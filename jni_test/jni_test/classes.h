@@ -12,6 +12,12 @@ class DECLSPECIFIER Calculator{
 
 };
 
+class DECLSPECIFIER JavaObjectWrapper{
+public:
+	jobject shapeObjWrap;
+};
+
+
 class DECLSPECIFIER CalculatorJava{
  public:
     CalculatorJava();
@@ -26,6 +32,8 @@ class DECLSPECIFIER CalculatorJava{
 	 jobject shapeObj;
 	 jobject pyDict;
 	 jobject pyList;
+	 JavaObjectWrapper * objectWrapperPtr;
+
 	 
 
 

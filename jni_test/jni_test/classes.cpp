@@ -86,6 +86,10 @@ jobject CalculatorJava::getRefShapeObj(){
 	   jmethodID constructorID=env->GetMethodID(geometryClass,"<init>","(D)V");
 		//jmethodID printNumberID=env->GetMethodID(geometryClass,"printNumber","()V");
 		jdouble squareSide=21;
+		cerr<<"THIS IS NEW OBJECT BEFORE INITIALIZATION="<<shapeObj<<endl;
+		objectWrapperPtr=new JavaObjectWrapper();
+		objectWrapperPtr->shapeObjWrap=shapeObj=env->NewObject(geometryClass,constructorID,squareSide);
+
 		shapeObj=env->NewObject(geometryClass,constructorID,squareSide);
 		jclass dictionaryWrapper=env->FindClass("Geometry/JDictWrapper");
 		cerr<<"dictionaryWrapper="<<dictionaryWrapper<<endl;
