@@ -12,6 +12,7 @@ Calculator::Calculator(){
 }
 Calculator::~Calculator(){
    cerr<<"THIS IS INSIDE Destructor"<<endl;
+	
 }
 
 void Calculator::calculate(int _max){
@@ -28,7 +29,10 @@ CalculatorJava::CalculatorJava(){
   cerr<<"THIS IS INSIDE CONSTRUCTOR CALCULATOR JAVA"<<endl;
 }
 CalculatorJava::~CalculatorJava(){
+
    cerr<<"THIS IS INSIDE Destructor Calculator Java"<<endl;
+	env->DeleteGlobalRef(shapeObjExt);
+	env->DeleteGlobalRef(shapeObjEx1);
 }
 
 void CalculatorJava::calculate(int _max){
@@ -56,14 +60,52 @@ jobject CalculatorJava::getRefShapeObj(){
 		return shapeObj;
 }
 
+void CalculatorJava::setShapeObject(jobject _extObj){
+	
+	shapeObjExt=env->NewGlobalRef(_extObj);
+   //shapeObjExt=_extObj;
+	cerr<<"SETTING shapeObjExt="<<shapeObjExt<<endl;
+
+}
+
+void CalculatorJava::setShapeObject1(jobject _extObj){
+	
+	shapeObjExt1=env->NewGlobalRef(_extObj);
+	//shapeObjExt1=_extObj;
+	cerr<<"SETTING shapeObjExt1="<<shapeObjExt1<<endl;
+}
+
+void CalculatorJava::runShapeObject(jobject  _extObj1){
+
+		jclass geometryClass=env->FindClass("Geometry/Square");
+	   
+		jmethodID printNumberID=env->GetMethodID(geometryClass,"printNumber","()V");
+		env->CallVoidMethod(_extObj1,printNumberID);
+		cerr<<"_extObj="<<_extObj1<<endl;
+		cerr<<"*******************************************************"<<endl;
+		jmethodID printNumberID1=env->GetMethodID(geometryClass,"printNumber","()V");
+		cerr<<"shapeObjExt="<<shapeObjExt<<endl;
+		env->CallVoidMethod(shapeObjExt,printNumberID1);
+}
+
+void CalculatorJava::runShapeObjects(){
+	jclass geometryClass=env->FindClass("Geometry/Square");
+	jmethodID printNumberID=env->GetMethodID(geometryClass,"printNumber","()V");
+	cerr<<"BEFORE env->CallVoidMethod(shapeObjExt,printNumberID)"<<endl;
+	env->CallVoidMethod(shapeObjExt,printNumberID);
+	cerr<<"AFTER env->CallVoidMethod(shapeObjExt,printNumberID)"<<endl;
+
+	env->CallVoidMethod(shapeObjExt1,printNumberID);
+
+}
 
  void 
 	 CalculatorJava::callJavaFunction(){
 		 JavaVMInitArgs vm_args; 
-		JNIEnv *env;
+		
 		jint res = 0;
 		char *classpath,*librarypath;
-		JavaVM *vms=NULL;
+		vms=NULL;
 		jsize no_vms;
 
 		res = JNI_GetCreatedJavaVMs(&vms, 1, &no_vms);
@@ -85,12 +127,20 @@ jobject CalculatorJava::getRefShapeObj(){
 		jclass geometryClass=env->FindClass("Geometry/Square");
 	   jmethodID constructorID=env->GetMethodID(geometryClass,"<init>","(D)V");
 		//jmethodID printNumberID=env->GetMethodID(geometryClass,"printNumber","()V");
-		jdouble squareSide=21;
-		cerr<<"THIS IS NEW OBJECT BEFORE INITIALIZATION="<<shapeObj<<endl;
+		
+		//cerr<<"THIS IS NEW OBJECT BEFORE INITIALIZATION="<<shapeObj<<endl;
 		objectWrapperPtr=new JavaObjectWrapper();
-		objectWrapperPtr->shapeObjWrap=shapeObj=env->NewObject(geometryClass,constructorID,squareSide);
+		jdouble squareSideWrap=21.21;
+		objectWrapperPtr->shapeObjWrap=env->NewObject(geometryClass,constructorID,squareSideWrap);
+		wrapper.shapeObjWrap=env->NewObject(geometryClass,constructorID,squareSideWrap);
 
+		jdouble squareSide=21;
 		shapeObj=env->NewObject(geometryClass,constructorID,squareSide);
+
+		jdouble squareSide1=20.201;
+		shapeObj1=env->NewObject(geometryClass,constructorID,squareSide1);
+
+
 		jclass dictionaryWrapper=env->FindClass("Geometry/JDictWrapper");
 		cerr<<"dictionaryWrapper="<<dictionaryWrapper<<endl;
 		jmethodID constructorDictionaryWrapperID=env->GetMethodID(dictionaryWrapper,"<init>","()V");

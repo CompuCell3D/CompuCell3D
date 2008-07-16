@@ -4,7 +4,6 @@
 %include "typemaps.i"
 
 %include <windows.i>
-
 %{
 #include <jni.h>
 #include "classes.h"

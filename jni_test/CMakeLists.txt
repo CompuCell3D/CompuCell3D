@@ -32,7 +32,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${JAVA_INCLUDE_PATH} ${JAVA_INCL
 SET(CMAKE_SWIG_FLAGS "")
 
 IF(SWIG_FOUND)
-
+    add_subdirectory(JyPlugin)
     add_subdirectory(jni_test)
 
 ELSE(SWIG_FOUND)
