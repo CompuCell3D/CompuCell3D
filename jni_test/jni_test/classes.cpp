@@ -33,6 +33,7 @@ CalculatorJava::~CalculatorJava(){
    cerr<<"THIS IS INSIDE Destructor Calculator Java"<<endl;
 	env->DeleteGlobalRef(shapeObjExt);
 	env->DeleteGlobalRef(shapeObjEx1);
+	
 }
 
 void CalculatorJava::calculate(int _max){
