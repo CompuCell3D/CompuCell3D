@@ -34,37 +34,38 @@ endif(BUILD_PYTHON_BINDINGS)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
-INSTALL(DIRECTORY  "${LIBSBML_INSTALL_PATH}/bin/" DESTINATION bin
-    PATTERN "*.svn" EXCLUDE
-    PATTERN "${LIBSBML_INSTALL_PATH}/bin/*.dll")
+    INSTALL(DIRECTORY  "${LIBSBML_INSTALL_DIR}/bin/" DESTINATION bin
+        PATTERN "*.svn" EXCLUDE
+        PATTERN "${LIBSBML_INSTALL_DIR}/bin/*.dll")
+
+        
+    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/BionetSolverExamples" DESTINATION @CMAKE_INSTALL_PREFIX@/Demos
+        PATTERN "*.svn" EXCLUDE
+        PATTERN "@CMAKE_SOURCE_DIR@/BionetSolverExamples/*")
 
     
-INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/BionetSolverExamples" DESTINATION @CMAKE_INSTALL_PREFIX@/Demos
-    PATTERN "*.svn" EXCLUDE
-    PATTERN "@CMAKE_SOURCE_DIR@/BionetSolverExamples/*")
-    
-INSTALL(
-    FILES
-        ${CMAKE_SOURCE_DIR}/python/bionetAPI.py
-    DESTINATION
-        ${CMAKE_INSTALL_PREFIX}/PythonSetupScripts )
+    INSTALL(
+        FILES
+            ${CMAKE_SOURCE_DIR}/python/bionetAPI.py
+        DESTINATION
+            ${CMAKE_INSTALL_PREFIX}/PythonSetupScripts )
     
 else ( ${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 
-INSTALL(DIRECTORY  "${LIBSBML_INSTALL_DIR}/lib/" DESTINATION @CMAKE_INSTALL_PREFIX@/lib
-    PATTERN "*.svn" EXCLUDE
-    PATTERN "${LIBSBML_INSTALL_DIR}/lib/*")
+    INSTALL(DIRECTORY  "${LIBSBML_INSTALL_DIR}/lib/" DESTINATION @CMAKE_INSTALL_PREFIX@/lib
+        PATTERN "*.svn" EXCLUDE
+        PATTERN "${LIBSBML_INSTALL_DIR}/lib/*")
 
-INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/BionetSolverExamples" DESTINATION @CMAKE_INSTALL_PREFIX@/Demos
-    PATTERN "*.svn" EXCLUDE
-    PATTERN "@CMAKE_SOURCE_DIR@/BionetSolverExamples/*")
-    
-INSTALL(
-    FILES
-        ${CMAKE_SOURCE_DIR}/python/bionetAPI.py
-    DESTINATION
-        ${CMAKE_INSTALL_PREFIX}/pythonSetupScripts )
+    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/BionetSolverExamples" DESTINATION @CMAKE_INSTALL_PREFIX@/Demos
+        PATTERN "*.svn" EXCLUDE
+        PATTERN "@CMAKE_SOURCE_DIR@/BionetSolverExamples/*")
+        
+    INSTALL(
+        FILES
+            ${CMAKE_SOURCE_DIR}/python/bionetAPI.py
+        DESTINATION
+            ${CMAKE_INSTALL_PREFIX}/pythonSetupScripts )
 
 
 endif( ${CMAKE_SYSTEM_NAME} STREQUAL Windows)

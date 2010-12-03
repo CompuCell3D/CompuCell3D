@@ -75,17 +75,15 @@ ADD_PREFIX(${PROJECT_SOURCE_DIR}/include/sbmlsolver/ Headers)
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
     Include_Directories(
+            ${LIBSBML_INSTALL_DIR}/include
+            ${SUNDIALS_INSTALL_DIR}/include                
             ${PROJECT_SOURCE_DIR}/include
             ${PROJECT_SOURCE_DIR}/include/sbmlsolver
-            ${PROJECT_SOURCE_DIR}/sundials/include
-            ${PROJECT_SOURCE_DIR}/sundials/include/sundials
-            ${PROJECT_SOURCE_DIR}/sbml/include
-            )
-        
+        )
         
     Link_Directories(
-            ${PROJECT_SOURCE_DIR}/sbml/lib
-            ${PROJECT_SOURCE_DIR}/sundials/lib
+            ${LIBSBML_INSTALL_DIR}/lib
+            ${SUNDIALS_INSTALL_DIR}/lib
             )
 
     # Link_Directories(
@@ -128,6 +126,7 @@ IF(BUILD_STATIC_LIB)
   SET_TARGET_PROPERTIES(soslib_static
     PROPERTIES OUTPUT_NAME soslib CLEAN_DIRECT_OUTPUT 1)
 
+    
   # Install the soslib library
   # # # INSTALL(TARGETS soslib_static DESTINATION ${PROJECT_SOURCE_DIR}/../soslib-install/bin/static)  
   # INSTALL(TARGETS soslib_static DESTINATION "@CMAKE_INSTALL_PREFIX@/lib)")

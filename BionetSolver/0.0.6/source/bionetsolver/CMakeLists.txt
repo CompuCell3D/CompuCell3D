@@ -29,17 +29,17 @@ ADD_PREFIX(${PROJECT_SOURCE_DIR}/include/bionetsolver/ Headers)
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
     Include_Directories(
+            ${LIBSBML_INSTALL_DIR}/include
+            ${SUNDIALS_INSTALL_DIR}/include
             ${PROJECT_SOURCE_DIR}/include
             ${PROJECT_SOURCE_DIR}/include/sbmlsolver
-            ${PROJECT_SOURCE_DIR}/sundials/include
-            ${PROJECT_SOURCE_DIR}/sundials/include/sundials
-            ${PROJECT_SOURCE_DIR}/sbml/include
+            ${PROJECT_SOURCE_DIR}/include/bionetsolver
             )
         
         
     Link_Directories(
-            ${PROJECT_SOURCE_DIR}/sbml/lib
-            ${PROJECT_SOURCE_DIR}/sundials/lib
+            ${LIBSBML_INSTALL_DIR}/lib
+            ${SUNDIALS_INSTALL_DIR}/lib
             )
 
     # Link_Directories(

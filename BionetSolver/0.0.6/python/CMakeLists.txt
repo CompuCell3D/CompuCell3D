@@ -18,20 +18,19 @@ FIND_PACKAGE(PythonInterp)
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
     Include_Directories(
+            ${LIBSBML_INSTALL_DIR}/include
+            ${SUNDIALS_INSTALL_DIR}/include
             ${PROJECT_SOURCE_DIR}/include
             ${PROJECT_SOURCE_DIR}/include/sbmlsolver
-            ${PROJECT_SOURCE_DIR}/sundials/include
-            ${PROJECT_SOURCE_DIR}/sundials/include/sundials
-            ${PROJECT_SOURCE_DIR}/sbml/include
             ${PYTHON_INCLUDE_PATH}
             ${CMAKE_CURRENT_SOURCE_DIR}
-			${PROJECT_SOURCE_DIR}/include
+			${PROJECT_SOURCE_DIR}/include            
             )
         
         
     Link_Directories(
-            ${PROJECT_SOURCE_DIR}/sbml/lib
-            ${PROJECT_SOURCE_DIR}/sundials/lib
+            ${LIBSBML_INSTALL_DIR}/lib
+            ${SUNDIALS_INSTALL_DIR}/lib
             )
 
  
@@ -87,11 +86,7 @@ ENDIF(BUILD_SHARED_LIB)
 # 
 # ADD_CUSTOM_TARGET(_swigmodifier ALL DEPENDS BionetSolverPy.py.mod)
 
-INSTALL(
-    FILES
-        ${CMAKE_BINARY_DIR}/python/BionetSolverPy.py
-    DESTINATION
-        ${CMAKE_INSTALL_PREFIX}/lib/python )
+
 
 INSTALL(
     TARGETS
