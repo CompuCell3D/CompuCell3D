@@ -1396,7 +1396,7 @@ SBML_ODESOLVER_API odeModel_t *ODEModel_createFromFile(const char *sbmlFileName)
   SBMLDocument_t *d;
   odeModel_t *om;
     
-    //printf("ODEModel_createFromFile was called...\n");
+    printf("ODEModel_createFromFile was called... %s\n",sbmlFileName);
     
   d =  parseModel((char *)sbmlFileName,
 		  0 /* print message */,
