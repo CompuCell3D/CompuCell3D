@@ -76,8 +76,8 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 # Build the static library
 IF(BUILD_STATIC_LIB)
 
-  # Add the build target for the static soslib library
-  SET(Libraries soslib_static) 
+  # Add the build target for the static bionetsolver library
+  SET(Libraries sbmlsolver_static) 
   ADD_LIBRARY(bionetsolver_static STATIC ${Sources})
   TARGET_LINK_LIBRARIES(bionetsolver_static ${Libraries})
 
@@ -85,9 +85,7 @@ IF(BUILD_STATIC_LIB)
   SET_TARGET_PROPERTIES(bionetsolver_static
     PROPERTIES OUTPUT_NAME bionetsolver CLEAN_DIRECT_OUTPUT 1)
 
-  # Install the soslib library
-  # # # INSTALL(TARGETS soslib_static DESTINATION ${PROJECT_SOURCE_DIR}/../soslib-install/bin/static)  
-  # INSTALL(TARGETS soslib_static DESTINATION "@CMAKE_INSTALL_PREFIX@/lib)")
+  # Install the bionetsolver library
   INSTALL_TARGETS(/lib bionetsolver_static) # this will install *.lib in the lib directory and *.dll in the bin directory
   
 ENDIF(BUILD_STATIC_LIB)
@@ -96,8 +94,8 @@ ENDIF(BUILD_STATIC_LIB)
 # Build the shared library
 IF(BUILD_SHARED_LIB)
 
-  # Add the build target for the shared soslib library
-  SET(Libraries soslib_shared) 
+  # Add the build target for the shared bionetsolver library
+  SET(Libraries sbmlsolver_shared) 
   ADD_LIBRARY(bionetsolver_shared SHARED ${Sources})
   TARGET_LINK_LIBRARIES(bionetsolver_shared ${Libraries})
 
@@ -105,14 +103,14 @@ IF(BUILD_SHARED_LIB)
   SET_TARGET_PROPERTIES(bionetsolver_shared
     PROPERTIES OUTPUT_NAME bionetsolver CLEAN_DIRECT_OUTPUT 1)
 
-  # Install the soslib library
+  # Install the bionetsolver library
   INSTALL_TARGETS(/lib bionetsolver_shared) # this will install *.lib in the lib directory and *.dll in the bin directory
   
 
 ENDIF(BUILD_SHARED_LIB)
 
 
-# Install the soslib header files
+# Install the bionetsolver header files
 
 INSTALL(FILES ${Headers} DESTINATION "@CMAKE_INSTALL_PREFIX@/include/bionetsolver")
 

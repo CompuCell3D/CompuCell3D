@@ -118,19 +118,17 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 # Build the static library
 IF(BUILD_STATIC_LIB)
 
-  # Add the build target for the static soslib library
-  ADD_LIBRARY(soslib_static STATIC ${Sources})
-  TARGET_LINK_LIBRARIES(soslib_static ${Libraries})
+  # Add the build target for the static sbmlsolver library
+  ADD_LIBRARY(sbmlsolver_static STATIC ${Sources})
+  TARGET_LINK_LIBRARIES(sbmlsolver_static ${Libraries})
 
   # Set the library name and make sure it is not deleted
-  SET_TARGET_PROPERTIES(soslib_static
-    PROPERTIES OUTPUT_NAME soslib CLEAN_DIRECT_OUTPUT 1)
+  SET_TARGET_PROPERTIES(sbmlsolver_static
+    PROPERTIES OUTPUT_NAME sbmlsolver CLEAN_DIRECT_OUTPUT 1)
 
     
-  # Install the soslib library
-  # # # INSTALL(TARGETS soslib_static DESTINATION ${PROJECT_SOURCE_DIR}/../soslib-install/bin/static)  
-  # INSTALL(TARGETS soslib_static DESTINATION "@CMAKE_INSTALL_PREFIX@/lib)")
-  INSTALL_TARGETS(/lib soslib_static) # this will install *.lib in the lib directory and *.dll in the bin directory
+  # Install the sbmlsolver library
+  INSTALL_TARGETS(/lib sbmlsolver_static) # this will install *.lib in the lib directory and *.dll in the bin directory
   
 ENDIF(BUILD_STATIC_LIB)
 
@@ -138,22 +136,22 @@ ENDIF(BUILD_STATIC_LIB)
 # Build the shared library
 IF(BUILD_SHARED_LIB)
 
-  # Add the build target for the shared soslib library
-  ADD_LIBRARY(soslib_shared SHARED ${Sources})
-  TARGET_LINK_LIBRARIES(soslib_shared ${Libraries})
+  # Add the build target for the shared sbmlsolver library
+  ADD_LIBRARY(sbmlsolver_shared SHARED ${Sources})
+  TARGET_LINK_LIBRARIES(sbmlsolver_shared ${Libraries})
 
   # Set the library name and make sure it is not deleted
-  SET_TARGET_PROPERTIES(soslib_shared
-    PROPERTIES OUTPUT_NAME soslib CLEAN_DIRECT_OUTPUT 1)
+  SET_TARGET_PROPERTIES(sbmlsolver_shared
+    PROPERTIES OUTPUT_NAME sbmlsolver CLEAN_DIRECT_OUTPUT 1)
 
-  # Install the soslib library
-  INSTALL_TARGETS(/lib soslib_shared) # this will install *.lib in the lib directory and *.dll in the bin directory
+  # Install the sbmlsolver library
+  INSTALL_TARGETS(/lib sbmlsolver_shared) # this will install *.lib in the lib directory and *.dll in the bin directory
   
 
 ENDIF(BUILD_SHARED_LIB)
 
 
-# Install the soslib header files
+# Install the sbmlsolver header files
 
 INSTALL(FILES ${Headers} DESTINATION "@CMAKE_INSTALL_PREFIX@/include/sbmlsolver")
 
