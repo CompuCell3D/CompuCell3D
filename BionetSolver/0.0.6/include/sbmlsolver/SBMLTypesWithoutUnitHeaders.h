@@ -21,11 +21,11 @@
  * and also available online as http://sbml.org/software/libsbml/license.html
  *----------------------------------------------------------------------- -->*/
 
-#ifndef SBMLTypes_h
-#define SBMLTypes_h
+#ifndef SBMLTypesWithoutUnitHeaders_h
+#define SBMLTypesWithoutUnitHeaders_h
 
 
-//#include <sbml/common/sbmlfwd.h>
+#include <sbml/common/sbmlfwd.h>
 
 #include <sbml/SBMLDocument.h>
 #include <sbml/xml/XMLError.h>
@@ -33,7 +33,7 @@
 #include <sbml/SBase.h>
 #include <sbml/ListOf.h>
 
-//#include <sbml/Model.h>
+#include <sbml/Model.h>
 
 #include <sbml/FunctionDefinition.h>
 
