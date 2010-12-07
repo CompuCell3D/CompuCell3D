@@ -64,30 +64,8 @@ else ( ${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     INSTALL(
         FILES
             ${CMAKE_SOURCE_DIR}/python/bionetAPI.py
-            ${CMAKE_SOURCE_DIR}/python/bionetAPITest.py
         DESTINATION
             ${CMAKE_INSTALL_PREFIX}/pythonSetupScripts )
-
-
-            
-    INSTALL(
-        FILES
-            ${CMAKE_SOURCE_DIR}/python/bionet.py
-        DESTINATION
-            ${CMAKE_INSTALL_PREFIX} )
-
-
-    INSTALL(
-        FILES
-           
-            ${CMAKE_SOURCE_DIR}/python/bionet.command
-        DESTINATION
-            ${CMAKE_INSTALL_PREFIX} 
-									PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                                    GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                                    WORLD_READ WORLD_WRITE WORLD_EXECUTE            
-            )
-
 
 
 endif( ${CMAKE_SYSTEM_NAME} STREQUAL Windows)

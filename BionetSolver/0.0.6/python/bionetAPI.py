@@ -51,7 +51,6 @@ def printInitializationWarningMessage():
 #   loadSBMLModel( _sbmlModelName, _sbmlModelPath, _modelKey = "", _timeStepOfIntegration = -1.0 )
 def loadSBMLModel( _sbmlModelName, _sbmlModelPath, _modelKey = "", _timeStepOfIntegration = -1.0 ):
     global bionetworkManager
-    print "INSIDE bionetAPI loading fcn"
     if( bionetworkManager != None ):
         bionetworkManager.loadSBMLModel( _sbmlModelName, _sbmlModelPath, _modelKey, _timeStepOfIntegration )
     else:

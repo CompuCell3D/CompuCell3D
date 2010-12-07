@@ -38,10 +38,8 @@ BionetworkSBML::BionetworkSBML(std::string name, std::string _sbmlModelPath, dou
     
     modelKey = "";
     modelName = name;
-    cerr<<"BIONETWORK SOLVERSBML - loading model "<<_sbmlModelPath<<endl;
-    odeModel = new soslib_OdeModel(fileName);
-    cerr<<"AFTER new soslib_OdeModel(fileName)"<<endl;
     
+    odeModel = new soslib_OdeModel(fileName);
     
     if ( odeModel != 0 ){
         std::cout << "soslib_OdeModel instance successfully created..." << std::endl;

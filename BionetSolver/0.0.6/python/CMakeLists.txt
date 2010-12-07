@@ -52,7 +52,7 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
             ${SUNDIALS_INSTALL_DIR}/lib
             )
 
-	
+
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 
@@ -74,7 +74,7 @@ ENDIF(BUILD_STATIC_LIB)
 
 
 IF(BUILD_SHARED_LIB)
-	SWIG_LINK_LIBRARIES(BionetSolverPy bionetsolver_shared  sundials_cvodes sundials_nvecserial sbml dl ${PYTHON_LIBRARIES})
+	SWIG_LINK_LIBRARIES(BionetSolverPy bionetsolver_shared ${PYTHON_LIBRARIES})
 ENDIF(BUILD_SHARED_LIB)
 
 #THIS IS EXAMPLE OF WORKING COMMAND
