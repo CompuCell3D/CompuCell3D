@@ -1,9 +1,5 @@
-<<<<<<< .mine
 
 
-=======
-
->>>>>>> .r1534
 /*
   Last changed Time-stamp: <2010-04-12 10:24:04 raim>
   $Id: odeModel.c,v 1.130 2010/04/12 08:29:38 raimc Exp $
@@ -1402,7 +1398,7 @@ SBML_ODESOLVER_API odeModel_t *ODEModel_createFromFile(const char *sbmlFileName)
   SBMLDocument_t *d;
   odeModel_t *om;
     
-    printf("ODEModel_createFromFile was called... %s\n",sbmlFileName);
+    //printf("ODEModel_createFromFile was called...\n");
     
   d =  parseModel((char *)sbmlFileName,
 		  0 /* print message */,
