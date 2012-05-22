@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/cc3d/!svn/ver/2395/branch/CellDraw/1.5.1
+END
+cdPixelEditor.qrc
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/cc3d/!svn/ver/2080/branch/CellDraw/1.5.1/cdPixelEditor.qrc
+END
+Info.plist
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/cc3d/!svn/ver/2052/branch/CellDraw/1.5.1/Info.plist
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/cc3d/!svn/ver/2052/branch/CellDraw/1.5.1/CMakeLists.txt
+END
+cdDiagramScene.qrc
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/cc3d/!svn/ver/2163/branch/CellDraw/1.5.1/cdDiagramScene.qrc
+END
+cellDrawGUI.ui
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/cc3d/!svn/ver/2052/branch/CellDraw/1.5.1/cellDrawGUI.ui
+END

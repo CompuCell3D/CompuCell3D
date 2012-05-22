@@ -1,0 +1,173 @@
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/cc3d/!svn/ver/2395/branch/CellDraw/1.5.1/src
+END
+cdDiagramScene.py
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/cc3d/!svn/ver/2395/branch/CellDraw/1.5.1/src/cdDiagramScene.py
+END
+cellDrawMain.pyw
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/cc3d/!svn/ver/2281/branch/CellDraw/1.5.1/src/cellDrawMain.pyw
+END
+cdControlSceneItemEdit.py
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/cc3d/!svn/ver/2154/branch/CellDraw/1.5.1/src/cdControlSceneItemEdit.py
+END
+cdControlLayerSelection.py
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/cc3d/!svn/ver/2263/branch/CellDraw/1.5.1/src/cdControlLayerSelection.py
+END
+CellDraw_standalone.command
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/cc3d/!svn/ver/2052/branch/CellDraw/1.5.1/src/CellDraw_standalone.command
+END
+cdControlRegionOrCell.py
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/cc3d/!svn/ver/2263/branch/CellDraw/1.5.1/src/cdControlRegionOrCell.py
+END
+cdSceneAssistant.py
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/cc3d/!svn/ver/2263/branch/CellDraw/1.5.1/src/cdSceneAssistant.py
+END
+cdSceneBundle.py
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/cc3d/!svn/ver/2163/branch/CellDraw/1.5.1/src/cdSceneBundle.py
+END
+cdPixelEditor.py
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/cc3d/!svn/ver/2087/branch/CellDraw/1.5.1/src/cdPixelEditor.py
+END
+ui_cellDrawGUI.py
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/cc3d/!svn/ver/2052/branch/CellDraw/1.5.1/src/ui_cellDrawGUI.py
+END
+cdControlPanel.py
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/cc3d/!svn/ver/2263/branch/CellDraw/1.5.1/src/cdControlPanel.py
+END
+cdPreferences.py
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/cc3d/!svn/ver/2263/branch/CellDraw/1.5.1/src/cdPreferences.py
+END
+cdTableOfTypes.py
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/cc3d/!svn/ver/2281/branch/CellDraw/1.5.1/src/cdTableOfTypes.py
+END
+cdControlInputImage.py
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/cc3d/!svn/ver/2163/branch/CellDraw/1.5.1/src/cdControlInputImage.py
+END
+cdControlTypes.py
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/cc3d/!svn/ver/2154/branch/CellDraw/1.5.1/src/cdControlTypes.py
+END
+cdControlClusters.py
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/cc3d/!svn/ver/2160/branch/CellDraw/1.5.1/src/cdControlClusters.py
+END
+cdTableOfBlockCellSizes.py
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/cc3d/!svn/ver/2052/branch/CellDraw/1.5.1/src/cdTableOfBlockCellSizes.py
+END
+cdDiagramScene_rc.py
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/cc3d/!svn/ver/2163/branch/CellDraw/1.5.1/src/cdDiagramScene_rc.py
+END
+cdControlPIFFGenerationMode.py
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/cc3d/!svn/ver/2263/branch/CellDraw/1.5.1/src/cdControlPIFFGenerationMode.py
+END
+cdSceneRasterizer.py
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/cc3d/!svn/ver/2263/branch/CellDraw/1.5.1/src/cdSceneRasterizer.py
+END
+cdControlSceneScaleZoom.py
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/cc3d/!svn/ver/2161/branch/CellDraw/1.5.1/src/cdControlSceneScaleZoom.py
+END
+cdImageSequence.py
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/cc3d/!svn/ver/2280/branch/CellDraw/1.5.1/src/cdImageSequence.py
+END
+cdControlImageSequence.py
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/cc3d/!svn/ver/2280/branch/CellDraw/1.5.1/src/cdControlImageSequence.py
+END
+cdConstants.py
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/cc3d/!svn/ver/2222/branch/CellDraw/1.5.1/src/cdConstants.py
+END
+cdPixelEditor_rc.py
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/cc3d/!svn/ver/2080/branch/CellDraw/1.5.1/src/cdPixelEditor_rc.py
+END
+cdWaitProgressBarWithImage.py
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/cc3d/!svn/ver/2263/branch/CellDraw/1.5.1/src/cdWaitProgressBarWithImage.py
+END
+cdWaitProgressBar.py
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/cc3d/!svn/ver/2263/branch/CellDraw/1.5.1/src/cdWaitProgressBar.py
+END
+cdImageLayer.py
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/cc3d/!svn/ver/2165/branch/CellDraw/1.5.1/src/cdImageLayer.py
+END

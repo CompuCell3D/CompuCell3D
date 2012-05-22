@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/cc3d/!svn/ver/2108/branch/BionetSolver/0.0.6/include/bionetsolver
+END
+BionetworkDLLSpecifier.h
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/cc3d/!svn/ver/1523/branch/BionetSolver/0.0.6/include/bionetsolver/BionetworkDLLSpecifier.h
+END
+BionetworkUtilManager.h
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/cc3d/!svn/ver/1523/branch/BionetSolver/0.0.6/include/bionetsolver/BionetworkUtilManager.h
+END
+soslib_CvodeSettings.h
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/cc3d/!svn/ver/1523/branch/BionetSolver/0.0.6/include/bionetsolver/soslib_CvodeSettings.h
+END
+soslib_IntegratorInstance.h
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/cc3d/!svn/ver/1523/branch/BionetSolver/0.0.6/include/bionetsolver/soslib_IntegratorInstance.h
+END
+BionetworkSBML.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/cc3d/!svn/ver/2108/branch/BionetSolver/0.0.6/include/bionetsolver/BionetworkSBML.h
+END
+Bionetwork.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/cc3d/!svn/ver/2108/branch/BionetSolver/0.0.6/include/bionetsolver/Bionetwork.h
+END
+soslib_OdeModel.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/cc3d/!svn/ver/1523/branch/BionetSolver/0.0.6/include/bionetsolver/soslib_OdeModel.h
+END
+BionetworkTemplateLibrary.h
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/cc3d/!svn/ver/2108/branch/BionetSolver/0.0.6/include/bionetsolver/BionetworkTemplateLibrary.h
+END
