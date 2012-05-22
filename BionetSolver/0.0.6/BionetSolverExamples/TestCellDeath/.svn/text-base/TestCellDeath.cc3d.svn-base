@@ -1,6 +1,0 @@
-<Simulation version="3.5.1">
-   <XMLScript Type="XMLScript">Simulation/TestCellDeath.xml</XMLScript>
-   <PythonScript Type="PythonScript">Simulation/TestCellDeath.py</PythonScript>
-   <Resource Type="Python">Simulation/TestCellDeathSteppables.py</Resource>
-   <Resource Type="SBML">Simulation/MinimalDeltaNotch.sbml</Resource>   
-</Simulation>
