@@ -1,0 +1,7 @@
+#ifndef __GPU_ENABLED_H__
+#define __GPU_ENABLED_H__
+
+#define CUDA_ENABLED @CudaEnabled@
+#define OPENCL_ENABLED @OpenCLEnabled@
+
+#endif

@@ -1,0 +1,7 @@
+<Simulation version="3.5.1">
+    <XMLScript>Simulation/cellsort_2D_neighbor_tracker.xml</XMLScript>    
+    <PythonScript>Simulation/cellsort_2D_neighbor_tracker.py</PythonScript> 
+    <Resource Type="Python">Simulation/cellsort_2D_steppables_neighbor_tracker.py</Resource>    
+</Simulation>
+
+ 

@@ -1,0 +1,16 @@
+SET(QT_LIBS )
+SET(MOC_FILES )
+
+
+FIND_PACKAGE(Qt4 REQUIRED)
+SET(QT_LIBS ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} )
+INCLUDE_DIRECTORIES(${QT_INCLUDES})
+
+    
+    
+
+
+
+
+# Recurse into subprojects
+ADD_SUBDIRECTORY(StreamRedirectors)

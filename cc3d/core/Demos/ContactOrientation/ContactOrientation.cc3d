@@ -1,0 +1,5 @@
+<Simulation version="3.6.2">
+   <XMLScript Type="XMLScript">Simulation/ContactOrientation.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/ContactOrientation.py</PythonScript>
+   <Resource Type="Python">Simulation/ContactOrientationSteppables.py</Resource>
+</Simulation>

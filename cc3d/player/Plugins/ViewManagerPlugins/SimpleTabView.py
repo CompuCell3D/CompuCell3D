@@ -1,0 +1,2955 @@
+# -*- coding: utf-8 -*-
+import os, sys
+import re
+import inspect
+import string
+
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+from PyQt4.QtXml import *
+
+from Messaging import stdMsg, dbgMsg,pd, errMsg, setDebugging
+setDebugging(1)
+
+
+FIELD_TYPES = ("CellField", "ConField", "ScalarField", "ScalarFieldCellLevel", "VectorField", "VectorFieldCellLevel","CustomVis")
+PLANES      = ("xy", "xz", "yz")
+
+MODULENAME = '---- SimpleTabView.py: '
+
+
+# from ViewManager.ViewManager import ViewManager
+from ViewManager.SimpleViewManager import SimpleViewManager
+from  Graphics.GraphicsFrameWidget import GraphicsFrameWidget
+
+from Utilities.QVTKRenderWidget import QVTKRenderWidget
+from Utilities.SimModel import SimModel
+from Configuration.ConfigurationDialog import ConfigurationDialog
+import Configuration
+
+from Simulation.CMLResultReader import CMLResultReader
+
+from Simulation.SimulationThread import SimulationThread
+# from Simulation.SimulationThread1 import SimulationThread1
+
+import ScreenshotManager
+import vtk
+from RollbackImporter import RollbackImporter
+
+try:
+    python_module_path=os.environ["PYTHON_MODULE_PATH"]
+    appended=sys.path.count(python_module_path)
+    if not appended:
+        sys.path.append(python_module_path)
+    import CompuCellSetup
+except:
+    print 'STView: sys.path=',sys.path
+
+class SimpleTabView(QMdiArea,SimpleViewManager):
+
+    def __init__(self, parent):
+        # sys.path.append(os.environ["PYTHON_MODULE_PATH"])
+        import CompuCellSetup
+    
+        self.__parent = parent # QMainWindow -> UI.UserInterface
+        self.UI = parent
+        QTabWidget.__init__(self, parent)
+        SimpleViewManager.__init__(self, parent)
+        self.__createStatusBar()
+        self.__setConnects()
+        
+        self.scrollView = QScrollArea(self)
+        self.scrollView.setBackgroundRole(QPalette.Dark)
+        self.scrollView.setVisible(False)
+        
+        # turning off vtk debug output. This requires small modification to the vtk code itself. 
+        # Files affected vtkOutputWindow.h vtkOutputWindow.cxx vtkWin32OutputWindow.h vtkWin32OutputWindow.cxx
+        if hasattr(vtk.vtkOutputWindow,"setOutputToWindowFlag"):            
+            vtkOutput = vtk.vtkOutputWindow.GetInstance()
+            vtkOutput.setOutputToWindowFlag(False)
+            
+        #had to introduce separate scrollArea for 2D and 3D widgets. for some reason switching graphics widgets in Scroll area  did not work correctly. 
+        self.scrollView3D = QScrollArea(self)
+        self.scrollView3D.setBackgroundRole(QPalette.Dark)
+        self.scrollView3D.setVisible(False)
+        #holds ptr (stored as long int) to original cerr stream buffer
+        self.cerrStreamBufOrig = None
+        
+        #qworkspace        
+        # self.setScrollBarsEnabled(True)    
+
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)                
+        
+        self.rollbackImporter = None
+        
+        from PlotManagerSetup import createPlotManager
+        self.plotManager = createPlotManager(self) # object responsible for creating/managing plot windows so they're accessible from steppable level 
+#        print MODULENAME," __init__:  self.plotManager=",self.plotManager
+        
+        self.fieldTypes = {}
+        
+        self.pluginTab  = None
+        self.mysim      = None
+        
+        self.simulation = None    # gets assigned to SimulationThread down in prepareForNewSimulation()
+        self.screenshotManager = None
+        self.zitems     = []
+        self.__fileName = ""        
+#        self.setParams()
+        
+        self.__fieldType = ("Cell_Field", FIELD_TYPES[0])
+        self.simulationIsStepping = False
+        self.simulationIsRunning = False
+        self.screenshotDirectoryName=""
+        self.playerSettingsFileName = ""
+        self.resultStorageDirectory=""
+        self.customScreenshotDirectoryName=""
+        self.prevOutputDir = ""
+        self.baseScreenshotName = ""
+        self.latticeType = Configuration.LATTICE_TYPES["Square"]
+        self.newDrawingUserRequest = False
+        self.completedFirstMCS = False
+        
+        self.cmlHandlerCreated = False
+        
+        self.basicSimulationData = None
+        self.saveSettings = True
+        
+        self.closePlayerAfterSimulationDone = False
+        
+        self.__screenshotDescriptionFileName = ""
+        self.__outputDirectory = ""
+        self.__prefsFile = ""
+        
+        
+        self.__viewManagerType = "Regular"
+        
+        self.screenshotNumberOfDigits = 10 #this determines how many digits screenshot number of screenshot file name should have
+        
+        self.windowCounter = 0
+        self.windowDict={}
+        self.plotWindowDict={}
+        self.graphicsWindowDict={}
+        self.graphicsWindowVisDict={}
+        
+        # This extra dictionary is needed to map widget number to mdiWidget. When inserting window to  
+        # mdiArea it is wrapped as QMdiSubWindow and QMdiSubWindow are used as identifiers 
+        # in managing QMdiArea. If we sore only underlying widgets (i.e. those that QMdisubwindow wrap 
+        # then we will not have access to QMdiSubWindow when e.g. we want to make it active )
+        # We might also use subWindowList to deal with it, but for now we will use the solution with extra dictionary.
+        self.mdiWindowDict = {}
+        
+        self.graphicsWindowActionsDict = {}
+        self.lastActiveWindow = None
+        self.lastPositionMainGraphicsWindow = None        
+        self.newWindowDefaultPlane = None
+        
+        self.cc3dSimulationDataHandler = None
+        
+        # for more information on QSignalMapper see Mark Summerfield book "Rapid GUI Development with PyQt"
+        self.windowMapper = QSignalMapper(self)
+        self.connect(self.windowMapper,SIGNAL("mapped(QWidget*)"), self.setActiveSubWindowCustomSlot)        
+        
+        
+        self.prepareForNewSimulation(_forceGenericInitialization=True)
+#        print MODULENAME,'__init__:   after prepareForNewSimulation(),  self.mysim = ',self.mysim
+        
+        self.setParams()
+        
+        self.keepOldTabs = False #this flag sets if tabs should be removed before creating new one or not
+        
+        self.mainGraphicsWindow = None    # vs.  lastActiveWindow
+        
+        # determine if some relevant plugins are defined in the model
+        self.pluginFPPDefined = False   # FocalPointPlasticity
+        self.pluginCOMDefined = False   # CenterOfMass
+        # is there a better way to check for plugins being defined?
+        # mainGraphicsWindow.drawModel2D.currentDrawingParameters.bsd.sim.getCC3DModuleData("Plugin","FocalPointPlasticity"):
+        
+        # Note: we cannot check the plugins here as CompuCellSetup.cc3dXML2ObjConverter.root is not defined
+        
+        # nextSimulation holds the name of the file that will be inserted as a new simulation to run after current simulation gets stopped
+        self.nextSimulation = ""
+        
+        self.dlg = None
+        
+
+    def getSimFileName(self):
+        return self.__fileName
+        
+    def updateRecentFileMenu(self):
+        menusDict = self.__parent.getMenusDictionary()
+        rencentSimulationsMenu = menusDict["recentSimulations"]    
+        rencentSimulationsMenu.clear()
+        recentSimulations = Configuration.getSetting("RecentSimulations")
+        simCounter = 1
+        for simulationFileName in recentSimulations:
+            actionText = self.tr("&%1 %2").arg(simCounter).arg(simulationFileName)
+            # action=rencentSimulationsMenu.addAction(actionText)
+            action = QAction("&%d %s " % (simCounter,simulationFileName) , self)
+            rencentSimulationsMenu.addAction(action)
+            action.setData(QVariant(simulationFileName))
+            self.connect(action,SIGNAL("triggered()"),self.__openRecentSim)
+            
+            simCounter += 1
+            
+        return
+
+        
+        
+    def setActiveSubWindowCustomSlot(self, window):
+#        print MODULENAME,"setActiveSubWindow: window=",window
+#        print MODULENAME,'\n ------------------  setActiveSubWindowCustomSlot():  self.mdiWindowDict =', self.mdiWindowDict
+        windowNames = self.plotWindowDict.keys()
+#        for windowName in windowNames:
+#          print MODULENAME,'     setActiveSubWindowCustomSlot():  windowName=', windowName
+            
+#        print 'dir(window)=',dir(window)
+        if window:
+#            self.setActiveSubWindow(window)
+            self.setActiveSubWindow(self.mdiWindowDict.values()[0])
+
+            self.lastActiveWindow = window
+#            print "MODULENAME,'         setActiveSubWindowCustomSlot(): self.lastActiveWindow.winId().__int__()=",self.lastActiveWindow.windowId().__int__()
+#            print "MODULENAME,'         setActiveSubWindowCustomSlot(): self.lastActiveWindow is ",self.lastActiveWindow.windowTitle()
+            
+#            self.updateActiveWindowVisFlags()
+
+        if (self.lastActiveWindow is not None) and (self.lastActiveWindow.winId().__int__() in self.graphicsWindowVisDict.keys()):
+            dictKey = self.lastActiveWindow.winId().__int__()
+            if dictKey in self.graphicsWindowVisDict.keys():
+#               self.simulation.drawMutex.lock()  # lock/unlock necessary or not?
+#                print MODULENAME,'------- setActiveSubWindowCustomSlot():  updating *Act.setChecked:  cellsAct=',self.graphicsWindowVisDict[self.lastActiveWindow.winId().__int__()][0]
+#                print MODULENAME,'------- setActiveSubWindowCustomSlot():  updating *Act.setChecked: borderAct=',self.graphicsWindowVisDict[self.lastActiveWindow.winId().__int__()][1]
+                self.cellsAct.setChecked(self.graphicsWindowVisDict[dictKey][0])
+                self.borderAct.setChecked(self.graphicsWindowVisDict[dictKey][1])
+                self.clusterBorderAct.setChecked(self.graphicsWindowVisDict[dictKey][2])
+                self.cellGlyphsAct.setChecked(self.graphicsWindowVisDict[dictKey][3])
+                self.FPPLinksAct.setChecked(self.graphicsWindowVisDict[dictKey][4])
+        
+
+    def updateActiveWindowVisFlags(self):
+        dictKey = self.lastActiveWindow.winId().__int__()
+        self.graphicsWindowVisDict[dictKey] = (self.cellsAct.isChecked(),self.borderAct.isChecked(), \
+                                      self.clusterBorderAct.isChecked(),self.cellGlyphsAct.isChecked(),self.FPPLinksAct.isChecked() )
+#        print
+#        print MODULENAME, 'updateActiveWindowVisFlags():  dictKey=',dictKey
+#        print MODULENAME, 'updateActiveWindowVisFlags():  self.graphicsWindowVisDict[self.lastActiveWindow.winId()]=',self.graphicsWindowVisDict[self.lastActiveWindow.winId()]
+#        print MODULENAME, 'updateActiveWindowVisFlags():  self.graphicsWindowVisDict=',self.graphicsWindowVisDict
+#        print
+        
+        
+    # Invoked whenever 'Window' menu is clicked. It does NOT modify lastActiveWindow directly (setActiveSubWindowCustomSlot does)
+    def updateWindowMenu(self):   
+#        if self.lastActiveWindow is not None:
+#            print MODULENAME,'------- updateWindowMenu(): (starting)  self.lastActiveWindow.winId()=',self.lastActiveWindow.winId()
+        menusDict = self.__parent.getMenusDictionary()
+        windowMenu = menusDict["window"]    
+        windowMenu.clear()
+        windowMenu.addAction(self.newGraphicsWindowAct)
+        # windowMenu.addAction(self.newPlotWindowAct)
+        windowMenu.addAction(self.tileAct)
+        windowMenu.addAction(self.cascadeAct)
+        windowMenu.addAction(self.minimizeAllGraphicsWindowsAct)
+        windowMenu.addAction(self.restoreAllGraphicsWindowsAct)
+        windowMenu.addSeparator()
+        windowMenu.addAction(self.closeActiveWindowAct)
+        windowMenu.addAction(self.closeAdditionalGraphicsWindowsAct)
+        windowMenu.addSeparator()        
+        
+        # adding graphics windows
+        counter=0
+#        print MODULENAME,'------- updateWindowMenu():  -------------------------------------------------'
+#        print MODULENAME,'------- updateWindowMenu():  self.graphicsWindowDict.keys()=',self.graphicsWindowDict.keys()
+#        print MODULENAME,'------- updateWindowMenu():  self.graphicsWindowDict=',self.graphicsWindowDict
+#        print MODULENAME,'------- updateWindowMenu():  self.graphicsWindowVisDict=',self.graphicsWindowVisDict
+#        print MODULENAME,'------- updateWindowMenu():  self.lastActiveWindow=',self.lastActiveWindow
+        for windowName in self.graphicsWindowDict.keys():
+            graphicsWindow = self.graphicsWindowDict[windowName]
+            if counter < 9:
+                actionText = self.tr("&%1 %2").arg(counter + 1).arg(graphicsWindow.windowTitle())
+            else:
+                actionText = self.tr("%1 %2").arg(counter + 1).arg(graphicsWindow.windowTitle())
+        
+            action = windowMenu.addAction(actionText)
+            action.setCheckable(True)
+            myFlag = self.lastActiveWindow==graphicsWindow
+#            print MODULENAME,'------- updateWindowMenu():  setting winId,flag=',graphicsWindow.winId(),myFlag
+#            print MODULENAME,'------- updateWindowMenu():  lastActiveWindow=',self.lastActiveWindow.winId()
+            action.setChecked(myFlag)
+#            if self.lastActiveWindow==graphicsWindow:
+#                 print "               (in loop)  CHECKING window title = ",self.lastActiveWindow.windowTitle()
+            # action.triggered.connect(self.windowMapper.map)
+            
+            self.connect(action,SIGNAL("triggered()"),self.windowMapper,SLOT("map()"))
+            self.windowMapper.setMapping(action, graphicsWindow)
+            counter += 1
+            
+#        if self.lastActiveWindow is not None: 
+#            print "               (after loop)  CHECKED lastActiveWindow title = ",self.lastActiveWindow.windowTitle()
+            
+#        self.graphicsWindowVisDict[self.lastActiveWindow.winId()] = (self.cellsAct.isChecked(),self.borderAct.isChecked(), \
+#                                      self.clusterBorderAct.isChecked(),self.cellGlyphsAct.isChecked(),self.FPPLinksAct.isChecked() )
+#        self.connect(self.cellsAct,    SIGNAL('triggered(bool)'),  self.__checkCells)
+#        self.connect(self.borderAct,    SIGNAL('triggered(bool)'),  self.__checkBorder)
+#        self.connect(self.clusterBorderAct,    SIGNAL('triggered(bool)'),  self.__checkClusterBorder)
+#        self.connect(self.cellGlyphsAct,  SIGNAL('triggered(bool)'),  self.__checkCellGlyphs)
+#        self.connect(self.FPPLinksAct,  SIGNAL('triggered(bool)'),  self.__checkFPPLinks)
+
+#        if (self.lastActiveWindow is not None):
+#            self.setActiveWindowVisFlags()   # rwh: do this?
+
+#        if self.lastActiveWindow is not None:
+#            print MODULENAME,'------- updateWindowMenu():   self.lastActiveWindow.winId()=',self.lastActiveWindow.winId()
+#        if (self.lastActiveWindow is not None) and (self.lastActiveWindow.winId() in self.graphicsWindowVisDict.keys()):
+##            self.simulation.drawMutex.lock()
+#            print MODULENAME,'------- updateWindowMenu():  updating *Act.setChecked: cellsAct=',self.graphicsWindowVisDict[self.lastActiveWindow.winId()][0]
+#            print MODULENAME,'------- updateWindowMenu():  updating *Act.setChecked: borderAct=',self.graphicsWindowVisDict[self.lastActiveWindow.winId()][1]
+#            self.cellsAct.setChecked(self.graphicsWindowVisDict[self.lastActiveWindow.winId()][0])
+#            self.borderAct.setChecked(self.graphicsWindowVisDict[self.lastActiveWindow.winId()][1])
+#            self.clusterBorderAct.setChecked(self.graphicsWindowVisDict[self.lastActiveWindow.winId()][2])
+#            self.cellGlyphsAct.setChecked(self.graphicsWindowVisDict[self.lastActiveWindow.winId()][3])
+#            self.FPPLinksAct.setChecked(self.graphicsWindowVisDict[self.lastActiveWindow.winId()][4])
+#            self.simulation.drawMutex.unlock()
+
+        # windows = self.mdiArea.subWindowList()
+        # self.separatorAct.setVisible(len(windows) != 0)
+
+        # for i, window in enumerate(windows):
+            # child = window.widget()
+
+            # if i < 9:
+                # text = self.tr("&%1 %2").arg(i + 1).arg(child.userFriendlyCurrentFile())
+            # else:
+                # text = self.tr("%1 %2").arg(i + 1).arg(child.userFriendlyFile())
+
+            # action = self.windowMenu.addAction(text)
+            # action.setCheckable(True)
+            # action.setChecked(child == self.activeMdiChild())
+            # action.triggered.connect(self.windowMapper.map)
+            # self.windowMapper.setMapping(action, child)
+
+
+    def addNewPlotWindow(self):
+        # from PlotManager import CustomPlot        
+        # customPlot=CustomPlot(self.plotManager)
+        # customPlot.initPlot()
+        
+        # print "ADDING NEW WINDOW"
+        # sys.exit()
+        # import time
+        # time.sleep(2)
+        
+        return self.plotManager.addNewPlotWindow()
+
+        
+    def addNewGraphicsWindow(self): 
+#        print MODULENAME, '--------- addNewGraphicsWindow() '
+        # if self.pauseAct.isEnabled():
+            # self.__pauseSim()
+        if not self.simulationIsRunning:
+            return
+        self.simulation.drawMutex.lock()
+    
+        self.windowCounter += 1        
+        newWindow = GraphicsFrameWidget(self)
+        self.windowDict[self.windowCounter] = newWindow
+        self.graphicsWindowDict[self.windowCounter] = newWindow  
+        
+        newWindow.setWindowTitle("Aux Graphics Window "+str(self.windowCounter))
+        newWindow.setZoomItems(self.zitems)   # Set zoomFixed parameters
+        
+        self.lastActiveWindow = newWindow
+#        print MODULENAME,'  addNewGraphicsWindow():  self.lastActiveWindow=',self.lastActiveWindow
+#        print MODULENAME,'  addNewGraphicsWindow():  self.lastActiveWindow.winId().__int__()=',self.lastActiveWindow.winId().__int__()
+        # self.updateWindowMenu()
+        
+        newWindow.setShown(False)
+        self.connect(self, SIGNAL('configsChanged'), newWindow.draw2D.configsChanged)
+        self.connect(self, SIGNAL('configsChanged'), newWindow.draw3D.configsChanged)
+        
+        newWindow.readSettings()   # Graphics/MVCDrawViewBase.py
+        # setting up plane tuple based on window number 1
+        # plane=self.windowDict[1].getPlane()
+        # newWindow.setPlane(plane[0],plane[1])
+        
+        #each new window is painted in 2D mode xy projection with z coordinate set to fieldDim.z/2
+        self.newWindowDefaultPlane = ("XY",self.basicSimulationData.fieldDim.z/2)
+        newWindow.setPlane(self.newWindowDefaultPlane[0],self.newWindowDefaultPlane[1])
+        
+        # newWindow.currentDrawingObject.setPlane(plane[0],plane[1])
+        newWindow.currentDrawingObject.setPlane(self.newWindowDefaultPlane[0],self.newWindowDefaultPlane[1])
+        # self.simulation.drawMutex.unlock()
+        
+        # newWindow.setConnects(self)
+        # newWindow.setInitialCrossSection(self.basicSimulationData)
+        # newWindow.setFieldTypesComboBox(self.fieldTypes)
+        
+        
+       # self.simulation.setGraphicsWidget(self.mainGraphicsWindow)        
+        self.mdiWindowDict[self.windowCounter] = self.addSubWindow(newWindow)
+        self.updateActiveWindowVisFlags()
+        newWindow.show()
+#        print MODULENAME, '--------- addNewGraphicsWindow: mdiWindowDict= ',self.mdiWindowDict
+        # camera=self.windowDict[1].getCamera2D()
+        # newWindow.setActiveCamera(camera)
+        # newWindow.resetCamera()
+
+        
+        self.simulation.drawMutex.unlock()
+        
+        newWindow.setConnects(self)   # in GraphicsFrameWidget
+        newWindow.setInitialCrossSection(self.basicSimulationData)
+        newWindow.setFieldTypesComboBox(self.fieldTypes)
+        
+
+        
+    def addVTKWindowToWorkspace(self):   # just called one time, for initial graphics window
+#        print MODULENAME,' =================================addVTKWindowToWorkspace ========='
+#        dbgMsg(' addVTKWindowToWorkspace =========')
+        # self.graphics2D = Graphics2DNew(self)     
+        self.mainGraphicsWindow = GraphicsFrameWidget(self)               
+        
+        # we make sure that first graphics window is positioned in the left upper corner
+        # NOTE: we have to perform move prior to calling addSubWindow. or else we will get distorted window
+        if self.lastPositionMainGraphicsWindow is not None:
+            self.mainGraphicsWindow.move(self.lastPositionMainGraphicsWindow)
+        else:
+            self.lastPositionMainGraphicsWindow = self.mainGraphicsWindow.pos()
+
+        
+        self.mainGraphicsWindow.setShown(False)
+        # self.connect(self, SIGNAL('configsChanged'), self.graphics2D.configsChanged)        
+        self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWindow.draw2D.configsChanged) 
+        self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWindow.draw3D.configsChanged)        
+        self.mainGraphicsWindow.readSettings()
+        self.simulation.setGraphicsWidget(self.mainGraphicsWindow)
+        # self.addSubWindow(self.mainGraphicsWindow)
+        mdiSubWindow = self.addSubWindow(self.mainGraphicsWindow)
+        self.mainGraphicsWindow.show()
+        self.mainGraphicsWindow.setConnects(self)
+        
+        self.windowCounter += 1
+        self.windowDict[self.windowCounter] = self.mainGraphicsWindow
+        self.graphicsWindowDict[self.windowCounter] = self.mainGraphicsWindow
+        self.graphicsWindowVisDict = {}   # re-init this dict
+#        print MODULENAME, '--------- addVTKWindowToWorkspace: graphicsWindowDict= ',self.graphicsWindowDict
+        
+        self.mdiWindowDict[self.windowCounter] = mdiSubWindow
+#        print MODULENAME, '--------- addVTKWindowToWorkspace: mdiWindowDict= ',self.mdiWindowDict
+        
+        # self.windowDict[self.windowCounter]=mdiSubWindow
+        # self.graphicsWindowDict[self.windowCounter]=mdiSubWindow
+        
+        self.mainGraphicsWindow.setWindowTitle("Main Graphics Window "+str(self.windowCounter))
+        self.lastActiveWindow = self.mainGraphicsWindow
+#        print MODULENAME,'  addVTKWindowToWorkspace:  self.lastActiveWindow=',self.lastActiveWindow
+        
+        # print "self.lastPositionMainGraphicsWindow=",self.lastPositionMainGraphicsWindow
+        # print "\n\n\n"
+        # import time
+        # time.sleep(3)
+        
+        # self.activeWindow().move(10,80)
+        
+        
+        self.updateWindowMenu()
+        self.updateActiveWindowVisFlags()
+        
+#        self.mainGraphicsWindow._switchDim(True)   #rwh
+
+        
+    def removeAllVTKWindows(self,_leaveFirstWindowFlag=False):
+        # self.closeAllWindows()
+        # for windowName in self.graphicsWindowDict.keys():
+            # print "windowName=",windowName
+            # print "self.graphicsWindowDict=",self.graphicsWindowDict
+            # if _leaveFirstWindowFlag and windowName==1:
+                # print "leaving first window"
+                # continue
+            # # self.setActiveWindow(self.graphicsWindowDict[windowName])
+            # # self.closeActiveWindow()
+            # windowToRemove=self.graphicsWindowDict[windowName]
+            # print "removing window=",windowName
+            # del self.graphicsWindowDict[windowName]
+            # print "removing window=",windowName
+            # del self.windowDict[windowName]
+            # windowToRemove.close()
+            # self.windowCounter-=1   
+
+        windowNames = self.graphicsWindowDict.keys()
+        for windowName in windowNames:
+            # print "windowName=",windowName
+            # print "self.graphicsWindowDict=",self.graphicsWindowDict
+            if _leaveFirstWindowFlag and windowName==1:
+                # print "leaving first window"
+                continue
+                
+            # self.removeSubWindow(self.graphicsWindowDict[windowName])
+#            print MODULENAME," REMOVING window=",self.graphicsWindowDict[windowName]
+            # self.setActiveSubWindow(self.graphicsWindowDict[windowName])
+            self.setActiveSubWindow(self.mdiWindowDict[windowName])
+            self.closeActiveSubWindowSlot()
+            continue
+            
+        self.updateWindowMenu()
+
+
+    def removeAllPlotWindows(self,_leaveFirstWindowFlag=False):
+        windowNames=self.plotWindowDict.keys()
+        for windowName in windowNames:
+            # print "windowName=",windowName
+            # print "self.graphicsWindowDict=",self.graphicsWindowDict
+            if _leaveFirstWindowFlag and windowName==1:
+                # print "leaving first window"
+                continue
+            # self.setActiveSubWindow(self.plotWindowDict[windowName])
+            self.setActiveSubWindow(self.mdiWindowDict[windowName])
+            self.closeActiveSubWindowSlot()
+            
+            
+        self.updateWindowMenu()
+        self.plotWindowDict={}
+        self.plotManager.reset()
+        # from PlotManagerSetup import createPlotManager
+        # self.plotManager=createPlotManager(self) # object that is responsible for creating and managing plot windows sdo that they are accessible from steppable level 
+        
+    def removeAuxiliaryGraphicsWindows(self):
+        self.removeAllVTKWindows(True)
+        
+    def minimizeAllGraphicsWindows(self):
+        for windowName in self.graphicsWindowDict.keys():
+            self.windowDict[windowName].showMinimized()
+            
+    def restoreAllGraphicsWindows(self):
+        for windowName in self.graphicsWindowDict.keys():
+            self.windowDict[windowName].showNormal()
+    
+    def closeActiveSubWindowSlot(self):   # this method is called whenever a user closes a graphics window
+        print MODULENAME,"   ----- closeActiveSubWindowSlot()"
+        activeWindow = self.activeSubWindow()
+        print "activeWindow=",activeWindow.widget()
+        # print "self.windowDict[1]=",self.windowDict[1]
+        # print "self.graphicsWindowDict[1]=",self.graphicsWindowDict[1]
+        print MODULENAME,"closeActiveSubWindowSlot():   self.windowDict.keys()=",self.windowDict.keys()
+        for windowName in self.windowDict.keys():
+            print MODULENAME,"closeActiveSubWindowSlot():   windowName=",windowName    #  = 1,2, etc
+            if self.windowDict[windowName]==activeWindow.widget():
+                del self.windowDict[windowName]
+                if windowName in self.graphicsWindowDict.keys():
+                    del self.graphicsWindowDict[windowName]
+                    del self.mdiWindowDict[windowName]
+                activeWindow.close()
+                self.windowCounter -= 1 
+        
+        self.updateWindowMenu()
+        
+        
+    def processCommandLineOptions(self):   # parse the command line
+        import getopt
+        self.__screenshotDescriptionFileName=""
+        self.customScreenshotDirectoryName=""
+        startSimulation = False
+        
+        print MODULENAME,"-----------  processCommandLineOptions"
+        
+        opts=None
+        args=None
+        try:
+            #  NOTE: need ending ":" on single letter options string!
+            opts, args = getopt.getopt(self.__parent.argv, "h:i:s:o:p:", ["help","noOutput","exitWhenDone","port=","tweditPID=","currentDir=","prefs="])
+            print "opts=",opts
+            print "args=",args
+        except getopt.GetoptError, err:
+            print str(err) # will print something like "option -a not recognized"
+            # self.usage()
+            sys.exit(2)
+        output = None
+        verbose = False
+        currentDir=""
+        port =-1
+        tweditPID=-1
+        # connectTwedit=False
+        
+        self.__prefsFile = "cc3d_default"  # default name of QSettings .ini file (in ~/.config/Biocomplexity on *nix)
+        for o, a in opts:
+            print "o=",o
+            print "a=",a
+            if o in ("-i"):   # input file (e.g.  .dml for pre-dumped vtk files)
+                self.__fileName = a
+                startSimulation = True
+            elif o in ("-h", "--help"):
+                self.usage()
+                sys.exit()
+            elif o in ("-s"):
+                self.__screenshotDescriptionFileName=a
+            elif o in ("-o"):    
+                self.customScreenshotDirectoryName=a
+                self.__imageOutput=True
+            elif o in ("-p"):
+                print ' handling - (playerSettings, e.g. camera)... a = ',a
+                self.playerSettingsFileName = a
+                print MODULENAME, 'self.playerSettingsFileName= ',self.playerSettingsFileName
+            elif o in ("--noOutput"):             
+                self.__imageOutput=False 
+            elif o in ("--currentDir"):
+                currentDir=a
+                print "currentDirectory=",currentDir
+                
+            elif o in ("--port"):
+                port=int(a)
+                print "port=",port
+            elif o in ("--prefs"):
+                self.__prefsFile = a
+                print MODULENAME,'---------  doing QSettings ---------  prefsFile=',self.__prefsFile
+                Configuration.mySettings = QSettings(QSettings.IniFormat, QSettings.UserScope, "Biocomplexity", self.__prefsFile)
+                Configuration.setSetting("PreferencesFile", self.__prefsFile)
+ 
+            # elif o in ("--tweditPID"):
+                # tweditPID=int(a)
+                # print "tweditPID=",tweditPID
+                
+            elif o in ("--exitWhenDone"):             
+                self.closePlayerAfterSimulationDone=True 
+                
+            # elif o in ("--connectTwedit"):             
+                # connectTwedit=True 
+            else:
+                assert False, "unhandled option"
+                
+                
+        # import UI.ErrorConsole
+        # self.UI.console.getSyntaxErrorConsole().closeCC3D.connect(qApp.closeAllWindows)
+        
+        self.UI.console.getSyntaxErrorConsole().setPlayerMainWidget(self)
+        
+        self.connect(self.UI.console.getSyntaxErrorConsole(),SIGNAL("closeCC3D()"),qApp.closeAllWindows)
+        # establishConnection starts twedit and hooks it up via sockets to player
+        self.connect(self.tweditAct,SIGNAL("triggered()"),self.UI.console.getSyntaxErrorConsole().cc3dSender.establishConnection)
+        
+#        print MODULENAME,"    self.UI.console=",self.UI.console
+        
+        if port != -1:
+            self.UI.console.getSyntaxErrorConsole().cc3dSender.setServerPort(port)
+            
+        # if tweditPID != -1:
+            # self.UI.console.getSyntaxErrorConsole().cc3dSender.setTweditPID(tweditPID)
+        
+        # if connectTwedit:
+            # self.UI.console.getSyntaxErrorConsole().cc3dSender.connectTwedit
+        # ...
+        # checking if file path needs to be remapped to point to files in the directories from which run script was called
+        simFileFullName=os.path.join(currentDir,self.__fileName)
+        if startSimulation:
+            if os.access(simFileFullName,os.F_OK): # checking if such a file exists
+                self.__fileName=simFileFullName
+                print "self.__fileName=",self.__fileName
+                import CompuCellSetup
+                CompuCellSetup.simulationFileName=self.__fileName    
+                
+            elif not os.access(self.__fileName,os.F_OK): 
+                assert False, "Could not find simulation file: "+self.__fileName
+            from os.path import basename    
+            self.__parent.setWindowTitle(self.trUtf8(basename(self.__fileName)+" - CompuCell3D Player"))
+
+        
+        if self.__screenshotDescriptionFileName != "":   
+            screenshotDescriptionFullFileName = os.path.abspath(self.__screenshotDescriptionFileName)
+            if os.access(screenshotDescriptionFullFileName,os.F_OK):# checking if such a file exists
+                self.__screenshotDescriptionFileName=screenshotDescriptionFullFileName
+            elif os.access(self.__screenshotDescriptionFileName):# checking if such a file exists
+                assert False, "Could not find screenshot Description file: "+self.__screenshotDescriptionFileName
+            
+        if self.playerSettingsFileName != "":   
+            playerSettingsFullFileName = os.path.abspath(self.playerSettingsFileName)
+            if os.access(playerSettingsFullFileName, os.F_OK):# checking if such a file exists
+                self.playerSettingsFileName = playerSettingsFullFileName
+                print MODULENAME,'(full) playerSettings filename=',self.playerSettingsFileName
+            else:
+                assert False, "Could not find playerSettings file: "+self.playerSettingsFileName
+        
+        # print "This is startSimulation=",startSimulation
+        if startSimulation:
+            self.__runSim()
+            
+    def usage(self):
+        print "USAGE: ./compucell3d.sh -i <xmlFile or Python File> -s <ScreenshotDescriptionFile> -o <custom outputDirectory>"
+        print "--exitWhenDone option will close the player after simulation is done"
+        print "--noOutput will ensure that no screenshots are stored regardless of Player settings"
+        print "-h or --help will print help message"
+        
+    def setRecentSimulationFile(self,_fileName):
+        self.__fileName =_fileName
+        from os.path import basename
+        self.__parent.setWindowTitle(self.trUtf8(basename(self.__fileName)+" - CompuCell3D Player"))        
+        import CompuCellSetup
+        CompuCellSetup.simulationFileName=self.__fileName    
+        
+        
+    def prepareForNewSimulation(self,_forceGenericInitialization=False):
+        """
+        This function creates new instance of computational thread and sets various flags to initial values i.e. to a state before the beginnig of the simulations
+        """
+        self.pauseAct.setEnabled(False)
+        self.stopAct.setEnabled(False)
+        self.openAct.setEnabled(True)
+        self.pifFromSimulationAct.setEnabled(False)
+        
+        self.steppingThroughSimulation = False
+        
+#        import CompuCellSetup
+        CompuCellSetup.viewManager = self
+        CompuCellSetup.simulationFileName=""
+        
+        from BasicSimulationData import BasicSimulationData
+        self.basicSimulationData = BasicSimulationData()
+        # this import has to be here not inside is statement to ensure that during switching from playing one type of files to another there is no "missing module" issue due to imoprer imports
+        # import CMLResultReader 
+        from Simulation.CMLResultReader import CMLResultReader                                
+        
+        self.cmlHandlerCreated = False
+        
+        # this is used to perform generic preparation for new simulation , normally called after "stop". If users decide to use *.dml  prepare simulation will be called again with False argument
+        if _forceGenericInitialization:
+            CompuCellSetup.playerType="new"
+        
+        if  CompuCellSetup.playerType=="CMLResultReplay":
+            self.__viewManagerType = "CMLResultReplay"
+            
+            self.simulation = CMLResultReader(self)
+
+            # print "GOT THIS self.__fileName=",self.__fileName
+            self.simulation.extractLatticeDescriptionInfo(self.__fileName)
+            #filling out basic simulation data
+            self.basicSimulationData.fieldDim = self.simulation.fieldDim
+            self.basicSimulationData.numberOfSteps = self.simulation.numberOfSteps
+            
+            
+            self.connect(self.simulation,SIGNAL("simulationInitialized(bool)"),self.initializeSimulationViewWidget)
+            self.connect(self.simulation,SIGNAL("steppablesStarted(bool)"),self.runSteppablePostStartPlayerPrep)            
+            self.connect(self.simulation,SIGNAL("simulationFinished(bool)"),self.handleSimulationFinished)
+            self.connect(self.simulation,SIGNAL("completedStep(int)"),self.handleCompletedStep)
+            # print "\n\n\n\n\n\n\n\n self.simulation=",self.simulation
+            import PlayerPython
+
+            self.fieldExtractor = PlayerPython.FieldExtractorCML()
+            self.fieldExtractor.setFieldDim(self.basicSimulationData.fieldDim)
+            
+        else:
+            self.__viewManagerType = "Regular"
+#            import CompuCellSetup
+#            print MODULENAME,'prepareForNewSimulation(): setting cmlFieldHandler = None'
+            CompuCellSetup.cmlFieldHandler = None # have to reinitialize cmlFieldHandler to None
+            
+            self.simulation = SimulationThread(self)
+            
+            self.connect(self.simulation,SIGNAL("simulationInitialized(bool)"),self.initializeSimulationViewWidget)
+            self.connect(self.simulation,SIGNAL("steppablesStarted(bool)"),self.runSteppablePostStartPlayerPrep)            
+            self.connect(self.simulation,SIGNAL("simulationFinished(bool)"),self.handleSimulationFinished)
+            self.connect(self.simulation,SIGNAL("completedStep(int)"),self.handleCompletedStep)
+            
+            # self.connect(self.plotManager,SIGNAL("newPlotWindow(bool)"),self.addNewPlotWindow)
+            self.plotManager.initSignalAndSlots()
+            
+            import PlayerPython
+            self.fieldStorage = PlayerPython.FieldStorage()
+            self.fieldExtractor = PlayerPython.FieldExtractor()
+            self.fieldExtractor.setFieldStorage(self.fieldStorage)
+            
+        self.simulation.setCallingWidget(self)    
+        
+        """Commented out"""
+        # if not _forceGenericInitialization:    
+            # self.simulation.setCallingWidget(self)            
+            # self.__setupArea()
+            
+        self.drawingAreaPrepared=False
+        self.simulationIsRunning=False
+        
+        self.newDrawingUserRequest=False
+        self.completedFirstMCS=False
+        
+    def __setupArea(self):
+        self.removeAllVTKWindows()
+        self.removeAllPlotWindows()
+        self.addVTKWindowToWorkspace()
+        
+        
+        
+    def handleErrorMessage(self,_errorType,_traceback_message):
+        msg = QMessageBox.warning(self, _errorType, \
+                                  _traceback_message, \
+                                  QMessageBox.Ok , 
+                                  QMessageBox.Ok)
+
+        self.__stopSim()
+        syntaxErrorConsole=self.UI.console.getSyntaxErrorConsole()    
+        text="Search \"file.xml\"\n"
+        text+="    file.xml\n"
+        text+=_traceback_message
+        syntaxErrorConsole.setText(text)
+    
+    # def handleErrorMessageDetailed(self,_errorType,_file,_line,_col,_traceback_message):
+        
+        # print "INSIDE handleErrorMessageDetailed"
+        # self.__stopSim()
+        # syntaxErrorConsole=self.UI.console.getSyntaxErrorConsole()    
+    
+        # text="Error:"+_errorType+"\n"
+        # text+="  File: "+_file+"\n"
+        # text+="    Line: "+str(_line)+" col: "+str(_col)+" "+_traceback_message+"\n\n\n\n"
+        # syntaxErrorConsole.setText(text)
+        
+    
+        # return
+        
+    def handleErrorFormatted(self,_errorMessage):
+        
+        print "INSIDE handleErrorFormatted"
+        self.__stopSim()
+        syntaxErrorConsole=self.UI.console.getSyntaxErrorConsole()    
+    
+        syntaxErrorConsole.setText(_errorMessage)
+        self.UI.console.bringUpSyntaxErrorConsole()
+    
+        return    
+        
+    def processIncommingSimulation(self,_fileName,_stopCurrentSim=False):
+        print "processIncommingSimulation = ",_fileName,
+        if _stopCurrentSim:
+            startNewSimulation=False
+            if not self.simulationIsRunning and not self.simulationIsStepping:
+                startNewSimulation=True
+            
+            self.__stopSim()
+            self.__fileName=_fileName
+            import CompuCellSetup
+            CompuCellSetup.simulationFileName=self.__fileName    
+            
+            # import time
+            # time.sleep(1.0)
+            
+            if startNewSimulation:                
+                self.__runSim()
+            
+        else:
+            self.__fileName = _fileName
+            self.nextSimulation = _fileName
+            
+        from os.path import basename
+        self.__parent.setWindowTitle(self.trUtf8(basename(str(_fileName))+" - CompuCell3D Player"))
+        
+    def prepareXMLTreeView(self,_xmlFileName):
+        import XMLUtils
+#        import CompuCellSetup
+        
+        _simulationFileName="D:\Program Files\COMPUCELL3D_3.4.0\Demos\cellsort_2D\cellsort_2D.xml"
+        
+        self.root_element = CompuCellSetup.cc3dXML2ObjConverter.root
+        self.model = SimModel(self.root_element, self.__modelEditor)
+        self.simulation.setSimModel(self.model) # hook in simulation thread class to XML model TreeView panel in the GUI - needed for steering
+        
+        # self.model.checkSanity()
+        
+        self.__modelEditor.setModel(self.model)
+        self.model.setPrintFlag(True)
+    
+    def prepareLatticeDataView(self):
+        self.__parent.latticeDataModel.setLatticeDataFileList(self.simulation.ldsFileList)
+        self.latticeDataModel=self.__parent.latticeDataModel
+        self.__parent.latticeDataModelTable.setModel(self.__parent.latticeDataModel) # this sets up the model and actually displays model data- so use this function when model is ready to be used
+        self.__parent.latticeDataModelTable.setParams()
+        self.latticeDataModelTable=self.__parent.latticeDataModelTable
+    
+    
+    def __loadSim(self, file):
+        # resetting reference to SimulationDataHandler
+        self.cc3dSimulationDataHandler=None
+        
+        fileName = str(self.__fileName)
+#        print MODULENAME,"Load file ",fileName
+        self.UI.console.bringUpOutputConsole()
+        
+        # have to connect error handler to the signal emited from self.simulation object
+        self.connect(self.simulation,SIGNAL("errorOccured(QString,QString)"),self.handleErrorMessage)
+        # self.connect(self.simulation,SIGNAL("errorOccuredDetailed(QString,QString,int,int,QString)"),self.handleErrorMessageDetailed)
+        self.connect(self.simulation,SIGNAL("errorFormatted(QString)"),self.handleErrorFormatted)
+        
+        
+        # We need to create new SimulationPaths object for each new simulation.    
+#        import CompuCellSetup            
+        CompuCellSetup.simulationPaths = CompuCellSetup.SimulationPaths()   
+        
+        if re.match(".*\.xml$", fileName): # If filename ends with .xml
+            # print "GOT FILE ",fileName
+    
+            # self.prepareForNewSimulation()
+            self.simulation.setRunUserPythonScriptFlag(True)
+            CompuCellSetup.simulationPaths.setPlayerSimulationXMLFileName(fileName)
+            pythonScriptName=CompuCellSetup.ExtractPythonScriptNameFromXML(fileName)
+            
+            # import xml
+            # try:
+                # pythonScriptName=CompuCellSetup.ExtractPythonScriptNameFromXML(fileName)
+            # except xml.parsers.expat.ExpatError,e:
+                # import CompuCellSetup
+                # xmlFileName=CompuCellSetup.simulationPaths.simulationXMLFileName
+                # print "Error in XML File","File:\n "+xmlFileName+"\nhas the following problem\n"+e.message
+                # import sys
+                # return
+                # sys.exit()
+                
+            
+            if pythonScriptName!="":
+                CompuCellSetup.simulationPaths.setPythonScriptNameFromXML(pythonScriptName) 
+                
+            if self.__parent.latticeDataDock.isVisible():
+                self.__parent.latticeDataAct.trigger()            
+
+            if self.__parent.modelEditorDock.isHidden():
+                self.__parent.modelAct.trigger()                   
+                
+            
+        elif re.match(".*\.py$", fileName):
+            globals={'simTabView':20}
+            locals={}
+            self.simulation.setRunUserPythonScriptFlag(True)
+            
+            # NOTE: extracting of xml file name from python script is done during script run time so we cannot use CompuCellSetup.simulationPaths.setXmlFileNameFromPython function here
+            CompuCellSetup.simulationPaths.setPlayerSimulationPythonScriptName(self.__fileName)
+            
+            if self.__parent.latticeDataDock.isVisible():
+                self.__parent.latticeDataAct.trigger()            
+
+            if self.__parent.modelEditorDock.isHidden():
+                self.__parent.modelAct.trigger()   
+            
+        elif re.match(".*\.cc3d$", fileName):
+            self.__loadCC3DFile(fileName)
+                
+            if self.__parent.latticeDataDock.isVisible():
+                self.__parent.latticeDataAct.trigger()            
+
+            if self.__parent.modelEditorDock.isHidden():
+                self.__parent.modelAct.trigger()           
+                
+        elif re.match(".*\.dml$", fileName):
+            # Let's toggle these off (and not tell the user for now)
+#            Configuration.setSetting("ImageOutputOn",False)  # need to make it possible to save images from .dml/vtk files
+            if Configuration.getSetting("LatticeOutputOn"):
+                QMessageBox.warning(self, "Message", 
+                                        "Warning: Turning OFF 'Save lattice...' in Preferences",
+                                        QMessageBox.Ok)
+                print '-----------------------'
+                print '  WARNING:  Turning OFF "Save lattice" in Preferences|Output'
+                print '-----------------------'
+                Configuration.setSetting("LatticeOutputOn",False)
+#            self.dlg.enableLatticeOutput(False)   # disable the Lattice Output toggle (doesn't seem to work)
+
+#        if (self.lastActiveWindow is not None) and (self.lastActiveWindow.winId() in self.graphicsWindowVisDict.keys()):
+#            self.cellsAct.setChecked(self.graphicsWindowVisDict[self.lastActiveWindow.winId()][0])
+#            self.borderAct.setChecked(self.graphicsWindowVisDict[self.lastActiveWindow.winId()][1])
+#            self.clusterBorderAct.setChecked(self.graphicsWindowVisDict[self.lastActiveWindow.winId()][2])
+#            self.cellGlyphsAct.setChecked(self.graphicsWindowVisDict[self.lastActiveWindow.winId()][3])
+#            self.FPPLinksAct.setChecked(self.graphicsWindowVisDict[self.lastActiveWindow.winId()][4])
+            
+            
+            if Configuration.getSetting("CellGlyphsOn"):
+                QMessageBox.warning(self, "Message", 
+                                        "Warning: Turning OFF 'Vis->Cell Glyphs' ",
+                                        QMessageBox.Ok)
+                print '-----------------------'
+                print '  WARNING:  Turning OFF "Vis->Cell Glyphs"'
+                print '-----------------------'
+                Configuration.setSetting("CellGlyphsOn",False)
+#                self.graphicsWindowVisDict[self.lastActiveWindow.winId()][3] = False
+                self.cellGlyphsAct.setChecked(False)
+                
+            if Configuration.getSetting("FPPLinksOn"):
+                QMessageBox.warning(self, "Message", 
+                                        "Warning: Turning OFF 'Vis->FPP Links' ",
+                                        QMessageBox.Ok)
+                print '-----------------------'
+                print '  WARNING:  Turning OFF "Vis->FPP Links"'
+                print '-----------------------'
+                Configuration.setSetting("FPPLinksOn",False)
+#                self.graphicsWindowVisDict[self.lastActiveWindow.winId()][4] = False
+                self.FPPLinksAct.setChecked(False)
+        
+            CompuCellSetup.playerType="CMLResultReplay"
+            self.prepareForNewSimulation()
+            CompuCellSetup.simulationPaths.setSimulationResultDescriptionFile(fileName)
+            
+            if self.__parent.latticeDataDock.isHidden():
+                self.__parent.latticeDataAct.trigger()            
+
+            if self.__parent.modelEditorDock.isVisible():
+                self.__parent.modelAct.trigger()   
+                
+            # rwh: if 3D view specified, do here
+            # graphicsFrameWidget threeDRB.trigger()
+#            self.lastActiveWindow._switchDim(True)
+            
+            self.prepareLatticeDataView()
+            
+            
+    def __loadCC3DFile(self,fileName):
+#        import CompuCellSetup        
+        import CC3DSimulationDataHandler
+        self.cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler(self)
+        try:
+            f=open(fileName,'r')
+            f.close()
+        except IOError,e:
+            msg = QMessageBox.warning(self, "Not A Valid Simulation File", \
+                      "Please make sure <b>%s</b> exists"%fileName, \
+                      QMessageBox.Ok )
+            raise IOError("%s does not exist"%fileName)
+            
+            
+        self.cc3dSimulationDataHandler.readCC3DFileFormat(fileName)
+        print self.cc3dSimulationDataHandler.cc3dSimulationData        
+        
+        
+        CompuCellSetup.simulationPaths.setSimulationBasePath(self.cc3dSimulationDataHandler.cc3dSimulationData.basePath)
+
+        if self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript != "":       
+        
+            self.simulation.setRunUserPythonScriptFlag(True)
+            CompuCellSetup.simulationPaths.setPlayerSimulationPythonScriptName(self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
+            
+            if self.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript!="":
+                CompuCellSetup.simulationPaths.setPlayerSimulationXMLFileName(self.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript)
+
+        
+        elif self.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript != "":
+        
+            self.simulation.setRunUserPythonScriptFlag(True)
+            
+            CompuCellSetup.simulationPaths.setPlayerSimulationXMLFileName(self.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript)
+            
+            # import xml
+            # try:
+                # pythonScriptName=CompuCellSetup.ExtractPythonScriptNameFromXML(fileName)
+            # except xml.parsers.expat.ExpatError,e:
+                # import CompuCellSetup
+                # xmlFileName=CompuCellSetup.simulationPaths.simulationXMLFileName
+                # print "Error in XML File","File:\n "+xmlFileName+"\nhas the following problem\n"+e.message
+                # import sys
+                # return
+                # sys.exit()
+                
+            
+            if self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript!="":
+                CompuCellSetup.simulationPaths.setPythonScriptNameFromXML(self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript) 
+                
+        
+        # self.simulation.setRunUserPythonScriptFlag(True)
+        
+        # # NOTE: extracting of xml file name from python script is done during script run time so we cannot use CompuCellSetup.simulationPaths.setXmlFileNameFromPython function here
+        # CompuCellSetup.simulationPaths.setPlayerSimulationPythonScriptName(self.__fileName)
+        
+    
+    def __dumpPlayerParams(self):  # QShortcut
+        fname = 'player.txt'
+        print '     self.lastActiveWindow=',self.lastActiveWindow
+        f = open(fname, 'w')
+        cam = self.lastActiveWindow.camera3D
+        
+        print '\n-----------------'
+        v = cam.GetPosition()
+        s = str(v)
+        s = 'CameraPosition= '+ s.replace('(',' ').replace(')',' ').replace(',',' ') + '\n'
+        print s,
+        f.write(s)
+        
+        v = cam.GetFocalPoint()
+        s = str(v)
+        s = 'CameraFocalPoint= '+ s.replace('(',' ').replace(')',' ').replace(',',' ') + '\n'
+        print s,
+        f.write(s)
+        
+        v = cam.GetViewUp()
+        s = str(v)
+        s = 'CameraViewUp= '+ s.replace('(',' ').replace(')',' ').replace(',',' ') + '\n'
+        print s,
+        f.write(s)
+        
+        v = cam.GetClippingRange()
+        s = str(v)
+        s = 'CameraClippingRange= '+ s.replace('(',' ').replace(')',' ').replace(',',' ') + '\n'
+        print s,
+        f.write(s)
+        
+#        v = cam.GetViewPlaneNormal()  # deprecated; computed automatically
+#        s = str(v)
+#        s = 'ViewPlaneNormal= '+ s.replace('(',' ').replace(')',' ').replace(',',' ') + '\n'
+#        print s,
+#        f.write(s)
+        
+        v = cam.GetDistance()
+        s = str(v)
+        s = 'CameraDistance= '+ s + '\n'
+        print s,
+        f.write(s)
+        
+        v = cam.GetViewAngle()
+        s = str(v)
+        s = 'ViewAngle= '+ s + '\n'
+        print s,
+        f.write(s)
+        
+        
+        f.close()
+        print MODULENAME, '  dumpPlayerParams  --> ',fname
+        print '-----------------'
+
+        
+    def __setConnects(self):
+        QShortcut(QKeySequence("Ctrl+p"), self, self.__dumpPlayerParams )    # Cmd-3 on Mac
+        self.connect(self.runAct,   SIGNAL('triggered()'), self.__runSim) 
+        self.connect(self.stepAct,  SIGNAL('triggered()'), self.__stepSim)
+        self.connect(self.pauseAct, SIGNAL('triggered()'), self.__pauseSim)
+        self.connect(self.stopAct,  SIGNAL('triggered()'), self.__simulationStop)
+        self.connect(self.serializeAct,  SIGNAL('triggered()'), self.__simulationSerialize)
+        
+        
+        self.connect(self.openAct,  SIGNAL('triggered()'), self.__openSim)
+        self.connect(self.openLDSAct,  SIGNAL('triggered()'), self.__openLDSFile)
+        
+
+        self.connect(self.saveAct,  SIGNAL('triggered()'), self.__saveSim)
+        self.connect(self.saveScreenshotDescriptionAct,  SIGNAL('triggered()'), self.__saveScrDesc)
+        self.connect(self.openScreenshotDescriptionAct,  SIGNAL('triggered()'), self.__openScrDesc)
+        
+        self.connect(self.savePlayerParamsAct,  SIGNAL('triggered()'), self.__savePlayerParams)
+        self.connect(self.exitAct,  SIGNAL('triggered()'), qApp.closeAllWindows) #qApp is a member of QtGui. closeAllWindows will cause closeEvent and closeEventSimpleTabView will be called
+#        self.connect(self.openPlayerParamsAct,  SIGNAL('triggered()'), self.__openPlayerParams)
+        
+        self.connect(self.cellsAct,    SIGNAL('triggered(bool)'),  self.__checkCells)
+        self.connect(self.borderAct,    SIGNAL('triggered(bool)'),  self.__checkBorder)
+        self.connect(self.clusterBorderAct,    SIGNAL('triggered(bool)'),  self.__checkClusterBorder)
+        self.connect(self.cellGlyphsAct,  SIGNAL('triggered(bool)'),  self.__checkCellGlyphs)
+        self.connect(self.FPPLinksAct,  SIGNAL('triggered(bool)'),  self.__checkFPPLinks)
+#        self.connect(self.FPPLinksColorAct,  SIGNAL('triggered(bool)'),  self.__checkFPPLinksColor)
+
+        # self.connect(self.contourAct,   SIGNAL('triggered(bool)'),  self.__checkContour)
+        self.connect(self.limitsAct,    SIGNAL('triggered(bool)'),  self.__checkLimits)
+        self.connect(self.configAct,    SIGNAL('triggered()'),      self.__showConfigDialog)
+        self.connect(self.cc3dOutputOnAct,  SIGNAL('triggered(bool)'),  self.__checkCC3DOutput)
+        
+        self.connect(self.pifFromSimulationAct,    SIGNAL('triggered()'),      self.__generatePIFFromCurrentSnapshot)
+        # self.connect(self.pifFromVTKAct,    SIGNAL('triggered()'),      self.__generatePIFFromVTK)
+        
+        #window menu actions
+        self.connect(self.newGraphicsWindowAct,    SIGNAL('triggered()'),      self.addNewGraphicsWindow)        
+        # self.connect(self.newPlotWindowAct,    SIGNAL('triggered()'),      self.addNewPlotWindow)        
+        self.connect(self.tileAct,    SIGNAL('triggered()'),      self.tileSubWindows)
+        self.connect(self.cascadeAct, SIGNAL('triggered()'),      self.cascadeSubWindows) 
+        self.connect(self.minimizeAllGraphicsWindowsAct,    SIGNAL('triggered()'),      self.minimizeAllGraphicsWindows) 
+        self.connect(self.restoreAllGraphicsWindowsAct,    SIGNAL('triggered()'),      self.restoreAllGraphicsWindows) 
+        
+        
+        self.connect(self.closeActiveWindowAct,    SIGNAL('triggered()'),      self.closeActiveSubWindowSlot)         
+        
+        self.connect(self.closeAdditionalGraphicsWindowsAct,    SIGNAL('triggered()'),      self.removeAuxiliaryGraphicsWindows)        
+        
+        
+        self.connect(self,          SIGNAL('configsChanged'), self.__paramsChanged)
+
+
+    
+    # Connections that are related to the simulation view
+    # Change to Graphics2D or Graphics3D
+    def __setSimConnects(self):
+        # Set connections is the self.mainGraphicsWindow is instance of Graphics2D 
+        if self.mainGraphicsWindow is not None and isinstance(self.mainGraphicsWindow, (Graphics2D)):
+            self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWindow.configsChanged)
+
+        
+    def setFieldType(self,_fieldTypeTuple):
+        self.__fieldType=_fieldTypeTuple
+    
+
+        
+    def closeEventSimpleTabView(self, event=None):
+
+        print "CALLING CLOSE EVENT SIMTAB"
+        # print "self.simulation=",self.simulation
+        Configuration.setSetting("RecentFile",self.__fileName)
+        Configuration.setSetting("RecentSimulations",self.__fileName)
+        # import time
+        # time.sleep(3)
+        
+        
+        if self.saveSettings:    
+            Configuration.syncPreferences()        
+
+            self.__simulationStop()
+            return
+        
+            """
+            For some reason have to introduce delay to avoid problems with application becoming unresponsive
+            """
+            import time
+            time.sleep(0.5)
+            self.simulation.stop()
+            self.simulation.wait()
+            
+            self.removeAllVTKWindows()
+            self.removeAllPlotWindows()
+        
+        
+    # # Core method for running simulation
+    def printInfo(self):
+        # print "INFO"
+        self.simulation.sem.acquire()
+        self.simulation.sem.release()
+        
+    
+    def initializeSimulationViewWidgetCMLResultReplay(self):
+        # self.pifFromVTKAct.setEnabled(True)
+        self.fieldDim = self.simulation.fieldDim
+        self.mysim = self.simulation.sim
+#        print MODULENAME,"--------- initializeSimulationViewWidgetCMLResultReplay()"
+        
+        latticeTypeStr=self.simulation.latticeType
+        if latticeTypeStr in Configuration.LATTICE_TYPES.keys():
+            self.latticeType=Configuration.LATTICE_TYPES[latticeTypeStr]
+        else:
+            self.latticeType=Configuration.LATTICE_TYPES["Square"] # default choice        
+
+        simulationDataIntAddr=self.extractAddressIntFromVtkObject(self.simulation.simulationData)
+        self.fieldExtractor.setSimulationData(simulationDataIntAddr) 
+        self.simulation.newFileBeingLoaded=False # this flag is used to prevent calling  draw function when new data is read from hard drive
+                                                 # at this moment new data has been read and is ready to be used  
+
+        # this fcn will draw initial lattice configuration so data has to be available by then and appropriate pointers set - see line above
+        self.prepareSimulationView()
+        
+        self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
+        self.screenshotNumberOfDigits=len(str(self.basicSimulationData.numberOfSteps))
+        
+        # print "self.screenshotManager",self.screenshotManager
+        # print "self.__fileName=",self.__fileName
+        
+        if self.__screenshotDescriptionFileName != "":
+            self.screenshotManager.readScreenshotDescriptionFile(self.__screenshotDescriptionFileName)
+        
+        
+        if self.simulationIsStepping:
+            # print "BEFORE STEPPING PAUSE"
+            self.__pauseSim()              
+
+
+        # after this call I can access self.root_element of the XML File
+        # self.loadCustomPlayerSettings(self.root_element)
+        # creating simulation directory depending on whether user requests simulation output or not
+#        import CompuCellSetup
+        
+        if self.__imageOutput:
+            if self.customScreenshotDirectoryName=="":
+#                import CompuCellSetup
+                outputDir = str(Configuration.getSetting("OutputLocation"))
+#                print MODULENAME, 'initializeSimulationViewWidgetCMLResultReplay(): outputDir, self.__outputDirectory= ',outputDir, self.__outputDirectory
+                (self.screenshotDirectoryName,self.baseScreenshotName) = CompuCellSetup.makeSimDir(self.__fileName,outputDir)
+#                print MODULENAME, 'initializeSimulationViewWidgetCMLResultReplay(): self.screenshotDirectoryName= ',self.screenshotDirectoryName
+                CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
+                
+            else:
+                (self.screenshotDirectoryName,self.baseScreenshotName) = self.makeCustomSimDir(self.customScreenshotDirectoryName,self.__fileName)
+                CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
+                if self.screenshotDirectoryName == "":
+                    self.__imageOutput = False # do not output screenshots when custom directory was not created or already exists
+#                print MODULENAME, 'initializeSimulationViewWidgetCMLResultReplay(): self.screenshotDirectoryName= ',self.screenshotDirectoryName
+
+                    
+        # self.simulation.sem.tryAcquire()
+        # self.simulation.sem.release()      
+   
+    def createOutputDirs(self):
+        import CompuCellSetup
+        if self.customScreenshotDirectoryName=="":
+#            import CompuCellSetup
+#            outputDir = self.__outputDirectory
+#            print MODULENAME,'createOutputDirs():  self.__outputDirectory, self.__outputDirectory= ',self.__outputDirectory, self.__outputDirectory
+            (self.screenshotDirectoryName,self.baseScreenshotName) = CompuCellSetup.makeSimDir(self.__fileName,self.__outputDirectory)
+#                (self.screenshotSubdirName, self.baseScreenshotName) = CompuCellSetup.makeSimDir(self.__fileName,outputDir)
+#            print MODULENAME, 'createOutputDirs(): (not custom dir) screenshotDirectoryName,baseScreenshotName=',self.screenshotDirectoryName,', ',self.baseScreenshotName
+            CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
+            self.prevOutputDir = self.__outputDirectory
+#            print MODULENAME,'createOutputDirs:  self.prevOutputDir=',self.__outputDirectory
+        else:
+            (self.screenshotDirectoryName,self.baseScreenshotName) = self.makeCustomSimDir(self.customScreenshotDirectoryName,self.__fileName)
+#            print MODULENAME, 'createOutputDirs(): (custom dir: screenshotDirectoryName,baseScreenshotName=',self.screenshotDirectoryName,', ',self.baseScreenshotName
+            CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
+            if self.screenshotDirectoryName == "":
+                self.__imageOutput = False # do not output screenshots when custom directory was not created or already exists
+                    
+#        if Configuration.getSetting("LatticeOutputOn"):
+        if not self.cmlHandlerCreated:
+#            print MODULENAME,'createOutputDirs():  calling CompuCellSetup.createCMLFieldHandler()'
+            CompuCellSetup.createCMLFieldHandler()
+            self.cmlHandlerCreated = True   # rwh
+            
+        self.resultStorageDirectory = os.path.join(self.screenshotDirectoryName,"LatticeData")
+#        print MODULENAME, 'createOutputDirs(), lattice: resultStorageDirectory=',self.resultStorageDirectory
+                
+#        import CompuCellSetup
+#        print MODULENAME,'createOutputDirs:  calling initCMLFieldHandler()'
+#        print MODULENAME,'createOutputDirs():  calling CompuCellSetup.initCMLFieldHandler()'
+        if (self.mysim == None):
+            print MODULENAME,'createOutputDirs():  self.mysim is None!!!'   # bad, very bad
+#            sys.exit(0)
+#        else:
+#            print MODULENAME,'createOutputDirs():   type(self.mysim) = ',type(self.mysim)
+#            print MODULENAME,'createOutputDirs():   self.mysim = ',self.mysim
+        CompuCellSetup.initCMLFieldHandler(self.mysim,self.resultStorageDirectory,self.fieldStorage)  # also creates the /LatticeData dir
+#        else:
+#            print MODULENAME,'createOutputDirs:  LatticeOutputOn is False'
+
+    
+    def initializeSimulationViewWidgetRegular(self):
+#        print MODULENAME,'  --------- initializeSimulationViewWidgetRegular:'
+        # self.pifFromVTKAct.setEnabled(False)
+        
+        self.fieldDim = self.simulation.sim.getPotts().getCellFieldG().getDim()
+        self.mysim = self.simulation.sim
+        
+        if not self.cerrStreamBufOrig:#get original cerr stream buffer - do it only once per session
+            self.cerrStreamBufOrig = self.mysim.getCerrStreamBufOrig()
+            
+        # if Configuration.getVisualization("CC3DOutputOn"):
+        if self.UI.viewmanager.cc3dOutputOnAct.isChecked():
+            if Configuration.getSetting("UseInternalConsole"):
+                #redirecting output from C++ to internal console
+                import sip
+                stdErrConsole = self.UI.console.getStdErrConsole() # we use __stdout console (see UI/Consile.py) as main output console for both stdout and std err from C++ and Python - sort of internal system console
+                stdErrConsole.clear()
+                addr = sip.unwrapinstance(stdErrConsole)
+                
+                self.mysim.setOutputRedirectionTarget(addr)
+                #redirecting Python output to internal console
+                self.UI.useInternalConsoleForPythonOutput(True)      
+            else:
+                #C++ output goes to system console
+                # self.mysim.setOutputRedirectionTarget(-1)
+                self.mysim.restoreCerrStreamBufOrig(self.cerrStreamBufOrig)
+                #Python output goes to system console
+                self.UI.enablePythonOutput(True)
+        else:
+            #silencing output from C++ 
+            self.mysim.setOutputRedirectionTarget(0)
+            #silencing output from Python
+            self.UI.enablePythonOutput(False)
+                
+        
+        # check if we will be outputting fields in vtk format
+#        import CompuCellSetup
+        # print "THIS IS Configuration.getSetting(LatticeOutputOn)",Configuration.getSetting("LatticeOutputOn")
+        # print self.mysim
+        self.basicSimulationData.fieldDim = self.fieldDim
+        self.basicSimulationData.sim = self.mysim
+        self.basicSimulationData.numberOfSteps = self.mysim.getNumSteps()
+        
+        self.fieldStorage.allocateCellField(self.fieldDim)
+                
+        self.fieldExtractor.init(self.mysim)
+        
+        self.screenshotNumberOfDigits = len(str(self.basicSimulationData.numberOfSteps))
+        
+#        import CompuCellSetup
+        latticeTypeStr = CompuCellSetup.ExtractLatticeType()
+#        print MODULENAME,' initializeSimulationViewWidgetRegular():  latticeTypeStr=',latticeTypeStr
+        if latticeTypeStr in Configuration.LATTICE_TYPES.keys():
+            self.latticeType = Configuration.LATTICE_TYPES[latticeTypeStr]
+        else:
+            self.latticeType = Configuration.LATTICE_TYPES["Square"] # default choice
+            
+        self.prepareSimulationView()
+        self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
+        
+        # print "self.screenshotManager",self.screenshotManager
+        
+        if self.__screenshotDescriptionFileName != "":
+            self.screenshotManager.readScreenshotDescriptionFile(self.__screenshotDescriptionFileName)
+            
+        if self.simulationIsStepping:
+            # print "BEFORE STEPPING PAUSE REGULAR SIMULATION"
+            self.__pauseSim()   
+        
+        
+        self.prepareXMLTreeView(self.__fileName)
+        # after this call I can access self.root_element of the XML File
+        self.loadCustomPlayerSettings(self.root_element)
+        # creating simulation directory depending on whether user requests simulatin output or not
+#        import CompuCellSetup
+#        if  self.__imageOutput:     # self.__latticeOutputFlag
+#        print MODULENAME,'initializeSimulationViewWidgetRegular():  self.__imageOutput, self.__latticeOutputFlag= ',self.__imageOutput,self.__latticeOutputFlag
+#        if True:
+#        if  self.__imageOutput or self.__latticeOutputFlag:
+#            self.createOutputDirs()
+
+        
+
+
+        # self.simulation.sem.tryAcquire()
+        # self.simulation.sem.release()        
+    
+    
+    def initializeSimulationViewWidget(self):
+        import CompuCellSetup
+        CompuCellSetup.simulationFileName=self.__fileName    
+        
+        initializeSimulationViewWidgetFcn = getattr(self, "initializeSimulationViewWidget" + self.__viewManagerType)
+        initializeSimulationViewWidgetFcn()        
+        
+#        import CompuCellSetup
+        # print "self.cc3dSimulationDataHandler=",self.cc3dSimulationDataHandler
+        # print 'CompuCellSetup.screenshotDirectoryName=',CompuCellSetup.screenshotDirectoryName
+        
+#        print MODULENAME, 'initializeSimulationViewWidget(),  __imageOutput,__latticeOutputFlag,screenshotDirectoryName=', self.__imageOutput,self.__latticeOutputFlag,self.screenshotDirectoryName
+        if (self.__imageOutput or self.__latticeOutputFlag) and self.screenshotDirectoryName == "":
+#            print MODULENAME, 'initializeSimulationViewWidget(),  calling createOutputDirs'
+            self.createOutputDirs()
+            
+        
+        #copy simulation files to output directory                       
+        if self.cc3dSimulationDataHandler and CompuCellSetup.screenshotDirectoryName != "":
+            self.cc3dSimulationDataHandler.copySimulationDataFiles(CompuCellSetup.screenshotDirectoryName)        
+
+            
+        self.simulation.sem.tryAcquire()
+        self.simulation.sem.release()        
+            
+    def runSteppablePostStartPlayerPrep(self):
+        self.setFieldTypes() 
+        self.windowDict[1].setFieldTypesComboBox(self.fieldTypes) #we have only one window at this stage of the simulation run
+        
+        self.simulation.sem.tryAcquire()
+        self.simulation.sem.release()        
+    
+    
+    def loadCustomPlayerSettings(self,_root_element):
+        import XMLUtils
+        import CC3DXML
+        from XMLUtils import dictionaryToMapStrStr as d2mss        
+        playerSettingsElement = _root_element.getFirstElement("Plugin",d2mss({"Name":"PlayerSettings"}))
+        if playerSettingsElement:
+            visualControlElement = playerSettingsElement.getFirstElement("VisualControl")
+            if visualControlElement:
+#                print 'type(visualControlElement)=',type(visualControlElement)
+#                print 'visualControlElement=',visualControlElement
+#                print 'dir(visualControlElement)=',dir(visualControlElement)
+#                print 'visualControlElement.getName()=',visualControlElement.getName()
+#                print 'visualControlElement.attributes=',visualControlElement.attributes
+#                print 'visualControlElement.getNumberOfChildren()=',visualControlElement.getNumberOfChildren()
+#                print 'visualControlElement.getElements()=',visualControlElement.getElements()
+#                print 'visualControlElement.getAttributes()=',visualControlElement.getAttributes()
+                validAttrs = ("ScreenUpdateFrequency",  "NoOutput","ImageOutput", "ScreenshotFrequency","ImageFrequency",
+                              "LatticeOutput","LatticeFrequency")
+                              
+                for vcAttr in XMLUtils.XMLAttributeList(visualControlElement):
+                    if str(vcAttr[0]) not in validAttrs:
+                      print "\n-------\nERROR in loadCustomPlayerSettings:  VisualControl attribute '",vcAttr[0],"' is invalid"
+                      print 'Valid attributes are ',validAttrs
+                      print '--------\n'
+                    
+#                foundAttr = False
+#                for attr in validAttrs:
+#                    if visualControlElement.findAttribute(attr):
+#                        foundAttr = True
+#                        break
+#                if not foundAttr:
+#                    print '\n --------- loadCustomPlayerSettings:   invalid VisualControl attribute; valid=',validAttrs
+#                    sys.exit(-1)
+                      
+                #  NOTE: do NOT do an if-elif block here! 
+                if visualControlElement.findAttribute("ScreenUpdateFrequency"):
+                    screenUpdateFrequency = visualControlElement.getAttributeAsUInt("ScreenUpdateFrequency")
+                    Configuration.setSetting("ScreenUpdateFrequency",screenUpdateFrequency)
+                    
+                if visualControlElement.findAttribute("NoOutput"):  # trying to deprecate
+                    noOutput = visualControlElement.getAttributeAsBool("NoOutput")
+                    imageOut = not noOutput
+                    Configuration.setSetting("ImageOutputOn",imageOut)
+                if visualControlElement.findAttribute("ImageOutput"):   # replaces previous
+                    imageOut = visualControlElement.getAttributeAsBool("ImageOutput")
+                    Configuration.setSetting("ImageOutputOn",imageOut)
+                    
+                if visualControlElement.findAttribute("ScreenshotFrequency"):  # trying to deprecate
+                    scrFreq = visualControlElement.getAttributeAsUInt("ScreenshotFrequency")
+                    Configuration.setSetting("SaveImageFrequency",scrFreq)
+                if visualControlElement.findAttribute("ImageFrequency"):  # replaces previous
+                    scrFreq = visualControlElement.getAttributeAsUInt("ImageFrequency")
+                    Configuration.setSetting("SaveImageFrequency",scrFreq)
+                    
+                if visualControlElement.findAttribute("LatticeOutput"):
+                    latticeOut = visualControlElement.getAttributeAsBool("LatticeOutput")
+                    Configuration.setSetting("LatticeOutputOn",latticeOut)
+                if visualControlElement.findAttribute("LatticeFrequency"):
+                    latticeFreq = visualControlElement.getAttributeAsUInt("LatticeFrequency")
+                    Configuration.setSetting("SaveLatticeFrequency",latticeFreq)
+
+        # if visualControlElement.findAttribute("ClosePlayerAfterSimulationDone"):
+            # closePlayerAfterSimulationDone=visualControlElement.getAttributeAsBool("ClosePlayerAfterSimulationDone")
+            # Configuration.setSetting("ClosePlayerAfterSimulationDone",closePlayerAfterSimulationDone)
+                self.__paramsChanged()    
+                
+            borderElement=playerSettingsElement.getFirstElement("Border")
+            if borderElement:
+                if borderElement.findAttribute("BorderColor"):
+                    # print "borderElement"
+                    borderColor=borderElement.getAttribute("BorderColor")
+                    Configuration.setSetting("Border", QColor(borderColor))
+                    
+                if borderElement.findAttribute("BorderOn"):
+                    borderOn=borderElement.getAttributeAsBool("BorderOn")
+                    Configuration.setSetting("BordersOn", borderOn)
+                    if borderOn:
+                        self.borderAct.setChecked(True)
+                    else:
+                        self.borderAct.setChecked(False)
+                        
+            cellColorsList = XMLUtils.CC3DXMLListPy(playerSettingsElement.getElements("Cell"))
+#            typeColorMap = {}
+            typeColorMap = Configuration.getSetting("TypeColorMap")  # start out with the given (default) cell type colormap
+#            print MODULENAME,'  loadCustomPlayerSettings, typeColorMap =',typeColorMap
+            cellColorsListLength = 0
+            for cellElement in cellColorsList:
+                cellColorsListLength += 1
+                
+            if cellColorsListLength:
+#                print MODULENAME,'-----  cellColorsListLength=',cellColorsListLength
+#                import pdb; pdb.set_trace()
+                for cellElement in cellColorsList:
+                    cellType = cellElement.getAttributeAsUInt("Type")
+#                    print 'type(cellType), cellType =',type(cellType),cellType
+                    cellColor = cellElement.getAttribute("Color")
+#                    print 'type(cellColor), cellColor =',type(cellColor),cellColor
+                    if cellColor[0] == '#':   # handle a hex specification (Michael Rountree likes to do this)
+                        r,g,b = cellColor[1:3], cellColor[3:5], cellColor[5:7]
+                        r,g,b = [int(n, 16) for n in (r, g, b)]
+#                        print '   type(r)=',type(r)
+#                        print '   r,g,b=',r,g,b
+                        typeColorMap[cellType] = QColor(r,g,b)
+                    else:
+                        cellColor = string.lower(cellColor)
+                        typeColorMap[cellType] = QColor(cellColor)
+                # print "GOT CUSTOM COLORS"    
+                # for cellType in typeColorMap.keys():
+                    # print "typeColorMap=",typeColorMap
+#                Configuration.setSetting("CustomTypeColorMap", typeColorMap)
+                Configuration.setSetting("TypeColorMap", typeColorMap)
+                for windowName,window in self.graphicsWindowDict.items():
+                    window.populateLookupTable()
+                
+                    
+                # self.mainGraphicsWindow.populateLookupTable()
+                # self.graphics3D.populateLookupTable()
+            
+            typesInvisibleIn3DElement = playerSettingsElement.getFirstElement("TypesInvisibleIn3D")
+            if typesInvisibleIn3DElement:
+                Configuration.setSetting("Types3DInvisible", typesInvisibleIn3DElement.getAttribute("Types"))
+            
+            self.saveSettings = True # by default we will save settings each time we exit player    
+            
+            settingsElement = playerSettingsElement.getFirstElement("Settings")
+            if settingsElement:
+                self.saveSettings = settingsElement.getAttributeAsBool("SaveSettings")
+                
+            projection2DElement = playerSettingsElement.getFirstElement("Project2D")
+            if projection2DElement:
+                if projection2DElement.findAttribute("XYProj"):
+                    zPos = projection2DElement.getAttributeAsUInt("XYProj")
+                    if zPos >= self.xySB.minimum() and zPos <= self.xySB.maximum():
+                        self.mainGraphicsWindow._xyChecked(True)
+                        self.mainGraphicsWindow._projSpinBoxChanged(zPos)
+                
+                elif projection2DElement.findAttribute("XZProj"):
+                    yPos = projection2DElement.getAttributeAsUInt("XZProj")
+                    if yPos >= self.xzSB.minimum() and yPos <= self.xzSB.maximum():
+                        self.mainGraphicsWindow._xzChecked(True)
+                        self.mainGraphicsWindow._projSpinBoxChanged(yPos)
+                        
+                elif projection2DElement.findAttribute("YZProj"):
+                    xPos = projection2DElement.getAttributeAsUInt("YZProj")
+                    if xPos >= self.yzSB.minimum() and xPos <= self.yzSB.maximum():
+                        self.mainGraphicsWindow._yzChecked(True)
+                        self.mainGraphicsWindow._projSpinBoxChanged(xPos)
+            else:
+                view3DElement = playerSettingsElement.getFirstElement("View3D")
+                if view3DElement:
+                    cameraCippingRange=None
+                    cameraFocalPoint=None
+                    cameraPosition=None
+                    cameraViewUp=None
+                    
+                    clippingRangeElement=view3DElement.getFirstElement("CameraClippingRange")
+                    if clippingRangeElement:
+                        cameraClippingRange=[float(clippingRangeElement.getAttribute("Min")),float(clippingRangeElement.getAttribute("Max"))]
+                        
+                    focalPointElement=view3DElement.getFirstElement("CameraFocalPoint")
+                    if focalPointElement:
+                        cameraFocalPoint=[float(focalPointElement.getAttribute("x")),float(focalPointElement.getAttribute("y")),float(focalPointElement.getAttribute("z"))]
+                    
+                    positionElement=view3DElement.getFirstElement("CameraPosition")
+                    if positionElement:
+                        cameraPosition=[float(positionElement.getAttribute("x")),float(positionElement.getAttribute("y")),float(positionElement.getAttribute("z"))]
+                        
+                    viewUpElement=view3DElement.getFirstElement("CameraViewUp")
+                    if viewUpElement:
+                        cameraViewUp=[float(viewUpElement.getAttribute("x")),float(viewUpElement.getAttribute("y")),float(viewUpElement.getAttribute("z"))]
+                
+                    camera3D=self.mainGraphicsWindow.getCamera3D()
+                    if cameraCippingRange:
+                        camera3D.SetClippingRange(cameraCippingRange)
+                    if  cameraFocalPoint:
+                        camera3D.SetFocalPoint(cameraFocalPoint)
+                    if  cameraPosition:
+                        camera3D.SetPosition(cameraPosition)   
+                    if  cameraViewUp:
+                        camera3D.SetViewUp(cameraViewUp)   
+                    
+                    self.mainGraphicsWindow._switchDim(True)
+                    
+                    
+    def __savePlayerParams(self):
+        # print "THIS IS __saveScrDesc"
+        filter = "Player parameters File (*.txt )" # self._getOpenFileFilter() 
+        self.playerParamsFileName = QFileDialog.getSaveFileName(\
+            self.ui,
+            QApplication.translate('ViewManager', "Save Player Parameters File"),
+            os.getcwd(), 
+            filter
+            )
+#        if self.screenshotManager:
+#            self.screenshotManager.writePlayerParamsFile(self.playerParamsFileName)
+            
+        print MODULENAME,"playerParamsFileName=",self.playerParamsFileName
+#        pFile = open(self.playerParamsFileName,'w')
+#        pFile.write('size 512\n')
+#        pFile.close()
+#        from csv import writer
+        paramsDict = Configuration.getPlayerParams()
+#        paramWriter = writer(open(self.playerParamsFileName, 'w'), delimiter=' ')
+#        paramWriter.writerow(params)
+        paramFile = open(self.playerParamsFileName, 'w')
+        paramFile.write(repr(paramsDict))
+
+#        for idx in paramsDict.keys():
+#            paramFile.write(idx, repr(paramsDict))
+        paramFile.close()
+        print MODULENAME,'paramsDict =',paramsDict     
+
+
+    def extractAddressIntFromVtkObject(self,_vtkObj):
+        return self.fieldExtractor.unmangleSWIGVktPtrAsLong(_vtkObj.__this__)
+
+    def handleSimulationFinishedCMLResultReplay(self,_flag):
+#        import CompuCellSetup
+        if  CompuCellSetup.playerType=="CMLResultReplay":
+            self.latticeDataModelTable.prepareToClose()
+
+        self.__stopSim()
+        
+    def handleSimulationFinishedRegular(self,_flag):
+        self.__stopSim()
+    
+    def handleSimulationFinished(self,_flag):
+        handleSimulationFinishedFcn = getattr(self, "handleSimulationFinished" + self.__viewManagerType)
+        handleSimulationFinishedFcn(_flag)
+        
+        
+    def handleCompletedStepCMLResultReplay(self,_mcs):
+        self.simulation.drawMutex.lock()    # had to add synchronization here . without it I would get weird behavior in CML replay mode
+        # print "THIS IS handleCompletedStepCMLResultReplay"
+        # print "Before extracting the address self.simulation.simulationData=",self.simulation.simulationData
+        simulationDataIntAddr = self.extractAddressIntFromVtkObject(self.simulation.simulationData)
+        # print "simulationDataIntAddr=%X\n"% (simulationDataIntAddr)
+        # print "self.simulation.simulationData=",self.simulation.simulationData
+        self.fieldExtractor.setSimulationData(simulationDataIntAddr)
+        self.__step = self.simulation.currentStep
+        self.latticeDataModelTable.selectRow(self.__step / self.simulation.frequency ) # here elf.step holds the value of the "user step" i.e. not multiplied by frequency. it gets multiplied by frequency next
+        #there is additional locking inside draw to acccount for the fact that users may want to draw lattice on demand
+        # self.simulation.newFileBeingLoaded=False
+        self.simulation.drawMutex.unlock()  # had to add synchronization here . without it I would get weird behavior in CML replay mode      
+        
+        self.simulation.newFileBeingLoaded = False # this flag is used to prevent calling  draw function when new data is read from hard drive
+                                                 # at this moment new data has been read and is ready to be used  
+        self.__drawField()
+        
+        self.simulation.drawMutex.lock()
+        # will need to synchorinize screenshots with simulation thread . make sure that before simuklation thread writes new results all the screenshots are taken
+        
+        if self.__imageOutput and not (self.__step % self.__shotFrequency):  # dumping images? Check modulo MCS #
+            mcsFormattedNumber = string.zfill(str(self.__step),self.screenshotNumberOfDigits) # fills string wtih 0's up to self.screenshotNumberOfDigits width
+            screenshotFileName = os.path.join(self.screenshotDirectoryName,self.baseScreenshotName+"_"+mcsFormattedNumber+".png")
+            self.mainGraphicsWindow.takeSimShot(screenshotFileName)
+            self.screenshotManager.outputScreenshots(self.screenshotDirectoryName,self.__step)
+            
+        self.simulation.drawMutex.unlock()
+        
+        if self.simulationIsStepping:
+            self.__pauseSim()            
+            self.stepAct.setEnabled(True)
+        
+        self.simulation.sem.tryAcquire()
+        self.simulation.sem.release()        
+        
+        
+    def handleCompletedStepRegular(self,_mcs):
+#        print MODULENAME,'  handleCompletedStepRegular():  calling __drawField()='
+        self.__drawField()
+        
+        self.simulation.drawMutex.lock()
+        # will need to sync screenshots with simulation thread. Be sure before simulation thread writes new results all the screenshots are taken
+
+#        print MODULENAME, 'handleCompletedStepRegular():  __shotFrequency, __imageOutput = ',self.__shotFrequency,self.__imageOutput
+        if self.__imageOutput and not (self.__step % self.__shotFrequency):  # dumping images? Check modulo MCS #
+            mcsFormattedNumber = string.zfill(str(self.__step),self.screenshotNumberOfDigits) # fills string wtih 0's up to self.screenshotNumberOfDigits width
+            screenshotFileName = os.path.join(self.screenshotDirectoryName,self.baseScreenshotName+"_"+mcsFormattedNumber+".png")
+#            print '       handleCompletedStepRegular():  screenshotDirectoryName=',self.screenshotDirectoryName
+#            print '       handleCompletedStepRegular():  baseScreenshotName=',self.baseScreenshotName
+#            print '       handleCompletedStepRegular():  screenshotFileName=',screenshotFileName
+            self.mainGraphicsWindow.takeSimShot(screenshotFileName)
+            self.screenshotManager.outputScreenshots(self.screenshotDirectoryName,self.__step)
+            
+
+#        if (CompuCellSetup.cmlFieldHandler is not None) and self.__latticeOutputFlag and (not self.__step % self.__latticeOutputFrequency):  #rwh 
+        if self.cmlHandlerCreated  and self.__latticeOutputFlag and (not self.__step % self.__latticeOutputFrequency):  #rwh 
+#            print MODULENAME,' handleCompletedStepRegular(): cmlFieldHandler.writeFields'
+#            import CompuCellSetup
+            CompuCellSetup.cmlFieldHandler.writeFields(self.__step)
+            
+            
+        self.simulation.drawMutex.unlock()
+        
+        if self.simulationIsStepping:
+            self.__pauseSim()            
+            self.stepAct.setEnabled(True)
+        
+        self.simulation.sem.tryAcquire()
+        self.simulation.sem.release()
+    
+    
+    def handleCompletedStep(self,_mcs):
+#        print MODULENAME, 'handleCompletedStep:  _mcs =',_mcs
+        if not self.completedFirstMCS: 
+            self.completedFirstMCS = True        
+#            self.updateActiveWindowVisFlags()
+            
+        self.__step = _mcs
+        
+#        print MODULENAME, 'handleCompletedStep:  self.__viewManagerType =',self.__viewManagerType
+#        fcnName = "handleCompletedStep" + self.__viewManagerType
+#        print MODULENAME, 'handleCompletedStep:  fcnName=',fcnName
+        handleCompletedStepFcn = getattr(self, "handleCompletedStep" + self.__viewManagerType)
+#        handleCompletedStepFcn = getattr(self, fcnName)
+        handleCompletedStepFcn(_mcs)
+        return 
+
+
+    def updateSimPrefs(self):
+        self.simulation.screenUpdateFrequency = self.__updateScreen
+        self.simulation.imageOutputFlag = self.__imageOutput
+        self.simulation.screenshotFrequency = self.__shotFrequency
+        self.simulation.latticeOutputFlag = self.__latticeOutputFlag
+        self.simulation.latticeOutputFrequency = self.__latticeOutputFrequency
+
+
+    def __runSim(self):
+#        print MODULENAME,'__runSim():  self.__fileName =', self.__fileName
+        if  Configuration.getSetting("LatticeOutputOn") and not self.cmlHandlerCreated:
+#            import CompuCellSetup
+#            print MODULENAME,"__runSim():  will create CML FILE HANDLER"
+            # print "\n\n\n created    CMLFieldHandler \n\n\n"
+            CompuCellSetup.createCMLFieldHandler()
+            self.cmlHandlerCreated = True
+#            CompuCellSetup.initCMLFieldHandler(self.mysim,self.resultStorageDirectory,self.fieldStorage)
+
+        self.steppingThroughSimulation = False
+        
+        if self.simulationIsStepping:
+            self.simulationIsStepping = False
+            self.updateSimPrefs()
+#            self.simulation.screenUpdateFrequency = self.__updateScreen
+#            self.simulation.imageOutputFlag = self.__imageOutput
+#            self.simulation.screenshotFrequency = self.__shotFrequency
+#            self.simulation.imageOutputFlag = self.__imageOutput
+#            self.simulation.screenshotFrequency = self.__shotFrequency
+        
+        if not self.pauseAct.isEnabled() and self.simulationIsRunning:
+            self.runAct.setEnabled(False)
+            self.pauseAct.setEnabled(True)
+            self.simulation.semPause.release()
+            return
+            
+#        print MODULENAME,'  __runSim(): self.drawingAreaPrepared =',self.drawingAreaPrepared 
+        if not self.drawingAreaPrepared:
+            # checking if the simulation file is not an empty string 
+            if self.__fileName == "":
+                msg = QMessageBox.warning(self, "Not A Valid Simulation File", \
+                          "Please pick simulation file <b>File->OpenSimulation File ...</b>", \
+                          QMessageBox.Ok , 
+                          QMessageBox.Ok)
+                return
+            file = QFile(self.__fileName)
+
+            import xml
+            try: 
+                self.__loadSim(file)            
+            except AssertionError,e:
+                print "Assertion Error: ",e.message
+                self.handleErrorMessage("Assertion Error",e.message)
+                return                
+            except xml.parsers.expat.ExpatError,e:
+                # if CompuCellSetup.simulationObjectsCreated:
+                    # sim.finish()
+                # import PlayerPython
+                # simthread=PlayerPython.getSimthreadBasePtr()
+                xmlFileName = CompuCellSetup.simulationPaths.simulationXMLFileName
+                print "Error in XML File","File:\n "+xmlFileName+"\nhas the following problem\n"+e.message
+                self.handleErrorMessage("Error in XML File","File:\n "+xmlFileName+"\nhas the following problem\n"+e.message)                
+            except IOError,e:
+                return
+                
+            self.runAct.setEnabled(False)
+            self.stepAct.setEnabled(True)
+            self.pauseAct.setEnabled(True)
+            self.stopAct.setEnabled(True)
+            self.pifFromSimulationAct.setEnabled(True)
+            self.openAct.setEnabled(False)
+            
+            self.updateSimPrefs()
+#            self.simulation.screenUpdateFrequency = self.__updateScreen
+#            self.simulation.imageOutputFlag = self.__imageOutput
+#            self.simulation.screenshotFrequency = self.__shotFrequency
+#            self.simulation.latticeOutputFlag = self.__latticeOutputFlag
+#            self.simulation.latticeOutputFrequency = self.__latticeOutputFrequency
+            
+            self.screenshotDirectoryName = ""
+                
+            if self.rollbackImporter:
+                self.rollbackImporter.uninstall()
+                
+            self.rollbackImporter = RollbackImporter()
+            
+            
+#        if True:
+#            self.mainGraphicsWindow._switchDim(True)   #rwh
+
+#            print MODULENAME,'  __runSim(): calling simulation.start(); updateFreq,shotFreq =',self.simulation.screenUpdateFrequency,self.simulation.screenshotFrequency
+            self.simulation.start()
+#            self.mainGraphicsWindow._switchDim(True)   #rwh
+
+            #copy simulation files to output directory
+
+            self.simulationIsRunning = True
+    
+            return
+            
+        self.runAct.setEnabled(False)
+        self.pauseAct.setEnabled(True)
+        self.stopAct.setEnabled(True)
+        self.pifFromSimulationAct.setEnabled(True)
+      
+      
+    def __stepSim(self):
+#        import pdb; pdb.set_trace()
+#        from RollbackImporter import RollbackImporter
+#        print MODULENAME,'__stepSim():  self.__fileName =', self.__fileName
+        # self.cc3dSender.sendToEditor(self.__fileName)
+        # self.cc3dSender.issueOpenFileRequest(self.__fileName,20,5)
+        # self.cc3dSender.send()
+
+        if  self.completedFirstMCS and Configuration.getSetting("LatticeOutputOn") and not self.cmlHandlerCreated:  #rwh
+#            import CompuCellSetup
+#            print MODULENAME,'  __stepSim(): calling CompuCellSetup.createCMLFieldHandler()'
+            CompuCellSetup.createCMLFieldHandler()
+            self.cmlHandlerCreated = True   #rwh
+            
+            CompuCellSetup.initCMLFieldHandler(self.mysim,self.resultStorageDirectory,self.fieldStorage)
+            CompuCellSetup.cmlFieldHandler.getInfoAboutFields()  #rwh
+            
+        if self.simulationIsRunning and self.simulationIsStepping:
+#            print MODULENAME,'  __stepSim() - 1:'
+            self.pauseAct.setEnabled(False)
+            self.simulation.semPause.release()
+            self.stepAct.setEnabled(False)
+            self.pauseAct.setEnabled(False)
+            
+            return
+        
+        # if Pause button is enabled
+        elif self.simulationIsRunning and not self.simulationIsStepping and self.pauseAct.isEnabled(): #transition from running simulation
+#            print MODULENAME,'  __stepSim() - 2:'
+#            updateSimPrefs()   # should we call this and then reset screenUpdateFreq = 1 ?
+            self.simulation.screenUpdateFrequency = 1
+            self.simulation.screenshotFrequency = self.__shotFrequency
+            self.simulationIsStepping = True
+            self.stepAct.setEnabled(False)
+            self.pauseAct.setEnabled(False)
+        # if Pause button is disabled, meaning the sim is paused:
+        elif self.simulationIsRunning and not self.simulationIsStepping and not self.pauseAct.isEnabled():#transition from paused simulation
+#            print MODULENAME,'  __stepSim() - 3:'
+#            updateSimPrefs()   # should we call this and then reset screenUpdateFreq = 1 ?
+            self.simulation.screenUpdateFrequency = 1
+            self.simulation.screenshotFrequency = self.__shotFrequency
+            self.simulationIsStepping = True
+            
+            return
+            
+        if not self.drawingAreaPrepared:
+        
+            # checking if the simulation file is not an empty string 
+            if self.__fileName == "":
+                msg = QMessageBox.warning(self, "Not A Valid Simulation File", \
+                          "Please pick simulation file <b>File->OpenS imulation File ...</b>", \
+                          QMessageBox.Ok , 
+                          QMessageBox.Ok)
+                return
+            
+            file = QFile(self.__fileName)
+
+            import xml
+            try: 
+                self.__loadSim(file)            
+            except AssertionError,e:
+                print "Assertion Error: ",e.message
+                self.handleErrorMessage("Assertion Error",e.message)
+                return
+            
+            except xml.parsers.expat.ExpatError,e: 
+                #in case of the XML error during initial scanning we let it go and it will be caught "properly" during second pass through XML
+#                import CompuCellSetup
+                xmlFileName = CompuCellSetup.simulationPaths.simulationXMLFileName
+                print "Error in XML File","File:\n "+xmlFileName+"\nhas the following problem\n"+e.message
+
+
+            self.runAct.setEnabled(True)
+            self.pauseAct.setEnabled(False)
+            self.stopAct.setEnabled(True)
+            self.pifFromSimulationAct.setEnabled(True)
+            self.openAct.setEnabled(False)
+            
+#            updateSimPrefs()    # updated
+            self.simulation.screenUpdateFrequency = 1
+            self.simulation.screenshotFrequency = self.__shotFrequency
+            self.screenshotDirectoryName = ""
+            
+            if self.rollbackImporter:
+                self.rollbackImporter.uninstall()
+                
+            self.rollbackImporter = RollbackImporter()
+            
+            self.simulation.start()
+            
+            self.simulationIsStepping = True
+            self.simulationIsRunning = True
+
+                
+    def requestRedraw(self):
+        self.__drawField()
+        
+    def drawFieldCMLResultReplay(self):
+        self.simulation.drawMutex.lock()
+        # print "self.simulation.readFileSem.available()=",self.simulation.readFileSem.available()
+        self.simulation.readFileSem.acquire()
+        # print " THIS IS drawFieldCMLResultReplay and NEW FILE IS LOADED=",self.simulation.newFileBeingLoaded
+        if not self.simulationIsRunning:
+            return    
+    
+        if self.newDrawingUserRequest:
+            # print "entering newDrawingUserRequest"
+            self.newDrawingUserRequest = False
+            if self.pauseAct.isEnabled():
+                # print "PAUSING THE SIMULATION"
+                self.__pauseSim()
+
+                
+        self.simulation.drawMutex.unlock()
+        self.simulation.readFileSem.release()
+        
+        # print "self.simulation.drawMutex=",self.simulation.drawMutex
+        self.simulation.drawMutex.lock()
+        self.simulation.readFileSem.acquire()
+        
+        self.__step = self.simulation.getCurrentStep()   
+        if True:            
+            for windowName in self.windowDict.keys():
+                graphicsFrame = self.windowDict[windowName]
+                # print "graphicsFrame=",graphicsFrame
+                    
+                (currentPlane, currentPlanePos) = graphicsFrame.getPlane()
+
+                # print "NEW FILE IS LOADED =",self.simulation.newFileBeingLoaded
+                
+                if not self.simulation.newFileBeingLoaded: # this flag is used to prevent calling  draw function when new data is read from hard drive
+                    graphicsFrame.drawFieldLocal(self.basicSimulationData)
+
+                self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())
+            
+        self.simulation.drawMutex.unlock()
+        self.simulation.readFileSem.release()
+    
+    def drawFieldRegular(self):
+#        print MODULENAME,'  drawFieldRegular(): simulationIsRunning=',self.simulationIsRunning
+        if not self.simulationIsRunning:
+            return    
+    
+        if self.newDrawingUserRequest:
+            self.newDrawingUserRequest = False
+            if self.pauseAct.isEnabled():
+                self.__pauseSim()
+        self.simulation.drawMutex.lock()
+        
+        self.__step = self.simulation.getCurrentStep()
+#        print MODULENAME,'  drawFieldRegular(): __step=',self.__step
+        
+        if self.mysim:
+#            print MODULENAME,'  drawFieldRegular(): in self.mysim block; windowDict.keys=',self.graphicsWindowDict.keys()
+            for windowName in self.graphicsWindowDict.keys():
+                graphicsFrame = self.windowDict[windowName]
+#                print MODULENAME,"drawFieldRegular():   windowName, graphicsFrame=",windowName, graphicsFrame
+                
+                #rwh: error if we try to invoke switchdim earlier    
+                (currentPlane, currentPlanePos) = graphicsFrame.getPlane()
+                graphicsFrame.drawFieldLocal(self.basicSimulationData)
+                self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())   # show MCS in lower-left GUI
+        
+        self.simulation.drawMutex.unlock()
+    
+        
+    def _drawField(self):
+#        print MODULENAME,'   _drawField called'
+        self.__drawField()
+    
+    def __drawField(self):
+        __drawFieldFcn = getattr(self, "drawField" + self.__viewManagerType)
+#        print MODULENAME, '__drawField():  calling ',"drawField"+self.__viewManagerType
+        __drawFieldFcn()
+        
+    def __updateStatusBar(self, step, conMinMax):
+        self.mcSteps.setText("MC Step: %s"% step)
+        self.conSteps.setText("Min: %s Max: %s" % conMinMax)
+           
+    def __pauseSim(self):
+        # print "Pause Sim"
+        self.simulation.semPause.acquire()        
+        self.runAct.setEnabled(True)
+        self.pauseAct.setEnabled(False)
+        
+    def __simulationStop(self):
+        if  not self.pauseAct.isEnabled():
+            self.__stopSim()
+        else:
+            self.simulation.setStopSimulation(True)
+            
+    def __simulationSerialize(self):        
+        print self.simulation.restartManager        
+        currentStep=self.simulation.sim.getStep()        
+        if self.pauseAct.isEnabled():
+            self.__pauseSim()
+        self.simulation.restartManager.outputRestartFiles(currentStep,True)
+        
+        
+    
+    def __stopSim(self):
+        # print "STOP SIMULATION"
+        self.simulation.stop()
+        self.simulation.wait()
+        
+        Configuration.setSetting("RecentSimulations",self.__fileName)
+        
+        if Configuration.getSetting("ClosePlayerAfterSimulationDone") or self.closePlayerAfterSimulationDone:
+            Configuration.setSetting("RecentFile",self.__fileName)
+            
+            Configuration.setSetting("RecentSimulations",self.__fileName)
+            
+            if self.saveSettings:
+                Configuration.syncPreferences()        
+
+            sys.exit()
+            
+        self.runAct.setEnabled(True)
+        self.stepAct.setEnabled(True)
+        
+        self.fieldTypes = {}   # re-init (empty) the fieldTypes dict, otherwise get previous/bogus fields in graphics win field combobox
+        
+        self.prepareForNewSimulation(_forceGenericInitialization=True) 
+        
+        # in case there is pending simulation to be run we will put it a recent simulation so that it can be ready to run without going through open file dialog
+        if self.nextSimulation != "":
+            Configuration.setSetting("RecentSimulations",self.nextSimulation)
+            self.nextSimulation = ""
+        
+#        import CompuCellSetup
+        CompuCellSetup.resetGlobals()
+        # CompuCellSetup.simulationObjectsCreated = False
+        # CompuCellSetup.simulationFileName=""
+        # CompuCellSetup.screenshotDirectoryName=""
+        
+        
+        
+        
+    def makeCustomSimDir(self,_dirName,_simulationFileName):    
+        fullFileName = os.path.abspath(_simulationFileName)
+        (filePath,baseFileName) = os.path.split(fullFileName)
+        baseFileNameForDirectory = baseFileName.replace('.','_')    
+        if not os.path.isdir(_dirName):
+            os.mkdir(_dirName)
+            return (_dirName,baseFileNameForDirectory)
+        else:
+            return ("","")
+    
+    def mapCellTypeToColor(self, cellType):
+        return self.colors[cellType]
+
+    # Shows the plugin view tab
+    def showPluginView(self, pluginInfo):
+        textStr = QString('<div style="margin: 10px 10px 10px 20px; font-size: 14px"><br />\
+        Plugin: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <b>%1</b><br />\
+        Description: &nbsp; %2</div>').arg(pluginInfo[0]).arg(pluginInfo[1])
+        
+        if self.pluginTab is None:
+            self.pluginTab = QTextEdit(textStr, self)
+            self.addTab(self.pluginTab, QIcon("player/icons/plugin.png"), pluginInfo[0])  
+            # self.closeTab.show()
+        else:
+            # The plugin view always has index 1 if simview present 0 otherwhise
+            if self.count() == 2:
+                idx = 1
+            else:
+                idx = 0
+            self.setTabText(idx, pluginInfo[0]) # self.currentIndex()
+            self.pluginTab.setText(textStr)
+            
+        self.setCurrentIndex(1)
+
+    def prepareDrawingArea(self):
+#        print MODULENAME, '----------  prepareDrawingArea'
+        self.__setupArea()
+        self.mainGraphicsWindow = self.mainGraphicsWindow # Graphics2D by default
+        self.__step = 0
+        self.__loadSim(file)
+        self.setSimParams()
+        self.mainGraphicsWindow.initSimArea(self.sim)
+        # self.graphics3D.initSimArea(self.sim)
+        self.drawingAreaPrepared=True
+        
+#        if True:
+        #self.mainGraphicsWindow._switchDim(True)   #rwh
+        
+    def setInitialCrossSection(self,_basicSimulationData):
+        for windowName in self.windowDict.keys():
+            self.windowDict[windowName].setInitialCrossSection(_basicSimulationData)
+            
+    def initGraphicsWidgetsFieldTypes(self):
+        for windowName in self.windowDict.keys():
+            self.windowDict[windowName].setFieldTypesComboBox(self.fieldTypes)
+            
+        
+    # Shows simulation view tab
+    def showSimView(self, file):
+        self.__setupArea()
+        
+        # Set to 'True' if it is a test tab
+        isTest = False
+        
+        """      
+        # For testing. Leave for a while
+        if isTest:
+            self.mainGraphicsWindow = QVTKRenderWidget(self)
+            self.insertTab(0, self.mainGraphicsWindow, QIcon("player/icons/sim.png"), os.path.basename(str(self.__fileName)))
+            self.setupArea()
+        else:
+        """
+        
+        # Create self.mainGraphicsWindow  
+        self.mainGraphicsWindow = self.mainGraphicsWindow # Graphics2D by default
+        self.__step = 0
+        self.showDisplayWidgets()
+        # # # self.mainGraphicsWindow.initSimArea(self.basicSimulationData)
+        # # # self.graphics3D.initSimArea(self.basicSimulationData)
+        
+        self.__fieldType = ("Cell_Field", FIELD_TYPES[0])
+        
+#        print MODULENAME,'  ------- showSimView \n\n'
+        
+        if self.basicSimulationData.sim:
+            cellField = self.mysim.getPotts().getCellFieldG()
+            # self.simulation.graphicsWidget.fillCellFieldData(cellField,"xy",0)
+            
+#            print "        BEFORE DRAW FIELD(1) FROM showSimView()"
+            self.__drawField()
+        
+            # # Fields are available only after simulation is loaded
+            self.setFieldTypes() 
+        else:
+#            print "        BEFORE DRAW FIELD(2) FROM showSimView()"
+            self.__drawField()
+            self.setFieldTypesCML() 
+            
+        Configuration.initFieldsParams(self.fieldTypes.keys())
+            
+        # # # self.__setCrossSection()
+        self.setInitialCrossSection(self.basicSimulationData)
+        self.initGraphicsWidgetsFieldTypes()
+        # self.closeTab.show()
+        self.drawingAreaPrepared = True
+        
+    def setFieldTypesCML(self):
+        # Add cell field
+        self.fieldTypes["Cell_Field"] = FIELD_TYPES[0]   #"CellField" 
+    
+        self.fieldComboBox.clear()
+        self.fieldComboBox.addItem("-- Field Type --")
+        self.fieldComboBox.addItem("Cell_Field")
+        
+    
+        for fieldName in self.simulation.fieldsUsed.keys():
+            if fieldName!="Cell_Field":
+                self.fieldTypes[fieldName]=self.simulation.fieldsUsed[fieldName]
+                self.fieldComboBox.addItem(fieldName)
+                
+        
+    def setFieldTypes(self):
+        # Add cell field
+#        self.fieldTypes = {}
+        self.fieldTypes["Cell_Field"] = FIELD_TYPES[0]  #"CellField" 
+        
+        # Add concentration fields How? I don't care how I got it at this time
+        # print self.mysim.getPotts()
+        concFieldNameVec = self.mysim.getConcentrationFieldNameVector()
+        
+        #putting concentration fields from simulator
+        for fieldName in concFieldNameVec:
+#            print MODULENAME,"setFieldTypes():  Got this conc field: ",fieldName
+            self.fieldTypes[fieldName] = FIELD_TYPES[1]
+        
+        
+        #inserting extra scalar fields managed from Python script
+        scalarFieldNameVec = self.fieldStorage.getScalarFieldNameVector()
+        for fieldName in scalarFieldNameVec:
+#            print MODULENAME,"setFieldTypes():  Got this scalar field: ",fieldName
+            self.fieldTypes[fieldName] = FIELD_TYPES[2]
+            
+        
+        #inserting extra scalar fields cell levee managed from Python script
+        scalarFieldCellLevelNameVec = self.fieldStorage.getScalarFieldCellLevelNameVector()
+        for fieldName in scalarFieldCellLevelNameVec:
+#            print MODULENAME,"setFieldTypes():  Got this scalar field (cell leve): ",fieldName
+            self.fieldTypes[fieldName] = FIELD_TYPES[3]
+            
+            
+        #inserting extra vector fields  managed from Python script
+        vectorFieldNameVec = self.fieldStorage.getVectorFieldNameVector()
+        for fieldName in vectorFieldNameVec:
+#            print MODULENAME,"setFieldTypes():  Got this vector field: ",fieldName
+            self.fieldTypes[fieldName] = FIELD_TYPES[4]
+            
+
+        #inserting extra vector fields  cell level managed from Python script
+        vectorFieldCellLevelNameVec = self.fieldStorage.getVectorFieldCellLevelNameVector()
+        for fieldName in vectorFieldCellLevelNameVec:
+#            print MODULENAME,"setFieldTypes():  Got this vector field (cell level): ",fieldName
+            self.fieldTypes[fieldName] = FIELD_TYPES[5]
+            
+        #inserting custom visulaization
+        visDict=CompuCellSetup.customVisStorage.visDataDict
+        
+        for visName in visDict:
+            self.fieldTypes[visName] = FIELD_TYPES[6]
+            
+            
+#        print MODULENAME,"setFieldTypes():  len(self.fieldTypes)=",len(self.fieldTypes) 
+#        print '   self.dlg=',self.dlg,
+#        print '   type(self.dlg)=',type(self.dlg)
+#        print '   dir(self.dlg)=',dir(self.dlg)
+#        self.dlg.fieldComboBox.clear()
+#        self.dlg.fieldComboBox.addItem("foo1")
+#        self.dlg.fieldComboBox.addItem("foo2")
+        
+#        print MODULENAME,"setFieldTypes(): THIS IS vectorFieldCellLevelNameVec=",vectorFieldCellLevelNameVec
+        
+
+    def showDisplayWidgets(self):
+#        print '\n\n\n',MODULENAME,' showDisplayWidgets'
+        
+        # This block of code simply checks to see if some plugins assoc'd with Vis are defined
+#        import CompuCellSetup, XMLUtils
+        import XMLUtils
+#        print MODULENAME,' dir(XMLUtils)= ',dir(XMLUtils)
+        if CompuCellSetup.cc3dXML2ObjConverter != None:
+            self.pluginCOMDefined = False
+            self.pluginFPPDefined = False
+            
+#            print MODULENAME, 'CompuCellSetup.cc3dXML2ObjConverter != None; check FPP and COM plugins'
+            self.root_element = CompuCellSetup.cc3dXML2ObjConverter.root
+            elms = self.root_element.getElements("Plugin")
+            elmList = XMLUtils.CC3DXMLListPy(elms)
+            for elm in elmList:
+    #                print 'dir(elm) = ',dir(elm)
+    #                print "Element = ",elm.name  # -> Plugin
+                pluginName = elm.getAttribute("Name")
+                print "   pluginName = ",pluginName  # e.g. CellType, Contact, etc
+                if pluginName == "FocalPointPlasticity":
+#                    print '    yes, FPP is definded, enabling Vis menu item'
+                    self.pluginFPPDefined = True
+                    
+                if pluginName == "CenterOfMass":
+                    self.pluginCOMDefined = True
+
+#            print MODULENAME,' FPP= ',self.pluginFPPDefined, ', COM=',self.pluginCOMDefined
+            
+            # If appropriate, disable/enable Vis menu options
+            if not self.pluginFPPDefined:
+                self.FPPLinksAct.setEnabled(False)
+                self.FPPLinksAct.setChecked(False)
+                Configuration.setSetting("FPPLinksOn",False)
+                
+#                self.FPPLinksColorAct.setEnabled(False)
+#                self.FPPLinksColorAct.setChecked(False)
+#                Configuration.setSetting("FPPLinksColorOn",False)
+            else:
+#                print '    yes, FPP is definded, enabling Vis menu item'
+                self.FPPLinksAct.setEnabled(True)
+#                self.FPPLinksColorAct.setEnabled(True)
+                
+            if not self.pluginCOMDefined:
+                self.cellGlyphsAct.setEnabled(False)
+                self.cellGlyphsAct.setChecked(False)
+                Configuration.setSetting("CellGlyphsOn",False)
+            else:
+                self.cellGlyphsAct.setEnabled(True)
+                    
+        #------------------
+            
+        self.mainGraphicsWindow.setStatusBar(self.__statusBar)
+        
+#        self.mainGraphicsWindow._switchDim(True)   # rwh
+        
+        if not self.keepOldTabs:
+            pass
+        #self.mainGraphicsWindow.setZoomItems(self.zitems)   # Set zoomFixed parameters
+        self.mainGraphicsWindow.setZoomItems(self.zitems)   # Set zoomFixed parameters
+        
+        #if self.cellsAct.isChecked():          # Set "Cells" check box
+        #    self.mainGraphicsWindow.showCells()
+            
+        if self.borderAct.isChecked():          # Vis menu "Cell Borders" check box
+            self.mainGraphicsWindow.showBorder()
+            
+        if self.clusterBorderAct.isChecked():          # Vis menu "Cluster Borders" check box
+            self.mainGraphicsWindow.showClusterBorder()
+            
+        #---------------------
+        if self.cellGlyphsAct.isChecked():          # Vis menu "Cell Glyphs"
+            self.mainGraphicsWindow.showCellGlyphs()
+#            if not self.pluginCOMDefined:
+#                print "CenterOfMass plugin was NOT defined - toggling off Vis Cell Glyphs menu item"
+#                self.cellGlyphsAct.setChecked(False)
+#                self.cellGlyphsAct.setEnabled(False)
+#                Configuration.setSetting("CellGlyphsOn",False)
+#            else:
+#                self.cellGlyphsAct.setEnabled(True)
+#                self.mainGraphicsWindow.showCellGlyphs()
+
+        #---------------------
+        if self.FPPLinksAct.isChecked():          # Vis menu "FPP (Focal Point Plasticity) Links"
+            self.mainGraphicsWindow.showFPPLinks()
+#            if not self.pluginFPPDefined:
+#                print "showDisplayWidgets(): FocalPointPlasticity plugin was NOT defined - toggling off Vis FPP Links menu item"
+#                self.FPPLinksAct.setChecked(False)
+#                self.FPPLinksAct.setEnabled(False)
+#                Configuration.setSetting("FPPLinksOn",False)
+#            else:
+#                self.FPPLinksAct.setEnabled(True)
+#                self.mainGraphicsWindow.showFPPLinks()
+                
+        #---------------------
+        # if self.contourAct.isChecked():         
+            # self.mainGraphicsWindow.showContours(True)
+        # else:
+            # self.mainGraphicsWindow.showContours(False)
+
+        self.mainGraphicsWindow.setPlane(PLANES[0], 0)
+        self.mainGraphicsWindow.currentDrawingObject.setPlane(PLANES[0], 0)
+    
+    def setParams(self):
+        self.__paramsChanged()
+
+    def __paramsChanged(self):
+#        print MODULENAME,'  __paramsChanged():  do a bunch of Config--.getSetting'
+        self.__updateScreen     = Configuration.getSetting("ScreenUpdateFrequency")
+        self.__imageOutput      = Configuration.getSetting("ImageOutputOn")
+        self.__shotFrequency    = Configuration.getSetting("SaveImageFrequency")
+        self.__latticeOutputFlag    = Configuration.getSetting("LatticeOutputOn")
+        self.__latticeOutputFrequency = Configuration.getSetting("SaveLatticeFrequency")
+        self.__projectLocation = str(Configuration.getSetting("ProjectLocation"))
+        self.__outputLocation = str(Configuration.getSetting("OutputLocation"))
+            
+        # test if the sneaky user changed the output location
+#        prevOutputDir = self.__outputDirectory
+        
+        self.__outputDirectory = str(Configuration.getSetting("OutputLocation"))
+        if Configuration.getSetting("OutputToProjectOn"):
+            self.__outputDirectory = str(Configuration.getSetting("ProjectLocation"))
+        
+#        print MODULENAME, '__paramsChanged(),  prevOutputDir, __outputDirectory= ', self.prevOutputDir, self.__outputDirectory
+            
+        if (self.__imageOutput or self.__latticeOutputFlag) and self.mysim:  # has user requested output and is there a valid sim?
+            if self.screenshotDirectoryName == "":  # haven't created any yet
+#                print MODULENAME, '__paramsChanged(), screenshotDirName empty;  calling createOutputDirs'
+                self.createOutputDirs()
+            elif self.prevOutputDir != self.__outputDirectory:  # test if the sneaky user changed the output location
+#                print MODULENAME, '__paramsChanged(),  prevOutput != Output;  calling createOutputDirs'
+                self.createOutputDirs()
+                
+        # NOTE: if self.mysim == None (i.e. sim hasn't begun yet), then createOutputDirs() should be called in __loadSim
+                
+#        print MODULENAME, '__paramsChanged(), screenshotDirName= ',self.screenshotDirectoryName # e.g. screenshotDirName= .../CC3DWorkspace2/cellsort_2D_xml_08_04_2011
+#        print MODULENAME, ' __paramsChanged(),  self.__outputDirectory, type()=',self.__outputDirectory,type(self.__outputDirectory)
+        
+        if self.simulation:
+            self.updateSimPrefs()
+#            self.simulation.screenUpdateFrequency = self.__updateScreen
+#            self.simulation.screenshotFrequency = self.__shotFrequency
+        
+    def setZoomItems(self, zitems):
+         self.zitems = zitems
+         
+    def zoomIn(self):
+        if self.mainGraphicsWindow is not None:
+            self.activeWindow().zoomIn()
+            # self.mainGraphicsWindow.zoomIn()
+        # print "Zoom in from TabView"
+            
+    def zoomOut(self):
+        if self.mainGraphicsWindow is not None:
+            self.activeWindow().zoomOut()
+            # self.mainGraphicsWindow.zoomOut()
+
+    def zoomFixed(self, val):
+        if self.mainGraphicsWindow is not None:
+            self.activeWindow().zoomFixed(val)
+            # self.mainGraphicsWindow.zoomFixed(val)
+    
+    # # File name should be passed    
+    def takeShot(self):
+        if self.screenshotManager is not None:
+            if self.threeDRB.isChecked():
+                camera=self.mainGraphicsWindow.ren.GetActiveCamera()
+                # print "CAMERA SETTINGS =",camera
+                self.screenshotManager.add3DScreenshot(self.__fieldType[0],self.__fieldType[1],camera)
+            else:
+                planePositionTupple=self.mainGraphicsWindow.getPlane()
+                # print "planePositionTupple=",planePositionTupple
+                self.screenshotManager.add2DScreenshot(self.__fieldType[0],self.__fieldType[1],planePositionTupple[0],planePositionTupple[1])
+    
+    def prepareSimulationView(self):
+        if self.__fileName != "":
+            file = QFile(self.__fileName)
+            if file is not None:                
+                if self.mainGraphicsWindow is None:
+                    # print "NO SIM TAB HERE"
+                    self.showSimView(file)
+                else:
+                    # print "SIM TAB IITIALIZED"
+                    self.__closeSim()
+                    self.showSimView(file)
+        self.drawingAreaPrepared=True
+    
+    
+    def __openLDSFile(self,fileName=None):
+        filter = "Lattice Description Summary file  (*.dml )" # self._getOpenFileFilter() 
+        
+#        defaultDir = str(Configuration.getSetting('OutputLocation'))
+        defaultDir = self.__outputDirectory
+        
+        if not os.path.exists(defaultDir):
+            defaultDir = os.getcwd()
+        
+        self.__fileName = QFileDialog.getOpenFileName(\
+            self.ui,
+            QApplication.translate('ViewManager', "Open Lattice Description Summary file"),
+            defaultDir, 
+            filter
+            )
+        # converting Qstring to python string    
+        self.__fileName=str(self.__fileName)
+        from os.path import basename
+        # setting text for main window (self.__parent) title bar 
+        self.__parent.setWindowTitle(self.trUtf8(basename(self.__fileName)+" - CompuCell3D Player"))
+        
+        # Shall we inform the user?  Nah, screw 'em.
+#        msg = QMessageBox.warning(self, "Message","Toggling off image & lattice output in Preferences", 
+#                          QMessageBox.Ok , 
+#                          QMessageBox.Ok)
+        Configuration.setSetting("ImageOutputOn",False)
+        Configuration.setSetting("LatticeOutputOn",False)
+                
+
+    def __openRecentSim(self):
+        if self.simulationIsRunning:
+            return
+        
+        action=self.sender()
+        if isinstance(action,QAction):
+            self.__fileName=str(action.data().toString())    
+        from os.path import basename
+        # setting text for main window (self.__parent) title bar 
+        self.__parent.setWindowTitle(self.trUtf8(basename(self.__fileName)+" - CompuCell3D Player"))
+        
+        import CompuCellSetup
+        CompuCellSetup.simulationFileName=self.__fileName    
+        
+        
+    def __openSim(self, fileName = None):
+        # """
+        # Public slot to open some files.
+        
+        # @param prog name of file to be opened (string or QString)
+        # """
+
+        # set the cwd of the dialog based on the following search criteria:
+        #     1: Directory of currently active editor
+        #     2: Directory of currently active project
+        #     3: CWD  
+
+        filter = "CompuCell3D simulation (*.cc3d *.xml *.py)" # self._getOpenFileFilter() 
+        
+        self.__screenshotDescriptionFileName="" # make screenshotDescriptionFile empty string
+        
+        defaultDir = str(Configuration.getSetting('ProjectLocation'))
+        
+        if not os.path.exists(defaultDir):
+            defaultDir = os.getcwd()
+        
+        self.__fileName = QFileDialog.getOpenFileName(\
+            self.ui,
+            QApplication.translate('ViewManager', "Open Simulation File"),
+            defaultDir, 
+            filter
+            )
+        # converting Qstring to python string    
+        self.__fileName=str(self.__fileName)
+        from os.path import basename
+        # setting text for main window (self.__parent) title bar 
+        self.__parent.setWindowTitle(self.trUtf8(basename(self.__fileName)+" - CompuCell3D Player"))
+
+        import CompuCellSetup
+        CompuCellSetup.simulationFileName=self.__fileName    
+        
+                    
+    def __saveSim(self):
+        fullSimFileName=os.path.abspath(self.__fileName)
+        simFilePath=os.path.dirname(fullSimFileName)
+
+        filter = "CompuCell3D Simulation File (CC3DML) (*.xml )" # self._getOpenFileFilter() 
+        cc3dmlFileName = QFileDialog.getSaveFileName(\
+            self.ui,
+            QApplication.translate('ViewManager', "CompuCell3D Simulation File (CC3DML)"),
+            simFilePath, 
+            filter
+            )    
+            
+#        import CompuCellSetup
+        CompuCellSetup.cc3dXML2ObjConverter.root.saveXML(str(cc3dmlFileName))        
+                
+    def __openScrDesc(self):    
+        filter = "Screenshot description file (*.sdfml)" # self._getOpenFileFilter() 
+        self.__screenshotDescriptionFileName = QFileDialog.getOpenFileName(\
+            self.ui,
+            QApplication.translate('ViewManager', "Open Screenshot Description File"),
+            os.getcwd(), 
+            filter
+            )
+        
+    def __saveScrDesc(self):
+        # print "THIS IS __saveScrDesc"
+        filter = "Screenshot Description File (*.sdfml )" # self._getOpenFileFilter() 
+        self.screenshotDescriptionFileName = QFileDialog.getSaveFileName(\
+            self.ui,
+            QApplication.translate('ViewManager', "Save Screenshot Description File"),
+            os.getcwd(), 
+            filter
+            )
+        if self.screenshotManager:
+            self.screenshotManager.writeScreenshotDescriptionFile(self.screenshotDescriptionFileName)
+            
+        print "self.screenshotDescriptionFileName=",self.screenshotDescriptionFileName
+    def __closeSim(self):
+        print "INSIDE closeSim"
+
+    # Sets the attribute self.movieSupport
+    def __setMovieSupport(self):
+        self.movieSupport = False # Is there vtkMPEG2Writer class in vtk module?
+        vtkmod = inspect.getmembers(vtk, inspect.isclass)
+        for i in range(len(vtkmod)):
+            if vtkmod[i][0] == "vtkMPEG2Writer":
+                self.movieSupport = True
+                self.movieAct.setEnabled(True)
+                return
+
+        self.movieAct.setEnabled(False)
+    
+    def __checkMovieSupport(self, checked):
+        if self.movieAct.isEnabled():
+            if checked and self.movieSupport:
+                # The ONLY place where the self.movieAct is checked!
+                self.movieAct.setChecked(True) 
+            elif not self.movieSupport:
+                self.movieAct.setChecked(False)
+                QMessageBox.warning(self, "Movie Support Failed", 
+                                    "Sorry, your VTK library does not support \nmovie generation!",
+                                    QMessageBox.Ok)
+    
+        
+    def __checkCells(self, checked):
+#        self.graphicsWindowVisDict[self.lastActiveWindow.winId()] = checked
+#        print MODULENAME, '  __checkCells():  dir(self.lastActiveWindow)=',dir(self.lastActiveWindow)
+#        print MODULENAME, '  __checkCells():  self.lastActiveWindow.winId()=',self.lastActiveWindow.winId()
+#        print MODULENAME, '  __checkCells():  self.lastActiveWindow.windowDict()=',self.lastActiveWindow.windowDict()
+#        print MODULENAME, '  __checkCells():  self.lastActiveWindow.windowTitle()=',self.lastActiveWindow.windowTitle()
+#        print MODULENAME, '  __checkCells():  self.lastActiveWindow.windowCounter=',self.lastActiveWindow.windowCounter
+#        print MODULENAME, '  __checkCells():  self.lastActiveWindow.windowDict()=',self.lastActiveWindow.windowDict()
+
+#        self.graphicsWindowVisDict[self.lastActiveWindow.winId()] = checked
+        
+#        print MODULENAME, '  __checkCells():  self.graphicsWindowVisDict=',self.graphicsWindowVisDict
+        
+        # Should be disabled when the simulation is not loaded!
+        self.simulation.drawMutex.lock()
+        self.updateActiveWindowVisFlags()
+        if self.cellsAct.isEnabled():
+            if checked:
+#                if self.mainGraphicsWindow is not None:
+#                    self.mainGraphicsWindow.showCells()
+                if self.lastActiveWindow is not None:
+                    self.lastActiveWindow.showCells()
+#                self.cellsAct.setChecked(True)
+            else:
+#                if self.mainGraphicsWindow is not None:
+#                    self.mainGraphicsWindow.hideCells()
+                if self.lastActiveWindow is not None:
+                    self.lastActiveWindow.hideCells()
+#                self.cellsAct.setChecked(False)
+#        else:
+#            print '======== SimpleTabView.py:  __checkCells, cellsAct NOT Enabled!!'
+        self.simulation.drawMutex.unlock()
+        
+        
+    def __checkBorder(self, checked):
+        # Should be disabled when the simulation is not loaded!
+        self.simulation.drawMutex.lock()
+#        print '======== SimpleTabView.py:  __checkBorder(): checked =',checked
+#        print '             self.graphicsWindowDict=',self.graphicsWindowDict
+        self.updateActiveWindowVisFlags()
+        
+        if self.borderAct.isEnabled():
+            if checked:
+#                if self.mainGraphicsWindow is not None:
+                if self.lastActiveWindow is not None:
+                    self.lastActiveWindow.showBorder()
+                self.borderAct.setChecked(True)
+            else:
+                if self.lastActiveWindow is not None:
+                    self.lastActiveWindow.hideBorder()
+                self.borderAct.setChecked(False)
+        self.simulation.drawMutex.unlock()
+        
+        
+    def __checkClusterBorder(self, checked):
+        # Should be disabled when the simulation is not loaded!
+        self.simulation.drawMutex.lock()
+#        print '======== SimpleTabView.py:  __checkClusterBorder: checked =',checked
+
+        self.updateActiveWindowVisFlags()
+        if self.clusterBorderAct.isEnabled():
+            if checked:
+                if self.lastActiveWindow is not None:
+                    self.lastActiveWindow.showClusterBorder()
+                self.clusterBorderAct.setChecked(True)
+            else:
+                if self.lastActiveWindow is not None:
+                    self.lastActiveWindow.hideClusterBorder()
+                self.clusterBorderAct.setChecked(False)
+        self.simulation.drawMutex.unlock()
+
+
+    def __checkCellGlyphs(self, checked):
+        # Should be disabled when the simulation is not loaded!
+        self.simulation.drawMutex.lock()
+        self.updateActiveWindowVisFlags()
+        
+        if self.cellGlyphsAct.isEnabled():
+            if checked:
+                if self.lastActiveWindow is not None:
+                    # Check for CenterOfMass plugin - improve to not even allow glyphs if no CoM
+#                    print MODULENAME,'__checkCellGlyphs(): ---- dir(self.simulation) =', dir(self.simulation)
+#                    print MODULENAME,'__checkCellGlyphs(): ---- self.simulation.children =', self.simulation.children
+#                    print MODULENAME,'---- CoM = ',self.mainGraphicsWindow.drawModel2D.currentDrawingParameters.bsd.sim.getCC3DModuleData("Plugin","CenterOfMass")
+                    if not self.pluginCOMDefined:
+                        QMessageBox.warning(self, "Message", 
+                                        "Warning: You have not defined a CenterOfMass plugin",
+                                        QMessageBox.Ok)
+                        self.cellGlyphsAct.setChecked(False)
+                        Configuration.setSetting("CellGlyphsOn",False)
+
+                        self.simulation.drawMutex.unlock()
+                        return
+                    else:
+                        self.lastActiveWindow.showCellGlyphs()
+                        
+                self.cellGlyphsAct.setChecked(True)
+            else:
+                if self.lastActiveWindow is not None:
+                    self.lastActiveWindow.hideCellGlyphs()
+                self.cellGlyphsAct.setChecked(False)
+#        else:
+#            print MODULENAME,'  __checkCellGlyphs, cellGlyphsAct NOT Enabled!!'
+        self.simulation.drawMutex.unlock()
+
+
+    def __checkFPPLinks(self, checked):
+#        print MODULENAME,'  __checkFPPLinks, checked=',checked
+#        if checked and self.FPPLinksColorAct.isChecked():
+#            self.FPPLinksColorAct.setChecked(False)
+#            self.__checkFPPLinksColor(False)
+        
+        Configuration.setSetting("FPPLinksOn",checked)
+        # Should be disabled when the simulation is not loaded!
+        self.simulation.drawMutex.lock()
+        self.updateActiveWindowVisFlags()
+        
+        if self.FPPLinksAct.isEnabled():
+            if checked:
+                if self.lastActiveWindow is not None:
+#                    Check for FPP plugin - improve to not even allow glyphs if no CoM
+#                    print '---- dir(self.simulation) =', dir(self.simulation)
+#                    print MODULENAME,'---- CoM = ',self.mainGraphicsWindow.drawModel2D.currentDrawingParameters.bsd.sim.getCC3DModuleData("Plugin","CenterOfMass")
+#                    print 'dir(self.mainGraphicsWindow)=',dir(self.mainGraphicsWindow)
+                    if not self.pluginFPPDefined:
+                        QMessageBox.warning(self, "Message", 
+                                        "Warning: You have not defined a FocalPointPlasticity plugin",
+                                        QMessageBox.Ok)
+                        self.FPPLinksAct.setChecked(False)
+                        Configuration.setSetting("FPPLinksOn",False)
+
+                        self.simulation.drawMutex.unlock()
+                        return
+                    else:
+                        self.lastActiveWindow.showFPPLinks()
+                        
+                self.FPPLinksAct.setChecked(True)
+            else:
+#                print ' in hide block'
+                if self.lastActiveWindow is not None:
+                    self.lastActiveWindow.hideFPPLinks()
+                self.FPPLinksAct.setChecked(False)
+#        else:
+#            print '======== SimpleTabView.py:  __checkFPPLinks, FPPLinksAct NOT Enabled!!'
+        self.simulation.drawMutex.unlock()
+
+
+    def __checkFPPLinksColor(self, checked):
+#        print MODULENAME,'  __checkFPPLinksColor, checked=',checked
+        if checked and self.FPPLinksAct.isChecked():
+            self.FPPLinksAct.setChecked(False)
+            self.__checkFPPLinks(False)
+#            if self.mainGraphicsWindow is not None:
+#                self.mainGraphicsWindow.hideFPPLinks()
+        
+        Configuration.setSetting("FPPLinksColorOn",checked)
+        # Should be disabled when the simulation is not loaded!
+        self.simulation.drawMutex.lock()
+        self.updateActiveWindowVisFlags()
+        
+        if self.FPPLinksColorAct.isEnabled():
+            if checked:
+                if self.lastActiveWindow is not None:
+#                    Check for FPP plugin - improve to not even allow glyphs if no CoM
+#                    print '---- dir(self.simulation) =', dir(self.simulation)
+#                    print MODULENAME,'---- CoM = ',self.mainGraphicsWindow.drawModel2D.currentDrawingParameters.bsd.sim.getCC3DModuleData("Plugin","CenterOfMass")
+#                    print 'dir(self.mainGraphicsWindow)=',dir(self.mainGraphicsWindow)
+                    if not self.pluginFPPDefined:
+                        QMessageBox.warning(self, "Message", 
+                                        "Warning: You have not defined a FocalPointPlasticity plugin",
+                                        QMessageBox.Ok)
+                        self.FPPLinksColorAct.setChecked(False)
+                        Configuration.setSetting("FPPLinksColorOn",False)
+
+                        self.simulation.drawMutex.unlock()
+                        return
+                    else:
+                        self.lastActiveWindow.showFPPLinksColor()
+                        
+                self.FPPLinksColorAct.setChecked(True)
+            else:
+                if self.lastActiveWindow is not None:
+                    self.lastActiveWindow.hideFPPLinksColor()
+                self.FPPLinksColorAct.setChecked(False)
+#        else:
+#            print '======== SimpleTabView.py:  __checkFPPLinks, FPPLinksAct NOT Enabled!!'
+        self.simulation.drawMutex.unlock()
+        
+        
+    def __checkContour(self, checked):
+        if self.contourAct.isEnabled():
+            if checked:
+                if self.lastActiveWindow is not None:
+                    self.lastActiveWindow.showContours(True)
+                self.contourAct.setChecked(True)
+            else:
+                if self.lastActiveWindow is not None:
+                    self.lastActiveWindow.showContours(False)
+                self.contourAct.setChecked(False)
+
+    def __checkLimits(self, checked):
+        pass
+    
+    def __checkCC3DOutput(self,checked):
+        Configuration.setSetting("CC3DOutputOn",checked)
+        
+    def __showConfigDialog(self, pageName = None):
+        """
+        Private slot to set the configurations.
+        @param pageName name of the configuration page to show (string or QString)
+        """
+        dlg = ConfigurationDialog(self, 'Configuration', True)
+        self.dlg = dlg   # rwh: to allow enable/disable widgets in Preferences
+        
+#        print MODULENAME,"__showConfigDialog():  len(self.fieldTypes)=",len(self.fieldTypes) 
+#        print MODULENAME,"__showConfigDialog():  type(self.fieldTypes)=",type(self.fieldTypes) 
+#        print MODULENAME,"__showConfigDialog():  self.fieldTypes=",self.fieldTypes 
+#        print '   self.dlg=',self.dlg,
+#        print '   type(self.dlg)=',type(self.dlg)
+#        print '   dir(self.dlg)=',dir(self.dlg)
+        self.dlg.fieldComboBox.clear()
+        for idx in range(len(self.fieldTypes) ):
+            fieldName = self.fieldTypes.keys()[idx]
+            if fieldName != 'Cell_Field':  # rwh: dangerous to hard code this field name
+                self.dlg.fieldComboBox.addItem(fieldName)
+                
+#        print MODULENAME,"__showConfigDialog():  Configuration.getSimFieldsParams=",Configuration.getSimFieldsParams()
+#        print MODULENAME,"__showConfigDialog():  Configuration.setSimFieldsParams"
+#        Configuration.initFieldsParams(self.fieldTypes.keys())
+#        print '    again, directly =',Configuration.simFieldsParams  # cannot access directly!
+        
+        
+        self.connect(dlg, SIGNAL('configsChanged'), self.__configsChanged)
+        dlg.show()
+#        dlg.showConfigurationPageByName("default") #showConfigurationDefaultPage()#
+        
+        dlg.exec_()
+        QApplication.processEvents()
+
+        if dlg.result() == QDialog.Accepted:
+            # Saves changes from all configuration pages!
+#            dlg.setPreferences()
+            Configuration.syncPreferences()
+            self.__configsChanged() # Explicitly calling signal 'configsChanged'
+    
+    def __generatePIFFromCurrentSnapshot(self):
+        if self.__viewManagerType=="CMLResultReplay":
+            self.__generatePIFFromVTK()
+        else:
+            self.__generatePIFFromRunningSimulation()
+            
+    def __generatePIFFromRunningSimulation(self):
+        if self.pauseAct.isEnabled():
+            self.__pauseSim()
+    
+        fullSimFileName=os.path.abspath(self.__fileName)
+        simFilePath=os.path.dirname(fullSimFileName)
+
+        filter = "Choose PIF File Name (*.piff *.txt )" # self._getOpenFileFilter() 
+        pifFileName = QFileDialog.getSaveFileName(\
+            self.ui,
+            QApplication.translate('ViewManager', "Save PIF File As ..."),
+            simFilePath, 
+            filter
+            )      
+        self.simulation.generatePIFFromRunningSimulation(str(pifFileName))
+    
+    def __generatePIFFromVTK(self):
+        if self.pauseAct.isEnabled():
+            self.__pauseSim()
+    
+        fullSimFileName=os.path.abspath(self.__fileName)
+        simFilePath=os.path.dirname(fullSimFileName)
+
+        filter = "Choose PIF File Name (*.piff *.txt )" # self._getOpenFileFilter() 
+        pifFileName = QFileDialog.getSaveFileName(\
+            self.ui,
+            QApplication.translate('ViewManager', "Save PIF File As ..."),
+            simFilePath, 
+            filter
+            )      
+        
+        self.simulation.generatePIFFromVTK(self.simulation.currentFileName,str(pifFileName))
+
+    # def __generatePIFFromVTK(self):
+        # if self.__viewManagerType!="CMLResultReplay":
+            # return
+        # else:
+            # #pause simulation if it is running
+            # if self.pauseAct.isEnabled():
+                # self.__pauseSim()
+        
+            # fullSimFileName=os.path.abspath(self.__fileName)
+            # simFilePath=os.path.dirname(fullSimFileName)
+
+            # filter = "Choose PIF File Name (*.piff *.txt )" # self._getOpenFileFilter() 
+            # pifFileName = QFileDialog.getSaveFileName(\
+                # self.ui,
+                # QApplication.translate('ViewManager', "Save PIF File As ..."),
+                # simFilePath, 
+                # filter
+                # )      
+            
+            # self.simulation.generatePIFFromVTK(self.simulation.currentFileName,str(pifFileName))
+
+    def __configsChanged(self):
+        """
+        Private slot to handle a change of the preferences.
+        """
+        self.emit(SIGNAL('configsChanged'))
+
+    def setModelEditor(self, modelEditor):
+        self.__modelEditor = modelEditor
+    
+    # Class that checks if it is safe to close the simulation view
+    def isSafeToCloseSim(self):
+        msg = QMessageBox.warning(self, "Close Simulation", \
+                                  "Are you sure you want to close the Simulation?", \
+                                  QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Cancel)
+        
+        if msg == QMessageBox.Ok:
+            return True
+        else:
+            return False
+
+
+    def __createStatusBar(self): 
+        self.__statusBar = self.__parent.statusBar()
+        self.mcSteps = QLabel()#self.__parent)
+        self.mcSteps.setAutoFillBackground(True)
+        mcp = QPalette()
+        mcp.setColor(QPalette.Window, QColor("white"))# WindowText
+        mcp.setColor(QPalette.WindowText, QColor("red"))
+        self.mcSteps.setPalette(mcp)
+        
+        self.conSteps = QLabel()
+        self.conSteps.setAutoFillBackground(True)
+        cp = QPalette()
+        cp.setColor(QPalette.Window, QColor("white"))# WindowText
+        cp.setColor(QPalette.WindowText, QColor("blue"))
+        self.conSteps.setPalette(cp)
+        
+        self.__statusBar.addWidget(self.mcSteps)
+        self.__statusBar.addWidget(self.conSteps)
+        

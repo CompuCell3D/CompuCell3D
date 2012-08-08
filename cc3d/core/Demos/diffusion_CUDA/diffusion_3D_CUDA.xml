@@ -1,0 +1,38 @@
+ <CompuCell3D>
+<Potts>
+   <Dimensions x="256" y="256" z="256"/>
+   <Anneal>0</Anneal>
+   <Steps>100</Steps>
+   <Temperature>0</Temperature>
+   <Flip2DimRatio>0.0</Flip2DimRatio>
+   <Boundary_y>NoFlux</Boundary_y>
+ </Potts>
+
+
+
+<Plugin Name="CellType">
+    <CellType TypeName="Medium" TypeId="0"/>
+    <CellType TypeName="Wall1" TypeId="1"/>
+    <CellType TypeName="Wall2" TypeId="2"/>
+
+ </Plugin>
+
+
+ <Steppable Type="FlexibleDiffusionSolverFE_CUDA">
+<!--  <Steppable Type="FastDiffusionSolver2DFE"> -->
+<!--  zero-based GPU device index. -1 stands for automatic GPU device selection. May be omited (default behavior). -->
+	<GPUDeviceIndex>-1</GPUDeviceIndex>
+	<DiffusionField>
+        <DiffusionData>
+	        <FieldName>FGF</FieldName>
+            <ExtraTimesPerMCS>0</ExtraTimesPerMCS>
+            <DiffusionCoefficient CellType="Medium">0.1</DiffusionCoefficient>
+            <DiffusionCoefficient CellType="Wall1">0.0</DiffusionCoefficient>
+            <DiffusionCoefficient CellType="Wall2">0.0</DiffusionCoefficient>            
+	    <ConcentrationFileName>Demos/diffusion_CUDA/diffusion_3D_CUDA.pulse.txt</ConcentrationFileName>
+        </DiffusionData>
+    </DiffusionField>
+ </Steppable>
+
+
+</CompuCell3D>

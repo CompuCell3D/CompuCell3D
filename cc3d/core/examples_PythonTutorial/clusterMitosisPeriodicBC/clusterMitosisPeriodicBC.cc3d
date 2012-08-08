@@ -1,0 +1,8 @@
+<Simulation version="3.5.1">
+    <XMLScript>Simulation/clusterMitosis.xml</XMLScript>    
+    <PythonScript>Simulation/clusterMitosis.py</PythonScript> 
+    <Resource Type="Python">Simulation/clusterMitosisSteppables.py</Resource>
+    <PIFFile>Simulation/clusterMitosisPeriodicBC.piff</PIFFile>        
+</Simulation>
+
+ 

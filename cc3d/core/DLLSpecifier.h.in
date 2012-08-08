@@ -1,0 +1,17 @@
+#ifndef @LIBRARY_NAME_UPPERCASE@_EXPORT_H
+#define @LIBRARY_NAME_UPPERCASE@_EXPORT_H
+
+    #if defined(_WIN32)
+      #ifdef @LIBRARY_NAME@Shared_EXPORTS
+          #define @LIBRARY_NAME_UPPERCASE@_EXPORT __declspec(dllexport)
+          #define @LIBRARY_NAME_UPPERCASE@_EXPIMP_TEMPLATE
+      #else
+          #define @LIBRARY_NAME_UPPERCASE@_EXPORT __declspec(dllimport)
+          #define @LIBRARY_NAME_UPPERCASE@_EXPIMP_TEMPLATE extern
+      #endif
+    #else
+         #define @LIBRARY_NAME_UPPERCASE@_EXPORT
+         #define @LIBRARY_NAME_UPPERCASE@_EXPIMP_TEMPLATE
+    #endif
+
+#endif

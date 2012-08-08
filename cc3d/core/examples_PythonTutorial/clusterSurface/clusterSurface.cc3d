@@ -1,0 +1,8 @@
+<Simulation version="3.5.1">
+    <XMLScript>Simulation/clusterSurface.xml</XMLScript>    
+    <PythonScript>Simulation/clusterSurface.py</PythonScript> 
+    <Resource Type="Python">Simulation/clusterSurfaceSteppables.py</Resource>
+    <PIFFile>Simulation/clusterSurface.piff</PIFFile>        
+</Simulation>
+
+ 

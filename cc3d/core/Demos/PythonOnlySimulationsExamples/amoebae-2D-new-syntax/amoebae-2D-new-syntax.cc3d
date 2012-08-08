@@ -1,0 +1,9 @@
+<Simulation version="3.6.1">
+
+    <PythonScript>Simulation/amoebae-2D-new-syntax.py</PythonScript> 
+
+    <Resource Type="Field" Copy="No">Simulation/amoebaConcentrationField_2D.txt</Resource>
+
+    <PIFFile>Simulation/amoebae_2D.piff</PIFFile>
+
+</Simulation>

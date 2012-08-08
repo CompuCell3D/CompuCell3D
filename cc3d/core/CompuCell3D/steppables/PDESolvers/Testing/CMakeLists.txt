@@ -1,0 +1,3 @@
+ADD_EXECUTABLE(TestsPDESolvers TestsPDESolvers.cpp)
+TARGET_LINK_LIBRARIES(TestsPDESolvers cppunit PDESolversShared)
+ADD_TEST(PDESolversTests TestsPDESolvers)

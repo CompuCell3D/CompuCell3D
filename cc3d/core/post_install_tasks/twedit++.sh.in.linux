@@ -1,0 +1,19 @@
+#!/bin/sh
+
+export PREFIX_CC3D=@COMPUCELL_INSTALL_DIR@
+
+export PYTHON_MODULE_PATH=${PREFIX_CC3D}/pythonSetupScripts
+export SWIG_LIB_INSTALL_DIR=${PREFIX_CC3D}/lib/python
+
+export @LIBRARY_PATH_SYNTAX@=${PREFIX_CC3D}/lib/:$@LIBRARY_PATH_SYNTAX@
+export @LIBRARY_PATH_SYNTAX@=${PREFIX_CC3D}/lib/python:$@LIBRARY_PATH_SYNTAX@
+
+
+python ${PREFIX_CC3D}/Twedit++/twedit_plus_plus_cc3d.py $*
+
+
+
+
+
+
+

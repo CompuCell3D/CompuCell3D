@@ -1,0 +1,1 @@
+pyrcc4 -o CC3DProject_rc.py CC3DProject.qrc

@@ -1,0 +1,583 @@
+/*************************************************************************
+ *    CompuCell - A software framework for multimodel simulations of     *
+ * biocomplexity problems Copyright (C) 2003 University of Notre Dame,   *
+ *                             Indiana                                   *
+ *                                                                       *
+ * This program is free software; IF YOU AGREE TO CITE USE OF CompuCell  *
+ *  IN ALL RELATED RESEARCH PUBLICATIONS according to the terms of the   *
+ *  CompuCell GNU General Public License RIDER you can redistribute it   *
+ * and/or modify it under the terms of the GNU General Public License as *
+ *  published by the Free Software Foundation; either version 2 of the   *
+ *         License, or (at your option) any later version.               *
+ *                                                                       *
+ * This program is distributed in the hope that it will be useful, but   *
+ *      WITHOUT ANY WARRANTY; without even the implied warranty of       *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *
+ *             General Public License for more details.                  *
+ *                                                                       *
+ *  You should have received a copy of the GNU General Public License    *
+ *     along with this program; if not, write to the Free Software       *
+ *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
+ *************************************************************************/
+
+
+#include <CompuCell3D/Automaton/Automaton.h>
+#include <CompuCell3D/Potts3D/Potts3D.h>
+#include <CompuCell3D/Field3D/Field3D.h>
+#include <CompuCell3D/Field3D/WatchableField3D.h>
+#include <CompuCell3D/Boundary/BoundaryStrategy.h>
+
+#include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/Potts3D/Potts3D.h>
+using namespace CompuCell3D;
+
+
+
+#include <iostream>
+using namespace std;
+
+#define EXP_STL
+#include "LengthConstraintPlugin.h"
+
+LengthConstraintPlugin::LengthConstraintPlugin() : xmlData(0),potts(0),changeEnergyFcnPtr(0),field3DChangeFcnPtr(0) 
+{}
+
+LengthConstraintPlugin::~LengthConstraintPlugin() {}
+
+void LengthConstraintPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
+
+  xmlData=_xmlData;
+  this->simulator=simulator; 
+  potts = simulator->getPotts();  
+
+  boundaryStrategy=BoundaryStrategy::getInstance();
+
+  potts->registerEnergyFunctionWithName(this,"LengthConstraint");
+  potts->registerCellGChangeWatcher(this);
+
+  simulator->registerSteerableObject(this);
+
+   Dim3D fieldDim=potts->getCellFieldG()->getDim();
+   if(fieldDim.x==1){
+      changeEnergyFcnPtr=&LengthConstraintPlugin::changeEnergy_yz;
+      field3DChangeFcnPtr=&LengthConstraintPlugin::field3DChange_yz;
+   }else if(fieldDim.y==1){
+      changeEnergyFcnPtr=&LengthConstraintPlugin::changeEnergy_xz;
+      field3DChangeFcnPtr=&LengthConstraintPlugin::field3DChange_xz;
+
+   }else if (fieldDim.z==1){
+      changeEnergyFcnPtr=&LengthConstraintPlugin::changeEnergy_xy;
+      field3DChangeFcnPtr=&LengthConstraintPlugin::field3DChange_xy;
+
+   }else{
+      ASSERT_OR_THROW("Currently LengthConstraint plugin can only be used in 2D",0);
+   }
+
+}
+
+void LengthConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
+   
+
+   typeNameVec.clear();
+   lengthEnergyParamVector.clear();
+   
+	CC3DXMLElementList lengthEnergyParamVecXML=_xmlData->getElements("LengthEnergyParameters");
+	for (int i =0 ; i < lengthEnergyParamVecXML.size() ; ++i){
+		LengthEnergyParam lengthEnergyParam(
+		lengthEnergyParamVecXML[i]->getAttribute("CellType"),
+		lengthEnergyParamVecXML[i]->getAttributeAsDouble("TargetLength"),
+		lengthEnergyParamVecXML[i]->getAttributeAsDouble("LambdaLength")
+		);
+
+		typeNameVec.push_back(lengthEnergyParam.cellTypeName);
+		lengthEnergyParamVector.push_back(lengthEnergyParam);
+	}
+   //have to make sure that potts ptr is initilized
+   ASSERT_OR_THROW("Potts pointer is unitialized",potts);
+   initTypeId(potts);
+}
+
+
+void LengthConstraintPlugin::extraInit(Simulator *simulator){
+	update(xmlData,true);
+}
+
+
+void LengthConstraintPlugin::field3DChange(const Point3D &pt, CellG *newCell,
+				 CellG *oldCell) {
+
+    (this->*field3DChangeFcnPtr)(pt,newCell,oldCell);
+
+}
+
+
+void LengthConstraintPlugin::field3DChange_xz(const Point3D &pt, CellG *newCell,
+				 CellG *oldCell) {
+    double xcm, ycm, zcm;
+	 Coordinates3D<double> ptTrans=boundaryStrategy->calculatePointCoordinates(pt);  
+    
+	 if (newCell)
+    {
+       // Assumption: COM and Volume has been updated.
+        double xcmOld, zcmOld, xcm, zcm;
+        if (newCell->volume > 1) {
+          xcmOld = (newCell->xCM - ptTrans.x)/ ((float)newCell->volume - 1);
+          zcmOld = (newCell->zCM - ptTrans.z)/ ((float)newCell->volume - 1);
+        }
+        else
+        {
+            xcmOld = 0;
+            zcmOld = 0;
+        }
+        xcm = (float) newCell->xCM / (float) newCell->volume;
+        zcm = (float) newCell->zCM / (float) newCell->volume;
+        double xPtSum = newCell->xCM - ptTrans.x;
+        double zPtSum = newCell->zCM - ptTrans.z;
+        double zPtSumSQ = newCell->iXX - (newCell->volume - 1)*zcmOld*zcmOld + 2*zcmOld*zPtSum + ptTrans.z*ptTrans.z;
+        double xPtSumSQ = newCell->iZZ - (newCell->volume - 1)*xcmOld*xcmOld + 2*xcmOld*xPtSum + ptTrans.x*ptTrans.x;
+        double xzSum = ((newCell->iXZ - xcmOld*zPtSum - zcmOld*xPtSum + (newCell->volume - 1)*xcmOld*zcmOld) / -1.0) + ptTrans.x*ptTrans.z;
+        xPtSum += ptTrans.x;
+        zPtSum += ptTrans.z;
+        newCell->iXX = zPtSumSQ - 2*zcm*zPtSum + (newCell->volume)*zcm*zcm;
+        newCell->iZZ = xPtSumSQ - 2*xcm*xPtSum + (newCell->volume)*xcm*xcm;
+        newCell->iXZ = -xzSum + xcm*zPtSum + zcm*xPtSum - (newCell->volume)*xcm*zcm;
+    }  
+    if (oldCell)
+    {
+       // Assumption: COM and Volume has been updated.
+       double xcmOld = (oldCell->xCM + ptTrans.x) / ((float)oldCell->volume + 1);
+       double zcmOld = (oldCell->zCM + ptTrans.z) / ((float)oldCell->volume + 1);
+       xcm = (float) oldCell->xCM / (float) oldCell->volume;
+       zcm = (float) oldCell->zCM / (float) oldCell->volume;
+       double xPtSum = oldCell->xCM + ptTrans.x;
+       double zPtSum = oldCell->zCM + ptTrans.z;
+       double xPtSumSQ = oldCell->iZZ - (oldCell->volume + 1)*xcmOld*xcmOld + 2*xcmOld*xPtSum - ptTrans.x*ptTrans.x;
+       double zPtSumSQ = oldCell->iXX - (oldCell->volume + 1)*zcmOld*zcmOld + 2*zcmOld*zPtSum - ptTrans.z*ptTrans.z;
+       double xzSum = ((oldCell->iXZ - xcmOld*zPtSum - zcmOld*xPtSum + (oldCell->volume + 1)*xcmOld*zcmOld) / -1.0) - ptTrans.x*ptTrans.z;
+       xPtSum -= ptTrans.x;
+       zPtSum -= ptTrans.z;
+       oldCell->iXX = zPtSumSQ - 2*zcm*zPtSum + (oldCell->volume)*zcm*zcm;
+       oldCell->iZZ = xPtSumSQ - 2*xcm*xPtSum + (oldCell->volume)*xcm*xcm;
+       oldCell->iXZ = -xzSum + xcm*zPtSum + zcm*xPtSum - (oldCell->volume)*xcm*zcm;
+    }  
+}
+
+
+void LengthConstraintPlugin::field3DChange_xy(const Point3D &pt, CellG *newCell,
+				 CellG *oldCell) {
+    double xcm, ycm, zcm;
+	 Coordinates3D<double> ptTrans=boundaryStrategy->calculatePointCoordinates(pt);  
+    if (newCell)
+    {
+       // Assumption: COM and Volume has been updated.
+        double xcmOld, ycmOld, xcm, ycm;
+        if (newCell->volume > 1) {
+          xcmOld = (newCell->xCM - ptTrans.x)/ ((float)newCell->volume - 1);
+          ycmOld = (newCell->yCM - ptTrans.y)/ ((float)newCell->volume - 1);
+        }
+        else
+        {
+            xcmOld = 0;
+            ycmOld = 0;
+        }
+        xcm = (float) newCell->xCM / (float) newCell->volume;
+        ycm = (float) newCell->yCM / (float) newCell->volume;
+        double xPtSum = newCell->xCM - ptTrans.x;
+        double yPtSum = newCell->yCM - ptTrans.y;
+        double yPtSumSQ = newCell->iXX - (newCell->volume - 1)*ycmOld*ycmOld + 2*ycmOld*yPtSum + ptTrans.y*ptTrans.y;
+        double xPtSumSQ = newCell->iYY - (newCell->volume - 1)*xcmOld*xcmOld + 2*xcmOld*xPtSum + ptTrans.x*ptTrans.x;
+        double xySum = ((newCell->iXY - xcmOld*yPtSum - ycmOld*xPtSum + (newCell->volume - 1)*xcmOld*ycmOld) / -1.0) + ptTrans.x*ptTrans.y;
+        xPtSum += ptTrans.x;
+        yPtSum += ptTrans.y;
+        newCell->iXX = yPtSumSQ - 2*ycm*yPtSum + (newCell->volume)*ycm*ycm;
+        newCell->iYY = xPtSumSQ - 2*xcm*xPtSum + (newCell->volume)*xcm*xcm;
+        newCell->iXY = -xySum + xcm*yPtSum + ycm*xPtSum - (newCell->volume)*xcm*ycm;
+    }  
+    if (oldCell)
+    {
+       // Assumption: COM and Volume has been updated.
+       double xcmOld = (oldCell->xCM + ptTrans.x) / ((float)oldCell->volume + 1);
+       double ycmOld = (oldCell->yCM + ptTrans.y) / ((float)oldCell->volume + 1);
+       xcm = (float) oldCell->xCM / (float) oldCell->volume;
+       ycm = (float) oldCell->yCM / (float) oldCell->volume;
+       double xPtSum = oldCell->xCM + ptTrans.x;
+       double yPtSum = oldCell->yCM + ptTrans.y;
+       double xPtSumSQ = oldCell->iYY - (oldCell->volume + 1)*xcmOld*xcmOld + 2*xcmOld*xPtSum - ptTrans.x*ptTrans.x;
+       double yPtSumSQ = oldCell->iXX - (oldCell->volume + 1)*ycmOld*ycmOld + 2*ycmOld*yPtSum - ptTrans.y*ptTrans.y;
+       double xySum = ((oldCell->iXY - xcmOld*yPtSum - ycmOld*xPtSum + (oldCell->volume + 1)*xcmOld*ycmOld) / -1.0) - ptTrans.x*ptTrans.y;
+       xPtSum -= ptTrans.x;
+       yPtSum -= ptTrans.y;
+       oldCell->iXX = yPtSumSQ - 2*ycm*yPtSum + (oldCell->volume)*ycm*ycm;
+       oldCell->iYY = xPtSumSQ - 2*xcm*xPtSum + (oldCell->volume)*xcm*xcm;
+       oldCell->iXY = -xySum + xcm*yPtSum + ycm*xPtSum - (oldCell->volume)*xcm*ycm;
+    }  
+}
+
+
+void LengthConstraintPlugin::field3DChange_yz(const Point3D &pt, CellG *newCell,
+				 CellG *oldCell) {
+    double xcm, ycm, zcm;
+	 Coordinates3D<double> ptTrans=boundaryStrategy->calculatePointCoordinates(pt);  
+    
+	 if (newCell)
+    {
+       // Assumption: COM and Volume has been updated.
+        double ycmOld, zcmOld, ycm, zcm;
+        if (newCell->volume > 1) {
+          ycmOld = (newCell->yCM - ptTrans.y)/ ((float)newCell->volume - 1);
+          zcmOld = (newCell->zCM - ptTrans.z)/ ((float)newCell->volume - 1);
+        }
+        else
+        {
+            ycmOld = 0;
+            zcmOld = 0;
+        }
+        ycm = (float) newCell->yCM / (float) newCell->volume;
+        zcm = (float) newCell->zCM / (float) newCell->volume;
+        double yPtSum = newCell->yCM - ptTrans.y;
+        double zPtSum = newCell->zCM - ptTrans.z;
+        double zPtSumSQ = newCell->iYY - (newCell->volume - 1)*zcmOld*zcmOld + 2*zcmOld*zPtSum + ptTrans.z*ptTrans.z;
+        double yPtSumSQ = newCell->iZZ - (newCell->volume - 1)*ycmOld*ycmOld + 2*ycmOld*yPtSum + ptTrans.y*ptTrans.y;
+        double yzSum = ((newCell->iYZ - ycmOld*zPtSum - zcmOld*yPtSum + (newCell->volume - 1)*ycmOld*zcmOld) / -1.0) + ptTrans.y*ptTrans.z;
+        yPtSum += ptTrans.y;
+        zPtSum += ptTrans.z;
+        newCell->iYY = zPtSumSQ - 2*zcm*zPtSum + (newCell->volume)*zcm*zcm;
+        newCell->iZZ = yPtSumSQ - 2*ycm*yPtSum + (newCell->volume)*ycm*ycm;
+        newCell->iYZ = -yzSum + ycm*zPtSum + zcm*yPtSum - (newCell->volume)*ycm*zcm;
+    }  
+    if (oldCell)
+    {
+       // Assumption: COM and Volume has been updated.
+       double ycmOld = (oldCell->yCM + ptTrans.y) / ((float)oldCell->volume + 1);
+       double zcmOld = (oldCell->zCM + ptTrans.z) / ((float)oldCell->volume + 1);
+       ycm = (float) oldCell->yCM / (float) oldCell->volume;
+       zcm = (float) oldCell->zCM / (float) oldCell->volume;
+       double yPtSum = oldCell->yCM + ptTrans.y;
+       double zPtSum = oldCell->zCM + ptTrans.z;
+       double yPtSumSQ = oldCell->iZZ - (oldCell->volume + 1)*ycmOld*ycmOld + 2*ycmOld*yPtSum - ptTrans.y*ptTrans.y;
+       double zPtSumSQ = oldCell->iYY - (oldCell->volume + 1)*zcmOld*zcmOld + 2*zcmOld*zPtSum - ptTrans.z*ptTrans.z;
+       double yzSum = ((oldCell->iYZ - ycmOld*zPtSum - zcmOld*yPtSum + (oldCell->volume + 1)*ycmOld*zcmOld) / -1.0) - ptTrans.y*ptTrans.z;
+       yPtSum -= ptTrans.y;
+       zPtSum -= ptTrans.z;
+       oldCell->iYY = zPtSumSQ - 2*zcm*zPtSum + (oldCell->volume)*zcm*zcm;
+       oldCell->iZZ = yPtSumSQ - 2*ycm*yPtSum + (oldCell->volume)*ycm*ycm;
+       oldCell->iYZ = -yzSum + ycm*zPtSum + zcm*yPtSum - (oldCell->volume)*ycm*zcm;
+    }  
+}
+
+
+double LengthConstraintPlugin::changeEnergy(const Point3D &pt,
+				  const CellG *newCell,
+				  const CellG *oldCell) {
+
+
+  /// E = lambda * (length - targetLength) ^ 2 
+
+ return (this->*changeEnergyFcnPtr)(pt,newCell,oldCell);
+
+
+}
+
+
+double LengthConstraintPlugin::changeEnergy_xz(const Point3D &pt,
+				  const CellG *newCell,
+				  const CellG *oldCell) {
+
+
+  /// E = lambda * (length - targetLength) ^ 2 
+
+
+  double energy = 0;
+
+  if (oldCell == newCell) return 0;
+
+  Coordinates3D<double> ptTrans=boundaryStrategy->calculatePointCoordinates(pt);  
+
+   //as in the original version 
+  if (newCell){
+    double xPtSum = newCell->xCM;
+    double zPtSum = newCell->zCM;
+    double xcm = (newCell->xCM / (float) newCell->volume);
+    double zcm = (newCell->zCM / (float) newCell->volume);
+    double zPtSumSQ = newCell->iXX - newCell->volume*zcm*zcm + 2*zcm*zPtSum;
+    double xPtSumSQ = newCell->iZZ - newCell->volume*xcm*xcm + 2*xcm*xPtSum;
+    double xzSum = (newCell->iXZ - xcm*zPtSum - zcm*xPtSum + newCell->volume*xcm*zcm) / -1.0; 
+	 double newXCM = (newCell->xCM + ptTrans.x)/((float)newCell->volume + 1);
+    double newZCM = (newCell->zCM + ptTrans.z)/((float)newCell->volume + 1);
+    xPtSum += ptTrans.x;
+    zPtSum += ptTrans.z;
+    xPtSumSQ += ptTrans.x*ptTrans.x;
+    zPtSumSQ += ptTrans.z*ptTrans.z;
+    xzSum += ptTrans.x*ptTrans.z;
+
+
+	 //double newXCM = (newCell->xCM + pt.x)/((float)newCell->volume + 1);
+  //  double newZCM = (newCell->zCM + pt.z)/((float)newCell->volume + 1);
+  //  xPtSum += pt.x;
+  //  zPtSum += pt.z;
+  //  xPtSumSQ += pt.x*pt.x;
+  //  zPtSumSQ += pt.z*pt.z;
+  //  xzSum += pt.x*pt.z;
+    double newIxx = zPtSumSQ - 2*newZCM*zPtSum + (newCell->volume+1)*newZCM*newZCM;
+    double newIzz = xPtSumSQ - 2*newXCM*xPtSum + (newCell->volume+1)*newXCM*newXCM;
+    double newIxz = -xzSum + newXCM*zPtSum + newZCM*xPtSum - (newCell->volume+1)*newXCM*newZCM;
+    double currLength = 4.0*sqrt(((float)((0.5*(newCell->iXX + newCell->iZZ)) + .5*sqrt((float)((newCell->iXX - newCell->iZZ)*(newCell->iXX - newCell->iZZ) + 4*(newCell->iXZ)*(newCell->iXZ)))))/(float)(newCell->volume));
+
+    double currEnergy = lengthEnergyParamVector[newCell->type].lambdaLength * (currLength - lengthEnergyParamVector[newCell->type].targetLength)*(currLength - lengthEnergyParamVector[newCell->type].targetLength);
+    double newLength = 4.0*sqrt(((float)((0.5*(newIxx + newIzz)) + .5*sqrt((float)((newIxx - newIzz)*(newIxx - newIzz) + 4*newIxz*newIxz))))/(float)(newCell->volume));
+    double newEnergy = lengthEnergyParamVector[newCell->type].lambdaLength * (newLength - lengthEnergyParamVector[newCell->type].targetLength)*(newLength - lengthEnergyParamVector[newCell->type].targetLength);
+    energy += newEnergy - currEnergy;
+  }
+  if (oldCell) {
+    double xPtSum = oldCell->xCM;
+    double zPtSum = oldCell->zCM;
+    double xcm = (oldCell->xCM / (float) oldCell->volume);
+    double zcm = (oldCell->zCM / (float) oldCell->volume);
+    double zPtSumSQ = oldCell->iXX - oldCell->volume*zcm*zcm + 2*zcm*zPtSum;
+    double xPtSumSQ = oldCell->iZZ - oldCell->volume*xcm*xcm + 2*xcm*xPtSum;
+    double xzSum = (oldCell->iXZ - xcm*zPtSum - zcm*xPtSum + oldCell->volume*xcm*zcm) / -1.0; 
+    double newXCM = (oldCell->xCM - ptTrans.x)/((float)oldCell->volume - 1);
+    double newZCM = (oldCell->zCM - ptTrans.z)/((float)oldCell->volume - 1);
+    xPtSum -= ptTrans.x;
+    zPtSum -= ptTrans.z;
+    xPtSumSQ -= ptTrans.x*ptTrans.x;
+    zPtSumSQ -= ptTrans.z*ptTrans.z;
+    xzSum -= ptTrans.x*ptTrans.z;
+
+    //double newXCM = (oldCell->xCM - pt.x)/((float)oldCell->volume - 1);
+    //double newZCM = (oldCell->zCM - pt.z)/((float)oldCell->volume - 1);
+    //xPtSum -= pt.x;
+    //zPtSum -= pt.z;
+    //xPtSumSQ -= pt.x*pt.x;
+    //zPtSumSQ -= pt.z*pt.z;
+    //xzSum -= pt.x*pt.z;
+    double newIxx = zPtSumSQ - 2*newZCM*zPtSum + (oldCell->volume-1)*newZCM*newZCM;
+    double newIzz = xPtSumSQ - 2*newXCM*xPtSum + (oldCell->volume-1)*newXCM*newXCM;
+    double newIxz = -xzSum + newXCM*zPtSum + newZCM*xPtSum - (oldCell->volume-1)*newXCM*newZCM;
+    
+    double currLength = 4.0*sqrt(((float)((0.5*(oldCell->iXX + oldCell->iZZ)) + .5*sqrt((float)((oldCell->iXX - oldCell->iZZ)*(oldCell->iXX - oldCell->iZZ) + 4*(oldCell->iXZ)*(oldCell->iXZ)))))/(float)(oldCell->volume));
+    double currEnergy = lengthEnergyParamVector[oldCell->type].lambdaLength * (currLength - lengthEnergyParamVector[oldCell->type].targetLength)*(currLength - lengthEnergyParamVector[oldCell->type].targetLength);
+    double newLength = 4.0*sqrt(((float)((0.5*(newIxx + newIzz)) + .5*sqrt((float)((newIxx - newIzz)*(newIxx - newIzz) + 4*newIxz*newIxz))))/(float)(oldCell->volume));
+    double newEnergy = lengthEnergyParamVector[oldCell->type].lambdaLength * (newLength - lengthEnergyParamVector[oldCell->type].targetLength) * (newLength - lengthEnergyParamVector[oldCell->type].targetLength);
+    energy += newEnergy - currEnergy;
+  }
+  
+  
+  
+  return energy;
+}
+
+
+double LengthConstraintPlugin::changeEnergy_xy(const Point3D &pt,
+				  const CellG *newCell,
+				  const CellG *oldCell) {
+
+
+  /// E = lambda * (length - targetLength) ^ 2 
+
+
+  double energy = 0;
+
+  if (oldCell == newCell) return 0;
+
+  Coordinates3D<double> ptTrans=boundaryStrategy->calculatePointCoordinates(pt);  
+
+   //as in the original version 
+  if (newCell){
+	  
+
+    double xPtSum = newCell->xCM;
+    double yPtSum = newCell->yCM;
+    double xcm = (newCell->xCM / (float) newCell->volume);
+    double ycm = (newCell->yCM / (float) newCell->volume);
+    double yPtSumSQ = newCell->iXX - newCell->volume*ycm*ycm + 2*ycm*yPtSum;
+    double xPtSumSQ = newCell->iYY - newCell->volume*xcm*xcm + 2*xcm*xPtSum;
+    double xySum = (newCell->iXY - xcm*yPtSum - ycm*xPtSum + newCell->volume*xcm*ycm) / -1.0; 
+    double newXCM = (newCell->xCM + ptTrans.x)/((float)newCell->volume + 1);
+    double newYCM = (newCell->yCM + ptTrans.y)/((float)newCell->volume + 1);	 
+	 xPtSum += ptTrans.x;
+    yPtSum += ptTrans.y;
+    xPtSumSQ += ptTrans.x*ptTrans.x;
+    yPtSumSQ += ptTrans.y*ptTrans.y;
+    xySum += ptTrans.x*ptTrans.y;
+
+	 //double newXCM = (newCell->xCM + pt.x)/((float)newCell->volume + 1);
+  //  double newYCM = (newCell->yCM + pt.y)/((float)newCell->volume + 1);		 
+	 //xPtSum += pt.x;
+  //  yPtSum += pt.y;
+  //  xPtSumSQ += pt.x*pt.x;
+  //  yPtSumSQ += pt.y*pt.y;
+  //  xySum += pt.x*pt.y;
+
+
+
+    double newIxx = yPtSumSQ - 2*newYCM*yPtSum + (newCell->volume+1)*newYCM*newYCM;
+    double newIyy = xPtSumSQ - 2*newXCM*xPtSum + (newCell->volume+1)*newXCM*newXCM;
+    double newIxy = -xySum + newXCM*yPtSum + newYCM*xPtSum - (newCell->volume+1)*newXCM*newYCM;
+    double currLength = 4.0*sqrt(((float)((0.5*(newCell->iXX + newCell->iYY)) + .5*sqrt((float)((newCell->iXX - newCell->iYY)*(newCell->iXX - newCell->iYY) + 4*(newCell->iXY)*(newCell->iXY)))))/(float)(newCell->volume));
+
+    double currEnergy = lengthEnergyParamVector[newCell->type].lambdaLength * (currLength - lengthEnergyParamVector[newCell->type].targetLength)*(currLength - lengthEnergyParamVector[newCell->type].targetLength);
+    double newLength = 4.0*sqrt(((float)((0.5*(newIxx + newIyy)) + .5*sqrt((float)((newIxx - newIyy)*(newIxx - newIyy) + 4*newIxy*newIxy))))/(float)(newCell->volume));
+    double newEnergy = lengthEnergyParamVector[newCell->type].lambdaLength * (newLength - lengthEnergyParamVector[newCell->type].targetLength)*(newLength - lengthEnergyParamVector[newCell->type].targetLength);
+    energy += newEnergy - currEnergy;
+  }
+  if (oldCell) {
+    double xPtSum = oldCell->xCM;
+    double yPtSum = oldCell->yCM;
+    double xcm = (oldCell->xCM / (float) oldCell->volume);
+    double ycm = (oldCell->yCM / (float) oldCell->volume);
+    double yPtSumSQ = oldCell->iXX - oldCell->volume*ycm*ycm + 2*ycm*yPtSum;
+    double xPtSumSQ = oldCell->iYY - oldCell->volume*xcm*xcm + 2*xcm*xPtSum;
+    double xySum = (oldCell->iXY - xcm*yPtSum - ycm*xPtSum + oldCell->volume*xcm*ycm) / -1.0; 
+	 double newXCM = (oldCell->xCM - ptTrans.x)/((float)oldCell->volume - 1);
+    double newYCM = (oldCell->yCM - ptTrans.y)/((float)oldCell->volume - 1);
+	 xPtSum -= ptTrans.x;
+    yPtSum -= ptTrans.y;
+    xPtSumSQ -= ptTrans.x*ptTrans.x;
+    yPtSumSQ -= ptTrans.y*ptTrans.y;
+    xySum -= ptTrans.x*ptTrans.y;
+
+	 //double newXCM = (oldCell->xCM - pt.x)/((float)oldCell->volume - 1);
+  //  double newYCM = (oldCell->yCM - pt.y)/((float)oldCell->volume - 1);
+	 //xPtSum -= pt.x;
+  //  yPtSum -= pt.y;
+  //  xPtSumSQ -= pt.x*pt.x;
+  //  yPtSumSQ -= pt.y*pt.y;
+  //  xySum -= pt.x*pt.y;
+    double newIxx = yPtSumSQ - 2*newYCM*yPtSum + (oldCell->volume-1)*newYCM*newYCM;
+    double newIyy = xPtSumSQ - 2*newXCM*xPtSum + (oldCell->volume-1)*newXCM*newXCM;
+    double newIxy = -xySum + newXCM*yPtSum + newYCM*xPtSum - (oldCell->volume-1)*newXCM*newYCM;
+    
+    double currLength = 4.0*sqrt(((float)((0.5*(oldCell->iXX + oldCell->iYY)) + .5*sqrt((float)((oldCell->iXX - oldCell->iYY)*(oldCell->iXX - oldCell->iYY) + 4*(oldCell->iXY)*(oldCell->iXY)))))/(float)(oldCell->volume));
+    double currEnergy = lengthEnergyParamVector[oldCell->type].lambdaLength * (currLength - lengthEnergyParamVector[oldCell->type].targetLength)*(currLength - lengthEnergyParamVector[oldCell->type].targetLength);
+    double newLength = 4.0*sqrt(((float)((0.5*(newIxx + newIyy)) + .5*sqrt((float)((newIxx - newIyy)*(newIxx - newIyy) + 4*newIxy*newIxy))))/(float)(oldCell->volume));
+    double newEnergy = lengthEnergyParamVector[oldCell->type].lambdaLength * (newLength - lengthEnergyParamVector[oldCell->type].targetLength) * (newLength - lengthEnergyParamVector[oldCell->type].targetLength);
+    energy += newEnergy - currEnergy;
+  }
+  
+  return energy;
+}
+
+
+double LengthConstraintPlugin::changeEnergy_yz(const Point3D &pt,
+				  const CellG *newCell,
+				  const CellG *oldCell) {
+
+
+  /// E = lambda * (length - targetLength) ^ 2 
+
+
+  double energy = 0;
+
+  if (oldCell == newCell) return 0;
+  
+  Coordinates3D<double> ptTrans=boundaryStrategy->calculatePointCoordinates(pt);   
+   //as in the original version 
+  if (newCell){
+    double yPtSum = newCell->yCM;
+    double zPtSum = newCell->zCM;
+    double ycm = (newCell->yCM / (float) newCell->volume);
+    double zcm = (newCell->zCM / (float) newCell->volume);
+    double zPtSumSQ = newCell->iYY - newCell->volume*zcm*zcm + 2*zcm*zPtSum;
+    double yPtSumSQ = newCell->iZZ - newCell->volume*ycm*ycm + 2*ycm*yPtSum;
+    double yzSum = (newCell->iYZ - ycm*zPtSum - zcm*yPtSum + newCell->volume*ycm*zcm) / -1.0; 
+    double newYCM = (newCell->yCM + ptTrans.y)/((float)newCell->volume + 1);
+    double newZCM = (newCell->zCM + ptTrans.z)/((float)newCell->volume + 1);
+    yPtSum += ptTrans.y;
+    zPtSum += ptTrans.z;
+    yPtSumSQ += ptTrans.y*ptTrans.y;
+    zPtSumSQ += ptTrans.z*ptTrans.z;
+    yzSum += ptTrans.y*ptTrans.z;
+
+	 //double newYCM = (newCell->yCM + pt.y)/((float)newCell->volume + 1);
+  //  double newZCM = (newCell->zCM + pt.z)/((float)newCell->volume + 1);
+  //  yPtSum += pt.y;
+  //  zPtSum += pt.z;
+  //  yPtSumSQ += pt.y*pt.y;
+  //  zPtSumSQ += pt.z*pt.z;
+  //  yzSum += pt.y*pt.z;
+    double newIyy = zPtSumSQ - 2*newZCM*zPtSum + (newCell->volume+1)*newZCM*newZCM;
+    double newIzz = yPtSumSQ - 2*newYCM*yPtSum + (newCell->volume+1)*newYCM*newYCM;
+    double newIyz = -yzSum + newYCM*zPtSum + newZCM*yPtSum - (newCell->volume+1)*newYCM*newZCM;
+    double currLength = 4.0*sqrt(((float)((0.5*(newCell->iYY + newCell->iZZ)) + .5*sqrt((float)((newCell->iYY - newCell->iZZ)*(newCell->iYY - newCell->iZZ) + 4*(newCell->iYZ)*(newCell->iYZ)))))/(float)(newCell->volume));
+
+    double currEnergy = lengthEnergyParamVector[newCell->type].lambdaLength * (currLength - lengthEnergyParamVector[newCell->type].targetLength)*(currLength - lengthEnergyParamVector[newCell->type].targetLength);
+    double newLength = 4.0*sqrt(((float)((0.5*(newIyy + newIzz)) + .5*sqrt((float)((newIyy - newIzz)*(newIyy - newIzz) + 4*newIyz*newIyz))))/(float)(newCell->volume));
+    double newEnergy = lengthEnergyParamVector[newCell->type].lambdaLength * (newLength - lengthEnergyParamVector[newCell->type].targetLength)*(newLength - lengthEnergyParamVector[newCell->type].targetLength);
+    energy += newEnergy - currEnergy;
+  }
+  if (oldCell) {
+    double yPtSum = oldCell->yCM;
+    double zPtSum = oldCell->zCM;
+    double ycm = (oldCell->yCM / (float) oldCell->volume);
+    double zcm = (oldCell->zCM / (float) oldCell->volume);
+    double zPtSumSQ = oldCell->iYY - oldCell->volume*zcm*zcm + 2*zcm*zPtSum;
+    double yPtSumSQ = oldCell->iZZ - oldCell->volume*ycm*ycm + 2*ycm*yPtSum;
+    double yzSum = (oldCell->iYZ - ycm*zPtSum - zcm*yPtSum + oldCell->volume*ycm*zcm) / -1.0; 
+    double newYCM = (oldCell->yCM - ptTrans.y)/((float)oldCell->volume - 1);
+    double newZCM = (oldCell->zCM - ptTrans.z)/((float)oldCell->volume - 1);
+    yPtSum -= ptTrans.y;
+    zPtSum -= ptTrans.z;
+    yPtSumSQ -= ptTrans.y*ptTrans.y;
+    zPtSumSQ -= ptTrans.z*ptTrans.z;
+    yzSum -= ptTrans.y*ptTrans.z;
+
+	 //double newYCM = (oldCell->yCM - pt.y)/((float)oldCell->volume - 1);
+  //  double newZCM = (oldCell->zCM - pt.z)/((float)oldCell->volume - 1);
+  //  yPtSum -= pt.y;
+  //  zPtSum -= pt.z;
+  //  yPtSumSQ -= pt.y*pt.y;
+  //  zPtSumSQ -= pt.z*pt.z;
+  //  yzSum -= pt.y*pt.z;
+    double newIyy = zPtSumSQ - 2*newZCM*zPtSum + (oldCell->volume-1)*newZCM*newZCM;
+    double newIzz = yPtSumSQ - 2*newYCM*yPtSum + (oldCell->volume-1)*newYCM*newYCM;
+    double newIyz = -yzSum + newYCM*zPtSum + newZCM*yPtSum - (oldCell->volume-1)*newYCM*newZCM;
+    
+    double currLength = 4.0*sqrt(((float)((0.5*(oldCell->iYY + oldCell->iZZ)) + .5*sqrt((float)((oldCell->iYY - oldCell->iZZ)*(oldCell->iYY - oldCell->iZZ) + 4*(oldCell->iYZ)*(oldCell->iYZ)))))/(float)(oldCell->volume));
+
+    double currEnergy = lengthEnergyParamVector[oldCell->type].lambdaLength * (currLength - lengthEnergyParamVector[oldCell->type].targetLength)*(currLength - lengthEnergyParamVector[oldCell->type].targetLength);
+    double newLength = 4.0*sqrt(((float)((0.5*(newIyy + newIzz)) + .5*sqrt((float)((newIyy - newIzz)*(newIyy - newIzz) + 4*newIyz*newIyz))))/(float)(oldCell->volume));
+    double newEnergy = lengthEnergyParamVector[oldCell->type].lambdaLength * (newLength - lengthEnergyParamVector[oldCell->type].targetLength) * (newLength - lengthEnergyParamVector[oldCell->type].targetLength);
+    energy += newEnergy - currEnergy;
+  }
+  
+  return energy;
+}
+
+
+void LengthConstraintPlugin::initTypeId(Potts3D * potts){
+   unsigned char maxType(0);
+   Automaton * automaton=potts->getAutomaton();
+   
+   vector<unsigned char> typeIdVec(typeNameVec.size(),0);
+   
+   vector<LengthEnergyParam> lepVec=lengthEnergyParamVector;//temporaty storage
+   //translate type name to type id
+   for(unsigned int i =0 ; i < typeNameVec.size() ;++i){
+      typeIdVec[i]=automaton->getTypeId(typeNameVec[i]);
+      
+      if(typeIdVec[i]>maxType)
+         maxType=typeIdVec[i];
+  }
+
+   //assigning vector lambda targetVol pairs in such a wav that it will be possible to use e.g.vec[cellType].lambda statements
+   // note that some of the vector elements migh be left default initialized
+   lengthEnergyParamVector.clear();
+   lengthEnergyParamVector.assign(maxType+1,LengthEnergyParam());
+  
+   for(unsigned int i =0 ; i < typeIdVec.size() ;++i){
+      lengthEnergyParamVector[typeIdVec[i]]=lepVec[i];
+   }
+
+}
+
+std::string LengthConstraintPlugin::toString(){
+   return string("LengthConstraint");
+}
+
+std::string LengthConstraintPlugin::steerableName(){
+
+   return toString();
+
+}
+

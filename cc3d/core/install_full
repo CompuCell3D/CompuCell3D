@@ -1,0 +1,73 @@
+
+#!/bin/bash
+
+function usage
+{
+    # Temporary function stub
+    echo "USAGE: ./install_full --install_path <directory where CompuCell will be installed>"
+    echo "or"
+    echo "USAGE: ./install_full -i <directory where CompuCell will be installed>"
+}
+
+export source_dir=${PWD}
+
+export install_path
+export build_type=Release
+
+while [ "$1" != "" ]; do
+    case $1 in
+        -i | --install_path )           shift
+                                install_path=$1
+                                echo "install_path: $install_path"
+                                ;;
+
+        -t | --build_type )           shift
+                                build_type=$1
+                                echo "build_type: $build_type"
+                                ;;
+																	
+        -h | --help )           usage
+                                exit
+                                ;;
+        * )                     usage
+                                exit 1
+    esac
+    shift
+done
+
+
+if [ -w $install_path ] 
+then
+    echo "Everything seems to be OK permission wise"
+else
+    if mkdir $install_path; then
+	echo "Successfully created installation directory: $install_path"
+        mkdir $install_path/cmake_binary_dir
+    else
+	echo "Could not create directory $install_path. Check if you have right permissions"
+	exit 1
+    fi
+
+fi
+
+cd $install_path/cmake_binary_dir
+
+if cmake -DCMAKE_INSTALL_PREFIX:STRING=$install_path -DCMAKE_BUILD_TYPE:STRING=$build_type ${source_dir}; then
+   echo "CONFIGURATION COMPLETE.PROCEDING TO COMPILATION"
+   if make ; then
+      echo "COMPILATION COMPLETE.PROCEEDING TO INSTALLATION"
+      if make install ; then
+         echo "COMPUCELL INSTALLED SUCCESSFULY"
+      else
+         echo "PROBLEMS DURING INSTALLATION"
+      fi
+      
+   else
+      echo "PROBLEMS DURING COMPILATION"
+   fi
+else
+   echo "ERRORS DURING CONFIGURATION"
+fi
+
+
+

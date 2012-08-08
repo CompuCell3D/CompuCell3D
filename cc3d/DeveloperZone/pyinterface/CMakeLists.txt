@@ -1,0 +1,36 @@
+
+
+
+CMAKE_MINIMUM_REQUIRED(VERSION 2.2)
+PROJECT(PYINTERFACE)
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/FindSWIG.cmake) # this is slightly modified FindSWIG.cmake file -  had to tune it to work with OSX
+
+FIND_PACKAGE(SWIG REQUIRED)
+
+
+# INCLUDE(${SWIG_USE_FILE})
+INCLUDE(UseSWIG)
+
+FIND_PACKAGE(PythonLibs)
+INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+
+SET(PYINTERFACE_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+SET(CMAKE_SWIG_FLAGS "")
+
+IF(SWIG_FOUND)
+
+    add_subdirectory(CompuCellExtraModules)
+
+ELSE(SWIG_FOUND)
+    message("could not find SWIG in your system")
+ENDIF(SWIG_FOUND)
+
+
+
+
+
+

@@ -1,0 +1,53 @@
+CellBoundary Tracker plugin is used to track changes contact area between neighboring cells and keep track of pixels that belong to the cell boundary. This plugin introduces additional cell attribute - CellBoundaryTracker which consists of two sets (by set I mean is C++ container set<>)
+:
+
+1) first set contains BoundaryData (pixel offset and number of pixel's foreign neighbors) - this set is a collection of pixels belonging to the cell boundary. each pixel is indexed by by offset - i.e. the distance from begining of the field.
+2) second set contains NeighbourSurfaceData (neighboring cell address and common surface area between current cell and neighboring cell )
+
+It is convenient to think of a set as a simple list which does not allow duplicate objects and in addition keeps its content sorted. For details see any C++ book - chapter on Standard Template Library (STL).
+
+in summary, each cell have a list of neighboring cells and common surface area with those cells and it has a list of pixels that belong to the boundary and for each such pixel there is also an information how many foreign pixel neighbors a given pixel has.
+
+Medium (i.e. cell with id 0 does not keep track of anything )
+
+First let use review an algorithm that updates cell boundary set.
+
+When spin is flipped at a given pixel we:
+1) check if a current cell present in this pixel is different than medium
+2) if yes, then visit adjacent pixels (currently we go to 3rd nearest neighbor, but reducing it to 1st nearest neighbors is no problem)   checking if visited pixel belongs to current cell.
+3) if it does and is a member of boundary we increase number of foreign neighbors for that adjacent pixel, if it does not belong to boundary but is a member of current cell we insert this pixel to set that contains BoundaryData for current cell (with number of foreign neighbors being 1)
+
+Next we check if
+1) new cell that will occupy current pixel (after flip is done) is different than medium
+
+2) if yes, we insert current pixel (neighborCount is 0 in this case) to the set of boundary pixels of the new cells, then visit adjacent pixels (currently we go to 3rd nearest neighbor, but reducing it to 1st nearest neighbors is no problem)   checking if visited pixel belongs to new cell.
+3) if it does and is a member of boundary we decrease number of foreign neighbors for that adjacent pixel(removing the pixel from the boundary whenever number of foreign neighbors reaches 0). If adjacent pixel does not belong to the new cell we increase neighbor count for the current pixel in the new cell by 1
+
+REMARK:
+if a pixel touches lattice boundary we treat adjacent pixel (the one that does not belong to boundary)
+as a foreign neighbor . Otherwise this would cause pixel touching lattice boundary (e.g. pixel in the corner) to be removed
+to early from the boundary. The only place where pixel touching boundary can be removed is in the if(oldCell) section
+
+
+Common surface area algorithm:
+
+Now let's discuss algorithm which keeps track of the surface area between adjacent cells
+
+When spin is flipped at a given pixel we:
+1) check if a current cell present in this pixel is different than medium
+2) if yes, then visit adjacent pixels (1st nearest neighbors) and if adjacent pixel belongs to different than current cell then we decrement surface area with cell to which adjacent pixel belongs. In addition if adjacent pixel's cell is different than medium then in that cell we decrement common surface area with current cell. In other words  if we adjust common surface area between cell and neighbor we need to do it in both cell and neighbor. When decreasing surface area once it reaches 0 we remove such cell from set of neighbors
+
+Next we check if 
+1) new cell that will occupy current pixel (after flip is done) is different than medium
+2) if yes, then visit adjacent pixels (1st nearest neighbors) and if adjacent pixel belongs to different than current cell then we increment surface area with cell to which adjacent pixel belongs (inserting new neighbor if there is not such neighbor in the current list). In addition if adjacent pixel's cell is different than medium then in that cell we increment common surface area with current cell. In other words  if we adjust common surface area between cell and neighbor we need to do it in both cell and neighbor. When decreasing surface area once it reaches 0 we remove such cell from set of neighbors
+
+Two special cases arise:
+if current cell in the curerent pixel is medium then:
+
+1) we visit adjacent pixels (1st nearest neighbors) and if adjacent pixel belongs to different than current cell then in the adjacent cell (not medium) we decrement common surface area with current cell (not medium)
+
+if new cell in the curerent pixel is medium then:
+
+1) we visit adjacent pixels (1st nearest neighbors) and if adjacent pixel belongs to different than current cell then in the adjacent cell (not medium) we increment (inserting new neighbor - medium if necessary)common surface area with current cell (not medium)
+
+

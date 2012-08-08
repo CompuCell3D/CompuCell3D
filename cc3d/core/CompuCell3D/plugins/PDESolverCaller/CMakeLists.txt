@@ -1,0 +1,6 @@
+ADD_COMPUCELL3D_PLUGIN(PDESolverCaller
+  PDESolverCallerPlugin.cpp
+  PDESolverCallerPluginProxy.cpp LINK_LIBRARIES ${PLUGIN_DEPENDENCIES})
+
+ADD_COMPUCELL3D_PLUGIN_HEADERS(PDESolverCaller
+  PDESolverCallerPlugin.h)

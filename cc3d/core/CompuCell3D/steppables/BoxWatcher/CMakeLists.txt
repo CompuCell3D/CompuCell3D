@@ -1,0 +1,8 @@
+ADD_COMPUCELL3D_STEPPABLE(BoxWatcher
+  BoxWatcher.cpp
+  BoxWatcherProxy.cpp LINK_LIBRARIES ${STEPPABLE_DEPENDENCIES})
+
+
+ADD_COMPUCELL3D_STEPPABLE_HEADERS(BoxWatcher
+  BoxWatcher.h
+  )

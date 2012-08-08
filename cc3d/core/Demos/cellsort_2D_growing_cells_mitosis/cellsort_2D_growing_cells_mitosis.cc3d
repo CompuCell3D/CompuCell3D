@@ -1,0 +1,9 @@
+<Simulation version="3.6.1">
+
+    <XMLScript Type="XMLScript">Simulation/cellsort_2D_field.xml</XMLScript>
+
+    <PythonScript>Simulation/cellsort_2D_field.py</PythonScript> 
+
+    <Resource Type="Python">Simulation/cellsort_2D_field_modules.py</Resource>    
+
+</Simulation>

@@ -1,0 +1,63 @@
+
+INCLUDE_DIRECTORIES ( 
+    ${COMPUCELL3D_SOURCE_DIR}/core
+    )
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+    SET(LIBS BasicUtilsStatic)
+else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+   SET(LIBS BasicUtilsShared)
+endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+
+SET(SRCS CC3DXMLElement.cpp CC3DXMLElementWalker.cpp)
+
+ADD_SHARED_LIBRARY(XMLUtils ${SRCS} LINK_LIBRARIES ${LIBS})
+
+INSTALL_FILES(/include/CompuCell3D/XMLUtils .h
+   CC3DXMLElement
+   CC3DXMLElementWalker
+   XMLParserExpatLibDLLSpecifier
+   XMLUtilsDLLSpecifier   
+)
+
+#ADD_LIBRARY(XMLUtils SHARED CC3DXMLElement.cpp CC3DXMLElementWalker.cpp)
+
+if(BUILD_CPP_ONLY_EXECUTABLE)
+
+    SET(SRCS_XML_PARSER_EXPAT_LIB
+      XMLParserExpat.cpp
+      )
+
+    # SET(EXPAT_INCLUDE_DIRECTORY  CACHE PATH "EXPAT include directory")
+    # SET(EXPAT_LIBRARY_DIRECTORY  CACHE PATH "EXPAT library directory")
+
+    # # MESSAGE("EXPAT_INCLUDE_DIR=",${EXPAT_INCLUDE_DIR})  
+    # # MESSAGE("EXPAT_INCLUDE_DIRECTORY=",${EXPAT_INCLUDE_DIRECTORY})  
+
+    # SET(EXPAT_INCLUDE_DIR ${EXPAT_INCLUDE_DIRECTORY})
+    # SET(EXPAT_LIBRARY ${EXPAT_LIBRARY_DIRECTORY})
+
+      
+    # INCLUDE(findEXPAT)  
+    # MESSAGE("EXPAT_INCLUDE_DIRS=",${EXPAT_INCLUDE_DIRS})  
+    # MESSAGE("EXPAT_LIBRARIES=",${EXPAT_LIBRARIES})  
+    # MESSAGE("EXPAT_FOUND=",${EXPAT_FOUND})  
+
+      
+    # INCLUDE_DIRECTORIES ( 
+        # ${EXPAT_INCLUDE_DIRS}
+        # ${CMAKE_CURRENT_SOURCE_DIR}
+        # )
+    # LINK_DIRECTORIES(${EXPAT_LIBRARY})
+     
+     ADD_SHARED_LIBRARY(XMLParserExpatLib ${SRCS_XML_PARSER_EXPAT_LIB} LINK_LIBRARIES libexpat XMLUtilsShared)
+     # ADD_LIBRARY(XMLParserExpatLib STATIC ${SRCS_XML_PARSER_EXPAT_LIB})
+
+     # TARGET_LINK_LIBRARIES(XMLParserExpatLib
+        # libexpat XMLUtilsShared
+     # )
+     
+     INSTALL_TARGETS(/lib XMLParserExpatLibShared)
+     
+
+endif(BUILD_CPP_ONLY_EXECUTABLE)

@@ -1,0 +1,7 @@
+ADD_COMPUCELL3D_STEPPABLE(PIFInitializer  PIFInitializer.cpp PIFInitializerProxy.cpp LINK_LIBRARIES ${STEPPABLE_DEPENDENCIES})
+
+
+ADD_COMPUCELL3D_STEPPABLE_HEADERS(PIFInitializer
+  PIFInitializer.h
+  )
+

@@ -1,0 +1,71 @@
+
+#!/bin/bash
+
+function usage
+{
+    # Temporary function stub
+    echo "USAGE: ./install_full --install_path <directory where CompuCell will be installed>"
+    echo "or"
+    echo "USAGE: ./install_full -i <directory where CompuCell will be installed>"
+}
+
+export source_dir=${PWD}
+
+export install_path
+export build_type=Release
+
+export xcode_project_path=${source_dir}/xcode_project
+
+#export source_dir
+
+while [ "$1" != "" ]; do
+    case $1 in
+        -i | --install_path )           shift
+                                install_path=$1
+                                echo "install_path: $install_path"
+                                ;;
+
+        -d | --xcode_project_path )           shift
+                                xcode_project_path=$1
+                                echo "xcode_project_path: $xcode_project_path"
+                                ;;
+
+        -t | --build_type )           shift
+                                build_type=$1
+                                echo "build_type: $build_type"
+                                ;;
+
+
+
+        -h | --help )           usage
+                                exit
+                                ;;
+        * )                     usage
+                                exit 1
+    esac
+    shift
+done
+
+
+if [ -w $install_path ] 
+then
+    echo "Everything seems to be OK permission wise"
+else
+    if mkdir $install_path; then
+	echo "Successfully created installation directory: $install_path"
+        mkdir $install_path/cmake_binary_dir
+    else
+	echo "Could not create directory $install_path. Check if you have right permissions"
+	exit 1
+    fi
+
+fi
+
+echo "will generate xcode file in ${xcode_project_path}"
+
+mkdir ${xcode_project_path}
+cd ${xcode_project_path}
+cmake -GXcode -DCMAKE_INSTALL_PREFIX:STRING=$install_path -DCMAKE_BUILD_TYPE:STRING=$build_type ${source_dir};
+
+exit 0
+

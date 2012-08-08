@@ -1,0 +1,9 @@
+<Simulation version="3.6.1">
+
+    <XMLScript Type="XMLScript">Simulation/ContactLocalProductVisExample.xml</XMLScript>
+
+    <PythonScript>Simulation/ContactLocalProductVisExample.py</PythonScript> 
+
+    <Resource Type="Python">Simulation/ContactLocalProductExampleModules.py</Resource>    
+
+</Simulation>

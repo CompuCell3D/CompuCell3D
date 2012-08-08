@@ -1,0 +1,88 @@
+#ifndef OPENCL_HELPER_H
+#define OPENCL_HELPER_H
+
+
+// 2012 Mitja:
+// #include <CL/opencl.h>
+#if defined (__APPLE__) || defined(MACOSX)
+    #include <OpenCL/opencl.h>
+#else
+    #include <CL/opencl.h>
+#endif
+
+
+#include <cassert>
+
+namespace CompuCell3D {
+
+class OpenCLHelper
+{
+	cl_context context;//device's context
+	cl_command_queue commandQueue;
+	cl_uint numDevices;
+	cl_device_id *devices;
+    cl_uint deviceUsed;
+	cl_platform_id platform;
+
+	size_t maxWorkGroupSize;
+
+	static cl_int GetPlatformID(cl_platform_id* clSelectedPlatformID);
+	void BuildExecutable(cl_program program);
+
+	cl_program CreateProgramWithSource(cl_uint           /* count */,
+                          const char **     /* strings */,
+                          cl_int *          /* errcode_ret */);
+	
+public:
+	explicit OpenCLHelper(int gpuDeviceIndex);
+	~OpenCLHelper();
+
+	static const char* ErrorString(cl_int error);
+
+	static char *FileContents(const char *filename, int *length);
+
+	//simple, synchronous write (from host to device)
+	template <class T>
+	cl_int WriteBuffer(cl_mem buffer, T const *h_arr, size_t arrLen){
+		cl_int res=clEnqueueWriteBuffer(commandQueue, buffer, CL_TRUE, 0, sizeof(T)*arrLen, h_arr, 0, NULL, NULL);
+		//cerr<<"sizeof(T)="<<sizeof(T)<<",  arrLen="<<arrLen<<endl;
+		assert(res==CL_SUCCESS);
+		return res;
+	}
+
+	//simple, synchronous copying (on device)
+	template <class T>
+	cl_int CopyBuffer(cl_mem src_buffer, cl_mem dst_buffer, size_t arrLen){
+		cl_int res=clEnqueueCopyBuffer(commandQueue, src_buffer, dst_buffer, 0, 0, sizeof(T)*arrLen, 0, NULL, NULL);
+		//cerr<<"sizeof(T)="<<sizeof(T)<<",  arrLen="<<arrLen<<endl;
+		assert(res==CL_SUCCESS);
+		clEnqueueBarrier(commandQueue);//TODO: can be optimize with events probably
+		return res;
+	}
+
+	//simple, synchronous read (from device to host)
+	template <class T>
+	cl_int ReadBuffer(cl_mem buffer, T *h_arr, size_t arrLen){
+		cl_int res=clEnqueueReadBuffer(commandQueue, buffer, CL_TRUE, 0, sizeof(T)*arrLen, h_arr, 0, NULL, NULL);
+		assert(res==CL_SUCCESS);
+		return res;
+	}
+
+	size_t getMaxWorkGroupSize()const{return maxWorkGroupSize;}
+
+	cl_int EnqueueNDRangeKernel(cl_kernel        /* kernel */,
+                       cl_uint          /* work_dim */,
+                       const size_t *   /* global_work_size */,
+                       const size_t *   /* local_work_size */
+                       );
+
+	cl_mem CreateBuffer(cl_mem_flags memFlags, size_t sizeInBytes)const;
+
+	bool LoadProgram(const char *filePath[], size_t sourcesCount, cl_program &program);
+
+	void Finish();
+};
+
+}//namespace CompuCell3D 
+
+#endif

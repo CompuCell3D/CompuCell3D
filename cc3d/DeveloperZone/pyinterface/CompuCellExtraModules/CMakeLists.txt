@@ -1,0 +1,91 @@
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+SET(LIBS
+  CC3DCompuCellLib
+  #AutomatonStatic
+  #BoundaryStatic
+  #Field3DStatic
+  #Potts3DStatic
+
+
+   CC3DBasicUtils
+   CC3DXMLUtils
+   ${PYTHON_LIBRARIES}
+
+)
+else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+SET(LIBS
+  CC3DCompuCellLib
+  #AutomatonStatic
+  #BoundaryStatic
+  #Field3DStatic
+  #Potts3DStatic
+
+   
+   CC3DBasicUtils
+   CC3DXMLUtils
+   
+   ${PYTHON_LIBRARIES}
+
+)
+
+
+endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+
+
+
+SET(LIBS_AUX
+   SimpleVolumeShared
+   VolumeMeanShared                    
+   PyPlugin
+
+)
+
+
+MESSAGE(COMPUCELL3D_INCLUDE_PATH ${COMPUCELL3D_INCLUDE_PATH})
+
+INCLUDE_DIRECTORIES(
+${CMAKE_CURRENT_SOURCE_DIR}
+${COMPUCELL3D_SOURCE_DIR}
+${COMPUCELL3D_INCLUDE_PATH}
+${COMPUCELL3D_INSTALL_PATH}/include
+${COMPUCELL3D_SOURCE_DIR}/CompuCell3D
+${COMPUCELL3D_SOURCE_DIR}/CompuCell3D/plugins
+${COMPUCELL3D_INCLUDE_PATH}/CompuCell3D
+${COMPUCELL3D_INCLUDE_PATH}/CompuCell3D/plugins
+# ${COMPUCELL3D_SOURCE_DIR}/BasicUtils
+# ${COMPUCELL3D_SOURCE_DIR}/XercescUtils
+# ${COMPUCELL3D_SOURCE_DIR}/XMLCereal
+${PYINTERFACE_SRC_DIR}/PyPlugin
+
+)
+
+
+
+SET_SOURCE_FILES_PROPERTIES(CompuCellExtraModules.i  PROPERTIES CPLUSPLUS ON)
+SWIG_ADD_MODULE(CompuCellExtraModules python CompuCellExtraModules.i)
+
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+  SET_TARGET_PROPERTIES(_CompuCellExtraModules PROPERTIES SUFFIX ".pyd") # changes dll name to pyd sop that it is compatible with new Python standard
+endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+
+
+
+
+
+SWIG_LINK_LIBRARIES(CompuCellExtraModules ${LIBS} ${LIBS_AUX})
+
+
+
+install_targets(/lib/python _CompuCellExtraModules)
+
+set(python_files_path ${CMAKE_BINARY_DIR}/pyinterface/CompuCellExtraModules)
+
+INSTALL(FILES ${python_files_path}/CompuCellExtraModules.py
+	      DESTINATION lib/python)
+
+
+
+
+
