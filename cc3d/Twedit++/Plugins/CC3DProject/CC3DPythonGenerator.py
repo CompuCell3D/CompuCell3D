@@ -62,9 +62,12 @@ class CC3DPythonGenerator:
         self.cellTypeTable=[["Medium",False]]
         self.afMolecules=[]
         self.afFormula='min(Molecule1,Molecule2)'
-        self.cmcCadherins=[]        
+        self.cmcCadherins=[]                
         
         self.pythonOnlyFlag=False
+        
+        self.steppableFrequency=1
+        
     def setPythonOnlyFlag(self,_flag):
         self.pythonOnlyFlag=_flag
     
@@ -240,17 +243,17 @@ CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
         
             self.steppableRegistrationLines+='''
 from %s import %s
-steppableInstance=%s(sim,_frequency=100)
+steppableInstance=%s(sim,_frequency=%s)
 steppableRegistry.registerSteppable(steppableInstance)
-        '''%(self.simulationName+"Steppables",self.simulationName+"Steppable",self.simulationName+"Steppable" )
+        '''%(self.simulationName+"Steppables",self.simulationName+"Steppable",self.simulationName+"Steppable", self.steppableFrequency )
         else:# generating registration lines for user stppables
             for steppableName in self.generatedSteppableNames:
                 self.steppableRegistrationLines+='''
 
 from %s import %s
-%s=%s(sim,_frequency=100)
+%s=%s(sim,_frequency=%s)
 steppableRegistry.registerSteppable(%s)
-        '''%(self.simulationName+"Steppables",steppableName,steppableName+"Instance",steppableName, steppableName+"Instance")
+        '''%(self.simulationName+"Steppables",steppableName,steppableName+"Instance",steppableName, self.steppableFrequency, steppableName+"Instance")
                 
 
     def generatePlotSteppableRegistrationLines(self):
@@ -260,11 +263,11 @@ steppableRegistry.registerSteppable(%s)
                 self.steppableRegistrationLines+='''
 
 from %s import %s
-%s=%s(sim,_frequency=100)
+%s=%s(sim,_frequency=%s)
 %s.visField=%s
 steppableRegistry.registerSteppable(%s)
 
-        '''%(self.simulationName+"Steppables",steppableName,steppableInstanceName,steppableName, steppableInstanceName,plotNameTuple[0],steppableInstanceName)
+        '''%(self.simulationName+"Steppables",steppableName,steppableInstanceName,steppableName, self.steppableFrequency, steppableInstanceName,plotNameTuple[0],steppableInstanceName)
         
         
     def generateVisPlotSteppables(self):
@@ -289,7 +292,7 @@ from math import *
 class %s(SteppableBasePy):
 '''%(steppableName)
                     self.steppableCodeLines+='''
-    def __init__(self,_simulator,_frequency=10):
+    def __init__(self,_simulator,_frequency=%s):
         SteppableBasePy.__init__(self,_simulator,_frequency)
         self.visField=None
         
@@ -305,13 +308,13 @@ class %s(SteppableBasePy):
                     else:
                         value=sin(x*y)
                         fillScalarValue(self.visField,x,y,z,value) # value assigned to individual pixel                    
-'''
+'''%(self.steppableFrequency)
                 
                 elif plotType=='CellLevelScalarField':
                     self.steppableCodeLines+='''                
                     
 class %s(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=10):
+    def __init__(self,_simulator,_frequency=%s):
         SteppableBasePy.__init__(self,_simulator,_frequency)
         self.visField=None
 
@@ -320,13 +323,13 @@ class %s(SteppableBasePy):
         from random import random
         for cell in self.cellList:
             fillScalarValueCellLevel(self.visField,cell,cell.id*random())   # value assigned to every cell , all cell pixels are painted based on this value             
-'''%(steppableName)
+'''%(steppableName,self.steppableFrequency)
 
                 elif plotType=='VectorField':
                     self.steppableCodeLines+='''            
                     
 class %s(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=10):
+    def __init__(self,_simulator,_frequency=%s):
         SteppableBasePy.__init__(self,_simulator,_frequency)
         self.visField=None
     
@@ -338,13 +341,13 @@ class %s(SteppableBasePy):
                 for z in xrange(self.dim.z):                     
                     pt=CompuCell.Point3D(x,y,z)                    
                     insertVectorIntoVectorField(self.visField,pt.x, pt.y,pt.z, pt.x, pt.y, pt.z) # vector assigned to individual pixel
-'''%(steppableName)
+'''%(steppableName,self.steppableFrequency)
 
                 elif plotType=='CellLevelVectorField':
                     self.steppableCodeLines+='''                
                     
 class %s(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=10):
+    def __init__(self,_simulator,_frequency=%s):
         SteppableBasePy.__init__(self,_simulator,_frequency)
         self.visField=None
 
@@ -353,7 +356,7 @@ class %s(SteppableBasePy):
         for cell in self.cellList:
             if cell.type==1:
                 insertVectorIntoVectorCellLevelField(self.visField,cell, cell.id, cell.id, 0.0)
-'''%(steppableName)
+'''%(steppableName,self.steppableFrequency)
 
     
     def generateConstraintInitializer(self):
@@ -362,14 +365,14 @@ class %s(SteppableBasePy):
             self.steppableCodeLines+='''
 
 class ConstraintInitializerSteppable(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=1):
+    def __init__(self,_simulator,_frequency=%s):
         SteppableBasePy.__init__(self,_simulator,_frequency)
     def start(self):
         for cell in self.cellList:
             cell.targetVolume=25
             cell.lambdaVolume=2.0
         
-        '''
+        '''%(self.steppableFrequency)
             
     def generateGrowthSteppable(self):
         self.generateConstraintInitializer()
@@ -379,7 +382,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
             self.steppableCodeLines+='''
 
 class GrowthSteppable(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=1):
+    def __init__(self,_simulator,_frequency=%s):
         SteppableBasePy.__init__(self,_simulator,_frequency)
     def step(self,mcs):
         for cell in self.cellList:
@@ -394,7 +397,7 @@ class GrowthSteppable(SteppableBasePy):
             # concentrationAtCOM=field.get(pt)
             # cell.targetVolume+=0.01*concentrationAtCOM  # you can use here any fcn of concentrationAtCOM     
         
-        '''
+        '''%(self.steppableFrequency)
     def generateMitosisSteppable(self):
         self.generateGrowthSteppable()
         if "MitosisSteppable" not in self.generatedSteppableNames:
@@ -403,7 +406,7 @@ class GrowthSteppable(SteppableBasePy):
             self.steppableCodeLines+='''
 
 class MitosisSteppable(MitosisSteppableBase):
-    def __init__(self,_simulator,_frequency=1):
+    def __init__(self,_simulator,_frequency=%s):
         MitosisSteppableBase.__init__(self,_simulator, _frequency)
     
     def step(self,mcs):
@@ -432,7 +435,7 @@ class MitosisSteppable(MitosisSteppableBase):
         else:
             childCell.type=1
         
-        '''        
+        '''%(self.steppableFrequency)        
     def generateDeathSteppable(self):
         self.generateConstraintInitializer()
         if "DeathSteppable" not in self.generatedSteppableNames:
@@ -441,7 +444,7 @@ class MitosisSteppable(MitosisSteppableBase):
             self.steppableCodeLines+='''
 
 class DeathSteppable(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=1):
+    def __init__(self,_simulator,_frequency=%s):
         SteppableBasePy.__init__(self,_simulator,_frequency)
     def step(self,mcs):
         if mcs==1000:
@@ -450,7 +453,7 @@ class DeathSteppable(SteppableBasePy):
                     cell.targetVolume==0
                     cell.lambdaVolume==100
         
-        '''        
+        '''%(self.steppableFrequency)        
     def generateSteppablePythonScript(self):
         file=open(self.steppablesPythonFileName,"w")
         
@@ -470,7 +473,7 @@ from PySteppablesExamples import MitosisSteppableBase
             classDefinitionLine='''class %s(SteppableBasePy):'''%(self.simulationName+"Steppable")
             steppableBody='''    
 
-    def __init__(self,_simulator,_frequency=10):
+    def __init__(self,_simulator,_frequency=%s):
         SteppableBasePy.__init__(self,_simulator,_frequency)
     def start(self):
         # any code in the start function runs before MCS=0
@@ -482,7 +485,7 @@ from PySteppablesExamples import MitosisSteppableBase
     def finish(self):
         # Finish Function gets called after the last MCS
         pass
-        '''
+        '''%(self.steppableFrequency)
         
             file.write(classDefinitionLine)
             file.write(steppableBody)

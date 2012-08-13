@@ -138,9 +138,9 @@ class Settings():
             
     
         self.zoomFactor, ok         = settings.value("/zoomFactor",             QVariant(1)).toInt()
-        self.screenshotFrequency, ok    = settings.value("/screenshotFrequency",    QVariant(1)).toInt()
-        self.screenUpdateFrequency, ok  = settings.value("/screenUpdateFrequency",  QVariant(1)).toInt()
-        self.noOutputFlag           = settings.value("/noOutputFlag",           QVariant(False)).toBool()
+        self.screenshotFrequency, ok    = settings.value("/screenshotFrequency",    QVariant(100)).toInt()
+        self.screenUpdateFrequency, ok  = settings.value("/screenUpdateFrequency",  QVariant(10)).toInt()
+        self.noOutputFlag           = settings.value("/noOutputFlag",           QVariant(True)).toBool()
     
         self.minConcentration, ok   = settings.value("/minConcentration",       QVariant(0.0)).toDouble()
         self.minConcentrationFixed  = settings.value("/minConcentrationFixed",  QVariant(False)).toBool()
