@@ -107,7 +107,7 @@ class /*DECLSPECIFIER*/ CellInventory
 		CC3DCellList  getClusterCells(long _clusterId);
 
 		void initCellInventoryByType(cellListByType_t *_inventoryByTypePtr,unsigned char _type); //the return variable is the same as the second argument 																											  
-
+	    void CellInventory::initCellInventoryByMultiType(CellInventory::cellListByType_t *_inventoryByTypePtr,std::vector<int> * _typeVecPtr);
 
 		CompartmentInventory & getClusterInventory(){return compartmentInventory;}
 

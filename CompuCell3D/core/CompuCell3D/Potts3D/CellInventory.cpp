@@ -146,6 +146,26 @@ namespace CompuCell3D {
 				
 		}			
 	}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	void CellInventory::initCellInventoryByMultiType(CellInventory::cellListByType_t *_inventoryByTypePtr,std::vector<int> * _typeVecPtr){
+		_inventoryByTypePtr->clear();
+		CellInventory::cellInventoryIterator cInvItr;
+		CellG * cell;
+		vector<int> & typeVec=*_typeVecPtr;
+		for( cInvItr = cellInventoryBegin() ; cInvItr !=cellInventoryEnd() ; ++cInvItr ){
+			cell=getCell(cInvItr);
+			for (unsigned int i = 0 ; i < typeVec.size(); ++i){
+				if (cell->type==typeVec[i]){
+					_inventoryByTypePtr->insert(make_pair(cell->id,cell));
+					break;
+				}
+
+
+			}
+				
+		}			
+	}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	

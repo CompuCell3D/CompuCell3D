@@ -443,38 +443,49 @@ class CellListIterator:
             
 # iterating ofver inventory of cells of a given type
 class CellListByType:
-    def __init__(self,_inventory,_type=1):            
+    def __init__(self,_inventory,*args):            
         import CompuCell
         self.inventory = _inventory
-        self.type=_type        
+        
+        self.types=CompuCell.vectorint()
+        
         self.inventoryByType=CompuCell.mapLongCellGPtr()
-        self.inventory.initCellInventoryByType(self.inventoryByType , self.type)  
+        
+        self.initTypeVec(args)
+        self.inventory.initCellInventoryByMultiType(self.inventoryByType , self.types)  
+        
         
         
     def __iter__(self):
         return CellListByTypeIterator(self)
-        
-    def __call__(self,_type=1):
-        
-        self.type=_type
-        self.inventory.initCellInventoryByType(self.inventoryByType , self.type)
-        # print 'self.inventory=',self.inventory
-        # print "CALLING CELL LIST BY TYPE"
-        # print 'self.inventoryByType=',self.inventoryByType
-        # iter=self.inventoryByType.begin()
-        # print 'iter=',iter
-        # return CellListByTypeIterator(self)       
+
+    def __call__(self,*args):
+        self.initTypeVec(args)
+        self.inventory.initCellInventoryByMultiType(self.inventoryByType , self.types)
+
         return self       
+
+        
         
     def __len__(self):
         return self.inventoryByType.size()
         
+    def initTypeVec(self,_typeList):
+        
+        self.types.clear()        
+        if len(_typeList)<=0:
+            self.types.push_back(1) # type 1 
+        else:    
+            for type in _typeList:
+                self.types.push_back(type)
+    
     def initializeWithType(self,_type):
-        self.type=_type
-        self.inventory.initCellInventoryByType(self.inventoryByType , self.type)
+        self.types.clear()
+        self.types.push_back(_type)
+        self.inventory.initCellInventoryByMultiType(self.inventoryByType , self.types)
         
     def refresh(self):
-        self.inventory.initCellInventoryByType(self.inventoryByType , self.type)        
+        self.inventory.initCellInventoryByMultiType(self.inventoryByType , self.types)        
         
 
 
