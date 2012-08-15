@@ -24,9 +24,13 @@ class InfoPrinterSteppable(SteppableBasePy):
             for cell in self.cellListByType(2):
                 print "BY TYPE CELL ID=",cell.id, " CELL TYPE=",cell.type," volume=",cell.volume
                 counter+=1
-            
+                
+            for cell in self.cellListByType(1,2):
+                print "MULTI TYPE LIST - CELL ID=",cell.id, " CELL TYPE=",cell.type," volume=",cell.volume                
+                
             print "number of cells in typeInventory=",len(self.cellListByType)
             print "number of cells in the entire cell inventory=",len(self.cellList)                
+            
         if mcs>500:
             CompuCellSetup.stopSimulation()
 
