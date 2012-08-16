@@ -207,3 +207,6 @@ class CDConstants(QtCore.QObject):
 # signal.signal(signal.SIGUSR1, dumpstacks)
 # CDConstants.printOut( "___ - DEBUG ----- CDConstants: signal.signal(signal.SIGUSR1, dumpstacks) executed. " , CDConstants.DebugTODO )
 # 
+# Local Variables:
+# coding: US-ASCII
+# End:

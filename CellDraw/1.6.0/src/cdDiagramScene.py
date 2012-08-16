@@ -2026,7 +2026,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         # 2012 - Mitja: to access the "Type Editor" controls,
         #   we add another pane to the Control Panel:
         # set up the GUI to control (formerly the table) the Type Editor for regions/cell values:
-        # 2012 - Mitja: these controls used to be handled from the PIFInputMainWindow,
+        # 2012 - Mitja: these controls used to be handled from the CellDrawMainWindow,
         #   now they become another pane in the Control Panel:
         # -----------------------------------------------------------------------------
         #
@@ -3202,7 +3202,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
     def setTypesDict(self, pTheNewRegionTypeDict):
 
         self.theTypesEditor.setTypesDict(pTheNewRegionTypeDict)
-        self.theTypesEditor.populateTreeWithTypesDict()
+        self.theTypesEditor.populateEditorFromTypesDict()
 
         CDConstants.printOut( "      CDDiagramSceneMainWidget.setTypesDict( pTheNewRegionTypeDict=="+str(pTheNewRegionTypeDict)+" )  done." , CDConstants.DebugVerbose )
 

@@ -161,11 +161,11 @@ class CDImageSequence(QtCore.QObject):
         self.scaleFactor = 1.0
 
         if isinstance( pParent, QtGui.QWidget ) == True:
-            self.graphicsSceneWindow = pParent
+            self._graphicsSceneMainWidget = pParent
         else:
-            self.graphicsSceneWindow = None
+            self._graphicsSceneMainWidget = None
 
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: __init__() graphicsSceneWindow == "+str(self.graphicsSceneWindow)+" " , CDConstants.DebugExcessive )
+        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: __init__() _graphicsSceneMainWidget == "+str(self._graphicsSceneMainWidget)+" " , CDConstants.DebugExcessive )
         CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: __init__() imageInSequenceIsReadyFlags == "+str(self.imageInSequenceIsReadyFlags)+" " , CDConstants.DebugExcessive )
         CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: __init__() edgeInSequenceIsReadyFlags == "+str(self.edgeInSequenceIsReadyFlags)+" " , CDConstants.DebugExcessive )
         CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: __init__() contoursAreReadyFlag == "+str(self.contoursAreReadyFlag)+" " , CDConstants.DebugExcessive )
@@ -1767,8 +1767,8 @@ class CDImageSequence(QtCore.QObject):
     # ------------------------------------------------------------------   
     def setSequenceLoadedFromFiles(self, pTrueOrFalse):
         self.imageSequenceLoaded = pTrueOrFalse
-        if isinstance( self.graphicsSceneWindow, QtGui.QWidget ) == True:
-            self.graphicsSceneWindow.scene.update()
+        if isinstance( self._graphicsSceneMainWidget, QtGui.QWidget ) == True:
+            self._graphicsSceneMainWidget.scene.update()
         CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: setSequenceLoadedFromFiles( " \
             + str(self.imageSequenceLoaded) + " )", CDConstants.DebugVerbose )
 
@@ -1779,8 +1779,8 @@ class CDImageSequence(QtCore.QObject):
     #   pass it upstream to the parent widget's QGraphicsScene:
     # ------------------------------------------------------------------   
     def setMouseTracking(self, pTrueOrFalse):
-        if isinstance( self.graphicsSceneWindow, QtGui.QWidget ) == True:
-            self.graphicsSceneWindow.view.setMouseTracking(pTrueOrFalse)
+        if isinstance( self._graphicsSceneMainWidget, QtGui.QWidget ) == True:
+            self._graphicsSceneMainWidget.view.setMouseTracking(pTrueOrFalse)
 
 
     # ------------------------------------------------------------------
@@ -2097,7 +2097,7 @@ class CDImageSequence(QtCore.QObject):
 
             # 2010 - Mitja: update the CDImageSequence's parent widget,
             #   i.e. paintEvent() will be invoked regardless of the picking mode:
-            self.graphicsSceneWindow.scene.update()
+            self._graphicsSceneMainWidget.scene.update()
 
 
 

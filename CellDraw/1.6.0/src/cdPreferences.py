@@ -658,7 +658,7 @@ class CDPreferences(QtGui.QDialog):
         # explicitly connect the "signalPIFFGenerationModeHasChanged()"
         #   signal from the theControlsForPIFFGenerationMode object,
         #   to our "slot" method responding to radio button changes:
-        self.theMainWindow.graphicsSceneWindow.theTypesEditor.theControlsForPIFFGenerationMode.signalPIFFGenerationModeHasChanged.connect( \
+        self.theMainWindow.diagramSceneMainWidget.theTypesEditor.theControlsForPIFFGenerationMode.signalPIFFGenerationModeHasChanged.connect( \
             self.handlePIFFGenerationModeHasChanged )
 
 

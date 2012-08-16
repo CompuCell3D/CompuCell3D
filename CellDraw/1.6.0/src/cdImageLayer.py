@@ -80,11 +80,11 @@ class CDImageLayer(QtCore.QObject):
 #         self.processedPixmap = QtGui.QPixmap()
 
         if isinstance( pParent, QtGui.QWidget ) is True:
-            self.graphicsSceneWindow = pParent
+            self._graphicsSceneWidget = pParent
         else:
-            self.graphicsSceneWindow = None
-        print "|^|^|^|^| CDImageLayer.__init__() self.graphicsSceneWindow ==", \
-            self.graphicsSceneWindow, " |^|^|^|^|"
+            self._graphicsSceneWidget = None
+        print "|^|^|^|^| CDImageLayer.__init__() self._graphicsSceneWidget ==", \
+            self._graphicsSceneWidget, " |^|^|^|^|"
 
         self.inputImagePickingMode = CDConstants.ImageModeDrawFreehand
 
@@ -136,7 +136,7 @@ class CDImageLayer(QtCore.QObject):
         # 2011 - Mitja: update the CDImageLayer's parent widget,
         #   i.e. paintEvent() will be invoked regardless of the picking mode:
         # but we don't call update() here, we call it where opacity is changed
-        # self.graphicsSceneWindow.scene.update()
+        # self._graphicsSceneWidget.scene.update()
 
 
     # ------------------------------------------------------------------
@@ -156,8 +156,8 @@ class CDImageLayer(QtCore.QObject):
     # ------------------------------------------------------------------   
     def setImageLoadedFromFile(self, pTrueOrFalse):
         self.imageLoadedFromFile = pTrueOrFalse
-        if isinstance( self.graphicsSceneWindow, QtGui.QWidget ) == True:
-            self.graphicsSceneWindow.scene.update()
+        if isinstance( self._graphicsSceneWidget, QtGui.QWidget ) == True:
+            self._graphicsSceneWidget.scene.update()
 
 
     # ------------------------------------------------------------------
@@ -166,14 +166,14 @@ class CDImageLayer(QtCore.QObject):
     #   pass it upstream to the parent widget's QGraphicsScene:
     # ------------------------------------------------------------------   
     def setMouseTracking(self, pTrueOrFalse):
-        if isinstance( self.graphicsSceneWindow, QtGui.QWidget ) == True:
-#             print "self.graphicsSceneWindow.view.hasMouseTracking() ==============", \
-#               self.graphicsSceneWindow.view.hasMouseTracking()
+        if isinstance( self._graphicsSceneWidget, QtGui.QWidget ) == True:
+#             print "self._graphicsSceneWidget.view.hasMouseTracking() ==============", \
+#               self._graphicsSceneWidget.view.hasMouseTracking()
 #             print "                                    pTrueOrFalse ==============", \
 #               pTrueOrFalse
-            self.graphicsSceneWindow.view.setMouseTracking(pTrueOrFalse)
-#             print "self.graphicsSceneWindow.view.hasMouseTracking() ==============", \
-#               self.graphicsSceneWindow.view.hasMouseTracking()
+            self._graphicsSceneWidget.view.setMouseTracking(pTrueOrFalse)
+#             print "self._graphicsSceneWidget.view.hasMouseTracking() ==============", \
+#               self._graphicsSceneWidget.view.hasMouseTracking()
 
 
 
@@ -886,7 +886,7 @@ class CDImageLayer(QtCore.QObject):
 
             # 2010 - Mitja: update the CDImageLayer's parent widget,
             #   i.e. paintEvent() will be invoked regardless of the picking mode:
-            self.graphicsSceneWindow.scene.update()
+            self._graphicsSceneWidget.scene.update()
 
 
 
@@ -959,7 +959,7 @@ class CDImageLayer(QtCore.QObject):
                     theGraphicsPathItem.setBrush(QtGui.QColor(0,0,0,0))
 
                     # pass the QGraphicsItem to the external QGraphicsScene window:
-                    self.graphicsSceneWindow.scene.mousePressEvent( \
+                    self._graphicsSceneWidget.scene.mousePressEvent( \
                         QtGui.QMouseEvent( QtCore.QEvent.GraphicsSceneMousePress, \
                                            QtCore.QPoint(0,0), \
                                            QtCore.Qt.NoButton, QtCore.Qt.NoButton, QtCore.Qt.NoModifier), \
@@ -969,14 +969,14 @@ class CDImageLayer(QtCore.QObject):
    
                 # 2010 - Mitja: update the CDImageLayer's parent widget,
                 #   i.e. paintEvent() will be invoked:
-                self.graphicsSceneWindow.scene.update()
+                self._graphicsSceneWidget.scene.update()
 
         elif (self.inputImagePickingMode == CDConstants.ImageModeDrawPolygon):
         # this is polygon drawing mode:
             # 2010 - Mitja: track release events of the mouse left button only:
             if (pEvent.button() == QtCore.Qt.LeftButton):
                 self.myMouseLeftDown = False
-                self.graphicsSceneWindow.scene.update()
+                self._graphicsSceneWidget.scene.update()
 
                 # if highlighted, add to scene:
                 if self.myPathHighlight == True:
@@ -998,7 +998,7 @@ class CDImageLayer(QtCore.QObject):
                     theGraphicsPathItem.setBrush(QtGui.QColor(0,0,0,0))
 
                     # pass the QGraphicsItem to the external QGraphicsScene window:
-                    self.graphicsSceneWindow.scene.mousePressEvent( \
+                    self._graphicsSceneWidget.scene.mousePressEvent( \
                         QtGui.QMouseEvent( QtCore.QEvent.GraphicsSceneMousePress, \
                                            QtCore.QPoint(0,0), \
                                            QtCore.Qt.NoButton, QtCore.Qt.NoButton, QtCore.Qt.NoModifier), \
@@ -1059,7 +1059,7 @@ class CDImageLayer(QtCore.QObject):
 
         # 2010 - Mitja: update the CDImageLayer's parent widget,
         #   i.e. paintEvent() will be invoked regardless of the picking mode:
-        self.graphicsSceneWindow.scene.update()
+        self._graphicsSceneWidget.scene.update()
 
 
 
@@ -1078,19 +1078,19 @@ class CDImageLayer(QtCore.QObject):
         if (self.inputImagePickingMode == CDConstants.ImageModePickColor):
         # this is color-picking mode:
             if (self.myMouseLeftDown == False) and \
-              (self.graphicsSceneWindow.view.hasMouseTracking() == True):
+              (self._graphicsSceneWidget.view.hasMouseTracking() == True):
                 # print lX, lY
                 # 2011 - Mitja: to have real-time visual feedback while moving the mouse,
                 #   without actually picking a color region in the image for the PIFF scene,
                 #   uncomment one of these two methods:
                 # self.processImageForFuzzyPick(lX, lY)
                 # self.processImageForCloseColors(lX, lY)
-                # self.graphicsSceneWindow.scene.update()
+                # self._graphicsSceneWidget.scene.update()
                 pass
         elif (self.inputImagePickingMode == CDConstants.ImageModeDrawFreehand):
         # this is freeform drawing mode:
             if (self.myMouseLeftDown == True) and \
-              (self.graphicsSceneWindow.view.hasMouseTracking() == False):
+              (self._graphicsSceneWidget.view.hasMouseTracking() == False):
                 # 2010 - Mitja: track mouse move events only when the mouse left button is depressed:
                 self.myMouseX = lX
                 self.myMouseY = lY
@@ -1103,11 +1103,11 @@ class CDImageLayer(QtCore.QObject):
                     self.myPathHighlight = False
                 # 2010 - Mitja: update the CDImageLayer's parent widget,
                 #   i.e. paintEvent() will be invoked:
-                self.graphicsSceneWindow.scene.update()
+                self._graphicsSceneWidget.scene.update()
         elif (self.inputImagePickingMode == CDConstants.ImageModeDrawPolygon):
         # this is polygon drawing mode:
             if (self.myMouseLeftDown == False) and \
-              (self.graphicsSceneWindow.view.hasMouseTracking() == True):
+              (self._graphicsSceneWidget.view.hasMouseTracking() == True):
                 # 2010 - Mitja: track mouse move events only when the mouse left button is NOT depressed:
                 self.myMouseX = lX
                 self.myMouseY = lY
@@ -1123,7 +1123,7 @@ class CDImageLayer(QtCore.QObject):
                         self.myPathHighlight = False
                 # 2010 - Mitja: update the CDImageLayer's parent widget,
                 #   i.e. paintEvent() will be invoked:
-                self.graphicsSceneWindow.scene.update()
+                self._graphicsSceneWidget.scene.update()
 
 
 

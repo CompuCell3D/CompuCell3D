@@ -210,7 +210,7 @@ except:
 # ----------------------------------------------------------------------
 # 2010- Mitja: this is the main application window for the CellDraw
 # ----------------------------------------------------------------------
-class PIFInputMainWindow(QtGui.QMainWindow):
+class CellDrawMainWindow(QtGui.QMainWindow):
 
 
     # ------------------------------------------------------------------
@@ -384,11 +384,9 @@ class PIFInputMainWindow(QtGui.QMainWindow):
         self.colorDict = {}       # colorDict = a dict of all region names, one for each RGBA color: name(color)
         self.comboDict = {}       # comboDict = a dict (unused?) of region INTs, one for each RGBA color: int(color)
         # 2010 - Mitja: (1.1) support for data from pixmap to external table widget:
-        self.regionsTableDict = {}
+        self.mainTypesDict = {}
         # 2010 - Mitja: (1.2) support for region names from external table widget:
         self.nameToColorDict = {} # nameToColorDict = a dict of all region colors, one for each region name: color(name)
-
-
 
         #  __init__ (6) - prepare a default empty lBoringPixMap:
         # -----------------------------------------------------------------------------
@@ -401,23 +399,29 @@ class PIFInputMainWindow(QtGui.QMainWindow):
         #  __init__ (7) - set up the main editable graphics scene widget:
         # -----------------------------------------------------------------------------
         #
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - creating CDDiagramSceneMainWidget ...", CDConstants.DebugTODO )
         # 2010 - Mitja: external class for creating/displaying a QGraphicsScene based on the input image:
-        self.graphicsSceneWindow = CDDiagramSceneMainWidget(self)
+        self.diagramSceneMainWidget = CDDiagramSceneMainWidget(self)
 
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - obtaining self.diagramSceneMainWidget.getMainControlPanel() ...", CDConstants.DebugTODO )
         # obtain a reference to the only instance of the main control panel:
-        self.theMainControlPanel = self.graphicsSceneWindow.getMainControlPanel()
+        self.theMainControlPanel = self.diagramSceneMainWidget.getMainControlPanel()
 
-        # connect theSceneRasterizerWidget to the only instance of the cdPreferences object:
-        self.graphicsSceneWindow.setPreferencesObject(self.cdPreferences)
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - obtaining self.diagramSceneMainWidget.getMainControlPanel() ...", CDConstants.DebugTODO )
+        # connect diagramSceneMainWidget to the only instance of the cdPreferences object:
+        self.diagramSceneMainWidget.setPreferencesObject(self.cdPreferences)
 
-        self.graphicsSceneWindow.scene.setSceneRect(QtCore.QRectF(0, 0, \
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting self.diagramSceneMainWidget.scene.setSceneRect() ...", CDConstants.DebugTODO )
+        self.diagramSceneMainWidget.scene.setSceneRect(QtCore.QRectF(0, 0, \
             self.cdPreferences.getPifSceneWidth(), self.cdPreferences.getPifSceneHeight()))
-        self.graphicsSceneWindow.scene.setDepth(  self.cdPreferences.getPifSceneDepth() )
+        self.diagramSceneMainWidget.scene.setDepth(  self.cdPreferences.getPifSceneDepth() )
 
-        self.graphicsSceneWindow.updateSceneRectSize()
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting self.diagramSceneMainWidget.scene.setSceneRect() ...", CDConstants.DebugTODO )
+        self.diagramSceneMainWidget.updateSceneRectSize()
 
 
 
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting up self.controlPanelDockWidget() ...", CDConstants.DebugTODO )
         # 2012 - Mitja: move the main control panel to a QDockWidget:
         #
         # first create a QDockWidget
@@ -441,6 +445,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
 
 
 
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - creating CDSceneRasterizer() ...", CDConstants.DebugTODO )
 
         # DIH continue cleaning up GUI here:
         #
@@ -453,16 +458,16 @@ class PIFInputMainWindow(QtGui.QMainWindow):
 
         # 2011 - Mitja: add input image handling directly to the QGraphicsScene,
         #   into theCDImageLayer to be drawn as foreground/overlay to the scene items:
-        self.graphicsSceneWindow.theCDImageLayer.width = self.cdPreferences.getPifSceneWidth()
-        self.graphicsSceneWindow.theCDImageLayer.height = self.cdPreferences.getPifSceneHeight()
-        self.graphicsSceneWindow.theCDImageLayer.pifSceneWidth = self.cdPreferences.getPifSceneWidth()
-        self.graphicsSceneWindow.theCDImageLayer.pifSceneHeight = self.cdPreferences.getPifSceneHeight()
+        self.diagramSceneMainWidget.theCDImageLayer.width = self.cdPreferences.getPifSceneWidth()
+        self.diagramSceneMainWidget.theCDImageLayer.height = self.cdPreferences.getPifSceneHeight()
+        self.diagramSceneMainWidget.theCDImageLayer.pifSceneWidth = self.cdPreferences.getPifSceneWidth()
+        self.diagramSceneMainWidget.theCDImageLayer.pifSceneHeight = self.cdPreferences.getPifSceneHeight()
 
         # 2011 - Mitja: add managing a sequence of images to the QGraphicsScene,
         #   into theCDImageSequence to be drawn as foreground/overlay to the scene items:
-        self.graphicsSceneWindow.theCDImageSequence.pifSceneWidth = self.cdPreferences.getPifSceneWidth()
-        self.graphicsSceneWindow.theCDImageSequence.pifSceneHeight = self.cdPreferences.getPifSceneHeight()
-        self.graphicsSceneWindow.theCDImageSequence.pifSceneDepth = self.cdPreferences.getPifSceneDepth()
+        self.diagramSceneMainWidget.theCDImageSequence.pifSceneWidth = self.cdPreferences.getPifSceneWidth()
+        self.diagramSceneMainWidget.theCDImageSequence.pifSceneHeight = self.cdPreferences.getPifSceneHeight()
+        self.diagramSceneMainWidget.theCDImageSequence.pifSceneDepth = self.cdPreferences.getPifSceneDepth()
 
 
 
@@ -475,7 +480,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
 #         # 2010 - Mitja added an interactive table
 #         #   containing all regions/colors found in the pixmap. If "self" is passed as parameter,
 #         #   when the QApplication exits, it'll signal this window to close as well:
-#         self.theTypesEditor = CDTypesEditor(self.graphicsSceneWindow)
+#         self.theTypesEditor = CDTypesEditor(self.diagramSceneMainWidget)
 # 
 #         # 2012 - Mitja: move the region/cell type controls to a QDockWidget:
 #         #
@@ -491,13 +496,15 @@ class PIFInputMainWindow(QtGui.QMainWindow):
 #         # attach the newly created QDockWidget to self i.e. the QMainWindow:
 #         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.typesDockWidget)
 # 
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting self.diagramSceneMainWidget.setHandlerForRegionsTableWidgetChanged(self.handleRegionsTableWidgetChanged) ...", CDConstants.DebugTODO )
         # we handle signals coming from changes in the Type Editor
         #   with the local function self.handleRegionsTableWidgetChanged()
-        self.graphicsSceneWindow.setHandlerForRegionsTableWidgetChanged(self.handleRegionsTableWidgetChanged)
+        self.diagramSceneMainWidget.setHandlerForRegionsTableWidgetChanged(self.handleRegionsTableWidgetChanged)
 
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - preparing main self.mainTypesDict ...", CDConstants.DebugTODO )
         # prepare the default dict of regions and cell types:
         # each entry consists of a region's QColor, region's name, subtable for cell types, list of cell sizes and whether it's in use in the cell scene:
-        self.regionsTableDict = dict({ 1: [ QtGui.QColor(QtCore.Qt.green), "green", [10, 10, 1], 0, \
+        self.mainTypesDict = dict({ 1: [ QtGui.QColor(QtCore.Qt.green), "green", [10, 10, 1], 0, \
                                                 [  [QtGui.QColor(QtCore.Qt.green), "greenTypeOne", 3.0, 100], \
                                                    [QtGui.QColor(QtCore.Qt.green), "greenTypeTwo", 1.0, 200]  ]   ], \
                                        2: [ QtGui.QColor(QtCore.Qt.blue), "blue", [10, 10, 1], 0, \
@@ -518,9 +525,10 @@ class PIFInputMainWindow(QtGui.QMainWindow):
                                                 [  [QtGui.QColor(QtCore.Qt.darkGreen), "darkGreenType", 1.0, 100]  ]   ]   }  )
 
 
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting self.diagramSceneMainWidget.setTypesDict(self.mainTypesDict) ...", CDConstants.DebugTODO )
         # we handle signals coming from changes in the Type Editor
         #   with the local function self.handleRegionsTableWidgetChanged()
-        self.graphicsSceneWindow.setTypesDict(self.regionsTableDict)
+        self.diagramSceneMainWidget.setTypesDict(self.mainTypesDict)
 
 
 
@@ -531,17 +539,19 @@ class PIFInputMainWindow(QtGui.QMainWindow):
 
 
 
-        self.graphicsSceneWindow.theCDImageLayer.setImageLoadedFromFile(False)
+        self.diagramSceneMainWidget.theCDImageLayer.setImageLoadedFromFile(False)
 
-        self.graphicsSceneWindow.theCDImageSequence.setSequenceLoadedFromFiles(False)
+        self.diagramSceneMainWidget.theCDImageSequence.setSequenceLoadedFromFiles(False)
 
-        # now that both the regionsTableDict and the graphicsSceneWindow are initialized, add starting blank data:
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting self.setImageGlobals( lBoringPixMap.toImage() ) ...", CDConstants.DebugTODO )
+        # now that both the mainTypesDict and the diagramSceneMainWidget are initialized, add starting blank data:
         self.setImageGlobals( lBoringPixMap.toImage() )
 
 
 
 
 
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - self.ui.ignoreWhiteRegions_checkBox.setChecked(True)  etc ...", CDConstants.DebugTODO )
         #  __init__ (9) - set global variable default values,
         #     and their related GUI widget defaults:
         # -----------------------------------------------------------------------------
@@ -574,16 +584,16 @@ class PIFInputMainWindow(QtGui.QMainWindow):
 
 
         # explicitly connect the "signalVisibilityTypesDockWidget()" signal from the
-        #   graphicsSceneWindow object, to our "slot" (i.e. handler) method
+        #   diagramSceneMainWidget object, to our "slot" (i.e. handler) method
         #   so that it will respond to requests to show/hide the Types Dock Widget:
-        self.graphicsSceneWindow.signalVisibilityTypesDockWidget.connect( \
+        self.diagramSceneMainWidget.signalVisibilityTypesDockWidget.connect( \
             self.handleToggleTypesDockWidget )
 
 
         # explicitly connect the "signalVisibilityControlPanelDockWidget()" signal from the
-        #   graphicsSceneWindow object, to our "slot" (i.e. handler) method
+        #   diagramSceneMainWidget object, to our "slot" (i.e. handler) method
         #   so that it will respond to requests to show/hide the Control Panel Dock Widget:
-        self.graphicsSceneWindow.signalVisibilityControlPanelDockWidget.connect( \
+        self.diagramSceneMainWidget.signalVisibilityControlPanelDockWidget.connect( \
             self.handleToggleControlPanelDockWidget )
 
 
@@ -599,7 +609,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
         #   running CellDraw if the installed versions are too old to support our code:
         self.versionWarning()
 
-        self.setCentralWidget(self.graphicsSceneWindow)
+        self.setCentralWidget(self.diagramSceneMainWidget)
 
 
         # if we get here, it means that we can use the available Qt and PyQt libraries:
@@ -673,49 +683,49 @@ class PIFInputMainWindow(QtGui.QMainWindow):
         self.cdPreferences.readPreferencesFromDisk()
 
         # 2010 - Mitja: get some default global values from the preferences:
-        self.graphicsSceneWindow.theCDImageLayer.pifSceneWidth = self.cdPreferences.getPifSceneWidth()
-        self.graphicsSceneWindow.theCDImageLayer.pifSceneHeight = self.cdPreferences.getPifSceneHeight()
+        self.diagramSceneMainWidget.theCDImageLayer.pifSceneWidth = self.cdPreferences.getPifSceneWidth()
+        self.diagramSceneMainWidget.theCDImageLayer.pifSceneHeight = self.cdPreferences.getPifSceneHeight()
 
         # 2010 - Mitja: get some default global values from the preferences:
-        self.graphicsSceneWindow.theCDImageSequence.pifSceneWidth = self.cdPreferences.getPifSceneWidth()
-        self.graphicsSceneWindow.theCDImageSequence.pifSceneHeight = self.cdPreferences.getPifSceneHeight()
-        self.graphicsSceneWindow.theCDImageSequence.pifSceneDepth = self.cdPreferences.getPifSceneDepth()
+        self.diagramSceneMainWidget.theCDImageSequence.pifSceneWidth = self.cdPreferences.getPifSceneWidth()
+        self.diagramSceneMainWidget.theCDImageSequence.pifSceneHeight = self.cdPreferences.getPifSceneHeight()
+        self.diagramSceneMainWidget.theCDImageSequence.pifSceneDepth = self.cdPreferences.getPifSceneDepth()
 
         # propagate the change upstream, to all data structures!
         # here we update the PIFF graphics scene dimensions to the newly changed width/height values:
-        self.graphicsSceneWindow.scene.setSceneRect(QtCore.QRectF(0, 0, \
+        self.diagramSceneMainWidget.scene.setSceneRect(QtCore.QRectF(0, 0, \
                              self.cdPreferences.getPifSceneWidth(), self.cdPreferences.getPifSceneHeight()))
-        self.graphicsSceneWindow.scene.setDepth(  self.cdPreferences.getPifSceneDepth() )
-        self.graphicsSceneWindow.scene.mySceneUnits = self.cdPreferences.pifSceneUnits
-        self.graphicsSceneWindow.updateSceneRectSize()
+        self.diagramSceneMainWidget.scene.setDepth(  self.cdPreferences.getPifSceneDepth() )
+        self.diagramSceneMainWidget.scene.mySceneUnits = self.cdPreferences.pifSceneUnits
+        self.diagramSceneMainWidget.updateSceneRectSize()
        
         # if and *only* if there is no image loaded from a picture file on disk,
         #   then resize the blank placeholder image accordingly:
-        if self.graphicsSceneWindow.theCDImageLayer.imageLoadedFromFile == False:
+        if self.diagramSceneMainWidget.theCDImageLayer.imageLoadedFromFile == False:
             lBoringPixMap = QtGui.QPixmap(self.cdPreferences.getPifSceneWidth(), self.cdPreferences.getPifSceneHeight())
             lBoringPixMap.fill( QtGui.QColor(QtCore.Qt.transparent) )
-            self.graphicsSceneWindow.theCDImageLayer.setImageLoadedFromFile(False)
+            self.diagramSceneMainWidget.theCDImageLayer.setImageLoadedFromFile(False)
             self.setImageGlobals( lBoringPixMap.toImage() )
 
         # if and *only* if there is no sequence of images loaded from files on disk,
         #   then tell the theCDImageSequence to reset its pixel array internally:
-        if self.graphicsSceneWindow.theCDImageSequence.imageSequenceLoaded == False:
-            self.graphicsSceneWindow.theCDImageSequence.resetSequenceDimensions( \
+        if self.diagramSceneMainWidget.theCDImageSequence.imageSequenceLoaded == False:
+            self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions( \
                 self.cdPreferences.getPifSceneWidth(), \
                 self.cdPreferences.getPifSceneHeight(), \
                 self.cdPreferences.getPifSceneDepth() )
 
 
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
-        self.graphicsSceneWindow.scene.update()
+        self.diagramSceneMainWidget.scene.update()
 
         print "    self.cdPreferences. "
         print "    self.cdPreferences. "
         print "    self.cdPreferences. "
         print "    self.cdPreferences. "
         print "    self.cdPreferences. "
-        print "      self.graphicsSceneWindow.theCDImageLayer.height =", self.graphicsSceneWindow.theCDImageLayer.height
-        print "      self.graphicsSceneWindow.theCDImageLayer.width =", self.graphicsSceneWindow.theCDImageLayer.width
+        print "      self.diagramSceneMainWidget.theCDImageLayer.height =", self.diagramSceneMainWidget.theCDImageLayer.height
+        print "      self.diagramSceneMainWidget.theCDImageLayer.width =", self.diagramSceneMainWidget.theCDImageLayer.width
         print "    self.cdPreferences. "
         print "      self.cdPreferences.getPifSceneWidth() =", self.cdPreferences.getPifSceneWidth()
         print "      self.cdPreferences.getPifSceneHeight() =", self.cdPreferences.getPifSceneHeight()
@@ -725,7 +735,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
         print "    self.cdPreferences. "
         print "    self.cdPreferences. "
         print "    self.cdPreferences. "
-        print "___ - DEBUG ----- PIFInputMainWindow: handlePreferencesChanged() done."
+        print "___ - DEBUG ----- CellDrawMainWindow: handlePreferencesChanged() done."
 
 
 
@@ -755,7 +765,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
                 "Signal received with string: [" + str(pString) + "]", CDConstants.DebugVerbose )
 
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
-        self.graphicsSceneWindow.scene.update()
+        self.diagramSceneMainWidget.scene.update()
 
     # end of def handleToggleControlPanelDockWidget(self, pString="Toggle")
     # ------------------------------------------------------------------
@@ -786,7 +796,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
                 "Signal received with string: [" + str(pString) + "]", CDConstants.DebugVerbose )
 
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
-        self.graphicsSceneWindow.scene.update()
+        self.diagramSceneMainWidget.scene.update()
 
 
     # ------------------------------------------------------------------
@@ -796,48 +806,48 @@ class PIFInputMainWindow(QtGui.QMainWindow):
     def handleRegionsTableWidgetChanged(self):
         # SLOT function for the signal "regionsTableChangedSignal() from CDTypesEditor"
         #
-        #   here we retrieve the table contents to update regionsTableDict:
-        self.regionsTableDict = self.graphicsSceneWindow.getTypesDict()
-        lKeys = self.regionsTableDict.keys()
-        print "2010 DEBUG: in handleRegionsTableWidgetChanged() the regionsTableDict is :"
-        print "                  regionsTableDict keys =", lKeys
-        for i in xrange(len(self.regionsTableDict)):
-            print "                  regionsTableDict: i, lKeys[i], regionsTableDict[keys[i]], self.regionsTableDict[lKeys[i]][0].rgba() = ", \
-                  i, lKeys[i], self.regionsTableDict[lKeys[i]], self.regionsTableDict[lKeys[i]][0].rgba()
+        #   here we retrieve the table contents to update mainTypesDict:
+        self.mainTypesDict = self.diagramSceneMainWidget.getTypesDict()
+        lKeys = self.mainTypesDict.keys()
+        print "2010 DEBUG: in handleRegionsTableWidgetChanged() the mainTypesDict is :"
+        print "                  mainTypesDict keys =", lKeys
+        for i in xrange(len(self.mainTypesDict)):
+            print "                  mainTypesDict: i, lKeys[i], mainTypesDict[keys[i]], self.mainTypesDict[lKeys[i]][0].rgba() = ", \
+                  i, lKeys[i], self.mainTypesDict[lKeys[i]], self.mainTypesDict[lKeys[i]][0].rgba()
             # update all global data structures to the new values just provided by the external table widget:
             # colorIds remains the same, since the external table doesn't change colors:
             #    self.colorIds
             # colorDict needs to be updated to new names:
-            self.colorDict[self.regionsTableDict[lKeys[i]][0].rgba()] = self.regionsTableDict[lKeys[i]][1]
+            self.colorDict[self.mainTypesDict[lKeys[i]][0].rgba()] = self.mainTypesDict[lKeys[i]][1]
             # comboDict remains the same, since the external table doesn't change colorIds values:
             #    self.comboDict = {}
 
             # nameToColorDict = a dict of all region colors, one for each region name: color(name)
-            self.nameToColorDict[self.regionsTableDict[lKeys[i]][1]] = self.regionsTableDict[lKeys[i]][0].rgba()
+            self.nameToColorDict[self.mainTypesDict[lKeys[i]][1]] = self.mainTypesDict[lKeys[i]][0].rgba()
             # nameToColorDict also has to contain all type colors, one for each type name: color(name)
-            for j in xrange(len(self.regionsTableDict[lKeys[i]][4])):
-                print " -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_     at i =", i, ", j =", j, "self.regionsTableDict[lKeys[i]][4][j] =", \
-                      self.regionsTableDict[lKeys[i]][4][j]
-                self.nameToColorDict[ self.regionsTableDict[lKeys[i]][4][j][1] ] = self.regionsTableDict[lKeys[i]][4][j][0].rgba()
+            for j in xrange(len(self.mainTypesDict[lKeys[i]][4])):
+                print " -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_     at i =", i, ", j =", j, "self.mainTypesDict[lKeys[i]][4][j] =", \
+                      self.mainTypesDict[lKeys[i]][4][j]
+                self.nameToColorDict[ self.mainTypesDict[lKeys[i]][4][j][1] ] = self.mainTypesDict[lKeys[i]][4][j][0].rgba()
 
         print "2010 DEBUG: handleRegionsTableWidgetChanged() with globals:", \
             "\n ___ - DEBUG ----- self.colorIds =", self.colorIds, \
             "\n ___ - DEBUG ----- self.colorDict =", self.colorDict, \
             "\n ___ - DEBUG ----- self.comboDict =", self.comboDict, \
             "\n ___ - DEBUG ----- self.nameToColorDict =", self.nameToColorDict, \
-            "\n ___ - DEBUG ----- self.regionsTableDict =", self.regionsTableDict
-        print "___ - DEBUG ----- PIFInputMainWindow: handleRegionsTableWidgetChanged() ....."
+            "\n ___ - DEBUG ----- self.mainTypesDict =", self.mainTypesDict
+        print "___ - DEBUG ----- CellDrawMainWindow: handleRegionsTableWidgetChanged() ....."
 
 
         # propagate the change upstream, to all data structures!
 
         # update the theSceneRasterizerWidget with new region data:
-        self.theSceneRasterizerWidget.setRegionsDict(self.regionsTableDict)
+        self.theSceneRasterizerWidget.setRegionsDict(self.mainTypesDict)
 
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
-        self.graphicsSceneWindow.scene.update()
+        self.diagramSceneMainWidget.scene.update()
 
-        print "___ - DEBUG ----- PIFInputMainWindow: handleRegionsTableWidgetChanged() done."
+        print "___ - DEBUG ----- CellDrawMainWindow: handleRegionsTableWidgetChanged() done."
 
 
 
@@ -856,8 +866,8 @@ class PIFInputMainWindow(QtGui.QMainWindow):
         self.ignoreWhiteRegionsForPIF = pCheckBox
         self.theSceneRasterizerWidget.setIgnoreWhiteRegions(self.ignoreWhiteRegionsForPIF)
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
-        self.graphicsSceneWindow.scene.update()
-        print ">>>>>>>>>>>>>>>>>>>>>>>> PIFInputMainWindow.ignoreWhiteRegionsForPIF is now =", self.ignoreWhiteRegionsForPIF
+        self.diagramSceneMainWidget.scene.update()
+        print ">>>>>>>>>>>>>>>>>>>>>>>> CellDrawMainWindow.ignoreWhiteRegionsForPIF is now =", self.ignoreWhiteRegionsForPIF
 
     # ------------------------------------------------------------------
     # 2010 Mitja - this is a slot method to handle "content change" events
@@ -865,11 +875,11 @@ class PIFInputMainWindow(QtGui.QMainWindow):
     # ------------------------------------------------------------------
     def setIgnoreBlackRegions(self, pCheckBox):
         self.ignoreBlackRegionsForPIF = pCheckBox
-        self.graphicsSceneWindow.scene.update()
+        self.diagramSceneMainWidget.scene.update()
         self.theSceneRasterizerWidget.setIgnoreBlackRegions(self.ignoreBlackRegionsForPIF)
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
-        self.graphicsSceneWindow.scene.update()
-        print ">>>>>>>>>>>>>>>>>>>>>>>> PIFInputMainWindow.ignoreBlackRegionsForPIF is now =", self.ignoreBlackRegionsForPIF
+        self.diagramSceneMainWidget.scene.update()
+        print ">>>>>>>>>>>>>>>>>>>>>>>> CellDrawMainWindow.ignoreBlackRegionsForPIF is now =", self.ignoreBlackRegionsForPIF
 
 
     # ------------------------------------------------------------------
@@ -879,8 +889,8 @@ class PIFInputMainWindow(QtGui.QMainWindow):
     def setSavePIFFromGraphicsScene(self, pCheckBox):
         self.thePIFMustBeSavedFromTheGraphicsScene = pCheckBox
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
-        self.graphicsSceneWindow.scene.update()
-        print ">>>>>>>>>>>>>>>>>>>>>>>> PIFInputMainWindow.thePIFMustBeSavedFromTheGraphicsScene is now =", self.thePIFMustBeSavedFromTheGraphicsScene
+        self.diagramSceneMainWidget.scene.update()
+        print ">>>>>>>>>>>>>>>>>>>>>>>> CellDrawMainWindow.thePIFMustBeSavedFromTheGraphicsScene is now =", self.thePIFMustBeSavedFromTheGraphicsScene
 
 
 
@@ -892,9 +902,9 @@ class PIFInputMainWindow(QtGui.QMainWindow):
         self.pickColorRegion = pCheckBox
 
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
-        self.graphicsSceneWindow.scene.update()
+        self.diagramSceneMainWidget.scene.update()
 
-        print ">>>>>>>>>>>>>>>>>>>>>>>> PIFInputMainWindow.pickColorRegion is now =", self.pickColorRegion
+        print ">>>>>>>>>>>>>>>>>>>>>>>> CellDrawMainWindow.pickColorRegion is now =", self.pickColorRegion
 
 
     # ------------------------------------------------------------------
@@ -906,10 +916,10 @@ class PIFInputMainWindow(QtGui.QMainWindow):
         self.savePIFMetadata = pCheckBox
 
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
-        self.graphicsSceneWindow.scene.update()
+        self.diagramSceneMainWidget.scene.update()
 
         self.theSceneRasterizerWidget.setSavePIFMetadata(self.savePIFMetadata)
-        print ">>>>>>>>>>>>>>>>>>>>>>>> PIFInputMainWindow.savePIFMetadata is now =", self.savePIFMetadata
+        print ">>>>>>>>>>>>>>>>>>>>>>>> CellDrawMainWindow.savePIFMetadata is now =", self.savePIFMetadata
 
 
 
@@ -922,21 +932,21 @@ class PIFInputMainWindow(QtGui.QMainWindow):
     def collectAllColorsInTable(self):
         # 2010 - Mitja: this function collects *all* color values in the external table widget
 
-        #   here we retrieve the table contents to update the global regionsTableDict:
-        self.regionsTableDict = self.graphicsSceneWindow.getTypesDict()
+        #   here we retrieve the table contents to update the global mainTypesDict:
+        self.mainTypesDict = self.diagramSceneMainWidget.getTypesDict()
        
-        lKeys = self.regionsTableDict.keys()
-        print "2010 DEBUG:   in   collectAllColorsInTable() the regionsTableDict is :"
-        print "                   regionsTableDict keys =", lKeys
+        lKeys = self.mainTypesDict.keys()
+        print "2010 DEBUG:   in   collectAllColorsInTable() the mainTypesDict is :"
+        print "                   mainTypesDict keys =", lKeys
 
-        # this is how the regionsTableDict used to be created:
-        # self.regionsTableDict[k] = [QtGui.QColor(lColor), self.colorDict[lColor], \
+        # this is how the mainTypesDict used to be created:
+        # self.mainTypesDict[k] = [QtGui.QColor(lColor), self.colorDict[lColor], \
         #                            [ [QtGui.QColor(lColor).darker(150), "type"+str(k), 1.0, 100] ] ]
 
-        for i in xrange(len(self.regionsTableDict)):
-            lColor = self.regionsTableDict[lKeys[i]][0].rgba()
-            print "                  regionsTableDict: i, lKeys[i], regionsTableDict[keys[i]], self.regionsTableDict[lKeys[i]][0].rgba() = ", \
-                  i, lKeys[i], self.regionsTableDict[lKeys[i]], lColor
+        for i in xrange(len(self.mainTypesDict)):
+            lColor = self.mainTypesDict[lKeys[i]][0].rgba()
+            print "                  mainTypesDict: i, lKeys[i], mainTypesDict[keys[i]], self.mainTypesDict[lKeys[i]][0].rgba() = ", \
+                  i, lKeys[i], self.mainTypesDict[lKeys[i]], lColor
             #
             # update all global data structures to the new values just provided by the external table widget:
             #
@@ -946,13 +956,13 @@ class PIFInputMainWindow(QtGui.QMainWindow):
 
             # 2010 - Mitja: add new color to the global colorDict (dict of colors<->names) :
             #   (in the original code, all these were assigned the name "empty")
-            self.colorDict[lColor] = self.regionsTableDict[lKeys[i]][1]
+            self.colorDict[lColor] = self.mainTypesDict[lKeys[i]][1]
 
             # nameToColorDict = a dict of all region colors, one for each region name: color(name)
-            self.nameToColorDict[self.regionsTableDict[lKeys[i]][1]] = self.regionsTableDict[lKeys[i]][0].rgba()
+            self.nameToColorDict[self.mainTypesDict[lKeys[i]][1]] = self.mainTypesDict[lKeys[i]][0].rgba()
             # nameToColorDict also has to contain all type colors, one for each type name: color(name)
-            for j in xrange(len(self.regionsTableDict[lKeys[i]][4])):
-                self.nameToColorDict[ self.regionsTableDict[lKeys[i]][4][j][1] ] = self.regionsTableDict[lKeys[i]][4][j][0].rgba()
+            for j in xrange(len(self.mainTypesDict[lKeys[i]][4])):
+                self.nameToColorDict[ self.mainTypesDict[lKeys[i]][4][j][1] ] = self.mainTypesDict[lKeys[i]][4][j][0].rgba()
 
 
         # 2010 - Mitja: for unknown reason, the global "colorIds" is initialized with
@@ -976,14 +986,14 @@ class PIFInputMainWindow(QtGui.QMainWindow):
 #         self.finishedSetup = True
 
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
-        self.graphicsSceneWindow.scene.update()
+        self.diagramSceneMainWidget.scene.update()
 
         print "2010 DEBUG: collectAllColorsInTable() DONE with globals:", \
               "\n self.colorIds =", self.colorIds, \
               "\n self.colorDict =", self.colorDict, \
               "\n self.comboDict =", self.comboDict, \
               "\n self.nameToColorDict =", self.nameToColorDict, \
-              "\n self.regionsTableDict =", self.regionsTableDict
+              "\n self.mainTypesDict =", self.mainTypesDict
     # end of def collectAllColorsInTable(self)
     # ---------------------------------------------------------
 
@@ -996,7 +1006,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
               "\n self.colorIds =", self.colorIds, \
               "\n self.colorDict =", self.colorDict, \
               "\n self.comboDict =", self.comboDict, \
-              "\n self.regionsTableDict =", self.regionsTableDict
+              "\n self.mainTypesDict =", self.mainTypesDict
 
         # 2010 - Mitja: according to Qt documentation, the tr() function returns a
         #   translated version of its input parameter, optionally based on a
@@ -1020,7 +1030,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
                 print "2010 DEBUG: _,.- ~*'`'*~-.,_ openImage() got [", lFileName, "]"
 
                 # now confirm that the theCDImageLayer contains an actual image loaded from a file:
-                self.graphicsSceneWindow.theCDImageLayer.setImageLoadedFromFile(True)
+                self.diagramSceneMainWidget.theCDImageLayer.setImageLoadedFromFile(True)
 
                 # update all input-image-related globals:
                 self.setImageGlobals( lImage )
@@ -1035,11 +1045,11 @@ class PIFInputMainWindow(QtGui.QMainWindow):
                 #    This way it will tile, but only once.
                 #    Besure to update the pixmap on resize!
                 lThePath,lTheFileName = os.path.split(str(lFileName))
-                print "2010 DEBUG 2010 DEBUG now calling self.graphicsSceneWindow.updateBackgroundImage(lTheFileName, lImage) with ", lTheFileName, lImage
-                self.graphicsSceneWindow.updateBackgroundImage(lTheFileName, lImage)
+                print "2010 DEBUG 2010 DEBUG now calling self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, lImage) with ", lTheFileName, lImage
+                self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, lImage)
 
             # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
-            self.graphicsSceneWindow.scene.update()
+            self.diagramSceneMainWidget.scene.update()
 
     # end of def openImage(self)
     # ---------------------------------------------------------
@@ -1048,8 +1058,8 @@ class PIFInputMainWindow(QtGui.QMainWindow):
 
 
     # ---------------------------------------------------------
-    # 2010 - Mitja: "setImageGlobals()" sets image-related globals every time a new image
-    #   is loaded from a picture image file from disk.
+    # 2010 - Mitja: "setImageGlobals()" is used to set image-related globals,
+    #   when a new image is loaded from a picture image file from disk.
     #   It derives from the original "openImage()" function which has been now split into
     #   the new "openImage()" function which only obtains an image from a file, and this
     #   setImageGlobals() which deals with updating globals from a new image's data.
@@ -1060,7 +1070,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
 
         # 2010 - Mitja: note that (as per Qt documentation) a QLabel may contain a QPixmap object, but not a QImage.
         #   Thus the image instance we assign to theCDImageLayer from pImage is a separate object:
-        self.graphicsSceneWindow.theCDImageLayer.setImage(pImage)
+        self.diagramSceneMainWidget.theCDImageLayer.setImage(pImage)
 
 
         # 2010 - Mitja: sample the color of every pixel in the pixmap
@@ -1095,7 +1105,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
     # ---------------------------------------------------------
     def fileSavePIFFromScene_Callback(self):
 
-        print "___ - DEBUG ----- PIFInputMainWindow: fileSavePIFFromScene_Callback() starting."
+        print "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() starting."
 
         # 2010 - Mitja: setup local variables for file saving:
         lToBeSavedFileExtension = QtCore.QString("piff")
@@ -1109,22 +1119,22 @@ class PIFInputMainWindow(QtGui.QMainWindow):
 
             # update the theSceneRasterizerWidget with new data:
             #
-            #   1. retrieve the PIFF table of types contents to update regionsTableDict:
+            #   1. retrieve the PIFF table of types contents to update mainTypesDict:
             self.handleRegionsTableWidgetChanged()
-            self.theSceneRasterizerWidget.setRegionsDict(self.regionsTableDict)
+            self.theSceneRasterizerWidget.setRegionsDict(self.mainTypesDict)
             self.theSceneRasterizerWidget.setRasterWidth(self.cdPreferences.piffFixedRasterWidth)
             self.theSceneRasterizerWidget.setIgnoreWhiteRegions(self.ignoreWhiteRegionsForPIF)
             self.theSceneRasterizerWidget.setIgnoreBlackRegions(self.ignoreBlackRegionsForPIF)
             #   2. update the graphics scene data:
-            if (False == self.theSceneRasterizerWidget.setInputGraphicsScene(self.graphicsSceneWindow.scene)) :
+            if (False == self.theSceneRasterizerWidget.setInputGraphicsScene(self.diagramSceneMainWidget.scene)) :
                 self.theSceneRasterizerWidget.hide()
-                CDConstants.printOut( "___ - DEBUG ----- PIFInputMainWindow: fileSavePIFFromScene_Callback() - theSceneRasterizerWidget.setInputGraphicsScene() failed.", CDConstants.DebugSparse )
+                CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() - theSceneRasterizerWidget.setInputGraphicsScene() failed.", CDConstants.DebugSparse )
                 return False
 
 
             # this used to be set to the width&height of the scene contents.
             # But we now set PIFF width&height values in preferences, separately from the scene contents, so we don't set it thus:
-            # self.theSceneRasterizerWidget.resize(self.graphicsSceneWindow.scene.width(), self.graphicsSceneWindow.scene.height())
+            # self.theSceneRasterizerWidget.resize(self.diagramSceneMainWidget.scene.width(), self.diagramSceneMainWidget.scene.height())
             # Instead we set it from preferences:
             self.theSceneRasterizerWidget.resize((100+self.cdPreferences.getPifSceneWidth()), (100+self.cdPreferences.getPifSceneHeight()))
 
@@ -1134,20 +1144,20 @@ class PIFInputMainWindow(QtGui.QMainWindow):
 
 
             # save PIFF from sequence:
-            if (self.graphicsSceneWindow.scene.getMode() == CDConstants.SceneModeImageSequence):
+            if (self.diagramSceneMainWidget.scene.getMode() == CDConstants.SceneModeImageSequence):
                 # ----------------------------------------------------
                 # saving to PIFF from sequence of images:
                 # ----------------------------------------------------
                 # disable drawing the scene image foreground to avoid useless repainting:
-                lTmpDrawForegroundEnabled = self.graphicsSceneWindow.scene.getDrawForegroundEnabled()
-                self.graphicsSceneWindow.scene.setDrawForegroundEnabled(False)
-                self.theSceneRasterizerWidget.setInputImageSequence(self.graphicsSceneWindow.theCDImageSequence)
+                lTmpDrawForegroundEnabled = self.diagramSceneMainWidget.scene.getDrawForegroundEnabled()
+                self.diagramSceneMainWidget.scene.setDrawForegroundEnabled(False)
+                self.theSceneRasterizerWidget.setInputImageSequence(self.diagramSceneMainWidget.theCDImageSequence)
                 self.theSceneRasterizerWidget.rasterizeSequenceAndSavePIF()
                 self.theSceneRasterizerWidget.hide()
 
                 # restore drawing the scene image foreground to avoid useless repainting:
-                self.graphicsSceneWindow.scene.setDrawForegroundEnabled(lTmpDrawForegroundEnabled)
-                print "___ - DEBUG ----- PIFInputMainWindow: fileSavePIFFromScene_Callback() Sequence-generated PIFF done."
+                self.diagramSceneMainWidget.scene.setDrawForegroundEnabled(lTmpDrawForegroundEnabled)
+                print "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() Sequence-generated PIFF done."
                 return True
 
 
@@ -1175,12 +1185,12 @@ class PIFInputMainWindow(QtGui.QMainWindow):
                 if fileName.isEmpty():
                     self.theSceneRasterizerWidget.hide()
                     return False
-                    print "___ - DEBUG ----- PIFInputMainWindow: fileSavePIFFromScene_Callback() fixed-size raster PIFF failed."
+                    print "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() fixed-size raster PIFF failed."
                 else:
                     # DIH:
                     self.theSceneRasterizerWidget.savePIFFFileFromFixedSizeRaster(fileName)
                     self.theSceneRasterizerWidget.hide()
-                    print "___ - DEBUG ----- PIFInputMainWindow: fileSavePIFFromScene_Callback() fixed-size raster PIFF done."
+                    print "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() fixed-size raster PIFF done."
                     return True
 
             elif self.cdPreferences.piffGenerationMode == CDConstants.PIFFSaveWithPotts:
@@ -1191,7 +1201,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
                 # here we use the Potts algorithm to generate each region of cells:
                 self.theSceneRasterizerWidget.computePottsModelAndSavePIF()
                 self.theSceneRasterizerWidget.hide()
-                print "___ - DEBUG ----- PIFInputMainWindow: fileSavePIFFromScene_Callback() Potts-generated PIFF done."
+                print "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() Potts-generated PIFF done."
                 return True
                 # ----------------------------------------------------------------
 
@@ -1210,7 +1220,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
                                            .arg(lToBeSavedFileExtension))
                 if fileName.isEmpty():
                     self.theSceneRasterizerWidget.hide()
-                    print "___ - DEBUG ----- PIFInputMainWindow: fileSavePIFFromScene_Callback() region-raster PIFF failed."
+                    print "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() region-raster PIFF failed."
                     return False
                 else:
                     # this used to be the call to rasterize region-raster cells from each region:
@@ -1219,7 +1229,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
                     #   self.theSceneRasterizerWidget.rasterizeVarSizedCellRegionsAndSavePIF(fileName)
                     self.theSceneRasterizerWidget.savePIFFFileFromRegionRasters(fileName)
                     self.theSceneRasterizerWidget.hide()
-                    print "___ - DEBUG ----- PIFInputMainWindow: fileSavePIFFromScene_Callback() region-raster PIFF done."
+                    print "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() region-raster PIFF done."
                     return True
                 # ----------------------------------------------------------------
                
@@ -1233,14 +1243,14 @@ class PIFInputMainWindow(QtGui.QMainWindow):
                                        .arg(lToBeSavedFileExtension))
             if fileName.isEmpty():
                 self.theSceneRasterizerWidget.hide()
-                print "___ - DEBUG ----- PIFInputMainWindow: fileSavePIFFromScene_Callback() pixel-based PIFF failed."
+                print "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() pixel-based PIFF failed."
                 return False
             else:
                 # 2010 - Mitja: this was originally calling the saveFile function:
                 #   self.saveFile(fileName)
                 self.savePIFFileFromAllPixels(fileName)
                 self.theSceneRasterizerWidget.hide()
-                print "___ - DEBUG ----- PIFInputMainWindow: fileSavePIFFromScene_Callback() pixel-based PIFF done."
+                print "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() pixel-based PIFF done."
                 return True
 
 
@@ -1261,18 +1271,18 @@ class PIFInputMainWindow(QtGui.QMainWindow):
         if not file.open( QtCore.QFile.WriteOnly | QtCore.QFile.Text):
             QtGui.QMessageBox.warning(self, self.tr("CellDraw"), \
                 self.tr("Saving per-pixel PIFF file...\mcan not write file %1:\n%2.").arg(fileName).arg(file.errorString()))
-            print "___ - DEBUG ----- PIFInputMainWindow: savePIFFileFromAllPixels() failed."
+            print "___ - DEBUG ----- CellDrawMainWindow: savePIFFileFromAllPixels() failed."
             return False
 
         # 2010 - Mitja: TODO TODO TODO
-        #   here we retrieve the table contents to an update regionsTableDict:
-        self.regionsTableDict = self.graphicsSceneWindow.getTypesDict()
-        lKeys = self.regionsTableDict.keys()
-        print "2010 DEBUG DEBUG DEBUG DEBUG: in savePIFFileFromAllPixels() the regionsTableDict is :"
-        print "                  regionsTableDict keys =", lKeys
-        for i in xrange(len(self.regionsTableDict)):
-            print "                  regionsTableDict: i, lKeys[i], regionsTableDict[keys[i]] = ", \
-                  i, lKeys[i], self.regionsTableDict[lKeys[i]]
+        #   here we retrieve the table contents to an update mainTypesDict:
+        self.mainTypesDict = self.diagramSceneMainWidget.getTypesDict()
+        lKeys = self.mainTypesDict.keys()
+        print "2010 DEBUG DEBUG DEBUG DEBUG: in savePIFFileFromAllPixels() the mainTypesDict is :"
+        print "                  mainTypesDict keys =", lKeys
+        for i in xrange(len(self.mainTypesDict)):
+            print "                  mainTypesDict: i, lKeys[i], mainTypesDict[keys[i]] = ", \
+                  i, lKeys[i], self.mainTypesDict[lKeys[i]]
 
 
 
@@ -1288,8 +1298,8 @@ class PIFInputMainWindow(QtGui.QMainWindow):
         # 2010 - Mitja: sample and save *all* cell values from the pixmap image
         #   (not just those at "fixedRasterWidth" intervals)
         lSampleInterval = 1
-        lWidth = self.graphicsSceneWindow.theCDImageLayer.width
-        lHeight = self.graphicsSceneWindow.theCDImageLayer.height
+        lWidth = self.diagramSceneMainWidget.theCDImageLayer.width
+        lHeight = self.diagramSceneMainWidget.theCDImageLayer.height
 
         lCellID = 0
 
@@ -1301,7 +1311,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
                 yoffset = j
 
                 # 2010 - Mitja: sample the pixmap to obtain the color value at i,j:
-                lColor = self.graphicsSceneWindow.theCDImageLayer.image.pixel(xoffset,yoffset)
+                lColor = self.diagramSceneMainWidget.theCDImageLayer.image.pixel(xoffset,yoffset)
 
                 lCellType = self.colorDict[lColor]
                 # 2010 - Mitja: the simplest type of save function is implemented as
@@ -1322,7 +1332,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
                     lOutputStream << "%s %s %s %s %s %s 0 0\n"%(lCellID,lCellType,xmin,xmax,ymin,ymax)
                     lCellID +=1
 
-        print "___ - DEBUG ----- PIFInputMainWindow: savePIFFileFromAllPixels() done."
+        print "___ - DEBUG ----- CellDrawMainWindow: savePIFFileFromAllPixels() done."
 
         # 2010 - Mitja: stop showing that the application is busy (while writing to a file)
         #   and undo the last setOverrideCursor(), i.e. set the mouse cursor to what it was before:
@@ -1346,9 +1356,9 @@ class PIFInputMainWindow(QtGui.QMainWindow):
               "\n self.colorIds =", self.colorIds, \
               "\n self.colorDict =", self.colorDict, \
               "\n self.comboDict =", self.comboDict, \
-              "\n self.regionsTableDict =", self.regionsTableDict
+              "\n self.mainTypesDict =", self.mainTypesDict
 
-        self.graphicsSceneWindow.saveSceneFile()
+        self.diagramSceneMainWidget.saveSceneFile()
 
 
     # end of def fileSaveScene_Callback(self)
@@ -1366,9 +1376,9 @@ class PIFInputMainWindow(QtGui.QMainWindow):
               "\n self.colorIds =", self.colorIds, \
               "\n self.colorDict =", self.colorDict, \
               "\n self.comboDict =", self.comboDict, \
-              "\n self.regionsTableDict =", self.regionsTableDict
+              "\n self.mainTypesDict =", self.mainTypesDict
 
-        self.graphicsSceneWindow.newSceneFile()
+        self.diagramSceneMainWidget.newSceneFile()
 
 
     # end of def fileNewScene_Callback(self)
@@ -1385,7 +1395,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
               "\n self.colorIds ="+ str(self.colorIds)+ \
               "\n self.colorDict ="+ str(self.colorDict)+ \
               "\n self.comboDict ="+ str(self.comboDict)+ \
-              "\n self.regionsTableDict ="+ str(self.regionsTableDict), CDConstants.DebugAll )
+              "\n self.mainTypesDict ="+ str(self.mainTypesDict), CDConstants.DebugAll )
 
         lFileDialog = QtGui.QFileDialog(self.theMainWindow)
         lFilters = "Scene Bundle (*."+CDConstants.SceneBundleFileExtension+");;Scene File (*.pifScene)"
@@ -1411,14 +1421,14 @@ class PIFInputMainWindow(QtGui.QMainWindow):
                     lTheSceneFileName = self.cdSceneBundle.getSceneFileName()
                     if (lTheSceneFileName != ""):
                         CDConstants.printOut(  "fileOpenScene_Callback() : lTheSceneFileName = " + str(lTheSceneFileName), CDConstants.DebugAll )
-                        self.graphicsSceneWindow.openSceneFile(lTheSceneFileName)
+                        self.diagramSceneMainWidget.openSceneFile(lTheSceneFileName)
                     lThePIFFFileName = self.cdSceneBundle.getPIFFFileName()
                     if (lThePIFFFileName != ""):
                         CDConstants.printOut(  "fileOpenScene_Callback() : lThePIFFFileName = " + str(lThePIFFFileName), CDConstants.DebugAll )
                         self.openPIFFFile(lThePIFFFileName)
                 
             elif (lFileExtension == ".pifScene"):
-                self.graphicsSceneWindow.openSceneFile(lFileName)
+                self.diagramSceneMainWidget.openSceneFile(lFileName)
 
 #         CDConstants.printOut(  "fileOpenScene_Callback() : lFileDialog.selectedNameFilter() = " + str(lFileDialog.selectedNameFilter()), CDConstants.DebugAll )
 #         CDConstants.printOut(  "fileOpenScene_Callback() : lFileDialog.selectedFiles()[0] = " + str(lFileDialog.selectedFiles()[0]), CDConstants.DebugAll )
@@ -1439,7 +1449,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
               "\n self.colorIds ="+ str(self.colorIds)+ \
               "\n self.colorDict ="+ str(self.colorDict)+ \
               "\n self.comboDict ="+ str(self.comboDict)+ \
-              "\n self.regionsTableDict ="+ str(self.regionsTableDict), CDConstants.DebugAll )
+              "\n self.mainTypesDict ="+ str(self.mainTypesDict), CDConstants.DebugAll )
 
         lFileName = QtGui.QFileDialog.getOpenFileName(self, \
             self.tr("CellDraw - Import Image Sequence File"), \
@@ -1500,16 +1510,16 @@ class PIFInputMainWindow(QtGui.QMainWindow):
 
         # update x,y,z dimensions in the Image Sequence object,
         #    this will also reset all the image sequence object's numpy array:
-        self.graphicsSceneWindow.theCDImageSequence.resetSequenceDimensions(lXdim, lYdim, lZdim)
+        self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions(lXdim, lYdim, lZdim)
 
         # tell the Image Sequence to show only the plain area (image contents) from the sequence:
-        self.graphicsSceneWindow.theCDImageSequence.resetToOneProcessingModeForImageSequenceToPIFF( CDConstants.ImageSequenceUseAreaSeeds )
+        self.diagramSceneMainWidget.theCDImageSequence.resetToOneProcessingModeForImageSequenceToPIFF( CDConstants.ImageSequenceUseAreaSeeds )
 
         CDConstants.printOut(  "importImageSequence()  --  5.", CDConstants.DebugTODO )
         # time.sleep(1.0)
         
         # temporarily disable drawing the scene overlay:
-        self.graphicsSceneWindow.scene.setDrawForegroundEnabled(False)
+        self.diagramSceneMainWidget.scene.setDrawForegroundEnabled(False)
 
         # show a panel containing a progress bar:        
         lProgressBarPanel=CDWaitProgressBar("Importing image sequence.",100,self.theMainWindow)
@@ -1532,8 +1542,8 @@ class PIFInputMainWindow(QtGui.QMainWindow):
             if lImage.isNull():
 
                 # if non-image file, abort sequence and quit this function:
-                self.graphicsSceneWindow.theCDImageSequence.setSequenceLoadedFromFiles(False)
-                self.graphicsSceneWindow.theCDImageSequence.resetSequenceDimensions( \
+                self.diagramSceneMainWidget.theCDImageSequence.setSequenceLoadedFromFiles(False)
+                self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions( \
                     lXdim, lYdim, lFileCounter)
 
                 lProgressBarPanel.maxProgressBar()
@@ -1543,12 +1553,12 @@ class PIFInputMainWindow(QtGui.QMainWindow):
                     self.tr("Cannot open the image file:\n" \
                     "%1\nCanceling the image sequence import.").arg(lCurrentFileName)  )
                 # re-enable drawing the scene overlay:
-                self.graphicsSceneWindow.scene.setDrawForegroundEnabled(True)
+                self.diagramSceneMainWidget.scene.setDrawForegroundEnabled(True)
                 return
 
-            self.graphicsSceneWindow.theCDImageSequence.setCurrentIndexWithoutUpdatingGUI(lFileCounter)
-            self.graphicsSceneWindow.theCDImageSequence.setCurrentImageAndArrayLayer(lImage)
-            self.graphicsSceneWindow.theCDImageSequence.setCurrentFileName(lCurrentFileName)
+            self.diagramSceneMainWidget.theCDImageSequence.setCurrentIndexWithoutUpdatingGUI(lFileCounter)
+            self.diagramSceneMainWidget.theCDImageSequence.setCurrentImageAndArrayLayer(lImage)
+            self.diagramSceneMainWidget.theCDImageSequence.setCurrentFileName(lCurrentFileName)
 
             lFileCounter = lFileCounter + 1
 
@@ -1567,16 +1577,16 @@ class PIFInputMainWindow(QtGui.QMainWindow):
         # time.sleep(1.0)
 
         # now confirm that the theCDImageSequence contains a sequence loaded from files:
-        self.graphicsSceneWindow.theCDImageSequence.setSequenceLoadedFromFiles(True)
-        self.graphicsSceneWindow.theCDImageSequence.setSequencePathName(str(lThePathToImageSequenceDir))
+        self.diagramSceneMainWidget.theCDImageSequence.setSequenceLoadedFromFiles(True)
+        self.diagramSceneMainWidget.theCDImageSequence.setSequencePathName(str(lThePathToImageSequenceDir))
 
         CDConstants.printOut(  "importImageSequence()  --  9.", CDConstants.DebugTODO )
         # time.sleep(1.0)
 
         # 2011 - also update the regionUseDict since it contains the list of all
         #  region colors in use by our scene - TODO TODO - this ought to be a separate list from the region list...
-        self.graphicsSceneWindow.scene.addToRegionColorsInUse( \
-                self.graphicsSceneWindow.theCDImageSequence.getSequenceCurrentColor()  )
+        self.diagramSceneMainWidget.scene.addToRegionColorsInUse( \
+                self.diagramSceneMainWidget.theCDImageSequence.getSequenceCurrentColor()  )
 
         CDConstants.printOut(  "importImageSequence()  --  10.", CDConstants.DebugTODO )
         # time.sleep(1.0)
@@ -1594,8 +1604,8 @@ class PIFInputMainWindow(QtGui.QMainWindow):
 
         # 2011 - also update the regionUseDict since it contains the list of all
         #  region colors in use by our scene - TODO TODO - this ought to be a separate list from the region list...
-        self.graphicsSceneWindow.scene.addToRegionColorsInUse( \
-                self.graphicsSceneWindow.theCDImageSequence.getSequenceWallColor()  )
+        self.diagramSceneMainWidget.scene.addToRegionColorsInUse( \
+                self.diagramSceneMainWidget.theCDImageSequence.getSequenceWallColor()  )
 
         CDConstants.printOut(  "importImageSequence()  --  11.", CDConstants.DebugTODO )
         # time.sleep(1.0)
@@ -1607,7 +1617,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
 #         3. fix sequence display so that it uses the chosen content color for rendering of 2D images
 #             probably after normalizing
 
-        self.graphicsSceneWindow.theCDImageSequence.normalizeAllImages()
+        self.diagramSceneMainWidget.theCDImageSequence.normalizeAllImages()
 
         CDConstants.printOut(  "importImageSequence()  --  12.", CDConstants.DebugTODO )
         # time.sleep(1.0)
@@ -1622,7 +1632,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
 
                 
 
-            lNewSceneMessageBox = QtGui.QMessageBox(self.graphicsSceneWindow)
+            lNewSceneMessageBox = QtGui.QMessageBox(self.diagramSceneMainWidget)
             lNewSceneMessageBox.setWindowModality(QtCore.Qt.WindowModal)
             lNewSceneMessageBox.setIcon(QtGui.QMessageBox.Warning)
             # the "setText" sets the main large print text in the dialog box:
@@ -1653,10 +1663,10 @@ class PIFInputMainWindow(QtGui.QMainWindow):
         # time.sleep(1.0)
 
         # finally set the current index to 0 i.e. the initial image in the sequence:
-        self.graphicsSceneWindow.theCDImageSequence.setCurrentIndex(0)
+        self.diagramSceneMainWidget.theCDImageSequence.setCurrentIndex(0)
 
         # re-enable drawing the scene overlay:
-        self.graphicsSceneWindow.scene.setDrawForegroundEnabled(True)
+        self.diagramSceneMainWidget.scene.setDrawForegroundEnabled(True)
 
 
     # end of def importImageSequence(self)
@@ -1717,7 +1727,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
               "\n self.colorIds ="+ str(self.colorIds)+ \
               "\n self.colorDict ="+ str(self.colorDict)+ \
               "\n self.comboDict ="+ str(self.comboDict)+ \
-              "\n self.regionsTableDict ="+ str(self.regionsTableDict), CDConstants.DebugAll )
+              "\n self.mainTypesDict ="+ str(self.mainTypesDict), CDConstants.DebugAll )
 
         lFileName = QtGui.QFileDialog.getOpenFileName(self, \
             self.tr("CellDraw - Import PIFF File"), \
@@ -1864,7 +1874,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
                 print "2010 DEBUG: _,.- ~*'`'*~-.,_ openPIFFFile() converted [", pFileName, "] PIFF into image."
 
                 # now confirm that the theCDImageLayer contains an actual image loaded from a file:
-                self.graphicsSceneWindow.theCDImageLayer.setImageLoadedFromFile(True)
+                self.diagramSceneMainWidget.theCDImageLayer.setImageLoadedFromFile(True)
 
                 self.setImageGlobals( image )
                
@@ -1878,8 +1888,8 @@ class PIFInputMainWindow(QtGui.QMainWindow):
                 #    This way it will tile, but only once.
                 #    Besure to update the pixmap on resize!
                 lThePath,lTheFileName = os.path.split(str(pFileName))
-                print "2010 DEBUG 2010 DEBUG now calling self.graphicsSceneWindow.updateBackgroundImage(lTheFileName, image) = (", lTheFileName, image, ")."
-                self.graphicsSceneWindow.updateBackgroundImage(lTheFileName, image)
+                print "2010 DEBUG 2010 DEBUG now calling self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image) = (", lTheFileName, image, ")."
+                self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image)
 
 
     # end of def openPIFFFile(self)
@@ -1907,7 +1917,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
               "\n self.colorIds =", self.colorIds, \
               "\n self.colorDict =", self.colorDict, \
               "\n self.comboDict =", self.comboDict, \
-              "\n self.regionsTableDict =", self.regionsTableDict
+              "\n self.mainTypesDict =", self.mainTypesDict
 
         lFileName = QtGui.QFileDialog.getOpenFileName(self, self.tr("CellDraw - Open DICOM File"), \
                        QtCore.QDir.currentPath(), self.tr("*.dcm"))
@@ -2025,7 +2035,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
             print "2010 DEBUG: _,.- ~*'`'*~-.,_ fileImportDICOM_Callback() converted [", lFileName, "] PIFF into image."
 
             # now confirm that the theCDImageLayer contains an actual image loaded from a file:
-            self.graphicsSceneWindow.theCDImageLayer.setImageLoadedFromFile(True)
+            self.diagramSceneMainWidget.theCDImageLayer.setImageLoadedFromFile(True)
 
             self.setImageGlobals( image )
            
@@ -2039,8 +2049,8 @@ class PIFInputMainWindow(QtGui.QMainWindow):
             #    This way it will tile, but only once.
             #    Besure to update the pixmap on resize!
             lThePath,lTheFileName = os.path.split(str(lFileName))
-            print "2010 DEBUG 2010 DEBUG now calling self.graphicsSceneWindow.updateBackgroundImage(lTheFileName, image) = (", lTheFileName, image, ")."
-            self.graphicsSceneWindow.updateBackgroundImage(lTheFileName, image)
+            print "2010 DEBUG 2010 DEBUG now calling self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image) = (", lTheFileName, image, ")."
+            self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image)
         print "2010 DEBUG: fileImportDICOM_Callback() ENDING."
         print "-.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-"
 
@@ -2079,7 +2089,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
               "\n self.colorIds ="+str(self.colorIds)+
               "\n self.colorDict ="+str(self.colorDict)+
               "\n self.comboDict ="+str(self.comboDict)+
-              "\n self.regionsTableDict ="+str(self.regionsTableDict), CDConstants.DebugAll )
+              "\n self.mainTypesDict ="+str(self.mainTypesDict), CDConstants.DebugAll )
         CDConstants.printOut( "     1     ", CDConstants.DebugAll )
 
 #         lFileName = QtGui.QFileDialog.getOpenFileName(self, self.tr("CellDraw - Open TIFF Multi-Page File"), \
@@ -2212,7 +2222,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
             CDConstants.printOut( "2010 DEBUG: _,.- ~*'`'*~-.,_ fileImportTIFFMultiPage_Callback() converted ["+str(lFileName)+"] TIFF into image.", CDConstants.DebugAll )
 
             # now confirm that the theCDImageLayer contains an actual image loaded from a file:
-            self.graphicsSceneWindow.theCDImageLayer.setImageLoadedFromFile(True)
+            self.diagramSceneMainWidget.theCDImageLayer.setImageLoadedFromFile(True)
 
             self.setImageGlobals( image )
            
@@ -2226,8 +2236,8 @@ class PIFInputMainWindow(QtGui.QMainWindow):
             #    This way it will tile, but only once.
             #    Besure to update the pixmap on resize!
             lThePath,lTheFileName = os.path.split(str(lFileName))
-            CDConstants.printOut( "2010 DEBUG 2010 DEBUG now calling self.graphicsSceneWindow.updateBackgroundImage(lTheFileName, image) = ("+str(lTheFileName)+" "+str(image)+").", CDConstants.DebugAll )
-            self.graphicsSceneWindow.updateBackgroundImage(lTheFileName, image)
+            CDConstants.printOut( "2010 DEBUG 2010 DEBUG now calling self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image) = ("+str(lTheFileName)+" "+str(image)+").", CDConstants.DebugAll )
+            self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image)
         CDConstants.printOut( "2010 DEBUG: fileImportTIFFMultiPage_Callback() ENDING.", CDConstants.DebugAll )
         CDConstants.printOut( "-.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-", CDConstants.DebugAll )
 
@@ -2300,7 +2310,7 @@ class PIFInputMainWindow(QtGui.QMainWindow):
 
 
     # ---------------------------------------------------------
-    # end of class PIFInputMainWindow(QtGui.QMainWindow):
+    # end of class CellDrawMainWindow(QtGui.QMainWindow):
     # ---------------------------------------------------------
 
 
@@ -2311,24 +2321,24 @@ class PIFInputMainWindow(QtGui.QMainWindow):
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
 
-    # 2010 - Mitja: the class PIFInputMainWindow actually implements this application's
+    # 2010 - Mitja: the class CellDrawMainWindow actually implements this application's
     #   main GUI (not just the main window):
-    cellDrawMainWindow = PIFInputMainWindow()
+    cellDrawTheMainWindow = CellDrawMainWindow()
 
     # 2010 - Mitja: parse any command-line options to see if an image has to be
     #  opened right away, specified as "commandname -o filename"
     if len(sys.argv) > 1:
         if sys.argv[1] == '-o':
             file_name = sys.argv[2]
-            cellDrawMainWindow.openImage(file_name)
+            cellDrawTheMainWindow.openImage(file_name)
 
     # 2010 - Mitja: QMainWindow.raise_() must be called after QMainWindow.show()
     #     otherwise the PyQt/Qt-based GUI won't receive foreground focus.
     #     It's a workaround for a well-known bug caused by PyQt/Qt on Mac OS X
     #     as shown here:
     #       http://www.riverbankcomputing.com/pipermail/pyqt/2009-September/024509.html
-    cellDrawMainWindow.show()
-    cellDrawMainWindow.raise_()
+    cellDrawTheMainWindow.show()
+    cellDrawTheMainWindow.raise_()
 
     sys.exit(app.exec_())
 

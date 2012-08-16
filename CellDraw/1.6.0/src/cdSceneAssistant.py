@@ -1773,7 +1773,6 @@ class CDSceneAssistant(QtGui.QWizard):
         wizard = CDSceneAssistant()
     
     
-        # connect theSceneRasterizerWidget to the only instance of the cdPreferences object:
         #    read some persistent-value globals from the preferences file on disk, if it already exists.
         cdPreferences = CDPreferences()
         cdPreferences.hide()
@@ -2006,7 +2005,6 @@ if __name__ == '__main__':
     wizard = CDSceneAssistant()
 
 
-    # connect theSceneRasterizerWidget to the only instance of the cdPreferences object:
     #    read some persistent-value globals from the preferences file on disk, if it already exists.
     cdPreferences = CDPreferences()
     cdPreferences.hide()
