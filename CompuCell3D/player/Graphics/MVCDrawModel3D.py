@@ -182,6 +182,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
             
             filterList[actorCounter].SetValue(0, self.usedCellTypesList[actorCounter])
             smootherList[actorCounter].SetInputConnection(filterList[actorCounter].GetOutputPort())
+#            print MODULENAME,' smooth iters=',smootherList[actorCounter].GetNumberOfIterations()
+#            smootherList[actorCounter].SetNumberOfIterations(200)
             normalsList[actorCounter].SetInputConnection(smootherList[actorCounter].GetOutputPort())
             normalsList[actorCounter].SetFeatureAngle(45.0)
             mapperList[actorCounter].SetInputConnection(normalsList[actorCounter].GetOutputPort())
@@ -192,6 +194,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
             if actorName in _actors:
                 _actors[actorName].SetMapper(mapperList[actorCounter])
                 _actors[actorName].GetProperty().SetDiffuseColor(self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3])
+#                _actors[actorName].GetProperty().SetOpacity(0.5)
+
                 
                 
     # new rendering technique - vkDiscreteMarchingCubes on cellId
@@ -267,75 +271,75 @@ class MVCDrawModel3D(MVCDrawModelBase):
                 _actors[actorName].GetProperty().SetDiffuseColor(self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3])
         
         
-    def drawCellField_rwh_old(self, bsd, fieldType):
-        import CompuCell
-        # potts      = sim.getPotts()
-        # cellField  = potts.getCellFieldG()
-        fieldDim   = bsd.fieldDim
-        
-        # self.usedCellTypesList=self.fillCellFieldData(cellField)
-        
-        self.cellType = vtk.vtkIntArray()
-        self.cellType.SetName("celltype")
-        self.cellTypeIntAddr = self.extractAddressIntFromVtkObject(self.cellType)
-        
-        self.cellId = vtk.vtkIntArray()
-        self.cellId.SetName("cellid")
-        self.cellIdIntAddr = self.extractAddressIntFromVtkObject(self.cellId)
-        
-#        self.usedCellTypesList = self.parentWidget.fieldExtractor.fillCellFieldData3D(self.cellTypeIntAddr)
-        self.usedCellTypesList = self.parentWidget.fieldExtractor.fillCellFieldData3D(self.cellTypeIntAddr, self.cellIdIntAddr)
-        
-        print MODULENAME,"drawCellField: usedCellTypesList",self.usedCellTypesList
-        
-        numberOfActors = len(self.usedCellTypesList)
-        # self.numberOfUsedCellTypes=len(self.usedCellTypesList)
-        #each cell type will be represented by one actor
-        # print "\n\n\n numberOfActors=",numberOfActors,"\n\n\n"
-                
-        # creating vtkImageData
-        cellTypeImageData = vtk.vtkImageData()
-        cellTypeImageData.SetDimensions(fieldDim.x+2,fieldDim.y+2,fieldDim.z+2) # adding 1 pixel border around the lattice to make rendereing smooth at lattice borders
-        cellTypeImageData.GetPointData().SetScalars(self.cellType)
-        
-        self.hideAllActors()
-        self.set3DInvisibleTypes()
-        self.prepareOutlineActor(cellTypeImageData)
-        self.showOutlineActor()
-        
-        self.prepareCellTypeActors()
-        self.showCellTypeActors()
-        
-        # creating and initializing filters, smoothers and mappers - one for each cell type
-        
-        filterList = [vtk.vtkDiscreteMarchingCubes() for i in xrange(numberOfActors)]
-        smootherList = [vtk.vtkSmoothPolyDataFilter() for i in xrange(numberOfActors)]
-        normalsList = [vtk.vtkPolyDataNormals() for i in xrange(numberOfActors)]
-        mapperList = [vtk.vtkPolyDataMapper() for i in xrange(numberOfActors)]
-        
-        # actorCounter=0
-        # for i in usedCellTypesList:
-        for actorCounter in xrange(len(self.usedCellTypesList)):
-            filterList[actorCounter].SetInput(cellTypeImageData)
-            # filterList[actorCounter].SetValue(0, usedCellTypesList[actorCounter])
-            
-            filterList[actorCounter].SetValue(0, self.usedCellTypesList[actorCounter])
-            smootherList[actorCounter].SetInputConnection(filterList[actorCounter].GetOutputPort())
-            normalsList[actorCounter].SetInputConnection(smootherList[actorCounter].GetOutputPort())
-            normalsList[actorCounter].SetFeatureAngle(45.0)
-            mapperList[actorCounter].SetInputConnection(normalsList[actorCounter].GetOutputPort())
-            mapperList[actorCounter].ScalarVisibilityOff()
-            
-            actorName = "CellType_" + str(self.usedCellTypesList[actorCounter])
-            print MODULENAME, '  drawCellField, actorName=',actorName
-            if actorName in self.currentActors:
-                self.currentActors[actorName].SetMapper(mapperList[actorCounter])
-                rgbVal = self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3]
-                self.currentActors[actorName].GetProperty().SetDiffuseColor(rgbVal)
-#                self.currentActors[actorName].GetProperty().SetDiffuseColor(self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3])
-                # # # print "clut.GetTableValue(actorName)[0:3]=",self.lut.GetTableValue(self.usedCellTypesList[actorCounter])[0:3]
-
-        self.Render()
+#    def drawCellField_rwh_old(self, bsd, fieldType):
+#        import CompuCell
+#        # potts      = sim.getPotts()
+#        # cellField  = potts.getCellFieldG()
+#        fieldDim   = bsd.fieldDim
+#        
+#        # self.usedCellTypesList=self.fillCellFieldData(cellField)
+#        
+#        self.cellType = vtk.vtkIntArray()
+#        self.cellType.SetName("celltype")
+#        self.cellTypeIntAddr = self.extractAddressIntFromVtkObject(self.cellType)
+#        
+#        self.cellId = vtk.vtkIntArray()
+#        self.cellId.SetName("cellid")
+#        self.cellIdIntAddr = self.extractAddressIntFromVtkObject(self.cellId)
+#        
+##        self.usedCellTypesList = self.parentWidget.fieldExtractor.fillCellFieldData3D(self.cellTypeIntAddr)
+#        self.usedCellTypesList = self.parentWidget.fieldExtractor.fillCellFieldData3D(self.cellTypeIntAddr, self.cellIdIntAddr)
+#        
+#        print MODULENAME,"drawCellField: usedCellTypesList",self.usedCellTypesList
+#        
+#        numberOfActors = len(self.usedCellTypesList)
+#        # self.numberOfUsedCellTypes=len(self.usedCellTypesList)
+#        #each cell type will be represented by one actor
+#        # print "\n\n\n numberOfActors=",numberOfActors,"\n\n\n"
+#                
+#        # creating vtkImageData
+#        cellTypeImageData = vtk.vtkImageData()
+#        cellTypeImageData.SetDimensions(fieldDim.x+2,fieldDim.y+2,fieldDim.z+2) # adding 1 pixel border around the lattice to make rendereing smooth at lattice borders
+#        cellTypeImageData.GetPointData().SetScalars(self.cellType)
+#        
+#        self.hideAllActors()
+#        self.set3DInvisibleTypes()
+#        self.prepareOutlineActor(cellTypeImageData)
+#        self.showOutlineActor()
+#        
+#        self.prepareCellTypeActors()
+#        self.showCellTypeActors()
+#        
+#        # creating and initializing filters, smoothers and mappers - one for each cell type
+#        
+#        filterList = [vtk.vtkDiscreteMarchingCubes() for i in xrange(numberOfActors)]
+#        smootherList = [vtk.vtkSmoothPolyDataFilter() for i in xrange(numberOfActors)]
+#        normalsList = [vtk.vtkPolyDataNormals() for i in xrange(numberOfActors)]
+#        mapperList = [vtk.vtkPolyDataMapper() for i in xrange(numberOfActors)]
+#        
+#        # actorCounter=0
+#        # for i in usedCellTypesList:
+#        for actorCounter in xrange(len(self.usedCellTypesList)):
+#            filterList[actorCounter].SetInput(cellTypeImageData)
+#            # filterList[actorCounter].SetValue(0, usedCellTypesList[actorCounter])
+#            
+#            filterList[actorCounter].SetValue(0, self.usedCellTypesList[actorCounter])
+#            smootherList[actorCounter].SetInputConnection(filterList[actorCounter].GetOutputPort())
+#            normalsList[actorCounter].SetInputConnection(smootherList[actorCounter].GetOutputPort())
+#            normalsList[actorCounter].SetFeatureAngle(45.0)
+#            mapperList[actorCounter].SetInputConnection(normalsList[actorCounter].GetOutputPort())
+#            mapperList[actorCounter].ScalarVisibilityOff()
+#            
+#            actorName = "CellType_" + str(self.usedCellTypesList[actorCounter])
+#            print MODULENAME, '  drawCellField, actorName=',actorName
+#            if actorName in self.currentActors:
+#                self.currentActors[actorName].SetMapper(mapperList[actorCounter])
+#                rgbVal = self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3]
+#                self.currentActors[actorName].GetProperty().SetDiffuseColor(rgbVal)
+##                self.currentActors[actorName].GetProperty().SetDiffuseColor(self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3])
+#                # # # print "clut.GetTableValue(actorName)[0:3]=",self.lut.GetTableValue(self.usedCellTypesList[actorCounter])[0:3]
+#
+#        self.Render()
         
     def showConActors(self):
         if not self.currentActors.has_key("ConActor"):
@@ -371,7 +375,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         # conField   = CompuCell.getConcentrationField(sim, fieldType[0])
         conFieldName = self.currentDrawingParameters.fieldName
-        
         
         numIsos = Configuration.getSetting("NumberOfContourLines",conFieldName)
         self.isovalStr = Configuration.getSetting("ScalarIsoValues",conFieldName)
@@ -498,14 +501,13 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
 #        print MODULENAME, '  initScalarFieldDataActors(): len(self.isovalStr)=',len(self.isovalStr)
         printIsoValues = False
-        if printIsoValues:  print MODULENAME, ' isovalues= ',
+#        if printIsoValues:  print MODULENAME, ' isovalues= ',
         isoNum = 0
         for idx in xrange(len(self.isovalStr)):
 #            print MODULENAME, '  initScalarFieldDataActors(): idx= ',idx
             try:
                 isoVal = float(self.isovalStr[idx])
-                print MODULENAME, '  initScalarFieldDataActors(): setting (specific) isoval= ',isoVal
-                if printIsoValues:  print isoVal,
+                if printIsoValues:  print MODULENAME, '  initScalarFieldDataActors(): setting (specific) isoval= ',isoVal
                 isoContour.SetValue(isoNum, isoVal)
                 isoNum += 1
             except:
@@ -518,9 +520,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
 #        print MODULENAME, '  initScalarFieldDataActors(): delIso= ',delIso
         isoVal = self.minCon + delIso
         for idx in xrange(numIsos):
-            print MODULENAME, '  initScalarFieldDataActors(): isoNum, isoval= ',isoNum,isoVal
+            if printIsoValues:  print MODULENAME, '  initScalarFieldDataActors(): isoNum, isoval= ',isoNum,isoVal
             isoContour.SetValue(isoNum, isoVal)
-            if printIsoValues:  print isoVal,
             isoNum += 1
             isoVal += delIso
         if printIsoValues:  print 

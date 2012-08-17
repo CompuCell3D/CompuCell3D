@@ -358,8 +358,8 @@ class MVCDrawView2D(MVCDrawViewBase):
 #        if self.parentWidget.cellsAct.isChecked():
 #        if self.parentWidget.cellsAct.isChecked() or self.getSim3DFlag():  # rwh: hack for FPP
         dictKey = self.graphicsFrameWidget.winId().__int__()  # get key (addr) for this window
-        
 #        print MODULENAME,' drawCellField(): self.parentWidget.graphicsWindowVisDict=',self.parentWidget.graphicsWindowVisDict
+#        print MODULENAME,' drawCellField(): dictKey=',dictKey
         
         if self.parentWidget.graphicsWindowVisDict[dictKey][0] or self.getSim3DFlag():  # rwh: for multi-window bug fix;  rwh: hack for FPP
 #        if self.parentWidget.graphicsWindowVisDict[self.parentWidget.lastActiveWindow.winId()][0] or self.getSim3DFlag():  # rwh: for multi-window bug fix;  rwh: hack for FPP

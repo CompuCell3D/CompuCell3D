@@ -199,8 +199,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         
     def setActiveSubWindowCustomSlot(self, window):
-#        print MODULENAME,"setActiveSubWindow: window=",window
-#        print MODULENAME,'\n ------------------  setActiveSubWindowCustomSlot():  self.mdiWindowDict =', self.mdiWindowDict
+        print MODULENAME,"setActiveSubWindow: window=",window
+        print MODULENAME,'\n ------------------  setActiveSubWindowCustomSlot():  self.mdiWindowDict =', self.mdiWindowDict
         windowNames = self.plotWindowDict.keys()
 #        for windowName in windowNames:
 #          print MODULENAME,'     setActiveSubWindowCustomSlot():  windowName=', windowName
@@ -212,7 +212,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
             self.lastActiveWindow = window
 #            print "MODULENAME,'         setActiveSubWindowCustomSlot(): self.lastActiveWindow.winId().__int__()=",self.lastActiveWindow.windowId().__int__()
-#            print "MODULENAME,'         setActiveSubWindowCustomSlot(): self.lastActiveWindow is ",self.lastActiveWindow.windowTitle()
+            print "MODULENAME,'         setActiveSubWindowCustomSlot(): self.lastActiveWindow is ",self.lastActiveWindow.windowTitle()
             
 #            self.updateActiveWindowVisFlags()
 
@@ -221,7 +221,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             if dictKey in self.graphicsWindowVisDict.keys():
 #               self.simulation.drawMutex.lock()  # lock/unlock necessary or not?
 #                print MODULENAME,'------- setActiveSubWindowCustomSlot():  updating *Act.setChecked:  cellsAct=',self.graphicsWindowVisDict[self.lastActiveWindow.winId().__int__()][0]
-#                print MODULENAME,'------- setActiveSubWindowCustomSlot():  updating *Act.setChecked: borderAct=',self.graphicsWindowVisDict[self.lastActiveWindow.winId().__int__()][1]
+                print MODULENAME,'------- setActiveSubWindowCustomSlot():  updating *Act.setChecked: borderAct=',self.graphicsWindowVisDict[self.lastActiveWindow.winId().__int__()][1]
                 self.cellsAct.setChecked(self.graphicsWindowVisDict[dictKey][0])
                 self.borderAct.setChecked(self.graphicsWindowVisDict[dictKey][1])
                 self.clusterBorderAct.setChecked(self.graphicsWindowVisDict[dictKey][2])
@@ -229,15 +229,18 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                 self.FPPLinksAct.setChecked(self.graphicsWindowVisDict[dictKey][4])
         
 
-    def updateActiveWindowVisFlags(self):
-        dictKey = self.lastActiveWindow.winId().__int__()
+    def updateActiveWindowVisFlags(self, window=None):
+        if window:
+            dictKey = window.winId().__int__()
+        else:
+            dictKey = self.lastActiveWindow.winId().__int__()
+        print
+        print MODULENAME, 'updateActiveWindowVisFlags():  dictKey (of lastActiveWindow)=',dictKey
         self.graphicsWindowVisDict[dictKey] = (self.cellsAct.isChecked(),self.borderAct.isChecked(), \
                                       self.clusterBorderAct.isChecked(),self.cellGlyphsAct.isChecked(),self.FPPLinksAct.isChecked() )
-#        print
-#        print MODULENAME, 'updateActiveWindowVisFlags():  dictKey=',dictKey
-#        print MODULENAME, 'updateActiveWindowVisFlags():  self.graphicsWindowVisDict[self.lastActiveWindow.winId()]=',self.graphicsWindowVisDict[self.lastActiveWindow.winId()]
-#        print MODULENAME, 'updateActiveWindowVisFlags():  self.graphicsWindowVisDict=',self.graphicsWindowVisDict
-#        print
+#        print MODULENAME, 'updateActiveWindowVisFlags():  self.graphicsWindowVisDict[self.lastActiveWindow.winId().__int__()]=',self.graphicsWindowVisDict[self.lastActiveWindow.winId().__init__()]
+        print MODULENAME, 'updateActiveWindowVisFlags():  self.graphicsWindowVisDict=',self.graphicsWindowVisDict
+        print
         
         
     # Invoked whenever 'Window' menu is clicked. It does NOT modify lastActiveWindow directly (setActiveSubWindowCustomSlot does)
@@ -345,7 +348,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
         
     def addNewGraphicsWindow(self): 
-#        print MODULENAME, '--------- addNewGraphicsWindow() '
+        print MODULENAME, '--------- addNewGraphicsWindow() '
         # if self.pauseAct.isEnabled():
             # self.__pauseSim()
         if not self.simulationIsRunning:
@@ -406,10 +409,10 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
         
     def addVTKWindowToWorkspace(self):   # just called one time, for initial graphics window
-#        print MODULENAME,' =================================addVTKWindowToWorkspace ========='
+        print MODULENAME,' =================================addVTKWindowToWorkspace ========='
 #        dbgMsg(' addVTKWindowToWorkspace =========')
         # self.graphics2D = Graphics2DNew(self)     
-        self.mainGraphicsWindow = GraphicsFrameWidget(self)               
+        self.mainGraphicsWindow = GraphicsFrameWidget(self)
         
         # we make sure that first graphics window is positioned in the left upper corner
         # NOTE: we have to perform move prior to calling addSubWindow. or else we will get distorted window
@@ -444,7 +447,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         self.mainGraphicsWindow.setWindowTitle("Main Graphics Window "+str(self.windowCounter))
         self.lastActiveWindow = self.mainGraphicsWindow
-#        print MODULENAME,'  addVTKWindowToWorkspace:  self.lastActiveWindow=',self.lastActiveWindow
+        print MODULENAME,'  addVTKWindowToWorkspace:  self.lastActiveWindow=',self.lastActiveWindow
+        print MODULENAME,'  addVTKWindowToWorkspace:  self.lastActiveWindow.winId().__int__()=',self.lastActiveWindow.winId().__int__()
         
         # print "self.lastPositionMainGraphicsWindow=",self.lastPositionMainGraphicsWindow
         # print "\n\n\n"
@@ -453,6 +457,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         # self.activeWindow().move(10,80)
         
+        self.setActiveSubWindowCustomSlot(self.mainGraphicsWindow)  # rwh: do this to "check" this in the "Window" menu
         
         self.updateWindowMenu()
         self.updateActiveWindowVisFlags()
@@ -1382,6 +1387,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         self.prepareXMLTreeView(self.__fileName)
         # after this call I can access self.root_element of the XML File
+#        self.multiWindowPlayerSettings(self.root_element)
         self.loadCustomPlayerSettings(self.root_element)
         # creating simulation directory depending on whether user requests simulatin output or not
 #        import CompuCellSetup
@@ -1431,12 +1437,105 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.simulation.sem.release()        
     
     
+#    def multiWindowPlayerSettings(self, _root_element):
+#        print MODULENAME,'multiWindowPlayerSettings(): --------------------------------\n'
+#        import pdb; pdb.set_trace()
+        
+    def setWindowView(self, w,attrKeys):
+                camera3D = self.lastActiveWindow.getCamera3D()
+                
+#                print 'w.getAttributes()=',w.getAttributes()
+#                print 'dir(w.getAttributes())=',dir(w.getAttributes())
+                
+                if "Projection" in attrKeys:
+                    winProj = w.getAttribute("Projection")
+                    print MODULENAME,'winProj=',winProj
+                    if winProj == '3D':
+                        self.lastActiveWindow._switchDim(True)
+                    else:
+                        if w.findAttribute("XYProj"):
+                            zPos = w.getAttributeAsUInt("XYProj")
+                            print MODULENAME,'  loadCustomPlayerSettings(): XYProj, zPos =',zPos  #rwh
+                            if zPos >= self.xySB.minimum() and zPos <= self.xySB.maximum():
+                                self.lastActiveWindow._xyChecked(True)
+                                self.lastActiveWindow._projSpinBoxChanged(zPos)
+                        elif w.findAttribute("XZProj"):
+                            yPos = w.getAttributeAsUInt("XZProj")
+                            if yPos >= self.xzSB.minimum() and yPos <= self.xzSB.maximum():
+                                self.lastActiveWindow._xzChecked(True)
+                                self.lastActiveWindow._projSpinBoxChanged(yPos)
+                                
+                        elif w.findAttribute("YZProj"):
+                            xPos = w.getAttributeAsUInt("YZProj")
+                            if xPos >= self.yzSB.minimum() and xPos <= self.yzSB.maximum():
+                                self.lastActiveWindow._yzChecked(True)
+                                self.lastActiveWindow._projSpinBoxChanged(xPos)
+                        
+                        
+                if "WindowNumber" in attrKeys:
+                    winNum = w.getAttributeAsUInt("WindowNumber")
+                    print MODULENAME,'winNum=',winNum
+                
+                # set camera params for each window
+                if "CameraPos" in attrKeys:
+                    p = w.getAttribute("CameraPos")
+                    pStr = p.split()
+                    cameraPos = [float(pStr[0]),float(pStr[1]),float(pStr[2])]
+                    print MODULENAME,'cameraPos=',cameraPos
+                    camera3D.SetPosition(cameraPos)
+                if "CameraFocalPoint" in attrKeys:
+                    p = w.getAttribute("CameraFocalPoint")
+                    pStr = p.split()
+                    cameraFocalPoint= [float(pStr[0]),float(pStr[1]),float(pStr[2])]
+                    print MODULENAME,'cameraFocalPoint=',cameraFocalPoint
+                    camera3D.SetFocalPoint(cameraFocalPoint)
+                if "CameraViewUp" in attrKeys:
+                    p = w.getAttribute("CameraViewUp")
+                    pStr = p.split()
+                    cameraViewUp= [float(pStr[0]),float(pStr[1]),float(pStr[2])]
+                    print MODULENAME,'cameraViewUp=',cameraViewUp
+                    camera3D.SetViewUp(cameraViewUp)
+                if "CameraClippingRange" in attrKeys:
+                    p = w.getAttribute("CameraClippingRange")
+                    pStr = p.split()
+                    cameraClippingRange= [float(pStr[0]),float(pStr[1])]
+                    print MODULENAME,'cameraClippingRange=',cameraClippingRange
+                    camera3D.SetClippingRange(cameraClippingRange)
+                if "CameraDistance" in attrKeys:
+                    p = w.getAttributeAsDouble("CameraDistance")
+                    print MODULENAME,'camera distance=',p
+                    camera3D.SetDistance(p)
+
+                self.lastActiveWindow.ren.ResetCameraClippingRange()  # need to do this, else might have clipped actors
+                
     def loadCustomPlayerSettings(self,_root_element):
         import XMLUtils
         import CC3DXML
-        from XMLUtils import dictionaryToMapStrStr as d2mss        
+        from XMLUtils import dictionaryToMapStrStr as d2mss
         playerSettingsElement = _root_element.getFirstElement("Plugin",d2mss({"Name":"PlayerSettings"}))
+#        print '--------------------------------\n'
+#        print 'type(playerSettingsElement)=',type(playerSettingsElement)
+#        print 'dir(playerSettingsElement)=',dir(playerSettingsElement)
+#        print 'playerSettingsElement.getNumberOfChildren()=',playerSettingsElement.getNumberOfChildren()
         if playerSettingsElement:
+            winList = XMLUtils.CC3DXMLListPy(playerSettingsElement.getElements("MainWindow"))
+            for myWin in winList:
+                attrKeys = myWin.getAttributes().keys()  # ['CameraClippingRange', 'CameraDistance', 'CameraFocalPoint', 'CameraPos', 'CameraViewUp', 'WindowNumber']
+#                print '------ MainWindow: attrKeys=',attrKeys
+                self.setWindowView(myWin,attrKeys)
+#            self.mainGraphicsWindow._xyChecked(True)
+            
+            winList = XMLUtils.CC3DXMLListPy(playerSettingsElement.getElements("NewWindow"))
+            for myWin in winList:
+                self.addNewGraphicsWindow()   #rwh
+#                camera3D = self.lastActiveWindow.getCamera3D()
+                
+#                print 'w.getAttributes()=',w.getAttributes()
+#                print 'dir(w.getAttributes())=',dir(w.getAttributes())
+                attrKeys = myWin.getAttributes().keys()  # ['CameraClippingRange', 'CameraDistance', 'CameraFocalPoint', 'CameraPos', 'CameraViewUp', 'WindowNumber']
+                self.setWindowView(myWin,attrKeys)
+                
+                
             visualControlElement = playerSettingsElement.getFirstElement("VisualControl")
             if visualControlElement:
 #                print 'type(visualControlElement)=',type(visualControlElement)
@@ -1456,15 +1555,6 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                       print 'Valid attributes are ',validAttrs
                       print '--------\n'
                     
-#                foundAttr = False
-#                for attr in validAttrs:
-#                    if visualControlElement.findAttribute(attr):
-#                        foundAttr = True
-#                        break
-#                if not foundAttr:
-#                    print '\n --------- loadCustomPlayerSettings:   invalid VisualControl attribute; valid=',validAttrs
-#                    sys.exit(-1)
-                      
                 #  NOTE: do NOT do an if-elif block here! 
                 if visualControlElement.findAttribute("ScreenUpdateFrequency"):
                     screenUpdateFrequency = visualControlElement.getAttributeAsUInt("ScreenUpdateFrequency")
@@ -1551,6 +1641,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             
             typesInvisibleIn3DElement = playerSettingsElement.getFirstElement("TypesInvisibleIn3D")
             if typesInvisibleIn3DElement:
+                print MODULENAME,' type(typesInvisibleIn3DElement.getAttribute("Types")) = ',type(typesInvisibleIn3DElement.getAttribute("Types"))
+                print MODULENAME,' typesInvisibleIn3DElement.getAttribute("Types") = ',typesInvisibleIn3DElement.getAttribute("Types")
                 Configuration.setSetting("Types3DInvisible", typesInvisibleIn3DElement.getAttribute("Types"))
             
             self.saveSettings = True # by default we will save settings each time we exit player    
@@ -1563,6 +1655,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             if projection2DElement:
                 if projection2DElement.findAttribute("XYProj"):
                     zPos = projection2DElement.getAttributeAsUInt("XYProj")
+                    print MODULENAME,'  loadCustomPlayerSettings(): XYProj, zPos =',zPos  #rwh
                     if zPos >= self.xySB.minimum() and zPos <= self.xySB.maximum():
                         self.mainGraphicsWindow._xyChecked(True)
                         self.mainGraphicsWindow._projSpinBoxChanged(zPos)
@@ -1578,7 +1671,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                     if xPos >= self.yzSB.minimum() and xPos <= self.yzSB.maximum():
                         self.mainGraphicsWindow._yzChecked(True)
                         self.mainGraphicsWindow._projSpinBoxChanged(xPos)
-            else:
+            else:   # rwh: would like to deprecate this and duplicate the above syntax for 3D windows
                 view3DElement = playerSettingsElement.getFirstElement("View3D")
                 if view3DElement:
                     cameraCippingRange=None
@@ -1996,6 +2089,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
     
     def drawFieldRegular(self):
 #        print MODULENAME,'  drawFieldRegular(): simulationIsRunning=',self.simulationIsRunning
+#        import pdb; pdb.set_trace()
         if not self.simulationIsRunning:
             return    
     
@@ -2022,7 +2116,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.simulation.drawMutex.unlock()
     
         
-    def _drawField(self):
+    def _drawField(self):   # called from GraphicsFrameWidget.py
 #        print MODULENAME,'   _drawField called'
         self.__drawField()
     

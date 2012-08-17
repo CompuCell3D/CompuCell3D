@@ -77,6 +77,10 @@ class ScreenshotManager:
     def __init__(self,_tabViewWidget):
         self.screenshotDataDict={}
         self.tabViewWidget=_tabViewWidget
+        print
+#        print MODULENAME,'  ScreenshotManager: __init__(),   self.tabViewWidget=',self.tabViewWidget
+#        print MODULENAME,'  ScreenshotManager: __init__(),   type(self.tabViewWidget)=',type(self.tabViewWidget)
+#        print MODULENAME,'  ScreenshotManager: __init__(),   dir(self.tabViewWidget)=',dir(self.tabViewWidget)
         # self.sim=self.tabViewWidget.sim
         self.basicSimulationData=self.tabViewWidget.basicSimulationData
         self.screenshotNumberOfDigits=len(str(self.basicSimulationData.numberOfSteps))
@@ -86,8 +90,15 @@ class ScreenshotManager:
         self.screenshotCounter3D=0
         
         self.screenshotGraphicsWidget = GraphicsFrameWidget(self.tabViewWidget)
-        print MODULENAME,'  ScreenshotManager: __init__(),   self.screenshotGraphicsWidget=',self.screenshotGraphicsWidget
-        print MODULENAME,'  ScreenshotManager: __init__(),   self.screenshotGraphicsWidget.winId().__int__()=',self.screenshotGraphicsWidget.winId().__int__()
+#        print MODULENAME,'  ScreenshotManager: __init__(),   self.screenshotGraphicsWidget=',self.screenshotGraphicsWidget
+#        print MODULENAME,'  ScreenshotManager: __init__(),   self.screenshotGraphicsWidget.winId().__int__()=',self.screenshotGraphicsWidget.winId().__int__()
+#        print
+#        import pdb; pdb.set_trace()
+#        bad = 1/0
+#        SimpleTabView.   # rwh: add this to the graphics windows dict
+
+#        self.tabViewWidget.lastActiveWindow = self.screenshotGraphicsWidget
+#        self.tabViewWidget.updateActiveWindowVisFlags()
         
         self.screenshotGraphicsWidget.readSettings()
         self.tabViewWidget.addSubWindow(self.screenshotGraphicsWidget)
@@ -224,7 +235,6 @@ class ScreenshotManager:
                     if scrDataFromDict.screenshotCoreName==scrCoreName and scrDataFromDict.spaceDimension=="3D":
                         print MODULENAME,"scrDataFromDict.screenshotCoreName=",scrDataFromDict.screenshotCoreName," scrCoreName=",scrCoreName
                         
-                        
                         if scrDataFromDict.compareExistingCameraToNewCameraSettings(camSettings):
                             print MODULENAME,"CAMERAS ARE THE SAME"
                             okToAddScreenshot=False
@@ -253,7 +263,7 @@ class ScreenshotManager:
         scrData=ScreenshotData()
         scrData.spaceDimension="2D"
         scrData.plotData=(_plotName,_plotType)        
-        print MODULENAME,"ADD SCREENSHOT scrData.plotData=",scrData.plotData   # e.g. =('Cell_Field', 'CellField')
+        print MODULENAME," add2DScreenshot(): scrData.plotData=",scrData.plotData   # e.g. =('Cell_Field', 'CellField')
         scrData.projection=_projection
         scrData.projectionPosition=int(_projectionPosition)
         
@@ -264,6 +274,13 @@ class ScreenshotManager:
             scrData.screenshotName=scrName
             scrData.screenshotCoreName=scrCoreName
             scrData.screenshotGraphicsWidget=self.screenshotGraphicsWidget
+#            print MODULENAME," add2DScreenshot(): scrData.screenshotGraphicsWidget=",scrData.screenshotGraphicsWidget
+#            print MODULENAME," add2DScreenshot(): type(scrData.screenshotGraphicsWidget)=",type(scrData.screenshotGraphicsWidget)
+            
+#            self.tabViewWidget.lastActiveWindow = self.screenshotGraphicsWidget
+            print MODULENAME," add2DScreenshot(): win id=", self.tabViewWidget.lastActiveWindow.winId().__int__()
+            self.tabViewWidget.updateActiveWindowVisFlags(self.screenshotGraphicsWidget)
+            
             # on linux there is a problem with X-server/Qt/QVTK implementation and calling resize right after additional QVTK 
             # is created causes segfault so possible "solution" is to do resize right before taking screenshot. It causes flicker but does not cause segfault
             if sys.platform=='Linux' or sys.platform=='linux' or sys.platform=='linux2': 
@@ -300,6 +317,10 @@ class ScreenshotManager:
             scrData.screenshotName=scrName
             scrData.screenshotCoreName=scrCoreName
             scrData.screenshotGraphicsWidget=self.screenshotGraphicsWidget 
+#            self.tabViewWidget.lastActiveWindow = self.screenshotGraphicsWidget
+            print MODULENAME," add3DScreenshot(): win id=", self.tabViewWidget.lastActiveWindow.winId().__int__()
+            self.tabViewWidget.updateActiveWindowVisFlags(self.screenshotGraphicsWidget)
+            
             scrData.extractCameraInfo(_camera)
 
             # on linux there is a problem with X-server/Qt/QVTK implementation and calling resize right after additional QVTK 

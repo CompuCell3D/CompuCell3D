@@ -54,6 +54,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.cellBorderColorButton.clicked.connect(self.cellBorderColorClicked)
         self.clusterBorderColorButton.clicked.connect(self.clusterBorderColorClicked)
         self.contourColorButton.clicked.connect(self.contourColorClicked)
+#        self.windowColorButton.clicked.connect(self.windowColorClicked)
         
         cellGlyphScaleValid = QDoubleValidator(self.cellGlyphScale)
         self.cellGlyphScale.setValidator(cellGlyphScaleValid)
@@ -62,7 +63,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         # The following will constrain the input to be valid (double) numeric values
 #        self.fieldComboBox.activated.connect(self.fieldComboBoxClicked)
         self.fieldComboBox.currentIndexChanged.connect(self.fieldComboBoxClicked)
-#        self.lastSelectedField = None
+        self.lastSelectedField = -1
         
         fieldMinValid = QDoubleValidator(self.fieldMinRange)
         self.fieldMinRange.setValidator(fieldMinValid)
@@ -105,7 +106,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 #        print '      tab currentIndex =',self.tabWidget.currentIndex()
         Configuration.setSetting("TabIndex", self.tabWidget.currentIndex())
         if (self.tabWidget.currentIndex() == 2):
-            if self.lastSelectedField: 
+            if self.lastSelectedField >= 0: 
                 self.fieldComboBox.setCurrentIndex(self.lastSelectedField)
     
     # -------- Output widgets CBs
@@ -191,6 +192,9 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 #        print '      color=',color
 #        Configuration.setSetting("ContourColor", color)
 
+    def windowColorClicked(self):
+        self.updateColorButton(self.windowColorButton, "WindowColor")
+
 
     # -------- Field widgets CBs  (was both Colormap and Vector tabs, now combined in Field tab)
     def fieldComboBoxClicked(self):
@@ -199,7 +203,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         fieldIndex = self.fieldComboBox.currentIndex()
         Configuration.setSetting("FieldIndex", fieldIndex)
         self.lastSelectedField = fieldIndex
-#        print MODULENAME,' fieldComboBoxClicked():  fieldIndex=',fieldIndex
+#        print MODULENAME,' fieldComboBoxClicked():  fieldIndex (=lastSelectedField)=',fieldIndex
 #        print '=================================='
 #        print MODULENAME,' fieldComboBoxClicked():  fname=',fname
 #        print MODULENAME,' fieldComboBoxClicked():  type(fname)=',type(fname)   # <class 'PyQt4.QtCore.QString'>
@@ -283,7 +287,10 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
             if type(val) == QVariant:  self.isovalList.setText(val.toString())
             elif type(val) == QString:  self.isovalList.setText(val)
         except KeyError:
+            print '-----------------\n'
             print MODULENAME,'  WARNING fieldParamsDict key "ScalarIsoValues" not defined'
+            print MODULENAME,'  fieldParamsDict=',fieldParamsDict
+            print '\n'
         val = fieldParamsDict["NumberOfContourLines"]
 #        print MODULENAME, 'fieldComboBoxClicked(): NumberOfContourLines      type(val)= ',type(val)
         self.numberOfContoursLinesSpinBox.setValue(val)
@@ -577,6 +584,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         key = "ScalarIsoValues" 
         val = self.isovalList.text()
         fieldDict[key] = val
+#        print MODULENAME,' updateFieldParams():  fieldDict (after adding ScalarIsoValues)=',fieldDict
         Configuration.setSetting(key,val)
         key = "NumberOfContourLines" 
         val = self.numberOfContoursLinesSpinBox.value()
@@ -704,6 +712,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         # Display size, Camera params...
         # Invisible cell types in 3D
         Configuration.setSetting("Types3DInvisible", self.cellTypesInvisibleList.text())
+        Configuration.setSetting("BoundingBoxOn", self.boundingBoxCheckBox.isChecked())
     
     def updateUI(self):
 #        print MODULENAME, ' ----------------  updateUI  -------------------------'
@@ -776,6 +785,12 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.contourColorButton.setIconSize(pm.size())
         self.contourColorButton.setIcon(QIcon(pm))
         
+        color = Configuration.getSetting("WindowColor")
+        pm = QPixmap(size.width(), size.height())
+        pm.fill(color)
+        self.windowColorButton.setIconSize(pm.size())
+        self.windowColorButton.setIcon(QIcon(pm))
+        
         self.cellGlyphScale.setText( str(Configuration.getSetting("CellGlyphScale")))
         self.cellGlyphThetaRes.setValue(self.paramCC3D["CellGlyphThetaRes"])
         self.cellGlyphPhiRes.setValue(self.paramCC3D["CellGlyphPhiRes"])
@@ -827,9 +842,9 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.vectorsArrowColorButton.setIconSize(pm.size())
         self.vectorsArrowColorButton.setIcon(QIcon(pm))
         
-        
         # 3D
         self.cellTypesInvisibleList.setText(Configuration.getSetting("Types3DInvisible"))
+        self.boundingBoxCheckBox.setChecked(self.paramCC3D["BoundingBoxOn"])
 
 #        configuration=self.editorWindow.configuration
 #        self.tabSpacesCheckBox.setChecked(configuration.setting("UseTabSpaces"))
@@ -846,11 +861,14 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         paramList += ["MinRange","MinRangeFixed","MaxRange","MaxRangeFixed","NumberAccuracy","NumberOfLegendBoxes",
                       "LegendEnable","ScalarIsoValues","NumberOfContourLines"]
 #                      "LegendEnable","ScalarIsoValues","ContoursOn","NumberOfContourLines"]
-        # Vectors tab
+        # Field tab
 #        paramList += ["ArrowColor","ArrowLength","FixedArrowColorOn","LegendEnableVector","ScaleArrowsOn",
 #                      "NumberAccuracyVector","NumberOfLegendBoxesVector","OverlayVectorsOn",
 #                      "MaxMagnitude","MaxMagnitudeFixed","MinMagnitude","MinMagnitudeFixed"]
         paramList += ["ArrowColor","ArrowLength","FixedArrowColorOn","ScaleArrowsOn","OverlayVectorsOn"]
+        
+        # 3D
+        paramList += ["BoundingBoxOn"]
         for p in paramList:
             self.paramCC3D[p] = Configuration.getSetting(p)
 #            if p == "TypeColorMap":

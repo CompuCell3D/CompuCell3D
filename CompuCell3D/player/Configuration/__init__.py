@@ -49,11 +49,11 @@ class Configuration():
         defaultConfigs["RecentSimulations"] = []
        
        # Output tab
-        defaultConfigs["ScreenUpdateFrequency"] = 1; paramTypeInt.append("ScreenUpdateFrequency")
-        defaultConfigs["ImageOutputOn"] = True; paramTypeBool.append("ImageOutputOn")
-        defaultConfigs["SaveImageFrequency"] = 1; paramTypeInt.append("SaveImageFrequency")
+        defaultConfigs["ScreenUpdateFrequency"] = 10; paramTypeInt.append("ScreenUpdateFrequency")
+        defaultConfigs["ImageOutputOn"] = False; paramTypeBool.append("ImageOutputOn")
+        defaultConfigs["SaveImageFrequency"] = 100; paramTypeInt.append("SaveImageFrequency")
         defaultConfigs["LatticeOutputOn"] = False; paramTypeBool.append("LatticeOutputOn")
-        defaultConfigs["SaveLatticeFrequency"] = 2; paramTypeInt.append("SaveLatticeFrequency")
+        defaultConfigs["SaveLatticeFrequency"] = 100; paramTypeInt.append("SaveLatticeFrequency")
         defaultConfigs["UseInternalConsole"] = False; paramTypeBool.append("UseInternalConsole")
         defaultConfigs["ClosePlayerAfterSimulationDone"] = False; paramTypeBool.append("ClosePlayerAfterSimulationDone")
         # defaultConfigs["ProjectLocation"] = QString(os.path.join(os.path.expanduser('~'),'CC3DProjects')); paramTypeString.append("ProjectLocation")
@@ -80,6 +80,7 @@ class Configuration():
         defaultConfigs["BorderColor"] = QColor(Qt.yellow); paramTypeColor.append("BorderColor")
         defaultConfigs["ClusterBorderColor"] = QColor(Qt.blue); paramTypeColor.append("ClusterBorderColor")
         defaultConfigs["ContourColor"] = QColor(Qt.white); paramTypeColor.append("ContourColor")
+        defaultConfigs["WindowColor"] = QColor(Qt.black); paramTypeColor.append("WindowColor")
         defaultConfigs["BrushColor"] = QColor(Qt.white); paramTypeColor.append("BrushColor")
         defaultConfigs["PenColor"] = QColor(Qt.black); paramTypeColor.append("PenColor")
         
@@ -124,6 +125,7 @@ class Configuration():
         
         # 3D tab
         defaultConfigs["Types3DInvisible"] = QString("0"); paramTypeString.append("Types3DInvisible")
+        defaultConfigs["BoundingBoxOn"] = True; paramTypeBool.append("BoundingBoxOn")
         
         
         #------------- prefs from menu items, etc. (NOT in Preferences dialog) -----------
@@ -612,7 +614,7 @@ def setSetting(_key,_value):  # rf. ConfigurationDialog.py, updatePreferences()
 #                print MODULENAME,' setSetting FieldParams:  type(valDict)= ',type(valDict)
 #                print MODULENAME,' setSetting FieldParams:  valDict.keys()= ',valDict.keys()
 #                print MODULENAME,' setSetting FieldParams:  valDict.values()= ', valDict.values()
-                val1 = valDict.values()[0]
+#                val1 = valDict.values()[0]
 #                print MODULENAME,' setSetting FieldParams:  val1.toMap()= ', val1.toMap()
 #                for key2 in val1.toMap().keys():
 #                        print '-------  str(key2)=',str(key2)

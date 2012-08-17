@@ -44,6 +44,7 @@ MODULENAME='----- MVCDrawViewBase.py: '
 class MVCDrawViewBase():
     def __init__(self, _drawModel , graphicsFrameWidget, parent=None):
         self.legendActor    = vtk.vtkScalarBarActor()
+        self.legendActor.SetNumberOfLabels(8)
         (self.minCon, self.maxCon) = (0, 0)
 #        print MODULENAME,"graphicsFrameWidget=",graphicsFrameWidget
 #        print MODULENAME,"parent=",parent

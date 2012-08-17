@@ -22,6 +22,8 @@ class MVCDrawView3D(MVCDrawViewBase):
         
         self.usedCellTypesList=None
         self.usedDraw3DFlag=False
+        self.boundingBox = Configuration.getSetting("BoundingBoxOn")
+#        self.legendEnable = Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName)  # what fieldName??
         self.warnUserCellBorders = True
     
     # Sets up the VTK simulation area 
@@ -221,7 +223,8 @@ class MVCDrawView3D(MVCDrawViewBase):
 
     def showOutlineActor(self):
         self.currentActors["Outline"]=self.outlineActor
-        self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
+        if self.boundingBox:
+            self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
     
     def hideOutlineActor(self):
         self.graphicsFrameWidget.ren.RemoveActor(self.outlineActor)
@@ -257,6 +260,7 @@ class MVCDrawView3D(MVCDrawViewBase):
         
         self.hideAllActors()
         self.set3DInvisibleTypes()
+        
         self.drawModel.prepareOutlineActors((self.outlineActor,))
         self.showOutlineActor()
 
@@ -273,7 +277,7 @@ class MVCDrawView3D(MVCDrawViewBase):
         if self.parentWidget.graphicsWindowVisDict[dictKey][1]:    # cell borders (= individual cells)
             if self.warnUserCellBorders:
                 reply = QMessageBox.warning(self.parentWidget, "Message",
-                                        "Warning:  About to draw individual cells (Vis->Borders is toggled on)",
+                                        "Warning:  About to draw individual cells (Vis->Borders is on). If you cancel and 3D:BBox is off, you may need to press 'r' in window to re-center.",
                                         QMessageBox.Ok,QMessageBox.Cancel)
 #                print '\n------------ reply,  QMessageBox.Cancel=',reply,QMessageBox.Cancel
                 if reply == QMessageBox.Cancel:     # != 1024
@@ -331,14 +335,16 @@ class MVCDrawView3D(MVCDrawViewBase):
         self.drawModel.initScalarFieldDataActors((self.conActor,), self.invisibleCellTypesVector, _fillScalarField)
         
         self.hideAllActors()
+        
         self.set3DInvisibleTypes()
+        
         self.drawModel.prepareOutlineActors((self.outlineActor,))
-
         self.showOutlineActor()
         
         self.showConActors()
             
-        if Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName):            
+        if Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName):   # rwh: need to speed this up w/ local flag
+#        if self.legendEnable:
             self.drawModel.prepareLegendActors((self.drawModel.conMapper,),(self.legendActor,))
             self.showLegend(True)
         else:
@@ -487,4 +493,7 @@ class MVCDrawView3D(MVCDrawViewBase):
         self.populateLookupTable()
         #reassign which types are invisible        
         self.set3DInvisibleTypes()
+        self.boundingBox = Configuration.getSetting("BoundingBoxOn")
+#        print MODULENAME, '  configsChanged():  boundingBox=',self.boundingBox
+#        self.legendEnable = Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName)  # what fieldName??
         self.parentWidget.requestRedraw()
