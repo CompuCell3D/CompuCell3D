@@ -9,7 +9,7 @@
 #include <set>
 
 #include "FocalPointPlasticityDLLSpecifier.h"
-
+#include <vector>
 
 namespace CompuCell3D {
 
@@ -21,8 +21,11 @@ namespace CompuCell3D {
       public:
 
          FocalPointPlasticityTrackerData(CellG * _neighborAddress=0,float _lambdaDistance=0.0, float _targetDistance=0.0, float _maxDistance=100000.0,int _maxNumberOfJunctions=0, float _activationEnergy=0.0,int _neighborOrder=1)
-         :neighborAddress(_neighborAddress),lambdaDistance(_lambdaDistance),targetDistance(_targetDistance),maxDistance(_maxDistance),maxNumberOfJunctions(_maxNumberOfJunctions),activationEnergy(_activationEnergy),neighborOrder(_neighborOrder)
-          {}
+         :neighborAddress(_neighborAddress),lambdaDistance(_lambdaDistance),targetDistance(_targetDistance),maxDistance(_maxDistance),maxNumberOfJunctions(_maxNumberOfJunctions),activationEnergy(_activationEnergy),neighborOrder(_neighborOrder),anchor(false),anchorId(0)
+          {
+			  
+			  anchorPoint=std::vector<float>(3,0.);
+		 }
 
          FocalPointPlasticityTrackerData(const FocalPointPlasticityTrackerData &fpptd) //copy constructor
          {
@@ -33,12 +36,25 @@ namespace CompuCell3D {
 			  activationEnergy=fpptd.activationEnergy;			
 			  maxNumberOfJunctions=fpptd.maxNumberOfJunctions;
 			  neighborOrder=fpptd.neighborOrder;
+			  anchor=fpptd.anchor;
+			  anchorId=fpptd.anchorId;
+			  anchorPoint=fpptd.anchorPoint;
+			  //anchorPoint[0]=fpptd.anchorPoint[0];
+			  //anchorPoint[1]=fpptd.anchorPoint[1];
+			  //anchorPoint[2]=fpptd.anchorPoint[2];
 
 		 }
 
          ///have to define < operator if using a class in the set and no < operator is defined for this class
          bool operator<(const FocalPointPlasticityTrackerData & _rhs) const{
-            return neighborAddress < _rhs.neighborAddress;
+			// notice that anchor links will be listed first and the last of such links will have highest anchorId 
+			 return neighborAddress < _rhs.neighborAddress || (!(neighborAddress < _rhs.neighborAddress) && anchorId<_rhs.anchorId);
+
+
+
+			// return (neighborAddress && _rhs.neighborAddress) ? neighborAddress < _rhs.neighborAddress :
+			//	 anchorPoint[0] < _rhs.anchorPoint[0] || (!(_rhs.anchorPoint[0] < anchorPoint[0])&& anchorPoint[1] < _rhs.anchorPoint[1])
+			//||(!(_rhs.anchorPoint[0] < anchorPoint[0])&& !(_rhs.anchorPoint[1] <anchorPoint[1] )&& anchorPoint[2] < _rhs.anchorPoint[2]);
          }
 
 
@@ -50,6 +66,10 @@ namespace CompuCell3D {
 		 int maxNumberOfJunctions;
 		 float activationEnergy;
 		 int neighborOrder;
+		 bool anchor;
+		 std::vector<float> anchorPoint;
+	
+		 int anchorId;
 
    };
 
@@ -59,6 +79,9 @@ namespace CompuCell3D {
          ~FocalPointPlasticityTracker(){};
          std::set<FocalPointPlasticityTrackerData> focalPointPlasticityNeighbors; //stores ptrs to cell neighbors i.e. each cell keeps track of its neighbors
 		 std::set<FocalPointPlasticityTrackerData> internalFocalPointPlasticityNeighbors; //stores ptrs to cell neighbors withon a given cluster i.e. each cell keeps track of its neighbors
+
+		 std::set<FocalPointPlasticityTrackerData> anchors;
+
 		 FocalPointPlasticityTrackerData fpptd;
    };
 

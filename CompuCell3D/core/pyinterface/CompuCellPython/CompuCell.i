@@ -148,6 +148,9 @@ using namespace CompuCell3D;
 // C++ std::map handling
 %include "std_vector.i"
 
+//C arrays
+//%include "carrays.i"
+
 // ******************************
 // Third Party Classes
 // ******************************
@@ -464,6 +467,7 @@ namespace CompuCell3D {
 
 %template(vectorstdstring) std::vector<std::string>;
 %template(vectordouble) std::vector<double>;
+
 %template(vectorint) std::vector<int>;
 
 

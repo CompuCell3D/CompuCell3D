@@ -882,7 +882,27 @@ class RestartManager:
                         fpptd.neighborOrder=fppDict['neighborOrder']
                         focalPointPlasticityPlugin.insertInternalFPPData(cell,fpptd)
                         
-                    
+                    # read number of fpp links in the cell (anchors)
+                    anchorLinksNumber=cPickle.load(pf)
+                    for i in range(anchorLinksNumber):
+                        fppDict=cPickle.load(pf) # loading external links
+                        fpptd=CompuCell.FocalPointPlasticityTrackerData()
+                        # get neighbor data
+                        # neighborIds=fppDict['neighborIds'] # cellId, cluster id
+                        # neighborCell=inventory.getCellByIds(neighborIds[0],neighborIds[1])
+                        fpptd.neighborAddfess=0
+                        fpptd.lambdaDistance=fppDict['lambdaDistance']
+                        fpptd.targetDistance=fppDict['targetDistance']
+                        fpptd.maxDistance=fppDict['maxDistance']                        
+                        fpptd.anchorId=fppDict['anchorId']
+                        fpptd.anchorPoint[0]=fppDict['anchorPoint'][0]
+                        fpptd.anchorPoint[1]=fppDict['anchorPoint'][1]
+                        fpptd.anchorPoint[2]=fppDict['anchorPoint'][2]
+                        
+                        
+                        focalPointPlasticityPlugin.insertAnchorFPPData(cell,fpptd)
+
+                        
 
                 pf.close()
  
@@ -1941,6 +1961,7 @@ class RestartManager:
             cPickle.dump(cell.id,pf)            
             fppVec=focalPointPlasticityPlugin.getFPPDataVec(cell)
             internalFPPVec=focalPointPlasticityPlugin.getInternalFPPDataVec(cell)
+            anchorFPPVec=focalPointPlasticityPlugin.getAnchorFPPDataVec(cell)
             
             # dumping 'external' fpp links
             cPickle.dump(len(fppVec),pf)           
@@ -1972,6 +1993,18 @@ class RestartManager:
                 fppDataDict['activationEnergy']=fppData.activationEnergy
                 fppDataDict['maxNumberOfJunctions']=fppData.maxNumberOfJunctions
                 fppDataDict['neighborOrder']=fppData.neighborOrder
+                cPickle.dump(fppDataDict,pf)
+
+
+            # dumping anchor fpp links
+            cPickle.dump(len(anchorFPPVec),pf)           
+            for fppData in anchorFPPVec:
+                fppDataDict={}
+                fppDataDict['lambdaDistance']=fppData.lambdaDistance
+                fppDataDict['targetDistance']=fppData.targetDistance
+                fppDataDict['maxDistance']=fppData.maxDistance
+                fppDataDict['anchorId']=fppData.anchorId                
+                fppDataDict['anchorPoint']=[fppData.anchorPoint[0],fppData.anchorPoint[1],fppData.anchorPoint[2]]                                                
                 cPickle.dump(fppDataDict,pf)
 
                 

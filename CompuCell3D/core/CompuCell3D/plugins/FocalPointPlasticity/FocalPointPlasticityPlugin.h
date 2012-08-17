@@ -170,10 +170,15 @@ namespace CompuCell3D {
 		//used for serialization and restart 
 		void insertFPPData(CellG * _cell,FocalPointPlasticityTrackerData * _fpptd);
 		void insertInternalFPPData(CellG * _cell,FocalPointPlasticityTrackerData * _fpptd);
+		void insertAnchorFPPData(CellG * _cell,FocalPointPlasticityTrackerData * _fpptd);
 		std::vector<FocalPointPlasticityTrackerData> getFPPDataVec(CellG * _cell);
 		std::vector<FocalPointPlasticityTrackerData> getInternalFPPDataVec(CellG * _cell);
+		std::vector<FocalPointPlasticityTrackerData> getAnchorFPPDataVec(CellG * _cell);
 
-
+		//anchors
+		int createAnchor(CellG * _cell, double _lambda, double _targetDistance=0.0,double _maxDistance=100000.0,float _x=0, float _y=0, float _z=0);
+		void deleteAnchor(CellG * _cell, int _anchorId);
+		void setAnchorParameters(CellG * _cell, int _anchorId,double _lambda, double _targetDistance=0.0,double _maxDistance=100000.0,float _x=-1, float _y=-1, float _z=-1);
 
 
 		BasicClassAccessor<FocalPointPlasticityTracker> * getFocalPointPlasticityTrackerAccessorPtr(){return &focalPointPlasticityTrackerAccessor;}
