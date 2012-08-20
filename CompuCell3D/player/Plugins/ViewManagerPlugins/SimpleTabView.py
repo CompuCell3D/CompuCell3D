@@ -2392,6 +2392,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                 if pluginName == "FocalPointPlasticity":
 #                    print '    yes, FPP is definded, enabling Vis menu item'
                     self.pluginFPPDefined = True
+                    self.pluginCOMDefined = True   # if FPP is defined, COM will (implicitly) be defined
                     
                 if pluginName == "CenterOfMass":
                     self.pluginCOMDefined = True
