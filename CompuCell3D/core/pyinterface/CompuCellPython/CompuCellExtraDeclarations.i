@@ -566,6 +566,8 @@ CompuCell3D::PlasticityTrackerData & derefPlasticityTrackerData(std::set<CompuCe
 
 %include <CompuCell3D/plugins/FocalPointPlasticity/FocalPointPlasticityPlugin.h>
 
+
+
 %inline %{
  FocalPointPlasticityPlugin * getFocalPointPlasticityPlugin(){
       return (FocalPointPlasticityPlugin *)Simulator::pluginManager.get("FocalPointPlasticity");

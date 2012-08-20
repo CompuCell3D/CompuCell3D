@@ -236,7 +236,14 @@ class SteppableBasePy(SteppablePy):
             return InternalFocalPointPlasticityDataList(self.focalPointPlasticityPlugin,_cell)            
             
         return None    
-        
+
+    def getAnchorFocalPointPlasticityDataList(self,_cell):
+        if self.focalPointPlasticityPlugin:
+            return AnchorFocalPointPlasticityDataList(self.focalPointPlasticityPlugin,_cell)            
+            
+        return None    
+
+
     def getCellBoundaryPixelList(self,_cell):
         if self.boundaryPixelTrackerPlugin:
             return CellBoundaryPixelList(self.boundaryPixelTrackerPlugin,_cell)
@@ -906,6 +913,39 @@ class InternalFocalPointPlasticityDataIterator:
     def __iter__(self):
             return self              
             
+class AnchorFocalPointPlasticityDataList:
+    def __init__(self,_focalPointPlasticityPlugin,_cell):
+        self.focalPointPlasticityPlugin=_focalPointPlasticityPlugin
+        self.focalPointPlasticityTrackerAccessor=self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerAccessorPtr()
+        self.cell=_cell
+    def __iter__(self):
+        return AnchorFocalPointPlasticityDataIterator(self)
+
+
+class AnchorFocalPointPlasticityDataIterator:
+    def __init__(self, _focalPointPlasticityDataList):
+        import CompuCell
+        self.focalPointPlasticityTrackerAccessor = _focalPointPlasticityDataList.focalPointPlasticityTrackerAccessor
+        self.cell=_focalPointPlasticityDataList.cell
+        self.focalPointPlasticityPlugin=_focalPointPlasticityDataList.focalPointPlasticityPlugin
+        self.focalPointPlasticityTracker=self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
+        self.focalPointPlasticityDataSetItr=CompuCell.focalPointPlasticitySetPyItr()
+        self.focalPointPlasticityDataSetItr.initialize(self.focalPointPlasticityTracker.anchors)
+        self.focalPointPlasticityDataSetItr.setToBegin()
+
+    def next(self):
+        if not self.focalPointPlasticityDataSetItr.isEnd():
+            self.currentFocalPointPlasticityDataSetItr = self.focalPointPlasticityDataSetItr.current
+            self.focalPointPlasticityData=self.focalPointPlasticityDataSetItr.getCurrentRef()
+            self.focalPointPlasticityDataSetItr.next()
+            return self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerData(self.focalPointPlasticityData)
+#             return self.plasticityData
+        else:
+            raise StopIteration
+
+    def __iter__(self):
+            return self              
+
 
 # forEachCellInInventory function takes as arguments inventory of cells and a function that will operate on a single cell
 # It will run singleCellOperation on each cell from cell inventory
