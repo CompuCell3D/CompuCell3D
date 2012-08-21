@@ -335,7 +335,7 @@ class ScreenshotManager:
             
             
     def outputScreenshots(self,_generalScreenshotDirectoryName,_mcs):  # called from SimpleTabView:handleCompletedStep{Regular,CML*}
-        print MODULENAME, 'outputScreenshots():  _generalScreenshotDirectoryName=',_generalScreenshotDirectoryName
+#        print MODULENAME, 'outputScreenshots():  _generalScreenshotDirectoryName=',_generalScreenshotDirectoryName
         mcsFormattedNumber = string.zfill(str(_mcs),self.screenshotNumberOfDigits) # fills string with 0's up to self.screenshotNumberOfDigits width
         
         if not self.screenshotGraphicsWidgetFieldTypesInitialized:

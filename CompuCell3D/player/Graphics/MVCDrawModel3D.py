@@ -223,9 +223,9 @@ class MVCDrawModel3D(MVCDrawModelBase):
         
         # actorCounter=0
         # for i in usedCellTypesList:
-        print '-------------- NOTE:  drawing 3D Cell Borders is in beta ----------------'
+#        print '-------------- NOTE:  drawing 3D Cell Borders is in beta ----------------'
         for actorCounter in xrange(len(self.usedCellTypesList)):
-            print MODULENAME,' initCellFieldBordersActors(): actorCounter=',actorCounter,
+#            print MODULENAME,' initCellFieldBordersActors(): actorCounter=',actorCounter,
             filterList[actorCounter].SetInput(cellTypeImageData)
             # filterList[actorCounter].SetValue(0, usedCellTypesList[actorCounter])
             
@@ -247,7 +247,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
                             cidUnique.append(cidAll[idx])
                         
 #                print ', len(cidUnique)=',len(cidUnique),
-                print ', len(ctAll, cidAll, cidUnique)=',len(ctAll),len(cidAll),len(cidUnique),
+#                print ', len(ctAll, cidAll, cidUnique)=',len(ctAll),len(cidAll),len(cidUnique),
                 
                 for idx in range(len(cidUnique)):
                     filterList[actorCounter].SetValue(idx, cidUnique[idx])
@@ -265,7 +265,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
             mapperList[actorCounter].ScalarVisibilityOff()
             
             actorName = "CellType_" + str(self.usedCellTypesList[actorCounter])
-            print ', actorName=',actorName
+#            print ', actorName=',actorName
             if actorName in _actors:
                 _actors[actorName].SetMapper(mapperList[actorCounter])
                 _actors[actorName].GetProperty().SetDiffuseColor(self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3])
@@ -1013,6 +1013,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
 #        cellVolumes = vtk.vtkIntArray()
 #        cellVolumes.SetName("CellVolumes")
+
+#        if self.scaleGlyphsByVolume:
         cellScalars = vtk.vtkFloatArray()
         cellScalars.SetName("CellScalars")
         
@@ -1033,16 +1035,21 @@ class MVCDrawModel3D(MVCDrawModelBase):
           centroidPoints.InsertNextPoint(xmid,ymid,zmid)
           cellTypes.InsertNextValue(cell.type)
 
-          cellScalars.InsertNextValue(cell.volume ** 0.333)   # take cube root of V, to get ~radius
+#          if self.scaleGlyphsByVolume:
+          if Configuration.getSetting("CellGlyphScaleByVolumeOn"):       # todo: make class attrib; update only when changes
+            cellScalars.InsertNextValue(cell.volume ** 0.333)   # take cube root of V, to get ~radius
+          else:
+            cellScalars.InsertNextValue(1.0)      # lame way of doing this
 
         centroidsPD = vtk.vtkPolyData()
         centroidsPD.SetPoints(centroidPoints)
         centroidsPD.GetPointData().SetScalars(cellTypes)
 
+#        if self.scaleGlyphsByVolume:
         centroidsPD.GetPointData().AddArray(cellScalars)
 
         centroidGS = vtk.vtkSphereSource()
-        thetaRes = Configuration.getSetting("CellGlyphThetaRes")            
+        thetaRes = Configuration.getSetting("CellGlyphThetaRes")     # todo: make class attrib; update only when changes
         phiRes = Configuration.getSetting("CellGlyphPhiRes")            
         centroidGS.SetThetaResolution(thetaRes)  # increase these values for a higher-res sphere glyph
         centroidGS.SetPhiResolution(phiRes)
@@ -1057,6 +1064,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         centroidGlyph.SetRange(0,self.celltypeLUTMax)
 
         centroidGlyph.SetColorModeToColorByScalar()
+#        if self.scaleGlyphsByVolume:
         centroidGlyph.SetScaleModeToScaleByScalar()
         
 #        centroidGlyph.SetScaleModeToDataScalingOff()  # call this to disable scaling by scalar value

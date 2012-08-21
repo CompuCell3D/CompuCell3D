@@ -56,6 +56,7 @@ class MVCDrawModelBase():
         self.currentDrawingFunction=None       
         self.fieldTypes=None 
         self.currentDrawingParameters=None
+#        self.scaleGlyphsByVolume = False
         
         self.hexFlag = self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"]
 #        print MODULENAME,' __init__:   self.hexFlag=', self.hexFlag
