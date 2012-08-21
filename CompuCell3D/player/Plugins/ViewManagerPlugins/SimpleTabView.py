@@ -199,8 +199,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         
     def setActiveSubWindowCustomSlot(self, window):
-        print MODULENAME,"setActiveSubWindow: window=",window
-        print MODULENAME,'\n ------------------  setActiveSubWindowCustomSlot():  self.mdiWindowDict =', self.mdiWindowDict
+#        print MODULENAME,"setActiveSubWindow: window=",window
+#        print MODULENAME,'\n ------------------  setActiveSubWindowCustomSlot():  self.mdiWindowDict =', self.mdiWindowDict
         windowNames = self.plotWindowDict.keys()
 #        for windowName in windowNames:
 #          print MODULENAME,'     setActiveSubWindowCustomSlot():  windowName=', windowName
@@ -212,7 +212,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
             self.lastActiveWindow = window
 #            print "MODULENAME,'         setActiveSubWindowCustomSlot(): self.lastActiveWindow.winId().__int__()=",self.lastActiveWindow.windowId().__int__()
-            print "MODULENAME,'         setActiveSubWindowCustomSlot(): self.lastActiveWindow is ",self.lastActiveWindow.windowTitle()
+#            print MODULENAME,"         setActiveSubWindowCustomSlot(): self.lastActiveWindow is ",self.lastActiveWindow.windowTitle()
             
 #            self.updateActiveWindowVisFlags()
 
@@ -221,7 +221,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             if dictKey in self.graphicsWindowVisDict.keys():
 #               self.simulation.drawMutex.lock()  # lock/unlock necessary or not?
 #                print MODULENAME,'------- setActiveSubWindowCustomSlot():  updating *Act.setChecked:  cellsAct=',self.graphicsWindowVisDict[self.lastActiveWindow.winId().__int__()][0]
-                print MODULENAME,'------- setActiveSubWindowCustomSlot():  updating *Act.setChecked: borderAct=',self.graphicsWindowVisDict[self.lastActiveWindow.winId().__int__()][1]
+#                print MODULENAME,'------- setActiveSubWindowCustomSlot():  updating *Act.setChecked: borderAct=',self.graphicsWindowVisDict[self.lastActiveWindow.winId().__int__()][1]
                 self.cellsAct.setChecked(self.graphicsWindowVisDict[dictKey][0])
                 self.borderAct.setChecked(self.graphicsWindowVisDict[dictKey][1])
                 self.clusterBorderAct.setChecked(self.graphicsWindowVisDict[dictKey][2])
@@ -234,13 +234,11 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             dictKey = window.winId().__int__()
         else:
             dictKey = self.lastActiveWindow.winId().__int__()
-        print
-        print MODULENAME, 'updateActiveWindowVisFlags():  dictKey (of lastActiveWindow)=',dictKey
+#        print MODULENAME, 'updateActiveWindowVisFlags():  dictKey (of lastActiveWindow)=',dictKey
         self.graphicsWindowVisDict[dictKey] = (self.cellsAct.isChecked(),self.borderAct.isChecked(), \
                                       self.clusterBorderAct.isChecked(),self.cellGlyphsAct.isChecked(),self.FPPLinksAct.isChecked() )
 #        print MODULENAME, 'updateActiveWindowVisFlags():  self.graphicsWindowVisDict[self.lastActiveWindow.winId().__int__()]=',self.graphicsWindowVisDict[self.lastActiveWindow.winId().__init__()]
-        print MODULENAME, 'updateActiveWindowVisFlags():  self.graphicsWindowVisDict=',self.graphicsWindowVisDict
-        print
+#        print MODULENAME, 'updateActiveWindowVisFlags():  self.graphicsWindowVisDict=',self.graphicsWindowVisDict
         
         
     # Invoked whenever 'Window' menu is clicked. It does NOT modify lastActiveWindow directly (setActiveSubWindowCustomSlot does)
@@ -409,7 +407,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
         
     def addVTKWindowToWorkspace(self):   # just called one time, for initial graphics window
-        print MODULENAME,' =================================addVTKWindowToWorkspace ========='
+#        print MODULENAME,' =================================addVTKWindowToWorkspace ========='
 #        dbgMsg(' addVTKWindowToWorkspace =========')
         # self.graphics2D = Graphics2DNew(self)     
         self.mainGraphicsWindow = GraphicsFrameWidget(self)
@@ -2392,6 +2390,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                 if pluginName == "FocalPointPlasticity":
 #                    print '    yes, FPP is definded, enabling Vis menu item'
                     self.pluginFPPDefined = True
+                    self.pluginCOMDefined = True   # if FPP is defined, COM will (implicitly) be defined
                     
                 if pluginName == "CenterOfMass":
                     self.pluginCOMDefined = True

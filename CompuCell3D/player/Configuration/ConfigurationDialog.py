@@ -656,6 +656,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 #        Configuration.setSetting("BrushColor", self.
 #        Configuration.setSetting("PenColor", self.
 
+        Configuration.setSetting("CellGlyphScaleByVolumeOn", self.cellGlyphScaleByVolumeCheckBox.isChecked())
         Configuration.setSetting("CellGlyphScale", self.cellGlyphScale.text())
         Configuration.setSetting("CellGlyphThetaRes", self.cellGlyphThetaRes.value())  # spinbox
         Configuration.setSetting("CellGlyphPhiRes", self.cellGlyphPhiRes.value())  # spinbox
@@ -714,7 +715,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("Types3DInvisible", self.cellTypesInvisibleList.text())
         Configuration.setSetting("BoundingBoxOn", self.boundingBoxCheckBox.isChecked())
     
-    def updateUI(self):
+    def updateUI(self):  # called whenever Prefs dialog is open
 #        print MODULENAME, ' ----------------  updateUI  -------------------------'
 
         # rwh: what to use: self.paramCC3D[] or Configuration.getSetting?        
@@ -791,6 +792,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.windowColorButton.setIconSize(pm.size())
         self.windowColorButton.setIcon(QIcon(pm))
         
+        self.cellGlyphScaleByVolumeCheckBox.setChecked(Configuration.getSetting("CellGlyphScaleByVolumeOn"))
         self.cellGlyphScale.setText( str(Configuration.getSetting("CellGlyphScale")))
         self.cellGlyphThetaRes.setValue(self.paramCC3D["CellGlyphThetaRes"])
         self.cellGlyphPhiRes.setValue(self.paramCC3D["CellGlyphPhiRes"])
@@ -856,7 +858,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
                      "UseInternalConsole","ClosePlayerAfterSimulationDone","OutputToProjectOn"]
         # Colors tab: cell type, borders, etc
         paramList += ["TypeColorMap","BorderColor","ClusterBorderColor","ContourColor","BrushColor",
-                      "PenColor","Types3DInvisible","CellGlyphScale","CellGlyphThetaRes","CellGlyphPhiRes"]
+                      "PenColor","Types3DInvisible","CellGlyphScaleByVolumeOn","CellGlyphScale","CellGlyphThetaRes","CellGlyphPhiRes"]
         # Field tab
         paramList += ["MinRange","MinRangeFixed","MaxRange","MaxRangeFixed","NumberAccuracy","NumberOfLegendBoxes",
                       "LegendEnable","ScalarIsoValues","NumberOfContourLines"]

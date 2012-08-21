@@ -1415,11 +1415,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
               
         if self.hexFlag:
           for cell in cellList:
-            if cell.volume > 0:
-              xmid = float(cell.xCM) / cell.volume
-              ymid = float(cell.yCM) / cell.volume
-              xmid = xmid/1.07457
-              ymid = ymid/1.07457
+#            if cell.volume > 0:
+#              xmid = float(cell.xCM) / cell.volume
+#              ymid = float(cell.yCM) / cell.volume
+#              xmid = xmid/1.07457
+              xmid = cell.xCOM/1.07457
+              ymid = cell.yCOM/1.07457
               centroidPoints.InsertNextPoint(xmid,ymid,0.0)
               cellTypes.InsertNextValue(cell.type)
 #              cellVolumes.InsertNextValue(cell.volume)
@@ -1446,9 +1447,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
           #print 'cell.id=',cell.id  # = 2,3,4,...
           #print 'cell.type=',cell.type
           #print 'cell.volume=',cell.volume
-            if cell.volume > 0:
-              xmid = float(cell.xCM) / cell.volume + self.offset
-              ymid = float(cell.yCM) / cell.volume + self.offset
+#            if cell.volume > 0:
+#              xmid = float(cell.xCM) / cell.volume + self.offset
+              xmid = cell.xCOM + self.offset
+              ymid = cell.yCOM + self.offset
               centroidPoints.InsertNextPoint(xmid,ymid,0.0)
               cellTypes.InsertNextValue(cell.type)
 #              cellVolumes.InsertNextValue(cell.volume)
@@ -1540,13 +1542,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
 #          print 'cell.id=',cell.id  # = 2,3,4,...
 #          print 'cell.type=',cell.type
 #          print 'cell.volume=',cell.volume
-          vol = cell.volume
-          if vol < self.eps: continue
-          
-          xmid = float(cell.xCM) / vol
-          ymid = float(cell.yCM) / vol
+#          vol = cell.volume
+#          if vol < self.eps: continue
+#          xmid = float(cell.xCM) / vol
+#          ymid = float(cell.yCM) / vol
 #          print MODULENAME,'cell.id=',cell.id,'  x,y (begin)=',xmid,ymid
-          points.InsertNextPoint(xmid,ymid,0)
+#          points.InsertNextPoint(xmid,ymid,0)
+          points.InsertNextPoint(cell.xCOM,cell.yCOM,0)
           
           endPt = beginPt + 1
 
@@ -1555,11 +1557,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
           for fppd in dataList(fppPlugin, cell):
 
 #            print '   nbrId=',fppd.neighborAddress.id
-            vol = fppd.neighborAddress.volume
-            xmid=float(fppd.neighborAddress.xCM) / vol
-            ymid=float(fppd.neighborAddress.yCM) / vol
+#            vol = fppd.neighborAddress.volume
+#            xmid=fppd.neighborAddress.xCOM
+#            ymid=fppd.neighborAddress.yCOM
 #            print '    x,y (end)=',xmid,ymid
-            points.InsertNextPoint(xmid,ymid,0)
+#            points.InsertNextPoint(xmid,ymid,0)
+            points.InsertNextPoint(fppd.neighborAddress.xCOM, fppd.neighborAddress.yCOM, 0)
             
             lines.InsertNextCell(2)  # our line has 2 points
 #            print beginPt,' -----> ',endPt
@@ -1615,13 +1618,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
           if vol < self.eps: continue
 
           if self.hexFlag:
-            xmid0 = float(cell.xCM) / vol 
-            ymid0 = float(cell.yCM) / vol 
-            xmid0 = xmid0/1.07457
-            ymid0 = ymid0/1.07457
+            xmid0 = cell.xCOM/1.07457
+            ymid0 = cell.yCOM/1.07457
           else:
-            xmid0 = float(cell.xCM) / vol + self.offset
-            ymid0 = float(cell.yCM) / vol + self.offset
+            xmid0 = cell.xCOM + self.offset
+            ymid0 = cell.yCOM + self.offset
 #          print 'cell.id=',cell.id,'  x,y,z (begin)=',xmid0,ymid0,zmid0
           points.InsertNextPoint(xmid0,ymid0,0)
           
@@ -1635,16 +1636,14 @@ class MVCDrawModel2D(MVCDrawModelBase):
 #             print 'targetDistance,maxDistance=',fppd.targetDistance,fppd.maxDistance
 #targetDistance,maxDistance= 3.0 6.0
 #targetDistance,maxDistance= 2.0 4.0
-            vol = fppd.neighborAddress.volume
-            if vol < self.eps: continue
+#            vol = fppd.neighborAddress.volume
+#            if vol < self.eps: continue
             if self.hexFlag:
-              xmid = float(fppd.neighborAddress.xCM) / vol
-              ymid = float(fppd.neighborAddress.yCM) / vol
-              xmid = xmid/1.07457
-              ymid = ymid/1.07457
+              xmid = fppd.neighborAddress.xCOM/1.07457
+              ymid = fppd.neighborAddress.yCOM/1.07457
             else:
-              xmid = float(fppd.neighborAddress.xCM) / vol + self.offset
-              ymid = float(fppd.neighborAddress.yCM) / vol + self.offset
+              xmid = fppd.neighborAddress.xCOM + self.offset
+              ymid = fppd.neighborAddress.yCOM + self.offset
 #            print '    x,y,z (end)=',xmid,ymid,zmid
 #            points.InsertNextPoint(xmid,ymid,zmid)
             xdiff = xmid-xmid0
@@ -1725,16 +1724,14 @@ class MVCDrawModel2D(MVCDrawModelBase):
 #             print 'targetDistance,maxDistance=',fppd.targetDistance,fppd.maxDistance
 #targetDistance,maxDistance= 3.0 6.0
 #targetDistance,maxDistance= 2.0 4.0
-            vol = fppd.neighborAddress.volume
-            if vol < self.eps: continue
+#            vol = fppd.neighborAddress.volume
+#            if vol < self.eps: continue
             if self.hexFlag:
-              xmid=float(fppd.neighborAddress.xCM) / vol
-              ymid=float(fppd.neighborAddress.yCM) / vol
-              xmid = xmid/1.07457
-              ymid = ymid/1.07457
+              xmid = fppd.neighborAddress.xCOM/1.07457
+              ymid = fppd.neighborAddress.yCOM/1.07457
             else:
-              xmid=float(fppd.neighborAddress.xCM) / vol + self.offset
-              ymid=float(fppd.neighborAddress.yCM) / vol + self.offset
+              xmid=fppd.neighborAddress.xCOM + self.offset
+              ymid=fppd.neighborAddress.yCOM + self.offset
 #            print '    x,y,z (end)=',xmid,ymid,zmid
 #            points.InsertNextPoint(xmid,ymid,zmid)
             xdiff = xmid-xmid0
@@ -1871,17 +1868,15 @@ class MVCDrawModel2D(MVCDrawModelBase):
 #          print 'cell.id=',cell.id  # = 2,3,4,...
 #          print 'cell.type=',cell.type
 #          print 'cell.volume=',cell.volume
-          vol = cell.volume
-          if vol < self.eps: continue
+#          vol = cell.volume
+#          if vol < self.eps: continue
 
           if self.hexFlag:
-            xmid0 = float(cell.xCM) / vol 
-            ymid0 = float(cell.yCM) / vol 
-            xmid0 = xmid0/1.07457
-            ymid0 = ymid0/1.07457
+            xmid0 = cell.xCOM/1.07457
+            ymid0 = cell.yCOM/1.07457
           else:
-            xmid0 = float(cell.xCM) / vol + self.offset
-            ymid0 = float(cell.yCM) / vol + self.offset
+            xmid0 = cell.xCOM + self.offset
+            ymid0 = cell.yCOM + self.offset
 #          print 'cell.id=',cell.id,'  x,y,z (begin)=',xmid0,ymid0,zmid0
           points.InsertNextPoint(xmid0,ymid0,0)
           
@@ -1895,16 +1890,14 @@ class MVCDrawModel2D(MVCDrawModelBase):
 #             print 'targetDistance,maxDistance=',fppd.targetDistance,fppd.maxDistance
 #targetDistance,maxDistance= 3.0 6.0
 #targetDistance,maxDistance= 2.0 4.0
-            vol = fppd.neighborAddress.volume
-            if vol < self.eps: continue
+#            vol = fppd.neighborAddress.volume
+#            if vol < self.eps: continue
             if self.hexFlag:
-              xmid = float(fppd.neighborAddress.xCM) / vol
-              ymid = float(fppd.neighborAddress.yCM) / vol
-              xmid = xmid/1.07457
-              ymid = ymid/1.07457
+              xmid = fppd.neighborAddress.xCOM/1.07457
+              ymid = fppd.neighborAddress.yCOM/1.07457
             else:
-              xmid = float(fppd.neighborAddress.xCM) / vol + self.offset
-              ymid = float(fppd.neighborAddress.yCM) / vol + self.offset
+              xmid = fppd.neighborAddress.xCOM + self.offset
+              ymid = fppd.neighborAddress.yCOM + self.offset
 #            print '    x,y,z (end)=',xmid,ymid,zmid
 #            points.InsertNextPoint(xmid,ymid,zmid)
             xdiff = xmid-xmid0
@@ -1985,16 +1978,14 @@ class MVCDrawModel2D(MVCDrawModelBase):
 #             print 'targetDistance,maxDistance=',fppd.targetDistance,fppd.maxDistance
 #targetDistance,maxDistance= 3.0 6.0
 #targetDistance,maxDistance= 2.0 4.0
-            vol = fppd.neighborAddress.volume
-            if vol < self.eps: continue
+#            vol = fppd.neighborAddress.volume
+#            if vol < self.eps: continue
             if self.hexFlag:
-              xmid=float(fppd.neighborAddress.xCM) / vol
-              ymid=float(fppd.neighborAddress.yCM) / vol
-              xmid = xmid/1.07457
-              ymid = ymid/1.07457
+              xmid = fppd.neighborAddress.xCOM/1.07457
+              ymid = fppd.neighborAddress.yCOM/1.07457
             else:
-              xmid=float(fppd.neighborAddress.xCM) / vol + self.offset
-              ymid=float(fppd.neighborAddress.yCM) / vol + self.offset
+              xmid=fppd.neighborAddress.xCOM + self.offset
+              ymid=fppd.neighborAddress.yCOM + self.offset
 #            print '    x,y,z (end)=',xmid,ymid,zmid
 #            points.InsertNextPoint(xmid,ymid,zmid)
             xdiff = xmid-xmid0
@@ -2131,17 +2122,15 @@ class MVCDrawModel2D(MVCDrawModelBase):
 #          print 'cell.id=',cell.id  # = 2,3,4,...
 #          print 'cell.type=',cell.type
 #          print 'cell.volume=',cell.volume
-          vol = cell.volume
-          if vol < self.eps: continue
+#          vol = cell.volume
+#          if vol < self.eps: continue
 
           if self.hexFlag:
-            xmid0 = float(cell.xCM) / vol
-            ymid0 = float(cell.yCM) / vol
-            xmid0 = xmid0/1.07457
-            ymid0 = ymid0/1.07457
+            xmid0 = cell.xCOM/1.07457
+            ymid0 = cell.yCOM/1.07457
           else:
-            xmid0 = float(cell.xCM) / vol + self.offset
-            ymid0 = float(cell.yCM) / vol + self.offset
+            xmid0 = cell.xCOM + self.offset
+            ymid0 = cell.yCOM + self.offset
 #          print 'cell.id=',cell.id,'  x,y,z (begin)=',xmid0,ymid0,zmid0
 
           points.InsertNextPoint(xmid0,ymid0,0)
@@ -2156,10 +2145,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
 #             print 'targetDistance,maxDistance=',fppd.targetDistance,fppd.maxDistance
 #targetDistance,maxDistance= 3.0 6.0
 #targetDistance,maxDistance= 2.0 4.0
-            vol = fppd.neighborAddress.volume
-            if vol < self.eps: continue
-            xmid = float(fppd.neighborAddress.xCM) / vol + self.offset
-            ymid = float(fppd.neighborAddress.yCM) / vol + self.offset
+#            vol = fppd.neighborAddress.volume
+#            if vol < self.eps: continue
+            xmid = fppd.neighborAddress.xCOM + self.offset
+            ymid = fppd.neighborAddress.yCOM + self.offset
 #            print '    x,y,z (end)=',xmid,ymid,zmid
 #            points.InsertNextPoint(xmid,ymid,zmid)
             xdiff = xmid-xmid0
@@ -2253,10 +2242,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
 #             print 'targetDistance,maxDistance=',fppd.targetDistance,fppd.maxDistance
 #targetDistance,maxDistance= 3.0 6.0
 #targetDistance,maxDistance= 2.0 4.0
-            vol = fppd.neighborAddress.volume
-            if vol < self.eps: continue
-            xmid = float(fppd.neighborAddress.xCM) / vol + self.offset
-            ymid = float(fppd.neighborAddress.yCM) / vol + self.offset
+#            vol = fppd.neighborAddress.volume
+#            if vol < self.eps: continue
+            xmid = fppd.neighborAddress.xCOM + self.offset
+            ymid = fppd.neighborAddress.yCOM + self.offset
 #            print '    x,y,z (end)=',xmid,ymid,zmid
 #            points.InsertNextPoint(xmid,ymid,zmid)
             xdiff = xmid-xmid0

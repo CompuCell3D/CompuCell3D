@@ -66,7 +66,7 @@ class Configuration():
         defaultConfigs["PreferencesFile"] = QString(prefsFile); paramTypeString.append("PreferencesFile")
         
         
-        # Cell Type tab
+        # Cells/Colors tab  (used to be: Cell Type tab)
         defaultConfigs["TypeColorMap"] = { 0:QColor(Qt.black), 1:QColor(Qt.green), 2:QColor(Qt.blue),
             3: QColor(Qt.red),
             4: QColor(Qt.darkYellow),
@@ -84,6 +84,7 @@ class Configuration():
         defaultConfigs["BrushColor"] = QColor(Qt.white); paramTypeColor.append("BrushColor")
         defaultConfigs["PenColor"] = QColor(Qt.black); paramTypeColor.append("PenColor")
         
+        defaultConfigs["CellGlyphScaleByVolumeOn"] = False; paramTypeBool.append("CellGlyphScaleByVolumeOn")
         defaultConfigs["CellGlyphScale"] = 1.0; paramTypeDouble.append("CellGlyphScale")
         defaultConfigs["CellGlyphThetaRes"] = 2; paramTypeInt.append("CellGlyphThetaRes")
         defaultConfigs["CellGlyphPhiRes"] = 2; paramTypeInt.append("CellGlyphPhiRes")
@@ -753,7 +754,7 @@ def getPlayerParams():
 #        dbgMsg 'playerParamsDict=',playerParamsDict
     return playerParamsDict
     
-def syncPreferences():
+def syncPreferences():   # this function invoked when we close the Prefs dialog with the "OK" button
 #    print
 #    print MODULENAME,'----------- syncPreferences -------------'
     for key in Configuration.defaultConfigs.keys():

@@ -223,9 +223,9 @@ class MVCDrawModel3D(MVCDrawModelBase):
         
         # actorCounter=0
         # for i in usedCellTypesList:
-        print '-------------- NOTE:  drawing 3D Cell Borders is in beta ----------------'
+#        print '-------------- NOTE:  drawing 3D Cell Borders is in beta ----------------'
         for actorCounter in xrange(len(self.usedCellTypesList)):
-            print MODULENAME,' initCellFieldBordersActors(): actorCounter=',actorCounter,
+#            print MODULENAME,' initCellFieldBordersActors(): actorCounter=',actorCounter,
             filterList[actorCounter].SetInput(cellTypeImageData)
             # filterList[actorCounter].SetValue(0, usedCellTypesList[actorCounter])
             
@@ -247,7 +247,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
                             cidUnique.append(cidAll[idx])
                         
 #                print ', len(cidUnique)=',len(cidUnique),
-                print ', len(ctAll, cidAll, cidUnique)=',len(ctAll),len(cidAll),len(cidUnique),
+#                print ', len(ctAll, cidAll, cidUnique)=',len(ctAll),len(cidAll),len(cidUnique),
                 
                 for idx in range(len(cidUnique)):
                     filterList[actorCounter].SetValue(idx, cidUnique[idx])
@@ -265,7 +265,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
             mapperList[actorCounter].ScalarVisibilityOff()
             
             actorName = "CellType_" + str(self.usedCellTypesList[actorCounter])
-            print ', actorName=',actorName
+#            print ', actorName=',actorName
             if actorName in _actors:
                 _actors[actorName].SetMapper(mapperList[actorCounter])
                 _actors[actorName].GetProperty().SetDiffuseColor(self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3])
@@ -1013,6 +1013,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
 #        cellVolumes = vtk.vtkIntArray()
 #        cellVolumes.SetName("CellVolumes")
+
+#        if self.scaleGlyphsByVolume:
         cellScalars = vtk.vtkFloatArray()
         cellScalars.SetName("CellScalars")
         
@@ -1024,25 +1026,30 @@ class MVCDrawModel3D(MVCDrawModelBase):
           #print 'cell.id=',cell.id  # = 2,3,4,...
           #print 'cell.type=',cell.type
           #print 'cell.volume=',cell.volume
-          xmid = float(cell.xCM) / cell.volume + self.offset
-          ymid = float(cell.yCM) / cell.volume + self.offset
-          zmid = float(cell.zCM) / cell.volume + self.offset
+          xmid = cell.xCOM + self.offset
+          ymid = cell.yCOM + self.offset
+          zmid = cell.zCOM + self.offset
 #          if cellCount < 50:  print cellCount,' glyph x,y,z,vol=',xmid,ymid,zmid,cell.volume
 #          if cell.volume > 1: print cellCount,' ** glyph x,y,z,vol=',xmid,ymid,zmid,cell.volume
 #          cellCount += 1
           centroidPoints.InsertNextPoint(xmid,ymid,zmid)
           cellTypes.InsertNextValue(cell.type)
 
-          cellScalars.InsertNextValue(cell.volume ** 0.333)   # take cube root of V, to get ~radius
+#          if self.scaleGlyphsByVolume:
+          if Configuration.getSetting("CellGlyphScaleByVolumeOn"):       # todo: make class attrib; update only when changes
+            cellScalars.InsertNextValue(cell.volume ** 0.333)   # take cube root of V, to get ~radius
+          else:
+            cellScalars.InsertNextValue(1.0)      # lame way of doing this
 
         centroidsPD = vtk.vtkPolyData()
         centroidsPD.SetPoints(centroidPoints)
         centroidsPD.GetPointData().SetScalars(cellTypes)
 
+#        if self.scaleGlyphsByVolume:
         centroidsPD.GetPointData().AddArray(cellScalars)
 
         centroidGS = vtk.vtkSphereSource()
-        thetaRes = Configuration.getSetting("CellGlyphThetaRes")            
+        thetaRes = Configuration.getSetting("CellGlyphThetaRes")     # todo: make class attrib; update only when changes
         phiRes = Configuration.getSetting("CellGlyphPhiRes")            
         centroidGS.SetThetaResolution(thetaRes)  # increase these values for a higher-res sphere glyph
         centroidGS.SetPhiResolution(phiRes)
@@ -1057,6 +1064,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         centroidGlyph.SetRange(0,self.celltypeLUTMax)
 
         centroidGlyph.SetColorModeToColorByScalar()
+#        if self.scaleGlyphsByVolume:
         centroidGlyph.SetScaleModeToScaleByScalar()
         
 #        centroidGlyph.SetScaleModeToDataScalingOff()  # call this to disable scaling by scalar value
@@ -1117,12 +1125,11 @@ class MVCDrawModel3D(MVCDrawModelBase):
 #          print 'cell.id=',cell.id  # = 2,3,4,...
 #          print 'cell.type=',cell.type
 #          print 'cell.volume=',cell.volume
-          vol = cell.volume
-          if vol < self.eps: continue
-
-          xmid0 = float(cell.xCM) / vol + self.offset
-          ymid0 = float(cell.yCM) / vol + self.offset
-          zmid0 = float(cell.zCM) / vol + self.offset
+#          vol = cell.volume
+#          if vol < self.eps: continue
+          xmid0 = cell.xCOM + self.offset
+          ymid0 = cell.yCOM + self.offset
+          zmid0 = cell.zCOM + self.offset
 #          print 'cell.id=',cell.id,'  x,y,z (begin)=',xmid0,ymid0,zmid0
           points.InsertNextPoint(xmid0,ymid0,zmid0)
           
@@ -1136,11 +1143,11 @@ class MVCDrawModel3D(MVCDrawModelBase):
 #             print 'targetDistance,maxDistance=',fppd.targetDistance,fppd.maxDistance
 #targetDistance,maxDistance= 3.0 6.0
 #targetDistance,maxDistance= 2.0 4.0
-            vol = fppd.neighborAddress.volume
-            if vol < self.eps: continue
-            xmid=float(fppd.neighborAddress.xCM) / vol + self.offset
-            ymid=float(fppd.neighborAddress.yCM) / vol + self.offset
-            zmid=float(fppd.neighborAddress.zCM) / vol + self.offset
+#            vol = fppd.neighborAddress.volume
+#            if vol < self.eps: continue
+            xmid=fppd.neighborAddress.xCOM + self.offset
+            ymid=fppd.neighborAddress.yCOM + self.offset
+            zmid=fppd.neighborAddress.zCOM + self.offset
 #            print '    x,y,z (end)=',xmid,ymid,zmid
 #            points.InsertNextPoint(xmid,ymid,zmid)
             xdiff = xmid-xmid0
@@ -1249,11 +1256,11 @@ class MVCDrawModel3D(MVCDrawModelBase):
 #             print 'targetDistance,maxDistance=',fppd.targetDistance,fppd.maxDistance
 #targetDistance,maxDistance= 3.0 6.0
 #targetDistance,maxDistance= 2.0 4.0
-            vol = fppd.neighborAddress.volume
-            if vol < self.eps: continue
-            xmid=float(fppd.neighborAddress.xCM) / vol + self.offset
-            ymid=float(fppd.neighborAddress.yCM) / vol + self.offset
-            zmid=float(fppd.neighborAddress.zCM) / vol + self.offset
+#            vol = fppd.neighborAddress.volume
+#            if vol < self.eps: continue
+            xmid=fppd.neighborAddress.xCOM + self.offset   # used to do: float(fppd.neighborAddress.xCM) / vol + self.offset
+            ymid=fppd.neighborAddress.yCOM + self.offset
+            zmid=fppd.neighborAddress.zCOM + self.offset
 #            print '    x,y,z (end)=',xmid,ymid,zmid
 #            points.InsertNextPoint(xmid,ymid,zmid)
             xdiff = xmid-xmid0
@@ -1424,12 +1431,11 @@ class MVCDrawModel3D(MVCDrawModelBase):
 #          print 'cell.id=',cell.id  # = 2,3,4,...
 #          print 'cell.type=',cell.type
 #          print 'cell.volume=',cell.volume
-          vol = cell.volume
-          if vol < self.eps: continue
-          
-          xmid0 = float(cell.xCM) / vol + self.offset
-          ymid0 = float(cell.yCM) / vol + self.offset
-          zmid0 = float(cell.zCM) / vol + self.offset
+#          vol = cell.volume
+#          if vol < self.eps: continue
+          xmid0 = cell.xCOM + self.offset
+          ymid0 = cell.yCOM + self.offset
+          zmid0 = cell.zCOM + self.offset
 #          print 'cell.id=',cell.id,'  x,y,z (begin)=',xmid0,ymid0,zmid0
           points.InsertNextPoint(xmid0,ymid0,zmid0)
           
@@ -1442,11 +1448,11 @@ class MVCDrawModel3D(MVCDrawModelBase):
 #             print 'targetDistance,maxDistance=',fppd.targetDistance,fppd.maxDistance
 #targetDistance,maxDistance= 3.0 6.0
 #targetDistance,maxDistance= 2.0 4.0
-            vol = fppd.neighborAddress.volume
-            if vol < self.eps: continue
-            xmid=float(fppd.neighborAddress.xCM) / vol + self.offset
-            ymid=float(fppd.neighborAddress.yCM) / vol + self.offset
-            zmid=float(fppd.neighborAddress.zCM) / vol + self.offset
+#            vol = fppd.neighborAddress.volume
+#            if vol < self.eps: continue
+            xmid=fppd.neighborAddress.xCOM + self.offset
+            ymid=fppd.neighborAddress.yCOM + self.offset
+            zmid=fppd.neighborAddress.zCOM + self.offset
 #            print '    x,y,z (end)=',xmid,ymid,zmid
 #            points.InsertNextPoint(xmid,ymid,zmid)
             xdiff = xmid-xmid0
@@ -1550,11 +1556,11 @@ class MVCDrawModel3D(MVCDrawModelBase):
 #             print 'targetDistance,maxDistance=',fppd.targetDistance,fppd.maxDistance
 #targetDistance,maxDistance= 3.0 6.0
 #targetDistance,maxDistance= 2.0 4.0
-            vol = fppd.neighborAddress.volume
-            if vol < self.eps: continue
-            xmid=float(fppd.neighborAddress.xCM) / vol + self.offset
-            ymid=float(fppd.neighborAddress.yCM) / vol + self.offset
-            zmid=float(fppd.neighborAddress.zCM) / vol + self.offset
+#            vol = fppd.neighborAddress.volume
+#            if vol < self.eps: continue
+            xmid=fppd.neighborAddress.xCOM + self.offset
+            ymid=fppd.neighborAddress.yCOM + self.offset
+            zmid=fppd.neighborAddress.zCOM + self.offset
 #            print '    x,y,z (end)=',xmid,ymid,zmid
 #            points.InsertNextPoint(xmid,ymid,zmid)
             xdiff = xmid-xmid0
