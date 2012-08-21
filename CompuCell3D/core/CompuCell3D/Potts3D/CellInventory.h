@@ -103,6 +103,10 @@ class /*DECLSPECIFIER*/ CellInventory
 		void setPotts3DPtr(Potts3D *_potts);
         CellG * getCellById(long _id); //obsolete
 		CellG * getCellByIds(long _id,long clusterId);
+
+		CellG * attemptFetchingCellById(long _id);
+
+
 		CellG * getCell(cellInventoryIterator & _itr){return _itr->second;}
 		CC3DCellList  getClusterCells(long _clusterId);
 

@@ -86,6 +86,7 @@ namespace CompuCell3D {
   class MITOSISSTEPPABLE_EXPORT MitosisSteppable : public Steppable{
 
 	  BasicRandomNumberGeneratorNonStatic randGen;
+	  int parentChildPositionFlag;
   public:
 
 	 typedef bool (MitosisSteppable::*doDirectionalMitosis2DPtr_t)();
@@ -104,6 +105,8 @@ namespace CompuCell3D {
 	 bool flag3D;
 	 
 	 
+	 void setParentChildPositionFlag(int _flag);
+	 int getParentChildPositionFlag();
 
 	 BasicClassAccessor<PixelTracker> *pixelTrackerAccessorPtr;
 	 PixelTrackerPlugin * pixelTrackerPlugin;

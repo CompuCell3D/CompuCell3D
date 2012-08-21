@@ -68,7 +68,7 @@ class VolumeParamSteppable(SteppablePy):
                 if  GlucoseConcentration < 0.001 and mcs>1000:
                     cell.type = 2
                     #set growth rate equation -- fastest cell cycle is 24hours or 1440 mcs--- 32voxels/1440mcs= 0.022 voxel/mcs
-                    cell.targetVolume+=0.022*GlucoseConcentration/(0.05 + GlucoseConcentration)
+                cell.targetVolume+=0.022*GlucoseConcentration/(0.05 + GlucoseConcentration)
                 #print "growth rate: ", 0.044*GlucoseConcentration/(0.05 + GlucoseConcentration), "GlucoseConcentration", GlucoseConcentration
 
             #Necrotic Cells

@@ -4,6 +4,7 @@
 
 #include "CellInventory.h"
 #include "Potts3D.h"
+#include <limits>
 
 using namespace std;
 
@@ -129,10 +130,34 @@ namespace CompuCell3D {
 		}
 
 	}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	CC3DCellList CellInventory::getClusterCells(long _clusterId){
-		return compartmentInventory.getClusterCells(_clusterId);
+
+CellG * CellInventory::attemptFetchingCellById(long _id){
+
+	cellInventoryIterator upperMitr=inventory.upper_bound(CellIdentifier(_id,std::numeric_limits<long>::max())); //upperMitr will point to location whose key is 'greater' than searched key
+	--upperMitr;
+	if (upperMitr->first.cellId==_id){
+		return upperMitr->second;
+	}else{
+		return 0;
+		//--upperMitr;
+		//if (upperMitr->first.cellId==_id){
+		//	return upperMitr->second;
+		//}else{
+		//	return 0;
+		//}
+
 	}
+
+	return 0;		
+
+	}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+CC3DCellList CellInventory::getClusterCells(long _clusterId){
+	return compartmentInventory.getClusterCells(_clusterId);
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	void CellInventory::initCellInventoryByType(CellInventory::cellListByType_t *_inventoryByTypePtr,unsigned char _type){

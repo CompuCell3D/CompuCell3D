@@ -48,6 +48,7 @@ using namespace std;
 
 MitosisSteppable::MitosisSteppable()
 {
+	parentChildPositionFlag=0;
 	potts=0;
 	doDirectionalMitosis2DPtr=0;
 	// // // getOrientationVectorsMitosis2DPtr=0;
@@ -150,6 +151,14 @@ void MitosisSteppable::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 			randGen.setSeed(simulator->ppdCC3DPtr->seed);
 		}            
 
+}
+
+void MitosisSteppable::setParentChildPositionFlag(int _flag){
+	parentChildPositionFlag=_flag;
+}
+
+int MitosisSteppable::getParentChildPositionFlag(){
+	return parentChildPositionFlag;
 }
 
 Vector3 MitosisSteppable::getShiftVector(std::set<PixelTrackerData> & _sourcePixels){
@@ -718,7 +727,16 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBased(CellG* _cell,d
 	set<PixelTrackerData> parentPixels;
 	set<PixelTrackerData> childPixels;
 
-	bool lessThanFlag=(randGen.getRatio()<0.5);
+
+	bool lessThanFlag;
+	if (parentChildPositionFlag<0){
+		lessThanFlag=false;
+	}else if (parentChildPositionFlag==0){
+		lessThanFlag=(randGen.getRatio()<0.5);
+	}else{
+		lessThanFlag=true;
+	}
+	//bool lessThanFlag=(randGen.getRatio()<0.5);
 	//cerr<<"lessThanFlag="<<lessThanFlag<<endl;
 
 	for(set<PixelTrackerData>::iterator sitr=pixelsToDividePtr->begin() ; sitr != pixelsToDividePtr->end() ;++sitr){
@@ -1431,7 +1449,15 @@ bool MitosisSteppable::divideClusterPixelsOrientationVectorBased(set<PixelTracke
 
 
 	int parentCellVolume=0;
-	bool lessThanFlag=(randGen.getRatio()<0.5);
+	bool lessThanFlag;
+	if (parentChildPositionFlag<0){
+		lessThanFlag=false;
+	}else if (parentChildPositionFlag==0){
+		lessThanFlag=(randGen.getRatio()<0.5);
+	}else{
+		lessThanFlag=true;
+	}
+	//bool lessThanFlag=(randGen.getRatio()<0.5);
 
 	for(set<PixelTrackerData>::iterator sitr=clusterPixels.begin() ; sitr != clusterPixels.end() ;++sitr){
 		Coordinates3D<double> pixelTrans= boundaryStrategy->calculatePointCoordinates(sitr->pixel);

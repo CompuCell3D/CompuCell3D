@@ -22,6 +22,12 @@ class VolumeParamSteppable(SteppablePy):
 class MitosisSteppable(MitosisSteppableBase):
     def __init__(self,_simulator,_frequency=1):
         MitosisSteppableBase.__init__(self,_simulator, _frequency)
+        
+        
+        # 0 - parent child position will be randomized between mitosis event
+        # negative integer - parent appears on the 'left' of the child
+        # positive integer - parent appears on the 'right' of the child
+        self.setParentChildPositionFlag(-1)       
     
     def step(self,mcs):
         # print "INSIDE MITOSIS STEPPABLE"

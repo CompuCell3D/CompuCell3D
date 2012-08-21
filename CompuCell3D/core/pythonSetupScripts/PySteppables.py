@@ -199,8 +199,12 @@ class SteppableBasePy(SteppablePy):
             import CompuCell            
             self.boundaryMonitorPlugin=CompuCell.getBoundaryMonitorPlugin()
 
+
+    def attemptFetchingCellById(self,_id):
+        return self.inventory.attemptFetchingCellById(_id)
             
-            
+    def getCellByIds(self,_id,_clusterId):
+        return self.inventory.getCellByIds(_id,_clusterId)
             
     def getClusterCells(self,_clusterId):
         return ClusterCellList(self.inventory.getClusterInventory().getClusterCells(_clusterId))   
