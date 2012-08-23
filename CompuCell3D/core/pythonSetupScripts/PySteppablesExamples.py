@@ -44,6 +44,18 @@ class MitosisSteppableBase(SteppableBasePy):
         # #works too
         # # return ClusterCellList(self.inventory.getClusterInventory().getClusterCells(_clusterId))        
         
+    def setParentChildPositionFlag(self,_flag):
+        '''
+            0 - parent child position will be randomized between mitosis event
+            negative integer - parent appears on the 'left' of the child
+            positive integer - parent appears on the 'right' of the child
+        '''
+        
+        self.mitosisSteppable.setParentChildPositionFlag(int(_flag))
+        
+    def getParentChildPositionFlag(self,_flag):
+        return self.mitosisSteppable.getParentChildPositionFlag()
+        
     def updateAttributes(self):
         self.childCell.targetVolume=self.parentCell.targetVolume
         self.childCell.lambdaVolume=self.parentCell.lambdaVolume
