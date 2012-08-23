@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'cc3D_prefs9.ui'
 #
-# Created: Fri Aug 17 12:27:13 2012
+# Created: Tue Aug 21 14:50:03 2012
 #      by: PyQt4 UI code generator 4.8.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -206,9 +206,9 @@ class Ui_CC3DPrefs(object):
         self.verticalLayout_5 = QtGui.QVBoxLayout(self.layoutWidget)
         self.verticalLayout_5.setMargin(0)
         self.verticalLayout_5.setObjectName(_fromUtf8("verticalLayout_5"))
-        self.checkBox = QtGui.QCheckBox(self.layoutWidget)
-        self.checkBox.setObjectName(_fromUtf8("checkBox"))
-        self.verticalLayout_5.addWidget(self.checkBox)
+        self.cellGlyphScaleByVolumeCheckBox = QtGui.QCheckBox(self.layoutWidget)
+        self.cellGlyphScaleByVolumeCheckBox.setObjectName(_fromUtf8("cellGlyphScaleByVolumeCheckBox"))
+        self.verticalLayout_5.addWidget(self.cellGlyphScaleByVolumeCheckBox)
         self.gridLayout = QtGui.QGridLayout()
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.label_9 = QtGui.QLabel(self.layoutWidget)
@@ -580,7 +580,7 @@ class Ui_CC3DPrefs(object):
         self.verticalLayout_11.addWidget(self.buttonBox)
 
         self.retranslateUi(CC3DPrefs)
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), CC3DPrefs.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), CC3DPrefs.reject)
         QtCore.QMetaObject.connectSlotsByName(CC3DPrefs)
@@ -605,7 +605,7 @@ class Ui_CC3DPrefs(object):
         self.addCellTypeButton.setText(QtGui.QApplication.translate("CC3DPrefs", "Add", None, QtGui.QApplication.UnicodeUTF8))
         self.deleteCellTypeButton.setText(QtGui.QApplication.translate("CC3DPrefs", "-", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_4.setTitle(QtGui.QApplication.translate("CC3DPrefs", "Cell Glyphs", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox.setText(QtGui.QApplication.translate("CC3DPrefs", "scale by volume", None, QtGui.QApplication.UnicodeUTF8))
+        self.cellGlyphScaleByVolumeCheckBox.setText(QtGui.QApplication.translate("CC3DPrefs", "scale by volume", None, QtGui.QApplication.UnicodeUTF8))
         self.label_9.setText(QtGui.QApplication.translate("CC3DPrefs", "Scale factor", None, QtGui.QApplication.UnicodeUTF8))
         self.label_10.setText(QtGui.QApplication.translate("CC3DPrefs", "Theta res", None, QtGui.QApplication.UnicodeUTF8))
         self.label_11.setText(QtGui.QApplication.translate("CC3DPrefs", "Phi res", None, QtGui.QApplication.UnicodeUTF8))
