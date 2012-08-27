@@ -207,6 +207,7 @@ class MVCDrawView3D(MVCDrawViewBase):
                 self.cellTypeActors[actorNumber]=vtk.vtkActor()
                 
     def prepareOutlineActor(self,_imageData):
+        print MODULENAME, '------------  prepareOutlineActor()'
         outlineDimTmp=_imageData.GetDimensions()
         # print "\n\n\n this is outlineDimTmp=",outlineDimTmp," self.outlineDim=",self.outlineDim
         if self.outlineDim[0] != outlineDimTmp[0] or self.outlineDim[1] != outlineDimTmp[1] or self.outlineDim[2] != outlineDimTmp[2]:
@@ -218,12 +219,18 @@ class MVCDrawView3D(MVCDrawViewBase):
             outlineMapper.SetInputConnection(outline.GetOutputPort())
         
             self.outlineActor.SetMapper(outlineMapper)
-            self.outlineActor.GetProperty().SetColor(1, 1, 1)        
-            self.outlineDim=_imageData.GetDimensions()
+            
+            color = Configuration.getSetting("WindowColor")   # eventually do this smarter (only get/update when it changes)
+            self.outlineActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+#            self.outlineActor.GetProperty().SetColor(1, 1, 1)        
+            self.outlineDim = _imageData.GetDimensions()
 
     def showOutlineActor(self):
+#        print MODULENAME, '------------  showOutlineActor()'
         self.currentActors["Outline"]=self.outlineActor
         if self.boundingBox:
+            color = Configuration.getSetting("BoundingBoxColor")   # eventually do this smarter (only get/update when it changes)
+            self.outlineActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
             self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
     
     def hideOutlineActor(self):

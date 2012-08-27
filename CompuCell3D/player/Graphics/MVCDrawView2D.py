@@ -262,11 +262,12 @@ class MVCDrawView2D(MVCDrawViewBase):
         # self.Render() 
         # self.graphicsFrameWidget.repaint()
     
-    def setBorderColor(self):
+    def setBorderColor(self):  # called from drawBorders2D[Hex]  (below)
         color = Configuration.getSetting("BorderColor")
         r = color.red()
         g = color.green()
         b = color.blue()
+#        print MODULENAME,'  setBorderColor():   r,g,b=',r,g,b
         self.borderActor.GetProperty().SetColor(self.toVTKColor(r), self.toVTKColor(g), self.toVTKColor(b))
         self.borderActorHex.GetProperty().SetColor(self.toVTKColor(r), self.toVTKColor(g), self.toVTKColor(b))
         # self.Render() 

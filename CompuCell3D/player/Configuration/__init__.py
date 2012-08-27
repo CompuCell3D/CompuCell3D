@@ -127,6 +127,7 @@ class Configuration():
         # 3D tab
         defaultConfigs["Types3DInvisible"] = QString("0"); paramTypeString.append("Types3DInvisible")
         defaultConfigs["BoundingBoxOn"] = True; paramTypeBool.append("BoundingBoxOn")
+        defaultConfigs["BoundingBoxColor"] = QColor(Qt.white); paramTypeColor.append("BoundingBoxColor")
         
         
         #------------- prefs from menu items, etc. (NOT in Preferences dialog) -----------

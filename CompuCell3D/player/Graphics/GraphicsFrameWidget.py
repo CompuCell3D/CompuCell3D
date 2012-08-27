@@ -179,6 +179,15 @@ class GraphicsFrameWidget(QtGui.QFrame):
         self.drawModel3D.populateLookupTable()
         
     def Render(self):        
+#        print MODULENAME, ' ---------Render():'
+#        Configuration.getSetting("CurrentFieldName",name)
+        color = Configuration.getSetting("WindowColor")
+#        r = color.red()
+#        g = color.green()
+#        b = color.blue()
+#        print MODULENAME,'  setBorderColor():   r,g,b=',r,g,b
+#        self.borderActor.GetProperty().SetColor(self.toVTKColor(r), self.toVTKColor(g), self.toVTKColor(b))
+        self.ren.SetBackground(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
         self.qvtkWidget.Render()
         # self.qvtkWidget.resetCamera()
     def getCamera(self):

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'cc3D_prefs9.ui'
 #
-# Created: Tue Aug 21 14:50:03 2012
+# Created: Mon Aug 27 09:11:14 2012
 #      by: PyQt4 UI code generator 4.8.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -274,7 +274,7 @@ class Ui_CC3DPrefs(object):
         self.windowColorLabel.setObjectName(_fromUtf8("windowColorLabel"))
         self.gridLayout_2.addWidget(self.windowColorLabel, 3, 0, 1, 1)
         self.windowColorButton = QtGui.QToolButton(self.layoutWidget1)
-        self.windowColorButton.setEnabled(False)
+        self.windowColorButton.setEnabled(True)
         self.windowColorButton.setMinimumSize(QtCore.QSize(26, 26))
         self.windowColorButton.setMaximumSize(QtCore.QSize(26, 26))
         self.windowColorButton.setText(_fromUtf8(""))
@@ -559,7 +559,7 @@ class Ui_CC3DPrefs(object):
         self.label_12.setObjectName(_fromUtf8("label_12"))
         self.horizontalLayout_10.addWidget(self.label_12)
         self.boundingBoxColorButton = QtGui.QToolButton(self.tab_3D)
-        self.boundingBoxColorButton.setEnabled(False)
+        self.boundingBoxColorButton.setEnabled(True)
         self.boundingBoxColorButton.setText(_fromUtf8(""))
         self.boundingBoxColorButton.setObjectName(_fromUtf8("boundingBoxColorButton"))
         self.horizontalLayout_10.addWidget(self.boundingBoxColorButton)
@@ -580,7 +580,7 @@ class Ui_CC3DPrefs(object):
         self.verticalLayout_11.addWidget(self.buttonBox)
 
         self.retranslateUi(CC3DPrefs)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(3)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), CC3DPrefs.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), CC3DPrefs.reject)
         QtCore.QMetaObject.connectSlotsByName(CC3DPrefs)

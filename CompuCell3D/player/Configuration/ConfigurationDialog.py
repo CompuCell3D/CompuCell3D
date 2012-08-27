@@ -54,7 +54,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.cellBorderColorButton.clicked.connect(self.cellBorderColorClicked)
         self.clusterBorderColorButton.clicked.connect(self.clusterBorderColorClicked)
         self.contourColorButton.clicked.connect(self.contourColorClicked)
-#        self.windowColorButton.clicked.connect(self.windowColorClicked)
+        self.windowColorButton.clicked.connect(self.windowColorClicked)
         
         cellGlyphScaleValid = QDoubleValidator(self.cellGlyphScale)
         self.cellGlyphScale.setValidator(cellGlyphScaleValid)
@@ -81,6 +81,11 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.vectorsArrowColorCheckBox.clicked.connect(self.vectorsArrowColorClicked)
         self.vectorsArrowColorButton.clicked.connect(self.vectorsArrowColorButtonClicked)
         
+        # 3D tab
+        self.boundingBoxColorButton.clicked.connect(self.boundingBoxColorClicked)
+        
+        
+        # bottom buttons of Prefs dialog
 #        self.connect(self.buttonBox,   SIGNAL("accepted()"),       self.accept)  # done implicitly
 #        self.connect(self.buttonBox,   SIGNAL("rejected()"),       self.reject)  # done implicitly
 #        self.connect(self.buttonBox,   SIGNAL("clicked()"),       self.buttonClicked)    # doesn't work
@@ -194,6 +199,9 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 
     def windowColorClicked(self):
         self.updateColorButton(self.windowColorButton, "WindowColor")
+
+    def boundingBoxColorClicked(self):
+        self.updateColorButton(self.boundingBoxColorButton, "BoundingBoxColor")
 
 
     # -------- Field widgets CBs  (was both Colormap and Vector tabs, now combined in Field tab)
@@ -384,7 +392,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
 #    def buttonClicked(self,btn):
 #    def apply(self):
-    def buttonBoxClicked(self,btn):
+    def buttonBoxClicked(self,btn):   # this is the primary buttons (Apply/Cancel/OK) at the bottom of the Prefs diaglog
 #        print MODULENAME, 'buttonBoxClicked():    type(btn.text())=',type(btn.text())
 #        print MODULENAME, 'buttonBoxClicked():    btn.text()=',btn.text()
         if str(btn.text()) == 'Apply':
@@ -622,7 +630,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 #        print MODULENAME,' updateFieldParams():  fieldDict=',fieldDict
         Configuration.updateFieldsParams(fieldName,fieldDict)
         
-    def updatePreferences(self):
+    def updatePreferences(self):   # called when user applies/OKs the Prefs dialog
 #        print MODULENAME, ' -----------  updatePreferences  -------------------------'
         
         # rwh: check if the PreferencesFile is different; if so, update it
@@ -847,6 +855,12 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         # 3D
         self.cellTypesInvisibleList.setText(Configuration.getSetting("Types3DInvisible"))
         self.boundingBoxCheckBox.setChecked(self.paramCC3D["BoundingBoxOn"])
+        
+        color = Configuration.getSetting("BoundingBoxColor")
+        pm = QPixmap(size.width(), size.height())
+        pm.fill(color)
+        self.boundingBoxColorButton.setIconSize(pm.size())
+        self.boundingBoxColorButton.setIcon(QIcon(pm))
 
 #        configuration=self.editorWindow.configuration
 #        self.tabSpacesCheckBox.setChecked(configuration.setting("UseTabSpaces"))
@@ -870,7 +884,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         paramList += ["ArrowColor","ArrowLength","FixedArrowColorOn","ScaleArrowsOn","OverlayVectorsOn"]
         
         # 3D
-        paramList += ["BoundingBoxOn"]
+        paramList += ["BoundingBoxOn","BoundingBoxColor"]
         for p in paramList:
             self.paramCC3D[p] = Configuration.getSetting(p)
 #            if p == "TypeColorMap":

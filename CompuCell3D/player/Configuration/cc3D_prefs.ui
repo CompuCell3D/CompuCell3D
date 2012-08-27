@@ -19,7 +19,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>1</number>
+        <number>3</number>
        </property>
        <widget class="QWidget" name="tab_output">
         <attribute name="title">
@@ -659,7 +659,7 @@
            <item row="3" column="1">
             <widget class="QToolButton" name="windowColorButton">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="minimumSize">
               <size>
@@ -1361,7 +1361,7 @@
              <item>
               <widget class="QToolButton" name="boundingBoxColorButton">
                <property name="enabled">
-                <bool>false</bool>
+                <bool>true</bool>
                </property>
                <property name="text">
                 <string/>

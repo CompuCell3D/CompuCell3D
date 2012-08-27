@@ -346,7 +346,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
         
     def addNewGraphicsWindow(self): 
-        print MODULENAME, '--------- addNewGraphicsWindow() '
+#        print MODULENAME, '--------- addNewGraphicsWindow() '
         # if self.pauseAct.isEnabled():
             # self.__pauseSim()
         if not self.simulationIsRunning:

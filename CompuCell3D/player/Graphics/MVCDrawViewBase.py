@@ -554,7 +554,7 @@ class MVCDrawViewBase():
         self._statusBar = statusBar
 
     # Break the settings read into groups?
-    def readSettings(self):
+    def readSettings(self):   # only performed at startup
 #        print MODULENAME,'----- readSettings()'
         self.readColorsSets()
         self.readViewSets()
@@ -565,12 +565,15 @@ class MVCDrawViewBase():
         # simDefaults?
 
     def readColorsSets(self):
+#        print MODULENAME,'----- readColorsSets()'
         #colorsDefaults
         self._colorMap     = Configuration.getSetting("TypeColorMap")
         self._borderColor  = Configuration.getSetting("BorderColor")
         self._contourColor = Configuration.getSetting("ContourColor")
         self._brushColor   = Configuration.getSetting("BrushColor")
         self._penColor     = Configuration.getSetting("PenColor")
+        self._windowColor     = Configuration.getSetting("WindowColor")
+        self._boundingBoxColor     = Configuration.getSetting("BoundingBoxColor")
 
     def readViewSets(self):
         # For 3D only?

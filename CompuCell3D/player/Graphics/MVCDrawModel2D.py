@@ -1088,7 +1088,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
     def takeSimShot(self, fileName):
         # DON'T REMOVE!
         # Better quality
-        # Passes vtkRenderer. Takes actual screenshot of the region withing the widget window
+        # Passes vtkRenderer. Takes actual screenshot of the region within the widget window
         # If other application are present within this region it will shoot them also
 
         renderLarge = vtk.vtkRenderLargeImage()
@@ -1108,7 +1108,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
     def toolTip(self, cellG):
         return "Id:             %s\nType:       %s\nVolume:  %s" % (cellG.id, cellG.type, cellG.volume)
 
-    def configsChanged(self):  # this method does not seem to get invoked
+    def configsChanged(self):  # never called?!
         print MODULENAME,'  >>>>>>>>>>   configsChange()    <<<<<<<<<<<<<<<<<<'
         self.populateLookupTable()
         self.setBorderColor()

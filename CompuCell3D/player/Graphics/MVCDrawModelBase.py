@@ -88,7 +88,8 @@ class MVCDrawModelBase():
             
         self.currentActors.clear()
     
-    def Render(self):
+    def Render(self):   # never called?!
+#        print MODULENAME,"     --------- Render() "
         self.graphicsFrameWidget.Render()
         
     #this is an ugly solution that seems to work on 32 bit machines. We will see if it will work on other machines        
@@ -258,13 +259,13 @@ class MVCDrawModelBase():
 
 
     # Break the settings read into groups?
-    def readSettings_old(self):   # not ever called?!
-        self.readColorsSets()
-        self.readViewSets()
-        self.readColormapSets()
-        self.readOutputSets()
-        self.readVectorSets()
-        self.readVisualSets()
+#    def readSettings_old(self):   # not ever called?!  (rf. MVCDrawViewBase)
+#        self.readColorsSets()
+#        self.readViewSets()
+#        self.readColormapSets()
+#        self.readOutputSets()
+#        self.readVectorSets()
+#        self.readVisualSets()
         # simDefaults?
 
     def readColorsSets(self):
