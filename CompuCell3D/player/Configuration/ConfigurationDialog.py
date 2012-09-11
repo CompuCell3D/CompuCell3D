@@ -59,6 +59,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         cellGlyphScaleValid = QDoubleValidator(self.cellGlyphScale)
         self.cellGlyphScale.setValidator(cellGlyphScaleValid)
         
+        
         # Field tab (handles both scalar and vector fields)
         # The following will constrain the input to be valid (double) numeric values
 #        self.fieldComboBox.activated.connect(self.fieldComboBoxClicked)
@@ -80,6 +81,14 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
         self.vectorsArrowColorCheckBox.clicked.connect(self.vectorsArrowColorClicked)
         self.vectorsArrowColorButton.clicked.connect(self.vectorsArrowColorButtonClicked)
+        
+        self.isovalList.textEdited.connect(self.isovalListChanged)
+        self.numberOfContoursLinesSpinBox.valueChanged.connect(self.numContoursInRangeChanged)
+#        self.numberOfContoursLinesSpinBox.editingFinished.connect(self.numContoursInRangeChanged)  # changes with each keypress in input
+
+#        self.maxNumContours = 10
+#        self.isoValList = []
+        
         
         # 3D tab
         self.boundingBoxColorButton.clicked.connect(self.boundingBoxColorClicked)
@@ -107,10 +116,11 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 
     #----------- following methods are callbacks from the above "connect"s  ------------
     def currentTabChanged(self):
-#        print MODULENAME,' ------ tab changed()'
-#        print '      tab currentIndex =',self.tabWidget.currentIndex()
+#        print MODULENAME,' ------ currentTabChanged()'
+#        print MODULENAME,' ------ currentTabChanged():  currentIndex =',self.tabWidget.currentIndex()
         Configuration.setSetting("TabIndex", self.tabWidget.currentIndex())
         if (self.tabWidget.currentIndex() == 2):
+#            print MODULENAME,' ------ currentTabChanged():  self.fieldComboBox.count() =',self.fieldComboBox.count() 
             if self.lastSelectedField >= 0: 
                 self.fieldComboBox.setCurrentIndex(self.lastSelectedField)
     
@@ -390,11 +400,17 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.updateColorButton(self.vectorsArrowColorButton, "ArrowColor")
         
         
-#    def buttonClicked(self,btn):
-#    def apply(self):
+    def isovalListChanged(self):
+        pass
+#        print MODULENAME, '\n>>>>>>>>>>>> isovalListChanged() '
+        
+    def numContoursInRangeChanged(self):
+        pass
+#        print MODULENAME, '\n>>>>>>>>>>>> numContoursInRangeChanged() '
+        
+        
     def buttonBoxClicked(self,btn):   # this is the primary buttons (Apply/Cancel/OK) at the bottom of the Prefs diaglog
-#        print MODULENAME, 'buttonBoxClicked():    type(btn.text())=',type(btn.text())
-#        print MODULENAME, 'buttonBoxClicked():    btn.text()=',btn.text()
+#        print MODULENAME, 'buttonBoxClicked():    btn.text()=',btn.text()   #  e.g. btn.text()= OK; btn.text()= Apply
         if str(btn.text()) == 'Apply':
             if self.outputImagesCheckBox.isChecked() and (self.saveImageSpinBox.value() < self.updateScreenSpinBox.value()):
                 saveImgStr = str(self.saveImageSpinBox.value())
@@ -403,7 +419,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
             self.updatePreferences()
         
         
-    def accept(self):
+    def accept(self):    # called when 'OK' is pressed on Prefs
 #        print MODULENAME, 'accept <<<<<<<<<<<<<----------------'
 #        Configuration.setSetting()
         if self.outputImagesCheckBox.isChecked() and (self.saveImageSpinBox.value() < self.updateScreenSpinBox.value()):
@@ -630,7 +646,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 #        print MODULENAME,' updateFieldParams():  fieldDict=',fieldDict
         Configuration.updateFieldsParams(fieldName,fieldDict)
         
-    def updatePreferences(self):   # called when user applies/OKs the Prefs dialog
+    def updatePreferences(self):   # called when user presses Apply or OK button on the Prefs dialog
 #        print MODULENAME, ' -----------  updatePreferences  -------------------------'
         
         # rwh: check if the PreferencesFile is different; if so, update it
@@ -640,7 +656,6 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 #        configuration.updatedConfigs={}
 
         # update flags in menus:  CC3DOutputOn, etc. (rf. ViewManager/SimpleViewManager)
-        
         
         # Output
         Configuration.setSetting("ScreenUpdateFrequency", self.updateScreenSpinBox.value())
@@ -679,8 +694,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
         # get Field name from combobox in the Field tab and save the current settings for that field
         fname = self.fieldComboBox.currentText()
-#        print MODULENAME,'  updatePreferences():  fname=',fname
-#        print MODULENAME,'  updatePreferences():  type(fname)=',type(fname)
+#        print MODULENAME,'  updatePreferences():  fname=',fname   # e.g. fname= FGF
+#        print MODULENAME,'  updatePreferences():  type(fname)=',type(fname)   # e.g. <class 'PyQt4.QtCore.QString'>
 #        Configuration.updateSimFieldsParams(fname)
         self.updateFieldParams(fname)
 
@@ -733,6 +748,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         fieldIndex = Configuration.getSetting("FieldIndex")
         self.lastSelectedField = fieldIndex
         self.fieldComboBox.setCurrentIndex(self.lastSelectedField)
+#        print MODULENAME, ' ------  updateUI(),   self.fieldComboBox.count()=',self.fieldComboBox.count()
+#        print MODULENAME, ' ------  updateUI(),   self.fieldComboBox.__len__()=',self.fieldComboBox.__len__()
 #        if self.lastSelectedField: 
         
         # Output

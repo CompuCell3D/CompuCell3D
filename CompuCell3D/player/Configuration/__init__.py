@@ -54,6 +54,8 @@ class Configuration():
         defaultConfigs["SaveImageFrequency"] = 100; paramTypeInt.append("SaveImageFrequency")
         defaultConfigs["LatticeOutputOn"] = False; paramTypeBool.append("LatticeOutputOn")
         defaultConfigs["SaveLatticeFrequency"] = 100; paramTypeInt.append("SaveLatticeFrequency")
+        defaultConfigs["GraphicsWinWidth"] = 400; paramTypeInt.append("GraphicsWinWidth")
+        defaultConfigs["GraphicsWinHeight"] = 400; paramTypeInt.append("GraphicsWinHeight")
         defaultConfigs["UseInternalConsole"] = False; paramTypeBool.append("UseInternalConsole")
         defaultConfigs["ClosePlayerAfterSimulationDone"] = False; paramTypeBool.append("ClosePlayerAfterSimulationDone")
         # defaultConfigs["ProjectLocation"] = QString(os.path.join(os.path.expanduser('~'),'CC3DProjects')); paramTypeString.append("ProjectLocation")

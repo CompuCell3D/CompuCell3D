@@ -289,7 +289,7 @@ class GraphicsFrameWidget(QtGui.QFrame):
         self.projSpinBox.addAction(self.projSBAct)
 
         self.fieldComboBoxAct = QtGui.QAction(self)
-        self.fieldComboBox  = QtGui.QComboBox()
+        self.fieldComboBox  = QtGui.QComboBox()   # Note that this is different than the fieldComboBox in the Prefs panel (rf. SimpleTabView.py)
         self.fieldComboBox.addAction(self.fieldComboBoxAct)
         self.fieldComboBox.addItem("-- Field Type --")
         self.fieldComboBox.addItem("cAMP")  # huh?

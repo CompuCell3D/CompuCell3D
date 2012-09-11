@@ -862,6 +862,7 @@ class MVCDrawView2D(MVCDrawViewBase):
         self.showContours(True)
         self.parentWidget.requestRedraw()
 
+    # these drawBorders* fns called from drawCellField[Hex] (above)
     def drawBorders2D(self):
 #        print '============ MVCDrawView2D.py: drawBorders2D ============='
         self.setBorderColor()

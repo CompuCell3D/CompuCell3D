@@ -263,7 +263,6 @@ class MVCDrawViewBase():
             
         self.Render()    
     
-    
     def showContours(self, enable): pass
     
     def setPlane(self, plane, pos): pass

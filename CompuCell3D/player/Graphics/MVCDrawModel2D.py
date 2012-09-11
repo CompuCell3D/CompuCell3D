@@ -178,15 +178,15 @@ class MVCDrawModel2D(MVCDrawModelBase):
         transform.Scale(1,math.sqrt(3.0)/2.0,1)
         transform.Translate(0,math.sqrt(3.0)/2.0,0)
         
-        contour = vtk.vtkContourFilter()
+        isoContour = vtk.vtkContourFilter()
         
 #        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):
         if True:
-            contour.SetInputConnection(field.GetOutputPort())
-            contour.GenerateValues(Configuration.getSetting("NumberOfContourLines",self.currentDrawingParameters.fieldName)+2, _minMax)
+            isoContour.SetInputConnection(field.GetOutputPort())
+            isoContour.GenerateValues(Configuration.getSetting("NumberOfContourLines",self.currentDrawingParameters.fieldName)+2, _minMax)
             
             tpd1 = vtk.vtkTransformPolyDataFilter()
-            tpd1.SetInputConnection(contour.GetOutputPort())
+            tpd1.SetInputConnection(isoContour.GetOutputPort())
             tpd1.SetTransform(transform)
             
             # self.contourMapper.SetInputConnection(contour.GetOutputPort())
@@ -413,7 +413,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # conField   = CompuCell.getConcentrationField(sim, fieldType[0]) 
         # conFieldName=fieldType[0]
         
-        
         #print self._statusBar.currentMessage() 
         fieldDim = self.currentDrawingParameters.bsd.fieldDim
         conFieldName = self.currentDrawingParameters.fieldName
@@ -421,12 +420,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # conFieldName=fieldType[0]
         
         self.dim    = [fieldDim.x, fieldDim.y, fieldDim.z]
-        field       = vtk.vtkImageDataGeometryFilter()
-        contour     = vtk.vtkContourFilter()
+#        print MODULENAME,'   initScalarFieldActors():  self.dim=',self.dim
         
         # Leave it for testing
         assert self.currentDrawingParameters.plane in ("XY", "XZ", "YZ"), "Plane is not XY, XZ or YZ"
-
 
         # fieldDim = cellField.getDim()
         dimOrder = self.dimOrder(self.plane)
@@ -439,13 +436,17 @@ class MVCDrawModel2D(MVCDrawModelBase):
         if not fillSuccessful:
             return
 
+        numIsos = Configuration.getSetting("NumberOfContourLines",conFieldName)
+#        self.isovalStr = Configuration.getSetting("ScalarIsoValues",conFieldName)
+        
         range = self.conArray.GetRange()
-        self.minCon=range[0]
-        self.maxCon=range[1]
+        self.minCon = range[0]
+        self.maxCon = range[1]
 #        print MODULENAME,'   initScalarFieldActors():  (before) self.minCon, maxCon=',self.minCon,self.maxCon
 #        print MODULENAME,'   initScalarFieldActors():  numberOfTableColors, highTableValue=',self.numberOfTableColors,self.highTableValue  # 1024 (1.0, 0.0, 0.0, 1.0)
 #        print MODULENAME,'  initScalarFieldActors():  doing Config-.getSetting(MinRange*)'
-        # Note! should really avoid doing a getSetting with each step to speed up the rendering
+
+        # Note! should really avoid doing a getSetting with each step to speed up the rendering; only update when changed in Prefs
         if Configuration.getSetting("MinRangeFixed",conFieldName):
             self.minCon = Configuration.getSetting("MinRange",conFieldName)
 #            self.clut.SetTableValue(0,[0,0,0,1])   # this will cause values < minCon to be black
@@ -454,112 +455,77 @@ class MVCDrawModel2D(MVCDrawModelBase):
                         
         if Configuration.getSetting("MaxRangeFixed",conFieldName):
             self.maxCon = Configuration.getSetting("MaxRange",conFieldName)
-#            self.clut.SetTableValue(self.numberOfTableColors-1,[0,0,0,1])  # this will cause values > maxCon to be black
-#        else:
-#            self.clut.SetTableValue(self.numberOfTableColors-1,self.highTableValue)
-            
+        
+        
+        dim_0 = self.dim[0]+1
+        dim_1 = self.dim[1]+1
 
-        ####################
-        # field       = vtk.vtkImageDataGeometryFilter()
-        # contour     = vtk.vtkContourFilter()
-        # conFieldName=self.currentDrawingParameters.fieldName       
-        
-        # # # # print "drawing plane ",self.plane," planePos=",self.planePos
-        # fieldDim = self.currentDrawingParameters.bsd.fieldDim
-        # dimOrder    = self.dimOrder(self.currentDrawingParameters.plane)
-        # self.dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]         
-            
-        # self.conArray = vtk.vtkDoubleArray()
-        # self.conArray.SetName("concentration")
-        # self.conArrayIntAddr=self.extractAddressIntFromVtkObject(self.conArray)
-        # self.hexPointsCon = vtk.vtkPoints()
-        # # self.hexPoints.SetName("hexpoints")
-        # self.hexPointsConIntAddr=self.extractAddressIntFromVtkObject(self.hexPointsCon)
-        
-        # # ***************************************************************************    
-        # self.hexCellsCon=vtk.vtkCellArray()
-		
-        # self.hexCellsConIntAddr=self.extractAddressIntFromVtkObject(self.hexCellsCon)
-		
-        # self.hexCellsConPolyData=vtk.vtkPolyData()
-
-
-            
-        # fillSuccessful=self.parentWidget.fieldExtractor.fillScalarFieldData2DHex(self.conArrayIntAddr,self.hexCellsConIntAddr,self.hexPointsConIntAddr,conFieldName,self.currentDrawingParameters.plane, self.currentDrawingParameters.planePos)                     
-        
-        # range=self.conArray.GetRange()
-        # self.minCon=range[0]
-        # self.maxCon=range[1]
-        
-        
-        
-        # if Configuration.getSetting("MinRangeFixed"):
-            # self.minCon=Configuration.getSetting("MinRange")
-            
-        # if Configuration.getSetting("MaxRangeFixed"):
-            # self.maxCon=Configuration.getSetting("MaxRange")        
-        #####################    
-        # if Configuration.getSetting("ContoursOn"):
-            # contourActor=_actors[1]
-            
-            # plane = vtk.vtkPlaneSource() #note center of the plane is at 0,0,0 so we need to moe it to the center of the lattice by either 
-                                         # # setting the origin or translating it
-            # plane.SetResolution(self.dim[0], self.dim[1])
-            # transP1 = vtk.vtkTransform()
-            # transP1.Translate(self.dim[0]/2, self.dim[1]/2,0)
-            # transP1.Scale(self.dim[0], self.dim[1], 1)
-            
-            # tpd1 = vtk.vtkTransformPolyDataFilter()
-            # tpd1.SetInputConnection(plane.GetOutputPort())
-            # tpd1.SetTransform(transP1)
-            
-            # appendF = vtk.vtkAppendPolyData()
-            # appendF.AddInput(tpd1.GetOutput())
-        
-            # plane2DScalarFieldStructuredPoints=vtk.vtkStructuredPoints()
-            # plane2DScalarFieldStructuredPoints.SetDimensions(self.dim[0], self.dim[1],1)
-            # plane2DScalarFieldStructuredPoints.GetPointData().AddArray(self.conArray)
-            
-        
-            # probe = vtk.vtkProbeFilter()
-            # probe.SetInputConnection(appendF.GetOutputPort())                    
-            # probe.SetSource(plane2DScalarFieldStructuredPoints)
-            
-            # self.contourMapper.SetInputConnection(probe.GetOutputPort())
-            
-            # self.contourMapper.SetScalarRange([self.minCon,self.maxCon])           
-            # contourActor.SetMapper(self.contourMapper)
-            
-        
-        dim_0=self.dim[0]+1
-        dim_1=self.dim[1]+1
-        
-        
-        # self.fillCellFieldData(cellField,self.plane, self.planePos)
-        # (self.minCon, self.maxCon,dim_0,dim_1) = self.fillConFieldData( cellField, conField, self.plane, self.planePos)
-        
-        # self.initializeContours([dim_0, dim_1],self.conArray,[self.minCon, self.maxCon],[_actors[1]])
-        
         data = vtk.vtkImageData()
         data.SetDimensions(dim_0, dim_1, 1)
         # print "dim_0,dim_1",(dim_0,dim_1)
         data.SetScalarTypeToUnsignedChar()      
         data.GetPointData().SetScalars(self.conArray)
-        field.SetExtent(0, dim_0, 0, dim_1, 0, 0)
-        field.SetInput(data)
         
-#        if Configuration.getSetting("ContoursOn",conFieldName):
-        if True:
-            contourActor=_actors[1]
-            contourActor.SetMapper(self.contourMapper)
-            contour.SetInputConnection(field.GetOutputPort())
-            contour.GenerateValues(Configuration.getSetting("NumberOfContourLines",self.currentDrawingParameters.fieldName)+2, [self.minCon, self.maxCon])
-            self.contourMapper.SetInputConnection(contour.GetOutputPort())
-            self.contourMapper.SetLookupTable(self.ctlut)
-            self.contourMapper.SetScalarRange(self.minCon, self.maxCon)
-            self.contourMapper.ScalarVisibilityOff()  # this is required to do a SetColor on the actor's property
+        field = vtk.vtkImageDataGeometryFilter()
+        field.SetInput(data)
+        field.SetExtent(0, dim_0, 0, dim_1, 0, 0)
+        
+#        spoints = vtk.vtkStructuredPoints()
+#        spoints.SetDimensions(self.dim[0]+2, self.dim[1]+2, self.dim[2]+2)  #  only add 2 if we're filling in an extra boundary (rf. FieldExtractor.cpp)
+#        spoints.GetPointData().SetScalars(self.conArray)
+        
+#        voi = vtk.vtkExtractVOI()
+#        voi.SetInput(spoints)
+#        voi.SetVOI(1,self.dim[0]-1, 1,self.dim[1]-1, 1,self.dim[2]-1 )
+        
+        isoContour = vtk.vtkContourFilter()
+#        isoContour.SetInputConnection(voi.GetOutputPort())
+        isoContour.SetInputConnection(field.GetOutputPort())
+
+        
+        isoValList = self.getIsoValues(conFieldName)
+#        print MODULENAME, 'initScalarFieldActors():  getIsoValues=',isoValList
+        
+        printIsoValues = False
+#        if printIsoValues:  print MODULENAME, ' isovalues= ',
+        isoNum = 0
+        for isoVal in isoValList:
+            try:
+                if printIsoValues:  print MODULENAME, '  initScalarFieldActors(): setting (specific) isoval= ',isoVal
+                isoContour.SetValue(isoNum, isoVal)
+                isoNum += 1
+            except:
+                print MODULENAME, '  initScalarFieldDataActors(): cannot convert to float: ',self.isovalStr[idx]
+        if isoNum > 0:  isoNum += 1
+#        print MODULENAME, '  after specific isovalues, isoNum=',isoNum
+#        numIsos = Configuration.getSetting("NumberOfContourLines")
+#        print MODULENAME, '  Next, do range of isovalues: min,max, # isos=',self.minCon,self.maxCon,numIsos
+        delIso = (self.maxCon - self.minCon)/(numIsos+1)  # exclude the min,max for isovalues
+#        print MODULENAME, '  initScalarFieldActors(): delIso= ',delIso
+        isoVal = self.minCon + delIso
+        for idx in xrange(numIsos):
+            if printIsoValues:  print MODULENAME, '  initScalarFieldDataActors(): isoNum, isoval= ',isoNum,isoVal
+            isoContour.SetValue(isoNum, isoVal)
+            isoNum += 1
+            isoVal += delIso
+        if printIsoValues:  print 
+        
+        
+        isoContour.SetInputConnection(field.GetOutputPort())  # rwh?
+#        isoContour.GenerateValues(Configuration.getSetting("NumberOfContourLines",self.currentDrawingParameters.fieldName)+2, [self.minCon, self.maxCon])
+
+        self.contourMapper.SetInputConnection(isoContour.GetOutputPort())
+        self.contourMapper.SetLookupTable(self.ctlut)
+        self.contourMapper.SetScalarRange(self.minCon, self.maxCon)
+        self.contourMapper.ScalarVisibilityOff()  # this is required to do a SetColor on the actor's property
 #            print MODULENAME,' initScalarFieldActors:  setColor=1,0,0'
 #            contourActor.GetProperty().SetColor(1.,0.,0.)
+#        if Configuration.getSetting("ContoursOn",conFieldName):
+        contourActor = _actors[1]
+        contourActor.SetMapper(self.contourMapper)
+        
+        color = Configuration.getSetting("ContourColor")  # want to avoid this; only update when Prefs changes
+        contourActor.GetProperty().SetColor(float(color.red())/255, float(color.green())/255, float(color.blue())/255)
 
         
         self.conMapper.SetInputConnection(field.GetOutputPort()) # port index = 0
@@ -567,7 +533,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.conMapper.SetLookupTable(self.clut)
         self.conMapper.SetScalarRange(self.minCon, self.maxCon) #0, self.clut.GetNumberOfColors()) # may manually set range so that type reassignment will not be scalled dynamically when one type is missing
         self.conMapper.SetScalarModeToUsePointData()
-        _actors[0].SetMapper(self.conMapper)
+        
+        _actors[0].SetMapper(self.conMapper)   # concentration actor
+        
         
     def drawVectorField(self, bsd, fieldType):
         if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
@@ -2460,146 +2428,147 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 return [ x+0.5 ,  sqrt(3.0)/2.0*y , z*sqrt(6.0)/3.0]
    
         
-    def drawBordersHex(self):
-        self.hexVerts=[]
-        import math
-        sqrt_3_3=math.sqrt(3.0)/3.0
-        self.hexVerts.append([0, sqrt_3_3, 0.0])
-        self.hexVerts.append([0.5 , 0.5*sqrt_3_3, 0.0])
-        self.hexVerts.append([0.5, -0.5*sqrt_3_3, 0.0])
-        self.hexVerts.append([0. , -sqrt_3_3, 0.0])
-        self.hexVerts.append([-0.5 , -0.5*sqrt_3_3, 0.0])
-        self.hexVerts.append([-0.5, 0.5*sqrt_3_3, 0.0])
-    
-        # Draw borders
-        points = vtk.vtkPoints()    
-        lines = vtk.vtkCellArray()  
-        
-        k = 0 # dim[2]-1 -- k = 0 for 2D lattice
-        pc = 0 # point counter
-        # Add lines for the very bottom edge 
-
-        for i in range(self.dim[0]):
-            for j in range(self.dim[1]):
-                hexPt = self.HexCoordXY(i,j,0)
-                if j%2:
-                    if i-1>=0 and self.cellId[i][j] != self.cellId[i-1][j]:
-                        points.InsertNextPoint(self.hexVerts[4][0]+hexPt[0],self.hexVerts[4][1]+hexPt[1],0)
-                        points.InsertNextPoint(self.hexVerts[5][0]+hexPt[0],self.hexVerts[5][1]+hexPt[1],0)
-                        pc+=2
-                        lines.InsertNextCell(2)
-                        lines.InsertCellPoint(pc-2)
-                        lines.InsertCellPoint(pc-1)
-                        
-                    if i-1>=0 and j+1<self.dim[1] and self.cellId[i][j] != self.cellId[i-1][j+1]:
-                        points.InsertNextPoint(self.hexVerts[5][0]+hexPt[0],self.hexVerts[5][1]+hexPt[1],0)
-                        points.InsertNextPoint(self.hexVerts[0][0]+hexPt[0],self.hexVerts[0][1]+hexPt[1],0)
-                        pc+=2
-                        lines.InsertNextCell(2)
-                        lines.InsertCellPoint(pc-2)
-                        lines.InsertCellPoint(pc-1)
-                        
-                    if j+1<self.dim[1] and self.cellId[i][j] != self.cellId[i][j+1]:
-                        points.InsertNextPoint(self.hexVerts[0][0]+hexPt[0],self.hexVerts[0][1]+hexPt[1],0)
-                        points.InsertNextPoint(self.hexVerts[1][0]+hexPt[0],self.hexVerts[1][1]+hexPt[1],0)
-                        pc+=2
-                        lines.InsertNextCell(2)
-                        lines.InsertCellPoint(pc-2)
-                        lines.InsertCellPoint(pc-1)          
-
-                    if i+1<self.dim[0] and self.cellId[i][j] != self.cellId[i+1][j]:
-                        points.InsertNextPoint(self.hexVerts[1][0]+hexPt[0],self.hexVerts[1][1]+hexPt[1],0)
-                        points.InsertNextPoint(self.hexVerts[2][0]+hexPt[0],self.hexVerts[2][1]+hexPt[1],0)
-                        pc+=2
-                        lines.InsertNextCell(2)
-                        lines.InsertCellPoint(pc-2)
-                        lines.InsertCellPoint(pc-1) 
-
-                    if j-1>=0 and self.cellId[i][j] != self.cellId[i][j-1]:
-                        points.InsertNextPoint(self.hexVerts[2][0]+hexPt[0],self.hexVerts[2][1]+hexPt[1],0)
-                        points.InsertNextPoint(self.hexVerts[3][0]+hexPt[0],self.hexVerts[3][1]+hexPt[1],0)
-                        pc+=2
-                        lines.InsertNextCell(2)
-                        lines.InsertCellPoint(pc-2)
-                        lines.InsertCellPoint(pc-1)          
-
-                    if i-1>=0 and j-1>= 0 and self.cellId[i][j] != self.cellId[i-1][j-1]:
-                        points.InsertNextPoint(self.hexVerts[3][0]+hexPt[0],self.hexVerts[3][1]+hexPt[1],0)
-                        points.InsertNextPoint(self.hexVerts[4][0]+hexPt[0],self.hexVerts[4][1]+hexPt[1],0)
-                        pc+=2
-                        lines.InsertNextCell(2)
-                        lines.InsertCellPoint(pc-2)
-                        lines.InsertCellPoint(pc-1)                        
-                        
-                else:
-                    if i-1>=0 and self.cellId[i][j] != self.cellId[i-1][j]:
-                        points.InsertNextPoint(self.hexVerts[4][0]+hexPt[0],self.hexVerts[4][1]+hexPt[1],0)
-                        points.InsertNextPoint(self.hexVerts[5][0]+hexPt[0],self.hexVerts[5][1]+hexPt[1],0)
-                        pc+=2
-                        lines.InsertNextCell(2)
-                        lines.InsertCellPoint(pc-2)
-                        lines.InsertCellPoint(pc-1)
-                        
-                    if j+1<self.dim[1] and self.cellId[i][j] != self.cellId[i][j+1]:
-                        points.InsertNextPoint(self.hexVerts[5][0]+hexPt[0],self.hexVerts[5][1]+hexPt[1],0)
-                        points.InsertNextPoint(self.hexVerts[0][0]+hexPt[0],self.hexVerts[0][1]+hexPt[1],0)
-                        pc+=2
-                        lines.InsertNextCell(2)
-                        lines.InsertCellPoint(pc-2)
-                        lines.InsertCellPoint(pc-1)
-                        
-                    if i+1<self.dim[0] and j+1<self.dim[1] and self.cellId[i][j] != self.cellId[i+1][j+1]:
-                        points.InsertNextPoint(self.hexVerts[0][0]+hexPt[0],self.hexVerts[0][1]+hexPt[1],0)
-                        points.InsertNextPoint(self.hexVerts[1][0]+hexPt[0],self.hexVerts[1][1]+hexPt[1],0)
-                        pc+=2
-                        lines.InsertNextCell(2)
-                        lines.InsertCellPoint(pc-2)
-                        lines.InsertCellPoint(pc-1)
-                        
-                    if i+1<self.dim[0] and self.cellId[i][j] != self.cellId[i+1][j]:
-                        points.InsertNextPoint(self.hexVerts[1][0]+hexPt[0],self.hexVerts[1][1]+hexPt[1],0)
-                        points.InsertNextPoint(self.hexVerts[2][0]+hexPt[0],self.hexVerts[2][1]+hexPt[1],0)
-                        pc+=2
-                        lines.InsertNextCell(2)
-                        lines.InsertCellPoint(pc-2)
-                        lines.InsertCellPoint(pc-1)
-                    
-                    if i+1<self.dim[0] and j-1>= 0 and self.cellId[i][j] != self.cellId[i+1][j-1]:
-                        points.InsertNextPoint(self.hexVerts[2][0]+hexPt[0],self.hexVerts[2][1]+hexPt[1],0)
-                        points.InsertNextPoint(self.hexVerts[3][0]+hexPt[0],self.hexVerts[3][1]+hexPt[1],0)
-                        pc+=2
-                        lines.InsertNextCell(2)
-                        lines.InsertCellPoint(pc-2)
-                        lines.InsertCellPoint(pc-1)
-                        
-                    if j-1>=0 and self.cellId[i][j] != self.cellId[i][j-1]:
-                        points.InsertNextPoint(self.hexVerts[3][0]+hexPt[0],self.hexVerts[3][1]+hexPt[1],0)
-                        points.InsertNextPoint(self.hexVerts[4][0]+hexPt[0],self.hexVerts[4][1]+hexPt[1],0)
-                        pc+=2
-                        lines.InsertNextCell(2)
-                        lines.InsertCellPoint(pc-2)
-                        lines.InsertCellPoint(pc-1)
-                    
-        
-
-        borders = vtk.vtkPolyData()
-
-        borders.SetPoints(points)
-        borders.SetLines(lines)
-        
-        self.borderMapperHex.SetInput(borders)
-        self.borderActorHex.SetMapper(self.borderMapperHex)
-        # self.setBorderColor() 
-        self.borderActorHex.GetProperty().SetColor(1,1,1)
-        if not self.currentActors.has_key("BorderActorHex"):
-            self.currentActors["BorderActorHex"]=self.borderActorHex
-            self.ren.AddActor(self.borderActorHex) 
-        else:
-            # wil ensure that borders is the last item to draw
-            actorsCollection=self.ren.GetActors()
-            if actorsCollection.GetLastItem()!=self.borderActorHex:
-                self.ren.RemoveActor(self.borderActorHex)
-                self.ren.AddActor(self.borderActorHex)                 
+#    def drawBordersHex(self):
+#        self.hexVerts=[]
+#        import math
+#        sqrt_3_3=math.sqrt(3.0)/3.0
+#        self.hexVerts.append([0, sqrt_3_3, 0.0])
+#        self.hexVerts.append([0.5 , 0.5*sqrt_3_3, 0.0])
+#        self.hexVerts.append([0.5, -0.5*sqrt_3_3, 0.0])
+#        self.hexVerts.append([0. , -sqrt_3_3, 0.0])
+#        self.hexVerts.append([-0.5 , -0.5*sqrt_3_3, 0.0])
+#        self.hexVerts.append([-0.5, 0.5*sqrt_3_3, 0.0])
+#    
+#        # Draw borders
+#        points = vtk.vtkPoints()    
+#        lines = vtk.vtkCellArray()  
+#        
+#        k = 0 # dim[2]-1 -- k = 0 for 2D lattice
+#        pc = 0 # point counter
+#        # Add lines for the very bottom edge 
+#
+#        for i in range(self.dim[0]):
+#            for j in range(self.dim[1]):
+#                hexPt = self.HexCoordXY(i,j,0)
+#                if j%2:
+#                    if i-1>=0 and self.cellId[i][j] != self.cellId[i-1][j]:
+#                        points.InsertNextPoint(self.hexVerts[4][0]+hexPt[0],self.hexVerts[4][1]+hexPt[1],0)
+#                        points.InsertNextPoint(self.hexVerts[5][0]+hexPt[0],self.hexVerts[5][1]+hexPt[1],0)
+#                        pc+=2
+#                        lines.InsertNextCell(2)
+#                        lines.InsertCellPoint(pc-2)
+#                        lines.InsertCellPoint(pc-1)
+#                        
+#                    if i-1>=0 and j+1<self.dim[1] and self.cellId[i][j] != self.cellId[i-1][j+1]:
+#                        points.InsertNextPoint(self.hexVerts[5][0]+hexPt[0],self.hexVerts[5][1]+hexPt[1],0)
+#                        points.InsertNextPoint(self.hexVerts[0][0]+hexPt[0],self.hexVerts[0][1]+hexPt[1],0)
+#                        pc+=2
+#                        lines.InsertNextCell(2)
+#                        lines.InsertCellPoint(pc-2)
+#                        lines.InsertCellPoint(pc-1)
+#                        
+#                    if j+1<self.dim[1] and self.cellId[i][j] != self.cellId[i][j+1]:
+#                        points.InsertNextPoint(self.hexVerts[0][0]+hexPt[0],self.hexVerts[0][1]+hexPt[1],0)
+#                        points.InsertNextPoint(self.hexVerts[1][0]+hexPt[0],self.hexVerts[1][1]+hexPt[1],0)
+#                        pc+=2
+#                        lines.InsertNextCell(2)
+#                        lines.InsertCellPoint(pc-2)
+#                        lines.InsertCellPoint(pc-1)          
+#
+#                    if i+1<self.dim[0] and self.cellId[i][j] != self.cellId[i+1][j]:
+#                        points.InsertNextPoint(self.hexVerts[1][0]+hexPt[0],self.hexVerts[1][1]+hexPt[1],0)
+#                        points.InsertNextPoint(self.hexVerts[2][0]+hexPt[0],self.hexVerts[2][1]+hexPt[1],0)
+#                        pc+=2
+#                        lines.InsertNextCell(2)
+#                        lines.InsertCellPoint(pc-2)
+#                        lines.InsertCellPoint(pc-1) 
+#
+#                    if j-1>=0 and self.cellId[i][j] != self.cellId[i][j-1]:
+#                        points.InsertNextPoint(self.hexVerts[2][0]+hexPt[0],self.hexVerts[2][1]+hexPt[1],0)
+#                        points.InsertNextPoint(self.hexVerts[3][0]+hexPt[0],self.hexVerts[3][1]+hexPt[1],0)
+#                        pc+=2
+#                        lines.InsertNextCell(2)
+#                        lines.InsertCellPoint(pc-2)
+#                        lines.InsertCellPoint(pc-1)          
+#
+#                    if i-1>=0 and j-1>= 0 and self.cellId[i][j] != self.cellId[i-1][j-1]:
+#                        points.InsertNextPoint(self.hexVerts[3][0]+hexPt[0],self.hexVerts[3][1]+hexPt[1],0)
+#                        points.InsertNextPoint(self.hexVerts[4][0]+hexPt[0],self.hexVerts[4][1]+hexPt[1],0)
+#                        pc+=2
+#                        lines.InsertNextCell(2)
+#                        lines.InsertCellPoint(pc-2)
+#                        lines.InsertCellPoint(pc-1)                        
+#                        
+#                else:
+#                    if i-1>=0 and self.cellId[i][j] != self.cellId[i-1][j]:
+#                        points.InsertNextPoint(self.hexVerts[4][0]+hexPt[0],self.hexVerts[4][1]+hexPt[1],0)
+#                        points.InsertNextPoint(self.hexVerts[5][0]+hexPt[0],self.hexVerts[5][1]+hexPt[1],0)
+#                        pc+=2
+#                        lines.InsertNextCell(2)
+#                        lines.InsertCellPoint(pc-2)
+#                        lines.InsertCellPoint(pc-1)
+#                        
+#                    if j+1<self.dim[1] and self.cellId[i][j] != self.cellId[i][j+1]:
+#                        points.InsertNextPoint(self.hexVerts[5][0]+hexPt[0],self.hexVerts[5][1]+hexPt[1],0)
+#                        points.InsertNextPoint(self.hexVerts[0][0]+hexPt[0],self.hexVerts[0][1]+hexPt[1],0)
+#                        pc+=2
+#                        lines.InsertNextCell(2)
+#                        lines.InsertCellPoint(pc-2)
+#                        lines.InsertCellPoint(pc-1)
+#                        
+#                    if i+1<self.dim[0] and j+1<self.dim[1] and self.cellId[i][j] != self.cellId[i+1][j+1]:
+#                        points.InsertNextPoint(self.hexVerts[0][0]+hexPt[0],self.hexVerts[0][1]+hexPt[1],0)
+#                        points.InsertNextPoint(self.hexVerts[1][0]+hexPt[0],self.hexVerts[1][1]+hexPt[1],0)
+#                        pc+=2
+#                        lines.InsertNextCell(2)
+#                        lines.InsertCellPoint(pc-2)
+#                        lines.InsertCellPoint(pc-1)
+#                        
+#                    if i+1<self.dim[0] and self.cellId[i][j] != self.cellId[i+1][j]:
+#                        points.InsertNextPoint(self.hexVerts[1][0]+hexPt[0],self.hexVerts[1][1]+hexPt[1],0)
+#                        points.InsertNextPoint(self.hexVerts[2][0]+hexPt[0],self.hexVerts[2][1]+hexPt[1],0)
+#                        pc+=2
+#                        lines.InsertNextCell(2)
+#                        lines.InsertCellPoint(pc-2)
+#                        lines.InsertCellPoint(pc-1)
+#                    
+#                    if i+1<self.dim[0] and j-1>= 0 and self.cellId[i][j] != self.cellId[i+1][j-1]:
+#                        points.InsertNextPoint(self.hexVerts[2][0]+hexPt[0],self.hexVerts[2][1]+hexPt[1],0)
+#                        points.InsertNextPoint(self.hexVerts[3][0]+hexPt[0],self.hexVerts[3][1]+hexPt[1],0)
+#                        pc+=2
+#                        lines.InsertNextCell(2)
+#                        lines.InsertCellPoint(pc-2)
+#                        lines.InsertCellPoint(pc-1)
+#                        
+#                    if j-1>=0 and self.cellId[i][j] != self.cellId[i][j-1]:
+#                        points.InsertNextPoint(self.hexVerts[3][0]+hexPt[0],self.hexVerts[3][1]+hexPt[1],0)
+#                        points.InsertNextPoint(self.hexVerts[4][0]+hexPt[0],self.hexVerts[4][1]+hexPt[1],0)
+#                        pc+=2
+#                        lines.InsertNextCell(2)
+#                        lines.InsertCellPoint(pc-2)
+#                        lines.InsertCellPoint(pc-1)
+#                    
+#        
+#
+#        borders = vtk.vtkPolyData()
+#
+#        borders.SetPoints(points)
+#        borders.SetLines(lines)
+#        
+#        self.borderMapperHex.SetInput(borders)
+#        self.borderActorHex.SetMapper(self.borderMapperHex)
+#        # self.setBorderColor() 
+#        self.borderActorHex.GetProperty().SetColor(1,1,1)
+#        if not self.currentActors.has_key("BorderActorHex"):
+#            self.currentActors["BorderActorHex"]=self.borderActorHex
+#            self.ren.AddActor(self.borderActorHex) 
+#        else:
+#            # wil ensure that borders is the last item to draw
+#            actorsCollection=self.ren.GetActors()
+#            if actorsCollection.GetLastItem()!=self.borderActorHex:
+#                self.ren.RemoveActor(self.borderActorHex)
+#                self.ren.AddActor(self.borderActorHex)
+                
                 
     def initCellFieldActorsData(self,_actors):
         import string

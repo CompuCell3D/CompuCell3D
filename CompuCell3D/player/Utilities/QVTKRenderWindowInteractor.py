@@ -245,7 +245,10 @@ class QVTKRenderWindowInteractor(QtOpenGL.QGLWidget):
         self.setCursor(cursor)
 
     def sizeHint(self):
-        return QtCore.QSize(400, 400)
+#        return QtCore.QSize(400, 400)
+        width = Configuration.getSetting("GraphicsWinWidth")
+        height = Configuration.getSetting("GraphicsWinHeight")
+        return QtCore.QSize(width, height)
 
     def paintEngine(self):
         return None

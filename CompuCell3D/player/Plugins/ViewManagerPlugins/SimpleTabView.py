@@ -445,8 +445,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         self.mainGraphicsWindow.setWindowTitle("Main Graphics Window "+str(self.windowCounter))
         self.lastActiveWindow = self.mainGraphicsWindow
-        print MODULENAME,'  addVTKWindowToWorkspace:  self.lastActiveWindow=',self.lastActiveWindow
-        print MODULENAME,'  addVTKWindowToWorkspace:  self.lastActiveWindow.winId().__int__()=',self.lastActiveWindow.winId().__int__()
+#        print MODULENAME,'  addVTKWindowToWorkspace:  self.lastActiveWindow=',self.lastActiveWindow
+#        print MODULENAME,'  addVTKWindowToWorkspace:  self.lastActiveWindow.winId().__int__()=',self.lastActiveWindow.winId().__int__()
         
         # print "self.lastPositionMainGraphicsWindow=",self.lastPositionMainGraphicsWindow
         # print "\n\n\n"
@@ -549,25 +549,25 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.updateWindowMenu()
         
         
-    def processCommandLineOptions(self):   # parse the command line
-        import getopt
+    def processCommandLineOptions(self, opts):   # parse the command line (rf. player/compucell3d.pyw now)
+#        import getopt
         self.__screenshotDescriptionFileName=""
         self.customScreenshotDirectoryName=""
         startSimulation = False
         
-        print MODULENAME,"-----------  processCommandLineOptions"
+#        print MODULENAME,"-----------  processCommandLineOptions():  opts=",opts
         
-        opts=None
-        args=None
-        try:
-            #  NOTE: need ending ":" on single letter options string!
-            opts, args = getopt.getopt(self.__parent.argv, "h:i:s:o:p:", ["help","noOutput","exitWhenDone","port=","tweditPID=","currentDir=","prefs="])
-            print "opts=",opts
-            print "args=",args
-        except getopt.GetoptError, err:
-            print str(err) # will print something like "option -a not recognized"
-            # self.usage()
-            sys.exit(2)
+#        opts=None
+#        args=None
+#        try:
+#            #  NOTE: need ending ":" on single letter options string!
+#            opts, args = getopt.getopt(self.__parent.argv, "h:i:s:o:p:", ["help","noOutput","exitWhenDone","port=","tweditPID=","currentDir=","prefs="])
+#            print "opts=",opts
+#            print "args=",args
+#        except getopt.GetoptError, err:
+#            print str(err) # will print something like "option -a not recognized"
+#            # self.usage()
+#            sys.exit(2)
         output = None
         verbose = False
         currentDir=""
@@ -599,6 +599,13 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             elif o in ("--currentDir"):
                 currentDir=a
                 print "currentDirectory=",currentDir
+            elif o in ("-w"):   # assume parameter is widthxheight smashed together, e.g. -w 500x300
+                winSizes = a.split('x')
+                print MODULENAME, "  winSizes=",winSizes
+                width = int(winSizes[0])
+                height = int(winSizes[1])
+                Configuration.setSetting("GraphicsWinWidth", width)
+                Configuration.setSetting("GraphicsWinHeight", height)
                 
             elif o in ("--port"):
                 port=int(a)
@@ -677,10 +684,15 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             self.__runSim()
             
     def usage(self):
-        print "USAGE: ./compucell3d.sh -i <xmlFile or Python File> -s <ScreenshotDescriptionFile> -o <custom outputDirectory>"
-        print "--exitWhenDone option will close the player after simulation is done"
-        print "--noOutput will ensure that no screenshots are stored regardless of Player settings"
-        print "-h or --help will print help message"
+        print "\n--------------------------------------------------------"
+        print "USAGE: ./compucell3d.sh -i <sim file (.cc3d or .xml or .py)> -s <ScreenshotDescriptionFile> -o <custom outputDirectory>"
+        print "-w <widthxheight of graphics window>"
+        print "--exitWhenDone   close the player after simulation is done"
+        print "--noOutput   ensure that no screenshots are stored regardless of Player settings"
+        print "--prefs    name of preferences file to use/save"
+        print "-p    playerSettingsFileName (e.g. 3D camera settings)"
+        print "-h or --help   print (this) help message"
+        print "\ne.g.  compucell3d.sh -i Demos/cellsort_2D/cellsort_2D/cellsort_2D.cc3d -w 500x500 --prefs myCellSortPrefs"
         
     def setRecentSimulationFile(self,_fileName):
         self.__fileName =_fileName
@@ -2921,11 +2933,16 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 #        print '   self.dlg=',self.dlg,
 #        print '   type(self.dlg)=',type(self.dlg)
 #        print '   dir(self.dlg)=',dir(self.dlg)
+        if len(self.fieldTypes) < 2:
+            self.dlg.tab_field.setEnabled(False)
+        else:
+            self.dlg.tab_field.setEnabled(True)
+            
         self.dlg.fieldComboBox.clear()
         for idx in range(len(self.fieldTypes) ):
             fieldName = self.fieldTypes.keys()[idx]
             if fieldName != 'Cell_Field':  # rwh: dangerous to hard code this field name
-                self.dlg.fieldComboBox.addItem(fieldName)
+                self.dlg.fieldComboBox.addItem(fieldName)   # this is where we set the combobox of field names in Prefs
                 
 #        print MODULENAME,"__showConfigDialog():  Configuration.getSimFieldsParams=",Configuration.getSimFieldsParams()
 #        print MODULENAME,"__showConfigDialog():  Configuration.setSimFieldsParams"

@@ -41,7 +41,8 @@ import vtk
 
 import Configuration
 import vtk, math
-import sys, os
+#import sys, os
+import string
 
 from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES,PLANES
         
@@ -115,6 +116,58 @@ class MVCDrawModelBase():
     def initScalarFieldActors(self, _fillScalarField, _actors): pass   
     
     def prepareOutlineActors(self,_actors):pass        
+    
+    def setContourColor(self):
+#        foo=1/0
+        color = Configuration.getSetting("ContourColor")
+        r = color.red()
+        g = color.green()
+        b = color.blue()
+#        print MODULENAME,'  setBorderColor():   r,g,b=',r,g,b
+        self.contourActor.GetProperty().SetColor(self.toVTKColor(r), self.toVTKColor(g), self.toVTKColor(b))
+#        self.contourActorHex.GetProperty().SetColor(self.toVTKColor(r), self.toVTKColor(g), self.toVTKColor(b))
+
+    def getIsoValues(self,conFieldName):
+        self.isovalStr = Configuration.getSetting("ScalarIsoValues",conFieldName)
+#        print MODULENAME, '  type(self.isovalStr)=',type(self.isovalStr)
+#        print MODULENAME, '  self.isovalStr=',self.isovalStr
+        if type(self.isovalStr) == QVariant:
+#          isovalStr = isovalStr.toString()
+#          print MODULENAME, ' self.isovalStr.toList()=',self.isovalStr.toList()
+#          print MODULENAME, ' self.isovalStr.toString()=',self.isovalStr.toString()
+          self.isovalStr = str(self.isovalStr.toString())
+#          print MODULENAME, ' new type(self.isovalStr)=',type(self.isovalStr)
+#        elif type(self.isovalStr) == QString:
+        else:
+          self.isovalStr = str(self.isovalStr)
+
+
+#        print MODULENAME, '  pre-replace,split; initScalarFieldDataActors(): self.isovalStr=',self.isovalStr
+#        import string
+        self.isovalStr = string.replace(self.isovalStr,","," ")
+        self.isovalStr = string.split(self.isovalStr)
+#        print MODULENAME, '  initScalarFieldDataActors(): final type(self.isovalStr)=',type(self.isovalStr)
+#        print MODULENAME, '  initScalarFieldDataActors(): final self.isovalStr=',self.isovalStr
+
+#        print MODULENAME, '  initScalarFieldDataActors(): len(self.isovalStr)=',len(self.isovalStr)
+        printIsoValues = False
+#        if printIsoValues:  print MODULENAME, ' isovalues= ',
+        isoNum = 0
+        self.isoValList = []
+        for idx in xrange(len(self.isovalStr)):
+#            print MODULENAME, '  initScalarFieldDataActors(): idx= ',idx
+            try:
+                isoVal = float(self.isovalStr[idx])
+                if printIsoValues:  print MODULENAME, '  initScalarFieldDataActors(): setting (specific) isoval= ',isoVal
+                self.isoValList.append(isoVal)
+#                isoContour.SetValue(isoNum, isoVal)
+                isoNum += 1
+            except:
+                print MODULENAME, '  initScalarFieldDataActors(): cannot convert to float: ',self.isovalStr[idx]
+                
+#        return [1.1,2.2,3.3]
+#        print MODULENAME, '  returning self.isoValList=',self.isoValList
+        return self.isoValList
     
     # def showContours(self, enable): pass
     

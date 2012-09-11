@@ -476,26 +476,29 @@ class MVCDrawModel3D(MVCDrawModelBase):
         #skinExtractorColor = vtk.vtkMarchingCubes()
 #        isoContour.SetInput(uGrid)
         isoContour.SetInputConnection(voi.GetOutputPort())
+        
+        isoVals = self.getIsoValues(conFieldName)
+#        print MODULENAME, 'initScalarFieldDataActors():  getIsoValues=',isoVals
 
 #        print MODULENAME, ' initScalarFieldDataActors():   getting ScalarIsoValues for field conFieldName=: ',conFieldName
-        self.isovalStr = Configuration.getSetting("ScalarIsoValues",conFieldName)
-#        print MODULENAME, '  type(self.isovalStr)=',type(self.isovalStr)
-#        print MODULENAME, '  self.isovalStr=',self.isovalStr
-        if type(self.isovalStr) == QVariant:
-#          isovalStr = isovalStr.toString()
-#          print MODULENAME, ' self.isovalStr.toList()=',self.isovalStr.toList()
-#          print MODULENAME, ' self.isovalStr.toString()=',self.isovalStr.toString()
-          self.isovalStr = str(self.isovalStr.toString())
-#          print MODULENAME, ' new type(self.isovalStr)=',type(self.isovalStr)
-#        elif type(self.isovalStr) == QString:
-        else:
-          self.isovalStr = str(self.isovalStr)
+#        self.isovalStr = Configuration.getSetting("ScalarIsoValues",conFieldName)
+##        print MODULENAME, '  type(self.isovalStr)=',type(self.isovalStr)
+##        print MODULENAME, '  self.isovalStr=',self.isovalStr
+#        if type(self.isovalStr) == QVariant:
+##          isovalStr = isovalStr.toString()
+##          print MODULENAME, ' self.isovalStr.toList()=',self.isovalStr.toList()
+##          print MODULENAME, ' self.isovalStr.toString()=',self.isovalStr.toString()
+#          self.isovalStr = str(self.isovalStr.toString())
+##          print MODULENAME, ' new type(self.isovalStr)=',type(self.isovalStr)
+##        elif type(self.isovalStr) == QString:
+#        else:
+#          self.isovalStr = str(self.isovalStr)
 
 
 #        print MODULENAME, '  pre-replace,split; initScalarFieldDataActors(): self.isovalStr=',self.isovalStr
-        import string
-        self.isovalStr = string.replace(self.isovalStr,","," ")
-        self.isovalStr = string.split(self.isovalStr)
+#        import string
+#        self.isovalStr = string.replace(self.isovalStr,","," ")
+#        self.isovalStr = string.split(self.isovalStr)
 #        print MODULENAME, '  initScalarFieldDataActors(): final type(self.isovalStr)=',type(self.isovalStr)
 #        print MODULENAME, '  initScalarFieldDataActors(): final self.isovalStr=',self.isovalStr
 
@@ -555,134 +558,12 @@ class MVCDrawModel3D(MVCDrawModelBase):
 #        self.conMapper.ColorByArrayComponent("concentration",0)
         
 #        print MODULENAME,"initScalarFieldDataActors():  Plotting 3D Scalar field"
-        
         # self.conMapper      = vtk.vtkPolyDataMapper()
         # self.conActor       = vtk.vtkActor()        
-        
-        # self.conActor=vtk.vtkActor()
-        # self.conActor.SetMapper(self.conMapper)     
-        
-#        print MODULENAME,"initScalarFieldDataActors():  isoNum=",isoNum
-#        if isoNum == 0:
-#            print MODULENAME,"initScalarFieldDataActors():  removeActor"
-#            self.graphicsFrameWidget.ren.RemoveActor(_actors[0])
-#            self.hideConActors()   # doesn't seem to work properly; leaves residual geometry
-#        else:
-#            _actors[0].SetMapper(self.conMapper)
 
         _actors[0].SetMapper(self.conMapper)
         self.Render()    
-        
-    # def drawScalarFieldData(self, bsd, fieldType,_fillScalarField):
-        # import CompuCell
-        # import PlayerPython
-        # # potts      = sim.getPotts()
-        # # cellField  = potts.getCellFieldG()
-        # fieldDim   = bsd.fieldDim
-        # # conField   = CompuCell.getConcentrationField(sim, fieldType[0])
-        # conFieldName=fieldType[0]
-        
-        # #print self._statusBar.currentMessage() 
-        # self.dim    = [fieldDim.x, fieldDim.y, fieldDim.z]
-        # field       = vtk.vtkImageDataGeometryFilter()
-        # contour     = vtk.vtkContourFilter()
-        
-        # # self.fillCellFieldData(cellField)
-        
-        # self.conArray = vtk.vtkDoubleArray()
-        # self.conArray.SetName("concentration")
-        # self.conArrayIntAddr=self.extractAddressIntFromVtkObject(self.conArray)
 
-        # self.cellTypeCon=vtk.vtkIntArray()
-        # self.cellTypeCon.SetName("concelltype")
-        # self.cellTypeConIntAddr=self.extractAddressIntFromVtkObject(self.cellTypeCon)
-        
-        # self.invisibleCellTypesVector=PlayerPython.vectorint()
-        # for type in self.invisibleCellTypes: 
-            # self.invisibleCellTypesVector.append(type)
-        # # print "self.invisibleCellTypesVector=",self.invisibleCellTypesVector
-        # # print "self.invisibleCellTypesVector=",self.invisibleCellTypesVector.size()
-        
-        # fillSuccessful=_fillScalarField(self.conArrayIntAddr,self.cellTypeConIntAddr,conFieldName,self.invisibleCellTypesVector)
-        
-        # if not fillSuccessful:
-            # return
-            
-        # range=self.conArray.GetRange()
-        # self.minCon=range[0]
-        # self.maxCon=range[1]
-        
-        # if Configuration.getSetting("MinRangeFixed"):
-            # self.minCon=Configuration.getSetting("MinRange")
-            
-        # if Configuration.getSetting("MaxRangeFixed"):
-            # self.maxCon=Configuration.getSetting("MaxRange")
-        
-        # # print "getting conField=",conField
-        # # (self.minCon, self.maxCon) = self.fillConFieldData( cellField, conField)
-        # # print "(self.minCon, self.maxCon) ",(self.minCon, self.maxCon)
-        
-        # conc_vol=vtk.vtkImageData()
-        # conc_vol.GetPointData().SetScalars(self.conArray)
-        # conc_vol.SetDimensions(self.dim[0]+2,self.dim[1]+2,self.dim[2]+2)
-        
-        # uGrid=vtk.vtkStructuredPoints()
-        # uGrid.SetDimensions(self.dim[0]+2,self.dim[1]+2,self.dim[2]+2)
-        # uGrid.GetPointData().SetScalars(self.cellTypeCon)
-        # uGrid.GetPointData().AddArray(self.conArray)        
-        
-        # skinExtractorColor = vtk.vtkContourFilter()
-        # #skinExtractorColor = vtk.vtkDiscreteMarchingCubes()
-        # #skinExtractorColor = vtk.vtkMarchingCubes()
-        # skinExtractorColor.SetInput(uGrid)
-        # skinExtractorColor.SetValue(0, 1)
-        # skinExtractorColor.SetValue(1, 2)
-        # skinExtractorColor.SetValue(2, 3)
-        # skinExtractorColor.SetValue(3, 4)
-
-        # concLut = vtk.vtkLookupTable()
-        # # concLut.SetTableRange(conc_vol.GetScalarRange())
-        # concLut.SetTableRange([self.minCon,self.maxCon])        
-        # concLut.SetNumberOfColors(256)
-        # concLut.Build()
-        # # concLut.SetTableValue(39,0,0,0,0)        
-        
-        # skinColorMapper=vtk.vtkPolyDataMapper()
-        # #skinColorMapper.SetInputConnection(skinNormals.GetOutputPort())
-        # self.conMapper.SetInputConnection(skinExtractorColor.GetOutputPort())
-        # self.conMapper.ScalarVisibilityOn()
-        # self.conMapper.SetLookupTable(self.clut)
-        # # # # print " this is conc_vol.GetScalarRange()=",conc_vol.GetScalarRange()
-        # # self.conMapper.SetScalarRange(conc_vol.GetScalarRange())
-        # concLut.SetTableRange([self.minCon,self.maxCon])
-        
-        # #self.conMapper.SetScalarRange(0,1500)
-        # self.conMapper.SetScalarModeToUsePointFieldData()
-        # self.conMapper.ColorByArrayComponent("concentration",0)
-
-        # # self.conMapper      = vtk.vtkPolyDataMapper()
-        # # self.conActor       = vtk.vtkActor()        
-        
-        # # self.conActor=vtk.vtkActor()
-        # self.conActor.SetMapper(self.conMapper)     
-        # self.hideAllActors()
-        # self.set3DInvisibleTypes()
-        # self.prepareOutlineActor(conc_vol)
-        # self.showOutlineActor()
-        
-        # self.showConActors()
-        
-        # # if Configuration.getSetting("LegendEnable"):
-            # # self.drawLegend(self.conMapper)
-
-        # if Configuration.getSetting("LegendEnable"):            
-            # self.drawLegend(self.conMapper)
-        # else:
-            # self.showLegend(False)       
-            
-        # # self.repaint()            
-        
-        # self.Render()    
 
     def drawVectorField(self, bsd, fieldType):
         fillVectorField = getattr(self.parentWidget.fieldExtractor, "fillVectorFieldData3D") # this is simply a "pointer" to function self.parentWidget.fieldExtractor.fillVectorFieldData3D        

@@ -29,6 +29,7 @@ Changes by Phil Thompson, Mar. 2008
 
 import sys
 import os
+import Configuration
 
 MODULENAME = '---- QVTKRenderWindowInteractor_mac.py: '
 
@@ -259,8 +260,10 @@ class QVTKRenderWindowInteractor(QtGui.QWidget):        # Mac
         self.setCursor(cursor)
 
     def sizeHint(self):
-        return QtCore.QSize(400, 400)
-#        return QtCore.QSize(800, 600)    # some testing for Rountree/EPA
+#        return QtCore.QSize(400, 400)
+        width = Configuration.getSetting("GraphicsWinWidth")
+        height = Configuration.getSetting("GraphicsWinHeight")
+        return QtCore.QSize(width, height)    # some testing for Rountree/EPA
 
     def paintEngine(self):
         return None
