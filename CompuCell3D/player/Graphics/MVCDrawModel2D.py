@@ -1380,6 +1380,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 #        cellTypeScale = vtk.vtkFloatArray()
 #        cellTypeScale.SetName("CellTypeScale")
 
+        scaleByVolume = Configuration.getSetting("CellGlyphScaleByVolumeOn")       # todo: make class attrib; update only when changes
               
         if self.hexFlag:
           for cell in cellList:
@@ -1391,8 +1392,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
               ymid = cell.yCOM/1.07457
               centroidPoints.InsertNextPoint(xmid,ymid,0.0)
               cellTypes.InsertNextValue(cell.type)
-#              cellVolumes.InsertNextValue(cell.volume)
-              cellScalars.InsertNextValue(math.sqrt(cell.volume))   # A(circle) = pi * r^2
+              if scaleByVolume:
+                  cellScalars.InsertNextValue(math.sqrt(cell.volume))   # A(circle) = pi * r^2
+              else:
+                  cellScalars.InsertNextValue(1.0)      # lame way of doing this
 #            else:
 #              print 'cell.id, .volume=',cell.id,cell.volume
               
@@ -1422,7 +1425,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
               centroidPoints.InsertNextPoint(xmid,ymid,0.0)
               cellTypes.InsertNextValue(cell.type)
 #              cellVolumes.InsertNextValue(cell.volume)
-              cellScalars.InsertNextValue(math.sqrt(cell.volume))   # A(circle) = pi * r^2
+
+              if scaleByVolume:
+                  cellScalars.InsertNextValue(math.sqrt(cell.volume))   # A(circle) = pi * r^2
+              else:
+                  cellScalars.InsertNextValue(1.0)      # lame way of doing this
+            
 #            else:
 #              print 'cell.id, .volume=',cell.id,cell.volume
 
