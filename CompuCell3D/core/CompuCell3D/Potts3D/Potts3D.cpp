@@ -66,6 +66,7 @@ connectivityConstraint(0),
 cellFieldG(0),
 attrAdder(0),
 acceptanceFunction(&defaultAcceptanceFunction), 
+customAcceptanceExpressionDefined(false),
 energy(0),
 depth(1.0),
 displayUnitsFlag(true),
@@ -93,6 +94,7 @@ cellFieldG(0),
 attrAdder(0),
 acceptanceFunction(&defaultAcceptanceFunction), 
 energy(0) ,
+customAcceptanceExpressionDefined(false),
 depth(1.0),
 displayUnitsFlag(true),
 recentlyCreatedCellId(1),
@@ -470,6 +472,10 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
 
 	ASSERT_OR_THROW("MetropolisList algorithm works only in single processor mode. Please change number of processors to 1",pUtils->getNumberOfWorkNodesPotts()==1);
 
+	if (customAcceptanceExpressionDefined){
+		customAcceptanceFunction.initialize(this->sim); //actual initialization will happen only once at MCS=0 all other calls will return without doing anything
+	}
+
 	if (!randNSVec.size()){ //each thread will have different random number ghenerator
 		randNSVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(),BasicRandomNumberGeneratorNonStatic());
 
@@ -630,6 +636,10 @@ Point3D Potts3D::getFlipNeighbor(){
 unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp) {
 	ASSERT_OR_THROW("Potts3D: cell field G not initialized", cellFieldG);
 	ParallelUtilsOpenMP * pUtils=sim->getParallelUtils();
+
+	if (customAcceptanceExpressionDefined){
+		customAcceptanceFunction.initialize(this->sim); //actual initialization will happen only once at MCS=0 all other calls will return without doing anything
+	}
 
 	if (!randNSVec.size()){ //each thread will have different random number ghenerator
 		randNSVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(),BasicRandomNumberGeneratorNonStatic());
@@ -917,6 +927,10 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 	ASSERT_OR_THROW("Potts3D: cell field G not initialized", cellFieldG);
 
 	ParallelUtilsOpenMP * pUtils=sim->getParallelUtils();
+	if (customAcceptanceExpressionDefined){
+		customAcceptanceFunction.initialize(this->sim); //actual initialization will happen only once at MCS=0 all other calls will return without doing anything
+	}
+
 
 	ASSERT_OR_THROW("BoundaryWalker Algorithm works only in single processor mode. Please change number of processors to 1",pUtils->getNumberOfWorkNodesPotts()==1);
 
@@ -1266,6 +1280,22 @@ void Potts3D::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	}else{
 		setNeighborOrder(neighborOrder);
 	}
+
+	//CustomAcceptanceFunction
+	unsigned int currentStep=sim->getStep();
+	if (_xmlData->getFirstElement("CustomAcceptanceFunction")) {
+		if (currentStep>0){
+			//we can only update custom acceptance function when simulation has been initialized and we know how many cores are used
+			customAcceptanceFunction.update(_xmlData->getFirstElement("CustomAcceptanceFunction"),true);
+		}
+
+		//first  initialization of the acceptance function will be done in the metropolis function
+		customAcceptanceExpressionDefined=true;
+		customAcceptanceFunction.update(_xmlData->getFirstElement("CustomAcceptanceFunction"),false); //this stores XML information inside ExpressionEvaluationDepot local variables
+		registerAcceptanceFunction(&customAcceptanceFunction);
+	}		
+
+
 
 	//Units
 	if(_xmlData->getFirstElement("Units")){

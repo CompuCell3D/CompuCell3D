@@ -5,7 +5,7 @@
   |  Y Y  \|  |  /|    |     / __ \_|  | \/\___ \ \  ___/ |  | \/
   |__|_|  /|____/ |____|    (____  /|__|  /____  > \___  >|__|   
         \/                       \/            \/      \/        
-  Copyright (C) 2004-2008 Ingo Berg
+  Copyright (C) 2011 Ingo Berg
 
   Permission is hereby granted, free of charge, to any person obtaining a copy of this 
   software and associated documentation files (the "Software"), to deal in the Software
@@ -44,11 +44,13 @@ namespace mu
     //------------------------------------------------------------------------------
     /** \brief Test cases for unit testing.
 
-      (C) 2004-2006 Ingo Berg
+      (C) 2004-2011 Ingo Berg
     */
     class ParserTester // final
     {
     private:
+        static int c_iCount;
+
         // Multiarg callbacks
         static value_type f1of1(value_type v) { return v;};
       	
@@ -77,6 +79,9 @@ namespace mu
         static value_type times3(value_type v1) { return v1*3; }
         static value_type sqr(value_type v1) { return v1*v1; }
         static value_type sign(value_type v) { return -v; }
+        static value_type add(value_type v1, value_type v2) { return v1+v2; }
+        static value_type land(value_type v1, value_type v2) { return (int)v1 & (int)v2; }
+        
 
         static value_type FirstArg(const value_type* a_afArg, int a_iArgc)
         {
@@ -128,14 +133,14 @@ namespace mu
         { 
           int val(0);
           stringstream_type(v1) >> val;
-          return val;
+          return (value_type)val;
         }
 
         static value_type StrFun2(const char_type* v1, value_type v2)                
         { 
           int val(0);
           stringstream_type(v1) >> val;
-          return val + v2;
+          return (value_type)(val + v2);
         }
         
         static value_type StrFun3(const char_type* v1, value_type v2, value_type v3) 
@@ -147,23 +152,22 @@ namespace mu
 
         static value_type StrToFloat(const char_type* a_szMsg)
         {
-          double val(0);
+          value_type val(0);
           stringstream_type(a_szMsg) >> val;
           return val;
-
-//          using namespace std; // atof is for some compilers in std for some not... 
-//          return atof(a_szMsg);
         }
 
         // postfix operator callback
-	      static value_type Milli(value_type v) { return v/(value_type)1e3; }
-        
-        static int c_iCount;
+        static value_type Mega(value_type a_fVal)  { return a_fVal * (value_type)1e6; }
+        static value_type Micro(value_type a_fVal) { return a_fVal * (value_type)1e-6; }
+        static value_type Milli(value_type a_fVal) { return a_fVal / (value_type)1e3; }
 
-	      int TestNames();
+        // Custom value recognition
+        static int IsHexVal(const char_type *a_szExpr, int *a_iPos, value_type *a_fVal);
+
+        int TestNames();
 	      int TestSyntax();
 	      int TestMultiArg();
-	      int TestVolatile();
 	      int TestPostFix();
 	      int TestExpression();
 	      int TestInfixOprt();
@@ -172,6 +176,7 @@ namespace mu
 	      int TestInterface();
 	      int TestException();
         int TestStrArg();
+        int TestIfThenElse();
 
         void Abort() const;
 
@@ -187,6 +192,11 @@ namespace mu
 
         // Test Double Parser
         int EqnTest(const string_type& a_str, double a_fRes, bool a_fPass);
+        int EqnTestWithVarChange(const string_type& a_str, 
+                                 double a_fRes1, 
+                                 double a_fVar1, 
+                                 double a_fRes2, 
+                                 double a_fVar2);
         int ThrowTest(const string_type& a_str, int a_iErrc, bool a_bFail = true);
 
         // Test Int Parser

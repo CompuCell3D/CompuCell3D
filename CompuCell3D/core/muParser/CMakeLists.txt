@@ -5,13 +5,13 @@ SET(SRCS
   muParserBase.cpp
   muParserBytecode.cpp
   muParserCallback.cpp
-  muParserComplex.cpp
   muParserError.cpp
   muParserInt.cpp
   muParserTokenReader.cpp
   )
 
 INCLUDE_DIRECTORIES ( 
+    ${COMPUCELL3D_SOURCE_DIR}
     ${COMPUCELL3D_SOURCE_DIR}/core/muParser
     )
 
@@ -29,7 +29,6 @@ muParser
 muParserBase
 muParserBytecode
 muParserCallback
-muParserComplex
 muParserDef
 muParserDLL
 muParserError
@@ -37,8 +36,14 @@ muParserFixes
 muParserInt
 muParserStack
 muParserTest
+muParserTemplateMagic
 muParserToken
 muParserTokenReader
+
   )
 
-#INCLUDE_DIRECTORIES(${XERCESC_INCLUDE_DIR})
+
+
+
+add_subdirectory(Test)
+add_subdirectory(ExpressionEvaluator)

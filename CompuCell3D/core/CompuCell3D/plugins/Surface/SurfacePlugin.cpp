@@ -47,11 +47,15 @@ void SurfacePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData){
 	potts = simulator->getPotts();
 	cellFieldG = (WatchableField3D<CellG *>*)potts->getCellFieldG();
 
+
+
 	bool pluginAlreadyRegisteredFlag;
 	SurfaceTrackerPlugin *plugin=(SurfaceTrackerPlugin*)Simulator::pluginManager.get("SurfaceTracker",&pluginAlreadyRegisteredFlag); //this will load SurfaceTracker plugin if it is not already loaded
 	cerr<<"GOT HERE BEFORE CALLING INIT"<<endl;
 	if(!pluginAlreadyRegisteredFlag)
 		plugin->init(simulator);
+
+	pUtils=simulator->getParallelUtils();
 
 	pluginName=_xmlData->getAttribute("Name");
 
@@ -94,8 +98,23 @@ void SurfacePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	}
 
 
+	if (_xmlData->findElement("SurfaceEnergyExpression")){
+		unsigned int maxNumberOfWorkNodes=pUtils->getMaxNumberOfWorkNodesPotts();
+		eed.allocateSize(maxNumberOfWorkNodes);
+		vector<string> variableNames;
+		variableNames.push_back("lambdaSurface");
+		variableNames.push_back("surface");
+		variableNames.push_back("starget");
+
+		eed.addVariables(variableNames.begin(),variableNames.end());
+		eed.update(_xmlData->getFirstElement("SurfaceEnergyExpression"));			
+		energyExpressionDefined=true;
+	}else{
+		energyExpressionDefined=false;
+	}
+
 	//if there are no child elements for this plugin it means will use changeEnergyByCellId
-	if(!_xmlData->getNumberOfChildren()){ 
+	if(!_xmlData->findElement("SurfaceEnergyParameters") && !_xmlData->findElement("TargetSurface")){ 
 		functionType=BYCELLID;
 	}else{
 		if(_xmlData->findElement("SurfaceEnergyParameters"))
@@ -196,8 +215,28 @@ std::pair<double,double> SurfacePlugin::getNewOldSurfaceDiffs(const Point3D &pt,
 }
 
 double SurfacePlugin::diffEnergy(double lambda, double targetSurface,double surface,  double diff) {
+	if (!energyExpressionDefined){
 
-  return lambda *(diff*diff + 2 * diff * (surface - fabs(targetSurface)));
+		return lambda *(diff*diff + 2 * diff * (surface - fabs(targetSurface)));
+	}else{
+		int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();	
+		ExpressionEvaluator & ev=eed[currentWorkNodeNumber];
+		double energyBefore=0.0,energyAfter=0.0;
+
+		//before
+		ev[0]=lambda;
+		ev[1]=surface;
+		ev[2]=targetSurface;
+		energyBefore=ev.eval();
+
+		//after
+		ev[1]=surface+diff;
+		
+		energyAfter=ev.eval();
+
+		return energyAfter-energyBefore;
+		
+	}
 }
 
 double SurfacePlugin::changeEnergyGlobal(const Point3D &pt, const CellG *newCell,const CellG *oldCell){

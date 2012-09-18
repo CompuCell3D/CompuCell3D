@@ -35,6 +35,10 @@
 #include <CompuCell3D/Boundary/BoundaryTypeDefinitions.h>  
 #include <CompuCell3D/Potts3D/Cell.h>
 
+#include <PublicUtilities/ParallelUtilsOpenMP.h>
+#include <muParser/ExpressionEvaluator/ExpressionEvaluator.h>
+
+
 #include "SurfaceDLLSpecifier.h"
 #include <vector>
 #include <string>
@@ -60,6 +64,10 @@ namespace CompuCell3D {
 		Potts3D *potts;
 
 		CC3DXMLElement *xmlData;
+		ParallelUtilsOpenMP *pUtils;
+		ExpressionEvaluatorDepot eed;
+		bool energyExpressionDefined;
+
 
 		std::string pluginName;
 
@@ -92,10 +100,11 @@ namespace CompuCell3D {
 
 		std::pair<double,double> getNewOldSurfaceDiffs(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
 		double diffEnergy(double lambda, double targetSurface,double surface,  double diff);
+		//double customExpressionFunction(double _lambdaVolume,double _targetVolume, double _volumeBefore,double _volumeAfter);
 
 
 	public:
-		SurfacePlugin():potts(0),pluginName("Surface"),scaleSurface(1.0),boundaryStrategy(0){};
+		SurfacePlugin():potts(0),energyExpressionDefined(false),pUtils(0),pluginName("Surface"),scaleSurface(1.0),boundaryStrategy(0){};
 		virtual ~SurfacePlugin();
 
 

@@ -46,6 +46,7 @@ void VolumePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData){
 	Plugin *plugin=Simulator::pluginManager.get("VolumeTracker",&pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
 
 
+	pUtils=simulator->getParallelUtils();
 	pluginName=_xmlData->getAttribute("Name");
 
 	cerr<<"GOT HERE BEFORE CALLING INIT"<<endl;
@@ -97,10 +98,26 @@ void VolumePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	}
 
+	
+
+	if (_xmlData->findElement("VolumeEnergyExpression")){
+		unsigned int maxNumberOfWorkNodes=pUtils->getMaxNumberOfWorkNodesPotts();
+		eed.allocateSize(maxNumberOfWorkNodes);
+		vector<string> variableNames;
+		variableNames.push_back("lambdaVolume");
+		variableNames.push_back("volume");
+		variableNames.push_back("vtarget");
+
+		eed.addVariables(variableNames.begin(),variableNames.end());
+		eed.update(_xmlData->getFirstElement("VolumeEnergyExpression"));			
+		energyExpressionDefined=true;
+	}else{
+		energyExpressionDefined=false;
+	}
 
 
+	if(!_xmlData->findElement("VolumeEnergyParameters") && !_xmlData->findElement("TargetVolume")){ 
 
-	if(!_xmlData->getNumberOfChildren()){ 
 		functionType=BYCELLID;
 	}else{
 		if(_xmlData->findElement("VolumeEnergyParameters"))
@@ -170,38 +187,72 @@ void VolumePlugin::extraInit(Simulator *simulator){
 	update(xmlData);
 }
 
+double VolumePlugin::customExpressionFunction(double _lambdaVolume,double _targetVolume, double _volumeBefore,double _volumeAfter){
+
+		int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();	
+		ExpressionEvaluator & ev=eed[currentWorkNodeNumber];
+		double energyBefore=0.0,energyAfter=0.0;
+
+		//before
+		ev[0]=_lambdaVolume;
+		ev[1]=_volumeBefore;
+		ev[2]=_targetVolume;
+		energyBefore=ev.eval();
+
+		//after		
+		ev[1]=_volumeAfter;		
+		energyAfter=ev.eval();
+
+		return energyAfter-energyBefore;
+}
+
 double VolumePlugin::changeEnergyGlobal(const Point3D &pt, const CellG *newCell,const CellG *oldCell){
 
 	double energy = 0;
 
 	if (oldCell == newCell) return 0;
 
-	//as in the original version 
-	if (newCell){
-		energy += lambdaVolume *
-			(1 + 2 * (newCell->volume - targetVolume));
+	if (!energyExpressionDefined){
+		//as in the original version 
+		if (newCell){
+			energy += lambdaVolume *
+				(1 + 2 * (newCell->volume - targetVolume));
+
+		}
+		if (oldCell){
+			energy += lambdaVolume *
+				(1 - 2 * (oldCell->volume - targetVolume));
+
+
+		}
+
+
+		//cerr<<"energy="<<energy<<endl;
+		//if (energy>300){
+		//	if (newCell){
+		//		cerr<<"newCell->volume="<<newCell->volume<<endl;
+		//	}
+		//	if (oldCell){
+		//		cerr<<"oldCell->volume="<<oldCell->volume<<endl;
+		//	}
+
+
+		//}
+		return energy;
+	}else{
+
+		if (newCell){
+			energy+=customExpressionFunction(lambdaVolume,targetVolume,newCell->volume,newCell->volume+1);
+		}
+		
+		if (oldCell){
+			energy+=customExpressionFunction(lambdaVolume,targetVolume,oldCell->volume,oldCell->volume-1);
+
+		}		
+		return energy;
+		
 
 	}
-	if (oldCell){
-		energy += lambdaVolume *
-			(1 - 2 * (oldCell->volume - targetVolume));
-
-
-	}
-
-
-	//cerr<<"energy="<<energy<<endl;
-	//if (energy>300){
-	//	if (newCell){
-	//		cerr<<"newCell->volume="<<newCell->volume<<endl;
-	//	}
-	//	if (oldCell){
-	//		cerr<<"oldCell->volume="<<oldCell->volume<<endl;
-	//	}
-
-
-	//}
-	return energy;
 
 
 }
@@ -214,17 +265,36 @@ double VolumePlugin::changeEnergyByCellType(const Point3D &pt,const CellG *newCe
 
 	if (oldCell == newCell) return 0;
 
-	if (newCell)
-		energy += volumeEnergyParamVector[newCell->type].lambdaVolume *
-		(1 + 2 * (newCell->volume - fabs(volumeEnergyParamVector[newCell->type].targetVolume)));
+	if (!energyExpressionDefined){
+		if (newCell)
+			energy += volumeEnergyParamVector[newCell->type].lambdaVolume *
+			(1 + 2 * (newCell->volume - fabs(volumeEnergyParamVector[newCell->type].targetVolume)));
 
-	if (oldCell)
-		energy += volumeEnergyParamVector[oldCell->type].lambdaVolume  *
-		(1 - 2 * (oldCell->volume - fabs(volumeEnergyParamVector[oldCell->type].targetVolume)));
+		if (oldCell)
+			energy += volumeEnergyParamVector[oldCell->type].lambdaVolume  *
+			(1 - 2 * (oldCell->volume - fabs(volumeEnergyParamVector[oldCell->type].targetVolume)));
 
 
-	//cerr<<"VOLUME CHANGE ENERGY NEW: "<<energy<<endl;
-	return energy;
+		//cerr<<"VOLUME CHANGE ENERGY NEW: "<<energy<<endl;
+		return energy;
+
+
+	}else{
+
+		if (newCell){
+			energy+=customExpressionFunction(volumeEnergyParamVector[newCell->type].lambdaVolume,fabs(volumeEnergyParamVector[newCell->type].targetVolume),newCell->volume,newCell->volume+1);
+		}
+
+		if (oldCell){
+			energy+=customExpressionFunction(volumeEnergyParamVector[oldCell->type].lambdaVolume,fabs(volumeEnergyParamVector[oldCell->type].targetVolume),oldCell->volume,oldCell->volume-1);
+
+		}		
+		return energy;
+
+
+	}
+
+
 }
 
 
@@ -236,19 +306,39 @@ double VolumePlugin::changeEnergyByCellId(const Point3D &pt,const CellG *newCell
 
 	if (oldCell == newCell) return 0;
 
-	if (newCell){
+	if (!energyExpressionDefined){
 
-		energy +=  newCell->lambdaVolume*
-			(1 + 2 * ((int)newCell->volume - newCell->targetVolume));
+		if (newCell){
+
+			energy +=  newCell->lambdaVolume*
+				(1 + 2 * ((int)newCell->volume - newCell->targetVolume));
+		}
+		if (oldCell){
+			energy += oldCell->lambdaVolume*
+				(1 - 2 * ((int)oldCell->volume - oldCell->targetVolume));
+		}
+
+
+
+		return energy;
+
+
+	}else{
+
+		if (newCell){
+			energy+=customExpressionFunction(newCell->lambdaVolume,newCell->targetVolume,newCell->volume,newCell->volume+1);
+		}
+
+		if (oldCell){
+			energy+=customExpressionFunction(oldCell->lambdaVolume,oldCell->targetVolume,oldCell->volume,oldCell->volume-1);
+
+		}		
+		return energy;
+
+
 	}
-	if (oldCell){
-		energy += oldCell->lambdaVolume*
-			(1 - 2 * ((int)oldCell->volume - oldCell->targetVolume));
-	}
 
 
-
-	return energy;
 }
 
 
