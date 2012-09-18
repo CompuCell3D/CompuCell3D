@@ -45,5 +45,5 @@ muParserTokenReader
 
 
 
-add_subdirectory(Test)
+# add_subdirectory(Test)
 add_subdirectory(ExpressionEvaluator)
