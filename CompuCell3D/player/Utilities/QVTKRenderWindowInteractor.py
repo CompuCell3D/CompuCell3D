@@ -29,6 +29,7 @@ Changes by Phil Thompson, Mar. 2008
 
 import sys
 import os
+import Configuration
 
 def setVTKPaths():
    import sys
