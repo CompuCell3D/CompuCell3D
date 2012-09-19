@@ -114,6 +114,7 @@ class EXPRESSIONEVALUATOR_EXPORT ExpressionEvaluatorDepot{
 
 		void getParseData(CC3DXMLElement *_xmlData);
 		void initializeUsingParseData();
+		std::string getExpressionString(){return expressionString;}
 
 
 	private:

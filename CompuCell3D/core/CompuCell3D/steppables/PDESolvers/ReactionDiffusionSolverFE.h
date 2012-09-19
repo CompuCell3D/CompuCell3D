@@ -17,6 +17,7 @@
 #include <map>
 #include <iostream>
 #include <muParser/muParser.h>
+#include <muParser/ExpressionEvaluator/ExpressionEvaluator.h>
 
 #include "PDESolversDLLSpecifier.h"
 
@@ -126,8 +127,9 @@ protected:
 	std::vector<double> variableCellTypeMu;
 
 	std::string cellTypeVariableName;
-	
-	
+			
+	std::vector<ExpressionEvaluatorDepot> eedVec;
+	//unsigned int eedIndex(unsigned int _fieldIdx, unsigned int _nodeIdx){return _nodeIdx*numberOfFields+_fieldIdx;} 
 
    CellInventory *cellInventoryPtr;
 
