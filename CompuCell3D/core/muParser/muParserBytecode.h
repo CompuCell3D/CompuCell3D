@@ -5,7 +5,7 @@
   |  Y Y  \|  |  /|    |     / __ \_|  | \/\___ \ \  ___/ |  | \/
   |__|_|  /|____/ |____|    (____  /|__|  /____  > \___  >|__|   
         \/                       \/            \/      \/        
-  Copyright (C) 2004-2008 Ingo Berg
+  Copyright (C) 2004-2012 Ingo Berg
 
   Permission is hereby granted, free of charge, to any person obtaining a copy of this 
   software and associated documentation files (the "Software"), to deal in the Software
@@ -41,69 +41,75 @@
 
 namespace mu
 {
+  struct SToken
+  {
+    ECmdCode Cmd;
+    int StackPos;
 
+    union
+    {
+      struct //SValData
+      {
+        value_type *ptr;
+        value_type  data;
+        value_type  data2;
+      } Val;
 
-/** \brief Bytecode implementation of the Math Parser.
+      struct //SFunData
+      {
+        // Note: generic_fun_type is merely a placeholder. The real type could be 
+        //       anything between gun_type1 and fun_type9. I can't use a void
+        //       pointer due to constraints in the ANSI standard which allows
+        //       data pointers and function pointers to differ in size.
+        generic_fun_type ptr;
+        int   argc;
+        int   idx;
+      } Fun;
+
+      struct //SOprtData
+      {
+        value_type *ptr;
+        int offset;
+      } Oprt;
+    };
+  };
+  
+  
+  /** \brief Bytecode implementation of the Math Parser.
 
   The bytecode contains the formula converted to revers polish notation stored in a continious
   memory area. Associated with this data are operator codes, variable pointers, constant 
   values and function pointers. Those are necessary in order to calculate the result.
   All those data items will be casted to the underlying datatype of the bytecode.
 
-  \author (C) 2004, 2005 Ingo Berg 
+  \author (C) 2004-2012 Ingo Berg 
 */
 class ParserByteCode
 {
-public:
-    /** \brief Underlying type of the container.
-
-       The bytecode is a vector of this type containing control codes,
-       values and pointers. Values and pointer will be casted to this 
-       type before their storage.
-    */
-    typedef bytecode_type map_type;
-
 private:
 
     /** \brief Token type for internal use only. */
     typedef ParserToken<value_type, string_type> token_type;
 
-    /** \brief Core type of the bytecode. */
-    typedef std::vector<map_type> storage_type;
+    /** \brief Token vector for storing the RPN. */
+    typedef std::vector<SToken> rpn_type;
 
     /** \brief Position in the Calculation array. */
     unsigned m_iStackPos;
 
-    /** \brief Core type of the bytecode. */
-    storage_type m_vBase;
+    /** \brief Maximum size needed for the stack. */
+    std::size_t m_iMaxStackSize;
+    
+    /** \brief The actual rpn storage. */
+    rpn_type  m_vRPN;
 
-    /** \brief Size of a value entry in the bytecode, relative to TMapType size. */
-    const int mc_iSizeVal;
+    bool m_bEnableOptimizer;
 
-    /** \brief Size of a pointer, relative to size of underlying TMapType.
-       
-        \attention The size is related to the size of TMapType not bytes!
-    */
-    const int mc_iSizePtr;
-
-    /** \brief A value entry requires that much entires in the bytecode. 
-        
-        Value entry consists of:
-        <ul>
-          <li>One entry for Stack index</li>
-          <li>One entry for Token identifier</li>
-          <li>mc_iSizeVal entries for the value</li>
-        <ul>
-
-        \sa AddVal(TBaseData a_fVal)
-    */
-    const int mc_iSizeValEntry;
-
-    void StorePtr(void *a_pAddr);
+    void ConstantFolding(ECmdCode a_Oprt);
 
 public:
+
     ParserByteCode();
-   ~ParserByteCode();
     ParserByteCode(const ParserByteCode &a_ByteCode);
     ParserByteCode& operator=(const ParserByteCode &a_ByteCode);
     void Assign(const ParserByteCode &a_ByteCode);
@@ -111,40 +117,20 @@ public:
     void AddVar(value_type *a_pVar);
     void AddVal(value_type a_fVal);
     void AddOp(ECmdCode a_Oprt);
+    void AddIfElse(ECmdCode a_Oprt);
     void AddAssignOp(value_type *a_pVar);
-    void AddFun(void *a_pFun, int a_iArgc);
-    void AddStrFun(void *a_pFun, int a_iArgc, int a_iIdx);
+    void AddFun(generic_fun_type a_pFun, int a_iArgc);
+    void AddBulkFun(generic_fun_type a_pFun, int a_iArgc);
+    void AddStrFun(generic_fun_type a_pFun, int a_iArgc, int a_iIdx);
+
+    void EnableOptimizer(bool bStat);
 
     void Finalize();
     void clear();
+    std::size_t GetMaxStackSize() const;
+    std::size_t GetSize() const;
 
-    std::size_t GetBufSize() const;
-
-    const map_type* GetRawData() const;
-
-    /** \brief Return size of a value entry. 
-    
-      That many bytecode entries are necessary to store a value.
-
-      \sa mc_iSizeVal
-    */
-    unsigned GetValSize() const 
-    {
-      return mc_iSizeVal;
-    }
-
-    /** \brief Return size of a pointer entry. 
-    
-      That many bytecode entries are necessary to store a pointer.
-
-      \sa mc_iSizePtr
-    */
-    unsigned GetPtrSize() const 
-    {
-      return mc_iSizePtr;
-    }
-
-    void RemoveValEntries(unsigned a_iNumber);
+    const SToken* GetBase() const;
     void AsciiDump();
 };
 

@@ -3,6 +3,7 @@ SET(SRCS
   Cell.cpp
   CellInventory.cpp
   DefaultAcceptanceFunction.cpp
+  CustomAcceptanceFunction.cpp
   EnergyFunctionCalculator.cpp
   EnergyFunctionCalculatorStatistics.cpp
   TypeTransition.cpp
@@ -17,13 +18,13 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
   ADD_STATIC_LIBRARY(Potts3D ${SRCS} LINK_LIBRARIES BasicUtilsStatic
   BoundaryShared
-  Field3DStatic PublicUtilitiesStatic UnitsStatic EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
+  Field3DStatic PublicUtilitiesStatic UnitsStatic ExpressionEvaluatorShared EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
 
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
   ADD_SHARED_LIBRARY(Potts3D ${SRCS} 
   LINK_LIBRARIES 
-  gomp BoundaryShared BasicUtilsShared Field3DShared PublicUtilitiesShared UnitsShared 
+  gomp BoundaryShared BasicUtilsShared Field3DShared PublicUtilitiesShared UnitsShared ExpressionEvaluatorShared
   EXTRA_COMPILER_FLAGS 
   ${OpenMP_CXX_FLAGS})
 
@@ -38,6 +39,7 @@ INSTALL_FILES(/include/CompuCell3D/CompuCell3D/Potts3D .h
   CellInventory
   CellTypeMotilityData
   DefaultAcceptanceFunction
+  CustomAcceptanceFunction
   EnergyFunction
   EnergyFunctionCalculator
   EnergyFunctionCalculatorStatistics

@@ -31,7 +31,7 @@
 
 #include "DefaultAcceptanceFunction.h"
 #include "FirstOrderExpansionAcceptanceFunction.h"
-
+#include "CustomAcceptanceFunction.h"
 
 
 #include <BasicUtils/BasicArray.h>
@@ -51,6 +51,7 @@
 #include <CompuCell3D/SteerableObject.h>
 
 #include <PublicUtilities/Units/Unit.h>
+#include <muParser/ExpressionEvaluator/ExpressionEvaluator.h>
 
 // #include <CompuCell3D/dllDeclarationSpecifier.h>
 
@@ -127,6 +128,11 @@ namespace CompuCell3D {
 
     /// Used to determine the probablity that a pixel flip should be taken.
     AcceptanceFunction *acceptanceFunction;
+
+	//ExpressionEvaluatorDepot acceptanceEed;
+	CustomAcceptanceFunction customAcceptanceFunction;
+	bool customAcceptanceExpressionDefined;
+	
 
 
 	FluctuationAmplitudeFunction * fluctAmplFcn;

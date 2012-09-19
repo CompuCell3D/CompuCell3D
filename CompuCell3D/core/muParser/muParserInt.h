@@ -5,7 +5,7 @@
   |  Y Y  \|  |  /|    |     / __ \_|  | \/\___ \ \  ___/ |  | \/
   |__|_|  /|____/ |____|    (____  /|__|  /____  > \___  >|__|   
         \/                       \/            \/      \/        
-  Copyright (C) 2004-2008 Ingo Berg
+  Copyright (C) 2004-2012 Ingo Berg
 
   Permission is hereby granted, free of charge, to any person obtaining a copy of this 
   software and associated documentation files (the "Software"), to deal in the Software
@@ -29,6 +29,7 @@
 #include "muParserBase.h"
 #include <vector>
 
+
 /** \file
     \brief Definition of a parser using integer value.
 */
@@ -48,7 +49,7 @@ private:
     static int  Round(value_type v) { return (int)(v + ((v>=0) ? 0.5 : -0.5) ); };
   
     static value_type  Abs(value_type);
-	  static value_type  Sign(value_type);
+    static value_type  Sign(value_type);
     static value_type  Ite(value_type, value_type, value_type);
     // !! The unary Minus is a MUST, otherwise you cant use negative signs !!
     static value_type  UnaryMinus(value_type);
@@ -62,11 +63,11 @@ private:
     static value_type  Mul(value_type v1, value_type v2);
     static value_type  Div(value_type v1, value_type v2);
     static value_type  Mod(value_type v1, value_type v2);
+    static value_type  Pow(value_type v1, value_type v2);
     static value_type  Shr(value_type v1, value_type v2);
     static value_type  Shl(value_type v1, value_type v2);
     static value_type  LogAnd(value_type v1, value_type v2);
     static value_type  LogOr(value_type v1, value_type v2);
-    static value_type  LogXor(value_type v1, value_type v2);
     static value_type  And(value_type v1, value_type v2);
     static value_type  Or(value_type v1, value_type v2);
     static value_type  Xor(value_type v1, value_type v2);
@@ -81,6 +82,43 @@ private:
     static int IsHexVal(const char_type* a_szExpr, int *a_iPos, value_type *a_iVal);
     static int IsBinVal(const char_type* a_szExpr, int *a_iPos, value_type *a_iVal);
     static int IsVal   (const char_type* a_szExpr, int *a_iPos, value_type *a_iVal);
+
+    /** \brief A facet class used to change decimal and thousands separator. */
+    template<class TChar>
+    class change_dec_sep : public std::numpunct<TChar>
+    {
+    public:
+      
+      explicit change_dec_sep(char_type cDecSep, char_type cThousandsSep = 0, int nGroup = 3)
+        :std::numpunct<TChar>()
+        ,m_cDecPoint(cDecSep)
+        ,m_cThousandsSep(cThousandsSep)
+        ,m_nGroup(nGroup)
+      {}
+      
+    protected:
+      
+      virtual char_type do_decimal_point() const
+      {
+        return m_cDecPoint;
+      }
+
+      virtual char_type do_thousands_sep() const
+      {
+        return m_cThousandsSep;
+      }
+
+      virtual std::string do_grouping() const 
+      { 
+        return std::string(1, m_nGroup); 
+      }
+
+    private:
+
+      int m_nGroup;
+      char_type m_cDecPoint;  
+      char_type m_cThousandsSep;
+    };
 
 public:
     ParserInt();

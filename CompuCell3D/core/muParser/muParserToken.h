@@ -5,7 +5,7 @@
   |  Y Y  \|  |  /|    |     / __ \_|  | \/\___ \ \  ___/ |  | \/
   |__|_|  /|____/ |____|    (____  /|__|  /____  > \___  >|__|   
         \/                       \/            \/      \/        
-  Copyright (C) 2004-2008 Ingo Berg
+  Copyright (C) 2004-2012 Ingo Berg
 
   Permission is hereby granted, free of charge, to any person obtaining a copy of this 
   software and associated documentation files (the "Software"), to deal in the Software
@@ -55,29 +55,20 @@ namespace mu
 	    <li>binary operator</li>
     </ul>
 
-   \author (C) 2004 Ingo Berg 
+   \author (C) 2004-2012 Ingo Berg 
   */
   template<typename TBase, typename TString>
   class ParserToken
   {
-  public:
-
-      /** \brief Additional token flags. */
-      enum ETokFlags
-	    {
-	      flVOLATILE = 1    ///< Mark a token that depends on a variable or a function that is not conservative
-	    };
-
   private:
 
       ECmdCode  m_iCode;  ///< Type of the token; The token type is a constant of type #ECmdCode.
       ETypeCode m_iType;
       void  *m_pTok;      ///< Stores Token pointer; not applicable for all tokens
-  	  int  m_iFlags;      ///< Additional flags for the token.
       int  m_iIdx;        ///< An otional index to an external buffer storing the token data
       TString m_strTok;   ///< Token string
       TString m_strVal;   ///< Value for string variables
-      value_type m_fVal;
+      value_type m_fVal;  ///< the value 
       std::auto_ptr<ParserCallback> m_pCallback;
 
   public:
@@ -93,7 +84,6 @@ namespace mu
         :m_iCode(cmUNKNOWN)
         ,m_iType(tpVOID)
         ,m_pTok(0)
-        ,m_iFlags(0)
         ,m_iIdx(-1)
         ,m_strTok()
         ,m_pCallback()
@@ -134,7 +124,6 @@ namespace mu
       {
         m_iCode = a_Tok.m_iCode;
         m_pTok = a_Tok.m_pTok;
-        m_iFlags = a_Tok.m_iFlags;
         m_strTok = a_Tok.m_strTok;
         m_iIdx = a_Tok.m_iIdx;
         m_strVal = a_Tok.m_strVal;
@@ -142,35 +131,6 @@ namespace mu
         m_fVal = a_Tok.m_fVal;
         // create new callback object if a_Tok has one 
         m_pCallback.reset(a_Tok.m_pCallback.get() ? a_Tok.m_pCallback->Clone() : 0);
-      }
-
-      //------------------------------------------------------------------------------
-      /** \brief Add additional flags to the token. 
-
-          Flags are currently used to mark volatile (non optimizeable) functions.
-          \sa m_iFlags, ETokFlags    
-      */
-      void AddFlags(int a_iFlags)
-      {
-        m_iFlags |= a_iFlags;
-      }
-
-      //------------------------------------------------------------------------------
-      /** \brief Check if a certain flag ist set. 
-
-          \throw nothrow
-      */
-      bool IsFlagSet(int a_iFlags) const
-      {
-        #if defined(_MSC_VER)
-          #pragma warning( disable : 4800 )
-        #endif
-          
-        return (bool)(m_iFlags & a_iFlags);
-
-        #if defined(_MSC_VER)
-          #pragma warning( default : 4800 ) // int: Variable set to boolean value (may degrade performance)
-        #endif
       }
 
       //------------------------------------------------------------------------------
@@ -194,7 +154,6 @@ namespace mu
         m_iCode = a_iType;
         m_iType = tpVOID;
         m_pTok = 0;
-        m_iFlags = 0;
         m_strTok = a_strTok;
         m_iIdx = -1;
 
@@ -213,12 +172,8 @@ namespace mu
         m_pCallback.reset(new ParserCallback(a_pCallback));
 
         m_pTok = 0;
-        m_iFlags = 0;
         m_iIdx = -1;
         
-        if (!m_pCallback->IsOptimizable())
-          AddFlags(flVOLATILE);
-
         return *this;
       }
 
@@ -233,7 +188,6 @@ namespace mu
         m_iCode = cmVAL;
         m_iType = tpDBL;
         m_fVal = a_fVal;
-        m_iFlags = 0;
         m_strTok = a_strTok;
         m_iIdx = -1;
         
@@ -253,13 +207,10 @@ namespace mu
       {
         m_iCode = cmVAR;
         m_iType = tpDBL;
-        m_iFlags = 0;
         m_strTok = a_strTok;
         m_iIdx = -1;
         m_pTok = (void*)a_pVar;
         m_pCallback.reset(0);
-
-        AddFlags(ParserToken::flVOLATILE);
         return *this;
       }
 
@@ -273,14 +224,11 @@ namespace mu
       {
         m_iCode = cmSTRING;
         m_iType = tpSTR;
-        m_iFlags = 0;
         m_strTok = a_strTok;
         m_iIdx = static_cast<int>(a_iSize);
 
         m_pTok = 0;
         m_pCallback.reset(0);
-
-        AddFlags(ParserToken::flVOLATILE);
         return *this;
       }
 
@@ -359,6 +307,15 @@ namespace mu
       }
 
       //------------------------------------------------------------------------------
+      EOprtAssociativity GetAssociativity() const
+      {
+        if (m_pCallback.get()==NULL || m_pCallback->GetCode()!=cmOPRT_BIN)
+	        throw ParserError(ecINTERNAL_ERROR);
+
+        return m_pCallback->GetAssociativity();
+      }
+
+      //------------------------------------------------------------------------------
       /** \brief Return the address of the callback function assoziated with
                  function and operator tokens.
 
@@ -373,9 +330,9 @@ namespace mu
                  </ul>
           \sa ECmdCode
       */
-      void* GetFuncAddr() const
+      generic_fun_type GetFuncAddr() const
       {
-        return (m_pCallback.get()) ? m_pCallback->GetAddr() : 0;
+        return (m_pCallback.get()) ? (generic_fun_type)m_pCallback->GetAddr() : 0;
       }
 
       //------------------------------------------------------------------------------

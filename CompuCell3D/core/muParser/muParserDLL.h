@@ -5,7 +5,7 @@
   |  Y Y  \|  |  /|    |     / __ \_|  | \/\___ \ \  ___/ |  | \/
   |__|_|  /|____/ |____|    (____  /|__|  /____  > \___  >|__|   
         \/                       \/            \/      \/        
-  Copyright (C) 2004-2008 Ingo Berg
+  Copyright (C) 2011 Ingo Berg
 
   Permission is hereby granted, free of charge, to any person obtaining a copy of this 
   software and associated documentation files (the "Software"), to deal in the Software
@@ -25,14 +25,20 @@
 #ifndef MU_PARSER_DLL_H
 #define MU_PARSER_DLL_H
 
-#if defined(_WIN32)
+#if defined(WIN32) || defined(_WIN32)
     #ifdef MUPARSERLIB_EXPORTS
-        #define API_EXPORT(TYPE) extern "C" __declspec(dllexport) TYPE __stdcall
+        #define API_EXPORT(TYPE) __declspec(dllexport) TYPE __cdecl
     #else
-        #define API_EXPORT(TYPE) extern __declspec(dllimport) TYPE __stdcall
+        #define API_EXPORT(TYPE) __declspec(dllimport) TYPE __cdecl
     #endif
 #else
     #define API_EXPORT(TYPE) TYPE
+#endif
+
+
+#ifdef __cplusplus
+extern "C"
+{
 #endif
 
 /** \file 
@@ -47,12 +53,31 @@ typedef int    muInt_t;             // integer type
 typedef double muFloat_t;           // floating point type
 
 // function types for calculation
-typedef muFloat_t (*muFun0_t)(); 
-typedef muFloat_t (*muFun1_t)(muFloat_t); 
-typedef muFloat_t (*muFun2_t)(muFloat_t, muFloat_t); 
-typedef muFloat_t (*muFun3_t)(muFloat_t, muFloat_t, muFloat_t); 
-typedef muFloat_t (*muFun4_t)(muFloat_t, muFloat_t, muFloat_t, muFloat_t); 
-typedef muFloat_t (*muFun5_t)(muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t); 
+typedef muFloat_t (*muFun0_t )(); 
+typedef muFloat_t (*muFun1_t )(muFloat_t); 
+typedef muFloat_t (*muFun2_t )(muFloat_t, muFloat_t); 
+typedef muFloat_t (*muFun3_t )(muFloat_t, muFloat_t, muFloat_t); 
+typedef muFloat_t (*muFun4_t )(muFloat_t, muFloat_t, muFloat_t, muFloat_t); 
+typedef muFloat_t (*muFun5_t )(muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t); 
+typedef muFloat_t (*muFun6_t )(muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t); 
+typedef muFloat_t (*muFun7_t )(muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t); 
+typedef muFloat_t (*muFun8_t )(muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t); 
+typedef muFloat_t (*muFun9_t )(muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t); 
+typedef muFloat_t (*muFun10_t)(muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t); 
+
+// Function prototypes for bulkmode functions
+typedef muFloat_t (*muBulkFun0_t )(int, int); 
+typedef muFloat_t (*muBulkFun1_t )(int, int, muFloat_t); 
+typedef muFloat_t (*muBulkFun2_t )(int, int, muFloat_t, muFloat_t); 
+typedef muFloat_t (*muBulkFun3_t )(int, int, muFloat_t, muFloat_t, muFloat_t); 
+typedef muFloat_t (*muBulkFun4_t )(int, int, muFloat_t, muFloat_t, muFloat_t, muFloat_t); 
+typedef muFloat_t (*muBulkFun5_t )(int, int, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t); 
+typedef muFloat_t (*muBulkFun6_t )(int, int, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t); 
+typedef muFloat_t (*muBulkFun7_t )(int, int, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t); 
+typedef muFloat_t (*muBulkFun8_t )(int, int, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t); 
+typedef muFloat_t (*muBulkFun9_t )(int, int, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t); 
+typedef muFloat_t (*muBulkFun10_t)(int, int, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t, muFloat_t); 
+
 typedef muFloat_t (*muMultFun_t)(const muFloat_t*, muInt_t);
 typedef muFloat_t (*muStrFun1_t)(const muChar_t*);
 typedef muFloat_t (*muStrFun2_t)(const muChar_t*, muFloat_t);
@@ -64,6 +89,14 @@ typedef muFloat_t* (*muFacFun_t)(const muChar_t*, void*);               // [opti
 typedef muInt_t (*muIdentFun_t)(const muChar_t*, muInt_t*, muFloat_t*); // [optional] value identification callbacks
 
 //-----------------------------------------------------------------------------------------------------
+// Constants
+const int muOPRT_ASCT_LEFT = 0;
+const int muOPRT_ASCT_RIGHT = 1;
+
+const int muBASETYPE_FLOAT   = 0;
+const int muBASETYPE_INT     = 1;
+
+//-----------------------------------------------------------------------------------------------------
 //
 //
 // muParser C compatible bindings
@@ -71,14 +104,17 @@ typedef muInt_t (*muIdentFun_t)(const muChar_t*, muInt_t*, muFloat_t*); // [opti
 //
 //-----------------------------------------------------------------------------------------------------
 
+
 // Basic operations / initialization  
-API_EXPORT(muParserHandle_t) mupCreate();
+API_EXPORT(muParserHandle_t) mupCreate(int nBaseType);
 API_EXPORT(void) mupRelease(muParserHandle_t a_hParser);
 API_EXPORT(const muChar_t*) mupGetExpr(muParserHandle_t a_hParser);
 API_EXPORT(void) mupSetExpr(muParserHandle_t a_hParser, const muChar_t *a_szExpr);
 API_EXPORT(void) mupSetVarFactory(muParserHandle_t a_hParser, muFacFun_t a_pFactory, void* pUserData);
-
+API_EXPORT(const muChar_t*) mupGetVersion(muParserHandle_t a_hParser);
 API_EXPORT(muFloat_t) mupEval(muParserHandle_t a_hParser);
+API_EXPORT(muFloat_t*) mupEvalMulti(muParserHandle_t a_hParser, int *nNum);
+API_EXPORT(void) mupEvalBulk(muParserHandle_t a_hParser, muFloat_t *a_fResult, int nSize);
 
 // Defining callbacks / variables / constants
 API_EXPORT(void) mupDefineFun0(muParserHandle_t a_hParser, const muChar_t *a_szName, muFun0_t a_pFun, muBool_t a_bOptimize);
@@ -87,6 +123,25 @@ API_EXPORT(void) mupDefineFun2(muParserHandle_t a_hParser, const muChar_t *a_szN
 API_EXPORT(void) mupDefineFun3(muParserHandle_t a_hParser, const muChar_t *a_szName, muFun3_t a_pFun, muBool_t a_bOptimize);
 API_EXPORT(void) mupDefineFun4(muParserHandle_t a_hParser, const muChar_t *a_szName, muFun4_t a_pFun, muBool_t a_bOptimize);
 API_EXPORT(void) mupDefineFun5(muParserHandle_t a_hParser, const muChar_t *a_szName, muFun5_t a_pFun, muBool_t a_bOptimize);
+API_EXPORT(void) mupDefineFun6(muParserHandle_t a_hParser, const muChar_t *a_szName, muFun6_t a_pFun, muBool_t a_bOptimize);
+API_EXPORT(void) mupDefineFun7(muParserHandle_t a_hParser, const muChar_t *a_szName, muFun7_t a_pFun, muBool_t a_bOptimize);
+API_EXPORT(void) mupDefineFun8(muParserHandle_t a_hParser, const muChar_t *a_szName, muFun8_t a_pFun, muBool_t a_bOptimize);
+API_EXPORT(void) mupDefineFun9(muParserHandle_t a_hParser, const muChar_t *a_szName, muFun9_t a_pFun, muBool_t a_bOptimize);
+API_EXPORT(void) mupDefineFun10(muParserHandle_t a_hParser, const muChar_t *a_szName, muFun10_t a_pFun, muBool_t a_bOptimize);
+
+// Defining bulkmode functions
+API_EXPORT(void) mupDefineBulkFun0(muParserHandle_t a_hParser, const muChar_t *a_szName, muBulkFun0_t a_pFun);
+API_EXPORT(void) mupDefineBulkFun1(muParserHandle_t a_hParser, const muChar_t *a_szName, muBulkFun1_t a_pFun);
+API_EXPORT(void) mupDefineBulkFun2(muParserHandle_t a_hParser, const muChar_t *a_szName, muBulkFun2_t a_pFun);
+API_EXPORT(void) mupDefineBulkFun3(muParserHandle_t a_hParser, const muChar_t *a_szName, muBulkFun3_t a_pFun);
+API_EXPORT(void) mupDefineBulkFun4(muParserHandle_t a_hParser, const muChar_t *a_szName, muBulkFun4_t a_pFun);
+API_EXPORT(void) mupDefineBulkFun5(muParserHandle_t a_hParser, const muChar_t *a_szName, muBulkFun5_t a_pFun);
+API_EXPORT(void) mupDefineBulkFun6(muParserHandle_t a_hParser, const muChar_t *a_szName, muBulkFun6_t a_pFun);
+API_EXPORT(void) mupDefineBulkFun7(muParserHandle_t a_hParser, const muChar_t *a_szName, muBulkFun7_t a_pFun);
+API_EXPORT(void) mupDefineBulkFun8(muParserHandle_t a_hParser, const muChar_t *a_szName, muBulkFun8_t a_pFun);
+API_EXPORT(void) mupDefineBulkFun9(muParserHandle_t a_hParser, const muChar_t *a_szName, muBulkFun9_t a_pFun);
+API_EXPORT(void) mupDefineBulkFun10(muParserHandle_t a_hParser, const muChar_t *a_szName, muBulkFun10_t a_pFun);
+
 // string functions
 API_EXPORT(void) mupDefineStrFun1(muParserHandle_t a_hParser, const muChar_t *a_szName, muStrFun1_t a_pFun);
 API_EXPORT(void) mupDefineStrFun2(muParserHandle_t a_hParser, const muChar_t *a_szName, muStrFun2_t a_pFun);
@@ -100,7 +155,8 @@ API_EXPORT(void) mupDefineMultFun( muParserHandle_t a_hParser,
 API_EXPORT(void) mupDefineOprt( muParserHandle_t a_hParser, 
                                 const muChar_t* a_szName, 
                                 muFun2_t a_pFun, 
-                                muInt_t a_iPri1, 
+                                muInt_t a_nPrec, 
+                                muInt_t a_nOprtAsct,
                                 muBool_t a_bOptimize);
 
 API_EXPORT(void) mupDefineConst( muParserHandle_t a_hParser, 
@@ -112,6 +168,10 @@ API_EXPORT(void) mupDefineStrConst( muParserHandle_t a_hParser,
                                     const muChar_t *a_sVal );
 
 API_EXPORT(void) mupDefineVar( muParserHandle_t a_hParser, 
+                               const muChar_t* a_szName, 
+                               muFloat_t *a_fVar);
+
+API_EXPORT(void) mupDefineBulkVar( muParserHandle_t a_hParser, 
                                const muChar_t* a_szName, 
                                muFloat_t *a_fVar);
 
@@ -148,6 +208,7 @@ API_EXPORT(void) mupGetConst(muParserHandle_t a_hParser, unsigned a_iVar, const 
 API_EXPORT(void) mupSetArgSep(muParserHandle_t a_hParser, const muChar_t cArgSep);
 API_EXPORT(void) mupSetDecSep(muParserHandle_t a_hParser, const muChar_t cArgSep);
 API_EXPORT(void) mupSetThousandsSep(muParserHandle_t a_hParser, const muChar_t cArgSep);
+API_EXPORT(void) mupResetLocale(muParserHandle_t a_hParser);
 
 // Add value recognition callbacks
 API_EXPORT(void) mupAddValIdent(muParserHandle_t a_hParser, muIdentFun_t);
@@ -160,12 +221,15 @@ API_EXPORT(const muChar_t*) mupGetErrorMsg(muParserHandle_t a_hParser);
 API_EXPORT(muInt_t) mupGetErrorCode(muParserHandle_t a_hParser);
 API_EXPORT(muInt_t) mupGetErrorPos(muParserHandle_t a_hParser);
 API_EXPORT(const muChar_t*) mupGetErrorToken(muParserHandle_t a_hParser);
-API_EXPORT(const muChar_t*) mupGetErrorExpr(muParserHandle_t a_hParser);
+//API_EXPORT(const muChar_t*) mupGetErrorExpr(muParserHandle_t a_hParser);
 
 // This is used for .NET only. It creates a new variable allowing the dll to
 // manage the variable rather than the .NET garbage collector.
 API_EXPORT(muFloat_t*) mupCreateVar();
 API_EXPORT(void) mupReleaseVar(muFloat_t*);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif // include guard

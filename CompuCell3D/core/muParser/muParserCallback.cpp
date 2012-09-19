@@ -5,7 +5,7 @@
   |  Y Y  \|  |  /|    |     / __ \_|  | \/\___ \ \  ___/ |  | \/
   |__|_|  /|____/ |____|    (____  /|__|  /____  > \___  >|__|   
         \/                       \/            \/      \/        
-  Copyright (C) 2004-2008 Ingo Berg
+  Copyright (C) 2004-2011 Ingo Berg
 
   Permission is hereby granted, free of charge, to any person obtaining a copy of this 
   software and associated documentation files (the "Software"), to deal in the Software
@@ -37,6 +37,7 @@ namespace mu
     :m_pFun((void*)a_pFun)
     ,m_iArgc(0)
     ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
     ,m_iCode(cmFUNC)
     ,m_iType(tpDBL)
     ,m_bAllowOpti(a_bAllowOpti)
@@ -47,6 +48,7 @@ namespace mu
     :m_pFun((void*)a_pFun)
     ,m_iArgc(1)
     ,m_iPri(a_iPrec)
+    ,m_eOprtAsct(oaNONE)
     ,m_iCode(a_iCode)
     ,m_iType(tpDBL)
     ,m_bAllowOpti(a_bAllowOpti)
@@ -54,21 +56,46 @@ namespace mu
 
 
   //---------------------------------------------------------------------------
-  ParserCallback::ParserCallback( fun_type2 a_pFun, bool a_bAllowOpti, int a_iPrec, ECmdCode a_iCode)
+  /** \brief Constructor for constructing funcstion callbacks taking two arguments. 
+      \throw nothrow
+  */
+  ParserCallback::ParserCallback(fun_type2 a_pFun, bool a_bAllowOpti)
     :m_pFun((void*)a_pFun)
     ,m_iArgc(2)
-    ,m_iPri(a_iPrec)
-    ,m_iCode(a_iCode)
+    ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
+    ,m_iCode(cmFUNC)
     ,m_iType(tpDBL)
     ,m_bAllowOpti(a_bAllowOpti)
   {}
 
+  //---------------------------------------------------------------------------
+  /** \brief Constructor for constructing binary operator callbacks. 
+      \param a_pFun Pointer to a static function taking two arguments
+      \param a_bAllowOpti A flag indicating this funcation can be optimized
+      \param a_iPrec The operator precedence
+      \param a_eOprtAsct The operators associativity
+      \throw nothrow
+  */
+  ParserCallback::ParserCallback(fun_type2 a_pFun, 
+                                 bool a_bAllowOpti, 
+                                 int a_iPrec, 
+                                 EOprtAssociativity a_eOprtAsct)
+    :m_pFun((void*)a_pFun)
+    ,m_iArgc(2)
+    ,m_iPri(a_iPrec)
+    ,m_eOprtAsct(a_eOprtAsct)
+    ,m_iCode(cmOPRT_BIN)
+    ,m_iType(tpDBL)
+    ,m_bAllowOpti(a_bAllowOpti)
+  {}
 
   //---------------------------------------------------------------------------
   ParserCallback::ParserCallback(fun_type3 a_pFun, bool a_bAllowOpti)
     :m_pFun((void*)a_pFun)
     ,m_iArgc(3)
     ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
     ,m_iCode(cmFUNC)
     ,m_iType(tpDBL)
     ,m_bAllowOpti(a_bAllowOpti)
@@ -80,6 +107,7 @@ namespace mu
     :m_pFun((void*)a_pFun)
     ,m_iArgc(4)
     ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
     ,m_iCode(cmFUNC)
     ,m_iType(tpDBL)
     ,m_bAllowOpti(a_bAllowOpti)
@@ -91,7 +119,190 @@ namespace mu
     :m_pFun((void*)a_pFun)
     ,m_iArgc(5)
     ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
     ,m_iCode(cmFUNC)
+    ,m_iType(tpDBL)
+    ,m_bAllowOpti(a_bAllowOpti)
+  {}
+
+  //---------------------------------------------------------------------------
+  ParserCallback::ParserCallback(fun_type6 a_pFun, bool a_bAllowOpti)
+    :m_pFun((void*)a_pFun)
+    ,m_iArgc(6)
+    ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
+    ,m_iCode(cmFUNC)
+    ,m_iType(tpDBL)
+    ,m_bAllowOpti(a_bAllowOpti)
+  {}
+
+  //---------------------------------------------------------------------------
+  ParserCallback::ParserCallback(fun_type7 a_pFun, bool a_bAllowOpti)
+    :m_pFun((void*)a_pFun)
+    ,m_iArgc(7)
+    ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
+    ,m_iCode(cmFUNC)
+    ,m_iType(tpDBL)
+    ,m_bAllowOpti(a_bAllowOpti)
+  {}
+
+  //---------------------------------------------------------------------------
+  ParserCallback::ParserCallback(fun_type8 a_pFun, bool a_bAllowOpti)
+    :m_pFun((void*)a_pFun)
+    ,m_iArgc(8)
+    ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
+    ,m_iCode(cmFUNC)
+    ,m_iType(tpDBL)
+    ,m_bAllowOpti(a_bAllowOpti)
+  {}
+
+  //---------------------------------------------------------------------------
+  ParserCallback::ParserCallback(fun_type9 a_pFun, bool a_bAllowOpti)
+    :m_pFun((void*)a_pFun)
+    ,m_iArgc(9)
+    ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
+    ,m_iCode(cmFUNC)
+    ,m_iType(tpDBL)
+    ,m_bAllowOpti(a_bAllowOpti)
+  {}
+
+  //---------------------------------------------------------------------------
+  ParserCallback::ParserCallback(fun_type10 a_pFun, bool a_bAllowOpti)
+    :m_pFun((void*)a_pFun)
+    ,m_iArgc(10)
+    ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
+    ,m_iCode(cmFUNC)
+    ,m_iType(tpDBL)
+    ,m_bAllowOpti(a_bAllowOpti)
+  {}
+
+  //---------------------------------------------------------------------------
+  ParserCallback::ParserCallback(bulkfun_type0 a_pFun, bool a_bAllowOpti)
+    :m_pFun((void*)a_pFun)
+    ,m_iArgc(0)
+    ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
+    ,m_iCode(cmFUNC_BULK)
+    ,m_iType(tpDBL)
+    ,m_bAllowOpti(a_bAllowOpti)
+  {}
+
+  //---------------------------------------------------------------------------
+  ParserCallback::ParserCallback(bulkfun_type1 a_pFun, bool a_bAllowOpti)
+    :m_pFun((void*)a_pFun)
+    ,m_iArgc(1)
+    ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
+    ,m_iCode(cmFUNC_BULK)
+    ,m_iType(tpDBL)
+    ,m_bAllowOpti(a_bAllowOpti)
+  {}
+
+
+  //---------------------------------------------------------------------------
+  /** \brief Constructor for constructing funcstion callbacks taking two arguments. 
+      \throw nothrow
+  */
+  ParserCallback::ParserCallback(bulkfun_type2 a_pFun, bool a_bAllowOpti)
+    :m_pFun((void*)a_pFun)
+    ,m_iArgc(2)
+    ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
+    ,m_iCode(cmFUNC_BULK)
+    ,m_iType(tpDBL)
+    ,m_bAllowOpti(a_bAllowOpti)
+  {}
+
+  //---------------------------------------------------------------------------
+  ParserCallback::ParserCallback(bulkfun_type3 a_pFun, bool a_bAllowOpti)
+    :m_pFun((void*)a_pFun)
+    ,m_iArgc(3)
+    ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
+    ,m_iCode(cmFUNC_BULK)
+    ,m_iType(tpDBL)
+    ,m_bAllowOpti(a_bAllowOpti)
+  {}
+
+
+  //---------------------------------------------------------------------------
+  ParserCallback::ParserCallback(bulkfun_type4 a_pFun, bool a_bAllowOpti)
+    :m_pFun((void*)a_pFun)
+    ,m_iArgc(4)
+    ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
+    ,m_iCode(cmFUNC_BULK)
+    ,m_iType(tpDBL)
+    ,m_bAllowOpti(a_bAllowOpti)
+  {}
+
+
+  //---------------------------------------------------------------------------
+  ParserCallback::ParserCallback(bulkfun_type5 a_pFun, bool a_bAllowOpti)
+    :m_pFun((void*)a_pFun)
+    ,m_iArgc(5)
+    ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
+    ,m_iCode(cmFUNC_BULK)
+    ,m_iType(tpDBL)
+    ,m_bAllowOpti(a_bAllowOpti)
+  {}
+
+  //---------------------------------------------------------------------------
+  ParserCallback::ParserCallback(bulkfun_type6 a_pFun, bool a_bAllowOpti)
+    :m_pFun((void*)a_pFun)
+    ,m_iArgc(6)
+    ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
+    ,m_iCode(cmFUNC_BULK)
+    ,m_iType(tpDBL)
+    ,m_bAllowOpti(a_bAllowOpti)
+  {}
+
+  //---------------------------------------------------------------------------
+  ParserCallback::ParserCallback(bulkfun_type7 a_pFun, bool a_bAllowOpti)
+    :m_pFun((void*)a_pFun)
+    ,m_iArgc(7)
+    ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
+    ,m_iCode(cmFUNC_BULK)
+    ,m_iType(tpDBL)
+    ,m_bAllowOpti(a_bAllowOpti)
+  {}
+
+  //---------------------------------------------------------------------------
+  ParserCallback::ParserCallback(bulkfun_type8 a_pFun, bool a_bAllowOpti)
+    :m_pFun((void*)a_pFun)
+    ,m_iArgc(8)
+    ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
+    ,m_iCode(cmFUNC_BULK)
+    ,m_iType(tpDBL)
+    ,m_bAllowOpti(a_bAllowOpti)
+  {}
+
+  //---------------------------------------------------------------------------
+  ParserCallback::ParserCallback(bulkfun_type9 a_pFun, bool a_bAllowOpti)
+    :m_pFun((void*)a_pFun)
+    ,m_iArgc(9)
+    ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
+    ,m_iCode(cmFUNC_BULK)
+    ,m_iType(tpDBL)
+    ,m_bAllowOpti(a_bAllowOpti)
+  {}
+
+  //---------------------------------------------------------------------------
+  ParserCallback::ParserCallback(bulkfun_type10 a_pFun, bool a_bAllowOpti)
+    :m_pFun((void*)a_pFun)
+    ,m_iArgc(10)
+    ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
+    ,m_iCode(cmFUNC_BULK)
     ,m_iType(tpDBL)
     ,m_bAllowOpti(a_bAllowOpti)
   {}
@@ -102,6 +313,7 @@ namespace mu
     :m_pFun((void*)a_pFun)
     ,m_iArgc(-1)
     ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
     ,m_iCode(cmFUNC)
     ,m_iType(tpDBL)
     ,m_bAllowOpti(a_bAllowOpti)
@@ -113,6 +325,7 @@ namespace mu
     :m_pFun((void*)a_pFun)
     ,m_iArgc(0)
     ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
     ,m_iCode(cmFUNC_STR)
     ,m_iType(tpSTR)
     ,m_bAllowOpti(a_bAllowOpti)
@@ -124,6 +337,7 @@ namespace mu
     :m_pFun((void*)a_pFun)
     ,m_iArgc(1)
     ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
     ,m_iCode(cmFUNC_STR)
     ,m_iType(tpSTR)
     ,m_bAllowOpti(a_bAllowOpti)
@@ -135,6 +349,7 @@ namespace mu
     :m_pFun((void*)a_pFun)
     ,m_iArgc(2)
     ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
     ,m_iCode(cmFUNC_STR)
     ,m_iType(tpSTR)
     ,m_bAllowOpti(a_bAllowOpti)
@@ -143,12 +358,13 @@ namespace mu
 
   //---------------------------------------------------------------------------
   /** \brief Default constructor. 
-
       \throw nothrow
   */
   ParserCallback::ParserCallback()
     :m_pFun(0)
     ,m_iArgc(0)
+    ,m_iPri(-1)
+    ,m_eOprtAsct(oaNONE)
     ,m_iCode(cmUNKNOWN)
     ,m_iType(tpVOID)
     ,m_bAllowOpti(0)
@@ -157,19 +373,18 @@ namespace mu
 
   //---------------------------------------------------------------------------
   /** \brief Copy constructor. 
-
       \throw nothrow
   */
-  ParserCallback::ParserCallback(const ParserCallback &a_Fun)
+  ParserCallback::ParserCallback(const ParserCallback &ref)
   {
-    m_pFun = a_Fun.m_pFun;
-    m_iArgc = a_Fun.m_iArgc;
-    m_bAllowOpti = a_Fun.m_bAllowOpti;
-    m_iCode = a_Fun.m_iCode;
-    m_iType = a_Fun.m_iType;
-    m_iPri = a_Fun.m_iPri;
+    m_pFun       = ref.m_pFun;
+    m_iArgc      = ref.m_iArgc;
+    m_bAllowOpti = ref.m_bAllowOpti;
+    m_iCode      = ref.m_iCode;
+    m_iType      = ref.m_iType;
+    m_iPri       = ref.m_iPri;
+    m_eOprtAsct  = ref.m_eOprtAsct;
   }
-
 
   //---------------------------------------------------------------------------
   /** \brief Clone this instance and return a pointer to the new instance. */
@@ -177,7 +392,6 @@ namespace mu
   {
     return new ParserCallback(*this);
   }
-
 
   //---------------------------------------------------------------------------
   /** \brief Return tru if the function is conservative.
@@ -189,7 +403,6 @@ namespace mu
   { 
     return m_bAllowOpti; 
   }
-
 
   //---------------------------------------------------------------------------
   /** \brief Get the callback address for the parser function. 
@@ -205,7 +418,6 @@ namespace mu
     return m_pFun;  
   }
 
-
   //---------------------------------------------------------------------------
   /** \brief Return the callback code. */
   ECmdCode  ParserCallback::GetCode() const 
@@ -213,7 +425,6 @@ namespace mu
     return m_iCode; 
   }
   
-
   //---------------------------------------------------------------------------
   ETypeCode ParserCallback::GetType() const 
   { 
@@ -222,8 +433,9 @@ namespace mu
 
 
   //---------------------------------------------------------------------------
-  /** \brief Return the operator priority. 
-  
+  /** \brief Return the operator precedence. 
+      \throw nothrown
+
      Only valid if the callback token is an operator token (binary or infix).
   */
   int ParserCallback::GetPri()  const 
@@ -231,6 +443,16 @@ namespace mu
     return m_iPri;  
   }
 
+  //---------------------------------------------------------------------------
+  /** \brief Return the operators associativity. 
+      \throw nothrown
+
+     Only valid if the callback token is a binary operator token.
+  */
+  EOprtAssociativity ParserCallback::GetAssociativity() const
+  {
+    return m_eOprtAsct;
+  }
 
   //---------------------------------------------------------------------------
   /** \brief Returns the number of function Arguments. */
