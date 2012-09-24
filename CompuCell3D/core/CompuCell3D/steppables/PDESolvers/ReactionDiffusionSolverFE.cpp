@@ -1156,6 +1156,8 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx){
 
 			ConcentrationField_t & concentrationField = *concentrationFieldVector[idx];
 
+			ExpressionEvaluator &ev=eedVec[idx][threadNumber];
+
 			for (int z = minDim.z; z < maxDim.z; z++)
 				for (int y = minDim.y; y < maxDim.y; y++)
 					for (int x = minDim.x; x < maxDim.x; x++){
@@ -1166,16 +1168,34 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx){
 						currentConcentration = concentrationField.getDirect(x,y,z);
 
 						if (currentCellPtr)
-							variableCellTypeMu[threadNumber]=currentCellPtr->type;
+							ev[0]=currentCellPtr->type; //0 is idx to cell type var in exp evaluator							
 						else
-							variableCellTypeMu[threadNumber]=0;
+							ev[0]=0;							
+
+						//setting up x,y,z variables
+						ev[1]=pt.x; //x-variable
+						ev[2]=pt.y; //y-variable
+						ev[3]=pt.z; //z-variable
 
 						//getting concentrations at x,y,z for all the fields	
 						for (int fieldIdx=0 ; fieldIdx<numberOfFields; ++fieldIdx){						
 							ConcentrationField_t & concentrationField = *concentrationFieldVector[fieldIdx];
-							variableConcentrationVecMu[threadNumber][fieldIdx]=concentrationField.getDirect(x,y,z);
-
+							ev[4+fieldIdx]=concentrationField.getDirect(x,y,z);
 						}
+
+				
+
+						//if (currentCellPtr)
+						//	variableCellTypeMu[threadNumber]=currentCellPtr->type;
+						//else
+						//	variableCellTypeMu[threadNumber]=0;
+
+						////getting concentrations at x,y,z for all the fields	
+						//for (int fieldIdx=0 ; fieldIdx<numberOfFields; ++fieldIdx){						
+						//	ConcentrationField_t & concentrationField = *concentrationFieldVector[fieldIdx];
+						//	variableConcentrationVecMu[threadNumber][fieldIdx]=concentrationField.getDirect(x,y,z);
+
+						//}
 
 
 						//DoNotDiffuseTo means do not solve RD equations for points occupied by this cell type
@@ -1222,8 +1242,8 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx){
 						//additionalTerm contributions
 
 
-						updatedConcentration+=deltaT*parserVec[threadNumber][idx].Eval();
-
+						//updatedConcentration+=deltaT*parserVec[threadNumber][idx].Eval();
+						updatedConcentration+=deltaT*ev.eval();
 
 
 
@@ -1585,31 +1605,74 @@ void ReactionDiffusionSolverFE::update(CC3DXMLElement *_xmlData, bool _fullInitF
 	}
 
 	numberOfFields=diffSecrFieldTuppleVec.size();
-	//allocate vector of parsers
-	parserVec.assign(pUtils->getMaxNumberOfWorkNodesFESolver(),vector<mu::Parser>(numberOfFields,mu::Parser()));
 
-	variableConcentrationVecMu.assign(pUtils->getMaxNumberOfWorkNodesFESolver(),vector<double>(numberOfFields,0.0));
-	variableCellTypeMu.assign(pUtils->getMaxNumberOfWorkNodesFESolver(),0.0);
-	//initialize parsers
+	//specify names for variables used in eed
+	vector<string> variableNames;	
+	variableNames.push_back(cellTypeVariableName);
+	variableNames.push_back("x"); //x -coordinate var 
+	variableNames.push_back("y"); //y -coordinate var
+	variableNames.push_back("z"); //z -coordinate var
+	for(unsigned int j = 0 ; j < numberOfFields ; ++j){
+		variableNames.push_back(diffSecrFieldTuppleVec[j].diffData.fieldName);
+	}
+
 	try{
-		for(unsigned int t = 0 ; t < pUtils->getMaxNumberOfWorkNodesFESolver(); ++t){
-			for(unsigned int i = 0 ; i < numberOfFields ; ++i){
-				for(unsigned int j = 0 ; j < numberOfFields ; ++j){
-					parserVec[t][i].DefineVar(diffSecrFieldTuppleVec[j].diffData.fieldName, &variableConcentrationVecMu[t][j]);
-				}
-				parserVec[t][i].DefineVar(cellTypeVariableName,&variableCellTypeMu[t]);
-				if (diffSecrFieldTuppleVec[i].diffData.additionalTerm==""){
-					diffSecrFieldTuppleVec[i].diffData.additionalTerm="0.0"; //in case additonal term is set empty we will return 0.0
-				}
-				parserVec[t][i].SetExpr(diffSecrFieldTuppleVec[i].diffData.additionalTerm);
+		//allocate expression evaluator depot vector
+		eedVec.assign(numberOfFields,ExpressionEvaluatorDepot());
+		for(unsigned int i = 0 ; i < numberOfFields ; ++i){
+			eedVec[i].allocateSize(pUtils->getMaxNumberOfWorkNodesFESolver());
+			eedVec[i].addVariables(variableNames.begin(),variableNames.end());
+			if (diffSecrFieldTuppleVec[i].diffData.additionalTerm==""){
+				diffSecrFieldTuppleVec[i].diffData.additionalTerm="0.0"; //in case additonal term is set empty we will return 0.0
 			}
+			eedVec[i].setExpression(diffSecrFieldTuppleVec[i].diffData.additionalTerm);
+
 		}
+
 
 	} catch (mu::Parser::exception_type &e)
 	{
 		cerr<<e.GetMsg()<<endl;
 		ASSERT_OR_THROW(e.GetMsg(),0);
 	}
+
+	////allocate vector of parsers
+	//parserVec.assign(pUtils->getMaxNumberOfWorkNodesFESolver(),vector<mu::Parser>(numberOfFields,mu::Parser()));
+
+	//variableConcentrationVecMu.assign(pUtils->getMaxNumberOfWorkNodesFESolver(),vector<double>(numberOfFields,0.0));
+	//variableCellTypeMu.assign(pUtils->getMaxNumberOfWorkNodesFESolver(),0.0);
+	////initialize parsers
+	//try{
+	//	for(unsigned int t = 0 ; t < pUtils->getMaxNumberOfWorkNodesFESolver(); ++t){
+	//		for(unsigned int i = 0 ; i < numberOfFields ; ++i){
+	//			for(unsigned int j = 0 ; j < numberOfFields ; ++j){
+	//				parserVec[t][i].DefineVar(diffSecrFieldTuppleVec[j].diffData.fieldName, &variableConcentrationVecMu[t][j]);
+	//			}
+	//			parserVec[t][i].DefineVar(cellTypeVariableName,&variableCellTypeMu[t]);
+	//			if (diffSecrFieldTuppleVec[i].diffData.additionalTerm==""){
+	//				diffSecrFieldTuppleVec[i].diffData.additionalTerm="0.0"; //in case additonal term is set empty we will return 0.0
+	//			}
+	//			parserVec[t][i].SetExpr(diffSecrFieldTuppleVec[i].diffData.additionalTerm);
+	//		}
+	//	}
+
+	//} catch (mu::Parser::exception_type &e)
+	//{
+	//	cerr<<e.GetMsg()<<endl;
+	//	ASSERT_OR_THROW(e.GetMsg(),0);
+	//}
+
+
+
+
+
+
+
+
+
+
+
+
 
 }
 

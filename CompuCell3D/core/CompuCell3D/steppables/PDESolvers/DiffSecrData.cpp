@@ -127,7 +127,8 @@ void DiffusionData::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	if(_xmlData->findElement("AdditionalTerm"))
 		additionalTerm=_xmlData->getFirstElement("AdditionalTerm")->getText();
-	
+
+
 	if(_xmlData->findElement("CallUserFuncs"))
                 userFuncFlag=_xmlData->getFirstElement("CallUserFuncs")->getUInt();
         

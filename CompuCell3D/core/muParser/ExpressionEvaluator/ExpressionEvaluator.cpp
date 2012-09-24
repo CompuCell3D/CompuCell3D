@@ -85,7 +85,9 @@ void ExpressionEvaluatorDepot::initializeUsingParseData(){
 	}
 
 	//set expression	
-	setExpression(parseData.expression);
+	if (parseData.expression.size()){ //we only set expression if the expression string has some content
+		setExpression(parseData.expression);
+	}
 }
 
 void ExpressionEvaluatorDepot::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
