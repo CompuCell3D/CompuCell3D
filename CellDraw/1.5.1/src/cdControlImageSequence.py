@@ -55,7 +55,9 @@ class CDControlImageSequence(QtGui.QWidget):
         #    3 = Region 3D Volume = CDConstants.ImageSequenceUse3DVolume
         #    4 = Region Cell Seeds = CDConstants.ImageSequenceUseAreaSeeds
         self.theImageSequenceProcessingMode = (1 << CDConstants.ImageSequenceUseAreaSeeds)
-        CDConstants.printOut( "___ - DEBUG ----- CDControlImageSequence: __init__() bin(self.theImageSequenceProcessingMode) == "+str(bin(self.theImageSequenceProcessingMode)) , CDConstants.DebugExcessive )
+        # bin() does not exist in Python 2.5, so we comment it out for now:
+        # CDConstants.printOut( "___ - DEBUG ----- CDControlImageSequence: __init__() bin(self.theImageSequenceProcessingMode) == "+str(bin(self.theImageSequenceProcessingMode)) , CDConstants.DebugExcessive )
+        CDConstants.printOut( "___ - DEBUG ----- CDControlImageSequence: __init__() self.theImageSequenceProcessingMode == "+str(self.theImageSequenceProcessingMode) , CDConstants.DebugExcessive )
         # typical usage :
         # | is used to set a certain bit to 1
         # & is used to test or clear a certaint bit
@@ -456,8 +458,11 @@ class CDControlImageSequence(QtGui.QWidget):
 
         if lImageSequenceProcessingMode != self.theImageSequenceProcessingMode:
             self.theImageSequenceProcessingMode = lImageSequenceProcessingMode
-            CDConstants.printOut( "CDControlImageSequence - handleAreaOrEdgeButtonGroupClicked(), str(type(self.theImageSequenceProcessingMode))==["+str(type(self.theImageSequenceProcessingMode))+"], str(type(self.theImageSequenceProcessingMode).__name__)==["+str(type(self.theImageSequenceProcessingMode).__name__)+"], str(self.theImageSequenceProcessingMode)==["+str(self.theImageSequenceProcessingMode)+"], str(bin(int(self.theImageSequenceProcessingMode)))==["+str(bin(int(self.theImageSequenceProcessingMode)))+"]" , CDConstants.DebugTODO )
-            CDConstants.printOut("CDControlImageSequence - handleAreaOrEdgeButtonGroupClicked(), theImageSequenceProcessingMode is = " +str(bin(self.theImageSequenceProcessingMode)), CDConstants.DebugVerbose)
+            # bin() does not exist in Python 2.5, so we comment it out for now:
+#             CDConstants.printOut( "CDControlImageSequence - handleAreaOrEdgeButtonGroupClicked(), str(type(self.theImageSequenceProcessingMode))==["+str(type(self.theImageSequenceProcessingMode))+"], str(type(self.theImageSequenceProcessingMode).__name__)==["+str(type(self.theImageSequenceProcessingMode).__name__)+"], str(self.theImageSequenceProcessingMode)==["+str(self.theImageSequenceProcessingMode)+"], str(bin(int(self.theImageSequenceProcessingMode)))==["+str(bin(int(self.theImageSequenceProcessingMode)))+"]" , CDConstants.DebugTODO )
+#             CDConstants.printOut("CDControlImageSequence - handleAreaOrEdgeButtonGroupClicked(), theImageSequenceProcessingMode is = " +str(bin(self.theImageSequenceProcessingMode)), CDConstants.DebugVerbose)
+            CDConstants.printOut( "CDControlImageSequence - handleAreaOrEdgeButtonGroupClicked(), str(type(self.theImageSequenceProcessingMode))==["+str(type(self.theImageSequenceProcessingMode))+"], str(type(self.theImageSequenceProcessingMode).__name__)==["+str(type(self.theImageSequenceProcessingMode).__name__)+"], str(self.theImageSequenceProcessingMode)==["+str(self.theImageSequenceProcessingMode)+"], str(int(self.theImageSequenceProcessingMode))==["+str(int(self.theImageSequenceProcessingMode))+"]" , CDConstants.DebugTODO )
+            CDConstants.printOut("CDControlImageSequence - handleAreaOrEdgeButtonGroupClicked(), theImageSequenceProcessingMode is = " +str(self.theImageSequenceProcessingMode), CDConstants.DebugVerbose)
             # propagate the signal upstream, for example to parent objects:
             self.signalImageSequenceProcessingModeHasChanged.emit(self.theImageSequenceProcessingMode)
 

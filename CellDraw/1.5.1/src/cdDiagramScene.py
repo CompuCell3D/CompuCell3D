@@ -3066,7 +3066,9 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         CDConstants.printOut( "      handleAreaOrEdgeModeHasChanged() str(type(pMode))==["+str(type(pMode))+"]" , CDConstants.DebugTODO )
         CDConstants.printOut( "             str(type(pMode).__name__)==["+str(type(pMode).__name__)+"]" , CDConstants.DebugTODO )
         CDConstants.printOut( "             str(pMode)==["+str(pMode)+"]" , CDConstants.DebugTODO )
-        CDConstants.printOut( "             str(bin(int(pMode)))==["+str(bin(int(pMode)))+"]" , CDConstants.DebugTODO )
+        # bin() does not exist in Python 2.5, so we comment it out for now:
+        # CDConstants.printOut( "             str(bin(int(pMode)))==["+str(bin(int(pMode)))+"]" , CDConstants.DebugTODO )
+        CDConstants.printOut( "             str(int(pMode))==["+str(int(pMode))+"]" , CDConstants.DebugTODO )
 
         if ( isinstance(self.scene.theImageSequence, CDImageSequence) == True ):
             # go and tell the image sequence in what mode it is now:
@@ -3083,7 +3085,9 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 # 
 # 
 
-            CDConstants.printOut( "      handleAreaOrEdgeModeHasChanged() called self.scene.theImageSequence.assignAllProcessingModesForImageSequenceToPIFF( "+str(bin(pMode))+") complete." , CDConstants.DebugExcessive )
+            # bin() does not exist in Python 2.5, so we comment it out for now:
+            # CDConstants.printOut( "      handleAreaOrEdgeModeHasChanged() called self.scene.theImageSequence.assignAllProcessingModesForImageSequenceToPIFF( "+str(bin(pMode))+") complete." , CDConstants.DebugExcessive )
+            CDConstants.printOut( "      handleAreaOrEdgeModeHasChanged() called self.scene.theImageSequence.assignAllProcessingModesForImageSequenceToPIFF( "+str(pMode)+") complete." , CDConstants.DebugExcessive )
 
 
 
@@ -3357,7 +3361,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         lAllItems = self.scene.items()
         lHowManyItems = len(lAllItems)
 
-        CDConstants.printOut(str( lHowManyItems, lAllItems )+" ", CDConstants.DebugTODO )
+        CDConstants.printOut( str(lHowManyItems) + ", " + str(lAllItems) + " ", CDConstants.DebugTODO )
 
         # make sure that there is at least one item in the scene:
         if not lAllItems:
