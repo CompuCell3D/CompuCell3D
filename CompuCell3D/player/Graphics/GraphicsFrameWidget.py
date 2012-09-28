@@ -513,7 +513,17 @@ class GraphicsFrameWidget(QtGui.QFrame):
             
     
     def _takeShot(self):
-        print MODULENAME, '  _takeShot():  self.parentWidget.screenshotManager=',self.parentWidget.screenshotManager
+#        print MODULENAME, '  _takeShot():  self.parentWidget.screenshotManager=',self.parentWidget.screenshotManager
+        print MODULENAME, '  _takeShot():  self.renWin.GetSize()=',self.renWin.GetSize()
+        camera = self.ren.GetActiveCamera()
+#        print MODULENAME, '  _takeShot():  camera=',camera
+#        clippingRange= camera.GetClippingRange()
+#        focalPoint= camera.GetFocalPoint()
+#        position= camera.GetPosition()
+#        viewUp= camera.GetViewUp()
+#        viewAngle= camera.GetViewAngle()
+#        print MODULENAME,"_takeShot():  Range,FP,Pos,Up,Angle=",clippingRange,focalPoint,position,viewUp,viewAngle
+
         if self.parentWidget.screenshotManager is not None:
             name = str(self.fieldComboBox.currentText())
             self.parentWidget.fieldTypes[name]
@@ -522,14 +532,12 @@ class GraphicsFrameWidget(QtGui.QFrame):
         
 #            if self.threeDRB.isChecked():
             if self.draw3DFlag:
-                camera=self.ren.GetActiveCamera()
-                # print "CAMERA SETTINGS =",camera
-                
                 self.parentWidget.screenshotManager.add3DScreenshot(fieldType[0],fieldType[1],camera)
             else:
                 planePositionTupple = self.draw2D.getPlane()
                 # print "planePositionTupple=",planePositionTupple
-                self.parentWidget.screenshotManager.add2DScreenshot(fieldType[0],fieldType[1],planePositionTupple[0],planePositionTupple[1])
+                self.parentWidget.screenshotManager.add2DScreenshot(fieldType[0],fieldType[1],planePositionTupple[0],planePositionTupple[1],camera)
+
     
     def setConnects(self,_workspace):   # rf. Plugins/ViewManagerPlugins/SimpleTabView.py
 #        self.connect(self.threeDRB, SIGNAL('toggled(bool)'), self._switchDim)

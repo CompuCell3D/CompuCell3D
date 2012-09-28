@@ -14,7 +14,7 @@ class ScreenshotData:
         self.screenshotCoreName=""
         self.spaceDimension="2D"
         self.projection="xy"
-        self.plotData=("Cell_Field","CellField") # this is a tupple there first element is field name (as displayed in the field list in the player) and the second one is plot type (e.g. CellField, Confield, Vector Field)
+        self.plotData=("Cell_Field","CellField") # this is a tuple where first element is field name (as displayed in the field list in the player) and the second one is plot type (e.g. CellField, Confield, Vector Field)
         self.projectionPosition=0
         self.screenshotGraphicsWidget=None
         # self.originalCameraObj=None
@@ -25,11 +25,15 @@ class ScreenshotData:
         self.position=None
         self.viewUp=None
         
+#        self.winWidth=299   # some unique default 
+#        self.winHeight=299
+        
     def extractCameraInfo(self,_camera):
         self.clippingRange=_camera.GetClippingRange()
         self.focalPoint=_camera.GetFocalPoint()
         self.position=_camera.GetPosition()
         self.viewUp=_camera.GetViewUp()
+#        print MODULENAME,"-------- extractCameraInfoFromList(): Range,FP,Pos,Up=",self.clippingRange,self.focalPoint,self.position,self.viewUp
         
         
     def extractCameraInfoFromList(self,_cameraSettings):
@@ -37,13 +41,14 @@ class ScreenshotData:
         self.focalPoint=_cameraSettings[2:5]
         self.position=_cameraSettings[5:8]
         self.viewUp=_cameraSettings[8:11]
-        print MODULENAME,"self.clippingRange=",self.clippingRange
-        print "self.focalPoint",self.focalPoint
-        print "self.position=",self.position
-        print "self.viewUp=",self.viewUp
-        print "camerasettings=",_cameraSettings
+#        print MODULENAME,"-------- extractCameraInfoFromList():  self.clippingRange=",self.clippingRange
+#        print "self.focalPoint",self.focalPoint
+#        print "self.position=",self.position
+#        print "self.viewUp=",self.viewUp
+#        print "camerasettings=",_cameraSettings
         
     def prepareCamera(self):
+#        print MODULENAME,"------------  prepareCamera()"
         if self.clippingRange and self.focalPoint and self.position and self.viewUp:         
             cam=self.screenshotGraphicsWidget.getCamera()
             cam.SetClippingRange(self.clippingRange)
@@ -62,6 +67,7 @@ class ScreenshotData:
         if self.viewUp!=_camera.GetViewUp():
             return False
         return True
+    
     def compareExistingCameraToNewCameraSettings(self, _cameraSettings):
         if self.clippingRange[0]!=_cameraSettings[0] or self.clippingRange[1]!=_cameraSettings[1]:
             return False
@@ -124,40 +130,27 @@ class ScreenshotManager:
     def writeScreenshotDescriptionFile(self,_fileName):
         from XMLUtils import ElementCC3D
         
-        
         screenshotFileElement=ElementCC3D("CompuCell3DScreenshots")
         
         for name in self.screenshotDataDict:
             scrData=self.screenshotDataDict[name]
             if scrData.spaceDimension=="2D":
                 scrDescElement=screenshotFileElement.ElementCC3D("ScreenshotDescription")
-                
                 scrDescElement.ElementCC3D("Dimension", {}, str(scrData.spaceDimension))
-                
                 scrDescElement.ElementCC3D("Plot", {"PlotType":str(scrData.plotData[1]),"PlotName":str(scrData.plotData[0])})
-                
                 scrDescElement.ElementCC3D("Projection", {"ProjectionPlane":scrData.projection,"ProjectionPosition":str(scrData.projectionPosition)})
-                
                 scrDescElement.ElementCC3D("Size", {"Width":str(scrData.screenshotGraphicsWidget.size().width()),"Height":str(scrData.screenshotGraphicsWidget.size().height())})
                 
             if scrData.spaceDimension=="3D":
                 scrDescElement=screenshotFileElement.ElementCC3D("ScreenshotDescription")                
-                
                 scrDescElement.ElementCC3D("Dimension", {}, str(scrData.spaceDimension))
-                
                 scrDescElement.ElementCC3D("Plot", {"PlotType":str(scrData.plotData[1]),"PlotName":str(scrData.plotData[0])})
-                
                 scrDescElement.ElementCC3D("CameraClippingRange", {"Min":str(scrData.clippingRange[0]),"Max":str(scrData.clippingRange[1])})
-                
                 scrDescElement.ElementCC3D("CameraFocalPoint", {"x":str(scrData.focalPoint[0]),"y":str(scrData.focalPoint[1]),"z":str(scrData.focalPoint[2])})
-                
                 scrDescElement.ElementCC3D("CameraPosition", {"x":str(scrData.position[0]),"y":str(scrData.position[1]),"z":str(scrData.position[2])})
-                
                 scrDescElement.ElementCC3D("CameraViewUp", {"x":str(scrData.viewUp[0]),"y":str(scrData.viewUp[1]),"z":str(scrData.viewUp[2])})
-                
                 scrDescElement.ElementCC3D("Size", {"Width":str(scrData.screenshotGraphicsWidget.size().width()),"Height":str(scrData.screenshotGraphicsWidget.size().height())})
                 
-        
         screenshotFileElement.CC3DXMLElement.saveXML(str(_fileName))
         
     def readScreenshotDescriptionFile(self,_fileName):        
@@ -187,9 +180,7 @@ class ScreenshotManager:
                 if not scrName in self.screenshotDataDict:
                     scrData.screenshotName=scrName
                     scrData.screenshotCoreName=scrCoreName
-
                     scrData.screenshotGraphicsWidget=self.screenshotGraphicsWidget
-
                     self.screenshotDataDict[scrData.screenshotName]=scrData
                 else:
                     print MODULENAME,"Screenshot ",scrName," already exists"
@@ -197,10 +188,8 @@ class ScreenshotManager:
             elif scr.getFirstElement("Dimension").getText()=="3D":
                 scrData=ScreenshotData()
                 scrData.spaceDimension="3D"
-                
                 plotElement=scr.getFirstElement("Plot")
                 scrData.plotData=(plotElement.getAttribute("PlotName"),plotElement.getAttribute("PlotType"))
-                
                 sizeElement=scr.getFirstElement("Size")
                 scrSize=[int(sizeElement.getAttribute("Width")),int(sizeElement.getAttribute("Height"))]
                 
@@ -256,7 +245,7 @@ class ScreenshotManager:
                 print MODULENAME,"GOT UNKNOWN SCREENSHOT"
             
            
-    def add2DScreenshot(self, _plotName,_plotType,_projection,_projectionPosition):
+    def add2DScreenshot(self, _plotName,_plotType,_projection,_projectionPosition,_camera):   # called from GraphicsFrameWidget
         if len(self.screenshotDataDict)>self.maxNumberOfScreenshots:
             print MODULENAME,"MAX NUMBER OF SCREENSHOTS HAS BEEN REACHED"
         
@@ -264,34 +253,51 @@ class ScreenshotManager:
         scrData.spaceDimension="2D"
         scrData.plotData=(_plotName,_plotType)        
         print MODULENAME," add2DScreenshot(): scrData.plotData=",scrData.plotData   # e.g. =('Cell_Field', 'CellField')
-        scrData.projection=_projection
-        scrData.projectionPosition=int(_projectionPosition)
+#        print MODULENAME," add2DScreenshot(): _camera=",_camera
+#        print MODULENAME,"  add2DScreenshot():  incoming _camera: Range,FP,Pos,Up,Distance", \
+#                _camera.GetClippingRange(),_camera.GetFocalPoint(),_camera.GetPosition(),_camera.GetViewUp(),_camera.GetDistance()
+        scrData.projection = _projection
+        scrData.projectionPosition = int(_projectionPosition)
         
         (scrName,scrCoreName)=self.produceScreenshotName(scrData)
         
         print MODULENAME,"  add2DScreenshot():  THIS IS NEW SCRSHOT NAME",scrName   # e.g. Cell_Field_CellField_2D_XY_150
+        
         if not scrName in self.screenshotDataDict:
-            scrData.screenshotName=scrName
-            scrData.screenshotCoreName=scrCoreName
-            scrData.screenshotGraphicsWidget=self.screenshotGraphicsWidget
+            scrData.screenshotName = scrName
+            scrData.screenshotCoreName = scrCoreName
+            scrData.screenshotGraphicsWidget = self.screenshotGraphicsWidget   # = GraphicsFrameWidget (rf. __init__)
+            
+#            cam = self.screenshotGraphicsWidget.getCamera()
+#            print MODULENAME,"  add2DScreenshot():  cam: Range,FP,Pos,Up,Distance", \
+#                cam.GetClippingRange(),cam.GetFocalPoint(),cam.GetPosition(),cam.GetViewUp(),cam.GetDistance()
+#            cam.SetClippingRange(_cam.GetClippingRange())
+#            cam.SetDistance(_cam.GetDistance())
+#            cam.SetFocalPoint(_cam.GetFocalPoint())
+#            cam.SetPosition(_cam.GetPosition())
+#            cam.SetThickness(_cam.GetThickness())
+#            cam.SetViewUp(_cam.GetViewUp())   # not needed for 2D
+
 #            print MODULENAME," add2DScreenshot(): scrData.screenshotGraphicsWidget=",scrData.screenshotGraphicsWidget
 #            print MODULENAME," add2DScreenshot(): type(scrData.screenshotGraphicsWidget)=",type(scrData.screenshotGraphicsWidget)
             
 #            self.tabViewWidget.lastActiveWindow = self.screenshotGraphicsWidget
-            print MODULENAME," add2DScreenshot(): win id=", self.tabViewWidget.lastActiveWindow.winId().__int__()
+#            print MODULENAME," add2DScreenshot(): win id=", self.tabViewWidget.lastActiveWindow.winId().__int__()
             self.tabViewWidget.updateActiveWindowVisFlags(self.screenshotGraphicsWidget)
+            
+            scrData.extractCameraInfo(_camera)   # so "camera" icon (save images) remembers camera view
             
             # on linux there is a problem with X-server/Qt/QVTK implementation and calling resize right after additional QVTK 
             # is created causes segfault so possible "solution" is to do resize right before taking screenshot. It causes flicker but does not cause segfault
             if sys.platform=='Linux' or sys.platform=='linux' or sys.platform=='linux2': 
                 pass
             else:
-                self.screenshotDataDict[scrData.screenshotName]=scrData
+                self.screenshotDataDict[scrData.screenshotName] = scrData
         else:
             print MODULENAME,"Screenshot ",scrName," already exists"
 
 
-    def add3DScreenshot(self, _plotName,_plotType, _camera):
+    def add3DScreenshot(self, _plotName,_plotType,_camera):   # called from GraphicsFrameWidget
         if len(self.screenshotDataDict)>self.maxNumberOfScreenshots:
             print MODULENAME,"MAX NUMBER OF SCREENSHOTS HAS BEEN REACHED"        
         scrData=ScreenshotData()
@@ -312,13 +318,13 @@ class ScreenshotManager:
                 else:
                     print MODULENAME,"CAMERAS ARE DIFFERENT"
                     
-        print MODULENAME,"okToAddScreenshot=",okToAddScreenshot    
+#        print MODULENAME,"okToAddScreenshot=",okToAddScreenshot    
         if (not scrName in self.screenshotDataDict) and okToAddScreenshot:
             scrData.screenshotName=scrName
             scrData.screenshotCoreName=scrCoreName
             scrData.screenshotGraphicsWidget=self.screenshotGraphicsWidget 
 #            self.tabViewWidget.lastActiveWindow = self.screenshotGraphicsWidget
-            print MODULENAME," add3DScreenshot(): win id=", self.tabViewWidget.lastActiveWindow.winId().__int__()
+#            print MODULENAME," add3DScreenshot(): win id=", self.tabViewWidget.lastActiveWindow.winId().__int__()
             self.tabViewWidget.updateActiveWindowVisFlags(self.screenshotGraphicsWidget)
             
             scrData.extractCameraInfo(_camera)
@@ -331,7 +337,7 @@ class ScreenshotManager:
                 self.screenshotDataDict[scrData.screenshotName] = scrData
                 self.screenshotCounter3D += 1
         else:
-            print MODULENAME,"Screenshot ",scrCoreName," with current camera settings already exists. You need to rotate camera i.e. rotate picture using moouse to take additional screenshot"
+            print MODULENAME,"Screenshot ",scrCoreName," with current camera settings already exists. You need to rotate camera i.e. rotate picture using mouse to take additional screenshot"
             
             
     def outputScreenshots(self,_generalScreenshotDirectoryName,_mcs):  # called from SimpleTabView:handleCompletedStep{Regular,CML*}
@@ -342,14 +348,25 @@ class ScreenshotManager:
             self.screenshotGraphicsWidget.setFieldTypesComboBox(self.tabViewWidget.fieldTypes)
         
         # self.screenshotGraphicsWidget.setShown(True)
-        self.screenshotGraphicsWidget.qvtkWidget.resize(400,400)   # rwh, why??
+        winsize = self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().GetSize()
+        self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().SetSize(winsize[0],winsize[1])
+#        print MODULENAME,'outputScreenshots(): type(winsize), [0],[1]=',type(winsize),winsize[0],winsize[1]
+#        self.screenshotGraphicsWidget.qvtkWidget.resize(400,400)   # rwh, why?? (if I don't, it defaults to (100,30)
+        self.screenshotGraphicsWidget.qvtkWidget.resize(winsize[0],winsize[1])   # rwh, why?? (if I don't, it defaults to (100,30)
+#        self.screenshotGraphicsWidget.qvtkWidget.resize(611,411)   # rwh, why?? (if I don't, it defaults to (100,30)
+#        print MODULENAME,'outputScreenshots(): dir(self.screenshotGraphicsWidget.qvtkWidget)=',dir(self.screenshotGraphicsWidget.qvtkWidget)
+#        print MODULENAME,'outputScreenshots(): dir(self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow())=',dir(self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow())
+
+#        print MODULENAME,'outputScreenshots(): self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().GetSize()=',self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().GetSize()
 #        self.screenshotGraphicsWidget.qvtkWidget.resize(343,300)   # rwh, why??
 
 #        print MODULENAME,'outputScreenshots(): win size=',  self.tabViewWidget.mainGraphicsWindow.size() # PyQt4.QtCore.QSize(367, 378)
         
+#        print MODULENAME,'outputScreenshots(): self.screenshotDataDict=',self.screenshotDataDict
         for scrName in self.screenshotDataDict.keys():
-            print MODULENAME,'outputScreenshots(): scrName =',scrName  # e.g. FGF_ConField_2D_XY_0  (i.e. subdir name)
+#            print MODULENAME,'----------->>>>> outputScreenshots(): scrName =',scrName  # e.g. FGF_ConField_2D_XY_0  (i.e. subdir name)
             scrData = self.screenshotDataDict[scrName]
+#            print MODULENAME,'outputScreenshots(): scrData.screenshotGraphicsWidget.size().width(), height() =',scrData.screenshotGraphicsWidget.size().width(),scrData.screenshotGraphicsWidget.size().height()  # 100,30 ?!
             scrFullDirName = os.path.join(_generalScreenshotDirectoryName,scrData.screenshotName)
             
             if not os.path.isdir(scrFullDirName):# will create screenshot directory if directory does not exist
@@ -361,13 +378,14 @@ class ScreenshotManager:
             # rwh: why is this necessary??
             if scrData.spaceDimension=="2D":  # cf. this block with how it's done in MVCDrawView2D.py:takeSimShot()
                 self.screenshotGraphicsWidget.setDrawingStyle("2D")
-                self.screenshotGraphicsWidget.draw2D.initSimArea(self.basicSimulationData)
+                self.screenshotGraphicsWidget.draw2D.initSimArea(self.basicSimulationData)   # MVCDrawViewBase
                 self.screenshotGraphicsWidget.draw2D.setPlane(scrData.projection,scrData.projectionPosition)
                 scrData.prepareCamera()
                 
             elif scrData.spaceDimension=="3D":
                 self.screenshotGraphicsWidget.setDrawingStyle("3D")
                 self.screenshotGraphicsWidget.draw3D.initSimArea(self.basicSimulationData)
+#                print MODULENAME,'outputScreenshots(): calling scrData.prepareCamera() '
                 scrData.prepareCamera()
                 
             else:
