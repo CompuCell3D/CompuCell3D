@@ -50,7 +50,7 @@ def debugWhoIsTheParentFunction():
 
 
 
-import sys    # sys is necessary to inquire about "sys.platform"
+import sys    # sys is necessary to inquire about "sys.platform" and "sys.version_info"
 
 import math
 
@@ -3066,9 +3066,11 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         CDConstants.printOut( "      handleAreaOrEdgeModeHasChanged() str(type(pMode))==["+str(type(pMode))+"]" , CDConstants.DebugTODO )
         CDConstants.printOut( "             str(type(pMode).__name__)==["+str(type(pMode).__name__)+"]" , CDConstants.DebugTODO )
         CDConstants.printOut( "             str(pMode)==["+str(pMode)+"]" , CDConstants.DebugTODO )
-        # bin() does not exist in Python 2.5, so we comment it out for now:
-        # CDConstants.printOut( "             str(bin(int(pMode)))==["+str(bin(int(pMode)))+"]" , CDConstants.DebugTODO )
-        CDConstants.printOut( "             str(int(pMode))==["+str(int(pMode))+"]" , CDConstants.DebugTODO )
+        # bin() does not exist in Python 2.5:
+        if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
+            CDConstants.printOut( "             str(bin(int(pMode)))==["+str(bin(int(pMode)))+"]" , CDConstants.DebugTODO )
+        else:
+            CDConstants.printOut( "             str(int(pMode))==["+str(int(pMode))+"]" , CDConstants.DebugTODO )
 
         if ( isinstance(self.scene.theImageSequence, CDImageSequence) == True ):
             # go and tell the image sequence in what mode it is now:
@@ -3085,9 +3087,11 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 # 
 # 
 
-            # bin() does not exist in Python 2.5, so we comment it out for now:
-            # CDConstants.printOut( "      handleAreaOrEdgeModeHasChanged() called self.scene.theImageSequence.assignAllProcessingModesForImageSequenceToPIFF( "+str(bin(pMode))+") complete." , CDConstants.DebugExcessive )
-            CDConstants.printOut( "      handleAreaOrEdgeModeHasChanged() called self.scene.theImageSequence.assignAllProcessingModesForImageSequenceToPIFF( "+str(pMode)+") complete." , CDConstants.DebugExcessive )
+            # bin() does not exist in Python 2.5:
+            if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
+                CDConstants.printOut( "      handleAreaOrEdgeModeHasChanged() called self.scene.theImageSequence.assignAllProcessingModesForImageSequenceToPIFF( "+str(bin(pMode))+") complete." , CDConstants.DebugExcessive )
+            else:
+                CDConstants.printOut( "      handleAreaOrEdgeModeHasChanged() called self.scene.theImageSequence.assignAllProcessingModesForImageSequenceToPIFF( "+str(pMode)+") complete." , CDConstants.DebugExcessive )
 
 
 
@@ -3434,8 +3438,9 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
        
         lAboutString = "CellDraw 1.5.1<br><br>An editing and conversion software tool for PIFF files, as used in CompuCell3D simulations.<br><br>CellDraw can be useful for creating PIFF files containing a high number of cells and cell types, either by drawing a scene containing cell regions in a paint program, and then discretize the drawing into a PIFF file, or by drawing the cell scenario directly in CellDraw.<br><br>More information at:<br><a href=\"http://www.compucell3d.org/\">http://www.compucell3d.org/</a>"
 
-        lVersionString = "<br><br><small>Support library information:<br>Qt runtime version: %s<br>Qt compile-time version: %s<br>PyQt version: %s (%s = 0x%06x)</small>" % \
-            (QtCore.QT_VERSION_STR, QtCore.qVersion(), PyQt4.QtCore.PYQT_VERSION_STR, PyQt4.QtCore.PYQT_VERSION, PyQt4.QtCore.PYQT_VERSION)
+        lVersionString = "<br><br><small>Support library information:<br>Python runtime version: %s<br>Qt runtime version: %s<br>Qt compile-time version: %s<br>PyQt version: %s (%s = 0x%06x)</small>" % \
+            ( str(sys.version_info[0])+"."+str(sys.version_info[1])+"."+str(sys.version_info[2])+" | "+str(sys.version_info[3])+" | "+str(sys.version_info[4]) , \
+            QtCore.QT_VERSION_STR, QtCore.qVersion(), PyQt4.QtCore.PYQT_VERSION_STR, PyQt4.QtCore.PYQT_VERSION, PyQt4.QtCore.PYQT_VERSION)
 
         QtGui.QMessageBox.about(self, "About CellDraw", lAboutString+lVersionString)
 

@@ -44,14 +44,8 @@ import PyQt4
 # <--  <--  <-- mswat code added to run in MS Windows <-- <--  <--
 # <--  <--  <-- mswat code added to run in MS Windows <-- <--  <--
 
-# 2012 - Mitja: external class based on QTreeWidget for editing types:
-# from cdTypesTree import CDTypesTree
-
 # 2011 - Mitja: external QWidget for selecting the PIFF Generation mode:
 from cdControlPIFFGenerationMode import CDControlPIFFGenerationMode
-
-# 2011 - Mitja: external QWidget to input x,y,z block cell dimensions:
-from cdTableOfBlockCellSizes import CDTableOfBlockCellSizes
 
 # 2011 - Mitja: external class defining all global constants for CellDraw:
 from cdConstants import CDConstants
@@ -61,470 +55,6 @@ def PWN_debugWhoIsTheRunningFunction():
     return inspect.stack()[1][3]
 def PWN_debugWhoIsTheParentFunction():
     return inspect.stack()[2][3]
-
-
-
-# ======================================================================
-# a helper class for the small table-within table for each region
-# ======================================================================
-# note: this class emits a signal:
-#
-#         self.emit(QtCore.SIGNAL("oneRegionTableChangedSignal()"))
-#
-# ======================================================================
-class PIFOneRegionTable(QtGui.QWidget):
-
-    def PWN___init__(self, pParent):
-        # it is compulsory to call the parent's __init__ class right away:
-        super(PIFOneRegionTable, self).__init__(pParent)
-
-        CDConstants.printOut( "    - DEBUG ----- PIFOneRegionTable: __init__(): starting", CDConstants.DebugExcessive )
-
-        # don't show this widget until it's completely ready:
-        self.hide()
-
-        # init - windowing GUI stuff:
-        #   (for explanations see the __miInitEditorGUIGeneralBehavior() function below, in the CDTypesEditor class)
-        # this title probably will not show up anywhere,
-        #   since the widget will be used within another widget's layout:
-        self.setWindowTitle("PIFF Cell Types in One Region")
-
-        #
-        # QWidget setup - more windowing GUI setup:
-        #
-
-        miDialogsWindowFlags = QtCore.Qt.WindowFlags()
-        # this panel is a so-called "Tool" (by PyQt and Qt definitions)
-        #    we'd use the Tool type of window, except for this oh-so typical Qt bug:
-        #    http://bugreports.qt.nokia.com/browse/QTBUG-6418
-        #    i.e. it defines a system-wide panel which shows on top of *all* applications,
-        #    even when this application is in the background.
-        # miDialogsWindowFlags = QtCore.Qt.Tool
-        #    so we use a plain QtCore.Qt.Window type instead:
-        miDialogsWindowFlags = QtCore.Qt.Window
-        #    add a peculiar WindowFlags combination to have no close/minimize/maxize buttons:
-        miDialogsWindowFlags |= QtCore.Qt.WindowTitleHint
-        miDialogsWindowFlags |= QtCore.Qt.CustomizeWindowHint
-#        miDialogsWindowFlags |= QtCore.Qt.WindowMinimizeButtonHint
-#        miDialogsWindowFlags |= QtCore.Qt.WindowStaysOnTopHint
-        self.setWindowFlags(miDialogsWindowFlags)
-
-        # 1. The widget is not modal and does not block input to other widgets.
-        # 2. If widget is inactive, the click won't be seen by the widget.
-        #    (it does NOT work as Qt docs says it would on Mac OS X: click-throughs don't get disabled)
-        # 3. The widget can choose between alternative sizes for widgets to avoid clipping.
-        # 4. The native Carbon size grip should be opaque instead of transparent.
-        self.setAttribute(QtCore.Qt.NonModal  | \
-                          QtCore.Qt.WA_MacNoClickThrough | \
-                          QtCore.Qt.WA_MacVariableSize | \
-                          QtCore.Qt.WA_MacOpaqueSizeGrip )
-
-        # do not delete the window widget when the window is closed:
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, False)
-
-
-
-        # init - create central table, set it up and show it inside the panel:
-        #   (for explanations see the NOTUSED__miInitCentralTableWidget() function below,
-        #    in the CDTypesEditor class)
-        self.oneRegionTable = QtGui.QTableWidget(self)
-        self.oneRegionTable.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.oneRegionTable.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
-        self.oneRegionTable.setEditTriggers(QtGui.QAbstractItemView.AllEditTriggers)
-        # self.oneRegionTable.verticalHeader().hide()
-        #
-        self.oneRegionTable.setColumnCount(5)
-        self.oneRegionTable.setRowCount(1)
-        self.oneRegionTable.setHorizontalHeaderLabels( (" ", "Cell\nType", "Amount", "Fraction", "Volume") )
-        self.oneRegionTable.horizontalHeader().setResizeMode(0, QtGui.QHeaderView.Interactive)
-        self.oneRegionTable.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Interactive)
-        self.oneRegionTable.horizontalHeader().setResizeMode(2, QtGui.QHeaderView.Interactive)
-        self.oneRegionTable.horizontalHeader().setResizeMode(3, QtGui.QHeaderView.Interactive)
-        self.oneRegionTable.horizontalHeader().setResizeMode(4, QtGui.QHeaderView.Interactive)
-        self.oneRegionTable.horizontalHeader().setStretchLastSection(True)
-        self.oneRegionTable.verticalHeader().setResizeMode(0, QtGui.QHeaderView.Interactive)
-        #
-        self.oneRegionTable.setLineWidth(1)
-        self.oneRegionTable.setMidLineWidth(1)
-        self.oneRegionTable.setFrameShape(QtGui.QFrame.Panel)
-        self.oneRegionTable.setFrameShadow(QtGui.QFrame.Plain)
-
-        # init - create region dict, populate it with empty values:
-        self.oneRegionDict = dict()
-
-        self.oneRegionDict = dict( { 1: [QtGui.QColor(64,64,64), "Condensing", 3, 100], \
-                                     2: [QtGui.QColor(64,64,64), "NonCondensing", 4, 80]  } )
-
-        # init - create pattern dict, it will be used to distinguish between different types in the region:
-        self.patternDict = dict()
-        self.patternDict = dict({ 0: QtCore.Qt.SolidPattern, \
-                                  1: QtCore.Qt.Dense2Pattern, \
-                                  2: QtCore.Qt.Dense4Pattern, \
-                                  3: QtCore.Qt.Dense6Pattern, \
-                                  4: QtCore.Qt.HorPattern, \
-                                  5: QtCore.Qt.VerPattern, \
-                                  6: QtCore.Qt.CrossPattern, \
-                                  7: QtCore.Qt.BDiagPattern, \
-                                  8: QtCore.Qt.FDiagPattern, \
-                                  9: QtCore.Qt.DiagCrossPattern    } )
-        CDConstants.printOut( "    - DEBUG ----- PIFOneRegionTable: __init__(): patternDict == " + str(self.patternDict), CDConstants.DebugAll )
-
-        self.populateOneRegionSubTable()
-
-        # a separate "QDialogButtonBox" widget, to have "add" and "remove" buttons
-        #   that allow the user to add/remove lines from the oneRegionTable:
-        addTableRowButton = QtGui.QPushButton("+")
-        removeTableRowButton = QtGui.QPushButton("-")
-        self.buttonBox = QtGui.QDialogButtonBox()
-        self.buttonBox.addButton(addTableRowButton, QtGui.QDialogButtonBox.AcceptRole)
-        self.buttonBox.addButton(removeTableRowButton, QtGui.QDialogButtonBox.RejectRole)
-        # connects signals from buttons to "slot" methods:
-        self.buttonBox.accepted.connect(self.handleAddTableRow)
-        self.buttonBox.rejected.connect(self.handleRemoveTableRow)
-
-        # place the sub-widget in a layout, assign the layout to the PIFOneRegionTable:
-        vbox = QtGui.QVBoxLayout()
-        vbox.setContentsMargins(0,0,0,0)
-        vbox.setSpacing(4)
-        vbox.addWidget(self.oneRegionTable)
-        vbox.addWidget(self.buttonBox)
-        self.setLayout(vbox)
-        self.layout().setAlignment(QtCore.Qt.AlignTop)
-
-        # connect the "cellChanged" pyqtBoundSignal to a "slot" method
-        #   so that it will respond to any change in table item contents:
-        self.oneRegionTable.cellChanged[int, int].connect(self.handleTableCellChanged)
-
-        self.show()
-
-        CDConstants.printOut( "    - DEBUG ----- PIFOneRegionTable: __init__(): done", CDConstants.DebugExcessive )
-
-
-    # ------------------------------------------------------------------
-    # assign a dict parameter value to oneRegionDict:
-    # ------------------------------------------------------------------
-    def PWN_setOneRegionDict(self, pDict):
-        self.oneRegionDict = pDict
-        CDConstants.printOut( "___ - DEBUG ----- PIFOneRegionTable: setOneRegionDict() to "+str(self.oneRegionDict)+" done.", CDConstants.DebugExcessive )
-
-
-    # ------------------------------------------------------------------
-    # rebuild the oneRegionDict global from its table contents:
-    # ------------------------------------------------------------------
-    def PWN_updateOneRegionDict(self):
-        # print "___ - DEBUG DEBUG DEBUG ----- PIFOneRegionTable: self.updateOneRegionDict() from ", self.oneRegionDict
-
-        # set how many rows are present in the table:
-        lTypesCount = self.oneRegionTable.rowCount()
-
-        # get the oneRegionDict keys in order to access elements:
-        lKeys = self.oneRegionDict.keys()
-       
-        # add additional (non-editable) table column with percentages calculated at each table content update:
-        lTotalAmounts = 0.0
-
-        # parse each table rown separately to build a oneRegionDict entry:
-        for i in xrange(lTypesCount):
-
-            #   the key is NOT retrieved from the first oneRegionTable column,
-            #   (since we don't show oneRegionDict keys in oneRegionTable anymore) :
-            # lKey = self.oneRegionTable.item(i, 0)
-            lKey = lKeys[i]
-
-            # the color remains the same (table color is not editable (yet?) )
-            lColor = self.oneRegionDict[lKey][0]
-            # the region name is retrieved from the third oneRegionTable column:
-            lTypeName = str ( self.oneRegionTable.item(i, 1).text() )
-            # the amount (or "percentage" of total) for this cell type is retrieved from the third oneRegionTable column:
-            lAmount = float ( self.oneRegionTable.item(i, 2).text() )
-            # keep track of the total of all individual cell type amounts:
-            lTotalAmounts = lTotalAmounts + lAmount
-            # 2011 - add a Volume field for each cell type:
-            lVolume = float ( self.oneRegionTable.item(i, 4).text() )
-
-            # rebuild the i-th dict entry:
-            self.oneRegionDict[lKey] = [ lColor, lTypeName, lAmount, lVolume ]
-
-
-        # now fill the additional (non-editable) table column with percentages:
-        # (prevent oneRegionTable from emitting any "cellChanged" signals when
-        #   updating its content programmatically:)
-        self.oneRegionTable.blockSignals(True)
-        for i in xrange(lTypesCount):
-            lKey = lKeys[i]
-            # create a fourth QTableWidgetItem and place a value (i.e. cells amount in region) from oneRegionDict in it:
-            lItem = QtGui.QTableWidgetItem( \
-                       QtCore.QString("%1").arg( self.oneRegionDict[lKey][2] / lTotalAmounts ) )
-            # the region color table item shouldn't be selectable/editable:
-            lItem.setFlags(lItem.flags() & ~(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable))
-            # this goes to column 2 in the table:
-            self.oneRegionTable.setItem(i, 3, lItem)
-
-        # (allow oneRegionTable to emit "cellChanged" signals now that we're done
-        #   updating its content programmatically:)
-        self.oneRegionTable.blockSignals(False)
-
-
-        # print "___ - DEBUG ----- PIFOneRegionTable: self.updateOneRegionDict() to ", self.oneRegionDict, " done."
-
-    # ------------------------------------------------------------------
-    # retrieve the up-to-date oneRegionDict for external use:
-    # ------------------------------------------------------------------
-    def PWN_getOneRegionDict(self):
-        # first rebuild the oneRegionDict global from its table:
-        self.updateOneRegionDict()
-        # print "___ - DEBUG ----- PIFOneRegionTable: getOneRegionDict is ", self.oneRegionDict, " done."
-        return self.oneRegionDict
-
-    # ------------------------------------------------------------------
-    # populate the one-region subtable with data from oneRegionDict
-    # ------------------------------------------------------------------
-    def PWN_populateOneRegionSubTable(self):
-#        print "SIZE SIZE SIZE self.oneRegionTable.height() =", self.oneRegionTable.height()
-#        print "SIZE SIZE SIZE self.oneRegionTable.parentWidget().height() =", self.oneRegionTable.parentWidget().height()
-
-#        print "SIZE SIZE SIZE self.oneRegionTable.width() =", self.oneRegionTable.width()
-#        print "SIZE SIZE SIZE self.oneRegionTable.parentWidget().width() =", self.oneRegionTable.parentWidget().width()
-#        print "___ - DEBUG ----- PIFOneRegionTable: populateOneRegionSubTable() = ", \
-#              self.oneRegionTable.rowCount()
-
-        # prevent oneRegionTable from emitting any "cellChanged" signals when
-        #   updating its content programmatically:
-        self.oneRegionTable.blockSignals(True)
-
-        # set how many rows are needed in the table:
-        lTypesCount = len(self.oneRegionDict)
-        self.oneRegionTable.setRowCount(lTypesCount)
-
-        # set how many rows are present in the table:
-#         print "___ - DEBUG ----- PIFOneRegionTable: populateOneRegionSubTable() = ", \
-#               self.oneRegionTable.rowCount()
-
-        # get the oneRegionDict keys in order to resize the table:
-        lKeys = self.oneRegionDict.keys()
-#         print "___ - DEBUG ----- PIFOneRegionTable: lKeys =", lKeys
-
-        # add additional (non-editable) table column with percentages calculated at each table content update:
-        lTotalAmounts = 0.0
-
-        for i in xrange(lTypesCount):
-            lKey = lKeys[i]
-
-            #   before, we created a QTableWidgetItem **item**, set its string value to the dict key:
-            # lItem = QtGui.QTableWidgetItem( QtCore.QString("%1").arg(lKey) )
-            #   the table item containing the dict key ought not to be selected/edited:
-            # lItem.setFlags(lItem.flags() & ~(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable))
-            #   this string value *was* shown in column 0 of the table widget:
-            # self.oneRegionTable.setItem(i, 0, lItem)
-
-            # create a first QTableWidgetItem and place a swatch in it:
-            lItem = QtGui.QTableWidgetItem()
-            # (setting the background color like this would not be a good idea,
-            #   for example because it can be confused with selection highlight colors:
-            #   lItem.setBackground(QtGui.QBrush(self.oneRegionDict[lKey][0]))
-            # this way is much better, it generates a rectangle in the same color,
-            #   and we add patterns to the color so that it can distinguish types within regions:
-            #   print "lKey,self.oneRegionDict[lKey] = ", lKey,self.oneRegionDict[lKey]
-            lItem.setIcon(  self.createColorIcon( self.oneRegionDict[lKey][0] )  )
-            # 2011 Mitja - remove the pattern for each cell type, so that colors can show better:
-            # lItem.setIcon(  self.createColorIcon( self.oneRegionDict[lKey][0], self.patternDict[int(lKey) % 10] )  )
-            # the region color table item shouldn't be selectable/editable:
-            lItem.setFlags(lItem.flags() & ~(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable))
-            # this goes to column 0 in the table:
-            self.oneRegionTable.setItem(i, 0, lItem)
-
-            # create a second QTableWidgetItem and place text (i.e. cell type name) from oneRegionDict in it:
-            lItem = QtGui.QTableWidgetItem( \
-                       QtCore.QString("%1").arg(self.oneRegionDict[lKey][1]) )
-            # this goes to column 1 in the table:
-            self.oneRegionTable.setItem(i, 1, lItem)
-
-            # create a third QTableWidgetItem and place a value (i.e. cells amount in region) from oneRegionDict in it:
-            lItem = QtGui.QTableWidgetItem( \
-                       QtCore.QString("%1").arg(self.oneRegionDict[lKey][2]) )
-            # this goes to column 2 in the table:
-            self.oneRegionTable.setItem(i, 2, lItem)
-            lTotalAmounts = lTotalAmounts + self.oneRegionDict[lKey][2]
-
-            # create a fifth QTableWidgetItem and place a value (i.e. volume for this cell type) from oneRegionDict in it:
-            lItem = QtGui.QTableWidgetItem( \
-                       QtCore.QString("%1").arg(self.oneRegionDict[lKey][3]) )
-            # this goes to column 4 in the table,
-            #   because column 3 is just the automatically-computed percentage of cells per type:
-            self.oneRegionTable.setItem(i, 4, lItem)
-
-
-
-        for i in xrange(lTypesCount):
-            lKey = lKeys[i]
-            # create a fourth QTableWidgetItem and place a value (i.e. cells amount in region) from oneRegionDict in it:
-            lItem = QtGui.QTableWidgetItem( \
-                       QtCore.QString("%1").arg( self.oneRegionDict[lKey][2] / lTotalAmounts ) )
-            # the region color table item shouldn't be selectable/editable:
-            lItem.setFlags(lItem.flags() & ~(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable))
-            # this goes to column 3 in the table:
-            self.oneRegionTable.setItem(i, 3, lItem)
-#
-#
-#         # distribute the available space according to the space requirement of each column or row:
-#         # TODO TODO: all this widget layout semi/auto/resizing still @#$@*Y@ does not work...
-#         w = 0
-#         for i in xrange(self.oneRegionTable.columnCount()):
-#             # print "column", i, "has width", self.oneRegionTable.columnWidth(i)
-#             w = w + self.oneRegionTable.columnWidth(i)
-#         w = w + self.oneRegionTable.verticalHeader().width()
-#         w = w + self.oneRegionTable.verticalScrollBar().width()
-#         # print "column and everything is", w
-#
-#         h = 0
-#         for i in xrange(self.oneRegionTable.rowCount()):
-#             # print "row", i, "has height", self.oneRegionTable.rowHeight(i)
-#             h = h + self.oneRegionTable.rowHeight(i)
-#         h = h + self.oneRegionTable.horizontalHeader().height()
-#         h = h + self.oneRegionTable.horizontalScrollBar().height()
-#         # print "column and everything is", h
-# #        self.oneRegionTable.resize(w + 4, h + 4)
-# #        self.oneRegionTable.parentWidget().resize(w + 4, h + 4)
-#
-# #        self.oneRegionTable.resizeRowsToContents()
-        self.oneRegionTable.resizeColumnsToContents()
-
-
-#        print "SIZE SIZE SIZE self.oneRegionTable.height() =", self.oneRegionTable.height()
-#        print "SIZE SIZE SIZE self.oneRegionTable.parentWidget().height() =", self.oneRegionTable.parentWidget().height()
-
-#        print "SIZE SIZE SIZE self.oneRegionTable.width() =", self.oneRegionTable.width()
-#        print "SIZE SIZE SIZE self.oneRegionTable.parentWidget().width() =", self.oneRegionTable.parentWidget().width()
-
-        # start with no table cell selected, and the user can then click to select:
-        self.oneRegionTable.setCurrentCell(-1,-1)
-        # self.oneRegionTable.parentWidget().resize(self.oneRegionTable.width(),self.oneRegionTable.height())
-
-        # allow oneRegionTable to emit "cellChanged" signals now that we're done
-        #   updating its content programmatically:
-        self.oneRegionTable.blockSignals(False)
-
-        # print "___ - DEBUG ----- PIFOneRegionTable: populateOneRegionSubTable() : done"
-
-    # ------------------------------------------------------------------
-    # remove the last row from the table, if there is more than one row:
-    # ------------------------------------------------------------------
-    def PWN_handleRemoveTableRow(self):
-        # get the oneRegionTable keys in order to resize the table:
-        lKeys = self.oneRegionDict.keys()
-        lLength = len(self.oneRegionDict)
-        # don't remove the last row in the dict:
-        if (lLength > 1):
-            lLastKey = lKeys[lLength-1]
-            # remove the last entry in the oneRegionDict:
-            del self.oneRegionDict[lLastKey]
-            # update the table:
-            self.populateOneRegionSubTable()
-
-        # propagate the change upstream by emitting a signal, for example to parent objects:
-        self.emit(QtCore.SIGNAL("oneRegionTableChangedSignal()"))
-
-        # print "___ - DEBUG ----- PIFOneRegionTable: handleRemoveTableRow() : done"
-
-    # ------------------------------------------------------------------
-    # add a row to the table:
-    # ------------------------------------------------------------------
-    def PWN_handleAddTableRow(self):
-        self.updateOneRegionDict()
-        # print "___ - DEBUG ----- PIFOneRegionTable: handleAddTableRow FROM ", self.oneRegionDict
-
-        # get the oneRegionTable keys in order to resize the table:
-        lKeys = self.oneRegionDict.keys()
-        lLength = len(self.oneRegionDict)
-        # generate a new key for the oneRegionDict (just a sequential number)
-        lNewKey = lKeys[lLength-1] + 1
-
-        # generate a oneRegionDict entry:
-        lThisRegionQColor = QtGui.QColor( self.oneRegionDict[lKeys[lKeys[lLength-1]]][0] )
-        lNewColorR = lThisRegionQColor.red()
-        lNewColorG = lThisRegionQColor.green()
-        lNewColorB = lThisRegionQColor.blue()
-
-#         lNewColorB = lNewColorB + 64
-#         lNewColorR = lNewColorR + 64
-
-        if (lNewColorR < 128) :
-            lNewColorR = lNewColorR + int(random.random()*64.0)
-        else:
-            lNewColorR = lNewColorR - int(random.random()*64.0)
-
-        if (lNewColorG < 128) :
-            lNewColorG = lNewColorG + int(random.random()*64.0)
-        else:
-            lNewColorG = lNewColorG - int(random.random()*64.0)
-
-        if (lNewColorB < 128) :
-            lNewColorB = lNewColorB + int(random.random()*64.0)
-        else:
-            lNewColorB = lNewColorB - int(random.random()*64.0)
-
-        # CONTINUA 
-        lNewColor = QtGui.QColor( lNewColorR, \
-                                  lNewColorG, \
-                                  lNewColorB    )
-
-        CDConstants.printOut( "DEBUG ----- PIFOneRegionTable: handleAddTableRow(): lNewColor = " + str(lNewColor), CDConstants.DebugAll )
-        CDConstants.printOut( "DEBUG ----- PIFOneRegionTable: handleAddTableRow(): lNewColorR = " + str(lNewColorR), CDConstants.DebugAll )
-        CDConstants.printOut( "DEBUG ----- PIFOneRegionTable: handleAddTableRow(): lNewColorG = " + str(lNewColorG), CDConstants.DebugAll )
-        CDConstants.printOut( "DEBUG ----- PIFOneRegionTable: handleAddTableRow(): lNewColorB = " + str(lNewColorB), CDConstants.DebugAll )
-
-        self.oneRegionDict[lNewKey] = [ lNewColor, "newType"+str(lNewKey+1),  0.0, 100 ]
-        self.updateOneRegionDict()
-        # print "___ - DEBUG ----- PIFOneRegionTable: handleAddTableRow TO ", self.oneRegionDict
-        # update the table:
-        self.populateOneRegionSubTable()
-
-        # propagate the change upstream by emitting a signal, for example to parent objects:
-        self.emit(QtCore.SIGNAL("oneRegionTableChangedSignal()"))
-
-        # print "___ - DEBUG ----- PIFOneRegionTable: handleAddTableRow() done."
-
-    # ------------------------------------------------------------------
-    # generate an icon containing a rectangle in a specified color
-    # ------------------------------------------------------------------
-    def PWN_createColorIcon(self, pColor, pPattern = None):
-        pixmap = QtGui.QPixmap(32, 32)
-        pixmap.fill(QtCore.Qt.transparent)
-        painter = QtGui.QPainter(pixmap)
-        painter.setPen(QtCore.Qt.NoPen)
-        lBrush = QtGui.QBrush(pColor)
-        if pPattern != None:
-            lBrush.setStyle(pPattern)
-        painter.fillRect(QtCore.QRect(0, 0, 32, 32), lBrush)
-        painter.end()
-        return QtGui.QIcon(pixmap)
-
-
-
-    # ------------------------------------------------------------------
-    # this is a slot method to handle "content change" events (AKA signals)
-    #   from table items:
-    # ------------------------------------------------------------------
-    def PWN_handleTableCellChanged(self,pRow,pColumn):
-
-        # from <http://lateral.netmanagers.com.ar/stories/BBS48.html> :
-        #   "We could define a method in the Main class, and connect it to the
-        #    itemChanged signal, but there is no need because we can use AutoConnect."
-        #   "If you add to a class "Main" a method with a specific name,
-        #    it will be connected to that signal. The name is on_objectname_signalname."
-
-        # print "___ - DEBUG ----- PIFOneRegionTable: handleTableCellChanged() pRow,pColumn =" , pRow,pColumn
-        # update the dict:
-        self.updateOneRegionDict()
-
-        # propagate the signal upstream, for example to parent objects:
-        self.emit(QtCore.SIGNAL("oneRegionTableChangedSignal()"))
-
-        # print "___ - DEBUG ----- PIFOneRegionTable: handleTableCellChanged()  done."
-
-# end of class PIFOneRegionTable(QtGui.QWidget)
-# ======================================================================
-
 
 
 
@@ -606,7 +136,7 @@ class CDOneCellTypeItem(QtGui.QTreeWidgetItem):
     # ------------------------------------------------------------------
     # retrieve all up-to-date cell type data from CDOneCellTypeItem for external use:
     # ------------------------------------------------------------------
-    def getOneCellTypeList(self):
+    def getOneCellTypeData(self):
         # first rebuild self.__oneCellTypeList list from the CDOneCellTypeItem:
         self.__updateOneCellTypeDataFromEditor()
         return self.__oneCellTypeList
@@ -824,7 +354,18 @@ class CDOneRegionTypeItem(QtGui.QTreeWidgetItem):
     # ------------------------------------------------------------------
     def getOneRegionTypeData(self):
         # first rebuild self.__oneCellTypeList list from the CDOneCellTypeItem:
+
+
+##### TODOTODO : do we need to call self.__updateOneRegionTypeDataFromEditor() every time getOneRegionTypeData() is called???
+        CDConstants.printOut( "   >>>> DEBUG ----- CDOneRegionTypeItem: getOneRegionTypeData() BEFORE calling __updateOneRegionTypeDataFromEditor()  :\n   >>>> self.__regionColor="+str(self.__regionColor)+",\n   >>>> self.__regionName="+str(self.__regionName)+",\n   >>>> self.__cellXYZSizeList="+str(self.__cellXYZSizeList)+",\n   >>>> self.__regionUse="+str(self.__regionUse)+",\n   >>>> self.__oneRegionCellTypesDict="+str(self.__oneRegionCellTypesDict)+",\n   >>>> self.__regionTypeKey="+str(self.__regionTypeKey), CDConstants.DebugExcessive )
+
         self.__updateOneRegionTypeDataFromEditor()
+
+        CDConstants.printOut( "   >>>> DEBUG ----- CDOneRegionTypeItem: getOneRegionTypeData() AFTER calling __updateOneRegionTypeDataFromEditor()  :\n   >>>> self.__regionColor="+str(self.__regionColor)+",\n   >>>> self.__regionName="+str(self.__regionName)+",\n   >>>> self.__cellXYZSizeList="+str(self.__cellXYZSizeList)+",\n   >>>> self.__regionUse="+str(self.__regionUse)+",\n   >>>> self.__oneRegionCellTypesDict="+str(self.__oneRegionCellTypesDict)+",\n   >>>> self.__regionTypeKey="+str(self.__regionTypeKey), CDConstants.DebugExcessive )
+##### TODOTODO : do we need to call self.__updateOneRegionTypeDataFromEditor() every time getOneRegionTypeData() is called???
+
+
+
         return (  self.__regionColor, \
             self.__regionName, \
             self.__cellXYZSizeList, \
@@ -898,7 +439,7 @@ class CDOneRegionTypeItem(QtGui.QTreeWidgetItem):
         lTotalAmounts = 0.0
         for i in xrange(lTypesCount):
             lOneCellItem = self.regionCellTypesItem.child(i)
-            lOneCellTypeList = lOneCellItem.getOneCellTypeList()
+            lOneCellTypeList = lOneCellItem.getOneCellTypeData()
             lTotalAmounts = lTotalAmounts + lOneCellTypeList[2]
 
         for i in xrange(lTypesCount):
@@ -917,7 +458,6 @@ class CDOneRegionTypeItem(QtGui.QTreeWidgetItem):
         if (self.regionCellTypesItem.childCount() != \
             self.__getOneRegionCellsTypeDictElementCount() ):
             CDConstants.printOut("CDOneRegionTypeItem - __updateOneRegionTypeDataFromEditor(), self.regionCellTypesItem.childCount() == " +str(self.regionCellTypesItem.childCount())+" is not the same as self.__getOneRegionCellsTypeDictElementCount() == "+str(self.__getOneRegionCellsTypeDictElementCount()), CDConstants.DebugImportant)            
-            return
 
         # get the self.__oneRegionCellTypesDict keys:
         lCellsTypeKeys = self.__getOneRegionCellsTypeDictKeys()
@@ -926,7 +466,7 @@ class CDOneRegionTypeItem(QtGui.QTreeWidgetItem):
             # get one CDOneCellTypeItem at a time:
             lOneCellTypesItem = self.regionCellTypesItem.child(i)
             # obtain its cell type data list:
-            self.__oneRegionCellTypesDict[lOneCellTypeKey] = lOneCellTypesItem.getOneCellTypeList()
+            self.__oneRegionCellTypesDict[lOneCellTypeKey] = lOneCellTypesItem.getOneCellTypeData()
 
         # the value of self.__regionTypeKey can not be changed in the editor
 
@@ -958,7 +498,7 @@ class CDOneRegionTypeItem(QtGui.QTreeWidgetItem):
         # we don't really need/have to get and refill the data again
         #   and then ask the item to repopulate, but we're testing if
         #   both the CDOneCellTypeItem init and its separate calls work the same way:
-        lTestCellTypeList = lOneCellItem.getOneCellTypeList()
+        lTestCellTypeList = lOneCellItem.getOneCellTypeData()
         lOneCellItem.setOneCellTypeData(lTestCellTypeList, pTotalAmounts, pCellTypeKey)
         lOneCellItem.populateOneCellTypeItemFromData()
 
@@ -1111,11 +651,15 @@ class CDTypesTree(QtGui.QTreeWidget):
         # create a CDOneRegionTypeItem and attach it to the "self" QTreeWidget:
         lTopLevelItem = CDOneRegionTypeItem(self, lPreceding, pRegionQColor, pRegionName, pCellXYZSizeList, pRegionTypeUse, pRegionCellTypesDict, pRegionKey)
 
+##### TODOTODO :
         # we don't really need/have to get and refill the data again
         #   and then ask the item to repopulate, but we're testing if
         #   both the CDOneRegionTypeItem init and its separate calls work the same way:
-        ( lRegionQColor, lRegionName, lCellXYZSizeList, lRegionTypeUse, lRegionCellTypesDict, lRegionKey) = lTopLevelItem.getOneRegionTypeData()
+
+        (lRegionQColor, lRegionName, lCellXYZSizeList, lRegionTypeUse, lRegionCellTypesDict, lRegionKey) = lTopLevelItem.getOneRegionTypeData()
+
         lTopLevelItem.setOneRegionTypeData( lRegionQColor, lRegionName, lCellXYZSizeList, lRegionTypeUse, lRegionCellTypesDict, lRegionKey)
+
         lTopLevelItem.populateOneRegionTypeItemFromData()
 
         return lTopLevelItem
@@ -1125,16 +669,52 @@ class CDTypesTree(QtGui.QTreeWidget):
 
 
 
-    # ------------------------------------------------------------------
-    # getTopRegionItemList() returns one top-level CDOneRegionTypeItem for one region type:
-    # retrieve all up-to-date region type data from CDTypesTree for external use:
-    # ------------------------------------------------------------------
-    def getTopRegionItemList( self, pIndex ):
 
-        #### TODOTODO: build list with all data for one region from one top-level item:
+    # ------------------------------------------------------------------
+    # updateTopRegionItem() loads new data into an existing top-level CDOneRegionTypeItem,
+    #    for one region type, located with its "pRegionQColor":
+    # ------------------------------------------------------------------
+    def updateTopRegionItem( self, pRegionQColor, pRegionName, pCellXYZSizeList, pRegionTypeUse, pRegionCellTypesDict, pRegionKey ):
+
+        # scan all top-level items one by one, and compare by region color:
+        lTopLevelItem = None
+        for i in xrange(self.topLevelItemCount()):
+            lTmpItem = self.__childAt(None, i)
+            (lRegionQColor, lRegionName, lCellXYZSizeList, lRegionTypeUse, lRegionCellTypesDict, lRegionKey) = lTmpItem.getOneRegionTypeData()
+
+            if pRegionQColor.rgba() == lRegionQColor.rgba() :
+                CDConstants.printOut( "___ ----- CDTypesTree: updateTopRegionItem()  ----- the asked pRegionQColor.rgba()=="+str(pRegionQColor.rgba())+ \
+                    " is the SAME as the existing lRegionQColor.rgba()=="+str(lRegionQColor.rgba()), CDConstants.DebugAll )
+                lTopLevelItem = lTmpItem
+                lTmpItem = None
+                break
+            else:
+                CDConstants.printOut( "___ ----- CDTypesTree: updateTopRegionItem()  ----- the asked pRegionQColor.rgba()=="+str(pRegionQColor.rgba())+ \
+                    " is DIFFERENT than the existing lRegionQColor.rgba()=="+str(lRegionQColor.rgba()), CDConstants.DebugAll )
+                lTmpItem = None
+
+        if (lTopLevelItem != None):
+            # update the CDOneRegionTypeItem with the correct region key:
+            lTopLevelItem.setOneRegionTypeData( pRegionQColor, pRegionName, pCellXYZSizeList, pRegionTypeUse, pRegionCellTypesDict, pRegionKey)
+            lTopLevelItem.populateOneRegionTypeItemFromData()
+
         return lTopLevelItem
 
-    # end of      def getTopRegionItemList( self, pIndex )
+    # end of   def updateTopRegionItem( self, pRegionQColor, pRegionName, pCellXYZSizeList, pRegionTypeUse, pRegionCellTypesDict, pRegionKey )
+    # ------------------------------------------------------------------
+
+
+
+
+    # ------------------------------------------------------------------
+    # getTopRegionItemData() returns one top-level CDOneRegionTypeItem for one region type:
+    # retrieve all up-to-date region type data from CDTypesTree for external use:
+    # ------------------------------------------------------------------
+    def getTopRegionItemData( self, pIndex ):
+    
+        return self.topLevelItem(pIndex).getOneRegionTypeData()
+
+    # end of      def getTopRegionItemData( self, pIndex )
     # ------------------------------------------------------------------
 
 
@@ -1328,137 +908,6 @@ class CDTypesEditor(QtGui.QWidget):
 
 
 
-    # ------------------------------------------------------------------
-    # init (3) - central table, set up and show:
-    # ------------------------------------------------------------------
-    def PWN___miInitCentralTreeWidget(self):
-
-        CDConstants.printOut( "    - DEBUG ----- CDTypesEditor: __miInitCentralTreeWidget() starting.", CDConstants.DebugExcessive )
-
-        # -------------------------------------------
-        # place the table in the Panel's vbox layout:
-        # one cell information widget, containing a vbox layout, in which to place the table:
-        tableContainerWidget = QtGui.QWidget()
-# 
-#         # this topFiller part is cosmetic and could safely be removed:
-#         topFiller = QtGui.QWidget()
-#         topFiller.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-# 
-#         # this infoLabel part is cosmetic and could safely be removed,
-#         #     unless useful info is provided here:
-#         self.infoLabel = QtGui.QLabel()
-#         self.infoLabel.setText("<i>colors</i> in the Cell Scene correspond to <i>region types</i>")
-#         self.infoLabel.setAlignment = QtCore.Qt.AlignCenter
-# #         self.infoLabel.setLineWidth(3)
-# #         self.infoLabel.setMidLineWidth(3)
-#         self.infoLabel.setFrameStyle(QtGui.QFrame.StyledPanel | QtGui.QFrame.Sunken)
-# 
-#         # this bottomFiller part is cosmetic and could safely be removed:
-#         bottomFiller = QtGui.QWidget()
-#         bottomFiller.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-# 
-        # create a layout and place all 'sub-widgets' in it:
-        vbox = QtGui.QVBoxLayout()
-        vbox.setContentsMargins(0,0,0,0)
-        # vbox.addWidget(topFiller)
-        vbox.addWidget(self.theTypesTree)
-#         vbox.addWidget(self.infoLabel)
-        # vbox.addWidget(bottomFiller)
-        # finally place the complete layout in a QWidget and return it:
-        tableContainerWidget.setLayout(vbox)
-        return tableContainerWidget
-
-        CDConstants.printOut( "    - DEBUG ----- CDTypesEditor: __miInitCentralTreeWidget() done.", CDConstants.DebugExcessive )
-
-    # end of   def __miInitCentralTreeWidget(self)
-    # ------------------------------------------------------------------
-
-
-
-    # ------------------------------------------------------------------
-    # init (3) - central table, set up and show:
-    # ------------------------------------------------------------------
-    def PWN_NOTUSED__miInitCentralTableWidget(self):
-    
-        # create a tree widget for the main "central widget" area of the window:
-        self.regionsMainTreeWidget = QtGui.QTreeWidget()
-        # tree item selection set to: "When the user selects an item,
-        # any already-selected item becomes unselected, and the user cannot unselect
-        # the selected item by clicking on it." :
-        self.regionsMainTreeWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        # clicking on a tree item selects a single item:
-        self.regionsMainTreeWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
-        # actions which will initiate item editing: all of them (double-clicking, etc.) :
-        self.regionsMainTreeWidget.setEditTriggers(QtGui.QAbstractItemView.AllEditTriggers)
-
-        # don't show the tree's rown numbers in the "verticalHeader" on the left side, since its
-        #   numbering is inconsistent with the 1st column, which contains cell type ID numbers:
-        # self.regionsMainTreeWidget.verticalHeader().hide()
-        # show the table's verticalHeader, but remove all its labels:
-        self.regionsMainTreeWidget.setHeaderLabels( \
-             (" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ") )
-
-        self.regionsMainTreeWidget.setColumnCount(6)
-        # the QTreeQidget doesn't have a setRowCount() function:
-        # self.regionsMainTreeWidget.setRowCount(6)
-        self.regionsMainTreeWidget.setHeaderLabels( \
-             ("#", "Color", "Region", "Cell\nSize", "Use", "Cell Types in Region") )
-        self.regionsMainTreeWidget.header().setResizeMode(0, QtGui.QHeaderView.Interactive)
-        self.regionsMainTreeWidget.header().setResizeMode(1, QtGui.QHeaderView.Interactive)
-        self.regionsMainTreeWidget.header().setResizeMode(2, QtGui.QHeaderView.Interactive)
-        self.regionsMainTreeWidget.header().setResizeMode(3, QtGui.QHeaderView.Interactive)
-        self.regionsMainTreeWidget.header().setResizeMode(4, QtGui.QHeaderView.Interactive)
-        self.regionsMainTreeWidget.header().setResizeMode(5, QtGui.QHeaderView.Interactive)
-        self.regionsMainTreeWidget.header().setStretchLastSection(True)
-        # self.regionsMainTreeWidget.header().resizeSection(1, 180)
-        self.regionsMainTreeWidget.show()
-
-#        self.regionsMainTreeWidget.setMinimumSize(QtCore.QSize(245,0))
-        self.regionsMainTreeWidget.setLineWidth(1)
-        self.regionsMainTreeWidget.setMidLineWidth(1)
-        self.regionsMainTreeWidget.setFrameShape(QtGui.QFrame.Panel)
-        self.regionsMainTreeWidget.setFrameShadow(QtGui.QFrame.Plain)
-        self.regionsMainTreeWidget.setObjectName("regionsMainTreeWidget")
-
-        # -------------------------------------------
-        # place the table in the Panel's vbox layout:
-        # one cell information widget, containing a vbox layout, in which to place the table:
-        tableContainerWidget = QtGui.QWidget()
-
-        # this topFiller part is cosmetic and could safely be removed:
-        topFiller = QtGui.QWidget()
-        topFiller.setSizePolicy(QtGui.QSizePolicy.Expanding,
-                QtGui.QSizePolicy.Expanding)
-
-        # this infoLabel part is cosmetic and could safely be removed,
-        #     unless useful info is provided here:
-        self.infoLabel = QtGui.QLabel()
-        self.infoLabel.setText("<i>colors</i> in the Cell Scene correspond to <i>region types</i>")
-        self.infoLabel.setAlignment = QtCore.Qt.AlignCenter
-        self.infoLabel.setLineWidth(3)
-        self.infoLabel.setMidLineWidth(3)
-        self.infoLabel.setFrameStyle(QtGui.QFrame.StyledPanel | QtGui.QFrame.Sunken)
-
-        # this bottomFiller part is cosmetic and could safely be removed:
-        bottomFiller = QtGui.QWidget()
-        bottomFiller.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-
-        # create a layout and place all 'sub-widgets' in it:
-        vbox = QtGui.QVBoxLayout()
-        vbox.setContentsMargins(0,0,0,0)
-        # vbox.addWidget(topFiller)
-        vbox.addWidget(self.regionsMainTreeWidget)
-        vbox.addWidget(self.infoLabel)
-        # vbox.addWidget(bottomFiller)
-        # finally place the complete layout in a QWidget and return it:
-        tableContainerWidget.setLayout(vbox)
-        return tableContainerWidget
-
-    # end of   def NOTUSED__miInitCentralTableWidget(self)
-    # ------------------------------------------------------------------
-
-
-
 
     # ------------------------------------------------------------------
     # ------------------------------------------------------------------
@@ -1478,64 +927,6 @@ class CDTypesEditor(QtGui.QWidget):
         CDConstants.printOut( "___ - DEBUG ----- CDTypesEditor:  self.setTypesDict() to "+str(self.typesDict)+" done. ----- ", CDConstants.DebugVerbose )
 
 
-
-    # ------------------------------------------------------------------
-    # rebuild the typesDict global by retrieving all the values in theTypesTree:
-    # ------------------------------------------------------------------
-    def __updateTypesDictFromEditor(self):
-        CDConstants.printOut("___ - DEBUG ----- CDTypesEditor: __updateTypesDictFromEditor() = " + \
-            str(self.theTypesTree.topLevelItemCount()) + " rows to " + \
-            str(self.__getRegionsDictElementCount()) + " cells.", CDConstants.DebugExcessive )
-
-        # set how many rows are needed in the table:
-        lRegionsCount = self.theTypesTree.topLevelItemCount()
-        CDConstants.printOut("lRegionsCount="+str(lRegionsCount), CDConstants.DebugTODO )
-
-        # get the typesDict keys in order to access individual dict entries:
-        lKeys = self.__getRegionsDictKeys()
-        CDConstants.printOut("lKeys="+str(lKeys), CDConstants.DebugTODO )
-
-        # parse each top-level item separately to build a typesDict entry:
-        for i in xrange(lRegionsCount):
-            # the top-level key is NOT retrieved from theTypesTree items:
-            #    not: lKey = self.theTypesTree.item(i, 0)
-            lKey = lKeys[i]
-            # the color can be retrieved (although the color is not editable (yet?) )
-            lColor = self.typesDict[lKeys[i]][0]
-
-            # the region name is retrieved from the 3.rd theTypesTree column:
-            # print "___ - DEBUG DEBUG DEBUG ----- CDTypesEditor: self.__updateTypesDictFromEditor() \n"
-            # print "      i, self.theTypesTree.item(i, 2) ", i, self.theTypesTree.item(i, 2)
-            lRegionName = str ( self.theTypesTree.item(i, 2).text() )
-#
-#             # the region cell size is retrieved from the 4.th theTypesTree column:
-#             # print "___ - DEBUG DEBUG DEBUG ----- CDTypesEditor: self.__updateTypesDictFromEditor() \n"
-#             # print "      i, self.theTypesTree.item(i, 3) ", i, self.theTypesTree.item(i, 3)
-#             lRegionCellSize = int ( self.theTypesTree.item(i, 3).text() )
-
-            # the region cell sizes are retrieved from the 4.th theTypesTree column:
-            CDConstants.printOut ( "___ - DEBUG DEBUG DEBUG ----- CDTypesEditor: self.__updateTypesDictFromEditor() ", CDConstants.DebugAll )
-            CDConstants.printOut ( "      i, self.theTypesTree.cellWidget(i, 3) " + str(i) + " " + str( self.theTypesTree.cellWidget(i, 3) ), CDConstants.DebugAll )
-            lRegionBlockCellSizes = self.theTypesTree.cellWidget(i, 3)
-
-            # the region use is retrieved from the 5.th theTypesTree column:
-            # print "___ - DEBUG DEBUG DEBUG ----- CDTypesEditor: self.__updateTypesDictFromEditor() \n"
-            # print "      i, self.theTypesTree.item(i, 4) ", i, self.theTypesTree.item(i, 4)
-            lRegionInUse = int ( self.theTypesTree.item(i, 4).text() )
-
-            # the cell types dict for each region is obtained from the PIFOneRegionTable widget
-            #   which is in the 6.th  theTypesTree column:
-            lOneRegionTableWidget = self.theTypesTree.cellWidget(i, 5)
-
-            # rebuild the i-th dict entry:
-            self.typesDict[lKey] = [ lColor, lRegionName, \
-                                       lRegionBlockCellSizes.getOneRegionDict(), \
-                                       lRegionInUse, \
-                                       lOneRegionTableWidget.getOneRegionDict() ]
-
-        # print "___ - DEBUG ----- CDTypesEditor: self.__updateTypesDictFromEditor() to ", self.typesDict, " done."
-
-
     # ------------------------------------------------------------------
     # retrieve the up-to-date typesDict for external use:
     # ------------------------------------------------------------------
@@ -1547,13 +938,14 @@ class CDTypesEditor(QtGui.QWidget):
 
 
 
+
     # ------------------------------------------------------------------
     # populate the main QTreeWidget editor with data from the typesDict global
     # ------------------------------------------------------------------
     def populateEditorFromTypesDict(self):
-        CDConstants.printOut("___ - DEBUG ----- CDTypesEditor: populateEditorFromTypesDict() = " + \
-            str(self.theTypesTree.topLevelItemCount()) + " rows to " + \
-            str(self.__getRegionsDictElementCount()) + " cells.", CDConstants.DebugExcessive )
+        CDConstants.printOut("___ - DEBUG ----- CDTypesEditor: populateEditorFromTypesDict() BEGIN: now " + \
+            str(self.theTypesTree.topLevelItemCount()) + " top-level items in tree and " + \
+            str(self.__getRegionsDictElementCount()) + " regions.", CDConstants.DebugExcessive )
 
         # prevent theTypesTree from emitting any "itemChanged" signals when
         #   updating its content programmatically:
@@ -1618,12 +1010,160 @@ class CDTypesEditor(QtGui.QWidget):
         #   updating its content programmatically:
         self.theTypesTree.blockSignals(False)
 
-        CDConstants.printOut("___ - DEBUG ----- CDTypesEditor: populateEditorFromTypesDict() = " + \
-            str(self.theTypesTree.topLevelItemCount()) + " rows to " + \
-            str(self.__getRegionsDictElementCount()) + " cells ----- done.", CDConstants.DebugExcessive )
+        CDConstants.printOut("___ - DEBUG ----- CDTypesEditor: populateEditorFromTypesDict() END: now " + \
+            str(self.theTypesTree.topLevelItemCount()) + " top-level items in tree and " + \
+            str(self.__getRegionsDictElementCount()) + " regions. ----- DONE.", CDConstants.DebugExcessive )
 
         return
     # end of  def populateEditorFromTypesDict(self)
+    # ------------------------------------------------------------------
+
+
+
+    # ------------------------------------------------------------------
+    # populate the table widget with data from the typesDict global
+    # ------------------------------------------------------------------
+    def updateRegionUseInTypesEditor(self, pColor, pHowManyInUse):
+
+        lTheRegionToBeUpdatedColor = QtGui.QColor(pColor)
+
+        # prevent theTypesTree from emitting any "itemChanged" signals when
+        #   updating its content programmatically:
+        self.theTypesTree.blockSignals(True)
+
+        # check how many rows are present in the table:
+        lRegionsCount = self.theTypesTree.topLevelItemCount()
+        CDConstants.printOut("___         ----- CDTypesEditor: updateRegionUseInTypesEditor() ----- lRegionsCount="+str(lRegionsCount), CDConstants.DebugTODO )
+
+        # get the typesDict keys in order to access individual dict entries:
+        lRegionKeys = self.__getRegionsDictKeys()
+        CDConstants.printOut("___         ----- CDTypesEditor: updateRegionUseInTypesEditor() ----- lRegionKeys="+str(lRegionKeys), CDConstants.DebugTODO )
+       
+        # the entire table might be set to hide if there are no used rows:
+        lThereAreRegionRowsInUse = False
+
+        for i in xrange(lRegionsCount):
+            lOneRegionKey = lRegionKeys[i]
+            CDConstants.printOut( "___         ----- CDTypesEditor: updateRegionUseInTypesEditor()  ----- self.typesDict[lRegionKeys[i=="+str(i)+"]=="+str(lRegionKeys[i])+"] ="+str(self.typesDict[ lRegionKeys[i] ]), CDConstants.DebugAll )
+            CDConstants.printOut( "___         ----- CDTypesEditor: updateRegionUseInTypesEditor()  ----- self.typesDict[lOneRegionKey=="+str(lOneRegionKey)+"]] ="+str(self.typesDict[lOneRegionKey]), CDConstants.DebugAll )
+            CDConstants.printOut( "___         ----- CDTypesEditor: updateRegionUseInTypesEditor()  ----- self.typesDict[lOneRegionKey][0] ="+str(self.typesDict[lOneRegionKey][0]), CDConstants.DebugAll )
+            CDConstants.printOut( "___         ----- CDTypesEditor: updateRegionUseInTypesEditor()  ----- self.typesDict[lOneRegionKey][0].rgba() ="+str(self.typesDict[lOneRegionKey][0].rgba()), CDConstants.DebugAll )
+            CDConstants.printOut( "___         ----- CDTypesEditor: updateRegionUseInTypesEditor()  ----- lTheRegionToBeUpdatedColor.rgba() ="+str(lTheRegionToBeUpdatedColor.rgba()), CDConstants.DebugAll )
+            if self.typesDict[lOneRegionKey][0].rgba() == lTheRegionToBeUpdatedColor.rgba() :
+                # prepare all data for one top-level QTreeWidgetItem representing a region type:
+
+                # first update the region use in the main typesDict for region types:
+                CDConstants.printOut( "___         ----- CDTypesEditor: updateRegionUseInTypesEditor()  ----- IT WAS self.typesDict[lOneRegionKey][3] ="+str(self.typesDict[lOneRegionKey][3]), CDConstants.DebugAll )
+                self.typesDict[lOneRegionKey][3] = pHowManyInUse
+                CDConstants.printOut( "___         ----- CDTypesEditor: updateRegionUseInTypesEditor()  ----- NOW IS self.typesDict[lOneRegionKey][3] ="+str(self.typesDict[lOneRegionKey][3]), CDConstants.DebugAll )
+
+                # then prepare all other parameters to update the region's entry in the editor tree:
+                lRegionKey = QtCore.QString("%1").arg(lOneRegionKey)
+                lRegionQColor = self.__createQColor( self.typesDict[lOneRegionKey][0] )
+                lRegionName = QtCore.QString("%1").arg(self.typesDict[lOneRegionKey][1])
+                lCellXYZSizeList = list( ( -1, -2, -3) )
+                for j in xrange(3):
+                    lCellXYZSizeList[j] = self.typesDict[lOneRegionKey][2][j]
+                lRegionTypeUse = QtCore.QString("%1").arg(self.typesDict[lOneRegionKey][3])
+                lRegionCellTypesDict = dict()
+                for j in xrange( len(self.typesDict[lOneRegionKey][4]) ):
+                    lRegionCellTypesDict[j] = self.typesDict[lOneRegionKey][4][j]
+
+                lChild = self.theTypesTree.updateTopRegionItem( lRegionQColor, lRegionName, lCellXYZSizeList, lRegionTypeUse, lRegionCellTypesDict, lRegionKey )
+
+                # finally determine if the QTreeWidgetItem at index i is to be visible or not,
+                #    according to its region type use in the scene:
+                if self.typesDict[lOneRegionKey][3] < 1:
+                    lChild.setHidden(True)
+                else:
+                    lChild.setHidden(False)
+                    lThereAreRegionRowsInUse = True
+
+#         if lThereAreRegionRowsInUse is False:
+#             self.theTypesTree.hide()
+#         else:
+#             self.theTypesTree.show()
+
+        # allow theTypesTree to emit "itemChanged" signals now that we're done
+        #   updating its content programmatically:
+        self.theTypesTree.blockSignals(False)
+
+
+    # end of  def updateRegionUseInTypesEditor(self, pColor, pHowManyInUse).
+    # ------------------------------------------------------------------
+
+
+
+    # ------------------------------------------------------------------
+    # rebuild the typesDict global by retrieving all the values in theTypesTree:
+    # ------------------------------------------------------------------
+    def __updateTypesDictFromEditor(self):
+        CDConstants.printOut("___ - DEBUG ----- CDTypesEditor: __updateTypesDictFromEditor() BEGIN: now " + \
+            str(self.theTypesTree.topLevelItemCount()) + " top-level items in tree and " + \
+            str(self.__getRegionsDictElementCount()) + " regions.", CDConstants.DebugExcessive )
+
+        # set how many rows are needed in the table:
+        lRegionsCount = self.theTypesTree.topLevelItemCount()
+        CDConstants.printOut("___         ----- CDTypesEditor: __updateTypesDictFromEditor() ----- lRegionsCount="+str(lRegionsCount), CDConstants.DebugTODO )
+
+        # get the typesDict keys in order to access individual dict entries:
+        lKeys = self.__getRegionsDictKeys()
+        CDConstants.printOut("___         ----- CDTypesEditor: __updateTypesDictFromEditor() ----- lKeys="+str(lKeys), CDConstants.DebugTODO )
+
+        # parse each top-level item separately to build a typesDict entry:
+        for i in xrange(lRegionsCount):
+        
+            # get all data from one top-level item in the types tree, i.e. data for one region type:
+            (lRegionQColor, lRegionName, lCellXYZSizeList, lRegionTypeUse, lRegionCellTypesDict, lRegionKey) = self.theTypesTree.getTopRegionItemData(i)
+
+            CDConstants.printOut( "   >>>> DEBUG ----- CDTypesEditor: __updateTypesDictFromEditor() AFTER calling self.theTypesTree.getTopRegionItemData(i=="+str(i)+") :\n   >>>> lRegionQColor="+str(lRegionQColor)+",\n   >>>> lRegionName="+str(lRegionName)+",\n   >>>> lCellXYZSizeList="+str(lCellXYZSizeList)+",\n   >>>> lRegionTypeUse="+str(lRegionTypeUse)+",\n   >>>> lRegionCellTypesDict="+str(lRegionCellTypesDict)+",\n   >>>> lRegionKey="+str(lRegionKey), CDConstants.DebugTODO )
+
+            # the top-level key is NOT retrieved from theTypesTree items:
+            #    not: lKey = self.theTypesTree.item(i, 0)
+#             lKey = lKeys[i]
+            # the color can be retrieved (although the color is not editable (yet?) )
+#             lColor = self.typesDict[lKeys[i]][0]
+
+            # the region name is retrieved from the 3.rd theTypesTree column:
+            # print "___ - DEBUG DEBUG DEBUG ----- CDTypesEditor: self.__updateTypesDictFromEditor() \n"
+            # print "      i, self.theTypesTree.item(i, 2) ", i, self.theTypesTree.item(i, 2)
+#             lRegionName = str ( self.theTypesTree.item(i, 2).text() )
+#
+#             # the region cell size is retrieved from the 4.th theTypesTree column:
+#             # print "___ - DEBUG DEBUG DEBUG ----- CDTypesEditor: self.__updateTypesDictFromEditor() \n"
+#             # print "      i, self.theTypesTree.item(i, 3) ", i, self.theTypesTree.item(i, 3)
+#             lRegionCellSize = int ( self.theTypesTree.item(i, 3).text() )
+
+            # the region cell sizes are retrieved from the 4.th theTypesTree column:
+#             CDConstants.printOut ( "___ - DEBUG DEBUG DEBUG ----- CDTypesEditor: self.__updateTypesDictFromEditor() ", CDConstants.DebugAll )
+#             CDConstants.printOut ( "      i, self.theTypesTree.cellWidget(i, 3) " + str(i) + " " + str( self.theTypesTree.cellWidget(i, 3) ), CDConstants.DebugAll )
+#             lRegionBlockCellSizes = self.theTypesTree.cellWidget(i, 3)
+
+            # the region use is retrieved from the 5.th theTypesTree column:
+            # print "___ - DEBUG DEBUG DEBUG ----- CDTypesEditor: self.__updateTypesDictFromEditor() \n"
+            # print "      i, self.theTypesTree.item(i, 4) ", i, self.theTypesTree.item(i, 4)
+#             lRegionInUse = int ( self.theTypesTree.item(i, 4).text() )
+
+            # the cell types dict for each region is obtained from the PIFOneRegionTable widget
+            #   which is in the 6.th  theTypesTree column:
+#             lOneRegionTableWidget = self.theTypesTree.cellWidget(i, 5)
+
+            # rebuild the related dict entry - ***warning*** if lRegionKey is not casted into an int,
+            #    the key will become a Unicode string, and entries will be duplicated:
+            self.typesDict[int(lRegionKey)] = [ lRegionQColor, lRegionName, \
+                                       lCellXYZSizeList, \
+                                       lRegionTypeUse, \
+                                       lRegionCellTypesDict ]
+
+
+
+        CDConstants.printOut("___ - DEBUG ----- CDTypesEditor: __updateTypesDictFromEditor() to self.typesDict =\n    "+str(self.typesDict)+ "\n     done.", CDConstants.DebugTODO )
+        
+        CDConstants.printOut("___ - DEBUG ----- CDTypesEditor: __updateTypesDictFromEditor() END: now " + \
+            str(self.theTypesTree.topLevelItemCount()) + " top-level items in tree and " + \
+            str(self.__getRegionsDictElementCount()) + " regions. ----- DONE.", CDConstants.DebugExcessive )
+
+    # end of    def __updateTypesDictFromEditor(self)
     # ------------------------------------------------------------------
 
 
@@ -1787,64 +1327,6 @@ class CDTypesEditor(QtGui.QWidget):
     # end of  def NOTUSED__populateTableWithTypesDict(self)
     # ------------------------------------------------------------------
 
-
-
-    # ------------------------------------------------------------------
-    # populate the table widget with data from the typesDict global
-    # ------------------------------------------------------------------
-    def PWN_updateRegionUseOfTableElements(self, pColor, pHowManyInUse):
-
-        lColor = QtGui.QColor(pColor)
-
-        # prevent theTypesTree from emitting any "itemChanged" signals when
-        #   updating its content programmatically:
-        self.theTypesTree.blockSignals(True)
-
-        # get the typesDict keys in order to update the table's elements accordingly:
-        lKeys = self._getRegionsDictKeys()
-       
-        # the entire table might be set to hide if there are no used rows:
-        lThereAreRegionRowsInUse = False
-
-        for i in xrange(self._getRegionsDictElementCount()):
-
-            CDConstants.printOut( "___ updateRegionUseOfTableElements()  ----- self.typesDict[lKeys[i=="+str(i)+"]] ="+str(self.typesDict[lKeys[i]]), CDConstants.DebugAll )
-            CDConstants.printOut( "___ updateRegionUseOfTableElements()  ----- self.typesDict[lKeys[i]][0] ="+str(self.typesDict[lKeys[i]][0]), CDConstants.DebugAll )
-            if self.typesDict[lKeys[i]][0].rgba() == lColor.rgba() :
-                CDConstants.printOut( "___ updateRegionUseOfTableElements()  ----- self.typesDict[lKeys[i]][3] ="+str(self.typesDict[lKeys[i]][3]), CDConstants.DebugAll )
-                self.typesDict[lKeys[i]][3] = pHowManyInUse
-                CDConstants.printOut( "___ updateRegionUseOfTableElements()  ----- self.typesDict[lKeys[i]][3] ="+str(self.typesDict[lKeys[i]][3]), CDConstants.DebugAll )
-
-                # create a QTableWidgetItem and in it place the updated region use from typesDict:
-                lItem = QtGui.QTableWidgetItem( \
-                           QtCore.QString("%1").arg(self.typesDict[lKeys[i]][3]) )
-                CDConstants.printOut( "___ updateRegionUseOfTableElements()  ----- self.typesDict[lKeys[i]][3] ="+str(self.typesDict[lKeys[i]][3]), CDConstants.DebugAll )
-                # the table item containing the text from typesDict ought not to be selected/edited:
-                lItem.setFlags(lItem.flags() & ~(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable))
-                # this goes to column 4 in the table:
-                self.theTypesTree.setOneRegionTypeItem(i, 4, lItem)
-
-            # finally determine if the current row at index i is to be visible or not:
-            if self.typesDict[lKeys[i]][3] < 1:
-                self.theTypesTree.hideRegionTypeRow(i)
-                CDConstants.printOut( "___ updateRegionUseOfTableElements()  ----- self.theTypesTree.hideRegionTypeRow(i=="+str(i)+")", CDConstants.DebugAll )
-            else:
-                self.theTypesTree.showRegionTypeRow(i)
-                lThereAreRegionRowsInUse = True
-                CDConstants.printOut( "___ updateRegionUseOfTableElements()  ----- self.theTypesTree.showRegionTypeRow(i=="+str(i)+")", CDConstants.DebugAll )
-
-#         if lThereAreRegionRowsInUse is False:
-#             self.theTypesTree.hide()
-#         else:
-#             self.theTypesTree.show()
-
-        # allow theTypesTree to emit "itemChanged" signals now that we're done
-        #   updating its content programmatically:
-        self.theTypesTree.blockSignals(False)
-
-
-    # end of  def updateRegionUseOfTableElements(self, pColor, pHowManyInUse).
-    # ------------------------------------------------------------------
 
 
 
@@ -2154,6 +1636,142 @@ class CDTypesEditor(QtGui.QWidget):
         print "___ - DEBUG ----- CDTypesEditor: handleOneRegionTableWidgetChanged() done."
 
 
+
+
+
+
+
+
+
+
+    # ------------------------------------------------------------------
+    # init (3) - central table, set up and show:
+    # ------------------------------------------------------------------
+    def PWN___miInitCentralTreeWidget(self):
+
+        CDConstants.printOut( "    - DEBUG ----- CDTypesEditor: __miInitCentralTreeWidget() starting.", CDConstants.DebugExcessive )
+
+        # -------------------------------------------
+        # place the table in the Panel's vbox layout:
+        # one cell information widget, containing a vbox layout, in which to place the table:
+        tableContainerWidget = QtGui.QWidget()
+# 
+#         # this topFiller part is cosmetic and could safely be removed:
+#         topFiller = QtGui.QWidget()
+#         topFiller.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+# 
+#         # this infoLabel part is cosmetic and could safely be removed,
+#         #     unless useful info is provided here:
+#         self.infoLabel = QtGui.QLabel()
+#         self.infoLabel.setText("<i>colors</i> in the Cell Scene correspond to <i>region types</i>")
+#         self.infoLabel.setAlignment = QtCore.Qt.AlignCenter
+# #         self.infoLabel.setLineWidth(3)
+# #         self.infoLabel.setMidLineWidth(3)
+#         self.infoLabel.setFrameStyle(QtGui.QFrame.StyledPanel | QtGui.QFrame.Sunken)
+# 
+#         # this bottomFiller part is cosmetic and could safely be removed:
+#         bottomFiller = QtGui.QWidget()
+#         bottomFiller.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+# 
+        # create a layout and place all 'sub-widgets' in it:
+        vbox = QtGui.QVBoxLayout()
+        vbox.setContentsMargins(0,0,0,0)
+        # vbox.addWidget(topFiller)
+        vbox.addWidget(self.theTypesTree)
+#         vbox.addWidget(self.infoLabel)
+        # vbox.addWidget(bottomFiller)
+        # finally place the complete layout in a QWidget and return it:
+        tableContainerWidget.setLayout(vbox)
+        return tableContainerWidget
+
+        CDConstants.printOut( "    - DEBUG ----- CDTypesEditor: __miInitCentralTreeWidget() done.", CDConstants.DebugExcessive )
+
+    # end of   def __miInitCentralTreeWidget(self)
+    # ------------------------------------------------------------------
+
+
+
+    # ------------------------------------------------------------------
+    # init (3) - central table, set up and show:
+    # ------------------------------------------------------------------
+    def PWN_NOTUSED__miInitCentralTableWidget(self):
+    
+        # create a tree widget for the main "central widget" area of the window:
+        self.regionsMainTreeWidget = QtGui.QTreeWidget()
+        # tree item selection set to: "When the user selects an item,
+        # any already-selected item becomes unselected, and the user cannot unselect
+        # the selected item by clicking on it." :
+        self.regionsMainTreeWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        # clicking on a tree item selects a single item:
+        self.regionsMainTreeWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
+        # actions which will initiate item editing: all of them (double-clicking, etc.) :
+        self.regionsMainTreeWidget.setEditTriggers(QtGui.QAbstractItemView.AllEditTriggers)
+
+        # don't show the tree's rown numbers in the "verticalHeader" on the left side, since its
+        #   numbering is inconsistent with the 1st column, which contains cell type ID numbers:
+        # self.regionsMainTreeWidget.verticalHeader().hide()
+        # show the table's verticalHeader, but remove all its labels:
+        self.regionsMainTreeWidget.setHeaderLabels( \
+             (" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ") )
+
+        self.regionsMainTreeWidget.setColumnCount(6)
+        # the QTreeQidget doesn't have a setRowCount() function:
+        # self.regionsMainTreeWidget.setRowCount(6)
+        self.regionsMainTreeWidget.setHeaderLabels( \
+             ("#", "Color", "Region", "Cell\nSize", "Use", "Cell Types in Region") )
+        self.regionsMainTreeWidget.header().setResizeMode(0, QtGui.QHeaderView.Interactive)
+        self.regionsMainTreeWidget.header().setResizeMode(1, QtGui.QHeaderView.Interactive)
+        self.regionsMainTreeWidget.header().setResizeMode(2, QtGui.QHeaderView.Interactive)
+        self.regionsMainTreeWidget.header().setResizeMode(3, QtGui.QHeaderView.Interactive)
+        self.regionsMainTreeWidget.header().setResizeMode(4, QtGui.QHeaderView.Interactive)
+        self.regionsMainTreeWidget.header().setResizeMode(5, QtGui.QHeaderView.Interactive)
+        self.regionsMainTreeWidget.header().setStretchLastSection(True)
+        # self.regionsMainTreeWidget.header().resizeSection(1, 180)
+        self.regionsMainTreeWidget.show()
+
+#        self.regionsMainTreeWidget.setMinimumSize(QtCore.QSize(245,0))
+        self.regionsMainTreeWidget.setLineWidth(1)
+        self.regionsMainTreeWidget.setMidLineWidth(1)
+        self.regionsMainTreeWidget.setFrameShape(QtGui.QFrame.Panel)
+        self.regionsMainTreeWidget.setFrameShadow(QtGui.QFrame.Plain)
+        self.regionsMainTreeWidget.setObjectName("regionsMainTreeWidget")
+
+        # -------------------------------------------
+        # place the table in the Panel's vbox layout:
+        # one cell information widget, containing a vbox layout, in which to place the table:
+        tableContainerWidget = QtGui.QWidget()
+
+        # this topFiller part is cosmetic and could safely be removed:
+        topFiller = QtGui.QWidget()
+        topFiller.setSizePolicy(QtGui.QSizePolicy.Expanding,
+                QtGui.QSizePolicy.Expanding)
+
+        # this infoLabel part is cosmetic and could safely be removed,
+        #     unless useful info is provided here:
+        self.infoLabel = QtGui.QLabel()
+        self.infoLabel.setText("<i>colors</i> in the Cell Scene correspond to <i>region types</i>")
+        self.infoLabel.setAlignment = QtCore.Qt.AlignCenter
+        self.infoLabel.setLineWidth(3)
+        self.infoLabel.setMidLineWidth(3)
+        self.infoLabel.setFrameStyle(QtGui.QFrame.StyledPanel | QtGui.QFrame.Sunken)
+
+        # this bottomFiller part is cosmetic and could safely be removed:
+        bottomFiller = QtGui.QWidget()
+        bottomFiller.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+
+        # create a layout and place all 'sub-widgets' in it:
+        vbox = QtGui.QVBoxLayout()
+        vbox.setContentsMargins(0,0,0,0)
+        # vbox.addWidget(topFiller)
+        vbox.addWidget(self.regionsMainTreeWidget)
+        vbox.addWidget(self.infoLabel)
+        # vbox.addWidget(bottomFiller)
+        # finally place the complete layout in a QWidget and return it:
+        tableContainerWidget.setLayout(vbox)
+        return tableContainerWidget
+
+    # end of   def NOTUSED__miInitCentralTableWidget(self)
+    # ------------------------------------------------------------------
 
 
 

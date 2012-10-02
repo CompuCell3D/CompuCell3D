@@ -2,6 +2,8 @@
 
 from PyQt4 import QtGui, QtCore
 
+import sys    # sys is necessary to inquire about "sys.version_info"
+
 # 2011 - Mitja: external class defining all global constants for CellDraw:
 from cdConstants import CDConstants
 
@@ -55,7 +57,13 @@ class CDControlImageSequence(QtGui.QWidget):
         #    3 = Region 3D Volume = CDConstants.ImageSequenceUse3DVolume
         #    4 = Region Cell Seeds = CDConstants.ImageSequenceUseAreaSeeds
         self.theImageSequenceProcessingMode = (1 << CDConstants.ImageSequenceUseAreaSeeds)
-        CDConstants.printOut( "___ - DEBUG ----- CDControlImageSequence: __init__() bin(self.theImageSequenceProcessingMode) == "+str(bin(self.theImageSequenceProcessingMode)) , CDConstants.DebugExcessive )
+
+        # bin() does not exist in Python 2.5:
+        if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
+            CDConstants.printOut( "___ - DEBUG ----- CDControlImageSequence: __init__() bin(self.theImageSequenceProcessingMode) == "+str(bin(self.theImageSequenceProcessingMode)) , CDConstants.DebugExcessive )
+        else:
+            CDConstants.printOut( "___ - DEBUG ----- CDControlImageSequence: __init__() self.theImageSequenceProcessingMode == "+str(self.theImageSequenceProcessingMode) , CDConstants.DebugExcessive )
+
         # typical usage :
         # | is used to set a certain bit to 1
         # & is used to test or clear a certaint bit
@@ -74,7 +82,7 @@ class CDControlImageSequence(QtGui.QWidget):
 
 
         #
-        # QWidget setup (1) - windowing GUI setup for Control Panel:
+        # QWidget setup (1) - windowing GUI setup for Image Sequence controls:
         #
 
         self.setWindowTitle("Image Sequence Window Title")
@@ -293,12 +301,180 @@ class CDControlImageSequence(QtGui.QWidget):
         self.typesGroupBox.layout().addWidget(lToolButton)
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        # ----------------------------------------------------------------
+        #
+        # QWidget setup - add a QGroupBox for showing Image Sequence dimensions:
+        #
+        self.imageSequenceDimensionsGroupBox = QtGui.QGroupBox("Image Sequence Dimensions")
+        self.imageSequenceDimensionsGroupBox.setLayout(QtGui.QVBoxLayout())
+        self.imageSequenceDimensionsGroupBox.layout().setMargin(2)
+        self.imageSequenceDimensionsGroupBox.layout().setSpacing(4)
+        self.imageSequenceDimensionsGroupBox.layout().setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+
+        # 2011 - Mitja: add a widget displaying the imageSequence dimensions at all times:
+        self.imageSequenceWidthLabel = QtGui.QLabel()
+        self.imageSequenceWidthLabel.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.imageSequenceWidthLabel.setText("w")
+        self.imageSequenceWidthLabel.setFont(lFont)
+        self.imageSequenceWidthLabel.setMargin(2)
+        imageSequenceTimesSignLabel = QtGui.QLabel()
+        imageSequenceTimesSignLabel.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        imageSequenceTimesSignLabel.setText( u"\u00D7" ) # <-- the multiplication sign as unicode
+        imageSequenceTimesSignLabel.setFont(lFont)
+        imageSequenceTimesSignLabel.setMargin(2)
+        self.imageSequenceHeightLabel = QtGui.QLabel()
+        self.imageSequenceHeightLabel.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.imageSequenceHeightLabel.setText("h")
+        self.imageSequenceHeightLabel.setFont(lFont)
+        self.imageSequenceHeightLabel.setMargin(2)
+        self.imageSequenceUnitsLabel = QtGui.QLabel()
+        self.imageSequenceUnitsLabel.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.imageSequenceUnitsLabel.setText("  pixel")
+        self.imageSequenceUnitsLabel.setFont(lFont)
+        self.imageSequenceUnitsLabel.setMargin(2)
+
+        self.imageSequenceDepthLabel = QtGui.QLabel()
+        self.imageSequenceDepthLabel.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.imageSequenceDepthLabel.setText("d")
+        self.imageSequenceDepthLabel.setFont(lFont)
+        self.imageSequenceDepthLabel.setMargin(2)
+        self.imageSequenceImageOrImagesLabel = QtGui.QLabel()
+        self.imageSequenceImageOrImagesLabel.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.imageSequenceImageOrImagesLabel.setText( "  images" )
+        self.imageSequenceImageOrImagesLabel.setFont(lFont)
+        self.imageSequenceImageOrImagesLabel.setMargin(2)
+
+
+        imageSequenceXYDimLayout = QtGui.QHBoxLayout()
+        imageSequenceXYDimLayout.setMargin(2)
+        imageSequenceXYDimLayout.setSpacing(4)
+        imageSequenceXYDimLayout.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+
+        imageSequenceZDimLayout = QtGui.QHBoxLayout()
+        imageSequenceZDimLayout.setMargin(2)
+        imageSequenceZDimLayout.setSpacing(4)
+        imageSequenceZDimLayout.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+
+        imageSequenceXYDimLayout.addWidget(self.imageSequenceWidthLabel)
+        imageSequenceXYDimLayout.addWidget(imageSequenceTimesSignLabel)
+        imageSequenceXYDimLayout.addWidget(self.imageSequenceHeightLabel)
+        imageSequenceXYDimLayout.addWidget(self.imageSequenceUnitsLabel)
+
+        imageSequenceZDimLayout.addWidget(self.imageSequenceDepthLabel)
+        imageSequenceZDimLayout.addWidget(self.imageSequenceImageOrImagesLabel)
+
+
+        self.imageSequenceDimensionsGroupBox.layout().addLayout(imageSequenceXYDimLayout)
+        self.imageSequenceDimensionsGroupBox.layout().addLayout(imageSequenceZDimLayout)
+
+
+
+
+
+
+
+
+
+
+
+        # ----------------------------------------------------------------
+        #
+        # QWidget setup - add a QGroupBox for showing Image Sequence index and filename:
+        #
+        self.imageSequenceFilenamesGroupBox = QtGui.QGroupBox("Image Sequence Files")
+        self.imageSequenceFilenamesGroupBox.setLayout(QtGui.QVBoxLayout())
+        self.imageSequenceFilenamesGroupBox.layout().setMargin(2)
+        self.imageSequenceFilenamesGroupBox.layout().setSpacing(4)
+        self.imageSequenceFilenamesGroupBox.layout().setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+
+        # 2011 - Mitja: add a widget displaying the imageSequence dimensions at all times:
+        imageSequenceFileFirstLabel = QtGui.QLabel()
+        imageSequenceFileFirstLabel.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        imageSequenceFileFirstLabel.setText( "File index:" )
+        imageSequenceFileFirstLabel.setFont(lFont)
+        imageSequenceFileFirstLabel.setMargin(2)
+        self.imageSequenceFileCurrentIndexLabel = QtGui.QLabel()
+        self.imageSequenceFileCurrentIndexLabel.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.imageSequenceFileCurrentIndexLabel.setText(" ")
+        self.imageSequenceFileCurrentIndexLabel.setFont(lFont)
+        self.imageSequenceFileCurrentIndexLabel.setMargin(2)
+        imageSequenceFileSecondLabel = QtGui.QLabel()
+        imageSequenceFileSecondLabel.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        imageSequenceFileSecondLabel.setText( "File name:" )
+        imageSequenceFileSecondLabel.setFont(lFont)
+        imageSequenceFileSecondLabel.setMargin(2)
+        self.imageSequenceCurrentFilename = QtGui.QLabel()
+        self.imageSequenceCurrentFilename.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.imageSequenceCurrentFilename.setText(" ")
+        self.imageSequenceCurrentFilename.setFont(lFont)
+        self.imageSequenceCurrentFilename.setMargin(2)
+
+
+
+        imageSequenceCurrentFileIndexLayout = QtGui.QHBoxLayout()
+        imageSequenceCurrentFileIndexLayout.setMargin(2)
+        imageSequenceCurrentFileIndexLayout.setSpacing(4)
+        imageSequenceCurrentFileIndexLayout.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+
+        imageSequenceCurrentFileNameLayout = QtGui.QHBoxLayout()
+        imageSequenceCurrentFileNameLayout.setMargin(2)
+        imageSequenceCurrentFileNameLayout.setSpacing(4)
+        imageSequenceCurrentFileNameLayout.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+
+
+        imageSequenceCurrentFileIndexLayout.addWidget(imageSequenceFileFirstLabel)
+        imageSequenceCurrentFileIndexLayout.addWidget(self.imageSequenceFileCurrentIndexLabel)
+        imageSequenceCurrentFileNameLayout.addWidget(imageSequenceFileSecondLabel)
+        imageSequenceCurrentFileNameLayout.addWidget(self.imageSequenceCurrentFilename)
+
+
+
+        self.imageSequenceFilenamesGroupBox.layout().addLayout(imageSequenceCurrentFileIndexLayout)
+        self.imageSequenceFilenamesGroupBox.layout().addLayout(imageSequenceCurrentFileNameLayout)
+
+
+
+
+
+
+
+
         # ----------------------------------------------------------------
         # place all QGroupBox items in the main controls layout:
         #
         self.imageSequenceControlsMainLayout.addWidget(self.controlChoosenImageGroupBox)
         self.imageSequenceControlsMainLayout.addWidget(self.areaOrEdgeSelectionGroupBox)
         self.imageSequenceControlsMainLayout.addWidget(self.typesGroupBox)
+
+        #
+        self.imageSequenceControlsMainLayout.addWidget(self.imageSequenceDimensionsGroupBox)
+        self.imageSequenceControlsMainLayout.addWidget(self.imageSequenceFilenamesGroupBox)
+
 
 
 
@@ -456,10 +632,67 @@ class CDControlImageSequence(QtGui.QWidget):
 
         if lImageSequenceProcessingMode != self.theImageSequenceProcessingMode:
             self.theImageSequenceProcessingMode = lImageSequenceProcessingMode
-            CDConstants.printOut( "CDControlImageSequence - handleAreaOrEdgeButtonGroupClicked(), str(type(self.theImageSequenceProcessingMode))==["+str(type(self.theImageSequenceProcessingMode))+"], str(type(self.theImageSequenceProcessingMode).__name__)==["+str(type(self.theImageSequenceProcessingMode).__name__)+"], str(self.theImageSequenceProcessingMode)==["+str(self.theImageSequenceProcessingMode)+"], str(bin(int(self.theImageSequenceProcessingMode)))==["+str(bin(int(self.theImageSequenceProcessingMode)))+"]" , CDConstants.DebugTODO )
-            CDConstants.printOut("CDControlImageSequence - handleAreaOrEdgeButtonGroupClicked(), theImageSequenceProcessingMode is = " +str(bin(self.theImageSequenceProcessingMode)), CDConstants.DebugVerbose)
+
+            # bin() does not exist in Python 2.5:
+            if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
+                CDConstants.printOut( "CDControlImageSequence - handleAreaOrEdgeButtonGroupClicked(), str(type(self.theImageSequenceProcessingMode))==["+str(type(self.theImageSequenceProcessingMode))+"], str(type(self.theImageSequenceProcessingMode).__name__)==["+str(type(self.theImageSequenceProcessingMode).__name__)+"], str(self.theImageSequenceProcessingMode)==["+str(self.theImageSequenceProcessingMode)+"], str(bin(int(self.theImageSequenceProcessingMode)))==["+str(bin(int(self.theImageSequenceProcessingMode)))+"]" , CDConstants.DebugTODO )
+                CDConstants.printOut("CDControlImageSequence - handleAreaOrEdgeButtonGroupClicked(), theImageSequenceProcessingMode is = " +str(bin(self.theImageSequenceProcessingMode)), CDConstants.DebugVerbose)
+            else:
+                CDConstants.printOut( "CDControlImageSequence - handleAreaOrEdgeButtonGroupClicked(), str(type(self.theImageSequenceProcessingMode))==["+str(type(self.theImageSequenceProcessingMode))+"], str(type(self.theImageSequenceProcessingMode).__name__)==["+str(type(self.theImageSequenceProcessingMode).__name__)+"], str(self.theImageSequenceProcessingMode)==["+str(self.theImageSequenceProcessingMode)+"], str(int(self.theImageSequenceProcessingMode))==["+str(int(self.theImageSequenceProcessingMode))+"]" , CDConstants.DebugTODO )
+                CDConstants.printOut("CDControlImageSequence - handleAreaOrEdgeButtonGroupClicked(), theImageSequenceProcessingMode is = " +str(self.theImageSequenceProcessingMode), CDConstants.DebugVerbose)
+
             # propagate the signal upstream, for example to parent objects:
             self.signalImageSequenceProcessingModeHasChanged.emit(self.theImageSequenceProcessingMode)
+
+
+
+
+
+
+
+
+    # ------------------------------------------------------------------
+    def setImageSequenceWidthLabel(self, pImageSequenceWidthLabel):
+        self.imageSequenceWidthLabel.setText(pImageSequenceWidthLabel)
+        CDConstants.printOut("___ - DEBUG ----- CDControlCellScene: setImageSequenceWidthLabel(pImageSequenceWidthLabel=="+str(pImageSequenceWidthLabel)+"): done", CDConstants.DebugVerbose )
+
+    # ------------------------------------------------------------------
+    def setImageSequenceHeightLabel(self, pImageSequenceHeightLabel):
+        self.imageSequenceHeightLabel.setText(pImageSequenceHeightLabel)
+        CDConstants.printOut("___ - DEBUG ----- CDControlCellScene: setImageSequenceHeightLabel(pImageSequenceHeightLabel=="+str(pImageSequenceHeightLabel)+"): done", CDConstants.DebugVerbose )
+
+    # ------------------------------------------------------------------
+    # setImageSequenceDepthLabel() accepts as input only a string containing a properly formed integer!
+    # ------------------------------------------------------------------
+    def setImageSequenceDepthLabel(self, pImageSequenceDepthLabel):
+        self.imageSequenceDepthLabel.setText(pImageSequenceDepthLabel)
+        # also update the image selection range in the Image Sequence controls,
+        #   remembering that the index starts at 0 so the max image index should be:
+        self.controlsForImageSequence.setMaxImageIndex(int(pImageSequenceDepthLabel)-1)
+        CDConstants.printOut("___ - DEBUG ----- CDControlCellScene: setImageSequenceDepthLabel(pImageSequenceDepthLabel=="+str(pImageSequenceDepthLabel)+"): done", CDConstants.DebugVerbose )
+
+    # ------------------------------------------------------------------
+    def setImageSequenceUnitsLabel(self, pImageSequenceUnitsLabel):
+        self.imageSequenceUnitsLabel.setText(pImageSequenceUnitsLabel)
+        CDConstants.printOut("___ - DEBUG ----- CDControlCellScene: setImageSequenceUnitsLabel(pImageSequenceUnitsLabel=="+str(pImageSequenceUnitsLabel)+"): done", CDConstants.DebugVerbose )
+
+    # ------------------------------------------------------------------
+    def setImageSequenceImageUnitsLabel(self, pImageSequenceImageUnitsLabel):
+        self.imageSequenceImageOrImagesLabel.setText(pImageSequenceImageUnitsLabel)
+        CDConstants.printOut("___ - DEBUG ----- CDControlCellScene: setImageSequenceImageUnitsLabel(pImageSequenceImageUnitsLabel=="+str(pImageSequenceImageUnitsLabel)+"): done", CDConstants.DebugVerbose )
+
+
+
+    # ------------------------------------------------------------------
+    def setImageSequenceCurrentIndex(self, pImageSequenceCurrentIndex):
+        self.imageSequenceFileCurrentIndexLabel.setText(pImageSequenceCurrentIndex)
+        CDConstants.printOut("___ - DEBUG ----- CDControlCellScene: setImageSequenceCurrentIndex(pImageSequenceCurrentIndex=="+str(pImageSequenceCurrentIndex)+"): done", CDConstants.DebugVerbose )
+
+    # ------------------------------------------------------------------
+    def setImageSequenceCurrentFilename(self, pImageSequenceCurrentFilename):
+        self.imageSequenceCurrentFilename.setText(pImageSequenceCurrentFilename)
+        CDConstants.printOut("___ - DEBUG ----- CDControlCellScene: setImageSequenceCurrentFilename(pImageSequenceCurrentFilename=="+str(pImageSequenceCurrentFilename)+"): done", CDConstants.DebugVerbose )
+
 
 
 

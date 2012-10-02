@@ -23,7 +23,7 @@ from cdConstants import CDConstants
 #
 #         signalImageScaleZoomHasChanged = QtCore.pyqtSignal(str)
 #
-class CDControlInputImage(QtGui.QWidget):
+class CDControlImageLayer(QtGui.QWidget):
 
     # ------------------------------------------------------------
 
@@ -54,7 +54,7 @@ class CDControlInputImage(QtGui.QWidget):
         self.theScaleZoom = "100%"
 
         #
-        # QWidget setup (1) - windowing GUI setup for Control Panel:
+        # QWidget setup (1) - windowing GUI setup for Image Layer controls:
         #
 
         self.setWindowTitle("Image Layer Window Title")
@@ -102,7 +102,7 @@ class CDControlInputImage(QtGui.QWidget):
         #
         # QWidget setup (1) - add controls for Drawing in the Image:
         #
-        CDConstants.printOut( "___ - DEBUG ----- CDControlInputImage: populateControlPanel() 2", CDConstants.DebugTODO )
+        CDConstants.printOut( "___ - DEBUG ----- CDControlImageLayer: populateControlPanel() 2", CDConstants.DebugTODO )
 
         self.drawingGroupBox = QtGui.QGroupBox("Drawing tools")
 #         self.drawingGroupBox.setPalette(QtGui.QPalette(QtGui.QColor(222,222,222)))
@@ -185,7 +185,7 @@ class CDControlInputImage(QtGui.QWidget):
         #
         # QWidget setup (2) - add controls for transparency/displaying the Image:
         #
-        CDConstants.printOut( "___ - DEBUG ----- CDControlInputImage: populateControlPanel() 2", CDConstants.DebugTODO )
+        CDConstants.printOut( "___ - DEBUG ----- CDControlImageLayer: populateControlPanel() 2", CDConstants.DebugTODO )
 
         self.displayingImageGroupBox = QtGui.QGroupBox("Image opacity")
 #         self.displayingImageGroupBox.setPalette(QtGui.QPalette(QtGui.QColor(222,222,222)))
@@ -226,7 +226,7 @@ class CDControlInputImage(QtGui.QWidget):
         #
         # QWidget setup (3) - add controls for Color picking in the Image:
         #
-        CDConstants.printOut( "___ - DEBUG ----- CDControlInputImage: populateControlPanel() 1", CDConstants.DebugTODO )
+        CDConstants.printOut( "___ - DEBUG ----- CDControlImageLayer: populateControlPanel() 1", CDConstants.DebugTODO )
 
         self.colorPickingGroupBox = QtGui.QGroupBox("Color pick")
 #         self.colorPickingGroupBox.setPalette(QtGui.QPalette(QtGui.QColor(222,222,222)))
@@ -301,16 +301,7 @@ class CDControlInputImage(QtGui.QWidget):
         sceneItemLayerLayout.setSpacing(4)
         sceneItemLayerLayout.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
 
-#         sceneItemLayerLayout.addWidget(self.createRegionShapeButton("Ellipse", CDControlPanel.PathConst))
-# 
-#         sceneItemLayerLayout.addWidget(self.createRegionShapeButton("Rectangle", CDControlPanel.RectangleConst))
-
         sceneItemLayerLayout.addSpacing(40)
-
-#         sceneItemLayerLayout.addWidget(self.createRegionShapeButton("TenByTenBox", CDControlPanel.TenByTenBoxConst))
-# 
-#         sceneItemLayerLayout.addWidget(self.createRegionShapeButton("TwoByTwoBox", CDControlPanel.TwoByTwoBoxConst))
-
        
         self.informationGroupBox.layout().addLayout(sceneItemLayerLayout)
 
@@ -390,7 +381,7 @@ class CDControlInputImage(QtGui.QWidget):
 
 
         # setWindowOpacity seems to work only if it's set after setting WindowFlags and attributes:
-        self.setWindowOpacity(0.95)
+        # self.setWindowOpacity(0.95)
 
 
 
@@ -448,18 +439,18 @@ class CDControlInputImage(QtGui.QWidget):
     # ------------------------------------------------------------------
     def setFreehandXLabel(self, pLabelText):
         self.freehandXLabel.setText(pLabelText)
-#         CDConstants.printOut( "___ - DEBUG ----- CDControlInputImage: setFreehandXLabel(): done", CDConstants.DebugTODO )
+#         CDConstants.printOut( "___ - DEBUG ----- CDControlImageLayer: setFreehandXLabel(): done", CDConstants.DebugTODO )
 
     # ------------------------------------------------------------------
     def setFreehandYLabel(self, pLabelText):
         self.freehandYLabel.setText(pLabelText)
-#         CDConstants.printOut( "___ - DEBUG ----- CDControlInputImage: setFreehandYLabel(): done", CDConstants.DebugTODO )
+#         CDConstants.printOut( "___ - DEBUG ----- CDControlImageLayer: setFreehandYLabel(): done", CDConstants.DebugTODO )
 
 
     # ------------------------------------------------------------------
     def setFreehandColorLabel(self, pLabelColor):
         self.freehandColorLabel.setPixmap(self.createColorPixmap(pLabelColor))
-#         CDConstants.printOut( "___ - DEBUG ----- CDControlInputImage: setFreehandColorLabel(): done", CDConstants.DebugTODO )
+#         CDConstants.printOut( "___ - DEBUG ----- CDControlImageLayer: setFreehandColorLabel(): done", CDConstants.DebugTODO )
 
     # ------------------------------------------------------------
     def createColorPixmap(self, color):
@@ -472,6 +463,6 @@ class CDControlInputImage(QtGui.QWidget):
         return QtGui.QPixmap(pixmap)
 
 
-# end class CDControlInputImage(QtGui.QWidget)
+# end class CDControlImageLayer(QtGui.QWidget)
 # ======================================================================
 

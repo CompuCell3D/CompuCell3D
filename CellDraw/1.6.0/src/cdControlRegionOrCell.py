@@ -35,10 +35,10 @@ class CDControlRegionOrCell(QtGui.QWidget):
 
         # ----------------------------------------------------------------
         #
-        # QWidget setup (1) - windowing GUI setup for Control Panel:
+        # QWidget setup (1) - windowing GUI setup for Region or Cell Toggle controls:
         #
 
-        self.setWindowTitle("Draw Toggle Window Title")
+        self.setWindowTitle("Region or Cell Toggle Window Title")
         self.regionOrCellMainLayout = QtGui.QVBoxLayout()
         self.regionOrCellMainLayout.setMargin(2)
         self.regionOrCellMainLayout.setSpacing(4)

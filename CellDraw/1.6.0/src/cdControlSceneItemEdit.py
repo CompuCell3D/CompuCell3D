@@ -11,7 +11,7 @@ from cdConstants import CDConstants
 #               (a QGroupBox-based control)
 # ======================================================================
 #
-class PIFControlSceneItemEdit(QtGui.QWidget):
+class CDControlSceneItemEdit(QtGui.QWidget):
 
     # ------------------------------------------------------------
 
@@ -21,7 +21,7 @@ class PIFControlSceneItemEdit(QtGui.QWidget):
 
         # ----------------------------------------------------------------
         #
-        # QWidget setup (1) - windowing GUI setup for Control Panel:
+        # QWidget setup (1) - windowing GUI setup for Scene Item Edit controls:
         #
 
         self.setWindowTitle("Scene Item Edit Window Title")
@@ -96,7 +96,7 @@ class PIFControlSceneItemEdit(QtGui.QWidget):
 
         self.itemEditGroupBox.layout().addWidget(lToolButton)
 
-        CDConstants.printOut( "___ - DEBUG ----- PIFControlSceneItemEdit: addActionToControlsForSceneItemEdit("+ str(pAction) + ") done." , CDConstants.DebugTODO )
+        CDConstants.printOut( "___ - DEBUG ----- CDControlSceneItemEdit: addActionToControlsForSceneItemEdit("+ str(pAction) + ") done." , CDConstants.DebugTODO )
             
 
         # end of def addActionToControlsForSceneItemEdit(self)
@@ -106,6 +106,6 @@ class PIFControlSceneItemEdit(QtGui.QWidget):
 
 
 
-# end class PIFControlSceneItemEdit(QtGui.QWidget)
+# end class CDControlSceneItemEdit(QtGui.QWidget)
 # ======================================================================
 

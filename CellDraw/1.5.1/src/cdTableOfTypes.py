@@ -1063,7 +1063,7 @@ class CDTableOfTypes(QtGui.QWidget):
         # get the regionsDict keys in order to update the table's elements accordingly:
         lKeys = self.getRegionsDictKeys()
 
-        # the only row to be shown is this one:
+        # the *only* row to be shown is this one:
         lColorForCellSeedsInImageSequence = QtGui.QColor(QtCore.Qt.magenta)
         lTypeNameForCellSeedsInImageSequence = str("magentaType")
 

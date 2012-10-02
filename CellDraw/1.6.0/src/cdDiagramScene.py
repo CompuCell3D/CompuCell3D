@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 # This is only needed for Python v2 but is harmless for Python v3.
 #
 # 2010 - Mitja: apparently this is only necessary if run as main class:
@@ -51,7 +50,7 @@ def debugWhoIsTheParentFunction():
 
 
 
-import sys    # sys is necessary to inquire about "sys.platform"
+import sys    # sys is necessary to inquire about "sys.platform" and "sys.version_info"
 
 import math
 
@@ -79,10 +78,10 @@ from cdImageLayer import CDImageLayer
 from cdImageSequence import CDImageSequence
 
 # 2011 - Mitja: external class for buttons, labels, etc:
-from cdControlPanel import CDControlPanel
+from cdControlCellScene import CDControlCellScene
 
 # 2011 - Mitja: external class for controlling image picking mode: buttons/sliders:
-from cdControlInputImage import CDControlInputImage
+from cdControlImageLayer import CDControlImageLayer
 
 # 2011 - Mitja: external class for accessing image sequence controls:
 from cdControlImageSequence import CDControlImageSequence
@@ -93,14 +92,11 @@ from cdControlClusters import CDControlClusters
 # 2011 - Mitja: external class for controlling drawing toggle: regions vs. cells:
 from cdControlRegionOrCell import CDControlRegionOrCell
 
-# 2011 - Mitja: external class for selecting layer mode:
-from cdControlLayerSelection import CDControlLayerSelection
-
 # 2011 - Mitja: external class for scene scale / zoom control:
 from cdControlSceneScaleZoom import CDControlSceneScaleZoom
 
 # 2011 - Mitja: external class for scene item edit controls:
-from cdControlSceneItemEdit import PIFControlSceneItemEdit
+from cdControlSceneItemEdit import CDControlSceneItemEdit
 
 # 2011 - Mitja: external class for setting types of regions and cells:
 from cdControlTypes import CDControlTypes
@@ -109,8 +105,9 @@ from cdControlTypes import CDControlTypes
 from cdSceneAssistant import CDSceneAssistant
 
 # 2012 - Mitja: these controls are now handled from the CDDiagramSceneMainWidget:
-#   external class for interactive table of region/cell type data:
-from cdTypesEditor import CDTypesEditor
+#   external class for interactive table of region/cell type data.
+# 2012 - Mitja: no, we're keeping them back in the CellDrawMainWindow:
+# from cdTypesEditor import CDTypesEditor
 
 
 
@@ -256,9 +253,9 @@ class DiagramItem(QtGui.QGraphicsPolygonItem):
 
         CDConstants.printOut("DiagramItem DIAGRAMITEM debugWhoIsTheRunningFunction() is "+str(debugWhoIsTheRunningFunction())+" debugWhoIsTheParentFunction() is "+str(debugWhoIsTheParentFunction()), CDConstants.DebugTODO )
 
-        import traceback
-        
-        traceback.print_stack()
+        if (CDConstants.globalDebugLevel >= CDConstants.DebugAll):
+            import traceback
+            traceback.print_stack()
 
         #  self.setFillRule(QtCore.Qt.WindingFill) from Qt documentation:
         # Specifies that the region is filled using the non zero winding rule.
@@ -419,6 +416,10 @@ class DiagramItem(QtGui.QGraphicsPolygonItem):
 #         # painter->drawRoundedRect(-10, -10, 20, 20, 5, 5);
         CDConstants.printOut("--------------------------------------------- DiagramItem.__init__() end", CDConstants.DebugExcessive )
     # end of    def __init__(self, pDiagramType, contextMenu, parent=None, scene=None)
+    # ------------------------------------------------------------------
+
+
+
 
     # ------------------------------------------------------------------
     # 2011 - Mitja: for each scene item, is this item a region of cells or a single cell?
@@ -1007,7 +1008,12 @@ class DiagramScene(QtGui.QGraphicsScene):
         CDConstants.printOut("==================================== addToRegionColorsInUse", CDConstants.DebugTODO )
 
         # retrieve the region "name(color)" dictionary from the table of regions:
-        lRegionsTableDict = self.parentWidget.theTypesEditor.getTypesDict()
+
+        # the types editor would be here if declared locally to this file:
+        # lRegionsTableDict = self.parentWidget.theTypesEditor.getTypesDict()
+        # but the types editor is to be found thus since it's declared in the CellDrawMainWindow class:
+        lRegionsTableDict = self.parentWidget.parentWindow.theTypesEditor.getTypesDict()
+
         lKeys = lRegionsTableDict.keys()
         # lColor is the color for which we have to update the use count:
         lColor = QtGui.QColor(pColor)
@@ -1021,11 +1027,11 @@ class DiagramScene(QtGui.QGraphicsScene):
 
                 # check if there is already an entry for this color in the self.regionUseDict :
                 if lColor.rgba() not in self.regionUseDict:
-                    CDConstants.printOut("NO "+str(lColor.rgba())+"not in "+str(self.regionUseDict), CDConstants.DebugTODO )
+                    CDConstants.printOut("NO "+str(lColor.rgba())+" not in "+str(self.regionUseDict), CDConstants.DebugTODO )
                     # add a new entry to the self.regionUseDict local dictionary of used colors :
                     lCount = 1
                 else:
-                    CDConstants.printOut("YES "+str(lColor.rgba())+"in "+str(self.regionUseDict), CDConstants.DebugTODO )
+                    CDConstants.printOut("YES "+str(lColor.rgba())+" in "+str(self.regionUseDict), CDConstants.DebugTODO )
                     # increment the current entry in the self.regionUseDict local dictionary of used colors:
                     lCount = 1 + self.regionUseDict[ lColor.rgba() ][1]
 
@@ -1034,7 +1040,11 @@ class DiagramScene(QtGui.QGraphicsScene):
                 CDConstants.printOut( str(self.regionUseDict[ lColor.rgba() ][0])+" "+str(self.regionUseDict[ lColor.rgba() ][1]) , CDConstants.DebugTODO )
 
                 # signal upstream about the updated use of this region color:
-                self.parentWidget.theTypesEditor.updateRegionUseOfTableElements(lColor, lCount)
+
+                # the types editor would be here if declared locally to this file:
+                # self.parentWidget.theTypesEditor.updateRegionUseInTypesEditor(lColor, lCount)
+                # but the types editor is here since it's declared in the CellDrawMainWindow class:
+                self.parentWidget.parentWindow.theTypesEditor.updateRegionUseInTypesEditor(lColor, lCount)
 
         # if there is at least one color in the regionUseDict table, show the table:
 #         if self.regionUseDict :
@@ -1052,7 +1062,12 @@ class DiagramScene(QtGui.QGraphicsScene):
         CDConstants.printOut("==================================== subtractFromRegionColorsInUse", CDConstants.DebugTODO )
 
         # retrieve the region "name(color)" dictionary from the table of regions:
-        lRegionsTableDict = self.parentWidget.theTypesEditor.getTypesDict()
+        
+        # the types editor would be here if declared locally to this file:
+        # lRegionsTableDict = self.parentWidget.theTypesEditor.getTypesDict()
+        # but the types editor is to be found thus since it's declared in the CellDrawMainWindow class:
+        lRegionsTableDict = self.parentWidget.parentWindow.theTypesEditor.getTypesDict()
+        
         lKeys = lRegionsTableDict.keys()
         # lColor is the color for which we have to update the use count:
         lColor = QtGui.QColor(pColor)
@@ -1079,7 +1094,12 @@ class DiagramScene(QtGui.QGraphicsScene):
                         CDConstants.printOut( str(self.regionUseDict[ lColor.rgba() ][0])+" "+str(self.regionUseDict[ lColor.rgba() ][1]) , CDConstants.DebugTODO )
 
                 # signal upstream about the updated use of this region color:
-                self.parentWidget.theTypesEditor.updateRegionUseOfTableElements(lColor, lCount)
+
+        
+                # the types editor would be here if declared locally to this file:
+                # self.parentWidget.theTypesEditor.updateRegionUseInTypesEditor(lColor, lCount)
+                # but the types editor is to be found thus since it's declared in the CellDrawMainWindow class:
+                self.parentWidget.parentWindow.theTypesEditor.updateRegionUseInTypesEditor(lColor, lCount)
 
         # if there is at least one color in the regionUseDict table, show the table:
 #         if self.regionUseDict :
@@ -1181,36 +1201,17 @@ class DiagramScene(QtGui.QGraphicsScene):
             item.setFont(self.myFont)
 
     # ------------------------------------------------------------
-    def setMode(self, mode):
+    def setMode(self, pMode):
         # 2010 - Mitja: reset resizing unless we are in resizing mode
         #    and remain in resizing mode:
         if (self.mySceneMode == CDConstants.SceneModeResizeItem) and \
-            (mode == CDConstants.SceneModeResizeItem):
+            (pMode == CDConstants.SceneModeResizeItem):
             pass
         else:
             self.stopOutlineResizing()
-        self.mySceneMode = mode
-       
-        # 2011 - Mitja: adapt window title to current mode:
-        if self.parentWidget.parentWindow != None:
-            if self.mySceneMode == CDConstants.SceneModeInsertItem:
-                self.parentWidget.parentWindow.setWindowTitle("Cell Scene Editor - Insert Item")
-            elif self.mySceneMode == CDConstants.SceneModeInsertLine:
-                self.parentWidget.parentWindow.setWindowTitle("Cell Scene Editor - Insert Line")
-            elif self.mySceneMode == CDConstants.SceneModeInsertText:
-                self.parentWidget.parentWindow.setWindowTitle("Cell Scene Editor - Insert Text")
-            elif self.mySceneMode == CDConstants.SceneModeMoveItem:
-                self.parentWidget.parentWindow.setWindowTitle("Cell Scene Editor - Move Item")
-            elif self.mySceneMode == CDConstants.SceneModeInsertPixmap:
-                self.parentWidget.parentWindow.setWindowTitle("Cell Scene Editor - Insert Pixmap")
-            elif self.mySceneMode == CDConstants.SceneModeResizeItem:
-                self.parentWidget.parentWindow.setWindowTitle("Cell Scene Editor - Resize Item")
-            elif self.mySceneMode == CDConstants.SceneModeImageLayer:
-                self.parentWidget.parentWindow.setWindowTitle("Cell Scene Editor - Image Layer")
-            elif self.mySceneMode == CDConstants.SceneModeImageSequence:
-                self.parentWidget.parentWindow.setWindowTitle("Cell Scene Editor - Image Sequence")
-           
-        CDConstants.printOut("DiagramScene: setMode (mode=="+str(mode)+"). ", CDConstants.DebugVerbose )
+        self.mySceneMode = pMode
+                  
+        CDConstants.printOut("DiagramScene: setMode (pMode=="+str(pMode)+") done. ", CDConstants.DebugVerbose )
 
     # end of  def setMode(self, mode).
     # ------------------------------------------------------------
@@ -1800,7 +1801,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
     # 2010 - Mitja - since this class is not a QMainWindow class anymore,
     #   we need to be able to access our "parent" class (a QMainWindow!)
-    #   to place menus and toolbars onto it.
+    #   to attach menus to it...
     def __init__(self, pParentWindow = None):
         super(CDDiagramSceneMainWidget, self).__init__(pParentWindow)
 
@@ -1813,9 +1814,6 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
             pass
         else:
             self.createSceneEditActions()
-
-            # 2010 - Mitja: is there any real need for menus,
-            #    when all actions are reachable from toolbars?
             self.createMenus()
            
 
@@ -1834,26 +1832,10 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         #
         # panel for PIFF parameters, with the CDDiagramSceneMainWidget as its parent
         #    (that's why we pass "self" as parameter to the dialog panel) :
-        self.mainControlPanel = CDControlPanel(self)
+        self.controlsForCellScene = CDControlCellScene(self)
 
         # 2011 - Mitja: we now place all toolbox items inside the main Control Panel.
 
-        # -----------------------------------
-
-        # 2011 - Mitja: to control the "layer selection" for Cell Scene mode,
-        #   we add a set of radio-buttons to the Control Panel:
-
-        self.theControlsForLayerSelection = CDControlLayerSelection()
-
-        # explicitly connect the "signalLayersSelectionModeHasChanged()"
-        #   signal from the theControlsForLayerSelection object,
-        #   to our "slot" method responding to radio button changes:
-        self.theControlsForLayerSelection.signalLayersSelectionModeHasChanged.connect( \
-            self.handleLayersSelectionModeHasChanged )
-
-        # place the layer selection buttons in the control panel:
-        self.mainControlPanel.setControlsForLayerSelection( \
-            self.theControlsForLayerSelection)
 
         # -----------------------------------
 
@@ -1869,7 +1851,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
             self.handleSceneScaleZoomChanged )
 
         # place the layer selection buttons in the control panel:
-        self.mainControlPanel.setControlsForSceneScaleZoom( \
+        self.controlsForCellScene.setControlsForSceneScaleZoom( \
             self.theSceneScaleZoomControl)
 
         # -----------------------------------
@@ -1887,7 +1869,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
             self.handleToggleRegionOrCellDrawingChanged)
 
         # place the drawing toggle GUI in the control panel:
-        self.mainControlPanel.setControlsForDrawingRegionOrCellToggle( \
+        self.controlsForCellScene.setControlsForDrawingRegionOrCellToggle( \
             self.theToggleforRegionOrCellDrawing)
 
         # -----------------------------------
@@ -1899,32 +1881,32 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         #   that are going to be placed inside the main Control Panel:
         self.theButtonGroupForBackgrounds = self.createButtonGroupForBackgrounds()
 
-        self.mainControlPanel.setButtonGroupForRegionShapes( \
+        self.controlsForCellScene.setButtonGroupForRegionShapes( \
             self.theButtonGroupForRegionShapes )
 
-        self.mainControlPanel.setButtonGroupForBackgrounds( \
+        self.controlsForCellScene.setButtonGroupForBackgrounds( \
             self.theButtonGroupForBackgrounds )
 
         # create four icons for the basic four region DiagramItem buttons:
         lItem = DiagramItem(DiagramItem.RectangleConst, self.editMenu)
         lIcon = QtGui.QIcon( lItem.pixmapForIconFromPolygon() )
-        self.mainControlPanel.setWidgetIcon(DiagramItem.RectangleConst, lIcon)
+        self.controlsForCellScene.setWidgetIcon(DiagramItem.RectangleConst, lIcon)
 
         lItem = DiagramItem(DiagramItem.TenByTenBoxConst, self.editMenu)
         # u"\u00D7" # <-- the multiplication sign as unicode
         lIcon = QtGui.QIcon( lItem.pixmapForIconFromPolygon("10" + u"\u00D7" + "10") )
-        self.mainControlPanel.setWidgetIcon(DiagramItem.TenByTenBoxConst, lIcon)
+        self.controlsForCellScene.setWidgetIcon(DiagramItem.TenByTenBoxConst, lIcon)
 
         lItem = DiagramItem(DiagramItem.TwoByTwoBoxConst, self.editMenu)
         # u"\u00D7" # <-- the multiplication sign as unicode
         lIcon = QtGui.QIcon( lItem.pixmapForIconFromPolygon("2 " + u"\u00D7" + " 2") )
-        self.mainControlPanel.setWidgetIcon(DiagramItem.TwoByTwoBoxConst, lIcon)
+        self.controlsForCellScene.setWidgetIcon(DiagramItem.TwoByTwoBoxConst, lIcon)
 
 
-        # the "PathConst" is not there since it's generated by CDControlPanel internally:
+        # the "PathConst" is not there since it's generated by CDControlCellScene internally:
         # lItem = DiagramItem(DiagramItem.PathConst, self.editMenu)
         # lIcon = QtGui.QIcon( lItem.pixmapForIconFromPolygon() )
-        # self.mainControlPanel.setWidgetIcon(DiagramItem.PathConst, lIcon)
+        # self.controlsForCellScene.setWidgetIcon(DiagramItem.PathConst, lIcon)
         lItem = 0
 
         # -----------------------------------
@@ -1937,42 +1919,40 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
         # -----------------------------------
 
-        # 2011 - Mitja: to control the "picking mode" for the input image,
+        # 2011 - Mitja: to control the "picking mode" for the input image layer,
         #   we add a set of radio-buttons and a slider to the Control Panel:
 
-        self.theControlsForInputImagePicking = CDControlInputImage()
+        self.controlsForImageLayer = CDControlImageLayer()
         # explicitly connect the "inputImagePickingModeChangedSignal()" signal from the
-        #   theControlsForInputImagePicking object, to our "slot" method
+        #   controlsForImageLayer object, to our "slot" method
         #   so that it will respond to any change in radio button choices:
-        answer = self.connect(self.theControlsForInputImagePicking, \
+        answer = self.connect(self.controlsForImageLayer, \
                               QtCore.SIGNAL("inputImagePickingModeChangedSignal()"), \
                               self.handleInputImagePickingModeChanged )
         # explicitly connect the "inputImageOpacityChangedSignal()" signal from the
-        #   theControlsForInputImagePicking object, to our "slot" method
+        #   controlsForImageLayer object, to our "slot" method
         #   so that it will respond to any change in slider values:
-        answer = self.connect(self.theControlsForInputImagePicking, \
+        answer = self.connect(self.controlsForImageLayer, \
                               QtCore.SIGNAL("inputImageOpacityChangedSignal()"), \
                               self.handleImageOpacityChanged )
         # explicitly connect the "fuzzyPickTresholdChangedSignal()" signal from the
-        #   theControlsForInputImagePicking object, to our "slot" method
+        #   controlsForImageLayer object, to our "slot" method
         #   so that it will respond to any change in slider values:
-        answer = self.connect(self.theControlsForInputImagePicking, \
+        answer = self.connect(self.controlsForImageLayer, \
                               QtCore.SIGNAL("fuzzyPickTresholdChangedSignal()"), \
                               self.handleFuzzyPickThresholdChanged )
 
         # explicitly connect the "signalImageScaleZoomHasChanged()"
-        #   signal from the theControlsForInputImagePicking object,
+        #   signal from the controlsForImageLayer object,
         #   to our "slot" method responding to radio button changes:
-        self.theControlsForInputImagePicking.signalImageScaleZoomHasChanged.connect( \
+        self.controlsForImageLayer.signalImageScaleZoomHasChanged.connect( \
             self.handleImageScaleZoomChanged )
 
 
-        # 2011 - Mitja: since the self.theControlsForInputImagePicking widget is used
+        # 2011 - Mitja: since the self.controlsForImageLayer widget is used
         #   to control QGraphicsScene's theCDImageLayer's behavior, it's initially not enabled:
-        self.theControlsForInputImagePicking.setEnabled(False)
-       
-        self.mainControlPanel.setControlsForInputImagePicking( \
-            self.theControlsForInputImagePicking)
+        self.controlsForImageLayer.setEnabled(False)
+
 
 
 
@@ -2013,31 +1993,10 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         # 2011 - Mitja: since the self.theControlsForImageSequence widget is used
         #   to control an Image Sequence, it's initially not enabled:
         self.theControlsForImageSequence.setEnabled(False)
-       
-        self.mainControlPanel.setControlsForImageSequence( \
-            self.theControlsForImageSequence)
 
-
-
-
-
-        # -----------------------------------
-
-        # 2012 - Mitja: to access the "Type Editor" controls,
-        #   we add another pane to the Control Panel:
-        # set up the GUI to control (formerly the table) the Type Editor for regions/cell values:
-        # 2012 - Mitja: these controls used to be handled from the CellDrawMainWindow,
-        #   now they become another pane in the Control Panel:
-        # -----------------------------------------------------------------------------
-        #
-
-        # 2010 - Mitja added an interactive table
-        #   containing all regions/colors found in the pixmap. If a parent widget is passed as parameter,
-        #   then when the QApplication exits, it'll signal this window to close as well:
-        self.theTypesEditor = CDTypesEditor(self.mainControlPanel)
-
-        self.mainControlPanel.setcontrolsForTypeEditor( \
-            self.theTypesEditor)
+# 2012: move  self.theControlsForImageSequence  to its own QDockWidget      
+#         self.controlsForCellScene.setControlsForImageSequence( \
+#             self.theControlsForImageSequence)
 
 
 
@@ -2049,21 +2008,6 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
 
 
-
-
-
-
-
-
-
-        self.theControlsForClusters = CDControlClusters()
-
-        # 2011 - Mitja: since the self.theControlsForClusters widget is used
-        #   to control an Image Sequence, it's initially not enabled:
-        self.theControlsForClusters.setEnabled(False)
-       
-        self.mainControlPanel.setControlsForClusters( \
-            self.theControlsForClusters)
 
 
 
@@ -2082,7 +2026,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         #   to control an Image Sequence, it's initially not enabled:
         self.theControlsForClusters.setEnabled(False)
        
-        self.mainControlPanel.setControlsForClusters( \
+        self.controlsForCellScene.setControlsForClusters( \
             self.theControlsForClusters)
 
 
@@ -2092,7 +2036,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         # 2010 - Mitja: "Scene Item Edit" controls,
         #   containing basic scene editing actions:
         #
-        self.theControlsForSceneItemEdit = PIFControlSceneItemEdit()
+        self.theControlsForSceneItemEdit = CDControlSceneItemEdit()
         self.theControlsForSceneItemEdit.addActionToControlsForSceneItemEdit(self.cutAction)
         self.theControlsForSceneItemEdit.addActionToControlsForSceneItemEdit(self.copyAction)
         self.theControlsForSceneItemEdit.addActionToControlsForSceneItemEdit(self.pasteAction)
@@ -2101,7 +2045,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         self.theControlsForSceneItemEdit.addActionToControlsForSceneItemEdit(self.sendBackAction)
         self.theControlsForSceneItemEdit.populateControlsForSceneItemEdit()
 
-        self.mainControlPanel.setControlsForSceneItemEdit( \
+        self.controlsForCellScene.setControlsForSceneItemEdit( \
             self.theControlsForSceneItemEdit)
 
 
@@ -2125,21 +2069,21 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         # add the Table of Types window show/hide toggle action to the windowMenu in the main menu bar:
         self.theControlsForTypes.setMenuForTableAction(self.windowMenu)
 
-        self.mainControlPanel.setControlsForTypes( self.theControlsForTypes)
+        self.controlsForCellScene.setControlsForTypes( self.theControlsForTypes)
        
 
         # ------------------------------------------------------------
 
-        # populate the PIFF control panel toolbar with its content, i.e.
+        # populate the control panel with its content, i.e.
         #   now that we passed all the required data, generate the Control Panel GUI:
-        self.mainControlPanel.populateControlPanel()
+        self.controlsForCellScene.populateControlPanel()
 
         # finally show the PIFF control panel:
-        self.mainControlPanel.show()
+        self.controlsForCellScene.show()
 
 
         # ------------------------------------------------------------
-        # 2012 - create a QAction to show/hide the Control Panel Dock Widget:
+        # 2012 - create a QAction to show/hide the Control Panel QDockWidget:
         self.controlPanelDockWidgetAction = QtGui.QAction( \
                 QtGui.QIcon(':/icons/regiontable.png'), "Control Panel", self, \
                 shortcut="Ctrl+Y", statusTip="Toggle (show/hide) the Control Panel", \
@@ -2150,15 +2094,13 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 #         answer = self.theControlsForImageSequence.signalForPIFFTableToggle.connect( \
 #             self.handlePIFRegionTableButton)
 
-        # add the show/hide toggle action for the Control Panel Dock Widget
+        # add the show/hide toggle action for the Control Panel QDockWidget
         #   to the windowMenu in the main menu bar:
         self.windowMenu.addAction(self.controlPanelDockWidgetAction)
 
 
 
         # ----------------------
-
-        #         self.createToolbars()
 
         self.setLayout(QtGui.QHBoxLayout())
         self.layout().setMargin(2)
@@ -2198,14 +2140,109 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
 
     # ------------------------------------------------------------------
-    # 2012 - Mitja: assign CellDraw preferences object:
+    # 2012 - Mitja: access the only CDControlCellScene object:
     # ------------------------------------------------------------------
-    def getMainControlPanel(self):
-        CDConstants.printOut( "_____ - CDDiagramSceneMainWidget:getMainControlPanel()  --- returning mainControlPanel ==" + str(self.mainControlPanel), CDConstants.DebugExcessive )
-        if isinstance( self.mainControlPanel, CDControlPanel ):
-            return self.mainControlPanel
+    def getControlsForCellScene(self):
+        CDConstants.printOut( "_____ - CDDiagramSceneMainWidget:getControlsForCellScene()  --- returning controlsForCellScene ==" + str(self.controlsForCellScene), CDConstants.DebugExcessive )
+        if isinstance( self.controlsForCellScene, CDControlCellScene ):
+            return self.controlsForCellScene
         else:
             return None
+
+
+    # ------------------------------------------------------------------
+    # 2012 - Mitja: access the only CDControlImageLayer object:
+    # ------------------------------------------------------------------
+    def getControlsForImageLayer(self):
+        CDConstants.printOut( "_____ - CDDiagramSceneMainWidget:getControlsForImageLayer()  --- returning controlsForImageLayer ==" + str(self.controlsForImageLayer), CDConstants.DebugExcessive )
+        if isinstance( self.controlsForImageLayer, CDControlImageLayer ):
+            return self.controlsForImageLayer
+        else:
+            return None
+
+
+    # ------------------------------------------------------------------
+    # 2012 - Mitja: access the only CDControlImageSequence object:
+    # ------------------------------------------------------------------
+    def getControlsForImageSequence(self):
+        CDConstants.printOut( "_____ - CDDiagramSceneMainWidget:getControlsForImageSequence()  --- returning theControlsForImageSequence ==" + str(self.theControlsForImageSequence), CDConstants.DebugExcessive )
+        if isinstance( self.theControlsForImageSequence, CDControlImageSequence ):
+            return self.theControlsForImageSequence
+        else:
+            return None
+
+
+    # ------------------------------------------------------------------
+    # 2012 - Mitja: since self.scene is an instance of the DiagramScene class,
+    #   __setSceneMode is a function to both set the scene's mode,
+    #   as well as handle any other GUI changes that have to happen:
+    # ------------------------------------------------------------------
+    def __setSceneMode(self, pSceneMode):
+#     
+#         # only do something if the scene mode is changing:
+#         if (self.scene.getMode() == pSceneMode):
+#             return
+#         
+        self.scene.setMode(pSceneMode)
+
+        # 2011 - Mitja: hide/show the GUI controls appropriate to the current mode:
+        if pSceneMode == CDConstants.SceneModeInsertItem:
+            self.controlsForImageLayer.setEnabled(False)
+            self.theControlsForImageSequence.setEnabled(False)
+            self.parentWindow.theTypesEditor.updateTableOfTypesForImageSequenceOff()
+        elif pSceneMode == CDConstants.SceneModeInsertLine:
+            self.controlsForImageLayer.setEnabled(False)
+            self.theControlsForImageSequence.setEnabled(False)
+            self.parentWindow.theTypesEditor.updateTableOfTypesForImageSequenceOff()
+        elif pSceneMode == CDConstants.SceneModeInsertText:
+            self.controlsForImageLayer.setEnabled(False)
+            self.theControlsForImageSequence.setEnabled(False)
+            self.parentWindow.theTypesEditor.updateTableOfTypesForImageSequenceOff()
+        elif pSceneMode == CDConstants.SceneModeMoveItem:
+            self.controlsForImageLayer.setEnabled(False)
+            self.theControlsForImageSequence.setEnabled(False)
+            self.parentWindow.theTypesEditor.updateTableOfTypesForImageSequenceOff()
+            # 2010 - Mitja: add code for handling insertion of pixmap items:
+            try:
+                self.theButtonGroupForRegionShapes.button(item.diagramType).setChecked(False)
+            except:
+                CDConstants.printOut("EXCEPTION EXCEPTION EXCEPTION item item item item =", item , CDConstants.DebugTODO )
+        elif pSceneMode == CDConstants.SceneModeInsertPixmap:
+            self.controlsForImageLayer.setEnabled(False)
+            self.theControlsForImageSequence.setEnabled(False)
+            self.parentWindow.theTypesEditor.updateTableOfTypesForImageSequenceOff()
+        elif pSceneMode == CDConstants.SceneModeResizeItem:
+            self.controlsForImageLayer.setEnabled(False)
+            self.theControlsForImageSequence.setEnabled(False)
+            self.parentWindow.theTypesEditor.updateTableOfTypesForImageSequenceOff()
+        elif pSceneMode == CDConstants.SceneModeImageLayer:
+            self.controlsForImageLayer.setEnabled(True)
+            self.theControlsForImageSequence.setEnabled(False)
+            self.parentWindow.theTypesEditor.updateTableOfTypesForImageSequenceOff()
+        elif pSceneMode == CDConstants.SceneModeImageSequence:
+            self.controlsForImageLayer.setEnabled(False)
+            self.theControlsForImageSequence.setEnabled(True)
+            self.parentWindow.theTypesEditor.updateTableOfTypesForImageSequenceOn()
+
+
+        # 2011 - Mitja: adapt window title to new scene mode:
+        if self.parentWindow != None:
+            if pSceneMode == CDConstants.SceneModeInsertItem:
+                self.parentWindow.setWindowTitle("Cell Scene Editor - Insert Item")
+            elif pSceneMode == CDConstants.SceneModeInsertLine:
+                self.parentWindow.setWindowTitle("Cell Scene Editor - Insert Line")
+            elif pSceneMode == CDConstants.SceneModeInsertText:
+                self.parentWindow.setWindowTitle("Cell Scene Editor - Insert Text")
+            elif pSceneMode == CDConstants.SceneModeMoveItem:
+                self.parentWindow.setWindowTitle("Cell Scene Editor - Move Item")
+            elif pSceneMode == CDConstants.SceneModeInsertPixmap:
+                self.parentWindow.setWindowTitle("Cell Scene Editor - Insert Pixmap")
+            elif pSceneMode == CDConstants.SceneModeResizeItem:
+                self.parentWindow.setWindowTitle("Cell Scene Editor - Resize Item")
+            elif pSceneMode == CDConstants.SceneModeImageLayer:
+                self.parentWindow.setWindowTitle("Cell Scene Editor - Image Layer")
+            elif pSceneMode == CDConstants.SceneModeImageSequence:
+                self.parentWindow.setWindowTitle("Cell Scene Editor - Image Sequence")
 
 
 
@@ -2317,14 +2354,10 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
                 button.setChecked(False)
 
         if id == self.InsertTextButton:
-            self.scene.setMode(CDConstants.SceneModeInsertText)
-            # 2011 - Mitja: disable SceneModeImageLayer-specific buttons:
-            self.theControlsForInputImagePicking.setEnabled(False)
+            self.__setSceneMode(CDConstants.SceneModeInsertText)
         else:
             self.scene.setItemType(id)
-            self.scene.setMode(CDConstants.SceneModeInsertItem)
-            # 2011 - Mitja: disable SceneModeImageLayer-specific buttons:
-            self.theControlsForInputImagePicking.setEnabled(False)
+            self.__setSceneMode(CDConstants.SceneModeInsertItem)
 
 
 
@@ -2542,7 +2575,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
             lTheNewItem.setSelected(True)
 
             # emit our own signal to the handler which does other GUI adjustments
-            #   whenever a new signal is inserted:
+            #   whenever a new scene item is inserted:
             self.scene.signalThatItemInserted.emit(lTheNewItem)
 
             # position the new item in the scene:
@@ -2593,37 +2626,19 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
 
     # ------------------------------------------------------------------
-    # 2010 Mitja - slot method handling "signalLayersSelectionModeHasChanged"
-    #    events (AKA signals) arriving from  theControlsForLayerSelection:
+    # 2010 Mitja - slot method handling "signalModeSelectToolbarChanged"
+    #    events (AKA signals) arriving from  theModeSelectToolBar:
     # ------------------------------------------------------------------
-    def handleLayersSelectionModeHasChanged(self, pNewMode):
+    def handleSceneModeHasChanged(self, pNewMode):
 
-        CDConstants.printOut( "___ starting handleLayersSelectionModeHasChanged( pNewMode == "+str(pNewMode)+" ) ....", CDConstants.DebugTODO )
-        # we used to query which button is checked explicitly, but we now
-        #   receive that information as parameter directly from the signal:
-        # lCheckedId = self.theControlsForLayerSelection.getCheckedButtonId()
-        self.scene.setMode(pNewMode)
+        CDConstants.printOut( "___ starting handleSceneModeHasChanged( pNewMode == "+str(pNewMode)+" ) ....", CDConstants.DebugTODO )
 
-        # 2011 - Mitja: enable/disable SceneModeImageLayer-specific buttons:
-        if self.scene.getMode() == CDConstants.SceneModeImageLayer:
-            self.theControlsForInputImagePicking.setEnabled(True)
-        else:
-            self.theControlsForInputImagePicking.setEnabled(False)
+        self.__setSceneMode(pNewMode)
 
-        # 2011 - Mitja: enable/disable SceneModeImageSequence-specific controls:
-        if self.scene.getMode() == CDConstants.SceneModeImageSequence:
-            self.theControlsForImageSequence.setEnabled(True)
-            # signal upstream about the updated use of this region color:
-            self.theTypesEditor.updateTableOfTypesForImageSequenceOn()
-            CDConstants.printOut( "        in handleLayersSelectionModeHasChanged() -- self.theTypesEditor.updateTableOfTypesForImageSequenceOn() called.", CDConstants.DebugTODO )
-        else:
-            self.theControlsForImageSequence.setEnabled(False)
-            # signal upstream about the updated use of this region color:
-            self.theTypesEditor.updateTableOfTypesForImageSequenceOff()
-            CDConstants.printOut( "        in handleLayersSelectionModeHasChanged() -- self.theTypesEditor.updateTableOfTypesForImageSequenceOff() called.", CDConstants.DebugTODO )
+        CDConstants.printOut( "___ ending handleSceneModeHasChanged( pNewMode == "+str(pNewMode)+" ) ....done.", CDConstants.DebugTODO )
 
-        CDConstants.printOut( "___ ending handleLayersSelectionModeHasChanged( pNewMode == "+str(pNewMode)+" ) ....done.", CDConstants.DebugTODO )
 
+    # ------------------------------------------------------------
     # ------------------------------------------------------------
     def bringToFront(self):
         if not self.scene.selectedItems():
@@ -2654,32 +2669,20 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
     # ------------------------------------------------------------
     def handlerForItemInserted(self, item):
-        self.theControlsForLayerSelection.setCheckedButton( \
-            CDConstants.SceneModeMoveItem, True )
-        lCheckedId = self.theControlsForLayerSelection.getCheckedButtonId()
-        self.scene.setMode(lCheckedId)
+        self.theModeSelectToolBar.setSelectedSceneMode( CDConstants.SceneModeMoveItem )
+        lCheckedId = self.theModeSelectToolBar.getSelectedSceneMode()
+        self.__setSceneMode(lCheckedId)
 
-        # 2011 - Mitja: disable SceneModeImageLayer-specific buttons:
-        self.theControlsForInputImagePicking.setEnabled(False)
 
-        # 2011 - Mitja: disable SceneModeImageSequence-specific buttons:
-        self.theControlsForImageSequence.setEnabled(False)
-
-        # 2010 - Mitja: add code for handling insertion of pixmap items:
-        try:
-            self.theButtonGroupForRegionShapes.button(item.diagramType).setChecked(False)
-        except:
-            CDConstants.printOut("EXCEPTION EXCEPTION EXCEPTION item item item item =", item , CDConstants.DebugTODO )
-            pass
 
 
 
     # ------------------------------------------------------------
     def handlerForMouseMoved(self, pDict):
         lDict = dict(pDict)
-        self.theControlsForInputImagePicking.setFreehandXLabel(lDict[0])
-        self.theControlsForInputImagePicking.setFreehandYLabel(lDict[1])
-        self.theControlsForInputImagePicking.setFreehandColorLabel( \
+        self.controlsForImageLayer.setFreehandXLabel(lDict[0])
+        self.controlsForImageLayer.setFreehandYLabel(lDict[1])
+        self.controlsForImageLayer.setFreehandColorLabel( \
                 QtGui.QColor( lDict[2], lDict[3], lDict[4] )      )
 
 
@@ -2688,13 +2691,13 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
     def handlerForItemResized(self, pRect):
         lRect = QtCore.QRectF(pRect)
 #         CDConstants.printOut( " "+str( lRect )+" ", CDConstants.DebugTODO )
-        self.mainControlPanel.setResizingItemXLabel(str(int(lRect.x())))
-        self.mainControlPanel.setResizingItemYLabel(str(int(lRect.y())))
-        self.mainControlPanel.setResizingItemWidthLabel(str(int(lRect.width())))
-        self.mainControlPanel.setResizingItemHeightLabel(str(int(lRect.height())))
-#         self.scene.setMode(self.theControlsForLayerSelection.getCheckedButtonId())
+        self.controlsForCellScene.setResizingItemXLabel(str(int(lRect.x())))
+        self.controlsForCellScene.setResizingItemYLabel(str(int(lRect.y())))
+        self.controlsForCellScene.setResizingItemWidthLabel(str(int(lRect.width())))
+        self.controlsForCellScene.setResizingItemHeightLabel(str(int(lRect.height())))
+#         self.scene.setMode(self.theModeSelectToolBar.getSelectedSceneMode())
 #         self.theButtonGroupForRegionShapes.button(self.InsertTextButton).setChecked(False)
-#         self.theControlsForInputImagePicking.setEnabled(False)
+#         self.controlsForImageLayer.setEnabled(False)
 
 
     # ------------------------------------------------------------
@@ -2708,21 +2711,17 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         CDConstants.printOut(str( lDict ) , CDConstants.DebugTODO )
         CDConstants.printOut("    TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO ", CDConstants.DebugTODO )
         print
-        self.mainControlPanel.setSceneWidthLabel(lDict[0])
-        self.mainControlPanel.setSceneHeightLabel(lDict[1])
-        self.mainControlPanel.setSceneDepthLabel(lDict[2])
-        self.mainControlPanel.setSceneUnitsLabel(lDict[3])
+        self.controlsForCellScene.setSceneWidthLabel(lDict[0])
+        self.controlsForCellScene.setSceneHeightLabel(lDict[1])
+        self.controlsForCellScene.setSceneDepthLabel(lDict[2])
+        self.controlsForCellScene.setSceneUnitsLabel(lDict[3])
 
 
     # ------------------------------------------------------------
     def handlerForTextInserted(self, item):
         self.theButtonGroupForRegionShapes.button(self.InsertTextButton).setChecked(False)
-        lCheckedId = self.theControlsForLayerSelection.getCheckedButtonId()
-        self.scene.setMode(lCheckedId)
-        # 2011 - Mitja: disable SceneModeImageLayer-specific buttons:
-        self.theControlsForInputImagePicking.setEnabled(False)
-        # 2011 - Mitja: disable SceneModeImageSequence-specific buttons:
-        self.theControlsForInputImagePicking.setEnabled(False)
+        lCheckedId = self.theModeSelectToolBar.getSelectedSceneMode()
+        self.__setSceneMode(lCheckedId)
 
     # ------------------------------------------------------------
     def currentFontChanged(self, font):
@@ -2757,7 +2756,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
     # ------------------------------------------------------------------
     # 2010 Mitja - this is a slot method to handle
     #    "current index changed" events (AKA signals) arriving from
-    #    the object theControlsForInputImagePicking
+    #    the object controlsForImageLayer
     # ------------------------------------------------------------------
     def handleImageScaleZoomChanged(self, pScale):
         lNewScale = pScale.left(pScale.indexOf("%")).toDouble()[0] / 100.0
@@ -2864,11 +2863,11 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
     # ------------------------------------------------------------------
     # 2010 Mitja - this is a slot method to handle "button change" events
-    #    (AKA signals) arriving from the object theControlsForInputImagePicking
+    #    (AKA signals) arriving from the object controlsForImageLayer
     # ------------------------------------------------------------------
     def handleInputImagePickingModeChanged(self):
         # SLOT function for the signal "inputImagePickingModeChangedSignal()"
-        #   from theControlsForInputImagePicking
+        #   from controlsForImageLayer
         #
         # here we retrieve the updated values from radio buttons and update
         # the global keeping track of what's been changed:
@@ -2877,7 +2876,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         #    2 = Polygon Draw = CDConstants.ImageModeDrawPolygon
 
         self.theCDImageLayer.inputImagePickingMode = \
-          self.theControlsForInputImagePicking.theInputImagePickingMode
+          self.controlsForImageLayer.theInputImagePickingMode
 
         # if inputImagePickingMode is 3, i.e. Polygon Draw,
         #     then we need to track *passive* mouse motion;
@@ -2902,11 +2901,11 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
     # ------------------------------------------------------------------
     # 2011 Mitja - this is a slot method to handle "slider change" events
-    #    (AKA signals) arriving from the object theControlsForInputImagePicking
+    #    (AKA signals) arriving from the object controlsForImageLayer
     # ------------------------------------------------------------------
     def handleImageOpacityChanged(self):
         # SLOT function for the signal "inputImageOpacityChangedSignal()"
-        #   from theControlsForInputImagePicking
+        #   from controlsForImageLayer
         #
         # here we retrieve the updated value from the opacity slider and update
         # from the class global keeping track of the required opacity:
@@ -2915,7 +2914,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
         if isinstance(self.scene.theImageLayer, CDImageLayer) == True:
             self.scene.theImageLayer.setImageOpacity( \
-              self.theControlsForInputImagePicking.theImageOpacity )
+              self.controlsForImageLayer.theImageOpacity )
 
         self.scene.update()
 
@@ -2926,11 +2925,11 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
     # ------------------------------------------------------------------
     # 2011 Mitja - this is a slot method to handle "slider change" events
-    #    (AKA signals) arriving from the object theControlsForInputImagePicking
+    #    (AKA signals) arriving from the object controlsForImageLayer
     # ------------------------------------------------------------------
     def handleFuzzyPickThresholdChanged(self):
         # SLOT function for the signal "fuzzyPickTresholdChangedSignal()"
-        #   from theControlsForInputImagePicking
+        #   from controlsForImageLayer
         #
         # here we retrieve the updated value from the opacity slider and update
         # from the class global keeping track of the fuzzy pick treshold:
@@ -2939,7 +2938,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
         if isinstance(self.scene.theImageLayer, CDImageLayer) == True:
             self.scene.theImageLayer.setFuzzyPickTreshold( \
-              self.theControlsForInputImagePicking.theFuzzyPickTreshold )
+              self.controlsForImageLayer.theFuzzyPickTreshold )
 
         self.scene.update()
 
@@ -3093,10 +3092,10 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         lDict = dict(pDict)
         CDConstants.printOut("CDDiagramSceneMainWidget - handleImageSequenceResized() - " + \
             str( lDict ), CDConstants.DebugTODO )
-        self.mainControlPanel.setImageSequenceWidthLabel(lDict[0])
-        self.mainControlPanel.setImageSequenceHeightLabel(lDict[1])
-        self.mainControlPanel.setImageSequenceDepthLabel(lDict[2])
-        self.mainControlPanel.setImageSequenceImageUnitsLabel(lDict[3])
+        self.controlsForCellScene.setImageSequenceWidthLabel(lDict[0])
+        self.controlsForCellScene.setImageSequenceHeightLabel(lDict[1])
+        self.controlsForCellScene.setImageSequenceDepthLabel(lDict[2])
+        self.controlsForCellScene.setImageSequenceImageUnitsLabel(lDict[3])
 
 
 
@@ -3110,8 +3109,8 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
     # ------------------------------------------------------------
     def handleImageSequenceIndexSet(self, pDict):
         lDict = dict(pDict)
-        self.mainControlPanel.setImageSequenceCurrentIndex(lDict[0])
-        self.mainControlPanel.setImageSequenceCurrentFilename(lDict[1])
+        self.controlsForCellScene.setImageSequenceCurrentIndex(lDict[0])
+        self.controlsForCellScene.setImageSequenceCurrentFilename(lDict[1])
 
 
 
@@ -3139,7 +3138,11 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         CDConstants.printOut( "      handleAreaOrEdgeModeHasChanged() str(type(pMode))==["+str(type(pMode))+"]" , CDConstants.DebugTODO )
         CDConstants.printOut( "             str(type(pMode).__name__)==["+str(type(pMode).__name__)+"]" , CDConstants.DebugTODO )
         CDConstants.printOut( "             str(pMode)==["+str(pMode)+"]" , CDConstants.DebugTODO )
-        CDConstants.printOut( "             str(bin(int(pMode)))==["+str(bin(int(pMode)))+"]" , CDConstants.DebugTODO )
+        # bin() does not exist in Python 2.5:
+        if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
+            CDConstants.printOut( "             str(bin(int(pMode)))==["+str(bin(int(pMode)))+"]" , CDConstants.DebugTODO )
+        else:
+            CDConstants.printOut( "             str(int(pMode))==["+str(int(pMode))+"]" , CDConstants.DebugTODO )
 
         if ( isinstance(self.scene.theImageSequence, CDImageSequence) == True ):
             # go and tell the image sequence in what mode it is now:
@@ -3158,61 +3161,6 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
             CDConstants.printOut( "      handleAreaOrEdgeModeHasChanged() called self.scene.theImageSequence.assignAllProcessingModesForImageSequenceToPIFF( "+str(bin(pMode))+") complete." , CDConstants.DebugExcessive )
 
-
-
-
-
-
-
-    # ------------------------------------------------------------------
-    # 2012 Mitja - set the slot handler method handling "signalSelectedImageInSequenceHasChanged" events
-    #    (AKA signals) arriving from the object theControlsForImageSequence
-    # ------------------------------------------------------------------
-    def setHandlerForRegionsTableWidgetChanged(self, pHandlerForRegionsTableWidgetChanged):
-        # 2012 - Mitja: move the region/cell type controls to a QDockWidget?
-        #
-        # first create a QDockWidget
-        #  the first string parameter to QDockWidget is visible in the dock widget's title bar:
-#         self.typesDockWidget = QtGui.QDockWidget("Type Editor", self)
-#         self.typesDockWidget.setAllowedAreas( \
-#             QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea )
-#         self.typesDockWidget.setFeatures( QtGui.QDockWidget.NoDockWidgetFeatures | \
-#             QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
-#         # then assign self.theMainControlPanel (as obtained from CDDiagramSceneMainWidget) to the QDockWidget:
-#         self.typesDockWidget.setWidget( self.theTypesEditor )
-#         # attach the newly created QDockWidget to self i.e. the QMainWindow:
-#         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.typesDockWidget)
-
-#         if isinstance(self.scene.theImageSequence, CDImageSequence) == True:
-#             self.scene.theImageSequence.setCurrentIndex( pHandlerForRegionsTableWidgetChanged )
-
-        # explicitly connect the "signalTypeEditorChangedSignal()" signal from the
-        #   theTypesEditor object, to our "slot" (i.e. handler) method
-        #   so that it will respond to any change in table contents:
-        answer = self.connect(self.theTypesEditor, \
-                              QtCore.SIGNAL("signalTypeEditorChangedSignal()"), \
-                              pHandlerForRegionsTableWidgetChanged )
-#         pass
-
-
-    # ------------------------------------------------------------------
-    # 2012 Mitja - set the slot handler method handling "signalSelectedImageInSequenceHasChanged" events
-    #    (AKA signals) arriving from the object theControlsForImageSequence
-    # ------------------------------------------------------------------
-    def setTypesDict(self, pTheNewRegionTypeDict):
-
-        self.theTypesEditor.setTypesDict(pTheNewRegionTypeDict)
-        self.theTypesEditor.populateEditorFromTypesDict()
-
-        CDConstants.printOut( "      CDDiagramSceneMainWidget.setTypesDict( pTheNewRegionTypeDict=="+str(pTheNewRegionTypeDict)+" )  done." , CDConstants.DebugVerbose )
-
-
-    # ------------------------------------------------------------------
-    # retrieve the up-to-date typesDict from for external use:
-    # ------------------------------------------------------------------
-    def getTypesDict(self):
-        CDConstants.printOut( "___ - DEBUG ----- CDTypesEditor:  self.getTypesDict() will now return self.theTypesEditor.getTypesDict()=="+str(self.theTypesEditor.getTypesDict()) , CDConstants.DebugExcessive )
-        return self.theTypesEditor.getTypesDict()
 
 
     # ------------------------------------------------------------
@@ -3380,7 +3328,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
             lTheNewItem.setSelected(True)
 
             # emit our own signal to the handler which does other GUI adjustments
-            #   whenever a new signal is inserted:
+            #   whenever a new scene item is inserted:
             self.scene.signalThatItemInserted.emit(lTheNewItem)
 
             # position the new item in the scene:
@@ -3478,7 +3426,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         lAllItems = self.scene.items()
         lHowManyItems = len(lAllItems)
 
-        CDConstants.printOut(str( lHowManyItems, lAllItems )+" ", CDConstants.DebugTODO )
+        CDConstants.printOut( str(lHowManyItems) + ", " + str(lAllItems) + " ", CDConstants.DebugTODO )
 
         # make sure that there is at least one item in the scene:
         if not lAllItems:
@@ -3551,8 +3499,9 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
        
         lAboutString = "CellDraw 1.6.0<br><br>An editing and conversion software tool for PIFF files, as used in CompuCell3D simulations.<br><br>CellDraw can be useful for creating PIFF files containing a high number of cells and cell types, either by drawing a scene containing cell regions in a paint program, and then discretize the drawing into a PIFF file, or by drawing the cell scenario directly in CellDraw.<br><br>More information at:<br><a href=\"http://www.compucell3d.org/\">http://www.compucell3d.org/</a>"
 
-        lVersionString = "<br><br><small>Support library information:<br>Qt runtime version: %s<br>Qt compile-time version: %s<br>PyQt version: %s (%s = 0x%06x)</small>" % \
-            (QtCore.QT_VERSION_STR, QtCore.qVersion(), PyQt4.QtCore.PYQT_VERSION_STR, PyQt4.QtCore.PYQT_VERSION, PyQt4.QtCore.PYQT_VERSION)
+        lVersionString = "<br><br><small>Support library information:<br>Python runtime version: %s<br>Qt runtime version: %s<br>Qt compile-time version: %s<br>PyQt version: %s (%s = 0x%06x)</small>" % \
+            ( str(sys.version_info[0])+"."+str(sys.version_info[1])+"."+str(sys.version_info[2])+" | "+str(sys.version_info[3])+" | "+str(sys.version_info[4]) , \
+            QtCore.QT_VERSION_STR, QtCore.qVersion(), PyQt4.QtCore.PYQT_VERSION_STR, PyQt4.QtCore.PYQT_VERSION, PyQt4.QtCore.PYQT_VERSION)
 
         QtGui.QMessageBox.about(self, "About CellDraw", lAboutString+lVersionString)
 
@@ -3593,6 +3542,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
             QtCore.SIGNAL("mousePressedInImageLayerSignal()"), \
             self.handleMousePressedInImageLayerSignal )
 
+
         # you can use this syntax instead of the 'old' one:
         self.mysignal.connect(self.myslot)
 
@@ -3600,6 +3550,17 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         self.connect(self, QtCore.SIGNAL('mysignal(QString)'), self.myslot)
 
         self.mysignal.emit("hello")
+
+
+
+
+TODOTODO - do the reverse from the "registerSignalHandlerForModeSelectToolbarChanges" in CDModeSelectToolBar:
+    # ------------------------------------------------------------
+    # register the callback handler function for the
+    #   "signalSceneModeHasChanged()" signal:
+    # ------------------------------------------------------------
+    def registerSignalHandlerForSceneModeChanges(self, pHandler):
+        self.signalSceneModeHasChanged.connect( pHandler )
 
 
 
@@ -3762,81 +3723,6 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         self.aboutMenu = self.parentWindow.menuBar().addMenu("Help")
         self.aboutMenu.addAction(self.aboutAction)
 
-    # ------------------------------------------------------------
-#    def createToolbars(self):
-
-        # 2010 - Mitja: dummy "Toolbar" toolbar, it contains nothing, but
-        #    it seems to be necessary to bypass a Qt bug which prevents the first toolbar
-        #    added to a parent window from showing up there.
-        #
-        # self.dummyToolBar = self.parentWindow.addToolBar("Toolbar")
-
-
-        # ------------------------------------------------------------
-        # 2010 - Mitja: "Color" toolbar, it's built from 3 pop-up menu buttons,
-        #    one each for font color, item fill color, and line color.
-        #    Menu defaults are set here and for consistency they *must* coincide
-        #      with the defaults set in the DiagramScene class globals:
-        #    But really only use the item fill color, and we disable the other two:
-        #
-        #
-#         self.fontColorToolButton = QtGui.QToolButton()
-#         self.fontColorToolButton.setPopupMode(QtGui.QToolButton.MenuButtonPopup)
-#         self.fontColorToolButton.setMenu(
-#                 self.createColorMenu(self.textColorChanged, QtCore.Qt.red))
-#         self.textAction = self.fontColorToolButton.menu().defaultAction()
-#         self.fontColorToolButton.setIcon(
-#                 self.createColorToolButtonIcon(':/icons/textpointer.png',
-#                         QtCore.Qt.red))
-#         self.fontColorToolButton.setAutoFillBackground(True)
-#         self.fontColorToolButton.clicked.connect(self.textButtonTriggered)
-#         #
-#         self.lineColorToolButton = QtGui.QToolButton()
-#         self.lineColorToolButton.setPopupMode(QtGui.QToolButton.MenuButtonPopup)
-#         self.lineColorToolButton.setMenu(
-#                 self.createColorMenu(self.lineColorChanged, QtCore.Qt.black))
-#         self.lineAction = self.lineColorToolButton.menu().defaultAction()
-#         self.lineColorToolButton.setIcon(
-#                 self.createColorToolButtonIcon(':/icons/linecolor.png',
-#                         QtCore.Qt.black))
-#         self.lineColorToolButton.clicked.connect(self.lineButtonTriggered)
-
-#        self.colorToolBar = self.parentWindow.addToolBar("Color")
-        # 2010 - Mitja: GUI simplification: hide all that's not necessary to Cell Scene editing:
-        #   in this case don't add to the colorToolbar the fontColorToolButton and lineColorToolButton button-popup-menus:
-        # self.colorToolBar.addWidget(self.fontColorToolButton)
-        # self.colorToolBar.addWidget(self.lineColorToolButton)
-        # self.colorToolBar.addWidget(self.fillColorToolButton)
-#        self.colorToolBar.addAction(self.pifTableAction)
-
-
-        # ------------------------------------------------------------
-        # 2010 - Mitja: "Font" toolbar:
-        #   (we don't currently use this toolbar in the Cell Scene editor)
-        # 
-#         self.fontCombo = QtGui.QFontComboBox()
-#         self.fontCombo.currentFontChanged.connect(self.currentFontChanged)
-#         #
-#         self.fontSizeCombo = QtGui.QComboBox()
-#         self.fontSizeCombo.setEditable(True)
-#         for i in range(8, 30, 2):
-#             self.fontSizeCombo.addItem(str(i))
-#         validator = QtGui.QIntValidator(2, 64, self)
-#         self.fontSizeCombo.setValidator(validator)
-#         self.fontSizeCombo.currentIndexChanged.connect(self.fontSizeChanged)
-        #
-        # 2010 - Mitja: GUI simplification: hide all that's not necessary to Cell Scene editing:
-        #   in this case don't add to the parentWindow the textToolBar for handling text fonts:
-        # self.textToolBar = self.parentWindow.addToolBar("Font")
-        # just create the QToolBar and hide it, in case not having it would bring havoc to the application!
-#         self.textToolBar = QtGui.QToolBar("Font")
-#         self.textToolBar.addWidget(self.fontCombo)
-#         self.textToolBar.addWidget(self.fontSizeCombo)
-#         self.textToolBar.addAction(self.boldAction)
-#         self.textToolBar.addAction(self.italicAction)
-#         self.textToolBar.addAction(self.underlineAction)
-#         self.textToolBar.hide()
-
 
 
     # ------------------------------------------------------------
@@ -3847,7 +3733,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         self.theImageFromFile = pImage
         self.theBackgroundNameFromFile = pText
         # update the appearance of the Control Panel buttons for background selection:
-        self.mainControlPanel.updateBackgroundImageButtons(pText, pImage)
+        self.controlsForCellScene.updateBackgroundImageButtons(pText, pImage)
                
        
 

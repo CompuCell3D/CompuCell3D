@@ -48,7 +48,7 @@ class CDImageLayer(QtCore.QObject):
 
     # --------------------------------------------------------
     def __init__(self, pParent=None):
-        print "|^|^|^|^| CDImageLayer.__init__( pParent ==", pParent, ") |^|^|^|^|"
+        CDConstants.printOut( "|^|^|^|^| CDImageLayer.__init__( pParent =="+str(pParent)+") |^|^|^|^|" , CDConstants.DebugTODO ) 
 
         QtCore.QObject.__init__(self, pParent)
 
@@ -83,8 +83,7 @@ class CDImageLayer(QtCore.QObject):
             self._graphicsSceneWidget = pParent
         else:
             self._graphicsSceneWidget = None
-        print "|^|^|^|^| CDImageLayer.__init__() self._graphicsSceneWidget ==", \
-            self._graphicsSceneWidget, " |^|^|^|^|"
+        CDConstants.printOut( "|^|^|^|^| CDImageLayer.__init__   self._graphicsSceneWidget == "+str(self._graphicsSceneWidget)+" |^|^|^|^|" , CDConstants.DebugTODO ) 
 
         self.inputImagePickingMode = CDConstants.ImageModeDrawFreehand
 
@@ -259,8 +258,7 @@ class CDImageLayer(QtCore.QObject):
 
         else:
             self.processedImage = QtGui.QImage()
-            print "CDImageLayer.setToProcessedImage() ERROR: no self.theImage!"
-
+            CDConstants.printOut( "CDImageLayer.setToProcessedImage() ERROR: there is no self.theImage !!!!" , CDConstants.DebugImportant )
 
     # ------------------------------------------------------------
     # 2011 - Mitja: provide color-to-color distance calculation:
@@ -318,7 +316,7 @@ class CDImageLayer(QtCore.QObject):
         lWidth = self.processedImage.width()
         lHeight = self.processedImage.height()
         lSeedColor = self.theImage.pixel(pX, pY)
-        print "01"
+        CDConstants.printOut( "___ - DEBUG ----- CDImageLayer: processImageForCloseColors():        01" , CDConstants.DebugTODO )
         # 2010 - Mitja: python's xrange function is more appropriate for large loops
         #   since it generates integers (the range function generates lists instead)
         for i in xrange(0, lWidth, 1):
@@ -329,7 +327,7 @@ class CDImageLayer(QtCore.QObject):
                     self.processedImage.setPixel(i,j,lTmpColor)
 
 #         self.processedPixmap = QtGui.QPixmap(self.processedImage)
-        print "10"
+        CDConstants.printOut( "___ - DEBUG ----- CDImageLayer: processImageForCloseColors():        10" , CDConstants.DebugTODO )
         # self.theImage = QtGui.QImage(self.processedImage)
 
 
@@ -352,10 +350,10 @@ class CDImageLayer(QtCore.QObject):
 #         print lSysRecursionLimit
 #         sys.setrecursionlimit(100000000)
 #         print sys.getrecursionlimit()
-        print "02"
+        CDConstants.printOut( "___ - DEBUG ----- CDImageLayer: processImageForFuzzyPick():        02" , CDConstants.DebugTODO )
         self.floodFillFuzzyPick(pX, pY, lSeedColor)
 #         self.processedPixmap = QtGui.QPixmap(self.processedImage)
-        print "20"
+        CDConstants.printOut( "___ - DEBUG ----- CDImageLayer: processImageForFuzzyPick():        20" , CDConstants.DebugTODO )
 #         sys.setrecursionlimit(lSysRecursionLimit)
 #         print lSysRecursionLimit
 #         # self.theImage = QtGui.QImage(self.processedImage)
@@ -377,7 +375,7 @@ class CDImageLayer(QtCore.QObject):
     def floodFillFuzzyPick(self, pX, pY, pReplacementColor):
         lWidth = self.processedImage.width()
         lHeight = self.processedImage.height()
-        print "Flood fill on a region of non-BORDER_COLOR pixels."
+        CDConstants.printOut( "___ - DEBUG ----- CDImageLayer: floodFillFuzzyPick():        Flood fill on a region of non-BORDER_COLOR pixels." , CDConstants.DebugTODO )
         edge = [(pX, pY)]
         self.processedImage.setPixel(pX, pY, pReplacementColor)
         while edge:
@@ -512,7 +510,7 @@ class CDImageLayer(QtCore.QObject):
     # ------------------------------------------------------------------   
     def paintTheImageLayer(self, pThePainter):
 
-        CDConstants.printOut("[F] hello, I'm "+str(debugWhoIsTheRunningFunction())+", parent is "+str(debugWhoIsTheParentFunction())+ \
+        CDConstants.printOut("___ - DEBUG ----- CDImageLayer.paintTheImageLayer() :   [F] hello, I'm "+str(debugWhoIsTheRunningFunction())+", parent is "+str(debugWhoIsTheParentFunction())+ \
             " ||||| self.repaintEventsCounter=="+str(self.repaintEventsCounter)+ \
             " ||||| CDImageLayer.paintTheImageLayer(pThePainter=="+str(pThePainter)+")", CDConstants.DebugTODO )
 
@@ -740,7 +738,7 @@ class CDImageLayer(QtCore.QObject):
         # one paint cycle has been called:
         self.repaintEventsCounter = self.repaintEventsCounter + 1
 
-        CDConstants.printOut("[G] hello, I'm "+str(debugWhoIsTheRunningFunction())+", parent is "+str(debugWhoIsTheParentFunction())+ \
+        CDConstants.printOut("___ - DEBUG ----- CDImageLayer.paintEvent() :   [G] hello, I'm "+str(debugWhoIsTheRunningFunction())+", parent is "+str(debugWhoIsTheParentFunction())+ \
             " ||||| self.repaintEventsCounter=="+str(self.repaintEventsCounter)+ \
             " ||||| CDImageLayer.paintEvent(pThePainter=="+str(pThePainter)+")", CDConstants.DebugTODO )
 
@@ -817,7 +815,7 @@ class CDImageLayer(QtCore.QObject):
     # ---------------------------------------------------------
     def reject(self):
         super(CDPreferences, self).reject()
-        print "reject() DONE"
+        CDConstants.printOut( "___ - DEBUG ----- CDImageLayer:    reject() DONE" , CDConstants.DebugTODO )
 
 
 
@@ -1020,7 +1018,7 @@ class CDImageLayer(QtCore.QObject):
             }
         self.signalThatMouseMoved.emit(lDict)
 
-        print"2012 DEBUG: CDImageLayer.mouseReleaseEvent() - pEvent(x,y) =",lX,lY
+        CDConstants.printOut( "___ - DEBUG ----- 2012 DEBUG: CDImageLayer.mouseReleaseEvent() - pEvent(x,y)=("+str(lX,lY)+") : done" , CDConstants.DebugTODO )
 
     # end of def mouseReleaseEvent(self, pEvent)
     # ---------------------------------------------------------

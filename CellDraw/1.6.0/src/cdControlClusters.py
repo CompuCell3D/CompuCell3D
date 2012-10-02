@@ -41,7 +41,7 @@ class CDControlClusters(QtGui.QWidget):
 
     def __init__(self,parent=None):
         QtGui.QWidget.__init__(self, parent)
-        print "___ - DEBUG ----- CDControlClusters: __init__() "
+        CDConstants.printOut( "___ - DEBUG ----- CDControlClusters: __init__() ", CDConstants.DebugExcessive )
 
 
         # the class global keeping track of the selected image within the sequence:
@@ -54,7 +54,7 @@ class CDControlClusters(QtGui.QWidget):
         self.theColorButtonDict = dict()
 
         #
-        # QWidget setup (1) - windowing GUI setup for Control Panel:
+        # QWidget setup (1) - windowing GUI setup for Cluster Editor:
         #
 
         self.setWindowTitle("Cluster Editor Window Title")
@@ -202,7 +202,7 @@ class CDControlClusters(QtGui.QWidget):
         lColorGroupBox.layout().setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
                 
         for lColor, lName in zip(CDConstants.TypesColors, CDConstants.TypesColorNames):
-            # print "lColor =", lColor, "lName =", lName
+            # CDConstants.printOut( "lColor ="+str(lColor)+" lName ="+str(lName) , CDConstants.DebugTODO )
 
             lAction = QtGui.QAction(self.createColorIcon(lColor),
                       QtCore.QString(lName), self, triggered=pSlotFunction)
@@ -241,8 +241,8 @@ class CDControlClusters(QtGui.QWidget):
         
         # also add to global dict of buttons, with their color names as keys:
         self.theColorButtonDict[str(pAction.text())] = lToolButton
-        print "pAction.text() =", pAction.text()
-        print "self.theColorButtonDict =", self.theColorButtonDict
+        CDConstants.printOut( "pAction.text() = "+str(pAction.text()) , CDConstants.DebugTODO )
+        CDConstants.printOut( "self.theColorButtonDict = "+str(self.theColorButtonDict) , CDConstants.DebugTODO )
 
         # end of def addActionToColorGroupBox(self)
         # ------------------------------------------------------------
@@ -256,7 +256,7 @@ class CDControlClusters(QtGui.QWidget):
 #     def createColorMenu(self, pSlotFunction, pDefaultColor):
 #         lColorMenu = QtGui.QMenu(self)
 #         for lColor, lName in zip(CDConstants.TypesColors, CDConstants.TypesColorNames):
-#             # print "lColor =", lColor, "lName =", lName
+#             # CDConstants.printOut( "lColor ="+str(lColor)+" lName ="+str(lName) , CDConstants.DebugTODO )
 #             lAction = QtGui.QAction(self.createColorIcon(lColor),
 #                       QtCore.QString(lName), self, triggered=pSlotFunction)
 #             # set the action's data to be the color:
@@ -320,12 +320,12 @@ class CDControlClusters(QtGui.QWidget):
 
         # get data from the triggered action:
         self.clickedCellTypeAction = self.sender()
-        print self.clickedCellTypeAction
-        print dir(self.clickedCellTypeAction)
+        CDConstants.printOut( "handleCellTypeColorClicked() .... self.clickedCellTypeAction = "+str(self.clickedCellTypeAction) , CDConstants.DebugTODO )
+        CDConstants.printOut( "handleCellTypeColorClicked() .... dir(self.clickedCellTypeAction) = "+str(dir(self.clickedCellTypeAction)) , CDConstants.DebugTODO )
 
         # the data received from the action is a QVariant, can be converted to QColor:
         self.chosenCellTypeColor = QtGui.QColor(self.clickedCellTypeAction.data())
-        print self.chosenCellTypeColor
+        CDConstants.printOut( "handleCellTypeColorClicked() .... self.chosenCellTypeColor = "+str(self.chosenCellTypeColor) , CDConstants.DebugTODO )
 
         for lKey in self.theColorButtonDict:
             lButton = self.theColorButtonDict[lKey]
@@ -333,7 +333,7 @@ class CDControlClusters(QtGui.QWidget):
             lButton.setFocus(False)
 
         for lColor, lName in zip(CDConstants.TypesColors, CDConstants.TypesColorNames):
-            # print "lColor =", lColor, "lName =", lName
+            # CDConstants.printOut( "lColor ="+str(lColor)+" lName ="+str(lName) , CDConstants.DebugTODO )
             if ( QtGui.QColor(lColor).rgba() == self.chosenCellTypeColor.rgba()):
                 lButton = self.theColorButtonDict[str(lName)]
                 lButton.setChecked(True)
@@ -341,7 +341,7 @@ class CDControlClusters(QtGui.QWidget):
 
 
 
-        # print "self.chosenCellTypeColor is now", self.chosenCellTypeColor, "not", QtGui.QColor(self.chosenCellTypeColor)
+        # CDConstants.printOut( "self.chosenCellTypeColor is now == "+str(self.chosenCellTypeColor)+ "   not "+str(QtGui.QColor(self.chosenCellTypeColor)) , CDConstants.DebugTODO )
        
 #         self.fillColorToolButton.setIcon( \
 #             self.createFloodFillToolButtonIcon(':/icons/floodfill.png', \

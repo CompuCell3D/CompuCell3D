@@ -152,7 +152,8 @@ from cdConstants import CDConstants
 
 # 2010 - Mitja: external class for interactive table of region/cell type data:
 # 2012 - Mitja: these controls are now handled from the CDDiagramSceneMainWidget:
-# from cdTypesEditor import CDTypesEditor
+# 2012 - Mitja: no, we're keeping them back in here.
+from cdTypesEditor import CDTypesEditor
 
 # 2010 - Mitja: external class for saving PIFF files from a graphics scene:
 from cdSceneRasterizer import CDSceneRasterizer
@@ -169,6 +170,8 @@ from cdWaitProgressBar import CDWaitProgressBar
 # 2010 - Mitja: external class for scene bundle:
 from cdSceneBundle import CDSceneBundle
 
+# 2012 - Mitja: external class to handle all QToolBar items:
+from cdToolBars import CDToolBars
 
 
 
@@ -254,15 +257,22 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
 
 #
-#         # 2010 - Mitja: hide the dock widget containing zoom etc. pixmap-related functionalities,
+#         # 2010 - Mitja: hide the QDockWidget containing zoom etc. pixmap-related functionalities,
 #         #   to be implemented in the scene instead:
 #         self.ui.futureFunctionalitiesDockWidget.hide()
 
-        # 2010 - Mitja: hide the input controls dock widget containing picking functionalities,
+        # 2010 - Mitja: hide the input controls QDockWidget containing picking functionalities,
         #   since below we move its (pixmap-related prefs) content widget to the preferences QDialog:
         self.ui.inputControlsContentsWidget.hide()
         self.ui.inputControlsDockWidget.setWidget(None)
         self.ui.inputControlsDockWidget.hide()
+
+
+        # -----------------------------------------------------------------------------
+
+        # 2011 - Mitja: do version checking of Qt and PyQt libraries, and stop
+        #   running CellDraw if the installed versions are too old to support our code:
+        self.versionWarning()
 
 
 
@@ -311,7 +321,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         #   setUnifiedTitleAndToolBarOnMac() takes the toolbar placed in the TopToolBarArea
         #   and unify it with the main window's title bar, but it *doesn't* do the same
         #   with toolbars placed elsewhere (why? patchy Qt implementation?)
-        self.setUnifiedTitleAndToolBarOnMac(True)
+        self.setUnifiedTitleAndToolBarOnMac(False)
         self.show()
         self.raise_()
 
@@ -403,11 +413,19 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         # 2010 - Mitja: external class for creating/displaying a QGraphicsScene based on the input image:
         self.diagramSceneMainWidget = CDDiagramSceneMainWidget(self)
 
-        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - obtaining self.diagramSceneMainWidget.getMainControlPanel() ...", CDConstants.DebugTODO )
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - obtaining self.diagramSceneMainWidget.getControlsForCellScene() ...", CDConstants.DebugTODO )
         # obtain a reference to the only instance of the main control panel:
-        self.theMainControlPanel = self.diagramSceneMainWidget.getMainControlPanel()
+        self.theCellSceneControls = self.diagramSceneMainWidget.getControlsForCellScene()
 
-        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - obtaining self.diagramSceneMainWidget.getMainControlPanel() ...", CDConstants.DebugTODO )
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - obtaining self.diagramSceneMainWidget.getControlsForImageLayer() ...", CDConstants.DebugTODO )
+        # obtain a reference to the only instance of the main control panel:
+        self.theImageLayerControls = self.diagramSceneMainWidget.getControlsForImageLayer()
+
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - obtaining self.diagramSceneMainWidget.getControlsForImageSequence() ...", CDConstants.DebugTODO )
+        # obtain a reference to the only instance of the main control panel:
+        self.theImageSequenceControls = self.diagramSceneMainWidget.getControlsForImageSequence()
+
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting self.diagramSceneMainWidget.setPreferencesObject(self.cdPreferences) ...", CDConstants.DebugTODO )
         # connect diagramSceneMainWidget to the only instance of the cdPreferences object:
         self.diagramSceneMainWidget.setPreferencesObject(self.cdPreferences)
 
@@ -416,31 +434,172 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             self.cdPreferences.getPifSceneWidth(), self.cdPreferences.getPifSceneHeight()))
         self.diagramSceneMainWidget.scene.setDepth(  self.cdPreferences.getPifSceneDepth() )
 
-        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting self.diagramSceneMainWidget.scene.setSceneRect() ...", CDConstants.DebugTODO )
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting self.diagramSceneMainWidget.updateSceneRectSize() ...", CDConstants.DebugTODO )
         self.diagramSceneMainWidget.updateSceneRectSize()
 
 
 
-        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting up self.controlPanelDockWidget() ...", CDConstants.DebugTODO )
-        # 2012 - Mitja: move the main control panel to a QDockWidget:
-        #
-        # first create a QDockWidget
-        # we could create a Drawer on Mac OS X, but for now we keep it the same on all platforms:
-        # self.controlPanelDockWidget = QtGui.QDockWidget("Control Panel DockWidget", self, QtCore.Qt.Drawer)
-        #  the first string parameter to QDockWidget is visible in the dock widget's title bar:
-        self.controlPanelDockWidget = QtGui.QDockWidget("Control Panel", self)
-        self.controlPanelDockWidget.setAllowedAreas( \
-            QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea )
-        self.controlPanelDockWidget.setFeatures( QtGui.QDockWidget.NoDockWidgetFeatures | \
-            QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
-        # then assign self.theMainControlPanel (as obtained from CDDiagramSceneMainWidget) to the QDockWidget:
-        self.controlPanelDockWidget.setWidget( self.theMainControlPanel )
+
+        # ----- ----- ----- -----
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - creating self.controlPanelDockWidget() ...", CDConstants.DebugTODO )
+        # 2012 - Mitja: move the cell scene controls to a QDockWidget:
+        #    first create a QDockWidget
+        #       we could create a Drawer on Mac OS X, but it wouldn't work on other platforms:
+        # self.controlPanelDockWidget = QtGui.QDockWidget("Control Panel QDockWidget", self, QtCore.Qt.Drawer)
+        #  the first string parameter to QDockWidget is visible in the QDockWidget's title bar:
+        #  the second parameter is the QDockWidget's parent, in this case "self", the QMainWindow:
+        self.controlPanelDockWidget = QtGui.QDockWidget("Control Panel QDockWidget", self)
+
+        lTheCellSceneScrollArea = QtGui.QScrollArea()
+        lTheCellSceneScrollArea.setWidgetResizable(True)
+        lTheCellSceneScrollArea.setEnabled(True)
+#        lTheCellSceneScrollArea.setAlignment = (QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.theCellSceneControls.setParent(lTheCellSceneScrollArea)
+        lTheCellSceneScrollArea.setWidget(self.theCellSceneControls)
+
+        # assign self.theCellSceneControls (obtained from CDDiagramSceneMainWidget) to QDockWidget:
+        lTheCellSceneScrollArea.setParent(self.controlPanelDockWidget)
+        self.controlPanelDockWidget.setWidget( lTheCellSceneScrollArea )
 
         # attach the newly created QDockWidget to self i.e. the QMainWindow:
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.controlPanelDockWidget)
-        # QDockWidget doesn't respond to size function calls, since it obeys its main contained widget:
-        # self.controlPanelDockWidget.setMinimumSize(200, 400)
-        # self.controlPanelDockWidget.resize(270, 530)
+        # 1rvi
+
+
+
+
+
+
+
+
+
+
+
+
+        # ----- ----- ----- -----
+
+
+
+
+        # ----- ----- ----- -----
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - creating self.imageLayerControlsDockWidget() ...", CDConstants.DebugTODO )
+        # 2012 - Mitja: move image layer controls to a QDockWidget:
+        self.imageLayerControlsDockWidget = QtGui.QDockWidget("Image Layer QDockWidget", self)
+
+        # assign self.theImageLayerControls (obtained from CDDiagramSceneMainWidget) to QDockWidget:
+        self.theImageLayerControls.setParent(self.imageLayerControlsDockWidget)
+        self.imageLayerControlsDockWidget.setWidget( self.theImageLayerControls )
+
+        # attach the newly created QDockWidget to self i.e. the QMainWindow:
+        self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.imageLayerControlsDockWidget)
+        # ----- ----- ----- -----
+
+
+
+
+        # ----- ----- ----- -----
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - creating self.imageSequenceControlsDockWidget() ...", CDConstants.DebugTODO )
+        # 2012 - Mitja: move image layer controls to a QDockWidget:
+        self.imageSequenceControlsDockWidget = QtGui.QDockWidget("Image Sequence QDockWidget", self)
+
+        # then assign self.theImageSequenceControls (as obtained from CDDiagramSceneMainWidget) to the QDockWidget:
+        self.theImageSequenceControls.setParent(self.imageSequenceControlsDockWidget)
+        self.imageSequenceControlsDockWidget.setWidget( self.theImageSequenceControls )
+
+        # attach the newly created QDockWidget to self i.e. the QMainWindow:
+        self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.imageSequenceControlsDockWidget)
+        # ----- ----- ----- -----
+
+
+
+
+        # ----- ----- ----- -----
+        #  __init__ (8) - set up the GUI to control table of regions values:
+        # 2012 - Mitja: these controls are now handled from the CDDiagramSceneMainWidget:
+        # 2012 - Mitja: no, we're keeping them back in here.
+        # -----------------------------------------------------------------------------
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting up self.typesDockWidget() ...", CDConstants.DebugTODO )
+        # 2010 - Mitja added an interactive table
+        #   containing all regions/colors found in the pixmap. If "self" is passed as parameter,
+        #   when the QApplication exits, it'll signal this window to close as well:
+        self.theTypesEditor = CDTypesEditor(self)
+ 
+        # 2012 - Mitja: move the types editor controls to a QDockWidget:
+        self.typesDockWidget = QtGui.QDockWidget("Type Editor QDockWidget", self)
+
+        # then assign self.theTypesEditor to the QDockWidget:
+        self.theTypesEditor.setParent(self.typesDockWidget)
+        self.typesDockWidget.setWidget( self.theTypesEditor )
+
+        # attach the newly created QDockWidget to self i.e. the QMainWindow:
+        self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.typesDockWidget)
+
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - connecting self.connect(self.theTypesEditor .... self.handleRegionsTableWidgetChanged ...", CDConstants.DebugTODO )
+
+        # we handle signals coming from changes in the Type Editor
+        #   with the local function self.handleRegionsTableWidgetChanged()
+        #
+        # explicitly connect the "regionsTableChangedSignal()" signal from the
+        #   theTypesEditor object, to our "slot" (i.e. handler) method
+        #   so that it will respond to any change in table contents:
+        answer = self.connect(self.theTypesEditor, \
+                              QtCore.SIGNAL("regionsTableChangedSignal()"), \
+                              self.handleRegionsTableWidgetChanged )
+
+
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - preparing main self.mainTypesDict ...", CDConstants.DebugTODO )
+        # prepare the default dict of regions and cell types:
+        # each entry consists of a region's QColor, region's name, subtable for cell types, list of cell sizes and whether it's in use in the cell scene:
+        self.mainTypesDict = dict({ 1: [ QtGui.QColor(QtCore.Qt.green), "green", [10, 10, 1], 0, \
+                                                [  [QtGui.QColor(QtCore.Qt.green), "greenTypeOne", 3.0, 100], \
+                                                   [QtGui.QColor(QtCore.Qt.green), "greenTypeTwo", 1.0, 200]  ]   ], \
+                                       2: [ QtGui.QColor(QtCore.Qt.blue), "blue", [10, 10, 1], 0, \
+                                                [  [QtGui.QColor(QtCore.Qt.blue), "blueType", 1.0, 100]  ]   ], \
+                                       3: [ QtGui.QColor(QtCore.Qt.red), "red", [10, 10, 1], 0, \
+                                                [  [QtGui.QColor(QtCore.Qt.red), "redType", 1.0, 100]  ]   ], \
+                                       4: [ QtGui.QColor(QtCore.Qt.darkYellow), "darkYellow", [10, 10, 1], 0, \
+                                                [  [QtGui.QColor(QtCore.Qt.darkYellow), "darkYellowType", 1.0, 100]  ]   ], \
+                                       5: [ QtGui.QColor(QtCore.Qt.lightGray), "lightGray", [10, 10, 1], 0, \
+                                                [  [QtGui.QColor(QtCore.Qt.lightGray), "lightGrayType", 1.0, 100]  ]   ], \
+                                       6: [ QtGui.QColor(QtCore.Qt.magenta), "magenta", [10, 10, 1], 0, \
+                                                [  [QtGui.QColor(QtCore.Qt.magenta), "magentaType", 1.0, 100]  ]   ], \
+                                       7: [ QtGui.QColor(QtCore.Qt.darkBlue), "darkBlue", [10, 10, 1], 0, \
+                                                [  [QtGui.QColor(QtCore.Qt.darkBlue), "darkBlueType", 1.0, 100]  ]   ], \
+                                       8: [ QtGui.QColor(QtCore.Qt.cyan), "cyan", [10, 10, 1], 0, \
+                                                [  [QtGui.QColor(QtCore.Qt.cyan), "cyanType", 1.0, 100]  ]   ], \
+                                       9: [ QtGui.QColor(QtCore.Qt.darkGreen), "darkGreen", [10, 10, 1], 0, \
+                                                [  [QtGui.QColor(QtCore.Qt.darkGreen), "darkGreenType", 1.0, 100]  ]   ]   }  )
+
+
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting self.theTypesEditor.setTypesDict(self.mainTypesDict) ...", CDConstants.DebugTODO )
+        self.theTypesEditor.setTypesDict(self.mainTypesDict)
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting self.theTypesEditor.populateEditorFromTypesDict() ...", CDConstants.DebugTODO )
+        self.theTypesEditor.populateEditorFromTypesDict()
+        # ----- ----- ----- -----
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -472,65 +631,6 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
 
 
-        #  __init__ (8) - set up the GUI to control table of regions values:
-        # 2012 - Mitja: these controls are now handled from the CDDiagramSceneMainWidget:
-        # -----------------------------------------------------------------------------
-        #
-# 
-#         # 2010 - Mitja added an interactive table
-#         #   containing all regions/colors found in the pixmap. If "self" is passed as parameter,
-#         #   when the QApplication exits, it'll signal this window to close as well:
-#         self.theTypesEditor = CDTypesEditor(self.diagramSceneMainWidget)
-# 
-#         # 2012 - Mitja: move the region/cell type controls to a QDockWidget:
-#         #
-#         # first create a QDockWidget
-#         #  the first string parameter to QDockWidget is visible in the dock widget's title bar:
-#         self.typesDockWidget = QtGui.QDockWidget("Type Editor", self)
-#         self.typesDockWidget.setAllowedAreas( \
-#             QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea )
-#         self.typesDockWidget.setFeatures( QtGui.QDockWidget.NoDockWidgetFeatures | \
-#             QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
-#         # then assign self.theMainControlPanel (as obtained from CDDiagramSceneMainWidget) to the QDockWidget:
-#         self.typesDockWidget.setWidget( self.theTypesEditor )
-#         # attach the newly created QDockWidget to self i.e. the QMainWindow:
-#         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.typesDockWidget)
-# 
-        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting self.diagramSceneMainWidget.setHandlerForRegionsTableWidgetChanged(self.handleRegionsTableWidgetChanged) ...", CDConstants.DebugTODO )
-        # we handle signals coming from changes in the Type Editor
-        #   with the local function self.handleRegionsTableWidgetChanged()
-        self.diagramSceneMainWidget.setHandlerForRegionsTableWidgetChanged(self.handleRegionsTableWidgetChanged)
-
-        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - preparing main self.mainTypesDict ...", CDConstants.DebugTODO )
-        # prepare the default dict of regions and cell types:
-        # each entry consists of a region's QColor, region's name, subtable for cell types, list of cell sizes and whether it's in use in the cell scene:
-        self.mainTypesDict = dict({ 1: [ QtGui.QColor(QtCore.Qt.green), "green", [10, 10, 1], 0, \
-                                                [  [QtGui.QColor(QtCore.Qt.green), "greenTypeOne", 3.0, 100], \
-                                                   [QtGui.QColor(QtCore.Qt.green), "greenTypeTwo", 1.0, 200]  ]   ], \
-                                       2: [ QtGui.QColor(QtCore.Qt.blue), "blue", [10, 10, 1], 0, \
-                                                [  [QtGui.QColor(QtCore.Qt.blue), "blueType", 1.0, 100]  ]   ], \
-                                       3: [ QtGui.QColor(QtCore.Qt.red), "red", [10, 10, 1], 0, \
-                                                [  [QtGui.QColor(QtCore.Qt.red), "redType", 1.0, 100]  ]   ], \
-                                       4: [ QtGui.QColor(QtCore.Qt.darkYellow), "darkYellow", [10, 10, 1], 0, \
-                                                [  [QtGui.QColor(QtCore.Qt.darkYellow), "darkYellowType", 1.0, 100]  ]   ], \
-                                       5: [ QtGui.QColor(QtCore.Qt.lightGray), "lightGray", [10, 10, 1], 0, \
-                                                [  [QtGui.QColor(QtCore.Qt.lightGray), "lightGrayType", 1.0, 100]  ]   ], \
-                                       6: [ QtGui.QColor(QtCore.Qt.magenta), "magenta", [10, 10, 1], 0, \
-                                                [  [QtGui.QColor(QtCore.Qt.magenta), "magentaType", 1.0, 100]  ]   ], \
-                                       7: [ QtGui.QColor(QtCore.Qt.darkBlue), "darkBlue", [10, 10, 1], 0, \
-                                                [  [QtGui.QColor(QtCore.Qt.darkBlue), "darkBlueType", 1.0, 100]  ]   ], \
-                                       8: [ QtGui.QColor(QtCore.Qt.cyan), "cyan", [10, 10, 1], 0, \
-                                                [  [QtGui.QColor(QtCore.Qt.cyan), "cyanType", 1.0, 100]  ]   ], \
-                                       9: [ QtGui.QColor(QtCore.Qt.darkGreen), "darkGreen", [10, 10, 1], 0, \
-                                                [  [QtGui.QColor(QtCore.Qt.darkGreen), "darkGreenType", 1.0, 100]  ]   ]   }  )
-
-
-        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting self.diagramSceneMainWidget.setTypesDict(self.mainTypesDict) ...", CDConstants.DebugTODO )
-        # we handle signals coming from changes in the Type Editor
-        #   with the local function self.handleRegionsTableWidgetChanged()
-        self.diagramSceneMainWidget.setTypesDict(self.mainTypesDict)
-
-
 
 
 
@@ -543,8 +643,8 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
         self.diagramSceneMainWidget.theCDImageSequence.setSequenceLoadedFromFiles(False)
 
-        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting self.setImageGlobals( lBoringPixMap.toImage() ) ...", CDConstants.DebugTODO )
         # now that both the mainTypesDict and the diagramSceneMainWidget are initialized, add starting blank data:
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting self.setImageGlobals( lBoringPixMap.toImage() ) ...", CDConstants.DebugTODO )
         self.setImageGlobals( lBoringPixMap.toImage() )
 
 
@@ -574,7 +674,6 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         self.setSavePIFMetadata(False)
 
 
-
         #  __init__ (10) - connect application signals and slots:
         # -----------------------------------------------------------------------------
         #
@@ -585,14 +684,14 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
         # explicitly connect the "signalVisibilityTypesDockWidget()" signal from the
         #   diagramSceneMainWidget object, to our "slot" (i.e. handler) method
-        #   so that it will respond to requests to show/hide the Types Dock Widget:
+        #   so that it will respond to requests to show/hide the Types QDockWidget:
         self.diagramSceneMainWidget.signalVisibilityTypesDockWidget.connect( \
             self.handleToggleTypesDockWidget )
 
 
         # explicitly connect the "signalVisibilityControlPanelDockWidget()" signal from the
         #   diagramSceneMainWidget object, to our "slot" (i.e. handler) method
-        #   so that it will respond to requests to show/hide the Control Panel Dock Widget:
+        #   so that it will respond to requests to show/hide the Control Panel QDockWidget:
         self.diagramSceneMainWidget.signalVisibilityControlPanelDockWidget.connect( \
             self.handleToggleControlPanelDockWidget )
 
@@ -601,13 +700,35 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         self.cdPreferences.connectSignalsToHandlers()
 
 
-        #  __init__ (11) - finally set the main window,
+
+
+
+
+        #  __init__ (12) - set the QToolBar,
         #                  then show a modal QDialog for the graphics scene preferences:
         # -----------------------------------------------------------------------------
 
-        # 2011 - Mitja: do version checking of Qt and PyQt libraries, and stop
-        #   running CellDraw if the installed versions are too old to support our code:
-        self.versionWarning()
+
+
+
+        self.theToolBars = CDToolBars(self)
+
+
+        # register the callback handler for signals coming from theModeSelectToolBar,
+        #   to our "slot" method responding to radio button changes:
+        self.theToolBars.registerSignalHandlerForModeSelectToolbarChanges( \
+            self.diagramSceneMainWidget.handleSceneModeHasChanged )
+
+
+
+
+
+
+
+
+        #  __init__ (13) - finally set the main window,
+        #                  then show a modal QDialog for the graphics scene preferences:
+
 
         self.setCentralWidget(self.diagramSceneMainWidget)
 
@@ -651,7 +772,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 (self.minQtStr, self.minPyQtStr, QtCore.QT_VERSION_STR, QtCore.qVersion(), PyQt4.QtCore.PYQT_VERSION_STR, PyQt4.QtCore.PYQT_VERSION, PyQt4.QtCore.PYQT_VERSION) )
             sys.exit()
 
-        print "___ - DEBUG ----- CDPreferences: versionWarning(): done"
+        CDConstants.printOut("___ - DEBUG ----- CellDrawMainWindow:: versionWarning(): done", CDConstants.DebugExcessive )
 
 
 
@@ -677,7 +798,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
     #    (AKA signals) arriving from the object cdPreferences
     # ------------------------------------------------------------------
     def handlePreferencesChanged(self):
-        print "handlePreferencesChanged(self) -- # SLOT function for the signal cdPreferencesChangedSignal() from cdPreferences"
+        CDConstants.printOut("___ - DEBUG ----- CellDrawMainWindow.handlePreferencesChanged(self): BEGIN", CDConstants.DebugExcessive )
         #
         #   here we retrieve the updated values from preferences and update CellDraw globals:
         self.cdPreferences.readPreferencesFromDisk()
@@ -719,23 +840,23 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
         self.diagramSceneMainWidget.scene.update()
 
-        print "    self.cdPreferences. "
-        print "    self.cdPreferences. "
-        print "    self.cdPreferences. "
-        print "    self.cdPreferences. "
-        print "    self.cdPreferences. "
-        print "      self.diagramSceneMainWidget.theCDImageLayer.height =", self.diagramSceneMainWidget.theCDImageLayer.height
-        print "      self.diagramSceneMainWidget.theCDImageLayer.width =", self.diagramSceneMainWidget.theCDImageLayer.width
-        print "    self.cdPreferences. "
-        print "      self.cdPreferences.getPifSceneWidth() =", self.cdPreferences.getPifSceneWidth()
-        print "      self.cdPreferences.getPifSceneHeight() =", self.cdPreferences.getPifSceneHeight()
-        print "      self.cdPreferences.getPifSceneDepth() =", self.cdPreferences.getPifSceneDepth()
-        print "      self.cdPreferences.pifSceneUnits =", self.cdPreferences.pifSceneUnits
-        print "    self.cdPreferences. "
-        print "    self.cdPreferences. "
-        print "    self.cdPreferences. "
-        print "    self.cdPreferences. "
-        print "___ - DEBUG ----- CellDrawMainWindow: handlePreferencesChanged() done."
+        CDConstants.printOut("            -----     self.cdPreferences. ", CDConstants.DebugExcessive )
+        CDConstants.printOut("            -----     self.cdPreferences. ", CDConstants.DebugExcessive )
+        CDConstants.printOut("            -----     self.cdPreferences. ", CDConstants.DebugExcessive )
+        CDConstants.printOut("            -----     self.cdPreferences. ", CDConstants.DebugExcessive )
+        CDConstants.printOut("            -----     self.cdPreferences. ", CDConstants.DebugExcessive )
+        CDConstants.printOut("            -----       self.diagramSceneMainWidget.theCDImageLayer.height = "+str(self.diagramSceneMainWidget.theCDImageLayer.height), CDConstants.DebugExcessive )
+        CDConstants.printOut("            -----       self.diagramSceneMainWidget.theCDImageLayer.width = "+str(self.diagramSceneMainWidget.theCDImageLayer.width), CDConstants.DebugExcessive )
+        CDConstants.printOut("            -----     self.cdPreferences. ", CDConstants.DebugExcessive )
+        CDConstants.printOut("            -----       self.cdPreferences.getPifSceneWidth() = "+str(self.cdPreferences.getPifSceneWidth()), CDConstants.DebugExcessive )
+        CDConstants.printOut("            -----       self.cdPreferences.getPifSceneHeight() = "+str(self.cdPreferences.getPifSceneHeight()), CDConstants.DebugExcessive )
+        CDConstants.printOut("            -----       self.cdPreferences.getPifSceneDepth() = "+str(self.cdPreferences.getPifSceneDepth()), CDConstants.DebugExcessive )
+        CDConstants.printOut("            -----       self.cdPreferences.pifSceneUnits = "+str(self.cdPreferences.pifSceneUnits), CDConstants.DebugExcessive )
+        CDConstants.printOut("            -----     self.cdPreferences. ", CDConstants.DebugExcessive )
+        CDConstants.printOut("            -----     self.cdPreferences. ", CDConstants.DebugExcessive )
+        CDConstants.printOut("            -----     self.cdPreferences. ", CDConstants.DebugExcessive )
+        CDConstants.printOut("            -----     self.cdPreferences. ", CDConstants.DebugExcessive )
+        CDConstants.printOut("___ - DEBUG ----- CellDrawMainWindow.handlePreferencesChanged(self): DONE.", CDConstants.DebugExcessive )
 
 
 
@@ -743,7 +864,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
     # ------------------------------------------------------------------
     # 2012 Mitja - this is a slot method to handle "toggle" events
-    #    (AKA signals) arriving to hide or show the :
+    #    (AKA signals) arriving to hide or show the controlPanelDockWidget:
     # ------------------------------------------------------------------
     def handleToggleControlPanelDockWidget(self, pString="Toggle"):
         if pString == "Toggle":
@@ -759,8 +880,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         elif pString == "Show":
             CDConstants.printOut( "handleToggleControlPanelDockWidget() - executing self.controlPanelDockWidget.show() ...", CDConstants.DebugVerbose )
             self.controlPanelDockWidget.show()
-        else:
-            print 
+        else: 
             CDConstants.printOut( "????? handleToggleControlPanelDockWidget() does not know what to do!"+\
                 "Signal received with string: [" + str(pString) + "]", CDConstants.DebugVerbose )
 
@@ -790,8 +910,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         elif pString == "Show":
             CDConstants.printOut( "handleToggleTypesDockWidget() - executing self.typesDockWidget.show() ...", CDConstants.DebugVerbose )
             self.typesDockWidget.show()
-        else:
-            print 
+        else: 
             CDConstants.printOut( "????? handleToggleTypesDockWidget() does not know what to do!"+\
                 "Signal received with string: [" + str(pString) + "]", CDConstants.DebugVerbose )
 
@@ -807,13 +926,12 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         # SLOT function for the signal "regionsTableChangedSignal() from CDTypesEditor"
         #
         #   here we retrieve the table contents to update mainTypesDict:
-        self.mainTypesDict = self.diagramSceneMainWidget.getTypesDict()
+        self.mainTypesDict = self.theTypesEditor.getTypesDict()
         lKeys = self.mainTypesDict.keys()
-        print "2010 DEBUG: in handleRegionsTableWidgetChanged() the mainTypesDict is :"
-        print "                  mainTypesDict keys =", lKeys
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.handleRegionsTableWidgetChanged() -  the mainTypesDict is :", CDConstants.DebugAll )
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.handleRegionsTableWidgetChanged() -                    mainTypesDict keys ="+str(lKeys), CDConstants.DebugAll )
         for i in xrange(len(self.mainTypesDict)):
-            print "                  mainTypesDict: i, lKeys[i], mainTypesDict[keys[i]], self.mainTypesDict[lKeys[i]][0].rgba() = ", \
-                  i, lKeys[i], self.mainTypesDict[lKeys[i]], self.mainTypesDict[lKeys[i]][0].rgba()
+            CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.handleRegionsTableWidgetChanged() -  mainTypesDict: i="+str(i)+", lKeys[i]="+str(lKeys[i])+", mainTypesDict[keys[i]]="+str(mainTypesDict[keys[i]])+", self.mainTypesDict[lKeys[i]][0].rgba()="+str(self.mainTypesDict[lKeys[i]][0].rgba()), CDConstants.DebugAll )
             # update all global data structures to the new values just provided by the external table widget:
             # colorIds remains the same, since the external table doesn't change colors:
             #    self.colorIds
@@ -826,17 +944,16 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             self.nameToColorDict[self.mainTypesDict[lKeys[i]][1]] = self.mainTypesDict[lKeys[i]][0].rgba()
             # nameToColorDict also has to contain all type colors, one for each type name: color(name)
             for j in xrange(len(self.mainTypesDict[lKeys[i]][4])):
-                print " -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_     at i =", i, ", j =", j, "self.mainTypesDict[lKeys[i]][4][j] =", \
-                      self.mainTypesDict[lKeys[i]][4][j]
+                CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.handleRegionsTableWidgetChanged() -  at i ="+str(i)+", j ="+str(j)+"self.mainTypesDict[lKeys[i]][4][j] ="+str(self.mainTypesDict[lKeys[i]][4][j]), CDConstants.DebugAll )
                 self.nameToColorDict[ self.mainTypesDict[lKeys[i]][4][j][1] ] = self.mainTypesDict[lKeys[i]][4][j][0].rgba()
 
-        print "2010 DEBUG: handleRegionsTableWidgetChanged() with globals:", \
-            "\n ___ - DEBUG ----- self.colorIds =", self.colorIds, \
-            "\n ___ - DEBUG ----- self.colorDict =", self.colorDict, \
-            "\n ___ - DEBUG ----- self.comboDict =", self.comboDict, \
-            "\n ___ - DEBUG ----- self.nameToColorDict =", self.nameToColorDict, \
-            "\n ___ - DEBUG ----- self.mainTypesDict =", self.mainTypesDict
-        print "___ - DEBUG ----- CellDrawMainWindow: handleRegionsTableWidgetChanged() ....."
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.handleRegionsTableWidgetChanged()  with globals:"+ \
+            "\n ___ - DEBUG ----- self.colorIds ="+str(self.colorIds)+ \
+            "\n ___ - DEBUG ----- self.colorDict ="+str(self.colorDict)+ \
+            "\n ___ - DEBUG ----- self.comboDict ="+str(self.comboDict)+ \
+            "\n ___ - DEBUG ----- self.nameToColorDict ="+str(self.nameToColorDict)+ \
+            "\n ___ - DEBUG ----- self.mainTypesDict ="+str(self.mainTypesDict), CDConstants.DebugAll )
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.handleRegionsTableWidgetChanged() .....", CDConstants.DebugAll )
 
 
         # propagate the change upstream, to all data structures!
@@ -847,7 +964,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
         self.diagramSceneMainWidget.scene.update()
 
-        print "___ - DEBUG ----- CellDrawMainWindow: handleRegionsTableWidgetChanged() done."
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.handleRegionsTableWidgetChanged() done.", CDConstants.DebugExcessive )
 
 
 
@@ -867,7 +984,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         self.theSceneRasterizerWidget.setIgnoreWhiteRegions(self.ignoreWhiteRegionsForPIF)
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
         self.diagramSceneMainWidget.scene.update()
-        print ">>>>>>>>>>>>>>>>>>>>>>>> CellDrawMainWindow.ignoreWhiteRegionsForPIF is now =", self.ignoreWhiteRegionsForPIF
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow. CellDrawMainWindow.ignoreWhiteRegionsForPIF is now ="+str(self.ignoreWhiteRegionsForPIF), CDConstants.DebugVerbose )
 
     # ------------------------------------------------------------------
     # 2010 Mitja - this is a slot method to handle "content change" events
@@ -879,7 +996,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         self.theSceneRasterizerWidget.setIgnoreBlackRegions(self.ignoreBlackRegionsForPIF)
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
         self.diagramSceneMainWidget.scene.update()
-        print ">>>>>>>>>>>>>>>>>>>>>>>> CellDrawMainWindow.ignoreBlackRegionsForPIF is now =", self.ignoreBlackRegionsForPIF
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.ignoreBlackRegionsForPIF is now ="+str(self.ignoreBlackRegionsForPIF), CDConstants.DebugVerbose )
 
 
     # ------------------------------------------------------------------
@@ -890,7 +1007,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         self.thePIFMustBeSavedFromTheGraphicsScene = pCheckBox
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
         self.diagramSceneMainWidget.scene.update()
-        print ">>>>>>>>>>>>>>>>>>>>>>>> CellDrawMainWindow.thePIFMustBeSavedFromTheGraphicsScene is now =", self.thePIFMustBeSavedFromTheGraphicsScene
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.thePIFMustBeSavedFromTheGraphicsScene is now ="+str(self.thePIFMustBeSavedFromTheGraphicsScene), CDConstants.DebugVerbose )
 
 
 
@@ -904,7 +1021,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
         self.diagramSceneMainWidget.scene.update()
 
-        print ">>>>>>>>>>>>>>>>>>>>>>>> CellDrawMainWindow.pickColorRegion is now =", self.pickColorRegion
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.pickColorRegion is now ="+str(self.pickColorRegion), CDConstants.DebugVerbose )
 
 
     # ------------------------------------------------------------------
@@ -919,7 +1036,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         self.diagramSceneMainWidget.scene.update()
 
         self.theSceneRasterizerWidget.setSavePIFMetadata(self.savePIFMetadata)
-        print ">>>>>>>>>>>>>>>>>>>>>>>> CellDrawMainWindow.savePIFMetadata is now =", self.savePIFMetadata
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.savePIFMetadata is now ="+str(self.savePIFMetadata), CDConstants.DebugVerbose )
 
 
 
@@ -933,11 +1050,11 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         # 2010 - Mitja: this function collects *all* color values in the external table widget
 
         #   here we retrieve the table contents to update the global mainTypesDict:
-        self.mainTypesDict = self.diagramSceneMainWidget.getTypesDict()
+        self.mainTypesDict = self.theTypesEditor.getTypesDict()
        
         lKeys = self.mainTypesDict.keys()
-        print "2010 DEBUG:   in   collectAllColorsInTable() the mainTypesDict is :"
-        print "                   mainTypesDict keys =", lKeys
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.collectAllColorsInTable() -  the mainTypesDict is :", CDConstants.DebugAll )
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.collectAllColorsInTable() -                    mainTypesDict keys ="+str(lKeys), CDConstants.DebugAll )
 
         # this is how the mainTypesDict used to be created:
         # self.mainTypesDict[k] = [QtGui.QColor(lColor), self.colorDict[lColor], \
@@ -945,8 +1062,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
         for i in xrange(len(self.mainTypesDict)):
             lColor = self.mainTypesDict[lKeys[i]][0].rgba()
-            print "                  mainTypesDict: i, lKeys[i], mainTypesDict[keys[i]], self.mainTypesDict[lKeys[i]][0].rgba() = ", \
-                  i, lKeys[i], self.mainTypesDict[lKeys[i]], lColor
+            CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.collectAllColorsInTable() -  mainTypesDict: i="+str(i)+", lKeys[i]="+str(lKeys[i])+", self.mainTypesDict[lKeys[i]]="+str(self.mainTypesDict[lKeys[i]])+", self.mainTypesDict[lKeys[i]][0].rgba()="+str(self.mainTypesDict[lKeys[i]][0].rgba()), CDConstants.DebugAll )
             #
             # update all global data structures to the new values just provided by the external table widget:
             #
@@ -970,7 +1086,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         try:
             self.colorIds.remove(0)
         except:
-            print ">>>>>>>>>>>>>>>>>>>>>>>> self.colorIds does not include 0 :", self.colorIds
+            CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.collectAllColorsInTable() -  self.colorIds does not include 0 :"+str(self.colorIds), CDConstants.DebugVerbose)
 
 
         # 2010 - Mitja: add content to some widgets in the GUI,
@@ -988,12 +1104,12 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
         self.diagramSceneMainWidget.scene.update()
 
-        print "2010 DEBUG: collectAllColorsInTable() DONE with globals:", \
-              "\n self.colorIds =", self.colorIds, \
-              "\n self.colorDict =", self.colorDict, \
-              "\n self.comboDict =", self.comboDict, \
-              "\n self.nameToColorDict =", self.nameToColorDict, \
-              "\n self.mainTypesDict =", self.mainTypesDict
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.collectAllColorsInTable() DONE with globals:"+ \
+            "\n ___ - DEBUG ----- self.colorIds ="+str(self.colorIds)+ \
+            "\n ___ - DEBUG ----- self.colorDict ="+str(self.colorDict)+ \
+            "\n ___ - DEBUG ----- self.comboDict ="+str(self.comboDict)+ \
+            "\n ___ - DEBUG ----- self.nameToColorDict ="+str(self.nameToColorDict)+ \
+            "\n ___ - DEBUG ----- self.mainTypesDict ="+str(self.mainTypesDict), CDConstants.DebugAll )
     # end of def collectAllColorsInTable(self)
     # ---------------------------------------------------------
 
@@ -1002,11 +1118,12 @@ class CellDrawMainWindow(QtGui.QMainWindow):
     # ---------------------------------------------------------
     def openImage(self):
 
-        print "2010 DEBUG: openImage() STARTING with globals:", \
-              "\n self.colorIds =", self.colorIds, \
-              "\n self.colorDict =", self.colorDict, \
-              "\n self.comboDict =", self.comboDict, \
-              "\n self.mainTypesDict =", self.mainTypesDict
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.openImage() STARTING with globals:"+ \
+            "\n ___ - DEBUG ----- self.colorIds ="+str(self.colorIds)+ \
+            "\n ___ - DEBUG ----- self.colorDict ="+str(self.colorDict)+ \
+            "\n ___ - DEBUG ----- self.comboDict ="+str(self.comboDict)+ \
+            "\n ___ - DEBUG ----- self.nameToColorDict ="+str(self.nameToColorDict)+ \
+            "\n ___ - DEBUG ----- self.mainTypesDict ="+str(self.mainTypesDict), CDConstants.DebugAll )
 
         # 2010 - Mitja: according to Qt documentation, the tr() function returns a
         #   translated version of its input parameter, optionally based on a
@@ -1091,7 +1208,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
 
 
-        print "2010 DEBUG: _,.- ~*'`'*~-.,_ setImageGlobals() with image: ", str(pImage), " ... done."
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.setImageGlobals() with image=="+str(pImage)+" ... DONE.", CDConstants.DebugExcessive )
 
 
 
@@ -1105,7 +1222,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
     # ---------------------------------------------------------
     def fileSavePIFFromScene_Callback(self):
 
-        print "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() starting."
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.fileSavePIFFromScene_Callback() starting.", CDConstants.DebugExcessive )
 
         # 2010 - Mitja: setup local variables for file saving:
         lToBeSavedFileExtension = QtCore.QString("piff")
@@ -1157,7 +1274,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
                 # restore drawing the scene image foreground to avoid useless repainting:
                 self.diagramSceneMainWidget.scene.setDrawForegroundEnabled(lTmpDrawForegroundEnabled)
-                print "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() Sequence-generated PIFF done."
+                CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.fileSavePIFFromScene_Callback() Sequence-generated PIFF done.", CDConstants.DebugExcessive )
                 return True
 
 
@@ -1185,12 +1302,12 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 if fileName.isEmpty():
                     self.theSceneRasterizerWidget.hide()
                     return False
-                    print "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() fixed-size raster PIFF failed."
+                    CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() fixed-size raster PIFF failed.", CDConstants.DebugImportant )
                 else:
                     # DIH:
                     self.theSceneRasterizerWidget.savePIFFFileFromFixedSizeRaster(fileName)
                     self.theSceneRasterizerWidget.hide()
-                    print "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() fixed-size raster PIFF done."
+                    CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() fixed-size raster PIFF done.", CDConstants.DebugSparse )
                     return True
 
             elif self.cdPreferences.piffGenerationMode == CDConstants.PIFFSaveWithPotts:
@@ -1201,7 +1318,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 # here we use the Potts algorithm to generate each region of cells:
                 self.theSceneRasterizerWidget.computePottsModelAndSavePIF()
                 self.theSceneRasterizerWidget.hide()
-                print "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() Potts-generated PIFF done."
+                CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() Potts-generated PIFF done.", CDConstants.DebugSparse )
                 return True
                 # ----------------------------------------------------------------
 
@@ -1220,7 +1337,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                                            .arg(lToBeSavedFileExtension))
                 if fileName.isEmpty():
                     self.theSceneRasterizerWidget.hide()
-                    print "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() region-raster PIFF failed."
+                    CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() region-raster PIFF failed.", CDConstants.DebugImportant )
                     return False
                 else:
                     # this used to be the call to rasterize region-raster cells from each region:
@@ -1229,7 +1346,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                     #   self.theSceneRasterizerWidget.rasterizeVarSizedCellRegionsAndSavePIF(fileName)
                     self.theSceneRasterizerWidget.savePIFFFileFromRegionRasters(fileName)
                     self.theSceneRasterizerWidget.hide()
-                    print "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() region-raster PIFF done."
+                    CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() region-raster PIFF done.", CDConstants.DebugSparse )
                     return True
                 # ----------------------------------------------------------------
                
@@ -1243,14 +1360,14 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                                        .arg(lToBeSavedFileExtension))
             if fileName.isEmpty():
                 self.theSceneRasterizerWidget.hide()
-                print "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() pixel-based PIFF failed."
+                CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() pixel-based PIFF failed.", CDConstants.DebugImportant )
                 return False
             else:
                 # 2010 - Mitja: this was originally calling the saveFile function:
                 #   self.saveFile(fileName)
                 self.savePIFFileFromAllPixels(fileName)
                 self.theSceneRasterizerWidget.hide()
-                print "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() pixel-based PIFF done."
+                CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() pixel-based PIFF done.", CDConstants.DebugSparse )
                 return True
 
 
@@ -1458,7 +1575,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         if not lFileName.isEmpty():
 
             # programmatically select the image sequence tab in the control panel:
-            self.theMainControlPanel.setCurrentTab(2)
+            self.theCellSceneControls.setCurrentTab(2)
     
             # import the image sequence into a numpy array object:
             self.importImageSequence(lFileName)

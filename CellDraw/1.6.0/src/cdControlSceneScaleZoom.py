@@ -29,7 +29,7 @@ class CDControlSceneScaleZoom(QtGui.QWidget):
 
         # ----------------------------------------------------------------
         #
-        # QWidget setup (1) - windowing GUI setup for Control Panel:
+        # QWidget setup (1) - windowing GUI setup for Scene Scale/Zoom controls:
         #
 
         self.setWindowTitle("Scene Scale/Zoom Window Title")

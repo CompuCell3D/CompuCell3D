@@ -79,6 +79,7 @@ class CDConstants(QtCore.QObject):
     #    5 = DebugTODO = this constant and all references to it need to be TODO removed from release version!!!
     DebugImportant, DebugSparse, DebugVerbose, DebugExcessive, DebugAll, DebugTODO = range(6)
 
+
     # and the static class variable for debugging level:
     globalDebugLevel = DebugImportant
 

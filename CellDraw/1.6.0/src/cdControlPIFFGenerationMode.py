@@ -171,7 +171,7 @@ class CDControlPIFFGenerationMode(QtGui.QWidget):
 
 
         # setWindowOpacity seems to work only if it's set after setting WindowFlags and attributes:
-        self.setWindowOpacity(0.95)
+        # self.setWindowOpacity(0.95)
 
 
 

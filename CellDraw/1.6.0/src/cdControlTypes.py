@@ -44,7 +44,7 @@ class CDControlTypes(QtGui.QWidget):
 
         # ----------------------------------------------------------------
         #
-        # QWidget setup (1) - windowing GUI setup for Control Panel:
+        # QWidget setup (1) - windowing GUI setup for Types of Regions or Cells controls:
         #
 
         self.setWindowTitle("Types of Regions or Cells Window Title")

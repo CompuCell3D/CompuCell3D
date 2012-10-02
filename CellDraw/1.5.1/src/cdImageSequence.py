@@ -7,7 +7,7 @@ import PyQt4.QtGui
 import PyQt4.QtCore
 
 import math   # we need to import math to use sqrt() and such
-import sys    # for get/setrecursionlimit()
+import sys    # for get/setrecursionlimit() and sys.version_info
 
 # 2012 - Mitja: advanced debugging tools,
 #   work only on Posix-compliant systems so far (no MS-Windows)
@@ -95,9 +95,12 @@ class CDImageSequence(QtCore.QObject):
         #    3 = Region 3D Volume = CDConstants.ImageSequenceUse3DVolume
         #    4 = Region Cell Seeds = CDConstants.ImageSequenceUseAreaSeeds
         self.theProcessingModeForImageSequenceToPIFF = (1 << CDConstants.ImageSequenceUseAreaSeeds)
-        # bin() does not exist in Python 2.5, so we comment it out for now:
-        # CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: __init__() bin(self.theProcessingModeForImageSequenceToPIFF) == "+str(bin(self.theProcessingModeForImageSequenceToPIFF)) , CDConstants.DebugExcessive )
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: __init__() self.theProcessingModeForImageSequenceToPIFF == "+str(self.theProcessingModeForImageSequenceToPIFF) , CDConstants.DebugExcessive )
+
+        # bin() does not exist in Python 2.5:
+        if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: __init__() bin(self.theProcessingModeForImageSequenceToPIFF) == "+str(bin(self.theProcessingModeForImageSequenceToPIFF)) , CDConstants.DebugExcessive )
+        else:
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: __init__() self.theProcessingModeForImageSequenceToPIFF == "+str(self.theProcessingModeForImageSequenceToPIFF) , CDConstants.DebugExcessive )
 
 
 
@@ -1147,7 +1150,7 @@ class CDImageSequence(QtCore.QObject):
         if (self.edgeInSequenceIsReadyFlags[self.theCurrentIndex] == False):
             
             # adjusting Timer() setup for Python 2.5:
-            if ((sys.version_info[0] >= 2) and (sys.version_info[2] >= 6)) :
+            if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
                 timerMeasureForFunction = Timer(self.theTrueComputeCurrentEdge)  # define it before the try/except
                 try:
                     lTheTimeItTook = timerMeasureForFunction.timeit(1)           # or timerMeasureForFunction.repeat(...)
@@ -1508,7 +1511,7 @@ class CDImageSequence(QtCore.QObject):
         if (self.contoursAreReadyFlag == False):
             
             # adjusting Timer() setup for Python 2.5:
-            if ((sys.version_info[0] >= 2) and (sys.version_info[2] >= 6)) :
+            if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
                 timerMeasureForFunction = Timer(self.theTrueComputeContours)  # define it before the try/except
                 try:
                     lTheTimeItTook = timerMeasureForFunction.timeit(1)        # or timerMeasureForFunction.repeat(...)
@@ -1541,11 +1544,13 @@ class CDImageSequence(QtCore.QObject):
     # ------------------------------------------------------------------   
     def assignAllProcessingModesForImageSequenceToPIFF(self, pValue):
 
-        # bin() does not exist in Python 2.5, so we comment it out for now:
-        # CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: assignAllProcessingModesForImageSequenceToPIFF() bin(self.theProcessingModeForImageSequenceToPIFF) == " + \
-        #     str(bin(self.theProcessingModeForImageSequenceToPIFF)) + " bin(pValue) == " + str(bin(pValue)), CDConstants.DebugVerbose )
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: assignAllProcessingModesForImageSequenceToPIFF() self.theProcessingModeForImageSequenceToPIFF == " + \
-            str(self.theProcessingModeForImageSequenceToPIFF) + " pValue == " + str(pValue), CDConstants.DebugVerbose )
+        # bin() does not exist in Python 2.5:
+        if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: assignAllProcessingModesForImageSequenceToPIFF() bin(self.theProcessingModeForImageSequenceToPIFF) == " + \
+                str(bin(self.theProcessingModeForImageSequenceToPIFF)) + " bin(pValue) == " + str(bin(pValue)), CDConstants.DebugVerbose )
+        else:
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: assignAllProcessingModesForImageSequenceToPIFF() self.theProcessingModeForImageSequenceToPIFF == " + \
+                str(self.theProcessingModeForImageSequenceToPIFF) + " pValue == " + str(pValue), CDConstants.DebugVerbose )
 
         # if we are changing i.e. toggling B/W discretization mode,  invalidate all edges and contours computed so far:
         if  ( ( pValue & (1 << CDConstants.ImageSequenceUseDiscretizedToBWMode) )  and \
@@ -1571,9 +1576,11 @@ class CDImageSequence(QtCore.QObject):
         if (self.theProcessingModeForImageSequenceToPIFF & (1 << CDConstants.ImageSequenceUse3DContours) ):
             self.computeContours()
 
-        # bin() does not exist in Python 2.5, so we comment it out for now:
-        # CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: assignAllProcessingModesForImageSequenceToPIFF() bin(self.theProcessingModeForImageSequenceToPIFF) == "+str(bin(self.theProcessingModeForImageSequenceToPIFF)) , CDConstants.DebugVerbose )
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: assignAllProcessingModesForImageSequenceToPIFF() self.theProcessingModeForImageSequenceToPIFF == "+str(self.theProcessingModeForImageSequenceToPIFF) , CDConstants.DebugVerbose )
+        # bin() does not exist in Python 2.5:
+        if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: assignAllProcessingModesForImageSequenceToPIFF() bin(self.theProcessingModeForImageSequenceToPIFF) == "+str(bin(self.theProcessingModeForImageSequenceToPIFF)) , CDConstants.DebugVerbose )
+        else:
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: assignAllProcessingModesForImageSequenceToPIFF() self.theProcessingModeForImageSequenceToPIFF == "+str(self.theProcessingModeForImageSequenceToPIFF) , CDConstants.DebugVerbose )
 
     # end of   def assignAllProcessingModesForImageSequenceToPIFF(self, pValue)
     # ------------------------------------------------------------------   
@@ -1601,9 +1608,11 @@ class CDImageSequence(QtCore.QObject):
         # do a bitwise-OR with pValue, to set the specific bit to 1 and leave other bits unchanged:
         self.theProcessingModeForImageSequenceToPIFF |= (1 << pValue)
 
-        # bin() does not exist in Python 2.5, so we comment it out for now:
-        # CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: enableAProcessingModeForImageSequenceToPIFF() bin(self.theProcessingModeForImageSequenceToPIFF) == "+str(bin(self.theProcessingModeForImageSequenceToPIFF))+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: enableAProcessingModeForImageSequenceToPIFF() self.theProcessingModeForImageSequenceToPIFF == "+str(self.theProcessingModeForImageSequenceToPIFF)+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
+        # bin() does not exist in Python 2.5:
+        if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: enableAProcessingModeForImageSequenceToPIFF() bin(self.theProcessingModeForImageSequenceToPIFF) == "+str(bin(self.theProcessingModeForImageSequenceToPIFF))+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
+        else:
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: enableAProcessingModeForImageSequenceToPIFF() self.theProcessingModeForImageSequenceToPIFF == "+str(self.theProcessingModeForImageSequenceToPIFF)+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
 
         CDConstants.printOut("[A] hello, I'm "+str(debugWhoIsTheRunningFunction())+", parent is "+str(debugWhoIsTheParentFunction())+ \
             " ||||| self.repaintEventsCounter=="+str(self.repaintEventsCounter), CDConstants.DebugTODO )
@@ -1634,9 +1643,11 @@ class CDImageSequence(QtCore.QObject):
         # set bitwise pValue, to set only the specific bit to 1 and all other bits to 0:
         self.theProcessingModeForImageSequenceToPIFF = (1 << pValue)
 
-        # bin() does not exist in Python 2.5, so we comment it out for now:
-        # CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: resetToOneProcessingModeForImageSequenceToPIFF() bin(self.theProcessingModeForImageSequenceToPIFF) == "+str(bin(self.theProcessingModeForImageSequenceToPIFF))+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: resetToOneProcessingModeForImageSequenceToPIFF() self.theProcessingModeForImageSequenceToPIFF == "+str(self.theProcessingModeForImageSequenceToPIFF)+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
+        # bin() does not exist in Python 2.5:
+        if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: resetToOneProcessingModeForImageSequenceToPIFF() bin(self.theProcessingModeForImageSequenceToPIFF) == "+str(bin(self.theProcessingModeForImageSequenceToPIFF))+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
+        else:
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: resetToOneProcessingModeForImageSequenceToPIFF() self.theProcessingModeForImageSequenceToPIFF == "+str(self.theProcessingModeForImageSequenceToPIFF)+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
 
     # end of  def resetToOneProcessingModeForImageSequenceToPIFF(self, pValue)
     # ------------------------------------------------------------------   
@@ -1661,9 +1672,11 @@ class CDImageSequence(QtCore.QObject):
         # do a bitwise-AND with negated pValue, to clear the specific bit to 0:
         self.theProcessingModeForImageSequenceToPIFF &= ~(1 << pValue)
 
-        # bin() does not exist in Python 2.5, so we comment it out for now:
-        # CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: disableAProcessingModeForImageSequenceToPIFF() bin(self.theProcessingModeForImageSequenceToPIFF) == "+str(bin(self.theProcessingModeForImageSequenceToPIFF))+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: disableAProcessingModeForImageSequenceToPIFF() self.theProcessingModeForImageSequenceToPIFF == "+str(self.theProcessingModeForImageSequenceToPIFF)+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
+        # bin() does not exist in Python 2.5:
+        if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: disableAProcessingModeForImageSequenceToPIFF() bin(self.theProcessingModeForImageSequenceToPIFF) == "+str(bin(self.theProcessingModeForImageSequenceToPIFF))+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
+        else:
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: disableAProcessingModeForImageSequenceToPIFF() self.theProcessingModeForImageSequenceToPIFF == "+str(self.theProcessingModeForImageSequenceToPIFF)+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
 
     #  def disableAProcessingModeForImageSequenceToPIFF(self, pValue)
     # ------------------------------------------------------------------   
@@ -1678,10 +1691,18 @@ class CDImageSequence(QtCore.QObject):
     # ------------------------------------------------------------------   
     def getAProcessingModeStatusForImageSequenceToPIFF(self, pValue):
         if ( self.theProcessingModeForImageSequenceToPIFF & (1 << pValue) ):
-            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: getAProcessingModeStatusForImageSequenceToPIFF() TRUE (pValue, (1 << pValue) == "+str(pValue)+" , "+str(1 << pValue) , CDConstants.DebugVerbose )
+            # bin() does not exist in Python 2.5:
+            if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
+                CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: getAProcessingModeStatusForImageSequenceToPIFF() TRUE bin(pValue, (1 << pValue)) == "+str(pValue)+" , "+str(bin(1 << pValue)) , CDConstants.DebugVerbose )
+            else:
+                CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: getAProcessingModeStatusForImageSequenceToPIFF() TRUE (pValue, (1 << pValue) == "+str(pValue)+" , "+str(1 << pValue) , CDConstants.DebugVerbose )
             return True
         else:
-            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: getAProcessingModeStatusForImageSequenceToPIFF() FALSE pValue, (1 << pValue) == "+str(pValue)+" , "+str(1 << pValue) , CDConstants.DebugVerbose )
+            # bin() does not exist in Python 2.5:
+            if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
+                CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: getAProcessingModeStatusForImageSequenceToPIFF() FALSE bin(pValue, (1 << pValue)) == "+str(pValue)+" , "+str(bin(1 << pValue)) , CDConstants.DebugVerbose )
+            else:
+                CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: getAProcessingModeStatusForImageSequenceToPIFF() FALSE pValue, (1 << pValue) == "+str(pValue)+" , "+str(1 << pValue) , CDConstants.DebugVerbose )
             return False
 
 
