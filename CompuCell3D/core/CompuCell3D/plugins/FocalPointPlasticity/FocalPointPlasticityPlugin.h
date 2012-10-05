@@ -93,13 +93,13 @@ namespace CompuCell3D {
 		typedef double (FocalPointPlasticityPlugin::*diffEnergyFcnPtr_t)(float _deltaL,float _lBefore,const FocalPointPlasticityTrackerData * _plasticityTrackerData,const CellG *_cell,bool _useCluster);
 		diffEnergyFcnPtr_t diffEnergyFcnPtr;
 		
-		std::vector<mu::Parser> pVec; //used to implement custom constituent laws
-		std::string formulaString;
-		std::vector<double> lambdaVec; //used to keep link lambda parameter
-		std::vector<double> lengthVec; //used to keep link length parameter
-		std::vector<double> targetLengthVec; //used to keep link target length parameter
+		//std::vector<mu::Parser> pVec; //used to implement custom constituent laws
+		//std::string formulaString;
+		//std::vector<double> lambdaVec; //used to keep link lambda parameter
+		//std::vector<double> lengthVec; //used to keep link length parameter
+		//std::vector<double> targetLengthVec; //used to keep link target length parameter
 
-		std::vector<std::vector<double> > extraParamVec;
+		//std::vector<std::vector<double> > extraParamVec;
 
 
 		ExpressionEvaluatorDepot eed;
