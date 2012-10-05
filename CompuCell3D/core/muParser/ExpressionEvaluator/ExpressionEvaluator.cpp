@@ -118,11 +118,12 @@ void ExpressionEvaluatorDepot::update(CC3DXMLElement *_xmlData, bool _fullInitFl
 	}
 
 
-	
+	unsigned int numberOfExistingVariables=this->getNumberOfVars(); // these variables were addedbefore calling this fcn
 	//define variables for parsers
 	addVariables(varNameVec.begin(),varNameVec.end());
 	//set variables' values for parsers 
-	setVariables(varValueVec.begin(),varValueVec.end(),this->getNumberOfVars());
+	setVariables(varValueVec.begin(),varValueVec.end(),numberOfExistingVariables);
+	//setVariables(varValueVec.begin(),varValueVec.end(),this->getNumberOfVars());
 	//set aliases
 	for (int i =0 ; i < builtinVariableAliasPairVec.size() ; ++i){
 		setAlias(builtinVariableAliasPairVec[i].first,builtinVariableAliasPairVec[i].second);

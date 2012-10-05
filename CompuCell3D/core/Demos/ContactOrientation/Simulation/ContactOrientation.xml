@@ -33,7 +33,12 @@
       <NeighborOrder>1</NeighborOrder>
    </Plugin>
    
-    <Plugin Name="ContactOrientation"/>   
+    <Plugin Name="ContactOrientation">   
+        <AngularTerm>
+            <Variable Name="LambdaExtra" Value="1.0"/>
+            <Expression>Alpha*abs(cos(Theta))</Expression>
+        </AngularTerm>
+    </Plugin>
    
    <Steppable Type="BlobInitializer">
       

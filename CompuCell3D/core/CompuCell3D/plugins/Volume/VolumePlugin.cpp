@@ -104,9 +104,9 @@ void VolumePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		unsigned int maxNumberOfWorkNodes=pUtils->getMaxNumberOfWorkNodesPotts();
 		eed.allocateSize(maxNumberOfWorkNodes);
 		vector<string> variableNames;
-		variableNames.push_back("lambdaVolume");
-		variableNames.push_back("volume");
-		variableNames.push_back("vtarget");
+		variableNames.push_back("LambdaVolume");
+		variableNames.push_back("Volume");
+		variableNames.push_back("Vtarget");
 
 		eed.addVariables(variableNames.begin(),variableNames.end());
 		eed.update(_xmlData->getFirstElement("VolumeEnergyExpression"));			

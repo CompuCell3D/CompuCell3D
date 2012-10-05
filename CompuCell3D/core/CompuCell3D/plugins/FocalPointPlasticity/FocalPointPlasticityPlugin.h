@@ -36,6 +36,7 @@
 #include <muParser/muParser.h>
 
 #include "FocalPointPlasticityDLLSpecifier.h"
+#include <muParser/ExpressionEvaluator/ExpressionEvaluator.h>
 
 class CC3DXMLElement;
 
@@ -99,6 +100,9 @@ namespace CompuCell3D {
 		std::vector<double> targetLengthVec; //used to keep link target length parameter
 
 		std::vector<std::vector<double> > extraParamVec;
+
+
+		ExpressionEvaluatorDepot eed;
 
 
 		typedef double (FocalPointPlasticityPlugin::*constituentLawFcnPtr_t)(float _lambda,float _length,float _targetLength);
