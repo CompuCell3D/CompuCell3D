@@ -1008,6 +1008,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             
             self.prepareLatticeDataView()
             
+#        print MODULENAME,'__loadSim():  on exit,  self.graphicsWindowVisDict=',self.graphicsWindowVisDict
+         
             
     def __loadCC3DFile(self,fileName):
 #        import CompuCellSetup        
@@ -1285,6 +1287,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
    
     def createOutputDirs(self):
         import CompuCellSetup
+#        import pdb; pdb.set_trace()
         if self.customScreenshotDirectoryName=="":
 #            import CompuCellSetup
 #            outputDir = self.__outputDirectory
@@ -1789,6 +1792,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         if self.__imageOutput and not (self.__step % self.__shotFrequency):  # dumping images? Check modulo MCS #
             mcsFormattedNumber = string.zfill(str(self.__step),self.screenshotNumberOfDigits) # fills string wtih 0's up to self.screenshotNumberOfDigits width
             screenshotFileName = os.path.join(self.screenshotDirectoryName,self.baseScreenshotName+"_"+mcsFormattedNumber+".png")
+#            print MODULENAME," handleCompletedStepCMLResultReplay():  calling takeSimShot w/ screenshotFileName=",screenshotFileName
             self.mainGraphicsWindow.takeSimShot(screenshotFileName)
             self.screenshotManager.outputScreenshots(self.screenshotDirectoryName,self.__step)
             
@@ -1815,7 +1819,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             screenshotFileName = os.path.join(self.screenshotDirectoryName,self.baseScreenshotName+"_"+mcsFormattedNumber+".png")
 #            print '       handleCompletedStepRegular():  screenshotDirectoryName=',self.screenshotDirectoryName
 #            print '       handleCompletedStepRegular():  baseScreenshotName=',self.baseScreenshotName
-#            print '       handleCompletedStepRegular():  screenshotFileName=',screenshotFileName
+#            print MODULENAME,'  handleCompletedStepRegular():  calling takeSimShot w/ screenshotFileName=',screenshotFileName
             self.mainGraphicsWindow.takeSimShot(screenshotFileName)
             self.screenshotManager.outputScreenshots(self.screenshotDirectoryName,self.__step)
             
@@ -2380,7 +2384,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
 
     def showDisplayWidgets(self):
-#        print '\n\n\n',MODULENAME,' showDisplayWidgets'
+#        print MODULENAME,' showDisplayWidgets'
         
         # This block of code simply checks to see if some plugins assoc'd with Vis are defined
 #        import CompuCellSetup, XMLUtils
@@ -2407,7 +2411,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                 if pluginName == "CenterOfMass":
                     self.pluginCOMDefined = True
 
-#            print MODULENAME,' FPP= ',self.pluginFPPDefined, ', COM=',self.pluginCOMDefined
+#            print MODULENAME,'showDisplayWidgets(): FPP= ',self.pluginFPPDefined, ', COM=',self.pluginCOMDefined
             
             # If appropriate, disable/enable Vis menu options
             if not self.pluginFPPDefined:
@@ -2566,6 +2570,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                     self.__closeSim()
                     self.showSimView(file)
         self.drawingAreaPrepared=True
+        self.updateActiveWindowVisFlags()  # needed in case switching from one sim to another (e.g. 1st has FPP, 2nd doesn't)
     
     
     def __openLDSFile(self,fileName=None):
