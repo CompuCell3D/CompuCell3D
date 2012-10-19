@@ -90,7 +90,7 @@ class EXPRESSIONEVALUATOR_EXPORT ExpressionEvaluatorDepot{
 		void setVariables(ForwardIterator first, ForwardIterator last,unsigned int offset=0){			  
 				
 			  if (first==last) return ;
-
+			  
 			for (unsigned i = 0 ; i < eeVec.size() ; ++i){
 
               unsigned int idx=0;

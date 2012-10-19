@@ -23,9 +23,11 @@ ContactOrientationPlugin::ContactOrientationPlugin():
 pUtils(0),
 lockPtr(0),
 xmlData(0) ,
+angularTermDefined(false),
 cellFieldG(0),
 boundaryStrategy(0),
-automaton(0)
+automaton(0),
+angularTermFcnPtr(&ContactOrientationPlugin::singleTermFormula)
 {}
 
 ContactOrientationPlugin::~ContactOrientationPlugin() {
@@ -40,7 +42,7 @@ void ContactOrientationPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlDa
     potts=simulator->getPotts();
     cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
     fieldDim=cellFieldG->getDim();
-    //pUtils=sim->getParallelUtils();
+    pUtils=sim->getParallelUtils();
     //lockPtr=new ParallelUtilsOpenMP::OpenMPLock_t;
     //pUtils->initLock(lockPtr); 
     
@@ -62,6 +64,22 @@ void ContactOrientationPlugin::extraInit(Simulator *simulator){
 
 double ContactOrientationPlugin::singleTermFormula(double _alpha,double _theta){
 	return _alpha*fabs(cos(_theta));
+}
+
+
+double ContactOrientationPlugin::angularTermFunction(double _alpha,double _theta){
+
+		int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();	
+		ExpressionEvaluator & ev=eed[currentWorkNodeNumber];
+		double angularTerm=0.0;
+
+
+		ev[0]=_alpha;
+		ev[1]=_theta;	
+		angularTerm=ev.eval();
+
+
+		return angularTerm;
 }
 
 double ContactOrientationPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {	
@@ -140,14 +158,16 @@ double ContactOrientationPlugin::changeEnergy(const Point3D &pt,const CellG *new
                 if (oldCell->volume>1){
                     //termOld=alphaOld*fabs(cos(thetaOld));
 					//termOld=alphaOld*cos(thetaOld);
-					termOld=singleTermFormula(alphaOld,thetaOld);
+					// termOld=singleTermFormula(alphaOld,thetaOld);
+                    termOld=(this->*angularTermFcnPtr)(alphaOld,thetaOld);
                 }else{
                     termOld=0.0;
                 }                
                 
                 //termN=alphaN*fabs(cos(thetaN));
                 //termN=alphaN*cos(thetaN);
-				termN=singleTermFormula(alphaN,thetaN);
+				// termN=singleTermFormula(alphaN,thetaN);
+                termN=(this->*angularTermFcnPtr)(alphaN,thetaN);
 
                 if((nCell->clusterId) != (oldCell->clusterId)) {
                     
@@ -227,11 +247,13 @@ double ContactOrientationPlugin::changeEnergy(const Point3D &pt,const CellG *new
                 
 				//termNew=alphaNew*fabs(cos(thetaNew));
 				//termNew=alphaNew*cos(thetaNew);
-				termNew=singleTermFormula(alphaNew,thetaNew);
+				// termNew=singleTermFormula(alphaNew,thetaNew);
+                termNew=(this->*angularTermFcnPtr)(alphaNew,thetaNew);
                 
                 //termN=alphaN*fabs(cos(thetaN));
                 //termN=alphaN*cos(thetaN);
-				termN=singleTermFormula(alphaN,thetaN);
+				// termN=singleTermFormula(alphaN,thetaN);
+                termN=(this->*angularTermFcnPtr)(alphaN,thetaN);
 
                 if((nCell->clusterId) != (newCell->clusterId)) {
                     
@@ -297,12 +319,33 @@ void ContactOrientationPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFl
     automaton = potts->getAutomaton();
     ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
 
+    angularTermDefined=false;
+    
+    
+	if (_xmlData->findElement("AngularTerm")){
+		unsigned int maxNumberOfWorkNodes=pUtils->getMaxNumberOfWorkNodesPotts();
+		eed.allocateSize(maxNumberOfWorkNodes);
+		vector<string> variableNames;
+		variableNames.push_back("Alpha");
+		variableNames.push_back("Theta");
 
+		eed.addVariables(variableNames.begin(),variableNames.end());
+		eed.update(_xmlData->getFirstElement("AngularTerm"));			
+		angularTermDefined=true;
+        angularTermFcnPtr=&ContactOrientationPlugin::angularTermFunction;
+	}else{
+		angularTermDefined=false;
+        angularTermFcnPtr=&ContactOrientationPlugin::singleTermFormula;
+	}
+    
+    
 
     //Here I initialize max neighbor index for direct acces to the list of neighbors 
     boundaryStrategy=BoundaryStrategy::getInstance();
     maxNeighborIndex=0;
 
+    
+    
     if(_xmlData->getFirstElement("Depth")){
         maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
             //cerr<<"got here will do depth"<<endl;

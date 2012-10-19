@@ -25,6 +25,7 @@
 #include <string>
 
 #include "ContactOrientationDLLSpecifier.h"
+#include <muParser/ExpressionEvaluator/ExpressionEvaluator.h>
 
 class CC3DXMLElement;
 
@@ -52,6 +53,12 @@ namespace CompuCell3D {
         ParallelUtilsOpenMP *pUtils;            
         
         ParallelUtilsOpenMP::OpenMPLock_t *lockPtr;        
+        
+		ExpressionEvaluatorDepot eed;
+		bool angularTermDefined;
+        
+        
+        
 
         Automaton *automaton;
 
@@ -69,6 +76,8 @@ namespace CompuCell3D {
         double depth;        
         unsigned int maxNeighborIndex;
 		Dim3D fieldDim;
+        
+        
         
         
     public:
@@ -112,6 +121,10 @@ namespace CompuCell3D {
         */
         int getIndex(const int type1, const int type2) const; 
 		double singleTermFormula(double _alpha,double _theta);
+        double angularTermFunction(double _alpha,double _theta);
+        
+        typedef double ( ContactOrientationPlugin::*angularTerm_t)(double _alpha,double _theta);
+        ContactOrientationPlugin::angularTerm_t angularTermFcnPtr;
     
     };
 };

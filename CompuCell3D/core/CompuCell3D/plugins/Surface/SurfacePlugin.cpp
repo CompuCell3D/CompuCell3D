@@ -102,9 +102,9 @@ void SurfacePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		unsigned int maxNumberOfWorkNodes=pUtils->getMaxNumberOfWorkNodesPotts();
 		eed.allocateSize(maxNumberOfWorkNodes);
 		vector<string> variableNames;
-		variableNames.push_back("lambdaSurface");
-		variableNames.push_back("surface");
-		variableNames.push_back("starget");
+		variableNames.push_back("LambdaSurface");
+		variableNames.push_back("Surface");
+		variableNames.push_back("Starget");
 
 		eed.addVariables(variableNames.begin(),variableNames.end());
 		eed.update(_xmlData->getFirstElement("SurfaceEnergyExpression"));			

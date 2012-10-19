@@ -370,52 +370,75 @@ void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 
 			CC3DXMLElement * linkXMLElem = _xmlData->getFirstElement("LinkConstituentLaw");
 
-			if (linkXMLElem){
-				map<string,double> variableMap;
-
-
-
-				CC3DXMLElementList variableXMLVec = linkXMLElem->getElements("Variable");
-				for (int i = 0 ; i <variableXMLVec.size() ; ++i){
-					string varName = variableXMLVec[i]->getAttribute("Name");
-					double varVal = variableXMLVec[i]->getAttributeAsDouble("Value");
-					variableMap.insert(make_pair(varName,varVal));
-				}
-
-				CC3DXMLElement *formulaXMLElem = linkXMLElem->getFirstElement("Formula");
-				if (formulaXMLElem){		
-					formulaString=formulaXMLElem->getText();
-				}
-
-				//allocating muPArser related vectors	
-				unsigned int maxNumberOfWorkNodes=pUtils->getMaxNumberOfWorkNodesPotts();
-				pVec.assign(maxNumberOfWorkNodes,mu::Parser());    
-				lambdaVec.assign(maxNumberOfWorkNodes,0.0);
-				lengthVec.assign(maxNumberOfWorkNodes,0.0);
-				targetLengthVec.assign(maxNumberOfWorkNodes,0.0);
-				//extra parame vector - first index goes over node numbers second one is for parameter mapping	
-				extraParamVec.assign(maxNumberOfWorkNodes,vector<double>(variableMap.size(),0.0));
-
-
-				for (int i  = 0 ; i< maxNumberOfWorkNodes ; ++i){
-					pVec[i].DefineVar("Lambda",&lambdaVec[i]);
-					pVec[i].DefineVar("TargetLength",&targetLengthVec[i]);
-					pVec[i].DefineVar("Length",&lengthVec[i]);
-
-					int j=0;
-
-					for (map<string,double>::iterator mitr = variableMap.begin() ; mitr != variableMap.end() ; ++mitr){
-						extraParamVec[i][j]=mitr->second;
-						pVec[i].DefineVar(mitr->first, &extraParamVec[i][j]);
-						++j;
-					}
-
-					pVec[i].SetExpr(formulaString);		
-				}
-
-				constituentLawFcnPtr=&FocalPointPlasticityPlugin::customLinkConstituentLaw;
-
+			if( linkXMLElem  && linkXMLElem->findElement("Formula")){
+				ASSERT_OR_THROW("CC3DML Error: Please change Formula tag to Expression tag inside LinkConstituentLaw element",false);
 			}
+
+
+			if (linkXMLElem){
+				unsigned int maxNumberOfWorkNodes=pUtils->getMaxNumberOfWorkNodesPotts();
+				eed.allocateSize(maxNumberOfWorkNodes);
+				vector<string> variableNames;
+				variableNames.push_back("Lambda");
+				variableNames.push_back("Length");
+				variableNames.push_back("TargetLength");
+				
+
+				eed.addVariables(variableNames.begin(),variableNames.end());
+				eed.update(linkXMLElem);			
+				constituentLawFcnPtr=&FocalPointPlasticityPlugin::customLinkConstituentLaw;
+				
+			}else{
+				
+				constituentLawFcnPtr=&FocalPointPlasticityPlugin::elasticLinkConstituentLaw;;
+			}
+
+			//if (linkXMLElem){
+			//	map<string,double> variableMap;
+
+
+
+			//	CC3DXMLElementList variableXMLVec = linkXMLElem->getElements("Variable");
+			//	for (int i = 0 ; i <variableXMLVec.size() ; ++i){
+			//		string varName = variableXMLVec[i]->getAttribute("Name");
+			//		double varVal = variableXMLVec[i]->getAttributeAsDouble("Value");
+			//		variableMap.insert(make_pair(varName,varVal));
+			//	}
+
+			//	CC3DXMLElement *formulaXMLElem = linkXMLElem->getFirstElement("Formula");
+			//	if (formulaXMLElem){		
+			//		formulaString=formulaXMLElem->getText();
+			//	}
+
+			//	//allocating muPArser related vectors	
+			//	unsigned int maxNumberOfWorkNodes=pUtils->getMaxNumberOfWorkNodesPotts();
+			//	pVec.assign(maxNumberOfWorkNodes,mu::Parser());    
+			//	lambdaVec.assign(maxNumberOfWorkNodes,0.0);
+			//	lengthVec.assign(maxNumberOfWorkNodes,0.0);
+			//	targetLengthVec.assign(maxNumberOfWorkNodes,0.0);
+			//	//extra parame vector - first index goes over node numbers second one is for parameter mapping	
+			//	extraParamVec.assign(maxNumberOfWorkNodes,vector<double>(variableMap.size(),0.0));
+
+
+			//	for (int i  = 0 ; i< maxNumberOfWorkNodes ; ++i){
+			//		pVec[i].DefineVar("Lambda",&lambdaVec[i]);
+			//		pVec[i].DefineVar("TargetLength",&targetLengthVec[i]);
+			//		pVec[i].DefineVar("Length",&lengthVec[i]);
+
+			//		int j=0;
+
+			//		for (map<string,double>::iterator mitr = variableMap.begin() ; mitr != variableMap.end() ; ++mitr){
+			//			extraParamVec[i][j]=mitr->second;
+			//			pVec[i].DefineVar(mitr->first, &extraParamVec[i][j]);
+			//			++j;
+			//		}
+
+			//		pVec[i].SetExpr(formulaString);		
+			//	}
+
+			//	constituentLawFcnPtr=&FocalPointPlasticityPlugin::customLinkConstituentLaw;
+
+			//}
 
 
 
@@ -570,20 +593,50 @@ double FocalPointPlasticityPlugin::elasticLinkConstituentLaw(float _lambda,float
 }
 
 
-double FocalPointPlasticityPlugin::customLinkConstituentLaw(float _lambda,float _length,float _targetLength){
-	int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();
-	mu::Parser & p=pVec[currentWorkNodeNumber];
+//double FocalPointPlasticityPlugin::customLinkConstituentLaw(float _lambda,float _length,float _targetLength){
+//	int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();
+//	mu::Parser & p=pVec[currentWorkNodeNumber];
+//
+//	lambdaVec[currentWorkNodeNumber]=_lambda;
+//	lengthVec[currentWorkNodeNumber]=_length;
+//	targetLengthVec[currentWorkNodeNumber]=_targetLength;
+//	//double l=p.Eval();
+//	//cerr<<"l="<<l<<endl;
+//	return p.Eval();
+//	//return _lambda*(_length-_targetLength)*(_length-_targetLength);
+//
+//}
 
-	lambdaVec[currentWorkNodeNumber]=_lambda;
-	lengthVec[currentWorkNodeNumber]=_length;
-	targetLengthVec[currentWorkNodeNumber]=_targetLength;
-	//double l=p.Eval();
-	//cerr<<"l="<<l<<endl;
-	return p.Eval();
-	//return _lambda*(_length-_targetLength)*(_length-_targetLength);
+double FocalPointPlasticityPlugin::customLinkConstituentLaw(float _lambda,float _length,float _targetLength){
+
+		int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();	
+		ExpressionEvaluator & ev=eed[currentWorkNodeNumber];
+		double linkLaw=0.0;
+
+
+		ev[0]=_lambda;
+		ev[1]=_length;	
+		ev[2]=_targetLength;	
+		
+		linkLaw=ev.eval();
+
+
+		return linkLaw;
+
+
+
+	//int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();
+	//mu::Parser & p=pVec[currentWorkNodeNumber];
+
+	//lambdaVec[currentWorkNodeNumber]=_lambda;
+	//lengthVec[currentWorkNodeNumber]=_length;
+	//targetLengthVec[currentWorkNodeNumber]=_targetLength;
+	////double l=p.Eval();
+	////cerr<<"l="<<l<<endl;
+	//return p.Eval();
+	////return _lambda*(_length-_targetLength)*(_length-_targetLength);
 
 }
-
 
 //not used
 //double FocalPointPlasticityPlugin::diffEnergyLocal(float _deltaL,float _lBefore,const FocalPointPlasticityTrackerData * _plasticityTrackerData,const CellG *_cell,bool _useCluster){
