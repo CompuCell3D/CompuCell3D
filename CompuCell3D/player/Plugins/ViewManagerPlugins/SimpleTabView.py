@@ -709,6 +709,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.pauseAct.setEnabled(False)
         self.stopAct.setEnabled(False)
         self.openAct.setEnabled(True)
+        self.openLDSAct.setEnabled(True)
         self.pifFromSimulationAct.setEnabled(False)
         
         self.steppingThroughSimulation = False
@@ -1928,6 +1929,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             self.stopAct.setEnabled(True)
             self.pifFromSimulationAct.setEnabled(True)
             self.openAct.setEnabled(False)
+            self.openLDSAct.setEnabled(False)
             
             self.updateSimPrefs()
 #            self.simulation.screenUpdateFrequency = self.__updateScreen
@@ -2040,6 +2042,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             self.stopAct.setEnabled(True)
             self.pifFromSimulationAct.setEnabled(True)
             self.openAct.setEnabled(False)
+            self.openLDSAct.setEnabled(False)
             
 #            updateSimPrefs()    # updated
             self.simulation.screenUpdateFrequency = 1
