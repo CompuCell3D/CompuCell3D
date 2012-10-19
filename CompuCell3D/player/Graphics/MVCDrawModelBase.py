@@ -211,7 +211,12 @@ class MVCDrawModelBase():
         self.eps = 1.e-4     # not sure how small this should be (checking to see if cell volume -> 0)
         self.stubSize = 3.0  # dangling line stub size for lines that wraparound periodic BCs
 #        self.offset = 1.0    # account for fact that COM of cell is offset from visualized lattice
-        self.offset = 0.0    # account for fact that COM of cell is offset from visualized lattice
+#        self.offset = 0.0    # account for fact that COM of cell is offset from visualized lattice
+
+        # scaling factors to map square lattice to hex lattice (rf. CC3D Manual)
+        self.xScaleHex = 1.0
+        self.yScaleHex =  0.866
+        self.zScaleHex =  0.816
         
         self.lutBlueRed = vtk.vtkLookupTable()
         self.lutBlueRed.SetHueRange(0.667,0.0)
