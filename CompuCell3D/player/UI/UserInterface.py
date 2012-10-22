@@ -39,6 +39,8 @@ cc3dApp = QCoreApplication.instance
 class NullDevice:
     def write(self, s):
         pass
+    def flush(self):
+        pass
 
 class UserInterface(QMainWindow):
     def __init__(self):
