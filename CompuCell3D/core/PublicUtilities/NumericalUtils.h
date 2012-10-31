@@ -17,6 +17,12 @@ double dist(double x0,double y0,double z0,double x1,double y1,double z1);
 // and returns a vector of 3 complex solutions of the cubic equation
 std::vector<std::complex<double> > solveCubicEquationRealCoeeficients(std::vector<double> & aRef);
 
+template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
+double round(double number);
+
 namespace CompuCell3D{
 
 

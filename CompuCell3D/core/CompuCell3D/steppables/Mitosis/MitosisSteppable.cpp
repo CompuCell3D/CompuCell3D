@@ -1,4 +1,4 @@
-/*************************************************************************
+	/*************************************************************************
 *    CompuCell - A software framework for multimodel simulations of     *
 * biocomplexity problems Copyright (C) 2003 University of Notre Dame,   *
 *                             Indiana                                   *
@@ -135,8 +135,19 @@ void MitosisSteppable::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 			getOrientationVectorsMitosis2DPtr=&MitosisSteppable::getOrientationVectorsMitosis2D_xy;			
 		}
 
-
 	}
+
+	LatticeType latticeType=boundaryStrategy->getLatticeType();
+	//we use these factors to rescale pixels expressed in absolute coordinates to those of the underlying cartesian lattice - this is done for pixel lookup 
+	//because pixels are stored in sets as integers - i.e. in a "cartesian form"
+
+	xFactor=yFactor=zFactor=1.0;
+	if (latticeType==HEXAGONAL_LATTICE){
+		yFactor=2.0/sqrt(3.0);
+		zFactor=3.0/sqrt(6.0);
+	}
+	
+
 	//if (boundaryConditionIndicator.x || boundaryConditionIndicator.y || boundaryConditionIndicator.z){
 	//	ASSERT_OR_THROW("CURRENT VERSION OF MITOSIS STEPPABLE CANNOT BE USED WITH PERIODIC BOUNDARY CONDITIONS.WE ARE WORKING ON SOLVING THIS LIMITATION",
 	//	!boundaryConditionIndicator.x && !boundaryConditionIndicator.y && !boundaryConditionIndicator.z);
@@ -834,6 +845,40 @@ bool MitosisSteppable::doDirectionalMitosisRandomOrientationCompartments(long _c
 	
 }
 
+bool MitosisSteppable::tryAdjustingCompartmentCOM(Vector3 & _com, const set<PixelTrackerData> & _clusterPixels){
+	//this function explores if truncation errors may lead to misplaced COM for compartments
+	//it might adjust compartment COM for the purpose of conduction mitosis - only
+
+		Point3D pt=Point3D((int)round(_com.fX*xFactor),(int)round(_com.fY*yFactor),(int)round(_com.fZ*zFactor));
+
+		if(_clusterPixels.find(PixelTrackerData(pt))!=_clusterPixels.end()){			
+			return true;			
+		}
+		else if (_clusterPixels.find(PixelTrackerData(Point3D(pt.x-1,pt.y,pt.z)))!=_clusterPixels.end()){
+			//notice that to go from cartesian pixel coordinates to , here hex lattice coordinates we use inverse of xFactor , yFactor, or zFactor 
+			// this is inverse operation to going from hex lattice to cartesian coordinates
+			_com.fX-=1/xFactor;
+			return true;
+
+		}else if (_clusterPixels.find(PixelTrackerData(Point3D(pt.x+1,pt.y,pt.z)))!=_clusterPixels.end()){			
+			_com.fX+=1/xFactor;
+			return true;
+		}else if (_clusterPixels.find(PixelTrackerData(Point3D(pt.x,pt.y-1,pt.z)))!=_clusterPixels.end()){			
+			_com.fY-=1/yFactor;
+			return true;
+		}else if (_clusterPixels.find(PixelTrackerData(Point3D(pt.x,pt.y+1,pt.z)))!=_clusterPixels.end()){
+			_com.fY+=1/yFactor;
+			return true;
+		}else if (_clusterPixels.find(PixelTrackerData(Point3D(pt.x,pt.y,pt.z-1)))!=_clusterPixels.end()){
+			_com.fZ-=1/zFactor;
+			return true;
+		}else if (_clusterPixels.find(PixelTrackerData(Point3D(pt.x,pt.y,pt.z+1)))!=_clusterPixels.end()){
+			_com.fZ+=1/zFactor;
+			return true;
+		}
+
+		return false;
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool MitosisSteppable::doDirectionalMitosisOrientationVectorBasedCompartments(long _clusterId,double _nx, double _ny, double _nz){
 	//CHECK IF IT WILL WORK WITH PERIODIC BOUNDARY CONDITIONS ALL DISTANCES AND DISPLACEMENT VECTORS MAY NEED TO BE RECALCULATED THEN
@@ -842,6 +887,18 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBasedCompartments(lo
 	CellInventory & inventory=potts->getCellInventory();
 	CC3DCellList compartmentsVec=inventory.getClusterCells(_clusterId);
 	//////cerr<<"Got the following compartments for cluster id="<<_clusterId<<endl;
+
+	//we use these factors to rescale pixels expressed in absolute coordinates to those of the underlying cartesian lattice - this is done for pixel lookup 
+	//because pixels are stored in sets as integers - i.e. in a "cartesian form"
+
+	Vector3 cleavegeVector(_nx,_ny,_nz);
+
+	//have to massage the vector in case of 2D simulation - the vector coordinate corresponding to 'flat' direction is set to zero
+	cleavegeVector.fX*=fabs((double)sgn(fieldDim.x-1));
+	cleavegeVector.fY*=fabs((double)sgn(fieldDim.y-1));
+	cleavegeVector.fZ*=fabs((double)sgn(fieldDim.z-1));
+	//cerr<<"cleavegeVector="<<cleavegeVector<<endl;
+
 	int numberOfClusters=compartmentsVec.size();
 
 	comOffsetsMitosis.assign(numberOfClusters,CompartmentMitosisData());
@@ -900,18 +957,28 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBasedCompartments(lo
 
 		//////cerr<<"shiftVector="<<shiftVector <<endl;
 
-
-
 	}
-
-
 
 	//divide cluster pixels using mitosis orientation based algorithm
 	set<PixelTrackerData> clusterParent;
 	set<PixelTrackerData> clusterChild;
 	//bool clusterDivideFlag=divideClusterPixelsOrientationVectorBased(clusterPixels,clusterParent,clusterChild,_nx,_ny,_nz);
-	bool clusterDivideFlag=divideClusterPixelsOrientationVectorBased(*pixelsToDividePtr,clusterParent,clusterChild,_nx,_ny,_nz);
-	
+
+	//bool clusterDivideFlag=divideClusterPixelsOrientationVectorBased(*pixelsToDividePtr,clusterParent,clusterChild,_nx,_ny,_nz);
+
+	bool clusterDivideFlag=divideClusterPixelsOrientationVectorBased(*pixelsToDividePtr,clusterParent,clusterChild,cleavegeVector.fX,cleavegeVector.fY,cleavegeVector.fZ);
+	//for (set<PixelTrackerData>::iterator sitr=clusterParent.begin() ; sitr!=clusterParent.end() ; ++sitr){
+	//	cerr<<"parent pixel ="<<sitr->pixel<<endl;
+	//}
+
+	//for (set<PixelTrackerData>::iterator sitr=clusterChild.begin() ; sitr!=clusterChild.end() ; ++sitr){
+	//	cerr<<"Child pixel ="<<sitr->pixel<<endl;
+	//}
+
+	//cerr<<"clusterParent.size()="<<clusterParent.size()<<endl;
+	//cerr<<"clusterChild.size()="<<clusterChild.size()<<endl;
+
+
 	//////cerr<<"clusterChild.size()="<<clusterChild.size()<<" clusterParent.size()="<<clusterParent.size()<<endl;
 	//Vector3 clusterCOMBeforeMitosis=calculateClusterPixelsCOM(clusterPixels);
 
@@ -930,14 +997,16 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBasedCompartments(lo
 	//we will use parallel/perpendicular vector decomposition w.r.t nx, ny, nz and scale only parallel component of the offset vector
 	//offset_original=parentBeforeMitosis[i].com-referenceVector
 	//offset_scaled=offset_original+(offset_original*n)n[scalingFactor-1]
-	if(!_nx&&!_ny&&!_nz){
+	if(!cleavegeVector.fX&&!cleavegeVector.fY&&!cleavegeVector.fZ){
 		return false; //orientation vector is 0
 	}
-	Vector3 nVec(_nx,_ny,_nz);
+	//Vector3 nVec(_nx,_ny,_nz);
+	Vector3 nVec(cleavegeVector);
+	
 	double norm=nVec.Mag();
 	nVec*=1.0/norm;
 	//////cerr<<"nVec="<<nVec<<endl;
-	double scalingFactor=0.5;
+	double scalingFactor=0.50;
 	Vector3 referenceVector=clusterCOMBeforeMitosis;
 	for(int i = 0 ; i < numberOfClusters; ++i){
 
@@ -969,8 +1038,8 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBasedCompartments(lo
 	for(int i = 0 ; i < numberOfClusters; ++i){
 		parentAfterMitosis[i].com=clusterParentCOM+comOffsetsMitosis[i].com;
 		childAfterMitosis[i].com=clusterChildCOM+comOffsetsMitosis[i].com;
-		//////cerr<<"parentAfterMitosis[i].com="<<parentAfterMitosis[i].com<<endl;
-		//////cerr<<"childAfterMitosis[i].com="<<childAfterMitosis[i].com<<endl;
+		//cerr<<"parentAfterMitosis[i].com="<<parentAfterMitosis[i].com<<endl;
+		//cerr<<"childAfterMitosis[i].com="<<childAfterMitosis[i].com<<endl;
 	}
 	//initialize coms for parent and child cells
 	set<PixelTrackerData> parentCellKernelsSet;
@@ -987,20 +1056,39 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBasedCompartments(lo
 	//}
 
 	//first check if coms belong to set of cluster pixels
+	//cerr<<"xFactor="<<xFactor<<" yFactor="<<yFactor<<" zFactor="<<zFactor<<endl;
 	for(int i = 0 ; i < numberOfClusters; ++i){
-		Point3D pt=Point3D(parentAfterMitosis[i].com.fX,parentAfterMitosis[i].com.fY,parentAfterMitosis[i].com.fZ);
-		//////cerr<< "pt="<<pt<<endl;
-		if(clusterParent.find(PixelTrackerData(pt))==clusterParent.end()){
-			//////cerr<<"com for compartment "<<i<<" of parent cell does not belong to pixels of the parent cell after division"<<endl;
+		//Point3D pt=Point3D(parentAfterMitosis[i].com.fX,parentAfterMitosis[i].com.fY,parentAfterMitosis[i].com.fZ);
+		
+		//Point3D pt=Point3D(parentAfterMitosis[i].com.fX,parentAfterMitosis[i].com.fY*yFactor,parentAfterMitosis[i].com.fZ*zFactor);
+
+		Point3D pt=Point3D((int)round(parentAfterMitosis[i].com.fX*xFactor),(int)round(parentAfterMitosis[i].com.fY*yFactor),(int)round(parentAfterMitosis[i].com.fZ*zFactor));
+
+
+		//if(clusterParent.find(PixelTrackerData(pt))==clusterParent.end()){
+		if(!tryAdjustingCompartmentCOM(parentAfterMitosis[i].com,clusterParent)){
+			//cerr<<"parentAfterMitosis[i].com="<<parentAfterMitosis[i].com<<endl;
+			//cerr<< "pt="<<pt<<endl;
+	
+			//cerr<<"com for compartment "<<i<<" of parent cell does not belong to pixels of the parent cell after division"<<endl;
 			return false;
-			ASSERT_OR_THROW("Mitosis cannot be done for this parent cell",false);
+
 		}
 
-		pt=Point3D(childAfterMitosis[i].com.fX,childAfterMitosis[i].com.fY,childAfterMitosis[i].com.fZ);
-		if(clusterChild.find(PixelTrackerData(pt))==clusterChild.end()){
-			//////cerr<<"com for compartment "<<i<<" of child cell does not belong to pixels of the child cell after division"<<endl;
+		//pt=Point3D(childAfterMitosis[i].com.fX,childAfterMitosis[i].com.fY,childAfterMitosis[i].com.fZ);
+
+
+		//pt=Point3D(childAfterMitosis[i].com.fX,childAfterMitosis[i].com.fY*yFactor,childAfterMitosis[i].com.fZ*zFactor);
+		pt=Point3D((int)round(childAfterMitosis[i].com.fX*xFactor),(int)round(childAfterMitosis[i].com.fY*yFactor),(int)round(childAfterMitosis[i].com.fZ*zFactor));
+		if(!tryAdjustingCompartmentCOM(childAfterMitosis[i].com,clusterChild)){
+		//if(clusterChild.find(PixelTrackerData(pt))==clusterChild.end()){
+
+			//cerr<<"childAfterMitosis[i].com="<<childAfterMitosis[i].com<<endl;
+			//cerr<< "pt="<<pt<<endl;
+
+			//cerr<<"com for compartment "<<i<<" of child cell does not belong to pixels of the child cell after division"<<endl;
 			return false;
-			ASSERT_OR_THROW("Mitosis cannot be done for this child cell",false);
+
 		}
 
 	}
@@ -1011,7 +1099,8 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBasedCompartments(lo
 
 		CompartmentMitosisData parentCMD;
 
-		pt=Point3D(parentAfterMitosis[i].com.fX,parentAfterMitosis[i].com.fY,parentAfterMitosis[i].com.fZ);
+		//pt=Point3D(parentAfterMitosis[i].com.fX,parentAfterMitosis[i].com.fY,parentAfterMitosis[i].com.fZ);
+		pt=Point3D(parentAfterMitosis[i].com.fX*xFactor,parentAfterMitosis[i].com.fY*yFactor,parentAfterMitosis[i].com.fZ*zFactor);
 		//CellG * newCell1 = potts->createCellG(pt);
 		//newCell1->type=6; 
 		
@@ -1026,8 +1115,9 @@ bool MitosisSteppable::doDirectionalMitosisOrientationVectorBasedCompartments(lo
 		//parentBeforeMitosis[i].cell->type=6; 
 
 		CompartmentMitosisData childCMD;
-		pt=Point3D(childAfterMitosis[i].com.fX,childAfterMitosis[i].com.fY,childAfterMitosis[i].com.fZ);
 
+		//pt=Point3D(childAfterMitosis[i].com.fX,childAfterMitosis[i].com.fY,childAfterMitosis[i].com.fZ);
+		pt=Point3D(childAfterMitosis[i].com.fX*xFactor,childAfterMitosis[i].com.fY*yFactor,childAfterMitosis[i].com.fZ*zFactor);
 		
 
 		childCMD.type=parentBeforeMitosis[i].cell->type;

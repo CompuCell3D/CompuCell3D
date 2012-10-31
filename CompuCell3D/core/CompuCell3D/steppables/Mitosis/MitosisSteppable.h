@@ -87,6 +87,8 @@ namespace CompuCell3D {
 
 	  BasicRandomNumberGeneratorNonStatic randGen;
 	  int parentChildPositionFlag;
+	  bool tryAdjustingCompartmentCOM(Vector3 & _com, const std::set<PixelTrackerData> & _clusterPixels);
+	  double xFactor,yFactor,zFactor;
   public:
 
 	 typedef bool (MitosisSteppable::*doDirectionalMitosis2DPtr_t)();
