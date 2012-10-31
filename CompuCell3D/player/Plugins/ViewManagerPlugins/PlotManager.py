@@ -11,7 +11,8 @@ from PyQt4.Qwt5.anynumpy import *
 import PlotManagerSetup
 import os, Configuration 
 
-        
+MODULENAME = '---- PlotManager.py: '
+
     
 # class PlotWindowInterface(PlotManagerSetup.PlotWindowInterfaceBase,QtCore.QObject):
 class PlotWindowInterface(QtCore.QObject):
@@ -243,6 +244,29 @@ class PlotWindowInterface(QtCore.QObject):
         outfile = os.path.join(outDir,_fileName)
 #        print '--------- savePlotAsPNG: outfile=',outfile
         imgmap.save(outfile,"PNG")
+        
+    def savePlotAsData(self,_fileName):        
+        if Configuration.getSetting("OutputToProjectOn"):
+            outDir = str(Configuration.getSetting("ProjectLocation"))
+        else:
+            outDir = str(Configuration.getSetting("OutputLocation"))  # may to dump into image/lattice output dir instead
+        outfile = os.path.join(outDir,_fileName)
+        print MODULENAME,'  savePlotAsData():   outfile=',outfile
+        fpout = open(outfile, "w")
+#        print MODULENAME,'  self.plotData= ',self.plotData
+        for idx in range(len(self.plotData)):
+#            print MODULENAME,'  savePlotAsData():   ------- idx,name=',idx, self.plotData.keys()[idx]
+            fpout.write(self.plotData.keys()[idx] + '\n')
+            xvals = self.plotData.values()[idx][0]
+            yvals = self.plotData.values()[idx][1]
+#            print MODULENAME,'  savePlotAsData():   xvals=',xvals
+#            print MODULENAME,'  savePlotAsData():   yvals=',yvals
+            for jdx in range(len(xvals)):
+                xyStr = "%f  %f\n" % (xvals[jdx],yvals[jdx])
+                fpout.write(xyStr)
+        
+#        if (not _plotName in self.plotData.keys() ) or (not _plotName in self.plotDrawingObjects.keys() ):                        
+        fpout.close()
         
     def __showPlot(self,_plotName,_mutex=None):
         if (not _plotName in self.plotData.keys() ) or (not _plotName in self.plotDrawingObjects.keys() ):                        
@@ -657,7 +681,7 @@ class PlotManager(QtCore.QObject):
         return self.plotWindowList[-1] # returning recently added window
         
     def processRequestForNewPlotWindow(self,_mutex):
-        print "\n\n\n\n GOT HERE mutex=",_mutex
+#        print MODULENAME,"processRequestForNewPlotWindow(): GOT HERE mutex=",_mutex
         if not self.plotsSupported:
             return PlotWindowInterfaceBase(None) # dummy PlotwindowInterface
         
@@ -666,21 +690,17 @@ class PlotManager(QtCore.QObject):
             return
         # self.vm.simulation.drawMutex.lock()
         
-        self.vm.windowCounter+=1        
-        newWindow=PlotFrameWidget(self.vm)
+        self.vm.windowCounter += 1        
+        newWindow = PlotFrameWidget(self.vm)
         
         self.vm.windowDict[self.vm.windowCounter]=newWindow
-        self.vm.plotWindowDict[self.vm.windowCounter]=self.vm.windowDict[self.vm.windowCounter]
+        self.vm.plotWindowDict[self.vm.windowCounter] = self.vm.windowDict[self.vm.windowCounter]
         
         newWindow.setWindowTitle("Plot Window "+str(self.vm.windowCounter))
         
-        
-        
-        
-        self.vm.lastActiveWindow=newWindow
+        self.vm.lastActiveWindow = newWindow
         # # self.updateWindowMenu()
         
-          
         newWindow.setShown(False)
         
         self.vm.mdiWindowDict[self.vm.windowCounter]=self.vm.addSubWindow(newWindow)
@@ -689,7 +709,6 @@ class PlotManager(QtCore.QObject):
         plotWindowInterface=PlotWindowInterface(newWindow)
         self.plotWindowList.append(plotWindowInterface) # store plot window interface in the window list
                 
-        
         self.plotWindowMutex.unlock()
         
         # return  plotWindowInterface# here I will need to call either PlotWindowInterface or PlotWindowInterfaceBase depending if dependencies are installed or not
