@@ -432,7 +432,7 @@ class CellList:
     def __iter__(self):
         return CellListIterator(self)
     def __len__(self):
-        return self.inventory.getSize()
+        return int(self.inventory.getSize())
 
 class CellListIterator:
     def __init__(self, _cellList):
@@ -478,8 +478,8 @@ class CellListByType:
 
         
         
-    def __len__(self):
-        return self.inventoryByType.size()
+    def __len__(self):        
+        return int(self.inventoryByType.size())
         
     def initTypeVec(self,_typeList):
         

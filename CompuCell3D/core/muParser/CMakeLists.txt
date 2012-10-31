@@ -24,7 +24,8 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
-INSTALL_FILES(/include/muParser .h
+# INSTALL_FILES(/include/muParser .h
+INSTALL_FILES(/include/CompuCell3D/muParser .h
 muParser
 muParserBase
 muParserBytecode
