@@ -259,6 +259,8 @@ class ScreenshotManager:
         scrData.projection = _projection
         scrData.projectionPosition = int(_projectionPosition)
         
+#        import pdb; pdb.set_trace()
+        
         (scrName,scrCoreName)=self.produceScreenshotName(scrData)
         
         print MODULENAME,"  add2DScreenshot():  THIS IS NEW SCRSHOT NAME",scrName   # e.g. Cell_Field_CellField_2D_XY_150
@@ -288,9 +290,12 @@ class ScreenshotManager:
             scrData.extractCameraInfo(_camera)   # so "camera" icon (save images) remembers camera view
             
             # on linux there is a problem with X-server/Qt/QVTK implementation and calling resize right after additional QVTK 
-            # is created causes segfault so possible "solution" is to do resize right before taking screenshot. It causes flicker but does not cause segfault
+            # is created causes segfault so possible "solution" is to do resize right before taking screenshot. 
+            # It causes flicker but does not cause segfault.
+            # User should NOT close or minimize this "empty" window (on Linux anyway).
             if sys.platform=='Linux' or sys.platform=='linux' or sys.platform=='linux2': 
-                pass
+#                pass
+                self.screenshotDataDict[scrData.screenshotName] = scrData
             else:
                 self.screenshotDataDict[scrData.screenshotName] = scrData
         else:
@@ -330,9 +335,13 @@ class ScreenshotManager:
             scrData.extractCameraInfo(_camera)
 
             # on linux there is a problem with X-server/Qt/QVTK implementation and calling resize right after additional QVTK 
-            # is created causes segfault so possible "solution" is to do resize right before taking screenshot. It causes flicker but does not cause segfault
+            # is created causes segfault so possible "solution" is to do resize right before taking screenshot. 
+            # It causes flicker but does not cause segfault
+            # User should NOT close or minimize this "empty" window (on Linux anyway).
             if sys.platform=='Linux' or sys.platform=='linux' or sys.platform=='linux2':
-                pass
+#                pass
+                self.screenshotDataDict[scrData.screenshotName] = scrData
+                self.screenshotCounter3D += 1
             else:
                 self.screenshotDataDict[scrData.screenshotName] = scrData
                 self.screenshotCounter3D += 1
@@ -369,8 +378,9 @@ class ScreenshotManager:
 #            print MODULENAME,'outputScreenshots(): scrData.screenshotGraphicsWidget.size().width(), height() =',scrData.screenshotGraphicsWidget.size().width(),scrData.screenshotGraphicsWidget.size().height()  # 100,30 ?!
             scrFullDirName = os.path.join(_generalScreenshotDirectoryName,scrData.screenshotName)
             
-            if not os.path.isdir(scrFullDirName):# will create screenshot directory if directory does not exist
-                os.mkdir(scrFullDirName)
+            if not os.path.isdir(scrFullDirName):     # will create screenshot directory if directory does not exist
+                print MODULENAME,'   outputScreenshots(): doing os.mkdir on scrFullDirName=',scrFullDirName                os.mkdir(scrFullDirName)
+                
             scrFullName = os.path.join(scrFullDirName,scrData.screenshotName+"_"+mcsFormattedNumber+".png")
             
 #            print MODULENAME,'outputScreenshots(): scrData.spaceDimension =',scrData.spaceDimension  # 2D
@@ -414,7 +424,7 @@ class ScreenshotManager:
 #                scrData.screenshotGraphicsWidget.resize(self.tabViewWidget.mainGraphicsWindow.size())
 
             # scrData.screenshotGraphicsWidget.takeSimShot(scrFullName)
-#            print MODULENAME, '  calling self.screenshotGraphicsWidget.takeSimShot(',scrFullName
+            print MODULENAME, 'outputScreenshots():  calling self.screenshotGraphicsWidget.takeSimShot(',scrFullName
             self.screenshotGraphicsWidget.takeSimShot(scrFullName)
                 # scrData.screenshotGraphicsWidget.setShown(False)
         
