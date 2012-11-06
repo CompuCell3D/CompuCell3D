@@ -78,8 +78,8 @@ class MVCDrawViewBase():
             self.drawingFcnHasChanged = False
         self.drawingFcnName = _fcnName
         
-    def clearDisplay(self):
-        # print "CLEAR DISPLAY"
+    def clearDisplay(self):   # called whenever user selects a different field to render; beware NOT doing this because, for example, it wouldn't redraw a dynamic scalarbar
+#        print MODULENAME,"   ---------  clearDisplay()"
         for actor in self.currentActors:
             self.graphicsFrameWidget.ren.RemoveActor(self.currentActors[actor])
             

@@ -207,7 +207,7 @@ class MVCDrawView3D(MVCDrawViewBase):
                 self.cellTypeActors[actorNumber]=vtk.vtkActor()
                 
     def prepareOutlineActor(self,_imageData):
-        print MODULENAME, '------------  prepareOutlineActor()'
+#        print MODULENAME, '------------  prepareOutlineActor()'
         outlineDimTmp=_imageData.GetDimensions()
         # print "\n\n\n this is outlineDimTmp=",outlineDimTmp," self.outlineDim=",self.outlineDim
         if self.outlineDim[0] != outlineDimTmp[0] or self.outlineDim[1] != outlineDimTmp[1] or self.outlineDim[2] != outlineDimTmp[2]:
@@ -272,6 +272,8 @@ class MVCDrawView3D(MVCDrawViewBase):
         self.showOutlineActor()
 
         dictKey = self.graphicsFrameWidget.winId().__int__()
+        
+#        print MODULENAME, '  drawCellField():  graphicsWindowVisDict[dictKey]=',self.parentWidget.graphicsWindowVisDict[dictKey]
 
 #        if self.parentWidget.cellsAct.isChecked():
         if (self.parentWidget.graphicsWindowVisDict[dictKey][0])  \

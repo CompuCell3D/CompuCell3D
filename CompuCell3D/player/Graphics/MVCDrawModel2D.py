@@ -1037,41 +1037,41 @@ class MVCDrawModel2D(MVCDrawModelBase):
             self.ren.ResetCameraClippingRange()
 
             self.Render()
-
-        
-    def takeShot(self):
-        filter = "PNG files (*.png)"
-        fileName = QFileDialog.getSaveFileName(\
-            self,
-            "Save Screenshot",
-            os.getcwd(), 
-            filter
-            )
-
-        # Other way to get the correct file name: fileName.toAscii().data())
-        if fileName is not None and fileName != "":
-            self.takeSimShot(str(fileName))
-    
-    # fileName - full file name (e.g. "/home/user/shot.png")        
-    def takeSimShot(self, fileName):
-        # DON'T REMOVE!
-        # Better quality
-        # Passes vtkRenderer. Takes actual screenshot of the region within the widget window
-        # If other application are present within this region it will shoot them also
-
-        renderLarge = vtk.vtkRenderLargeImage()
-        renderLarge.SetInput(self.graphicsFrameWidget.ren)
-        renderLarge.SetMagnification(1)
-        
-        # We write out the image which causes the rendering to occur. If you
-        # watch your screen you might see the pieces being rendered right
-        # after one another.
-        writer = vtk.vtkPNGWriter()
-        writer.SetInputConnection(renderLarge.GetOutputPort())
-        # # # print "GOT HERE fileName=",fileName
-        writer.SetFileName(fileName)
-        
-        writer.Write()
+            
+     # Never used?!  Rf. same fns in MVCDrawView2D.py
+#    def takeShot_rwh(self):
+#        filter = "PNG files (*.png)"
+#        fileName = QFileDialog.getSaveFileName(\
+#            self,
+#            "Save Screenshot",
+#            os.getcwd(), 
+#            filter
+#            )
+#
+#        # Other way to get the correct file name: fileName.toAscii().data())
+#        if fileName is not None and fileName != "":
+#            self.takeSimShot(str(fileName))
+#    
+#    # fileName - full file name (e.g. "/home/user/shot.png")        
+#    def takeSimShot_rwh(self, fileName):
+#        # DON'T REMOVE!
+#        # Better quality
+#        # Passes vtkRenderer. Takes actual screenshot of the region within the widget window
+#        # If other application are present within this region it will shoot them also
+#
+#        renderLarge = vtk.vtkRenderLargeImage()
+#        renderLarge.SetInput(self.graphicsFrameWidget.ren)
+#        renderLarge.SetMagnification(1)
+#        
+#        # We write out the image which causes the rendering to occur. If you
+#        # watch your screen you might see the pieces being rendered right
+#        # after one another.
+#        writer = vtk.vtkPNGWriter()
+#        writer.SetInputConnection(renderLarge.GetOutputPort())
+#        # # # print "GOT HERE fileName=",fileName
+#        writer.SetFileName(fileName)
+#        
+#        writer.Write()
             
     def toolTip(self, cellG):
         return "Id:             %s\nType:       %s\nVolume:  %s" % (cellG.id, cellG.type, cellG.volume)
@@ -1382,7 +1382,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         scaleByVolume = Configuration.getSetting("CellGlyphScaleByVolumeOn")       # todo: make class attrib; update only when changes
               
+#        print MODULENAME,'  initCellGlyphsActor2D: self.offset=',self.offset
         if self.hexFlag:
+          print MODULENAME,'  initCellGlyphsActor2D:   ----- doing hexFlag block'
           for cell in cellList:
 #            if cell.volume > 0:
 #              xmid = float(cell.xCM) / cell.volume
@@ -1420,8 +1422,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
           #print 'cell.volume=',cell.volume
 #            if cell.volume > 0:
 #              xmid = float(cell.xCM) / cell.volume + self.offset
-              xmid = cell.xCOM + self.offset
-              ymid = cell.yCOM + self.offset
+              xmid = cell.xCOM #  + self.offset
+              ymid = cell.yCOM # + self.offset
               centroidPoints.InsertNextPoint(xmid,ymid,0.0)
               cellTypes.InsertNextValue(cell.type)
 #              cellVolumes.InsertNextValue(cell.volume)
@@ -1597,8 +1599,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
             xmid0 = cell.xCOM/1.07457
             ymid0 = cell.yCOM/1.07457
           else:
-            xmid0 = cell.xCOM + self.offset
-            ymid0 = cell.yCOM + self.offset
+            xmid0 = cell.xCOM # + self.offset
+            ymid0 = cell.yCOM # + self.offset
 #          print 'cell.id=',cell.id,'  x,y,z (begin)=',xmid0,ymid0,zmid0
           points.InsertNextPoint(xmid0,ymid0,0)
           
@@ -1618,8 +1620,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
               xmid = fppd.neighborAddress.xCOM/1.07457
               ymid = fppd.neighborAddress.yCOM/1.07457
             else:
-              xmid = fppd.neighborAddress.xCOM + self.offset
-              ymid = fppd.neighborAddress.yCOM + self.offset
+              xmid = fppd.neighborAddress.xCOM # + self.offset
+              ymid = fppd.neighborAddress.yCOM # + self.offset
 #            print '    x,y,z (end)=',xmid,ymid,zmid
 #            points.InsertNextPoint(xmid,ymid,zmid)
             xdiff = xmid-xmid0
@@ -1706,8 +1708,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
               xmid = fppd.neighborAddress.xCOM/1.07457
               ymid = fppd.neighborAddress.yCOM/1.07457
             else:
-              xmid=fppd.neighborAddress.xCOM + self.offset
-              ymid=fppd.neighborAddress.yCOM + self.offset
+              xmid=fppd.neighborAddress.xCOM # + self.offset
+              ymid=fppd.neighborAddress.yCOM # + self.offset
 #            print '    x,y,z (end)=',xmid,ymid,zmid
 #            points.InsertNextPoint(xmid,ymid,zmid)
             xdiff = xmid-xmid0
@@ -1851,8 +1853,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
             xmid0 = cell.xCOM/1.07457
             ymid0 = cell.yCOM/1.07457
           else:
-            xmid0 = cell.xCOM + self.offset
-            ymid0 = cell.yCOM + self.offset
+            xmid0 = cell.xCOM # + self.offset
+            ymid0 = cell.yCOM # + self.offset
 #          print 'cell.id=',cell.id,'  x,y,z (begin)=',xmid0,ymid0,zmid0
           points.InsertNextPoint(xmid0,ymid0,0)
           
@@ -1872,8 +1874,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
               xmid = fppd.neighborAddress.xCOM/1.07457
               ymid = fppd.neighborAddress.yCOM/1.07457
             else:
-              xmid = fppd.neighborAddress.xCOM + self.offset
-              ymid = fppd.neighborAddress.yCOM + self.offset
+              xmid = fppd.neighborAddress.xCOM # + self.offset
+              ymid = fppd.neighborAddress.yCOM # + self.offset
 #            print '    x,y,z (end)=',xmid,ymid,zmid
 #            points.InsertNextPoint(xmid,ymid,zmid)
             xdiff = xmid-xmid0
@@ -1960,8 +1962,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
               xmid = fppd.neighborAddress.xCOM/1.07457
               ymid = fppd.neighborAddress.yCOM/1.07457
             else:
-              xmid=fppd.neighborAddress.xCOM + self.offset
-              ymid=fppd.neighborAddress.yCOM + self.offset
+              xmid=fppd.neighborAddress.xCOM # + self.offset
+              ymid=fppd.neighborAddress.yCOM # + self.offset
 #            print '    x,y,z (end)=',xmid,ymid,zmid
 #            points.InsertNextPoint(xmid,ymid,zmid)
             xdiff = xmid-xmid0
@@ -2105,8 +2107,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
             xmid0 = cell.xCOM/1.07457
             ymid0 = cell.yCOM/1.07457
           else:
-            xmid0 = cell.xCOM + self.offset
-            ymid0 = cell.yCOM + self.offset
+            xmid0 = cell.xCOM # + self.offset
+            ymid0 = cell.yCOM # + self.offset
 #          print 'cell.id=',cell.id,'  x,y,z (begin)=',xmid0,ymid0,zmid0
 
           points.InsertNextPoint(xmid0,ymid0,0)
@@ -2123,8 +2125,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
 #targetDistance,maxDistance= 2.0 4.0
 #            vol = fppd.neighborAddress.volume
 #            if vol < self.eps: continue
-            xmid = fppd.neighborAddress.xCOM + self.offset
-            ymid = fppd.neighborAddress.yCOM + self.offset
+            xmid = fppd.neighborAddress.xCOM # + self.offset
+            ymid = fppd.neighborAddress.yCOM # + self.offset
 #            print '    x,y,z (end)=',xmid,ymid,zmid
 #            points.InsertNextPoint(xmid,ymid,zmid)
             xdiff = xmid-xmid0
@@ -2220,8 +2222,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
 #targetDistance,maxDistance= 2.0 4.0
 #            vol = fppd.neighborAddress.volume
 #            if vol < self.eps: continue
-            xmid = fppd.neighborAddress.xCOM + self.offset
-            ymid = fppd.neighborAddress.yCOM + self.offset
+            xmid = fppd.neighborAddress.xCOM # + self.offset
+            ymid = fppd.neighborAddress.yCOM # + self.offset
 #            print '    x,y,z (end)=',xmid,ymid,zmid
 #            points.InsertNextPoint(xmid,ymid,zmid)
             xdiff = xmid-xmid0

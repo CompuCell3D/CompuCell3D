@@ -840,9 +840,8 @@ class MVCDrawView2D(MVCDrawViewBase):
         # after one another.
         writer = vtk.vtkPNGWriter()
         writer.SetInputConnection(renderLarge.GetOutputPort())
-        # # # print "GOT HERE fileName=",fileName
+        print MODULENAME,"takeSimShot():  vtkPNGWriter, fileName=",fileName
         writer.SetFileName(fileName)
-        
         writer.Write()
             
     def toolTip(self, cellG):

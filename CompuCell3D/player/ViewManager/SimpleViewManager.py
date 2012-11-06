@@ -478,7 +478,9 @@ class SimpleViewManager():
         self.tileAct=QAction("Tile", self)
         self.cascadeAct=QAction("Cascade", self)
         
-        self.minimizeAllGraphicsWindowsAct=QAction("Mimimize All Graphics Windows",self)
+        self.saveWindowsGeometryAct = QAction("Save Window(s) Geometry", self)
+        
+        self.minimizeAllGraphicsWindowsAct=QAction("Minimize All Graphics Windows",self)
         
         self.minimizeAllGraphicsWindowsAct.setShortcut(self.tr("Ctrl+Alt+M"))
         
@@ -495,6 +497,7 @@ class SimpleViewManager():
         # self.windowActions.append(self.newPlotWindowAct)
         self.windowActions.append(self.tileAct)
         self.windowActions.append(self.cascadeAct)
+        self.windowActions.append(self.saveWindowsGeometryAct)
         
         self.windowActions.append(self.minimizeAllGraphicsWindowsAct)
         self.windowActions.append(self.restoreAllGraphicsWindowsAct)
