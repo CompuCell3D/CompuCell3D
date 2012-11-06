@@ -529,23 +529,23 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.removeAllVTKWindows(True)
         
     def saveWindowsGeometry(self):  # want mdiWindowDict (PyQt4.QtGui.QMdiSubWindow), NOT windowDict (Graphics.GraphicsFrameWidget.GraphicsFrameWidget)
-        print '--------> windows.xml'
-        print 'self.mdiWindowDict=',self.mdiWindowDict
+        print MODULENAME,'--------> windows.xml'
+#        print MODULENAME,'self.mdiWindowDict=',self.mdiWindowDict
         fpout = open("windows.xml", "w")
         fpout.write('<Windows>\n')
         
-        print 'dir()=', dir(self.mdiWindowDict[self.mdiWindowDict.keys()[0]])
+#        print 'dir()=', dir(self.mdiWindowDict[self.mdiWindowDict.keys()[0]])
 #        for windowName in self.graphicsWindowDict.keys():
         for windowName in self.mdiWindowDict.keys():
 #            print 'windowName=', windowName
-            print 'windowTitle=', self.mdiWindowDict[windowName].windowTitle()
+#            print 'windowTitle=', self.mdiWindowDict[windowName].windowTitle()
             line = '    <Window Name="%s">\n' % self.mdiWindowDict[windowName].windowTitle()
             fpout.write(line)
-            print 'mdi x,y=', self.mdiWindowDict[windowName].pos().x(),self.mdiWindowDict[windowName].pos().y()
+#            print 'mdi x,y=', self.mdiWindowDict[windowName].pos().x(),self.mdiWindowDict[windowName].pos().y()
 #            print 'parentWidget pos=', self.windowDict[windowName].parentWidget().pos()
 #            print 'type(self.windowDict[windowName])=', type(self.windowDict[windowName])
 #            print 'type(self.mdiWindowDict[windowName])=', type(self.mdiWindowDict[windowName])
-            print 'mdi width,height=', self.mdiWindowDict[windowName].geometry().width(), self.mdiWindowDict[windowName].geometry().height()
+#            print 'mdi width,height=', self.mdiWindowDict[windowName].geometry().width(), self.mdiWindowDict[windowName].geometry().height()
             line = '    <Location x="%d" y="%d"/>\n' % (self.mdiWindowDict[windowName].pos().x(),self.mdiWindowDict[windowName].pos().y())
             fpout.write(line)
             line = '    <Size width="%d" height="%d"/>\n' % (self.mdiWindowDict[windowName].geometry().width(),self.mdiWindowDict[windowName].geometry().height())
