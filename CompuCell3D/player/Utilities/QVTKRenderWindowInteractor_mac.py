@@ -329,16 +329,12 @@ class QVTKRenderWindowInteractor(QtGui.QWidget):        # Mac
         repeat = 0
         if ev.type() == QtCore.QEvent.MouseButtonDblClick:
             repeat = 1
-            
         shift=True    
-        
         self._Iren.SetEventInformationFlipY(ev.x(), ev.y(),
                                             ctrl, shift, chr(0), repeat, None)
-
         shift=False
         
         self._ActiveButton = ev.button()
-
         if self._ActiveButton == QtCore.Qt.LeftButton:
             self._Iren.LeftButtonPressEvent()
         elif self._ActiveButton == QtCore.Qt.RightButton:
@@ -351,14 +347,10 @@ class QVTKRenderWindowInteractor(QtGui.QWidget):        # Mac
         repeat = 0
         if ev.type() == QtCore.QEvent.MouseButtonDblClick:
             repeat = 1
-            
                 
         self._Iren.SetEventInformationFlipY(ev.x(), ev.y(),
                                             ctrl, shift, chr(0), repeat, None)
-
-        
         self._ActiveButton = ev.button()
-
         if self._ActiveButton == QtCore.Qt.LeftButton:
             self._Iren.LeftButtonPressEvent()
         elif self._ActiveButton == QtCore.Qt.RightButton:
@@ -373,16 +365,11 @@ class QVTKRenderWindowInteractor(QtGui.QWidget):        # Mac
         # repeat = 0
         # if ev.type() == QtCore.QEvent.MouseButtonDblClick:
             # repeat = 1
-            
         # shift=True    
-        
         # self._Iren.SetEventInformationFlipY(ev.x(), ev.y(),
                                             # ctrl, shift, chr(0), repeat, None)
-
         # shift=False
-        
         # self._ActiveButton = ev.button()
-
         # if self._ActiveButton == QtCore.Qt.LeftButton:
             # self._Iren.LeftButtonPressEvent()
         # elif self._ActiveButton == QtCore.Qt.RightButton:
@@ -432,7 +419,6 @@ class QVTKRenderWindowInteractor(QtGui.QWidget):        # Mac
             key = str(ev.text())
         else:
             key = chr(0)   
-
         self._Iren.SetEventInformationFlipY(self.__saveX, self.__saveY,
                                             ctrl, shift, key, 0, None)
         self._Iren.KeyPressEvent()
@@ -444,7 +430,6 @@ class QVTKRenderWindowInteractor(QtGui.QWidget):        # Mac
             key = chr(ev.key())
         else:
             key = chr(0)
-
         self._Iren.SetEventInformationFlipY(self.__saveX, self.__saveY,
                                             ctrl, shift, key, 0, None)
         self._Iren.KeyReleaseEvent()
