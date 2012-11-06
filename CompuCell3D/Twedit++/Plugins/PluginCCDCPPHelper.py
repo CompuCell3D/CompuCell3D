@@ -264,11 +264,16 @@ class CC3DCPPHelper(QObject):
         capitalFirst = lambda s: s[:1].upper() + s[1:] if s else ''                    
         # first check if directory exists and if it is writeable. If the module directory  already exists ask if user wants to overwrite files there with new, generated ones    
         dirName=str(cmgd.moduleDirLE.text()).rstrip() 
+        codeLayout='maincode'
+        if cmgd.developerZoneLayoutRB.isChecked():
+            codeLayout='developerzone'
+            
         self.configuration.setSetting("RecentModuleDirectory",dirName)            
         moduleCoreName=str(cmgd.moduleCoreNameLE.text()).rstrip() 
         moduleCoreName=capitalFirst(moduleCoreName)
         fullModuleDir=os.path.join(dirName,moduleCoreName)
         fullModuleDir=os.path.abspath(fullModuleDir)
+        
         #SWIG files
         coreDir=os.path.join(dirName,'../../')        
         coreDir=os.path.abspath(coreDir)
@@ -302,11 +307,27 @@ class CC3DCPPHelper(QObject):
             includesSwigFile=''
             cmakeSwigFile=''
             
-            
+        if codeLayout=='developerzone':
+            try:
+                coreDir=os.path.abspath(dirName)        
+                swigFileDir=os.path.abspath(os.path.join(coreDir,'pyinterface/CompuCellExtraModules'))                
+                mainSwigFile=os.path.join(swigFileDir,'CompuCellExtraModules.i')
+                cmakeSwigFile=os.path.join(swigFileDir,'CMakeLists.txt')            
+            except IOError,e:
+                mainSwigFile=''
+                cmakeSwigFile=''
+        print swigFileDir
+        print mainSwigFile
+        
+        features['codeLayout']=codeLayout
         features['mainSwigFile']=mainSwigFile
         features['declarationsSwigFile']=declarationsSwigFile
         features['includesSwigFile']=includesSwigFile        
         features['cmakeSwigFile']=cmakeSwigFile        
+        
+        if cmgd.extraAttribCB.isChecked():
+            features['ExtraAttribute']=True
+        
         
         if os.path.exists(fullModuleDir):
             message="Directory %s already exists. <br>Is it OK to overwrite content in this directory with generated files?"%fullModuleDir
@@ -341,8 +362,6 @@ class CC3DCPPHelper(QObject):
                 features['LatticeMonitor']=True
             if cmgd.stepperCB.isChecked():
                 features['Stepper']=True
-            if cmgd.extraAttribCB.isChecked():
-                features['ExtraAttribute']=True
                 
             #write CMake file   
             cmakeText=self.cppTemplates.generateCMakeFile(features)
@@ -396,15 +415,19 @@ class CC3DCPPHelper(QObject):
                 
             except LookupError,e:
                 pass
-                
+            
             #adding entry in the    plugins/CMakeLists.txt     
             self.addModuleToModuleDirCMakeFile(moduleCoreName,dirName)
+
             # moduleMainCMakeFile=os.path.join(dirName,'CMakeLists.txt')
             # generatedFileList.append(moduleMainCMakeFile)
             
-            if cmgd.pythonWrapCB.isChecked():                
-                self.modifySwigFiles(features)
-            
+            if cmgd.pythonWrapCB.isChecked():  
+                if features['codeLayout']=='maincode':
+                    self.modifySwigFiles(features)
+                elif features['codeLayout']=='developerzone':    
+                    self.modifySwigFilesDeveloperZone(features)
+         
             # open all generated files in Twedit
             self.__ui.loadFiles(generatedFileList)
             
@@ -452,11 +475,29 @@ class CC3DCPPHelper(QObject):
             self.writeTextToFile(steppableImplementationName,steppableImplementationText)
             generatedFileList.append(steppableImplementationName)
             
+            try:
+                features['ExtraAttribute']
+                #write extra attribute data header
+                steppableExtraAttributeFileName=moduleCoreName+'Data.h'
+                steppableExtraAttributeText=self.cppTemplates.generateSteppableExtraAttributeFile(features)
+                steppableExtraAttributeFileName=os.path.join(fullModuleDir,steppableExtraAttributeFileName)
+                steppableExtraAttributeFileName=os.path.abspath(steppableExtraAttributeFileName)                
+                self.writeTextToFile(steppableExtraAttributeFileName,steppableExtraAttributeText)
+                generatedFileList.append(steppableExtraAttributeFileName)
+                
+            except LookupError,e:
+                pass
+            
+            
             #adding entry in the  steppables/CMakeLists.txt 
             self.addModuleToModuleDirCMakeFile(moduleCoreName,dirName)
-            
-            if cmgd.pythonWrapCB.isChecked():                
-                self.modifySwigFiles(features)
+            print '\n\n\n\n\n\n\n\n CODELAYOUT=',features['codeLayout']
+            if cmgd.pythonWrapCB.isChecked():  
+                if features['codeLayout']=='maincode':
+                    self.modifySwigFiles(features)
+                elif features['codeLayout']=='developerzone':    
+                    self.modifySwigFilesDeveloperZone(features)
+
             
             # open all generated files in Twedit
             self.__ui.loadFiles(generatedFileList)
@@ -503,7 +544,156 @@ class CC3DCPPHelper(QObject):
             else:            
                 return
 
+    def modifySwigFilesDeveloperZone(self,_features):
+        fileLocalizationError=False
+        
+        if _features['codeLayout']=='developerzone':
+            if _features['mainSwigFile']=='' or _features['cmakeSwigFile']=='':
+                fileLocalizationError=True
+            
+        if fileLocalizationError:
+            message="Could not succesfully locate SWIG files. <br> Please make sure you have necessary permissions and that file exist. You will need to add newly generated module to SWIG filesmanually"
+            QtGui.QMessageBox.information(self.__ui, "Problem with SWIG files",message,QtGui.QMessageBox.Ok)        
+            return
+            
+        # this is the label which helps identify autogenerated code snippet.        
+        insertedCodeHeader='//'+_features['Module']+'_autogenerated'            
+            
+        insertedCodeRegex1='^[\s]*//[\s]*'+_features['Module']+'_autogenerated'    
+        insertionLocationLabel1='//AutogeneratedModules1'
+                                  
+        
+        #inserting module header files definitione into .i file    
+        pluginIncludeCode='''EXTRA_ATTRIB_INCLUDE
+#include <PLUGIN_NAME_CORE/PLUGIN_NAME_COREPlugin.h>
+'''
+        steppableIncludeCode='''EXTRA_ATTRIB_INCLUDE
+#include <STEPPABLE_NAME_CORE/STEPPABLE_NAME_CORE.h>
+'''
+   
+        
+        insertedCode=''+insertedCodeHeader+'\n'
+        if 'Plugin' in _features.keys():
+            PLUGIN_NAME_CORE=_features['Plugin']
+            pluginIncludeCode=re.sub('PLUGIN_NAME_CORE',PLUGIN_NAME_CORE,pluginIncludeCode)
+            print '_features=',_features
+            if 'ExtraAttribute' in _features.keys():
+                EXTRA_ATTRIB_INCLUDE='#include <'+PLUGIN_NAME_CORE+'/'+PLUGIN_NAME_CORE+'Data.h>'
+                pluginIncludeCode=re.sub('EXTRA_ATTRIB_INCLUDE',EXTRA_ATTRIB_INCLUDE,pluginIncludeCode)                
+            else:
+                pluginIncludeCode=re.sub('EXTRA_ATTRIB_INCLUDE','',pluginIncludeCode)
+                            
+            insertedCode+=pluginIncludeCode
+            
+        elif 'Steppable' in _features.keys():     
+            STEPPABLE_NAME_CORE=_features['Steppable']
+            steppableIncludeCode=re.sub('STEPPABLE_NAME_CORE',STEPPABLE_NAME_CORE,steppableIncludeCode)            
+            if 'ExtraAttribute' in _features.keys():
+                EXTRA_ATTRIB_INCLUDE='#include <'+STEPPABLE_NAME_CORE+'/'+STEPPABLE_NAME_CORE+'Data.h>'                
+                steppableIncludeCode=re.sub('EXTRA_ATTRIB_INCLUDE',EXTRA_ATTRIB_INCLUDE,steppableIncludeCode)
+            else:
+                steppableIncludeCode=re.sub('EXTRA_ATTRIB_INCLUDE','',steppableIncludeCode)
+                
+            insertedCode+=steppableIncludeCode
+            
+        self.addCodeToSwigFile(_features['mainSwigFile'],insertedCode,insertedCodeRegex1,insertionLocationLabel1)
+
+        
+        #inserting windows dll export labels        
+        insertedCode=insertedCodeHeader+'\n'
+        insertedCode+='#define '+_features['Module'].upper()+'_EXPORT\n'        
+        
+        insertionLocationLabel2='//AutogeneratedModules2'            
+        insertedCodeRegex2='^[\s]*//[\s]*'+_features['Module']+'_autogenerated'    
+        row,col=self.addCodeToSwigFile(_features['mainSwigFile'],insertedCode,insertedCodeRegex2,insertionLocationLabel2)        
+        
+        insertionLocationLabel3='//AutogeneratedModules3'            
+        insertedCodeRegex3='^[\s]*//[\s]*'+_features['Module']+'_autogenerated'    
+        self.addCodeToSwigFile(_features['mainSwigFile'],insertedCode,insertedCodeRegex3,insertionLocationLabel3)        
+        
+        #inserting declaration part of the header file - this is the code prepended by %{
+        insertedCode=insertedCodeHeader+'\n'
+        insertionLocationLabel4='//AutogeneratedModules4'
+        insertedCodeRegex4='^[\s]*//[\s]*'+_features['Module']+'_autogenerated'    
+        
+        pluginDeclarationCode='''EXTRA_ATTRIB_DECLARE                   
+%include <PLUGIN_NAME_CORE/PLUGIN_NAME_COREPlugin.h>
+
+%inline %{
+ PLUGIN_NAME_COREPlugin * getPLUGIN_NAME_COREPlugin(){
+      return (PLUGIN_NAME_COREPlugin *)Simulator::pluginManager.get("PLUGIN_NAME_CORE");
+   }
+
+%}
+'''
+        
+        steppableDeclarationCode='''EXTRA_ATTRIB_DECLARE            
+%include <STEPPABLE_NAME_CORE/STEPPABLE_NAME_CORE.h>
+
+%inline %{
+ STEPPABLE_NAME_CORE * getSTEPPABLE_NAME_CORE(){
+      return (STEPPABLE_NAME_CORE *)Simulator::steppableManager.get("STEPPABLE_NAME_CORE");
+   }
+
+%}
+'''     
+        #  Module declaration code 
+        if 'Plugin' in _features.keys():
+            PLUGIN_NAME_CORE=_features['Plugin']
+            pluginDeclarationCode=re.sub('PLUGIN_NAME_CORE',PLUGIN_NAME_CORE,pluginDeclarationCode)
+            
+            EXTRA_ATTRIB_DECLARE=''
+            if 'ExtraAttribute' in _features.keys():
+                
+                EXTRA_ATTRIB_DECLARE='''%include <PLUGIN_NAME_CORE/PLUGIN_NAME_COREData.h>
+%template (PLUGIN_NAME_COREDataAccessorTemplate) BasicClassAccessor<PLUGIN_NAME_COREData>; //necessary to get PLUGIN_NAME_COREData accessor working in Python
+'''
+                    
+                
+                EXTRA_ATTRIB_DECLARE=re.sub('PLUGIN_NAME_CORE',PLUGIN_NAME_CORE,EXTRA_ATTRIB_DECLARE)
+                pluginDeclarationCode=re.sub('EXTRA_ATTRIB_DECLARE',EXTRA_ATTRIB_DECLARE,pluginDeclarationCode)
+                
+                
+            else:
+                pluginDeclarationCode=re.sub('EXTRA_ATTRIB_DECLARE','',pluginDeclarationCode)
+                
+            insertedCode+=pluginDeclarationCode
+            
+        elif 'Steppable' in _features.keys():     
+            STEPPABLE_NAME_CORE=_features['Steppable']
+            steppableDeclarationCode=re.sub('STEPPABLE_NAME_CORE',STEPPABLE_NAME_CORE,steppableDeclarationCode)
+            
+            if 'ExtraAttribute' in _features.keys():
+            
+                
+                EXTRA_ATTRIB_DECLARE='''%include <STEPPABLE_NAME_CORE/STEPPABLE_NAME_COREData.h>
+%template (STEPPABLE_NAME_COREDataAccessorTemplate) BasicClassAccessor<STEPPABLE_NAME_COREData>; //necessary to get STEPPABLE_NAME_COREData accessor working in Python
+'''                
+                EXTRA_ATTRIB_DECLARE=re.sub('STEPPABLE_NAME_CORE',STEPPABLE_NAME_CORE,EXTRA_ATTRIB_DECLARE)
+                steppableDeclarationCode=re.sub('EXTRA_ATTRIB_DECLARE',EXTRA_ATTRIB_DECLARE,steppableDeclarationCode)
+                
+            else:
+                steppableDeclarationCode=re.sub('EXTRA_ATTRIB_DECLARE','',steppableDeclarationCode)
+                
+            insertedCode+=steppableDeclarationCode
+
+
+                
+        self.addCodeToSwigFile(_features['mainSwigFile'],insertedCode,insertedCodeRegex4,insertionLocationLabel4)
+        
+        #CMakeListe file in the CompuCellPython directory
+        insertedCodeHeader5='#'+_features['Module']+'_autogenerated\n'
+        insertedCodeRegex5='^[\s]*#[\s]*'+_features['Module']+'_autogenerated'    
+        insertionLocationLabel5='#AutogeneratedModules'
+        insertedCode=insertedCodeHeader5
+        insertedCode+=_features['Module']+'Shared\n'
+        self.addCodeToSwigFile(_features['cmakeSwigFile'],insertedCode,insertedCodeRegex5,insertionLocationLabel5)
+        
+        
+                
+                
     def modifySwigFiles(self,_features):
+        
         if _features['mainSwigFile']=='' or  _features['declarationsSwigFile']=='' or _features['declarationsSwigFile']=='' or _features['cmakeSwigFile']=='':
             message="Could not succesfully locate SWIG files. <br> Please make sure you have necessary permissions and that file exist. You will need to add newly generated module to SWIG filesmanually"
             QtGui.QMessageBox.information(self.__ui, "Problem with SWIG files",message,QtGui.QMessageBox.Ok)        
@@ -541,8 +731,7 @@ class CC3DCPPHelper(QObject):
 %}
 '''
 
-        steppableDeclarationCode='''    
-        
+        steppableDeclarationCode='''EXTRA_ATTRIB_DECLARE            
 %include <CompuCell3D/steppables/STEPPABLE_NAME_CORE/STEPPABLE_NAME_CORE.h>
 
 %inline %{
@@ -572,7 +761,21 @@ class CC3DCPPHelper(QObject):
         elif 'Steppable' in _features.keys():     
             STEPPABLE_NAME_CORE=_features['Steppable']
             steppableDeclarationCode=re.sub('STEPPABLE_NAME_CORE',STEPPABLE_NAME_CORE,steppableDeclarationCode)
+            
+            if 'ExtraAttribute' in _features.keys():
+            
+                
+                EXTRA_ATTRIB_DECLARE='''%include <CompuCell3D/steppables/STEPPABLE_NAME_CORE/STEPPABLE_NAME_COREData.h>
+%template (STEPPABLE_NAME_COREDataAccessorTemplate) BasicClassAccessor<STEPPABLE_NAME_COREData>; //necessary to get STEPPABLE_NAME_COREData accessor working in Python
+'''                
+                EXTRA_ATTRIB_DECLARE=re.sub('STEPPABLE_NAME_CORE',STEPPABLE_NAME_CORE,EXTRA_ATTRIB_DECLARE)
+                steppableDeclarationCode=re.sub('EXTRA_ATTRIB_DECLARE',EXTRA_ATTRIB_DECLARE,steppableDeclarationCode)
+                
+            else:
+                steppableDeclarationCode=re.sub('EXTRA_ATTRIB_DECLARE','',steppableDeclarationCode)
+                
             insertedCode+=steppableDeclarationCode
+
             
         self.addCodeToSwigFile(_features['declarationsSwigFile'],insertedCode,insertedCodeRegex2,insertionLocationLabel)
         
@@ -583,7 +786,8 @@ class CC3DCPPHelper(QObject):
         pluginIncludeCode='''EXTRA_ATTRIB_INCLUDE
 #include <CompuCell3D/plugins/PLUGIN_NAME_CORE/PLUGIN_NAME_COREPlugin.h>
 '''
-        steppableIncludeCode='''#include <CompuCell3D/steppables/STEPPABLE_NAME_CORE/STEPPABLE_NAME_CORE.h>
+        steppableIncludeCode='''EXTRA_ATTRIB_INCLUDE
+#include <CompuCell3D/steppables/STEPPABLE_NAME_CORE/STEPPABLE_NAME_CORE.h>
 '''
         
         if 'Plugin' in _features.keys():
@@ -599,9 +803,14 @@ class CC3DCPPHelper(QObject):
             insertedCode+=pluginIncludeCode
         elif 'Steppable' in _features.keys():     
             STEPPABLE_NAME_CORE=_features['Steppable']
-            steppableIncludeCode=re.sub('STEPPABLE_NAME_CORE',STEPPABLE_NAME_CORE,steppableIncludeCode)
+            steppableIncludeCode=re.sub('STEPPABLE_NAME_CORE',STEPPABLE_NAME_CORE,steppableIncludeCode)            
+            if 'ExtraAttribute' in _features.keys():
+                EXTRA_ATTRIB_INCLUDE='#include <CompuCell3D/steppables/'+STEPPABLE_NAME_CORE+'/'+STEPPABLE_NAME_CORE+'Data.h>'                  
+                steppableIncludeCode=re.sub('EXTRA_ATTRIB_INCLUDE',EXTRA_ATTRIB_INCLUDE,steppableIncludeCode)
+            else:
+                steppableIncludeCode=re.sub('EXTRA_ATTRIB_INCLUDE','',steppableIncludeCode)
+                
             insertedCode+=steppableIncludeCode
-        
         self.addCodeToSwigFile(_features['includesSwigFile'],insertedCode,insertedCodeRegex,insertionLocationLabel)
         
         #CMakeListe file in the CompuCellPython directory
@@ -611,8 +820,9 @@ class CC3DCPPHelper(QObject):
         insertedCode=insertedCodeHeader
         insertedCode+=_features['Module']+'Shared\n'
         self.addCodeToSwigFile(_features['cmakeSwigFile'],insertedCode,insertedCodeRegex,insertionLocationLabel)
-        
-    def addCodeToSwigFile(self,_swigFileName,_insertedCode,_insertedCodeRegex,_insertionLocationLabel):
+
+
+    def addCodeToSwigFile(self,_swigFileName,_insertedCode,_insertedCodeRegex,_insertionLocationLabel, startRow=0,startColumn=0):
         
         fileList=QStringList()
         if str(_swigFileName)=='':
@@ -628,24 +838,23 @@ class CC3DCPPHelper(QObject):
         
         # insertedCodeRegex='^[\s]*//[\s]*'+_features['Module']+'_autogenerated'
         
-        
-        #first check if the line is already there
-        
-        foundFlag=editor.findFirst(_insertedCodeRegex,True,True,False,False,True,0,0,False) 
-        print 'FOUND REGEX =',foundFlag
+        #localize insertion point first
+        foundFlag=editor.findFirst(_insertionLocationLabel,False,True,False,False,True,startRow,startColumn,False) 
         if foundFlag:
-            print "Generated is already in the file"
-            return
+            currentLine,currentIndex = editor.getCursorPosition() # record current cursor position
+            foundRegexFlag=editor.findFirst(_insertedCodeRegex,True,True,False,False,True,currentLine,currentIndex,False) 
+            if foundRegexFlag:
+                print "Generated is already in the file"
+                return editor.getCursorPosition()
+                    
+            editor.insertAt(_insertedCode,currentLine+1,0)
+            editor.ensureLineVisible(currentLine+10)
+            self.__ui.save() # saves active editor 
+            return currentLine,currentIndex
         else:
-            foundFlag=editor.findFirst(_insertionLocationLabel,False,True,False,False,True,0,0,False) 
-            if foundFlag:
-            
-                currentLine,currentIndex = editor.getCursorPosition() # record current cursor position
-                editor.insertAt(_insertedCode,currentLine+1,0)
-                editor.ensureLineVisible(currentLine+10)
-                self.__ui.save() # saves active editor 
-            else:            
-                return
+            print 'Could not locate insertion point'
+            return editor.getCursorPosition()
+        
                 
     def writeTextToFile(self,_fileName,_text=''):
         try:

@@ -14,7 +14,11 @@ class CppTemplates:
     def generateCMakeFile(self,_features={}):
         
         if 'Plugin' in _features.keys():
-            text=self.cppTemplatesDict["CMakePlugin"]
+            text=''
+            if _features['codeLayout']=='developerzone':
+                text=self.cppTemplatesDict["CMakePluginDeveloperZone"]
+            else:
+                text=self.cppTemplatesDict["CMakePlugin"]
             pluginName=_features['Plugin']
             text=re.sub("PLUGIN_CORE_NAME",pluginName,text)     
             try:
@@ -293,17 +297,39 @@ void PLUGIN_NAME_COREPlugin::step() {    //Put your code here - it will be invo
         
 # STEPPABLE GENERATOR
 
-    def generateCMakeFileSteppable(self,_features={}):
+    # def generateCMakeFileSteppable(self,_features={}):
         
+        # if 'Steppable' in _features.keys():
+            # text=self.cppTemplatesDict["CMakeSteppable"]
+            # moduleName=_features['Steppable']
+            # text=re.sub("STEPPABLE_NAME_CORE",moduleName,text)       
+            # return text    
+                
+        # else: # steppable
+            # return ''
+
+
+    def generateCMakeFileSteppable(self,_features={}):
+                    
         if 'Steppable' in _features.keys():
-            text=self.cppTemplatesDict["CMakeSteppable"]
-            moduleName=_features['Steppable']
-            text=re.sub("STEPPABLE_NAME_CORE",moduleName,text)       
+            text=''
+            if _features['codeLayout']=='developerzone':
+                text=self.cppTemplatesDict["CMakeSteppableDeveloperZone"]
+            else:
+                text=self.cppTemplatesDict["CMakeSteppable"]
+            steppableName=_features['Steppable']
+            text=re.sub("STEPPABLE_CORE_NAME",steppableName,text)     
+            try:
+                extraAttribFlag=_features['ExtraAttribute']
+                text=re.sub("EXTRA_ATTRIBUTE_HEADER",steppableName+'Data.h',text)                     
+            except LookupError,e:
+                text=re.sub("EXTRA_ATTRIBUTE_HEADER",'',text)                     
             return text    
                 
         else: # steppable
             return ''
-        
+
+            
     def generateSteppableProxyFile(self,_features={}):
     
         replaceLabelList=[]
@@ -358,7 +384,30 @@ void PLUGIN_NAME_COREPlugin::step() {    //Put your code here - it will be invo
         
         STEPPABLE_NAME_VAR=steppableNameVar
         replaceLabelList.append(['STEPPABLE_NAME_VAR',STEPPABLE_NAME_VAR])
+        print '_features[ExtraAttribute]=',_features['ExtraAttribute']
+        try:
+            _features['ExtraAttribute']
+            EXTRA_ATTRIB_INCLUDES='#include \"'+steppableName+'Data.h\"'
+            EXTRA_ATTRIB_INCLUDES+="""
+#include <BasicUtils/BasicClassAccessor.h>
+#include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
+"""
+
+            EXTRA_ATTRIB_ACCESSOR_DEFINE='BasicClassAccessor<'+steppableName+'Data> '+steppableNameVar+'DataAccessor;'
         
+            EXTRA_ATTRIB_ACCESSOR_GET_PTR='BasicClassAccessor<'+steppableName+'Data> * '+'get'+steppableName+'DataAccessorPtr(){return & '+steppableNameVar+'DataAccessor;}'
+		
+
+
+        except LookupError,e:
+            EXTRA_ATTRIB_INCLUDES=''
+            EXTRA_ATTRIB_ACCESSOR_DEFINE=''
+            EXTRA_ATTRIB_ACCESSOR_GET_PTR=''
+            
+            
+        replaceLabelList.append(['EXTRA_ATTRIB_INCLUDES',EXTRA_ATTRIB_INCLUDES])
+        replaceLabelList.append(['EXTRA_ATTRIB_ACCESSOR_DEFINE',EXTRA_ATTRIB_ACCESSOR_DEFINE])
+        replaceLabelList.append(['EXTRA_ATTRIB_ACCESSOR_GET_PTR',EXTRA_ATTRIB_ACCESSOR_GET_PTR])         
         
         
         # set text for replace labels
@@ -390,7 +439,15 @@ void PLUGIN_NAME_COREPlugin::step() {    //Put your code here - it will be invo
         
         STEPPABLE_NAME_VAR=steppableNameVar
         replaceLabelList.append(['STEPPABLE_NAME_VAR',STEPPABLE_NAME_VAR])
-                       
+
+        try:
+            _features['ExtraAttribute']
+            REGISTER_EXTRA_ATTRIBUTE='potts->getCellFactoryGroupPtr()->registerClass(&'+steppableNameVar+'DataAccessor);'
+		
+        except LookupError,e:
+            REGISTER_EXTRA_ATTRIBUTE=''
+                        
+        replaceLabelList.append(['REGISTER_EXTRA_ATTRIBUTE',REGISTER_EXTRA_ATTRIBUTE])        
 
         for replaceItems in replaceLabelList:
             steppableImplementationText=re.sub(replaceItems[0],replaceItems[1], steppableImplementationText)
@@ -420,6 +477,35 @@ void PLUGIN_NAME_COREPlugin::step() {    //Put your code here - it will be invo
         
         # # # return text
         
+    def generateSteppableExtraAttributeFile(self,_features={}):
+    
+        replaceLabelList=[]
+        steppableName=_features['Steppable']
+        
+        steppableExtraAttribText=self.cppTemplatesDict["SteppableExtraAttributeData"]
+        
+        IFDEFLABEL=(steppableName+'Pata').upper()+'_H'
+        replaceLabelList.append(['IFDEFLABEL',IFDEFLABEL])
+        
+        
+        lowerFirst = lambda s: s[:1].lower() + s[1:] if s else ''
+        steppableNameVar=lowerFirst(steppableName)
+        
+        STEPPABLE_NAME_CORE=steppableName
+        replaceLabelList.append(['STEPPABLE_NAME_CORE',STEPPABLE_NAME_CORE])
+        
+        STEPPABLE_NAME_VAR=steppableNameVar
+        replaceLabelList.append(['STEPPABLE_NAME_VAR',STEPPABLE_NAME_VAR])
+        
+        DLL_SPECIFIER_EXPORT=steppableName.upper()+"_EXPORT"
+        replaceLabelList.append(['DLL_SPECIFIER_EXPORT',DLL_SPECIFIER_EXPORT])            
+        
+        
+        for replaceItems in replaceLabelList:
+            steppableExtraAttribText=re.sub(replaceItems[0],replaceItems[1], steppableExtraAttribText)
+            
+        return steppableExtraAttribText
+        
     
     def initCppTemplates(self):
         self.cppTemplatesDict["CMakePlugin"]="""
@@ -433,6 +519,20 @@ ADD_COMPUCELL3D_PLUGIN_HEADERS(PLUGIN_CORE_NAME
   EXTRA_ATTRIBUTE_HEADER
   )
 """    
+
+        self.cppTemplatesDict["CMakePluginDeveloperZone"]="""
+ADD_COMPUCELL3D_PLUGIN(PLUGIN_CORE_NAME
+  PLUGIN_CORE_NAMEPlugin.cpp
+  PLUGIN_CORE_NAMEPluginProxy.cpp LINK_LIBRARIES ${CC3DLibraries} EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
+
+ADD_COMPUCELL3D_PLUGIN_HEADERS(PLUGIN_CORE_NAME
+  PLUGIN_CORE_NAMEPlugin.h
+  PLUGIN_CORE_NAMEDLLSpecifier.h
+  EXTRA_ATTRIBUTE_HEADER
+  )
+"""    
+
+
         self.cppTemplatesDict["PluginHeader"]="""
 #ifndef IFDEFLABEL
 #define IFDEFLABEL
@@ -679,6 +779,20 @@ ADD_COMPUCELL3D_STEPPABLE_HEADERS(STEPPABLE_NAME_CORE
   )        
 """        
 
+        self.cppTemplatesDict["CMakeSteppableDeveloperZone"]="""
+ADD_COMPUCELL3D_STEPPABLE(STEPPABLE_CORE_NAME
+  STEPPABLE_CORE_NAME.cpp
+  STEPPABLE_CORE_NAMEProxy.cpp LINK_LIBRARIES ${CC3DLibraries} EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
+
+ADD_COMPUCELL3D_STEPPABLE_HEADERS(STEPPABLE_CORE_NAME
+  STEPPABLE_CORE_NAME.h
+  STEPPABLE_CORE_NAMEDLLSpecifier.h
+  EXTRA_ATTRIBUTE_HEADER
+  )
+"""    
+
+
+
         self.cppTemplatesDict["SteppableProxy"]="""
 #include "STEPPABLE_NAME_CORE.h"
 
@@ -717,7 +831,7 @@ STEPPABLE_NAME_VARProxy("STEPPABLE_NAME_CORE", "Autogenerated steppeble - the au
 #define IFDEFLABEL
 
 #include <CompuCell3D/Steppable.h>
-
+EXTRA_ATTRIB_INCLUDES
 #include <CompuCell3D/Steppable.h>
 #include <CompuCell3D/Field3D/Dim3D.h>
 #include <CompuCell3D/Field3D/Point3D.h>
@@ -743,6 +857,7 @@ namespace CompuCell3D {
   
   class DLL_SPECIFIER_EXPORT STEPPABLE_NAME_CORE : public Steppable {
 
+    EXTRA_ATTRIB_ACCESSOR_DEFINE                
     WatchableField3D<CellG *> *cellFieldG;
     Simulator * sim;
     Potts3D *potts;
@@ -753,6 +868,7 @@ namespace CompuCell3D {
     
     Dim3D fieldDim;
 
+    
   public:
     STEPPABLE_NAME_CORE ();
     virtual ~STEPPABLE_NAME_CORE ();
@@ -760,6 +876,8 @@ namespace CompuCell3D {
     virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
     virtual void extraInit(Simulator *simulator);
 
+    EXTRA_ATTRIB_ACCESSOR_GET_PTR
+    
     //steppable interface
     virtual void start();
     virtual void step(const unsigned int currentStep);
@@ -815,7 +933,7 @@ void STEPPABLE_NAME_CORE::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
   cellFieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
   fieldDim=cellFieldG->getDim();
 
-
+  REGISTER_EXTRA_ATTRIBUTE
   simulator->registerSteerableObject(this);
 
   update(_xmlData,true);
@@ -887,3 +1005,27 @@ std::string STEPPABLE_NAME_CORE::steerableName(){
 }
         
 """        
+        self.cppTemplatesDict["SteppableExtraAttributeData"]="""
+#ifndef IFDEFLABEL
+#define IFDEFLABEL
+
+
+#include <vector>
+#include "STEPPABLE_NAME_COREDLLSpecifier.h"
+
+namespace CompuCell3D {
+
+   
+   class DLL_SPECIFIER_EXPORT STEPPABLE_NAME_COREData{
+      public:
+         STEPPABLE_NAME_COREData(){};
+         
+         ~STEPPABLE_NAME_COREData(){};
+         std::vector<float> array;
+         int x;
+         
+         
+   };
+};
+#endif
+"""
