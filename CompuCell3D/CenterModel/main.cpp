@@ -55,7 +55,14 @@
 
 
 #include <iostream>
+#include <string>
+#include <Components/CellCM.h>
+#include <Components/SimulationBox.h>
+#include <Components/CellInventoryCM.h>
+#include <Components/CellFactoryCM.h>
+
 using namespace std;
+using namespace  CenterModel;
 
 // // // PluginManager<Plugin> Simulator::pluginManager;
 // // // PluginManager<Steppable> Simulator::steppableManager;
@@ -67,10 +74,33 @@ void Syntax(const string name) {
   exit(1);
 }
 
-using namespace std;
+
+
 
 int main(int argc, char *argv[]) {
 	cerr<<"Welcome to CC3D command line edition"<<endl;
+    CellCM cell;
+    cell.grow();
+	cerr<<"cell.position="<<cell.position<<endl;
+
+	SimulationBox sb;
+	sb.setDim(21.2,45.7,80.1);
+	sb.setBoxSpatialProperties(21.2,45.7,80.1,1.5,5.5,7.1);
+	cerr<<sb.getDim()<<endl;
+
+	cerr<<sb.getLatticeLookupDim()<<endl;
+
+	CellFactoryCM cf=CellFactoryCM();
+    CellInventoryCM ci=CellInventoryCM();
+	ci.addToInventory(cf.createCellCM());
+	ci.addToInventory(cf.createCellCM());
+	ci.addToInventory(cf.createCellCM());
+
+	cerr<<"inventory size="<<ci.getSize()<<endl;
+
+	
+	
+
 
 
   return 1;

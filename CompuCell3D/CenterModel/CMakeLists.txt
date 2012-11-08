@@ -31,17 +31,23 @@
   # # ${MOC_FILES}
   # )
 
+ADD_SUBDIRECTORY(Components)  
+  
 INCLUDE_DIRECTORIES ( 
     ${COMPUCELL3D_SOURCE_DIR}/core
+    ${COMPUCELL3D_SOURCE_DIR}/CenterModel
     )
 
     
-ADD_EXECUTABLE(CompuCell3DCML main.cpp)
-TARGET_LINK_LIBRARIES(CompuCell3DCML
-CompuCellLibShared
-XMLParserExpatLibShared
+ADD_EXECUTABLE(CenterModelCML main.cpp)
+TARGET_LINK_LIBRARIES(CenterModelCML
+# CompuCellLibShared
+# XMLParserExpatLibShared
+Field3DStatic
+ComponentsShared
+XMLUtilsShared
 )
-INSTALL_TARGETS(/bin CompuCell3DCML)    
+INSTALL_TARGETS(/bin CenterModelCML)    
     
     
 # # # if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
