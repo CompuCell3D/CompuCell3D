@@ -154,12 +154,12 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 #        print MODULENAME,"    typeColorTableClicked"
         row = self.typeColorTable.currentRow()
         col = self.typeColorTable.currentColumn()
-#        print "  current row,col=",row,col
+#        print MODULENAME,"  current row,col=",row,col
         self.typeColorTable.setCurrentCell(row,0)  # highlight the left column cell (cell #), not cell w/ the color
-        item = self.typeColorTable.item(row,1)
+        item = self.typeColorTable.item(row,2)   # col 2 contains color 
 #        if row == 0 or col == 0: return  # ECM is special; only proceed with color dialog/selection if user chose color column
         keys = self.paramCC3D["TypeColorMap"].keys()
-        print 'keys= ',keys
+#        print MODULENAME,'keys= ',keys
 #            item = QTableWidgetItem()
         
 #            item.setBackground(QBrush(self.paramCC3D["TypeColorMap"][keys[row]]))
@@ -181,7 +181,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
     def updateColorButton(self, btn, name):
         color = self.selectColor(btn, Configuration.getSetting(name))
-#        print '      updateColorButton: color=',color.red(),color.green(),color.blue()
+        print '      updateColorButton: color=',color.red(),color.green(),color.blue()
         # which of the following is necessary at this point?
         Configuration.setSetting(name, color)
         self.paramCC3D[name] = color
@@ -500,12 +500,13 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
     @pyqtSignature("") # signature of the signal emitted by the button
     def on_addCellTypeButton_clicked(self):   
-    
-        lastRowIdx=self.typeColorTable.rowCount()-1
+        lastRowIdx = self.typeColorTable.rowCount()-1
+#        print MODULENAME,' on_addCellTypeButton_clicked():   lastRowIdx=',lastRowIdx
+#        print MODULENAME,' on_addCellTypeButton_clicked(): type(self.paramCC3D["TypeColorMap"][lastRowIdx]) =',type(self.paramCC3D["TypeColorMap"][lastRowIdx])
+#        print MODULENAME,' on_addCellTypeButton_clicked(): self.paramCC3D["TypeColorMap"][lastRowIdx] =',self.paramCC3D["TypeColorMap"][lastRowIdx]
 
-        typeItem=self.typeColorTable.item(lastRowIdx,0)
-        lastTypeNumber,flag=typeItem.text().toInt()
-        
+        typeItem = self.typeColorTable.item(lastRowIdx,0)
+        lastTypeNumber,flag = typeItem.text().toInt()
         
         if not flag:
             #conversion to integer unsuccessful
@@ -515,19 +516,21 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
             #cc3d supports only up to 256 cell types
             return
             
-        colorItem = self.typeColorTable.item(lastRowIdx,1)
-        print 'type(colorItem)=',type(colorItem)
-        print 'dir(colorItem)=',dir(colorItem)
+        colorItem = self.typeColorTable.item(lastRowIdx,2)  # col 2 contains color
+#        print MODULENAME,'on_addCellTypeButton_clicked():  type(colorItem)=',type(colorItem)
+#        print MODULENAME,'on_addCellTypeButton_clicked():  dir(colorItem)=',dir(colorItem)
 #        lastTypeColor=colorItem.background().color()
         self.typeColorTable.insertRow(lastRowIdx+1)
 
         # fill new row
         self.typeColorTable.setItem(lastRowIdx+1,0,QTableWidgetItem(str(lastTypeNumber+1)))
         self.typeColorTable.setItem(lastRowIdx+1,1,QTableWidgetItem())
-        colorITem=self.typeColorTable.item(lastRowIdx+1,1)
+        self.typeColorTable.setItem(lastRowIdx+1,2,QTableWidgetItem())
+#        colorITem = self.typeColorTable.item(lastRowIdx+1,1)
 #        colorITem.setBackground(QBrush(lastTypeColor))
         # init setting dictionary        
-#        self.paramCC3D["TypeColorMap"][lastRowIdx+1]=lastTypeColor
+        
+        self.paramCC3D["TypeColorMap"][lastRowIdx+1] = QColor(Qt.white)
         
         
     def populateCellColors(self):

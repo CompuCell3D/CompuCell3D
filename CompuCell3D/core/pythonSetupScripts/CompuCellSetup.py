@@ -10,6 +10,7 @@ cc3dModuleDictionary={}
 cc3dActiveSteerableList=[]
 cc3dXML2ObjConverter=None
 cc3dXML2ObjConverterAdapter=None
+windowsXML2ObjConverter=None
 simulationXMLDescription=None
 simulationObjectsCreated=False
 simulationPythonScriptName=""
@@ -165,6 +166,9 @@ class SimulationPaths:
 
         self.xmlFileNameFromPython=""
         self.pathToxmlFileNameFromPython=""
+        
+        self.playerSimulationWindowsFileName=""   # xml file describing layout of graphics windows in player (not plotting windows)
+        self.playerSimulationWindowsFilePath=""
 
         # self.mainSimulationFile="" # this is the name of the main simulation file. It may contain references to other files. This is the file that is input from CML or from Player 
         self.simulationResultStorageDirectory="" #this is a place where the output of simulation will be written 
@@ -179,7 +183,6 @@ class SimulationPaths:
     def setSimulationBasePath(self,_path):
         self.basePath = os.path.abspath(_path)
         
-    
     def setSimulationResultDescriptionFile(self,_fileName):
         self.simulationResultDescriptionFile=os.path.abspath(_fileName)
         self.simulationResultStorageDirectory=os.path.dirname(self.simulationResultDescriptionFile)
@@ -187,7 +190,6 @@ class SimulationPaths:
     def getSimulationResultStorageDirectory(self):
         return self.simulationResultStorageDirectory
 
-        
     def setSimulationResultStorageDirectory(self, _path,_useTimeExtension=False):
         mainDirName = os.path.dirname(os.path.abspath(_path))
         baseName = os.path.basename(os.path.abspath(_path))
@@ -212,8 +214,6 @@ class SimulationPaths:
         global screenshotDirectoryName
         screenshotDirectoryName = self.simulationResultStorageDirectory
 
-            
-        
     def getFullFileNameAndFilePath(self,_fileName,_filePath):
         if _fileName=="":
             return "",""
@@ -221,14 +221,11 @@ class SimulationPaths:
         filePath = os.path.dirname(_fileName)
         return fileName,filePath
 
-
     def setPlayerSimulationXMLFileName(self,_playerSimulationXMLFileName):
         if self.lock:
             return
         self.playerSimulationXMLFileName = _playerSimulationXMLFileName
-        
         self.playerSimulationXMLFileName = self.normalizePath(self.playerSimulationXMLFileName)
-        
         self.playerSimulationXMLFileName, self.playerSimulationXMLFilePath = self.getFullFileNameAndFilePath( self.playerSimulationXMLFileName, self.playerSimulationXMLFilePath)
 
         if self.playerSimulationXMLFileName != "":
@@ -237,30 +234,38 @@ class SimulationPaths:
 
         self.simulationXMLFileName = self.playerSimulationXMLFileName
 
-
     def setPlayerSimulationPythonScriptName(self,_playerSimulationPythonScriptName):
         if self.lock:
             return
         self.playerSimulationPythonScriptName = _playerSimulationPythonScriptName
-        
         self.playerSimulationPythonScriptName = self.normalizePath (self.playerSimulationPythonScriptName)
-        
         self.playerSimulationPythonScriptName, self.playerSimulationPythonScriptPath = self.getFullFileNameAndFilePath(self.playerSimulationPythonScriptName,self.playerSimulationPythonScriptPath)
 
         if self.playerSimulationPythonScriptName !="":
             assert os.path.exists(self.playerSimulationPythonScriptName),"In the Player you requested Python script: \n"\
             +self.playerSimulationPythonScriptName+"\nwhich does not exist.\nPlease pick different script"
 
-
         self.simulationPythonScriptName = self.playerSimulationPythonScriptName
+        
+    def setPlayerSimulationWindowsFileName(self,_filename):
+        if self.lock:
+            return
+        self.playerSimulationWindowsFileName = _filename
+        self.playerSimulationWindowsFileName = self.normalizePath(self.playerSimulationWindowsFileName)
+        self.playerSimulationWindowsFileName, self.playerSimulationWindowsFilePath = self.getFullFileNameAndFilePath( self.playerSimulationWindowsFileName, self.playerSimulationWindowsFilePath)
+        print MYMODULENAME,"self.playerSimulationWindowsFileName=",self.playerSimulationWindowsFileName
+
+        if self.playerSimulationWindowsFileName != "":
+            assert os.path.exists(self.playerSimulationWindowsFileName),"In the Player you requested Windows XML file: \n"+self.playerSimulationWindowsFileName\
+            +"\nwhich does not exist.\nPlease pick different Windows XML file "
+
+        self.simulationWindowsFileName = self.playerSimulationWindowsFileName
 
     def setPythonScriptNameFromXML(self,_pythonScriptNameFromXML):
         if self.lock:
             return
         self.pythonScriptNameFromXML = _pythonScriptNameFromXML
-        
         self.pythonScriptNameFromXML = self.normalizePath (self.pythonScriptNameFromXML)
-        
         self.pythonScriptNameFromXML,self.pathToPythonScriptNameFromXML = self.getFullFileNameAndFilePath(self.pythonScriptNameFromXML,self.pathToPythonScriptNameFromXML)
         
         print "_pythonScriptNameFromXML=",_pythonScriptNameFromXML
@@ -284,16 +289,13 @@ class SimulationPaths:
         if self.lock:
             return
         self.xmlFileNameFromPython = _xmlFileNameFromPython
-        
         self.xmlFileNameFromPython = self.normalizePath(self.xmlFileNameFromPython)
-        
         self.xmlFileNameFromPython , self.pathToxmlFileNameFromPython = self.getFullFileNameAndFilePath(self.xmlFileNameFromPython , self.pathToxmlFileNameFromPython)
 
         if self.simulationXMLFileName=="":
             assert os.path.exists(self.xmlFileNameFromPython),"In the Python script you requested XML file: \n"+self.xmlFileNameFromPython\
             +"  which does not exist.\n Please specify different XML file"
             self.simulationXMLFileName = self.xmlFileNameFromPython;
-
 
     def normalizePath(self,_path):
         # print "INSIDE NORMALIZE PATH _arg=",_path
@@ -330,13 +332,13 @@ class SimulationPaths:
             print "\n\n\n\n self.basePath=",self.basePath
             print "self.playerSimulationXMLFileName=",self.playerSimulationXMLFileName
             if self.playerSimulationXMLFileName != "":
-                self.playerSimulationXMLFileName=self.normalizePath(self.playerSimulationXMLFileName)
+                self.playerSimulationXMLFileName = self.normalizePath(self.playerSimulationXMLFileName)
                 
             if self.xmlFileNameFromPython != "":    
-                self.xmlFileNameFromPython=self.normalizePath(self.xmlFileNameFromPython)
+                self.xmlFileNameFromPython = self.normalizePath(self.xmlFileNameFromPython)
                 
             if self.playerSimulationPythonScriptName !="":
-                self.playerSimulationPythonScriptName=self.normalizePath(self.playerSimulationPythonScriptName)
+                self.playerSimulationPythonScriptName = self.normalizePath(self.playerSimulationPythonScriptName)
                 
             if self.pythonScriptNameFromXML != "":
                 self.pythonScriptNameFromXML = self.normalizePath(self.pythonScriptNameFromXML)
@@ -378,7 +380,6 @@ class SimulationPaths:
 
 simulationPaths=SimulationPaths() #will store simulation file names and paths and check if paths are correct
 
-
 def resetGlobals():
     global simulationObjectsCreated
     simulationObjectsCreated = False
@@ -400,7 +401,6 @@ def setSimulationXMLFileName(_simulationFileName):
     global simulationPaths
     simulationPaths.setXmlFileNameFromPython(_simulationFileName)
 #     print "\n\n\n got here ",simulationPaths.simulationXMLFileName
-
 
 def openFileInSimulationOutputDirectory(_filePath,_mode="r"):    
     import os.path
@@ -488,7 +488,13 @@ def parseXML(_simulationFileName):
     global cc3dXML2ObjConverter
     import XMLUtils
     cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
-    root_element=cc3dXML2ObjConverter.Parse(_simulationFileName)
+    root_element = cc3dXML2ObjConverter.Parse(_simulationFileName)
+    
+def parseWindowsXML(_windowsXMLFileName):
+    global windowsXML2ObjConverter
+    import XMLUtils
+    windowsXML2ObjConverter = XMLUtils.Xml2Obj()
+    root_element = windowsXML2ObjConverter.Parse(_windowsXMLFileName)
     
     
     # global cc3dXML2ObjConverter_1
@@ -513,7 +519,8 @@ def setSimulationXMLDescription(_xmlTree):
         setSimulationXMLDescriptionNewPlayer(_xmlTree)
     else:
         if simulationThreadObject is None:
-            setSimulationXMLDescriptionOldPlayer(_xmlTree)
+            print MYMODULENAME,'  setSimulationXMLDescription():  error, simThreadObject is None'
+#            setSimulationXMLDescriptionOldPlayer(_xmlTree)
         else:
             setSimulationXMLDescriptionNewPlayer(_xmlTree)
     # global cc3dXML2ObjConverterAdapter
@@ -523,121 +530,22 @@ def setSimulationXMLDescription(_xmlTree):
 
 def setSimulationXMLDescriptionNewPlayer(_xmlTree):    
     global cc3dXML2ObjConverter
-    cc3dXML2ObjConverter=XML2ObjConverterAdapter()
-    cc3dXML2ObjConverter.xmlTree=_xmlTree
-    cc3dXML2ObjConverter.root=_xmlTree.CC3DXMLElement
+    cc3dXML2ObjConverter = XML2ObjConverterAdapter()
+    cc3dXML2ObjConverter.xmlTree = _xmlTree
+    cc3dXML2ObjConverter.root = _xmlTree.CC3DXMLElement
      
-def setSimulationXMLDescriptionOldPlayer(_xmlTree):    
-    global cc3dXML2ObjConverterAdapter
-    cc3dXML2ObjConverterAdapter=XML2ObjConverterAdapter()
-    cc3dXML2ObjConverterAdapter.xmlTree=_xmlTree
-    cc3dXML2ObjConverterAdapter.root=_xmlTree.CC3DXMLElement
-
     
 def getScreenshotDirectoryName():
     global screenshotDirectoryName
     return screenshotDirectoryName    
     
-def getCoreSimulationObjectsOldPlayer(_parseOnlyFlag=False):
-#     try:
-    import sys
-    from os import environ
-    import string
-    python_module_path=os.environ["PYTHON_MODULE_PATH"]
-    appended=sys.path.count(python_module_path)
-    if not appended:
-        sys.path.append(python_module_path)    
-    
-    # sys.path.append(environ["PYTHON_MODULE_PATH"])
-
-    import SystemUtils
-    SystemUtils.setSwigPaths()
-    SystemUtils.initializeSystemResources()
-    # this dummy library was necessary to get restarting of the Python interpreter from C++ to work with SWIG generated libraries
-    import Example
-    import PlayerPython
-    import CompuCell
-    CompuCell.initializePlugins()
-
-    simthread=PlayerPython.getSimthreadBasePtr()
-    sim=None
-
-    #Here I will extract file names from the Player . Note that this is doe only if the _parseOnlyFlag is set i.e. when we determine which files to use
-    if _parseOnlyFlag:
-        global simulationPaths
-        if simthread is not None:
-             xmlfile = simthread.getSimulationFileName()
-             script  = simthread.getSimulationPythonScriptName()
-        else:
-             xmlfile = filename
-             script  = ""
-
-        simulationPaths.setPlayerSimulationXMLFileName(xmlfile)
-        simulationPaths.setPlayerSimulationPythonScriptName(script)
-
-    if simulationPaths.simulationXMLFileName!="" and _parseOnlyFlag:
-        global cc3dXML2ObjConverter
-        import XMLUtils
-        parseXML(simulationPaths.simulationXMLFileName)
-
-        # will try extracting python script name from simulation description if the one from Player is = ""
-
-        global simulationPaths
-        if cc3dXML2ObjConverter.root.findElement("PythonScript"):
-            simulationPaths.setPythonScriptNameFromXML(cc3dXML2ObjConverter.root.getFirstElement("PythonScript").getText())
-
-    if not _parseOnlyFlag:
-        sim=CompuCell.Simulator()
-        if simthread is not None:
-            simthread.setSimulator(sim)
-
-
-        if simulationPaths.simulationXMLFileName!="":
-            global simulationPaths
-            global cc3dXML2ObjConverter
-            import XMLUtils
-
-            parseXML(simulationPaths.simulationXMLFileName)
-
-            if cc3dXML2ObjConverter.root.findElement("PythonScript"):
-                simulationPaths.setPythonScriptNameFromXML(cc3dXML2ObjConverter.root.getFirstElement("PythonScript").getText())
-
-        simulationPaths.ensurePathsConsistency()
-
-        #here I will append path to search paths based on the paths to XML file and Python script paths
-        global appendedPaths
-        if simulationPaths.playerSimulationPythonScriptPath != "":
-            sys.path.append(simulationPaths.playerSimulationPythonScriptPath)
-            appendedPaths.append(simulationPaths.playerSimulationPythonScriptPath)
-
-        if simulationPaths.pathToPythonScriptNameFromXML !="":
-            sys.path.append(simulationPaths.pathToPythonScriptNameFromXML)
-            appendedPaths.append(simulationPaths.pathToPythonScriptNameFromXML)
-
-        if simulationPaths.playerSimulationXMLFilePath !="":
-            sys.path.append(simulationPaths.playerSimulationXMLFilePath)
-            appendedPaths.append(simulationPaths.playerSimulationXMLFilePath)
-
-        if simulationPaths.pathToxmlFileNameFromPython!="":
-            sys.path.append(simulationPaths.pathToxmlFileNameFromPython)
-            appendedPaths.append(simulationPaths.pathToxmlFileNameFromPython)
-
-
-        # initModules(sim)#extracts Plugins, Steppables and Potts XML elements and passes it to the simulator
-
-        global simulationObjectsCreated
-        simulationObjectsCreated = True
-
-#     print "sim=",sim
-    return sim,simthread
-
 
 def getCoreSimulationObjectsNewPlayer(_parseOnlyFlag=False, _cmlOnly=False):
     import sys
     from os import environ
     import string
-    python_module_path=os.environ["PYTHON_MODULE_PATH"]
-    appended=sys.path.count(python_module_path)
+    python_module_path = os.environ["PYTHON_MODULE_PATH"]
+    appended = sys.path.count(python_module_path)
     if not appended:
         sys.path.append(python_module_path)    
     
@@ -800,10 +708,10 @@ def getCoreSimulationObjects(_parseOnlyFlag=False):
         return getCoreSimulationObjectsNewPlayerCMLReplay(_parseOnlyFlag) 
         
     if simulationThreadObject is None:
-        return getCoreSimulationObjectsOldPlayer(_parseOnlyFlag)
+#        return getCoreSimulationObjectsOldPlayer(_parseOnlyFlag)
+        print MYMODULENAME,' getCoreSimulationObjects(): error, simThreadObj is None'
     else:
         return getCoreSimulationObjectsNewPlayer(_parseOnlyFlag)
-
 
 def createCMLFieldHandler():
     global cmlFieldHandler
@@ -849,7 +757,7 @@ def initCMLFieldHandler(sim, simulationResultStorageDirectory, _fieldStorage):
 def ExtractPythonScriptNameFromXML(_simulationXMLFileName):
     import XMLUtils
     cc3dXML2ObjConverterTmp = XMLUtils.Xml2Obj()
-    root_element_tmp=cc3dXML2ObjConverterTmp.Parse(_simulationXMLFileName)
+    root_element_tmp = cc3dXML2ObjConverterTmp.Parse(_simulationXMLFileName)
     
     # parseXML(_simulationXMLFileName)
     # will try extracting python script name from simulation description if the one from Player is = ""
@@ -973,7 +881,6 @@ def initializeSimulationObjects(sim,simthread):
     if simthread is not None:
         simthread.clearGraphicsFields()
 
-
 def attachDictionaryToCells(sim):
     from CompuCell import PyAttributeAdder
     from PyDictAdder import DictAdder
@@ -1057,8 +964,6 @@ def clearVectorFieldPy(_dim, _vectorField):
     else:
         simulationThreadObject.callingWidget.fieldStorage.clearVectorFieldPy(_dim,_vectorField)
     
-
-
 def vtkScriptCallback(arg):
   global customVisStorage  # see above, l.140:  customVisStorage = CustomVisStorage()
 #  import sys
@@ -1262,55 +1167,6 @@ def stopSimulation():
     global userStopSimulationFlag    
     userStopSimulationFlag=True
     
-def mainLoopOldPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFrequency = None):
-    import time
-    t1 = time.time()
-    
-    extraInitSimulationObjects(sim,simthread)
-    runFinishFlag = True;
-    
-    if not steppableRegistry is None:
-        steppableRegistry.init(sim)
-        steppableRegistry.start()
-
-    screenUpdateFrequency=1
-
-    for i in range(sim.getNumSteps()):
-        if simthread is not None:
-            if simthread.getStopSimulation() or userStopSimulationFlag:
-                runFinishFlag=False;
-                break
-                
-        #calling Python steppables which are suppose to run before MCS - e.g. secretion steppable        
-        if not steppableRegistry is None:
-            steppableRegistry.stepRunBeforeMCSSteppables(i)
-                
-        sim.step(i)
-    
-        if not steppableRegistry is None:
-            steppableRegistry.step(i)
-        # steer application will only update modules that uses requested using updateCC3DModule function from simulator
-        sim.steer() 
-
-        if not i % screenUpdateFrequency and simthread is not None:
-            simthread.loopWork(i)
-            simthread.loopWorkPostEvent(i)
-            screenUpdateFrequency = simthread.getScreenUpdateFrequency()
-    if runFinishFlag:
-        sim.finish()
-        steppableRegistry.finish()
-    else:
-        sim.unloadModules()
-        if simthread is not None:
-            simthread.sendStopSimulationRequest()
-            
-    t2 = time.time()
-    printSimulationRuntime((t2-t1)*1000.0)    
-    #In exception handlers you have to call sim.finish to unload the plugins .
-    #We may need to introduce new funuction name (e.g. unload) because finish does more than unloading
-
-
-
     
 def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFrequency = None):
     global cmlFieldHandler  #rwh2
@@ -1658,7 +1514,6 @@ def mainLoopCMLReplay(sim, simthread, steppableRegistry= None, _screenUpdateFreq
         if simthread is not None:
             simthread.sendStopSimulationRequest()
             simthread.simulationFinishedPostEvent(True)
-            
     
     #In exception handlers you have to call sim.finish to unload the plugins .
     #We may need to introduce new funuction name (e.g. unload) because finish does more than unloading
@@ -1667,7 +1522,6 @@ def mainLoopCMLReplay(sim, simthread, steppableRegistry= None, _screenUpdateFreq
 def mainLoop(sim, simthread, steppableRegistry= None, _screenUpdateFrequency = None):
     global playerType
 #    print MYMODULENAME,"playerType=",playerType
-    
 #    import pdb; pdb.set_trace()
     
     if playerType=="CML":
@@ -1675,9 +1529,9 @@ def mainLoop(sim, simthread, steppableRegistry= None, _screenUpdateFrequency = N
     if playerType=="CMLResultReplay":
         return mainLoopCMLReplay(sim, simthread, steppableRegistry, _screenUpdateFrequency )
         
-    
 #    print MYMODULENAME,' mainLoop:  simulationFileName =',simulationFileName
     if simulationThreadObject is None:
-        return mainLoopOldPlayer(sim, simthread, steppableRegistry, _screenUpdateFrequency )
+        print MYMODULENAME,' mainLoop:  error, simulationThreadObject is None (no longer an OldPlayer)'
+#        return mainLoopOldPlayer(sim, simthread, steppableRegistry, _screenUpdateFrequency )
     else:
         return mainLoopNewPlayer(sim, simthread, steppableRegistry, _screenUpdateFrequency )

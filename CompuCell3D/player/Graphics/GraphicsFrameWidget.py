@@ -53,7 +53,7 @@ class GraphicsFrameWidget(QtGui.QFrame):
     # def __init__(self, parent=None, wflags=QtCore.Qt.WindowFlags(), **kw):
     def __init__(self, parent=None):
         QtGui.QFrame.__init__(self, parent)
-        self.qvtkWidget = QVTKRenderWindowInteractor(self)
+        self.qvtkWidget = QVTKRenderWindowInteractor(self)   # a QWidget
         self.parentWidget = parent
         
         self.lineEdit = QtGui.QLineEdit()
