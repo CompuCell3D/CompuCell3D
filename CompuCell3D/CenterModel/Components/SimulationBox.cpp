@@ -24,8 +24,12 @@
 #include <iostream>
 #include <cmath>
 
+//indexing macro
+#define PT2IDX(pt) (pt.x + ((pt.y + (pt.z * lookupLatticeDim.y)) * lookupLatticeDim.x))
+
 using namespace std;
 using namespace CenterModel;
+
 
 SimulationBox::~SimulationBox(){
 
@@ -69,6 +73,10 @@ void SimulationBox::setGridSpacing(double _x,double _y,double _z){
 
 }
 
+void SimulationBox::setBoxSpatialProperties(Vector3 & _dim, Vector3 & _gridSpacing){
+	setBoxSpatialProperties(_dim.fX,_dim.fY,_dim.fZ,_gridSpacing.fX,_gridSpacing.fY,_gridSpacing.fZ);	
+}
+
 void SimulationBox::setBoxSpatialProperties(double _x,double _y,double _z,double _xs,double _ys,double _zs){
 
 	dim.fX=_x;
@@ -78,6 +86,10 @@ void SimulationBox::setBoxSpatialProperties(double _x,double _y,double _z,double
 	gridSpacing.fX=_xs;
 	gridSpacing.fY=_ys;
 	gridSpacing.fZ=_zs;
+
+	inverseGridSpacing.fX=1.0/gridSpacing.fX;
+	inverseGridSpacing.fY=1.0/gridSpacing.fY;
+	inverseGridSpacing.fZ=1.0/gridSpacing.fZ;
 
 	double xratio=1.0,yratio=1.0,zratio=1.0;
 
@@ -122,5 +134,53 @@ void SimulationBox::setLookupLatticeDim(short _x,short _y, short _z){
 	lookupLatticeDim.y=_y;
 	lookupLatticeDim.z=_z;
 
+}
 
+void SimulationBox::updateCellLookup(CellCM * _cell){
+	
+	//Vector3 lookupPosition=_cell->position*inverseGridSpacing;
+
+	CompuCell3D::Point3D pt(static_cast<short>(floor(_cell->position.fX/gridSpacing.fX)),static_cast<short>(floor(_cell->position.fY/gridSpacing.fY)),static_cast<short>(floor(_cell->position.fZ/gridSpacing.fZ)));
+
+	//cerr<<"_cell->position="<<_cell->position<<endl;
+	//cerr<<"inverseGridSpacing="<<inverseGridSpacing<<endl;
+	//cerr<<"lookupPosition="<<lookupPosition<<endl;
+
+	//cerr<<"pt="<<pt<<endl;	
+	long newLookupIndex=PT2IDX(pt);
+	long oldLookupIndex=_cell->lookupIdx;
+	if (oldLookupIndex!=newLookupIndex){
+		//fetch lookup set  corresponding to _cell->lookupIdx
+		
+		CellSorterCM * csPtr=lookupLatticePtr->getByIndex(oldLookupIndex);
+		if (csPtr){
+			//making sure that cell's lookup index is sane 
+			//cerr<<"csPtr="<<csPtr<<endl;
+
+			set<CellSorterDataCM> & oldSorterSetRef=lookupLatticePtr->getByIndex(oldLookupIndex)->sorterSet;
+			
+			//cerr<<"oldSorterSetRef.size()="<<oldSorterSetRef.size()<<endl;		
+
+			set<CellSorterDataCM>::iterator oldSitr=oldSorterSetRef.find(CellSorterDataCM(_cell));
+
+			
+
+			if(oldSitr!=oldSorterSetRef.end()){//cell is in the location pointed by lookupIdx and we remove it
+				oldSorterSetRef.erase(oldSitr);
+			}
+
+		}
+
+		//now insert cell with updated lookup index ()
+		_cell->lookupIdx=newLookupIndex;
+		//cerr<<"newLookupIndex="<<newLookupIndex<<endl;
+		set<CellSorterDataCM> & newSorterSetRef=lookupLatticePtr->getByIndex(newLookupIndex)->sorterSet;
+		set<CellSorterDataCM>::iterator newSitr;
+		newSorterSetRef.insert(CellSorterDataCM(_cell));
+		//cerr<<"newSorterSetRef.size()="<<newSorterSetRef.size()<<endl;
+
+	}
+
+	
+	
 }

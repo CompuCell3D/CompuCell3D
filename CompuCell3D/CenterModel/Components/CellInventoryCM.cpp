@@ -21,6 +21,8 @@
  *************************************************************************/
 
 #include "CellInventoryCM.h"
+#include "CellFactoryCM.h"
+
 #include "CellCM.h"
 
 using namespace std;
@@ -45,7 +47,7 @@ CellInventoryCM::~CellInventoryCM(){
 				delete cell;
          }
          else{
-				//cellFactoryPtr->destroyCellCM(cell,false);
+				cellFactoryPtr->destroyCellCM(cell);
          }
 		}
 	inventory.clear();	

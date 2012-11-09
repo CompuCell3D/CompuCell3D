@@ -60,6 +60,11 @@
 #include <Components/SimulationBox.h>
 #include <Components/CellInventoryCM.h>
 #include <Components/CellFactoryCM.h>
+#include <time.h>
+#include <BasicUtils/BasicRandomNumberGenerator.h>
+#include <limits>
+
+
 
 using namespace std;
 using namespace  CenterModel;
@@ -83,20 +88,60 @@ int main(int argc, char *argv[]) {
     cell.grow();
 	cerr<<"cell.position="<<cell.position<<endl;
 
+	Vector3 boxDim(21.2,45.7,80.1);
+	Vector3 gridSpacing(4,10,8);
+
 	SimulationBox sb;
-	sb.setDim(21.2,45.7,80.1);
-	sb.setBoxSpatialProperties(21.2,45.7,80.1,1.5,5.5,7.1);
+	//sb.setDim(21.2,45.7,80.1);
+	//sb.setBoxSpatialProperties(21.2,45.7,80.1,1.5,5.5,7.1);
+	sb.setBoxSpatialProperties(boxDim,gridSpacing);
 	cerr<<sb.getDim()<<endl;
 
 	cerr<<sb.getLatticeLookupDim()<<endl;
 
 	CellFactoryCM cf=CellFactoryCM();
+	cf.setSimulationBox(&sb);
+
     CellInventoryCM ci=CellInventoryCM();
-	ci.addToInventory(cf.createCellCM());
-	ci.addToInventory(cf.createCellCM());
-	ci.addToInventory(cf.createCellCM());
+	ci.setCellFactory(&cf);
+
+	ci.addToInventory(cf.createCellCM(19,20,67));
+	ci.addToInventory(cf.createCellCM(2,34,21));
+	ci.addToInventory(cf.createCellCM(8,1,9));
+	ci.addToInventory(cf.createCellCM(8,1,10));
+
+
+	BasicRandomNumberGeneratorNonStatic rGen;
+	srand(time(0));
+	unsigned int randomSeed=(unsigned int)rand()*((std::numeric_limits<unsigned int>::max)()-1);                
+	rGen.setSeed(randomSeed);
+
+	//creating many cells
+	int N=2000;
+	
+	for (int i=0;i<N;++i){
+		ci.addToInventory(cf.createCellCM(boxDim.fX*rGen.getRatio(),boxDim.fY*rGen.getRatio(),boxDim.fZ*rGen.getRatio()));
+	}
 
 	cerr<<"inventory size="<<ci.getSize()<<endl;
+
+	const SimulationBox::LookupField_t & lookupField=sb.getLookupFieldRef();
+
+	CompuCell3D::Dim3D lookupFieldDim=lookupField.getDim();
+	CompuCell3D::Point3D pt;
+
+	int cellCounter=0;
+	for (pt.x=0;pt.x<lookupFieldDim.x; ++pt.x)
+		for (pt.y=0;pt.y<lookupFieldDim.y; ++pt.y)
+			for (pt.z=0;pt.z<lookupFieldDim.z; ++pt.z){
+
+				set<CellSorterDataCM> &lookupSet=lookupField.get(pt)->sorterSet;
+				cellCounter+=lookupSet.size();
+				cerr<<"THIS IS SET FOR pt="<<pt<<" size="<<lookupSet.size()<<endl;
+
+			}
+	cerr<<"cellCounter="<<cellCounter<<endl;
+
 
 	
 	

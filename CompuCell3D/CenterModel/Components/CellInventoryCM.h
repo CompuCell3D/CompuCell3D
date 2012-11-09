@@ -59,6 +59,8 @@ class COMPONENTS_EXPORT CellInventoryCM{
       virtual ~CellInventoryCM();	  
       virtual void addToInventory(CellCM * _cell);
       virtual void removeFromInventory(CellCM * _cell);
+
+	  void setCellFactory(CellFactoryCM * _cellFactoryPtr){cellFactoryPtr=_cellFactoryPtr;}
 	  
       ////std::set<CellG *>::size_type getCellInventorySize(){return inventory.size();}
       int getSize(){return inventory.size();}   

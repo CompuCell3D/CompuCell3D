@@ -46,6 +46,7 @@ namespace CenterModel {
 		CellCM():
 			id(0),
 			type(0), 
+			lookupIdx(-1),
 			//x(0.0),y(0.0),z(0.0),
 			radius(2.0),
 			interactionRadius(1.0),
@@ -56,6 +57,9 @@ namespace CenterModel {
 
 		long id;
 		CellType_t type;
+
+		long lookupIdx;
+
 		//double x,y,z;
         
         Vector3 position;

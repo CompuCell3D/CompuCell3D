@@ -48,8 +48,7 @@ namespace CenterModel {
 
 	public:
 		CellSorterCM(){}
-
-	private:
+	
 		std::set<CellSorterDataCM> sorterSet;
 
 	};
@@ -57,29 +56,38 @@ namespace CenterModel {
 	class COMPONENTS_EXPORT SimulationBox{
 	public:
 
+		typedef CompuCell3D::Field3DImpl<CellSorterCM * > LookupField_t;
+
 		SimulationBox():lookupLatticePtr(0)
 		{}
 
 		virtual ~SimulationBox();
 
-		void  setDim(double _x=0,double _y=0,double _z=0) ;
+		void setDim(double _x=0,double _y=0,double _z=0) ;
 
-		void  setGridSpacing(double _x=0,double _y=0,double _z=0);
 
-		void  setBoxSpatialProperties(double _x=0,double _y=0,double _z=0,double _xs=1.,double _ys=1.,double _zs=1.);
+		void setGridSpacing(double _x=0,double _y=0,double _z=0);
+
+		void setBoxSpatialProperties(double _x=0,double _y=0,double _z=0,double _xs=1.,double _ys=1.,double _zs=1.);
+
+		void setBoxSpatialProperties(Vector3 & _dim, Vector3 & _gridSpacing);
 
 		void setLookupLatticeDim(short _x,short _y, short _z);
-
+		
+		void updateCellLookup(CellCM * _cell);
 
 		Vector3 getDim() {return dim;}
 		CompuCell3D::Dim3D getLatticeLookupDim(){return lookupLatticeDim;}
+
+		const LookupField_t & getLookupFieldRef(){return *lookupLatticePtr;}
 
 	private:
 
 		Vector3 dim;
 		Vector3 gridSpacing;
+		Vector3 inverseGridSpacing;
 		CompuCell3D::Dim3D lookupLatticeDim;
-		CompuCell3D::Field3DImpl<CellSorterCM * > *lookupLatticePtr;
+		LookupField_t *lookupLatticePtr;
 
 
 

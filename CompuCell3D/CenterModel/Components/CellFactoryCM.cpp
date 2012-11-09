@@ -21,6 +21,7 @@
  *************************************************************************/
 
 #include "CellFactoryCM.h"
+#include "SimulationBox.h"
 #include "CellCM.h"
 
 #include <iostream>
@@ -32,12 +33,20 @@ CellCM * CellFactoryCM::createCellCM(double _x,double _y, double _z){
 
     
     CellCM *cell=new CellCM();
+
+	cell->position.fX=_x;
+	cell->position.fY=_y;
+	cell->position.fZ=_z;
+
 	++recentCellId;
 	cell->id=recentCellId;
+
+	sbPtr->updateCellLookup(cell); //storin cell in a lookup set
 	return cell;
 }
 
 bool CellFactoryCM::destroyCellCM(CellCM * _cell){
+	delete _cell;
 	return true;
 
 }

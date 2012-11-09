@@ -20,38 +20,49 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
-#ifndef CELLFACTORYCM_H
-#define CELLFACTORYCM_H
+#ifndef LOOKUPFIELD_H
+#define LOOKUPFIELD_H
 
 
 #include "ComponentsDLLSpecifier.h"
+#include <CompuCell3D/Field3D/Field3DImpl.h>
 #include <PublicUtilities/Vector3.h>
 
 
-class BasicClassGroup;
+
+
 
 namespace CenterModel {
 
-	class CellCM;
-	class SimulationBox;
+  template <class T>
+  class CompuCell3D::Field3DImpl;
 
-	class COMPONENTS_EXPORT CellFactoryCM{
+  template <class T>
+  class LookupField: public CompuCell3D::Field3DImpl<T> {
+    //BasicArray<Field3DChangeWatcher<T> *> changeWatchers;
 
-	public:
-		CellFactoryCM():recentCellId(0),sbPtr(0)
-		{}
-		CellCM * createCellCM(double _x=0.0,double _y=0.0, double _z=0.0);
-		bool destroyCellCM(CellCM * _cell);
+  public:
+    /** 
+     * @param dim The field dimensions
+     * @param initialValue The initial value of all data elements in the field.
+     */
+    LookupField(const Dim3D dim, const T &initialValue) : 
+		CompuCell3D::Field3DImpl<T>(dim, initialValue) {}
 
-		void setSimulationBox(SimulationBox *_sbPtr){sbPtr=_sbPtr;}
-		SimulationBox *getSimulationBox(){return sbPtr;}
+      virtual ~LookupField(){}   
+ //   virtual void addChangeWatcher(Field3DChangeWatcher<T> *watcher) {
+ //     ASSERT_OR_THROW("addChangeWatcher() watcher cannot be NULL!", watcher);
+ //     changeWatchers.put(watcher);
+ //   }
 
+ //   virtual void set(const Point3D &pt, const T value) {
+ //     T oldValue = Field3DImpl<T>::get(pt);
+ //     Field3DImpl<T>::set(pt, value);
 
-	private:
-		long recentCellId;
-		SimulationBox *sbPtr;
-
-	};
+ //     for (unsigned int i = 0; i < changeWatchers.getSize(); i++)
+	//changeWatchers[i]->field3DChange(pt, value, oldValue);
+ //   }
+  };
 
 
 
