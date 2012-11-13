@@ -3,8 +3,8 @@ ADD_SUBDIRECTORY(Field3D)
 ADD_SUBDIRECTORY(Automaton)
 ADD_SUBDIRECTORY(Boundary)
 ADD_SUBDIRECTORY(Potts3D)
-ADD_SUBDIRECTORY(plugins)
-ADD_SUBDIRECTORY(steppables)
+# ADD_SUBDIRECTORY(plugins)
+# ADD_SUBDIRECTORY(steppables)
 
 FIND_PACKAGE(PythonLibs)
 INCLUDE(FindPythonLibs)
@@ -52,22 +52,22 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     # ${QT_LIBS}
   )
   
-    if(BUILD_CPP_ONLY_EXECUTABLE)
-          ADD_EXECUTABLE(CompuCell3DCML main.cpp)
-          TARGET_LINK_LIBRARIES(CompuCell3DCML
-            CompuCellLibShared
-            XMLParserExpatLibShared
-          )
-         INSTALL_TARGETS(/bin CompuCell3DCML)
-     else(BUILD_CPP_ONLY_EXECUTABLE)
+    # if(BUILD_CPP_ONLY_EXECUTABLE)
+          # ADD_EXECUTABLE(CompuCell3DCML main.cpp)
+          # TARGET_LINK_LIBRARIES(CompuCell3DCML
+            # CompuCellLibShared
+            # XMLParserExpatLibShared
+          # )
+         # INSTALL_TARGETS(/bin CompuCell3DCML)
+     # else(BUILD_CPP_ONLY_EXECUTABLE)
 
-          ADD_EXECUTABLE(CompuCell3D mainSimple.cpp)
-          TARGET_LINK_LIBRARIES(CompuCell3D
-            CompuCellLibShared            
-          )
-         INSTALL_TARGETS(/bin CompuCell3D)
+          # ADD_EXECUTABLE(CompuCell3D mainSimple.cpp)
+          # TARGET_LINK_LIBRARIES(CompuCell3D
+            # CompuCellLibShared            
+          # )
+         # INSTALL_TARGETS(/bin CompuCell3D)
 
-    endif(BUILD_CPP_ONLY_EXECUTABLE) 
+    # endif(BUILD_CPP_ONLY_EXECUTABLE) 
     
 
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)

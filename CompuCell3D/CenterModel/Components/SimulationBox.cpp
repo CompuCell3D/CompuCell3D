@@ -20,6 +20,9 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
+#include <CompuCell3D/Boundary/BoundaryStrategy.h>
+#include <CompuCell3D/Field3D/Neighbor.h>
+
 #include "SimulationBox.h"
 #include <iostream>
 #include <cmath>
@@ -29,6 +32,14 @@
 
 using namespace std;
 using namespace CenterModel;
+
+
+
+
+
+
+SimulationBox::SimulationBox():lookupLatticePtr(0),maxNeighborOrder(2)
+{}
 
 
 SimulationBox::~SimulationBox(){
@@ -49,6 +60,7 @@ SimulationBox::~SimulationBox(){
 
 
 }
+
 
 void  SimulationBox::setDim(double _x,double _y,double _z) {
 	//dim.fX=(ceil(fabs(_x)));
@@ -124,9 +136,63 @@ void SimulationBox::setBoxSpatialProperties(double _x,double _y,double _z,double
 			//	lookupLatticePtr->get(pt)
 			//}
 
+			//CompuCell3D::BoundaryStrategy::destroy();
+			CompuCell3D::BoundaryStrategy::instantiate("noflux","noflux","noflux","regular",0,0,"none",CompuCell3D::LatticeType::SQUARE_LATTICE);
+			boundaryStrategy=CompuCell3D::BoundaryStrategy::getInstance();
+			cerr<<"boundaryStrategy="<<boundaryStrategy<<endl;
+			cerr<<"lookupLatticeDim="<<lookupLatticeDim<<endl;
+			cerr<<"maxOffset="<<boundaryStrategy->getMaxOffset()<<endl;
+			cerr<<"getMaxDistance="<<boundaryStrategy->getMaxDistance()<<endl;
+			
+			//BoundaryStrategy is sensitive to mimimum dimension value -if the value is too small it will not work properly...
+			//CompuCell3D::Dim3D newDim(10,10,10);
+			boundaryStrategy->setMaxDistance(2.0);
+			boundaryStrategy->setDim(lookupLatticeDim);
+			//boundaryStrategy->setDim(newDim);
+
+
+			cerr<<"maxNeighborOrder="<<maxNeighborOrder<<endl;
+			maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(maxNeighborOrder);	//maxNeighborOrder is 2 here because we will search for interaction pairs in grid locations which are up to 2nd nearest neighbors
+			cerr<<"maxNeighborIndex="<<maxNeighborIndex<<endl;
+
+			neighborsVec.clear();
+			neighborsVec.assign(maxNeighborIndex+2,CompuCell3D::Point3D());
+
 
 }
 
+std::pair<std::vector<CompuCell3D::Point3D>,unsigned int> SimulationBox::getLatticeLocationsWithinInteractingRange(CellCM *_cell){
+
+	CompuCell3D::Point3D pt=getCellLatticeLocation(_cell);
+
+	std::pair<std::vector<CompuCell3D::Point3D>,unsigned int> neighborListCountPair;
+	cerr<<"maxNeighborIndex="<<maxNeighborIndex<<endl;
+	neighborListCountPair.first=std::vector<CompuCell3D::Point3D>(maxNeighborIndex+2);
+	neighborListCountPair.second=0;
+
+	cerr<<"neighborListCountPair.first.size()="<<neighborListCountPair.first.size()<<endl;
+	int validNeighbors=0;
+	neighborListCountPair.first[validNeighbors++]=pt; //lattice location with current cell has to be searched as well
+
+	CompuCell3D::Neighbor neighbor;
+
+	
+	cerr<<"maxNeighborIndex="<<maxNeighborIndex<<endl;
+	for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
+		neighbor=boundaryStrategy->getNeighborDirect(pt,nIdx);
+		if(!neighbor.distance){
+			//if distance is 0 then the neighbor returned is invalid
+			continue;
+		}
+		
+		neighborListCountPair.first[validNeighbors++]=neighbor.pt;
+		
+	}
+	neighborListCountPair.second=neighborListCountPair.first.size();
+	return neighborListCountPair;
+
+
+}
 
 void SimulationBox::setLookupLatticeDim(short _x,short _y, short _z){
 
@@ -140,7 +206,7 @@ void SimulationBox::updateCellLookup(CellCM * _cell){
 	
 	//Vector3 lookupPosition=_cell->position*inverseGridSpacing;
 
-	CompuCell3D::Point3D pt(static_cast<short>(floor(_cell->position.fX/gridSpacing.fX)),static_cast<short>(floor(_cell->position.fY/gridSpacing.fY)),static_cast<short>(floor(_cell->position.fZ/gridSpacing.fZ)));
+	CompuCell3D::Point3D pt=getCellLatticeLocation(_cell);
 
 	//cerr<<"_cell->position="<<_cell->position<<endl;
 	//cerr<<"inverseGridSpacing="<<inverseGridSpacing<<endl;
@@ -183,4 +249,133 @@ void SimulationBox::updateCellLookup(CellCM * _cell){
 
 	
 	
+}
+
+InteractionRangeIterator SimulationBox::getInteractionRangeIterator(CellCM *_cell){
+	InteractionRangeIterator itr;
+	itr.sbPtr=this;
+	itr.cell=_cell;
+	itr.initialize();
+	return itr;	
+}
+
+
+
+InteractionRangeIterator::InteractionRangeIterator():sbPtr(0),counter(0),lookupFieldPtr(0),currentSorterSetPtr(0){
+	
+}
+
+
+void InteractionRangeIterator::initialize(){
+	neighborListPair=sbPtr->getLatticeLocationsWithinInteractingRange(cell);
+
+
+	lookupFieldPtr=const_cast<SimulationBox::LookupField_t*>(&sbPtr->getLookupFieldRef());
+
+	
+
+	//counter=0;
+
+	//currentSorterSetPtr=&lookupFieldPtr->get(neighborListPair.first[counter])->sorterSet;
+	//sitrBegin = lookupFieldPtr->get(neighborListPair.first[counter])->sorterSet.begin();
+	//sitrCurrent= sitrBegin;
+	//sitrEnd=lookupFieldPtr->get(neighborListPair.first[neighborListPair.second-1])->sorterSet.end();
+	
+}
+InteractionRangeIterator& InteractionRangeIterator::begin(){
+
+	counter=0;
+
+	currentSorterSetPtr=&lookupFieldPtr->get(neighborListPair.first[counter])->sorterSet;
+	//sitrBegin = lookupFieldPtr->get(neighborListPair.first[counter])->sorterSet.begin();
+	sitrCurrent= lookupFieldPtr->get(neighborListPair.first[counter])->sorterSet.begin();
+	currentEnd=lookupFieldPtr->get(neighborListPair.first[counter])->sorterSet.end();
+
+	//cerr<<"begin sitrCurrent->cell="<<sitrCurrent->cell<<endl;
+	
+	//sitrEnd=lookupFieldPtr->get(neighborListPair.first[neighborListPair.second-1])->sorterSet.end();
+	//bool flag= (sitrCurrent==sitrEnd);
+	//cerr<<"begin flag="<<flag<<endl;
+	return *this;
+
+}
+
+InteractionRangeIterator& InteractionRangeIterator::end(){
+
+	counter=neighborListPair.second-1;
+
+	//currentSorterSetPtr=&lookupFieldPtr->get(neighborListPair.first[counter])->sorterSet;
+	//sitrBegin = lookupFieldPtr->get(neighborListPair.first[counter])->sorterSet.end();
+	
+	//sitrEnd=lookupFieldPtr->get(neighborListPair.first[neighborListPair.second-1])->sorterSet.end();
+	//sitrCurrent= sitrEnd;
+	sitrCurrent= lookupFieldPtr->get(neighborListPair.first[neighborListPair.second-1])->sorterSet.end();
+	return *this;
+}
+
+
+
+
+InteractionRangeIterator & InteractionRangeIterator::operator ++(){
+
+	currentSorterSetPtr=&lookupFieldPtr->get(neighborListPair.first[counter])->sorterSet;
+	
+	//cerr<<"ENTRY currentSorterSetPtr="<<currentSorterSetPtr<<endl;
+
+	if (++sitrCurrent != currentSorterSetPtr->end()){
+		
+	}else{
+		//cerr<<"\n\n\n\n HAS TO LOOK FOR NEW SET"<<endl;
+		//find next non empty set
+		currentSorterSetPtr=0;
+		//cerr<<"counter="<<counter<<endl;
+		std::set<CellSorterDataCM> *tmpSorterSetPtr;
+
+		for ( ++counter; counter < neighborListPair.second ;++counter){
+			tmpSorterSetPtr=&lookupFieldPtr->get(neighborListPair.first[counter])->sorterSet;
+			//cerr<<"loopCOunter="<<counter<<endl;
+			if (tmpSorterSetPtr->size()){
+				currentSorterSetPtr=tmpSorterSetPtr;
+				//cerr<<"FOUND NEW SET WITH "<<tmpSorterSetPtr->size()<<endl;
+				break;
+
+			}
+		}
+		if (counter>=neighborListPair.second){
+			--counter;
+		}
+		//cerr<<"AFTER LOOP COUNTER="<<counter<<endl;
+		if (!currentSorterSetPtr){
+			counter=neighborListPair.second-1;
+			sitrCurrent=lookupFieldPtr->get(neighborListPair.first[counter])->sorterSet.end();
+			currentEnd=sitrCurrent;
+			currentSorterSetPtr=&lookupFieldPtr->get(neighborListPair.first[counter])->sorterSet;
+			//cerr<<"DID NOT FIND SORTER SET SETTING TO LAST AVAILABLE="<<currentSorterSetPtr<<endl;
+		}else{
+			//cerr<<"NEW SET SIZE="<<currentSorterSetPtr->size()<<endl;
+			sitrCurrent=currentSorterSetPtr->begin();
+			currentEnd=currentSorterSetPtr->end();
+			//cerr<<"currentSorterSetPtr="<<currentSorterSetPtr<<endl;
+		}
+
+	}
+
+	//cerr<<"returning iterator currentSorterSetPtr="<<currentSorterSetPtr<<endl;
+	//cerr<<"previous cellsortrerSet="<<&lookupFieldPtr->get(neighborListPair.first[counter])->sorterSet<<endl;
+	return *this;
+}
+
+CellCM * InteractionRangeIterator::operator *() const{	
+	return sitrCurrent != currentEnd ? sitrCurrent->cell:0;
+}
+
+bool  InteractionRangeIterator::operator ==(const InteractionRangeIterator & _rhs){
+	//cerr<<"this->sitrCurrent="<<this->sitrCurrent->cell<<endl;
+	//cerr<<"_rhs.sitrCurrent="<<_rhs.counter<<endl;		
+
+	return _rhs.counter==this->counter ? _rhs.sitrCurrent==this->sitrCurrent:false;
+}
+
+bool  InteractionRangeIterator::operator !=(const InteractionRangeIterator & _rhs){
+	return !(*this==_rhs);
 }

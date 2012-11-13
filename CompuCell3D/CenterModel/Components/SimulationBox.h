@@ -53,18 +53,25 @@ namespace CenterModel {
 
 	};
 
+	class CompuCell3D::BoundaryStrategy;
+
+
+	class InteractionRangeIterator;
+
+
 	class COMPONENTS_EXPORT SimulationBox{
 	public:
 
+		
 		typedef CompuCell3D::Field3DImpl<CellSorterCM * > LookupField_t;
 
-		SimulationBox():lookupLatticePtr(0)
-		{}
+		SimulationBox();
 
 		virtual ~SimulationBox();
 
 		void setDim(double _x=0,double _y=0,double _z=0) ;
 
+		InteractionRangeIterator getInteractionRangeIterator(CellCM *_cell);
 
 		void setGridSpacing(double _x=0,double _y=0,double _z=0);
 
@@ -75,11 +82,15 @@ namespace CenterModel {
 		void setLookupLatticeDim(short _x,short _y, short _z);
 		
 		void updateCellLookup(CellCM * _cell);
+		inline CompuCell3D::Point3D getCellLatticeLocation(const CellCM * _cell) const{return CompuCell3D::Point3D(static_cast<short>(floor(_cell->position.fX/gridSpacing.fX)),static_cast<short>(floor(_cell->position.fY/gridSpacing.fY)),static_cast<short>(floor(_cell->position.fZ/gridSpacing.fZ)));}
 
 		Vector3 getDim() {return dim;}
 		CompuCell3D::Dim3D getLatticeLookupDim(){return lookupLatticeDim;}
 
 		const LookupField_t & getLookupFieldRef(){return *lookupLatticePtr;}
+
+		std::pair<std::vector<CompuCell3D::Point3D>,unsigned int> getLatticeLocationsWithinInteractingRange(CellCM *_cell);
+		
 
 	private:
 
@@ -88,12 +99,45 @@ namespace CenterModel {
 		Vector3 inverseGridSpacing;
 		CompuCell3D::Dim3D lookupLatticeDim;
 		LookupField_t *lookupLatticePtr;
-
-
-
+		CompuCell3D::BoundaryStrategy *boundaryStrategy;
+		unsigned int maxNeighborIndex;	
+		unsigned int maxNeighborOrder;	
+		//this will have to be changed to vec of vecs for parallel implementation
+		std::vector<CompuCell3D::Point3D> neighborsVec;
 
 
 	};
+
+
+	class COMPONENTS_EXPORT InteractionRangeIterator{
+	public:
+		friend class SimulationBox;	
+		InteractionRangeIterator();		
+		void initialize();
+		CellCM * operator *() const;
+		InteractionRangeIterator & operator ++();
+
+		bool  operator ==(const InteractionRangeIterator & _rhs);
+
+		bool  operator !=(const InteractionRangeIterator & _rhs);
+		InteractionRangeIterator& begin();
+		InteractionRangeIterator& end();
+
+	private:
+		SimulationBox * sbPtr;
+		CellCM *cell;
+
+		//std::set<CellSorterDataCM>::iterator sitrBegin;
+		//std::set<CellSorterDataCM>::iterator sitrEnd;
+		std::set<CellSorterDataCM>::iterator currentEnd;
+		std::set<CellSorterDataCM>::iterator sitrCurrent;
+		unsigned int counter;
+		SimulationBox::LookupField_t *lookupFieldPtr;
+		std::pair<std::vector<CompuCell3D::Point3D>,unsigned int> neighborListPair;
+		std::set<CellSorterDataCM> *currentSorterSetPtr;
+
+	};
+
 
 
 

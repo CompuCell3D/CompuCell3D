@@ -80,6 +80,7 @@ BoundaryStrategy::BoundaryStrategy(){
    //unsigned int maxHexArraySize=(Y_ODD|Z_ODD|X_ODD|Y_EVEN|Z_EVEN|X_EVEN)+1;
 
    unsigned int maxHexArraySize=6;
+   maxDistance=4.0;
 
 #ifdef _DEBUG
    cerr<<"maxHexArraySize="<<maxHexArraySize<<endl;
@@ -204,9 +205,12 @@ void BoundaryStrategy::setDim(const Dim3D theDim) {
     Dim3D oldDim(dim);
 
     dim = theDim;
+	
     algorithm->setDim(theDim);
+
+
     if(! neighborListsInitializedFlag){
-      prepareNeighborLists();
+      prepareNeighborLists(maxDistance);
       neighborListsInitializedFlag=true;
     }
     
@@ -467,7 +471,7 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance){
 	  ctPtTmp.z+=3-ctPtTmp.z % 3;// make it divisible by 3 in case it is not
 #ifdef _DEBUG
 		cerr<<"ctPtTmp.y % 2 ="<<ctPtTmp.y % 2 << " ctPtTmp.y % 2="<<ctPtTmp.y % 2<<endl;
-		cerr<<"  WILL USE CENTER POINT="<<ctPtTmp<<"Y_EVEN|Z_EVEN "<<(Y_EVEN|Z_EVEN)<<endl;
+		//cerr<<"  WILL USE CENTER POINT="<<ctPtTmp<<"Y_EVEN|Z_EVEN "<<(Y_EVEN|Z_EVEN)<<endl;
 #endif
       getOffsetsAndDistances(ctPtTmp,_maxDistance,tempField,hexOffsetArray[indexHex],hexDistanceArray[indexHex],hexNeighborOrderIndexArray[indexHex]);
 
@@ -506,7 +510,7 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance){
 #ifdef _DEBUG
 		cerr<<"ctPtTmp.y % 2 ="<<ctPtTmp.y % 2 << " !ctPtTmp.y % 2="<<!(ctPtTmp.y % 2)<<endl;
 
-		cerr<<"  WILL USE CENTER POINT="<<ctPtTmp<<"Y_ODD|Z_EVEN "<<(Y_ODD|Z_EVEN)<<endl;
+		//cerr<<"  WILL USE CENTER POINT="<<ctPtTmp<<"Y_ODD|Z_EVEN "<<(Y_ODD|Z_EVEN)<<endl;
 #endif
       getOffsetsAndDistances(ctPtTmp,_maxDistance,tempField,hexOffsetArray[indexHex],hexDistanceArray[indexHex],hexNeighborOrderIndexArray[indexHex]);
 
@@ -750,7 +754,7 @@ void BoundaryStrategy::getOffsetsAndDistances(
       ctPtTrans=Coordinates3D<double>(ctPt.x,ctPt.y,ctPt.z);
    }
 
-
+   cerr<<"maxDistance="<<maxDistance<<endl;
    while (true) {
       n = tempField.getNeighbor(ctPt, token, distance, false);
       if (distance > maxDistance*2.0) break; //2.0 factor is to ensure you visit enough neighbors for different kind of lattices
@@ -778,7 +782,6 @@ void BoundaryStrategy::getOffsetsAndDistances(
          distanceVecTmp.push_back(distanceTrans);
       }
    }
-
    
    //at this point we have all the offsets for the given simulation but they are unsorted.
    //Sorting  neighbors
@@ -823,7 +826,9 @@ void BoundaryStrategy::prepareNeighborListsSquare(float _maxDistance){
    Field3DImpl<char> tempField(dim,a);
    int margin=2*fabs(_maxDistance)+1;
    Point3D ctPt(dim.x/2,dim.y/2,dim.z/2);
+
    getOffsetsAndDistances(ctPt,_maxDistance,tempField,offsetVec,distanceVec,neighborOrderIndexVec);
+
 
 #ifdef _DEBUG
     for( int i = 0 ; i < offsetVec.size() ; ++i){

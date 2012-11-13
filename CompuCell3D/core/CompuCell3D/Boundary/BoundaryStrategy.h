@@ -163,6 +163,7 @@ namespace CompuCell3D {
                const std::vector<unsigned int> & getNeighborOrderIndexVec() const {return neighborOrderIndexVec;}
                Neighbor getNeighborDirect(Point3D & pt,unsigned int idx ,bool checkBounds=true, bool calculatePtTrans=false)const ;
                float getMaxDistance(){return maxDistance;}
+			   void setMaxDistance(float _maxDistance){maxDistance=_maxDistance;}
                unsigned int getMaxNeighborIndexFromDepth(float depth);
 
                unsigned int getMaxNeighborOrder();

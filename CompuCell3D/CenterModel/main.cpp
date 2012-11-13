@@ -62,7 +62,9 @@
 #include <Components/CellFactoryCM.h>
 #include <time.h>
 #include <BasicUtils/BasicRandomNumberGenerator.h>
+#include <CompuCell3D/Field3D/Point3D.h>
 #include <limits>
+
 
 
 
@@ -105,7 +107,8 @@ int main(int argc, char *argv[]) {
     CellInventoryCM ci=CellInventoryCM();
 	ci.setCellFactory(&cf);
 
-	ci.addToInventory(cf.createCellCM(19,20,67));
+	CellCM *cell1=cf.createCellCM(19,20,67);
+	ci.addToInventory(cell1);
 	ci.addToInventory(cf.createCellCM(2,34,21));
 	ci.addToInventory(cf.createCellCM(8,1,9));
 	ci.addToInventory(cf.createCellCM(8,1,10));
@@ -117,10 +120,16 @@ int main(int argc, char *argv[]) {
 	rGen.setSeed(randomSeed);
 
 	//creating many cells
-	int N=2000;
+	int N=200;
+	double r_min=1.0;
+	double r_max=2.0;
+
+
 	
 	for (int i=0;i<N;++i){
-		ci.addToInventory(cf.createCellCM(boxDim.fX*rGen.getRatio(),boxDim.fY*rGen.getRatio(),boxDim.fZ*rGen.getRatio()));
+		CellCM * cell=cf.createCellCM(boxDim.fX*rGen.getRatio(),boxDim.fY*rGen.getRatio(),boxDim.fZ*rGen.getRatio());
+		cell->interactionRadius=r_min+rGen.getRatio()*(r_max-r_min);
+		ci.addToInventory(cell);
 	}
 
 	cerr<<"inventory size="<<ci.getSize()<<endl;
@@ -131,22 +140,97 @@ int main(int argc, char *argv[]) {
 	CompuCell3D::Point3D pt;
 
 	int cellCounter=0;
-	for (pt.x=0;pt.x<lookupFieldDim.x; ++pt.x)
-		for (pt.y=0;pt.y<lookupFieldDim.y; ++pt.y)
-			for (pt.z=0;pt.z<lookupFieldDim.z; ++pt.z){
-
-				set<CellSorterDataCM> &lookupSet=lookupField.get(pt)->sorterSet;
-				cellCounter+=lookupSet.size();
-				cerr<<"THIS IS SET FOR pt="<<pt<<" size="<<lookupSet.size()<<endl;
-
-			}
-	cerr<<"cellCounter="<<cellCounter<<endl;
-
 
 	
+	//for (pt.x=0;pt.x<lookupFieldDim.x; ++pt.x)
+	//	for (pt.y=0;pt.y<lookupFieldDim.y; ++pt.y)
+	//		for (pt.z=0;pt.z<lookupFieldDim.z; ++pt.z){
+
+	//			set<CellSorterDataCM> &lookupSet=lookupField.get(pt)->sorterSet;
+	//			cellCounter+=lookupSet.size();
+	//			cerr<<"THIS IS SET FOR pt="<<pt<<" size="<<lookupSet.size()<<endl;
+
+	//		}
+	//cerr<<"cellCounter="<<cellCounter<<endl;
+
+	//visiting interaction pairs
+	
+	//CellInventoryCM::cellInventoryIterator itr;
+	//for (itr=ci.cellInventoryBegin() ; itr!=ci.cellInventoryEnd(); ++itr){
+	//	CellCM * cell=itr->second;
+	//	//CompuCell3D::Point3D pt=sb.getCellLatticeLocation(cell);
+
+	//	std::pair<std::vector<CompuCell3D::Point3D>,unsigned int> neighborListPair=sb.getLatticeLocationsWithinInteractingRange(cell);
+	//	for (int i=0 ; i<neighborListPair.first.size();++i){
+	//		cerr<<"neighborListPair.first["<<i<<"]="<<neighborListPair.first[i]<<endl;
+	//	}
+
+	//}
+	
+	//std::set<int> set1;
+	//std::set<int> set2;
+
+	//set1.insert(1);
+	//set1.insert(2);
+
+	//std::set<int>::iterator sitr1=set1.begin();
+	//std::set<int>::iterator sitr2=set2.end();
+
+
+	pt=sb.getCellLatticeLocation(cell1);
+	std::pair<std::vector<CompuCell3D::Point3D>,unsigned int> nPair=sb.getLatticeLocationsWithinInteractingRange(cell1);
+
+	std::vector<CompuCell3D::Point3D> nSitesVec=nPair.first;
+
+	const SimulationBox::LookupField_t & lookupLatticeRef=sb.getLookupFieldRef();
+
+	cerr<<"CENTER POINT="<<pt<<endl;
+	for(unsigned int i=0 ; i<nSitesVec.size();++i){
+		cerr<<"nSite["<<i<<"]="<<nSitesVec[i]<<endl;
+		std::set<CellSorterDataCM> & currentSorterSet=lookupLatticeRef.get(nSitesVec[i])->sorterSet;
+		for (std::set<CellSorterDataCM>::iterator sitr = currentSorterSet.begin() ; sitr!= currentSorterSet.end();++sitr){
+			cerr<<"cell id="<<sitr->cell->id<<endl;
+
+		}
+	}
+
+
+
+	CellInventoryCM::cellInventoryIterator itr;
+	for (itr=ci.cellInventoryBegin() ; itr!=ci.cellInventoryEnd(); ++itr){
+		CellCM * cell=itr->second;
+		InteractionRangeIterator itr = sb.getInteractionRangeIterator(cell);
+
+		itr.begin();
+		InteractionRangeIterator endItr = sb.getInteractionRangeIterator(cell).end();
+		bool flag= (itr==endItr);
+		//cerr<<"itr==endItr = "<<flag<<endl;
+		//
+
+		//
+		//cerr<<"itr->cell="<<(*itr)<<endl;
+		//
+		//++itr;
+		//cerr<<"itr->cell="<<(*itr)<<endl;
+
+		//cerr<<"itr!=endItr="<<(itr!=endItr)<<endl;
+		////cerr<<"itr==endItr = "<<(itr==endItr)<<endl;
+		cerr<<"FIRST CELL NEIGHBORS"<<endl;
+		for (itr.begin(); itr!=endItr ;++itr){
+			cerr<<"THIS IS cell.id="<<(*itr)->id<<endl;
+			
+		}
+
+		break;
 	
 
 
-
+	}
+	
+	
+	
+	
+	
+	
   return 1;
 }
