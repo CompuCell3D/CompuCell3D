@@ -93,7 +93,7 @@ from cdControlClusters import CDControlClusters
 from cdControlRegionOrCell import CDControlRegionOrCell
 
 # 2011 - Mitja: external class for scene scale / zoom control:
-from cdControlSceneScaleZoom import CDControlSceneScaleZoom
+from cdControlSceneZoomToolbar import CDControlSceneZoomToolbar
 
 # 2011 - Mitja: external class for scene item edit controls:
 from cdControlSceneItemEdit import CDControlSceneItemEdit
@@ -726,13 +726,13 @@ class DiagramScene(QtGui.QGraphicsScene):
         #   string as toolTip for each item in the scene.
         self.totalItemsCounter = int(0)
         
-        # 2011 Mitja - add scale/zoom parameters stored into our DiagramScene object:
+        # 2011 Mitja - add zoom parameters stored into our DiagramScene object:
         # This is just so that we can scale the outline's circles/ellipses
         #    when interactively/manually scaling a scene item.
         # The scale factor takes care of the RHS <-> LHS mismatch at its visible end,
         #    by flipping the y coordinate in the QGraphicsView's affine transformations:
-        self.myViewScaleZoomX =  1.0
-        self.myViewScaleZoomY = -1.0
+        self.__myViewZoomX =  1.0
+        self.__myViewZoomY = -1.0
 
 
 
@@ -916,20 +916,20 @@ class DiagramScene(QtGui.QGraphicsScene):
             pPainter.setPen(lOutlinePen)
             # 2011 Mitja - zoom the ellipses smaller as the scene zooms bigger, and vice versa
             #   so that they'll appear at the same size any time to the user resizing the items.
-            pPainter.drawEllipse(lBoundingRect.bottomLeft(), (4 / self.myViewScaleZoomX), (4 / self.myViewScaleZoomY))
-            pPainter.drawEllipse(lBoundingRect.bottomRight(), (4 / self.myViewScaleZoomX), (4 / self.myViewScaleZoomY))
-            pPainter.drawEllipse(lBoundingRect.topRight(), (4 / self.myViewScaleZoomX), (4 / self.myViewScaleZoomY))
-            pPainter.drawEllipse(lBoundingRect.topLeft(), (4 / self.myViewScaleZoomX), (4 / self.myViewScaleZoomY))
+            pPainter.drawEllipse(lBoundingRect.bottomLeft(), (4 / self.__myViewZoomX), (4 / self.__myViewZoomY))
+            pPainter.drawEllipse(lBoundingRect.bottomRight(), (4 / self.__myViewZoomX), (4 / self.__myViewZoomY))
+            pPainter.drawEllipse(lBoundingRect.topRight(), (4 / self.__myViewZoomX), (4 / self.__myViewZoomY))
+            pPainter.drawEllipse(lBoundingRect.topLeft(), (4 / self.__myViewZoomX), (4 / self.__myViewZoomY))
 
             pPainter.setBrush( QtGui.QBrush( QtGui.QColor(255, 255, 0) ) )
             if self.myOutlineResizingVertex == "bottomLeft":
-                pPainter.drawEllipse(lBoundingRect.bottomLeft(), (4 / self.myViewScaleZoomX), (4 / self.myViewScaleZoomY))
+                pPainter.drawEllipse(lBoundingRect.bottomLeft(), (4 / self.__myViewZoomX), (4 / self.__myViewZoomY))
             elif self.myOutlineResizingVertex == "bottomRight":
-                pPainter.drawEllipse(lBoundingRect.bottomRight(), (4 / self.myViewScaleZoomX), (4 / self.myViewScaleZoomY))
+                pPainter.drawEllipse(lBoundingRect.bottomRight(), (4 / self.__myViewZoomX), (4 / self.__myViewZoomY))
             elif self.myOutlineResizingVertex == "topRight":
-                pPainter.drawEllipse(lBoundingRect.topRight(), (4 / self.myViewScaleZoomX), (4 / self.myViewScaleZoomY))
+                pPainter.drawEllipse(lBoundingRect.topRight(), (4 / self.__myViewZoomX), (4 / self.__myViewZoomY))
             elif self.myOutlineResizingVertex == "topLeft":
-                pPainter.drawEllipse(lBoundingRect.topLeft(), (4 / self.myViewScaleZoomX), (4 / self.myViewScaleZoomY))
+                pPainter.drawEllipse(lBoundingRect.topLeft(), (4 / self.__myViewZoomX), (4 / self.__myViewZoomY))
                
             # restore the painter's pen & background to what they were before this function:
             pPainter.setPen(lTmpPen)
@@ -1793,6 +1793,11 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
     mysignal = QtCore.pyqtSignal(str)
 
+    __signalChangeInGlobalMode = QtCore.pyqtSignal(int)
+
+
+# TODO: change the following to hidden "__"  signals and handlers:
+
     signalVisibilityTypesDockWidget = QtCore.pyqtSignal(str)
 
     signalVisibilityControlPanelDockWidget = QtCore.pyqtSignal(str)
@@ -1806,7 +1811,6 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         super(CDDiagramSceneMainWidget, self).__init__(pParentWindow)
 
         self.parentWindow = pParentWindow
-
 
         if self.parentWindow == None:
             #  -> this is now called diagramSceneCreateActions() in ControllerMainWindow:
@@ -1836,23 +1840,31 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
         # 2011 - Mitja: we now place all toolbox items inside the main Control Panel.
 
+# 
+#         # -----------------------------------
+# 
+#         # 2011 - Mitja: to control Cell Scene "zoom" factor,
+#         #   we add a combobox (pop-up menu) to the Control Panel:
+# 
+#         self.__theSceneZoomToolBar = CDControlSceneZoomToolbar()
+#
+#  toolbars are now all created by a CDToolBars object,
+#    and here in cdDiagramScene we only need to provide
+#    event (signal) handlers (slots) for them, e.g. functions like handlerForSceneZoomControllerSignals()
 
-        # -----------------------------------
 
-        # 2011 - Mitja: to control Cell Scene "scale/zoom" factor,
-        #   we add a combobox (pop-up menu) to the Control Panel:
+# 
+#         # explicitly connect the "signalZoomFactorHasChanged()"
+#         #   signal from the __theSceneZoomToolBar object,
+#         #   to our "slot" method responding to radio button changes:
+#         self.__theSceneZoomToolBar.signalZoomFactorHasChanged.connect( \
+#             self.handlerForSceneZoomControllerSignals )
+# 
+#         # place the layer selection buttons in the control panel:
+#         self.controlsForCellScene.setControlsForSceneZoom( \
+#             self.__theSceneZoomToolBar)
+# 
 
-        self.theSceneScaleZoomControl = CDControlSceneScaleZoom()
-
-        # explicitly connect the "signalScaleZoomHasChanged()"
-        #   signal from the theSceneScaleZoomControl object,
-        #   to our "slot" method responding to radio button changes:
-        self.theSceneScaleZoomControl.signalScaleZoomHasChanged.connect( \
-            self.handleSceneScaleZoomChanged )
-
-        # place the layer selection buttons in the control panel:
-        self.controlsForCellScene.setControlsForSceneScaleZoom( \
-            self.theSceneScaleZoomControl)
 
         # -----------------------------------
 
@@ -1942,11 +1954,11 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
                               QtCore.SIGNAL("fuzzyPickTresholdChangedSignal()"), \
                               self.handleFuzzyPickThresholdChanged )
 
-        # explicitly connect the "signalImageScaleZoomHasChanged()"
+        # explicitly connect the "signalImageScaleHasChanged()"
         #   signal from the controlsForImageLayer object,
         #   to our "slot" method responding to radio button changes:
-        self.controlsForImageLayer.signalImageScaleZoomHasChanged.connect( \
-            self.handleImageScaleZoomChanged )
+        self.controlsForImageLayer.signalImageScaleHasChanged.connect( \
+            self.__handleImageScaleChanged )
 
 
         # 2011 - Mitja: since the self.controlsForImageLayer widget is used
@@ -2143,7 +2155,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
     # 2012 - Mitja: access the only CDControlCellScene object:
     # ------------------------------------------------------------------
     def getControlsForCellScene(self):
-        CDConstants.printOut( "_____ - CDDiagramSceneMainWidget:getControlsForCellScene()  --- returning controlsForCellScene ==" + str(self.controlsForCellScene), CDConstants.DebugExcessive )
+        CDConstants.printOut( "_____ - CDDiagramSceneMainWidget.getControlsForCellScene()  --- returning controlsForCellScene ==" + str(self.controlsForCellScene), CDConstants.DebugExcessive )
         if isinstance( self.controlsForCellScene, CDControlCellScene ):
             return self.controlsForCellScene
         else:
@@ -2154,7 +2166,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
     # 2012 - Mitja: access the only CDControlImageLayer object:
     # ------------------------------------------------------------------
     def getControlsForImageLayer(self):
-        CDConstants.printOut( "_____ - CDDiagramSceneMainWidget:getControlsForImageLayer()  --- returning controlsForImageLayer ==" + str(self.controlsForImageLayer), CDConstants.DebugExcessive )
+        CDConstants.printOut( "_____ - CDDiagramSceneMainWidget.getControlsForImageLayer()  --- returning controlsForImageLayer ==" + str(self.controlsForImageLayer), CDConstants.DebugExcessive )
         if isinstance( self.controlsForImageLayer, CDControlImageLayer ):
             return self.controlsForImageLayer
         else:
@@ -2165,7 +2177,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
     # 2012 - Mitja: access the only CDControlImageSequence object:
     # ------------------------------------------------------------------
     def getControlsForImageSequence(self):
-        CDConstants.printOut( "_____ - CDDiagramSceneMainWidget:getControlsForImageSequence()  --- returning theControlsForImageSequence ==" + str(self.theControlsForImageSequence), CDConstants.DebugExcessive )
+        CDConstants.printOut( "_____ - CDDiagramSceneMainWidget.getControlsForImageSequence()  --- returning theControlsForImageSequence ==" + str(self.theControlsForImageSequence), CDConstants.DebugExcessive )
         if isinstance( self.theControlsForImageSequence, CDControlImageSequence ):
             return self.theControlsForImageSequence
         else:
@@ -2183,6 +2195,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 #         if (self.scene.getMode() == pSceneMode):
 #             return
 #         
+
         self.scene.setMode(pSceneMode)
 
         # 2011 - Mitja: hide/show the GUI controls appropriate to the current mode:
@@ -2202,11 +2215,6 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
             self.controlsForImageLayer.setEnabled(False)
             self.theControlsForImageSequence.setEnabled(False)
             self.parentWindow.theTypesEditor.updateTableOfTypesForImageSequenceOff()
-            # 2010 - Mitja: add code for handling insertion of pixmap items:
-            try:
-                self.theButtonGroupForRegionShapes.button(item.diagramType).setChecked(False)
-            except:
-                CDConstants.printOut("EXCEPTION EXCEPTION EXCEPTION item item item item =", item , CDConstants.DebugTODO )
         elif pSceneMode == CDConstants.SceneModeInsertPixmap:
             self.controlsForImageLayer.setEnabled(False)
             self.theControlsForImageSequence.setEnabled(False)
@@ -2246,12 +2254,35 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
 
 
+    # ------------------------------------------------------------
+    def setGlobalSceneMode(self, pMode):
+        # propagate the signal upstream, for example to parent objects:
+        self.__signalChangeInGlobalMode.emit(pMode)
+        # set the mode for our local scene object, etc:
+        self.__setSceneMode(pMode)
+
+    # ------------------------------------------------------------
+    # register the callback handler function for the
+    #   "__signalChangeInGlobalMode()" signal:
+    # ------------------------------------------------------------
+    def registerHandlerForChangeInGlobalMode(self, pHandler):
+        self.__signalChangeInGlobalMode.connect( pHandler )
+
+
+    # ------------------------------------------------------------
+    # register the callback handler function for the
+    #   "signalThatSceneResized()" signal:
+    # ------------------------------------------------------------
+    def registerHandlerForSceneResized(self, pHandler):
+        self.scene.signalThatSceneResized.connect(pHandler)
+
+
     # ------------------------------------------------------------------
     # 2011 - Mitja: assign CellDraw preferences object:
     # ------------------------------------------------------------------
     def setPreferencesObject(self, pCDPreferences=None):
         self.cdPreferences = pCDPreferences
-        CDConstants.printOut( "_____ - CDDiagramSceneMainWidget:setPreferencesObject()  --- cdPreferences is now =" + str(self.cdPreferences), CDConstants.DebugVerbose )
+        CDConstants.printOut( "_____ - CDDiagramSceneMainWidget.setPreferencesObject()  --- cdPreferences is now =" + str(self.cdPreferences), CDConstants.DebugVerbose )
 
 
     # ------------------------------------------------------------
@@ -2339,7 +2370,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
         self.scene.update()
         self.view.update()
-        # CDConstants.printOut( " "+str( "___ - DEBUG ----- CDDiagramSceneMainWidget: updateSceneBackgroundImage() lBackgroundRect =", lBackgroundRect, "done." )+" ", CDConstants.DebugTODO )
+        # CDConstants.printOut( " "+str( "___ - DEBUG ----- CDDiagramSceneMainWidget.updateSceneBackgroundImage() lBackgroundRect =", lBackgroundRect, "done." )+" ", CDConstants.DebugTODO )
         # end of def updateSceneBackgroundImage(self, pText)
         # ------------------------------------------------------------
 
@@ -2444,7 +2475,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         # CDConstants.printOut( " "+str( "COPY: lPointListY =", lPointListY )+" ", CDConstants.DebugTODO )
 
         # create an empty byte array:
-        lItemDataByteArray = QByteArray()
+        lItemDataByteArray = QtCore.QByteArray()  # TODO <==== what is this?!?
 
         # open a data stream that can write to the new byte array:
         lDataStream = QtCore.QDataStream(lItemDataByteArray, QtCore.QIODevice.WriteOnly)
@@ -2522,8 +2553,8 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
            
             lListOfPointsX = lDataStream.readQVariant().toList()
             lListOfPointsY = lDataStream.readQVariant().toList()
-            CDConstants.printOut("PASTE: lListOfPointsX =", lListOfPointsX , CDConstants.DebugTODO )
-            CDConstants.printOut("PASTE: lListOfPointsY =", lListOfPointsY , CDConstants.DebugTODO )
+            CDConstants.printOut("PASTE: lListOfPointsX = " + str(lListOfPointsX) , CDConstants.DebugTODO )
+            CDConstants.printOut("PASTE: lListOfPointsY = " + str(lListOfPointsY) , CDConstants.DebugTODO )
             lLengthX = len(lListOfPointsX)
             lLengthY = len(lListOfPointsY)
             if lLengthX == lLengthY:
@@ -2545,14 +2576,14 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
                 lSelectedItemPolygon.append(lPointF)
 
 
-            CDConstants.printOut("PASTE: lSelectedItemPosition =", lSelectedItemPosition , CDConstants.DebugTODO )
-            CDConstants.printOut("PASTE: lSelectedItemHasBeenCut =", lSelectedItemHasBeenCut , CDConstants.DebugTODO )
-            CDConstants.printOut("PASTE: lSelectedItemColor =", lSelectedItemColor , CDConstants.DebugTODO )
-            CDConstants.printOut("PASTE: lSelectedItemRegionOrCell =", lSelectedItemRegionOrCell , CDConstants.DebugTODO )
-            CDConstants.printOut("PASTE: lSelectedItemType =", lSelectedItemType , CDConstants.DebugTODO )
-            CDConstants.printOut("PASTE: lSelectedItemScaleX =", lSelectedItemScaleX , CDConstants.DebugTODO )
-            CDConstants.printOut("PASTE: lSelectedItemScaleY =", lSelectedItemScaleY , CDConstants.DebugTODO )
-            CDConstants.printOut("PASTE: lSelectedItemPolygon =", lSelectedItemPolygon , CDConstants.DebugTODO )
+            CDConstants.printOut("PASTE: lSelectedItemPosition = "+str(lSelectedItemPosition) , CDConstants.DebugTODO )
+            CDConstants.printOut("PASTE: lSelectedItemHasBeenCut = "+str(lSelectedItemHasBeenCut) , CDConstants.DebugTODO )
+            CDConstants.printOut("PASTE: lSelectedItemColor = "+str(lSelectedItemColor) , CDConstants.DebugTODO )
+            CDConstants.printOut("PASTE: lSelectedItemRegionOrCell = "+str(lSelectedItemRegionOrCell) , CDConstants.DebugTODO )
+            CDConstants.printOut("PASTE: lSelectedItemType = "+str(lSelectedItemType) , CDConstants.DebugTODO )
+            CDConstants.printOut("PASTE: lSelectedItemScaleX = "+str(lSelectedItemScaleX) , CDConstants.DebugTODO )
+            CDConstants.printOut("PASTE: lSelectedItemScaleY = "+str(lSelectedItemScaleY) , CDConstants.DebugTODO )
+            CDConstants.printOut("PASTE: lSelectedItemPolygon = "+str(lSelectedItemPolygon) , CDConstants.DebugTODO )
 
             # convert the polygon we've constructed from pasted QPointF values
             #   into a QPainterPath which can be digested by the DiagramItem constructor:
@@ -2627,15 +2658,15 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
     # ------------------------------------------------------------------
     # 2010 Mitja - slot method handling "signalModeSelectToolbarChanged"
-    #    events (AKA signals) arriving from  theModeSelectToolBar:
+    #    events (AKA signals) arriving from  CDControlModeSelectToolBar:
     # ------------------------------------------------------------------
-    def handleSceneModeHasChanged(self, pNewMode):
+    def handlerForSceneModeControllerSignals(self, pNewMode):
 
-        CDConstants.printOut( "___ starting handleSceneModeHasChanged( pNewMode == "+str(pNewMode)+" ) ....", CDConstants.DebugTODO )
+        CDConstants.printOut( "___ starting handlerForSceneModeControllerSignals( pNewMode == "+str(pNewMode)+" ) ....", CDConstants.DebugTODO )
 
         self.__setSceneMode(pNewMode)
 
-        CDConstants.printOut( "___ ending handleSceneModeHasChanged( pNewMode == "+str(pNewMode)+" ) ....done.", CDConstants.DebugTODO )
+        CDConstants.printOut( "___ ending handlerForSceneModeControllerSignals( pNewMode == "+str(pNewMode)+" ) ....done.", CDConstants.DebugTODO )
 
 
     # ------------------------------------------------------------
@@ -2668,11 +2699,20 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         selectedItem.setZValue(zValue)
 
     # ------------------------------------------------------------
-    def handlerForItemInserted(self, item):
-        self.theModeSelectToolBar.setSelectedSceneMode( CDConstants.SceneModeMoveItem )
-        lCheckedId = self.theModeSelectToolBar.getSelectedSceneMode()
-        self.__setSceneMode(lCheckedId)
+    def handlerForItemInserted(self, pItem):
+        CDConstants.printOut( "_____ - CDDiagramSceneMainWidget.handlerForItemInserted(pItem==" + str(pItem) + ").", CDConstants.DebugExcessive )
 
+        # propagate the signal upstream, for example to parent objects:
+        self.__signalChangeInGlobalMode.emit(CDConstants.SceneModeMoveItem)
+
+        # change the local mode accordingly:
+        self.__setSceneMode(CDConstants.SceneModeMoveItem)
+
+        # 2010 - Mitja: TODO add code for handling insertion of pixmap items:
+        try:
+            self.theButtonGroupForRegionShapes.button(pItem.diagramType).setChecked(False)
+        except:
+            CDConstants.printOut("EXCEPTION EXCEPTION EXCEPTION CDDiagramSceneMainWidget.handlerForItemInserted() - EXCEPTION EXCEPTION EXCEPTION pItem pItem pItem pItem ="+(pItem)+" boh?" , CDConstants.DebugTODO )
 
 
 
@@ -2700,28 +2740,15 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 #         self.controlsForImageLayer.setEnabled(False)
 
 
-    # ------------------------------------------------------------
-    # 2011 - Mitja: moving to a MVC design,
-    #   this connect signal handler should go to the Controller object!
-    # ------------------------------------------------------------
-    def handlerForSceneResized(self, pDict):
-        lDict = dict(pDict)
-        print
-        CDConstants.printOut("    TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO ", CDConstants.DebugTODO )
-        CDConstants.printOut(str( lDict ) , CDConstants.DebugTODO )
-        CDConstants.printOut("    TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO ", CDConstants.DebugTODO )
-        print
-        self.controlsForCellScene.setSceneWidthLabel(lDict[0])
-        self.controlsForCellScene.setSceneHeightLabel(lDict[1])
-        self.controlsForCellScene.setSceneDepthLabel(lDict[2])
-        self.controlsForCellScene.setSceneUnitsLabel(lDict[3])
-
 
     # ------------------------------------------------------------
     def handlerForTextInserted(self, item):
         self.theButtonGroupForRegionShapes.button(self.InsertTextButton).setChecked(False)
-        lCheckedId = self.theModeSelectToolBar.getSelectedSceneMode()
-        self.__setSceneMode(lCheckedId)
+
+        lCurrentSceneMode = self.scene.getMode()
+        # propagate the signal upstream, for example to parent objects:
+        self.__signalChangeInGlobalMode.emit(lCurrentSceneMode)
+        self.__setSceneMode(lCurrentSceneMode)
 
     # ------------------------------------------------------------
     def currentFontChanged(self, font):
@@ -2735,9 +2762,9 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
     # ------------------------------------------------------------------
     # 2010 Mitja - this is a slot method to handle
     #    "current index changed" events (AKA signals) arriving from
-    #    the object theSceneScaleZoomControl
+    #    the object __theSceneZoomToolBar
     # ------------------------------------------------------------------
-    def handleSceneScaleZoomChanged(self, pScale):
+    def handlerForSceneZoomControllerSignals(self, pScale):
         lNewScale = pScale.left(pScale.indexOf("%")).toDouble()[0] / 100.0
         oldMatrix = self.view.matrix()
         self.view.resetMatrix()
@@ -2745,11 +2772,11 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         # take care of the RHS <-> LHS mismatch at its visible end,
         #   by flipping the y coordinate in the QGraphicsView's affine transformations:
         self.view.scale(lNewScale, -lNewScale)
-        # 2011 Mitja - add scale/zoom parameters stored into our DiagramScene object:
-        self.scene.myViewScaleZoomX = lNewScale
-        self.scene.myViewScaleZoomY = lNewScale
-        CDConstants.printOut( "___ - DEBUG ----- CDDiagramSceneMainWidget.handleSceneScaleZoomChanged() - self.scene.myViewScaleZoomX = " + \
-            str(self.scene.myViewScaleZoomX) + " self.scene.myViewScaleZoomY = " + str(self.scene.myViewScaleZoomY)  , CDConstants.DebugVerbose )
+        # 2011 Mitja - add zoom parameters stored into our DiagramScene object:
+        self.scene.__myViewZoomX = lNewScale
+        self.scene.__myViewZoomY = lNewScale
+        CDConstants.printOut( "___ - DEBUG ----- CDDiagramSceneMainWidget.handlerForSceneZoomControllerSignals() - self.scene.__myViewZoomX = " + \
+            str(self.scene.__myViewZoomX) + " self.scene.__myViewZoomY = " + str(self.scene.__myViewZoomY)  , CDConstants.DebugVerbose )
 
 
 
@@ -2758,15 +2785,15 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
     #    "current index changed" events (AKA signals) arriving from
     #    the object controlsForImageLayer
     # ------------------------------------------------------------------
-    def handleImageScaleZoomChanged(self, pScale):
+    def __handleImageScaleChanged(self, pScale):
         lNewScale = pScale.left(pScale.indexOf("%")).toDouble()[0] / 100.0
 
         if isinstance(self.scene.theImageLayer, CDImageLayer) == True:
-            self.scene.theImageLayer.setScaleZoom( lNewScale )
+            self.scene.theImageLayer.setImageScaleFactor( lNewScale )
 
         self.scene.update()
 
-        CDConstants.printOut("      self.theCDImageLayer.scaleFactor = "+str(self.theCDImageLayer.scaleFactor) , CDConstants.DebugTODO )
+        CDConstants.printOut("      self.theCDImageLayer.theImageScaleFactor = "+str(self.theCDImageLayer.theImageScaleFactor) , CDConstants.DebugTODO )
 
 
 
@@ -2874,17 +2901,21 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         #    0 = Color Pick = CDConstants.ImageModePickColor
         #    1 = Freehand Draw = CDConstants.ImageModeDrawFreehand
         #    2 = Polygon Draw = CDConstants.ImageModeDrawPolygon
-
+        #    3 = Extract Cells = CDConstants.ImageModeExtractCells
         self.theCDImageLayer.inputImagePickingMode = \
           self.controlsForImageLayer.theInputImagePickingMode
 
         # if inputImagePickingMode is 3, i.e. Polygon Draw,
         #     then we need to track *passive* mouse motion;
+        # same for mode 0, i.e. Color Pick, and mode 3, i.e. Extract Cells
+        #
         # otherwise we only track *active* mouse motion (which is the default for QWidget),
         #     i.e. when at least one mouse button is pressed while the mouse is moved:
         if (self.theCDImageLayer.inputImagePickingMode == CDConstants.ImageModeDrawPolygon):
             self.theCDImageLayer.setMouseTracking(True)
         elif (self.theCDImageLayer.inputImagePickingMode == CDConstants.ImageModePickColor):
+            self.theCDImageLayer.setMouseTracking(True)
+        elif (self.theCDImageLayer.inputImagePickingMode == CDConstants.ImageModeExtractCells):
             self.theCDImageLayer.setMouseTracking(True)
         else:
             self.theCDImageLayer.setMouseTracking(False)
@@ -3092,10 +3123,10 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         lDict = dict(pDict)
         CDConstants.printOut("CDDiagramSceneMainWidget - handleImageSequenceResized() - " + \
             str( lDict ), CDConstants.DebugTODO )
-        self.controlsForCellScene.setImageSequenceWidthLabel(lDict[0])
-        self.controlsForCellScene.setImageSequenceHeightLabel(lDict[1])
-        self.controlsForCellScene.setImageSequenceDepthLabel(lDict[2])
-        self.controlsForCellScene.setImageSequenceImageUnitsLabel(lDict[3])
+        self.theControlsForImageSequence.setImageSequenceWidthLabel(lDict[0])
+        self.theControlsForImageSequence.setImageSequenceHeightLabel(lDict[1])
+        self.theControlsForImageSequence.setImageSequenceDepthLabel(lDict[2])
+        self.theControlsForImageSequence.setImageSequenceImageUnitsLabel(lDict[3])
 
 
 
@@ -3109,8 +3140,8 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
     # ------------------------------------------------------------
     def handleImageSequenceIndexSet(self, pDict):
         lDict = dict(pDict)
-        self.controlsForCellScene.setImageSequenceCurrentIndex(lDict[0])
-        self.controlsForCellScene.setImageSequenceCurrentFilename(lDict[1])
+        self.theControlsForImageSequence.setImageSequenceCurrentIndex(lDict[0])
+        self.theControlsForImageSequence.setImageSequenceCurrentFilename(lDict[1])
 
 
 
@@ -3122,7 +3153,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
     def handleSelectedImageWithinSequenceChanged(self, pSelectedImage):
 
         if isinstance(self.scene.theImageSequence, CDImageSequence) == True:
-            self.scene.theImageSequence.setCurrentIndex( pSelectedImage )
+            self.scene.theImageSequence.setCurrentIndexInSequence( pSelectedImage )
 
         self.scene.update()
 
@@ -3159,7 +3190,18 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 # 
 # 
 
-            CDConstants.printOut( "      handleAreaOrEdgeModeHasChanged() called self.scene.theImageSequence.assignAllProcessingModesForImageSequenceToPIFF( "+str(bin(pMode))+") complete." , CDConstants.DebugExcessive )
+            # bin() does not exist in Python 2.5:
+            if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
+                CDConstants.printOut( "      handleAreaOrEdgeModeHasChanged() called self.scene.theImageSequence.assignAllProcessingModesForImageSequenceToPIFF( "+str(bin(pMode))+") complete." , CDConstants.DebugExcessive )
+            else:
+                CDConstants.printOut( "      handleAreaOrEdgeModeHasChanged() called self.scene.theImageSequence.assignAllProcessingModesForImageSequenceToPIFF( "+str(pMode)+") complete." , CDConstants.DebugExcessive )
+
+
+
+
+
+
+
 
 
 
@@ -3227,7 +3269,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
             "Please contact your system administrator or the source where you obtained CellDraw." )
             sys.exit()
 
-        CDConstants.printOut( "___ - DEBUG ----- CDDiagramSceneMainWidget: newSceneFile(): done.", CDConstants.DebugExcessive )
+        CDConstants.printOut( "___ - DEBUG ----- CDDiagramSceneMainWidget.newSceneFile(): done.", CDConstants.DebugExcessive )
     #
     # end of  def newSceneFile(self)
     # ------------------------------------------------------------
@@ -3247,7 +3289,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
     # ------------------------------------------------------------
     def loadScenePIFDataFromFile(self, pFileName):
-        CDConstants.printOut(  "2011 DEBUG: loadScenePIFDataFromFile("+str(pFileName)+") STARTING.", CDConstants.DebugExcessive )
+        CDConstants.printOut(  "2011 DEBUG: loadScenePIFDataFromFile("+str(pFileName)+") starting.", CDConstants.DebugExcessive )
         lQFileForReading = QtCore.QFile(pFileName)
         if not lQFileForReading.open(QtCore.QFile.ReadOnly):
             QtGui.QMessageBox.warning(self, "CellDraw",
@@ -3430,10 +3472,10 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
         # make sure that there is at least one item in the scene:
         if not lAllItems:
-            CDConstants.printOut("#=#=#=#=#=#=#=# saveScenePIFDataToFile() lAllItems =", lAllItems , CDConstants.DebugTODO )
-            print
+            CDConstants.printOut("#=#=#=#=#=#=#=# saveScenePIFDataToFile() lAllItems = "+str(lAllItems) , CDConstants.DebugTODO )
+            CDConstants.printOut("  ", CDConstants.DebugTODO )
             CDConstants.printOut("there is NOTHING in your Cell Scene!!!", CDConstants.DebugTODO )
-            print
+            CDConstants.printOut("  ", CDConstants.DebugTODO )
             return
 
 
@@ -3444,7 +3486,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
             return False
 
         # if we wrote into memory first, we'd create an empty byte array:
-        # lItemDataByteArray = QByteArray()
+        # lItemDataByteArray = QtCore.QByteArray()
 
         # open a data stream that can write *not* to the new byte array,
         #   but to the file we just opened:
@@ -3519,7 +3561,6 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
         self.scene.signalThatItemResized.connect(self.handlerForItemResized)
 
-        self.scene.signalThatSceneResized.connect(self.handlerForSceneResized)
 
 
         self.scene.theImageLayer.signalThatMouseMoved.connect(self.handlerForMouseMoved)
@@ -3554,7 +3595,11 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
 
 
-TODOTODO - do the reverse from the "registerSignalHandlerForModeSelectToolbarChanges" in CDModeSelectToolBar:
+
+
+
+
+
     # ------------------------------------------------------------
     # register the callback handler function for the
     #   "signalSceneModeHasChanged()" signal:
@@ -3692,7 +3737,7 @@ TODOTODO - do the reverse from the "registerSignalHandlerForModeSelectToolbarCha
                 shortcut="Ctrl+E", \
                 triggered=self.about)
 
-        CDConstants.printOut("___ - DEBUG ----- CDDiagramSceneMainWidget: createSceneEditActions() done.", CDConstants.DebugTODO )
+        CDConstants.printOut("___ - DEBUG ----- CDDiagramSceneMainWidget.createSceneEditActions() done.", CDConstants.DebugTODO )
 
         # end of def createSceneEditActions(self)
         # ------------------------------------------------------------
@@ -3726,7 +3771,7 @@ TODOTODO - do the reverse from the "registerSignalHandlerForModeSelectToolbarCha
 
 
     # ------------------------------------------------------------
-    # 2010 - Mitja: add code for new backgrounds:
+    # 2010 - Mitja: update background image - this function is called by outside (e.g. main )
     # ------------------------------------------------------------
     def updateBackgroundImage(self, pText, pImage):
         # update globals in the cdDiagramScene:
@@ -3763,11 +3808,6 @@ TODOTODO - do the reverse from the "registerSignalHandlerForModeSelectToolbarCha
         # has installed PyQt 263938
         CDConstants.printOut(" TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO ", CDConstants.DebugTODO )
 
-
-        # self.sceneWidthLabel.setText(str(int(self.scene.width())))
-        # self.sceneHeightLabel.setText(str(int(self.scene.height())))
-        # self.sceneDepthLabel.setText(str(int(self.scene.depth())))
-        # self.sceneUnitsLabel.setText(str(self.scene.mySceneUnits))
 
         lText = ""
         buttons = self.theButtonGroupForBackgrounds.buttons()

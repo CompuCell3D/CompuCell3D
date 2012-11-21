@@ -687,7 +687,7 @@ class CDSceneRasterizer(QtGui.QWidget):
 # 
 #         # render all images to be rasterized into the rasterizer label:
 #         for lZ in xrange(self.theSceneLimitsMaxZ):
-#             self.theImageSequenceToBeRasterized.setCurrentIndex(lZ)
+#             self.theImageSequenceToBeRasterized.setCurrentIndexInSequence(lZ)
 #             lPainter = QtGui.QPainter(lPixmap)
 #             self.theImageSequenceToBeRasterized.paintTheImageSequence(lPainter)
 #             lPainter.end()
@@ -700,7 +700,7 @@ class CDSceneRasterizer(QtGui.QWidget):
 #             self.progressBar.setValue(lZ)
 #             QtGui.QApplication.processEvents()
 #             
-#         self.theImageSequenceToBeRasterized.setCurrentIndex(lTmpImageIndexInSequence)
+#         self.theImageSequenceToBeRasterized.setCurrentIndexInSequence(lTmpImageIndexInSequence)
 
 
 
@@ -3578,7 +3578,7 @@ class CDSceneRasterizer(QtGui.QWidget):
                         self.theRasterizedImageLabel.image = lTmpPixmap.toImage()
                         self.theRasterizedImageLabel.update()
                     else:
-                        print " -=-=-=-=-=-==>>>> lTmp3DContourImage is not a QtGui.QImage !!!!!!!!!!!!!!!!!"
+                        pass # 152 prrint " -=-=-=-=-=-==>>>> lTmp3DContourImage is not a QtGui.QImage !!!!!!!!!!!!!!!!!"
                     # print "b"
     
                 # provide some visual feedback to user by incrementing the progress bar:
@@ -3608,12 +3608,12 @@ class CDSceneRasterizer(QtGui.QWidget):
         # ------------------------------------------------------------
         # (4b) - rasterizeSequenceAndSavePIF - (4b)
         #
-        #     if the sequence uses the  CDConstants.ImageSequenceUseEdge  mode,
+        #     if the sequence uses the  CDConstants.ImageSequenceUse2DEdges  mode,
         #         start a loop to generate a list with all required 2D edge points:
         #
 
 
-        if ( self.theImageSequenceToBeRasterized.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseEdge) ) :
+        if ( self.theImageSequenceToBeRasterized.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUse2DEdges) ) :
 
             self.infoLabel.setText( self.tr(" Scanning %1 layers to generate \n 2D edge-boundary pixels in Detected Volume... ").arg( \
                 str(lSceneDepthInPixels)  ) )
@@ -3643,7 +3643,7 @@ class CDSceneRasterizer(QtGui.QWidget):
                     str(k) ).arg( str(lSceneDepthInPixels) )  ) 
                 CDConstants.printOut( " Scanning layer "+str(k)+" of "+str(lSceneDepthInPixels)+" to generate 2D edge-boundary pixels in Detected Volume... ", CDConstants.DebugTODO )
 
-                self.theImageSequenceToBeRasterized.setCurrentIndex( k )
+                self.theImageSequenceToBeRasterized.setCurrentIndexInSequence( k )
                 self.theImageSequenceToBeRasterized.computeCurrentEdge()
 
                 lDone = False
@@ -3686,7 +3686,7 @@ class CDSceneRasterizer(QtGui.QWidget):
                         self.theRasterizedImageLabel.image = lTmpPixmap.toImage()
                         self.theRasterizedImageLabel.update()
                     else:
-                        print " -=-=-=-=-=-==>>>> lTmp2DEdgeImage is not a QtGui.QImage !!!!!!!!!!!!!!!!!"
+                        CDConstants.printOut( "CDSceneRasterizer.rasterizeSequenceAndSavePIF() - -=-=-=-=-=-==>>>> lTmp2DEdgeImage is not a QtGui.QImage !!!!!!!!!!!!!!!!!", CDConstants.DebugImportant )
                     # print "b"
     
                 # provide some visual feedback to user by incrementing the progress bar:
@@ -3697,12 +3697,12 @@ class CDSceneRasterizer(QtGui.QWidget):
             # ----------
 
         else:
-            # if the sequence is not in the CDConstants.ImageSequenceUseEdge mode,
+            # if the sequence is not in the CDConstants.ImageSequenceUse2DEdges mode,
             #   then make sure the l2DEdgeWallPoints and l2DEdgeWallPointsOnlyXYZ lists are empty:
             l2DEdgeWallPoints = []
             l2DEdgeWallPointsOnlyXYZ = []
             self.infoLabel.setText( self.tr(" Disabled output of 2D edge-boundary pixels in Detected Volume. ") )
-            CDConstants.printOut( "Disabled output of 2D edge-boundary pixels in Detected Volume", CDConstants.DebugTODO )
+            CDConstants.printOut( "CDSceneRasterizer.rasterizeSequenceAndSavePIF() - Disabled output of 2D edge-boundary pixels in Detected Volume", CDConstants.DebugTODO )
 
         # end of   if ( self.theImageSequenceToBeRasterized.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseAreaSeeds) )
         # (4b) - rasterizeSequenceAndSavePIF - (4b)
@@ -3867,7 +3867,7 @@ class CDSceneRasterizer(QtGui.QWidget):
 # 
 # 
 #         # set the image sequence mode to "edge" i.e. draw edges, NOT complete areas
-# #         self.theImageSequenceToBeRasterized.enableAProcessingModeForImageSequenceToPIFF( CDConstants.ImageSequenceUseEdge )
+# #         self.theImageSequenceToBeRasterized.enableAProcessingModeForImageSequenceToPIFF( CDConstants.ImageSequenceUse2DEdges )
 # 
 # 
 #         # store the current index to restore it later:
@@ -3891,7 +3891,7 @@ class CDSceneRasterizer(QtGui.QWidget):
 #                 str(k) ).arg( str(lSceneDepthInPixels) )  ) 
 # 
 #             # ensure that the image sequence object has the edge data ready:
-#             self.theImageSequenceToBeRasterized.setCurrentIndex( k )
+#             self.theImageSequenceToBeRasterized.setCurrentIndexInSequence( k )
 #             self.theImageSequenceToBeRasterized.computeCurrentEdge()
 # 
 #             lDone = False
@@ -4030,7 +4030,7 @@ class CDSceneRasterizer(QtGui.QWidget):
 #         # set the image sequence mode back to to "area"
 # #         self.theImageSequenceToBeRasterized.enableAProcessingModeForImageSequenceToPIFF( CDConstants.ImageSequenceUseAreaSeeds )
 #         # restore the current index of the image sequence:
-#         self.theImageSequenceToBeRasterized.setCurrentIndex(lTmpImageIndexInSequence)
+#         self.theImageSequenceToBeRasterized.setCurrentIndexInSequence(lTmpImageIndexInSequence)
 # 
 
 
@@ -4159,7 +4159,7 @@ class CDSceneRasterizer(QtGui.QWidget):
                 # lCellID +=1
 
 
-        if ( self.theImageSequenceToBeRasterized.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseEdge) ) :
+        if ( self.theImageSequenceToBeRasterized.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUse2DEdges) ) :
             # all wall points belong to the same "cell" type:
             lCellID +=1
             for (lName,lColor,i,j,k) in l2DEdgeWallPoints :

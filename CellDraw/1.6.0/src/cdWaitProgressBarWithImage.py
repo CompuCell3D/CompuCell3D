@@ -9,6 +9,9 @@ import inspect # <-- for debugging functions, may be removed in final version
 from PyQt4 import QtGui, QtCore
 #
 
+# 2012 - Mitja: external class defining all global constants for CellDraw:
+from cdConstants import CDConstants
+
 
 # debugging functions, may be removed in final version:
 def debugWhoIsTheRunningFunction():
@@ -344,6 +347,7 @@ class CDWaitProgressBarWithImage(QtGui.QDialog):
         lPercentage = (float(curVal) / float(maxVal)) * 100.0
         self.percentageLabel.setText( QtCore.QString("... %1 %").arg(lPercentage, 0, 'g', 2) )
         QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+        CDConstants.printOut( "___ - DEBUG ----- CDImageNP.setValue( "+str(pValue)+" ) done." , CDConstants.DebugExcessive )
 
     # ---------------------------------------------------------
     def setRange(self, pMin=0, pMax=100):
@@ -357,6 +361,8 @@ class CDWaitProgressBarWithImage(QtGui.QDialog):
         # self.progressBar.setRange(0, 10000)
         self.progressBar.setRange(0, self.maxValue)
         self.progressBar.setValue(0)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+
     # ---------------------------------------------------------
     def advanceProgressBar(self):
         curVal = self.progressBar.value()
@@ -372,10 +378,13 @@ class CDWaitProgressBarWithImage(QtGui.QDialog):
     def resetProgressBar(self):
         self.percentageLabel.setText("0 %")
         self.progressBar.setValue(0)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+
     # ---------------------------------------------------------
     def maxProgressBar(self):
         self.percentageLabel.setText("100 %")
         self.progressBar.setValue(self.maxValue)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
     # ---------------------------------------------------------
 
 

@@ -30,9 +30,10 @@ class CDControlCellScene(QtGui.QWidget):
         #    it's assigned below, in setControlsForLayerSelection()
         self.controlsForLayerSelection = 0
 
-        # a QGroupBox with a combobox (pop-up menu) for scene scale/zoom
-        #    it's assigned below, in setControlsForSceneScaleZoom()
-        self.controlsForSceneScaleZoom = 0
+# 
+#         # a QGroupBox with a combobox (pop-up menu) for scene zoom
+#         #    it's assigned below, in setControlsForSceneZoom()
+#         self.controlsForSceneZoom = 0
 
         # a QGroupBox containing buttons for toggling the
         #    drawing mode between regions and cells,
@@ -122,31 +123,30 @@ class CDControlCellScene(QtGui.QWidget):
         #
 
 
-
-        # ----------------------------------------------------------------
-        #
-        # QWidget setup (2a) - add controls for scene editing mode (pick/move vs. scale)
-        #    and for scene zoom:
-        #
-        lFirstSimpleQHBoxLayout = QtGui.QHBoxLayout()
-        lFirstSimpleQHBoxLayout.setMargin(2)
-        lFirstSimpleQHBoxLayout.setSpacing(4)
-        lFirstSimpleQHBoxLayout.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
-
-        # 2012 - Mitja: the layer selection controls have been moved to a QToolBar:
-        #    but we keep them here until we decouple actions/signals/slots/handlers:
-        #
-        #    the layer selection control is defined in its own class:
-        #
-        #    lFirstSimpleQHBoxLayout.addWidget(self.controlsForLayerSelection)
-
-        # the combobox/pop-up menu for scale/zoom control is defined in its own class:
-        #
-        lFirstSimpleQHBoxLayout.addWidget(self.controlsForSceneScaleZoom)
-
-        self.mainControlCellSceneLayout.addLayout(lFirstSimpleQHBoxLayout)
-
-
+# 
+#         # ----------------------------------------------------------------
+#         #
+#         # QWidget setup (2a) - add controls for scene zoom:
+#         #
+#         lFirstSimpleQHBoxLayout = QtGui.QHBoxLayout()
+#         lFirstSimpleQHBoxLayout.setMargin(2)
+#         lFirstSimpleQHBoxLayout.setSpacing(4)
+#         lFirstSimpleQHBoxLayout.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+# 
+#         # 2012 - Mitja: the layer selection controls have been moved to a QToolBar:
+#         #    but we keep them here until we decouple actions/signals/slots/handlers:
+#         #
+#         #    the layer selection control is defined in its own class:
+#         #
+#         #    lFirstSimpleQHBoxLayout.addWidget(self.controlsForLayerSelection)
+# 
+#         # the combobox/pop-up menu for scene zoom control is defined in its own class:
+#         #
+#         lFirstSimpleQHBoxLayout.addWidget(self.controlsForSceneZoom)
+# 
+#         self.mainControlCellSceneLayout.addLayout(lFirstSimpleQHBoxLayout)
+# 
+# 
 
 
 
@@ -341,76 +341,11 @@ class CDControlCellScene(QtGui.QWidget):
         #
         # QWidget setup (2e) - add a QGroupBox for showing Scene dimensions:
         #
-        self.pifDimensionsGroupBox = QtGui.QGroupBox("Scene Dimensions")
-#         self.pifDimensionsGroupBox.setPalette(QtGui.QPalette(QtGui.QColor(222,222,222)))
-#         self.pifDimensionsGroupBox.setAutoFillBackground(True)
-        self.pifDimensionsGroupBox.setLayout(QtGui.QHBoxLayout())
-        self.pifDimensionsGroupBox.layout().setMargin(2)
-        self.pifDimensionsGroupBox.layout().setSpacing(4)
-        self.pifDimensionsGroupBox.layout().setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-
-        # 2010 - Mitja: add a widget displaying the scene dimensions at all times:
-        # the scene dimension widget will have a title label:
-        self.sceneWidthLabel = QtGui.QLabel()
-        self.sceneWidthLabel.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-        self.sceneWidthLabel.setText("w")
-        self.sceneWidthLabel.setFont(lFont)
-        self.sceneWidthLabel.setMargin(2)
-        sceneTimesSignLabel = QtGui.QLabel()
-        sceneTimesSignLabel.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-        sceneTimesSignLabel.setText( u"\u00D7" ) # <-- the multiplication sign as unicode
-        sceneTimesSignLabel.setFont(lFont)
-        sceneTimesSignLabel.setMargin(2)
-        self.sceneHeightLabel = QtGui.QLabel()
-        self.sceneHeightLabel.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-        self.sceneHeightLabel.setText("h")
-        self.sceneHeightLabel.setFont(lFont)
-        self.sceneHeightLabel.setMargin(2)
-        sceneTimesSign2Label = QtGui.QLabel()
-        sceneTimesSign2Label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-        sceneTimesSign2Label.setText( u"\u00D7" ) # <-- the multiplication sign as unicode
-        sceneTimesSign2Label.setFont(lFont)
-        sceneTimesSign2Label.setMargin(2)
-        self.sceneDepthLabel = QtGui.QLabel()
-        self.sceneDepthLabel.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-        self.sceneDepthLabel.setText("d")
-        self.sceneDepthLabel.setFont(lFont)
-        self.sceneDepthLabel.setMargin(2)
-        self.sceneUnitsLabel = QtGui.QLabel()
-        self.sceneUnitsLabel.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-        self.sceneUnitsLabel.setText("  units:")
-        self.sceneUnitsLabel.setFont(lFont)
-        self.sceneUnitsLabel.setMargin(2)
-
-#         self.sceneDimensionsWidget = QtGui.QWidget()
-#         # self.sceneDimensionsWidget.setPalette(QtGui.QPalette(QtGui.QColor(222,222,222)))
-#         # self.sceneDimensionsWidget.setAutoFillBackground(True)
-#         self.sceneDimensionsWidget.setLayout(QtGui.QHBoxLayout())
-#         self.sceneDimensionsWidget.layout().setMargin(2)
-#         self.sceneDimensionsWidget.layout().setSpacing(4)
-#         self.sceneDimensionsWidget.layout().setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-#         self.sceneDimensionsWidget.setFont(lFont)
-
-        self.sceneDimensionsWidget = QtGui.QWidget()
-        self.sceneDimensionsWidget.setLayout(QtGui.QHBoxLayout())
-        self.sceneDimensionsWidget.layout().setMargin(2)
-        self.sceneDimensionsWidget.layout().setSpacing(4)
-        self.sceneDimensionsWidget.setFont(lFont)
-        self.sceneDimensionsWidget.layout().addWidget(self.sceneWidthLabel)
-        self.sceneDimensionsWidget.layout().addWidget(sceneTimesSignLabel)
-        self.sceneDimensionsWidget.layout().addWidget(self.sceneHeightLabel)
-        self.sceneDimensionsWidget.layout().addWidget(sceneTimesSign2Label)
-        self.sceneDimensionsWidget.layout().addWidget(self.sceneDepthLabel)
-        self.sceneDimensionsWidget.layout().addWidget(self.sceneUnitsLabel)
-
-        self.pifDimensionsGroupBox.layout().addWidget(self.sceneDimensionsWidget)
-
-        self.mainControlCellSceneLayout.addWidget(self.pifDimensionsGroupBox)
-
+        # this now goes to its own class: CDViewSceneDimensions()
 
         # ----------------------------------------------------------------
         #
-        # QWidget setup (2f) - add controls for scene scale/zoom, and for
+        # QWidget setup (2f) - add controls for scene zoom, and for
         #       the types of regions and cells:
         #
 
@@ -606,9 +541,6 @@ class CDControlCellScene(QtGui.QWidget):
                 self.parentWindow.updateSceneBackgroundImage(self.imageNameFromFile)
                 # CDConstants.printOut( " "+str( "self.parentWindow.updateSceneBackgroundImage(self.imageNameFromFile) DONE" )+" ", CDConstants.DebugTODO )
 
-        # 2011 - Mitja: also update the button for selecting the Image Layer in the editor:
-        self.controlsForLayerSelection.setImageLayerButtonIcon( QtGui.QIcon( QtGui.QPixmap.fromImage(pImage) ) )
-
 
         # CDConstants.printOut( " "+str( "___ - DEBUG ----- CDControlCellScene: updateBackgroundImageButtons() done." )+" ", CDConstants.DebugTODO )
 
@@ -658,10 +590,12 @@ class CDControlCellScene(QtGui.QWidget):
         self.controlsForLayerSelection = pWidget
         # CDConstants.printOut( " "+str( "___ - DEBUG ----- CDControlCellScene: setControlsForLayerSelection(): done" )+" ", CDConstants.DebugTODO )
 
-    # ------------------------------------------------------------
-    def setControlsForSceneScaleZoom(self, pWidget):
-        self.controlsForSceneScaleZoom = pWidget
-        # CDConstants.printOut( " "+str( "___ - DEBUG ----- CDControlCellScene: setControlsForSceneScaleZoom(): done" )+" ", CDConstants.DebugTODO )
+
+# 
+#     # ------------------------------------------------------------
+#     def setControlsForSceneZoom(self, pWidget):
+#         self.controlsForSceneZoom = pWidget
+#         # CDConstants.printOut( " "+str( "___ - DEBUG ----- CDControlCellScene: setControlsForSceneZoom(): done" )+" ", CDConstants.DebugTODO )
 
 
 
@@ -721,30 +655,6 @@ class CDControlCellScene(QtGui.QWidget):
 
 
 
-
-
-    # ------------------------------------------------------------------
-    # functions for externally setting the control panel's label values:
-
-    # ------------------------------------------------------------------
-    def setSceneWidthLabel(self, pSceneWidthLabel):
-        self.sceneWidthLabel.setText(pSceneWidthLabel)
-        # CDConstants.printOut( " "+str( "___ - DEBUG ----- CDControlCellScene: setSceneWidthLabel(): done" )+" ", CDConstants.DebugTODO )
-
-    # ------------------------------------------------------------------
-    def setSceneHeightLabel(self, pSceneHeightLabel):
-        self.sceneHeightLabel.setText(pSceneHeightLabel)
-        # CDConstants.printOut( " "+str( "___ - DEBUG ----- CDControlCellScene: setSceneHeightLabel(): done" )+" ", CDConstants.DebugTODO )
-
-    # ------------------------------------------------------------------
-    def setSceneDepthLabel(self, pSceneDepthLabel):
-        self.sceneDepthLabel.setText(pSceneDepthLabel)
-        # CDConstants.printOut( " "+str( "___ - DEBUG ----- CDControlCellScene: setSceneHeightLabel(): done" )+" ", CDConstants.DebugTODO )
-
-    # ------------------------------------------------------------------
-    def setSceneUnitsLabel(self, pSceneUnitsLabel):
-        self.sceneUnitsLabel.setText(pSceneUnitsLabel)
-        # CDConstants.printOut( " "+str( "___ - DEBUG ----- CDControlCellScene: setSceneUnitsLabel(): done" )+" ", CDConstants.DebugTODO )
 
 
     # ------------------------------------------------------------------

@@ -52,7 +52,7 @@ class CDControlImageSequence(QtGui.QWidget):
 
         # the class global keeping track of the mode for generating PIFF from displayed imported image sequence:
         #    0 = Use Discretized Images to B/W = CDConstants.ImageSequenceUseDiscretizedToBWMode
-        #    1 = Region 2D Edge = CDConstants.ImageSequenceUseEdge
+        #    1 = Region 2D Edge = CDConstants.ImageSequenceUse2DEdges
         #    2 = Region 3D Contours = CDConstants.ImageSequenceUse3DContours
         #    3 = Region 3D Volume = CDConstants.ImageSequenceUse3DVolume
         #    4 = Region Cell Seeds = CDConstants.ImageSequenceUseAreaSeeds
@@ -208,7 +208,7 @@ class CDControlImageSequence(QtGui.QWidget):
         self.theButtonGroupForAreaOrEdgeSelection.addButton(self.regionSeedsButton, CDConstants.ImageSequenceUseAreaSeeds)
         self.theButtonGroupForAreaOrEdgeSelection.addButton(self.regionVolumeButton, CDConstants.ImageSequenceUse3DVolume)
         self.theButtonGroupForAreaOrEdgeSelection.addButton(self.regionContoursButton, CDConstants.ImageSequenceUse3DContours)
-        self.theButtonGroupForAreaOrEdgeSelection.addButton(self.regionEdgeButton, CDConstants.ImageSequenceUseEdge)
+        self.theButtonGroupForAreaOrEdgeSelection.addButton(self.regionEdgeButton, CDConstants.ImageSequenceUse2DEdges)
         self.theButtonGroupForAreaOrEdgeSelection.addButton(self.discretizeToBWModeButton, CDConstants.ImageSequenceUseDiscretizedToBWMode)
         # make sure that the buttons are *not* mutually exclusive:
         self.theButtonGroupForAreaOrEdgeSelection.setExclusive(False)
@@ -618,7 +618,7 @@ class CDControlImageSequence(QtGui.QWidget):
         if self.regionSeedsButton.isChecked():
             lImageSequenceProcessingMode |= (1 << CDConstants.ImageSequenceUseAreaSeeds)
         if self.regionEdgeButton.isChecked():
-            lImageSequenceProcessingMode |= (1 << CDConstants.ImageSequenceUseEdge)
+            lImageSequenceProcessingMode |= (1 << CDConstants.ImageSequenceUse2DEdges)
         if self.regionContoursButton.isChecked():
             lImageSequenceProcessingMode |= (1 << CDConstants.ImageSequenceUse3DContours)
         if self.regionVolumeButton.isChecked():
@@ -668,7 +668,7 @@ class CDControlImageSequence(QtGui.QWidget):
         self.imageSequenceDepthLabel.setText(pImageSequenceDepthLabel)
         # also update the image selection range in the Image Sequence controls,
         #   remembering that the index starts at 0 so the max image index should be:
-        self.controlsForImageSequence.setMaxImageIndex(int(pImageSequenceDepthLabel)-1)
+#         self.controlsForImageSequence.setMaxImageIndex(int(pImageSequenceDepthLabel)-1)
         CDConstants.printOut("___ - DEBUG ----- CDControlCellScene: setImageSequenceDepthLabel(pImageSequenceDepthLabel=="+str(pImageSequenceDepthLabel)+"): done", CDConstants.DebugVerbose )
 
     # ------------------------------------------------------------------

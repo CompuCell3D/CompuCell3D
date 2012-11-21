@@ -817,7 +817,7 @@ class CDTypesEditor(QtGui.QWidget):
         # to be used as "flag name" when switching to Image Sequence use and back:
         self.theBackupCellTypeNameWhenSwitchingToImageSequenceAndBack = ""
 
-        # print "005 - DEBUG ----- CDTypesEditor: __init__(): done"
+        # print "005 - DEBUG ----- CDTypesEditor.__init__(): done"
 
 
     # ------------------------------------------------------------------
@@ -830,7 +830,7 @@ class CDTypesEditor(QtGui.QWidget):
     # ------------------------------------------------------------------
     def __miInitEditorGUIGeneralBehavior(self):
 
-        CDConstants.printOut( "    - DEBUG ----- CDTypesEditor: __miInitEditorGUIGeneralBehavior(): starting", CDConstants.DebugExcessive )
+        CDConstants.printOut( "    - DEBUG ----- CDTypesEditor.__miInitEditorGUIGeneralBehavior(): starting", CDConstants.DebugExcessive )
 
         # how will the CDTypesEditor look like:
         #   this title won't appear anywhere if the CDTypesEditor widget is included in a QDockWidget:
@@ -900,7 +900,7 @@ class CDTypesEditor(QtGui.QWidget):
 
         self.show()
 
-        CDConstants.printOut( "    - DEBUG ----- CDTypesEditor: __miInitEditorGUIGeneralBehavior() done.", CDConstants.DebugExcessive )
+        CDConstants.printOut( "    - DEBUG ----- CDTypesEditor.__miInitEditorGUIGeneralBehavior() done.", CDConstants.DebugExcessive )
 
     # end of        def __miInitEditorGUIGeneralBehavior(self)
     # ------------------------------------------------------------------
@@ -924,7 +924,7 @@ class CDTypesEditor(QtGui.QWidget):
         self.typesDict = None
         self.typesDict = pDict
         self.__debugRegionDict()
-        CDConstants.printOut( "___ - DEBUG ----- CDTypesEditor:  self.setTypesDict() to "+str(self.typesDict)+" done. ----- ", CDConstants.DebugVerbose )
+        CDConstants.printOut( "___ - DEBUG ----- CDTypesEditor.self.setTypesDict() to "+str(self.typesDict)+" done. ----- ", CDConstants.DebugVerbose )
 
 
     # ------------------------------------------------------------------
@@ -933,7 +933,7 @@ class CDTypesEditor(QtGui.QWidget):
     def getTypesDict(self):
         # first rebuild the typesDict global from its PIFOneRegionTable objects:
         self.__updateTypesDictFromEditor()
-        CDConstants.printOut( "___ - DEBUG ----- CDTypesEditor:  self.getTypesDict() will now return self.typesDict=="+str(self.typesDict) , CDConstants.DebugVerbose )
+        CDConstants.printOut( "___ - DEBUG ----- CDTypesEditor.self.getTypesDict() will now return self.typesDict=="+str(self.typesDict) , CDConstants.DebugVerbose )
         return self.typesDict
 
 
@@ -943,7 +943,7 @@ class CDTypesEditor(QtGui.QWidget):
     # populate the main QTreeWidget editor with data from the typesDict global
     # ------------------------------------------------------------------
     def populateEditorFromTypesDict(self):
-        CDConstants.printOut("___ - DEBUG ----- CDTypesEditor: populateEditorFromTypesDict() BEGIN: now " + \
+        CDConstants.printOut("___ - DEBUG ----- CDTypesEditor.populateEditorFromTypesDict() BEGIN: now " + \
             str(self.theTypesTree.topLevelItemCount()) + " top-level items in tree and " + \
             str(self.__getRegionsDictElementCount()) + " regions.", CDConstants.DebugExcessive )
 
@@ -1010,7 +1010,7 @@ class CDTypesEditor(QtGui.QWidget):
         #   updating its content programmatically:
         self.theTypesTree.blockSignals(False)
 
-        CDConstants.printOut("___ - DEBUG ----- CDTypesEditor: populateEditorFromTypesDict() END: now " + \
+        CDConstants.printOut("___ - DEBUG ----- CDTypesEditor.populateEditorFromTypesDict() END: now " + \
             str(self.theTypesTree.topLevelItemCount()) + " top-level items in tree and " + \
             str(self.__getRegionsDictElementCount()) + " regions. ----- DONE.", CDConstants.DebugExcessive )
 
@@ -1033,29 +1033,29 @@ class CDTypesEditor(QtGui.QWidget):
 
         # check how many rows are present in the table:
         lRegionsCount = self.theTypesTree.topLevelItemCount()
-        CDConstants.printOut("___         ----- CDTypesEditor: updateRegionUseInTypesEditor() ----- lRegionsCount="+str(lRegionsCount), CDConstants.DebugTODO )
+        CDConstants.printOut("___         ----- CDTypesEditor.updateRegionUseInTypesEditor() ----- lRegionsCount="+str(lRegionsCount), CDConstants.DebugTODO )
 
         # get the typesDict keys in order to access individual dict entries:
         lRegionKeys = self.__getRegionsDictKeys()
-        CDConstants.printOut("___         ----- CDTypesEditor: updateRegionUseInTypesEditor() ----- lRegionKeys="+str(lRegionKeys), CDConstants.DebugTODO )
+        CDConstants.printOut("___         ----- CDTypesEditor.updateRegionUseInTypesEditor() ----- lRegionKeys="+str(lRegionKeys), CDConstants.DebugTODO )
        
         # the entire table might be set to hide if there are no used rows:
         lThereAreRegionRowsInUse = False
 
         for i in xrange(lRegionsCount):
             lOneRegionKey = lRegionKeys[i]
-            CDConstants.printOut( "___         ----- CDTypesEditor: updateRegionUseInTypesEditor()  ----- self.typesDict[lRegionKeys[i=="+str(i)+"]=="+str(lRegionKeys[i])+"] ="+str(self.typesDict[ lRegionKeys[i] ]), CDConstants.DebugAll )
-            CDConstants.printOut( "___         ----- CDTypesEditor: updateRegionUseInTypesEditor()  ----- self.typesDict[lOneRegionKey=="+str(lOneRegionKey)+"]] ="+str(self.typesDict[lOneRegionKey]), CDConstants.DebugAll )
-            CDConstants.printOut( "___         ----- CDTypesEditor: updateRegionUseInTypesEditor()  ----- self.typesDict[lOneRegionKey][0] ="+str(self.typesDict[lOneRegionKey][0]), CDConstants.DebugAll )
-            CDConstants.printOut( "___         ----- CDTypesEditor: updateRegionUseInTypesEditor()  ----- self.typesDict[lOneRegionKey][0].rgba() ="+str(self.typesDict[lOneRegionKey][0].rgba()), CDConstants.DebugAll )
-            CDConstants.printOut( "___         ----- CDTypesEditor: updateRegionUseInTypesEditor()  ----- lTheRegionToBeUpdatedColor.rgba() ="+str(lTheRegionToBeUpdatedColor.rgba()), CDConstants.DebugAll )
+            CDConstants.printOut( "___         ----- CDTypesEditor.updateRegionUseInTypesEditor()  ----- self.typesDict[lRegionKeys[i=="+str(i)+"]=="+str(lRegionKeys[i])+"] ="+str(self.typesDict[ lRegionKeys[i] ]), CDConstants.DebugAll )
+            CDConstants.printOut( "___         ----- CDTypesEditor.updateRegionUseInTypesEditor()  ----- self.typesDict[lOneRegionKey=="+str(lOneRegionKey)+"]] ="+str(self.typesDict[lOneRegionKey]), CDConstants.DebugAll )
+            CDConstants.printOut( "___         ----- CDTypesEditor.updateRegionUseInTypesEditor()  ----- self.typesDict[lOneRegionKey][0] ="+str(self.typesDict[lOneRegionKey][0]), CDConstants.DebugAll )
+            CDConstants.printOut( "___         ----- CDTypesEditor.updateRegionUseInTypesEditor()  ----- self.typesDict[lOneRegionKey][0].rgba() ="+str(self.typesDict[lOneRegionKey][0].rgba()), CDConstants.DebugAll )
+            CDConstants.printOut( "___         ----- CDTypesEditor.updateRegionUseInTypesEditor()  ----- lTheRegionToBeUpdatedColor.rgba() ="+str(lTheRegionToBeUpdatedColor.rgba()), CDConstants.DebugAll )
             if self.typesDict[lOneRegionKey][0].rgba() == lTheRegionToBeUpdatedColor.rgba() :
                 # prepare all data for one top-level QTreeWidgetItem representing a region type:
 
                 # first update the region use in the main typesDict for region types:
-                CDConstants.printOut( "___         ----- CDTypesEditor: updateRegionUseInTypesEditor()  ----- IT WAS self.typesDict[lOneRegionKey][3] ="+str(self.typesDict[lOneRegionKey][3]), CDConstants.DebugAll )
+                CDConstants.printOut( "___         ----- CDTypesEditor.updateRegionUseInTypesEditor()  ----- IT WAS self.typesDict[lOneRegionKey][3] ="+str(self.typesDict[lOneRegionKey][3]), CDConstants.DebugAll )
                 self.typesDict[lOneRegionKey][3] = pHowManyInUse
-                CDConstants.printOut( "___         ----- CDTypesEditor: updateRegionUseInTypesEditor()  ----- NOW IS self.typesDict[lOneRegionKey][3] ="+str(self.typesDict[lOneRegionKey][3]), CDConstants.DebugAll )
+                CDConstants.printOut( "___         ----- CDTypesEditor.updateRegionUseInTypesEditor()  ----- NOW IS self.typesDict[lOneRegionKey][3] ="+str(self.typesDict[lOneRegionKey][3]), CDConstants.DebugAll )
 
                 # then prepare all other parameters to update the region's entry in the editor tree:
                 lRegionKey = QtCore.QString("%1").arg(lOneRegionKey)
@@ -1098,17 +1098,17 @@ class CDTypesEditor(QtGui.QWidget):
     # rebuild the typesDict global by retrieving all the values in theTypesTree:
     # ------------------------------------------------------------------
     def __updateTypesDictFromEditor(self):
-        CDConstants.printOut("___ - DEBUG ----- CDTypesEditor: __updateTypesDictFromEditor() BEGIN: now " + \
+        CDConstants.printOut("___ - DEBUG ----- CDTypesEditor.__updateTypesDictFromEditor() BEGIN: now " + \
             str(self.theTypesTree.topLevelItemCount()) + " top-level items in tree and " + \
             str(self.__getRegionsDictElementCount()) + " regions.", CDConstants.DebugExcessive )
 
         # set how many rows are needed in the table:
         lRegionsCount = self.theTypesTree.topLevelItemCount()
-        CDConstants.printOut("___         ----- CDTypesEditor: __updateTypesDictFromEditor() ----- lRegionsCount="+str(lRegionsCount), CDConstants.DebugTODO )
+        CDConstants.printOut("___         ----- CDTypesEditor.__updateTypesDictFromEditor() ----- lRegionsCount="+str(lRegionsCount), CDConstants.DebugTODO )
 
         # get the typesDict keys in order to access individual dict entries:
         lKeys = self.__getRegionsDictKeys()
-        CDConstants.printOut("___         ----- CDTypesEditor: __updateTypesDictFromEditor() ----- lKeys="+str(lKeys), CDConstants.DebugTODO )
+        CDConstants.printOut("___         ----- CDTypesEditor.__updateTypesDictFromEditor() ----- lKeys="+str(lKeys), CDConstants.DebugTODO )
 
         # parse each top-level item separately to build a typesDict entry:
         for i in xrange(lRegionsCount):
@@ -1116,7 +1116,7 @@ class CDTypesEditor(QtGui.QWidget):
             # get all data from one top-level item in the types tree, i.e. data for one region type:
             (lRegionQColor, lRegionName, lCellXYZSizeList, lRegionTypeUse, lRegionCellTypesDict, lRegionKey) = self.theTypesTree.getTopRegionItemData(i)
 
-            CDConstants.printOut( "   >>>> DEBUG ----- CDTypesEditor: __updateTypesDictFromEditor() AFTER calling self.theTypesTree.getTopRegionItemData(i=="+str(i)+") :\n   >>>> lRegionQColor="+str(lRegionQColor)+",\n   >>>> lRegionName="+str(lRegionName)+",\n   >>>> lCellXYZSizeList="+str(lCellXYZSizeList)+",\n   >>>> lRegionTypeUse="+str(lRegionTypeUse)+",\n   >>>> lRegionCellTypesDict="+str(lRegionCellTypesDict)+",\n   >>>> lRegionKey="+str(lRegionKey), CDConstants.DebugTODO )
+            CDConstants.printOut( "   >>>> DEBUG ----- CDTypesEditor.__updateTypesDictFromEditor() AFTER calling self.theTypesTree.getTopRegionItemData(i=="+str(i)+") :\n   >>>> lRegionQColor="+str(lRegionQColor)+",\n   >>>> lRegionName="+str(lRegionName)+",\n   >>>> lCellXYZSizeList="+str(lCellXYZSizeList)+",\n   >>>> lRegionTypeUse="+str(lRegionTypeUse)+",\n   >>>> lRegionCellTypesDict="+str(lRegionCellTypesDict)+",\n   >>>> lRegionKey="+str(lRegionKey), CDConstants.DebugTODO )
 
             # the top-level key is NOT retrieved from theTypesTree items:
             #    not: lKey = self.theTypesTree.item(i, 0)
@@ -1125,22 +1125,22 @@ class CDTypesEditor(QtGui.QWidget):
 #             lColor = self.typesDict[lKeys[i]][0]
 
             # the region name is retrieved from the 3.rd theTypesTree column:
-            # print "___ - DEBUG DEBUG DEBUG ----- CDTypesEditor: self.__updateTypesDictFromEditor() \n"
+            # print "___ - DEBUG DEBUG DEBUG ----- CDTypesEditor.self.__updateTypesDictFromEditor() \n"
             # print "      i, self.theTypesTree.item(i, 2) ", i, self.theTypesTree.item(i, 2)
 #             lRegionName = str ( self.theTypesTree.item(i, 2).text() )
 #
 #             # the region cell size is retrieved from the 4.th theTypesTree column:
-#             # print "___ - DEBUG DEBUG DEBUG ----- CDTypesEditor: self.__updateTypesDictFromEditor() \n"
+#             # print "___ - DEBUG DEBUG DEBUG ----- CDTypesEditor.self.__updateTypesDictFromEditor() \n"
 #             # print "      i, self.theTypesTree.item(i, 3) ", i, self.theTypesTree.item(i, 3)
 #             lRegionCellSize = int ( self.theTypesTree.item(i, 3).text() )
 
             # the region cell sizes are retrieved from the 4.th theTypesTree column:
-#             CDConstants.printOut ( "___ - DEBUG DEBUG DEBUG ----- CDTypesEditor: self.__updateTypesDictFromEditor() ", CDConstants.DebugAll )
+#             CDConstants.printOut ( "___ - DEBUG DEBUG DEBUG ----- CDTypesEditor.self.__updateTypesDictFromEditor() ", CDConstants.DebugAll )
 #             CDConstants.printOut ( "      i, self.theTypesTree.cellWidget(i, 3) " + str(i) + " " + str( self.theTypesTree.cellWidget(i, 3) ), CDConstants.DebugAll )
 #             lRegionBlockCellSizes = self.theTypesTree.cellWidget(i, 3)
 
             # the region use is retrieved from the 5.th theTypesTree column:
-            # print "___ - DEBUG DEBUG DEBUG ----- CDTypesEditor: self.__updateTypesDictFromEditor() \n"
+            # print "___ - DEBUG DEBUG DEBUG ----- CDTypesEditor.self.__updateTypesDictFromEditor() \n"
             # print "      i, self.theTypesTree.item(i, 4) ", i, self.theTypesTree.item(i, 4)
 #             lRegionInUse = int ( self.theTypesTree.item(i, 4).text() )
 
@@ -1157,9 +1157,9 @@ class CDTypesEditor(QtGui.QWidget):
 
 
 
-        CDConstants.printOut("___ - DEBUG ----- CDTypesEditor: __updateTypesDictFromEditor() to self.typesDict =\n    "+str(self.typesDict)+ "\n     done.", CDConstants.DebugTODO )
+        CDConstants.printOut("___ - DEBUG ----- CDTypesEditor.__updateTypesDictFromEditor() to self.typesDict =\n    "+str(self.typesDict)+ "\n     done.", CDConstants.DebugTODO )
         
-        CDConstants.printOut("___ - DEBUG ----- CDTypesEditor: __updateTypesDictFromEditor() END: now " + \
+        CDConstants.printOut("___ - DEBUG ----- CDTypesEditor.__updateTypesDictFromEditor() END: now " + \
             str(self.theTypesTree.topLevelItemCount()) + " top-level items in tree and " + \
             str(self.__getRegionsDictElementCount()) + " regions. ----- DONE.", CDConstants.DebugExcessive )
 
@@ -1321,7 +1321,7 @@ class CDTypesEditor(QtGui.QWidget):
         #   updating its content programmatically:
         self.regionsMainTreeWidget.blockSignals(False)
 
-        # print "___ - DEBUG ----- CDTypesEditor: NOTUSED__populateTableWithTypesDict() : done"
+        # print "___ - DEBUG ----- CDTypesEditor.NOTUSED__populateTableWithTypesDict() : done"
 
 
     # end of  def NOTUSED__populateTableWithTypesDict(self)
@@ -1334,7 +1334,7 @@ class CDTypesEditor(QtGui.QWidget):
     # adjust the table widget for handling image sequence data:
     # ------------------------------------------------------------------
     def PWN_updateTableOfTypesForImageSequenceOn(self):
-        CDConstants.printOut( "___ - DEBUG ----- CDTypesEditor: updateTableOfTypesForImageSequenceOn() starting ----- ", CDConstants.DebugExcessive )
+        CDConstants.printOut( "___ - DEBUG ----- CDTypesEditor.updateTableOfTypesForImageSequenceOn() starting ----- ", CDConstants.DebugExcessive )
 
         # prevent theTypesTree from emitting any "itemChanged" signals when
         #   updating its content programmatically:
@@ -1409,10 +1409,9 @@ class CDTypesEditor(QtGui.QWidget):
         self.theTypesTree.blockSignals(False)
 
 
-        CDConstants.printOut( "___ - DEBUG ----- CDTypesEditor: updateTableOfTypesForImageSequenceOn() ending. ----- ", CDConstants.DebugExcessive )
+        CDConstants.printOut( "___ - DEBUG ----- CDTypesEditor.updateTableOfTypesForImageSequenceOn() ending. ----- ", CDConstants.DebugExcessive )
     # end of  def updateTableOfTypesForImageSequenceOn(self).
     # ------------------------------------------------------------------
-
 
 
 
@@ -1421,8 +1420,28 @@ class CDTypesEditor(QtGui.QWidget):
     # ------------------------------------------------------------------
     # adjust the table widget for handling image sequence data:
     # ------------------------------------------------------------------
+    def updateTableOfTypesForImageSequenceOn(self):
+        CDConstants.printOut( "___ - DEBUG ----- CDTypesEditor.updateTableOfTypesForImageSequenceOn() DO THIS. ----- ", CDConstants.DebugExcessive )
+    # end of  def updateTableOfTypesForImageSequenceOn(self).
+    # ------------------------------------------------------------------
+
+
+    # ------------------------------------------------------------------
+    # adjust the table widget for handling image sequence data:
+    # ------------------------------------------------------------------
+    def updateTableOfTypesForImageSequenceOff(self):
+        CDConstants.printOut( "___ - DEBUG ----- CDTypesEditor.updateTableOfTypesForImageSequenceOff() DO THIS. ----- ", CDConstants.DebugExcessive )
+    # end of  def updateTableOfTypesForImageSequenceOff(self).
+    # ------------------------------------------------------------------
+
+
+
+
+    # ------------------------------------------------------------------
+    # adjust the table widget for handling image sequence data:
+    # ------------------------------------------------------------------
     def PWN_updateTableOfTypesForImageSequenceOff(self):
-        CDConstants.printOut( "___ - DEBUG ----- CDTypesEditor: updateTableOfTypesForImageSequenceOff() starting ----- ", CDConstants.DebugExcessive )
+        CDConstants.printOut( "___ - DEBUG ----- CDTypesEditor.updateTableOfTypesForImageSequenceOff() starting ----- ", CDConstants.DebugExcessive )
 
         # prevent theTypesTree from emitting any "itemChanged" signals when
         #   updating its content programmatically:
@@ -1496,7 +1515,7 @@ class CDTypesEditor(QtGui.QWidget):
         #   updating its content programmatically:
         self.theTypesTree.blockSignals(False)
 
-        CDConstants.printOut( "___ - DEBUG ----- CDTypesEditor: updateTableOfTypesForImageSequenceOff() ending. ----- ", CDConstants.DebugExcessive )
+        CDConstants.printOut( "___ - DEBUG ----- CDTypesEditor.updateTableOfTypesForImageSequenceOff() ending. ----- ", CDConstants.DebugExcessive )
     # end of  def updateTableOfTypesForImageSequenceOff(self).
     # ------------------------------------------------------------------
 
@@ -1560,7 +1579,7 @@ class CDTypesEditor(QtGui.QWidget):
             if howMany > maxRowCount:
                 maxRowCount = howMany
 
-#         CDConstants.printOut("___ - DEBUG ----- CDTypesEditor: __getRegionsDictMaxNoOfCellTypes() = " + \
+#         CDConstants.printOut("___ - DEBUG ----- CDTypesEditor.__getRegionsDictMaxNoOfCellTypes() = " + \
 #             str(maxRowCount), CDConstants.DebugVerbose )
         return maxRowCount
 
@@ -1571,7 +1590,7 @@ class CDTypesEditor(QtGui.QWidget):
 #     # ------------------------------------------------------------------
 #     def handleTableItemSelectionChanged(self):
 #         lSelectionModel = self.regionsMainTreeWidget.selectionModel()
-#         print "___ - DEBUG ----- CDTypesEditor: handleTableItemSelectionChanged() lSelectionModel = " , lSelectionModel, " done."
+#         print "___ - DEBUG ----- CDTypesEditor.handleTableItemSelectionChanged() lSelectionModel = " , lSelectionModel, " done."
 #
 #         # TODO if any action is necessary
 #         #
@@ -1614,7 +1633,7 @@ class CDTypesEditor(QtGui.QWidget):
     # ------------------------------------------------------------------
     def __handleItemChanged(self,pItem,pColumn):
 
-        print "___ - DEBUG ----- CDTypesEditor: __handleItemChanged() pItem,pColumn =" , pItem,pColumn
+        print "___ - DEBUG ----- CDTypesEditor.__handleItemChanged() pItem,pColumn =" , pItem,pColumn
         # update the dict:
         self.__updateTypesDictFromEditor()
 
@@ -1633,7 +1652,7 @@ class CDTypesEditor(QtGui.QWidget):
         # propagate the signal upstream, for example to parent objects:
         self.emit(QtCore.SIGNAL("regionsTableChangedSignal()"))
 
-        print "___ - DEBUG ----- CDTypesEditor: handleOneRegionTableWidgetChanged() done."
+        print "___ - DEBUG ----- CDTypesEditor.handleOneRegionTableWidgetChanged() done."
 
 
 
@@ -1649,7 +1668,7 @@ class CDTypesEditor(QtGui.QWidget):
     # ------------------------------------------------------------------
     def PWN___miInitCentralTreeWidget(self):
 
-        CDConstants.printOut( "    - DEBUG ----- CDTypesEditor: __miInitCentralTreeWidget() starting.", CDConstants.DebugExcessive )
+        CDConstants.printOut( "    - DEBUG ----- CDTypesEditor.__miInitCentralTreeWidget() starting.", CDConstants.DebugExcessive )
 
         # -------------------------------------------
         # place the table in the Panel's vbox layout:
@@ -1684,7 +1703,7 @@ class CDTypesEditor(QtGui.QWidget):
         tableContainerWidget.setLayout(vbox)
         return tableContainerWidget
 
-        CDConstants.printOut( "    - DEBUG ----- CDTypesEditor: __miInitCentralTreeWidget() done.", CDConstants.DebugExcessive )
+        CDConstants.printOut( "    - DEBUG ----- CDTypesEditor.__miInitCentralTreeWidget() done.", CDConstants.DebugExcessive )
 
     # end of   def __miInitCentralTreeWidget(self)
     # ------------------------------------------------------------------
