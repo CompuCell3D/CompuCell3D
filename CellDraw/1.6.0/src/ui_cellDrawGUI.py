@@ -143,11 +143,11 @@ class Ui_CellDrawGUI(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:9pt;\">Click on an image color in the Input Image Layer to generate a corresponding region in the PIFF Scene.</span></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.label_7.setText(QtGui.QApplication.translate("CellDrawGUI", "Input Image Settings", None, QtGui.QApplication.UnicodeUTF8))
         self.label_8.setText(QtGui.QApplication.translate("CellDrawGUI", "PIFF Output Settings", None, QtGui.QApplication.UnicodeUTF8))
-        self.graphicsScenePIFF_saveMetadataCheckbox.setToolTip(QtGui.QApplication.translate("CellDrawGUI", "Selecting the \"Save metadata in PIFF\" checkbox will cause the saved PIFF files to include XML-formatted information about the dataset dimensions, units, etc.\n"
-"This information is ignored by CompuCell3D releases 3.5.0 and earlier.", None, QtGui.QApplication.UnicodeUTF8))
+        self.graphicsScenePIFF_saveMetadataCheckbox.setToolTip(QtGui.QApplication.translate("CellDrawGUI", "Selecting the \"Save metadata in PIFF\" checkbox will cause the saved PIFF files to include\n XML-formatted information about the dataset dimensions, units, etc.\n"
+"This information is ignored by CompuCell3D releases 3.6.2 and earlier.", None, QtGui.QApplication.UnicodeUTF8))
         self.graphicsScenePIFF_saveMetadataCheckbox.setText(QtGui.QApplication.translate("CellDrawGUI", "Save metadata in PIFF", None, QtGui.QApplication.UnicodeUTF8))
         self.graphicsScenePIFF_saveMetadataCheckbox_2.setToolTip(QtGui.QApplication.translate("CellDrawGUI", "Selecting \"Metadata in header\" will position the XML metadata at the beginning of saved PIFF files.\n"
-"Note: this will save PIFF files that are not readable by CompuCell3D release 3.5.0 and earlier.\n"
+"Note: this will save PIFF files that are not readable by CompuCell3D release 3.6.2 and earlier.\n"
 "To save PIFF files in a format compatible with older CompuCell3D releases, de-select this checkbox.\n"
 "", None, QtGui.QApplication.UnicodeUTF8))
         self.graphicsScenePIFF_saveMetadataCheckbox_2.setText(QtGui.QApplication.translate("CellDrawGUI", "Metadata in header", None, QtGui.QApplication.UnicodeUTF8))

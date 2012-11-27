@@ -49,15 +49,15 @@ class CDPreferences(QtGui.QDialog):
         # ---------------------------------------------------------
         #  these constants are defined in the CDConstants class:
         #
-        QtCore.QCoreApplication.setApplicationName(CDConstants.PrefsCellDrawApplication2011);
-        QtCore.QCoreApplication.setApplicationVersion(CDConstants.PrefsCellDrawApplicatioVersion2011);
-        QtCore.QCoreApplication.setOrganizationName(CDConstants.PrefsCellDrawOrganization2011);
-        QtCore.QCoreApplication.setOrganizationDomain(CDConstants.PrefsCellDrawOrganizationDomain2011);
+        QtCore.QCoreApplication.setApplicationName(CDConstants.PrefsCellDrawApplicationINI);
+        QtCore.QCoreApplication.setApplicationVersion(CDConstants.PrefsCellDrawApplicatioVersionINI);
+        QtCore.QCoreApplication.setOrganizationName(CDConstants.PrefsCellDrawOrganizationINI);
+        QtCore.QCoreApplication.setOrganizationDomain(CDConstants.PrefsCellDrawOrganizationDomainINI);
 
-        lCC3DPreferences = QtCore.QSettings(CDConstants.PrefsCellDrawFormat2011,
-                                            CDConstants.PrefsCellDrawScope2011,
-                                            CDConstants.PrefsCellDrawOrganization2011,
-                                            CDConstants.PrefsCellDrawApplication2011)
+        lCC3DPreferences = QtCore.QSettings(CDConstants.PrefsCellDrawFormatINI,
+                                            CDConstants.PrefsCellDrawScopeINI,
+                                            CDConstants.PrefsCellDrawOrganizationINI,
+                                            CDConstants.PrefsCellDrawApplicationINI)
 
 
         #  __init__ (2) - assign default values to all stored preferences,
@@ -69,7 +69,7 @@ class CDPreferences(QtGui.QDialog):
         self.pifSceneDepth  = 1
         self.pifSceneUnits  = "Pixel"
         self.pifScenePossibleUnitsList = ["Pixel", "mm", "micron"]
-       
+        
         # the class global keeping track of the selected PIFF generation mode:
         #    CDConstants.PIFFSaveWithFixedRaster,
         #    CDConstants.PIFFSaveWithOneRasterPerRegion,
@@ -77,6 +77,13 @@ class CDPreferences(QtGui.QDialog):
         self.piffGenerationMode = CDConstants.PIFFSaveWithOneRasterPerRegion
         # and the fixed raster size:
         self.piffFixedRasterWidth = 10
+
+        # two globals describing CellDraw's QMainWindow geometry and state (toolbars, menus)
+        self.mainWindowGeometry = QtCore.QByteArray()
+        self.mainWindowState = QtCore.QByteArray()
+       
+
+
         
         # the class global keeping track of where to write output files,
         #    its default is defined here in the same way as in the
@@ -193,12 +200,12 @@ class CDPreferences(QtGui.QDialog):
 
         lFont = QtGui.QFont()
         lFont.setWeight(QtGui.QFont.Bold)
-        pifSceneDimensionsTitleLabel = QtGui.QLabel("Cell Scene Dimensions")
-        pifSceneDimensionsTitleLabel.setFont(lFont)
-        pifSceneDimensionsTitleLabel.setMargin(2)
-        pifSceneDimensionsTitleLabel.setFrameShape(QtGui.QFrame.Panel)
-        pifSceneDimensionsTitleLabel.setPalette(QtGui.QPalette(QtGui.QColor(QtCore.Qt.lightGray)))
-        pifSceneDimensionsTitleLabel.setAutoFillBackground(True)
+        self.pifSceneDimensionsTitleLabel = QtGui.QLabel("Cell Scene Dimensions")
+        self.pifSceneDimensionsTitleLabel.setFont(lFont)
+        self.pifSceneDimensionsTitleLabel.setMargin(2)
+        self.pifSceneDimensionsTitleLabel.setFrameShape(QtGui.QFrame.Panel)
+        self.pifSceneDimensionsTitleLabel.setPalette(QtGui.QPalette(QtGui.QColor(QtCore.Qt.lightGray)))
+        self.pifSceneDimensionsTitleLabel.setAutoFillBackground(True)
         # CDConstants.printOut( " "+str( "___ - DEBUG ----- CDPreferences: __init__(): D" )+" ", CDConstants.DebugTODO )
        
         pifSceneWidthLabel = QtGui.QLabel("Cell Scene Width (x) :")
@@ -212,7 +219,7 @@ class CDPreferences(QtGui.QDialog):
 
         sceneDimensionsLayout = QtGui.QGridLayout()
 
-        sceneDimensionsLayout.addWidget(pifSceneDimensionsTitleLabel, 0, 0)
+        sceneDimensionsLayout.addWidget(self.pifSceneDimensionsTitleLabel, 0, 0)
 
         sceneDimensionsLayout.addWidget(pifSceneWidthLabel, 1, 0)
         sceneDimensionsLayout.addWidget(self.pifSceneWidthLineEdit, 1, 1)
@@ -310,10 +317,12 @@ class CDPreferences(QtGui.QDialog):
     # ---------------------------------------------------------
     def showMorePrefs(self, pShowMorePrefs=True):
         if pShowMorePrefs == False:
+            self.pifSceneDimensionsTitleLabel.setText("New Cell Scene Dimensions")
             self.mainLayout.removeWidget(self.morePreferencesWidget)
             self.morePreferencesWidget.hide()
             self.mainLayout.update()
         else:
+            self.pifSceneDimensionsTitleLabel.setText("Cell Scene Dimensions")
             self.morePreferencesWidget.show()
             self.mainLayout.addWidget(self.morePreferencesWidget, 0, 2, 2, 1)
             self.mainLayout.update()
@@ -341,27 +350,43 @@ class CDPreferences(QtGui.QDialog):
 
     # ---------------------------------------------------------
     def readPreferencesFromDisk(self):
-        preferences = QtCore.QSettings( \
-            CDConstants.PrefsCellDrawFormat2011, \
-            CDConstants.PrefsCellDrawScope2011, \
+        lPreferences = QtCore.QSettings( \
+            CDConstants.PrefsCellDrawFormatINI, \
+            CDConstants.PrefsCellDrawScopeINI, \
             QtCore.QCoreApplication.organizationName(), \
             QtCore.QCoreApplication.applicationName() )
-        preferences.beginGroup("pifScene")
+
+
+        lPreferences.beginGroup("pifScene")
         # each value saved in the preferences has to be extracted from a QVariant object,
         #   and if there is no such preferences key/value yet,
         #   QVariant builds it from the default values we place there (our globals):
         # CDConstants.printOut( " "+str( "self.pifSceneWidth, self.pifSceneHeight, self.pifSceneDepth, self.pifSceneUnits =", self.pifSceneWidth, self.pifSceneHeight, self.pifSceneDepth, self.pifSceneUnits )+" ", CDConstants.DebugTODO )
         # as we read int values from preferences, .value() returns them as tuples:
-        self.pifSceneWidth, ok  = preferences.value("pifSceneWidth", \
+        self.pifSceneWidth, ok  = lPreferences.value("pifSceneWidth", \
                                 QtCore.QVariant(self.pifSceneWidth) ).toInt()
-        self.pifSceneHeight, ok = preferences.value("pifSceneHeight", \
+        self.pifSceneHeight, ok = lPreferences.value("pifSceneHeight", \
                                 QtCore.QVariant(self.pifSceneHeight) ).toInt()
-        self.pifSceneDepth, ok = preferences.value("pifSceneDepth", \
+        self.pifSceneDepth, ok = lPreferences.value("pifSceneDepth", \
                                 QtCore.QVariant(self.pifSceneDepth) ).toInt()
-        self.pifSceneUnits  = preferences.value("pifSceneUnits", \
+        self.pifSceneUnits  = lPreferences.value("pifSceneUnits", \
                                 QtCore.QVariant(self.pifSceneUnits) ).toString()
+        lPreferences.endGroup()
+
+
+
+        lPreferences.beginGroup("mainWindow")
+        self.mainWindowGeometry = lPreferences.value("mainWindowGeometry", \
+                                QtCore.QVariant(self.mainWindowGeometry) ).toByteArray()
+        self.mainWindowState = lPreferences.value("mainWindowState", \
+                                QtCore.QVariant(self.mainWindowState) ).toByteArray()
+        lPreferences.endGroup()
+
+
         # CDConstants.printOut( " "+str( "self.pifSceneWidth, self.pifSceneHeight, self.pifSceneDepth, self.pifSceneUnits =", self.pifSceneWidth, self.pifSceneHeight, self.pifSceneDepth, self.pifSceneUnits )+" ", CDConstants.DebugTODO )
-        preferences.endGroup()
+
+
+
         # CDConstants.printOut( " "+str( "readPreferencesFromDisk() DONE" )+" ", CDConstants.DebugTODO )
 
 
@@ -388,15 +413,15 @@ class CDPreferences(QtGui.QDialog):
         # Also, since about Oct 2011 we now use the IniFormat for QSettings in CompuCell3D,
         #    to have it the same way on all platforms.
         #
-        lCC3DPreferences = QtCore.QSettings(CDConstants.PrefsCC3DFormat2011, \
-                                            CDConstants.PrefsCC3DScope2011, \
-                                            CDConstants.PrefsCC3DOrganization2011, \
-                                            CDConstants.PrefsCC3DApplication2011)
+        lCC3DPreferences = QtCore.QSettings(CDConstants.PrefsCC3DFormatINI, \
+                                            CDConstants.PrefsCC3DScopeINI, \
+                                            CDConstants.PrefsCC3DOrganizationINI, \
+                                            CDConstants.PrefsCC3DApplicationINI)
 
         lQSettingsStatus = lCC3DPreferences.status()
         if ( lQSettingsStatus != QtCore.QSettings.NoError ) :
             # there's been an error, let's try reading "old style" CC3D QSettings instead:
-            CDConstants.printOut( "___ - DEBUG ----- CDPreferences: readCC3DPreferencesFromDisk(): error: " + str(lQSettingsStatus) + " when using PrefsCC3DFormat2011.", CDConstants.DebugVerbose )            
+            CDConstants.printOut( "___ - DEBUG ----- CDPreferences: readCC3DPreferencesFromDisk(): error: " + str(lQSettingsStatus) + " when using PrefsCC3DFormatINI.", CDConstants.DebugVerbose )            
 
             lCC3DPreferences = QtCore.QSettings(CDConstants.PrefsCC3DFormatOld, \
                                                 CDConstants.PrefsCC3DScopeOld, \
@@ -412,7 +437,7 @@ class CDPreferences(QtGui.QDialog):
                 CDConstants.printOut( "___ - DEBUG ----- CDPreferences: readCC3DPreferencesFromDisk(): NO ERROR: " + str(lQSettingsStatus) + " when using PrefsCC3DFormatOld.", CDConstants.DebugVerbose )
         else:
             # no error when reading "old style" CC3D QSettings:
-            CDConstants.printOut( "___ - DEBUG ----- CDPreferences: readCC3DPreferencesFromDisk(): NO ERROR: " + str(lQSettingsStatus) + " when using PrefsCC3DFormat2011.", CDConstants.DebugVerbose )            
+            CDConstants.printOut( "___ - DEBUG ----- CDPreferences: readCC3DPreferencesFromDisk(): NO ERROR: " + str(lQSettingsStatus) + " when using PrefsCC3DFormatINI.", CDConstants.DebugVerbose )            
         # ---------------------------------------------------------
 
 
@@ -550,18 +575,25 @@ class CDPreferences(QtGui.QDialog):
 
     # ---------------------------------------------------------
     def writePreferencesToDisk(self):
-        preferences = QtCore.QSettings( \
-            CDConstants.PrefsCellDrawFormat2011, \
-            CDConstants.PrefsCellDrawScope2011, \
+
+        lPreferences = QtCore.QSettings( \
+            CDConstants.PrefsCellDrawFormatINI, \
+            CDConstants.PrefsCellDrawScopeINI, \
             QtCore.QCoreApplication.organizationName(), \
             QtCore.QCoreApplication.applicationName() )
-        preferences.beginGroup("pifScene")
+
+        lPreferences.beginGroup("pifScene")
         # each value saved in the preferences has to be wrapped inside a QVariant object:
-        preferences.setValue("pifSceneWidth", QtCore.QVariant(self.pifSceneWidth))
-        preferences.setValue("pifSceneHeight", QtCore.QVariant(self.pifSceneHeight))
-        preferences.setValue("pifSceneDepth", QtCore.QVariant(self.pifSceneDepth))
-        preferences.setValue("pifSceneUnits", QtCore.QVariant(self.pifSceneUnits))
-        preferences.endGroup();
+        lPreferences.setValue("pifSceneWidth", QtCore.QVariant(self.pifSceneWidth))
+        lPreferences.setValue("pifSceneHeight", QtCore.QVariant(self.pifSceneHeight))
+        lPreferences.setValue("pifSceneDepth", QtCore.QVariant(self.pifSceneDepth))
+        lPreferences.setValue("pifSceneUnits", QtCore.QVariant(self.pifSceneUnits))
+        lPreferences.endGroup()
+
+        lPreferences.beginGroup("mainWindow")
+        lPreferences.setValue("mainWindowGeometry", QtCore.QVariant(self.mainWindowGeometry))
+        lPreferences.setValue("mainWindowState", QtCore.QVariant(self.mainWindowState))
+        lPreferences.endGroup()
 
         # propagate a signal upstream, for example to parent objects:
         self.emit(QtCore.SIGNAL("cdPreferencesChangedSignal()"))
@@ -589,15 +621,39 @@ class CDPreferences(QtGui.QDialog):
 
     # ---------------------------------------------------------
     def getPifSceneWidth(self):
+        self.readPreferencesFromDisk()
         return self.pifSceneWidth
 
     # ---------------------------------------------------------
     def getPifSceneHeight(self):
+        self.readPreferencesFromDisk()
         return self.pifSceneHeight
 
     # ---------------------------------------------------------
     def getPifSceneDepth(self):
+        self.readPreferencesFromDisk()
         return self.pifSceneDepth
+
+
+    # ---------------------------------------------------------
+    def setMainWindowGeometry(self, pValue):
+        self.mainWindowGeometry = pValue
+        self.writePreferencesToDisk()
+
+    # ---------------------------------------------------------
+    def setMainWindowState(self, pValue):
+        self.mainWindowState = pValue
+        self.writePreferencesToDisk()
+
+    # ---------------------------------------------------------
+    def getMainWindowGeometry(self):
+        self.readPreferencesFromDisk()
+        return self.mainWindowGeometry
+
+    # ---------------------------------------------------------
+    def getMainWindowState(self):
+        self.readPreferencesFromDisk()
+        return self.mainWindowState
 
 
 

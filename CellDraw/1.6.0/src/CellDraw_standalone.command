@@ -38,6 +38,6 @@ export CELLDRAW_BUILD_VERSION=0
 echo "====> CellDraw $CELLDRAW_MAJOR_VERSION.$CELLDRAW_MINOR_VERSION.$CELLDRAW_BUILD_VERSION now starting from Python."
 
 # on Mac OS X 10.6.x we explicitly call Python 2.6:
-pythonw2.6 ${PREFIX_CELLDRAW}/cellDrawMain.pyw
+/usr/bin/pythonw2.6 ${PREFIX_CELLDRAW}/cellDrawMain.pyw
 
 cd ${current_directory}

@@ -79,7 +79,7 @@ class /*DECLSPECIFIER*/ CellIdentifier{
 class /*DECLSPECIFIER*/ CellInventory
 {
    public:
-		typedef  std::map<CellIdentifier,CellG *> cellInventoryContainerType;
+       typedef  std::map<CellIdentifier,CellG *> cellInventoryContainerType;
       //typedef  std::set<CellG *> cellInventoryContainerType;
       typedef  cellInventoryContainerType::iterator cellInventoryIterator;
 	  typedef std::map<long,CellG *> cellListByType_t;
