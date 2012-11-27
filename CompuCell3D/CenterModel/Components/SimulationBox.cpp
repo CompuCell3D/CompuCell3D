@@ -252,6 +252,10 @@ void SimulationBox::updateCellLookup(CellCM * _cell){
 		//cerr<<"newLookupIndex="<<newLookupIndex<<endl;
 		set<CellSorterDataCM> & newSorterSetRef=lookupLatticePtr->getByIndex(newLookupIndex)->sorterSet;
 		set<CellSorterDataCM>::iterator newSitr;
+
+        //cerr<<"_cell="<<_cell->id<<" lookupIdx="<<_cell->lookupIdx<<endl;
+        //cerr<<"_cell->position="<<_cell->position<<endl;
+
 		newSorterSetRef.insert(CellSorterDataCM(_cell));
 		//cerr<<"newSorterSetRef.size()="<<newSorterSetRef.size()<<endl;
 

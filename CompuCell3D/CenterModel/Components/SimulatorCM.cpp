@@ -1,6 +1,7 @@
 
 #include "SimulatorCM.h"
 #include "CellCM.h"
+#include "Integrator.h"
 
 #include <time.h>
 #include <BasicUtils/BasicRandomNumberGenerator.h>
@@ -15,7 +16,7 @@
 		
 using namespace CenterModel;
 
-SimulatorCM::SimulatorCM():stepCounter(0),timeSim(0.0)
+SimulatorCM::SimulatorCM():stepCounter(0),timeSim(0.0),integrator(0)
 
 {}
 
@@ -34,7 +35,12 @@ void SimulatorCM::registerForce(ForceTerm * _forceTerm){
     fCalc.registerForce(_forceTerm);
 }
 
-void SimulatorCM::createRandomCells(int N, double r_min, double r_max){
+void SimulatorCM::registerIntegrator(Integrator * _integrator){
+    integrator=_integrator;
+    integrator->init(this);
+}
+
+void SimulatorCM::createRandomCells(int N, double r_min, double r_max, double mot_min, double mot_max){
 
 	BasicRandomNumberGeneratorNonStatic rGen;
     //srand(GetTickCount());
@@ -47,13 +53,27 @@ void SimulatorCM::createRandomCells(int N, double r_min, double r_max){
 	for (int i=0;i<N;++i){
 		CellCM * cell=cf.createCellCM(boxDim.fX*rGen.getRatio(),boxDim.fY*rGen.getRatio(),boxDim.fZ*rGen.getRatio());
 		cell->interactionRadius=r_min+rGen.getRatio()*(r_max-r_min);
+        cell->effectiveMotility=mot_min+rGen.getRatio()*(mot_max-mot_min);
 		ci.addToInventory(cell);
 	}
 
 }
 
 void SimulatorCM::step(){
+    //cerr<<"SIMULATOR STEP="<<endl;
+
     fCalc.calculateForces();
+    //cerr<<"AFTER calculateForces="<<endl;
+    IntegratorData * integrDataPtr=integrator->getIntegratorDataPtr();    
+    
+
+    //cerr<<"BEFORE integrate"<<endl;
+    integrator->integrate();
+
+    timeSim+=integrator->getIntegratorDataPtr()->dt;
+    ++stepCounter;
+    cerr<<"stepCounter="<<stepCounter<<" time="<<timeSim<<" time_step="<<integrator->getIntegratorDataPtr()->dt<<endl;
+    //cerr<<"AFTER integrate"<<endl;
 
     return;
 	//int n=0;

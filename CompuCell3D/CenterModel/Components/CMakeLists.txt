@@ -7,6 +7,8 @@ SET(SRCS
   ForceCalculator.cpp  
   LennardJonesForceTerm.cpp
   SimulatorCM.cpp
+  Integrator.cpp
+  IntegratorFE.cpp
   )
 
 FIND_PACKAGE(PythonLibs)
@@ -28,6 +30,10 @@ INSTALL_FILES(/include/CompuCell3D/CenterModel/Components .h
   CellInventoryCM
   CellFactoryCM
   ForceCalculator
+  ForceTerm
   LennardJonesForceTerm
   SimulatorCM
+  Integrator
+  IntegratorFE
+  
   )

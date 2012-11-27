@@ -60,13 +60,33 @@ int main(int argc, char *argv[]) {
     simulator.init();
 
     
-    int N=200;
+    int N=2000;
     double r_min=1.0;
     double r_max=2.0;
     double mot_min=30000.0;
     double mot_max=60000.0;
 
     simulator.createRandomCells(N,r_min,r_max,mot_min,mot_max);
+    ////////CellCM * cellTmp;
+
+    ////////CellInventoryCM * ciPtr=simulator.getCellInventoryPtr();
+    ////////CellFactoryCM * cfPtr = simulator.getCellFactoryPtr();
+
+    ////////cellTmp=cfPtr->createCellCM(11.02,35.1,51.7);
+    ////////cellTmp->interactionRadius=1.6;
+    ////////cellTmp->effectiveMotility=20000.0;
+    ////////ciPtr->addToInventory(cellTmp);
+
+    ////////cellTmp=cfPtr->createCellCM(11.02,35.7,51.7);
+    ////////cellTmp->interactionRadius=1.6;
+    ////////cellTmp->effectiveMotility=20000.0;
+    ////////ciPtr->addToInventory(cellTmp);
+
+
+    ////////cellTmp=cfPtr->createCellCM(11.1,35.7,51.7);
+    ////////cellTmp->interactionRadius=1.6;
+    ////////cellTmp->effectiveMotility=20000.0;
+    ////////ciPtr->addToInventory(cellTmp);
 
 
     LennardJonesForceTerm ljTerm;

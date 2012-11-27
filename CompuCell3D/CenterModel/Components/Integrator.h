@@ -24,39 +24,41 @@
 #define INTEGRATOR_H
 
 #include "ComponentsDLLSpecifier.h"
-
-
 #include "CellCM.h"
 
 namespace CenterModel {
 
-
 	class SimulationBox;
-    class CellInventory;
+    class CellInventoryCM;
+    class SimulatorCM;
     
-
+    class COMPONENTS_EXPORT IntegratorData{
+        public:
+            double dt;     
+            double tolerance;
+    };
+    
+    
 	class COMPONENTS_EXPORT Integrator{
+    
 	public:
-
 		
+        Integrator():sbPtr(0),ciPtr(0),simulator(0){}
+        virtual ~Integrator(){}
 
+        //Integrator interface
+        virtual void init(SimulatorCM *_simulator=0);
+        virtual void integrate(){}
+        IntegratorData * getIntegratorDataPtr(){return &integratorData;}
 
-		Integrator();
-
-		virtual ~Integrator();
-        void integrate(double _dt);
-		
-
-	private:
+	protected:
 
         SimulationBox *sbPtr;
-        CellInventory *ciPtr;
+        CellInventoryCM *ciPtr;
+        SimulatorCM * simulator;
+        IntegratorData integratorData;
 
 	};
-
-
-
-
 
 
 };

@@ -20,49 +20,33 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
-#ifndef LENNARDJONESFORCETERM_H
-#define LENNARDJONESFORCETERM_H
+#ifndef INTEGRATORFE_H
+#define INTEGRATORFE_H
 
 #include "ComponentsDLLSpecifier.h"
+#include "Integrator.h"
 
-#include "ForceTerm.h"
-#include "CellCM.h"
+
+
 
 namespace CenterModel {
 
-
-	class SimulationBox;
-
-	class COMPONENTS_EXPORT LennardJonesForceTerm: public ForceTerm{
+	class COMPONENTS_EXPORT IntegratorFE:public Integrator{
     
 	public:
-
-		       
-		LennardJonesForceTerm();
-
-		virtual ~LennardJonesForceTerm();
+		
+		IntegratorFE();
         
-        //ForceTerm interface
+        //integrator interface
+        
+		virtual ~IntegratorFE();
         virtual void init(SimulatorCM *_simulator=0);
-        virtual Vector3 forceTerm(const CellCM * _cell1, const CellCM * _cell2, double _distance=0.0, const Vector3 & _unitDistVec=Vector3(0.,0.,0.) );
-        
-	protected:	
-        double A;
-        double B;
-        double eps;
-        double sigma;
+        virtual void integrate();		
 
+    protected:
+        double calculateTimeStep();
 
 	};
-
-    
-    
-
-
-
-
-
-
 
 };
 #endif

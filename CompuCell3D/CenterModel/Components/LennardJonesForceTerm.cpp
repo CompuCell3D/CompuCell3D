@@ -27,7 +27,7 @@
 
 using namespace CenterModel;
 
-LennardJonesForceTerm::LennardJonesForceTerm():A(0.2),B(0.1){}
+LennardJonesForceTerm::LennardJonesForceTerm():A(0.2),B(0.1),eps(0.6502),sigma(0.3166){}
 
 
 LennardJonesForceTerm::~LennardJonesForceTerm(){}
@@ -42,6 +42,24 @@ void LennardJonesForceTerm::init(SimulatorCM *_simulator){
 }
 
 
+//Vector3 LennardJonesForceTerm::forceTerm(const CellCM * _cell1, const CellCM * _cell2, double _distance, const Vector3 & _unitDistVec){
+//    Vector3 unitDistVec=_unitDistVec;        
+//    double dist=_distance;
+//
+//    
+//    if (!_distance){
+//        Vector3 distVec=distanceVectorInvariantCenterModel(_cell1->position , _cell2->position,boxDim ,bc);            
+//        dist=distVec.Mag();
+//        unitDistVec=distVec.Unit();
+//    }
+//    double forceMag=A*(-12.0)*pow(dist,-13.0)-B*(-6.0)*pow(dist,-7.0);
+//    //cerr<<"forceMag="<<forceMag<<endl;
+//    //cerr<<"unitDistVec="<<unitDistVec<<endl;
+//
+//    return forceMag*unitDistVec;
+//    
+//}
+
 Vector3 LennardJonesForceTerm::forceTerm(const CellCM * _cell1, const CellCM * _cell2, double _distance, const Vector3 & _unitDistVec){
     Vector3 unitDistVec=_unitDistVec;        
     double dist=_distance;
@@ -52,10 +70,13 @@ Vector3 LennardJonesForceTerm::forceTerm(const CellCM * _cell1, const CellCM * _
         dist=distVec.Mag();
         unitDistVec=distVec.Unit();
     }
-    double forceMag=A*(-12.0)*pow(dist,-13.0)-B*(-6.0)*pow(dist,-7.0);
+    double forceMag=24.0*(eps/sigma)*(2.0*pow(sigma/dist,13)-pow(sigma/dist,7));
+    
+
     //cerr<<"forceMag="<<forceMag<<endl;
     //cerr<<"unitDistVec="<<unitDistVec<<endl;
 
     return forceMag*unitDistVec;
     
 }
+

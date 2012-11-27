@@ -70,9 +70,10 @@ namespace CenterModel {
 
 
         //convenience function - used during testing
-        void createRandomCells(int N, double r_min, double r_max);
+        void createRandomCells(int N, double r_min, double r_max,double mot_min, double mot_max);
 
         void registerForce(ForceTerm * _forceTerm);
+        void registerIntegrator(Integrator * _integrator);
 
 	private:
 
@@ -90,6 +91,7 @@ namespace CenterModel {
         double startTime;
         long stepCounter;
 
+        Integrator * integrator;
 	};
 
 };

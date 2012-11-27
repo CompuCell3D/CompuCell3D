@@ -52,7 +52,8 @@ namespace CenterModel {
 			interactionRadius(1.0),
 			mass(1.0),
 			volume(0.0),
-			surface(0.0)
+			surface(0.0),
+            effectiveMotility(1.0)
 		{}
 
 		long id;
@@ -64,6 +65,7 @@ namespace CenterModel {
         
         Vector3 position;
         Vector3 netForce;
+        Vector3 velocity;
         
 		double radius;
 		double interactionRadius;
@@ -72,6 +74,7 @@ namespace CenterModel {
 		double volume;
 
 		double surface;
+        double effectiveMotility;
 
 		void grow();
 
