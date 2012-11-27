@@ -2,6 +2,7 @@
 #include <cmath>
 #include <CompuCell3D/Potts3D/Cell.h>
 #include <CompuCell3D/Field3D/Point3D.h>
+#include "Vector3.h"
 #include <iostream>
 
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
@@ -41,6 +42,59 @@ double dist(double x0,double y0,double z0){
 double dist(double x0,double y0,double z0,double x1,double y1,double z1){
    return sqrt((x0-x1)*(x0-x1)+(y0-y1)*(y0-y1)+(z0-z1)*(z0-z1));
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Vector3 distanceVectorInvariantCenterModel(const Vector3 & v0,const Vector3 & v1,const Vector3 & latticeSize ,const Vector3 & bc){
+//v0 -vector0
+//v1 -vector1
+//latticeSize - lattice dimensions
+//bc - boundary condition vector (component is 1 if BC is periodic along this coordinate, 0 otherwise)
+
+   // double x0_t,y0_t,z0_t;
+   // double x1_t,y1_t,z1_t;
+   Vector3 v0_t,v1_t;
+   
+   Vector3 shiftVec;
+   
+   shiftVec.fX= (v0.fX-latticeSize.fX/2)*bc.fX;
+   shiftVec.fY= (v0.fY-latticeSize.fY/2)*bc.fY;
+   shiftVec.fZ= (v0.fZ-latticeSize.fZ/2)*bc.fZ;
+
+
+   //moving x0,y0,z0 to approximetely center of the lattice
+   v0_t=v0-shiftVec;
+   
+
+   //shifting accordingly other coordinates
+   v1_t=v1-shiftVec;
+   
+   
+    if(v1_t.fX < 0){
+      v1_t.fX += latticeSize.fX;
+    }else if (v1_t.fX > latticeSize.fX){
+      v1_t.fX -= latticeSize.fX;
+    }  
+
+    if(v1_t.fY < 0){
+      v1_t.fY += latticeSize.fY;
+    }else if (v1_t.fY > latticeSize.fY){
+      v1_t.fY -= latticeSize.fY;
+    }  
+
+    if(v1_t.fZ < 0){
+      v1_t.fZ += latticeSize.fZ;
+    }else if (v1_t.fZ > latticeSize.fZ){
+      v1_t.fZ -= latticeSize.fZ;
+    }  
+    
+   return (v0_t-v1_t);
+
+
+
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 std::vector<std::complex<double> > solveCubicEquationRealCoeeficients(std::vector<double> & aRef){
@@ -355,6 +409,7 @@ Coordinates3D<double> precalculateCentroid(const Point3D & pt, const CellG *_cel
     
 // }
 
+
 double distanceInvariantCM(double x0,double y0,double z0,double x1,double y1,double z1,const Point3D & fieldDim, BoundaryStrategy *boundaryStrategy,int _pbcX,int _pbcY,int _pbcZ){
    double x0_t,y0_t,z0_t;
    double x1_t,y1_t,z1_t;
@@ -414,7 +469,6 @@ double distanceInvariantCM(double x0,double y0,double z0,double x1,double y1,dou
    // cerr<<" x1_t="<<x1_t<<" y1_t="<<y1_t<<" z1_t="<<z1_t<<endl;
    
    return dist(x0_t,y0_t,z0_t,x1_t,y1_t,z1_t);
-
 
 }
 

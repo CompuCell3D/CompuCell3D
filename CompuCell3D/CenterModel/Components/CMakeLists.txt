@@ -4,6 +4,9 @@ SET(SRCS
   SimulationBox.cpp
   CellInventoryCM.cpp
   CellFactoryCM.cpp
+  ForceCalculator.cpp  
+  LennardJonesForceTerm.cpp
+  SimulatorCM.cpp
   )
 
 FIND_PACKAGE(PythonLibs)
@@ -24,5 +27,7 @@ INSTALL_FILES(/include/CompuCell3D/CenterModel/Components .h
   SimulationBox
   CellInventoryCM
   CellFactoryCM
-  
+  ForceCalculator
+  LennardJonesForceTerm
+  SimulatorCM
   )

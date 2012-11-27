@@ -68,6 +68,7 @@ class COMPONENTS_EXPORT CellInventoryCM{
       cellInventoryIterator cellInventoryEnd(){return inventory.end();}
       void incrementIterator(cellInventoryIterator & _itr){++_itr;}
       void decrementIterator(cellInventoryIterator & _itr){--_itr;}
+      CellCM *getCellById(long _id);  
 
 
 

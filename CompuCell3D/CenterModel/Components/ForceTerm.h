@@ -20,67 +20,38 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
-#ifndef CELLCM_H
-#define CELLCM_H
-
+#ifndef FORCETERM_H
+#define FORCETERM_H
 
 #include "ComponentsDLLSpecifier.h"
-#include <PublicUtilities/Vector3.h>
 
-#ifndef PyObject_HEAD
-struct _object; //forward declare
-typedef _object PyObject; //type redefinition
-#endif
 
-class BasicClassGroup;
+#include "CellCM.h"
 
 namespace CenterModel {
 
-	/**
-	* A Potts3D cell.
-	*/
+	class SimulationBox;
+    class SimulatorCM;
 
-	class COMPONENTS_EXPORT CellCM{
+	class COMPONENTS_EXPORT ForceTerm{
+    
 	public:
-		typedef unsigned char CellType_t;
-		CellCM():
-			id(0),
-			type(0), 
-			lookupIdx(-1),
-			//x(0.0),y(0.0),z(0.0),
-			radius(2.0),
-			interactionRadius(1.0),
-			mass(1.0),
-			volume(0.0),
-			surface(0.0)
-		{}
+		       
+		ForceTerm():sbPtr(0),simulator(0){};
 
-		long id;
-		CellType_t type;
-
-		long lookupIdx;
-
-		//double x,y,z;
+		virtual ~ForceTerm(){};
         
-        Vector3 position;
-        Vector3 netForce;
-        
-		double radius;
-		double interactionRadius;
-		double mass;
+        //ForceTerm interface
+        virtual void init(SimulatorCM *_simulator=0){}
+        virtual Vector3 forceTerm(const CellCM * _cell1, const CellCM * _cell2,double _distance=0.0, const Vector3 & _unitDistVec=Vector3(0.,0.,0.) ){return Vector3();};
+		
+	protected:
+        SimulationBox *sbPtr;
+        SimulatorCM * simulator;
+        Vector3 bc; // boundary condition vector
+        Vector3 boxDim; // physical dimensions of computational box
 
-		double volume;
-
-		double surface;
-
-		void grow();
-
-		BasicClassGroup *extraAttribPtr;
-
-		PyObject *pyAttrib;
 	};
-
-
 
 };
 #endif

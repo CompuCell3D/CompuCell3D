@@ -8,11 +8,14 @@
 #include <complex>
 
 
+class Vector3;
 
 float findMin( float _d , int _dim );
 
 double dist(double x0,double y0,double z0);
 double dist(double x0,double y0,double z0,double x1,double y1,double z1);
+Vector3 distanceVectorInvariantCenterModel(const Vector3 & v0,const Vector3 & v1,const Vector3 & latticeSize ,const Vector3 & bc);
+
 //the takes as an input a vector 'a' of 4 real coefficient of cubic plynomial (a[0]*x^3 + a[1]*x^2+a[2]*x+a[3])
 // and returns a vector of 3 complex solutions of the cubic equation
 std::vector<std::complex<double> > solveCubicEquationRealCoeeficients(std::vector<double> & aRef);
@@ -53,6 +56,8 @@ namespace CompuCell3D{
 	double distInvariantCM(double x0,double y0,double z0,double x1,double y1,double z1,const Point3D & fieldDim, BoundaryStrategy *boundaryStrategy=0);
     
     double distanceInvariantCM(double x0,double y0,double z0,double x1,double y1,double z1,const Point3D & fieldDim, BoundaryStrategy *boundaryStrategy=0,int _pbcX=0,int _pbcY=0,int _pbcZ=0);
+    
+    
     
     
 	Point3D distanceVectorInvariant(const Point3D & _pt1 ,const Point3D & _pt0,const Point3D & _fieldDim);

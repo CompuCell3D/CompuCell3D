@@ -20,67 +20,42 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
-#ifndef CELLCM_H
-#define CELLCM_H
+#include "LennardJonesForceTerm.h"
+#include <PublicUtilities/NumericalUtils.h>
+#include "SimulatorCM.h"
+#include <iostream>
+
+using namespace CenterModel;
+
+LennardJonesForceTerm::LennardJonesForceTerm():A(0.2),B(0.1){}
 
 
-#include "ComponentsDLLSpecifier.h"
-#include <PublicUtilities/Vector3.h>
+LennardJonesForceTerm::~LennardJonesForceTerm(){}
 
-#ifndef PyObject_HEAD
-struct _object; //forward declare
-typedef _object PyObject; //type redefinition
-#endif
+void LennardJonesForceTerm::init(SimulatorCM *_simulator){
+    if (!_simulator)
+        return;
 
-class BasicClassGroup;
-
-namespace CenterModel {
-
-	/**
-	* A Potts3D cell.
-	*/
-
-	class COMPONENTS_EXPORT CellCM{
-	public:
-		typedef unsigned char CellType_t;
-		CellCM():
-			id(0),
-			type(0), 
-			lookupIdx(-1),
-			//x(0.0),y(0.0),z(0.0),
-			radius(2.0),
-			interactionRadius(1.0),
-			mass(1.0),
-			volume(0.0),
-			surface(0.0)
-		{}
-
-		long id;
-		CellType_t type;
-
-		long lookupIdx;
-
-		//double x,y,z;
-        
-        Vector3 position;
-        Vector3 netForce;
-        
-		double radius;
-		double interactionRadius;
-		double mass;
-
-		double volume;
-
-		double surface;
-
-		void grow();
-
-		BasicClassGroup *extraAttribPtr;
-
-		PyObject *pyAttrib;
-	};
+    simulator=_simulator;
+    simulator->registerForce(this);
+    
+}
 
 
+Vector3 LennardJonesForceTerm::forceTerm(const CellCM * _cell1, const CellCM * _cell2, double _distance, const Vector3 & _unitDistVec){
+    Vector3 unitDistVec=_unitDistVec;        
+    double dist=_distance;
 
-};
-#endif
+    
+    if (!_distance){
+        Vector3 distVec=distanceVectorInvariantCenterModel(_cell1->position , _cell2->position,boxDim ,bc);            
+        dist=distVec.Mag();
+        unitDistVec=distVec.Unit();
+    }
+    double forceMag=A*(-12.0)*pow(dist,-13.0)-B*(-6.0)*pow(dist,-7.0);
+    //cerr<<"forceMag="<<forceMag<<endl;
+    //cerr<<"unitDistVec="<<unitDistVec<<endl;
+
+    return forceMag*unitDistVec;
+    
+}

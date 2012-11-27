@@ -63,3 +63,11 @@ void CellInventoryCM::removeFromInventory(CellCM * _cell){
 	inventory.erase(CellIdentifierCM(_cell->id));
 }
 	  
+CellCM * CellInventoryCM::getCellById(long _id){
+    cellInventoryContainerTypeCM::iterator mitr=inventory.find(CellIdentifierCM(_id));
+    if (mitr!=inventory.end()){
+        return mitr->second;
+    }
+    return 0;
+
+}

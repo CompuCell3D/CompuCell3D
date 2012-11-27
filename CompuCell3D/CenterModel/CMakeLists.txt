@@ -32,7 +32,14 @@
   # )
 
 ADD_SUBDIRECTORY(Components)  
-  
+ 
+SET(LIBS 
+Field3DStatic
+ComponentsShared
+XMLUtilsShared
+
+)
+ 
 INCLUDE_DIRECTORIES ( 
     ${COMPUCELL3D_SOURCE_DIR}/core
     ${COMPUCELL3D_SOURCE_DIR}/CenterModel
@@ -40,14 +47,14 @@ INCLUDE_DIRECTORIES (
 
     
 ADD_EXECUTABLE(CenterModelCML main.cpp)
-TARGET_LINK_LIBRARIES(CenterModelCML
-# CompuCellLibShared
-# XMLParserExpatLibShared
-Field3DStatic
-ComponentsShared
-XMLUtilsShared
-)
-INSTALL_TARGETS(/bin CenterModelCML)    
+ADD_EXECUTABLE(CenterModelIntegratorCML mainIntegrator.cpp)
+ADD_EXECUTABLE(CenterModelIntegratorNewCML mainIntegratorNew.cpp)
+
+TARGET_LINK_LIBRARIES(CenterModelCML ${LIBS})
+TARGET_LINK_LIBRARIES(CenterModelIntegratorCML ${LIBS})
+TARGET_LINK_LIBRARIES(CenterModelIntegratorNewCML ${LIBS})
+
+INSTALL_TARGETS(/bin CenterModelCML CenterModelIntegratorCML CenterModelIntegratorNewCML)      
     
     
 # # # if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)

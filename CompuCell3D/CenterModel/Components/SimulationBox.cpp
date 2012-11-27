@@ -118,6 +118,13 @@ void SimulationBox::setBoxSpatialProperties(double _x,double _y,double _z,double
 	lookupLatticeDim.z=static_cast<short>(floor(fabs(zratio)))+1;
 
 
+	// // // //once we figured out lookupLAtticeDimension we will have to adjust box size to make sure that the size of each lookup box  is the same
+	// // // dim.fX=_x;
+	// // // dim.fY=_y;
+	// // // dim.fZ=_z;
+
+
+
 	lookupLatticePtr=new CompuCell3D::Field3DImpl<CellSorterCM*>(lookupLatticeDim,static_cast<CellSorterCM*>(0));
 
 
@@ -139,10 +146,10 @@ void SimulationBox::setBoxSpatialProperties(double _x,double _y,double _z,double
 			//CompuCell3D::BoundaryStrategy::destroy();
 			CompuCell3D::BoundaryStrategy::instantiate("noflux","noflux","noflux","regular",0,0,"none",CompuCell3D::LatticeType::SQUARE_LATTICE);
 			boundaryStrategy=CompuCell3D::BoundaryStrategy::getInstance();
-			cerr<<"boundaryStrategy="<<boundaryStrategy<<endl;
-			cerr<<"lookupLatticeDim="<<lookupLatticeDim<<endl;
-			cerr<<"maxOffset="<<boundaryStrategy->getMaxOffset()<<endl;
-			cerr<<"getMaxDistance="<<boundaryStrategy->getMaxDistance()<<endl;
+			//cerr<<"boundaryStrategy="<<boundaryStrategy<<endl;
+			//cerr<<"lookupLatticeDim="<<lookupLatticeDim<<endl;
+			//cerr<<"maxOffset="<<boundaryStrategy->getMaxOffset()<<endl;
+			//cerr<<"getMaxDistance="<<boundaryStrategy->getMaxDistance()<<endl;
 			
 			//BoundaryStrategy is sensitive to mimimum dimension value -if the value is too small it will not work properly...
 			//CompuCell3D::Dim3D newDim(10,10,10);
@@ -151,9 +158,12 @@ void SimulationBox::setBoxSpatialProperties(double _x,double _y,double _z,double
 			//boundaryStrategy->setDim(newDim);
 
 
-			cerr<<"maxNeighborOrder="<<maxNeighborOrder<<endl;
+			//cerr<<"maxNeighborOrder="<<maxNeighborOrder<<endl;
+            //in 3D maxNeighborOrder=3 - we need to cover all "corners" of central pixel
+            //in2D maxNeighborOrder=2
+            maxNeighborOrder=3;
 			maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(maxNeighborOrder);	//maxNeighborOrder is 2 here because we will search for interaction pairs in grid locations which are up to 2nd nearest neighbors
-			cerr<<"maxNeighborIndex="<<maxNeighborIndex<<endl;
+			//cerr<<"maxNeighborIndex="<<maxNeighborIndex<<endl;
 
 			neighborsVec.clear();
 			neighborsVec.assign(maxNeighborIndex+2,CompuCell3D::Point3D());
@@ -166,18 +176,18 @@ std::pair<std::vector<CompuCell3D::Point3D>,unsigned int> SimulationBox::getLatt
 	CompuCell3D::Point3D pt=getCellLatticeLocation(_cell);
 
 	std::pair<std::vector<CompuCell3D::Point3D>,unsigned int> neighborListCountPair;
-	cerr<<"maxNeighborIndex="<<maxNeighborIndex<<endl;
+	//cerr<<"maxNeighborIndex="<<maxNeighborIndex<<endl;
 	neighborListCountPair.first=std::vector<CompuCell3D::Point3D>(maxNeighborIndex+2);
 	neighborListCountPair.second=0;
 
-	cerr<<"neighborListCountPair.first.size()="<<neighborListCountPair.first.size()<<endl;
+	//cerr<<"neighborListCountPair.first.size()="<<neighborListCountPair.first.size()<<endl;
 	int validNeighbors=0;
 	neighborListCountPair.first[validNeighbors++]=pt; //lattice location with current cell has to be searched as well
 
 	CompuCell3D::Neighbor neighbor;
 
 	
-	cerr<<"maxNeighborIndex="<<maxNeighborIndex<<endl;
+	//cerr<<"maxNeighborIndex="<<maxNeighborIndex<<endl;
 	for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
 		neighbor=boundaryStrategy->getNeighborDirect(pt,nIdx);
 		if(!neighbor.distance){

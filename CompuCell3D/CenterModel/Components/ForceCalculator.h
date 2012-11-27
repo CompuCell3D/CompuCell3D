@@ -20,65 +20,45 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
-#ifndef CELLCM_H
-#define CELLCM_H
-
+#ifndef FORCECALCULATOR_H
+#define FORCECALCULATOR_H
 
 #include "ComponentsDLLSpecifier.h"
-#include <PublicUtilities/Vector3.h>
 
-#ifndef PyObject_HEAD
-struct _object; //forward declare
-typedef _object PyObject; //type redefinition
-#endif
 
-class BasicClassGroup;
+#include "CellCM.h"
+#include <vector>
+
 
 namespace CenterModel {
 
-	/**
-	* A Potts3D cell.
-	*/
 
-	class COMPONENTS_EXPORT CellCM{
+	class SimulationBox;
+    class CellInventoryCM;
+    class ForceTerm;
+    class SimulatorCM;
+
+	class COMPONENTS_EXPORT ForceCalculator{
 	public:
-		typedef unsigned char CellType_t;
-		CellCM():
-			id(0),
-			type(0), 
-			lookupIdx(-1),
-			//x(0.0),y(0.0),z(0.0),
-			radius(2.0),
-			interactionRadius(1.0),
-			mass(1.0),
-			volume(0.0),
-			surface(0.0)
-		{}
 
-		long id;
-		CellType_t type;
-
-		long lookupIdx;
-
-		//double x,y,z;
+		ForceCalculator();
+        virtual void init(SimulatorCM *_simulator=0);
         
-        Vector3 position;
-        Vector3 netForce;
-        
-		double radius;
-		double interactionRadius;
-		double mass;
+		virtual ~ForceCalculator();
+        void calculateForces();
+        void registerForce(ForceTerm * _forceTerm);
+		
 
-		double volume;
+	private:
+        SimulatorCM * simulator;
+        SimulationBox *sbPtr;
+        CellInventoryCM *ciPtr;
+        std::vector<ForceTerm*> forceTermRegistry;
 
-		double surface;
-
-		void grow();
-
-		BasicClassGroup *extraAttribPtr;
-
-		PyObject *pyAttrib;
 	};
+
+
+
 
 
 
