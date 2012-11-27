@@ -80,7 +80,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.rollbackImporter = None
         
         from PlotManagerSetup import createPlotManager
-        self.plotManager = createPlotManager(self) # object responsible for creating/managing plot windows so they're accessible from steppable level 
+        self.useVTKPlots = False
+        self.plotManager = createPlotManager(self, self.useVTKPlots) # object responsible for creating/managing plot windows so they're accessible from steppable level 
 #        print MODULENAME," __init__:  self.plotManager=",self.plotManager
         
         self.fieldTypes = {}
@@ -228,6 +229,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         else:
             dictKey = self.lastActiveWindow.winId().__int__()
 #        print MODULENAME, 'updateActiveWindowVisFlags():  dictKey (of lastActiveWindow)=',dictKey
+#        if self.lastActiveWindow:
+#            print MODULENAME, 'updateActiveWindowVisFlags():  self.lastActiveWindow.windowTitle()=',self.lastActiveWindow.windowTitle()
         self.graphicsWindowVisDict[dictKey] = (self.cellsAct.isChecked(),self.borderAct.isChecked(), \
                                       self.clusterBorderAct.isChecked(),self.cellGlyphsAct.isChecked(),self.FPPLinksAct.isChecked() )
 #        print MODULENAME, 'updateActiveWindowVisFlags():  self.graphicsWindowVisDict[self.lastActiveWindow.winId().__int__()]=',self.graphicsWindowVisDict[self.lastActiveWindow.winId().__init__()]
@@ -269,7 +272,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
             action = windowMenu.addAction(actionText)
             action.setCheckable(True)
-            myFlag = self.lastActiveWindow==graphicsWindow
+            myFlag = self.lastActiveWindow == graphicsWindow
 #            print MODULENAME,'------- updateWindowMenu():  setting winId,flag=',graphicsWindow.winId(),myFlag
 #            print MODULENAME,'------- updateWindowMenu():  lastActiveWindow=',self.lastActiveWindow.winId()
             action.setChecked(myFlag)
@@ -507,7 +510,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
 
     def removeAllPlotWindows(self,_leaveFirstWindowFlag=False):
-        windowNames=self.plotWindowDict.keys()
+        windowNames = self.plotWindowDict.keys()
         for windowName in windowNames:
             # print "windowName=",windowName
             # print "self.graphicsWindowDict=",self.graphicsWindowDict
@@ -517,10 +520,9 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             # self.setActiveSubWindow(self.plotWindowDict[windowName])
             self.setActiveSubWindow(self.mdiWindowDict[windowName])
             self.closeActiveSubWindowSlot()
-            
-            
+
         self.updateWindowMenu()
-        self.plotWindowDict={}
+        self.plotWindowDict = {}
         self.plotManager.reset()
         # from PlotManagerSetup import createPlotManager
         # self.plotManager=createPlotManager(self) # object that is responsible for creating and managing plot windows sdo that they are accessible from steppable level 
@@ -572,7 +574,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         print MODULENAME,"closeActiveSubWindowSlot():   self.windowDict.keys()=",self.windowDict.keys()
         for windowName in self.windowDict.keys():
             print MODULENAME,"closeActiveSubWindowSlot():   windowName=",windowName    #  = 1,2, etc
-            if self.windowDict[windowName]==activeWindow.widget():
+            if self.windowDict[windowName] == activeWindow.widget():
                 del self.windowDict[windowName]
                 if windowName in self.graphicsWindowDict.keys():
                     del self.graphicsWindowDict[windowName]
@@ -1204,20 +1206,17 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         #window menu actions
         self.connect(self.newGraphicsWindowAct,    SIGNAL('triggered()'),      self.addNewGraphicsWindow)        
         # self.connect(self.newPlotWindowAct,    SIGNAL('triggered()'),      self.addNewPlotWindow)        
-        self.connect(self.tileAct,    SIGNAL('triggered()'),      self.tileSubWindows)
-        self.connect(self.cascadeAct, SIGNAL('triggered()'),      self.cascadeSubWindows) 
-        self.connect(self.saveWindowsGeometryAct, SIGNAL('triggered()'),     self.saveWindowsGeometry) 
-        self.connect(self.minimizeAllGraphicsWindowsAct,    SIGNAL('triggered()'),      self.minimizeAllGraphicsWindows) 
-        self.connect(self.restoreAllGraphicsWindowsAct,    SIGNAL('triggered()'),      self.restoreAllGraphicsWindows) 
+        self.connect(self.tileAct,    SIGNAL('triggered()'), self.tileSubWindows)
+        self.connect(self.cascadeAct, SIGNAL('triggered()'), self.cascadeSubWindows) 
+        self.connect(self.saveWindowsGeometryAct, SIGNAL('triggered()'), self.saveWindowsGeometry) 
+        self.connect(self.minimizeAllGraphicsWindowsAct, SIGNAL('triggered()'), self.minimizeAllGraphicsWindows) 
+        self.connect(self.restoreAllGraphicsWindowsAct, SIGNAL('triggered()'), self.restoreAllGraphicsWindows) 
         
         
-        self.connect(self.closeActiveWindowAct,    SIGNAL('triggered()'),      self.closeActiveSubWindowSlot)         
+        self.connect(self.closeActiveWindowAct, SIGNAL('triggered()'), self.closeActiveSubWindowSlot)         
+        self.connect(self.closeAdditionalGraphicsWindowsAct, SIGNAL('triggered()'), self.removeAuxiliaryGraphicsWindows)        
         
-        self.connect(self.closeAdditionalGraphicsWindowsAct,    SIGNAL('triggered()'),      self.removeAuxiliaryGraphicsWindows)        
-        
-        
-        self.connect(self,          SIGNAL('configsChanged'), self.__paramsChanged)
-
+        self.connect(self, SIGNAL('configsChanged'), self.__paramsChanged)
 
     
     # Connections that are related to the simulation view
@@ -2819,6 +2818,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             if checked:
 #                if self.mainGraphicsWindow is not None:
                 if self.lastActiveWindow is not None:
+#                    print MODULENAME,"  __checkBorder: type(self.lastActiveWindow)=",type(self.lastActiveWindow)
+#                    print MODULENAME,"  __checkBorder: dir(self.lastActiveWindow)=",dir(self.lastActiveWindow)
                     self.lastActiveWindow.showBorder()
                 self.borderAct.setChecked(True)
             else:
