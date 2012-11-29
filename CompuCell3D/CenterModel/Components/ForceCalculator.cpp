@@ -51,9 +51,9 @@ void ForceCalculator::calculateForces(){
         cell->netForce=Vector3(0.,0.,0.);
 
 
-		InteractionRangeIterator itr = sb.getInteractionRangeIterator(cell);
+        InteractionRangeIterator itr = sb.getInteractionRangeIterator(cell).begin();
 
-		itr.begin();
+		//itr.begin();
 		InteractionRangeIterator endItr = sb.getInteractionRangeIterator(cell).end();
 
 		//cerr<<"***************** NEIGHBORS of cell->id="<<cell->id<<endl;

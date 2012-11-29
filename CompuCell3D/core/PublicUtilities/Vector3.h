@@ -73,7 +73,20 @@ public:
 
    inline void SetMag(precision_t);
    // Set magnitude keeping theta and phi constant (BaBar).
-   
+
+   inline void SetMin(precision_t _x, precision_t _y,precision_t _z);
+   //Ensure that vector coordinates are at least (_x,_y,_z)  - this function changes vector components
+
+   inline void SetMin(Vector3 &_vec);
+   //overloaded version of the above
+
+   inline void SetMax(precision_t _x, precision_t _y,precision_t _z);
+   //Ensure that vector coordinates are at most (_x,_y,_z)  - this function changes vector components
+
+   inline void SetMax(Vector3 &_vec);
+   //overloaded version of the above
+          
+
    void SetMagThetaPhi(precision_t mag, precision_t theta, precision_t phi);
 
    inline Vector3 & operator = (const Vector3 &);
@@ -245,6 +258,32 @@ inline void Vector3::SetMag(Vector3::precision_t ma) {
       fZ=fZ*factor;
    }
 }
+
+inline void Vector3::SetMin(precision_t _x, precision_t _y,precision_t _z){
+    if (fX<_x) fX=_x;
+    if (fY<_y) fY=_y;
+    if (fZ<_z) fZ=_z;
+}
+
+inline void Vector3::SetMax(precision_t _x, precision_t _y,precision_t _z){
+    if (fX>_x) fX=_x;
+    if (fY>_y) fY=_y;
+    if (fZ>_z) fZ=_z;
+    
+}
+
+inline void Vector3::SetMin(Vector3 &_vec){
+    if (fX<_vec.fX) fX=_vec.fX;
+    if (fY<_vec.fY) fY=_vec.fY;
+    if (fZ<_vec.fZ) fZ=_vec.fZ;
+}
+
+inline void Vector3::SetMax(Vector3 &_vec){
+    if (fX>_vec.fX) fX=_vec.fX;
+    if (fY>_vec.fY) fY=_vec.fY;
+    if (fZ>_vec.fZ) fZ=_vec.fZ;
+}
+
 
 
 inline Vector3::precision_t Vector3::Perp2() const { return fX*fX + fY*fY; }

@@ -37,3 +37,5 @@ INSTALL_FILES(/include/CompuCell3D/CenterModel/Components .h
   IntegratorFE
   
   )
+  
+ add_subdirectory(Forces)

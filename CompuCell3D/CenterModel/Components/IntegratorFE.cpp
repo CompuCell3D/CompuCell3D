@@ -28,8 +28,6 @@ double IntegratorFE::calculateTimeStep(){
             maxAbsVelocity=absVelocity;
         }
     }
-
-    
     
     integratorData.dt=integratorData.tolerance/maxAbsVelocity;
 
@@ -37,11 +35,15 @@ double IntegratorFE::calculateTimeStep(){
 
 }
 
+
+
 void IntegratorFE::integrate(){
 
     calculateTimeStep();
 
     CellInventoryCM::cellInventoryIterator itr;    
+
+    cerr<<"boxMin="<<boxMin<<" boxMax="<<boxMax<<" integratorData.dt="<<integratorData.dt<<endl;
 
 	for (itr=ciPtr->cellInventoryBegin() ; itr!=ciPtr->cellInventoryEnd(); ++itr){
 		CellCM * cell=itr->second;
@@ -52,6 +54,7 @@ void IntegratorFE::integrate(){
 
         cell->position+=cell->velocity*integratorData.dt;
 
+        
         long int lookupIdx=cell->lookupIdx;
         //cerr<<"integratorData.dt="<<integratorData.dt<<endl;
         //cerr<<"cell->id="<<cell->id<<" pos="<<cell->position<<endl;
@@ -59,8 +62,12 @@ void IntegratorFE::integrate(){
         //cerr<<"cell->effectiveMotility="<<cell->effectiveMotility<<endl;
         //cerr<<"cell->velocity*integratorData.dt="<<cell->velocity*integratorData.dt<<endl;
 
-        sbPtr->updateCellLookup(cell); //updating lookup information about cell
+        cell->position.SetMin(boxMin);
+        cell->position.SetMax(boxMax);
 
+
+        sbPtr->updateCellLookup(cell); //updating lookup information about cell
+        
         if (lookupIdx!=cell->lookupIdx){
             cerr<<"cell->id="<<cell->id<<" idx before="<<lookupIdx<<" index after="<<cell->lookupIdx<<endl;
             cerr<<"positionBefore="<<positionBefore<<" position after="<<cell->position<<endl;

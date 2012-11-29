@@ -14,5 +14,7 @@ void Integrator::init(SimulatorCM *_simulator){
     //simulator->registerIntegrator(this);
     sbPtr=simulator->getSimulationBoxPtr();
     ciPtr=simulator->getCellInventoryPtr();
+    boxMax=sbPtr->getDim();
+    boxMin=Vector3(0.,0.,0.);
 }
 

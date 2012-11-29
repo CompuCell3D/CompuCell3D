@@ -253,11 +253,16 @@ void SimulationBox::updateCellLookup(CellCM * _cell){
 		set<CellSorterDataCM> & newSorterSetRef=lookupLatticePtr->getByIndex(newLookupIndex)->sorterSet;
 		set<CellSorterDataCM>::iterator newSitr;
 
-        //cerr<<"_cell="<<_cell->id<<" lookupIdx="<<_cell->lookupIdx<<endl;
-        //cerr<<"_cell->position="<<_cell->position<<endl;
+        //if (_debug){
+        //    cerr<<"_cell="<<_cell->id<<" lookupIdx="<<_cell->lookupIdx<<endl;
+        //    cerr<<"_cell->position="<<_cell->position<<" lookupLaticePt="<<pt<<endl;
 
+        //}
 		newSorterSetRef.insert(CellSorterDataCM(_cell));
-		//cerr<<"newSorterSetRef.size()="<<newSorterSetRef.size()<<endl;
+
+      //  if (_debug){
+		    //cerr<<"newSorterSetRef.size()="<<newSorterSetRef.size()<<endl;
+      //  }
 
 	}
 
@@ -300,6 +305,18 @@ InteractionRangeIterator& InteractionRangeIterator::begin(){
 
 	counter=0;
 
+    CompuCell3D::Point3D lookupPt = neighborListPair.first[counter];
+    CompuCell3D::Dim3D lookupLatticeDim = lookupFieldPtr->getDim();
+
+    for (int i = 0 ; i<neighborListPair.second ; ++i){
+        if (neighborListPair.first[i].x<0 ||neighborListPair.first[i].y<0 || neighborListPair.first[i].z<0 ||
+            neighborListPair.first[i].x>=lookupLatticeDim.x || neighborListPair.first[i].y>=lookupLatticeDim.y || neighborListPair.first[i].z>=lookupLatticeDim.z){
+            cerr<<"neighborListPair.first["<<i<<"]="<<neighborListPair.first[i]<<endl;
+            cerr<<"cell->id="<<cell->id<<" cell->position="<<cell->position<<endl;
+        }
+    }
+
+    //cerr<<"neighborListPair.first[counter]="<<neighborListPair.first[counter]<<endl;
 	currentSorterSetPtr=&lookupFieldPtr->get(neighborListPair.first[counter])->sorterSet;
 	//sitrBegin = lookupFieldPtr->get(neighborListPair.first[counter])->sorterSet.begin();
 	sitrCurrent= lookupFieldPtr->get(neighborListPair.first[counter])->sorterSet.begin();

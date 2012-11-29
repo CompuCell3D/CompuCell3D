@@ -17,6 +17,9 @@
 #include <limits>
 #include <fstream>
 
+#include <BasicUtils/BasicModuleManager.h>
+#include <Components/ForceTerm.h>
+
 #include <Components/LennardJonesForceTerm.h>
 
 
@@ -48,6 +51,18 @@ int main(int argc, char *argv[]) {
     cell.grow();
 	cerr<<"cell.position="<<cell.position<<endl;
 
+    BasicModuleManager<ForceTerm> forceTermManager;
+
+    char *forceTermPath = getenv("COMPUCELL3D_FORCECM_PATH");
+    cerr<<"forceTermPath ="<<forceTermPath <<endl;
+    if (forceTermPath ) forceTermManager.scanLibraries(forceTermPath);
+
+    ForceTerm *ljTm=0;
+    ljTm = forceTermManager.get("LennardJones");
+    cerr<<"ljTm="<<ljTm<<endl;
+
+    return 0;
+
     SimulatorCM simulator;
     
     
@@ -60,7 +75,7 @@ int main(int argc, char *argv[]) {
     simulator.init();
 
     
-    int N=2000;
+    int N=20000;
     double r_min=1.0;
     double r_max=2.0;
     double mot_min=30000.0;
@@ -110,7 +125,7 @@ int main(int argc, char *argv[]) {
     integrDataPtr->tolerance=0.1;
     simulator.registerIntegrator(&integrator);
 
-    double endTime=10000.0;
+    double endTime=100.0;
 
 #if defined(_WIN32)
 	volatile DWORD dwStart;

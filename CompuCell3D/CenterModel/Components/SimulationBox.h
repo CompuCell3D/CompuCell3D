@@ -81,7 +81,8 @@ namespace CenterModel {
 
 		void setLookupLatticeDim(short _x,short _y, short _z);
 		
-		void updateCellLookup(CellCM * _cell);
+		//void updateCellLookup(CellCM * _cell, bool _debug=false);
+        void updateCellLookup(CellCM * _cell);
 		inline CompuCell3D::Point3D getCellLatticeLocation(const CellCM * _cell) const{return CompuCell3D::Point3D(static_cast<short>(floor(_cell->position.fX/gridSpacing.fX)),static_cast<short>(floor(_cell->position.fY/gridSpacing.fY)),static_cast<short>(floor(_cell->position.fZ/gridSpacing.fZ)));}
 
 		Vector3 getDim() {return dim;}

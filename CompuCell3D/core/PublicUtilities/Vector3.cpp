@@ -175,6 +175,8 @@ void Vector3::SetMagThetaPhi(precision_t mag, precision_t theta, precision_t phi
 }
 
 
+
+
 Vector3 operator + (const Vector3 & a, const Vector3 & b) {
    return Vector3(a.fX + b.fX, a.fY + b.fY, a.fZ + b.fZ);
 }

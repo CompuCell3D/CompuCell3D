@@ -54,6 +54,8 @@ namespace CenterModel {
 	protected:
 
         SimulationBox *sbPtr;
+        Vector3 boxMin;
+        Vector3 boxMax;        
         CellInventoryCM *ciPtr;
         SimulatorCM * simulator;
         IntegratorData integratorData;
