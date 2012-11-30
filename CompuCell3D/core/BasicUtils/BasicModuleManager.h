@@ -152,7 +152,7 @@ public:
     nameToBasicModuleInfoMap_t::iterator mitr = nameToModuleInfoMap.find(moduleName);
 
     if (mitr==nameToModuleInfoMap.end())
-        return 0; //module info does not exis
+        return 0; //module info does not exist
 
     BasicModuleInfo &info=mitr->second;
 
@@ -168,17 +168,20 @@ public:
     CREATEMODULE_PTR createModulePtr = (CREATEMODULE_PTR) GetProcAddress(handle, "createModule");    
     if (createModulePtr){
         module=(createModulePtr)();
+
+        cerr<<" CONSTRUCTED "<<info.name<<endl;
         
         if (!module){
             THROW(std::string("BasicModuleManagerFlex::get() Could not create module ")+info.fileName);    
         }
         modules[moduleName]=module;
+        cerr<<module->getName()<<endl;
 
     }
 
     cerr<<"Library name="<<info.fileName<<endl;
 
-
+    
 	 
       if(_moduleAlreadyRegisteredFlag)
          *_moduleAlreadyRegisteredFlag=false;

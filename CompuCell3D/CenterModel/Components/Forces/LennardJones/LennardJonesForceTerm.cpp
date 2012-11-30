@@ -22,22 +22,34 @@
 
 #include "LennardJonesForceTerm.h"
 #include <PublicUtilities/NumericalUtils.h>
+#include <XMLUtils/CC3DXMLElement.h>
 #include <Components/SimulatorCM.h>
 #include <iostream>
 
 using namespace CenterModel;
 
-LennardJonesForceTerm::LennardJonesForceTerm():A(0.2),B(0.1),eps(0.6502),sigma(0.3166){}
+LennardJonesForceTerm::LennardJonesForceTerm():A(0.2),B(0.1),eps(0.6502),sigma(0.3166){
+
+}
 
 
 LennardJonesForceTerm::~LennardJonesForceTerm(){}
 
-void LennardJonesForceTerm::init(SimulatorCM *_simulator){
+
+
+void LennardJonesForceTerm::init(SimulatorCM *_simulator,CC3DXMLElement * _xmlData){
     if (!_simulator)
         return;
 
+    xmlData=_xmlData;
+    if (xmlData)
+        update(xmlData);
+
     simulator=_simulator;
     simulator->registerForce(this);
+
+
+
     
 }
 
@@ -80,3 +92,17 @@ Vector3 LennardJonesForceTerm::forceTerm(const CellCM * _cell1, const CellCM * _
     
 }
 
+void LennardJonesForceTerm::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
+
+    CC3DXMLElement * epsElem=_xmlData->getFirstElement("Epsilon");
+    if (epsElem){
+        eps=epsElem->getDouble();
+    }
+
+    CC3DXMLElement * sigmaElem=_xmlData->getFirstElement("Sigma");
+    if (sigmaElem){
+        sigma=sigmaElem->getDouble();
+    }
+
+
+}

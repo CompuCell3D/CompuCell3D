@@ -2,19 +2,21 @@
 #include "SimulatorCM.h"
 #include "CellCM.h"
 #include "Integrator.h"
-
+#include <XMLUtils/CC3DXMLElement.h>
 #include <time.h>
 #include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <CompuCell3D/Field3D/Point3D.h>
 #include <PublicUtilities/NumericalUtils.h>
 #include <limits>
 #include <stdlib.h>
+#include <Components/Interfaces/ForceTerm.h>
 
 #if defined(_WIN32)
 	#include <windows.h>
 #endif
 		
 using namespace CenterModel;
+using namespace std;
 
 SimulatorCM::SimulatorCM():stepCounter(0),timeSim(0.0),integrator(0)
 
@@ -28,6 +30,26 @@ void SimulatorCM::init(){
     cf.setSimulationBox(&sb);
     ci.setCellFactory(&cf);
     fCalc.init(this);
+}
+
+void SimulatorCM::handleForceTermRequest(CC3DXMLElement * _forceElement){
+
+    std::string moduleName=_forceElement->getAttribute("Name");
+
+    bool moduleAlreadyRegisteredFlag=false;
+
+    ForceTerm * module=forceTermManager.get(moduleName,&moduleAlreadyRegisteredFlag);
+	
+	
+	if(!moduleAlreadyRegisteredFlag){
+		//Will only process first occurence of a given plugin
+		cerr<<"INITIALIZING "<<moduleName<<endl;
+		module->init(this, _forceElement);
+    }else{
+        cerr<<" MODULE "<<moduleName<<" is laready registered - ignoring request"<<endl;
+    }
+
+
 }
 
 

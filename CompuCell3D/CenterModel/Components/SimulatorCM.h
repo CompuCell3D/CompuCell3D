@@ -29,18 +29,23 @@
 #include "CellFactoryCM.h"
 #include "CellInventoryCM.h"
 #include "ForceCalculator.h"
+#include "ForceTermManager.h"
 
 #include "CellCM.h"
+
+class CC3DXMLElement;
 
 namespace CenterModel {
 
 	class SimulationBox;
     class ForceCalculator;
     class Integrator;
+    
 
 	class COMPONENTS_EXPORT SimulatorCM{
 	public:
 
+        typedef ForceTermManager<ForceTerm> forceTermManager_t;    
 		SimulatorCM();
 
 		virtual ~SimulatorCM();
@@ -72,8 +77,13 @@ namespace CenterModel {
         //convenience function - used during testing
         void createRandomCells(int N, double r_min, double r_max,double mot_min, double mot_max);
 
-        void registerForce(ForceTerm * _forceTerm);
+        virtual void handleForceTermRequest(CC3DXMLElement * _forceElement);
+
+        virtual void registerForce(ForceTerm * _forceTerm);
         void registerIntegrator(Integrator * _integrator);
+        
+        forceTermManager_t * getForceTermManagerPtr(){return &forceTermManager;}
+        
 
 	private:
 
@@ -92,6 +102,9 @@ namespace CenterModel {
         long stepCounter;
 
         Integrator * integrator;
+        
+        forceTermManager_t forceTermManager;
+
 	};
 
 };

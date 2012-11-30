@@ -168,7 +168,7 @@ void Vector3::SetPhi(precision_t ph)
 void Vector3::SetMagThetaPhi(precision_t mag, precision_t theta, precision_t phi) 
 {
    //setter with mag, theta, phi
-   precision_t amag = fabs((float)mag);
+   precision_t amag = fabs((precision_t)mag);
    fX = amag * sin(theta) * cos(phi);
    fY = amag * sin(theta) * sin(phi);
    fZ = amag * cos(theta);

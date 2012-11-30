@@ -20,20 +20,21 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
-#ifndef LENNARDJONESFORCETERM_H
-#define LENNARDJONESFORCETERM_H
+#ifndef STOCHASTICFORCETERM_H
+#define STOCHASTICFORCETERM_H
 
 
 
-#include "LennardJonesDLLSpecifier.h"
+#include "StochasticDLLSpecifier.h"
 
 #include <Components/Interfaces/ForceTerm.h>
 #include <Components/Interfaces/ModuleApiExporter.h>
 #include <Components/CellCM.h>
+#include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <string>
 
 
-const char* const moduleName = "LennardJones";
+const char* const moduleName = "Stochastic";
 const char* const author = "Maciej Swat";
 const char* const moduleType= "ForceTerm";
 const int versionMajor=3;
@@ -44,21 +45,21 @@ namespace CenterModel {
 
 	class SimulationBox;
 
-	class LENNARDJONES_EXPORT LennardJonesForceTerm: public ForceTerm{
+	class STOCHASTIC_EXPORT StochasticForceTerm: public ForceTerm{
     
 	public:
 
 		       
-		LennardJonesForceTerm();
+		StochasticForceTerm();
 
-		virtual ~LennardJonesForceTerm();
+		virtual ~StochasticForceTerm();
         
         //ForceTerm interface
 
-        virtual void init(SimulatorCM *_simulator=0,CC3DXMLElement * _xmlData=0);
+        virtual void init(SimulatorCM *_simulator=0, CC3DXMLElement * _xmlData=0);
         virtual Vector3 forceTerm(const CellCM * _cell1, const CellCM * _cell2, double _distance=0.0, const Vector3 & _unitDistVec=Vector3(0.,0.,0.) );
 
-        virtual std::string getName(){return "LennardJones";}
+        virtual std::string getName(){return "Stochastic";}
 
         //Steerable Interface
         virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
@@ -66,15 +67,19 @@ namespace CenterModel {
 
         
 	protected:	
-        double A;
-        double B;
-        double eps;
-        double sigma;
+        double mag_min;
+        double mag_max;
+        double PI;
+        double PI_HALF;
 
+        BasicRandomNumberGeneratorNonStatic rGen;
+    
 
-	};
+    
 
-    MODULE_EXTERNAL_API(LENNARDJONES_EXPORT,ForceTerm, LennardJonesForceTerm)
+    };
+
+    MODULE_EXTERNAL_API(STOCHASTIC_EXPORT,ForceTerm, StochasticForceTerm)
 
 };
 #endif

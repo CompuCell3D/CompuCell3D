@@ -20,61 +20,46 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
-#ifndef LENNARDJONESFORCETERM_H
-#define LENNARDJONESFORCETERM_H
+#ifndef FORCETERM_H
+#define FORCETERM_H
 
-
-
-#include "LennardJonesDLLSpecifier.h"
-
-#include <Components/Interfaces/ForceTerm.h>
-#include <Components/Interfaces/ModuleApiExporter.h>
-#include <Components/CellCM.h>
+#include "InterfacesDLLSpecifier.h"
 #include <string>
+#include <iostream>
 
-
-const char* const moduleName = "LennardJones";
-const char* const author = "Maciej Swat";
-const char* const moduleType= "ForceTerm";
-const int versionMajor=3;
-const int versionMinor=6;
-const int versionSubMinor=2;
+#include <Components/CellCM.h>
+#include <Components/Interfaces/Steerable.h>
 
 namespace CenterModel {
 
 	class SimulationBox;
+    class SimulatorCM;
 
-	class LENNARDJONES_EXPORT LennardJonesForceTerm: public ForceTerm{
+	class INTERFACES_EXPORT ForceTerm: public Steerable{
     
 	public:
-
 		       
-		LennardJonesForceTerm();
+		ForceTerm();
 
-		virtual ~LennardJonesForceTerm();
+		virtual ~ForceTerm();
         
         //ForceTerm interface
-
-        virtual void init(SimulatorCM *_simulator=0,CC3DXMLElement * _xmlData=0);
-        virtual Vector3 forceTerm(const CellCM * _cell1, const CellCM * _cell2, double _distance=0.0, const Vector3 & _unitDistVec=Vector3(0.,0.,0.) );
-
-        virtual std::string getName(){return "LennardJones";}
-
-        //Steerable Interface
-        virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
-        virtual std::string steerableName(){return getName();}
-
+        virtual void init(SimulatorCM *_simulator=0, CC3DXMLElement * _xmlData=0)=0;
+        virtual Vector3 forceTerm(const CellCM * _cell1, const CellCM * _cell2,double _distance=0.0, const Vector3 & _unitDistVec=Vector3(0.,0.,0.) )=0;
+		virtual std::string getName()=0;
         
-	protected:	
-        double A;
-        double B;
-        double eps;
-        double sigma;
+  //      virtual void init(SimulatorCM *_simulator=0){}
+  //      virtual Vector3 forceTerm(const CellCM * _cell1, const CellCM * _cell2,double _distance=0.0, const Vector3 & _unitDistVec=Vector3(0.,0.,0.) ){return Vector3();};
+		//virtual std::string getName(){return "ForceTerm";}
 
+	protected:
+        SimulationBox *sbPtr;
+        SimulatorCM * simulator;
+        Vector3 bc; // boundary condition vector
+        Vector3 boxDim; // physical dimensions of computational box
+        CC3DXMLElement *xmlData;
 
 	};
-
-    MODULE_EXTERNAL_API(LENNARDJONES_EXPORT,ForceTerm, LennardJonesForceTerm)
 
 };
 #endif

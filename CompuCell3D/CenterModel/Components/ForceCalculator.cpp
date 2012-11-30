@@ -1,7 +1,7 @@
 #include "ForceCalculator.h"
 #include "SimulationBox.h"
 #include "CellInventoryCM.h"
-#include "ForceTerm.h"
+#include <Components/Interfaces/ForceTerm.h>
 #include "SimulatorCM.h"
 #include <PublicUtilities/NumericalUtils.h>
 

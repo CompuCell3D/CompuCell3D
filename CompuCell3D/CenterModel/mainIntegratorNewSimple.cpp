@@ -18,9 +18,13 @@
 #include <fstream>
 
 #include <BasicUtils/BasicModuleManager.h>
-#include <Components/ForceTerm.h>
+#include <Components/Interfaces/ForceTerm.h>
 
-#include <Components/LennardJonesForceTerm.h>
+
+#include <Components/Interfaces/ForceTerm.h>
+
+#include <XMLUtils/XMLParserExpat.h>
+
 
 
 #if defined(_WIN32)
@@ -31,9 +35,6 @@
 using namespace std;
 using namespace  CenterModel;
 
-// // // PluginManager<Plugin> Simulator::pluginManager;
-// // // PluginManager<Steppable> Simulator::steppableManager;
-// // // BasicPluginManager<PluginBase> Simulator::pluginBaseManager;
 
 
 void Syntax(const string name) {
@@ -51,21 +52,55 @@ int main(int argc, char *argv[]) {
     cell.grow();
 	cerr<<"cell.position="<<cell.position<<endl;
 
-    BasicModuleManager<ForceTerm> forceTermManager;
+    //BasicModuleManager<ForceTerm> forceTermManager;
+    
 
-    char *forceTermPath = getenv("COMPUCELL3D_FORCECM_PATH");
-    cerr<<"forceTermPath ="<<forceTermPath <<endl;
-    if (forceTermPath ) forceTermManager.scanLibraries(forceTermPath);
+   XMLParserExpat xmlParser;
+	if(argc<2){
+        cerr<<"argc="<<argc<<endl;    
+		cerr<<"SPECIFY XML FILE"<<endl;
+		exit(0);
+	}
+    xmlParser.setFileName(string(argv[1]));
+	xmlParser.parse();
 
-    ForceTerm *ljTm=0;
-    ljTm = forceTermManager.get("LennardJones");
-    cerr<<"ljTm="<<ljTm<<endl;
+    CC3DXMLElement *simulatorData=xmlParser.rootElement->getFirstElement("Simulator");
+    cerr<<"simulatorData="<<simulatorData<<endl;
 
-    return 0;
+	//extracting force term elements from the XML file
+	CC3DXMLElementList forceTermDataList=xmlParser.rootElement->getElements("ForceTerm");
+    cerr<<"forceTermDataList.size()="<<forceTermDataList.size()<<endl;
+	for(int i = 0 ; i < forceTermDataList.size() ; ++i ){
+		cerr<<"THIS IS ForceTerm: "<<forceTermDataList[i]->getAttribute("Name")<<endl;
+        //sim.ps.addPluginDataCC3D(pluginDataList[i]);        
+	}
+
+    
 
     SimulatorCM simulator;
     
-    
+
+    SimulatorCM::forceTermManager_t * forceTermManagerPtr=simulator.getForceTermManagerPtr();
+
+    char *forceTermPath = getenv("COMPUCELL3D_FORCECM_PATH");
+    cerr<<"forceTermPath ="<<forceTermPath <<endl;
+    if (forceTermPath ) forceTermManagerPtr->scanLibraries(forceTermPath);
+
+    //ForceTerm *ljTm=0;
+    //ljTm = forceTermManagerPtr->get("LennardJones");
+
+    //if (!ljTm){
+    //    cerr<<"ljTm="<<ljTm<<" COULD NOT FIND REQUESTED MODULE"<<endl;
+    //    return 0;
+    //}
+
+    //cerr<<"ljTm="<<ljTm<<endl;
+    //
+
+    //ForceTerm *stochForce=0;
+    //stochForce=forceTermManagerPtr->get("Stochastic");
+    //cerr<<"StochForce="<<stochForce<<endl;
+
 
     simulator.setBoxDim(21.2,45.7,80.1);
     simulator.setGridSpacing(2.01,2.01,2.01);
@@ -75,6 +110,13 @@ int main(int argc, char *argv[]) {
     simulator.init();
 
     
+	//loading force terms
+	for(int i = 0 ; i < forceTermDataList.size() ; ++i ){
+		cerr<<"THIS IS ForceTerm: "<<forceTermDataList[i]->getAttribute("Name")<<endl;
+        simulator.handleForceTermRequest(forceTermDataList[i]);
+        //sim.ps.addPluginDataCC3D(pluginDataList[i]);        
+	}
+
     int N=20000;
     double r_min=1.0;
     double r_max=2.0;
@@ -103,21 +145,39 @@ int main(int argc, char *argv[]) {
     ////////cellTmp->effectiveMotility=20000.0;
     ////////ciPtr->addToInventory(cellTmp);
 
+    
 
-    LennardJonesForceTerm ljTerm;
+    //ljTm->init(&simulator);   
+    //stochForce->init(&simulator);   
+    //cerr<<"after ljTm->init(&simulator)"<<endl;
 
-    ljTerm.init(&simulator);
+    //simulator.registerForce(ljTm);
+    
+    //simulator.registerForce(ljTm);
+    //simulator.registerForce(ljTm);
+    //simulator.registerForce(ljTm);
+    //simulator.registerForce(ljTm);
+    //simulator.registerForce(ljTm);
+    //simulator.registerForce(ljTm);
+    //simulator.registerForce(ljTm);
+    //simulator.registerForce(ljTm);
+    //simulator.registerForce(ljTm);
 
-    simulator.registerForce(&ljTerm);
-    simulator.registerForce(&ljTerm);
-    simulator.registerForce(&ljTerm);
-    simulator.registerForce(&ljTerm);
-    simulator.registerForce(&ljTerm);
-    simulator.registerForce(&ljTerm);
-    simulator.registerForce(&ljTerm);
-    simulator.registerForce(&ljTerm);
-    simulator.registerForce(&ljTerm);
-    simulator.registerForce(&ljTerm);
+
+    //LennardJonesForceTerm ljTerm;
+
+    //ljTerm.init(&simulator);
+
+    //simulator.registerForce(&ljTerm);
+    //simulator.registerForce(&ljTerm);
+    //simulator.registerForce(&ljTerm);
+    //simulator.registerForce(&ljTerm);
+    //simulator.registerForce(&ljTerm);
+    //simulator.registerForce(&ljTerm);
+    //simulator.registerForce(&ljTerm);
+    //simulator.registerForce(&ljTerm);
+    //simulator.registerForce(&ljTerm);
+    //simulator.registerForce(&ljTerm);
 
 
     IntegratorFE integrator;

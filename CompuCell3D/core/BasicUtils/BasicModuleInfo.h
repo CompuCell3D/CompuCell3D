@@ -56,10 +56,10 @@ public:
 
 
 
-  friend std::ostream &operator<<(std::ostream &, BasicModuleInfo &);
+  inline friend std::ostream &operator<<(std::ostream &, BasicModuleInfo &);
 };
 
-std::ostream &operator<<(std::ostream &stream, BasicModuleInfo &info) {
+inline std::ostream &operator<<(std::ostream &stream, BasicModuleInfo &info) {
     stream <<std::endl;
     stream <<"****** "<<info.name<<" - "<<info.type<<" by "<<info.author<<std::endl;
     stream <<"Version: "<<info.versionMajor<<"."<<info.versionMinor<<"."<<info.versionSubMinor<<std::endl; 

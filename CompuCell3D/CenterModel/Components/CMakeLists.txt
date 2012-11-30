@@ -5,7 +5,7 @@ SET(SRCS
   CellInventoryCM.cpp
   CellFactoryCM.cpp
   ForceCalculator.cpp  
-  LennardJonesForceTerm.cpp
+  # LennardJonesForceTerm.cpp
   SimulatorCM.cpp
   Integrator.cpp
   IntegratorFE.cpp
@@ -30,12 +30,13 @@ INSTALL_FILES(/include/CompuCell3D/CenterModel/Components .h
   CellInventoryCM
   CellFactoryCM
   ForceCalculator
-  ForceTerm
-  LennardJonesForceTerm
+  # ForceTerm
+  # LennardJonesForceTerm
   SimulatorCM
   Integrator
   IntegratorFE
   
   )
   
- add_subdirectory(Forces)
+add_subdirectory(Interfaces)
+add_subdirectory(Forces)

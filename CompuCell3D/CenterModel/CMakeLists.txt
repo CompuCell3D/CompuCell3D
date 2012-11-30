@@ -48,16 +48,17 @@ INCLUDE_DIRECTORIES (
     
 ADD_EXECUTABLE(CenterModelCML main.cpp)
 ADD_EXECUTABLE(CenterModelIntegratorCML mainIntegrator.cpp)
-ADD_EXECUTABLE(CenterModelIntegratorNewCML mainIntegratorNew.cpp)
+# ADD_EXECUTABLE(CenterModelIntegratorNewCML mainIntegratorNew.cpp)
 ADD_EXECUTABLE(CenterModelIntegratorNewSimpleCML mainIntegratorNewSimple.cpp)
 
 TARGET_LINK_LIBRARIES(CenterModelCML ${LIBS})
 TARGET_LINK_LIBRARIES(CenterModelIntegratorCML ${LIBS})
-TARGET_LINK_LIBRARIES(CenterModelIntegratorNewCML ${LIBS})
-TARGET_LINK_LIBRARIES(CenterModelIntegratorNewSimpleCML ${LIBS})
+# TARGET_LINK_LIBRARIES(CenterModelIntegratorNewCML ${LIBS})
+TARGET_LINK_LIBRARIES(CenterModelIntegratorNewSimpleCML ${LIBS} XMLParserExpatLibShared)
 
-INSTALL_TARGETS(/bin CenterModelCML CenterModelIntegratorCML CenterModelIntegratorNewCML CenterModelIntegratorNewSimpleCML)      
+# INSTALL_TARGETS(/bin CenterModelCML CenterModelIntegratorCML CenterModelIntegratorNewCML CenterModelIntegratorNewSimpleCML)      
         
+INSTALL_TARGETS(/bin CenterModelCML CenterModelIntegratorCML CenterModelIntegratorNewSimpleCML)              
     
 # # # if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   # # # ADD_SHARED_LIBRARY(CompuCellLib ${SRCS} LINK_LIBRARIES
