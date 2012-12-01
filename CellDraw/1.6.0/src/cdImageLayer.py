@@ -41,12 +41,6 @@ import traceback
 # 2011 - Mitja: external class defining all global constants for CellDraw:
 from cdConstants import CDConstants
 
-# 2010 - Mitja: simple external class for drawing a progress bar widget:
-from cdWaitProgressBar import CDWaitProgressBar
-
-# 2011 - Mitja: simple external class for drawing a progress bar widget + an image:
-from cdWaitProgressBarWithImage import CDWaitProgressBarWithImage
-
 
 
 # ======================================================================
@@ -154,6 +148,14 @@ class CDImageNP(QtCore.QObject):
         else:
             self._graphicsSceneWidget = None
 
+        # the progress bar widget is instantiated in the CellDrawMainWindow class,
+        #   and assigned below in setSimpleProgressBarPanel() :
+        self.__theSimpleWaitProgressBar = None
+
+        # the progress bar with image widget is instantiated in the CellDrawMainWindow class,
+        #   and assigned below in setProgressBarWithImagePanel() :
+        self.__theWaitProgressBarWithImage = None
+
         CDConstants.printOut( "___ - DEBUG ----- CDImageNP.__init__() - _graphicsSceneWidget == "+str(self._graphicsSceneWidget)+" " , CDConstants.DebugExcessive )
         CDConstants.printOut( "___ - DEBUG ----- CDImageNP.__init__() - imageInNPIsReadyFlags == "+str(self.imageInNPIsReadyFlags)+" " , CDConstants.DebugExcessive )
         CDConstants.printOut( "___ - DEBUG ----- CDImageNP.__init__() - extractedCellDataNPIsReadyFlags == "+str(self.extractedCellDataNPIsReadyFlags)+" " , CDConstants.DebugExcessive )
@@ -165,6 +167,33 @@ class CDImageNP(QtCore.QObject):
 
     # end of  def __init__(self, pParent=None):
     # --------------------------------------------------------
+
+
+
+
+
+    # --------------------------------------------------------
+    def setSimpleProgressBarPanel(self, pSimpleProcessBar=None):
+    # --------------------------------------------------------
+        if isinstance( pSimpleProcessBar, QtGui.QWidget ) == True:
+            self.__theSimpleWaitProgressBar = pSimpleProcessBar
+        else:
+            self.__theSimpleWaitProgressBar = None
+    # end of   def setSimpleProgressBarPanel()
+    # --------------------------------------------------------
+
+
+
+    # --------------------------------------------------------
+    def setProgressBarWithImagePanel(self, pProcessBarWithImage=None):
+    # --------------------------------------------------------
+        if isinstance( pProcessBarWithImage, QtGui.QWidget ) == True:
+            self.__theWaitProgressBarWithImage = pProcessBarWithImage
+        else:
+            self.__theWaitProgressBarWithImage = None
+    # end of   def setProgressBarWithImagePanel()
+    # --------------------------------------------------------
+
 
 
 
@@ -211,43 +240,42 @@ class CDImageNP(QtCore.QObject):
         if (self.imageNPLoaded == True):
 
             # show a panel containing a progress bar:        
-            lProgressBarPanelImageNP=CDWaitProgressBarWithImage("Processing image.", 100, self._graphicsSceneWidget)
-            lProgressBarPanelImageNP.show()
-            lProgressBarPanelImageNP.setRange(0, self.sizeY)
+            self.__theWaitProgressBarWithImage.setTitleTextRange("Processing image.", " ", 0, self.sizeY)
+            self.__theWaitProgressBarWithImage.show()
             lFileCounter = 0
     
             # if there is an image loaded from a file, show a pixmap in the progress bar dialog window:
             llPixmapForProgressBarPanelImageNP = QtGui.QPixmap( lUserSelectedImage )
-            lProgressBarPanelImageNP.theProgressBarImageLabel.setPixmap(llPixmapForProgressBarPanelImageNP)
-            lProgressBarPanelImageNP.theProgressBarImageLabel.image = llPixmapForProgressBarPanelImageNP.toImage()    
-            lProgressBarPanelImageNP.theProgressBarImageLabel.width = int( llPixmapForProgressBarPanelImageNP.width() )
-            lProgressBarPanelImageNP.theProgressBarImageLabel.height = int ( llPixmapForProgressBarPanelImageNP.height() )
-            print "lProgressBarPanelImageNP.width() =",lProgressBarPanelImageNP.width()
-            print "lProgressBarPanelImageNP.height() =",lProgressBarPanelImageNP.height()
-            print "lProgressBarPanelImageNP.theContentWidget.width() =",lProgressBarPanelImageNP.theContentWidget.width()
-            print "lProgressBarPanelImageNP.theContentWidget.height() =",lProgressBarPanelImageNP.theContentWidget.height()
+            self.__theWaitProgressBarWithImage.theProgressBarImageLabel.setPixmap(llPixmapForProgressBarPanelImageNP)
+            self.__theWaitProgressBarWithImage.theProgressBarImageLabel.image = llPixmapForProgressBarPanelImageNP.toImage()    
+            self.__theWaitProgressBarWithImage.theProgressBarImageLabel.width = int( llPixmapForProgressBarPanelImageNP.width() )
+            self.__theWaitProgressBarWithImage.theProgressBarImageLabel.height = int ( llPixmapForProgressBarPanelImageNP.height() )
+            print "self.__theWaitProgressBarWithImage.width() =",self.__theWaitProgressBarWithImage.width()
+            print "self.__theWaitProgressBarWithImage.height() =",self.__theWaitProgressBarWithImage.height()
+            print "self.__theWaitProgressBarWithImage.theContentWidget.width() =",self.__theWaitProgressBarWithImage.theContentWidget.width()
+            print "self.__theWaitProgressBarWithImage.theContentWidget.height() =",self.__theWaitProgressBarWithImage.theContentWidget.height()
             print "self.sizeX =",self.sizeX
             print "self.sizeY =",self.sizeY
             print "self.sizeZ =",self.sizeZ
     
-            if ( lProgressBarPanelImageNP.theContentWidget.width() < (self.sizeX + 20) ):
+            if ( self.__theWaitProgressBarWithImage.theContentWidget.width() < (self.sizeX + 20) ):
                 lTheNewWidth = self.sizeX + 20
             else:
-                lTheNewWidth = lProgressBarPanelImageNP.theContentWidget.width()
-            if ( lProgressBarPanelImageNP.theContentWidget.height() < (self.sizeY + 20) ):
+                lTheNewWidth = self.__theWaitProgressBarWithImage.theContentWidget.width()
+            if ( self.__theWaitProgressBarWithImage.theContentWidget.height() < (self.sizeY + 20) ):
                 lTheNewHeight = self.sizeY + 20
             else:
-                lTheNewHeight = lProgressBarPanelImageNP.theContentWidget.height()
-            lProgressBarPanelImageNP.theContentWidget.resize(lTheNewWidth, lTheNewHeight)
-            lProgressBarPanelImageNP.theContentWidget.update()
-            lProgressBarPanelImageNP.theProgressBarImageLabel.update()
-            lProgressBarPanelImageNP.resize(lTheNewWidth+64, lTheNewHeight+64)
-            lProgressBarPanelImageNP.adjustSize()
-            lProgressBarPanelImageNP.update()
-            print "lProgressBarPanelImageNP.theContentWidget.width() =",lProgressBarPanelImageNP.theContentWidget.width()
-            print "lProgressBarPanelImageNP.theContentWidget.height() =",lProgressBarPanelImageNP.theContentWidget.height()
-            print "lProgressBarPanelImageNP.width() =",lProgressBarPanelImageNP.width()
-            print "lProgressBarPanelImageNP.height() =",lProgressBarPanelImageNP.height()
+                lTheNewHeight = self.__theWaitProgressBarWithImage.theContentWidget.height()
+            self.__theWaitProgressBarWithImage.theContentWidget.resize(lTheNewWidth, lTheNewHeight)
+            self.__theWaitProgressBarWithImage.theContentWidget.update()
+            self.__theWaitProgressBarWithImage.theProgressBarImageLabel.update()
+            self.__theWaitProgressBarWithImage.resize(lTheNewWidth+64, lTheNewHeight+64)
+            self.__theWaitProgressBarWithImage.adjustSize()
+            self.__theWaitProgressBarWithImage.update()
+            print "self.__theWaitProgressBarWithImage.theContentWidget.width() =",self.__theWaitProgressBarWithImage.theContentWidget.width()
+            print "self.__theWaitProgressBarWithImage.theContentWidget.height() =",self.__theWaitProgressBarWithImage.theContentWidget.height()
+            print "self.__theWaitProgressBarWithImage.width() =",self.__theWaitProgressBarWithImage.width()
+            print "self.__theWaitProgressBarWithImage.height() =",self.__theWaitProgressBarWithImage.height()
             print "self.sizeX =",self.sizeX
             print "self.sizeY =",self.sizeY
             print "self.sizeZ =",self.sizeZ
@@ -257,7 +285,7 @@ class CDImageNP(QtCore.QObject):
             CDConstants.printOut(  "CDImageNP.setImage()  --  2.", CDConstants.DebugTODO )
             # time.sleep(5.0)
     
-            lProgressBarPanelImageNP.setValue(lFileCounter)
+            self.__theWaitProgressBarWithImage.setValue(lFileCounter)
             # time.sleep(5.0)
     
             # set the current index in the imageNPArray and other NP arrays:
@@ -270,12 +298,11 @@ class CDImageNP(QtCore.QObject):
     
     
             CDConstants.printOut(  "CDImageNP.setImage()  --  3.", CDConstants.DebugTODO )
-            time.sleep(5.0)
+            # time.sleep(5.0)
     
             # close the panel containing a progress bar:
-            lProgressBarPanelImageNP.maxProgressBar()
-            lProgressBarPanelImageNP.accept()
-            lProgressBarPanelImageNP.close()
+            self.__theWaitProgressBarWithImage.maxProgressBar()
+            self.__theWaitProgressBarWithImage.close()
 
             CDConstants.printOut(  "CDImageNP.setImage()  --  4.", CDConstants.DebugTODO )
         # end of   if (self.imageNPLoaded == True).
@@ -622,9 +649,8 @@ class CDImageNP(QtCore.QObject):
             # if discretizing to black/white, the "volume array" values are to be used:
 
             # show a panel containing a progress bar:        
-            lTmpProgressBarPanel=CDWaitProgressBar("Computing edge detection on volume.", self.theCurrentDiscretizedImage.height())
-            lTmpProgressBarPanel.show()
-            lTmpProgressBarPanel.setRange(0, self.theCurrentDiscretizedImage.height())
+            self.__theSimpleWaitProgressBar.setTitleTextRange("Computing edge detection on volume.", " ", 0, self.theCurrentDiscretizedImage.height())
+            self.__theSimpleWaitProgressBar.show()
     
             # set the flag for the current edge array in the sequence as False, as we're computing it now:
             self.extractedCellDataNPIsReadyFlags[self.theCurrentIndex] = False
@@ -640,7 +666,7 @@ class CDImageNP(QtCore.QObject):
          
             for y in xrange(height): 
     
-                lTmpProgressBarPanel.setValue(y)
+                self.__theSimpleWaitProgressBar.setValue(y)
     
                 for x in xrange(width): 
                     sumX, sumY, magnitude = 0, 0, 0 
@@ -685,17 +711,15 @@ class CDImageNP(QtCore.QObject):
             # set the flag for the current edge array in the sequence as True, as we're computing it now:
             self.extractedCellDataNPIsReadyFlags[self.theCurrentIndex] = True
     
-            lTmpProgressBarPanel.maxProgressBar()
-            lTmpProgressBarPanel.accept()
-            lTmpProgressBarPanel.close()
+            self.__theSimpleWaitProgressBar.maxProgressBar()
+            self.__theSimpleWaitProgressBar.hide()
             
         else:
             # if NOT discretizing to black/white, the "image sequence array" values are to be used:
 
             # show a panel containing a progress bar:        
-            lTmpProgressBarPanel=CDWaitProgressBar("Computing edge detection on images.", self.theCurrentImage.height())
-            lTmpProgressBarPanel.show()
-            lTmpProgressBarPanel.setRange(0, self.theCurrentImage.height())
+            self.__theSimpleWaitProgressBar.setTitleTextRange("Computing edge detection on images.", " ", 0, self.theCurrentImage.height())
+            self.__theSimpleWaitProgressBar.show()
     
             # set the flag for the current edge array in the sequence as False, as we're computing it now:
             self.extractedCellDataNPIsReadyFlags[self.theCurrentIndex] = False
@@ -711,7 +735,7 @@ class CDImageNP(QtCore.QObject):
          
             for y in xrange(height): 
     
-                lTmpProgressBarPanel.setValue(y)
+                self.__theSimpleWaitProgressBar.setValue(y)
     
                 for x in xrange(width): 
                     sumX, sumY, magnitude = 0, 0, 0 
@@ -756,9 +780,8 @@ class CDImageNP(QtCore.QObject):
             # set the flag for the current edge array in the sequence as True, as we're computing it now:
             self.extractedCellDataNPIsReadyFlags[self.theCurrentIndex] = True
     
-            lTmpProgressBarPanel.maxProgressBar()
-            lTmpProgressBarPanel.accept()
-            lTmpProgressBarPanel.close()
+            self.__theSimpleWaitProgressBar.maxProgressBar()
+            self.__theSimpleWaitProgressBar.hide()
         
         # end         if ( self.getAProcessingModeStatusForImageNP(CDConstants.ImageNPUseDiscretizedToBWMode) == True )
 
@@ -1035,30 +1058,30 @@ class CDImageNP(QtCore.QObject):
         lDepth = self.sizeZ
 
         # show a panel containing a progress bar:        
-        lTmpProgressBarPanel=CDWaitProgressBarWithImage("Extracting Cell Areas from Image.", self.theCurrentImage.height())
-        lTmpProgressBarPanel.show()
-        lTmpProgressBarPanel.setRange(0, self.theCurrentImage.height())
+        self.__theProgressBarWithImage=CDWaitProgressBarWithImage("Extracting Cell Areas from Image.", self.theCurrentImage.height())
+        self.__theProgressBarWithImage.show()
+        self.__theProgressBarWithImage.setRange(0, self.theCurrentImage.height())
 
         lPixmap = QtGui.QPixmap( lDepth, lHeight)
         lPixmap.fill(QtCore.Qt.transparent)
 
         # store the pixmap holding the specially rendered scene:
-        lTmpProgressBarPanel.theProgressBarImageLabel.setPixmap(lPixmap)
-        lTmpProgressBarPanel.theProgressBarImageLabel.image = lPixmap.toImage()   
-        lTmpProgressBarPanel.theProgressBarImageLabel.width = int( lPixmap.width() )
-        lTmpProgressBarPanel.theProgressBarImageLabel.height = int ( lPixmap.height() )
+        self.__theProgressBarWithImage.theProgressBarImageLabel.setPixmap(lPixmap)
+        self.__theProgressBarWithImage.theProgressBarImageLabel.image = lPixmap.toImage()   
+        self.__theProgressBarWithImage.theProgressBarImageLabel.width = int( lPixmap.width() )
+        self.__theProgressBarWithImage.theProgressBarImageLabel.height = int ( lPixmap.height() )
 
-        if ( lTmpProgressBarPanel.theContentWidget.width() < (lDepth + 20) ):
+        if ( self.__theProgressBarWithImage.theContentWidget.width() < (lDepth + 20) ):
             lTheNewWidth = lDepth + 20
         else:
-            lTheNewWidth = lTmpProgressBarPanel.theContentWidget.width()
-        if ( lTmpProgressBarPanel.theContentWidget.height() < (lHeight + 20) ):
+            lTheNewWidth = self.__theProgressBarWithImage.theContentWidget.width()
+        if ( self.__theProgressBarWithImage.theContentWidget.height() < (lHeight + 20) ):
             lTheNewHeight = lHeight + 20
         else:
-            lTheNewHeight = lTmpProgressBarPanel.theContentWidget.height()
-        lTmpProgressBarPanel.theContentWidget.resize(lTheNewWidth, lTheNewHeight)
-        lTmpProgressBarPanel.theContentWidget.update()
-        lTmpProgressBarPanel.adjustSize()
+            lTheNewHeight = self.__theProgressBarWithImage.theContentWidget.height()
+        self.__theProgressBarWithImage.theContentWidget.resize(lTheNewWidth, lTheNewHeight)
+        self.__theProgressBarWithImage.theContentWidget.update()
+        self.__theProgressBarWithImage.adjustSize()
 
         # -------------------------------
         # scan across x-direction layers:
@@ -1074,17 +1097,17 @@ class CDImageNP(QtCore.QObject):
             lTmpBrush = QtGui.QBrush(QtGui.QColor(QtCore.Qt.red))
             lTmpPainter.setBrush(lTmpBrush)
 
-            lTmpProgressBarPanel.setTitle( self.tr(" Scanning x layer %1 of %2 from Image Sequence Volume \n to generate 3D Contour-boundary points... ").arg( \
+            self.__theProgressBarWithImage.setTitle( self.tr(" Scanning [x] layer %1 of %2 from Image Sequence Volume \n to generate 3D Contour-boundary points... ").arg( \
                 str(x) ).arg( str(lWidth) )  )
 
-            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.self.theTrueExtractCells() - lPixmap w,h =" + \
-                  str(lTmpProgressBarPanel.theProgressBarImageLabel.width) + " " + str(lTmpProgressBarPanel.theProgressBarImageLabel.height) + \
-                  " Scanning x layer "+str(x)+" of "+str(lWidth)+" from Image Sequence Volume to generate 3D Contour-boundary points.", CDConstants.DebugVerbose )
+            CDConstants.printOut( "___ - DEBUG ----- CDImageNP.self.theTrueExtractCells() - lPixmap w,h =" + \
+                  str(self.__theProgressBarWithImage.theProgressBarImageLabel.width) + " " + str(self.__theProgressBarWithImage.theProgressBarImageLabel.height) + \
+                  " Scanning [x] layer "+str(x)+" of "+str(lWidth)+" from Image Sequence Volume to generate 3D Contour-boundary points.", CDConstants.DebugVerbose )
 
             # adjusts the size of the label widget to fit its contents (i.e. the pixmap):
-            lTmpProgressBarPanel.theProgressBarImageLabel.adjustSize()
-            lTmpProgressBarPanel.theProgressBarImageLabel.show()
-            lTmpProgressBarPanel.theProgressBarImageLabel.update()
+            self.__theProgressBarWithImage.theProgressBarImageLabel.adjustSize()
+            self.__theProgressBarWithImage.theProgressBarImageLabel.show()
+            self.__theProgressBarWithImage.theProgressBarImageLabel.update()
 
             # -----------------------------
             # scan across y-direction rows:
@@ -1092,7 +1115,7 @@ class CDImageNP(QtCore.QObject):
             for y in xrange(lHeight): 
 
                 # provide visual feedback to user:
-                lTmpProgressBarPanel.setValue(y)
+                self.__theProgressBarWithImage.setValue(y)
                 QtGui.QApplication.processEvents()
 
                 # --------------------------------
@@ -1156,8 +1179,8 @@ class CDImageNP(QtCore.QObject):
 
             lTmpPainter.end()
             # provide visual feedback to user:
-            lTmpProgressBarPanel.theProgressBarImageLabel.drawPixmapAtPoint(lPixmap)
-            lTmpProgressBarPanel.theProgressBarImageLabel.update()
+            self.__theProgressBarWithImage.theProgressBarImageLabel.drawPixmapAtPoint(lPixmap)
+            self.__theProgressBarWithImage.theProgressBarImageLabel.update()
 
 
         # ------------------------------------------
@@ -1167,9 +1190,9 @@ class CDImageNP(QtCore.QObject):
         # set the flag for the contours array in the sequence as True, as we've just computed it:
         self.contoursAreReadyFlag = True
     
-        lTmpProgressBarPanel.maxProgressBar()
-        lTmpProgressBarPanel.accept()
-        lTmpProgressBarPanel.close()
+        self.__theProgressBarWithImage.maxProgressBar()
+        self.__theProgressBarWithImage.accept()
+        self.__theProgressBarWithImage.close()
 
         CDConstants.printOut( "    - DEBUG ----- CDImageNP.theTrueExtractCells(): done.", CDConstants.DebugExcessive )
 
@@ -1889,11 +1912,45 @@ class CDImageLayer(QtCore.QObject):
         #   holds an image and pixmap as loaded from a file.
         self.imageLoadedFromFile = False
 
+        # the progress bar widget is instantiated in the CellDrawMainWindow class,
+        #   and assigned below in setSimpleProgressBarPanel() :
+        self.__theSimpleWaitProgressBar = None
+
+        # the progress bar with image widget is instantiated in the CellDrawMainWindow class,
+        #   and assigned below in setProgressBarWithImagePanel() :
+        self.__theWaitProgressBarWithImage = None
+
         # 2012 - Mitja: add a separate object to handle NumPy-based image processing:
         self.cdImageNP = CDImageNP(self._graphicsSceneWidget)
 
     # end of  def __init__(self, pParent=None)
     # --------------------------------------------------------
+
+
+    # --------------------------------------------------------
+    def setSimpleProgressBarPanel(self, pSimpleProcessBar=None):
+    # --------------------------------------------------------
+        if isinstance( pSimpleProcessBar, QtGui.QWidget ) == True:
+            self.__theSimpleWaitProgressBar = pSimpleProcessBar
+            self.cdImageNP.setSimpleProgressBarPanel(self.__theSimpleWaitProgressBar)
+        else:
+            self.__theSimpleWaitProgressBar = None
+    # end of   def setSimpleProgressBarPanel()
+    # --------------------------------------------------------
+
+
+
+    # --------------------------------------------------------
+    def setProgressBarWithImagePanel(self, pProcessBarWithImage=None):
+    # --------------------------------------------------------
+        if isinstance( pProcessBarWithImage, QtGui.QWidget ) == True:
+            self.__theWaitProgressBarWithImage = pProcessBarWithImage
+            self.cdImageNP.setProgressBarWithImagePanel(self.__theWaitProgressBarWithImage)
+        else:
+            self.__theWaitProgressBarWithImage = None
+    # end of   def setProgressBarWithImagePanel()
+    # --------------------------------------------------------
+
 
 
     # ------------------------------------------------------------------

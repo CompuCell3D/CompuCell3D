@@ -173,6 +173,9 @@ from cdPreferences import CDPreferences
 # 2010 - Mitja: simple external class for drawing a progress bar widget:
 from cdWaitProgressBar import CDWaitProgressBar
 
+# 2011 - Mitja: simple external class for drawing a progress bar with image widget:
+from cdWaitProgressBarWithImage import CDWaitProgressBarWithImage
+
 # 2010 - Mitja: external class for scene bundle:
 from cdSceneBundle import CDSceneBundle
 
@@ -738,12 +741,12 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
 
 
-        self.theToolBars = CDToolBars(self)
+        self.__theToolBars = CDToolBars(self)
 
 
         # register the callback handler for signals coming from CDControlModeSelectToolBar,
         #   to our "slot" method responding to radio button changes:
-        self.theToolBars.registerHandlerForModeSelectToolbarControllerSignals( \
+        self.__theToolBars.registerHandlerForModeSelectToolbarControllerSignals( \
             self.diagramSceneMainWidget.handlerForSceneModeControllerSignals )
 
 
@@ -752,7 +755,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         #   CDDiagramSceneMainWidget class, to the "slot" (i.e. handler) method in CDToolBars,
         #   so that it will respond to changes in the global scene mode:
         self.diagramSceneMainWidget.registerHandlerForChangeInGlobalMode( \
-            self.theToolBars.handlerForChangeInGlobalModeModelSignals )
+            self.__theToolBars.handlerForChangeInGlobalModeModelSignals )
 
 
 
@@ -760,8 +763,12 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
         # register the callback handler for signals coming from CDControlSceneZoomToolbar,
         #   to our "slot" method responding to radio button changes:
-        self.theToolBars.registerHandlerForSceneZoomChangedControllerSignals( \
+        self.__theToolBars.registerHandlerForSceneZoomChangedControllerSignals( \
             self.diagramSceneMainWidget.handlerForSceneZoomControllerSignals )
+
+
+
+
 
 
 
@@ -789,14 +796,30 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
 
 
+        #  __init__ (14) - set the __theSimpleWaitProgressBar and __theWaitProgressBarWithImage
+        #       and notify about it other classes that may use it:
+        # -----------------------------------------------------------------------------
 
-        #  __init__ (14) - finally set the main window,
+        self.__theSimpleWaitProgressBar = CDWaitProgressBar("CellDraw: processing.", " ", 100, self.__theMainStatusBar)
+        self.__theMainStatusBar.insertPermanentWidgetInStatusBar(0, self.__theSimpleWaitProgressBar)
+        self.__theSimpleWaitProgressBar.hide()
+
+        self.__theWaitProgressBarWithImage = CDWaitProgressBarWithImage("CellDraw: processing.", " ", 100, self.__theMainStatusBar)
+        self.__theMainStatusBar.insertPermanentWidgetInStatusBar(0, self.__theWaitProgressBarWithImage)
+        self.__theWaitProgressBarWithImage.hide()
+
+
+        self.diagramSceneMainWidget.setSimpleProgressBarPanel(self.__theSimpleWaitProgressBar)
+        self.diagramSceneMainWidget.setProgressBarWithImagePanel(self.__theWaitProgressBarWithImage)
+
+
+
+        #  __init__ (15) - finally set the main window,
         #      then restore main window state and position from saved preferences,
         #      then show a modal QDialog for simplified preferences (graphics scene only) :
         # -----------------------------------------------------------------------------
 
         self.setCentralWidget(self.diagramSceneMainWidget)
-
 
         lPlayerGeometry = self.cdPreferences.getMainWindowGeometry()
         lPlayerState = self.cdPreferences.getMainWindowState()
@@ -804,7 +827,6 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             (lPlayerGeometry) and (lPlayerGeometry.isEmpty() == False) :
             self.restoreGeometry(lPlayerGeometry)
             self.restoreState(lPlayerState)
-
 
         # if we get here, it means that we can use the available Qt and PyQt libraries:
         self.showPreferencesDialog(False)
@@ -1256,7 +1278,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 lThePath,lTheFileName = os.path.split(str(lFileName))
                 CDConstants.printOut( "____ DEBUG: _,.- ~*'`'*~-.,_  CellDrawMainWindow.openImage() now calling self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, lImage) with ["+str(lTheFileName)+" "+str(lImage)+ "]", CDConstants.DebugAll)
                 self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, lImage)
-                self.theToolBars.setModeSelectToolBarImageLayerButtonIcon(lImage)
+                self.__theToolBars.setModeSelectToolBarImageLayerButtonIcon(lImage)
 
             # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
             self.diagramSceneMainWidget.scene.update()
@@ -1726,16 +1748,15 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         self.diagramSceneMainWidget.scene.setDrawForegroundEnabled(False)
 
         # show a panel containing a progress bar:        
-        lProgressBarPanel=CDWaitProgressBar("Importing image sequence.",100,self.theMainWindow)
-        lProgressBarPanel.show()
-        lProgressBarPanel.setRange(0, lNumberOfFilesInDir)
+        self.__theSimpleWaitProgressBar.setTitleTextRange("Importing image sequence."," ",0, lNumberOfFilesInDir)
+        self.__theSimpleWaitProgressBar.show()
         lFileCounter = 0
 
         CDConstants.printOut(  "importImageSequence()  --  6.", CDConstants.DebugTODO )
         # time.sleep(1.0)
 
         for lCurrentFileName in sorted(lCurrentListDir, key=self.keynat):
-            lProgressBarPanel.setValue(lFileCounter)
+            self.__theSimpleWaitProgressBar.setValue(lFileCounter)
             lPathAndFileName = os.path.join(lThePathToImageSequenceDir,lCurrentFileName)
             CDConstants.printOut( "      "+str(lPathAndFileName), CDConstants.DebugAll )
 
@@ -1750,9 +1771,8 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions( \
                     lXdim, lYdim, lFileCounter)
 
-                lProgressBarPanel.maxProgressBar()
-                lProgressBarPanel.accept()
-                lProgressBarPanel.close()
+                self.__theSimpleWaitProgressBar.maxProgressBar()
+                self.__theSimpleWaitProgressBar.hide()
                 QtGui.QMessageBox.warning( self, self.tr("CellDraw"), \
                     self.tr("Cannot open the image file:\n" \
                     "%1\nCanceling the image sequence import.").arg(lCurrentFileName)  )
@@ -1772,10 +1792,9 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         CDConstants.printOut(  "importImageSequence()  --  7.", CDConstants.DebugTODO )
         # time.sleep(1.0)
 
-        # close the panel containing a progress bar:
-        lProgressBarPanel.maxProgressBar()
-        lProgressBarPanel.accept()
-        lProgressBarPanel.close()
+        # hide the panel containing a progress bar:
+        self.__theSimpleWaitProgressBar.maxProgressBar()
+        self.__theSimpleWaitProgressBar.hide()
 
         CDConstants.printOut(  "importImageSequence()  --  8.", CDConstants.DebugTODO )
         # time.sleep(1.0)
@@ -1965,7 +1984,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             else:
 
                 # show a panel containing a progress bar:
-                lProgressBarPanel = CDWaitProgressBar("Loading image data from PIFF file, pass 1 of 2.", 100, self.theMainWindow)
+                lProgressBarPanel = CDWaitProgressBar("Loading image data from PIFF file, pass 1 of 2.", " ", 100, self.theMainWindow)
                 lProgressBarPanel.show()
 
                 lThePIFText = QtCore.QTextStream(lThePIFInputFile).readAll()
@@ -2027,11 +2046,10 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
                 # close the first panel containing a progress bar:
                 lProgressBarPanel.maxProgressBar()
-                lProgressBarPanel.accept()
                 lProgressBarPanel.close()
 
                 # show a second panel containing a progress bar:
-                lProgressBarPanel = CDWaitProgressBar("Loading image data from PIFF file, pass 2 of 2.", 100, self.theMainWindow)
+                lProgressBarPanel = CDWaitProgressBar("Loading image data from PIFF file, pass 2 of 2.", " ", 100, self.theMainWindow)
                 lProgressBarPanel.show()
                 lProgressBarPanel.setRange(0,lThePIFTextNumberOfLines)
 
@@ -2071,7 +2089,6 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 image = lPixmap.toImage()
 
                 lProgressBarPanel.maxProgressBar()
-                lProgressBarPanel.accept()
                 lProgressBarPanel.close()
 
 
@@ -2094,7 +2111,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 lThePath,lTheFileName = os.path.split(str(pFileName))
                 pass # 152 prrint "2010 DEBUG 2010 DEBUG now calling self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image) = (", lTheFileName, image, ")."
                 self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image)
-                self.theToolBars.setModeSelectToolBarImageLayerButtonIcon(image)
+                self.__theToolBars.setModeSelectToolBarImageLayerButtonIcon(image)
 
 
     # end of def openPIFFFile(self)
@@ -2172,7 +2189,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             lPainter = QtGui.QPainter(lPixmap)
 
             # show a panel containing a progress bar:
-            lProgressBarPanel = CDWaitProgressBar("Loading image data from DICOM file...", xMax, self.theMainWindow)
+            lProgressBarPanel = CDWaitProgressBar("Loading image data from DICOM file...", " ", xMax, self.theMainWindow)
             # show() and raise_() have to be called here:
             lProgressBarPanel.show()
             # lProgressBarPanel.raise_()
@@ -2195,7 +2212,6 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                         lPainter.setPen(lPen)
                         lPainter.drawPoint(i, j)
             lProgressBarPanel.maxProgressBar()
-            lProgressBarPanel.accept()
             lProgressBarPanel.close()
 
 #
@@ -2252,7 +2268,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             lThePath,lTheFileName = os.path.split(str(lFileName))
             pass # 152 prrint "2010 DEBUG 2010 DEBUG now calling self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image) = (", lTheFileName, image, ")."
             self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image)
-            self.theToolBars.setModeSelectToolBarImageLayerButtonIcon(image)
+            self.__theToolBars.setModeSelectToolBarImageLayerButtonIcon(image)
         pass # 152 prrint "2010 DEBUG: fileImportDICOM_Callback() ENDING."
         pass # 152 prrint "-.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-"
 
@@ -2360,7 +2376,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             lPainter = QtGui.QPainter(lPixmap)
 
             # show a panel containing a progress bar:
-            lProgressBarPanel = CDWaitProgressBar("Loading image data from TIFF multi-page file...", xMax, self.theMainWindow)
+            lProgressBarPanel = CDWaitProgressBar("Loading image data from TIFF multi-page file...", " ", xMax, self.theMainWindow)
             # show() and raise_() have to be called here:
             lProgressBarPanel.show()
             # lProgressBarPanel.raise_()
@@ -2383,7 +2399,6 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                         lPainter.setPen(lPen)
                         lPainter.drawPoint(i, j)
             lProgressBarPanel.maxProgressBar()
-            lProgressBarPanel.accept()
             lProgressBarPanel.close()
     
 #
@@ -2440,7 +2455,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             lThePath,lTheFileName = os.path.split(str(lFileName))
             CDConstants.printOut( "2010 DEBUG 2010 DEBUG now calling self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image) = ("+str(lTheFileName)+" "+str(image)+").", CDConstants.DebugAll )
             self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image)
-            self.theToolBars.setModeSelectToolBarImageLayerButtonIcon(image)
+            self.__theToolBars.setModeSelectToolBarImageLayerButtonIcon(image)
         CDConstants.printOut( "2010 DEBUG: fileImportTIFFMultiPage_Callback() ENDING.", CDConstants.DebugAll )
         CDConstants.printOut( "-.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-", CDConstants.DebugAll )
 

@@ -127,7 +127,7 @@ class CDStatusBar(QtGui.QStatusBar):
     # ------------------------------------------------------------
     def insertPermanentWidgetInStatusBar(self, pIndex, pWidget):
         self.insertPermanentWidget(pIndex, pWidget)
-        pWidget.show()
+#         pWidget.show()
         self.show()
 
 
@@ -137,7 +137,7 @@ class CDStatusBar(QtGui.QStatusBar):
     #    "This function does not delete the widget but hides it.
     #     To add the widget again, you must call both the addWidget() and show() functions."
     # ------------------------------------------------------------
-    def removeWidgetFromStatusBar(self, pIndex, pWidget):
+    def removeWidgetFromStatusBar(self, pWidget):
         self.removeWidget(pWidget)
         self.show()
 
