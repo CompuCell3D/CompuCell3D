@@ -28,14 +28,15 @@
 #include <iostream>
 
 #include <Components/CellCM.h>
-#include <Components/Interfaces/Steerable.h>
+#include <Components/Interfaces/CenterModelObject.h>
+
 
 namespace CenterModel {
 
 	class SimulationBox;
     class SimulatorCM;
 
-	class INTERFACES_EXPORT ForceTerm: public Steerable{
+	class INTERFACES_EXPORT ForceTerm: public CenterModelObject{
     
 	public:
 		       
@@ -48,16 +49,11 @@ namespace CenterModel {
         virtual Vector3 forceTerm(const CellCM * _cell1, const CellCM * _cell2,double _distance=0.0, const Vector3 & _unitDistVec=Vector3(0.,0.,0.) )=0;
 		virtual std::string getName()=0;
         
-  //      virtual void init(SimulatorCM *_simulator=0){}
-  //      virtual Vector3 forceTerm(const CellCM * _cell1, const CellCM * _cell2,double _distance=0.0, const Vector3 & _unitDistVec=Vector3(0.,0.,0.) ){return Vector3();};
-		//virtual std::string getName(){return "ForceTerm";}
 
 	protected:
-        SimulationBox *sbPtr;
-        SimulatorCM * simulator;
         Vector3 bc; // boundary condition vector
         Vector3 boxDim; // physical dimensions of computational box
-        CC3DXMLElement *xmlData;
+
 
 	};
 

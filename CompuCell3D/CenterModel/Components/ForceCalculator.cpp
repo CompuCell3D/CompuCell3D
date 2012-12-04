@@ -2,6 +2,7 @@
 #include "SimulationBox.h"
 #include "CellInventoryCM.h"
 #include <Components/Interfaces/ForceTerm.h>
+#include <Components/Interfaces/SingleBodyForceTerm.h>
 #include "SimulatorCM.h"
 #include <PublicUtilities/NumericalUtils.h>
 
@@ -27,6 +28,14 @@ void ForceCalculator::registerForce(ForceTerm * _forceTerm){
 }
 
 
+void ForceCalculator::registerSingleBodyForce(SingleBodyForceTerm * _forceTerm){
+    if (! _forceTerm)
+        return;
+
+    singleBodyForceTermRegistry.push_back(_forceTerm);
+}
+
+
 void ForceCalculator::calculateForces(){
 
     CellInventoryCM &ci=*ciPtr;
@@ -44,6 +53,7 @@ void ForceCalculator::calculateForces(){
     Vector3 unitDistVec;
     Vector3 netForce;
 
+    //two body forces
 	CellInventoryCM::cellInventoryIterator itr;
 	for (itr=ci.cellInventoryBegin() ; itr!=ci.cellInventoryEnd(); ++itr){
 		CellCM * cell=itr->second;
@@ -83,6 +93,27 @@ void ForceCalculator::calculateForces(){
 
 
 	}
+
+    //single body forces
+    for (itr=ci.cellInventoryBegin() ; itr!=ci.cellInventoryEnd(); ++itr){
+        CellCM * cell=itr->second;
+
+        netForce=Vector3(0.,0.,0.);
+        //cerr<<"\t\t\t CELL ID="<<cell->id<<endl;
+        for (int i = 0 ; i < singleBodyForceTermRegistry.size() ; ++i){
+            //Vector3 force=singleBodyForceTermRegistry[i]->forceTerm(cell);
+            //cerr<<"adding single body force"<<force<<endl;
+            //netForce+=force;
+            netForce+=singleBodyForceTermRegistry[i]->forceTerm(cell);
+            //cerr<<"forceTerm["<<i<<"]="<<netForce<<endl;
+        }
+
+        //cerr<<"tot single body force="<<netForce<<endl;
+        //cerr<<"before cell->netForce="<<cell->netForce<<endl;
+        cell->netForce+=netForce;
+        //cerr<<"after cell->netForce="<<cell->netForce<<endl;
+    
+    }
 
 
 }

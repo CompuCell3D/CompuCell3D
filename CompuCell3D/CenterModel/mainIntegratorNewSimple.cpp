@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
     //cerr<<"ljTm="<<ljTm<<endl;
     //
 
-    //ForceTerm *stochForce=0;
+    //SingleBodyForceTerm *stochForce=0;
     //stochForce=forceTermManagerPtr->get("Stochastic");
     //cerr<<"StochForce="<<stochForce<<endl;
 

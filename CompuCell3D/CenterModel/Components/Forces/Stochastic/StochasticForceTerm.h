@@ -27,7 +27,7 @@
 
 #include "StochasticDLLSpecifier.h"
 
-#include <Components/Interfaces/ForceTerm.h>
+#include <Components/Interfaces/SingleBodyForceTerm.h>
 #include <Components/Interfaces/ModuleApiExporter.h>
 #include <Components/CellCM.h>
 #include <BasicUtils/BasicRandomNumberGenerator.h>
@@ -36,7 +36,7 @@
 
 const char* const moduleName = "Stochastic";
 const char* const author = "Maciej Swat";
-const char* const moduleType= "ForceTerm";
+const char* const moduleType= "SingleBodyForceTerm";
 const int versionMajor=3;
 const int versionMinor=6;
 const int versionSubMinor=2;
@@ -45,7 +45,7 @@ namespace CenterModel {
 
 	class SimulationBox;
 
-	class STOCHASTIC_EXPORT StochasticForceTerm: public ForceTerm{
+	class STOCHASTIC_EXPORT StochasticForceTerm: public SingleBodyForceTerm{
     
 	public:
 
@@ -57,7 +57,7 @@ namespace CenterModel {
         //ForceTerm interface
 
         virtual void init(SimulatorCM *_simulator=0, CC3DXMLElement * _xmlData=0);
-        virtual Vector3 forceTerm(const CellCM * _cell1, const CellCM * _cell2, double _distance=0.0, const Vector3 & _unitDistVec=Vector3(0.,0.,0.) );
+        virtual Vector3 forceTerm(const CellCM * _cell1);
 
         virtual std::string getName(){return "Stochastic";}
 
@@ -79,7 +79,7 @@ namespace CenterModel {
 
     };
 
-    MODULE_EXTERNAL_API(STOCHASTIC_EXPORT,ForceTerm, StochasticForceTerm)
+    MODULE_EXTERNAL_API(STOCHASTIC_EXPORT,SingleBodyForceTerm, StochasticForceTerm)
 
 };
 #endif

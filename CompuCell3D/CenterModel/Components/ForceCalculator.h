@@ -36,6 +36,7 @@ namespace CenterModel {
 	class SimulationBox;
     class CellInventoryCM;
     class ForceTerm;
+    class SingleBodyForceTerm;
     class SimulatorCM;
 
 	class COMPONENTS_EXPORT ForceCalculator{
@@ -47,13 +48,15 @@ namespace CenterModel {
 		virtual ~ForceCalculator();
         void calculateForces();
         void registerForce(ForceTerm * _forceTerm);
-		
+		void registerSingleBodyForce(SingleBodyForceTerm * _forceTerm);
+        
 
 	private:
         SimulatorCM * simulator;
         SimulationBox *sbPtr;
         CellInventoryCM *ciPtr;
         std::vector<ForceTerm*> forceTermRegistry;
+        std::vector<SingleBodyForceTerm*> singleBodyForceTermRegistry;
 
 	};
 

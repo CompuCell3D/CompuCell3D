@@ -20,11 +20,43 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
-#include "ForceTerm.h"
+#ifndef SINGLEBODYFORCETERM_H
+#define SINGLEBODYFORCETERM_H
 
-using namespace CenterModel;
+#include "InterfacesDLLSpecifier.h"
+#include <string>
+#include <iostream>
 
-ForceTerm::ForceTerm(){};
+#include <Components/CellCM.h>
+#include <Components/Interfaces/CenterModelObject.h>
 
-ForceTerm::~ForceTerm(){};    
+namespace CenterModel {
+
+	class SimulationBox;
+    class SimulatorCM;
+
+	class INTERFACES_EXPORT SingleBodyForceTerm: public CenterModelObject{
     
+	public:
+		       
+		SingleBodyForceTerm();
+
+		virtual ~SingleBodyForceTerm();
+        
+        //ForceTerm interface
+        virtual void init(SimulatorCM *_simulator=0, CC3DXMLElement * _xmlData=0)=0;
+        virtual Vector3 forceTerm(const CellCM * _cell1)=0;
+		virtual std::string getName()=0;
+        
+
+	protected:
+        SimulationBox *sbPtr;
+        SimulatorCM * simulator;
+        Vector3 bc; // boundary condition vector
+        Vector3 boxDim; // physical dimensions of computational box
+        CC3DXMLElement *xmlData;
+
+	};
+
+};
+#endif

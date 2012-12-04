@@ -20,11 +20,11 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
-#include "ForceTerm.h"
+#include "SingleBodyForceTerm.h"
 
 using namespace CenterModel;
 
-ForceTerm::ForceTerm(){};
+SingleBodyForceTerm::SingleBodyForceTerm():sbPtr(0),simulator(0),xmlData(0){};
 
-ForceTerm::~ForceTerm(){};    
+SingleBodyForceTerm::~SingleBodyForceTerm(){};    
     

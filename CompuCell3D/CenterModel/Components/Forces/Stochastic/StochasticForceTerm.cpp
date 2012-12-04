@@ -43,12 +43,12 @@ void StochasticForceTerm::init(SimulatorCM *_simulator, CC3DXMLElement * _xmlDat
         update(xmlData);
         
     simulator=_simulator;
-    simulator->registerForce(this);
+    simulator->registerSingleBodyForce(this);
 
     
 }
 
-Vector3 StochasticForceTerm::forceTerm(const CellCM * _cell1, const CellCM * _cell2, double _distance, const Vector3 & _unitDistVec){
+Vector3 StochasticForceTerm::forceTerm(const CellCM * _cell1){
     
     double mag=mag_min+rGen.getRatio()*(mag_max-mag_min);
     double theta=-PI_HALF+rGen.getRatio()*PI;
@@ -57,7 +57,7 @@ Vector3 StochasticForceTerm::forceTerm(const CellCM * _cell1, const CellCM * _ce
     
     Vector3 stochForce;
     stochForce.SetMagThetaPhi(mag,  theta,  phi);
-    //cerr<<"stochForce= "<<stochForce<<endl;
+    //cerr<<"FORCE TERM: stochForce= "<<stochForce<<endl;
     return stochForce;
     
     

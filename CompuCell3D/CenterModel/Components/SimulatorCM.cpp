@@ -38,8 +38,9 @@ void SimulatorCM::handleForceTermRequest(CC3DXMLElement * _forceElement){
 
     bool moduleAlreadyRegisteredFlag=false;
 
-    ForceTerm * module=forceTermManager.get(moduleName,&moduleAlreadyRegisteredFlag);
-	
+    //ForceTerm * module=forceTermManager.get(moduleName,&moduleAlreadyRegisteredFlag);
+	CenterModelObject * module=forceTermManager.get(moduleName,&moduleAlreadyRegisteredFlag);
+
 	
 	if(!moduleAlreadyRegisteredFlag){
 		//Will only process first occurence of a given plugin
@@ -56,6 +57,11 @@ void SimulatorCM::handleForceTermRequest(CC3DXMLElement * _forceElement){
 void SimulatorCM::registerForce(ForceTerm * _forceTerm){
     fCalc.registerForce(_forceTerm);
 }
+
+void SimulatorCM::registerSingleBodyForce(SingleBodyForceTerm * _forceTerm){
+    fCalc.registerSingleBodyForce(_forceTerm);
+}
+
 
 void SimulatorCM::registerIntegrator(Integrator * _integrator){
     integrator=_integrator;

@@ -30,6 +30,7 @@
 #include "CellInventoryCM.h"
 #include "ForceCalculator.h"
 #include "ForceTermManager.h"
+#include <Components/Interfaces/CenterModelObject.h>
 
 #include "CellCM.h"
 
@@ -45,7 +46,7 @@ namespace CenterModel {
 	class COMPONENTS_EXPORT SimulatorCM{
 	public:
 
-        typedef ForceTermManager<ForceTerm> forceTermManager_t;    
+        typedef ForceTermManager<CenterModelObject> forceTermManager_t;    
 		SimulatorCM();
 
 		virtual ~SimulatorCM();
@@ -80,6 +81,7 @@ namespace CenterModel {
         virtual void handleForceTermRequest(CC3DXMLElement * _forceElement);
 
         virtual void registerForce(ForceTerm * _forceTerm);
+        virtual void registerSingleBodyForce(SingleBodyForceTerm * _forceTerm);
         void registerIntegrator(Integrator * _integrator);
         
         forceTermManager_t * getForceTermManagerPtr(){return &forceTermManager;}
