@@ -186,6 +186,9 @@ class CDPreferences(QtGui.QDialog):
         #  create a placeholder widget for preferences that are going to be added
         #    from the main CellDraw code:
         self.morePreferencesWidget = QtGui.QWidget()
+        #    but don't set the flag yet:
+        self.__showMorePrefs = False
+
         # CDConstants.printOut( " "+str( "___ - DEBUG ----- CDPreferences: __init__(): A" )+" ", CDConstants.DebugTODO )
 
 
@@ -317,11 +320,13 @@ class CDPreferences(QtGui.QDialog):
     # ---------------------------------------------------------
     def showMorePrefs(self, pShowMorePrefs=True):
         if pShowMorePrefs == False:
+            self.__showMorePrefs = False
             self.pifSceneDimensionsTitleLabel.setText("New Cell Scene Dimensions")
             self.mainLayout.removeWidget(self.morePreferencesWidget)
             self.morePreferencesWidget.hide()
             self.mainLayout.update()
         else:
+            self.__showMorePrefs = True
             self.pifSceneDimensionsTitleLabel.setText("Cell Scene Dimensions")
             self.morePreferencesWidget.show()
             self.mainLayout.addWidget(self.morePreferencesWidget, 0, 2, 2, 1)
@@ -342,6 +347,14 @@ class CDPreferences(QtGui.QDialog):
     # ---------------------------------------------------------
     def readPreferencesFromDiskAndCloseDialog(self):
         self.readPreferencesFromDisk()
+        self.__setDialogfromGlobals()
+
+        # if the preferences dialog has been called without extended preferences (i.e. only scene size)
+        #  assume that the rest of the application still hasn't received scene size values,
+        #  therefore propagate the signal upstream, for example to parent objects:
+        if (self.__showMorePrefs == False) :
+            self.emit(QtCore.SIGNAL("cdPreferencesChangedSignal()"))
+
         self.close()
         # self.hide()
         # CDConstants.printOut( " "+str( "readPreferencesFromDiskAndCloseDialog() DONE" )+" ", CDConstants.DebugTODO )
@@ -363,23 +376,16 @@ class CDPreferences(QtGui.QDialog):
         #   QVariant builds it from the default values we place there (our globals):
         # CDConstants.printOut( " "+str( "self.pifSceneWidth, self.pifSceneHeight, self.pifSceneDepth, self.pifSceneUnits =", self.pifSceneWidth, self.pifSceneHeight, self.pifSceneDepth, self.pifSceneUnits )+" ", CDConstants.DebugTODO )
         # as we read int values from preferences, .value() returns them as tuples:
-        self.pifSceneWidth, ok  = lPreferences.value("pifSceneWidth", \
-                                QtCore.QVariant(self.pifSceneWidth) ).toInt()
-        self.pifSceneHeight, ok = lPreferences.value("pifSceneHeight", \
-                                QtCore.QVariant(self.pifSceneHeight) ).toInt()
-        self.pifSceneDepth, ok = lPreferences.value("pifSceneDepth", \
-                                QtCore.QVariant(self.pifSceneDepth) ).toInt()
-        self.pifSceneUnits  = lPreferences.value("pifSceneUnits", \
-                                QtCore.QVariant(self.pifSceneUnits) ).toString()
+        self.pifSceneWidth, ok  = lPreferences.value("pifSceneWidth", QtCore.QVariant(self.pifSceneWidth) ).toInt()
+        self.pifSceneHeight, ok = lPreferences.value("pifSceneHeight", QtCore.QVariant(self.pifSceneHeight) ).toInt()
+        self.pifSceneDepth, ok = lPreferences.value("pifSceneDepth", QtCore.QVariant(self.pifSceneDepth) ).toInt()
+        self.pifSceneUnits  = lPreferences.value("pifSceneUnits", QtCore.QVariant(self.pifSceneUnits) ).toString()
         lPreferences.endGroup()
 
 
-
         lPreferences.beginGroup("mainWindow")
-        self.mainWindowGeometry = lPreferences.value("mainWindowGeometry", \
-                                QtCore.QVariant(self.mainWindowGeometry) ).toByteArray()
-        self.mainWindowState = lPreferences.value("mainWindowState", \
-                                QtCore.QVariant(self.mainWindowState) ).toByteArray()
+        self.mainWindowGeometry = lPreferences.value("mainWindowGeometry", QtCore.QVariant(self.mainWindowGeometry) ).toByteArray()
+        self.mainWindowState = lPreferences.value("mainWindowState", QtCore.QVariant(self.mainWindowState) ).toByteArray()
         lPreferences.endGroup()
 
 
@@ -655,6 +661,16 @@ class CDPreferences(QtGui.QDialog):
         self.readPreferencesFromDisk()
         return self.mainWindowState
 
+
+
+
+    # ---------------------------------------------------------
+    def __setDialogfromGlobals(self):
+        self.pifSceneWidthLineEdit.setText( str(self.pifSceneWidth) )
+        self.pifSceneHeightLineEdit.setText( str(self.pifSceneHeight) )
+        self.pifSceneDepthLineEdit.setText( str(self.pifSceneDepth) )
+        if self.pifSceneUnits in self.pifScenePossibleUnitsList:
+            self.pifSceneUnitsComboBox.setCurrentIndex( self.pifScenePossibleUnitsList.index(self.pifSceneUnits) )
 
 
 

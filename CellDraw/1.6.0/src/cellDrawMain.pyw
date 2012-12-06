@@ -804,10 +804,9 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         self.__theMainStatusBar.insertPermanentWidgetInStatusBar(0, self.__theSimpleWaitProgressBar)
         self.__theSimpleWaitProgressBar.hide()
 
-        self.__theWaitProgressBarWithImage = CDWaitProgressBarWithImage("CellDraw: processing.", " ", 100, self.__theMainStatusBar)
+        self.__theWaitProgressBarWithImage = CDWaitProgressBarWithImage("CellDraw: processing image.", " ", 100, self.__theMainStatusBar)
         self.__theMainStatusBar.insertPermanentWidgetInStatusBar(0, self.__theWaitProgressBarWithImage)
         self.__theWaitProgressBarWithImage.hide()
-
 
         self.diagramSceneMainWidget.setSimpleProgressBarPanel(self.__theSimpleWaitProgressBar)
         self.diagramSceneMainWidget.setProgressBarWithImagePanel(self.__theWaitProgressBarWithImage)
@@ -1252,6 +1251,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
             # 2010 - Mitja: load the file's data into a QImage object:
             lImage = QtGui.QImage(lFileName)
+            lImagePixmap = QtGui.QPixmap.fromImage(lImage)
 
             if lImage.isNull():
                 QtGui.QMessageBox.warning( self, self.tr("CellDraw"), \
@@ -1278,7 +1278,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 lThePath,lTheFileName = os.path.split(str(lFileName))
                 CDConstants.printOut( "____ DEBUG: _,.- ~*'`'*~-.,_  CellDrawMainWindow.openImage() now calling self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, lImage) with ["+str(lTheFileName)+" "+str(lImage)+ "]", CDConstants.DebugAll)
                 self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, lImage)
-                self.__theToolBars.setModeSelectToolBarImageLayerButtonIcon(lImage)
+                self.__theToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap(lImagePixmap)
 
             # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
             self.diagramSceneMainWidget.scene.update()
@@ -2111,7 +2111,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 lThePath,lTheFileName = os.path.split(str(pFileName))
                 pass # 152 prrint "2010 DEBUG 2010 DEBUG now calling self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image) = (", lTheFileName, image, ")."
                 self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image)
-                self.__theToolBars.setModeSelectToolBarImageLayerButtonIcon(image)
+                self.__theToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap(QtGui.QPixmap.fromImage(image))
 
 
     # end of def openPIFFFile(self)
@@ -2268,7 +2268,11 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             lThePath,lTheFileName = os.path.split(str(lFileName))
             pass # 152 prrint "2010 DEBUG 2010 DEBUG now calling self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image) = (", lTheFileName, image, ")."
             self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image)
-            self.__theToolBars.setModeSelectToolBarImageLayerButtonIcon(image)
+
+
+            print "____ DEBUG: _,.- ~*'`'*~-.,_  CellDrawMainWindow.fileImportDICOM_Callback() now calling self.__theToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap(image) with ["+str(image)+", isNull()=="+str(image.isNull())+" ]"
+
+            self.__theToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap(QtGui.QPixmap.fromImage(image))
         pass # 152 prrint "2010 DEBUG: fileImportDICOM_Callback() ENDING."
         pass # 152 prrint "-.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-"
 
@@ -2455,7 +2459,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             lThePath,lTheFileName = os.path.split(str(lFileName))
             CDConstants.printOut( "2010 DEBUG 2010 DEBUG now calling self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image) = ("+str(lTheFileName)+" "+str(image)+").", CDConstants.DebugAll )
             self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image)
-            self.__theToolBars.setModeSelectToolBarImageLayerButtonIcon(image)
+            self.__theToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap(QtGui.QPixmap.fromImage(image))
         CDConstants.printOut( "2010 DEBUG: fileImportTIFFMultiPage_Callback() ENDING.", CDConstants.DebugAll )
         CDConstants.printOut( "-.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-", CDConstants.DebugAll )
 

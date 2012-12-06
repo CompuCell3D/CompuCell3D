@@ -276,7 +276,7 @@ class CDControlClusters(QtGui.QWidget):
         return QtGui.QIcon(pixmap)
 
     # ------------------------------------------------------------
-    # 2011 - Mitja: add code for creating better looking flood fill button:
+    # 2011 - Mitja: add code for creating a better looking flood fill button:
     # ------------------------------------------------------------
     def createFloodFillToolButtonIcon(self, pImageFile, pColor):
         lPixmap = QtGui.QPixmap(80, 80)

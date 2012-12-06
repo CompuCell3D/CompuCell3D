@@ -266,10 +266,10 @@ class CDImageNP(QtCore.QObject):
                 lTheNewHeight = self.sizeY + 20
             else:
                 lTheNewHeight = self.__theWaitProgressBarWithImage.theContentWidget.height()
-            self.__theWaitProgressBarWithImage.theContentWidget.resize(lTheNewWidth, lTheNewHeight)
+            self.__theWaitProgressBarWithImage.theContentWidget.resize(lTheNewWidth, lTheNewHeight) #asdf 
             self.__theWaitProgressBarWithImage.theContentWidget.update()
             self.__theWaitProgressBarWithImage.theProgressBarImageLabel.update()
-            self.__theWaitProgressBarWithImage.resize(lTheNewWidth+64, lTheNewHeight+64)
+            self.__theWaitProgressBarWithImage.resize(lTheNewWidth+64, lTheNewHeight+64) #asdf
             self.__theWaitProgressBarWithImage.adjustSize()
             self.__theWaitProgressBarWithImage.update()
             print "self.__theWaitProgressBarWithImage.theContentWidget.width() =",self.__theWaitProgressBarWithImage.theContentWidget.width()
@@ -1079,7 +1079,7 @@ class CDImageNP(QtCore.QObject):
             lTheNewHeight = lHeight + 20
         else:
             lTheNewHeight = self.__theProgressBarWithImage.theContentWidget.height()
-        self.__theProgressBarWithImage.theContentWidget.resize(lTheNewWidth, lTheNewHeight)
+        self.__theProgressBarWithImage.theContentWidget.resize(lTheNewWidth, lTheNewHeight) #asdf 
         self.__theProgressBarWithImage.theContentWidget.update()
         self.__theProgressBarWithImage.adjustSize()
 

@@ -216,20 +216,17 @@ class CDWaitProgressBarWithImage(QtGui.QWidget):
         print
         print "-----------------------------------------"
         print "  CDWaitProgressBarWithImage.hide() ....."
-        # pass the hide upwards:
-        super(CDWaitProgressBarWithImage, self).hide()
-
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         # this code was in the INIT section, but we now create/delete the image label
         #   on the fly when showing/hiding the progress bar widget --->
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        self.__waitProgressBarGroupBox.layout().removeWidget(self.scrollArea)
-        if (self.theProgressBarImageLabel != None):
-            self.theProgressBarImageLabel.destroy(True, True)
-            self.theProgressBarImageLabel = None
-        if (self.scrollArea != None):
-            self.scrollArea.destroy(True, True)
-            self.scrollArea = None
+#         self.__waitProgressBarGroupBox.layout().removeWidget(self.scrollArea)
+#         if (self.theProgressBarImageLabel != None):
+#             self.theProgressBarImageLabel.destroy(True, True)
+#             self.theProgressBarImageLabel = None
+#         if (self.scrollArea != None):
+#             self.scrollArea.destroy(True, True)
+#             self.scrollArea = None
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -246,6 +243,13 @@ class CDWaitProgressBarWithImage(QtGui.QWidget):
         self.__theParent.reformat()
         self.__theParent.update()
         print "  self.__theParent.size() =", self.__theParent.size()
+
+#         self.__theParent.adjustSize()
+#         self.adjustSize()
+
+        # pass the hide upwards:
+        super(CDWaitProgressBarWithImage, self).hide()
+
         print
         print "  CDWaitProgressBarWithImage.hide() done."
         print "-----------------------------------------"
@@ -255,6 +259,8 @@ class CDWaitProgressBarWithImage(QtGui.QWidget):
         print
         print "-----------------------------------------"
         print "  CDWaitProgressBarWithImage.show() ....."
+
+
         # pass the show upwards:
         super(CDWaitProgressBarWithImage, self).show()
 
@@ -263,6 +269,89 @@ class CDWaitProgressBarWithImage(QtGui.QWidget):
         # this code was in the INIT section, but we now create/delete the image label
         #   on the fly when showing/hiding the progress bar widget --->
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# 
+#         # now create a QLabel, but NOT to be used as a label.
+#         #   as in the original PIF_Generator code:
+#         self.theProgressBarImageLabel = ProgressBarImageLabel()
+# 
+#         # set the size policy of the theProgressBarImageLabel widget:.
+#         #   "The widget will get as much space as possible."
+# #         self.theProgressBarImageLabel.setSizePolicy(QtGui.QSizePolicy.Ignored, QtGui.QSizePolicy.Ignored)
+# 
+#         # according to Qt documentation,
+#         #   "scale the pixmap to fill the available space" :
+#         self.theProgressBarImageLabel.setScaledContents(True)
+# 
+#         # self.theProgressBarImageLabel.setLineWidth(1)
+#         # self.theProgressBarImageLabel.setMidLineWidth(1)
+# 
+#         # set a QFrame type for this label, so that it shows up with a visible border around itself:
+# #         self.theProgressBarImageLabel.setFrameShape(QtGui.QFrame.Panel)
+#         # self.theProgressBarImageLabel.setFrameShadow(QtGui.QFrame.Plain)
+# 
+#         # self.theProgressBarImageLabel.setAlignment = (QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+#         # self.theProgressBarImageLabel.setObjectName("theProgressBarImageLabel")
+# 
+#         # self.theProgressBarImageLabel.update()
+#         
+# 
+#         # for unexplained reasons, a QLabel containing an image has to be placed
+#         #   in a QScrollArea to be displayed within a layout. Placing theProgressBarImageLabel
+#         #   directly in the layout would *not* display it at all!
+#         #   Therefore, create a QScrollArea and assign theProgressBarImageLabel to it:
+#         self.scrollArea = QtGui.QScrollArea()
+#         # self.scrollArea.setBackgroundRole(QtGui.QPalette.AlternateBase)
+# #         self.scrollArea.setBackgroundRole(QtGui.QPalette.Mid)
+#         self.scrollArea.setWidget(self.theProgressBarImageLabel)
+#         self.scrollArea.setAlignment = (QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+#         
+#         print "  self.theProgressBarImageLabel =", self.theProgressBarImageLabel
+#         print "  self.scrollArea =", self.scrollArea
+# 
+#         self.__waitProgressBarGroupBox.layout().addWidget(self.scrollArea)
+# 
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        # <---   this code was in the INIT section, but we now create/delete
+        # the image label on the fly when showing/hiding the progress bar widget
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+        # to have the parent widget (a QStatusBar object) resize properly, insert self in it:
+        self.__theParent.insertPermanentWidgetInStatusBar(0, self)
+
+        print
+        print "  self.__theParent.size() =", self.__theParent.size()
+#         print "  self.__theParent ==", self.__theParent, "calling: self.__theParent.resize(16,64) "
+#         self.__theParent.resize(16,64)
+        self.__theParent.update()
+        print "  self.__theParent.size() =", self.__theParent.size()
+        print "  self.__theParent ==", self.__theParent, "calling: self.__theParent.reformat() "
+        self.__theParent.reformat()
+        self.__theParent.update()
+        print "  self.__theParent.size() =", self.__theParent.size()
+
+
+
+#         self.__theParent.adjustSize()
+#         self.adjustSize()
+
+
+        print
+        print "  CDWaitProgressBarWithImage.show() done."
+        print "-----------------------------------------"
+
+
+    # ------------------------------------------------------------------
+    # init - central widget containing a QProgressBar and an image, set up and show:
+    # ------------------------------------------------------------------
+    def __InitCentralWidget(self, pTitle):
+        # -------------------------------------------
+
+
+
+
+
+
         # now create a QLabel, but NOT to be used as a label.
         #   as in the original PIF_Generator code:
         self.theProgressBarImageLabel = ProgressBarImageLabel()
@@ -273,7 +362,7 @@ class CDWaitProgressBarWithImage(QtGui.QWidget):
 
         # according to Qt documentation,
         #   "scale the pixmap to fill the available space" :
-        self.theProgressBarImageLabel.setScaledContents(True)
+        self.theProgressBarImageLabel.setScaledContents(False)
 
         # self.theProgressBarImageLabel.setLineWidth(1)
         # self.theProgressBarImageLabel.setMidLineWidth(1)
@@ -301,42 +390,16 @@ class CDWaitProgressBarWithImage(QtGui.QWidget):
         print "  self.theProgressBarImageLabel =", self.theProgressBarImageLabel
         print "  self.scrollArea =", self.scrollArea
 
-        self.__waitProgressBarGroupBox.layout().addWidget(self.scrollArea)
-
-        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        # <---   this code was in the INIT section, but we now create/delete
-        # the image label on the fly when showing/hiding the progress bar widget
-        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
-        # to have the parent widget (a QStatusBar object) resize properly, insert self in it:
-        self.__theParent.insertPermanentWidgetInStatusBar(0, self)
-
-        print
-        print "  self.__theParent.size() =", self.__theParent.size()
-#         print "  self.__theParent ==", self.__theParent, "calling: self.__theParent.resize(16,64) "
-#         self.__theParent.resize(16,64)
-        self.__theParent.update()
-        print "  self.__theParent.size() =", self.__theParent.size()
-        print "  self.__theParent ==", self.__theParent, "calling: self.__theParent.reformat() "
-        self.__theParent.reformat()
-        self.__theParent.update()
-        print "  self.__theParent.size() =", self.__theParent.size()
-        print
-        print "  CDWaitProgressBarWithImage.show() done."
-        print "-----------------------------------------"
 
 
-    # ------------------------------------------------------------------
-    # init - central widget containing a QProgressBar and an image, set up and show:
-    # ------------------------------------------------------------------
-    def __InitCentralWidget(self, pTitle):
-        # -------------------------------------------
+
 
         lGroupBox = QtGui.QGroupBox(pTitle)
 #         lGroupBox.setPalette(QtGui.QPalette(QtGui.QColor(222,0,222)))
 #         lGroupBox.setAutoFillBackground(True)
-        lGroupBox.setLayout(QtGui.QVBoxLayout())
+        lGroupBox.setLayout(QtGui.QHBoxLayout())
         lGroupBox.layout().setMargin(0)
         lGroupBox.layout().setSpacing(2)
         lGroupBox.layout().setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
@@ -362,23 +425,20 @@ class CDWaitProgressBarWithImage(QtGui.QWidget):
 
         # place all 'sub-widgets' in the layout:
 
-#         lVBoxLayout = QtGui.QVBoxLayout()
-#         lVBoxLayout.setMargin(0)
-#         lVBoxLayout.setSpacing(2)
-#         lVBoxLayout.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-#         lVBoxLayout.addWidget(self.__infoLabel)
-#         lVBoxLayout.addWidget(self.__progressBar)
-#         lVBoxLayout.addWidget(self.percentageLabel)
+        lVBoxLayout = QtGui.QVBoxLayout()
+        lVBoxLayout.setMargin(0)
+        lVBoxLayout.setSpacing(2)
+        lVBoxLayout.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        lVBoxLayout.addWidget(self.__infoLabel)
+        lVBoxLayout.addWidget(self.__progressBar)
+        lVBoxLayout.addWidget(self.percentageLabel)
 
-        lGroupBox.layout().addWidget(self.__infoLabel)
-        lGroupBox.layout().addWidget(self.__progressBar)
-        lGroupBox.layout().addWidget(self.percentageLabel)
 
-        self.theProgressBarImageLabel = None
-        self.scrollArea = None
+#         self.theProgressBarImageLabel = None
+#         self.scrollArea = None
 
-#         lGroupBox.layout().addLayout(lVBoxLayout)
-#         lGroupBox.layout().addWidget(self.scrollArea)
+        lGroupBox.layout().addLayout(lVBoxLayout)
+        lGroupBox.layout().addWidget(self.scrollArea)
 
         # finally place the complete layout in a QWidget and return it:
         return lGroupBox

@@ -1250,7 +1250,7 @@ class CDImageSequence(QtCore.QObject):
                 lTheNewHeight = lHeight + 20
             else:
                 lTheNewHeight = self.__theWaitProgressBarWithImage.theContentWidget.height()
-            self.__theWaitProgressBarWithImage.theContentWidget.resize(lTheNewWidth, lTheNewHeight)
+            self.__theWaitProgressBarWithImage.theContentWidget.resize(lTheNewWidth, lTheNewHeight) #asdf 
             self.__theWaitProgressBarWithImage.theContentWidget.update()
             self.__theWaitProgressBarWithImage.adjustSize()
     
@@ -1404,7 +1404,7 @@ class CDImageSequence(QtCore.QObject):
                 lTheNewHeight = lHeight + 20
             else:
                 lTheNewHeight = self.__theWaitProgressBarWithImage.theContentWidget.height()
-            self.__theWaitProgressBarWithImage.theContentWidget.resize(lTheNewWidth, lTheNewHeight)
+            self.__theWaitProgressBarWithImage.theContentWidget.resize(lTheNewWidth, lTheNewHeight) #asdf 
             self.__theWaitProgressBarWithImage.theContentWidget.update()
             self.__theWaitProgressBarWithImage.adjustSize()
     
@@ -1961,6 +1961,23 @@ class CDImageSequence(QtCore.QObject):
 
         # push the QPainter's current state onto a stack, to be followed by a restore() below:
         lPainter.save()
+
+
+
+
+
+
+        lPixMap = QtGui.QPixmap(self.pifSceneWidth, self.pifSceneHeight)
+        lPixMap.fill( QtGui.QColor(QtCore.Qt.gray) )
+        lPainter.drawPixmap(QtCore.QPoint(0,0), lPixMap)
+
+
+
+
+
+
+
+
 
 
 

@@ -32,6 +32,17 @@ class CDWaitProgressBar(QtGui.QWidget):
         # it is compulsory to call the parent's __init__ class right away:
         super(CDWaitProgressBar, self).__init__(pParent)
 
+
+        print "CDWaitProgressBar.__init__()"
+        self.theProgressBarImageLabel = QtGui.QLabel()
+        print "CDWaitProgressBar.__init__()  self.theProgressBarImageLabel =="+str(self.theProgressBarImageLabel)
+
+
+        print "CDWaitProgressBar.__init__()"
+        self.theContentWidget = QtGui.QWidget()
+        print "CDWaitProgressBar.__init__()  self.theContentWidget =="+str(self.theContentWidget)
+
+
         # the progress bar widget is defined in createProgressBar() below:
         self.__progressBar = None
 
@@ -73,8 +84,6 @@ class CDWaitProgressBar(QtGui.QWidget):
         print
         print "--------------------------------"
         print "  CDWaitProgressBar.hide() ....."
-        # pass the hide upwards:
-        super(CDWaitProgressBar, self).hide()
 
         # to have the parent widget (a QStatusBar object) resize properly, remove self from it:
         self.__theParent.removeWidgetFromStatusBar(self)
@@ -89,6 +98,12 @@ class CDWaitProgressBar(QtGui.QWidget):
         self.__theParent.reformat()
         self.__theParent.update()
         print "  self.__theParent.size() =", self.__theParent.size()
+
+
+        # pass the hide upwards:
+        super(CDWaitProgressBar, self).hide()
+
+
         print
         print "  CDWaitProgressBar.hide() done."
         print "--------------------------------"
