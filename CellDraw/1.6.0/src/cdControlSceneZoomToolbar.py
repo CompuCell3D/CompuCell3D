@@ -71,9 +71,9 @@ class CDControlSceneZoomToolbar(QtGui.QToolBar):
         self.__theZoomGroupBox.layout().addWidget(self.__sceneZoomComboBox)
 
         # finally add the QGroupBox  to the QToolBar:
-        self.addWidget(QtGui.QLabel("["))
+#         self.addWidget(QtGui.QLabel("["))
         self.addWidget(self.__theZoomGroupBox)
-        self.addWidget(QtGui.QLabel("]"))
+#         self.addWidget(QtGui.QLabel("]"))
 
         self.show()
 

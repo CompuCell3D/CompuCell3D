@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# CDWaitProgressBar - add-on QProgressBar dialog for CellDraw - Mitja 2011
+# CDWaitProgressBar - add-on QProgressBar and QWidget for CellDraw - Mitja 2011
 #
 # ------------------------------------------------------------
 
@@ -8,6 +8,12 @@ import inspect # <-- for debugging functions, may be removed in final version
 #
 from PyQt4 import QtGui, QtCore
 #
+
+import time    # for sleep()
+
+
+# external class defining all global constants for CellDraw:
+from cdConstants import CDConstants
 
 
 # debugging functions, may be removed in final version:
@@ -19,110 +25,133 @@ def debugWhoIsTheParentFunction():
 
 
 # ======================================================================
-# a QDialog-based widget dialog, in application-specific dialog style
+# a QWidget-based progress bar, instead of a dialog-style widget
 # ======================================================================
-class CDWaitProgressBar(QtGui.QDialog):
+class CDWaitProgressBar(QtGui.QWidget):
 
-    def __init__(self, pTitle="CellDraw: processing.", pMaxValue=100, pParent=None):
+    # ------------------------------------------------------------------
+    def __init__(self, pTitle="CellDraw: processing.", pLabelText=" ", pMaxValue=100, pParent=None):
         # it is compulsory to call the parent's __init__ class right away:
         super(CDWaitProgressBar, self).__init__(pParent)
 
-        # delete the window widget when its window is closed:
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
-       
-        self.theTitle = pTitle
-        self.maxValue = pMaxValue
-        self.theParent = pParent
+
+        print "CDWaitProgressBar.__init__()"
+        self.__theProgressBarImageLabel = QtGui.QLabel()
+        print "CDWaitProgressBar.__init__()  self.__theProgressBarImageLabel =="+str(self.__theProgressBarImageLabel)
+
+
+        # the progress bar widget is defined in createProgressBar() below:
+        self.__progressBar = None
+
+        self.__theTitle = pTitle
+        self.__theLabelText = pLabelText
+        self.__maxValue = pMaxValue
+        self.__theParent = pParent
+
+        self.__waitProgressBarGroupBox = self.__InitCentralWidget(self.__theTitle)
 
         #
-        # init (1) - windowing GUI stuff:
-        #
-        self.miInitGUI()
-
-        #
-        # init (2) - set up a widget with a QProgressBar, show it inside the dialog:
-        #
-        self.layout().addWidget(self.miInitCentralWidget())
-        self.layout().setMargin(2)
-
-        # CDConstants.printOut( " "+str( "--- - DEBUG ----- CDWaitProgressBar: __init__(): done" )+" ", CDConstants.DebugTODO )
-
-
-    # ------------------------------------------------------------------
-    # init (1) - windowing GUI stuff:
-    # ------------------------------------------------------------------
-    def miInitGUI(self):
-
-        # this is a progress dialog within a processing operation, set it as modal:
-        self.setModal(True)
-
-        # how will the CDWaitProgressBar look like:
-        self.setWindowTitle("CellDraw: processing.")
-        self.setMinimumWidth(320)
-        # setGeometry is inherited from QWidget, taking 4 arguments:
-        #   x,y  of the top-left corner of the QWidget, from top-left of screen
-        #   w,h  of the QWidget
-        # NOTE: the x,y is NOT the top-left edge of the window,
-        #    but of its **content** (excluding the menu bar, toolbar, etc.
-        # self.setGeometry(750,480,480,320)
-
-        # QVBoxLayout layout lines up widgets vertically:
-        self.setLayout(QtGui.QVBoxLayout())
-        self.layout().setAlignment(QtCore.Qt.AlignTop)
-        self.layout().setMargin(2)
-
-        #
-        # QWidget setup (2) - more windowing GUI setup:
+        # set up a widget with a QProgressBar, show it inside the QWidget:
         #
 
-        miDialogsWindowFlags = QtCore.Qt.WindowFlags()
-        # this panel is a so-called "Tool" (by PyQt and Qt definitions)
-        #    we'd use the Tool type of window, except for this oh-so typical Qt bug:
-        #    http://bugreports.qt.nokia.com/browse/QTBUG-6418
-        #    i.e. it defines a system-wide panel which shows on top of *all* applications,
-        #    even when this application is in the background.
-        # miDialogsWindowFlags = QtCore.Qt.Tool
-        #    so we use a plain QtCore.Qt.Dialog type instead:
-        miDialogsWindowFlags = QtCore.Qt.Dialog
-        #    add a peculiar WindowFlags combination to have no close/minimize/maxize buttons:
-        miDialogsWindowFlags |= QtCore.Qt.WindowTitleHint
-        miDialogsWindowFlags |= QtCore.Qt.CustomizeWindowHint
-#        miDialogsWindowFlags |= QtCore.Qt.WindowMinimizeButtonHint
-#        miDialogsWindowFlags |= QtCore.Qt.WindowStaysOnTopHint
-        self.setWindowFlags(miDialogsWindowFlags)
-
-        # 1. The widget is not modal and does not block input to other widgets.
-        # 2. If widget is inactive, the click won't be seen by the widget.
-        #    (it does NOT work as Qt docs says it would on Mac OS X: click-throughs don't get disabled)
-        # 3. The widget can choose between alternative sizes for widgets to avoid clipping.
-        # 4. The native Carbon size grip should be opaque instead of transparent.
-        self.setAttribute(QtCore.Qt.NonModal  | \
-                          QtCore.Qt.WA_MacNoClickThrough | \
-                          QtCore.Qt.WA_MacVariableSize | \
-                          QtCore.Qt.WA_MacOpaqueSizeGrip )
-
+        lFont = QtGui.QFont()
+        lFont.setWeight(QtGui.QFont.Light)
+        self.setFont(lFont)
+        self.setLayout(QtGui.QHBoxLayout())
+        self.layout().setMargin(0)
+        self.layout().setSpacing(0)
+        self.layout().setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTop)
+        self.setWindowTitle("CellDraw: processing windowTitle.")
+        self.setStatusTip(QtCore.QString(self.__theTitle))
+        self.setToolTip(QtCore.QString(self.__theTitle))
         # do not delete the window widget when the window is closed:
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose, False)
 
+        self.layout().addWidget(self.__waitProgressBarGroupBox)
 
+        CDConstants.printOut( " "+str( "--- - DEBUG ----- CDWaitProgressBar: __init__(): done" )+" ", CDConstants.DebugTODO )
+
+    # end of   def __init__()
+    # ------------------------------------------------------------------
 
 
 
     # ------------------------------------------------------------------
-    # init (2) - central widget containing a QProgressBar, set up and show:
+    def hide(self):
+        print
+        print "--------------------------------"
+        print "  CDWaitProgressBar.hide() ....."
+
+        # to have the parent widget (a QStatusBar object) resize properly, remove self from it:
+        self.__theParent.removeWidgetFromStatusBar(self)
+
+        print
+        print "  self.__theParent.size() =", self.__theParent.size()
+#         print "  self.__theParent ==", self.__theParent, "calling: self.__theParent.resize(16,64) "
+#         self.__theParent.resize(16,64)
+        self.__theParent.update()
+        print "  self.__theParent.size() =", self.__theParent.size()
+        print "  self.__theParent ==", self.__theParent, "calling: self.__theParent.reformat() "
+        self.__theParent.reformat()
+        self.__theParent.update()
+        print "  self.__theParent.size() =", self.__theParent.size()
+
+
+        # pass the hide upwards:
+        super(CDWaitProgressBar, self).hide()
+
+
+        print
+        print "  CDWaitProgressBar.hide() done."
+        print "--------------------------------"
+
     # ------------------------------------------------------------------
-    def miInitCentralWidget(self):
+    def show(self):
+        print
+        print "--------------------------------"
+        print "  CDWaitProgressBar.show() ....."
+        # pass the show upwards:
+        super(CDWaitProgressBar, self).show()
+
+        # to have the parent widget (a QStatusBar object) resize properly, insert self in it:
+        self.__theParent.insertPermanentWidgetInStatusBar(0, self)
+
+        print
+        print "  self.__theParent.size() =", self.__theParent.size()
+#         print "  self.__theParent ==", self.__theParent, "calling: self.__theParent.resize(16,64) "
+#         self.__theParent.resize(16,64)
+        self.__theParent.update()
+        print "  self.__theParent.size() =", self.__theParent.size()
+        print "  self.__theParent ==", self.__theParent, "calling: self.__theParent.reformat() "
+        self.__theParent.reformat()
+        self.__theParent.update()
+        print "  self.__theParent.size() =", self.__theParent.size()
+        print
+        print "  CDWaitProgressBar.show() done."
+        print "--------------------------------"
+
+
+    # ------------------------------------------------------------------
+    # init - central widget containing a QProgressBar, set up and show:
+    # ------------------------------------------------------------------
+    def __InitCentralWidget(self, pTitle):
         # -------------------------------------------
-        # the dialog's vbox layout
-        theContainerWidget = QtGui.QWidget()
 
-        # this infoLabel part is cosmetic and can safely be removed,
+        lGroupBox = QtGui.QGroupBox(pTitle)
+#         lGroupBox.setPalette(QtGui.QPalette(QtGui.QColor(222,0,222)))
+#         lGroupBox.setAutoFillBackground(True)
+        lGroupBox.setLayout(QtGui.QVBoxLayout())
+        lGroupBox.layout().setMargin(0)
+        lGroupBox.layout().setSpacing(2)
+        lGroupBox.layout().setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+
+        # this self.__infoLabel part is cosmetic and can safely be removed,
         #     unless useful info is provided here:
-        infoLabel = QtGui.QLabel()
-        infoLabel.setText(self.theTitle)
-        infoLabel.setAlignment = QtCore.Qt.AlignCenter
-        infoLabel.setLineWidth(3)
-        infoLabel.setMidLineWidth(3)
+        self.__infoLabel = QtGui.QLabel()
+        self.__infoLabel.setText(self.__theLabelText)
+        self.__infoLabel.setAlignment = QtCore.Qt.AlignCenter
+#         self.__infoLabel.setLineWidth(3)
+#         self.__infoLabel.setMidLineWidth(3)
 
         # create a progress bar:
         self.createProgressBar()      
@@ -135,61 +164,108 @@ class CDWaitProgressBar(QtGui.QDialog):
         self.percentageLabel.setLineWidth(3)
         self.percentageLabel.setMidLineWidth(3)
 
-        # create a layout and place all 'sub-widgets' in it:
-        vbox = QtGui.QVBoxLayout()
-        vbox.setMargin(2)
-        vbox.addWidget(infoLabel)
-        vbox.addWidget(self.progressBar)
-        vbox.addWidget(self.percentageLabel)
+        # place all 'sub-widgets' in the layout:
+        lGroupBox.layout().addWidget(self.__infoLabel)
+        lGroupBox.layout().addWidget(self.__progressBar)
+        lGroupBox.layout().addWidget(self.percentageLabel)
 
         # finally place the complete layout in a QWidget and return it:
-        theContainerWidget.setLayout(vbox)
-        return theContainerWidget
+        return lGroupBox
+
+    # end of   def __InitCentralWidget(self)
+    # ------------------------------------------------------------------
+
+
 
 
 
 
     # ---------------------------------------------------------
-    def setValue(self, pValue):
-        self.progressBar.setValue(pValue)
+    def setImagePixmap(self, pPixmap, pWidth=-1, pHeight=-1):
+        print "CDWaitProgressBar.setImagePixmap() - start.  pPixmap="+str(pPixmap)+", pWidth="+str(pWidth)+", pHeight="+str(pHeight)+" ..."
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+        print "CDWaitProgressBar.setImagePixmap() - doing nothing."
+        time.sleep(3.0)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+        print "CDWaitProgressBar.setImagePixmap() - end."
 
-        curVal = self.progressBar.value()
-        maxVal = self.progressBar.maximum()
+
+
+
+    # ---------------------------------------------------------
+    def setTitle(self, pCaption):
+        self.__theTitle = str(pCaption)
+        # self.__infoLabel.setText(str(pCaption))
+        self.__waitProgressBarGroupBox.setTitle(self.__theTitle)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+
+    # ---------------------------------------------------------
+    def setValue(self, pValue):
+        self.__progressBar.setValue(pValue)
+
+        curVal = self.__progressBar.value()
+        maxVal = self.__progressBar.maximum()
         lPercentage = (float(curVal) / float(maxVal)) * 100.0
         self.percentageLabel.setText( QtCore.QString("... %1 %").arg(lPercentage, 0, 'g', 2) )
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+
+    # ---------------------------------------------------------
+    def setTitleTextRange(self, pCaption="CellDraw: processing.", pLabelText=" ", pMin=0, pMax=100):
+        self.__infoLabel.setText(pLabelText)
+        if (pLabelText==" "):
+            self.__infoLabel.hide()
+        else:
+            self.__infoLabel.show()
+        self.__progressBar.setRange(pMin, pMax)
+        self.__progressBar.setValue(pMin)
+        self.__theTitle = pCaption
+        self.__waitProgressBarGroupBox.setTitle(self.__theTitle)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+
+    # ---------------------------------------------------------
+    def setInfoText(self, pLabelText=" "):
+        self.__infoLabel.setText(pLabelText)
+        if (pLabelText==" "):
+            self.__infoLabel.hide()
+        else:
+            self.__infoLabel.show()
         QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
 
     # ---------------------------------------------------------
     def setRange(self, pMin=0, pMax=100):
-        self.progressBar.setRange(pMin, pMax)
-        self.progressBar.setValue(pMin)
+        self.__progressBar.setRange(pMin, pMax)
+        self.__progressBar.setValue(pMin)
         QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
 
     # ---------------------------------------------------------
     def createProgressBar(self):
-        self.progressBar = QtGui.QProgressBar()
-        # self.progressBar.setRange(0, 10000)
-        self.progressBar.setRange(0, self.maxValue)
-        self.progressBar.setValue(0)
+        self.__progressBar = QtGui.QProgressBar()
+        self.__progressBar.setRange(0, self.__maxValue)
+        self.__progressBar.setValue(0)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+
     # ---------------------------------------------------------
     def advanceProgressBar(self):
-        curVal = self.progressBar.value()
-        maxVal = self.progressBar.maximum()
-        # self.progressBar.setValue(curVal + (maxVal - curVal) / 100)
+        curVal = self.__progressBar.value()
+        maxVal = self.__progressBar.maximum()
+        # self.__progressBar.setValue(curVal + (maxVal - curVal) / 100)
         lPercentage = (float(curVal) / float(maxVal)) * 100.0
         # CDConstants.printOut( " "+str( "ah yes", curVal, maxVal, lPercentage, QtCore.QString("%1").arg(lPercentage) )+" ", CDConstants.DebugTODO )
         self.percentageLabel.setText( QtCore.QString("... %1 %").arg(lPercentage, 0, 'g', 2) )
-        self.progressBar.setValue(curVal + 1)
+        self.__progressBar.setValue(curVal + 1)
         QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
                
     # ---------------------------------------------------------
     def resetProgressBar(self):
         self.percentageLabel.setText("0 %")
-        self.progressBar.setValue(0)
+        self.__progressBar.setValue(0)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+
     # ---------------------------------------------------------
     def maxProgressBar(self):
         self.percentageLabel.setText("100 %")
-        self.progressBar.setValue(self.maxValue)
+        self.__progressBar.setValue(self.__maxValue)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
     # ---------------------------------------------------------
 
 

@@ -108,6 +108,8 @@ class CDViewSceneDimensions(QtGui.QWidget):
         self.layout().addWidget(self.__sceneDimensionsGroupBox)
 
 
+    # end of    def __init__(self,pParent=None)
+    # ------------------------------------------------------------
 
 
     # ------------------------------------------------------------------

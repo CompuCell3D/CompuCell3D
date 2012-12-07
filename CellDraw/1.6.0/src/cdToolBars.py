@@ -26,22 +26,22 @@ class CDToolBars(QtCore.QObject):
         super(CDToolBars, self).__init__(None)
 
         self.mainWindow = pParent
-        
-        # demo toolbar object:
-        lOneToolbar = QtGui.QToolBar("QToolBar | OneToolbar")
-        CDConstants.printOut( "----- CDToolBars.__init__() - lOneToolbar = "+str(lOneToolbar), CDConstants.DebugExcessive )
-        # set all icons in this QToolBar to be of the same size:
-        lOneToolbar.setIconSize(QtCore.QSize(24, 24))
-        lOneToolbar.setObjectName("setObjectName OneToolbar")
-        lOneToolbar.setToolTip("setToolTip OneToolbar")
-        lOneToolbar.addWidget(QtGui.QLabel("*"))
-        lOneToolbar.addWidget(QtGui.QLabel(" "))
-        lOneToolbar.addWidget(QtGui.QLabel("_"))
-        lPrintOut = self.mainWindow.addToolBar(QtCore.Qt.TopToolBarArea, lOneToolbar)
-        CDConstants.printOut( "----- CDToolBars.__init__() - self.mainWindow.addToolBar(QtCore.Qt.TopToolBarArea, lOneToolbar) = "+str(lPrintOut), CDConstants.DebugExcessive )
-        # addToolBarBreak() places the next toolbar in the same toolbar area in a "new line"
-        # print self.mainWindow.addToolBarBreak(QtCore.Qt.TopToolBarArea)
-
+#         
+#         # demo toolbar object:
+#         lOneToolbar = QtGui.QToolBar("QToolBar | OneToolbar")
+#         CDConstants.printOut( "----- CDToolBars.__init__() - lOneToolbar = "+str(lOneToolbar), CDConstants.DebugExcessive )
+#         # set all icons in this QToolBar to be of the same size:
+#         lOneToolbar.setIconSize(QtCore.QSize(24, 24))
+#         lOneToolbar.setObjectName("setObjectName OneToolbar")
+#         lOneToolbar.setToolTip("setToolTip OneToolbar")
+#         lOneToolbar.addWidget(QtGui.QLabel("*"))
+#         lOneToolbar.addWidget(QtGui.QLabel(" "))
+#         lOneToolbar.addWidget(QtGui.QLabel("_"))
+#         lPrintOut = self.mainWindow.addToolBar(QtCore.Qt.TopToolBarArea, lOneToolbar)
+#         CDConstants.printOut( "----- CDToolBars.__init__() - self.mainWindow.addToolBar(QtCore.Qt.TopToolBarArea, lOneToolbar) = "+str(lPrintOut), CDConstants.DebugExcessive )
+#         # addToolBarBreak() places the next toolbar in the same toolbar area in a "new line"
+#         # print self.mainWindow.addToolBarBreak(QtCore.Qt.TopToolBarArea)
+# 
 
         # ----------
         # 2011 - Mitja: to control the "layer selection" for Cell Scene mode,
@@ -127,8 +127,11 @@ class CDToolBars(QtCore.QObject):
     # CDControlModeSelectToolBar:
     # set the icon of the Image Layer selection button
     # ------------------------------------------------------------
-    def setModeSelectToolBarImageLayerButtonIcon(self, pIcon):
-        self.__theModeSelectToolBar.setImageLayerButtonIcon( pIcon )
+    def setModeSelectToolBarImageLayerButtonIconFromPixmap(self, pPixmap):
+        print "=-=-=-= CDToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap( pPixmap=="+str(pPixmap)+", isNull()=="+str(pPixmap.isNull())+" )"
+
+
+        self.__theModeSelectToolBar.setImageLayerButtonIconFromPixmap( pPixmap )
 
 
 

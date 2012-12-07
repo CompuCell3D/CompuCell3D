@@ -90,8 +90,8 @@ class CDConstants(QtCore.QObject):
 
 
     # and the static class variable for debugging level:
-    globalDebugLevel = DebugImportant
-    # globalDebugLevel = DebugTODO
+    # globalDebugLevel = DebugImportant
+    globalDebugLevel = DebugTODO
 
 
     # 2011 - Mitja: scene bundle:

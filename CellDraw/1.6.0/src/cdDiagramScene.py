@@ -2142,11 +2142,51 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
         self.theCDImageSequence = CDImageSequence(self)
         self.scene.setImageSequence(self.theCDImageSequence)
 
+        # the progress bar widget is instantiated in the CellDrawMainWindow class,
+        #   and assigned below in setSimpleProgressBarPanel() :
+        self.__theSimpleWaitProgressBar = None
+
+        # the progress bar with image widget is instantiated in the CellDrawMainWindow class,
+        #   and assigned below in setProgressBarWithImagePanel() :
+        self.__theWaitProgressBarWithImage = None
 
         self.connectSignals()
 
         self.setWindowTitle("Cell Scene Region Editor")
         self.show()
+
+    # end of    def __init__(self, pParentWindow = None)
+    # ------------------------------------------------------------------
+
+
+
+
+    # --------------------------------------------------------
+    def setSimpleProgressBarPanel(self, pSimpleProcessBar=None):
+    # --------------------------------------------------------
+        if isinstance( pSimpleProcessBar, QtGui.QWidget ) == True:
+            self.__theSimpleWaitProgressBar = pSimpleProcessBar
+            self.theCDImageLayer.setSimpleProgressBarPanel(self.__theSimpleWaitProgressBar)
+            self.theCDImageSequence.setSimpleProgressBarPanel(self.__theSimpleWaitProgressBar)
+        else:
+            self.__theSimpleWaitProgressBar = None
+    # end of   def setSimpleProgressBarPanel()
+    # --------------------------------------------------------
+
+
+
+
+    # --------------------------------------------------------
+    def setProgressBarWithImagePanel(self, pProcessBarWithImage=None):
+    # --------------------------------------------------------
+        if isinstance( pProcessBarWithImage, QtGui.QWidget ) == True:
+            self.__theWaitProgressBarWithImage = pProcessBarWithImage
+            self.theCDImageLayer.setProgressBarWithImagePanel(self.__theWaitProgressBarWithImage)
+            self.theCDImageSequence.setProgressBarWithImagePanel(self.__theWaitProgressBarWithImage)
+        else:
+            self.__theWaitProgressBarWithImage = None
+    # end of   def setProgressBarWithImagePanel()
+    # --------------------------------------------------------
 
 
 

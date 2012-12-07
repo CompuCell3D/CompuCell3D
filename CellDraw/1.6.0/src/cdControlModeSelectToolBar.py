@@ -163,12 +163,12 @@ class CDControlModeSelectToolBar(QtGui.QToolBar):
 #         self.editClusterAction.hide()
 
         # add all buttons to the QToolBar:
-        self.addWidget(QtGui.QLabel("["))
+#         self.addWidget(QtGui.QLabel("["))
         self.addAction(self.pointerAction)
         self.addAction(self.resizeAction)       
         self.addAction(self.imageLayerAction)
         self.addAction(self.imageSequenceAction)
-        self.addWidget(QtGui.QLabel("]"))
+#         self.addWidget(QtGui.QLabel("]"))
 
         self.show()
 
@@ -200,8 +200,19 @@ class CDControlModeSelectToolBar(QtGui.QToolBar):
     # ------------------------------------------------------------
     # set the icon of the Image Layer selection button
     # ------------------------------------------------------------
-    def setImageLayerButtonIcon(self, pIcon):
-        self.imageLayerAction.setIcon(QtGui.QIcon( pIcon ))
+    def setImageLayerButtonIconFromPixmap(self, pPixmap):
+        pass # 152 prrint "=-=-=-= CDControlModeSelectToolBar.setImageLayerButtonIconFromPixmap( pPixmap=="+str(pPixmap)+", isNull()=="+str(pPixmap.isNull())+" )"
+
+        lSize = max(pPixmap.height(), pPixmap.width())
+        lImageActionIconPixMap = QtGui.QPixmap(lSize, lSize)
+        lImageActionIconPixMap.fill(QtGui.QColor(QtCore.Qt.transparent))
+        lImageActionIconPainter = QtGui.QPainter(lImageActionIconPixMap)
+        lImageActionIconPainter.setPen(QtCore.Qt.NoPen)
+#         lImageActionIconPainter.fillRect(QtCore.QRect(0, 0, lSize, lSize), QtGui.QBrush(QtGui.QColor(QtCore.Qt.transparent)))
+        lImageActionIconPainter.drawPixmap(0, 0, pPixmap)
+        lImageActionIconPainter.end()
+        
+        self.imageLayerAction.setIcon(QtGui.QIcon(lImageActionIconPixMap))
 
 
 
