@@ -1,6 +1,6 @@
 class PlotManagerBase:
     def __init__(self,_viewManager=None,_plotSupportFlag=False):
-        self.vm=_viewManager
+        self.vm = _viewManager
         self.plotsSupported = checkSupportForPlotting()         
                     
     # def addNewPlotWindow(self):
@@ -16,12 +16,22 @@ class PlotManagerBase:
     def processRequestForNewPlotWindow(self,_mutex):
         pass
 
-def checkSupportForPlotting():
-    try:
-        import PyQt4.Qwt5            
-        PyQwtFlag=True
-    except ImportError:
+def checkSupportForPlotting(_useVTKFlag=False):
+    if _useVTKFlag:   # do we *only* want to use VTK for plotting?
         PyQwtFlag=False
+    else:
+        try:
+            import PyQt4.Qwt5            
+            PyQwtFlag=True
+        except ImportError:
+            PyQwtFlag=False
+        
+    try:
+        import vtk
+        if (vtk.vtkVersion.GetVTKMajorVersion() >= 5) and (vtk.vtkVersion.GetVTKMinorVersion() >= 8):  # need to verify this
+            vtkPlotFlag=True
+    except ImportError:
+        vtkPlotFlag=False
         
     try:
         import numpy            
@@ -29,18 +39,26 @@ def checkSupportForPlotting():
     except ImportError:
         numpyFlag=False
     
-    if PyQwtFlag and numpyFlag:
-        return True
+    if numpyFlag:
+        if PyQwtFlag:
+            return -1
+        elif vtkPlotFlag:
+            return 1
     else:
-        return False
+        return 0
         
 #factory method        
-def createPlotManager(_viewManager=None):
-    plotSupportFlag=checkSupportForPlotting()
-    if plotSupportFlag:
+def createPlotManager(_viewManager=None, _useVTKFlag=False):   # called from SimpleTabView
+    plotSupportFlag = checkSupportForPlotting(_useVTKFlag)
+    print '------ PlotManagerSetup.py:    plotSupportFlag=',plotSupportFlag
+    if plotSupportFlag < 0:  # via Qwt
         from PlotManager import PlotManager
+        print '------ PlotManagerSetup.py:    importing PyQwt PlotManager'
         return PlotManager(_viewManager,plotSupportFlag)
-    else:
+    elif plotSupportFlag > 0:  # via VTK
+        from PlotManagerVTK import PlotManager
+        return PlotManager(_viewManager,plotSupportFlag)
+    else:  # plotting not possible
         return PlotManagerBase(_viewManager,plotSupportFlag)
         
 # this class most likel;y is not needed but I keep it for now 
