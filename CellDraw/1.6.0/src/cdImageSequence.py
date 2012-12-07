@@ -1237,21 +1237,21 @@ class CDImageSequence(QtCore.QObject):
             lPixmap.fill(QtCore.Qt.transparent)
 
             # store the pixmap holding the specially rendered scene:
-            self.__theWaitProgressBarWithImage.theProgressBarImageLabel.setPixmap(lPixmap)
-            self.__theWaitProgressBarWithImage.theProgressBarImageLabel.image = lPixmap.toImage()    
-            self.__theWaitProgressBarWithImage.theProgressBarImageLabel.width = int( lPixmap.width() )
-            self.__theWaitProgressBarWithImage.theProgressBarImageLabel.height = int ( lPixmap.height() )
+            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.setPixmap(lPixmap)
+            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.image = lPixmap.toImage()    
+            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.width = int( lPixmap.width() )
+            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.height = int ( lPixmap.height() )
 
-            if ( self.__theWaitProgressBarWithImage.theContentWidget.width() < (lDepth + 20) ):
+            if ( self.__theWaitProgressBarWithImage.__theContentWidget.width() < (lDepth + 20) ):
                 lTheNewWidth = lDepth + 20
             else:
-                lTheNewWidth = self.__theWaitProgressBarWithImage.theContentWidget.width()
-            if ( self.__theWaitProgressBarWithImage.theContentWidget.height() < (lHeight + 20) ):
+                lTheNewWidth = self.__theWaitProgressBarWithImage.__theContentWidget.width()
+            if ( self.__theWaitProgressBarWithImage.__theContentWidget.height() < (lHeight + 20) ):
                 lTheNewHeight = lHeight + 20
             else:
-                lTheNewHeight = self.__theWaitProgressBarWithImage.theContentWidget.height()
-            self.__theWaitProgressBarWithImage.theContentWidget.resize(lTheNewWidth, lTheNewHeight) #asdf 
-            self.__theWaitProgressBarWithImage.theContentWidget.update()
+                lTheNewHeight = self.__theWaitProgressBarWithImage.__theContentWidget.height()
+            self.__theWaitProgressBarWithImage.__theContentWidget.resize(lTheNewWidth, lTheNewHeight) #asdf 
+            self.__theWaitProgressBarWithImage.__theContentWidget.update()
             self.__theWaitProgressBarWithImage.adjustSize()
     
             # -------------------------------
@@ -1274,13 +1274,13 @@ class CDImageSequence(QtCore.QObject):
                     str(x) ).arg( str(lWidth) )  ) 
     
                 CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.self.theTrueComputeContours() - lPixmap w,h =" + \
-                      str(self.__theWaitProgressBarWithImage.theProgressBarImageLabel.width) + " " + str(self.__theWaitProgressBarWithImage.theProgressBarImageLabel.height) + \
+                      str(self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.width) + " " + str(self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.height) + \
                       " Scanning [x] layer "+str(x)+" of "+str(lWidth)+" from computed B/W Volume to generate 3D Contour-boundary points.", CDConstants.DebugVerbose )
         
                 # adjusts the size of the label widget to fit its contents (i.e. the pixmap):
-                self.__theWaitProgressBarWithImage.theProgressBarImageLabel.adjustSize()
-                self.__theWaitProgressBarWithImage.theProgressBarImageLabel.show()
-                self.__theWaitProgressBarWithImage.theProgressBarImageLabel.update()
+                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.adjustSize()
+                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.show()
+                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.update()
              
                 # -----------------------------
                 # scan across y-direction rows:
@@ -1352,8 +1352,8 @@ class CDImageSequence(QtCore.QObject):
 
                 lTmpPainter.end()
                 # provide visual feedback to user:
-                self.__theWaitProgressBarWithImage.theProgressBarImageLabel.drawPixmapAtPoint(lPixmap)
-                self.__theWaitProgressBarWithImage.theProgressBarImageLabel.update()
+                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.drawPixmapAtPoint(lPixmap)
+                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.update()
 
     
             # ------------------------------------------
@@ -1391,21 +1391,21 @@ class CDImageSequence(QtCore.QObject):
             lPixmap.fill(QtCore.Qt.transparent)
 
             # store the pixmap holding the specially rendered scene:
-            self.__theWaitProgressBarWithImage.theProgressBarImageLabel.setPixmap(lPixmap)
-            self.__theWaitProgressBarWithImage.theProgressBarImageLabel.image = lPixmap.toImage()
-            self.__theWaitProgressBarWithImage.theProgressBarImageLabel.width = int( lPixmap.width() )
-            self.__theWaitProgressBarWithImage.theProgressBarImageLabel.height = int ( lPixmap.height() )
+            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.setPixmap(lPixmap)
+            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.image = lPixmap.toImage()
+            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.width = int( lPixmap.width() )
+            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.height = int ( lPixmap.height() )
 
-            if ( self.__theWaitProgressBarWithImage.theContentWidget.width() < (lDepth + 20) ):
+            if ( self.__theWaitProgressBarWithImage.__theContentWidget.width() < (lDepth + 20) ):
                 lTheNewWidth = lDepth + 20
             else:
-                lTheNewWidth = self.__theWaitProgressBarWithImage.theContentWidget.width()
-            if ( self.__theWaitProgressBarWithImage.theContentWidget.height() < (lHeight + 20) ):
+                lTheNewWidth = self.__theWaitProgressBarWithImage.__theContentWidget.width()
+            if ( self.__theWaitProgressBarWithImage.__theContentWidget.height() < (lHeight + 20) ):
                 lTheNewHeight = lHeight + 20
             else:
-                lTheNewHeight = self.__theWaitProgressBarWithImage.theContentWidget.height()
-            self.__theWaitProgressBarWithImage.theContentWidget.resize(lTheNewWidth, lTheNewHeight) #asdf 
-            self.__theWaitProgressBarWithImage.theContentWidget.update()
+                lTheNewHeight = self.__theWaitProgressBarWithImage.__theContentWidget.height()
+            self.__theWaitProgressBarWithImage.__theContentWidget.resize(lTheNewWidth, lTheNewHeight) #asdf 
+            self.__theWaitProgressBarWithImage.__theContentWidget.update()
             self.__theWaitProgressBarWithImage.adjustSize()
     
             # -------------------------------
@@ -1429,13 +1429,13 @@ class CDImageSequence(QtCore.QObject):
 
 
                 CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.self.theTrueComputeContours() - lPixmap w,h =" + \
-                      str(self.__theWaitProgressBarWithImage.theProgressBarImageLabel.width) + " " + str(self.__theWaitProgressBarWithImage.theProgressBarImageLabel.height) + \
+                      str(self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.width) + " " + str(self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.height) + \
                       " Scanning [x] layer "+str(x)+" of "+str(lWidth)+" from Image Sequence Volume to generate 3D Contour-boundary points.", CDConstants.DebugVerbose )
         
                 # adjusts the size of the label widget to fit its contents (i.e. the pixmap):
-                self.__theWaitProgressBarWithImage.theProgressBarImageLabel.adjustSize()
-                self.__theWaitProgressBarWithImage.theProgressBarImageLabel.show()
-                self.__theWaitProgressBarWithImage.theProgressBarImageLabel.update()
+                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.adjustSize()
+                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.show()
+                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.update()
              
                 # -----------------------------
                 # scan across y-direction rows:
@@ -1507,8 +1507,8 @@ class CDImageSequence(QtCore.QObject):
 
                 lTmpPainter.end()
                 # provide visual feedback to user:
-                self.__theWaitProgressBarWithImage.theProgressBarImageLabel.drawPixmapAtPoint(lPixmap)
-                self.__theWaitProgressBarWithImage.theProgressBarImageLabel.update()
+                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.drawPixmapAtPoint(lPixmap)
+                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.update()
 
     
             # ------------------------------------------

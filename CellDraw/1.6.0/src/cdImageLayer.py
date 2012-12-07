@@ -51,7 +51,7 @@ class CDImageNP(QtCore.QObject):
     # 2011 - Mitja: a signal for image data resizing. Has to be handled in CDDiagramScene!
     signalThatImageNPResized = QtCore.pyqtSignal(dict)
 
-    # 2011 - Mitja: a signal for the setting of self.theCurrentIndex. Has to be handled in CDDiagramScene!
+    # 2011 - Mitja: a signal for the setting of self.__theCurrentIndex. Has to be handled in CDDiagramScene!
     signalThatCurrentIndexSet = QtCore.pyqtSignal(dict)
 
 
@@ -63,32 +63,32 @@ class CDImageNP(QtCore.QObject):
         QtCore.QObject.__init__(self, pParent)
 
         # a flag to show if CDImageNP holds an image loaded from files:
-        self.imageNPLoaded = False
+        self.__imageNPLoaded = False
 
         # the class global keeping track of the selected image within the image processing:
         #    0 = minimum = the first image in the sequence stack
-        self.theCurrentIndex = 0
+        self.__theCurrentIndex = 0
         
         # the class global keeping track of the color picked from the image and used by image processing:
-        self.thePickedNPColor = QtGui.QColor(QtCore.Qt.transparent)
+        self.__thePickedNPColor = QtGui.QColor(QtCore.Qt.transparent)
 
         # the class global keeping track of the selected color/type for regions coming from image processing:
-        self.theImageNPColor = QtGui.QColor(QtCore.Qt.magenta)
+        self.__theImageNPColor = QtGui.QColor(QtCore.Qt.magenta)
 
         # the class global keeping track of the "wall" color/type for  for regions coming from image processing:
-        self.theImageNPWallColor = QtGui.QColor(QtCore.Qt.green)
+        self.__theImageNPWallColor = QtGui.QColor(QtCore.Qt.green)
 
 
         # the class global keeping track of the bit-flag modes for extracting cell areas from the displayed imported image:
         #    0 = Use Discretized Images to B/W = CDConstants.ImageNPUseDiscretizedToBWMode
         #    1 = Extract Cell from Single-Color Areas = CDConstants.ImageNPExtractSingleColorCells
-        self.theProcessingModeForImageNP = (1 << CDConstants.ImageNPExtractSingleColorCells)
+        self.__theProcessingModeForImageNP = (1 << CDConstants.ImageNPExtractSingleColorCells)
 
         # bin() does not exist in Python 2.5:
         if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
-            CDConstants.printOut( "___ - DEBUG ----- CDImageNP.__init__() - bin(self.theProcessingModeForImageNP) == "+str(bin(self.theProcessingModeForImageNP)) , CDConstants.DebugExcessive )
+            CDConstants.printOut( "___ - DEBUG ----- CDImageNP.__init__() - bin(self.__theProcessingModeForImageNP) == "+str(bin(self.__theProcessingModeForImageNP)) , CDConstants.DebugExcessive )
         else:
-            CDConstants.printOut( "___ - DEBUG ----- CDImageNP.__init__() - self.theProcessingModeForImageNP == "+str(self.theProcessingModeForImageNP) , CDConstants.DebugExcessive )
+            CDConstants.printOut( "___ - DEBUG ----- CDImageNP.__init__() - self.__theProcessingModeForImageNP == "+str(self.__theProcessingModeForImageNP) , CDConstants.DebugExcessive )
 
 
 
@@ -96,10 +96,10 @@ class CDImageNP(QtCore.QObject):
         #   and number of images (z) loaded in a stack/array
         #   and number of color channels (i.e. image depth, in bytes)
         #     in the *original* image loaded from file:
-        self.sizeX = 0
-        self.sizeY = 0
-        self.sizeZ = 0
-        self.cChannels = 0
+        self.__sizeX = 0
+        self.__sizeY = 0
+        self.__sizeZ = 0
+        self.__cChannels = 0
 
         # 2011 - Mitja: globals storing pixel-size data for all image processing:
         #
@@ -198,21 +198,21 @@ class CDImageNP(QtCore.QObject):
 
 
     # --------------------------------------------------------
-    def setImage(self, pImage=None, pIsImageLoadedFromFile=False, pImageFileName=" "):
-        CDConstants.printOut( "___ - DEBUG ----- CDImageNP.setImage( pImage == "+str(pImage)+"  ) starting. " , CDConstants.DebugExcessive )
+    def setNPImage(self, pImage=None, pIsImageLoadedFromFile=False, pImageFileName=" "):
+        CDConstants.printOut( "___ - DEBUG ----- CDImageNP.setNPImage( pImage == "+str(pImage)+"  ) starting. " , CDConstants.DebugExcessive )
 
         # the "lUserSelectedImage" QImage is the image loaded from a file:
         if isinstance(pImage, QtGui.QImage):
             lUserSelectedImage = QtGui.QImage(pImage)
         else: 
-            CDConstants.printOut( "___ - _____ ----- CDImageNP.setImage( pImage == "+str(pImage)+" is not a valid QImage ) ...doing nothing. " , CDConstants.DebugImportant )
+            CDConstants.printOut( "___ - _____ ----- CDImageNP.setNPImage( pImage == "+str(pImage)+" is not a valid QImage ) ...doing nothing. " , CDConstants.DebugImportant )
             return
 
         # temporarily disable drawing the scene overlay:
         self._graphicsSceneWidget.scene.setDrawForegroundEnabled(False)
 
         # set image-related globals:
-        self.imageNPLoaded = pIsImageLoadedFromFile
+        self.__imageNPLoaded = pIsImageLoadedFromFile
         self.setCurrentFileName(pImageFileName)
 
         lXdim = int(lUserSelectedImage.width())
@@ -223,7 +223,7 @@ class CDImageNP(QtCore.QObject):
         elif (lUserSelectedImage.format() == QtGui.QImage.Format_RGB32):
             lImageChannels = 3
         else: 
-            CDConstants.printOut( "___ - _____ ----- CDImageNP.setImage( pImage == "+str(pImage)+" ) is in unsupported Qt format: " +str(lUserSelectedImage.format())+ "...doing nothing. " , CDConstants.DebugImportant )
+            CDConstants.printOut( "___ - _____ ----- CDImageNP.setNPImage( pImage == "+str(pImage)+" ) is in unsupported Qt format: " +str(lUserSelectedImage.format())+ "...doing nothing. " , CDConstants.DebugImportant )
             return
             
         # update x,y,z dimensions in the CDImageNP object,
@@ -234,59 +234,33 @@ class CDImageNP(QtCore.QObject):
         # tell the CDImageNP object to extract single-color cells from the image loaded from file:
         self.resetToOneProcessingModeForImageNP( CDConstants.ImageNPExtractSingleColorCells )
 
-        CDConstants.printOut(  "CDImageNP.setImage()  --  1.", CDConstants.DebugTODO )
-        # time.sleep(5.0)
-        
-        if (self.imageNPLoaded == True):
+        if (self.__imageNPLoaded == True):
 
+            CDConstants.printOut(  "CDImageNP.setNPImage()  --  1.", CDConstants.DebugTODO )
+            time.sleep(3.0)
+        
             # show a panel containing a progress bar:        
-            self.__theWaitProgressBarWithImage.setTitleTextRange("Processing image.", " ", 0, self.sizeY)
+            self.__theWaitProgressBarWithImage.setTitleTextRange("Processing image.", " ", 0, self.__sizeY)
             self.__theWaitProgressBarWithImage.show()
             lFileCounter = 0
-    
+
             # if there is an image loaded from a file, show a pixmap in the progress bar dialog window:
             llPixmapForProgressBarPanelImageNP = QtGui.QPixmap( lUserSelectedImage )
-            self.__theWaitProgressBarWithImage.theProgressBarImageLabel.setPixmap(llPixmapForProgressBarPanelImageNP)
-            self.__theWaitProgressBarWithImage.theProgressBarImageLabel.image = llPixmapForProgressBarPanelImageNP.toImage()    
-            self.__theWaitProgressBarWithImage.theProgressBarImageLabel.width = int( llPixmapForProgressBarPanelImageNP.width() )
-            self.__theWaitProgressBarWithImage.theProgressBarImageLabel.height = int ( llPixmapForProgressBarPanelImageNP.height() )
-            print "self.__theWaitProgressBarWithImage.width() =",self.__theWaitProgressBarWithImage.width()
-            print "self.__theWaitProgressBarWithImage.height() =",self.__theWaitProgressBarWithImage.height()
-            print "self.__theWaitProgressBarWithImage.theContentWidget.width() =",self.__theWaitProgressBarWithImage.theContentWidget.width()
-            print "self.__theWaitProgressBarWithImage.theContentWidget.height() =",self.__theWaitProgressBarWithImage.theContentWidget.height()
-            print "self.sizeX =",self.sizeX
-            print "self.sizeY =",self.sizeY
-            print "self.sizeZ =",self.sizeZ
+
+            CDConstants.printOut(  "CDImageNP.setNPImage()  --  2.", CDConstants.DebugTODO )
+            time.sleep(3.0)
+
+
+            self.__theWaitProgressBarWithImage.setImagePixmap(llPixmapForProgressBarPanelImageNP)
+            print "CDImageNP.setNPImage() - self.__sizeX =",self.__sizeX
+            print "CDImageNP.setNPImage() - self.__sizeY =",self.__sizeY
+            print "CDImageNP.setNPImage() - self.__sizeZ =",self.__sizeZ    
     
-            if ( self.__theWaitProgressBarWithImage.theContentWidget.width() < (self.sizeX + 20) ):
-                lTheNewWidth = self.sizeX + 20
-            else:
-                lTheNewWidth = self.__theWaitProgressBarWithImage.theContentWidget.width()
-            if ( self.__theWaitProgressBarWithImage.theContentWidget.height() < (self.sizeY + 20) ):
-                lTheNewHeight = self.sizeY + 20
-            else:
-                lTheNewHeight = self.__theWaitProgressBarWithImage.theContentWidget.height()
-            self.__theWaitProgressBarWithImage.theContentWidget.resize(lTheNewWidth, lTheNewHeight) #asdf 
-            self.__theWaitProgressBarWithImage.theContentWidget.update()
-            self.__theWaitProgressBarWithImage.theProgressBarImageLabel.update()
-            self.__theWaitProgressBarWithImage.resize(lTheNewWidth+64, lTheNewHeight+64) #asdf
-            self.__theWaitProgressBarWithImage.adjustSize()
-            self.__theWaitProgressBarWithImage.update()
-            print "self.__theWaitProgressBarWithImage.theContentWidget.width() =",self.__theWaitProgressBarWithImage.theContentWidget.width()
-            print "self.__theWaitProgressBarWithImage.theContentWidget.height() =",self.__theWaitProgressBarWithImage.theContentWidget.height()
-            print "self.__theWaitProgressBarWithImage.width() =",self.__theWaitProgressBarWithImage.width()
-            print "self.__theWaitProgressBarWithImage.height() =",self.__theWaitProgressBarWithImage.height()
-            print "self.sizeX =",self.sizeX
-            print "self.sizeY =",self.sizeY
-            print "self.sizeZ =",self.sizeZ
-    #         QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
-    
-    
-            CDConstants.printOut(  "CDImageNP.setImage()  --  2.", CDConstants.DebugTODO )
-            # time.sleep(5.0)
-    
+            CDConstants.printOut(  "CDImageNP.setNPImage()  --  3.", CDConstants.DebugTODO )
+            time.sleep(3.0)
+    PRIMA DE QUA ZA CAMBIA
             self.__theWaitProgressBarWithImage.setValue(lFileCounter)
-            # time.sleep(5.0)
+            time.sleep(3.0)
     
             # set the current index in the imageNPArray and other NP arrays:
             self.setCurrentIndexWithoutUpdatingGUI(lFileCounter)
@@ -297,28 +271,27 @@ class CDImageNP(QtCore.QObject):
             lFileCounter = lFileCounter + 1
     
     
-            CDConstants.printOut(  "CDImageNP.setImage()  --  3.", CDConstants.DebugTODO )
-            # time.sleep(5.0)
+            CDConstants.printOut(  "CDImageNP.setNPImage()  --  4.", CDConstants.DebugTODO )
+            time.sleep(3.0)
     
             # close the panel containing a progress bar:
             self.__theWaitProgressBarWithImage.maxProgressBar()
             self.__theWaitProgressBarWithImage.close()
 
-            CDConstants.printOut(  "CDImageNP.setImage()  --  4.", CDConstants.DebugTODO )
-        # end of   if (self.imageNPLoaded == True).
+            CDConstants.printOut(  "CDImageNP.setNPImage()  --  5.", CDConstants.DebugTODO )
+            time.sleep(3.0)
+        # end of   if (self.__imageNPLoaded == True).
 
 
         # now confirm that the theCDImageNP contains data loaded from files:
         # NO! this could be a default image for example:
         # self.setNPLoadedFromFiles(True)
 
-        CDConstants.printOut(  "CDImageNP.setImage()  --  5.", CDConstants.DebugTODO )
 
         # 2012 - do NOT update the regionUseDict since it contains the list of all
         #  region colors in use by our scene - and we're only setting the image for processing here,
         #  not extracting any regions yet:
         # self._graphicsSceneWidget.scene.addToRegionColorsInUse( self.getNPCurrentColor()  )
-        CDConstants.printOut(  "CDImageNP.setImage()  --  6.", CDConstants.DebugTODO )
 
 
 ###### fix the paintEvent() vs. update() or repaint() for ALLL calls to paintEvent!!!
@@ -336,7 +309,6 @@ class CDImageNP(QtCore.QObject):
         #  not extracting any regions yet:
         # self._graphicsSceneWidget.scene.addToRegionColorsInUse( self.getNPWallColor()  )
 
-        CDConstants.printOut(  "CDImageNP.setImage()  --  7.", CDConstants.DebugTODO )
 
 
 #         2. set a proper example name for the sequence's wall (color) type name in the DICT table:
@@ -346,16 +318,15 @@ class CDImageNP(QtCore.QObject):
 #             probably after normalizing
 
 #         self.normalizeAllImages()
-        CDConstants.printOut(  "CDImageNP.setImage()  --  8.", CDConstants.DebugTODO )
 
 
         # warn user about image dimensions being different than PIF scene dimensions,
         #   ask what to do next:
-        if  (self.imageNPLoaded == True) and \
-             ( (self._graphicsSceneWidget.cdPreferences.getPifSceneWidth() != self.sizeX) or \
-               (self._graphicsSceneWidget.cdPreferences.getPifSceneHeight() != self.sizeY) or \
-               (self._graphicsSceneWidget.cdPreferences.getPifSceneDepth() != self.sizeZ)        ):
-            print "self.imageNPLoaded = ", self.imageNPLoaded
+        if  (self.__imageNPLoaded == True) and \
+             ( (self._graphicsSceneWidget.cdPreferences.getPifSceneWidth() != self.__sizeX) or \
+               (self._graphicsSceneWidget.cdPreferences.getPifSceneHeight() != self.__sizeY) or \
+               (self._graphicsSceneWidget.cdPreferences.getPifSceneDepth() != self.__sizeZ)        ):
+            print "CDImageNP.setNPImage() - self.__imageNPLoaded = ", self.__imageNPLoaded
 
             lNewSceneMessageBox = QtGui.QMessageBox(self._graphicsSceneWidget)
             lNewSceneMessageBox.setWindowModality(QtCore.Qt.WindowModal)
@@ -368,9 +339,9 @@ class CDImageNP(QtCore.QObject):
             lTheText = " Cell Scene = [ " + str(self._graphicsSceneWidget.cdPreferences.getPifSceneWidth())+ " , " \
                 " " + str(self._graphicsSceneWidget.cdPreferences.getPifSceneHeight())+ " , " \
                 " " + str(self._graphicsSceneWidget.cdPreferences.getPifSceneDepth())+ " ] \n" \
-                " Imported Image = [ " + str(self.sizeX)+ " , " \
-                " " + str(self.sizeY)+ " , " \
-                " " + str(self.sizeZ)+ " ] \n"
+                " Imported Image = [ " + str(self.__sizeX)+ " , " \
+                " " + str(self.__sizeY)+ " , " \
+                " " + str(self.__sizeZ)+ " ] \n"
             lNewSceneMessageBox.setInformativeText(lTheText)
             lTheResizeButton = lNewSceneMessageBox.addButton( "Resize Scene" ,  QtGui.QMessageBox.ActionRole)
             lTheCancelButton = lNewSceneMessageBox.addButton( "Cancel" ,  QtGui.QMessageBox.RejectRole)
@@ -379,11 +350,10 @@ class CDImageNP(QtCore.QObject):
             lUserChoice = lNewSceneMessageBox.clickedButton()
     
             if lUserChoice == lTheResizeButton:
-                self._graphicsSceneWidget.cdPreferences.setPifSceneWidth(self.sizeX)
-                self._graphicsSceneWidget.cdPreferences.setPifSceneHeight(self.sizeY)
-                self._graphicsSceneWidget.cdPreferences.setPifSceneDepth(self.sizeZ)
+                self._graphicsSceneWidget.cdPreferences.setPifSceneWidth(self.__sizeX)
+                self._graphicsSceneWidget.cdPreferences.setPifSceneHeight(self.__sizeY)
+                self._graphicsSceneWidget.cdPreferences.setPifSceneDepth(self.__sizeZ)
 
-        CDConstants.printOut(  "CDImageNP.setImage()  --  9.", CDConstants.DebugTODO )
 
         # finally set the current index to 0 i.e. the initial image in the sequence:
         # self.setCurrentIndexInImageNP(0)
@@ -392,19 +362,19 @@ class CDImageNP(QtCore.QObject):
         # re-enable drawing the scene overlay:
         self._graphicsSceneWidget.scene.setDrawForegroundEnabled(True)
 
-        CDConstants.printOut( "    - DEBUG ----- CDImageNP.setImage(): done.", CDConstants.DebugExcessive )
+        CDConstants.printOut( "    - DEBUG ----- CDImageNP.setNPImage(): done.", CDConstants.DebugExcessive )
 
-    # end of  def setImage(self, pImage=None)
+    # end of  def setNPImage(self, pImage=None)
     # --------------------------------------------------------
 
 
 
     # ------------------------------------------------------------------
     # 2011 - Mitja: setCurrentFileName() justs sets the filename string into the
-    #     "self.theCurrentIndex" key entry in the  self.imageNPFileNames  dict.
+    #     "self.__theCurrentIndex" key entry in the  self.imageNPFileNames  dict.
     # ------------------------------------------------------------------   
     def setCurrentFileName(self, pName):
-        self.imageNPFileNames[self.theCurrentIndex] = pName
+        self.imageNPFileNames[self.__theCurrentIndex] = pName
 
 
     # ------------------------------------------------------------------
@@ -415,32 +385,32 @@ class CDImageNP(QtCore.QObject):
         CDConstants.printOut( "    - DEBUG ----- CDImageNP.imageCurrentImageNP(): starting.", CDConstants.DebugExcessive )
 
         # do nothing if the current array size isn't anything:
-        if (self.sizeX <= 0) or (self.sizeY <= 0) or (self.sizeZ <= 0) :
+        if (self.__sizeX <= 0) or (self.__sizeY <= 0) or (self.__sizeZ <= 0) :
             return
 
         # do nothing if the current image index doesn't have a corresponding image:
-        if (self.theCurrentIndex < 0) or (self.theCurrentIndex >= self.sizeZ) :
+        if (self.__theCurrentIndex < 0) or (self.__theCurrentIndex >= self.__sizeZ) :
             return
 
         # obtain the current image data from one layer in the image numpy array 
-        lTmpOneLayerArray = self.imageNPArray[self.theCurrentIndex]
+        lTmpOneLayerArray = self.imageNPArray[self.__theCurrentIndex]
         self.theCurrentImage = self.rgb2qimage(lTmpOneLayerArray)
 
         # obtain the current volume slice data from one layer in the volume numpy array 
-        lTmpOneLayerArray = self.discretizedNPArray[self.theCurrentIndex]
+        lTmpOneLayerArray = self.discretizedNPArray[self.__theCurrentIndex]
         self.theCurrentDiscretizedImage = self.rgb2qimageKtoBandA(lTmpOneLayerArray)
 
         # check if the current image has its edge already computed; if it doesn't, then compute it now:
-        if (self.extractedCellDataNPIsReadyFlags[self.theCurrentIndex] == False):
+        if (self.extractedCellDataNPIsReadyFlags[self.__theCurrentIndex] == False):
             # self.theTrueComputeCurrentEdge()
             # TODO: calling computeCurrentEdge() is to be used just for testing theTrueComputeCurrentEdge() with a timer, afterwards revert to calling theTrueComputeCurrentEdge() directly:
             self.computeCurrentEdge()
         # obtain the current edge data from one layer in the edge numpy array 
-        lTmpOneLayerArray = self.extractedCellDataNPArray[self.theCurrentIndex]
+        lTmpOneLayerArray = self.extractedCellDataNPArray[self.__theCurrentIndex]
         self.theCurrentExtractedCellDataImage = self.rgb2qimageWtoRandA(lTmpOneLayerArray)
 
 
-        CDConstants.printOut( "___ - DEBUG ----- CDImageNP.imageCurrentImageNP() self.theCurrentIndex == "+str(self.theCurrentIndex)+ " DONE." , CDConstants.DebugVerbose )
+        CDConstants.printOut( "___ - DEBUG ----- CDImageNP.imageCurrentImageNP() self.__theCurrentIndex == "+str(self.__theCurrentIndex)+ " DONE." , CDConstants.DebugVerbose )
     # end of  def imageCurrentImageNP(self)
     # ------------------------------------------------------------------   
 
@@ -495,7 +465,7 @@ class CDImageNP(QtCore.QObject):
         CDConstants.printOut( "    - DEBUG ----- CDImageNP.imageNPpreview(): starting.", CDConstants.DebugExcessive )
 
         # obtain the current image data from one layer in the image numpy array 
-        lTmpOneLayerArray = self.imageNPArray[self.theCurrentIndex]
+        lTmpOneLayerArray = self.imageNPArray[self.__theCurrentIndex]
 
         h, w, channels = lTmpOneLayerArray.shape
     
@@ -537,8 +507,8 @@ class CDImageNP(QtCore.QObject):
         lTmpPixmap = QtGui.QPixmap.fromImage(lResultImage)
         lTmpArrayBGRA = self.qimage2numpy(QtGui.QImage(lTmpPixmap.toImage()), "array")
 
-        self.extractedCellDataNPArray[self.theCurrentIndex] = lTmpArrayBGRA
-        self.extractedCellDataNPIsReadyFlags[self.theCurrentIndex] = True
+        self.extractedCellDataNPArray[self.__theCurrentIndex] = lTmpArrayBGRA
+        self.extractedCellDataNPIsReadyFlags[self.__theCurrentIndex] = True
 
         CDConstants.printOut( "    - DEBUG ----- CDImageNP.imageNPpreview(): done.", CDConstants.DebugExcessive )
 
@@ -555,7 +525,7 @@ class CDImageNP(QtCore.QObject):
         CDConstants.printOut( "    - DEBUG ----- CDImageNP.computeCurrentEdge(): starting.", CDConstants.DebugExcessive )
 
         # only really compute the current edge if it hasn't been computed yet:
-        if (self.extractedCellDataNPIsReadyFlags[self.theCurrentIndex] == False):
+        if (self.extractedCellDataNPIsReadyFlags[self.__theCurrentIndex] == False):
             
             # adjusting Timer() setup for Python 2.5:
             if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
@@ -563,12 +533,12 @@ class CDImageNP(QtCore.QObject):
                 try:
                     lTheTimeItTook = timerMeasureForFunction.timeit(1)           # or timerMeasureForFunction.repeat(...)
                     CDConstants.printOut( str(lTheTimeItTook)+ \
-                        " seconds it took theTrueComputeCurrentEdge(), self.theCurrentIndex == " + \
-                        str(self.theCurrentIndex) + " in CDImageNP.computeCurrentEdge()" , CDConstants.DebugVerbose )
+                        " seconds it took theTrueComputeCurrentEdge(), self.__theCurrentIndex == " + \
+                        str(self.__theCurrentIndex) + " in CDImageNP.computeCurrentEdge()" , CDConstants.DebugVerbose )
                 except:
-                    CDConstants.printOut( "CDImageNP.computeCurrentEdge() code exception!   self.theCurrentIndex == "+str(self.theCurrentIndex) , CDConstants.DebugSparse )
+                    CDConstants.printOut( "CDImageNP.computeCurrentEdge() code exception!   self.__theCurrentIndex == "+str(self.__theCurrentIndex) , CDConstants.DebugSparse )
                     timerMeasureForFunction.print_exc()
-                    CDConstants.printOut( "CDImageNP.computeCurrentEdge() code exception!   self.theCurrentIndex == "+str(self.theCurrentIndex) , CDConstants.DebugSparse )
+                    CDConstants.printOut( "CDImageNP.computeCurrentEdge() code exception!   self.__theCurrentIndex == "+str(self.__theCurrentIndex) , CDConstants.DebugSparse )
             else:
                 # timerMeasureForFunction = Timer('theTrueComputeCurrentEdge()', 'from CDImageNP import theTrueComputeCurrentEdge')  # define it before the try/except
                 self.theTrueComputeCurrentEdge()
@@ -653,7 +623,7 @@ class CDImageNP(QtCore.QObject):
             self.__theSimpleWaitProgressBar.show()
     
             # set the flag for the current edge array in the sequence as False, as we're computing it now:
-            self.extractedCellDataNPIsReadyFlags[self.theCurrentIndex] = False
+            self.extractedCellDataNPIsReadyFlags[self.__theCurrentIndex] = False
     
             xmask, ymask = self.get_prewitt_masks() 
     
@@ -680,9 +650,9 @@ class CDImageNP(QtCore.QObject):
                                 lY = y+j
                                 # convolve the image pixels with the Prewitt mask,
                                 #     approximating dI/dx 
-                                r = int(self.discretizedNPArray[self.theCurrentIndex, lY, lX, 0])
-                                g = int(self.discretizedNPArray[self.theCurrentIndex, lY, lX, 1])
-                                b = int(self.discretizedNPArray[self.theCurrentIndex, lY, lX, 2])
+                                r = int(self.discretizedNPArray[self.__theCurrentIndex, lY, lX, 0])
+                                g = int(self.discretizedNPArray[self.__theCurrentIndex, lY, lX, 1])
+                                b = int(self.discretizedNPArray[self.__theCurrentIndex, lY, lX, 2])
                                 gray = (r + g + b) / 3
                                 sumX += (gray) * xmask[i+1, j+1] 
          
@@ -692,9 +662,9 @@ class CDImageNP(QtCore.QObject):
                                 lY = y+j
                                 # convolve the image pixels with the Prewitt mask,
                                 #     approximating dI/dy 
-                                r = int(self.discretizedNPArray[self.theCurrentIndex, lY, lX, 0])
-                                g = int(self.discretizedNPArray[self.theCurrentIndex, lY, lX, 1])
-                                b = int(self.discretizedNPArray[self.theCurrentIndex, lY, lX, 2])
+                                r = int(self.discretizedNPArray[self.__theCurrentIndex, lY, lX, 0])
+                                g = int(self.discretizedNPArray[self.__theCurrentIndex, lY, lX, 1])
+                                b = int(self.discretizedNPArray[self.__theCurrentIndex, lY, lX, 2])
                                 gray = (r + g + b) / 3
                                 sumY += (gray) * ymask[i+1, j+1] 
          
@@ -704,12 +674,12 @@ class CDImageNP(QtCore.QObject):
                     if magnitude > 255: magnitude = 255 
                     if magnitude < 0: magnitude = 0 
     
-                    self.extractedCellDataNPArray[self.theCurrentIndex, y, x, 0] = numpy.uint8 (255 - magnitude)
-                    self.extractedCellDataNPArray[self.theCurrentIndex, y, x, 1] = numpy.uint8 (255 - magnitude)
-                    self.extractedCellDataNPArray[self.theCurrentIndex, y, x, 2] = numpy.uint8 (255 - magnitude)
+                    self.extractedCellDataNPArray[self.__theCurrentIndex, y, x, 0] = numpy.uint8 (255 - magnitude)
+                    self.extractedCellDataNPArray[self.__theCurrentIndex, y, x, 1] = numpy.uint8 (255 - magnitude)
+                    self.extractedCellDataNPArray[self.__theCurrentIndex, y, x, 2] = numpy.uint8 (255 - magnitude)
     
             # set the flag for the current edge array in the sequence as True, as we're computing it now:
-            self.extractedCellDataNPIsReadyFlags[self.theCurrentIndex] = True
+            self.extractedCellDataNPIsReadyFlags[self.__theCurrentIndex] = True
     
             self.__theSimpleWaitProgressBar.maxProgressBar()
             self.__theSimpleWaitProgressBar.hide()
@@ -722,7 +692,7 @@ class CDImageNP(QtCore.QObject):
             self.__theSimpleWaitProgressBar.show()
     
             # set the flag for the current edge array in the sequence as False, as we're computing it now:
-            self.extractedCellDataNPIsReadyFlags[self.theCurrentIndex] = False
+            self.extractedCellDataNPIsReadyFlags[self.__theCurrentIndex] = False
     
             xmask, ymask = self.get_prewitt_masks() 
     
@@ -749,9 +719,9 @@ class CDImageNP(QtCore.QObject):
                                 lY = y+j
                                 # convolve the image pixels with the Prewitt mask,
                                 #     approximating dI/dx 
-                                r = int(self.imageNPArray[self.theCurrentIndex, lY, lX, 0])
-                                g = int(self.imageNPArray[self.theCurrentIndex, lY, lX, 1])
-                                b = int(self.imageNPArray[self.theCurrentIndex, lY, lX, 2])
+                                r = int(self.imageNPArray[self.__theCurrentIndex, lY, lX, 0])
+                                g = int(self.imageNPArray[self.__theCurrentIndex, lY, lX, 1])
+                                b = int(self.imageNPArray[self.__theCurrentIndex, lY, lX, 2])
                                 gray = (r + g + b) / 3
                                 sumX += (gray) * xmask[i+1, j+1] 
          
@@ -761,9 +731,9 @@ class CDImageNP(QtCore.QObject):
                                 lY = y+j
                                 # convolve the image pixels with the Prewitt mask,
                                 #     approximating dI/dy 
-                                r = int(self.imageNPArray[self.theCurrentIndex, lY, lX, 0])
-                                g = int(self.imageNPArray[self.theCurrentIndex, lY, lX, 1])
-                                b = int(self.imageNPArray[self.theCurrentIndex, lY, lX, 2])
+                                r = int(self.imageNPArray[self.__theCurrentIndex, lY, lX, 0])
+                                g = int(self.imageNPArray[self.__theCurrentIndex, lY, lX, 1])
+                                b = int(self.imageNPArray[self.__theCurrentIndex, lY, lX, 2])
                                 gray = (r + g + b) / 3
                                 sumY += (gray) * ymask[i+1, j+1] 
          
@@ -773,12 +743,12 @@ class CDImageNP(QtCore.QObject):
                     if magnitude > 255: magnitude = 255 
                     if magnitude < 0: magnitude = 0 
     
-                    self.extractedCellDataNPArray[self.theCurrentIndex, y, x, 0] = numpy.uint8 (255 - magnitude)
-                    self.extractedCellDataNPArray[self.theCurrentIndex, y, x, 1] = numpy.uint8 (255 - magnitude)
-                    self.extractedCellDataNPArray[self.theCurrentIndex, y, x, 2] = numpy.uint8 (255 - magnitude)
+                    self.extractedCellDataNPArray[self.__theCurrentIndex, y, x, 0] = numpy.uint8 (255 - magnitude)
+                    self.extractedCellDataNPArray[self.__theCurrentIndex, y, x, 1] = numpy.uint8 (255 - magnitude)
+                    self.extractedCellDataNPArray[self.__theCurrentIndex, y, x, 2] = numpy.uint8 (255 - magnitude)
     
             # set the flag for the current edge array in the sequence as True, as we're computing it now:
-            self.extractedCellDataNPIsReadyFlags[self.theCurrentIndex] = True
+            self.extractedCellDataNPIsReadyFlags[self.__theCurrentIndex] = True
     
             self.__theSimpleWaitProgressBar.maxProgressBar()
             self.__theSimpleWaitProgressBar.hide()
@@ -809,11 +779,11 @@ class CDImageNP(QtCore.QObject):
         CDConstants.printOut( "    - DEBUG ----- CDImageNP.normalizeAllImages(): starting.", CDConstants.DebugExcessive )
 
         # do nothing if the current array size isn't anything:
-        if (self.sizeX <= 0) or (self.sizeY <= 0) or (self.sizeZ <= 0) :
+        if (self.__sizeX <= 0) or (self.__sizeY <= 0) or (self.__sizeZ <= 0) :
             return
 
         # do nothing if the current image index doesn't have a corresponding image:
-        if (self.theCurrentIndex < 0) or (self.theCurrentIndex >= self.sizeZ) :
+        if (self.__theCurrentIndex < 0) or (self.__theCurrentIndex >= self.__sizeZ) :
             return
 
 
@@ -899,16 +869,16 @@ class CDImageNP(QtCore.QObject):
 # 
 # 
 #         # show a panel containing a progress bar:    
-#         lProgressBarPanel=CDWaitProgressBar("Test normalizeAllImages array x="+str(self.sizeX)+" y="+str(self.sizeY)+"  z="+str(self.sizeZ), 100)
+#         lProgressBarPanel=CDWaitProgressBar("Test normalizeAllImages array x="+str(self.__sizeX)+" y="+str(self.__sizeY)+"  z="+str(self.__sizeZ), 100)
 #         lProgressBarPanel.show()
-#         lProgressBarPanel.setRange(0, self.sizeZ)
+#         lProgressBarPanel.setRange(0, self.__sizeZ)
 # 
 # 
 #         # for each image in sequence:
-#         for k in xrange(0, self.sizeZ, 1):
+#         for k in xrange(0, self.__sizeZ, 1):
 #             # for each i,j point in an image:
-#             for i in xrange(0, self.sizeX, 1):
-#                 for j in xrange(0, self.sizeY, 1):
+#             for i in xrange(0, self.__sizeX, 1):
+#                 for j in xrange(0, self.__sizeY, 1):
 #                     if  (lTmpBoolArray[k, j, i, 0] == True) or (lTmpBoolArray[k, j, i, 1] == True) or (lTmpBoolArray[k, j, i, 2] == True) :
 #                         CDConstants.printOut(  "at i,j,k ["+str(i)+","+str(j)+","+str(k)+"] self.imageNPArray[k,j,i] = "+str(self.imageNPArray[k, j, i])+\
 #                             "  lTmpBoolArray[k,j,i] = "+str(lTmpBoolArray[k, j, i])+"  self.discretizedNPArray[k,j,i] = "+str(self.discretizedNPArray[k,j,i]), CDConstants.DebugExcessive )
@@ -1013,21 +983,21 @@ class CDImageNP(QtCore.QObject):
         lTmpArrayBGRA = self.qimage2numpy(QtGui.QImage(lTmpPixmap.toImage()), "array")
 
         # set the flag for the current image array in the sequence as True, as we've loaded it now:
-        self.imageInNPIsReadyFlags[self.theCurrentIndex] = True
+        self.imageInNPIsReadyFlags[self.__theCurrentIndex] = True
         # set the flag for the other related arrays as False, as we've just modified the original:
-        self.extractedCellDataNPIsReadyFlags[self.theCurrentIndex] = True
+        self.extractedCellDataNPIsReadyFlags[self.__theCurrentIndex] = True
 
 
-        print "self.imageNPArray[self.theCurrentIndex].shape =",self.imageNPArray[self.theCurrentIndex].shape
-        print "lTmpArrayBGRA.shape =",lTmpArrayBGRA.shape
+        print "CDImageNP.setCurrentImageAndNPArrayLayer() - self.imageNPArray[self.__theCurrentIndex].shape =",self.imageNPArray[self.__theCurrentIndex].shape
+        print "CDImageNP.setCurrentImageAndNPArrayLayer() - lTmpArrayBGRA.shape =",lTmpArrayBGRA.shape
 
-        self.imageNPArray[self.theCurrentIndex] = lTmpArrayBGRA
+        self.imageNPArray[self.__theCurrentIndex] = lTmpArrayBGRA
 
         # obtain the current image data from one layer in the image numpy array 
-        lTmpOneImageArray = self.imageNPArray[self.theCurrentIndex]
+        lTmpOneImageArray = self.imageNPArray[self.__theCurrentIndex]
         self.theCurrentImage = self.rgb2qimage(lTmpOneImageArray)
 
-        CDConstants.printOut( "___ - DEBUG ----- CDImageNP.setCurrentImageAndNPArrayLayer() self.theCurrentIndex == "+str(self.theCurrentIndex)+" done." , CDConstants.DebugVerbose )
+        CDConstants.printOut( "___ - DEBUG ----- CDImageNP.setCurrentImageAndNPArrayLayer() self.__theCurrentIndex == "+str(self.__theCurrentIndex)+" done." , CDConstants.DebugVerbose )
 
     # ------------------------------------------------------------------
 
@@ -1053,9 +1023,9 @@ class CDImageNP(QtCore.QObject):
 
         lXmask, lYmask = self.get_prewitt_masks()
 
-        lWidth = self.sizeX
-        lHeight = self.sizeY
-        lDepth = self.sizeZ
+        lWidth = self.__sizeX
+        lHeight = self.__sizeY
+        lDepth = self.__sizeZ
 
         # show a panel containing a progress bar:        
         self.__theProgressBarWithImage=CDWaitProgressBarWithImage("Extracting Cell Areas from Image.", self.theCurrentImage.height())
@@ -1066,21 +1036,21 @@ class CDImageNP(QtCore.QObject):
         lPixmap.fill(QtCore.Qt.transparent)
 
         # store the pixmap holding the specially rendered scene:
-        self.__theProgressBarWithImage.theProgressBarImageLabel.setPixmap(lPixmap)
-        self.__theProgressBarWithImage.theProgressBarImageLabel.image = lPixmap.toImage()   
-        self.__theProgressBarWithImage.theProgressBarImageLabel.width = int( lPixmap.width() )
-        self.__theProgressBarWithImage.theProgressBarImageLabel.height = int ( lPixmap.height() )
+        self.__theProgressBarWithImage.setImagePixmap(lPixmap)
+        self.__theProgressBarWithImage.__theProgressBarImageLabel.image = lPixmap.toImage()   
+        self.__theProgressBarWithImage.__theProgressBarImageLabel.width = int( lPixmap.width() )
+        self.__theProgressBarWithImage.__theProgressBarImageLabel.height = int ( lPixmap.height() )
 
-        if ( self.__theProgressBarWithImage.theContentWidget.width() < (lDepth + 20) ):
+        if ( self.__theProgressBarWithImage.__theContentWidget.width() < (lDepth + 20) ):
             lTheNewWidth = lDepth + 20
         else:
-            lTheNewWidth = self.__theProgressBarWithImage.theContentWidget.width()
-        if ( self.__theProgressBarWithImage.theContentWidget.height() < (lHeight + 20) ):
+            lTheNewWidth = self.__theProgressBarWithImage.__theContentWidget.width()
+        if ( self.__theProgressBarWithImage.__theContentWidget.height() < (lHeight + 20) ):
             lTheNewHeight = lHeight + 20
         else:
-            lTheNewHeight = self.__theProgressBarWithImage.theContentWidget.height()
-        self.__theProgressBarWithImage.theContentWidget.resize(lTheNewWidth, lTheNewHeight) #asdf 
-        self.__theProgressBarWithImage.theContentWidget.update()
+            lTheNewHeight = self.__theProgressBarWithImage.__theContentWidget.height()
+        self.__theProgressBarWithImage.__theContentWidget.resize(lTheNewWidth, lTheNewHeight) #asdf 
+        self.__theProgressBarWithImage.__theContentWidget.update()
         self.__theProgressBarWithImage.adjustSize()
 
         # -------------------------------
@@ -1101,13 +1071,13 @@ class CDImageNP(QtCore.QObject):
                 str(x) ).arg( str(lWidth) )  )
 
             CDConstants.printOut( "___ - DEBUG ----- CDImageNP.self.theTrueExtractCells() - lPixmap w,h =" + \
-                  str(self.__theProgressBarWithImage.theProgressBarImageLabel.width) + " " + str(self.__theProgressBarWithImage.theProgressBarImageLabel.height) + \
+                  str(self.__theProgressBarWithImage.__theProgressBarImageLabel.width) + " " + str(self.__theProgressBarWithImage.__theProgressBarImageLabel.height) + \
                   " Scanning [x] layer "+str(x)+" of "+str(lWidth)+" from Image Sequence Volume to generate 3D Contour-boundary points.", CDConstants.DebugVerbose )
 
             # adjusts the size of the label widget to fit its contents (i.e. the pixmap):
-            self.__theProgressBarWithImage.theProgressBarImageLabel.adjustSize()
-            self.__theProgressBarWithImage.theProgressBarImageLabel.show()
-            self.__theProgressBarWithImage.theProgressBarImageLabel.update()
+            self.__theProgressBarWithImage.__theProgressBarImageLabel.adjustSize()
+            self.__theProgressBarWithImage.__theProgressBarImageLabel.show()
+            self.__theProgressBarWithImage.__theProgressBarImageLabel.update()
 
             # -----------------------------
             # scan across y-direction rows:
@@ -1179,8 +1149,8 @@ class CDImageNP(QtCore.QObject):
 
             lTmpPainter.end()
             # provide visual feedback to user:
-            self.__theProgressBarWithImage.theProgressBarImageLabel.drawPixmapAtPoint(lPixmap)
-            self.__theProgressBarWithImage.theProgressBarImageLabel.update()
+            self.__theProgressBarWithImage.__theProgressBarImageLabel.drawPixmapAtPoint(lPixmap)
+            self.__theProgressBarWithImage.__theProgressBarImageLabel.update()
 
 
         # ------------------------------------------
@@ -1213,10 +1183,10 @@ class CDImageNP(QtCore.QObject):
     #    the behavior of the CDImageLayer class:
     # ------------------------------------------------------------------   
     def setNPLoadedFromFiles(self, pTrueOrFalse):
-        self.imageNPLoaded = pTrueOrFalse
+        self.__imageNPLoaded = pTrueOrFalse
         if isinstance( self._graphicsSceneWidget, QtGui.QWidget ) == True:
             self._graphicsSceneWidget.scene.update()
-        CDConstants.printOut( "___ - DEBUG ----- CDImageNP.setNPLoadedFromFiles( " + str(self.imageNPLoaded) + " )", CDConstants.DebugVerbose )
+        CDConstants.printOut( "___ - DEBUG ----- CDImageNP.setNPLoadedFromFiles( " + str(self.__imageNPLoaded) + " )", CDConstants.DebugVerbose )
 
 
 
@@ -1226,9 +1196,9 @@ class CDImageNP(QtCore.QObject):
     #   during importing images and other non-GUI tasks:
     # ------------------------------------------------------------------   
     def setCurrentIndexWithoutUpdatingGUI(self, pValue):
-        self.theCurrentIndex = pValue
+        self.__theCurrentIndex = pValue
 
-        CDConstants.printOut( "___ - DEBUG ----- CDImageNP.setCurrentIndexWithoutUpdatingGUI() self.theCurrentIndex == "+str(self.theCurrentIndex) , CDConstants.DebugVerbose )
+        CDConstants.printOut( "___ - DEBUG ----- CDImageNP.setCurrentIndexWithoutUpdatingGUI() self.__theCurrentIndex == "+str(self.__theCurrentIndex) , CDConstants.DebugVerbose )
     # end of    def setCurrentIndexWithoutUpdatingGUI(self, pValue)
     # ------------------------------------------------------------------   
 
@@ -1239,9 +1209,9 @@ class CDImageNP(QtCore.QObject):
     # 2011 - Mitja: setCurrentIndexInImageNP() is to set the current image index within the array stack:
     # ------------------------------------------------------------------   
     def setCurrentIndexInImageNP(self, pValue):
-        self.theCurrentIndex = pValue
+        self.__theCurrentIndex = pValue
 
-        CDConstants.printOut(  "___ - DEBUG ----- CDImageNP.setCurrentIndexInImageNP()  --  1.   self.theCurrentIndex=="+str(self.theCurrentIndex), CDConstants.DebugTODO )
+        CDConstants.printOut(  "___ - DEBUG ----- CDImageNP.setCurrentIndexInImageNP()  --  1.   self.__theCurrentIndex=="+str(self.__theCurrentIndex), CDConstants.DebugTODO )
 
         #  create images... theCurrentImage and theCurrentExtractedCellDataImage and theCurrentDiscretizedImage from the current layer in the sequence arrays:
         # these images are now *not* painted here, but from setCurrentIndexInImageNP() ...
@@ -1254,15 +1224,15 @@ class CDImageNP(QtCore.QObject):
 
         # emit a signal to update image sequence size GUI controls:
         lDict = { \
-            0: str(self.theCurrentIndex), \
-            1: str(self.imageNPFileNames[self.theCurrentIndex]), \
+            0: str(self.__theCurrentIndex), \
+            1: str(self.imageNPFileNames[self.__theCurrentIndex]), \
             }
 
         self.signalThatCurrentIndexSet.emit(lDict)
 
         CDConstants.printOut(  "___ - DEBUG ----- CDImageNP.setCurrentIndexInImageNP()  --  3.   self.signalThatCurrentIndexSet.emit( lDict=="+str(lDict)+" )", CDConstants.DebugTODO )
 
-        CDConstants.printOut(  "___ - DEBUG ----- CDImageNP.setCurrentIndexInImageNP() self.theCurrentIndex == "+str(self.theCurrentIndex) , CDConstants.DebugVerbose )
+        CDConstants.printOut(  "___ - DEBUG ----- CDImageNP.setCurrentIndexInImageNP() self.__theCurrentIndex == "+str(self.__theCurrentIndex) , CDConstants.DebugVerbose )
     # end of    def setCurrentIndexInImageNP(self, pValue)
     # ------------------------------------------------------------------   
 
@@ -1275,61 +1245,61 @@ class CDImageNP(QtCore.QObject):
         CDConstants.printOut( "    - DEBUG ----- CDImageNP.resetNPDimensions( pX="+str(pX)+", pY="+str(pY)+", pZ="+str(pZ)+", pChannels="+str(pChannels)+" ) starting.", CDConstants.DebugExcessive )
 
         if (pX > 0):
-            self.sizeX = pX
+            self.__sizeX = pX
         else:
-            self.sizeX = 1
+            self.__sizeX = 1
         if (pY > 0):
-            self.sizeY = pY
+            self.__sizeY = pY
         else:
-            self.sizeY = 1
+            self.__sizeY = 1
         if (pZ > 0):
-            self.sizeZ = pZ
+            self.__sizeZ = pZ
         else:
-            self.sizeZ = 1
+            self.__sizeZ = 1
         if (pChannels > 0):
-            self.cChannels = pChannels
+            self.__cChannels = pChannels
         else:
-            self.cChannels = 1
+            self.__cChannels = 1
 
         # a fresh numpy-based array - the four dimensions are:
         #   z = image layers,  y = height,  x = width, [b g r], even if image may be [a b g r]
         #   i.e. indexed from the slowest (most distant) to the fastest (closest data to each other):
 
         self.imageNPArray = numpy.zeros( \
-            (self.sizeZ,  self.sizeY,  self.sizeX,  3), \
+            (self.__sizeZ,  self.__sizeY,  self.__sizeX,  3), \
             dtype=numpy.uint8  )
         self.extractedCellDataNPArray = numpy.zeros( \
-            (self.sizeZ,  self.sizeY,  self.sizeX,  3), \
+            (self.__sizeZ,  self.__sizeY,  self.__sizeX,  3), \
             dtype=numpy.uint8  )
         self.discretizedNPArray = numpy.zeros( \
-            (self.sizeZ,  self.sizeY,  self.sizeX,  3), \
+            (self.__sizeZ,  self.__sizeY,  self.__sizeX,  3), \
             dtype=numpy.uint8  )
 
         # reset to fresh and empty (all False) flag arrays as well:
-        self.imageInNPIsReadyFlags = numpy.zeros( (self.sizeZ), dtype=numpy.bool )
-        self.extractedCellDataNPIsReadyFlags = numpy.zeros( (self.sizeZ), dtype=numpy.bool )
+        self.imageInNPIsReadyFlags = numpy.zeros( (self.__sizeZ), dtype=numpy.bool )
+        self.extractedCellDataNPIsReadyFlags = numpy.zeros( (self.__sizeZ), dtype=numpy.bool )
         self.contoursAreReadyFlag = False
 
         # reset to fresh and empty (all " ") filename strings as well:
-        for i in xrange(self.sizeZ):
+        for i in xrange(self.__sizeZ):
             self.imageNPFileNames[i] = " "
 
         # emit a signal to update image size GUI controls:
-        if ( int(self.sizeZ) == 1 ) :
+        if ( int(self.__sizeZ) == 1 ) :
             lLabel = "image"
         else:
             lLabel = "images"
 
         lDict = { \
-            0: str(int(self.sizeX)), \
-            1: str(int(self.sizeY)), \
-            2: str(int(self.sizeZ)), \
+            0: str(int(self.__sizeX)), \
+            1: str(int(self.__sizeY)), \
+            2: str(int(self.__sizeZ)), \
             3: str(lLabel) \
             }
 
         self.signalThatImageNPResized.emit(lDict)
 
-        CDConstants.printOut( "___ - DEBUG ----- CDImageNP.resetNPDimensions() self.sizeX,Y,Z, self.cChannels == "+str(self.sizeX)+" "+str(self.sizeY)+" "+str(self.sizeZ)+" "+str(self.cChannels) , CDConstants.DebugVerbose )
+        CDConstants.printOut( "___ - DEBUG ----- CDImageNP.resetNPDimensions() self.__sizeX,Y,Z, self.__cChannels == "+str(self.__sizeX)+" "+str(self.__sizeY)+" "+str(self.__sizeZ)+" "+str(self.__cChannels) , CDConstants.DebugVerbose )
 
 
 
@@ -1337,7 +1307,7 @@ class CDImageNP(QtCore.QObject):
         #   an empty array, into which to write pixel values,
         #   one Z layer for each image in the sequence,
         #   and we use numpy.int32 as data type to hold RGBA values:
-        # self.imageNPArray = numpy.zeros( (self.sizeY, self.sizeX, self.sizeZ), dtype=numpy.int )
+        # self.imageNPArray = numpy.zeros( (self.__sizeY, self.__sizeX, self.__sizeZ), dtype=numpy.int )
 
 
 #         TODO: this testing only necessary when NO image sequence loaded:
@@ -1346,21 +1316,21 @@ class CDImageNP(QtCore.QObject):
 
 
 
-#         if  (self.imageNPLoaded == False):
+#         if  (self.__imageNPLoaded == False):
 #     
 #             # set test array content:
 # 
 #             # show a panel containing a progress bar:    
-#             lProgressBarPanel=CDWaitProgressBar("Test content image sequence array x="+str(self.sizeX)+" y="+str(self.sizeY)+"  z="+str(self.sizeZ), 100)
+#             lProgressBarPanel=CDWaitProgressBar("Test content image sequence array x="+str(self.__sizeX)+" y="+str(self.__sizeY)+"  z="+str(self.__sizeZ), 100)
 #             lProgressBarPanel.show()
-#             lProgressBarPanel.setRange(0, self.sizeZ)
+#             lProgressBarPanel.setRange(0, self.__sizeZ)
 # 
 # 
 #             # for each image in sequence:
-#             for k in xrange(0, self.sizeZ, 1):
+#             for k in xrange(0, self.__sizeZ, 1):
 #                 # for each i,j point in an image:
-#                 for i in xrange(0, self.sizeX, 1):
-#                     for j in xrange(0, self.sizeY, 1):
+#                 for i in xrange(0, self.__sizeX, 1):
+#                     for j in xrange(0, self.__sizeY, 1):
 #                         if (i == j) and (j == k):
 #                             self.imageNPArray[k, j, i, 0] = numpy.uint8 (127)
 #                         else:
@@ -1395,17 +1365,17 @@ class CDImageNP(QtCore.QObject):
             (   (pValue != CDConstants.ImageNPUseDiscretizedToBWMode) and \
                 (self.getAProcessingModeStatusForImageNP(CDConstants.ImageNPUseDiscretizedToBWMode) == True)  ):
         # if we are changing choice on discretization to B/W mode,  invalidate all computed edges and contours:
-            self.extractedCellDataNPIsReadyFlags = numpy.zeros( (self.sizeZ), dtype=numpy.bool )
+            self.extractedCellDataNPIsReadyFlags = numpy.zeros( (self.__sizeZ), dtype=numpy.bool )
             self.contoursAreReadyFlag = False
 
         # set bitwise pValue, to set only the specific bit to 1 and all other bits to 0:
-        self.theProcessingModeForImageNP = (1 << pValue)
+        self.__theProcessingModeForImageNP = (1 << pValue)
 
         # bin() does not exist in Python 2.5:
         if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
-            CDConstants.printOut( "___ - DEBUG ----- CDImageNP.resetToOneProcessingModeForImageNP() bin(self.theProcessingModeForImageNP) == "+str(bin(self.theProcessingModeForImageNP))+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
+            CDConstants.printOut( "___ - DEBUG ----- CDImageNP.resetToOneProcessingModeForImageNP() bin(self.__theProcessingModeForImageNP) == "+str(bin(self.__theProcessingModeForImageNP))+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
         else:
-            CDConstants.printOut( "___ - DEBUG ----- CDImageNP.resetToOneProcessingModeForImageNP() self.theProcessingModeForImageNP == "+str(self.theProcessingModeForImageNP)+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
+            CDConstants.printOut( "___ - DEBUG ----- CDImageNP.resetToOneProcessingModeForImageNP() self.__theProcessingModeForImageNP == "+str(self.__theProcessingModeForImageNP)+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
 
     # end of  def resetToOneProcessingModeForImageNP(self, pValue)
     # ------------------------------------------------------------------   
@@ -1418,7 +1388,7 @@ class CDImageNP(QtCore.QObject):
     #    for generating PIFF from displayed imported image sequence
     # ------------------------------------------------------------------   
     def getAProcessingModeStatusForImageNP(self, pValue):
-        if ( self.theProcessingModeForImageNP & (1 << pValue) ):
+        if ( self.__theProcessingModeForImageNP & (1 << pValue) ):
             # bin() does not exist in Python 2.5:
             if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
                 CDConstants.printOut( "___ - DEBUG ----- CDImageNP.getAProcessingModeStatusForImageNP() TRUE bin(pValue, (1 << pValue)) == "+str(pValue)+" , "+str(bin(1 << pValue)) , CDConstants.DebugVerbose )
@@ -1440,8 +1410,8 @@ class CDImageNP(QtCore.QObject):
     # 2011 - Mitja: getNPCurrentColor():
     # ------------------------------------------------------------------   
     def getNPCurrentColor(self):
-        CDConstants.printOut( "    - DEBUG ----- CDImageNP.getNPCurrentColor returning  theImageNPColor=="+str(self.theImageNPColor)+" done.", CDConstants.DebugExcessive )
-        return (self.theImageNPColor)
+        CDConstants.printOut( "    - DEBUG ----- CDImageNP.getNPCurrentColor returning  theImageNPColor=="+str(self.__theImageNPColor)+" done.", CDConstants.DebugExcessive )
+        return (self.__theImageNPColor)
 
 
 
@@ -1449,8 +1419,8 @@ class CDImageNP(QtCore.QObject):
     # 2011 - Mitja: getNPWallColor():
     # ------------------------------------------------------------------   
     def getNPWallColor(self):
-        CDConstants.printOut( "    - DEBUG ----- CDImageNP.getNPWallColor returning  theImageNPWallColor=="+str(self.theImageNPWallColor)+" done.", CDConstants.DebugExcessive )
-        return (self.theImageNPWallColor)
+        CDConstants.printOut( "    - DEBUG ----- CDImageNP.getNPWallColor returning  theImageNPWallColor=="+str(self.__theImageNPWallColor)+" done.", CDConstants.DebugExcessive )
+        return (self.__theImageNPWallColor)
 
 
 
@@ -1518,13 +1488,13 @@ class CDImageNP(QtCore.QObject):
             elif pDataTypeOut == 'array':
                 # add a 3rd dimension to the array, i.e. 1 entry per color/channel in the image depth: R G B and A:
                 pDataTypeOut = numpy.uint8
-                print "result_shape = ", result_shape
-                print "temp_shape = ", temp_shape
+                print "CDImageNP.qimage2numpy() - result_shape = ", result_shape
+                print "CDImageNP.qimage2numpy() - temp_shape = ", temp_shape
                 result_shape += (4, )
                 temp_shape += (4, )
-                print "pImageIn.format() = ", pImageIn.format()
-                print "result_shape = ", result_shape
-                print "temp_shape = ", temp_shape
+                print "CDImageNP.qimage2numpy() - pImageIn.format() = ", pImageIn.format()
+                print "CDImageNP.qimage2numpy() - result_shape = ", result_shape
+                print "CDImageNP.qimage2numpy() - temp_shape = ", temp_shape
         elif pImageIn.format() == QtGui.QImage.Format_Indexed8:
             pDataTypeOut = numpy.uint8
         else:
@@ -1541,26 +1511,26 @@ class CDImageNP(QtCore.QObject):
         result = numpy.frombuffer(buf, pDataTypeOut).reshape(temp_shape)
 
         if result_shape != temp_shape:
-            print "======> result_shape != temp_shape, "
-            print "        therefore doing:   result = result[:,:result_shape[1]]"
+            print "CDImageNP.qimage2numpy() - ======> result_shape != temp_shape, "
+            print "CDImageNP.qimage2numpy() -         therefore doing:   result = result[:,:result_shape[1]]"
             result = result[:,:result_shape[1]]
         else:
-            print "======> result_shape == temp_shape, "
-            print "        therefore  result  stays the same."
+            print "CDImageNP.qimage2numpy() - ======> result_shape == temp_shape, "
+            print "CDImageNP.qimage2numpy() -         therefore  result  stays the same."
 
         if pImageIn.format() == QtGui.QImage.Format_RGB32 and pDataTypeOut == numpy.uint8:
-            print "======> pImageIn.format() == QtGui.QImage.Format_RGB32 = ", (pImageIn.format() == QtGui.QImage.Format_RGB32)
-            print "======> pDataTypeOut == numpy.uint8 = ", (pDataTypeOut == numpy.uint8)
-            print "        therefore doing:   result = result[...,:3]"
+            print "CDImageNP.qimage2numpy() - ======> pImageIn.format() == QtGui.QImage.Format_RGB32 = ", (pImageIn.format() == QtGui.QImage.Format_RGB32)
+            print "CDImageNP.qimage2numpy() - ======> pDataTypeOut == numpy.uint8 = ", (pDataTypeOut == numpy.uint8)
+            print "CDImageNP.qimage2numpy() -         therefore doing:   result = result[...,:3]"
             # slice the result so that every 4th byte is dropped, i.e. take 3 bytes at a time:
             result = result[...,:3]
             CDConstants.printOut( "    result[...,0].min, max() = "+str(result[...,0].min()) +" "+ str(result[...,0].max()), CDConstants.DebugExcessive )
             CDConstants.printOut( "    result[...,1].min, max() = "+str(result[...,1].min()) +" "+ str(result[...,1].max()), CDConstants.DebugExcessive )
             CDConstants.printOut( "    result[...,2].min, max() = "+str(result[...,2].min()) +" "+ str(result[...,2].max()), CDConstants.DebugExcessive )
         else:
-            print "======> pImageIn.format() == QtGui.QImage.Format_RGB32 = ", (pImageIn.format() == QtGui.QImage.Format_RGB32)
-            print "======> pDataTypeOut == numpy.uint8 = ", (pDataTypeOut == numpy.uint8)
-            print "        therefore  result  stays the same."
+            print "CDImageNP.qimage2numpy() - ======> pImageIn.format() == QtGui.QImage.Format_RGB32 = ", (pImageIn.format() == QtGui.QImage.Format_RGB32)
+            print "CDImageNP.qimage2numpy() - ======> pDataTypeOut == numpy.uint8 = ", (pDataTypeOut == numpy.uint8)
+            print "CDImageNP.qimage2numpy() -         therefore  result  stays the same."
             CDConstants.printOut( "    result[...,0].min, max() = "+str(result[...,0].min()) +" "+ str(result[...,0].max()), CDConstants.DebugExcessive )
             CDConstants.printOut( "    result[...,1].min, max() = "+str(result[...,1].min()) +" "+ str(result[...,1].max()), CDConstants.DebugExcessive )
             CDConstants.printOut( "    result[...,2].min, max() = "+str(result[...,2].min()) +" "+ str(result[...,2].max()), CDConstants.DebugExcessive )
@@ -2040,10 +2010,10 @@ class CDImageLayer(QtCore.QObject):
 
 
     # ------------------------------------------------------------------
-    # 2011 - Mitja: the setImage() function is to assign the starting QImage:
+    # 2011 - Mitja: the setTheImage() function is to assign the starting QImage:
     # ------------------------------------------------------------------   
-    def setImage(self, pImage, pImageFileName=" "):
-        CDConstants.printOut( "___ - DEBUG ----- CDImageLayer.setImage( pGridWidth == "+str(pImage)+") starting." , CDConstants.DebugExcessive )
+    def setTheImage(self, pImage, pImageFileName=" "):
+        CDConstants.printOut( "___ - DEBUG ----- CDImageLayer.setTheImage( pGridWidth == "+str(pImage)+") starting." , CDConstants.DebugExcessive )
         if isinstance(pImage, QtGui.QImage):
 
             if self.imageLoadedFromFile == True:
@@ -2051,34 +2021,33 @@ class CDImageLayer(QtCore.QObject):
                 # immediately transform the starting/loaded QImage: invert Y values, from RHS to LHS:
                 lWidth = pImage.width()
                 lHeight = pImage.height()
-   
+
                 # create an empty pixmap where to store the composed image:
                 lResultPixmap = QtGui.QPixmap(lWidth, lHeight)
-   
+
                 # create a QPainter to perform the Y inversion operation:
                 lPainter = QtGui.QPainter(lResultPixmap)
                 lPainter.fillRect(lResultPixmap.rect(), QtCore.Qt.transparent)
-   
+
                 # take care of the RHS <-> LHS mismatch at its visible end,
                 #   by flipping the y coordinate in the QPainter's affine transformations:       
                 lPainter.translate(0.0, float(lHeight))
                 lPainter.scale(1.0, -1.0)
-       
+
                 # access the QLabel's pixmap to draw it explicitly, using QPainter's scaling:
                 lPainter.drawPixmap(QtCore.QPoint(0,0), QtGui.QPixmap.fromImage(pImage))
-   
+
                 lPainter.end()           
-   
+
                 # copy the QImage passed as parameter into two separate instances:
                 self.theImage = QtGui.QImage(lResultPixmap.toImage())
                 # instead of setting manually, we call:     # self.processedImage = QtGui.QImage(lResultPixmap.toImage())
                 self.setToProcessedImage()
 
-
                 # also, set the input image for the NumPy image processing routines:
                 self.cdImageNP.setNPLoadedFromFiles(True)
-                self.cdImageNP.setImage( QtGui.QImage(lResultPixmap.toImage()), True,  )
-            
+                self.cdImageNP.setNPImage( QtGui.QImage(lResultPixmap.toImage()), True, pImageFileName )
+
 
             else:
                 # directly copy the QImage passed as parameter into two separate instances:
@@ -2088,7 +2057,7 @@ class CDImageLayer(QtCore.QObject):
 
                 # also, set the input image for the NumPy image processing routines:
                 self.cdImageNP.setNPLoadedFromFiles(False)
-                self.cdImageNP.setImage( QtGui.QImage(pImage) )
+                self.cdImageNP.setNPImage( QtGui.QImage(pImage), False )
 
             self.width = self.processedImage.width()
             self.height = self.processedImage.height()

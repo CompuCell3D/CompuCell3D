@@ -804,7 +804,8 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         self.__theMainStatusBar.insertPermanentWidgetInStatusBar(0, self.__theSimpleWaitProgressBar)
         self.__theSimpleWaitProgressBar.hide()
 
-        self.__theWaitProgressBarWithImage = CDWaitProgressBarWithImage("CellDraw: processing image.", " ", 100, self.__theMainStatusBar)
+##         self.__theWaitProgressBarWithImage = CDWaitProgressBarWithImage("CellDraw: processing image.", " ", 100, self.__theMainStatusBar)
+        self.__theWaitProgressBarWithImage = CDWaitProgressBar("CellDraw: processing image.", " ", 100, self.__theMainStatusBar)
         self.__theMainStatusBar.insertPermanentWidgetInStatusBar(0, self.__theWaitProgressBarWithImage)
         self.__theWaitProgressBarWithImage.hide()
 
@@ -1251,20 +1252,22 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
             # 2010 - Mitja: load the file's data into a QImage object:
             lImage = QtGui.QImage(lFileName)
-            lImagePixmap = QtGui.QPixmap.fromImage(lImage)
 
             if lImage.isNull():
                 QtGui.QMessageBox.warning( self, self.tr("CellDraw"), \
                     self.tr("Cannot open the image file: " \
                     "%1").arg(lFileName) )
             else:
-                CDConstants.printOut( "____ DEBUG: _,.- ~*'`'*~-.,_  CellDrawMainWindow.openImage() got ["+str(lFileName)+ "]", CDConstants.DebugAll)
+                lImagePixmap = QtGui.QPixmap.fromImage(lImage)
+                lThePath,lTheFileName = os.path.split(str(lFileName))
+
+                CDConstants.printOut( "____ DEBUG: _,.- ~*'`'*~-.,_  CellDrawMainWindow.openImage() got ["+str(lFileName)+"] == ["+str(lTheFileName)+" in "+str(lThePath)+"]", CDConstants.DebugAll)
 
                 # now confirm that the theCDImageLayer contains an actual image loaded from a file:
                 self.diagramSceneMainWidget.theCDImageLayer.setImageLoadedFromFile(True)
 
                 # update all input-image-related globals:
-                self.setImageGlobals( lImage )
+                self.setImageGlobals( lImage, lTheFileName )
 
                 # 2010 - Mitja: also pass the loaded image as background brush for the external QGraphicsScene window:
                 #
@@ -1274,9 +1277,10 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 #    You could create an image of (width(),height()),
                 #    draw your pixmap in the center of it and use that for the brush.
                 #    This way it will tile, but only once.
-                #    Besure to update the pixmap on resize!
-                lThePath,lTheFileName = os.path.split(str(lFileName))
+                #    Be sure to update the pixmap on resize!
+
                 CDConstants.printOut( "____ DEBUG: _,.- ~*'`'*~-.,_  CellDrawMainWindow.openImage() now calling self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, lImage) with ["+str(lTheFileName)+" "+str(lImage)+ "]", CDConstants.DebugAll)
+
                 self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, lImage)
                 self.__theToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap(lImagePixmap)
 
@@ -1302,7 +1306,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
         # 2010 - Mitja: note that (as per Qt documentation) a QLabel may contain a QPixmap object, but not a QImage.
         #   Thus the image instance we assign to theCDImageLayer from pImage is a separate object:
-        self.diagramSceneMainWidget.theCDImageLayer.setImage(pImage, pImageFileName)
+        self.diagramSceneMainWidget.theCDImageLayer.setTheImage(pImage, pImageFileName)
 
 
         # 2010 - Mitja: sample the color of every pixel in the pixmap

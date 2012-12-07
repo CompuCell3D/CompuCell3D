@@ -9,6 +9,8 @@ import inspect # <-- for debugging functions, may be removed in final version
 from PyQt4 import QtGui, QtCore
 #
 
+import time    # for sleep()
+
 
 # external class defining all global constants for CellDraw:
 from cdConstants import CDConstants
@@ -34,13 +36,8 @@ class CDWaitProgressBar(QtGui.QWidget):
 
 
         print "CDWaitProgressBar.__init__()"
-        self.theProgressBarImageLabel = QtGui.QLabel()
-        print "CDWaitProgressBar.__init__()  self.theProgressBarImageLabel =="+str(self.theProgressBarImageLabel)
-
-
-        print "CDWaitProgressBar.__init__()"
-        self.theContentWidget = QtGui.QWidget()
-        print "CDWaitProgressBar.__init__()  self.theContentWidget =="+str(self.theContentWidget)
+        self.__theProgressBarImageLabel = QtGui.QLabel()
+        print "CDWaitProgressBar.__init__()  self.__theProgressBarImageLabel =="+str(self.__theProgressBarImageLabel)
 
 
         # the progress bar widget is defined in createProgressBar() below:
@@ -177,6 +174,21 @@ class CDWaitProgressBar(QtGui.QWidget):
 
     # end of   def __InitCentralWidget(self)
     # ------------------------------------------------------------------
+
+
+
+
+
+
+    # ---------------------------------------------------------
+    def setImagePixmap(self, pPixmap, pWidth=-1, pHeight=-1):
+        print "CDWaitProgressBar.setImagePixmap() - start.  pPixmap="+str(pPixmap)+", pWidth="+str(pWidth)+", pHeight="+str(pHeight)+" ..."
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+        print "CDWaitProgressBar.setImagePixmap() - doing nothing."
+        time.sleep(3.0)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+        print "CDWaitProgressBar.setImagePixmap() - end."
+
 
 
 
