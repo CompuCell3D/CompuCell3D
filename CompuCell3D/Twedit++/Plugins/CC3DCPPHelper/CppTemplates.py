@@ -318,12 +318,15 @@ void PLUGIN_NAME_COREPlugin::step() {    //Put your code here - it will be invo
             else:
                 text=self.cppTemplatesDict["CMakeSteppable"]
             steppableName=_features['Steppable']
-            text=re.sub("STEPPABLE_CORE_NAME",steppableName,text)     
+            print 'text=',text
+            text=re.sub("STEPPABLE_NAME_CORE",steppableName,text)     
             try:
                 extraAttribFlag=_features['ExtraAttribute']
                 text=re.sub("EXTRA_ATTRIBUTE_HEADER",steppableName+'Data.h',text)                     
             except LookupError,e:
-                text=re.sub("EXTRA_ATTRIBUTE_HEADER",'',text)                     
+                text=re.sub("EXTRA_ATTRIBUTE_HEADER",'',text)        
+            
+            print 'CMAKE TEXT=',text    
             return text    
                 
         else: # steppable
@@ -384,8 +387,9 @@ void PLUGIN_NAME_COREPlugin::step() {    //Put your code here - it will be invo
         
         STEPPABLE_NAME_VAR=steppableNameVar
         replaceLabelList.append(['STEPPABLE_NAME_VAR',STEPPABLE_NAME_VAR])
-        print '_features[ExtraAttribute]=',_features['ExtraAttribute']
+        
         try:
+            print '_features[ExtraAttribute]=',_features['ExtraAttribute']
             _features['ExtraAttribute']
             EXTRA_ATTRIB_INCLUDES='#include \"'+steppableName+'Data.h\"'
             EXTRA_ATTRIB_INCLUDES+="""

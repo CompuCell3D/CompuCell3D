@@ -723,7 +723,7 @@ class CDMainTableClass(QtGui.QWidget):
         # this infoLabel part is cosmetic and could safely be removed,
         #     unless useful info is provided here:
         self.infoLabel = QtGui.QLabel()
-        self.infoLabel.setText("<i>colors</i> in the Cell Scene correspond to <i>region types</i>")
+        self.infoLabel.setText("<i>colors</i> in the Cell Scene correspond to <i>cell region types</i>")
         self.infoLabel.setAlignment = QtCore.Qt.AlignCenter
         self.infoLabel.setLineWidth(3)
         self.infoLabel.setMidLineWidth(3)
@@ -909,8 +909,8 @@ class CDMainTableClass(QtGui.QWidget):
                                   self.handleOneRegionTableWidgetChanged )
 
             # this goes to the last column in the table:
-            print "SIZE SIZE SIZE lOneRegionTableWidget.height() =", lOneRegionTableWidget.height()
-            print "SIZE SIZE SIZE lOneRegionTableWidget.height() =", lOneRegionTableWidget.width()
+            pass # 152 prrint "SIZE SIZE SIZE lOneRegionTableWidget.height() =", lOneRegionTableWidget.height()
+            pass # 152 prrint "SIZE SIZE SIZE lOneRegionTableWidget.height() =", lOneRegionTableWidget.width()
             # first resize the table row to PIFOneRegionTable's height,
             #   then assign the widget as content to this element in the row,
             #   since resizing after assigning would not seem to work:
@@ -953,8 +953,8 @@ class CDMainTableClass(QtGui.QWidget):
                                   self.handleOneRegionTableWidgetChanged )
 
             # this goes to the last column in the table:
-            print "SIZE SIZE SIZE lOneRegionTableWidget.height() =", lOneRegionTableWidget.height()
-            print "SIZE SIZE SIZE lOneRegionTableWidget.height() =", lOneRegionTableWidget.width()
+            pass # 152 prrint "SIZE SIZE SIZE lOneRegionTableWidget.height() =", lOneRegionTableWidget.height()
+            pass # 152 prrint "SIZE SIZE SIZE lOneRegionTableWidget.height() =", lOneRegionTableWidget.width()
             # first resize the table row to PIFOneRegionTable's height,
             #   then assign the widget as content to this element in the row,
             #   since resizing after assigning would not seem to work:
@@ -1055,28 +1055,26 @@ class CDMainTableClass(QtGui.QWidget):
     def debugRegionDict(self):
         lCount = self.getRegionsDictElementCount()
         lKeys = self.getRegionsDictKeys()
-        print "---------------------------------------------"
-        print " CDMainTableClass class, regionDict global: "
-        print " "
-        print " table rows =", lCount
-        print " table keys =", lKeys
-        print " table elements per row =", self.getRegionsDictMaxRowCount()
+        pass # 152 prrint "---------------------------------------------"
+        pass # 152 prrint " CDMainTableClass class, regionDict global: "
+        pass # 152 prrint " "
+        pass # 152 prrint " table rows =", lCount
+        pass # 152 prrint " table keys =", lKeys
+        pass # 152 prrint " table elements per row =", self.getRegionsDictMaxRowCount()
        
-        print " table row content: "
+        pass # 152 prrint " table row content: "
         for i in xrange(lCount):
-            print "i =                                     =", i
-            print "key =                       lKeys[i]     =", lKeys[i]
-            print "color =    self.regionsDict[lKeys[i]][0] =", self.regionsDict[lKeys[i]][0]
-            print "region =   self.regionsDict[lKeys[i]][1] =", self.regionsDict[lKeys[i]][1]
-            print "cellsize = self.regionsDict[lKeys[i]][2] =", self.regionsDict[lKeys[i]][2]
+            pass # 152 prrint "i =                                     =", i
+            pass # 152 prrint "key =                       lKeys[i]     =", lKeys[i]
+            pass # 152 prrint "color =    self.regionsDict[lKeys[i]][0] =", self.regionsDict[lKeys[i]][0]
+            pass # 152 prrint "region =   self.regionsDict[lKeys[i]][1] =", self.regionsDict[lKeys[i]][1]
+            pass # 152 prrint "cellsize = self.regionsDict[lKeys[i]][2] =", self.regionsDict[lKeys[i]][2]
             for j in xrange(3):
-                print "at i =", i, ", j =", j, "self.regionsDict[lKeys[i]][2][j] =", \
-                      self.regionsDict[lKeys[i]][2][j]
-            print "use =      self.regionsDict[lKeys[i]][3] =", self.regionsDict[lKeys[i]][3]
+                pass # 152 prrint "at i =", i, ", j =", j, "self.regionsDict[lKeys[i]][2][j] =",  self.regionsDict[lKeys[i]][2][j]
+            pass # 152 prrint "use =      self.regionsDict[lKeys[i]][3] =", self.regionsDict[lKeys[i]][3]
             for j in xrange( len(self.regionsDict[lKeys[i]][4]) ):
-                print "at i =", i, ", j =", j, "self.regionsDict[lKeys[i]][4][j] =", \
-                      self.regionsDict[lKeys[i]][4][j]
-        print "---------------------------------------------"
+                pass # 152 prrint "at i =", i, ", j =", j, "self.regionsDict[lKeys[i]][4][j] =",  self.regionsDict[lKeys[i]][4][j]
+        pass # 152 prrint "---------------------------------------------"
 
 
     # ------------------------------------------------------------------
@@ -1149,7 +1147,7 @@ class CDMainTableClass(QtGui.QWidget):
     # ------------------------------------------------------------------
     def handleTableCellChanged(self,pRow,pColumn):
 
-        print "___ - DEBUG ----- CDMainTableClass: handleTableCellChanged() pRow,pColumn =" , pRow,pColumn
+        pass # 152 prrint "___ - DEBUG ----- CDMainTableClass: handleTableCellChanged() pRow,pColumn =" , pRow,pColumn
         # update the dict:
         self.updateRegionsDict()
 
@@ -1168,14 +1166,14 @@ class CDMainTableClass(QtGui.QWidget):
         # propagate the signal upstream, for example to parent objects:
         self.emit(QtCore.SIGNAL("regionsTableChangedSignal()"))
 
-        print "___ - DEBUG ----- CDMainTableClass: handleOneRegionTableWidgetChanged() done."
+        pass # 152 prrint "___ - DEBUG ----- CDMainTableClass: handleOneRegionTableWidgetChanged() done."
 
 
 
     # TODO TODO TODO: is this still necessary???
 
     def on_regionsTable_cellClicked(self, row, col):
-        print "___ - DEBUG ----- CDMainTableClass: on_regionsTable_cellClicked() = ", self.regionsTable.rowCount()
+        pass # 152 prrint "___ - DEBUG ----- CDMainTableClass: on_regionsTable_cellClicked() = ", self.regionsTable.rowCount()
         # Only color cell can be changed
         if col == 0:
             # Stores the current type
@@ -1192,7 +1190,7 @@ class CDMainTableClass(QtGui.QWidget):
             self.regionsDict[keys[row]] = color
             self.regionsTable.item(row, col).setBackground(QBrush(color))
 
-        print "___ - DEBUG ----- CDMainTableClass: on_regionsTable_cellClicked()  done."
+        pass # 152 prrint "___ - DEBUG ----- CDMainTableClass: on_regionsTable_cellClicked()  done."
 
 
 
@@ -1996,7 +1994,7 @@ class CDSceneAssistant(QtGui.QWizard):
 if __name__ == '__main__':
 
 
-    print "001 - DEBUG - mi __main__ xe 01"
+    pass # 152 prrint "001 - DEBUG - mi __main__ xe 01"
     # every PyQt4 app must create an application object, from the QtGui module:
     miApp = QtGui.QApplication(sys.argv)
 
@@ -2024,12 +2022,12 @@ if __name__ == '__main__':
 
 
 
-    print "002 - DEBUG - mi __main__ xe 02"
+    pass # 152 prrint "002 - DEBUG - mi __main__ xe 02"
 
     # the cell type/colormap panel:
     mainPanel = CDMainTableClass()
 
-    print "003 - DEBUG - mi __main__ xe 03"
+    pass # 152 prrint "003 - DEBUG - mi __main__ xe 03"
 
     # temporarily assign colors/names to a dictionary:
     #   place all used colors/type names into a dictionary, to be locally accessible
@@ -2053,9 +2051,9 @@ if __name__ == '__main__':
     #   unless raise_() is called right after show(), the window/panel/etc will NOT become
     #   the foreground window and won't receive user input focus:
 #     mainPanel.raise_()
-    print "004 - DEBUG - mi __main__ xe 04"
+    pass # 152 prrint "004 - DEBUG - mi __main__ xe 04"
 
     sys.exit(miApp.exec_())
-    print "005 - DEBUG - mi __main__ xe 05"
+    pass # 152 prrint "005 - DEBUG - mi __main__ xe 05"
 
 # end if __name__ == '__main__'

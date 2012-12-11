@@ -51,17 +51,25 @@ class CDConstants(QtCore.QObject):
     #    0 = Color Pick = CDConstants.ImageModePickColor
     #    1 = Freehand Draw = CDConstants.ImageModeDrawFreehand
     #    2 = Polygon Draw = CDConstants.ImageModeDrawPolygon
-    ImageModePickColor, ImageModeDrawFreehand, ImageModeDrawPolygon  = range(3)
+    #    3 = Extract Cells = CDConstants.ImageModeExtractCells
+    ImageModePickColor, ImageModeDrawFreehand, ImageModeDrawPolygon, ImageModeExtractCells  = range(4)
 
 
     # 2011 - Mitja: bit-flag modes for generating PIFF from displayed imported image sequence:
     #    0 = Use Discretized Images to B/W = CDConstants.ImageSequenceUseDiscretizedToBWMode
-    #    1 = Region 2D Edge = CDConstants.ImageSequenceUseEdge
+    #    1 = Region 2D Edge = CDConstants.ImageSequenceUse2DEdges
     #    2 = Region 3D Contours = CDConstants.ImageSequenceUse3DContours
     #    3 = Region 3D Volume = CDConstants.ImageSequenceUse3DVolume
     #    4 = Region Cell Seeds = CDConstants.ImageSequenceUseAreaSeeds
-    ImageSequenceUseDiscretizedToBWMode, ImageSequenceUseEdge, ImageSequenceUse3DContours, \
+    ImageSequenceUseDiscretizedToBWMode, ImageSequenceUse2DEdges, ImageSequenceUse3DContours, \
         ImageSequenceUse3DVolume, ImageSequenceUseAreaSeeds = range(5)
+
+
+
+    # 2012 - Mitja: bit-flag modes for NumPy image processing:
+    #    0 = Use Discretized Images to B/W = CDConstants.ImageNPUseDiscretizedToBWMode
+    #    1 = Extract Cell from Single-Color Areas = CDConstants.ImageNPExtractSingleColorCells
+    ImageNPUseDiscretizedToBWMode, ImageNPExtractSingleColorCells = range(2)
 
 
     TypesColors = [QtCore.Qt.green, QtCore.Qt.blue, QtCore.Qt.red, \
@@ -82,7 +90,8 @@ class CDConstants(QtCore.QObject):
 
 
     # and the static class variable for debugging level:
-    globalDebugLevel = DebugImportant
+    # globalDebugLevel = DebugImportant
+    globalDebugLevel = DebugTODO
 
 
     # 2011 - Mitja: scene bundle:
@@ -94,18 +103,18 @@ class CDConstants(QtCore.QObject):
     # 2011 - Mitja: QSettings file application and organization names:
     #
     # the new CellDraw way - from Oct 2011 or so:
-    PrefsCellDrawFormat2011 = QtCore.QSettings.IniFormat
-    PrefsCellDrawScope2011 = QtCore.QSettings.UserScope
-    PrefsCellDrawOrganization2011 = "Biocomplexity"
-    PrefsCellDrawApplication2011 = "CellDraw_defaults"
-    PrefsCellDrawApplicatioVersion2011 = "1.6.0"
-    PrefsCellDrawOrganizationDomain2011 = "compucell.org"
+    PrefsCellDrawFormatINI = QtCore.QSettings.IniFormat
+    PrefsCellDrawScopeINI = QtCore.QSettings.UserScope
+    PrefsCellDrawOrganizationINI = "Biocomplexity"
+    PrefsCellDrawApplicationINI = "CellDraw_defaults"
+    PrefsCellDrawApplicatioVersionINI = "1.6.0"
+    PrefsCellDrawOrganizationDomainINI = "compucell.org"
     #
     # the new CC3D way - from Oct 2011 or so:
-    PrefsCC3DFormat2011 = QtCore.QSettings.IniFormat
-    PrefsCC3DScope2011 = QtCore.QSettings.UserScope
-    PrefsCC3DOrganization2011 = "Biocomplexity"
-    PrefsCC3DApplication2011 = "cc3d_default"
+    PrefsCC3DFormatINI = QtCore.QSettings.IniFormat
+    PrefsCC3DScopeINI = QtCore.QSettings.UserScope
+    PrefsCC3DOrganizationINI = "Biocomplexity"
+    PrefsCC3DApplicationINI = "cc3d_default"
     # the old CC3D way:
     PrefsCC3DFormatOld = QtCore.QSettings.NativeFormat
     PrefsCC3DScopeOld = QtCore.QSettings.UserScope

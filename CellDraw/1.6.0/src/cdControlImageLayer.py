@@ -21,13 +21,13 @@ from cdConstants import CDConstants
 #         self.emit(QtCore.SIGNAL("inputImageOpacityChangedSignal()"))
 #         self.emit(QtCore.SIGNAL("fuzzyPickTresholdChangedSignal()"))
 #
-#         signalImageScaleZoomHasChanged = QtCore.pyqtSignal(str)
+#         signalImageScaleHasChanged = QtCore.pyqtSignal(str)
 #
 class CDControlImageLayer(QtGui.QWidget):
 
     # ------------------------------------------------------------
 
-    signalImageScaleZoomHasChanged = QtCore.pyqtSignal(str)
+    signalImageScaleHasChanged = QtCore.pyqtSignal(str)
 
     # ------------------------------------------------------------
 
@@ -50,8 +50,8 @@ class CDControlImageLayer(QtGui.QWidget):
         #    100 = maximum = pick everything in the image
         self.theFuzzyPickTreshold = 2
 
-        # the class global keeping track of the current scale/zoom value:
-        self.theScaleZoom = "100%"
+        # the class global keeping track of the current image scale value:
+        self.__theImageScaleFactor = "100%"
 
         #
         # QWidget setup (1) - windowing GUI setup for Image Layer controls:
@@ -138,27 +138,27 @@ class CDControlImageLayer(QtGui.QWidget):
 
         # ----------------------------------------------------------------
         #
-        # QWidget setup (4) - "Scale/Zoom" QGroupBox:
+        # QWidget setup (4) - "Scale" QGroupBox:
 
-        self.scaleZoomGroupBox = QtGui.QGroupBox("Scale/Zoom")
-        self.scaleZoomGroupBox.setLayout(QtGui.QHBoxLayout())
-        self.scaleZoomGroupBox.layout().setContentsMargins(2,2,2,2)
-        self.scaleZoomGroupBox.layout().setSpacing(4)
-        self.scaleZoomGroupBox.layout().setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        self.__theImageScaleGroupBox = QtGui.QGroupBox("Scale Image")
+        self.__theImageScaleGroupBox.setLayout(QtGui.QHBoxLayout())
+        self.__theImageScaleGroupBox.layout().setContentsMargins(2,2,2,2)
+        self.__theImageScaleGroupBox.layout().setSpacing(4)
+        self.__theImageScaleGroupBox.layout().setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
 
-        # a "combo box" pop-up menu to select the Scale/Zoom factor:
+        # a "combo box" pop-up menu to select the Scale factor:
         self.imageScaleCombo = QtGui.QComboBox()
         self.imageScaleCombo.addItems(["50%", "75%", "100%", "125%", "150%", "200%", "250%", "300%", "400%", "500%", "1000%", "2000%", "4000%"])
         self.imageScaleCombo.setCurrentIndex(2)
         self.imageScaleCombo.clearFocus()
-        self.imageScaleCombo.setStatusTip("Zoom the input image")
-        self.imageScaleCombo.setToolTip("Zoom input image")
+        self.imageScaleCombo.setStatusTip("Scale the input image")
+        self.imageScaleCombo.setToolTip("Scale input image")
        
-        # call handleScaleZoomChanged() when imageScaleCombo changes index:
-        self.imageScaleCombo.currentIndexChanged[str].connect(self.handleScaleZoomChanged)
+        # call __handleImageScaleChanged() when imageScaleCombo changes index:
+        self.imageScaleCombo.currentIndexChanged[str].connect(self.__handleImageScaleChanged)
 
         # add the combo box to the QGroupBox:
-        self.scaleZoomGroupBox.layout().addWidget(self.imageScaleCombo)
+        self.__theImageScaleGroupBox.layout().addWidget(self.imageScaleCombo)
 
 
 
@@ -172,7 +172,7 @@ class CDControlImageLayer(QtGui.QWidget):
        
         aSimpleQHBoxLayout.addWidget(self.drawingGroupBox)
 
-        aSimpleQHBoxLayout.addWidget(self.scaleZoomGroupBox)
+        aSimpleQHBoxLayout.addWidget(self.__theImageScaleGroupBox)
 
         self.imageControlsMainLayout.addLayout(aSimpleQHBoxLayout)
 
@@ -425,14 +425,14 @@ class CDControlImageLayer(QtGui.QWidget):
         # propagate the signal upstream, for example to parent objects:
         self.emit(QtCore.SIGNAL("inputImageOpacityChangedSignal()"))
 
-    def handleScaleZoomChanged(self, pValueString):
-        CDConstants.printOut( "the requested Input Image scale/zoom is = "+str(pValueString), CDConstants.DebugTODO )
-        lScaleZoom = pValueString
-        if lScaleZoom != self.theScaleZoom:
-            self.theScaleZoom = lScaleZoom
-            CDConstants.printOut( "the new Input Image scale/zoom will be = "+str(self.theScaleZoom), CDConstants.DebugTODO )
+    def __handleImageScaleChanged(self, pValueString):
+        CDConstants.printOut( "the requested Input Image scale is = "+str(pValueString), CDConstants.DebugTODO )
+        lScaleFactor = pValueString
+        if lScaleFactor != self.__theImageScaleFactor:
+            self.__theImageScaleFactor = lScaleFactor
+            CDConstants.printOut( "the new Input Image scale will be = "+str(self.__theImageScaleFactor), CDConstants.DebugTODO )
             # propagate the signal upstream, for example to parent objects:
-            self.signalImageScaleZoomHasChanged.emit(self.theScaleZoom)
+            self.signalImageScaleHasChanged.emit(self.__theImageScaleFactor)
 
 
 

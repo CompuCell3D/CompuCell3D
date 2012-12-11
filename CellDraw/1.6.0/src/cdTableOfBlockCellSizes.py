@@ -40,12 +40,12 @@ class CDTableOfBlockCellSizes(QtGui.QWidget):
         self.blockCellDimTable.setColumnCount(1)
         self.blockCellDimTable.setRowCount(3)
         self.blockCellDimTable.setHorizontalHeaderLabels( " " )
-        print " 123123123123123123123123123123123123123123123123123123123 "
+        pass # 152 prrint " 123123123123123123123123123123123123123123123123123123123 "
         self.blockCellDimTable.horizontalHeader().setResizeMode(0, QtGui.QHeaderView.Interactive)
-        print " 123123123123123123123123123123123123123123123123123123123 "
+        pass # 152 prrint " 123123123123123123123123123123123123123123123123123123123 "
 
         self.blockCellDimTable.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Interactive)
-        print " 123123123123123123123123123123123123123123123123123123123 "
+        pass # 152 prrint " 123123123123123123123123123123123123123123123123123123123 "
 
         self.blockCellDimTable.setVerticalHeaderLabels( ("x", "y", "z") )
         self.blockCellDimTable.verticalHeader().setResizeMode(0, QtGui.QHeaderView.Interactive)
@@ -93,13 +93,13 @@ class CDTableOfBlockCellSizes(QtGui.QWidget):
     # rebuild the oneBlockCellSizesList global from its table contents:
     # ------------------------------------------------------------------
     def updateOneRegionCellSizes(self):
-        print "___ - DEBUG DEBUG DEBUG ----- CDTableOfBlockCellSizes: self.updateOneRegionCellSizes() from ", self.oneBlockCellSizesList
+        pass # 152 prrint "___ - DEBUG DEBUG DEBUG ----- CDTableOfBlockCellSizes: self.updateOneRegionCellSizes() from ", self.oneBlockCellSizesList
         # parse each table rown separately to build a oneBlockCellSizesList:
         self.oneBlockCellSizesList = (   \
             ( int ( self.blockCellDimTable.item(0, 0).text() ) , \
               int ( self.blockCellDimTable.item(1, 0).text() ) , \
               int ( self.blockCellDimTable.item(2, 0).text() )   )    )
-        print "___ - DEBUG ----- CDTableOfBlockCellSizes: self.updateOneRegionCellSizes() to ", self.oneBlockCellSizesList, " done."
+        pass # 152 prrint "___ - DEBUG ----- CDTableOfBlockCellSizes: self.updateOneRegionCellSizes() to ", self.oneBlockCellSizesList, " done."
 
     # ------------------------------------------------------------------
     # retrieve the up-to-date oneBlockCellSizesList for external use:
@@ -114,22 +114,21 @@ class CDTableOfBlockCellSizes(QtGui.QWidget):
     # populate the one-region subtable with data from oneBlockCellSizesList
     # ------------------------------------------------------------------
     def populateOneRegionBlockCellSizesTable(self):
-        print "SIZE SIZE SIZE self.blockCellDimTable.height() =", self.blockCellDimTable.height()
-        print "SIZE SIZE SIZE self.blockCellDimTable.parentWidget().height() =", self.blockCellDimTable.parentWidget().height()
+        pass # 152 prrint "SIZE SIZE SIZE self.blockCellDimTable.height() =", self.blockCellDimTable.height()
+        pass # 152 prrint "SIZE SIZE SIZE self.blockCellDimTable.parentWidget().height() =", self.blockCellDimTable.parentWidget().height()
 
-        print "SIZE SIZE SIZE self.blockCellDimTable.width() =", self.blockCellDimTable.width()
-        print "SIZE SIZE SIZE self.blockCellDimTable.parentWidget().width() =", self.blockCellDimTable.parentWidget().width()
-        print "___ - DEBUG ----- CDTableOfBlockCellSizes: populateOneRegionBlockCellSizesTable() = ", \
-              self.blockCellDimTable.rowCount()
+        pass # 152 prrint "SIZE SIZE SIZE self.blockCellDimTable.width() =", self.blockCellDimTable.width()
+        pass # 152 prrint "SIZE SIZE SIZE self.blockCellDimTable.parentWidget().width() =", self.blockCellDimTable.parentWidget().width()
+        pass # 152 prrint "___ - DEBUG ----- CDTableOfBlockCellSizes: populateOneRegionBlockCellSizesTable() = ",  self.blockCellDimTable.rowCount()
 
         # prevent blockCellDimTable from emitting any "cellChanged" signals when
         #   updating its content programmatically:
         self.blockCellDimTable.blockSignals(True)
 
-        print "self.oneBlockCellSizesList =", self.oneBlockCellSizesList
-        print "self.oneBlockCellSizesList[0] =", self.oneBlockCellSizesList[0]
-        print "self.oneBlockCellSizesList[1] =", self.oneBlockCellSizesList[1]
-        print "self.oneBlockCellSizesList[2] =", self.oneBlockCellSizesList[2]
+        pass # 152 prrint "self.oneBlockCellSizesList =", self.oneBlockCellSizesList
+        pass # 152 prrint "self.oneBlockCellSizesList[0] =", self.oneBlockCellSizesList[0]
+        pass # 152 prrint "self.oneBlockCellSizesList[1] =", self.oneBlockCellSizesList[1]
+        pass # 152 prrint "self.oneBlockCellSizesList[2] =", self.oneBlockCellSizesList[2]
 
         # create a first QTableWidgetItem and place text (i.e. the "x" cell size) from oneBlockCellSizesList in it:
         lItem = QtGui.QTableWidgetItem( \
@@ -204,14 +203,14 @@ class CDTableOfBlockCellSizes(QtGui.QWidget):
         #   "If you add to a class "Main" a method with a specific name,
         #    it will be connected to that signal. The name is on_objectname_signalname."
 
-        print "___ - DEBUG ----- CDTableOfBlockCellSizes: handleTableCellChanged() pRow,pColumn =" , pRow,pColumn
+        pass # 152 prrint "___ - DEBUG ----- CDTableOfBlockCellSizes: handleTableCellChanged() pRow,pColumn =" , pRow,pColumn
         # update the dict:
         self.updateOneRegionCellSizes()
 
         # propagate the signal upstream, for example to parent objects:
         self.emit(QtCore.SIGNAL("oneBlockCellDimChangedSignal()"))
 
-        print "___ - DEBUG ----- CDTableOfBlockCellSizes: handleTableCellChanged()  done."
+        pass # 152 prrint "___ - DEBUG ----- CDTableOfBlockCellSizes: handleTableCellChanged()  done."
 
 # end of class CDTableOfBlockCellSizes(QtGui.QWidget)
 # ======================================================================

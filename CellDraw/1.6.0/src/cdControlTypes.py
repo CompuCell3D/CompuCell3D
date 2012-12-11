@@ -98,7 +98,8 @@ class CDControlTypes(QtGui.QWidget):
         #      with the defaults set in the DiagramScene class globals.
         #
         self.fillColorToolButton = QtGui.QToolButton()
-        self.fillColorToolButton.setText("Color")
+        self.fillColorToolButton.setToolButtonStyle(QtCore.Qt.ToolButtonTextUnderIcon)
+        self.fillColorToolButton.setText("Type")
 
         self.fillColorToolButton.setIcon( \
             self.createFloodFillToolButtonIcon( \
@@ -132,10 +133,28 @@ class CDControlTypes(QtGui.QWidget):
         # Note: PyQt 4.8.6 seems to have problems with assigning the proper key shortcuts
         #   using mnemonics such as  shortcut=QtGui.QKeySequence.AddTab, so we have to 
         #   set the shortcut explicitly to "Ctrl+key" ...
-        self.pifTableAction = QtGui.QAction( \
-                QtGui.QIcon(':/icons/regiontable.png'), "Types Editor", self, \
-                shortcut="Ctrl+T", statusTip="Toggle (show/hide) the Types Editor", \
-                triggered=self.handlePIFTableButton)
+        self.pifTableAction = QtGui.QAction(self)
+
+        CDConstants.printOut("___ - DEBUG ----- CDControlTypes.__init__() -- self.pifTableAction = QtGui.QAction() ====== "+str(self.pifTableAction), CDConstants.DebugExcessive )
+
+#         self.pifTableAction = QtGui.QAction( \
+#                 QtGui.QIcon(':/icons/regiontable.png'), "Types Editor", self, \
+#                 shortcut="Ctrl+T", statusTip="Toggle (show/hide) the Types Editor", \
+#                 triggered=self.handlePIFTableButton)
+
+        # a new button to show the image sequence layer:
+        self.pifTableAction.setCheckable(True)
+        self.pifTableAction.setChecked(False)
+        self.pifTableAction.setShortcut("Ctrl+T")
+        self.pifTableAction.setIcon(QtGui.QIcon(':/icons/regiontable.png'))
+#        self.pifTableAction.setIconSize(QtCore.QSize(24, 24))
+        self.pifTableAction.setIconText("Types")
+        self.pifTableAction.setToolTip("Types Editor")
+        self.pifTableAction.setStatusTip("Toggle (show/hide) the Types Editor")
+        self.pifTableAction.triggered[bool].connect(self.handlePIFTableButton)
+#         self.imageSequenceAction.hide()
+
+
 
         # add an action to the QGroupBox:
         lToolButton = QtGui.QToolButton(self)
