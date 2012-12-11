@@ -4,7 +4,10 @@ from PyQt4 import QtGui, QtCore
 
 
 # external class for selecting layer mode:
-from cdModeSelectToolBar import CDModeSelectToolBar
+from cdControlModeSelectToolBar import CDControlModeSelectToolBar
+
+# external class for selecting layer mode:
+from cdControlSceneZoomToolbar import CDControlSceneZoomToolbar
 
 # external class defining all global constants for CellDraw:
 from cdConstants import CDConstants
@@ -23,86 +26,124 @@ class CDToolBars(QtCore.QObject):
         super(CDToolBars, self).__init__(None)
 
         self.mainWindow = pParent
-        
-        # demo toolbar object:
-        lOneToolbar = QtGui.QToolBar("QToolBar OneToolbar")
-        print lOneToolbar
-        # set all icons in this QToolBar to be of the same size:
-        lOneToolbar.setIconSize(QtCore.QSize(24, 24))
-        lOneToolbar.setObjectName("setObjectName OneToolbar")
-        lOneToolbar.setToolTip("setToolTip OneToolbar")
-        lOneToolbar.addWidget(QtGui.QLabel("*"))
-        lOneToolbar.addWidget(QtGui.QLabel(" "))
-        lOneToolbar.addWidget(QtGui.QLabel("_"))
-        print self.mainWindow.addToolBar(QtCore.Qt.TopToolBarArea, lOneToolbar)
-        # addToolBarBreak() places the next toolbar in the same toolbar area in a "new line"
-        # print self.mainWindow.addToolBarBreak(QtCore.Qt.TopToolBarArea)
+#         
+#         # demo toolbar object:
+#         lOneToolbar = QtGui.QToolBar("QToolBar | OneToolbar")
+#         CDConstants.printOut( "----- CDToolBars.__init__() - lOneToolbar = "+str(lOneToolbar), CDConstants.DebugExcessive )
+#         # set all icons in this QToolBar to be of the same size:
+#         lOneToolbar.setIconSize(QtCore.QSize(24, 24))
+#         lOneToolbar.setObjectName("setObjectName OneToolbar")
+#         lOneToolbar.setToolTip("setToolTip OneToolbar")
+#         lOneToolbar.addWidget(QtGui.QLabel("*"))
+#         lOneToolbar.addWidget(QtGui.QLabel(" "))
+#         lOneToolbar.addWidget(QtGui.QLabel("_"))
+#         lPrintOut = self.mainWindow.addToolBar(QtCore.Qt.TopToolBarArea, lOneToolbar)
+#         CDConstants.printOut( "----- CDToolBars.__init__() - self.mainWindow.addToolBar(QtCore.Qt.TopToolBarArea, lOneToolbar) = "+str(lPrintOut), CDConstants.DebugExcessive )
+#         # addToolBarBreak() places the next toolbar in the same toolbar area in a "new line"
+#         # print self.mainWindow.addToolBarBreak(QtCore.Qt.TopToolBarArea)
+# 
 
-
-
+        # ----------
         # 2011 - Mitja: to control the "layer selection" for Cell Scene mode,
-        #   we add a set of radio-buttons to the Control Panel:
-        self.theModeSelectToolBar = CDModeSelectToolBar("CellDraw | Main ToolBar")
-        print self.mainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.theModeSelectToolBar)
+        #   we add a set of radio-buttons:
+        self.__theModeSelectToolBar = CDControlModeSelectToolBar("CellDraw | Main Mode ToolBar")
+        self.__theModeSelectToolBar.setObjectName("theModeSelectToolBar")
+        lPrintOut = self.mainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.__theModeSelectToolBar)
+        CDConstants.printOut( "----- CDToolBars.__init__() - self.mainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.__theModeSelectToolBar) = "+str(lPrintOut), CDConstants.DebugExcessive )
+#         print self.mainWindow.addToolBarBreak(QtCore.Qt.TopToolBarArea)
+
+        # ----------
+        # 2012 - Mitja: to control the "scene zoom" factor,
+        #   we add a "combo box":
+        self.__theSceneZoomToolbar = CDControlSceneZoomToolbar("CellDraw | Scene Zoom ToolBar")
+        self.__theSceneZoomToolbar.setObjectName("theSceneZoomToolbar")
+        lPrintOut = self.mainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.__theSceneZoomToolbar)
+        CDConstants.printOut( "----- CDToolBars.__init__() - self.mainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.__theSceneZoomToolbar) = "+str(lPrintOut), CDConstants.DebugExcessive )
 #         print self.mainWindow.addToolBarBreak(QtCore.Qt.TopToolBarArea)
 
 
-        CDConstants.printOut( "----- CDToolBars(pParent=="+str(pParent)+").__init__() done. -----", CDConstants.DebugExcessive )
+        CDConstants.printOut( "----- CDToolBars.__init__(pParent=="+str(pParent)+") done. -----", CDConstants.DebugExcessive )
 
     # ------------------------------------------------------------------
     # ----- end of init() -----
     # ------------------------------------------------------------------
 
+# 
+# 
+#     # ------------------------------------------------------------
+#     # set a checked button in the QButtonGroup:
+#     # ------------------------------------------------------------
+#     def setSelectedSceneMode(self, pId):
+#         self.selectedSceneMode = pId
+#         self.sceneModeActionDict[self.selectedSceneMode].setChecked(True)
+# 
+
+# 
+# 
+
+# 
+#     # ------------------------------------------------------------
+#     # register a callback handler function for the
+#     #   "pSignal()" signal:
+#     # ------------------------------------------------------------
+#     def registerSignalHandler(self, pSignal, pHandler):
+#         pSignal.connect( pHandler )
+# 
+
+
+# 
+#     # ------------------------------------------------------------
+#     # return the ID of the only checked button in the QButtonGroup:
+#     # ------------------------------------------------------------
+#     def getSelectedSceneMode(self):
+#         return self.selectedSceneMode
+# 
+
 
 
     # ------------------------------------------------------------
-    # return the ID of the only checked button in the QButtonGroup:
+    # register any callback handlers for specific toolbars:
     # ------------------------------------------------------------
-    def getSelectedSceneMode(self):
-        return self.selectedSceneMode
 
-
-    # ------------------------------------------------------------
-    # set a checked button in the QButtonGroup:
-    # ------------------------------------------------------------
-    def setSelectedSceneMode(self, pId):
-        self.selectedSceneMode = pId
-        self.sceneModeActionDict[self.selectedSceneMode].setChecked(True)
 
 
     # ------------------------------------------------------------
+    # CDControlModeSelectToolBar:
+    # register the callback handler function
+    #   for the __signalModeSelectToolbarChanged signal generated by CDControlModeSelectToolBar:
+    # ------------------------------------------------------------
+    def registerHandlerForModeSelectToolbarControllerSignals(self, pHandler):
+        self.__theModeSelectToolBar.registerHandlerForToolbarChanges( pHandler )
+
+    # ------------------------------------------------------------
+    # CDControlModeSelectToolBar:
+    # callback handler function
+    #   for the __signalModeSelectToolbarChanged signal generated by CDControlModeSelectToolBar:
+    # ------------------------------------------------------------
+    def handlerForChangeInGlobalModeModelSignals(self, pMode):
+        self.__theModeSelectToolBar.setSelectedSceneMode(pMode)
+
+    # ------------------------------------------------------------
+    # CDControlModeSelectToolBar:
     # set the icon of the Image Layer selection button
     # ------------------------------------------------------------
-    def setImageLayerButtonIcon(self, pIcon):
-        self.imageLayerAction.setIcon(QtGui.QIcon( pIcon ))
+    def setModeSelectToolBarImageLayerButtonIconFromPixmap(self, pPixmap):
+        print "=-=-=-= CDToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap( pPixmap=="+str(pPixmap)+", isNull()=="+str(pPixmap.isNull())+" )"
 
 
-    # ------------------------------------------------------------
-    # register a callback handler function for the
-    #   "pSignal()" signal:
-    # ------------------------------------------------------------
-    def registerSignalHandler(self, pSignal, pHandler):
-        pSignal.connect( pHandler )
+        self.__theModeSelectToolBar.setImageLayerButtonIconFromPixmap( pPixmap )
 
-
-
-
-
-
-
-
-    #
-    # register any callback handlers for specific toolbars:
-    #
 
 
 
     # ------------------------------------------------------------
-    # register the callback handler function for the
-    #   "signalModeSelectToolbarChanged()" signal:
+    # CDControlSceneZoomToolbar:
+    # register the callback handler function
+    #   for the signalZoomFactorHasChanged signal generated by CDControlSceneZoomToolbar:
     # ------------------------------------------------------------
-    def registerSignalHandlerForModeSelectToolbarChanges(self, pHandler):
-        self.theModeSelectToolBar.signalModeSelectToolbarChanged.connect( pHandler )
+    def registerHandlerForSceneZoomChangedControllerSignals(self, pHandler):
+        self.__theSceneZoomToolbar.registerHandlerForToolbarChanges( pHandler )
+
 
 
 # end class CDToolBars(QtGui.QObject)
@@ -116,18 +157,18 @@ class CDToolBars(QtCore.QObject):
 # just for testing:
 # ------------------------------------------------------------
 if __name__ == '__main__':
-    CDConstants.printOut( "----- CDToolBars.__main__() 1", CDConstants.DebugTODO )
+    CDConstants.printOut( "----- CDToolBars.__main__() 1", CDConstants.DebugAll )
     import sys
 
     app = QtGui.QApplication(sys.argv)
 
-    CDConstants.printOut( "----- CDToolBars.__main__() 2", CDConstants.DebugTODO )
+    CDConstants.printOut( "----- CDToolBars.__main__() 2", CDConstants.DebugAll )
 
     testQMainWindow = QtGui.QMainWindow()
     testQMainWindow.setGeometry(100, 100, 900, 500)
     testQMainWindow.setUnifiedTitleAndToolBarOnMac(False)
 
-    CDConstants.printOut( "----- CDToolBars.__main__() 3", CDConstants.DebugTODO )
+    CDConstants.printOut( "----- CDToolBars.__main__() 3", CDConstants.DebugAll )
 
     print "testQMainWindow = ", testQMainWindow
     lTestToolBarsObject = CDToolBars(testQMainWindow)
@@ -136,7 +177,7 @@ if __name__ == '__main__':
 #     print "NOW testQMainWindow.addToolBarsToMainWindow() ..."
 #     print lTestToolBarsObject.addToolBarsToMainWindow()
 
-    CDConstants.printOut( "----- CDToolBars.__main__() 4", CDConstants.DebugTODO )
+    CDConstants.printOut( "----- CDToolBars.__main__() 4", CDConstants.DebugAll )
 
     # 2010 - Mitja: QMainWindow.raise_() must be called after QMainWindow.show()
     #     otherwise the PyQt/Qt-based GUI won't receive foreground focus.
@@ -146,11 +187,11 @@ if __name__ == '__main__':
     testQMainWindow.raise_()
     testQMainWindow.show()
 
-    CDConstants.printOut( "----- CDToolBars.__main__() 5", CDConstants.DebugTODO )
+    CDConstants.printOut( "----- CDToolBars.__main__() 5", CDConstants.DebugAll )
 
     sys.exit(app.exec_())
 
-    CDConstants.printOut( "----- CDToolBars.__main__() 6", CDConstants.DebugTODO )
+    CDConstants.printOut( "----- CDToolBars.__main__() 6", CDConstants.DebugAll )
 
 # Local Variables:
 # coding: US-ASCII

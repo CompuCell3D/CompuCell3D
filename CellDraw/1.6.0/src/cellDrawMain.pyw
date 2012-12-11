@@ -10,6 +10,12 @@
 
 
 # ------------------------------------------------------------
+# 2012 - Mitja: CellDraw (1.5.2) new features:
+#   - cell shape extraction from color areas in image
+# ------------------------------------------------------------
+
+
+# ------------------------------------------------------------
 # 2011 - Mitja: CellDraw (1.5.1) new features:
 #   - multi-tab control panel
 #   - loading sequence of images for 3D volume PIFF generation
@@ -167,14 +173,20 @@ from cdPreferences import CDPreferences
 # 2010 - Mitja: simple external class for drawing a progress bar widget:
 from cdWaitProgressBar import CDWaitProgressBar
 
+# 2011 - Mitja: simple external class for drawing a progress bar with image widget:
+from cdWaitProgressBarWithImage import CDWaitProgressBarWithImage
+
 # 2010 - Mitja: external class for scene bundle:
 from cdSceneBundle import CDSceneBundle
 
 # 2012 - Mitja: external class to handle all QToolBar items:
 from cdToolBars import CDToolBars
 
+# 2012 - Mitja: external class to handle all QToolBar items:
+from cdStatusBar import CDStatusBar
 
-
+# 2012 - Mitja: a view class to display scene dimensions:
+from cdViewSceneDimensions import CDViewSceneDimensions
 
 
 
@@ -298,6 +310,10 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         self.ignoreWhiteRegionsForPIF = False
         self.ignoreBlackRegionsForPIF = False
 
+        # 2010 - Mitja: add functionality for saving the PIFF file from the rasterized data:
+        #    This was used for PIFF generation from a QPixmap. Since we now go through a polygon-based scene,
+        #    the PIFRasterizer-related code is not necessary here anymore:
+        # self.thePIFMustBeSavedFromRasterizedData = False
 
         # 2010 - Mitja: add functionality for saving the PIFF file directly from the GraphicsScene:
         #    (this global was previously used for testing overlaying the rasterized image on the top of the original image)
@@ -309,7 +325,6 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
         # 2010 - Mitja: add functionality for picking a color region:
         self.pickColorRegion = False
-
         #               this always remains True since we only pick colors as paths (polygons) now:
         self.pickColorAsPath = True
 
@@ -449,33 +464,19 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         #  the first string parameter to QDockWidget is visible in the QDockWidget's title bar:
         #  the second parameter is the QDockWidget's parent, in this case "self", the QMainWindow:
         self.controlPanelDockWidget = QtGui.QDockWidget("Control Panel QDockWidget", self)
+        self.controlPanelDockWidget.setObjectName("controlPanelDockWidget")
 
-        lTheCellSceneScrollArea = QtGui.QScrollArea()
-        lTheCellSceneScrollArea.setWidgetResizable(True)
-        lTheCellSceneScrollArea.setEnabled(True)
-#        lTheCellSceneScrollArea.setAlignment = (QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-        self.theCellSceneControls.setParent(lTheCellSceneScrollArea)
-        lTheCellSceneScrollArea.setWidget(self.theCellSceneControls)
-
-        # assign self.theCellSceneControls (obtained from CDDiagramSceneMainWidget) to QDockWidget:
-        lTheCellSceneScrollArea.setParent(self.controlPanelDockWidget)
-        self.controlPanelDockWidget.setWidget( lTheCellSceneScrollArea )
+        lTheCellSceneControlsScrollArea = QtGui.QScrollArea()
+        lTheCellSceneControlsScrollArea.setWidgetResizable(True)
+        lTheCellSceneControlsScrollArea.setEnabled(True)
+        lTheCellSceneControlsScrollArea.setWidget(self.theCellSceneControls)
+        lTheCellSceneControlsScrollArea.setParent(self.controlPanelDockWidget)
+        self.theCellSceneControls.setParent(lTheCellSceneControlsScrollArea)
+        self.controlPanelDockWidget.setWidget( lTheCellSceneControlsScrollArea )
 
         # attach the newly created QDockWidget to self i.e. the QMainWindow:
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.controlPanelDockWidget)
         # 1rvi
-
-
-
-
-
-
-
-
-
-
-
-
         # ----- ----- ----- -----
 
 
@@ -485,13 +486,19 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - creating self.imageLayerControlsDockWidget() ...", CDConstants.DebugTODO )
         # 2012 - Mitja: move image layer controls to a QDockWidget:
         self.imageLayerControlsDockWidget = QtGui.QDockWidget("Image Layer QDockWidget", self)
+        self.imageLayerControlsDockWidget.setObjectName("imageLayerControlsDockWidget")
 
-        # assign self.theImageLayerControls (obtained from CDDiagramSceneMainWidget) to QDockWidget:
-        self.theImageLayerControls.setParent(self.imageLayerControlsDockWidget)
-        self.imageLayerControlsDockWidget.setWidget( self.theImageLayerControls )
+        lTheImageLayerControlsScrollArea = QtGui.QScrollArea()
+        lTheImageLayerControlsScrollArea.setWidgetResizable(True)
+        lTheImageLayerControlsScrollArea.setEnabled(True)
+        lTheImageLayerControlsScrollArea.setWidget(self.theImageLayerControls)
+        lTheImageLayerControlsScrollArea.setParent(self.imageLayerControlsDockWidget)
+        self.theImageLayerControls.setParent(lTheImageLayerControlsScrollArea)
+        self.imageLayerControlsDockWidget.setWidget( lTheImageLayerControlsScrollArea )
 
         # attach the newly created QDockWidget to self i.e. the QMainWindow:
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.imageLayerControlsDockWidget)
+        # 2ugi
         # ----- ----- ----- -----
 
 
@@ -501,13 +508,19 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - creating self.imageSequenceControlsDockWidget() ...", CDConstants.DebugTODO )
         # 2012 - Mitja: move image layer controls to a QDockWidget:
         self.imageSequenceControlsDockWidget = QtGui.QDockWidget("Image Sequence QDockWidget", self)
+        self.imageSequenceControlsDockWidget.setObjectName("imageSequenceControlsDockWidget")
 
-        # then assign self.theImageSequenceControls (as obtained from CDDiagramSceneMainWidget) to the QDockWidget:
-        self.theImageSequenceControls.setParent(self.imageSequenceControlsDockWidget)
-        self.imageSequenceControlsDockWidget.setWidget( self.theImageSequenceControls )
+        lTheImageSequenceControlsScrollArea = QtGui.QScrollArea()
+        lTheImageSequenceControlsScrollArea.setWidgetResizable(True)
+        lTheImageSequenceControlsScrollArea.setEnabled(True)
+        lTheImageSequenceControlsScrollArea.setWidget(self.theImageSequenceControls)
+        lTheImageSequenceControlsScrollArea.setParent(self.imageSequenceControlsDockWidget)
+        self.theImageSequenceControls.setParent(lTheImageSequenceControlsScrollArea)
+        self.imageSequenceControlsDockWidget.setWidget( lTheImageSequenceControlsScrollArea )
 
         # attach the newly created QDockWidget to self i.e. the QMainWindow:
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.imageSequenceControlsDockWidget)
+        # 3tji
         # ----- ----- ----- -----
 
 
@@ -518,7 +531,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         # 2012 - Mitja: these controls are now handled from the CDDiagramSceneMainWidget:
         # 2012 - Mitja: no, we're keeping them back in here.
         # -----------------------------------------------------------------------------
-        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting up self.typesDockWidget() ...", CDConstants.DebugTODO )
+        CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting up self.theTypesEditor() ...", CDConstants.DebugTODO )
         # 2010 - Mitja added an interactive table
         #   containing all regions/colors found in the pixmap. If "self" is passed as parameter,
         #   when the QApplication exits, it'll signal this window to close as well:
@@ -526,13 +539,31 @@ class CellDrawMainWindow(QtGui.QMainWindow):
  
         # 2012 - Mitja: move the types editor controls to a QDockWidget:
         self.typesDockWidget = QtGui.QDockWidget("Type Editor QDockWidget", self)
+        self.typesDockWidget.setObjectName("typesDockWidget")
 
-        # then assign self.theTypesEditor to the QDockWidget:
-        self.theTypesEditor.setParent(self.typesDockWidget)
-        self.typesDockWidget.setWidget( self.theTypesEditor )
+        lTheTypesEditorScrollArea = QtGui.QScrollArea()
+        lTheTypesEditorScrollArea.setWidgetResizable(True)
+        lTheTypesEditorScrollArea.setEnabled(True)
+        lTheTypesEditorScrollArea.setWidget(self.theTypesEditor)
+        lTheTypesEditorScrollArea.setParent(self.typesDockWidget)
+        self.theTypesEditor.setParent(lTheTypesEditorScrollArea)
+        self.typesDockWidget.setWidget( lTheTypesEditorScrollArea )
 
         # attach the newly created QDockWidget to self i.e. the QMainWindow:
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.typesDockWidget)
+        # 4rti
+        # ----- ----- ----- -----
+
+
+
+
+
+
+
+
+
+
+
 
         CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - connecting self.connect(self.theTypesEditor .... self.handleRegionsTableWidgetChanged ...", CDConstants.DebugTODO )
 
@@ -570,6 +601,8 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                                        9: [ QtGui.QColor(QtCore.Qt.darkGreen), "darkGreen", [10, 10, 1], 0, \
                                                 [  [QtGui.QColor(QtCore.Qt.darkGreen), "darkGreenType", 1.0, 100]  ]   ]   }  )
 
+
+        # from CC3D colors = [QtCore.Qt.green, QtCore.Qt.blue, QtCore.Qt.red, QtCore.Qt.darkYellow, QtCore.Qt.lightGray, QtCore.Qt.magenta, QtCore.Qt.darkBlue, QtCore.Qt.cyan, QtCore.Qt.darkGreen]
 
         CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting self.theTypesEditor.setTypesDict(self.mainTypesDict) ...", CDConstants.DebugTODO )
         self.theTypesEditor.setTypesDict(self.mainTypesDict)
@@ -685,15 +718,13 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         # explicitly connect the "signalVisibilityTypesDockWidget()" signal from the
         #   diagramSceneMainWidget object, to our "slot" (i.e. handler) method
         #   so that it will respond to requests to show/hide the Types QDockWidget:
-        self.diagramSceneMainWidget.signalVisibilityTypesDockWidget.connect( \
-            self.handleToggleTypesDockWidget )
+        self.diagramSceneMainWidget.signalVisibilityTypesDockWidget.connect( self.handleToggleTypesDockWidget )
 
 
         # explicitly connect the "signalVisibilityControlPanelDockWidget()" signal from the
         #   diagramSceneMainWidget object, to our "slot" (i.e. handler) method
         #   so that it will respond to requests to show/hide the Control Panel QDockWidget:
-        self.diagramSceneMainWidget.signalVisibilityControlPanelDockWidget.connect( \
-            self.handleToggleControlPanelDockWidget )
+        self.diagramSceneMainWidget.signalVisibilityControlPanelDockWidget.connect( self.handleToggleControlPanelDockWidget )
 
 
         # connect the slot/callback handlers in cdPreferences() to signals:
@@ -704,20 +735,36 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
 
 
-        #  __init__ (12) - set the QToolBar,
-        #                  then show a modal QDialog for the graphics scene preferences:
+        #  __init__ (12) - set the QToolBar, and its related signal handlers:
         # -----------------------------------------------------------------------------
 
 
 
 
-        self.theToolBars = CDToolBars(self)
+        self.__theToolBars = CDToolBars(self)
 
 
-        # register the callback handler for signals coming from theModeSelectToolBar,
+        # register the callback handler for signals coming from CDControlModeSelectToolBar,
         #   to our "slot" method responding to radio button changes:
-        self.theToolBars.registerSignalHandlerForModeSelectToolbarChanges( \
-            self.diagramSceneMainWidget.handleSceneModeHasChanged )
+        self.__theToolBars.registerHandlerForModeSelectToolbarControllerSignals( \
+            self.diagramSceneMainWidget.handlerForSceneModeControllerSignals )
+
+
+
+        # ask to connect the "__signalChangeInGlobalMode()" signal from the
+        #   CDDiagramSceneMainWidget class, to the "slot" (i.e. handler) method in CDToolBars,
+        #   so that it will respond to changes in the global scene mode:
+        self.diagramSceneMainWidget.registerHandlerForChangeInGlobalMode( \
+            self.__theToolBars.handlerForChangeInGlobalModeModelSignals )
+
+
+
+
+
+        # register the callback handler for signals coming from CDControlSceneZoomToolbar,
+        #   to our "slot" method responding to radio button changes:
+        self.__theToolBars.registerHandlerForSceneZoomChangedControllerSignals( \
+            self.diagramSceneMainWidget.handlerForSceneZoomControllerSignals )
 
 
 
@@ -726,12 +773,60 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
 
 
-        #  __init__ (13) - finally set the main window,
-        #                  then show a modal QDialog for the graphics scene preferences:
 
+        #  __init__ (13) - set the QStatusBar,
+        #    populate it with view widgets, and connect their related signal handlers:
+        # -----------------------------------------------------------------------------
+
+
+        self.__theMainStatusBar = CDStatusBar(self)
+        self.setStatusBar(self.__theMainStatusBar)
+        self.statusBar().show()
+
+
+        #  a view widget to display the scene dimensions in the status bar:
+        self.__ViewSceneDimensionsStatus = CDViewSceneDimensions(self.__theMainStatusBar)
+        self.__theMainStatusBar.insertPermanentWidgetInStatusBar(0, self.__ViewSceneDimensionsStatus)
+        # ask to connect the "__signalChangeInGlobalMode()" signal from the
+        #   CDDiagramSceneMainWidget class, to the "slot" (i.e. handler) method in CDToolBars,
+        #   so that it will respond to changes in the global scene mode:
+        self.diagramSceneMainWidget.registerHandlerForSceneResized(  \
+            self.__ViewSceneDimensionsStatus.handlerForSceneResized )
+
+
+
+
+        #  __init__ (14) - set the __theSimpleWaitProgressBar and __theWaitProgressBarWithImage
+        #       and notify about it other classes that may use it:
+        # -----------------------------------------------------------------------------
+
+        self.__theSimpleWaitProgressBar = CDWaitProgressBar("CellDraw: processing.", " ", 100, self.__theMainStatusBar)
+        self.__theMainStatusBar.insertPermanentWidgetInStatusBar(0, self.__theSimpleWaitProgressBar)
+        self.__theSimpleWaitProgressBar.hide()
+
+##         self.__theWaitProgressBarWithImage = CDWaitProgressBarWithImage("CellDraw: processing image.", " ", 100, self.__theMainStatusBar)
+        self.__theWaitProgressBarWithImage = CDWaitProgressBar("CellDraw: processing image.", " ", 100, self.__theMainStatusBar)
+        self.__theMainStatusBar.insertPermanentWidgetInStatusBar(0, self.__theWaitProgressBarWithImage)
+        self.__theWaitProgressBarWithImage.hide()
+
+        self.diagramSceneMainWidget.setSimpleProgressBarPanel(self.__theSimpleWaitProgressBar)
+        self.diagramSceneMainWidget.setProgressBarWithImagePanel(self.__theWaitProgressBarWithImage)
+
+
+
+        #  __init__ (15) - finally set the main window,
+        #      then restore main window state and position from saved preferences,
+        #      then show a modal QDialog for simplified preferences (graphics scene only) :
+        # -----------------------------------------------------------------------------
 
         self.setCentralWidget(self.diagramSceneMainWidget)
 
+        lPlayerGeometry = self.cdPreferences.getMainWindowGeometry()
+        lPlayerState = self.cdPreferences.getMainWindowState()
+        if (lPlayerState) and (lPlayerState.isEmpty() == False) and \
+            (lPlayerGeometry) and (lPlayerGeometry.isEmpty() == False) :
+            self.restoreGeometry(lPlayerGeometry)
+            self.restoreState(lPlayerState)
 
         # if we get here, it means that we can use the available Qt and PyQt libraries:
         self.showPreferencesDialog(False)
@@ -739,6 +834,25 @@ class CellDrawMainWindow(QtGui.QMainWindow):
     # ------------------------------------------------------------------
     # ----- end of init() -----
     # ------------------------------------------------------------------
+
+
+
+
+
+    # ----------------------------------------------------------------------
+    # the closeEvent() handler function  is called with the given event
+    #  when Qt receives a window close request for a top-level widget from the window system
+    # ----------------------------------------------------------------------
+    def closeEvent(self, event=None):
+        CDConstants.printOut("___ - DEBUG ----- CellDrawMainWindow.closeEvent(event=="+str(event)+").", CDConstants.DebugExcessive )
+        
+        # ask the preferences object to save the main window's state and geometry
+        #    (including dock and toolbar widgets) :
+        self.cdPreferences.setMainWindowState( self.saveState() )
+        self.cdPreferences.setMainWindowGeometry( self.saveGeometry() )
+        # propagate the closeEvent:
+        QtGui.QMainWindow.closeEvent(self, event)
+
 
 
 
@@ -772,7 +886,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 (self.minQtStr, self.minPyQtStr, QtCore.QT_VERSION_STR, QtCore.qVersion(), PyQt4.QtCore.PYQT_VERSION_STR, PyQt4.QtCore.PYQT_VERSION, PyQt4.QtCore.PYQT_VERSION) )
             sys.exit()
 
-        CDConstants.printOut("___ - DEBUG ----- CellDrawMainWindow:: versionWarning(): done", CDConstants.DebugExcessive )
+        CDConstants.printOut("___ - DEBUG ----- CellDrawMainWindow.versionWarning(): done", CDConstants.DebugExcessive )
 
 
 
@@ -784,7 +898,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         if pShowMorePrefs == True:
             self.cdPreferences.setWindowTitle("CellDraw - Preferences")
         else:
-            self.cdPreferences.setWindowTitle("CellDraw - Set Cell Scene Dimensions")
+            self.cdPreferences.setWindowTitle("CellDraw - New Cell Scene Dimensions")
         self.cdPreferences.showMorePrefs(pShowMorePrefs)
         self.cdPreferences.show()
         self.cdPreferences.raise_()
@@ -931,7 +1045,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.handleRegionsTableWidgetChanged() -  the mainTypesDict is :", CDConstants.DebugAll )
         CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.handleRegionsTableWidgetChanged() -                    mainTypesDict keys ="+str(lKeys), CDConstants.DebugAll )
         for i in xrange(len(self.mainTypesDict)):
-            CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.handleRegionsTableWidgetChanged() -  mainTypesDict: i="+str(i)+", lKeys[i]="+str(lKeys[i])+", mainTypesDict[keys[i]]="+str(mainTypesDict[keys[i]])+", self.mainTypesDict[lKeys[i]][0].rgba()="+str(self.mainTypesDict[lKeys[i]][0].rgba()), CDConstants.DebugAll )
+            CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.handleRegionsTableWidgetChanged() -  mainTypesDict: i="+str(i)+", lKeys[i]="+str(lKeys[i])+", mainTypesDict[keys[i]]="+str(self.mainTypesDict[lKeys[i]])+", self.mainTypesDict[lKeys[i]][0].rgba()="+str(self.mainTypesDict[lKeys[i]][0].rgba()), CDConstants.DebugAll )
             # update all global data structures to the new values just provided by the external table widget:
             # colorIds remains the same, since the external table doesn't change colors:
             #    self.colorIds
@@ -1144,13 +1258,16 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                     self.tr("Cannot open the image file: " \
                     "%1").arg(lFileName) )
             else:
-                print "2010 DEBUG: _,.- ~*'`'*~-.,_ openImage() got [", lFileName, "]"
+                lImagePixmap = QtGui.QPixmap.fromImage(lImage)
+                lThePath,lTheFileName = os.path.split(str(lFileName))
+
+                CDConstants.printOut( "____ DEBUG: _,.- ~*'`'*~-.,_  CellDrawMainWindow.openImage() got ["+str(lFileName)+"] == ["+str(lTheFileName)+" in "+str(lThePath)+"]", CDConstants.DebugAll)
 
                 # now confirm that the theCDImageLayer contains an actual image loaded from a file:
                 self.diagramSceneMainWidget.theCDImageLayer.setImageLoadedFromFile(True)
 
                 # update all input-image-related globals:
-                self.setImageGlobals( lImage )
+                self.setImageGlobals( lImage, lTheFileName )
 
                 # 2010 - Mitja: also pass the loaded image as background brush for the external QGraphicsScene window:
                 #
@@ -1160,10 +1277,12 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 #    You could create an image of (width(),height()),
                 #    draw your pixmap in the center of it and use that for the brush.
                 #    This way it will tile, but only once.
-                #    Besure to update the pixmap on resize!
-                lThePath,lTheFileName = os.path.split(str(lFileName))
-                print "2010 DEBUG 2010 DEBUG now calling self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, lImage) with ", lTheFileName, lImage
+                #    Be sure to update the pixmap on resize!
+
+                CDConstants.printOut( "____ DEBUG: _,.- ~*'`'*~-.,_  CellDrawMainWindow.openImage() now calling self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, lImage) with ["+str(lTheFileName)+" "+str(lImage)+ "]", CDConstants.DebugAll)
+
                 self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, lImage)
+                self.__theToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap(lImagePixmap)
 
             # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
             self.diagramSceneMainWidget.scene.update()
@@ -1183,11 +1302,11 @@ class CellDrawMainWindow(QtGui.QMainWindow):
     # ---------------------------------------------------------
     #   Mandatory input parameter to setImageGlobals() : one QImage object.
     # ---------------------------------------------------------
-    def setImageGlobals(self, pImage):
+    def setImageGlobals(self, pImage, pImageFileName=" "):
 
         # 2010 - Mitja: note that (as per Qt documentation) a QLabel may contain a QPixmap object, but not a QImage.
         #   Thus the image instance we assign to theCDImageLayer from pImage is a separate object:
-        self.diagramSceneMainWidget.theCDImageLayer.setImage(pImage)
+        self.diagramSceneMainWidget.theCDImageLayer.setTheImage(pImage, pImageFileName)
 
 
         # 2010 - Mitja: sample the color of every pixel in the pixmap
@@ -1215,6 +1334,8 @@ class CellDrawMainWindow(QtGui.QMainWindow):
     # ---------------------------------------------------------
     def fileOpenImage_Callback(self):
         self.openImage()
+
+
 
     # ---------------------------------------------------------
     # 2010 - Mitja: the fileSavePIFFromScene_Callback() function is activated by
@@ -1388,18 +1509,17 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         if not file.open( QtCore.QFile.WriteOnly | QtCore.QFile.Text):
             QtGui.QMessageBox.warning(self, self.tr("CellDraw"), \
                 self.tr("Saving per-pixel PIFF file...\mcan not write file %1:\n%2.").arg(fileName).arg(file.errorString()))
-            print "___ - DEBUG ----- CellDrawMainWindow: savePIFFileFromAllPixels() failed."
+            pass # 152 prrint "___ - DEBUG ----- CellDrawMainWindow: savePIFFileFromAllPixels() failed."
             return False
 
         # 2010 - Mitja: TODO TODO TODO
         #   here we retrieve the table contents to an update mainTypesDict:
         self.mainTypesDict = self.diagramSceneMainWidget.getTypesDict()
         lKeys = self.mainTypesDict.keys()
-        print "2010 DEBUG DEBUG DEBUG DEBUG: in savePIFFileFromAllPixels() the mainTypesDict is :"
-        print "                  mainTypesDict keys =", lKeys
+        pass # 152 prrint "2010 DEBUG DEBUG DEBUG DEBUG: in savePIFFileFromAllPixels() the mainTypesDict is :"
+        pass # 152 prrint "                  mainTypesDict keys =", lKeys
         for i in xrange(len(self.mainTypesDict)):
-            print "                  mainTypesDict: i, lKeys[i], mainTypesDict[keys[i]] = ", \
-                  i, lKeys[i], self.mainTypesDict[lKeys[i]]
+            pass # 152 prrint "                  mainTypesDict: i, lKeys[i], mainTypesDict[lKeys[i]] = ", i, lKeys[i], self.mainTypesDict[lKeys[i]]
 
 
 
@@ -1449,7 +1569,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                     lOutputStream << "%s %s %s %s %s %s 0 0\n"%(lCellID,lCellType,xmin,xmax,ymin,ymax)
                     lCellID +=1
 
-        print "___ - DEBUG ----- CellDrawMainWindow: savePIFFileFromAllPixels() done."
+        pass # 152 prrint "___ - DEBUG ----- CellDrawMainWindow: savePIFFileFromAllPixels() done."
 
         # 2010 - Mitja: stop showing that the application is busy (while writing to a file)
         #   and undo the last setOverrideCursor(), i.e. set the mouse cursor to what it was before:
@@ -1469,11 +1589,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
     # 2010 - Mitja: callback for menu item to "Save Scene"
     # ---------------------------------------------------------
     def fileSaveScene_Callback(self):
-        print "2010 DEBUG: fileSaveScene_Callback() STARTING with globals:", \
-              "\n self.colorIds =", self.colorIds, \
-              "\n self.colorDict =", self.colorDict, \
-              "\n self.comboDict =", self.comboDict, \
-              "\n self.mainTypesDict =", self.mainTypesDict
+        pass # 152 prrint "2010 DEBUG: fileSaveScene_Callback() STARTING with globals:",  "\n self.colorIds =", self.colorIds,  "\n self.colorDict =", self.colorDict,  "\n self.comboDict =", self.comboDict,  "\n self.mainTypesDict =", self.mainTypesDict
 
         self.diagramSceneMainWidget.saveSceneFile()
 
@@ -1489,11 +1605,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
     # 2011 - Mitja: callback for menu item for "New Scene"
     # ---------------------------------------------------------
     def fileNewScene_Callback(self):
-        print "2011 DEBUG: fileNewScene_Callback() STARTING with globals:", \
-              "\n self.colorIds =", self.colorIds, \
-              "\n self.colorDict =", self.colorDict, \
-              "\n self.comboDict =", self.comboDict, \
-              "\n self.mainTypesDict =", self.mainTypesDict
+        pass # 152 prrint "2011 DEBUG: fileNewScene_Callback() STARTING with globals:",  "\n self.colorIds =", self.colorIds,  "\n self.colorDict =", self.colorDict,  "\n self.comboDict =", self.comboDict,  "\n self.mainTypesDict =", self.mainTypesDict
 
         self.diagramSceneMainWidget.newSceneFile()
 
@@ -1575,7 +1687,8 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         if not lFileName.isEmpty():
 
             # programmatically select the image sequence tab in the control panel:
-            self.theCellSceneControls.setCurrentTab(2)
+            # TODO TODO TODO: change what controls are enabled, if necessary
+            self.diagramSceneMainWidget.setGlobalSceneMode(CDConstants.SceneModeImageSequence)
     
             # import the image sequence into a numpy array object:
             self.importImageSequence(lFileName)
@@ -1639,16 +1752,15 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         self.diagramSceneMainWidget.scene.setDrawForegroundEnabled(False)
 
         # show a panel containing a progress bar:        
-        lProgressBarPanel=CDWaitProgressBar("Importing image sequence.",100,self.theMainWindow)
-        lProgressBarPanel.show()
-        lProgressBarPanel.setRange(0, lNumberOfFilesInDir)
+        self.__theSimpleWaitProgressBar.setTitleTextRange("Importing image sequence."," ",0, lNumberOfFilesInDir)
+        self.__theSimpleWaitProgressBar.show()
         lFileCounter = 0
 
         CDConstants.printOut(  "importImageSequence()  --  6.", CDConstants.DebugTODO )
         # time.sleep(1.0)
 
         for lCurrentFileName in sorted(lCurrentListDir, key=self.keynat):
-            lProgressBarPanel.setValue(lFileCounter)
+            self.__theSimpleWaitProgressBar.setValue(lFileCounter)
             lPathAndFileName = os.path.join(lThePathToImageSequenceDir,lCurrentFileName)
             CDConstants.printOut( "      "+str(lPathAndFileName), CDConstants.DebugAll )
 
@@ -1663,9 +1775,8 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions( \
                     lXdim, lYdim, lFileCounter)
 
-                lProgressBarPanel.maxProgressBar()
-                lProgressBarPanel.accept()
-                lProgressBarPanel.close()
+                self.__theSimpleWaitProgressBar.maxProgressBar()
+                self.__theSimpleWaitProgressBar.hide()
                 QtGui.QMessageBox.warning( self, self.tr("CellDraw"), \
                     self.tr("Cannot open the image file:\n" \
                     "%1\nCanceling the image sequence import.").arg(lCurrentFileName)  )
@@ -1685,10 +1796,9 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         CDConstants.printOut(  "importImageSequence()  --  7.", CDConstants.DebugTODO )
         # time.sleep(1.0)
 
-        # close the panel containing a progress bar:
-        lProgressBarPanel.maxProgressBar()
-        lProgressBarPanel.accept()
-        lProgressBarPanel.close()
+        # hide the panel containing a progress bar:
+        self.__theSimpleWaitProgressBar.maxProgressBar()
+        self.__theSimpleWaitProgressBar.hide()
 
         CDConstants.printOut(  "importImageSequence()  --  8.", CDConstants.DebugTODO )
         # time.sleep(1.0)
@@ -1780,7 +1890,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         # time.sleep(1.0)
 
         # finally set the current index to 0 i.e. the initial image in the sequence:
-        self.diagramSceneMainWidget.theCDImageSequence.setCurrentIndex(0)
+        self.diagramSceneMainWidget.theCDImageSequence.setCurrentIndexInSequence(0)
 
         # re-enable drawing the scene overlay:
         self.diagramSceneMainWidget.scene.setDrawForegroundEnabled(True)
@@ -1878,7 +1988,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             else:
 
                 # show a panel containing a progress bar:
-                lProgressBarPanel = CDWaitProgressBar("Loading image data from PIFF file, pass 1 of 2.", 100, self.theMainWindow)
+                lProgressBarPanel = CDWaitProgressBar("Loading image data from PIFF file, pass 1 of 2.", " ", 100, self.theMainWindow)
                 lProgressBarPanel.show()
 
                 lThePIFText = QtCore.QTextStream(lThePIFInputFile).readAll()
@@ -1940,11 +2050,10 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
                 # close the first panel containing a progress bar:
                 lProgressBarPanel.maxProgressBar()
-                lProgressBarPanel.accept()
                 lProgressBarPanel.close()
 
                 # show a second panel containing a progress bar:
-                lProgressBarPanel = CDWaitProgressBar("Loading image data from PIFF file, pass 2 of 2.", 100, self.theMainWindow)
+                lProgressBarPanel = CDWaitProgressBar("Loading image data from PIFF file, pass 2 of 2.", " ", 100, self.theMainWindow)
                 lProgressBarPanel.show()
                 lProgressBarPanel.setRange(0,lThePIFTextNumberOfLines)
 
@@ -1984,11 +2093,10 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 image = lPixmap.toImage()
 
                 lProgressBarPanel.maxProgressBar()
-                lProgressBarPanel.accept()
                 lProgressBarPanel.close()
 
 
-                print "2010 DEBUG: _,.- ~*'`'*~-.,_ openPIFFFile() converted [", pFileName, "] PIFF into image."
+                pass # 152 prrint "2010 DEBUG: _,.- ~*'`'*~-.,_ openPIFFFile() converted [", pFileName, "] PIFF into image."
 
                 # now confirm that the theCDImageLayer contains an actual image loaded from a file:
                 self.diagramSceneMainWidget.theCDImageLayer.setImageLoadedFromFile(True)
@@ -2005,8 +2113,9 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 #    This way it will tile, but only once.
                 #    Besure to update the pixmap on resize!
                 lThePath,lTheFileName = os.path.split(str(pFileName))
-                print "2010 DEBUG 2010 DEBUG now calling self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image) = (", lTheFileName, image, ")."
+                pass # 152 prrint "2010 DEBUG 2010 DEBUG now calling self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image) = (", lTheFileName, image, ")."
                 self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image)
+                self.__theToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap(QtGui.QPixmap.fromImage(image))
 
 
     # end of def openPIFFFile(self)
@@ -2029,12 +2138,8 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             return
 
 
-        print "-.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-"
-        print "2010 DEBUG: fileImportDICOM_Callback() STARTING with globals:", \
-              "\n self.colorIds =", self.colorIds, \
-              "\n self.colorDict =", self.colorDict, \
-              "\n self.comboDict =", self.comboDict, \
-              "\n self.mainTypesDict =", self.mainTypesDict
+        pass # 152 prrint "-.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-"
+        pass # 152 prrint "2010 DEBUG: fileImportDICOM_Callback() STARTING with globals:",  "\n self.colorIds =", self.colorIds,  "\n self.colorDict =", self.colorDict,  "\n self.comboDict =", self.comboDict,  "\n self.mainTypesDict =", self.mainTypesDict
 
         lFileName = QtGui.QFileDialog.getOpenFileName(self, self.tr("CellDraw - Open DICOM File"), \
                        QtCore.QDir.currentPath(), self.tr("*.dcm"))
@@ -2048,35 +2153,35 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             reader.SetFileName(str(lFileName))
             reader.Update() # <-- important <-- otherwise the VTK pipeline is not updated <--
             image_point_data = reader.GetOutput().GetPointData()
-            print "-.-  -.-  -.-  -.-  GetPointData == image_point_data:   -.-  -.-  -.-  -.-"
-            print image_point_data
+            pass # 152 prrint "-.-  -.-  -.-  -.-  GetPointData == image_point_data:   -.-  -.-  -.-  -.-"
+            pass # 152 prrint image_point_data
            
             scalarptr = reader.GetOutput().GetScalarPointer(1, 1, 0)
-            print "-.-  -.-  -.-  -.-  GetScalarPointer == scalarptr:   -.-  -.-  -.-  -.-"
-            print scalarptr
+            pass # 152 prrint "-.-  -.-  -.-  -.-  GetScalarPointer == scalarptr:   -.-  -.-  -.-  -.-"
+            pass # 152 prrint scalarptr
             floatsomething = reader.GetOutput().GetScalarComponentAsFloat(1, 1, 0, 0)
-            print "-.-  -.-  -.-  -.-  GetScalarComponentAsFloat == floatsomething:   -.-  -.-  -.-  -.-"
-            print floatsomething
+            pass # 152 prrint "-.-  -.-  -.-  -.-  GetScalarComponentAsFloat == floatsomething:   -.-  -.-  -.-  -.-"
+            pass # 152 prrint floatsomething
 
             dimensions = reader.GetOutput().GetDimensions()
             xMax = dimensions[0]
             yMax = dimensions[1]
             zMax = dimensions[2]
-            print "-.-  -.-  -.-  -.-  GetDimensions:   -.-  -.-  -.-  -.-"
-            print xMax, yMax
+            pass # 152 prrint "-.-  -.-  -.-  -.-  GetDimensions:   -.-  -.-  -.-  -.-"
+            pass # 152 prrint xMax, yMax
 
 
             pixelDataRangeMin, pixelDataRangeMax = reader.GetOutput().GetScalarRange()
             pixelDataRange = pixelDataRangeMax - pixelDataRangeMin
-            print "-.-  -.-  -.-  -.-  GetScalarRange:   -.-  -.-  -.-  -.-"
-            print pixelDataRangeMin, pixelDataRangeMax, pixelDataRange
-            print "-.-"
+            pass # 152 prrint "-.-  -.-  -.-  -.-  GetScalarRange:   -.-  -.-  -.-  -.-"
+            pass # 152 prrint pixelDataRangeMin, pixelDataRangeMax, pixelDataRange
+            pass # 152 prrint "-.-"
             scalars = reader.GetOutput().GetPointData().GetScalars()
             components = scalars.GetNumberOfComponents()
-            print "-.-  -.-  -.-  -.-  GetNumberOfComponents:   -.-  -.-  -.-  -.-"
-            print components
-            print "-.-  -.-  -.-  -.-  GetScalars:   -.-  -.-  -.-  -.-"
-            print scalars
+            pass # 152 prrint "-.-  -.-  -.-  -.-  GetNumberOfComponents:   -.-  -.-  -.-  -.-"
+            pass # 152 prrint components
+            pass # 152 prrint "-.-  -.-  -.-  -.-  GetScalars:   -.-  -.-  -.-  -.-"
+            pass # 152 prrint scalars
 
             # print reader.GetOutput()
 #             print reader.GetOutput().Dimensions()
@@ -2088,7 +2193,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             lPainter = QtGui.QPainter(lPixmap)
 
             # show a panel containing a progress bar:
-            lProgressBarPanel = CDWaitProgressBar("Loading image data from DICOM file...", xMax, self.theMainWindow)
+            lProgressBarPanel = CDWaitProgressBar("Loading image data from DICOM file...", " ", xMax, self.theMainWindow)
             # show() and raise_() have to be called here:
             lProgressBarPanel.show()
             # lProgressBarPanel.raise_()
@@ -2111,7 +2216,6 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                         lPainter.setPen(lPen)
                         lPainter.drawPoint(i, j)
             lProgressBarPanel.maxProgressBar()
-            lProgressBarPanel.accept()
             lProgressBarPanel.close()
 
 #
@@ -2149,7 +2253,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
 
 
-            print "2010 DEBUG: _,.- ~*'`'*~-.,_ fileImportDICOM_Callback() converted [", lFileName, "] PIFF into image."
+            pass # 152 prrint "2010 DEBUG: _,.- ~*'`'*~-.,_ fileImportDICOM_Callback() converted [", lFileName, "] PIFF into image."
 
             # now confirm that the theCDImageLayer contains an actual image loaded from a file:
             self.diagramSceneMainWidget.theCDImageLayer.setImageLoadedFromFile(True)
@@ -2166,10 +2270,15 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             #    This way it will tile, but only once.
             #    Besure to update the pixmap on resize!
             lThePath,lTheFileName = os.path.split(str(lFileName))
-            print "2010 DEBUG 2010 DEBUG now calling self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image) = (", lTheFileName, image, ")."
+            pass # 152 prrint "2010 DEBUG 2010 DEBUG now calling self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image) = (", lTheFileName, image, ")."
             self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image)
-        print "2010 DEBUG: fileImportDICOM_Callback() ENDING."
-        print "-.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-"
+
+
+            print "____ DEBUG: _,.- ~*'`'*~-.,_  CellDrawMainWindow.fileImportDICOM_Callback() now calling self.__theToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap(image) with ["+str(image)+", isNull()=="+str(image.isNull())+" ]"
+
+            self.__theToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap(QtGui.QPixmap.fromImage(image))
+        pass # 152 prrint "2010 DEBUG: fileImportDICOM_Callback() ENDING."
+        pass # 152 prrint "-.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-"
 
 
     # end of def fileImportDICOM_Callback(self)
@@ -2236,34 +2345,34 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             CDConstants.printOut( "     7     lTheTIFFReaderOutput after Update() = " + str(lTheTIFFReaderOutput), CDConstants.DebugAll )
             image_point_data = lTheTIFFReader.GetOutput().GetPointData()
             CDConstants.printOut( "-.-  -.-  -.-  -.-  GetPointData == image_point_data:   -.-  -.-  -.-  -.-", CDConstants.DebugAll )
-            print image_point_data
+            pass # 152 prrint image_point_data
            
             scalarptr = lTheTIFFReader.GetOutput().GetScalarPointer(1, 1, 0)
             CDConstants.printOut( "-.-  -.-  -.-  -.-  GetScalarPointer == scalarptr:   -.-  -.-  -.-  -.-", CDConstants.DebugAll )
-            print scalarptr
+            pass # 152 prrint scalarptr
             floatsomething = lTheTIFFReader.GetOutput().GetScalarComponentAsFloat(1, 1, 0, 0)
             CDConstants.printOut( "-.-  -.-  -.-  -.-  GetScalarComponentAsFloat == floatsomething:   -.-  -.-  -.-  -.-", CDConstants.DebugAll )
-            print floatsomething
+            pass # 152 prrint floatsomething
 
             dimensions = lTheTIFFReader.GetOutput().GetDimensions()
             xMax = dimensions[0]
             yMax = dimensions[1]
             zMax = dimensions[2]
             CDConstants.printOut( "-.-  -.-  -.-  -.-  GetDimensions:   -.-  -.-  -.-  -.-", CDConstants.DebugAll )
-            print xMax, yMax
+            pass # 152 prrint xMax, yMax
 
 
             pixelDataRangeMin, pixelDataRangeMax = lTheTIFFReader.GetOutput().GetScalarRange()
             pixelDataRange = pixelDataRangeMax - pixelDataRangeMin
             CDConstants.printOut( "-.-  -.-  -.-  -.-  GetScalarRange:   -.-  -.-  -.-  -.-", CDConstants.DebugAll )
-            print pixelDataRangeMin, pixelDataRangeMax, pixelDataRange
+            pass # 152 prrint pixelDataRangeMin, pixelDataRangeMax, pixelDataRange
             CDConstants.printOut( "-.-", CDConstants.DebugAll )
             scalars = lTheTIFFReader.GetOutput().GetPointData().GetScalars()
             components = scalars.GetNumberOfComponents()
             CDConstants.printOut( "-.-  -.-  -.-  -.-  GetNumberOfComponents:   -.-  -.-  -.-  -.-", CDConstants.DebugAll )
-            print components
+            pass # 152 prrint components
             CDConstants.printOut( "-.-  -.-  -.-  -.-  GetScalars:   -.-  -.-  -.-  -.-", CDConstants.DebugAll )
-            print scalars
+            pass # 152 prrint scalars
 
             # print lTheTIFFReader.GetOutput()
 #             print lTheTIFFReader.GetOutput().Dimensions()
@@ -2275,7 +2384,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             lPainter = QtGui.QPainter(lPixmap)
 
             # show a panel containing a progress bar:
-            lProgressBarPanel = CDWaitProgressBar("Loading image data from TIFF multi-page file...", xMax, self.theMainWindow)
+            lProgressBarPanel = CDWaitProgressBar("Loading image data from TIFF multi-page file...", " ", xMax, self.theMainWindow)
             # show() and raise_() have to be called here:
             lProgressBarPanel.show()
             # lProgressBarPanel.raise_()
@@ -2298,7 +2407,6 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                         lPainter.setPen(lPen)
                         lPainter.drawPoint(i, j)
             lProgressBarPanel.maxProgressBar()
-            lProgressBarPanel.accept()
             lProgressBarPanel.close()
     
 #
@@ -2355,6 +2463,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             lThePath,lTheFileName = os.path.split(str(lFileName))
             CDConstants.printOut( "2010 DEBUG 2010 DEBUG now calling self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image) = ("+str(lTheFileName)+" "+str(image)+").", CDConstants.DebugAll )
             self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image)
+            self.__theToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap(QtGui.QPixmap.fromImage(image))
         CDConstants.printOut( "2010 DEBUG: fileImportTIFFMultiPage_Callback() ENDING.", CDConstants.DebugAll )
         CDConstants.printOut( "-.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-  -.-", CDConstants.DebugAll )
 

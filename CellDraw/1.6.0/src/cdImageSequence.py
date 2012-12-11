@@ -41,12 +41,6 @@ import traceback
 # 2011 - Mitja: external class defining all global constants for CellDraw:
 from cdConstants import CDConstants
 
-# 2010 - Mitja: simple external class for drawing a progress bar widget:
-from cdWaitProgressBar import CDWaitProgressBar
-
-# 2011 - Mitja: simple external class for drawing a progress bar widget + an image:
-from cdWaitProgressBarWithImage import CDWaitProgressBarWithImage
-
 
 
 # ----------------------------------------------------------------------
@@ -66,7 +60,7 @@ class CDImageSequence(QtCore.QObject):
     # --------------------------------------------------------
     def __init__(self, pParent=None):
 
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: __init__( pParent == "+str(pParent)+") " , CDConstants.DebugExcessive )
+        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.__init__( pParent == "+str(pParent)+") " , CDConstants.DebugExcessive )
 
         QtCore.QObject.__init__(self, pParent)
 
@@ -90,7 +84,7 @@ class CDImageSequence(QtCore.QObject):
 
         # the class global keeping track of the bit-flag modes for generating PIFF from displayed imported image sequence:
         #    0 = Use Discretized Images to B/W = CDConstants.ImageSequenceUseDiscretizedToBWMode
-        #    1 = Region 2D Edge = CDConstants.ImageSequenceUseEdge
+        #    1 = Region 2D Edge = CDConstants.ImageSequenceUse2DEdges
         #    2 = Region 3D Contours = CDConstants.ImageSequenceUse3DContours
         #    3 = Region 3D Volume = CDConstants.ImageSequenceUse3DVolume
         #    4 = Region Cell Seeds = CDConstants.ImageSequenceUseAreaSeeds
@@ -98,9 +92,9 @@ class CDImageSequence(QtCore.QObject):
 
         # bin() does not exist in Python 2.5:
         if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
-            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: __init__() bin(self.theProcessingModeForImageSequenceToPIFF) == "+str(bin(self.theProcessingModeForImageSequenceToPIFF)) , CDConstants.DebugExcessive )
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.__init__() - bin(self.theProcessingModeForImageSequenceToPIFF) == "+str(bin(self.theProcessingModeForImageSequenceToPIFF)) , CDConstants.DebugExcessive )
         else:
-            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: __init__() self.theProcessingModeForImageSequenceToPIFF == "+str(self.theProcessingModeForImageSequenceToPIFF) , CDConstants.DebugExcessive )
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.__init__() - self.theProcessingModeForImageSequenceToPIFF == "+str(self.theProcessingModeForImageSequenceToPIFF) , CDConstants.DebugExcessive )
 
 
 
@@ -163,30 +157,64 @@ class CDImageSequence(QtCore.QObject):
         self.theCurrentContour = QtGui.QImage(lBoringPixMap)
 
         # the scale factor is the zoom factor for viewing the sequence of images, separate from the PIFF scene zoom:
-        self.scaleFactor = 1.0
+        self.__theScaleFactor = 1.0
 
         if isinstance( pParent, QtGui.QWidget ) == True:
             self._graphicsSceneMainWidget = pParent
         else:
             self._graphicsSceneMainWidget = None
 
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: __init__() _graphicsSceneMainWidget == "+str(self._graphicsSceneMainWidget)+" " , CDConstants.DebugExcessive )
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: __init__() imageInSequenceIsReadyFlags == "+str(self.imageInSequenceIsReadyFlags)+" " , CDConstants.DebugExcessive )
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: __init__() edgeInSequenceIsReadyFlags == "+str(self.edgeInSequenceIsReadyFlags)+" " , CDConstants.DebugExcessive )
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: __init__() contoursAreReadyFlag == "+str(self.contoursAreReadyFlag)+" " , CDConstants.DebugExcessive )
+        # the progress bar widget is instantiated in the CellDrawMainWindow class,
+        #   and assigned below in setSimpleProgressBarPanel() :
+        self.__theSimpleWaitProgressBar = None
+
+        # the progress bar with image widget is instantiated in the CellDrawMainWindow class,
+        #   and assigned below in setProgressBarWithImagePanel() :
+        self.__theWaitProgressBarWithImage = None
+
+        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.__init__() - _graphicsSceneMainWidget == "+str(self._graphicsSceneMainWidget)+" " , CDConstants.DebugExcessive )
+        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.__init__() - imageInSequenceIsReadyFlags == "+str(self.imageInSequenceIsReadyFlags)+" " , CDConstants.DebugExcessive )
+        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.__init__() - edgeInSequenceIsReadyFlags == "+str(self.edgeInSequenceIsReadyFlags)+" " , CDConstants.DebugExcessive )
+        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.__init__() - contoursAreReadyFlag == "+str(self.contoursAreReadyFlag)+" " , CDConstants.DebugExcessive )
 
         # debugging counter, how many times has the paint function been called:
         self.repaintEventsCounter = 0
 
+    # end of    def __init__(self, pParent=None)
+    # --------------------------------------------------------
+
+
+
+
+    # --------------------------------------------------------
+    def setSimpleProgressBarPanel(self, pSimpleProcessBar=None):
+    # --------------------------------------------------------
+        if isinstance( pSimpleProcessBar, QtGui.QWidget ) == True:
+            self.__theSimpleWaitProgressBar = pSimpleProcessBar
+        else:
+            self.__theSimpleWaitProgressBar = None
+    # end of   def setSimpleProgressBarPanel()
+    # --------------------------------------------------------
+
+
+    # --------------------------------------------------------
+    def setProgressBarWithImagePanel(self, pProcessBarWithImage=None):
+    # --------------------------------------------------------
+        if isinstance( pProcessBarWithImage, QtGui.QWidget ) == True:
+            self.__theWaitProgressBarWithImage = pProcessBarWithImage
+        else:
+            self.__theWaitProgressBarWithImage = None
+    # end of   def setProgressBarWithImagePanel()
+    # --------------------------------------------------------
 
 
     # ------------------------------------------------------------------
-    # 2011 - Mitja: setScaleZoom() is to set the image display scale/zoom factor:
+    # 2011 - Mitja: setSequenceScaleFactor() is to set the sequence display scale factor:
     # TODO - this is at the moment never called from ANYWHERE
     # ------------------------------------------------------------------   
-    def setScaleZoom(self, pValue):
+    def setSequenceScaleFactor(self, pValue):
         # TODO - this is at the moment never called from ANYWHERE
-        self.scaleFactor = pValue
+        self.__theScaleFactor = pValue
         self.setToProcessedImage()
 
 
@@ -242,7 +270,7 @@ class CDImageSequence(QtCore.QObject):
 
         self.signalThatImageSequenceResized.emit(lDict)
 
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: resetSequenceDimensions() self.sizeX,Y,Z == "+str(self.sizeX)+" "+str(self.sizeY)+" "+str(self.sizeZ)+" " , CDConstants.DebugVerbose )
+        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.resetSequenceDimensions() - self.sizeX,Y,Z == "+str(self.sizeX)+" "+str(self.sizeY)+" "+str(self.sizeZ)+" " , CDConstants.DebugVerbose )
 
 
 
@@ -297,7 +325,7 @@ class CDImageSequence(QtCore.QObject):
     # ------------------------------------------------------------------   
     def getSequenceDimensions(self):
 
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: getSequenceDimensions() self.sizeX,Y,Z == "+str(self.sizeX)+" "+str(self.sizeY)+" "+str(self.sizeZ)+" " , CDConstants.DebugExcessive )
+        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.getSequenceDimensions() - self.sizeX,Y,Z == "+str(self.sizeX)+" "+str(self.sizeY)+" "+str(self.sizeZ)+" " , CDConstants.DebugExcessive )
 
         return (self.sizeX, self.sizeY, self.sizeZ)
 
@@ -376,7 +404,7 @@ class CDImageSequence(QtCore.QObject):
 # 
 #         self.theCurrentImage = lPixmap.toImage()
 
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: imageCurrentImage() self.theCurrentIndex == "+str(self.theCurrentIndex)+ " DONE." , CDConstants.DebugVerbose )
+        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.imageCurrentImage() - self.theCurrentIndex == "+str(self.theCurrentIndex)+ " DONE." , CDConstants.DebugVerbose )
 
 
 
@@ -405,7 +433,7 @@ class CDImageSequence(QtCore.QObject):
 
 
         lTheMaxImageSequenceValue = self.imageSequenceArray.max()
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: normalizeAllImages() lTheMaxImageSequenceValue == "+str(lTheMaxImageSequenceValue) , CDConstants.DebugVerbose )
+        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.normalizeAllImages() - lTheMaxImageSequenceValue == "+str(lTheMaxImageSequenceValue) , CDConstants.DebugVerbose )
 
 
         if (lTheMaxImageSequenceValue >= 1) and (lTheMaxImageSequenceValue < 128):
@@ -435,7 +463,7 @@ class CDImageSequence(QtCore.QObject):
             self.imageSequenceArray = lTmpArray
 
             lTheMaxImageSequenceValue = self.imageSequenceArray.max()
-            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: normalizeAllImages() now new lTheMaxImageSequenceValue == "+str(lTheMaxImageSequenceValue) , CDConstants.DebugVerbose )
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.normalizeAllImages() - now new lTheMaxImageSequenceValue == "+str(lTheMaxImageSequenceValue) , CDConstants.DebugVerbose )
 
         # end of  if (lTheMaxImageSequenceValue >= 1) and (lTheMaxImageSequenceValue < 128)
 
@@ -447,7 +475,7 @@ class CDImageSequence(QtCore.QObject):
         self.volumeSequenceArray = lTmpBoolArray.astype (numpy.uint8)
 
         lTheMaxVolumeArrayValue = self.volumeSequenceArray.max()
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: normalizeAllImages() lTheMaxVolumeArrayValue == "+str(lTheMaxVolumeArrayValue) , CDConstants.DebugVerbose )
+        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.normalizeAllImages() - lTheMaxVolumeArrayValue == "+str(lTheMaxVolumeArrayValue) , CDConstants.DebugVerbose )
 
 
         if (lTheMaxVolumeArrayValue >= 1) and (lTheMaxVolumeArrayValue < 128):
@@ -477,7 +505,7 @@ class CDImageSequence(QtCore.QObject):
             self.volumeSequenceArray = lTmpArray
 
             lTheMaxVolumeArrayValue = self.volumeSequenceArray.max()
-            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: normalizeAllImages() now new lTheMaxVolumeArrayValue == "+str(lTheMaxVolumeArrayValue) , CDConstants.DebugVerbose )
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.normalizeAllImages() - now new lTheMaxVolumeArrayValue == "+str(lTheMaxVolumeArrayValue) , CDConstants.DebugVerbose )
 
         # end of  if (lTheMaxVolumeArrayValue >= 1) and (lTheMaxVolumeArrayValue < 128)
 
@@ -648,7 +676,7 @@ class CDImageSequence(QtCore.QObject):
 #                         " ["+str(i)+" "+str(j)+" "+str(self.theCurrentIndex)+"] "
 # 
 #                 self.imageSequenceArray[self.theCurrentIndex, j, i] = lRGBAColorAtPixel
-#         CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: theTrueSetCurrentImage() self.theCurrentIndex == "+str(self.theCurrentIndex) , CDConstants.DebugVerbose )
+#         CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.theTrueSetCurrentImage() self.theCurrentIndex == "+str(self.theCurrentIndex) , CDConstants.DebugVerbose )
 
 
 
@@ -672,6 +700,13 @@ class CDImageSequence(QtCore.QObject):
         self.imageSequenceArray[self.theCurrentIndex] = lTmpArrayBGRA
 
 
+###   TEST TEST THAT THIS WORKS:
+
+        # set the flag for the current image array in the sequence as True, as we've loaded it now:
+        self.imageInSequenceIsReadyFlags[self.theCurrentIndex] = True
+        # set the flag for the other related arrays as False, as we've just modified the original:
+        self.edgeInSequenceIsReadyFlags[self.theCurrentIndex] = False
+
 #    for timing testing purposes, here's a possible code to time the above (now unused) function:
 #
 #         from timeit import Timer
@@ -684,7 +719,7 @@ class CDImageSequence(QtCore.QObject):
 #         except:
 #             timerMeasureForFunction.print_exc()
 
-#         CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: setCurrentImageAndArrayLayer() self.theCurrentIndex == "+str(self.theCurrentIndex) , CDConstants.DebugVerbose )
+        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.setCurrentImageAndArrayLayer( pImage=="+str(pImage)+") - self.theCurrentIndex == "+str(self.theCurrentIndex)+" done." , CDConstants.DebugVerbose )
 
     # ------------------------------------------------------------------
 
@@ -784,10 +819,11 @@ class CDImageSequence(QtCore.QObject):
         if ( self.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseDiscretizedToBWMode) == True ) :
             # if discretizing to black/white, the "volume array" values are to be used:
 
-            # show a panel containing a progress bar:        
-            lTmpProgressBarPanel=CDWaitProgressBar("Computing edge detection on volume.", self.theCurrentVolumeSliceImage.height())
-            lTmpProgressBarPanel.show()
-            lTmpProgressBarPanel.setRange(0, self.theCurrentVolumeSliceImage.height())
+            # show a panel containing a progress bar:
+            
+            self.__theSimpleWaitProgressBar.setTitleTextRange("Computing edge detection on volume.", " ", 0, self.theCurrentVolumeSliceImage.height())
+            self.__theSimpleWaitProgressBar.setInfoText("Volume slice ["+str(self.theCurrentIndex)+"].")
+            self.__theSimpleWaitProgressBar.show()
     
             # set the flag for the current edge array in the sequence as False, as we're computing it now:
             self.edgeInSequenceIsReadyFlags[self.theCurrentIndex] = False
@@ -803,7 +839,7 @@ class CDImageSequence(QtCore.QObject):
          
             for y in xrange(height): 
     
-                lTmpProgressBarPanel.setValue(y)
+                self.__theSimpleWaitProgressBar.setValue(y)
     
                 for x in xrange(width): 
                     sumX, sumY, magnitude = 0, 0, 0 
@@ -845,20 +881,19 @@ class CDImageSequence(QtCore.QObject):
                     self.edgeSequenceArray[self.theCurrentIndex, y, x, 1] = numpy.uint8 (255 - magnitude)
                     self.edgeSequenceArray[self.theCurrentIndex, y, x, 2] = numpy.uint8 (255 - magnitude)
     
-            # set the flag for the current edge array in the sequence as True, as we're computing it now:
+            # set the flag for the current edge array in the sequence as True, as we've computed it now:
             self.edgeInSequenceIsReadyFlags[self.theCurrentIndex] = True
     
-            lTmpProgressBarPanel.maxProgressBar()
-            lTmpProgressBarPanel.accept()
-            lTmpProgressBarPanel.close()
+            self.__theSimpleWaitProgressBar.maxProgressBar()
+            self.__theSimpleWaitProgressBar.hide()
             
         else:
             # if NOT discretizing to black/white, the "image sequence array" values are to be used:
 
             # show a panel containing a progress bar:        
-            lTmpProgressBarPanel=CDWaitProgressBar("Computing edge detection on images.", self.theCurrentImage.height())
-            lTmpProgressBarPanel.show()
-            lTmpProgressBarPanel.setRange(0, self.theCurrentImage.height())
+            self.__theSimpleWaitProgressBar.setTitleTextRange("Computing edge detection on images.", " ", 0, self.theCurrentImage.height())
+            self.__theSimpleWaitProgressBar.setInfoText("Image slice ["+str(self.theCurrentIndex)+"].")
+            self.__theSimpleWaitProgressBar.show()
     
             # set the flag for the current edge array in the sequence as False, as we're computing it now:
             self.edgeInSequenceIsReadyFlags[self.theCurrentIndex] = False
@@ -874,7 +909,7 @@ class CDImageSequence(QtCore.QObject):
          
             for y in xrange(height): 
     
-                lTmpProgressBarPanel.setValue(y)
+                self.__theSimpleWaitProgressBar.setValue(y)
     
                 for x in xrange(width): 
                     sumX, sumY, magnitude = 0, 0, 0 
@@ -916,12 +951,11 @@ class CDImageSequence(QtCore.QObject):
                     self.edgeSequenceArray[self.theCurrentIndex, y, x, 1] = numpy.uint8 (255 - magnitude)
                     self.edgeSequenceArray[self.theCurrentIndex, y, x, 2] = numpy.uint8 (255 - magnitude)
     
-            # set the flag for the current edge array in the sequence as True, as we're computing it now:
+            # set the flag for the current edge array in the sequence as True, as we've computed it now:
             self.edgeInSequenceIsReadyFlags[self.theCurrentIndex] = True
     
-            lTmpProgressBarPanel.maxProgressBar()
-            lTmpProgressBarPanel.accept()
-            lTmpProgressBarPanel.close()
+            self.__theSimpleWaitProgressBar.maxProgressBar()
+            self.__theSimpleWaitProgressBar.hide()
         
         # end         if ( self.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseDiscretizedToBWMode) == True )
 
@@ -963,7 +997,7 @@ class CDImageSequence(QtCore.QObject):
         ymask[2,0] = -1 
         ymask[2,1] = -1 
         ymask[2,2] = -1 
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: get_prewitt_array_masks( xmask=" \
+        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.get_prewitt_array_masks( xmask=" \
             + str(xmask) + ", ymask=" + str(ymask) + " )", CDConstants.DebugExcessive )
         return (xmask, ymask) 
 
@@ -983,9 +1017,9 @@ class CDImageSequence(QtCore.QObject):
 
 
         # show a panel containing a progress bar:        
-        lTmpProgressBarPanel=CDWaitProgressBar("Separated kernels computing edge detection.", self.theCurrentImage.height())
-        lTmpProgressBarPanel.show()
-        lTmpProgressBarPanel.setRange(0, self.theCurrentImage.height())
+        self.__theSimpleWaitProgressBar.setTitleTextRange("Separated kernels computing edge detection.", " ", 0, self.theCurrentImage.height())
+        self.__theSimpleWaitProgressBar.setInfoText("Image slice ["+str(self.theCurrentIndex)+"].")
+        self.__theSimpleWaitProgressBar.show()
 
         # set the flag for the current edge array in the sequence as False, as we're computing it now:
         self.edgeInSequenceIsReadyFlags[self.theCurrentIndex] = False
@@ -1002,7 +1036,7 @@ class CDImageSequence(QtCore.QObject):
         # 1. do the sumX loop     
         for y in xrange(height): 
 
-            lTmpProgressBarPanel.setValue(y)
+            self.__theSimpleWaitProgressBar.setValue(y)
 
             for x in xrange(width): 
                 sumX, sumY, magnitude = 0, 0, 0 
@@ -1037,7 +1071,7 @@ class CDImageSequence(QtCore.QObject):
         # 2. do the sumY loop     
         for y in xrange(height): 
 
-            lTmpProgressBarPanel.setValue(y)
+            self.__theSimpleWaitProgressBar.setValue(y)
 
             for x in xrange(width): 
                 sumX, sumY, magnitude = 0, 0, 0 
@@ -1083,7 +1117,7 @@ class CDImageSequence(QtCore.QObject):
         # 3. do the magnitude loop
         for y in xrange(height): 
 
-            lTmpProgressBarPanel.setValue(y)
+            self.__theSimpleWaitProgressBar.setValue(y)
 
             for x in xrange(width): 
                 sumX, sumY, magnitude = 0, 0, 0 
@@ -1126,12 +1160,11 @@ class CDImageSequence(QtCore.QObject):
                 self.edgeSequenceArray[self.theCurrentIndex, y, x, 2] = numpy.uint8 (255 - magnitude)
 
 
-        # set the flag for the current edge array in the sequence as True, as we're computing it now:
+        # set the flag for the current edge array in the sequence as True, as we've computed it now:
         self.edgeInSequenceIsReadyFlags[self.theCurrentIndex] = True
 
-        lTmpProgressBarPanel.maxProgressBar()
-        lTmpProgressBarPanel.accept()
-        lTmpProgressBarPanel.close()
+        self.__theSimpleWaitProgressBar.maxProgressBar()
+        self.__theSimpleWaitProgressBar.hide()
         
 
     # end of   def theSeparatedKernelComputeCurrentEdge(self)
@@ -1156,11 +1189,11 @@ class CDImageSequence(QtCore.QObject):
                     lTheTimeItTook = timerMeasureForFunction.timeit(1)           # or timerMeasureForFunction.repeat(...)
                     CDConstants.printOut( str(lTheTimeItTook)+ \
                         " seconds it took theTrueComputeCurrentEdge(), self.theCurrentIndex == " + \
-                        str(self.theCurrentIndex) + " in CDImageSequence: computeCurrentEdge()" , CDConstants.DebugVerbose )
+                        str(self.theCurrentIndex) + " in CDImageSequence.computeCurrentEdge()" , CDConstants.DebugVerbose )
                 except:
-                    CDConstants.printOut( "CDImageSequence: computeCurrentEdge() code exception!   self.theCurrentIndex == "+str(self.theCurrentIndex) , CDConstants.DebugSparse )
+                    CDConstants.printOut( "CDImageSequence.computeCurrentEdge() - code exception!   self.theCurrentIndex == "+str(self.theCurrentIndex) , CDConstants.DebugSparse )
                     timerMeasureForFunction.print_exc()
-                    CDConstants.printOut( "CDImageSequence: computeCurrentEdge() code exception!   self.theCurrentIndex == "+str(self.theCurrentIndex) , CDConstants.DebugSparse )
+                    CDConstants.printOut( "CDImageSequence.computeCurrentEdge() - code exception!   self.theCurrentIndex == "+str(self.theCurrentIndex) , CDConstants.DebugSparse )
             else:
                 # timerMeasureForFunction = Timer('theTrueComputeCurrentEdge()', 'from CDImageSequence import theTrueComputeCurrentEdge')  # define it before the try/except
                 self.theTrueComputeCurrentEdge()
@@ -1197,30 +1230,29 @@ class CDImageSequence(QtCore.QObject):
             lDepth = self.sizeZ
     
             # show a panel containing a progress bar:        
-            lTmpProgressBarPanel=CDWaitProgressBarWithImage("Computing 3D Contours edge detection from Detected B/W Volume.", self.theCurrentImage.height())
-            lTmpProgressBarPanel.show()
-            lTmpProgressBarPanel.setRange(0, self.theCurrentImage.height())
+            self.__theWaitProgressBarWithImage.setTitleTextRange("Computing 3D Contours edge detection from Detected B/W Volume.", " ", 0, self.theCurrentImage.height())
+            self.__theWaitProgressBarWithImage.show()
     
             lPixmap = QtGui.QPixmap( lDepth, lHeight)
             lPixmap.fill(QtCore.Qt.transparent)
 
             # store the pixmap holding the specially rendered scene:
-            lTmpProgressBarPanel.theProgressBarImageLabel.setPixmap(lPixmap)
-            lTmpProgressBarPanel.theProgressBarImageLabel.image = lPixmap.toImage()    
-            lTmpProgressBarPanel.theProgressBarImageLabel.width = int( lPixmap.width() )
-            lTmpProgressBarPanel.theProgressBarImageLabel.height = int ( lPixmap.height() )
+            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.setPixmap(lPixmap)
+            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.image = lPixmap.toImage()    
+            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.width = int( lPixmap.width() )
+            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.height = int ( lPixmap.height() )
 
-            if ( lTmpProgressBarPanel.theContentWidget.width() < (lDepth + 20) ):
+            if ( self.__theWaitProgressBarWithImage.__theContentWidget.width() < (lDepth + 20) ):
                 lTheNewWidth = lDepth + 20
             else:
-                lTheNewWidth = lTmpProgressBarPanel.theContentWidget.width()
-            if ( lTmpProgressBarPanel.theContentWidget.height() < (lHeight + 20) ):
+                lTheNewWidth = self.__theWaitProgressBarWithImage.__theContentWidget.width()
+            if ( self.__theWaitProgressBarWithImage.__theContentWidget.height() < (lHeight + 20) ):
                 lTheNewHeight = lHeight + 20
             else:
-                lTheNewHeight = lTmpProgressBarPanel.theContentWidget.height()
-            lTmpProgressBarPanel.theContentWidget.resize(lTheNewWidth, lTheNewHeight)
-            lTmpProgressBarPanel.theContentWidget.update()
-            lTmpProgressBarPanel.adjustSize()
+                lTheNewHeight = self.__theWaitProgressBarWithImage.__theContentWidget.height()
+            self.__theWaitProgressBarWithImage.__theContentWidget.resize(lTheNewWidth, lTheNewHeight) #asdf 
+            self.__theWaitProgressBarWithImage.__theContentWidget.update()
+            self.__theWaitProgressBarWithImage.adjustSize()
     
             # -------------------------------
             # scan across x-direction layers:
@@ -1237,17 +1269,18 @@ class CDImageSequence(QtCore.QObject):
                 lTmpPainter.setBrush(lTmpBrush)
 
         
-                lTmpProgressBarPanel.setTitle( self.tr(" Scanning x layer %1 of %2 from computed B/W Volume \n to generate 3D Contour-boundary points ... ").arg( \
+                self.__theWaitProgressBarWithImage.setTitle( self.tr(" Computing 3D Contour-boundary points. ") )
+                self.__theWaitProgressBarWithImage.setInfoText( self.tr(" Scanning [x] layer %1 of %2 from computed B/W Volume ... ").arg( \
                     str(x) ).arg( str(lWidth) )  ) 
     
-                CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: self.theTrueComputeContours() lPixmap w,h =" + \
-                      str(lTmpProgressBarPanel.theProgressBarImageLabel.width) + " " + str(lTmpProgressBarPanel.theProgressBarImageLabel.height) + \
-                      " Scanning x layer "+str(x)+" of "+str(lWidth)+" from computed B/W Volume to generate 3D Contour-boundary points.", CDConstants.DebugVerbose )
+                CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.self.theTrueComputeContours() - lPixmap w,h =" + \
+                      str(self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.width) + " " + str(self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.height) + \
+                      " Scanning [x] layer "+str(x)+" of "+str(lWidth)+" from computed B/W Volume to generate 3D Contour-boundary points.", CDConstants.DebugVerbose )
         
                 # adjusts the size of the label widget to fit its contents (i.e. the pixmap):
-                lTmpProgressBarPanel.theProgressBarImageLabel.adjustSize()
-                lTmpProgressBarPanel.theProgressBarImageLabel.show()
-                lTmpProgressBarPanel.theProgressBarImageLabel.update()
+                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.adjustSize()
+                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.show()
+                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.update()
              
                 # -----------------------------
                 # scan across y-direction rows:
@@ -1255,7 +1288,7 @@ class CDImageSequence(QtCore.QObject):
                 for y in xrange(lHeight): 
         
                     # provide visual feedback to user:
-                    lTmpProgressBarPanel.setValue(y)
+                    self.__theWaitProgressBarWithImage.setValue(y)
                     QtGui.QApplication.processEvents()
 
                     # --------------------------------
@@ -1319,8 +1352,8 @@ class CDImageSequence(QtCore.QObject):
 
                 lTmpPainter.end()
                 # provide visual feedback to user:
-                lTmpProgressBarPanel.theProgressBarImageLabel.drawPixmapAtPoint(lPixmap)
-                lTmpProgressBarPanel.theProgressBarImageLabel.update()
+                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.drawPixmapAtPoint(lPixmap)
+                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.update()
 
     
             # ------------------------------------------
@@ -1330,9 +1363,8 @@ class CDImageSequence(QtCore.QObject):
             # set the flag for the contours array in the sequence as True, as we've just computed it:
             self.contoursAreReadyFlag = True
         
-            lTmpProgressBarPanel.maxProgressBar()
-            lTmpProgressBarPanel.accept()
-            lTmpProgressBarPanel.close()
+            self.__theWaitProgressBarWithImage.maxProgressBar()
+            self.__theWaitProgressBarWithImage.close()
         # ------------------------------------------------------------------
         # end of  if ( self.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseDiscretizedToBWMode) == True )
         # i.e. if discretizing to black/white, the "volume array" values have been used <====
@@ -1345,37 +1377,36 @@ class CDImageSequence(QtCore.QObject):
             # set the flag for the current edge array in the sequence as False, as we're computing it now:
             self.contoursAreReadyFlag = False
     
-            lXmask, lYmask = self.get_prewitt_masks() 
+            lXmask, lYmask = self.get_prewitt_masks()
     
             lWidth = self.sizeX
             lHeight = self.sizeY
             lDepth = self.sizeZ
     
             # show a panel containing a progress bar:        
-            lTmpProgressBarPanel=CDWaitProgressBarWithImage("Computing 3D Contours edge detection from Image Sequence.", self.theCurrentImage.height())
-            lTmpProgressBarPanel.show()
-            lTmpProgressBarPanel.setRange(0, self.theCurrentImage.height())
+            self.__theWaitProgressBarWithImage.setTitleTextRange("Computing 3D Contours edge detection from Image Sequence.", " ", 0, self.theCurrentImage.height())
+            self.__theWaitProgressBarWithImage.show()
     
             lPixmap = QtGui.QPixmap( lDepth, lHeight)
             lPixmap.fill(QtCore.Qt.transparent)
 
             # store the pixmap holding the specially rendered scene:
-            lTmpProgressBarPanel.theProgressBarImageLabel.setPixmap(lPixmap)
-            lTmpProgressBarPanel.theProgressBarImageLabel.image = lPixmap.toImage()    
-            lTmpProgressBarPanel.theProgressBarImageLabel.width = int( lPixmap.width() )
-            lTmpProgressBarPanel.theProgressBarImageLabel.height = int ( lPixmap.height() )
+            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.setPixmap(lPixmap)
+            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.image = lPixmap.toImage()
+            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.width = int( lPixmap.width() )
+            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.height = int ( lPixmap.height() )
 
-            if ( lTmpProgressBarPanel.theContentWidget.width() < (lDepth + 20) ):
+            if ( self.__theWaitProgressBarWithImage.__theContentWidget.width() < (lDepth + 20) ):
                 lTheNewWidth = lDepth + 20
             else:
-                lTheNewWidth = lTmpProgressBarPanel.theContentWidget.width()
-            if ( lTmpProgressBarPanel.theContentWidget.height() < (lHeight + 20) ):
+                lTheNewWidth = self.__theWaitProgressBarWithImage.__theContentWidget.width()
+            if ( self.__theWaitProgressBarWithImage.__theContentWidget.height() < (lHeight + 20) ):
                 lTheNewHeight = lHeight + 20
             else:
-                lTheNewHeight = lTmpProgressBarPanel.theContentWidget.height()
-            lTmpProgressBarPanel.theContentWidget.resize(lTheNewWidth, lTheNewHeight)
-            lTmpProgressBarPanel.theContentWidget.update()
-            lTmpProgressBarPanel.adjustSize()
+                lTheNewHeight = self.__theWaitProgressBarWithImage.__theContentWidget.height()
+            self.__theWaitProgressBarWithImage.__theContentWidget.resize(lTheNewWidth, lTheNewHeight) #asdf 
+            self.__theWaitProgressBarWithImage.__theContentWidget.update()
+            self.__theWaitProgressBarWithImage.adjustSize()
     
             # -------------------------------
             # scan across x-direction layers:
@@ -1392,17 +1423,19 @@ class CDImageSequence(QtCore.QObject):
                 lTmpPainter.setBrush(lTmpBrush)
 
         
-                lTmpProgressBarPanel.setTitle( self.tr(" Scanning x layer %1 of %2 from Image Sequence Volume \n to generate 3D Contour-boundary points... ").arg( \
+                self.__theWaitProgressBarWithImage.setTitle( self.tr(" Computing 3D Contour-boundary points. ") ) 
+                self.__theWaitProgressBarWithImage.setInfoText( self.tr(" Scanning [x] layer %1 of %2 from Image Sequence Volume... ").arg( \
                     str(x) ).arg( str(lWidth) )  ) 
-    
-                CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: self.theTrueComputeContours() lPixmap w,h =" + \
-                      str(lTmpProgressBarPanel.theProgressBarImageLabel.width) + " " + str(lTmpProgressBarPanel.theProgressBarImageLabel.height) + \
-                      " Scanning x layer "+str(x)+" of "+str(lWidth)+" from Image Sequence Volume to generate 3D Contour-boundary points.", CDConstants.DebugVerbose )
+
+
+                CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.self.theTrueComputeContours() - lPixmap w,h =" + \
+                      str(self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.width) + " " + str(self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.height) + \
+                      " Scanning [x] layer "+str(x)+" of "+str(lWidth)+" from Image Sequence Volume to generate 3D Contour-boundary points.", CDConstants.DebugVerbose )
         
                 # adjusts the size of the label widget to fit its contents (i.e. the pixmap):
-                lTmpProgressBarPanel.theProgressBarImageLabel.adjustSize()
-                lTmpProgressBarPanel.theProgressBarImageLabel.show()
-                lTmpProgressBarPanel.theProgressBarImageLabel.update()
+                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.adjustSize()
+                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.show()
+                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.update()
              
                 # -----------------------------
                 # scan across y-direction rows:
@@ -1410,7 +1443,7 @@ class CDImageSequence(QtCore.QObject):
                 for y in xrange(lHeight): 
         
                     # provide visual feedback to user:
-                    lTmpProgressBarPanel.setValue(y)
+                    self.__theWaitProgressBarWithImage.setValue(y)
                     QtGui.QApplication.processEvents()
 
                     # --------------------------------
@@ -1474,8 +1507,8 @@ class CDImageSequence(QtCore.QObject):
 
                 lTmpPainter.end()
                 # provide visual feedback to user:
-                lTmpProgressBarPanel.theProgressBarImageLabel.drawPixmapAtPoint(lPixmap)
-                lTmpProgressBarPanel.theProgressBarImageLabel.update()
+                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.drawPixmapAtPoint(lPixmap)
+                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.update()
 
     
             # ------------------------------------------
@@ -1485,9 +1518,8 @@ class CDImageSequence(QtCore.QObject):
             # set the flag for the contours array in the sequence as True, as we've just computed it:
             self.contoursAreReadyFlag = True
         
-            lTmpProgressBarPanel.maxProgressBar()
-            lTmpProgressBarPanel.accept()
-            lTmpProgressBarPanel.close()
+            self.__theWaitProgressBarWithImage.maxProgressBar()
+            self.__theWaitProgressBarWithImage.close()
 
         # ------------------------------------------------------------------
         # end of else to  if ( self.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseDiscretizedToBWMode) == True )
@@ -1516,16 +1548,16 @@ class CDImageSequence(QtCore.QObject):
                 try:
                     lTheTimeItTook = timerMeasureForFunction.timeit(1)        # or timerMeasureForFunction.repeat(...)
                     CDConstants.printOut( str(lTheTimeItTook)+ \
-                        " seconds it took theTrueComputeContours() in CDImageSequence: computeContours()" , CDConstants.DebugVerbose )
+                        " seconds it took theTrueComputeContours() in CDImageSequence.computeContours()" , CDConstants.DebugVerbose )
                 except:
-                    CDConstants.printOut( "CDImageSequence: computeContours() code exception! " , CDConstants.DebugSparse )
+                    CDConstants.printOut( "CDImageSequence.computeContours() - code exception! " , CDConstants.DebugSparse )
                     timerMeasureForFunction.print_exc()
-                    CDConstants.printOut( "CDImageSequence: computeContours() code exception! " , CDConstants.DebugSparse )
+                    CDConstants.printOut( "CDImageSequence.computeContours() - code exception! " , CDConstants.DebugSparse )
             else:
                 # timerMeasureForFunction = Timer('theTrueComputeContours()', 'from CDImageSequence import theTrueComputeContours')  # define it before the try/except
                 self.theTrueComputeContours()
 
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: computeContours() self.theCurrentIndex == "+str(self.theCurrentIndex) , CDConstants.DebugVerbose )
+        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.computeContours() - self.theCurrentIndex == "+str(self.theCurrentIndex) +" done.", CDConstants.DebugVerbose )
 
 
     # end of  def computeContours(self)
@@ -1546,10 +1578,10 @@ class CDImageSequence(QtCore.QObject):
 
         # bin() does not exist in Python 2.5:
         if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
-            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: assignAllProcessingModesForImageSequenceToPIFF() bin(self.theProcessingModeForImageSequenceToPIFF) == " + \
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.assignAllProcessingModesForImageSequenceToPIFF() - bin(self.theProcessingModeForImageSequenceToPIFF) == " + \
                 str(bin(self.theProcessingModeForImageSequenceToPIFF)) + " bin(pValue) == " + str(bin(pValue)), CDConstants.DebugVerbose )
         else:
-            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: assignAllProcessingModesForImageSequenceToPIFF() self.theProcessingModeForImageSequenceToPIFF == " + \
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.assignAllProcessingModesForImageSequenceToPIFF() - self.theProcessingModeForImageSequenceToPIFF == " + \
                 str(self.theProcessingModeForImageSequenceToPIFF) + " pValue == " + str(pValue), CDConstants.DebugVerbose )
 
         # if we are changing i.e. toggling B/W discretization mode,  invalidate all edges and contours computed so far:
@@ -1561,7 +1593,7 @@ class CDImageSequence(QtCore.QObject):
 
             self.edgeInSequenceIsReadyFlags = numpy.zeros( (self.sizeZ), dtype=numpy.bool )
             self.contoursAreReadyFlag = False
-            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: assignAllProcessingModesForImageSequenceToPIFF() self.contoursAreReadyFlag=="+str(self.contoursAreReadyFlag)+ \
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.assignAllProcessingModesForImageSequenceToPIFF() - self.contoursAreReadyFlag=="+str(self.contoursAreReadyFlag)+ \
                 "self.edgeInSequenceIsReadyFlags"+str(self.edgeInSequenceIsReadyFlags) , CDConstants.DebugVerbose )
 
         # assign the actual mode:
@@ -1570,7 +1602,7 @@ class CDImageSequence(QtCore.QObject):
         # then check if the image sequence has to display its edge or its contours,
         #    and if so: ask the sequence to compute the edge or contours if not ready yet:
 
-        if (self.theProcessingModeForImageSequenceToPIFF & (1 << CDConstants.ImageSequenceUseEdge) ):
+        if (self.theProcessingModeForImageSequenceToPIFF & (1 << CDConstants.ImageSequenceUse2DEdges) ):
             self.computeCurrentEdge()
 
         if (self.theProcessingModeForImageSequenceToPIFF & (1 << CDConstants.ImageSequenceUse3DContours) ):
@@ -1578,9 +1610,9 @@ class CDImageSequence(QtCore.QObject):
 
         # bin() does not exist in Python 2.5:
         if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
-            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: assignAllProcessingModesForImageSequenceToPIFF() bin(self.theProcessingModeForImageSequenceToPIFF) == "+str(bin(self.theProcessingModeForImageSequenceToPIFF)) , CDConstants.DebugVerbose )
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.assignAllProcessingModesForImageSequenceToPIFF() - bin(self.theProcessingModeForImageSequenceToPIFF) == "+str(bin(self.theProcessingModeForImageSequenceToPIFF)) , CDConstants.DebugVerbose )
         else:
-            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: assignAllProcessingModesForImageSequenceToPIFF() self.theProcessingModeForImageSequenceToPIFF == "+str(self.theProcessingModeForImageSequenceToPIFF) , CDConstants.DebugVerbose )
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.assignAllProcessingModesForImageSequenceToPIFF() - self.theProcessingModeForImageSequenceToPIFF == "+str(self.theProcessingModeForImageSequenceToPIFF) , CDConstants.DebugVerbose )
 
     # end of   def assignAllProcessingModesForImageSequenceToPIFF(self, pValue)
     # ------------------------------------------------------------------   
@@ -1610,9 +1642,9 @@ class CDImageSequence(QtCore.QObject):
 
         # bin() does not exist in Python 2.5:
         if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
-            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: enableAProcessingModeForImageSequenceToPIFF() bin(self.theProcessingModeForImageSequenceToPIFF) == "+str(bin(self.theProcessingModeForImageSequenceToPIFF))+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.enableAProcessingModeForImageSequenceToPIFF() - bin(self.theProcessingModeForImageSequenceToPIFF) == "+str(bin(self.theProcessingModeForImageSequenceToPIFF))+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
         else:
-            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: enableAProcessingModeForImageSequenceToPIFF() self.theProcessingModeForImageSequenceToPIFF == "+str(self.theProcessingModeForImageSequenceToPIFF)+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.enableAProcessingModeForImageSequenceToPIFF() - self.theProcessingModeForImageSequenceToPIFF == "+str(self.theProcessingModeForImageSequenceToPIFF)+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
 
         CDConstants.printOut("[A] hello, I'm "+str(debugWhoIsTheRunningFunction())+", parent is "+str(debugWhoIsTheParentFunction())+ \
             " ||||| self.repaintEventsCounter=="+str(self.repaintEventsCounter), CDConstants.DebugTODO )
@@ -1645,9 +1677,9 @@ class CDImageSequence(QtCore.QObject):
 
         # bin() does not exist in Python 2.5:
         if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
-            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: resetToOneProcessingModeForImageSequenceToPIFF() bin(self.theProcessingModeForImageSequenceToPIFF) == "+str(bin(self.theProcessingModeForImageSequenceToPIFF))+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.resetToOneProcessingModeForImageSequenceToPIFF() - bin(self.theProcessingModeForImageSequenceToPIFF) == "+str(bin(self.theProcessingModeForImageSequenceToPIFF))+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
         else:
-            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: resetToOneProcessingModeForImageSequenceToPIFF() self.theProcessingModeForImageSequenceToPIFF == "+str(self.theProcessingModeForImageSequenceToPIFF)+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.resetToOneProcessingModeForImageSequenceToPIFF() - self.theProcessingModeForImageSequenceToPIFF == "+str(self.theProcessingModeForImageSequenceToPIFF)+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
 
     # end of  def resetToOneProcessingModeForImageSequenceToPIFF(self, pValue)
     # ------------------------------------------------------------------   
@@ -1674,9 +1706,9 @@ class CDImageSequence(QtCore.QObject):
 
         # bin() does not exist in Python 2.5:
         if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
-            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: disableAProcessingModeForImageSequenceToPIFF() bin(self.theProcessingModeForImageSequenceToPIFF) == "+str(bin(self.theProcessingModeForImageSequenceToPIFF))+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.disableAProcessingModeForImageSequenceToPIFF() - bin(self.theProcessingModeForImageSequenceToPIFF) == "+str(bin(self.theProcessingModeForImageSequenceToPIFF))+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
         else:
-            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: disableAProcessingModeForImageSequenceToPIFF() self.theProcessingModeForImageSequenceToPIFF == "+str(self.theProcessingModeForImageSequenceToPIFF)+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.disableAProcessingModeForImageSequenceToPIFF() - self.theProcessingModeForImageSequenceToPIFF == "+str(self.theProcessingModeForImageSequenceToPIFF)+" from pValue =="+str(pValue) , CDConstants.DebugVerbose )
 
     #  def disableAProcessingModeForImageSequenceToPIFF(self, pValue)
     # ------------------------------------------------------------------   
@@ -1693,16 +1725,16 @@ class CDImageSequence(QtCore.QObject):
         if ( self.theProcessingModeForImageSequenceToPIFF & (1 << pValue) ):
             # bin() does not exist in Python 2.5:
             if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
-                CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: getAProcessingModeStatusForImageSequenceToPIFF() TRUE bin(pValue, (1 << pValue)) == "+str(pValue)+" , "+str(bin(1 << pValue)) , CDConstants.DebugVerbose )
+                CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.getAProcessingModeStatusForImageSequenceToPIFF() - TRUE bin(pValue, (1 << pValue)) == "+str(pValue)+" , "+str(bin(1 << pValue)) , CDConstants.DebugVerbose )
             else:
-                CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: getAProcessingModeStatusForImageSequenceToPIFF() TRUE (pValue, (1 << pValue) == "+str(pValue)+" , "+str(1 << pValue) , CDConstants.DebugVerbose )
+                CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.getAProcessingModeStatusForImageSequenceToPIFF() - TRUE (pValue, (1 << pValue) == "+str(pValue)+" , "+str(1 << pValue) , CDConstants.DebugVerbose )
             return True
         else:
             # bin() does not exist in Python 2.5:
             if ((sys.version_info[0] >= 2) and (sys.version_info[1] >= 6)) :
-                CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: getAProcessingModeStatusForImageSequenceToPIFF() FALSE bin(pValue, (1 << pValue)) == "+str(pValue)+" , "+str(bin(1 << pValue)) , CDConstants.DebugVerbose )
+                CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.getAProcessingModeStatusForImageSequenceToPIFF() - FALSE bin(pValue, (1 << pValue)) == "+str(pValue)+" , "+str(bin(1 << pValue)) , CDConstants.DebugVerbose )
             else:
-                CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: getAProcessingModeStatusForImageSequenceToPIFF() FALSE pValue, (1 << pValue) == "+str(pValue)+" , "+str(1 << pValue) , CDConstants.DebugVerbose )
+                CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.getAProcessingModeStatusForImageSequenceToPIFF() - FALSE pValue, (1 << pValue) == "+str(pValue)+" , "+str(1 << pValue) , CDConstants.DebugVerbose )
             return False
 
 
@@ -1715,30 +1747,30 @@ class CDImageSequence(QtCore.QObject):
     def setCurrentIndexWithoutUpdatingGUI(self, pValue):
         self.theCurrentIndex = pValue
 
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: setCurrentIndexWithoutUpdatingGUI() self.theCurrentIndex == "+str(self.theCurrentIndex) , CDConstants.DebugVerbose )
+        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.setCurrentIndexWithoutUpdatingGUI() - self.theCurrentIndex == "+str(self.theCurrentIndex)+" done.", CDConstants.DebugVerbose )
     # end of    def setCurrentIndexWithoutUpdatingGUI(self, pValue)
     # ------------------------------------------------------------------   
 
 
 
     # ------------------------------------------------------------------
-    # 2011 - Mitja: setCurrentIndex() is to set the current image index within the sequence:
+    # 2011 - Mitja: setCurrentIndexInSequence() is to set the current image index within the sequence:
     # ------------------------------------------------------------------   
-    def setCurrentIndex(self, pValue):
+    def setCurrentIndexInSequence(self, pValue):
         self.theCurrentIndex = pValue
 
-        CDConstants.printOut(  "___ - DEBUG ----- CDImageSequence: setCurrentIndex()  --  1.   self.theCurrentIndex=="+str(self.theCurrentIndex), CDConstants.DebugTODO )
+        CDConstants.printOut(  "___ - DEBUG ----- CDImageSequence.setCurrentIndexInSequence()  --  1.   self.theCurrentIndex=="+str(self.theCurrentIndex), CDConstants.DebugTODO )
         # TODO remove TODO time.sleep(1.0)
 
         #  create images... theCurrentImage and theCurrentEdge and theCurrentVolumeSliceImage from the current layer in the sequence arrays:
-        # these images are now *not* painted here, but from setCurrentIndex() ...
+        # these images are now *not* painted here, but from setCurrentIndexInSequence() ...
         # ... should *not* call imageCurrentImage() from paintTheImageSequence(),
         #    because paintTheImageSequence() is part of the repainting and ought not open additional widgets or cause repaints...
         #    (and imageCurrentImage() may open dialog boxes etc.)
         self.imageCurrentImage()
 
 
-        CDConstants.printOut(  "___ - DEBUG ----- CDImageSequence: setCurrentIndex()  --  2.   self.imageCurrentImage() DONE", CDConstants.DebugTODO )
+        CDConstants.printOut(  "___ - DEBUG ----- CDImageSequence.setCurrentIndexInSequence()  --  2.   self.imageCurrentImage() DONE", CDConstants.DebugTODO )
         # TODO remove TODO time.sleep(1.0)
                 
 
@@ -1750,11 +1782,11 @@ class CDImageSequence(QtCore.QObject):
 
         self.signalThatCurrentIndexSet.emit(lDict)        
 
-        CDConstants.printOut(  "___ - DEBUG ----- CDImageSequence: setCurrentIndex()  --  3.   self.signalThatCurrentIndexSet.emit( lDict=="+str(lDict)+" )", CDConstants.DebugTODO )
+        CDConstants.printOut(  "___ - DEBUG ----- CDImageSequence.setCurrentIndexInSequence()  --  3.   self.signalThatCurrentIndexSet.emit( lDict=="+str(lDict)+" )", CDConstants.DebugTODO )
         # TODO remove TODO time.sleep(1.0)
         
-#         CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: setCurrentIndex() self.theCurrentIndex == "+str(self.theCurrentIndex) , CDConstants.DebugVerbose )
-    # end of    def setCurrentIndex(self, pValue)
+#         CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.setCurrentIndexInSequence() self.theCurrentIndex == "+str(self.theCurrentIndex) , CDConstants.DebugVerbose )
+    # end of    def setCurrentIndexInSequence(self, pValue)
     # ------------------------------------------------------------------   
 
 
@@ -1764,7 +1796,7 @@ class CDImageSequence(QtCore.QObject):
     # 2011 - Mitja: getCurrentIndex() is to get the current image index within the sequence:
     # ------------------------------------------------------------------   
     def getCurrentIndex(self):
-#         CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: getCurrentIndex() self.theCurrentIndex = "+str(self.theCurrentIndex) , CDConstants.DebugExcessive )
+#         CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.getCurrentIndex() - self.theCurrentIndex = "+str(self.theCurrentIndex) , CDConstants.DebugExcessive )
         return (self.theCurrentIndex)
 
 
@@ -1812,7 +1844,7 @@ class CDImageSequence(QtCore.QObject):
         self.imageSequenceLoaded = pTrueOrFalse
         if isinstance( self._graphicsSceneMainWidget, QtGui.QWidget ) == True:
             self._graphicsSceneMainWidget.scene.update()
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: setSequenceLoadedFromFiles( " \
+        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.setSequenceLoadedFromFiles( " \
             + str(self.imageSequenceLoaded) + " )", CDConstants.DebugVerbose )
 
 
@@ -1885,7 +1917,8 @@ class CDImageSequence(QtCore.QObject):
     #   into the Image Sequence, and may be called directly or by our paintEvent() handler:
     # ------------------------------------------------------------------   
     def paintTheImageSequence(self, pThePainter):
-    
+
+
 #         CDConstants.printOut("     =====     =====     =====     =====     ", CDConstants.DebugTODO )
 #         lTmpLengthI = len (inspect.stack())
 #         lTmpStrI = " >====> stack:"
@@ -1909,6 +1942,7 @@ class CDImageSequence(QtCore.QObject):
 # 
 #         CDConstants.printOut("     =====     =====     =====     =====     ", CDConstants.DebugTODO )
 
+
         CDConstants.printOut("[B] hello, I'm "+str(debugWhoIsTheRunningFunction())+", parent is "+str(debugWhoIsTheParentFunction())+ \
             " ||||| self.repaintEventsCounter=="+str(self.repaintEventsCounter)+ \
             " ||||| CDImageSequence.paintTheImageSequence(pThePainter=="+str(pThePainter)+")", CDConstants.DebugTODO )
@@ -1924,17 +1958,26 @@ class CDImageSequence(QtCore.QObject):
         # lPainter.begin()
 
 
-        # CDConstants.printOut(  "paintTheImageSequence()  --  2.", CDConstants.DebugTODO )
-        # TODO remove TODO time.sleep(1.0)
-
-
-
-
-
-
 
         # push the QPainter's current state onto a stack, to be followed by a restore() below:
         lPainter.save()
+
+
+
+
+
+
+        lPixMap = QtGui.QPixmap(self.pifSceneWidth, self.pifSceneHeight)
+        lPixMap.fill( QtGui.QColor(QtCore.Qt.gray) )
+        lPainter.drawPixmap(QtCore.QPoint(0,0), lPixMap)
+
+
+
+
+
+
+
+
 
 
 
@@ -1952,7 +1995,7 @@ class CDImageSequence(QtCore.QObject):
 
 
         #  create images... theCurrentImage and theCurrentEdge and theCurrentVolumeSliceImage from the current layer in the sequence arrays:
-        # these images are now *not* painted here, but from setCurrentIndex() ...
+        # these images are now *not* computed here, but from setCurrentIndexInSequence() ...
         # ... should *not* call imageCurrentImage() from paintTheImageSequence(),
         #    because paintTheImageSequence() is part of the repainting and ought not open additional widgets or cause repaints...
         #    (and imageCurrentImage() may open dialog boxes etc.)
@@ -2004,13 +2047,13 @@ class CDImageSequence(QtCore.QObject):
         # TODO remove TODO time.sleep(1.0)
 
 
-        if ( self.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseEdge) ) :
+        if ( self.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUse2DEdges) ) :
 
             # draw the selected edge image, if there is one:
             if isinstance( self.theCurrentEdge, QtGui.QImage ) == True:
                 lPixMap = QtGui.QPixmap.fromImage(self.theCurrentEdge)
                 lPainter.drawPixmap(QtCore.QPoint(0,0), lPixMap)
-                CDConstants.printOut(  "paintTheImageSequence()  --  6b. --  CDConstants.ImageSequenceUseEdge TRUE, painted:  self.theCurrentEdge", CDConstants.DebugTODO )
+                CDConstants.printOut(  "paintTheImageSequence()  --  6b. --  CDConstants.ImageSequenceUse2DEdges TRUE, painted:  self.theCurrentEdge", CDConstants.DebugTODO )
 
 
 
@@ -2056,11 +2099,11 @@ class CDImageSequence(QtCore.QObject):
     def getCurrentEdgePixmap(self):
         if isinstance( self.theCurrentEdge, QtGui.QImage ) == True:
             lPixMap = QtGui.QPixmap.fromImage(self.theCurrentEdge)
-            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: getCurrentEdgePixmap( " \
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.getCurrentEdgePixmap( " \
                 + str(self.theCurrentEdge) + " )", CDConstants.DebugExcessive )
             return (  lPixMap  )
         else:
-            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence: getCurrentEdgePixmap( " \
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.getCurrentEdgePixmap( " \
                 + "NO EDGE IMAGE ) ", CDConstants.DebugExcessive )
             return False
 
