@@ -39,7 +39,7 @@ void SimulatorCM::handleForceTermRequest(CC3DXMLElement * _forceElement){
     bool moduleAlreadyRegisteredFlag=false;
 
     //ForceTerm * module=forceTermManager.get(moduleName,&moduleAlreadyRegisteredFlag);
-	CenterModelObject * module=forceTermManager.get(moduleName,&moduleAlreadyRegisteredFlag);
+	CenterModelObject * module=(CenterModelObject *)forceTermManager.get(moduleName,&moduleAlreadyRegisteredFlag);
 
 	
 	if(!moduleAlreadyRegisteredFlag){
