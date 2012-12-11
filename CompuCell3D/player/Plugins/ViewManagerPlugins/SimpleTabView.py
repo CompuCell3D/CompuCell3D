@@ -830,6 +830,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         #--> e.g. = {'Aux Graphics Window 2': [450, 100, 300, 250], 'Main Graphics Window 1': [10, 10, 400, 300]}
 #        self.mdiWindowDict[self.windowCounter] = self.addSubWindow(newWindow)
 #        print MODULENAME,'    __layoutGraphicsWindows():   self.mdiWindowDict=',self.mdiWindowDict  # {1: <PyQt4.QtGui.QMdiSubWindow object at 0x11ff415f0>}
+        if self.cc3dSimulationDataHandler is None:
+            return
         windowIndex = 1
         for key in self.cc3dSimulationDataHandler.cc3dSimulationData.windowDict.keys():
             winGeom = self.cc3dSimulationDataHandler.cc3dSimulationData.windowDict[key]
