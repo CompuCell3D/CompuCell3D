@@ -246,8 +246,8 @@ void CleaverMeshDumper::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		}
 
 		if (outputXMLElem->getFirstElement("IncludeCellTypes")){
-
-			parseStringIntoList(outputXMLElem->getFirstElement("IncludeCellTypes")->getText() , typeNames , ",");
+			string celTypeStr=outputXMLElem->getFirstElement("IncludeCellTypes")->getText();
+			parseStringIntoList( celTypeStr, typeNames , ",");
 			for (int i = 0 ; i < typeNames.size(); ++i){
 				cellTypesSet.insert(automaton->getTypeId(typeNames[i]));
 				
