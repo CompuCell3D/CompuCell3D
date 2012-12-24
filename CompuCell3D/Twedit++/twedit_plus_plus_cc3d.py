@@ -25,6 +25,8 @@ def setPaths():
 setPaths()
 
 
+import sip
+sip.setapi('QVariant', 1)
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *

@@ -4,6 +4,9 @@
 import sys
 import os
 
+import sip
+sip.setapi('QVariant', 1)
+
 
 def setVTKPaths():
    import sys
@@ -13,7 +16,7 @@ def setVTKPaths():
    platform=sys.platform
    if platform=='win32':
       sys.path.insert(0,environ["PYTHON_DEPS_PATH"])
-      # sys.path.append(environ["VTKPATH"])
+      sys.path.append(environ["VTKPATH"])
       # sys.path.append(environ["VTKPATH1"])
       
       # # sys.path.append(environ["PYQT_PATH"])
