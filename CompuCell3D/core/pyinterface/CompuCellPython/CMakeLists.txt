@@ -32,6 +32,7 @@ SET(LIBS
    # XMLCerealShared
    # ${XERCESC_LIBRARY}
    ${PYTHON_LIBRARIES}
+   dolfin
 
 )
 

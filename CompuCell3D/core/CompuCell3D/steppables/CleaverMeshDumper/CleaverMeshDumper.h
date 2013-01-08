@@ -21,6 +21,15 @@
 #include <Cleaver/BoundingBox.h>
 
 
+// dolfin::Mesh; // this forward declaration will not work
+//this one will
+namespace dolfin{
+  class Mesh;
+};
+
+namespace Cleaver{
+   class TetMesh; 
+};
 
 namespace CompuCell3D {
     
@@ -98,6 +107,10 @@ namespace CompuCell3D {
     virtual std::string toString();
     
     void simulateCleaverMesh();
+    void buildDolfinMesh(dolfin::Mesh & _mesh);
+    
+    void buildDolfinMeshFromCleaver(dolfin::Mesh & _mesh,Cleaver::TetMesh & _cleaverMesh);    
+    
 
   private:
 	  std::string outputFileName;

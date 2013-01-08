@@ -2,7 +2,6 @@
 
 
 
-
 #include <CompuCell3D/Simulator.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>
 #include <CompuCell3D/Field3D/Field3D.h>
@@ -15,6 +14,12 @@
 #include <BasicUtils/BasicException.h>
 #include <PublicUtilities/StringUtils.h>
 #include <algorithm>
+
+//dolfin includes
+#include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/CellType.h>
+#include <dolfin/mesh/MeshEditor.h>
+
 
 using namespace CompuCell3D;
 
@@ -31,6 +36,7 @@ using namespace std;
 
 
 using namespace Cleaver;
+
 
 CellFieldCleaverSimulator::CellFieldCleaverSimulator() : 
 m_bounds(vec3::zero, vec3(1,1,1)),paddingDim(2,2,2),cellField(0)
@@ -153,6 +159,56 @@ void CleaverMeshDumper::start(){
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CleaverMeshDumper::buildDolfinMesh(dolfin::Mesh & _mesh){
+
+  
+  dolfin::MeshEditor editor;
+//   dolfin::CellType::tetrahedron;
+  editor.open(_mesh, dolfin::CellType::triangle, 2, 2);
+  editor.init_vertices(4);
+  editor.init_cells(2);
+  editor.add_vertex(0, 0.0, 0.0);
+  editor.add_vertex(1, 1.0, 0.0);
+  editor.add_vertex(2, 1.0, 1.0);
+  editor.add_vertex(3, 0.0, 1.0);
+  editor.add_cell(0, 0, 1, 2);
+  editor.add_cell(1, 0, 2, 3);
+  editor.close();
+  
+  cerr<<"Number of cells="<<_mesh.num_cells()<<endl;
+  cerr<<"Number of vertices="<<_mesh.num_vertices()<<endl;
+  
+//   editor.open(mesh, 2, 2);
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CleaverMeshDumper::buildDolfinMeshFromCleaver(dolfin::Mesh & _mesh,Cleaver::TetMesh & _cleaverMesh){
+  dolfin::MeshEditor editor;
+  
+  cerr<<"_cleaverMesh.verts.size()="<<_cleaverMesh.verts.size()<<endl;
+  cerr<<"_cleaverMesh.tets.size()="<<_cleaverMesh.tets.size()<<endl;
+  
+  editor.open(_mesh, dolfin::CellType::tetrahedron, 3, 3);
+  editor.init_vertices(_cleaverMesh.verts.size());  
+  editor.init_cells(_cleaverMesh.tets.size());
+  
+  //writing vertices to dolfin mesh 
+  for(unsigned int i=0; i < _cleaverMesh.verts.size(); i++)
+  {
+    editor.add_vertex(i,_cleaverMesh.verts[i]->pos().x,_cleaverMesh.verts[i]->pos().y,_cleaverMesh.verts[i]->pos().z);      
+  }
+  
+  //writing tetrahedrons to dolfin mesh 
+  for(unsigned int i=0; i < _cleaverMesh.tets.size(); i++)
+  {
+    
+    editor.add_cell(i,_cleaverMesh.verts[0]->tm_v_index,_cleaverMesh.verts[1]->tm_v_index,_cleaverMesh.verts[2]->tm_v_index,_cleaverMesh.verts[3]->tm_v_index);      
+  }
+
+  editor.close();
+  
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void CleaverMeshDumper::simulateCleaverMesh(){
 	CellFieldCleaverSimulator cfcs;
 	cfcs.setFieldDim(fieldDim);
@@ -193,9 +249,13 @@ void CleaverMeshDumper::simulateCleaverMesh(){
 		mesh->writePly(outputFileName, verbose);
 	}
 
-	delete mesh;
+	
 
-
+      dolfin::Mesh meshDolfin;	 
+      buildDolfinMeshFromCleaver(meshDolfin,*mesh);
+      
+     delete mesh; 
+//       buildDolfinMesh(meshDolfin);
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
