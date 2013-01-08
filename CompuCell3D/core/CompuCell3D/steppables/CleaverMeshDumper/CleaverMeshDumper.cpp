@@ -32,7 +32,6 @@ using namespace std;
 
 using namespace Cleaver;
 
-//this is demo comment
 CellFieldCleaverSimulator::CellFieldCleaverSimulator() : 
 m_bounds(vec3::zero, vec3(1,1,1)),paddingDim(2,2,2),cellField(0)
 {

@@ -15,7 +15,7 @@
 #include <PublicUtilities/NumericalUtils.h>
 #include <sstream>
 
-//this is demo comment
+
 using namespace std;
 
 namespace CompuCell3D {
