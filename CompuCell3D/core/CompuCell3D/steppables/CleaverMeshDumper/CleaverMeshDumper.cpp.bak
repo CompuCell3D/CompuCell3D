@@ -1,5 +1,7 @@
 
 
+
+
 #include <CompuCell3D/Simulator.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>
 #include <CompuCell3D/Field3D/Field3D.h>
@@ -13,10 +15,16 @@
 #include <PublicUtilities/StringUtils.h>
 #include <algorithm>
 
+#include <pyinterface/Example/PyNewPlugin.h>
 
+#include <boost/shared_ptr.hpp>
 
-
-
+#ifdef CC3D_HAS_DOLFIN
+  //dolfin includes
+  #include <dolfin/mesh/Mesh.h>
+  #include <dolfin/mesh/CellType.h>
+  #include <dolfin/mesh/MeshEditor.h>
+#endif
 
 using namespace CompuCell3D;
 
@@ -156,6 +164,60 @@ void CleaverMeshDumper::start(){
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CleaverMeshDumper::buildDolfinMesh(dolfin::Mesh & _mesh){
+#ifdef CC3D_HAS_DOLFIN
+  
+  dolfin::MeshEditor editor;
+//   dolfin::CellType::tetrahedron;
+  editor.open(_mesh, dolfin::CellType::triangle, 2, 2);
+  editor.init_vertices(4);
+  editor.init_cells(2);
+  editor.add_vertex(0, 0.0, 0.0);
+  editor.add_vertex(1, 1.0, 0.0);
+  editor.add_vertex(2, 1.0, 1.0);
+  editor.add_vertex(3, 0.0, 1.0);
+  editor.add_cell(0, 0, 1, 2);
+  editor.add_cell(1, 0, 2, 3);
+  editor.close();
+  
+  cerr<<"Number of cells="<<_mesh.num_cells()<<endl;
+  cerr<<"Number of vertices="<<_mesh.num_vertices()<<endl;
+#endif  
+//   editor.open(mesh, 2, 2);
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CleaverMeshDumper::buildDolfinMeshFromCleaver(dolfin::Mesh & _mesh,Cleaver::TetMesh & _cleaverMesh){
+
+#ifdef CC3D_HAS_DOLFIN
+
+  dolfin::MeshEditor editor;
+
+  cerr<<"_cleaverMesh.verts.size()="<<_cleaverMesh.verts.size()<<endl;
+  cerr<<"_cleaverMesh.tets.size()="<<_cleaverMesh.tets.size()<<endl;
+
+  
+  editor.open(_mesh, dolfin::CellType::tetrahedron, 3, 3);
+  editor.init_vertices(_cleaverMesh.verts.size());  
+  editor.init_cells(_cleaverMesh.tets.size());
+  
+  //writing vertices to dolfin mesh 
+  for(unsigned int i=0; i < _cleaverMesh.verts.size(); i++)
+  {
+    editor.add_vertex(i,_cleaverMesh.verts[i]->pos().x,_cleaverMesh.verts[i]->pos().y,_cleaverMesh.verts[i]->pos().z);      
+  }
+  
+  //writing tetrahedrons to dolfin mesh 
+  for(unsigned int i=0; i < _cleaverMesh.tets.size(); i++)
+  {
+    
+    editor.add_cell(i,_cleaverMesh.verts[0]->tm_v_index,_cleaverMesh.verts[1]->tm_v_index,_cleaverMesh.verts[2]->tm_v_index,_cleaverMesh.verts[3]->tm_v_index);      
+  }
+
+  editor.close();
+#endif  
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void CleaverMeshDumper::simulateCleaverMesh(){
 	CellFieldCleaverSimulator cfcs;
 	cfcs.setFieldDim(fieldDim);
@@ -197,15 +259,87 @@ void CleaverMeshDumper::simulateCleaverMesh(){
 	}
 
 	
+#ifdef CC3D_HAS_DOLFIN
+      dolfin::Mesh meshDolfin;	 
+      buildDolfinMeshFromCleaver(meshDolfin,*mesh);
+#endif      
+      
      delete mesh; 
+//       buildDolfinMesh(meshDolfin);
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+dolfin::Mesh * CleaverMeshDumper::getBlankDolfinMesh(){
+  return new dolfin::Mesh;  
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CleaverMeshDumper::dolfinMeshInfo(long int _ptr){
+    void * rawPtr=(void *)_ptr;
+    cerr<<"this is ptr="<<rawPtr<<endl;
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CleaverMeshDumper::pyNewPluginInfo(PyNewPlugin *_newPlugin){
+    cerr<<"_newPlugin="<<_newPlugin<<endl;
+    cout<<"INSIDE NEW PLUGIN INFO"<<endl;
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CleaverMeshDumper::objectInfo(void *_obj){
+    cerr<<"_objInfo="<<_obj<<endl;
+    cout<<"INSIDE OBJECT INFO"<<endl;
+//     PyNewPlugin * plPtr=(PyNewPlugin *)_obj;
+//     plPtr->getX();
+    
+    
+    boost::shared_ptr<dolfin::Mesh> *meshPtr=(boost::shared_ptr<dolfin::Mesh> *)_obj;
+    cerr<<"shared ptr meshPtr="<<meshPtr<<endl;
+    cerr<<"raw ptr meshPtr="<<meshPtr->get()<<endl;
+    cerr<<"NUMBER OF CELLS="<<meshPtr->get()->num_cells()<<endl;
+    
+//     cerr<<meshPtr->num_cells()<<endl;
+    
+  
+}
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// void CleaverMeshDumper::buildDolfinFromCurrentLatticeSnapshot(dolfin::Mesh & _meshDolfin){
+void CleaverMeshDumper::buildDolfinFromCurrentLatticeSnapshot(void *  _meshDolfinVoid){
+        boost::shared_ptr<dolfin::Mesh> * boostMeshPtr=(boost::shared_ptr<dolfin::Mesh> *)_meshDolfinVoid;
+        dolfin::Mesh * meshDolfinPtr=boostMeshPtr->get();
+	cerr<<"meshDolfinPtr="<<meshDolfinPtr<<endl;
+	cerr<<"NUMBER OF CELLS="<<meshDolfinPtr->num_cells()<<endl;
+        return;
+// 	CellFieldCleaverSimulator cfcs;
+// 	cfcs.setFieldDim(fieldDim);
+// 	cfcs.setCellFieldPtr(cellFieldG);
+// 	cfcs.setIncludeCellTypesSet(cellTypesSet);
+// 
+// 	//bool verbose=true;
+// 	//string outputFileName="cellfieldmesh";
+// 
+// 	Cleaver::InverseField inverseField = Cleaver::InverseField(&cfcs);
+// 
+// 	std::vector<Cleaver::ScalarField*> fields;
+// 
+// 	fields.push_back(&cfcs);
+// 	fields.push_back(&inverseField);
+// 
+// 	Cleaver::Volume volume(fields);
+// 	Cleaver::TetMesh *meshCleaver = Cleaver::createMeshFromVolume(volume, verbose);
+// 	
+// #ifdef CC3D_HAS_DOLFIN
+//       dolfin::Mesh meshDolfin;	 
+//       buildDolfinMeshFromCleaver(_meshDolfin,*meshCleaver);
+// #endif      
+//       
+//      delete meshCleaver; 
+	
+  
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void CleaverMeshDumper::step(const unsigned int currentStep){
-	if (! currentStep%10){
-		simulateCleaverMesh();
-	}
+// 	if (! currentStep%10){
+// 		simulateCleaverMesh();
+// 	}
 	//   //REPLACE SAMPLE CODE BELOW WITH YOUR OWN
 	//CellInventory::cellInventoryIterator cInvItr;
 	//CellG * cell;
@@ -219,7 +353,7 @@ void CleaverMeshDumper::step(const unsigned int currentStep){
 
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void CleaverMeshDumper::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	//PARSE XML IN THIS FUNCTION

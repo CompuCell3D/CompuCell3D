@@ -1,3 +1,4 @@
+
 #ifndef CLEAVERMESHDUMPERSTEPPABLE_H
 #define CLEAVERMESHDUMPERSTEPPABLE_H
 
@@ -20,13 +21,21 @@
 #include <Cleaver/BoundingBox.h>
 
 
+// dolfin::Mesh; // this forward declaration will not work
+//this one will
+namespace dolfin{
+  class Mesh;
+};
 
 namespace Cleaver{
    class TetMesh; 
 };
 
+namespace boost{
+  template <class T> class shared_ptr;  
+};
 
-
+class PyNewPlugin;
 
 namespace CompuCell3D {
     
@@ -104,6 +113,17 @@ namespace CompuCell3D {
     virtual std::string toString();
     
     void simulateCleaverMesh();
+    void buildDolfinMesh(dolfin::Mesh & _mesh);   
+    void buildDolfinMeshFromCleaver(dolfin::Mesh & _mesh,Cleaver::TetMesh & _cleaverMesh);    
+//     void buildDolfinFromCurrentLatticeSnapshot(dolfin::Mesh & _meshDolfin);
+    void buildDolfinFromCurrentLatticeSnapshot(void *  _meshDolfinVoid);
+    dolfin::Mesh * getBlankDolfinMesh();
+    void dolfinMeshInfo(long int  _ptr);    
+    void pyNewPluginInfo(PyNewPlugin *_newPlugin);
+    void objectInfo(void *_obj);
+    
+    
+    
 
   private:
 	  std::string outputFileName;
