@@ -18,6 +18,9 @@ SET(LIBS
 )
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
+INCLUDE_DIRECTORIES(/usr/include)
+
+
 SET(LIBS
   CompuCellLibShared
   #AutomatonShared

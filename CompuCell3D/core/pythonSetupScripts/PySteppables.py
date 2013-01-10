@@ -40,6 +40,11 @@ class SteppableBasePy(SteppablePy):
         for typeId in self.typeIdTypeNameDict:
             setattr(self,self.typeIdTypeNameDict[typeId].upper(),typeId)
         
+
+        
+        import CompuCell      
+        pluginManager=CompuCell.getPluginManagerAsBPM()                
+        stepManager=CompuCell.getSteppableManagerAsBPM() # have to use explicit cast to BasicPluginManager to get steppable manager to work
         
         #VolumeTrackerPlugin
         self.volumeTrackerPlugin=None
@@ -199,7 +204,13 @@ class SteppableBasePy(SteppablePy):
             import CompuCell            
             self.boundaryMonitorPlugin=CompuCell.getBoundaryMonitorPlugin()
 
+        #CleaverMeshDumper
+        self.cleaverMeshDumper=None
+        if stepManager.isLoaded("CleaverMeshDumper"):
+            import CompuCell            
+            self.cleaverMeshDumper=CompuCell.getCleaverMeshDumper()  
 
+            
     def attemptFetchingCellById(self,_id):
         return self.inventory.attemptFetchingCellById(_id)
             
