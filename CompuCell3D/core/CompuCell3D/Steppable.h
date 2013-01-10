@@ -35,10 +35,16 @@ namespace CompuCell3D {
     Steppable() : frequency(1) {}
     virtual ~Steppable() {}
 
-    virtual void start() = 0;
-    virtual void step(const unsigned int currentStep) = 0;
-    virtual void finish() = 0;
+//     virtual void start() = 0;
+//     virtual void step(const unsigned int currentStep) = 0;
+//     virtual void finish() = 0;
+//     virtual std::string toString(){return "Steppable";}
+
+    virtual void start() {};
+    virtual void step(const unsigned int currentStep) {};
+    virtual void finish() {};
     virtual std::string toString(){return "Steppable";}
+
   };
 };
 #endif

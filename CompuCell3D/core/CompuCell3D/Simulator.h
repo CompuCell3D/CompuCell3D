@@ -101,6 +101,9 @@ namespace CompuCell3D {
 		static PluginManager<Plugin> pluginManager;
 		static PluginManager<Steppable> steppableManager;
 		static BasicPluginManager<PluginBase> pluginBaseManager;
+		
+		PluginManager<Steppable> mySteppableManager;
+		
 		Simulator();
 		virtual ~Simulator();
 		//     PluginManager::plugins_t & getPluginMap(){return pluginManager.getPluginMap();}
