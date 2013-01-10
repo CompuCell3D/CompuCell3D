@@ -41,6 +41,7 @@
 
 #include "TetMesh.h"
 
+// #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <ctime>
@@ -72,6 +73,7 @@ Face::Face() :
 
 Face::~Face()
 {
+//     cerr<<"deleting Face"<<endl;
 }
 
 Tet::Tet() : mat_label(-1)
@@ -107,26 +109,31 @@ Tet::~Tet()
 }
 
 
-
+//have to initialize faces to 0 ptr otherwise might get segfault  
 TetMesh::TetMesh(std::vector<Vertex3D*> &verts, std::vector<Tet*> &tets) :
-    verts(verts), tets(tets), nFaces(0), time(0)
+    verts(verts), tets(tets), nFaces(0), time(0),faces(0)
 {
 }
 
 TetMesh::~TetMesh() {
-
+//      cerr<<"TetMesh::~TetMesh"<<endl;
+//      cerr<<"TetMesh:: =faces "<<faces<<endl;
     // delete tets verts, faces, etc
     if (faces) {
-        delete[] faces;
+        delete [] faces;
         nFaces = 0;
         faces = NULL;
     }
 
+//     cerr<<"TetMesh::~TetMesh - deleted faces"<<endl;
+    
     for(unsigned int v=0; v < verts.size(); v++)
         delete verts[v];
+//     cerr<<"TetMesh::~TetMesh - deleted verts"<<endl;    
     for(unsigned int t=0; t < tets.size(); t++)
         delete tets[t];
-
+//     cerr<<"TetMesh::~TetMesh - deleted tets"<<endl;        
+    
     std::vector<Vertex3D*> *vlist = &verts;
     std::vector<Tet*> *tlist = &tets;
 
