@@ -5,6 +5,14 @@
 #   SET(EXTRA_LIBS dolfin)
 # endif(USE_DOLFIN)
 
+# Get DOLFIN configuration data (dolfin-config.cmake must be in DOLFIN_CMAKE_CONFIG_PATH)
+find_package(dolfin)  # /usr/share/dolfin/cmake/dolfin-config.cmake - this file contains dolfin configurationvariables
+# message("DOLFIN INCLUDE " ${DOLFIN_INCLUDE_DIRS})
+# message("DOLFIN_3RD_PARTY_INCLUDE_DIRS " ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
+
+FIND_PACKAGE(Boost)
+message("THIS IS BOOST VAR" ${Boost_INCLUDE_DIRS})
+
 SET(SRCS
    dolfinCC3D.cpp
    CleaverDolfinUtil.cpp
@@ -48,7 +56,8 @@ INCLUDE_DIRECTORIES(
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${PYINTERFACE_SRC_DIR}/dolfinCC3D
    ${PYTHON_INCLUDE_PATH}
-   /usr/include
+   ${DOLFIN_INCLUDE_DIRS}
+#    ${Boost_INCLUDE_DIRS}
 )
 
 SET_SOURCE_FILES_PROPERTIES(dolfinCC3D.i PROPERTIES CPLUSPLUS ON)
