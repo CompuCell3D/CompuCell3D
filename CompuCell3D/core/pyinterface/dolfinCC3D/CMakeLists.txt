@@ -9,6 +9,7 @@ SET(SRCS
    dolfinCC3D.cpp
    CleaverDolfinUtil.cpp
    CellFieldCleaverSimulator.cpp
+   CustomSubDomains.cpp
 )
 
 SET(EXTRA_LIBS cleaver dolfin)
@@ -47,6 +48,7 @@ INCLUDE_DIRECTORIES(
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${PYINTERFACE_SRC_DIR}/dolfinCC3D
    ${PYTHON_INCLUDE_PATH}
+   /usr/include
 )
 
 SET_SOURCE_FILES_PROPERTIES(dolfinCC3D.i PROPERTIES CPLUSPLUS ON)
