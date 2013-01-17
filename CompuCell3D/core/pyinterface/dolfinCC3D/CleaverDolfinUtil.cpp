@@ -238,11 +238,18 @@ void buildCellFieldDolfinMeshUsingCleaver(void *_cellField,void *_dolfinMesh ,st
 // // //   
 // // // }
 
-void extractSolutionValuesAtLatticePoints(void *_scalarField, void * _dPtr){    
+void extractSolutionValuesAtLatticePoints(void *_scalarField, void * _dPtr, CompuCell3D::Dim3D  boxMin, CompuCell3D::Dim3D boxMax){    
 //   CompuCell3D::WatchableField3D<CompuCell3D::CellG*> * cellField=(CompuCell3D::WatchableField3D<CompuCell3D::CellG*> *)_cellField;
   CompuCell3D::Field3D<float> * scalarField=(CompuCell3D::Field3D<float> *)_scalarField;
   CompuCell3D::Dim3D fieldDim=scalarField->getDim();
   cerr<<"GOT FIELD DIM="<<fieldDim<<endl;
+  bool extractAtAllLatticePoints=true;
+  if (boxMin==boxMax){
+    boxMin=CompuCell3D::Dim3D();
+    boxMax=fieldDim;
+  }else{
+    extractAtAllLatticePoints=false;
+  }
   
 //   dolfin::Function * dolfinFcnPtr=(dolfin::Function *)_dolfinSolutionFunction;
 //   dolfin::Function * dPtr=(dolfin::Function *)_dPtr;
@@ -264,30 +271,62 @@ void extractSolutionValuesAtLatticePoints(void *_scalarField, void * _dPtr){
   cerr<<"dolfinFcnPtr="<<dolfinFcnPtr<<endl;
   dolfin::Array<double> ptArray(3);
   dolfin::Array<double> valArray(1);
-  ptArray[0]=10.0;
-  ptArray[1]=11.0;
-  ptArray[2]=12.0;
+  ptArray[0]=49.0;
+  ptArray[1]=49.0;
+  ptArray[2]=49.0;
   
   CompuCell3D::Point3D pt;
+  
+  	try{
+	  dolfinFcnPtr->eval(valArray,ptArray);
+// 	  scalarField->set(pt,valArray[0]);
+	}
+	catch( std::runtime_error & e)
+	{
+	  scalarField->set(pt,0.0);//if we cannot read concentration at any point we set it to 0.0
+	}
+
+  
 //   int counter=0;
-  for (pt.x= 1 ; pt.x<fieldDim.x-1 ; ++pt.x)
-    for (pt.y= 1 ; pt.y<fieldDim.y-1 ; ++pt.y)
-      for (pt.z= 1 ; pt.z<fieldDim.z-1 ; ++pt.z){
+//   for (pt.x= 1 ; pt.x<fieldDim.x-1 ; ++pt.x)
+//     for (pt.y= 1 ; pt.y<fieldDim.y-1 ; ++pt.y)
+//       for (pt.z= 1 ; pt.z<fieldDim.z-1 ; ++pt.z){
+  
+  
+//   for (pt.x= 0 ; pt.x<fieldDim.x ; ++pt.x)
+//     for (pt.y= 0 ; pt.y<fieldDim.y ; ++pt.y)
+//       for (pt.z= 0 ; pt.z<fieldDim.z ; ++pt.z){
+  
+  for (pt.x= boxMin.x ; pt.x<boxMax.x ; ++pt.x)
+    for (pt.y= boxMin.y ; pt.y<boxMax.y ; ++pt.y)
+      for (pt.z= boxMin.z ; pt.z<boxMax.z ; ++pt.z){
+	
 	ptArray[0]=pt.x;
 	ptArray[1]=pt.y;
 	ptArray[2]=pt.z;
-	dolfinFcnPtr->eval(valArray,ptArray);
-	scalarField->set(pt,valArray[0]);
+// 	dolfinFcnPtr->eval(valArray,ptArray);
+// 	scalarField->set(pt,valArray[0]);
+	
+	try{
+	  dolfinFcnPtr->eval(valArray,ptArray);
+	  scalarField->set(pt,valArray[0]);
+	}
+	catch( std::runtime_error & e)
+	{
+	  scalarField->set(pt,0.0);//if we cannot read concentration at any point we set it to 0.0
+	}
+	
 	
 // 	counter++;
 // 	if (! (counter%100)){
 // 	    cerr<<"processed point="<<counter<<endl;	
 // 	}
       }	
-  dolfinFcnPtr->eval(valArray,ptArray);
-  cerr<<"geometric Dimension="<<dolfinFcnPtr->geometric_dimension()<<endl;
-  
-  cerr<<"val="<<valArray[0]<<endl;
+      
+//   dolfinFcnPtr->eval(valArray,ptArray);
+//   cerr<<"geometric Dimension="<<dolfinFcnPtr->geometric_dimension()<<endl;
+//   
+//   cerr<<"val="<<valArray[0]<<endl;
   
   
   

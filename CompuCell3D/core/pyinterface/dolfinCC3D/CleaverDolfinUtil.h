@@ -2,7 +2,7 @@
 #define CLEAVERDOLFINUTIL_H
 
 #include <vector>
-
+#include <CompuCell3D/Field3D/Dim3D.h>
 
 #include "DolfinCC3DDLLSpecifier.h"
 
@@ -27,5 +27,5 @@ void buildCellFieldDolfinMeshUsingCleaver(void *_cellField,void *_dolfinMesh ,st
 // // // void extractSolutionValuesAtLatticePoints(void *_cellField, dolfin::Function *_dolfinSolutionFunction);
 // // // void extractSolutionValuesAtLatticePoints(void *_cellField, dolfin::Function *_dolfinSolutionFunction,void *_dptr);
 // void extractSolutionValuesAtLatticePoints(void *_cellField, void *_dptr);
-void extractSolutionValuesAtLatticePoints(void *_scalarField, void *_dptr);
+void extractSolutionValuesAtLatticePoints(void *_scalarField, void *_dptr,CompuCell3D::Dim3D  boxMin=CompuCell3D::Dim3D(), CompuCell3D::Dim3D boxMax=CompuCell3D::Dim3D());
 #endif
