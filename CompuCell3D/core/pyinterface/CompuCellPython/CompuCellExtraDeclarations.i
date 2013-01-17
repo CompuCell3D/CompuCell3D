@@ -105,7 +105,7 @@ namespace CompuCell3D {
 
   %template(cellfield) Field3D<CellG *>;
 //   %template(floatfieldExtra) Field3D<float>;
-  %template(floatfieldimplExtra) Field3DImpl<float>;
+//   %template(floatfieldimplExtra) Field3DImpl<float>;
 };
 
 
