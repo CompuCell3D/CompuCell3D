@@ -1,0 +1,5 @@
+<Simulation version="3.6.1">
+    <XMLScript Type="XMLScript">Simulation/CleaverDolfinDemo.xml</XMLScript>
+    <PythonScript>Simulation/CleaverDolfinDemo.py</PythonScript> 
+    <Resource Type="Python">Simulation/CleaverDolfinDemoSteppables.py</Resource>    
+</Simulation>
