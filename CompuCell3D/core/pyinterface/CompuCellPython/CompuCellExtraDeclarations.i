@@ -104,6 +104,8 @@ namespace CompuCell3D {
 
 
   %template(cellfield) Field3D<CellG *>;
+//   %template(floatfieldExtra) Field3D<float>;
+  %template(floatfieldimplExtra) Field3DImpl<float>;
 };
 
 
@@ -143,6 +145,9 @@ namespace CompuCell3D {
 %include <ChangeWatcherPyWrapper.h>
 %include <TypeChangeWatcherPyWrapper.h>
 %include <StepperPyWrapper.h>
+
+%include <CompuCell3D/steppables/PDESolvers/DiffusableVector.h>
+%template (DiffusableVectorFloat) DiffusableVector<float>;
 
 // %nothread PyAttributeAdder;
 %include <PyAttributeAdder.h>
@@ -711,6 +716,8 @@ CompuCell3D::FocalPointPlasticityTrackerData & derefPlasticityTrackerData(std::s
    }
 
 %}
+
+
 
 
 // //List of fields from simulator

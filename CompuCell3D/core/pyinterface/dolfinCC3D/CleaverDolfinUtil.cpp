@@ -18,6 +18,10 @@
 #include <dolfin/mesh/Mesh.h>
 #include <dolfin/mesh/CellType.h>
 #include <dolfin/mesh/MeshEditor.h>
+
+#include <dolfin/function/Function.h>
+#include <dolfin/common/Array.h>
+
 #include <boost/shared_ptr.hpp>
 
 using namespace std;
@@ -133,5 +137,160 @@ void buildCellFieldDolfinMeshUsingCleaver(void *_cellField,void *_dolfinMesh ,st
   
   delete cleaverMesh;
  
- 
+}
+
+
+// void extractSolutionValuesAtLatticePoints(void *_cellField, void *_dolfinSolutionFunction){
+// // // void extractSolutionValuesAtLatticePoints(void *_cellField, dolfin::Function *_dolfinSolutionFunction){
+// // // void extractSolutionValuesAtLatticePoints(void *_cellField, dolfin::Function *_dolfinSolutionFunction,void * _dPtr){    
+// // //   CompuCell3D::WatchableField3D<CompuCell3D::CellG*> * cellField=(CompuCell3D::WatchableField3D<CompuCell3D::CellG*> *)_cellField;
+// // //   
+// // //   CompuCell3D::Dim3D fieldDim=cellField->getDim();
+// // //   cerr<<"GOT FIELD DIM="<<fieldDim<<endl;
+// // //   
+// // // //   dolfin::Function * dolfinFcnPtr=(dolfin::Function *)_dolfinSolutionFunction;
+// // // //   dolfin::Function * dPtr=(dolfin::Function *)_dPtr;
+// // //   dolfin::Function * dolfinFcnPtr=_dolfinSolutionFunction;
+// // // // // //   boost::shared_ptr<  dolfin::Function > *dPtrBoost=reinterpret_cast< boost::shared_ptr<  dolfin::Function > * >(_dPtr);
+// // //   boost::shared_ptr<  dolfin::Function > *dPtrBoost=(boost::shared_ptr<  dolfin::Function > * )_dPtr;
+// // //   dolfin::Function * dPtr=dPtrBoost->get(); 
+// // //   
+// // //   cerr<<"dPtr="<<dPtr<<endl;
+// // //   cerr<<"dolfinFcnPtr="<<dolfinFcnPtr<<endl;
+// // // //   dolfinFcnPtr=dPtr;
+// // //   
+// // //   cerr<<"geometric_dimension="<<dolfinFcnPtr->geometric_dimension()<<endl;
+// // //   
+// // // //   boost::shared_ptr<dolfin::Function> *boostDolfinFcnPtr=(boost::shared_ptr<dolfin::Function> *)_dolfinSolutionFunction;   
+// // // //   
+// // // //   dolfin::Function *dolfinFcnPtr = boostDolfinFcnPtr->get();
+// // //   
+// // //   cerr<<"dolfinFcnPtr="<<dolfinFcnPtr<<endl;
+// // //   dolfin::Array<double> ptArray(3);
+// // //   dolfin::Array<double> valArray(1);
+// // //   ptArray[0]=10.0;
+// // //   ptArray[1]=11.0;
+// // //   ptArray[2]=12.0;
+// // //   
+// // //   dolfinFcnPtr->eval(valArray,ptArray);
+// // //   cerr<<"geometric Dimension="<<dolfinFcnPtr->geometric_dimension()<<endl;
+// // //   
+// // //   cerr<<"val="<<valArray[0]<<endl;
+// // //   
+// // //   
+// // //   
+// // //   
+// // //   
+// // // }
+
+// // // void extractSolutionValuesAtLatticePoints(void *_cellField, void * _dPtr){    
+// // //   CompuCell3D::WatchableField3D<CompuCell3D::CellG*> * cellField=(CompuCell3D::WatchableField3D<CompuCell3D::CellG*> *)_cellField;
+// // //   
+// // //   CompuCell3D::Dim3D fieldDim=cellField->getDim();
+// // //   cerr<<"GOT FIELD DIM="<<fieldDim<<endl;
+// // //   
+// // // //   dolfin::Function * dolfinFcnPtr=(dolfin::Function *)_dolfinSolutionFunction;
+// // // //   dolfin::Function * dPtr=(dolfin::Function *)_dPtr;
+// // //   dolfin::Function * dolfinFcnPtr=0;
+// // // // // //   boost::shared_ptr<  dolfin::Function > *dPtrBoost=reinterpret_cast< boost::shared_ptr<  dolfin::Function > * >(_dPtr);
+// // //   boost::shared_ptr<  dolfin::Function > *dPtrBoost=(boost::shared_ptr<  dolfin::Function > * )_dPtr;
+// // //   dolfin::Function * dPtr=dPtrBoost->get(); 
+// // //   
+// // //   cerr<<"dPtr="<<dPtr<<endl;
+// // //   cerr<<"dolfinFcnPtr="<<dolfinFcnPtr<<endl;
+// // //   dolfinFcnPtr=dPtr;
+// // //   
+// // //   cerr<<"geometric_dimension="<<dolfinFcnPtr->geometric_dimension()<<endl;
+// // //   
+// // // //   boost::shared_ptr<dolfin::Function> *boostDolfinFcnPtr=(boost::shared_ptr<dolfin::Function> *)_dolfinSolutionFunction;   
+// // // //   
+// // // //   dolfin::Function *dolfinFcnPtr = boostDolfinFcnPtr->get();
+// // //   
+// // //   cerr<<"dolfinFcnPtr="<<dolfinFcnPtr<<endl;
+// // //   dolfin::Array<double> ptArray(3);
+// // //   dolfin::Array<double> valArray(1);
+// // //   ptArray[0]=10.0;
+// // //   ptArray[1]=11.0;
+// // //   ptArray[2]=12.0;
+// // //   
+// // //   CompuCell3D::Point3D pt;
+// // // //   int counter=0;
+// // //   for (pt.x= 1 ; pt.x<fieldDim.x-1 ; ++pt.x)
+// // //     for (pt.y= 1 ; pt.y<fieldDim.y-1 ; ++pt.y)
+// // //       for (pt.z= 1 ; pt.z<fieldDim.z-1 ; ++pt.z){
+// // // 	ptArray[0]=pt.x;
+// // // 	ptArray[1]=pt.y;
+// // // 	ptArray[2]=pt.z;
+// // // 	dolfinFcnPtr->eval(valArray,ptArray);
+// // // // 	counter++;
+// // // // 	if (! (counter%100)){
+// // // // 	    cerr<<"processed point="<<counter<<endl;	
+// // // // 	}
+// // //       }	
+// // //   dolfinFcnPtr->eval(valArray,ptArray);
+// // //   cerr<<"geometric Dimension="<<dolfinFcnPtr->geometric_dimension()<<endl;
+// // //   
+// // //   cerr<<"val="<<valArray[0]<<endl;
+// // //   
+// // //   
+// // //   
+// // //   
+// // //   
+// // // }
+
+void extractSolutionValuesAtLatticePoints(void *_scalarField, void * _dPtr){    
+//   CompuCell3D::WatchableField3D<CompuCell3D::CellG*> * cellField=(CompuCell3D::WatchableField3D<CompuCell3D::CellG*> *)_cellField;
+  CompuCell3D::Field3D<float> * scalarField=(CompuCell3D::Field3D<float> *)_scalarField;
+  CompuCell3D::Dim3D fieldDim=scalarField->getDim();
+  cerr<<"GOT FIELD DIM="<<fieldDim<<endl;
+  
+//   dolfin::Function * dolfinFcnPtr=(dolfin::Function *)_dolfinSolutionFunction;
+//   dolfin::Function * dPtr=(dolfin::Function *)_dPtr;
+  dolfin::Function * dolfinFcnPtr=0;
+// // //   boost::shared_ptr<  dolfin::Function > *dPtrBoost=reinterpret_cast< boost::shared_ptr<  dolfin::Function > * >(_dPtr);
+  boost::shared_ptr<  dolfin::Function > *dPtrBoost=(boost::shared_ptr<  dolfin::Function > * )_dPtr;
+  dolfin::Function * dPtr=dPtrBoost->get(); 
+  
+  cerr<<"dPtr="<<dPtr<<endl;
+  cerr<<"dolfinFcnPtr="<<dolfinFcnPtr<<endl;
+  dolfinFcnPtr=dPtr;
+  
+  cerr<<"geometric_dimension="<<dolfinFcnPtr->geometric_dimension()<<endl;
+  
+//   boost::shared_ptr<dolfin::Function> *boostDolfinFcnPtr=(boost::shared_ptr<dolfin::Function> *)_dolfinSolutionFunction;   
+//   
+//   dolfin::Function *dolfinFcnPtr = boostDolfinFcnPtr->get();
+  
+  cerr<<"dolfinFcnPtr="<<dolfinFcnPtr<<endl;
+  dolfin::Array<double> ptArray(3);
+  dolfin::Array<double> valArray(1);
+  ptArray[0]=10.0;
+  ptArray[1]=11.0;
+  ptArray[2]=12.0;
+  
+  CompuCell3D::Point3D pt;
+//   int counter=0;
+  for (pt.x= 1 ; pt.x<fieldDim.x-1 ; ++pt.x)
+    for (pt.y= 1 ; pt.y<fieldDim.y-1 ; ++pt.y)
+      for (pt.z= 1 ; pt.z<fieldDim.z-1 ; ++pt.z){
+	ptArray[0]=pt.x;
+	ptArray[1]=pt.y;
+	ptArray[2]=pt.z;
+	dolfinFcnPtr->eval(valArray,ptArray);
+	scalarField->set(pt,valArray[0]);
+	
+// 	counter++;
+// 	if (! (counter%100)){
+// 	    cerr<<"processed point="<<counter<<endl;	
+// 	}
+      }	
+  dolfinFcnPtr->eval(valArray,ptArray);
+  cerr<<"geometric Dimension="<<dolfinFcnPtr->geometric_dimension()<<endl;
+  
+  cerr<<"val="<<valArray[0]<<endl;
+  
+  
+  
+  
+  
 }

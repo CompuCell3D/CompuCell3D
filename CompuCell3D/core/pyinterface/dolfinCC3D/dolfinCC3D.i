@@ -43,10 +43,6 @@ using namespace dolfin; // helps SWIG figure out names from dolfin namespace oth
 //-----------------------------------------------------------------------------
 %include <boost_shared_ptr.i>
 
-%include "dolfin/swig/import/mesh.i" // this file is essential to wrap any C++ class which inherits from SubDomain (or any non-dolfin class which inherits from dolfin class)
-
-
-
 // C++ std::string handling
 %include "std_string.i"
 
@@ -56,9 +52,20 @@ using namespace dolfin; // helps SWIG figure out names from dolfin namespace oth
 // C++ std::map handling
 %include "std_vector.i"
 
+
+
+%include "dolfin/swig/import/mesh.i" // this file is essential to wrap any C++ class which inherits from SubDomain (or any non-dolfin class which inherits from dolfin class)
+// %include "dolfin/swig/import/function.i" // when passing Function objects from Python to C++ and avoiding type casts it is necessary to include this file
+//%include "dolfin/swig/forwarddeclarations.i" // this file is essential to wrap any C++ class which inherits from SubDomain (or any non-dolfin class which inherits from dolfin class)
+//%include "dolfin/swig/globalincludes.i" // this file is essential to wrap any C++ class which inherits from SubDomain (or any non-dolfin class which inherits from dolfin class)
+//%include "dolfin/swig/mesh/pre.i" // this file is essential to wrap any C++ class which inherits from SubDomain (or any non-dolfin class which inherits from dolfin class)
+
+
 //%include <CompuCell3D/Field3D/Dim3D.h>
 
 %template(vectorint) std::vector<unsigned char>;
+
+// %shared_ptr(dolfin::Function) // when passing Function objects from Python to C++ and avoiding type casts it is necessary to include this file
 
 %include <dolfinCC3D.h>
 %include <CleaverDolfinUtil.h>

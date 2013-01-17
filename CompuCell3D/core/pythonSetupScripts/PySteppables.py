@@ -375,6 +375,46 @@ class SecretionBasePy(SteppableBasePy):
         SteppableBasePy.__init__(self,_simulator,_frequency)   
         self.runBeforeMCS=1    
 
+class DolfinSolverSteppable(RunBeforeMCSSteppableBasePy):
+    def __init__(self,_simulator,_frequency=1):
+        RunBeforeMCSSteppableBasePy.__init__(self,_simulator, _frequency)
+        
+        self.fieldDict={} # {fieldName:field}
+        self.diffusableVector=None                
+        #self.createFields(['NEWFIELD_EXTRA','NEWFIELD']) # typically each class which inherits DolfinSolverSteppable will call createFields function
+        
+    def createFields(self,_fieldNameList,_registerAllFields=True):
+        import CompuCell
+        
+        dimWithBorders=CompuCell.Dim3D()
+        dimWithBorders.x=self.dim.x+2
+        dimWithBorders.y=self.dim.y+2
+        dimWithBorders.z=self.dim.z+2
+        
+        self.diffusableVector=CompuCell.DiffusableVectorFloat()
+        self.diffusableVector.allocateDiffusableFieldVector(len(_fieldNameList),dimWithBorders)
+        nameVector=CompuCell.vectorstdstring()
+        
+        for fieldName in _fieldNameList:
+            nameVector.push_back(fieldName)  
+        self.diffusableVector.setConcentrationFieldNameVector(nameVector)
+        
+        for fieldName in _fieldNameList:
+            field=self.diffusableVector.getConcentrationField(fieldName)
+            self.fieldDict[fieldName]=field
+        
+        if _registerAllFields:
+            self.registerFields(_fieldNameList)
+            
+    def registerFields(self,_fieldNameList):
+        for fieldName in _fieldNameList:
+            try:
+                field=self.fieldDict[fieldName]
+                self.simulator.registerConcentrationField(fieldName,field)                            
+            except LookupError:
+                print 'DolfinSolverSteppable: COULD NOT FIND field=',fieldName
+                
+        
         
 class SteppableRegistry(SteppablePy):
     def __init__(self):

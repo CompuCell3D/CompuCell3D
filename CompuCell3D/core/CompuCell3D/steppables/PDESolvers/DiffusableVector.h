@@ -57,6 +57,10 @@ public:
     
     };
 
+    void setConcentrationFieldNameVector(std::vector<std::string> &_fieldNameVector){
+        concentrationFieldNameVector=_fieldNameVector;        
+    }
+    
     virtual void allocateDiffusableFieldVector(unsigned int numberOfFields,Dim3D fieldDim)
     {
       boundaryStrategy=BoundaryStrategy::getInstance();

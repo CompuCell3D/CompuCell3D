@@ -14,10 +14,18 @@ namespace CompuCell3D{
     
 }
 
+namespace dolfin{
+   class Function;
+};
+
 void dolfinMeshInfo(void *_obj);  
 void simulateCleaverMesh(void *_cellField,std::vector<unsigned char> _includeTypesVec);
 
 void buildCellFieldDolfinMeshUsingCleaver(void *_cellField,void *_dolfinMesh ,std::vector<unsigned char> _includeTypesVec,bool _verbose=true);
 
-
+// void extractSolutionValuesAtLatticePoints(void *_cellField, void *_dolfinSolutionFunction);
+// // // void extractSolutionValuesAtLatticePoints(void *_cellField, dolfin::Function *_dolfinSolutionFunction);
+// // // void extractSolutionValuesAtLatticePoints(void *_cellField, dolfin::Function *_dolfinSolutionFunction,void *_dptr);
+// void extractSolutionValuesAtLatticePoints(void *_cellField, void *_dptr);
+void extractSolutionValuesAtLatticePoints(void *_scalarField, void *_dptr);
 #endif

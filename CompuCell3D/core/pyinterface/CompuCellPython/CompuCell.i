@@ -68,6 +68,8 @@
 
 #include <CompuCell3D/Field3D/Neighbor.h>
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
+// #include <CompuCell3D/Field3D/Field3D.h>
+#include <CompuCell3D/Field3D/Field3DImpl.h>
 #include <CompuCell3D/Field3D/WatchableField3D.h>
 #include <CompuCell3D/ClassRegistry.h>
 #include <CompuCell3D/Simulator.h>
@@ -109,6 +111,9 @@
 #include <TypeChangeWatcherPyWrapper.h>
 
 #include <CompuCell3D/Potts3D/AttributeAdder.h>
+
+
+
 
 // Namespaces
 using namespace std;
@@ -235,6 +240,8 @@ using namespace CompuCell3D;
 
 %include "Field3D/Point3D.h"
 %include "Field3D/Dim3D.h"
+// %include "Field3D/Field3D.h"
+%include "Field3D/Field3DImpl.h"
 %include "Field3D/WatchableField3D.h"
 
 %include <NeighborFinderParams.h>
@@ -326,8 +333,7 @@ using namespace CompuCell3D;
         
     __swig_setmethods__["xCOM"] = setxCOM     
     if _newclass: xCOM = property(_CompuCell.CellG_xCOM_get,setxCOM)
-
-
+    
     def setyCOM(self,_yCOM):
         raise AttributeError('ASSIGNMENT cell.yCOM=%s is illegal. yCOM is read only variable'%(_yCOM))
         
@@ -412,7 +418,7 @@ using namespace CompuCell3D;
     
     def setlX(self,_lX):
         raise AttributeError('ASSIGNMENT cell.lX=%s is illegal. lX is read only variable'%(_lX))
-        
+        	
     __swig_setmethods__["lX"] = setlX     
     if _newclass: lX = property(_CompuCell.CellG_lX_get,setlX)
     
@@ -492,7 +498,7 @@ namespace CompuCell3D {
          result.z=6;
          return 4;
       };
-
+     
 
       void produceNumber(double seed,double & result){
          result=88;
@@ -514,6 +520,9 @@ namespace CompuCell3D {
   //%template (simulatorFieldMap) ::std::map<std::string,Field3D<float> >;
   //%template (simulatorFieldMap) ::std::set<int>;
 };
+
+
+
 
 %template(vectorstdstring) std::vector<std::string>;
 %template(vectordouble) std::vector<double>;
