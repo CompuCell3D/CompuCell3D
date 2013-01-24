@@ -67,9 +67,13 @@ float CellFieldCleaverSimulatorNew::valueAt(float x, float y, float z) const
 
     if (! cell){
         return -9.0;
-    }else if (includeCellTypesSet.find(cell->type)!=includeCellTypesSet.end()){
+    }else if (includeCellTypesSet.find(cell->type)!=includeCellTypesSet.end()){ //first check cell type
         return 2.0+cell->type;
-    } else {
+	
+    } else if (includeCellIdsSet.find(cell->id)!=includeCellIdsSet.end()){ //then cell id - this way we can have 'additive' specification of what to mesh
+									   // and order is important here	
+        return 2.0+cell->type;	
+    }else {
         return -9.0;
     }
 

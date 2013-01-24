@@ -21,7 +21,10 @@ namespace dolfin{
 void dolfinMeshInfo(void *_obj);  
 void simulateCleaverMesh(void *_cellField,std::vector<unsigned char> _includeTypesVec);
 
-void buildCellFieldDolfinMeshUsingCleaver(void *_cellField,void *_dolfinMesh ,std::vector<unsigned char> _includeTypesVec,bool _verbose=true);
+// void buildCellFieldDolfinMeshUsingCleaver(void *_cellField,void *_dolfinMesh ,std::vector<unsigned char>& _includeTypesVec, std::vector<long> & _includeIdsVec, bool _verbose=true);
+
+//to enable automatic conversion from pythoh list to std vector we have to accept vector parameter either by value or a constant reference. 
+void buildCellFieldDolfinMeshUsingCleaver(void *_cellField,void *_dolfinMesh , const std::vector<unsigned char>& _includeTypesVec=std::vector<unsigned char>(), const std::vector<long> & _includeIdsVec=std::vector<long>(), bool _verbose=true);
 
 // void extractSolutionValuesAtLatticePoints(void *_cellField, void *_dolfinSolutionFunction);
 // // // void extractSolutionValuesAtLatticePoints(void *_cellField, dolfin::Function *_dolfinSolutionFunction);

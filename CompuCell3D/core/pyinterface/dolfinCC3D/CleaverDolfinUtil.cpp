@@ -75,7 +75,8 @@ void simulateCleaverMesh(void *_cellField,std::vector<unsigned char> _includeTyp
 // // //   delete mesh;  
 }
 
-void buildCellFieldDolfinMeshUsingCleaver(void *_cellField,void *_dolfinMesh ,std::vector<unsigned char> _includeTypesVec,bool _verbose){
+// void buildCellFieldDolfinMeshUsingCleaver(void *_cellField,void *_dolfinMesh ,std::vector<unsigned char> & _includeTypesVec, std::vector<long> & _includeIdsVec,bool _verbose){
+void buildCellFieldDolfinMeshUsingCleaver(void *_cellField,void *_dolfinMesh ,const std::vector<unsigned char>& _includeTypesVec,const std::vector<long> & _includeIdsVec, bool _verbose){  
   
   CompuCell3D::WatchableField3D<CompuCell3D::CellG*> * cellField=(CompuCell3D::WatchableField3D<CompuCell3D::CellG*> *)_cellField;
   boost::shared_ptr<dolfin::Mesh> *dolfinMesh=(boost::shared_ptr<dolfin::Mesh> *)_dolfinMesh; 
@@ -91,6 +92,9 @@ void buildCellFieldDolfinMeshUsingCleaver(void *_cellField,void *_dolfinMesh ,st
   
   set<unsigned char> cellTypesSet(_includeTypesVec.begin(),_includeTypesVec.end());
   cfcs.setIncludeCellTypesSet(cellTypesSet);
+
+  set<long> cellIdsSet(_includeIdsVec.begin(),_includeIdsVec.end());
+  cfcs.setIncludeCellIdsSet(cellIdsSet);
   
 
   Cleaver::InverseField inverseField = Cleaver::InverseField(&cfcs);
@@ -105,6 +109,8 @@ void buildCellFieldDolfinMeshUsingCleaver(void *_cellField,void *_dolfinMesh ,st
   Cleaver::TetMesh *cleaverMesh = Cleaver::createMeshFromVolume(volume, _verbose);
   
   Cleaver::TetMesh & cleaverMeshRef=*cleaverMesh;
+  
+  cleaverMesh->writeNodeEle("DEMO_MESH", true);// for testing purposes
   
   //building dolfinMesh
   

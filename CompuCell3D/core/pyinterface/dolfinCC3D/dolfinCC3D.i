@@ -64,6 +64,7 @@ using namespace dolfin; // helps SWIG figure out names from dolfin namespace oth
 //%include <CompuCell3D/Field3D/Dim3D.h>
 
 %template(vectorint) std::vector<unsigned char>;
+%template(vectorlong) std::vector<long>;
 
 // %shared_ptr(dolfin::Function) // when passing Function objects from Python to C++ and avoiding type casts it is necessary to include this file
 

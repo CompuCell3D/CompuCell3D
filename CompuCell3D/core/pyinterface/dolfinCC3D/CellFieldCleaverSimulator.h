@@ -33,7 +33,7 @@ namespace CompuCell3D {
     {
     public:
         CellFieldCleaverSimulatorNew();
-        ~CellFieldCleaverSimulatorNew();
+        virtual ~CellFieldCleaverSimulatorNew();
     
         virtual float valueAt(float x, float y, float z) const;
         virtual Cleaver::BoundingBox bounds() const;
@@ -45,11 +45,22 @@ namespace CompuCell3D {
             includeCellTypesSet=_cellTypeSet;
             end_sitr=includeCellTypesSet.end();
         }
-        
-        void addIncludeCellTypesSet(unsigned char  _type){            
+
+        void includeCellType(unsigned char  _type){            
 	    includeCellTypesSet.insert(_type);
             end_sitr=includeCellTypesSet.end();
         }
+        
+        void setIncludeCellIdsSet(std::set<long> _includeCellIdsSet){
+            includeCellIdsSet=_includeCellIdsSet;
+            endId_sitr=includeCellIdsSet.end();
+        }        
+        
+        void includeCellId(long  _cellId){            	    
+	    includeCellIdsSet.insert(_cellId);
+            endId_sitr=includeCellIdsSet.end();
+        }
+
         
     private:
         Cleaver::BoundingBox m_bounds;
@@ -59,6 +70,9 @@ namespace CompuCell3D {
         std::set<unsigned char> includeCellTypesSet;
         std::set<unsigned char>::iterator end_sitr;
 
+        std::set<long> includeCellIdsSet;
+        std::set<long>::iterator endId_sitr;
+	
             
     };
     

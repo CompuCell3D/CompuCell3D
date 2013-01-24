@@ -26,10 +26,12 @@ class CleaverDolfinDemoSteppable(DolfinSolverSteppable):
    
       self.mesh = Mesh() 
       import dolfinCC3D
-
-      dolfinCC3D.buildCellFieldDolfinMeshUsingCleaver(self.cellField,self.mesh ,[1,2])
-      self.vtk_file = File("cc3d_new.pvd")      
-      self.vtk_file << self.mesh
+      
+      #signature
+      # dolfinCC3D.buildCellFieldDolfinMeshUsingCleaver(cellField,mesh ,cellTypesList,cellIdsList,verbose=[True/False - default False])      
+      dolfinCC3D.buildCellFieldDolfinMeshUsingCleaver(self.cellField,self.mesh ,[1],[1,2,3,4,5])
+      #self.vtk_file = File("cc3d_new.pvd")      
+      #self.vtk_file << self.mesh
       
       self.V = FunctionSpace(self.mesh, 'CG', 1)
       self.u = Function(self.V)
@@ -62,12 +64,12 @@ class CleaverDolfinDemoSteppable(DolfinSolverSteppable):
     
     # subdomain number and fill cell value in k
       k_values = [1, 10]  # values of k in the two subdomains
-      print 'len(subdomains.array())', len(subdomains.array())
-      for cell_no in range(len(subdomains.array())):
-        #print 'cell_no', cell_no
-        subdomain_no = subdomains.array()[cell_no]
-        k.vector()[cell_no] = k_values[subdomain_no]
-      print'DID K---------------------'
+      ###print 'len(subdomains.array())', len(subdomains.array())
+      ###for cell_no in range(len(subdomains.array())):
+        ####print 'cell_no', cell_no
+        ###subdomain_no = subdomains.array()[cell_no]
+        ###k.vector()[cell_no] = k_values[subdomain_no]
+      ###print'DID K---------------------'
     # Much more efficient vectorized code
     # (subdomains.array() has elements of type uint32, which
     # must be transformed to plain int for numpy.choose to work)
