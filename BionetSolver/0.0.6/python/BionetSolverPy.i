@@ -31,6 +31,7 @@ using namespace std;
 namespace std {
     typedef map<unsigned int, double> UIntDoubleMap;
     %template(UIntDoubleMap) map<unsigned int, double>;
+    %template(StdStringDoubleMap) map<std::string, double>;    
 }
 
 // C++ std::pair handling
