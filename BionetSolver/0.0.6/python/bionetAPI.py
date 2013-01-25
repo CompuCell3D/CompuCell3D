@@ -90,6 +90,15 @@ def timestepBionetworks():
     else:
         printInitializationWarningMessage()
 
+def getBionetworkParams(cellID,modelName=''):
+    global bionetworkManager
+    return bionetworkManager.getBionetworkParams(cellID,modelName)
+
+def getBionetworkState(cellID,modelName=''):
+    global bionetworkManager
+    return bionetworkManager.getBionetworkState(cellID,modelName)
+    
+
 #   getBionetworkValue( _propertyName, _currentID )
 def getBionetworkValue( _propertyName, _currentID = "Global"):
     global bionetworkManager
@@ -695,11 +704,20 @@ class BionetworkManager( object ):
         else:
             returnValue = propertyValue[1]
         return returnValue
-        
-    #   findBionetworkPropertyValue( self, propertyName, cellId)
+                                    
+    def getBionetworkParams(self,cellID,modelName=''):
+        bionetwork=self.getBionetworkByCellID(cellID)        
+        return bionetwork.getBionetworkParams(modelName)
+
+    def getBionetworkState(self,cellID,modelName=''):        
+        bionetwork=self.getBionetworkByCellID(cellID)        
+        return bionetwork.getBionetworkState(modelName)
+
+
     def findBionetworkPropertyValue( self, propertyName, cellID):
         splitString = self.utilities.splitStringAtFirst( '_', propertyName )
         propertyValue = [False, 0.0]
+        
         #if( propertyName == "CellType" ):
         if( propertyName == "TemplateLibrary" ):
             propertyValue[0] = True
@@ -719,7 +737,12 @@ class BionetworkManager( object ):
         #        propertyValue[0] = True
         #        propertyValue[1] = self.getCC3DCellProperty( splitString[1], self.getCC3DCellByID(cellID) )
         else:
+            #bionetwork=self.getBionetworkByCellID(cellID)
+            #propertyValue = [True, 1.0]            
+            #return propertyValue
+            
             propertyValue = self.getBionetworkByCellID(cellID).findPropertyValue( propertyName )
+            #print 'propertyValue =',propertyValue 
         return propertyValue
     
     def findPropertyValue( self, propertyName, cellID = "Global" ):
@@ -729,7 +752,7 @@ class BionetworkManager( object ):
             for currentCellID in self.getCellIDs():
                 propertyValue[currentCellID] = \
                     self.findBionetworkPropertyValue(propertyName, currentCellID)[1]
-        elif( cellID in self.getCellIDs() ):
+        elif( cellID in self.getCellIDs() ):            
             propertyValue = self.findBionetworkPropertyValue(propertyName, cellID)
         elif( cellID in self.getBionetworkTemplateLibraryNames() ):
             if( cellID in self.getNonCellBionetworkNames() ):

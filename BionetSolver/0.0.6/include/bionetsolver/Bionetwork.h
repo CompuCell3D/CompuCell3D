@@ -55,6 +55,9 @@ class BIONETWORK_EXPORT Bionetwork{
         
         void setPropertyValue( std::string, double );
         std::pair<bool, double> findPropertyValue( std::string ) const ;
+            
+        std::map<std::string, double> getBionetworkParams( const std::string & modelName="" ) const ;
+        std::map<std::string, double> getBionetworkState(const std::string & modelName="") const ;        
         //std::pair<bool, double> findCellPropertyValue( std::string ) const ;
         
         //void changeCellType(const BionetworkTemplateLibrary * );

@@ -8,6 +8,7 @@
 
 #include <iostream>
 
+using namespace std;
 
 Bionetwork::Bionetwork() : 
     //divideVolume(65535),
@@ -350,14 +351,40 @@ void Bionetwork::printMessage() const {
     std::cout << "This is the print message function." << std::endl;
 }
 
+std::map<std::string, double> Bionetwork::getBionetworkParams(const std::string & modelName) const {
+//     std::map<std::string, soslib_IntegratorInstance *>::const_iterator integrItr = integrators.begin();
+    
+    std::map<std::string, soslib_IntegratorInstance *>::const_iterator integrItr=integrators.find(modelName);
+    if (integrItr==integrators.end()){
+        integrItr = integrators.begin();
+    }
+    
+    
+    return integrItr->second->getParamValues();
+}
+
+std::map<std::string, double> Bionetwork::getBionetworkState(const std::string & modelName) const {
+    
+    std::map<std::string, soslib_IntegratorInstance *>::const_iterator integrItr=integrators.find(modelName);
+    if (integrItr==integrators.end()){
+        integrItr = integrators.begin();
+    }
+    
+//     std::map<std::string, soslib_IntegratorInstance *>::const_iterator integrItr = integrators.begin();
+    return integrItr->second->getState();
+}
+
 
 std::pair<bool, double> Bionetwork::findPropertyValue( std::string property ) const {
 
     bool valueFound = false;
     std::pair<bool, double> value;
     std::map<std::string, soslib_IntegratorInstance *>::const_iterator integrItr = integrators.begin();
+    
     for(; integrItr != integrators.end(); ++integrItr){
+//         cerr<<"integrator name="<<integrItr->first<<endl;
         value = integrItr->second->findValueAsDouble( property );
+//         value =  std::pair<bool, double>(true,1.0);
         if( value.first ){
             valueFound = true;
             break;
