@@ -103,6 +103,23 @@ void soslib_IntegratorInstance::setStateValue(std::pair<std::string, double> nam
     setState( stateMap );
 }
 
+//this can be optimized even further if we decide to cache map of model indexes - variableIndex_t*
+void soslib_IntegratorInstance::setStateDirect(const std::map<std::string, double> & state){
+    if (ii ){
+        variableIndex_t* currentVariableIndex = 0;
+        for (std::map<std::string, double>::const_iterator it = state.begin();it != state.end(); ++it){
+            currentVariableIndex =ODEModel_getVariableIndex( odeModel->getOdeModel(), it->first.c_str() );            
+            if(currentVariableIndex ){
+                IntegratorInstance_setVariableValue( ii, currentVariableIndex, it->second );
+                //std::cout << "Just called IntegratorInstance_setVariableValue..." << std::endl;
+                VariableIndex_free(currentVariableIndex);
+                currentVariableIndex = 0;
+                
+            }
+        }
+    }
+}
+
 void soslib_IntegratorInstance::setState(std::map<std::string, double> state){
     if (ii != NULL){
         //std::cout << "soslib_IntegratorInstance::setState was called..." << std::endl;
@@ -241,6 +258,27 @@ void soslib_IntegratorInstance::setParamValues(std::map<std::string, double> par
         }
     }
 }
+
+void soslib_IntegratorInstance::setParamsDirect(const std::map<std::string, double> & paramValues){
+    if (ii != NULL){
+        variableIndex_t* varIndex = NULL;
+        for (std::map<std::string, double>::const_iterator it = paramValues.begin();
+            it != paramValues.end(); ++it){
+            
+            varIndex = ODEModel_getVariableIndex(odeModel->getOdeModel(), it->first.c_str());
+            //IntegratorInstance_setVariableValue(ii,
+            //    ODEModel_getVariableIndex(odeModel->getOdeModel(), it->first.c_str()),
+            //    it->second);
+            if( varIndex != NULL ){
+                IntegratorInstance_setVariableValue(ii, varIndex, it->second);
+                VariableIndex_free(varIndex);
+                varIndex = NULL;
+            }
+        }
+    }
+}
+
+
 
 std::string soslib_IntegratorInstance::getStateAsString(){
     std::ostringstream stateString("");
