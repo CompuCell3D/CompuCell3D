@@ -97,7 +97,16 @@ def getBionetworkParams(cellID,modelName=''):
 def getBionetworkState(cellID,modelName=''):
     global bionetworkManager
     return bionetworkManager.getBionetworkState(cellID,modelName)
-    
+
+
+def setBionetworkParams(cellID,modelName,params):
+    global bionetworkManager
+    return bionetworkManager.setBionetworkParams(cellID,modelName,params)
+
+def setBionetworkState(cellID,modelName,state):
+    global bionetworkManager
+    return bionetworkManager.setBionetworkState(cellID,modelName,state)
+
 
 #   getBionetworkValue( _propertyName, _currentID )
 def getBionetworkValue( _propertyName, _currentID = "Global"):
@@ -672,7 +681,7 @@ class BionetworkManager( object ):
                 #getIntracellStateVarNamesAsString( bionetworkSBML ) )
                 getBionetworkStateVarNamesAsString( bionetworkSBML ) )
         output.close()
-    
+       
     #   writeBionetworkStateToFile( self, mcs, currentID, bionetworkSBML, outputFileName, fileMode )
     def writeBionetworkStateToFile( self, mcs, currentID, bionetworkSBML, outputFileName, fileMode ):
         output = open( outputFileName, fileMode )
@@ -708,10 +717,18 @@ class BionetworkManager( object ):
     def getBionetworkParams(self,cellID,modelName=''):
         bionetwork=self.getBionetworkByCellID(cellID)        
         return bionetwork.getBionetworkParams(modelName)
+        
+    def setBionetworkParams(self,cellID,modelName,params):        
+        bionetwork=self.getBionetworkByCellID(cellID)        
+        return bionetwork.setBionetworkParams(modelName,params)
 
     def getBionetworkState(self,cellID,modelName=''):        
         bionetwork=self.getBionetworkByCellID(cellID)        
         return bionetwork.getBionetworkState(modelName)
+
+    def setBionetworkState(self,cellID,modelName,state):        
+        bionetwork=self.getBionetworkByCellID(cellID)        
+        return bionetwork.setBionetworkState(modelName,state)
 
 
     def findBionetworkPropertyValue( self, propertyName, cellID):

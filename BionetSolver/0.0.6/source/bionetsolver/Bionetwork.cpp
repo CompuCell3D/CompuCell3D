@@ -363,6 +363,20 @@ std::map<std::string, double> Bionetwork::getBionetworkParams(const std::string 
     return integrItr->second->getParamValues();
 }
 
+void Bionetwork::setBionetworkParams(const std::string & modelName, const std::map<std::string, double> & _paramMap){
+    std::map<std::string, soslib_IntegratorInstance *>::const_iterator integrItr=integrators.find(modelName);
+    if (integrItr==integrators.end()){
+        cerr<<"COULD NOT SET PARAMS FOR "<<modelName<<". PLease make sure that cell has this model defined"<<endl;
+//         integrItr = integrators.begin();
+    }else{
+        integrItr->second->setParamsDirect(_paramMap);
+    }
+    
+     
+}
+
+
+
 std::map<std::string, double> Bionetwork::getBionetworkState(const std::string & modelName) const {
     
     std::map<std::string, soslib_IntegratorInstance *>::const_iterator integrItr=integrators.find(modelName);
@@ -373,6 +387,19 @@ std::map<std::string, double> Bionetwork::getBionetworkState(const std::string &
 //     std::map<std::string, soslib_IntegratorInstance *>::const_iterator integrItr = integrators.begin();
     return integrItr->second->getState();
 }
+
+void Bionetwork::setBionetworkState(const std::string & modelName, const std::map<std::string, double> & _stateMap){
+    std::map<std::string, soslib_IntegratorInstance *>::const_iterator integrItr=integrators.find(modelName);
+    if (integrItr==integrators.end()){
+        cerr<<"COULD NOT SET STATE FOR "<<modelName<<". PLease make sure that cell has this model defined"<<endl;        
+//         integrItr = integrators.begin();
+    }else{
+        integrItr->second->setStateDirect(_stateMap);
+    }
+
+}    
+
+
 
 
 std::pair<bool, double> Bionetwork::findPropertyValue( std::string property ) const {

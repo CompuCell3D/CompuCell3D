@@ -36,9 +36,11 @@
         
         std::map<std::string, double> getState() const ;
         void setState(std::map<std::string, double> );
+        void setStateDirect(const std::map<std::string, double> &);
         std::map<std::string, double> getParamValues() const ;
         void setParamValues(std::map<std::string, double> );
-        
+        void setParamsDirect(const std::map<std::string, double> &);
+            
         double getValueAsDouble( std::string ) const ;
         std::pair<bool, double> findValueAsDouble( std::string ) const ;
         
