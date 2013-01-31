@@ -4,11 +4,13 @@
 #include <dolfin/common/Array.h>
 // #include <dolfin/mesh/Mesh.h>
 // #include <dolfin/mesh/SubDomain.h>
+#include <CompuCell3D/Field3D/Dim3D.h>
 #include <dolfin.h>
 #include <vector>
+#include <set>
 
 namespace CompuCell3D{
-    class Dim3D;
+    class Dim3D;    
     class Point3D;
     class CellG;
     template <class T> class Field3D;
@@ -45,6 +47,23 @@ private:
   
 };
 
+class SubdomainFlex: public SubDomain{
+public:
+  SubdomainFlex(void * _cellField=0);
+  ~SubdomainFlex();
+  void setCellField(void * _cellField);
+  void includeEntities(const std::vector<unsigned char>& _includeTypesVec=std::vector<unsigned char>(), const std::vector<long> & _includeIdsVec=std::vector<long>());  
+  virtual bool inside(const Array<double>& x, bool on_boundary) const;  
+  
+private:
+  CompuCell3D::WatchableField3D<CompuCell3D::CellG *> *cellField;
+  CompuCell3D::Dim3D fieldDim;
+//   std::vector<CompuCell3D::Point3D> ptVec;;
+  std::set<unsigned char> cellTypesSet;
+  std::set<long> cellIdsSet;
+  
+  
+};
 
 
 };

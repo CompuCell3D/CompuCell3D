@@ -98,9 +98,10 @@ using namespace dolfin; // helps SWIG figure out names from dolfin namespace oth
 %shared_ptr(dolfin::SubDomain) //many dolfin classes when wrapped in Python first have their pointers wrapped using boost shared ptr . Therefore it is necesary to let SWIG know how to handle base class (SubDomain) and that whatever inherits base class should be accessible viashared ptr to base class
 // if we do not use shared_ptr(dolfin::SubDomain) we might get the sinilar error TypeError: in method 'SubDomain_mark', argument 1 of type 'dolfin::SubDomain const *'
 
+//any Subdomain defined in C++ has to be wrapped in swig shared_ptr
 %shared_ptr(dolfin::OmegaCustom1) // tell SWIG that dolfin::OmegaCustom1 ptr is also wrapped in shared_ptr
 %shared_ptr(dolfin::OmegaCustom0)
-
+%shared_ptr(dolfin::SubdomainFlex)
 
 %include <CustomSubDomains.h>
 
