@@ -236,27 +236,46 @@ class QLineEditCustom(QLineEdit):
         # have to monitor cursor position because qLineEdit inside QComboBox behaves weirdly - after each typed character the cursor is moved to the end of the word making it hard to type inside the line
         self.textEdited.connect(self.monitorCursor)
         self.cursorPositionChanged.connect(self.repositionCursor)
+        self.returnPressed.connect(self.handleReturnPressed)
         self.pos=-1
+        self.callbackFcn=None # cannbackFcn to be called each time user presses enter provided callback is different than None
         
     # seems the solution is to eat MouseButtonPress and MouseButtonRelease events...
     # http://www.qtcentre.org/threads/10539-QLineEdit-selectAll%28%29-in-eventFilter
     # to highlight content of QLine edit we need to implement focusInEvent and also change behavior of mousePressEvent
     # when mousePressEvent is called right after focusIn we do nothing otherwise we use default mousePress Event
     
-    
-    
+        
+    def setReturnKeyCallbackFcn(self,_callback):
+        self.callbackFcn=_callback
+        
+    @pyqtSignature("")
+    def handleReturnPressed(self):
+        if self.callbackFcn:    
+            self.callbackFcn()
+
+        
     def mousePressEvent(self,event): # this event handler is called second
             
         # dbgMsg("self.focusInCalled=",self.focusInCalled)
+        
         if self.focusInCalled:
             self.focusInCalled=False            
         else:
             QLineEdit.mousePressEvent(self,event)
       
-
+#     def keyPressEvent(self,event):
+#         if event.key()==Qt.Key_Return :
+# #             self.selectAll()            
+#             event.accept()
+#         else:    
+        
+#             print 'keyPressEvent=',event
+#             QLineEdit.keyPressEvent(self,event)
+        
     def focusInEvent(self,event): # this event handler is called first
         
-
+        print 'focusInEvent=',event
         self.selectAll()
         self.focusInCalled=True
         QLineEdit.focusInEvent(self,event)
@@ -266,7 +285,7 @@ class QLineEditCustom(QLineEdit):
         self.focusInCalled=False
         QLineEdit.focusOutEvent(self,event)
 
-    def monitorCursor(self,_str):
+    def monitorCursor(self,_str):        
         self.pos=self.cursorPosition()
 
         
@@ -295,6 +314,8 @@ class FindAndReplaceDlg(QDialog,ui_findinfilesdlg.Ui_FindInFiles):
         self.setupUi(self)
 
         self.findLineEdit=QLineEditCustom()
+        
+        self.findLineEdit.setReturnKeyCallbackFcn(self.on_findNextButton_clicked) # to enable handling of the 'return' key pressed event 
         self.findComboBox.setLineEdit(self.findLineEdit)
         self.findComboBox.completer().setCaseSensitivity(1)
 
@@ -310,8 +331,10 @@ class FindAndReplaceDlg(QDialog,ui_findinfilesdlg.Ui_FindInFiles):
         self.findAndReaplceHistory=None
         
         
+        
         # IF stands for "in files"
         self.findLineEditIF=QLineEditCustom()
+        self.findLineEditIF.setReturnKeyCallbackFcn(self.on_findAllButtonIF_clicked) # to enable handling of the 'return' key pressed event 
         self.findComboBoxIF.setLineEdit(self.findLineEditIF)
         self.findComboBoxIF.completer().setCaseSensitivity(1)
         self.replaceLineEditIF=QLineEditCustom()
