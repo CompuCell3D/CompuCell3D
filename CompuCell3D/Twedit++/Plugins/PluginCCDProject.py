@@ -1218,13 +1218,13 @@ class CC3DProject(QObject):
             
             base,extension=os.path.splitext(fileName)
             
-            location=wz.locationLE.text()
+            location=str(wz.locationLE.text())
             fileType=""
             if wz.customTypeCHB.isChecked():
-                fileType=wz.customTypeLE.text()
+                fileType=str(wz.customTypeLE.text())
             else:
                 # have to replace it with dictionary 
-                fileType=wz.fileTypeCB.currentText()
+                fileType=str(wz.fileTypeCB.currentText())
                 if fileType=="Main Python Script":
                     fileType="PythonScript"
                     
