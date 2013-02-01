@@ -236,23 +236,29 @@ class QLineEditCustom(QLineEdit):
         # have to monitor cursor position because qLineEdit inside QComboBox behaves weirdly - after each typed character the cursor is moved to the end of the word making it hard to type inside the line
         self.textEdited.connect(self.monitorCursor)
         self.cursorPositionChanged.connect(self.repositionCursor)
-        self.returnPressed.connect(self.handleReturnPressed)
+#         self.returnPressed.connect(self.handleReturnPressed)        
         self.pos=-1
         self.callbackFcn=None # cannbackFcn to be called each time user presses enter provided callback is different than None
+
+        
         
     # seems the solution is to eat MouseButtonPress and MouseButtonRelease events...
     # http://www.qtcentre.org/threads/10539-QLineEdit-selectAll%28%29-in-eventFilter
     # to highlight content of QLine edit we need to implement focusInEvent and also change behavior of mousePressEvent
     # when mousePressEvent is called right after focusIn we do nothing otherwise we use default mousePress Event
     
-        
+
     def setReturnKeyCallbackFcn(self,_callback):
         self.callbackFcn=_callback
-        
-    @pyqtSignature("")
-    def handleReturnPressed(self):
-        if self.callbackFcn:    
-            self.callbackFcn()
+
+    # the approach with returnPressed signal  does not seem to work properly                
+#     @pyqtSignature("")
+#     def handleReturnPressed(self):
+#         pass        
+#         print 'THIS IS A STRING FROM THE LINE ',str(self.wgt.findLineEdit.text())
+#         if self.callbackFcn:    
+#             self.callbackFcn()
+            
 
         
     def mousePressEvent(self,event): # this event handler is called second
@@ -264,18 +270,19 @@ class QLineEditCustom(QLineEdit):
         else:
             QLineEdit.mousePressEvent(self,event)
       
-#     def keyPressEvent(self,event):
-#         if event.key()==Qt.Key_Return :
-# #             self.selectAll()            
-#             event.accept()
-#         else:    
-        
-#             print 'keyPressEvent=',event
-#             QLineEdit.keyPressEvent(self,event)
+    def keyPressEvent(self,event):        
+        if event.key()==Qt.Key_Return :
+            if self.callbackFcn:    
+                self.callbackFcn()
+            
+#             self.selectAll()            
+            event.accept()
+        else:    
+                    
+            QLineEdit.keyPressEvent(self,event)
         
     def focusInEvent(self,event): # this event handler is called first
         
-        print 'focusInEvent=',event
         self.selectAll()
         self.focusInCalled=True
         QLineEdit.focusInEvent(self,event)
@@ -402,7 +409,8 @@ class FindAndReplaceDlg(QDialog,ui_findinfilesdlg.Ui_FindInFiles):
         self.findLineEdit.setFocus(True)
         self.initializeAllSearchLists(self.findAndReaplceHistory)
         if self.editorWindow.getCurrentEditor().hasSelectedText():
-            self.findLineEdit.setText(self.editorWindow.getCurrentEditor().selectedText())         
+            self.findLineEdit.setText(self.editorWindow.getCurrentEditor().selectedText())
+            
         # self.initializeSearchLists()
 
         ## this is quite strange but on windows there is no need to position dialog box, but on Linux, you have to do it manually
@@ -442,7 +450,7 @@ class FindAndReplaceDlg(QDialog,ui_findinfilesdlg.Ui_FindInFiles):
         
         
     def initializeDialog(self,_frh):
-            
+
         if _frh.cs:
             self.caseCheckBox.setChecked(True)
         else:
@@ -682,7 +690,7 @@ class FindDisplayWidget(QsciScintilla):
         dbgMsg("marginSensitivity=",self.marginSensitivity(0))
 
     def hideEvent(self,event):
-        print "HIDE EVENT IN FIND DISPLAY WIDGET"
+#         print "HIDE EVENT IN FIND DISPLAY WIDGET"
         self.editorWindow.showFindInFilesDockAct.setChecked(False)
         # self.editorWindow.showFindInFilesDockAct.trigger()
         
@@ -745,7 +753,7 @@ class FindDisplayWidget(QsciScintilla):
 
     def onDoubleClick(self,_position,_line,_modifiers):
         dbgMsg("position=",_position," line=",_line," modifiers=",_modifiers)
-        print "position=",_position," line=",_line," modifiers=",_modifiers
+#         print "position=",_position," line=",_line," modifiers=",_modifiers
         lineText=str(self.text(_line))
         dbgMsg("line text=",lineText)
         lineNumberGroups=self.lineNumberExtractRegex.search(lineText)
