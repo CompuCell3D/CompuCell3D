@@ -413,7 +413,37 @@ class DolfinSolverSteppable(RunBeforeMCSSteppableBasePy):
                 self.simulator.registerConcentrationField(fieldName,field)                            
             except LookupError:
                 print 'DolfinSolverSteppable: COULD NOT FIND field=',fieldName
-                
+
+    def getStepFunctionExpressionFlex(self,_cellTypeToValueMap={},_cellIdsToValueMap={},_defaultValue=0.0): # this will create scalar expression
+        import dolfin
+        import dolfinCC3D        
+        # expressions defined in C++ have to be instantiated using quite complex class composition (uses metaclasses - see e.g. /usr/lib/python2.7/dist-packages/dolfin/functions/expression.py)
+        # the way dolfin does it - it compiles C++ code including a class which inherits from  Expression. This class is then wrapped in Python using SWIG
+        # however we cannot use this class in UFL expressions because it does not have required interface to be a part of the UFL (aka weak form) expression
+        # there is a special functionwhich takes as an argument user-defined C++ class which inherits from Expression (wrapped in Python) and constructs a class which has the required interface (and of course includes all the function from the user defined C++ class)    
+        
+        # this is how create_compiled_expression_class looks like
+#         def create_compiled_expression_class(cpp_base):
+#             # Check the cpp_base
+#             assert(isinstance(cpp_base, (types.ClassType, type)))
+
+#             def __init__(self, cppcode, element=None, cell=None, \
+#                          degree=None, **kwargs):        
+        
+        
+        StepFunctionExpressionFlexClass = dolfin.functions.expression.create_compiled_expression_class(dolfinCC3D.StepFunctionExpressionFlex) # this statement creates Class type (class template - see documentation on metaclasses)
+        
+        # notice that the constructor of  StepFunctionExpressionFlexClass has signatore of the __init__ function defined inside create_compiled_expression_class
+        # we use it to construct the class and all remaining initialization will be done on the instance of this class
+        stepFunctionExpressionFlexClassInstance = StepFunctionExpressionFlexClass('',None,None,None)    
+        stepFunctionExpressionFlexClassInstance.setCellField(self.cellField)
+        stepFunctionExpressionFlexClassInstance.setStepFunctionValues(_cellTypeToValueMap,_cellIdsToValueMap,_defaultValue)
+        
+        return stepFunctionExpressionFlexClassInstance
+        
+        
+        
+        
         
         
 class SteppableRegistry(SteppablePy):

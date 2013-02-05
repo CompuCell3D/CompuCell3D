@@ -18,9 +18,14 @@ SET(SRCS
    CleaverDolfinUtil.cpp
    CellFieldCleaverSimulator.cpp
    CustomSubDomains.cpp
+   CustomExpressions.cpp
 )
 
+
+
 SET(EXTRA_LIBS cleaver dolfin)
+
+ADD_DEFINITIONS(-I/usr/include -I/usr/include/vtk-5.8 -I/usr/include/qt4 -I/usr/lib/openmpi/include/openmpi -I/usr/lib/openmpi/include -I/usr/include/suitesparse -I/usr/include/spooles -I/usr/include/scotch -I/usr/lib/petscdir/3.2/linux-gnu-c-opt/include -I/usr/lib/petscdir/3.2/include -I/usr/lib/slepcdir/3.2/include -I/usr/lib/slepcdir/3.2/linux-gnu-c-opt/include -I/usr/lib/slepcdir/3.2 -I/usr/include/libxml2 -I/usr/lib/python2.7/dist-packages/numpy/core/include -I/usr/include -I/usr/include/python2.7 -DMPICH_IGNORE_CXX_SEEK -Wno-deprecated -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -Werror=format-security -D_FORTIFY_SOURCE=2 -frounding-math -fopenmp -DDOLFIN_VERSION=\"1.1.0\" -DBOOST_UBLAS_NDEBUG -DHAS_HDF5 -DHAS_SLEPC -DHAS_PETSC -DHAS_UMFPACK -DHAS_CHOLMOD -DHAS_SCOTCH -DHAS_CGAL -DHAS_ZLIB -DHAS_MPI -DHAS_OPENMP -DHAS_QT4 -DHAS_VTK -DHAS_QVTK)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     ADD_LIBRARY(dolfinUtils ${SRCS})
@@ -80,6 +85,28 @@ set(python_files_path ${CMAKE_BINARY_DIR}/core/pyinterface/dolfinCC3D)
 INSTALL(FILES ${python_files_path}/dolfinCC3D.py
 	      DESTINATION lib/python)
 
+##############################################################################################33
+
+# SET_SOURCE_FILES_PROPERTIES(dolfinCC3DExpr.i PROPERTIES CPLUSPLUS ON)
+
+# SWIG_ADD_MODULE(dolfinCC3DExpr python dolfinCC3DExpr.i)
+
+# if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+#   SET_TARGET_PROPERTIES(_dolfinCC3DExpr PROPERTIES SUFFIX ".pyd") # changes dll name to pyd sop that it is compatible with new Python standard
+# endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+
+# SWIG_LINK_LIBRARIES(dolfinCC3DExpr ${LIBS})
+
+
+# install(TARGETS _dolfinCC3DExpr    DESTINATION lib/python )
+
+
+
+# set(python_files_path ${CMAKE_BINARY_DIR}/core/pyinterface/dolfinCC3D)
+
+# INSTALL(FILES ${python_files_path}/dolfinCC3DExpr.py
+# 	      DESTINATION lib/python)
+
           
-#SWIG_LINK_LIBRARIES(PlayerPython ${LIBS} simthreadStatic)
-#SWIG_LINK_LIBRARIES(PlayerPython ${LIBS} simthreadShared)
+# #SWIG_LINK_LIBRARIES(PlayerPython ${LIBS} simthreadStatic)
+# #SWIG_LINK_LIBRARIES(PlayerPython ${LIBS} simthreadShared)
