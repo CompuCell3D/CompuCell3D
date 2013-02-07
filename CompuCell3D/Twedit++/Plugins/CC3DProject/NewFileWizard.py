@@ -36,7 +36,7 @@ class NewFileWizard(QWizard,ui_newfilewizard.Ui_NewFileWizard):
            
     @pyqtSignature("") # signature of the signal emited by the button
     def on_nameBrowsePB_clicked(self):
-        fileName=QFileDialog.getOpenFileName(self,"Save File",self.projectPath,"*")
+        fileName=str(QFileDialog.getOpenFileName(self,"Save File",self.projectPath,"*"))        
         fileName=os.path.abspath(fileName) # normalizing path
         self.nameLE.setText(fileName)
         

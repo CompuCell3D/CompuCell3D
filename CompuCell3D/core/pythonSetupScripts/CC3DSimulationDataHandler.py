@@ -17,7 +17,7 @@ class CC3DResource(GenericResource):
         self.origin="" # e.g. serialized
         self.copy=True
     def __str__(self):
-        return "ResourcePath: "+self.path+"\n"+"Type: "+self.type+"\n"+"Module: "+self.module+"\n"+"Origin: "+self.origin+"\n"
+        return "ResourcePath: "+str(self.path)+"\n"+"Type: "+str(self.type)+"\n"+"Module: "+str(self.module)+"\n"+"Origin: "+str(self.origin)+"\n"
     def __repr__(self):
         return self.__str__()
         
@@ -94,6 +94,7 @@ class CC3DSimulationData:
         self.serializerResource=None
     
     def addNewResource(self,_fileName,_type):   # called by Twedit
+        print 'type(_fileName)=',type(_fileName)
         if _type=="XMLScript":
             self.xmlScript = os.path.abspath(_fileName)
             self.xmlScriptResource.path = self.xmlScript
@@ -121,7 +122,8 @@ class CC3DSimulationData:
         resource.path = fullPath
         resource.type = _type
         self.resources[fullPath] = resource
-        print MODULENAME,"self.resources=",self.resources
+        print MODULENAME        
+        print "self.resources=",self.resources
         return 
         
     def removeResource(self,_fileName):
