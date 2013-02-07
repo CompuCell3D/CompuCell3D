@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# CDSceneRasterizer - add-on QGraphicsScene rasterizer for CellDraw - Mitja 2010-2013
+# CDSceneRasterizer - add-on QGraphicsScene rasterizer for CellDraw - Mitja 2010-2012
 #
 # ------------------------------------------------------------
 
@@ -37,12 +37,16 @@ import PyQt4
 
 
 
-# debugging functions, remove in final version
+# debugging functions, remove in final Panel version
 def debugWhoIsTheRunningFunction():
     return inspect.stack()[1][3]
 def debugWhoIsTheParentFunction():
     return inspect.stack()[2][3]
-
+def pigi():
+    CDConstants.printOut("[D] hello, I'm "+str(debugWhoIsTheRunningFunction())+", parent is "+str(debugWhoIsTheParentFunction()), CDConstants.DebugTODO )
+def gigi():
+    CDConstants.printOut("[E] hello, I'm "+str(debugWhoIsTheRunningFunction())+", parent is "+str(debugWhoIsTheParentFunction()), CDConstants.DebugTODO )
+    pigi()
 
 # 2011 - Mitja: external class defining all global constants for CellDraw:
 from cdConstants import CDConstants
@@ -50,35 +54,143 @@ from cdConstants import CDConstants
 
 
 
-# ======================================================================
-# a QObject-based class, to rasterize cell scenes and save to PIFF files
-# ======================================================================
-class CDSceneRasterizer(QtCore.QObject):
+# ------------------------------------------------------------
+# a class to store a pixmap image, based on PIF_Generator's
+#     original code for InputImageLabel()
+# ------------------------------------------------------------
+class RasterizedImageLabel(QtGui.QLabel):
+    # 2010 - Mitja: for unexplained reasons, this class is based on QLabel,
+    #   even though it is NOT used as a label.
+    #   Instead, this class draws an image, intercepts
+    #   mouse click events, etc.
 
-    # ------------------------------------------------------------------
+    def __init__(self,parent=None):
+        QtGui.QLabel.__init__(self, parent)
+        QtGui.QWidget.__init__(self, parent)
+        self.width = 240
+        self.height = 180
+        self.rasterWidth = 10
+        # the "image" QImage is the one we see, i.e. the rasterized one
+        self.image = QtGui.QImage()
+        self.x = 0
+        self.y = 0
+        self.fixedSizeRaster = False
+
+    def paintEvent(self, event):
+
+        # QtGui.QLabel.paintEvent(self,event)
+
+        # start a QPainter on this QLabel - this is why we pass "self" as paramter:
+        lPainter = QtGui.QPainter(self)
+
+        # take care of the RHS <-> LHS mismatch at its visible end,
+        #   by flipping the y coordinate in the QPainter's affine transformations:       
+        lPainter.translate(0.0, float(self.pixmap().height()))
+        lPainter.scale(1.0, -1.0)
+
+        # access the QLabel's pixmap to draw it explicitly, using QPainter's scaling:
+        lPainter.drawPixmap(0, 0, self.pixmap())
+
+        if self.fixedSizeRaster == True:
+            lPen = QtGui.QPen()
+#             lPen.setColor(QtGui.QColor(QtCore.Qt.black))
+# TODO TODO: 20111129 TODO: go back to a black grid:
+            lTmpRgbaColor = QtGui.QColor( int(random.random()*256.0), \
+                                          int(random.random()*256.0), \
+                                          int(random.random()*256.0) ).rgba()
+            lPen.setColor(QtGui.QColor(lTmpRgbaColor))
+
+            lPen.setWidth(1)
+            lPen.setCosmetic(True)
+            lPainter.setPen(lPen)
+            self.drawGrid(lPainter)
+        else:
+            # we don't need to draw the grid on top of the label:
+            pass
+
+        lPainter.end()
+
+    def drawGrid(self,painter):
+        for x in xrange(0, self.width, self.rasterWidth):
+            #draw.line([(x, 0), (x, h)], width=2, fill='#000000')
+            painter.drawLine(x,0,x,self.height)
+        for y in xrange(0, self.height, self.rasterWidth):
+         #draw.line([(0, y), (w, y)], width=2, fill='#000000')
+            painter.drawLine(0,y,self.width,y)
+
+
+    def plotRect(self, pRGBA, pXmin, pYmin, pXmax, pYmax):
+
+        lColor = QtGui.QColor()
+        lColor.setRgba(pRGBA)
+
+        lPen = QtGui.QPen()
+        lPen.setColor(lColor)
+        lPen.setWidth(1)
+        lPen.setCosmetic(True)
+
+        lPainter = QtGui.QPainter()
+        lPainter.begin(self.pixmap())
+        lPainter.setPen(lPen)
+
+        if (pXmin >= pXmax) or (pYmin >= pYmax) :
+            # if passed an incorrect rectangle (with max point < min point)
+            # then just draw a 3x3 square around the min point
+            lPainter.drawRect(pXmin-1, pYmin-1, 3, 3)
+
+        else:
+            lPainter.drawRect(pXmin, pYmin, (pXmax-pXmin), (pYmax-pYmin))
+   
+#             lPen.setColor(QtGui.QColor(QtCore.Qt.black))
+#             lPen.setWidth(1)
+#             lPen.setCosmetic(True)
+#    
+#             lPainter.setPen(lPen)
+#             lPainter.drawRect(pXmin-1, pYmin-1, 3, 3)
+
+        lPainter.end()
+
+
+    def drawPixmapAtPoint(self, pPixmap, pXmin=0, pYmin=0):
+
+        lPainter = QtGui.QPainter()
+        lPainter.begin(self.pixmap())
+        lPainter.drawPixmap(pXmin, pYmin, pPixmap)
+        lPainter.end()
+        self.update()
+
+    def drawFixedSizeRaster(self, pFixedOrNot=False):
+        self.fixedSizeRaster = pFixedOrNot
+        self.update()
+
+
+#     def mousePressEvent(self, event):
+#         if event.button() == QtCore.Qt.LeftButton:
+#             self.x = event.x()
+#             self.y = event.y()
+#             CDConstants.printOut( " "+str( "___ - DEBUG ----- RasterizedImageLabel: mousePressEvent() finds Color(x,y) = %s(%s,%s)" %(QtCore.QString("%1").arg(color, 8, 16), self.x, self.y) ), CDConstants.DebugTODO )
+#             self.emit(QtCore.SIGNAL("getpos()"))
+
+
+
+# ======================================================================
+# a QWidget-based widget panel, in application-specific panel style
+# ======================================================================
+class CDSceneRasterizer(QtGui.QWidget):
+
     def __init__(self, pParent=None):
         # it is compulsory to call the parent's __init__ class right away:
         super(CDSceneRasterizer, self).__init__(pParent)
 
+        #
+        # init (1) - windowing GUI stuff:
+        #
+        self.miInitGUI()
 
-# this is not a QWidget anymore, so we comment out all that's GUI-related:
-# 
-#         #
-#         # init (1) - windowing GUI stuff:
-#         #
-#         self.miInitGUI()
-
-        self.theParentWindow = pParent
-
-#         #
-#         # init (2) - create widget with image-label, set it up and show it inside the panel:
-#         #
-#         self.layout().addWidget( self.miInitCentralImageLabelWidget() )
-
-        self.theRasterizedPixmap = QtGui.QPixmap( 64, 64 )
-        self.theRasterizedPixmap.fill( QtGui.QColor(QtCore.Qt.transparent) )
-        self.theRasterizedImage = QtGui.QPixmap( 64, 64 )
-        self.theRasterizedImage.fill( QtGui.QColor(QtCore.Qt.transparent) )
+        #
+        # init (2) - create widget with image-label, set it up and show it inside the panel:
+        #
+        self.layout().addWidget( self.miInitCentralImageLabelWidget() )
 
         #
         # init (3) - create empty region dict, color to name of region dict,
@@ -88,10 +200,6 @@ class CDSceneRasterizer(QtCore.QObject):
         self.colorToNameRegionDict = dict()
         self.colorToCellSizeRegionDict = dict()
         self.colorToKeyRegionDict = dict()
-# 
-#         # a pixmap to hold a specially rendered graphics scene :
-#         self.__aSpecialPixMap = QtGui.QPixmap( 64, 64 )
-#         self.__aSpecialPixMap.fill( QtGui.QColor(QtCore.Qt.transparent) )
 
         # 2011 - Mitja: globals storing fixed-size cell data for PIFF generation
         #
@@ -103,32 +211,16 @@ class CDSceneRasterizer(QtCore.QObject):
         self.fixedSizeWidthInCells = 0
         self.fixedSizeHeightInCells = 0
 
-        # global raster width (TODO is this necessary???)  :
-        self.__rasterWidth = 10
-
         # globals for ignoring white / black regions when saving the PIFF file:
         self.ignoreWhiteRegionsForPIF = False
         self.ignoreBlackRegionsForPIF = False
-
+       
         # 2010 - Mitja: add functionality for saving PIFF metadata:
         self.savePIFMetadata = False
 
         # 2010 - Mitja: add a CellDraw preferences object,
         #   we'll get its object value in the setPreferencesObject() function defined below:
-        self.__theCDPreferences = None
-
-        # the graphics scene is instantiated in the CDDiagramSceneMainWidget class,
-        #   and assigned below in setGraphicsSceneObject() :
-        self.__theGraphicsScene = None
-
-
-        # the progress bar widget is instantiated in the CellDrawMainWindow class,
-        #   and assigned below in setSimpleProgressBarPanel() :
-        self.__theSimpleWaitProgressBar = None
-
-        # the progress bar with image widget is instantiated in the CellDrawMainWindow class,
-        #   and assigned below in setProgressBarWithImagePanel() :
-        self.__theWaitProgressBarWithImage = None
+        self.cdPreferences = None
 
 
         # ---------------------------------------
@@ -140,176 +232,145 @@ class CDSceneRasterizer(QtCore.QObject):
         self.cc3dPath = None
         self.cc3dPathAndStartupFileName = None
         self.cc3dOutputLocationPath = None
+        
+        # TODO TODO: is self.pluginObj necessary for anything?
+        self.pluginObj = None
 
         self.cc3dProcess = None
         # ---------------------------------------
 
         CDConstants.printOut( "005 - DEBUG ----- CDSceneRasterizer: __init__(): done", CDConstants.DebugExcessive )
 
-    # end of   def __init__(self, pParent=None)
+    # ------------------------------------------------------------------
+    # define functions to initialize this panel:
     # ------------------------------------------------------------------
 
 
+    # ------------------------------------------------------------------
+    # init (1) - windowing GUI stuff:
+    # ------------------------------------------------------------------
+    def miInitGUI(self):
 
+        # how will the CDSceneRasterizer look like:
+        self.setWindowTitle("PIFF Output from Scene")
+        # self.setMinimumSize(240, 180)
+        # setGeometry is inherited from QWidget, taking 4 arguments:
+        #   x,y  of the top-left corner of the QWidget, from top-left of screen
+        #   w,h  of the QWidget
+        # NOTE: the x,y is NOT the top-left edge of the window,
+        #    but of its **content** (excluding the menu bar, toolbar, etc.
+        # self.setGeometry(750,480,480,320)
 
+        # QVBoxLayout layout lines up widgets vertically:
+        self.setLayout(QtGui.QVBoxLayout())
+        # self.layout().setAlignment(QtCore.Qt.AlignTop)
+        self.layout().setAlignment = (QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.layout().setMargin(2)
+        self.layout().setSpacing(4)
 
-    # --------------------------------------------------------
-    def setSimpleProgressBarPanel(self, pSimpleProcessBar=None):
-    # --------------------------------------------------------
-        if isinstance( pSimpleProcessBar, QtGui.QWidget ) == True:
-            self.__theSimpleWaitProgressBar = pSimpleProcessBar
-        else:
-            self.__theSimpleWaitProgressBar = None
-    # end of   def setSimpleProgressBarPanel()
-    # --------------------------------------------------------
+        #
+        # QWidget setup (2) - more windowing GUI setup:
+        #
 
+        miDialogsWindowFlags = QtCore.Qt.WindowFlags()
+        # this panel is a so-called "Tool" (by PyQt and Qt definitions)
+        #    we'd use the Tool type of window, except for this oh-so typical Qt bug:
+        #    http://bugreports.qt.nokia.com/browse/QTBUG-6418
+        #    i.e. it defines a system-wide panel which shows on top of *all* applications,
+        #    even when this application is in the background.
+        # miDialogsWindowFlags = QtCore.Qt.Tool
+        #    so we use a plain QtCore.Qt.Window type instead:
+        miDialogsWindowFlags = QtCore.Qt.Window
+        #    add a peculiar WindowFlags combination to have no close/minimize/maxize buttons:
+        miDialogsWindowFlags |= QtCore.Qt.WindowTitleHint
+        miDialogsWindowFlags |= QtCore.Qt.CustomizeWindowHint
+#        miDialogsWindowFlags |= QtCore.Qt.WindowMinimizeButtonHint
+#        miDialogsWindowFlags |= QtCore.Qt.WindowStaysOnTopHint
+        self.setWindowFlags(miDialogsWindowFlags)
 
-    # --------------------------------------------------------
-    def setProgressBarWithImagePanel(self, pProcessBarWithImage=None):
-    # --------------------------------------------------------
-        if isinstance( pProcessBarWithImage, QtGui.QWidget ) == True:
-            self.__theWaitProgressBarWithImage = pProcessBarWithImage
-        else:
-            self.__theWaitProgressBarWithImage = None
-    # end of   def setProgressBarWithImagePanel()
-    # --------------------------------------------------------
+        # 1. The widget is not modal and does not block input to other widgets.
+        # 2. If widget is inactive, the click won't be seen by the widget.
+        #    (it does NOT work as Qt docs says it would on Mac OS X: click-throughs don't get disabled)
+        # 3. The widget can choose between alternative sizes for widgets to avoid clipping.
+        # 4. The native Carbon size grip should be opaque instead of transparent.
+        self.setAttribute(QtCore.Qt.NonModal  | \
+                          QtCore.Qt.WA_MacNoClickThrough | \
+                          QtCore.Qt.WA_MacVariableSize | \
+                          QtCore.Qt.WA_MacOpaqueSizeGrip )
 
-
+        # do not delete the window widget when the window is closed:
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, False)
 
 
     # ------------------------------------------------------------------
-    # define functions to initialize this class:
+    # init (3) - central widget containing an image within a label, set up and show:
     # ------------------------------------------------------------------
+    def miInitCentralImageLabelWidget(self):
+
+        # 2010 - Mitja: now create a QLabel, but NOT to be used as a label.
+        #   as in the original PIF_Generator code:
+        self.theRasterizedImageLabel = RasterizedImageLabel()
+
+        # 2010 - Mitja: set the size policy of the theRasterizedImageLabel widget:.
+        #   "The widget will get as much space as possible."
+        self.theRasterizedImageLabel.setSizePolicy(QtGui.QSizePolicy.Ignored, QtGui.QSizePolicy.Ignored)
+
+        # 2010 - Mitja: according to Qt documentation,
+        #   "scale the pixmap to fill the available space" :
+        self.theRasterizedImageLabel.setScaledContents(False)
+
+        # self.theRasterizedImageLabel.setLineWidth(1)
+        # self.theRasterizedImageLabel.setMidLineWidth(1)
+
+        # set a QFrame type for this label, so that it shows up with a visible border around itself:
+        self.theRasterizedImageLabel.setFrameShape(QtGui.QFrame.Panel)
+        # self.theRasterizedImageLabel.setFrameShadow(QtGui.QFrame.Plain)
+
+        # self.theRasterizedImageLabel.setAlignment = (QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        # self.theRasterizedImageLabel.setObjectName("theRasterizedImageLabel")
+
+        # self.theRasterizedImageLabel.update()
+
+        # -------------------------------------------
+        # place theRasterizedImageLabel in the Panel's vbox layout:
+        # one cell information widget, containing a vbox layout, in which to place it:
+        theContainerWidget = QtGui.QWidget()
+
+        # this infoLabel part is cosmetic and could safely be removed,
+        #     unless useful info is provided here:
+        self.infoLabel = QtGui.QLabel()
+        self.infoLabel.setText("Generating PIFF elements from regions and cell scene...")
+        self.infoLabel.setAlignment = (QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+#         self.infoLabel.setLineWidth(3)
+#         self.infoLabel.setMidLineWidth(3)
+#         self.infoLabel.setFrameStyle(QtGui.QFrame.StyledPanel | QtGui.QFrame.Sunken)
+
+        # for unexplained reasons, a QLabel containing an image has to be placed
+        #   in a QScrollArea to be displayed within a layout. Placing theRasterizedImageLabel
+        #   directly in the layout would *not* display it at all!
+        #   Therefore, create a QScrollArea and assign theRasterizedImageLabel to it:
+        self.scrollArea = QtGui.QScrollArea()
+        # self.scrollArea.setBackgroundRole(QtGui.QPalette.AlternateBase)
+        self.scrollArea.setBackgroundRole(QtGui.QPalette.Mid)
+        self.scrollArea.setWidget(self.theRasterizedImageLabel)
+        self.scrollArea.setAlignment = (QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
 
-# this is not a QWidget anymore, so we comment out all that's GUI-related:
-# 
-# 
-#     # ------------------------------------------------------------------
-#     # init (1) - windowing GUI stuff:
-#     # ------------------------------------------------------------------
-#     def miInitGUI(self):
-# 
-#         # how will the CDSceneRasterizer look like:
-#         self.setWindowTitle("PIFF Output from Scene")
-#         # self.setMinimumSize(240, 180)
-#         # setGeometry is inherited from QWidget, taking 4 arguments:
-#         #   x,y  of the top-left corner of the QWidget, from top-left of screen
-#         #   w,h  of the QWidget
-#         # NOTE: the x,y is NOT the top-left edge of the window,
-#         #    but of its **content** (excluding the menu bar, toolbar, etc.
-#         # self.setGeometry(750,480,480,320)
-# 
-#         # QVBoxLayout layout lines up widgets vertically:
-#         self.setLayout(QtGui.QVBoxLayout())
-#         # self.layout().setAlignment(QtCore.Qt.AlignTop)
-#         self.layout().setAlignment = (QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-#         self.layout().setMargin(2)
-#         self.layout().setSpacing(4)
-# 
-#         #
-#         # QWidget setup (2) - more windowing GUI setup:
-#         #
-# 
-#         miDialogsWindowFlags = QtCore.Qt.WindowFlags()
-#         # this panel is a so-called "Tool" (by PyQt and Qt definitions)
-#         #    we'd use the Tool type of window, except for this oh-so typical Qt bug:
-#         #    http://bugreports.qt.nokia.com/browse/QTBUG-6418
-#         #    i.e. it defines a system-wide panel which shows on top of *all* applications,
-#         #    even when this application is in the background.
-#         # miDialogsWindowFlags = QtCore.Qt.Tool
-#         #    so we use a plain QtCore.Qt.Window type instead:
-#         miDialogsWindowFlags = QtCore.Qt.Window
-#         #    add a peculiar WindowFlags combination to have no close/minimize/maxize buttons:
-#         miDialogsWindowFlags |= QtCore.Qt.WindowTitleHint
-#         miDialogsWindowFlags |= QtCore.Qt.CustomizeWindowHint
-# #        miDialogsWindowFlags |= QtCore.Qt.WindowMinimizeButtonHint
-# #        miDialogsWindowFlags |= QtCore.Qt.WindowStaysOnTopHint
-#         self.setWindowFlags(miDialogsWindowFlags)
-# 
-#         # 1. The widget is not modal and does not block input to other widgets.
-#         # 2. If widget is inactive, the click won't be seen by the widget.
-#         #    (it does NOT work as Qt docs says it would on Mac OS X: click-throughs don't get disabled)
-#         # 3. The widget can choose between alternative sizes for widgets to avoid clipping.
-#         # 4. The native Carbon size grip should be opaque instead of transparent.
-#         self.setAttribute(QtCore.Qt.NonModal  | \
-#                           QtCore.Qt.WA_MacNoClickThrough | \
-#                           QtCore.Qt.WA_MacVariableSize | \
-#                           QtCore.Qt.WA_MacOpaqueSizeGrip )
-# 
-#         # do not delete the window widget when the window is closed:
-#         self.setAttribute(QtCore.Qt.WA_DeleteOnClose, False)
-# 
-# 
-#     # ------------------------------------------------------------------
-#     # init (3) - central widget containing an image within a label, set up and show:
-#     # ------------------------------------------------------------------
-#     def miInitCentralImageLabelWidget(self):
-# 
-#         # 2010 - Mitja: now create a QLabel, but NOT to be used as a label.
-#         #   as in the original PIF_Generator code:
-#         self.theRasterizedImageLabel = RasterizedImageLabel()
-# 
-#         # 2010 - Mitja: set the size policy of the theRasterizedImageLabel widget:.
-#         #   "The widget will get as much space as possible."
-#         self.theRasterizedImageLabel.setSizePolicy(QtGui.QSizePolicy.Ignored, QtGui.QSizePolicy.Ignored)
-# 
-#         # 2010 - Mitja: according to Qt documentation,
-#         #   "scale the pixmap to fill the available space" :
-#         self.theRasterizedImageLabel.setScaledContents(False)
-# 
-#         # self.theRasterizedImageLabel.setLineWidth(1)
-#         # self.theRasterizedImageLabel.setMidLineWidth(1)
-# 
-#         # set a QFrame type for this label, so that it shows up with a visible border around itself:
-#         self.theRasterizedImageLabel.setFrameShape(QtGui.QFrame.Panel)
-#         # self.theRasterizedImageLabel.setFrameShadow(QtGui.QFrame.Plain)
-# 
-#         # self.theRasterizedImageLabel.setAlignment = (QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-#         # self.theRasterizedImageLabel.setObjectName("theRasterizedImageLabel")
-# 
-#         # self.theRasterizedImageLabel.update()
-# 
-#         # -------------------------------------------
-#         # place theRasterizedImageLabel in the Panel's vbox layout:
-#         # one cell information widget, containing a vbox layout, in which to place it:
-#         theContainerWidget = QtGui.QWidget()
-# 
-#         # this infoLabel part is cosmetic and could safely be removed,
-#         #     unless useful info is provided here:
-#         self.infoLabel = QtGui.QLabel()
-#         self.infoLabel.setText("Generating PIFF elements from regions and cell scene...")
-#         self.infoLabel.setAlignment = (QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-# #         self.infoLabel.setLineWidth(3)
-# #         self.infoLabel.setMidLineWidth(3)
-# #         self.infoLabel.setFrameStyle(QtGui.QFrame.StyledPanel | QtGui.QFrame.Sunken)
-# 
-#         # for unexplained reasons, a QLabel containing an image has to be placed
-#         #   in a QScrollArea to be displayed within a layout. Placing theRasterizedImageLabel
-#         #   directly in the layout would *not* display it at all!
-#         #   Therefore, create a QScrollArea and assign theRasterizedImageLabel to it:
-#         self.scrollArea = QtGui.QScrollArea()
-#         # self.scrollArea.setBackgroundRole(QtGui.QPalette.AlternateBase)
-#         self.scrollArea.setBackgroundRole(QtGui.QPalette.Mid)
-#         self.scrollArea.setWidget(self.theRasterizedImageLabel)
-#         self.scrollArea.setAlignment = (QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-# 
-# 
-#         # create a progress bar:
-#         self.createProgressBar()      
-# 
-#         # create a layout and place all 'sub-widgets' in it:
-#         vbox = QtGui.QVBoxLayout()
-#         vbox.setMargin(2)
-#         vbox.setSpacing(4)
-#         vbox.setAlignment = (QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-#         vbox.addWidget(self.infoLabel)
-#         vbox.addWidget(self.progressBar)
-#         vbox.addWidget(self.scrollArea)
-# 
-#         # finally place the complete layout in a QWidget and return it:
-#         theContainerWidget.setLayout(vbox)
-#         return theContainerWidget
+        # create a progress bar:
+        self.createProgressBar()      
+
+        # create a layout and place all 'sub-widgets' in it:
+        vbox = QtGui.QVBoxLayout()
+        vbox.setMargin(2)
+        vbox.setSpacing(4)
+        vbox.setAlignment = (QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        vbox.addWidget(self.infoLabel)
+        vbox.addWidget(self.progressBar)
+        vbox.addWidget(self.scrollArea)
+
+        # finally place the complete layout in a QWidget and return it:
+        theContainerWidget.setLayout(vbox)
+        return theContainerWidget
 
 
     # ------------------------------------------------------------------
@@ -324,9 +385,9 @@ class CDSceneRasterizer(QtCore.QObject):
 
     # ------------------------------------------------------------------
     def setRasterWidth(self, pWidth):
-        self.__rasterWidth = pWidth
+        self.theRasterizedImageLabel.rasterWidth = pWidth
         CDConstants.printOut( ">>>>>>>>>>>>>>>>>>>>>>>> CDSceneRasterizer.theRasterizedImageLabel.rasterWidth is now =" + \
-          str(self.__rasterWidth), CDConstants.DebugVerbose )
+          str(self.theRasterizedImageLabel.rasterWidth), CDConstants.DebugVerbose )
 
     # ------------------------------------------------------------------
     # 2010 - Mitja: add functionality for saving PIFF metadata:
@@ -340,8 +401,8 @@ class CDSceneRasterizer(QtCore.QObject):
     # 2010 - Mitja: assign CellDraw preferences object:
     # ------------------------------------------------------------------
     def setPreferencesObject(self, pCDPreferences=None):
-        self.__theCDPreferences = pCDPreferences
-        CDConstants.printOut( ">>>>>>>>>>>>>>>>>>>>>>>> CDSceneRasterizer.__theCDPreferences is now =" + str(self.__theCDPreferences), CDConstants.DebugVerbose )
+        self.cdPreferences = pCDPreferences
+        CDConstants.printOut( ">>>>>>>>>>>>>>>>>>>>>>>> CDSceneRasterizer.cdPreferences is now =" + str(self.cdPreferences), CDConstants.DebugVerbose )
 
 
 
@@ -349,7 +410,7 @@ class CDSceneRasterizer(QtCore.QObject):
     # ------------------------------------------------------------------
     # assign a new graphics scene object to CDSceneRasterizer:
     # ------------------------------------------------------------------
-    def setGraphicsSceneObject(self, pGraphicsScene):
+    def setInputGraphicsScene(self, pGraphicsScene):
 
         lInputGraphisSceneIsGood = True
 
@@ -358,34 +419,34 @@ class CDSceneRasterizer(QtCore.QObject):
         #
         # TODO TODO TODO: declare the following globals in the __init__ method, for clearness!
         #
-        self.__theGraphicsScene = pGraphicsScene
+        self.theGraphicsScene = pGraphicsScene
         # the scene rect has been set (manually by us) to be the same as the PIFF output rect from user preferences:
-        lSceneRect = self.__theGraphicsScene.sceneRect()
+        lSceneRect = self.theGraphicsScene.sceneRect()
 
-        lTheSceneItemsRect = self.__theGraphicsScene.itemsBoundingRect()
-        self.theSceneLimitsMinX = lTheSceneItemsRect.left()
-        self.theSceneLimitsMinY = lTheSceneItemsRect.top()
-        self.theSceneLimitsMaxX = lTheSceneItemsRect.right()
-        self.theSceneLimitsMaxY = lTheSceneItemsRect.bottom()
+        self.theSceneItemsRect = self.theGraphicsScene.itemsBoundingRect()
+        self.theSceneLimitsMinX = self.theSceneItemsRect.left()
+        self.theSceneLimitsMinY = self.theSceneItemsRect.top()
+        self.theSceneLimitsMaxX = self.theSceneItemsRect.right()
+        self.theSceneLimitsMaxY = self.theSceneItemsRect.bottom()
        
-        CDConstants.printOut( "___ - DEBUG ----- CDSceneRasterizer: self.setGraphicsSceneObject() real values l,t,r,b, rect = " + \
+        CDConstants.printOut( "___ - DEBUG ----- CDSceneRasterizer: self.setInputGraphicsScene() real values l,t,r,b, rect = " + \
             str(self.theSceneLimitsMinX)+" "+str(self.theSceneLimitsMinY)+" "+str(self.theSceneLimitsMaxX)+" "+ \
-            str(self.theSceneLimitsMaxY)+" "+str(lTheSceneItemsRect)+" ", CDConstants.DebugVerbose )
+            str(self.theSceneLimitsMaxY)+" "+str(self.theSceneItemsRect)+" ", CDConstants.DebugVerbose )
            
         CDConstants.printOut( "                  itemsBoundingRect itemsBoundingRect itemsBoundingRect itemsBoundingRect = " + \
-            str(self.__theGraphicsScene.itemsBoundingRect()) , CDConstants.DebugVerbose )
+            str(self.theGraphicsScene.itemsBoundingRect()) , CDConstants.DebugVerbose )
 
         CDConstants.printOut( "                  sceneRect sceneRect sceneRect sceneRect = " + str(lSceneRect), CDConstants.DebugVerbose )
        
 
-        if (self.__theCDPreferences != None):
+        if (self.cdPreferences != None):
             # set lTempRectF from dimensions stored in preferences:
             lTempRectF = QtCore.QRectF(0.0, 0.0, \
-                self.__theCDPreferences.getPifSceneWidth(), self.__theCDPreferences.getPifSceneHeight())
+                self.cdPreferences.getPifSceneWidth(), self.cdPreferences.getPifSceneHeight())
         else:
             # if there are no preferences about the Cell Scene dimensions, take the
             #    **entire scene rect from objects** united with the nominal scene rect:
-            lTempRectF = QtCore.QRectF(lSceneRect.united(self.__theGraphicsScene.itemsBoundingRect()))
+            lTempRectF = QtCore.QRectF(lSceneRect.united(self.theGraphicsScene.itemsBoundingRect()))
 
         # set integer-value dimensions (or a QRect, not a QRectF!) when creating a QPixmap:
         lPixmap = QtGui.QPixmap( int(lTempRectF.right() - lTempRectF.left()), \
@@ -403,9 +464,9 @@ class CDSceneRasterizer(QtCore.QObject):
         self.lTmpColorList = list()
 
         # deselect all graphics items before rendering the scene to a pixmap:
-        self.__theGraphicsScene.clearSelection()
+        self.theGraphicsScene.clearSelection()
 
-        lSceneItems = self.__theGraphicsScene.items(QtCore.Qt.AscendingOrder)
+        lSceneItems = self.theGraphicsScene.items(QtCore.Qt.AscendingOrder)
         for lItem in lSceneItems:
             #
             # get the scene item/region' key:
@@ -431,7 +492,7 @@ class CDSceneRasterizer(QtCore.QObject):
                 lR = lItem.brush().color().red()
                 lG = lItem.brush().color().green()
                 lB = lItem.brush().color().blue()
-                CDConstants.printOut("CDSceneRasterizer.setGraphicsSceneObject() - lItemSceneColor = "+str(lItemSceneColor)+" = "+str(lR)+" "+str(lG)+" "+str(lB), CDConstants.DebugTODO )
+                CDConstants.printOut("CDSceneRasterizer.setInputGraphicsScene() - lItemSceneColor = "+str(lItemSceneColor)+" = "+str(lR)+" "+str(lG)+" "+str(lB), CDConstants.DebugTODO )
                 lItemKey = self.colorToKeyRegionDict[lItemSceneColor]
                 #
                 # store all graphics items' pens and brushes, and assign a unique brush color to each scene item:
@@ -454,43 +515,49 @@ class CDSceneRasterizer(QtCore.QObject):
                 else:
                     self.lTmpColorList.append(lTmpColor.rgba())
     
-                CDConstants.printOut("CDSceneRasterizer.setGraphicsSceneObject() - lItemID = "+str(lItemID ), CDConstants.DebugTODO )
-                CDConstants.printOut("CDSceneRasterizer.setGraphicsSceneObject() - lTmpColor.rgba() = "+str(lTmpColor.rgba() ), CDConstants.DebugTODO )
-                CDConstants.printOut("CDSceneRasterizer.setGraphicsSceneObject() - self.lTmpColorToItemIDDict[lTmpColor.rgba() ="+str(lTmpColor.rgba())+"] = "+str(self.lTmpColorToItemIDDict[lTmpColor.rgba()] ), CDConstants.DebugTODO )
-                CDConstants.printOut("CDSceneRasterizer.setGraphicsSceneObject() - lItem.brush().color().rgba() = "+str(lItem.brush().color().rgba() ), CDConstants.DebugTODO )
+                CDConstants.printOut("CDSceneRasterizer.setInputGraphicsScene() - lItemID = "+str(lItemID ), CDConstants.DebugTODO )
+                CDConstants.printOut("CDSceneRasterizer.setInputGraphicsScene() - lTmpColor.rgba() = "+str(lTmpColor.rgba() ), CDConstants.DebugTODO )
+                CDConstants.printOut("CDSceneRasterizer.setInputGraphicsScene() - self.lTmpColorToItemIDDict[lTmpColor.rgba() ="+str(lTmpColor.rgba())+"] = "+str(self.lTmpColorToItemIDDict[lTmpColor.rgba()] ), CDConstants.DebugTODO )
+                CDConstants.printOut("CDSceneRasterizer.setInputGraphicsScene() - lItem.brush().color().rgba() = "+str(lItem.brush().color().rgba() ), CDConstants.DebugTODO )
 
 
         # temporarily disable drawing the scene overlay:
-        self.__theGraphicsScene.setDrawForegroundEnabled(False)
-        CDConstants.printOut("CDSceneRasterizer.setGraphicsSceneObject() - self.lTmpColorToItemIDDict = "+str(self.lTmpColorToItemIDDict ), CDConstants.DebugTODO )
-        CDConstants.printOut("CDSceneRasterizer.setGraphicsSceneObject() - self.lTmpColorList = "+str(self.lTmpColorList ), CDConstants.DebugTODO )
+        self.theGraphicsScene.setDrawForegroundEnabled(False)
+        CDConstants.printOut("CDSceneRasterizer.setInputGraphicsScene() - self.lTmpColorToItemIDDict = "+str(self.lTmpColorToItemIDDict ), CDConstants.DebugTODO )
+        CDConstants.printOut("CDSceneRasterizer.setInputGraphicsScene() - self.lTmpColorList = "+str(self.lTmpColorList ), CDConstants.DebugTODO )
 
         # render the chosen width&height of the scene contents, using a painter into a local pixmap,
         #   with no QPen on any item, and using the new, temporary special brush colors for items:
         lPainter = QtGui.QPainter(lPixmap)
-        self.__theGraphicsScene.render( lPainter, lSceneRect, lSceneRect, QtCore.Qt.KeepAspectRatio )
+        self.theGraphicsScene.render( lPainter, lSceneRect, lSceneRect, QtCore.Qt.KeepAspectRatio )
         lPainter.end()
 
         # store the pixmap holding the specially rendered scene:
-        self.theRasterizedPixmap = lPixmap
-        self.theRasterizedImage = lPixmap.toImage()
+        self.theRasterizedImageLabel.setPixmap(lPixmap)
+        # this QImage is going to hold the rasterized version:
+        self.theRasterizedImageLabel.image = lPixmap.toImage()
 
-        CDConstants.printOut( "___ - DEBUG ----- CDSceneRasterizer: self.setGraphicsSceneObject() pGraphicsScene w,h = " + str(self.theRasterizedPixmap.width()) + " " + str(self.theRasterizedPixmap.height()), CDConstants.DebugVerbose )
+        self.theRasterizedImageLabel.width = int( lPixmap.width() )
+        self.theRasterizedImageLabel.height = int ( lPixmap.height() )
+        CDConstants.printOut( "___ - DEBUG ----- CDSceneRasterizer: self.setInputGraphicsScene() pGraphicsScene w,h = " + str(self.theRasterizedImageLabel.width) + " " + str(self.theRasterizedImageLabel.height), CDConstants.DebugVerbose )
 
-        if isinstance( self.__theWaitProgressBarWithImage, QtGui.QWidget ) == True:
-            self.__theWaitProgressBarWithImage.setImagePixmap(self.theRasterizedPixmap)
+        # adjusts the size of the label widget to fit its contents (i.e. the pixmap):
+        self.theRasterizedImageLabel.adjustSize()
+        self.theRasterizedImageLabel.show()
+        self.theRasterizedImageLabel.update()
+
 
         # restore the original pens and brushes for all graphics items' in the cell and region scene:
         for lItem in lSceneItems:
             lItem.restorePen()
             lItem.restoreBrush()
         # re-enable drawing the scene overlay:
-        self.__theGraphicsScene.setDrawForegroundEnabled(True)
+        self.theGraphicsScene.setDrawForegroundEnabled(True)
 
-        CDConstants.printOut( "___ - DEBUG ----- CDSceneRasterizer: self.setGraphicsSceneObject() done.", CDConstants.DebugExcessive )
+        CDConstants.printOut( "___ - DEBUG ----- CDSceneRasterizer: self.setInputGraphicsScene() done.", CDConstants.DebugExcessive )
         return lInputGraphisSceneIsGood
 
-    # end of  def setGraphicsSceneObject(self, pGraphicsScene)
+    # end of  def setInputGraphicsScene(self, pGraphicsScene)
     # ------------------------------------------------------------------
 
 
@@ -568,9 +635,9 @@ class CDSceneRasterizer(QtCore.QObject):
         #
         self.theImageSequenceToBeRasterized = pSequenceObject
 
-        self.__theWaitProgressBarWithImage.setInfoText(" Loading Image Sequence \n " + \
-            str(self.theImageSequenceToBeRasterized.imageSequencePathString) + \
-            " \n into Scene Rasterizer... " )
+        self.infoLabel.setText( self.tr(" Loading Image Sequence \n %1 \n into Scene Rasterizer... ").arg( \
+            str(self.theImageSequenceToBeRasterized.imageSequencePathString)  ) )
+
 
         self.theSceneLimitsMinX = 0
         self.theSceneLimitsMinY = 0
@@ -590,26 +657,27 @@ class CDSceneRasterizer(QtCore.QObject):
         lPixmap.fill(QtCore.Qt.transparent)
 
         # store the pixmap holding the specially rendered scene:
-
-        # store the pixmap holding the specially rendered scene:
-        self.theRasterizedPixmap = lPixmap
-        self.theRasterizedImage = lPixmap.toImage()
-
-        self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lPixmap))
+        self.theRasterizedImageLabel.setPixmap(lPixmap)
+        # this QImage is going to hold the rasterized version:
+        self.theRasterizedImageLabel.image = lPixmap.toImage()
+        self.theRasterizedImageLabel.width = int( lPixmap.width() )
+        self.theRasterizedImageLabel.height = int ( lPixmap.height() )
         CDConstants.printOut( "___ - DEBUG ----- CDSceneRasterizer: self.setInputImageSequence() pGraphicsScene w,h =" + \
-              str(lPixmap.width()) + " " + str(lPixmap.height()), CDConstants.DebugVerbose )
+              str(self.theRasterizedImageLabel.width) + " " + str(self.theRasterizedImageLabel.height), CDConstants.DebugVerbose )
 
-        if isinstance( self.__theWaitProgressBarWithImage, QtGui.QWidget ) == True:
-            self.__theWaitProgressBarWithImage.setImagePixmap(self.theRasterizedPixmap)
-
+        # adjusts the size of the label widget to fit its contents (i.e. the pixmap):
+        self.theRasterizedImageLabel.adjustSize()
+        self.theRasterizedImageLabel.show()
+        self.theRasterizedImageLabel.update()
 
 
         # for feedback, draw the entire sequence into the rasterizer window:
 
 
-        # start progress bar:
-        self.__theWaitProgressBarWithImage.setRange(0, self.theSceneLimitsMaxZ)
-        self.__theWaitProgressBarWithImage.setValue(0)
+        # start progress bar in our rasterizer window:
+        self.progressBar.setRange(0, self.theSceneLimitsMaxZ)
+        self.progressBar.setValue(0)
+        QtGui.QApplication.processEvents()
 
 # 
 #         # set the image sequence mode to "area" i.e. don't draw edges, but complete areas
@@ -629,7 +697,8 @@ class CDSceneRasterizer(QtCore.QObject):
 #             self.theRasterizedImageLabel.image = lPixmap.toImage()
 #             self.theRasterizedImageLabel.update()
 #             # progressBar status update:
-#             self.__theWaitProgressBarWithImage.setValue(lZ)
+#             self.progressBar.setValue(lZ)
+#             QtGui.QApplication.processEvents()
 #             
 #         self.theImageSequenceToBeRasterized.setCurrentIndexInSequence(lTmpImageIndexInSequence)
 
@@ -687,7 +756,7 @@ class CDSceneRasterizer(QtCore.QObject):
         # 2011 - Mitja: this doesn't always restore to normal (on different platrforms?) so we don't change cursor for now:
         # QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
    
-        lRasterizationSize = self.__rasterWidth
+        lRasterizationSize = self.theRasterizedImageLabel.rasterWidth
 
         # This used to be set to render the width&height of the scene contents.
         # But we now set what we want as PIFF width & height separately in preferences, so we don't set it thus:
@@ -695,11 +764,11 @@ class CDSceneRasterizer(QtCore.QObject):
         #    lSceneHeightInPixels = self.theRasterizedImageLabel.height
         # Instead we take PIFF width & height from the preferences'values as set to the graphics scene,
         #    which we rely on having been assigned to this object's local pointer copy:
-        # lSceneWidthInPixels = self.__theGraphicsScene.sceneRect().width()
-        # lSceneHeightInPixels = self.__theGraphicsScene.sceneRect().height()
+        # lSceneWidthInPixels = self.theGraphicsScene.sceneRect().width()
+        # lSceneHeightInPixels = self.theGraphicsScene.sceneRect().height()
 
-        lSceneWidthInPixels = self.__theCDPreferences.getPifSceneWidth()
-        lSceneHeightInPixels = self.__theCDPreferences.getPifSceneHeight()
+        lSceneWidthInPixels = self.cdPreferences.getPifSceneWidth()
+        lSceneHeightInPixels = self.cdPreferences.getPifSceneHeight()
 
 
         # now compute how many fixed-sized cells (width and height) there will be in our scene:
@@ -778,9 +847,9 @@ class CDSceneRasterizer(QtCore.QObject):
 
                             # This used to be set to rasterize from width&height of the scene contents.
                             # But we now set what we want as PIFF width & height separately in preferences, so we don't sample it thus:
-                            #   lItemAt = self.__theGraphicsScene.itemAt(float(p + int(self.theSceneLimitsMinX)),float(q  + int(self.theSceneLimitsMinY)))
+                            #   lItemAt = self.theGraphicsScene.itemAt(float(p + int(self.theSceneLimitsMinX)),float(q  + int(self.theSceneLimitsMinY)))
                             # Instead we take PIFF width & height from the preferences'values as set to the graphics scene:
-                            lItemAt = self.__theGraphicsScene.itemAt(float(p),float(q))
+                            lItemAt = self.theGraphicsScene.itemAt(float(p),float(q))
 
                             # convert the current color to an RGBA numeric value:
                             if isinstance( lItemAt, QtGui.QGraphicsItem ):
@@ -916,11 +985,11 @@ class CDSceneRasterizer(QtCore.QObject):
         # 2011 - Mitja: this doesn't always restore to normal (on different platrforms?) so we don't change cursor for now:
         # QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
 
-        lRasterSize = self.__rasterWidth
+        lRasterSize = self.theRasterizedImageLabel.rasterWidth
         # lSceneWidthInPixels = self.theRasterizedImageLabel.width
         # lSceneHeightInPixels = self.theRasterizedImageLabel.height
-        lSceneWidthInPixels = self.__theCDPreferences.getPifSceneWidth()
-        lSceneHeightInPixels = self.__theCDPreferences.getPifSceneHeight()
+        lSceneWidthInPixels = self.cdPreferences.getPifSceneWidth()
+        lSceneHeightInPixels = self.cdPreferences.getPifSceneHeight()
 
         # ------------------------------------------------------------
         # now create a table of total cell type probabilities for each region i.
@@ -1033,15 +1102,15 @@ class CDSceneRasterizer(QtCore.QObject):
                     #     " is not in self.colorToNameRegionDict =", self.colorToNameRegionDict
                     pass
 
-        if (self.savePIFMetadata == True) and (self.__theCDPreferences != None):
+        if (self.savePIFMetadata == True) and (self.cdPreferences != None):
             lOutputStream << "<xml>\n"
             lOutputStream << "    <units>\n"
-            lOutputStream << "        <unit name = \"%s\" />\n" % (str(self.__theCDPreferences.pifSceneUnits))
+            lOutputStream << "        <unit name = \"%s\" />\n" % (str(self.cdPreferences.pifSceneUnits))
             lOutputStream << "    </units>\n"
             lOutputStream << "    <dimensions>\n"
-            lOutputStream << "        <width = \"%s\" />\n" % (str(self.__theCDPreferences.getPifSceneWidth()))
-            lOutputStream << "        <height = \"%s\" />\n" % (str(self.__theCDPreferences.getPifSceneHeight()))
-            lOutputStream << "        <depth = \"%s\" />\n" % (str(self.__theCDPreferences.getPifSceneDepth()))
+            lOutputStream << "        <width = \"%s\" />\n" % (str(self.cdPreferences.getPifSceneWidth()))
+            lOutputStream << "        <height = \"%s\" />\n" % (str(self.cdPreferences.getPifSceneHeight()))
+            lOutputStream << "        <depth = \"%s\" />\n" % (str(self.cdPreferences.getPifSceneDepth()))
             lOutputStream << "    </dimensions>\n"
             lOutputStream << "</xml>\n"
 
@@ -1089,10 +1158,10 @@ class CDSceneRasterizer(QtCore.QObject):
         lItemsRasterSizeY = -1
         lItemsRasterSizeZ = -1
 
-        lSceneWidthInPixels = self.__theCDPreferences.getPifSceneWidth()
-        lSceneHeightInPixels = self.__theCDPreferences.getPifSceneHeight()
+        lSceneWidthInPixels = self.cdPreferences.getPifSceneWidth()
+        lSceneHeightInPixels = self.cdPreferences.getPifSceneHeight()
 
-        lSceneItems = self.__theGraphicsScene.items(QtCore.Qt.AscendingOrder)
+        lSceneItems = self.theGraphicsScene.items(QtCore.Qt.AscendingOrder)
         lTotalNumberOfItems = len(lSceneItems)
 
         # 2011 - Mitja: create two empty arrays, into which to write pixel values, three values for each pixel :
@@ -1434,12 +1503,12 @@ class CDSceneRasterizer(QtCore.QObject):
         # open a QTextStream, i.e. an "interface for reading and writing text":
         lOutputStream = QtCore.QTextStream(lFile)
 
-        lSceneItems = self.__theGraphicsScene.items(QtCore.Qt.AscendingOrder)
+        lSceneItems = self.theGraphicsScene.items(QtCore.Qt.AscendingOrder)
         lTotalNumberOfItems = len(lSceneItems)
 
-        lSceneWidthInPixels = self.__theCDPreferences.getPifSceneWidth()
-        lSceneHeightInPixels = self.__theCDPreferences.getPifSceneHeight()
-        lSceneDepthInPixels = self.__theCDPreferences.getPifSceneDepth()
+        lSceneWidthInPixels = self.cdPreferences.getPifSceneWidth()
+        lSceneHeightInPixels = self.cdPreferences.getPifSceneHeight()
+        lSceneDepthInPixels = self.cdPreferences.getPifSceneDepth()
 
         # set progress bar:
         self.progressBar.setRange(0, (lSceneHeightInPixels * lSceneWidthInPixels) )
@@ -1547,15 +1616,15 @@ class CDSceneRasterizer(QtCore.QObject):
                         (lRLEoutput[0],lRLEoutput[1],lRLEoutput[2],lRLEoutput[3],lRLEoutput[4],lRLEoutput[5],lRLEoutput[6],lRLEoutput[7]) 
                     # CDConstants.printOut( " "+str( lRLEoutput )+" ", CDConstants.DebugTODO )
 
-        if (self.savePIFMetadata == True) and (self.__theCDPreferences != None):
+        if (self.savePIFMetadata == True) and (self.cdPreferences != None):
             lOutputStream << "<xml>\n"
             lOutputStream << "    <units>\n"
-            lOutputStream << "        <unit name = \"%s\" />\n" % (str(self.__theCDPreferences.pifSceneUnits))
+            lOutputStream << "        <unit name = \"%s\" />\n" % (str(self.cdPreferences.pifSceneUnits))
             lOutputStream << "    </units>\n"
             lOutputStream << "    <dimensions>\n"
-            lOutputStream << "        <width = \"%s\" />\n" % (str(self.__theCDPreferences.getPifSceneWidth()))
-            lOutputStream << "        <height = \"%s\" />\n" % (str(self.__theCDPreferences.getPifSceneHeight()))
-            lOutputStream << "        <depth = \"%s\" />\n" % (str(self.__theCDPreferences.getPifSceneDepth()))
+            lOutputStream << "        <width = \"%s\" />\n" % (str(self.cdPreferences.getPifSceneWidth()))
+            lOutputStream << "        <height = \"%s\" />\n" % (str(self.cdPreferences.getPifSceneHeight()))
+            lOutputStream << "        <depth = \"%s\" />\n" % (str(self.cdPreferences.getPifSceneDepth()))
             lOutputStream << "    </dimensions>\n"
             lOutputStream << "</xml>\n"
 
@@ -1611,8 +1680,8 @@ class CDSceneRasterizer(QtCore.QObject):
 
         # This used to be set to render the width&height of the scene contents.
         # But we now set what we want as PIFF width & height separately in preferences:
-        lSceneWidthInPixels = self.__theCDPreferences.getPifSceneWidth()
-        lSceneHeightInPixels = self.__theCDPreferences.getPifSceneHeight()
+        lSceneWidthInPixels = self.cdPreferences.getPifSceneWidth()
+        lSceneHeightInPixels = self.cdPreferences.getPifSceneHeight()
         lSceneRect = QtCore.QRectF(0, 0, lSceneWidthInPixels, lSceneHeightInPixels)
 
         # ------------------------------------------------------------
@@ -1636,7 +1705,7 @@ class CDSceneRasterizer(QtCore.QObject):
         # ------------------------------------------------------------
 
 
-        lSceneItems = self.__theGraphicsScene.items(QtCore.Qt.AscendingOrder)
+        lSceneItems = self.theGraphicsScene.items(QtCore.Qt.AscendingOrder)
         lTotalNumberOfItems = len(lSceneItems)
 
         # set progress bar:
@@ -1826,14 +1895,14 @@ class CDSceneRasterizer(QtCore.QObject):
                         pass
 
 
-        if (self.savePIFMetadata == True) and (self.__theCDPreferences != None):
+        if (self.savePIFMetadata == True) and (self.cdPreferences != None):
             lOutputStream << "<xml>\n"
             lOutputStream << "    <units>\n"
-            lOutputStream << "        <unit name = \"%s\" />\n" % (str(self.__theCDPreferences.pifSceneUnits))
+            lOutputStream << "        <unit name = \"%s\" />\n" % (str(self.cdPreferences.pifSceneUnits))
             lOutputStream << "    </units>\n"
             lOutputStream << "    <dimensions>\n"
-            lOutputStream << "        <width = \"%s\" />\n" % (str(self.__theCDPreferences.getPifSceneWidth()))
-            lOutputStream << "        <height = \"%s\" />\n" % (str(self.__theCDPreferences.getPifSceneHeight()))
+            lOutputStream << "        <width = \"%s\" />\n" % (str(self.cdPreferences.getPifSceneWidth()))
+            lOutputStream << "        <height = \"%s\" />\n" % (str(self.cdPreferences.getPifSceneHeight()))
             lOutputStream << "    </dimensions>\n"
             lOutputStream << "</xml>\n"
 
@@ -1900,10 +1969,10 @@ class CDSceneRasterizer(QtCore.QObject):
         #    lSceneHeight = self.theRasterizedImageLabel.height
         # Instead we take PIFF width & height from the preferences'values as set to the graphics scene,
         #    which we rely on having been assigned to this object's local pointer copy:
-        # lSceneWidth = self.__theGraphicsScene.sceneRect().width()
-        # lSceneHeight = self.__theGraphicsScene.sceneRect().height()
-        lSceneWidth = self.__theCDPreferences.getPifSceneWidth()
-        lSceneHeight = self.__theCDPreferences.getPifSceneHeight()
+        # lSceneWidth = self.theGraphicsScene.sceneRect().width()
+        # lSceneHeight = self.theGraphicsScene.sceneRect().height()
+        lSceneWidth = self.cdPreferences.getPifSceneWidth()
+        lSceneHeight = self.cdPreferences.getPifSceneHeight()
 
         # ------------------------------------------------------------
         # now create a table of total cell type probabilities for each region i.
@@ -1928,11 +1997,11 @@ class CDSceneRasterizer(QtCore.QObject):
         # start progress bar:
         # self.progressBar.setRange(0, ( lSceneWidthInPixels * lSceneHeightInPixels ) )
         # for the progress bar we just increment once per processed item:
-        lSceneItemsCount = len(self.__theGraphicsScene.items())
+        lSceneItemsCount = len(self.theGraphicsScene.items())
         lSceneProcessedItem = 0
         self.progressBar.setRange(lSceneProcessedItem, lSceneItemsCount - 1)
 
-        lSceneItems = self.__theGraphicsScene.items(QtCore.Qt.AscendingOrder)
+        lSceneItems = self.theGraphicsScene.items(QtCore.Qt.AscendingOrder)
 
         lRegionsKeys = self.regionsDict.keys()
 
@@ -2020,8 +2089,8 @@ class CDSceneRasterizer(QtCore.QObject):
                 for x in xrange(0, int(lSceneWidthInPixels), 1):
                     for y in xrange(0, int(lSceneHeightInPixels), 1):
 
-                        lSceneWidthInPixels = self.__theGraphicsScene.sceneRect().width()
-                        lSceneHeightInPixels = self.__theGraphicsScene.sceneRect().height()
+                        lSceneWidthInPixels = self.theGraphicsScene.sceneRect().width()
+                        lSceneHeightInPixels = self.theGraphicsScene.sceneRect().height()
 
             # progressBar status update:
             lSceneProcessedItem = lSceneProcessedItem + 1
@@ -2063,12 +2132,16 @@ class CDSceneRasterizer(QtCore.QObject):
         # 2011 - Mitja: add calling CC3D as subprocess:
         
         # make sure that preferences obtained from CC3D settings file are up to date:
-        self.__theCDPreferences.readCC3DPreferencesFromDisk()
+        self.cdPreferences.readCC3DPreferencesFromDisk()
 
-        self.cc3dPath = str(self.__theCDPreferences.cc3dCommandPathCC3D)
-        self.cc3dPathAndStartupFileName = str(self.__theCDPreferences.cc3dCommandPathAndStartCC3D)
+        self.cc3dPath = str(self.cdPreferences.cc3dCommandPathCC3D)
+        self.cc3dPathAndStartupFileName = str(self.cdPreferences.cc3dCommandPathAndStartCC3D)
         
-        self.cc3dOutputLocationPath = str(self.__theCDPreferences.outputLocationPathCC3D)
+        self.cc3dOutputLocationPath = str(self.cdPreferences.outputLocationPathCC3D)
+
+
+        # TODO TODO: is self.pluginObj necessary for anything?
+        self.pluginObj=None
 
         self.cc3dProcess=None
    
@@ -2085,7 +2158,7 @@ class CDSceneRasterizer(QtCore.QObject):
         CDConstants.printOut( "self.cc3dPath=" + str(self.cc3dPath), CDConstants.DebugAll )
         CDConstants.printOut( "self.cc3dPathAndStartupFileName=" + str(self.cc3dPathAndStartupFileName), CDConstants.DebugAll )
         CDConstants.printOut( "self.cc3dOutputLocationPath=" + str(self.cc3dOutputLocationPath), CDConstants.DebugAll )
-        CDConstants.printOut( "self.__theCDPreferences.cellDrawDirectoryPath=" + str(self.__theCDPreferences.cellDrawDirectoryPath), CDConstants.DebugAll )
+        CDConstants.printOut( "self.cdPreferences.cellDrawDirectoryPath=" + str(self.cdPreferences.cellDrawDirectoryPath), CDConstants.DebugAll )
 
         # popenArgs=[self.cc3dPathAndStartupFileName,"--port=%s"%self.port]
         popenArgs=[self.cc3dPathAndStartupFileName]
@@ -2143,11 +2216,11 @@ class CDSceneRasterizer(QtCore.QObject):
         #    lSceneHeightInPixels = self.theRasterizedImageLabel.height
         # Instead we take PIFF width & height from the preferences'values as set to the graphics scene,
         #    which we rely on having been assigned to this object's local pointer copy:
-        # lSceneWidthInPixels = self.__theGraphicsScene.sceneRect().width()
-        # lSceneHeightInPixels = self.__theGraphicsScene.sceneRect().height()
+        # lSceneWidthInPixels = self.theGraphicsScene.sceneRect().width()
+        # lSceneHeightInPixels = self.theGraphicsScene.sceneRect().height()
 
-        lSceneWidthInPixels = self.__theCDPreferences.getPifSceneWidth()
-        lSceneHeightInPixels = self.__theCDPreferences.getPifSceneHeight()
+        lSceneWidthInPixels = self.cdPreferences.getPifSceneWidth()
+        lSceneHeightInPixels = self.cdPreferences.getPifSceneHeight()
 
         # 2011 - Mitja: create an empty array, into which to write pixel values,
         #    one for each pixel (not just one for each cell!) :
@@ -2213,7 +2286,7 @@ class CDSceneRasterizer(QtCore.QObject):
         #
         #       start a loop over each region (item) of cells in the Cell Scene:
         #
-        lSceneItems = self.__theGraphicsScene.items(QtCore.Qt.AscendingOrder)
+        lSceneItems = self.theGraphicsScene.items(QtCore.Qt.AscendingOrder)
 
         # set progress bar:
         self.infoLabel.setText( "Rasterizing Cell Scene using Potts (step 3 of 7) ... processing individual regions." )
@@ -2593,11 +2666,11 @@ class CDSceneRasterizer(QtCore.QObject):
 
         # grab the default helper files from our own CellDraw sourcecode directory,
         #   and copy them over to the temporary work directory:
-        shutil.copy(  os.path.join(self.__theCDPreferences.cellDrawDirectoryPath,"cc3Dhelpfiles/helpfile_CellDraw.cc3d"), \
+        shutil.copy(  os.path.join(self.cdPreferences.cellDrawDirectoryPath,"cc3Dhelpfiles/helpfile_CellDraw.cc3d"), \
             os.path.join(lHelperOutputDirectoryCC3D,"helpfile_CellDraw.cc3d")  )
-        shutil.copy(  os.path.join(self.__theCDPreferences.cellDrawDirectoryPath,"cc3Dhelpfiles/Simulation/helpfile_CellDraw.py"), \
+        shutil.copy(  os.path.join(self.cdPreferences.cellDrawDirectoryPath,"cc3Dhelpfiles/Simulation/helpfile_CellDraw.py"), \
             os.path.join(lHelperSimulationDirectoryCC3D,"helpfile_CellDraw.py")  )
-        shutil.copy(  os.path.join(self.__theCDPreferences.cellDrawDirectoryPath,"cc3Dhelpfiles/Simulation/helpfile_steppables_CellDraw.py"), \
+        shutil.copy(  os.path.join(self.cdPreferences.cellDrawDirectoryPath,"cc3Dhelpfiles/Simulation/helpfile_steppables_CellDraw.py"), \
             os.path.join(lHelperSimulationDirectoryCC3D,"helpfile_steppables_CellDraw.py")  )
 
         lHelperPIFFileName=os.path.join(lHelperSimulationDirectoryCC3D,"helpfile.piff")
@@ -2883,7 +2956,7 @@ class CDSceneRasterizer(QtCore.QObject):
 
         if False == True:
 
-            lSceneItems = self.__theGraphicsScene.items(QtCore.Qt.AscendingOrder)
+            lSceneItems = self.theGraphicsScene.items(QtCore.Qt.AscendingOrder)
    
             # set progress bar:
             self.progressBar.setRange(0, len(lSceneItems) )
@@ -3156,7 +3229,7 @@ class CDSceneRasterizer(QtCore.QObject):
 
         lToBeSavedFileExtension = QtCore.QString("piff")
         lToBeSavedInitialPath = QtCore.QDir.currentPath() + self.tr("/untitled.") + lToBeSavedFileExtension
-        lFileName = QtGui.QFileDialog.getSaveFileName(self.theParentWindow, self.tr("CellDraw - Save PIFF file from Potts algorithm as"),
+        lFileName = QtGui.QFileDialog.getSaveFileName(self, self.tr("CellDraw - Save PIFF file from Potts algorithm as"),
                                lToBeSavedInitialPath,
                                self.tr("%1 files (*.%2);;All files (*)")
                                    .arg(lToBeSavedFileExtension.toUpper())
@@ -3248,27 +3321,47 @@ class CDSceneRasterizer(QtCore.QObject):
 
 
 
-# this is not a QWidget anymore, so we comment out all that's GUI-related:
-# 
-#     # ---------------------------------------------------------
-#     def createProgressBar(self):
-#         self.progressBar = QtGui.QProgressBar()
-#         self.progressBar.setRange(0, 10000)
-#         self.progressBar.setValue(0)
-#         # Qt/PyQt's progressBar won't display updates from setValue(...) calls,
-#         #   unless we also explicitly ask Qt to process at least some events.
-#         QtGui.QApplication.processEvents()
-# 
-#     # ---------------------------------------------------------
-#     def advanceProgressBar(self):
-#         curVal = self.progressBar.value()
-#         maxVal = self.progressBar.maximum()
-#         self.progressBar.setValue(curVal + (maxVal - curVal) / 100)
-#         # Qt/PyQt's progressBar won't display updates from setValue(...) calls,
-#         #   unless we also explicitly ask Qt to process at least some events.
-#         QtGui.QApplication.processEvents()
-# 
-#     # ---------------------------------------------------------
+    # ---------------------------------------------------------
+    def createProgressBar(self):
+        self.progressBar = QtGui.QProgressBar()
+        self.progressBar.setRange(0, 10000)
+        self.progressBar.setValue(0)
+        # Qt/PyQt's progressBar won't display updates from setValue(...) calls,
+        #   unless we also explicitly ask Qt to process at least some events.
+        QtGui.QApplication.processEvents()
+
+    # ---------------------------------------------------------
+    def advanceProgressBar(self):
+        curVal = self.progressBar.value()
+        maxVal = self.progressBar.maximum()
+        self.progressBar.setValue(curVal + (maxVal - curVal) / 100)
+        # Qt/PyQt's progressBar won't display updates from setValue(...) calls,
+        #   unless we also explicitly ask Qt to process at least some events.
+        QtGui.QApplication.processEvents()
+
+    # ---------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3283,15 +3376,23 @@ class CDSceneRasterizer(QtCore.QObject):
     def rasterizeSequenceAndSavePIF(self):
         CDConstants.printOut("___ - DEBUG ----- CDSceneRasterizer: rasterizeSequenceAndSavePIF() starting.", CDConstants.DebugExcessive )
 
+        # start progress bar in our rasterizer window:
+        self.progressBar.setValue(0)
+
+        # we don't use a fixed size raster, so don't draw a grid on the image label:
+        self.theRasterizedImageLabel.drawFixedSizeRaster(False)
+        self.theRasterizedImageLabel.update()
+        QtGui.QApplication.processEvents()
+
         # ------------------------------------------------------------
         # (1) - rasterizeSequenceAndSavePIF - (1)
         #
         #       setup overall parameters for the output PIF file Scene:
         #
 
-        lSceneWidthInPixels = self.__theCDPreferences.getPifSceneWidth()
-        lSceneHeightInPixels = self.__theCDPreferences.getPifSceneHeight()
-        lSceneDepthInPixels = self.__theCDPreferences.getPifSceneDepth()
+        lSceneWidthInPixels = self.cdPreferences.getPifSceneWidth()
+        lSceneHeightInPixels = self.cdPreferences.getPifSceneHeight()
+        lSceneDepthInPixels = self.cdPreferences.getPifSceneDepth()
 
         lPIFFOutputWidth,lPIFFOutputHeight,lPIFFOutputDepth = \
             self.theImageSequenceToBeRasterized.getSequenceDimensions()
@@ -3307,18 +3408,6 @@ class CDSceneRasterizer(QtCore.QObject):
 
 
         # ------------------------------------------------------------
-        # show a panel containing a progress bar:
-        self.__theWaitProgressBarWithImage.setTitleTextRange("PIFF Output from Scene.", " ", 0, lPIFFOutputDepth)
-        self.__theWaitProgressBarWithImage.show()
-        self.__theWaitProgressBarWithImage.setValue(0)
-        self.__theWaitProgressBarWithImage.setImagePixmap(self.theRasterizedPixmap)
-
-
-#         self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lImage))
-#         self.__theWaitProgressBarWithImage.setTitle(" Computing 3D Contour-boundary points. ")
-
-
-        # ------------------------------------------------------------
         # (2) - rasterizeSequenceAndSavePIF - (2)
         #
         #       setup overall parameters for cell type data to be included in the output PIFF file:
@@ -3327,7 +3416,6 @@ class CDSceneRasterizer(QtCore.QObject):
         # from the image sequence, obtain relevant information about its region key,
         #    which at the moment is just a color to point to one entry in the PIFF table of types:
         lItemsColor = self.theImageSequenceToBeRasterized.getSequenceCurrentColor().rgba()
-
         #  colorToKeyRegionDict is used to map color RGBA values
         #      to region keys (integers starting from 1) so that we can
         #      obtain the specific color/region cell types and their required quantities:
@@ -3417,8 +3505,9 @@ class CDSceneRasterizer(QtCore.QObject):
         lTmpPainter.setBrush(lTmpBrush)
         lTmpPainter.end()
         # provide visual feedback to user:
-        self.__theWaitProgressBarWithImage.drawPixmapAtPoint(QtGui.QPixmap(lTmpPixmap))
-#         self.__theWaitProgressBarWithImage.setTitle(" Computing 3D Contour-boundary points. ")
+        self.theRasterizedImageLabel.drawPixmapAtPoint(lTmpPixmap)
+        self.theRasterizedImageLabel.update()
+        QtGui.QApplication.processEvents()
 
 
 #         time.sleep(2.0)
@@ -3434,12 +3523,13 @@ class CDSceneRasterizer(QtCore.QObject):
 
 
         if ( self.theImageSequenceToBeRasterized.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUse3DContours) ) :
-            self.__theWaitProgressBarWithImage.setInfoText( " Scanning " + \
-                str(lPIFFOutputDepth) + \
-                " layers to generate \n 3D contour-boundary pixels in Detected Volume... " )
+
+            self.infoLabel.setText( self.tr(" Scanning %1 layers to generate \n 3D contour-boundary pixels in Detected Volume... ").arg( \
+                str(lPIFFOutputDepth)  ) )
             CDConstants.printOut( " Scanning "+str(lPIFFOutputDepth)+" layers to generate 3D contour-boundary pixels in Detected Volume...  ", CDConstants.DebugTODO )
-            self.__theWaitProgressBarWithImage.setRange(0, lPIFFOutputDepth )
-            self.__theWaitProgressBarWithImage.setValue(0)
+            self.progressBar.setRange(0, lPIFFOutputDepth )
+            self.progressBar.setValue(0)
+            QtGui.QApplication.processEvents()
 
             # store the current index to restore it later:
             lTmpImageIndexInSequence = self.theImageSequenceToBeRasterized.getCurrentIndex()
@@ -3456,9 +3546,8 @@ class CDSceneRasterizer(QtCore.QObject):
             # ----------
             for k in xrange(0, lPIFFOutputDepth, 1):
     
-                self.__theWaitProgressBarWithImage.setInfoText( " Scanning layer " + \
-                    str(k) + " of " + str(lPIFFOutputDepth) + \
-                    " to generate \n 3D contour-boundary pixels in Detected Volume... " )
+                self.infoLabel.setText( self.tr(" Scanning layer %1 of %2 to generate \n 3D contour-boundary pixels in Detected Volume... ").arg( \
+                    str(k) ).arg( str(lPIFFOutputDepth) )  ) 
                 CDConstants.printOut( " Scanning layer "+str(k)+" of "+str(lPIFFOutputDepth)+" to generate 3D contour-boundary pixels in Detected Volume... ", CDConstants.DebugTODO )
     
                 lDone = False
@@ -3479,7 +3568,8 @@ class CDSceneRasterizer(QtCore.QObject):
 #                                 str(lNameOf3DContourWallType)+" "+ \
 #                                 str(lColorOf3DContourWallType)+" "+ \
 #                                 str(i)+" "+str(j)+" "+str(k)  , CDConstants.DebugAll )
-                self.__theWaitProgressBarWithImage.setInfoText( " Scanned layer "+str(k)+" of "+str(lPIFFOutputDepth)+" to generate \n 3D contour-boundary pixels in Detected Volume. " )
+                self.infoLabel.setText( self.tr(" Scanned layer %1 of %2 to generate \n 3D contour-boundary pixels in Detected Volume. ").arg( \
+                    str(k) ).arg( str(lPIFFOutputDepth) )  ) 
                 CDConstants.printOut( " Scanned layer "+str(k)+" of "+str(lPIFFOutputDepth)+" to generate 3D contour-boundary pixels in Detected Volume.", CDConstants.DebugTODO )
     
                 if (lDone == False):
@@ -3496,13 +3586,16 @@ class CDSceneRasterizer(QtCore.QObject):
                     lTmp3DContourImage = self.theImageSequenceToBeRasterized.rgb2qimageWtoGandA(lTmpOneLayerArray)
                     if isinstance( lTmp3DContourImage, QtGui.QImage ) == True:
                         lTmpPixmap = QtGui.QPixmap.fromImage(lTmp3DContourImage)
-                        self.__theWaitProgressBarWithImage.drawPixmapAtPoint(lTmpPixmap)
+                        self.theRasterizedImageLabel.drawPixmapAtPoint(lTmpPixmap)
+                        self.theRasterizedImageLabel.image = lTmpPixmap.toImage()
+                        self.theRasterizedImageLabel.update()
                     else:
                         pass # 152 prrint " -=-=-=-=-=-==>>>> lTmp3DContourImage is not a QtGui.QImage !!!!!!!!!!!!!!!!!"
                     # print "b"
     
                 # provide some visual feedback to user by incrementing the progress bar:
-                self.__theWaitProgressBarWithImage.setValue(k)
+                self.progressBar.setValue(k)
+                QtGui.QApplication.processEvents()
 
             # end of  for k in xrange(0, lPIFFOutputDepth, 1)   for generating l3DContourWallPoints and l3DContourWallPointsOnlyXYZ
             # ----------
@@ -3512,7 +3605,7 @@ class CDSceneRasterizer(QtCore.QObject):
             #   then make sure the l3DContourWallPoints and l3DContourWallPointsOnlyXYZ lists are empty:
             l3DContourWallPoints = []
             l3DContourWallPointsOnlyXYZ = []
-            self.__theWaitProgressBarWithImage.setInfoText( " Disabled output of 3D contour-boundary pixels in Detected Volume. ")
+            self.infoLabel.setText( self.tr(" Disabled output of 3D contour-boundary pixels in Detected Volume. ") )
             CDConstants.printOut( "Disabled output of 3D contour-boundary pixels in Detected Volume", CDConstants.DebugTODO )
 
         # end of   if ( self.theImageSequenceToBeRasterized.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseAreaSeeds) )
@@ -3534,17 +3627,20 @@ class CDSceneRasterizer(QtCore.QObject):
 
         if ( self.theImageSequenceToBeRasterized.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUse2DEdges) ) :
 
-            self.__theWaitProgressBarWithImage.setInfoText( " Scanning "+str(lPIFFOutputDepth)+" layers to generate \n 2D edge-boundary pixels in Detected Volume... " )
+            self.infoLabel.setText( self.tr(" Scanning %1 layers to generate \n 2D edge-boundary pixels in Detected Volume... ").arg( \
+                str(lPIFFOutputDepth)  ) )
             CDConstants.printOut( " Scanning "+str(lPIFFOutputDepth)+" layers to generate 2D edge-boundary pixels in Detected Volume...  ", CDConstants.DebugTODO )
-            self.__theWaitProgressBarWithImage.setRange(0, lPIFFOutputDepth )
-            self.__theWaitProgressBarWithImage.setValue(0)
+            self.progressBar.setRange(0, lPIFFOutputDepth )
+            self.progressBar.setValue(0)
+            QtGui.QApplication.processEvents()
 
             # store the current index to restore it later:
             lTmpImageIndexInSequence = self.theImageSequenceToBeRasterized.getCurrentIndex()
 # 
 #             # make sure that 2D edges have been computed:
 #             for k in xrange(0, lPIFFOutputDepth, 1):    
-#                 self.__theWaitProgressBarWithImage.setInfoText( " Scanning layer "+str(k)+" of "+str(lPIFFOutputDepth)+" to compute \n 2D edge-boundary pixels in Detected Volume... " )
+#                 self.infoLabel.setText( self.tr(" Scanning layer %1 of %2 to compute \n 2D edge-boundary pixels in Detected Volume... ").arg( \
+#                     str(k) ).arg( str(lPIFFOutputDepth) )  ) 
 #                 CDConstants.printOut( " Scanning layer "+str(k)+" of "+str(lPIFFOutputDepth)+" to compute 2D edge-boundary pixels in Detected Volume... ", CDConstants.DebugTODO )
 
             # store all 2D edge wall points we generate into a list with complete PIFF data,
@@ -3555,7 +3651,8 @@ class CDSceneRasterizer(QtCore.QObject):
             # ----------
             for k in xrange(0, lPIFFOutputDepth, 1):
     
-                self.__theWaitProgressBarWithImage.setInfoText( " Scanning layer "+str(k)+" of "+str(lPIFFOutputDepth)+" to generate \n 2D edge-boundary pixels in Detected Volume... " )
+                self.infoLabel.setText( self.tr(" Scanning layer %1 of %2 to generate \n 2D edge-boundary pixels in Detected Volume... ").arg( \
+                    str(k) ).arg( str(lPIFFOutputDepth) )  ) 
                 CDConstants.printOut( " Scanning layer "+str(k)+" of "+str(lPIFFOutputDepth)+" to generate 2D edge-boundary pixels in Detected Volume... ", CDConstants.DebugTODO )
 
                 self.theImageSequenceToBeRasterized.setCurrentIndexInSequence( k )
@@ -3579,7 +3676,8 @@ class CDSceneRasterizer(QtCore.QObject):
 #                                 str(lNameOf2DEdgeWallType)+" "+ \
 #                                 str(lColorOf2DEdgeWallType)+" "+ \
 #                                 str(i)+" "+str(j)+" "+str(k)  , CDConstants.DebugAll )
-                self.__theWaitProgressBarWithImage.setInfoText( " Scanned layer "+str(k)+" of "+str(lPIFFOutputDepth)+" to generate \n 2D edge-boundary pixels in Detected Volume. " )
+                self.infoLabel.setText( self.tr(" Scanned layer %1 of %2 to generate \n 2D edge-boundary pixels in Detected Volume. ").arg( \
+                    str(k) ).arg( str(lPIFFOutputDepth) )  ) 
                 CDConstants.printOut( " Scanned layer "+str(k)+" of "+str(lPIFFOutputDepth)+" to generate 2D edge-boundary pixels in Detected Volume.", CDConstants.DebugTODO )
     
                 if (lDone == False):
@@ -3596,13 +3694,16 @@ class CDSceneRasterizer(QtCore.QObject):
                     lTmp2DEdgeImage = self.theImageSequenceToBeRasterized.rgb2qimageWtoRandA(lTmpOneLayerArray)
                     if isinstance( lTmp2DEdgeImage, QtGui.QImage ) == True:
                         lTmpPixmap = QtGui.QPixmap.fromImage(lTmp2DEdgeImage)
-                        self.__theWaitProgressBarWithImage.drawPixmapAtPoint(lTmpPixmap)
+                        self.theRasterizedImageLabel.drawPixmapAtPoint(lTmpPixmap)
+                        self.theRasterizedImageLabel.image = lTmpPixmap.toImage()
+                        self.theRasterizedImageLabel.update()
                     else:
                         CDConstants.printOut( "CDSceneRasterizer.rasterizeSequenceAndSavePIF() - -=-=-=-=-=-==>>>> lTmp2DEdgeImage is not a QtGui.QImage !!!!!!!!!!!!!!!!!", CDConstants.DebugImportant )
                     # print "b"
     
                 # provide some visual feedback to user by incrementing the progress bar:
-                self.__theWaitProgressBarWithImage.setValue(k)
+                self.progressBar.setValue(k)
+                QtGui.QApplication.processEvents()
 
             # end of  for k in xrange(0, lPIFFOutputDepth, 1)   for generating l2DEdgeWallPoints and l2DEdgeWallPointsOnlyXYZ
             # ----------
@@ -3612,7 +3713,7 @@ class CDSceneRasterizer(QtCore.QObject):
             #   then make sure the l2DEdgeWallPoints and l2DEdgeWallPointsOnlyXYZ lists are empty:
             l2DEdgeWallPoints = []
             l2DEdgeWallPointsOnlyXYZ = []
-            self.__theWaitProgressBarWithImage.setInfoText( " Disabled output of 2D edge-boundary pixels in Detected Volume. ")
+            self.infoLabel.setText( self.tr(" Disabled output of 2D edge-boundary pixels in Detected Volume. ") )
             CDConstants.printOut( "CDSceneRasterizer.rasterizeSequenceAndSavePIF() - Disabled output of 2D edge-boundary pixels in Detected Volume", CDConstants.DebugTODO )
 
         # end of   if ( self.theImageSequenceToBeRasterized.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseAreaSeeds) )
@@ -3629,12 +3730,14 @@ class CDSceneRasterizer(QtCore.QObject):
         #
         if ( self.theImageSequenceToBeRasterized.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseAreaSeeds) ) :
 
-            self.__theWaitProgressBarWithImage.setInfoText( " Generating \n "+str(lRequiredCellPoints)+" \n cell pixels in Detected Volume... " )
+            self.infoLabel.setText( self.tr(" Generating \n %1 \n cell pixels in Detected Volume... ").arg( \
+                str(lRequiredCellPoints)  ) )
             CDConstants.printOut(" Generating "+str(lRequiredCellPoints)+" cell pixels in Detected Volume... ", CDConstants.DebugTODO )
     
             # set progress bar:
-            self.__theWaitProgressBarWithImage.setRange(0, lRequiredCellPoints )
-            self.__theWaitProgressBarWithImage.setValue(0)
+            self.progressBar.setRange(0, lRequiredCellPoints )
+            self.progressBar.setValue(0)
+            QtGui.QApplication.processEvents()
     
             # as user feedback, also plot all the cell initial points into a temporary pixmap:
 #             lTmpPixmap.fill(QtGui.QColor(QtCore.Qt.white))
@@ -3707,9 +3810,11 @@ class CDSceneRasterizer(QtCore.QObject):
                             lTmpPainter.setPen(lItemTmpPen)
                             lTmpPainter.drawPoint(i,j)
                             lTmpPainter.end()
+                            self.theRasterizedImageLabel.drawPixmapAtPoint(lTmpPixmap)
+                            self.theRasterizedImageLabel.update()
                             # provide some visual feedback to user by incrementing the progress bar:
-                            self.__theWaitProgressBarWithImage.drawPixmapAtPoint(lTmpPixmap)
-                            self.__theWaitProgressBarWithImage.setValue(len(lCellPoints))
+                            self.progressBar.setValue(len(lCellPoints))
+                            QtGui.QApplication.processEvents()
 
                             # switch to next cell type when enough points have been obtained for this type:
                             if ( len(lCellPoints) >= lRequiredCellPointsRequiredSoFar ) and (len(lCellPoints) < lRequiredCellPoints):
@@ -3729,7 +3834,7 @@ class CDSceneRasterizer(QtCore.QObject):
             #   then make sure the lCellPoints and lCellPointsOnlyXYZ lists are empty:
             lCellPoints = []
             lCellPointsOnlyXYZ = []
-            self.__theWaitProgressBarWithImage.setInfoText( " Disabled output of cell pixels in Detected Volume. ")
+            self.infoLabel.setText( self.tr(" Disabled output of cell pixels in Detected Volume. ") )
             CDConstants.printOut( "Disabled output of cell pixels in Detected Volume", CDConstants.DebugTODO )
 
         # end of   if ( self.theImageSequenceToBeRasterized.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseAreaSeeds) )
@@ -3748,12 +3853,14 @@ class CDSceneRasterizer(QtCore.QObject):
 #         # 
 # 
 # 
-#         self.__theWaitProgressBarWithImage.setInfoText( " Scanning "+str(lPIFFOutputDepth)+" layers to generate \n edge-boundary pixels in Detected Volume... " )
+#         self.infoLabel.setText( self.tr(" Scanning %1 layers to generate \n edge-boundary pixels in Detected Volume... ").arg( \
+#             str(lPIFFOutputDepth)  ) )
 #         CDConstants.printOut( " Scanning "+str(lPIFFOutputDepth)+" layers to generate edge-boundary pixels in Detected Volume... ", CDConstants.DebugTODO )
 # 
 #         # set progress bar:
-#         self.__theWaitProgressBarWithImage.setRange(0, lPIFFOutputDepth )
-#         self.__theWaitProgressBarWithImage.setValue(0)
+#         self.progressBar.setRange(0, lPIFFOutputDepth )
+#         self.progressBar.setValue(0)
+#         QtGui.QApplication.processEvents()
 # 
 #         # (5b) - as user feedback, also plot all the wall points into a temporary pixmap:
 #         # lTmpPixmap = QtGui.QPixmap(lPIFFOutputWidth, lPIFFOutputHeight)
@@ -3792,7 +3899,8 @@ class CDSceneRasterizer(QtCore.QObject):
 #         # ----------
 #         for k in xrange(0, lPIFFOutputDepth, 1):
 # 
-#             self.__theWaitProgressBarWithImage.setInfoText( " Scanning layer "+str(k)+" of "+str(lPIFFOutputDepth)+" to generate \n edge-boundary pixels in Detected Volume... ")
+#             self.infoLabel.setText( self.tr(" Scanning layer %1 of %2 to generate \n edge-boundary pixels in Detected Volume... ").arg( \
+#                 str(k) ).arg( str(lPIFFOutputDepth) )  ) 
 # 
 #             # ensure that the image sequence object has the edge data ready:
 #             self.theImageSequenceToBeRasterized.setCurrentIndexInSequence( k )
@@ -3838,40 +3946,52 @@ class CDSceneRasterizer(QtCore.QObject):
 #                     lTmpPixmap.fill(lTmpBlackColor)
 #                     lTmpPainter = QtGui.QPainter(lTmpPixmap)
 #                     lTmpPainter.end()
-#                     self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lTmpPixmap))
+#                     self.theRasterizedImageLabel.drawPixmapAtPoint(lTmpPixmap)
+#                     self.theRasterizedImageLabel.update()
+#                     QtGui.QApplication.processEvents()
 #                     time.sleep(0.2)
 #                     CDConstants.printOut("white", CDConstants.DebugTODO )
 #                     lTmpPixmap.fill(lTmpWhiteColor)
 #                     lTmpPainter = QtGui.QPainter(lTmpPixmap)
 #                     lTmpPainter.end()
-#                     self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lTmpPixmap))
+#                     self.theRasterizedImageLabel.drawPixmapAtPoint(lTmpPixmap)
+#                     self.theRasterizedImageLabel.update()
+#                     QtGui.QApplication.processEvents()
 #                     # flash the white pixmap just 1/5 of a second to make sure it's seen:
 #                     time.sleep(0.2)
 #                     CDConstants.printOut("black", CDConstants.DebugTODO )
 #                     lTmpPixmap.fill(lTmpBlackColor)
 #                     lTmpPainter = QtGui.QPainter(lTmpPixmap)
 #                     lTmpPainter.end()
-#                     self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lTmpPixmap))
+#                     self.theRasterizedImageLabel.drawPixmapAtPoint(lTmpPixmap)
+#                     self.theRasterizedImageLabel.update()
+#                     QtGui.QApplication.processEvents()
 #                     time.sleep(0.2)
 #                 else:
 #                     CDConstants.printOut("white", CDConstants.DebugTODO )
 #                     lTmpPixmap.fill(lTmpWhiteColor)
 #                     lTmpPainter = QtGui.QPainter(lTmpPixmap)
 #                     lTmpPainter.end()
-#                     self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lTmpPixmap))
+#                     self.theRasterizedImageLabel.drawPixmapAtPoint(lTmpPixmap)
+#                     self.theRasterizedImageLabel.update()
+#                     QtGui.QApplication.processEvents()
 #                     # flash the white pixmap just 1/5 of a second to make sure it's seen:
 #                     time.sleep(0.2)
 #                     CDConstants.printOut("black", CDConstants.DebugTODO )
 #                     lTmpPixmap.fill(lTmpBlackColor)
 #                     lTmpPainter = QtGui.QPainter(lTmpPixmap)
 #                     lTmpPainter.end()
-#                     self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lTmpPixmap))
+#                     self.theRasterizedImageLabel.drawPixmapAtPoint(lTmpPixmap)
+#                     self.theRasterizedImageLabel.update()
+#                     QtGui.QApplication.processEvents()
 #                     time.sleep(0.2)
 #                     CDConstants.printOut("white", CDConstants.DebugTODO )
 #                     lTmpPixmap.fill(lTmpWhiteColor)
 #                     lTmpPainter = QtGui.QPainter(lTmpPixmap)
 #                     lTmpPainter.end()
-#                     self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lTmpPixmap))
+#                     self.theRasterizedImageLabel.drawPixmapAtPoint(lTmpPixmap)
+#                     self.theRasterizedImageLabel.update()
+#                     QtGui.QApplication.processEvents()
 #                     # flash the white pixmap just 1/5 of a second to make sure it's seen:
 #                     time.sleep(0.2)
 #             else:
@@ -3889,7 +4009,8 @@ class CDSceneRasterizer(QtCore.QObject):
 #                 # lTmpPainter.drawPixmap(0, 0, lTheTmpEdgePixmap)
 #                 lTmpPainter.end()
 #                 
-#                 # self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lTmpPixmap))
+#                 # self.theRasterizedImageLabel.drawPixmapAtPoint(lTmpPixmap)
+#                 # self.theRasterizedImageLabel.update()
 # 
 # 
 # 
@@ -3901,11 +4022,16 @@ class CDSceneRasterizer(QtCore.QObject):
 #                 # self.theImageSequenceToBeRasterized.paintTheImageSequence(lPainter)
 #                 # lPainter.end()
 # 
-#                 self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lTmpPixmap))
+#                 # store the pixmap holding the specially rendered scene:
+#                 self.theRasterizedImageLabel.setPixmap(lTmpPixmap)
+#                 # this QImage is going to hold the rasterized version:
+#                 self.theRasterizedImageLabel.image = lTmpPixmap.toImage()
+#                 self.theRasterizedImageLabel.update()
 # 
 # 
 #             # provide some visual feedback to user by incrementing the progress bar:
-#             self.__theWaitProgressBarWithImage.setValue(k)
+#             self.progressBar.setValue(k)
+#             QtGui.QApplication.processEvents()
 # 
 # 
 # 
@@ -3942,13 +4068,13 @@ class CDSceneRasterizer(QtCore.QObject):
 #---------------------------------------------------------
 
 
-        self.__theWaitProgressBarWithImage.setInfoText( "Saving final PIFF from Image Sequence." )
+        self.infoLabel.setText( self.tr("Saving final PIFF from Image Sequence.") )
         CDConstants.printOut( "___ - DEBUG ----- CDSceneRasterizer: rasterizeSequenceAndSavePIF() Image Sequence: saving to PIFF.", \
                 CDConstants.DebugAll )
 
         lToBeSavedFileExtension = QtCore.QString("piff")
         lToBeSavedInitialPath = QtCore.QDir.currentPath() + self.tr("/untitled.") + lToBeSavedFileExtension
-        lFileName = QtGui.QFileDialog.getSaveFileName(self.theParentWindow, self.tr("CellDraw - Save PIFF file from Image Sequence as"),
+        lFileName = QtGui.QFileDialog.getSaveFileName(self, self.tr("CellDraw - Save PIFF file from Image Sequence as"),
                                lToBeSavedInitialPath,
                                self.tr("%1 files (*.%2);;All files (*)")
                                    .arg(lToBeSavedFileExtension.toUpper())
@@ -3963,7 +4089,7 @@ class CDSceneRasterizer(QtCore.QObject):
         # open output file, and make sure that it's writable:
         lFile = QtCore.QFile(lFileName)
         lOnlyThePathName,lOnlyTheFileName = os.path.split(str(lFileName))
-        self.__theWaitProgressBarWithImage.setInfoText( "Saving final PIFF from Image Sequence to file: "+str(lOnlyTheFileName)+" " )
+        self.infoLabel.setText( self.tr("Saving final PIFF from Image Sequence to file: %1").arg(lOnlyTheFileName) )
         if not lFile.open( QtCore.QFile.WriteOnly | QtCore.QFile.Text):
             QtGui.QMessageBox.warning(self, "CellDraw", \
                     self.tr("Cannot write file %1 .\nError: [%2] .").arg(lOnlyTheFileName).arg(lFile.errorString()))
@@ -3982,12 +4108,16 @@ class CDSceneRasterizer(QtCore.QObject):
         #    using one single cell ID and one single cell name (the first one)
         if ( self.theImageSequenceToBeRasterized.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUse3DVolume) ) :
 
-            self.__theWaitProgressBarWithImage.setRange(0, lPIFFOutputDepth )
-            self.__theWaitProgressBarWithImage.setValue(0)
+            self.progressBar.setRange(0, lPIFFOutputDepth )
+            self.progressBar.setValue(0)
+            QtGui.QApplication.processEvents()
 
             for k in xrange(0, lPIFFOutputDepth, 1):
-                self.__theWaitProgressBarWithImage.setInfoText(" Saving layer "+str(k)+" of "+str(lPIFFOutputDepth)+" to PIFF, \n  generating all pixels in Detected Volume... " )
-                self.__theWaitProgressBarWithImage.setValue(k)
+
+                self.infoLabel.setText( self.tr(" Saving layer %1 of %2 to PIFF, \n  generating all pixels in Detected Volume... ").arg( \
+                str(k) ).arg( str(lPIFFOutputDepth) )  ) 
+                self.progressBar.setValue(k)
+                QtGui.QApplication.processEvents()
 
                 lDone = False
                 for i in xrange(0, lPIFFOutputWidth, 1):
@@ -4002,7 +4132,8 @@ class CDSceneRasterizer(QtCore.QObject):
                             CDConstants.printOut( "rasterizeSequenceAndSavePIF(): PIFF line for seed pixel cell "+str(lCellID)+" = "+lThePIFTextLine , CDConstants.DebugAll )
                             lOutputStream << lThePIFTextLine
 
-            self.__theWaitProgressBarWithImage.setValue(lPIFFOutputDepth)
+            self.progressBar.setValue(lPIFFOutputDepth)
+            QtGui.QApplication.processEvents()
         # end of   if ( self.theImageSequenceToBeRasterized.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUse3DVolume) )
 
 
@@ -4055,14 +4186,14 @@ class CDSceneRasterizer(QtCore.QObject):
         # cleanly close access to the file:
         lFile.close()
 
-        self.__theWaitProgressBarWithImage.setInfoText("Saved PIFF from CC3D Potts to file "+str(lOnlyTheFileName)+" complete." )
+        self.infoLabel.setText( self.tr("Saved PIFF from CC3D Potts to file %1 complete.").arg(lOnlyTheFileName) )
 
         CDConstants.printOut( "rasterizeSequenceAndSavePIF():                       PIFF file saving from Potts complete.\n" , CDConstants.DebugExcessive )
 
         
         # TODO TODO TODO 2011.11.21 Mitja - this now stops here 
-        self.__theWaitProgressBarWithImage.maxProgressBar()
-        self.__theWaitProgressBarWithImage.hide()
+        self.theRasterizedImageLabel.hide()
+        self.hide()
         return
 
 
@@ -4142,7 +4273,7 @@ class CDSceneRasterizer(QtCore.QObject):
         CDConstants.printOut( "Generated numpy array with "+str(lNumOfPointsForThisRegion)+ \
             " points for item_region "+str(lItemCounter)+" : "+str(lRegionKey) , CDConstants.DebugExcessive )
 
-        self.__theWaitProgressBarWithImage.setInfoText("Generated cell data array for item "+str(lItemCounter)+" (cell region "+str(lRegionKey)+")" )
+        self.infoLabel.setText( self.tr("Generated cell data array for item %1 (cell region %2)").arg(lItemCounter).arg(lRegionKey) )
 
         time.sleep(2.0)
 
@@ -4176,11 +4307,11 @@ class CDSceneRasterizer(QtCore.QObject):
 
         # grab the default helper files from our own CellDraw sourcecode directory,
         #   and copy them over to the temporary work directory:
-        shutil.copy(  os.path.join(self.__theCDPreferences.cellDrawDirectoryPath,"cc3Dhelpfiles/helpfile_CellDraw.cc3d"), \
+        shutil.copy(  os.path.join(self.cdPreferences.cellDrawDirectoryPath,"cc3Dhelpfiles/helpfile_CellDraw.cc3d"), \
             os.path.join(lHelperOutputDirectoryCC3D,"helpfile_CellDraw.cc3d")  )
-        shutil.copy(  os.path.join(self.__theCDPreferences.cellDrawDirectoryPath,"cc3Dhelpfiles/Simulation/helpfile_CellDraw.py"), \
+        shutil.copy(  os.path.join(self.cdPreferences.cellDrawDirectoryPath,"cc3Dhelpfiles/Simulation/helpfile_CellDraw.py"), \
             os.path.join(lHelperSimulationDirectoryCC3D,"helpfile_CellDraw.py")  )
-        shutil.copy(  os.path.join(self.__theCDPreferences.cellDrawDirectoryPath,"cc3Dhelpfiles/Simulation/helpfile_steppables_CellDraw.py"), \
+        shutil.copy(  os.path.join(self.cdPreferences.cellDrawDirectoryPath,"cc3Dhelpfiles/Simulation/helpfile_steppables_CellDraw.py"), \
             os.path.join(lHelperSimulationDirectoryCC3D,"helpfile_steppables_CellDraw.py")  )
 
         lHelperPIFFileName=os.path.join(lHelperSimulationDirectoryCC3D,"helpfile.piff")
@@ -4193,7 +4324,7 @@ class CDSceneRasterizer(QtCore.QObject):
             self.hide()
             return False
         else:
-            self.__theWaitProgressBarWithImage.setInfoText("Temporary Potts model saved to PIFF file: "+str(lOnlyTheFileHelperPIFFileName) )
+            self.infoLabel.setText( self.tr("Temporary Potts model saved to PIFF file:  %1").arg(lOnlyTheFileHelperPIFFileName) )
         # open a QTextStream, i.e. an "interface for reading and writing text":
         lHelperPIFFileOutputStream = QtCore.QTextStream(lHelperPIFFile)
 
@@ -4243,7 +4374,7 @@ class CDSceneRasterizer(QtCore.QObject):
             self.hide()
             return False
         else:
-            self.__theWaitProgressBarWithImage.setInfoText("Saving temporary Potts model to XML file: "+str(lOnlyTheFileHelperXMLFileName)+" " )
+            self.infoLabel.setText( self.tr("Saving temporary Potts model to XML file: %1").arg(lOnlyTheFileHelperXMLFileName) )
 
         # open a QTextStream, i.e. an "interface for reading and writing text":
         lHelperXMLFileOutputStream = QtCore.QTextStream(lHelperXMLFile)
@@ -4434,7 +4565,10 @@ class CDSceneRasterizer(QtCore.QObject):
         # TODO TODO TODO 2011.11.21 Mitja - this now stops here with an error...
 
         # end progress bar:
-        self.__theWaitProgressBarWithImage.setValue( len(lSceneItems) )
+        self.progressBar.setValue( len(lSceneItems) )
+        # Qt/PyQt's progressBar won't display updates from setValue(...) calls,
+        #   unless we also explicitly ask Qt to process at least some events.
+        QtGui.QApplication.processEvents()
 
         # ===============================================================================
         #   the old (now UNUSED) way of generating the cell seed points
@@ -4442,11 +4576,14 @@ class CDSceneRasterizer(QtCore.QObject):
 
         if False == True:
 
-            lSceneItems = self.__theGraphicsScene.items(QtCore.Qt.AscendingOrder)
+            lSceneItems = self.theGraphicsScene.items(QtCore.Qt.AscendingOrder)
    
             # set progress bar:
-            self.__theWaitProgressBarWithImage.setRange(0, len(lSceneItems) )
-            self.__theWaitProgressBarWithImage.setValue(0)
+            self.progressBar.setRange(0, len(lSceneItems) )
+            self.progressBar.setValue(0)
+            # Qt/PyQt's progressBar won't display updates from setValue(...) calls,
+            #   unless we also explicitly ask Qt to process at least some events.
+            QtGui.QApplication.processEvents()
 
             CDConstants.printOut(  "", CDConstants.DebugExcessive )
             CDConstants.printOut( "rasterizeSequenceAndSavePIF - running conversion to intermediate PIFF file...." , CDConstants.DebugExcessive )
@@ -4455,7 +4592,10 @@ class CDSceneRasterizer(QtCore.QObject):
    
             for lItem in lSceneItems:
    
-                self.__theWaitProgressBarWithImage.setValue(lItemCounter+1)
+                self.progressBar.setValue(lItemCounter+1)
+                # Qt/PyQt's progressBar won't display updates from setValue(...) calls,
+                #   unless we also explicitly ask Qt to process at least some events.
+                QtGui.QApplication.processEvents()
    
                 lItemsColor = lItem.brush().color().rgba()
                 lItemsRasterSize = self.colorToCellSizeRegionDict[lItemsColor]
@@ -4615,7 +4755,7 @@ class CDSceneRasterizer(QtCore.QObject):
             CDConstants.printOut( " _____________ in cdSceneRasterizer: rasterizeSequenceAndSavePIF() - (12a) - correctly opened file " + \
                 str(lCC3DGeneratedPIFFileName) +" _____________" , CDConstants.DebugVerbose )
 
-            self.__theWaitProgressBarWithImage.setInfoText("Reading Potts data from CC3D in file: "+str(lCC3DGeneratedPIFFileName)+" " )
+            self.infoLabel.setText( self.tr("Reading Potts data from CC3D in file: %1").arg(lCC3DGeneratedPIFFileName) )
 
 
         # convert the CC3D-generated intermediate PIFF file's line endings, so that it's OK on any platform:
@@ -4636,7 +4776,7 @@ class CDSceneRasterizer(QtCore.QObject):
         if os.path.isfile(lCC3DGeneratedPIFFileName) :
             os.remove(lCC3DGeneratedPIFFileName)
 
-        self.__theWaitProgressBarWithImage.setInfoText( "Received intermediate Potts data from CC3D." )
+        self.infoLabel.setText( "Received intermediate Potts data from CC3D." )
 
         # ------------------------------------------------------------
         # (13) - rasterizeSequenceAndSavePIF - (13)
@@ -4686,14 +4826,14 @@ class CDSceneRasterizer(QtCore.QObject):
                 # we got exception in parsing a PIFF line, just do nothing.
                 pass
         lTmpPainter.end()
-
-        self.__theWaitProgressBarWithImage.drawPixmapAtPoint(lTmpPixmap)
+        self.theRasterizedImageLabel.drawPixmapAtPoint(lTmpPixmap)
+        self.theRasterizedImageLabel.update()
 
 
 
         lToBeSavedFileExtension = QtCore.QString("piff")
         lToBeSavedInitialPath = QtCore.QDir.currentPath() + self.tr("/untitled.") + lToBeSavedFileExtension
-        lFileName = QtGui.QFileDialog.getSaveFileName(self.theParentWindow, self.tr("CellDraw - Save PIFF file from Image Sequence as"),
+        lFileName = QtGui.QFileDialog.getSaveFileName(self, self.tr("CellDraw - Save PIFF file from Image Sequence as"),
                                lToBeSavedInitialPath,
                                self.tr("%1 files (*.%2);;All files (*)")
                                    .arg(lToBeSavedFileExtension.toUpper())
@@ -4708,8 +4848,7 @@ class CDSceneRasterizer(QtCore.QObject):
         # open output file, and make sure that it's writable:
         lFile = QtCore.QFile(lFileName)
         lOnlyThePathName,lOnlyTheFileName = os.path.split(str(lFileName))
-
-        self.__theWaitProgressBarWithImage.setInfoText( "Saving final PIFF from Image Sequence to file: "+str(lOnlyTheFileName)+" " )
+        self.infoLabel.setText( self.tr("Saving final PIFF from Image Sequence to file: %1").arg(lOnlyTheFileName) )
         if not lFile.open( QtCore.QFile.WriteOnly | QtCore.QFile.Text):
             QtGui.QMessageBox.warning(self, "CellDraw", \
                     self.tr("Cannot write file %1 .\nError: [%2] .").arg(lOnlyTheFileName).arg(lFile.errorString()))
@@ -4744,7 +4883,7 @@ class CDSceneRasterizer(QtCore.QObject):
         # cleanly close access to the file:
         lFile.close()
 
-        self.__theWaitProgressBarWithImage.setInfoText( "Saved PIFF from CC3D Potts to file "+str(lOnlyTheFileName)+" complete." )
+        self.infoLabel.setText( self.tr("Saved PIFF from CC3D Potts to file %1 complete.").arg(lOnlyTheFileName) )
 
         CDConstants.printOut( "rasterizeSequenceAndSavePIF():                       PIFF file saving from Potts complete.\n" , CDConstants.DebugExcessive )
 
@@ -4779,6 +4918,13 @@ class CDSceneRasterizer(QtCore.QObject):
 # ======================================================================
 if __name__ == '__main__':
 
+
+    pogi = pigi
+    # call them!
+    gigi()
+    pigi()
+    pogi()
+
     CDConstants.printOut( "001 - DEBUG - mi __main__ xe 01" , CDConstants.DebugExcessive )
     # every PyQt4 app must create an application object, from the QtGui module:
     miApp = QtGui.QApplication(sys.argv)
@@ -4810,7 +4956,7 @@ if __name__ == '__main__':
                          [[QtGui.QColor(255,128,255), "purpleCondensing", 0.5], \
                           [QtGui.QColor(255,128,255), "purpleNonCondensing", 0.5]] ]     } )
 
-    mainPanel.setGraphicsSceneObject(miBoringGraphicsScene)
+    mainPanel.setInputGraphicsScene(miBoringGraphicsScene)
 
     mainPanel.setRegionsDict(miDict)
 

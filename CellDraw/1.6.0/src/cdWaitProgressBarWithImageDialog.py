@@ -48,21 +48,7 @@ class ProgressBarImageLabel(QtGui.QLabel):
         self.x = 0
         self.y = 0
         self.fixedSizeRaster = False
-# 
-#         # store the pixmap holding the specially rendered scene:
-#         self.theRasterizedImageLabel.setPixmap(lPixmap)
-#         # this QImage is going to hold the rasterized version:
-#         self.theRasterizedImageLabel.image = lPixmap.toImage()
-# 
-#         self.theRasterizedImageLabel.width = int( lPixmap.width() )
-#         self.theRasterizedImageLabel.height = int ( lPixmap.height() )
-#         CDConstants.printOut( "___ - DEBUG ----- CDSceneRasterizer: self.setInputGraphicsScene() pGraphicsScene w,h =" + \
-#               str(self.theRasterizedImageLabel.width) + " " + str(self.theRasterizedImageLabel.height), CDConstants.DebugVerbose )
-# 
-#         # adjusts the size of the label widget to fit its contents (i.e. the pixmap):
-#         self.theRasterizedImageLabel.adjustSize()
-#         self.theRasterizedImageLabel.show()
-#         self.theRasterizedImageLabel.update()
+
 
     def paintEvent(self, event):
 
