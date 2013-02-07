@@ -83,7 +83,7 @@ class CDImageSequence(QtCore.QObject):
 
 
         # the class global keeping track of the bit-flag modes for generating PIFF from displayed imported image sequence:
-        #    0 = Use Discretized Images to B/W = CDConstants.ImageSequenceUseDiscretizedToBWMode
+        #    0 = Use Discretized Images to BW = CDConstants.ImageSequenceUseDiscretizedToBWMode
         #    1 = Region 2D Edge = CDConstants.ImageSequenceUse2DEdges
         #    2 = Region 3D Contours = CDConstants.ImageSequenceUse3DContours
         #    3 = Region 3D Volume = CDConstants.ImageSequenceUse3DVolume
@@ -332,10 +332,10 @@ class CDImageSequence(QtCore.QObject):
 
 
     # ------------------------------------------------------------------
-    # 2011 - Mitja: imageCurrentImage() creates theCurrentImage, theCurrentEdge and theCurrentVolumeSliceImage
+    # 2011 - Mitja: computeCurrentImages() creates theCurrentImage, theCurrentEdge and theCurrentVolumeSliceImage
     #   from the current layer in the sequence arrays:
     # ------------------------------------------------------------------   
-    def imageCurrentImage(self):
+    def computeCurrentImages(self):
 
         # do nothing if the current array size isn't anything:
         if (self.sizeX <= 0) or (self.sizeY <= 0) or (self.sizeZ <= 0) :
@@ -345,35 +345,20 @@ class CDImageSequence(QtCore.QObject):
         if (self.theCurrentIndex < 0) or (self.theCurrentIndex >= self.sizeZ) :
             return
 
-        # obtain the current image data from one layer in the image numpy array 
-        lTmpOneLayerArray = self.imageSequenceArray[self.theCurrentIndex]
-        self.theCurrentImage = self.rgb2qimage(lTmpOneLayerArray)
-
-        # obtain the current volume slice data from one layer in the volume numpy array 
-        lTmpOneLayerArray = self.volumeSequenceArray[self.theCurrentIndex]
-        self.theCurrentVolumeSliceImage = self.rgb2qimageKtoBandA(lTmpOneLayerArray)
-
         # check if the current image has its edge already computed; if it doesn't, then compute it now:
         if (self.edgeInSequenceIsReadyFlags[self.theCurrentIndex] == False):
             # self.theTrueComputeCurrentEdge()
             # TODO: calling computeCurrentEdge() is to be used just for testing theTrueComputeCurrentEdge() with a timer, afterwards revert to calling theTrueComputeCurrentEdge() directly:
             self.computeCurrentEdge()
-        # obtain the current edge data from one layer in the edge numpy array 
-        lTmpOneLayerArray = self.edgeSequenceArray[self.theCurrentIndex]
-        self.theCurrentEdge = self.rgb2qimageWtoRandA(lTmpOneLayerArray)
 
         # if 3D contours have to be painted, check if the 3D contours have already been computed, and if not, do so now:
         if ( self.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUse3DContours) ) and \
             (self.contoursAreReadyFlag == False):
             # TODO: calling computeContours() is to be used just for testing ...() with a timer, afterwards revert to calling ...() directly:
             self.computeContours()
-            
-        # obtain the current contour data from one layer in the contour numpy array 
-        lTmpOneLayerArray = self.contoursSequenceArray[self.theCurrentIndex]
-        self.theCurrentContour = self.rgb2qimageWtoGandA(lTmpOneLayerArray)
 
 
-#### TODO: fix B/W toggle so that it computes correctly for 3D contours (maybe never gets there?) and for 2D contours (delayed 1 toggle?)
+#### TODO: fix BW toggle so that it computes correctly for 3D contours (maybe never gets there?) and for 2D contours (delayed 1 toggle?)
 
 
 #         lBackgroundRect = QtCore.QRectF( QtCore.QRect(0, 0, self.sizeX, self.sizeY) )
@@ -404,7 +389,49 @@ class CDImageSequence(QtCore.QObject):
 # 
 #         self.theCurrentImage = lPixmap.toImage()
 
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.imageCurrentImage() - self.theCurrentIndex == "+str(self.theCurrentIndex)+ " DONE." , CDConstants.DebugVerbose )
+        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.computeCurrentImages() - self.theCurrentIndex == "+str(self.theCurrentIndex)+ " DONE." , CDConstants.DebugVerbose )
+
+    # end of   def computeCurrentImages(self)
+    # ------------------------------------------------------------------   
+
+
+
+    # ------------------------------------------------------------------
+    # 2011 - Mitja: retrieveCurrentImagesFromArrays() creates theCurrentImage, theCurrentEdge and theCurrentVolumeSliceImage
+    #   from the current layer in the sequence arrays:
+    # ------------------------------------------------------------------   
+    def retrieveCurrentImagesFromArrays(self):
+
+        # do nothing if the current array size isn't anything:
+        if (self.sizeX <= 0) or (self.sizeY <= 0) or (self.sizeZ <= 0) :
+            return
+
+        # do nothing if the current image index doesn't have a corresponding image:
+        if (self.theCurrentIndex < 0) or (self.theCurrentIndex >= self.sizeZ) :
+            return
+
+        # obtain the current image data from one layer in the image numpy array 
+        lTmpOneLayerArray = self.imageSequenceArray[self.theCurrentIndex]
+        self.theCurrentImage = self.rgb2qimage(lTmpOneLayerArray)
+
+        # obtain the current volume slice data from one layer in the volume numpy array 
+        lTmpOneLayerArray = self.volumeSequenceArray[self.theCurrentIndex]
+        self.theCurrentVolumeSliceImage = self.rgb2qimageKtoBandA(lTmpOneLayerArray)
+
+        # obtain the current edge data from one layer in the edge numpy array 
+        lTmpOneLayerArray = self.edgeSequenceArray[self.theCurrentIndex]
+        self.theCurrentEdge = self.rgb2qimageWtoRandA(lTmpOneLayerArray)
+
+        # obtain the current contour data from one layer in the contour numpy array 
+        lTmpOneLayerArray = self.contoursSequenceArray[self.theCurrentIndex]
+        self.theCurrentContour = self.rgb2qimageWtoGandA(lTmpOneLayerArray)
+
+
+        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.retrieveCurrentImagesFromArrays() - self.theCurrentIndex == "+str(self.theCurrentIndex)+ " DONE." , CDConstants.DebugVerbose )
+
+    # end of   def retrieveCurrentImagesFromArrays(self)
+    # ------------------------------------------------------------------   
+
 
 
 
@@ -811,7 +838,7 @@ class CDImageSequence(QtCore.QObject):
     #         outimg.save(sys.argv[2]) 
     #
     #     import Image 
-     
+
     # ------------------------------------------------------------------
     # ------------------------------------------------------------------
     def theTrueComputeCurrentEdge(self): 
@@ -820,9 +847,12 @@ class CDImageSequence(QtCore.QObject):
             # if discretizing to black/white, the "volume array" values are to be used:
 
             # show a panel containing a progress bar:
-            
-            self.__theSimpleWaitProgressBar.setTitleTextRange("Computing edge detection on volume.", " ", 0, self.theCurrentVolumeSliceImage.height())
-            self.__theSimpleWaitProgressBar.setInfoText("Volume slice ["+str(self.theCurrentIndex)+"].")
+
+            self.__theSimpleWaitProgressBar.setTitleTextRange("Computing edge detection from BW volume.", " ", 0, self.theCurrentVolumeSliceImage.height())
+            self.__theSimpleWaitProgressBar.setInfoText("Sequence image ["+str(self.theCurrentIndex)+"].")
+            # if we needed an image in the progress bar, we'd now:
+            # self.__theSimpleWaitProgressBar.setImagePixmap(None)
+#             self.__theSimpleWaitProgressBar.setImagePixmap(QtGui.QPixmap(self.theCurrentVolumeSliceImage))
             self.__theSimpleWaitProgressBar.show()
     
             # set the flag for the current edge array in the sequence as False, as we're computing it now:
@@ -830,8 +860,10 @@ class CDImageSequence(QtCore.QObject):
     
             xmask, ymask = self.get_prewitt_masks() 
     
-            width = self.theCurrentVolumeSliceImage.width()
-            height = self.theCurrentVolumeSliceImage.height()
+#             width = self.theCurrentVolumeSliceImage.width()
+#             height = self.theCurrentVolumeSliceImage.height()
+            width = self.sizeX
+            height = self.sizeY
     
             # create a new greyscale image for the output 
     #         outimg = Image.new('L', (width, height)) 
@@ -839,7 +871,9 @@ class CDImageSequence(QtCore.QObject):
          
             for y in xrange(height): 
     
-                self.__theSimpleWaitProgressBar.setValue(y)
+                # provide visual feedback to user:
+                if ((y % 5)==0) :
+                    self.__theSimpleWaitProgressBar.setValue(y)
     
                 for x in xrange(width): 
                     sumX, sumY, magnitude = 0, 0, 0 
@@ -873,35 +907,42 @@ class CDImageSequence(QtCore.QObject):
          
                     # approximate the magnitude of the gradient 
                     magnitude = abs(sumX) + abs(sumY)
-         
+
                     if magnitude > 255: magnitude = 255 
                     if magnitude < 0: magnitude = 0 
-    
+
                     self.edgeSequenceArray[self.theCurrentIndex, y, x, 0] = numpy.uint8 (255 - magnitude)
                     self.edgeSequenceArray[self.theCurrentIndex, y, x, 1] = numpy.uint8 (255 - magnitude)
                     self.edgeSequenceArray[self.theCurrentIndex, y, x, 2] = numpy.uint8 (255 - magnitude)
-    
+
             # set the flag for the current edge array in the sequence as True, as we've computed it now:
             self.edgeInSequenceIsReadyFlags[self.theCurrentIndex] = True
-    
+
+#             self.__theSimpleWaitProgressBar.setImagePixmap(QtGui.QPixmap(self.theCurrentVolumeSliceImage))
             self.__theSimpleWaitProgressBar.maxProgressBar()
             self.__theSimpleWaitProgressBar.hide()
-            
+
         else:
             # if NOT discretizing to black/white, the "image sequence array" values are to be used:
+# 
+#             CDConstants.printOut(  "CDImageSequence.theTrueComputeCurrentEdge()  --  1.", CDConstants.DebugTODO )
 
             # show a panel containing a progress bar:        
-            self.__theSimpleWaitProgressBar.setTitleTextRange("Computing edge detection on images.", " ", 0, self.theCurrentImage.height())
-            self.__theSimpleWaitProgressBar.setInfoText("Image slice ["+str(self.theCurrentIndex)+"].")
+            self.__theSimpleWaitProgressBar.setTitleTextRange("Computing edge detection from sequence volume.", " ", 0, self.theCurrentImage.height())
+            self.__theSimpleWaitProgressBar.setInfoText("Sequence image ["+str(self.theCurrentIndex)+"].")
+            # if we needed an image in the progress bar, we'd now:
+#            self.__theSimpleWaitProgressBar.setImagePixmap(QtGui.QPixmap(self.theCurrentImage))
             self.__theSimpleWaitProgressBar.show()
-    
+
             # set the flag for the current edge array in the sequence as False, as we're computing it now:
             self.edgeInSequenceIsReadyFlags[self.theCurrentIndex] = False
-    
+
             xmask, ymask = self.get_prewitt_masks() 
-    
-            width = self.theCurrentImage.width()
-            height = self.theCurrentImage.height()
+
+#             width = self.theCurrentImage.width()
+#             height = self.theCurrentImage.height()
+            width = self.sizeX
+            height = self.sizeY
     
             # create a new greyscale image for the output 
     #         outimg = Image.new('L', (width, height)) 
@@ -909,7 +950,9 @@ class CDImageSequence(QtCore.QObject):
          
             for y in xrange(height): 
     
-                self.__theSimpleWaitProgressBar.setValue(y)
+                # provide visual feedback to user:
+                if ((y % 5)==0) :
+                    self.__theSimpleWaitProgressBar.setValue(y)
     
                 for x in xrange(width): 
                     sumX, sumY, magnitude = 0, 0, 0 
@@ -954,6 +997,8 @@ class CDImageSequence(QtCore.QObject):
             # set the flag for the current edge array in the sequence as True, as we've computed it now:
             self.edgeInSequenceIsReadyFlags[self.theCurrentIndex] = True
     
+        # if we needed an image in the progress bar, we'd now:
+#             self.__theSimpleWaitProgressBar.setImagePixmap(QtGui.QPixmap(self.theCurrentImage))
             self.__theSimpleWaitProgressBar.maxProgressBar()
             self.__theSimpleWaitProgressBar.hide()
         
@@ -1016,9 +1061,11 @@ class CDImageSequence(QtCore.QObject):
     def theSeparatedKernelComputeCurrentEdge(self): 
 
 
-        # show a panel containing a progress bar:        
+        # show a panel containing a progress bar:
         self.__theSimpleWaitProgressBar.setTitleTextRange("Separated kernels computing edge detection.", " ", 0, self.theCurrentImage.height())
         self.__theSimpleWaitProgressBar.setInfoText("Image slice ["+str(self.theCurrentIndex)+"].")
+        # if we needed an image in the progress bar, we'd now:
+#         self.__theSimpleWaitProgressBar.setImagePixmap(QtGui.QPixmap(self.theCurrentImage))
         self.__theSimpleWaitProgressBar.show()
 
         # set the flag for the current edge array in the sequence as False, as we're computing it now:
@@ -1026,8 +1073,10 @@ class CDImageSequence(QtCore.QObject):
 
         xmask, ymask = self.get_prewitt_array_masks() 
 
-        width = self.theCurrentImage.width()
-        height = self.theCurrentImage.height()
+#         width = self.theCurrentImage.width()
+#         height = self.theCurrentImage.height()
+        width = self.sizeX
+        height = self.sizeY
 
         # create a new greyscale image for the output 
 #         outimg = Image.new('L', (width, height)) 
@@ -1163,6 +1212,8 @@ class CDImageSequence(QtCore.QObject):
         # set the flag for the current edge array in the sequence as True, as we've computed it now:
         self.edgeInSequenceIsReadyFlags[self.theCurrentIndex] = True
 
+        # if we needed an image in the progress bar, we'd now:
+#         self.__theSimpleWaitProgressBar.setImagePixmap(QtGui.QPixmap(self.theCurrentImage))
         self.__theSimpleWaitProgressBar.maxProgressBar()
         self.__theSimpleWaitProgressBar.hide()
         
@@ -1215,45 +1266,31 @@ class CDImageSequence(QtCore.QObject):
     # ------------------------------------------------------------------
     def theTrueComputeContours(self): 
 
+        # set the flag for the current edge array in the sequence as False, as we're computing it now:
+        self.contoursAreReadyFlag = False
+
+        lXmask, lYmask = self.get_prewitt_masks() 
+
+        lWidth = self.sizeX
+        lHeight = self.sizeY
+        lDepth = self.sizeZ
+
+        lPixmap = QtGui.QPixmap( lDepth, lHeight)
+        lPixmap.fill(QtGui.QColor(QtCore.Qt.white))
+        lImage = QtGui.QImage(lPixmap.toImage())
+
         if ( self.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseDiscretizedToBWMode) == True ) :
             # ------------------------------------------------------------------
             # if discretizing to black/white, the "volume array" values are to be used:
             # ------------------------------------------------------------------
 
-            # set the flag for the current edge array in the sequence as False, as we're computing it now:
-            self.contoursAreReadyFlag = False
-    
-            lXmask, lYmask = self.get_prewitt_masks() 
-    
-            lWidth = self.sizeX
-            lHeight = self.sizeY
-            lDepth = self.sizeZ
-    
-            # show a panel containing a progress bar:        
-            self.__theWaitProgressBarWithImage.setTitleTextRange("Computing 3D Contours edge detection from Detected B/W Volume.", " ", 0, self.theCurrentImage.height())
+            # show a panel containing a progress bar:
+            self.__theWaitProgressBarWithImage.setTitleTextRange("Computing 3D Contours edge detection from BW Volume.", " ", 0, lHeight)
             self.__theWaitProgressBarWithImage.show()
-    
-            lPixmap = QtGui.QPixmap( lDepth, lHeight)
-            lPixmap.fill(QtCore.Qt.transparent)
+            self.__theWaitProgressBarWithImage.setValue(0)
+            self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lImage))
+            self.__theWaitProgressBarWithImage.setTitle(" Computing 3D Contour-boundary points. ")
 
-            # store the pixmap holding the specially rendered scene:
-            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.setPixmap(lPixmap)
-            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.image = lPixmap.toImage()    
-            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.width = int( lPixmap.width() )
-            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.height = int ( lPixmap.height() )
-
-            if ( self.__theWaitProgressBarWithImage.__theContentWidget.width() < (lDepth + 20) ):
-                lTheNewWidth = lDepth + 20
-            else:
-                lTheNewWidth = self.__theWaitProgressBarWithImage.__theContentWidget.width()
-            if ( self.__theWaitProgressBarWithImage.__theContentWidget.height() < (lHeight + 20) ):
-                lTheNewHeight = lHeight + 20
-            else:
-                lTheNewHeight = self.__theWaitProgressBarWithImage.__theContentWidget.height()
-            self.__theWaitProgressBarWithImage.__theContentWidget.resize(lTheNewWidth, lTheNewHeight) #asdf 
-            self.__theWaitProgressBarWithImage.__theContentWidget.update()
-            self.__theWaitProgressBarWithImage.adjustSize()
-    
             # -------------------------------
             # scan across x-direction layers:
             # -------------------------------
@@ -1268,19 +1305,11 @@ class CDImageSequence(QtCore.QObject):
                 lTmpBrush = QtGui.QBrush(QtGui.QColor(QtCore.Qt.red))
                 lTmpPainter.setBrush(lTmpBrush)
 
-        
-                self.__theWaitProgressBarWithImage.setTitle( self.tr(" Computing 3D Contour-boundary points. ") )
-                self.__theWaitProgressBarWithImage.setInfoText( self.tr(" Scanning [x] layer %1 of %2 from computed B/W Volume ... ").arg( \
-                    str(x) ).arg( str(lWidth) )  ) 
-    
-                CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.self.theTrueComputeContours() - lPixmap w,h =" + \
-                      str(self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.width) + " " + str(self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.height) + \
-                      " Scanning [x] layer "+str(x)+" of "+str(lWidth)+" from computed B/W Volume to generate 3D Contour-boundary points.", CDConstants.DebugVerbose )
-        
-                # adjusts the size of the label widget to fit its contents (i.e. the pixmap):
-                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.adjustSize()
-                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.show()
-                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.update()
+                self.__theWaitProgressBarWithImage.setInfoText(" Scanning [x] layer "+str(x)+" of "+str(lWidth)+" from BW Volume ... "  ) 
+
+#                 CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.self.theTrueComputeContours() - lPixmap d,h =" + \
+#                       str(lDepth) + " " + str(lHeight) + \
+#                       " Scanning [x] layer "+str(x)+" of "+str(lWidth)+" from computed BW Volume to generate 3D Contour-boundary points.", CDConstants.DebugVerbose )
              
                 # -----------------------------
                 # scan across y-direction rows:
@@ -1288,8 +1317,8 @@ class CDImageSequence(QtCore.QObject):
                 for y in xrange(lHeight): 
         
                     # provide visual feedback to user:
-                    self.__theWaitProgressBarWithImage.setValue(y)
-                    QtGui.QApplication.processEvents()
+                    if ((y % 5)==0) :
+                        self.__theWaitProgressBarWithImage.setValue(y)
 
                     # --------------------------------
                     # scan across z-direction columns:
@@ -1351,20 +1380,20 @@ class CDImageSequence(QtCore.QObject):
                 # ----------------------------------------
 
                 lTmpPainter.end()
-                # provide visual feedback to user:
-                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.drawPixmapAtPoint(lPixmap)
-                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.update()
-
+                self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lPixmap))
+                self._graphicsSceneMainWidget.scene.update()
     
             # ------------------------------------------
             # <-- end of scan across x-direction layers.
             # ------------------------------------------
+
+            self.__theWaitProgressBarWithImage.maxProgressBar()
+            self.__theWaitProgressBarWithImage.hide()
         
             # set the flag for the contours array in the sequence as True, as we've just computed it:
             self.contoursAreReadyFlag = True
-        
-            self.__theWaitProgressBarWithImage.maxProgressBar()
-            self.__theWaitProgressBarWithImage.close()
+
+
         # ------------------------------------------------------------------
         # end of  if ( self.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseDiscretizedToBWMode) == True )
         # i.e. if discretizing to black/white, the "volume array" values have been used <====
@@ -1374,40 +1403,13 @@ class CDImageSequence(QtCore.QObject):
             # if NOT discretizing to black/white, the "image sequence array" values are to be used:
             # ------------------------------------------------------------------
 
-            # set the flag for the current edge array in the sequence as False, as we're computing it now:
-            self.contoursAreReadyFlag = False
-    
-            lXmask, lYmask = self.get_prewitt_masks()
-    
-            lWidth = self.sizeX
-            lHeight = self.sizeY
-            lDepth = self.sizeZ
-    
-            # show a panel containing a progress bar:        
-            self.__theWaitProgressBarWithImage.setTitleTextRange("Computing 3D Contours edge detection from Image Sequence.", " ", 0, self.theCurrentImage.height())
+            # show a panel containing a progress bar:
+            self.__theWaitProgressBarWithImage.setTitleTextRange("Computing 3D Contours edge detection from Image Sequence.", " ", 0, lHeight)
             self.__theWaitProgressBarWithImage.show()
-    
-            lPixmap = QtGui.QPixmap( lDepth, lHeight)
-            lPixmap.fill(QtCore.Qt.transparent)
+            self.__theWaitProgressBarWithImage.setValue(0)
+            self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lImage))
+            self.__theWaitProgressBarWithImage.setTitle( " Computing 3D Contour-boundary points. ") 
 
-            # store the pixmap holding the specially rendered scene:
-            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.setPixmap(lPixmap)
-            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.image = lPixmap.toImage()
-            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.width = int( lPixmap.width() )
-            self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.height = int ( lPixmap.height() )
-
-            if ( self.__theWaitProgressBarWithImage.__theContentWidget.width() < (lDepth + 20) ):
-                lTheNewWidth = lDepth + 20
-            else:
-                lTheNewWidth = self.__theWaitProgressBarWithImage.__theContentWidget.width()
-            if ( self.__theWaitProgressBarWithImage.__theContentWidget.height() < (lHeight + 20) ):
-                lTheNewHeight = lHeight + 20
-            else:
-                lTheNewHeight = self.__theWaitProgressBarWithImage.__theContentWidget.height()
-            self.__theWaitProgressBarWithImage.__theContentWidget.resize(lTheNewWidth, lTheNewHeight) #asdf 
-            self.__theWaitProgressBarWithImage.__theContentWidget.update()
-            self.__theWaitProgressBarWithImage.adjustSize()
-    
             # -------------------------------
             # scan across x-direction layers:
             # -------------------------------
@@ -1422,20 +1424,11 @@ class CDImageSequence(QtCore.QObject):
                 lTmpBrush = QtGui.QBrush(QtGui.QColor(QtCore.Qt.red))
                 lTmpPainter.setBrush(lTmpBrush)
 
-        
-                self.__theWaitProgressBarWithImage.setTitle( self.tr(" Computing 3D Contour-boundary points. ") ) 
-                self.__theWaitProgressBarWithImage.setInfoText( self.tr(" Scanning [x] layer %1 of %2 from Image Sequence Volume... ").arg( \
-                    str(x) ).arg( str(lWidth) )  ) 
+                self.__theWaitProgressBarWithImage.setInfoText( " Scanning [x] layer "+str(x)+" of "+str(lWidth)+" from Image Sequence Volume... " ) 
 
-
-                CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.self.theTrueComputeContours() - lPixmap w,h =" + \
-                      str(self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.width) + " " + str(self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.height) + \
-                      " Scanning [x] layer "+str(x)+" of "+str(lWidth)+" from Image Sequence Volume to generate 3D Contour-boundary points.", CDConstants.DebugVerbose )
-        
-                # adjusts the size of the label widget to fit its contents (i.e. the pixmap):
-                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.adjustSize()
-                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.show()
-                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.update()
+#                 CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.self.theTrueComputeContours() - lPixmap d,h =" + \
+#                       str(lDepth) + " " + str(lHeight) + \
+#                       " Scanning [x] layer "+str(x)+" of "+str(lWidth)+" from Image Sequence Volume to generate 3D Contour-boundary points.", CDConstants.DebugVerbose )
              
                 # -----------------------------
                 # scan across y-direction rows:
@@ -1443,9 +1436,9 @@ class CDImageSequence(QtCore.QObject):
                 for y in xrange(lHeight): 
         
                     # provide visual feedback to user:
-                    self.__theWaitProgressBarWithImage.setValue(y)
-                    QtGui.QApplication.processEvents()
-
+                    if ((y % 5)==0) :
+                        self.__theWaitProgressBarWithImage.setValue(y)
+    
                     # --------------------------------
                     # scan across z-direction columns:
                     # --------------------------------
@@ -1506,20 +1499,18 @@ class CDImageSequence(QtCore.QObject):
                 # ----------------------------------------
 
                 lTmpPainter.end()
-                # provide visual feedback to user:
-                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.drawPixmapAtPoint(lPixmap)
-                self.__theWaitProgressBarWithImage.__theProgressBarImageLabel.update()
-
+                self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lPixmap))
+                self._graphicsSceneMainWidget.scene.update()
     
             # ------------------------------------------
             # <-- end of scan across x-direction layers.
             # ------------------------------------------
-        
+
+            self.__theWaitProgressBarWithImage.maxProgressBar()
+            self.__theWaitProgressBarWithImage.hide()
+
             # set the flag for the contours array in the sequence as True, as we've just computed it:
             self.contoursAreReadyFlag = True
-        
-            self.__theWaitProgressBarWithImage.maxProgressBar()
-            self.__theWaitProgressBarWithImage.close()
 
         # ------------------------------------------------------------------
         # end of else to  if ( self.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseDiscretizedToBWMode) == True )
@@ -1584,7 +1575,7 @@ class CDImageSequence(QtCore.QObject):
             CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.assignAllProcessingModesForImageSequenceToPIFF() - self.theProcessingModeForImageSequenceToPIFF == " + \
                 str(self.theProcessingModeForImageSequenceToPIFF) + " pValue == " + str(pValue), CDConstants.DebugVerbose )
 
-        # if we are changing i.e. toggling B/W discretization mode,  invalidate all edges and contours computed so far:
+        # if we are changing i.e. toggling BW discretization mode,  invalidate all edges and contours computed so far:
         if  ( ( pValue & (1 << CDConstants.ImageSequenceUseDiscretizedToBWMode) )  and \
                 ( self.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseDiscretizedToBWMode) == False ) )  \
             or \
@@ -1629,7 +1620,7 @@ class CDImageSequence(QtCore.QObject):
     # ------------------------------------------------------------------   
     def enableAProcessingModeForImageSequenceToPIFF(self, pValue):
 
-        # if we are changing choice on discretization to B/W mode,  invalidate all computed edges and contours:
+        # if we are changing choice on discretization to BW mode,  invalidate all computed edges and contours:
         if ( (pValue == CDConstants.ImageSequenceUseDiscretizedToBWMode) and \
             (self.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseDiscretizedToBWMode) == False) ):
 
@@ -1662,13 +1653,13 @@ class CDImageSequence(QtCore.QObject):
     # ------------------------------------------------------------------
     def resetToOneProcessingModeForImageSequenceToPIFF(self, pValue):
 
-        # if we are changing choice on discretization to B/W mode,  invalidate all computed edges and contours:
+        # if we are changing choice on discretization to BW mode,  invalidate all computed edges and contours:
         if (    (pValue == CDConstants.ImageSequenceUseDiscretizedToBWMode) and \
                 (self.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseDiscretizedToBWMode) == False)  ) \
             or \
             (   (pValue != CDConstants.ImageSequenceUseDiscretizedToBWMode) and \
                 (self.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseDiscretizedToBWMode) == True)  ):
-            # if we are changing choice on discretization to B/W mode,  invalidate all computed edges and contours:
+            # if we are changing choice on discretization to BW mode,  invalidate all computed edges and contours:
             self.edgeInSequenceIsReadyFlags = numpy.zeros( (self.sizeZ), dtype=numpy.bool )
             self.contoursAreReadyFlag = False
 
@@ -1694,10 +1685,10 @@ class CDImageSequence(QtCore.QObject):
     # ------------------------------------------------------------------   
     def disableAProcessingModeForImageSequenceToPIFF(self, pValue):
 
-        # if we are changing choice on discretization to B/W mode,  invalidate all computed edges and contours:
+        # if we are changing choice on discretization to BW mode,  invalidate all computed edges and contours:
         if ( (pValue == CDConstants.ImageSequenceUseDiscretizedToBWMode) and \
             (self.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseDiscretizedToBWMode) == True) ):
-            # if we are changing choice on discretization to B/W mode,  invalidate all computed edges and contours:
+            # if we are changing choice on discretization to BW mode,  invalidate all computed edges and contours:
             self.edgeInSequenceIsReadyFlags = numpy.zeros( (self.sizeZ), dtype=numpy.bool )
             self.contoursAreReadyFlag = False
 
@@ -1763,14 +1754,20 @@ class CDImageSequence(QtCore.QObject):
         # TODO remove TODO time.sleep(1.0)
 
         #  create images... theCurrentImage and theCurrentEdge and theCurrentVolumeSliceImage from the current layer in the sequence arrays:
+
         # these images are now *not* painted here, but from setCurrentIndexInSequence() ...
-        # ... should *not* call imageCurrentImage() from paintTheImageSequence(),
-        #    because paintTheImageSequence() is part of the repainting and ought not open additional widgets or cause repaints...
-        #    (and imageCurrentImage() may open dialog boxes etc.)
-        self.imageCurrentImage()
+        # ... should *not* call computeCurrentImages() from getTheCurrentSequenceImages(),
+        #    because getTheCurrentSequenceImages() is part of the repainting and ought not open additional widgets or cause repaints...
+        #    (and computeCurrentImages() may open dialog boxes etc.)
+
+        # first check if the self.theCurrentEdge or self.theCurrentContour
+        #   may need to be computed, and in that case compute them now:
+        self.computeCurrentImages()
+        # then retrieve the self.theCurrentImage etc. from NumPy arrays:
+        self.retrieveCurrentImagesFromArrays()
 
 
-        CDConstants.printOut(  "___ - DEBUG ----- CDImageSequence.setCurrentIndexInSequence()  --  2.   self.imageCurrentImage() DONE", CDConstants.DebugTODO )
+        CDConstants.printOut(  "___ - DEBUG ----- CDImageSequence.setCurrentIndexInSequence()  --  2.   self.computeCurrentImages() and self.retrieveCurrentImagesFromArrays() DONE", CDConstants.DebugTODO )
         # TODO remove TODO time.sleep(1.0)
                 
 
@@ -1913,16 +1910,96 @@ class CDImageSequence(QtCore.QObject):
 
 
     # ------------------------------------------------------------------
-    # 2011 - Mitja: paintTheImageSequence() paints/draws all that needs to go
-    #   into the Image Sequence, and may be called directly or by our paintEvent() handler:
+    # 2011 - Mitja: getTheCurrentSequenceImages() paints/draws data from the Image Sequence
+    #   and may be called directly or by our paintEvent() handler to obtain a QImage:
     # ------------------------------------------------------------------   
-    def paintTheImageSequence(self, pThePainter):
+    def getTheCurrentSequenceImages(self):
+
+        #  create a temporary QPixmap, where a temporary QPainter can draw images:
+
+        # create a pixmap that's as least as wide/tall to include both
+        #   the sequence X,Y sizes, as well as the scene width and height:
+        lTmpSequenceRect = QtCore.QRect(0, 0, self.sizeX, self.sizeY)
+        lTmpSceneRect = QtCore.QRect(0, 0, self.pifSceneWidth, self.pifSceneHeight)
+        lTotalRect = lTmpSceneRect.united(lTmpSequenceRect)
+        lPixmap = QtGui.QPixmap( lTotalRect.width(), lTotalRect.height() )
+        lPixmap.fill( QtGui.QColor(QtCore.Qt.black) )
+        lPainter = QtGui.QPainter( lPixmap )
+
+        # draw a rectangle having same X,Y size as the cell scene:
+        lPainter.fillRect( lTmpSceneRect, QtGui.QColor(QtCore.Qt.darkGray) )
+
+        # draw a rectangle having same X,Y size as the imported image sequence:
+        lPainter.fillRect( lTmpSequenceRect, QtGui.QColor(QtCore.Qt.black) )
+
+
+        # get all images from NumPy arrays -- current image, volume slice, contour slice, edge:
+        self.retrieveCurrentImagesFromArrays()
+
+        # draw image's full area regions, their computed edges, etc. according to the users' choosen GUI buttons:
+        #
+        if ( self.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseAreaSeeds) ) :
+
+            # draw the selected image, if there is one:
+            if isinstance( self.theCurrentImage, QtGui.QImage ) == True:
+                lPixMapFromCurrentImage = QtGui.QPixmap.fromImage(self.theCurrentImage)
+                lPainter.drawPixmap(QtCore.QPoint(0,0), lPixMapFromCurrentImage)
+                CDConstants.printOut(  "getTheCurrentSequenceImages()  --  4b. --  CDConstants.ImageSequenceUseAreaSeeds TRUE, painted:  self.theCurrentImage", CDConstants.DebugTODO )
+
+
+        # CDConstants.printOut(  "getTheCurrentSequenceImages()  --  5.", CDConstants.DebugTODO )
+        # TODO remove TODO time.sleep(1.0)
+
+
+        if ( self.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUse3DVolume) ) :
+
+            # draw the selected volume slice image, if there is one:
+            if isinstance( self.theCurrentVolumeSliceImage, QtGui.QImage ) == True:
+                lPixMapFromCurrentVolumeSlice = QtGui.QPixmap.fromImage(self.theCurrentVolumeSliceImage)
+                lPainter.drawPixmap(QtCore.QPoint(0,0), lPixMapFromCurrentVolumeSlice)
+                CDConstants.printOut(  "getTheCurrentSequenceImages()  --  5b. --  CDConstants.ImageSequenceUse3DVolume TRUE, painted:  self.theCurrentVolumeSliceImage", CDConstants.DebugTODO )
+
+
+        # CDConstants.printOut(  "getTheCurrentSequenceImages()  --  6.", CDConstants.DebugTODO )
+        # TODO remove TODO time.sleep(1.0)
+
+
+        if ( self.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUse3DContours) ) :
+
+            # draw the selected volume slice image, if there is one:
+            if isinstance( self.theCurrentContour, QtGui.QImage ) == True:
+                lPixMapFromCurrentContourSlice = QtGui.QPixmap.fromImage(self.theCurrentContour)
+                lPainter.drawPixmap(QtCore.QPoint(0,0), lPixMapFromCurrentContourSlice)
+                CDConstants.printOut(  "getTheCurrentSequenceImages()  --  6b. --  CDConstants.ImageSequenceUse3DContours TRUE, painted:  self.theCurrentContour", CDConstants.DebugTODO )
+
+
+        # CDConstants.printOut(  "getTheCurrentSequenceImages()  --  7.", CDConstants.DebugTODO )
+        # TODO remove TODO time.sleep(1.0)
+
+
+        if ( self.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUse2DEdges) ) :
+
+            # draw the selected edge image, if there is one:
+            if isinstance( self.theCurrentEdge, QtGui.QImage ) == True:
+                lPixMapFromCurrentEdge = QtGui.QPixmap.fromImage(self.theCurrentEdge)
+                lPainter.drawPixmap(QtCore.QPoint(0,0), lPixMapFromCurrentEdge)
+                CDConstants.printOut(  "getTheCurrentSequenceImages()  --  6b. --  CDConstants.ImageSequenceUse2DEdges TRUE, painted:  self.theCurrentEdge", CDConstants.DebugTODO )
+
+
+
+
+
+        lPainter.end()
+        return QtGui.QImage(lPixmap.toImage())
+
+
+
 
 
 #         CDConstants.printOut("     =====     =====     =====     =====     ", CDConstants.DebugTODO )
 #         lTmpLengthI = len (inspect.stack())
 #         lTmpStrI = " >====> stack:"
-#         CDConstants.printOut("in paintTheImageSequence(), len (inspect.stack()) = "+str(lTmpLengthI), CDConstants.DebugTODO )        
+#         CDConstants.printOut("in getTheCurrentSequenceImages(), len (inspect.stack()) = "+str(lTmpLengthI), CDConstants.DebugTODO )        
 #         for i in xrange(lTmpLengthI):
 #             lTmpLengthJ = len (inspect.stack()[i])
 #             lTmpStrJ = ""
@@ -1945,10 +2022,10 @@ class CDImageSequence(QtCore.QObject):
 
         CDConstants.printOut("[B] hello, I'm "+str(debugWhoIsTheRunningFunction())+", parent is "+str(debugWhoIsTheParentFunction())+ \
             " ||||| self.repaintEventsCounter=="+str(self.repaintEventsCounter)+ \
-            " ||||| CDImageSequence.paintTheImageSequence(pThePainter=="+str(pThePainter)+")", CDConstants.DebugTODO )
+            " ||||| CDImageSequence.getTheCurrentSequenceImages(pThePainter=="+str(pThePainter)+")", CDConstants.DebugTODO )
 
 
-        # CDConstants.printOut(  "paintTheImageSequence()  --  1.", CDConstants.DebugTODO )
+        # CDConstants.printOut(  "getTheCurrentSequenceImages()  --  1.", CDConstants.DebugTODO )
         # TODO remove TODO time.sleep(1.0)
 
 
@@ -1982,7 +2059,7 @@ class CDImageSequence(QtCore.QObject):
 
 
 
-        # CDConstants.printOut(  "paintTheImageSequence()  --  3.", CDConstants.DebugTODO )
+        # CDConstants.printOut(  "getTheCurrentSequenceImages()  --  3.", CDConstants.DebugTODO )
         # TODO remove TODO time.sleep(1.0)
 
 
@@ -1995,14 +2072,27 @@ class CDImageSequence(QtCore.QObject):
 
 
         #  create images... theCurrentImage and theCurrentEdge and theCurrentVolumeSliceImage from the current layer in the sequence arrays:
+
+        # first check if the self.theCurrentEdge or self.theCurrentContour
+        #   may need to be computed, and in that case compute them now:
+        self.computeCurrentImages()
+        # then retrieve the self.theCurrentImage etc. from NumPy arrays:
+        self.retrieveCurrentImagesFromArrays()
+
+
         # these images are now *not* computed here, but from setCurrentIndexInSequence() ...
-        # ... should *not* call imageCurrentImage() from paintTheImageSequence(),
-        #    because paintTheImageSequence() is part of the repainting and ought not open additional widgets or cause repaints...
-        #    (and imageCurrentImage() may open dialog boxes etc.)
-        # self.imageCurrentImage()
+        # ... should *not* call computeCurrentImages() from getTheCurrentSequenceImages(),
+        #    because getTheCurrentSequenceImages() is part of the repainting and ought not open additional widgets or cause repaints...
+        #    (and computeCurrentImages() may open dialog boxes etc.)
+
+        # first check if the self.theCurrentEdge or self.theCurrentContour
+        #   may need to be computed, and in that case compute them now:
+        #self.computeCurrentImages()
+        # then retrieve the self.theCurrentImage etc. from NumPy arrays:
+        #self.retrieveCurrentImagesFromArrays()
 
 
-        # CDConstants.printOut(  "paintTheImageSequence()  --  4.", CDConstants.DebugTODO )
+        # CDConstants.printOut(  "getTheCurrentSequenceImages()  --  4.", CDConstants.DebugTODO )
         # TODO remove TODO time.sleep(1.0)
 
 
@@ -2014,10 +2104,10 @@ class CDImageSequence(QtCore.QObject):
             if isinstance( self.theCurrentImage, QtGui.QImage ) == True:
                 lPixMap = QtGui.QPixmap.fromImage(self.theCurrentImage)
                 lPainter.drawPixmap(QtCore.QPoint(0,0), lPixMap)
-                CDConstants.printOut(  "paintTheImageSequence()  --  4b. --  CDConstants.ImageSequenceUseAreaSeeds TRUE, painted:  self.theCurrentImage", CDConstants.DebugTODO )
+                CDConstants.printOut(  "getTheCurrentSequenceImages()  --  4b. --  CDConstants.ImageSequenceUseAreaSeeds TRUE, painted:  self.theCurrentImage", CDConstants.DebugTODO )
 
 
-        # CDConstants.printOut(  "paintTheImageSequence()  --  5.", CDConstants.DebugTODO )
+        # CDConstants.printOut(  "getTheCurrentSequenceImages()  --  5.", CDConstants.DebugTODO )
         # TODO remove TODO time.sleep(1.0)
 
 
@@ -2027,10 +2117,10 @@ class CDImageSequence(QtCore.QObject):
             if isinstance( self.theCurrentVolumeSliceImage, QtGui.QImage ) == True:
                 lPixMap = QtGui.QPixmap.fromImage(self.theCurrentVolumeSliceImage)
                 lPainter.drawPixmap(QtCore.QPoint(0,0), lPixMap)
-                CDConstants.printOut(  "paintTheImageSequence()  --  5b. --  CDConstants.ImageSequenceUse3DVolume TRUE, painted:  self.theCurrentVolumeSliceImage", CDConstants.DebugTODO )
+                CDConstants.printOut(  "getTheCurrentSequenceImages()  --  5b. --  CDConstants.ImageSequenceUse3DVolume TRUE, painted:  self.theCurrentVolumeSliceImage", CDConstants.DebugTODO )
 
 
-        # CDConstants.printOut(  "paintTheImageSequence()  --  6.", CDConstants.DebugTODO )
+        # CDConstants.printOut(  "getTheCurrentSequenceImages()  --  6.", CDConstants.DebugTODO )
         # TODO remove TODO time.sleep(1.0)
 
 
@@ -2040,10 +2130,10 @@ class CDImageSequence(QtCore.QObject):
             if isinstance( self.theCurrentContour, QtGui.QImage ) == True:
                 lPixMap = QtGui.QPixmap.fromImage(self.theCurrentContour)
                 lPainter.drawPixmap(QtCore.QPoint(0,0), lPixMap)
-                CDConstants.printOut(  "paintTheImageSequence()  --  6b. --  CDConstants.ImageSequenceUse3DContours TRUE, painted:  self.theCurrentContour", CDConstants.DebugTODO )
+                CDConstants.printOut(  "getTheCurrentSequenceImages()  --  6b. --  CDConstants.ImageSequenceUse3DContours TRUE, painted:  self.theCurrentContour", CDConstants.DebugTODO )
 
 
-        # CDConstants.printOut(  "paintTheImageSequence()  --  7.", CDConstants.DebugTODO )
+        # CDConstants.printOut(  "getTheCurrentSequenceImages()  --  7.", CDConstants.DebugTODO )
         # TODO remove TODO time.sleep(1.0)
 
 
@@ -2053,11 +2143,11 @@ class CDImageSequence(QtCore.QObject):
             if isinstance( self.theCurrentEdge, QtGui.QImage ) == True:
                 lPixMap = QtGui.QPixmap.fromImage(self.theCurrentEdge)
                 lPainter.drawPixmap(QtCore.QPoint(0,0), lPixMap)
-                CDConstants.printOut(  "paintTheImageSequence()  --  6b. --  CDConstants.ImageSequenceUse2DEdges TRUE, painted:  self.theCurrentEdge", CDConstants.DebugTODO )
+                CDConstants.printOut(  "getTheCurrentSequenceImages()  --  6b. --  CDConstants.ImageSequenceUse2DEdges TRUE, painted:  self.theCurrentEdge", CDConstants.DebugTODO )
 
 
 
-        # CDConstants.printOut(  "paintTheImageSequence()  --  8.", CDConstants.DebugTODO )
+        # CDConstants.printOut(  "getTheCurrentSequenceImages()  --  8.", CDConstants.DebugTODO )
         # TODO remove TODO time.sleep(1.0)
 
 
@@ -2065,17 +2155,15 @@ class CDImageSequence(QtCore.QObject):
         lPainter.restore()
 
 
-        # CDConstants.printOut(  "paintTheImageSequence()  --  9.", CDConstants.DebugTODO )
+        # CDConstants.printOut(  "getTheCurrentSequenceImages()  --  9.", CDConstants.DebugTODO )
         # TODO remove TODO time.sleep(1.0)
 
 
-    # end of def paintTheImageSequence(self, pThePainter):
+    # end of def getTheCurrentSequenceImages(self, pThePainter):
     # ------------------------------------------------------------------
 
 
 
-
-# 
 #     # ------------------------------------------------------------------
 #     # 2011 - Mitja: this function is NOT to be called directly: it is the callback handler
 #     #   for update() and paint() events, and it paints into the passed QPainter parameter
@@ -2087,11 +2175,11 @@ class CDImageSequence(QtCore.QObject):
 # 
 #         CDConstants.printOut("[C] hello, I'm "+str(debugWhoIsTheRunningFunction())+", parent is "+str(debugWhoIsTheParentFunction())+ \
 #             " ||||| self.repaintEventsCounter=="+str(self.repaintEventsCounter)+ \
-#             " ||||| CDImageSequence.paintTheImageSequence(pThePainter=="+str(pThePainter)+")", CDConstants.DebugTODO )
+#             " ||||| CDImageSequence.getTheCurrentSequenceImages(pThePainter=="+str(pThePainter)+")", CDConstants.DebugTODO )
 # 
 #         # 2011 - Mitja: call our function doing the actual drawing,
 #         #   passing along the QPainter parameter received by paintEvent():
-#         self.paintTheImageSequence(pThePainter)
+#         self.getTheCurrentSequenceImages(pThePainter)
 
 
 
@@ -2229,51 +2317,51 @@ class CDImageSequence(QtCore.QObject):
     
     # import numpy
     # from PyQt4.QtGui import QImage, QColor
-    
-    bgra_dtype = numpy.dtype({'b': (numpy.uint8, 0),
+
+    BGRA_DType = numpy.dtype({'b': (numpy.uint8, 0),
                               'g': (numpy.uint8, 1),
                               'r': (numpy.uint8, 2),
                               'a': (numpy.uint8, 3)})
     
-    def qimage2numpy(self, qimage, dtype = 'array'):
-        """Convert QImage to numpy.ndarray.  The dtype defaults to uint8
-        for QImage.Format_Indexed8 or `bgra_dtype` (i.e. a record array)
-        for 32bit color images.  You can pass a different dtype to use, or
+    def qimage2numpy(self, pQImage, pDType = 'array'):
+        """Convert QImage to numpy.ndarray.  The pDType defaults to uint8
+        for QImage.Format_Indexed8 or `BGRA_DType` (i.e. a record array)
+        for 32bit color images.  You can pass a different pDType to use, or
         'array' to get a 3D uint8 array for color images."""
-        result_shape = (qimage.height(), qimage.width())
-        temp_shape = (qimage.height(),
-                      qimage.bytesPerLine() * 8 / qimage.depth())
-        if qimage.format() in (QtGui.QImage.Format_ARGB32_Premultiplied,
+        result_shape = (pQImage.height(), pQImage.width())
+        temp_shape = (pQImage.height(),
+                      pQImage.bytesPerLine() * 8 / pQImage.depth())
+        if pQImage.format() in (QtGui.QImage.Format_ARGB32_Premultiplied,
                                QtGui.QImage.Format_ARGB32,
                                QtGui.QImage.Format_RGB32):
-            if dtype == 'rec':
-                dtype = bgra_dtype
-            elif dtype == 'array':
-                dtype = numpy.uint8
+            if pDType == 'rec':
+                pDType = BGRA_DType
+            elif pDType == 'array':
+                pDType = numpy.uint8
                 result_shape += (4, )
                 temp_shape += (4, )
-        elif qimage.format() == QtGui.QImage.Format_Indexed8:
-            dtype = numpy.uint8
+        elif pQImage.format() == QtGui.QImage.Format_Indexed8:
+            pDType = numpy.uint8
         else:
             raise ValueError("qimage2numpy only supports 32bit and 8bit images")
         # FIXME: raise error if alignment does not match
-        buf = qimage.bits().asstring(qimage.numBytes())
-        result = numpy.frombuffer(buf, dtype).reshape(temp_shape)
+        buf = pQImage.bits().asstring(pQImage.numBytes())
+        result = numpy.frombuffer(buf, pDType).reshape(temp_shape)
         if result_shape != temp_shape:
             result = result[:,:result_shape[1]]
-        if qimage.format() == QtGui.QImage.Format_RGB32 and dtype == numpy.uint8:
+        if pQImage.format() == QtGui.QImage.Format_RGB32 and pDType == numpy.uint8:
             result = result[...,:3]
         return result
     
-    def numpy2qimage(self, array):
-        if numpy.ndim(array) == 2:
-            return self.gray2qimage(array)
-        elif numpy.ndim(array) == 3:
-            return self.rgb2qimage(array)
+    def numpy2qimage(self, pArray):
+        if numpy.ndim(pArray) == 2:
+            return self.gray2qimage(pArray)
+        elif numpy.ndim(pArray) == 3:
+            return self.rgb2qimage(pArray)
         raise ValueError("can only convert 2D or 3D arrays")
     
-    def gray2qimage(self, gray):
-        """Convert the 2D numpy array `gray` into a 8-bit QImage with a gray
+    def gray2qimage(self, pGray):
+        """Convert the 2D numpy array `pGray` into a 8-bit QImage with a gray
         colormap.  The first dimension represents the vertical image axis.
     
         ATTENTION: This QImage carries an attribute `ndimage` with a
@@ -2282,22 +2370,22 @@ class CDImageSequence(QtCore.QObject):
         that you have to take care that the QImage does not get garbage
         collected (otherwise PyQt will throw away the wrapper, effectively
         freeing the underlying memory - boom!)."""
-        if len(gray.shape) != 2:
+        if len(pGray.shape) != 2:
             raise ValueError("gray2QImage can only convert 2D arrays")
     
-        gray = numpy.require(gray, numpy.uint8, 'C')
+        pGray = numpy.require(pGray, numpy.uint8, 'C')
     
-        h, w = gray.shape
+        h, w = pGray.shape
     
-        result = QtGui.QImage(gray.data, w, h, QtGui.QImage.Format_Indexed8)
-        result.ndarray = gray
+        result = QtGui.QImage(pGray.data, w, h, QtGui.QImage.Format_Indexed8)
+        result.ndarray = pGray
         for i in range(256):
             result.setColor(i, QtGui.QColor(i, i, i).rgb())
         return result
     
     # --------------------------
-    def rgb2qimage(self, rgb):
-        """Convert the 3D numpy array `rgb` into a 32-bit QImage.  `rgb` must
+    def rgb2qimage(self, pRGB):
+        """Convert the 3D numpy array `pRGB` into a 32-bit QImage.  `pRGB` must
         have three dimensions with the vertical, horizontal and RGB image axes.
     
         ATTENTION: This QImage carries an attribute `ndimage` with a
@@ -2306,48 +2394,48 @@ class CDImageSequence(QtCore.QObject):
         that you have to take care that the QImage does not get garbage
         collected (otherwise PyQt will throw away the wrapper, effectively
         freeing the underlying memory - boom!)."""
-        if len(rgb.shape) != 3:
+        if len(pRGB.shape) != 3:
             raise ValueError("rgb2QImage only converts 3D arrays")
-        if rgb.shape[2] not in (3, 4):
+        if pRGB.shape[2] not in (3, 4):
             raise ValueError("rgb2QImage expects the last dimension to contain exactly three (R,G,B) or four (R,G,B,A) channels")
     
-        h, w, channels = rgb.shape
+        h, w, channels = pRGB.shape
     
         # Qt expects 32bit BGRA data for color images:
         bgra = numpy.empty((h, w, 4), numpy.uint8, 'C')
-        bgra[...,0] = rgb[...,2]
-        bgra[...,1] = rgb[...,1]
-        bgra[...,2] = rgb[...,0]
-        if rgb.shape[2] == 3:
+        bgra[...,0] = pRGB[...,2]
+        bgra[...,1] = pRGB[...,1]
+        bgra[...,2] = pRGB[...,0]
+        if pRGB.shape[2] == 3:
             bgra[...,3].fill(255)
             fmt = QtGui.QImage.Format_RGB32
         else:
-            bgra[...,3] = rgb[...,3]
+            bgra[...,3] = pRGB[...,3]
             fmt = QtGui.QImage.Format_ARGB32
     
         result = QtGui.QImage(bgra.data, w, h, fmt)
         result.ndarray = bgra
         return result
-    # end of def rgb2qimage(rgb)
+    # end of def rgb2qimage(pRGB)
     # --------------------------
     
     
     # --------------------------
     # 2012 - Mitja modify to fill alpha channel with transparent where black, and fill only blue where non-black:
     # --------------------------
-    def rgb2qimageKtoBandA(self, rgb):
-        if len(rgb.shape) != 3:
+    def rgb2qimageKtoBandA(self, pRGB):
+        if len(pRGB.shape) != 3:
             raise ValueError("rgb2QImage only converts 3D arrays")
-        if rgb.shape[2] not in (3, 4):
+        if pRGB.shape[2] not in (3, 4):
             raise ValueError("rgb2QImage expects the last dimension to contain exactly three (R,G,B) or four (R,G,B,A) channels")
     
-        h, w, channels = rgb.shape
+        h, w, channels = pRGB.shape
     
         # Qt expects 32bit BGRA data for color images:
         bgra = numpy.empty((h, w, 4), numpy.uint8, 'C')
-        bgra[...,0] = rgb[...,2]
-        bgra[...,1] = rgb[...,1]
-        bgra[...,2] = rgb[...,0]
+        bgra[...,0] = pRGB[...,2]
+        bgra[...,1] = pRGB[...,1]
+        bgra[...,2] = pRGB[...,0]
     
         # 2012 - Mitja:
     
@@ -2387,19 +2475,19 @@ class CDImageSequence(QtCore.QObject):
     # --------------------------
     # 2012 - Mitja modify to fill alpha channel with transparent where white, and fill only red where black:
     # --------------------------
-    def rgb2qimageWtoRandA(self, rgb):
-        if len(rgb.shape) != 3:
+    def rgb2qimageWtoRandA(self, pRGB):
+        if len(pRGB.shape) != 3:
             raise ValueError("rgb2QImage only converts 3D arrays")
-        if rgb.shape[2] not in (3, 4):
+        if pRGB.shape[2] not in (3, 4):
             raise ValueError("rgb2QImage expects the last dimension to contain exactly three (R,G,B) or four (R,G,B,A) channels")
     
-        h, w, channels = rgb.shape
+        h, w, channels = pRGB.shape
     
         # Qt expects 32bit BGRA data for color images:
         bgra = numpy.empty((h, w, 4), numpy.uint8, 'C')
-        bgra[...,0] = rgb[...,2]
-        bgra[...,1] = rgb[...,1]
-        bgra[...,2] = rgb[...,0]
+        bgra[...,0] = pRGB[...,2]
+        bgra[...,1] = pRGB[...,1]
+        bgra[...,2] = pRGB[...,0]
     
         # 2012 - Mitja:
     
@@ -2440,19 +2528,19 @@ class CDImageSequence(QtCore.QObject):
     # --------------------------
     # 2012 - Mitja modify to fill alpha channel with transparent where white, and fill only red where black:
     # --------------------------
-    def rgb2qimageWtoGandA(self, rgb):
-        if len(rgb.shape) != 3:
+    def rgb2qimageWtoGandA(self, pRGB):
+        if len(pRGB.shape) != 3:
             raise ValueError("rgb2QImage only converts 3D arrays")
-        if rgb.shape[2] not in (3, 4):
+        if pRGB.shape[2] not in (3, 4):
             raise ValueError("rgb2QImage expects the last dimension to contain exactly three (R,G,B) or four (R,G,B,A) channels")
     
-        h, w, channels = rgb.shape
+        h, w, channels = pRGB.shape
     
         # Qt expects 32bit BGRA data for color images:
         bgra = numpy.empty((h, w, 4), numpy.uint8, 'C')
-        bgra[...,0] = rgb[...,2]
-        bgra[...,1] = rgb[...,1]
-        bgra[...,2] = rgb[...,0]
+        bgra[...,0] = pRGB[...,2]
+        bgra[...,1] = pRGB[...,1]
+        bgra[...,2] = pRGB[...,0]
     
         # 2012 - Mitja:
     
