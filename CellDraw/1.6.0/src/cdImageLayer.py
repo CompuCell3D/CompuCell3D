@@ -201,7 +201,7 @@ class CDImageNP(QtCore.QObject):
     def setNPImage(self, pImage=None, pIsImageLoadedFromFile=False, pImageFileName=" "):
 
         CDConstants.printOut( "___ - DEBUG ----- CDImageNP.setNPImage( pImage == "+str(pImage)+"  ) starting. " , CDConstants.DebugExcessive )
-        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
 
         # the "lUserSelectedImage" QImage is the image loaded from a file:
         if isinstance(pImage, QtGui.QImage):
@@ -248,7 +248,7 @@ class CDImageNP(QtCore.QObject):
             set_trace()
 
             # ## ## ## CDConstants.printOut(  "CDImageNP.setNPImage()  --  1.", CDConstants.DebugTODO )
-            QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+            QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
             #   time.sleep(3.0)
 
             # show a panel containing a progress bar:        
@@ -261,7 +261,7 @@ class CDImageNP(QtCore.QObject):
             llPixmapForProgressBarPanelImageNP = QtGui.QPixmap( lUserSelectedImage )
 
             # ## ## ## CDConstants.printOut(  "CDImageNP.setNPImage()  --  2.", CDConstants.DebugTODO )
-            QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+            QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
             #   time.sleep(3.0)
 
             print    "DOPO DE QUA CAMBIA"
@@ -300,7 +300,7 @@ class CDImageNP(QtCore.QObject):
             # ## ## ## CDConstants.printOut(  "CDImageNP.setNPImage()  --  3.", CDConstants.DebugTODO )
             print    "DORMO 5"
             #   time.sleep(3.0)
-            QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+            QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
             print    "DORMO 6"
             #   time.sleep(3.0)
             print    "PRIMA DE QUA ZA CAMBIA"

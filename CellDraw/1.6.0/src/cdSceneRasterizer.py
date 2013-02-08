@@ -963,7 +963,7 @@ class CDSceneRasterizer(QtCore.QObject):
                 self.progressBar.setValue(j + (i * self.fixedSizeHeightInCells) )
                 # Qt/PyQt's progressBar won't display updates from setValue(...) calls,
                 #   unless we also explicitly ask Qt to process at least some events.
-                # QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+                # QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
                 QtGui.QApplication.processEvents()
 
                 # retrieve the prevalent color in the fixed-size cell at position i,j :
@@ -3956,7 +3956,7 @@ class CDSceneRasterizer(QtCore.QObject):
         if lFileName.isEmpty():
             CDConstants.printOut( "___ - DEBUG ----- CDSceneRasterizer: rasterizeSequenceAndSavePIF() Image Sequence PIFF failed: no filename selected.", \
                 CDConstants.DebugAll )
-            self.hide()
+            self.__theWaitProgressBarWithImage.hide()
             return False
 
 
@@ -3967,7 +3967,7 @@ class CDSceneRasterizer(QtCore.QObject):
         if not lFile.open( QtCore.QFile.WriteOnly | QtCore.QFile.Text):
             QtGui.QMessageBox.warning(self, "CellDraw", \
                     self.tr("Cannot write file %1 .\nError: [%2] .").arg(lOnlyTheFileName).arg(lFile.errorString()))
-            self.hide()
+            self.__theWaitProgressBarWithImage.hide()
             return False
 
 
@@ -4190,7 +4190,7 @@ class CDSceneRasterizer(QtCore.QObject):
         if not lHelperPIFFile.open( QtCore.QFile.WriteOnly | QtCore.QFile.Text):
             QtGui.QMessageBox.warning(self, "CellDraw", \
                 self.tr("Cannot write file %1 .\nError: [%2] .\n[in rasterizeSequenceAndSavePIF() - (11a)]").arg(lOnlyTheFileHelperPIFFileName).arg(lHelperPIFFile.errorString()))
-            self.hide()
+            self.__theWaitProgressBarWithImage.hide()
             return False
         else:
             self.__theWaitProgressBarWithImage.setInfoText("Temporary Potts model saved to PIFF file: "+str(lOnlyTheFileHelperPIFFileName) )
@@ -4240,7 +4240,7 @@ class CDSceneRasterizer(QtCore.QObject):
         if not lHelperXMLFile.open( QtCore.QFile.WriteOnly | QtCore.QFile.Text):
             QtGui.QMessageBox.warning(self, "CellDraw", \
                 self.tr("Cannot write file %1 .\nError: [%2] .\n[in rasterizeSequenceAndSavePIF() - (11b)]").arg(lOnlyTheFileHelperXMLFileName).arg(lHelperXMLFile.errorString()))
-            self.hide()
+            self.__theWaitProgressBarWithImage.hide()
             return False
         else:
             self.__theWaitProgressBarWithImage.setInfoText("Saving temporary Potts model to XML file: "+str(lOnlyTheFileHelperXMLFileName)+" " )
@@ -4588,7 +4588,7 @@ class CDSceneRasterizer(QtCore.QObject):
                     CDConstants.printOut( " _____________ in cdSceneRasterizer: can not read from file "+str(lFlagFileName)+" _____________" , CDConstants.DebugVerbose )
                     QtGui.QMessageBox.warning(self, "CellDraw", \
                         self.tr("Cannot write file %1 .\n[in rasterizeSequenceAndSavePIF() - (12a)]").arg(lFlagFileName) )
-                    self.hide()
+                    self.__theWaitProgressBarWithImage.hide()
                     return False
                
         # -----------------------------
@@ -4608,7 +4608,7 @@ class CDSceneRasterizer(QtCore.QObject):
                 str(lCC3DGeneratedPIFFileName) +" _____________" , CDConstants.DebugImportant )
             QtGui.QMessageBox.warning( self, self.tr("CellDraw"), \
                 self.tr("Cannot read from file %1 .\n[in rasterizeSequenceAndSavePIF() - (12a)]").arg(lCC3DGeneratedPIFFileName) )
-            self.hide()
+            self.__theWaitProgressBarWithImage.hide()
             return False
         else:
             # i.e. the lCC3DGeneratedPIFFile has been opened fine for reading:
@@ -4701,7 +4701,7 @@ class CDSceneRasterizer(QtCore.QObject):
         if lFileName.isEmpty():
             CDConstants.printOut( "___ - DEBUG ----- CDSceneRasterizer: rasterizeSequenceAndSavePIF() Image Sequence PIFF failed: no filename selected.", \
                 CDConstants.DebugAll )
-            self.hide()
+            self.__theWaitProgressBarWithImage.hide()
             return False
 
 
@@ -4713,7 +4713,7 @@ class CDSceneRasterizer(QtCore.QObject):
         if not lFile.open( QtCore.QFile.WriteOnly | QtCore.QFile.Text):
             QtGui.QMessageBox.warning(self, "CellDraw", \
                     self.tr("Cannot write file %1 .\nError: [%2] .").arg(lOnlyTheFileName).arg(lFile.errorString()))
-            self.hide()
+            self.__theWaitProgressBarWithImage.hide()
             return False
 
         # open a QTextStream, i.e. an "interface for reading and writing text":
@@ -4748,7 +4748,7 @@ class CDSceneRasterizer(QtCore.QObject):
 
         CDConstants.printOut( "rasterizeSequenceAndSavePIF():                       PIFF file saving from Potts complete.\n" , CDConstants.DebugExcessive )
 
-        self.hide()
+        self.__theWaitProgressBarWithImage.hide()
 
 
     # end of def rasterizeSequenceAndSavePIF(self)

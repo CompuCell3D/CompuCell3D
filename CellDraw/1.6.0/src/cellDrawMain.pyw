@@ -955,12 +955,9 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             self.setImageGlobals( lBoringPixMap.toImage() )
 
         # if and *only* if there is no sequence of images loaded from files on disk,
-        #   then tell the theCDImageSequence to reset its pixel array internally:
-        if self.diagramSceneMainWidget.theCDImageSequence.imageSequenceLoaded == False:
-            self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions( \
-                self.cdPreferences.getPifSceneWidth(), \
-                self.cdPreferences.getPifSceneHeight(), \
-                self.cdPreferences.getPifSceneDepth() )
+        #   then tell the theCDImageSequence to reset its pixel array internally to its default:
+        if self.diagramSceneMainWidget.theCDImageSequence.getSequenceLoadedFromFiles() == False:
+            self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions()
 
 
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
@@ -1753,7 +1750,11 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
         # update x,y,z dimensions in the Image Sequence object,
         #    this will also reset all the image sequence object's numpy array:
-        self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions(lXdim, lYdim, lZdim)
+        lImageSequenceMemoryAllocatedOK = self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions(lXdim, lYdim, lZdim)
+        # continue only if the NumPy arrays could be allocated:
+        if (lImageSequenceMemoryAllocatedOK == False) :
+            return
+
 
         # tell the Image Sequence to show only the plain area (image contents) from the sequence:
         self.diagramSceneMainWidget.theCDImageSequence.resetToOneProcessingModeForImageSequenceToPIFF( CDConstants.ImageSequenceUseAreaSeeds )
@@ -1770,7 +1771,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
         lFileCounter = 0
         lImage = QtGui.QImage(lXdim, lYdim, QtGui.QImage.Format_ARGB32)
-        lImage.fill(QtGui.QColor(QtCore.Qt.white))
+        lImage.fill(QtGui.QColor(QtCore.Qt.white).rgb())
 
         self.__theWaitProgressBarWithImage.setValue(lFileCounter)
         self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lImage))

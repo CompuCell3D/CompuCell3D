@@ -64,6 +64,10 @@ class CDConstants(QtCore.QObject):
     ImageSequenceUseDiscretizedToBWMode, ImageSequenceUse2DEdges, ImageSequenceUse3DContours, \
         ImageSequenceUse3DVolume, ImageSequenceUseAreaSeeds = range(5)
 
+    # 2013 - Mitja: defaults for the initial (empty) image sequence:
+    ImageSequenceDefaultX = 120
+    ImageSequenceDefaultY = 90
+    ImageSequenceDefaultZ = 100
 
 
     # 2012 - Mitja: bit-flag modes for NumPy image processing:
@@ -99,6 +103,11 @@ class CDConstants(QtCore.QObject):
     SceneBundleResDirName = "Resources"
     PIFSceneFileExtension = "pifScene"
     PIFFFileExtension = "piff"
+
+    # 2013 - Mitja: for the CDWaitProgressBarWithImage preview image, what's the maximum accepted size:
+    ProgressBarPrevewImageMaxWidth = 256
+    ProgressBarPrevewImageMaxHeight = 256
+    
     
     # 2011 - Mitja: QSettings file application and organization names:
     #
