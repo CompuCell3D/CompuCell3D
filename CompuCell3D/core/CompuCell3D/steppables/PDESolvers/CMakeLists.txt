@@ -8,28 +8,34 @@ IF(MSVC)
 ENDIF(MSVC)
 
 SET (HEADER_FILES
-  DiffSecrData.h
-  DiffusableGraph.h
-  ReactionDiffusionSolverFE_SavHog.h
-  ReactionDiffusionSolverFE.h
-  AdvectionDiffusionSolverFE.h
-  Diffusable.h
-  DiffusableVector2D.h
-  FastDiffusionSolver2DFE.h
-  SteadyStateDiffusionSolver2D.h
-  SteadyStateDiffusionSolver.h
-  DiffusableVector.h
-  DiffusableVectorCommon.h
-  DiffusableVectorFortran.h
   hpppdesolvers
-  FlexibleDiffusionSolverFE.h
-  FiPySolver.h
-  DiffusionSolverFE.h
-  DiffusionSolverFE_CPU.h
-  FlexibleDiffusionSolverADE.h
-  KernelDiffusionSolver.h
   GPUSolverParams.h
   ${OPENCL_HDRS})
+
+
+# SET (HEADER_FILES
+  # DiffSecrData.h
+  # DiffusableGraph.h
+  # ReactionDiffusionSolverFE_SavHog.h
+  # ReactionDiffusionSolverFE.h
+  # AdvectionDiffusionSolverFE.h
+  # Diffusable.h
+  # DiffusableVector2D.h
+  # FastDiffusionSolver2DFE.h
+  # SteadyStateDiffusionSolver2D.h
+  # SteadyStateDiffusionSolver.h
+  # DiffusableVector.h
+  # DiffusableVectorCommon.h
+  # DiffusableVectorFortran.h
+  # hpppdesolvers
+  # FlexibleDiffusionSolverFE.h
+  # FiPySolver.h
+  # DiffusionSolverFE.h
+  # DiffusionSolverFE_CPU.h
+  # FlexibleDiffusionSolverADE.h
+  # KernelDiffusionSolver.h
+  # GPUSolverParams.h
+  # ${OPENCL_HDRS})
 
 # SET(CUDA_LIBS )    
 # SET(CUDA_SRCS )
@@ -137,32 +143,43 @@ INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}")
 
 message("OPENMP FLAGS " ${OpenMP_CXX_FLAGS})
 
-ADD_COMPUCELL3D_STEPPABLE(PDESolvers
-  AdvectionDiffusionSolverFE.cpp
-  FastDiffusionSolver2DFE.cpp
-  DiffusionSolverFE.cpp
-  DiffusionSolverFE_CPU.cpp
-  SteadyStateDiffusionSolver2D.cpp
-  SteadyStateDiffusionSolver.cpp
-  PDESolversProxy.cpp
-  DiffSecrData.cpp  
-  FlexibleDiffusionSolverFE.cpp
-  # FiPySolver.cpp
-  FlexibleDiffusionSolverADE.cpp
-  KernelDiffusionSolver.cpp
-  ReactionDiffusionSolverFE_SavHog.cpp
-  ReactionDiffusionSolverFE.cpp
-  HW3CRT.c 
-  HWSCRT.c
-#  ${CUDA_SRCS}
-  ${OPENCL_SRCS}
-  ${HEADER_FILES}
-
-LINK_LIBRARIES ${STEPPABLE_DEPENDENCIES} ${OPENCL_LIBS} 
+ADD_COMPUCELL3D_STEPPABLE(PDESolvers ${OPENCL_SRCS} ${HEADER_FILES} LINK_LIBRARIES ${STEPPABLE_DEPENDENCIES} ${OPENCL_LIBS} 
 #  ${CUDA_LIBS} 
   EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS}
 )
 
-ADD_COMPUCELL3D_STEPPABLE_HEADERS(PDESolvers
-  ${HEADER_FILES}
-  )
+# ADD_COMPUCELL3D_STEPPABLE_HEADERS(PDESolvers
+  # ${HEADER_FILES}
+  # )
+
+
+
+# ADD_COMPUCELL3D_STEPPABLE(PDESolvers
+  # AdvectionDiffusionSolverFE.cpp
+  # FastDiffusionSolver2DFE.cpp
+  # DiffusionSolverFE.cpp
+  # DiffusionSolverFE_CPU.cpp
+  # SteadyStateDiffusionSolver2D.cpp
+  # SteadyStateDiffusionSolver.cpp
+  # PDESolversProxy.cpp
+  # DiffSecrData.cpp  
+  # FlexibleDiffusionSolverFE.cpp
+  # # FiPySolver.cpp
+  # FlexibleDiffusionSolverADE.cpp
+  # KernelDiffusionSolver.cpp
+  # ReactionDiffusionSolverFE_SavHog.cpp
+  # ReactionDiffusionSolverFE.cpp
+  # HW3CRT.c 
+  # HWSCRT.c
+# #  ${CUDA_SRCS}
+  # ${OPENCL_SRCS}
+  # ${HEADER_FILES}
+
+# LINK_LIBRARIES ${STEPPABLE_DEPENDENCIES} ${OPENCL_LIBS} 
+# #  ${CUDA_LIBS} 
+  # EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS}
+# )
+
+# ADD_COMPUCELL3D_STEPPABLE_HEADERS(PDESolvers
+  # ${HEADER_FILES}
+  # )

@@ -1,8 +1,10 @@
-ADD_COMPUCELL3D_PLUGIN(NeighborTracker
-  NeighborTrackerPlugin.cpp
-  NeighborTrackerPluginProxy.cpp LINK_LIBRARIES ${PLUGIN_DEPENDENCIES} EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
+ADD_COMPUCELL3D_PLUGIN(NeighborTracker LINK_LIBRARIES ${PLUGIN_DEPENDENCIES} EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
+
+# ADD_COMPUCELL3D_PLUGIN(NeighborTracker
+  # NeighborTrackerPlugin.cpp
+  # NeighborTrackerPluginProxy.cpp LINK_LIBRARIES ${PLUGIN_DEPENDENCIES} EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
 
 
-ADD_COMPUCELL3D_PLUGIN_HEADERS(NeighborTracker
-  NeighborTracker.h
-  NeighborTrackerPlugin.h)
+# ADD_COMPUCELL3D_PLUGIN_HEADERS(NeighborTracker
+  # NeighborTracker.h
+  # NeighborTrackerPlugin.h)

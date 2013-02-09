@@ -130,7 +130,8 @@ double AdvectionDiffusionSolverFE::computeAverageCellRadius(){
    
    for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr ){
          
-      cell=*cInvItr;
+      cell=cellInventoryPtr->getCell(cInvItr);
+      
       sumRadius+=pow(cell->volume,radical);
       ++numberOfCells;
       
@@ -171,7 +172,7 @@ void AdvectionDiffusionSolverFE::updateLocalCellInventory(unsigned int idx){
       
    for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr ){
          
-      cell=*cInvItr;
+      cell=cellInventoryPtr->getCell(cInvItr);
       concentrationItr=concentrationField->find(cell);
          if(concentrationItr==concentrationEndItr){//no such cell addfress int he map
             concentrationField->insert(make_pair(cell,0.0));//inserting new cell with default concentration in the field 0
@@ -335,7 +336,7 @@ void AdvectionDiffusionSolverFE::secreteSingleField(unsigned int idx){
    
    for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr ){
          
-      cell=*cInvItr;
+      cell=cellInventoryPtr->getCell(cInvItr);
       
       concentrationItr = concentrationField->find(cell);
       
@@ -386,7 +387,7 @@ void AdvectionDiffusionSolverFE::secreteOnContactSingleField(unsigned int idx){
    
    for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr ){
          
-      cell=*cInvItr;
+      cell=cellInventoryPtr->getCell(cInvItr);
       
       concentrationItr = concentrationField->find(cell);
       

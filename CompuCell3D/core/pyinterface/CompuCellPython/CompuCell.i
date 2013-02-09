@@ -1,15 +1,6 @@
 
 // -*-c++-*-
 
-// CompuCell.y
-
-
-
-// This SWIG interface file defines the CompuCell API.
-// CompuCell module wraps the major CompuCell3D classes.
-
-// Module Name
-
 
 %module ("threads"=1) CompuCell
 
@@ -55,20 +46,12 @@
 %include <windows.i>
 
 %{
-
-
-// CompuCell Include Files
-
 // CompuCell3D Include Files
-// #include <dolfin/mesh/Mesh.h>
-
 #include <CompuCell3D/Plugin.h>
 #include <CompuCell3D/Steppable.h>
-// #include <CompuCell3D/StepNew.h>
-
 #include <CompuCell3D/Field3D/Neighbor.h>
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
-// #include <CompuCell3D/Field3D/Field3D.h>
+#include <CompuCell3D/Field3D/Field3D.h>
 #include <CompuCell3D/Field3D/Field3DImpl.h>
 #include <CompuCell3D/Field3D/WatchableField3D.h>
 #include <CompuCell3D/ClassRegistry.h>
@@ -79,13 +62,11 @@
 #include <CompuCell3D/Potts3D/TypeTransition.h>
 #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
 
-
 #include <CompuCell3D/Potts3D/Potts3D.h>
 //NeighborFinderParams
 #include <NeighborFinderParams.h>
 
 // Third Party Libraries
-
 #include <PublicUtilities/NumericalUtils.h>
 #include <PublicUtilities/Vector3.h>
 
@@ -113,8 +94,6 @@
 #include <CompuCell3D/Potts3D/AttributeAdder.h>
 
 
-
-
 // Namespaces
 using namespace std;
 using namespace CompuCell3D;
@@ -122,28 +101,10 @@ using namespace CompuCell3D;
 
 %}
 
+
 %include stl.i //to ensure stl functionality 
 
 %include "CompuCellExtraIncludes.i"
-
-// ************************************************************
-// SWIG Declarations
-// ************************************************************
-
-// Where possible, classes are presneted to SWIG via %include.
-// SWIG simply uses the definition in the include file and builds
-// wrappers based on it.
-
-// In a few cases (e.g. Field3D), SWIG became confused and could not 
-// properly handle the header file.  These classes and support definitions
-// are explicitly handled here.
-
-// Additionally, the definitions for some of the third party classes
-// are explicit here.  This may change in the future.
-
-// ******************************
-// SWIG Libraries
-// ******************************
 
 // C++ std::string handling
 %include "std_string.i"
@@ -156,6 +117,18 @@ using namespace CompuCell3D;
 
 // C++ std::map handling
 %include "std_vector.i"
+
+
+//enables better handling of STL exceptions
+%include "exception.i"
+
+%exception {
+  try {
+    $action
+  } catch (const std::exception& e) {
+    SWIG_exception(SWIG_RuntimeError, e.what());
+  }
+}
 
 //C arrays
 //%include "carrays.i"
@@ -240,9 +213,45 @@ using namespace CompuCell3D;
 
 %include "Field3D/Point3D.h"
 %include "Field3D/Dim3D.h"
-// %include "Field3D/Field3D.h"
+%include "Field3D/Field3D.h"
 %include "Field3D/Field3DImpl.h"
 %include "Field3D/WatchableField3D.h"
+
+
+%extend CompuCell3D::Point3D{
+  std::string __str__(){
+    std::ostringstream s;
+    s<<(*self);
+    return s.str();
+  }
+  
+%pythoncode %{
+    def __getstate__(self):
+        return (self.x,self.y,self.z)
+
+    def __setstate__(self,tup):
+        print 'tuple=',tup
+        self.this = _CompuCell.new_Point3D(tup[0],tup[1],tup[2])
+        self.thisown=1            
+	
+%}   
+};
+
+
+%extend CompuCell3D::Dim3D{
+  std::string __str__(){
+    std::ostringstream s;
+    s<<(*self);
+    return s.str();
+  }
+};
+
+// %template(cellfield) CompuCell3D::Field3D<CellG *>;
+// %template(floatfield) CompuCell3D::Field3D<float>;
+// %template(floatfieldImpl) CompuCell3D::Field3DImpl<float>;
+// %template(watchablecellfield) CompuCell3D::WatchableField3D<CellG *>;
+
+
 
 %include <NeighborFinderParams.h>
 
@@ -453,74 +462,62 @@ using namespace CompuCell3D;
     __swig_setmethods__["pyAttrib"] = setpyAttrib     
     if _newclass: pyAttrib = property(_CompuCell.CellG_pyAttrib_get,setpyAttrib)
     
-    
-    
-    
-    
       %}
     };
 
-
-
-// The template instanciation for Field3D<Cell *> does not work properly
-// if Field3D.h is included and the template is instanciated by SWIG.
-// However, simply declaring Field3D and instanciating Field3D<Cell *>
-// this way seems to work fine.
-namespace CompuCell3D {
-  template <class T>
-  class Field3D {
-  public:
-    virtual void set(const Point3D &pt, const T value) = 0;
-    virtual T get(const Point3D &pt) const = 0;
-    // virtual T operator[](const Point3D &pt) const {return get(pt);}
-    // --> Warning(389): operator[] ignored (consider using %extend)
-    virtual Dim3D getDim() const = 0;
-    virtual bool isValid(const Point3D &pt) const = 0;
-    virtual void setDim(const Dim3D theDim) {}
-    virtual Point3D getNeighbor(const Point3D &pt, unsigned int &token,
-				double &distance,
-    			bool checkBounds = true) const;
-    %extend  {
-      T get(short x, short y, short z) {
-        Point3D pt;
-        pt.x = x; pt.y = y; pt.z = z;
-        return self->get(pt);
-      };
-
-
-		Point3D nextNeighbor(NeighborFinderParams & nfp){
-			Point3D n=self->getNeighbor(nfp.pt , nfp.token , nfp.distance, nfp.checkBounds);
-			return n;
-		}
-      double producePoint(double seed,Point3D & result){
-         result.x=3;
-         result.y=8;
-         result.z=6;
-         return 4;
-      };
-     
-
-      void produceNumber(double seed,double & result){
-         result=88;
+// macro used to generate extra functions to better manipulate fields    
+%define FIELD3DEXTENDER(type,returnType)
+%extend  type{
+    
+  std::string __str__(){
+    std::ostringstream s;
+    s<<#type<<" dim"<<self->getDim();
+    return s.str();
+  }
   
-      };
+  returnType __getitem__(PyObject *_indexTuple) {
+    if (!PyTuple_Check( _indexTuple) || PyTuple_GET_SIZE(_indexTuple)!=3){
+	throw std::runtime_error(std::string(#type)+std::string(": Wrong Syntax: Expected someting like: field[1,2,3]"));
+    }
 
+    return self->get(Point3D(PyInt_AsLong(PyTuple_GetItem(_indexTuple,0)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,1)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,2))));    
+  }
 
-    };
-  }; 
+  void __setitem__(PyObject *_indexTuple,returnType _val) {
+    if (!PyTuple_Check( _indexTuple) || PyTuple_GET_SIZE(_indexTuple)!=3){
+	throw std::runtime_error(std::string(#type)+std::string(": Wrong Syntax: Expected someting like: field[1,2,3]=object"));
+    }
 
-
-  %template(cellfield) Field3D<CellG *>;
-  %template(floatfield) Field3D<float>;
-  %template(floatfieldImpl) Field3DImpl<float>;
-  %template(watchablecellfield) WatchableField3D<CellG *>;
+    return self->set(Point3D(PyInt_AsLong(PyTuple_GetItem(_indexTuple,0)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,1)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,2))),_val);    
+  }
   
-
   
-  //%template (simulatorFieldMap) ::std::map<std::string,Field3D<float> >;
-  //%template (simulatorFieldMap) ::std::set<int>;
-};
+}
+%enddef    
+    
 
+    
+%ignore Field3D<float>::typeStr;
+%ignore Field3DImpl<float>::typeStr;
+%ignore Field3D<int>::typeStr;
+%ignore Field3DImpl<int>::typeStr;
+%ignore Field3D<CellG*>::typeStr;
+%ignore Field3DImpl<CellG*>::typeStr;
+%ignore WatchableField3D<CellG*>::typeStr;
+
+%template(floatfield) Field3D<float>;
+%template(floatfieldImpl) Field3DImpl<float>;
+%template(intfield) Field3D<int>;
+%template(intfieldImpl) Field3DImpl<int>;
+
+%template(cellfield) Field3D<CellG *>;
+%template(cellfieldImpl) Field3DImpl<CellG *>;
+%template(watchablecellfield) WatchableField3D<CellG *>;
+
+
+FIELD3DEXTENDER(Field3D<CellG *>,CellG*)
+FIELD3DEXTENDER(Field3D<float>,float)
+FIELD3DEXTENDER(Field3D<int>,int)
 
 
 
@@ -529,35 +526,6 @@ namespace CompuCell3D {
 
 %template(vectorint) std::vector<int>;
 
-
-//%template (simulatorFieldMap) ::std::map<std::string,int >;
-
-//%template (simulatorFieldMap) std::map<std::string,CompuCell3D::Field3DImpl<float>*>;
-
-%extend CompuCell3D::Point3D{
-   char * __str__(){
-      static char id[100];
-      sprintf(id,"(%d,%d,%d)",self->x,self->y,self->z);
-      return id;
-   }
-   double produceNumber(double seed,double & result){
-         result=88;
-         return 4;
-   };
-   
-    %insert("python") %{
-        def __getstate__(self):
-            return (self.x,self.y,self.z)
-            
-        def __setstate__(self,tup):
-            print 'tuple=',tup
-            self.this = _CompuCell.new_Point3D(tup[0],tup[1],tup[2])
-            self.thisown=1            
-            
-    %}   
-
-    
-};
 
 
 %include "Field3D/Field3DChangeWatcher.h"
@@ -593,7 +561,7 @@ namespace CompuCell3D {
 %include <BasicUtils/BasicException.h>
 
 
-%include exception.i
+//%include exception.i
 
 
 // ************************************************************

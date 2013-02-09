@@ -1,8 +1,10 @@
-ADD_COMPUCELL3D_PLUGIN(ContactLocalFlex
-  ContactLocalFlexPlugin.cpp
-  ContactLocalFlexPluginProxy.cpp LINK_LIBRARIES ${PLUGIN_DEPENDENCIES} EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
+ADD_COMPUCELL3D_PLUGIN(ContactLocalFlex LINK_LIBRARIES ${PLUGIN_DEPENDENCIES} EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
+
+# ADD_COMPUCELL3D_PLUGIN(ContactLocalFlex
+  # ContactLocalFlexPlugin.cpp
+  # ContactLocalFlexPluginProxy.cpp LINK_LIBRARIES ${PLUGIN_DEPENDENCIES} EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
 
 
-ADD_COMPUCELL3D_PLUGIN_HEADERS(ContactLocalFlex
+# ADD_COMPUCELL3D_PLUGIN_HEADERS(ContactLocalFlex
 
-  ContactLocalFlexPlugin.h)
+  # ContactLocalFlexPlugin.h)

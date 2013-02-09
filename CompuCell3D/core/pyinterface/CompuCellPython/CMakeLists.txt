@@ -4,7 +4,7 @@ SET(LIBS
   CompuCellLibShared
   #AutomatonStatic
   #BoundaryStatic
-  #Field3DStatic
+  Field3DStatic
   #Potts3DStatic
 
    # XercesUtilsStatic
@@ -25,7 +25,7 @@ SET(LIBS
   CompuCellLibShared
   #AutomatonShared
   #BoundaryShared
-  #Field3DShared
+  Field3DShared
   #Potts3DShared
 
    # XercesUtilsShared

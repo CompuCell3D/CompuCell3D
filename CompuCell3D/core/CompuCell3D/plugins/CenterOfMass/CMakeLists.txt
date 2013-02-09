@@ -1,7 +1,9 @@
-ADD_COMPUCELL3D_PLUGIN(CenterOfMass
-  CenterOfMassPlugin.cpp
-  CenterOfMassPluginProxy.cpp LINK_LIBRARIES ${PLUGIN_DEPENDENCIES})
+ADD_COMPUCELL3D_PLUGIN(CenterOfMass LINK_LIBRARIES ${PLUGIN_DEPENDENCIES})
 
-ADD_COMPUCELL3D_PLUGIN_HEADERS(CenterOfMass
-  CenterOfMassPlugin.h
-  )
+# ADD_COMPUCELL3D_PLUGIN(CenterOfMass
+  # CenterOfMassPlugin.cpp
+  # CenterOfMassPluginProxy.cpp LINK_LIBRARIES ${PLUGIN_DEPENDENCIES})
+
+# ADD_COMPUCELL3D_PLUGIN_HEADERS(CenterOfMass
+  # CenterOfMassPlugin.h
+  # )

@@ -89,6 +89,7 @@ void CellTypePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		}
 
       potts->setFrozenTypeVector(frozenTypeVec);
+      
   
 
 }

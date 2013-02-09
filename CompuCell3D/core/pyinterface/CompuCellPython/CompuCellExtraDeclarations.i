@@ -48,82 +48,82 @@
 
 using namespace CompuCell3D;
 
-// The template instanciation for Field3D<Cell *> does not work properly 
-// if Field3D.h is included and the template is instanciated by SWIG.
-// However, simply declaring Field3D and instanciating Field3D<Cell *>
-// this way seems to work fine.
-namespace CompuCell3D {
-  template <class T>
-  class Field3D {
-  public:
-    virtual void set(const Point3D &pt, const T value) = 0;
-    virtual T get(const Point3D &pt) const = 0;
-    // virtual T operator[](const Point3D &pt) const {return get(pt);}
-    // --> Warning(389): operator[] ignored (consider using %extend)
-    virtual Dim3D getDim() const = 0;
-    virtual bool isValid(const Point3D &pt) const = 0;
-    virtual void setDim(const Dim3D theDim) {}
-    virtual Point3D getNeighbor(const Point3D &pt, unsigned int &token,
-				double &distance,
-    			bool checkBounds = true) const;
-    %extend  {
-      T get(short x, short y, short z) {
-        Point3D pt;
-        pt.x = x; pt.y = y; pt.z = z;
-        return self->get(pt);
-      };
+// // // // The template instanciation for Field3D<Cell *> does not work properly 
+// // // // if Field3D.h is included and the template is instanciated by SWIG.
+// // // // However, simply declaring Field3D and instanciating Field3D<Cell *>
+// // // // this way seems to work fine.
+// // // namespace CompuCell3D {
+// // //   template <class T>
+// // //   class Field3D {
+// // //   public:
+// // //     virtual void set(const Point3D &pt, const T value) = 0;
+// // //     virtual T get(const Point3D &pt) const = 0;
+// // //     // virtual T operator[](const Point3D &pt) const {return get(pt);}
+// // //     // --> Warning(389): operator[] ignored (consider using %extend)
+// // //     virtual Dim3D getDim() const = 0;
+// // //     virtual bool isValid(const Point3D &pt) const = 0;
+// // //     virtual void setDim(const Dim3D theDim) {}
+// // //     virtual Point3D getNeighbor(const Point3D &pt, unsigned int &token,
+// // // 				double &distance,
+// // //     			bool checkBounds = true) const;
+// // //     %extend  {
+// // //       T get(short x, short y, short z) {
+// // //         Point3D pt;
+// // //         pt.x = x; pt.y = y; pt.z = z;
+// // //         return self->get(pt);
+// // //       };
+// // // 
+// // // 
+// // //       /*T getWithNullCheck(Point3D pt) {
+// // //          T  cell;
+// // //          cell=self->get(pt);
+// // //          if(!cell)
+// // //             cerr<<"GOT NULL PTR TO CELL"<<endl;
+// // //         return cell;
+// // //       };*/
+// // // 
+// // // 		Point3D nextNeighbor(NeighborFinderParams & nfp){
+// // // 			Point3D n=self->getNeighbor(nfp.pt , nfp.token , nfp.distance, nfp.checkBounds);
+// // // 			return n;
+// // // 		}
+// // //       double producePoint(double seed,Point3D & result){
+// // //          result.x=3;
+// // //          result.y=8;
+// // //          result.z=6;
+// // //          return 4;
+// // //       };
+// // // 
+// // //       void produceNumber(double seed,double & result){
+// // //          result=88;
+// // // 
+// // //       };
+// // // 
+// // // 
+// // //     };
+// // //   }; 
+// // // 
+// // // 
+// // //   %template(cellfield) Field3D<CellG *>;
+// // // //   %template(floatfieldExtra) Field3D<float>;
+// // // //   %template(floatfieldimplExtra) Field3DImpl<float>;
+// // // };
+// // // 
 
 
-      /*T getWithNullCheck(Point3D pt) {
-         T  cell;
-         cell=self->get(pt);
-         if(!cell)
-            cerr<<"GOT NULL PTR TO CELL"<<endl;
-        return cell;
-      };*/
-
-		Point3D nextNeighbor(NeighborFinderParams & nfp){
-			Point3D n=self->getNeighbor(nfp.pt , nfp.token , nfp.distance, nfp.checkBounds);
-			return n;
-		}
-      double producePoint(double seed,Point3D & result){
-         result.x=3;
-         result.y=8;
-         result.z=6;
-         return 4;
-      };
-
-      void produceNumber(double seed,double & result){
-         result=88;
-
-      };
 
 
-    };
-  }; 
-
-
-  %template(cellfield) Field3D<CellG *>;
-//   %template(floatfieldExtra) Field3D<float>;
-//   %template(floatfieldimplExtra) Field3DImpl<float>;
-};
-
-
-
-
-
-//adding cout capabilities to Point3D
-%extend CompuCell3D::Point3D{
-   char * __str__(){
-      static char id[100];
-      sprintf(id,"(%d,%d,%d)",self->x,self->y,self->z);
-      return id;
-   }
-   double produceNumber(double seed,double & result){
-         result=88;
-         return 4;
-   };
-};
+// // // //adding cout capabilities to Point3D
+// // // %extend CompuCell3D::Point3D{
+// // //    char * __str__(){
+// // //       static char id[100];
+// // //       sprintf(id,"(%d,%d,%d)",self->x,self->y,self->z);
+// // //       return id;
+// // //    }
+// // //    double produceNumber(double seed,double & result){
+// // //          result=88;
+// // //          return 4;
+// // //    };
+// // // };
 
 
 //%include "Field3D/Field3DChangeWatcher.h"
