@@ -48,6 +48,8 @@
 %{
 // CompuCell3D Include Files
 #include <CompuCell3D/Plugin.h>
+#include <CompuCell3D/Potts3D/Stepper.h>
+#include <CompuCell3D/plugins/VolumeTracker/VolumeTrackerPlugin.h> //necesssary to make slicing in cellfield work
 #include <CompuCell3D/Steppable.h>
 #include <CompuCell3D/Field3D/Neighbor.h>
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
@@ -168,13 +170,17 @@ using namespace CompuCell3D;
 #define MITOSISSTEPPABLE_EXPORT
 #define NEIGHBORTRACKER_EXPORT
 #define PIXELTRACKER_EXPORT
+#define BOUNDARYPIXELTRACKER_EXPORT
 #define CONTACTLOCALFLEX_EXPORT
 #define CONTACTLOCALPRODUCT_EXPORT
 #define CONTACTMULTICAD_EXPORT
 #define CELLORIENTATION_EXPORT
 #define POLARIZATIONVECTOR_EXPORT
+#define ELASTICITYTRACKER_EXPORT
 #define ELASTICITY_EXPORT
+#define PLASTICITYTRACKER_EXPORT
 #define PLASTICITY_EXPORT
+
 #define CONNECTIVITYLOCALFLEX_EXPORT
 // #define LENGTHCONSTRAINTLOCALFLEX_EXPORT
 #define LENGTHCONSTRAINT_EXPORT
@@ -299,7 +305,6 @@ using namespace CompuCell3D;
 %}
 
 using namespace CompuCell3D;
-
 
 
 
@@ -465,8 +470,16 @@ using namespace CompuCell3D;
       %}
     };
 
-// macro used to generate extra functions to better manipulate fields    
-%define FIELD3DEXTENDER(type,returnType)
+// macros used to generate extra functions to better manipulate fields    
+    
+//#x
+//Converts macro argument x to a string surrounded by double quotes ("x").
+//x ## y
+//Concatenates x and y together to form xy.
+//`x`
+//If x is a string surrounded by double quotes, do nothing. Otherwise, turn into a string like #x. This is a non-standard SWIG extension.    
+    
+%define FIELD3DEXTENDERBASE(type,returnType)    
 %extend  type{
     
   std::string __str__(){
@@ -477,25 +490,192 @@ using namespace CompuCell3D;
   
   returnType __getitem__(PyObject *_indexTuple) {
     if (!PyTuple_Check( _indexTuple) || PyTuple_GET_SIZE(_indexTuple)!=3){
-	throw std::runtime_error(std::string(#type)+std::string(": Wrong Syntax: Expected someting like: field[1,2,3]"));
+        throw std::runtime_error(std::string(#type)+std::string(": Wrong Syntax: Expected someting like: field[1,2,3]"));
     }
 
     return self->get(Point3D(PyInt_AsLong(PyTuple_GetItem(_indexTuple,0)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,1)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,2))));    
   }
 
+%enddef
+    
+%define FIELD3DEXTENDER(type,returnType)
+FIELD3DEXTENDERBASE(type,returnType)    
+  
   void __setitem__(PyObject *_indexTuple,returnType _val) {
     if (!PyTuple_Check( _indexTuple) || PyTuple_GET_SIZE(_indexTuple)!=3){
-	throw std::runtime_error(std::string(#type)+std::string(": Wrong Syntax: Expected someting like: field[1,2,3]=object"));
+        throw std::runtime_error("Wrong Syntax: Expected someting like: field[1,2,3]=object");
+    }
+    
+    PyObject *xCoord=PyTuple_GetItem(_indexTuple,0);
+    PyObject *yCoord=PyTuple_GetItem(_indexTuple,1);
+    PyObject *zCoord=PyTuple_GetItem(_indexTuple,2);
+    
+    Py_ssize_t  start_x, stop_x, step_x, sliceLength;
+    Py_ssize_t  start_y, stop_y, step_y;
+    Py_ssize_t  start_z, stop_z, step_z;
+    
+    Dim3D dim=self->getDim();
+    
+    if (PySlice_Check(xCoord)){
+
+        PySlice_GetIndicesEx((PySliceObject*)xCoord,dim.x-1,&start_x,&stop_x,&step_x,&sliceLength);
+
+        
+    }else{
+        start_x=PyInt_AsLong(PyTuple_GetItem(_indexTuple,0));
+        stop_x=start_x;
+        step_x=1;
     }
 
-    return self->set(Point3D(PyInt_AsLong(PyTuple_GetItem(_indexTuple,0)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,1)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,2))),_val);    
+    if (PySlice_Check(yCoord)){
+        
+        PySlice_GetIndicesEx((PySliceObject*)yCoord,dim.y-1,&start_y,&stop_y,&step_y,&sliceLength);
+        
+        
+    }else{
+        start_y=PyInt_AsLong(PyTuple_GetItem(_indexTuple,1));
+        stop_y=start_y;
+        step_y=1;
+    }
+    
+    if (PySlice_Check(zCoord)){
+        
+        PySlice_GetIndicesEx((PySliceObject*)zCoord,dim.z-1,&start_z,&stop_z,&step_z,&sliceLength);
+        
+        
+    }else{
+        start_z=PyInt_AsLong(PyTuple_GetItem(_indexTuple,2));
+        stop_z=start_z;
+        step_z=1;
+    }
+
+    
+//     cerr<<"start x="<< start_x<<endl;
+//     cerr<<"stop x="<< stop_x<<endl;
+//     cerr<<"step x="<< step_x<<endl;
+//     cerr<<"sliceLength="<<sliceLength<<endl;
+    
+    
+    int x,y,z;
+    PyObject *sliceX=0,*sliceY=0,* sliceZ=0;
+    
+    for (Py_ssize_t x=start_x ; x<=stop_x ; x+=step_x)
+        for (Py_ssize_t y=start_y ; y<=stop_y ; y+=step_y)
+            for (Py_ssize_t z=start_z ; z<=stop_z ; z+=step_z){
+                $self->set(Point3D(x,y,z),_val); 
+            }
+    
   }
-  
+
   
 }
 %enddef    
     
 
+    
+%define CELLFIELD3DEXTENDER(type,returnType)
+FIELD3DEXTENDERBASE(type,returnType)    
+// %extend  type{
+//     
+//   std::string __str__(){
+//     std::ostringstream s;
+//     s<<#type<<" dim"<<self->getDim();
+//     return s.str();
+//   }
+//   
+//   returnType __getitem__(PyObject *_indexTuple) {
+//     if (!PyTuple_Check( _indexTuple) || PyTuple_GET_SIZE(_indexTuple)!=3){
+//         throw std::runtime_error(std::string(#type)+std::string(": Wrong Syntax: Expected someting like: field[1,2,3]"));
+//     }
+// 
+//     return self->get(Point3D(PyInt_AsLong(PyTuple_GetItem(_indexTuple,0)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,1)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,2))));    
+//   }
+  
+//for cell field we call __setitem__ Python implementation which in turn calls setitem c++ implementation. We do this to pass volumeTracker plugin
+//to setitem (c++) so that after each set operation on the field we can check if ther is any cell which needs to be deleted (this is what volumeTrackerPlugin step fcn does)
+// otherwise we might end up with memory leaks.
+//We could have also included volumeTrackerPlugin ptr in WatchableField3D<> but decided that it woudl be better not to ploute main code - might reconsider this though
+
+%pythoncode %{
+    def __setitem__(self,_indexTyple,_val):
+        self.setitem(_indexTyple,_val,self.volumeTrackerPlugin)
+%}  
+
+  void setitem(PyObject *_indexTuple,returnType _val,void *_volumeTrackerPlugin=0) {
+    if (!PyTuple_Check( _indexTuple) || PyTuple_GET_SIZE(_indexTuple)!=3){
+        throw std::runtime_error("Wrong Syntax: Expected someting like: field[1,2,3]=object");
+    }
+    
+    VolumeTrackerPlugin *volumeTrackerPlugin=(VolumeTrackerPlugin *)_volumeTrackerPlugin;
+    
+    PyObject *xCoord=PyTuple_GetItem(_indexTuple,0);
+    PyObject *yCoord=PyTuple_GetItem(_indexTuple,1);
+    PyObject *zCoord=PyTuple_GetItem(_indexTuple,2);
+    
+    Py_ssize_t  start_x, stop_x, step_x, sliceLength;
+    Py_ssize_t  start_y, stop_y, step_y;
+    Py_ssize_t  start_z, stop_z, step_z;
+    
+    Dim3D dim=self->getDim();
+    
+    if (PySlice_Check(xCoord)){
+
+        PySlice_GetIndicesEx((PySliceObject*)xCoord,dim.x-1,&start_x,&stop_x,&step_x,&sliceLength);
+
+        
+    }else{
+        start_x=PyInt_AsLong(PyTuple_GetItem(_indexTuple,0));
+        stop_x=start_x;
+        step_x=1;
+    }
+
+    if (PySlice_Check(yCoord)){
+        
+        PySlice_GetIndicesEx((PySliceObject*)yCoord,dim.y-1,&start_y,&stop_y,&step_y,&sliceLength);
+        
+        
+    }else{
+        start_y=PyInt_AsLong(PyTuple_GetItem(_indexTuple,1));
+        stop_y=start_y;
+        step_y=1;
+    }
+    
+    if (PySlice_Check(zCoord)){
+        
+        PySlice_GetIndicesEx((PySliceObject*)zCoord,dim.z-1,&start_z,&stop_z,&step_z,&sliceLength);
+        
+        
+    }else{
+        start_z=PyInt_AsLong(PyTuple_GetItem(_indexTuple,2));
+        stop_z=start_z;
+        step_z=1;
+    }
+
+    
+//     cerr<<"start x="<< start_x<<endl;
+//     cerr<<"stop x="<< stop_x<<endl;
+//     cerr<<"step x="<< step_x<<endl;
+//     cerr<<"sliceLength="<<sliceLength<<endl;
+    
+    
+    int x,y,z;
+    PyObject *sliceX=0,*sliceY=0,* sliceZ=0;
+    
+    for (Py_ssize_t x=start_x ; x<=stop_x ; x+=step_x)
+        for (Py_ssize_t y=start_y ; y<=stop_y ; y+=step_y)
+            for (Py_ssize_t z=start_z ; z<=stop_z ; z+=step_z){
+                $self->set(Point3D(x,y,z),_val);
+                volumeTrackerPlugin->step();
+            }
+    
+
+  }
+
+  
+}
+%enddef    
+    
+    
     
 %ignore Field3D<float>::typeStr;
 %ignore Field3DImpl<float>::typeStr;
@@ -515,7 +695,7 @@ using namespace CompuCell3D;
 %template(watchablecellfield) WatchableField3D<CellG *>;
 
 
-FIELD3DEXTENDER(Field3D<CellG *>,CellG*)
+CELLFIELD3DEXTENDER(Field3D<CellG *>,CellG*)
 FIELD3DEXTENDER(Field3D<float>,float)
 FIELD3DEXTENDER(Field3D<int>,int)
 

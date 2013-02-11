@@ -33,7 +33,7 @@
 #include "AttributeAdder.h"
 #include <CompuCell3D/Automaton/Automaton.h>
 
-#include <CompuCell3D/Field3D/WatchableField3D.h>
+// #include <CompuCell3D/Field3D/WatchableField3D.h>
 
 #include <CompuCell3D/Potts3D/TypeTransition.h>
 #include "EnergyFunctionCalculator.h"

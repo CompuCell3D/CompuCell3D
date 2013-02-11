@@ -20,14 +20,14 @@
  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
  *************************************************************************/
 
-#include <CompuCell3D/plugins/Plasticity/PlasticityTrackerPlugin.h>
+#include <CompuCell3D/plugins/PlasticityTracker/PlasticityTrackerPlugin.h>
 
 #include <CompuCell3D/Field3D/Field3D.h>
 #include <CompuCell3D/Field3D/Point3D.h>
 #include <BasicUtils/BasicString.h>
 #include <BasicUtils/BasicException.h>
 #include <PublicUtilities/NumericalUtils.h>
-#include <CompuCell3D/plugins/Plasticity/PlasticityTracker.h>
+#include <CompuCell3D/plugins/PlasticityTracker/PlasticityTracker.h>
 #include <BasicUtils/BasicClassAccessor.h>
 #include <BasicUtils/BasicClassGroup.h>
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>

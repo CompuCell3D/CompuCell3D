@@ -23,10 +23,12 @@
 #ifndef POTTS3D_H
 #define POTTS3D_H
 
-#include <CompuCell3D/Field3D/Dim3D.h>
-#include <CompuCell3D/Field3D/Point3D.h>
+#include <CompuCell3D/Field3D/CC3D_Field3D.h>
+
+// #include <CompuCell3D/Field3D/Dim3D.h>
+// #include <CompuCell3D/Field3D/Point3D.h>
 //#include <CompuCell3D/Field3D/WatchableField3D.h>
-#include <CompuCell3D/Field3D/NeighborFinder.h>
+// #include <CompuCell3D/Field3D/NeighborFinder.h>
 
 
 #include "DefaultAcceptanceFunction.h"

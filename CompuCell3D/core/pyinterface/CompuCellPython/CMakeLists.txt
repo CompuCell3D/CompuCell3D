@@ -50,12 +50,15 @@ SET(LIBS_AUX
    MitosisShared
    MitosisSteppableShared
    NeighborTrackerShared
-   PixelTrackerShared   
+   PixelTrackerShared
+   BoundaryPixelTrackerShared   
    ContactLocalFlexShared
    ContactLocalProductShared
    CellOrientationShared
    PolarizationVectorShared
-   ElasticityShared
+   ElasticityTrackerShared
+   ElasticityShared   
+   PlasticityTrackerShared
    PlasticityShared
    FocalPointPlasticityShared
    ContactMultiCadShared

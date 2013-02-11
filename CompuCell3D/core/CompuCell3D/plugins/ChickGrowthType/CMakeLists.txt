@@ -7,12 +7,3 @@
 ADD_COMPUCELL3D_PLUGIN(ChickGrowthType LINK_LIBRARIES CompuCellLibShared GrowthShared)
 
 
-# ADD_COMPUCELL3D_PLUGIN(ChickGrowthType
-  # ChickGrowthTypePlugin.cpp
-  # ChickGrowthTypePluginProxy.cpp LINK_LIBRARIES CompuCellLibShared GrowthShared)
-
-
-# ADD_COMPUCELL3D_PLUGIN_HEADERS(ChickGrowthType
-  # ChickGrowthCondensingTransition.h
-  # ChickGrowthNonCondensingTransition.h
-  # ChickGrowthTypePlugin.h)

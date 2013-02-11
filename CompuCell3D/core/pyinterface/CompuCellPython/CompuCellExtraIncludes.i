@@ -90,8 +90,8 @@
 #include <CompuCell3D/plugins/PixelTracker/PixelTracker.h>
 #include <CompuCell3D/plugins/PixelTracker/PixelTrackerPlugin.h>
 
-#include <CompuCell3D/plugins/PixelTracker/BoundaryPixelTracker.h>
-#include <CompuCell3D/plugins/PixelTracker/BoundaryPixelTrackerPlugin.h>
+#include <CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTracker.h>
+#include <CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTrackerPlugin.h>
 
 #include <CompuCell3D/plugins/ContactLocalFlex/ContactLocalFlexData.h>
 #include <CompuCell3D/plugins/ContactLocalFlex/ContactLocalFlexPlugin.h>
@@ -114,11 +114,11 @@
 #include <CompuCell3D/plugins/PolarizationVector/PolarizationVector.h>
 #include <CompuCell3D/plugins/PolarizationVector/PolarizationVectorPlugin.h>
 
-#include <CompuCell3D/plugins/Elasticity/ElasticityTracker.h>
-#include <CompuCell3D/plugins/Elasticity/ElasticityTrackerPlugin.h>
+#include <CompuCell3D/plugins/ElasticityTracker/ElasticityTracker.h>
+#include <CompuCell3D/plugins/ElasticityTracker/ElasticityTrackerPlugin.h>
       
-#include <CompuCell3D/plugins/Plasticity/PlasticityTracker.h>
-#include <CompuCell3D/plugins/Plasticity/PlasticityTrackerPlugin.h>
+#include <CompuCell3D/plugins/PlasticityTracker/PlasticityTracker.h>
+#include <CompuCell3D/plugins/PlasticityTracker/PlasticityTrackerPlugin.h>
 
 #include <CompuCell3D/plugins/FocalPointPlasticity/FocalPointPlasticityTracker.h>
 #include <CompuCell3D/plugins/FocalPointPlasticity/FocalPointPlasticityPlugin.h>

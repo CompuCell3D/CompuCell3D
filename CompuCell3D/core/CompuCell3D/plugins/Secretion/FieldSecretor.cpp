@@ -27,8 +27,8 @@
 #include <CompuCell3D/Field3D/WatchableField3D.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>
 #include <CompuCell3D/plugins/PixelTracker/PixelTrackerPlugin.h>
-#include <CompuCell3D/plugins/PixelTracker/BoundaryPixelTrackerPlugin.h>
-#include <CompuCell3D/plugins/PixelTracker/BoundaryPixelTracker.h>
+#include <CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTrackerPlugin.h>
+#include <CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTracker.h>
 
 
 #include <iostream>

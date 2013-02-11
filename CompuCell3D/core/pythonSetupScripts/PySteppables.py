@@ -51,7 +51,8 @@ class SteppableBasePy(SteppablePy):
         if self.simulator.pluginManager.isLoaded("VolumeTracker"):
             import CompuCell
             self.volumeTrackerPlugin=CompuCell.getVolumeTrackerPlugin()
-        
+            self.cellField.volumeTrackerPlugin=self.volumeTrackerPlugin # used in setitem function in swigg CELLFIELDEXTEDER macro CompuCell.i
+            
         #NeighborTrackerPlugin
         self.neighborTrackerPlugin=None
         if self.simulator.pluginManager.isLoaded("NeighborTracker"):

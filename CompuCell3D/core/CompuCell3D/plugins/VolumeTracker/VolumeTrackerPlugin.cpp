@@ -104,7 +104,7 @@ void VolumeTrackerPlugin::step() {
 	//   deadCellG = 0;
 	// }
 	CellG *deadCellPtr=deadCellVec[pUtils->getCurrentWorkNodeNumber()];
-
+//         cerr<<"inside step function "<<deadCellPtr<<endl;
 	if (deadCellPtr) {
 
         //NOTICE: we cannot use #pragma omp critical instead of locks because although this is called from inside the parallel region critical directive has to be included explicitely inside #pragma omp parallel section - and this has to be known at the compile time

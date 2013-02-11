@@ -1,12 +1,1 @@
 ADD_COMPUCELL3D_PLUGIN(Mitosis LINK_LIBRARIES ${PLUGIN_DEPENDENCIES} PixelTrackerShared EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
-
-
-# ADD_COMPUCELL3D_PLUGIN(Mitosis
-  # MitosisPlugin.cpp
-  # MitosisSimplePlugin.cpp
-  # MitosisPluginProxy.cpp LINK_LIBRARIES ${PLUGIN_DEPENDENCIES} PixelTrackerShared EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
-
-
-# ADD_COMPUCELL3D_PLUGIN_HEADERS(Mitosis
-  # MitosisSimplePlugin.h
-  # MitosisPlugin.h)

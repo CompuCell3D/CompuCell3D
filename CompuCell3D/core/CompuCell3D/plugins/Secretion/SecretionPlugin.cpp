@@ -30,7 +30,7 @@ using namespace CompuCell3D;
 #include <CompuCell3D/Field3D/WatchableField3D.h>
 #include <CompuCell3D/Automaton/Automaton.h>
 #include <CompuCell3D/plugins/PixelTracker/PixelTrackerPlugin.h>
-#include <CompuCell3D/plugins/PixelTracker/BoundaryPixelTrackerPlugin.h>
+#include <CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTrackerPlugin.h>
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
 
