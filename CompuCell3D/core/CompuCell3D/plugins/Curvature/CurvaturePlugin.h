@@ -23,18 +23,18 @@
 #ifndef CURVATUREPLUGIN_H
 #define CURVATUREPLUGIN_H
 
-
-#include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-#include <CompuCell3D/Potts3D/EnergyFunction.h>
-#include <CompuCell3D/Plugin.h>
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
+// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
+// // // #include <CompuCell3D/Plugin.h>
 #include "CurvatureTracker.h"
-#include <PublicUtilities/Vector3.h>
+// // // #include <PublicUtilities/Vector3.h>
 
 
-#include <map>
-#include <set>
-#include <string>
-#include <vector>
+// // // #include <map>
+// // // #include <set>
+// // // #include <string>
+// // // #include <vector>
 
 
 #include "CurvatureDLLSpecifier.h"

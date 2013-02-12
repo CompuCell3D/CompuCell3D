@@ -8,32 +8,34 @@
 //the common code for CUDA and OpenCL diffusion solvers
 //#include "FlexibleDiffusionSolverFE_GPU.h"
 
-#include <CompuCell3D/Simulator.h>
-#include <CompuCell3D/Automaton/Automaton.h>
-#include <CompuCell3D/Potts3D/Potts3D.h>
-#include <CompuCell3D/Potts3D/CellInventory.h>
-#include <CompuCell3D/Field3D/WatchableField3D.h>
-#include <CompuCell3D/Field3D/Field3DImpl.h>
-#include <CompuCell3D/Field3D/Field3D.h>
-#include <CompuCell3D/Field3D/Field3DIO.h>
-#include <BasicUtils/BasicClassGroup.h>
-#include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
+#include <CompuCell3D/CC3D.h>
+
+// // // #include <CompuCell3D/Simulator.h>
+// // // #include <CompuCell3D/Automaton/Automaton.h>
+// // // #include <CompuCell3D/Potts3D/Potts3D.h>
+// // // #include <CompuCell3D/Potts3D/CellInventory.h>
+// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
+// // // #include <CompuCell3D/Field3D/Field3DImpl.h>
+// // // #include <CompuCell3D/Field3D/Field3D.h>
+// // // #include <CompuCell3D/Field3D/Field3DIO.h>
+// // // #include <BasicUtils/BasicClassGroup.h>
+// // // #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
 #include <CompuCell3D/plugins/CellTypeMonitor/CellTypeMonitorPlugin.h>
 #include <CompuCell3D/plugins/BoundaryMonitor/BoundaryMonitorPlugin.h>
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
-#include <BasicUtils/BasicRandomNumberGenerator.h>
-#include <PublicUtilities/StringUtils.h>
-#include <PublicUtilities/ParallelUtilsOpenMP.h>
+// // // #include <BasicUtils/BasicString.h>
+// // // #include <BasicUtils/BasicException.h>
+// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
+// // // #include <PublicUtilities/StringUtils.h>
+// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
 
 #include "FlexibleDiffusionSolverFE_GPU_Device.h"
 
-#include <string>
-#include <cmath>
-#include <iostream>
-#include <fstream>
-#include <sstream>
+// // // #include <string>
+// // // #include <cmath>
+// // // #include <iostream>
+// // // #include <fstream>
+// // // #include <sstream>
 #include <omp.h>
 //#define NUMBER_OF_THREADS 4
 

@@ -1,10 +1,6 @@
 
+#include <CompuCell3D/CC3D.h>
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
-#include <PublicUtilities/StringUtils.h>
-#include <CompuCell3D/Automaton/Automaton.h>
-#include <XMLUtils/CC3DXMLElement.h>
 
 using namespace CompuCell3D;
 using namespace std;

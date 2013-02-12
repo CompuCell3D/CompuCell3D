@@ -1,18 +1,19 @@
 #ifndef COMPUCELL3DEXTERNALPOTENTIALPLUGIN_H
 #define COMPUCELL3DEXTERNALPOTENTIALPLUGIN_H
 
-#include <CompuCell3D/Plugin.h>
-#include <CompuCell3D/Potts3D/EnergyFunction.h>
-#include <BasicUtils/BasicClassAccessor.h>
-#include <CompuCell3D/Potts3D/Cell.h>
-#include <CompuCell3D/Field3D/AdjacentNeighbor.h>
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Plugin.h>
+// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
+// // // #include <BasicUtils/BasicClassAccessor.h>
+// // // #include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <CompuCell3D/Field3D/AdjacentNeighbor.h>
 
-#include <CompuCell3D/Potts3D/Cell.h>
-#include <Utils/Coordinates3D.h>
-#include <CompuCell3D/Field3D/WatchableField3D.h>
+// // // #include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <Utils/Coordinates3D.h>
+// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
 
 
-#include <set>
+// // // #include <set>
 
 #include "ExternalPotentialDLLSpecifier.h"
 

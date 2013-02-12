@@ -22,17 +22,17 @@
 
 #ifndef REARRANGEMENTPLUGIN_H
 #define REARRANGEMENTPLUGIN_H
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Plugin.h>
 
-#include <CompuCell3D/Plugin.h>
-
-#include <CompuCell3D/Potts3D/EnergyFunction.h>
-
-
-#include <CompuCell3D/Potts3D/Stepper.h>
-#include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
+// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
 
 
-#include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <CompuCell3D/Potts3D/Stepper.h>
+// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
+
+
+// // // #include <CompuCell3D/Potts3D/Cell.h>
 
 #include "RearrangementDLLSpecifier.h"
 

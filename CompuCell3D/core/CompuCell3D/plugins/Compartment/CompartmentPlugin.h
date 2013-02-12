@@ -23,13 +23,13 @@
 #ifndef COMPARTMENTPLUGIN_H
 #define COMPARTMENTPLUGIN_H
 
-
-#include <CompuCell3D/Potts3D/EnergyFunction.h>
-#include <CompuCell3D/Plugin.h>
+ #include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
+// // // #include <CompuCell3D/Plugin.h>
 #include "CompartmentDLLSpecifier.h"
-#include <map>
-#include <vector>
-#include <string>
+// // // #include <map>
+// // // #include <vector>
+// // // #include <string>
 
 
 class CC3DXMLElement;

@@ -23,20 +23,20 @@
 #ifndef ADHESIONFLEXPLUGIN_H
 #define ADHESIONFLEXPLUGIN_H
 
-
+#include <CompuCell3D/CC3D.h>
 
 
 #include "AdhesionFlexData.h"
 
 
-#include <CompuCell3D/Potts3D/EnergyFunction.h>
-#include <BasicUtils/BasicClassAccessor.h>
-#include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
+// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
+// // // #include <BasicUtils/BasicClassAccessor.h>
+// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 
-#include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-#include <PublicUtilities/ParallelUtilsOpenMP.h>
-#include <CompuCell3D/Plugin.h>
-#include <muParser/muParser.h>
+// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
+// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
+// // // #include <CompuCell3D/Plugin.h>
+// // // #include <muParser/muParser.h>
 #include "AdhesionFlexDLLSpecifier.h"
 
 

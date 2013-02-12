@@ -1,16 +1,16 @@
 #ifndef REALPLASTICITYTRACKERPLUGIN_H
 #define REALPLASTICITYTRACKERPLUGIN_H
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Plugin.h>
 
-#include <CompuCell3D/Plugin.h>
-
-#include <CompuCell3D/Potts3D/Cell.h>
-#include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-#include <BasicUtils/BasicClassAccessor.h>
-#include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
+// // // #include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
+// // // #include <BasicUtils/BasicClassAccessor.h>
+// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 #include "PlasticityTracker.h"
-#include <CompuCell3D/Field3D/AdjacentNeighbor.h>
+// // // #include <CompuCell3D/Field3D/AdjacentNeighbor.h>
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
-#include <PublicUtilities/ParallelUtilsOpenMP.h>
+// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
 
 
 #include "PlasticityTrackerDLLSpecifier.h"

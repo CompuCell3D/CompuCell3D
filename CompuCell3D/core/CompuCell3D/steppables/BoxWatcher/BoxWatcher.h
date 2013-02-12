@@ -22,13 +22,13 @@
 
 #ifndef BOXWATCHERSTEPPABLE_H
 #define BOXWATCHERSTEPPABLE_H
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Plugin.h>
 
-#include <CompuCell3D/Plugin.h>
-
-#include <CompuCell3D/Potts3D/Cell.h>
-#include <CompuCell3D/Steppable.h>
-#include <CompuCell3D/Field3D/Dim3D.h>
-#include <vector>
+// // // #include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <CompuCell3D/Steppable.h>
+// // // #include <CompuCell3D/Field3D/Dim3D.h>
+// // // #include <vector>
 
 
 #include "BoxWatcherDLLSpecifier.h"

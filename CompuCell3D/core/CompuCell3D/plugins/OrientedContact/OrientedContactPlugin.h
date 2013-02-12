@@ -23,10 +23,11 @@
 #ifndef ORIENTEDCONTACTPLUGIN_H
 #define ORIENTEDCONTACTPLUGIN_H
 
-#include <CompuCell3D/Potts3D/EnergyFunction.h>
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
 
 
-#include <CompuCell3D/Plugin.h>
+// // // #include <CompuCell3D/Plugin.h>
 
 #include "OrientedContactDLLSpecifier.h"
 

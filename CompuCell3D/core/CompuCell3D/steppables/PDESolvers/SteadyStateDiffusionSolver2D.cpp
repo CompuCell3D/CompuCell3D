@@ -1,5 +1,6 @@
 
-
+// #include <CompuCell3D/CC3D.h>
+// #undef real
 #include <CompuCell3D/Simulator.h>
 #include <CompuCell3D/Automaton/Automaton.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>
@@ -23,12 +24,14 @@
 #include <sstream>
 
 
+
 #include <time.h>
 
 
 #include "SteadyStateDiffusionSolver2D.h"
 
 #include "hpppdesolvers.h" //have to put this header last to avoid STL header clash on linux
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // std::ostream & operator<<(std::ostream & out,CompuCell3D::DiffusionData & diffData){

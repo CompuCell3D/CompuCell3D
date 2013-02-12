@@ -24,15 +24,18 @@
 #ifndef CELLTYPEPLUGIN_H
 #define CELLTYPEPLUGIN_H
 
-#include <CompuCell3D/Plugin.h>
+#include <CompuCell3D/CC3D.h>
 
-//#include <CompuCell3D/Potts3D/CellChangeWatcher.h>
-#include <CompuCell3D/Automaton/Automaton.h>
-#include <CompuCell3D/plugins/CellType/CellTypeG.h>
-#include <string>
-#include <map>
+// // // #include <CompuCell3D/Plugin.h>
+
+// // // //#include <CompuCell3D/Potts3D/CellChangeWatcher.h>
+// // // #include <CompuCell3D/Automaton/Automaton.h>
+// // // #include <CompuCell3D/plugins/CellType/CellTypeG.h>
+// // // #include <string>
+// // // #include <map>
 //#include "CellTypeParseData.h"
 //#include <CompuCell3D/dllDeclarationSpecifier.h>
+#include "CellTypeG.h"
 #include "CellTypeDLLSpecifier.h"
 
 

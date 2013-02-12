@@ -20,22 +20,24 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
-#include <CompuCell3D/Simulator.h>
-#include <CompuCell3D/ClassRegistry.h>
-#include <CompuCell3D/Field3D/Field3D.h>
-#include <CompuCell3D/Potts3D/Potts3D.h>
-#include <CompuCell3D/Potts3D/Cell.h>
+ #include <CompuCell3D/CC3D.h>
+ 
+// // // #include <CompuCell3D/Simulator.h>
+// // // #include <CompuCell3D/ClassRegistry.h>
+// // // #include <CompuCell3D/Field3D/Field3D.h>
+// // // #include <CompuCell3D/Potts3D/Potts3D.h>
+// // // #include <CompuCell3D/Potts3D/Cell.h>
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
+// // // #include <BasicUtils/BasicString.h>
+// // // #include <BasicUtils/BasicException.h>
 
-#include <CompuCell3D/Potts3D/CellInventory.h>
-#include <CompuCell3D/Boundary/BoundaryStrategy.h>
+// // // #include <CompuCell3D/Potts3D/CellInventory.h>
+// // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 
 using namespace CompuCell3D;
 
-#include <cmath>
-#include <iostream>
+// // // #include <cmath>
+// // // #include <iostream>
 
 using namespace std;
 

@@ -22,10 +22,10 @@
 
 #ifndef DICTYCHEMOTAXISSTEPPABLE_H
 #define DICTYCHEMOTAXISSTEPPABLE_H
-
-#include <CompuCell3D/Steppable.h>
-#include <CompuCell3D/Field3D/Dim3D.h>
-#include <string>
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Steppable.h>
+// // // #include <CompuCell3D/Field3D/Dim3D.h>
+// // // #include <string>
 
 #include "DictyDLLSpecifier.h"
 

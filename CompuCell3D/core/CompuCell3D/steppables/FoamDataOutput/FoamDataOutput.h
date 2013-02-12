@@ -23,8 +23,10 @@
 #ifndef FOAMDATAOUTPUT_H
 #define FOAMDATAOUTPUT_H
 
-#include <CompuCell3D/Steppable.h>
-#include <CompuCell3D/Field3D/Dim3D.h>
+#include <CompuCell3D/CC3D.h>
+
+// // // #include <CompuCell3D/Steppable.h>
+// // // #include <CompuCell3D/Field3D/Dim3D.h>
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTracker.h>
 #include "FoamDataOutputDLLSpecifier.h"
 #include <string>

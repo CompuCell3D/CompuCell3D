@@ -23,11 +23,12 @@
 #ifndef TEMPLATESTEPPABLE_H
 #define TEMPLATESTEPPABLE_H
 
-#include <CompuCell3D/Steppable.h>
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Steppable.h>
 
-#include <string>
+// // // #include <string>
 
-template <typename Y> class BasicClassAccessor;
+// // // template <typename Y> class BasicClassAccessor;
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTracker.h>
 #include "TemplateSteppableDLLSpecifier.h"
 

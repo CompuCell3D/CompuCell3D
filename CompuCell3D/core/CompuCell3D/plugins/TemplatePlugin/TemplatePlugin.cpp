@@ -21,25 +21,26 @@
 *************************************************************************/
 
 
+#include <CompuCell3D/CC3D.h>
 
-#include <CompuCell3D/Simulator.h>
-#include <CompuCell3D/Potts3D/Potts3D.h>
-#include <CompuCell3D/Automaton/Automaton.h>
+// // // #include <CompuCell3D/Simulator.h>
+// // // #include <CompuCell3D/Potts3D/Potts3D.h>
+// // // #include <CompuCell3D/Automaton/Automaton.h>
 using namespace CompuCell3D;
 
-#include <iostream>
-#include <string>
-#include <algorithm>
-#include <PublicUtilities/Units/Unit.h>
+// // // #include <iostream>
+// // // #include <string>
+// // // #include <algorithm>
+// // // #include <PublicUtilities/Units/Unit.h>
 using namespace std;
 
 #include "TemplatePlugin.h"
 
-#include <PublicUtilities/StringUtils.h>
+// // // #include <PublicUtilities/StringUtils.h>
 
 #include <CompuCell3D/steppables/PDESolvers/DiffusableVector.h>
-#include <CompuCell3D/ClassRegistry.h>
-#include <CompuCell3D/Field3D/Field3D.h>
+// // // #include <CompuCell3D/ClassRegistry.h>
+// // // #include <CompuCell3D/Field3D/Field3D.h>
 
 
 // TemplatePlugin::TemplatePlugin() : potts(0) {}

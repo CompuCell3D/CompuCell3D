@@ -23,13 +23,13 @@
 #ifndef CONTACTINTERNALPLUGIN_H
 #define CONTACTINTERNALPLUGIN_H
 
-
-#include <CompuCell3D/Potts3D/EnergyFunction.h>
-#include <CompuCell3D/Plugin.h>
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
+// // // #include <CompuCell3D/Plugin.h>
 #include "ContactInternalDLLSpecifier.h"
-#include <map>
-#include <vector>
-#include <string>
+// // // #include <map>
+// // // #include <vector>
+// // // #include <string>
 
 
 class CC3DXMLElement;

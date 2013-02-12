@@ -5,8 +5,9 @@
 /**
 @author m
 */
-#include <set>
-#include <CompuCell3D/Field3D/Point3D.h>
+ #include <CompuCell3D/CC3D.h>
+// // // #include <set>
+// // // #include <CompuCell3D/Field3D/Point3D.h>
 #include "BoundaryPixelTrackerDLLSpecifier.h"
 
 namespace CompuCell3D {

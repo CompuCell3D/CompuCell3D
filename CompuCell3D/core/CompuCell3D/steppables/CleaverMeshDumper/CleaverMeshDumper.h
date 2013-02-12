@@ -1,19 +1,21 @@
 #ifndef CLEAVERMESHDUMPERSTEPPABLE_H
 #define CLEAVERMESHDUMPERSTEPPABLE_H
 
-#include <CompuCell3D/Steppable.h>
+#include <CompuCell3D/CC3D.h>
 
-#include <CompuCell3D/Steppable.h>
-#include <CompuCell3D/Field3D/Dim3D.h>
-#include <CompuCell3D/Field3D/Point3D.h>
+// // // #include <CompuCell3D/Steppable.h>
+
+// // // #include <CompuCell3D/Steppable.h>
+// // // #include <CompuCell3D/Field3D/Dim3D.h>
+// // // #include <CompuCell3D/Field3D/Point3D.h>
 
 #include "CleaverMeshDumperDLLSpecifier.h"
 
 //STL containers
-#include <vector>
-#include <list>
-#include <set>
-#include <map>
+// // // #include <vector>
+// // // #include <list>
+// // // #include <set>
+// // // #include <map>
 
 
 #include <Cleaver/ScalarField.h>

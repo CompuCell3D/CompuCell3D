@@ -23,17 +23,17 @@
 #ifndef CHEMOTAXISDICTYPLUGIN_H
 #define CHEMOTAXISDICTYPLUGIN_H
 
+ #include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
 
-#include <CompuCell3D/Potts3D/EnergyFunction.h>
-
-#include <CompuCell3D/Plugin.h>
-//#include <CompuCell3D/Potts3D/Stepper.h>
-#include <BasicUtils/BasicClassGroup.h>
-#include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
+// // // #include <CompuCell3D/Plugin.h>
+// // // //#include <CompuCell3D/Potts3D/Stepper.h>
+// // // #include <BasicUtils/BasicClassGroup.h>
+// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
 #include "ChemotaxisDictyDLLSpecifier.h"
 
-template <typename T>
-class BasicClassAccessor;
+// // // template <typename T>
+// // // class BasicClassAccessor;
 
 class CC3DXMLElement;
 

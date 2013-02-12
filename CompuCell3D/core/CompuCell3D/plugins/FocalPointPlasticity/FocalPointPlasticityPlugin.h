@@ -23,20 +23,21 @@
 #ifndef FOCALPOINTPLACTICITYPLUGIN_H
 #define FOCALPOINTPLACTICITYPLUGIN_H
 
+#include <CompuCell3D/CC3D.h>
 
-#include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-#include <CompuCell3D/Potts3D/EnergyFunction.h>
-#include <CompuCell3D/Plugin.h>
+// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
+// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
+// // // #include <CompuCell3D/Plugin.h>
 #include "FocalPointPlasticityTracker.h"
 
-#include <map>
-#include <set>
-#include <string>
-#include <vector>
-#include <muParser/muParser.h>
+// // // #include <map>
+// // // #include <set>
+// // // #include <string>
+// // // #include <vector>
+// // // #include <muParser/muParser.h>
 
 #include "FocalPointPlasticityDLLSpecifier.h"
-#include <muParser/ExpressionEvaluator/ExpressionEvaluator.h>
+// // // #include <muParser/ExpressionEvaluator/ExpressionEvaluator.h>
 
 class CC3DXMLElement;
 

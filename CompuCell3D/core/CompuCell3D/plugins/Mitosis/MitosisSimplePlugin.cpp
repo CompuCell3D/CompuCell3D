@@ -20,17 +20,17 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
-
-#include <CompuCell3D/Simulator.h>
-#include <CompuCell3D/Boundary/BoundaryStrategy.h>
-#include <CompuCell3D/Field3D/WatchableField3D.h>
-#include <PublicUtilities/NumericalUtils.h>
-#include <PublicUtilities/ParallelUtilsOpenMP.h>
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Simulator.h>
+// // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
+// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
+// // // #include <PublicUtilities/NumericalUtils.h>
+// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
 
 using namespace CompuCell3D;
 
-#include <iostream>
-#include <complex>
+// // // #include <iostream>
+// // // #include <complex>
 using namespace std;
 
 

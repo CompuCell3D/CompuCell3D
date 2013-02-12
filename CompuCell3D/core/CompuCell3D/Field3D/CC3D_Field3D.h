@@ -9,6 +9,6 @@
     #include <CompuCell3D/Field3D/WatchableField3D.h>
     #include <CompuCell3D/Field3D/Field3DChangeWatcher.h>
     #include <CompuCell3D/Field3D/Neighbor.h>
-        
+    #include <CompuCell3D/Field3D/AdjacentNeighbor.h>
 
 #endif

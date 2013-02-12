@@ -10,17 +10,19 @@
 #ifndef FIELDBUILDER_H_
 #define FIELDBUILDER_H_
 
-#include <CompuCell3D/Simulator.h>
-#include <CompuCell3D/Field3D/Dim3D.h>
-#include <CompuCell3D/Field3D/WatchableField3D.h>
-#include <CompuCell3D/Potts3D/Cell.h>
-#include <CompuCell3D/Potts3D/Potts3D.h>
-#include <BasicUtils/BasicRandomNumberGenerator.h>
+#include <CompuCell3D/CC3D.h>
+
+// // // #include <CompuCell3D/Simulator.h>
+// // // #include <CompuCell3D/Field3D/Dim3D.h>
+// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
+// // // #include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <CompuCell3D/Potts3D/Potts3D.h>
+// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <CompuCell3D/plugins/PixelTracker/PixelTracker.h>
 
-#include <string>
-#include <map>
-#include <vector>
+// // // #include <string>
+// // // #include <map>
+// // // #include <vector>
 
 #include "RandomFieldInitializerDLLSpecifier.h"
 

@@ -20,25 +20,26 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
+#include <CompuCell3D/CC3D.h>
 
-#include <CompuCell3D/ClassRegistry.h>
+// // // #include <CompuCell3D/ClassRegistry.h>
 
 using namespace CompuCell3D;
 
 #include <CompuCell3D/Simulator.h>
-#include <CompuCell3D/Potts3D/Potts3D.h>
-#include <CompuCell3D/Field3D/WatchableField3D.h>
-#include <CompuCell3D/Automaton/Automaton.h>
+// // // #include <CompuCell3D/Potts3D/Potts3D.h>
+// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
+// // // #include <CompuCell3D/Automaton/Automaton.h>
 #include <CompuCell3D/plugins/PixelTracker/PixelTrackerPlugin.h>
 #include <CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTrackerPlugin.h>
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
-#include <PublicUtilities/ParallelUtilsOpenMP.h>
+// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
 
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
+// // // #include <BasicUtils/BasicString.h>
+// // // #include <BasicUtils/BasicException.h>
 
-#include <iostream>
+
 using namespace std;
 
 

@@ -24,6 +24,7 @@
 #define POTTS3D_H
 
 #include <CompuCell3D/Field3D/CC3D_Field3D.h>
+#include <CompuCell3D/Boundary/CC3D_Boundary.h>
 
 // #include <CompuCell3D/Field3D/Dim3D.h>
 // #include <CompuCell3D/Field3D/Point3D.h>
@@ -35,14 +36,14 @@
 #include "FirstOrderExpansionAcceptanceFunction.h"
 #include "CustomAcceptanceFunction.h"
 
+#include <BasicUtils/BasicUtils.h>
+// #include <BasicUtils/BasicArray.h>
+// #include <BasicUtils/BasicDynamicClassFactory.h>
 
-#include <BasicUtils/BasicArray.h>
-#include <BasicUtils/BasicDynamicClassFactory.h>
-
-#include <BasicUtils/BasicClassAccessor.h>
-#include <BasicUtils/BasicClassGroupFactory.h>
-#include <BasicUtils/BasicClassGroup.h>
-#include <BasicUtils/BasicRandomNumberGenerator.h>
+// #include <BasicUtils/BasicClassAccessor.h>
+// #include <BasicUtils/BasicClassGroupFactory.h>
+// #include <BasicUtils/BasicClassGroup.h>
+// #include <BasicUtils/BasicRandomNumberGenerator.h>
 #include "CellInventory.h"
 #include "Cell.h"
 #include <string>

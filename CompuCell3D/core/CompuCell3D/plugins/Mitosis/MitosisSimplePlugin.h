@@ -23,10 +23,12 @@
 #ifndef MITOSISSIMPLEPLUGIN_H
 #define MITOSISSIMPLEPLUGIN_H
 
+#include <CompuCell3D/CC3D.h>
+
 #include "MitosisPlugin.h"
 #include "MitosisDLLSpecifier.h"
-#include <BasicUtils/BasicClassAccessor.h>
-#include <Utils/Coordinates3D.h>
+// // // #include <BasicUtils/BasicClassAccessor.h>
+// // // #include <Utils/Coordinates3D.h>
 
 namespace CompuCell3D {
   class Potts3D;

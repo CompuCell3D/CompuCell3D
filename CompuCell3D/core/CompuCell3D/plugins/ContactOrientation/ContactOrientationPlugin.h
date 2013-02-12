@@ -1,31 +1,32 @@
 
 #ifndef CONTACTORIENTATIONPLUGIN_H
 #define CONTACTORIENTATIONPLUGIN_H
-
-
-#include <CompuCell3D/Plugin.h>
+#include <CompuCell3D/CC3D.h>
 #include "ContactOrientationData.h"
-#include <BasicUtils/BasicClassAccessor.h>
-#include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 
-#include <CompuCell3D/Potts3D/EnergyFunction.h>
+// // // #include <CompuCell3D/Plugin.h>
+
+// // // #include <BasicUtils/BasicClassAccessor.h>
+// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
+
+// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
 
 
-#include <PublicUtilities/ParallelUtilsOpenMP.h>
+// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
 
-#include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <CompuCell3D/Potts3D/Cell.h>
 
-#include <muParser/muParser.h>
+// // // #include <muParser/muParser.h>
 
-// basic STL includes
-#include <vector>
-#include <list>
-#include <map>
-#include <set>
-#include <string>
+// // // // basic STL includes
+// // // #include <vector>
+// // // #include <list>
+// // // #include <map>
+// // // #include <set>
+// // // #include <string>
 
 #include "ContactOrientationDLLSpecifier.h"
-#include <muParser/ExpressionEvaluator/ExpressionEvaluator.h>
+// // // #include <muParser/ExpressionEvaluator/ExpressionEvaluator.h>
 
 class CC3DXMLElement;
 

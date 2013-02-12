@@ -24,12 +24,14 @@
 #ifndef SECRETIONPLUGIN_H
 #define SECRETIONPLUGIN_H
 
-#include <CompuCell3D/Plugin.h>
-#include <CompuCell3D/Potts3D/FixedStepper.h>
-#include <CompuCell3D/Field3D/Dim3D.h>
+#include <CompuCell3D/CC3D.h>
 
-#include <string>
-#include <vector>
+// // // #include <CompuCell3D/Plugin.h>
+// // // #include <CompuCell3D/Potts3D/FixedStepper.h>
+// // // #include <CompuCell3D/Field3D/Dim3D.h>
+
+// // // #include <string>
+// // // #include <vector>
 
 
 #include "SecretionDataP.h"

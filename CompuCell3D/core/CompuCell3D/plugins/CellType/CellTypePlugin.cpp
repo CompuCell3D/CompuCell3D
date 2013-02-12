@@ -21,23 +21,26 @@
  *************************************************************************/
 
 
-#include <map>
-#include <vector>
-#include <CompuCell3D/Automaton/CellType.h>
-using namespace CompuCell3D;
-
+// #include <map>
+// #include <vector>
+// #include <CompuCell3D/Automaton/CellType.h>
 #include <CompuCell3D/CC3D.h>
 
-#include <CompuCell3D/Simulator.h>
+using namespace CompuCell3D;
+
+
+
+
+// #include <CompuCell3D/Simulator.h>
 //  #include <CompuCell3D/Potts3D/Potts3D.h>
 
 //#include <XMLCereal/XMLPullParser.h>
 //#include <XMLCereal/XMLSerializer.h>
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
+// #include <BasicUtils/BasicString.h>
+// #include <BasicUtils/BasicException.h>
 
-#include <XMLUtils/CC3DXMLElement.h>
+// #include <XMLUtils/CC3DXMLElement.h>
 
 #include <iostream>
 using namespace std;

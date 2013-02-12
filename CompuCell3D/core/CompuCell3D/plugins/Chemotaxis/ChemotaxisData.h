@@ -22,17 +22,18 @@
 
 #ifndef CHEMOTAXISDATA_H
 #define CHEMOTAXISDATA_H
+ #include <CompuCell3D/CC3D.h>
+ 
+// // // #include <string>
+// // // #include <vector>
+// // // #include <map>
+// // // #include <iostream>
 
-#include <string>
-#include <vector>
-#include <map>
-#include <iostream>
-
-#include <CompuCell3D/Potts3D/Cell.h>
-#include <BasicUtils/BasicException.h>
-#include <PublicUtilities/StringUtils.h>
+// // // #include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <BasicUtils/BasicException.h>
+// // // #include <PublicUtilities/StringUtils.h>
 #include "ChemotaxisDLLSpecifier.h"
-#include <CompuCell3D/Automaton/Automaton.h>
+// // // #include <CompuCell3D/Automaton/Automaton.h>
 
 namespace CompuCell3D {
 	class ChemotaxisPlugin;

@@ -20,16 +20,16 @@
  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
  *************************************************************************/
 
+ #include <CompuCell3D/CC3D.h>
 
-
-#include <CompuCell3D/Simulator.h>
-#include <CompuCell3D/ClassRegistry.h>
-#include <CompuCell3D/Potts3D/Potts3D.h>
-#include <CompuCell3D/Field3D/Field3D.h>
-#include <CompuCell3D/Field3D/WatchableField3D.h>
+// // // #include <CompuCell3D/Simulator.h>
+// // // #include <CompuCell3D/ClassRegistry.h>
+// // // #include <CompuCell3D/Potts3D/Potts3D.h>
+// // // #include <CompuCell3D/Field3D/Field3D.h>
+// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
 #include <CompuCell3D/steppables/PDESolvers/DiffusableVector.h>
-#include <CompuCell3D/Field3D/Field3DIO.h>
-#include <BasicUtils/BasicClassAccessor.h>
+// // // #include <CompuCell3D/Field3D/Field3DIO.h>
+// // // #include <BasicUtils/BasicClassAccessor.h>
 #include <CompuCell3D/plugins/SimpleClock/SimpleClockPlugin.h>
 
 
@@ -37,15 +37,15 @@
 using namespace CompuCell3D;
 
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
-#include <BasicUtils/BasicClassFactoryBase.h>
+// // // #include <BasicUtils/BasicString.h>
+// // // #include <BasicUtils/BasicException.h>
+// // // #include <BasicUtils/BasicClassFactoryBase.h>
 
 
-#include <string>
-#include <fstream>
-#include <iostream>
-#include <sstream>
+// // // #include <string>
+// // // #include <fstream>
+// // // #include <iostream>
+// // // #include <sstream>
 using namespace std;
 
 

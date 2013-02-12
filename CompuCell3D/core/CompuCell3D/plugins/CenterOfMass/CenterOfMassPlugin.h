@@ -23,20 +23,21 @@
 #ifndef CENTEROFMASSPLUGIN_H
 #define CENTEROFMASSPLUGIN_H
 
-#include <CompuCell3D/Plugin.h>
+ #include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Plugin.h>
 
 
 
 
-#include <CompuCell3D/Field3D/Point3D.h>
-#include <CompuCell3D/Field3D/Dim3D.h>
+// // // #include <CompuCell3D/Field3D/Point3D.h>
+// // // #include <CompuCell3D/Field3D/Dim3D.h>
 
-#include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-#include <CompuCell3D/Potts3D/Cell.h>
-#include <BasicUtils/BasicClassAccessor.h>
-#include <Utils/Coordinates3D.h>
-#include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
-#include <cmath>
+// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
+// // // #include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <BasicUtils/BasicClassAccessor.h>
+// // // #include <Utils/Coordinates3D.h>
+// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
+// // // #include <cmath>
 #define roundf(a) ((fmod(a,1)<0.5)?floor(a):ceil(a))
 
 

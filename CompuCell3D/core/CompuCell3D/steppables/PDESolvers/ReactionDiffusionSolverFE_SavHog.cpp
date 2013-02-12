@@ -1,23 +1,24 @@
 
+#include <CompuCell3D/CC3D.h>
 
-#include <CompuCell3D/Simulator.h>
-#include <CompuCell3D/Automaton/Automaton.h>
-#include <CompuCell3D/Potts3D/Potts3D.h>
-#include <CompuCell3D/Potts3D/CellInventory.h>
-#include <CompuCell3D/Field3D/WatchableField3D.h>
-#include <CompuCell3D/Field3D/Field3DImpl.h>
-#include <CompuCell3D/Field3D/Field3D.h>
-#include <BasicUtils/BasicClassGroup.h>
-#include <CompuCell3D/Field3D/Field3D.h>
+// // // #include <CompuCell3D/Simulator.h>
+// // // #include <CompuCell3D/Automaton/Automaton.h>
+// // // #include <CompuCell3D/Potts3D/Potts3D.h>
+// // // #include <CompuCell3D/Potts3D/CellInventory.h>
+// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
+// // // #include <CompuCell3D/Field3D/Field3DImpl.h>
+// // // #include <CompuCell3D/Field3D/Field3D.h>
+// // // #include <BasicUtils/BasicClassGroup.h>
+// // // #include <CompuCell3D/Field3D/Field3D.h>
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
-#include <BasicUtils/BasicRandomNumberGenerator.h>
-#include <string>
-#include <cmath>
-#include <iostream>
-#include <fstream>
-#include <sstream>
+// // // #include <BasicUtils/BasicString.h>
+// // // #include <BasicUtils/BasicException.h>
+// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
+// // // #include <string>
+// // // #include <cmath>
+// // // #include <iostream>
+// // // #include <fstream>
+// // // #include <sstream>
 
 using namespace CompuCell3D;
 using namespace std;

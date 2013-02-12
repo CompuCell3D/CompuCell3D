@@ -23,11 +23,11 @@
 #ifndef ADHESIONFLEXDATA_H
 #define ADHESIONFLEXDATA_H
 
+#include <CompuCell3D/CC3D.h>
 
-
-#include <vector>
-#include <set>
-#include <string>
+// // // #include <vector>
+// // // #include <set>
+// // // #include <string>
 
 #include "AdhesionFlexDLLSpecifier.h"
 namespace CompuCell3D {

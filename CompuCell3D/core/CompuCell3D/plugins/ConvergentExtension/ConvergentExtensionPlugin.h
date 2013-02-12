@@ -23,13 +23,13 @@
 #ifndef CONVERGENTEXTENSIONPLUGIN_H
 #define CONVERGENTEXTENSIONPLUGIN_H
 
+#include <CompuCell3D/CC3D.h>
 
-
-#include <CompuCell3D/Potts3D/EnergyFunction.h>
-#include <CompuCell3D/Plugin.h>
-#include <map>
-#include <set>
-#include <vector>
+// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
+// // // #include <CompuCell3D/Plugin.h>
+// // // #include <map>
+// // // #include <set>
+// // // #include <vector>
 
 #include "ConvergentExtensionDLLSpecifier.h"
 

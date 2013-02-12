@@ -22,18 +22,18 @@
 
 #ifndef GLOBALBOUNDARYPIXELTRACKERPLUGIN_H
 #define GLOBALBOUNDARYPIXELTRACKERPLUGIN_H
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Plugin.h>
 
-#include <CompuCell3D/Plugin.h>
-
-#include <CompuCell3D/Potts3D/Cell.h>
-#include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-#include <BasicUtils/BasicClassAccessor.h>
-#include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
-#include <PublicUtilities/ParallelUtilsOpenMP.h>
-#include <CompuCell3D/Field3D/AdjacentNeighbor.h>
+// // // #include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
+// // // #include <BasicUtils/BasicClassAccessor.h>
+// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
+// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
+// // // #include <CompuCell3D/Field3D/AdjacentNeighbor.h>
 
 #include "GlobalBoundaryPixelTrackerDLLSpecifier.h"
-#include <set>
+// // // #include <set>
 
 class CC3DXMLElement;
 namespace CompuCell3D {

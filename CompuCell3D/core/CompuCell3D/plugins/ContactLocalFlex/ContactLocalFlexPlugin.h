@@ -25,19 +25,19 @@
 
 
 
+#include <CompuCell3D/CC3D.h>
 
 
+// // // #include <BasicUtils/BasicClassAccessor.h>
+// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 
-#include <BasicUtils/BasicClassAccessor.h>
-#include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
-
-#include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-// #include <CompuCell3D/Potts3D/TypeChangeWatcher.h>
-#include <CompuCell3D/Plugin.h>
+// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
+// // // // #include <CompuCell3D/Potts3D/TypeChangeWatcher.h>
+// // // #include <CompuCell3D/Plugin.h>
 
 #include "ContactLocalFlexData.h"
-#include <CompuCell3D/Potts3D/EnergyFunction.h>
-#include <PublicUtilities/ParallelUtilsOpenMP.h>
+// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
+// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include "ContactLocalFlexDLLSpecifier.h"
 
 class CC3DXMLElement;

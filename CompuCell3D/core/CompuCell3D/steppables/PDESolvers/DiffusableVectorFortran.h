@@ -1,5 +1,6 @@
 #ifndef COMPUCELL3DDIFFUSABLEVECTORFORTRAN_H
 #define COMPUCELL3DDIFFUSABLEVECTORFORTRAN_H
+// #include <CompuCell3D/CC3D.h>
 #include <CompuCell3D/Field3D/Dim3D.h>
 #include <CompuCell3D/Steppable.h>
 #include <vector>

@@ -23,9 +23,10 @@
 #ifndef OBJINITIALIZER_H
 #define OBJINITIALIZER_H
 
-#include <CompuCell3D/Steppable.h>
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Steppable.h>
 
-#include <string>
+// // // #include <string>
 
 #include "ObjInitializerDLLSpecifier.h"
 

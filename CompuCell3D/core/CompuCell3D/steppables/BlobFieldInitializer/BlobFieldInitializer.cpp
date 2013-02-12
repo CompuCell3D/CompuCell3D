@@ -20,34 +20,34 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
-
-
-#include <CompuCell3D/Simulator.h>
-#include <CompuCell3D/Potts3D/Cell.h>
-#include <CompuCell3D/Potts3D/Potts3D.h>
-#include <CompuCell3D/Field3D/Point3D.h>
-#include <CompuCell3D/Field3D/Dim3D.h>
-#include <CompuCell3D/Field3D/WatchableField3D.h>
+#include <CompuCell3D/CC3D.h>
+#include <CompuCell3D/plugins/CellType/CellTypePlugin.h>
+// // // #include <CompuCell3D/Simulator.h>
+// // // #include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <CompuCell3D/Potts3D/Potts3D.h>
+// // // #include <CompuCell3D/Field3D/Point3D.h>
+// // // #include <CompuCell3D/Field3D/Dim3D.h>
+// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
 using namespace CompuCell3D;
 
 //#include <XMLCereal/XMLPullParser.h>
 //#include <XMLCereal/XMLSerializer.h>
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
+// // // #include <BasicUtils/BasicString.h>
+// // // #include <BasicUtils/BasicException.h>
 
-#include <BasicUtils/BasicClassGroup.h>
-#include <BasicUtils/BasicRandomNumberGenerator.h>
-#include <CompuCell3D/Potts3D/CellInventory.h>
-#include <CompuCell3D/plugins/CellType/CellTypePlugin.h>
-#include <PublicUtilities/StringUtils.h>
-#include <XMLUtils/CC3DXMLElement.h>
+// // // #include <BasicUtils/BasicClassGroup.h>
+// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
+// // // #include <CompuCell3D/Potts3D/CellInventory.h>
+// // // #include <CompuCell3D/plugins/CellType/CellTypePlugin.h>
+// // // #include <PublicUtilities/StringUtils.h>
+// // // #include <XMLUtils/CC3DXMLElement.h>
 
-#include <string>
+// // // #include <string>
 
-#include <math.h>
+// // // #include <math.h>
 
-#include <iostream>
+// // // #include <iostream>
 using namespace std;
 
 

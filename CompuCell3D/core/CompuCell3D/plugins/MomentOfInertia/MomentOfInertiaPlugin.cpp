@@ -24,28 +24,30 @@
 
 #include "CellMomentOfInertia.h"
 
-#include <CompuCell3D/Simulator.h>
-#include <CompuCell3D/ClassRegistry.h>
-#include <CompuCell3D/Field3D/Field3D.h>
-#include <CompuCell3D/Potts3D/Potts3D.h>
-#include <CompuCell3D/Potts3D/Cell.h>
-#include <CompuCell3D/Boundary/BoundaryStrategy.h>
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
-#include <PublicUtilities/NumericalUtils.h>
-#include <complex>
-#include <algorithm>
+#include <CompuCell3D/CC3D.h>
 
-#include <CompuCell3D/Potts3D/CellInventory.h>
+// // // #include <CompuCell3D/Simulator.h>
+// // // #include <CompuCell3D/ClassRegistry.h>
+// // // #include <CompuCell3D/Field3D/Field3D.h>
+// // // #include <CompuCell3D/Potts3D/Potts3D.h>
+// // // #include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
+// // // #include <BasicUtils/BasicString.h>
+// // // #include <BasicUtils/BasicException.h>
+// // // #include <PublicUtilities/NumericalUtils.h>
+// // // #include <complex>
+// // // #include <algorithm>
+
+// // // #include <CompuCell3D/Potts3D/CellInventory.h>
 
 
 using namespace CompuCell3D;
 
 
 
-#include <cmath>
+// // // #include <cmath>
 
-#include <iostream>
+// // // #include <iostream>
 
 
 #include "MomentOfInertiaPlugin.h"

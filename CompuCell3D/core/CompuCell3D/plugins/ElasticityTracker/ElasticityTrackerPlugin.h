@@ -1,16 +1,18 @@
 #ifndef ELASTICITYTRACKERPLUGIN_H
 #define ELASTICITYTRACKERPLUGIN_H
 
-#include <CompuCell3D/Plugin.h>
+#include <CompuCell3D/CC3D.h>
 
-#include <CompuCell3D/Potts3D/Cell.h>
-#include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-#include <BasicUtils/BasicClassAccessor.h>
-#include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
-#include <PublicUtilities/ParallelUtilsOpenMP.h>
+// // // #include <CompuCell3D/Plugin.h>
+
+// // // #include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
+// // // #include <BasicUtils/BasicClassAccessor.h>
+// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
+// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include "ElasticityTracker.h"
 
-#include <CompuCell3D/Field3D/AdjacentNeighbor.h>
+// // // #include <CompuCell3D/Field3D/AdjacentNeighbor.h>
 
 
 #include "ElasticityTrackerDLLSpecifier.h"

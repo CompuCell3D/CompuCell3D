@@ -1,15 +1,16 @@
 #ifndef COMPUCELL3DREACTIONDIFFUSIONSOLVERFE_SAVHOG_H
 #define COMPUCELL3DREACTIONDIFFUSIONSOLVERFE_SAVHOG_H
 
+#include <CompuCell3D/CC3D.h>
 
-#include <CompuCell3D/Steppable.h>
-#include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <CompuCell3D/Steppable.h>
+// // // #include <CompuCell3D/Potts3D/Cell.h>
 #include "DiffusableVector.h"
 
-#include <string>
-#include <vector>
+// // // #include <string>
+// // // #include <vector>
 
-#include <iostream>
+// // // #include <iostream>
 
 
 #include "PDESolversDLLSpecifier.h"

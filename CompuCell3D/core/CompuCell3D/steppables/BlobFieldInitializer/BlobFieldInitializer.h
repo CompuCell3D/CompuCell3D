@@ -23,11 +23,13 @@
 #ifndef BLOBFIELDINITIALIZER_H
 #define BLOBFIELDINITIALIZER_H
 
-#include <CompuCell3D/Steppable.h>
-#include <CompuCell3D/Field3D/Dim3D.h>
-#include <CompuCell3D/Field3D/Point3D.h>
-#include <vector>
-#include <string>
+#include <CompuCell3D/CC3D.h>
+
+// // // #include <CompuCell3D/Steppable.h>
+// // // #include <CompuCell3D/Field3D/Dim3D.h>
+// // // #include <CompuCell3D/Field3D/Point3D.h>
+// // // #include <vector>
+// // // #include <string>
 //#include "BlobInitializerParseData.h"
 
 // #include <CompuCell3D/dllDeclarationSpecifier.h>

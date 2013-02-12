@@ -1,18 +1,18 @@
 
 
 
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Simulator.h>
+// // // #include <CompuCell3D/Potts3D/Potts3D.h>
+// // // #include <CompuCell3D/Field3D/Dim3D.h>
+// // // #include <CompuCell3D/Field3D/Field3D.h>
 
-#include <CompuCell3D/Simulator.h>
-#include <CompuCell3D/Potts3D/Potts3D.h>
-#include <CompuCell3D/Field3D/Dim3D.h>
-#include <CompuCell3D/Field3D/Field3D.h>
 
-
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
-#include <PublicUtilities/StringUtils.h>
-#include <iostream>
-#include <algorithm>
+// // // #include <BasicUtils/BasicString.h>
+// // // #include <BasicUtils/BasicException.h>
+// // // #include <PublicUtilities/StringUtils.h>
+// // // #include <iostream>
+// // // #include <algorithm>
 
 using namespace std;
 

@@ -23,14 +23,16 @@
 #ifndef VOLUMETRACKERPLUGIN_H
 #define VOLUMETRACKERPLUGIN_H
 
-#include <CompuCell3D/Plugin.h>
-#include <CompuCell3D/Potts3D/Stepper.h>
-#include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-#include <CompuCell3D/Potts3D/Cell.h>
-#include <PublicUtilities/ParallelUtilsOpenMP.h>
+#include <CompuCell3D/CC3D.h>
+
+// // // #include <CompuCell3D/Plugin.h>
+// // // #include <CompuCell3D/Potts3D/Stepper.h>
+// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
+// // // #include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include "VolumeTrackerDLLSpecifier.h"
 
-#include <vector>
+// // // #include <vector>
 
 
 class CC3DXMLElement;

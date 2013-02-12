@@ -20,22 +20,16 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
+#include <CompuCell3D/CC3D.h>
 
-
-#include <CompuCell3D/Simulator.h>
-#include <CompuCell3D/Potts3D/Potts3D.h>
-#include <CompuCell3D/Simulator.h>
+// // // #include <CompuCell3D/Simulator.h>
+// // // #include <CompuCell3D/Potts3D/Potts3D.h>
+// // // #include <CompuCell3D/Simulator.h>
 
 using namespace CompuCell3D;
-
-
-
-
-#include <iostream>
-#include <string>
 using namespace std;
 
-#define EXP_STL
+// // // #define EXP_STL
 #include "VolumeTrackerPlugin.h"
 
 VolumeTrackerPlugin::VolumeTrackerPlugin() : pUtils(0),lockPtr(0), potts(0), deadCellG(0) {

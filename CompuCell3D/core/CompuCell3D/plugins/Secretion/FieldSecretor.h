@@ -24,12 +24,8 @@
 #ifndef FIELDSECRETOR_H
 #define FIELDSECRETOR_H
 
+#include <CompuCell3D/CC3D.h>
 
-#include <CompuCell3D/Field3D/Dim3D.h>
-
-#include <cmath>
-#include <string>
-#include <vector>
 #include "SecretionDLLSpecifier.h"
 
 

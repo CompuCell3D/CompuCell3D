@@ -20,28 +20,28 @@
  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
  *************************************************************************/
 
+ #include <CompuCell3D/CC3D.h>
 
-
-#include <CompuCell3D/Automaton/Automaton.h>
-#include <CompuCell3D/Field3D/Dim3D.h>
-#include <CompuCell3D/ClassRegistry.h>
-#include <CompuCell3D/Simulator.h>
-//#include <CompuCell3D/Diffusable.h>
-#include <CompuCell3D/Field3D/Field3D.h>
-#include <CompuCell3D/Field3D/Field3DIO.h>
-#include <CompuCell3D/Potts3D/Cell.h>
-//#include <CompuCell3D/DiffusionSolverBiofilmFE.h>
+// // // #include <CompuCell3D/Automaton/Automaton.h>
+// // // #include <CompuCell3D/Field3D/Dim3D.h>
+// // // #include <CompuCell3D/ClassRegistry.h>
+// // // #include <CompuCell3D/Simulator.h>
+// // // //#include <CompuCell3D/Diffusable.h>
+// // // #include <CompuCell3D/Field3D/Field3D.h>
+// // // #include <CompuCell3D/Field3D/Field3DIO.h>
+// // // #include <CompuCell3D/Potts3D/Cell.h>
+// // // //#include <CompuCell3D/DiffusionSolverBiofilmFE.h>
 #include <CompuCell3D/steppables/PDESolvers/DiffusableVector.h>
 using namespace CompuCell3D;
 
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
-#include <PublicUtilities/StringUtils.h>
+// // // #include <BasicUtils/BasicString.h>
+// // // #include <BasicUtils/BasicException.h>
+// // // #include <PublicUtilities/StringUtils.h>
 
 
-#include <fstream>
-#include <string>
+// // // #include <fstream>
+// // // #include <string>
 using namespace std;
 
 

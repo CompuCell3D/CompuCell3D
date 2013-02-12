@@ -5,15 +5,17 @@
  *      Author: palm
  */
  //Author: Margriet Palm CWI, Netherlands
+
+ #include <CompuCell3D/CC3D.h>
  
-#include <CompuCell3D/Potts3D/CellInventory.h>
+// // // #include <CompuCell3D/Potts3D/CellInventory.h>
 #include <CompuCell3D/plugins/PixelTracker/PixelTracker.h>
 #include <CompuCell3D/plugins/PixelTracker/PixelTrackerPlugin.h>
-#include <CompuCell3D/Automaton/Automaton.h>
+// // // #include <CompuCell3D/Automaton/Automaton.h>
 
-#include <string>
-#include <fstream>
-#include <sstream>
+// // // #include <string>
+// // // #include <fstream>
+// // // #include <sstream>
 
 #include "FieldBuilder.h"
 using namespace CompuCell3D;

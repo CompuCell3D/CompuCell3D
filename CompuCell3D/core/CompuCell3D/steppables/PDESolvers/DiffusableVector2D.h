@@ -1,13 +1,15 @@
 #ifndef COMPUCELL3DDIFFUSABLEVECTOR2D_H
 #define COMPUCELL3DDIFFUSABLEVECTOR2D_H
-#include <CompuCell3D/Field3D/Dim3D.h>
-#include <CompuCell3D/Steppable.h>
-#include <vector>
-#include <string>
-#include <iostream>
-#include <CompuCell3D/Field3D/Array3D.h>
-#include <muParser/muParser.h>
-#include <CompuCell3D/Boundary/BoundaryStrategy.h>
+#include <CompuCell3D/CC3D.h>
+
+// // // #include <CompuCell3D/Field3D/Dim3D.h>
+// // // #include <CompuCell3D/Steppable.h>
+// // // #include <vector>
+// // // #include <string>
+// // // #include <iostream>
+// // // #include <CompuCell3D/Field3D/Array3D.h>
+// // // #include <muParser/muParser.h>
+// // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 
 
 namespace mu{

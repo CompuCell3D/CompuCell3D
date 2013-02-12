@@ -22,17 +22,18 @@
 
 #ifndef MITOSISPLUGIN_H
 #define MITOSISPLUGIN_H
+#include <CompuCell3D/CC3D.h>
 
-#include <CompuCell3D/Plugin.h>
+// // // #include <CompuCell3D/Plugin.h>
 
-#include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <CompuCell3D/Potts3D/Cell.h>
 
 
-#include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-#include <CompuCell3D/Potts3D/Stepper.h>
+// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
+// // // #include <CompuCell3D/Potts3D/Stepper.h>
 
-#include <BasicUtils/BasicArray.h>
-#include <vector>
+// // // #include <BasicUtils/BasicArray.h>
+// // // #include <vector>
 #include "MitosisDLLSpecifier.h"
 
 namespace CompuCell3D {

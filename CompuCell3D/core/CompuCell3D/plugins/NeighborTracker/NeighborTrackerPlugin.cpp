@@ -21,20 +21,21 @@
 *************************************************************************/
 
 
+#include <CompuCell3D/CC3D.h>
 
-#include <CompuCell3D/Simulator.h>
-#include <CompuCell3D/Potts3D/Potts3D.h>
-//#include <CompuCell3D/plugins/Volume/VolumePlugin.h>
-//#include <CompuCell3D/plugins/Volume/VolumeEnergy.h>
-#include <CompuCell3D/Potts3D/CellInventory.h>
-#include <CompuCell3D/Field3D/Field3D.h>
-#include <CompuCell3D/Field3D/WatchableField3D.h>
-#include <CompuCell3D/Boundary/BoundaryStrategy.h>
+// // // #include <CompuCell3D/Simulator.h>
+// // // #include <CompuCell3D/Potts3D/Potts3D.h>
+// // // //#include <CompuCell3D/plugins/Volume/VolumePlugin.h>
+// // // //#include <CompuCell3D/plugins/Volume/VolumeEnergy.h>
+// // // #include <CompuCell3D/Potts3D/CellInventory.h>
+// // // #include <CompuCell3D/Field3D/Field3D.h>
+// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
+// // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 
 using namespace CompuCell3D;
 
-#include <iostream>
-#include <cmath>
+// // // #include <iostream>
+// // // #include <cmath>
 using namespace std;
 
 

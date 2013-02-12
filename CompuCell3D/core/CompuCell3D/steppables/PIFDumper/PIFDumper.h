@@ -23,9 +23,11 @@
 #ifndef PIFDUMPER_H
 #define PIFDUMPER_H
 
-#include <CompuCell3D/Steppable.h>
 
-#include <string>
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Steppable.h>
+
+// // // #include <string>
 
 
 #include "PIFDumperDLLSpecifier.h"

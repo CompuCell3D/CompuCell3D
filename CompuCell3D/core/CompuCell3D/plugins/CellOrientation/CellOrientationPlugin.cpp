@@ -20,20 +20,22 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
-#include <CompuCell3D/Field3D/Field3D.h>
-#include <CompuCell3D/Field3D/Point3D.h>
-#include <CompuCell3D/Potts3D/Potts3D.h>
-#include <PublicUtilities/NumericalUtils.h>
-#include <Utils/Coordinates3D.h>
-#include <PublicUtilities/StringUtils.h>
-#include <CompuCell3D/Simulator.h>
+ #include <CompuCell3D/CC3D.h>
+
+// // // #include <CompuCell3D/Field3D/Field3D.h>
+// // // #include <CompuCell3D/Field3D/Point3D.h>
+// // // #include <CompuCell3D/Potts3D/Potts3D.h>
+// // // #include <PublicUtilities/NumericalUtils.h>
+// // // #include <Utils/Coordinates3D.h>
+// // // #include <PublicUtilities/StringUtils.h>
+// // // #include <CompuCell3D/Simulator.h>
 #include <CompuCell3D/plugins/PolarizationVector/PolarizationVector.h>
 #include <CompuCell3D/plugins/PolarizationVector/PolarizationVectorPlugin.h>
 
 using namespace CompuCell3D;
 
 
-#include <iostream>
+// // // #include <iostream>
 using namespace std;
 
 

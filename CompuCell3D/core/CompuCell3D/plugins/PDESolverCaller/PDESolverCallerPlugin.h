@@ -23,12 +23,12 @@
 
 #ifndef PDESOLVERCALLERPLUGIN_H
 #define PDESOLVERCALLERPLUGIN_H
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Plugin.h>
+// // // #include <CompuCell3D/Potts3D/FixedStepper.h>
 
-#include <CompuCell3D/Plugin.h>
-#include <CompuCell3D/Potts3D/FixedStepper.h>
-
-#include <string>
-#include <vector>
+// // // #include <string>
+// // // #include <vector>
 
 
 

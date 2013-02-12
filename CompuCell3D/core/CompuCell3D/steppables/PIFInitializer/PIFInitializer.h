@@ -23,7 +23,8 @@
 #ifndef PIFINITIALIZER_H
 #define PIFINITIALIZER_H
 
-#include <CompuCell3D/Steppable.h>
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Steppable.h>
 
 #include <string>
 

@@ -1,9 +1,10 @@
 #include "DiffusionSolverFE_CPU.h"
 
-#include <CompuCell3D/Potts3D/Potts3D.h>
-#include <CompuCell3D/Automaton/Automaton.h>
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Potts3D/Potts3D.h>
+// // // #include <CompuCell3D/Automaton/Automaton.h>
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
-#include <PublicUtilities/ParallelUtilsOpenMP.h>
+// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #define NOMINMAX
 
 // 2012 Mitja:

@@ -23,9 +23,10 @@
 #ifndef DICTYFIELDINITIALIZER_H
 #define DICTYFIELDINITIALIZER_H
 
-#include <CompuCell3D/Steppable.h>
-#include <CompuCell3D/Field3D/Point3D.h>
-#include <CompuCell3D/Field3D/Dim3D.h>
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Steppable.h>
+// // // #include <CompuCell3D/Field3D/Point3D.h>
+// // // #include <CompuCell3D/Field3D/Dim3D.h>
 
 
 #include "DictyDLLSpecifier.h"

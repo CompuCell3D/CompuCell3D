@@ -21,28 +21,29 @@
 *************************************************************************/
 
 
+#include <CompuCell3D/CC3D.h>
 
-#include <CompuCell3D/Potts3D/CellInventory.h>
-#include <CompuCell3D/Automaton/Automaton.h>
-#include <CompuCell3D/Boundary/BoundaryStrategy.h>
-#include <CompuCell3D/Field3D/Field3D.h>
-#include <CompuCell3D/Field3D/WatchableField3D.h>
+// // // #include <CompuCell3D/Potts3D/CellInventory.h>
+// // // #include <CompuCell3D/Automaton/Automaton.h>
+// // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
+// // // #include <CompuCell3D/Field3D/Field3D.h>
+// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
 
-#include <CompuCell3D/Simulator.h>
-#include <CompuCell3D/Potts3D/Cell.h>
-#include <CompuCell3D/Potts3D/Potts3D.h>
-#include <CompuCell3D/Field3D/Point3D.h>
-#include <CompuCell3D/Field3D/Dim3D.h>
+// // // #include <CompuCell3D/Simulator.h>
+// // // #include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <CompuCell3D/Potts3D/Potts3D.h>
+// // // #include <CompuCell3D/Field3D/Point3D.h>
+// // // #include <CompuCell3D/Field3D/Dim3D.h>
 using namespace CompuCell3D;
 
 
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
+// // // #include <BasicUtils/BasicString.h>
+// // // #include <BasicUtils/BasicException.h>
 
-#include <BasicUtils/BasicRandomNumberGenerator.h>
-#include <PublicUtilities/StringUtils.h>
+// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
+// // // #include <PublicUtilities/StringUtils.h>
 
-#include <string>
+// // // #include <string>
 
 using namespace std;
 

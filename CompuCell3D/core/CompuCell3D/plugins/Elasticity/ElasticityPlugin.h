@@ -22,11 +22,11 @@
 
 #ifndef ELASTICITYPLUGIN_H
 #define ELASTICITYPLUGIN_H
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Plugin.h>
 
-#include <CompuCell3D/Plugin.h>
-
-#include <CompuCell3D/Potts3D/EnergyFunction.h>
-#include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
+// // // #include <CompuCell3D/Potts3D/Cell.h>
 
 #include "ElasticityDLLSpecifier.h"
 

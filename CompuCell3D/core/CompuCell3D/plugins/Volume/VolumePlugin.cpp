@@ -20,17 +20,13 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
+#include <CompuCell3D/CC3D.h>
 
-
-#include <CompuCell3D/Simulator.h>
-#include <CompuCell3D/Potts3D/Potts3D.h>
-#include <CompuCell3D/Automaton/Automaton.h>
+// // // #include <CompuCell3D/Simulator.h>
+// // // #include <CompuCell3D/Potts3D/Potts3D.h>
+// // // #include <CompuCell3D/Automaton/Automaton.h>
 using namespace CompuCell3D;
 
-#include <iostream>
-#include <string>
-#include <algorithm>
-#include <PublicUtilities/Units/Unit.h>
 using namespace std;
 
 #include "VolumePlugin.h"

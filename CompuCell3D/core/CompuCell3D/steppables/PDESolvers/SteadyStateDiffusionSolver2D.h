@@ -1,6 +1,8 @@
 #ifndef COMPUCELL3DSTEADYSTATEDIFFUSIONSOLVER2D_H
 #define COMPUCELL3DSTEADYSTATEDIFFUSIONSOLVER2D_H
 
+// #include <CompuCell3D/CC3D.h>
+// #undef real
 
 #include <CompuCell3D/Steppable.h>
 #include <CompuCell3D/Potts3D/Cell.h>
@@ -15,6 +17,7 @@
 #include <vector>
 #include <set>
 #include <map>
+
 #include <iostream>
 
 #include "PDESolversDLLSpecifier.h"

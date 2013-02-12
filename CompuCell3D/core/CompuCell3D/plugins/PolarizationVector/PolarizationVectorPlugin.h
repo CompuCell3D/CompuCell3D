@@ -23,13 +23,14 @@
 #ifndef POLARIZATIONVECTORPLUGIN_H
 #define POLARIZATIONVECTORPLUGIN_H
 
-#include <CompuCell3D/Plugin.h>
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Plugin.h>
 
 
-#include <CompuCell3D/Potts3D/Cell.h>
-#include <BasicUtils/BasicClassAccessor.h>
-#include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
-#include <vector>
+// // // #include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <BasicUtils/BasicClassAccessor.h>
+// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
+// // // #include <vector>
 #include "PolarizationVector.h"
 
 

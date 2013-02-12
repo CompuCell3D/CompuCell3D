@@ -20,25 +20,26 @@
  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
  *************************************************************************/
 
+ #include <CompuCell3D/CC3D.h>
 #include <CompuCell3D/plugins/ElasticityTracker/ElasticityTrackerPlugin.h>
 
-#include <CompuCell3D/Field3D/Field3D.h>
-#include <CompuCell3D/Field3D/Point3D.h>
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
-#include <PublicUtilities/NumericalUtils.h>
+// // // #include <CompuCell3D/Field3D/Field3D.h>
+// // // #include <CompuCell3D/Field3D/Point3D.h>
+// // // #include <BasicUtils/BasicString.h>
+// // // #include <BasicUtils/BasicException.h>
+// // // #include <PublicUtilities/NumericalUtils.h>
 #include <CompuCell3D/plugins/ElasticityTracker/ElasticityTracker.h>
-#include <BasicUtils/BasicClassAccessor.h>
-#include <BasicUtils/BasicClassGroup.h>
-#include <CompuCell3D/Boundary/BoundaryStrategy.h>
+// // // #include <BasicUtils/BasicClassAccessor.h>
+// // // #include <BasicUtils/BasicClassGroup.h>
+// // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 
 
-#include <CompuCell3D/Simulator.h>
-#include <CompuCell3D/Potts3D/Potts3D.h>
+// // // #include <CompuCell3D/Simulator.h>
+// // // #include <CompuCell3D/Potts3D/Potts3D.h>
 using namespace CompuCell3D;
 
 
-#include <iostream>
+// // // #include <iostream>
 using namespace std;
 
 #include "ElasticityPlugin.h"

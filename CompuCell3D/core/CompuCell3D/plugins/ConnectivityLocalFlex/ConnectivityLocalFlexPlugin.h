@@ -23,14 +23,15 @@
 #ifndef CONNECTIVITYLOCALFLEXPLUGIN_H
 #define CONNECTIVITYLOCALFLEXPLUGIN_H
 
+ #include <CompuCell3D/CC3D.h>
 #include "ConnectivityLocalFlexData.h"
 
-#include <CompuCell3D/Potts3D/EnergyFunction.h>
+// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
 
-#include <CompuCell3D/Plugin.h>
+// // // #include <CompuCell3D/Plugin.h>
 
-#include <BasicUtils/BasicClassAccessor.h>
-#include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
+// // // #include <BasicUtils/BasicClassAccessor.h>
+// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 #include "ConnectivityLocalFlexDLLSpecifier.h"
 
 

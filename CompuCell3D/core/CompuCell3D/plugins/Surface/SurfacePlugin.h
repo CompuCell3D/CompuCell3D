@@ -23,25 +23,24 @@
 #ifndef SURFACEPLUGIN_H
 #define SURFACEPLUGIN_H
 
-#include <CompuCell3D/Plugin.h>
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Plugin.h>
 
 
 
 
-#include <CompuCell3D/Potts3D/Stepper.h>
-#include <CompuCell3D/Potts3D/EnergyFunction.h>
-#include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
+// // // #include <CompuCell3D/Potts3D/Stepper.h>
+// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
+// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
 
-#include <CompuCell3D/Boundary/BoundaryTypeDefinitions.h>  
-#include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <CompuCell3D/Boundary/BoundaryTypeDefinitions.h>  
+// // // #include <CompuCell3D/Potts3D/Cell.h>
 
-#include <PublicUtilities/ParallelUtilsOpenMP.h>
-#include <muParser/ExpressionEvaluator/ExpressionEvaluator.h>
+// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
+// // // #include <muParser/ExpressionEvaluator/ExpressionEvaluator.h>
 
 
 #include "SurfaceDLLSpecifier.h"
-#include <vector>
-#include <string>
 
 class CC3DXMLElement;
 

@@ -23,12 +23,13 @@
 #ifndef SURFACETRACKERPLUGIN_H
 #define SURFACETRACKERPLUGIN_H
 
-#include <CompuCell3D/Plugin.h>
+#include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Plugin.h>
 
-#include <CompuCell3D/Potts3D/Cell.h>
-#include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
+// // // #include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
 
-#include <CompuCell3D/Boundary/BoundaryTypeDefinitions.h>
+// // // #include <CompuCell3D/Boundary/BoundaryTypeDefinitions.h>
 #include "SurfaceTrackerDLLSpecifier.h"
 
 class CC3DXMLElement;

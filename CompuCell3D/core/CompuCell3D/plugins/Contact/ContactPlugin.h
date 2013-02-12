@@ -23,12 +23,12 @@
 #ifndef CONTACTPLUGIN_H
 #define CONTACTPLUGIN_H
 
+ #include <CompuCell3D/CC3D.h>
 
-
-#include <CompuCell3D/Potts3D/EnergyFunction.h>
-#include <CompuCell3D/Plugin.h>
-#include <map>
-#include <vector>
+// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
+// // // #include <CompuCell3D/Plugin.h>
+// // // #include <map>
+// // // #include <vector>
 
 
 // #include <CompuCell3D/dllDeclarationSpecifier.h>

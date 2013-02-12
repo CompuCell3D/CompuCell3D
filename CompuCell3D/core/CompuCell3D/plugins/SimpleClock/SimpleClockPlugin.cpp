@@ -20,14 +20,14 @@
  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
  *************************************************************************/
 
+#include <CompuCell3D/CC3D.h>
 
-
-#include <CompuCell3D/Simulator.h>
-#include <CompuCell3D/Potts3D/Potts3D.h>
+// // // #include <CompuCell3D/Simulator.h>
+// // // #include <CompuCell3D/Potts3D/Potts3D.h>
 using namespace CompuCell3D;
 
 
-#include <iostream>
+
 using namespace std;
 
 

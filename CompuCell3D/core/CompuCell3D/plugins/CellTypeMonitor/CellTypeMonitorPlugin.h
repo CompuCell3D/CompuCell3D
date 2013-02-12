@@ -2,26 +2,26 @@
 #ifndef CELLTYPEMONITORPLUGIN_H
 #define CELLTYPEMONITORPLUGIN_H
 
+ #include <CompuCell3D/CC3D.h>
+// // // #include <CompuCell3D/Plugin.h>
 
-#include <CompuCell3D/Plugin.h>
 
+// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
 
-#include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
+// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
 
-#include <PublicUtilities/ParallelUtilsOpenMP.h>
+// // // #include <CompuCell3D/Potts3D/Cell.h>
+// // // #include <CompuCell3D/Field3D/Array3D.h>
 
-#include <CompuCell3D/Potts3D/Cell.h>
-#include <CompuCell3D/Field3D/Array3D.h>
-
-#include <muParser/muParser.h>
+// // // #include <muParser/muParser.h>
 
 
 // basic STL includes
-#include <vector>
-#include <list>
-#include <map>
-#include <set>
-#include <string>
+// // // #include <vector>
+// // // #include <list>
+// // // #include <map>
+// // // #include <set>
+// // // #include <string>
 
 
 #include "CellTypeMonitorDLLSpecifier.h"
