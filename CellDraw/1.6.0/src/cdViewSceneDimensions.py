@@ -100,7 +100,7 @@ class CDViewSceneDimensions(QtGui.QWidget):
         self.setLayout(QtGui.QHBoxLayout())
         self.layout().setMargin(0)
         self.layout().setSpacing(0)
-        self.layout().setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTop)
+        self.layout().setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom)
         __statusBarString = QtCore.QString("Scene Dimensions: width "+u"\u00D7"+" height "+u"\u00D7"+" depth ")
         self.setStatusTip(__statusBarString)
         self.setToolTip("Scene Dimensions")

@@ -641,12 +641,19 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
         # DIH continue cleaning up GUI here:
         #
-        # 2010 - Mitja - create a CDSceneRasterizer object (including its visible widget)
-        self.theSceneRasterizerWidget = CDSceneRasterizer(self)
-        self.theSceneRasterizerWidget.hide()
+        # 2010 - Mitja - create a CDSceneRasterizer object
+        self.__theSceneRasterizer = CDSceneRasterizer(self)
+        # it's not a QWidget anymore, there's nothing to hide:
+        #  self.__theSceneRasterizer.hide()
 
-        # connect theSceneRasterizerWidget to the only instance of the cdPreferences object:
-        self.theSceneRasterizerWidget.setPreferencesObject(self.cdPreferences)
+        # connect __theSceneRasterizer to the only instance of the cdPreferences object:
+        self.__theSceneRasterizer.setPreferencesObject(self.cdPreferences)
+
+
+
+
+
+
 
         # 2011 - Mitja: add input image handling directly to the QGraphicsScene,
         #   into theCDImageLayer to be drawn as foreground/overlay to the scene items:
@@ -804,13 +811,18 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         self.__theMainStatusBar.insertPermanentWidgetInStatusBar(0, self.__theSimpleWaitProgressBar)
         self.__theSimpleWaitProgressBar.hide()
 
-##         self.__theWaitProgressBarWithImage = CDWaitProgressBarWithImage("CellDraw: processing image.", " ", 100, self.__theMainStatusBar)
-        self.__theWaitProgressBarWithImage = CDWaitProgressBar("CellDraw: processing image.", " ", 100, self.__theMainStatusBar)
+        self.__theWaitProgressBarWithImage = CDWaitProgressBarWithImage("CellDraw: processing image.", " ", 100, self.__theMainStatusBar)
+        #        self.__theWaitProgressBarWithImage = CDWaitProgressBar("CellDraw: processing image.", " ", 100, self.__theMainStatusBar)
         self.__theMainStatusBar.insertPermanentWidgetInStatusBar(0, self.__theWaitProgressBarWithImage)
         self.__theWaitProgressBarWithImage.hide()
 
         self.diagramSceneMainWidget.setSimpleProgressBarPanel(self.__theSimpleWaitProgressBar)
         self.diagramSceneMainWidget.setProgressBarWithImagePanel(self.__theWaitProgressBarWithImage)
+
+        # connect __theSceneRasterizer to the only instances of the CDWaitProgressBar and CDWaitProgressBarWithImage objects:
+        self.__theSceneRasterizer.setSimpleProgressBarPanel(self.__theSimpleWaitProgressBar)
+        self.__theSceneRasterizer.setProgressBarWithImagePanel(self.__theWaitProgressBarWithImage)
+
 
 
 
@@ -943,12 +955,9 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             self.setImageGlobals( lBoringPixMap.toImage() )
 
         # if and *only* if there is no sequence of images loaded from files on disk,
-        #   then tell the theCDImageSequence to reset its pixel array internally:
-        if self.diagramSceneMainWidget.theCDImageSequence.imageSequenceLoaded == False:
-            self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions( \
-                self.cdPreferences.getPifSceneWidth(), \
-                self.cdPreferences.getPifSceneHeight(), \
-                self.cdPreferences.getPifSceneDepth() )
+        #   then tell the theCDImageSequence to reset its pixel array internally to its default:
+        if self.diagramSceneMainWidget.theCDImageSequence.getSequenceLoadedFromFiles() == False:
+            self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions()
 
 
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
@@ -1072,8 +1081,8 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
         # propagate the change upstream, to all data structures!
 
-        # update the theSceneRasterizerWidget with new region data:
-        self.theSceneRasterizerWidget.setRegionsDict(self.mainTypesDict)
+        # update the __theSceneRasterizer with new region data:
+        self.__theSceneRasterizer.setRegionsDict(self.mainTypesDict)
 
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
         self.diagramSceneMainWidget.scene.update()
@@ -1095,7 +1104,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
     # ------------------------------------------------------------------
     def setIgnoreWhiteRegions(self, pCheckBox):
         self.ignoreWhiteRegionsForPIF = pCheckBox
-        self.theSceneRasterizerWidget.setIgnoreWhiteRegions(self.ignoreWhiteRegionsForPIF)
+        self.__theSceneRasterizer.setIgnoreWhiteRegions(self.ignoreWhiteRegionsForPIF)
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
         self.diagramSceneMainWidget.scene.update()
         CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow. CellDrawMainWindow.ignoreWhiteRegionsForPIF is now ="+str(self.ignoreWhiteRegionsForPIF), CDConstants.DebugVerbose )
@@ -1107,7 +1116,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
     def setIgnoreBlackRegions(self, pCheckBox):
         self.ignoreBlackRegionsForPIF = pCheckBox
         self.diagramSceneMainWidget.scene.update()
-        self.theSceneRasterizerWidget.setIgnoreBlackRegions(self.ignoreBlackRegionsForPIF)
+        self.__theSceneRasterizer.setIgnoreBlackRegions(self.ignoreBlackRegionsForPIF)
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
         self.diagramSceneMainWidget.scene.update()
         CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.ignoreBlackRegionsForPIF is now ="+str(self.ignoreBlackRegionsForPIF), CDConstants.DebugVerbose )
@@ -1149,7 +1158,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
         self.diagramSceneMainWidget.scene.update()
 
-        self.theSceneRasterizerWidget.setSavePIFMetadata(self.savePIFMetadata)
+        self.__theSceneRasterizer.setSavePIFMetadata(self.savePIFMetadata)
         CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.savePIFMetadata is now ="+str(self.savePIFMetadata), CDConstants.DebugVerbose )
 
 
@@ -1355,29 +1364,30 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             # (thePIFMustBeSavedFromTheGraphicsScene was used (previously, in PIF Generator 1.1)
             # for testing the overlaying of the rasterized image on the top of the original image)
 
-            # update the theSceneRasterizerWidget with new data:
+            # update the __theSceneRasterizer with new data:
             #
             #   1. retrieve the PIFF table of types contents to update mainTypesDict:
             self.handleRegionsTableWidgetChanged()
-            self.theSceneRasterizerWidget.setRegionsDict(self.mainTypesDict)
-            self.theSceneRasterizerWidget.setRasterWidth(self.cdPreferences.piffFixedRasterWidth)
-            self.theSceneRasterizerWidget.setIgnoreWhiteRegions(self.ignoreWhiteRegionsForPIF)
-            self.theSceneRasterizerWidget.setIgnoreBlackRegions(self.ignoreBlackRegionsForPIF)
+            self.__theSceneRasterizer.setRegionsDict(self.mainTypesDict)
+            self.__theSceneRasterizer.setRasterWidth(self.cdPreferences.piffFixedRasterWidth)
+            self.__theSceneRasterizer.setIgnoreWhiteRegions(self.ignoreWhiteRegionsForPIF)
+            self.__theSceneRasterizer.setIgnoreBlackRegions(self.ignoreBlackRegionsForPIF)
             #   2. update the graphics scene data:
-            if (False == self.theSceneRasterizerWidget.setInputGraphicsScene(self.diagramSceneMainWidget.scene)) :
-                self.theSceneRasterizerWidget.hide()
-                CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() - theSceneRasterizerWidget.setInputGraphicsScene() failed.", CDConstants.DebugSparse )
+            if (False == self.__theSceneRasterizer.setGraphicsSceneObject(self.diagramSceneMainWidget.scene)) :
+                # it's not a QWidget anymore, there's nothing to hide:
+                #    self.__theSceneRasterizer.hide()
+                CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() - __theSceneRasterizer.setGraphicsSceneObject() failed.", CDConstants.DebugSparse )
                 return False
 
 
             # this used to be set to the width&height of the scene contents.
             # But we now set PIFF width&height values in preferences, separately from the scene contents, so we don't set it thus:
-            # self.theSceneRasterizerWidget.resize(self.diagramSceneMainWidget.scene.width(), self.diagramSceneMainWidget.scene.height())
+            # self.__theSceneRasterizer.resize(self.diagramSceneMainWidget.scene.width(), self.diagramSceneMainWidget.scene.height())
             # Instead we set it from preferences:
-            self.theSceneRasterizerWidget.resize((100+self.cdPreferences.getPifSceneWidth()), (100+self.cdPreferences.getPifSceneHeight()))
 
-            self.theSceneRasterizerWidget.show()
-            self.theSceneRasterizerWidget.raise_()
+            # self.__theSceneRasterizer.resize((100+self.cdPreferences.getPifSceneWidth()), (100+self.cdPreferences.getPifSceneHeight()))
+            # self.__theSceneRasterizer.show()
+            # self.__theSceneRasterizer.raise_()
 
 
 
@@ -1389,9 +1399,9 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 # disable drawing the scene image foreground to avoid useless repainting:
                 lTmpDrawForegroundEnabled = self.diagramSceneMainWidget.scene.getDrawForegroundEnabled()
                 self.diagramSceneMainWidget.scene.setDrawForegroundEnabled(False)
-                self.theSceneRasterizerWidget.setInputImageSequence(self.diagramSceneMainWidget.theCDImageSequence)
-                self.theSceneRasterizerWidget.rasterizeSequenceAndSavePIF()
-                self.theSceneRasterizerWidget.hide()
+                self.__theSceneRasterizer.setInputImageSequence(self.diagramSceneMainWidget.theCDImageSequence)
+                self.__theSceneRasterizer.rasterizeSequenceAndSavePIF()
+                #  self.__theSceneRasterizer.hide()
 
                 # restore drawing the scene image foreground to avoid useless repainting:
                 self.diagramSceneMainWidget.scene.setDrawForegroundEnabled(lTmpDrawForegroundEnabled)
@@ -1413,7 +1423,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 #    as from the raster size set in CellDraw preferences)
                 # ----------------------------------------------------
    
-                self.theSceneRasterizerWidget.rasterizeSceneToFixedSizeRaster()
+                self.__theSceneRasterizer.rasterizeSceneToFixedSizeRaster()
 
                 fileName = QtGui.QFileDialog.getSaveFileName(self, self.tr("CellDraw - Save fixed-raster PIFF as"),
                                        lToBeSavedInitialPath,
@@ -1421,13 +1431,13 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                                            .arg(lToBeSavedFileExtension.toUpper())
                                            .arg(lToBeSavedFileExtension))
                 if fileName.isEmpty():
-                    self.theSceneRasterizerWidget.hide()
-                    return False
+                    #  self.__theSceneRasterizer.hide()
                     CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() fixed-size raster PIFF failed.", CDConstants.DebugImportant )
+                    return False
                 else:
                     # DIH:
-                    self.theSceneRasterizerWidget.savePIFFFileFromFixedSizeRaster(fileName)
-                    self.theSceneRasterizerWidget.hide()
+                    self.__theSceneRasterizer.savePIFFFileFromFixedSizeRaster(fileName)
+                    #  self.__theSceneRasterizer.hide()
                     CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() fixed-size raster PIFF done.", CDConstants.DebugSparse )
                     return True
 
@@ -1437,8 +1447,8 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 # ----------------------------------------------------
 
                 # here we use the Potts algorithm to generate each region of cells:
-                self.theSceneRasterizerWidget.computePottsModelAndSavePIF()
-                self.theSceneRasterizerWidget.hide()
+                self.__theSceneRasterizer.computePottsModelAndSavePIF()
+                #  self.__theSceneRasterizer.hide()
                 CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() Potts-generated PIFF done.", CDConstants.DebugSparse )
                 return True
                 # ----------------------------------------------------------------
@@ -1449,7 +1459,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 # ----------------------------------------------------
 
                 # 2011 - Mitja: first step towards 3D PIFF scenes:
-                self.theSceneRasterizerWidget.rasterizeSceneToRegionRasters()
+                self.__theSceneRasterizer.rasterizeSceneToRegionRasters()
 
                 fileName = QtGui.QFileDialog.getSaveFileName(self, self.tr("CellDraw - Save region-raster PIFF as"),
                                        lToBeSavedInitialPath,
@@ -1457,16 +1467,16 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                                            .arg(lToBeSavedFileExtension.toUpper())
                                            .arg(lToBeSavedFileExtension))
                 if fileName.isEmpty():
-                    self.theSceneRasterizerWidget.hide()
+                    #  self.__theSceneRasterizer.hide()
                     CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() region-raster PIFF failed.", CDConstants.DebugImportant )
                     return False
                 else:
                     # this used to be the call to rasterize region-raster cells from each region:
-                    #   self.theSceneRasterizerWidget.attemptAtRasterizingVariableSizeCellsAndSavePIF(fileName)
+                    #   self.__theSceneRasterizer.attemptAtRasterizingVariableSizeCellsAndSavePIF(fileName)
                     # this used to be another old-style region raster ("variable")-sized cell rasteization:
-                    #   self.theSceneRasterizerWidget.rasterizeVarSizedCellRegionsAndSavePIF(fileName)
-                    self.theSceneRasterizerWidget.savePIFFFileFromRegionRasters(fileName)
-                    self.theSceneRasterizerWidget.hide()
+                    #   self.__theSceneRasterizer.rasterizeVarSizedCellRegionsAndSavePIF(fileName)
+                    self.__theSceneRasterizer.savePIFFFileFromRegionRasters(fileName)
+                    #  self.__theSceneRasterizer.hide()
                     CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() region-raster PIFF done.", CDConstants.DebugSparse )
                     return True
                 # ----------------------------------------------------------------
@@ -1480,14 +1490,14 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                                        .arg(lToBeSavedFileExtension.toUpper())
                                        .arg(lToBeSavedFileExtension))
             if fileName.isEmpty():
-                self.theSceneRasterizerWidget.hide()
+                #  self.__theSceneRasterizer.hide()
                 CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() pixel-based PIFF failed.", CDConstants.DebugImportant )
                 return False
             else:
                 # 2010 - Mitja: this was originally calling the saveFile function:
                 #   self.saveFile(fileName)
                 self.savePIFFileFromAllPixels(fileName)
-                self.theSceneRasterizerWidget.hide()
+                #  self.__theSceneRasterizer.hide()
                 CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() pixel-based PIFF done.", CDConstants.DebugSparse )
                 return True
 
@@ -1740,32 +1750,51 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
         # update x,y,z dimensions in the Image Sequence object,
         #    this will also reset all the image sequence object's numpy array:
-        self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions(lXdim, lYdim, lZdim)
+        lImageSequenceMemoryAllocatedOK = self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions(lXdim, lYdim, lZdim)
+        # continue only if the NumPy arrays could be allocated:
+        if (lImageSequenceMemoryAllocatedOK == False) :
+            return
+
 
         # tell the Image Sequence to show only the plain area (image contents) from the sequence:
         self.diagramSceneMainWidget.theCDImageSequence.resetToOneProcessingModeForImageSequenceToPIFF( CDConstants.ImageSequenceUseAreaSeeds )
 
         CDConstants.printOut(  "importImageSequence()  --  5.", CDConstants.DebugTODO )
         # time.sleep(1.0)
-        
+
         # temporarily disable drawing the scene overlay:
         self.diagramSceneMainWidget.scene.setDrawForegroundEnabled(False)
 
         # show a panel containing a progress bar:        
-        self.__theSimpleWaitProgressBar.setTitleTextRange("Importing image sequence."," ",0, lNumberOfFilesInDir)
-        self.__theSimpleWaitProgressBar.show()
+        self.__theWaitProgressBarWithImage.setTitleTextRange("Importing image sequence."," ",0, lNumberOfFilesInDir)
+        self.__theWaitProgressBarWithImage.show()
+
         lFileCounter = 0
+        lImage = QtGui.QImage(lXdim, lYdim, QtGui.QImage.Format_ARGB32)
+        lImage.fill(QtGui.QColor(QtCore.Qt.white).rgb())
+
+        self.__theWaitProgressBarWithImage.setValue(lFileCounter)
+        self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lImage))
+
+        self.__theWaitProgressBarWithImage.setTitle(" Importing sequence of images. ")
+        self.__theWaitProgressBarWithImage.setInfoText(" Importing image "+str(lFileCounter)+" of "+str(lNumberOfFilesInDir)+" . "  ) 
+
 
         CDConstants.printOut(  "importImageSequence()  --  6.", CDConstants.DebugTODO )
         # time.sleep(1.0)
 
         for lCurrentFileName in sorted(lCurrentListDir, key=self.keynat):
-            self.__theSimpleWaitProgressBar.setValue(lFileCounter)
+
+            self.__theWaitProgressBarWithImage.setValue(lFileCounter)
+            self.__theWaitProgressBarWithImage.setInfoText(" Importing image "+str(lFileCounter)+" of "+str(lNumberOfFilesInDir)+" . "  ) 
+
             lPathAndFileName = os.path.join(lThePathToImageSequenceDir,lCurrentFileName)
             CDConstants.printOut( "      "+str(lPathAndFileName), CDConstants.DebugAll )
 
             # 2010 - Mitja: load the file's data into a QImage object:
             lImage = QtGui.QImage(lPathAndFileName)
+
+            self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lImage))
 
             # check that the image file is opened correctly:
             if lImage.isNull():
@@ -1775,8 +1804,8 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions( \
                     lXdim, lYdim, lFileCounter)
 
-                self.__theSimpleWaitProgressBar.maxProgressBar()
-                self.__theSimpleWaitProgressBar.hide()
+                self.__theWaitProgressBarWithImage.maxProgressBar()
+                self.__theWaitProgressBarWithImage.hide()
                 QtGui.QMessageBox.warning( self, self.tr("CellDraw"), \
                     self.tr("Cannot open the image file:\n" \
                     "%1\nCanceling the image sequence import.").arg(lCurrentFileName)  )
@@ -1797,8 +1826,8 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         # time.sleep(1.0)
 
         # hide the panel containing a progress bar:
-        self.__theSimpleWaitProgressBar.maxProgressBar()
-        self.__theSimpleWaitProgressBar.hide()
+        self.__theWaitProgressBarWithImage.maxProgressBar()
+        self.__theWaitProgressBarWithImage.hide()
 
         CDConstants.printOut(  "importImageSequence()  --  8.", CDConstants.DebugTODO )
         # time.sleep(1.0)
@@ -2050,7 +2079,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
                 # close the first panel containing a progress bar:
                 lProgressBarPanel.maxProgressBar()
-                lProgressBarPanel.close()
+                lProgressBarPanel.hide()
 
                 # show a second panel containing a progress bar:
                 lProgressBarPanel = CDWaitProgressBar("Loading image data from PIFF file, pass 2 of 2.", " ", 100, self.theMainWindow)
@@ -2093,7 +2122,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                 image = lPixmap.toImage()
 
                 lProgressBarPanel.maxProgressBar()
-                lProgressBarPanel.close()
+                lProgressBarPanel.hide()
 
 
                 pass # 152 prrint "2010 DEBUG: _,.- ~*'`'*~-.,_ openPIFFFile() converted [", pFileName, "] PIFF into image."
@@ -2216,7 +2245,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                         lPainter.setPen(lPen)
                         lPainter.drawPoint(i, j)
             lProgressBarPanel.maxProgressBar()
-            lProgressBarPanel.close()
+            lProgressBarPanel.hide()
 
 #
 #             lNameToColorDictKeys = self.nameToColorDict.keys()
@@ -2407,7 +2436,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                         lPainter.setPen(lPen)
                         lPainter.drawPoint(i, j)
             lProgressBarPanel.maxProgressBar()
-            lProgressBarPanel.close()
+            lProgressBarPanel.hide()
     
 #
 #             lNameToColorDictKeys = self.nameToColorDict.keys()
@@ -2545,6 +2574,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 # ------------------------------------------------------------
 # ------------------------------------------------------------
 if __name__ == "__main__":
+
     app = QtGui.QApplication(sys.argv)
 
     # 2010 - Mitja: the class CellDrawMainWindow actually implements this application's
