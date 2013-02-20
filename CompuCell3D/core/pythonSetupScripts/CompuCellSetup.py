@@ -942,20 +942,47 @@ def createVectorFieldCellLevelPy(_fieldName):
         fieldRegistry.addNewField(field,_fieldName,VECTOR_FIELD_CELL_LEVEL)
         return field
 
+# # # def createVectorFieldPy(_dim,_fieldName):
+# # #     global cmlFieldHandler  #rwh2
+# # #     global fieldRegistry
+# # #     import string
+# # #     fieldName = string.replace(_fieldName," ","_") # replacing spaces with underscore
+
+# # #     if playerType=="CML":
+# # #         field = cmlFieldHandler.fieldStorage.createVectorFieldPy(_dim,fieldName)
+# # #         fieldRegistry.addNewField(field,_fieldName,VECTOR_FIELD)
+# # #         return field
+# # #     else:
+# # #         field = simulationThreadObject.callingWidget.fieldStorage.createVectorFieldPy(_dim,fieldName)
+# # #         fieldRegistry.addNewField(field,_fieldName,VECTOR_FIELD)
+# # #         return field
+
+
 def createVectorFieldPy(_dim,_fieldName):
     global cmlFieldHandler  #rwh2
     global fieldRegistry
     import string
     fieldName = string.replace(_fieldName," ","_") # replacing spaces with underscore
-
+    import numpy as np
+    
     if playerType=="CML":
-        field = cmlFieldHandler.fieldStorage.createVectorFieldPy(_dim,fieldName)
-        fieldRegistry.addNewField(field,_fieldName,VECTOR_FIELD)
-        return field
+        fieldNP = np.zeros(shape=(_dim.x,_dim.y,_dim.z,3),dtype=np.float32)
+        ndarrayAdapter=cmlFieldHandler.fieldStorage.createVectorFieldPy(_dim,_fieldName)
+        ndarrayAdapter.initFromNumpy(fieldNP) # initializing  numpyAdapter using numpy array (copy dims and data ptr)        
+        fieldRegistry.addNewField(ndarrayAdapter,_fieldName,VECTOR_FIELD)
+        fieldRegistry.addNewField(fieldNP,_fieldName+'_npy',VECTOR_FIELD)
+        return fieldNP
+        
     else:
-        field = simulationThreadObject.callingWidget.fieldStorage.createVectorFieldPy(_dim,fieldName)
-        fieldRegistry.addNewField(field,_fieldName,VECTOR_FIELD)
-        return field
+        
+        fieldNP = np.zeros(shape=(_dim.x,_dim.y,_dim.z,3),dtype=np.float32)
+        ndarrayAdapter=simulationThreadObject.callingWidget.fieldStorage.createVectorFieldPy(_dim,_fieldName)
+        ndarrayAdapter.initFromNumpy(fieldNP) # initializing  numpyAdapter using numpy array (copy dims and data ptr)        
+        fieldRegistry.addNewField(ndarrayAdapter,_fieldName,VECTOR_FIELD)
+        fieldRegistry.addNewField(fieldNP,_fieldName+'_npy',VECTOR_FIELD)
+        return fieldNP
+        
+        
 
 def clearVectorFieldPy(_dim, _vectorField):
     global cmlFieldHandler  #rwh2
@@ -1060,26 +1087,33 @@ def createCustomVisPy(_visName):  # called from Python steppable doing custom vi
     # return customVisStorage.visDataDict[_name],customVisStorage.callbackFunctionDict
     # # ,customActorsStorage.actorsDict
 
-    
+
 def createScalarFieldPy(_dim,_fieldName):
     return createFloatFieldPy(_dim,_fieldName)
-   
+
 def createFloatFieldPy(_dim,_fieldName):
     global cmlFieldHandler  #rwh2
     global fieldRegistry
     import string
     fieldName = string.replace(_fieldName," ","_") # replacing spaces with underscore
 
-    if playerType=="CML":
-        field = cmlFieldHandler.fieldStorage.createFloatFieldPy(_dim,_fieldName)    
-        fieldRegistry.addNewField(field,_fieldName,SCALAR_FIELD)
-        return field
+    if playerType=="CML":        
+        import numpy as np
+        fieldNP = np.zeros(shape=(_dim.x,_dim.y,_dim.z),dtype=np.float32)
+        ndarrayAdapter=cmlFieldHandler.fieldStorage.createFloatFieldPy(_dim,_fieldName)
+        ndarrayAdapter.initFromNumpy(fieldNP) # initializing  numpyAdapter using numpy array (copy dims and data ptr)
+        fieldRegistry.addNewField(ndarrayAdapter,_fieldName,SCALAR_FIELD)
+        fieldRegistry.addNewField(fieldNP,_fieldName+'_npy',SCALAR_FIELD)
+        return fieldNP
     else:
-        # import string
-        # fieldName=string.replace(_fieldName," ","_") # replacing spaces with underscore
-        field = simulationThreadObject.callingWidget.fieldStorage.createFloatFieldPy(_dim,_fieldName)
-        fieldRegistry.addNewField(field,_fieldName,SCALAR_FIELD)
-        return field
+        import numpy as np
+        fieldNP = np.zeros(shape=(_dim.x,_dim.y,_dim.z),dtype=np.float32)
+        ndarrayAdapter=simulationThreadObject.callingWidget.fieldStorage.createFloatFieldPy(_dim,_fieldName) 
+        ndarrayAdapter.initFromNumpy(fieldNP) # initializing  numpyAdapter using numpy array (copy dims and data ptr)
+        fieldRegistry.addNewField(ndarrayAdapter,_fieldName,SCALAR_FIELD)
+        fieldRegistry.addNewField(fieldNP,_fieldName+'_npy',SCALAR_FIELD)
+        return fieldNP
+
 
 def createScalarFieldCellLevelPy(_fieldName):
     global cmlFieldHandler  #rwh2

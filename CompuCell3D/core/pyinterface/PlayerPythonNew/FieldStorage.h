@@ -11,34 +11,56 @@
 #include "FieldExtractorDLLSpecifier.h"
 #include <CompuCell3D/Field3D/Dim3D.h>
 
+#include "ndarray_adapter.h"
+
 namespace CompuCell3D{
 	//have to declare here all the classes that will be passed to this class from Python
 	class Dim3D;
 
 
+    
+class FIELDEXTRACTOR_EXPORT ScalarFieldCellLevel:public std::map<CompuCell3D::CellG*,float > {
+public:    
+    typedef std::map<CompuCell3D::CellG*,float > container_t;
+//     container_t cellToScalarMap;
+};
 
+class FIELDEXTRACTOR_EXPORT VectorFieldCellLevel:public std::map<CompuCell3D::CellG*,Coordinates3D<float> > {
+public:        
+    typedef std::map<CompuCell3D::CellG*,Coordinates3D<float> > container_t;
+};
 
 class FIELDEXTRACTOR_EXPORT FieldStorage{
    public://typedef's
       // typedef std::vector<std::vector<float> > floatField2D_t;
-      typedef std::vector<std::vector<std::vector<float> > > floatField3D_t;
+      
+      typedef NdarrayAdapter<float,3> floatField3D_t;      
+      
+//       typedef std::vector<std::vector<std::vector<float> > > floatField3D_t;      
       typedef std::map<std::string,floatField3D_t*>::iterator floatField3DNameMapItr_t;
       // typedef std::vector<std::vector<std::vector<Coordinates3D<float> > > > vectorFloatField3D_t;
       // typedef std::map<std::string,vectorFloatField3D_t*>::iterator vectorFloatField3DNameMapItr_t;
       // typedef std::vector<std::vector<std::vector<std::pair<Coordinates3D<float>,CompuCell3D::CellG*> > > > vectorCellFloatField3D_t;
       // typedef std::map<std::string,vectorCellFloatField3D_t*>::iterator vectorCellFloatField3DNameMapItr_t;
 
-		typedef std::vector<std::vector<std::vector<Coordinates3D<float> > > > vectorField3D_t;
+// 		typedef std::vector<std::vector<std::vector<Coordinates3D<float> > > > vectorField3D_t;
+                typedef NdarrayAdapter<float,4> vectorField3D_t;
+                
 		typedef std::map<std::string,vectorField3D_t *>::iterator vectorFieldNameMapItr_t;
 
       //cell level vector fields (represented as maps)
-      typedef std::map<CompuCell3D::CellG*,Coordinates3D<float> > vectorFieldCellLevel_t;
+//       typedef std::map<CompuCell3D::CellG*,Coordinates3D<float> > vectorFieldCellLevel_t;                
+      typedef VectorFieldCellLevel vectorFieldCellLevel_t;                      
       typedef std::map<std::string,vectorFieldCellLevel_t *>::iterator vectorFieldCellLevelNameMapItr_t;
       typedef vectorFieldCellLevel_t::iterator vectorFieldCellLevelItr_t;
 
       //cell level scalar fields (represented as maps)
-      typedef std::map<CompuCell3D::CellG*,float > scalarFieldCellLevel_t;
+      
+      typedef ScalarFieldCellLevel scalarFieldCellLevel_t;
+//       typedef std::map<CompuCell3D::CellG*,float > scalarFieldCellLevel_t;
+      
       typedef std::map<std::string,scalarFieldCellLevel_t *>::iterator scalarFieldCellLevelNameMapItr_t;
+//       typedef scalarFieldCellLevel_t::container_t::iterator scalarFieldCellLevelItr_t;
       typedef scalarFieldCellLevel_t::iterator scalarFieldCellLevelItr_t;
 
 
@@ -61,9 +83,16 @@ class FIELDEXTRACTOR_EXPORT FieldStorage{
 
       void allocateCellField(Dim3D _dim);
 
+                //numpy arrays thin wrapper
+      
+//                 NdarrayAdapter<float,3> * createNdarrayAdapter3D(Dim3D _dim,std::string _fieldName);
+//                 void clearNdarrayAdapter3D(NdarrayAdapter<float,3> * _fieldPtr);
+                
+// // //                 FloatField3D * createFloatField3D(Dim3D _dim,std::string _fieldName);
+      
 		// scalar field a.k.a. concentration field
 		floatField3D_t* createFloatFieldPy(Dim3D _dim,std::string _fieldName);
-		void fillScalarValue(floatField3D_t * _field, int _x, int _y, int _z, float _value);
+// 		void fillScalarValue(floatField3D_t * _field, int _x, int _y, int _z, float _value);
 		void clearScalarField(Dim3D _dim,floatField3D_t * _fieldPtr);
 		std::vector<std::string> getScalarFieldNameVector();
 		floatField3D_t * getScalarFieldByName(std::string _fieldName);
@@ -78,7 +107,8 @@ class FIELDEXTRACTOR_EXPORT FieldStorage{
 		//vector fields 
 		vectorField3D_t * createVectorFieldPy(Dim3D _dim,std::string _fieldName);
 		
-	   void insertVectorIntoVectorField(vectorField3D_t * _field,int _xPos, int _yPos, int _zPos, float _x, float _y, float _z);
+                
+// 	        void insertVectorIntoVectorField(vectorField3D_t * _field,int _xPos, int _yPos, int _zPos, float _x, float _y, float _z);
 		void clearVectorField(Dim3D _dim,vectorField3D_t * _fieldPtr);
 		std::vector<std::string> getVectorFieldNameVector();
 		vectorField3D_t * getVectorFieldFieldByName(std::string _fieldName);
@@ -86,7 +116,7 @@ class FIELDEXTRACTOR_EXPORT FieldStorage{
 
 		//scalar fields cell level
 		scalarFieldCellLevel_t * createScalarFieldCellLevelPy(std::string _fieldName);
-	   void insertScalarIntoScalarCellLevelField(scalarFieldCellLevel_t * _field,CompuCell3D::CellG* _cell, float _x);
+                void insertScalarIntoScalarCellLevelField(scalarFieldCellLevel_t * _field,CompuCell3D::CellG* _cell, float _x);
 		void clearScalarCellLevelField(scalarFieldCellLevel_t * _field);
 		std::vector<std::string> getScalarFieldCellLevelNameVector();
 		scalarFieldCellLevel_t * getScalarFieldCellLevelFieldByName(std::string _fieldName);
@@ -119,6 +149,8 @@ class FIELDEXTRACTOR_EXPORT FieldStorage{
 		Dim3D fieldDim;
       
       std::map<std::string,floatField3D_t*> floatField3DNameMap; ///this map will be filled externally
+
+      
       // std::map<std::string,vectorFloatField3D_t*> vectorFloatField3DNameMap; ///this map will be filled externally
       // std::map<std::string,vectorCellFloatField3D_t*> vectorCellFloatField3DNameMap; ///this map will be filled externally
 

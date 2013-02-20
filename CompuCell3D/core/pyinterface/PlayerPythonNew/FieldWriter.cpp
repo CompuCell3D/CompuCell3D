@@ -343,15 +343,18 @@ bool FieldWriter::addVectorFieldForOutput(std::string _vectorFieldName){
 	vecArray->SetNumberOfTuples(numberOfValues); // if using more than one component data you need to use SetNumberOfComponent followed by SetNumberOfTuples
 	long offset=0;
 	Point3D pt;
-	
+	float x,y,z;
 	Coordinates3D<float> vecTmp;
 
 	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)	
 		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
 			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
-				vecTmp=(*vecFieldPtr)[pt.x][pt.y][pt.z];
+// 				vecTmp=(*vecFieldPtr)[pt.x][pt.y][pt.z];
+                                x=(*vecFieldPtr)[pt.x][pt.y][pt.z][0];
+                                y=(*vecFieldPtr)[pt.x][pt.y][pt.z][1];
+                                z=(*vecFieldPtr)[pt.x][pt.y][pt.z][2];                                
 				//cerr<<"vecTmp="<<vecTmp<<endl;
-				vecArray->SetTuple3(offset,vecTmp.x,vecTmp.y,vecTmp.z);
+				vecArray->SetTuple3(offset,x,y,z);
 				++offset;
 			}
 

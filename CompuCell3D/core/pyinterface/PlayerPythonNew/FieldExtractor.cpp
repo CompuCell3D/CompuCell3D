@@ -1444,6 +1444,7 @@ bool FieldExtractor::fillVectorFieldData2D(long _pointsArrayIntAddr,long _vector
 	CellG* cell;
 	Coordinates3D<float> vecTmp;
 	float  vecTmpCoord[3] ;
+        float x,y,z;
 	double con;
 
 	int offset=0;
@@ -1458,12 +1459,21 @@ bool FieldExtractor::fillVectorFieldData2D(long _pointsArrayIntAddr,long _vector
 			pt.y=ptVec[pointOrderVec[1]];
 			pt.z=ptVec[pointOrderVec[2]];
 
-			vecTmp=(*vectorFieldPtr)[pt.x][pt.y][pt.z];
-			vecTmpCoord[0]=vecTmp.x;
-			vecTmpCoord[1]=vecTmp.y;
-			vecTmpCoord[2]=vecTmp.z;
+                        x=(*vectorFieldPtr)[pt.x][pt.y][pt.z][0];
+                        y=(*vectorFieldPtr)[pt.x][pt.y][pt.z][1];
+                        z=(*vectorFieldPtr)[pt.x][pt.y][pt.z][2];
+                        
+                        
+                        vecTmpCoord[0]=x;
+                        vecTmpCoord[1]=y;
+                        vecTmpCoord[2]=z;
+                        
+// 			vecTmp=(*vectorFieldPtr)[pt.x][pt.y][pt.z];
+// 			vecTmpCoord[0]=vecTmp.x;
+// 			vecTmpCoord[1]=vecTmp.y;
+// 			vecTmpCoord[2]=vecTmp.z;
 
-			if(vecTmp.x!=0.0 || vecTmp.y!=0.0 || vecTmp.z!=0.0){
+			if(x!=0.0 || y!=0.0 || z!=0.0){
 				pointsArray->InsertPoint(offset,ptVec[0],ptVec[1],0);
 				vectorArray->InsertTuple3(offset,vecTmpCoord[pointOrderVec[0]],vecTmpCoord[pointOrderVec[1]],0);
 				++offset;
@@ -1503,7 +1513,7 @@ bool FieldExtractor::fillVectorFieldData2DHex(long _pointsArrayIntAddr,long _vec
 	Coordinates3D<float> vecTmp;
 	float  vecTmpCoord[3] ;
 	double con;
-
+        float x,y,z;
 	int offset=0;
 	for(int j =0 ; j<dim[1] ; ++j)
 		for(int i =0 ; i<dim[0] ; ++i){
@@ -1514,13 +1524,17 @@ bool FieldExtractor::fillVectorFieldData2DHex(long _pointsArrayIntAddr,long _vec
 			pt.x=ptVec[pointOrderVec[0]];
 			pt.y=ptVec[pointOrderVec[1]];
 			pt.z=ptVec[pointOrderVec[2]];
+                        
+                        x=(*vectorFieldPtr)[pt.x][pt.y][pt.z][0];
+                        y=(*vectorFieldPtr)[pt.x][pt.y][pt.z][1];
+                        z=(*vectorFieldPtr)[pt.x][pt.y][pt.z][2];
+                        
+// 			vecTmp=(*vectorFieldPtr)[pt.x][pt.y][pt.z];
+// 			vecTmpCoord[0]=vecTmp.x;
+// 			vecTmpCoord[1]=vecTmp.y;
+// 			vecTmpCoord[2]=vecTmp.z;
 
-			vecTmp=(*vectorFieldPtr)[pt.x][pt.y][pt.z];
-			vecTmpCoord[0]=vecTmp.x;
-			vecTmpCoord[1]=vecTmp.y;
-			vecTmpCoord[2]=vecTmp.z;
-
-			if(vecTmp.x!=0.0 || vecTmp.y!=0.0 || vecTmp.z!=0.0){
+			if(x!=0.0 || y!=0.0 || z!=0.0){
 				Coordinates3D<double> hexCoords=HexCoordXY(pt.x,pt.y,pt.z);
 				pointsArray->InsertPoint(offset, hexCoords.x,hexCoords.y,0.0);
 				
@@ -1549,14 +1563,19 @@ bool FieldExtractor::fillVectorFieldData3D(long _pointsArrayIntAddr,long _vector
 	CellG* cell;
 	Coordinates3D<float> vecTmp;
 
+        float x,y,z;
+        
 	int offset=0;
 	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)	
 		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
 			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
-				vecTmp=(*vectorFieldPtr)[pt.x][pt.y][pt.z];
-				if(vecTmp.x!=0.0 || vecTmp.y!=0.0 || vecTmp.z!=0.0){
+// 				vecTmp=(*vectorFieldPtr)[pt.x][pt.y][pt.z];
+                                x=(*vectorFieldPtr)[pt.x][pt.y][pt.z][0];
+                                y=(*vectorFieldPtr)[pt.x][pt.y][pt.z][1];
+                                z=(*vectorFieldPtr)[pt.x][pt.y][pt.z][2];                                
+				if(x!=0.0 || y!=0.0 || z!=0.0){
 					pointsArray->InsertPoint(offset,pt.x,pt.y,pt.z);
-					vectorArray->InsertTuple3(offset,vecTmp.x,vecTmp.y,vecTmp.z);
+					vectorArray->InsertTuple3(offset,x,y,z);
 					++offset;
 				}
 			}

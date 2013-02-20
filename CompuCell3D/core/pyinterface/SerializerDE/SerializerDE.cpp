@@ -560,14 +560,19 @@ bool SerializerDE::serializeVectorField(SerializeData &_sd){
 	fieldArray->SetNumberOfTuples(numberOfValues);
 	long offset=0;
 	Point3D pt;
-	Coordinates3D<float> vecTmp;
+// 	Coordinates3D<float> vecTmp;
+        float x,y,z;
 
 	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)	
 		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
 			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
-				vecTmp=(*fieldPtr)[pt.x][pt.y][pt.z];
+// 				vecTmp=(*fieldPtr)[pt.x][pt.y][pt.z];
+                                x=(*fieldPtr)[pt.x][pt.y][pt.z][0];
+                                y=(*fieldPtr)[pt.x][pt.y][pt.z][1];
+                                z=(*fieldPtr)[pt.x][pt.y][pt.z][2];
+                                fieldArray->SetTuple3(offset,x,y,z);
 				//cerr<<"vecTmp="<<vecTmp<<endl;
-				fieldArray->SetTuple3(offset,vecTmp.x,vecTmp.y,vecTmp.z);
+// 				fieldArray->SetTuple3(offset,vecTmp.x,vecTmp.y,vecTmp.z);
 				++offset;
 
 			}
@@ -631,7 +636,11 @@ bool SerializerDE::loadVectorField(SerializeData &_sd){
 
 				fieldArray->GetTupleValue(offset,tuple);
 
-				(*fieldPtr)[pt.x][pt.y][pt.z]=Coordinates3D<float>(tuple[0],tuple[1],tuple[2]) ;
+// 				(*fieldPtr)[pt.x][pt.y][pt.z]=Coordinates3D<float>(tuple[0],tuple[1],tuple[2]) ;
+                                
+                                (*fieldPtr)[pt.x][pt.y][pt.z][0]=tuple[0];
+                                (*fieldPtr)[pt.x][pt.y][pt.z][1]=tuple[1];
+                                (*fieldPtr)[pt.x][pt.y][pt.z][2]=tuple[2];
 				++offset;
 
 			}
