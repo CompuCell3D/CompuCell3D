@@ -1,7 +1,7 @@
 versionMajor=3
 versionMinor=6
 versionBuild=2
-revisionNumber="20130211"
+revisionNumber="20130220"
 
 def getVersionAsString():
     return str(versionMajor)+"."+str(versionMinor)+"."+str(versionBuild)
