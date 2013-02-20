@@ -673,6 +673,14 @@ class CDSceneRasterizer(QtCore.QObject):
 
         CDConstants.printOut( "___ - DEBUG ----- CDSceneRasterizer: rasterizeSceneToFixedSizeRaster() starting.", CDConstants.DebugExcessive )
 
+        # ------------------------------------------------------------
+        # show a panel containing a progress bar:
+        self.__theWaitProgressBarWithImage.setTitleTextRange("PIFF Output as Fixed Raster from Scene.", " ", 0, lPIFFOutputDepth)
+        self.__theWaitProgressBarWithImage.show()
+        self.__theWaitProgressBarWithImage.setValue(0)
+        self.__theWaitProgressBarWithImage.setImagePixmap(self.theRasterizedPixmap)
+
+
         # start progress bar:
         self.progressBar.setValue(0)
         # Qt/PyQt's progressBar won't display updates from setValue(...) calls,
@@ -3627,7 +3635,9 @@ class CDSceneRasterizer(QtCore.QObject):
         #     if the sequence uses the  CDConstants.ImageSequenceUseAreaSeeds  mode,
         #         start a loop to generate a list with all required seed points:
         #
-        if ( self.theImageSequenceToBeRasterized.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseAreaSeeds) ) :
+        #  (make sure that there is any cell content before doing anything, by checking the max value in the subarray)
+        if ( self.theImageSequenceToBeRasterized.getAProcessingModeStatusForImageSequenceToPIFF(CDConstants.ImageSequenceUseAreaSeeds) and \
+             self.theImageSequenceToBeRasterized.maxInImageSequenceSubArray(lPIFFOutputWidth, lPIFFOutputHeight, lPIFFOutputDepth) > 0 ) :
 
             self.__theWaitProgressBarWithImage.setInfoText( " Generating \n "+str(lRequiredCellPoints)+" \n cell pixels in Detected Volume... " )
             CDConstants.printOut(" Generating "+str(lRequiredCellPoints)+" cell pixels in Detected Volume... ", CDConstants.DebugTODO )

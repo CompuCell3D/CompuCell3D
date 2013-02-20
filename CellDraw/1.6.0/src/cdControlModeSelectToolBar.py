@@ -216,6 +216,28 @@ class CDControlModeSelectToolBar(QtGui.QToolBar):
 
 
 
+    # ------------------------------------------------------------
+    # enable or disable a layer selection button
+    # ------------------------------------------------------------
+    def setEnabled(self, pMode, pEnable=True):
+        if (pMode == CDConstants.SceneModeMoveItem):
+            self.pointerAction.setEnabled(pEnable)
+        elif (pMode == CDConstants.SceneModeResizeItem):
+            self.resizeAction.setEnabled(pEnable)
+        elif (pMode == CDConstants.SceneModeImageLayer):
+            self.imageLayerAction.setEnabled(pEnable)
+        elif (pMode == CDConstants.SceneModeImageSequence):
+            self.imageSequenceAction.setEnabled(pEnable)
+        
+        if (pEnable == False) and (pMode == self.__selectedSceneMode) and (pMode != CDConstants.SceneModeMoveItem):
+            self.pointerAction.setChecked(True)
+            self.pointerAction.trigger()
+
+    # end of   def setEnabled(self, pMode, pEnable=True)
+    # ------------------------------------------------------------
+
+
+
 
     # ------------------------------------------------------------
     # 2010 Mitja - slot method handling "triggered" events

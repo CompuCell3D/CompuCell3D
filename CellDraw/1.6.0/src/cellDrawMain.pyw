@@ -683,6 +683,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
         self.diagramSceneMainWidget.theCDImageSequence.setSequenceLoadedFromFiles(False)
 
+
         # now that both the mainTypesDict and the diagramSceneMainWidget are initialized, add starting blank data:
         CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting self.setImageGlobals( lBoringPixMap.toImage() ) ...", CDConstants.DebugTODO )
         self.setImageGlobals( lBoringPixMap.toImage() )
@@ -773,6 +774,9 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         self.__theToolBars.registerHandlerForSceneZoomChangedControllerSignals( \
             self.diagramSceneMainWidget.handlerForSceneZoomControllerSignals )
 
+
+        # there is no image sequence loaded in the beginning, so start with image sequence mode disabled:
+        self.__theToolBars.setModeSelectToolBarButtonEnabled(CDConstants.SceneModeImageSequence, False)
 
 
 
@@ -956,8 +960,10 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
         # if and *only* if there is no sequence of images loaded from files on disk,
         #   then tell the theCDImageSequence to reset its pixel array internally to its default:
-        if self.diagramSceneMainWidget.theCDImageSequence.getSequenceLoadedFromFiles() == False:
+        if (self.diagramSceneMainWidget.theCDImageSequence.getSequenceLoadedFromFiles() == False):
             self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions()
+            self.__theToolBars.setModeSelectToolBarButtonEnabled( CDConstants.SceneModeImageSequence, False )
+            
 
 
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
@@ -1753,6 +1759,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         lImageSequenceMemoryAllocatedOK = self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions(lXdim, lYdim, lZdim)
         # continue only if the NumPy arrays could be allocated:
         if (lImageSequenceMemoryAllocatedOK == False) :
+            self.__theToolBars.setModeSelectToolBarButtonEnabled( CDConstants.SceneModeImageSequence, False )
             return
 
 
@@ -1801,6 +1808,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
                 # if non-image file, abort sequence and quit this function:
                 self.diagramSceneMainWidget.theCDImageSequence.setSequenceLoadedFromFiles(False)
+                self.__theToolBars.setModeSelectToolBarButtonEnabled( CDConstants.SceneModeImageSequence, False )
                 self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions( \
                     lXdim, lYdim, lFileCounter)
 
@@ -1834,7 +1842,8 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
         # now confirm that the theCDImageSequence contains a sequence loaded from files:
         self.diagramSceneMainWidget.theCDImageSequence.setSequenceLoadedFromFiles(True)
-        self.diagramSceneMainWidget.theCDImageSequence.setSequencePathName(str(lThePathToImageSequenceDir))
+        self.__theToolBars.setModeSelectToolBarButtonEnabled(CDConstants.SceneModeImageSequence, True)
+        self.diagramSceneMainWidget.theCDImageSequence.setSequencePathName( str(lThePathToImageSequenceDir) )
 
         CDConstants.printOut(  "importImageSequence()  --  9.", CDConstants.DebugTODO )
         # time.sleep(1.0)
@@ -2303,7 +2312,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image)
 
 
-            print "____ DEBUG: _,.- ~*'`'*~-.,_  CellDrawMainWindow.fileImportDICOM_Callback() now calling self.__theToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap(image) with ["+str(image)+", isNull()=="+str(image.isNull())+" ]"
+            CDConstants.printOut( "____ DEBUG: _,.- ~*'`'*~-.,_  CellDrawMainWindow.fileImportDICOM_Callback() now calling self.__theToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap(image) with ["+str(image)+", isNull()=="+str(image.isNull())+" ]", CDConstants.DebugTODO )
 
             self.__theToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap(QtGui.QPixmap.fromImage(image))
         pass # 152 prrint "2010 DEBUG: fileImportDICOM_Callback() ENDING."

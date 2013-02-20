@@ -261,6 +261,26 @@ class CDImageSequence(QtCore.QObject):
             for i in xrange(self.sizeZ):
                 self.imageSequenceFileNames[i] = " "
 
+
+            # emit a signal to update image sequence size GUI controls:
+            if ( int(self.sizeZ) == 1 ) :
+                lLabel = "image"
+            else:
+                lLabel = "images"
+    
+            lDict = { \
+                0: str(int(self.sizeX)), \
+                1: str(int(self.sizeY)), \
+                2: str(int(self.sizeZ)), \
+                3: str(lLabel) \
+                }
+    
+            self.signalThatImageSequenceResized.emit(lDict)
+
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.resetSequenceDimensions() - self.sizeX,Y,Z == "+str(self.sizeX)+" "+str(self.sizeY)+" "+str(self.sizeZ)+" " , CDConstants.DebugVerbose )
+
+            return True
+
         except:
         
             self.sizeX = CDConstants.ImageSequenceDefaultX
@@ -301,78 +321,24 @@ class CDImageSequence(QtCore.QObject):
             lDataArrayTooLargeWarning = QtGui.QMessageBox.critical( lParentWidget, "CellDraw", \
                 "CellDraw just ran out of memory.\n\nTry reducing the scene size, or use a smaller data set.")
 
+
+
+
+
+
+            # emit a signal to update image sequence size GUI controls:
+            lDict = { \
+                0: str(int(0)), \
+                1: str(int(0)), \
+                2: str(int(0)), \
+                3: str("images") \
+                }
+    
+            self.signalThatImageSequenceResized.emit(lDict)
+
             self.setSequenceLoadedFromFiles(False)
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.resetSequenceDimensions() just ran out of memory.  Try reducing the scene size, or use a smaller data set." , CDConstants.DebugVerbose )
             return False
-
-
-
-
-        # emit a signal to update image sequence size GUI controls:
-        if ( int(self.sizeZ) == 1 ) :
-            lLabel = "image"
-        else:
-            lLabel = "images"
-
-        lDict = { \
-            0: str(int(self.sizeX)), \
-            1: str(int(self.sizeY)), \
-            2: str(int(self.sizeZ)), \
-            3: str(lLabel) \
-            }
-
-        self.signalThatImageSequenceResized.emit(lDict)
-        
-        
-
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.resetSequenceDimensions() - self.sizeX,Y,Z == "+str(self.sizeX)+" "+str(self.sizeY)+" "+str(self.sizeZ)+" " , CDConstants.DebugVerbose )
-
-
-
-
-        #   an empty array, into which to write pixel values,
-        #   one Z layer for each image in the sequence,
-        #   and we use numpy.int32 as data type to hold RGBA values:
-        # self.imageSequenceArray = numpy.zeros( (self.sizeY, self.sizeX, self.sizeZ), dtype=numpy.int )
-
-
-#         TODO: this testing only necessary when NO image sequence loaded:
-
-        # if there is no image sequence loaded, then do nothing after clearing the array:
-
-
-
-#         if  (self.__imageSequenceLoaded == False):
-#     
-#             # set test array content:
-# 
-#             # show a panel containing a progress bar:    
-#             lProgressBarPanel=CDWaitProgressBar("Test content image sequence array x="+str(self.sizeX)+" y="+str(self.sizeY)+"  z="+str(self.sizeZ), 100)
-#             lProgressBarPanel.show()
-#             lProgressBarPanel.setRange(0, self.sizeZ)
-# 
-# 
-#             # for each image in sequence:
-#             for k in xrange(0, self.sizeZ, 1):
-#                 # for each i,j point in an image:
-#                 for i in xrange(0, self.sizeX, 1):
-#                     for j in xrange(0, self.sizeY, 1):
-#                         if (i == j) and (j == k):
-#                             self.imageSequenceArray[k, j, i, 0] = numpy.uint8 (127)
-#                         else:
-#                             self.imageSequenceArray[k, j, i, 0] = numpy.uint8 ( 0 )
-# #                        print "i,j,k [",i,j,k,"] =", self.imageSequenceArray[j, i, k]
-# #                     print "-----------------------------------"
-# #                 print "===================================="
-#                         
-#                 lProgressBarPanel.setValue(k)
-# 
-#             # close the panel containing a progress bar:
-#             lProgressBarPanel.maxProgressBar()
-#             lProgressBarPanel.accept()
-# 
-#             self.normalizeAllImages()
-
-        return True
 
     # end of   def resetSequenceDimensions( ... )
     # ------------------------------------------------------------------   
@@ -491,6 +457,64 @@ class CDImageSequence(QtCore.QObject):
     # ------------------------------------------------------------------   
 
 
+
+
+
+
+    # ------------------------------------------------------------------
+    # 2013 - Mitja: maxInSubArray(pX, pY, pZ)
+    # 
+    # ------------------------------------------------------------------   
+    def maxInImageSequenceSubArray(self, pX, pY, pZ):
+
+
+        # do nothing if the current array size isn't anything:
+        if (self.sizeX <= 0) or (self.sizeY <= 0) or (self.sizeZ <= 0) :
+            return
+
+        if (pX < 0) :
+            lXsize = 0
+        else:
+            lXsize = pX
+            
+        if (pY < 0) :
+            lYsize = 0
+        else:
+            lYsize = pY
+
+        if (pZ < 0) :
+            lZsize = 0
+        else:
+            lZsize = pZ
+
+        if (lXsize > self.sizeX) :
+            lXsize = self.sizeX
+        if (lYsize > self.sizeY) :
+            lYsize = self.sizeY
+        if (lZsize > self.sizeZ) :
+            lZsize = self.sizeZ
+
+#         print
+#         print "   --=**=--   "
+#         print
+#         print "self.imageSequenceArray = "
+#         print self.imageSequenceArray
+#         print
+#         print "   --=**=--   "
+#         print
+        lTmpSubArray = self.imageSequenceArray[0:lZsize, 0:lYsize, 0:lXsize, :]
+        lMaxValueInTmpSubArray = lTmpSubArray.max()
+#         print "self.imageSequenceArray[0:lXsize=="+str(lXsize)+", 0:lYsize=="+str(lYsize)+", 0:lZsize=="+str(lZsize)+", :] = "
+#         print lTmpSubArray
+#         print
+#         print "   --=**=--   "
+#         print
+        return lMaxValueInTmpSubArray
+        
+
+
+    #  end of   def maxInImageSequenceSubArray(pX, pY, pZ)
+    # ------------------------------------------------------------------   
 
 
     # ------------------------------------------------------------------
@@ -1439,7 +1463,8 @@ class CDImageSequence(QtCore.QObject):
 
                 lTmpPainter.end()
                 self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lPixmap))
-                self.__graphicsSceneMainWidget.scene.update()
+                if isinstance( self.__graphicsSceneMainWidget, QtGui.QWidget ) == True:
+                    self.__graphicsSceneMainWidget.scene.update()
     
             # ------------------------------------------
             # <-- end of scan across x-direction layers.
@@ -1558,7 +1583,8 @@ class CDImageSequence(QtCore.QObject):
 
                 lTmpPainter.end()
                 self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lPixmap))
-                self.__graphicsSceneMainWidget.scene.update()
+                if isinstance( self.__graphicsSceneMainWidget, QtGui.QWidget ) == True:
+                    self.__graphicsSceneMainWidget.scene.update()
     
             # ------------------------------------------
             # <-- end of scan across x-direction layers.
@@ -1806,6 +1832,17 @@ class CDImageSequence(QtCore.QObject):
     # 2011 - Mitja: setCurrentIndexInSequence() is to set the current image index within the sequence:
     # ------------------------------------------------------------------   
     def setCurrentIndexInSequence(self, pValue):
+#         print "setCurrentIndexInSequence(self, pValue)"
+#         print
+#         print "setCurrentIndexInSequence(self, pValue)"
+#         print
+#         print "pValue = ", pValue
+
+
+        # only do something if the  new key value is actually in the sequence:
+        if ( pValue in self.imageSequenceFileNames.keys() ) == False:
+            return
+
         self.theCurrentIndex = pValue
 
         CDConstants.printOut(  "___ - DEBUG ----- CDImageSequence.setCurrentIndexInSequence()  --  1.   self.theCurrentIndex=="+str(self.theCurrentIndex), CDConstants.DebugTODO )
@@ -1828,7 +1865,6 @@ class CDImageSequence(QtCore.QObject):
         CDConstants.printOut(  "___ - DEBUG ----- CDImageSequence.setCurrentIndexInSequence()  --  2.   self.computeCurrentImages() and self.retrieveCurrentImagesFromArrays() DONE", CDConstants.DebugTODO )
         # TODO remove TODO time.sleep(1.0)
                 
-
         # emit a signal to update image sequence size GUI controls:
         lDict = { \
             0: str(self.theCurrentIndex), \
@@ -2322,8 +2358,9 @@ class CDImageSequence(QtCore.QObject):
        
 
 
+
     # ------------------------------------------------------------------
-    def mousePressEvent(self, pEvent):       
+    def mousePressEvent(self, pEvent):
         # 2010 - Mitja: track click events of the mouse left button only:
         if pEvent.button() == QtCore.Qt.LeftButton:
             # print "CLICK inside CDImageSequence"
@@ -2337,15 +2374,18 @@ class CDImageSequence(QtCore.QObject):
 
             # 2010 - Mitja: update the CDImageSequence's parent widget,
             #   i.e. paintEvent() will be invoked regardless of the picking mode:
-            self.__graphicsSceneMainWidget.scene.update()
+
+
+            if isinstance( self.__graphicsSceneMainWidget, QtGui.QWidget ) == True:
+                self.__graphicsSceneMainWidget.scene.update()
+
+    # end of   def mousePressEvent(self, pEvent)
+    # ------------------------------------------------------------------
 
 
 
 
 
-    
-    
-    
     # ----------------------------------------------------------------------
     # ----------------------------------------------------------------------
     # ----------------------------------------------------------------------
