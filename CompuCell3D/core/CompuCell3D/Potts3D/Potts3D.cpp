@@ -336,6 +336,16 @@ void Potts3D::registerFixedStepper(FixedStepper *fixedStepper,bool _front) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 CellG * Potts3D::createCellG(const Point3D pt,long _clusterId) {
 	ASSERT_OR_THROW("createCell() cellFieldG Point out of range!", cellFieldG->isValid(pt));
+
+	CellG * cell=createCell(_clusterId);
+
+	cellFieldG->set(pt, cell);
+
+	return cell;   
+
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+CellG *Potts3D::createCell(long _clusterId){	
 	CellG * cell = new CellG();
 	cell->extraAttribPtr=cellFactoryGroup.create();
 	cell->id=recentlyCreatedCellId;
@@ -359,12 +369,11 @@ CellG * Potts3D::createCellG(const Point3D pt,long _clusterId) {
 
 
 	cellInventory.addToInventory(cell);
-	cellFieldG->set(pt, cell);
+
 	if(attrAdder){
 		attrAdder->addAttribute(cell);
 	}
-	return cell;   
-
+	return cell;
 
 }
 
@@ -372,6 +381,14 @@ CellG * Potts3D::createCellG(const Point3D pt,long _clusterId) {
 // this function should be only used from PIF Initializers or when you really understand the way CC3D assigns cell ids
 CellG * Potts3D::createCellGSpecifiedIds(const Point3D pt,long _cellId,long _clusterId) {
 	ASSERT_OR_THROW("createCell() cellFieldG Point out of range!", cellFieldG->isValid(pt));
+	CellG * cell =createCellSpecifiedIds(_cellId,_clusterId);
+	cellFieldG->set(pt, cell);
+	return cell;   
+
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// this function should be only used from PIF Initializers or when you really understand the way CC3D assigns cell ids
+CellG *Potts3D:: createCellSpecifiedIds(long _cellId,long _clusterId){
 	CellG * cell = new CellG();
 	cell->extraAttribPtr=cellFactoryGroup.create();
 	cell->id=_cellId;
@@ -398,16 +415,14 @@ CellG * Potts3D::createCellGSpecifiedIds(const Point3D pt,long _cellId,long _clu
 	}
 
 
-	cellInventory.addToInventory(cell);
-	cellFieldG->set(pt, cell);
+	cellInventory.addToInventory(cell);	
 	if(attrAdder){
 		attrAdder->addAttribute(cell);
 	}
 	return cell;   
 
-
 }
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Potts3D::destroyCellG(CellG *cell,bool _removeFromInventory) {
 	if(cell->extraAttribPtr){
 		cellFactoryGroup.destroy(cell->extraAttribPtr);

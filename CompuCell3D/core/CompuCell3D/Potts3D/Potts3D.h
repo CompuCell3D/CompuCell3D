@@ -316,6 +316,10 @@ namespace CompuCell3D {
 
     virtual CellG *createCellG(const Point3D pt, long _clusterId=-1);
     virtual CellG *createCellGSpecifiedIds(const Point3D pt,long _cellId,long _clusterId=-1);
+    virtual CellG *createCell(long _clusterId=-1);
+	virtual CellG *createCellSpecifiedIds(long _cellId,long _clusterId=-1);
+    
+
     virtual void destroyCellG(CellG * cell,bool _removeFromInventory=true);
 
     BasicClassGroupFactory * getCellFactoryGroupPtr(){return &cellFactoryGroup;};
