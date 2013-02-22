@@ -6,6 +6,9 @@
 #include "Potts3D.h"
 #include <limits>
 
+#undef max
+#undef min
+
 using namespace std;
 
 namespace CompuCell3D {
