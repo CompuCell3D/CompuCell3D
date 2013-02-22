@@ -4,6 +4,9 @@ SET(SRCS
   SerializerDE.cpp
   )
 
+
+
+  
 FIND_PACKAGE(VTK REQUIRED)
 
 
@@ -23,6 +26,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     SET(LIBS
        CompuCellLibShared
        BasicUtilsStatic
+       FieldExtractor
        ${PYTHON_LIBRARIES}
        # simthreadShared
        vtkVolumeRendering 
@@ -33,7 +37,8 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     SET(LIBS
        CompuCellLibShared
-       BasicUtilsShared
+       BasicUtilsShared       
+       FieldExtractor
        ${PYTHON_LIBRARIES}
        vtkVolumeRendering 
        vtkHybrid 

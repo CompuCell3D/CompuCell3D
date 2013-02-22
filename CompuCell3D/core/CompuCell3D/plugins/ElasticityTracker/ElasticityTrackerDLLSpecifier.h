@@ -2,7 +2,7 @@
 #define ELASTICITYTRACKER_EXPORT_H
 
     #if defined(_WIN32)
-      #ifdef ElasticityTracekrShared_EXPORTS
+      #ifdef ElasticityTrackerShared_EXPORTS
           #define ELASTICITYTRACKER_EXPORT __declspec(dllexport)
           #define ELASTICITYTRACKER_EXPIMP_TEMPLATE
       #else

@@ -48,6 +48,8 @@
 
 #include <iostream>
 
+#undef min
+#undef max
 
 namespace Cleaver
 {

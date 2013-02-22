@@ -41,8 +41,8 @@ namespace CompuCell3D {
 
    class ELASTICITYTRACKER_EXPORT ElasticityTracker{
       public:
-         ElasticityTracker(){};
-         ~ElasticityTracker(){};
+		  ElasticityTracker(){};
+		  ~ElasticityTracker(){};
          std::set<ElasticityTrackerData> elasticityNeighbors; //stores ptrs to cell neighbors i.e. each cell keeps track of its neighbors
 
    };

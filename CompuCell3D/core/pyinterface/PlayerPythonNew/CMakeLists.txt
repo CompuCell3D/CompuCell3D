@@ -1,3 +1,12 @@
+
+
+SET(NUMPY_INCLUDE_DIR )
+EXEC_PROGRAM(${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/core/pyinterface/PlayerPythonNew ARGS NumpyHeader.py
+      OUTPUT_VARIABLE NUMPY_INCLUDE_DIR)
+
+#   
+MESSAGE(NUMPY_INCLUDE_DIR ${NUMPY_INCLUDE_DIR})
+
 SET(SRCS
    FieldStorage.cpp
    FieldExtractorBase.cpp   
@@ -18,6 +27,7 @@ INCLUDE_DIRECTORIES(
    ${COMPUCELL3D_SOURCE_DIR}/core/CompuCell3D
    ${COMPUCELL3D_SOURCE_DIR}/core/CompuCell3D/plugins
    ${COMPUCELL3D_SOURCE_DIR}/core/pyinterface/PyPlugin
+   ${NUMPY_INCLUDE_DIR}
    # ${COMPUCELL3D_SOURCE_DIR}/BasicUtils
    # ${PYINTERFACE_SRC_DIR}/PyPlugin
     )

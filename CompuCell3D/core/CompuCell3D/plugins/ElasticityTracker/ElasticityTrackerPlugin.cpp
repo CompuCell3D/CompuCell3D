@@ -127,9 +127,9 @@ void ElasticityTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,
 				  CellG *oldCell) {  
 
    //do not do any updates until the lattice is fully initialized
-/*   if(simulator->getStep()<0){
-      return;
-   }*/
+   //if(simulator->getStep()<0){
+   //   return;
+   //}
    
 	if (newCell==oldCell) //this may happen if you are trying to assign same cell to one pixel twice 
 		return;

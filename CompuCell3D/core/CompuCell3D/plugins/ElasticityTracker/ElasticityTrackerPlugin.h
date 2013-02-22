@@ -52,8 +52,7 @@ class ELASTICITYTRACKER_EXPORT ElasticityTrackerPlugin : public Plugin, public C
       virtual void extraInit(Simulator *simulator);
 
       // BCGChangeWatcher interface
-      virtual void field3DChange(const Point3D &pt, CellG *newCell,
-                                 CellG *oldCell);
+      virtual void field3DChange(const Point3D &pt, CellG *newCell,CellG *oldCell);
       
       BasicClassAccessor<ElasticityTracker> * getElasticityTrackerAccessorPtr(){return & elasticityTrackerAccessor;}
 		//had to include this function to get set inereation working properly with Python , and Player that has restart capabilities 
