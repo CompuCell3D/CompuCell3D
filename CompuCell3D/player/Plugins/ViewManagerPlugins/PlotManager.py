@@ -231,25 +231,33 @@ class PlotWindowInterface(QtCore.QObject):
 #        pixmap=QPixmap(_sizeX,_sizeY)  # worked on Windows, but not Linux/OSX
 #        pixmap.fill(QColor("white"))
         
+        
         imgmap = QImage(_sizeX, _sizeY, QImage.Format_ARGB32)
         #imgmap.fill(Qt.white)
         imgmap.fill(qRgba(255, 255, 255, 255)) # solid white background (should probably depend on user-chosen colors though)
         
         self.pW.print_(imgmap)
-        # following seems pretty crude, but keep in mind user can change Prefs anytime during sim
-        if Configuration.getSetting("OutputToProjectOn"):
-            outDir = str(Configuration.getSetting("ProjectLocation"))
-        else:
-            outDir = str(Configuration.getSetting("OutputLocation"))
+# # #         # following seems pretty crude, but keep in mind user can change Prefs anytime during sim
+# # #         if Configuration.getSetting("OutputToProjectOn"):
+# # #             outDir = str(Configuration.getSetting("ProjectLocation"))
+# # #         else:
+# # #             outDir = str(Configuration.getSetting("OutputLocation"))
+            
+        import CompuCellSetup
+        outDir=CompuCellSetup.getSimulationOutputDir()   
+        
         outfile = os.path.join(outDir,_fileName)
 #        print '--------- savePlotAsPNG: outfile=',outfile
         imgmap.save(outfile,"PNG")
         
     def savePlotAsData(self,_fileName):        
-        if Configuration.getSetting("OutputToProjectOn"):
-            outDir = str(Configuration.getSetting("ProjectLocation"))
-        else:
-            outDir = str(Configuration.getSetting("OutputLocation"))  # may to dump into image/lattice output dir instead
+# # #         if Configuration.getSetting("OutputToProjectOn"):
+# # #             outDir = str(Configuration.getSetting("ProjectLocation"))
+# # #         else:
+# # #             outDir = str(Configuration.getSetting("OutputLocation"))  # may to dump into image/lattice output dir instead
+        import CompuCellSetup
+        outDir=CompuCellSetup.getSimulationOutputDir()   
+            
         outfile = os.path.join(outDir,_fileName)
         print MODULENAME,'  savePlotAsData():   outfile=',outfile
         fpout = open(outfile, "w")

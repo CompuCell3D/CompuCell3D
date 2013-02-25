@@ -24,7 +24,11 @@ class SteppablePy(SimObjectPy):
 
 
 class SteppableBasePy(SteppablePy):    
+    (CC3D_FORMAT,TUPLE_FORMAT)=range(0,2)    
     def __init__(self,_simulator,_frequency=1):
+        
+        
+        
         SteppablePy.__init__(self,_frequency)
         self.simulator=_simulator
         self.potts=_simulator.getPotts()
@@ -211,7 +215,10 @@ class SteppableBasePy(SteppablePy):
             import CompuCell            
             self.cleaverMeshDumper=CompuCell.getCleaverMeshDumper()  
 
-            
+    def everyPixel(self):
+        import itertools
+        return itertools.product(xrange(self.dim.x),xrange(self.dim.y),xrange(self.dim.z))  
+                    
     def attemptFetchingCellById(self,_id):
         return self.inventory.attemptFetchingCellById(_id)
             
@@ -240,7 +247,18 @@ class SteppableBasePy(SteppablePy):
             return CellNeighborListAuto(self.neighborTrackerPlugin,_cell)
         
         return None
+
+    def getCellNeighborDataList(self,_cell):
+        try:
+            for neighborSurfaceData  in self.getCellNeighbors(_cell):
+                yield neighborSurfaceData.neighborAddress,neighborSurfaceData.commonSurfaceArea
+        except:
+            raise AttributeError('Could not find NeighborTracker Plugin')
+
             
+
+
+
     def getFocalPointPlasticityDataList(self,_cell):
         if self.focalPointPlasticityPlugin:
             return FocalPointPlasticityDataList(self.focalPointPlasticityPlugin,_cell)
@@ -266,12 +284,34 @@ class SteppableBasePy(SteppablePy):
             
         return None    
         
+    def getCopyOfCellBoundaryPixels(self,_cell,_format=CC3D_FORMAT):
+        try:
+            if _format==SteppableBasePy.CC3D_FORMAT:
+                import CompuCell
+                return [CompuCell.Point3D(boundaryPixelTrackerData.pixel) for boundaryPixelTrackerData in self.getCellBoundaryPixelList(_cell)]                
+            else:                
+                return [(boundaryPixelTrackerData.pixel.x,boundaryPixelTrackerData.pixel.y,boundaryPixelTrackerData.pixel.z) for boundaryPixelTrackerData in self.getCellBoundaryPixelList(_cell)]
+        except:
+            raise AttributeError('Could not find BoundaryPixelTracker Plugin')        
+        
+        
     def getCellPixelList(self,_cell):
         if self.pixelTrackerPlugin:
             return CellPixelList(self.pixelTrackerPlugin,_cell)
 
         return None    
         
+    def getCopyOfCellPixels(self,_cell,_format=CC3D_FORMAT):
+        
+        try:
+            if _format==SteppableBasePy.CC3D_FORMAT:
+                import CompuCell
+                return [CompuCell.Point3D(pixelTrackerData.pixel) for pixelTrackerData in self.getCellPixelList(_cell)]                
+            else:                
+                return [(pixelTrackerData.pixel.x,pixelTrackerData.pixel.y,pixelTrackerData.pixel.z) for pixelTrackerData in self.getCellPixelList(_cell)]
+        except:
+            raise AttributeError('Could not find PixelTracker Plugin')    
+    
     def getElasticityDataList(self,_cell):
         if self.elasticityTrackerPlugin:
             return ElasticityDataList(self.elasticityTrackerPlugin,_cell)
@@ -297,35 +337,19 @@ class SteppableBasePy(SteppablePy):
             
     def  deleteCell(self,cell):
         import CompuCell
-        pixelsToDelete=[] #used to hold pixels to delete        
-        pixelList=self.getCellPixelList(cell)
-        pt=CompuCell.Point3D()
-        
-        for pixelTrackerData in pixelList:
-            pixelsToDelete.append(CompuCell.Point3D(pixelTrackerData.pixel))            
-            self.mediumCell=CompuCell.getMediumCell()                                    
-        for pixel in pixelsToDelete:            
-            self.cellField.set(pixel,self.mediumCell)   
-        # We have to call volumeTracker. setp function manually when tryuign to delete cell. This function is called only from potts loop whil Python steppables are run outside this loop.    
-        self.cleanDeadCells()   
+#         pixelsToDelete=self.getCopyOfCellPixels(cell,SteppableBasePy.CC3D_FORMAT) # returns list of Point3D
+        pixelsToDelete=self.getCopyOfCellPixels(cell,SteppableBasePy.TUPLE_FORMAT) # returns list of tuples
+        self.mediumCell=CompuCell.getMediumCell()    
+        for pixel in pixelsToDelete:                        
+            self.cellField[pixel[0],pixel[1],pixel[2]]=self.mediumCell
     
     def createNewCell (self,type,pt,xSize,ySize,zSize=1):
-        import CompuCell
         if not self.checkIfInTheLattice(pt):
             return
-        cell=self.potts.createCellG(pt)    
+        cell=self.potts.createCell()    
         cell.type=type
-        
-        ptCell=CompuCell.Point3D()
-        
-        for x in range(pt.x,pt.x+xSize,1):
-            for y in range(pt.y,pt.y+ySize,1):        
-                for z in range(pt.z,pt.z+zSize,1):
-                    ptCell.x=x
-                    ptCell.y=y
-                    ptCell.z=z                    
-                    if self.checkIfInTheLattice(ptCell):
-                        self.cellField.set(ptCell,cell)        
+        self.cellField[pt.x:pt.x+xSize-1,pt.y:pt.y+ySize-1,pt.z:pt.z+zSize-1]=cell
+       
                         
     def moveCell(self, cell, shiftVector):
         import  CompuCell  
@@ -350,21 +374,40 @@ class SteppableBasePy(SteppablePy):
          
         # Now we will move cell
         for pixel in pixelsToMove:
-            self.cellField.set(pixel,cell)
+            self.cellField[pixel.x,pixel.y,pixel.z]=cell
          
         # Now we will delete old pixels    
-        pixelList=self.getCellPixelList(cell)
-        pt=CompuCell.Point3D()
-        
         self.mediumCell=CompuCell.getMediumCell()                
         for pixel in pixelsToDelete:
-            self.cellField.set(pixel,self.mediumCell)   
+            self.cellField[pixel.x,pixel.y,pixel.z]=self.mediumCell   
                     
     def checkIfInTheLattice(self,_pt):
         if _pt.x>=0 and _pt.x<self.dim.x and  _pt.y>=0 and _pt.y<self.dim.y and _pt.z>=0 and _pt.z<self.dim.z:            
             return True
         return False
         
+    def getPixelNeighborsBasedOnDistance(self,_pixel,_maxDistance=1.1):
+        import CompuCell
+        boundaryStrategy=CompuCell.BoundaryStrategy.getInstance()
+        maxNeighborIndex=boundaryStrategy.getMaxNeighborIndexFromDepth(_maxDistance)
+        
+        for i in xrange (maxNeighborIndex+1):
+            pixelNeighbor=boundaryStrategy.getNeighborDirect(_pixel,i)
+            if pixelNeighbor.distance: #neighbor is valid
+                yield pixelNeighbor
+            
+    def getPixelNeighborsBasedOnNeighborOrder(self,_pixel,_neighborOrder=1):
+        import CompuCell
+        boundaryStrategy=CompuCell.BoundaryStrategy.getInstance()
+        maxNeighborIndex=boundaryStrategy.getMaxNeighborIndexFromNeighborOrder(_neighborOrder)
+        
+        for i in xrange (maxNeighborIndex+1):
+            pixelNeighbor=boundaryStrategy.getNeighborDirect(_pixel,i)
+            if pixelNeighbor.distance: #neighbor is valid
+                yield pixelNeighbor
+        
+        
+            
         
 class RunBeforeMCSSteppableBasePy(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):

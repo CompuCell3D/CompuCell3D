@@ -50,7 +50,7 @@ namespace CompuCell3D {
          
          ///members
 		 int getCommonSurfaceArea(){return commonSurfaceArea;}
-         CellG * neighborAddress;
+         CellG * neighborAddress;		 
          int commonSurfaceArea;
 
                   

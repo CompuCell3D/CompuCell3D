@@ -3,6 +3,9 @@ import os
 import os.path
 import cStringIO,traceback
 import CMLParser
+
+from distutils.dir_util import mkpath
+
 #import Configuration
 
 
@@ -402,43 +405,88 @@ def setSimulationXMLFileName(_simulationFileName):
     simulationPaths.setXmlFileNameFromPython(_simulationFileName)
 #     print "\n\n\n got here ",simulationPaths.simulationXMLFileName
 
-def openFileInSimulationOutputDirectory(_filePath,_mode="r"):    
-    import os.path
+
+def makeDefaultSimulationOutputDirectory():
+    global simulationFileName
     global screenshotDirectoryName
-    print "screenshotDirectoryName=",screenshotDirectoryName
-#     from distutils.dir_util  import mkpath
-    import distutils  
-    import os.path
     
-    if screenshotDirectoryName=="":
+    simulationFileBaseName=os.path.basename(simulationFileName)        
+    import datetime
+    timestampStr=datetime.datetime.now().__str__()
+    timestampStr=timestampStr.replace(' ','-')
+    timestampStr=timestampStr.replace('.','-')
+    timestampStr=timestampStr.replace(':','-')
+    
+    defaultOutputRootDirectory=os.path.join(os.path.expanduser('~'),'CC3DWorkspace')
+    outputDir=os.path.join(defaultOutputRootDirectory,simulationFileBaseName+'-'+timestampStr)
+    outputDir=os.path.abspath(outputDir)# normalizing path
+    
+    screenshotDirectoryName=outputDir # after this call screenshot directory  - screenshotDirectoryName is set to outputDir
+    
+    
+    try:
+        mkpath(outputDir)        
+        return outputDir
+    except:
+        raise IOError
+    
+
+def getSimulationOutputDir():
+    global screenshotDirectoryName
+    if screenshotDirectoryName=='':
+        return makeDefaultSimulationOutputDirectory()            
+    else:    
+        return os.path.abspath(screenshotDirectoryName)#normalizing path
+        
+def openFileInSimulationOutputDirectory(_filePath,_mode="r"):    
+    
+    global screenshotDirectoryName    
+    
+    print 'screenshotDirectoryName=',screenshotDirectoryName
+#     print 'dirName=',dirName    
+#     print 'fileName=',fileName    
+    
+    if screenshotDirectoryName=="":        
         fileName=os.path.abspath(_filePath)
         dirName=os.path.dirname(fileName)
+        
+        defaultOutputRootDirectory=makeDefaultSimulationOutputDirectory()
+        
+        outputFileName=os.path.join(defaultOutputRootDirectory,_filePath)
+        outputFileName=os.path.abspath(outputFileName)# normalizing path
+        dirForOutputFileName=os.path.dirname(outputFileName)
+        
         try:
-            distutils.dir_util.mkpath(dirName)
+            mkpath(dirForOutputFileName)        
         except:
             raise IOError
             
         try :
-            return open(fileName,_mode),fileName
+            return open(outputFileName,_mode),outputFileName            
         except:
-            raise IOError 
+            raise IOError ('COULD NOT OPEN '+outputFileName+' in mode='+_mode)
         
 
     fileName=os.path.join(os.path.abspath(screenshotDirectoryName),_filePath)
+    fileName=os.path.abspath(fileName) #normalizing path    
+    
     dirName=os.path.dirname(fileName)
+    
+
+    
     if os.path.abspath(screenshotDirectoryName)==dirName:
         try:
             return open(fileName,_mode),fileName
         except: # perhaps directory screenshotDirectoryName does not exist yet
-            try:
-                distutils.dir_utilmkpath(dirName)
+            try:                
+                mkpath(dirName)
                 return open(fileName,_mode),fileName
             except:
             
                 raise IOError
-    else:        
-        try:
-            distutils.dir_utilmkpath(dirName)
+    else:                
+        try:            
+            mkpath(dirName)
         except:
             raise IOError
     
