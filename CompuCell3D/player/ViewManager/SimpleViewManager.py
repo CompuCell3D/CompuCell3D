@@ -550,12 +550,18 @@ class SimpleViewManager():
             
         # import Configuration
         # versionStr=Configuration.getVersion()
-        aboutText= "<h2>CompuCell3D</h2> Version:"+versionStr+" Revision: "+revisionStr+"<br />\
+        aboutText= "<h2>CompuCell3D</h2> Version: "+versionStr+" Revision: "+revisionStr+"<br />\
                           Copyright &copy; Biocomplexity Institute, <br />\
-                          Indiana University, Bloomington,IN\
+                          Indiana University, Bloomington, IN\
                           <p><b>CompuCell Player</b> is a visualization engine for CompuCell.</p>"
-        
-        QMessageBox.about(self, "CompuCell3D", aboutText)
+        lMoreInfoText="More information at:<br><a href=\"http://www.compucell3d.org/\">http://www.compucell3d.org/</a>"
+
+        lVersionString = "<br><br><small><small>Support library information:<br>Python runtime version: %s<br>Qt runtime version: %s<br>Qt compile-time version: %s<br>PyQt version: %s</small></small>" % \
+            ( str(sys.version_info[0])+"."+str(sys.version_info[1])+"."+str(sys.version_info[2])+" - "+str(sys.version_info[3])+" - "+str(sys.version_info[4]) , \
+            qVersion(), QT_VERSION_STR, PYQT_VERSION_STR)
+#            PyQt4.QtCore.QT_VERSION_STR, PyQt4.QtCore.qVersion(), PyQt4.QtCore.PYQT_VERSION_STR)
+
+        QMessageBox.about(self, "CompuCell3D", aboutText+lMoreInfoText+lVersionString)
           
     def __whatsThis(self):
         """
