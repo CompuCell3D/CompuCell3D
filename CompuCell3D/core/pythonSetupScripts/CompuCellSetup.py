@@ -405,6 +405,43 @@ def setSimulationXMLFileName(_simulationFileName):
     simulationPaths.setXmlFileNameFromPython(_simulationFileName)
 #     print "\n\n\n got here ",simulationPaths.simulationXMLFileName
 
+def addNewPlotWindow(_title='',_xAxisTitle='',_yAxisTitle='',_xScaleType='linear',_yScaleType='linear'):
+    global viewManager
+    pW=viewManager.plotManager.getNewPlotWindow()
+    
+    if not pW:
+        raise AttributeError('Missing plot modules. Windows/OSX Users: Make sure you have numpy installed. For instructions please visit www.compucell3d.org/Downloads. Linux Users: Make sure you have numpy and PyQwt installed. Please consult your linux distributioun manual pages on how to best install those packages')
+        
+    # setting up default plot window parameters/look
+    
+    #Plot Title - properties           
+    pW.setTitle(_title)
+    pW.setTitleSize(12)
+    pW.setTitleColor("Green")
+    
+    #plot background
+    pW.setPlotBackgroundColor("white")
+    # properties of x axis
+    pW.setXAxisTitle(_xAxisTitle)
+    if _xScaleType=='log':
+        pW.setXAxisLogScale()        
+    pW.setXAxisTitleSize(10)      
+    pW.setXAxisTitleColor("blue")              
+    
+    # properties of y axis
+    pW.setYAxisTitle(_yAxisTitle)        
+    if _xScaleType=='log':
+        pW.setYAxisLogScale()
+    pW.setYAxisTitleSize(10)        
+    pW.setYAxisTitleColor("red") 
+
+    pW.addGrid()
+    #adding automatically generated legend
+    # default possition is at the bottom of the plot but here we put it at the top
+    pW.addAutoLegend("top")
+    
+    return pW
+    
 
 def makeDefaultSimulationOutputDirectory():
     global simulationFileName

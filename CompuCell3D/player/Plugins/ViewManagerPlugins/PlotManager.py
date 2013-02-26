@@ -23,6 +23,7 @@ class PlotWindowInterface(QtCore.QObject):
     showAllHistPlotsSignal=QtCore.pyqtSignal( (QtCore.QMutex, ))
     showBarCurvePlotSignal = QtCore.pyqtSignal( ('char*',QtCore.QMutex, ))
     showAllBarCurvePlotsSignal=QtCore.pyqtSignal( (QtCore.QMutex, ))
+    savePlotAsPNGSignal=QtCore.pyqtSignal( ('char*','int','int',QtCore.QMutex, )) #savePlotAsPNG has to emit signal with locking mutex to work correctly
     
     def __init__(self,_plotWindow=None):
         # PlotManagerSetup.PlotWindowInterfaceBase.__init__(self,_plotWindow)
@@ -53,6 +54,7 @@ class PlotWindowInterface(QtCore.QObject):
         self.showHistPlotSignal.connect(self.__showHistPlot)
         self.showAllBarCurvePlotsSignal.connect(self.__showAllBarCurvePlots)
         self.showBarCurvePlotSignal.connect(self.__showBarCurvePlot)
+        self.savePlotAsPNGSignal.connect(self.__savePlotAsPNG)
     
     def clear(self):
         # self.pW.clear()
@@ -104,14 +106,15 @@ class PlotWindowInterface(QtCore.QObject):
         
         # self.pW.insertLegend(legend, Qwt.QwtPlot.TopLegend)
         
-    def addPlot(self,_plotName,_style="Lines"):
+    def addPlot(self,_plotName,_style="Lines",_color='black',_size=1):
         # self.plotData[_plotName]=[arange(0),arange(0),False]
         self.plotData[_plotName]=[array([],dtype=double),array([],dtype=double),False]
         
-        self.plotDrawingObjects[_plotName]={"curve":Qwt.QwtPlotCurve(_plotName),"LineWidth":2,"LineColor":"black"}
+        self.plotDrawingObjects[_plotName]={"curve":Qwt.QwtPlotCurve(_plotName),"LineWidth":_size,"LineColor":_color}
         plotStyle=getattr(Qwt.QwtPlotCurve,_style)
         # self.plotDrawingObjects[_plotName]["curve"].setStyle(Qwt.QwtPlotCurve.Dots)
         self.plotDrawingObjects[_plotName]["curve"].setStyle(plotStyle)
+
         
         
     def addGrid(self):
@@ -226,35 +229,61 @@ class PlotWindowInterface(QtCore.QObject):
     def showPlot(self,_plotName):
         self.plotWindowInterfaceMutex.lock()
         self.showPlotSignal.emit(_plotName,self.plotWindowInterfaceMutex)
+     
+    def  savePlotAsPNG(self,_fileName,_sizeX=400,_sizeY=400) :
+        self.plotWindowInterfaceMutex.lock()
+        self.savePlotAsPNGSignal.emit(_fileName,_sizeX,_sizeY,self.plotWindowInterfaceMutex)
         
-    def savePlotAsPNG(self,_fileName,_sizeX=400,_sizeY=400):        
+    def __savePlotAsPNG(self,_fileName,_sizeX,_sizeY,_mutex):        
+        
 #        pixmap=QPixmap(_sizeX,_sizeY)  # worked on Windows, but not Linux/OSX
 #        pixmap.fill(QColor("white"))
-        
         
         imgmap = QImage(_sizeX, _sizeY, QImage.Format_ARGB32)
         #imgmap.fill(Qt.white)
         imgmap.fill(qRgba(255, 255, 255, 255)) # solid white background (should probably depend on user-chosen colors though)
         
         self.pW.print_(imgmap)
-# # #         # following seems pretty crude, but keep in mind user can change Prefs anytime during sim
+        # following seems pretty crude, but keep in mind user can change Prefs anytime during sim
 # # #         if Configuration.getSetting("OutputToProjectOn"):
 # # #             outDir = str(Configuration.getSetting("ProjectLocation"))
 # # #         else:
 # # #             outDir = str(Configuration.getSetting("OutputLocation"))
-            
+
         import CompuCellSetup
-        outDir=CompuCellSetup.getSimulationOutputDir()   
+        outDir=CompuCellSetup.getSimulationOutputDir()
         
         outfile = os.path.join(outDir,_fileName)
 #        print '--------- savePlotAsPNG: outfile=',outfile
         imgmap.save(outfile,"PNG")
+        _mutex.unlock()
+        
+    #original implementation - does not really work unless we use signal slot mechanism    
+    # def savePlotAsPNG(self,_fileName,_sizeX=400,_sizeY=400):        
+# #        pixmap=QPixmap(_sizeX,_sizeY)  # worked on Windows, but not Linux/OSX
+# #        pixmap.fill(QColor("white"))
+        
+        # imgmap = QImage(_sizeX, _sizeY, QImage.Format_ARGB32)
+        # #imgmap.fill(Qt.white)
+        # imgmap.fill(qRgba(255, 255, 255, 255)) # solid white background (should probably depend on user-chosen colors though)
+        
+        # self.pW.print_(imgmap)
+        # # following seems pretty crude, but keep in mind user can change Prefs anytime during sim
+        # if Configuration.getSetting("OutputToProjectOn"):
+            # outDir = str(Configuration.getSetting("ProjectLocation"))
+        # else:
+            # outDir = str(Configuration.getSetting("OutputLocation"))
+        # outfile = os.path.join(outDir,_fileName)
+# #        print '--------- savePlotAsPNG: outfile=',outfile
+        # imgmap.save(outfile,"PNG")
+        
         
     def savePlotAsData(self,_fileName):        
 # # #         if Configuration.getSetting("OutputToProjectOn"):
 # # #             outDir = str(Configuration.getSetting("ProjectLocation"))
 # # #         else:
 # # #             outDir = str(Configuration.getSetting("OutputLocation"))  # may to dump into image/lattice output dir instead
+
         import CompuCellSetup
         outDir=CompuCellSetup.getSimulationOutputDir()   
             
@@ -339,6 +368,9 @@ class PlotWindowInterface(QtCore.QObject):
         _mutex.unlock()
 
     def addHistPlotData(self,_plotName,_values,_intervals):
+        # print 'addHistPlotData'
+        # print '_values=',_values
+        # print '_intervals=',_intervals
         intervals = []
         valLength = len(_values)
         values = Qwt.QwtArrayDouble(valLength)
@@ -350,17 +382,25 @@ class PlotWindowInterface(QtCore.QObject):
         self.plotHistData[_plotName].setData(Qwt.QwtIntervalData(intervals, values))
     
     def addHistPlot(self,_plotName, _r = 100, _g = 100, _b = 0,_alpha=255):
-      self.plotHistData[_plotName]=HistogramItem()
-      self.plotHistData[_plotName].setColor(QColor(_r,_b,_g,_alpha))
-    
+        self.plotHistData[_plotName]=HistogramItem()
+        self.plotHistData[_plotName].setColor(QColor(_r,_g,_b,_alpha))
+
+    def addHistogramPlot(self,_plotName, _color='black',_alpha=255):
+        self.plotHistData[_plotName]=HistogramItem()
+        color=QColor(_color)
+        color.setAlpha(_alpha)
+        self.plotHistData[_plotName].setColor(color)
+
     #def setHistogramColor(self,):
         #self.histogram.setColor(QColor(_colorName))
     
-    def setHistogramColor(self,_colorName = None, _r = 100, _b = 100, _g = 0,_alpha=255):
+    def setHistogramColor(self,_colorName = None, _r = 100, _g = 100, _b = 0,_alpha=255):
         if _colorName != None:
-            self.histogram.setColor(QColor(_colorName))
+            # self.histogram.setColor(QColor(_colorName))
+            self.plotHistData[_plotName].setColor(QColor(_colorName))
         else:
-            self.histogram.setColor(QColor(_r,_b,_g,_alpha))
+            # self.histogram.setColor(QColor(_r,_g,_b,_alpha))
+            self.plotHistData[_plotName].setColor(QColor(_r,_g,_b,_alpha))  
     
     def setHistogramView(self):
         self.histogram = HistogramItem()    
@@ -381,8 +421,8 @@ class PlotWindowInterface(QtCore.QObject):
       #self.histogram.setData(Qwt.QwtIntervalData(intervals, values))
     
     def showHistogram(self):
-      self.plotWindowInterfaceMutex.lock()
-      self.showAllHistPlotsSignal.emit(self.plotWindowInterfaceMutex)
+        self.plotWindowInterfaceMutex.lock()
+        self.showAllHistPlotsSignal.emit(self.plotWindowInterfaceMutex)
 
     def addBarPlotData(self,_values,_positions,_width=1):
         for bar in self.pW.itemList():
@@ -464,7 +504,7 @@ class HistogramItem(Qwt.QwtPlotItem): #courtesy of pyqwt examples
     # __init__()
 
     def setData(self, data):
-        self.__data = data
+        self.__data = data        
         self.itemChanged()
 
     # setData()
@@ -501,7 +541,7 @@ class HistogramItem(Qwt.QwtPlotItem): #courtesy of pyqwt examples
             if result.bottom() < self.baseline():
                 result.setBottom(self.baseline())
             elif result.top() > self.baseline():
-                result.setTop(self.baseline())
+                result.setTop(self.baseline())        
         return result
 
     # boundingRect()
@@ -514,9 +554,21 @@ class HistogramItem(Qwt.QwtPlotItem): #courtesy of pyqwt examples
 
     def draw(self, painter, xMap, yMap, rect):
         iData = self.data()
+        # # # print iData
+        # # self.xMap=xMap
+        # # self.yMap=yMap
+        # # self.rect=rect
+        # # print 'self.rect=',self.rect
+        # # # print 'xMap=',xMap
+        # # # print 'yMap=',yMap
+        
         painter.setPen(self.color())
         x0 = xMap.transform(self.baseline())
         y0 = yMap.transform(self.baseline())
+        # # # print 'self.baseline()=',self.baseline()
+        # # # print 'x0=',x0
+        # # # print 'y0=',y0
+        
         for i in range(iData.size()):
             if self.testHistogramAttribute(HistogramItem.Xfy):
                 x2 = xMap.transform(iData.value(i))
@@ -525,7 +577,7 @@ class HistogramItem(Qwt.QwtPlotItem): #courtesy of pyqwt examples
 
                 y1 = yMap.transform(iData.interval(i).minValue())
                 y2 = yMap.transform(iData.interval(i).maxValue())
-
+                # print 'y1=',y1,' y2=',y2
                 if y1 > y2:
                     y1, y2 = y2, y1
                     
@@ -544,12 +596,17 @@ class HistogramItem(Qwt.QwtPlotItem): #courtesy of pyqwt examples
                     painter, Qt.Horizontal, QRect(x0, y1, x2-x0, y2-y1))
             else:
                 y2 = yMap.transform(iData.value(i))
+                # print 'y2=',y2
                 if y2 == y0:
                     continue
-
+                
                 x1 = xMap.transform(iData.interval(i).minValue())
                 x2 = xMap.transform(iData.interval(i).maxValue())
-
+                
+                # # # if x1<x0 or x2<x0:
+                    # # # continue
+                
+                
                 if x1 > x2:
                     x1, x2 = x2, x1
 
@@ -563,11 +620,10 @@ class HistogramItem(Qwt.QwtPlotItem): #courtesy of pyqwt examples
                                          or (yy2 > y0 and y2 > y0)):
                             # One pixel distance between neighboured bars
                             x2 -= 1
-                
-                self.drawBar(
-                    painter, Qt.Vertical, QRect(x1, y0, x2-x1, y2-y0))
 
-    # draw()
+                
+                self.drawBar(painter, Qt.Vertical, QRect(x1, y0, x2-x1, y2-y0))    
+
 
     def setBaseline(self, reference):
         if self.baseline() != reference:
@@ -600,6 +656,7 @@ class HistogramItem(Qwt.QwtPlotItem): #courtesy of pyqwt examples
     # testHistogramAttribute()
 
     def drawBar(self, painter, orientation, rect):
+        
         painter.save()
         color = painter.pen().color()
         r = rect.normalized()
@@ -615,24 +672,20 @@ class HistogramItem(Qwt.QwtPlotItem): #courtesy of pyqwt examples
         painter.setBrush(Qt.NoBrush)
 
         painter.setPen(QPen(light, 2))
-        Qwt.QwtPainter.drawLine(
-            painter, r.left()+1, r.top()+2, r.right()+1, r.top()+2)
+        
+        Qwt.QwtPainter.drawLine(painter, r.left()+1, r.top()+2, r.right()+1, r.top()+2)
 
         painter.setPen(QPen(dark, 2))
-        Qwt.QwtPainter.drawLine(
-            painter, r.left()+1, r.bottom(), r.right()+1, r.bottom())
+        Qwt.QwtPainter.drawLine(painter, r.left()+1, r.bottom(), r.right()+1, r.bottom())
 
         painter.setPen(QPen(light, 1))
-        Qwt.QwtPainter.drawLine(
-            painter, r.left(), r.top() + 1, r.left(), r.bottom())
-        Qwt.QwtPainter.drawLine(
-            painter, r.left()+1, r.top()+2, r.left()+1, r.bottom()-1)
+        Qwt.QwtPainter.drawLine(painter, r.left(), r.top() + 1, r.left(), r.bottom())
+        Qwt.QwtPainter.drawLine(painter, r.left()+1, r.top()+2, r.left()+1, r.bottom()-1)
 
         painter.setPen(QPen(dark, 1))
-        Qwt.QwtPainter.drawLine(
-            painter, r.right()+1, r.top()+1, r.right()+1, r.bottom())
-        Qwt.QwtPainter.drawLine(
-            painter, r.right(), r.top()+2, r.right(), r.bottom()-1)
+        Qwt.QwtPainter.drawLine(painter, r.right()+1, r.top()+1, r.right()+1, r.bottom())
+        Qwt.QwtPainter.drawLine(painter, r.right(), r.top()+2, r.right(), r.bottom()-1)
+        
 
         painter.restore()
 
