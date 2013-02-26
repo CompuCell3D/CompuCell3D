@@ -1,0 +1,7 @@
+<Simulation version="3.6.1">
+
+    <PythonScript>Simulation/diffusion-3D.py</PythonScript> 
+
+    <Resource Type="Field" Copy="No">Simulation/diffusion_3D.pulse.txt</Resource>
+
+</Simulation>

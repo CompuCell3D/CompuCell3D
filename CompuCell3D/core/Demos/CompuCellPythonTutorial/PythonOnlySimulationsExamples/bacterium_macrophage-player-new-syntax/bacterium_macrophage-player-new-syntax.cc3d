@@ -1,0 +1,7 @@
+<Simulation version="3.6.1">
+
+    <PythonScript>Simulation/bacterium_macrophage-player-new-syntax.py</PythonScript> 
+
+    <PIFFile>Simulation/bacterium_macrophage_2D_wall.piff</PIFFile>
+
+</Simulation>
