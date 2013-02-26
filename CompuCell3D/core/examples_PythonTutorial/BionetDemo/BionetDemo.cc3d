@@ -1,7 +1,0 @@
-<Simulation version="3.5.1">
-   <XMLScript Type="XMLScript">Simulation/BionetDemo.xml</XMLScript>
-   <PythonScript Type="PythonScript">Simulation/BionetDemo.py</PythonScript>
-   <Resource Type="Python">Simulation/BionetDemoSteppables.py</Resource>
-   <Resource Type="SBML">Simulation/oscli.sbml</Resource>
-   <SerializeSimulation AllowMultipleRestartDirectories="False" FileFormat="text" OutputFrequency="100"/>
-</Simulation>

@@ -1,7 +1,0 @@
-<Simulation version="3.6.1">
-
-    <XMLScript Type="XMLScript">Simulation/bacterium_macrophage_2D.xml</XMLScript>
-
-    <PIFFile>Simulation/bacterium_macrophage_2D_wall.piff</PIFFile>
-
-</Simulation>

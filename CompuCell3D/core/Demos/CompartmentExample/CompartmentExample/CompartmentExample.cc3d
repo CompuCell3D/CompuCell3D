@@ -1,7 +1,0 @@
-<Simulation version="3.6.1">
-
-    <XMLScript Type="XMLScript">Simulation/CompartmentExample.xml</XMLScript>
-
-    <PIFFile>Simulation/3D_LINE_BASE.piff</PIFFile>
-
-</Simulation>

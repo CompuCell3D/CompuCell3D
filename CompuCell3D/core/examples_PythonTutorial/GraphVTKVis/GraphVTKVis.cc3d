@@ -1,5 +1,0 @@
-<Simulation version="3.5.1">
-   <XMLScript Type="XMLScript">Simulation/GraphVTKVis.xml</XMLScript>
-   <PythonScript Type="PythonScript">Simulation/GraphVTKVis.py</PythonScript>
-   <Resource Type="Python">Simulation/GraphVTKVisSteppables.py</Resource>
-</Simulation>

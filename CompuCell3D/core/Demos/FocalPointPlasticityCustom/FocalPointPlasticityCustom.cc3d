@@ -1,6 +1,0 @@
-<Simulation version="3.6.2">
-    <XMLScript>Simulation/FocalPointPlasticityCustom.xml</XMLScript>    
-    <PIFFile>Simulation/FocalPointPlasticityCustom.piff</PIFFile>        
-</Simulation>
-
- 

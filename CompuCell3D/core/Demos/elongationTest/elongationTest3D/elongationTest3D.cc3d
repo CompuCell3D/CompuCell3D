@@ -1,7 +1,0 @@
-<Simulation version="3.6.1">
-
-    <XMLScript Type="XMLScript">Simulation/elongationTest3D.xml</XMLScript>
-
-    <PIFFile>Simulation/elongationTest3D.piff</PIFFile>
-
-</Simulation>

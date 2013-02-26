@@ -1,7 +1,0 @@
-<Simulation version="3.6.1">
-
-    <XMLScript Type="XMLScript">Simulation/diffusion_steady_state_ext_potential_3D_oxygen.xml</XMLScript>
-
-    <PIFFile>Simulation/elasticityTest.piff</PIFFile>
-
-</Simulation>

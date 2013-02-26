@@ -1,9 +1,0 @@
-<Simulation version="3.6.1">
-
-    <PythonScript>Simulation/elasticitytest-player-new-syntax.py</PythonScript> 
-
-    <Resource Type="Python">Simulation/elasticitytestSteppables.py</Resource>    
-
-    <PIFFile>Simulation/elasticitytest.piff</PIFFile>
-
-</Simulation>

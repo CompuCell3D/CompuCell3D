@@ -1,7 +1,0 @@
-<Simulation version="3.6.1">
-
-    <XMLScript Type="XMLScript">Simulation/elasticityTest.xml</XMLScript>
-
-    <PIFFile>Simulation/elasticityTest.piff</PIFFile>
-
-</Simulation>

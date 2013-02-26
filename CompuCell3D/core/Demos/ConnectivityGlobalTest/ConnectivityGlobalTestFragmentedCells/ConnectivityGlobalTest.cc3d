@@ -1,7 +1,0 @@
-<Simulation version="3.6.1">
-
-    <XMLScript Type="XMLScript">Simulation/ConnectivityGlobalTestFragmentedCells.xml</XMLScript>
-
-    <PIFFile>Simulation/ConnectivityGlobalTestFragmentedCells.piff</PIFFile>
-
-</Simulation>

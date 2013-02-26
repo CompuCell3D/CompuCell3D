@@ -1,7 +1,0 @@
-<Simulation version="3.6.1">
-
-    <XMLScript Type="XMLScript">Simulation/connectivityTest.xml</XMLScript>
-
-    <PIFFile>Simulation/connectivityTest.piff</PIFFile>
-
-</Simulation>

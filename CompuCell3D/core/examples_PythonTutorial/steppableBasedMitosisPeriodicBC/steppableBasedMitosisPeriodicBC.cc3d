@@ -1,8 +1,0 @@
-<Simulation version="3.5.1">
-    <XMLScript>Simulation/steppableBasedMitosis.xml</XMLScript>    
-    <PythonScript>Simulation/steppableBasedMitosis.py</PythonScript> 
-    <Resource Type="Python">Simulation/steppableBasedMitosisSteppables.py</Resource>
-    <PIFFile>Simulation/steppableBasedMitosis.piff</PIFFile>
-</Simulation>
-
- 

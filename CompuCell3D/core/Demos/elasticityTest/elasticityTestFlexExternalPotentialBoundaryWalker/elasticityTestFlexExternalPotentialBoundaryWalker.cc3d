@@ -1,7 +1,0 @@
-<Simulation version="3.6.1">
-
-    <XMLScript Type="XMLScript">Simulation/elasticityTestFlexExternalPotentialBoundaryWalker.xml</XMLScript>
-
-    <PIFFile>Simulation/elasticityTest.piff</PIFFile>
-
-</Simulation>

@@ -1,7 +1,0 @@
-<Simulation version="3.6.1">
-
-    <XMLScript Type="XMLScript">Simulation/FocalPointPlasticityCompartments.xml</XMLScript>
-
-    <PIFFile>Simulation/plasticityCompartments.piff</PIFFile>
-
-</Simulation>

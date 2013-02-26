@@ -1,7 +1,0 @@
-<Simulation version="3.6.1">
-
-    <PythonScript>Simulation/diffusion-2D-new-syntax.py</PythonScript> 
-
-    <Resource Type="Field" Copy="No">Simulation/diffusion_2D.pulse.txt</Resource>
-
-</Simulation>

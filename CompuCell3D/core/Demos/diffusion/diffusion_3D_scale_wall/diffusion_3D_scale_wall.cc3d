@@ -1,9 +1,0 @@
-<Simulation version="3.6.1">
-
-    <XMLScript Type="XMLScript">Simulation/diffusion_3D_scale_wall.xml</XMLScript>
-
-    <Resource Type="Field" Copy="No">Simulation/diffusion_3D_scale_wall.pulse.txt</Resource>    
-
-    <PIFFile>Simulation/diffusion_3D_scale_wall.piff</PIFFile>
-
-</Simulation>

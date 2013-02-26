@@ -1,4 +1,0 @@
-<Simulation version="3.5.1">
-   <PythonScript Type="PythonScript">Simulation/Angiogenesis.py</PythonScript>
-   <Resource Type="Python">Simulation/AngiogenesisSteppables.py</Resource>
-</Simulation>

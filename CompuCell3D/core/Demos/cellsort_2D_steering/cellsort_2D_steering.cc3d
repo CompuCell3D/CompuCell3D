@@ -1,9 +1,0 @@
-<Simulation version="3.6.1">
-
-    <XMLScript Type="XMLScript">Simulation/cellsort_2D_steering.xml</XMLScript>
-
-    <PythonScript>Simulation/cellsort_2D_steering.py</PythonScript> 
-
-    <Resource Type="Python">Simulation/cellsort_2D_steering_steppables.py</Resource>    
-
-</Simulation>
