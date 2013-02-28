@@ -1438,7 +1438,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                                            .arg(lToBeSavedFileExtension))
                 if fileName.isEmpty():
                     #  self.__theSceneRasterizer.hide()
-                    CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() fixed-size raster PIFF failed.", CDConstants.DebugImportant )
+                    CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() fixed-size raster PIFF failed.", CDConstants.DebugSparse )
                     return False
                 else:
                     # DIH:
@@ -1474,7 +1474,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                                            .arg(lToBeSavedFileExtension))
                 if fileName.isEmpty():
                     #  self.__theSceneRasterizer.hide()
-                    CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() region-raster PIFF failed.", CDConstants.DebugImportant )
+                    CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() region-raster PIFF failed.", CDConstants.DebugSparse )
                     return False
                 else:
                     # this used to be the call to rasterize region-raster cells from each region:
@@ -1497,7 +1497,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                                        .arg(lToBeSavedFileExtension))
             if fileName.isEmpty():
                 #  self.__theSceneRasterizer.hide()
-                CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() pixel-based PIFF failed.", CDConstants.DebugImportant )
+                CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() pixel-based PIFF failed.", CDConstants.DebugSparse )
                 return False
             else:
                 # 2010 - Mitja: this was originally calling the saveFile function:
@@ -1643,7 +1643,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
               "\n self.mainTypesDict ="+ str(self.mainTypesDict), CDConstants.DebugAll )
 
         lFileDialog = QtGui.QFileDialog(self.theMainWindow)
-        lFilters = "Scene Bundle (*."+CDConstants.SceneBundleFileExtension+");;Scene File (*.pifScene)"
+        lFilters = "Scene File (*.pifScene);;Scene Bundle (*."+CDConstants.SceneBundleFileExtension+")"
 
         #         lFilters.append("Scene Bundle (*.cc3s)")
         #         lFilters.append("Scene File (*.pifScene)")

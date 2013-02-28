@@ -38,15 +38,14 @@ class ProgressBarImageLabel(QtGui.QLabel):
 
     def __init__(self,parent=None):
         QtGui.QLabel.__init__(self, parent)
-#         QtGui.QWidget.__init__(self, parent)
         self.__width = 64
         self.__height = 64
         self.__rasterWidth = 10
+        self.__fixedSizeRaster = False
+
         # store a pixmap:
         self.setPixmap( QtGui.QPixmap(self.__width, self.__height) )
         self.pixmap().fill(QtCore.Qt.darkGreen)
-
-        self.__fixedSizeRaster = False
 
     def paintEvent(self, event):
 
@@ -81,8 +80,6 @@ class ProgressBarImageLabel(QtGui.QLabel):
             pass
 
         lPainter.end()
-        # JUJU LA PRIMA VOLTA QUA APPARI EL PROGRESSBAR NEL TOOLBAR DE SOTO
-        # JUJU LA SECONDA VOLTA QUA SE RIDIMENSIONA LIMMAGINE NEL PROGRESSBAR A 100x100 pixel
 
     def __drawGrid(self,painter):
         for x in xrange(0, self.__width, self.__rasterWidth):
@@ -198,9 +195,6 @@ class CDWaitProgressBar(QtGui.QWidget):
 
     # ------------------------------------------------------------------
     def hide(self):
-#         print
-#         print "--------------------------------"
-#         print "  CDWaitProgressBar.hide() ....."
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         # this code was in the INIT section, but we now create/delete the image label
         #   on the fly when showing/hiding the progress bar widget --->
@@ -210,25 +204,9 @@ class CDWaitProgressBar(QtGui.QWidget):
         if isinstance( self.__theParent, QtGui.QStatusBar ) == True:
             self.__theParent.removeWidgetFromStatusBar(self)
 
-#             print
-#             print "  self.__theParent.size() =", self.__theParent.size()
-#     #         print "  self.__theParent ==", self.__theParent, "calling: self.__theParent.resize(16,64) "
-#     #         self.__theParent.resize(16,64)
-#             self.__theParent.update()
-#             print "  self.__theParent.size() =", self.__theParent.size()
-#             print "  self.__theParent ==", self.__theParent, "calling: self.__theParent.reformat() "
-#             self.__theParent.reformat()
-#             self.__theParent.update()
-#             print "  self.__theParent.size() =", self.__theParent.size()
-
-
         # finally pass the hide() call upwards:
         super(CDWaitProgressBar, self).hide()
 
-
-#         print
-#         print "  CDWaitProgressBar.hide() done."
-#         print "--------------------------------"
     # end of   def hide(self)
     # ------------------------------------------------------------------
 
@@ -236,10 +214,6 @@ class CDWaitProgressBar(QtGui.QWidget):
 
     # ------------------------------------------------------------------
     def show(self):
-#         print
-#         print "--------------------------------"
-#         print "  CDWaitProgressBar.show() ....."
-
         # immediately pass the show() call upwards:
         super(CDWaitProgressBar, self).show()
 
@@ -247,20 +221,6 @@ class CDWaitProgressBar(QtGui.QWidget):
         if isinstance( self.__theParent, QtGui.QStatusBar ) == True:
             self.__theParent.insertPermanentWidgetInStatusBar(0, self)
 
-#             print
-#             print "  self.__theParent.size() =", self.__theParent.size()
-#     #         print "  self.__theParent ==", self.__theParent, "calling: self.__theParent.resize(16,64) "
-#     #         self.__theParent.resize(16,64)
-#             self.__theParent.update()
-#             print "  self.__theParent.size() =", self.__theParent.size()
-#             print "  self.__theParent ==", self.__theParent, "calling: self.__theParent.reformat() "
-#             self.__theParent.reformat()
-#             self.__theParent.update()
-#             print "  self.__theParent.size() =", self.__theParent.size()
-
-#         print
-#         print "  CDWaitProgressBar.show() done."
-#         print "--------------------------------"
     # end of     def show(self)
     # ------------------------------------------------------------------
 
@@ -272,8 +232,6 @@ class CDWaitProgressBar(QtGui.QWidget):
         # -------------------------------------------
 
         # if we needed an image in the progress bar, we'd now:
-        #   create a QLabel, NOT to be used as a label but to show an image
-        #   as in the original PIF_Generator code:
 #         self.__theProgressBarImageLabel = ProgressBarImageLabel()
 #         print "CDWaitProgressBar.__InitCentralWidget()  self.__theProgressBarImageLabel =="+str(self.__theProgressBarImageLabel)
 
@@ -324,27 +282,12 @@ class CDWaitProgressBar(QtGui.QWidget):
     # ---------------------------------------------------------
     def setImagePixmap(self, pPixmap, pWidth=-1, pHeight=-1):
 
-#         print "CDWaitProgressBar.setImagePixmap() - start.  pPixmap="+str(pPixmap)+", pWidth="+str(pWidth)+", pHeight="+str(pHeight)+" ..."
-#         QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
-# 
-#         print "CDWaitProgressBar.setImagePixmap() - doing self.__theProgressBarImageLabel.setPixmap(pPixmap):"
-
-
-        # if we needed an image in the progress bar, we'd now:
-#         if isinstance( pPixmap, QtGui.QPixmap ) == True:
-#             self.__theProgressBarImageLabel.setPixmap(pPixmap)
-#         else:
-#             # store a dummy pixmap:
-#             self.__theProgressBarImageLabel.setPixmap( QtGui.QPixmap(64, 64) )
-#             self.__theProgressBarImageLabel.pixmap().fill(QtCore.Qt.darkGreen)
-
-#         print "CDWaitProgressBar.setImagePixmap() - doing nothing."
-        # time.sleep(3.0)
-
-
         QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
-
-#         print "CDWaitProgressBar.setImagePixmap() - end."
+        lCriticalErrorWarning = QtGui.QMessageBox.critical( self, \
+        "CellDraw", \
+        "Critical eror: CDWaitProgressBar.setImagePixmap()\n\n." + \
+        "Please contact your system administrator or the source where you obtained CellDraw." )
+        sys.exit()
 
     # end of   def setImagePixmap(self, pPixmap, pWidth=-1, pHeight=-1)
     # ---------------------------------------------------------
@@ -364,7 +307,10 @@ class CDWaitProgressBar(QtGui.QWidget):
 
         curVal = self.__progressBar.value()
         maxVal = self.__progressBar.maximum()
-        lPercentage = (float(curVal) / float(maxVal)) * 100.0
+        if (maxVal != 0) :
+            lPercentage = (float(curVal) / float(maxVal)) * 100.0
+        else:
+            lPercentage = 100.0
         self.__percentageLabel.setText( QtCore.QString("... %1 %").arg(lPercentage, 0, 'g', 2) )
         QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
 
@@ -410,7 +356,10 @@ class CDWaitProgressBar(QtGui.QWidget):
         curVal = self.__progressBar.value()
         maxVal = self.__progressBar.maximum()
         # self.__progressBar.setValue(curVal + (maxVal - curVal) / 100)
-        lPercentage = (float(curVal) / float(maxVal)) * 100.0
+        if (maxVal != 0) :
+            lPercentage = (float(curVal) / float(maxVal)) * 100.0
+        else:
+            lPercentage = 100.0
         # CDConstants.printOut( " "+str( "ah yes", curVal, maxVal, lPercentage, QtCore.QString("%1").arg(lPercentage) )+" ", CDConstants.DebugTODO )
         self.__percentageLabel.setText( QtCore.QString("... %1 %").arg(lPercentage, 0, 'g', 2) )
         self.__progressBar.setValue(curVal + 1)
