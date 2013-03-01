@@ -205,10 +205,8 @@ void PLUGIN_NAME_COREPlugin::step() {    //Put your code here - it will be invo
         try:
             _features['ExtraAttribute']
             EXTRA_ATTRIB_INCLUDES='#include \"'+pluginName+'Data.h\"'
-            EXTRA_ATTRIB_INCLUDES+="""
-#include <BasicUtils/BasicClassAccessor.h>
-#include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
-"""
+            # # # EXTRA_ATTRIB_INCLUDES+="""
+# # # """
 
             EXTRA_ATTRIB_ACCESSOR_DEFINE='BasicClassAccessor<'+pluginName+'Data> '+pluginNameVar+'DataAccessor;'
         
@@ -392,10 +390,10 @@ void PLUGIN_NAME_COREPlugin::step() {    //Put your code here - it will be invo
             print '_features[ExtraAttribute]=',_features['ExtraAttribute']
             _features['ExtraAttribute']
             EXTRA_ATTRIB_INCLUDES='#include \"'+steppableName+'Data.h\"'
-            EXTRA_ATTRIB_INCLUDES+="""
-#include <BasicUtils/BasicClassAccessor.h>
-#include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
-"""
+            # # # EXTRA_ATTRIB_INCLUDES+="""
+# # # #include <BasicUtils/BasicClassAccessor.h>
+# # # #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
+# # # """
 
             EXTRA_ATTRIB_ACCESSOR_DEFINE='BasicClassAccessor<'+steppableName+'Data> '+steppableNameVar+'DataAccessor;'
         
@@ -513,27 +511,11 @@ void PLUGIN_NAME_COREPlugin::step() {    //Put your code here - it will be invo
     
     def initCppTemplates(self):
         self.cppTemplatesDict["CMakePlugin"]="""
-ADD_COMPUCELL3D_PLUGIN(PLUGIN_CORE_NAME
-  PLUGIN_CORE_NAMEPlugin.cpp
-  PLUGIN_CORE_NAMEPluginProxy.cpp LINK_LIBRARIES ${PLUGIN_DEPENDENCIES} EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
-
-ADD_COMPUCELL3D_PLUGIN_HEADERS(PLUGIN_CORE_NAME
-  PLUGIN_CORE_NAMEPlugin.h
-  PLUGIN_CORE_NAMEDLLSpecifier.h
-  EXTRA_ATTRIBUTE_HEADER
-  )
+ADD_COMPUCELL3D_PLUGIN(PLUGIN_CORE_NAME LINK_LIBRARIES ${PLUGIN_DEPENDENCIES} EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
 """    
 
         self.cppTemplatesDict["CMakePluginDeveloperZone"]="""
-ADD_COMPUCELL3D_PLUGIN(PLUGIN_CORE_NAME
-  PLUGIN_CORE_NAMEPlugin.cpp
-  PLUGIN_CORE_NAMEPluginProxy.cpp LINK_LIBRARIES ${CC3DLibraries} EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
-
-ADD_COMPUCELL3D_PLUGIN_HEADERS(PLUGIN_CORE_NAME
-  PLUGIN_CORE_NAMEPlugin.h
-  PLUGIN_CORE_NAMEDLLSpecifier.h
-  EXTRA_ATTRIBUTE_HEADER
-  )
+ADD_COMPUCELL3D_PLUGIN(PLUGIN_CORE_NAME LINK_LIBRARIES ${PLUGIN_DEPENDENCIES} EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})        
 """    
 
 
@@ -541,24 +523,8 @@ ADD_COMPUCELL3D_PLUGIN_HEADERS(PLUGIN_CORE_NAME
 #ifndef IFDEFLABEL
 #define IFDEFLABEL
 
-
-#include <CompuCell3D/Plugin.h>
+#include <CompuCell3D/CC3D.h>
 EXTRA_ATTRIB_INCLUDES
-ENERGY_FUNCTION_INCLUDE
-LATTICE_MONITOR_INCLUDE
-STEPPER_INCLUDE
-#include <PublicUtilities/ParallelUtilsOpenMP.h>
-
-#include <CompuCell3D/Potts3D/Cell.h>
-
-#include <muParser/muParser.h>
-
-// basic STL includes
-#include <vector>
-#include <list>
-#include <map>
-#include <set>
-#include <string>
 
 DLL_SPECIFIER_INCLUDE
 
@@ -678,21 +644,8 @@ namespace CompuCell3D {
 #endif
 """
         self.cppTemplatesDict["PluginImplementation"]="""
-#include <CompuCell3D/Simulator.h>
-#include <CompuCell3D/Potts3D/Potts3D.h>
-
-#include <CompuCell3D/Field3D/Field3D.h>
-#include <CompuCell3D/Field3D/WatchableField3D.h>
-#include <CompuCell3D/Boundary/BoundaryStrategy.h>
-
-#include <CompuCell3D/Potts3D/CellInventory.h>
-#include <CompuCell3D/Automaton/Automaton.h>
+#include <CompuCell3D/CC3D.h>        
 using namespace CompuCell3D;
-
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
-#include <PublicUtilities/StringUtils.h>
-#include <algorithm>
 
 #include "PLUGIN_NAME_COREPlugin.h"
 
@@ -773,26 +726,11 @@ std::string PLUGIN_NAME_COREPlugin::steerableName(){
 }
 """
         self.cppTemplatesDict["CMakeSteppable"]="""
-ADD_COMPUCELL3D_STEPPABLE(STEPPABLE_NAME_CORE
-  STEPPABLE_NAME_CORE.cpp
-  STEPPABLE_NAME_COREProxy.cpp LINK_LIBRARIES ${STEPPABLE_DEPENDENCIES})
-
-
-ADD_COMPUCELL3D_STEPPABLE_HEADERS(STEPPABLE_NAME_CORE
-  STEPPABLE_NAME_CORE.h
-  )        
+ADD_COMPUCELL3D_STEPPABLE(STEPPABLE_NAME_CORE   LINK_LIBRARIES ${STEPPABLE_DEPENDENCIES} EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})        
 """        
 
         self.cppTemplatesDict["CMakeSteppableDeveloperZone"]="""
-ADD_COMPUCELL3D_STEPPABLE(STEPPABLE_CORE_NAME
-  STEPPABLE_CORE_NAME.cpp
-  STEPPABLE_CORE_NAMEProxy.cpp LINK_LIBRARIES ${CC3DLibraries} EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})
-
-ADD_COMPUCELL3D_STEPPABLE_HEADERS(STEPPABLE_CORE_NAME
-  STEPPABLE_CORE_NAME.h
-  STEPPABLE_CORE_NAMEDLLSpecifier.h
-  EXTRA_ATTRIBUTE_HEADER
-  )
+ADD_COMPUCELL3D_STEPPABLE(STEPPABLE_NAME_CORE   LINK_LIBRARIES ${STEPPABLE_DEPENDENCIES} EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS})            
 """    
 
 
@@ -834,19 +772,12 @@ STEPPABLE_NAME_VARProxy("STEPPABLE_NAME_CORE", "Autogenerated steppeble - the au
 #ifndef IFDEFLABEL
 #define IFDEFLABEL
 
-#include <CompuCell3D/Steppable.h>
+#include <CompuCell3D/CC3D.h>
+
 EXTRA_ATTRIB_INCLUDES
-#include <CompuCell3D/Steppable.h>
-#include <CompuCell3D/Field3D/Dim3D.h>
-#include <CompuCell3D/Field3D/Point3D.h>
 
 #include "STEPPABLE_NAME_COREDLLSpecifier.h"
 
-//STL containers
-#include <vector>
-#include <list>
-#include <set>
-#include <map>
 
 namespace CompuCell3D {
     
@@ -899,25 +830,10 @@ namespace CompuCell3D {
 """        
         self.cppTemplatesDict["SteppableImplementation"]="""
 
-
-
-#include <CompuCell3D/Simulator.h>
-#include <CompuCell3D/Potts3D/Potts3D.h>
-#include <CompuCell3D/Field3D/Field3D.h>
-#include <CompuCell3D/Field3D/WatchableField3D.h>
-#include <CompuCell3D/Boundary/BoundaryStrategy.h>
-
-#include <CompuCell3D/Potts3D/CellInventory.h>
-#include <CompuCell3D/Automaton/Automaton.h>
-#include <BasicUtils/BasicString.h>
-#include <BasicUtils/BasicException.h>
-#include <PublicUtilities/StringUtils.h>
-#include <algorithm>
+#include <CompuCell3D/CC3D.h>
 
 using namespace CompuCell3D;
 
-
-#include <iostream>
 using namespace std;
 
 #include "STEPPABLE_NAME_CORE.h"

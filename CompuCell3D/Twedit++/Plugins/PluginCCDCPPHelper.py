@@ -19,7 +19,9 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from CC3DCPPHelper.Configuration  import Configuration
 
-from CC3DCPPHelper import SnippetUtils
+
+from PluginUtils.SnippetMenuParser import SnippetMenuParser 
+
 
 import os.path
 import string
@@ -39,10 +41,6 @@ longDescription = """This plugin provides provides users with CC3D C++ code gene
 
 error = QString("")
 
-        
-
-# # # from CC3DPythonHelper import SnippetUtils
-          
 
 class CC3DCPPHelper(QObject):
     """
@@ -60,22 +58,11 @@ class CC3DCPPHelper(QObject):
         
         self.configuration=Configuration(self.__ui.configuration.settings)
         
-        self.snippetUtils=SnippetUtils.SnippetUtils()
-
+        self.snippetDictionary={}
         self.initialize()   
-        # those were moved to initialize fcn
-        # self.actions={}
-        # self.actionGroupDict={}
-        # self.actionGroupMenuDict={}
                     
         self.cppTemplates=None                
         
-        # self.snippetMapper = QSignalMapper(self.__ui)
-        # self.__ui.connect(self.snippetMapper,SIGNAL("mapped(const QString&)"),  self.__insertSnippet)
-        
-        # self.snippetDictionary=self.snippetUtils.getCodeSnippetsDict()
-        # self.__initMenus()  
-        # self.__initActions()        
         
         # useful regular expressions
         self.nonwhitespaceRegex=re.compile('^[\s]*[\S]+')
@@ -84,8 +71,6 @@ class CC3DCPPHelper(QObject):
         self.blockStatementRegex=re.compile(':[\s]*$') # block statement - : followed by whitespaces at the end of the line
         self.blockStatementWithCommentRegex=re.compile(':[\s]*[#]+[\s\S]*$') # block statement - : followed by whitespaces at the end of the line
         
-        # self.__initUI()
-        # self.__initToolbar()
         
     def initialize(self):
         '''  
@@ -112,7 +97,7 @@ class CC3DCPPHelper(QObject):
         self.snippetMapper = QSignalMapper(self.__ui)
         self.__ui.connect(self.snippetMapper,SIGNAL("mapped(const QString&)"),  self.__insertSnippet)
         
-        self.snippetDictionary=self.snippetUtils.getCodeSnippetsDict()
+        # # # self.snippetDictionary=self.snippetUtils.getCodeSnippetsDict()
         self.__initMenus()  
         self.__initActions()        
 
@@ -129,16 +114,14 @@ class CC3DCPPHelper(QObject):
             self.__ui.disconnect(self.actions['Generate New Module...'],SIGNAL("triggered()"),self.generateNewModule)
         except LookupError,e:
             pass
-        # self.cc3dcppMenu.removeAction(self.actions['Generate New Module...'])
-
+        
         
         for actionName, action in self.actions.iteritems():
             
             self.__ui.disconnect(action,SIGNAL("triggered()"),self.snippetMapper,SLOT("map()"))
 
         self.cc3dcppMenu.clear()
-        
-        # self.cppMenuAction = self.__ui.menuBar().insertMenu(self.__ui.fileMenu.menuAction(),self.cc3dcppMenu)
+                
         
         self.__ui.menuBar().removeAction(self.cc3dcppMenuAction)
         
@@ -155,35 +138,17 @@ class CC3DCPPHelper(QObject):
         self.cc3dcppMenuAction=self.__ui.menuBar().insertMenu(self.__ui.fileMenu.menuAction(),self.cc3dcppMenu)
         
         
-    def getActionGroupAssignment(self, _actionName):
-        groupActionListNames=["Visit","Module Setup","XML Utils","Include","Get"]
-        actionName=str(_actionName)
-        for name in groupActionListNames:
-            if actionName.startswith(name):
-                return name
-        return ""
         
     def __initActions(self):
         """
         Private method to initialize the actions.        
         """
-        # self.actions['Generate New Module...'] = QtGui.QAction(QtGui.QIcon(':/icons/document-new.png'), "&Generate New Module...",
-                # self, 
-                # statusTip="Create new C++ CC3D module", triggered=self.generateNewModule)
                 
         self.actions['Generate New Module...'] = QtGui.QAction(QtGui.QIcon(':/icons/document-new.png'), "&Generate New Module...",
                 self, 
                 statusTip="Create new C++ CC3D module")
                 
         self.__ui.connect(self.actions['Generate New Module...'] ,SIGNAL("triggered()"),self.generateNewModule)       
-        
-        
-        # self.actions['Generate New Module...'].disconnect(self, SIGNAL("triggered()"), self.generateNewModule)
-        # self.disconnect(self.actions['Generate New Module...'],SIGNAL("triggered()"),self.generateNewModule)
-        
-        # self.__ui.disconnect(self.__ui,SIGNAL("triggered()"),self.generateNewModule)
-        
-        
         
         
         self.actions['Deactivate']=QtGui.QAction("Deactivate",
@@ -195,60 +160,31 @@ class CC3DCPPHelper(QObject):
         #----------------------------
         self.cc3dcppMenu.addSeparator()
         
-        # lists begining of action names which will be grouped 
         
-        keys=self.snippetDictionary.keys()
-        keys.sort()
-        for key in keys:
-            actionGroupName=self.getActionGroupAssignment(key)
-            print 'actionGroupName=',actionGroupName
-            if actionGroupName!="":
-                try:
-                    actionGroupMenu=self.actionGroupMenuDict[actionGroupName] 
-                    
-                    actionName=key
-                    # removing action group anme from the name of te action
-                    actionGroupNameStr=str(actionGroupName)
-                    actionName =re.sub(actionGroupNameStr,'',actionName)
-                    actionName.strip() #trimming leading and trailing spaces
-                    
-                    
-                    action=actionGroupMenu.addAction(actionName)
-                    self.actions[key]=action
-                    self.__ui.connect(action,SIGNAL("triggered()"),self.snippetMapper,SLOT("map()"))
-                    self.snippetMapper.setMapping(action, key)
-                    
-                except KeyError,e:
+        self.snippetDictionary={}
+        psmp=SnippetMenuParser()
+        snippetFilePath=os.path.abspath(os.path.join(os.path.dirname(__file__),'CC3DCPPHelper/Snippets.cpp.template'))
+        
+        psmp.readSnippetMenu(snippetFilePath)
 
+        snippetMenuDict=psmp.getSnippetMenuDict()        
 
-                    actionName=key
-                    # removing action group anme from the name of te action
-                    actionGroupNameStr=str(actionGroupName)
-                    actionName =re.sub(actionGroupNameStr,'',actionName)
-                    actionName.strip() #trimming leading and trailing spaces
-
+        for menuName, submenuDict in iter(sorted(snippetMenuDict.iteritems())):
+            print 'menuName=',menuName
+            
+            groupMenu=self.cc3dcppMenu.addMenu(menuName)
+            
+            for subMenuName, snippetText in  iter(sorted(submenuDict.iteritems())):
+                action=groupMenu.addAction(subMenuName)
                 
-                    self.actionGroupMenuDict[actionGroupName]=self.cc3dcppMenu.addMenu(actionGroupName)
-                    action=self.actionGroupMenuDict[actionGroupName].addAction(actionName)
-                    self.actions[key]=action
-                    # action.setCheckable(True)
-                    self.__ui.connect(action,SIGNAL("triggered()"),self.snippetMapper,SLOT("map()"))
-                    self.snippetMapper.setMapping(action, key)
-                    
+                actionKey=menuName.strip()+' '+subMenuName.strip() # for lookup int he self.snippetDictionary 
+                self.snippetDictionary[actionKey]=snippetText
                 
-                    # actionGroup=self.cc3dPythonMenu.addAction(key)
-                    # self.actionGroupDict[actionGroupName]=actionGroup
-                    # action=actionGroup.addAction(key)
-                    # self.actions[key]=action
-                    # self.__ui.connect(action,SIGNAL("triggered()"),self.snippetMapper,SLOT("map()"))
-                    # self.snippetMapper.setMapping(action, key)                    
-            else:            
-                
-                action=self.cc3dcppMenu.addAction(key)
-                self.actions[key]=action
-                # action.setCheckable(True)
+                self.actions[actionKey]=action
                 self.__ui.connect(action,SIGNAL("triggered()"),self.snippetMapper,SLOT("map()"))
-                self.snippetMapper.setMapping(action, key)
+                self.snippetMapper.setMapping(action, actionKey)
+        
+        
         
     def generateNewModule(self):        
     
@@ -939,59 +875,6 @@ class CC3DCPPHelper(QObject):
         editor.findFirst(indentedText,False,False,False,True,curLine)
         lineFrom,colFrom,lineTo,colTo=editor.getSelection()
     
-    # def  __visitAllCells(self):
-        # nonwhitespaceRegex=re.compile('^[\s]*[\S]+')
-        
-        # print "__visitAllCells"
-        # editor=self.__ui.getCurrentEditor()
-        # curFileName=str(self.__ui.getCurrentDocumentName())
-        
-        # basename,ext=os.path.splitext(curFileName)
-        # if ext!=".py" and ext!=".pyw":
-            # QMessageBox.warning(self.__ui,"Python files only","Python code snippets work only for Python files")
-            # return
-        # text="""
-# for cell in self.cellList:
-    # print "cell.id=",cell.id
-# """        
-        
-        # curLine,curCol=editor.getCursorPosition()
-        # # print "editor.lines()=",editor.lines()," curLine=",curLine
-        # # if editor.lines()==curLine+1:
-            # # editor.insertAt("\n",curLine,editor.lineLength(curLine))
-            # # curLine+=1
-            
-        # indentationLevels , indentConsistency=self.findIndentationForSnippet(editor,curLine)
-        # print "indentationLevels=",indentationLevels," consistency=",indentConsistency
-        
-        # textLines=text.splitlines(True)
-        # for i in range(len(textLines)):
-            # textLines[i]=' '*editor.indentationWidth()*indentationLevels+textLines[i]
-        
-        # indentedText=''.join(textLines)
-        
-        # currentLineText=str(editor.text(curLine))
-        # nonwhitespaceFound =re.match(nonwhitespaceRegex, currentLineText)
-        # print "currentLineText=",currentLineText," nonwhitespaceFound=",nonwhitespaceFound
-        
-        
-        # editor.beginUndoAction() # begining of action sequence
-        
-        # if nonwhitespaceFound: # we only add new line if the current line has someting in it other than whitespaces
-            # editor.insertAt("\n",curLine,editor.lineLength(curLine))
-            # curLine+=1                    
-            
-        # editor.insertAt(indentedText,curLine,0)
-        # # editor.insertAt(text,curLine,0)
-        
-        # editor.endUndoAction() # end of action sequence        
-        
-        # # #highlighting inserted text
-        # # editor.findFirst(text,False,False,False,True,curLine)
-        # # lineFrom,colFrom,lineTo,colTo=editor.getSelection()
-        # # for line in range(lineFrom,lineTo+1): 
-            # # for i in range ()
-                # # editor.indent(line)
     def includeExtraFieldsImports(self,_editor):
         playerFromImportRegex=re.compile('^[\s]*from[\s]*PlayerPython[\s]*import[\s]*\*')
         compuCellSetupImportRegex=re.compile('^[\s]*import[\s]*CompuCellSetup')
