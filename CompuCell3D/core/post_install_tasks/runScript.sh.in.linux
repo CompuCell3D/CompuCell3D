@@ -1,3 +1,4 @@
+#!/bin/sh
 
 current_directory=$(pwd)
 
