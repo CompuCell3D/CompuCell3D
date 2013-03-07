@@ -711,6 +711,7 @@ class BionetworkManager( object ):
         if( type(propertyValue) == dict ):
             returnValue = propertyValue
         else:
+            assert propertyValue[0],'Could not find '+str(propertyName)+' in id '+str(currentID)
             returnValue = propertyValue[1]
         return returnValue
                                     
@@ -786,6 +787,7 @@ class BionetworkManager( object ):
     
     #   setBionetworkValue( self, propertyName, newPropertyValue, currentID = "Global" )
     def setBionetworkValue( self, propertyName, newPropertyValue, currentID = "Global" ):
+        #it looks like setting value for the name which does not exist in SBML is ignored - see bionetwork.cpp and soslib_IntegratorInstance.cpp (void setState(...))
         self.setPropertyValue( propertyName, newPropertyValue, currentID )
     
     def setPropertyValueForSpecifiedCellID( self, propertyName, newPropertyValue, currentCellID):

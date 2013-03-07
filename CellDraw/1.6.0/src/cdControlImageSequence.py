@@ -51,7 +51,7 @@ class CDControlImageSequence(QtGui.QWidget):
         self.imageCurrentIndex = 0
 
         # the class global keeping track of the mode for generating PIFF from displayed imported image sequence:
-        #    0 = Use Discretized Images to B/W = CDConstants.ImageSequenceUseDiscretizedToBWMode
+        #    0 = Use Discretized Images to BW = CDConstants.ImageSequenceUseDiscretizedToBWMode
         #    1 = Region 2D Edge = CDConstants.ImageSequenceUse2DEdges
         #    2 = Region 3D Contours = CDConstants.ImageSequenceUse3DContours
         #    3 = Region 3D Volume = CDConstants.ImageSequenceUse3DVolume
@@ -134,7 +134,7 @@ class CDControlImageSequence(QtGui.QWidget):
 
         # ----------------------------------------------------------------
 
-        self.areaOrEdgeSelectionGroupBox = QtGui.QGroupBox("Cell Seeds|2D Edges|3D Contours|Volume| B/W")
+        self.areaOrEdgeSelectionGroupBox = QtGui.QGroupBox("Cell Seeds|2D Edges|3D Contours|Volume| BW")
         self.areaOrEdgeSelectionGroupBox.setLayout(QtGui.QHBoxLayout())
         self.areaOrEdgeSelectionGroupBox.layout().setContentsMargins(0,0,0,0)
         self.areaOrEdgeSelectionGroupBox.layout().setSpacing(4)
@@ -184,8 +184,8 @@ class CDControlImageSequence(QtGui.QWidget):
         self.discretizeToBWModeButton.setChecked(False)
         self.discretizeToBWModeButton.setIcon(QtGui.QIcon(':/icons/imageSequenceBW.png'))
         self.discretizeToBWModeButton.setIconSize(QtCore.QSize(32, 32))
-        self.discretizeToBWModeButton.setToolTip("B/W : treat the image sequence as black/white images.")
-        self.discretizeToBWModeButton.setStatusTip("B/W: Treat the image sequence as black/white images: all non-black pixels are considered as white.")
+        self.discretizeToBWModeButton.setToolTip("BW : treat the image sequence as black/white images.")
+        self.discretizeToBWModeButton.setStatusTip("BW: Treat the image sequence as black/white images: all non-black pixels are considered as white.")
 
 
 
@@ -668,6 +668,7 @@ class CDControlImageSequence(QtGui.QWidget):
         self.imageSequenceDepthLabel.setText(pImageSequenceDepthLabel)
         # also update the image selection range in the Image Sequence controls,
         #   remembering that the index starts at 0 so the max image index should be:
+        self.setMaxImageIndex(int(pImageSequenceDepthLabel)-1)
 #         self.controlsForImageSequence.setMaxImageIndex(int(pImageSequenceDepthLabel)-1)
         CDConstants.printOut("___ - DEBUG ----- CDControlCellScene: setImageSequenceDepthLabel(pImageSequenceDepthLabel=="+str(pImageSequenceDepthLabel)+"): done", CDConstants.DebugVerbose )
 

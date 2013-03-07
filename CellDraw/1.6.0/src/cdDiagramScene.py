@@ -821,7 +821,7 @@ class DiagramScene(QtGui.QGraphicsScene):
 
             # this used to call the theImageSequence's paintEvent handler directly: self.theImageSequence.paintEvent(pPainter)
             #  but direct paintEvent calls are BAD! instead we now call our separate paint routine:
-            # self.theImageSequence.paintTheImageSequence(pPainter)
+            # lSomeImage = self.theImageSequence.getTheCurrentSequenceImages()
 
             # restore the painter's pen & background to what they were before this function:
             pPainter.setPen(lTmpPen)
@@ -843,7 +843,9 @@ class DiagramScene(QtGui.QGraphicsScene):
            
             # this used to call the theImageSequence's paintEvent handler directly: self.theImageSequence.paintEvent(pPainter)
             #  but direct paintEvent calls are BAD! instead we now call our separate paint routine:
-            self.theImageSequence.paintTheImageSequence(pPainter)
+#             self.theImageSequence.retrieveCurrentImagesFromArrays()
+            lPixMap = QtGui.QPixmap.fromImage(  self.theImageSequence.getTheCurrentSequenceImages()  )
+            pPainter.drawPixmap(QtCore.QPoint(0,0), lPixMap)
                        
             # restore the painter's pen & background to what they were before this function:
             pPainter.setPen(lTmpPen)
