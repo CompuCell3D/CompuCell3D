@@ -262,8 +262,8 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 			for(unsigned int i=0; i < chemotaxisFieldDataVec.size() ; ++i ){
 				//if(chemotaxisFieldDataVec[i].chemicalFieldSource=="DiffusionSolverFE")
 				{
-					map<string,Field3DImpl<float>*> & nameFieldMap = sim->getConcentrationFieldNameMap();
-					map<string,Field3DImpl<float>*>::iterator mitr=nameFieldMap.find(chemotaxisFieldDataVec[i].chemicalFieldName);
+					map<string,Field3D<float>*> & nameFieldMap = sim->getConcentrationFieldNameMap();
+					map<string,Field3D<float>*>::iterator mitr=nameFieldMap.find(chemotaxisFieldDataVec[i].chemicalFieldName);
 
 					if(mitr!=nameFieldMap.end()){
 						fieldVec[i]=mitr->second;

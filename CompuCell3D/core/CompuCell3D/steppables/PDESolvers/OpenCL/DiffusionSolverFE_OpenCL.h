@@ -11,6 +11,7 @@
     #include <CL/cl.h>
 #endif
 
+//#include "windows.h"
 
 //Ivan Komarov
 
@@ -35,6 +36,11 @@ class PDESOLVERS_EXPORT DiffusionSolverFE_OpenCL :
 	cl_int nbhdDiffLen;
 
 	int gpuDeviceIndex;//GPU device to use
+
+//	double mutable totalSolveTime;
+//	double mutable totalTransferTime;
+
+//	LARGE_INTEGER fq;
 		
 public:
 	typedef Array3DCUDA<float> ConcentrationField_t;//TODO: check if I can automate this type deduction
@@ -42,6 +48,8 @@ public:
 	virtual ~DiffusionSolverFE_OpenCL(void);
 
 	void diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData const &diffData);
+
+	virtual void finish();
 
 protected:
 	//virtual void diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData &diffData);
@@ -53,7 +61,7 @@ protected:
 private:
 
 	//for debugging
-	void CheckConcentrationField(float const *h_field)const;
+	//void CheckConcentrationField(float const *h_field)const;
 
 	//kernel's name selector
 	std::string diffKernelName();

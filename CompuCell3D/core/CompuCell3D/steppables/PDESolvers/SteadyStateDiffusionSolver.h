@@ -2,18 +2,18 @@
 #define COMPUCELL3DSTEADYSTATEDIFFUSIONSOLVER_H
 
 
-// #include <CompuCell3D/CC3D.h>
 #include <CompuCell3D/Steppable.h>
 #include <CompuCell3D/Potts3D/Cell.h>
 #include <CompuCell3D/Field3D/Array3D.h>
 #include "DiffusableVectorFortran.h"
 
 #include "DiffSecrData.h"
+#include "BoundaryConditionSpecifier.h"
 
 #include <CompuCell3D/Serializer.h>
 
 #include <string>
-// #include <complex>
+
 #include <vector>
 #include <set>
 #include <map>

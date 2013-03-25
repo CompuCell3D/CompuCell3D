@@ -16,7 +16,7 @@ public:
 
 	//TODO: check if can use a constant diffData here
 	void diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData /*const*/ &diffData);
-
+		
 protected:
 	//virtual void diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData &diffData);
 	virtual void initImpl();
@@ -24,7 +24,7 @@ protected:
 	virtual void initCellTypesAndBoundariesImpl();
 	virtual void solverSpecific(CC3DXMLElement *_xmlData);//reading solver-specific information from XML file
 private:
-	void CheckConcentrationField(ConcentrationField_t &concentrationField)const;
+	//void CheckConcentrationField(ConcentrationField_t &concentrationField)const;
 };
 
 }//CompuCell3D 

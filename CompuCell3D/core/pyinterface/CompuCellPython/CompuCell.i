@@ -756,8 +756,8 @@ FIELD3DEXTENDER(Field3D<int>,int)
 %inline %{
 
    Field3D<float> * getConcentrationField(CompuCell3D::Simulator & simulator, std::string fieldName){
-      std::map<std::string,Field3DImpl<float>*> & fieldMap=simulator.getConcentrationFieldNameMap();
-      std::map<std::string,Field3DImpl<float>*>::iterator mitr;
+      std::map<std::string,Field3D<float>*> & fieldMap=simulator.getConcentrationFieldNameMap();
+      std::map<std::string,Field3D<float>*>::iterator mitr;
       mitr=fieldMap.find(fieldName);
         
       if(mitr!=fieldMap.end()){

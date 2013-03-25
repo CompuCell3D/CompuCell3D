@@ -52,7 +52,7 @@ namespace CompuCell3D {
     BasicClassAccessor<SimpleClock> simpleClockAccessor;
         
     
-    Field3DImpl<float> *simpleClockFieldPtr;
+    Field3D<float> *simpleClockFieldPtr;
     Potts3D *potts;
         
 	// Point3D pt;
@@ -65,7 +65,7 @@ namespace CompuCell3D {
     // SimObject interface
     virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
 
-    void setSimpleClockFieldPtr( Field3DImpl<float> *_simpleClockFieldPtr){simpleClockFieldPtr=_simpleClockFieldPtr;}   
+    void setSimpleClockFieldPtr( Field3D<float> *_simpleClockFieldPtr){simpleClockFieldPtr=_simpleClockFieldPtr;}   
 
   };
 };

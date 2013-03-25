@@ -1,29 +1,29 @@
-#include <CompuCell3D/CC3D.h>
 
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Automaton/Automaton.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <CompuCell3D/Potts3D/CellInventory.h>
-// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
-// // // #include <CompuCell3D/Field3D/Field3DImpl.h>
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/Field3DIO.h>
-// // // #include <BasicUtils/BasicClassGroup.h>
+
+#include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/Automaton/Automaton.h>
+#include <CompuCell3D/Potts3D/Potts3D.h>
+#include <CompuCell3D/Potts3D/CellInventory.h>
+#include <CompuCell3D/Field3D/WatchableField3D.h>
+#include <CompuCell3D/Field3D/Field3DImpl.h>
+#include <CompuCell3D/Field3D/Field3D.h>
+#include <CompuCell3D/Field3D/Field3DIO.h>
+#include <BasicUtils/BasicClassGroup.h>
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
 
 
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
-// // // #include <PublicUtilities/StringUtils.h>
-// // // #include <string>
-// // // #include <cmath>
-// // // #include <iostream>
-// // // #include <fstream>
-// // // #include <sstream>
+#include <BasicUtils/BasicString.h>
+#include <BasicUtils/BasicException.h>
+#include <BasicUtils/BasicRandomNumberGenerator.h>
+#include <PublicUtilities/StringUtils.h>
+#include <string>
+#include <cmath>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 #include <time.h>
-// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
+#include <PublicUtilities/ParallelUtilsOpenMP.h>
 
 
 #include "FastDiffusionSolver2DFE.h"
@@ -42,7 +42,7 @@ using namespace std;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FastDiffusionSolver2DSerializer::serialize(){
 
-	for(int i = 0 ; i < solverPtr->diffSecrFieldTuppleVec.size() ; ++i){
+	for(size_t i = 0 ; i < solverPtr->diffSecrFieldTuppleVec.size() ; ++i){
 		ostringstream outName;
 
 		outName<<solverPtr->diffSecrFieldTuppleVec[i].diffData.fieldName<<"_"<<currentStep<<"."<<serializedFileExtension;
@@ -56,7 +56,7 @@ void FastDiffusionSolver2DSerializer::serialize(){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FastDiffusionSolver2DSerializer::readFromFile(){
 	try{
-		for(int i = 0 ; i < solverPtr->diffSecrFieldTuppleVec.size() ; ++i){
+		for(size_t i = 0 ; i < solverPtr->diffSecrFieldTuppleVec.size() ; ++i){
 			ostringstream inName;
 			inName<<solverPtr->diffSecrFieldTuppleVec[i].diffData.fieldName<<"."<<serializedFileExtension;
 
@@ -143,9 +143,9 @@ void FastDiffusionSolver2DFE::init(Simulator *simulator, CC3DXMLElement *_xmlDat
 
 	for(unsigned int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
 		pos=diffSecrFieldTuppleVec[i].diffData.couplingDataVec.begin();
-		for(int j = 0 ; j < diffSecrFieldTuppleVec[i].diffData.couplingDataVec.size() ; ++j){
+		for(size_t j = 0 ; j < diffSecrFieldTuppleVec[i].diffData.couplingDataVec.size() ; ++j){
 
-			for(int idx=0; idx<concentrationFieldNameVectorTmp.size() ; ++idx){
+			for(size_t idx=0; idx<concentrationFieldNameVectorTmp.size() ; ++idx){
 				if( concentrationFieldNameVectorTmp[idx] == diffSecrFieldTuppleVec[i].diffData.couplingDataVec[j].intrFieldName ){
 					diffSecrFieldTuppleVec[i].diffData.couplingDataVec[j].fieldIdx=idx;
 					haveCouplingTerms=true; //if this is called at list once we have already coupling terms and need to proceed differently with scratch field initialization
@@ -245,7 +245,7 @@ void FastDiffusionSolver2DFE::extraInit(Simulator *simulator){
 
 
 	bool useBoxWatcher=false;
-	for (int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
+	for (size_t i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
 		if(diffSecrFieldTuppleVec[i].diffData.useBoxWatcher){
 			useBoxWatcher=true;
 			break;
@@ -278,7 +278,7 @@ void FastDiffusionSolver2DFE::start() {
 
 			//          serializerPtr->readFromFile();
 
-		} catch (BasicException &e){
+		} catch (BasicException &){
 			cerr<<"Going to fail-safe initialization"<<endl;
 			initializeConcentration(); //if there was error, initialize using failsafe defaults
 		}
@@ -420,7 +420,7 @@ void FastDiffusionSolver2DFE::secreteOnContactSingleField(unsigned int idx){
 				currentConcentration = concentrationField.getDirect(x,y);
 
 				if(secreteInMedium && ! currentCellPtr){
-					for (int i = 0  ; i<=maxNeighborIndex/*offsetVec.size()*/ ; ++i ){
+					for (unsigned int i = 0  ; i<=maxNeighborIndex ; ++i ){
 						n=boundaryStrategy->getNeighborDirect(pt,i);
 						if(!n.distance)//not a valid neighbor
 							continue;
@@ -449,7 +449,7 @@ void FastDiffusionSolver2DFE::secreteOnContactSingleField(unsigned int idx){
 
 						contactCellMapPtr = &(mitr->second.contactCellMap);
 
-						for (int i = 0  ; i<=maxNeighborIndex/*offsetVec.size() */; ++i ){
+						for (unsigned int i = 0  ; i<=maxNeighborIndex; ++i ){
 
 							n=boundaryStrategy->getNeighborDirect(pt,i);
 							if(!n.distance)//not a valid neighbor
@@ -909,7 +909,7 @@ void FastDiffusionSolver2DFE::secreteConstantConcentrationSingleField(unsigned i
 
 		CellG *currentCellPtr;
 		//Field3DImpl<float> * concentrationField=concentrationFieldVector[idx];
-		float currentConcentration;
+//		float currentConcentration;
 		float secrConst;
 
 		std::map<unsigned char,float>::iterator mitr;
@@ -1036,7 +1036,7 @@ float FastDiffusionSolver2DFE::couplingTerm(Point3D & _pt,std::vector<CouplingDa
 
 	float couplingTerm=0.0;
 	float coupledConcentration;
-	for(int i =  0 ; i < _couplDataVec.size() ; ++i){
+	for(size_t i =  0 ; i < _couplDataVec.size() ; ++i){
 		coupledConcentration=concentrationFieldVector[_couplDataVec[i].fieldIdx]->get(_pt);
 		couplingTerm+=_couplDataVec[i].couplingCoef*_currentConcentration*coupledConcentration;
 	}
@@ -1059,6 +1059,8 @@ void FastDiffusionSolver2DFE::boundaryConditionInit(int idx){
 	//ConcentrationField_t & _array=*concentrationField;
 	//Array2D_t & concentrationArray=concentrationField->getContainer();
 
+
+	//TODO: seems it can be unifyed for several solvers
 	if (!detailedBCFlag){
 		//have to use internalDim-1 in the for loop as max index because otherwise with extra shitf if we used internalDim we run outside the lattice
 		if(periodicBoundaryCheckVector[0]){//periodic BC along X
@@ -1103,12 +1105,12 @@ void FastDiffusionSolver2DFE::boundaryConditionInit(int idx){
 			}			
 		}else{
 			if (bcSpec.planePositions[0]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[0];
+				float cValue= static_cast<float>(bcSpec.values[0]);
 				for(int y=0 ; y<workFieldDim.y-1 ; ++y){
 					_array.setDirect(0,y,cValue);					
 				}							
 			}else if(bcSpec.planePositions[0]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[0];
+				float cdValue= static_cast<float>(bcSpec.values[0]);
 
 				for(int y=0 ; y<workFieldDim.y-1 ; ++y){
 					_array.setDirect(0,y,_array.getDirect(1,y)-cdValue*deltaX);					
@@ -1116,12 +1118,12 @@ void FastDiffusionSolver2DFE::boundaryConditionInit(int idx){
 			}
 
 			if (bcSpec.planePositions[1]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[1];
+				float cValue= static_cast<float>(bcSpec.values[1]);
 				for(int y=0 ; y<workFieldDim.y-1 ; ++y){
 					_array.setDirect(fieldDim.x+1,y,cValue);					
 				}							
 			}else if(bcSpec.planePositions[1]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[1];
+				float cdValue= static_cast<float>(bcSpec.values[1]);
 
 				for(int y=0 ; y<workFieldDim.y-1 ; ++y){
 					_array.setDirect(fieldDim.x+1,y,_array.getDirect(fieldDim.x,y)+cdValue*deltaX);					
@@ -1137,12 +1139,12 @@ void FastDiffusionSolver2DFE::boundaryConditionInit(int idx){
 			}			
 		}else{
 			if (bcSpec.planePositions[2]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[2];
+				float cValue= static_cast<float>(bcSpec.values[2]);
 				for(int x=0 ; x<workFieldDim.x-1 ; ++x){
 					_array.setDirect(x,0,cValue);					
 				}							
 			}else if(bcSpec.planePositions[2]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[2];
+				float cdValue= static_cast<float>(bcSpec.values[2]);
 
 				for(int x=0 ; x<workFieldDim.x-1 ; ++x){
 					_array.setDirect(x,0,_array.getDirect(x,1)-cdValue*deltaX);					
@@ -1150,12 +1152,12 @@ void FastDiffusionSolver2DFE::boundaryConditionInit(int idx){
 			}
 
 			if (bcSpec.planePositions[3]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[3];
+				float cValue= static_cast<float>(bcSpec.values[3]);
 				for(int x=0 ; x<workFieldDim.x-1 ; ++x){
 					_array.setDirect(x,fieldDim.y+1,cValue);					
 				}							
 			}else if(bcSpec.planePositions[3]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[3];
+				float cdValue= static_cast<float>(bcSpec.values[3]);
 
 				for(int x=0 ; x<workFieldDim.x-1 ; ++x){
 					_array.setDirect(x,fieldDim.y+1,_array.getDirect(x,fieldDim.y)+cdValue*deltaX);					
@@ -1637,11 +1639,7 @@ void FastDiffusionSolver2DFE::update(CC3DXMLElement *_xmlData, bool _fullInitFla
 		cerr<<"readFromFileFlag="<<readFromFileFlag<<endl;
 	}
 
-
-
-
-
-	for(int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
+	for(size_t i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
 		diffSecrFieldTuppleVec[i].diffData.setAutomaton(automaton);
 		diffSecrFieldTuppleVec[i].secrData.setAutomaton(automaton);
 		diffSecrFieldTuppleVec[i].diffData.initialize(automaton);
@@ -1650,7 +1648,7 @@ void FastDiffusionSolver2DFE::update(CC3DXMLElement *_xmlData, bool _fullInitFla
 
 	///assigning member method ptrs to the vector
 
-	for(unsigned int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
+	for(size_t i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
 
 		diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.assign(diffSecrFieldTuppleVec[i].secrData.secrTypesNameSet.size(),0);
 		unsigned int j=0;

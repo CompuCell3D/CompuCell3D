@@ -13,6 +13,8 @@ SET (HEADER_FILES
 	
 SET (KERNEL_FILES
   DiffusionKernel.cl
+  common.cl
+  ImplicitMatrix.cl
   )
   
 SOURCE_GROUP(Kernels FILES
@@ -40,4 +42,5 @@ INSTALL_TARGETS(/lib/CompuCell3DSteppables RUNTIME_DIRECTORY /lib/CompuCell3DSte
 INSTALL(FILES 
 	${KERNEL_FILES} 
 	../GPUSolverParams.h
+	GPUBoundaryConditions.h
 	DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/CompuCell3DSteppables/OpenCL)

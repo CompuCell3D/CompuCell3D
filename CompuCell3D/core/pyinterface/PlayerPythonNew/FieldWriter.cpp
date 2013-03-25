@@ -215,9 +215,9 @@ bool FieldWriter::addConFieldForOutput(std::string _conFieldName){
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
 	Dim3D fieldDim=cellFieldG->getDim();
 
-	Field3DImpl<float> *conFieldPtr=0; 
-	std::map<std::string,Field3DImpl<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
-	std::map<std::string,Field3DImpl<float>*>::iterator mitr;
+	Field3D<float> *conFieldPtr=0; 
+	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
+	std::map<std::string,Field3D<float>*>::iterator mitr;
 	mitr=fieldMap.find(_conFieldName);
 	if(mitr!=fieldMap.end()){
 		conFieldPtr=mitr->second;

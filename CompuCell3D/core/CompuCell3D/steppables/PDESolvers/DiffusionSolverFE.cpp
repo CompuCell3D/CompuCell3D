@@ -1,37 +1,40 @@
 #include "DiffusionSolverFE.h"
-#include <CompuCell3D/CC3D.h>
-
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Automaton/Automaton.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <CompuCell3D/Potts3D/CellInventory.h>
-// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
-// // // #include <CompuCell3D/Field3D/Field3DImpl.h>
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/Field3DIO.h>
-// // // #include <BasicUtils/BasicClassGroup.h>
+#include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/Automaton/Automaton.h>
+#include <CompuCell3D/Potts3D/Potts3D.h>
+#include <CompuCell3D/Potts3D/CellInventory.h>
+#include <CompuCell3D/Field3D/WatchableField3D.h>
+#include <CompuCell3D/Field3D/Field3DImpl.h>
+#include <CompuCell3D/Field3D/Field3D.h>
+#include <CompuCell3D/Field3D/Field3DIO.h>
+#include <BasicUtils/BasicClassGroup.h>
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
 #include <CompuCell3D/plugins/CellTypeMonitor/CellTypeMonitorPlugin.h>
 
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
-// // // #include <PublicUtilities/StringUtils.h>
-// // // #include <PublicUtilities/Vector3.h>
-// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
+#include <BasicUtils/BasicString.h>
+#include <BasicUtils/BasicException.h>
+#include <BasicUtils/BasicRandomNumberGenerator.h>
+#include <PublicUtilities/StringUtils.h>
+#include <PublicUtilities/Vector3.h>
+#include <PublicUtilities/ParallelUtilsOpenMP.h>
 
 #include "DiffusionSolverFE_CPU.h"
+#include "DiffusionSolverFE_CPU_Implicit.h"
 #include "GPUEnabled.h"
+
+#include "MyTime.h"
 
 #if OPENCL_ENABLED == 1
 #include "OpenCL/DiffusionSolverFE_OpenCL.h"
+//#include "OpenCL/DiffusionSolverFE_OpenCL_Implicit.h"
+#include "OpenCL/ReactionDiffusionSolverFE_OpenCL_Implicit.h"
 #endif
 
-// // // #include <string>
-// // // #include <cmath>
-// // // #include <iostream>
-// // // #include <fstream>
-// // // #include <sstream>
+#include <string>
+#include <cmath>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 #include <omp.h>
 //#define NUMBER_OF_THREADS 4
 
@@ -104,6 +107,62 @@ DiffusionSolverFE<Cruncher>::~DiffusionSolverFE()
 		serializerPtr=0;
 	}
 }
+
+
+template <class Cruncher>
+void DiffusionSolverFE<Cruncher>::Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant)
+{
+	//scaling of diffusion and secretion coeeficients
+	for(unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); i++){
+		scalingExtraMCSVec[i] = ceil(maxDiffConstVec[i]/maxStableDiffConstant); //compute number of calls to diffusion solver
+		if (scalingExtraMCSVec[i]==0)
+			continue;
+
+		//diffusion data
+		for(int currentCellType = 0; currentCellType < UCHAR_MAX+1; currentCellType++) {
+			float diffConstTemp = diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType];					
+			float decayConstTemp = diffSecrFieldTuppleVec[i].diffData.decayCoef[currentCellType];
+			diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType] = (diffConstTemp/scalingExtraMCSVec[i]); //scale diffusion
+			diffSecrFieldTuppleVec[i].diffData.decayCoef[currentCellType] = (decayConstTemp/scalingExtraMCSVec[i]); //scale decay
+			
+		}
+	
+		//secretion data
+		SecretionData & secrData=diffSecrFieldTuppleVec[i].secrData;
+		for (std::map<unsigned char,float>::iterator mitr=secrData.typeIdSecrConstMap.begin() ; mitr!=secrData.typeIdSecrConstMap.end() ; ++mitr){
+			mitr->second/=scalingExtraMCSVec[i];
+		}
+
+		for (std::map<unsigned char,float>::iterator mitr=secrData.typeIdSecrConstConstantConcentrationMap.begin() ; mitr!=secrData.typeIdSecrConstConstantConcentrationMap.end() ; ++mitr){
+			mitr->second/=scalingExtraMCSVec[i];
+		}
+
+		for (std::map<unsigned char,SecretionOnContactData>::iterator mitr=secrData.typeIdSecrOnContactDataMap.begin() ; mitr!=secrData.typeIdSecrOnContactDataMap.end() ; ++mitr){
+			SecretionOnContactData & secrOnContactData=mitr->second;
+			for (std::map<unsigned char,float>::iterator cmitr=secrOnContactData.contactCellMap.begin() ; cmitr!=secrOnContactData.contactCellMap.end() ; ++cmitr){
+				cmitr->second/=scalingExtraMCSVec[i];
+			}	
+		}
+
+		//uptake data
+		for (std::map<unsigned char,UptakeData>::iterator mitr=secrData.typeIdUptakeDataMap.begin() ; mitr!=secrData.typeIdUptakeDataMap.end() ; ++mitr){
+			mitr->second.maxUptake/=scalingExtraMCSVec[i];
+			mitr->second.relativeUptakeRate/=scalingExtraMCSVec[i];			
+		}
+	}
+}
+
+template <class Cruncher>
+bool DiffusionSolverFE<Cruncher>::hasAdditionalTerms()const{
+
+	for(size_t i=0; i<diffSecrFieldTuppleVec.size(); ++i){
+		DiffusionData const &diffData=diffSecrFieldTuppleVec[i].diffData;
+		if(!diffData.additionalTerm.empty())
+			return true;
+	}
+	return false;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_xmlData) {
@@ -126,6 +185,8 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
 	pUtils=simulator->getParallelUtils();
 
 	cerr<<"INSIDE INIT"<<endl;
+
+	
 
 	///setting member function pointers
 	diffusePtr=&DiffusionSolverFE::diffuse;
@@ -251,65 +312,28 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
 	float maxStableDiffConstant=0.23;
 	if(static_cast<Cruncher*>(this)->getBoundaryStrategy()->getLatticeType()==HEXAGONAL_LATTICE) {
 		if (fieldDim.x==1 || fieldDim.y==1||fieldDim.z==1){ //2D simulation we ignore 1D simulations in CC3D they make no sense and we assume users will not attempt to run 1D simulations with CC3D		
-			maxStableDiffConstant=0.16;
+			maxStableDiffConstant=0.16f;
 		}else{//3D
-			maxStableDiffConstant=0.08;
+			maxStableDiffConstant=0.08f;
 		}
 	}else{//Square lattice
 		if (fieldDim.x==1 || fieldDim.y==1||fieldDim.z==1){ //2D simulation we ignore 1D simulations in CC3D they make no sense and we assume users will not attempt to run 1D simulations with CC3D				
-			maxStableDiffConstant=0.23;
+			maxStableDiffConstant=0.23f;
 		}else{//3D
-			maxStableDiffConstant=0.14;
+			maxStableDiffConstant=0.14f;
 		}
 	}
 
-	//scaling of diffusion and secretion coeeficients
-	for(unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); i++){
-		scalingExtraMCSVec[i] = ceil(maxDiffConstVec[i]/maxStableDiffConstant); //compute number of calls to diffusion solver
-		if (scalingExtraMCSVec[i]==0)
-			continue;
-
-		//diffusion data
-		for(int currentCellType = 0; currentCellType < UCHAR_MAX+1; currentCellType++) {
-			float diffConstTemp = diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType];					
-			float decayConstTemp = diffSecrFieldTuppleVec[i].diffData.decayCoef[currentCellType];
-			diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType] = (diffConstTemp/scalingExtraMCSVec[i]); //scale diffusion
-			diffSecrFieldTuppleVec[i].diffData.decayCoef[currentCellType] = (decayConstTemp/scalingExtraMCSVec[i]); //scale decay
-			
-		}
-	
-		//secretion data
-		SecretionData & secrData=diffSecrFieldTuppleVec[i].secrData;
-		for (std::map<unsigned char,float>::iterator mitr=secrData.typeIdSecrConstMap.begin() ; mitr!=secrData.typeIdSecrConstMap.end() ; ++mitr){
-			mitr->second/=scalingExtraMCSVec[i];
-		}
-
-		for (std::map<unsigned char,float>::iterator mitr=secrData.typeIdSecrConstConstantConcentrationMap.begin() ; mitr!=secrData.typeIdSecrConstConstantConcentrationMap.end() ; ++mitr){
-			mitr->second/=scalingExtraMCSVec[i];
-		}
-
-		for (std::map<unsigned char,SecretionOnContactData>::iterator mitr=secrData.typeIdSecrOnContactDataMap.begin() ; mitr!=secrData.typeIdSecrOnContactDataMap.end() ; ++mitr){
-			SecretionOnContactData & secrOnContactData=mitr->second;
-			for (std::map<unsigned char,float>::iterator cmitr=secrOnContactData.contactCellMap.begin() ; cmitr!=secrOnContactData.contactCellMap.end() ; ++cmitr){
-				cmitr->second/=scalingExtraMCSVec[i];
-			}	
-		}
-
-		//uptake data
-		for (std::map<unsigned char,UptakeData>::iterator mitr=secrData.typeIdUptakeDataMap.begin() ; mitr!=secrData.typeIdUptakeDataMap.end() ; ++mitr){
-			mitr->second.maxUptake/=scalingExtraMCSVec[i];
-			mitr->second.relativeUptakeRate/=scalingExtraMCSVec[i];			
-		}
-	}
+	Scale(maxDiffConstVec, maxStableDiffConstant);//TODO: remove for implicit solvers?
 
 	//determining latticeType and setting diffusionLatticeScalingFactor
-	//When you evaluate div as a flux through the surface divided by volume those scaling factors appear automatically. On cartesian lattife everything is one so this is easy to forget that on different lattices they are not
+	//When you evaluate div as a flux through the surface divided bby volume those scaling factors appear automatically. On cartesian lattife everythink is one so this is easy to forget that on different lattices they are not1
 	diffusionLatticeScalingFactor=1.0;
 	if (static_cast<Cruncher*>(this)->getBoundaryStrategy()->getLatticeType()==HEXAGONAL_LATTICE){
 		if (fieldDim.x==1 || fieldDim.y==1||fieldDim.z==1){ //2D simulation we ignore 1D simulations in CC3D they make no sense and we assume users will not attempt to run 1D simulations with CC3D
-			diffusionLatticeScalingFactor=1.0/sqrt(3.0);// (2/3)/dL^2 dL=sqrt(2/sqrt(3)) so (2/3)/dL^2=1/sqrt(3)
+			diffusionLatticeScalingFactor=1.0f/sqrt(3.0f);// (2/3)/dL^2 dL=sqrt(2/sqrt(3)) so (2/3)/dL^2=1/sqrt(3)
 		}else{//3D simulation
-			diffusionLatticeScalingFactor=pow(2.0,-4.0/3.0); //(1/2)/dL^2 dL dL^2=2**(1/3) so (1/2)/dL^2=1/(2.0*2^(1/3))=2^(-4/3)
+			diffusionLatticeScalingFactor=pow(2.0f,-4.0f/3.0f); //(1/2)/dL^2 dL dL^2=2**(1/3) so (1/2)/dL^2=1/(2.0*2^(1/3))=2^(-4/3)
 		}
 
 	}
@@ -385,6 +409,7 @@ void DiffusionSolverFE<Cruncher>::prepareForwardDerivativeOffsets(){
 	unsigned int maxHexArraySize=6;
 
 	hexOffsetArray.assign(maxHexArraySize,vector<Point3D>());
+
 
 	if(latticeType==HEXAGONAL_LATTICE){//2D case
 
@@ -513,7 +538,16 @@ void DiffusionSolverFE<Cruncher>::start() {
 	}else{
 		initializeConcentration();//Normal reading from User specified files
 	}
+
+	m_RDTime=0;
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template <class Cruncher>
+void DiffusionSolverFE<Cruncher>::finish(){
+	cerr<<m_RDTime<<" ms spent in solving "<<(hasAdditionalTerms()?"reaction-":"")<<"diffusion problem"<<endl;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::initializeConcentration()
@@ -531,15 +565,17 @@ void DiffusionSolverFE<Cruncher>::initializeConcentration()
 		cerr << "fail-safe initialization " << diffSecrFieldTuppleVec[i].diffData.concentrationFileName << endl;
 		readConcentrationField(diffSecrFieldTuppleVec[i].diffData.concentrationFileName,
 			static_cast<Cruncher*>(this)->getConcentrationField(i));
+		//cerr<<"---------------------------------Have read something from a file----------------------------------\n";
+		//float f=static_cast<Cruncher*>(this)->getConcentrationField(i)->getDirect(20,20,32);
+	
+		//cerr<<"\tcontrol value is"<<f<<endl;
+
 	}
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
-void DiffusionSolverFE<Cruncher>::step(const unsigned int _currentStep) {
-
-	currentStep=_currentStep;
-
+void DiffusionSolverFE<Cruncher>::stepImpl(const unsigned int _currentStep)
+{
 	//cerr<<"diffSecrFieldTuppleVec.size()="<<diffSecrFieldTuppleVec.size()<<endl;
 	for(unsigned int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i ){
 		//cerr<<"scalingExtraMCSVec[i]="<<scalingExtraMCSVec[i]<<endl;
@@ -550,22 +586,65 @@ void DiffusionSolverFE<Cruncher>::step(const unsigned int _currentStep) {
 			}
 		}
 
+		//cerr<<"Making "<<scalingExtraMCSVec[i]<<" extra diffusion steps"<<endl;
 		for(int extraMCS = 0; extraMCS < scalingExtraMCSVec[i]; extraMCS++) {
-			
+//			std::cout<<"field #"<<i<<"; diffConst is: "<<diffSecrFieldTuppleVec[i].diffData.diffConst<<"; "<<
+//				diffSecrFieldTuppleVec[i].diffData.diffCoef[0]<<"; "<<
+//				diffSecrFieldTuppleVec[i].diffData.diffCoef[1]<<std::endl;
 			diffuseSingleField(i);
 			for(unsigned int j = 0 ; j <diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.size() ; ++j){
 				(this->*diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec[j])(i);
-
 			}
-
 		}
-
 	}
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template <class Cruncher>
+void DiffusionSolverFE<Cruncher>::step(const unsigned int _currentStep) {
+
+	currentStep=_currentStep;
+
+	MyTime::Time_t stepBT=MyTime::CTime();
+	stepImpl(_currentStep);
+	m_RDTime+=MyTime::ElapsedTime(stepBT, MyTime::CTime());
+	//std::cout<<"Solving took "<<MyTime::ElapsedTime(stepBT, MyTime::CTime())<<"ms"<<std::endl;
+	
+	
 	if(serializeFrequency>0 && serializeFlag && !(_currentStep % serializeFrequency)){
 		serializerPtr->setCurrentStep(currentStep);
 		serializerPtr->serialize();
 	}
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template <class Cruncher>
+void DiffusionSolverFE<Cruncher>::getMinMaxBox(bool useBoxWatcher, int threadNumber, Dim3D &minDim, Dim3D &maxDim)const{
+	bool isMaxThread;
+	if(useBoxWatcher){
+		minDim=pUtils->getFESolverPartitionWithBoxWatcher(threadNumber).first;
+		maxDim=pUtils->getFESolverPartitionWithBoxWatcher(threadNumber).second;
+
+		isMaxThread=(threadNumber==pUtils->getNumberOfWorkNodesFESolverWithBoxWatcher()-1);
+
+	}else{
+		minDim=pUtils->getFESolverPartition(threadNumber).first;
+		maxDim=pUtils->getFESolverPartition(threadNumber).second;
+
+		isMaxThread=(threadNumber==pUtils->getNumberOfWorkNodesFESolver()-1);
+	}
+
+	if(!hasExtraLayer()){
+		if(threadNumber==0){
+			minDim-=Dim3D(1,1,1);
+		}
+
+		if(isMaxThread){
+			maxDim-=Dim3D(1,1,1);
+		}
+	}
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::secreteOnContactSingleField(unsigned int idx){
@@ -638,24 +717,20 @@ void DiffusionSolverFE<Cruncher>::secreteOnContactSingleField(unsigned int idx){
 
 		int threadNumber=pUtils->getCurrentWorkNodeNumber();
 
+		bool hasExtraBndLayer=hasExtraLayer();
+
 		Dim3D minDim;		
 		Dim3D maxDim;
 
-		if(diffData.useBoxWatcher){
-			minDim=pUtils->getFESolverPartitionWithBoxWatcher(threadNumber).first;
-			maxDim=pUtils->getFESolverPartitionWithBoxWatcher(threadNumber).second;
-
-		}else{
-			minDim=pUtils->getFESolverPartition(threadNumber).first;
-			maxDim=pUtils->getFESolverPartition(threadNumber).second;
-		}
-
-
-
+		getMinMaxBox(diffData.useBoxWatcher, threadNumber, minDim, maxDim);
+		
 		for (int z = minDim.z; z < maxDim.z; z++)
 			for (int y = minDim.y; y < maxDim.y; y++)
 				for (int x = minDim.x; x < maxDim.x; x++){
-					pt=Point3D(x-1,y-1,z-1);
+					if(hasExtraBndLayer)
+						pt=Point3D(x-1,y-1,z-1);
+					else
+						pt=Point3D(x,y,z);
 					///**
 					currentCellPtr=cellFieldG->getQuick(pt);
 					//             currentCellPtr=cellFieldG->get(pt);
@@ -718,6 +793,14 @@ void DiffusionSolverFE<Cruncher>::secreteOnContactSingleField(unsigned int idx){
 				}
 	}
 }
+
+
+//Default implementation. Most of the solvers have it.
+template <class Cruncher>
+bool DiffusionSolverFE<Cruncher>::hasExtraLayer()const{
+	return true;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::secreteSingleField(unsigned int idx){
@@ -733,7 +816,7 @@ void DiffusionSolverFE<Cruncher>::secreteSingleField(unsigned int idx){
 	std::map<unsigned char,UptakeData>::iterator mitrUptakeShared;
 	std::map<unsigned char,UptakeData>::iterator end_mitrUptake=secrData.typeIdUptakeDataMap.end();
 
-	typename Cruncher::ConcentrationField_t & concentrationField= *static_cast<Cruncher *>(this)->getConcentrationField(idx);
+	typename Cruncher::ConcentrationField_t &concentrationField= *static_cast<Cruncher *>(this)->getConcentrationField(idx);
 
 	bool doUptakeFlag=false;
 	bool uptakeInMediumFlag=false;
@@ -760,8 +843,6 @@ void DiffusionSolverFE<Cruncher>::secreteSingleField(unsigned int idx){
 
 		}
 	}
-
-
 
 	//HAVE TO WATCH OUT FOR SHARED/PRIVATE VARIABLES
 	DiffusionData & diffData = diffSecrFieldTuppleVec[idx].diffData;
@@ -811,24 +892,22 @@ void DiffusionSolverFE<Cruncher>::secreteSingleField(unsigned int idx){
 		int threadNumber=pUtils->getCurrentWorkNodeNumber();
 
 
+		bool hasExtraBndLayer=hasExtraLayer();
 
 		Dim3D minDim;		
 		Dim3D maxDim;
 
-		if(diffData.useBoxWatcher){
-			minDim=pUtils->getFESolverPartitionWithBoxWatcher(threadNumber).first;
-			maxDim=pUtils->getFESolverPartitionWithBoxWatcher(threadNumber).second;
-
-		}else{
-			minDim=pUtils->getFESolverPartition(threadNumber).first;
-			maxDim=pUtils->getFESolverPartition(threadNumber).second;
-		}
+		getMinMaxBox(diffData.useBoxWatcher, threadNumber, minDim, maxDim);
+		
 
 		for (int z = minDim.z; z < maxDim.z; z++)
 			for (int y = minDim.y; y < maxDim.y; y++)
 				for (int x = minDim.x; x < maxDim.x; x++){
 
-					pt=Point3D(x-1,y-1,z-1);
+					if(hasExtraBndLayer)
+						pt=Point3D(x-1,y-1,z-1);
+					else
+						pt=Point3D(x,y,z);
 					//             cerr<<"pt="<<pt<<" is valid "<<cellFieldG->isValid(pt)<<endl;
 					///**
 					currentCellPtr=cellFieldG->getQuick(pt);
@@ -850,7 +929,6 @@ void DiffusionSolverFE<Cruncher>::secreteSingleField(unsigned int idx){
 						if(mitr!=end_mitr){
 							secrConst=mitr->second;
 							concentrationField.setDirect(x,y,z,currentConcentration+secrConst);
-
 						}
 					}
 
@@ -883,6 +961,8 @@ void DiffusionSolverFE<Cruncher>::secreteSingleField(unsigned int idx){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::secreteConstantConcentrationSingleField(unsigned int idx){
+
+	std::cerr<<"***************here secreteConstantConcentrationSingleField***************\n";
 
 	SecretionData & secrData=diffSecrFieldTuppleVec[idx].secrData;
 
@@ -945,23 +1025,21 @@ void DiffusionSolverFE<Cruncher>::secreteConstantConcentrationSingleField(unsign
 		Point3D pt;
 		int threadNumber=pUtils->getCurrentWorkNodeNumber();
 
+		bool hasExtraBndLayer=hasExtraLayer();
+
 		Dim3D minDim;		
 		Dim3D maxDim;
 
-		if(diffData.useBoxWatcher){
-			minDim=pUtils->getFESolverPartitionWithBoxWatcher(threadNumber).first;
-			maxDim=pUtils->getFESolverPartitionWithBoxWatcher(threadNumber).second;
-
-		}else{
-			minDim=pUtils->getFESolverPartition(threadNumber).first;
-			maxDim=pUtils->getFESolverPartition(threadNumber).second;
-		}
-
+		getMinMaxBox(diffData.useBoxWatcher, threadNumber, minDim, maxDim);
+		
 		for (int z = minDim.z; z < maxDim.z; z++)
 			for (int y = minDim.y; y < maxDim.y; y++)
 				for (int x = minDim.x; x < maxDim.x; x++){
 
-					pt=Point3D(x-1,y-1,z-1);
+					if(hasExtraBndLayer)
+						pt=Point3D(x-1,y-1,z-1);
+					else
+						pt=Point3D(x,y,z);
 					//             cerr<<"pt="<<pt<<" is valid "<<cellFieldG->isValid(pt)<<endl;
 					///**
 					currentCellPtr=cellFieldG->getQuick(pt);
@@ -1006,7 +1084,7 @@ float DiffusionSolverFE<Cruncher>::couplingTerm(Point3D & _pt,std::vector<Coupli
 
 	float couplingTerm=0.0;
 	float coupledConcentration;
-	for(int i =  0 ; i < _couplDataVec.size() ; ++i){
+	for(size_t i =  0 ; i < _couplDataVec.size() ; ++i){
 		coupledConcentration=static_cast<Cruncher *>(this)->getConcentrationField(_couplDataVec[i].fieldIdx)->get(_pt);
 		couplingTerm+=_couplDataVec[i].couplingCoef*_currentConcentration*coupledConcentration;
 	}
@@ -1290,7 +1368,6 @@ void DiffusionSolverFE<Cruncher>::diffuseSingleField(unsigned int idx)
 
 	initCellTypesAndBoundariesImpl();
 	static_cast<Cruncher *>(this)->diffuseSingleFieldImpl(concentrationField, diffData);
-
 	
 }
 
@@ -1479,12 +1556,13 @@ void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullIni
 	}
 
 	solverSpecific(_xmlData);
-
 	diffSecrFieldTuppleVec.clear();
 	bcSpecVec.clear();
 	bcSpecFlagVec.clear();
 
 	CC3DXMLElementList diffFieldXMLVec=_xmlData->getElements("DiffusionField");
+
+	
 	for(unsigned int i = 0 ; i < diffFieldXMLVec.size() ; ++i ){
 		diffSecrFieldTuppleVec.push_back(DiffusionSecretionDiffusionFEFieldTupple<Cruncher>());
 		DiffusionData & diffData=diffSecrFieldTuppleVec[diffSecrFieldTuppleVec.size()-1].diffData;
@@ -1575,6 +1653,8 @@ void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullIni
 
 		}
 	}
+
+
 	if(_xmlData->findElement("Serialize")){
 		serializeFlag=true;
 		if(_xmlData->getFirstElement("Serialize")->findAttribute("Frequency")){
@@ -1590,13 +1670,11 @@ void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullIni
 
 	//variableDiffusionConstantFlagVec.assign(diffSecrFieldTuppleVec.size(),false);
 
-	for(int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
+	for(size_t i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
 		diffSecrFieldTuppleVec[i].diffData.setAutomaton(automaton);
 		diffSecrFieldTuppleVec[i].secrData.setAutomaton(automaton);
 		diffSecrFieldTuppleVec[i].diffData.initialize(automaton);
 		diffSecrFieldTuppleVec[i].secrData.initialize(automaton);
-
-
 	}
 
 	///assigning member method ptrs to the vector
@@ -1633,9 +1711,13 @@ std::string DiffusionSolverFE<Cruncher>::steerableName(){
 }
 
 
-//The explicit instantiation part
+//The explicit instantiation part.
+//Add new solvers here
 template class DiffusionSolverFE<DiffusionSolverFE_CPU>; 
+template class DiffusionSolverFE<DiffusionSolverFE_CPU_Implicit>; 
 
 #if OPENCL_ENABLED == 1
 template class DiffusionSolverFE<DiffusionSolverFE_OpenCL>;
+//template class DiffusionSolverFE<DiffusionSolverFE_OpenCL_Implicit>;
+template class DiffusionSolverFE<ReactionDiffusionSolverFE_OpenCL_Implicit>;
 #endif

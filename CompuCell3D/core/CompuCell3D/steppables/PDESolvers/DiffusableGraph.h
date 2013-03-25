@@ -1,16 +1,13 @@
 #ifndef COMPUCELL3DDIFFUSABLEGRAPH_H
 #define COMPUCELL3DDIFFUSABLEGRAPH_H
-
-#include <CompuCell3D/CC3D.h>
-
-// // // #include <CompuCell3D/Field3D/Dim3D.h>
-// // // #include <CompuCell3D/Steppable.h>
-// // // #include <vector>
-// // // #include <map>
-// // // #include <string>
-// // // #include <iostream>
+#include <CompuCell3D/Field3D/Dim3D.h>
+#include <CompuCell3D/Steppable.h>
+#include <vector>
+#include <map>
+#include <string>
+#include <iostream>
 #include "DiffusableVector.h"
-// // // #include <CompuCell3D/Field3D/Array3D.h>
+#include <CompuCell3D/Field3D/Array3D.h>
 namespace CompuCell3D {
 
 //template <typename Y> class Field3DImpl;

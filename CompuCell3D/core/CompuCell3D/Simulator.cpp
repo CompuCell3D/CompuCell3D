@@ -154,24 +154,24 @@ BoundaryStrategy * Simulator::getBoundaryStrategy(){
 	return BoundaryStrategy::getInstance();
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Simulator::registerConcentrationField(std::string _name,Field3DImpl<float>* _fieldPtr){
+void Simulator::registerConcentrationField(std::string _name,Field3D<float>* _fieldPtr){
 	concentrationFieldNameMap.insert(std::make_pair(_name,_fieldPtr));
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::vector<std::string> Simulator::getConcentrationFieldNameVector(){
 	vector<string> fieldNameVec;
-	std::map<std::string,Field3DImpl<float>*>::iterator mitr;
+	std::map<std::string,Field3D<float>*>::iterator mitr;
 	for (mitr=concentrationFieldNameMap.begin()  ; mitr !=concentrationFieldNameMap.end() ; ++mitr){
 		fieldNameVec.push_back(mitr->first);	
 	}
 	return fieldNameVec;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Field3DImpl<float>* Simulator::getConcentrationFieldByName(std::string _fieldName){
+Field3D<float>* Simulator::getConcentrationFieldByName(std::string _fieldName){
 		//this function crashes CC3D when called from outside Simulator. 
-      std::map<std::string,Field3DImpl<float>*> & fieldMap=this->getConcentrationFieldNameMap();
+      std::map<std::string,Field3D<float>*> & fieldMap=this->getConcentrationFieldNameMap();
 	  //cerr<<" mapSize="<<fieldMap.size()<<endl;
-      std::map<std::string,Field3DImpl<float>*>::iterator mitr;
+      std::map<std::string,Field3D<float>*>::iterator mitr;
       mitr=fieldMap.find(_fieldName);
       if(mitr!=fieldMap.end()){
          return mitr->second;
@@ -195,7 +195,7 @@ Field3DImpl<float>* Simulator::getConcentrationFieldByName(std::string _fieldNam
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Simulator::serialize(){
-	for(int i = 0 ; i < serializerVec.size() ; ++i){
+	for(size_t i = 0 ; i < serializerVec.size() ; ++i){
 		serializerVec[i]->serialize();
 	}
 }
@@ -432,7 +432,7 @@ void Simulator::initializeCC3D(){
 		std::set<std::string> initializedPlugins;
 		std::set<std::string> initializedSteppables;
 
-		for(int i=0; i <ps.pluginCC3DXMLElementVector.size(); ++i){
+		for(size_t i=0; i <ps.pluginCC3DXMLElementVector.size(); ++i){
 
 			std::string pluginName = ps.pluginCC3DXMLElementVector[i]->getAttribute("Name");
 			bool pluginAlreadyRegisteredFlag=false;
@@ -444,7 +444,7 @@ void Simulator::initializeCC3D(){
 			}
 		}
 
-		for(int i=0; i <ps.steppableCC3DXMLElementVector.size(); ++i){
+		for(size_t i=0; i <ps.steppableCC3DXMLElementVector.size(); ++i){
 			std::string steppableName = ps.steppableCC3DXMLElementVector[i]->getAttribute("Type");
 			bool steppableAlreadyRegisteredFlag=false;
 			Steppable *steppable = steppableManager.get(steppableName,&steppableAlreadyRegisteredFlag);
@@ -522,11 +522,11 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 		if (_xmlData->getFirstElement("FluctuationAmplitude")->findElement("FluctuationAmplitudeParameters")){
 		
 			CC3DXMLElementList motilityVec=_xmlData->getFirstElement("FluctuationAmplitude")->getElements("FluctuationAmplitudeParameters");
-			for (int i = 0 ; i<motilityVec.size(); ++i){
+			for (size_t i = 0 ; i<motilityVec.size(); ++i){
 				CellTypeMotilityData motilityData;
 
 				motilityData.typeName=motilityVec[i]->getAttribute("CellType");
-				motilityData.motility=motilityVec[i]->getAttributeAsDouble("FluctuationAmplitude");
+				motilityData.motility=static_cast<float>(motilityVec[i]->getAttributeAsDouble("FluctuationAmplitude"));
 				ppdCC3DPtr->cellTypeMotilityVector.push_back(motilityData);				
 			}
 			fluctAmplByTypeReadFlag=true;
@@ -544,11 +544,11 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 
 	if(!fluctAmplByTypeReadFlag && _xmlData->getFirstElement("CellMotility")){
 		CC3DXMLElementList motilityVec=_xmlData->getFirstElement("CellMotility")->getElements("MotilityParameters");
-		for (int i = 0 ; i<motilityVec.size(); ++i){
+		for (size_t i = 0 ; i<motilityVec.size(); ++i){
 			CellTypeMotilityData motilityData;
 
 			motilityData.typeName=motilityVec[i]->getAttribute("CellType");
-			motilityData.motility=motilityVec[i]->getAttributeAsDouble("Motility");
+			motilityData.motility=static_cast<float>(motilityVec[i]->getAttributeAsDouble("Motility"));
 			ppdCC3DPtr->cellTypeMotilityVector.push_back(motilityData);				
 		}
 	}	
@@ -587,7 +587,7 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 
 
 	if(!_xmlData->getFirstElement("RandomSeed")){
-		srand(time(0));
+		srand((unsigned int)time(0));
 		unsigned int randomSeed=(unsigned int)rand()*((std::numeric_limits<unsigned int>::max)()-1);
 
 		BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
@@ -738,7 +738,7 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 	//    exit(0);
 	
 
-	if (_xmlData->getFirstElement("Offset")) {
+	if (_xmlData->getFirstElement("Offset")) {//TODO: these two are really strange: assigning double into strings??
 		ppdCC3DPtr->acceptanceFunctionName=_xmlData->getFirstElement("Offset")->getDouble();
 	}
 
@@ -819,13 +819,13 @@ CC3DXMLElement * Simulator::getCC3DModuleData(std::string _moduleType,std::strin
 	}else if(_moduleType=="Metadata"){
 		return ps.metadataCC3DXMLElement;
 	}else if(_moduleType=="Plugin"){
-		for (int i = 0 ; i<ps.pluginCC3DXMLElementVector.size() ;  ++i){
+		for (size_t i = 0 ; i<ps.pluginCC3DXMLElementVector.size() ;  ++i){
 			if (ps.pluginCC3DXMLElementVector[i]->getAttribute("Name")==_moduleName)
 				return ps.pluginCC3DXMLElementVector[i];
 		}
 		return 0;
 	}else if(_moduleType=="Steppable"){
-		for (int i = 0 ; i<ps.pluginCC3DXMLElementVector.size() ;  ++i){
+		for (size_t i = 0 ; i<ps.pluginCC3DXMLElementVector.size() ;  ++i){
 			if (ps.steppableCC3DXMLElementVector[i]->getAttribute("Type")==_moduleName)
 				return ps.steppableCC3DXMLElementVector[i];
 		}
@@ -883,13 +883,13 @@ void Simulator::steer(){
 	else if(ps.updatePluginCC3DXMLElementVector.size()){
 
 		string moduleName;
-		for (int i = 0 ; i < ps.updatePluginCC3DXMLElementVector.size() ; ++i){
+		for (size_t i = 0 ; i < ps.updatePluginCC3DXMLElementVector.size() ; ++i){
 			moduleName=ps.updatePluginCC3DXMLElementVector[i]->getAttribute("Name");
 			mitr=steerableObjectMap.find(moduleName);
 			if(mitr!=steerableObjectMap.end()){
 				mitr->second->update(ps.updatePluginCC3DXMLElementVector[i]);
 				//now overwrite pointer to existing copy of the module data
-				for(int j=0 ; j < ps.pluginCC3DXMLElementVector.size(); ++j){
+				for(size_t j=0 ; j < ps.pluginCC3DXMLElementVector.size(); ++j){
 					if(ps.pluginCC3DXMLElementVector[j]->getAttribute("Name")==moduleName)
 						ps.pluginCC3DXMLElementVector[j]=ps.updatePluginCC3DXMLElementVector[i];
 				}
@@ -900,13 +900,13 @@ void Simulator::steer(){
 	}else if(ps.updateSteppableCC3DXMLElementVector.size()){
 
 		string moduleName;
-		for (int i = 0 ; i < ps.updateSteppableCC3DXMLElementVector.size() ; ++i){
+		for (size_t i = 0 ; i < ps.updateSteppableCC3DXMLElementVector.size() ; ++i){
 			moduleName=ps.updateSteppableCC3DXMLElementVector[i]->getAttribute("Type");
 			mitr=steerableObjectMap.find(moduleName);
 			if(mitr!=steerableObjectMap.end()){
 				mitr->second->update(ps.updateSteppableCC3DXMLElementVector[i]);
 				//now overwrite pointer to existing copy of the module data
-				for(int j=0 ; j < ps.steppableCC3DXMLElementVector.size(); ++j){
+				for(size_t j=0 ; j < ps.steppableCC3DXMLElementVector.size(); ++j){
 					if(ps.steppableCC3DXMLElementVector[j]->getAttribute("Type")==moduleName)
 						ps.steppableCC3DXMLElementVector[j]=ps.updateSteppableCC3DXMLElementVector[i];
 				}

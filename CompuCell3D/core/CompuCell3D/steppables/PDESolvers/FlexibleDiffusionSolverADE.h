@@ -1,22 +1,21 @@
 #ifndef COMPUCELL3DFlexibleDiffusionSolverADE_H
 #define COMPUCELL3DFlexibleDiffusionSolverADE_H
 
-#include <CompuCell3D/CC3D.h>
 
-// // // #include <CompuCell3D/Steppable.h>
-// // // #include <CompuCell3D/Potts3D/Cell.h>
+#include <CompuCell3D/Steppable.h>
+#include <CompuCell3D/Potts3D/Cell.h>
 #include "DiffusableVector.h"
 
 #include "DiffSecrData.h"
 
-// // // #include <CompuCell3D/Serializer.h>
+#include <CompuCell3D/Serializer.h>
 
-// // // #include <string>
+#include <string>
 
-// // // #include <vector>
-// // // #include <set>
-// // // #include <map>
-// // // #include <iostream>
+#include <vector>
+#include <set>
+#include <map>
+#include <iostream>
 
 
 //#include "FlexibleDiffusionSolverFE.h" // include the class FlexibleDiffusionSolverSerializer

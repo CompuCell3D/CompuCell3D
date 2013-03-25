@@ -11,9 +11,11 @@
 #include "ElasticityTrackerDLLSpecifier.h"
 
 #include <limits>
-#undef max
-#undef min
 
+#if defined(_WIN32)
+    #undef max
+    #undef min
+#endif
 
 namespace CompuCell3D {
 

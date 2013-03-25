@@ -1,14 +1,12 @@
 #ifndef COMPUCELL3DDIFFUSABLEVECTOR_H
 #define COMPUCELL3DDIFFUSABLEVECTOR_H
-#include <CompuCell3D/CC3D.h>
-
-// // // #include <CompuCell3D/Field3D/Dim3D.h>
-// // // #include <CompuCell3D/Steppable.h>
-// // // #include <vector>
-// // // #include <string>
-// // // #include <iostream>
-// // // #include <CompuCell3D/Field3D/Array3D.h>
-// // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
+#include <CompuCell3D/Field3D/Dim3D.h>
+#include <CompuCell3D/Steppable.h>
+#include <vector>
+#include <string>
+#include <iostream>
+#include <CompuCell3D/Field3D/Array3D.h>
+#include <CompuCell3D/Boundary/BoundaryStrategy.h>
 
 
 
@@ -41,7 +39,7 @@ public:
     }
     //Field3DImpl<precision> * getConcentrationField(unsigned int i){return concentrationFieldVector[i];};
     
-    virtual Field3DImpl<precision> * getConcentrationField(const std::string & name){
+    virtual Field3D<precision> * getConcentrationField(const std::string & name){
       using namespace std;
        cerr<<"concentrationFieldNameVector.size()="<<concentrationFieldNameVector.size()<<endl;
        for(unsigned int i=0 ; i < concentrationFieldNameVector.size() ; ++i){
@@ -59,10 +57,6 @@ public:
     
     };
 
-    void setConcentrationFieldNameVector(std::vector<std::string> &_fieldNameVector){
-        concentrationFieldNameVector=_fieldNameVector;        
-    }
-    
     virtual void allocateDiffusableFieldVector(unsigned int numberOfFields,Dim3D fieldDim)
     {
       boundaryStrategy=BoundaryStrategy::getInstance();

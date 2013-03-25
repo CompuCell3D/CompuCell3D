@@ -2,8 +2,6 @@
 #define DIFFSECRDATA_H
 
 
-// #include <CompuCell3D/CC3D.h>
-
 #include <string>
 
 #include <vector>
@@ -22,30 +20,6 @@
 
 namespace CompuCell3D {
 class Automaton;
-
-
-class PDESOLVERS_EXPORT BoundaryConditionSpecifier{
-public:
-	enum BCType{
-		PERIODIC,
-		CONSTANT_VALUE,
-		CONSTANT_DERIVATIVE
-	};
-	BoundaryConditionSpecifier(){
-		planePositions[0]=PERIODIC;
-		planePositions[1]=PERIODIC;
-		planePositions[2]=PERIODIC;
-		planePositions[3]=PERIODIC;
-		planePositions[4]=PERIODIC;
-		planePositions[5]=PERIODIC;
-	}
-
-	BCType planePositions[6];
-	double  values [6];
-
-};
-
-
 
 class PDESOLVERS_EXPORT SecretionOnContactData{
    public:

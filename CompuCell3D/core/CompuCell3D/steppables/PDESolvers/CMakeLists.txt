@@ -7,35 +7,38 @@ IF(MSVC)
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251")
 ENDIF(MSVC)
 
+#enable looking for the FindEigen3.cmake and FindOpenCL.cmake (if requested) files in the source directory
+MESSAGE(STATUS ${CMAKE_SOURCE_DIR})
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
+
+#for the implicit diffusion solver
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
+
 SET (HEADER_FILES
+  DiffSecrData.h
+  DiffusableGraph.h
+  ReactionDiffusionSolverFE_SavHog.h
+  ReactionDiffusionSolverFE.h
+  AdvectionDiffusionSolverFE.h
+  Diffusable.h
+  DiffusableVector2D.h
+  FastDiffusionSolver2DFE.h
+  SteadyStateDiffusionSolver2D.h
+  SteadyStateDiffusionSolver.h
+  DiffusableVector.h
+  DiffusableVectorCommon.h
+  DiffusableVectorFortran.h
   hpppdesolvers
+  FlexibleDiffusionSolverFE.h
+  # FiPySolver.h
+  DiffusionSolverFE.h
+  DiffusionSolverFE_CPU.h
+  DiffusionSolverFE_CPU_Implicit.h
+  FlexibleDiffusionSolverADE.h
+  KernelDiffusionSolver.h
   GPUSolverParams.h
   ${OPENCL_HDRS})
-
-
-# SET (HEADER_FILES
-  # DiffSecrData.h
-  # DiffusableGraph.h
-  # ReactionDiffusionSolverFE_SavHog.h
-  # ReactionDiffusionSolverFE.h
-  # AdvectionDiffusionSolverFE.h
-  # Diffusable.h
-  # DiffusableVector2D.h
-  # FastDiffusionSolver2DFE.h
-  # SteadyStateDiffusionSolver2D.h
-  # SteadyStateDiffusionSolver.h
-  # DiffusableVector.h
-  # DiffusableVectorCommon.h
-  # DiffusableVectorFortran.h
-  # hpppdesolvers
-  # FlexibleDiffusionSolverFE.h
-  # FiPySolver.h
-  # DiffusionSolverFE.h
-  # DiffusionSolverFE_CPU.h
-  # FlexibleDiffusionSolverADE.h
-  # KernelDiffusionSolver.h
-  # GPUSolverParams.h
-  # ${OPENCL_HDRS})
 
 # SET(CUDA_LIBS )    
 # SET(CUDA_SRCS )
@@ -87,16 +90,18 @@ SET(OPENCL_HDRS)
 
 IF(NOT NO_OPENCL)
 	MESSAGE(STATUS "Looking for OpenCL...")
-	#enable looking for the FindOpenCL.cmake file in the source directory
-	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
 	FIND_PACKAGE(OpenCL)
 	
 	IF(OPENCL_FOUND)
+#        IF(NOT WIN32)
+#                SET(CMAKE_CXX_FLAGS "-std=c++0x")
+#        ENDIF(NOT WIN32)
 		MESSAGE(STATUS "OpenCL headers found at " ${OPENCL_INCLUDE_DIRS})
 		MESSAGE(STATUS "OpenCL library: " ${OPENCL_LIBRARIES})
 		ADD_SUBDIRECTORY(OpenCL)
-		ADD_DEFINITIONS(-DPDESOLVERSGPU_EXPORT_COMPILER_DEFINITION)
+		ADD_DEFINITIONS(-DPDESOLVERSGPU_EXPORT_COMPILER_DEFINITION -DVIENNACL_WITH_OPENCL)
 		INCLUDE_DIRECTORIES(${OPENCL_INCLUDE_DIRS})
+		include_directories(${CMAKE_SOURCE_DIR}/core/ViennaCL)
 		SET(OpenCLEnabled 1)
 		SET(OPENCL_HDRS 
 			#DiffusableVectorGPU.h
@@ -105,7 +110,17 @@ IF(NOT NO_OPENCL)
 		SET(OPENCL_SRCS
 #			OpenCL/FlexibleDiffusionSolverFE_OpenCL.cpp
 			OpenCL/DiffusionSolverFE_OpenCL.cpp
+#			OpenCL/DiffusionSolverFE_OpenCL_Implicit.cpp
+			OpenCL/ReactionDiffusionSolverFE_OpenCL_Implicit.cpp
 			OpenCL/OpenCLHelper.cpp
+			OpenCL/OpenCLKernel.cpp
+			OpenCL/OpenCLBuffer.cpp
+			OpenCL/ReactionKernels.cpp
+#			OpenCL/NonLinear.cpp
+			OpenCL/ImplicitMatrix.cpp
+                        OpenCL/NonlinearSolver.cpp
+			OpenCL/LinearSolver.cpp
+			OpenCL/Solver.cpp
 		)	
 		SET(OPENCL_LIBS
 			FlexibleDiffusionSolverFE_OpenCL)
@@ -115,7 +130,20 @@ IF(NOT NO_OPENCL)
 #			FlexibleDiffusionSolverFE_GPU.h
 #			FlexibleDiffusionSolverFE_GPU.hpp
 			OpenCL/DiffusionSolverFE_OpenCL.h
+#			OpenCL/DiffusionSolverFE_OpenCL_Implicit.h
+			OpenCL/ReactionDiffusionSolverFE_OpenCL_Implicit.h
 			OpenCL/OpenCLHelper.h
+			OpenCL/OpenCLKernel.h
+			OpenCL/OpenCLBuffer.h
+			OpenCL/ReactionKernels.h
+			OpenCL/ImplicitMatrix.h
+#			OpenCL/NonLinear.h
+			OpenCL/NonlinearSolver.h
+			OpenCL/DiffusableVectorRD.hpp
+			OpenCL/OCLNeighbourIndsInfo.h
+			OpenCL/Solver.h
+			OpenCL/LinearSolver.h
+#			OpenCL/ArrayRDOpenCLImpl.hpp
 			${OPENCL_HDRS})
 		
 	ELSE(OPENCL_FOUND)
@@ -143,45 +171,33 @@ INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}")
 
 message("OPENMP FLAGS " ${OpenMP_CXX_FLAGS})
 
-# message(opencl_srcs ${OPENCL_SRCS})
+ADD_COMPUCELL3D_STEPPABLE(PDESolvers
+  AdvectionDiffusionSolverFE.cpp
+  FastDiffusionSolver2DFE.cpp
+  DiffusionSolverFE.cpp
+  DiffusionSolverFE_CPU.cpp
+  DiffusionSolverFE_CPU_Implicit.cpp
+  SteadyStateDiffusionSolver2D.cpp
+  SteadyStateDiffusionSolver.cpp
+  PDESolversProxy.cpp
+  DiffSecrData.cpp  
+  FlexibleDiffusionSolverFE.cpp
+  # FiPySolver.cpp
+  FlexibleDiffusionSolverADE.cpp
+  KernelDiffusionSolver.cpp
+  ReactionDiffusionSolverFE_SavHog.cpp
+  ReactionDiffusionSolverFE.cpp
+  HW3CRT.c 
+  HWSCRT.c
+#  ${CUDA_SRCS}
+  ${OPENCL_SRCS}
+  ${HEADER_FILES}
 
-ADD_COMPUCELL3D_STEPPABLE(PDESolvers ${OPENCL_SRCS} ${HEADER_FILES} LINK_LIBRARIES ${STEPPABLE_DEPENDENCIES} ${OPENCL_LIBS} 
+LINK_LIBRARIES ${STEPPABLE_DEPENDENCIES} ${OPENCL_LIBS} 
 #  ${CUDA_LIBS} 
   EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS}
 )
 
-# ADD_COMPUCELL3D_STEPPABLE_HEADERS(PDESolvers
-  # ${HEADER_FILES}
-  # )
-
-
-
-# ADD_COMPUCELL3D_STEPPABLE(PDESolvers
-  # AdvectionDiffusionSolverFE.cpp
-  # FastDiffusionSolver2DFE.cpp
-  # DiffusionSolverFE.cpp
-  # DiffusionSolverFE_CPU.cpp
-  # SteadyStateDiffusionSolver2D.cpp
-  # SteadyStateDiffusionSolver.cpp
-  # PDESolversProxy.cpp
-  # DiffSecrData.cpp  
-  # FlexibleDiffusionSolverFE.cpp
-  # # FiPySolver.cpp
-  # FlexibleDiffusionSolverADE.cpp
-  # KernelDiffusionSolver.cpp
-  # ReactionDiffusionSolverFE_SavHog.cpp
-  # ReactionDiffusionSolverFE.cpp
-  # HW3CRT.c 
-  # HWSCRT.c
-# #  ${CUDA_SRCS}
-  # ${OPENCL_SRCS}
-  # ${HEADER_FILES}
-
-# LINK_LIBRARIES ${STEPPABLE_DEPENDENCIES} ${OPENCL_LIBS} 
-# #  ${CUDA_LIBS} 
-  # EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS}
-# )
-
-# ADD_COMPUCELL3D_STEPPABLE_HEADERS(PDESolvers
-  # ${HEADER_FILES}
-  # )
+ADD_COMPUCELL3D_STEPPABLE_HEADERS(PDESolvers
+  ${HEADER_FILES}
+  )

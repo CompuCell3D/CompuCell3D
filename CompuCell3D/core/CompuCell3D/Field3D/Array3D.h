@@ -184,7 +184,9 @@ class Array3DLinearFortranField3DAdapter:public Field3DImpl<float>{
       }
 
       virtual float get(const Point3D &pt) const {
-         return container[index(pt.x,pt.y,pt.z)];            
+		  //TODO: we'd better check why we cast from doubles to floats here      
+		  //Either doubles are not used, either interface is incorrect
+         return container[index(pt.x,pt.y,pt.z)];
 
       }
 

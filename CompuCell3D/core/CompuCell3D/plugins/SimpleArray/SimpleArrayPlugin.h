@@ -50,7 +50,7 @@ namespace CompuCell3D {
      
      BasicClassAccessor<SimpleArray> simpleArrayAccessor;
      CellInventory * cellInventoryPtr;
-     Field3DImpl<float> *simpleArrayFieldPtr;
+     Field3D<float> *simpleArrayFieldPtr;
      Potts3D *potts;
    
 

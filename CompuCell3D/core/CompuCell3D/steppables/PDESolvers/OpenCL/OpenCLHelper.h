@@ -26,15 +26,15 @@ class OpenCLHelper
 
 	size_t maxWorkGroupSize;
 
-	static cl_int GetPlatformID(cl_platform_id* clSelectedPlatformID);
-	void BuildExecutable(cl_program program);
+	static cl_int GetPlatformID(cl_platform_id& clSelectedPlatformID, int &platformInd, int platfrormHint=-1);
+	void BuildExecutable(cl_program program)const;
 
 	cl_program CreateProgramWithSource(cl_uint           /* count */,
                           const char **     /* strings */,
-                          cl_int *          /* errcode_ret */);
+                          cl_int *          /* errcode_ret */)const;
 	
 public:
-	explicit OpenCLHelper(int gpuDeviceIndex);
+	explicit OpenCLHelper(int gpuDeviceIndex, int platformHint=-1);
 	~OpenCLHelper();
 
 	static const char* ErrorString(cl_int error);
@@ -43,7 +43,7 @@ public:
 
 	//simple, synchronous write (from host to device)
 	template <class T>
-	cl_int WriteBuffer(cl_mem buffer, T const *h_arr, size_t arrLen){
+	cl_int WriteBuffer(cl_mem buffer, T const *h_arr, size_t arrLen)const {
 		cl_int res=clEnqueueWriteBuffer(commandQueue, buffer, CL_TRUE, 0, sizeof(T)*arrLen, h_arr, 0, NULL, NULL);
 		//cerr<<"sizeof(T)="<<sizeof(T)<<",  arrLen="<<arrLen<<endl;
 		assert(res==CL_SUCCESS);
@@ -52,7 +52,7 @@ public:
 
 	//simple, synchronous copying (on device)
 	template <class T>
-	cl_int CopyBuffer(cl_mem src_buffer, cl_mem dst_buffer, size_t arrLen){
+	cl_int CopyBuffer(cl_mem src_buffer, cl_mem dst_buffer, size_t arrLen)const {
 		cl_int res=clEnqueueCopyBuffer(commandQueue, src_buffer, dst_buffer, 0, 0, sizeof(T)*arrLen, 0, NULL, NULL);
 		//cerr<<"sizeof(T)="<<sizeof(T)<<",  arrLen="<<arrLen<<endl;
 		assert(res==CL_SUCCESS);
@@ -62,7 +62,7 @@ public:
 
 	//simple, synchronous read (from device to host)
 	template <class T>
-	cl_int ReadBuffer(cl_mem buffer, T *h_arr, size_t arrLen){
+	cl_int ReadBuffer(cl_mem buffer, T *h_arr, size_t arrLen)const{
 		cl_int res=clEnqueueReadBuffer(commandQueue, buffer, CL_TRUE, 0, sizeof(T)*arrLen, h_arr, 0, NULL, NULL);
 		assert(res==CL_SUCCESS);
 		return res;
@@ -74,13 +74,17 @@ public:
                        cl_uint          /* work_dim */,
                        const size_t *   /* global_work_size */,
                        const size_t *   /* local_work_size */
-                       );
+                       )const;
 
-	cl_mem CreateBuffer(cl_mem_flags memFlags, size_t sizeInBytes)const;
+	cl_mem CreateBuffer(cl_mem_flags memFlags, size_t sizeInBytes, void const *hostPtr=NULL)const;
 
-	bool LoadProgram(const char *filePath[], size_t sourcesCount, cl_program &program);
+	bool LoadProgram(const char *filePath[], size_t sourcesCount, cl_program &program)const;
 
 	void Finish();
+
+	cl_context getContext()const {return context;}
+	cl_device_id getDevice()const{return devices[deviceUsed];}
+	cl_command_queue getCommandQueue() const{return commandQueue;}
 };
 
 }//namespace CompuCell3D 

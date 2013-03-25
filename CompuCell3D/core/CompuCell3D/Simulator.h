@@ -65,7 +65,7 @@ namespace CompuCell3D {
 
 		bool simulatorIsStepping;
 		bool readPottsSectionFromXML;
-		std::map<std::string,Field3DImpl<float>*> concentrationFieldNameMap;
+		std::map<std::string,Field3D<float>*> concentrationFieldNameMap;
 		//map of steerable objects
 		std::map<std::string,SteerableObject *> steerableObjectMap;
 
@@ -101,9 +101,6 @@ namespace CompuCell3D {
 		static PluginManager<Plugin> pluginManager;
 		static PluginManager<Steppable> steppableManager;
 		static BasicPluginManager<PluginBase> pluginBaseManager;
-		
-		PluginManager<Steppable> mySteppableManager;
-		
 		Simulator();
 		virtual ~Simulator();
 		//     PluginManager::plugins_t & getPluginMap(){return pluginManager.getPluginMap();}
@@ -133,12 +130,12 @@ namespace CompuCell3D {
 		ClassRegistry *getClassRegistry() {return classRegistry;}
 
 
-		void registerConcentrationField(std::string _name,Field3DImpl<float>* _fieldPtr);
-		std::map<std::string,Field3DImpl<float>*> & getConcentrationFieldNameMap(){
+		void registerConcentrationField(std::string _name,Field3D<float>* _fieldPtr);
+		std::map<std::string,Field3D<float>*> & getConcentrationFieldNameMap(){
 			return concentrationFieldNameMap;
 		}
 		std::vector<std::string> getConcentrationFieldNameVector();
-		Field3DImpl<float>* getConcentrationFieldByName(std::string _fieldName);
+		Field3D<float>* getConcentrationFieldByName(std::string _fieldName);
 		
 		void registerSerializer(Serializer * _serializerPtr){serializerVec.push_back(_serializerPtr);}
 		virtual void serialize();

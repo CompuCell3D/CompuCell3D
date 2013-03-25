@@ -270,7 +270,7 @@ void BoundaryStrategy::setDim(const Dim3D theDim) {
  *
  * @return Point3D Valid Neighbor
  */
-Point3D BoundaryStrategy::getNeighbor(const Point3D& pt, unsigned int& token, double& distance, bool checkBounds) 
+Point3D BoundaryStrategy::getNeighbor(const Point3D& pt, unsigned int& token, double& distance, bool checkBounds)const
 {
 	Neighbor n;
 	Point3D p;
@@ -334,7 +334,7 @@ int BoundaryStrategy::getNumPixels(int x, int y, int z) const  {
 
 //returns true if _offset is stacked in _offsetVec
 //false otherwise
-bool BoundaryStrategy::checkIfOffsetAlreadyStacked(Point3D & _ptToCheck , std::vector<Point3D> & _offsetVec){
+bool BoundaryStrategy::checkIfOffsetAlreadyStacked(Point3D & _ptToCheck , std::vector<Point3D> & _offsetVec)const{
 
    for(int i = 0 ; i < _offsetVec.size() ; ++i ){
       if( _offsetVec[i].x==_ptToCheck.x && _offsetVec[i].y==_ptToCheck.y && _offsetVec[i].z==_ptToCheck.z)
@@ -343,11 +343,11 @@ bool BoundaryStrategy::checkIfOffsetAlreadyStacked(Point3D & _ptToCheck , std::v
    return false;
 }
 
-double BoundaryStrategy::calculateDistance(Coordinates3D<double> & _pt1 , Coordinates3D<double> & _pt2){
+double BoundaryStrategy::calculateDistance(Coordinates3D<double> & _pt1 , Coordinates3D<double> & _pt2)const{
    return sqrt((double)(_pt1.x-_pt2.x)*(_pt1.x-_pt2.x)+(_pt1.y-_pt2.y)*(_pt1.y-_pt2.y)+(_pt1.z-_pt2.z)*(_pt1.z-_pt2.z));
 }
 
-bool BoundaryStrategy::checkEuclidianDistance(Coordinates3D<double> & _pt1,Coordinates3D<double> & _pt2, float _distance){
+bool BoundaryStrategy::checkEuclidianDistance(Coordinates3D<double> & _pt1,Coordinates3D<double> & _pt2, float _distance)const{
    //checks if distance between two points is smaller than _distance
    //used to eliminate in offsetVec offsets that come from periodic conditions (opposite side of the lattice)
    return calculateDistance(_pt1,_pt2)<_distance+0.1;
@@ -725,11 +725,11 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance){
 void BoundaryStrategy::getOffsetsAndDistances(
                                                 Point3D ctPt,
                                                 float maxDistance,
-                                                Field3DImpl<char> & tempField,
+                                                Field3DImpl<char> const& tempField,
                                                 vector<Point3D> & offsetVecTmp,
                                                 vector<float> &distanceVecTmp,
                                                 vector<unsigned int> &neighborOrderIndexVecTmp
-                                                )
+                                                )const
 {
 
    Point3D n;
@@ -882,7 +882,7 @@ void BoundaryStrategy::prepareNeighborLists(float _maxDistance){
 
 }
 
-unsigned int  BoundaryStrategy::getMaxNeighborOrder(){
+unsigned int  BoundaryStrategy::getMaxNeighborOrder()const{
 
    //determining max neighborOrder
    unsigned int maxNeighborOrder=1;
@@ -931,7 +931,7 @@ void BoundaryStrategy::prepareNeighborListsBasedOnNeighborOrder(unsigned int _ne
 //
 //}
 
-unsigned int BoundaryStrategy::getMaxNeighborIndexFromNeighborOrder(unsigned int _neighborOrder){
+unsigned int BoundaryStrategy::getMaxNeighborIndexFromNeighborOrder(unsigned int _neighborOrder)const{
    //Now determine max neighbor index from a list of neighbor offsets
    unsigned int maxNeighborIndex=0;
    unsigned int orderCounter=1;
@@ -978,7 +978,7 @@ unsigned int BoundaryStrategy::getMaxNeighborIndexFromNeighborOrder(unsigned int
 }
 
 
-unsigned int BoundaryStrategy::getMaxNeighborIndexFromDepth(float depth){
+unsigned int BoundaryStrategy::getMaxNeighborIndexFromDepth(float depth)const{
    //Now determine max neighbor index from a list of neighbor offsets
 
    unsigned int maxNeighborIndex=0;

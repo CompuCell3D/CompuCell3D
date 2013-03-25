@@ -1,18 +1,9 @@
 #include "DiffusionSolverFE_CPU.h"
 
-#include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <CompuCell3D/Automaton/Automaton.h>
+#include <CompuCell3D/Potts3D/Potts3D.h>
+#include <CompuCell3D/Automaton/Automaton.h>
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
-// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
-#define NOMINMAX
-
-// 2012 Mitja:
-//  #include <windows.h>
-#if defined(_WIN32)
-	#include <windows.h>
-#endif
-
+#include <PublicUtilities/ParallelUtilsOpenMP.h>
 
 using namespace CompuCell3D;
 
@@ -197,7 +188,7 @@ void DiffusionSolverFE_CPU::diffuseSingleFieldImpl(ConcentrationField_t &concent
 
 					}
 
-					updatedConcentration=diffusionLatticeScalingFactor*(concentrationSum+varDiffSumTerm)+(1-decayCoef[currentCellType])*currentConcentration;
+					updatedConcentration=(concentrationSum+varDiffSumTerm)+(1-decayCoef[currentCellType])*currentConcentration;
 
 					
 
@@ -470,36 +461,7 @@ void DiffusionSolverFE_CPU::diffuseSingleFieldImpl(ConcentrationField_t &concent
 		
 }
 
-//for debugging
-void DiffusionSolverFE_CPU::CheckConcentrationField(ConcentrationField_t &concentrationField)const{
 
-	double sum=0.f;
-	float minVal=numeric_limits<float>::max();
-	float maxVal=-numeric_limits<float>::max();
-	for(int z=1; z<=fieldDim.z; ++z){
-		for(int y=1; y<=fieldDim.y; ++y){
-			for(int x=1; x<=fieldDim.x; ++x){
-				//float val=h_field[z*(fieldDim.x+2)*(fieldDim.y+2)+y*(fieldDim.x+2)+x];
-				float val=concentrationField.getDirect(x,y,z);
-#ifdef _WIN32
-				if(!_finite(val)){
-#else
-				if(!finite(val)){
-#endif
-					cerr<<"NaN at position: "<<x<<"x"<<y<<"x"<<z<<endl;
-					continue;
-				}
-				//if(val!=0) 
-				//	cerr<<"f("<<x<<","<<y<<","<<z<<")="<<val<<"  ";
-				sum+=val;
-				minVal=std::min(val, minVal);
-				maxVal=std::max(val, maxVal);
-			}
-		}
-	}
-
-	cerr<<"min: "<<minVal<<"; max: "<<maxVal<<" "<<sum<<endl;
-}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE_CPU::initImpl(){

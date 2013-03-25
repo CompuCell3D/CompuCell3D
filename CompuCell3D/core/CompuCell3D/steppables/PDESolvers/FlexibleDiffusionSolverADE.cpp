@@ -1,25 +1,24 @@
 
-#include <CompuCell3D/CC3D.h>
 
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Automaton/Automaton.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <CompuCell3D/Potts3D/CellInventory.h>
-// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
-// // // #include <CompuCell3D/Field3D/Field3DImpl.h>
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/Field3DIO.h>
-// // // #include <BasicUtils/BasicClassGroup.h>
+#include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/Automaton/Automaton.h>
+#include <CompuCell3D/Potts3D/Potts3D.h>
+#include <CompuCell3D/Potts3D/CellInventory.h>
+#include <CompuCell3D/Field3D/WatchableField3D.h>
+#include <CompuCell3D/Field3D/Field3DImpl.h>
+#include <CompuCell3D/Field3D/Field3D.h>
+#include <CompuCell3D/Field3D/Field3DIO.h>
+#include <BasicUtils/BasicClassGroup.h>
 
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
-// // // #include <PublicUtilities/StringUtils.h>
-// // // #include <string>
-// // // #include <cmath>
-// // // #include <iostream>
-// // // #include <fstream>
-// // // #include <sstream>
+#include <BasicUtils/BasicString.h>
+#include <BasicUtils/BasicException.h>
+#include <BasicUtils/BasicRandomNumberGenerator.h>
+#include <PublicUtilities/StringUtils.h>
+#include <string>
+#include <cmath>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // std::ostream & operator<<(std::ostream & out,CompuCell3D::DiffusionData & diffData){
@@ -413,7 +412,7 @@ void FlexibleDiffusionSolverADE::secreteSingleField(unsigned int idx){
 
 
 	CellG *currentCellPtr;
-	Field3DImpl<float> * concentrationField=concentrationFieldVector[idx];
+	Field3D<float> * concentrationField=concentrationFieldVector[idx];
 	float currentConcentration;
 	float secrConst;
 	float secrConstMedium=0.0;
@@ -516,7 +515,7 @@ void FlexibleDiffusionSolverADE::secreteConstantConcentrationSingleField(unsigne
 	std::map<unsigned char,float>::iterator end_mitr=secrData.typeIdSecrConstConstantConcentrationMap.end();
 
 	CellG *currentCellPtr;
-	Field3DImpl<float> * concentrationField=concentrationFieldVector[idx];
+	Field3D<float> * concentrationField=concentrationFieldVector[idx];
 	float currentConcentration;
 	float secrConst;
 	float secrConstMedium=0.0;
