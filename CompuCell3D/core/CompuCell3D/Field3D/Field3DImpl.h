@@ -85,17 +85,23 @@ namespace CompuCell3D {
       field[PT2IDX(pt)] = value;
     }
 
-    virtual void setDim(const Dim3D theDim)
+    virtual void setDim(const Dim3D theDim,  Dim3D shiftVec=Dim3D())
     {
        T* field2 = new T[theDim.x*theDim.y*theDim.z];
+       //first initialize the lattice with initial value 
+       for(long int i = 0 ; i <  theDim.x*theDim.y*theDim.z ; ++i) 
+            field2[i]=initialValue;
+       
+       //than lay copy old field 
        for (int x = 0; x < theDim.x; x++)
            for (int y = 0; y < theDim.y; y++)
                for (int z = 0; z < theDim.z; z++)
                    if ((x < dim.x) && (y < dim.y) && (z < dim.z))
-                       field2[x+((y+(z*theDim.y))*theDim.x)] = field[PT2IDX(Point3D(x,y,z))];
-                   else
-                       field2[x+((y+(z*theDim.y))*theDim.x)] = initialValue;
-       delete field;
+                       // field2[x+((y+(z*theDim.y))*theDim.x)] = field[PT2IDX(Point3D(x,y,z))];
+                       field2[(x+shiftVec.x)+(((y+shiftVec.y)+((z+shiftVec.z)*theDim.y))*theDim.x)] = getQuick(Point3D(x,y,z));
+                   // else
+                       // field2[x+((y+(z*theDim.y))*theDim.x)]  = initialValue;
+       delete []  field;
        field = field2;
        dim = theDim;
 

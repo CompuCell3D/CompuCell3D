@@ -24,20 +24,7 @@
 #define CENTEROFMASSPLUGIN_H
 
  #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Plugin.h>
 
-
-
-
-// // // #include <CompuCell3D/Field3D/Point3D.h>
-// // // #include <CompuCell3D/Field3D/Dim3D.h>
-
-// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-// // // #include <CompuCell3D/Potts3D/Cell.h>
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <Utils/Coordinates3D.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
-// // // #include <cmath>
 #define roundf(a) ((fmod(a,1)<0.5)?floor(a):ceil(a))
 
 
@@ -112,6 +99,7 @@ namespace CompuCell3D {
      void field3DCheck(const Point3D &pt, CellG *newCell,
                                 CellG *oldCell);
 
+	void updateCOMsAfterLatticeShift(Dim3D _shiftVec);
     // SimObject interface
     //virtual void init(Simulator *simulator, ParseData *_pd=0);
 	 virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);

@@ -214,8 +214,30 @@ void Potts3D::createCellField(const Dim3D dim) {
 	ASSERT_OR_THROW("createCellField() cell field G already created!", !cellFieldG);
 	cellFieldG = new WatchableField3D<CellG *>(dim, 0); //added
 
+}
+
+void Potts3D::resizeCellField(const Dim3D dim, Dim3D shiftVec) {
+
+	// ASSERT_OR_THROW("createCellField() cell field G already created!", !cellFieldG);
+    Dim3D currentDim=cellFieldG->getDim();
+    ASSERT_OR_THROW("Cell Field can only expand. New field dimensions smaller than the old one!", currentDim.x<=dim.x && currentDim.y<=dim.y,currentDim.z<=dim.z);
+    cellFieldG->setDim(dim,shiftVec);
+
+	//WatchableField3D<CellG *> * newCellFieldG = new WatchableField3D<CellG *>(dim, 0); //added
+ //   
+ //   Point3D pt;
+ //   for (short int pt.x =0 ; pt.x<currentDim.x ; ++pt.x)
+ //       for (short int pt.y =0 ; pt.y<currentDim.y ; ++pt.y)
+ //           for (short int pt.z =0 ; pt.z<currentDim.z ; ++pt.z){
+ //               newCellFieldG->set(pt,cellFieldG->get(pt)); //copying cells from old field to new one            
+ //           }
+ //   
+ //   delete cellFieldG;
+ //   cellFieldG=newCellFieldG;
 
 }
+
+
 
 void Potts3D::registerAttributeAdder(AttributeAdder * _attrAdder){
 	attrAdder=_attrAdder;

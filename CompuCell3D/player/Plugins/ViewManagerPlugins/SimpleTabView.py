@@ -2180,12 +2180,34 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         self.simulation.drawMutex.unlock()
     
+
+    def updateSimulationProperties(self):
+        fieldDim = self.simulation.sim.getPotts().getCellFieldG().getDim()
+        if fieldDim.x==self.fieldDim.x and fieldDim.y==self.fieldDim.y and fieldDim.z==self.fieldDim.z:
+            return False
+        self.fieldDim= fieldDim   
+        self.basicSimulationData.fieldDim = self.fieldDim
+        self.basicSimulationData.sim = self.mysim
+        self.basicSimulationData.numberOfSteps = self.mysim.getNumSteps()
+        
+        return True
+        
+    def updateVisualization(self):    
+        self.fieldStorage.allocateCellField(self.fieldDim)
+        
+        self.prepareSimulationView() # this pauses simulation
+        if self.simulationIsRunning and not self.simulationIsStepping:
+            self.__runSim() # we are immediately restarting it after e.g. lattice resizing took place
         
     def _drawField(self):   # called from GraphicsFrameWidget.py
 #        print MODULENAME,'   _drawField called'
         self.__drawField()
     
     def __drawField(self):
+        propertiesUpdated=self.updateSimulationProperties()
+        if propertiesUpdated:            
+            self.updateVisualization()
+            
         __drawFieldFcn = getattr(self, "drawField" + self.__viewManagerType)
 #        print MODULENAME, '__drawField():  calling ',"drawField"+self.__viewManagerType
         __drawFieldFcn()

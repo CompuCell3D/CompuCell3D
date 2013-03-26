@@ -56,7 +56,15 @@ class SteppableBasePy(SteppablePy):
             import CompuCell
             self.volumeTrackerPlugin=CompuCell.getVolumeTrackerPlugin()
             self.cellField.volumeTrackerPlugin=self.volumeTrackerPlugin # used in setitem function in swigg CELLFIELDEXTEDER macro CompuCell.i
+
+        #CenterOfMassPlugin
+        self.centerOfMassPlugin=None
+        if self.simulator.pluginManager.isLoaded("CenterOfMass"):
+            import CompuCell
+            self.centerOfMassPlugin=CompuCell.getCenterOfMassPlugin()
             
+
+
         #NeighborTrackerPlugin
         self.neighborTrackerPlugin=None
         if self.simulator.pluginManager.isLoaded("NeighborTracker"):
@@ -215,6 +223,37 @@ class SteppableBasePy(SteppablePy):
             import CompuCell            
             self.cleaverMeshDumper=CompuCell.getCleaverMeshDumper()  
 
+    def resizeAndShiftLattice(self,_newSize, _shiftVec=(0,0,0)):
+        if self.potts.getBoundaryXName().lower()=='periodic'\
+            or self.potts.getBoundaryYName().lower()=='periodic'\
+            or self.potts.getBoundaryZName().lower()=='periodic':
+                
+            raise EnvironmentError('Cannot resize lattice with Periodic Boundary Conditions')
+        
+        
+        import CompuCell
+        newSize=map(int,_newSize)# converting new size to integers
+        shiftVec=map(int,_shiftVec) # converting shift vec to integers
+        
+        oldGeometryDimensionality=2
+        if self.dim.x>1 and self.dim.y>1 and self.dim.z>1:
+            oldGeometryDimensionality=3
+        
+        newGeometryDimensionality=2
+        if newSize[0]>1 and newSize[1]>1 and newSize[2]>1:
+            newGeometryDimensionality=3                
+        
+        if newGeometryDimensionality!=oldGeometryDimensionality:
+            raise EnvironmentError('Changing dimmensionality of simulation from 2D to 3D is not supported. It also makes little sense as 2D and 3D simulations have different mathematical properties. Please see CPM literature for more details.')    
+            
+        
+        self.potts.resizeCellField(CompuCell.Dim3D(newSize[0],newSize[1],newSize[2]),CompuCell.Dim3D(shiftVec[0],shiftVec[1],shiftVec[2]))    
+        if sum(shiftVec)==0: # there is no shift in cell field
+            return
+            
+        if self.centerOfMassPlugin:
+            self.centerOfMassPlugin.updateCOMsAfterLatticeShift(CompuCell.Dim3D(shiftVec[0],shiftVec[1],shiftVec[2]))
+            
     def everyPixel(self):
         import itertools
         return itertools.product(xrange(self.dim.x),xrange(self.dim.y),xrange(self.dim.z))  
@@ -277,7 +316,7 @@ class SteppableBasePy(SteppablePy):
             
         return None    
 
-
+    
     def getCellBoundaryPixelList(self,_cell):
         if self.boundaryPixelTrackerPlugin:
             return CellBoundaryPixelList(self.boundaryPixelTrackerPlugin,_cell)

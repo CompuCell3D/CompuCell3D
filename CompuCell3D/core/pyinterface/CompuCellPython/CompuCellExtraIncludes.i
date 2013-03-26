@@ -84,6 +84,8 @@
 
 #include <CompuCell3D/plugins/VolumeTracker/VolumeTrackerPlugin.h>
 
+#include <CompuCell3D/plugins/CenterOfMass/CenterOfMassPlugin.h>
+
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTracker.h>
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
 

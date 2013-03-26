@@ -42,7 +42,7 @@ void FieldExtractor::extractCellField(){
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
 	Dim3D fieldDim=cellFieldG->getDim();
 	Point3D pt;
-	//cerr<< "fieldDim="<<fieldDim<<endl;
+	// cerr<< "FIeld Extractor cell field fieldDim="<<fieldDim<<endl;
 	CellGraphicsData gd;
 	CellG *cell;
 
