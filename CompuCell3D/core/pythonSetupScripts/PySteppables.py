@@ -250,9 +250,27 @@ class SteppableBasePy(SteppablePy):
         self.potts.resizeCellField(CompuCell.Dim3D(newSize[0],newSize[1],newSize[2]),CompuCell.Dim3D(shiftVec[0],shiftVec[1],shiftVec[2]))    
         if sum(shiftVec)==0: # there is no shift in cell field
             return
-            
-        if self.centerOfMassPlugin:
-            self.centerOfMassPlugin.updateCOMsAfterLatticeShift(CompuCell.Dim3D(shiftVec[0],shiftVec[1],shiftVec[2]))
+        
+        # posting CC3DEventLatticeResize so that participating modules can react
+        resizeEv=CompuCell.CC3DEventLatticeResize()
+        resizeEv.oldDim=self.dim
+        resizeEv.newDim=CompuCell.Dim3D(newSize[0],newSize[1],newSize[2])
+        resizeEv.shiftVec=CompuCell.Dim3D(shiftVec[0],shiftVec[1],shiftVec[2])
+        
+        self.simulator.postEvent(resizeEv)
+        
+        self.__init__(self.simulator,self.frequency)
+        import CompuCellSetup
+        
+        # with new cell field and possibly other fields  we have to reinitialize steppables
+        for steppable in CompuCellSetup.globalSteppableRegistry.allSteppables():
+            if steppable !=self:
+                steppable.__init__(steppable.simulator,steppable.frequency) 
+        
+        
+        
+#         if self.centerOfMassPlugin:
+#             self.centerOfMassPlugin.updateCOMsAfterLatticeShift(CompuCell.Dim3D(shiftVec[0],shiftVec[1],shiftVec[2]))
             
     def everyPixel(self):
         import itertools
@@ -533,7 +551,13 @@ class SteppableRegistry(SteppablePy):
     def __init__(self):
         self.steppableList=[]
         self.runBeforeMCSSteppableList=[]
-
+        
+    def allSteppables(self):
+        for steppable in self.steppableList:
+            yield steppable
+        for steppable in self.runBeforeMCSSteppableList:
+            yield steppable
+                
     def registerSteppable(self,_steppable):
         try:
             if _steppable.runBeforeMCS:

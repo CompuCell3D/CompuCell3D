@@ -233,6 +233,9 @@ void FlexibleDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
 
 	simulator->registerSteerableObject(this);
 }
+
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FlexibleDiffusionSolverFE::extraInit(Simulator *simulator){
 
@@ -259,6 +262,23 @@ void FlexibleDiffusionSolverFE::extraInit(Simulator *simulator){
 			boxWatcherSteppable->init(simulator);
 	}
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void FlexibleDiffusionSolverFE::handleEvent(CC3DEvent & _event){
+	if (_event.id!=LATTICE_RESIZE){
+		return;
+	}
+	
+	CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
+	
+    for (size_t i =0 ;   i < concentrationFieldVector.size() ; ++i){
+        concentrationFieldVector[i]->setDim(ev.newDim,ev.shiftVec);
+    }
+    
+	
+}
+
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FlexibleDiffusionSolverFE::start() {
 	//     if(diffConst> (1.0/6.0-0.05) ){ //hard coded condtion for stability of the solutions - assume dt=1 dx=dy=dz=1

@@ -459,28 +459,63 @@ void CompuCell3D::CenterOfMassPlugin::field3DChange(const Point3D &pt, CellG *ne
 	}
 }
 
-void CenterOfMassPlugin::updateCOMsAfterLatticeShift(Dim3D _shiftVec){
+void CenterOfMassPlugin::handleEvent(CC3DEvent & _event){
+	if (_event.id!=LATTICE_RESIZE){
+		return;
+	}
+	CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
+
+	Dim3D shiftVec=ev.shiftVec;
+
     CellInventory &cellInventory = potts->getCellInventory();
     CellInventory::cellInventoryIterator cInvItr;
     CellG * cell;
     
-    cerr<<"THIS IS UPDATE COMS"<<endl;
     for(cInvItr=cellInventory.cellInventoryBegin() ; cInvItr !=cellInventory.cellInventoryEnd() ;++cInvItr )
     {
 		cell=cInvItr->second;
 		//cerr<<"cell->id="<<cell->id<<endl;
-		cell->xCOM+=_shiftVec.x;
-		cell->yCOM+=_shiftVec.y;
-		cell->zCOM+=_shiftVec.z;
+		cell->xCOM+=shiftVec.x;
+		cell->yCOM+=shiftVec.y;
+		cell->zCOM+=shiftVec.z;
 
-		cell->xCM+=_shiftVec.x*cell->volume;
-		cell->yCM+=_shiftVec.y*cell->volume;
-		cell->zCM+=_shiftVec.z*cell->volume;
+		cell->xCOMPrev+=shiftVec.x;
+		cell->yCOMPrev+=shiftVec.y;
+		cell->zCOMPrev+=shiftVec.z;
+
+		cell->xCM+=shiftVec.x*cell->volume;
+		cell->yCM+=shiftVec.y*cell->volume;
+		cell->zCM+=shiftVec.z*cell->volume;
+
+
 
     }
-    
-    
+
+
 }
+
+//void CenterOfMassPlugin::updateCOMsAfterLatticeShift(Dim3D _shiftVec){
+//    CellInventory &cellInventory = potts->getCellInventory();
+//    CellInventory::cellInventoryIterator cInvItr;
+//    CellG * cell;
+//    
+//    cerr<<"THIS IS UPDATE COMS"<<endl;
+//    for(cInvItr=cellInventory.cellInventoryBegin() ; cInvItr !=cellInventory.cellInventoryEnd() ;++cInvItr )
+//    {
+//		cell=cInvItr->second;
+//		//cerr<<"cell->id="<<cell->id<<endl;
+//		cell->xCOM+=_shiftVec.x;
+//		cell->yCOM+=_shiftVec.y;
+//		cell->zCOM+=_shiftVec.z;
+//
+//		cell->xCM+=_shiftVec.x*cell->volume;
+//		cell->yCM+=_shiftVec.y*cell->volume;
+//		cell->zCM+=_shiftVec.z*cell->volume;
+//
+//    }
+//    
+//    
+//}
 
 std::string CenterOfMassPlugin::toString(){return "CenterOfMass";}
 std::string CenterOfMassPlugin::steerableName(){return toString();}

@@ -30,6 +30,8 @@ global appendedPaths
 appendedPaths=[]
 #PERHAPS I SHOULD ADD A CLASS WHICH WOULD CONTROL CML version
 
+global globalSteppableRegistry #rwh2
+globalSteppableRegistry=None #rwh2
 
 
 global cmlFieldHandler
@@ -1286,9 +1288,11 @@ def stopSimulation():
     global userStopSimulationFlag    
     userStopSimulationFlag=True
     
-    
+
 def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFrequency = None):
     global cmlFieldHandler  #rwh2
+    global globalSteppableRegistry  #rwh2
+    globalSteppableRegistry=steppableRegistry
     import time
     global userStopSimulationFlag
     userStopSimulationFlag=False
@@ -1446,6 +1450,9 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
     
 def mainLoopCML(sim, simthread, steppableRegistry= None, _screenUpdateFrequency = None):
     global cmlFieldHandler   #rwh2
+    global globalSteppableRegistry  #rwh2
+    globalSteppableRegistry=steppableRegistry
+    
     import time
     t1 = time.time()
     # print 'SIMULATION FILE NAME=',simthread.getSimFileName()
@@ -1541,6 +1548,9 @@ def mainLoopCML(sim, simthread, steppableRegistry= None, _screenUpdateFrequency 
 def mainLoopCMLReplay(sim, simthread, steppableRegistry= None, _screenUpdateFrequency = None):
     # have to read fsimulation data (vtk file) before proceeding to extrainit.
     # this is because extra init will send a signal to initialize simulation view but simulation view refers to simulation data. therefore this data better be ready
+    global globalSteppableRegistry  #rwh2
+    globalSteppableRegistry=steppableRegistry
+    
     if simthread:
         simthread.readSimulationData(0)
         if not simthread.simulationData:

@@ -235,6 +235,26 @@ SteerableObject * Simulator::getSteerableObject(const std::string & _objectName)
 	}
 
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Simulator::postEvent(CC3DEvent & _ev){
+		BasicPluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
+		BasicPluginManager<Plugin>::infos_t::iterator it; 
+		for (it = infos->begin(); it != infos->end(); it++)
+			if (pluginManager.isLoaded((*it)->getName())) {
+				Plugin *plugin = pluginManager.get((*it)->getName());
+				plugin->handleEvent(_ev); 
+			}	
+
+
+		BasicPluginManager<Steppable>::infos_t *infos_step = &steppableManager.getPluginInfos();
+		BasicPluginManager<Steppable>::infos_t::iterator it_step; 
+		for (it_step = infos_step->begin(); it_step != infos_step->end(); it_step++)
+			if (steppableManager.isLoaded((*it_step)->getName())) {
+				Steppable *steppable= steppableManager.get((*it_step)->getName());
+				steppable->handleEvent(_ev); 
+			}	
+
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

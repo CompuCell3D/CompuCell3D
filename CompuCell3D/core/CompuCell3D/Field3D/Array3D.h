@@ -698,6 +698,8 @@ public:
 		}
 		arrayCont=0;
 	}
+    virtual void setDim(const Dim3D theDim,  Dim3D shiftVec=Dim3D());
+    
 	void allocateArray(const Dim3D & _dim , T val=T());
 	//       operator Type&();
 	ContainerType getContainer(){return arrayCont;}
@@ -806,6 +808,53 @@ void Array3DContiguous<T>::allocateArray(const Dim3D & _dim , T  val){
 		arrayCont[i]=val;
 	}
 
+}
+
+template <typename T>
+void Array3DContiguous<T>::setDim(const Dim3D newDim,  Dim3D shiftVec=Dim3D()){
+    
+    Dim3D newInternalDim=newDim;
+	newInternalDim.x+=3;
+	newInternalDim.y+=3;
+	newInternalDim.z+=3;
+    
+	int newArraySize=newInternalDim.x*newInternalDim.y*2*newInternalDim.z;
+	T * newArrayCont=new T[newArraySize];
+    
+	//initialization 
+	for (int i = 0 ;i<newArraySize;++i){
+		newArrayCont[i]=T();
+	}
+    
+    //copying old array to new one - we do not copy swap values or boundary conditions these are usually set externally by the solver
+	Point3D pt;
+	Point3D ptShift;
+
+	//when lattice is growing or shrinking
+	for(pt.x=0 ; pt.x < newDim.x ; ++pt.x)
+		for(pt.y=0 ; pt.y < newDim.y ; ++pt.y)
+			for(pt.z=0 ; pt.z < newDim.z ; ++pt.z){
+
+				ptShift=pt-shiftVec;
+				if (ptShift.x>=0 && ptShift.x<dim.x && ptShift.y>=0 && ptShift.y<dim.y && ptShift.z>=0 && ptShift.z<dim.z)
+				{
+					//cerr<<"ptShift="<<ptShift<<" pt="<<pt<<endl;
+                    
+                    newArrayCont[(((pt.x+borderWidth)+shiftArray) + ((((pt.y+borderWidth)+shiftArray) + ((2*(pt.z+borderWidth)+shiftArray) *newInternalDim.y)) * newInternalDim.x))]=get(ptShift.x,ptShift.y,ptShift.z);
+                    
+				}
+			}
+    
+    //swapping array and deallocation old one
+    internalDim=newInternalDim;
+	dim=newDim;
+    arraySize=newArraySize;
+    
+    delete [] arrayCont;
+    
+    arrayCont=newArrayCont;
+    
+    
 }
 
 template <typename T>

@@ -98,8 +98,9 @@ namespace CompuCell3D {
     // BCGChangeWatcher interface
      void field3DCheck(const Point3D &pt, CellG *newCell,
                                 CellG *oldCell);
+	 virtual void handleEvent(CC3DEvent & _event);
 
-	void updateCOMsAfterLatticeShift(Dim3D _shiftVec);
+	//void updateCOMsAfterLatticeShift(Dim3D _shiftVec);
     // SimObject interface
     //virtual void init(Simulator *simulator, ParseData *_pd=0);
 	 virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);

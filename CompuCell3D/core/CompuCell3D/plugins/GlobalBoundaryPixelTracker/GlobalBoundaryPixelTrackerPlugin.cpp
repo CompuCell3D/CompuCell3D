@@ -20,17 +20,8 @@
  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
  *************************************************************************/
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <CompuCell3D/Potts3D/CellInventory.h>
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
-// // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
-
 using namespace CompuCell3D;
 
-// // // #include <iostream>
-// // // #include <cmath>
 using namespace std;
 
 
@@ -68,6 +59,8 @@ void GlobalBoundaryPixelTrackerPlugin::init(Simulator *_simulator, CC3DXMLElemen
 void GlobalBoundaryPixelTrackerPlugin::extraInit(Simulator *simulator){
 	update(xmlData,true);
 }
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void GlobalBoundaryPixelTrackerPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
@@ -91,6 +84,25 @@ void GlobalBoundaryPixelTrackerPlugin::update(CC3DXMLElement *_xmlData, bool _fu
 
 	}
     boundaryPixelSetPtr=potts->getBoundaryPixelSetPtr();
+
+}
+
+void GlobalBoundaryPixelTrackerPlugin::handleEvent(CC3DEvent & _event){
+	if (_event.id!=LATTICE_RESIZE){
+		return;
+	}
+
+	CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
+	Dim3D newDim = ev.newDim;
+	Dim3D oldDim = ev.oldDim;
+	Dim3D shiftVec = ev.shiftVec;
+
+	
+	for(std::set<Point3D>::iterator sitr =  boundaryPixelSetPtr->begin() ; sitr != boundaryPixelSetPtr->end() ; ++sitr){
+		sitr->x+=ev.shiftVec.x;
+		sitr->y+=ev.shiftVec.y;
+		sitr->z+=ev.shiftVec.z;
+	}
 
 }
 

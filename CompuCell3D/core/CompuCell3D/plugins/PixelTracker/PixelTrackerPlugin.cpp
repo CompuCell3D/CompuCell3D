@@ -23,25 +23,15 @@
 
 #include <CompuCell3D/CC3D.h>
 
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <CompuCell3D/Potts3D/CellInventory.h>
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
-// // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
-
 using namespace CompuCell3D;
 
-
-// // // #include <iostream>
-// // // #include <cmath>
 using namespace std;
 
 #include "PixelTrackerPlugin.h"
 
 
 PixelTrackerPlugin::PixelTrackerPlugin():
-simulator(0)    
+simulator(0),potts(0)    
 {}
 
 PixelTrackerPlugin::~PixelTrackerPlugin() {}
@@ -53,7 +43,7 @@ void PixelTrackerPlugin::init(Simulator *_simulator, CC3DXMLElement *_xmlData) {
 
 
   simulator=_simulator;
-  Potts3D *potts = simulator->getPotts();
+  potts = simulator->getPotts();
 
 
 
@@ -96,6 +86,38 @@ void PixelTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,CellG *
    
    
 }
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void PixelTrackerPlugin::handleEvent(CC3DEvent & _event){
+	if (_event.id!=LATTICE_RESIZE){
+		return;
+	}
+
+	CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
+
+	Dim3D shiftVec=ev.shiftVec;
+
+    CellInventory &cellInventory = potts->getCellInventory();
+    CellInventory::cellInventoryIterator cInvItr;
+    CellG * cell;
+        
+    for(cInvItr=cellInventory.cellInventoryBegin() ; cInvItr !=cellInventory.cellInventoryEnd() ;++cInvItr )
+    {
+		cell=cInvItr->second;
+		std::set<PixelTrackerData > & pixelSetRef=pixelTrackerAccessor.get(cell->extraAttribPtr)->pixelSet;
+		for (set<PixelTrackerData >::iterator sitr=pixelSetRef.begin() ; sitr != pixelSetRef.end() ; ++sitr ){
+			sitr->pixel.x+=shiftVec.x;
+			sitr->pixel.y+=shiftVec.y;
+			sitr->pixel.z+=shiftVec.z;
+		}
+
+
+
+    }
+
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

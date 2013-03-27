@@ -32,6 +32,7 @@ class CC3DXMLElement;
 namespace CompuCell3D {
   class Simulator;
   class ParseData;
+  class CC3DEvent;
 
   class SimObject : public virtual SteerableObject {
   protected:
@@ -46,6 +47,7 @@ namespace CompuCell3D {
     virtual void extraInit(Simulator *simulator){this->simulator = simulator;}
     virtual std::string toString(){return "SimObject";}
     virtual ParseData * getParseData(){return pd;}
+    virtual void handleEvent(CC3DEvent & _event){}
 
   };
 }

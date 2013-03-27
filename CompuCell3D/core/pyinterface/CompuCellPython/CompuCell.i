@@ -56,7 +56,9 @@
 #include <CompuCell3D/Field3D/Field3DImpl.h>
 #include <CompuCell3D/Field3D/WatchableField3D.h>
 #include <CompuCell3D/ClassRegistry.h>
+#include <CompuCell3D/CC3DEvents.h>
 #include <CompuCell3D/Simulator.h>
+
 #include <CompuCell3D/PluginManager.h>
 #include <CompuCell3D/Potts3D/CellInventory.h>
 #include <CompuCell3D/Potts3D/TypeChangeWatcher.h>
@@ -729,6 +731,7 @@ FIELD3DEXTENDER(Field3D<int>,int)
 %include "ClassRegistry.h"
 %include <CompuCell3D/SteerableObject.h>
 %include "Simulator.h"
+%include <CompuCell3D/CC3DEvents.h>
 
 
 %include <CompuCell3D/ParseData.h>

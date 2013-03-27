@@ -39,6 +39,7 @@
 #include <CompuCell3D/ParseData.h>
 #include <CompuCell3D/PottsParseData.h>
 #include <CompuCell3D/ParserStorage.h>
+#include <CompuCell3D/CC3DEvents.h>
 //#include <QtWrappers/StreamRedirectors/CustomStreamBuffers.h>
 
 
@@ -134,6 +135,8 @@ namespace CompuCell3D {
 		std::map<std::string,Field3D<float>*> & getConcentrationFieldNameMap(){
 			return concentrationFieldNameMap;
 		}
+		void postEvent(CC3DEvent & _ev);
+
 		std::vector<std::string> getConcentrationFieldNameVector();
 		Field3D<float>* getConcentrationFieldByName(std::string _fieldName);
 		

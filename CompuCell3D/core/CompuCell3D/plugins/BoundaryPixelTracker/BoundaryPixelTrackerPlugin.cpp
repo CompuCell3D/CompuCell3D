@@ -72,6 +72,35 @@ void BoundaryPixelTrackerPlugin::extraInit(Simulator *simulator){
 	update(xmlData,true);
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void BoundaryPixelTrackerPlugin::handleEvent(CC3DEvent & _event){
+	if (_event.id!=LATTICE_RESIZE){
+		return;
+	}
+	cerr<<"INSIDE BOUNDARY PIXEL TRACKER EVEN HANDLER"<<endl;
+	CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
+
+	Dim3D shiftVec=ev.shiftVec;
+
+    CellInventory &cellInventory = potts->getCellInventory();
+    CellInventory::cellInventoryIterator cInvItr;
+    CellG * cell;
+        
+    for(cInvItr=cellInventory.cellInventoryBegin() ; cInvItr !=cellInventory.cellInventoryEnd() ;++cInvItr )
+    {
+		cell=cInvItr->second;
+		set<BoundaryPixelTrackerData > & pixelSetRef=boundaryPixelTrackerAccessor.get(cell->extraAttribPtr)->pixelSet;
+		for (set<BoundaryPixelTrackerData >::iterator sitr=pixelSetRef.begin() ; sitr != pixelSetRef.end() ; ++sitr ){
+			sitr->pixel.x+=shiftVec.x;
+			sitr->pixel.y+=shiftVec.y;
+			sitr->pixel.z+=shiftVec.z;
+		}
+
+
+
+    }
+
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void BoundaryPixelTrackerPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 
@@ -105,9 +134,6 @@ void BoundaryPixelTrackerPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
 void BoundaryPixelTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,CellG *oldCell) {
 	if (newCell==oldCell) //this may happen if you are trying to assign same cell to one pixel twice 
 		return;

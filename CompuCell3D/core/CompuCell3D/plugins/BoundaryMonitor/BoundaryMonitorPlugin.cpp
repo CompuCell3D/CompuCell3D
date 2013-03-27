@@ -1,20 +1,7 @@
 
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
 
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
-// // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
-
-// // // #include <CompuCell3D/Potts3D/CellInventory.h>
-// // // #include <CompuCell3D/Automaton/Automaton.h>
 using namespace CompuCell3D;
-
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-// // // #include <PublicUtilities/StringUtils.h>
-// // // #include <algorithm>
 
 #include "BoundaryMonitorPlugin.h"
 
@@ -39,6 +26,8 @@ BoundaryMonitorPlugin::~BoundaryMonitorPlugin() {
     }    
     
 }
+
+Array3DCUDA<unsigned char> * BoundaryMonitorPlugin::getBoundaryArray(){return boundaryArray;}
 
 void BoundaryMonitorPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     xmlData=_xmlData;
@@ -95,7 +84,7 @@ void BoundaryMonitorPlugin::field3DChange(const Point3D &pt, CellG *newCell, Cel
         }
 
         nCell = cellFieldG->get(neighbor.pt);
-        if (nCell!=newCell){ //if newPixel touches cell of different type this means it si a boundary pixel
+        if (nCell!=newCell){ //if newPixel touches cell of different type this means it is a boundary pixel
             boundaryArray->set(pt,1);
 //             break;
         }
@@ -163,6 +152,45 @@ void BoundaryMonitorPlugin::field3DChange(const Point3D &pt, CellG *newCell, Cel
     //    //PUT YOUR CODE HERE
     //}
 		
+}
+
+void BoundaryMonitorPlugin::handleEvent(CC3DEvent & _event){
+	if (_event.id!=LATTICE_RESIZE){
+		return;
+	}
+
+
+
+	CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
+	Dim3D newDim = ev.newDim;
+	Dim3D oldDim = ev.oldDim;
+	Dim3D shiftVec = ev.shiftVec;
+
+	unsigned char initVal=0;
+    Array3DCUDA<unsigned char> * newBoundaryArray=new Array3DCUDA<unsigned char>(newDim,initVal); // 0 indicates pixels is not a boundary pixel
+	
+	Point3D pt;
+	Point3D ptShift;
+
+	//when lattice is growing or shrinking
+	for(pt.x=0 ; pt.x < newDim.x ; ++pt.x)
+		for(pt.y=0 ; pt.y < newDim.y ; ++pt.y)
+			for(pt.z=0 ; pt.z < newDim.z ; ++pt.z){
+
+				ptShift=pt-shiftVec;
+				if (ptShift.x>=0 && ptShift.x<oldDim.x && ptShift.y>=0 && ptShift.y<oldDim.y && ptShift.z>=0 && ptShift.z<oldDim.z)
+				{
+					//cerr<<"ptShift="<<ptShift<<" pt="<<pt<<endl;
+
+					newBoundaryArray->set(pt,boundaryArray->get(ptShift));
+				}
+			}
+	//reassign boundary lattice 
+	delete boundaryArray;
+	//cerr<<"deleted boundaryArray"<<endl;
+	boundaryArray=newBoundaryArray;
+
+	//cerr<<"new boundaryArray"<<endl;
 }
 
 
