@@ -27,6 +27,11 @@ ReactionDiffusionSolverFE_OpenCL_Implicit::ReactionDiffusionSolverFE_OpenCL_Impl
 	}
 }
 
+void ReactionDiffusionSolverFE_OpenCL_Implicit::handleEventLocal(CC3DEvent & _event){
+	if (_event.id==LATTICE_RESIZE){
+		// CODE WHICH HANDLES CELL LATTICE RESIZE
+	}
+}
 
 ReactionDiffusionSolverFE_OpenCL_Implicit::~ReactionDiffusionSolverFE_OpenCL_Implicit(void)
 {

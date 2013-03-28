@@ -1,5 +1,6 @@
-//Maciej Swat
 
+//Maciej Swat
+    
 #include <CompuCell3D/Simulator.h>
 #include <CompuCell3D/Automaton/Automaton.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>
@@ -264,16 +265,21 @@ void FlexibleDiffusionSolverFE::extraInit(Simulator *simulator){
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FlexibleDiffusionSolverFE::handleEvent(CC3DEvent & _event){
+	cerr<<"\n\n\n\n FlexibleDiffusionSolverFE::handleEvent"<<endl;
 	if (_event.id!=LATTICE_RESIZE){
 		return;
 	}
 	
+    cellFieldG=(WatchableField3D<CellG *> *)potts->getCellFieldG();
+    
 	CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
 	
     for (size_t i =0 ;   i < concentrationFieldVector.size() ; ++i){
         concentrationFieldVector[i]->setDim(ev.newDim,ev.shiftVec);
     }
     
+	fieldDim=cellFieldG->getDim();
+    workFieldDim=concentrationFieldVector[0]->getInternalDim();
 	
 }
 

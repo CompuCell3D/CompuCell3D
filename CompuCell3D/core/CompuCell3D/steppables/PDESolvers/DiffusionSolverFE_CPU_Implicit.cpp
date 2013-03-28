@@ -35,6 +35,12 @@ DiffusionSolverFE_CPU_Implicit::~DiffusionSolverFE_CPU_Implicit(void)
 void DiffusionSolverFE_CPU_Implicit::Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant){
 }
 
+void DiffusionSolverFE_CPU_Implicit::handleEventLocal(CC3DEvent & _event){
+	if (_event.id==LATTICE_RESIZE){
+		// CODE WHICH HANDLES CELL LATTICE RESIZE
+	}
+}
+
 
 template <typename SparseMatrixT>
 void CompareMatrices(SparseMatrixT const &m1, SparseMatrixT const &m2){

@@ -1,6 +1,8 @@
 #ifndef DIFFUSION_SOLVER_FE_CPU_IMPLICIT
 #define DIFFUSION_SOLVER_FE_CPU_IMPLICIT
 
+#include <CompuCell3D/CC3DEvents.h>
+
 #include "DiffusionSolverFE.h"
 #include <Eigen/Sparse>
 //#include "DiffusableVectorCommon.h"
@@ -22,6 +24,7 @@ public:
 
 	//TODO: check if can use a constant diffData here
 	void diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData /*const*/ &diffData);
+	virtual void handleEventLocal(CC3DEvent & _event);
 
 protected:
 

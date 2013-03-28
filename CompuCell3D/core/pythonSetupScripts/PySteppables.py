@@ -224,6 +224,7 @@ class SteppableBasePy(SteppablePy):
             self.cleaverMeshDumper=CompuCell.getCleaverMeshDumper()  
 
     def resizeAndShiftLattice(self,_newSize, _shiftVec=(0,0,0)):
+        
         if self.potts.getBoundaryXName().lower()=='periodic'\
             or self.potts.getBoundaryYName().lower()=='periodic'\
             or self.potts.getBoundaryZName().lower()=='periodic':
@@ -248,8 +249,8 @@ class SteppableBasePy(SteppablePy):
             
         
         self.potts.resizeCellField(CompuCell.Dim3D(newSize[0],newSize[1],newSize[2]),CompuCell.Dim3D(shiftVec[0],shiftVec[1],shiftVec[2]))    
-        if sum(shiftVec)==0: # there is no shift in cell field
-            return
+#         if sum(shiftVec)==0: # there is no shift in cell field
+#             return
         
         # posting CC3DEventLatticeResize so that participating modules can react
         resizeEv=CompuCell.CC3DEventLatticeResize()
@@ -258,6 +259,7 @@ class SteppableBasePy(SteppablePy):
         resizeEv.shiftVec=CompuCell.Dim3D(shiftVec[0],shiftVec[1],shiftVec[2])
         
         self.simulator.postEvent(resizeEv)
+        
         
         self.__init__(self.simulator,self.frequency)
         import CompuCellSetup

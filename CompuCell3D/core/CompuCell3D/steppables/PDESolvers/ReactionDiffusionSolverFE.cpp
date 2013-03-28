@@ -241,6 +241,22 @@ void ReactionDiffusionSolverFE::extraInit(Simulator *simulator){
 			boxWatcherSteppable->init(simulator);
 	}
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ReactionDiffusionSolverFE::handleEvent(CC3DEvent & _event){
+	if (_event.id!=LATTICE_RESIZE){
+		return;
+	}
+	
+    cellFieldG=(WatchableField3D<CellG *> *)potts->getCellFieldG();
+    
+	CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
+	
+    for (size_t i =0 ;   i < concentrationFieldVector.size() ; ++i){
+        concentrationFieldVector[i]->setDim(ev.newDim,ev.shiftVec);
+    }
+    
+	
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ReactionDiffusionSolverFE::start() {

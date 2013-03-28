@@ -30,6 +30,11 @@ DiffusionSolverFE_OpenCL::DiffusionSolverFE_OpenCL(void):DiffusableVectorCommon<
 //	QueryPerformanceFrequency(&fq);
 }
 
+void DiffusionSolverFE_OpenCL::handleEventLocal(CC3DEvent & _event){
+	if (_event.id==LATTICE_RESIZE){
+		// CODE WHICH HANDLES CELL LATTICE RESIZE
+	}
+}
 
 DiffusionSolverFE_OpenCL::~DiffusionSolverFE_OpenCL(void)
 {

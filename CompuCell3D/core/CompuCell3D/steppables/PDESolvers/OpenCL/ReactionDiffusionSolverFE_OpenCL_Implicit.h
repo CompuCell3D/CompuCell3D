@@ -1,6 +1,7 @@
 #ifndef REACTION_DIFFUSION_SOLVER_FE_OPENCL_IMPLICIT
 #define REACTION_DIFFUSION_SOLVER_FE_OPENCL_IMPLICIT
 
+#include <CompuCell3D/CC3DEvents.h>
 #include "../DiffusionSolverFE.h"
 
 #include "DiffusableVectorRD.hpp"
@@ -44,7 +45,7 @@ public:
 	~ReactionDiffusionSolverFE_OpenCL_Implicit(void);
 
 	void diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData const &diffData);
-
+	virtual void handleEventLocal(CC3DEvent & _event);
 	void finish();
 	
 protected:

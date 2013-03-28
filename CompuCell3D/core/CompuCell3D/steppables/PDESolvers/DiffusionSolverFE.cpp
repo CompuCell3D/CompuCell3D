@@ -1,4 +1,4 @@
-#include "DiffusionSolverFE.h"
+#include "DiffusionSolverFE.h"cell
 #include <CompuCell3D/Simulator.h>
 #include <CompuCell3D/Automaton/Automaton.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>
@@ -390,6 +390,26 @@ void DiffusionSolverFE<Cruncher>::extraInit(Simulator *simulator){
 	//platform-specific initialization
 	extraInitImpl();
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template <class Cruncher>
+void  DiffusionSolverFE<Cruncher>::handleEvent(CC3DEvent & _event){
+
+	if (_event.id!=LATTICE_RESIZE){
+		return;
+	}
+
+    
+    
+	static_cast<Cruncher *>(this)->handleEventLocal(_event);
+    
+	h_celltype_field=cellTypeMonitorPlugin->getCellTypeArray();
+
+	fieldDim=cellFieldG->getDim();
+    workFieldDim=static_cast<Cruncher*>(this)->getConcentrationField(0)->getInternalDim();
+
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>

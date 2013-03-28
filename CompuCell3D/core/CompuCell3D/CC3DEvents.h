@@ -1,6 +1,7 @@
 #ifndef EVENTS_H
 #define EVENTS_H
 
+#include <CompuCell3D/Field3D/Dim3D.h>
 
 namespace CompuCell3D {
 

@@ -138,6 +138,19 @@ void ParallelUtilsOpenMP::setDim(const Dim3D &_dim){
 }
 
 
+void  ParallelUtilsOpenMP::handleEvent(CC3DEvent & _event){
+
+	if (_event.id==LATTICE_RESIZE){
+        CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
+		setDim(ev.newDim);
+	}
+
+    
+    
+
+}
+
+
 
 Dim3D ParallelUtilsOpenMP::getDim(){return fieldDim;}
 

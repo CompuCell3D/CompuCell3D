@@ -19,6 +19,27 @@ int flatInd(int x, int y, int z, Dim3D const&dim){
 	return z*dim.x*dim.y+y*dim.x+x;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void  DiffusionSolverFE_CPU::handleEventLocal(CC3DEvent & _event){	
+	if (_event.id!=LATTICE_RESIZE){
+		return;
+	}
+	
+    cellFieldG=(WatchableField3D<CellG *> *)potts->getCellFieldG();
+    
+	CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
+	
+    for (size_t i =0 ;   i < concentrationFieldVector.size() ; ++i){
+        concentrationFieldVector[i]->setDim(ev.newDim,ev.shiftVec);
+    }
+    
+    
+	
+}
+
+
+
 void DiffusionSolverFE_CPU::diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData &diffData)
 {
 

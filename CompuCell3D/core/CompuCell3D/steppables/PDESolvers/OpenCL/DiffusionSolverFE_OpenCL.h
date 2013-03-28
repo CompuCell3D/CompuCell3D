@@ -1,6 +1,8 @@
 #ifndef DIFFUSIONSOLVERFE_OPENCL_H
 #define DIFFUSIONSOLVERFE_OPENCL_H
 
+#include <CompuCell3D/CC3DEvents.h>
+
 #include "../DiffusionSolverFE.h"
 
 // 2012 Mitja:
@@ -48,6 +50,7 @@ public:
 	virtual ~DiffusionSolverFE_OpenCL(void);
 
 	void diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData const &diffData);
+	virtual void handleEventLocal(CC3DEvent & _event);
 
 	virtual void finish();
 
