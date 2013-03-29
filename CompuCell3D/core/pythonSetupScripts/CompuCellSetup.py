@@ -1367,8 +1367,11 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
 #    dumpImageFlag = Configuration.getSetting("ImageOutputOn")
 #    dumpLatticeFlag = Configuration.getSetting("LatticeOutputOn")
 #    print MYMODULENAME,"mainLoopNewPlayer: dumpImageFlag, dumpLatticeFlag = ",dumpImageFlag,dumpLatticeFlag
-    
-    for i in range(beginingStep,sim.getNumSteps()):
+
+    i=beginingStep
+    # for i in range(beginingStep,sim.getNumSteps()):
+    while True:
+            
         if simthread is not None:
     
             simthread.beforeStep(i)                
@@ -1383,8 +1386,7 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
                 
             if simthread.getStopSimulation() or userStopSimulationFlag:
                 runFinishFlag=False;
-                break
-                
+                break        
         #calling Python steppables which are suppose to run before MCS - e.g. secretion steppable                
         if not steppableRegistry is None:     
             steppableRegistry.stepRunBeforeMCSSteppables(i)        
@@ -1424,6 +1426,10 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
             # if (cmlFieldHandler is not None) and latticeFlag and (i % latticeFrequency == 0):
 # #                print MYMODULENAME,' mainLoopNewPlayer: cmlFieldHandler.writeFields(i), i=',i
                 # cmlFieldHandler.writeFields(i)
+        i+=1        
+        if i>=sim.getNumSteps():
+            break
+                
         
     print "END OF SIMULATION  "
     if runFinishFlag:

@@ -895,6 +895,11 @@ void Simulator::steer(){
 		if(mitr!=steerableObjectMap.end()){
 			mitr->second->update(ps.updatePottsCC3DXMLElement);
 			ps.pottsCC3DXMLElement=ps.updatePottsCC3DXMLElement;
+
+			if(ps.updatePottsCC3DXMLElement->getFirstElement("Steps")){
+				ppdCC3DPtr->numSteps=ps.updatePottsCC3DXMLElement->getFirstElement("Steps")->getUInt();
+			}
+
 			ps.updatePottsCC3DXMLElement=0;
 		}
 
@@ -911,6 +916,7 @@ void Simulator::steer(){
 				potts.setDebugOutputFrequency(debugOutputFrequency>0 ?debugOutputFrequency: 0);
 				ppdCC3DPtr->debugOutputFrequency=debugOutputFrequency;
 			}
+
 		}
 		ps.updateMetadataCC3DXMLElement=0;
 
