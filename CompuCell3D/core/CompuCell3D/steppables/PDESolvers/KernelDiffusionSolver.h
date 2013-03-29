@@ -157,7 +157,8 @@ public:
    
     virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
     virtual void extraInit(Simulator *simulator);
-    
+    virtual void handleEvent(CC3DEvent & _event);
+
     // Begin Steppable interface
     virtual void start();
     virtual void step(const unsigned int _currentStep);

@@ -262,6 +262,38 @@ void SteadyStateDiffusionSolver2D::extraInit(Simulator *simulator){
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void SteadyStateDiffusionSolver2D::handleEvent(CC3DEvent & _event){
+	
+	if (_event.id==LATTICE_RESIZE){
+		cellFieldG=(WatchableField3D<CellG *> *)potts->getCellFieldG();
+	    
+		CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
+		
+		for (size_t i =0 ;   i < concentrationFieldVector.size() ; ++i){
+			concentrationFieldVector[i]->setDim(ev.newDim,ev.shiftVec);
+		}
+
+
+		fieldDim=cellFieldG->getDim();		
+		workFieldDim=Dim3D(fieldDim.x+1,fieldDim.y+1,1);
+
+		scratchVec.assign(4*(fieldDim.y+1+1)+(13+(int)(log(fieldDim.y+1+1.0)/log(2.0)))*(fieldDim.x+1+1),0.0);
+		scratch=&(scratchVec[0]);
+
+		
+		//vectors used to specify boundary conditions
+		bdaVec.assign(fieldDim.y+1,0.0);
+		bdbVec.assign(fieldDim.y+1,0.0);
+		bdcVec.assign(fieldDim.x+1,0.0);
+		bddVec.assign(fieldDim.x+1,0.0);
+
+		
+	}
+	
+	
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void SteadyStateDiffusionSolver2D::start() {
 	//     if(diffConst> (1.0/6.0-0.05) ){ //hard coded condtion for stability of the solutions - assume dt=1 dx=dy=dz=1
 	// 

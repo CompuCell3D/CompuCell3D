@@ -1225,7 +1225,7 @@ bool FieldExtractor::fillConFieldData2D(long _conArrayAddr,std::string _conField
 		conFieldPtr=mitr->second;
 	}
 
-    
+    cerr<<"THIS IS conFieldPtr="<<conFieldPtr<<endl;
 	if(!conFieldPtr)
 		return false;
 
