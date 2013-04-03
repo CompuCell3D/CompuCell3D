@@ -1585,7 +1585,9 @@ def mainLoopCMLReplay(sim, simthread, steppableRegistry= None, _screenUpdateFreq
     mcsDirectAccess=0
     directAccessFlag=False
     while i<numberOfSteps :
-
+        # print 'i=',i
+        # print 'COMPUCELLSETUP field dim before=',simthread.fieldDim
+        
         if simthread is not None:
             mcsDirectAccess,directAccessFlag = simthread.getCurrentStepDirectAccess()
         if directAccessFlag:
@@ -1596,31 +1598,18 @@ def mainLoopCMLReplay(sim, simthread, steppableRegistry= None, _screenUpdateFreq
         # print "working on MCS " , i
         if simthread is not None:
             if i!=0: # new data for step 0 is already read
+                
                 simthread.readSimulationData(i)    
+                # print 'field dim after=',simthread.fieldDim
                 
             simthread.beforeStep(i)                
             # print "simthread=",simthread
             if simthread.getStopSimulation():
-                runFinishFlag=False;
+                runFinishFlag=False
                 break
         if i>=numberOfSteps:
             break                 
-        # print "currentStep=",simthread.getCurrentStep()
-        # if simthread.getCurrentStep() != i:
-            # i=simthread.getCurrentStep()                
-            
-        # sim.step(i)#  steering using steppables     
-        # if sim.getRecentErrorMessage()!="":        
-            # raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
-        
-        # simthread.steerUsingGUI(sim) #steering using GUI. GUI steering overrides steering done in the steppables
-        
-        # if not steppableRegistry is None:
-            # steppableRegistry.step(i)
-        # steer application will only update modules that uses requested using updateCC3DModule function from simulator
-        # sim.steer() 
-        # if sim.getRecentErrorMessage()!="":        
-            # raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
+
 
         screenUpdateFrequency = simthread.getScreenUpdateFrequency()
         screenshotFrequency=simthread.getScreenshotFrequency()

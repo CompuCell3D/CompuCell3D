@@ -38,7 +38,9 @@ class SteppableBasePy(SteppablePy):
         self.clusterInventory=self.inventory.getClusterInventory()
         self.cellList=CellList(self.inventory)
         self.cellListByType=CellListByType(self.inventory)
-        self.clusterList=ClusterList(self.inventory)        
+        self.clusterList=ClusterList(self.inventory) 
+        self.clusters=Clusters(self.inventory)       
+        
         import CompuCellSetup
         self.typeIdTypeNameDict = CompuCellSetup.ExtractTypeNamesAndIds()    
         for typeId in self.typeIdTypeNameDict:
@@ -735,6 +737,7 @@ class ClusterListIterator:
         self.invItr.initialize(self.inventory)        
         self.invItr.setToBegin()
         
+        self.compartmentList=None
         
     def next(self):
     
@@ -742,12 +745,45 @@ class ClusterListIterator:
             self.compartmentList=self.invItr.getCurrentRef()
             # print 'self.idCellPair=',self.idCellPair
             # print 'dir(self.idCellPair)=',dir(self.idCellPair)
-            self.invItr.next()
+            self.invItr.next()            
             return self.compartmentList
 #       
         else:
             raise StopIteration
     
+#this is used to iterate more easily over clusters and avoid strange looking Python syntax 
+
+class Clusters:
+    def __init__(self,_inventory):
+        self.inventory = _inventory.getClusterInventory().getContainer()
+    def __iter__(self):
+        return ClustersIterator(self)
+    def __len__(self):
+        return self.inventory.size()        
+
+class ClustersIterator:
+    def __init__(self, _cellList):
+        import CompuCell
+        self.inventory = _cellList.inventory
+        
+        self.invItr=CompuCell.compartmentinventoryPtrPyItr()
+        self.invItr.initialize(self.inventory)        
+        self.invItr.setToBegin()
+        
+        self.compartmentList=None
+        
+    def next(self):
+    
+        if not self.invItr.isEnd():
+            self.compartmentList=self.invItr.getCurrentRef()
+            # print 'self.idCellPair=',self.idCellPair
+            # print 'dir(self.idCellPair)=',dir(self.idCellPair)
+            self.invItr.next()            
+            return CompartmentList(self.compartmentList)
+#       
+        else:
+            raise StopIteration
+
 
 #this is used to iterate more easily over list of compartments , notice regular map iteration will work too but this is more abstracted out and will work with other containers too
 
@@ -757,11 +793,15 @@ class CompartmentList:
         self.inventory = _inventory
         
                 
-    def __iter__(self):
+    def __iter__(self):        
         return CompartmentListIterator(self)
                 
     def __len__(self):
-        return self.inventoryByType.size()
+        return self.inventory.size()
+        
+    def clusterId(self):
+        return self.__iter__().next().clusterId
+        
         
 class CompartmentListIterator:
     def __init__(self,  _cellList):
@@ -818,6 +858,7 @@ class ClusterCellListIterator:
             
             self.cell=self.inventory[self.currentIdx]
             self.currentIdx+=1
+            
             return self.cell
         else:
             raise StopIteration

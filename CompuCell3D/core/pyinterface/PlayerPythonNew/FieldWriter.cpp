@@ -75,6 +75,13 @@ void FieldWriter::writeFields(std::string _fileName){
 	vtkStructuredPointsWriter * latticeDataWriter=vtkStructuredPointsWriter::New();
 	latticeDataWriter->SetFileName(_fileName.c_str());
 
+	//get new field dim before each write event - in case simulation dimensions have changed
+	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
+	Dim3D fieldDim=cellFieldG->getDim();
+    
+    latticeData->SetDimensions(fieldDim.x,fieldDim.y,fieldDim.z);
+
+
 //	if (binaryFlag)
 //	    latticeDataWriter->SetFileTypeToBinary();
 //	else
