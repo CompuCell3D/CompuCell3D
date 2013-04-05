@@ -142,7 +142,8 @@ void  ParallelUtilsOpenMP::handleEvent(CC3DEvent & _event){
 
 	if (_event.id==LATTICE_RESIZE){
         CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
-		setDim(ev.newDim);
+		init(ev.newDim);
+		//setDim(ev.newDim);
 	}
 
     

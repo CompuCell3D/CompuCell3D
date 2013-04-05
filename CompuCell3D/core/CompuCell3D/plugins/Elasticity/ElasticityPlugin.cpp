@@ -23,23 +23,12 @@
  #include <CompuCell3D/CC3D.h>
 #include <CompuCell3D/plugins/ElasticityTracker/ElasticityTrackerPlugin.h>
 
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/Point3D.h>
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-// // // #include <PublicUtilities/NumericalUtils.h>
+
 #include <CompuCell3D/plugins/ElasticityTracker/ElasticityTracker.h>
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h>
-// // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 
-
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
 using namespace CompuCell3D;
 
 
-// // // #include <iostream>
 using namespace std;
 
 #include "ElasticityPlugin.h"
@@ -54,7 +43,9 @@ targetLengthElasticity(0.0),
 lambdaElasticity(0.0),
 maxLengthElasticity(100000000000.0),
 diffEnergyFcnPtr(&ElasticityPlugin::diffEnergyGlobal),
-boundaryStrategy(0) 
+boundaryStrategy(0),
+simulator(0),
+potts(0)
 {}
 
 ElasticityPlugin::~ElasticityPlugin() {
@@ -63,7 +54,7 @@ ElasticityPlugin::~ElasticityPlugin() {
 
 void ElasticityPlugin::init(Simulator *_simulator, CC3DXMLElement *_xmlData) {
    simulator=_simulator;	
-   Potts3D *potts = simulator->getPotts();
+   potts = simulator->getPotts();
    cellFieldG = potts->getCellFieldG();
 
    pluginName=_xmlData->getAttribute("Name");
@@ -76,7 +67,7 @@ void ElasticityPlugin::init(Simulator *_simulator, CC3DXMLElement *_xmlData) {
 }
 
 void ElasticityPlugin::extraInit(Simulator *simulator) {
-  Potts3D *potts = simulator->getPotts();
+
   cellFieldG = potts->getCellFieldG();
   
   fieldDim=cellFieldG ->getDim();
@@ -94,6 +85,20 @@ void ElasticityPlugin::extraInit(Simulator *simulator) {
 
 }
 
+void ElasticityPlugin::handleEvent(CC3DEvent & _event){
+	if (_event.id!=LATTICE_RESIZE){
+		return;
+	}
+	CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
+
+	Dim3D shiftVec=ev.shiftVec;
+	
+    cellFieldG = potts->getCellFieldG();
+	  
+	fieldDim=cellFieldG ->getDim();
+
+
+}
 
 void ElasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
     
@@ -287,6 +292,9 @@ double ElasticityPlugin::changeEnergy(const Point3D &pt,
             -lBefore;
 
          }
+		 //cerr<<"centMassOldBefore="<<centMassOldBefore<<endl;
+		 //cerr<<"centMassOldAfter="<centMassOldAfter<<endl;	
+		 //cerr<<"deltaL="<<deltaL<<" lBefore="<<lBefore<<endl;
          energy+=(this->*diffEnergyFcnPtr)(deltaL,lBefore,&(*sitr),oldCell);
 
 //          if(oldCell->volume>1){

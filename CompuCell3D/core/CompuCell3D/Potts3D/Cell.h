@@ -68,7 +68,7 @@ namespace CompuCell3D {
         extraAttribPtr(0),
         pyAttrib(0)
       {}
-      unsigned long volume;
+      long volume;
       float targetVolume;
       float lambdaVolume;
       double surface;

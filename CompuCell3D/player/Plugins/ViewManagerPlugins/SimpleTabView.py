@@ -2247,8 +2247,12 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
     def updateVisualization(self):    
         # print 'INSIDE f'
         self.fieldStorage.allocateCellField(self.fieldDim)
+        # this updates cross sections when dimensions change
+        for windowName in self.windowDict.keys():
+            self.windowDict[windowName].updateCrossSection(self.basicSimulationData)
         
-        # self.setInitialCrossSection(self.basicSimulationData)
+        
+        # # # self.setInitialCrossSection(self.basicSimulationData) 
         
         
         for windowName, graphicsWindow in self.graphicsWindowDict.iteritems():

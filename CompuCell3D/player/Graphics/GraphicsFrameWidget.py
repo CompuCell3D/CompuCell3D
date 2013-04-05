@@ -587,18 +587,21 @@ class GraphicsFrameWidget(QtGui.QFrame):
 #        self.yzSB.setValue(fieldDim.x/2)
 #        self.yzSB.setWrapping(True)
         
+        self.updateCrossSection(_basicSimulationData)
+        
         # new (rwh, May 2011)
         self.currentProjection = 'xy'   # rwh
         
-        self.xyMaxPlane = fieldDim.z - 1
-#        self.xyPlane = fieldDim.z/2 + 1
-        self.xyPlane = fieldDim.z/2
         
-        self.xzMaxPlane = fieldDim.y - 1
-        self.xzPlane = fieldDim.y/2
+        # # # self.xyMaxPlane = fieldDim.z - 1
+# # # #        self.xyPlane = fieldDim.z/2 + 1
+        # # # self.xyPlane = fieldDim.z/2
         
-        self.yzMaxPlane = fieldDim.x - 1
-        self.yzPlane = fieldDim.x/2
+        # # # self.xzMaxPlane = fieldDim.y - 1
+        # # # self.xzPlane = fieldDim.y/2
+        
+        # # # self.yzMaxPlane = fieldDim.x - 1
+        # # # self.yzPlane = fieldDim.x/2
         
         self.projComboBox.setCurrentIndex(1)   # set to be 'xy' projection by default, regardless of 2D or 3D sim?
         
@@ -610,7 +613,19 @@ class GraphicsFrameWidget(QtGui.QFrame):
         self.projSpinBox.setValue(fieldDim.z/2) # If you want to set the value from configuration
 #        self.projSpinBox.setWrapping(True)
 
-
+    def updateCrossSection(self,_basicSimulationData):
+        fieldDim = _basicSimulationData.fieldDim
+        self.xyMaxPlane = fieldDim.z - 1
+#        self.xyPlane = fieldDim.z/2 + 1
+        self.xyPlane = fieldDim.z/2
+        
+        self.xzMaxPlane = fieldDim.y - 1
+        self.xzPlane = fieldDim.y/2
+        
+        self.yzMaxPlane = fieldDim.x - 1
+        self.yzPlane = fieldDim.x/2
+        
+    
     def setFieldTypesComboBox(self,_fieldTypes):
         self.fieldTypes=_fieldTypes # assign field types to be the same as field types in the workspace
         self.draw2D.setFieldTypes(self.fieldTypes) # make sure that field types are the same in graphics widget and in the drawing object

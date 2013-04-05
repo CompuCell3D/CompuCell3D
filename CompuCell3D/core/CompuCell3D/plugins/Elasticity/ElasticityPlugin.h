@@ -23,10 +23,7 @@
 #ifndef ELASTICITYPLUGIN_H
 #define ELASTICITYPLUGIN_H
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Plugin.h>
 
-// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
-// // // #include <CompuCell3D/Potts3D/Cell.h>
 
 #include "ElasticityDLLSpecifier.h"
 
@@ -60,6 +57,7 @@ namespace CompuCell3D {
 	 float maxLengthElasticity;
     double lambdaElasticity;
     Simulator *simulator;
+	Potts3D *potts;
     Dim3D fieldDim;
     BasicClassAccessor<ElasticityTracker> *elasticityTrackerAccessorPtr;
     typedef double (ElasticityPlugin::*diffEnergyFcnPtr_t)(float _deltaL,float _lBefore,const ElasticityTrackerData * _elasticityTrackerData,const CellG *_cell);
@@ -76,6 +74,7 @@ namespace CompuCell3D {
     virtual void init(Simulator *_simulator, CC3DXMLElement *_xmlData=0);
 	 virtual std::string toString();
 	 virtual void extraInit(Simulator *simulator);
+	 virtual void handleEvent(CC3DEvent & _event);
 
 	 //EnergyFunction interface
 	  virtual double changeEnergy(const Point3D &pt, const CellG *newCell,

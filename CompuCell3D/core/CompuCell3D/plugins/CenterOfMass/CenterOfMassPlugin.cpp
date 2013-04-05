@@ -482,13 +482,13 @@ void CenterOfMassPlugin::handleEvent(CC3DEvent & _event){
 		cell->xCOMPrev+=shiftVec.x;
 		cell->yCOMPrev+=shiftVec.y;
 		cell->zCOMPrev+=shiftVec.z;
+		
 
 		cell->xCM+=shiftVec.x*cell->volume;
 		cell->yCM+=shiftVec.y*cell->volume;
 		cell->zCM+=shiftVec.z*cell->volume;
 
-
-
+		
     }
 
 

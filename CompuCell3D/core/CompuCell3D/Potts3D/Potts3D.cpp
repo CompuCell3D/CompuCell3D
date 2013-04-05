@@ -800,11 +800,13 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 		Point3D flipNeighborLocal;
 
 		unsigned int currentWorkNodeNumber = pUtils->getCurrentWorkNodeNumber();
+		
+		//cerr<<"currentWorkNodeNumber ="<<currentWorkNodeNumber <<endl;
 
 		BasicRandomNumberGeneratorNonStatic * rand = randNSVec[currentWorkNodeNumber].getInstance();
 		BoundaryStrategy * boundaryStrategy = BoundaryStrategy::getInstance();
 
-
+		//cerr<<"subgridSectionOrderVec.size()="<<subgridSectionOrderVec.size()<<endl;
 		//iterating over subgridSections
 		for (int s = 0 ; s<subgridSectionOrderVec.size() ; ++s){
 
@@ -813,6 +815,8 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
 			pair<Dim3D,Dim3D> sectionDims=pUtils->getPottsSection(currentWorkNodeNumber,s);
 			numberOfAttemptsLocal=(int)(sectionDims.second.x-sectionDims.first.x)*(sectionDims.second.y-sectionDims.first.y)*(sectionDims.second.z-sectionDims.first.z)*sim->getFlip2DimRatio();
+			//cerr<<"sectionDims.first="<<sectionDims.first<<endl;
+			//cerr<<"sectionDims.second="<<sectionDims.second<<endl;
 
 			//#pragma omp critical
 			//				{
