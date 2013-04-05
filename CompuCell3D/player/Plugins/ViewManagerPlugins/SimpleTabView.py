@@ -2279,7 +2279,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
             
         if propertiesUpdated:            
-            __drawFieldFcn()
+            # __drawFieldFcn() # this call is actually unnecessary
             self.updateVisualization()   # for some reason cameras have to be initialized after drawing resized lattice and draw function has to be repeated
 
             

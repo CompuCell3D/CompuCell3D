@@ -222,11 +222,15 @@ class MVCDrawViewBase():
             self.cameraSettingsDict[fieldName] = self.getCurrentCameraSettings()
         
        
-    def resetAllCameras(self) :                        
-            print
-            self.qvtkWidget.resetCamera() 
-            for fieldName in self.cameraSettingsDict:                            
-                self.cameraSettingsDict[fieldName] = self.getCurrentCameraSettings()
+    def resetAllCameras(self) :             
+            self.cameraSettingsDict={}
+            # return
+            # print 'THIS IS VIEWBASE = ',self
+            # self.qvtkWidget.resetCamera() 
+            # for fieldName in self.cameraSettingsDict:        
+                # print 'fieldName=',fieldName
+                # self.cameraSettingsDict[fieldName] = self.getCurrentCameraSettings()
+                # # self.cameraSettingsDict[fieldName] = None
                 
             # set camera seettings for the current scene    
             # print 'self.graphicsFrameWidget=',self.graphicsFrameWidget
