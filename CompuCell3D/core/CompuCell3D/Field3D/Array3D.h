@@ -154,8 +154,11 @@ class Array3DLinearFortranField3DAdapter:public Field3DImpl<float>{
          
          
       }
-      
-	virtual void setDim(const Dim3D newDim,  Dim3D shiftVec=Dim3D()){
+    virtual void setDim(const Dim3D newDim){
+		this->resizeAndShift(newDim);
+	}
+
+	virtual void resizeAndShift(const Dim3D newDim,  Dim3D shiftVec=Dim3D()){
 		vector<double> tmpContainer=container; 
 		tmpContainer.swap(container);// swapping vector content  => copy old vec to new
 
@@ -302,7 +305,11 @@ class Array2DLinearFortranField3DAdapter:public Field3DImpl<float>{
          
       }
 	  
-	    virtual void setDim(const Dim3D newDim,  Dim3D shiftVec=Dim3D()){
+		virtual void setDim(const Dim3D newDim){
+			this->resizeAndShift(newDim);
+		}
+
+	    virtual void resizeAndShift(const Dim3D newDim,  Dim3D shiftVec=Dim3D()){
 		vector<double> tmpContainer=container; 
 		tmpContainer.swap(container);// swapping vector content  => copy old vec to new
 
@@ -774,7 +781,8 @@ public:
 		}
 		arrayCont=0;
 	}
-    virtual void setDim(const Dim3D theDim,  Dim3D shiftVec=Dim3D());
+    virtual void setDim(const Dim3D theDim);
+	virtual void resizeAndShift(const Dim3D theDim,  Dim3D shiftVec=Dim3D());
     
 	void allocateArray(const Dim3D & _dim , T val=T());
 	//       operator Type&();
@@ -886,8 +894,9 @@ void Array3DContiguous<T>::allocateArray(const Dim3D & _dim , T  val){
 
 }
 
+
 template <typename T>
-void Array3DContiguous<T>::setDim(const Dim3D newDim,  Dim3D shiftVec=Dim3D()){
+void Array3DContiguous<T>::resizeAndShift(const Dim3D newDim,  Dim3D shiftVec=Dim3D()){
     
     Dim3D newInternalDim=newDim;
 	newInternalDim.x+=3;
@@ -932,6 +941,12 @@ void Array3DContiguous<T>::setDim(const Dim3D newDim,  Dim3D shiftVec=Dim3D()){
     
     
 }
+
+template <typename T>
+void Array3DContiguous<T>::setDim(const Dim3D newDim){
+	this->resizeAndShift(newDim);
+}
+
 
 template <typename T>
 void Array3DContiguous<T>::swapArrays(){
@@ -1133,7 +1148,8 @@ public:
 		arrayCont=0;
 	}
 	void allocateArray(const Dim3D & _dim , T val=T());
-	virtual void setDim(const Dim3D newDim,  Dim3D shiftVec=Dim3D());
+	virtual void setDim(const Dim3D newDim);
+	virtual void resizeAndShift(const Dim3D newDim,  Dim3D shiftVec=Dim3D());
 	//       operator Type&();
 	ContainerType getContainer(){return arrayCont;}
 
@@ -1246,7 +1262,7 @@ void Array2DContiguous<T>::swapArrays(){
 
 
 template <typename T>
-void Array2DContiguous<T>::setDim(const Dim3D newDim,  Dim3D shiftVec=Dim3D()){
+void Array2DContiguous<T>::resizeAndShift(const Dim3D newDim,  Dim3D shiftVec=Dim3D()){
     
     Dim3D newInternalDim=newDim;
 	newInternalDim.x+=3;
@@ -1287,6 +1303,11 @@ void Array2DContiguous<T>::setDim(const Dim3D newDim,  Dim3D shiftVec=Dim3D()){
     arrayCont=newArrayCont;
     
     
+}
+
+template <typename T>
+void Array2DContiguous<T>::setDim(const Dim3D newDim){
+	this->resizeAndShift(newDim);
 }
 
 

@@ -270,7 +270,7 @@ void SteadyStateDiffusionSolver2D::handleEvent(CC3DEvent & _event){
 		CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
 		
 		for (size_t i =0 ;   i < concentrationFieldVector.size() ; ++i){
-			concentrationFieldVector[i]->setDim(ev.newDim,ev.shiftVec);
+			concentrationFieldVector[i]->resizeAndShift(ev.newDim,ev.shiftVec);
 		}
 
 

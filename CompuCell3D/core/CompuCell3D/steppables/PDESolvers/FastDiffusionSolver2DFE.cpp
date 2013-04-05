@@ -329,7 +329,7 @@ void FastDiffusionSolver2DFE::handleEvent(CC3DEvent & _event){
 	////////concentrationFieldVector[0]=tmpField;
 
     for (size_t i =0 ;   i < concentrationFieldVector.size() ; ++i){
-        concentrationFieldVector[i]->setDim(ev.newDim,ev.shiftVec);
+        concentrationFieldVector[i]->resizeAndShift(ev.newDim,ev.shiftVec);
     }
     
 	fieldDim=cellFieldG->getDim();

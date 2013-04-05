@@ -217,69 +217,9 @@ void Potts3D::createCellField(const Dim3D dim) {
 }
 
 void Potts3D::resizeCellField(const Dim3D dim, Dim3D shiftVec) {
-
-	// ASSERT_OR_THROW("createCellField() cell field G already created!", !cellFieldG);
-    Dim3D currentDim=cellFieldG->getDim();
-    //ASSERT_OR_THROW("Cell Field can only expand. New field dimensions smaller than the old one!", currentDim.x<=dim.x && currentDim.y<=dim.y,currentDim.z<=dim.z);
-    cellFieldG->setDim(dim,shiftVec);
-	//////cerr<<"INSIDE Potts3D::resizeCellField"<<endl;
-	//////cerr<<"shiftVec="<<shiftVec<<endl;
-	//////Dim3D theDim=dim;
-
-	////////CellG** oldField=cellFieldG->field;
-
- //////   CellG** field2 = new CellG*[theDim.x*theDim.y*theDim.z];
- //////  //first initialize the lattice with initial value 
- //////  for(long int i = 0 ; i <  theDim.x*theDim.y*theDim.z ; ++i) 
- //////       field2[i]=0;
- //////      
- //////  //then  copy old field 
- //////  CellG * cell;
- //////  cerr<<"new Dim="<<theDim<<endl;
- //////  cerr<<" oldDim="<<cellFieldG->getDim()<<endl;
- //////  for (int x = 0; x < theDim.x; x++)
- //////      for (int y = 0; y < theDim.y; y++)
- //////          for (int z = 0; z < theDim.z; z++)
-	//////		   if ((x-shiftVec.x>=0) && (x-shiftVec.x<currentDim.x) && (y-shiftVec.y>=0) && (y-shiftVec.y<currentDim.y) && (z-shiftVec.z>=0) && (z-shiftVec.z<currentDim.z)	){
-	//////			   //cerr<<"INSIDE SHIFT OK IF "<<Point3D(x,y,z)<<endl;
-	//////			   cell=cellFieldG->getQuick(Point3D(x-shiftVec.x,y-shiftVec.y,z-shiftVec.z));
-	//////			  // if (cell){
-	//////					//cerr<<"assigning cell with id="<<cell->id<<" from "<<Point3D(x-shiftVec.x,y-shiftVec.y,z-shiftVec.z)<<" to "<<Point3D(x,y,z)<<endl;
-	//////			  // }
-	//////				field2[(x)+(((y)+((z)*theDim.y))*theDim.x)] = cellFieldG->getQuick(Point3D(x-shiftVec.x,y-shiftVec.y,z-shiftVec.z));
-	//////		   }
-
- //////      //////        if ((x < cellFieldG->dim.x) && (y < cellFieldG->dim.y) && (z < cellFieldG->dim.z))
-	//////			   //////field2[(x+shiftVec.x)+(((y+shiftVec.y)+((z+shiftVec.z)*theDim.y))*theDim.x)] = cellFieldG->getQuick(Point3D(x,y,z))
- //////      //////            // field2[x+((y+(z*theDim.y))*theDim.x)] = field[PT2IDX(Point3D(x,y,z))];
- //////      //////            //field2[(x+shiftVec.x)+(((y+shiftVec.y)+((z+shiftVec.z)*theDim.y))*theDim.x)] = cellFieldG->getQuick(Point3D(x,y,z));
- //////      //////        // else
- //////      //////            // field2[x+((y+(z*theDim.y))*theDim.x)]  = initialValue;
- //////  delete []  cellFieldG->field;
- //////  cellFieldG->field = field2;
- //////  cellFieldG->dim = theDim;
- //////  cerr<<"FINISHED FIELD RESIZE"<<endl;
-	//////
- //////      //Set dimension for the Boundary Strategy
- //////   BoundaryStrategy::getInstance()->setDim(cellFieldG->dim );
-	//////cerr<<"FINISHED FIELD RESIZE 1"<<endl;	
-	//////cerr<<" new dim="<<cellFieldG->dim<<endl;
 	
-
-
-
-	//WatchableField3D<CellG *> * newCellFieldG = new WatchableField3D<CellG *>(dim, 0); //added
- //   
- //   Point3D pt;
- //   for (short int pt.x =0 ; pt.x<currentDim.x ; ++pt.x)
- //       for (short int pt.y =0 ; pt.y<currentDim.y ; ++pt.y)
- //           for (short int pt.z =0 ; pt.z<currentDim.z ; ++pt.z){
- //               newCellFieldG->set(pt,cellFieldG->get(pt)); //copying cells from old field to new one            
- //           }
- //   
- //   delete cellFieldG;
- //   cellFieldG=newCellFieldG;
-
+    Dim3D currentDim=cellFieldG->getDim();    
+    cellFieldG->resizeAndShift(dim,shiftVec);
 }
 
 

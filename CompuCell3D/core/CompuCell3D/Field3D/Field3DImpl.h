@@ -86,8 +86,7 @@ public:
       field[PT2IDX(pt)] = value;
     }
 
-    virtual void setDim(const Dim3D theDim,  Dim3D shiftVec=Dim3D())
-    {
+	virtual void resizeAndShift(const Dim3D theDim,  Dim3D shiftVec=Dim3D()){
        T* field2 = new T[theDim.x*theDim.y*theDim.z];
        //first initialize the lattice with initial value 
        for(long int i = 0 ; i <  theDim.x*theDim.y*theDim.z ; ++i) 
@@ -111,6 +110,11 @@ public:
 	
        //Set dimension for the Boundary Strategy
        BoundaryStrategy::getInstance()->setDim(dim);		
+
+	}
+    virtual void setDim(const Dim3D theDim,  Dim3D shiftVec=Dim3D())
+    {
+		this->resizeAndShift(theDim);
     }
 
    T getQuick(const Point3D &pt) const {
