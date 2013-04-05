@@ -26,9 +26,6 @@ class SteppablePy(SimObjectPy):
 class SteppableBasePy(SteppablePy):    
     (CC3D_FORMAT,TUPLE_FORMAT)=range(0,2)    
     def __init__(self,_simulator,_frequency=1):
-        
-        
-        
         SteppablePy.__init__(self,_frequency)
         self.simulator=_simulator
         self.potts=_simulator.getPotts()
@@ -226,7 +223,8 @@ class SteppableBasePy(SteppablePy):
             self.cleaverMeshDumper=CompuCell.getCleaverMeshDumper()  
 
     def resizeAndShiftLattice(self,_newSize, _shiftVec=(0,0,0)):
-        
+     
+        print 'PYSTEPPABLES INSIDE resizeAndShiftLattice'
         if self.potts.getBoundaryXName().lower()=='periodic'\
             or self.potts.getBoundaryYName().lower()=='periodic'\
             or self.potts.getBoundaryZName().lower()=='periodic':
@@ -234,25 +232,32 @@ class SteppableBasePy(SteppablePy):
             raise EnvironmentError('Cannot resize lattice with Periodic Boundary Conditions')
         
         
-        import CompuCell
+        import CompuCell        
+        
         newSize=map(int,_newSize)# converting new size to integers
         shiftVec=map(int,_shiftVec) # converting shift vec to integers
         
+        okFlag=self.volumeTrackerPlugin.checkIfOKToResize(CompuCell.Dim3D(newSize[0],newSize[1],newSize[2]),CompuCell.Dim3D(shiftVec[0],shiftVec[1],shiftVec[2]))
+        print 'okFlag=',okFlag   
+        if not okFlag:            
+            print 'WARNING: Lattice Resize Denied  - the proposed lattice resizing/shift would lead to disappearance of cells.'
+            return
+                                    
         oldGeometryDimensionality=2
-        if self.dim.x>1 and self.dim.y>1 and self.dim.z>1:
+        if self.dim.x>1 and self.dim.y>1 and self.dim.z>1:           
             oldGeometryDimensionality=3
-        
+                
         newGeometryDimensionality=2
         if newSize[0]>1 and newSize[1]>1 and newSize[2]>1:
             newGeometryDimensionality=3                
         
         if newGeometryDimensionality!=oldGeometryDimensionality:
             raise EnvironmentError('Changing dimmensionality of simulation from 2D to 3D is not supported. It also makes little sense as 2D and 3D simulations have different mathematical properties. Please see CPM literature for more details.')    
-            
         
         self.potts.resizeCellField(CompuCell.Dim3D(newSize[0],newSize[1],newSize[2]),CompuCell.Dim3D(shiftVec[0],shiftVec[1],shiftVec[2]))    
 #         if sum(shiftVec)==0: # there is no shift in cell field
 #             return
+        
         
         # posting CC3DEventLatticeResize so that participating modules can react
         resizeEv=CompuCell.CC3DEventLatticeResize()
@@ -273,8 +278,6 @@ class SteppableBasePy(SteppablePy):
         
         
         
-#         if self.centerOfMassPlugin:
-#             self.centerOfMassPlugin.updateCOMsAfterLatticeShift(CompuCell.Dim3D(shiftVec[0],shiftVec[1],shiftVec[2]))
             
     def everyPixel(self):
         import itertools

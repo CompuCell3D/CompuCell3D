@@ -24,15 +24,8 @@
 #define VOLUMETRACKERPLUGIN_H
 
 #include <CompuCell3D/CC3D.h>
-
-// // // #include <CompuCell3D/Plugin.h>
-// // // #include <CompuCell3D/Potts3D/Stepper.h>
-// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-// // // #include <CompuCell3D/Potts3D/Cell.h>
-// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include "VolumeTrackerDLLSpecifier.h"
 
-// // // #include <vector>
 
 
 class CC3DXMLElement;
@@ -66,7 +59,7 @@ namespace CompuCell3D {
 	
 	// CellChangeWatcher interface
 	virtual void field3DChange(const Point3D &pt, CellG *newCell, CellG *oldCell);
-	
+	bool checkIfOKToResize(Dim3D _newSize,Dim3D _shiftVec);
 	// Stepper interface
 	virtual void step();
 	virtual std::string toString();

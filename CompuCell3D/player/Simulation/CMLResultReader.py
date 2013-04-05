@@ -123,7 +123,7 @@ class CMLResultReader(SimulationThread.SimulationThread):
         self.setCurrentStep(self.currentStep)
         # print "self.frequency=",self.frequency," _i=",self.frequency
         
-        print "\n\n\n\n FINISHED RUNNING readSimulationData step ",self.currentStep," \n\n\n"        
+        # print "\n\n\n\n FINISHED RUNNING readSimulationData step ",self.currentStep," \n\n\n"        
         self.drawMutex.unlock()
         self.readFileSem.release()
         # print "FINISHED READING self.newFileBeingLoaded=",self.newFileBeingLoaded

@@ -135,7 +135,14 @@ class GraphicsFrameWidget(QtGui.QFrame):
 #            self.camera3D.SetPosition(100,100,100)
 #            self.qvtkWidget.SetSize(200,200)
 
-    
+    # def clearDisplayOnDemand(self):
+        # self.draw2D.clearDisplay()
+        
+    def resetAllCameras(self):
+        print 'resetAllCameras in GraphicsFrame =',self
+        
+        self.draw2D.resetAllCameras()
+        self.draw3D.resetAllCameras()
         
     def __getattr__(self, attr):
         """Makes the object behave like a DrawBase"""
@@ -189,7 +196,7 @@ class GraphicsFrameWidget(QtGui.QFrame):
 #        self.borderActor.GetProperty().SetColor(self.toVTKColor(r), self.toVTKColor(g), self.toVTKColor(b))
         self.ren.SetBackground(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
         self.qvtkWidget.Render()
-        # self.qvtkWidget.resetCamera()
+        
     def getCamera(self):
         return self.getActiveCamera()
     
@@ -292,7 +299,7 @@ class GraphicsFrameWidget(QtGui.QFrame):
         self.fieldComboBox  = QtGui.QComboBox()   # Note that this is different than the fieldComboBox in the Prefs panel (rf. SimpleTabView.py)
         self.fieldComboBox.addAction(self.fieldComboBoxAct)
         self.fieldComboBox.addItem("-- Field Type --")
-        self.fieldComboBox.addItem("cAMP")  # huh?
+        # self.fieldComboBox.addItem("cAMP")  # huh?
         self.screenshotAct = QtGui.QAction(QtGui.QIcon("player/icons/screenshot.png"), "&Take Screenshot", self)
         
         

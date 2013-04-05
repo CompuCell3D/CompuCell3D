@@ -28,13 +28,10 @@ void  DiffusionSolverFE_CPU::handleEventLocal(CC3DEvent & _event){
 	
     cellFieldG=(WatchableField3D<CellG *> *)potts->getCellFieldG();
     
-	CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
-	
+	CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);	
     for (size_t i =0 ;   i < concentrationFieldVector.size() ; ++i){
         concentrationFieldVector[i]->setDim(ev.newDim,ev.shiftVec);
     }
-    
-    
 	
 }
 
