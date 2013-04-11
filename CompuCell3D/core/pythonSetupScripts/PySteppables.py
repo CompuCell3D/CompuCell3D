@@ -414,7 +414,7 @@ class SteppableBasePy(SteppablePy):
         cell.type=type
         self.cellField[pt.x:pt.x+xSize-1,pt.y:pt.y+ySize-1,pt.z:pt.z+zSize-1]=cell
        
-                        
+        
     def moveCell(self, cell, shiftVector):
         import  CompuCell  
         #we have to make two list of pixels :
@@ -449,6 +449,61 @@ class SteppableBasePy(SteppablePy):
         if _pt.x>=0 and _pt.x<self.dim.x and  _pt.y>=0 and _pt.y<self.dim.y and _pt.z>=0 and _pt.z<self.dim.z:            
             return True
         return False
+    
+    def buildWall(self,type):
+        cell=None
+        if type==0:#medium:
+            import CompuCell
+            cell=CompuCell.getMediumCell()
+        else:    
+            cell=self.potts.createCell()    
+            cell.type=type
+        
+        indexOf1=-1
+        dimLocal=[self.dim.x,self.dim.y,self.dim.z]
+        
+        for idx in range(len(dimLocal)):
+            
+            if dimLocal[idx]==1:
+                indexOf1=idx
+                break
+
+        # this could be recoded in a more general way but the code would be longer than the most naive verios presented here
+        if indexOf1>=0: # 2D case
+            if indexOf1==2: # xy plane simulation
+                self.cellField[0:self.dim.x,0,0]=cell
+                self.cellField[0:self.dim.x,self.dim.y-1:self.dim.y,0]=cell
+                self.cellField[0,0:self.dim.y,0]=cell
+                self.cellField[self.dim.x-1:self.dim.x,0:self.dim.y,0:0]=cell
+            elif indexOf1==0: # yz simulation
+                self.cellField[0,0:self.dim.y,0]=cell
+                self.cellField[0,0:self.dim.y,self.dim.z-1:self.dim.z]=cell
+                self.cellField[0,0,0:self.dim.z]=cell
+                self.cellField[0,self.dim.y-1:self.dim.y,0:self.dim.z]=cell
+            
+            elif indexOf1==1: # xz simulation
+                self.cellField[0:self.dim.x,0,0]=cell
+                self.cellField[0:self.dim.x,0,self.dim.z-1:self.dim.z]=cell
+                self.cellField[0,0,0:self.dim.z]=cell
+                self.cellField[self.dim.x-1:self.dim.x,0,0:self.dim.z]=cell
+        else: # 3D case
+            #wall 1 (front)
+            self.cellField[0:self.dim.x,0:self.dim.y,0]=cell
+            #wall 2 (rear)
+            self.cellField[0:self.dim.x,0:self.dim.y,self.dim.z-1]=cell
+            #wall 3 (bottom)
+            self.cellField[0:self.dim.x,0,0:self.dim.z]=cell
+            #wall 4 (top)
+            self.cellField[0:self.dim.x,self.dim.y-1,0:self.dim.z]=cell
+            #wall 5 (left)
+            self.cellField[0,0:self.dim.y,0:self.dim.z]=cell
+            #wall 6 (right)
+            self.cellField[self.dim.x-1,0:self.dim.y,0:self.dim.z]=cell
+            
+        
+            
+    def destroyWall(self):
+        self.buildWall(0) # build wall of Medium
         
     def getPixelNeighborsBasedOnDistance(self,_pixel,_maxDistance=1.1):
         import CompuCell
