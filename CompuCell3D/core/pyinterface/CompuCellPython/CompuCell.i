@@ -211,20 +211,9 @@ using namespace CompuCell3D;
 
 // %include <dolfin/mesh/Mesh.h>
 
-
-%include <CompuCell3D/Field3D/Neighbor.h>
-%include <CompuCell3D/Boundary/BoundaryStrategy.h>
-%include "Potts3D/Cell.h"
-
-
-
-
+// we have to include files for objects that we will type-map before including definitions of corresponding typemaps
 %include "Field3D/Point3D.h"
 %include "Field3D/Dim3D.h"
-%include "Field3D/Field3D.h"
-%include "Field3D/Field3DImpl.h"
-%include "Field3D/WatchableField3D.h"
-
 
 %extend CompuCell3D::Point3D{
   std::string __str__(){
@@ -253,6 +242,29 @@ using namespace CompuCell3D;
     return s.str();
   }
 };
+
+
+
+// turns on proper handling of default arguments - only one wrapper code will get generated for a function
+// alternative way could be to use typecheck maps but I had trouble with it.
+// compactdefaultargs has one disadvantage - it will not with all languages e.g Java and C# 
+// for more information see e.g. http://tech.groups.yahoo.com/group/swig/message/13432 
+%feature("compactdefaultargs"); 
+
+//typemaps for Point3D, Dim3D - enable more convenient Python syntax e.g. Point3D can be specified as a list/tuple with 3 numerical elements
+%include "typemaps_CC3D.i"
+
+%include <CompuCell3D/Field3D/Neighbor.h>
+%include <CompuCell3D/Boundary/BoundaryStrategy.h>
+%include "Potts3D/Cell.h"
+
+    
+
+%include "Field3D/Field3D.h"
+%include "Field3D/Field3DImpl.h"
+%include "Field3D/WatchableField3D.h"
+
+
 
 // %template(cellfield) CompuCell3D::Field3D<CellG *>;
 // %template(floatfield) CompuCell3D::Field3D<float>;

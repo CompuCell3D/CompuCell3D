@@ -38,6 +38,14 @@ VolumeTrackerPlugin::~VolumeTrackerPlugin() {
 	lockPtr=0;
 }
 
+void VolumeTrackerPlugin::initVec(const vector<int> & _vec){
+	cerr<<" THIS IS VEC.size="<<_vec.size()<<endl;
+}
+
+void VolumeTrackerPlugin::initVec(const Dim3D & _dim){
+	cerr<<" THIS IS A COMPUCELL3D DIM3D"<<_dim<<endl;
+}
+
 bool VolumeTrackerPlugin::checkIfOKToResize(Dim3D _newSize,Dim3D _shiftVec){
 
 	Field3DImpl<CellG*> *cellField=(Field3DImpl<CellG*> *)potts->getCellFieldG();
@@ -46,6 +54,10 @@ bool VolumeTrackerPlugin::checkIfOKToResize(Dim3D _newSize,Dim3D _shiftVec){
 	Point3D shiftVec(_shiftVec.x,_shiftVec.y,_shiftVec.z);
 	Point3D shiftedPt;
 	CellG *cell;
+
+	cerr<<"_newSize="<<_newSize<<endl;
+	cerr<<"_shiftVec="<<_shiftVec<<endl;
+
 	for (pt.x=0 ; pt.x<fieldDim.x ; ++pt.x)
 		for (pt.y=0 ; pt.y<fieldDim.y ; ++pt.y)
 			for (pt.z=0 ; pt.z<fieldDim.z ; ++pt.z){
@@ -61,6 +73,8 @@ bool VolumeTrackerPlugin::checkIfOKToResize(Dim3D _newSize,Dim3D _shiftVec){
 			}
 	return true;
 }
+
+
 
 void VolumeTrackerPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData)
 {

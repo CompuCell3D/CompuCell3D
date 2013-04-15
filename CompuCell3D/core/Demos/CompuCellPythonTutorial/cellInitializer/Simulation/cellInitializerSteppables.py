@@ -85,5 +85,5 @@ class CellInitializer(SteppableBasePy):
             for i in xrange(self.dim.x):
                 for j in xrange(self.dim.y):
                     for k in xrange(self.dim.z):
-                        fileHandle.write("%d\t%d\t%d\t%f\n"%(pt.x,pt.y,pt.z,field[x,y,z]))
+                        fileHandle.write("%d\t%d\t%d\t%f\n"%(x,y,z,field[x,y,z]))
 

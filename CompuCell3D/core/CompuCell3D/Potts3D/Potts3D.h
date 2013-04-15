@@ -196,6 +196,7 @@ namespace CompuCell3D {
      */
     void createCellField(const Dim3D dim);
     void resizeCellField(const Dim3D dim, Dim3D shiftVec=Dim3D());
+	//void resizeCellField(const std::vector<int> & dim, const std::vector<int> & shiftVec);
     
 	double getTemperature() const {return temperature;}
     unsigned int getCurrentAttempt(){return currentAttempt;}

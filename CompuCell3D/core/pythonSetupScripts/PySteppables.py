@@ -408,11 +408,21 @@ class SteppableBasePy(SteppablePy):
             self.cellField[pixel[0],pixel[1],pixel[2]]=self.mediumCell
     
     def createNewCell (self,type,pt,xSize,ySize,zSize=1):
-        if not self.checkIfInTheLattice(pt):
+        import CompuCell
+        ptTmp=CompuCell.Point3D()
+        
+        if isinstance(pt, list) or isinstance(pt, tuple): 
+            ptTmp.x=pt[0]
+            ptTmp.y=pt[1]
+            ptTmp.z=pt[2]            
+        else:
+            ptTmp=pt
+        
+        if not self.checkIfInTheLattice(ptTmp):
             return
         cell=self.potts.createCell()    
         cell.type=type
-        self.cellField[pt.x:pt.x+xSize-1,pt.y:pt.y+ySize-1,pt.z:pt.z+zSize-1]=cell
+        self.cellField[ptTmp.x:ptTmp.x+xSize-1,ptTmp.y:ptTmp.y+ySize-1,ptTmp.z:ptTmp.z+zSize-1]=cell
        
         
     def moveCell(self, cell, shiftVector):
@@ -421,14 +431,21 @@ class SteppableBasePy(SteppablePy):
         pixelsToDelete=[] #used to hold pixels to delete
         pixelsToMove=[] #used to hold pixels to move
         
+        shiftVec=CompuCell.Point3D()
+        if isinstance(shiftVector, list) or isinstance(shiftVector, tuple): 
+            shiftVec.x=shiftVector[0]
+            shiftVec.y=shiftVector[1]
+            shiftVec.z=shiftVector[2]
+        else:
+            shiftVec=shiftVector
         # If we try to reassign pixels in the loop where we iterate over pixel data we will corrupt the container so in the loop below all we will do is to populate the two list mentioned above
         pixelList=self.getCellPixelList(cell)
         pt=CompuCell.Point3D()
         
         for pixelTrackerData in pixelList:
-            pt.x = pixelTrackerData.pixel.x + shiftVector.x
-            pt.y = pixelTrackerData.pixel.y + shiftVector.y
-            pt.z = pixelTrackerData.pixel.z + shiftVector.z
+            pt.x = pixelTrackerData.pixel.x + shiftVec.x
+            pt.y = pixelTrackerData.pixel.y + shiftVec.y
+            pt.z = pixelTrackerData.pixel.z + shiftVec.z
             # here we are making a copy of the cell                 
             pixelsToDelete.append(CompuCell.Point3D(pixelTrackerData.pixel))
             

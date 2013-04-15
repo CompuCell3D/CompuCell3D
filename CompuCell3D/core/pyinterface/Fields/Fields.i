@@ -35,6 +35,11 @@
 
 %include "Fields_pre.i"
 // %{
+// #include <CompuCell3D/Boundary/BoundaryStrategy.h>
+
+// %}
+
+// %{
 // 
 // #include <sstream>  
 // #include <BasicUtils/BasicException.h>
@@ -86,8 +91,16 @@
 // }
 
 
+
+
 %include <BasicUtils/BasicException.h>
 
+
+
+
+
+
+// %include <CompuCell3D/Boundary/BoundaryStrategy.h>
 
 %include <CompuCell3D/Field3D/Point3D.h>
 
@@ -109,6 +122,37 @@
     return s.str();
   }
 };
+
+
+
+%feature("compactdefaultargs"); 
+%include "typemaps_Fields.i"
+
+%inline %{
+
+class BS{
+    public:
+    BS(void){
+        cerr<<"BS constructor"<<endl;
+    }
+    
+    // void getNeighborDirect(Point3D  pt,unsigned int   idx ,bool checkBounds=true, bool calculatePtTrans=false){
+    void getNeighborDirect(CompuCell3D::Point3D &  pt,unsigned int idx =10,bool checkBounds=true, bool calculatePtTrans=false) const {
+    
+        cerr<<"THIS IS GET NEIGHBOR DIRECT"<<endl;
+        cerr<<"pt="<<pt<<endl;        
+    }
+    
+};
+
+
+%}
+
+
+// turns on proper handling of default arguments - only one wrapper code will get generated for a function
+// alternative way could be to use typecheck maps but I had trouble with it.
+// compactdefaultargs has one disadvantage - it will not with all languages e.g Java and C# 
+// for more information see e.g. http://tech.groups.yahoo.com/group/swig/message/13432 
 
 
 %include <CompuCell3D/Field3D/Field3D.h>
@@ -294,6 +338,453 @@
 //     
 //   }
 };
+
+
+
+// // // %typemap(in) CompuCell3D::Dim3D {
+  // // // /* Check if is a list */
+  // // // if (PyList_Check($input)) {
+    // // // int size = PyList_Size($input);
+    // // // int i = 0;
+    // // // $1 = (char **) malloc((size+1)*sizeof(char *));
+    // // // for (i = 0; i < size; i++) {
+      // // // PyObject *o = PyList_GetItem($input,i);
+      // // // if (PyString_Check(o))
+	// // // $1[i] = PyString_AsString(PyList_GetItem($input,i));
+      // // // else {
+	// // // PyErr_SetString(PyExc_TypeError,"list must contain strings");
+	// // // free($1);
+	// // // return NULL;
+      // // // }
+    // // // }
+    // // // $1[i] = 0;
+  // // // } else {
+    // // // PyErr_SetString(PyExc_TypeError,"not a list");
+    // // // return NULL;
+  // // // }
+// // // }
+
+
+
+// // typemap(in) CompuCell3D::Dim3D will not overshadow earlier default conversion of list to std::vector
+// %typemap(in) CompuCell3D::Dim3D  {
+  // /* Check if is a list */
+    // if (PyList_Check($input)) {
+        // int size = PyList_Size($input);        
+        // if (size==3){
+            // CompuCell3D::Dim3D dim;    
+            // dim.x= (short)PyInt_AsLong(PyList_GetItem($input,0));
+            // dim.y=(short)PyInt_AsLong(PyList_GetItem($input,1));
+            // dim.z=(short)PyInt_AsLong(PyList_GetItem($input,2));
+            // $1=dim;
+        // }else{
+            // SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+
+        // }
+
+    // }else if (PyTuple_Check($input)){
+        // //check if it is a tuple
+        // int size = PyTuple_Size($input);        
+        // if (size==3){
+            // CompuCell3D::Dim3D dim;    
+            // dim.x= (short)PyInt_AsLong(PyTuple_GetItem($input,0));
+            // dim.y=(short)PyInt_AsLong(PyTuple_GetItem($input,1));
+            // dim.z=(short)PyInt_AsLong(PyTuple_GetItem($input,2));
+            // $1=dim;
+        // }else{
+            // SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+        // }                
+    // }else{
+        
+         // int res = SWIG_ConvertPtr($input,(void **) &$1, $&1_descriptor,0);
+         
+         
+        // if (SWIG_IsOK(res)) {
+            // CompuCell3D::Dim3D dim;    
+            // dim.x=(short)PyInt_AsLong(PyObject_GetAttrString($input,"x"));
+            // dim.y=(short)PyInt_AsLong(PyObject_GetAttrString($input,"y"));
+            // dim.z=(short)PyInt_AsLong(PyObject_GetAttrString($input,"z"));
+            // $1=dim;
+        // } else {
+        
+            // SWIG_exception(SWIG_ValueError,"Expected CompuCell.Dim3D object."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+            
+          
+        // }
+         
+    // }
+// }
+
+// // // // turns on proper handling of default arguments - only one wrapper code will get generated for a function
+// // // // alternative way could be to use typecheck maps but I had trouble with it.
+// // // // compactdefaultargs has one disadvantage - it will not with all languages e.g Java and C# 
+// // // // for more information see e.g. http://tech.groups.yahoo.com/group/swig/message/13432 
+// // // %feature("compactdefaultargs"); 
+// // // %include "typemaps_Fields.i"
+
+
+// // typemap(in) CompuCell3D::Dim3D will not overshadow earlier default conversion of list to std::vector
+// %typemap(in) CompuCell3D::Dim3D  {
+  // /* Check if is a list */
+    // if (PyList_Check($input)) {
+        // int size = PyList_Size($input);        
+        // if (size==3){
+            // CompuCell3D::Dim3D dim;    
+            // dim.x= (short)PyInt_AsLong(PyList_GetItem($input,0));
+            // dim.y=(short)PyInt_AsLong(PyList_GetItem($input,1));
+            // dim.z=(short)PyInt_AsLong(PyList_GetItem($input,2));
+            // $1=dim;
+        // }else{
+            // SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+
+        // }
+
+    // }else if (PyTuple_Check($input)){
+        // //check if it is a tuple
+        // int size = PyTuple_Size($input);        
+        // if (size==3){
+            // CompuCell3D::Dim3D dim;    
+            // dim.x= (short)PyInt_AsLong(PyTuple_GetItem($input,0));
+            // dim.y=(short)PyInt_AsLong(PyTuple_GetItem($input,1));
+            // dim.z=(short)PyInt_AsLong(PyTuple_GetItem($input,2));
+            // $1=dim;
+        // }else{
+            // SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+        // }                
+    // }else{
+        
+         // int res = SWIG_ConvertPtr($input,(void **) &$1, $&1_descriptor,0);
+         
+         
+        // if (SWIG_IsOK(res)) {
+            // CompuCell3D::Dim3D dim;    
+            // dim.x=(short)PyInt_AsLong(PyObject_GetAttrString($input,"x"));
+            // dim.y=(short)PyInt_AsLong(PyObject_GetAttrString($input,"y"));
+            // dim.z=(short)PyInt_AsLong(PyObject_GetAttrString($input,"z"));
+            // $1=dim;
+        // } else {
+        
+            // SWIG_exception(SWIG_ValueError,"Expected CompuCell.Dim3D object."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+            
+          
+        // }
+         
+    // }
+// }
+
+
+
+
+// // %typemap(in) CompuCell3D::Point3D  {
+  // // /* Check if is a list */
+  // // cerr<<"inside point3D conversion typemap"<<endl;
+    // // if (PyList_Check($input)) {
+        // // int size = PyList_Size($input);        
+        // // if (size==3){
+            // // CompuCell3D::Point3D pt;    
+            // // pt.x= (short)PyInt_AsLong(PyList_GetItem($input,0));
+            // // pt.y=(short)PyInt_AsLong(PyList_GetItem($input,1));
+            // // pt.z=(short)PyInt_AsLong(PyList_GetItem($input,2));
+            // // $1=pt;
+        // // }else{
+            // // SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+
+        // // }
+
+    // // }else if (PyTuple_Check($input)){
+        // // //check if it is a tuple
+        // // int size = PyTuple_Size($input);        
+        // // if (size==3){
+            // // CompuCell3D::Point3D pt;    
+            // // pt.x= (short)PyInt_AsLong(PyTuple_GetItem($input,0));
+            // // pt.y=(short)PyInt_AsLong(PyTuple_GetItem($input,1));
+            // // pt.z=(short)PyInt_AsLong(PyTuple_GetItem($input,2));
+            // // $1=pt;
+        // // }else{
+            // // SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+        // // }                
+    // // }else{
+        
+         // // int res = SWIG_ConvertPtr($input,(void **) &$1, $&1_descriptor,0);
+         
+         
+        // // if (SWIG_IsOK(res)) {
+            // // CompuCell3D::Point3D pt;    
+            // // pt.x=(short)PyInt_AsLong(PyObject_GetAttrString($input,"x"));
+            // // pt.y=(short)PyInt_AsLong(PyObject_GetAttrString($input,"y"));
+            // // pt.z=(short)PyInt_AsLong(PyObject_GetAttrString($input,"z"));
+            // // $1=pt;
+        // // } else {
+        
+            // // SWIG_exception(SWIG_ValueError,"Expected CompuCell.Point3D object."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+                      
+        // // }
+         
+    // // }
+// // }
+
+
+// %typemap(in) CompuCell3D::Point3D  (CompuCell3D::Point3D pt)  {
+  // /* Check if is a list */
+  // cerr<<"inside point3D conversion typemap"<<endl;
+    // if (PyList_Check($input)) {
+        // int size = PyList_Size($input);        
+        // if (size==3){
+            // // CompuCell3D::Point3D pt;    
+            // pt.x= (short)PyInt_AsLong(PyList_GetItem($input,0));
+            // pt.y=(short)PyInt_AsLong(PyList_GetItem($input,1));
+            // pt.z=(short)PyInt_AsLong(PyList_GetItem($input,2));
+            // $1=pt;
+        // }else{
+            // SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+
+        // }
+
+    // }else if (PyTuple_Check($input)){
+        // //check if it is a tuple
+        // int size = PyTuple_Size($input);        
+        // if (size==3){
+            // // CompuCell3D::Point3D pt;    
+            // pt.x= (short)PyInt_AsLong(PyTuple_GetItem($input,0));
+            // pt.y=(short)PyInt_AsLong(PyTuple_GetItem($input,1));
+            // pt.z=(short)PyInt_AsLong(PyTuple_GetItem($input,2));
+            // $1=pt;
+        // }else{
+            // SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+        // }                
+    // }else{
+        
+         // int res = SWIG_ConvertPtr($input,(void **) &$1, $&1_descriptor,0);
+         
+         
+        // if (SWIG_IsOK(res)) {
+            // // CompuCell3D::Point3D pt;    
+            // pt.x=(short)PyInt_AsLong(PyObject_GetAttrString($input,"x"));
+            // pt.y=(short)PyInt_AsLong(PyObject_GetAttrString($input,"y"));
+            // pt.z=(short)PyInt_AsLong(PyObject_GetAttrString($input,"z"));
+            // $1=pt;
+        // } else {
+        
+            // SWIG_exception(SWIG_ValueError,"Expected CompuCell.Point3D object."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+                      
+        // }
+         
+    // }
+// }
+
+
+// %typemap(in) CompuCell3D::Point3D &  (CompuCell3D::Point3D pt)  { // note that (CompuCell3D::Point3D pt) causes pt to be allocated on the stack - no need to worry abuot freeing memory
+  // /* Check if is a list */
+  // cerr<<"inside point3D conversion typemap"<<endl;
+    // if (PyList_Check($input)) {
+        // int size = PyList_Size($input);        
+        // if (size==3){
+            // // CompuCell3D::Point3D pt;    
+            // pt.x= (short)PyInt_AsLong(PyList_GetItem($input,0));
+            // pt.y=(short)PyInt_AsLong(PyList_GetItem($input,1));
+            // pt.z=(short)PyInt_AsLong(PyList_GetItem($input,2));
+            // $1=&pt;
+        // }else{
+            // SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+
+        // }
+
+    // }else if (PyTuple_Check($input)){
+        // //check if it is a tuple
+        // int size = PyTuple_Size($input);        
+        // if (size==3){
+            // // CompuCell3D::Point3D pt;    
+            // pt.x= (short)PyInt_AsLong(PyTuple_GetItem($input,0));
+            // pt.y=(short)PyInt_AsLong(PyTuple_GetItem($input,1));
+            // pt.z=(short)PyInt_AsLong(PyTuple_GetItem($input,2));
+            // $1=&pt;
+        // }else{
+            // SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+        // }                
+    // }else{
+        
+         // int res = SWIG_ConvertPtr($input,(void **) &$1, $1_descriptor,0);
+         
+         
+        // if (SWIG_IsOK(res)) {
+            // // CompuCell3D::Point3D pt;    
+            // pt.x=(short)PyInt_AsLong(PyObject_GetAttrString($input,"x"));
+            // pt.y=(short)PyInt_AsLong(PyObject_GetAttrString($input,"y"));
+            // pt.z=(short)PyInt_AsLong(PyObject_GetAttrString($input,"z"));
+            // $1=&pt;
+        // } else {
+        
+            // SWIG_exception(SWIG_ValueError,"Expected CompuCell.Point3D object."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+                      
+        // }
+         
+    // }
+// }
+
+// %typemap(in) CompuCell3D::Point3D *  (CompuCell3D::Point3D pt) = CompuCell3D::Point3D &  (CompuCell3D::Point3D pt);
+
+// // %typemap(in) CompuCell3D::Point3D * (CompuCell3D::Point3D pt)  { // note that (CompuCell3D::Point3D pt) causes pt to be allocated on the stack - no need to worry abuot freeing memory
+  // // /* Check if is a list */
+  // // cerr<<"inside point3D conversion typemap"<<endl;
+    // // if (PyList_Check($input)) {
+        // // int size = PyList_Size($input);        
+        // // if (size==3){
+            // // // CompuCell3D::Point3D pt;    
+            // // pt.x= (short)PyInt_AsLong(PyList_GetItem($input,0));
+            // // pt.y=(short)PyInt_AsLong(PyList_GetItem($input,1));
+            // // pt.z=(short)PyInt_AsLong(PyList_GetItem($input,2));
+            // // $1=&pt;
+        // // }else{
+            // // SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+
+        // // }
+
+    // // }else if (PyTuple_Check($input)){
+        // // //check if it is a tuple
+        // // int size = PyTuple_Size($input);        
+        // // if (size==3){
+            // // // CompuCell3D::Point3D pt;    
+            // // pt.x= (short)PyInt_AsLong(PyTuple_GetItem($input,0));
+            // // pt.y=(short)PyInt_AsLong(PyTuple_GetItem($input,1));
+            // // pt.z=(short)PyInt_AsLong(PyTuple_GetItem($input,2));
+            // // $1=&pt;
+        // // }else{
+            // // SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+        // // }                
+    // // }else{
+        
+         // // int res = SWIG_ConvertPtr($input,(void **) &$1, $1_descriptor,0);
+         
+         
+        // // if (SWIG_IsOK(res)) {
+            // // // CompuCell3D::Point3D pt;    
+            // // pt.x=(short)PyInt_AsLong(PyObject_GetAttrString($input,"x"));
+            // // pt.y=(short)PyInt_AsLong(PyObject_GetAttrString($input,"y"));
+            // // pt.z=(short)PyInt_AsLong(PyObject_GetAttrString($input,"z"));
+            // // $1=&pt;
+        // // } else {
+        
+            // // SWIG_exception(SWIG_ValueError,"Expected CompuCell.Point3D object."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+                      
+        // // }
+         
+    // // }
+// // }
+
+// // %typemap(in) CompuCell3D::Point3D * (CompuCell3D::Point3D pt) =  CompuCell3D::Point3D & (CompuCell3D::Point3D pt);
+
+
+// // %typemap(in) (const CompuCell3D::Point3D _pt, long _val=11){
+  // // /* Check if is a list */
+  // // cerr<<"inside point3D conversion typemap"<<endl;
+    // // if (PyList_Check($input)) {
+        // // int size = PyList_Size($input);        
+        // // if (size==3){
+            // // CompuCell3D::Point3D pt;    
+            // // pt.x= (short)PyInt_AsLong(PyList_GetItem($input,0));
+            // // pt.y=(short)PyInt_AsLong(PyList_GetItem($input,1));
+            // // pt.z=(short)PyInt_AsLong(PyList_GetItem($input,2));
+            // // $1=pt;
+            // // $2=PyInt_AsLong($input);
+        // // }else{
+            // // SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+
+        // // }
+
+    // // }else if (PyTuple_Check($input)){
+        // // //check if it is a tuple
+        // // int size = PyTuple_Size($input);        
+        // // if (size==3){
+            // // CompuCell3D::Point3D pt;    
+            // // pt.x= (short)PyInt_AsLong(PyTuple_GetItem($input,0));
+            // // pt.y=(short)PyInt_AsLong(PyTuple_GetItem($input,1));
+            // // pt.z=(short)PyInt_AsLong(PyTuple_GetItem($input,2));
+            // // $1=pt;
+            // // $2=PyInt_AsLong($input);
+        // // }else{
+            // // SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+        // // }                
+    // // }else{
+        
+         // // int res = SWIG_ConvertPtr($input,(void **) &$1, $&1_descriptor,0);
+         
+         
+        // // if (SWIG_IsOK(res)) {
+            // // CompuCell3D::Point3D pt;    
+            // // pt.x=(short)PyInt_AsLong(PyObject_GetAttrString($input,"x"));
+            // // pt.y=(short)PyInt_AsLong(PyObject_GetAttrString($input,"y"));
+            // // pt.z=(short)PyInt_AsLong(PyObject_GetAttrString($input,"z"));
+            // // $1=pt;
+            // // $2=PyInt_AsLong($input);
+        // // } else {
+        
+            // // SWIG_exception(SWIG_ValueError,"Expected CompuCell.Point3D object."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+                      
+        // // }
+         
+    // // }
+// // }
+
+// // %typemap(typecheck,precedence=SWIG_TYPECHECK_INTEGER) CompuCell3D::Point3D {
+    // // int res = SWIG_ConvertPtr($input,(void **) &$1, $&1_descriptor,0);
+    // // cerr<<"CHECKING POINT 3D ="<<res<<endl;
+    // // if (SWIG_IsOK(res)) {
+        // // $1=1;        
+    // // }else{
+        // // $1=0;
+    // // }      
+// // }
+
+// // %typemap(typecheck,precedence=SWIG_TYPECHECK_INTEGER) CompuCell3D::Point3D {
+
+
+
+
+// // %typemap(in) const CompuCell3D::Point3D = CompuCell3D::Point3D;
+
+
+// %include "typemaps_Fields.i"
+
+
+
+%inline %{
+        void fcn(CompuCell3D::Dim3D _dim){
+            cerr<<" THIS IS DIMENSION "<<_dim<<endl;
+            // throw std::runtime_error(" DEMO: Wrong Syntax: Expected someting like: field[1,2,3]");
+        }
+
+%}
+
+%template (vector_int) std::vector<int>;
+
+%inline %{
+        void fcnVec(const std::vector<int> & _vec){
+            cerr<<" THIS IS VECTOR SIZE "<<_vec.size()<<endl;
+        }
+
+%}
+
+// %typemap(in) CompuCell3D::Dim3D; //deleting a typamap
+
+%inline %{
+        void fcnDim(CompuCell3D::Dim3D _dim){
+            cerr<<" THIS IS DIMENSION FCN DIM = "<<_dim<<endl;
+        }
+
+%}
+
+
+%inline %{
+        void buildCell(const CompuCell3D::Point3D  * _pt, long _val=11){
+        // void buildCell(CompuCell3D::Point3D & _pt, long _val, bool checkBounds=true, bool calculatePtTrans=false){
+        // void buildCell(const CompuCell3D::Point3D _pt){
+            cerr<<" THIS IS BUILD CELLS = "<<_pt<<endl;
+            cerr<<" this is value="<<_val<<endl;
+        }
+
+%}
+
+
 
 
 

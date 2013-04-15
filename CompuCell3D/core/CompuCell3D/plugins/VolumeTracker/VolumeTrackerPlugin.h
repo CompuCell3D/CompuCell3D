@@ -54,6 +54,9 @@ namespace CompuCell3D {
 	VolumeTrackerPlugin();
 	virtual ~VolumeTrackerPlugin();
 	
+	void initVec(const vector<int> & _vec);
+	void initVec(const Dim3D & _dim);
+
 	// SimObject interface
 	virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData);
 	

@@ -222,6 +222,14 @@ void Potts3D::resizeCellField(const Dim3D dim, Dim3D shiftVec) {
     cellFieldG->resizeAndShift(dim,shiftVec);
 }
 
+////////added for more convenient Python scripting
+//////// notice that SWIG will automatically convert tupples and lists to vectors of a given type provided 
+//////// they are passed by a constant reference
+//////void Potts3D::resizeCellField(const vector<int> & dim, const vector<int> & shiftVec) {
+//////	if (dim.size()==3 && shiftVec.size()==3){
+//////		resizeCellField(Dim3D(dim[0],dim[1],dim[2]),Dim3D(shiftVec[0],shiftVec[1],shiftVec[2]));
+//////	}
+//////}
 
 
 void Potts3D::registerAttributeAdder(AttributeAdder * _attrAdder){
