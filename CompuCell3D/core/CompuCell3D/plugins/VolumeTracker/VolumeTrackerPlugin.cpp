@@ -55,8 +55,8 @@ bool VolumeTrackerPlugin::checkIfOKToResize(Dim3D _newSize,Dim3D _shiftVec){
 	Point3D shiftedPt;
 	CellG *cell;
 
-	cerr<<"_newSize="<<_newSize<<endl;
-	cerr<<"_shiftVec="<<_shiftVec<<endl;
+	//cerr<<"_newSize="<<_newSize<<endl;
+	//cerr<<"_shiftVec="<<_shiftVec<<endl;
 
 	for (pt.x=0 ; pt.x<fieldDim.x ; ++pt.x)
 		for (pt.y=0 ; pt.y<fieldDim.y ; ++pt.y)

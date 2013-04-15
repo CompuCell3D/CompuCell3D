@@ -221,7 +221,17 @@ class SteppableBasePy(SteppablePy):
         if stepManager.isLoaded("CleaverMeshDumper"):
             import CompuCell            
             self.cleaverMeshDumper=CompuCell.getCleaverMeshDumper()  
+            
+    def changeNumberOfWorkNodes(self,_numberOfWorkNodes):
+        
+        import CompuCell
+        numberOfWorkNodesEv=CompuCell.CC3DEventChangeNumberOfWorkNodes()
+        numberOfWorkNodesEv.oldNumberOfNodes=1
+        numberOfWorkNodesEv.newNumberOfNodes=_numberOfWorkNodes
+        self.simulator.postEvent(numberOfWorkNodesEv)
 
+    
+    
     def resizeAndShiftLattice(self,_newSize, _shiftVec=(0,0,0)):
      
         print 'PYSTEPPABLES INSIDE resizeAndShiftLattice'

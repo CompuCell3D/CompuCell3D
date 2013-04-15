@@ -5,7 +5,7 @@
 
 namespace CompuCell3D {
 
-  enum CC3DEvent_t { BASE, LATTICE_RESIZE}; 
+  enum CC3DEvent_t { BASE, LATTICE_RESIZE,CHANGE_NUMBER_OF_WORK_NODES}; 
   
   
   class CC3DEvent{
@@ -30,7 +30,20 @@ namespace CompuCell3D {
       
    };
    
-  
+  class CC3DEventChangeNumberOfWorkNodes:public CC3DEvent{
+      public:
+        CC3DEventChangeNumberOfWorkNodes(){
+            id=CHANGE_NUMBER_OF_WORK_NODES;
+			oldNumberOfNodes=1;
+			newNumberOfNodes=1;
+        }
+        int oldNumberOfNodes;
+		int newNumberOfNodes;
+
+      
+   };
+
+
 
 };
 #endif
