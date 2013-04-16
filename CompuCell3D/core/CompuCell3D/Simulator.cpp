@@ -430,13 +430,28 @@ void Simulator::processMetadataCC3D(CC3DXMLElement * _xmlData){
 		if (_xmlData->getFirstElement("NumberOfProcessors")) {
 			unsigned int numberOfProcessors=_xmlData->getFirstElement("NumberOfProcessors")->getUInt();
 			pUtils->setNumberOfWorkNodes(numberOfProcessors);
+			CC3DEventChangeNumberOfWorkNodes workNodeChangeEvent;
+			workNodeChangeEvent.newNumberOfNodes=numberOfProcessors;
+			
+			// this will cause redundant calculations inside pUtils but since we do not call it often it is ok . This way code remains cleaner
+			postEvent(workNodeChangeEvent);
+
 		}else if(_xmlData->getFirstElement("VirtualProcessingUnits")){
+			
 			unsigned int numberOfVPUs=_xmlData->getFirstElement("VirtualProcessingUnits")->getUInt();
 			unsigned int threadsPerVPU=0;
+			
 			if (_xmlData->getFirstElement("VirtualProcessingUnits")->findAttribute("ThreadsPerVPU")){
 				threadsPerVPU=_xmlData->getFirstElement("VirtualProcessingUnits")->getAttributeAsUInt("ThreadsPerVPU");				
 			}
+			cerr<<"updating VPU's numberOfVPUs="<<numberOfVPUs<<" threadsPerVPU="<<threadsPerVPU<<endl;	
 			pUtils->setVPUs(numberOfVPUs,threadsPerVPU);
+
+			CC3DEventChangeNumberOfWorkNodes workNodeChangeEvent;
+			workNodeChangeEvent.newNumberOfNodes=numberOfVPUs;
+			
+			// this will cause redundant calculations inside pUtils but since we do not call it often it is ok . This way code remains cleaner
+			postEvent(workNodeChangeEvent);
 		}
 
 		if(_xmlData->getFirstElement("DebugOutputFrequency")){
@@ -906,18 +921,20 @@ void Simulator::steer(){
 	}
 
 	if(ps.updateMetadataCC3DXMLElement){
-		//here we will update Debug Frequency - the way we handle this will have to be rewritten thouh. This is ad hoc solution only
-		mitr=steerableObjectMap.find("Potts"); 
-		if(mitr!=steerableObjectMap.end()){
-			if(ps.updateMetadataCC3DXMLElement->getFirstElement("DebugOutputFrequency")){
-				//updating DebugOutputFrequency in Potts using Metadata
-				unsigned int debugOutputFrequency=ps.updateMetadataCC3DXMLElement->getFirstElement("DebugOutputFrequency")->getUInt();
-				//((Potts3D*)(mitr->second))->setDebugOutputFrequency(debugOutputFrequency>0 ?debugOutputFrequency: 0);
-				potts.setDebugOutputFrequency(debugOutputFrequency>0 ?debugOutputFrequency: 0);
-				ppdCC3DPtr->debugOutputFrequency=debugOutputFrequency;
-			}
+		//here we will update Debug Frequency - the way we handle this will have to be rewritten though. This is ad hoc solution only
+		//mitr=steerableObjectMap.find("Potts"); 
+		//if(mitr!=steerableObjectMap.end()){
+		//	if(ps.updateMetadataCC3DXMLElement->getFirstElement("DebugOutputFrequency")){
+		//		//updating DebugOutputFrequency in Potts using Metadata
+		//		unsigned int debugOutputFrequency=ps.updateMetadataCC3DXMLElement->getFirstElement("DebugOutputFrequency")->getUInt();
+		//		//((Potts3D*)(mitr->second))->setDebugOutputFrequency(debugOutputFrequency>0 ?debugOutputFrequency: 0);
+		//		potts.setDebugOutputFrequency(debugOutputFrequency>0 ?debugOutputFrequency: 0);
+		//		ppdCC3DPtr->debugOutputFrequency=debugOutputFrequency;
+		//	}
 
-		}
+		//}
+		
+		processMetadataCC3D(ps.updateMetadataCC3DXMLElement); // here we update number of work nodes and Debug output frequency
 		ps.updateMetadataCC3DXMLElement=0;
 
 	}

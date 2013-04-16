@@ -123,6 +123,24 @@ void MitosisSimplePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
 }
 
+void MitosisSimplePlugin::handleEvent(CC3DEvent & _event){
+    if (_event.id==CHANGE_NUMBER_OF_WORK_NODES){    
+       unsigned int maxNumberOfWorkNodes=pUtils->getMaxNumberOfWorkNodesPotts();
+       childCellVec.assign(maxNumberOfWorkNodes,0);
+       parentCellVec.assign(maxNumberOfWorkNodes,0);
+       splitPtVec.assign(maxNumberOfWorkNodes,Point3D());
+       splitVec.assign(maxNumberOfWorkNodes,false);
+       onVec.assign(maxNumberOfWorkNodes,false);
+       mitosisFlagVec.assign(maxNumberOfWorkNodes,false);
+
+       turnOn(); //this can be called only after vectors have been allocated
+
+    }
+
+}
+
+
+
 void MitosisSimplePlugin::setMitosisFlag(bool _flag){
 	mitosisFlagVec[pUtils->getCurrentWorkNodeNumber()]=_flag;
 }

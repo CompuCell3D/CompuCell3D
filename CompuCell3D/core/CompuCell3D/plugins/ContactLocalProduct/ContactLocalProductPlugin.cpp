@@ -232,10 +232,13 @@ void ContactLocalProductPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
                // }            
                
 				// p=mu::Parser(); //using new parser
+                variableNameVector.clear();
 				CC3DXMLElementList variableVec=_xmlData->getFirstElement("CustomFunction")->getElements("Variable");
 				int variableCount=0;
 				bool variableInitializationOK=false;
 				for (int i = 0 ; i<variableVec.size(); ++i){
+                    variableNameVector.push_back(variableVec[i]->getText());
+                
 					if (variableCount==0){
 						cerr<<"ADDING VARIABLE "<<variableVec[i]->getText()<<endl;
 						// p.DefineVar(variableVec[i]->getText(), &k1);
@@ -253,6 +256,7 @@ void ContactLocalProductPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
                         }
                         
 					}
+                    
 					++variableCount;
 					if (variableCount==2){
 						variableInitializationOK=true;
@@ -284,6 +288,66 @@ void ContactLocalProductPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitF
 			cerr<<"Contact maxNeighborIndex="<<maxNeighborIndex<<endl;
 			
 }
+
+void ContactLocalProductPlugin::handleEvent(CC3DEvent & _event){
+	if (_event.id==CHANGE_NUMBER_OF_WORK_NODES){
+    
+               unsigned int maxNumberOfWorkNodes=pUtils->getMaxNumberOfWorkNodesPotts();
+               k1Vec.assign(maxNumberOfWorkNodes,0.0);
+               k2Vec.assign(maxNumberOfWorkNodes,0.0);
+               pVec.assign(maxNumberOfWorkNodes,mu::Parser());    
+
+               // for (int i  = 0 ; i< maxNumberOfWorkNodes ; ++i){
+                // pVec[i].DefineVar("Molecule1",&molecule1Vec[i]);
+                // pVec[i].DefineVar("Molecule2",&molecule2Vec[i]);
+                // pVec[i].SetExpr(formulaString);
+               // }            
+               
+				// p=mu::Parser(); //using new parser
+                
+
+				int variableCount=0;
+				bool variableInitializationOK=false;
+				for (int i = 0 ; i<variableNameVector.size(); ++i){
+                    
+                
+					if (variableCount==0){
+						cerr<<"ADDING VARIABLE "<<variableNameVector[i]<<endl;						
+                        
+                        for (int idx  = 0 ; idx< maxNumberOfWorkNodes ; ++idx){
+                            pVec[idx].DefineVar(variableNameVector[i], &k1Vec[idx]);
+                        }
+                        
+					}
+					else{
+						cerr<<"ADDING VARIABLE "<<variableNameVector[i]<<endl;
+						// p.DefineVar(variableVec[i]->getText(), &k2);					
+                        for (int idx  = 0 ; idx< maxNumberOfWorkNodes ; ++idx){
+                            pVec[idx].DefineVar(variableNameVector[i], &k2Vec[idx]);
+                        }
+                        
+					}
+                    
+					++variableCount;
+					if (variableCount==2){
+						variableInitializationOK=true;
+						break;
+						
+					}
+
+				}
+
+
+                    for (int idx  = 0 ; idx< maxNumberOfWorkNodes ; ++idx){
+                        pVec[idx].SetExpr(customExpression);
+                    }                    
+				
+				
+    
+    
+	}
+}
+
 
 double ContactLocalProductPlugin::changeEnergy(const Point3D &pt,
                                   const CellG *newCell,

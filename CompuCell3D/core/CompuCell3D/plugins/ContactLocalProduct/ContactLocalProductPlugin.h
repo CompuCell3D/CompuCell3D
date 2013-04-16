@@ -92,6 +92,7 @@ namespace CompuCell3D {
 	 // mu::Parser p;
 
     //vectorized variables for convenient parallel access
+    std::vector<std::string> variableNameVector;
     std::string customExpression; //expression for cad-cad function
     std::vector<double> k1Vec; //used to keep arguments for cad-cad function 
     std::vector<double> k2Vec;//used to keep arguments for cad-cad function
@@ -111,7 +112,8 @@ namespace CompuCell3D {
 		
 
 		virtual void extraInit(Simulator *simulator);
-    
+        
+        virtual void handleEvent(CC3DEvent & _event);
 
 
 

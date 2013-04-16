@@ -119,6 +119,17 @@ void CurvaturePlugin::extraInit(Simulator *simulator){
 }
 
 
+void CurvaturePlugin::handleEvent(CC3DEvent & _event){
+    if (_event.id==CHANGE_NUMBER_OF_WORK_NODES){    
+        unsigned int maxNumberOfWorkNodes=pUtils->getMaxNumberOfWorkNodesPotts();        
+
+        newJunctionInitiatedFlagWithinClusterVec.assign(maxNumberOfWorkNodes,false);
+        newNeighborVec.assign(maxNumberOfWorkNodes,0);
+    }
+    
+    
+}
+
 void CurvaturePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	automaton = potts->getAutomaton();
 

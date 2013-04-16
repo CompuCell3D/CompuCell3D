@@ -187,6 +187,13 @@ void SurfacePlugin::extraInit(Simulator *simulator){
 	update(xmlData);
 }
 
+void SurfacePlugin::handleEvent(CC3DEvent & _event){
+    if (_event.id==CHANGE_NUMBER_OF_WORK_NODES){    
+    	update(xmlData);
+    }
+
+}
+
 
 std::pair<double,double> SurfacePlugin::getNewOldSurfaceDiffs(const Point3D &pt, const CellG *newCell,const CellG *oldCell){
 	

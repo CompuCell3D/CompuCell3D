@@ -60,6 +60,8 @@ namespace CompuCell3D {
 	// SimObject interface
 	virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData);
 	
+	virtual void handleEvent(CC3DEvent & _event);
+
 	// CellChangeWatcher interface
 	virtual void field3DChange(const Point3D &pt, CellG *newCell, CellG *oldCell);
 	bool checkIfOKToResize(Dim3D _newSize,Dim3D _shiftVec);

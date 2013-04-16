@@ -92,6 +92,15 @@ void VolumeTrackerPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData)
 }
 
 
+void VolumeTrackerPlugin::handleEvent(CC3DEvent & _event){
+	if (_event.id==CHANGE_NUMBER_OF_WORK_NODES){
+		CC3DEventChangeNumberOfWorkNodes ev = static_cast<CC3DEventChangeNumberOfWorkNodes&>(_event);
+		deadCellVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), (CellG*)0);		
+		cerr<<"VolumeTrackerPlugin::handleEvent="<<endl;
+	}
+}
+
+
 std::string VolumeTrackerPlugin::toString(){return "VolumeTracker";}
 
 std::string VolumeTrackerPlugin::steerableName(){return toString();}

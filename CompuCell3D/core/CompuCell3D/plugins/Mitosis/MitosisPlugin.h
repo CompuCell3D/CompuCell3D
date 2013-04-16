@@ -79,6 +79,7 @@ namespace CompuCell3D {
 
     // SimObject interface
     virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
+    virtual void handleEvent(CC3DEvent & _event);
 
     // CellChangeWatcher interface
     virtual void field3DChange(const Point3D &pt, CellG *newCell,

@@ -314,6 +314,14 @@ double ContactOrientationPlugin::changeEnergy(const Point3D &pt,const CellG *new
 }            
 
 
+void ContactOrientationPlugin::handleEvent(CC3DEvent & _event){
+	if (_event.id==CHANGE_NUMBER_OF_WORK_NODES){
+    
+        update(xmlData);
+	}
+}
+
+
 void ContactOrientationPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
     //PARSE XML IN THIS FUNCTION
     //For more information on XML parser function please see CC3D code or lookup XML utils API

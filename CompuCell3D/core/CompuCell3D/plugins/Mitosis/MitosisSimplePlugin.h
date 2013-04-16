@@ -64,9 +64,13 @@ namespace CompuCell3D {
 	 bool divideAlongMajorAxisFlag;
 	 bool flag3D;
 	 
+     
+     
 	 BasicClassAccessor<PixelTracker> *pixelTrackerAccessorPtr;
 	 PixelTrackerPlugin * pixelTrackerPlugin;
 
+     virtual void handleEvent(CC3DEvent & _event);
+     
     // SimObject interface
     virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
 	 void setDivideAlongMinorAxis();

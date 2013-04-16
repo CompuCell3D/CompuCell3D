@@ -1,7 +1,7 @@
  <CompuCell3D>
   <Metadata>    
-    <VirtualProcessingUnits ThreadsPerVPU="1">1</VirtualProcessingUnits>
-    <DebugOutputFrequency>100</DebugOutputFrequency>     
+    <VirtualProcessingUnits ThreadsPerVPU="1">4</VirtualProcessingUnits>
+<!--     <DebugOutputFrequency>100</DebugOutputFrequency>      -->
  </Metadata> 
  
  <Potts>
@@ -34,6 +34,28 @@
    <Energy Type1="Condensing"    Type2="Medium">16</Energy>
    <NeighborOrder>2</NeighborOrder>
  </Plugin>
+ 
+<Steppable Type="FlexibleDiffusionSolverFE">
+   
+   <!-- Specification of PDE solvers -->
+   <DiffusionField>
+      <DiffusionData>
+         <FieldName>FGF</FieldName>
+         <DiffusionConstant>0.1</DiffusionConstant>
+         <DecayConstant>1e-05</DecayConstant>
+         <!-- Additional options are: -->
+         <!-- <DoNotDiffuseTo>LIST YOUR CELL TYPES HERE</DoNotDiffuseTo> -->
+         <!-- <DoNotDecayIn>LIST YOUR CELL TYPES HERE</DoNotDecayIn> -->
+         <InitialConcentrationExpression>x*y</InitialConcentrationExpression>
+         <!-- <ConcentrationFileName>INITIAL CONCENTRATION FIELD - typically a file with path Simulation/NAME_OF_THE_FILE.txt</ConcentrationFileName> -->
+         <!-- To run solver for large diffusion constants you typically call solver multiple times - ExtraTimesPerMCS to specify additional calls to the solver in each MCS  -->
+         <!-- IMPORTANT: make sure not to mix this setting with the PDESolverCaller module! See manual for more information -->
+         <!-- <ExtraTimesPerMCS>0</ExtraTimesPerMCS> -->
+         <!-- <DeltaX>1.0</DeltaX> -->
+         <!-- <DeltaT>1.0</DeltaT> -->
+      </DiffusionData>
+   </DiffusionField>
+</Steppable>
 
  <Steppable Type="BlobInitializer">
    <Gap>0</Gap>

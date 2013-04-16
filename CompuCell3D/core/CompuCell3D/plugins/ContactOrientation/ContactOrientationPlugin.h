@@ -95,6 +95,7 @@ namespace CompuCell3D {
                 
         
         virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
+        virtual void handleEvent(CC3DEvent & _event);
 
         virtual void extraInit(Simulator *simulator);
 

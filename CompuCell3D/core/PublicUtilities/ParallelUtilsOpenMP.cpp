@@ -219,7 +219,7 @@ unsigned int ParallelUtilsOpenMP::getNumberOfWorkNodesFESolver(){
 
 unsigned int ParallelUtilsOpenMP::getMaxNumberOfWorkNodesFESolver(){
 	unsigned int numberOfProcessors=getNumberOfProcessors();
-	//users may request more "processors" than there are CPU's on the system
+	//users may request more "processors" than there are CPU's on the system	
 	return (numberOfProcessors>=numberOfWorkNodes ? threadsPerWorkNode*numberOfProcessors : threadsPerWorkNode*numberOfWorkNodes);
 
 }

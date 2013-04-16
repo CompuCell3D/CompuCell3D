@@ -87,6 +87,24 @@ void AdhesionFlexPlugin::extraInit(Simulator *simulator){
 }
 
 
+void AdhesionFlexPlugin::handleEvent(CC3DEvent & _event){
+	if (_event.id==CHANGE_NUMBER_OF_WORK_NODES){
+    
+        //vectorized variables for convenient parallel access 
+       unsigned int maxNumberOfWorkNodes=pUtils->getMaxNumberOfWorkNodesPotts();
+       molecule1Vec.assign(maxNumberOfWorkNodes,0.0);
+       molecule2Vec.assign(maxNumberOfWorkNodes,0.0);
+       pVec.assign(maxNumberOfWorkNodes,mu::Parser());    
+
+       for (int i  = 0 ; i< maxNumberOfWorkNodes ; ++i){
+        pVec[i].DefineVar("Molecule1",&molecule1Vec[i]);
+        pVec[i].DefineVar("Molecule2",&molecule2Vec[i]);
+        pVec[i].SetExpr(formulaString);
+       }
+    
+	}
+}
+
 
 double AdhesionFlexPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {
 	//cerr<<"ChangeEnergy"<<endl;

@@ -12,6 +12,6 @@ class DynamicNumberOfProcessorsSteppable(SteppableBasePy):
             self.resizeAndShiftLattice(_newSize=(400,400,1), _shiftVec=(100,100,0))
 #             self.changeNumberOfWorkNodes(4)    
 
-        if mcs==500:    
-            self.changeNumberOfWorkNodes(4)    
+        if mcs==100:    
+            self.changeNumberOfWorkNodes(8)    
         
