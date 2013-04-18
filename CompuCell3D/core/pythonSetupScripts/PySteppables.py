@@ -666,6 +666,25 @@ class SteppableBasePy(SteppablePy):
         pt.z=_array[2]
         return pt
         
+    def getSteppableListByClassName(self,_className):    
+        '''
+        This function returns a list of registered steppables with class name given  by _className
+        '''        
+        import CompuCellSetup
+        return CompuCellSetup.globalSteppableRegistry.getSteppablesByClassName(_className)
+        
+    def getSteppableByClassName(self,_className):    
+        '''
+        This function returns a registered steppables with class name given  by _className.
+        It will be the first registered steppable for this given class name. In almost all the cases we will have one steppable with a given class name
+        '''        
+        import CompuCellSetup
+        try:
+            return CompuCellSetup.globalSteppableRegistry.getSteppablesByClassName(_className)[0]
+        except IndexError,e:
+            return None    
+        
+        
 
 class RunBeforeMCSSteppableBasePy(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
@@ -752,6 +771,7 @@ class SteppableRegistry(SteppablePy):
     def __init__(self):
         self.steppableList=[]
         self.runBeforeMCSSteppableList=[]
+        self.steppableDict={} # {steppableClassName:[steppable inst0,steppable inst1,...]}
         
     def allSteppables(self):
         for steppable in self.steppableList:
@@ -764,11 +784,21 @@ class SteppableRegistry(SteppablePy):
             if _steppable.runBeforeMCS:
                 self.runBeforeMCSSteppableList.append(_steppable)
             else:
-                self.steppableList.append(_steppable)
-            return    
+                self.steppableList.append(_steppable)            
         except AttributeError:
             self.steppableList.append(_steppable)
-
+        
+        #storing steppable in the dictionary
+        try:
+            self.steppableDict[_steppable.__class__.__name__].append(_steppable)
+        except LookupError,e:
+            self.steppableDict[_steppable.__class__.__name__]=[_steppable]    
+    
+    def getSteppablesByClassName(self,_className):
+        try:            
+            return self.steppableDict[_className]
+        except LookupError,e:
+            return []    
     def init(self,_simulator):
         for steppable in self.runBeforeMCSSteppableList:
             steppable.init(_simulator)            

@@ -890,6 +890,13 @@ def registerPotts(_sim, _pd):
     _sim.ps.addPottsData(_pd)
     cc3dModuleDictionary[_pd.moduleName]=_pd
 
+def getSteppablesByClassName(_className):
+    '''
+    This function returns a list of registered steppables with class name given  by _className
+    '''
+    global globalSteppableRegistry
+    globalSteppableRegistry.getSteppablesByClassName(_className)
+
 def getSteppableRegistry():
     from PySteppables import SteppableRegistry
     steppableRegistry=SteppableRegistry()
