@@ -96,6 +96,7 @@
 
 #include <CompuCell3D/Potts3D/AttributeAdder.h>
 
+#include <numpy/arrayobject.h>
 
 // Namespaces
 using namespace std;
@@ -132,6 +133,13 @@ using namespace CompuCell3D;
     SWIG_exception(SWIG_RuntimeError, e.what());
   }
 }
+
+%include "swig_includes/numpy.i"
+
+%init %{
+    import_array();
+%}
+
 
 //C arrays
 //%include "carrays.i"
@@ -243,6 +251,11 @@ using namespace CompuCell3D;
   }
 };
 
+%include <Utils/Coordinates3D.h>
+
+%template (Coordinates3DDouble) Coordinates3D<double>; 
+
+
 
 
 // turns on proper handling of default arguments - only one wrapper code will get generated for a function
@@ -251,7 +264,7 @@ using namespace CompuCell3D;
 // for more information see e.g. http://tech.groups.yahoo.com/group/swig/message/13432 
 %feature("compactdefaultargs"); 
 
-//typemaps for Point3D, Dim3D - enable more convenient Python syntax e.g. Point3D can be specified as a list/tuple with 3 numerical elements
+//typemaps for Point3D, Dim3D, Coordinates3D<double> - enable more convenient Python syntax e.g. Point3D can be specified as a list/tuple with 3 numerical elements
 %include "typemaps_CC3D.i"
 
 %include <CompuCell3D/Field3D/Neighbor.h>

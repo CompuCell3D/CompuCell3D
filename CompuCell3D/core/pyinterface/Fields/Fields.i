@@ -23,6 +23,8 @@
 //enables better handling of STL exceptions
 %include "exception.i"
 
+
+
 %exception {
   try {
     $action
@@ -34,6 +36,18 @@
 
 
 %include "Fields_pre.i"
+
+%{
+    #include <numpy/arrayobject.h>
+%}
+
+
+%include "swig_includes/numpy.i"
+
+%init %{
+    import_array();
+%}
+
 // %{
 // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 
@@ -96,6 +110,9 @@
 %include <BasicUtils/BasicException.h>
 
 
+%include <Utils/Coordinates3D.h>
+
+%template (Coordinates3DDouble) Coordinates3D<double>; 
 
 
 
@@ -127,6 +144,152 @@
 
 %feature("compactdefaultargs"); 
 %include "typemaps_Fields.i"
+
+%typemap(in) Coordinates3D<double>  (Coordinates3D<double> coord)  {
+  /* Check if is a list */
+  cerr<<"inside Coordinates3D<double> conversion typemap"<<endl;
+    if (PyList_Check($input)) {
+        int size = PyList_Size($input);        
+        if (size==3){
+            // CompuCell3D::Point3D pt;    
+            coord.x= (double)PyFloat_AsDouble(PyList_GetItem($input,0));
+            coord.y=(double)PyFloat_AsDouble(PyList_GetItem($input,1));
+            coord.z=(double)PyFloat_AsDouble(PyList_GetItem($input,2));
+            $1=coord;
+        }else{
+            SWIG_exception(SWIG_ValueError,"Expected a list/numpy array of 3 double values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+
+        }
+
+    }else if (PyTuple_Check($input)){
+        //check if it is a tuple
+        int size = PyTuple_Size($input);        
+        if (size==3){
+            // CompuCell3D::Point3D pt;    
+            coord.x= (double)PyFloat_AsDouble(PyTuple_GetItem($input,0));
+            coord.y=(double)PyFloat_AsDouble(PyTuple_GetItem($input,1));
+            coord.z=(double)PyFloat_AsDouble(PyTuple_GetItem($input,2));
+            $1=coord;
+        }else{
+            SWIG_exception(SWIG_ValueError,"Expected a list/numpy array of 3 double values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+        }                
+    }else if(PyArray_Check($input)){
+    
+        if (PyArray_NDIM($input)!=1 || PyArray_DIM($input,0)!=3){ // checking if the argument is a vector with 3 values
+            SWIG_exception(SWIG_ValueError,"Expected a list/numpy array of 3 double values e.g. [12,31,48].");
+        }
+        
+        if (PyArray_ISFLOAT ($input)){
+            double * arrayContainerPtr=(double *) PyArray_DATA($input);
+            coord.x=arrayContainerPtr[0];
+            coord.y=arrayContainerPtr[1];
+            coord.z=arrayContainerPtr[2];
+        
+            
+        }  else  if (PyArray_ISINTEGER ($input)){
+
+            int * arrayContainerPtr=(int *) PyArray_DATA($input);
+            coord.x=arrayContainerPtr[0];
+            coord.y=arrayContainerPtr[1];
+            coord.z=arrayContainerPtr[2];
+
+        
+        }else{
+            SWIG_exception(SWIG_ValueError,"The values in the array should be either floating point numbers or inttegers. Please use explicit type conversion for all the values");
+        }
+                
+        
+        
+        $1=coord;        
+    }
+    else{
+        
+         int res = SWIG_ConvertPtr($input,(void **) &$1, $&1_descriptor,0);
+         
+         
+        if (SWIG_IsOK(res)) {
+            // CompuCell3D::Point3D pt;    
+            coord.x=(double)PyFloat_AsDouble(PyObject_GetAttrString($input,"x"));
+            coord.y=(double)PyFloat_AsDouble(PyObject_GetAttrString($input,"y"));
+            coord.z=(double)PyFloat_AsDouble(PyObject_GetAttrString($input,"z"));
+            $1=coord;
+        } else {
+        
+            SWIG_exception(SWIG_ValueError,"Expected CompuCell.Coordinates3DDouble object."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+                      
+        }
+         
+    }
+}
+
+
+%typemap(in) Coordinates3D<double> &  (Coordinates3D<double> coord)  { // note that (CompuCell3D::Point3D pt) causes pt to be allocated on the stack - no need to worry abuot freeing memory
+  /* Check if is a list */  
+    if (PyList_Check($input)) {
+        int size = PyList_Size($input);        
+        if (size==3){
+            // CompuCell3D::Point3D pt;    
+            coord.x= (double)PyFloat_AsDouble(PyList_GetItem($input,0));
+            coord.y=(double)PyFloat_AsDouble(PyList_GetItem($input,1));
+            coord.z=(double)PyFloat_AsDouble(PyList_GetItem($input,2));
+            $1=&coord;
+        }else{
+            SWIG_exception(SWIG_ValueError,"Expected a list of 3 double values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+
+        }
+
+    }else if (PyTuple_Check($input)){
+        //check if it is a tuple
+        int size = PyTuple_Size($input);        
+        if (size==3){
+            // CompuCell3D::Point3D pt;    
+            coord.x= (double)PyFloat_AsDouble(PyTuple_GetItem($input,0));
+            coord.y=(double)PyFloat_AsDouble(PyTuple_GetItem($input,1));
+            coord.z=(double)PyFloat_AsDouble(PyTuple_GetItem($input,2));
+            $1=&coord;
+        }else{
+            SWIG_exception(SWIG_ValueError,"Expected a list of 3 double values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+        }                
+    }else if(PyArray_Check($input)){
+    
+        if (PyArray_NDIM($input)!=1 || PyArray_DIM($input,0)!=3){ // checking if the argument is a vector with 3 values
+            SWIG_exception(SWIG_ValueError,"Expected a list/numpy array of 3 double values e.g. [12,31,48].");
+        }
+        
+        if (! PyArray_ISFLOAT ($input)){
+            SWIG_exception(SWIG_ValueError,"The values in the array appear not to be floating point numbers. Please use explicit casting to double for all the values");
+        }        
+        
+        double * arrayContainerPtr=(double *) PyArray_DATA($input);
+        coord.x=arrayContainerPtr[0];
+        coord.y=arrayContainerPtr[1];
+        coord.z=arrayContainerPtr[2];
+        
+        
+        $1=&coord;        
+    }else{
+        
+         int res = SWIG_ConvertPtr($input,(void **) &$1, $1_descriptor,0);
+         
+         
+        if (SWIG_IsOK(res)) {
+            // CompuCell3D::Point3D pt;    
+            coord.x=(double)PyFloat_AsDouble(PyObject_GetAttrString($input,"x"));
+            coord.y=(double)PyFloat_AsDouble(PyObject_GetAttrString($input,"y"));
+            coord.z=(double)PyFloat_AsDouble(PyObject_GetAttrString($input,"z"));
+            $1=&coord;
+        } else {
+        
+            SWIG_exception(SWIG_ValueError,"Expected CompuCell.Coordinates3DDouble object."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
+                      
+        }
+         
+    }
+}
+
+
+
+
 
 %inline %{
 
@@ -775,7 +938,7 @@ class BS{
 
 
 %inline %{
-        void buildCell(const CompuCell3D::Point3D  * _pt, long _val=11){
+        void buildCell(const CompuCell3D::Point3D  & _pt, long _val=11){
         // void buildCell(CompuCell3D::Point3D & _pt, long _val, bool checkBounds=true, bool calculatePtTrans=false){
         // void buildCell(const CompuCell3D::Point3D _pt){
             cerr<<" THIS IS BUILD CELLS = "<<_pt<<endl;
@@ -784,6 +947,24 @@ class BS{
 
 %}
 
+
+%inline %{
+        void fcnCoordinates(Coordinates3D<double> _coord){
+            cerr<<" THIS IS Coordinates3D<double> = "<<_coord<<endl;
+        }
+
+%}
+
+
+%inline %{
+        void buildCoordinates(const Coordinates3D<double> & _coord, long _val=11){
+        // void buildCell(CompuCell3D::Point3D & _pt, long _val, bool checkBounds=true, bool calculatePtTrans=false){
+        // void buildCell(const CompuCell3D::Point3D _pt){
+            cerr<<" buildCoordinates = "<<_coord<<endl;
+            cerr<<" this is value="<<_val<<endl;
+        }
+
+%}
 
 
 

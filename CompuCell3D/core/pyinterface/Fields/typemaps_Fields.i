@@ -125,6 +125,32 @@
         }else{
             SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
         }                
+    }else if(PyArray_Check($input)){
+    
+        if (PyArray_NDIM($input)!=1 || PyArray_DIM($input,0)!=3){ // checking if the argument is a vector with 3 values
+            SWIG_exception(SWIG_ValueError,"Expected a list/numpy array of 3 double values e.g. [12,31,48].");
+        }
+        
+        if (PyArray_ISFLOAT ($input)){
+            double * arrayContainerPtr=(double *) PyArray_DATA($input);
+            pt.x=(short)arrayContainerPtr[0];
+            pt.y=(short)arrayContainerPtr[1];
+            pt.z=(short)arrayContainerPtr[2];
+        
+            
+        }  else  if (PyArray_ISINTEGER ($input)){
+
+            int * arrayContainerPtr=(int *) PyArray_DATA($input);
+            pt.x=(short)arrayContainerPtr[0];
+            pt.y=(short)arrayContainerPtr[1];
+            pt.z=(short)arrayContainerPtr[2];
+
+        
+        }else{
+            SWIG_exception(SWIG_ValueError,"The values in the array should be either floating point numbers or inttegers. Please use explicit type conversion for all the values");
+        }
+        
+        $1=pt;        
     }else{
         
          int res = SWIG_ConvertPtr($input,(void **) &$1, $&1_descriptor,0);
@@ -174,6 +200,35 @@
         }else{
             SWIG_exception(SWIG_ValueError,"Expected a list of 3 integer values e.g. [12,31,48]."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case
         }                
+    }else if(PyArray_Check($input)){
+    
+        if (PyArray_NDIM($input)!=1 || PyArray_DIM($input,0)!=3){ // checking if the argument is a vector with 3 values
+            SWIG_exception(SWIG_ValueError,"Expected a list/numpy array of 3 double values e.g. [12,31,48].");
+        }
+        
+        if (PyArray_ISFLOAT ($input)){
+            double * arrayContainerPtr=(double *) PyArray_DATA($input);
+            pt.x=(short)arrayContainerPtr[0];
+            pt.y=(short)arrayContainerPtr[1];
+            pt.z=(short)arrayContainerPtr[2];
+        
+            
+        }  else  if (PyArray_ISINTEGER ($input)){
+
+            int * arrayContainerPtr=(int *) PyArray_DATA($input);
+            pt.x=(short)arrayContainerPtr[0];
+            pt.y=(short)arrayContainerPtr[1];
+            pt.z=(short)arrayContainerPtr[2];
+
+        
+        }else{
+            SWIG_exception(SWIG_ValueError,"The values in the array should be either floating point numbers or inttegers. Please use explicit type conversion for all the values");
+        }
+        
+        
+        
+        
+        $1=&pt;        
     }else{
         
          int res = SWIG_ConvertPtr($input,(void **) &$1, $1_descriptor,0);

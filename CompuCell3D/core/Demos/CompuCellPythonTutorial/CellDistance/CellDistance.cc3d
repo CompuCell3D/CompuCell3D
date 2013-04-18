@@ -1,0 +1,5 @@
+<Simulation version="3.6.2">
+   <XMLScript Type="XMLScript">Simulation/CellDistance.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/CellDistance.py</PythonScript>
+   <Resource Type="Python">Simulation/CellDistanceSteppables.py</Resource>
+</Simulation>

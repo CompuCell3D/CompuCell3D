@@ -60,9 +60,6 @@ using namespace CompuCell3D;
 %include "ClassRegistry.h"
 %include "Simulator.h"
 
-%include <Utils/Coordinates3D.h>
-
-%template (Coordinates3DDouble) Coordinates3D<double>; 
 
 %include <PyCompuCellObjAdapter.h>
 %include <EnergyFunctionPyWrapper.h>

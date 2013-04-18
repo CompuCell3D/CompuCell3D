@@ -552,9 +552,121 @@ class SteppableBasePy(SteppablePy):
             if pixelNeighbor.distance: #neighbor is valid
                 yield pixelNeighbor
         
+    def invariantDistanceVectorInteger(self,_from=[0,0,0],_to=[0,0,0]):
+        '''
         
+        This function will calculate distance vector with integer coordinates between two Point3D points
+        and make sure that the absolute values of the vector are smaller than 1/2 of the corresponding lattice dimension
+        this way we simulate 'invariance' of distance assuming that periodic boundary conditions are in place 
+        @_from - list/tuple of 3 integers
+        @_to  -list/tuple of 3 integers
+        @ return value - numpy float array    
+        '''
+        import CompuCell
+        import numpy
+        distVec=CompuCell.distanceVectorInvariant(_to ,_from,self.dim)    
+        return numpy.array([float(distVec.x),float(distVec.y),float(distVec.z)])
             
+    def distanceVector(self,_from,_to):
+        '''
+        This function will calculate distance vector between  two points - (_to-_from)  
+        This is most straightforward implementation and will ignore periodic boundary conditions if such are present
+        @_from - list/tuple of 3 numbers
+        @_to  -list/tuple of 3 numbers        
+        @ return value - numpy float array
+        '''      
+        import numpy    
+        return numpy.array([float(_to[0]-_from[0]),float(_to[1]-_from[1]),float(_to[2]-_from[2])])
         
+    def invariantDistanceVector(self,_to,_from):
+        '''
+        This function will calculate distance vector with integer coordinates between two Coordinates3D<double> points
+        and make sure that the absolute values of the vector are smaller than 1/2 of the corresponding lattice dimension
+        this way we simulate 'invariance' of distance assuming that periodic boundary conditions are in place            
+        @_from - list/tuple/numpy array of 3 floating point numbers
+        @_from - list/tuple/numpy array of 3 floating point numbers
+        @ return value - numpy float array
+        '''
+        import CompuCell
+        import numpy
+        
+        distVec=CompuCell.distanceVectorCoordinatesInvariant(_to ,_from,self.dim)
+        return numpy.array([distVec.x,distVec.y,distVec.z])
+        
+    def distance(self,_from,_to):
+        '''
+        Distance between two points. Assumes non-periodic boundary conditions
+        @return value - floating point number 
+        '''
+        return self.vectorNorm(self.distanceVector(_from, _to))    
+        
+    def invariantDistance(self,_from,_to):
+        '''
+        Distance between two points. Assumes periodic boundary conditions 
+        - or simply makes sure that no component of distance vector 
+        is greater than 1/2 corresponding dimension
+        @return value - floating point number 
+        '''
+        
+        return self.vectorNorm(self.invariantDistanceVector(_from, _to))    
+    
+    
+    def vectorNorm(self,_vec):
+        import numpy
+        return numpy.linalg.norm(_vec)
+    
+    def distanceVectorBetweenCells(self, _cell_from, _cell_to):
+        '''
+        This function will calculate distance vector between  COM's of cells  assuming non-periodic boundary conditions
+        @ return value - numpy float array
+        '''        
+        return self.distanceVector([_cell_to.xCOM,_cell_to.yCOM,_cell_to.zCOM],[_cell_from.xCOM,_cell_from.yCOM,_cell_from.zCOM])    
+        
+    def invariantDistanceVectorBetweenCells(self, _cell_from, _cell_to):
+        '''
+        This function will calculate distance vector between  COM's of cells  assuming periodic boundary conditions
+        - or simply makes sure that no component of distance vector 
+        is greater than 1/2 corresponding dimension        
+        @ return value - numpy float array
+        '''        
+        return self.invariantDistanceVector([_cell_to.xCOM,_cell_to.yCOM,_cell_to.zCOM],[_cell_from.xCOM,_cell_from.yCOM,_cell_from.zCOM])    
+    
+    def distanceBetweenCells(self, _cell_from, _cell_to):
+        '''
+        Distance between COM's between cells. Assumes non-periodic boundary conditions        
+        @return value - floating point number 
+        '''
+        
+        return self.vectorNorm(self.distanceVectorBetweenCells(_cell_from, _cell_to))
+        
+    def invariantDistanceBetweenCells(self, _cell_from, _cell_to):
+        '''
+        Distance between COM's of two cells. Assumes periodic boundary conditions 
+        - or simply makes sure that no component of distance vector 
+        is greater than 1/2 corresponding dimension
+        @return value - floating point number 
+        '''        
+        return self.vectorNorm(self.invariantDistanceVectorBetweenCells(_cell_from, _cell_to))
+        
+    def point3DToNumpy(self, _pt):
+        '''
+        This function converts CompuCell.Point3D into floating point numpy array(vector) of size 3
+        '''
+        import numpy        
+        return numpy.array([float(_pt.x),float(_pt.y),float(_pt.z)])
+        
+    def numpyToPoint3D(self, _array):
+        '''
+        This function converts floating point numpy array(vector) of size 3 into CompuCell.Point3D 
+        '''        
+        import CompuCell
+        pt=CompuCell.Point3D()
+        pt.x=_array[0]
+        pt.y=_array[1]
+        pt.z=_array[2]
+        return pt
+        
+
 class RunBeforeMCSSteppableBasePy(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
         SteppableBasePy.__init__(self,_simulator,_frequency)   
