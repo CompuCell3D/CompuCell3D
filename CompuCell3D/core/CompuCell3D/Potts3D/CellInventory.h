@@ -71,7 +71,10 @@ class /*DECLSPECIFIER*/ CellIdentifier{
 		long clusterId;
          ///have to define < operator if using a class in the set and no < operator is defined for this class
          bool operator<(const CellIdentifier & _rhs) const{
-            return clusterId < _rhs.clusterId || (!(_rhs.clusterId < clusterId ) && cellId < _rhs.cellId);
+            //return clusterId < _rhs.clusterId || (!(_rhs.clusterId < clusterId ) && cellId < _rhs.cellId);
+			// this ordering (first cell id, then cluster id) is necessary to get attemptFetchingCellById function working properly
+			return cellId < _rhs.cellId || (!(cellId < _rhs.cellId) && clusterId < _rhs.clusterId );
+
          }
 
 };

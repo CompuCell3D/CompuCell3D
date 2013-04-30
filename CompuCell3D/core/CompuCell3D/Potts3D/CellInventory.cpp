@@ -137,7 +137,12 @@ namespace CompuCell3D {
 CellG * CellInventory::attemptFetchingCellById(long _id){
 
 	cellInventoryIterator upperMitr=inventory.upper_bound(CellIdentifier(_id,std::numeric_limits<long>::max())); //upperMitr will point to location whose key is 'greater' than searched key
-	--upperMitr;
+	if (upperMitr!=inventory.begin()){
+		--upperMitr;
+	}
+	//cerr<<"trying to get id="<<_id<<endl;
+	//cerr<<"upperMitr->first.cellId="<<upperMitr->first.cellId<<endl;
+
 	if (upperMitr->first.cellId==_id){
 		return upperMitr->second;
 	}else{
@@ -151,7 +156,7 @@ CellG * CellInventory::attemptFetchingCellById(long _id){
 
 	}
 
-	return 0;		
+	
 
 	}
 

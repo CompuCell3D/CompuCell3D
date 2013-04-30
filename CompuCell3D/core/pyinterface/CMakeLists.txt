@@ -15,7 +15,7 @@ FIND_PACKAGE(PythonInterp)
 
 SET(NUMPY_INCLUDE_DIR )
 # searching for numpy include dir
-EXEC_PROGRAM(${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/core/pyinterface/PlayerPythonNew ARGS NumpyHeader.py
+EXEC_PROGRAM(${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/core/pyinterface ARGS NumpyHeader.py
       OUTPUT_VARIABLE NUMPY_INCLUDE_DIR)
 
 

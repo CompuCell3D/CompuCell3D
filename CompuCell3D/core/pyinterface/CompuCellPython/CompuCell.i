@@ -46,6 +46,7 @@
 
 %{
 // CompuCell3D Include Files
+// #include <Potts3D/Cell.h>
 #include <CompuCell3D/Plugin.h>
 #include <CompuCell3D/Potts3D/Stepper.h>
 #include <CompuCell3D/plugins/VolumeTracker/VolumeTrackerPlugin.h> //necesssary to make slicing in cellfield work
@@ -122,6 +123,7 @@ using namespace CompuCell3D;
 // C++ std::map handling
 %include "std_vector.i"
 
+%include "stl.i"
 
 //enables better handling of STL exceptions
 %include "exception.i"
@@ -272,65 +274,7 @@ using namespace CompuCell3D;
 %include "Potts3D/Cell.h"
 
     
-
-%include "Field3D/Field3D.h"
-%include "Field3D/Field3DImpl.h"
-%include "Field3D/WatchableField3D.h"
-
-
-
-// %template(cellfield) CompuCell3D::Field3D<CellG *>;
-// %template(floatfield) CompuCell3D::Field3D<float>;
-// %template(floatfieldImpl) CompuCell3D::Field3DImpl<float>;
-// %template(watchablecellfield) CompuCell3D::WatchableField3D<CellG *>;
-
-
-
-%include <NeighborFinderParams.h>
-
-
-%include <CompuCell3D/PluginManager.h>
-
-// template <class T>
-// class PluginManager {
-//   public:
-//     void loadLibraries(const std::string path);
-//     bool isLoaded(std::string pluginName);
-// };
-
-// %template(templatebasicpluginmanagersteppable) BasicPluginManager<Steppable>;
-// %template(templatebasicpluginmanagerplugin) BasicPluginManager<Plugin>;
-
-
-// %include <CompuCell3D/Steppable.h>
-// %include <CompuCell3D/Plugin.h>
-%include <BasicUtils/BasicPluginManager.h>
-
-%template(bpmPlugin) BasicPluginManager<Plugin> ;
-%template(bpmSteppable) BasicPluginManager<Steppable> ;
-
-%template(pluginmanagertemplate) CompuCell3D::PluginManager<Plugin> ;
-%template(steppablemanagertemplate) CompuCell3D::PluginManager<Steppable> ;
-
-
-// %template(bpmStepNew) BasicPluginManager<StepNew> ;
-// %template(stepnewmanagertemplate) CompuCell3D::PluginManager<StepNew> ;
-
-%inline %{
-
-  
-  BasicPluginManager<Plugin> * getPluginManagerAsBPM(){
-    return (BasicPluginManager<Plugin> *)&Simulator::pluginManager;
-  }
-
-  BasicPluginManager<Steppable> * getSteppableManagerAsBPM(){
-    return (BasicPluginManager<Steppable> *)&Simulator::steppableManager;
-  }
-  
-//   CompuCell3D::PluginManager<StepNew> getStepManager(){return CompuCell3D::PluginManager<StepNew>();}
-//   CompuCell3D::PluginManager<Steppable> getSteppableManager(){return CompuCell3D::PluginManager<Steppable>();}
-%}
-
+    
 using namespace CompuCell3D;
 
 
@@ -496,6 +440,68 @@ using namespace CompuCell3D;
     
       %}
     };
+
+    
+
+%include "Field3D/Field3D.h"
+%include "Field3D/Field3DImpl.h"
+%include "Field3D/WatchableField3D.h"
+
+
+
+// %template(cellfield) CompuCell3D::Field3D<CellG *>;
+// %template(floatfield) CompuCell3D::Field3D<float>;
+// %template(floatfieldImpl) CompuCell3D::Field3DImpl<float>;
+// %template(watchablecellfield) CompuCell3D::WatchableField3D<CellG *>;
+
+
+
+%include <NeighborFinderParams.h>
+
+
+%include <CompuCell3D/PluginManager.h>
+
+// template <class T>
+// class PluginManager {
+//   public:
+//     void loadLibraries(const std::string path);
+//     bool isLoaded(std::string pluginName);
+// };
+
+// %template(templatebasicpluginmanagersteppable) BasicPluginManager<Steppable>;
+// %template(templatebasicpluginmanagerplugin) BasicPluginManager<Plugin>;
+
+
+// %include <CompuCell3D/Steppable.h>
+// %include <CompuCell3D/Plugin.h>
+%include <BasicUtils/BasicPluginManager.h>
+
+%template(bpmPlugin) BasicPluginManager<Plugin> ;
+%template(bpmSteppable) BasicPluginManager<Steppable> ;
+
+%template(pluginmanagertemplate) CompuCell3D::PluginManager<Plugin> ;
+%template(steppablemanagertemplate) CompuCell3D::PluginManager<Steppable> ;
+
+
+// %template(bpmStepNew) BasicPluginManager<StepNew> ;
+// %template(stepnewmanagertemplate) CompuCell3D::PluginManager<StepNew> ;
+
+%inline %{
+
+  
+  BasicPluginManager<Plugin> * getPluginManagerAsBPM(){
+    return (BasicPluginManager<Plugin> *)&Simulator::pluginManager;
+  }
+
+  BasicPluginManager<Steppable> * getSteppableManagerAsBPM(){
+    return (BasicPluginManager<Steppable> *)&Simulator::steppableManager;
+  }
+  
+//   CompuCell3D::PluginManager<StepNew> getStepManager(){return CompuCell3D::PluginManager<StepNew>();}
+//   CompuCell3D::PluginManager<Steppable> getSteppableManager(){return CompuCell3D::PluginManager<Steppable>();}
+%}
+
+
 
 // macros used to generate extra functions to better manipulate fields    
     
@@ -738,7 +744,9 @@ FIELD3DEXTENDER(Field3D<int>,int)
 %include "Field3D/Field3DChangeWatcher.h"
 %template(cellgchangewatcher) CompuCell3D::Field3DChangeWatcher<CompuCell3D::CellG *>;
 
-%template(vectorCellGPtr)std::vector<CompuCell3D::CellG *> ;
+
+
+%template (mvectorCellGPtr) std::vector<CellG *>;
 %template(mapLongCellGPtr)std::map<long,CellG *> ;
 %template(mapLongmapLongCellGPtr)std::map<long,std::map<long,CellG *> >;
 

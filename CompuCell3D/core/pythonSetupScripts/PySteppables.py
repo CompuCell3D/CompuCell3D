@@ -23,10 +23,15 @@ class SteppablePy(SimObjectPy):
     def finish(self):pass
 
 
-class SteppableBasePy(SteppablePy):    
+
+
+# class SteppableBasePy(SteppablePy): 
+from SBMLSolverHelper import SBMLSolverHelper
+class SteppableBasePy(SteppablePy,SBMLSolverHelper):         
     (CC3D_FORMAT,TUPLE_FORMAT)=range(0,2)    
     def __init__(self,_simulator,_frequency=1):
         SteppablePy.__init__(self,_frequency)
+        SBMLSolverHelper.__init__(self) 
         self.simulator=_simulator
         self.potts=_simulator.getPotts()
         self.cellField=self.potts.getCellFieldG()
@@ -42,9 +47,7 @@ class SteppableBasePy(SteppablePy):
         self.typeIdTypeNameDict = CompuCellSetup.ExtractTypeNamesAndIds()    
         for typeId in self.typeIdTypeNameDict:
             setattr(self,self.typeIdTypeNameDict[typeId].upper(),typeId)
-        
-
-        
+                        
         import CompuCell      
         pluginManager=CompuCell.getPluginManagerAsBPM()                
         stepManager=CompuCell.getSteppableManagerAsBPM() # have to use explicit cast to BasicPluginManager to get steppable manager to work
@@ -288,7 +291,7 @@ class SteppableBasePy(SteppablePy):
         
         
         
-            
+        
     def everyPixel(self):
         import itertools
         return itertools.product(xrange(self.dim.x),xrange(self.dim.y),xrange(self.dim.z))  
@@ -683,8 +686,10 @@ class SteppableBasePy(SteppablePy):
             return CompuCellSetup.globalSteppableRegistry.getSteppablesByClassName(_className)[0]
         except IndexError,e:
             return None    
-        
-        
+
+
+
+
 
 class RunBeforeMCSSteppableBasePy(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):

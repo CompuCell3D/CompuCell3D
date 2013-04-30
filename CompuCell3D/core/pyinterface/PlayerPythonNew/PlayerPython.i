@@ -15,7 +15,7 @@ namespace CompuCell3D{
 
 %{
 
-#include <Potts3D/Cell.h>
+// #include <Potts3D/Cell.h>
 #include <Utils/Coordinates3D.h>
 #include <GraphicsData.h>
 #include <FieldStorage.h>
@@ -40,6 +40,7 @@ namespace CompuCell3D{
 // Namespaces
 using namespace std;
 using namespace CompuCell3D;
+class CellG;
 
 %}
 
