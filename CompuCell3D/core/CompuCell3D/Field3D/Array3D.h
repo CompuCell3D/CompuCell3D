@@ -896,7 +896,7 @@ void Array3DContiguous<T>::allocateArray(const Dim3D & _dim , T  val){
 
 
 template <typename T>
-void Array3DContiguous<T>::resizeAndShift(const Dim3D newDim,  Dim3D shiftVec=Dim3D()){
+void Array3DContiguous<T>::resizeAndShift(const Dim3D newDim,  Dim3D shiftVec){
     
     Dim3D newInternalDim=newDim;
 	newInternalDim.x+=3;
@@ -1262,7 +1262,7 @@ void Array2DContiguous<T>::swapArrays(){
 
 
 template <typename T>
-void Array2DContiguous<T>::resizeAndShift(const Dim3D newDim,  Dim3D shiftVec=Dim3D()){
+void Array2DContiguous<T>::resizeAndShift(const Dim3D newDim,  Dim3D shiftVec){
     
     Dim3D newInternalDim=newDim;
 	newInternalDim.x+=3;
