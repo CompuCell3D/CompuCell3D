@@ -683,6 +683,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
         self.diagramSceneMainWidget.theCDImageSequence.setSequenceLoadedFromFiles(False)
 
+
         # now that both the mainTypesDict and the diagramSceneMainWidget are initialized, add starting blank data:
         CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow.__init__() - setting self.setImageGlobals( lBoringPixMap.toImage() ) ...", CDConstants.DebugTODO )
         self.setImageGlobals( lBoringPixMap.toImage() )
@@ -773,6 +774,9 @@ class CellDrawMainWindow(QtGui.QMainWindow):
         self.__theToolBars.registerHandlerForSceneZoomChangedControllerSignals( \
             self.diagramSceneMainWidget.handlerForSceneZoomControllerSignals )
 
+
+        # there is no image sequence loaded in the beginning, so start with image sequence mode disabled:
+        self.__theToolBars.setModeSelectToolBarButtonEnabled(CDConstants.SceneModeImageSequence, False)
 
 
 
@@ -955,12 +959,11 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             self.setImageGlobals( lBoringPixMap.toImage() )
 
         # if and *only* if there is no sequence of images loaded from files on disk,
-        #   then tell the theCDImageSequence to reset its pixel array internally:
-        if self.diagramSceneMainWidget.theCDImageSequence.imageSequenceLoaded == False:
-            self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions( \
-                self.cdPreferences.getPifSceneWidth(), \
-                self.cdPreferences.getPifSceneHeight(), \
-                self.cdPreferences.getPifSceneDepth() )
+        #   then tell the theCDImageSequence to reset its pixel array internally to its default:
+        if (self.diagramSceneMainWidget.theCDImageSequence.getSequenceLoadedFromFiles() == False):
+            self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions()
+            self.__theToolBars.setModeSelectToolBarButtonEnabled( CDConstants.SceneModeImageSequence, False )
+            
 
 
         # 2011 - Mitja: and ask for a redraw of the theCDImageLayer:
@@ -1435,7 +1438,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                                            .arg(lToBeSavedFileExtension))
                 if fileName.isEmpty():
                     #  self.__theSceneRasterizer.hide()
-                    CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() fixed-size raster PIFF failed.", CDConstants.DebugImportant )
+                    CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() fixed-size raster PIFF failed.", CDConstants.DebugSparse )
                     return False
                 else:
                     # DIH:
@@ -1471,7 +1474,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                                            .arg(lToBeSavedFileExtension))
                 if fileName.isEmpty():
                     #  self.__theSceneRasterizer.hide()
-                    CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() region-raster PIFF failed.", CDConstants.DebugImportant )
+                    CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() region-raster PIFF failed.", CDConstants.DebugSparse )
                     return False
                 else:
                     # this used to be the call to rasterize region-raster cells from each region:
@@ -1494,7 +1497,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
                                        .arg(lToBeSavedFileExtension))
             if fileName.isEmpty():
                 #  self.__theSceneRasterizer.hide()
-                CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() pixel-based PIFF failed.", CDConstants.DebugImportant )
+                CDConstants.printOut( "___ - DEBUG ----- CellDrawMainWindow: fileSavePIFFromScene_Callback() pixel-based PIFF failed.", CDConstants.DebugSparse )
                 return False
             else:
                 # 2010 - Mitja: this was originally calling the saveFile function:
@@ -1640,7 +1643,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
               "\n self.mainTypesDict ="+ str(self.mainTypesDict), CDConstants.DebugAll )
 
         lFileDialog = QtGui.QFileDialog(self.theMainWindow)
-        lFilters = "Scene Bundle (*."+CDConstants.SceneBundleFileExtension+");;Scene File (*.pifScene)"
+        lFilters = "Scene File (*.pifScene);;Scene Bundle (*."+CDConstants.SceneBundleFileExtension+")"
 
         #         lFilters.append("Scene Bundle (*.cc3s)")
         #         lFilters.append("Scene File (*.pifScene)")
@@ -1753,7 +1756,12 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
         # update x,y,z dimensions in the Image Sequence object,
         #    this will also reset all the image sequence object's numpy array:
-        self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions(lXdim, lYdim, lZdim)
+        lImageSequenceMemoryAllocatedOK = self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions(lXdim, lYdim, lZdim)
+        # continue only if the NumPy arrays could be allocated:
+        if (lImageSequenceMemoryAllocatedOK == False) :
+            self.__theToolBars.setModeSelectToolBarButtonEnabled( CDConstants.SceneModeImageSequence, False )
+            return
+
 
         # tell the Image Sequence to show only the plain area (image contents) from the sequence:
         self.diagramSceneMainWidget.theCDImageSequence.resetToOneProcessingModeForImageSequenceToPIFF( CDConstants.ImageSequenceUseAreaSeeds )
@@ -1770,7 +1778,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
         lFileCounter = 0
         lImage = QtGui.QImage(lXdim, lYdim, QtGui.QImage.Format_ARGB32)
-        lImage.fill(QtGui.QColor(QtCore.Qt.white))
+        lImage.fill(QtGui.QColor(QtCore.Qt.white).rgb())
 
         self.__theWaitProgressBarWithImage.setValue(lFileCounter)
         self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lImage))
@@ -1800,6 +1808,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
                 # if non-image file, abort sequence and quit this function:
                 self.diagramSceneMainWidget.theCDImageSequence.setSequenceLoadedFromFiles(False)
+                self.__theToolBars.setModeSelectToolBarButtonEnabled( CDConstants.SceneModeImageSequence, False )
                 self.diagramSceneMainWidget.theCDImageSequence.resetSequenceDimensions( \
                     lXdim, lYdim, lFileCounter)
 
@@ -1833,7 +1842,8 @@ class CellDrawMainWindow(QtGui.QMainWindow):
 
         # now confirm that the theCDImageSequence contains a sequence loaded from files:
         self.diagramSceneMainWidget.theCDImageSequence.setSequenceLoadedFromFiles(True)
-        self.diagramSceneMainWidget.theCDImageSequence.setSequencePathName(str(lThePathToImageSequenceDir))
+        self.__theToolBars.setModeSelectToolBarButtonEnabled(CDConstants.SceneModeImageSequence, True)
+        self.diagramSceneMainWidget.theCDImageSequence.setSequencePathName( str(lThePathToImageSequenceDir) )
 
         CDConstants.printOut(  "importImageSequence()  --  9.", CDConstants.DebugTODO )
         # time.sleep(1.0)
@@ -2302,7 +2312,7 @@ class CellDrawMainWindow(QtGui.QMainWindow):
             self.diagramSceneMainWidget.updateBackgroundImage(lTheFileName, image)
 
 
-            print "____ DEBUG: _,.- ~*'`'*~-.,_  CellDrawMainWindow.fileImportDICOM_Callback() now calling self.__theToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap(image) with ["+str(image)+", isNull()=="+str(image.isNull())+" ]"
+            CDConstants.printOut( "____ DEBUG: _,.- ~*'`'*~-.,_  CellDrawMainWindow.fileImportDICOM_Callback() now calling self.__theToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap(image) with ["+str(image)+", isNull()=="+str(image.isNull())+" ]", CDConstants.DebugTODO )
 
             self.__theToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap(QtGui.QPixmap.fromImage(image))
         pass # 152 prrint "2010 DEBUG: fileImportDICOM_Callback() ENDING."

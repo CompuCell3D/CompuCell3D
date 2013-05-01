@@ -1032,7 +1032,7 @@ class CDSceneRasterizer(QtGui.QWidget):
                 self.progressBar.setValue(j + (i * self.fixedSizeHeightInCells) )
                 # Qt/PyQt's progressBar won't display updates from setValue(...) calls,
                 #   unless we also explicitly ask Qt to process at least some events.
-                # QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+                # QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
                 QtGui.QApplication.processEvents()
 
                 # retrieve the prevalent color in the fixed-size cell at position i,j :

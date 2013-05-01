@@ -38,51 +38,58 @@ class ProgressBarImageLabel(QtGui.QLabel):
 
     def __init__(self,parent=None):
         QtGui.QLabel.__init__(self, parent)
-#         QtGui.QWidget.__init__(self, parent)
         self.__width = 64
         self.__height = 64
         self.__rasterWidth = 10
+        self.__fixedSizeRaster = False
+
         # store a pixmap:
         self.setPixmap( QtGui.QPixmap(self.__width, self.__height) )
         self.pixmap().fill(QtCore.Qt.darkRed)
 
-        self.__fixedSizeRaster = False
+        # show some different background color, since other frames don't work:
+        self.setAutoFillBackground(True)
+        self.setPalette(QtGui.QPalette(QtGui.QColor(222,222,222)))
+        self.setAlignment( QtCore.Qt.AlignCenter )
+# margin does not align:        self.setMargin(10)
+# margin does not align:        self.setContentsMargins(20,20,20,20)
+# frame does not show up at all:        self.setFrameShape(QtGui.QFrame.Panel | QtGui.QFrame.Sunken)
+
+
 
     def paintEvent(self, event):
 
         # QtGui.QLabel.paintEvent(self,event)
 
         # start a QPainter on this QLabel - this is why we pass "self" as paramter:
-        __lPainter = QtGui.QPainter(self)
+        lPainter = QtGui.QPainter(self)
 
         # take care of the RHS <-> LHS mismatch at its visible end,
         #   by flipping the y coordinate in the QPainter's affine transformations:       
-        __lPainter.translate(0.0, float(self.pixmap().height()))
-        __lPainter.scale(1.0, -1.0)
+        lPainter.translate(0.0, float(self.pixmap().height()))
+        lPainter.scale(1.0, -1.0)
 
         # access the QLabel's pixmap to draw it explicitly, using QPainter's scaling:
-        __lPainter.drawPixmap(0, 0, self.pixmap())
+        lPainter.drawPixmap(0, 0, self.pixmap())
 
         if self.__fixedSizeRaster == True:
-            __lPen = QtGui.QPen()
-#             __lPen.setColor(QtGui.QColor(QtCore.Qt.black))
+            lPen = QtGui.QPen()
+#             lPen.setColor(QtGui.QColor(QtCore.Qt.black))
 # TODO TODO: 20111129 TODO: go back to a black grid:
             lTmpRgbaColor = QtGui.QColor( int(random.random()*256.0), \
                                           int(random.random()*256.0), \
                                           int(random.random()*256.0) ).rgba()
-            __lPen.setColor(QtGui.QColor(lTmpRgbaColor))
+            lPen.setColor(QtGui.QColor(lTmpRgbaColor))
 
-            __lPen.setWidth(1)
-            __lPen.setCosmetic(True)
-            __lPainter.setPen(__lPen)
-            self.__drawGrid(__lPainter)
+            lPen.setWidth(1)
+            lPen.setCosmetic(True)
+            lPainter.setPen(lPen)
+            self.__drawGrid(lPainter)
         else:
             # we don't need to draw the grid on top of the label:
             pass
 
-        __lPainter.end()
-        # JUJU LA PRIMA VOLTA QUA APPARI EL PROGRESSBAR NEL TOOLBAR DE SOTO
-        # JUJU LA SECONDA VOLTA QUA SE RIDIMENSIONA LIMMAGINE NEL PROGRESSBAR A 100x100 pixel
+        lPainter.end()
 
     def __drawGrid(self,painter):
         for x in xrange(0, self.__width, self.__rasterWidth):
@@ -98,39 +105,39 @@ class ProgressBarImageLabel(QtGui.QLabel):
         lColor = QtGui.QColor()
         lColor.setRgba(pRGBA)
 
-        __lPen = QtGui.QPen()
-        __lPen.setColor(lColor)
-        __lPen.setWidth(1)
-        __lPen.setCosmetic(True)
+        lPen = QtGui.QPen()
+        lPen.setColor(lColor)
+        lPen.setWidth(1)
+        lPen.setCosmetic(True)
 
-        __lPainter = QtGui.QPainter()
-        __lPainter.begin(self.pixmap())
-        __lPainter.setPen(__lPen)
+        lPainter = QtGui.QPainter()
+        lPainter.begin(self.pixmap())
+        lPainter.setPen(lPen)
 
         if (pXmin >= pXmax) or (pYmin >= pYmax) :
             # if passed an incorrect rectangle (with max point < min point)
             # then just draw a 3x3 square around the min point
-            __lPainter.drawRect(pXmin-1, pYmin-1, 3, 3)
+            lPainter.drawRect(pXmin-1, pYmin-1, 3, 3)
 
         else:
-            __lPainter.drawRect(pXmin, pYmin, (pXmax-pXmin), (pYmax-pYmin))
+            lPainter.drawRect(pXmin, pYmin, (pXmax-pXmin), (pYmax-pYmin))
    
-#             __lPen.setColor(QtGui.QColor(QtCore.Qt.black))
-#             __lPen.setWidth(1)
-#             __lPen.setCosmetic(True)
+#             lPen.setColor(QtGui.QColor(QtCore.Qt.black))
+#             lPen.setWidth(1)
+#             lPen.setCosmetic(True)
 #    
-#             __lPainter.setPen(__lPen)
-#             __lPainter.drawRect(pXmin-1, pYmin-1, 3, 3)
+#             lPainter.setPen(lPen)
+#             lPainter.drawRect(pXmin-1, pYmin-1, 3, 3)
 
-        __lPainter.end()
+        lPainter.end()
 
 
     def drawPixmapAtPoint(self, pPixmap, pXmin=0, pYmin=0):
 
-        __lPainter = QtGui.QPainter()
-        __lPainter.begin(self.pixmap())
-        __lPainter.drawPixmap(pXmin, pYmin, pPixmap)
-        __lPainter.end()
+        lPainter = QtGui.QPainter()
+        lPainter.begin(self.pixmap())
+        lPainter.drawPixmap(pXmin, pYmin, pPixmap)
+        lPainter.end()
         self.update()
 
 
@@ -145,10 +152,6 @@ class ProgressBarImageLabel(QtGui.QLabel):
 # a QWidget-based progress bar, instead of a dialog-style widget
 # ======================================================================
 class CDWaitProgressBarWithImage(QtGui.QWidget):
-
-
-# RICONFRONTA CDWaitProgressBarWithImage E ELIMINA TUTTI I RIFERIMENTI DIRETTI A VARIABILI, NONCHE PULISCI
-
 
     # ------------------------------------------------------------------
     def __init__(self, pTitle="CellDraw: processing.", pLabelText=" ", pMaxValue=100, pParent=None):
@@ -198,9 +201,6 @@ class CDWaitProgressBarWithImage(QtGui.QWidget):
 
     # ------------------------------------------------------------------
     def hide(self):
-#         print
-#         print "-----------------------------------------"
-#         print "  CDWaitProgressBarWithImage.hide() ....."
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         # this code was in the INIT section, but we now create/delete the image label
         #   on the fly when showing/hiding the progress bar widget --->
@@ -210,24 +210,9 @@ class CDWaitProgressBarWithImage(QtGui.QWidget):
         if isinstance( self.__theParent, QtGui.QStatusBar ) == True:
             self.__theParent.removeWidgetFromStatusBar(self)
 
-#             print
-#             print "  self.__theParent.size() =", self.__theParent.size()
-#     #         print "  self.__theParent ==", self.__theParent, "calling: self.__theParent.resize(16,64) "
-#     #         self.__theParent.resize(16,64)
-#             self.__theParent.update()
-#             print "  self.__theParent.size() =", self.__theParent.size()
-#             print "  self.__theParent ==", self.__theParent, "calling: self.__theParent.reformat() "
-#             self.__theParent.reformat()
-#             self.__theParent.update()
-#             print "  self.__theParent.size() =", self.__theParent.size()
-
-
         # finally pass the hide() call upwards:
         super(CDWaitProgressBarWithImage, self).hide()
 
-#         print
-#         print "  CDWaitProgressBarWithImage.hide() done."
-#         print "-----------------------------------------"
     # end of   def hide(self)
     # ------------------------------------------------------------------
 
@@ -235,10 +220,6 @@ class CDWaitProgressBarWithImage(QtGui.QWidget):
 
     # ------------------------------------------------------------------
     def show(self):
-#         print
-#         print "-----------------------------------------"
-#         print "  CDWaitProgressBarWithImage.show() ....."
-
         # immediately pass the show() call upwards:
         super(CDWaitProgressBarWithImage, self).show()
 
@@ -246,20 +227,6 @@ class CDWaitProgressBarWithImage(QtGui.QWidget):
         if isinstance( self.__theParent, QtGui.QStatusBar ) == True:
             self.__theParent.insertPermanentWidgetInStatusBar(0, self)
 
-#             print
-#             print "  self.__theParent.size() =", self.__theParent.size()
-#     #         print "  self.__theParent ==", self.__theParent, "calling: self.__theParent.resize(16,64) "
-#     #         self.__theParent.resize(16,64)
-#             self.__theParent.update()
-#             print "  self.__theParent.size() =", self.__theParent.size()
-#             print "  self.__theParent ==", self.__theParent, "calling: self.__theParent.reformat() "
-#             self.__theParent.reformat()
-#             self.__theParent.update()
-#             print "  self.__theParent.size() =", self.__theParent.size()
-
-#         print
-#         print "  CDWaitProgressBarWithImage.show() done."
-#         print "-----------------------------------------"
     # end of     def show(self)
     # ------------------------------------------------------------------
 
@@ -300,22 +267,6 @@ class CDWaitProgressBarWithImage(QtGui.QWidget):
         self.__percentageLabel.setMidLineWidth(3)
 
         # place all 'sub-widgets' in the layout:
-
-#         lVBoxLayout = QtGui.QVBoxLayout()
-#         lVBoxLayout.setMargin(0)
-#         lVBoxLayout.setSpacing(2)
-#         lVBoxLayout.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-#         lVBoxLayout.addWidget(self.__infoLabel)
-#         lVBoxLayout.addWidget(self.__progressBar)
-#         lVBoxLayout.addWidget(self.__percentageLabel)
-# 
-# 
-# #         self.__theProgressBarImageLabel = None
-# #         self.__scrollArea = None
-# 
-#         lGroupBox.layout().addLayout(lVBoxLayout)
-#         lGroupBox.layout().addWidget(self.__scrollArea)
-
         lGroupBox.layout().addWidget(self.__infoLabel)
         lGroupBox.layout().addWidget(self.__progressBar)
         lGroupBox.layout().addWidget(self.__percentageLabel)
@@ -334,61 +285,41 @@ class CDWaitProgressBarWithImage(QtGui.QWidget):
 
     # ---------------------------------------------------------
     def setImagePixmap(self, pPixmap, pWidth=-1, pHeight=-1):
-#         print    "DORMO A"
-#         #   time.sleep(3.0)
-#         print "CDWaitProgressBarWithImage.setImagePixmap() - start.  pPixmap="+str(pPixmap)+", pWidth="+str(pWidth)+", pHeight="+str(pHeight)+" ..."
-#         print    "DORMO B"
-#         #   time.sleep(3.0)
-#         QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
-#         # time.sleep(3.0)
-# #         if (pWidth<0):
-# #             self.__width = pPixmap.width()
-# #         else:
-# #             self.__width = pWidth()
-# #         if (pHeight<0):
-# #             self.__height = pPixmap.height()
-# #         else:
-# #             self.__height = pHeight()
-#         print    "DORMO C"
-#         #   time.sleep(3.0)
-#         print "CDWaitProgressBarWithImage.setImagePixmap() - doing self.__theProgressBarImageLabel.setPixmap(pPixmap):"
-#         print    "DORMO D"
-#         #   time.sleep(3.0)
-
 
         if isinstance( pPixmap, QtGui.QPixmap ) == True:
-            self.__theProgressBarImageLabel.setPixmap(pPixmap)
+            if (pPixmap.width() > CDConstants.ProgressBarPrevewImageMaxWidth) or \
+               (pPixmap.height() > CDConstants.ProgressBarPrevewImageMaxHeight) :
+                lPixmap = pPixmap.scaled(CDConstants.ProgressBarPrevewImageMaxWidth, \
+                                         CDConstants.ProgressBarPrevewImageMaxHeight, \
+                                         QtCore.Qt.KeepAspectRatio,  QtCore.Qt.SmoothTransformation)
+            else:
+                lPixmap = pPixmap
+            self.__theProgressBarImageLabel.setPixmap(lPixmap)
+
         else:
             # store a dummy pixmap:
             self.__theProgressBarImageLabel.setPixmap( QtGui.QPixmap(64, 64) )
             self.__theProgressBarImageLabel.pixmap().fill(QtCore.Qt.darkRed)
 
 
-
-        # time.sleep(3.0)
-    
-#         print    "DORMO E"
-#         #   time.sleep(3.0)
-#         print "CDWaitProgressBarWithImage.setImagePixmap() - doing QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)"
-#         print    "DORMO F"
-#         #   time.sleep(3.0)
-
-        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
-
-#         print "CDWaitProgressBarWithImage.setImagePixmap() - 6."
-#         time.sleep(3.0)
-#         print    "DORMO G"
-#         #   time.sleep(3.0)
-#         print "CDWaitProgressBarWithImage.setImagePixmap() - end."
-        
     # end of   def setImagePixmap(self, pPixmap, pWidth=-1, pHeight=-1)
     # ---------------------------------------------------------
 
 
     # ---------------------------------------------------------
     def drawPixmapAtPoint(self, pPixmap, pXmin=0, pYmin=0):
-        self.__theProgressBarImageLabel.drawPixmapAtPoint(pPixmap, pXmin, pYmin)
+
+        if (pPixmap.width() > CDConstants.ProgressBarPrevewImageMaxWidth) or \
+           (pPixmap.height() > CDConstants.ProgressBarPrevewImageMaxHeight) :
+            lPixmap = pPixmap.scaled(CDConstants.ProgressBarPrevewImageMaxWidth, \
+                                     CDConstants.ProgressBarPrevewImageMaxHeight, \
+                                     QtCore.Qt.KeepAspectRatio,  QtCore.Qt.SmoothTransformation)
+        else:
+            lPixmap = pPixmap
+
+        self.__theProgressBarImageLabel.drawPixmapAtPoint(lPixmap, pXmin, pYmin)
     # ---------------------------------------------------------
+
 
 
     # ---------------------------------------------------------
@@ -396,7 +327,8 @@ class CDWaitProgressBarWithImage(QtGui.QWidget):
         self.__theTitle = str(pCaption)
         # self.__infoLabel.setText(str(pCaption))
         self.__waitProgressBarGroupBox.setTitle(self.__theTitle)
-        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
+
 
     # ---------------------------------------------------------
     def setValue(self, pValue):
@@ -404,9 +336,12 @@ class CDWaitProgressBarWithImage(QtGui.QWidget):
 
         curVal = self.__progressBar.value()
         maxVal = self.__progressBar.maximum()
-        lPercentage = (float(curVal) / float(maxVal)) * 100.0
+        if (maxVal != 0) :
+            lPercentage = (float(curVal) / float(maxVal)) * 100.0
+        else:
+            lPercentage = 100.0
         self.__percentageLabel.setText( QtCore.QString("... %1 %").arg(lPercentage, 0, 'g', 2) )
-        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
 
     # ---------------------------------------------------------
     def setTitleTextRange(self, pCaption="CellDraw: processing.", pLabelText=" ", pMin=0, pMax=100):
@@ -419,7 +354,7 @@ class CDWaitProgressBarWithImage(QtGui.QWidget):
         self.__progressBar.setValue(pMin)
         self.__theTitle = pCaption
         self.__waitProgressBarGroupBox.setTitle(self.__theTitle)
-        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
 
     # ---------------------------------------------------------
     def setInfoText(self, pLabelText=" "):
@@ -428,13 +363,13 @@ class CDWaitProgressBarWithImage(QtGui.QWidget):
             self.__infoLabel.hide()
         else:
             self.__infoLabel.show()
-        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
 
     # ---------------------------------------------------------
     def setRange(self, pMin=0, pMax=100):
         self.__progressBar.setRange(pMin, pMax)
         self.__progressBar.setValue(pMin)
-        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
 
     # ---------------------------------------------------------
     def __createProgressBar(self):
@@ -442,7 +377,7 @@ class CDWaitProgressBarWithImage(QtGui.QWidget):
         # lProgressBar.setRange(0, 10000)
         lProgressBar.setRange(0, self.__maxValue)
         lProgressBar.setValue(0)
-        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
         return lProgressBar
 
     # ---------------------------------------------------------
@@ -450,23 +385,26 @@ class CDWaitProgressBarWithImage(QtGui.QWidget):
         curVal = self.__progressBar.value()
         maxVal = self.__progressBar.maximum()
         # self.__progressBar.setValue(curVal + (maxVal - curVal) / 100)
-        lPercentage = (float(curVal) / float(maxVal)) * 100.0
+        if (maxVal != 0) :
+            lPercentage = (float(curVal) / float(maxVal)) * 100.0
+        else:
+            lPercentage = 100.0
         # CDConstants.printOut( " "+str( "ah yes", curVal, maxVal, lPercentage, QtCore.QString("%1").arg(lPercentage) )+" ", CDConstants.DebugTODO )
         self.__percentageLabel.setText( QtCore.QString("... %1 %").arg(lPercentage, 0, 'g', 2) )
         self.__progressBar.setValue(curVal + 1)
-        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
                
     # ---------------------------------------------------------
     def resetProgressBar(self):
         self.__percentageLabel.setText("0 %")
         self.__progressBar.setValue(0)
-        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
 
     # ---------------------------------------------------------
     def maxProgressBar(self):
         self.__percentageLabel.setText("100 %")
         self.__progressBar.setValue(self.__maxValue)
-        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
     # ---------------------------------------------------------
 
 

@@ -123,16 +123,24 @@ class CDToolBars(QtCore.QObject):
     def handlerForChangeInGlobalModeModelSignals(self, pMode):
         self.__theModeSelectToolBar.setSelectedSceneMode(pMode)
 
+
+
     # ------------------------------------------------------------
     # CDControlModeSelectToolBar:
     # set the icon of the Image Layer selection button
     # ------------------------------------------------------------
     def setModeSelectToolBarImageLayerButtonIconFromPixmap(self, pPixmap):
-        print "=-=-=-= CDToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap( pPixmap=="+str(pPixmap)+", isNull()=="+str(pPixmap.isNull())+" )"
-
-
+        pass # 154 prrint "=-=-=-= CDToolBars.setModeSelectToolBarImageLayerButtonIconFromPixmap( pPixmap=="+str(pPixmap)+", isNull()=="+str(pPixmap.isNull())+" )"
         self.__theModeSelectToolBar.setImageLayerButtonIconFromPixmap( pPixmap )
 
+
+
+    # ------------------------------------------------------------
+    # CDControlModeSelectToolBar:
+    # set one button of the mode select toolbar to be enabled or not enabled
+    # ------------------------------------------------------------
+    def setModeSelectToolBarButtonEnabled(self, pMode, pEnable=True):
+        self.__theModeSelectToolBar.setEnabled( pMode, pEnable )
 
 
 
@@ -148,8 +156,6 @@ class CDToolBars(QtCore.QObject):
 
 # end class CDToolBars(QtGui.QObject)
 # ======================================================================
-
-
 
 
 
@@ -170,9 +176,11 @@ if __name__ == '__main__':
 
     CDConstants.printOut( "----- CDToolBars.__main__() 3", CDConstants.DebugAll )
 
-    print "testQMainWindow = ", testQMainWindow
+    CDConstants.printOut( "testQMainWindow = "+str(testQMainWindow), CDConstants.DebugAll )
+
     lTestToolBarsObject = CDToolBars(testQMainWindow)
-    print "lTestToolBarsObject = ", lTestToolBarsObject
+
+    CDConstants.printOut( "lTestToolBarsObject = "+str(lTestToolBarsObject), CDConstants.DebugAll )
    
 #     print "NOW testQMainWindow.addToolBarsToMainWindow() ..."
 #     print lTestToolBarsObject.addToolBarsToMainWindow()

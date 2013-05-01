@@ -201,7 +201,7 @@ class CDImageNP(QtCore.QObject):
     def setNPImage(self, pImage=None, pIsImageLoadedFromFile=False, pImageFileName=" "):
 
         CDConstants.printOut( "___ - DEBUG ----- CDImageNP.setNPImage( pImage == "+str(pImage)+"  ) starting. " , CDConstants.DebugExcessive )
-        QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+        QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
 
         # the "lUserSelectedImage" QImage is the image loaded from a file:
         if isinstance(pImage, QtGui.QImage):
@@ -248,7 +248,7 @@ class CDImageNP(QtCore.QObject):
             set_trace()
 
             # ## ## ## CDConstants.printOut(  "CDImageNP.setNPImage()  --  1.", CDConstants.DebugTODO )
-            QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+            QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
             #   time.sleep(3.0)
 
             # show a panel containing a progress bar:        
@@ -261,10 +261,10 @@ class CDImageNP(QtCore.QObject):
             llPixmapForProgressBarPanelImageNP = QtGui.QPixmap( lUserSelectedImage )
 
             # ## ## ## CDConstants.printOut(  "CDImageNP.setNPImage()  --  2.", CDConstants.DebugTODO )
-            QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
+            QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
             #   time.sleep(3.0)
 
-            print    "DOPO DE QUA CAMBIA"
+            pass # 154 prrint    "DOPO DE QUA CAMBIA"
 #             print    "DOPO DE QUA CAMBIA"
 #             print    "DOPO DE QUA CAMBIA"
 #             print    "DOPO DE QUA CAMBIA"
@@ -282,28 +282,28 @@ class CDImageNP(QtCore.QObject):
 #             print    "DOPO DE QUA CAMBIA"
 
 
-            print    "DORMO 0"
+            pass # 154 prrint    "DORMO 0"
             #   time.sleep(3.0)
             self.__theWaitProgressBarWithImage.setImagePixmap(llPixmapForProgressBarPanelImageNP)
-            print    "DORMO 1"
+            pass # 154 prrint    "DORMO 1"
             #   time.sleep(3.0)
-            print "CDImageNP.setNPImage() - self.__sizeX =",self.__sizeX
-            print    "DORMO 2"
+            pass # 154 prrint "CDImageNP.setNPImage() - self.__sizeX =",self.__sizeX
+            pass # 154 prrint    "DORMO 2"
             #   time.sleep(3.0)
-            print "CDImageNP.setNPImage() - self.__sizeY =",self.__sizeY
-            print    "DORMO 3"
+            pass # 154 prrint "CDImageNP.setNPImage() - self.__sizeY =",self.__sizeY
+            pass # 154 prrint    "DORMO 3"
             #   time.sleep(3.0)
-            print "CDImageNP.setNPImage() - self.__sizeZ =",self.__sizeZ    
-            print    "DORMO 4"
+            pass # 154 prrint "CDImageNP.setNPImage() - self.__sizeZ =",self.__sizeZ    
+            pass # 154 prrint    "DORMO 4"
             #   time.sleep(3.0)
     
             # ## ## ## CDConstants.printOut(  "CDImageNP.setNPImage()  --  3.", CDConstants.DebugTODO )
-            print    "DORMO 5"
+            pass # 154 prrint    "DORMO 5"
             #   time.sleep(3.0)
-            QtGui.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
-            print    "DORMO 6"
+            QtGui.QApplication.processEvents(QtCore.QEventLoop.AllEvents)
+            pass # 154 prrint    "DORMO 6"
             #   time.sleep(3.0)
-            print    "PRIMA DE QUA ZA CAMBIA"
+            pass # 154 prrint    "PRIMA DE QUA ZA CAMBIA"
 #             print    "PRIMA DE QUA ZA CAMBIA"
 #             print    "PRIMA DE QUA ZA CAMBIA"
 #             print    "PRIMA DE QUA ZA CAMBIA"
@@ -386,7 +386,7 @@ class CDImageNP(QtCore.QObject):
              ( (self._graphicsSceneWidget.cdPreferences.getPifSceneWidth() != self.__sizeX) or \
                (self._graphicsSceneWidget.cdPreferences.getPifSceneHeight() != self.__sizeY) or \
                (self._graphicsSceneWidget.cdPreferences.getPifSceneDepth() != self.__sizeZ)        ):
-            print "CDImageNP.setNPImage() - self.__imageNPLoaded = ", self.__imageNPLoaded
+            pass # 154 prrint "CDImageNP.setNPImage() - self.__imageNPLoaded = ", self.__imageNPLoaded
 
             lNewSceneMessageBox = QtGui.QMessageBox(self._graphicsSceneWidget)
             lNewSceneMessageBox.setWindowModality(QtCore.Qt.WindowModal)
@@ -1048,8 +1048,8 @@ class CDImageNP(QtCore.QObject):
         self.extractedCellDataNPIsReadyFlags[self.__theCurrentIndex] = True
 
 
-        print "CDImageNP.setCurrentImageAndNPArrayLayer() - self.imageNPArray[self.__theCurrentIndex].shape =",self.imageNPArray[self.__theCurrentIndex].shape
-        print "CDImageNP.setCurrentImageAndNPArrayLayer() - lTmpArrayBGRA.shape =",lTmpArrayBGRA.shape
+        pass # 154 prrint "CDImageNP.setCurrentImageAndNPArrayLayer() - self.imageNPArray[self.__theCurrentIndex].shape =",self.imageNPArray[self.__theCurrentIndex].shape
+        pass # 154 prrint "CDImageNP.setCurrentImageAndNPArrayLayer() - lTmpArrayBGRA.shape =",lTmpArrayBGRA.shape
 
         self.imageNPArray[self.__theCurrentIndex] = lTmpArrayBGRA
 
@@ -1548,13 +1548,13 @@ class CDImageNP(QtCore.QObject):
             elif pDataTypeOut == 'array':
                 # add a 3rd dimension to the array, i.e. 1 entry per color/channel in the image depth: R G B and A:
                 pDataTypeOut = numpy.uint8
-                print "CDImageNP.qimage2numpy() - result_shape = ", result_shape
-                print "CDImageNP.qimage2numpy() - temp_shape = ", temp_shape
+                pass # 154 prrint "CDImageNP.qimage2numpy() - result_shape = ", result_shape
+                pass # 154 prrint "CDImageNP.qimage2numpy() - temp_shape = ", temp_shape
                 result_shape += (4, )
                 temp_shape += (4, )
-                print "CDImageNP.qimage2numpy() - pImageIn.format() = ", pImageIn.format()
-                print "CDImageNP.qimage2numpy() - result_shape = ", result_shape
-                print "CDImageNP.qimage2numpy() - temp_shape = ", temp_shape
+                pass # 154 prrint "CDImageNP.qimage2numpy() - pImageIn.format() = ", pImageIn.format()
+                pass # 154 prrint "CDImageNP.qimage2numpy() - result_shape = ", result_shape
+                pass # 154 prrint "CDImageNP.qimage2numpy() - temp_shape = ", temp_shape
         elif pImageIn.format() == QtGui.QImage.Format_Indexed8:
             pDataTypeOut = numpy.uint8
         else:
@@ -1571,26 +1571,26 @@ class CDImageNP(QtCore.QObject):
         result = numpy.frombuffer(buf, pDataTypeOut).reshape(temp_shape)
 
         if result_shape != temp_shape:
-            print "CDImageNP.qimage2numpy() - ======> result_shape != temp_shape, "
-            print "CDImageNP.qimage2numpy() -         therefore doing:   result = result[:,:result_shape[1]]"
+            pass # 154 prrint "CDImageNP.qimage2numpy() - ======> result_shape != temp_shape, "
+            pass # 154 prrint "CDImageNP.qimage2numpy() -         therefore doing:   result = result[:,:result_shape[1]]"
             result = result[:,:result_shape[1]]
         else:
-            print "CDImageNP.qimage2numpy() - ======> result_shape == temp_shape, "
-            print "CDImageNP.qimage2numpy() -         therefore  result  stays the same."
+            pass # 154 prrint "CDImageNP.qimage2numpy() - ======> result_shape == temp_shape, "
+            pass # 154 prrint "CDImageNP.qimage2numpy() -         therefore  result  stays the same."
 
         if pImageIn.format() == QtGui.QImage.Format_RGB32 and pDataTypeOut == numpy.uint8:
-            print "CDImageNP.qimage2numpy() - ======> pImageIn.format() == QtGui.QImage.Format_RGB32 = ", (pImageIn.format() == QtGui.QImage.Format_RGB32)
-            print "CDImageNP.qimage2numpy() - ======> pDataTypeOut == numpy.uint8 = ", (pDataTypeOut == numpy.uint8)
-            print "CDImageNP.qimage2numpy() -         therefore doing:   result = result[...,:3]"
+            pass # 154 prrint "CDImageNP.qimage2numpy() - ======> pImageIn.format() == QtGui.QImage.Format_RGB32 = ", (pImageIn.format() == QtGui.QImage.Format_RGB32)
+            pass # 154 prrint "CDImageNP.qimage2numpy() - ======> pDataTypeOut == numpy.uint8 = ", (pDataTypeOut == numpy.uint8)
+            pass # 154 prrint "CDImageNP.qimage2numpy() -         therefore doing:   result = result[...,:3]"
             # slice the result so that every 4th byte is dropped, i.e. take 3 bytes at a time:
             result = result[...,:3]
             CDConstants.printOut( "    result[...,0].min, max() = "+str(result[...,0].min()) +" "+ str(result[...,0].max()), CDConstants.DebugExcessive )
             CDConstants.printOut( "    result[...,1].min, max() = "+str(result[...,1].min()) +" "+ str(result[...,1].max()), CDConstants.DebugExcessive )
             CDConstants.printOut( "    result[...,2].min, max() = "+str(result[...,2].min()) +" "+ str(result[...,2].max()), CDConstants.DebugExcessive )
         else:
-            print "CDImageNP.qimage2numpy() - ======> pImageIn.format() == QtGui.QImage.Format_RGB32 = ", (pImageIn.format() == QtGui.QImage.Format_RGB32)
-            print "CDImageNP.qimage2numpy() - ======> pDataTypeOut == numpy.uint8 = ", (pDataTypeOut == numpy.uint8)
-            print "CDImageNP.qimage2numpy() -         therefore  result  stays the same."
+            pass # 154 prrint "CDImageNP.qimage2numpy() - ======> pImageIn.format() == QtGui.QImage.Format_RGB32 = ", (pImageIn.format() == QtGui.QImage.Format_RGB32)
+            pass # 154 prrint "CDImageNP.qimage2numpy() - ======> pDataTypeOut == numpy.uint8 = ", (pDataTypeOut == numpy.uint8)
+            pass # 154 prrint "CDImageNP.qimage2numpy() -         therefore  result  stays the same."
             CDConstants.printOut( "    result[...,0].min, max() = "+str(result[...,0].min()) +" "+ str(result[...,0].max()), CDConstants.DebugExcessive )
             CDConstants.printOut( "    result[...,1].min, max() = "+str(result[...,1].min()) +" "+ str(result[...,1].max()), CDConstants.DebugExcessive )
             CDConstants.printOut( "    result[...,2].min, max() = "+str(result[...,2].min()) +" "+ str(result[...,2].max()), CDConstants.DebugExcessive )

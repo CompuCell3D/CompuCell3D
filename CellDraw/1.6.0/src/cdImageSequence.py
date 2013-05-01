@@ -66,7 +66,7 @@ class CDImageSequence(QtCore.QObject):
 
         # a flag to show if CDImageSequence holds a sequence of images
         #    as loaded from files:
-        self.imageSequenceLoaded = False
+        self.__imageSequenceLoaded = False
 
         # a string containing the full path to the directory holding the image files:
         self.imageSequencePathString = ""
@@ -128,9 +128,9 @@ class CDImageSequence(QtCore.QObject):
         self.imageSequenceFileNames = dict()
         self.imageSequenceFileNames[0] = " "
 
-        self.pifSceneWidth = 120
-        self.pifSceneHeight = 90
-        self.pifSceneDepth = 100
+        self.pifSceneWidth = CDConstants.ImageSequenceDefaultX
+        self.pifSceneHeight = CDConstants.ImageSequenceDefaultY
+        self.pifSceneDepth = CDConstants.ImageSequenceDefaultZ
 
         self.resetSequenceDimensions( \
             self.pifSceneWidth, \
@@ -160,9 +160,9 @@ class CDImageSequence(QtCore.QObject):
         self.__theScaleFactor = 1.0
 
         if isinstance( pParent, QtGui.QWidget ) == True:
-            self._graphicsSceneMainWidget = pParent
+            self.__graphicsSceneMainWidget = pParent
         else:
-            self._graphicsSceneMainWidget = None
+            self.__graphicsSceneMainWidget = None
 
         # the progress bar widget is instantiated in the CellDrawMainWindow class,
         #   and assigned below in setSimpleProgressBarPanel() :
@@ -172,7 +172,7 @@ class CDImageSequence(QtCore.QObject):
         #   and assigned below in setProgressBarWithImagePanel() :
         self.__theWaitProgressBarWithImage = None
 
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.__init__() - _graphicsSceneMainWidget == "+str(self._graphicsSceneMainWidget)+" " , CDConstants.DebugExcessive )
+        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.__init__() - __graphicsSceneMainWidget == "+str(self.__graphicsSceneMainWidget)+" " , CDConstants.DebugExcessive )
         CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.__init__() - imageInSequenceIsReadyFlags == "+str(self.imageInSequenceIsReadyFlags)+" " , CDConstants.DebugExcessive )
         CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.__init__() - edgeInSequenceIsReadyFlags == "+str(self.edgeInSequenceIsReadyFlags)+" " , CDConstants.DebugExcessive )
         CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.__init__() - contoursAreReadyFlag == "+str(self.contoursAreReadyFlag)+" " , CDConstants.DebugExcessive )
@@ -223,101 +223,125 @@ class CDImageSequence(QtCore.QObject):
     # ------------------------------------------------------------------
     # 2011 - Mitja: resetSequenceDimensions() is to set x,y,z for the sequence:
     # ------------------------------------------------------------------   
-    def resetSequenceDimensions(self, pX, pY, pZ):
+    def resetSequenceDimensions(   self, \
+            pX=CDConstants.ImageSequenceDefaultX, \
+            pY=CDConstants.ImageSequenceDefaultY, \
+            pZ=CDConstants.ImageSequenceDefaultZ   ):
 
         self.sizeX = pX
         self.sizeY = pY
         self.sizeZ = pZ
 
-        # a fresh numpy-based array - the 4 dimensions are:
-        #   z = image layers,  y = height,  x = width,  [b g r]  
-        #   (i.e. indexed from slowest to fastest)
+        # if the requested array dimensions are too large, there may be a MemoryError exception,
+        #   so it's safer to use a try-except to catch it if necessary:
 
-        self.imageSequenceArray = numpy.zeros( \
-            (self.sizeZ,  self.sizeY,  self.sizeX,  3), \
-            dtype=numpy.uint8  )
-        self.edgeSequenceArray = numpy.zeros( \
-            (self.sizeZ,  self.sizeY,  self.sizeX,  3), \
-            dtype=numpy.uint8  )
-        self.contoursSequenceArray = numpy.zeros( \
-            (self.sizeZ,  self.sizeY,  self.sizeX,  3), \
-            dtype=numpy.uint8  )
-        self.volumeSequenceArray = numpy.zeros( \
-            (self.sizeZ,  self.sizeY,  self.sizeX,  3), \
-            dtype=numpy.uint8  )
-
-        # reset to fresh and empty (all False) flag arrays as well:
-        self.imageInSequenceIsReadyFlags = numpy.zeros( (self.sizeZ), dtype=numpy.bool )
-        self.edgeInSequenceIsReadyFlags = numpy.zeros( (self.sizeZ), dtype=numpy.bool )
-        self.contoursAreReadyFlag = False
-
-        # reset to fresh and empty (all " ") filename strings as well:
-        for i in xrange(self.sizeZ):
-            self.imageSequenceFileNames[i] = " "
-
-        # emit a signal to update image sequence size GUI controls:
-        if ( int(self.sizeZ) == 1 ) :
-            lLabel = "image"
-        else:
-            lLabel = "images"
-
-        lDict = { \
-            0: str(int(self.sizeX)), \
-            1: str(int(self.sizeY)), \
-            2: str(int(self.sizeZ)), \
-            3: str(lLabel) \
-            }
-
-        self.signalThatImageSequenceResized.emit(lDict)
-
-        CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.resetSequenceDimensions() - self.sizeX,Y,Z == "+str(self.sizeX)+" "+str(self.sizeY)+" "+str(self.sizeZ)+" " , CDConstants.DebugVerbose )
+        try:
+            # a fresh numpy-based array - the 4 dimensions are:
+            #   z = image layers,  y = height,  x = width,  [b g r]  
+            #   (i.e. indexed from slowest to fastest)
+            self.imageSequenceArray = numpy.zeros( \
+                (self.sizeZ,  self.sizeY,  self.sizeX,  3), \
+                dtype=numpy.uint8  )
+            self.edgeSequenceArray = numpy.zeros( \
+                (self.sizeZ,  self.sizeY,  self.sizeX,  3), \
+                dtype=numpy.uint8  )
+            self.contoursSequenceArray = numpy.zeros( \
+                (self.sizeZ,  self.sizeY,  self.sizeX,  3), \
+                dtype=numpy.uint8  )
+            self.volumeSequenceArray = numpy.zeros( \
+                (self.sizeZ,  self.sizeY,  self.sizeX,  3), \
+                dtype=numpy.uint8  )
+    
+            # reset to fresh and empty (all False) flag arrays as well:
+            self.imageInSequenceIsReadyFlags = numpy.zeros( (self.sizeZ), dtype=numpy.bool )
+            self.edgeInSequenceIsReadyFlags = numpy.zeros( (self.sizeZ), dtype=numpy.bool )
+            self.contoursAreReadyFlag = False
+    
+            # reset to fresh and empty (all " ") filename strings as well:
+            for i in xrange(self.sizeZ):
+                self.imageSequenceFileNames[i] = " "
 
 
+            # emit a signal to update image sequence size GUI controls:
+            if ( int(self.sizeZ) == 1 ) :
+                lLabel = "image"
+            else:
+                lLabel = "images"
+    
+            lDict = { \
+                0: str(int(self.sizeX)), \
+                1: str(int(self.sizeY)), \
+                2: str(int(self.sizeZ)), \
+                3: str(lLabel) \
+                }
+    
+            self.signalThatImageSequenceResized.emit(lDict)
+
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.resetSequenceDimensions() - self.sizeX,Y,Z == "+str(self.sizeX)+" "+str(self.sizeY)+" "+str(self.sizeZ)+" " , CDConstants.DebugVerbose )
+
+            return True
+
+        except:
+        
+            self.sizeX = CDConstants.ImageSequenceDefaultX
+            self.sizeY = CDConstants.ImageSequenceDefaultY
+            self.sizeZ = CDConstants.ImageSequenceDefaultZ
+
+            # a fresh numpy-based array - the 4 dimensions are:
+            #   z = image layers,  y = height,  x = width,  [b g r]  
+            #   (i.e. indexed from slowest to fastest)
+            self.imageSequenceArray = numpy.zeros( \
+                (self.sizeZ,  self.sizeY,  self.sizeX,  3), \
+                dtype=numpy.uint8  )
+            self.edgeSequenceArray = numpy.zeros( \
+                (self.sizeZ,  self.sizeY,  self.sizeX,  3), \
+                dtype=numpy.uint8  )
+            self.contoursSequenceArray = numpy.zeros( \
+                (self.sizeZ,  self.sizeY,  self.sizeX,  3), \
+                dtype=numpy.uint8  )
+            self.volumeSequenceArray = numpy.zeros( \
+                (self.sizeZ,  self.sizeY,  self.sizeX,  3), \
+                dtype=numpy.uint8  )
+    
+            # reset to fresh and empty (all False) flag arrays as well:
+            self.imageInSequenceIsReadyFlags = numpy.zeros( (self.sizeZ), dtype=numpy.bool )
+            self.edgeInSequenceIsReadyFlags = numpy.zeros( (self.sizeZ), dtype=numpy.bool )
+            self.contoursAreReadyFlag = False
+    
+            # reset to fresh and empty (all " ") filename strings as well:
+            for i in xrange(self.sizeZ):
+                self.imageSequenceFileNames[i] = " "
+    
+
+            if ( isinstance( self.__graphicsSceneMainWidget, QtGui.QWidget ) == False ) :
+                lParentWidget = None
+            else:
+                lParentWidget = self.__graphicsSceneMainWidget
+
+            lDataArrayTooLargeWarning = QtGui.QMessageBox.critical( lParentWidget, "CellDraw", \
+                "CellDraw just ran out of memory.\n\nTry reducing the scene size, or use a smaller data set.")
 
 
-        #   an empty array, into which to write pixel values,
-        #   one Z layer for each image in the sequence,
-        #   and we use numpy.int32 as data type to hold RGBA values:
-        # self.imageSequenceArray = numpy.zeros( (self.sizeY, self.sizeX, self.sizeZ), dtype=numpy.int )
-
-
-#         TODO: this testing only necessary when NO image sequence loaded:
-
-        # if there is no image sequence loaded, then do nothing after clearing the array:
 
 
 
-#         if  (self.imageSequenceLoaded == False):
-#     
-#             # set test array content:
-# 
-#             # show a panel containing a progress bar:    
-#             lProgressBarPanel=CDWaitProgressBar("Test content image sequence array x="+str(self.sizeX)+" y="+str(self.sizeY)+"  z="+str(self.sizeZ), 100)
-#             lProgressBarPanel.show()
-#             lProgressBarPanel.setRange(0, self.sizeZ)
-# 
-# 
-#             # for each image in sequence:
-#             for k in xrange(0, self.sizeZ, 1):
-#                 # for each i,j point in an image:
-#                 for i in xrange(0, self.sizeX, 1):
-#                     for j in xrange(0, self.sizeY, 1):
-#                         if (i == j) and (j == k):
-#                             self.imageSequenceArray[k, j, i, 0] = numpy.uint8 (127)
-#                         else:
-#                             self.imageSequenceArray[k, j, i, 0] = numpy.uint8 ( 0 )
-# #                        print "i,j,k [",i,j,k,"] =", self.imageSequenceArray[j, i, k]
-# #                     print "-----------------------------------"
-# #                 print "===================================="
-#                         
-#                 lProgressBarPanel.setValue(k)
-# 
-#             # close the panel containing a progress bar:
-#             lProgressBarPanel.maxProgressBar()
-#             lProgressBarPanel.accept()
-# 
-#             self.normalizeAllImages()
 
+            # emit a signal to update image sequence size GUI controls:
+            lDict = { \
+                0: str(int(0)), \
+                1: str(int(0)), \
+                2: str(int(0)), \
+                3: str("images") \
+                }
+    
+            self.signalThatImageSequenceResized.emit(lDict)
+
+            self.setSequenceLoadedFromFiles(False)
+            CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.resetSequenceDimensions() just ran out of memory.  Try reducing the scene size, or use a smaller data set." , CDConstants.DebugVerbose )
+            return False
+
+    # end of   def resetSequenceDimensions( ... )
+    # ------------------------------------------------------------------   
 
 
     # ------------------------------------------------------------------
@@ -433,6 +457,64 @@ class CDImageSequence(QtCore.QObject):
     # ------------------------------------------------------------------   
 
 
+
+
+
+
+    # ------------------------------------------------------------------
+    # 2013 - Mitja: maxInSubArray(pX, pY, pZ)
+    # 
+    # ------------------------------------------------------------------   
+    def maxInImageSequenceSubArray(self, pX, pY, pZ):
+
+
+        # do nothing if the current array size isn't anything:
+        if (self.sizeX <= 0) or (self.sizeY <= 0) or (self.sizeZ <= 0) :
+            return
+
+        if (pX < 0) :
+            lXsize = 0
+        else:
+            lXsize = pX
+            
+        if (pY < 0) :
+            lYsize = 0
+        else:
+            lYsize = pY
+
+        if (pZ < 0) :
+            lZsize = 0
+        else:
+            lZsize = pZ
+
+        if (lXsize > self.sizeX) :
+            lXsize = self.sizeX
+        if (lYsize > self.sizeY) :
+            lYsize = self.sizeY
+        if (lZsize > self.sizeZ) :
+            lZsize = self.sizeZ
+
+#         print
+#         print "   --=**=--   "
+#         print
+#         print "self.imageSequenceArray = "
+#         print self.imageSequenceArray
+#         print
+#         print "   --=**=--   "
+#         print
+        lTmpSubArray = self.imageSequenceArray[0:lZsize, 0:lYsize, 0:lXsize, :]
+        lMaxValueInTmpSubArray = lTmpSubArray.max()
+#         print "self.imageSequenceArray[0:lXsize=="+str(lXsize)+", 0:lYsize=="+str(lYsize)+", 0:lZsize=="+str(lZsize)+", :] = "
+#         print lTmpSubArray
+#         print
+#         print "   --=**=--   "
+#         print
+        return lMaxValueInTmpSubArray
+        
+
+
+    #  end of   def maxInImageSequenceSubArray(pX, pY, pZ)
+    # ------------------------------------------------------------------   
 
 
     # ------------------------------------------------------------------
@@ -1381,7 +1463,8 @@ class CDImageSequence(QtCore.QObject):
 
                 lTmpPainter.end()
                 self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lPixmap))
-                self._graphicsSceneMainWidget.scene.update()
+                if isinstance( self.__graphicsSceneMainWidget, QtGui.QWidget ) == True:
+                    self.__graphicsSceneMainWidget.scene.update()
     
             # ------------------------------------------
             # <-- end of scan across x-direction layers.
@@ -1500,7 +1583,8 @@ class CDImageSequence(QtCore.QObject):
 
                 lTmpPainter.end()
                 self.__theWaitProgressBarWithImage.setImagePixmap(QtGui.QPixmap(lPixmap))
-                self._graphicsSceneMainWidget.scene.update()
+                if isinstance( self.__graphicsSceneMainWidget, QtGui.QWidget ) == True:
+                    self.__graphicsSceneMainWidget.scene.update()
     
             # ------------------------------------------
             # <-- end of scan across x-direction layers.
@@ -1748,6 +1832,17 @@ class CDImageSequence(QtCore.QObject):
     # 2011 - Mitja: setCurrentIndexInSequence() is to set the current image index within the sequence:
     # ------------------------------------------------------------------   
     def setCurrentIndexInSequence(self, pValue):
+#         print "setCurrentIndexInSequence(self, pValue)"
+#         print
+#         print "setCurrentIndexInSequence(self, pValue)"
+#         print
+#         print "pValue = ", pValue
+
+
+        # only do something if the  new key value is actually in the sequence:
+        if ( pValue in self.imageSequenceFileNames.keys() ) == False:
+            return
+
         self.theCurrentIndex = pValue
 
         CDConstants.printOut(  "___ - DEBUG ----- CDImageSequence.setCurrentIndexInSequence()  --  1.   self.theCurrentIndex=="+str(self.theCurrentIndex), CDConstants.DebugTODO )
@@ -1770,7 +1865,6 @@ class CDImageSequence(QtCore.QObject):
         CDConstants.printOut(  "___ - DEBUG ----- CDImageSequence.setCurrentIndexInSequence()  --  2.   self.computeCurrentImages() and self.retrieveCurrentImagesFromArrays() DONE", CDConstants.DebugTODO )
         # TODO remove TODO time.sleep(1.0)
                 
-
         # emit a signal to update image sequence size GUI controls:
         lDict = { \
             0: str(self.theCurrentIndex), \
@@ -1838,11 +1932,19 @@ class CDImageSequence(QtCore.QObject):
     #    the behavior of our CDImageLayer class:
     # ------------------------------------------------------------------   
     def setSequenceLoadedFromFiles(self, pTrueOrFalse):
-        self.imageSequenceLoaded = pTrueOrFalse
-        if isinstance( self._graphicsSceneMainWidget, QtGui.QWidget ) == True:
-            self._graphicsSceneMainWidget.scene.update()
+        self.__imageSequenceLoaded = pTrueOrFalse
+        if isinstance( self.__graphicsSceneMainWidget, QtGui.QWidget ) == True:
+            self.__graphicsSceneMainWidget.scene.update()
         CDConstants.printOut( "___ - DEBUG ----- CDImageSequence.setSequenceLoadedFromFiles( " \
-            + str(self.imageSequenceLoaded) + " )", CDConstants.DebugVerbose )
+            + str(self.__imageSequenceLoaded) + " )", CDConstants.DebugVerbose )
+
+
+    # ------------------------------------------------------------------
+    # 2011 - Mitja: the getSequenceLoadedFromFiles() function is to mimic
+    #    the behavior of our CDImageLayer class:
+    # ------------------------------------------------------------------   
+    def getSequenceLoadedFromFiles(self):
+        return self.__imageSequenceLoaded
 
 
     # ------------------------------------------------------------------
@@ -1851,8 +1953,8 @@ class CDImageSequence(QtCore.QObject):
     #   pass it upstream to the parent widget's QGraphicsScene:
     # ------------------------------------------------------------------   
     def setMouseTracking(self, pTrueOrFalse):
-        if isinstance( self._graphicsSceneMainWidget, QtGui.QWidget ) == True:
-            self._graphicsSceneMainWidget.view.setMouseTracking(pTrueOrFalse)
+        if isinstance( self.__graphicsSceneMainWidget, QtGui.QWidget ) == True:
+            self.__graphicsSceneMainWidget.view.setMouseTracking(pTrueOrFalse)
 
 
     # ------------------------------------------------------------------
@@ -2256,8 +2358,9 @@ class CDImageSequence(QtCore.QObject):
        
 
 
+
     # ------------------------------------------------------------------
-    def mousePressEvent(self, pEvent):       
+    def mousePressEvent(self, pEvent):
         # 2010 - Mitja: track click events of the mouse left button only:
         if pEvent.button() == QtCore.Qt.LeftButton:
             # print "CLICK inside CDImageSequence"
@@ -2271,15 +2374,18 @@ class CDImageSequence(QtCore.QObject):
 
             # 2010 - Mitja: update the CDImageSequence's parent widget,
             #   i.e. paintEvent() will be invoked regardless of the picking mode:
-            self._graphicsSceneMainWidget.scene.update()
+
+
+            if isinstance( self.__graphicsSceneMainWidget, QtGui.QWidget ) == True:
+                self.__graphicsSceneMainWidget.scene.update()
+
+    # end of   def mousePressEvent(self, pEvent)
+    # ------------------------------------------------------------------
 
 
 
 
 
-    
-    
-    
     # ----------------------------------------------------------------------
     # ----------------------------------------------------------------------
     # ----------------------------------------------------------------------
