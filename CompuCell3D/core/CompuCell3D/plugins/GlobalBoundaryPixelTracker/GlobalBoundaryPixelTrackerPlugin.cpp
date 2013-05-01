@@ -99,9 +99,15 @@ void GlobalBoundaryPixelTrackerPlugin::handleEvent(CC3DEvent & _event){
 
 	
 	for(std::set<Point3D>::iterator sitr =  boundaryPixelSetPtr->begin() ; sitr != boundaryPixelSetPtr->end() ; ++sitr){
-		sitr->x+=ev.shiftVec.x;
-		sitr->y+=ev.shiftVec.y;
-		sitr->z+=ev.shiftVec.z;
+            
+                Point3D & pixel=const_cast<Point3D&>(*sitr);
+                pixel.x+=shiftVec.x;
+                pixel.y+=shiftVec.y;
+                pixel.z+=shiftVec.z;
+            
+// 		sitr->x+=ev.shiftVec.x;
+// 		sitr->y+=ev.shiftVec.y;
+// 		sitr->z+=ev.shiftVec.z;
 	}
 
 }

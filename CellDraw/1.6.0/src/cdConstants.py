@@ -56,7 +56,7 @@ class CDConstants(QtCore.QObject):
 
 
     # 2011 - Mitja: bit-flag modes for generating PIFF from displayed imported image sequence:
-    #    0 = Use Discretized Images to B/W = CDConstants.ImageSequenceUseDiscretizedToBWMode
+    #    0 = Use Discretized Images to BW = CDConstants.ImageSequenceUseDiscretizedToBWMode
     #    1 = Region 2D Edge = CDConstants.ImageSequenceUse2DEdges
     #    2 = Region 3D Contours = CDConstants.ImageSequenceUse3DContours
     #    3 = Region 3D Volume = CDConstants.ImageSequenceUse3DVolume
@@ -64,10 +64,14 @@ class CDConstants(QtCore.QObject):
     ImageSequenceUseDiscretizedToBWMode, ImageSequenceUse2DEdges, ImageSequenceUse3DContours, \
         ImageSequenceUse3DVolume, ImageSequenceUseAreaSeeds = range(5)
 
+    # 2013 - Mitja: defaults for the initial (empty) image sequence:
+    ImageSequenceDefaultX = 120
+    ImageSequenceDefaultY = 90
+    ImageSequenceDefaultZ = 100
 
 
     # 2012 - Mitja: bit-flag modes for NumPy image processing:
-    #    0 = Use Discretized Images to B/W = CDConstants.ImageNPUseDiscretizedToBWMode
+    #    0 = Use Discretized Images to BW = CDConstants.ImageNPUseDiscretizedToBWMode
     #    1 = Extract Cell from Single-Color Areas = CDConstants.ImageNPExtractSingleColorCells
     ImageNPUseDiscretizedToBWMode, ImageNPExtractSingleColorCells = range(2)
 
@@ -91,7 +95,7 @@ class CDConstants(QtCore.QObject):
 
     # and the static class variable for debugging level:
     # globalDebugLevel = DebugImportant
-    globalDebugLevel = DebugTODO
+    globalDebugLevel = DebugImportant
 
 
     # 2011 - Mitja: scene bundle:
@@ -99,6 +103,11 @@ class CDConstants(QtCore.QObject):
     SceneBundleResDirName = "Resources"
     PIFSceneFileExtension = "pifScene"
     PIFFFileExtension = "piff"
+
+    # 2013 - Mitja: for the CDWaitProgressBarWithImage preview image, what's the maximum accepted size:
+    ProgressBarPrevewImageMaxWidth = 256
+    ProgressBarPrevewImageMaxHeight = 256
+    
     
     # 2011 - Mitja: QSettings file application and organization names:
     #

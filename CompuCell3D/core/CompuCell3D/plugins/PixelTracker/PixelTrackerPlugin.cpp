@@ -107,9 +107,14 @@ void PixelTrackerPlugin::handleEvent(CC3DEvent & _event){
 		cell=cInvItr->second;
 		std::set<PixelTrackerData > & pixelSetRef=pixelTrackerAccessor.get(cell->extraAttribPtr)->pixelSet;
 		for (set<PixelTrackerData >::iterator sitr=pixelSetRef.begin() ; sitr != pixelSetRef.end() ; ++sitr ){
-			sitr->pixel.x+=shiftVec.x;
-			sitr->pixel.y+=shiftVec.y;
-			sitr->pixel.z+=shiftVec.z;
+                        Point3D & pixel=const_cast<Point3D&>(sitr->pixel);
+                        pixel.x+=shiftVec.x;
+                        pixel.y+=shiftVec.y;
+                        pixel.z+=shiftVec.z;
+                        
+// 			sitr->pixel.x+=shiftVec.x;
+// 			sitr->pixel.y+=shiftVec.y;
+// 			sitr->pixel.z+=shiftVec.z;
 		}
 
 

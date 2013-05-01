@@ -821,7 +821,7 @@ class DiagramScene(QtGui.QGraphicsScene):
 
             # this used to call the theImageSequence's paintEvent handler directly: self.theImageSequence.paintEvent(pPainter)
             #  but direct paintEvent calls are BAD! instead we now call our separate paint routine:
-            # self.theImageSequence.paintTheImageSequence(pPainter)
+            # lSomeImage = self.theImageSequence.getTheCurrentSequenceImages()
 
             # restore the painter's pen & background to what they were before this function:
             pPainter.setPen(lTmpPen)
@@ -843,7 +843,9 @@ class DiagramScene(QtGui.QGraphicsScene):
            
             # this used to call the theImageSequence's paintEvent handler directly: self.theImageSequence.paintEvent(pPainter)
             #  but direct paintEvent calls are BAD! instead we now call our separate paint routine:
-            self.theImageSequence.paintTheImageSequence(pPainter)
+#             self.theImageSequence.retrieveCurrentImagesFromArrays()
+            lPixMap = QtGui.QPixmap.fromImage(  self.theImageSequence.getTheCurrentSequenceImages()  )
+            pPainter.drawPixmap(QtCore.QPoint(0,0), lPixMap)
                        
             # restore the painter's pen & background to what they were before this function:
             pPainter.setPen(lTmpPen)
@@ -3583,7 +3585,7 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
 
         lVersionString = "<br><br><small>Support library information:<br>Python runtime version: %s<br>Qt runtime version: %s<br>Qt compile-time version: %s<br>PyQt version: %s (%s = 0x%06x)</small>" % \
             ( str(sys.version_info[0])+"."+str(sys.version_info[1])+"."+str(sys.version_info[2])+" | "+str(sys.version_info[3])+" | "+str(sys.version_info[4]) , \
-            QtCore.QT_VERSION_STR, QtCore.qVersion(), PyQt4.QtCore.PYQT_VERSION_STR, PyQt4.QtCore.PYQT_VERSION, PyQt4.QtCore.PYQT_VERSION)
+            QtCore.qVersion(), QtCore.QT_VERSION_STR, PyQt4.QtCore.PYQT_VERSION_STR, PyQt4.QtCore.PYQT_VERSION, PyQt4.QtCore.PYQT_VERSION)
 
         QtGui.QMessageBox.about(self, "About CellDraw", lAboutString+lVersionString)
 
@@ -3774,8 +3776,9 @@ class CDDiagramSceneMainWidget(QtGui.QWidget):
                 triggered=self.handleFontChange)
 
         self.aboutAction = QtGui.QAction("About", self, \
-                shortcut="Ctrl+E", \
                 triggered=self.about)
+#                shortcut=QtGui.QKeySequence(QtCore.Qt.CTRL,QtCore.Qt.Key_Question), \
+
 
         CDConstants.printOut("___ - DEBUG ----- CDDiagramSceneMainWidget.createSceneEditActions() done.", CDConstants.DebugTODO )
 
