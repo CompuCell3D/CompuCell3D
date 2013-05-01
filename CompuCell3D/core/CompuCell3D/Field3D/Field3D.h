@@ -159,6 +159,7 @@ namespace CompuCell3D {
      * @param theDim New dimensions.
      */
     virtual void setDim(const Dim3D theDim) {}
+	virtual void resizeAndShift(const Dim3D theDim,const Dim3D shiftVec) {}
     
     virtual void clearSecData(){}
     //virtual std::vector<std::vector<int> > &  getDoNotDiffuseVec();

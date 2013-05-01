@@ -122,7 +122,7 @@ namespace CompuCell3D {
     virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
    virtual void  extraInit(Simulator *simulator);
 
-   Field3DImpl<float>*  getConcentrationFieldByName(std::string _fieldName);
+   Field3D<float>*  getConcentrationFieldByName(std::string _fieldName);
 
    void secreteSingleField(unsigned int idx);
    void secreteOnContactSingleField(unsigned int idx);

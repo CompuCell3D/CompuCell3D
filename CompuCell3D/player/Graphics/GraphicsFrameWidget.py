@@ -135,7 +135,14 @@ class GraphicsFrameWidget(QtGui.QFrame):
 #            self.camera3D.SetPosition(100,100,100)
 #            self.qvtkWidget.SetSize(200,200)
 
-    
+    # def clearDisplayOnDemand(self):
+        # self.draw2D.clearDisplay()
+        
+    def resetAllCameras(self):
+        print 'resetAllCameras in GraphicsFrame =',self
+        
+        self.draw2D.resetAllCameras()
+        self.draw3D.resetAllCameras()
         
     def __getattr__(self, attr):
         """Makes the object behave like a DrawBase"""
@@ -189,7 +196,7 @@ class GraphicsFrameWidget(QtGui.QFrame):
 #        self.borderActor.GetProperty().SetColor(self.toVTKColor(r), self.toVTKColor(g), self.toVTKColor(b))
         self.ren.SetBackground(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
         self.qvtkWidget.Render()
-        # self.qvtkWidget.resetCamera()
+        
     def getCamera(self):
         return self.getActiveCamera()
     
@@ -292,7 +299,7 @@ class GraphicsFrameWidget(QtGui.QFrame):
         self.fieldComboBox  = QtGui.QComboBox()   # Note that this is different than the fieldComboBox in the Prefs panel (rf. SimpleTabView.py)
         self.fieldComboBox.addAction(self.fieldComboBoxAct)
         self.fieldComboBox.addItem("-- Field Type --")
-        self.fieldComboBox.addItem("cAMP")  # huh?
+        # self.fieldComboBox.addItem("cAMP")  # huh?
         self.screenshotAct = QtGui.QAction(QtGui.QIcon("player/icons/screenshot.png"), "&Take Screenshot", self)
         
         
@@ -580,18 +587,21 @@ class GraphicsFrameWidget(QtGui.QFrame):
 #        self.yzSB.setValue(fieldDim.x/2)
 #        self.yzSB.setWrapping(True)
         
+        self.updateCrossSection(_basicSimulationData)
+        
         # new (rwh, May 2011)
         self.currentProjection = 'xy'   # rwh
         
-        self.xyMaxPlane = fieldDim.z - 1
-#        self.xyPlane = fieldDim.z/2 + 1
-        self.xyPlane = fieldDim.z/2
         
-        self.xzMaxPlane = fieldDim.y - 1
-        self.xzPlane = fieldDim.y/2
+        # # # self.xyMaxPlane = fieldDim.z - 1
+# # # #        self.xyPlane = fieldDim.z/2 + 1
+        # # # self.xyPlane = fieldDim.z/2
         
-        self.yzMaxPlane = fieldDim.x - 1
-        self.yzPlane = fieldDim.x/2
+        # # # self.xzMaxPlane = fieldDim.y - 1
+        # # # self.xzPlane = fieldDim.y/2
+        
+        # # # self.yzMaxPlane = fieldDim.x - 1
+        # # # self.yzPlane = fieldDim.x/2
         
         self.projComboBox.setCurrentIndex(1)   # set to be 'xy' projection by default, regardless of 2D or 3D sim?
         
@@ -603,7 +613,19 @@ class GraphicsFrameWidget(QtGui.QFrame):
         self.projSpinBox.setValue(fieldDim.z/2) # If you want to set the value from configuration
 #        self.projSpinBox.setWrapping(True)
 
-
+    def updateCrossSection(self,_basicSimulationData):
+        fieldDim = _basicSimulationData.fieldDim
+        self.xyMaxPlane = fieldDim.z - 1
+#        self.xyPlane = fieldDim.z/2 + 1
+        self.xyPlane = fieldDim.z/2
+        
+        self.xzMaxPlane = fieldDim.y - 1
+        self.xzPlane = fieldDim.y/2
+        
+        self.yzMaxPlane = fieldDim.x - 1
+        self.yzPlane = fieldDim.x/2
+        
+    
     def setFieldTypesComboBox(self,_fieldTypes):
         self.fieldTypes=_fieldTypes # assign field types to be the same as field types in the workspace
         self.draw2D.setFieldTypes(self.fieldTypes) # make sure that field types are the same in graphics widget and in the drawing object

@@ -1,6 +1,5 @@
 
-// #include <CompuCell3D/CC3D.h>
-// #undef real
+
 #include <CompuCell3D/Simulator.h>
 #include <CompuCell3D/Automaton/Automaton.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>
@@ -10,7 +9,6 @@
 #include <CompuCell3D/Field3D/Field3D.h>
 #include <CompuCell3D/Field3D/Field3DIO.h>
 #include <BasicUtils/BasicClassGroup.h>
-
 
 
 #include <BasicUtils/BasicString.h>
@@ -24,14 +22,12 @@
 #include <sstream>
 
 
-
 #include <time.h>
 
 
 #include "SteadyStateDiffusionSolver2D.h"
 
 #include "hpppdesolvers.h" //have to put this header last to avoid STL header clash on linux
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // std::ostream & operator<<(std::ostream & out,CompuCell3D::DiffusionData & diffData){
@@ -263,6 +259,38 @@ void SteadyStateDiffusionSolver2D::extraInit(Simulator *simulator){
 	if(!pluginAlreadyRegisteredFlag)
 		centerOfMassPlugin->init(simulator);
 
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void SteadyStateDiffusionSolver2D::handleEvent(CC3DEvent & _event){
+	
+	if (_event.id==LATTICE_RESIZE){
+		cellFieldG=(WatchableField3D<CellG *> *)potts->getCellFieldG();
+	    
+		CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
+		
+		for (size_t i =0 ;   i < concentrationFieldVector.size() ; ++i){
+			concentrationFieldVector[i]->resizeAndShift(ev.newDim,ev.shiftVec);
+		}
+
+
+		fieldDim=cellFieldG->getDim();		
+		workFieldDim=Dim3D(fieldDim.x+1,fieldDim.y+1,1);
+
+		scratchVec.assign(4*(fieldDim.y+1+1)+(13+(int)(log(fieldDim.y+1+1.0)/log(2.0)))*(fieldDim.x+1+1),0.0);
+		scratch=&(scratchVec[0]);
+
+		
+		//vectors used to specify boundary conditions
+		bdaVec.assign(fieldDim.y+1,0.0);
+		bdbVec.assign(fieldDim.y+1,0.0);
+		bdcVec.assign(fieldDim.x+1,0.0);
+		bddVec.assign(fieldDim.x+1,0.0);
+
+		
+	}
+	
+	
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

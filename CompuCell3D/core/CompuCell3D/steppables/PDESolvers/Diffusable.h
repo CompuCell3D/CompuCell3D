@@ -1,8 +1,7 @@
 #ifndef COMPUCELL3DDIFFUSABLE_H
 #define COMPUCELL3DDIFFUSABLE_H
-#include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Field3D/Dim3D.h>
-// // // #include <CompuCell3D/Steppable.h>
+#include <CompuCell3D/Field3D/Dim3D.h>
+#include <CompuCell3D/Steppable.h>
 
 namespace CompuCell3D {
 
@@ -21,11 +20,11 @@ public:
       if(concentrationField) delete concentrationField;
       concentrationField=0;
     }
-    Field3DImpl<precision> * getConcentrationField(){return concentrationField;};
+    Field3D<precision> * getConcentrationField(){return concentrationField;};
     void allocateDiffusableField(Dim3D fieldDim){concentrationField= new Field3DImpl<precision>(fieldDim, 0.0);}
     
 protected:
-   Field3DImpl<precision> *concentrationField;
+   Field3D<precision> *concentrationField;
 };
 
 };

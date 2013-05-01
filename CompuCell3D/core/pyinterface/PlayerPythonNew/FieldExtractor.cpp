@@ -42,7 +42,7 @@ void FieldExtractor::extractCellField(){
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
 	Dim3D fieldDim=cellFieldG->getDim();
 	Point3D pt;
-	//cerr<< "fieldDim="<<fieldDim<<endl;
+	// cerr<< "FIeld Extractor cell field fieldDim="<<fieldDim<<endl;
 	CellGraphicsData gd;
 	CellG *cell;
 
@@ -985,9 +985,9 @@ bool FieldExtractor::fillConFieldData2DHex(long _conArrayAddr,long _hexCellsArra
 	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
 
 
-	Field3DImpl<float> *conFieldPtr=0; 
-	std::map<std::string,Field3DImpl<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
-	std::map<std::string,Field3DImpl<float>*>::iterator mitr;
+	Field3D<float> *conFieldPtr=0; 
+	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
+	std::map<std::string,Field3D<float>*>::iterator mitr;
 	mitr=fieldMap.find(_conFieldName);
 	if(mitr!=fieldMap.end()){
 		conFieldPtr=mitr->second;
@@ -1217,14 +1217,15 @@ bool FieldExtractor::fillScalarFieldCellLevelData2DHex(long _conArrayAddr,long _
 
 bool FieldExtractor::fillConFieldData2D(long _conArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){
 	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
-	Field3DImpl<float> *conFieldPtr=0; 
-	std::map<std::string,Field3DImpl<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
-	std::map<std::string,Field3DImpl<float>*>::iterator mitr;
+	Field3D<float> *conFieldPtr=0; 
+	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
+	std::map<std::string,Field3D<float>*>::iterator mitr;
 	mitr=fieldMap.find(_conFieldName);
 	if(mitr!=fieldMap.end()){
 		conFieldPtr=mitr->second;
 	}
 
+    cerr<<"THIS IS conFieldPtr="<<conFieldPtr<<endl;
 	if(!conFieldPtr)
 		return false;
 
@@ -1861,9 +1862,9 @@ bool FieldExtractor::fillConFieldData3D(long _conArrayAddr ,long _cellTypeArrayA
 	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
 	vtkIntArray *cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
 
-	Field3DImpl<float> *conFieldPtr=0; 
-	std::map<std::string,Field3DImpl<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
-	std::map<std::string,Field3DImpl<float>*>::iterator mitr;
+	Field3D<float> *conFieldPtr=0; 
+	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
+	std::map<std::string,Field3D<float>*>::iterator mitr;
 	mitr=fieldMap.find(_conFieldName);
 	if(mitr!=fieldMap.end()){
 		conFieldPtr=mitr->second;

@@ -58,7 +58,7 @@ namespace CompuCell3D {
     Simulator* sim;
     Field3D<float>* concentrationField;
 	//EnergyFunction Data    
-    Field3DImpl<float> *field;
+    Field3D<float> *field;
 
    
     Potts3D *potts;

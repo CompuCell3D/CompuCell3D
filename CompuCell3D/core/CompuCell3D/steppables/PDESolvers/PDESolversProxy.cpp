@@ -36,11 +36,13 @@
 // #include "ScalableFlexibleDiffusionSolverFE.h"
 #include "DiffusionSolverFE.h"
 #include "DiffusionSolverFE_CPU.h"
+#include "DiffusionSolverFE_CPU_Implicit.h"
 
 #if OPENCL_ENABLED == 1
 #include "FlexibleDiffusionSolverFE_GPU.h"
-//#include "OpenCL/FlexibleDiffusionSolverFE_GPU_OpenCL.h"
 #include "OpenCL/DiffusionSolverFE_OpenCL.h"
+//#include "OpenCL/DiffusionSolverFE_OpenCL_Implicit.h"
+#include "OpenCL/ReactionDiffusionSolverFE_OpenCL_Implicit.h"
 #endif
 
 // #include "ReactionDiffusionFile.h"
@@ -87,8 +89,8 @@ reactionDiffusion_SavHogSolverProxy("ReactionDiffusionSolverFE_SavHog", "Solves 
 // reactionAdvectionDiffusionTagsSolverProxy("ReactionAdvectionDiffusionTagsSolverFE", "Solves reaction-diffusion system of equations on the lattice ",
             // &Simulator::steppableManager);
        
- BasicPluginProxy<Steppable, FastDiffusionSolver2DFE> 
- fastDiffusionSolverProxy("FastDiffusionSolver2DFE", "Solves diffusion equation on the lattice. Provides limited flexibility but is faster than FlexibleDiffusionSolver however operates only in the xy plane and is 2D only",
+BasicPluginProxy<Steppable, FastDiffusionSolver2DFE> 
+fastDiffusionSolverProxy("FastDiffusionSolver2DFE", "Solves diffusion equation on the lattice. Provides limited flexibility but is faster than FlexibleDiffusionSolver however operates only in the xy plane and is 2D only",
 	     &Simulator::steppableManager);
 
 
@@ -107,11 +109,24 @@ steadyStateDiffusionSolverProxy("SteadyStateDiffusionSolver", "Solves for steady
 BasicPluginProxy<Steppable, DiffusionSolverFE_CPU> 
 diffusionSolverFEProxy("DiffusionSolverFE", "Solves diffusion equation on the lattice. Uses Forward Euler method - finite difference.  Also, uses automatic scaling.",
             &Simulator::steppableManager);
+
+BasicPluginProxy<Steppable, DiffusionSolverFE_CPU_Implicit> 
+diffusionSolverFEImplicitProxy("DiffusionSolverFE_Implicit", "Solves diffusion equation on the lattice. Uses Implicit method - finite difference.",
+            &Simulator::steppableManager);
 			
 #if OPENCL_ENABLED == 1
 BasicPluginProxy<Steppable, DiffusionSolverFE_OpenCL> 
 diffusionSolverOpenCLProxy("DiffusionSolverFE_OpenCL", "Solves diffusion equation on the lattice with OpenCL. Uses Forward Euler method - finite difference.  Also, uses automatic scaling.",
             &Simulator::steppableManager);
+
+//BasicPluginProxy<Steppable, DiffusionSolverFE_OpenCL_Implicit> 
+//diffusionSolverOpenCLImplicitProxy("DiffusionSolverFE_OpenCL_Implicit", "Solves diffusion equation on the lattice with OpenCL. Uses Implicit method - finite difference.",
+//            &Simulator::steppableManager);
+
+BasicPluginProxy<Steppable, ReactionDiffusionSolverFE_OpenCL_Implicit>
+reactionDiffusionSolverOpenCLImplicitProxy("ReactionDiffusionSolverFE_OpenCL_Implicit", "Solves diffusion equation on the lattice with OpenCL. Uses Implicit method - finite difference.",
+            &Simulator::steppableManager);
+
 #endif
 
 //BasicPluginProxy<Steppable, ReactionDiffusionFile>

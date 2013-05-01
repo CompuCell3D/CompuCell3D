@@ -30,6 +30,8 @@ global appendedPaths
 appendedPaths=[]
 #PERHAPS I SHOULD ADD A CLASS WHICH WOULD CONTROL CML version
 
+global globalSteppableRegistry #rwh2
+globalSteppableRegistry=None #rwh2
 
 
 global cmlFieldHandler
@@ -888,6 +890,13 @@ def registerPotts(_sim, _pd):
     _sim.ps.addPottsData(_pd)
     cc3dModuleDictionary[_pd.moduleName]=_pd
 
+def getSteppablesByClassName(_className):
+    '''
+    This function returns a list of registered steppables with class name given  by _className
+    '''
+    global globalSteppableRegistry
+    globalSteppableRegistry.getSteppablesByClassName(_className)
+
 def getSteppableRegistry():
     from PySteppables import SteppableRegistry
     steppableRegistry=SteppableRegistry()
@@ -1286,9 +1295,11 @@ def stopSimulation():
     global userStopSimulationFlag    
     userStopSimulationFlag=True
     
-    
+
 def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFrequency = None):
     global cmlFieldHandler  #rwh2
+    global globalSteppableRegistry  #rwh2
+    globalSteppableRegistry=steppableRegistry
     import time
     global userStopSimulationFlag
     userStopSimulationFlag=False
@@ -1363,8 +1374,11 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
 #    dumpImageFlag = Configuration.getSetting("ImageOutputOn")
 #    dumpLatticeFlag = Configuration.getSetting("LatticeOutputOn")
 #    print MYMODULENAME,"mainLoopNewPlayer: dumpImageFlag, dumpLatticeFlag = ",dumpImageFlag,dumpLatticeFlag
-    
-    for i in range(beginingStep,sim.getNumSteps()):
+
+    i=beginingStep
+    # for i in range(beginingStep,sim.getNumSteps()):
+    while True:
+            
         if simthread is not None:
     
             simthread.beforeStep(i)                
@@ -1379,8 +1393,7 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
                 
             if simthread.getStopSimulation() or userStopSimulationFlag:
                 runFinishFlag=False;
-                break
-                
+                break        
         #calling Python steppables which are suppose to run before MCS - e.g. secretion steppable                
         if not steppableRegistry is None:     
             steppableRegistry.stepRunBeforeMCSSteppables(i)        
@@ -1420,6 +1433,10 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
             # if (cmlFieldHandler is not None) and latticeFlag and (i % latticeFrequency == 0):
 # #                print MYMODULENAME,' mainLoopNewPlayer: cmlFieldHandler.writeFields(i), i=',i
                 # cmlFieldHandler.writeFields(i)
+        i+=1        
+        if i>=sim.getNumSteps():
+            break
+                
         
     print "END OF SIMULATION  "
     if runFinishFlag:
@@ -1446,6 +1463,9 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
     
 def mainLoopCML(sim, simthread, steppableRegistry= None, _screenUpdateFrequency = None):
     global cmlFieldHandler   #rwh2
+    global globalSteppableRegistry  #rwh2
+    globalSteppableRegistry=steppableRegistry
+    
     import time
     t1 = time.time()
     # print 'SIMULATION FILE NAME=',simthread.getSimFileName()
@@ -1541,6 +1561,9 @@ def mainLoopCML(sim, simthread, steppableRegistry= None, _screenUpdateFrequency 
 def mainLoopCMLReplay(sim, simthread, steppableRegistry= None, _screenUpdateFrequency = None):
     # have to read fsimulation data (vtk file) before proceeding to extrainit.
     # this is because extra init will send a signal to initialize simulation view but simulation view refers to simulation data. therefore this data better be ready
+    global globalSteppableRegistry  #rwh2
+    globalSteppableRegistry=steppableRegistry
+    
     if simthread:
         simthread.readSimulationData(0)
         if not simthread.simulationData:
@@ -1569,7 +1592,9 @@ def mainLoopCMLReplay(sim, simthread, steppableRegistry= None, _screenUpdateFreq
     mcsDirectAccess=0
     directAccessFlag=False
     while i<numberOfSteps :
-
+        # print 'i=',i
+        # print 'COMPUCELLSETUP field dim before=',simthread.fieldDim
+        
         if simthread is not None:
             mcsDirectAccess,directAccessFlag = simthread.getCurrentStepDirectAccess()
         if directAccessFlag:
@@ -1580,31 +1605,18 @@ def mainLoopCMLReplay(sim, simthread, steppableRegistry= None, _screenUpdateFreq
         # print "working on MCS " , i
         if simthread is not None:
             if i!=0: # new data for step 0 is already read
+                
                 simthread.readSimulationData(i)    
+                # print 'field dim after=',simthread.fieldDim
                 
             simthread.beforeStep(i)                
             # print "simthread=",simthread
             if simthread.getStopSimulation():
-                runFinishFlag=False;
+                runFinishFlag=False
                 break
         if i>=numberOfSteps:
             break                 
-        # print "currentStep=",simthread.getCurrentStep()
-        # if simthread.getCurrentStep() != i:
-            # i=simthread.getCurrentStep()                
-            
-        # sim.step(i)#  steering using steppables     
-        # if sim.getRecentErrorMessage()!="":        
-            # raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
-        
-        # simthread.steerUsingGUI(sim) #steering using GUI. GUI steering overrides steering done in the steppables
-        
-        # if not steppableRegistry is None:
-            # steppableRegistry.step(i)
-        # steer application will only update modules that uses requested using updateCC3DModule function from simulator
-        # sim.steer() 
-        # if sim.getRecentErrorMessage()!="":        
-            # raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
+
 
         screenUpdateFrequency = simthread.getScreenUpdateFrequency()
         screenshotFrequency=simthread.getScreenshotFrequency()

@@ -1,27 +1,25 @@
-#include <CompuCell3D/CC3D.h>
-
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Automaton/Automaton.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <CompuCell3D/Potts3D/CellInventory.h>
-// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
-// // // #include <CompuCell3D/Field3D/Field3DImpl.h>
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/Field3DIO.h>
-// // // #include <BasicUtils/BasicClassGroup.h>
+#include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/Automaton/Automaton.h>
+#include <CompuCell3D/Potts3D/Potts3D.h>
+#include <CompuCell3D/Potts3D/CellInventory.h>
+#include <CompuCell3D/Field3D/WatchableField3D.h>
+#include <CompuCell3D/Field3D/Field3DImpl.h>
+#include <CompuCell3D/Field3D/Field3D.h>
+#include <CompuCell3D/Field3D/Field3DIO.h>
+#include <BasicUtils/BasicClassGroup.h>
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
 
 
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
-// // // #include <PublicUtilities/StringUtils.h>
-// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
-// // // #include <string>
-// // // #include <cmath>
-// // // #include <iostream>
-// // // #include <fstream>
-// // // #include <sstream>
+#include <BasicUtils/BasicString.h>
+#include <BasicUtils/BasicException.h>
+#include <BasicUtils/BasicRandomNumberGenerator.h>
+#include <PublicUtilities/StringUtils.h>
+#include <PublicUtilities/ParallelUtilsOpenMP.h>
+#include <string>
+#include <cmath>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 #include <time.h>
 
@@ -214,9 +212,9 @@ void KernelDiffusionSolver::initializeKernel(Simulator *simulator){
 	cerr << "Number of Fields: " << numberOfFields << endl;
 	float diffConst;
 	Point3D pt;
-	pt.x = 0;
-	pt.y = 0;
-	pt.z = 0;
+	pt.x = (fieldDim.x>1 ? fieldDim.x/2 : 0);
+	pt.y = (fieldDim.y>1 ? fieldDim.y/2 : 0);
+	pt.z = (fieldDim.z>1 ? fieldDim.z/2 : 0);
 
 	cellFieldG=(WatchableField3D<CellG *> *)potts->getCellFieldG();
 	fieldDim=cellFieldG->getDim();
@@ -236,7 +234,7 @@ void KernelDiffusionSolver::initializeKernel(Simulator *simulator){
 	dimension += (fieldDim.x > 1 ? 1 : 0); 
 	dimension += (fieldDim.y > 1 ? 1 : 0); 
 	dimension += (fieldDim.z > 1 ? 1 : 0); 
-
+	cerr<<"pt="<<pt<<endl;
 	//new BEN
 	for(int m=0; m < numberOfFields; m++) {
 		float sum = 0;
@@ -251,6 +249,7 @@ void KernelDiffusionSolver::initializeKernel(Simulator *simulator){
 		//       neighborIter;
 		for(unsigned int nIdx=0 ; nIdx <= tempmaxNeighborIndex[m]; ++nIdx ){
 			neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
+			cerr<<"n.pt="<<neighbor.pt<<" distance="<<neighbor.distance<<endl;
 			float temp = exp(-1.0*pow(neighbor.distance*coarseGrainFactorVec[m],2)/(4.0*ld*ld));
 			sum += temp;
 			Ker[nIdx+1] = temp;
@@ -266,7 +265,8 @@ void KernelDiffusionSolver::initializeKernel(Simulator *simulator){
 		}
 
 		if (decayConst > 0) {
-			cerr << exp(-decayConst) << "Got Decay\n";
+			
+			cerr << "Decay Const="<< exp(-decayConst) << endl;
 			for(int i = 0; i < Ker.size(); i++) {
 				NKer[m][i] = NKer[m][i]*exp(-decayConst);
 			}
@@ -295,6 +295,16 @@ void KernelDiffusionSolver::extraInit(Simulator *simulator){
 	}
 
 }
+
+void KernelDiffusionSolver::handleEvent(CC3DEvent & _event){
+	//cerr<<" THIS IS EVENT HANDLE FOR FAST DIFFUSION 2D FE"<<endl;	
+	if (_event.id==LATTICE_RESIZE){
+		ASSERT_OR_THROW("KernelDiffusionSolver works only with simulations with full periodic boundary conditions and lattice resizing is not supported for such simulations",false);
+	}
+	
+}
+
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void KernelDiffusionSolver::start() {
@@ -831,13 +841,7 @@ void KernelDiffusionSolver::diffuseSingleField(unsigned int idx){
 	fieldDim = cellFieldG->getDim();
 
 	boundaryStrategy=BoundaryStrategy::getInstance();
-	//     maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(kernel);
 
-		//        cerr << "NumberOfFields: " << numberOfFields << endl;
-		//        cerr << "Number of ConcentrationFields: " << concentrationFieldVector.size() << endl;
-		//SecretionData & secrData=diffSecrFieldTuppleVec[i].secrData;
-		//std::map<unsigned char,float>::iterator mitr;
-		//std::map<unsigned char,float>::iterator end_mitr=secrData.typeIdSecrConstMap.end();
 
 		if(diffSecrFieldTuppleVec[idx].diffData.diffConst==0.0 && diffSecrFieldTuppleVec[idx].diffData.decayConst==0.0){
 			return; //skip solving of the equation if diffusion and decay constants are 0
@@ -864,10 +868,6 @@ void KernelDiffusionSolver::diffuseSingleField(unsigned int idx){
 
 		ConcentrationField_t & concentrationField = *concentrationFieldVector[idx];
 		ConcentrationField_t * concentrationFieldPtr = concentrationFieldVector[idx];
-		//ConcentrationField_t * scratchFieldPtr;
-		//scratchFieldPtr=concentrationFieldVector[diffSecrFieldTuppleVec.size()];
-		//Array3D_t & scratchArray = scratchFieldPtr->getContainer();
-		//        sleep(2);
 
 //managing number of threads has to be done BEFORE parallel section otherwise undefined behavior will occur
 pUtils->prepareParallelRegionKernelSolvers();
@@ -886,7 +886,6 @@ pUtils->prepareParallelRegionKernelSolvers();
 		minDim=pUtils->getKernelSolverPartition(threadNumber).first;
 		maxDim=pUtils->getKernelSolverPartition(threadNumber).second;
 
-
 		for (int z = minDim.z; z < maxDim.z; z++)
 			for (int y = minDim.y; y < maxDim.y; y++)
 				for (int x = minDim.x; x < maxDim.x; x++){
@@ -895,34 +894,26 @@ pUtils->prepareParallelRegionKernelSolvers();
 					float value = 0.0;
 					float zero_val = 0.0;
 					pt=Point3D(x*coarseGrainFactor , y*coarseGrainFactor , z*coarseGrainFactor);
-					ptCoarseGrained=Point3D(x,y,z);
-					//                 currentCellPtr=cellFieldG->get(pt);
+					ptCoarseGrained=Point3D(x,y,z);					
 
 					value += concentrationField.getDirect(pt.x+1,pt.y+1,pt.z+1)*NKer[idx][0];
-					//cerr<<"pt="<<pt<<endl;
-
-					//                 cerr << "pt.x: " << pt.x+1 << " pt.y: " << pt.y+1 << " value: " << concentrationArray[pt.x+1][pt.y+1] << endl; 
-					//                 cerr << "pt.x: " << pt.x+1 << " pt.y: " << pt.y+1 << endl;
+					
 
 					for(unsigned int nIdx=0 ; nIdx <=tempmaxNeighborIndex[idx]; ++nIdx ){
 						neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(ptCoarseGrained),nIdx);
-						//                    cerr << "neighbor.pt.x: " << neighbor.pt.x << " neighbor.pt.y: " << neighbor.pt.y << endl; 
+						
 
 						if(!neighbor.distance){
-							//                       cerr << "//if distance is 0 then the neighbor returned is invalid \n";
 							//if distance is 0 then the neighbor returned is invalid
 							continue;
 						}
 
-						//                    cerr << "neighbor.pt.x: " << neighbor.pt.x+1 << " neighbor.pt.y: " << neighbor.pt.y+1 << " value: " << 
-						//                          concentrationArray[neighbor.pt.x+1][neighbor.pt.y+1][neighbor.pt.z+1] << " NKer[i][nIdx]: " << NKer[i][nIdx+1] << "\n";
-						//                    cerr << "Distance: " << neighbor.distance << " Adjusted Distance: " << neighborDistance[ceil(neighbor.distance*1000)] << endl;
-						//cerr<<" neighbor="<<neighbor.pt<<" neighbor.x="<<neighbor.pt.x*coarseGrainFactor<<" neighbor.y="<<neighbor.pt.y*coarseGrainFactor<<endl;   
-						value += concentrationField.getDirect(neighbor.pt.x*coarseGrainFactor+1,neighbor.pt.y*coarseGrainFactor+1,neighbor.pt.z*coarseGrainFactor+1)*NKer[idx][nIdx+1];
 
+						value += concentrationField.getDirect(neighbor.pt.x*coarseGrainFactor+1,neighbor.pt.y*coarseGrainFactor+1,neighbor.pt.z*coarseGrainFactor+1)*NKer[idx][nIdx+1];
+						
 					}
 					concentrationField.setDirectSwap(pt.x+1,pt.y+1,pt.z+1,value+zero_val);					
-					//                 if(coarseGrainFactor>1)
+										
 					writePixelValue(Point3D(pt.x,pt.y,pt.z),concentrationField.getDirectSwap(pt.x+1,pt.y+1,pt.z+1),  coarseGrainFactor,concentrationField);               
 
 		}

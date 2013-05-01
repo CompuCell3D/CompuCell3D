@@ -22,22 +22,8 @@
 
  #include <CompuCell3D/CC3D.h>
  
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/ClassRegistry.h>
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <CompuCell3D/Potts3D/Cell.h>
-
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-
-// // // #include <CompuCell3D/Potts3D/CellInventory.h>
-// // // #include <CompuCell3D/Boundary/BoundaryStrategy.h>
-
 using namespace CompuCell3D;
 
-// // // #include <cmath>
-// // // #include <iostream>
 
 using namespace std;
 
@@ -472,6 +458,64 @@ void CompuCell3D::CenterOfMassPlugin::field3DChange(const Point3D &pt, CellG *ne
 		//    cerr<<"newCell->xCM="<<newCell->xCM<<" newCell->yCM="<<newCell->yCM<<" newCell->zCM="<<newCell->zCM<<endl;
 	}
 }
+
+void CenterOfMassPlugin::handleEvent(CC3DEvent & _event){
+	if (_event.id!=LATTICE_RESIZE){
+		return;
+	}
+	CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
+
+	Dim3D shiftVec=ev.shiftVec;
+
+    CellInventory &cellInventory = potts->getCellInventory();
+    CellInventory::cellInventoryIterator cInvItr;
+    CellG * cell;
+    
+    for(cInvItr=cellInventory.cellInventoryBegin() ; cInvItr !=cellInventory.cellInventoryEnd() ;++cInvItr )
+    {
+		cell=cInvItr->second;
+		//cerr<<"cell->id="<<cell->id<<endl;
+		cell->xCOM+=shiftVec.x;
+		cell->yCOM+=shiftVec.y;
+		cell->zCOM+=shiftVec.z;
+
+		cell->xCOMPrev+=shiftVec.x;
+		cell->yCOMPrev+=shiftVec.y;
+		cell->zCOMPrev+=shiftVec.z;
+		
+
+		cell->xCM+=shiftVec.x*cell->volume;
+		cell->yCM+=shiftVec.y*cell->volume;
+		cell->zCM+=shiftVec.z*cell->volume;
+
+		
+    }
+
+
+}
+
+//void CenterOfMassPlugin::updateCOMsAfterLatticeShift(Dim3D _shiftVec){
+//    CellInventory &cellInventory = potts->getCellInventory();
+//    CellInventory::cellInventoryIterator cInvItr;
+//    CellG * cell;
+//    
+//    cerr<<"THIS IS UPDATE COMS"<<endl;
+//    for(cInvItr=cellInventory.cellInventoryBegin() ; cInvItr !=cellInventory.cellInventoryEnd() ;++cInvItr )
+//    {
+//		cell=cInvItr->second;
+//		//cerr<<"cell->id="<<cell->id<<endl;
+//		cell->xCOM+=_shiftVec.x;
+//		cell->yCOM+=_shiftVec.y;
+//		cell->zCOM+=_shiftVec.z;
+//
+//		cell->xCM+=_shiftVec.x*cell->volume;
+//		cell->yCM+=_shiftVec.y*cell->volume;
+//		cell->zCM+=_shiftVec.z*cell->volume;
+//
+//    }
+//    
+//    
+//}
 
 std::string CenterOfMassPlugin::toString(){return "CenterOfMass";}
 std::string CenterOfMassPlugin::steerableName(){return toString();}

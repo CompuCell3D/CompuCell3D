@@ -140,7 +140,7 @@ class RestartManager:
             except IOError,e:
                 restartOutputPath=''
                 
-        # we only copy simulation fuiles if simulation run in in the .cc3d format                
+        # we only copy simulation files if simulation run in in the .cc3d format                
         import re
         if re.match(".*\.cc3d$", CompuCellSetup.simulationFileName):
             import CC3DSimulationDataHandler
@@ -149,7 +149,7 @@ class RestartManager:
             cc3dSimulationDataHandler.readCC3DFileFormat(CompuCellSetup.simulationFileName)
             #copying  verbatim simulation files
             if not self.__baseSimulationFilesCopied:
-                cc3dSimulationDataHandler.copySimulationDataFiles(self.cc3dSimOutputDir)
+                cc3dSimulationDataHandler.copySimulationDataFiles(self.cc3dSimOutputDir)                
                 self.__baseSimulationFilesCopied=True
                 
             #copying modified simulation files - with restart modification
@@ -162,6 +162,15 @@ class RestartManager:
                 simFullName=os.path.join(simFilesOutputPath,simBaseName)
                 #read newly copied simulation file - we will add restart tags to it
                 cc3dSimulationDataHandlerLocal.readCC3DFileFormat(simFullName)
+                
+                print '\n\n\n\n cc3dSimulationDataHandlerLocal.cc3dSimulationData=',cc3dSimulationDataHandlerLocal.cc3dSimulationData
+                
+                # update simulation size in the XML  in case it has changed during the simulation 
+                if cc3dSimulationDataHandlerLocal.cc3dSimulationData.xmlScript!='':
+                    print 'cc3dSimulationDataHandlerLocal.cc3dSimulationData.xmlScript=',cc3dSimulationDataHandlerLocal.cc3dSimulationData.xmlScript
+                    self.updateXMLScript(cc3dSimulationDataHandlerLocal.cc3dSimulationData.xmlScript)
+                elif cc3dSimulationDataHandlerLocal.cc3dSimulationData.pythonScript!='':
+                    self.updatePythonScript(cc3dSimulationDataHandlerLocal.cc3dSimulationData.pythonScript)
                 
                 # if serialize resource exists we only modify it by adding restart simulation element
                 if cc3dSimulationDataHandlerLocal.cc3dSimulationData.serializerResource:
@@ -177,6 +186,75 @@ class RestartManager:
             
        
         return restartOutputPath
+        
+    def updatePythonScript(self,_fileName):    
+        if _fileName=='':
+            return
+        
+        import re
+        dimRegex=re.compile('([\s\S]*.ElementCC3D\([\s]*"Dimensions")([\S\s]*)(\)[\s\S]*)')
+        commentRegex=re.compile('^([\s]*#)')
+        
+        try:
+            fXMLNew=open(_fileName+'.new','w')
+        except IOerror,e:
+            print __file__+' updatePythonScript: could not open ',_fileName,' for writing'
+            
+        fieldDim=self.sim.getPotts().getCellFieldG().getDim()            
+        
+        for line in open(_fileName):
+            lineTmp= line.rstrip()
+            groups=dimRegex.search(lineTmp)            
+            
+            commentGroups=commentRegex.search(lineTmp)
+            if commentGroups:
+               
+                
+                print >>fXMLNew,line.rstrip()
+                continue
+                
+            if groups and groups.lastindex==3:                               
+                dimString=',{"x":'+str(fieldDim.x)+',' +'"y":'+str(fieldDim.y)+','+'"z":'+str(fieldDim.z)+'}'                
+                newLine=dimRegex.sub(r'\1'+ dimString+r'\3',lineTmp)
+                print >>fXMLNew,newLine
+            else:            
+                print >>fXMLNew,line.rstrip()
+            
+        fXMLNew.close()
+        # ged rid of temporary file
+        os.remove(_fileName)
+        os.rename(_fileName+'.new',_fileName)
+            
+        
+    def  updateXMLScript(self,_fileName=''):
+        if _fileName=='':
+            return
+        
+        import re
+        dimRegex=re.compile('([\s]*<Dimensions)([\S\s]*)(/>[\s]*)')
+        
+        try:
+            fXMLNew=open(_fileName+'.new','w')
+        except IOerror,e:
+            print __file__+' updateXMLScript: could not open ',_fileName,' for writing'
+        
+        fieldDim=self.sim.getPotts().getCellFieldG().getDim()        
+        for line in open(_fileName):
+            lineTmp= line.rstrip()
+            groups=dimRegex.search(lineTmp)            
+            
+            if groups and groups.lastindex==3:                
+                dimString=' x="'+str(fieldDim.x)+'" '+'y="'+str(fieldDim.y)+'" '+'z="'+str(fieldDim.z)+'" '
+                newLine=dimRegex.sub(r'\1'+ dimString+r'\3',lineTmp)
+                print >>fXMLNew,newLine
+            else:
+            
+                print >>fXMLNew,line.rstrip()
+            
+        fXMLNew.close()
+        # ged rid of temporary file
+        os.remove(_fileName)
+        os.rename(_fileName+'.new',_fileName)
         
     def readRestartFile(self,_fileName):
         import XMLUtils
@@ -1142,6 +1220,8 @@ class RestartManager:
         
         if not _onDemand and _step%self.__outputFrequency:            
             return 
+        
+        self.serializer.init(self.sim) # have to initialize serialized each time in case lattice gets resized in which case cellField Ptr has to be updated and lattice dimension is usually different
         
         from XMLUtils import ElementCC3D
         import Version

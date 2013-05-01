@@ -214,8 +214,23 @@ void Potts3D::createCellField(const Dim3D dim) {
 	ASSERT_OR_THROW("createCellField() cell field G already created!", !cellFieldG);
 	cellFieldG = new WatchableField3D<CellG *>(dim, 0); //added
 
-
 }
+
+void Potts3D::resizeCellField(const Dim3D dim, Dim3D shiftVec) {
+	
+    Dim3D currentDim=cellFieldG->getDim();    
+    cellFieldG->resizeAndShift(dim,shiftVec);
+}
+
+////////added for more convenient Python scripting
+//////// notice that SWIG will automatically convert tupples and lists to vectors of a given type provided 
+//////// they are passed by a constant reference
+//////void Potts3D::resizeCellField(const vector<int> & dim, const vector<int> & shiftVec) {
+//////	if (dim.size()==3 && shiftVec.size()==3){
+//////		resizeCellField(Dim3D(dim[0],dim[1],dim[2]),Dim3D(shiftVec[0],shiftVec[1],shiftVec[2]));
+//////	}
+//////}
+
 
 void Potts3D::registerAttributeAdder(AttributeAdder * _attrAdder){
 	attrAdder=_attrAdder;
@@ -491,7 +506,8 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
 		customAcceptanceFunction.initialize(this->sim); //actual initialization will happen only once at MCS=0 all other calls will return without doing anything
 	}
 
-	if (!randNSVec.size()){ //each thread will have different random number ghenerator
+	//here we will allocate Random number generators for each thread. Note that since user may change number of work nodes we have to monitor if the max number of work threads is greater than size of random number generator vector 
+	if (!randNSVec.size() ||pUtils->getMaxNumberOfWorkNodesPotts() > randNSVec.size()){ //each thread will have different random number ghenerator
 		randNSVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(),BasicRandomNumberGeneratorNonStatic());
 
 		for (unsigned int i=0; i <randNSVec.size() ;++i){
@@ -504,8 +520,8 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
 			}            
 		}        
 	}
-
-	if (!flipNeighborVec.size()){
+	// Note that since user may change number of work nodes we have to monitor if the max number of work threads is greater than size of flipNeighborVec
+	if (!flipNeighborVec.size() || pUtils->getMaxNumberOfWorkNodesPotts() > flipNeighborVec.size()){
 		flipNeighborVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(),Point3D());
 	}
 	flips = 0;
@@ -656,7 +672,8 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 		customAcceptanceFunction.initialize(this->sim); //actual initialization will happen only once at MCS=0 all other calls will return without doing anything
 	}
 
-	if (!randNSVec.size()){ //each thread will have different random number ghenerator
+	//here we will allocate Random number generators for each thread. Note that since user may change number of work nodes we have to monitor if the max number of work threads is greater than size of random number generator vector 
+	if (!randNSVec.size() ||pUtils->getMaxNumberOfWorkNodesPotts() > randNSVec.size()){ //each thread will have different random number ghenerator
 		randNSVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(),BasicRandomNumberGeneratorNonStatic());
 
 		for (unsigned int i=0; i <randNSVec.size() ;++i){			
@@ -670,10 +687,15 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 		}        
 	}
 
+	
 
-	if (!flipNeighborVec.size()){
+	// Note that since user may change number of work nodes we have to monitor if the max number of work threads is greater than size of flipNeighborVec
+	if (!flipNeighborVec.size() || pUtils->getMaxNumberOfWorkNodesPotts() > flipNeighborVec.size()){
 		flipNeighborVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(),Point3D());
 	}
+
+	//cerr<<"flipNeighborVec.size()="<<flipNeighborVec.size()<<endl;
+
 	// generating random order in which subgridSections will be handled
 	vector<unsigned int> subgridSectionOrderVec(pUtils->getNumberOfSubgridSectionsPotts());
 	for (int i  = 0 ; i < subgridSectionOrderVec.size() ; ++i){
@@ -703,26 +725,21 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 	vector<int>	attemptedECVec(maxNumberOfThreads,0);
 	vector<int> flipsVec(maxNumberOfThreads,0);
 
-	//////BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
-	///Dim3D dim = cellField->getDim();
 	Dim3D dim = cellFieldG->getDim();
 	ASSERT_OR_THROW("Potts3D: You must supply an acceptance function!",
 		acceptanceFunction);
-	//cerr<<"steps="<<steps<<" temp="<<temp<<" acceptanceFunction="<<acceptanceFunction<<endl;
+
 
 
 	//FOR NOW WE WILL IGNORE BOX WATCHER FOR POTTS SECTION IT WILL STILL WORK WITH PDE SOLVERS
 	Dim3D fieldDim=cellFieldG->getDim();
 	numberOfAttempts=(int)fieldDim.x*fieldDim.y*fieldDim.z*sim->getFlip2DimRatio();
-	//cerr<<"OVERALL numberOfAttempts="<<numberOfAttempts<<endl;
-	//   numberOfAttempts=steps;
 	unsigned int currentStep=sim->getStep();
 	if(debugOutputFrequency && ! (currentStep % debugOutputFrequency) ){
 		cerr<<"FAST numberOfAttempts="<<numberOfAttempts<<endl;
 	}
 
 	pUtils->prepareParallelRegionPotts();
-	//cerr<<"fixedSteppers.size()="<<fixedSteppers.size()<<endl;
 	pUtils->allowNestedParallelRegions(true); //necessary in case we use e.g. PDE solver caller which in turn calls parallel PDE solver
 	//omp_set_nested(true);
 #pragma omp parallel
@@ -733,11 +750,13 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 		Point3D flipNeighborLocal;
 
 		unsigned int currentWorkNodeNumber = pUtils->getCurrentWorkNodeNumber();
-
+		
+		//cerr<<"currentWorkNodeNumber ="<<currentWorkNodeNumber <<endl;
+		
 		BasicRandomNumberGeneratorNonStatic * rand = randNSVec[currentWorkNodeNumber].getInstance();
 		BoundaryStrategy * boundaryStrategy = BoundaryStrategy::getInstance();
 
-
+		//cerr<<"subgridSectionOrderVec.size()="<<subgridSectionOrderVec.size()<<endl;
 		//iterating over subgridSections
 		for (int s = 0 ; s<subgridSectionOrderVec.size() ; ++s){
 
@@ -746,6 +765,8 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
 			pair<Dim3D,Dim3D> sectionDims=pUtils->getPottsSection(currentWorkNodeNumber,s);
 			numberOfAttemptsLocal=(int)(sectionDims.second.x-sectionDims.first.x)*(sectionDims.second.y-sectionDims.first.y)*(sectionDims.second.z-sectionDims.first.z)*sim->getFlip2DimRatio();
+			//cerr<<"sectionDims.first="<<sectionDims.first<<endl;
+			//cerr<<"sectionDims.second="<<sectionDims.second<<endl;
 
 			//#pragma omp critical
 			//				{
@@ -781,11 +802,6 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 				pt.x = rand->getInteger(sectionDims.first.x, sectionDims.second.x - 1);
 				pt.y = rand->getInteger(sectionDims.first.y, sectionDims.second.y - 1);
 				pt.z = rand->getInteger(sectionDims.first.z, sectionDims.second.z - 1);
-				//    cerr<<"pt flip="<<pt<<endl;
-				//     pt.x = rand->getInteger(0, dim.x - 1);
-				//     pt.y = rand->getInteger(0, dim.y - 1);
-				//     pt.z = rand->getInteger(0, dim.z - 1);
-				//     cerr<<"pt="<<pt<<" rand->getSeed()="<<rand->getSeed()<<endl;
 
 
 				///Cell *cell = cellField->get(pt);
@@ -814,7 +830,6 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 				}
 				Point3D changePixel = n.pt;
 
-				//cerr<<"pt="<<pt<<" n.pt="<<n.pt<<" difference="<<pt-n.pt<<endl;
 				//check if changePixel refers to different cell. 
 				CellG* changePixelCell=cellFieldG->getQuick(changePixel);
 
@@ -825,7 +840,6 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
 				}
 
-				//     cerr<<"pt="<<pt<<" changePixel="<<changePixel<<endl;
 
 				if(sizeFrozenTypeVec && changePixelCell){///must also make sure that cell ptr is different 0; Will never freeze medium
 					if(checkIfFrozen(changePixelCell->type))
@@ -833,7 +847,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 				}
 				++attemptedECVec[currentWorkNodeNumber];  
 
-				//flipNeighbor=pt;/// change takes place at change pixel  and pt is a neighbor of changePixel
+				
 
 				flipNeighborVec[currentWorkNodeNumber]=pt;/// change takes place at change pixel  and pt is a neighbor of changePixel
 				// Calculate change in energy
@@ -847,24 +861,6 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
 				// Acceptance based on probability
 				double motility = fluctAmplFcn->fluctuationAmplitude(cell, cellFieldG->get(changePixel));
-				//double motility=0.0;
-				//if(cellTypeMotilityVec.size()){
-				//	unsigned int newCellTypeId=(cell ? (unsigned int)cell->type :0);
-				//	unsigned int oldCellTypeId=(changePixelCell? (unsigned int)changePixelCell->type :0);
-				//	if(newCellTypeId && oldCellTypeId)
-				//		motility=(cellTypeMotilityVec[newCellTypeId]<cellTypeMotilityVec[oldCellTypeId] ? cellTypeMotilityVec[newCellTypeId]:cellTypeMotilityVec[oldCellTypeId]);
-				//	else if(newCellTypeId){
-				//		motility=cellTypeMotilityVec[newCellTypeId];
-				//	}else if (oldCellTypeId){
-				//		motility=cellTypeMotilityVec[oldCellTypeId];
-				//	}else{//should never get here
-				//		motility=0;
-				//	}
-				//}else{
-				//	motility=temp;
-				//}
-
-				//cerr<<"newCell="<<cell<<" oldCell="<<cellFieldG->get(changePixel)<<" motility="<<motility<<endl;
 
 				double prob = acceptanceFunction->accept(motility, change);
 				//#pragma omp critical
@@ -878,9 +874,9 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 				//     cerr<<"change E="<<change<<" prob="<<prob<<endl;
 				if (prob >= 1.0 || rand->getRatio() < prob) {
 					// Accept the change
-					//        cerr<<"accepted flip "<< change<<endl;
+					
 					energyVec[currentWorkNodeNumber] += change;
-					//       cerr<<"energy="<<energy<<endl;
+					
 					if (connectivityConstraint && connectivityConstraint->changeEnergy(changePixel, cell, cellFieldG->get(changePixel) ) ){
 						if (numberOfThreads==1)
 							energyCalculator->setLastFlipAccepted(false);
@@ -910,12 +906,16 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 		}//iteration over subrid sections
 
 #pragma omp critical
-		{
+		{	
+			//cerr<<"energyVec.size()="<<energyVec.size()<<endl;
+			//cerr<<"attemptedECVec.size()="<<attemptedECVec.size()<<endl;
+			//cerr<<"flipsVec.size()="<<flipsVec.size()<<endl;
+
 			energy+=energyVec[currentWorkNodeNumber];
 			attemptedEC+=attemptedECVec[currentWorkNodeNumber];
 			flips+=flipsVec[currentWorkNodeNumber];
 
-			//cerr<<"thread "<<threadNumber<<" has finished calculations and did "<<attemptedECVec[threadNumber]<<" calculations"<<endl;
+			//cerr<<"thread "<<currentWorkNodeNumber<<" has finished calculations and did "<<attemptedECVec[currentWorkNodeNumber]<<" calculations"<<endl;
 
 			//reseting values before processing new slice
 
@@ -949,7 +949,8 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 
 	ASSERT_OR_THROW("BoundaryWalker Algorithm works only in single processor mode. Please change number of processors to 1",pUtils->getNumberOfWorkNodesPotts()==1);
 
-	if (!randNSVec.size()){ //each thread will have different random number ghenerator
+	//here we will allocate Random number generators for each thread. Note that since user may change number of work nodes we have to monitor if the max number of work threads is greater than size of random number generator vector 
+	if (!randNSVec.size() ||pUtils->getMaxNumberOfWorkNodesPotts() > randNSVec.size()){ //each thread will have different random number ghenerator
 		randNSVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(),BasicRandomNumberGeneratorNonStatic());
 
 		for (unsigned int i=0; i <randNSVec.size() ;++i){
@@ -963,7 +964,9 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 		}        
 	}
 
-	if (!flipNeighborVec.size()){
+	// Note that since user may change number of work nodes we have to monitor if the max number of work threads is greater than size of flipNeighborVec
+	if (!flipNeighborVec.size() || pUtils->getMaxNumberOfWorkNodesPotts() > flipNeighborVec.size()){
+
 		flipNeighborVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(),Point3D());
 	}
 

@@ -23,17 +23,8 @@
 #ifndef GLOBALBOUNDARYPIXELTRACKERPLUGIN_H
 #define GLOBALBOUNDARYPIXELTRACKERPLUGIN_H
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Plugin.h>
-
-// // // #include <CompuCell3D/Potts3D/Cell.h>
-// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
-// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
-// // // #include <CompuCell3D/Field3D/AdjacentNeighbor.h>
-
 #include "GlobalBoundaryPixelTrackerDLLSpecifier.h"
-// // // #include <set>
+
 
 class CC3DXMLElement;
 namespace CompuCell3D {
@@ -72,7 +63,7 @@ class GLOBALBOUNDARYPIXELTRACKER_EXPORT GlobalBoundaryPixelTrackerPlugin : publi
 		//Plugin interface 
 		virtual void init(Simulator *_simulator, CC3DXMLElement *_xmlData=0);
 		virtual void extraInit(Simulator *_simulators);
-
+		virtual void handleEvent(CC3DEvent & _event);		
 
 		//Steerable interface
 		virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);

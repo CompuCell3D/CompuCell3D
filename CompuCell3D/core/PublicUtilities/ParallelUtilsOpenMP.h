@@ -16,7 +16,7 @@
 #undef min
 
 #include <CompuCell3D/SteerableObject.h>
-
+#include <CompuCell3D/CC3DEvents.h>
 
 
 
@@ -33,6 +33,7 @@ namespace CompuCell3D {
             void setDim(const Dim3D &_dim);
             Dim3D getDim();
 
+            virtual void handleEvent(CC3DEvent & _ev);
             //locks			
 			void initLock(OpenMPLock_t * _lock);
 			void destroyLock(OpenMPLock_t * _lock);

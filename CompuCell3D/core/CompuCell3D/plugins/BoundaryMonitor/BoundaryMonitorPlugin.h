@@ -4,25 +4,6 @@
 
 #include <CompuCell3D/CC3D.h>
 
-// // // #include <CompuCell3D/Plugin.h>
-
-
-// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-
-// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
-
-// // // #include <CompuCell3D/Potts3D/Cell.h>
-
-// // // #include <muParser/muParser.h>
-
-// basic STL includes
-// // // #include <vector>
-// // // #include <list>
-// // // #include <map>
-// // // #include <set>
-// // // #include <string>
-// // // #include <CompuCell3D/Field3D/Array3D.h>
-
 #include "BoundaryMonitorDLLSpecifier.h"
 
 class CC3DXMLElement;
@@ -66,7 +47,7 @@ namespace CompuCell3D {
         BoundaryMonitorPlugin();
         virtual ~BoundaryMonitorPlugin();
         
-        Array3DCUDA<unsigned char> * getBoundaryArray(){return boundaryArray;}                        
+        Array3DCUDA<unsigned char> * getBoundaryArray();
 
         
                 
@@ -77,6 +58,7 @@ namespace CompuCell3D {
         virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
 
         virtual void extraInit(Simulator *simulator);
+		virtual void handleEvent(CC3DEvent & _event);		
 
         //Steerrable interface
         virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);

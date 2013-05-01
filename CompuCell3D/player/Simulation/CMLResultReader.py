@@ -20,6 +20,7 @@ class CMLResultReader(SimulationThread.SimulationThread):
         
         # data extracted from LDS file *.dml
         self.fieldDim=None
+        self.fieldDimPrevious=None
         self.ldsCoreFileName=""
         self.currentFileName=""
         self.ldsDir=None
@@ -53,6 +54,20 @@ class CMLResultReader(SimulationThread.SimulationThread):
 	import CompuCell
 	import PlayerPython
 
+    def dimensionChange(self):   
+        # print 'self.fieldDimPrevious=',self.fieldDimPrevious
+        # print 'self.fieldDim=',self.fieldDim
+        if self.fieldDimPrevious:
+            if  self.fieldDimPrevious.x != self.fieldDim.x or self.fieldDimPrevious.y != self.fieldDim.y or self.fieldDimPrevious.z != self.fieldDim.z:                
+                return True
+            else:
+                return False
+        else: 
+            return False
+            
+    def resetDimensionChangeMonitoring(self):
+        # this reset is necessary to avoid recursive calls in the SimpleTabView -- this code needs to be changed because at this point it looks horrible
+        self.fieldDimPrevious=self.fieldDim 
         
     def readSimulationData(self,_i):
         # self.counter+=1
@@ -78,6 +93,29 @@ class CMLResultReader(SimulationThread.SimulationThread):
         self.simulationDataReader.Update()
         self.simulationData = self.simulationDataReader.GetOutput()
         # print "self.simulationData",self.simulationData
+        # print 'dimensions=',self.simulationData.GetDimensions()
+        
+        #updating fieldDim each time we read data
+        
+        import CompuCell
+        self.fieldDimPrevious=self.fieldDim
+        # self.fieldDimPrevious=CompuCell.Dim3D()
+        
+        dimFromVTK=self.simulationData.GetDimensions()
+        
+        self.fieldDim=CompuCell.Dim3D(dimFromVTK[0],dimFromVTK[1],dimFromVTK[2])
+        
+        
+        # 
+        # self.fieldDim.x=dimFromVTK[0]
+        # self.fieldDim.y=dimFromVTK[1]
+        # self.fieldDim.z=dimFromVTK[2]
+        
+        
+        
+        # print 'self.fieldDim=',self.fieldDim
+        
+        
         # print "vtkStructuredPointsReader ERROR CODE=",self.simulationDataReader.GetErrorCode()
         
         
@@ -92,7 +130,7 @@ class CMLResultReader(SimulationThread.SimulationThread):
         # print "self.readFileSem.available()=",self.readFileSem.available()
 #        print MODULENAME,' readSimulationData():  self.currentFileName =  ',self.currentFileName
 
-        
+    
     def extractLatticeDescriptionInfo(self,_fileName):
         import os
         import os.path

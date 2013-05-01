@@ -72,7 +72,7 @@ class BOUNDARYPIXELTRACKER_EXPORT BoundaryPixelTrackerPlugin : public Plugin, pu
 		//Plugin interface 
 		virtual void init(Simulator *_simulator, CC3DXMLElement *_xmlData=0);
 		virtual void extraInit(Simulator *_simulators);
-
+		virtual void handleEvent(CC3DEvent & _event);
 
 		//Steerable interface
 		virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);

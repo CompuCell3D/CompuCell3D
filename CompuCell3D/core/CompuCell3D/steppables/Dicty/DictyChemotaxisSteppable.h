@@ -55,7 +55,7 @@ namespace CompuCell3D {
    
   class DICTY_EXPORT DictyChemotaxisSteppable : public Steppable {
     Potts3D *potts;
-    Field3DImpl<float> *field;
+    Field3D<float> *field;
 
     WatchableField3D<CellG *> *cellFieldG;
     

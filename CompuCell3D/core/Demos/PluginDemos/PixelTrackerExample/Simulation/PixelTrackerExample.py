@@ -4,7 +4,7 @@ import string
 sys.path.append(environ["PYTHON_MODULE_PATH"])
 
 import CompuCellSetup
-CompuCellSetup.setSimulationXMLFileName("Simulation/PixelTrackerExample.xml")
+
 sim,simthread = CompuCellSetup.getCoreSimulationObjects()
 
 CompuCellSetup.initializeSimulationObjects(sim,simthread)

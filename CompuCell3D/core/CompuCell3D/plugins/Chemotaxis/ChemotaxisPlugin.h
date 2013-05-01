@@ -58,7 +58,7 @@ namespace CompuCell3D {
 	 //EnergyFunction data
 
     Potts3D *potts;
-    std::vector<Field3DImpl<float> *> fieldVec;
+    std::vector<Field3D<float> *> fieldVec;
 	std::vector<std::string> fieldNameVec;
 	
    std::vector<std::vector<ChemotaxisData> > vecVecChemotaxisData;

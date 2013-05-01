@@ -166,8 +166,7 @@ void VolumePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		case GLOBAL:
 			//using Global Volume Energy Parameters
 			targetVolume=_xmlData->getFirstElement("TargetVolume")->getDouble();
-			lambdaVolume=_xmlData->getFirstElement("LambdaVolume")->getDouble();
-
+			lambdaVolume=_xmlData->getFirstElement("LambdaVolume")->getDouble();			
 			//set fcn ptr
 			changeEnergyFcnPtr=&VolumePlugin::changeEnergyGlobal;
 			break;
@@ -183,6 +182,12 @@ void VolumePlugin::extraInit(Simulator *simulator){
 	update(xmlData);
 }
 
+void VolumePlugin::handleEvent(CC3DEvent & _event){
+    if (_event.id==CHANGE_NUMBER_OF_WORK_NODES){    
+    	update(xmlData);
+    }
+
+}
 double VolumePlugin::customExpressionFunction(double _lambdaVolume,double _targetVolume, double _volumeBefore,double _volumeAfter){
 
 		int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();	

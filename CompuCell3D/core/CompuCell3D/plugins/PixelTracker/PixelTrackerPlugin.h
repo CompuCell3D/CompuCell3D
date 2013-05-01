@@ -24,14 +24,7 @@
 #define PIXELTRACKERPLUGIN_H
 
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Plugin.h>
-
-// // // #include <CompuCell3D/Potts3D/Cell.h>
-// // // #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-// // // #include <BasicUtils/BasicClassAccessor.h>
-// // // #include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
 #include "PixelTracker.h"
-// // // #include <CompuCell3D/Field3D/AdjacentNeighbor.h>
 #include "PixelTrackerDLLSpecifier.h"
 
 
@@ -51,7 +44,7 @@ class PIXELTRACKER_EXPORT PixelTrackerPlugin : public Plugin, public CellGChange
       Dim3D fieldDim;
       BasicClassAccessor<PixelTracker> pixelTrackerAccessor;
       Simulator *simulator;
-
+	  Potts3D *potts;		
     
    public:
       PixelTrackerPlugin();
@@ -65,7 +58,7 @@ class PIXELTRACKER_EXPORT PixelTrackerPlugin : public Plugin, public CellGChange
 		//Plugin interface 
 		virtual void init(Simulator *_simulator, CC3DXMLElement *_xmlData=0);
 		virtual std::string toString();
-
+		virtual void handleEvent(CC3DEvent & _event);		
 
 		BasicClassAccessor<PixelTracker> * getPixelTrackerAccessorPtr(){return & pixelTrackerAccessor;}
 		//had to include this function to get set itereation working properly with Python , and Player that has restart capabilities

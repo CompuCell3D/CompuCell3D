@@ -103,6 +103,19 @@ void FocalPointPlasticityPlugin::extraInit(Simulator *simulator){
 	update(xmlData,true);
 }
 
+void FocalPointPlasticityPlugin::handleEvent(CC3DEvent & _event){
+    if (_event.id==CHANGE_NUMBER_OF_WORK_NODES){    
+    	unsigned int maxNumberOfWorkNodes=pUtils->getMaxNumberOfWorkNodesPotts();        
+        newJunctionInitiatedFlagVec.assign(maxNumberOfWorkNodes,false);
+        newJunctionInitiatedFlagWithinClusterVec.assign(maxNumberOfWorkNodes,false);
+        newNeighborVec.assign(maxNumberOfWorkNodes,0);
+
+    	update(xmlData);
+    }
+
+}
+
+
 void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 	if(potts->getDisplayUnitsFlag()){

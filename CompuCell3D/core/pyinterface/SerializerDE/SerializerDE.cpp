@@ -205,9 +205,9 @@ bool SerializerDE::serializeConcentrationField(SerializeData &_sd){
 	fieldData->SetDimensions(fieldDim.x,fieldDim.y,fieldDim.z);
 	
 
-	Field3DImpl<float> *fieldPtr=0; 
-	std::map<std::string,Field3DImpl<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
-	std::map<std::string,Field3DImpl<float>*>::iterator mitr;
+	Field3D<float> *fieldPtr=0; 
+	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
+	std::map<std::string,Field3D<float>*>::iterator mitr;
 	mitr=fieldMap.find(_sd.objectName);
 	if(mitr!=fieldMap.end()){
 		fieldPtr=mitr->second;
@@ -263,9 +263,9 @@ bool SerializerDE::serializeConcentrationField(SerializeData &_sd){
 
 bool SerializerDE::loadConcentrationField(SerializeData &_sd){
 
-	Field3DImpl<float> *fieldPtr=0; 
-	std::map<std::string,Field3DImpl<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
-	std::map<std::string,Field3DImpl<float>*>::iterator mitr;
+	Field3D<float> *fieldPtr=0; 
+	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
+	std::map<std::string,Field3D<float>*>::iterator mitr;
 	mitr=fieldMap.find(_sd.objectName);
 	if(mitr!=fieldMap.end()){
 		fieldPtr=mitr->second;

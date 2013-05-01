@@ -22,14 +22,11 @@
 
 #include <CompuCell3D/CC3D.h>
 
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <CompuCell3D/Simulator.h>
+
 
 using namespace CompuCell3D;
 using namespace std;
 
-// // // #define EXP_STL
 #include "VolumeTrackerPlugin.h"
 
 VolumeTrackerPlugin::VolumeTrackerPlugin() : pUtils(0),lockPtr(0), potts(0), deadCellG(0) {
@@ -39,6 +36,42 @@ VolumeTrackerPlugin::~VolumeTrackerPlugin() {
 	pUtils->destroyLock(lockPtr);
 	delete lockPtr;
 	lockPtr=0;
+}
+
+void VolumeTrackerPlugin::initVec(const vector<int> & _vec){
+	cerr<<" THIS IS VEC.size="<<_vec.size()<<endl;
+}
+
+void VolumeTrackerPlugin::initVec(const Dim3D & _dim){
+	cerr<<" THIS IS A COMPUCELL3D DIM3D"<<_dim<<endl;
+}
+
+bool VolumeTrackerPlugin::checkIfOKToResize(Dim3D _newSize,Dim3D _shiftVec){
+
+	Field3DImpl<CellG*> *cellField=(Field3DImpl<CellG*> *)potts->getCellFieldG();
+	Dim3D fieldDim=cellField->getDim();
+	Point3D pt;
+	Point3D shiftVec(_shiftVec.x,_shiftVec.y,_shiftVec.z);
+	Point3D shiftedPt;
+	CellG *cell;
+
+	//cerr<<"_newSize="<<_newSize<<endl;
+	//cerr<<"_shiftVec="<<_shiftVec<<endl;
+
+	for (pt.x=0 ; pt.x<fieldDim.x ; ++pt.x)
+		for (pt.y=0 ; pt.y<fieldDim.y ; ++pt.y)
+			for (pt.z=0 ; pt.z<fieldDim.z ; ++pt.z){
+				cell=cellField->get(pt);
+				if(cell){
+					shiftedPt=pt+shiftVec;
+
+					if(shiftedPt.x<0 || shiftedPt.x>=_newSize.x || shiftedPt.y<0 || shiftedPt.y>=_newSize.y || shiftedPt.z<0 || shiftedPt.z>=_newSize.z){
+						return false;
+					}
+				}
+				
+			}
+	return true;
 }
 
 
@@ -56,6 +89,15 @@ void VolumeTrackerPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData)
 	potts->registerStepper(this);
 
 	deadCellVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), (CellG*)0);
+}
+
+
+void VolumeTrackerPlugin::handleEvent(CC3DEvent & _event){
+	if (_event.id==CHANGE_NUMBER_OF_WORK_NODES){
+		CC3DEventChangeNumberOfWorkNodes ev = static_cast<CC3DEventChangeNumberOfWorkNodes&>(_event);
+		deadCellVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), (CellG*)0);		
+		cerr<<"VolumeTrackerPlugin::handleEvent="<<endl;
+	}
 }
 
 

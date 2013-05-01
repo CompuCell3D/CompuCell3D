@@ -85,6 +85,22 @@ void MitosisPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
 }
 
+void MitosisPlugin::handleEvent(CC3DEvent & _event){
+    if (_event.id==CHANGE_NUMBER_OF_WORK_NODES){    
+       unsigned int maxNumberOfWorkNodes=pUtils->getMaxNumberOfWorkNodesPotts();
+       childCellVec.assign(maxNumberOfWorkNodes,0);
+       parentCellVec.assign(maxNumberOfWorkNodes,0);
+       splitPtVec.assign(maxNumberOfWorkNodes,Point3D());
+       splitVec.assign(maxNumberOfWorkNodes,false);
+       onVec.assign(maxNumberOfWorkNodes,false);
+       mitosisFlagVec.assign(maxNumberOfWorkNodes,false);
+       turnOn();
+
+    }
+
+}
+
+
 void MitosisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
      
 	doublingVolume=_xmlData->getFirstElement("DoublingVolume")->getUInt();

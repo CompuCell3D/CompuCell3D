@@ -17,10 +17,13 @@ class VolumeParamSteppable(SteppableBasePy):
     def step(self,mcs):
         for cell in self.cellList:
             cell.targetVolume+=1
-            
-        for compartmentList in self.clusterList:
-            # print "cluster has size=",compartmentList.size()
-            for cell in CompartmentList(compartmentList):
+        print    
+        for compartments in self.clusters:
+#             print "cluster has size=",len(compartments)
+#             print ' ------ compartmentList=',compartments.clusterId()
+#             print 'compartments=',compartments
+            for cell in compartments:                
+#                 print 'cell.id=',cell.id                
                 self.clusterSurfacePlugin.setTargetAndLambdaClusterSurface(cell,80, 2.0);
                 break
             
@@ -37,11 +40,11 @@ class MitosisSteppableClusters(MitosisSteppableClustersBase):
                 print "CLUSTER CELL ID=",cellLocal.id," type=",cellLocal.type
                 print 'clusterSurface=',cellLocal.clusterSurface
                     
-        for compartmentList in self.clusterList:
+        for compartments in self.clusters:
             clusterId=-1
             clusterCell=None
             clusterSurface=0.0
-            for cell in CompartmentList(compartmentList):
+            for cell in compartments:
                 clusterCell=cell
                 clusterId=cell.clusterId
                 for pixelTrackerData in self.getCellPixelList(cell):

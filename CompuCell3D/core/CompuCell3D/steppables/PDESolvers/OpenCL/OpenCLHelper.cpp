@@ -4,7 +4,9 @@
 #include <string.h>
 #include <iostream>
 #include <cassert>
+#include <vector>
 #include <sstream>
+#include <stdexcept>
 
 #include <BasicUtils/BasicException.h>
 
@@ -12,26 +14,28 @@ using namespace CompuCell3D;
 
 using std::cerr;
 using std::endl;
-using std::stringstream;
 
-OpenCLHelper::OpenCLHelper(int gpuDeviceIndex){
+OpenCLHelper::OpenCLHelper(int gpuDeviceIndex, int platformHint){
 	if(gpuDeviceIndex==-1)
 		 gpuDeviceIndex=0;//TODO: check if we can find "the best" device
 
+	int selectedPlatformInd;
+
     //this function is defined in util.cpp
     //it comes from the NVIDIA SDK example code
-    cl_int err = GetPlatformID(&platform);
+    cl_int err = GetPlatformID(platform, selectedPlatformInd, platformHint);
     //also comes from the NVIDIA SDK
-    std::cout<<"oclGetPlatformID: "<<ErrorString(err)<<std::endl;
+    if(err!=CL_SUCCESS)
+		std::cout<<"oclGetPlatformID: "<<ErrorString(err)<<std::endl;
 
     // Get the number of GPU devices available to the platform
     // we should probably expose the device type to the user
     // the other common option is CL_DEVICE_TYPE_CPU
     err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 0, NULL, &numDevices);
-    std::cout<<"clGetDeviceIDs (get number of devices): "<<ErrorString(err)<<std::endl;
-	stringstream errStr;
-	errStr<<"OpenCLHelper::ctor Can't use the requested device: there is no device with this index ("<<gpuDeviceIndex<<")";
-    ASSERT_OR_THROW(errStr.str().c_str() ,gpuDeviceIndex<(int)numDevices);
+	if(err!=CL_SUCCESS)
+		std::cout<<"clGetDeviceIDs (get number of devices): "<<ErrorString(err)<<std::endl;
+	ASSERT_OR_THROW("OpenCLHelper::ctor Can't use the requested device: there is no device with this index",gpuDeviceIndex<(int)numDevices);
+	std::cout<<"\t"<<numDevices<<" device(s) avalable in platform #"<<selectedPlatformInd<<endl;
 
 	/*if((size_t)gpuDeviceIndex>=numDevices){
 		throw std::runtime_error("OpenCLHelper::ctor Can't use the requested device: there is no device with this index");
@@ -42,7 +46,9 @@ OpenCLHelper::OpenCLHelper(int gpuDeviceIndex){
     // Create the device list
     devices = new cl_device_id [numDevices];
     err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, numDevices, devices, NULL);
-    std::cout<<"clGetDeviceIDs (create device list): "<<ErrorString(err)<<std::endl;
+	if(err!=CL_SUCCESS)
+		std::cout<<"clGetDeviceIDs (create device list): "<<ErrorString(err)<<std::endl;
+	
  
     //create the context
     context = clCreateContext(0, 1, &devices[deviceUsed], NULL, NULL, &err);
@@ -54,12 +60,16 @@ OpenCLHelper::OpenCLHelper(int gpuDeviceIndex){
 	char devName[256];
 	size_t len;
 	clGetDeviceInfo(devices[deviceUsed], CL_DEVICE_NAME,255,devName, &len);
-	cerr<<"GPU device \""<<devName<<"\" selected\n";
-	clGetDeviceInfo(devices[deviceUsed], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(maxWorkGroupSize), &maxWorkGroupSize, &len);
-	cerr<<"Max work group size: "<<maxWorkGroupSize<<endl;
+	cerr<<"\tGPU device \""<<devName<<"\" selected\n";
 	cl_ulong gpuMem;
 	clGetDeviceInfo(devices[deviceUsed], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(gpuMem), &gpuMem, &len);
-	cerr<<"GPU memory: "<<gpuMem<<endl;
+	cerr<<"\tTotal GPU memory: "<<gpuMem/1024/1024<<"MB"<<endl;
+
+	clGetDeviceInfo(devices[deviceUsed], CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(gpuMem), &gpuMem, &len);
+	cerr<<"\tMax GPU memory chunk to allocate: "<<gpuMem/1024/1024<<"MB"<<endl;
+	
+	clGetDeviceInfo(devices[deviceUsed], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(maxWorkGroupSize), &maxWorkGroupSize, &len);
+	cerr<<"\tMax work group size: "<<maxWorkGroupSize<<endl;
 }
 
 
@@ -85,27 +95,30 @@ cl_int OpenCLHelper::EnqueueNDRangeKernel(cl_kernel kernel,
                        cl_uint          work_dim,
                        const size_t *   global_work_size,
                        const size_t *   local_work_size
-                       )
+                       )const
 {
 	return clEnqueueNDRangeKernel(commandQueue, kernel, work_dim, NULL, global_work_size, local_work_size, 0, NULL, NULL);
 }
 
 //memory allocator
-cl_mem OpenCLHelper::CreateBuffer(cl_mem_flags memFlags, size_t sizeInBytes)const{
+cl_mem OpenCLHelper::CreateBuffer(cl_mem_flags memFlags, size_t sizeInBytes, void const *hostPtr)const{
 	cl_int retCode;
-	cl_mem res=clCreateBuffer(context, memFlags, sizeInBytes, NULL, &retCode);
-	ASSERT_OR_THROW("Can not allocate GPU memory", retCode==CL_SUCCESS);
+	if(hostPtr&&!(memFlags&CL_MEM_COPY_HOST_PTR))
+		memFlags|=CL_MEM_COPY_HOST_PTR;
+	cl_mem res=clCreateBuffer(context, memFlags, sizeInBytes, const_cast<void *>(hostPtr), &retCode);
+	if(retCode!=CL_SUCCESS)
+		throw std::runtime_error("Can not allocate GPU memory");
 	return res;
 }
 
 cl_program OpenCLHelper::CreateProgramWithSource(cl_uint sourcesCount,
                           const char ** kernel_source,
-                          cl_int * errcode_ret)
+                          cl_int * errcode_ret)const
 {
 	return clCreateProgramWithSource(context, sourcesCount, kernel_source, NULL, errcode_ret);
 }
 
-void OpenCLHelper::BuildExecutable(cl_program program)
+void OpenCLHelper::BuildExecutable(cl_program program)const
 {
     // Build the program executable
 
@@ -159,25 +172,30 @@ char *OpenCLHelper::FileContents(const char *filename, int *length)
     return (char*)buffer;
 }
 
-bool OpenCLHelper::LoadProgram(const char *filePath[], size_t sourcesCount, cl_program &program)
+bool OpenCLHelper::LoadProgram(const char *filePath[], size_t sourcesCount, cl_program &program)const
 {
     cl_int err;
 	
-	int *len=new int[sourcesCount];
-    const char **kernel_source=new const char *[sourcesCount];
+	std::vector<int> len(sourcesCount);
+	std::vector<const char *> kernel_source(sourcesCount);
 
 	for(size_t i=0; i<sourcesCount; ++i){
 		char *kernel_buff= FileContents(filePath[i], &len[i]);
+
+		if(!kernel_buff){
+			std::stringstream sstr;
+			sstr<<"OpenCLHelper::LoadProgram: Can't load '"<<filePath[i]<<"' program";
+			throw std::invalid_argument(sstr.str().c_str());
+		}
 		
 		kernel_source[i]=kernel_buff;
 	}
 
     
 
-
     // create the program
     program = CreateProgramWithSource(sourcesCount,
-                                        kernel_source, &err);
+                                        &kernel_source[0], &err);
 
     printf("clCreateProgramWithSource: %s\n", ErrorString(err));
 
@@ -191,8 +209,6 @@ bool OpenCLHelper::LoadProgram(const char *filePath[], size_t sourcesCount, cl_p
 			free((char *)kernel_source[i]);
 	}
 	   
-	delete len;
-	delete kernel_source; 
 
 	return true;
 }
@@ -214,17 +230,17 @@ bool OpenCLHelper::LoadProgram(const char *filePath[], size_t sourcesCount, cl_p
 //! @return the id 
 //! @param clSelectedPlatformID         OpenCL platform ID
 //////////////////////////////////////////////////////////////////////////////
-cl_int OpenCLHelper::GetPlatformID(cl_platform_id* clSelectedPlatformID)
+cl_int OpenCLHelper::GetPlatformID(cl_platform_id& clSelectedPlatformID, int &platformInd, int platfrormHint)
 {
     char chBuffer[1024];
     cl_uint num_platforms;
     cl_platform_id* clPlatformIDs;
-    cl_int ciErrNum;
-    *clSelectedPlatformID = NULL;
+    clSelectedPlatformID = NULL;
     cl_uint i = 0;
+	platformInd=-1;
 
     // Get OpenCL platform count
-    ciErrNum = clGetPlatformIDs (0, NULL, &num_platforms);
+    cl_int ciErrNum = clGetPlatformIDs (0, NULL, &num_platforms);
     if (ciErrNum != CL_SUCCESS)
     {
         //shrLog(" Error %i in clGetPlatformIDs Call !!!\n\n", ciErrNum);
@@ -257,22 +273,29 @@ cl_int OpenCLHelper::GetPlatformID(cl_platform_id* clSelectedPlatformID)
                 if(ciErrNum == CL_SUCCESS)
                 {
                     printf("platform %d: %s\n", i, chBuffer);
-                    if(strstr(chBuffer, "NVIDIA") != NULL)
+                    if(platfrormHint==-1&&strstr(chBuffer, "NVIDIA") != NULL)
                     {
-                        printf("selected platform %d\n", i);
-                        *clSelectedPlatformID = clPlatformIDs[i];
+                        printf("selected default NVIDIA platform (%d)\n", i);
+                        clSelectedPlatformID = clPlatformIDs[i];
+						platformInd=i;
                         break;
                     }
                 }
             }
 
+			if(platfrormHint!=-1&&platfrormHint<(int)num_platforms){
+				printf("Platform %d selection requested\n", platfrormHint);
+				clSelectedPlatformID=clPlatformIDs[platfrormHint];
+				platformInd=platfrormHint;
+			}
+
             // default to zeroeth platform if NVIDIA not found
-            if(*clSelectedPlatformID == NULL)
+            if(clSelectedPlatformID == NULL)
             {
                 //shrLog("WARNING: NVIDIA OpenCL platform not found - defaulting to first platform!\n\n");
-                //printf("WARNING: NVIDIA OpenCL platform not found - defaulting to first platform!\n\n");
-                printf("selected platform: %d\n", 0);
-                *clSelectedPlatformID = clPlatformIDs[0];
+                printf("WARNING: NVIDIA OpenCL platform not found - defaulting to first platform!\n\n");
+                clSelectedPlatformID = clPlatformIDs[0];
+				platformInd=0;
             }
 
             free(clPlatformIDs);

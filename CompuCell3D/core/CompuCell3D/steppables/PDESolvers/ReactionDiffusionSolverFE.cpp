@@ -1,28 +1,27 @@
 
-#include <CompuCell3D/CC3D.h>
 
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Automaton/Automaton.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <CompuCell3D/Potts3D/CellInventory.h>
-// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
-// // // #include <CompuCell3D/Field3D/Field3DImpl.h>
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/Field3DIO.h>
-// // // #include <BasicUtils/BasicClassGroup.h>
+#include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/Automaton/Automaton.h>
+#include <CompuCell3D/Potts3D/Potts3D.h>
+#include <CompuCell3D/Potts3D/CellInventory.h>
+#include <CompuCell3D/Field3D/WatchableField3D.h>
+#include <CompuCell3D/Field3D/Field3DImpl.h>
+#include <CompuCell3D/Field3D/Field3D.h>
+#include <CompuCell3D/Field3D/Field3DIO.h>
+#include <BasicUtils/BasicClassGroup.h>
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
 
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
-// // // #include <PublicUtilities/StringUtils.h>
-// // // #include <muParser/muParser.h>
-// // // #include <string>
-// // // #include <cmath>
-// // // #include <iostream>
-// // // #include <fstream>
-// // // #include <sstream>
-// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
+#include <BasicUtils/BasicString.h>
+#include <BasicUtils/BasicException.h>
+#include <BasicUtils/BasicRandomNumberGenerator.h>
+#include <PublicUtilities/StringUtils.h>
+#include <muParser/muParser.h>
+#include <string>
+#include <cmath>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <PublicUtilities/ParallelUtilsOpenMP.h>
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -241,6 +240,22 @@ void ReactionDiffusionSolverFE::extraInit(Simulator *simulator){
 		if(!steppableAlreadyRegisteredFlag)
 			boxWatcherSteppable->init(simulator);
 	}
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ReactionDiffusionSolverFE::handleEvent(CC3DEvent & _event){
+	if (_event.id!=LATTICE_RESIZE){
+		return;
+	}
+	
+    cellFieldG=(WatchableField3D<CellG *> *)potts->getCellFieldG();
+    
+	CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
+	
+    for (size_t i =0 ;   i < concentrationFieldVector.size() ; ++i){
+        concentrationFieldVector[i]->resizeAndShift(ev.newDim,ev.shiftVec);
+    }
+    
+	
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

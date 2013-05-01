@@ -187,7 +187,7 @@ __kernel void diff3D(__global const float* field,
 
     //solve actual diff equation
     float concentrationSum =0.0f;
-    float dt_dx2=solverParams->dt/(solverParams->dx*solverParams->dx);
+	float dt_dx2=solverParams->dt/solverParams->dx2;
 
     int curentCelltype=celltypeBlock[bExInd];
 
@@ -316,12 +316,52 @@ void globToLocal(int4 g_dim, int4 g_ind, int4 l_dim, int4 l_ind,
 		for(int shiftY=minShift.y; shiftY<=maxShift.y; ++shiftY){
 			for(int shiftX=minShift.x; shiftX<=maxShift.x; ++shiftX){
 				int l_linearInd=ext3DIndToLinear(l_dim, l_ind+(int4)(shiftX, shiftY, shiftZ,0));
-                                //HACK keeps from crashing though it is redundand
-                                if(l_linearInd<0)
-                                    continue;
 				int g_linearInd=ext3DIndToLinear(g_dim, g_ind+(int4)(shiftX, shiftY, shiftZ,0));
 				l_field[l_linearInd]=g_field[g_linearInd];
 				l_cellType[l_linearInd]=g_cellType[g_linearInd];
+			}
+		}
+	}
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+}
+
+void globToLocalEx1(int4 g_dim, int4 g_ind, int4 l_dim, int4 l_ind, 
+	__global const float* g_field, __global const unsigned char* g_cellType, __global const float* g_fieldDelta,
+	__local float* l_field, __local unsigned char* l_cellType, __local float* l_fieldDelta)
+{
+	int4 minShift={-1,-1,-1,0};
+	int4 maxShift={1,1,1,0};
+
+
+	//all but boundary work items (threads) copy only one element. 
+	//Boundary work items copy an extra layer (usually one more element in one direction)
+	if(l_ind.x+minShift.x>0)
+		minShift.x=0;
+
+	if(l_ind.y+minShift.y>0)
+		minShift.y=0;
+
+	if(l_ind.z+minShift.z>0)
+		minShift.z=0;
+
+	if(l_ind.x+maxShift.x<=l_dim.x)
+		maxShift.x=0;
+
+	if(l_ind.y+maxShift.y<=l_dim.y)
+		maxShift.y=0;
+
+	if(l_ind.z+maxShift.z<=l_dim.z)
+		maxShift.z=0;
+	
+	for(int shiftZ=minShift.z; shiftZ<=maxShift.z; ++shiftZ){
+		for(int shiftY=minShift.y; shiftY<=maxShift.y; ++shiftY){
+			for(int shiftX=minShift.x; shiftX<=maxShift.x; ++shiftX){
+				int l_linearInd=ext3DIndToLinear(l_dim, l_ind+(int4)(shiftX, shiftY, shiftZ,0));
+				int g_linearInd=ext3DIndToLinear(g_dim, g_ind+(int4)(shiftX, shiftY, shiftZ,0));
+				l_field[l_linearInd]=g_field[g_linearInd];
+				l_cellType[l_linearInd]=g_cellType[g_linearInd];
+				l_fieldDelta[l_linearInd]=g_fieldDelta[g_linearInd];
 			}
 		}
 	}
@@ -349,48 +389,42 @@ __kernel void uniDiff(__global const float* g_field,
 	__constant int4 const *nbhdDiffShifts, 
     __global float* g_scratch,
     __local float *l_field,
-	__local unsigned char *l_cellType
+	__local unsigned char *l_cellType,
+	float dt
     )
 {
 
 	//there is a border of 1 pixel around the domain, so shifting by 1 at all dimensions
 	int4 g_ind={get_global_id(0)+1, get_global_id(1)+1, get_global_id(2)+1, 0};
 
-        if(g_ind.x>solverParams->xDim||g_ind.y>solverParams->yDim||g_ind.z>solverParams->zDim)
+	if(g_ind.x>solverParams->xDim||g_ind.y>solverParams->yDim||g_ind.z>solverParams->zDim)
 		return;
 	
-        int4 l_ind={get_local_id(0)+1,  get_local_id(1)+1,  get_local_id(2)+1, 0};
+	int4 l_ind={get_local_id(0)+1,  get_local_id(1)+1,  get_local_id(2)+1, 0};
 
-	int4 g_dim={solverParams->xDim, solverParams->yDim, solverParams->zDim, 0};
+	int4 g_dim={get_global_size(0), get_global_size(1), get_global_size(2), 0};
 
-        int4 l_dim={min(get_local_size(0), g_dim.x-get_group_id(0)*get_local_size(0)),
-		min(get_local_size(1), g_dim.y-get_group_id(1)*get_local_size(1)),  
-                min(get_local_size(2), g_dim.z-get_group_id(2)*get_local_size(2)), 0};
+	int4 l_dim={get_local_size(0),  get_local_size(1),  get_local_size(2), 0};
 
 	int g_linearInd=ext3DIndToLinear(g_dim, g_ind);//index of a current work item in a global space
-        int l_linearInd=ext3DIndToLinear(l_dim, l_ind);//index of a current work item in a local space (in a block of shared memory)
+	int l_linearInd=ext3DIndToLinear(l_dim, l_ind);//index of a current work item in a local space (in a block of shared memory)
 
-        globToLocal(g_dim, g_ind, l_dim, l_ind, g_field, g_cellType, l_field, l_cellType);
+	globToLocal(g_dim, g_ind, l_dim, l_ind, g_field, g_cellType, l_field, l_cellType);
 
-        float currentConcentration=l_field[l_linearInd];
-        //float currentConcentration=g_field[g_linearInd];
+	float currentConcentration=l_field[l_linearInd];
 	float concentrationSum=0.f;
 	if(solverParams->hexLattice){
 		for(int i=0; i<solverParams->nbhdConcLen; ++i){
 			int4 shift=getShift(g_ind+(int4)(-1,-1,-1,0), i, solverParams->hexLattice, nbhdConcShifts, solverParams->nbhdConcLen);
-                        int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
-                        concentrationSum+=l_field[lInd];
-                        //int gInd=ext3DIndToLinear(g_dim, g_ind+shift);
-                        //concentrationSum+=g_field[gInd];
+			int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			concentrationSum+=l_field[lInd];
 		}
 		concentrationSum-=solverParams->nbhdConcLen*currentConcentration;
 	}else{
 		for(int i=0; i<solverParams->nbhdConcLen; ++i){
 			int4 shift=nbhdConcShifts[i];
-                        int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
-                        concentrationSum+=l_field[lInd];
-                        //int gInd=ext3DIndToLinear(g_dim, g_ind+shift);
-                        //concentrationSum+=g_field[gInd];
+			int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			concentrationSum+=l_field[lInd];
 		}
 		concentrationSum-=solverParams->nbhdConcLen*currentConcentration;
 	}
@@ -398,8 +432,7 @@ __kernel void uniDiff(__global const float* g_field,
 	//g_scratch[g_linearInd]=concentrationSum;
 	//return;
 
-        unsigned char curentCelltype=l_cellType[l_linearInd];
-        //unsigned char curentCelltype=g_cellType[g_linearInd];
+	unsigned char curentCelltype=l_cellType[l_linearInd];
 	float currentDiffCoef=solverParams->diffCoef[curentCelltype];
 	
 	concentrationSum*=currentDiffCoef;
@@ -408,30 +441,401 @@ __kernel void uniDiff(__global const float* g_field,
 	if(solverParams->hexLattice){
 		for(int i=0; i<solverParams->nbhdDiffLen; ++i){
 			int4 shift=getShift(g_ind+(int4)(-1,-1,-1, 0), i, solverParams->hexLattice, nbhdDiffShifts, solverParams->nbhdDiffLen);
-                        int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
-                        varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
-                        //int gInd=ext3DIndToLinear(g_dim, g_ind+shift);
-                        //varDiffSumTerm+=(solverParams->diffCoef[g_cellType[gInd]]-currentDiffCoef)*(g_field[gInd]-currentConcentration);
+			int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
 		}
 	}else{
 		for(int i=0; i<solverParams->nbhdDiffLen; ++i){
-                        int lInd=ext3DIndToLinear(l_dim, l_ind+nbhdDiffShifts[i]);
-                        varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
-                        //int gInd=ext3DIndToLinear(g_dim, g_ind+nbhdDiffShifts[i]);
-                        //varDiffSumTerm+=(solverParams->diffCoef[g_cellType[gInd]]-currentDiffCoef)*(g_field[gInd]-currentConcentration);
+			int lInd=ext3DIndToLinear(l_dim, l_ind+nbhdDiffShifts[i]);
+			varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
 		}
 	}
 	
-	float dt_dx2=solverParams->dt/(solverParams->dx*solverParams->dx);
 
-    float scratch=dt_dx2*(concentrationSum+varDiffSumTerm)+(1.f-solverParams->dt*solverParams->decayCoef[curentCelltype])*currentConcentration;
+	float dx2=solverParams->dx*solverParams->dx;
+	float dt_dx2=dt/dx2;
+
+    float scratch=dt_dx2*(concentrationSum+varDiffSumTerm)+(1.f-dt*solverParams->decayCoef[curentCelltype])*currentConcentration;
 
 	g_scratch[g_linearInd]=scratch;
 	
 }
 
+
+//TODO: fix this by using diffop and taking dt/dx into account
+//used in linear solver
+__kernel void prod(__global const float* g_field,
+    __global const unsigned char * g_cellType,
+	__global UniSolverParams_t  const *solverParams,
+	__constant int4 const *nbhdConcShifts, 
+	__constant int4 const *nbhdDiffShifts, 
+    __global float* g_scratch,
+    __local float *l_field,
+	__local unsigned char *l_cellType,
+	float dt
+    )
+{
+
+	//there is a border of 1 pixel around the domain, so shifting by 1 at all dimensions
+	int4 g_ind={get_global_id(0)+1, get_global_id(1)+1, get_global_id(2)+1, 0};
+
+	if(g_ind.x>solverParams->xDim||g_ind.y>solverParams->yDim||g_ind.z>solverParams->zDim)
+		return;
+	
+	int4 l_ind={get_local_id(0)+1,  get_local_id(1)+1,  get_local_id(2)+1, 0};
+
+	int4 g_dim={get_global_size(0), get_global_size(1), get_global_size(2), 0};
+
+	int4 l_dim={get_local_size(0),  get_local_size(1),  get_local_size(2), 0};
+
+	int g_linearInd=ext3DIndToLinear(g_dim, g_ind);//index of a current work item in a global space
+	int l_linearInd=ext3DIndToLinear(l_dim, l_ind);//index of a current work item in a local space (in a block of shared memory)
+
+	globToLocal(g_dim, g_ind, l_dim, l_ind, g_field, g_cellType, l_field, l_cellType);
+
+	float currentConcentration=l_field[l_linearInd];
+	float concentrationSum=0.f;
+	unsigned char curentCelltype=l_cellType[l_linearInd];
+	float currentDiffCoef=solverParams->diffCoef[curentCelltype];
+
+	float scratch=0.f;
+	if(solverParams->hexLattice){
+		for(int i=0; i<solverParams->nbhdConcLen; ++i){
+			int4 shift=getShift(g_ind+(int4)(-1,-1,-1,0), i, solverParams->hexLattice, nbhdConcShifts, solverParams->nbhdConcLen);
+			int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			concentrationSum+=l_field[lInd];
+		}
+		concentrationSum-=solverParams->nbhdConcLen*currentConcentration;
+	}else
+	{
+		for(int i=0; i<solverParams->nbhdConcLen; ++i){
+			int4 shift=nbhdConcShifts[i];
+			int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			scratch-=l_field[lInd]*currentDiffCoef;
+			//concentrationSum-=l_field[lInd];
+		}
+		//concentrationSum+=solverParams->nbhdConcLen*currentConcentration;
+		scratch+=(1+solverParams->nbhdConcLen*currentDiffCoef)*currentConcentration;
+	}
+
+			
+	//g_scratch[g_linearInd]=concentrationSum;
+	//return;
+
+	
+	
+	//concentrationSum*=currentDiffCoef;
+	
+	g_scratch[g_linearInd]=scratch;
+	
+}
+
+
+/*
+
+__kernel void vct_add(__global float* vector,
+    __global const float * add,
+	int size
+    )
+{
+	//there is a border of 1 pixel around the domain, so shifting by 1 at all dimensions
+	int idx=get_global_id(0);
+
+	if(idx>=size)
+		return;
+
+	vector[idx]+=add[idx];
+}*/
+
+
+float diffOp(float dx2, int nbhdLen, __constant int4 const * nbhdShifts, float currDiffCoeff, float currField,
+	int4 lDim, int4 lInd, __local const float * l_field, bool bnd)
+{
+	float scratch=0.f;
+	if(!bnd){
+		for(int i=0; i<nbhdLen; ++i){
+			int4 shift=nbhdShifts[i];
+			int lShiftedInd=ext3DIndToLinear(lDim, lInd+shift);
+			scratch+=l_field[lShiftedInd];
+		}
+		scratch-=nbhdLen*currField;
+		
+	}else
+		scratch=currField; 
+
+	return scratch*currDiffCoeff/dx2;
+	
+}
+
+float diffOpDiag(float dx2, int nbhdLen, float currDiffCoeff, bool bnd){
+	if(!bnd){
+		float scratch=0.f;
+		
+		scratch-=nbhdLen; /* *currField;*/
+		scratch*=currDiffCoeff;
+
+		return scratch/dx2;
+	}else
+		return 1;
+	
+}
+
+/*__kernel void newtonItKernel(float epsilon,
+	__global const float* g_krylovVct,//1
+	__global const float* g_newField,
+	__global const unsigned char * g_cellType,
+	__global UniSolverParams_t  const *solverParams,
+	__constant int4 const *nbhdConcShifts, 
+	__global float* g_scratch,//6
+    __local float *l_field,
+	__local unsigned char *l_cellType,
+	float dt)
+{
+
+	int4 g_ind={get_global_id(0)+1, get_global_id(1)+1, get_global_id(2)+1, 0};
+
+	if(g_ind.x>solverParams->xDim||g_ind.y>solverParams->yDim||g_ind.z>solverParams->zDim)
+		return;
+
+	int4 lInd={get_local_id(0)+1,  get_local_id(1)+1,  get_local_id(2)+1, 0};
+
+	int4 g_dim={get_global_size(0), get_global_size(1), get_global_size(2), 0};
+
+	int4 lDim={get_local_size(0),  get_local_size(1),  get_local_size(2), 0};
+
+	int g_linearInd=ext3DIndToLinear(g_dim, g_ind);//index of a current work item in a global space
+	int l_linearInd=ext3DIndToLinear(lDim, lInd);//index of a current work item in a local space (in a block of shared memory)
+
+	
+
+	globToLocal(g_dim, g_ind, lDim, lInd, g_krylovVct, g_cellType, l_field, l_cellType);
+
+	unsigned char currCelltype=l_cellType[l_linearInd];
+	float currDiffCoef=solverParams->diffCoef[currCelltype];
+
+	
+
+	float argValue=l_field[l_linearInd];
+
+	
+
+	float newFieldVal=g_newField[g_linearInd];
+
+	
+
+	bool bnd=(g_ind.x==1||g_ind.x==solverParams->xDim||
+		g_ind.y==1||g_ind.y==solverParams->yDim||
+		g_ind.z==1||g_ind.z==solverParams->zDim);
+
+
+	//g_scratch[g_linearInd]=diffOp(solverParams->dx2, solverParams->nbhdConcLen, nbhdConcShifts, currDiffCoef, argValue, lDim, lInd, l_field, bnd);
+	//g_scratch[g_linearInd]=epsilon;
+	
+	//implicit scheme
+	float dx2=solverParams->dx*solverParams->dx;
+	g_scratch[g_linearInd]=argValue-dt*(diffOp(dx2, solverParams->nbhdConcLen, nbhdConcShifts, currDiffCoef, argValue, lDim, lInd, l_field, bnd)+
+		(AdditionalTermFGF(newFieldVal+argValue*epsilon)-AdditionalTermFGF(newFieldVal))/epsilon);
+	
+
+}
+
+
+__kernel void newtonItKernelDiag(float epsilon,
+	__global const float* g_newField,
+	__global const unsigned char * g_cellType,
+	__global UniSolverParams_t  const *solverParams,
+	__constant int4 const *nbhdConcShifts, 
+	__global float* g_scratch, 
+	float dt)
+{
+	int4 g_ind={get_global_id(0)+1, get_global_id(1)+1, get_global_id(2)+1, 0};
+
+	if(g_ind.x>solverParams->xDim||g_ind.y>solverParams->yDim||g_ind.z>solverParams->zDim)
+		return;
+	
+	//int4 lInd={get_local_id(0)+1,  get_local_id(1)+1,  get_local_id(2)+1, 0};
+
+	int4 g_dim={get_global_size(0), get_global_size(1), get_global_size(2), 0};
+
+	//int4 lDim={get_local_size(0),  get_local_size(1),  get_local_size(2), 0};
+
+	int g_linearInd=ext3DIndToLinear(g_dim, g_ind);//index of a current work item in a global space
+	
+	//globToLocal(g_dim, g_ind, lDim, lInd, g_krylovVct, g_cellType, l_field, l_cellType);
+
+	unsigned char currCelltype=g_cellType[g_linearInd];
+	float currDiffCoef=solverParams->diffCoef[currCelltype];
+
+	//float argValue=g_krylovVct[g_linearInd];
+
+	float newFieldVal=g_newField[g_linearInd];
+
+	bool bnd=(g_ind.x==1||g_ind.x==solverParams->xDim||
+		g_ind.y==1||g_ind.y==solverParams->yDim||
+		g_ind.z==1||g_ind.z==solverParams->zDim);
+	
+	float dx2=solverParams->dx*solverParams->dx;
+	float res=1-dt*diffOpDiag(dx2, solverParams->nbhdConcLen, currDiffCoef, bnd);
+	
+	res+=dt*(AdditionalTermFGF(newFieldVal+epsilon)-AdditionalTermFGF(newFieldVal))/epsilon;
+
+	if(fabs(res)<epsilon)
+	{
+		g_scratch[g_linearInd]=epsilon;
+		return;
+	}
+	
+	//implicit scheme
+	g_scratch[g_linearInd]=1/res;
+	
+}
+
+__kernel void fullExpr(int negate,
+	__global const float* g_field,
+	__global const float* g_argVector,
+    __global const unsigned char * g_cellType,
+	__global UniSolverParams_t  const *solverParams,
+	__constant int4 const *nbhdConcShifts, 
+	__global float* g_scratch,//6
+    __local float *l_field,
+	__local unsigned char *l_cellType, 
+	float dt)
+{
+	int4 g_ind={get_global_id(0)+1, get_global_id(1)+1, get_global_id(2)+1, 0};
+
+	if(g_ind.x>solverParams->xDim||g_ind.y>solverParams->yDim||g_ind.z>solverParams->zDim)
+		return;
+	
+	int4 lInd={get_local_id(0)+1,  get_local_id(1)+1,  get_local_id(2)+1, 0};
+
+	int4 g_dim={get_global_size(0), get_global_size(1), get_global_size(2), 0};
+
+	int4 lDim={get_local_size(0),  get_local_size(1),  get_local_size(2), 0};
+
+	int g_linearInd=ext3DIndToLinear(g_dim, g_ind);//index of a current work item in a global space
+	//g_scratch[10]=-nbhdConcShifts[0].x;
+	//g_scratch[11]=nbhdConcShifts[0].x;
+	//return;
+
+
+	int l_linearInd=ext3DIndToLinear(lDim, lInd);//index of a current work item in a local space (in a block of shared memory)
+
+	globToLocal(g_dim, g_ind, lDim, lInd, g_argVector, g_cellType, l_field, l_cellType);
+
+	unsigned char currCelltype=l_cellType[l_linearInd];
+	float currDiffCoef=solverParams->diffCoef[currCelltype];
+
+	float argValue=l_field[l_linearInd];
+
+	bool bnd=(g_ind.x==1||g_ind.x==solverParams->xDim||
+		g_ind.y==1||g_ind.y==solverParams->yDim||
+		g_ind.z==1||g_ind.z==solverParams->zDim);
+	
+	//implicit scheme
+	float dx2=solverParams->dx*solverParams->dx;
+	float res=argValue-g_field[g_linearInd]-
+		dt*(diffOp(dx2, solverParams->nbhdConcLen, nbhdConcShifts, currDiffCoef, argValue, lDim, lInd, l_field, bnd)+
+						  AdditionalTermFGF(argValue));
+
+	//float res=argValue;
+
+	if(negate)
+		g_scratch[g_linearInd]=-res;
+	else
+		g_scratch[g_linearInd]=res;
+
+}
+
+
+//if hasDelta==true compute F(g_field+e*g_fieldDelta)
+//otherwise compute F(g_fieldDelta)
+//if negate==true negate the reult
+__kernel void newtonKernel(int negate,
+	__global const float* g_field,
+    __global const unsigned char * g_cellType,
+	__global UniSolverParams_t  const *solverParams,
+	__constant int4 const *nbhdConcShifts, 
+	__global float* g_scratch,
+    __local float *l_field,
+	__local unsigned char *l_cellType)//TODO: unify with a regular solver?
+{
+
+	//there is a border of 1 pixel around the domain, so shifting by 1 at all dimensions
+	int4 g_ind={get_global_id(0)+1, get_global_id(1)+1, get_global_id(2)+1, 0};
+
+	if(g_ind.x>solverParams->xDim||g_ind.y>solverParams->yDim||g_ind.z>solverParams->zDim)
+		return;
+	
+	int4 l_ind={get_local_id(0)+1,  get_local_id(1)+1,  get_local_id(2)+1, 0};
+
+	int4 g_dim={get_global_size(0), get_global_size(1), get_global_size(2), 0};
+
+	int4 l_dim={get_local_size(0),  get_local_size(1),  get_local_size(2), 0};
+
+	int g_linearInd=ext3DIndToLinear(g_dim, g_ind);//index of a current work item in a global space
+	int l_linearInd=ext3DIndToLinear(l_dim, l_ind);//index of a current work item in a local space (in a block of shared memory)
+
+	globToLocal(g_dim, g_ind, l_dim, l_ind, g_field, g_cellType, l_field, l_cellType);
+
+	float currentConcentration=l_field[l_linearInd];
+	float concentrationSum=0.f;
+	unsigned char curentCelltype=l_cellType[l_linearInd];
+	float currentDiffCoef=solverParams->diffCoef[curentCelltype];
+
+	float scratch=0.f;
+	
+	for(int i=0; i<solverParams->nbhdConcLen; ++i){
+		int4 shift=nbhdConcShifts[i];
+		int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+		scratch=l_field[lInd];
+		//concentrationSum-=l_field[lInd];
+	}
+	scratch*=currentDiffCoef;
+	
+	scratch+=(1-solverParams->nbhdConcLen*currentDiffCoef)*currentConcentration;
+
+	if(negate)
+		g_scratch[g_linearInd]=-scratch;
+	else
+		g_scratch[g_linearInd]=scratch;
+	
+}
+
+//if hasDelta==true compute F(g_field+e*g_fieldDelta)
+//otherwise compute F(g_fieldDelta)
+//if negate==true negate the reult
+__kernel void newtonReactionKernel(float epsilon,
+	__global const float* g_field,
+    __global const float* g_fieldDelta,
+	__global UniSolverParams_t  const *solverParams,
+	__constant int4 const *nbhdConcShifts, 
+    __global float* g_scratch
+    )
+{
+	
+	//there is a border of 1 pixel around the domain, so shifting by 1 at all dimensions
+	int4 g_ind={get_global_id(0)+1, get_global_id(1)+1, get_global_id(2)+1, 0};
+
+	if(g_ind.x>solverParams->xDim||g_ind.y>solverParams->yDim||g_ind.z>solverParams->zDim)
+		return;
+
+	int4 g_dim={get_global_size(0), get_global_size(1), get_global_size(2), 0};
+
+	int g_linearInd=ext3DIndToLinear(g_dim, g_ind);//index of a current work item in a global space
+
+	float currentConcentration=g_field[g_linearInd];
+	float currentConcentrationDelta=g_fieldDelta[g_linearInd];
+	
+	float scratch=AdditionalTermFGF(currentConcentration+epsilon*currentConcentrationDelta);
+	scratch-=AdditionalTermFGF(currentConcentration);
+	
+	g_scratch[g_linearInd]+=scratch/epsilon;
+	
+}*/
+
+
 //for testing purposes
-__kernel void diffHexagonal3D(__global const float* g_field,
+/*__kernel void diffHexagonal3D(__global const float* g_field,
     __global const unsigned char * g_cellType,
 	__global UniSolverParams_t  const *solverParams,
 	__constant int4 const *nbhdConcShifts, 
@@ -483,7 +887,7 @@ __kernel void diffHexagonal3D(__global const float* g_field,
 		varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
 	}
 	
-	float dt_dx2=solverParams->dt/(solverParams->dx*solverParams->dx);
+	float dt_dx2=solverParams->dt/(solverParams->dx2);
 
 	//float scratch=varDiffSumTerm;
     float scratch=dt_dx2*(concentrationSum+varDiffSumTerm)+(1.f-solverParams->dt*solverParams->decayCoef[curentCelltype])*currentConcentration;
@@ -524,22 +928,6 @@ __kernel void diffHexagonal2D1(__global const float* g_field,
 	for(int i=0; i<6; ++i){
 		int4 shift=getShift(g_ind+(int4)(-1,-1,-1,0), i, solverParams->hexLattice, nbhdConcShifts, 6);
 
-		/*if(shift.x<-1||shift.x>1){
-			g_scratch[g_linearInd]=100+i;
-			return;
-		}*/
-
-		
-	/*	if(shift.y<-1||shift.y>1){
-			g_scratch[g_linearInd]=200+i;
-			return;
-		}
-
-		
-		if(shift.z<-1||shift.z>1){
-			g_scratch[g_linearInd]=300+i;
-			return;
-		}*/
 	
 		
 		int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
@@ -563,12 +951,8 @@ __kernel void diffHexagonal2D1(__global const float* g_field,
 		varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
 	}
 	
-	float dt_dx2=solverParams->dt/(solverParams->dx*solverParams->dx);
+	float dt_dx2=solverParams->dt/(solverParams->dx2);
 
-	/*if(!isfinite(concentrationSum)){
-		g_scratch[g_linearInd]=45;
-		return;
-	}*/
 
 	//float scratch=varDiffSumTerm;
     float scratch=dt_dx2*(concentrationSum+varDiffSumTerm)+(1.f-solverParams->dt*solverParams->decayCoef[curentCelltype])*currentConcentration;
@@ -650,7 +1034,7 @@ __kernel void diffHexagonal2D(__global const float* g_field,
 		varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
 	}
 	
-	float dt_dx2=solverParams->dt/(solverParams->dx*solverParams->dx);
+	float dt_dx2=solverParams->dt/(solverParams->dx2);
 
 	//float scratch=varDiffSumTerm;
     float scratch=dt_dx2*(concentrationSum+varDiffSumTerm)+(1.f-solverParams->dt*solverParams->decayCoef[curentCelltype])*currentConcentration;
@@ -711,7 +1095,7 @@ __kernel void diffCartesian3D(__global const float* g_field,
 	}
 	
 	
-	float dt_dx2=solverParams->dt/(solverParams->dx*solverParams->dx);
+	float dt_dx2=solverParams->dt/(solverParams->dx2);
 
 	//float scratch=varDiffSumTerm;
     float scratch=dt_dx2*(concentrationSum+varDiffSumTerm)+(1.f-solverParams->dt*solverParams->decayCoef[curentCelltype])*currentConcentration;
@@ -772,7 +1156,7 @@ __kernel void diffCartesian2D(__global const float* g_field,
 	}
 	
 	
-	float dt_dx2=solverParams->dt/(solverParams->dx*solverParams->dx);
+	float dt_dx2=solverParams->dt/(solverParams->dx2);
 
 	//float scratch=varDiffSumTerm;
     float scratch=dt_dx2*(concentrationSum+varDiffSumTerm)+(1.f-solverParams->dt*solverParams->decayCoef[curentCelltype])*currentConcentration;
@@ -828,7 +1212,7 @@ __kernel void diff2DHex(__global const float* field_lr,
 
     //solve actual diff equation
     
-    float dt_dx2=solverParams->dt/(solverParams->dx*solverParams->dx);
+    float dt_dx2=solverParams->dt/(solverParams->dx2);
 
     int curentCelltype=celltype[glob2DIndToLinear(DIMX, x+1, y+1)];
 
@@ -867,32 +1251,8 @@ __kernel void diff2DHex(__global const float* field_lr,
 
 	scratch[gCurrInd]=dt_dx2*(concentrationSum+varDiffSumTerm)+(1-solverParams->dt*decayCoef[curentCelltype])*field[gCurrInd];
 
-   /* concentrationSum=fieldBlock[bExIndXp1]+fieldBlock[bExIndYp1]
-		+fieldBlock[bExIndXm1]+fieldBlock[bExIndYm1]-4*fieldBlock[bExInd];
-
-    __global float const * diffCoef=solverParams->diffCoef;
-    __global float const * decayCoef=solverParams->decayCoef;
-
-	concentrationSum*=diffCoef[curentCelltype];
-		
-    float varDiffSumTerm=0.0f;
-
-    //using forward first derivatives
-    //x partial derivatives
-    varDiffSumTerm+=(diffCoef[celltypeBlock[bExIndXp1]]-diffCoef[curentCelltype])*(fieldBlock[bExIndXp1]-fieldBlock[bExInd]);
-    //y partial derivatives
-    varDiffSumTerm+=(diffCoef[celltypeBlock[bExIndYp1]]-diffCoef[curentCelltype])*(fieldBlock[bExIndYp1]-fieldBlock[bExInd]);
  
-    scratchBlock[bScratchInd]=dt_dx2*(concentrationSum+varDiffSumTerm)+(1-solverParams->dt*decayCoef[curentCelltype])*fieldBlock[bExInd];
-	
-	barrier(CLK_LOCAL_MEM_FENCE);
-
-    //copy scratchBlock to scratch field on the device
-	scratch[glob2DIndToLinear(DIMX, x+1, y+1)]=scratchBlock[bScratchInd];
-	scratch[glob2DIndToLinear(DIMX, x+1, y+1)]=2500;
-    
-	barrier(CLK_LOCAL_MEM_FENCE);*/
 	 
-}
+}*/
 
 

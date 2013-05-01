@@ -130,7 +130,7 @@ class Array3DLinearFortranField3DAdapter:public Field3DImpl<float>{
    public:
 	  //typedef float precision_t;
 
-      Array3DLinearFortranField3DAdapter() : Field3DImpl<float>(Dim3D(1,1,1),float()) , containerPtr(0){};
+      Array3DLinearFortranField3DAdapter() : Field3DImpl<float>(Dim3D(1,1,1),float()){};
 
       Array3DLinearFortranField3DAdapter(Dim3D & _dim,float & _initVal):Field3DImpl<float>(Dim3D(1,1,1),float()){
          allocateMemory(_dim,_initVal);         
@@ -151,12 +151,54 @@ class Array3DLinearFortranField3DAdapter:public Field3DImpl<float>{
          dim=theDim;
          
          container.assign((internalDim.x)*(internalDim.y)*(internalDim.z),_initVal); 
-         containerPtr=&(container[0]);         
+         
          
       }
-      
+    virtual void setDim(const Dim3D newDim){
+		this->resizeAndShift(newDim);
+	}
+
+	virtual void resizeAndShift(const Dim3D newDim,  Dim3D shiftVec=Dim3D()){
+		vector<double> tmpContainer=container; 
+		tmpContainer.swap(container);// swapping vector content  => copy old vec to new
+
+		Dim3D oldInternalDim=internalDim;
+
+		internalDim.x=newDim.x+1;
+		internalDim.y=newDim.y+1;
+		internalDim.z=newDim.z+1;
+
+
+
+		container.assign((internalDim.x)*(internalDim.y)*(internalDim.z),0.0) ; //resize container and initialize it
+
+		//copying old array to new one - we do not copy swap values or boundary conditions these are usually set externally by the solver
+		Point3D pt;
+		Point3D ptShift;
+
+		//when lattice is growing or shrinking
+		for(pt.x=0 ; pt.x < newDim.x ; ++pt.x)
+			for(pt.y=0 ; pt.y < newDim.y ; ++pt.y)
+				for(pt.z=0 ; pt.z < newDim.z ; ++pt.z){
+
+				ptShift=pt-shiftVec;
+				if (ptShift.x>=0 && ptShift.x<dim.x && ptShift.y>=0 && ptShift.y<dim.y && ptShift.z>=0 && ptShift.z<dim.z )
+				{
+					container[pt.x + (pt.y+ pt.z * internalDim.y) * internalDim.x]=tmpContainer[ptShift.x + (ptShift.y+ ptShift.z * oldInternalDim.y) * oldInternalDim.x];							                    
+				}
+			}
+		//setting dim to new dim 
+        dim=newDim;
+        dim.z=1;
+		
+
+
+		
+	  }
+
+
 	  std::vector<double> & getContainerRef(){return container;}
-	  double * getContainerArrayPtr(){return containerPtr;}
+	  double * getContainerArrayPtr(){return &(container[0]);}	  
 
       inline unsigned int index(int _x,int _y,int _z ) const{
         //return _x+1 + (_y+1+ (_z+1) * internalDim.y) * internalDim.x;
@@ -184,7 +226,9 @@ class Array3DLinearFortranField3DAdapter:public Field3DImpl<float>{
       }
 
       virtual float get(const Point3D &pt) const {
-         return container[index(pt.x,pt.y,pt.z)];            
+		  //TODO: we'd better check why we cast from doubles to floats here      
+		  //Either doubles are not used, either interface is incorrect
+         return container[index(pt.x,pt.y,pt.z)];
 
       }
 
@@ -219,8 +263,7 @@ class Array3DLinearFortranField3DAdapter:public Field3DImpl<float>{
    protected:      
       std::vector<double> container;
       Dim3D dim;
-      Dim3D internalDim;
-      double * containerPtr;
+      Dim3D internalDim;      
 };
 
 
@@ -242,7 +285,7 @@ class Array3DLinearFortranField3DAdapter:public Field3DImpl<float>{
 class Array2DLinearFortranField3DAdapter:public Field3DImpl<float>{
    public:
 	  //typedef float precision_t;
-      Array2DLinearFortranField3DAdapter() : Field3DImpl<float>(Dim3D(1,1,1),float()) , containerPtr(0){};
+      Array2DLinearFortranField3DAdapter() : Field3DImpl<float>(Dim3D(1,1,1),float()) {};
       
       Array2DLinearFortranField3DAdapter(Dim3D & _dim,float & _initVal):Field3DImpl<float>(Dim3D(1,1,1),float())
 	  {
@@ -258,13 +301,56 @@ class Array2DLinearFortranField3DAdapter:public Field3DImpl<float>{
          dim=theDim;
          dim.z=1;
          
-         container.assign((internalDim.x)*(internalDim.y),_initVal); 
-         containerPtr=&(container[0]);         
+         container.assign((internalDim.x)*(internalDim.y),_initVal);          
          
       }
-      
+	  
+		virtual void setDim(const Dim3D newDim){
+			this->resizeAndShift(newDim);
+		}
+
+	    virtual void resizeAndShift(const Dim3D newDim,  Dim3D shiftVec=Dim3D()){
+		vector<double> tmpContainer=container; 
+		tmpContainer.swap(container);// swapping vector content  => copy old vec to new
+
+		Dim3D oldInternalDim=internalDim;
+
+		internalDim.x=newDim.x+1;
+		internalDim.y=newDim.y+1;
+		internalDim.z=1;
+
+
+
+		container.assign((internalDim.x)*(internalDim.y),0.0) ; //resize container and initialize it
+
+			
+		    
+			//copying old array to new one - we do not copy swap values or boundary conditions these are usually set externally by the solver
+			Point3D pt;
+			Point3D ptShift;
+
+			//when lattice is growing or shrinking
+			for(pt.x=0 ; pt.x < newDim.x ; ++pt.x)
+				for(pt.y=0 ; pt.y < newDim.y ; ++pt.y){
+					ptShift=pt-shiftVec;
+					if (ptShift.x>=0 && ptShift.x<dim.x && ptShift.y>=0 && ptShift.y<dim.y )
+					{
+					
+	                    
+						container[pt.x + (pt.y) * internalDim.x]=tmpContainer[ptShift.x + (ptShift.y) * oldInternalDim.x];						
+	                    
+					}
+				}
+		//setting dim to new dim 
+        dim=newDim;
+        dim.z=1;
+		
+
+
+		
+	  }
 	  std::vector<double> & getContainerRef(){return container;}
-	  double * getContainerArrayPtr(){return containerPtr;}
+	  double * getContainerArrayPtr(){return &(container[0]);}
 
       inline unsigned int index(int _x,int _y ) const{
         //return _x+1 + (_y+1) * internalDim.x;
@@ -322,8 +408,7 @@ class Array2DLinearFortranField3DAdapter:public Field3DImpl<float>{
    protected:      
       std::vector<double> container;
       Dim3D dim;
-      Dim3D internalDim;
-      double * containerPtr;
+      Dim3D internalDim;      
 };
 
 
@@ -696,6 +781,9 @@ public:
 		}
 		arrayCont=0;
 	}
+    virtual void setDim(const Dim3D theDim);
+	virtual void resizeAndShift(const Dim3D theDim,  Dim3D shiftVec=Dim3D());
+    
 	void allocateArray(const Dim3D & _dim , T val=T());
 	//       operator Type&();
 	ContainerType getContainer(){return arrayCont;}
@@ -805,6 +893,60 @@ void Array3DContiguous<T>::allocateArray(const Dim3D & _dim , T  val){
 	}
 
 }
+
+
+template <typename T>
+void Array3DContiguous<T>::resizeAndShift(const Dim3D newDim,  Dim3D shiftVec=Dim3D()){
+    
+    Dim3D newInternalDim=newDim;
+	newInternalDim.x+=3;
+	newInternalDim.y+=3;
+	newInternalDim.z+=3;
+    
+	int newArraySize=newInternalDim.x*newInternalDim.y*2*newInternalDim.z;
+	T * newArrayCont=new T[newArraySize];
+    
+	//initialization 
+	for (int i = 0 ;i<newArraySize;++i){
+		newArrayCont[i]=T();
+	}
+    
+    //copying old array to new one - we do not copy swap values or boundary conditions these are usually set externally by the solver
+	Point3D pt;
+	Point3D ptShift;
+
+	//when lattice is growing or shrinking
+	for(pt.x=0 ; pt.x < newDim.x ; ++pt.x)
+		for(pt.y=0 ; pt.y < newDim.y ; ++pt.y)
+			for(pt.z=0 ; pt.z < newDim.z ; ++pt.z){
+
+				ptShift=pt-shiftVec;
+				if (ptShift.x>=0 && ptShift.x<dim.x && ptShift.y>=0 && ptShift.y<dim.y && ptShift.z>=0 && ptShift.z<dim.z)
+				{
+					//cerr<<"ptShift="<<ptShift<<" pt="<<pt<<endl;
+                    
+                    newArrayCont[(((pt.x+borderWidth)+shiftArray) + ((((pt.y+borderWidth)+shiftArray) + ((2*(pt.z+borderWidth)+shiftArray) *newInternalDim.y)) * newInternalDim.x))]=get(ptShift.x,ptShift.y,ptShift.z);
+                    
+				}
+			}
+    
+    //swapping array and deallocation old one
+    internalDim=newInternalDim;
+	dim=newDim;
+    arraySize=newArraySize;
+    
+    delete [] arrayCont;
+    
+    arrayCont=newArrayCont;
+    
+    
+}
+
+template <typename T>
+void Array3DContiguous<T>::setDim(const Dim3D newDim){
+	this->resizeAndShift(newDim);
+}
+
 
 template <typename T>
 void Array3DContiguous<T>::swapArrays(){
@@ -1006,6 +1148,8 @@ public:
 		arrayCont=0;
 	}
 	void allocateArray(const Dim3D & _dim , T val=T());
+	virtual void setDim(const Dim3D newDim);
+	virtual void resizeAndShift(const Dim3D newDim,  Dim3D shiftVec=Dim3D());
 	//       operator Type&();
 	ContainerType getContainer(){return arrayCont;}
 
@@ -1116,6 +1260,58 @@ void Array2DContiguous<T>::swapArrays(){
 	}
 }
 
+
+template <typename T>
+void Array2DContiguous<T>::resizeAndShift(const Dim3D newDim,  Dim3D shiftVec=Dim3D()){
+    
+    Dim3D newInternalDim=newDim;
+	newInternalDim.x+=3;
+	newInternalDim.y+=3;
+	newInternalDim.z=1;
+    
+	int newArraySize=newInternalDim.x*newInternalDim.y*2;
+	T * newArrayCont=new T[newArraySize];
+    
+	//initialization 
+	for (int i = 0 ;i<newArraySize;++i){
+		newArrayCont[i]=T();
+	}
+    
+    //copying old array to new one - we do not copy swap values or boundary conditions these are usually set externally by the solver
+	Point3D pt;
+	Point3D ptShift;
+
+	//when lattice is growing or shrinking
+	for(pt.x=0 ; pt.x < newDim.x ; ++pt.x)
+		for(pt.y=0 ; pt.y < newDim.y ; ++pt.y){			
+				ptShift=pt-shiftVec;
+				if (ptShift.x>=0 && ptShift.x<dim.x && ptShift.y>=0 && ptShift.y<dim.y )
+				{
+					//cerr<<"ptShift="<<ptShift<<" pt="<<pt<<endl;
+                    newArrayCont[(pt.x+borderWidth)+shiftArray + (2*(pt.y+borderWidth)+shiftArray)* newInternalDim.x]=arrayCont[ptShift.x+borderWidth+shiftArray + (2*(ptShift.y+borderWidth)+shiftArray)* internalDim.x];
+                    // get(ptShift.x,ptShift.y);                    
+				}
+			}
+    
+    //swapping array and deallocation old one
+    internalDim=newInternalDim;
+	dim=newDim;
+    arraySize=newArraySize;
+    
+    delete [] arrayCont;
+    
+    arrayCont=newArrayCont;
+    
+    
+}
+
+template <typename T>
+void Array2DContiguous<T>::setDim(const Dim3D newDim){
+	this->resizeAndShift(newDim);
+}
+
+
+
 template <typename T>
 class Array3DFiPy:public Field3DImpl<T>{
 public:
@@ -1150,6 +1346,8 @@ public:
 		arrayCont=0;
 	}
 	void allocateArray(const Dim3D & _dim , T val=T());
+	
+
 	//       operator Type&();
 	ContainerType getContainer(){return arrayCont;}
 

@@ -329,11 +329,14 @@ class MVCDrawView2D(MVCDrawViewBase):
 
 
     def hideOutlineActor(self):
-        self.ren.RemoveActor(self.outlineActor)
+        self.graphicsFrameWidget.ren.RemoveActor(self.outlineActor)
         del self.currentActors["Outline"]
 
 
     def drawCellField(self, _bsd, fieldType):
+    
+            
+        
         import CompuCellSetup
 #        print
 #        print MODULENAME,'  drawCellField():   type(_bsd)=',type(_bsd)
@@ -359,19 +362,27 @@ class MVCDrawView2D(MVCDrawViewBase):
 #        if self.parentWidget.cellsAct.isChecked():
 #        if self.parentWidget.cellsAct.isChecked() or self.getSim3DFlag():  # rwh: hack for FPP
         dictKey = self.graphicsFrameWidget.winId().__int__()  # get key (addr) for this window
+        
+        
 #        print MODULENAME,' drawCellField(): self.parentWidget.graphicsWindowVisDict=',self.parentWidget.graphicsWindowVisDict
 #        print MODULENAME,' drawCellField(): dictKey=',dictKey
-        
+
+            
         if self.parentWidget.graphicsWindowVisDict[dictKey][0] or self.getSim3DFlag():  # rwh: for multi-window bug fix;  rwh: hack for FPP
 #        if self.parentWidget.graphicsWindowVisDict[self.parentWidget.lastActiveWindow.winId()][0] or self.getSim3DFlag():  # rwh: for multi-window bug fix;  rwh: hack for FPP
 #        print MODULENAME,'  hideCells():  self.parentWidget.lastActiveWindow= ',self.parentWidget.lastActiveWindow
+
+
 
 #            print '    drawCellField: yes, cellsAct isChecked'
             if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
                 self.drawCellFieldHex(_bsd,fieldType)
                 return
-            
+
+
+                
             self.drawModel.initCellFieldActors((self.cellsActor,))
+    
         
 #            print '   drawCellField:  currentActors=',self.currentActors
             if not self.currentActors.has_key("CellsActor"):
@@ -380,10 +391,13 @@ class MVCDrawView2D(MVCDrawViewBase):
 #                print '-----  added CELLS ACTOR'
         
         # Always draw outline of lattice
-        self.drawModel.prepareOutlineActors((self.outlineActor,))
-        self.showOutlineActor()
         
 
+
+        self.drawModel.prepareOutlineActors((self.outlineActor,))
+        self.showOutlineActor()
+
+        
 #        if self.parentWidget.borderAct.isChecked():
         if self.parentWidget.graphicsWindowVisDict[dictKey][1]:  # rwh: for multi-window bug fix
             if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
@@ -414,7 +428,8 @@ class MVCDrawView2D(MVCDrawViewBase):
                 self.drawClusterBorders2DHex()    
             else:
                 self.drawClusterBorders2D()
-                
+        
+
         self.Render()
         
         

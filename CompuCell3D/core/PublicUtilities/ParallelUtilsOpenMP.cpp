@@ -85,7 +85,7 @@ int latticeGridPartition3D[][3]={
 
 ParallelUtilsOpenMP::ParallelUtilsOpenMP():
 	numberOfWorkNodes(0), //by default this var is set to 0 . user can set manually number of work nodes  
-	threadsPerWorkNode(2) //by default this var is set to 2 . user can set manually number threads per worknode   
+	threadsPerWorkNode(1) //by default this var is set to 1 . user can set manually number threads per worknode   
 {
 	initLock(&pyWrapperGlobalLock);
 }
@@ -96,8 +96,8 @@ ParallelUtilsOpenMP::~ParallelUtilsOpenMP(){
 
 
 void ParallelUtilsOpenMP::init(const Dim3D &_dim){
-	numberOfWorkNodes=0;
-	threadsPerWorkNode=2;
+	//numberOfWorkNodes=0;
+	//threadsPerWorkNode=1;
 
 	fieldDim=_dim;
 	Dim3D minDim=Dim3D(1,1,1);
@@ -134,6 +134,24 @@ void ParallelUtilsOpenMP::setDim(const Dim3D &_dim){
 	feSolverPartitionVec.push_back(make_pair(minDim,maxDim));
 
 	calculateFESolverPartition();
+
+}
+
+
+void  ParallelUtilsOpenMP::handleEvent(CC3DEvent & _event){
+
+	if (_event.id==LATTICE_RESIZE){
+        CC3DEventLatticeResize & ev = static_cast<CC3DEventLatticeResize&>(_event);
+		init(ev.newDim);
+		//setDim(ev.newDim);
+	}else if (_event.id==CHANGE_NUMBER_OF_WORK_NODES){// I am trying to gradually get rid of VPU's and in this version we set threadsPerWorkNode which means that, by default, number of nodes is equal to number of threads. Users still can change it
+		CC3DEventChangeNumberOfWorkNodes & ev=static_cast<CC3DEventChangeNumberOfWorkNodes&>(_event);
+		setNumberOfWorkNodes(ev.newNumberOfNodes);
+		//threadsPerWorkNode=1; 
+	}
+
+    
+    
 
 }
 
@@ -201,7 +219,7 @@ unsigned int ParallelUtilsOpenMP::getNumberOfWorkNodesFESolver(){
 
 unsigned int ParallelUtilsOpenMP::getMaxNumberOfWorkNodesFESolver(){
 	unsigned int numberOfProcessors=getNumberOfProcessors();
-	//users may request more "processors" than there are CPU's on the system
+	//users may request more "processors" than there are CPU's on the system	
 	return (numberOfProcessors>=numberOfWorkNodes ? threadsPerWorkNode*numberOfProcessors : threadsPerWorkNode*numberOfWorkNodes);
 
 }

@@ -105,10 +105,13 @@ class MVCDrawViewBase():
         self.currentFieldType = _plotData        
         
     def drawFieldLocal(self, _bsd,_useFieldComboBox=True):
+        # print 'resetting camera in drawFieldLocal View base'
+        # self.resetAllCameras()    
+    
         fieldType = ("Cell_Field", FIELD_TYPES[0])
 #        print MODULENAME,  "drawFieldLocal():  fieldType=",fieldType
         # print "DrawLocal"
-        plane = self.getPlane()
+        plane = self.getPlane()        
 #        print MODULENAME,  "drawFieldLocal():  plane=",plane
         self.drawModel.setDrawingParameters(_bsd,plane[0],plane[1],fieldType)
         
@@ -140,7 +143,7 @@ class MVCDrawViewBase():
 #            print "---- MVCDrawViewBase.py: DrawingFunctionName=","draw"+fieldType[1]+currentPlane
             
             # # self.parentWidget.setFieldType((name, self.parentWidget.fieldTypes[name])) 
-            plane = (currentPlane, currentPlanePos)
+            plane = (currentPlane, currentPlanePos)            
             self.drawModel.setDrawingParameters(_bsd,plane[0],plane[1],fieldType)
             
             self.currentDrawingParameters.bsd = _bsd
@@ -150,21 +153,25 @@ class MVCDrawViewBase():
             self.currentDrawingParameters.fieldType = fieldType[1]        
             self.drawModel.setDrawingParametersObject(self.currentDrawingParameters)
             
-        self.drawField(_bsd,fieldType)
+        
+        self.drawField(_bsd,fieldType)        
         self.qvtkWidget.repaint()
         
         
-    def drawField(self, _bsd, fieldType): 
+    def drawField(self, _bsd, fieldType):         
         resetCamera = False # we reset camera only for visualizations for which camera settings are not in the dictionary and users have not requested custom cameras
         
-        if self.drawingFcnHasChanged:
+        if self.drawingFcnHasChanged:            
             self.clearDisplay()
-        
+            
         drawField = getattr(self, "draw" + fieldType[1])   # e.g. "drawCellField"
+        
+            
+        
         
         cs = None #camera settings
         
-        if self.currentDrawingFunction != drawField: # changing type of drawing function - need to remove actors that are currently displayed
+        if self.currentDrawingFunction != drawField: # changing type of drawing function e.g. from drawCellField to drawConField- need to remove actors that are currently displayed            
             for actorName in self.currentActors.keys():                
                 self.graphicsFrameWidget.ren.RemoveActor(self.currentActors[actorName])
                 del self.currentActors[actorName]
@@ -175,8 +182,7 @@ class MVCDrawViewBase():
         # here we handle actors for custom visualization when the name of the function does not change (it is drawCustomVis) but the name of the plot changes (hence actors have to be replaced with new actors)
         drawFieldCustomVis = getattr(self, "drawCustomVis")
         if self.currentDrawingFunction==drawFieldCustomVis:
-            #check if actors the name of the custom vis has changed
-            
+            #check if actors the name of the custom vis has changed            
             if self.currentCustomVisName != self.currentDrawingParameters.fieldName:
                 self.currentCustomVisName = self.currentDrawingParameters.fieldName
 
@@ -185,6 +191,7 @@ class MVCDrawViewBase():
                     del self.currentActors[actorName]
                 
         try:
+        
             fieldName = self.currentDrawingParameters.fieldName                                   
             cs = self.cameraSettingsDict[fieldName]
             
@@ -192,6 +199,7 @@ class MVCDrawViewBase():
                 if self.currentVisName==self.currentDrawingParameters.fieldName: # this section is called when camera setings have changed between calls to this fcn (e.g. when screen refreshes with new MCS data) and the visualzation field was not change by the user                    
                     cs = self.getCurrentCameraSettings()
                     self.cameraSettingsDict[fieldName] = cs
+                    
                     
                     self.setCurrentCameraSettings(cs)
                 else:                    # this section is called when camera settings have changed between calls to this function and visualization field changes. Before initializing camera with cs for new vis field setting we store cs for  previous vis field
@@ -205,13 +213,30 @@ class MVCDrawViewBase():
                 self.cameraSettingsDict[self.currentVisName] = self.getCurrentCameraSettings()
 
         self.currentVisName = self.currentDrawingParameters.fieldName    # updating current vis name        
-        drawField(_bsd, fieldType)        
+        
 
+        drawField(_bsd, fieldType)        
+        
         if resetCamera:
             self.qvtkWidget.resetCamera() 
             self.cameraSettingsDict[fieldName] = self.getCurrentCameraSettings()
         
-        
+       
+    def resetAllCameras(self) :             
+            self.cameraSettingsDict={}
+            # return
+            # print 'THIS IS VIEWBASE = ',self
+            # self.qvtkWidget.resetCamera() 
+            # for fieldName in self.cameraSettingsDict:        
+                # print 'fieldName=',fieldName
+                # self.cameraSettingsDict[fieldName] = self.getCurrentCameraSettings()
+                # # self.cameraSettingsDict[fieldName] = None
+                
+            # set camera seettings for the current scene    
+            # print 'self.graphicsFrameWidget=',self.graphicsFrameWidget
+            # self.graphicsFrameWidget.clearDisplayOnDemand()
+            
+    
     def drawCellField(self, _bsd, fieldType): pass
     
     def drawConField(self, _bsd, fieldType): pass
@@ -274,6 +299,7 @@ class MVCDrawViewBase():
         return self.ren.GetActiveCamera()
         
     def initSimArea(self, _bsd):
+        
         fieldDim   = _bsd.fieldDim
         # sim.getPotts().getCellFieldG().getDim()
         self.setCamera(fieldDim)

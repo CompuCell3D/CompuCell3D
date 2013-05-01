@@ -1,6 +1,5 @@
 
 
-// #include <CompuCell3D/CC3D.h>
 #include <CompuCell3D/Simulator.h>
 #include <CompuCell3D/Automaton/Automaton.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>
@@ -246,7 +245,54 @@ void SteadyStateDiffusionSolver::extraInit(Simulator *simulator){
 		centerOfMassPlugin->init(simulator);
 
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void SteadyStateDiffusionSolver::handleEvent(CC3DEvent & _event){
+	
+	if (_event.id==LATTICE_RESIZE){
+		cellFieldG=(WatchableField3D<CellG *> *)potts->getCellFieldG();
+	    
+		CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
+		
 
+		for (size_t i =0 ;   i < concentrationFieldVector.size() ; ++i){
+			concentrationFieldVector[i]->resizeAndShift(ev.newDim,ev.shiftVec);
+		}
+
+		
+
+		fieldDim=cellFieldG->getDim();		
+		workFieldDim=Dim3D(fieldDim.x+1,fieldDim.y+1,fieldDim.z+1);
+
+		
+
+		//scratch vecor
+		int maxLMN=fieldDim.x+1;
+		if(maxLMN<fieldDim.y+1)
+			maxLMN=fieldDim.y+1;
+		if(maxLMN<fieldDim.z+1)
+			maxLMN=fieldDim.z+1;
+
+
+		scratchVec.assign(30 + fieldDim.x+1+1 + fieldDim.y+1+1 + 5*(fieldDim.z+1)+maxLMN+7*((int)(fieldDim.x+1+1)+(int)(fieldDim.y+1+1)),0.0);
+		scratch=&(scratchVec[0]);
+
+
+		//vectors used to specify boundary conditions
+		bdaVec.assign((fieldDim.y+1)*(fieldDim.z+1),0.0);
+		bdbVec.assign((fieldDim.y+1)*(fieldDim.z+1),0.0);
+		bdcVec.assign((fieldDim.x+1)*(fieldDim.z+1),0.0);
+		bddVec.assign((fieldDim.x+1)*(fieldDim.z+1),0.0);
+
+		bdeVec.assign((fieldDim.x+1)*(fieldDim.y+1),0.0);
+		bdfVec.assign((fieldDim.x+1)*(fieldDim.y+1),0.0);
+
+
+
+		
+	}
+	
+	
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void SteadyStateDiffusionSolver::start() {
 	//     if(diffConst> (1.0/6.0-0.05) ){ //hard coded condtion for stability of the solutions - assume dt=1 dx=dy=dz=1

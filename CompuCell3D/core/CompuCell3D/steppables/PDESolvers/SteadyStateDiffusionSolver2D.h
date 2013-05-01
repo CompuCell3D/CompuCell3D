@@ -1,23 +1,22 @@
 #ifndef COMPUCELL3DSTEADYSTATEDIFFUSIONSOLVER2D_H
 #define COMPUCELL3DSTEADYSTATEDIFFUSIONSOLVER2D_H
 
-// #include <CompuCell3D/CC3D.h>
-// #undef real
 
 #include <CompuCell3D/Steppable.h>
 #include <CompuCell3D/Potts3D/Cell.h>
 #include "DiffusableVectorFortran.h"
 
 #include "DiffSecrData.h"
+#include "BoundaryConditionSpecifier.h"
 
 #include <CompuCell3D/Serializer.h>
+#include <CompuCell3D/CC3DEvents.h>
 
 #include <string>
 
 #include <vector>
 #include <set>
 #include <map>
-
 #include <iostream>
 
 #include "PDESolversDLLSpecifier.h"
@@ -152,7 +151,7 @@ namespace CompuCell3D {
 
 		virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);
 		virtual void extraInit(Simulator *simulator);
-
+		virtual void handleEvent(CC3DEvent & _event);
 		// Begin Steppable interface
 		virtual void start();
 		virtual void step(const unsigned int _currentStep);

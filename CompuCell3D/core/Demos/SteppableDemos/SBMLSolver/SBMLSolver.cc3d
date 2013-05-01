@@ -1,0 +1,5 @@
+<Simulation version="3.6.2">
+   <XMLScript Type="XMLScript">Simulation/SBMLSolver.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/SBMLSolver.py</PythonScript>
+   <Resource Type="Python">Simulation/SBMLSolverSteppables.py</Resource>
+</Simulation>

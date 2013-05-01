@@ -822,7 +822,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.removeAllPlotWindows()
         self.addVTKWindowToWorkspace()
         
-#        print MODULENAME,'    __setupArea():   self.mdiWindowDict=',self.mdiWindowDict
+        # print MODULENAME,'    __setupArea():   self.mdiWindowDict=',self.mdiWindowDict
 
     def __layoutGraphicsWindows(self):
         # rwh: if user specified a windows layout .xml in the .cc3d, then use it
@@ -871,7 +871,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         # return
         
     def handleErrorFormatted(self,_errorMessage):
-        print "INSIDE handleErrorFormatted"
+        # print "INSIDE handleErrorFormatted"
         self.__stopSim()
         syntaxErrorConsole=self.UI.console.getSyntaxErrorConsole()    
     
@@ -880,7 +880,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         return    
         
     def processIncommingSimulation(self,_fileName,_stopCurrentSim=False):
-        print "processIncommingSimulation = ",_fileName,
+        # print "processIncommingSimulation = ",_fileName,
         if _stopCurrentSim:
             startNewSimulation = False
             if not self.simulationIsRunning and not self.simulationIsStepping:
@@ -1273,6 +1273,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         # self.pifFromVTKAct.setEnabled(True)
         self.fieldDim = self.simulation.fieldDim
         self.mysim = self.simulation.sim
+        
 #        print MODULENAME,"--------- initializeSimulationViewWidgetCMLResultReplay()"
         
         latticeTypeStr=self.simulation.latticeType
@@ -1281,6 +1282,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         else:
             self.latticeType=Configuration.LATTICE_TYPES["Square"] # default choice        
 
+        
         simulationDataIntAddr = self.extractAddressIntFromVtkObject(self.simulation.simulationData)
         self.fieldExtractor.setSimulationData(simulationDataIntAddr) 
         self.simulation.newFileBeingLoaded=False # this flag is used to prevent calling  draw function when new data is read from hard drive
@@ -1819,6 +1821,10 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
     def handleCompletedStepCMLResultReplay(self,_mcs):
         self.simulation.drawMutex.lock()    # had to add synchronization here . without it I would get weird behavior in CML replay mode
+        
+        # print  '\n\n ---------------- handleCompletedStepCMLResultReplay'                                        
+        # print '--------------BEFORE self.fieldDim=',self.fieldDim        
+        
         # print "THIS IS handleCompletedStepCMLResultReplay"
         # print "Before extracting the address self.simulation.simulationData=",self.simulation.simulationData
         simulationDataIntAddr = self.extractAddressIntFromVtkObject(self.simulation.simulationData)
@@ -1833,7 +1839,10 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         self.simulation.newFileBeingLoaded = False # this flag is used to prevent calling  draw function when new data is read from hard drive
                                                  # at this moment new data has been read and is ready to be used  
+        
+        
         self.__drawField()
+        # print '----------------AFTER self.fieldDim=',self.fieldDim                                                 
         
         self.simulation.drawMutex.lock()
         # will need to synchorinize screenshots with simulation thread . make sure that before simuklation thread writes new results all the screenshots are taken
@@ -1855,7 +1864,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.simulation.sem.release()        
         
         
-    def handleCompletedStepRegular(self,_mcs):
+    def handleCompletedStepRegular(self,_mcs):    
 #        print MODULENAME,'  handleCompletedStepRegular():  calling __drawField()='
         self.__drawField()
         
@@ -1891,6 +1900,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
     
     
     def handleCompletedStep(self,_mcs):
+
+    
 #        print MODULENAME, 'handleCompletedStep:  _mcs =',_mcs
         if not self.completedFirstMCS: 
             self.completedFirstMCS = True        
@@ -2112,6 +2123,16 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.__drawField()
         
     def drawFieldCMLResultReplay(self):
+                
+        # # # print 'self.__step=',self.__step
+        # # # if self.simulation.dimensionChange():
+            # # # print 'DIMENSION CHANGED'
+        
+            # # # self.fieldStorage.allocateCellField(self.fieldDim)
+        
+            # # # self.prepareSimulationView() # this pauses simulation        
+
+        
         self.simulation.drawMutex.lock()
         # print "self.simulation.readFileSem.available()=",self.simulation.readFileSem.available()
         self.simulation.readFileSem.acquire()
@@ -2135,6 +2156,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.simulation.readFileSem.acquire()
         
         self.__step = self.simulation.getCurrentStep()   
+        
         if True:            
             for windowName in self.windowDict.keys():
                 graphicsFrame = self.windowDict[windowName]
@@ -2144,8 +2166,10 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
                 # print "NEW FILE IS LOADED =",self.simulation.newFileBeingLoaded
                 
-                if not self.simulation.newFileBeingLoaded: # this flag is used to prevent calling  draw function when new data is read from hard drive
+                if not self.simulation.newFileBeingLoaded: # this flag is used to prevent calling  draw function when new data is read from hard drive                                        
                     graphicsFrame.drawFieldLocal(self.basicSimulationData)
+                    
+                    
 
                 self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())
             
@@ -2158,6 +2182,9 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         if not self.simulationIsRunning:
             return    
     
+          
+            
+            
         if self.newDrawingUserRequest:
             self.newDrawingUserRequest = False
             if self.pauseAct.isEnabled():
@@ -2172,24 +2199,99 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             for windowName in self.graphicsWindowDict.keys():
                 graphicsFrame = self.windowDict[windowName]
 #                print MODULENAME,"drawFieldRegular():   windowName, graphicsFrame=",windowName, graphicsFrame
+                                
                 
                 #rwh: error if we try to invoke switchdim earlier    
                 (currentPlane, currentPlanePos) = graphicsFrame.getPlane()
+
+                
                 graphicsFrame.drawFieldLocal(self.basicSimulationData)
+                    
                 self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())   # show MCS in lower-left GUI
         
         self.simulation.drawMutex.unlock()
     
+
+    def updateSimulationProperties(self):       
+        # print 'INSIDE updateSimulationProperties ',self.fieldDim
+        
+        fieldDim=None
+        if self.__viewManagerType=="Regular":
+        
+            fieldDim = self.simulation.sim.getPotts().getCellFieldG().getDim()
+            
+            if fieldDim.x==self.fieldDim.x and fieldDim.y==self.fieldDim.y and fieldDim.z==self.fieldDim.z:
+                return False
+                
+            self.fieldDim= fieldDim   
+            self.basicSimulationData.fieldDim = self.fieldDim
+            self.basicSimulationData.sim = self.mysim
+            self.basicSimulationData.numberOfSteps = self.mysim.getNumSteps()
+            
+            return True
+            
+        elif self.__viewManagerType=="CMLResultReplay":
+            fieldDim = self.simulation.fieldDim
+            if self.simulation.dimensionChange():
+                self.simulation.resetDimensionChangeMonitoring()
+                self.fieldDim= self.simulation.fieldDim   
+                self.basicSimulationData.fieldDim = self.fieldDim
+                self.fieldExtractor.setFieldDim(self.basicSimulationData.fieldDim)
+                # self.basicSimulationData.sim = self.mysim
+                # self.basicSimulationData.numberOfSteps = self.mysim.getNumSteps()
+                return True
+                
+            return False
+        
+        
+    def updateVisualization(self):    
+        # print 'INSIDE f'
+        self.fieldStorage.allocateCellField(self.fieldDim)
+        # this updates cross sections when dimensions change
+        for windowName in self.windowDict.keys():
+            self.windowDict[windowName].updateCrossSection(self.basicSimulationData)
+        
+        
+        # # # self.setInitialCrossSection(self.basicSimulationData) 
+        
+        
+        for windowName, graphicsWindow in self.graphicsWindowDict.iteritems():
+            graphicsWindow.resetAllCameras()
+        
+        
+        # # # self.prepareSimulationView() # this pauses simulation        
+        # self.__drawField()
+        
+        if self.simulationIsRunning and not self.simulationIsStepping:
+            self.__runSim() # we are immediately restarting it after e.g. lattice resizing took place
         
     def _drawField(self):   # called from GraphicsFrameWidget.py
 #        print MODULENAME,'   _drawField called'
         self.__drawField()
     
     def __drawField(self):
+
+            
         __drawFieldFcn = getattr(self, "drawField" + self.__viewManagerType)
 #        print MODULENAME, '__drawField():  calling ',"drawField"+self.__viewManagerType
+        
+        
+        
+        # print 'self.__viewManagerType=',self.__viewManagerType        
+        propertiesUpdated=self.updateSimulationProperties()
+        # print 'propertiesUpdated=',propertiesUpdated
+
+            
+        if propertiesUpdated:            
+            # __drawFieldFcn() # this call is actually unnecessary
+            self.updateVisualization()   # for some reason cameras have to be initialized after drawing resized lattice and draw function has to be repeated
+
+            
         __drawFieldFcn()
         
+        # if propertiesUpdated:
+            # __drawFieldFcn()
+            
     def __updateStatusBar(self, step, conMinMax):
         self.mcSteps.setText("MC Step: %s"% step)
         self.conSteps.setText("Min: %s Max: %s" % conMinMax)
@@ -2314,7 +2416,9 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
     # Shows simulation view tab
     def showSimView(self, file):
+        
         self.__setupArea()
+        
         
         # Set to 'True' if it is a test tab
         isTest = False
@@ -2337,6 +2441,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         self.__fieldType = ("Cell_Field", FIELD_TYPES[0])
         
+        # self.__fieldType = ("FGF", FIELD_TYPES[1])
+        
 #        print MODULENAME,'  ------- showSimView \n\n'
         
         if self.basicSimulationData.sim:
@@ -2350,6 +2456,10 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             self.setFieldTypes() 
         else:
 #            print "        BEFORE DRAW FIELD(2) FROM showSimView()"
+            # if not self.simulation.dimensionChange():
+            
+                
+
             self.__drawField()
             self.setFieldTypesCML() 
             
@@ -2624,8 +2734,13 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                     self.showSimView(file)
                 else:
                     # print "SIM TAB IITIALIZED"
+                    # print 'file=',self.__fileName
+                    # if self.simulation.dimensionChange():
+                        # sys.exit()
+                    
                     self.__closeSim()
                     self.showSimView(file)
+                    
         self.drawingAreaPrepared = True
         self.updateActiveWindowVisFlags()  # needed in case switching from one sim to another (e.g. 1st has FPP, 2nd doesn't)
     

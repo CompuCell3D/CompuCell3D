@@ -91,9 +91,9 @@ namespace CompuCell3D {
                std::vector<Point3D> offsetVec;
                std::vector<float> distanceVec;
                std::vector<unsigned int> neighborOrderIndexVec;
-               bool checkIfOffsetAlreadyStacked(Point3D &, std::vector<Point3D> &);
-               bool checkEuclidianDistance(Coordinates3D<double> & , Coordinates3D<double> & , float);
-               double calculateDistance(Coordinates3D<double> & , Coordinates3D<double> &);
+               bool checkIfOffsetAlreadyStacked(Point3D &, std::vector<Point3D> &)const;
+               bool checkEuclidianDistance(Coordinates3D<double> & , Coordinates3D<double> & , float)const;
+               double calculateDistance(Coordinates3D<double> & , Coordinates3D<double> &)const;
                void initializeQuickCheckField(Dim3D );
                float maxDistance;
                bool neighborListsInitializedFlag;
@@ -101,11 +101,11 @@ namespace CompuCell3D {
                void getOffsetsAndDistances(
                                           Point3D ctPt,
                                           float maxDistance,
-                                          Field3DImpl<char> & tempField,
+                                          Field3DImpl<char> const & tempField,
                                           std::vector<Point3D> & offsetVecTmp,
                                           std::vector<float> &distanceVecTmp,
                                           std::vector<unsigned int> &neighborOrderIndexVecTmp
-                                          );
+                                          )const;
 
 
                std::vector<std::vector<Point3D> > hexOffsetArray;
@@ -121,10 +121,10 @@ namespace CompuCell3D {
 
           public:
 
-			   Coordinates3D<double> getLatticeSpanVector(){return latticeSpanVector;} //maximum allowed point coordinate which is considered to be still in the lattice
-			   Coordinates3D<double> getLatticeSizeVector(){return latticeSizeVector;} //actual size of the lattice in x,y,z directions
+			   Coordinates3D<double> getLatticeSpanVector()const{return latticeSpanVector;} //maximum allowed point coordinate which is considered to be still in the lattice
+			   Coordinates3D<double> getLatticeSizeVector()const{return latticeSizeVector;} //actual size of the lattice in x,y,z directions
 
-               LatticeMultiplicativeFactors getLatticeMultiplicativeFactors(){return lmf;}
+               LatticeMultiplicativeFactors getLatticeMultiplicativeFactors()const{return lmf;}
                LatticeMultiplicativeFactors generateLatticeMultiplicativeFactors(LatticeType _latticeType,Dim3D _dim);
                LatticeType getLatticeType()const{return latticeType;}
                int getNumPixels(int x, int y, int z) const;
@@ -134,7 +134,7 @@ namespace CompuCell3D {
                void setDim(const Dim3D theDim);
                void setCurrentStep(const int currentStep);
                Point3D getNeighbor(const Point3D& pt, unsigned int& token,
-                                   double& distance, bool checkBounds = true);
+                                   double& distance, bool checkBounds = true)const;
 
                const std::vector<Point3D> & getOffsetVec() const {return offsetVec;}
                const std::vector<float> & getDistanceVec() const {return distanceVec;}
@@ -162,12 +162,12 @@ namespace CompuCell3D {
 
                const std::vector<unsigned int> & getNeighborOrderIndexVec() const {return neighborOrderIndexVec;}
                Neighbor getNeighborDirect(Point3D & pt,unsigned int idx ,bool checkBounds=true, bool calculatePtTrans=false)const ;
-               float getMaxDistance(){return maxDistance;}
-               unsigned int getMaxNeighborIndexFromDepth(float depth);
+               float getMaxDistance()const{return maxDistance;}
+               unsigned int getMaxNeighborIndexFromDepth(float depth)const;
 
-               unsigned int getMaxNeighborOrder();
+               unsigned int getMaxNeighborOrder()const;
 
-               unsigned int getMaxNeighborIndexFromNeighborOrder(unsigned int _neighborOrder);
+               unsigned int getMaxNeighborIndexFromNeighborOrder(unsigned int _neighborOrder)const;
                
                ~BoundaryStrategy();
    

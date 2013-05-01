@@ -152,6 +152,7 @@ namespace CompuCell3D {
 		//Plugin interface
 		virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData);
 		virtual void extraInit(Simulator *simulator);
+        virtual void handleEvent(CC3DEvent & _event);
 		
 		//EnergyFunction Interface
 		virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);

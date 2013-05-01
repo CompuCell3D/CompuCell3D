@@ -1,29 +1,28 @@
+
 //Maciej Swat
-
-#include <CompuCell3D/CC3D.h>
-
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Automaton/Automaton.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <CompuCell3D/Potts3D/CellInventory.h>
-// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
-// // // #include <CompuCell3D/Field3D/Field3DImpl.h>
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/Field3DIO.h>
-// // // #include <BasicUtils/BasicClassGroup.h>
+    
+#include <CompuCell3D/Simulator.h>
+#include <CompuCell3D/Automaton/Automaton.h>
+#include <CompuCell3D/Potts3D/Potts3D.h>
+#include <CompuCell3D/Potts3D/CellInventory.h>
+#include <CompuCell3D/Field3D/WatchableField3D.h>
+#include <CompuCell3D/Field3D/Field3DImpl.h>
+#include <CompuCell3D/Field3D/Field3D.h>
+#include <CompuCell3D/Field3D/Field3DIO.h>
+#include <BasicUtils/BasicClassGroup.h>
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
 
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-// // // #include <BasicUtils/BasicRandomNumberGenerator.h>
-// // // #include <PublicUtilities/StringUtils.h>
-// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
+#include <BasicUtils/BasicString.h>
+#include <BasicUtils/BasicException.h>
+#include <BasicUtils/BasicRandomNumberGenerator.h>
+#include <PublicUtilities/StringUtils.h>
+#include <PublicUtilities/ParallelUtilsOpenMP.h>
 
-// // // #include <string>
-// // // #include <cmath>
-// // // #include <iostream>
-// // // #include <fstream>
-// // // #include <sstream>
+#include <string>
+#include <cmath>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 #include <omp.h>
 //#define NUMBER_OF_THREADS 4
 
@@ -42,7 +41,7 @@ using namespace std;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FlexibleDiffusionSolverSerializer::serialize(){
 
-	for(int i = 0 ; i < solverPtr->diffSecrFieldTuppleVec.size() ; ++i){
+	for(size_t i = 0 ; i < solverPtr->diffSecrFieldTuppleVec.size() ; ++i){
 		ostringstream outName;
 
 		outName<<solverPtr->diffSecrFieldTuppleVec[i].diffData.fieldName<<"_"<<currentStep<<"."<<serializedFileExtension;
@@ -53,7 +52,7 @@ void FlexibleDiffusionSolverSerializer::serialize(){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FlexibleDiffusionSolverSerializer::readFromFile(){
 	try{
-		for(int i = 0 ; i < solverPtr->diffSecrFieldTuppleVec.size() ; ++i){
+		for(size_t i = 0 ; i < solverPtr->diffSecrFieldTuppleVec.size() ; ++i){
 			ostringstream inName;
 			inName<<solverPtr->diffSecrFieldTuppleVec[i].diffData.fieldName<<"."<<serializedFileExtension;
 
@@ -134,9 +133,9 @@ void FlexibleDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
 
 	for(unsigned int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
 		pos=diffSecrFieldTuppleVec[i].diffData.couplingDataVec.begin();
-		for(int j = 0 ; j < diffSecrFieldTuppleVec[i].diffData.couplingDataVec.size() ; ++j){
+		for(size_t j = 0 ; j < diffSecrFieldTuppleVec[i].diffData.couplingDataVec.size() ; ++j){
 
-			for(int idx=0; idx<concentrationFieldNameVectorTmp.size() ; ++idx){
+			for(size_t idx=0; idx<concentrationFieldNameVectorTmp.size() ; ++idx){
 				if( concentrationFieldNameVectorTmp[idx] == diffSecrFieldTuppleVec[i].diffData.couplingDataVec[j].intrFieldName ){
 					diffSecrFieldTuppleVec[i].diffData.couplingDataVec[j].fieldIdx=idx;
 					haveCouplingTerms=true; //if this is called at list once we have already coupling terms and need to proceed differently with scratch field initialization
@@ -221,9 +220,9 @@ void FlexibleDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
 	//When you evaluate div asa flux through the surface divided bby volume those scaling factors appear automatically. On cartesian lattife everythink is one so this is easy to forget that on different lattices they are not1
 	if (boundaryStrategy->getLatticeType()==HEXAGONAL_LATTICE){
 		if (fieldDim.x==1 || fieldDim.y==1||fieldDim.z==1){ //2D simulation we ignore 1D simulations in CC3D they make no sense and we assume users will not attempt to run 1D simulations with CC3D
-			diffusionLatticeScalingFactor=1.0/sqrt(3.0);// (2/3)/dL^2 dL=sqrt(2/sqrt(3)) so (2/3)/dL^2=1/sqrt(3)
+			diffusionLatticeScalingFactor=1.0f/sqrt(3.0f);// (2/3)/dL^2 dL=sqrt(2/sqrt(3)) so (2/3)/dL^2=1/sqrt(3)
 		}else{//3D simulation
-			diffusionLatticeScalingFactor=pow(2.0,-4.0/3.0); //(1/2)/dL^2 dL dL^2=2**(1/3) so (1/2)/dL^2=1/(2.0*2^(1/3))=2^(-4/3)
+			diffusionLatticeScalingFactor=pow(2.0f,-4.0f/3.0f); //(1/2)/dL^2 dL dL^2=2**(1/3) so (1/2)/dL^2=1/(2.0*2^(1/3))=2^(-4/3)
 		}
 
 	}
@@ -235,6 +234,9 @@ void FlexibleDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
 
 	simulator->registerSteerableObject(this);
 }
+
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FlexibleDiffusionSolverFE::extraInit(Simulator *simulator){
 
@@ -248,7 +250,7 @@ void FlexibleDiffusionSolverFE::extraInit(Simulator *simulator){
 	}
 
 	bool useBoxWatcher=false;
-	for (int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
+	for (size_t i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
 		if(diffSecrFieldTuppleVec[i].diffData.useBoxWatcher){
 			useBoxWatcher=true;
 			break;
@@ -261,6 +263,28 @@ void FlexibleDiffusionSolverFE::extraInit(Simulator *simulator){
 			boxWatcherSteppable->init(simulator);
 	}
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void FlexibleDiffusionSolverFE::handleEvent(CC3DEvent & _event){
+	cerr<<"\n\n\n\n FlexibleDiffusionSolverFE::handleEvent"<<endl;
+	if (_event.id!=LATTICE_RESIZE){
+		return;
+	}
+	
+    cellFieldG=(WatchableField3D<CellG *> *)potts->getCellFieldG();
+    
+	CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
+	
+    for (size_t i =0 ;   i < concentrationFieldVector.size() ; ++i){
+        concentrationFieldVector[i]->resizeAndShift(ev.newDim,ev.shiftVec);
+    }
+    
+	fieldDim=cellFieldG->getDim();
+    workFieldDim=concentrationFieldVector[0]->getInternalDim();
+	
+}
+
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FlexibleDiffusionSolverFE::start() {
 	//     if(diffConst> (1.0/6.0-0.05) ){ //hard coded condtion for stability of the solutions - assume dt=1 dx=dy=dz=1
@@ -280,7 +304,7 @@ void FlexibleDiffusionSolverFE::start() {
 		try{
 			serializerPtr->readFromFile();
 
-		} catch (BasicException &e){
+		} catch (BasicException &){
 			cerr<<"Going to fail-safe initialization"<<endl;
 			initializeConcentration(); //if there was error, initialize using failsafe defaults
 		}
@@ -421,7 +445,7 @@ void FlexibleDiffusionSolverFE::secreteOnContactSingleField(unsigned int idx){
 					currentConcentration = concentrationField.getDirect(x,y,z);
 
 					if(secreteInMedium && ! currentCellPtr){
-						for (int i = 0  ; i<=maxNeighborIndex/*offsetVec.size()*/ ; ++i ){
+						for (unsigned int i = 0  ; i<=maxNeighborIndex/*offsetVec.size()*/ ; ++i ){
 							n=boundaryStrategy->getNeighborDirect(pt,i);
 							if(!n.distance)//not a valid neighbor
 								continue;
@@ -450,7 +474,7 @@ void FlexibleDiffusionSolverFE::secreteOnContactSingleField(unsigned int idx){
 
 							contactCellMapPtr = &(mitr->second.contactCellMap);
 
-							for (int i = 0  ; i<=maxNeighborIndex/*offsetVec.size() */; ++i ){
+							for (unsigned int i = 0  ; i<=maxNeighborIndex/*offsetVec.size() */; ++i ){
 
 								n=boundaryStrategy->getNeighborDirect(pt,i);
 								if(!n.distance)//not a valid neighbor
@@ -700,7 +724,7 @@ void FlexibleDiffusionSolverFE::secreteConstantConcentrationSingleField(unsigned
 
 		CellG *currentCellPtr;
 		//Field3DImpl<float> * concentrationField=concentrationFieldVector[idx];
-		float currentConcentration;
+//		float currentConcentration;
 		float secrConst;
 
 		std::map<unsigned char,float>::iterator mitr;
@@ -767,7 +791,7 @@ float FlexibleDiffusionSolverFE::couplingTerm(Point3D & _pt,std::vector<Coupling
 
 	float couplingTerm=0.0;
 	float coupledConcentration;
-	for(int i =  0 ; i < _couplDataVec.size() ; ++i){
+	for(size_t i =  0 ; i < _couplDataVec.size() ; ++i){
 		coupledConcentration=concentrationFieldVector[_couplDataVec[i].fieldIdx]->get(_pt);
 		couplingTerm+=_couplDataVec[i].couplingCoef*_currentConcentration*coupledConcentration;
 	}
@@ -887,7 +911,7 @@ void FlexibleDiffusionSolverFE::boundaryConditionInit(int idx){
 		}else{
 
 			if (bcSpec.planePositions[0]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[0];
+				float cValue= static_cast<float>(bcSpec.values[0]);
 				int x=0;
 				for(int y=0 ; y< workFieldDim.y-1; ++y)
 					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
@@ -895,7 +919,7 @@ void FlexibleDiffusionSolverFE::boundaryConditionInit(int idx){
 					}
 
 			}else if(bcSpec.planePositions[0]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[0];
+				float cdValue= static_cast<float>(bcSpec.values[0]);
 				int x=0;
 
 				for(int y=0 ; y< workFieldDim.y-1; ++y)
@@ -906,7 +930,7 @@ void FlexibleDiffusionSolverFE::boundaryConditionInit(int idx){
 			}
 
 			if (bcSpec.planePositions[1]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[1];
+				float cValue= static_cast<float>(bcSpec.values[1]);
 				int x=fieldDim.x+1;
 				for(int y=0 ; y< workFieldDim.y-1; ++y)
 					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
@@ -914,7 +938,7 @@ void FlexibleDiffusionSolverFE::boundaryConditionInit(int idx){
 					}
 
 			}else if(bcSpec.planePositions[1]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[1];
+				float cdValue= static_cast<float>(bcSpec.values[1]);
 				int x=fieldDim.x+1;
 
 				for(int y=0 ; y< workFieldDim.y-1; ++y)
@@ -943,7 +967,7 @@ void FlexibleDiffusionSolverFE::boundaryConditionInit(int idx){
 		}else{
 
 			if (bcSpec.planePositions[2]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[2];
+				float cValue= static_cast<float>(bcSpec.values[2]);
 				int y=0;
 				for(int x=0 ; x< workFieldDim.x-1; ++x)
 					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
@@ -951,7 +975,7 @@ void FlexibleDiffusionSolverFE::boundaryConditionInit(int idx){
 					}
 
 			}else if(bcSpec.planePositions[2]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[2];
+				float cdValue= static_cast<float>(bcSpec.values[2]);
 				int y=0;
 
 				for(int x=0 ; x< workFieldDim.x-1; ++x)
@@ -962,7 +986,7 @@ void FlexibleDiffusionSolverFE::boundaryConditionInit(int idx){
 			}
 
 			if (bcSpec.planePositions[3]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[3];
+				float cValue= static_cast<float>(bcSpec.values[3]);
 				int y=fieldDim.y+1;
 				for(int x=0 ; x< workFieldDim.x-1; ++x)
 					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
@@ -970,7 +994,7 @@ void FlexibleDiffusionSolverFE::boundaryConditionInit(int idx){
 					}
 
 			}else if(bcSpec.planePositions[3]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[3];
+				float cdValue= static_cast<float>(bcSpec.values[3]);
 				int y=fieldDim.y+1;
 
 				for(int x=0 ; x< workFieldDim.x-1; ++x)
@@ -998,7 +1022,7 @@ void FlexibleDiffusionSolverFE::boundaryConditionInit(int idx){
 		}else{
 
 			if (bcSpec.planePositions[4]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[4];
+				float cValue= static_cast<float>(bcSpec.values[4]);
 				int z=0;
 				for(int x=0 ; x< workFieldDim.x-1; ++x)
 					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
@@ -1006,7 +1030,7 @@ void FlexibleDiffusionSolverFE::boundaryConditionInit(int idx){
 					}
 
 			}else if(bcSpec.planePositions[4]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[4];
+				float cdValue= static_cast<float>(bcSpec.values[4]);
 				int z=0;
 
 				for(int x=0 ; x< workFieldDim.x-1; ++x)
@@ -1017,7 +1041,7 @@ void FlexibleDiffusionSolverFE::boundaryConditionInit(int idx){
 			}
 
 			if (bcSpec.planePositions[5]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[5];
+				float cValue=static_cast<float>( bcSpec.values[5]);
 				int z=fieldDim.z+1;
 				for(int x=0 ; x< workFieldDim.x-1; ++x)
 					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
@@ -1025,7 +1049,7 @@ void FlexibleDiffusionSolverFE::boundaryConditionInit(int idx){
 					}
 
 			}else if(bcSpec.planePositions[5]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[5];
+				float cdValue= static_cast<float>(bcSpec.values[5]);
 				int z=fieldDim.z+1;
 
 				for(int x=0 ; x< workFieldDim.x-1; ++x)
@@ -1216,7 +1240,7 @@ void FlexibleDiffusionSolverFE::diffuseSingleField(unsigned int idx){
 
 
 					const std::vector<Point3D> & offsetVecRef=boundaryStrategy->getOffsetVec(pt);
-					for (register int i = 0  ; i<=maxNeighborIndex /*offsetVec.size()*/ ; ++i ){
+					for (register unsigned int i = 0  ; i<=maxNeighborIndex /*offsetVec.size()*/ ; ++i ){
 						const Point3D & offset = offsetVecRef[i];
 
 						if(diffData.avoidTypeIdSet.size()||avoidMedium){ //means user defined types to avoid in terms of the diffusion
@@ -1592,7 +1616,7 @@ void FlexibleDiffusionSolverFE::update(CC3DXMLElement *_xmlData, bool _fullInitF
 		cerr<<"readFromFileFlag="<<readFromFileFlag<<endl;
 	}
 
-	for(int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
+	for(size_t i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
 		diffSecrFieldTuppleVec[i].diffData.setAutomaton(automaton);
 		diffSecrFieldTuppleVec[i].secrData.setAutomaton(automaton);
 		diffSecrFieldTuppleVec[i].diffData.initialize(automaton);
@@ -1600,7 +1624,7 @@ void FlexibleDiffusionSolverFE::update(CC3DXMLElement *_xmlData, bool _fullInitF
 	}
 
 	///assigning member method ptrs to the vector
-	for(unsigned int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
+	for(size_t i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
 
 		diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.assign(diffSecrFieldTuppleVec[i].secrData.secrTypesNameSet.size(),0);
 		unsigned int j=0;

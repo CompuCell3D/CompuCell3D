@@ -69,7 +69,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
     def prepareOutlineActors(self,_actors):
         outlineData = vtk.vtkImageData()
         
-        fieldDim = self.currentDrawingParameters.bsd.fieldDim
+        fieldDim = self.currentDrawingParameters.bsd.fieldDim        
         dimOrder    = self.dimOrder(self.currentDrawingParameters.plane)
         self.dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))        
         
@@ -117,12 +117,19 @@ class MVCDrawModel2D(MVCDrawModelBase):
         
         self.cellTypeIntAddr=self.extractAddressIntFromVtkObject(self.cellType)
         # print "self.cellTypeIntAddr=",self.cellTypeIntAddr
+    
+
+
+
         self.parentWidget.fieldExtractor.fillCellFieldData2D(self.cellTypeIntAddr,self.currentDrawingParameters.plane, self.currentDrawingParameters.planePos)
         
         # Python function used during prototyping
         # self.fillCellFieldData(cellField,self.plane, self.planePos)
         
+        
         self.initCellFieldActorsData(_actors)
+        
+        
     
     
     def initCellFieldHexActors(self, _actors):

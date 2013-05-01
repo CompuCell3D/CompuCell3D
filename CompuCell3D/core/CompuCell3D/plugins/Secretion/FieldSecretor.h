@@ -78,7 +78,7 @@ namespace CompuCell3D {
 
 		FieldSecretor();
 		~FieldSecretor();
-		Field3DImpl<float> * concentrationFieldPtr;
+		Field3D<float> * concentrationFieldPtr;
 		BoundaryPixelTrackerPlugin *boundaryPixelTrackerPlugin;
 		PixelTrackerPlugin *pixelTrackerPlugin;
 		BoundaryStrategy *boundaryStrategy;

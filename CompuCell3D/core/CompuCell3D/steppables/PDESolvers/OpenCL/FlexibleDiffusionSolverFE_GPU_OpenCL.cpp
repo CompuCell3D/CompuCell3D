@@ -157,7 +157,7 @@ void FlexibleDiffusionSolverFE_GPU_OpenCL::prepareSolverParams(Dim3D fieldDim, D
     h_solverParam.dimy=fieldDim.y;
     h_solverParam.dimz=fieldDim.z;
 
-    h_solverParam.dx=1.0;
+    h_solverParam.dx2=1.0;
     h_solverParam.dt=1.0;
     h_solverParam.numberOfCelltypes=2;
 	

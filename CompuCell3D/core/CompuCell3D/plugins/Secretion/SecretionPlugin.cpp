@@ -134,10 +134,10 @@ void SecretionPlugin::extraInit(Simulator *simulator) {
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Field3DImpl<float>*  SecretionPlugin::getConcentrationFieldByName(std::string _fieldName)
+Field3D<float>*  SecretionPlugin::getConcentrationFieldByName(std::string _fieldName)
 {
-	std::map<std::string,Field3DImpl<float>*> & fieldMap=sim->getConcentrationFieldNameMap();	  
-	std::map<std::string,Field3DImpl<float>*>::iterator mitr;
+	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();	  
+	std::map<std::string,Field3D<float>*>::iterator mitr;
 	mitr=fieldMap.find(_fieldName);
 	if(mitr!=fieldMap.end()){
 		return mitr->second;
@@ -285,7 +285,7 @@ void SecretionPlugin::secreteSingleField(unsigned int idx){
 
 
 
-	Field3DImpl<float> & concentrationField=*getConcentrationFieldByName(secrData.fieldName);	
+	Field3D<float> & concentrationField=*getConcentrationFieldByName(secrData.fieldName);	
 
 	//cerr<<"concentrationField="<<getConcentrationFieldByName(secrData.fieldName)<<endl;
 
@@ -456,7 +456,7 @@ void SecretionPlugin::secreteOnContactSingleField(unsigned int idx){
 
 
 
-	Field3DImpl<float> & concentrationField=*getConcentrationFieldByName(secrData.fieldName);
+	Field3D<float> & concentrationField=*getConcentrationFieldByName(secrData.fieldName);
 	
 	std::map<unsigned char, float> * contactCellMapMediumPtr;
 	std::map<unsigned char, float> * contactCellMapPtr;
@@ -615,7 +615,7 @@ void SecretionPlugin::secreteConstantConcentrationSingleField(unsigned int idx){
 
 	float secrConstMedium=0.0;
 
-	Field3DImpl<float> & concentrationField=*getConcentrationFieldByName(secrData.fieldName);
+	Field3D<float> & concentrationField=*getConcentrationFieldByName(secrData.fieldName);
 	
 
 	bool secreteInMedium=false;

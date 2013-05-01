@@ -23,13 +23,15 @@ class SteppablePy(SimObjectPy):
     def finish(self):pass
 
 
-class SteppableBasePy(SteppablePy):    
+
+
+# class SteppableBasePy(SteppablePy): 
+from SBMLSolverHelper import SBMLSolverHelper
+class SteppableBasePy(SteppablePy,SBMLSolverHelper):         
     (CC3D_FORMAT,TUPLE_FORMAT)=range(0,2)    
     def __init__(self,_simulator,_frequency=1):
-        
-        
-        
         SteppablePy.__init__(self,_frequency)
+        SBMLSolverHelper.__init__(self) 
         self.simulator=_simulator
         self.potts=_simulator.getPotts()
         self.cellField=self.potts.getCellFieldG()
@@ -38,14 +40,14 @@ class SteppableBasePy(SteppablePy):
         self.clusterInventory=self.inventory.getClusterInventory()
         self.cellList=CellList(self.inventory)
         self.cellListByType=CellListByType(self.inventory)
-        self.clusterList=ClusterList(self.inventory)        
+        self.clusterList=ClusterList(self.inventory) 
+        self.clusters=Clusters(self.inventory)       
+        
         import CompuCellSetup
         self.typeIdTypeNameDict = CompuCellSetup.ExtractTypeNamesAndIds()    
         for typeId in self.typeIdTypeNameDict:
             setattr(self,self.typeIdTypeNameDict[typeId].upper(),typeId)
-        
-
-        
+                        
         import CompuCell      
         pluginManager=CompuCell.getPluginManagerAsBPM()                
         stepManager=CompuCell.getSteppableManagerAsBPM() # have to use explicit cast to BasicPluginManager to get steppable manager to work
@@ -56,7 +58,15 @@ class SteppableBasePy(SteppablePy):
             import CompuCell
             self.volumeTrackerPlugin=CompuCell.getVolumeTrackerPlugin()
             self.cellField.volumeTrackerPlugin=self.volumeTrackerPlugin # used in setitem function in swigg CELLFIELDEXTEDER macro CompuCell.i
+
+        #CenterOfMassPlugin
+        self.centerOfMassPlugin=None
+        if self.simulator.pluginManager.isLoaded("CenterOfMass"):
+            import CompuCell
+            self.centerOfMassPlugin=CompuCell.getCenterOfMassPlugin()
             
+
+
         #NeighborTrackerPlugin
         self.neighborTrackerPlugin=None
         if self.simulator.pluginManager.isLoaded("NeighborTracker"):
@@ -214,7 +224,74 @@ class SteppableBasePy(SteppablePy):
         if stepManager.isLoaded("CleaverMeshDumper"):
             import CompuCell            
             self.cleaverMeshDumper=CompuCell.getCleaverMeshDumper()  
+            
+    def changeNumberOfWorkNodes(self,_numberOfWorkNodes):
+        
+        import CompuCell
+        numberOfWorkNodesEv=CompuCell.CC3DEventChangeNumberOfWorkNodes()
+        numberOfWorkNodesEv.oldNumberOfNodes=1
+        numberOfWorkNodesEv.newNumberOfNodes=_numberOfWorkNodes
+        self.simulator.postEvent(numberOfWorkNodesEv)
 
+    
+    
+    def resizeAndShiftLattice(self,_newSize, _shiftVec=(0,0,0)):
+     
+        print 'PYSTEPPABLES INSIDE resizeAndShiftLattice'
+        if self.potts.getBoundaryXName().lower()=='periodic'\
+            or self.potts.getBoundaryYName().lower()=='periodic'\
+            or self.potts.getBoundaryZName().lower()=='periodic':
+                
+            raise EnvironmentError('Cannot resize lattice with Periodic Boundary Conditions')
+        
+        
+        import CompuCell        
+        
+        newSize=map(int,_newSize)# converting new size to integers
+        shiftVec=map(int,_shiftVec) # converting shift vec to integers
+        
+        okFlag=self.volumeTrackerPlugin.checkIfOKToResize(CompuCell.Dim3D(newSize[0],newSize[1],newSize[2]),CompuCell.Dim3D(shiftVec[0],shiftVec[1],shiftVec[2]))
+        print 'okFlag=',okFlag   
+        if not okFlag:            
+            print 'WARNING: Lattice Resize Denied  - the proposed lattice resizing/shift would lead to disappearance of cells.'
+            return
+                                    
+        oldGeometryDimensionality=2
+        if self.dim.x>1 and self.dim.y>1 and self.dim.z>1:           
+            oldGeometryDimensionality=3
+                
+        newGeometryDimensionality=2
+        if newSize[0]>1 and newSize[1]>1 and newSize[2]>1:
+            newGeometryDimensionality=3                
+        
+        if newGeometryDimensionality!=oldGeometryDimensionality:
+            raise EnvironmentError('Changing dimmensionality of simulation from 2D to 3D is not supported. It also makes little sense as 2D and 3D simulations have different mathematical properties. Please see CPM literature for more details.')    
+        
+        self.potts.resizeCellField(CompuCell.Dim3D(newSize[0],newSize[1],newSize[2]),CompuCell.Dim3D(shiftVec[0],shiftVec[1],shiftVec[2]))    
+#         if sum(shiftVec)==0: # there is no shift in cell field
+#             return
+        
+        
+        # posting CC3DEventLatticeResize so that participating modules can react
+        resizeEv=CompuCell.CC3DEventLatticeResize()
+        resizeEv.oldDim=self.dim
+        resizeEv.newDim=CompuCell.Dim3D(newSize[0],newSize[1],newSize[2])
+        resizeEv.shiftVec=CompuCell.Dim3D(shiftVec[0],shiftVec[1],shiftVec[2])
+        
+        self.simulator.postEvent(resizeEv)
+        
+        
+        self.__init__(self.simulator,self.frequency)
+        import CompuCellSetup
+        
+        # with new cell field and possibly other fields  we have to reinitialize steppables
+        for steppable in CompuCellSetup.globalSteppableRegistry.allSteppables():
+            if steppable !=self:
+                steppable.__init__(steppable.simulator,steppable.frequency) 
+        
+        
+        
+        
     def everyPixel(self):
         import itertools
         return itertools.product(xrange(self.dim.x),xrange(self.dim.y),xrange(self.dim.z))  
@@ -277,7 +354,7 @@ class SteppableBasePy(SteppablePy):
             
         return None    
 
-
+    
     def getCellBoundaryPixelList(self,_cell):
         if self.boundaryPixelTrackerPlugin:
             return CellBoundaryPixelList(self.boundaryPixelTrackerPlugin,_cell)
@@ -344,27 +421,44 @@ class SteppableBasePy(SteppablePy):
             self.cellField[pixel[0],pixel[1],pixel[2]]=self.mediumCell
     
     def createNewCell (self,type,pt,xSize,ySize,zSize=1):
-        if not self.checkIfInTheLattice(pt):
+        import CompuCell
+        ptTmp=CompuCell.Point3D()
+        
+        if isinstance(pt, list) or isinstance(pt, tuple): 
+            ptTmp.x=pt[0]
+            ptTmp.y=pt[1]
+            ptTmp.z=pt[2]            
+        else:
+            ptTmp=pt
+        
+        if not self.checkIfInTheLattice(ptTmp):
             return
         cell=self.potts.createCell()    
         cell.type=type
-        self.cellField[pt.x:pt.x+xSize-1,pt.y:pt.y+ySize-1,pt.z:pt.z+zSize-1]=cell
+        self.cellField[ptTmp.x:ptTmp.x+xSize-1,ptTmp.y:ptTmp.y+ySize-1,ptTmp.z:ptTmp.z+zSize-1]=cell
        
-                        
+        
     def moveCell(self, cell, shiftVector):
         import  CompuCell  
         #we have to make two list of pixels :
         pixelsToDelete=[] #used to hold pixels to delete
         pixelsToMove=[] #used to hold pixels to move
         
+        shiftVec=CompuCell.Point3D()
+        if isinstance(shiftVector, list) or isinstance(shiftVector, tuple): 
+            shiftVec.x=shiftVector[0]
+            shiftVec.y=shiftVector[1]
+            shiftVec.z=shiftVector[2]
+        else:
+            shiftVec=shiftVector
         # If we try to reassign pixels in the loop where we iterate over pixel data we will corrupt the container so in the loop below all we will do is to populate the two list mentioned above
         pixelList=self.getCellPixelList(cell)
         pt=CompuCell.Point3D()
         
         for pixelTrackerData in pixelList:
-            pt.x = pixelTrackerData.pixel.x + shiftVector.x
-            pt.y = pixelTrackerData.pixel.y + shiftVector.y
-            pt.z = pixelTrackerData.pixel.z + shiftVector.z
+            pt.x = pixelTrackerData.pixel.x + shiftVec.x
+            pt.y = pixelTrackerData.pixel.y + shiftVec.y
+            pt.z = pixelTrackerData.pixel.z + shiftVec.z
             # here we are making a copy of the cell                 
             pixelsToDelete.append(CompuCell.Point3D(pixelTrackerData.pixel))
             
@@ -385,6 +479,61 @@ class SteppableBasePy(SteppablePy):
         if _pt.x>=0 and _pt.x<self.dim.x and  _pt.y>=0 and _pt.y<self.dim.y and _pt.z>=0 and _pt.z<self.dim.z:            
             return True
         return False
+    
+    def buildWall(self,type):
+        cell=None
+        if type==0:#medium:
+            import CompuCell
+            cell=CompuCell.getMediumCell()
+        else:    
+            cell=self.potts.createCell()    
+            cell.type=type
+        
+        indexOf1=-1
+        dimLocal=[self.dim.x,self.dim.y,self.dim.z]
+        
+        for idx in range(len(dimLocal)):
+            
+            if dimLocal[idx]==1:
+                indexOf1=idx
+                break
+
+        # this could be recoded in a more general way but the code would be longer than the most naive verios presented here
+        if indexOf1>=0: # 2D case
+            if indexOf1==2: # xy plane simulation
+                self.cellField[0:self.dim.x,0,0]=cell
+                self.cellField[0:self.dim.x,self.dim.y-1:self.dim.y,0]=cell
+                self.cellField[0,0:self.dim.y,0]=cell
+                self.cellField[self.dim.x-1:self.dim.x,0:self.dim.y,0:0]=cell
+            elif indexOf1==0: # yz simulation
+                self.cellField[0,0:self.dim.y,0]=cell
+                self.cellField[0,0:self.dim.y,self.dim.z-1:self.dim.z]=cell
+                self.cellField[0,0,0:self.dim.z]=cell
+                self.cellField[0,self.dim.y-1:self.dim.y,0:self.dim.z]=cell
+            
+            elif indexOf1==1: # xz simulation
+                self.cellField[0:self.dim.x,0,0]=cell
+                self.cellField[0:self.dim.x,0,self.dim.z-1:self.dim.z]=cell
+                self.cellField[0,0,0:self.dim.z]=cell
+                self.cellField[self.dim.x-1:self.dim.x,0,0:self.dim.z]=cell
+        else: # 3D case
+            #wall 1 (front)
+            self.cellField[0:self.dim.x,0:self.dim.y,0]=cell
+            #wall 2 (rear)
+            self.cellField[0:self.dim.x,0:self.dim.y,self.dim.z-1]=cell
+            #wall 3 (bottom)
+            self.cellField[0:self.dim.x,0,0:self.dim.z]=cell
+            #wall 4 (top)
+            self.cellField[0:self.dim.x,self.dim.y-1,0:self.dim.z]=cell
+            #wall 5 (left)
+            self.cellField[0,0:self.dim.y,0:self.dim.z]=cell
+            #wall 6 (right)
+            self.cellField[self.dim.x-1,0:self.dim.y,0:self.dim.z]=cell
+            
+        
+            
+    def destroyWall(self):
+        self.buildWall(0) # build wall of Medium
         
     def getPixelNeighborsBasedOnDistance(self,_pixel,_maxDistance=1.1):
         import CompuCell
@@ -406,9 +555,142 @@ class SteppableBasePy(SteppablePy):
             if pixelNeighbor.distance: #neighbor is valid
                 yield pixelNeighbor
         
+    def invariantDistanceVectorInteger(self,_from=[0,0,0],_to=[0,0,0]):
+        '''
         
+        This function will calculate distance vector with integer coordinates between two Point3D points
+        and make sure that the absolute values of the vector are smaller than 1/2 of the corresponding lattice dimension
+        this way we simulate 'invariance' of distance assuming that periodic boundary conditions are in place 
+        @_from - list/tuple of 3 integers
+        @_to  -list/tuple of 3 integers
+        @ return value - numpy float array    
+        '''
+        import CompuCell
+        import numpy
+        distVec=CompuCell.distanceVectorInvariant(_to ,_from,self.dim)    
+        return numpy.array([float(distVec.x),float(distVec.y),float(distVec.z)])
             
+    def distanceVector(self,_from,_to):
+        '''
+        This function will calculate distance vector between  two points - (_to-_from)  
+        This is most straightforward implementation and will ignore periodic boundary conditions if such are present
+        @_from - list/tuple of 3 numbers
+        @_to  -list/tuple of 3 numbers        
+        @ return value - numpy float array
+        '''      
+        import numpy    
+        return numpy.array([float(_to[0]-_from[0]),float(_to[1]-_from[1]),float(_to[2]-_from[2])])
         
+    def invariantDistanceVector(self,_to,_from):
+        '''
+        This function will calculate distance vector with integer coordinates between two Coordinates3D<double> points
+        and make sure that the absolute values of the vector are smaller than 1/2 of the corresponding lattice dimension
+        this way we simulate 'invariance' of distance assuming that periodic boundary conditions are in place            
+        @_from - list/tuple/numpy array of 3 floating point numbers
+        @_from - list/tuple/numpy array of 3 floating point numbers
+        @ return value - numpy float array
+        '''
+        import CompuCell
+        import numpy
+        
+        distVec=CompuCell.distanceVectorCoordinatesInvariant(_to ,_from,self.dim)
+        return numpy.array([distVec.x,distVec.y,distVec.z])
+        
+    def distance(self,_from,_to):
+        '''
+        Distance between two points. Assumes non-periodic boundary conditions
+        @return value - floating point number 
+        '''
+        return self.vectorNorm(self.distanceVector(_from, _to))    
+        
+    def invariantDistance(self,_from,_to):
+        '''
+        Distance between two points. Assumes periodic boundary conditions 
+        - or simply makes sure that no component of distance vector 
+        is greater than 1/2 corresponding dimension
+        @return value - floating point number 
+        '''
+        
+        return self.vectorNorm(self.invariantDistanceVector(_from, _to))    
+    
+    
+    def vectorNorm(self,_vec):
+        import numpy
+        return numpy.linalg.norm(_vec)
+    
+    def distanceVectorBetweenCells(self, _cell_from, _cell_to):
+        '''
+        This function will calculate distance vector between  COM's of cells  assuming non-periodic boundary conditions
+        @ return value - numpy float array
+        '''        
+        return self.distanceVector([_cell_to.xCOM,_cell_to.yCOM,_cell_to.zCOM],[_cell_from.xCOM,_cell_from.yCOM,_cell_from.zCOM])    
+        
+    def invariantDistanceVectorBetweenCells(self, _cell_from, _cell_to):
+        '''
+        This function will calculate distance vector between  COM's of cells  assuming periodic boundary conditions
+        - or simply makes sure that no component of distance vector 
+        is greater than 1/2 corresponding dimension        
+        @ return value - numpy float array
+        '''        
+        return self.invariantDistanceVector([_cell_to.xCOM,_cell_to.yCOM,_cell_to.zCOM],[_cell_from.xCOM,_cell_from.yCOM,_cell_from.zCOM])    
+    
+    def distanceBetweenCells(self, _cell_from, _cell_to):
+        '''
+        Distance between COM's between cells. Assumes non-periodic boundary conditions        
+        @return value - floating point number 
+        '''
+        
+        return self.vectorNorm(self.distanceVectorBetweenCells(_cell_from, _cell_to))
+        
+    def invariantDistanceBetweenCells(self, _cell_from, _cell_to):
+        '''
+        Distance between COM's of two cells. Assumes periodic boundary conditions 
+        - or simply makes sure that no component of distance vector 
+        is greater than 1/2 corresponding dimension
+        @return value - floating point number 
+        '''        
+        return self.vectorNorm(self.invariantDistanceVectorBetweenCells(_cell_from, _cell_to))
+        
+    def point3DToNumpy(self, _pt):
+        '''
+        This function converts CompuCell.Point3D into floating point numpy array(vector) of size 3
+        '''
+        import numpy        
+        return numpy.array([float(_pt.x),float(_pt.y),float(_pt.z)])
+        
+    def numpyToPoint3D(self, _array):
+        '''
+        This function converts floating point numpy array(vector) of size 3 into CompuCell.Point3D 
+        '''        
+        import CompuCell
+        pt=CompuCell.Point3D()
+        pt.x=_array[0]
+        pt.y=_array[1]
+        pt.z=_array[2]
+        return pt
+        
+    def getSteppableListByClassName(self,_className):    
+        '''
+        This function returns a list of registered steppables with class name given  by _className
+        '''        
+        import CompuCellSetup
+        return CompuCellSetup.globalSteppableRegistry.getSteppablesByClassName(_className)
+        
+    def getSteppableByClassName(self,_className):    
+        '''
+        This function returns a registered steppables with class name given  by _className.
+        It will be the first registered steppable for this given class name. In almost all the cases we will have one steppable with a given class name
+        '''        
+        import CompuCellSetup
+        try:
+            return CompuCellSetup.globalSteppableRegistry.getSteppablesByClassName(_className)[0]
+        except IndexError,e:
+            return None    
+
+
+
+
+
 class RunBeforeMCSSteppableBasePy(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
         SteppableBasePy.__init__(self,_simulator,_frequency)   
@@ -494,17 +776,34 @@ class SteppableRegistry(SteppablePy):
     def __init__(self):
         self.steppableList=[]
         self.runBeforeMCSSteppableList=[]
-
+        self.steppableDict={} # {steppableClassName:[steppable inst0,steppable inst1,...]}
+        
+    def allSteppables(self):
+        for steppable in self.steppableList:
+            yield steppable
+        for steppable in self.runBeforeMCSSteppableList:
+            yield steppable
+                
     def registerSteppable(self,_steppable):
         try:
             if _steppable.runBeforeMCS:
                 self.runBeforeMCSSteppableList.append(_steppable)
             else:
-                self.steppableList.append(_steppable)
-            return    
+                self.steppableList.append(_steppable)            
         except AttributeError:
             self.steppableList.append(_steppable)
-
+        
+        #storing steppable in the dictionary
+        try:
+            self.steppableDict[_steppable.__class__.__name__].append(_steppable)
+        except LookupError,e:
+            self.steppableDict[_steppable.__class__.__name__]=[_steppable]    
+    
+    def getSteppablesByClassName(self,_className):
+        try:            
+            return self.steppableDict[_className]
+        except LookupError,e:
+            return []    
     def init(self,_simulator):
         for steppable in self.runBeforeMCSSteppableList:
             steppable.init(_simulator)            
@@ -670,6 +969,7 @@ class ClusterListIterator:
         self.invItr.initialize(self.inventory)        
         self.invItr.setToBegin()
         
+        self.compartmentList=None
         
     def next(self):
     
@@ -677,12 +977,45 @@ class ClusterListIterator:
             self.compartmentList=self.invItr.getCurrentRef()
             # print 'self.idCellPair=',self.idCellPair
             # print 'dir(self.idCellPair)=',dir(self.idCellPair)
-            self.invItr.next()
+            self.invItr.next()            
             return self.compartmentList
 #       
         else:
             raise StopIteration
     
+#this is used to iterate more easily over clusters and avoid strange looking Python syntax 
+
+class Clusters:
+    def __init__(self,_inventory):
+        self.inventory = _inventory.getClusterInventory().getContainer()
+    def __iter__(self):
+        return ClustersIterator(self)
+    def __len__(self):
+        return self.inventory.size()        
+
+class ClustersIterator:
+    def __init__(self, _cellList):
+        import CompuCell
+        self.inventory = _cellList.inventory
+        
+        self.invItr=CompuCell.compartmentinventoryPtrPyItr()
+        self.invItr.initialize(self.inventory)        
+        self.invItr.setToBegin()
+        
+        self.compartmentList=None
+        
+    def next(self):
+    
+        if not self.invItr.isEnd():
+            self.compartmentList=self.invItr.getCurrentRef()
+            # print 'self.idCellPair=',self.idCellPair
+            # print 'dir(self.idCellPair)=',dir(self.idCellPair)
+            self.invItr.next()            
+            return CompartmentList(self.compartmentList)
+#       
+        else:
+            raise StopIteration
+
 
 #this is used to iterate more easily over list of compartments , notice regular map iteration will work too but this is more abstracted out and will work with other containers too
 
@@ -692,11 +1025,15 @@ class CompartmentList:
         self.inventory = _inventory
         
                 
-    def __iter__(self):
+    def __iter__(self):        
         return CompartmentListIterator(self)
                 
     def __len__(self):
-        return self.inventoryByType.size()
+        return self.inventory.size()
+        
+    def clusterId(self):
+        return self.__iter__().next().clusterId
+        
         
 class CompartmentListIterator:
     def __init__(self,  _cellList):
@@ -753,6 +1090,7 @@ class ClusterCellListIterator:
             
             self.cell=self.inventory[self.currentIdx]
             self.currentIdx+=1
+            
             return self.cell
         else:
             raise StopIteration

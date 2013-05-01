@@ -2,6 +2,7 @@
 #define DIFFUSIONSOLVERFE_CPU_H
 
 #include "DiffusionSolverFE.h"
+#include <CompuCell3D/CC3DEvents.h>
 
 namespace CompuCell3D {
 
@@ -16,7 +17,8 @@ public:
 
 	//TODO: check if can use a constant diffData here
 	void diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData /*const*/ &diffData);
-
+    virtual void handleEventLocal(CC3DEvent & _event);
+		
 protected:
 	//virtual void diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData &diffData);
 	virtual void initImpl();
@@ -24,7 +26,7 @@ protected:
 	virtual void initCellTypesAndBoundariesImpl();
 	virtual void solverSpecific(CC3DXMLElement *_xmlData);//reading solver-specific information from XML file
 private:
-	void CheckConcentrationField(ConcentrationField_t &concentrationField)const;
+	//void CheckConcentrationField(ConcentrationField_t &concentrationField)const;
 };
 
 }//CompuCell3D 

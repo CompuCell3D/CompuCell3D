@@ -76,7 +76,7 @@ namespace CompuCell3D {
 
 	  std::string TemplateChemicalFieldName;
 	  std::string TemplateChemicalFieldSource;
-      std::vector<Field3DImpl<float> *> fieldVec;
+      std::vector<Field3D<float> *> fieldVec;
     TemplatePlugin():potts(0),pluginName("Template"){};
     virtual ~TemplatePlugin();
 
