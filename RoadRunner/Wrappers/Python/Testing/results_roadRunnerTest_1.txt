@@ -1,0 +1,361 @@
+# Simple Test Model
+# root = "roadRunnerTest_1";
+[SBML]
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by XMLPrettyPrinter on 1/1/2013 from  -->
+<sbml xmlns = "http://www.sbml.org/sbml/level2/version4" level = "2" version = "4">
+   <model id = "cell">
+      <listOfCompartments>
+         <compartment id = "compartment" size = "1"/>
+      </listOfCompartments>
+      <listOfSpecies>
+         <species id = "src" boundaryCondition = "true" initialConcentration = "0" compartment = "compartment"/>
+         <species id = "waste" boundaryCondition = "true" initialConcentration = "0" compartment = "compartment"/>
+         <species id = "Xo" boundaryCondition = "true" initialConcentration = "1" compartment = "compartment"/>
+         <species id = "X1" boundaryCondition = "true" initialConcentration = "0" compartment = "compartment"/>
+         <species id = "S1" boundaryCondition = "false" initialConcentration = "0.1" compartment = "compartment"/>
+         <species id = "S2" boundaryCondition = "false" initialConcentration = "0.25" compartment = "compartment"/>
+         <species id = "S3" boundaryCondition = "false" initialConcentration = "0.1" compartment = "compartment"/>
+      </listOfSpecies>
+      <listOfParameters>
+         <parameter id = "kk1" value = "1"/>
+         <parameter id = "k1" value = "0.1"/>
+         <parameter id = "k_1" value = "0.05"/>
+         <parameter id = "kk2" value = "1"/>
+         <parameter id = "k2" value = "0.15"/>
+         <parameter id = "k_2" value = "0.067"/>
+         <parameter id = "kk3" value = "1"/>
+         <parameter id = "k3" value = "0.4"/>
+         <parameter id = "k_3" value = "0.09"/>
+         <parameter id = "kk4" value = "1"/>
+         <parameter id = "k4" value = "0.55"/>
+         <parameter id = "k_4" value = "0.01"/>
+      </listOfParameters>
+      <listOfReactions>
+         <reaction id = "J1" reversible = "false">
+            <listOfReactants>
+               <speciesReference species = "Xo" stoichiometry = "1"/>
+            </listOfReactants>
+            <listOfProducts>
+               <speciesReference species = "S1" stoichiometry = "1"/>
+            </listOfProducts>
+            <kineticLaw>
+               <math xmlns = "http://www.w3.org/1998/Math/MathML">
+                  <apply>
+                     <times/>
+                     <ci>
+                           kk1
+                     </ci>
+                     <apply>
+                        <minus/>
+                        <apply>
+                           <times/>
+                           <ci>
+                                 k1
+                           </ci>
+                           <ci>
+                                 Xo
+                           </ci>
+                        </apply>
+                        <apply>
+                           <times/>
+                           <ci>
+                                 k_1
+                           </ci>
+                           <ci>
+                                 S1
+                           </ci>
+                        </apply>
+                     </apply>
+                  </apply>
+               </math>
+            </kineticLaw>
+         </reaction>
+         <reaction id = "J2" reversible = "false">
+            <listOfReactants>
+               <speciesReference species = "S1" stoichiometry = "1"/>
+            </listOfReactants>
+            <listOfProducts>
+               <speciesReference species = "S2" stoichiometry = "1"/>
+            </listOfProducts>
+            <kineticLaw>
+               <math xmlns = "http://www.w3.org/1998/Math/MathML">
+                  <apply>
+                     <times/>
+                     <ci>
+                           kk2
+                     </ci>
+                     <apply>
+                        <minus/>
+                        <apply>
+                           <times/>
+                           <ci>
+                                 k2
+                           </ci>
+                           <ci>
+                                 S1
+                           </ci>
+                        </apply>
+                        <apply>
+                           <times/>
+                           <ci>
+                                 k_2
+                           </ci>
+                           <ci>
+                                 S2
+                           </ci>
+                        </apply>
+                     </apply>
+                  </apply>
+               </math>
+            </kineticLaw>
+         </reaction>
+         <reaction id = "J3" reversible = "false">
+            <listOfReactants>
+               <speciesReference species = "S2" stoichiometry = "1"/>
+            </listOfReactants>
+            <listOfProducts>
+               <speciesReference species = "S3" stoichiometry = "1"/>
+            </listOfProducts>
+            <kineticLaw>
+               <math xmlns = "http://www.w3.org/1998/Math/MathML">
+                  <apply>
+                     <times/>
+                     <ci>
+                           kk3
+                     </ci>
+                     <apply>
+                        <minus/>
+                        <apply>
+                           <times/>
+                           <ci>
+                                 k3
+                           </ci>
+                           <ci>
+                                 S2
+                           </ci>
+                        </apply>
+                        <apply>
+                           <times/>
+                           <ci>
+                                 k_3
+                           </ci>
+                           <ci>
+                                 S3
+                           </ci>
+                        </apply>
+                     </apply>
+                  </apply>
+               </math>
+            </kineticLaw>
+         </reaction>
+         <reaction id = "J4" reversible = "false">
+            <listOfReactants>
+               <speciesReference species = "S3" stoichiometry = "1"/>
+            </listOfReactants>
+            <listOfProducts>
+               <speciesReference species = "X1" stoichiometry = "1"/>
+            </listOfProducts>
+            <kineticLaw>
+               <math xmlns = "http://www.w3.org/1998/Math/MathML">
+                  <apply>
+                     <times/>
+                     <ci>
+                           kk4
+                     </ci>
+                     <apply>
+                        <minus/>
+                        <apply>
+                           <times/>
+                           <ci>
+                                 k4
+                           </ci>
+                           <ci>
+                                 S3
+                           </ci>
+                        </apply>
+                        <apply>
+                           <times/>
+                           <ci>
+                                 k_4
+                           </ci>
+                           <ci>
+                                 X1
+                           </ci>
+                        </apply>
+                     </apply>
+                  </apply>
+               </math>
+            </kineticLaw>
+         </reaction>
+      </listOfReactions>
+   </model>
+</sbml>
+[END_MODEL]
+
+[JARNAC]
+p = defn cell
+      var S1, S2, S3;
+      ext src, waste;
+      ext Xo, X1;
+
+      J1: Xo -> S1; k1*Xo - k_1*S1;
+      J2: S1 -> S2; k2*S1 - k_2*S2;
+      J3: S2 -> S3; k3*S2 - k_3*S3;
+      J4: S3 -> X1; k4*S3 - k_4*X1;
+  end;
+
+p.Xo = 1;
+p.X1 = 0;
+p.S1 = 0.5;
+p.S2 = 0.2;
+p.S3 = 0.1;
+p.k1 = 0.1;  p.k_1 = 0.05;
+p.k2 = 0.15; p.k_2 = 0.067;
+p.k3 = 0.4;  p.k_3 = 0.09;
+p.k4 = 0.55; p.k_4 = 0.01;
+[END_MODEL]
+
+[INITIALIZATION]
+[Conservation Laws]
+True
+[END_INITIALIZATION]
+
+[START_TESTS]
+[Set Steady State Selection List]
+S1 S2 S3
+
+[Compute Steady State]
+True
+
+[Species Concentrations]
+S1 0.569694868238558
+S2 0.208044382801664
+S3 0.13002773925104
+
+[Fluxes]
+J1 0.0715152565880721
+J2 0.0715152565880721
+J3 0.0715152565880721
+J4 0.0715152565880721
+
+[Full Jacobian]
+      -0.2      0           0.067      
+         0     -0.64        0.4  
+      0.15     0.09        -0.467   
+         
+[Individual Eigenvalues]
+S1 -0.157263450928358 0
+S3 -0.382371338369918 0
+S2 -0.767365210701723 0
+
+[Eigenvalue Matrix]
+-0.157263450928358 0
+-0.382371338369918 0
+-0.767365210701723 0
+
+[Stoichiometry Matrix]
+         1         -1          0          0 
+         0          0          1         -1 
+         0          1         -1          0 
+         
+[Link Matrix]
+         1          0          0 
+         0          1          0 
+         0          0          1 
+         
+[Unscaled Elasticity Matrix]
+     -0.05          0          0 
+      0.15        0        -0.067      
+         0        -0.09      0.4
+         0         0.55      0  
+         
+[Scaled Elasticity Matrix]
+-0.39830303          0          0 
+ 1.1949091           0 -0.19490909  
+         0   -0.16363636   1.1636364
+         0          1          0
+         
+[Unscaled Concentration Control Matrix]
+ 5.6969487 -4.7676838 -0.79858703 -0.13067788 
+ 1.3002774  0.4334258 0.072598821  -1.806302 
+ 2.0804438 0.69348128 -2.3838419 -0.39008322 
+
+[Scaled Concentration Control Matrix]
+0.715152565880724 -0.598499560612292 -0.100248676402559 -0.0164043288658731 
+0.715152565880721 0.238384188626906 0.039929351595007 -0.993466106102634 
+0.715152565880721 0.238384188626906 -0.819445648404993 -0.134091106102633
+
+[Unscaled Flux Control Matrix]
+0.71515257 0.23838419 0.039929352 0.0065338939 
+0.71515257 0.23838419 0.039929352 0.0065338939 
+0.71515257 0.23838419 0.039929352 0.0065338939 
+0.71515257 0.23838419 0.039929352 0.0065338939 
+
+[Scaled Flux Control Matrix]
+0.715152565880722 0.238384188626906 0.0399293515950069 0.00653389389736468 
+0.715152565880722 0.238384188626906 0.0399293515950069 0.00653389389736467 
+0.715152565880722 0.238384188626906 0.039929351595007 0.00653389389736467 
+0.715152565880722 0.238384188626906 0.0399293515950071 0.0065338938973647
+
+#[Individual Unscaled Flux Control Coefficients]
+
+
+[Floating Species Ids]
+S1 S3 S2
+[Boundary Species Ids]
+src waste Xo X1
+[Global Parameter Ids]
+kk1 k1 k_1 kk2 k2 k_2 kk3 k3 k_3 kk4 k4 k_4 
+[Compartment Ids]
+compartment
+[Reaction Ids]
+J1 J2 J3 J4
+[Species Initial Condition Ids]
+init(S1) init(S3) init(S2)
+[Get Eigenvalue Ids]
+eigen_S1 eigen_S3 eigen_S2 
+[Get Rates Of Change Ids]
+S1' S3' S2'
+[Set Steady State Selection List]
+S2 S3
+[Get Steady State Selection List]
+S2 S3
+[Set Time Course Selection List]
+time S2 S3
+[Get Time Course Selection List]
+time S2 S3
+[Compute Steady State Values]
+0.20804438 0.1300277392
+[Floating Species Concentrations]
+0.56969487 0.13002774 0.20804438
+[Boundary Species Concentrations]
+0 0 1 0
+[Get Global Parameter Values]
+   1    0.1   0.05    1   0.15   0.067    1    0.4    0.09    1   0.55   0.01
+[Get Initial Floating Species Concs]
+0.1 0.1 0.25
+[Get Reaction Rates]
+0.07151526 0.07151526 0.07151526 0.07151526
+[Get Reaction Rate By Index]
+0.07151526 0.07151526 0.07151526 0.07151526
+[Number of Dependent Species]
+0
+[Number of Independent Species]
+3
+[Number Of Rules]
+0
+[Get Rates Of Change]
+0 0 0
+[Get Reaction Rates Ex]
+1 2 3
+0.05 -0.051 1.02 1.1
+[Get Rates of Change Ex]
+1 2 3
+0.101 -0.08 -1.071
+[Get Rate of Change by Index]
+1 2 3
+0.101 -0.08 -1.071
+[END_TESTS]
+
+
