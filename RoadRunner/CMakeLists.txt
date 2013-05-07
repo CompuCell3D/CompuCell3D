@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(rr)
 
 OPTION(BUILD_CC3D_EXTENSION "Build RR extension for CompuCell3D" OFF)
+OPTION(INSTALL_CC3D_RR_PYTHON_EXAMPLE "Install standalone RR Python example" ON)
 
 # if (${BUILD_CC3D_EXTENSION})
 if (${BUILD_CC3D_EXTENSION} STREQUAL ON  )

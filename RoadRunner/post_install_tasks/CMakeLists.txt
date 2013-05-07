@@ -17,19 +17,24 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     #for more info please see http://www.amk.ca/python/howto/regex/ 
     STRING(REGEX REPLACE "/" "\\\\" COMPUCELL_INSTALL_DIR_WINDOWS_STYLE ${COMPUCELL_INSTALL_DIR_WINDOWS_STYLE})
 
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/rrPython.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/rrPython.bat @ONLY)
+    
+    
+    if (${INSTALL_CC3D_RR_PYTHON_EXAMPLE} STREQUAL ON)
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/rrPython.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/rrPython.bat @ONLY)
 
 
 
-    INSTALL(FILES  ${CMAKE_BINARY_DIR}/post_install_tasks/rrPython.bat DESTINATION ${COMPUCELL_INSTALL_DIR_WINDOWS_STYLE})
+        INSTALL(FILES  ${CMAKE_BINARY_DIR}/post_install_tasks/rrPython.bat DESTINATION ${COMPUCELL_INSTALL_DIR_WINDOWS_STYLE})
 
 
 
-
-    #copying SetupScript file
-    INSTALL(FILES "@CMAKE_CURRENT_SOURCE_DIR@/rrPython.py" DESTINATION ${COMPUCELL_INSTALL_DIR_WINDOWS_STYLE})    
-    #install demo SBML file
-    INSTALL(FILES "@CMAKE_CURRENT_SOURCE_DIR@/test_1.xml" DESTINATION ${COMPUCELL_INSTALL_DIR_WINDOWS_STYLE})    
+    
+        #copying SetupScript file
+        INSTALL(FILES "@CMAKE_CURRENT_SOURCE_DIR@/rrPython.py" DESTINATION ${COMPUCELL_INSTALL_DIR_WINDOWS_STYLE})    
+        #install demo SBML file
+        INSTALL(FILES "@CMAKE_CURRENT_SOURCE_DIR@/test_1.xml" DESTINATION ${COMPUCELL_INSTALL_DIR_WINDOWS_STYLE})    
+        
+    endif (${INSTALL_CC3D_RR_PYTHON_EXAMPLE} STREQUAL ON)    
 
     #copying RoadRunnerSetup file  
     INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/RoadRunnerSetup.py DESTINATION ${CC3D_INSTALL_PREFIX}/lib/python)
@@ -68,7 +73,9 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     # configure_file(${CMAKE_CURRENT_SOURCE_DIR}/compucell3d_old.sh.in.linux ${CMAKE_BINARY_DIR}/compucell3d_old.sh @ONLY)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/rrPython.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/rrPython.sh @ONLY)
+    
+    if (${INSTALL_CC3D_RR_PYTHON_EXAMPLE} STREQUAL ON)
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/rrPython.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/rrPython.sh @ONLY)
     
         INSTALL(FILES  
             ${CMAKE_BINARY_DIR}/post_install_tasks/rrPython.sh 
@@ -77,18 +84,22 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
                                                             WORLD_READ WORLD_WRITE WORLD_EXECUTE
             )
 
+          #copying rrPython file
+          INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/rrPython.py DESTINATION ${CC3D_INSTALL_PREFIX})
+          
+        
+          #install demo SBML file
+          INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/test_1.xml DESTINATION ${CC3D_INSTALL_PREFIX})    
             
+            
+     endif (${INSTALL_CC3D_RR_PYTHON_EXAMPLE} STREQUAL ON)       
+     
     #installing rr_support directory      
     INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/ThirdParty/rr_support" DESTINATION @COMPUCELL_INSTALL_DIR@
         PATTERN "*.svn" EXCLUDE
         PATTERN "@CMAKE_SOURCE_DIR@/ThirdParty/rr_support/*")  
             
       
-      #copying rrPython file
-      INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/rrPython.py DESTINATION ${CC3D_INSTALL_PREFIX})
-          
-      #install demo SBML file
-      INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/test_1.xml DESTINATION ${CC3D_INSTALL_PREFIX})    
 
       #copying RoadRunnerSetup file  
       INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/RoadRunnerSetup.py DESTINATION ${CC3D_INSTALL_PREFIX}/lib/python)
