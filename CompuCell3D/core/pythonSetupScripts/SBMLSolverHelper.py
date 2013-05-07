@@ -201,7 +201,7 @@ class SBMLSolverHelper(object):
                 for modelName, rrTmp in sbmlDict.iteritems():
                     rrTmp.timestep()
         
-                    print 'modelName=',modelName,'id=',cell.id,'rr t=',rrTmp.timeStart,' S1=',rrTmp.getValue('S1'),' S2=',rrTmp.getValue('S2')
+#                     print 'modelName=',modelName,'id=',cell.id,'rr t=',rrTmp.timeStart,' S1=',rrTmp.getValue('S1'),' S2=',rrTmp.getValue('S2')
                     
         
     def setStepSizeForCell(self, _modelName='',_cell=None,_stepSize=1.0):
@@ -239,7 +239,7 @@ class SBMLSolverHelper(object):
         #timestepping free-floating SBML        
         for modelName, rr in self.freeFloatingSBMLSimulator.iteritems():
            rr.timestep() 
-           print 'modelName=',modelName,'id=''rr t=',rr.timeStart,' S1=',rr.getValue('S1'),' S2=',rr.getValue('S2')        
+#            print 'modelName=',modelName,'id=''rr t=',rr.timeStart,' S1=',rr.getValue('S1'),' S2=',rr.getValue('S2')        
             
     def timestepSBML(self):        
         self.timestepCellSBML()
