@@ -32,7 +32,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     INSTALL(FILES "@CMAKE_CURRENT_SOURCE_DIR@/test_1.xml" DESTINATION ${COMPUCELL_INSTALL_DIR_WINDOWS_STYLE})    
 
     #copying RoadRunnerSetup file  
-    INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/RoadRunnerSetup.py DESTINATION ${CC3D_INSTALL_PREFIX})
+    INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/RoadRunnerSetup.py DESTINATION ${CC3D_INSTALL_PREFIX}/lib/python)
 
     
     #installing tcc compil;er for windows
@@ -91,7 +91,7 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
       INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/test_1.xml DESTINATION ${CC3D_INSTALL_PREFIX})    
 
       #copying RoadRunnerSetup file  
-      INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/RoadRunnerSetup.py DESTINATION ${CC3D_INSTALL_PREFIX})
+      INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/RoadRunnerSetup.py DESTINATION ${CC3D_INSTALL_PREFIX}/lib/python)
             
       file(GLOB libsbmlfiles "${THIRD_PARTY_INSTALL_FOLDER}/lib/libsbml.*")
       file(GLOB lapackfiles "${THIRD_PARTY_INSTALL_FOLDER}/lib/liblapack.*")

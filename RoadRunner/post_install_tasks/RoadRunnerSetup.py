@@ -5,8 +5,22 @@ import time
 sys.path.append(os.environ["PYTHON_MODULE_PATH"])
 sys.path.append(os.environ["SWIG_LIB_INSTALL_DIR"])
 
+# will try to extract prefix environment variable - can be  either PREFIX_RR or PREFIX_CC3D - depending on what we install
+global prefixPath
+try:
+    prefixPath=os.environ["PREFIX_RR"]
+except LookupError,e:
+    try:
+        prefixPath=os.environ["PREFIX_CC3D"]
+    except LookupError,e:
+        prefixPath=''
+# if prefixPath=='':
+    # prefixPath=os.environ["PREFIX_CC3D"]
+
+
 def getRoadRunnerTempDirectory():
-    tempDirPath=os.path.abspath(os.path.join(os.environ["PREFIX_RR"],'temp'))
+    global prefixPath
+    tempDirPath=os.path.abspath(os.path.join(prefixPath,'temp'))
     
     if os.path.isdir(tempDirPath) :
         return tempDirPath
@@ -25,7 +39,7 @@ def getRoadRunnerTempDirectory():
         
 def getCompiler():
     if sys.platform.startswith('win'):
-        return os.path.abspath(os.path.join(os.environ["PREFIX_RR"],'compilers/tcc/tcc.exe'))
+        return os.path.abspath(os.path.join(prefixPath,'compilers/tcc/tcc.exe'))
     elif sys.platform.startswith('lin'):
         return os.path.abspath(os.path.join('/usr/bin','gcc'))
     else:
@@ -37,7 +51,7 @@ global compilerExeFile
 
 tempDirPath=getRoadRunnerTempDirectory()
 
-compilerSupportPath=os.path.abspath(os.path.join(os.environ["PREFIX_RR"],'rr_support'))
+compilerSupportPath=os.path.abspath(os.path.join(prefixPath,'rr_support'))
 
 compilerExeFile=getCompiler()
 

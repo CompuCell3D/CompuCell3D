@@ -17,6 +17,7 @@ class SBMLSolverHelper(object):
 
         try:
             import RoadRunner
+            import RoadRunnerSetup
             import os
             import sys
             
@@ -27,19 +28,9 @@ class SBMLSolverHelper(object):
             self.compilerSupportPath=''        
             self.compilerExeFile=''
             
-            if sys.platform.startswith('win'):
-                self.tempDirPath=os.path.abspath(os.path.join(os.environ["PREFIX_CC3D"],'temp'))
-                self.compilerSupportPath=os.path.abspath(os.path.join(os.environ["PREFIX_CC3D"],'rr_support'))        
-                self.compilerExeFile=os.path.abspath(os.path.join(os.environ["PREFIX_CC3D"],'compilers/tcc/tcc.exe'))
-            elif sys.platform.startswith('linux'):    
-                self.tempDirPath=os.path.abspath(os.path.join(os.environ["PREFIX_CC3D"],'temp'))
-                self.compilerSupportPath=os.path.abspath(os.path.join(os.environ["PREFIX_CC3D"],'rr_support'))        
-                self.compilerExeFile=os.path.abspath(os.path.join('/usr/bin','gcc'))
-            elif sys.platform.startswith('darwin'):    
-                self.tempDirPath=os.path.abspath(os.path.join(os.environ["PREFIX_CC3D"],'temp'))
-                self.compilerSupportPath=os.path.abspath(os.path.join(os.environ["PREFIX_CC3D"],'rr_support'))        
-                self.compilerExeFile=os.path.abspath(os.path.join('/usr/bin','gcc'))
-                
+            self.tempDirPath=RoadRunnerSetup.tempDirPath
+            self.compilerSupportPath=RoadRunnerSetup.compilerSupportPath            
+            self.compilerExeFile=RoadRunnerSetup.compilerExeFile 
             
         except ImportError,e:
             #replacing SBMLSolver API with wrror messages 
@@ -48,7 +39,7 @@ class SBMLSolverHelper(object):
             'deleteSBMLFromCellIds','deleteSBMLFromCellTypes','deleteSBMLFromCell',\
             'timestepCellSBML','timestepFreeFloatingSBML','timestepSBML',
             'setStepSizeForCell','setStepSizeForCellIds','setStepSizeForCellTypes','setStepSizeForFreeFloatingSBML',\
-            'getSBMLSimulator','getSBMLState','setSBMLState','getSBMLValue','setSBMLValue','normalizePath']
+            'getSBMLSimulator','getSBMLState','setSBMLState','getSBMLValue','setSBMLValue','normalizePath','copySBMLs']
             
             import types            
             for apiName in SBMLSolverAPI:
