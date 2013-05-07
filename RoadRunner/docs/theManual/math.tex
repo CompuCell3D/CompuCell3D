@@ -1,0 +1,101 @@
+\chapter{Math}
+\label{chap4}
+\thispagestyle{empty}
+
+\section{Fourier Transformation}
+\label{ft}
+
+An important technique in digital image analysis is the Fourier transformation (FT).
+
+In the field of electrical engineering the parameter $t$ (time) is often used for the one dimensional
+Fourier transformation.  In this case the transformation leads from the time domain to the
+frequency domain. This context goes back to the field of system theory, because there are
+time continuous or time discrete signals. The digital image analysis deals with 
+spatial coordinates and a transformation from the spatial domain to the frequency domain.
+In both domains the intensity or gray value images are represented 
+by functions of two parameters.
+
+\subsection{Discrete Fourier Transformation}
+\label{discrete_ft}
+
+A given continuous function $f(x)$ sampled in $N$ equidistant intervals $\Delta x$ 
+leads to the discrete function or series 
+\begin{eqnarray*}
+f(x) &=& f(x_{0}+x \Delta x) \\
+ &=& \left \{ f(x_{0}),f(x_{0}+ \Delta x),\cdots,f(x_{0}+ [ N-1 ] \Delta x) \right \}.
+\end{eqnarray*}
+%% todo: check equation
+The discrete value $x$ ranges from
+$x=0,1,\dots,N-1$.
+
+\begin{table}
+ \begin{center}
+ \begin{tabular}{|rrrr|}
+ \hline
+ & direct DFT & FFT & Expense\\
+ $N$ & $N^{2}$ & $N \log_{2} N$ & $\log_{2} N/N$ \\
+ \hline
+ \hline
+  64&      4.096&      384&      9,4\%\\
+ 128&     16.384&      896&      5,5\%\\
+ 256&     65.536&    2.048&      3,1\%\\
+ 512&    262.144&    4.608&      1,8\%\\
+ \hline
+  \end{tabular}
+ \end{center}
+ \caption[Expense of calculation of the FFT in contrast to the direct DFT]
+   {Expense of calculation of the FFT in contrast to the direct DFT \cite{Gonzalez:1992}.}
+ \label{tab_expenseofcalculation}
+\end{table}   
+
+\subsection{Fast Fourier Transformation}
+\label{fft}
+
+The two dimensional image analysis uses the discrete 2D-Fourier transformation.
+Practise shows, that the calculation of a Fourier transformation given by
+above equations is an expensive operation.
+
+Taking a closer look towards the 1D-DFT shows that the amount of 
+complex additions and multiplications is proportional to $N^{2}$:
+For a certain frequency $u$ ($u=0,1,\dots,N-1$) 
+$N$ complex multiplications of the function  $f(x)$ with $e^{ -j 2 \pi \frac{u x}{N} }$
+and $(N-1)$ additions of these results are needed.
+By introducing the fast Fourier transformation (FFT) the number of calculations reduces and
+the multiplications of the FFT become proportional to $N \log_{2} N$ \cite{Gonzalez:1992}.
+Several algorithms are found in literature. An example is the
+'decimation in time radix-2 algorithm' presented in \cite{Gonzalez:1992}.
+The table \ref{tab_expenseofcalculation} shows, that for large amount of data 
+the expense of calculation steps is very small in contrast to the DFT.
+$N$-dimensional DFTs can be split into 1D-DFTs (Separability). 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
