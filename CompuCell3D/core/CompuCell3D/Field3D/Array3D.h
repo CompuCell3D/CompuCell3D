@@ -967,13 +967,13 @@ void Array3DContiguous<T>::swapArrays(){
 
 
 //Array3DCUDA is a special container designed for CUDA purposes
-
+//had to fo static_cast<T>(0) instead of T() to ensure that it will compile on gcc in the SWIG generated wrapper file
 template <typename T>
 class Array3DCUDA:public Field3DImpl<T>{
 public:
 	typedef T* ContainerType;
 	Array3DCUDA():
-		Field3DImpl<T>(Dim3D(1,1,1),T()),
+		Field3DImpl<T>(Dim3D(1,1,1),static_cast<T>(0)),
 		arrayCont(0),				
 		arraySize(0),
 		//shiftArray(0),
@@ -981,8 +981,8 @@ public:
 		borderWidth(1)
 	{}
 
-	Array3DCUDA(Dim3D & _dim,T  _initVal=T()):
-		Field3DImpl<T>(Dim3D(1,1,1),T()),
+	Array3DCUDA(Dim3D & _dim,T  _initVal=static_cast<T>(0)):
+		Field3DImpl<T>(Dim3D(1,1,1),static_cast<T>(0)),
 		arrayCont(0),
 		arraySize(0),
 		//shiftArray(0),
@@ -998,7 +998,7 @@ public:
 		}
 		arrayCont=0;
 	}
-	void allocateArray(const Dim3D & _dim , T val=T());
+	void allocateArray(const Dim3D & _dim , T val=static_cast<T>(0));
 	//       operator Type&();
 	ContainerType getContainer(){return arrayCont;}
 

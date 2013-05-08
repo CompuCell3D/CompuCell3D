@@ -104,7 +104,10 @@ using namespace std;
 using namespace CompuCell3D;
 
 
+
 %}
+
+
 
 
 %include stl.i //to ensure stl functionality 
@@ -966,6 +969,8 @@ public:
    * plugins are used.
    */
 
+ 
+  
   void initializePlugins() {
     // Set the path and load the plugins
 
