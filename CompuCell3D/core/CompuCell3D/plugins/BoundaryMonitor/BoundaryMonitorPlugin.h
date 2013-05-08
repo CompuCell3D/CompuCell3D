@@ -4,11 +4,13 @@
 
 #include <CompuCell3D/CC3D.h>
 
+
 #include "BoundaryMonitorDLLSpecifier.h"
 
 class CC3DXMLElement;
 
 namespace CompuCell3D {
+    
     class Simulator;
 
     class Potts3D;
@@ -48,8 +50,6 @@ namespace CompuCell3D {
         virtual ~BoundaryMonitorPlugin();
         
         Array3DCUDA<unsigned char> * getBoundaryArray();
-
-        
                 
         // CellChangeWatcher interface
         virtual void field3DChange(const Point3D &pt, CellG *newCell, CellG *oldCell);
@@ -64,7 +64,7 @@ namespace CompuCell3D {
         virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
         virtual std::string steerableName();
         virtual std::string toString();
-
+        
     };
 };
 #endif

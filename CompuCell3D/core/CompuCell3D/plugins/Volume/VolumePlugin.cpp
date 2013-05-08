@@ -54,6 +54,7 @@ void VolumePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData){
 	xmlData=_xmlData;
 
 	simulator->registerSteerableObject(this);
+        
 
 }
 
