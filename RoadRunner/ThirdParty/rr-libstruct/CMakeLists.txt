@@ -95,11 +95,18 @@ if (${LIBSTRUCT_BUILD_SHARED_LIBS})
      lapack
 
     )
-    set(shared_compile_definitions 
-    ${shared_compile_definitions}
-    WIN32
-    ) 
-
+    if(${CMAKE_SYSTEM_NAME} STREQUAL Windows) 
+        set(shared_compile_definitions 
+        ${shared_compile_definitions}
+        WIN32
+        ) 
+    else(${CMAKE_SYSTEM_NAME} STREQUAL Windows) 
+        set(shared_compile_definitions 
+        ${shared_compile_definitions}
+        ) 
+    
+    endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows) 
+    
     set_property(TARGET ${target}  
                  PROPERTY  COMPILE_DEFINITIONS 
                  ${shared_compile_definitions}
