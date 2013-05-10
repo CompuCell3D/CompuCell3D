@@ -1,0 +1,7 @@
+<Simulation version="3.5.1">    
+    <PythonScript>Simulation/DeltaNotch.py</PythonScript> 
+    <Resource Type="Python">Simulation/DeltaNotchSteppables.py</Resource>    
+    <Resource Type="SBML">Simulation/DN_Collier.sbml</Resource>    
+</Simulation>
+
+ 
