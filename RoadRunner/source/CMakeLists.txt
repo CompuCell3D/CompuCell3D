@@ -136,11 +136,11 @@ target_link_libraries (${target}
 if(UNIX)
 target_link_libraries (${target}    
  pthread
- sbml
+ sbml5
 )
 else()
 target_link_libraries (${target}    
- libsbml
+ libsbml5
 )
 endif()
 
@@ -161,7 +161,7 @@ POCO_NO_AUTOMATIC_LIBS
 
 #libraries to link with static lib
 target_link_libraries (${target}-static 
-   libsbml-static${staticLibExt}
+   libsbml5-static${staticLibExt}
    sundials_cvode
    sundials_nvecserial
    blas

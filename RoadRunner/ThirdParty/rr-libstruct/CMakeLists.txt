@@ -81,10 +81,10 @@ if (${LIBSTRUCT_BUILD_SHARED_LIBS})
 
     add_library(${target} SHARED ${sources})
 
-    SET(EXTRALIBS sbml)
+    SET(EXTRALIBS sbml5)
     
     if (WIN32)
-        SET(EXTRALIBS libsbml)
+        SET(EXTRALIBS libsbml5)
     endif()
     
     

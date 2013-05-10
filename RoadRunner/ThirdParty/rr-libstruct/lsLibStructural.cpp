@@ -101,15 +101,15 @@ string LibStructural::loadSBML(string sSBML)
 {
     
     DELETE_IF_NON_NULL(_Model);
-    cerr<<"BEFORE new SBMLmodel(sSBML)"<<endl;
+    // cerr<<"BEFORE new SBMLmodel(sSBML)"<<endl;
     _Model = new SBMLmodel(sSBML); //Todo: memoryleak
 
-    cerr<<"AFTER new SBMLmodel(sSBML)"<<endl;
+    // cerr<<"AFTER new SBMLmodel(sSBML)"<<endl;
     string msg = "";
 
     msg = analyzeWithQR();	//Todo: memoryleaks!
     
-    cerr<<"analyzeWithQR="<<msg<<endl;
+    // cerr<<"analyzeWithQR="<<msg<<endl;
     
     return msg;
 }
@@ -529,12 +529,12 @@ void  LibStructural::BuildStoichiometryMatrixFromModel(ls::SBMLmodel& oModel)
 //Uses QR Decomposition for Conservation analysis
 string LibStructural::analyzeWithQR()
 {
-    cerr<<"analyzeWithQR"<<endl;
+    // cerr<<"analyzeWithQR"<<endl;
     stringstream oResult;
     Initialize();
 
-    cerr<<"after initialize"<<endl;
-    cerr<<"_NumRows="<<_NumRows<<" _NumCols="<<_NumCols<<endl;
+    // cerr<<"after initialize"<<endl;
+    // cerr<<"_NumRows="<<_NumRows<<" _NumCols="<<_NumCols<<endl;
     
     if (_NumRows == 0)
     {
@@ -546,18 +546,18 @@ string LibStructural::analyzeWithQR()
     }
     else
     {
-        cerr<<"will try to get oQRResult _NmatT="<<_NmatT<<endl;
+        // cerr<<"will try to get oQRResult _NmatT="<<_NmatT<<endl;
         
         
         vector< DoubleMatrix*> oQRResult = getQRWithPivot(*_NmatT);
-        cerr<<"got vector oQRResult "<<endl;
+        // cerr<<"got vector oQRResult "<<endl;
         DoubleMatrix *Q = oQRResult[0];
         DoubleMatrix *R = oQRResult[1];
         DoubleMatrix *P = oQRResult[2];
 
         ls::gaussJordan(*R, _Tolerance);
 
-        cerr<<"got gaussJordan with _Tolerance="<<_Tolerance<<endl;
+        // cerr<<"got gaussJordan with _Tolerance="<<_Tolerance<<endl;
         // The rank is obtained by looking at the number of zero rows of R, which is
         // a lower trapezoidal matrix.
         _NumIndependent = ls::findRank(*R, _Tolerance);

@@ -34,7 +34,7 @@ rr-libstruct-static
 lapack
 blas
 f2c
-libsbml-static.a
+libsbml5-static.a
 libxml2.so
 sundials_nvecserial.a
 sundials_cvode.a
