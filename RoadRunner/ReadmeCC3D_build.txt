@@ -1,4 +1,4 @@
-Windows
+-------------------- Windows
 
 1.Build Third Party projects with Release build (change it in Visual Studio). MAke sure to change CMAKE_C_FLAGS_RELEASE to /MD /Od /Ob0 /D NDEBUG otherwise toy will get CVODE error. Do not change
 CMAKE_BUILD_TYPE if compiling using Visual Studio you will do it from Visual Studio interface
@@ -36,3 +36,13 @@ needs to be changed to
 /MD /Od /Ob0 /D NDEBUG
 
 The problem seem to be in the CVODE integration library, not being able to converge properly when full optimization is turned on. 
+
+-------------------- Linux
+------32 bit release
+On 32 bit Ubuntu when compiling in the Release mode change CMAKE_C_FLAGS_RELEASE to -O0 -NDEBUG in ThirdParty Project
+
+------64 bit release
+No changes necesary RR works out of the box
+
+-------------------- Apple OSX
+not tested
