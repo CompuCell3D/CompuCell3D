@@ -83,7 +83,7 @@
 #define VERSION "1.6.0pre"
 
 // #define SHAREDLIBEXT ".so"
-#define SHAREDLIBEXT ".dylib"
+#define SHAREDLIBEXT ".so"
 
 #define SOSLIB_CFLAGS "-g -O2 -I/include/soslib"
 #define SUNDIALS_CFLAGS "-g -O2 -I/include"
