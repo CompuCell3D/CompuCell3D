@@ -29,6 +29,7 @@ BoundaryMonitorPlugin::~BoundaryMonitorPlugin() {
 
 Array3DCUDA<unsigned char> * BoundaryMonitorPlugin::getBoundaryArray(){return boundaryArray;}
 
+
 void BoundaryMonitorPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     xmlData=_xmlData;
     sim=simulator;
