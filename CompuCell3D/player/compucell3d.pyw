@@ -4,8 +4,7 @@
 import sys
 import os
 
-import sip
-sip.setapi('QVariant', 1)
+
 
 
 def setVTKPaths():
@@ -36,7 +35,14 @@ def setVTKPaths():
 setVTKPaths()
 # print "PATH=",sys.path  
 
+
+
 #mainWindow = None
+
+# setting api for QVariant is necessary to get player workign with MinGW-compiled PyQt4
+import sip
+sip.setapi('QVariant', 1)
+
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
