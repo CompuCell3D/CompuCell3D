@@ -270,14 +270,14 @@ class SBMLSolverHelper(object):
             else:
                 raise RuntimeError("Could not find model "+_modelName+' in the list of free floating SBML models')                 
         else:
-            return sbmlSimulator.getFloatingSpeciesMap()       
+            return sbmlSimulator.getAdjustableSBMLParameters()
         
     def setSBMLState(self,_modelName,_cell=None,_state={}):
         sbmlSimulator=self.getSBMLSimulator(_modelName,_cell)
         if not sbmlSimulator:
             return False
         else:
-            sbmlSimulator.setFloatingSpeciesMap(_state)
+            sbmlSimulator.setAdjustableSBMLParameters(_state)
             return True
             
     def getSBMLValue(self,_modelName,_valueName='',_cell=None):

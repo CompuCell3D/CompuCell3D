@@ -4109,6 +4109,65 @@ void RoadRunner::setCapabilities(const string& capsStr)
 //    }
 }
 
+
+std::map<std::string,double> RoadRunner::getAdjustableSBMLParameters(){
+
+	std::map<std::string,double> exportableQuantities;
+	SymbolList & speciesSymList=mModelGenerator->mFloatingSpeciesConcentrationList;
+	for (unsigned int i = 0 ; i < speciesSymList.size(); ++i ){
+		std::string  name=speciesSymList[i].name;
+		exportableQuantities[name]=mModel->mData.y[i];		
+	}
+
+	SymbolList & globalParametersList=mModelGenerator->mGlobalParameterList;
+	for (unsigned int i = 0 ; i < globalParametersList.size(); ++i ){
+		std::string  name=globalParametersList[i].name;
+		exportableQuantities[name]=mModel->mData.gp[i];		
+	}
+
+
+	SymbolList & boundarySpeciesList=mModelGenerator->mBoundarySpeciesList;
+	for (unsigned int i = 0 ; i < boundarySpeciesList.size(); ++i ){
+		std::string  name=boundarySpeciesList[i].name;
+		exportableQuantities[name]=mModel->mData.bc[i];		
+	}
+
+	return exportableQuantities;
+
+
+}
+void RoadRunner::setAdjustableSBMLParameters(const std::map<std::string,double> & _speciesMap){
+	for (map<std::string,double>::const_iterator mitr = _speciesMap.begin() ; mitr != _speciesMap.end() ; ++mitr){
+		setValue(mitr->first,mitr->second);
+	}
+}
+
+
+std::map<std::string,double> RoadRunner::getFloatingSpeciesMap(){
+	std::map<std::string,double> exportableQuantities;
+	SymbolList & speciesSymList=mModelGenerator->mFloatingSpeciesConcentrationList;
+	for (unsigned int i = 0 ; i < speciesSymList.size(); ++i ){
+		std::string  name=speciesSymList[i].name;
+		exportableQuantities[name]=mModel->mData.y[i];		
+	}
+	return exportableQuantities;
+}
+
+void RoadRunner::setFloatingSpeciesMap(const std::map<std::string,double> & _speciesMap){
+	setAdjustableSBMLParameters(_speciesMap);
+	//////for (map<std::string,double>::const_iterator mitr = _speciesMap.begin() ; mitr != _speciesMap.end() ; ++mitr){
+	//////	setValue(mitr->first,mitr->second);
+	//////	//I would need to use code from SetValues which does nore than to set number. Decided to go with SetValue
+	//////	//int nIndex=0;
+	//////	//if (mModelGenerator->mFloatingSpeciesConcentrationList.find(mitr->first, nIndex))
+	//////	//{
+	//////	//	mModel->mData.y[nIndex]=mitr->second;
+	//////	//	cerr<<" assigning nIndex="<<nIndex<<" name of species="<<mitr->first<<" value="<<mitr->second<<endl;
+	//////	//}		
+	//////}
+}
+
+
 // Help("Sets the value of the given species or global parameter to the given value (not of local parameters)")
 bool RoadRunner::setValue(const string& sId, const double& dValue)
 {
@@ -4171,29 +4230,6 @@ bool RoadRunner::setValue(const string& sId, const double& dValue)
     return false;
 }
 
-std::map<std::string,double> RoadRunner::getFloatingSpeciesMap(){
-	std::map<std::string,double> exportableQuantities;
-	SymbolList & speciesSymList=mModelGenerator->mFloatingSpeciesConcentrationList;
-	for (unsigned int i = 0 ; i < speciesSymList.size(); ++i ){
-		std::string  name=speciesSymList[i].name;
-		exportableQuantities[name]=mModel->mData.y[i];		
-	}
-	return exportableQuantities;
-}
-
-void RoadRunner::setFloatingSpeciesMap(const std::map<std::string,double> & _speciesMap){
-
-	for (map<std::string,double>::const_iterator mitr = _speciesMap.begin() ; mitr != _speciesMap.end() ; ++mitr){
-		setValue(mitr->first,mitr->second);
-		//I would need to use code from SetValues which does nore than to set number. Decided to go with SetValue
-		//int nIndex=0;
-		//if (mModelGenerator->mFloatingSpeciesConcentrationList.find(mitr->first, nIndex))
-		//{
-		//	mModel->mData.y[nIndex]=mitr->second;
-		//	cerr<<" assigning nIndex="<<nIndex<<" name of species="<<mitr->first<<" value="<<mitr->second<<endl;
-		//}		
-	}
-}
 
 // Help("Gets the Value of the given species or global parameter (not of local parameters)")
 double RoadRunner::getValue(const string& sId)

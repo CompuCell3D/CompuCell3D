@@ -165,6 +165,9 @@ class RR_DECLSPEC RoadRunner : public rrObject
 		std::map<std::string,double>    getFloatingSpeciesMap(); 
 		void							setFloatingSpeciesMap(const std::map<std::string,double> & _speciesMap); 
 
+		std::map<std::string,double>    getAdjustableSBMLParameters(); 
+		void							setAdjustableSBMLParameters(const std::map<std::string,double> & _speciesMap); 
+
 		//Model generation
 		ModelFromC*						getModel();
 		CGenerator*						getCGenerator();
