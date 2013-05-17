@@ -24,6 +24,12 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 INCLUDE_DIRECTORIES(/usr/include)
 
+SET(DOLFIN_LIBS )                                                                                                
+                                                                                                                 
+if(USE_DOLFIN)                                                                                                   
+    SET(DOLFIN_LIBS dolfin)                                                                                      
+endif() 
+
 
 SET(LIBS
   CompuCellLibShared
@@ -39,7 +45,7 @@ SET(LIBS
    # XMLCerealShared
    # ${XERCESC_LIBRARY}
    ${PYTHON_LIBRARIES}
-   dolfin
+   ${DOLFIN_LIBS}
 
 )
 
