@@ -5,6 +5,8 @@
 
 
 
+
+
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 SET(LIBS
   CompuCellLibShared
