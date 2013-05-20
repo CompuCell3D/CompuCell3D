@@ -1,3 +1,8 @@
+global sbmlModelCompilations
+global freeFloatingSBMLSimulator
+sbmlModelCompilations={} #{sbml file name - full path:''}
+freeFloatingSBMLSimulator={} # {name:RoadRunnerPy}
+
 # this function will replace all API functions which refer to SBMLSolver in the event that no SBMLSolver event is installed
 def SBMLSolverError(self, *args,**kwrds):
     import inspect
@@ -21,8 +26,8 @@ class SBMLSolverHelper(object):
             import os
             import sys
             
-            self.sbmlModelCompilations={} #{sbml file name - full path:''}
-            self.freeFloatingSBMLSimulator={} # {name:RoadRunnerPy}
+# # #             self.sbmlModelCompilations={} #{sbml file name - full path:''}
+# # #             self.freeFloatingSBMLSimulator={} # {name:RoadRunnerPy}
             
             self.tempDirPath=''
             self.compilerSupportPath=''        
@@ -76,12 +81,16 @@ class SBMLSolverHelper(object):
         
         sbmlDict[coreModelName]=rr
         
-        if not self.sbmlModelCompilations.has_key(modelPathNormalized):                
+# # #         if not self.sbmlModelCompilations.has_key(modelPathNormalized):                
+
+        global sbmlModelCompilations
+        if not sbmlModelCompilations.has_key(modelPathNormalized):                
             compiled=rr.loadSBMLFromFile(modelPathNormalized, True)
             if not compiled:
                 raise RuntimeError('COULD NOT COMPILE SBML MODEL '+modelPathNormalized)
             else:
-                self.sbmlModelCompilations[modelPathNormalized]=''
+                sbmlModelCompilations[modelPathNormalized]=''
+# # #                 self.sbmlModelCompilations[modelPathNormalized]=''
         else:
             rr.loadSBMLFromFile(modelPathNormalized, False)
             
@@ -134,17 +143,21 @@ class SBMLSolverHelper(object):
         #setting stepSize
         rr.stepSize=_stepSize
         
-        
-        if not self.sbmlModelCompilations.has_key(modelPathNormalized):                
+        global sbmlModelCompilations
+        global freeFloatingSBMLSimulator
+        if not sbmlModelCompilations.has_key(modelPathNormalized):                        
+# # #         if not self.sbmlModelCompilations.has_key(modelPathNormalized):                
             compiled=rr.loadSBMLFromFile(modelPathNormalized, True)
             if not compiled:
                 raise RuntimeError('COULD NOT COMPILE SBML MODEL '+modelFile)
             else:
-                self.sbmlModelCompilations[modelPathNormalized]=''
+                sbmlModelCompilations[modelPathNormalized]=''
+# # #                 self.sbmlModelCompilations[modelPathNormalized]=''
         else:
             rr.loadSBMLFromFile(modelPathNormalized, False)
             
-        self.freeFloatingSBMLSimulator[_modelName]=rr        
+# # #         self.freeFloatingSBMLSimulator[_modelName]=rr  
+        freeFloatingSBMLSimulator[_modelName]=rr        
         
         #setting initial conditions - this has to be done after loadingSBML
         for name,value in _initialConditions.iteritems():
@@ -184,8 +197,11 @@ class SBMLSolverHelper(object):
                 pass            
         
     def deleteFreeFloatingSBML(self,_modelName):
+        global freeFloatingSBMLSimulator
         try:
-            del self.freeFloatingSBMLSimulator[_modelName]
+# # #             del self.freeFloatingSBMLSimulator[_modelName]
+            global freeFloatingSBMLSimulator
+            del freeFloatingSBMLSimulator[_modelName]
         except LookupError,e:
             pass    
         
@@ -227,8 +243,11 @@ class SBMLSolverHelper(object):
             self.setStepSizeForCell(_modelName=_modelName,_cell=cell,_stepSize=_stepSize)
 
     def setStepSizeForFreeFloatingSBML(self, _modelName='',_stepSize=1.0):
+        
         try:
-            sbmlSolver=self.freeFloatingSBMLSimulator[_modelName]
+# # #             sbmlSolver=self.freeFloatingSBMLSimulator[_modelName]
+            global freeFloatingSBMLSimulator
+            sbmlSolver=freeFloatingSBMLSimulator[_modelName]
         except LookupError,e:
             return
             
@@ -237,8 +256,12 @@ class SBMLSolverHelper(object):
 
     def timestepFreeFloatingSBML(self):    
         #timestepping free-floating SBML        
-        for modelName, rr in self.freeFloatingSBMLSimulator.iteritems():
+        global freeFloatingSBMLSimulator
+        for modelName, rr in freeFloatingSBMLSimulator.iteritems():
            rr.timestep() 
+        
+# # #         for modelName, rr in self.freeFloatingSBMLSimulator.iteritems():
+# # #            rr.timestep() 
 #            print 'modelName=',modelName,'id=''rr t=',rr.timeStart,' S1=',rr.getValue('S1'),' S2=',rr.getValue('S2')        
             
     def timestepSBML(self):        
@@ -252,7 +275,9 @@ class SBMLSolverHelper(object):
         import CompuCell
         if not _cell:
             try:
-                return self.freeFloatingSBMLSimulator[_modelName]
+                global freeFloatingSBMLSimulator
+                return freeFloatingSBMLSimulator[_modelName]
+# # #                 return self.freeFloatingSBMLSimulator[_modelName]
             except LookupError,e:
                 return None    
         else:  
