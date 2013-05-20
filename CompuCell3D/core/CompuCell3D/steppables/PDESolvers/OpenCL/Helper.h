@@ -29,8 +29,11 @@ void analyze(const char *msg, viennacl::vector<T> const &v, CompuCell3D::Dim3D d
 		//oclHelper.ReadBuffer(out, &host_out[0], totalLength);
 
 		//std::pair<vct_t::const_iterator, vct_t::const_iterator> mnmx=std::minmax_element(host_out.begin(), host_out.end());
-		vct_t::iterator mn=std::min_element(host_out.begin(), host_out.end());
-		vct_t::iterator mx=std::max_element(host_out.begin(), host_out.end());
+		//
+		// change to compile with gcc 4.7.1 on Mac OS X 10.8.x:
+		//    "typename" is required to inform the compiler that it'll be a type and not a member variable:
+		typename vct_t::iterator mn=std::min_element(host_out.begin(), host_out.end());
+		typename vct_t::iterator mx=std::max_element(host_out.begin(), host_out.end());
 		CompuCell3D::Dim3D mnInd3d=d3From1d(std::distance(host_out.begin(), mn), dim3d);
 		CompuCell3D::Dim3D mxInd3d=d3From1d(std::distance(host_out.begin(), mx), dim3d);
 
