@@ -988,16 +988,18 @@ def attachDictionaryToCells(sim):
     return adder,dictAdder #returning those two objects ensures that they will not be garbage collected. They are needed for proper functioning of the attribute adder
 
 def attachListToCells(sim):
-    from CompuCell import PyAttributeAdder
-    from PyListAdder import ListAdder
-    #from sys import getrefcount
-    adder=PyAttributeAdder()
-    #adder.registerRefChecker(getrefcount)
-    listAdder=ListAdder()
-    adder.registerAdder(listAdder)
-    potts=sim.getPotts()
-    potts.registerAttributeAdder(adder.getPyAttributeAdderPtr())
-    return adder,listAdder #returning those two objects ensures that they will not be garbage collected. They are needed for proper functioning of the attribute adder
+    raise AttributeError('List cell attributes are no longer supported by CompuCell3D. Please use dictionaries they are much more convenient and you can always insert Python list into a dictionary.')
+# # # old code    
+#     from CompuCell import PyAttributeAdder
+#     from PyListAdder import ListAdder
+#     #from sys import getrefcount
+#     adder=PyAttributeAdder()
+#     #adder.registerRefChecker(getrefcount)
+#     listAdder=ListAdder()
+#     adder.registerAdder(listAdder)
+#     potts=sim.getPotts()
+#     potts.registerAttributeAdder(adder.getPyAttributeAdderPtr())
+#     return adder,listAdder #returning those two objects ensures that they will not be garbage collected. They are needed for proper functioning of the attribute adder
 
 def extraInitSimulationObjects(sim,simthread,_restartEnabled=False):
     if playerType=="CMLResultReplay":

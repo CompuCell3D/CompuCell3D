@@ -1,5 +1,13 @@
 "This module contains definitions of basic classes that are used to construct Python based Steppables"
 
+# necessary to keep refernces to attribute adder and dictAdder current
+global pyAttributeAdder
+global dictAdder
+
+
+pyAttributeAdder=None
+dictAdder=None
+
 
 #steppables
 
@@ -42,6 +50,13 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         self.cellListByType=CellListByType(self.inventory)
         self.clusterList=ClusterList(self.inventory) 
         self.clusters=Clusters(self.inventory)       
+        
+        import CompuCellSetup
+        global pyAttributeAdder
+        global dictAdder
+        if not pyAttributeAdder or dictAdder:
+            pyAttributeAdder, dictAdder = CompuCellSetup.attachDictionaryToCells(self.simulator)
+        
         
         import CompuCellSetup
         self.typeIdTypeNameDict = CompuCellSetup.ExtractTypeNamesAndIds()    
@@ -225,6 +240,13 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             import CompuCell            
             self.cleaverMeshDumper=CompuCell.getCleaverMeshDumper()  
             
+    def getDictionaryAttribute(self,_cell):
+        # access/modification of a dictionary attached to cell - make sure to decalare in main script that you will use such attribute
+        import CompuCell        
+        return CompuCell.getPyAttrib(_cell)
+        
+            
+            
     def changeNumberOfWorkNodes(self,_numberOfWorkNodes):
         
         import CompuCell
@@ -291,7 +313,7 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         
         
         
-        
+            
     def everyPixel(self):
         import itertools
         return itertools.product(xrange(self.dim.x),xrange(self.dim.y),xrange(self.dim.z))  

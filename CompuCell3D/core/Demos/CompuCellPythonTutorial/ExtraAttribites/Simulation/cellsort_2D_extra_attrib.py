@@ -12,7 +12,6 @@ import CompuCellSetup
 sim,simthread = CompuCellSetup.getCoreSimulationObjects()
 
 #Create extra player fields here or add attributes
-pyAttributeAdder,listAdder=CompuCellSetup.attachListToCells(sim)
 
 CompuCellSetup.initializeSimulationObjects(sim,simthread)
 
