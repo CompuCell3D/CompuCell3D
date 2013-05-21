@@ -88,11 +88,21 @@ class MVCDrawView3D(MVCDrawViewBase):
         
         if self.fieldTypes is not None:
             currentPlane=""
-            currentPlanePos=""         
+            currentPlanePos=""
             if _useFieldComboBox:
                 name = str(self.graphicsFrameWidget.fieldComboBox.currentText())
-                fieldType=(name, self.fieldTypes[name])
-                (currentPlane, currentPlanePos)=self.getPlane()
+                
+                # check that there is a meaningful selection in the fieldComboBox, otherwise it may break:
+                if (name != "-- Field Type --"):
+                    fieldType=(name, self.fieldTypes[name])
+                    (currentPlane, currentPlanePos)=self.getPlane()
+                else:
+                    # these 4 lines are the same as the "else" 4 lines below:
+                    name = self.currentFieldType[0]
+                    fieldType=(name, self.fieldTypes[name])
+                    self.currentFieldType=fieldType        # this assignment seems redundent but I keep it in order to make sure nothing breaks        
+                    (currentPlane, currentPlanePos)=self.getPlane()
+
             else:
                 name = self.currentFieldType[0]
                 fieldType=(name, self.fieldTypes[name])
