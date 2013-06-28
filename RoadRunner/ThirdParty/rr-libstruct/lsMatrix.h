@@ -1,8 +1,9 @@
 #ifndef lsMatrixH
 #define lsMatrixH
 
-#if defined(__linux)
-#include <cstring> //FOr memset on linux
+//     (from Andy S.)
+#if defined __unix || defined(__APPLE__)
+#include <cstring> //for memset on unix platforms
 #endif
 #include <ostream>
 #include "lsExporter.h"
