@@ -57,8 +57,8 @@ class MitosisSteppableClusters(MitosisSteppableClustersBase):
         parentCell=self.mitosisSteppable.parentCell
         childCell=self.mitosisSteppable.childCell
                 
-        compartmentListChild=self.inventory.getClusterCells(childCell.clusterId)
-        compartmentListParent=self.inventory.getClusterCells(parentCell.clusterId)
+        compartmentListChild=self.getClusterCells(childCell.clusterId)
+        compartmentListParent=self.getClusterCells(parentCell.clusterId)
         print "compartmentListChild=",compartmentListChild 
         for i in xrange(compartmentListChild.size()):
             compartmentListParent[i].targetVolume/=2.0

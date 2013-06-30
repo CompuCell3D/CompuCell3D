@@ -481,7 +481,7 @@ def openFileInSimulationOutputDirectory(_filePath,_mode="r"):
     
     global screenshotDirectoryName    
     
-    print 'screenshotDirectoryName=',screenshotDirectoryName
+    # print 'screenshotDirectoryName=',screenshotDirectoryName
 #     print 'dirName=',dirName    
 #     print 'fileName=',fileName    
     

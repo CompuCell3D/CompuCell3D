@@ -121,7 +121,8 @@ namespace CompuCell3D {
 		void registerSteerableObject(SteerableObject *);
 		void unregisterSteerableObject(const std::string & );
 		SteerableObject * getSteerableObject(const std::string & _objectName);
-
+		
+		void setNumSteps(unsigned int _numSteps){ppdCC3DPtr->numSteps=_numSteps;}
 		unsigned int getNumSteps() {return ppdCC3DPtr->numSteps;}
 		int getStep() {return currstep;}
 		bool isStepping(){return simulatorIsStepping;}

@@ -313,11 +313,20 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         
         
         
+    def everyPixelWithSteps(self,step_x,step_y,step_z) :
+        for x in xrange(0,self.dim.x,step_x):
+            for y in xrange(0,self.dim.y,step_y):
+                for z in xrange(0,self.dim.z,step_z):
+                    yield x,y,z
+        
+    
+    def everyPixel(self,step_x=1,step_y=1,step_z=1):
+        if  step_x==1 and step_y==1 and step_z==1:    
+            import itertools
+            return itertools.product(xrange(self.dim.x),xrange(self.dim.y),xrange(self.dim.z))  
+        else:
+            return self.everyPixelWithSteps(step_x,step_y,step_z)
             
-    def everyPixel(self):
-        import itertools
-        return itertools.product(xrange(self.dim.x),xrange(self.dim.y),xrange(self.dim.z))  
-                    
     def attemptFetchingCellById(self,_id):
         return self.inventory.attemptFetchingCellById(_id)
             
@@ -708,10 +717,36 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             return CompuCellSetup.globalSteppableRegistry.getSteppablesByClassName(_className)[0]
         except IndexError,e:
             return None    
-
-
-
-
+            
+    def openFileInSimulationOutputDirectory(self,_filePath,_mode="r"):
+        import  CompuCellSetup
+        return CompuCellSetup.openFileInSimulationOutputDirectory(_filePath,_mode)
+        
+    def stopSimulation(self):    
+        import CompuCellSetup
+        CompuCellSetup.stopSimulation()
+        
+    def setMaxMCS(self,maxMCS) :
+        self.simulator.setNumSteps(maxMCS)
+        
+    def createScalarFieldPy(self,_fieldName):
+        import CompuCellSetup
+        return CompuCellSetup.createScalarFieldPy(self.dim,_fieldName)
+        
+    def createScalarFieldCellLevelPy(self,_fieldName):
+        import CompuCellSetup
+        return CompuCellSetup.createScalarFieldCellLevelPy(_fieldName)
+        
+    def createVectorFieldPy(self,_fieldName):
+        import CompuCellSetup
+        return CompuCellSetup.createVectorFieldPy(self.dim,_fieldName)
+        
+    def createVectorFieldCellLevelPy(self,_fieldName):
+        import CompuCellSetup
+        return CompuCellSetup.createVectorFieldCellLevelPy(_fieldName)
+        
+    def getClusterCells(self,_clusterId):
+        return self.inventory.getClusterCells(_clusterId)
 
 class RunBeforeMCSSteppableBasePy(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):

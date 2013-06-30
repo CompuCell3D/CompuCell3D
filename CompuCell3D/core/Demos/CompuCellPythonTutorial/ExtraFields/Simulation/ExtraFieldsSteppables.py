@@ -11,25 +11,25 @@ from random import random
 class ExtraFieldVisualizationSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=10):
         SteppableBasePy.__init__(self,_simulator,_frequency)
-        self.scalarField=CompuCellSetup.createScalarFieldPy(self.dim,"ExtraField")
+        self.scalarField=self.createScalarFieldPy("ExtraField")
+        
     def step(self,mcs):
         
         self.scalarField[:, :, :]=0.0 # clear field
         
-        for x in xrange(self.dim.x):
-            for y in xrange(self.dim.y):
-                for z in xrange(self.dim.z):
-                    
-                    if (not mcs%20):
-                        self.scalarField[x,y,z]=x*y
-                        
-                    else:
-                        self.scalarField[x,y,z]=sin(x*y)
+        for x,y,z in self.everyPixel(4,4,1):
+            if (not mcs%20):
+                self.scalarField[x,y,z]=x*y                
+            else:
+                self.scalarField[x,y,z]=sin(x*y)
+           
+        
+
 
 class IdFieldVisualizationSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=10):
         SteppableBasePy.__init__(self,_simulator,_frequency)        
-        self.scalarCLField=CompuCellSetup.createScalarFieldCellLevelPy("IdField")
+        self.scalarCLField=self.createScalarFieldCellLevelPy("IdField")
         
     def step(self,mcs):
         self.scalarCLField.clear()
@@ -43,23 +43,22 @@ class IdFieldVisualizationSteppable(SteppableBasePy):
 class VectorFieldVisualizationSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=10):
         SteppableBasePy.__init__(self,_simulator,_frequency)        
-        self.vectorField=CompuCellSetup.createVectorFieldPy(self.dim,"VectorField")
+        self.vectorField=self.createVectorFieldPy("VectorField")
     
     def step(self,mcs):
         
         self.vectorField[:, :, :,:]=0.0 # clear vector field        
         
-        for x in xrange(0,self.dim.x,5):
-            for y in xrange(0,self.dim.y,5):
-                for z in xrange(self.dim.z):
-                    
-                    self.vectorField[x,y,z]=[x*random(), y*random(), z*random()]
+        for x,y,z in self.everyPixel(10,10,5):
+            self.vectorField[x,y,z]=[x*random(), y*random(), z*random()]
+            
+
 
 class VectorFieldCellLevelVisualizationSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=10):
         SteppableBasePy.__init__(self,_simulator,_frequency)     
         
-        self.vectorCLField=CompuCellSetup.createVectorFieldCellLevelPy("VectorFieldCellLevel")        
+        self.vectorCLField=self.createVectorFieldCellLevelPy("VectorFieldCellLevel")        
 
     def step(self,mcs):
         self.vectorCLField.clear()

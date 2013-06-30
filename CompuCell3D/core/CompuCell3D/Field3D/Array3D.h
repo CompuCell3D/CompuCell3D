@@ -111,7 +111,7 @@ class Array3DField3DAdapter:public Field3DImpl<T>{
       
    protected:
       Array3D<T> * array3DPtr;
-      Dim3D dim;
+      //Dim3D dim; //defined already in Field3DImpl<>
       typename Array3D<T>::ContainerType * containerPtr;
 };
 
@@ -262,7 +262,7 @@ class Array3DLinearFortranField3DAdapter:public Field3DImpl<float>{
       
    protected:      
       std::vector<double> container;
-      Dim3D dim;
+      //Dim3D dim; //defined already in Field3DImpl<>
       Dim3D internalDim;      
 };
 
@@ -407,7 +407,7 @@ class Array2DLinearFortranField3DAdapter:public Field3DImpl<float>{
       }
    protected:      
       std::vector<double> container;
-      Dim3D dim;
+      //Dim3D dim; //defined already in Field3DImpl<>
       Dim3D internalDim;      
 };
 
@@ -861,7 +861,7 @@ public:
 
 protected:
 	T *arrayCont;
-	Dim3D dim;
+	//Dim3D dim; //defined already in Field3DImpl<>
 	Dim3D internalDim;
 	int arraySize;
 	int shiftSwap;
@@ -1065,7 +1065,7 @@ public:
 
 protected:
 	T *arrayCont;
-	Dim3D dim;
+	//Dim3D dim; //defined already in Field3DImpl<>
 	Dim3D internalDim;
 	int arraySize;
 	// int shiftSwap;
@@ -1214,7 +1214,7 @@ public:
 
 protected:
 	T *arrayCont;
-	Dim3D dim;
+	//Dim3D dim; //defined already in Field3DImpl<>
 	Dim3D internalDim;
 	int arraySize;
 	int shiftSwap;
@@ -1543,7 +1543,7 @@ public:
 
 protected:
 	T *arrayCont;
-	Dim3D dim;
+	//Dim3D dim; //defined already in Field3DImpl<>
 	Dim3D internalDim;
 	int arraySize;
 	int shiftSwap;

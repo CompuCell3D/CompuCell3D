@@ -1,5 +1,12 @@
 =============== #@Menu@ Python Utilities 
 
+---------- #@Submenu@ Open File In Sinumation Output Directory
+try:                
+    fileHandle,fullFileName=self.openFileInSimulationOutputDirectory("YOUR FILE NAME","w")
+except IOError:
+    print "Could not open file ", "YOUR FILE NAME"," for writing. "                
+    return
+
 ---------- #@Submenu@ Get Dir Of Current File
 fileDir=os.path.dirname (os.path.abspath( __file__ ))
 
@@ -184,6 +191,10 @@ self.connectivityLocalFlexPlugin.setConnectivityStrength(cell,10000000) #cell, s
 
 
 =============== #@Menu@ Cell Manipulation
+
+---------- #@Submenu@ Fetch Cell By Id
+cell=self.attemptFetchingCellById(CELL_ID)
+
 
 ---------- #@Submenu@ Delete Cell
 self.deleteCell(cell)  
@@ -530,7 +541,7 @@ for cell in self.cellList:
 
     
 ---------- #@Submenu@ Scalar Field Cell Level - Create
-self.scalarCLField=CompuCellSetup.createScalarFieldCellLevelPy("FIELD_NAME_SCL")
+self.scalarCLField=self.createScalarFieldCellLevelPy("FIELD_NAME_SCL")
 
 ---------- #@Submenu@ Scalar Field Cell Level - Clear
 self.scalarCLField.clear()
@@ -548,7 +559,7 @@ for x,y,z in self.everyPixel():
         self.scalarField[x,y,z]=sin(x*y)
         
 ---------- #@Submenu@ Scalar Field Pixel Level - Create
-self.scalarField=CompuCellSetup.createScalarFieldPy(self.dim,"FIELD_NAME_S")
+self.scalarField=self.createScalarFieldPy("FIELD_NAME_S")
 
 ---------- #@Submenu@ Scalar Field Pixel Level - Clear
 self.scalarField[:, :, :]=0.0
@@ -567,7 +578,7 @@ for cell in self.cellList:
         self.vectorCLField[cell]=vec
 
 ---------- #@Submenu@ Vector Field Cell Level - Create
-self.vectorCLField=CompuCellSetup.createVectorFieldCellLevelPy("FIELD_NAME_VCL")        
+self.vectorCLField=self.createVectorFieldCellLevelPy("FIELD_NAME_VCL")        
 
 ---------- #@Submenu@ Vector Field Cell Level - Clear
 self.vectorCLField.clear()
@@ -583,7 +594,7 @@ for x in xrange(0,self.dim.x,5):
             self.vectorField[x,y,z]=[x*random(), y*random(), z*random()]        
 
 ---------- #@Submenu@ Vector Field Pixel Level - Create
-self.vectorField=CompuCellSetup.createVectorFieldPy(self.dim,"FIELD_NAME_V")
+self.vectorField=self.createVectorFieldPy("FIELD_NAME_V")
 
 ---------- #@Submenu@ Vector Field Pixel Level - Clear
 self.vectorField[:, :, :,:]=0.0 # clear vector field        
@@ -633,19 +644,20 @@ self.pW.addAutoLegend("top")
 
 self.clearFlag=False
 
----------- #@Submenu@ Setup (start fcn) 
-self.pW=CompuCellSetup.addNewPlotWindow(_title='Average Volume And Surface',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Variables')
-self.pW.addPlot('MVol',_style='Dots',_color='red',_size=5)
-self.pW.addPlot('MSur',_style='Steps',_size=1)
+---------- #@Submenu@ 1. Setup (start fcn) 
+self.pW=CompuCellSetup.addNewPlotWindow(_title='DATA_SERIES_1 and DATA_SERIES_2',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Variables')
+self.pW.addPlot('DATA_SERIES_1',_style='Dots',_color='red',_size=5)
+self.pW.addPlot('DATA_SERIES_1',_style='Steps',_size=1)
 self.pW.setYAxisLogScale()   
 
----------- #@Submenu@ Add Data Points (step fcn)
+---------- #@Submenu@ 2. Add Data Points (step fcn)
 self.pW.addDataPoint("DATA_SERIES_1",mcs,mcs*mcs) # arguments are (name of the data series, x, y)
+self.pW.addDataPoint("DATA_SERIES_2",mcs,mcs) # arguments are (name of the data series, x, y)
 
 ---------- #@Submenu@ Erase Plot (step fcn)
 self.pW.eraseAllData()
 
----------- #@Submenu@ Refresh Plots
+---------- #@Submenu@ 3. Refresh Plots (step fcn)
 self.pW.showAllPlots() 
 
 ---------- #@Submenu@ Add Histogram Plot (start fcn)
@@ -674,6 +686,129 @@ self.pW.savePlotAsPNG(fileName,1000,1000) # here we specify size of the image sa
 ---------- #@Submenu@ Save Plot As Data (text file)
 self.pW.savePlotAsData(fileName) 
 
+=============== #@Menu@ Simulation
 
+---------- #@Submenu@ Stop Simulation
+self.stopSimulation()
+
+---------- #@Submenu@ Set Max MCS
+self.setMaxMCS(MAX_MCS)
+
+=============== #@Menu@ Mitosis
+
+---------- #@Submenu@ Child/Parent Random Relative Position
+self.setParentChildPositionFlag(0)       
+
+---------- #@Submenu@ Child on the Left of the Parent
+self.setParentChildPositionFlag(1)       
+
+---------- #@Submenu@ Child on the Right of the Parent
+self.setParentChildPositionFlag(-1)       
+
+---------- #@Submenu@ Divide Cells Along Random Axis (Example)
+cells_to_divide=[]
+for cell in self.cellList:
+    if cell.volume>50:
         
+        cells_to_divide.append(cell)
+        
+for cell in cells_to_divide:
+    self.divideCellRandomOrientation(cell)
 
+---------- #@Submenu@ Divide Cells Along Major Axis (Example)
+cells_to_divide=[]
+for cell in self.cellList:
+    if cell.volume>50:
+        
+        cells_to_divide.append(cell)
+        
+for cell in cells_to_divide:
+    self.divideCellAlongMajorAxis(cell)
+
+---------- #@Submenu@ Divide Cells Along Minor Axis (Example)
+cells_to_divide=[]
+for cell in self.cellList:
+    if cell.volume>50:
+        
+        cells_to_divide.append(cell)
+        
+for cell in cells_to_divide:
+    self.divideCellAlongMinorAxis(cell)
+
+---------- #@Submenu@ Divide Cells Along Normal To Vector (Example)
+cells_to_divide=[]
+for cell in self.cellList:
+    if cell.volume>50:
+        
+        cells_to_divide.append(cell)
+        
+for cell in cells_to_divide:
+    self.divideCellOrientationVectorBased(cell,1,0,0)  # dividing along Y axis - normal to (1,0,0)
+    
+---------- #@Submenu@ Divide Cluster Along Random Axis (Example)    
+mitosisClusterIdList=[]
+for compartmentList in self.clusterList:
+    
+    clusterId=0
+    clusterVolume=0            
+    for cell in CompartmentList(compartmentList):
+        clusterVolume+=cell.volume            
+        clusterId=cell.clusterId
+    
+    
+    if clusterVolume>250: # condition under which cluster mitosis takes place
+        mitosisClusterIdList.append(clusterId) # instead of doing mitosis right away we store ids for clusters which should be divide. This avoids modifying cluster list while we iterate through it
+for clusterId in mitosisClusterIdList:
+    self.divideClusterRandomOrientation(clusterId)             
+
+    
+---------- #@Submenu@ Divide Cluster Along Major Axis (Example)    
+mitosisClusterIdList=[]
+for compartmentList in self.clusterList:
+    
+    clusterId=0
+    clusterVolume=0            
+    for cell in CompartmentList(compartmentList):
+        clusterVolume+=cell.volume            
+        clusterId=cell.clusterId
+    
+    
+    if clusterVolume>250: # condition under which cluster mitosis takes place
+        mitosisClusterIdList.append(clusterId) # instead of doing mitosis right away we store ids for clusters which should be divide. This avoids modifying cluster list while we iterate through it
+for clusterId in mitosisClusterIdList:
+    self.divideClusterAlongMajorAxis(clusterId)             
+
+---------- #@Submenu@ Divide Cluster Along Minor Axis (Example)    
+mitosisClusterIdList=[]
+for compartmentList in self.clusterList:
+    
+    clusterId=0
+    clusterVolume=0            
+    for cell in CompartmentList(compartmentList):
+        clusterVolume+=cell.volume            
+        clusterId=cell.clusterId
+    
+    
+    if clusterVolume>250: # condition under which cluster mitosis takes place
+        mitosisClusterIdList.append(clusterId) # instead of doing mitosis right away we store ids for clusters which should be divide. This avoids modifying cluster list while we iterate through it
+for clusterId in mitosisClusterIdList:
+    self.divideClusterAlongMinorAxis(clusterId)             
+    
+---------- #@Submenu@ Divide Cluster Along Normal To Vector (Example)    
+mitosisClusterIdList=[]
+for compartmentList in self.clusterList:
+    
+    clusterId=0
+    clusterVolume=0            
+    for cell in CompartmentList(compartmentList):
+        clusterVolume+=cell.volume            
+        clusterId=cell.clusterId
+    
+    
+    if clusterVolume>250: # condition under which cluster mitosis takes place
+        mitosisClusterIdList.append(clusterId) # instead of doing mitosis right away we store ids for clusters which should be divide. This avoids modifying cluster list while we iterate through it
+for clusterId in mitosisClusterIdList:
+    self.divideClusterOrientationVectorBased(clusterId,1,0,0)             
+            
+    
+    

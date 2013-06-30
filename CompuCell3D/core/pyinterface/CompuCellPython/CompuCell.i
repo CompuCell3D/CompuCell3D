@@ -552,9 +552,18 @@ FIELD3DEXTENDERBASE(type,returnType)
     
     Dim3D dim=self->getDim();
     
+    
+    // cerr<<"THIS IS FIELD DIM="<<dim<<endl;
+    
     if (PySlice_Check(xCoord)){
 
-        PySlice_GetIndicesEx((PySliceObject*)xCoord,dim.x-1,&start_x,&stop_x,&step_x,&sliceLength);
+        int ok=PySlice_GetIndicesEx((PySliceObject*)xCoord,dim.x-1,&start_x,&stop_x,&step_x,&sliceLength);
+     // cerr<<"extracting slices for x axis"<<endl;   
+    // cerr<<"start x="<< start_x<<endl;
+    // cerr<<"stop x="<< stop_x<<endl;
+    // cerr<<"step x="<< step_x<<endl;
+    // cerr<<"sliceLength="<<sliceLength<<endl;        
+    // cerr<<"ok="<<ok<<endl;
 
         
     }else{
@@ -565,7 +574,12 @@ FIELD3DEXTENDERBASE(type,returnType)
 
     if (PySlice_Check(yCoord)){
         
-        PySlice_GetIndicesEx((PySliceObject*)yCoord,dim.y-1,&start_y,&stop_y,&step_y,&sliceLength);
+        int ok=PySlice_GetIndicesEx((PySliceObject*)yCoord,dim.y-1,&start_y,&stop_y,&step_y,&sliceLength);
+     // cerr<<"extracting slices for x axis"<<endl;   
+    // cerr<<"start y="<< start_y<<endl;
+    // cerr<<"stop y="<< stop_y<<endl;
+    // cerr<<"step y="<< step_y<<endl;
+    // cerr<<"sliceLength="<<sliceLength<<endl;               
         
         
     }else{
@@ -576,7 +590,7 @@ FIELD3DEXTENDERBASE(type,returnType)
     
     if (PySlice_Check(zCoord)){
         
-        PySlice_GetIndicesEx((PySliceObject*)zCoord,dim.z-1,&start_z,&stop_z,&step_z,&sliceLength);
+       int ok= PySlice_GetIndicesEx((PySliceObject*)zCoord,dim.z-1,&start_z,&stop_z,&step_z,&sliceLength);
         
         
     }else{
@@ -586,10 +600,10 @@ FIELD3DEXTENDERBASE(type,returnType)
     }
 
     
-//     cerr<<"start x="<< start_x<<endl;
-//     cerr<<"stop x="<< stop_x<<endl;
-//     cerr<<"step x="<< step_x<<endl;
-//     cerr<<"sliceLength="<<sliceLength<<endl;
+    // cerr<<"start x="<< start_x<<endl;
+    // cerr<<"stop x="<< stop_x<<endl;
+    // cerr<<"step x="<< step_x<<endl;
+    // cerr<<"sliceLength="<<sliceLength<<endl;
     
     
     int x,y,z;

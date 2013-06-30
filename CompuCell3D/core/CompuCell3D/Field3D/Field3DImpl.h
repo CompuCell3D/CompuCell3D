@@ -44,7 +44,7 @@ namespace CompuCell3D {
    */
   template<class T>
   class Field3DImpl : public Field3D<T> {
-	
+  protected:
     Dim3D dim;
     T *field;
     T initialValue;
