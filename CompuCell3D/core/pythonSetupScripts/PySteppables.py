@@ -345,11 +345,7 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         if self.clusterSurfaceTrackerPlugin:
             self.clusterSurfaceTrackerPlugin.updateClusterSurface(oldClusterId)
             self.clusterSurfaceTrackerPlugin.updateClusterSurface(newClusterId)        
-    
-    
-        
-        
-        
+          
     def getCellNeighbors(self,_cell):
         if self.neighborTrackerPlugin:
             return CellNeighborListAuto(self.neighborTrackerPlugin,_cell)
@@ -747,6 +743,15 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         
     def getClusterCells(self,_clusterId):
         return self.inventory.getClusterCells(_clusterId)
+
+    def getConcentrationField(self,_fieldName):
+        import CompuCell
+        return CompuCell.getConcentrationField(self.simulator,_fieldName)
+        
+    def addNewPlotWindow(self, _title='',_xAxisTitle='',_yAxisTitle='',_xScaleType='linear',_yScaleType='linear'):
+        import CompuCellSetup
+        return CompuCellSetup.addNewPlotWindow(_title,_xAxisTitle,_yAxisTitle,_xScaleType,_yScaleType)
+        
 
 class RunBeforeMCSSteppableBasePy(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
