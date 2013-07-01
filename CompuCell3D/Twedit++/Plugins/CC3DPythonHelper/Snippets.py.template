@@ -694,6 +694,21 @@ self.stopSimulation()
 ---------- #@Submenu@ Set Max MCS
 self.setMaxMCS(MAX_MCS)
 
+---------- #@Submenu@ Change Steppable Frequency
+self.frequency=NEW_FREQUENCY
+
+---------- #@Submenu@ Build Wall
+self.buildWall(self.YOUR_WALL_CELL_TYPE)
+
+---------- #@Submenu@ Destroy Wall
+self.destroyWall()
+
+---------- #@Submenu@ Resize And Shift Lattice
+self.resizeAndShiftLattice(_newSize=(X,Y,Z), _shiftVec=(VX,VY,VZ))
+
+---------- #@Submenu@ Change Number of CPU's (worknodes)
+self.changeNumberOfWorkNodes(8)
+
 =============== #@Menu@ Mitosis
 
 ---------- #@Submenu@ Child/Parent Random Relative Position
