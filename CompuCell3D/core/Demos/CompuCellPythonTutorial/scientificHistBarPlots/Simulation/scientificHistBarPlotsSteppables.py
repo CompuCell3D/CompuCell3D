@@ -11,7 +11,7 @@ class HistPlotSteppable(SteppableBasePy):
     def start(self):        
         
         #initialize setting for Histogram
-        self.pW=CompuCellSetup.addNewPlotWindow(_title='Histogram of Cell Volumes',_xAxisTitle='Number of Cells',_yAxisTitle='Volume Size in Pixels')
+        self.pW=self.addNewPlotWindow(_title='Histogram of Cell Volumes',_xAxisTitle='Number of Cells',_yAxisTitle='Volume Size in Pixels')
         self.pW.addHistogramPlot(_plotName='Hist 1',_color='green',_alpha=100)# _alpha is transparency 0 is transparent, 255 is opaque        
         self.pW.addHistogramPlot(_plotName='Hist 2',_color='red')
         self.pW.addHistogramPlot(_plotName='Hist 3',_color='blue')
@@ -25,8 +25,9 @@ class HistPlotSteppable(SteppableBasePy):
         for i in  range(100):
             gauss.append(random.gauss(0,1))
         
-        (n2, bins2) = numpy.histogram(gauss, bins=2)  # NumPy version (no plot)
-        
+        (n2, bins2) = numpy.histogram(gauss, bins=10)  # NumPy version (no plot)
+ 
+       
         (n3, bins3) = numpy.histogram(volList, bins=50)  # Use NumPy to generate Histogram of volumes
         
         (n, bins) = numpy.histogram(volList, bins=10)  # Use NumPy to generate Histogram of volumes
@@ -46,7 +47,7 @@ class BarPlotSteppable(SteppableBasePy):
         SteppableBasePy.__init__(self,_simulator,_frequency)
 
     def start(self):        
-        self.pW=CompuCellSetup.addNewPlotWindow(_title='Bar Plot',_xAxisTitle='Growth of US GDP',_yAxisTitle='Number of Suits')        
+        self.pW=self.addNewPlotWindow(_title='Bar Plot',_xAxisTitle='Growth of US GDP',_yAxisTitle='Number of Suits')        
     def step(self,mcs):
     
         if (mcs%20 == 0):

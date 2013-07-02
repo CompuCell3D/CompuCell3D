@@ -8,24 +8,26 @@ class SBMLSolverSteppable(SteppableBasePy):
         SteppableBasePy.__init__(self,_simulator,_frequency)
         
     def start(self):
-        
+ 
+       
         modelFile='Simulation/test_1.xml'
         
         initialConditions={}
         initialConditions['S1']=0.00020
         initialConditions['S2']=0.000002
 
-        self.addSBMLToCellIds(_modelFile=modelFile,_modelName='dupa',_ids=range(1,11),_stepSize=0.5,_initialConditions=initialConditions)
+        self.addSBMLToCellIds(_modelFile=modelFile,_modelName='dp',_ids=range(1,11),_stepSize=0.5,_initialConditions=initialConditions)
         
-        self.addFreeFloatingSBML(_modelFile=modelFile,_modelName='Medium_dupa',_stepSize=0.5,_initialConditions=initialConditions)
-        self.addFreeFloatingSBML(_modelFile=modelFile,_modelName='Medium_dupa1',_stepSize=0.5,_initialConditions=initialConditions)
-        self.addFreeFloatingSBML(_modelFile=modelFile,_modelName='Medium_dupa2')
-        self.addFreeFloatingSBML(_modelFile=modelFile,_modelName='Medium_dupa3')
-        self.addFreeFloatingSBML(_modelFile=modelFile,_modelName='Medium_dupa4')
+        self.addFreeFloatingSBML(_modelFile=modelFile,_modelName='Medium_dp',_stepSize=0.5,_initialConditions=initialConditions)
+        self.addFreeFloatingSBML(_modelFile=modelFile,_modelName='Medium_dp1',_stepSize=0.5,_initialConditions=initialConditions)
+        self.addFreeFloatingSBML(_modelFile=modelFile,_modelName='Medium_dp2')
+        self.addFreeFloatingSBML(_modelFile=modelFile,_modelName='Medium_dp3')
+        self.addFreeFloatingSBML(_modelFile=modelFile,_modelName='Medium_dp4')
         
-        cell20=self.inventory.attemptFetchingCellById(20)        
+        cell20=self.attemptFetchingCellById(20)        
         
-        self.addSBMLToCell(_modelFile=modelFile,_modelName='dupa',_cell=cell20)
+        self.addSBMLToCell(_modelFile=modelFile,_modelName='dp',_cell=cell20)
+        
                 
     def step(self,mcs):        
         
@@ -34,17 +36,17 @@ class SBMLSolverSteppable(SteppableBasePy):
         cell10=self.inventory.attemptFetchingCellById(10)
         print 'cell=',cell10
         
-        speciesDict=self.getSBMLState(_modelName='Medium_dupa2')
-        print 'speciesDict=',speciesDict.values()
+        state=self.getSBMLState(_modelName='Medium_dp2')
+        print 'state=',state.values()
 
         state={}
         state['S1']=10
         state['S2']=0.5
         if mcs==3:
-            self.setSBMLState('Medium_dupa2',_state=state)
+            self.setSBMLState('Medium_dp2',_state=state)
         
 #         if mcs==5:
-#             self.deleteSBMLFromCellIds(_modelName='dupa',_ids=range(1,11))
+#             self.deleteSBMLFromCellIds(_modelName='dp',_ids=range(1,11))
             
 
         if mcs==7:

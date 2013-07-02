@@ -11,7 +11,7 @@ class FieldSecretionSteppable(SteppableBasePy):
         SteppableBasePy.__init__(self,_simulator,_frequency)
 
     def step(self,mcs):
-        self.scalarField=CompuCell.getConcentrationField(self.simulator,'FGF')
+        self.scalarField=self.getConcentrationField('FGF')
         
         lmfLength=1.0;
         xScale=1.0
