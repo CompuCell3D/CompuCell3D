@@ -2,6 +2,7 @@
 from PySteppables import *
 import CompuCell
 import sys
+
 class SteppableCommunicationSteppable(SteppableBasePy):    
 
     def __init__(self,_simulator,_frequency=1):
@@ -11,15 +12,6 @@ class SteppableCommunicationSteppable(SteppableBasePy):
         extraSteppable=self.getSteppableByClassName('ExtraSteppable')
         print 'extraSteppable.sharedParameter=',extraSteppable.sharedParameter
         
-        
-from PySteppables import *
-import CompuCell
-import sys
-
-from PlayerPython import *
-import CompuCellSetup
-from math import *
-
 
 class ExtraSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):

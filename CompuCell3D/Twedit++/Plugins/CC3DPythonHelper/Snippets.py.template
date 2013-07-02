@@ -1,12 +1,15 @@
 =============== #@Menu@ Python Utilities 
 
----------- #@Submenu@ Open File In Sinumation Output Directory
+---------- #@Submenu@ Open File In Simulation Output Directory
 try:                
     fileHandle,fullFileName=self.openFileInSimulationOutputDirectory("YOUR FILE NAME","w")
 except IOError:
     print "Could not open file ", "YOUR FILE NAME"," for writing. "                
     return
 
+---------- #@Submenu@ Fetch Steppable By Class Name
+self.getSteppableByClassName('STEPPABLE_CLASS_NAME')
+    
 ---------- #@Submenu@ Get Dir Of Current File
 fileDir=os.path.dirname (os.path.abspath( __file__ ))
 
@@ -255,7 +258,15 @@ for pixelTrackerData in pixelList:
 for x,y,z in self.everyPixel():
    print "x,y,z=",(x,y,z)
 
-        
+---------- #@Submenu@ All Clusters
+for compartments in self.clusters:
+    print 'compartments=', compartments
+
+---------- #@Submenu@ All Clusters and Cells Withing Clusters
+for compartments in self.clusters:
+    for cell in compartments:
+        print cell.id
+    
 =============== #@Menu@ Chemical Field Manipulation    
 
 ---------- #@Submenu@ Get Field Reference
