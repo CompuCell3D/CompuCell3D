@@ -76,7 +76,7 @@ class Array3DField3DAdapter:public Field3DImpl<T>{
 
             array3DPtr->allocateArray( theDim ,t);
             containerPtr=&array3DPtr->getContainer();
-            dim=theDim;
+            Field3DImpl<T>::dim=theDim;
          }else{
             delete array3DPtr;
             array3DPtr=new Array3D<T>();
@@ -84,14 +84,14 @@ class Array3DField3DAdapter:public Field3DImpl<T>{
             t=T();
             array3DPtr->allocateArray( theDim, t );
             containerPtr=&array3DPtr->getContainer();
-            dim=theDim;
+            Field3DImpl<T>::dim=theDim;
          }
       }
-      virtual Dim3D getDim() const {return dim;};
+      virtual Dim3D getDim() const {return Field3DImpl<T>::dim;};
       virtual bool isValid(const Point3D &pt) const {      
-         return (0 <= pt.x && pt.x < dim.x &&
-	      0 <= pt.y && pt.y < dim.y &&
-	      0 <= pt.z && pt.z < dim.z);
+         return (0 <= pt.x && pt.x < Field3DImpl<T>::dim.x &&
+	      0 <= pt.y && pt.y < Field3DImpl<T>::dim.y &&
+	      0 <= pt.z && pt.z < Field3DImpl<T>::dim.z);
       }
       virtual void set(const Point3D &pt, const T value) {
          if(array3DPtr){
@@ -845,7 +845,7 @@ public:
 
 	void swapArrays();
 	Dim3D getInternalDim(){return internalDim;}
-	Dim3D getDim(){return dim;}
+	Dim3D getDim(){return Field3DImpl<T>::dim;}
 	int getShiftArray(){return shiftArray;}
 	int getShiftSwap(){return shiftSwap;}
 
@@ -874,8 +874,8 @@ protected:
 template <typename T>
 void Array3DContiguous<T>::allocateArray(const Dim3D & _dim , T  val){
 
-	dim=_dim;
-	internalDim=dim;
+	Field3DImpl<T>::dim=_dim;
+	internalDim=Field3DImpl<T>::dim;
 	internalDim.x+=3;
 	internalDim.y+=3;
 	internalDim.z+=3;
@@ -921,7 +921,7 @@ void Array3DContiguous<T>::resizeAndShift(const Dim3D newDim,  Dim3D shiftVec){
 			for(pt.z=0 ; pt.z < newDim.z ; ++pt.z){
 
 				ptShift=pt-shiftVec;
-				if (ptShift.x>=0 && ptShift.x<dim.x && ptShift.y>=0 && ptShift.y<dim.y && ptShift.z>=0 && ptShift.z<dim.z)
+				if (ptShift.x>=0 && ptShift.x<Field3DImpl<T>::dim.x && ptShift.y>=0 && ptShift.y<Field3DImpl<T>::dim.y && ptShift.z>=0 && ptShift.z<Field3DImpl<T>::dim.z)
 				{
 					//cerr<<"ptShift="<<ptShift<<" pt="<<pt<<endl;
                     
@@ -932,7 +932,7 @@ void Array3DContiguous<T>::resizeAndShift(const Dim3D newDim,  Dim3D shiftVec){
     
     //swapping array and deallocation old one
     internalDim=newInternalDim;
-	dim=newDim;
+	Field3DImpl<T>::dim=newDim;
     arraySize=newArraySize;
     
     delete [] arrayCont;
@@ -1049,7 +1049,7 @@ public:
 	void swapArrays();
 	int getArraySize(){return arraySize;}
 	Dim3D getInternalDim(){return internalDim;}
-	Dim3D getDim(){return dim;}
+	Dim3D getDim(){return Field3DImpl<T>::dim;}
 	// int getShiftArray(){return shiftArray;}
 	// int getShiftSwap(){return shiftSwap;}
 
@@ -1078,8 +1078,8 @@ protected:
 template <typename T>
 void Array3DCUDA<T>::allocateArray(const Dim3D & _dim , T  val){
 
-	dim=_dim;
-	internalDim=dim;
+	Field3DImpl<T>::dim=_dim;
+	internalDim=Field3DImpl<T>::dim;
 	internalDim.x+=2;
 	internalDim.y+=2;
 	internalDim.z+=2;
@@ -1198,7 +1198,7 @@ public:
 
 	void swapArrays();
 	Dim3D getInternalDim(){return internalDim;}
-	Dim3D getDim(){return dim;}
+	Dim3D getDim(){return Field3DImpl<T>::dim;}
 	int getShiftArray(){return shiftArray;}
 	int getShiftSwap(){return shiftSwap;}
 
@@ -1227,8 +1227,8 @@ protected:
 template <typename T>
 void Array2DContiguous<T>::allocateArray(const Dim3D & _dim , T  val){
 
-	dim=_dim;
-	internalDim=dim;
+	Field3DImpl<T>::dim=_dim;
+	internalDim=Field3DImpl<T>::dim;
 	internalDim.x+=3;
 	internalDim.y+=3;
     internalDim.z=1;
@@ -1285,7 +1285,7 @@ void Array2DContiguous<T>::resizeAndShift(const Dim3D newDim,  Dim3D shiftVec){
 	for(pt.x=0 ; pt.x < newDim.x ; ++pt.x)
 		for(pt.y=0 ; pt.y < newDim.y ; ++pt.y){			
 				ptShift=pt-shiftVec;
-				if (ptShift.x>=0 && ptShift.x<dim.x && ptShift.y>=0 && ptShift.y<dim.y )
+				if (ptShift.x>=0 && ptShift.x<Field3DImpl<T>::dim.x && ptShift.y>=0 && ptShift.y<Field3DImpl<T>::dim.y )
 				{
 					//cerr<<"ptShift="<<ptShift<<" pt="<<pt<<endl;
                     newArrayCont[(pt.x+borderWidth)+shiftArray + (2*(pt.y+borderWidth)+shiftArray)* newInternalDim.x]=arrayCont[ptShift.x+borderWidth+shiftArray + (2*(ptShift.y+borderWidth)+shiftArray)* internalDim.x];
@@ -1295,7 +1295,7 @@ void Array2DContiguous<T>::resizeAndShift(const Dim3D newDim,  Dim3D shiftVec){
     
     //swapping array and deallocation old one
     internalDim=newInternalDim;
-	dim=newDim;
+	Field3DImpl<T>::dim=newDim;
     arraySize=newArraySize;
     
     delete [] arrayCont;
@@ -1527,7 +1527,7 @@ public:
 
 	void swapArrays();
 	Dim3D getInternalDim(){return internalDim;}
-	Dim3D getDim(){return dim;}
+	Dim3D getDim(){return Field3DImpl<T>::dim;}
 	int getShiftArray(){return shiftArray;}
 	int getShiftSwap(){return shiftSwap;}
 
@@ -1555,8 +1555,8 @@ protected:
 template <typename T>
 void Array3DFiPy<T>::allocateArray(const Dim3D & _dim , T  val){
 
-	dim=_dim;
-	internalDim=dim;
+	Field3DImpl<T>::dim=_dim;
+	internalDim=Field3DImpl<T>::dim;
 	internalDim.x+=3;
 	internalDim.y+=3;
 	internalDim.z+=3;
