@@ -35,7 +35,8 @@ lapack
 blas
 f2c
 libsbml5-static.a
-libxml2.so
+# (Mitja) --- :
+#not needed in OSX, actually gives error "library not found for -llibxml2.so" : libxml2.so
 sundials_nvecserial.a
 sundials_cvode.a
 pthread

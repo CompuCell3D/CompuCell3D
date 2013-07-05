@@ -38,12 +38,56 @@
 #include "rrLogger.h"
 #include "rrMisc.h"
 
-//---------------------------------------------------------------------------
+// (from Andy S.)  --- :
+// Most Unix systems have a getch in libcurses, but this introduces
+// an un-needed depencency, as we can write our own getch easily.
+// We do need the standard Posix termio headers though.
+#if defined (__unix__) || defined(__APPLE__)
+#include <stdlib.h>
+#include <termios.h>
+#endif
 
+#if defined(__APPLE__)
+#include <limits.h>  //PATH_MAX
+#include <mach-o/dyld.h>
+#endif
+
+
+//---------------------------------------------------------------------------
 namespace rr
 {
 using namespace std;
 using namespace Poco;
+
+
+// (from Andy S.)  --- :
+// A function to get a character from the console without echo.
+// equivalent of Windows / Curses getch function. Note, that the 
+// curses library has the same thing, but not all systems have curses, 
+// and makes no sense have a dependency on it for one simple function. 
+#if defined(__unix__) || defined(__APPLE__)
+static char rrGetch()
+{
+    char ch;
+    termios _old, _new;
+
+    /* Initialize new terminal i/o settings */
+    tcgetattr(0, &_old); /* grab old terminal i/o settings */
+    _new = _old; /* make new settings same as old settings */
+    _new.c_lflag &= ~ICANON; /* disable buffered i/o */
+    _new.c_lflag &= ~ECHO; /* set no echo mode */
+    tcsetattr(0, TCSANOW, &_new); /* use these new terminal i/o settings now */
+
+    ch = getchar();
+
+    /* Restore old terminal i/o settings */
+    tcsetattr(0, TCSANOW, &_old);
+    return ch;
+}
+#elif defined (_WIN32)
+// Windows has get built into conio
+#define rrGetch getch
+#endif
 
 string getMD5(const string& text)
 {
@@ -100,7 +144,15 @@ string getCurrentExeFolder()
 		return aPath;
     }
     return "";
-#else
+// (from Andy S.)  --- :
+#elif defined(__APPLE__)
+    char path[PATH_MAX+1];
+    unsigned  bufsize = sizeof(path);
+    if (_NSGetExecutablePath(path, &bufsize) == 0) {
+	    string aPath(ExtractFilePath(path));
+		return aPath;
+    }
+#elif defined __linux
         char arg1[20];
         char exepath[PATH_MAX + 1] = {0};
 
@@ -255,10 +307,10 @@ void Pause(bool doIt, const string& msg)
     	cout<<msg;
     }
     cin.ignore(0,'\n');
-#if !defined(__linux)    
-    getch();
-#endif    
 
+    // (from Andy S.)  --- :
+    // On Windows this just calls the built in getch.
+    rrGetch();
 }
 
 bool FileExists(const string& fName)

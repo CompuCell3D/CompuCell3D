@@ -4,6 +4,7 @@
 #pragma hdrstop
 #include "rrStringUtils.h"
 #include "rrConstants.h"
+#include <stdlib.h>     // (from Andy S.)
 
 //---------------------------------------------------------------------------
 namespace rr
@@ -32,16 +33,19 @@ const string		gEmptyModelMessage 			= "A model needs to be loaded before one can
 
 
 #if defined(_WIN32) || defined(__CODEGEARC__)
-const string		gDefaultCompiler 			= JoinPath("..", "compilers", "tcc", "tcc.exe");
-const char       	gPathSeparator      = '\\';
-const string		gExeSuffix          = ".exe";
-#elif defined(__linux)
-const string		gDefaultCompiler    = "gcc";
-const char       	gPathSeparator      = '/';
-const string		gExeSuffix          = "";
+    const string		gDefaultCompiler 			= JoinPath("..", "compilers", "tcc", "tcc.exe");
+    const char       	gPathSeparator      = '\\';
+    const string		gExeSuffix          = ".exe";
+// for both __unix__ and __APPLE__ (from Andy S.)  --- :
+#elif defined(__unix__) || defined(__APPLE__)
+    // the default compiler on Unix systems is 'cc', the standard enviornment
+    // for the default compiler is 'CC'.
+    const string		gDefaultCompiler    = getenv("CC") ? getenv("CC") : "gcc";
+    const char       	gPathSeparator      = '/';
+    const string		gExeSuffix          = "";
 #else  //Something else...
-const char       	gPathSeparator      = '/';
-const string		gExeSuffix          = "";
+    const char       	gPathSeparator      = '/';
+    const string		gExeSuffix          = "";
 #endif
 
 }

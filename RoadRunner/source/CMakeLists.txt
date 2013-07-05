@@ -199,7 +199,9 @@ target_link_libraries (${target}-static libxml2)
 endif()
 
 if(${UNIX})
-target_link_libraries (${target}-static libxml2.so)
+# target_link_libraries (${target}-static libxml2.so)
+# don't write out the entire "libxml2.so" name, otherwise won't link (Mitja) --- :
+target_link_libraries (${target}-static xml2)
 endif()
 
 if(BUILD_TESTS)
