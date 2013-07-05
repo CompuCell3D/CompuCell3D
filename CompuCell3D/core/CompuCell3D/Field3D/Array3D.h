@@ -515,7 +515,7 @@ class Array3DBordersField3DAdapter:public Field3DImpl<T>, public Array3DBorders<
    public:
       Array3DBordersField3DAdapter() : Field3DImpl<T>(Dim3D(1,1,1),T()), Array3DBorders<T>() {};
       Array3DBordersField3DAdapter(Dim3D & _dim,T & _initVal):Field3DImpl<T>(Dim3D(1,1,1),T()), Array3DBorders<T>(){
-         allocateMemory(_dim,_initVal);
+         this->allocateMemory(_dim,_initVal);
          Array3DBorders<T>::internalDim=_dim;
       }
       virtual ~Array3DBordersField3DAdapter(){
@@ -529,7 +529,7 @@ class Array3DBordersField3DAdapter:public Field3DImpl<T>, public Array3DBorders<
       virtual void setDim(const Dim3D theDim) {
          T t;
          
-         allocateMemory(theDim,t);
+         this->allocateMemory(theDim,t);
          Array3DBorders<T>::internalDim=theDim;
 //          if(!array3DPtr){
 //             array3DPtr=new Array3DBorders<T>();
