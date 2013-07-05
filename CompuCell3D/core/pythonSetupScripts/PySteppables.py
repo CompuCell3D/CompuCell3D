@@ -240,6 +240,10 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             import CompuCell            
             self.cleaverMeshDumper=CompuCell.getCleaverMeshDumper()  
             
+    def areCellsDifferent(self,_cell1,_cell2):
+        import CompuCell
+        return areCellsDifferent(_cell1,_cell2)
+            
     def getDictionaryAttribute(self,_cell):
         # access/modification of a dictionary attached to cell - make sure to decalare in main script that you will use such attribute
         import CompuCell        

@@ -302,6 +302,9 @@ if field:
         
 =============== #@Menu@ Cell Attributes
 
+---------- #@Submenu@ Check If Two Cells Are Different
+self.areCellsDifferent(cell1,cell2)
+
 ---------- #@Submenu@ Add Dictionary To Cells (deprecated)
 # It is not longer necessary to add list attribute to cells. The dictionary is added by default provided your steppables inherit from SteppableBasePy
 pyAttrDictAdder,dictAdder=CompuCellSetup.attachDictionaryToCells(sim)
