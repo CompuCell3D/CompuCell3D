@@ -551,11 +551,11 @@ void Octree::balance_tree()
                     for(int z_dir=-1; z_dir <= 1; z_dir++)
                     {
                         // skip corners
-                        if(abs(x_dir) + abs(y_dir) + abs(z_dir) == 3)
+                        if(fabs(x_dir) + fabs(y_dir) + fabs(z_dir) == 3)
                             continue;
 
                         // skip self
-                        if(abs(x_dir) + abs(y_dir) + abs(z_dir) == 0)
+                        if(fabs(x_dir) + fabs(y_dir) + fabs(z_dir) == 0)
                             continue;
 
                         unsigned int shift = 1 << cell->level;
