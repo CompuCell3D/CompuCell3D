@@ -63,22 +63,22 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
   
 
+endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)  
   
-  
-else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/celldraw.sh.in.linux ${CMAKE_BINARY_DIR}/celldraw.sh @ONLY)
-
-
-        INSTALL(FILES  
-            ${CMAKE_BINARY_DIR}/celldraw.sh 
-            DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                                                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                                                            WORLD_READ WORLD_WRITE WORLD_EXECUTE
-            )
-
-    
-endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+# else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+# 
+#     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/celldraw.sh.in.linux ${CMAKE_BINARY_DIR}/celldraw.sh @ONLY)
+# 
+# 
+#         INSTALL(FILES  
+#             ${CMAKE_BINARY_DIR}/celldraw.sh 
+#             DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+#                                                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
+#                                                             WORLD_READ WORLD_WRITE WORLD_EXECUTE
+#             )
+# 
+#     
+# endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     
 
 
