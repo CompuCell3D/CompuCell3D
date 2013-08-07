@@ -2,6 +2,7 @@
 import os, sys
 import string
 
+import Configuration
 import SimpleTabView
 
 from  Graphics.GraphicsFrameWidget import GraphicsFrameWidget
@@ -96,6 +97,12 @@ class ScreenshotManager:
         self.screenshotCounter3D=0
         
         self.screenshotGraphicsWidget = GraphicsFrameWidget(self.tabViewWidget)
+        
+        xSize=Configuration.getSetting("Screenshot_X")
+        ySize=Configuration.getSetting("Screenshot_Y")
+        
+        self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().SetSize(xSize,ySize) # default size
+        self.screenshotGraphicsWidget.qvtkWidget.resize(xSize,ySize)
 #        print MODULENAME,'  ScreenshotManager: __init__(),   self.screenshotGraphicsWidget=',self.screenshotGraphicsWidget
 #        print MODULENAME,'  ScreenshotManager: __init__(),   self.screenshotGraphicsWidget.winId().__int__()=',self.screenshotGraphicsWidget.winId().__int__()
 #        print
@@ -358,11 +365,12 @@ class ScreenshotManager:
         
         # self.screenshotGraphicsWidget.setShown(True)
         winsize = self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().GetSize()
+        print 'ADDITIONAL SCREENSHOT WINDOW SIZE=',winsize
         self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().SetSize(winsize[0],winsize[1])
 #        print MODULENAME,'outputScreenshots(): type(winsize), [0],[1]=',type(winsize),winsize[0],winsize[1]
 #        self.screenshotGraphicsWidget.qvtkWidget.resize(400,400)   # rwh, why?? (if I don't, it defaults to (100,30)
-        self.screenshotGraphicsWidget.qvtkWidget.resize(winsize[0],winsize[1])   # rwh, why?? (if I don't, it defaults to (100,30)
-#        self.screenshotGraphicsWidget.qvtkWidget.resize(611,411)   # rwh, why?? (if I don't, it defaults to (100,30)
+        # self.screenshotGraphicsWidget.qvtkWidget.resize(winsize[0],winsize[1])   # rwh, why?? (if I don't, it defaults to (100,30)        
+        # self.screenshotGraphicsWidget.qvtkWidget.resize(611,411)   # rwh, why?? (if I don't, it defaults to (100,30)
 #        print MODULENAME,'outputScreenshots(): dir(self.screenshotGraphicsWidget.qvtkWidget)=',dir(self.screenshotGraphicsWidget.qvtkWidget)
 #        print MODULENAME,'outputScreenshots(): dir(self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow())=',dir(self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow())
 

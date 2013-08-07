@@ -180,6 +180,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         rencentSimulationsMenu = menusDict["recentSimulations"]    
         rencentSimulationsMenu.clear()
         recentSimulations = Configuration.getSetting("RecentSimulations")
+        
+        
         simCounter = 1
         for simulationFileName in recentSimulations:
             actionText = self.tr("&%1 %2").arg(simCounter).arg(simulationFileName)
@@ -1056,8 +1058,23 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 #            self.lastActiveWindow._switchDim(True)
             
             self.prepareLatticeDataView()
-            
+        
+        Configuration.setSetting("RecentFile",self.__fileName)
+        Configuration.setSetting("RecentSimulations",self.__fileName) #  each loaded simulation has to be passed to a function which updates list of recent files
+        
+        
+
+        
+        # if self.saveSettings:
+            # Configuration.syncPreferences()               
+        
+        # recentSim=Configuration.getSetting("RecentSimulations")     
+        # print 'recent sim=',recentSim
+        # sys.exit()
+                
+        
 #        print MODULENAME,'__loadSim():  on exit,  self.graphicsWindowVisDict=',self.graphicsWindowVisDict
+        
          
             
     def __loadCC3DFile(self,fileName):
@@ -1108,7 +1125,9 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             CompuCellSetup.simulationPaths.setPlayerSimulationWindowsFileName(self.cc3dSimulationDataHandler.cc3dSimulationData.windowScript)
             self.__windowsXMLFileName = self.cc3dSimulationDataHandler.cc3dSimulationData.windowScript
 #            print MODULENAME,'   __loadCC3DFile:  self.cc3dSimulationDataHandler.cc3dSimulationData.windowDict=',self.cc3dSimulationDataHandler.cc3dSimulationData.windowDict
-            
+
+        # Configuration.setSetting("RecentSimulations",fileName)   # updating recent files
+        
         # self.simulation.setRunUserPythonScriptFlag(True)
         # # NOTE: extracting of xml file name from python script is done during script run time so we cannot use CompuCellSetup.simulationPaths.setXmlFileNameFromPython function here
         # CompuCellSetup.simulationPaths.setPlayerSimulationPythonScriptName(self.__fileName)
@@ -1235,19 +1254,21 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
         
     def closeEventSimpleTabView(self, event=None):
-
-        print "CALLING CLOSE EVENT SIMTAB"
-        # print "self.simulation=",self.simulation
-        Configuration.setSetting("RecentFile",self.__fileName)
-        Configuration.setSetting("RecentSimulations",self.__fileName)
+        
+        # Configuration.setSetting("RecentFile",self.__fileName)
+        # Configuration.setSetting("RecentSimulations",self.__fileName)
+        
+                
         # import time
         # time.sleep(3)
         
         
-        if self.saveSettings:    
+        if self.saveSettings:                
+            
             Configuration.syncPreferences()        
-
             self.__simulationStop()
+            
+            
             return
         
             """
@@ -2322,14 +2343,15 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.simulation.stop()
         self.simulation.wait()
         
-        Configuration.setSetting("RecentSimulations",self.__fileName)
+        # Configuration.setSetting("RecentSimulations",self.__fileName) # this is unnecessary we call it from settings each time we load simulation
+        
         
         if Configuration.getSetting("ClosePlayerAfterSimulationDone") or self.closePlayerAfterSimulationDone:
             Configuration.setSetting("RecentFile",self.__fileName)
             
             Configuration.setSetting("RecentSimulations",self.__fileName)
             
-            if self.saveSettings:
+            if self.saveSettings:                
                 Configuration.syncPreferences()        
 
             sys.exit()
@@ -2824,6 +2846,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
         import CompuCellSetup
         CompuCellSetup.simulationFileName=self.__fileName    
+        
+       
         
                     
     def __saveSim(self):

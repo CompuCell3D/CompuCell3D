@@ -1,8 +1,12 @@
 import os,sys
 import re
 
+# example command:
+# python .\win_cc3d_installer_creator.pyw -d 'D:\Program Files (x86)\COMPUCELL3D_3.7.0_install' -v 3.7.0.0
+
 # this is the path to the NSIS instaler executable
 NSIS_EXE_PATH='C:\Program Files (x86)\NSIS\makensis.exe '
+
 
 # version has to have format 3.7.0.0 - four numbers otherwise NSIS crashes, strange...
 

@@ -664,6 +664,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("ScreenUpdateFrequency", self.updateScreenSpinBox.value())
         Configuration.setSetting("ImageOutputOn", self.outputImagesCheckBox.isChecked())
         Configuration.setSetting("SaveImageFrequency", self.saveImageSpinBox.value())
+        Configuration.setSetting("Screenshot_X", self.screenshot_X_SB.value())
+        Configuration.setSetting("Screenshot_Y", self.screenshot_Y_SB.value())
         Configuration.setSetting("LatticeOutputOn", self.outputLatticeDataCheckBox.isChecked())
         Configuration.setSetting("SaveLatticeFrequency", self.saveLatticeSpinBox.value())
         Configuration.setSetting("UseInternalConsole", self.useInternalConsoleCheckBox.isChecked())
@@ -672,7 +674,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("OutputLocation", self.outputLocationLineEdit.text())
         Configuration.setSetting("OutputToProjectOn", self.outputToProjectCheckBox.isChecked())
         Configuration.setSetting("PreferencesFile", self.prefsFileLineEdit.text())
-
+        Configuration.setSetting("NumberOfRecentSimulations", self.numberOfRecentSimulationsSB.value())
+        
         # Cell Type/Colors
         Configuration.setSetting("TypeColorMap",self.paramCC3D["TypeColorMap"])  # rwh
         
@@ -760,6 +763,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 #        self.updateScreenSpinBox.setMinimum(1)
         self.outputImagesCheckBox.setChecked(Configuration.getSetting("ImageOutputOn"))
         self.saveImageSpinBox.setValue(Configuration.getSetting("SaveImageFrequency"))
+        self.screenshot_X_SB.setValue(Configuration.getSetting("Screenshot_X"))
+        self.screenshot_Y_SB.setValue(Configuration.getSetting("Screenshot_Y"))
         self.outputImagesClicked()  # enable/disable
 #        self.saveImageSpinBox.setMinimum(1)
         self.outputLatticeDataCheckBox.setChecked(Configuration.getSetting("LatticeOutputOn"))
@@ -774,7 +779,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.outputToProjectCheckBox.setChecked(Configuration.getSetting("OutputToProjectOn"))
         
         self.prefsFileLineEdit.setText( str(Configuration.getSetting("PreferencesFile")))
-        
+        self.numberOfRecentSimulationsSB.setValue(Configuration.getSetting("NumberOfRecentSimulations"))
         
         
         # Cell Type/Colors
@@ -888,8 +893,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
     def initParams(self):  # rwh: why the heck should we do this?
 #        print MODULENAME, ' initParams -------------------'
         # Output tab
-        paramList = ["ImageOutputOn","LatticeOutputOn","ScreenUpdateFrequency","SaveImageFrequency",
-                     "UseInternalConsole","ClosePlayerAfterSimulationDone","OutputToProjectOn"]
+        paramList = ["ImageOutputOn","LatticeOutputOn","ScreenUpdateFrequency","SaveImageFrequency",'Screenshot_X','Screenshot_Y',
+                     "UseInternalConsole","ClosePlayerAfterSimulationDone","OutputToProjectOn",'NumberOfRecentSimulations']
         # Colors tab: cell type, borders, etc
         paramList += ["TypeColorMap","BorderColor","ClusterBorderColor","ContourColor","BrushColor",
                       "PenColor","Types3DInvisible","CellGlyphScaleByVolumeOn","CellGlyphScale","CellGlyphThetaRes","CellGlyphPhiRes"]

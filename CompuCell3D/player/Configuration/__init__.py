@@ -52,6 +52,8 @@ class Configuration():
         defaultConfigs["ScreenUpdateFrequency"] = 10; paramTypeInt.append("ScreenUpdateFrequency")
         defaultConfigs["ImageOutputOn"] = False; paramTypeBool.append("ImageOutputOn")
         defaultConfigs["SaveImageFrequency"] = 100; paramTypeInt.append("SaveImageFrequency")
+        defaultConfigs["Screenshot_X"] = 600; paramTypeInt.append("Screenshot_X")
+        defaultConfigs["Screenshot_Y"] = 600; paramTypeInt.append("Screenshot_Y")        
         defaultConfigs["LatticeOutputOn"] = False; paramTypeBool.append("LatticeOutputOn")
         defaultConfigs["SaveLatticeFrequency"] = 100; paramTypeInt.append("SaveLatticeFrequency")
         defaultConfigs["GraphicsWinWidth"] = 400; paramTypeInt.append("GraphicsWinWidth")
@@ -66,6 +68,8 @@ class Configuration():
         prefsFile = os.path.join(os.path.join(os.path.join(os.path.expanduser('~'),'.config'),ORGANIZATION),APPLICATION+'.ini')
         prefsFile = APPLICATION
         defaultConfigs["PreferencesFile"] = QString(prefsFile); paramTypeString.append("PreferencesFile")
+        
+        defaultConfigs["NumberOfRecentSimulations"] = 8; paramTypeInt.append("NumberOfRecentSimulations")
         
         
         # Cells/Colors tab  (used to be: Cell Type tab)
@@ -526,6 +530,7 @@ def addNewSimulation(recentSimulationsList,value):
 #        print '  --- addNewSimulation:  fileNameTmp=',fileNameTmp
         recentSimulationsList.removeAt(idxFound)
         recentSimulationsList.prepend(fileNameTmp)
+        # print 'recentSimulationsList=',recentSimulationsList
         return False
                 
 def setSetting(_key,_value):  # rf. ConfigurationDialog.py, updatePreferences()
@@ -567,28 +572,37 @@ def setSetting(_key,_value):  # rf. ConfigurationDialog.py, updatePreferences()
 #            Configuration.mySettings.setValue(_key,QColor(_value))
         
         elif _key in ["RecentSimulations"]:
-#            print MODULENAME,' setSetting:RecentSimulations:  _key,_value= ',_key,_value
+            # print '\n\n\n\n'
+            # print MODULENAME,' setSetting:RecentSimulations:  _key,_value= ',_key,_value
 #            return
             recentSimulationsVariant = Configuration.mySettings.value("RecentSimulations")
             if recentSimulationsVariant.isValid():
                 recentSimulationsList = recentSimulationsVariant.toStringList()
 #                print "setSetting:  recentSimulationsList.count()=",recentSimulationsList.count()
 #                print "setSetting: maxNumberOfRecentFiles=",maxNumberOfRecentFiles
+                maxNumberOfRecentFiles = getSetting("NumberOfRecentSimulations")
+                
+                if recentSimulationsList.count() > maxNumberOfRecentFiles: 
+                    
+                    removeNumber=recentSimulationsList.count()-maxNumberOfRecentFiles
+                    
+                    for i in xrange(removeNumber):
+                        recentSimulationsList.removeAt(recentSimulationsList.count()-1)
+                
                 if recentSimulationsList.count() >= maxNumberOfRecentFiles:    
                     addingSuccessful = addNewSimulation(recentSimulationsList,_value)
+                    # print 'addingSuccessful=',addingSuccessful
                     if addingSuccessful:
                         recentSimulationsList.removeAt(recentSimulationsList.count()-1)
                 else:
-#                    print 'setSetting:    addNewSim... _value = ',_value
-#                    print '    addNewSim... _value.toString() = ',_value.toString() # AttributeError: 'str' object has no attribute 'toString'
+                    # print 'setSetting:    addNewSim... _value = ',_value
+                    # print '    addNewSim... _value.toString() = ',_value.toString() # AttributeError: 'str' object has no attribute 'toString'
                     addingSuccessful = addNewSimulation(recentSimulationsList,_value)
-        
-                if addingSuccessful:
-#                    print "setSetting: doing setValue for recentSim-List="
-                    Configuration.mySettings.setValue("RecentSimulations", QVariant(recentSimulationsList))
-                    
-#                for idx in range(recentSimulationsList.count()):
-#                    print "READ EXISTING FILE  =",idx," file name=", recentSimulationsList[idx]
+                print 'before RecentSimulations setValue'    
+                Configuration.mySettings.setValue("RecentSimulations", QVariant(recentSimulationsList))  # each time we set a list of recent files we have to update variant variable corresponding to this setting to ensure that recent file list is up to date in the GUI
+                print 'after RecentSimulations setValue'    
+                
+
             else:
 #                print "       recentSimulationsVariant is NOT valid:  _key,_value=",_key,_value
                 recentSimulationsList = QStringList()
@@ -774,6 +788,7 @@ def syncPreferences():   # this function invoked when we close the Prefs dialog 
 #            else:
 #            if key == 'FieldParams': 
 #                print '      syncPreferences (not valid):  calling setSetting on FieldParams: key,val=',key,Configuration.defaultConfigs[key]
+            print 'setting recent simulations'
             setSetting(key,Configuration.defaultConfigs[key])
             
 #    print MODULENAME,'----------- leaving syncPreferences -------------'
