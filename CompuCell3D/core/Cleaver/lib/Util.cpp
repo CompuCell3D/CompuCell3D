@@ -144,11 +144,11 @@ double pow2(int p) {
     case 20: return 1048576;
   default:
     double ret = 1;
-    if (fabs(p) == p)
-      for (int i=0; i<fabs(p); i++)
+    if (abs((int)p) == p)
+      for (int i=0; i<abs((int)p); i++)
                 ret *= 2.0;
     else
-      for (int i=0; i<fabs(p); i++)
+      for (int i=0; i<abs((int)p); i++)
                 ret /= 2.0;
     return ret;
   }
