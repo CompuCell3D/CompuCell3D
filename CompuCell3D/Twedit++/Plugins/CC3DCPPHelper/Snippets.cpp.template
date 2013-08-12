@@ -2,11 +2,12 @@
 
 ---------- #@Submenu@ All Cells
 CellInventory::cellInventoryIterator cInvItr;
-CellG * cell;
-std::set<NeighborSurfaceData > * neighborData;
+CellG * cell=0;
+// std::set<NeighborSurfaceData > * neighborData;
 
 for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr )
 {
+    cell=cellInventoryPtr->getCell(cInvItr);
     //Put your code here
     cerr<<"cell id="<<cell->id<<endl;
 }

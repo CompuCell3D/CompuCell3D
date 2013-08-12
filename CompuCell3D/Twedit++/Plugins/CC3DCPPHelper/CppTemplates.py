@@ -880,7 +880,7 @@ void STEPPABLE_NAME_CORE::start(){
 void STEPPABLE_NAME_CORE::step(const unsigned int currentStep){
     //REPLACE SAMPLE CODE BELOW WITH YOUR OWN
 	CellInventory::cellInventoryIterator cInvItr;
-	CellG * cell;
+	CellG * cell=0;
     
     cerr<<"currentStep="<<currentStep<<endl;
 	for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr )

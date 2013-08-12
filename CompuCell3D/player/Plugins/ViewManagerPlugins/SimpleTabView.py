@@ -2847,6 +2847,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         import CompuCellSetup
         CompuCellSetup.simulationFileName=self.__fileName    
         
+        Configuration.setSetting("RecentFile",self.__fileName)
+        Configuration.setSetting("RecentSimulations",self.__fileName) #  each loaded simulation has to be passed to a function which updates list of recent files
        
         
                     
