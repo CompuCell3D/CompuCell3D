@@ -356,7 +356,9 @@ class SimpleViewManager():
         self.stepAct = QAction(QIcon("player/icons/step.png"), "&Step", self)
         self.stepAct.setShortcut(Qt.CTRL + Qt.Key_E)
         self.pauseAct = QAction(QIcon("player/icons/pause.png"), "&Pause", self)
+        self.pauseAct.setShortcut(Qt.CTRL + Qt.Key_D)
         self.stopAct = QAction(QIcon("player/icons/stop.png"), "&Stop", self)
+        self.stopAct.setShortcut(Qt.CTRL + Qt.Key_X)
         self.serializeAct = QAction( "Serialize", self)
 
         # Why append?
