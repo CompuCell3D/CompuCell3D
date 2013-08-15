@@ -87,6 +87,7 @@ case $i in
 esac
 done
 
+# exit()
 
 if [ "$BUILD_ALL" == YES ]
 then
@@ -128,77 +129,77 @@ echo DEPENDENCIES_ROOT = ${DEPENDENCIES_ROOT}
 mkdir -p $BUILD_ROOT
 mkdir -p $DEPENDENCIES_ROOT
 
-# if [ "$BUILD_CC3D" == YES ]
-# then
-#   ############# BUILDING CC3D
-#   mkdir -p $BUILD_ROOT/CompuCell3D
-#   cd $BUILD_ROOT/CompuCell3D
-# 
-# 
-#   cmake -G "Unix Makefiles" --build=/home/m/CompuCell3D_build -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $SOURCE_ROOT/CompuCell3D
-#   make && make install
-#   ############# END OF BUILDING CC3D
-# fi
-# 
-# 
-# if [ "$BUILD_BIONET_DEPEND" == YES ]
-# then
-#   ############# BUILDING SBML AND SUNDIALS BIONET DEPENDENCIES
-#   export CXXFLAGS=-fPIC
-#   export CFLAGS=-fPIC
-# 
-# 
-#   cp $SOURCE_ROOT/BionetSolver/dependencies/libsbml-3.4.1-src.zip $BUILD_ROOT
-#   cd $BUILD_ROOT
-# 
-#   unzip libsbml-3.4.1-src.zip
-# 
-#   cd $BUILD_ROOT/libsbml-3.4.1
-#   ./configure --prefix=$DEPENDENCIES_ROOT/libsbml-3.4.1
-# 
-#   make && make install
-# 
-#   cp $SOURCE_ROOT/BionetSolver/dependencies/sundials-2.3.0.tar.gz $BUILD_ROOT
-#   cd $BUILD_ROOT
-# 
-#   tar -zxvf sundials-2.3.0.tar.gz
-# 
-#   cd $BUILD_ROOT/sundials-2.3.0
-#   ./configure --with-pic --prefix=$DEPENDENCIES_ROOT/sundials-2.3.0
-# 
-#   make && make install
-#   ############# END OF BUILDING SBML AND SUNDIALS BIONET DEPENDENCIES
-# fi
-# 
-# if [ "$BUILD_BIONET_DEPEND" == YES ]
-# then
-#   ############# BUILDING  BIONET 
-# 
-#   export BIONET_SOURCE=$SOURCE_ROOT/BionetSolver/0.0.6
-# 
-#   mkdir -p $BUILD_ROOT/BionetSolver
-#   cd $BUILD_ROOT/BionetSolver
-# 
-# 
-#   cmake -G "Unix Makefiles" -DLIBSBML_INSTALL_DIR:PATH=$DEPENDENCIES_ROOT/libsbml-3.4.1 -DSUNDIALS_INSTALL_DIR:PATH=$DEPENDENCIES_ROOT/sundials-2.3.0 -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $BIONET_SOURCE
-#   make && make install
-# 
-#   ############# END OF BUILDING  BIONET 
-# fi
-# 
-# if [ "$BUILD_CELLDRAW" == YES ]
-# then
-#   ############# BUILDING  CELLDRAW 
-#   export CELLDRAW_SOURCE=$SOURCE_ROOT/CellDraw/1.5.1
-# 
-#   mkdir -p $BUILD_ROOT/CellDraw
-#   cd $BUILD_ROOT/CellDraw
-# 
-# 
-#   cmake -G "Unix Makefiles"  -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $CELLDRAW_SOURCE
-#   make && make install
-#   ############# END OF  CELLDRAW 
-# fi
+if [ "$BUILD_CC3D" == YES ]
+then
+  ############# BUILDING CC3D
+  mkdir -p $BUILD_ROOT/CompuCell3D
+  cd $BUILD_ROOT/CompuCell3D
+
+
+  cmake -G "Unix Makefiles" --build=/home/m/CompuCell3D_build -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $SOURCE_ROOT/CompuCell3D
+  make && make install
+  ############# END OF BUILDING CC3D
+fi
+
+
+if [ "$BUILD_BIONET_DEPEND" == YES ]
+then
+  ############# BUILDING SBML AND SUNDIALS BIONET DEPENDENCIES
+  export CXXFLAGS=-fPIC
+  export CFLAGS=-fPIC
+
+
+  cp $SOURCE_ROOT/BionetSolver/dependencies/libsbml-3.4.1-src.zip $BUILD_ROOT
+  cd $BUILD_ROOT
+
+  unzip libsbml-3.4.1-src.zip
+
+  cd $BUILD_ROOT/libsbml-3.4.1
+  ./configure --prefix=$DEPENDENCIES_ROOT/libsbml-3.4.1
+
+  make && make install
+
+  cp $SOURCE_ROOT/BionetSolver/dependencies/sundials-2.3.0.tar.gz $BUILD_ROOT
+  cd $BUILD_ROOT
+
+  tar -zxvf sundials-2.3.0.tar.gz
+
+  cd $BUILD_ROOT/sundials-2.3.0
+  ./configure --with-pic --prefix=$DEPENDENCIES_ROOT/sundials-2.3.0
+
+  make && make install
+  ############# END OF BUILDING SBML AND SUNDIALS BIONET DEPENDENCIES
+fi
+
+if [ "$BUILD_BIONET_DEPEND" == YES ]
+then
+  ############# BUILDING  BIONET 
+
+  export BIONET_SOURCE=$SOURCE_ROOT/BionetSolver/0.0.6
+
+  mkdir -p $BUILD_ROOT/BionetSolver
+  cd $BUILD_ROOT/BionetSolver
+
+
+  cmake -G "Unix Makefiles" -DLIBSBML_INSTALL_DIR:PATH=$DEPENDENCIES_ROOT/libsbml-3.4.1 -DSUNDIALS_INSTALL_DIR:PATH=$DEPENDENCIES_ROOT/sundials-2.3.0 -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $BIONET_SOURCE
+  make && make install
+
+  ############# END OF BUILDING  BIONET 
+fi
+
+if [ "$BUILD_CELLDRAW" == YES ]
+then
+  ############# BUILDING  CELLDRAW 
+  export CELLDRAW_SOURCE=$SOURCE_ROOT/CellDraw/1.5.1
+
+  mkdir -p $BUILD_ROOT/CellDraw
+  cd $BUILD_ROOT/CellDraw
+
+
+  cmake -G "Unix Makefiles"  -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $CELLDRAW_SOURCE
+  make && make install
+  ############# END OF  CELLDRAW 
+fi
 
 if [ "$BUILD_RR_DEPEND" == YES ]
 then
