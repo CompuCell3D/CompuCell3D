@@ -3,7 +3,22 @@ import CompuCell
 import sys
 from XMLUtils import dictionaryToMapStrStr as d2mss
             
-class ChemotaxisSteering(SteppablePy):
+class ChemotaxisSteering(SteppableBasePy):
+    def __init__(self,_simulator,_frequency=100):
+        SteppableBasePy.__init__(self,_simulator,_frequency)
+        
+
+    def step(self,mcs):
+        if mcs>100 and not mcs%100:
+        
+            attrVal=float(self.getXMLAttributeValue('Lambda',['Plugin','Name','Chemotaxis'],['ChemicalField','Name','ATTR'],['ChemotaxisByType','Type','Macrophage']))    
+            self.setXMLAttributeValue('Lambda',attrVal-3,['Plugin','Name','Chemotaxis'],['ChemicalField','Name','ATTR'],['ChemotaxisByType','Type','Macrophage'])
+            self.updateXML()
+        
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------        
+# OLD STYLE STEERING
+
+class ChemotaxisSteeringOldStyle(SteppablePy):
     def __init__(self,_simulator,_frequency=100):
         SteppablePy.__init__(self,_frequency)
         self.simulator=_simulator
@@ -32,3 +47,4 @@ class ChemotaxisSteering(SteppablePy):
             self.simulator.updateCC3DModule(chemotaxisXMLData);
         
 
+        

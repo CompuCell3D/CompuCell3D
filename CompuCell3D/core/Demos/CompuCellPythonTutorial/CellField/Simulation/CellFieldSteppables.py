@@ -17,9 +17,7 @@ class UniformInitializer(SteppableBasePy):
         
         for x in range(xMin,xMax,size):
             for y in range(yMin,yMax,size):                
-                cell=self.potts.createCell()
-                cell.type=self.CONDENSING
-                self.cellField[x:x+size-1,y:y+size-1,0]=cell
+                self.cellField[x:x+size-1,y:y+size-1,0]=self.newCell(self.CONDENSING)
         
         cell0=self.cellField[0,0,0]
         cell1=self.cellField[50,50,0]

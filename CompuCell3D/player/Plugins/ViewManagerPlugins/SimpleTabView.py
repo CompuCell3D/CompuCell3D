@@ -354,6 +354,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
     
         self.windowCounter += 1        
         newWindow = GraphicsFrameWidget(self)   # "newWindow" is actually a QFrame
+        
+        
         self.windowDict[self.windowCounter] = newWindow
         self.graphicsWindowDict[self.windowCounter] = newWindow  
         
@@ -390,6 +392,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
        # self.simulation.setGraphicsWidget(self.mainGraphicsWindow)        
         self.mdiWindowDict[self.windowCounter] = self.addSubWindow(newWindow)
         self.updateActiveWindowVisFlags()
+        
+        
         newWindow.show()
 #        print MODULENAME, '--------- addNewGraphicsWindow: mdiWindowDict= ',self.mdiWindowDict
         # camera=self.windowDict[1].getCamera2D()
@@ -2807,8 +2811,11 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         # setting text for main window (self.__parent) title bar 
         self.__parent.setWindowTitle(self.trUtf8(basename(self.__fileName)+" - CompuCell3D Player"))
         
+        
         import CompuCellSetup
         CompuCellSetup.simulationFileName=self.__fileName    
+        Configuration.setSetting("RecentFile",self.__fileName)
+        Configuration.setSetting("RecentSimulations",self.__fileName) #  each loaded simulation has to be passed to a function which updates list of recent files
         
         
     def __openSim(self, fileName = None):

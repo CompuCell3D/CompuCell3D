@@ -275,72 +275,17 @@ void CC3DXMLElement::writeCC3DXMLElementInPython(ostream &_out, string _parentEl
 		children[i]->writeCC3DXMLElementInPython(_out, elementName,4,commentElemFlag);
 		
 	}
-
-
- //   string parentElement;
- //   if (_parentElement.size())
-	//_out<<leadingSpaces<<"<"<<this->name;
- //   _out<<leadingSpaces<<this->name+"Elmnt=ElementCC3D("+this->name;
-	//if(attributes.size()){
- //       _out<<",{"<<
-	//	for (map<std::string,std::string>::iterator mitr=attributes.begin() ; mitr!=attributes.end() ; ++mitr){
- //           
-	//		_out<<"\""<<mitr->first<<"\":\""<<mitr->second<<"\"";
- //           if (mitr++!=attributes.end()){
- //               _out<<","
- //           }
- //           --mitr;
-	//	}
- //       _out<<"}"<<
-	//}
- //   
- //   if (this->cdata.size()){
- //       if(!attributes.size()){
- //           _out<<",{},"
- //       }
- //       // _out<<">"/*<<endl*/;	
- //       // string extraSpace(defaultIndent,' ');
- //       _out<<"\""<</*leadingSpaces<<extraSpace<<*/this->cdata<<"\""/*<<endl*/;
- //       _out<<")"
- //       _out<<endl;
- //   }else{
- //       _out<<")"<<endl;	
- //       
- //   }
-    
-	
-
-	//if(children.size()){
-	//	_out<<">"<<endl;
-	//	if (this->cdata.size()){
-	//		string extraSpace(defaultIndent,' ');
-	//		_out<<leadingSpaces<<extraSpace<<this->cdata<<endl;
-	//	}
-	//	for(int i=0 ; i < children.size() ; ++i){
-	//		//cerr<<"i="<<i<<" element="<<children[i]->name<<endl;
-	//		int childIndex=(_indent?_indent+defaultIndent:defaultIndent);
-	//		children[i]->writeCC3DXMLElement(_out,childIndex /*_indent+defaultIndent*/);
-	//	}
-
-	//	_out<<leadingSpaces<<"</"<<this->name<<">"<<endl;
-	//}else{
-
-	//	
-	//	if (this->cdata.size()){
-	//		_out<<">"/*<<endl*/;	
-	//		string extraSpace(defaultIndent,' ');
-	//		_out<</*leadingSpaces<<extraSpace<<*/this->cdata/*<<endl*/;
-	//		_out<</*leadingSpaces<<*/"</"<<this->name<<">"<<endl;
-	//	}else{
-	//		_out<<"/>"<<endl;	
-	//		
-	//	}
-	//}
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 CC3DXMLElement * CC3DXMLElement::getFirstElement(std::string  _name, std::map<std::string,std::string> * _attributes){
+
+	//cerr<<"INSIDE getFirstElement"<<endl;
+	//if (_attributes){
+	//	cerr<<"_attributes->size()="<<_attributes->size()<<endl;
+	//}
+	//cerr<<"\n\n\n\n\n\n";
 	map<string,string>::iterator pos;
 	for(int i = 0 ; i< children.size() ; ++i){
 		if(children[i]->name==_name){
@@ -350,6 +295,7 @@ CC3DXMLElement * CC3DXMLElement::getFirstElement(std::string  _name, std::map<st
 			bool attributesMatch=true;
 			if(_attributes->size() <= children[i]->attributes.size()){// check attributes when they exist
 				for(map<string,string>::iterator mitr = _attributes->begin() ;  mitr != _attributes->end() ; ++mitr){
+					//cerr<<"Looking for attribute "<<mitr->first<<endl;
 					pos=children[i]->attributes.find(mitr->first);
 					if(pos==children[i]->attributes.end() || mitr->second!=pos->second){
 						//if there is a mismatch in any attribute (name or value) move to another child element

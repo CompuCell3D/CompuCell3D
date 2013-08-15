@@ -1,10 +1,26 @@
 from PySteppables import *
 import CompuCell
 import sys
-from XMLUtils import dictionaryToMapStrStr as d2mss
 
-
-class PottsSteering(SteppablePy):
+            
+class ContactSteeringAndTemperature(SteppableBasePy):
+    def __init__(self,_simulator,_frequency=10):
+        SteppableBasePy.__init__(self,_simulator,_frequency)
+        
+    def step(self,mcs):
+        
+        temp=float(self.getXMLElementValue(['Potts'],['Temperature']))
+        self.setXMLElementValue(temp+1,['Potts'],['Temperature'])    
+        
+        val=float(self.getXMLElementValue(['Plugin','Name','Contact'],['Energy','Type1','NonCondensing','Type2','Condensing']))       
+        
+        self.setXMLElementValue(val+1,['Plugin','Name','Contact'],['Energy','Type1','NonCondensing','Type2','Condensing']) 
+                
+        self.updateXML()    
+        
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------        
+# OLD STYLE STEERING
+class PottsSteeringOldStyle(SteppablePy):
     def __init__(self,_simulator,_frequency=1):
         SteppablePy.__init__(self,_frequency)
         self.simulator=_simulator
@@ -29,7 +45,7 @@ class PottsSteering(SteppablePy):
         
             
             
-class ContactSteering(SteppablePy):
+class ContactSteeringOldStyle(SteppablePy):
     def __init__(self,_simulator,_frequency=10):
         SteppablePy.__init__(self,_frequency)
         self.simulator=_simulator

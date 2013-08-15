@@ -588,210 +588,208 @@
           <rect>
            <x>290</x>
            <y>220</y>
-           <width>191</width>
-           <height>151</height>
+           <width>221</width>
+           <height>135</height>
           </rect>
          </property>
          <property name="title">
           <string>Cell Glyphs</string>
          </property>
-         <widget class="QWidget" name="layoutWidget">
-          <property name="geometry">
-           <rect>
-            <x>20</x>
-            <y>20</y>
-            <width>161</width>
-            <height>121</height>
-           </rect>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_5">
-           <item>
-            <widget class="QCheckBox" name="cellGlyphScaleByVolumeCheckBox">
-             <property name="text">
-              <string>scale by volume</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QGridLayout" name="gridLayout">
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_9">
-               <property name="text">
-                <string>Scale factor</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QLineEdit" name="cellGlyphScale"/>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="label_10">
-               <property name="text">
-                <string>Theta res</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QSpinBox" name="cellGlyphThetaRes"/>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_11">
-               <property name="text">
-                <string>Phi res</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QSpinBox" name="cellGlyphPhiRes"/>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </widget>
+         <layout class="QVBoxLayout" name="verticalLayout_16">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_5">
+            <item>
+             <widget class="QCheckBox" name="cellGlyphScaleByVolumeCheckBox">
+              <property name="text">
+               <string>scale by volume</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QGridLayout" name="gridLayout">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_9">
+                <property name="text">
+                 <string>Scale factor</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="cellGlyphScale"/>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_10">
+                <property name="text">
+                 <string>Theta res</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QSpinBox" name="cellGlyphThetaRes"/>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_11">
+                <property name="text">
+                 <string>Phi res</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QSpinBox" name="cellGlyphPhiRes"/>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+         </layout>
         </widget>
         <widget class="QGroupBox" name="groupBox_11">
          <property name="geometry">
           <rect>
            <x>290</x>
            <y>30</y>
-           <width>181</width>
-           <height>171</height>
+           <width>221</width>
+           <height>181</height>
           </rect>
          </property>
          <property name="title">
           <string>Aditional colors</string>
          </property>
-         <widget class="QWidget" name="layoutWidget">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>33</y>
-            <width>163</width>
-            <height>130</height>
-           </rect>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_2">
-           <item row="0" column="0">
-            <widget class="QLabel" name="borderColorLabel">
-             <property name="text">
-              <string>Cell border color</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QToolButton" name="cellBorderColorButton">
-             <property name="minimumSize">
-              <size>
-               <width>26</width>
-               <height>26</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>26</width>
-               <height>26</height>
-              </size>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="clusterBorderColorLabel">
-             <property name="text">
-              <string>Cluster border color</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QToolButton" name="clusterBorderColorButton">
-             <property name="minimumSize">
-              <size>
-               <width>26</width>
-               <height>26</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>26</width>
-               <height>26</height>
-              </size>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="contourColorLabel">
-             <property name="text">
-              <string>Contour color</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QToolButton" name="contourColorButton">
-             <property name="minimumSize">
-              <size>
-               <width>26</width>
-               <height>26</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>26</width>
-               <height>26</height>
-              </size>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="windowColorLabel">
-             <property name="text">
-              <string>Window color</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QToolButton" name="windowColorButton">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>26</width>
-               <height>26</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>26</width>
-               <height>26</height>
-              </size>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
+         <layout class="QVBoxLayout" name="verticalLayout_12">
+          <item>
+           <layout class="QGridLayout" name="gridLayout_2">
+            <item row="0" column="0">
+             <widget class="QLabel" name="borderColorLabel">
+              <property name="text">
+               <string>Cell border color</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QToolButton" name="cellBorderColorButton">
+              <property name="minimumSize">
+               <size>
+                <width>26</width>
+                <height>26</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>26</width>
+                <height>26</height>
+               </size>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="clusterBorderColorLabel">
+              <property name="text">
+               <string>Cluster border color</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QToolButton" name="clusterBorderColorButton">
+              <property name="minimumSize">
+               <size>
+                <width>26</width>
+                <height>26</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>26</width>
+                <height>26</height>
+               </size>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="contourColorLabel">
+              <property name="text">
+               <string>Contour color</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QToolButton" name="contourColorButton">
+              <property name="minimumSize">
+               <size>
+                <width>26</width>
+                <height>26</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>26</width>
+                <height>26</height>
+               </size>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="windowColorLabel">
+              <property name="text">
+               <string>Window color</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QToolButton" name="windowColorButton">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>26</width>
+                <height>26</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>26</width>
+                <height>26</height>
+               </size>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QCheckBox" name="windowColorSameAsMediumCB">
+              <property name="text">
+               <string>Window color same as Medium</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
         </widget>
        </widget>
        <widget class="QWidget" name="tab_field">

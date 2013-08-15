@@ -19,13 +19,10 @@ CompuCellSetup.initializeSimulationObjects(sim,simthread)
 #Add Python steppables here
 steppableRegistry=CompuCellSetup.getSteppableRegistry()
 
-from cellsort_2D_steering_steppables import PottsSteering
-pottsSteering=PottsSteering(_simulator=sim,_frequency=10)
-steppableRegistry.registerSteppable(pottsSteering)
 
-from cellsort_2D_steering_steppables import ContactSteering
-contactSteering=ContactSteering(_simulator=sim,_frequency=10)
-steppableRegistry.registerSteppable(contactSteering)
+from cellsort_2D_steering_steppables import ContactSteeringAndTemperature
+contactSteeringAndTemperature=ContactSteeringAndTemperature(_simulator=sim,_frequency=10)
+steppableRegistry.registerSteppable(contactSteeringAndTemperature)
 
 CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
 

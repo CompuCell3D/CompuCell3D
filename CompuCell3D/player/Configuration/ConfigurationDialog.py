@@ -21,11 +21,10 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
    
     def __init__(self, parent = None, name = None, modal = False):
         QDialog.__init__(self, parent)
-        self.setModal(modal)
-        
-#        self.config = Configuration()
+        self.setModal(modal)        
         
         self.paramCC3D = {}   #  dict for ALL parameters on CC3D Preferences dialog
+        
         self.initParams()  # read params from QSession file
         
         self.setupUi(self)   # in ui_configurationdlg.Ui_CC3DPrefs
@@ -36,11 +35,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
   
 #        if not MAC:
 #            self.cancelButton.setFocusPolicy(Qt.NoFocus)
-#        self.updateUi()
 
-        # ------- the following 'connect' method basically establish callback methods -----------
-#        self.tabWidget.currentChanged.connect(currentChanged)
-#        self.connect(self.tabWidget,   SIGNAL("currentChanged()"),       self.currentChanged)
         self.tabWidget.currentChanged.connect(self.currentTabChanged)
         
         # Output tab
@@ -60,9 +55,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.cellGlyphScale.setValidator(cellGlyphScaleValid)
         
         
-        # Field tab (handles both scalar and vector fields)
+        
         # The following will constrain the input to be valid (double) numeric values
-#        self.fieldComboBox.activated.connect(self.fieldComboBoxClicked)
         self.fieldComboBox.currentIndexChanged.connect(self.fieldComboBoxClicked)
         self.lastSelectedField = -1
         
@@ -74,50 +68,28 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.fieldMinRangeFixedCheckBox.clicked.connect(self.fieldMinRangeClicked)
         self.fieldMaxRangeFixedCheckBox.clicked.connect(self.fieldMaxRangeClicked)
         
-#        minVecValid = QDoubleValidator(self.vectorsMinMag)
-#        self.vectorsMinMag.setValidator(minVecValid)
-#        maxVecValid = QDoubleValidator(self.vectorsMaxMag)
-#        self.vectorsMaxMag.setValidator(maxVecValid)
+
         
         self.vectorsArrowColorCheckBox.clicked.connect(self.vectorsArrowColorClicked)
         self.vectorsArrowColorButton.clicked.connect(self.vectorsArrowColorButtonClicked)
         
         self.isovalList.textEdited.connect(self.isovalListChanged)
         self.numberOfContoursLinesSpinBox.valueChanged.connect(self.numContoursInRangeChanged)
-#        self.numberOfContoursLinesSpinBox.editingFinished.connect(self.numContoursInRangeChanged)  # changes with each keypress in input
 
-#        self.maxNumContours = 10
-#        self.isoValList = []
-        
+        self.windowColorSameAsMediumCB.toggled.connect(self.windowColorSameAsMediumToggled)
         
         # 3D tab
         self.boundingBoxColorButton.clicked.connect(self.boundingBoxColorClicked)
         
-        
-        # bottom buttons of Prefs dialog
-#        self.connect(self.buttonBox,   SIGNAL("accepted()"),       self.accept)  # done implicitly
-#        self.connect(self.buttonBox,   SIGNAL("rejected()"),       self.reject)  # done implicitly
-#        self.connect(self.buttonBox,   SIGNAL("clicked()"),       self.buttonClicked)    # doesn't work
         self.buttonBox.clicked.connect(self.buttonBoxClicked)
 
 
-#        self.connect(self.configWidget.buttonBox,   SIGNAL("rejected()"),       self.reject)
-#        self.connect(self.configWidget,             SIGNAL('configsChanged'),   self.__configsChanged)
         self.updateUI()
         
-#        self.connect(self.tabWidget,   SIGNAL("currentChanged()"),       self.tabChanged)
-        
-
-#    @pyqtSignature("")
-#    def on_borderColorButton_clicked(self):
-#        print MODULENAME,'  on_borderColorButton_clicked'
-        
-#    @tabWidget.currentChanged.connect
 
     #----------- following methods are callbacks from the above "connect"s  ------------
     def currentTabChanged(self):
-#        print MODULENAME,' ------ currentTabChanged()'
-#        print MODULENAME,' ------ currentTabChanged():  currentIndex =',self.tabWidget.currentIndex()
+
         Configuration.setSetting("TabIndex", self.tabWidget.currentIndex())
         if (self.tabWidget.currentIndex() == 2):
 #            print MODULENAME,' ------ currentTabChanged():  self.fieldComboBox.count() =',self.fieldComboBox.count() 
@@ -139,6 +111,12 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
             
         else:
             self.saveLatticeSpinBox.setEnabled(False)
+     
+    def windowColorSameAsMediumToggled(self,_flag):
+        if _flag:# this means windowColorSameAsMedium has been checked
+            mediumColor=self.paramCC3D["TypeColorMap"][0]
+            self.changeButtonColor(self.windowColorButton,mediumColor,"WindowColor")
+            
             
     def outputToProjectClicked(self):
         if self.outputToProjectCheckBox.isChecked():
@@ -151,61 +129,60 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
     # -------- Cell Type (colors) widgets CBs
     def typeColorTableClicked(self):
-#        print MODULENAME,"    typeColorTableClicked"
+        '''handles cell type color table modifications'''
+
         row = self.typeColorTable.currentRow()
         col = self.typeColorTable.currentColumn()
-#        print MODULENAME,"  current row,col=",row,col
+
         self.typeColorTable.setCurrentCell(row,0)  # highlight the left column cell (cell #), not cell w/ the color
         item = self.typeColorTable.item(row,2)   # col 2 contains color 
-#        if row == 0 or col == 0: return  # ECM is special; only proceed with color dialog/selection if user chose color column
+
         keys = self.paramCC3D["TypeColorMap"].keys()
-#        print MODULENAME,'keys= ',keys
-#            item = QTableWidgetItem()
         
-#            item.setBackground(QBrush(self.paramCC3D["TypeColorMap"][keys[row]]))
-#            self.typeColorTable.setItem(row, 1, item)
-#            cellColor = QColor(Qt.yellow)
         cellColor = self.paramCC3D["TypeColorMap"][keys[row]]
         color = QColorDialog.getColor(cellColor)
         if color.isValid():
-#            print 'color= ',color
-#            print 'rgb= ',color.red(),color.green(),color.blue()
             self.paramCC3D["TypeColorMap"][keys[row]] = color
-#            Configuration.setSetting("TypeColorMap",self.paramCC3D["TypeColorMap"])  # is this necessary yet?
+
             item.setBackground(QBrush(color))
-#            self.populateCellColors()
-            
+        
+        if self.windowColorSameAsMediumCB.isChecked():            
+            mediumColor=self.paramCC3D["TypeColorMap"][0] # get medium color
+            self.changeButtonColor(self.windowColorButton, mediumColor,"WindowColor")
          
-#         color = self.selectColor(self.clusterBorderColorButton, Configuration.getSetting("ClusterBorderColor"))
-#         print '      typeColorTableClicked: color=',color.red(),color.green(),color.blue()
+
+    def changeButtonColor(self,_btn,_color,_settingName):
+        '''
+        assigns color (_color)  to button (_btn) and changes corresponding color setting (_settingName). Does not shows Choose color dialog 
+        '''
+        if _color.isValid():
+            size = _btn.iconSize()
+            pm = QPixmap(size.width(), size.height())
+            pm.fill(_color)
+            _btn.setIcon(QIcon(pm)) 
+            Configuration.setSetting(_settingName, _color)
         
     def updateColorButton(self, btn, name):
+        '''
+            updates button (btn) and changes corresponding color setting (name).Shows Choose color dialog 
+        '''
         color = self.selectColor(btn, Configuration.getSetting(name))
-        print '      updateColorButton: color=',color.red(),color.green(),color.blue()
+        
         # which of the following is necessary at this point?
         Configuration.setSetting(name, color)
         self.paramCC3D[name] = color
         
-    def cellBorderColorClicked(self):
-#        dbgMsg(MODULENAME,' ------ cellBorderColorClicked()')  # why isn't my 'print' printing?!
+    def cellBorderColorClicked(self):   
+
         self.updateColorButton(self.cellBorderColorButton, "BorderColor")
-#        color = self.selectColor(self.cellBorderColorButton, Configuration.getSetting("BorderColor"))
-#        print '      color=',color
-#        Configuration.setSetting("BorderColor", color)
         
     def clusterBorderColorClicked(self):
-#        print MODULENAME,' ------ clusterBorderColorClicked()'
+
         self.updateColorButton(self.clusterBorderColorButton, "ClusterBorderColor")
-#        color = self.selectColor(self.clusterBorderColorButton, Configuration.getSetting("ClusterBorderColor"))
-#        print '      color=',color
-#        Configuration.setSetting("ClusterBorderColor", color)
         
     def contourColorClicked(self):
-#        print MODULENAME,' ------ countourColorClicked()'
+
         self.updateColorButton(self.contourColorButton, "ContourColor")
-#        color = self.selectColor(self.contourColorButton, Configuration.getSetting("ContourColor"))
-#        print '      color=',color
-#        Configuration.setSetting("ContourColor", color)
 
     def windowColorClicked(self):
         self.updateColorButton(self.windowColorButton, "WindowColor")
@@ -221,67 +198,34 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         fieldIndex = self.fieldComboBox.currentIndex()
         Configuration.setSetting("FieldIndex", fieldIndex)
         self.lastSelectedField = fieldIndex
-#        print MODULENAME,' fieldComboBoxClicked():  fieldIndex (=lastSelectedField)=',fieldIndex
-#        print '=================================='
-#        print MODULENAME,' fieldComboBoxClicked():  fname=',fname
-#        print MODULENAME,' fieldComboBoxClicked():  type(fname)=',type(fname)   # <class 'PyQt4.QtCore.QString'>
-#        print MODULENAME,' fieldComboBoxClicked():  str(fname)=',str(fname)
-#        print MODULENAME,' fieldComboBoxClicked():  type(str(fname))=',type(str(fname))   # 
         
         allFieldsDict = Configuration.getSimFieldsParams()
-#        print MODULENAME, 'fieldComboBoxClicked():  allFieldsDict = ',allFieldsDict
-#        if len(allFieldsDict) == 0:
-#            print 
-#            print MODULENAME, '-------------------------'
-#            print MODULENAME, 'fieldComboBoxClicked():  WARNING   empty allFieldsDict'
-#            print MODULENAME, '-------------------------'
-#            print 
-#------- ConfigurationDialog.py:  fieldComboBoxClicked():  allFieldsDict =  {'VectorField': 
-#{'MaxRangeFixed': False, 'MaxRange': 1.0, 'LegendEnable': True, 'MinRange': -11.0,
-#'MinRangeFixed': True, 'ContoursOn': False, 'ScaleArrowsOn': False,
-#'FixedArrowColorOn': False, 'NumberOfLegendBoxes': 6, 'NumberAccuracy': 2, 'NumberOfContourLines': 5, 
-#'OverlayVectorsOn': False,
-#'ArrowColor': <PyQt4.QtGui.QColor object at 0x114f95ad0>, 'ArrowLength': 1}, 
-#'IdField': {'MaxRange': 1.0, 'MinRange': 0.0}, 
-#'ExtraField': {'MaxRange': 1.0, 'MinRange': 0.0}, 
-#'FGF': {'MaxRange': 1.0, 'MinRange': 0.0}, 
-#'VectorFieldCellLevel': {'MaxRange': 1.0, 'MinRange': 0.0}}
-#        print MODULENAME, 'fieldComboBoxClicked():  type(allFieldsDict) = ',type(allFieldsDict)
+
         key1 = allFieldsDict.keys()[0]
-#        print MODULENAME, 'fieldComboBoxClicked():  allFieldsDict.keys()[0] = ',key1
-#        print MODULENAME, 'fieldComboBoxClicked():  type(allFieldsDict.keys()[0]) = ',type(key1)
-#        print MODULENAME, 'fieldComboBoxClicked():  isinstance(key1,str)= ',isinstance(key1,str)
-#        fieldParams = allFieldsDict[fname]
-#        fieldParams = allFieldsDict[fname].toMap()
+        
         if isinstance(key1,str):
             fieldParams = allFieldsDict[str(fname)]
         else:
             fieldParams = allFieldsDict[fname]
-#        print MODULENAME, 'fieldComboBoxClicked():  fieldParams = ',fieldParams
-#        print MODULENAME, 'fieldComboBoxClicked():  type(fieldParams) = ',type(fieldParams)   # <class 'PyQt4.QtCore.QVariant'>
+
         if not isinstance(fieldParams,dict):
-#            print MODULENAME, 'fieldComboBoxClicked():  convert to dict via toMap()'
+
             fieldParamsDict = fieldParams.toMap()
         else:
-#            print MODULENAME, 'fieldComboBoxClicked():  is already a dict'
+
             fieldParamsDict = fieldParams
             
-#        print MODULENAME, 'fieldComboBoxClicked():  fieldParamsDict = ',fieldParamsDict
-#        print MODULENAME, 'fieldComboBoxClicked():  type(fieldParamsDict) = ',type(fieldParamsDict)
         
         val = fieldParamsDict["MinRange"]
-#        print MODULENAME, 'fieldComboBoxClicked():       type(val)= ',type(val)
-#        print MODULENAME, 'fieldComboBoxClicked():       MinRange  = ',val
+        
         self.fieldMinRange.setText( str(val) )
         val = fieldParamsDict["MinRangeFixed"]
-#        print MODULENAME, 'fieldComboBoxClicked():       type(val)= ',type(val)
-#        print MODULENAME, 'fieldComboBoxClicked():       MinRangeFixed  = ',val
+        
         self.fieldMinRangeFixedCheckBox.setChecked( val )
         self.fieldMinRangeClicked()   # enable/disable
         
         val = fieldParamsDict["MaxRange"]
-#        print MODULENAME, 'fieldComboBoxClicked():       type(val)= ',type(val)
-#        print MODULENAME, 'fieldComboBoxClicked():       MaxRange  = ',val
+        
         self.fieldMaxRange.setText( str(val) )
         val = fieldParamsDict["MaxRangeFixed"]
         self.fieldMaxRangeFixedCheckBox.setChecked( val )
@@ -300,8 +244,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
          
         try:
             val = fieldParamsDict["ScalarIsoValues"]
-#            print MODULENAME,'  val=',val
-#            print MODULENAME,'  dir(val)=',dir(val)
+            
             if type(val) == QVariant:  self.isovalList.setText(val.toString())
             elif type(val) == QString:  self.isovalList.setText(val)
         except KeyError:
@@ -310,10 +253,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
             print MODULENAME,'  fieldParamsDict=',fieldParamsDict
             print '\n'
         val = fieldParamsDict["NumberOfContourLines"]
-#        print MODULENAME, 'fieldComboBoxClicked(): NumberOfContourLines      type(val)= ',type(val)
+
         self.numberOfContoursLinesSpinBox.setValue(val)
-#        val = fieldParamsDict["ContoursOn"]
-#        self.contoursShowCheckBox.setChecked(val)
         
         val = fieldParamsDict["ArrowLength"]
         self.vectorsArrowLength.setValue(val)
@@ -323,38 +264,6 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.vectorsArrowColorCheckBox.setChecked(val)
         self.vectorsArrowColorClicked()  # enable/disable
         
-#        val = fieldParamsDict["OverlayVectorsOn"]
-#        self.vectorsOverlayCheckBox.setChecked(val)
-        
-#        print '=================================='
-        
-        # update the params in the widgets for this newly selected field
-#        self.fieldMinRange.setText( str(Configuration.getSetting("MinRange")))
-#        self.fieldMinRangeFixedCheckBox.setChecked(Configuration.getSetting("MinRangeFixed"))
-#        self.fieldMinRangeClicked()   # enable/disable
-#        self.fieldMaxRange.setText( str(Configuration.getSetting("MaxRange")))
-#        self.fieldMaxRangeFixedCheckBox.setChecked(Configuration.getSetting("MaxRangeFixed"))
-#        self.fieldMaxRangeClicked()   # enable/disable
-#        
-#        self.fieldLegendNumLabels.setValue(self.paramCC3D["NumberOfLegendBoxes"])
-#        self.fieldLegendAccuracy.setValue(self.paramCC3D["NumberAccuracy"])
-#        self.fieldShowLegendCheckBox.setChecked(self.paramCC3D["LegendEnable"])
-#        
-#        self.numberOfContoursLinesSpinBox.setValue(self.paramCC3D["NumberOfContourLines"])
-#        self.contoursShowCheckBox.setChecked(self.paramCC3D["ContoursOn"])
-#        
-#        self.vectorsArrowLength.setValue(self.paramCC3D["ArrowLength"])
-#        self.vectorsScaleArrowCheckBox.setChecked(self.paramCC3D["ScaleArrowsOn"])
-#        self.vectorsArrowColorCheckBox.setChecked(self.paramCC3D["FixedArrowColorOn"])
-#        self.vectorsArrowColorClicked()  # enable/disable
-#        
-#        self.vectorsOverlayCheckBox.setChecked(self.paramCC3D["OverlayVectorsOn"])
-#        
-#        color = Configuration.getSetting("ArrowColor")
-#        pm = QPixmap(size.width(), size.height())
-#        pm.fill(color)
-#        self.vectorsArrowColorButton.setIconSize(pm.size())
-#        self.vectorsArrowColorButton.setIcon(QIcon(pm))
         
         
     def fieldMinRangeClicked(self):
@@ -402,11 +311,11 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
     def isovalListChanged(self):
         pass
-#        print MODULENAME, '\n>>>>>>>>>>>> isovalListChanged() '
+
         
     def numContoursInRangeChanged(self):
         pass
-#        print MODULENAME, '\n>>>>>>>>>>>> numContoursInRangeChanged() '
+
         
         
     def buttonBoxClicked(self,btn):   # this is the primary buttons (Apply/Cancel/OK) at the bottom of the Prefs diaglog
@@ -434,29 +343,6 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.outputLatticeDataCheckBox.setEnabled(boolFlag)
     
         
-#    def reject(self):
-#        print MODULENAME, 'reject <<<<<<<<<<<<<----------------'
-#        QDialog.reject(self)
-#        
-#    def apply(self):  # never called
-#        print MODULENAME, 'apply <<<<<<<<<<<<<----------------'
-#        QDialog.apply(self)
-#
-        
-        
-#    @pyqtSignature("") # signature of the signal emitted by the button
-#    def on_okButton_clicked(self):
-#        print MODULENAME, 'on_okButton_clicked <<<<<<<<<<<<<----------------'
-#        self.updatePreferences()        
-#        self.close()
-
-#    @pyqtSignature("")
-#    def on_borderColorButton_clicked(self):
-#        """
-#        Private slot to set the color for border
-#        """
-#        print MODULENAME,'-------- on_borderColorButton_clicked --------'
-#        self.cellColors["Border"] = self.selectColor(self.borderColorButton, self.cellColors["Border"])
 
     # The following "on_blah_clicked" methods magically happen when a UI button (whose name *matches* "blah") is clicked
     @pyqtSignature("") # signature of the signal emitted by the button
@@ -501,9 +387,6 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
     @pyqtSignature("") # signature of the signal emitted by the button
     def on_addCellTypeButton_clicked(self):   
         lastRowIdx = self.typeColorTable.rowCount()-1
-#        print MODULENAME,' on_addCellTypeButton_clicked():   lastRowIdx=',lastRowIdx
-#        print MODULENAME,' on_addCellTypeButton_clicked(): type(self.paramCC3D["TypeColorMap"][lastRowIdx]) =',type(self.paramCC3D["TypeColorMap"][lastRowIdx])
-#        print MODULENAME,' on_addCellTypeButton_clicked(): self.paramCC3D["TypeColorMap"][lastRowIdx] =',self.paramCC3D["TypeColorMap"][lastRowIdx]
 
         typeItem = self.typeColorTable.item(lastRowIdx,0)
         lastTypeNumber,flag = typeItem.text().toInt()
@@ -517,17 +400,13 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
             return
             
         colorItem = self.typeColorTable.item(lastRowIdx,2)  # col 2 contains color
-#        print MODULENAME,'on_addCellTypeButton_clicked():  type(colorItem)=',type(colorItem)
-#        print MODULENAME,'on_addCellTypeButton_clicked():  dir(colorItem)=',dir(colorItem)
-#        lastTypeColor=colorItem.background().color()
+
         self.typeColorTable.insertRow(lastRowIdx+1)
 
         # fill new row
         self.typeColorTable.setItem(lastRowIdx+1,0,QTableWidgetItem(str(lastTypeNumber+1)))
         self.typeColorTable.setItem(lastRowIdx+1,1,QTableWidgetItem())
         self.typeColorTable.setItem(lastRowIdx+1,2,QTableWidgetItem())
-#        colorITem = self.typeColorTable.item(lastRowIdx+1,1)
-#        colorITem.setBackground(QBrush(lastTypeColor))
         # init setting dictionary        
         
         self.paramCC3D["TypeColorMap"][lastRowIdx+1] = QColor(Qt.white)
@@ -535,9 +414,6 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
     def populateCellColors(self):
         from CompuCellSetup import ExtractTypeNamesAndIds
-#        print MODULENAME,'    populateCellColors'
-
-#        self.typeColorTable.setHorizontalHeaderLabels(['type','name','color'])    # doesn't work
         
         cw=self.typeColorTable.columnWidth(1)
 #        print '    col 2 width=',self.typeColorTable.columnWidth(2)   # = 50
@@ -570,16 +446,13 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
             
             
     def updateFieldParams(self,fieldName):
-#        print MODULENAME,' updateFieldParams():  fieldName=',fieldName
-#        print MODULENAME,' updateFieldParams():  Configuration.simFieldsParams=',Configuration.simFieldsParams
         
         fieldDict = {}
         key = "MinRange"
         val = self.fieldMinRange.text()
-#        fieldDict[key] = val
+
         fieldDict[key] = float(val)
-#        print MODULENAME,' updateFieldParams():  type(val)  for MinRange=',type(val)   # <class 'PyQt4.QtCore.QString'>
-#        print MODULENAME,' updateFieldParams():  dir(val)  for MinRange=',dir(val)  # ... toFloat(), toDouble() ...
+
         Configuration.setSetting(key,val)
         key = "MinRangeFixed"
         val = self.fieldMinRangeFixedCheckBox.isChecked()
@@ -587,7 +460,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting(key,val)
         key = "MaxRange"
         val = self.fieldMaxRange.text()
-#        fieldDict[key] = val
+
         fieldDict[key] = float(val)
         Configuration.setSetting(key,val)
         key = "MaxRangeFixed"
@@ -617,10 +490,6 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         val = self.numberOfContoursLinesSpinBox.value()
         fieldDict[key] = val
         Configuration.setSetting(key,val)
-#        key = "ContoursOn" 
-#        val = self.contoursShowCheckBox.isChecked()
-#        fieldDict[key] = val
-#        Configuration.setSetting(key,val)
             
         key = "ArrowLength" 
         val = self.vectorsArrowLength.value()
@@ -635,28 +504,17 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         fieldDict[key] = val
         Configuration.setSetting(key,val)
         color = Configuration.getSetting("ArrowColor")
-#        print MODULENAME,'   updateFieldsParams:  type(color),color=',type(color),color
+
         fieldDict["ArrowColor"] = color
-#        fieldDict["ArrowColor"] = (color.red(),color.green(),color.blue())
-#        key = "OverlayVectorsOn" 
-#        val = self.vectorsOverlayCheckBox.isChecked()
-#        fieldDict[key] = val
-#        Configuration.setSetting(key,val)
         
-#        if fieldName not in Configuration.simFieldsParams.keys():
-#            Configuration.simFieldsParams[fieldName] = fieldDict
-#        print MODULENAME,' updateFieldParams():  post Configuration.simFieldsParams=',Configuration.simFieldsParams
-#        print MODULENAME,' updateFieldParams():  fieldDict=',fieldDict
         Configuration.updateFieldsParams(fieldName,fieldDict)
         
-    def updatePreferences(self):   # called when user presses Apply or OK button on the Prefs dialog
-#        print MODULENAME, ' -----------  updatePreferences  -------------------------'
+    def updatePreferences(self):    
+        '''called when user presses Apply or OK button on the Prefs dialog'''
+
         
         # rwh: check if the PreferencesFile is different; if so, update it
         Configuration.mySettings = QSettings(QSettings.IniFormat, QSettings.UserScope, "Biocomplexity", self.prefsFileLineEdit.text())
-
-#        configuration=self.editorWindow.configuration
-#        configuration.updatedConfigs={}
 
         # update flags in menus:  CC3DOutputOn, etc. (rf. ViewManager/SimpleViewManager)
         
@@ -674,16 +532,16 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("OutputLocation", self.outputLocationLineEdit.text())
         Configuration.setSetting("OutputToProjectOn", self.outputToProjectCheckBox.isChecked())
         Configuration.setSetting("PreferencesFile", self.prefsFileLineEdit.text())
-        Configuration.setSetting("NumberOfRecentSimulations", self.numberOfRecentSimulationsSB.value())
+        Configuration.setSetting("NumberOfRecentSimulations", self.numberOfRecentSimulationsSB.value())        
+        
+        Configuration.setSetting("WindowColorSameAsMedium", self.windowColorSameAsMediumCB.isChecked() )
+        
         
         # Cell Type/Colors
         Configuration.setSetting("TypeColorMap",self.paramCC3D["TypeColorMap"])  # rwh
         
-#        Configuration.setSetting("BorderColor", self.cellBorderColorButton
-##        Configuration.setSetting("ClusterBorderColor", self.
-#        Configuration.setSetting("ContourColor", self.
-#        Configuration.setSetting("BrushColor", self.
-#        Configuration.setSetting("PenColor", self.
+        
+
 
         Configuration.setSetting("CellGlyphScaleByVolumeOn", self.cellGlyphScaleByVolumeCheckBox.isChecked())
         Configuration.setSetting("CellGlyphScale", self.cellGlyphScale.text())
@@ -692,16 +550,13 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 
 
 
-        # Field  (scalars and vectors)
-#        print '         self.fieldMinRange.text() = ',self.fieldMinRange.text()
+
 
         fp = Configuration.getSetting("FieldParams")
-#        print MODULENAME, '  updatePreferences():   FieldParams =',fp
         
         # get Field name from combobox in the Field tab and save the current settings for that field
         fname = self.fieldComboBox.currentText()
-#        print MODULENAME,'  updatePreferences():  fname=',fname   # e.g. fname= FGF
-#        print MODULENAME,'  updatePreferences():  type(fname)=',type(fname)   # e.g. <class 'PyQt4.QtCore.QString'>
+        
 #        Configuration.updateSimFieldsParams(fname)
         self.updateFieldParams(fname)
 
@@ -716,47 +571,33 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
         Configuration.setSetting("ScalarIsoValues", self.isovalList.text())
         Configuration.setSetting("NumberOfContourLines", self.numberOfContoursLinesSpinBox.value())
-#        print MODULENAME, '      updatePreferences:  self.contoursShowCheckBox.isChecked() = ',self.contoursShowCheckBox.isChecked()
-#        Configuration.setSetting("ContoursOn", self.contoursShowCheckBox.isChecked())
 
         
         # Vectors
-#        if configuration.setting("UseTabSpaces")!=self.tabSpacesCheckBox.isChecked():
-#            configuration.updatedConfigs["UseTabSpaces"]=self.tabSpacesCheckBox.isChecked()
-#        Configuration.setSetting("MinMagnitude", self.vectorsMinMag.text())
-#        Configuration.setSetting("MinMagnitudeFixed", self.vectorsMinMagFixedCheckBox.isChecked())
-#        Configuration.setSetting("MaxMagnitude", self.vectorsMaxMag.text())
-#        Configuration.setSetting("MaxMagnitudeFixed", self.vectorsMaxMagFixedCheckBox.isChecked())
-        
-#        Configuration.setSetting("NumberOfLegendBoxesVector", self.vectorsLegendNumLabels.value())
-#        Configuration.setSetting("NumberAccuracyVector", self.vectorsLegendAccuracy.value())
-#        Configuration.setSetting("LegendEnableVector", self.vectorsShowLegendCheckBox.isChecked())
         
         Configuration.setSetting("ArrowLength", self.vectorsArrowLength.value())
         Configuration.setSetting("ScaleArrowsOn", self.vectorsScaleArrowCheckBox.isChecked())
         Configuration.setSetting("FixedArrowColorOn", self.vectorsArrowColorCheckBox.isChecked())
         
-#        Configuration.setSetting("OverlayVectorsOn", self.vectorsOverlayCheckBox.isChecked())
-
         # 3D
-        # Display size, Camera params...
-        # Invisible cell types in 3D
+
         Configuration.setSetting("Types3DInvisible", self.cellTypesInvisibleList.text())
         Configuration.setSetting("BoundingBoxOn", self.boundingBoxCheckBox.isChecked())
     
-    def updateUI(self):  # called whenever Prefs dialog is open
-#        print MODULENAME, ' ----------------  updateUI  -------------------------'
+    def updateUI(self):  # 
+        '''called whenever Prefs dialog is open'''
+    
+
 
         # rwh: what to use: self.paramCC3D[] or Configuration.getSetting?        
+        
         
         self.tabWidget.setCurrentIndex(Configuration.getSetting("TabIndex"))
         
         fieldIndex = Configuration.getSetting("FieldIndex")
         self.lastSelectedField = fieldIndex
         self.fieldComboBox.setCurrentIndex(self.lastSelectedField)
-#        print MODULENAME, ' ------  updateUI(),   self.fieldComboBox.count()=',self.fieldComboBox.count()
-#        print MODULENAME, ' ------  updateUI(),   self.fieldComboBox.__len__()=',self.fieldComboBox.__len__()
-#        if self.lastSelectedField: 
+
         
         # Output
         self.updateScreenSpinBox.setValue(Configuration.getSetting("ScreenUpdateFrequency"))
@@ -783,25 +624,15 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
         
         # Cell Type/Colors
-#        self.paramCC3D["TypeColorMap"]
+
         self.populateCellColors()
         # rwh: the following pops up the color selection widget
-#        self.selectColor(self.borderColorButton, Configuration.getSetting("BorderColor"))
-#        defaultConfigs["BorderColor"] = QColor(Qt.yellow); paramTypeColor.append("BorderColor")
-#        defaultConfigs["ContourColor"] = QColor(Qt.white); paramTypeColor.append("ContourColor")
-#        defaultConfigs["BrushColor"] = QColor(Qt.white); paramTypeColor.append("BrushColor")
-#        defaultConfigs["PenColor"] =
 
-#        palette = QPalette()
-#        brush = QBrush(QColor(237,236,235))
-#        brush.setStyle(Qt.SolidPattern)
-#        palette.setBrush(QPalette.Disabled, QPalette.Window,brush)
-#        self.cellBorderColorButton.setPalette(palette)
         
-#        color = prefMethod(configColor)
+
         color = Configuration.getSetting("BorderColor")
         size = self.cellBorderColorButton.size()
-#        print '        size w,h=',size.width(),size.height()
+
         pm = QPixmap(size.width(), size.height())
         pm.fill(color)
         self.cellBorderColorButton.setIconSize(pm.size())
@@ -825,14 +656,14 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.windowColorButton.setIconSize(pm.size())
         self.windowColorButton.setIcon(QIcon(pm))
         
+        self.windowColorSameAsMediumCB.setChecked(Configuration.getSetting("WindowColorSameAsMedium"))
+        
         self.cellGlyphScaleByVolumeCheckBox.setChecked(Configuration.getSetting("CellGlyphScaleByVolumeOn"))
         self.cellGlyphScale.setText( str(Configuration.getSetting("CellGlyphScale")))
         self.cellGlyphThetaRes.setValue(self.paramCC3D["CellGlyphThetaRes"])
         self.cellGlyphPhiRes.setValue(self.paramCC3D["CellGlyphPhiRes"])
         
         
-        # Field (scalar and vector)   (used to be 'Colormap' and 'Vectors')
-#        self.fieldMinRange.setText(str(self.colormap["MinConcentration"]))
         fp = Configuration.getSetting("FieldParams")
         
         self.fieldMinRange.setText( str(Configuration.getSetting("MinRange")))
@@ -845,24 +676,13 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.fieldLegendNumLabels.setValue(self.paramCC3D["NumberOfLegendBoxes"])
         self.fieldLegendAccuracy.setValue(self.paramCC3D["NumberAccuracy"])
         self.fieldShowLegendCheckBox.setChecked(self.paramCC3D["LegendEnable"])
-#        
+        
         self.isovalList.setText(Configuration.getSetting("ScalarIsoValues"))
         self.numberOfContoursLinesSpinBox.setValue(self.paramCC3D["NumberOfContourLines"])
-#        self.contoursShowCheckBox.setChecked(self.paramCC3D["ContoursOn"])
+
         
         
         # Vectors
-#        self.vectorsMinMag.setText( str(Configuration.getSetting("MinMagnitude")))
-#        self.vectorsMinMagFixedCheckBox.setChecked(self.paramCC3D["MinMagnitudeFixed"])
-#        self.vectorsMinMagClicked()  # enable/disable
-#        
-#        self.vectorsMaxMag.setText( str(Configuration.getSetting("MaxMagnitude")))
-#        self.vectorsMaxMagFixedCheckBox.setChecked(self.paramCC3D["MaxMagnitudeFixed"])
-#        self.vectorsMaxMagClicked()  # enable/disable
-#        
-#        self.vectorsLegendNumLabels.setValue(self.paramCC3D["NumberOfLegendBoxesVector"])
-#        self.vectorsLegendAccuracy.setValue(self.paramCC3D["NumberAccuracyVector"])
-#        self.vectorsShowLegendCheckBox.setChecked(self.paramCC3D["LegendEnableVector"])
         
         self.vectorsArrowLength.setValue(self.paramCC3D["ArrowLength"])
         self.vectorsScaleArrowCheckBox.setChecked(self.paramCC3D["ScaleArrowsOn"])
@@ -887,33 +707,13 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.boundingBoxColorButton.setIconSize(pm.size())
         self.boundingBoxColorButton.setIcon(QIcon(pm))
 
-#        configuration=self.editorWindow.configuration
-#        self.tabSpacesCheckBox.setChecked(configuration.setting("UseTabSpaces"))
+
     
-    def initParams(self):  # rwh: why the heck should we do this?
-#        print MODULENAME, ' initParams -------------------'
-        # Output tab
-        paramList = ["ImageOutputOn","LatticeOutputOn","ScreenUpdateFrequency","SaveImageFrequency",'Screenshot_X','Screenshot_Y',
-                     "UseInternalConsole","ClosePlayerAfterSimulationDone","OutputToProjectOn",'NumberOfRecentSimulations']
-        # Colors tab: cell type, borders, etc
-        paramList += ["TypeColorMap","BorderColor","ClusterBorderColor","ContourColor","BrushColor",
-                      "PenColor","Types3DInvisible","CellGlyphScaleByVolumeOn","CellGlyphScale","CellGlyphThetaRes","CellGlyphPhiRes"]
-        # Field tab
-        paramList += ["MinRange","MinRangeFixed","MaxRange","MaxRangeFixed","NumberAccuracy","NumberOfLegendBoxes",
-                      "LegendEnable","ScalarIsoValues","NumberOfContourLines"]
-#                      "LegendEnable","ScalarIsoValues","ContoursOn","NumberOfContourLines"]
-        # Field tab
-#        paramList += ["ArrowColor","ArrowLength","FixedArrowColorOn","LegendEnableVector","ScaleArrowsOn",
-#                      "NumberAccuracyVector","NumberOfLegendBoxesVector","OverlayVectorsOn",
-#                      "MaxMagnitude","MaxMagnitudeFixed","MinMagnitude","MinMagnitudeFixed"]
-        paramList += ["ArrowColor","ArrowLength","FixedArrowColorOn","ScaleArrowsOn","OverlayVectorsOn"]
-        
-        # 3D
-        paramList += ["BoundingBoxOn","BoundingBoxColor"]
-        for p in paramList:
-            self.paramCC3D[p] = Configuration.getSetting(p)
-#            if p == "TypeColorMap":
-#                print MODULENAME,'  paramCC3D[TypeColorMap]=',self.paramCC3D[p]
-            
-            
-        # rwh: do we also need to set the widgets here, using the params?
+    def initParams(self):  
+        '''
+            this fcn stores current settings for all the keys of Configuration.Configuration.defaultConfigs as a self.paramCC3D dictionary
+        '''
+        for key in Configuration.Configuration.defaultConfigs.keys():
+            self.paramCC3D[key]=Configuration.getSetting(key)
+        return    
+
