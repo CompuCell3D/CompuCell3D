@@ -769,8 +769,7 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         
         if not len(args):
             return None 
-            
-        # # # print 'type(args[0])=',type(args[0])
+                    
         if type(args[0]) is not list: # it is CC3DXMLElement 
             element=args[0]
         else:    
@@ -784,10 +783,10 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         return element.getText() if element else None
         
     def registerXMLElementUpdate(self,*args):
-        element,coreElement=self.getXMLElementAndModuleRoot(*args,cc3dModule=None)         
+        '''this function registers core module XML Element from wchich XML subelement has been fetched.It returns XML subelement 
+        '''
+        element,coreElement=self.getXMLElementAndModuleRoot(*args,returnModuleRoot=True)         
         
-        # # # print 'core element=',coreElement,' coreElementName=',coreElement.getName()
-        # # # print ' element=',element,'element name=',element.getName()
         coreNameComposite=coreElement.getName()
         if coreElement.findAttribute('Name'):
             coreNameComposite+=coreElement.getAttribute('Name')            
@@ -848,11 +847,7 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             
         numberOfModules=moduleDict['NumberOfModules']    
         del moduleDict['NumberOfModules']
-        # # # print 'self.__modulesToUpdateDict[currentMCS]=',self.__modulesToUpdateDict[currentMCS]
-        # 'sorting ' dictionary by value (i.e. the order in which elements were added)
-        # # # print 'moduleDict.iteritems() =',moduleDict.iteritems() 
-        # # # for item1,item2 in moduleDict.iteritems():
-            # # # print 'items=',item1,' ',item2
+
             
         # [1][1] refers to number denoting the order in which module was added            
         # [1][1] refers to added element with order number being [1][1]            
@@ -861,9 +856,6 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         # # # print 'list_of_tuples=',list_of_tuples    
         for elem_tuple in list_of_tuples:
             self.simulator.updateCC3DModule(elem_tuple[1][0])
-            # # # print 'UPDATING ',elem_tuple[1][0].getName()
-        # for moduleElem in moduleDict.keys():
-            # self.simulator.updateCC3DModule(moduleElem)
         
     def  getXMLElementAndModuleRoot(self,*args,**kwds):
         ''' This fcn fetches xml element value and returns it as text. Potts, Plugin and steppable are special names and roots of these elements are fetched using simulator
@@ -904,17 +896,15 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
                             break
                         counter+=1    
                 else:
-                    print 'XML FETCH=',arg
+                    # print 'XML FETCH=',arg
                     attrDict=None
                     if len(arg)>=3:
                         attrDict={}
-                        for tuple in izip(arg[1::2],arg[2::2]):
-
+                        for tuple in izip(arg[1::2],arg[2::2]):                            
                             if attrDict.has_key(tuple[0]):
                                 raise LookupError ('Duplicate attribute name in the access path '+str(args))
                             else:
-                                attrDict[tuple[0]]=tuple[1]
-                        print 'attrDict=',attrDict
+                                attrDict[tuple[0]]=tuple[1]                        
                         attrDict=d2mss(attrDict)
                         # attrDict=d2mss(dict((tuple[0],tuple[1]) for tuple in izip(arg[1::2],arg[2::2])))
                         
@@ -925,7 +915,7 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         if tmpElement is None:
             raise LookupError('Could not find element With the following access path', args)
         
-        if 'cc3dModule' in kwds.keys():
+        if 'returnModuleRoot' in kwds.keys():
             return tmpElement,coreModuleElement
             
         return tmpElement,None                
