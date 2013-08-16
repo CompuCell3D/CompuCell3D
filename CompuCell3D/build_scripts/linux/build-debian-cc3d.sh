@@ -1,4 +1,4 @@
-# example command ./build-debian-cc3d.sh -s=~/CODE_TGIT_NEW -p=~/install_projects/3.7.0 
+# example command ./build-debian-cc3d.sh -s=~/CODE_TGIT -p=~/install_projects/3.7.0 -c=4
 #command line parsing
 
 function run_and_watch_status {
