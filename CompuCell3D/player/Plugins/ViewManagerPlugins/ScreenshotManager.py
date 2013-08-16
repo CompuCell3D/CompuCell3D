@@ -101,8 +101,14 @@ class ScreenshotManager:
         xSize=Configuration.getSetting("Screenshot_X")
         ySize=Configuration.getSetting("Screenshot_Y")
         
+        print 'xSize=',xSize,' ySize=',ySize
+        
         self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().SetSize(xSize,ySize) # default size
         self.screenshotGraphicsWidget.qvtkWidget.resize(xSize,ySize)
+        
+        winsize = self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().GetSize()
+        print 'ADDITIONAL SCREENSHOT WINDOW SIZE=',winsize
+        
 #        print MODULENAME,'  ScreenshotManager: __init__(),   self.screenshotGraphicsWidget=',self.screenshotGraphicsWidget
 #        print MODULENAME,'  ScreenshotManager: __init__(),   self.screenshotGraphicsWidget.winId().__int__()=',self.screenshotGraphicsWidget.winId().__int__()
 #        print
@@ -363,10 +369,18 @@ class ScreenshotManager:
         if not self.screenshotGraphicsWidgetFieldTypesInitialized:
             self.screenshotGraphicsWidget.setFieldTypesComboBox(self.tabViewWidget.fieldTypes)
         
-        # self.screenshotGraphicsWidget.setShown(True)
+        # apparently on linux and most likely OSX we need to resize screenshot window before each screenshot
+        xSize=Configuration.getSetting("Screenshot_X")
+        ySize=Configuration.getSetting("Screenshot_Y")
+        self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().SetSize(xSize,ySize) # default size
+        self.screenshotGraphicsWidget.qvtkWidget.resize(xSize,ySize)
+        
+        
+# self.screenshotGraphicsWidget.setShown(True)
         winsize = self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().GetSize()
         print 'ADDITIONAL SCREENSHOT WINDOW SIZE=',winsize
-        self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().SetSize(winsize[0],winsize[1])
+# # #         self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().SetSize(winsize[0],winsize[1])
+
 #        print MODULENAME,'outputScreenshots(): type(winsize), [0],[1]=',type(winsize),winsize[0],winsize[1]
 #        self.screenshotGraphicsWidget.qvtkWidget.resize(400,400)   # rwh, why?? (if I don't, it defaults to (100,30)
         # self.screenshotGraphicsWidget.qvtkWidget.resize(winsize[0],winsize[1])   # rwh, why?? (if I don't, it defaults to (100,30)        
@@ -387,7 +401,8 @@ class ScreenshotManager:
             scrFullDirName = os.path.join(_generalScreenshotDirectoryName,scrData.screenshotName)
             
             if not os.path.isdir(scrFullDirName):     # will create screenshot directory if directory does not exist
-                print MODULENAME,'   outputScreenshots(): doing os.mkdir on scrFullDirName=',scrFullDirName                os.mkdir(scrFullDirName)
+                print MODULENAME,'   outputScreenshots(): doing os.mkdir on scrFullDirName=',scrFullDirName
+                os.mkdir(scrFullDirName)
                 
             scrFullName = os.path.join(scrFullDirName,scrData.screenshotName+"_"+mcsFormattedNumber+".png")
             

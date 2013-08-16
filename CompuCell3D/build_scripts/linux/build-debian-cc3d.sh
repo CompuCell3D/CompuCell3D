@@ -1,6 +1,24 @@
 # example command ./build-debian-cc3d.sh -s=~/CODE_TGIT_NEW -p=~/install_projects/3.7.0 
 #command line parsing
 
+function run_and_watch_status {
+    # first argument is a task descriptor and is mandatory
+    # the remaining arguments make up a command to execute
+    
+    #executing the command
+    "${@:2}"
+    # querrying its status
+    status=$?
+    echo "STATUS=$status"
+    if [ $status -ne 0 ]; then
+        echo "error with $1"
+        exit
+    fi
+    return $status    
+
+}
+
+
 export BUILD_ROOT=~/BuildCC3D
 export SOURCE_ROOT=~/CODE_TGIT_NEW
 export DEPENDENCIES_ROOT=~/install_projects
@@ -14,6 +32,7 @@ export BUILD_CELLDRAW=NO
 export BUILD_RR=NO
 export BUILD_RR_DEPEND=NO
 export BUILD_ALL=YES
+export MAKE_MULTICORE=1
 
 
 for i in "$@"
@@ -25,6 +44,10 @@ case $i in
     ;;
     -s=*|--source-root=*)
     SOURCE_ROOT=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+    
+    -c=*|--cores=*)
+    MAKE_MULTICORE=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
     ;;
     --cc3d)
     BUILD_ALL=NO
@@ -87,7 +110,7 @@ case $i in
 esac
 done
 
-# exit()
+
 
 if [ "$BUILD_ALL" == YES ]
 then
@@ -125,6 +148,10 @@ echo DEPENDENCIES_ROOT = ${DEPENDENCIES_ROOT}
 
 
 
+echo MAKE_MULTICORE= $MAKE_MULTICORE
+MAKE_MULTICORE_OPTION=-j$MAKE_MULTICORE
+echo OPTION=$MAKE_MULTICORE_OPTION
+
 
 mkdir -p $BUILD_ROOT
 mkdir -p $DEPENDENCIES_ROOT
@@ -135,11 +162,12 @@ then
   mkdir -p $BUILD_ROOT/CompuCell3D
   cd $BUILD_ROOT/CompuCell3D
 
-
-  cmake -G "Unix Makefiles" --build=/home/m/CompuCell3D_build -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $SOURCE_ROOT/CompuCell3D
-  make && make install
+  run_and_watch_status COMPUCELL3D_CMAKE_CONFIG cmake -G "Unix Makefiles" --build=/home/m/CompuCell3D_build -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $SOURCE_ROOT/CompuCell3D 
+  run_and_watch_status COMPUCELL3D_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION   && make install
+  
   ############# END OF BUILDING CC3D
 fi
+
 
 
 if [ "$BUILD_BIONET_DEPEND" == YES ]
@@ -150,14 +178,16 @@ then
 
 
   cp $SOURCE_ROOT/BionetSolver/dependencies/libsbml-3.4.1-src.zip $BUILD_ROOT
-  cd $BUILD_ROOT
+  cd $BUILD_ROOT 
 
   unzip libsbml-3.4.1-src.zip
 
   cd $BUILD_ROOT/libsbml-3.4.1
-  ./configure --prefix=$DEPENDENCIES_ROOT/libsbml-3.4.1
-
-  make && make install
+  run_and_watch_status LIBSBML_CONFIGURE ./configure --prefix=$DEPENDENCIES_ROOT/libsbml-3.4.1
+  
+  # libsbml does not compile well with multi-core option on
+  
+  run_and_watch_status LIBSBML_COMPILE_AND_INSTALL make  && make install
 
   cp $SOURCE_ROOT/BionetSolver/dependencies/sundials-2.3.0.tar.gz $BUILD_ROOT
   cd $BUILD_ROOT
@@ -165,9 +195,9 @@ then
   tar -zxvf sundials-2.3.0.tar.gz
 
   cd $BUILD_ROOT/sundials-2.3.0
-  ./configure --with-pic --prefix=$DEPENDENCIES_ROOT/sundials-2.3.0
+  run_and_watch_status SUNDIALS_CONFIGURE ./configure --with-pic --prefix=$DEPENDENCIES_ROOT/sundials-2.3.0
 
-  make && make install
+  run_and_watch_status SUNDIALS_COMPILE_AND_INSTALL  make $MAKE_MULTICORE_OPTION && make install
   ############# END OF BUILDING SBML AND SUNDIALS BIONET DEPENDENCIES
 fi
 
@@ -181,8 +211,8 @@ then
   cd $BUILD_ROOT/BionetSolver
 
 
-  cmake -G "Unix Makefiles" -DLIBSBML_INSTALL_DIR:PATH=$DEPENDENCIES_ROOT/libsbml-3.4.1 -DSUNDIALS_INSTALL_DIR:PATH=$DEPENDENCIES_ROOT/sundials-2.3.0 -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $BIONET_SOURCE
-  make && make install
+  run_and_watch_status BIONET_CMAKE_CONFIG cmake -G "Unix Makefiles" -DLIBSBML_INSTALL_DIR:PATH=$DEPENDENCIES_ROOT/libsbml-3.4.1 -DSUNDIALS_INSTALL_DIR:PATH=$DEPENDENCIES_ROOT/sundials-2.3.0 DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $BIONET_SOURCE
+  run_and_watch_status BIONET_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION && make install
 
   ############# END OF BUILDING  BIONET 
 fi
@@ -196,8 +226,8 @@ then
   cd $BUILD_ROOT/CellDraw
 
 
-  cmake -G "Unix Makefiles"  -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $CELLDRAW_SOURCE
-  make && make install
+  run_and_watch_status CELLDRAW_CMAKE_CONFIG cmake -G "Unix Makefiles"  -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $CELLDRAW_SOURCE
+  run_and_watch_status CELLDRAW_COMPILE_AND_INSTALL make && make install
   ############# END OF  CELLDRAW 
 fi
 
@@ -206,6 +236,7 @@ then
   ############# BUILDING CC3D
   mkdir -p $BUILD_ROOT/RRDepend
   cd $BUILD_ROOT/RRDepend
+  
 
   #checking if kernel is 32 or 64 bit
   BITS=$( getconf LONG_BIT )
@@ -214,16 +245,16 @@ then
 
   OPTIMIZATION_FLAGS= 
 
-  if [ $BITS -eq 64 ]
+  if [ ! $BITS -eq 64 ]
   then
-      OPTIMIZATION_FLAGS=-DCMAKE_C_FLAGS_RELEASE:STRING='-O0 -DNDEBUG'
-  else
-      OPTIMIZATION_FLAGS= 
+      
+      # since you cannot pass cmake options that have spaces to cmake command line the alternatice is to prepare initial CmakeCache.txt file and put those options there...
+      echo 'CMAKE_C_FLAGS_RELEASE=-O0 -DNDEBUG'>>CMakeCache.txt
   fi  
   
 
-  cmake -G "Unix Makefiles" ${OPTIMIZATION_FLAGS} -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_PREFIX}_RR -DCMAKE_BUILD_TYPE:STRING=Release $SOURCE_ROOT/RoadRunner/ThirdParty 
-  make VERBOSE=1 && make install
+  run_and_watch_status THIRD_PARTY_CMAKE_CONFIG cmake -G "Unix Makefiles"  -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_PREFIX}_RR -DCMAKE_BUILD_TYPE:STRING=Release $SOURCE_ROOT/RoadRunner/ThirdParty 
+  run_and_watch_status THIRD_PARTY_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION VERBOSE=1 && make install
   ############# END OF BUILDING CC3D
 fi
 
@@ -234,7 +265,7 @@ then
   cd $BUILD_ROOT/RR
 
 
-  cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_PREFIX}_RR -DBUILD_CC3D_EXTENSION:BOOL=ON -DTHIRD_PARTY_INSTALL_FOLDER:PATH=${INSTALL_PREFIX}_RR -DCC3D_INSTALL_PREFIX:PATH=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE:STRING=Release $SOURCE_ROOT/RoadRunner 
-  make VERBOSE=1 && make install
+  run_and_watch_status RR_CMAKE_CONFIG cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_PREFIX}_RR -DBUILD_CC3D_EXTENSION:BOOL=ON -DTHIRD_PARTY_INSTALL_FOLDER:PATH=${INSTALL_PREFIX}_RR -DCC3D_INSTALL_PREFIX:PATH=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE:STRING=Release $SOURCE_ROOT/RoadRunner 
+  run_and_watch_status RR_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION VERBOSE=1 && make install
   ############# END OF BUILDING CC3D
 fi
