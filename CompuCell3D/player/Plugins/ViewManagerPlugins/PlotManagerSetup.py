@@ -25,7 +25,8 @@ def checkSupportForPlotting(_useVTKFlag=False):
             PyQwtFlag=True
         except ImportError:
             PyQwtFlag=False
-        
+
+    vtkPlotFlag=False
     try:
         import vtk
         if (vtk.vtkVersion.GetVTKMajorVersion() >= 5) and (vtk.vtkVersion.GetVTKMinorVersion() >= 8):  # need to verify this
