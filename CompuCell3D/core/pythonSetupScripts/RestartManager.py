@@ -48,10 +48,10 @@ class RestartManager:
     def prepareRestarter(self):
         import re
         import CompuCellSetup   
-        if re.match(".*\.cc3d$", CompuCellSetup.simulationFileName):
+        if re.match(".*\.cc3d$", str(CompuCellSetup.simulationFileName)):
             import CC3DSimulationDataHandler        
             cc3dSimulationDataHandler=CC3DSimulationDataHandler.CC3DSimulationDataHandler()
-            cc3dSimulationDataHandler.readCC3DFileFormat(CompuCellSetup.simulationFileName)
+            cc3dSimulationDataHandler.readCC3DFileFormat(str(CompuCellSetup.simulationFileName))
             
             # checking is serializer resource exists
             if cc3dSimulationDataHandler.cc3dSimulationData.serializerResource:
@@ -77,11 +77,11 @@ class RestartManager:
         # f=open('simcheck.dat','w')
         # print >>f,"REASTART MANAGER CompuCellSetup.simulationFileName=",CompuCellSetup.simulationFileName
         # f.close()
-        if re.match(".*\.cc3d$", CompuCellSetup.simulationFileName):
+        if re.match(".*\.cc3d$", str(CompuCellSetup.simulationFileName)):
             print "EXTRACTING restartEnabled"
             import CC3DSimulationDataHandler        
             cc3dSimulationDataHandler=CC3DSimulationDataHandler.CC3DSimulationDataHandler()
-            cc3dSimulationDataHandler.readCC3DFileFormat(CompuCellSetup.simulationFileName)
+            cc3dSimulationDataHandler.readCC3DFileFormat(str(CompuCellSetup.simulationFileName))
             # print "cc3dSimulationDataHandler.cc3dSimulationData.serializerResource=",cc3dSimulationDataHandler.cc3dSimulationData.serializerResource.restartDirectory
             return cc3dSimulationDataHandler.cc3dSimulationData.restartEnabled()
         return False    
@@ -112,8 +112,8 @@ class RestartManager:
         restartOutputPath=''
         simFilesOutputPath=''
         if self.cc3dSimOutputDir=='':
-            if CompuCellSetup.simulationFileName!='':        
-                (self.cc3dSimOutputDir, baseScreenshotName) = CompuCellSetup.makeSimDir(CompuCellSetup.simulationFileName)
+            if str(CompuCellSetup.simulationFileName)!='':        
+                (self.cc3dSimOutputDir, baseScreenshotName) = CompuCellSetup.makeSimDir(str(CompuCellSetup.simulationFileName))
                 CompuCellSetup.screenshotDirectoryName=self.cc3dSimOutputDir                
                 
                 
@@ -142,11 +142,11 @@ class RestartManager:
                 
         # we only copy simulation files if simulation run in in the .cc3d format                
         import re
-        if re.match(".*\.cc3d$", CompuCellSetup.simulationFileName):
+        if re.match(".*\.cc3d$", str(CompuCellSetup.simulationFileName)):
             import CC3DSimulationDataHandler
         
             cc3dSimulationDataHandler=CC3DSimulationDataHandler.CC3DSimulationDataHandler()
-            cc3dSimulationDataHandler.readCC3DFileFormat(CompuCellSetup.simulationFileName)
+            cc3dSimulationDataHandler.readCC3DFileFormat(str(CompuCellSetup.simulationFileName))
             #copying  verbatim simulation files
             if not self.__baseSimulationFilesCopied:
                 cc3dSimulationDataHandler.copySimulationDataFiles(self.cc3dSimOutputDir)                
@@ -157,7 +157,7 @@ class RestartManager:
                 cc3dSimulationDataHandler.copySimulationDataFiles(simFilesOutputPath)
                 cc3dSimulationDataHandlerLocal=CC3DSimulationDataHandler.CC3DSimulationDataHandler()
                 
-                simBaseName = os.path.basename(CompuCellSetup.simulationFileName)
+                simBaseName = os.path.basename(str(CompuCellSetup.simulationFileName))
                 #path to newly copied simulation file
                 simFullName=os.path.join(simFilesOutputPath,simBaseName)
                 #read newly copied simulation file - we will add restart tags to it
@@ -302,14 +302,14 @@ class RestartManager:
         
         print  "\n\n\n\n REASTART MANAGER CompuCellSetup.simulationFileName=",CompuCellSetup.simulationFileName
         
-        if re.match(".*\.cc3d$", CompuCellSetup.simulationFileName):
+        if re.match(".*\.cc3d$", str(CompuCellSetup.simulationFileName)):
             print "EXTRACTING restartEnabled"
             import CC3DSimulationDataHandler        
             cc3dSimulationDataHandler=CC3DSimulationDataHandler.CC3DSimulationDataHandler()
-            cc3dSimulationDataHandler.readCC3DFileFormat(CompuCellSetup.simulationFileName)
+            cc3dSimulationDataHandler.readCC3DFileFormat(str(CompuCellSetup.simulationFileName))
             print "cc3dSimulationDataHandler.cc3dSimulationData.serializerResource=",cc3dSimulationDataHandler.cc3dSimulationData.serializerResource.restartDirectory
             if cc3dSimulationDataHandler.cc3dSimulationData.serializerResource.restartDirectory!='':
-                restartFileLocation=os.path.dirname(CompuCellSetup.simulationFileName)
+                restartFileLocation=os.path.dirname(str(CompuCellSetup.simulationFileName))
                 self.__restartDirectory=os.path.join(restartFileLocation,'restart')
                 self.__restartDirectory=os.path.abspath(self.__restartDirectory) # normalizing path format
                 
