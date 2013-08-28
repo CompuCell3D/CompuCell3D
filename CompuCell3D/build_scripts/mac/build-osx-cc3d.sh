@@ -1,4 +1,4 @@
-# example command ./build-osx-cc3d.sh -s=~/CODE_TGIT -p=~/install_projects/3.7.0 -c=4
+# example command ./build-osx-cc3d.sh -s=~/CC3D_GIT -p=~/install_projects/CC3D_3.7.0 -r=~/RR_OSX -d=/Users/Shared/CC3Ddev/Dependencies -b=CC3D_3.7.0_MacOSX_10.8 -c=4
 #command line parsing
 
 function run_and_watch_status {
@@ -19,14 +19,16 @@ function run_and_watch_status {
 }
 
 
-export BUILD_ROOT=~/BuildCC3D
-export SOURCE_ROOT=~/CODE_TGIT_NEW
-export DEPENDENCIES_ROOT=~/install_projects
+export BUILD_ROOT=
+export SOURCE_ROOT=~/CC3D_GIT
+export DEPENDENCIES_ROOT=
 export INSTALL_PREFIX=~/install_projects/cc3d
+export RR_SOURCE_ROOT=~/RR_OSX
 #mac variables
 export GCC_DIR=/Users/Shared/CC3Ddev/gcc_4.7.1
 export VTK_BIN_AND_BUILD_DIR=/Users/Shared/CC3Ddev/VTK_5.8.0_bin_and_build
-
+export MAC_DEPS=/Users/Shared/CC3Ddev/Dependencies/
+export OUTPUT_BINARY_NAME=CC3D_3.7.0_MacOSX_10.8
 
 export BUILD_CC3D=NO
 export BUILD_BIONET=NO
@@ -48,6 +50,18 @@ case $i in
     -s=*|--source-root=*)
     SOURCE_ROOT=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
     ;;
+
+    -r=*|--rr-source-root=*)
+    RR_SOURCE_ROOT=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+
+    -d=*|--mac-dependencies=*)
+    MAC_DEPS=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+    -b=*|--output-binary-name=*)
+    OUTPUT_BINARY_NAME=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+
     
     -c=*|--cores=*)
     MAKE_MULTICORE=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
@@ -78,17 +92,15 @@ case $i in
     ;;
     --help)
     
-    echo "build-debian-cc3d.sh <OPTIONS>"
+    echo "build-osx-cc3d.sh <OPTIONS>"
     echo
     echo "OPTIONS:"
     echo
     echo "-p=<dir> | --prefix=<dir> : cc3d installation prefix (target directory) | default ~/install_projects/cc3d"
     echo
-    echo "-b=<dir> | --build_root=<dir> : temporary directory for object files (aka compiler output) | default ~/BuildCC3D"
+    echo "-r=<dir> | --rr-source-root=<dir> : RoadRunner Source"
     echo
-    echo "-s=<dir> | --source_root=<dir> : root directory of CC3D GIT repository "
-    echo
-    echo "-d=<dir> | --dependencies_root=<dir> : root directory where dependencies will be installed (used mainly  for bionet dependencies) | default ~/install_projects"
+    echo "-s=<dir> | --source-root=<dir> : root directory of CC3D GIT repository "
     echo
     echo "specifying options below will allow for selection of specific projects to build."
     echo  "If you are rebuilding CompuCell3D by picking specific projects you will shorten build time"
@@ -159,6 +171,7 @@ echo OPTION=$MAKE_MULTICORE_OPTION
 mkdir -p $BUILD_ROOT
 mkdir -p $DEPENDENCIES_ROOT
 
+
 if [ "$BUILD_CC3D" == YES ]
 then
   ############# BUILDING CC3D
@@ -166,110 +179,153 @@ then
   cd $BUILD_ROOT/CompuCell3D
 
   run_and_watch_status COMPUCELL3D_CMAKE_CONFIG cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.6 -DPYTHON_EXECUTABLE:FILEPATH=/usr/bin/python2.6 -DPYTHON_INCLUDE_DIR:PATH=/System/Library/Frameworks/Python.framework/Versions/2.6/Headers -DEIGEN3_INCLUDE_DIR=${SOURCE_ROOT}/CompuCell3D/core/Eigen -DPYTHON_LIBRARY:FILEPATH=/usr/lib/libpython2.6.dylib -DCMAKE_C_COMPILER:FILEPATH=${GCC_DIR}/bin/gcc -DCMAKE_CXX_COMPILER:FILEPATH=${GCC_DIR}/bin/g++ PATH=$INSTALL_PREFIX  -DVTK_DIR:PATH=${VTK_BIN_AND_BUILD_DIR}/lib/vtk-5.8 -DCMAKE_CXX_FLAGS="-mmacosx-version-min=10.6 -O3 -g -fpermissive -m64" -DCMAKE_C_FLAGS="-mmacosx-version-min=10.6 -O3 -g -fpermissive -m64" $SOURCE_ROOT/CompuCell3D
-  # run_and_watch_status COMPUCELL3D_CMAKE_CONFIG cmake -G "Unix Makefiles" --build=/home/m/CompuCell3D_build -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $SOURCE_ROOT/CompuCell3D 
   run_and_watch_status COMPUCELL3D_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION  && make install
   
   ############# END OF BUILDING CC3D
 fi
 
 
+################### INSTALLING DEPENDENCIES
 
-# if [ "$BUILD_BIONET_DEPEND" == YES ]
-# then
-#   ############# BUILDING SBML AND SUNDIALS BIONET DEPENDENCIES
-#   export CXXFLAGS=-fPIC
-#   export CFLAGS=-fPIC
+cp -a ${MAC_DEPS}/* ${INSTALL_PREFIX}
+
+################### END OF INSTALLING DEPENDENCIES
 
 
-#   cp $SOURCE_ROOT/BionetSolver/dependencies/libsbml-3.4.1-src.zip $BUILD_ROOT
-#   cd $BUILD_ROOT 
+if [ "$BUILD_BIONET_DEPEND" == YES ]
+then
+  ############# BUILDING SBML AND SUNDIALS BIONET DEPENDENCIES
+  export CXXFLAGS="-fPIC -arch x86_64 -arch i386"
+  export CFLAGS="-fPIC -arch x86_64 -arch i386"
+  export LDFLAGS="-arch x86_64 -arch i386" 
 
-#   unzip libsbml-3.4.1-src.zip
+  cp $SOURCE_ROOT/BionetSolver/dependencies/libsbml-3.4.1-src.zip $BUILD_ROOT
+  cd $BUILD_ROOT 
 
-#   cd $BUILD_ROOT/libsbml-3.4.1
-#   run_and_watch_status LIBSBML_CONFIGURE ./configure --prefix=$DEPENDENCIES_ROOT/libsbml-3.4.1
+  unzip libsbml-3.4.1-src.zip
+
+  cd $BUILD_ROOT/libsbml-3.4.1
+  run_and_watch_status LIBSBML_CONFIGURE ./configure --prefix=$DEPENDENCIES_ROOT/libsbml-3.4.1
   
-#   # libsbml does not compile well with multi-core option on
+  # libsbml does not compile well with multi-core option on
   
-#   run_and_watch_status LIBSBML_COMPILE_AND_INSTALL make  && make install
+  run_and_watch_status LIBSBML_COMPILE_AND_INSTALL make  && make install
 
-#   cp $SOURCE_ROOT/BionetSolver/dependencies/sundials-2.3.0.tar.gz $BUILD_ROOT
-#   cd $BUILD_ROOT
+  cp $SOURCE_ROOT/BionetSolver/dependencies/sundials-2.3.0.tar.gz $BUILD_ROOT
+  cd $BUILD_ROOT
 
-#   tar -zxvf sundials-2.3.0.tar.gz
+  tar -zxvf sundials-2.3.0.tar.gz
 
-#   cd $BUILD_ROOT/sundials-2.3.0
-#   run_and_watch_status SUNDIALS_CONFIGURE ./configure --with-pic --prefix=$DEPENDENCIES_ROOT/sundials-2.3.0
+  cd $BUILD_ROOT/sundials-2.3.0
+  run_and_watch_status SUNDIALS_CONFIGURE ./configure --with-pic --prefix=$DEPENDENCIES_ROOT/sundials-2.3.0
 
-#   run_and_watch_status SUNDIALS_COMPILE_AND_INSTALL  make $MAKE_MULTICORE_OPTION && make install
-#   ############# END OF BUILDING SBML AND SUNDIALS BIONET DEPENDENCIES
-# fi
+  run_and_watch_status SUNDIALS_COMPILE_AND_INSTALL  make $MAKE_MULTICORE_OPTION && make install
 
-# if [ "$BUILD_BIONET_DEPEND" == YES ]
-# then
-#   ############# BUILDING  BIONET 
+  # reset flags
+  CXXFLAGS=
+  CFLAGS= 
+  LDFLAGS=
+  ############# END OF BUILDING SBML AND SUNDIALS BIONET DEPENDENCIES
+fi
 
-#   export BIONET_SOURCE=$SOURCE_ROOT/BionetSolver/0.0.6
+if [ "$BUILD_BIONET_DEPEND" == YES ]
+then
+  ############# BUILDING  BIONET 
 
-#   mkdir -p $BUILD_ROOT/BionetSolver
-#   cd $BUILD_ROOT/BionetSolver
+  export BIONET_SOURCE=$SOURCE_ROOT/BionetSolver/0.0.6
 
-
-#   run_and_watch_status BIONET_CMAKE_CONFIG cmake -G "Unix Makefiles" -DLIBSBML_INSTALL_DIR:PATH=$DEPENDENCIES_ROOT/libsbml-3.4.1 -DSUNDIALS_INSTALL_DIR:PATH=$DEPENDENCIES_ROOT/sundials-2.3.0 DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $BIONET_SOURCE
-#   run_and_watch_status BIONET_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION && make install
-
-#   ############# END OF BUILDING  BIONET 
-# fi
-
-# if [ "$BUILD_CELLDRAW" == YES ]
-# then
-#   ############# BUILDING  CELLDRAW 
-#   export CELLDRAW_SOURCE=$SOURCE_ROOT/CellDraw/1.5.1
-
-#   mkdir -p $BUILD_ROOT/CellDraw
-#   cd $BUILD_ROOT/CellDraw
+  mkdir -p $BUILD_ROOT/BionetSolver
+  cd $BUILD_ROOT/BionetSolver
 
 
-#   run_and_watch_status CELLDRAW_CMAKE_CONFIG cmake -G "Unix Makefiles"  -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $CELLDRAW_SOURCE
-#   run_and_watch_status CELLDRAW_COMPILE_AND_INSTALL make && make install
-#   ############# END OF  CELLDRAW 
-# fi
+  run_and_watch_status BIONET_CMAKE_CONFIG cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.6 -DPYTHON_EXECUTABLE:FILEPATH=/usr/bin/python2.6 -DPYTHON_INCLUDE_DIR:PATH=/System/Library/Frameworks/Python.framework/Versions/2.6/Headers -DEIGEN3_INCLUDE_DIR=${SOURCE_ROOT}/CompuCell3D/core/Eigen -DPYTHON_LIBRARY:FILEPATH=/usr/lib/libpython2.6.dylib -DCMAKE_C_COMPILER:FILEPATH=${GCC_DIR}/bin/gcc -DCMAKE_CXX_COMPILER:FILEPATH=${GCC_DIR}/bin/g++ PATH=$INSTALL_PREFIX  -DVTK_DIR:PATH=${VTK_BIN_AND_BUILD_DIR}/lib/vtk-5.8 -DCMAKE_CXX_FLAGS="-mmacosx-version-min=10.6 -O3 -g -fpermissive -m64" -DCMAKE_C_FLAGS="-mmacosx-version-min=10.6 -O3 -g -fpermissive -m64" -DLIBSBML_INSTALL_DIR:PATH=$DEPENDENCIES_ROOT/libsbml-3.4.1 -DSUNDIALS_INSTALL_DIR:PATH=$DEPENDENCIES_ROOT/sundials-2.3.0 DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $BIONET_SOURCE
+  # -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.6 -DPYTHON_EXECUTABLE:FILEPATH=/usr/bin/python2.6 -DPYTHON_INCLUDE_DIR:PATH=/System/Library/Frameworks/Python.framework/Versions/2.6/Headers -DEIGEN3_INCLUDE_DIR=${SOURCE_ROOT}/CompuCell3D/core/Eigen -DPYTHON_LIBRARY:FILEPATH=/usr/lib/libpython2.6.dylib -DCMAKE_C_COMPILER:FILEPATH=${GCC_DIR}/bin/gcc -DCMAKE_CXX_COMPILER:FILEPATH=${GCC_DIR}/bin/g++ PATH=$INSTALL_PREFIX  -DVTK_DIR:PATH=${VTK_BIN_AND_BUILD_DIR}/lib/vtk-5.8 -DCMAKE_CXX_FLAGS="-mmacosx-version-min=10.6 -O3 -g -fpermissive -m64" -DCMAKE_C_FLAGS="-mmacosx-version-min=10.6 -O3 -g -fpermissive -m64"
+  run_and_watch_status BIONET_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION && make install
 
-# if [ "$BUILD_RR_DEPEND" == YES ]
-# then
-#   ############# BUILDING CC3D
-#   mkdir -p $BUILD_ROOT/RRDepend
-#   cd $BUILD_ROOT/RRDepend
+  ############# END OF BUILDING  BIONET 
+fi
+
+if [ "$BUILD_CELLDRAW" == YES ]
+then
+  ############# BUILDING  CELLDRAW 
+  export CELLDRAW_SOURCE=$SOURCE_ROOT/CellDraw/1.5.1
+
+  mkdir -p $BUILD_ROOT/CellDraw
+  cd $BUILD_ROOT/CellDraw
+
+
+  run_and_watch_status CELLDRAW_CMAKE_CONFIG cmake -G "Unix Makefiles"  -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $CELLDRAW_SOURCE
+  run_and_watch_status CELLDRAW_COMPILE_AND_INSTALL make && make install
+  ############# END OF  CELLDRAW 
+fi
+
+
+
+if [ "$BUILD_RR_DEPEND" == YES ]
+then
+  ############# BUILDING CC3D
+  mkdir -p $BUILD_ROOT/RRDepend
+  cd $BUILD_ROOT/RRDepend
+  export CC=${GCC_DIR}/bin/gcc
+  export CXX=${GCC_DIR}/bin/g++
+
+
+  run_and_watch_status THIRD_PARTY_CMAKE_CONFIG cmake -G "Unix Makefiles"  -DCMAKE_OSX_ARCHITECTURES="x86_64" -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_PREFIX}_RR -DCMAKE_BUILD_TYPE:STRING=Release ${RR_SOURCE_ROOT}/third_party 
+  run_and_watch_status THIRD_PARTY_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION VERBOSE=1 && make install
   
 
-#   #checking if kernel is 32 or 64 bit
-#   BITS=$( getconf LONG_BIT )
+  CC=
+  CXX=
 
-#   echo BITS = $BITS
+  ############# END OF BUILDING CC3D
+fi
 
-#   OPTIMIZATION_FLAGS= 
+if [ "$BUILD_RR" == YES ]
+then
+  ############# BUILDING CC3D
+  mkdir -p $BUILD_ROOT/RR
+  cd $BUILD_ROOT/RR
 
-#   if [ ! $BITS -eq 64 ]
-#   then
-      
-#       # since you cannot pass cmake options that have spaces to cmake command line the alternatice is to prepare initial CmakeCache.txt file and put those options there...
-#       echo 'CMAKE_C_FLAGS_RELEASE=-O0 -DNDEBUG'>>CMakeCache.txt
-#   fi  
-  
-
-#   run_and_watch_status THIRD_PARTY_CMAKE_CONFIG cmake -G "Unix Makefiles"  -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_PREFIX}_RR -DCMAKE_BUILD_TYPE:STRING=Release $SOURCE_ROOT/RoadRunner/ThirdParty 
-#   run_and_watch_status THIRD_PARTY_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION VERBOSE=1 && make install
-#   ############# END OF BUILDING CC3D
-# fi
-
-# if [ "$BUILD_RR" == YES ]
-# then
-#   ############# BUILDING CC3D
-#   mkdir -p $BUILD_ROOT/RR
-#   cd $BUILD_ROOT/RR
+  export CC=${GCC_DIR}/bin/gcc
+  export CXX=${GCC_DIR}/bin/g++
 
 
-#   run_and_watch_status RR_CMAKE_CONFIG cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_PREFIX}_RR -DBUILD_CC3D_EXTENSION:BOOL=ON -DTHIRD_PARTY_INSTALL_FOLDER:PATH=${INSTALL_PREFIX}_RR -DCC3D_INSTALL_PREFIX:PATH=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE:STRING=Release $SOURCE_ROOT/RoadRunner 
-#   run_and_watch_status RR_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION VERBOSE=1 && make install
-#   ############# END OF BUILDING CC3D
-# fi
+  run_and_watch_status RR_CMAKE_CONFIG cmake -G "Unix Makefiles" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DPYTHON_EXECUTABLE:PATH="/usr/bin/python2.6" -DPYTHON_INCLUDE_DIR:PATH="/System/Library/Frameworks/Python.framework/Versions/2.6/Headers" -DPYTHON_LIBRARY="/usr/lib/libpython2.6.dylib" -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_PREFIX}_RR -DBUILD_CC3D_EXTENSION:BOOL=ON -DTHIRD_PARTY_INSTALL_FOLDER:PATH=${INSTALL_PREFIX}_RR -DCC3D_INSTALL_PREFIX:PATH=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE:STRING=Release ${RR_SOURCE_ROOT} 
+  run_and_watch_status RR_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION VERBOSE=1 && make install
+
+  CC=
+  CXX=
+
+  ############# END OF BUILDING CC3D
+fi
+
+################### BUILDING ZIP-BASED INSTALLER
+
+
+cd $INSTALL_PREFIX
+cd ..
+# date
+
+
+DATE_FORMAT=$(date +"%Y%m%d")
+echo $DATE_FORMAT
+CC3D_ARCHIVE=${OUTPUT_BINARY_NAME}_${DATE_FORMAT}.zip
+echo CC3D_ARCHIVE $CC3D_ARCHIVE
+
+rm -f ${CC3D_ARCHIVE}
+run_and_watch_status ZIPPING_BINARY ditto -c -k --keepParent -rsrcFork $INSTALL_PREFIX ${CC3D_ARCHIVE}
+
+################### END OF BUILDING ZIP-BASED INSTALLER
+
+
+
+# DATE_FORMAT= eval date +"%Y%m%d"
+# echo THIS IS DATE FORMAT ${DATE_FORMAT}
+
+# # echo ${OUTPUT_BINARY_NAME}_${DATE_FORMAT}.zip
+
+# # CC3D_ARCHIVE="${OUTPUT_BINARY_NAME}_${DATE_FORMAT}.zip"
+# CC3D_ARCHIVE="${DATE_FORMAT}"
+# echo CC3D_ARCHIVE_NAME ${CC3D_ARCHIVE}
+# rm -f ${CC3D_ARCHIVE}
+# # run_and_watch_status ZIPPING_BINARY  zip -r ${OUTPUT_BINARY_NAME}_${DATE_FORMAT}.zip $INSTALL_PREFIX

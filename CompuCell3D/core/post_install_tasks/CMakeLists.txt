@@ -44,7 +44,25 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/runScript.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})  
   INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/twedit++.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})  
   
- 
+elseif (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)  
+        
+        SET(MAC_PATH ${CMAKE_CURRENT_SOURCE_DIR}/mac)                                                    
+
+        FILE(GLOB mac_command_files "${MAC_PATH}/*.command")
+        # message("mac_command_files=" ${mac_command_files})
+        INSTALL(FILES ${mac_command_files} DESTINATION ${CMAKE_INSTALL_PREFIX}    
+          PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE  WORLD_READ WORLD_WRITE WORLD_EXECUTE
+          )
+
+
+    if(BUILD_CPP_ONLY_EXECUTABLE)
+      configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cc3dScript.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/cc3dScript.sh @ONLY)
+        INSTALL(FILES  
+            ${CMAKE_BINARY_DIR}/post_install_tasks/cc3dScript.sh
+            DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_WRITE WORLD_EXECUTE
+        )
+
+    endif(BUILD_CPP_ONLY_EXECUTABLE) 
   
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     # configure_file(${CMAKE_CURRENT_SOURCE_DIR}/compucell3d_old.sh.in.linux ${CMAKE_BINARY_DIR}/compucell3d_old.sh @ONLY)
