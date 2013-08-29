@@ -21,6 +21,8 @@
 #include <vtkLookupTable.h>
 #include <vtkSmartPointer.h>
 #include <vtkDoubleArray.h>
+#include <vtkSphereSource.h>
+#include <vtkGlyph3D.h>
 
 #include <Windows.h>
 #include <Components/CellFactoryCM.h>
@@ -175,7 +177,7 @@ int main(int argc, char *argv[]){
 	CellInventoryCM  *ci=makeCellInventory(ifile, *cf);//allocated with new withing a function
 	cout<<ci->getSize()<<" cells have been added to the inventory"<<endl;
 
-
+	
 	std::pair<Vector3, Vector3> bBox=detectBoundingBox(*ci);
 	cout<<"cells are enclosed in a bounding box "<<bBox.first<<"x"<<bBox.second<<endl;
 
@@ -196,15 +198,24 @@ int main(int argc, char *argv[]){
 	vtkSmartPointer<vtkPolyData> pointsPolydata =genPolydata(*ci);
 	cout<<pointsPolydata->GetNumberOfCells()<<" cells are put into a vtkPolydata object"<<endl;
 
+	vtkSmartPointer<vtkSphereSource> sphereSource=vtkSphereSource::New();
+	sphereSource->SetRadius(2);
+	//sphere.SetRadius(10);
+	
+	vtkSmartPointer<vtkGlyph3D> glyph=vtkGlyph3D::New();
+	glyph->SetInput(pointsPolydata);
+	glyph->SetSource(sphereSource->GetOutput());
+
+
 	// map to graphics library 
-    vtkPolyDataMapper *map = vtkPolyDataMapper::New(); 
-	map->SetInput(pointsPolydata);
+    vtkSmartPointer<vtkPolyDataMapper> map = vtkPolyDataMapper::New(); 
+	map->SetInput(glyph->GetOutput());
 		
 	
 	// actor coordinates geometry, properties, transformation 
 	vtkSmartPointer<vtkActor> actor = vtkActor::New(); 
 	actor->SetMapper(map); 
-	actor->GetProperty()->SetPointSize(10);
+	//actor->GetProperty()->SetPointSize(10);
 	actor->GetProperty()->SetColor(0,0,1); 
 
 	vtkSmartPointer<vtkRenderWindow> renderWindow =vtkSmartPointer<vtkRenderWindow>::New();
