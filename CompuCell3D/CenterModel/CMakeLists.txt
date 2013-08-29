@@ -31,6 +31,10 @@
   # # ${MOC_FILES}
   # )
 
+FIND_PACKAGE(VTK REQUIRED)
+
+INCLUDE(${VTK_USE_FILE})
+
 ADD_SUBDIRECTORY(Components)  
  
 SET(LIBS 
@@ -44,6 +48,8 @@ INCLUDE_DIRECTORIES (
     ${COMPUCELL3D_SOURCE_DIR}/core
     ${COMPUCELL3D_SOURCE_DIR}/CenterModel
     )
+	
+configure_file(cells.txt cells.txt COPYONLY) 
 
     
 ADD_EXECUTABLE(CenterModelCML main.cpp)
@@ -51,10 +57,13 @@ ADD_EXECUTABLE(CenterModelIntegratorCML mainIntegrator.cpp)
 # ADD_EXECUTABLE(CenterModelIntegratorNewCML mainIntegratorNew.cpp)
 ADD_EXECUTABLE(CenterModelIntegratorNewSimpleCML mainIntegratorNewSimple.cpp)
 
+ADD_EXECUTABLE(CenterModelVTK mainVTK.cpp)
+
 TARGET_LINK_LIBRARIES(CenterModelCML ${LIBS})
 TARGET_LINK_LIBRARIES(CenterModelIntegratorCML ${LIBS})
 # TARGET_LINK_LIBRARIES(CenterModelIntegratorNewCML ${LIBS})
 TARGET_LINK_LIBRARIES(CenterModelIntegratorNewSimpleCML ${LIBS} XMLParserExpatLibShared)
+TARGET_LINK_LIBRARIES(CenterModelVTK ${LIBS} ${VTK_LIBRARIES})
 
 # INSTALL_TARGETS(/bin CenterModelCML CenterModelIntegratorCML CenterModelIntegratorNewCML CenterModelIntegratorNewSimpleCML)      
         
