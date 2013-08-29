@@ -77,13 +77,13 @@ public:
    inline void SetMin(precision_t _x, precision_t _y,precision_t _z);
    //Ensure that vector coordinates are at least (_x,_y,_z)  - this function changes vector components
 
-   inline void SetMin(Vector3 &_vec);
+   inline void SetMin(const Vector3 &_vec);
    //overloaded version of the above
 
    inline void SetMax(precision_t _x, precision_t _y,precision_t _z);
    //Ensure that vector coordinates are at most (_x,_y,_z)  - this function changes vector components
 
-   inline void SetMax(Vector3 &_vec);
+   inline void SetMax(const Vector3 &_vec);
    //overloaded version of the above
           
 
@@ -272,13 +272,13 @@ inline void Vector3::SetMax(precision_t _x, precision_t _y,precision_t _z){
     
 }
 
-inline void Vector3::SetMin(Vector3 &_vec){
+inline void Vector3::SetMin(Vector3 const &_vec){
     if (fX<_vec.fX) fX=_vec.fX;
     if (fY<_vec.fY) fY=_vec.fY;
     if (fZ<_vec.fZ) fZ=_vec.fZ;
 }
 
-inline void Vector3::SetMax(Vector3 &_vec){
+inline void Vector3::SetMax(Vector3 const &_vec){
     if (fX>_vec.fX) fX=_vec.fX;
     if (fY>_vec.fY) fY=_vec.fY;
     if (fZ>_vec.fZ) fZ=_vec.fZ;
