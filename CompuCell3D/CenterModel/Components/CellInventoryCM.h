@@ -52,6 +52,7 @@ class COMPONENTS_EXPORT CellInventoryCM{
    public:
 	   typedef  std::map<CellIdentifierCM,CellCM *> cellInventoryContainerTypeCM;
 	   typedef  cellInventoryContainerTypeCM::iterator cellInventoryIterator;
+	   typedef  cellInventoryContainerTypeCM::const_iterator cellInventoryIteratorConst;
 	   CellInventoryCM():cellFactoryPtr(0)
       {}
       
@@ -63,9 +64,13 @@ class COMPONENTS_EXPORT CellInventoryCM{
 	  void setCellFactory(CellFactoryCM * _cellFactoryPtr){cellFactoryPtr=_cellFactoryPtr;}
 	  
       ////std::set<CellG *>::size_type getCellInventorySize(){return inventory.size();}
-      int getSize(){return inventory.size();}   
+      int getSize(){return inventory.size();}  
+
       cellInventoryIterator cellInventoryBegin(){return inventory.begin();}
       cellInventoryIterator cellInventoryEnd(){return inventory.end();}
+	  cellInventoryIteratorConst cellInventoryBegin()const{return inventory.cbegin();}
+      cellInventoryIteratorConst cellInventoryEnd()const{return inventory.cend();}
+
       void incrementIterator(cellInventoryIterator & _itr){++_itr;}
       void decrementIterator(cellInventoryIterator & _itr){--_itr;}
       CellCM *getCellById(long _id);  
