@@ -40,8 +40,8 @@ CellCM * CellFactoryCM::createCellCM(double _x,double _y, double _z){
 
 	++recentCellId;
 	cell->id=recentCellId;
-
-	sbPtr->updateCellLookup(cell); //storin cell in a lookup set
+	if(sbPtr)
+		sbPtr->updateCellLookup(cell); //storin cell in a lookup set
 	return cell;
 }
 

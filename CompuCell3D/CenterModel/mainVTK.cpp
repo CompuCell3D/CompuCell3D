@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <iostream>
+#include <cassert>
 
 #include <vtkRenderWindow.h>
 #include <vtkSmartPointer.h>
@@ -56,6 +57,7 @@ CLArguments parceCommandLine(int argc, char *argv[]){
 //I'd bettef use std::unique_ptr<CellCM> here,
 //but for the sake of backward compatability with VS2008 I used plain pointers
 CellCM * parseString(std::istream &is, CellFactoryCM &cf){
+	assert(is);
 	float x,y,z,r;
 	is>>x>>y>>z>>r;
 	
@@ -68,55 +70,53 @@ CellCM * parseString(std::istream &is, CellFactoryCM &cf){
 	return cellTmp;
 }
 
-//making a cell factory with a predefined simulation box. To be fixed
-CellFactoryCM *makeCellFactory()
-{
-	Vector3 boxDim(21.2,45.7,80.1);
-	//Vector3 gridSpacing(4,10,8);
-	//Vector3 gridSpacing(2.01,2.01,2.01);
-    //Vector3 gridSpacing(3.01,3.01,3.01);
-    Vector3 gridSpacing(1.01,1.01,1.01);
+std::pair<Vector3, Vector3> detectBoundingBox(CellInventoryCM const &ci){
+	const Vector3::precision_t maxReal=std::numeric_limits<Vector3::precision_t>::max();
+	Vector3 minDim(maxReal, maxReal, maxReal), maxDim(-maxReal,-maxReal,-maxReal);
 
-	SimulationBox *sb=new SimulationBox();//HACK: some memory leak is likely to happen due to this allocation
-	//sb.setDim(21.2,45.7,80.1);
-	//sb.setBoxSpatialProperties(21.2,45.7,80.1,1.5,5.5,7.1);
-	sb->setBoxSpatialProperties(boxDim,gridSpacing);
-	cout<<sb->getDim()<<endl;
+	for (CellInventoryCM::cellInventoryIteratorConst cit=ci.cellInventoryBegin() ; cit!=ci.cellInventoryEnd(); ++cit){
+		CellCM const* cell=cit->second;
+		Vector3 const &cellPos=cell->position;
+		minDim.SetMax(cellPos);
+		maxDim.SetMin(cellPos);
+	}
 
-	cout<<sb->getLatticeLookupDim()<<endl;
+	return make_pair(minDim, maxDim);
 
-	CellFactoryCM *cf= new CellFactoryCM();
-	cf->setSimulationBox(sb);
-
-	return cf;
 }
 
 
-CellInventoryCM *makeCellInventory(std::istream &is)
+CellInventoryCM *makeCellInventory(std::istream &is, CellFactoryCM &cf)
 {
 
 	string str;
 
-	CellFactoryCM *cf=makeCellFactory();//TODO: detect box's size based on cells' coordinates
 	
-	CellInventoryCM *ci=new CellInventoryCM();
-	ci->setCellFactory(cf);
+    CellInventoryCM *ci=new CellInventoryCM();
+	
+	ci->setCellFactory(&cf);
 
 	while(!is.eof()){
-		CellCM *cm=parseString(is, *cf);
+		CellCM *cm=parseString(is, cf);
 
 		ci->addToInventory(cm);
 	}
 	
-	delete cf;
 
 	return ci;
+}
+
+void updateCellsLookup(CellInventoryCM  &ci, SimulationBox &sb){
+	for (CellInventoryCM::cellInventoryIterator cit=ci.cellInventoryBegin() ; cit!=ci.cellInventoryEnd(); ++cit){
+		CellCM * cell=cit->second;
+		sb.updateCellLookup(cell);
+	}
 }
 
 
 //generate vtkPolyData based on CellInventory
 //TODO: needs binding instead
-vtkSmartPointer<vtkPolyData> genPolydata(CellInventoryCM &ci){
+vtkSmartPointer<vtkPolyData> genPolydata(CellInventoryCM const &ci){
 	vtkSmartPointer<vtkPolyData> res=vtkSmartPointer<vtkPolyData>::New();
 
 	vtkSmartPointer<vtkCellArray> vertices =  vtkSmartPointer<vtkCellArray>::New();
@@ -132,7 +132,7 @@ vtkSmartPointer<vtkPolyData> genPolydata(CellInventoryCM &ci){
 	radii->SetName("Radii");
 
 
-   for (CellInventoryCM::cellInventoryIterator cit=ci.cellInventoryBegin() ; cit!=ci.cellInventoryEnd(); ++cit){
+   for (CellInventoryCM::cellInventoryIteratorConst cit=ci.cellInventoryBegin() ; cit!=ci.cellInventoryEnd(); ++cit){
 		CellCM const* cell=cit->second;
 		Vector3 const &cellPos=cell->position;
 		vtkIdType type=points->InsertNextPoint(cellPos.fX, cellPos.fY, cellPos.fZ);
@@ -169,9 +169,29 @@ int main(int argc, char *argv[]){
 		return EXIT_FAILURE;
 	}
 
+	CellFactoryCM *cf= new CellFactoryCM();
+	
 	//read cells from file and put them into the inventory 
-	CellInventoryCM  *ci=makeCellInventory(ifile);
+	CellInventoryCM  *ci=makeCellInventory(ifile, *cf);//allocated with new withing a function
 	cout<<ci->getSize()<<" cells have been added to the inventory"<<endl;
+
+
+	std::pair<Vector3, Vector3> bBox=detectBoundingBox(*ci);
+	cout<<"cells are enclosed in a bounding box "<<bBox.first<<"x"<<bBox.second<<endl;
+
+	//assume that we start from zero and enlarge max dimension a bit...
+	Vector3 simBoxDim(bBox.second[0]*1.1, bBox.second[1]*1.1, bBox.second[2]*1.1);
+	cout<<"setting simulation box to"<<simBoxDim<<endl;
+
+	SimulationBox *sb=new SimulationBox();
+	sb->setBoxSpatialProperties(simBoxDim,Vector3(1.01,1.01,1.01));//HACK: spacing is hardcoded
+
+	updateCellsLookup(*ci, *sb);
+
+	cf->setSimulationBox(sb);
+
+	cout<<"CompuCell Center Model is ready, setting up VTK pipeline..."<<endl;
+
 
 	vtkSmartPointer<vtkPolyData> pointsPolydata =genPolydata(*ci);
 	cout<<pointsPolydata->GetNumberOfCells()<<" cells are put into a vtkPolydata object"<<endl;
@@ -179,8 +199,7 @@ int main(int argc, char *argv[]){
 	// map to graphics library 
     vtkPolyDataMapper *map = vtkPolyDataMapper::New(); 
 	map->SetInput(pointsPolydata);
-
-	
+		
 	
 	// actor coordinates geometry, properties, transformation 
 	vtkSmartPointer<vtkActor> actor = vtkActor::New(); 
@@ -207,8 +226,9 @@ int main(int argc, char *argv[]){
 	renderWindow->Render();
 	iren->Start();
 
-	
+	delete sb;
 	delete ci;
+	delete cf;
 /*	while(getline(ifile, str)){
 		cout<<str<<endl;
 	}*/
