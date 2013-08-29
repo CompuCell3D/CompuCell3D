@@ -74,7 +74,7 @@
 #include <sstream>
 #include "TetMesh.h"
 #include "Util.h"
-
+#include <cstdlib> // to avoid compilation errors with older compilers
 
 using namespace Cleaver;
 

@@ -40,6 +40,7 @@
 
 #include "Util.h"
 #include <cmath>
+#include <cstdlib> // to avoid compilation errors with older compilers
 
 using namespace std;
 

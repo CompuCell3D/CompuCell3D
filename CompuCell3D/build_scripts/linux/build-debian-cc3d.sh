@@ -1,4 +1,4 @@
-# example command ./build-debian-cc3d.sh -s=~/CODE_TGIT -p=~/install_projects/3.7.0 -c=4
+# example command ./build-debian-cc3d.sh -s=~/CC3D_GIT -p=~/install_projects/3.7.0 -c=4
 #command line parsing
 
 function run_and_watch_status {
@@ -249,7 +249,7 @@ then
   then
       
       # since you cannot pass cmake options that have spaces to cmake command line the alternatice is to prepare initial CmakeCache.txt file and put those options there...
-      echo 'CMAKE_C_FLAGS_RELEASE=-O0 -DNDEBUG'>>CMakeCache.txt
+      echo 'CMAKE_C_FLAGS_RELEASE:STRING=-O0 -DNDEBUG'>>CMakeCache.txt
   fi  
   
 
