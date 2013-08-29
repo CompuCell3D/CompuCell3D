@@ -65,9 +65,11 @@ CellCM * parseString(std::istream &is, CellFactoryCM &cf){
 	
 	//cout<<x<<" "<<y<<" "<<z<<" "<<r<<"\n";
 
-
+	if(is.fail())
+		return NULL;
+	
 	CellCM *cellTmp=cf.createCellCM(x,y,z);
-    cellTmp->interactionRadius=1.61149;
+    cellTmp->interactionRadius=r;
    
 	return cellTmp;
 }
@@ -101,6 +103,8 @@ CellInventoryCM *makeCellInventory(std::istream &is, CellFactoryCM &cf)
 	while(!is.eof()){
 		CellCM *cm=parseString(is, cf);
 
+		if(cm==NULL)
+			break;
 		ci->addToInventory(cm);
 	}
 	
@@ -121,7 +125,7 @@ void updateCellsLookup(CellInventoryCM  &ci, SimulationBox &sb){
 vtkSmartPointer<vtkPolyData> genPolydata(CellInventoryCM const &ci){
 	vtkSmartPointer<vtkPolyData> res=vtkSmartPointer<vtkPolyData>::New();
 
-	vtkSmartPointer<vtkCellArray> vertices =  vtkSmartPointer<vtkCellArray>::New();
+	//vtkSmartPointer<vtkCellArray> vertices =  vtkSmartPointer<vtkCellArray>::New();
  	vtkSmartPointer<vtkPoints> points =vtkSmartPointer<vtkPoints>::New();
 
 	// Setup the colors array
@@ -130,7 +134,7 @@ vtkSmartPointer<vtkPolyData> genPolydata(CellInventoryCM const &ci){
 	//colors->SetName("Colors");
 
 	vtkSmartPointer<vtkDoubleArray> radii =vtkSmartPointer<vtkDoubleArray>::New();
-	radii->SetNumberOfComponents(1);
+//	radii->SetNumberOfComponents(1);
 	radii->SetName("Radii");
 
 
@@ -138,7 +142,7 @@ vtkSmartPointer<vtkPolyData> genPolydata(CellInventoryCM const &ci){
 		CellCM const* cell=cit->second;
 		Vector3 const &cellPos=cell->position;
 		vtkIdType type=points->InsertNextPoint(cellPos.fX, cellPos.fY, cellPos.fZ);
-		vertices->InsertNextCell(1, &type);
+//		vertices->InsertNextCell(1, &type);
 
 		//unsigned char color[3] = {rand()/(double)RAND_MAX*255, rand()/(double)RAND_MAX*255, rand()/(double)RAND_MAX*255};
 		//double scalar=rand()/(double)RAND_MAX*1265.;
@@ -150,10 +154,74 @@ vtkSmartPointer<vtkPolyData> genPolydata(CellInventoryCM const &ci){
 	}
 
 	res->SetPoints(points);
-	res->SetVerts(vertices);
+	//res->SetVerts(vertices);
 	res->GetPointData()->SetScalars(radii);
 
 	return res;
+}
+
+double detectMaxRadius(vtkPolyData *const pointsPolydata)
+{
+	double maxRad=0;
+	vtkDataArray *arr=pointsPolydata->GetPointData()->GetScalars();
+	for(int i=0; i<pointsPolydata->GetNumberOfPoints(); ++i){
+		double rad=*arr->GetTuple(i);
+		maxRad=std::max(rad, maxRad);
+	}
+	return maxRad;
+}
+
+
+void goVTK(CellInventoryCM const &ci){
+	vtkSmartPointer<vtkPolyData> pointsPolydata =genPolydata(ci);
+	cout<<pointsPolydata->GetNumberOfPoints()<<" points are put into a vtkPolydata object"<<endl;
+
+	double maxRad=detectMaxRadius(pointsPolydata);
+	cout<<"max cell's radius: "<<maxRad<<endl;
+
+
+	vtkSmartPointer<vtkSphereSource> sphereSource=vtkSphereSource::New();
+	sphereSource->SetThetaResolution(20);
+	sphereSource->SetPhiResolution(20);
+	
+	
+	vtkSmartPointer<vtkGlyph3D> glyph=vtkGlyph3D::New();
+	glyph->SetScaleModeToScaleByScalar();
+	glyph->SetSourceConnection(sphereSource->GetOutputPort());
+	glyph->SetInput(pointsPolydata);
+	glyph->Update();
+
+
+	// map to graphics library 
+    vtkSmartPointer<vtkPolyDataMapper> map = vtkPolyDataMapper::New(); 
+	map->SetInputConnection(glyph->GetOutputPort());
+
+	// actor coordinates geometry, properties, transformation 
+	vtkSmartPointer<vtkActor> actor = vtkActor::New(); 
+	actor->SetMapper(map); 
+	//actor->GetProperty()->SetPointSize(10);
+	actor->GetProperty()->SetColor(0,0,1); 
+
+	vtkSmartPointer<vtkRenderWindow> renderWindow =vtkSmartPointer<vtkRenderWindow>::New();
+	vtkSmartPointer<vtkRenderer> renderer = vtkRenderer::New(); 
+	renderWindow->AddRenderer(renderer);
+
+	renderer->AddActor(actor); 
+	renderer->SetBackground(1,1,1); // Background color white
+
+
+	vtkSmartPointer<vtkRenderWindowInteractor> iren = vtkRenderWindowInteractor::New(); 
+	iren->SetRenderWindow(renderWindow);
+
+	vtkInteractorStyleTrackballCamera *style =  vtkInteractorStyleTrackballCamera::New();
+	iren->SetInteractorStyle(style);
+	
+	//actor->SetOrigin(center);
+
+	renderWindow->SetSize(640, 480);
+
+	renderWindow->Render();
+	iren->Start();
 }
 
 int main(int argc, char *argv[]){
@@ -195,54 +263,11 @@ int main(int argc, char *argv[]){
 	cout<<"CompuCell Center Model is ready, setting up VTK pipeline..."<<endl;
 
 
-	vtkSmartPointer<vtkPolyData> pointsPolydata =genPolydata(*ci);
-	cout<<pointsPolydata->GetNumberOfCells()<<" cells are put into a vtkPolydata object"<<endl;
-
-	vtkSmartPointer<vtkSphereSource> sphereSource=vtkSphereSource::New();
-	sphereSource->SetRadius(2);
-	//sphere.SetRadius(10);
+	goVTK(*ci);
 	
-	vtkSmartPointer<vtkGlyph3D> glyph=vtkGlyph3D::New();
-	glyph->SetInput(pointsPolydata);
-	glyph->SetSource(sphereSource->GetOutput());
-
-
-	// map to graphics library 
-    vtkSmartPointer<vtkPolyDataMapper> map = vtkPolyDataMapper::New(); 
-	map->SetInput(glyph->GetOutput());
-		
-	
-	// actor coordinates geometry, properties, transformation 
-	vtkSmartPointer<vtkActor> actor = vtkActor::New(); 
-	actor->SetMapper(map); 
-	//actor->GetProperty()->SetPointSize(10);
-	actor->GetProperty()->SetColor(0,0,1); 
-
-	vtkSmartPointer<vtkRenderWindow> renderWindow =vtkSmartPointer<vtkRenderWindow>::New();
-	vtkSmartPointer<vtkRenderer> renderer = vtkRenderer::New(); 
-	renderWindow->AddRenderer(renderer);
-
-	renderer->AddActor(actor); 
-	renderer->SetBackground(1,1,1); // Background color white
-
-
-	vtkSmartPointer<vtkRenderWindowInteractor> iren = vtkRenderWindowInteractor::New(); 
-	iren->SetRenderWindow(renderWindow);
-
-	vtkInteractorStyleTrackballCamera *style =  vtkInteractorStyleTrackballCamera::New();
-	iren->SetInteractorStyle(style);
-	
-	//actor->SetOrigin(center);
-
-	renderWindow->Render();
-	iren->Start();
 
 	delete sb;
 	delete ci;
 	delete cf;
-/*	while(getline(ifile, str)){
-		cout<<str<<endl;
-	}*/
 
-	//printf("Go!\n");
 }
