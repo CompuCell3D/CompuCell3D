@@ -785,7 +785,8 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
     def registerXMLElementUpdate(self,*args):
         '''this function registers core module XML Element from wchich XML subelement has been fetched.It returns XML subelement 
         '''
-        element,coreElement=self.getXMLElementAndModuleRoot(*args,returnModuleRoot=True)         
+        # element,coreElement=self.getXMLElementAndModuleRoot(*args,returnModuleRoot=True)  # does not work in python 2.5 - syntax error
+        element,coreElement=self.getXMLElementAndModuleRoot(args,returnModuleRoot=True)                 
         
         coreNameComposite=coreElement.getName()
         if coreElement.findAttribute('Name'):

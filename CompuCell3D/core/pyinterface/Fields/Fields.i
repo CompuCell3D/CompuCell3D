@@ -11,6 +11,12 @@
 // by SWIG.  Include include files or definitions that are required
 // for the module to build correctly.
 
+%{
+#include <stddef.h>
+%}
+
+
+
 // C++ std::string handling
 %include "std_string.i"
 
