@@ -54,7 +54,7 @@
 #endif
 
 #if defined(__linux) 
-#  define isnan  std::isnan
+#include <math.h>
 #endif
 
 /** @cond doxygen-ignored */
