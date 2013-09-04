@@ -55,8 +55,10 @@ class CC3DSender(QObject):
         
         if sys.platform.startswith('win'):
             self.tweditCC3DPath=os.path.join(environ['PREFIX_CC3D'],'twedit++.bat')
-        else:
-            self.tweditCC3DPath=os.path.join(environ['PREFIX_CC3D'],'twedit++.sh')
+        elif sys.platform.startswith('darwin'):
+            self.tweditCC3DPath=os.path.join(environ['PREFIX_CC3D'],'twedit++.command')
+        else: # linux/unix
+             self.tweditCC3DPath=os.path.join(environ['PREFIX_CC3D'],'twedit++.sh')   
             
         self.tweditCC3DPath=os.path.abspath(self.tweditCC3DPath)        
         # checking inf file exists
