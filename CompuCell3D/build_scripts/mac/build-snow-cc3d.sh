@@ -1,4 +1,4 @@
-# example command ./build-osx-cc3d.sh -s=~/CC3D_GIT -p=~/install_projects/CC3D_3.7.0 -r=~/RR_OSX -d=/Users/Shared/CC3Ddev/Dependencies -b=CC3D_3.7.0_MacOSX_10.8 -c=4
+# example command ./build-osx-cc3d.sh -s=~/CC3D_GIT -p=~/install_projects/CC3D_3.7.0 -r=~/RR_OSX -d=/Users/Shared/CC3Ddev/Dependencies -b=CC3D_3.7.0_MacOSX_10.8_32bit -c=4
 #command line parsing
 
 function run_and_watch_status {
@@ -28,7 +28,7 @@ export RR_SOURCE_ROOT=~/RR_OSX
 export GCC_DIR=~/Deps/gcc_4.6.0
 export VTK_BIN_AND_BUILD_DIR=~/Deps/VTK_5.8.0_bin_and_build
 export MAC_DEPS=~/Deps/OSX_Leopard_Deps                 
-export OUTPUT_BINARY_NAME=CC3D_3.7.0_MacOSX_10.8
+export OUTPUT_BINARY_NAME=CC3D_3.7.0_MacOSX_10.6_32bit
 
 export BUILD_CC3D=NO
 export BUILD_BIONET=NO
@@ -199,14 +199,15 @@ fi
 
 cp -a ${MAC_DEPS}/* ${INSTALL_PREFIX}
 
-exit
 
-################### END OF INSTALLING DEPENDENCIES
+################## END OF INSTALLING DEPENDENCIES
 
 
 if [ "$BUILD_BIONET_DEPEND" == YES ]
 then
   ############# BUILDING SBML AND SUNDIALS BIONET DEPENDENCIES
+
+  # bionet solver deps are built using standard OSX gcc compilers
   export CXXFLAGS="-fPIC -arch x86_64 -arch i386"
   export CFLAGS="-fPIC -arch x86_64 -arch i386"
   export LDFLAGS="-arch x86_64 -arch i386" 
@@ -237,8 +238,11 @@ then
   CXXFLAGS=
   CFLAGS= 
   LDFLAGS=
+
   ############# END OF BUILDING SBML AND SUNDIALS BIONET DEPENDENCIES
 fi
+
+
 
 if [ "$BUILD_BIONET_DEPEND" == YES ]
 then
@@ -250,7 +254,7 @@ then
   cd $BUILD_ROOT/BionetSolver
 
 
-  run_and_watch_status BIONET_CMAKE_CONFIG cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.6 -DPYTHON_EXECUTABLE:FILEPATH=/usr/bin/python2.6 -DPYTHON_INCLUDE_DIR:PATH=/System/Library/Frameworks/Python.framework/Versions/2.6/Headers -DEIGEN3_INCLUDE_DIR=${SOURCE_ROOT}/CompuCell3D/core/Eigen -DPYTHON_LIBRARY:FILEPATH=/usr/lib/libpython2.6.dylib -DCMAKE_C_COMPILER:FILEPATH=${GCC_DIR}/bin/gcc -DCMAKE_CXX_COMPILER:FILEPATH=${GCC_DIR}/bin/g++ PATH=$INSTALL_PREFIX  -DVTK_DIR:PATH=${VTK_BIN_AND_BUILD_DIR}/lib/vtk-5.8 -DCMAKE_CXX_FLAGS="-mmacosx-version-min=10.6 -O3 -g -fpermissive -m64" -DCMAKE_C_FLAGS="-mmacosx-version-min=10.6 -O3 -g -fpermissive -m64" -DLIBSBML_INSTALL_DIR:PATH=$DEPENDENCIES_ROOT/libsbml-3.4.1 -DSUNDIALS_INSTALL_DIR:PATH=$DEPENDENCIES_ROOT/sundials-2.3.0 DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $BIONET_SOURCE
+  run_and_watch_status BIONET_CMAKE_CONFIG cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.5 -DPYTHON_EXECUTABLE:FILEPATH=/usr/bin/python2.5 -DPYTHON_INCLUDE_DIR:PATH=/System/Library/Frameworks/Python.framework/Versions/2.5/Headers -DPYTHON_LIBRARY:FILEPATH=/usr/lib/libpython2.5.dylib -DCMAKE_C_COMPILER:FILEPATH=${GCC_DIR}/bin/gcc -DCMAKE_CXX_COMPILER:FILEPATH=${GCC_DIR}/bin/g++ PATH=$INSTALL_PREFIX   -DCMAKE_CXX_FLAGS="-mmacosx-version-min=10.5 -O3 -g -m32" -DCMAKE_C_FLAGS="-mmacosx-version-min=10.5 -O3 -g -m32" -DLIBSBML_INSTALL_DIR:PATH=$DEPENDENCIES_ROOT/libsbml-3.4.1 -DSUNDIALS_INSTALL_DIR:PATH=$DEPENDENCIES_ROOT/sundials-2.3.0 DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $BIONET_SOURCE
   # -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.6 -DPYTHON_EXECUTABLE:FILEPATH=/usr/bin/python2.6 -DPYTHON_INCLUDE_DIR:PATH=/System/Library/Frameworks/Python.framework/Versions/2.6/Headers -DEIGEN3_INCLUDE_DIR=${SOURCE_ROOT}/CompuCell3D/core/Eigen -DPYTHON_LIBRARY:FILEPATH=/usr/lib/libpython2.6.dylib -DCMAKE_C_COMPILER:FILEPATH=${GCC_DIR}/bin/gcc -DCMAKE_CXX_COMPILER:FILEPATH=${GCC_DIR}/bin/g++ PATH=$INSTALL_PREFIX  -DVTK_DIR:PATH=${VTK_BIN_AND_BUILD_DIR}/lib/vtk-5.8 -DCMAKE_CXX_FLAGS="-mmacosx-version-min=10.6 -O3 -g -fpermissive -m64" -DCMAKE_C_FLAGS="-mmacosx-version-min=10.6 -O3 -g -fpermissive -m64"
   run_and_watch_status BIONET_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION && make install
 
@@ -282,7 +286,8 @@ then
   export CXX=${GCC_DIR}/bin/g++
 
 
-  run_and_watch_status THIRD_PARTY_CMAKE_CONFIG cmake -G "Unix Makefiles"  -DCMAKE_OSX_ARCHITECTURES="x86_64" -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_PREFIX}_RR -DCMAKE_BUILD_TYPE:STRING=Release ${RR_SOURCE_ROOT}/third_party 
+  run_and_watch_status THIRD_PARTY_CMAKE_CONFIG cmake -G "Unix Makefiles"  -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_PREFIX}_RR -DCMAKE_BUILD_TYPE:STRING=Release ${RR_SOURCE_ROOT}/third_party 
+  # run_and_watch_status THIRD_PARTY_CMAKE_CONFIG cmake -G "Unix Makefiles"  -DCMAKE_OSX_ARCHITECTURES="x86_64" -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_PREFIX}_RR -DCMAKE_BUILD_TYPE:STRING=Release ${RR_SOURCE_ROOT}/third_party 
   run_and_watch_status THIRD_PARTY_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION VERBOSE=1 && make install
   
 
@@ -301,8 +306,8 @@ then
   export CC=${GCC_DIR}/bin/gcc
   export CXX=${GCC_DIR}/bin/g++
 
-
-  run_and_watch_status RR_CMAKE_CONFIG cmake -G "Unix Makefiles" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DPYTHON_EXECUTABLE:PATH="/usr/bin/python2.6" -DPYTHON_INCLUDE_DIR:PATH="/System/Library/Frameworks/Python.framework/Versions/2.6/Headers" -DPYTHON_LIBRARY="/usr/lib/libpython2.6.dylib" -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_PREFIX}_RR -DBUILD_CC3D_EXTENSION:BOOL=ON -DTHIRD_PARTY_INSTALL_FOLDER:PATH=${INSTALL_PREFIX}_RR -DCC3D_INSTALL_PREFIX:PATH=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE:STRING=Release ${RR_SOURCE_ROOT} 
+  run_and_watch_status RR_CMAKE_CONFIG cmake -G "Unix Makefiles" -DPYTHON_EXECUTABLE:PATH="/usr/bin/python2.5" -DPYTHON_INCLUDE_DIR:PATH="/System/Library/Frameworks/Python.framework/Versions/2.5/Headers" -DPYTHON_LIBRARY="/usr/lib/libpython2.5.dylib" -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_PREFIX}_RR -DBUILD_CC3D_EXTENSION:BOOL=ON -DTHIRD_PARTY_INSTALL_FOLDER:PATH=${INSTALL_PREFIX}_RR -DCC3D_INSTALL_PREFIX:PATH=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE:STRING=Release ${RR_SOURCE_ROOT} 
+  # run_and_watch_status RR_CMAKE_CONFIG cmake -G "Unix Makefiles" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DPYTHON_EXECUTABLE:PATH="/usr/bin/python2.6" -DPYTHON_INCLUDE_DIR:PATH="/System/Library/Frameworks/Python.framework/Versions/2.6/Headers" -DPYTHON_LIBRARY="/usr/lib/libpython2.6.dylib" -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_PREFIX}_RR -DBUILD_CC3D_EXTENSION:BOOL=ON -DTHIRD_PARTY_INSTALL_FOLDER:PATH=${INSTALL_PREFIX}_RR -DCC3D_INSTALL_PREFIX:PATH=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE:STRING=Release ${RR_SOURCE_ROOT} 
   run_and_watch_status RR_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION VERBOSE=1 && make install
 
   CC=
@@ -312,6 +317,7 @@ then
 fi
 
 ################### BUILDING ZIP-BASED INSTALLER
+
 
 
 cd $INSTALL_PREFIX
