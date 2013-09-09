@@ -110,9 +110,10 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/compucell3d.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.sh @ONLY)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/runScript.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh @ONLY)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/twedit++.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.sh @ONLY)
-    
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/celldraw.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/celldraw.sh @ONLY)
+
         INSTALL(FILES  
-            ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.sh ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.sh
+            ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.sh ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.sh ${CMAKE_BINARY_DIR}/post_install_tasks/celldraw.sh
             DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                                                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                                             WORLD_READ WORLD_WRITE WORLD_EXECUTE
