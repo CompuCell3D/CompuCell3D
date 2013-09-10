@@ -29,10 +29,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
        FieldExtractor
        ${PYTHON_LIBRARIES}
        # simthreadShared
-       vtkVolumeRendering 
-       vtkHybrid 
-       vtkFiltering 
-       vtkCommon
+       vtkRenderingVolume 
     )
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     SET(LIBS
@@ -40,11 +37,7 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
        BasicUtilsShared       
        FieldExtractor
        ${PYTHON_LIBRARIES}
-       vtkVolumeRendering 
-       vtkHybrid 
-       vtkFiltering 
-       vtkCommon
-       
+       vtkRenderingVolume 
        # simthreadShared
     )
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)

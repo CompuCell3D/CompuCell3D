@@ -467,7 +467,7 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance){
 	  ctPtTmp.z+=3-ctPtTmp.z % 3;// make it divisible by 3 in case it is not
 #ifdef _DEBUG
 		cerr<<"ctPtTmp.y % 2 ="<<ctPtTmp.y % 2 << " ctPtTmp.y % 2="<<ctPtTmp.y % 2<<endl;
-		cerr<<"  WILL USE CENTER POINT="<<ctPtTmp<<"Y_EVEN|Z_EVEN "<<(Y_EVEN|Z_EVEN)<<endl;
+		cerr<<"  WILL USE CENTER POINT="<<ctPtTmp/*<<"Y_EVEN|Z_EVEN "<<(Y_EVEN|Z_EVEN)*/<<endl;
 #endif
       getOffsetsAndDistances(ctPtTmp,_maxDistance,tempField,hexOffsetArray[indexHex],hexDistanceArray[indexHex],hexNeighborOrderIndexArray[indexHex]);
 
@@ -506,7 +506,7 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance){
 #ifdef _DEBUG
 		cerr<<"ctPtTmp.y % 2 ="<<ctPtTmp.y % 2 << " !ctPtTmp.y % 2="<<!(ctPtTmp.y % 2)<<endl;
 
-		cerr<<"  WILL USE CENTER POINT="<<ctPtTmp<<"Y_ODD|Z_EVEN "<<(Y_ODD|Z_EVEN)<<endl;
+		cerr<<"  WILL USE CENTER POINT="<<ctPtTmp/*<<"Y_ODD|Z_EVEN "<<(Y_ODD|Z_EVEN)*/<<endl;
 #endif
       getOffsetsAndDistances(ctPtTmp,_maxDistance,tempField,hexOffsetArray[indexHex],hexDistanceArray[indexHex],hexNeighborOrderIndexArray[indexHex]);
 

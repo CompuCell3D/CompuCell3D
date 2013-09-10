@@ -40,22 +40,17 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
        BasicUtilsStatic
        ${PYTHON_LIBRARIES}
        # simthreadShared
-       vtkVolumeRendering 
-       vtkHybrid 
-       vtkFiltering 
-       vtkCommon
+       #vtkRenderingVolume
+	   vtkIOLegacy
     )
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     SET(LIBS
        CompuCellLibShared
        BasicUtilsShared
        ${PYTHON_LIBRARIES}
-       vtkVolumeRendering 
-       vtkHybrid 
-       vtkFiltering 
-       vtkCommon
-       
-       # simthreadShared
+      # simthreadShared
+	   #vtkRenderingVolume
+	   vtkIOLegacy
     )
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 

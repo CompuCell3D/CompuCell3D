@@ -110,7 +110,7 @@ bool SerializerDE::serializeCellField(SerializeData &_sd){
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
 
-	fieldDataWriter->SetInput(fieldData);
+	fieldDataWriter->SetInputData(fieldData);
 	//int dim[3];
 	//latticeData->GetDimensions(dim);
 	////cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;
@@ -249,7 +249,7 @@ bool SerializerDE::serializeConcentrationField(SerializeData &_sd){
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
 
-	fieldDataWriter->SetInput(fieldData);
+	fieldDataWriter->SetInputData(fieldData);
 	//int dim[3];
 	//latticeData->GetDimensions(dim);
 	////cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;
@@ -355,7 +355,7 @@ bool SerializerDE::serializeScalarField(SerializeData &_sd){
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
 
-	fieldDataWriter->SetInput(fieldData);
+	fieldDataWriter->SetInputData(fieldData);
 	//int dim[3];
 	//latticeData->GetDimensions(dim);
 	////cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;
@@ -472,7 +472,7 @@ bool SerializerDE::serializeScalarFieldCellLevel(SerializeData &_sd){
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
 
-	fieldDataWriter->SetInput(fieldData);
+	fieldDataWriter->SetInputData(fieldData);
 	//int dim[3];
 	//latticeData->GetDimensions(dim);
 	////cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;
@@ -591,7 +591,7 @@ bool SerializerDE::serializeVectorField(SerializeData &_sd){
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
 
-	fieldDataWriter->SetInput(fieldData);
+	fieldDataWriter->SetInputData(fieldData);
 	//int dim[3];
 	//latticeData->GetDimensions(dim);
 	////cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;
@@ -712,7 +712,7 @@ bool SerializerDE::serializeVectorFieldCellLevel(SerializeData &_sd){
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
 
-	fieldDataWriter->SetInput(fieldData);
+	fieldDataWriter->SetInputData(fieldData);
 	//int dim[3];
 	//latticeData->GetDimensions(dim);
 	////cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;
