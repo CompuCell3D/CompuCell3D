@@ -1,0 +1,3 @@
+?package(compucell3d): needs=X11 \
+        section="Applications/Science" \
+        title=CompuCell3D command="x-terminal-emulator -e /usr/share/compucell3d/compucell3d.sh"
