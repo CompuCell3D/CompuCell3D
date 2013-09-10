@@ -163,7 +163,7 @@ then
   cd $BUILD_ROOT/CompuCell3D
 
   run_and_watch_status COMPUCELL3D_CMAKE_CONFIG cmake -G "Unix Makefiles" --build=/home/m/CompuCell3D_build -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $SOURCE_ROOT/CompuCell3D 
-  run_and_watch_status COMPUCELL3D_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION   && make install
+  run_and_watch_status COMPUCELL3D_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION && make install
   
   ############# END OF BUILDING CC3D
 fi
