@@ -14,7 +14,7 @@ import os, Configuration
 
 import vtk
 #import math
-from  Graphics.PlotFrameWidget import PlotFrameWidget
+from  Graphics.PlotFrameWidgetVTK import PlotFrameWidget
 from  Graphics.GraphicsFrameWidget import GraphicsFrameWidget
 
 
