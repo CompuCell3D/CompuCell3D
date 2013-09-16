@@ -206,7 +206,7 @@ then
 
     tar -zxvf sundials-2.3.0.tar.gz
 
-    cd SUNDIALS_BUILD_DIR
+    cd $SUNDIALS_BUILD_DIR
     run_and_watch_status SUNDIALS_CONFIGURE ./configure --with-pic --prefix=$SUNDIALS_INSTALL_DIR
 
     run_and_watch_status SUNDIALS_COMPILE_AND_INSTALL  make $MAKE_MULTICORE_OPTION && make install
