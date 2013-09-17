@@ -4,7 +4,7 @@ import subprocess
 from subprocess import Popen,PIPE
 import shutil
 # example command:
-# python ./deb_pkg_builder.py -d /usr/share/compucell3d -i ~/cc3d_deb_pkg
+# python ./deb_pkg_builder.py -d /usr/share/compucell3d -i ~/cc3d_deb_pkg -v 3.7.0
 
 
 
@@ -59,9 +59,9 @@ from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("-d", "--directory", dest="cc3d_install_dir",action="store", type="string",help="CC3D installation directory")
 parser.add_option("-i", "--installer-dir", dest="installer_dir",action="store", default='', type="string",help="full installer directory name")
-parser.add_option("-v", "--version", dest="version",action="store", type="string",help="CC3D version", default='3.7.0.0')
+parser.add_option("-v", "--version", dest="version",action="store", type="string",help="CC3D version", default='3.7.0')
 
-
+installation
 (options, args) = parser.parse_args()
 
 # -------------- end of parsing command line
@@ -94,8 +94,13 @@ if options.installer_dir=='':
     print 'Please specify FULL installer directory name'    
     sys.exit()
 
+#revision number 
+from datetime import date
+today=date.today()
+revisionNumber=str(today.year)+str(today.month).zfill(2)+str(today.day).zfill(2)
+version=options.version
     
-installer_core_name='compucell3d-'+version+'-'+release+'-'+linux_architecture    
+installer_core_name='compucell3d-'+version+'-'+release+'-'+linux_architecture+'-'+revisionNumber    
 installer_ext='.deb'
 
 print 'installer_core_name=',installer_core_name
