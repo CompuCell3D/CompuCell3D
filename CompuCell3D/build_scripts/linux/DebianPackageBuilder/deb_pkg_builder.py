@@ -61,7 +61,7 @@ parser.add_option("-d", "--directory", dest="cc3d_install_dir",action="store", t
 parser.add_option("-i", "--installer-dir", dest="installer_dir",action="store", default='', type="string",help="full installer directory name")
 parser.add_option("-v", "--version", dest="version",action="store", type="string",help="CC3D version", default='3.7.0')
 
-installation
+
 (options, args) = parser.parse_args()
 
 # -------------- end of parsing command line
