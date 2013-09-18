@@ -1,5 +1,7 @@
 "This module contains definitions of basic classes that are used to construct Python based Steppables"
 
+import sys
+
 # necessary to keep refernces to attribute adder and dictAdder current
 global pyAttributeAdder
 global dictAdder
@@ -785,8 +787,13 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
     def registerXMLElementUpdate(self,*args):
         '''this function registers core module XML Element from wchich XML subelement has been fetched.It returns XML subelement 
         '''
-        # element,coreElement=self.getXMLElementAndModuleRoot(*args,returnModuleRoot=True)  # does not work in python 2.5 - syntax error
-        element,coreElement=self.getXMLElementAndModuleRoot(args,returnModuleRoot=True)                 
+        element,coreElement=None,None
+        info=sys.version_info
+        if info[0]>=2 and info[1]>5:
+            element,coreElement=self.getXMLElementAndModuleRoot(*args,returnModuleRoot=True)  # does not work in python 2.5 - syntax error  
+        else:    
+            element,coreElement=self.getXMLElementAndModuleRoot(args,returnModuleRoot=True)  
+
         
         coreNameComposite=coreElement.getName()
         if coreElement.findAttribute('Name'):
@@ -864,7 +871,7 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             This Function greatly simplifies access to XML data - one line  easily replaces  many lines of code
         '''
         
-        if type(args[0]) is not list: # it is CC3DXMLElement 
+        if type(args[0]) is not list: # it is CC3DXMLElement             
             return args[0]
             
         
