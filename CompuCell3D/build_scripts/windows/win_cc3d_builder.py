@@ -138,93 +138,93 @@ if BUILD_ALL:
     
 
 
-# if not os.path.isdir(BUILD_ROOT):
-    # os.makedirs(BUILD_ROOT)
+if not os.path.isdir(BUILD_ROOT):
+    os.makedirs(BUILD_ROOT)
     
-# if not os.path.isdir(DEPENDENCIES_ROOT):   
-    # os.makedirs(DEPENDENCIES_ROOT)
+if not os.path.isdir(DEPENDENCIES_ROOT):   
+    os.makedirs(DEPENDENCIES_ROOT)
 
-# if BUILD_CC3D:    
-    # ############ building CompuCell3D
+if BUILD_CC3D:    
+    ############ building CompuCell3D
     
 
-    # CC3D_BUILD_PATH=os.path.abspath(os.path.join(BUILD_ROOT,'CompuCell3D'))
-    # CC3D_SOURCE_PATH=os.path.abspath(os.path.join(SOURCE_ROOT,'CompuCell3D'))
-    # if not os.path.isdir(CC3D_BUILD_PATH):   
-        # os.makedirs(CC3D_BUILD_PATH)
-    # os. chdir(CC3D_BUILD_PATH)  
+    CC3D_BUILD_PATH=os.path.abspath(os.path.join(BUILD_ROOT,'CompuCell3D'))
+    CC3D_SOURCE_PATH=os.path.abspath(os.path.join(SOURCE_ROOT,'CompuCell3D'))
+    if not os.path.isdir(CC3D_BUILD_PATH):   
+        os.makedirs(CC3D_BUILD_PATH)
+    os. chdir(CC3D_BUILD_PATH)  
     
-    # subprocess.call([CMAKE_PATH,'-G', CMAKE_GENERATOR_NAME,'-DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo','-DCMAKE_INSTALL_PREFIX:PATH='+INSTALL_PREFIX,'-DWINDOWS_DEPENDENCIES:PATH='+WIN_DEPENDENCIES_ROOT, CC3D_SOURCE_PATH ])
-    # # subprocess.call(['nmake'])
-    # subprocess.call(['nmake','install'])
-    # ############ End of building CompuCell3D
+    subprocess.call([CMAKE_PATH,'-G', CMAKE_GENERATOR_NAME,'-DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo','-DCMAKE_INSTALL_PREFIX:PATH='+INSTALL_PREFIX,'-DWINDOWS_DEPENDENCIES:PATH='+WIN_DEPENDENCIES_ROOT, CC3D_SOURCE_PATH ])
+    # subprocess.call(['nmake'])
+    subprocess.call(['nmake','install'])
+    ############ End of building CompuCell3D
 
 
-# if BUILD_BIONET:
+if BUILD_BIONET:
 
-    # ############# BUILDING  BIONET 
+    ############# BUILDING  BIONET 
 
-    # BIONET_SOURCE_PATH=os.path.abspath(os.path.join(SOURCE_ROOT,'BionetSolver/0.0.6'))
-    # BIONET_BUILD_PATH=os.path.abspath(os.path.join(BUILD_ROOT,'BionetSolver'))
+    BIONET_SOURCE_PATH=os.path.abspath(os.path.join(SOURCE_ROOT,'BionetSolver/0.0.6'))
+    BIONET_BUILD_PATH=os.path.abspath(os.path.join(BUILD_ROOT,'BionetSolver'))
     
-    # print 'BIONET_SOURCE_PATH=',BIONET_SOURCE_PATH  
+    print 'BIONET_SOURCE_PATH=',BIONET_SOURCE_PATH  
     
-    # if not os.path.isdir(BIONET_BUILD_PATH):   
-        # os.makedirs(BIONET_BUILD_PATH)
-    # os. chdir(BIONET_BUILD_PATH)  
+    if not os.path.isdir(BIONET_BUILD_PATH):   
+        os.makedirs(BIONET_BUILD_PATH)
+    os. chdir(BIONET_BUILD_PATH)  
     
-    # subprocess.call([CMAKE_PATH,'-G', CMAKE_GENERATOR_NAME,'-DCMAKE_BUILD_TYPE:STRING=Release','-DCMAKE_INSTALL_PREFIX:PATH='+INSTALL_PREFIX,'-DLIBSBML_INSTALL_DIR:PATH='+LIBSBML_INSTALL_DIR, '-DSUNDIALS_INSTALL_DIR:PATH='+SUNDIALS_INSTALL_DIR, BIONET_SOURCE_PATH ])
-    # subprocess.call(['nmake','install'])    
+    subprocess.call([CMAKE_PATH,'-G', CMAKE_GENERATOR_NAME,'-DCMAKE_BUILD_TYPE:STRING=Release','-DCMAKE_INSTALL_PREFIX:PATH='+INSTALL_PREFIX,'-DLIBSBML_INSTALL_DIR:PATH='+LIBSBML_INSTALL_DIR, '-DSUNDIALS_INSTALL_DIR:PATH='+SUNDIALS_INSTALL_DIR, BIONET_SOURCE_PATH ])
+    subprocess.call(['nmake','install'])    
     
-  # ############# END OF BUILDING  BIONET 
+  ############# END OF BUILDING  BIONET 
 
     
-# if  BUILD_CELLDRAW:
+if  BUILD_CELLDRAW:
 
-    # ############# BUILDING  CELLDRAW 
-    # CELLDRAW_BUILD_PATH=os.path.abspath(os.path.join(BUILD_ROOT,'CellDraw'))
-    # CELLDRAW_SOURCE_PATH=os.path.abspath(os.path.join(SOURCE_ROOT,'CellDraw/1.5.1'))
+    ############# BUILDING  CELLDRAW 
+    CELLDRAW_BUILD_PATH=os.path.abspath(os.path.join(BUILD_ROOT,'CellDraw'))
+    CELLDRAW_SOURCE_PATH=os.path.abspath(os.path.join(SOURCE_ROOT,'CellDraw/1.5.1'))
     
-    # if not os.path.isdir(CELLDRAW_BUILD_PATH):   
-        # os.makedirs(CELLDRAW_BUILD_PATH)
-    # os. chdir(CELLDRAW_BUILD_PATH)  
+    if not os.path.isdir(CELLDRAW_BUILD_PATH):   
+        os.makedirs(CELLDRAW_BUILD_PATH)
+    os. chdir(CELLDRAW_BUILD_PATH)  
 
-    # subprocess.call([CMAKE_PATH,'-G', CMAKE_GENERATOR_NAME,'-DCMAKE_BUILD_TYPE:STRING=Release','-DCMAKE_INSTALL_PREFIX:PATH='+INSTALL_PREFIX, CELLDRAW_SOURCE_PATH ])    
-    # subprocess.call(['nmake','install'])        
+    subprocess.call([CMAKE_PATH,'-G', CMAKE_GENERATOR_NAME,'-DCMAKE_BUILD_TYPE:STRING=Release','-DCMAKE_INSTALL_PREFIX:PATH='+INSTALL_PREFIX, CELLDRAW_SOURCE_PATH ])    
+    subprocess.call(['nmake','install'])        
 
-  # ############# END OF  CELLDRAW 
+  ############# END OF  CELLDRAW 
 
-# if BUILD_RR_DEPEND:
+if BUILD_RR_DEPEND:
 
-    # ############# BUILDING RR DEPENDENCIES
-    # RR_DEPEND_BUILD_PATH=os.path.abspath(os.path.join(BUILD_ROOT,'RRDepend'))
-    # RR_DEPEND_SOURCE_PATH=os.path.abspath(os.path.join(SOURCE_ROOT,'RoadRunner/ThirdParty'))
-    # CMAKE_C_FLAGS_RELEASE="/MD /Od /Ob0 /D NDEBUG"    
+    ############# BUILDING RR DEPENDENCIES
+    RR_DEPEND_BUILD_PATH=os.path.abspath(os.path.join(BUILD_ROOT,'RRDepend'))
+    RR_DEPEND_SOURCE_PATH=os.path.abspath(os.path.join(SOURCE_ROOT,'RoadRunner/ThirdParty'))
+    CMAKE_C_FLAGS_RELEASE="/MD /Od /Ob0 /D NDEBUG"    
     
-    # if not os.path.isdir(RR_DEPEND_BUILD_PATH):   
-        # os.makedirs(RR_DEPEND_BUILD_PATH)
-    # os. chdir(RR_DEPEND_BUILD_PATH)    
+    if not os.path.isdir(RR_DEPEND_BUILD_PATH):   
+        os.makedirs(RR_DEPEND_BUILD_PATH)
+    os. chdir(RR_DEPEND_BUILD_PATH)    
 
-    # subprocess.call([CMAKE_PATH,'-G', CMAKE_GENERATOR_NAME, '-DCMAKE_BUILD_TYPE:STRING=Release','-DCMAKE_INSTALL_PREFIX:PATH='+INSTALL_PREFIX+'_RR','-DCMAKE_C_FLAGS_RELEASE:STRING='+CMAKE_C_FLAGS_RELEASE, RR_DEPEND_SOURCE_PATH])    
+    subprocess.call([CMAKE_PATH,'-G', CMAKE_GENERATOR_NAME, '-DCMAKE_BUILD_TYPE:STRING=Release','-DCMAKE_INSTALL_PREFIX:PATH='+INSTALL_PREFIX+'_RR','-DCMAKE_C_FLAGS_RELEASE:STRING='+CMAKE_C_FLAGS_RELEASE, RR_DEPEND_SOURCE_PATH])    
     
-    # subprocess.call(['nmake','install'])   
+    subprocess.call(['nmake','install'])   
     
-    # ############# END OF BUILDING RR DEPENDENCIES
+    ############# END OF BUILDING RR DEPENDENCIES
     
-# if BUILD_RR:
+if BUILD_RR:
 
-    # ############# BUILDING RR
-    # RR_BUILD_PATH=os.path.abspath(os.path.join(BUILD_ROOT,'RR'))
-    # RR_SOURCE_PATH=os.path.abspath(os.path.join(SOURCE_ROOT,'RoadRunner'))
+    ############# BUILDING RR
+    RR_BUILD_PATH=os.path.abspath(os.path.join(BUILD_ROOT,'RR'))
+    RR_SOURCE_PATH=os.path.abspath(os.path.join(SOURCE_ROOT,'RoadRunner'))
     
-    # if not os.path.isdir(RR_BUILD_PATH):   
-        # os.makedirs(RR_BUILD_PATH)
-    # os. chdir(RR_BUILD_PATH)    
+    if not os.path.isdir(RR_BUILD_PATH):   
+        os.makedirs(RR_BUILD_PATH)
+    os. chdir(RR_BUILD_PATH)    
 
-    # subprocess.call([CMAKE_PATH,'-G', CMAKE_GENERATOR_NAME ,'-DCMAKE_BUILD_TYPE:STRING=Release','-DCMAKE_INSTALL_PREFIX:PATH='+INSTALL_PREFIX+'_RR','-DBUILD_CC3D_EXTENSION:BOOL=ON','-DTHIRD_PARTY_INSTALL_FOLDER:PATH='+INSTALL_PREFIX+'_RR', RR_SOURCE_PATH])    
-    # subprocess.call(['nmake','install'])       
+    subprocess.call([CMAKE_PATH,'-G', CMAKE_GENERATOR_NAME ,'-DCMAKE_BUILD_TYPE:STRING=Release','-DCMAKE_INSTALL_PREFIX:PATH='+INSTALL_PREFIX+'_RR','-DBUILD_CC3D_EXTENSION:BOOL=ON','-DTHIRD_PARTY_INSTALL_FOLDER:PATH='+INSTALL_PREFIX+'_RR', RR_SOURCE_PATH])    
+    subprocess.call(['nmake','install'])       
     
-  # ############# END OF BUILDING RR
+  ############# END OF BUILDING RR
 
   
 if  BUILD_INSTALLER:    
