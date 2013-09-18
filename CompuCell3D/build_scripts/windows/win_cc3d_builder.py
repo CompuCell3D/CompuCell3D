@@ -235,7 +235,7 @@ if  BUILD_INSTALLER:
     version=options.version
     
     INSTALLER_NAME=os.path.abspath(os.path.join(INSTALLER_DIR,'setup-'+version+'v'+revisionNumber+'.exe'))
-    os.chdir(CURRENT_DIR)
+    os.chdir(CURRENT_DIR)    
     subprocess.call(['python','win_cc3d_installer_creator.py','-d',INSTALL_PREFIX,' -v',INSTALLER_VERSION,'-i',INSTALLER_NAME])    
     
   

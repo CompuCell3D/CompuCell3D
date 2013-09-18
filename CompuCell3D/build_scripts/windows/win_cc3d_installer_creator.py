@@ -2,7 +2,7 @@ import os,sys
 import re
 
 # example command:
-# python .\win_cc3d_installer_creator.pyw -d 'D:\Program Files (x86)\COMPUCELL3D_3.7.0_install' -v 3.7.0.0
+# python .\win_cc3d_installer_creator.py -d 'D:\install_projects\3.7.0' -v 3.7.0.0
 
 # this is the path to the NSIS instaler executable
 NSIS_EXE_PATH='C:\Program Files (x86)\NSIS\makensis.exe '
@@ -94,7 +94,8 @@ for dir in dirs_to_remove:
 installer_path=os.path.dirname(INSTALLER_NAME)
 
 inFile=open('CompuCell3D.nsi.tpl','r')
-outFile=open(os.path.join(installer_path,'CompuCell3D_installer.nsi'),'w')
+nsiFilePath=os.path.join(installer_path,'CompuCell3D_installer.nsi')
+nsiFile=open(nsiFilePath,'w')
 for line in inFile.readlines():
     line=line.rstrip()
     if line.startswith('!define VERSION'):
@@ -113,14 +114,15 @@ for line in inFile.readlines():
         for delete_line in DELETE_FILES:
             line+=delete_line+'\n'
             
-    print>>outFile,line    
+    print>>nsiFile,line    
     
 
     
 inFile.close()
-outFile.close()
+nsiFile.close()
 
 #executing NSIS command
 import subprocess
-subprocess.call([NSIS_EXE_PATH,'/V1','CompuCell3D_installer.nsi'])
+subprocess.call([NSIS_EXE_PATH,'/V1',nsiFilePath])
+# subprocess.call([NSIS_EXE_PATH,'/V1','CompuCell3D_installer.nsi'])
 
