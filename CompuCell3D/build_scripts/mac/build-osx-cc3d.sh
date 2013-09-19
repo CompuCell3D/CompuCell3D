@@ -199,27 +199,39 @@ then
   export CFLAGS="-fPIC -arch x86_64 -arch i386"
   export LDFLAGS="-arch x86_64 -arch i386" 
 
-  cp $SOURCE_ROOT/BionetSolver/dependencies/libsbml-3.4.1-src.zip $BUILD_ROOT
-  cd $BUILD_ROOT 
+  SBML_BUILD_DIR=$BUILD_ROOT/libsbml-3.4.1
+  SBML_INSTALL_DIR=$DEPENDENCIES_ROOT/libsbml-3.4.1
 
-  unzip libsbml-3.4.1-src.zip
-
-  cd $BUILD_ROOT/libsbml-3.4.1
-  run_and_watch_status LIBSBML_CONFIGURE ./configure --prefix=$DEPENDENCIES_ROOT/libsbml-3.4.1
   
-  # libsbml does not compile well with multi-core option on
+  if [ ! -d "$SBML_INSTALL_DIR" ]; then # SBML_INSTALL_DIR does not exist
   
-  run_and_watch_status LIBSBML_COMPILE_AND_INSTALL make  && make install
+    cp $SOURCE_ROOT/BionetSolver/dependencies/libsbml-3.4.1-src.zip $BUILD_ROOT
+    cd $BUILD_ROOT 
 
-  cp $SOURCE_ROOT/BionetSolver/dependencies/sundials-2.3.0.tar.gz $BUILD_ROOT
-  cd $BUILD_ROOT
+    unzip libsbml-3.4.1-src.zip
+    
+    cd $SBML_BUILD_DIR 
+    run_and_watch_status LIBSBML_CONFIGURE ./configure --prefix=$SBML_INSTALL_DIR 
+    # libsbml does not compile well with multi-core option on
+    run_and_watch_status LIBSBML_COMPILE_AND_INSTALL make  && make install
+  fi
 
-  tar -zxvf sundials-2.3.0.tar.gz
 
-  cd $BUILD_ROOT/sundials-2.3.0
-  run_and_watch_status SUNDIALS_CONFIGURE ./configure --with-pic --prefix=$DEPENDENCIES_ROOT/sundials-2.3.0
+  SUNDIALS_BUILD_DIR=$BUILD_ROOT/sundials-2.3.0
+  SUNDIALS_INSTALL_DIR=$DEPENDENCIES_ROOT/sundials-2.3.0
+  
+  if [ ! -d "$SUNDIALS_INSTALL_DIR" ]; then # SUNDIALS_INSTALL_DIR does not exist
+    
+    cp $SOURCE_ROOT/BionetSolver/dependencies/sundials-2.3.0.tar.gz $BUILD_ROOT
+    cd $BUILD_ROOT
 
-  run_and_watch_status SUNDIALS_COMPILE_AND_INSTALL  make $MAKE_MULTICORE_OPTION && make install
+    tar -zxvf sundials-2.3.0.tar.gz
+
+    cd $SUNDIALS_BUILD_DIR
+    run_and_watch_status SUNDIALS_CONFIGURE ./configure --with-pic --prefix=$SUNDIALS_INSTALL_DIR
+
+    run_and_watch_status SUNDIALS_COMPILE_AND_INSTALL  make $MAKE_MULTICORE_OPTION && make install
+  fi
 
   # reset flags
   CXXFLAGS=

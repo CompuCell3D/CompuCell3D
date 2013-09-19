@@ -168,8 +168,6 @@ then
   ############# END OF BUILDING CC3D
 fi
 
-
-
 if [ "$BUILD_BIONET_DEPEND" == YES ]
 then
   ############# BUILDING SBML AND SUNDIALS BIONET DEPENDENCIES
@@ -192,8 +190,6 @@ then
     # libsbml does not compile well with multi-core option on
     run_and_watch_status LIBSBML_COMPILE_AND_INSTALL make  && make install
   fi
-  
-  
   
   
   SUNDIALS_BUILD_DIR=$BUILD_ROOT/sundials-2.3.0
