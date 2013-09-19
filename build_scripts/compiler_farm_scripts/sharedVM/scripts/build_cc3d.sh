@@ -26,6 +26,9 @@ time ./build-debian-cc3d.sh -s=$CC3D_GIT_DIR -p=$install_path -c=$number_of_cpus
 
 cd $CC3D_GIT_DIR/build_scripts/linux/DebianPackageBuilder
 
+# remove old deb packages
+rm -rf ${install_path}_deb/*
+
 python ./deb_pkg_builder.py -d $install_path -i ${install_path}_deb
 
 
