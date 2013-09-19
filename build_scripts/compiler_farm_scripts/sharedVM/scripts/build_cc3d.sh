@@ -34,7 +34,7 @@ python ./deb_pkg_builder.py -d $install_path -i ${install_path}_deb
 
 mkdir -p ${CC3D_BINARIES_DIR}
 #removing old debian packages
-rm -rf ${CC3D_BINARIES_DIR}/* 
+# rm -rf ${CC3D_BINARIES_DIR}/* 
 
 cd ${install_path}_deb
 
