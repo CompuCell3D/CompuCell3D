@@ -45,7 +45,7 @@ cp *.deb $CC3D_BINARIES_DIR
 # sudo chmod 0440 poweroff.sudo
 # sudo mv poweroff.sudo /etc/sudoers.d/
 
-poweroff
+/sbin/poweroff
 # cd $CC3D_BINARIES_DIR
 # svn add *
 # svn commit -m "build deb package "
