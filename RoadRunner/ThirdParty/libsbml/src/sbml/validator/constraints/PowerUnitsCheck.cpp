@@ -54,7 +54,7 @@
 #endif
 
 #if defined(__linux) 
-#include <math.h>
+#include <cmath>
 #endif
 
 /** @cond doxygen-ignored */
@@ -234,7 +234,7 @@ PowerUnitsCheck::checkUnitsFromPower (const Model& m,
         SBMLTransforms::clearComponentValues();
 
 #if defined(__linux) 
-        if (!::isnan(value))
+        if (!std::isnan(value))
 #else
         if (!isnan(value))	
 #endif   
@@ -326,7 +326,7 @@ PowerUnitsCheck::checkUnitsFromPower (const Model& m,
         // but it may not be an integer
 	
 #if defined(__linux) 
-        if (!::isnan(value))
+        if (!std::isnan(value))
 #else
         if (!isnan(value))	
 #endif   
