@@ -74,7 +74,9 @@ namespace CompuCell3D {
 
 		bool uptakeInsideCell(CellG * _cell, float _maxUptake, float _relativeUptake);
 		bool uptakeInsideCellAtBoundary(CellG * _cell, float _maxUptake, float _relativeUptake);
+		bool uptakeInsideCellAtBoundaryOnContactWith(CellG * _cell, float _maxUptake, float _relativeUptake,const std::vector<unsigned char> & _onContactVec);
 		bool uptakeOutsideCellAtBoundary(CellG * _cell, float _maxUptake, float _relativeUptake);
+		bool uptakeOutsideCellAtBoundaryOnContactWith(CellG * _cell, float _maxUptake, float _relativeUptake,const std::vector<unsigned char> & _onContactVec);
 		bool uptakeInsideCellAtCOM(CellG * _cell, float _maxUptake, float _relativeUptake);
 
 	};
