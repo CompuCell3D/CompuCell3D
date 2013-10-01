@@ -1,25 +1,3 @@
-/*************************************************************************
-*    CompuCell - A software framework for multimodel simulations of     *
-* biocomplexity problems Copyright (C) 2003 University of Notre Dame,   *
-*                             Indiana                                   *
-*                                                                       *
-* This program is free software; IF YOU AGREE TO CITE USE OF CompuCell  *
-*  IN ALL RELATED RESEARCH PUBLICATIONS according to the terms of the   *
-*  CompuCell GNU General Public License RIDER you can redistribute it   *
-* and/or modify it under the terms of the GNU General Public License as *
-*  published by the Free Software Foundation; either version 2 of the   *
-*         License, or (at your option) any later version.               *
-*                                                                       *
-* This program is distributed in the hope that it will be useful, but   *
-*      WITHOUT ANY WARRANTY; without even the implied warranty of       *
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    *
-*             General Public License for more details.                  *
-*                                                                       *
-*  You should have received a copy of the GNU General Public License    *
-*     along with this program; if not, write to the Free Software       *
-*      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
-*************************************************************************/
-
 #include <CompuCell3D/CC3D.h>
 
 
@@ -86,6 +64,57 @@ bool FieldSecretor::secreteInsideCellAtBoundary(CellG * _cell, float _amount){
 
 }
 
+bool FieldSecretor::secreteInsideCellAtBoundaryOnContactWith(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec){
+	
+	set<unsigned char> onContactSet(_onContactVec.begin(),_onContactVec.end());
+
+	if (!boundaryPixelTrackerPlugin){
+		return false;
+	}
+
+	BasicClassAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr=boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
+
+	std::set<BoundaryPixelTrackerData > & pixelSetRef=boundaryPixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
+
+	Point3D nPt;
+
+	CellG *nCell=0;
+
+	Neighbor neighbor;
+
+	for (set<BoundaryPixelTrackerData>::iterator sitr=pixelSetRef.begin() ; sitr!=pixelSetRef.end(); ++sitr){	
+		
+		for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
+			neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(sitr->pixel),nIdx);
+			if(!neighbor.distance){
+				//if distance is 0 then the neighbor returned is invalid
+				continue;
+			}
+
+			nPt=neighbor.pt;
+			nCell = cellFieldG->get(neighbor.pt);
+			if(nCell!=_cell && !nCell && onContactSet.find(0)!=onContactSet.end()){
+				//user requested secrete on contact with medium and we found medium pixel
+				concentrationFieldPtr->set(sitr->pixel,concentrationFieldPtr->get(sitr->pixel)+_amount);
+				break; //after secreting do not try to secrete more
+			}
+			
+			if (nCell!=_cell && nCell && onContactSet.find(nCell->type)!=onContactSet.end() )
+			{
+				//user requested secretion on contact with cell type whose pixel we have just found 
+				concentrationFieldPtr->set(sitr->pixel,concentrationFieldPtr->get(sitr->pixel)+_amount);
+				break;//after secreting do not try to secrete more
+			}
+
+		}
+
+	}
+
+	return true;
+
+}
+
+
 bool FieldSecretor::secreteOutsideCellAtBoundary(CellG * _cell, float _amount){
 
 	if (!boundaryPixelTrackerPlugin){
@@ -130,6 +159,63 @@ bool FieldSecretor::secreteOutsideCellAtBoundary(CellG * _cell, float _amount){
 
 
 }
+
+
+bool FieldSecretor::secreteOutsideCellAtBoundaryOnContactWith(CellG * _cell, float _amount, const std::vector<unsigned char> & _onContactVec){
+
+	set<unsigned char> onContactSet(_onContactVec.begin(),_onContactVec.end());
+
+	if (!boundaryPixelTrackerPlugin){
+		return false;
+	}
+
+	BasicClassAccessor<BoundaryPixelTracker> *boundaryPixelTrackerAccessorPtr=boundaryPixelTrackerPlugin->getBoundaryPixelTrackerAccessorPtr();
+
+	std::set<BoundaryPixelTrackerData > & pixelSetRef=boundaryPixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
+
+	Point3D nPt;
+
+	CellG *nCell=0;
+
+	Neighbor neighbor;
+
+	set<FieldSecretorPixelData> visitedPixels;
+
+	for (set<BoundaryPixelTrackerData>::iterator sitr=pixelSetRef.begin() ; sitr!=pixelSetRef.end(); ++sitr){		
+
+
+		for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
+			neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(sitr->pixel),nIdx);
+			if(!neighbor.distance){
+				//if distance is 0 then the neighbor returned is invalid
+				continue;
+			}
+			nPt=neighbor.pt;
+			nCell = cellFieldG->get(neighbor.pt);
+			if (nCell!=_cell && visitedPixels.find(FieldSecretorPixelData(neighbor.pt))==visitedPixels.end()){
+				if (!nCell && onContactSet.find(0)!=onContactSet.end()){
+					//checking if the unvisited pixel belongs to Medium and if Medium is a  cell type listed in the onContactSet
+					concentrationFieldPtr->set(nPt,concentrationFieldPtr->get(nPt)+_amount);
+					visitedPixels.insert(FieldSecretorPixelData(nPt));
+				}
+
+				if (nCell && onContactSet.find(nCell->type)!=onContactSet.end()){
+					//checking if the unvisited pixel belongs to a  cell type listed in the onContactSet
+					concentrationFieldPtr->set(nPt,concentrationFieldPtr->get(nPt)+_amount);
+					visitedPixels.insert(FieldSecretorPixelData(nPt));
+				}
+
+			}
+
+		}		
+
+	}
+
+	return true;
+
+
+}
+
 
 bool FieldSecretor::secreteInsideCellAtCOM(CellG * _cell, float _amount){
 	Point3D pt((int)round(_cell->xCM/_cell->volume),(int)round(_cell->yCM/_cell->volume),(int)round(_cell->zCM/_cell->volume));

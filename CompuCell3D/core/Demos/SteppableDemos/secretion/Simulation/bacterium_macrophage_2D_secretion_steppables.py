@@ -10,7 +10,9 @@ class SecretionSteppable(SecretionBasePy):
     def step(self,mcs):
         attrSecretor=self.getFieldSecretor("ATTR")
         for cell in self.cellList:
-            if cell.type==3:
+            if cell.type==self.WALL:
+                attrSecretor.secreteInsideCellAtBoundaryOnContactWith(cell,300,[self.WALL])
+                attrSecretor.secreteOutsideCellAtBoundaryOnContactWith(cell,300,[self.MEDIUM])
                 attrSecretor.secreteInsideCell(cell,300)
                 attrSecretor.secreteInsideCellAtBoundary(cell,300)
                 attrSecretor.secreteOutsideCellAtBoundary(cell,500)
