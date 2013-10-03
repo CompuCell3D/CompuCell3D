@@ -1,0 +1,10 @@
+NO_OPENCL:BOOL=ON 
+MAKE_OSX_DEPLOYMENT_TARGET:STRING=10.6 
+PYTHON_EXECUTABLE:FILEPATH=/usr/bin/python2.6 
+PYTHON_INCLUDE_DIR:PATH=/System/Library/Frameworks/Python.framework/Versions/2.6/Headers 
+PYTHON_LIBRARY:FILEPATH=/usr/lib/libpython2.6.dylib  
+CMAKE_C_COMPILER:FILEPATH=/Users/Shared/installs/gcc-4.7/bin/gcc 
+CMAKE_CXX_COMPILER:FILEPATH=/Users/Shared/installs/gcc-4.7/bin/g++ 
+CMAKE_CXX_FLAGS:STRING=-mmacosx-version-min=10.6 -O3 -g  
+CMAKE_C_FLAGS:STRING=-mmacosx-version-min=10.6 -O3 -g  
+

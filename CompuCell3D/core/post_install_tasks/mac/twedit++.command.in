@@ -37,7 +37,10 @@ echo "====> PYTHONPATH directory: $PYTHONPATH"
 echo "---- ---- ---- ---- ---- ---- ---- ---- "
 echo " setting the PYTHONLIB_SYSTEM shell variable as used by CompuCell3D: "
 export PYTHONLIB_SYSTEM=/System/Library/Frameworks/Python.framework/Versions/2.${PYTHON_MINOR_VERSION}
-export PYTHON_EXEC=python2.${PYTHON_MINOR_VERSION}
+ln -s /System/Library/Frameworks/Python.framework/Versions/2.${PYTHON_MINOR_VERSION}/Resources/Python.app/Contents/MacOS/Python ${PREFIX_CC3D}/Twedit++CC3D
+export PYTHON_EXEC=${PREFIX_CC3D}/Twedit++CC3D
+
+# export PYTHON_EXEC=python2.${PYTHON_MINOR_VERSION}
 echo " ====> PYTHONLIB_SYSTEM: $PYTHONLIB_SYSTEM"
 
 
