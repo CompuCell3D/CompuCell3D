@@ -1,4 +1,4 @@
-# example command ./build-debian-cc3d.sh -s=~/CODE_TGIT -p=~/install_projects/3.7.0 -c=4
+# example command ./build-debian-cc3d.sh -s=~/CC3D_GIT -p=~/install_projects/3.7.0 -c=4
 #command line parsing
 
 function run_and_watch_status {
@@ -162,13 +162,11 @@ then
   mkdir -p $BUILD_ROOT/CompuCell3D
   cd $BUILD_ROOT/CompuCell3D
 
-  run_and_watch_status COMPUCELL3D_CMAKE_CONFIG cmake -G "Unix Makefiles" --build=/home/m/CompuCell3D_build -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $SOURCE_ROOT/CompuCell3D 
-  run_and_watch_status COMPUCELL3D_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION   && make install
+  run_and_watch_status COMPUCELL3D_CMAKE_CONFIG cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $SOURCE_ROOT/CompuCell3D 
+  run_and_watch_status COMPUCELL3D_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION && make install
   
   ############# END OF BUILDING CC3D
 fi
-
-
 
 if [ "$BUILD_BIONET_DEPEND" == YES ]
 then
@@ -176,28 +174,39 @@ then
   export CXXFLAGS=-fPIC
   export CFLAGS=-fPIC
 
+  SBML_BUILD_DIR=$BUILD_ROOT/libsbml-3.4.1
+  SBML_INSTALL_DIR=$DEPENDENCIES_ROOT/libsbml-3.4.1
 
-  cp $SOURCE_ROOT/BionetSolver/dependencies/libsbml-3.4.1-src.zip $BUILD_ROOT
-  cd $BUILD_ROOT 
-
-  unzip libsbml-3.4.1-src.zip
-
-  cd $BUILD_ROOT/libsbml-3.4.1
-  run_and_watch_status LIBSBML_CONFIGURE ./configure --prefix=$DEPENDENCIES_ROOT/libsbml-3.4.1
   
-  # libsbml does not compile well with multi-core option on
+  if [ ! -d "$SBML_INSTALL_DIR" ]; then # SBML_INSTALL_DIR does not exist
   
-  run_and_watch_status LIBSBML_COMPILE_AND_INSTALL make  && make install
+    cp $SOURCE_ROOT/BionetSolver/dependencies/libsbml-3.4.1-src.zip $BUILD_ROOT
+    cd $BUILD_ROOT 
 
-  cp $SOURCE_ROOT/BionetSolver/dependencies/sundials-2.3.0.tar.gz $BUILD_ROOT
-  cd $BUILD_ROOT
+    unzip libsbml-3.4.1-src.zip
+    
+    cd $SBML_BUILD_DIR 
+    run_and_watch_status LIBSBML_CONFIGURE ./configure --prefix=$SBML_INSTALL_DIR 
+    # libsbml does not compile well with multi-core option on
+    run_and_watch_status LIBSBML_COMPILE_AND_INSTALL make  && make install
+  fi
+  
+  
+  SUNDIALS_BUILD_DIR=$BUILD_ROOT/sundials-2.3.0
+  SUNDIALS_INSTALL_DIR=$DEPENDENCIES_ROOT/sundials-2.3.0
+  
+  if [ ! -d "$SUNDIALS_INSTALL_DIR" ]; then # SUNDIALS_INSTALL_DIR does not exist
+    
+    cp $SOURCE_ROOT/BionetSolver/dependencies/sundials-2.3.0.tar.gz $BUILD_ROOT
+    cd $BUILD_ROOT
 
-  tar -zxvf sundials-2.3.0.tar.gz
+    tar -zxvf sundials-2.3.0.tar.gz
 
-  cd $BUILD_ROOT/sundials-2.3.0
-  run_and_watch_status SUNDIALS_CONFIGURE ./configure --with-pic --prefix=$DEPENDENCIES_ROOT/sundials-2.3.0
+    cd $SUNDIALS_BUILD_DIR
+    run_and_watch_status SUNDIALS_CONFIGURE ./configure --with-pic --prefix=$SUNDIALS_INSTALL_DIR
 
-  run_and_watch_status SUNDIALS_COMPILE_AND_INSTALL  make $MAKE_MULTICORE_OPTION && make install
+    run_and_watch_status SUNDIALS_COMPILE_AND_INSTALL  make $MAKE_MULTICORE_OPTION && make install
+  fi
   ############# END OF BUILDING SBML AND SUNDIALS BIONET DEPENDENCIES
 fi
 
@@ -211,7 +220,7 @@ then
   cd $BUILD_ROOT/BionetSolver
 
 
-  run_and_watch_status BIONET_CMAKE_CONFIG cmake -G "Unix Makefiles" -DLIBSBML_INSTALL_DIR:PATH=$DEPENDENCIES_ROOT/libsbml-3.4.1 -DSUNDIALS_INSTALL_DIR:PATH=$DEPENDENCIES_ROOT/sundials-2.3.0 DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $BIONET_SOURCE
+  run_and_watch_status BIONET_CMAKE_CONFIG cmake -G "Unix Makefiles" -DLIBSBML_INSTALL_DIR:PATH=$DEPENDENCIES_ROOT/libsbml-3.4.1 -DSUNDIALS_INSTALL_DIR:PATH=$DEPENDENCIES_ROOT/sundials-2.3.0 -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_PREFIX $BIONET_SOURCE
   run_and_watch_status BIONET_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION && make install
 
   ############# END OF BUILDING  BIONET 
@@ -249,7 +258,7 @@ then
   then
       
       # since you cannot pass cmake options that have spaces to cmake command line the alternatice is to prepare initial CmakeCache.txt file and put those options there...
-      echo 'CMAKE_C_FLAGS_RELEASE=-O0 -DNDEBUG'>>CMakeCache.txt
+      echo 'CMAKE_C_FLAGS_RELEASE:STRING=-O0 -DNDEBUG'>>CMakeCache.txt
   fi  
   
 

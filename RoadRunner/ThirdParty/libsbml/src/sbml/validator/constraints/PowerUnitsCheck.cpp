@@ -54,7 +54,7 @@
 #endif
 
 #if defined(__linux) 
-#  define isnan  std::isnan
+#include <cmath>
 #endif
 
 /** @cond doxygen-ignored */
@@ -232,7 +232,12 @@ PowerUnitsCheck::checkUnitsFromPower (const Model& m,
         SBMLTransforms::mapComponentValues(&m);
         double value = SBMLTransforms::evaluateASTNode(child);
         SBMLTransforms::clearComponentValues();
-        if (!isnan(value))
+
+#if defined(__linux) 
+        if (!std::isnan(value))
+#else
+        if (!isnan(value))	
+#endif   
         {
           if (floor(value) != value)
             isExpression = 1;
@@ -319,7 +324,12 @@ PowerUnitsCheck::checkUnitsFromPower (const Model& m,
         double value = SBMLTransforms::evaluateASTNode(child, &m);
         SBMLTransforms::clearComponentValues();
         // but it may not be an integer
-        if (isnan(value))
+	
+#if defined(__linux) 
+        if (!std::isnan(value))
+#else
+        if (!isnan(value))	
+#endif   
           // we cant check
         {
           isExpression = 1;

@@ -300,7 +300,9 @@ class CC3DListener(QTcpServer):
         
         if sys.platform.startswith('win'):
             self.cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.bat')
-        else:
+        elif sys.platform.startswith('darwin'):
+            self.cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.command')
+        else : # linux/unix
             self.cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.sh')
             
         self.cc3dPath=os.path.abspath(self.cc3dPath)
@@ -380,6 +382,7 @@ class CC3DListener(QTcpServer):
         
     def startCC3D(self,_simulationName=""):
         from subprocess import Popen    
+
         print "self.cc3dPath=",self.cc3dPath        
         popenArgs=[self.cc3dPath,"--port=%s"%self.port]
         if _simulationName!="":
@@ -388,8 +391,8 @@ class CC3DListener(QTcpServer):
         # popenArgs.append("-i")
         # popenArgs.append("D:\\Program Files\\COMPUCELL3D_3.5.1_install2\\examples_PythonTutorial\\infoPrinterDemo\\infoPrinterDemo.cc3d" )
             
-        
-        self.cc3dProcess = Popen(popenArgs)            
+        print 'Executing Popen command with following arguments=',popenArgs        
+        self.cc3dProcess = Popen(popenArgs)
         
         # self.cc3dProcess = Popen([self.cc3dPath,"--port=%s"%self.port])
         

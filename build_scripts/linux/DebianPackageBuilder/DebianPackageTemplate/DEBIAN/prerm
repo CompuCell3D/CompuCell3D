@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+#Find and delete all the compiled python files
+find /usr/lib/compucell3d/ -name *.pyc -type f -print0 | xargs -0 /bin/rm -f
+

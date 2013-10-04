@@ -1,5 +1,7 @@
 "This module contains definitions of basic classes that are used to construct Python based Steppables"
 
+# import sys
+
 # necessary to keep refernces to attribute adder and dictAdder current
 global pyAttributeAdder
 global dictAdder
@@ -781,11 +783,17 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         
         element=self.getXMLElement(*args)    
         return element.getText() if element else None
-        
+            
     def registerXMLElementUpdate(self,*args):
         '''this function registers core module XML Element from wchich XML subelement has been fetched.It returns XML subelement 
         '''
-        element,coreElement=self.getXMLElementAndModuleRoot(*args,returnModuleRoot=True)         
+        # element,coreElement=None,None
+        # info=sys.version_info
+        # if info[0]>=2 and info[1]>5:
+        #     element,coreElement=self.getXMLElementAndModuleRoot(*args,returnModuleRoot=True)  # does not work in python 2.5 - syntax error  
+        # else:    
+        element,coreElement=self.getXMLElementAndModuleRoot(args,returnModuleRoot=True)  
+
         
         coreNameComposite=coreElement.getName()
         if coreElement.findAttribute('Name'):
@@ -862,10 +870,15 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             The implementation of this plugin may be simplified. Current implementation is least invasive and requires no changes apart from modifying PySteppables.
             This Function greatly simplifies access to XML data - one line  easily replaces  many lines of code
         '''
+        import types        
         
-        if type(args[0]) is not list: # it is CC3DXMLElement 
-            return args[0]
+        if isinstance(args[0],types.TupleType): # depending on Python version we might need to pass "extra-tupple-wrapped" positional arguments especially in situation when variable list arguments are mixed with keyword arguments during function call            
+            args=args[0]
             
+
+        if not isinstance(args[0],types.ListType) : # it is CC3DXMLElement     
+            return args[0]
+        
         
         from  itertools import izip
         from XMLUtils import dictionaryToMapStrStr as d2mss

@@ -4,14 +4,21 @@
 # echo " dollar-zero AKA the first argument to this .command script is: "
 # echo $0
 # echo " "
+export PYTHON_MINOR_VERSION=@PYTHON_MINOR_VERSION@
 cd "${0%/*}"
 
+
+# language settings
+export LANG=en_EN
+export __CF_USER_TEXT_ENCODING=""
+
 export COMPUCELL3D_MAJOR_VERSION=3
-export COMPUCELL3D_MINOR_VERSION=6
-export COMPUCELL3D_BUILD_VERSION=1
+export COMPUCELL3D_MINOR_VERSION=7
+export COMPUCELL3D_BUILD_VERSION=0
 echo " "
 echo "---- ---- ---- ---- ---- ---- ---- ---- "
 echo "  CompuCell3D version $COMPUCELL3D_MAJOR_VERSION.$COMPUCELL3D_MINOR_VERSION.$COMPUCELL3D_BUILD_VERSION"
+echo "     (OS X 10.8 x86_64 build) "
 echo "---- ---- ---- ---- ---- ---- ---- ---- "
 
 
@@ -72,9 +79,13 @@ echo " ====> DYLD_LIBRARY_PATH: $DYLD_LIBRARY_PATH"
 
 
 echo "---- ---- ---- ---- ---- ---- ---- ---- "
-echo " setting the PYTHONLIB_26_SYSTEM shell variable as used by CompuCell3D: "
-export PYTHONLIB_26_SYSTEM=/System/Library/Frameworks/Python.framework/Versions/2.6
-echo " ====> PYTHONLIB_26_SYSTEM: $PYTHONLIB_26_SYSTEM"
+echo " setting the PYTHONLIB_SYSTEM shell variable as used by CompuCell3D: "
+export PYTHONLIB_SYSTEM=/System/Library/Frameworks/Python.framework/Versions/2.${PYTHON_MINOR_VERSION}
+
+ln -s /System/Library/Frameworks/Python.framework/Versions/2.${PYTHON_MINOR_VERSION}/Resources/Python.app/Contents/MacOS/Python ${PREFIX_CC3D}/CompuCell3D
+export PYTHON_EXEC=${PREFIX_CC3D}/CompuCell3D
+# export PYTHON_EXEC=python2.${PYTHON_MINOR_VERSION}
+echo " ====> PYTHONLIB_SYSTEM: $PYTHONLIB_SYSTEM"
 
 
 echo "---- ---- ---- ---- ---- ---- ---- ---- "
@@ -82,7 +93,7 @@ echo " setting the PATH shell variable as used by CompuCell3D: "
 # avoid any previously user-defined DYLD_LIBRARY_PATH values:
 # export PATH=${PREFIX_CC3D}/LIBRARYDEPS/sipDeps:${PYTHONLIB_26_SYSTEM}/bin:${PYTHONLIB_26_SYSTEM}:${PREFIX_CC3D}/LIBRARYDEPS:${PREFIX_CC3D}/LIBRARYDEPS/LIBRARY-PYTHON-2.5/Extras/lib/python/wx/lib:$PATH
 # export PATH=${PYTHONLIB_26_SYSTEM}/bin:${PYTHONLIB_26_SYSTEM}
-export PATH=${PYTHONLIB_26_SYSTEM}/bin
+export PATH=${PYTHONLIB_SYSTEM}/bin:$PATH
 echo " ====> PATH: $PATH"
 # echo "---- ---- ---- ---- ---- ---- ---- ---- "
 # echo " env is here:"
@@ -97,13 +108,13 @@ echo " ====> PATH: $PATH"
 echo "---- ---- ---- ---- ---- ---- ---- ---- "
 echo 'Hello World. Python --version says:'
 echo "---- ---- ---- ---- ---- ---- ---- ---- "
-python2.6 --version
+${PYTHON_EXEC} --version
 echo "---- ---- ---- ---- ---- ---- ---- ---- "
 echo " "
-echo " Now starting CompuCell3D in command-line mode:"
+echo " Now starting CompuCell3D $COMPUCELL3D_MAJOR_VERSION.$COMPUCELL3D_MINOR_VERSION.$COMPUCELL3D_BUILD_VERSION  (OS X 10.8 x86_64 build) in GUI mode:"
 echo " "
-# python ${PREFIX_CC3D}/player/CompuCellPythonSimulationCML.py $* --currentDir=${current_directory}
-python2.6 ${PREFIX_CC3D}/player/CompuCellPythonSimulationCML.py $* --currentDir=${PREFIX_CC3D}
+# python ${PREFIX_CC3D}/player/compucell3d.pyw $* --currentDir=${current_directory}
+${PYTHON_EXEC} ${PREFIX_CC3D}/player/compucell3d.pyw $* --currentDir=${PREFIX_CC3D}
 
 # cd ${current_directory}
 cd ${PREFIX_CC3D}

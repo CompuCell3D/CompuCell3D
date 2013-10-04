@@ -2145,7 +2145,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
                 
     def requestRedraw(self):
-        self.__drawField()
+        if self.simulationIsRunning or self.simulationIsStepping:
+            self.__drawField()
         
     def drawFieldCMLResultReplay(self):
                 

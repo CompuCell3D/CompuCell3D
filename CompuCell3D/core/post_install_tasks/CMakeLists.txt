@@ -44,16 +44,77 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/runScript.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})  
   INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/twedit++.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})  
   
- 
+elseif (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)  
+        
+        message ("CMAKE_SYSTEM_VERSION " ${CMAKE_SYSTEM_VERSION})
+
+        EXEC_PROGRAM(sw_vers ARGS -productVersion  OUTPUT_VARIABLE MAC_OS_PRODUCT_VERSION)
+        STRING(REGEX REPLACE
+            "([0-9]+).([0-9]+).([0-9]+)"
+            "\\1;\\2;\\3" RESULT ${MAC_OS_PRODUCT_VERSION})
+        message("RESULT =" ${RESULT})
+
+        LIST(LENGTH RESULT n)
+        MESSAGE("n=${n}")
+        LIST(GET RESULT 0 MAJOR_OS_VERSION)
+        LIST(GET RESULT 1 MINOR_OS_VERSION)
+        LIST(GET RESULT 2 MINOR_MINOR_OS_VERSION)
+        MESSAGE ("MAJOR_OS_VERSION=" ${MAJOR_OS_VERSION})
+        MESSAGE ("MINOR_OS_VERSION=" ${MINOR_OS_VERSION})
+        MESSAGE ("MINOR_MINOR_OS_VERSION=" ${MINOR_MINOR_OS_VERSION})
+
+        # SET(MAC_PATH ${CMAKE_CURRENT_SOURCE_DIR}/mac)     
+        # EXEC_PROGRAM(sw_vers ARGS -productVersion  OUTPUT_VARIABLE DARWIN_VERSION)
+
+        # EXEC_PROGRAM(uname ARGS -v  OUTPUT_VARIABLE DARWIN_VERSION)
+        # STRING(REGEX MATCH "[0-9]+" DARWIN_VERSION ${DARWIN_VERSION})
+        # MESSAGE(STATUS "DARWIN_VERSION=${DARWIN_VERSION}")
+        SET (PYTHON_MINOR_VERSION 6 CACHE STRING "Minor version of Python on OSX")
+
+        # IF (${MINOR_OS_VERSION} GREATER 5)
+        #   SET(PYTHON_MINOR_VERSION 6)
+        # ELSE()
+        #   SET(PYTHON_MINOR_VERSION 5)
+        # ENDIF ()
+
+        message ("PYTHON_MINOR_VERSION = "  ${PYTHON_MINOR_VERSION})
+        
+
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/compucell3d.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/compucell3d.command @ONLY)
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/twedit++.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/twedit++.command @ONLY)
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/runScript.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/runScript.command @ONLY)
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/celldraw.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/celldraw.command @ONLY)
+
+        FILE(GLOB mac_command_files "${CMAKE_BINARY_DIR}/post_install_tasks/mac/*.command")
+        INSTALL(FILES ${mac_command_files} DESTINATION ${CMAKE_INSTALL_PREFIX}    
+          PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE  WORLD_READ WORLD_WRITE WORLD_EXECUTE
+          )
+
+        # FILE(GLOB mac_command_files "${MAC_PATH}/*.command")
+        # # message("mac_command_files=" ${mac_command_files})
+        # INSTALL(FILES ${mac_command_files} DESTINATION ${CMAKE_INSTALL_PREFIX}    
+        #   PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE  WORLD_READ WORLD_WRITE WORLD_EXECUTE
+        #   )
+
+
+    if(BUILD_CPP_ONLY_EXECUTABLE)
+      configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cc3dScript.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/cc3dScript.sh @ONLY)
+        INSTALL(FILES  
+            ${CMAKE_BINARY_DIR}/post_install_tasks/cc3dScript.sh
+            DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_WRITE WORLD_EXECUTE
+        )
+
+    endif(BUILD_CPP_ONLY_EXECUTABLE) 
   
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     # configure_file(${CMAKE_CURRENT_SOURCE_DIR}/compucell3d_old.sh.in.linux ${CMAKE_BINARY_DIR}/compucell3d_old.sh @ONLY)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/compucell3d.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.sh @ONLY)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/runScript.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh @ONLY)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/twedit++.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.sh @ONLY)
-    
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/celldraw.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/celldraw.sh @ONLY)
+
         INSTALL(FILES  
-            ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.sh ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.sh
+            ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.sh ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.sh ${CMAKE_BINARY_DIR}/post_install_tasks/celldraw.sh
             DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                                                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                                             WORLD_READ WORLD_WRITE WORLD_EXECUTE

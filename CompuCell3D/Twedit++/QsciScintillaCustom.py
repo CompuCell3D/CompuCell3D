@@ -4,6 +4,7 @@ from PyQt4.QtGui import *
 from PyQt4.Qsci import *
 
 from PyQt4 import QtCore, QtGui
+import sys
 
 # have to implement custom class for QSciScintilla to handle properly wheel even with and without ctrl pressed 
 class QsciScintillaCustom(QsciScintilla):
@@ -12,16 +13,52 @@ class QsciScintillaCustom(QsciScintilla):
         self.editorWindow=parent
         self.panel=_panel        
         self.mousePressEventOrig=self.mousePressEvent
+        self.CtrlKeyEquivalent=Qt.Key_Control
+        self.scintillaDefinedLetterShortcuts=[ord('D'),ord('L'),ord('T'),ord('U'),ord('/')]
+        
+        if sys.platform.startswith("darwin"):        
+            self.CtrlKeyEquivalent=Qt.Key_Alt
+            
+        # print 'key code=',ord('d')+(QsciScintilla.SCMOD_CTRL<<16)
         
     def wheelEvent(self,event):
         if qApp.keyboardModifiers()==Qt.ControlModifier:
             # Forwarding wheel event to editor windowwheelEvent
-            event.ignore()    
-             
+            event.ignore()                 
         else:
             # # calling wheelEvent from base class - regular scrolling
             super(QsciScintillaCustom,self).wheelEvent(event)
-    def focusInEvent(self,event):
+            
+    def handleScintillaDefaultShortcut(self,modifierKeysText,event):    
+    
+        if event.key() in self.scintillaDefinedLetterShortcuts:            
+            try:
+                import ActionManager as am
+                action=am.actionDict[am.shortcutToActionDict[modifierKeysText+'+'+chr(event.key())]]
+                action.trigger()
+                event.accept()
+            except LookupError:
+                super(QsciScintillaCustom,self).keyPressEvent(event)
+        else:
+            super(QsciScintillaCustom,self).keyPressEvent(event)
+            
+    def keyPressEvent(self, event):   
+        """
+            senses if scintilla predefined keyboard shortcut was pressed.  
+        """
+        
+        if event.modifiers() == Qt.ControlModifier: 
+            
+            self.handleScintillaDefaultShortcut('Ctrl',event)
+        elif event.modifiers() & Qt.ControlModifier and event.modifiers() & Qt.ShiftModifier:
+
+            self.handleScintillaDefaultShortcut('Ctrl+Shift',event)
+            
+        else:
+            super(QsciScintillaCustom,self).keyPressEvent(event)
+            
+    def focusInEvent(self,event):        
+        
         editorTab=0
         if self.panel==self.editorWindow.panels[1]:
             editorTab=1    

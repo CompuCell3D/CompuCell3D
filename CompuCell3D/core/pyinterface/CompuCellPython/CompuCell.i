@@ -755,7 +755,7 @@ FIELD3DEXTENDER(Field3D<int>,int)
 %template(vectordouble) std::vector<double>;
 
 %template(vectorint) std::vector<int>;
-
+%template(vectorunsignedchar) std::vector<unsigned char>;
 
 
 %include "Field3D/Field3DChangeWatcher.h"

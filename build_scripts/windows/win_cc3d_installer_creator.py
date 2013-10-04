@@ -2,11 +2,10 @@ import os,sys
 import re
 
 # example command:
-# python .\win_cc3d_installer_creator.pyw -d 'D:\Program Files (x86)\COMPUCELL3D_3.7.0_install' -v 3.7.0.0
+# python .\win_cc3d_installer_creator.py -d 'D:\install_projects\3.7.0' -v 3.7.0.0
 
 # this is the path to the NSIS instaler executable
 NSIS_EXE_PATH='C:\Program Files (x86)\NSIS\makensis.exe '
-
 
 # version has to have format 3.7.0.0 - four numbers otherwise NSIS crashes, strange...
 
@@ -14,6 +13,7 @@ NSIS_EXE_PATH='C:\Program Files (x86)\NSIS\makensis.exe '
 from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("-d", "--directory", dest="dirname",action="store", type="string",help="CC3D installation directory")
+parser.add_option("-i", "--installer-name", dest="installer_name",action="store", default='', type="string",help="full installer name")
 parser.add_option("-v", "--version", dest="version",action="store", type="string",help="CC3D version", default='3.7.0.0')
 
 (options, args) = parser.parse_args()
@@ -32,8 +32,13 @@ today=date.today()
 revisionNumber=str(today.year)+str(today.month).zfill(2)+str(today.day).zfill(2)
 version=options.version
 
-INSTALLER_NAME=os.path.abspath(os.path.join(cwd,'setup-'+version+'v'+revisionNumber+'.exe'))
+INSTALLER_NAME=options.installer_name
 
+if INSTALLER_NAME=='':
+    INSTALLER_NAME=os.path.abspath(os.path.join(cwd,'setup-'+version+'v'+revisionNumber+'.exe'))
+else:    
+    INSTALLER_NAME=os.path.abspath(INSTALLER_NAME)
+    
 INSTALLATION_SOURCE_DIR=cc3d_install_dir
 
 
@@ -86,8 +91,11 @@ for dir in dirs_to_remove:
 
 
 
+installer_path=os.path.dirname(INSTALLER_NAME)
+
 inFile=open('CompuCell3D.nsi.tpl','r')
-outFile=open('CompuCell3D_installer.nsi','w')
+nsiFilePath=os.path.join(installer_path,'CompuCell3D_installer.nsi')
+nsiFile=open(nsiFilePath,'w')
 for line in inFile.readlines():
     line=line.rstrip()
     if line.startswith('!define VERSION'):
@@ -106,13 +114,15 @@ for line in inFile.readlines():
         for delete_line in DELETE_FILES:
             line+=delete_line+'\n'
             
-    print>>outFile,line    
+    print>>nsiFile,line    
     
 
     
 inFile.close()
-outFile.close()
+nsiFile.close()
 
 #executing NSIS command
 import subprocess
-subprocess.call([NSIS_EXE_PATH,'/V1','CompuCell3D_installer.nsi'])
+subprocess.call([NSIS_EXE_PATH,'/V1',nsiFilePath])
+# subprocess.call([NSIS_EXE_PATH,'/V1','CompuCell3D_installer.nsi'])
+

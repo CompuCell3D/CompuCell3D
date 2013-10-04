@@ -131,7 +131,8 @@ class KeyboardShortcutsDlg(QDialog,ui_KeyboardShortcuts.Ui_KeyboardShortcutsDlg)
             ret=keyShortcutDlg.exec_()
             if ret:
                 newKeySequence=keyShortcutDlg.getKeySequence()
-                dbgMsg("THIS IS NEW SHORTCUT:",str(newKeySequence.toString(QKeySequence.NativeText)))
+                dbgMsg("THIS IS NEW SHORTCUT:",str(newKeySequence.toString())) 
+                # dbgMsg("THIS IS NEW SHORTCUT:",str(newKeySequence.toString(QKeySequence.NativeText))) # QKeySequence.NativeText does not work well on OSX
                 self.assignNewShortcut(newKeySequence,actionItem,shortcutItem)
                 # self.changesInActionShortcutDict[actionText]=newKeySequence
                 # shortcutItem.setText(newKeySequence.toString())
