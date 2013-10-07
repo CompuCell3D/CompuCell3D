@@ -364,6 +364,7 @@ class CC3DProject(QObject):
         self.steppableTemplates=None
         self.xmlFileToConvert=None
         
+        self.openCC3Dproject('C:/Users/m/CC3DProjects/CellSorting/CellSorting.cc3d')
         
     def getUI(self):
         return self.__ui
@@ -438,6 +439,8 @@ class CC3DProject(QObject):
         #---------------------------------------
         self.cc3dProjectMenu.addAction(self.actions["Open In Editor"])
         self.cc3dProjectMenu.addAction(self.actions["Open XML/Python In Editor"])
+        
+        self.cc3dProjectMenu.addAction(self.actions["Add Parameter Sweep"])
         
 
         self.cc3dProjectMenu.addSeparator()
@@ -562,6 +565,144 @@ class CC3DProject(QObject):
         self.actions["Add Steppable..."]=QtGui.QAction(QIcon(':/icons/addSteppable.png'),"Add Steppable...", self, shortcut="", statusTip="Adds Steppable to Python File (Cannot be Python Main Script) ", triggered=self.__addSteppable)
         self.actions["Convert XML to Python"]=QtGui.QAction(QIcon(':/icons/xml-icon.png'),"Convert XML to Python", self, shortcut="", statusTip="Converts XML into equivalent Python script", triggered=self.__convertXMLToPython)
         
+        self.actions["Add Parameter Sweep"]=QtGui.QAction(QIcon(':/icons/open-project.png'),"Add Parameter Sweep", self, shortcut="Ctrl+Shift+P", statusTip="Add Parameter Sweep ", triggered=self.__addParameterSweep)        
+        
+        
+    class XMLHandler:
+        def __init__(self):
+            self.lineNumber=0
+            self.accesspath=[]
+            self.currentElement=None
+            self.indent=0
+            self.indentOffset=4
+            self.xmlString=''
+            self.lineToElem={}
+            self.lineToAccessPath={}
+            self.accessPathList=[]
+            
+        def newline(self):
+            self.xmlString+='\n'
+            self.lineNumber+=1
+            
+        def outputXMLWithAccessPaths(self,_xmlFilePath): 
+            import XMLUtils
+            import os
+            cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
+                    
+            root_element = cc3dXML2ObjConverter.Parse(_xmlFilePath)
+            xmlStr=self.writeXMLElement(root_element)
+            print 'xmlStr=',self.xmlString
+        
+        def writeXMLElement(self,_elem,_indent=0):
+            self.indent=_indent
+            import XMLUtils          
+            import copy    
+            spaces=' '*self.indent
+            
+            self.xmlString+=spaces+'<'+_elem.name
+            currentElemAccessList=[]
+            currentElemAccessList.append(_elem.name)                   
+            
+            if _elem.attributes.size():
+                for key in _elem.attributes.keys():
+                    self.xmlString+=' '+key+'="'+_elem.attributes[key]+'"'            
+                    currentElemAccessList.append(key)
+                    currentElemAccessList.append(_elem.attributes[key])
+                    
+            self.accesspath.append(currentElemAccessList)
+            
+            self.lineToElem[self.lineNumber]=_elem.name
+            self.lineToAccessPath[self.lineNumber]=copy.deepcopy(self.accesspath)
+            # print dir(_elem.children)
+            # print 'len(childElemList)=',len(childElemList)
+            
+            if _elem.children.size():
+                self.xmlString+='>'
+                if _elem.cdata:
+                    self.xmlString+=spaces+_elem.cdata
+                self.newline()                
+                
+                
+                
+                childElemList=XMLUtils.CC3DXMLListPy(_elem.children) 
+                for childElem in childElemList:
+                    self.writeXMLElement(childElem,_indent+self.indentOffset)
+                self.xmlString+=spaces+'</'+_elem.name+'>'
+                self.newline()                
+            else:
+                if _elem.cdata:                
+                    self.xmlString+=">"+_elem.cdata
+                    self.xmlString+='</'+_elem.name+'>'
+                    self.newline()                
+                    print '_elem.cdata=',_elem.cdata
+                else:        
+                    self.xmlString+='/>'
+                    self.newline()
+            if len(self.accesspath):
+                del self.accesspath[-1]
+            # print '_elem.cdata=',_elem.cdata
+            # return elemStr
+        
+        
+    def __addParameterSweep(self):
+        print 'addParameterSweep'
+        tw=self.treeWidget
+        # resource=self.treeWidget.getCurrentResource()
+        
+        # print 'self.treeWidget.currentItem()=',tw.getProjectParent(tw.currentItem())
+        
+        projItem=tw.getProjectParent(tw.currentItem())
+        print'projItem=',projItem
+        
+        print 'self.projectDataHandlers=',self.projectDataHandlers
+        
+        pdh=None
+        try:
+           pdh = self.projectDataHandlers[projItem]
+        except LookupError,e:
+        
+            return            
+            
+        print  'pdh=',pdh.cc3dSimulationData
+        print 'self.xmlScript=',pdh.cc3dSimulationData.xmlScript   
+        xmlScript=pdh.cc3dSimulationData.xmlScript
+        if xmlScript:   
+            import XMLUtils
+            import os
+            cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
+            root_element=cc3dXML2ObjConverter.Parse(xmlScript)
+            print 'root_element=',root_element
+            
+            print 'root_element.children=',root_element.children
+            print 'root_element.attributes=',root_element.attributes
+            root_element.saveXML('tmp.xml')
+        
+            
+            xmlHandler=self.XMLHandler()
+            
+            xmlHandler.outputXMLWithAccessPaths(xmlScript)
+            print 'GOT LINES = ',xmlHandler.lineNumber
+            print xmlHandler.lineToElem
+            print xmlHandler.lineToAccessPath
+            
+            
+        
+            self.__ui.newFile()
+            editor=self.__ui.getCurrentEditor()
+            editor.insertAt(xmlHandler.xmlString,0,0)
+            editor.setReadOnly(True)
+            editor.setModified(False)
+            
+            activePanel, currentindex=self.__ui.getCurrentTabWidgetAndIndex()
+            activePanel.setTabText(currentindex,'Parameter Scan Tmp File')
+            
+            lexer=self.__ui.guessLexer("tmp.xml")
+            if lexer[0]:
+                editor.setLexer(lexer[0])
+            self.__ui.setEditorProperties(editor)         
+
+        
+    
     def __serializerEdit(self):
         from CC3DProject.SerializerEdit import SerializerEdit
         se=SerializerEdit(self.treeWidget)

@@ -454,6 +454,23 @@ class EditorWindow(QMainWindow):
             returns active editor - the one which has keyboard focus
         """
         return self.getActiveEditor()        
+        
+    def getCurrentTab(self):
+        """
+            returns active editor tab widget - the one which has keyboard focus
+        """
+        return self.activeTabWidget 
+
+    def getCurrentTabWidgetAndIndex(self):
+        """
+            returns active tab widget and current index- the one which has keyboard focus
+        """
+        
+        activePanel=self.getActivePanel()
+        tabIndex=activePanel.indexOf(activePanel.currentWidget())
+        
+        return activePanel,tabIndex
+        
     
     def checkIfEditorExists(self,_editor):
         """

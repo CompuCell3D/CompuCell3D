@@ -40,6 +40,8 @@ using namespace std;
 //C++ std::list handling
 %include "std_list.i"
 
+%template (ListCC3DXMLElement) std::vector<CC3DXMLElement*>;
+
 %include <CC3DXMLElement.h>
 %include <CC3DXMLElementWalker.h>
 
@@ -47,7 +49,7 @@ using namespace std;
 %template (MapIntStr) std::map<int,std::string>;
 %template(DoubleMap) std::map<std::string,double>;
 //%template (ListCC3DXMLElement) std::list<CC3DXMLElement*>;
-%template (ListCC3DXMLElement) std::vector<CC3DXMLElement*>;
+
 
 %include "STLPyIteratorValueType.h"
 %include "STLPyMapIteratorValueType.h"
