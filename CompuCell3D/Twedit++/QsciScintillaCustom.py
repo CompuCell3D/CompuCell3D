@@ -15,7 +15,7 @@ class QsciScintillaCustom(QsciScintilla):
         self.mousePressEventOrig=self.mousePressEvent
         self.CtrlKeyEquivalent=Qt.Key_Control
         self.scintillaDefinedLetterShortcuts=[ord('D'),ord('L'),ord('T'),ord('U'),ord('/')]
-        
+        self.customContextMenu=None
         if sys.platform.startswith("darwin"):        
             self.CtrlKeyEquivalent=Qt.Key_Alt
             
@@ -41,7 +41,21 @@ class QsciScintillaCustom(QsciScintilla):
                 super(QsciScintillaCustom,self).keyPressEvent(event)
         else:
             super(QsciScintillaCustom,self).keyPressEvent(event)
-            
+    
+    def registerCustomContextMenu(self,_menu):
+        self.customContextMenu=_menu
+        
+    def unregisterCustomContextMenu(self):
+        self.customContextMenu=None
+        
+    def contextMenuEvent(self,_event):
+        if not self.customContextMenu:
+            super(QsciScintillaCustom,self).contextMenuEvent(_event)
+        else:
+            self.customContextMenu.exec_(_event.globalPos())
+        
+        
+    
     def keyPressEvent(self, event):   
         """
             senses if scintilla predefined keyboard shortcut was pressed.  

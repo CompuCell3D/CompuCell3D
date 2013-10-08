@@ -65,6 +65,7 @@ class CC3DSimulationData:
         self.windowDict = {}
         
         self.serializerResource = None
+        # self.parameterScan = None
         
         self.resources={} # dictionary of resource files with description (types, plugin, etc)
         self.path="" # full path to project file
@@ -128,6 +129,7 @@ class CC3DSimulationData:
         
     def removeResource(self,_fileName):
         fileName=os.path.abspath(_fileName)
+        print 'TRYING TO REMOVE RESOURCE _fileName=',_fileName
         # file name can be associated with many resources - we have to erase all such associations
         if fileName==self.xmlScript:
             self.xmlScript=""
@@ -146,6 +148,9 @@ class CC3DSimulationData:
         except LookupError,e:
             pass
             
+        print 'After removing resources'    
+        
+        print  self.resources   
         return 
             
 class CC3DSimulationDataHandler:
