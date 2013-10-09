@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '.\parameterdlg.ui'
 #
-# Created: Tue Oct 08 17:19:28 2013
+# Created: Wed Oct 09 16:22:40 2013
 #      by: PyQt4 UI code generator 4.8.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,7 +17,7 @@ except AttributeError:
 class Ui_ParameterDlg(object):
     def setupUi(self, ParameterDlg):
         ParameterDlg.setObjectName(_fromUtf8("ParameterDlg"))
-        ParameterDlg.resize(400, 300)
+        ParameterDlg.resize(423, 293)
         ParameterDlg.setWindowTitle(QtGui.QApplication.translate("ParameterDlg", "Scannable Paramerters", None, QtGui.QApplication.UnicodeUTF8))
         self.verticalLayout = QtGui.QVBoxLayout(ParameterDlg)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
@@ -34,17 +34,20 @@ class Ui_ParameterDlg(object):
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.paramTW = QtGui.QTableWidget(ParameterDlg)
         self.paramTW.setObjectName(_fromUtf8("paramTW"))
-        self.paramTW.setColumnCount(3)
+        self.paramTW.setColumnCount(4)
         self.paramTW.setRowCount(0)
         item = QtGui.QTableWidgetItem()
         item.setText(QtGui.QApplication.translate("ParameterDlg", "Parameter", None, QtGui.QApplication.UnicodeUTF8))
         self.paramTW.setHorizontalHeaderItem(0, item)
         item = QtGui.QTableWidgetItem()
-        item.setText(QtGui.QApplication.translate("ParameterDlg", "Value", None, QtGui.QApplication.UnicodeUTF8))
+        item.setText(QtGui.QApplication.translate("ParameterDlg", "Type", None, QtGui.QApplication.UnicodeUTF8))
         self.paramTW.setHorizontalHeaderItem(1, item)
         item = QtGui.QTableWidgetItem()
-        item.setText(QtGui.QApplication.translate("ParameterDlg", "Action", None, QtGui.QApplication.UnicodeUTF8))
+        item.setText(QtGui.QApplication.translate("ParameterDlg", "Value", None, QtGui.QApplication.UnicodeUTF8))
         self.paramTW.setHorizontalHeaderItem(2, item)
+        item = QtGui.QTableWidgetItem()
+        item.setText(QtGui.QApplication.translate("ParameterDlg", "Action", None, QtGui.QApplication.UnicodeUTF8))
+        self.paramTW.setHorizontalHeaderItem(3, item)
         self.verticalLayout.addWidget(self.paramTW)
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
@@ -64,4 +67,5 @@ class Ui_ParameterDlg(object):
         item = self.paramTW.horizontalHeaderItem(0)
         item = self.paramTW.horizontalHeaderItem(1)
         item = self.paramTW.horizontalHeaderItem(2)
+        item = self.paramTW.horizontalHeaderItem(3)
 

@@ -470,6 +470,24 @@ class EditorWindow(QMainWindow):
         tabIndex=activePanel.indexOf(activePanel.currentWidget())
         
         return activePanel,tabIndex
+
+        
+    def getTabWidgetAndWidgetIndex(self,_wgt):
+        
+        
+        tabIndex=self.panels[0].indexOf(_wgt)
+        
+        if tabIndex>=0:
+            return self.panels[0], tabIndex
+        else:
+            
+            
+            tabIndex=self.panels[1].indexOf(_wgt)
+            if tabIndex>=0:
+                return self.panels[1],tabIndex
+            else:
+                return None,-1
+                
         
     
     def checkIfEditorExists(self,_editor):

@@ -50,7 +50,60 @@ class CC3DSerializerResource(GenericResource):
             attributeDict={"RestartDirectory":self.restartDirectory}
             _rootElem.ElementCC3D('RestartSimulation',attributeDict)
             print MODULENAME,'attributeDict=',attributeDict
+
+class CC3DParameterScanResource(CC3DResource):
+    def __init__(self):        
+        CC3DResource.__init__(self)
+        self.resourceName='CC3DParameterScanResource'
+        self.type='ParameterScan'
         
+        self.parameterScanXMLElements = {}
+        self.parameterScanDataMap = {}
+        self.fileTypeForEditor = 'xml'
+        self.parameterScanXMLHandler = None
+        
+    def readParameterScanSpecs(self):
+    
+        if not self.path:return
+        
+        self.parameterScanDataMap={}
+        
+        import XMLUtils
+        import os
+        cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
+        
+        root_element=cc3dXML2ObjConverter.Parse(self.path)    
+        
+        paramElemList = XMLUtils.CC3DXMLListPy(root_element.getElements("Parameter"))
+            
+        for paramElem in paramElemList:
+            from ParameterScanUtils import ParameterScanData
+            print '\n\n\n\n\n READING SCAN DATA'
+            psd=ParameterScanData()
+            
+            psd.fromXMLElem(paramElem)            
+            
+            # self.parameterScanDataMap[psd.stringHash()]=psd
+            
+        print 'self.parameterScanDataMap=',self.parameterScanDataMap
+#        print MODULENAME,'  readCC3DFileFormat():  resourceList=',resourceList
+        # for resourceElem in resourceList:
+        
+        
+        
+    # def appendXMLStub(self, _rootElem):                 
+        
+        # from XMLUtils import ElementCC3D  
+
+        # elName,attributeDict,path = self.formatResourceElement(self,'CC3DParameterScanResource')        
+        # attributeDict={}
+        
+        # attributeDict["Type"]=self.resourceName
+        # attributeDict["Copy"]="Yes"        
+
+        # _rootElem.ElementCC3D(elName,attributeDict,path)            
+        
+            
 class CC3DSimulationData:
     def __init__(self):
         self.pythonScript=""
@@ -65,7 +118,7 @@ class CC3DSimulationData:
         self.windowDict = {}
         
         self.serializerResource = None
-        # self.parameterScan = None
+        self.parameterScanResource = None
         
         self.resources={} # dictionary of resource files with description (types, plugin, etc)
         self.path="" # full path to project file
@@ -77,6 +130,15 @@ class CC3DSimulationData:
         return "CC3DSIMULATIONDATA: "+self.basePath+"\n"+"\tpython file: "+self.pythonScript+"\n"+"\txml file: "+self.xmlScript+"\n"+\
         "\tpifFile="+self.pifFile+"\n"+"\twindow script="+self.windowScript + str(self.resources)
         
+    def addNewParameterScanResource(self):
+        self.parameterScanResource=CC3DParameterScanResource()
+        self.parameterScanResource.path=os.path.abspath(os.path.join(self.basePath,'Simulation/ParameterScanSpecs.xml'))
+        
+    def removeParameterScanResource(self):        
+        self.parameterScanResource=None    
+    
+
+    
     def addNewSerializerResource(self,_outFreq=0,_multipleRestartDirs=False,_format='text',_restartDir=''):
         self.serializerResource = CC3DSerializerResource()
         
@@ -84,6 +146,13 @@ class CC3DSimulationData:
         self.serializerResource.serializerAllowMultipleRestartDirectories = _multipleRestartDirs
         self.serializerResource.serializerFileFormat = _format    
         self.serializerResource.restartDirectory = _restartDir
+        
+    def getResourcesByType(self,_type):
+        resourceList=[]
+        for key,resource in self.resources.iteritems():
+            if resource.type==_type:
+                resourceList.append(resource)
+        return resourceList
         
     def restartEnabled(self):
         if self.serializerResource:
@@ -269,6 +338,8 @@ class CC3DSimulationDataHandler:
             print MODULENAME,'  -------- self.cc3dSimulationData.windowDict= ',self.cc3dSimulationData.windowDict
                 
 
+                
+                
         if root_element.getFirstElement("SerializeSimulation"):
             serializeElem = root_element.getFirstElement("SerializeSimulation")
             self.cc3dSimulationData.serializerResource = CC3DSerializerResource()
@@ -290,6 +361,14 @@ class CC3DSimulationDataHandler:
             if restartElem.findAttribute("RestartDirectory"):                        
                 self.cc3dSimulationData.serializerResource.restartDirectory = restartElem.getAttribute("RestartDirectory")
         
+
+        if root_element.getFirstElement("ParameterScan"):
+            psFile = root_element.getFirstElement("ParameterScan").getText()
+            self.cc3dSimulationData.parameterScanResource= CC3DParameterScanResource()
+            self.cc3dSimulationData.parameterScanResource.path=os.path.abspath(os.path.join(bp,psFile)) #normalizing path to python script
+            self.cc3dSimulationData.parameterScanResource.type = 'ParameterScan'
+            #reading content of XML parameter scan specs
+            self.cc3dSimulationData.parameterScanResource.readParameterScanSpecs()
         
         resourceList = XMLUtils.CC3DXMLListPy(root_element.getElements("Resource"))
 #        print MODULENAME,'  readCC3DFileFormat():  resourceList=',resourceList
@@ -388,6 +467,10 @@ class CC3DSimulationDataHandler:
                 
         if csd.serializerResource:
             csd.serializerResource.appendXMLStub(simulationElement)
+            
+        if csd.parameterScanResource:
+            elName,attributeDict,path = self.formatResourceElement(csd.parameterScanResource,'ParameterScan')
+            simulationElement.ElementCC3D(elName,attributeDict,path)
             
         simulationElement.CC3DXMLElement.saveXML(str(_fileName))   
     

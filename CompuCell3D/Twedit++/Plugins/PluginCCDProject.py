@@ -95,7 +95,7 @@ class ItemLookupData:
             return None
             
             
-    def getFullPath(self,_item):  
+    def getFullPath(self,_item):          
         try:
             return self.itemToResource[_item].path
         except LookupError,e:
@@ -205,6 +205,7 @@ class CC3DProjectTreeWidget(QTreeWidget):
         if not projItem:
             return 
         
+        # print 'self.getFullPath(self.currentItem()=',self.getFullPath(self.currentItem())
         
         if self.getFullPath(self.currentItem())!="":
             self.plugin.actions["Open In Editor"].trigger()
@@ -395,9 +396,9 @@ class CC3DProject(QObject):
         self.xmlFileToConvert=None
         
         #parameter scan globals
-        self.parameterScanEditor=None
-        self.parameterScanXMLHandler=None
-        self.parameterScanFile=''
+        self.parameterScanEditor=None # only one scan editor is allowed at any given time
+        # self.parameterScanXMLHandler=None
+        # self.parameterScanFile=''
         
         self.openCC3Dproject('C:/Users/m/CC3DProjects/CellSorting/CellSorting.cc3d')
         
@@ -682,105 +683,150 @@ class CC3DProject(QObject):
             # print '_elem.cdata=',_elem.cdata
             # return elemStr
         
-        
     def __addParameterScan(self):
-    
-        print 'addParameterSCan'
+
         tw=self.treeWidget
-        # resource=self.treeWidget.getCurrentResource()
-        
-        # print 'self.treeWidget.currentItem()=',tw.getProjectParent(tw.currentItem())
-        
-        
-        
-        projItem=tw.getProjectParent(tw.currentItem())
-        print'projItem=',projItem
-        
-        print 'self.projectDataHandlers=',self.projectDataHandlers
-        
+        projItem=tw.getProjectParent(tw.currentItem())            
+
         pdh=None
         try:
-           pdh = self.projectDataHandlers[projItem]
+            pdh=self.projectDataHandlers[projItem]                    
         except LookupError,e:
+            print "could not find simulation data handler for this item"
+            return              
         
-            return            
-            
-        import os
+        if pdh.cc3dSimulationData.parameterScanResource:
+            QMessageBox.warning(tw,"Parameter Scan is already defined","You cannot have more than one parameter scan specifications in the simulation")
+            return
         
-        print  'pdh.cc3dSimulationData.path=',pdh.cc3dSimulationData.path
-        psSpecsFileName=os.path.abspath(os.path.join(os.path.dirname(pdh.cc3dSimulationData.path),'Simulation/ParameterScanSpecs.xml'))
-        print 'psSpecsFileName=',psSpecsFileName
         
-        resourceName=psSpecsFileName
-        fileType='ParameterScanSpecs'
-        
-        pdh.cc3dSimulationData.addNewResource(resourceName,fileType)  
+        pdh.cc3dSimulationData.addNewParameterScanResource()# adding empty parameter scan resource
+        resourceFileName = pdh.cc3dSimulationData.parameterScanResource.path   
+
         #insert new file into the tree
-        self.insertNewTreeItem(resourceName,fileType)
+        self.insertNewGenericResourceTreeItem(pdh.cc3dSimulationData.parameterScanResource)
         
+
+
         
-        #create Parameter scan File file
-        if not os.path.isfile(resourceName): 
+        #create Parameter scan file
+        if not os.path.isfile(resourceFileName): 
             import XMLUtils
             from XMLUtils import ElementCC3D
             
             rootElem=ElementCC3D('ParameterScan',{'version':'3.7.0'})
-            rootElem.CC3DXMLElement.saveXML(resourceName)
-            
-            
-        # #mark project as dirty
-        # self.markProjectDirty(projItem)      
+            rootElem.CC3DXMLElement.saveXML(resourceFileName)
         
-        # instead of marking project as dirty we save it with nerw parameter scan        
         self.__saveCC3DProject()
-        
-        return 
-        
-        
-        print  'pdh=',pdh.cc3dSimulationData
-        print 'self.xmlScript=',pdh.cc3dSimulationData.xmlScript   
-        xmlScript=pdh.cc3dSimulationData.xmlScript
-        if xmlScript:   
-            import XMLUtils
-            import os
-            cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
-            root_element=cc3dXML2ObjConverter.Parse(xmlScript)
-            print 'root_element=',root_element
-            
-            print 'root_element.children=',root_element.children
-            print 'root_element.attributes=',root_element.attributes
-            root_element.saveXML('tmp.xml')
-        
-            
-            xmlHandler=self.XMLHandler()
-            
-            xmlHandler.outputXMLWithAccessPaths(xmlScript)
-            print 'GOT LINES = ',xmlHandler.lineNumber
-            print xmlHandler.lineToElem
-            print xmlHandler.lineToAccessPath
-            
-            
-        
-            self.__ui.newFile()
-            editor=self.__ui.getCurrentEditor()
-            editor.insertAt(xmlHandler.xmlString,0,0)
-            editor.setReadOnly(True)
-            editor.setModified(False)
-            
-            activePanel, currentindex=self.__ui.getCurrentTabWidgetAndIndex()
-            activePanel.setTabText(currentindex,'Parameter Scan Tmp File')
-            
-            lexer=self.__ui.guessLexer("tmp.xml")
-            if lexer[0]:
-                editor.setLexer(lexer[0])
-            self.__ui.setEditorProperties(editor)        
 
-            # editor.createStandardContextMenu=self.parameterScanMenu 
-            editor.registerCustomContextMenu(self.createParameterScanMenu(editor))
-            self.parameterScanEditor=editor
             
-    def __openScanEditor(self):        
+    # def __addParameterScan(self):
+    
+        # print 'addParameterScan'
+        # tw=self.treeWidget
+        # # resource=self.treeWidget.getCurrentResource()
         
+        # # print 'self.treeWidget.currentItem()=',tw.getProjectParent(tw.currentItem())               
+        
+        # projItem=tw.getProjectParent(tw.currentItem())
+        # print'projItem=',projItem
+        
+        # print 'self.projectDataHandlers=',self.projectDataHandlers
+        
+        # pdh=None
+        # try:
+           # pdh = self.projectDataHandlers[projItem]
+        # except LookupError,e:
+        
+            # return            
+            
+        # import os
+        
+        # print  'pdh.cc3dSimulationData.path=',pdh.cc3dSimulationData.path
+        # psSpecsFileName=os.path.abspath(os.path.join(os.path.dirname(pdh.cc3dSimulationData.path),'Simulation/ParameterScanSpecs.xml'))
+        # print 'psSpecsFileName=',psSpecsFileName
+        
+        # resourceName=psSpecsFileName
+        # fileType='ParameterScanSpecs'
+        
+        # pdh.cc3dSimulationData.addNewResource(resourceName,fileType)  
+        # #insert new file into the tree
+        # self.insertNewTreeItem(resourceName,fileType)
+        
+        
+        # #create Parameter scan File file
+        # if not os.path.isfile(resourceName): 
+            # import XMLUtils
+            # from XMLUtils import ElementCC3D
+            
+            # rootElem=ElementCC3D('ParameterScan',{'version':'3.7.0'})
+            # rootElem.CC3DXMLElement.saveXML(resourceName)
+            
+            
+        # # #mark project as dirty
+        # # self.markProjectDirty(projItem)      
+        
+        # # instead of marking project as dirty we save it with nerw parameter scan        
+        # self.__saveCC3DProject()
+        
+        # return 
+        
+        
+        # print  'pdh=',pdh.cc3dSimulationData
+        # print 'self.xmlScript=',pdh.cc3dSimulationData.xmlScript   
+        # xmlScript=pdh.cc3dSimulationData.xmlScript
+        # if xmlScript:   
+            # import XMLUtils
+            # import os
+            # cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
+            # root_element=cc3dXML2ObjConverter.Parse(xmlScript)
+            # print 'root_element=',root_element
+            
+            # print 'root_element.children=',root_element.children
+            # print 'root_element.attributes=',root_element.attributes
+            # root_element.saveXML('tmp.xml')
+        
+            
+            # xmlHandler=self.XMLHandler()
+            
+            # xmlHandler.outputXMLWithAccessPaths(xmlScript)
+            # print 'GOT LINES = ',xmlHandler.lineNumber
+            # print xmlHandler.lineToElem
+            # print xmlHandler.lineToAccessPath
+            
+            
+        
+            # self.__ui.newFile()
+            # editor=self.__ui.getCurrentEditor()
+            # editor.insertAt(xmlHandler.xmlString,0,0)
+            # editor.setReadOnly(True)
+            # editor.setModified(False)
+            
+            # activePanel, currentindex=self.__ui.getCurrentTabWidgetAndIndex()
+            # activePanel.setTabText(currentindex,'Parameter Scan Tmp File')
+            
+            # lexer=self.__ui.guessLexer("tmp.xml")
+            # if lexer[0]:
+                # editor.setLexer(lexer[0])
+            # self.__ui.setEditorProperties(editor)        
+
+            # # editor.createStandardContextMenu=self.parameterScanMenu 
+            # editor.registerCustomContextMenu(self.createParameterScanMenu(editor))
+            # self.parameterScanEditor=editor
+            
+    def  __closeScanEditor(self):
+        if not self.parameterScanEditor :return
+        
+        
+        panel,idx=self.__ui.getTabWidgetAndWidgetIndex(self.parameterScanEditor)
+        if panel and idx>=0:
+            self.__ui.closeTab( index=idx,_askToSave=False,_panel=panel)
+        self.parameterScanEditor=None
+        
+    def __openScanEditor(self):        
+    
+        if self.parameterScanEditor :
+            self.__closeScanEditor()
 
         import os
         # if self.parameterScanEditor
@@ -801,32 +847,41 @@ class CC3DProject(QObject):
         
         print 'pdh=',pdh.cc3dSimulationData
         
-        # check if parameter scan is already enabled        
-        parameterScanEnabled=False
-        parameterScanFile=''
-        for path,resource in pdh.cc3dSimulationData.resources.iteritems():
-            if resource.type=='ParameterScanSpecs':
-                parameterScanEnabled=True
-                parameterScanFile=os.path.abspath(path)
+        # # check if parameter scan is already enabled        
+        # parameterScanEnabled=False
+        # parameterScanFile=''
+        # for path,resource in pdh.cc3dSimulationData.resources.iteritems():
+            # if resource.type=='ParameterScanSpecs':
+                # parameterScanEnabled=True
+                # parameterScanFile=os.path.abspath(path)
                 
-                break 
+                # break 
         
-        print 'parameterScanFile=',parameterScanFile
+        # print 'parameterScanFile=',parameterScanFile
         
         
+        if not pdh.cc3dSimulationData.parameterScanResource: 
+            print 'you must add parameter scan to the project first'
+            return
+        
+        pScanResource=pdh.cc3dSimulationData.parameterScanResource
         
         print 'self.xmlScript=',pdh.cc3dSimulationData.xmlScript   
+        pScanResource.fileTypeForEditor='xml'
+        
+        
+        
         xmlScript=pdh.cc3dSimulationData.xmlScript
         if xmlScript:   
             import XMLUtils
             import os
             cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
             root_element=cc3dXML2ObjConverter.Parse(xmlScript)
-            print 'root_element=',root_element
+            # print 'root_element=',root_element
             
-            print 'root_element.children=',root_element.children
-            print 'root_element.attributes=',root_element.attributes
-            root_element.saveXML('tmp.xml')
+            # print 'root_element.children=',root_element.children
+            # print 'root_element.attributes=',root_element.attributes
+            # root_element.saveXML('tmp.xml')
                     
             xmlHandler=self.XMLHandler()
             
@@ -844,7 +899,9 @@ class CC3DProject(QObject):
             activePanel, currentindex=self.__ui.getCurrentTabWidgetAndIndex()
             activePanel.setTabText(currentindex,'Parameter Scan Tmp File')
             
-            lexer=self.__ui.guessLexer("tmp.xml")
+            # lexer=self.__ui.guessLexer("tmp.xml")
+            lexer=self.__ui.guessLexer("tmp."+pScanResource.fileTypeForEditor)
+            
             if lexer[0]:
                 editor.setLexer(lexer[0])
             self.__ui.setEditorProperties(editor)        
@@ -854,17 +911,39 @@ class CC3DProject(QObject):
             
             #initialize globals
             self.parameterScanEditor=editor
-            self.parameterScanXMLHandler=xmlHandler
-            self.parameterScanFile=parameterScanFile
+            
+            pScanResource.parameterScanEditor=editor
+            pScanResource.parameterScanXMLHandler=xmlHandler
+            # self.parameterScanFile=parameterScanFile
         
         
         
     def __addToScan(self):
+    
+        tw=self.treeWidget
+        
+        projItem=tw.getProjectParent(tw.currentItem())
+        print'projItem=',projItem
+        
+        print 'self.projectDataHandlers=',self.projectDataHandlers
+        
+        pdh=None
+        try:
+           pdh = self.projectDataHandlers[projItem]
+        except LookupError,e:
+        
+            return                    
+        
+        
+        csd=pdh.cc3dSimulationData
+        pScanResource=pdh.cc3dSimulationData.parameterScanResource
+        
+    
         print '__addToScan'
-        line,col=self.parameterScanEditor.getCursorPosition()
+        line,col=pScanResource.parameterScanEditor.getCursorPosition()
         print 'line,col=',(line,col)
         
-        psXMLHandler=self.parameterScanXMLHandler
+        psXMLHandler=pScanResource.parameterScanXMLHandler
         if psXMLHandler:
             try:
                 accessPath=psXMLHandler.lineToAccessPath[line]
@@ -886,15 +965,50 @@ class CC3DProject(QObject):
         
         # return     
         from CC3DProject.ParameterDialog import  ParameterDialog
-        pdlg=ParameterDialog(self.parameterScanEditor)
+        pdlg=ParameterDialog(pScanResource.parameterScanEditor)
         try:
-            pdlg.displayRunnableParameters(xmlElem,psXMLHandler.lineToAccessPath[line],self.parameterScanFile)
-            pdlg.show()
-        except LookupError,e:
-            pass
-        # pdlg.extractScannableParameters(xmlElem,self.parameterScanFile)
+            pdlg.displayScannableParameters(xmlElem,psXMLHandler.lineToAccessPath[line],pScanResource.path)
+            ret=pdlg.exec_()
+            if ret:                
+                for key,val in pdlg.parameterScanDataMap.iteritems():
+                    print 'Adding key,val=',(key,val)
+                    csd.parameterScanResource.parameterScanDataMap[key]=val
+                
+                # for key,val in pdlg.parameterScanXMLElements.iteritems():
+                    # print 'Adding key,val=',(key,val)
+                    # csd.parameterScanResource.parameterScanXMLElements[key]=val
+        except LookupError,e: # to protect against elements that are not in psXMLHandler.lineToAccessPath
+            return
         
+        # get path to ParameterScan XML file
+        parScanResources=csd.getResourcesByType ('ParameterScan') 
+        print 'parScanResources=',parScanResources     
+        
+        if not csd.parameterScanResource:return
+        
+        resource=csd.parameterScanResource
+        paramScanXMLFilePath=resource.path
+
+        
+        import XMLUtils
+        from XMLUtils import ElementCC3D
+        import os    
+        print 'paramScanXMLFilePath=',paramScanXMLFilePath
+        root_elem=ElementCC3D('ParameterScan',{'version':'3.7.0'})
+        print 'csd.parameterScanResource.parameterScanXMLElements=',csd.parameterScanResource.parameterScanXMLElements
+        
+        xmlElemTmpStorage=[]
+        
+        for key,val in csd.parameterScanResource.parameterScanDataMap.iteritems():
+            xmlElem=val.toXMLElem()
+            xmlElemTmpStorage.append(xmlElem)
             
+            root_elem.CC3DXMLElement.addChild(xmlElem.CC3DXMLElement)
+        
+        # for key,val in csd.parameterScanResource.parameterScanXMLElements.iteritems():
+            # root_elem.CC3DXMLElement.addChild(val.CC3DXMLElement)
+            
+        root_elem.CC3DXMLElement.saveXML(paramScanXMLFilePath)    
         
         
         
@@ -1528,6 +1642,9 @@ class CC3DProject(QObject):
             if ild.getResourceName(item)=='CC3DSerializerResource':
                 pdh.cc3dSimulationData.removeSerializerResource()                
                 
+            elif ild.getResourceName(item)=='CC3DParameterScanResource':
+                pdh.cc3dSimulationData.removeParameterScanResource()                
+                
             ild.removeItem(item)
             
             projItem.removeChild(item)
@@ -1762,6 +1879,24 @@ class CC3DProject(QObject):
                 # print "pd.resources[resourceName]=",pd.resources[resourceName]
                 pass
         
+        elif _resource.resourceName=='CC3DParameterScanResource':
+        
+            # make new branch to store this item 
+            item=QTreeWidgetItem(projItem)
+            item.setText(0,"ParameterScan")
+            item.setIcon(0,QIcon(':/icons/save-simulation.png'))            
+            
+            item1=QTreeWidgetItem(item)
+            item1.setText(0,os.path.basename(_resource.path))            
+
+            
+            try:
+                ild.insertnewGenericResource(item,_resource)
+                ild.insertNewItem(item1,_resource) # file path has to be entered into ild using insertNewItem to enable proper behavior of tree widget                
+                
+            except LookupError,e:
+                # print "pd.resources[resourceName]=",pd.resources[resourceName]
+                pass
         
         
     def insertNewTreeItem(self,resourceName,fileType):
@@ -2183,6 +2318,25 @@ class CC3DProject(QObject):
             ild.insertnewGenericResource(serializerItem,pd.serializerResource)
             # ild.insertNewItem(pifFileItem1,pd.pifFileResource) 
             
+        if pd.parameterScanResource:
+            psResource=pd.parameterScanResource
+            # make new branch to store this item 
+            item=QTreeWidgetItem(projItem)
+            item.setText(0,"ParameterScan")
+            item.setIcon(0,QIcon(':/icons/save-simulation.png'))            
+            
+            item1=QTreeWidgetItem(item)
+            item1.setText(0,os.path.basename(psResource.path))            
+
+            
+            try:
+                ild.insertnewGenericResource(item,psResource)
+                ild.insertNewItem(item1,psResource) # file path has to be entered into ild using insertNewItem to enable proper behavior of tree widget                
+                
+            except LookupError,e:
+                # print "pd.resources[resourceName]=",pd.resources[resourceName]
+                pass        
+  
                 
                 
             

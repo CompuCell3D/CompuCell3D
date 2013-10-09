@@ -1,6 +1,7 @@
 import os
 import sys
 import XMLUtils
+from CC3DProject.enums import *
 
 class XMLHandler:
     def __init__(self):
@@ -78,30 +79,81 @@ class XMLHandler:
             del self.accesspath[-1]
         # print '_elem.cdata=',_elem.cdata
         # return elemStr
-
+        
+def removeWhiteSpaces(_str):
+    import re
+    out_str=str(_str)
+    pattern = re.compile(r'\s+')
+    out_str = re.sub(pattern, '', out_str)
+    return out_str 
+    
 class ParameterScanData:
     def __init__(self):
         self.name=''
-        self.type=''
+        self.valueType=FLOAT
+        self.type=XML_ATTR
         self.accessPath=''
         self.minValue=0
         self.maxValue=0
         self.steps=1
         self.customValues=[]
+        self.currentIteration=0
+        self.hash=''
+    
+    def calculateValues(self):
+        if self.steps>1:
+            interval=(self.maxValue-self.minValue)/float(self.steps-1)
+            values=[self.minValue+i*interval for i in range(self.steps)]
+            
+        else:
+            values=[(self.maxValue+self.minValue)/2.0]
+        return values
+        
+    def  stringHash(self):
+        self.accessPath=removeWhiteSpaces(self.accessPath)
+        print 'str(self.accessPath)=',str(self.accessPath)
+        hash=str(self.accessPath)+'_Type='+TYPE_DICT[self.type]+'_Name='+self.name        
+        return hash
+        
+    def fromXMLElem(self,_el):
+        import XMLUtils
+        self.name = _el.getAttribute('Name')
+        print 'self.name=',self.name
+        self.type = _el.getAttribute('Type')
+        self.type = TYPE_DICT_REVERSE[self.type] # changing string to number to be consistent
+        self.valueType = _el.getAttribute('ValueType')
+        self.valueType = VALUE_TYPE_DICT_REVERSE[self.valueType]# changing string to number to be consistent
+        self.currentIteration = _el.getAttribute('CurrentIteration')
+        self.accessPath = removeWhiteSpaces(_el.getText())
+        
+        
         
     def toXMLElem(self):
         import XMLUtils
         from XMLUtils import ElementCC3D
         
-        el=ElementCC3D('Parameter',{'Name':self.name,'Type':self.type},self.accessPath)
+        el=ElementCC3D('Parameter',{'Name':self.name,'Type':TYPE_DICT[self.type],'ValueType':VALUE_TYPE_DICT[self.valueType],'CurrentIteration':self.currentIteration},removeWhiteSpaces(self.accessPath))
         
-        if len(self.customValues):
-            for val in self.customValues:
-                el.ElementCC3D('CustomValue',{},val)
-        else:        
-            el.ElementCC3D('MinValue',{},self.minValue)
-            el.ElementCC3D('MaxValue',{},self.maxValue)
-            el.ElementCC3D('Steps',{},self.steps)
+        valStr=''
+        values=self.calculateValues()
+        for val in values:
+            valStr+=str(val)+','
+            
+        #remove last comma    
+        if valStr:
+            valStr=valStr[:-1]
+            
+            
+        el.ElementCC3D('Values',{},valStr)
+        
+        # if len(self.customValues):
+            
+            # for val in self.customValues:
+                # el.ElementCC3D('CustomValue',{},val)
+        # else:        
+            # el.ElementCC3D('MinValue',{},self.minValue)
+            # el.ElementCC3D('MaxValue',{},self.maxValue)
+            # el.ElementCC3D('Steps',{},self.steps)
             
         return el
 
@@ -141,7 +193,7 @@ class ParameterScanUtils:
                 try:# checki if attribute can be converted to floating point value - if so it can be added to scannable parameters
                     print '_elem.attributes[key]=',_elem.attributes[key]
                     float(_elem.attributes[key])
-                    params[key]=[_elem.attributes[key],0]
+                    params[key]=[_elem.attributes[key],XML_ATTR,FLOAT]
                 except ValueError,e:
                     pass
                     
@@ -149,7 +201,7 @@ class ParameterScanUtils:
         try:# checki if attribute can be converted to floating point value - if so it can be added to scannable parameters
 
             float(_elem.cdata)
-            params[_elem.name]=[_elem.cdata,0]
+            params[_elem.name]=[_elem.cdata,XML_CDATA,FLOAT]
         except ValueError,e:
             pass
         

@@ -5,8 +5,11 @@ import PyQt4.QtCore as QtCore
 import ui_parameterdlg
 import sys
 import os.path
+from CC3DProject.enums import *
 
 MAC = "qt_mac_set_native_menubar" in dir()
+
+
 
 class TablePushButton(QPushButton):
     def __init__(self,_parent=None):
@@ -27,32 +30,45 @@ class ParameterDialog(QDialog,ui_parameterdlg.Ui_ParameterDlg):
     
     def __init__(self,parent=None):
         super(ParameterDialog, self).__init__(parent)
+        self.fileType='XML'
 
         self.scannableParams={}
         self.xmlString=''
         self.accessPath=''
-
+        self.parameterScanXMLElements={}
+        self.parameterScanDataMap={}
+        
         self.setupUi(self)
           
-        self.updateUi()      
+        self.updateUi()
         
+    def setFileType(self,_type):
+        self.fileType=_type
+    
     def __handleActionClicked(self):
         senderBtn=self.sender()
         row,col=senderBtn.getPosition()
         print 'clicked row,column=',(row,col)
         from ParameterScanUtils import ParameterScanData
         
-        nameItem=self.paramTW.item(row,0)
-        valueItem=self.paramTW.item(row,1)
+        nameItem=self.paramTW.item(row,PARAMETER)
+        
+        valueItem=self.paramTW.item(row,VALUE)
         value=float(valueItem.text())
+        
+        print 'TYPE=',TYPE
+        typeItem=self.paramTW.item(row,TYPE)
+        type=TYPE_DICT_REVERSE[str(typeItem.text())]
+        print 'type=',type,'\n\n\n\n' 
         
         psd=ParameterScanData()
         
-        psd.name=nameItem.text()
-        psd.type='float'
-        psd.minValue=value
+        psd.name=str(nameItem.text())
+        psd.valueType=VALUE_TYPE_DICT_REVERSE['float']
+        psd.type=type
+        psd.minValue=0
         psd.maxValue=value
-        psd.step=1
+        psd.steps=5
         psd.accessPath=self.accessPath
         
         el=psd.toXMLElem()
@@ -60,12 +76,14 @@ class ParameterDialog(QDialog,ui_parameterdlg.Ui_ParameterDlg):
         from ParameterScanUtils import XMLHandler
         xmlHandler=XMLHandler()
         xmlHandler.writeXMLElement(el.CC3DXMLElement) # because ElementCC3D was constructed in Python we need to get C++ object (CC3DXMLElement) from it this is what writeXMLElement expects
+        # self.parameterScanXMLElements[psd.stringHash()]=el
+        self.parameterScanDataMap[psd.stringHash()]=psd
         
         print 'xmlElem=',xmlHandler.xmlString
         
 
         
-    def  displayRunnableParameters(self,_elem,_accessPath,_parameterScanFile):
+    def  displayScannableParameters(self,_elem,_accessPath,_parameterScanFile):
         
         self.accessPath=_accessPath
         
@@ -93,6 +111,8 @@ class ParameterDialog(QDialog,ui_parameterdlg.Ui_ParameterDlg):
             paramNameItem=QTableWidgetItem(paramName)
             paramValueItem=QTableWidgetItem(paramProps[0])
             
+            paramTypeItem=QTableWidgetItem(TYPE_DICT[paramProps[1]])
+                
             btn = TablePushButton(table)
             
             
@@ -104,10 +124,12 @@ class ParameterDialog(QDialog,ui_parameterdlg.Ui_ParameterDlg):
                 btn.setText('View/Edit...')
                 # actionItem=QTableWidgetItem('View/Edit...')
                 
-            table.setItem (currentRow,0,  paramNameItem)
-            table.setItem (currentRow,1,  paramValueItem)
-            table.setCellWidget(currentRow, 2, btn)
-            btn.setPosition(currentRow, 2)
+            table.setItem (currentRow,PARAMETER,  paramNameItem)
+            table.setItem (currentRow,VALUE,  paramValueItem)
+            table.setItem (currentRow,TYPE,  paramTypeItem)
+            
+            table.setCellWidget(currentRow, ACTION, btn)
+            btn.setPosition(currentRow, ACTION)
             btn.clicked.connect(self.__handleActionClicked)
             
             
