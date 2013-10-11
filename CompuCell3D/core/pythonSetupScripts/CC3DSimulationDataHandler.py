@@ -4,6 +4,35 @@ import string
 
 MODULENAME = '------- pythonSetupScripts/CC3DSimulationDataHandler.py: '
 
+def findRelativePathSegments(basePath,p, rest=[]):
+    """
+        This function finds relative path segments of path p with respect to base path    
+        It returns list of relative path segments and flag whether operation succeeded or not    
+    """
+    h,t = os.path.split(p)
+    pathMatch=False
+    if h==basePath:
+        pathMatch=True
+        return [t]+rest,pathMatch
+    print "(h,t,pathMatch)=",(h,t,pathMatch)
+    if len(h) < 1: return [t]+rest,pathMatch
+    if len(t) < 1: return [h]+rest,pathMatch
+    return findRelativePathSegments(basePath,h,[t]+rest)
+    
+def findRelativePath(basePath,p):
+    relativePathSegments,pathMatch = findRelativePathSegments(basePath,p)
+    if pathMatch:
+        relativePath=""
+        for i in range(len(relativePathSegments)):
+            segment = relativePathSegments[i]
+            relativePath += segment
+            if i != len(relativePathSegments)-1:
+                relativePath += "/" # we use unix style separators - they work on all (3) platforms
+        return relativePath
+    else:
+        return p
+
+
 class GenericResource(object):
     def __init__(self,_resourceName=''):
         self.resourceName=_resourceName
@@ -56,38 +85,157 @@ class CC3DParameterScanResource(CC3DResource):
         CC3DResource.__init__(self)
         self.resourceName='CC3DParameterScanResource'
         self.type='ParameterScan'
+        self.basePath=''
         
         self.parameterScanXMLElements = {}
-        self.parameterScanDataMap = {}
+        self.parameterScanFileToDataMap = {} # {file name:dictionary of parameterScanData} parameterScanDataMap={hash:parameterScanData}
+        # self.parameterScanDataMap = {}
         self.fileTypeForEditor = 'xml'
         self.parameterScanXMLHandler = None
         
+    def addParameterScanData(self,_file,_psd):
+        print 'self.basePath=',self.basePath
+        print '_file=',_file
+        relativePath=findRelativePath(self.basePath,_file) # relative path of the scanned simulation file w.r.t. project directory
+        print 'relativePath=',relativePath
+        
+        try:
+            parameterScanDataMap=self.parameterScanFileToDataMap[relativePath]            
+        except LookupError,e:
+            parameterScanDataMap={}
+            self.parameterScanFileToDataMap[relativePath]=parameterScanDataMap
+            
+            
+        parameterScanDataMap[_psd.stringHash()]=_psd
+        
+        
     def readParameterScanSpecs(self):
-    
+        
         if not self.path:return
         
-        self.parameterScanDataMap={}
+        import xml
         
+        self.parameterScanFileToDataMap={}
         import XMLUtils
         import os
         cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
+        try:
+            root_element=cc3dXML2ObjConverter.Parse(self.path)    
+        except xml.parsers.expat.ExpatError,e:
+            print 'Error Parsing Parameter scan file'
+            return
         
-        root_element=cc3dXML2ObjConverter.Parse(self.path)    
+        paramListElemList = XMLUtils.CC3DXMLListPy(root_element.getElements("ParameterList"))
+        for paramListElem in paramListElemList:
+            filePath=paramListElem.getAttribute('Resource')
+            print 'filePath=',filePath 
+            
+            parameterScanDataMap={}
+            self.parameterScanFileToDataMap[filePath]=parameterScanDataMap
+                        
+            paramElemList=XMLUtils.CC3DXMLListPy(paramListElem.getElements("Parameter")) 
+            
+            
+            for paramElem in paramElemList:
+                from ParameterScanUtils import ParameterScanData            
+                psd=ParameterScanData()                
+                psd.fromXMLElem(paramElem)            
+                
+                #storing psd in the dictionary
+                parameterScanDataMap[psd.stringHash()]=psd
+
+        # print 'self.parameterScanFileToDataMap=',self.parameterScanFileToDataMap
+        # ########################################
+
+        # if not self.path:return
         
-        paramElemList = XMLUtils.CC3DXMLListPy(root_element.getElements("Parameter"))
+        # self.parameterScanDataMap={}
+        # self.parameterScanFileToDataMap={}
+        
+        # import XMLUtils
+        # import os
+        # cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
+        
+        # root_element=cc3dXML2ObjConverter.Parse(self.path)    
+        
+        # paramElemList = XMLUtils.CC3DXMLListPy(root_element.getElements("Parameter"))
             
-        for paramElem in paramElemList:
-            from ParameterScanUtils import ParameterScanData
-            print '\n\n\n\n\n READING SCAN DATA'
-            psd=ParameterScanData()
+        # for paramElem in paramElemList:
+            # from ParameterScanUtils import ParameterScanData
+            # print '\n\n\n\n\n READING SCAN DATA'
+            # psd=ParameterScanData()
             
-            psd.fromXMLElem(paramElem)            
+            # psd.fromXMLElem(paramElem)            
             
-            # self.parameterScanDataMap[psd.stringHash()]=psd
+            # # self.parameterScanDataMap[psd.stringHash()]=psd
             
-        print 'self.parameterScanDataMap=',self.parameterScanDataMap
-#        print MODULENAME,'  readCC3DFileFormat():  resourceList=',resourceList
-        # for resourceElem in resourceList:
+        # print 'self.parameterScanDataMap=',self.parameterScanDataMap
+# #        print MODULENAME,'  readCC3DFileFormat():  resourceList=',resourceList
+        # # for resourceElem in resourceList:
+
+    def writeParameterScanSpecs(self):
+    
+        if not self.path:return
+        
+        import XMLUtils
+        from XMLUtils import ElementCC3D
+        import os    
+
+        root_elem=ElementCC3D('ParameterScan',{'version':'3.7.0'})
+        print 'csd.parameterScanResource.parameterScanXMLElements=',self.parameterScanXMLElements
+        
+        xmlElemTmpStorage=[]
+        
+        print 'JUST BEFORE WRITING self.parameterScanFileToDataMap=',self.parameterScanFileToDataMap
+        
+        for fileName, parameterScanDataMap in self.parameterScanFileToDataMap.iteritems():
+            if len(parameterScanDataMap.keys()):
+                paramListElem=root_elem.ElementCC3D('ParameterList',{'Resource':fileName})
+                
+                xmlElemTmpStorage.append(paramListElem)
+                
+                for hash, psd in parameterScanDataMap.iteritems():
+                    xmlElem=psd.toXMLElem()
+                    xmlElemTmpStorage.append(xmlElem)
+                    
+                    paramListElem.CC3DXMLElement.addChild(xmlElem.CC3DXMLElement)
+                    
+            
+            
+        root_elem.CC3DXMLElement.saveXML(self.path) 
+        
+        # ##################################
+        
+        # xmlElemTmpStorage=[]
+        
+        # for key,val in self.parameterScanDataMap.iteritems():
+            # xmlElem=val.toXMLElem()
+            # xmlElemTmpStorage.append(xmlElem)
+            
+            # root_elem.CC3DXMLElement.addChild(xmlElem.CC3DXMLElement)
+        
+            
+        # root_elem.CC3DXMLElement.saveXML(self.path)    
+        
+        
+        # import XMLUtils
+        # import os
+        # cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
+        
+        # root_element=cc3dXML2ObjConverter.Parse(self.path)    
+        
+        # paramElemList = XMLUtils.CC3DXMLListPy(root_element.getElements("Parameter"))
+            
+        # for paramElem in paramElemList:
+            # from ParameterScanUtils import ParameterScanData
+            # print '\n\n\n\n\n READING SCAN DATA'
+            # psd=ParameterScanData()
+            
+            # psd.fromXMLElem(paramElem)            
+            
+            # # self.parameterScanDataMap[psd.stringHash()]=psd
+            
+        # print 'self.parameterScanDataMap=',self.parameterScanDataMap
         
         
         
@@ -367,6 +515,7 @@ class CC3DSimulationDataHandler:
             self.cc3dSimulationData.parameterScanResource= CC3DParameterScanResource()
             self.cc3dSimulationData.parameterScanResource.path=os.path.abspath(os.path.join(bp,psFile)) #normalizing path to python script
             self.cc3dSimulationData.parameterScanResource.type = 'ParameterScan'
+            self.cc3dSimulationData.parameterScanResource.basePath=self.cc3dSimulationData.basePath # setting same base path for parameter scan as for the project - necessary to get relative paths in the parameterSpec file
             #reading content of XML parameter scan specs
             self.cc3dSimulationData.parameterScanResource.readParameterScanSpecs()
         
@@ -411,7 +560,7 @@ class CC3DSimulationDataHandler:
         if not _resource.copy:
             attributeDict["Copy"]="No"
             
-        return elName,attributeDict,self.findRelativePath(self.cc3dSimulationData.basePath,_resource.path)
+        return elName,attributeDict,findRelativePath(self.cc3dSimulationData.basePath,_resource.path)
     
     def writeCC3DFileFormat(self,_fileName):        
         from XMLUtils import ElementCC3D
@@ -477,30 +626,5 @@ class CC3DSimulationDataHandler:
     # Based on code by  Cimarron Taylor
     # Date: July 6, 2003
     
-    def findRelativePathSegments(self,basePath,p, rest=[]):
-        """
-            This function finds relative path segments of path p with respect to base path    
-            It returns list of relative path segments and flag whether operation succeeded or not    
-        """
-        h,t = os.path.split(p)
-        pathMatch=False
-        if h==basePath:
-            pathMatch=True
-            return [t]+rest,pathMatch
-        print "(h,t,pathMatch)=",(h,t,pathMatch)
-        if len(h) < 1: return [t]+rest,pathMatch
-        if len(t) < 1: return [h]+rest,pathMatch
-        return self.findRelativePathSegments(basePath,h,[t]+rest)
-        
-    def findRelativePath(self,basePath,p):
-        relativePathSegments,pathMatch = self.findRelativePathSegments(basePath,p)
-        if pathMatch:
-            relativePath=""
-            for i in range(len(relativePathSegments)):
-                segment = relativePathSegments[i]
-                relativePath += segment
-                if i != len(relativePathSegments)-1:
-                    relativePath += "/" # we use unix style separators - they work on all (3) platforms
-            return relativePath
-        else:
-            return p
+
+    

@@ -88,14 +88,14 @@ def removeWhiteSpaces(_str):
     return out_str 
     
 class ParameterScanData:
-    def __init__(self):
+    def __init__(self):        
         self.name=''
         self.valueType=FLOAT
         self.type=XML_ATTR
         self.accessPath=''
-        self.minValue=0
-        self.maxValue=0
-        self.steps=1
+        # self.minValue=0
+        # self.maxValue=0
+        # self.steps=1
         self.customValues=[]
         self.currentIteration=0
         self.hash=''
@@ -103,16 +103,17 @@ class ParameterScanData:
     def calculateValues(self):
         if self.steps>1:
             interval=(self.maxValue-self.minValue)/float(self.steps-1)
-            values=[self.minValue+i*interval for i in range(self.steps)]
+            self.customValues=[self.minValue+i*interval for i in range(self.steps)]
             
         else:
-            values=[(self.maxValue+self.minValue)/2.0]
-        return values
+            self.customValues=[(self.maxValue+self.minValue)/2.0]
+        return self.customValues
         
     def  stringHash(self):
         self.accessPath=removeWhiteSpaces(self.accessPath)
         print 'str(self.accessPath)=',str(self.accessPath)
-        hash=str(self.accessPath)+'_Type='+TYPE_DICT[self.type]+'_Name='+self.name        
+        hash=str(self.accessPath)+'_Type='+TYPE_DICT[self.type]+'_Name='+self.name   
+        print 'hash=',hash    
         return hash
         
     def fromXMLElem(self,_el):
@@ -123,10 +124,27 @@ class ParameterScanData:
         self.type = TYPE_DICT_REVERSE[self.type] # changing string to number to be consistent
         self.valueType = _el.getAttribute('ValueType')
         self.valueType = VALUE_TYPE_DICT_REVERSE[self.valueType]# changing string to number to be consistent
-        self.currentIteration = _el.getAttribute('CurrentIteration')
+        self.currentIteration = str(_el.getAttribute('CurrentIteration'))
         self.accessPath = removeWhiteSpaces(_el.getText())
+        valueStr=str(_el.getFirstElement('Values').getText())
+        
+        values=[]
+
+        if len(valueStr):            
+            values=valueStr.split(',')
+            
         
         
+        if len(values):
+            if self.valueType==FLOAT:
+                self.customValues=map(float,values)
+            elif self.valueType==INT:   
+                self.customValues=map(int,values)
+            else:
+                self.customValues=values
+                
+        else:
+            self.customValues=[]
         
     def toXMLElem(self):
         import XMLUtils
@@ -135,8 +153,9 @@ class ParameterScanData:
         el=ElementCC3D('Parameter',{'Name':self.name,'Type':TYPE_DICT[self.type],'ValueType':VALUE_TYPE_DICT[self.valueType],'CurrentIteration':self.currentIteration},removeWhiteSpaces(self.accessPath))
         
         valStr=''
-        values=self.calculateValues()
-        for val in values:
+        # values=self.calculateValues()
+        
+        for val in self.customValues:
             valStr+=str(val)+','
             
         #remove last comma    

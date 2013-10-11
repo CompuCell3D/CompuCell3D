@@ -38,6 +38,8 @@ class ParameterDialog(QDialog,ui_parameterdlg.Ui_ParameterDlg):
         self.parameterScanXMLElements={}
         self.parameterScanDataMap={}
         
+        # self.scannedFileName='' # name of the file being scanned - can be either XML , or Python
+        
         self.setupUi(self)
           
         self.updateUi()
@@ -64,26 +66,33 @@ class ParameterDialog(QDialog,ui_parameterdlg.Ui_ParameterDlg):
         psd=ParameterScanData()
         
         psd.name=str(nameItem.text())
-        psd.valueType=VALUE_TYPE_DICT_REVERSE['float']
         psd.type=type
-        psd.minValue=0
-        psd.maxValue=value
-        psd.steps=5
         psd.accessPath=self.accessPath
         
+        # show param scan values generation dialog
+        from ParValDlg import ParValDlg
+        parvaldlg=ParValDlg(self)
+        parvaldlg.setAutoMinMax(value)
+        
+        if parvaldlg.exec_():
+            valueStr=str()
+            psd.customValues=parvaldlg.getValues()
+            psd.valueType=VALUE_TYPE_DICT_REVERSE[parvaldlg.getValueType()]
+        else:
+            #user canceled
+            return
+
         el=psd.toXMLElem()
         
         from ParameterScanUtils import XMLHandler
         xmlHandler=XMLHandler()
         xmlHandler.writeXMLElement(el.CC3DXMLElement) # because ElementCC3D was constructed in Python we need to get C++ object (CC3DXMLElement) from it this is what writeXMLElement expects
-        # self.parameterScanXMLElements[psd.stringHash()]=el
         self.parameterScanDataMap[psd.stringHash()]=psd
         
-        print 'xmlElem=',xmlHandler.xmlString
+        # print 'xmlElem=',xmlHandler.xmlString
         
 
-        
-    def  displayScannableParameters(self,_elem,_accessPath,_parameterScanFile):
+    def displayScannableParameters(self,_elem,_accessPath,_parameterScanFile):
         
         self.accessPath=_accessPath
         
@@ -117,12 +126,13 @@ class ParameterDialog(QDialog,ui_parameterdlg.Ui_ParameterDlg):
             
             
             actionItem=None
-            if paramProps[1]==0:
-                btn.setText('Add To Scan...')
-                # actionItem=QTableWidgetItem('Add To Scan')
-            elif paramProps[1]==1:
-                btn.setText('View/Edit...')
-                # actionItem=QTableWidgetItem('View/Edit...')
+            btn.setText('Edit...')
+            # if paramProps[1]==0:
+                # btn.setText('Add To Scan...')
+                # # actionItem=QTableWidgetItem('Add To Scan')
+            # elif paramProps[1]==1:
+                # btn.setText('View/Edit...')
+                # # actionItem=QTableWidgetItem('View/Edit...')
                 
             table.setItem (currentRow,PARAMETER,  paramNameItem)
             table.setItem (currentRow,VALUE,  paramValueItem)
@@ -132,12 +142,6 @@ class ParameterDialog(QDialog,ui_parameterdlg.Ui_ParameterDlg):
             btn.setPosition(currentRow, ACTION)
             btn.clicked.connect(self.__handleActionClicked)
             
-            
-
-        
-        
-        
-        
         
     def updateUi(self):
         table=self.paramTW
