@@ -1,5 +1,7 @@
 <RCC>
   <qresource>
+    <file>icons/reset_32x32.png</file>
+    <file>icons/reset_64x64.png</file>
     <file>icons/editor.png</file>
     <file>icons/scan_32x32.png</file>
     <file>icons/scan_64x64.png</file>
