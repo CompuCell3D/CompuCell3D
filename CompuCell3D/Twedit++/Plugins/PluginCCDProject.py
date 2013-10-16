@@ -247,15 +247,22 @@ class CC3DProjectTreeWidget(QTreeWidget):
             #--------------------------------------------------------------------
             self.addGenerateSteppableMenu(menu,projItem)
             self.addConvertXMLToPythonMenu(menu,projItem)            
-            self.addOpenScanEditorMenu(menu,projItem)
+            
+            
+            
             
             menu.addSeparator()
+            
+        # parameter scan menus        
+        self.addParameterScanMenus(menu,projItem)            
             
         resourceName=self.getResourceName(self.currentItem())
         print '\n\n\n RESOURCENAME',resourceName
         if resourceName=='CC3DSerializerResource':            
             menu.addAction(self.plugin.actions["Serializer..."])    
             
+        # if resourceName=='CC3DParameterScanResource':            
+            # menu.addAction(self.plugin.actions["Reset Parameter Scan"])    
         
         menu.addAction(self.plugin.actions["Save CC3D Project"])
         menu.addAction(self.plugin.actions["Add Resource..."])
@@ -313,19 +320,28 @@ class CC3DProjectTreeWidget(QTreeWidget):
             return
                         
                         
-           
-    def addOpenScanEditorMenu(self,_menu,_projItem):
-    
+    def addParameterScanMenus(self,_menu,_projItem):
         pdh=None
         try:
            pdh = self.plugin.projectDataHandlers[_projItem]
         except LookupError,e:
         
             return          
-            
+        _menu.addSeparator()    
+        resourceName=self.getResourceName(self.currentItem())    
+        
         itemFullPath=str(self.getFullPath(self.currentItem()))
         basename, extension = os.path.splitext(itemFullPath)
-        
+        #adding menu to parameter scan xml file
+        if pdh.cc3dSimulationData.parameterScanResource and itemFullPath==pdh.cc3dSimulationData.parameterScanResource.path:
+            _menu.addAction(self.plugin.actions["Reset Parameter Scan"])
+            
+        #adding menu to parameter scan node
+        if resourceName=='CC3DParameterScanResource':            
+            _menu.addAction(self.plugin.actions["Reset Parameter Scan"])    
+            
+            
+            
         try:
             cc3dResource=pdh.cc3dSimulationData.resources[itemFullPath]
             if cc3dResource.type=="Python":
@@ -334,8 +350,14 @@ class CC3DProjectTreeWidget(QTreeWidget):
         except LookupError,e:
             pass
         
+
+        
         if pdh.cc3dSimulationData.xmlScript==itemFullPath or pdh.cc3dSimulationData.pythonScript==itemFullPath:
             _menu.addAction(self.plugin.actions["Open Scan Editor"])
+            
+        _menu.addSeparator()        
+    
+
         
     def addConvertXMLToPythonMenu(self,_menu,_projItem):
     
@@ -605,7 +627,30 @@ class CC3DProject(QObject):
         
         self.actions["Add To Scan..."]=QtGui.QAction(QIcon(':/icons/add.png'),"Add To Scan...", self, shortcut="", statusTip="Add Parameter To Scan", triggered=self.__addToScan)        
         self.actions['Open Scan Editor']=QtGui.QAction(QIcon(':/icons/editor.png'),"Open Scan Editor", self, shortcut="", statusTip="Open Scan Editor", triggered=self.__openScanEditor)        
-                
+        self.actions['Reset Parameter Scan']=QtGui.QAction(QIcon(':/icons/editor.png'),"Reset Parameter Scan", self, shortcut="", statusTip="Reset Parameter Scan", triggered=self.__resetParameterScan)                        
+
+    def  __resetParameterScan(self):
+        tw=self.treeWidget
+        ret=QMessageBox.warning(tw,"Parameter Scan Reset","You are about to reset parameter scan to start from the beginning. Do you want to proceed?",QMessageBox.Yes |QMessageBox.No)
+        
+        if ret == QMessageBox.No:return
+            
+
+        projItem=tw.getProjectParent(tw.currentItem())            
+
+        pdh=None
+        try:
+            pdh=self.projectDataHandlers[projItem]                    
+        except LookupError,e:
+            print "could not find simulation data handler for this item"
+            return              
+        
+        if pdh.cc3dSimulationData.parameterScanResource:
+            from ParameterScanUtils import ParameterScanUtils as PSU
+            psu=PSU()
+            psu.resetParameterScan(pdh.cc3dSimulationData.parameterScanResource.path)
+            
+        
     def __addParameterScan(self):
 
         tw=self.treeWidget
@@ -751,49 +796,99 @@ class CC3DProject(QObject):
         line,col=pScanResource.parameterScanEditor.getCursorPosition()
         print 'line,col=',(line,col)
         
-        psXMLHandler=pScanResource.parameterScanXMLHandler
-        if psXMLHandler:
-            try:
-                accessPath=psXMLHandler.lineToAccessPath[line]
-                xmlElem=psXMLHandler.lineToElem[line]
-            except LookupError,e:
-                accessPath=''
-            
-            print 'AccessPath=',accessPath
         
-            
-        if not accessPath:
-            return
-            
-        print 'self.scannedFileName=',self.scannedFileName,'\n\n\n\n\n'
-        from CC3DProject.ParameterDialog import  ParameterDialog
-        pdlg=ParameterDialog(pScanResource.parameterScanEditor)
-        print 'DICT BEFORE=',csd.parameterScanResource.parameterScanFileToDataMap
-        try:
-            pdlg.displayScannableParameters(xmlElem,psXMLHandler.lineToAccessPath[line],pScanResource.path)
-            ret=pdlg.exec_()
-            if ret:                
-                for key,val in pdlg.parameterScanDataMap.iteritems():
-                    print 'Adding key,val=',(key,val)
-                    csd.parameterScanResource.addParameterScanData(self.scannedFileName,val)
-                    
-                    # csd.parameterScanResource.parameterScanDataMap[key]=val ###
+        # if pScanResource
+        scannedFileExt= os.path.splitext(self.scannedFileName)[1].lower() 
+        if scannedFileExt == '.xml':
+            psXMLHandler=pScanResource.parameterScanXMLHandler
+            if psXMLHandler:
+                try:
+                    accessPath=psXMLHandler.lineToAccessPath[line]
+                    xmlElem=psXMLHandler.lineToElem[line]
+                except LookupError,e:
+                    accessPath=''
                 
+                print 'AccessPath=',accessPath
+            
+                
+            if not accessPath:
+                return
+                
+            print 'self.scannedFileName=',self.scannedFileName,'\n\n\n\n\n'
+            from CC3DProject.ParameterDialog import  ParameterDialog
+            pdlg=ParameterDialog(pScanResource.parameterScanEditor)
+            print 'DICT BEFORE=',csd.parameterScanResource.parameterScanFileToDataMap
+            try:
+                pdlg.displayXMLScannableParameters(xmlElem,psXMLHandler.lineToAccessPath[line],pScanResource.path)
+                ret=pdlg.exec_()
+                if ret:                
+                    haveNewItems=False
+                    for key,val in pdlg.parameterScanDataMap.iteritems():
+                        print 'Adding key,val=',(key,val)
+                        csd.parameterScanResource.addParameterScanData(self.scannedFileName,val)
+                        haveNewItems=True
+                        
+                        # csd.parameterScanResource.parameterScanDataMap[key]=val ###
+                    if haveNewItems:    
+                        pScanResource.writeParameterScanSpecs()
 
-        except LookupError,e: # to protect against elements that are not in psXMLHandler.lineToAccessPath
-            return
+            except LookupError,e: # to protect against elements that are not in psXMLHandler.lineToAccessPath
+                return
+                
         
-        print 'DICT AFTER=',csd.parameterScanResource.parameterScanFileToDataMap
-        # get path to ParameterScan XML file
-        parScanResources=csd.getResourcesByType ('ParameterScan') 
-        print 'parScanResources=',parScanResources     
-        
-        if not csd.parameterScanResource:return
-        
-        resource=csd.parameterScanResource
-        # paramScanXMLFilePath=resource.path
+        elif scannedFileExt == '.py':
+            from ParameterScanUtils import ParameterScanUtils as PSU
+            psu=PSU()
+            
+            pythonLine=str(pScanResource.parameterScanEditor.text(line))
+            
+            foundGlobalVar=psu.checkPythonLineForGlobalVariable(pythonLine)
+            if foundGlobalVar:
+                try:
+                    varName,varValue=psu.extractGlobalVarFromLine(pythonLine)
+                    print 'varName,varValue=',(varName,varValue)
+                except:
+                    QMessageBox.warning(tw,"Problem Parsing Python Line","Could Not Parse Python Line to find global variable. Make sure you declare global variables in separate lines e.g. myvar=10 ")
+                    
+                    
+                from CC3DProject.ParValDlg import ParValDlg
+                parvaldlg=ParValDlg(self.parameterScanEditor)
+                from ParameterScanEnums import PYTHON_GLOBAL
+                parvaldlg.initParameterScanData(_parValue=varValue,_parName=varName,_parType=PYTHON_GLOBAL,_parAccessPath='')
+                
+                if parvaldlg.exec_():
+                    try:
+                        parvaldlg.recordValues()
+                    except ValueError,e:
+                        QMessageBox.warning(tw,"Error Parsing Parameter List","Please make sure that parameter list entries have correct type")
+                        return
+                        
+                    psd=parvaldlg.psd
+                    
+                    if len(psd.customValues):
+                        csd.parameterScanResource.addParameterScanData(self.scannedFileName,psd)
+                        pScanResource.writeParameterScanSpecs()
+                        
+                else:
+                    #user canceled
+                    return
 
-        resource.writeParameterScanSpecs()
+
+        
+        
+            
+        
+        # # # print 'DICT AFTER=',csd.parameterScanResource.parameterScanFileToDataMap
+        # # # # get path to ParameterScan XML file
+        # # # parScanResources=csd.getResourcesByType ('ParameterScan') 
+        # # # print 'parScanResources=',parScanResources     
+        
+        # # # if not csd.parameterScanResource:return
+        
+        # # # resource=csd.parameterScanResource
+        # # # # paramScanXMLFilePath=resource.path
+
+        # resource.writeParameterScanSpecs()
 
         
         

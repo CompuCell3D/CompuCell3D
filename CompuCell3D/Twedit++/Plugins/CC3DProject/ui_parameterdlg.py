@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '.\parameterdlg.ui'
 #
-# Created: Wed Oct 09 16:22:40 2013
+# Created: Wed Oct 16 18:17:23 2013
 #      by: PyQt4 UI code generator 4.8.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -53,6 +53,10 @@ class Ui_ParameterDlg(object):
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
+        self.pushButton = QtGui.QPushButton(ParameterDlg)
+        self.pushButton.setText(QtGui.QApplication.translate("ParameterDlg", "Cancel", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton.setObjectName(_fromUtf8("pushButton"))
+        self.horizontalLayout.addWidget(self.pushButton)
         self.okPB = QtGui.QPushButton(ParameterDlg)
         self.okPB.setText(QtGui.QApplication.translate("ParameterDlg", "OK", None, QtGui.QApplication.UnicodeUTF8))
         self.okPB.setObjectName(_fromUtf8("okPB"))
@@ -61,6 +65,7 @@ class Ui_ParameterDlg(object):
 
         self.retranslateUi(ParameterDlg)
         QtCore.QObject.connect(self.okPB, QtCore.SIGNAL(_fromUtf8("clicked()")), ParameterDlg.accept)
+        QtCore.QObject.connect(self.pushButton, QtCore.SIGNAL(_fromUtf8("clicked()")), ParameterDlg.reject)
         QtCore.QMetaObject.connectSlotsByName(ParameterDlg)
 
     def retranslateUi(self, ParameterDlg):

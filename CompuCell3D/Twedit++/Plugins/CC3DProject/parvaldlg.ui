@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Generate Paramete rValues</string>
+   <string>Generate Parameter Values</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

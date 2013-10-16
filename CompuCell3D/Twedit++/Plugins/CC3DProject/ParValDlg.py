@@ -5,7 +5,8 @@ import PyQt4.QtCore as QtCore
 import ui_parvaldlg
 import sys
 import os.path
-from CC3DProject.enums import *
+# from CC3DProject.enums import *
+from ParameterScanEnums import *
 
 MAC = "qt_mac_set_native_menubar" in dir()
 
@@ -24,7 +25,25 @@ class ParValDlg(QDialog,ui_parvaldlg.Ui_ParValDlg):
         
         self.typeCB.currentIndexChanged.connect(self.__changeValueType)
         self.valueType=str(self.typeCB.currentText())
-     
+        
+        from ParameterScanUtils import ParameterScanData
+        self.psd=ParameterScanData()
+        
+    def initParameterScanData(self,_parValue,_parName,_parType=XML_CDATA,_parAccessPath=''):
+        psd=self.psd
+        psd.name=_parName
+        psd.type=_parType
+        psd.accessPath=_parAccessPath          
+        self.setAutoMinMax(float(_parValue))
+        self.valueType=str(self.typeCB.currentText()) # after sucessful type change we store new type 
+        
+        # self.recordValues()
+        
+    def recordValues(self):
+        psd=self.psd
+        psd.valueType=VALUE_TYPE_DICT_REVERSE[self.getValueType()]                
+        psd.customValues=self.getValues()
+    
     def __changeValueType(self,_index):
                 
         typeStr=str(self.typeCB.itemText(_index))
@@ -39,6 +58,9 @@ class ParValDlg(QDialog,ui_parvaldlg.Ui_ParValDlg):
         self.valuesLE.setText(','.join(map(str,values)))
         
         self.valueType=str(self.typeCB.currentText()) # after sucessful type change we store new type 
+        
+        # self.recordValues()
+        
         
     def setAutoMinMax(self,_val):
         minVal=0.2*_val
@@ -60,6 +82,9 @@ class ParValDlg(QDialog,ui_parvaldlg.Ui_ParValDlg):
         valueStr=removeWhiteSpaces(valueStr)
         
         values=[]
+        
+        if valueStr=='':return  values
+            
         if valueStr[-1]==',':
             valueStr=valueStr[:-1]
             
@@ -105,7 +130,9 @@ class ParValDlg(QDialog,ui_parvaldlg.Ui_ParValDlg):
         values=map(str,values)        # convert to string list 
         valuesStr=','.join(values)    
         
-        self.valuesLE.setText(valuesStr)
+        self.valuesLE.setText(valuesStr)        
+        self.valueType=str(self.typeCB.currentText()) # after sucessful type change we store new type 
+        # self.recordValues()
         
     def updateUi(self):
         pass

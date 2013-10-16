@@ -72,6 +72,13 @@
       </spacer>
      </item>
      <item>
+      <widget class="QPushButton" name="pushButton">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="okPB">
        <property name="text">
         <string>OK</string>
@@ -97,6 +104,22 @@
     <hint type="destinationlabel">
      <x>231</x>
      <y>269</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>ParameterDlg</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>269</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>141</x>
+     <y>253</y>
     </hint>
    </hints>
   </connection>

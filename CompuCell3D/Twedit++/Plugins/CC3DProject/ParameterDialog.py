@@ -5,7 +5,8 @@ import PyQt4.QtCore as QtCore
 import ui_parameterdlg
 import sys
 import os.path
-from CC3DProject.enums import *
+# from CC3DProject.enums import *
+from ParameterScanEnums import *
 
 MAC = "qt_mac_set_native_menubar" in dir()
 
@@ -76,7 +77,11 @@ class ParameterDialog(QDialog,ui_parameterdlg.Ui_ParameterDlg):
         
         if parvaldlg.exec_():
             valueStr=str()
-            psd.customValues=parvaldlg.getValues()
+            try:
+                psd.customValues=parvaldlg.getValues()
+            except ValueError,e:
+                QMessageBox.warning(self,"Error Parsing Parameter List","Please make sure that parameter list entries have correct type")
+                return
             psd.valueType=VALUE_TYPE_DICT_REVERSE[parvaldlg.getValueType()]
         else:
             #user canceled
@@ -92,7 +97,7 @@ class ParameterDialog(QDialog,ui_parameterdlg.Ui_ParameterDlg):
         # print 'xmlElem=',xmlHandler.xmlString
         
 
-    def displayScannableParameters(self,_elem,_accessPath,_parameterScanFile):
+    def displayXMLScannableParameters(self,_elem,_accessPath,_parameterScanFile):
         
         self.accessPath=_accessPath
         
@@ -142,7 +147,14 @@ class ParameterDialog(QDialog,ui_parameterdlg.Ui_ParameterDlg):
             btn.setPosition(currentRow, ACTION)
             btn.clicked.connect(self.__handleActionClicked)
             
+    def displayPythonScannableParameters(self,_pythonLine,_parameterScanFile):        
+        print '_pythonLine=',_pythonLine
+        from ParameterScanUtils import ParameterScanUtils        
+        psu=ParameterScanUtils()
+        foundGlobalVar=psu.checkPythonLineForGlobalVariable(_pythonLine)
+        print 'foundGlobalVar=',foundGlobalVar
         
+    
     def updateUi(self):
         table=self.paramTW
         table.verticalHeader().setDefaultSectionSize(20)

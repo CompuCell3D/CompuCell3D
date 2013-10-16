@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '.\parvaldlg.ui'
 #
-# Created: Thu Oct 10 20:09:32 2013
+# Created: Wed Oct 16 18:16:05 2013
 #      by: PyQt4 UI code generator 4.8.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -18,7 +18,7 @@ class Ui_ParValDlg(object):
     def setupUi(self, ParValDlg):
         ParValDlg.setObjectName(_fromUtf8("ParValDlg"))
         ParValDlg.resize(269, 215)
-        ParValDlg.setWindowTitle(QtGui.QApplication.translate("ParValDlg", "Generate Paramete rValues", None, QtGui.QApplication.UnicodeUTF8))
+        ParValDlg.setWindowTitle(QtGui.QApplication.translate("ParValDlg", "Generate Parameter Values", None, QtGui.QApplication.UnicodeUTF8))
         self.verticalLayout = QtGui.QVBoxLayout(ParValDlg)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.gridLayout = QtGui.QGridLayout()

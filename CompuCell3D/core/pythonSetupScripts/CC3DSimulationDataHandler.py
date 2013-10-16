@@ -80,6 +80,9 @@ class CC3DSerializerResource(GenericResource):
             _rootElem.ElementCC3D('RestartSimulation',attributeDict)
             print MODULENAME,'attributeDict=',attributeDict
 
+            
+from ParameterScanUtils import ParameterScanUtils       
+     
 class CC3DParameterScanResource(CC3DResource):
     def __init__(self):        
         CC3DResource.__init__(self)
@@ -93,163 +96,22 @@ class CC3DParameterScanResource(CC3DResource):
         self.fileTypeForEditor = 'xml'
         self.parameterScanXMLHandler = None
         
+        self.psu=ParameterScanUtils() # ParameterScanUtils is the class where all parsing and parameter scan data processing takes place
+        
     def addParameterScanData(self,_file,_psd):
         print 'self.basePath=',self.basePath
         print '_file=',_file
         relativePath=findRelativePath(self.basePath,_file) # relative path of the scanned simulation file w.r.t. project directory
         print 'relativePath=',relativePath
-        
-        try:
-            parameterScanDataMap=self.parameterScanFileToDataMap[relativePath]            
-        except LookupError,e:
-            parameterScanDataMap={}
-            self.parameterScanFileToDataMap[relativePath]=parameterScanDataMap
-            
-            
-        parameterScanDataMap[_psd.stringHash()]=_psd
-        
+        self.psu.addParameterScanData(relativePath,_psd)
         
     def readParameterScanSpecs(self):
-        
-        if not self.path:return
-        
-        import xml
-        
-        self.parameterScanFileToDataMap={}
-        import XMLUtils
-        import os
-        cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
-        try:
-            root_element=cc3dXML2ObjConverter.Parse(self.path)    
-        except xml.parsers.expat.ExpatError,e:
-            print 'Error Parsing Parameter scan file'
-            return
-        
-        paramListElemList = XMLUtils.CC3DXMLListPy(root_element.getElements("ParameterList"))
-        for paramListElem in paramListElemList:
-            filePath=paramListElem.getAttribute('Resource')
-            print 'filePath=',filePath 
-            
-            parameterScanDataMap={}
-            self.parameterScanFileToDataMap[filePath]=parameterScanDataMap
-                        
-            paramElemList=XMLUtils.CC3DXMLListPy(paramListElem.getElements("Parameter")) 
-            
-            
-            for paramElem in paramElemList:
-                from ParameterScanUtils import ParameterScanData            
-                psd=ParameterScanData()                
-                psd.fromXMLElem(paramElem)            
-                
-                #storing psd in the dictionary
-                parameterScanDataMap[psd.stringHash()]=psd
-
-        # print 'self.parameterScanFileToDataMap=',self.parameterScanFileToDataMap
-        # ########################################
-
-        # if not self.path:return
-        
-        # self.parameterScanDataMap={}
-        # self.parameterScanFileToDataMap={}
-        
-        # import XMLUtils
-        # import os
-        # cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
-        
-        # root_element=cc3dXML2ObjConverter.Parse(self.path)    
-        
-        # paramElemList = XMLUtils.CC3DXMLListPy(root_element.getElements("Parameter"))
-            
-        # for paramElem in paramElemList:
-            # from ParameterScanUtils import ParameterScanData
-            # print '\n\n\n\n\n READING SCAN DATA'
-            # psd=ParameterScanData()
-            
-            # psd.fromXMLElem(paramElem)            
-            
-            # # self.parameterScanDataMap[psd.stringHash()]=psd
-            
-        # print 'self.parameterScanDataMap=',self.parameterScanDataMap
-# #        print MODULENAME,'  readCC3DFileFormat():  resourceList=',resourceList
-        # # for resourceElem in resourceList:
+        self.psu.readParameterScanSpecs(self.path)
 
     def writeParameterScanSpecs(self):
-    
-        if not self.path:return
-        
-        import XMLUtils
-        from XMLUtils import ElementCC3D
-        import os    
-
-        root_elem=ElementCC3D('ParameterScan',{'version':'3.7.0'})
-        print 'csd.parameterScanResource.parameterScanXMLElements=',self.parameterScanXMLElements
-        
-        xmlElemTmpStorage=[]
-        
-        print 'JUST BEFORE WRITING self.parameterScanFileToDataMap=',self.parameterScanFileToDataMap
-        
-        for fileName, parameterScanDataMap in self.parameterScanFileToDataMap.iteritems():
-            if len(parameterScanDataMap.keys()):
-                paramListElem=root_elem.ElementCC3D('ParameterList',{'Resource':fileName})
-                
-                xmlElemTmpStorage.append(paramListElem)
-                
-                for hash, psd in parameterScanDataMap.iteritems():
-                    xmlElem=psd.toXMLElem()
-                    xmlElemTmpStorage.append(xmlElem)
-                    
-                    paramListElem.CC3DXMLElement.addChild(xmlElem.CC3DXMLElement)
-                    
-            
-            
-        root_elem.CC3DXMLElement.saveXML(self.path) 
-        
-        # ##################################
-        
-        # xmlElemTmpStorage=[]
-        
-        # for key,val in self.parameterScanDataMap.iteritems():
-            # xmlElem=val.toXMLElem()
-            # xmlElemTmpStorage.append(xmlElem)
-            
-            # root_elem.CC3DXMLElement.addChild(xmlElem.CC3DXMLElement)
-        
-            
-        # root_elem.CC3DXMLElement.saveXML(self.path)    
+        self.psu.writeParameterScanSpecs(self.path)
         
         
-        # import XMLUtils
-        # import os
-        # cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
-        
-        # root_element=cc3dXML2ObjConverter.Parse(self.path)    
-        
-        # paramElemList = XMLUtils.CC3DXMLListPy(root_element.getElements("Parameter"))
-            
-        # for paramElem in paramElemList:
-            # from ParameterScanUtils import ParameterScanData
-            # print '\n\n\n\n\n READING SCAN DATA'
-            # psd=ParameterScanData()
-            
-            # psd.fromXMLElem(paramElem)            
-            
-            # # self.parameterScanDataMap[psd.stringHash()]=psd
-            
-        # print 'self.parameterScanDataMap=',self.parameterScanDataMap
-        
-        
-        
-    # def appendXMLStub(self, _rootElem):                 
-        
-        # from XMLUtils import ElementCC3D  
-
-        # elName,attributeDict,path = self.formatResourceElement(self,'CC3DParameterScanResource')        
-        # attributeDict={}
-        
-        # attributeDict["Type"]=self.resourceName
-        # attributeDict["Copy"]="Yes"        
-
-        # _rootElem.ElementCC3D(elName,attributeDict,path)            
         
             
 class CC3DSimulationData:
@@ -380,7 +242,7 @@ class CC3DSimulationDataHandler:
         simulationPath = os.path.join(_dir,'Simulation')
         
         if not os.path.exists(simulationPath):
-            os.mkdir(simulationPath)
+            os.makedirs(simulationPath)
             
         #copy project file        
         try:            
@@ -399,7 +261,12 @@ class CC3DSimulationDataHandler:
             
         if self.cc3dSimulationData.windowScript!="":
             shutil.copy(self.cc3dSimulationData.windowScript,os.path.join(simulationPath,os.path.basename(self.cc3dSimulationData.windowScript))) 
-        
+            
+        if self.cc3dSimulationData.parameterScanResource:
+            
+            shutil.copy(self.cc3dSimulationData.parameterScanResource.path , os.path.join(simulationPath,os.path.basename(self.cc3dSimulationData.parameterScanResource.path))) 
+
+            
         #copy resource files
         fileNames = self.cc3dSimulationData.resources.keys()
         
