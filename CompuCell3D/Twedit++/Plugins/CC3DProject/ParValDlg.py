@@ -26,56 +26,87 @@ class ParValDlg(QDialog,ui_parvaldlg.Ui_ParValDlg):
         self.typeCB.currentIndexChanged.connect(self.__changeValueType)
         self.valueType=str(self.typeCB.currentText())
         
+        self.typeToCBindexDict={FLOAT:0,INT:1,STRING:2} # dict used provide easy mapping between type combo box index and types
+        
         from ParameterScanUtils import ParameterScanData
         self.psd=ParameterScanData()
         
+    
+        
+    
+    def guessParameterValueType(self,_val):
+        ''' this fcn attempts to guess type of the parameter in this order:int,float, default string
+        '''
+        try:
+            int(_val)
+            return INT
+        except ValueError,e:
+            pass
+            
+        try:
+            float(_val)
+            return FLOAT    
+        except ValueError,e:
+            pass
+            
+        return STRING    
+            
     def initParameterScanData(self,_parValue,_parName,_parType=XML_CDATA,_parAccessPath=''):
         psd=self.psd
         psd.name=_parName
         psd.type=_parType
-        psd.accessPath=_parAccessPath          
-        self.setAutoMinMax(float(_parValue))
-        self.valueType=str(self.typeCB.currentText()) # after sucessful type change we store new type 
+        psd.accessPath=_parAccessPath
+        
+        guessedType=self.guessParameterValueType(_parValue)
+        print 'guessedType=',guessedType
+        
+        self.typeCB.setCurrentIndex(self.typeToCBindexDict[guessedType])
+        
+        self.setAutoMinMax(_parValue,guessedType)
+        
+        self.valueType=str(self.typeCB.currentText()) 
         
         # self.recordValues()
         
     def recordValues(self):
         psd=self.psd
-        psd.valueType=VALUE_TYPE_DICT_REVERSE[self.getValueType()]                
+        psd.valueType=self.getValueType()
+        # VALUE_TYPE_DICT_REVERSE[self.getValueType()]                
         psd.customValues=self.getValues()
     
     def __changeValueType(self,_index):
-                
-        typeStr=str(self.typeCB.itemText(_index))
+    
+        if not str(self.valuesLE.text()).strip():return 
         
-        values=self.getValues(_castToType=self.valueType) # uses previous type - before change
+        self.__generateValues()
+          
         
-        if typeStr=='float':
-            values=map(float,values)
-        elif typeStr=='int':
-            values=map(int,values)
-            
-        self.valuesLE.setText(','.join(map(str,values)))
+    def setAutoMinMax(self,_val,_valType=FLOAT):
+        if _valType==STRING:return
         
-        self.valueType=str(self.typeCB.currentText()) # after sucessful type change we store new type 
-        
-        # self.recordValues()
-        
-        
-    def setAutoMinMax(self,_val):
         minVal=0.2*_val
         maxVal=2.0*_val
         
         if _val<0:
             minVal,maxVal=maxVal,minVal
+            
+        if _valType==INT:
+            minVal=int(minVal)
+            maxVal=int(maxVal)
+        
         self.minLE.setText(str(minVal))
         self.maxLE.setText(str(maxVal))
         
     def getValueType(self):
         '''returns string denoting type of the values in the generated list'''
-        return str(self.typeCB.currentText())
+        try:
+            return VALUE_TYPE_DICT_REVERSE[str(self.typeCB.currentText())]                
+        except LookupError,e:
+            return None
+        
+        # return str(self.typeCB.currentText())
     
-    def getValues(self,_castToType=''):
+    def getValues(self,_castToType=None):
         '''returns list of numerical values for parameter scan'''    
         valueStr=str(self.valuesLE.text())
         from ParameterScanUtils import removeWhiteSpaces
@@ -87,35 +118,54 @@ class ParValDlg(QDialog,ui_parvaldlg.Ui_ParValDlg):
             
         if valueStr[-1]==',':
             valueStr=valueStr[:-1]
-            
-        if len(valueStr):            
-            values=valueStr.split(',')
-            
-        typeToCompare=str(self.typeCB.currentText())
+        
+        typeToCompare=self.getValueType()
+        # str(self.typeCB.currentText())
         if _castToType:
-            typeToCompare=_castToType
+            typeToCompare=_castToType        
+        
+        # we have to split values differently depending whether they are strings or numbers
+        values=None
+        
+        if  typeToCompare==STRING:    
+            from ParameterScanUtils import extractListOfStrings
+            values=extractListOfStrings(valueStr)
+            
+                
+        else:
+            if len(valueStr):            
+                values=valueStr.split(',')
+            
+
         
         if len(values):
-            if typeToCompare=='float':
+            # if typeToCompare=='float':
+            if typeToCompare==FLOAT:
                 values=map(float,values)
-            elif typeToCompare=='int':   
+            elif typeToCompare==INT:                   
+            # elif typeToCompare=='int':   
                 values=map(int,values)
                     
         return values    
             
     
     def __generateValues(self):
-        print 'INSIDE GENERATE VALUES'
-        # try:
-        minVal=float(str(self.minLE.text()))
-        maxVal=float(str(self.maxLE.text()))
-        steps=int(str(self.stepsLE.text()))
-        type=str(self.typeCB.currentText())
-        distr=str(self.distrCB.currentText())
+        
+        try:
+            minVal=float(str(self.minLE.text()))
+            maxVal=float(str(self.maxLE.text()))
+            steps=int(str(self.stepsLE.text()))
+            type=self.getValueType()
+            # type=str(self.typeCB.currentText())            
+            distr=str(self.distrCB.currentText())
+        except ValueError,e:
+            return
         # except:
             # return
             
-        customValues=[]
+        # if type=='string':
+        if type==STRING:
+            return
         
         if distr=='linear':
             if steps>1:
@@ -124,10 +174,19 @@ class ParValDlg(QDialog,ui_parvaldlg.Ui_ParValDlg):
             else:
                 values=[minVal]
             
-        if type=='int':        
+        # if type=='int':        
+        if type==INT:        
             values=map(int,values)
-            
-        values=map(str,values)        # convert to string list 
+        
+
+        #remove duplicates fromt he list
+        values=list(set(values))
+        values.sort()
+        
+        values=map(str,values)        # convert to string list         
+        
+        
+        
         valuesStr=','.join(values)    
         
         self.valuesLE.setText(valuesStr)        

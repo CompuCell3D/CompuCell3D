@@ -6,7 +6,7 @@ TYPE_DICT={XML_ATTR:'XML_ATTR',XML_CDATA:'XML_CDATA',PYTHON_GLOBAL:'PYTHON_GLOBA
 
 TYPE_DICT_REVERSE={v:k for k, v in TYPE_DICT.items()}
 
-(FLOAT,INT,CUSTOM)=range(3)
+(FLOAT,INT,STRING)=range(3)
 #reverse lookup
-VALUE_TYPE_DICT={FLOAT:'float',INT:'int',CUSTOM:'custom'}
+VALUE_TYPE_DICT={FLOAT:'float',INT:'int',STRING:'string'}
 VALUE_TYPE_DICT_REVERSE={v:k for k, v in VALUE_TYPE_DICT.items()}

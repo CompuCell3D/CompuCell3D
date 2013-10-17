@@ -89,7 +89,9 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../../../../../CC3D_GIT/CompuCell3D/Twedit++/Plugins/CC3DProject/CC3DProject.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>okPB</sender>

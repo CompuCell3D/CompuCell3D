@@ -498,7 +498,12 @@ class CC3DProject(QObject):
         self.cc3dProjectMenu.addAction(self.actions["Open In Editor"])
         self.cc3dProjectMenu.addAction(self.actions["Open XML/Python In Editor"])
         
+        self.cc3dProjectMenu.addSeparator()
+        #---------------------------------------------------
+        #Parameter scan Menu
         self.cc3dProjectMenu.addAction(self.actions["Add Parameter Scan"])
+        self.cc3dProjectMenu.addAction(self.actions["Add To Scan..."])
+        
         
 
         self.cc3dProjectMenu.addSeparator()
@@ -625,9 +630,9 @@ class CC3DProject(QObject):
         
         self.actions["Add Parameter Scan"]=QtGui.QAction(QIcon(':/icons/scan_32x32.png'),"Add Parameter Scan", self, shortcut="Ctrl+Shift+P", statusTip="Add Parameter Scan ", triggered=self.__addParameterScan)        
         
-        self.actions["Add To Scan..."]=QtGui.QAction(QIcon(':/icons/add.png'),"Add To Scan...", self, shortcut="", statusTip="Add Parameter To Scan", triggered=self.__addToScan)        
+        self.actions["Add To Scan..."]=QtGui.QAction(QIcon(':/icons/add.png'),"Add To Scan...", self, shortcut="Ctrl+I", statusTip="Add Parameter To Scan", triggered=self.__addToScan)        
         self.actions['Open Scan Editor']=QtGui.QAction(QIcon(':/icons/editor.png'),"Open Scan Editor", self, shortcut="", statusTip="Open Scan Editor", triggered=self.__openScanEditor)        
-        self.actions['Reset Parameter Scan']=QtGui.QAction(QIcon(':/icons/editor.png'),"Reset Parameter Scan", self, shortcut="", statusTip="Reset Parameter Scan", triggered=self.__resetParameterScan)                        
+        self.actions['Reset Parameter Scan']=QtGui.QAction(QIcon(':/icons/reset_32x32.png'),"Reset Parameter Scan", self, shortcut="", statusTip="Reset Parameter Scan", triggered=self.__resetParameterScan)                        
 
     def  __resetParameterScan(self):
         tw=self.treeWidget
@@ -690,6 +695,10 @@ class CC3DProject(QObject):
             self.__ui.closeTab( index=idx,_askToSave=False,_panel=panel)
         self.parameterScanEditor=None
         
+    # def  __closeScanEditorEvent(self,event):
+        # print 'LOCAL CLOSE EVENT'
+        # self.parameterScanEditor=None
+        
     def __openScanEditor(self):        
     
         if self.parameterScanEditor :
@@ -742,8 +751,11 @@ class CC3DProject(QObject):
         editor.registerCustomContextMenu(self.createParameterScanMenu(editor))
         
         #initialize globals
-        self.parameterScanEditor=editor                
-        pScanResource.parameterScanEditor=editor
+        self.parameterScanEditor=editor      
+        
+        # self.parameterScanEditor.closeEvent=self.__closeScanEditorEvent # close event will be handled via local function 
+
+        # pScanResource.parameterScanEditor=editor
         
         if pScanResource.fileTypeForEditor=='.xml': # for xml we have to get generate line to access path map and line to element map for easier handling of parameter scan generation
             
@@ -772,7 +784,7 @@ class CC3DProject(QObject):
             
         
     def __addToScan(self):
-    
+        
         tw=self.treeWidget
         
         projItem=tw.getProjectParent(tw.currentItem())
@@ -793,7 +805,15 @@ class CC3DProject(QObject):
         
     
         print '__addToScan'
-        line,col=pScanResource.parameterScanEditor.getCursorPosition()
+        if not self.parameterScanEditor:return
+        
+        #check if the editor is still open
+        editorExists=self.__ui.checkIfEditorExists(self.parameterScanEditor)
+        if not  editorExists:            
+            self.parameterScanEditor=None
+            return
+        
+        line,col=self.parameterScanEditor.getCursorPosition()
         print 'line,col=',(line,col)
         
         
@@ -840,7 +860,7 @@ class CC3DProject(QObject):
             from ParameterScanUtils import ParameterScanUtils as PSU
             psu=PSU()
             
-            pythonLine=str(pScanResource.parameterScanEditor.text(line))
+            pythonLine=str(self.parameterScanEditor.text(line))
             
             foundGlobalVar=psu.checkPythonLineForGlobalVariable(pythonLine)
             if foundGlobalVar:
@@ -852,8 +872,11 @@ class CC3DProject(QObject):
                     
                     
                 from CC3DProject.ParValDlg import ParValDlg
+                
                 parvaldlg=ParValDlg(self.parameterScanEditor)
+                
                 from ParameterScanEnums import PYTHON_GLOBAL
+                
                 parvaldlg.initParameterScanData(_parValue=varValue,_parName=varName,_parType=PYTHON_GLOBAL,_parAccessPath='')
                 
                 if parvaldlg.exec_():

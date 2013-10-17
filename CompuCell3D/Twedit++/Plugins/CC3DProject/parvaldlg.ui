@@ -180,6 +180,11 @@
          <string>int</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>string</string>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>

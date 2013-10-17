@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '.\parvaldlg.ui'
 #
-# Created: Wed Oct 16 18:16:05 2013
+# Created: Thu Oct 17 12:57:30 2013
 #      by: PyQt4 UI code generator 4.8.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -93,6 +93,8 @@ class Ui_ParValDlg(object):
         self.typeCB.setItemText(0, QtGui.QApplication.translate("ParValDlg", "float", None, QtGui.QApplication.UnicodeUTF8))
         self.typeCB.addItem(_fromUtf8(""))
         self.typeCB.setItemText(1, QtGui.QApplication.translate("ParValDlg", "int", None, QtGui.QApplication.UnicodeUTF8))
+        self.typeCB.addItem(_fromUtf8(""))
+        self.typeCB.setItemText(2, QtGui.QApplication.translate("ParValDlg", "string", None, QtGui.QApplication.UnicodeUTF8))
         self.gridLayout.addWidget(self.typeCB, 4, 1, 1, 1)
         self.verticalLayout.addLayout(self.gridLayout)
         self.horizontalLayout_6 = QtGui.QHBoxLayout()

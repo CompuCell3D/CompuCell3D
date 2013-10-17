@@ -95,6 +95,7 @@ class CC3DParameterScanResource(CC3DResource):
         # self.parameterScanDataMap = {}
         self.fileTypeForEditor = 'xml'
         self.parameterScanXMLHandler = None
+        # self.parameterScanEditor=None
         
         self.psu=ParameterScanUtils() # ParameterScanUtils is the class where all parsing and parameter scan data processing takes place
         

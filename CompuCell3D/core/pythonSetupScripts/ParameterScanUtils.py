@@ -5,17 +5,39 @@ import XMLUtils
 from ParameterScanEnums import *
 from OrderedDict import OrderedDict
 
+
+
 def removeWhiteSpaces(_str):
     import re
     out_str=str(_str)
     pattern = re.compile(r'\s+')
     out_str = re.sub(pattern, '', out_str)
     return out_str 
+    
+def extractListOfStrings(_valueStr):
+    values=None
+    pos=_valueStr.find('"')     # searching for " if found this means we have composite strings with commas inside - hence we cannot split the string based on comma position       
+    if pos>=0:
+        values=_valueStr.split('",')
+        for i in range(len(values)):
+            val=values[i]
+            val=val.replace('"','')
+            values[i]=val            
+    else:
+        values=_valueStr.split('",')
+    return values    
+    
 
 def nextIterationCartProd(currentIteration,maxVals):
-    '''Computes next generation of cartesian product
+    '''Computes next iteration of cartesian product
     '''
     length=len(currentIteration)
+    import copy
+    
+    nextIteration=copy.deepcopy(currentIteration)
+    
+    
+    
     # print 'currentIteration=',currentIteration
     #determine the lowest index with currentIteration value less than max value 
     idx=-1
@@ -25,16 +47,17 @@ def nextIterationCartProd(currentIteration,maxVals):
             break
             
     if idx==-1:
-        raise StopIteration
+        return [0 for i in range(length) ] # rollover
+        # raise StopIteration
         
     #increment currentIteration for idx and zero iterations for i<idx 
-    currentIteration[idx]+=1
+    nextIteration[idx]+=1
     # print 'currentIteration=',currentIteration
     
     for i in range(idx):
-        currentIteration[i]=0
+        nextIteration[i]=0
     
-    return currentIteration    
+    return nextIteration    
     
 
 class XMLHandler:
@@ -181,11 +204,11 @@ class ParameterScanData:
         valueStr=str(_el.getFirstElement('Values').getText())
         
         values=[]
-
         if len(valueStr):            
-            values=valueStr.split(',')
-            
-        
+            if self.valueType==STRING:
+                values=extractListOfStrings(valueStr)
+            else:
+                values=valueStr.split(',')
         
         if len(values):
             if self.valueType==FLOAT:
@@ -198,6 +221,8 @@ class ParameterScanData:
         else:
             self.customValues=[]
         
+        print 'self.customValues=',self.customValues
+        
     def toXMLElem(self):
         import XMLUtils
         from XMLUtils import ElementCC3D
@@ -205,10 +230,13 @@ class ParameterScanData:
         el=ElementCC3D('Parameter',{'Name':self.name,'Type':TYPE_DICT[self.type],'ValueType':VALUE_TYPE_DICT[self.valueType],'CurrentIteration':self.currentIteration},removeWhiteSpaces(self.accessPath))
         
         valStr=''
-        # values=self.calculateValues()
         
-        for val in self.customValues:
-            valStr+=str(val)+','
+        if self.valueType==STRING:
+            for val in self.customValues:
+                valStr+='"'+str(val)+'",'
+        else:
+            for val in self.customValues:
+                valStr+=str(val)+','
             
         #remove last comma    
         if valStr:
@@ -217,14 +245,6 @@ class ParameterScanData:
             
         el.ElementCC3D('Values',{},valStr)
         
-        # if len(self.customValues):
-            
-            # for val in self.customValues:
-                # el.ElementCC3D('CustomValue',{},val)
-        # else:        
-            # el.ElementCC3D('MinValue',{},self.minValue)
-            # el.ElementCC3D('MaxValue',{},self.maxValue)
-            # el.ElementCC3D('Steps',{},self.steps)
             
         return el
 
@@ -245,19 +265,6 @@ class ParameterScanUtils:
         
     def setOutputDirectoryRelativePath(self,_path):
         self.outputDirectoryRelativePath=_path
-        
-    # def parseScanFile(self, _scanFile):
-        # import XMLUtils
-        # import os
-        # self.cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
-                
-        # self.root_element = self.cc3dXML2ObjConverter.Parse(_xmlFilePath)
-        
-        # paramElemList=XMLUtils.CC3DXMLListPy(self.root_element) 
-        # for elem in paramElemList:
-            # print 'elem.name=',elem.name
-
-        
         
     def extractXMLScannableParameters(self,_elem, _scanFile):
         '''
@@ -291,10 +298,7 @@ class ParameterScanUtils:
         
         
     def addParameterScanData(self,_relativePath,_psd):
-        # print 'self.basePath=',self.basePath
-        # print '_file=',_file
-        # relativePath=findRelativePath(self.basePath,_file) # relative path of the scanned simulation file w.r.t. project directory
-        # print 'relativePath=',relativePath
+
         
         try:
             parameterScanDataMap=self.parameterScanFileToDataMap[_relativePath]            
@@ -329,8 +333,7 @@ class ParameterScanUtils:
         if not _pScanFileName:return
         
         root_element,xml2ObjConverter=self.parseXML(_pScanFileName)
-        
-        
+                
         
         if not root_element:return
         
@@ -365,6 +368,7 @@ class ParameterScanUtils:
                 parameterScanDataMap[psd.stringHash()]=psd        
                 
         print 'AFTER READING PARAM SCAN SPECS ',self.parameterScanFileToDataMap
+        # sys.exit()
         
     # def normalizeParameterScanSpecs(self,_pScanFileName):
         # '''This function writes parameter scan file in order set by internal dictionaries of the ParameterScanUtils class. We call it each time we run new parameters scan to ensure that the ordering of dictionaries and file content is the same  
@@ -421,6 +425,49 @@ class ParameterScanUtils:
         
         self.writeParameterScanSpecs(_pScanFileName)    
         
+    def prepareParameterScanOutputDirs(self,_outputDirRoot):
+        import os
+        pScanOutputDirRelPath=self.outputDirectoryRelativePath
+        
+        if pScanOutputDirRelPath=='':
+            pScanOutputDirRelPath='ParameterScan'
+            
+        customPath=os.path.join(_outputDirRoot,pScanOutputDirRelPath)    
+        
+
+        
+        # iterationId=self.computeIterationIdNumber(iteration)
+        iterationId=self.computeCurrentIterationIdNumber()
+        print 'iterationId=',iterationId
+        
+        customOutputPath=os.path.join(_outputDirRoot,pScanOutputDirRelPath)
+        customOutputPath=os.path.join(customOutputPath,str(iterationId))        
+        
+        #make output directory    
+        
+        try:
+            os.makedirs(customOutputPath)
+        except :
+            return None
+            raise AssertionError('Could not create directory '+customOutputPath+ ' . please make sure you have necessary write permissions')
+            # print 'Could not create directory ',customOutputPath, ' . please make sure you have necessary write permissions'
+            
+            
+        return customOutputPath
+        
+    
+    def reachedMaxIteration(self):
+        maxVals=[] # max values for parameter scans
+        currentIteration=[] # current iteration
+        
+        for filePath,parameterScanDataMap in self.parameterScanFileToDataMap.items():
+            for hash,psd in parameterScanDataMap.items():
+                maxVals.append(len(psd.customValues)-1)
+                currentIteration.append(psd.currentIteration)
+                
+        return True if currentIteration==maxVals else False
+            
+        
     def computeNextIteration(self):
         '''given current state of the parameter scan computes next combination of the parameters for the parameter scan 
         '''
@@ -452,6 +499,25 @@ class ParameterScanUtils:
                 
         self.writeParameterScanSpecs(_pScanFileName)
         
+    def saveParameterScanState(self,_pScanFileName ):        
+        
+        iteration=self.computeNextIteration()        
+        self.writeParameterScanSpecsWithIteration(_pScanFileName,iteration)        
+        
+            
+        
+        
+    def  computeCurrentIterationIdNumber(self):            
+        
+        
+        currentIteration=[] # current iteration
+        
+        for filePath,parameterScanDataMap in self.parameterScanFileToDataMap.items():
+            for hash,psd in parameterScanDataMap.items():                
+                currentIteration.append(psd.currentIteration) 
+                
+        return  self.computeIterationIdNumber(currentIteration)      
+    
     def computeIterationIdNumber(self,_iteration):
         maxValsMultiply=[] # max values for parameter scans - increased by one for multiplication purposes
         currentIteration=_iteration
@@ -590,34 +656,36 @@ class ParameterScanUtils:
 
         
     def  replaceValuesInPythonFile(self,_parameterScanDataMap,_pythonFile):    
-    
         fileContent=[]
         
         
         for line in open(_pythonFile):
             fileContent.append(line)
-        
-        print fileContent
+                
         import re    
                
         for hash,psd in _parameterScanDataMap.items():
             
             if psd.type==PYTHON_GLOBAL:
             
-                foundGlobalVar=self.checkPythonLineForGlobalVariable(line,psd.name)
+                for idx in range(len(fileContent)):
                 
-                if  foundGlobalVar:
-                    fileContent[idx]=psd.name+' = '+str(psd.currentValue())
+                    line = fileContent[idx]
                     
-                # globalPythonVarRegex=re.compile(psd.name+"[\s]*=") 
+                    foundGlobalVar=self.checkPythonLineForGlobalVariable(line,psd.name)
                     
-                # for idx in range(len(fileContent)): 
-                
-                    # line = fileContent[idx]
-                    # matchObj=re.match(globalPythonVarRegex,line)                
-                    # print 'matchObj=',matchObj                    
-                    # if matchObj:
-                        # fileContent[idx]=psd.name+' = '+str(psd.currentValue())
+                    if  foundGlobalVar:
+                    
+                        if psd.valueType==STRING:
+                            # print 'GOT STRING VALUE FOR ',psd.name
+                            # if psd.name=='MYVAR1':
+                                # print 'psd.currentValue()=',psd.currentValue()                                
+                                
+                            fileContent[idx]=psd.name+" = '"+str(psd.currentValue())+"'\n"                           
+                        else:
+                            fileContent[idx]=psd.name+' = '+str(psd.currentValue())+'\n'
+                        break
+                        
             else:
                 raise AssertionError('ParameterScans: Trying to replace parameter which is not of PYTHON_GLOBAL type')
                 
