@@ -385,7 +385,13 @@ class CC3DSimulationDataHandler:
             self.cc3dSimulationData.parameterScanResource.type = 'ParameterScan'
             self.cc3dSimulationData.parameterScanResource.basePath=self.cc3dSimulationData.basePath # setting same base path for parameter scan as for the project - necessary to get relative paths in the parameterSpec file
             #reading content of XML parameter scan specs
-            self.cc3dSimulationData.parameterScanResource.readParameterScanSpecs()
+            # ------------------------------------------------------------------ IMPORTANT IMPOTRANT ------------------------------------------------------------------
+            # WE HAVE TO CALL MANUALLYreadParameterScanSpecs because if it is called each time CC3DSiulationDataHandler calls readCC3DFileFormat it may cause problems with parameter scan
+            # namely one process will attempt to read parameter scan specs while another might try to write to it and error will get thrown and synchronization gets lost
+            # plus readCC3DFileFormat should read .cc3d only , not files which are included from .cc3d
+            # ------------------------------------------------------------------ IMPORTANT IMPOTRANT ------------------------------------------------------------------
+            
+            # # # self.cc3dSimulationData.parameterScanResource.readParameterScanSpecs()
         
         resourceList = XMLUtils.CC3DXMLListPy(root_element.getElements("Resource"))
 #        print MODULENAME,'  readCC3DFileFormat():  resourceList=',resourceList

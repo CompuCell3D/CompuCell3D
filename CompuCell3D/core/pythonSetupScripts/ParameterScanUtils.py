@@ -1,9 +1,15 @@
+from __future__ import with_statement
+# enabling with statement in python 2.5
+
+    
 import os
 import sys
 import XMLUtils
 # from CC3DProject.enums import *
 from ParameterScanEnums import *
 from OrderedDict import OrderedDict
+
+
 
 
 
@@ -85,7 +91,7 @@ class XMLHandler:
                 
         self.root_element = self.cc3dXML2ObjConverter.Parse(_xmlFilePath)
         xmlStr=self.writeXMLElement(self.root_element)
-        print 'xmlStr=',self.xmlString
+        # print 'xmlStr=',self.xmlString
     
     def writeXMLElement(self,_elem,_indent=0):
         self.indent=_indent
@@ -186,15 +192,15 @@ class ParameterScanData:
         
     def  stringHash(self):
         self.accessPath=removeWhiteSpaces(self.accessPath)
-        print 'str(self.accessPath)=',str(self.accessPath)
+        # # print 'str(self.accessPath)=',str(self.accessPath)
         hash=str(self.accessPath)+'_Type='+TYPE_DICT[self.type]+'_Name='+self.name   
-        print 'hash=',hash    
+        # # print 'hash=',hash    
         return hash
         
     def fromXMLElem(self,_el):
         import XMLUtils
         self.name = _el.getAttribute('Name')
-        print 'self.name=',self.name
+        # # print 'self.name=',self.name
         self.type = _el.getAttribute('Type')
         self.type = TYPE_DICT_REVERSE[self.type] # changing string to number to be consistent
         self.valueType = _el.getAttribute('ValueType')
@@ -221,7 +227,7 @@ class ParameterScanData:
         else:
             self.customValues=[]
         
-        print 'self.customValues=',self.customValues
+        # # print 'self.customValues=',self.customValues
         
     def toXMLElem(self):
         import XMLUtils
@@ -274,8 +280,8 @@ class ParameterScanUtils:
         self.xmlHandler=XMLHandler
         
         params={}
-        print '_elem=',_elem.name
-        print '_elem.attributes.size()=',_elem.attributes
+        # # print '_elem=',_elem.name
+        # # print '_elem.attributes.size()=',_elem.attributes
         
         if _elem.attributes.size():
             for key in _elem.attributes.keys():
@@ -325,7 +331,9 @@ class ParameterScanUtils:
             print 'Error Parsing Parameter scan file\n\n\n'
             return None,None        
         
-
+    def refreshParamSpecsContent(self,_pScanFileName):
+        self.readParameterScanSpecs(_pScanFileName)
+        
     def readParameterScanSpecs(self,_pScanFileName=''):
         
         self.initialize()
@@ -349,12 +357,12 @@ class ParameterScanUtils:
         paramListElemList = XMLUtils.CC3DXMLListPy(root_element.getElements("ParameterList"))
         for paramListElem in paramListElemList:
             filePath=paramListElem.getAttribute('Resource')
-            print 'filePath=',filePath 
+            # # print 'filePath=',filePath 
             
             parameterScanDataMap=OrderedDict()
             self.parameterScanFileToDataMap[filePath]=parameterScanDataMap
             
-            print 'READING self.parameterScanFileToDataMap=',self.parameterScanFileToDataMap
+            # # print 'READING self.parameterScanFileToDataMap=',self.parameterScanFileToDataMap
                         
             paramElemList=XMLUtils.CC3DXMLListPy(paramListElem.getElements("Parameter")) 
             
@@ -367,7 +375,7 @@ class ParameterScanUtils:
                 #storing psd in the dictionary
                 parameterScanDataMap[psd.stringHash()]=psd        
                 
-        print 'AFTER READING PARAM SCAN SPECS ',self.parameterScanFileToDataMap
+        # # print 'AFTER READING PARAM SCAN SPECS ',self.parameterScanFileToDataMap
         # sys.exit()
         
     # def normalizeParameterScanSpecs(self,_pScanFileName):
@@ -377,11 +385,7 @@ class ParameterScanUtils:
         # # self.readParameterScanSpecs(_pScanFileName)
         # # self.writeParameterScanSpecs(_pScanFileName)
         
-    
-    def writeParameterScanSpecs(self,_pScanFileName):
-    
-        if not _pScanFileName:return
-        
+    def getParameterScanSpecsXMLString(self):
         import XMLUtils
         from XMLUtils import ElementCC3D
         import os    
@@ -393,11 +397,11 @@ class ParameterScanUtils:
         
         xmlElemTmpStorage=[]
         
-        print 'JUST BEFORE WRITING self.parameterScanFileToDataMap=',self.parameterScanFileToDataMap
+        # # print 'JUST BEFORE WRITING self.parameterScanFileToDataMap=',self.parameterScanFileToDataMap
         
         for fileName, parameterScanDataMap in self.parameterScanFileToDataMap.iteritems():
             if len(parameterScanDataMap.keys()):
-                print ' adding paramList element =',fileName
+                # # print ' adding paramList element =',fileName
                 paramListElem=root_elem.ElementCC3D('ParameterList',{'Resource':fileName})
                 
                 xmlElemTmpStorage.append(paramListElem)
@@ -408,11 +412,97 @@ class ParameterScanUtils:
                     
                     paramListElem.CC3DXMLElement.addChild(xmlElem.CC3DXMLElement)
                     
-            
-            
+        
+        return root_elem.CC3DXMLElement.getCC3DXMLElementString()
+    def writeParameterScanSpecs(self,_pScanFileName):       
+
+        import XMLUtils
+        from XMLUtils import ElementCC3D
+        import os    
+
+        root_elem=ElementCC3D('ParameterScan',{'version':'3.7.0'})
+        root_elem.ElementCC3D('OutputDirectory',{},self.outputDirectoryRelativePath)
+        
+        # print 'csd.parameterScanResource.parameterScanXMLElements=',self.parameterScanXMLElements
+        
+        xmlElemTmpStorage=[]
+        
+        # # print 'JUST BEFORE WRITING self.parameterScanFileToDataMap=',self.parameterScanFileToDataMap
+        
+        for fileName, parameterScanDataMap in self.parameterScanFileToDataMap.iteritems():
+            if len(parameterScanDataMap.keys()):
+                # # print ' adding paramList element =',fileName
+                paramListElem=root_elem.ElementCC3D('ParameterList',{'Resource':fileName})
+                
+                xmlElemTmpStorage.append(paramListElem)
+                
+                for hash, psd in parameterScanDataMap.iteritems():
+                    xmlElem=psd.toXMLElem()
+                    xmlElemTmpStorage.append(xmlElem)
+                    
+                    paramListElem.CC3DXMLElement.addChild(xmlElem.CC3DXMLElement)    
+                    
         root_elem.CC3DXMLElement.saveXML(_pScanFileName) 
         
-        self.readParameterScanSpecs(_pScanFileName)
+    # # # def writeParameterScanSpecs(self,_pScanFileName):
+    
+        # # # if not _pScanFileName:return
+                
+        # # # xmlString = self.getParameterScanSpecsXMLString()
+        # # # os.unlink(_pScanFileName)
+        # # # with open(_pScanFileName,'w') as file:  
+            # # # file.write('%s'%xmlString)
+            # # # file.flush()        
+        
+        # # # # # # import XMLUtils
+        # # # # # # from XMLUtils import ElementCC3D
+        # # # # # # import os    
+
+        # # # # # # root_elem=ElementCC3D('ParameterScan',{'version':'3.7.0'})
+        # # # # # # root_elem.ElementCC3D('OutputDirectory',{},self.outputDirectoryRelativePath)
+        
+        # # # # # # # print 'csd.parameterScanResource.parameterScanXMLElements=',self.parameterScanXMLElements
+        
+        # # # # # # xmlElemTmpStorage=[]
+        
+        # # # # # # # # print 'JUST BEFORE WRITING self.parameterScanFileToDataMap=',self.parameterScanFileToDataMap
+        
+        # # # # # # for fileName, parameterScanDataMap in self.parameterScanFileToDataMap.iteritems():
+            # # # # # # if len(parameterScanDataMap.keys()):
+                # # # # # # # # print ' adding paramList element =',fileName
+                # # # # # # paramListElem=root_elem.ElementCC3D('ParameterList',{'Resource':fileName})
+                
+                # # # # # # xmlElemTmpStorage.append(paramListElem)
+                
+                # # # # # # for hash, psd in parameterScanDataMap.iteritems():
+                    # # # # # # xmlElem=psd.toXMLElem()
+                    # # # # # # xmlElemTmpStorage.append(xmlElem)
+                    
+                    # # # # # # paramListElem.CC3DXMLElement.addChild(xmlElem.CC3DXMLElement)
+                    
+            
+            
+        # # # # # # # root_elem.CC3DXMLElement.saveXML(_pScanFileName) 
+        # # # # # # # aparently there seems to be a problem with the way  xml file writing is done in XMLUtils - 
+        # # # # # # # therefore decided to get string repressentatino of the XML and write it from Python
+
+        # # # # # # outFileName=os.path.abspath(_pScanFileName)
+        # # # # # # # from FileLock import FileLock    
+        # # # # # # # fLock=FileLock(file_name=outFileName, timeout=10, delay=0.05) 
+        # # # # # # # fLock.acquire()    
+        
+        # # # # # # xmlString=root_elem.CC3DXMLElement.getCC3DXMLElementString()
+        # # # with open(_pScanFileName,'w') as file:  
+            # # # file.write('%s'%xmlString)
+            # # # file.flush()
+
+        # # # # fLock.release()        
+        # # # # # # file=open(_pScanFileName,'w')            
+        # # # # # # file.close()
+        # # # # print 'xmlString=',xmlString
+        # # # # sys.exit()
+        
+        # # # # self.readParameterScanSpecs(_pScanFileName)
         
     def resetParameterScan(self,_pScanFileName):
         '''This function resets state of the parameter scan to the beginning
@@ -425,6 +515,8 @@ class ParameterScanUtils:
         
         self.writeParameterScanSpecs(_pScanFileName)    
         
+    
+    
     def prepareParameterScanOutputDirs(self,_outputDirRoot):
         import os
         pScanOutputDirRelPath=self.outputDirectoryRelativePath
@@ -437,8 +529,13 @@ class ParameterScanUtils:
 
         
         # iterationId=self.computeIterationIdNumber(iteration)
+        
+        
+        
         iterationId=self.computeCurrentIterationIdNumber()
-        print 'iterationId=',iterationId
+        # print 'param SCAN XML=',self.getParameterScanSpecsXMLString()
+        
+        print '\n\n\n iterationId=',iterationId
         
         customOutputPath=os.path.join(_outputDirRoot,pScanOutputDirRelPath)
         customOutputPath=os.path.join(customOutputPath,str(iterationId))        
@@ -448,6 +545,7 @@ class ParameterScanUtils:
         try:
             os.makedirs(customOutputPath)
         except :
+            print 'COULD NOT WRITE customOutputPath=',customOutputPath
             return None
             raise AssertionError('Could not create directory '+customOutputPath+ ' . please make sure you have necessary write permissions')
             # print 'Could not create directory ',customOutputPath, ' . please make sure you have necessary write permissions'
@@ -501,6 +599,7 @@ class ParameterScanUtils:
         
     def saveParameterScanState(self,_pScanFileName ):        
         
+        self.refreshParamSpecsContent(_pScanFileName)
         iteration=self.computeNextIteration()        
         self.writeParameterScanSpecsWithIteration(_pScanFileName,iteration)        
         

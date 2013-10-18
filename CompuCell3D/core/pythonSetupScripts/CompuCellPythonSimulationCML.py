@@ -1,3 +1,6 @@
+from __future__ import with_statement
+# enabling with statement in python 2.5
+
 '''
 SWIG LIBRARY LOADING ORDER: Before attempting to load swig libray it is necessary to first call 
    sim,simthread = CompuCellSetup.getCoreSimulationObjects(True)
@@ -34,6 +37,7 @@ setVTKPaths()
 import os          
 import sys
 import Configuration
+import time
 
 """ Have to import vtk from command line script to make sure vtk output works"""
 
@@ -41,69 +45,97 @@ import Configuration
 cc3dSimulationDataHandler=None
 
 
-def prepareParameterScan(_cc3dSimulationDataHandler):
 
+def prepareParameterScan(_cc3dSimulationDataHandler):
+    '''This fcn returns True if preparation of the next PS run was succesfull or False otherwise - this will usually happen when parameter scan reaches max iteration . 
+    '''
     # psu = _cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.psu # parameter scan utils
 
     # print 'pscanFile=',_cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.path
     
-    pScanFilePath=_cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.path # parameter scan utils
-    psu=_cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.psu
+    pScanFilePath = _cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.path # parameter scan file path
+    psu = _cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.psu #parameter scan utils
+    
+    # We use separate ParameterScanUtils object to handle parameter scan 
+    from ParameterScanUtils import ParameterScanUtils
+    
+    psu=ParameterScanUtils()
+    psu.readParameterScanSpecs(pScanFilePath)
+    # print 'INITIAL READ O FPARAMETER SCAN------------------------------'
+    # print psu.getParameterScanSpecsXMLString()
+    # print 'END OF INITIAL READ O FPARAMETER SCAN------------------------------'
+    
+    paramScanSpecsDirName=os.path.dirname(pScanFilePath)
+    
+    # # # lockFilePath=os.path.join(paramScanSpecsDirName,'.paramScanLock')
+    # # # if not os.path.isfile(lockFilePath):
+        # # # open(lockFilePath, 'a').close()
+    
     # # reading and writing parameter scan specs to ensure ordering of the file is consisten with internal ordering of the psu 
     # psu.normalizeParameterScanSpecs(pScanFilePath)
     
     
     outputDir = str(Configuration.getSetting('OutputLocation'))
-    pScanOutputDirRelPath=psu.outputDirectoryRelativePath
+
+    # # # from FileLock import FileLock
+    # fLock=FileLock(file_name=pScanFilePath, timeout=15, delay=0.5)    
+    # # fLock=FileLock(file_name=lockFilePath, timeout=10, delay=0.05)    
     
-    if pScanOutputDirRelPath=='':
-        pScanOutputDirRelPath='ParameterScan'
+    # # # print 'waiting for lock'
+    # # # fLock.acquire()
+    # # # print 'lock acquired'
+    
+    # # time.sleep(1)
+    # import time
+    # time.sleep(10)
+    
+    # # # print 'prepareOUTPUT DIR'
+    
+    # IMPORTANT : this call synchronizes the content of the psu object with the content of the param scan spec file
+    # we have to call it inside locked region to avoid possibility that outside locked region two or more cc3d simulations read the same content of the file and thus will attempt to create the same output dir 
+    # only one of them will succeed , all others will stop running . The simulation will finish but it will be much slower because only one process will remain
+    # # # psu.refreshParamSpecsContent(pScanFilePath) 
+    
+    customOutputPath=psu.prepareParameterScanOutputDirs(_outputDirRoot=outputDir)
+    # # # print 'AFTER prepareOUTPUT DIR, ',customOutputPath
+    # # # time.sleep(1)
+    
+    if not customOutputPath:
+        # # # fLock.release()
+        # # # print 'RELEASING THE LOCK'
+        # # # time.sleep(1)
+        return False,False
         
-    customPath=os.path.join(outputDir,pScanOutputDirRelPath)    
+    # # # print 'customOutputPath=',customOutputPath    
+    # # # time.sleep(1)    
     
-    
-    
-        
-    iteration=psu.computeNextIteration()
-    psu.writeParameterScanSpecsWithIteration(pScanFilePath,iteration)
-    
-    iterationId=psu.computeIterationIdNumber(iteration)
-    print 'iterationId=',iterationId
-    
-    customOutputPath=os.path.join(outputDir,pScanOutputDirRelPath)
-    customOutputPath=os.path.join(customOutputPath,str(iterationId))
-    
-    
-    #make output directory    
-    
-    try:
-        os.makedirs(customOutputPath)
-    except IOError,e:
-        print 'Could not create directory ',customOutputPath, ' . please make sure you have necessary write permissions'
-        sys.exit()
-        
     _cc3dSimulationDataHandler.copySimulationDataFiles(customOutputPath) 
+
+
     
     # tweak simulation files according to parameter scan file
     
     #construct path to the just-copied .cc3d file
     cc3dFileBaseName=os.path.basename(_cc3dSimulationDataHandler.cc3dSimulationData.path)
     cc3dFileFullName=os.path.join(customOutputPath,cc3dFileBaseName)
-    # print 'cc3dFileFullName=',cc3dFileFullName
     
     # set output directory for parameter scan
     setSimulationResultStorageDirectory(customOutputPath)
     
     # replace values simulation files with values defined in the  the parameter scan spcs
-    from ParameterScanUtils import ParameterScanUtils as PSU
-    psu=PSU()
     psu.replaceValuesInSimulationFiles(_pScanFileName = pScanFilePath, _simulationDir = customOutputPath)    
-
-    # import time
-    # time.sleep(1)
-    # load new simulation files
-    loadCC3DFile(fileName = cc3dFileFullName , forceSingleRun = True)
     
+    # save parameter Scan spec file with incremented ityeration
+    psu.saveParameterScanState(_pScanFileName = pScanFilePath)
+    
+    
+    return customOutputPath,cc3dFileFullName
+    # # # loadCC3DFile(fileName = cc3dFileFullName , forceSingleRun = True)
+    
+    # # # # # # fLock.release()
+    
+    
+    # # # return True
     
     
     
@@ -145,9 +177,7 @@ def setSimulationResultStorageDirectory(_dir=''):
  
     
  
-
-
-def loadCC3DFile(fileName,forceSingleRun=False):    
+def readCC3DFile(fileName):
     import CompuCellSetup
     import CC3DSimulationDataHandler as CC3DSimulationDataHandler
     
@@ -156,47 +186,35 @@ def loadCC3DFile(fileName,forceSingleRun=False):
     print cc3dSimulationDataHandler.cc3dSimulationData        
     
     
-    # CompuCellSetup.simulationPaths.setSimulationBasePath(cc3dSimulationDataHandler.cc3dSimulationData.basePath)
-
-    # if cc3dSimulationDataHandler.cc3dSimulationData.pythonScript != "":       
-    
-        
-        # CompuCellSetup.simulationPaths.setPlayerSimulationPythonScriptName(cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
-        
-        # if cc3dSimulationDataHandler.cc3dSimulationData.xmlScript!="":
-            # CompuCellSetup.simulationPaths.setPlayerSimulationXMLFileName(cc3dSimulationDataHandler.cc3dSimulationData.xmlScript)
+    return cc3dSimulationDataHandler
 
     
-    # elif cc3dSimulationDataHandler.cc3dSimulationData.xmlScript != "":
+def loadCC3DFile(fileName,forceSingleRun=False):    
+
+    from FileLock import FileLock    
+    fLock=FileLock(file_name=fileName, timeout=10, delay=0.05) 
+    fLock.acquire()    
+
+    import CompuCellSetup
+    import CC3DSimulationDataHandler as CC3DSimulationDataHandler
     
-        
-        # CompuCellSetup.simulationPaths.setPlayerSimulationXMLFileName(cc3dSimulationDataHandler.cc3dSimulationData.xmlScript)
-        
+    cc3dSimulationDataHandler=CC3DSimulationDataHandler.CC3DSimulationDataHandler(None)
+    cc3dSimulationDataHandler.readCC3DFileFormat(fileName)
+    print cc3dSimulationDataHandler.cc3dSimulationData        
+    
+    
     if   forceSingleRun: # forces loadCC3D to behave as if it was running plane simulation without addons such as e.g. parameter scan
         prepareSingleRun(cc3dSimulationDataHandler)
     else:
         if cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource:
-            prepareParameterScan(cc3dSimulationDataHandler)
+            preparationSuccessful=prepareParameterScan(cc3dSimulationDataHandler)
+            if not preparationSuccessful:
+                raise AssertionError('Parameter Scan Complete')
+            
         else:
             prepareSingleRun(cc3dSimulationDataHandler)
-        
-        # print 'cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource=',cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource
-        # print 'pscanFile=',cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.path
-        
-        # pScanFilePath=cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.path
-        # psu=cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.psu
-        
-        # iteration=psu.computeNextIteration()
-        # psu.writeParameterScanSpecsWithIteration(pScanFilePath,iteration)
-        
-        # for file, psd_dict in psu.parameterScanFileToDataMap.iteritems():
-            # print '------------File=',file
-            # for hash , psd in psd_dict.items():
-                # print ' paramName=',psd.name
-                # print 'values=',psd.customValues
-                # print 'currentIteration=',
                 
-            
+    fLock.release()                
     return cc3dSimulationDataHandler         
 
 
@@ -250,51 +268,83 @@ try:
     
     sim,simthread=None,None
     
-    while(True): # by default we are looping the simulation to make sure parameter scans 
-        helpOnly = cmlParser.processCommandLineOptions()
-        if helpOnly: 
-            raise NameError('HelpOnly')
+    helpOnly = cmlParser.processCommandLineOptions()
+    if helpOnly: 
+        raise NameError('HelpOnly')
+    fileName=cmlParser.getSimulationFileName()
+    
+    while(True): # by default we are looping the simulation to make sure parameter scans are handled properly
+    
+        cc3dSimulationDataHandler=None
         
-        CompuCellSetup.simulationPaths = CompuCellSetup.SimulationPaths()    
-        
-        
-        sim,simthread = CompuCellSetup.getCoreSimulationObjects(True)
-        # CompuCellSetup.cmlFieldHandler.outputFrequency=cmlParser.outputFrequency          
+        from FileLock import FileLock    
+        with FileLock(file_name=fileName, timeout=10, delay=0.05)  as flock:
+        # fLock=FileLock(file_name=fileName, timeout=10, delay=0.05) 
+        # fLock.acquire()    
+    
+            CompuCellSetup.resetGlobals()   
+            CompuCellSetup.simulationPaths = CompuCellSetup.SimulationPaths()    
+            
+            
+            sim,simthread = CompuCellSetup.getCoreSimulationObjects(True)
+            # CompuCellSetup.cmlFieldHandler.outputFrequency=cmlParser.outputFrequency          
 
-     
-        fileName=cmlParser.getSimulationFileName()
-        
-        CompuCellSetup.simulationFileName=fileName
-        
-            
-        setSimulationResultStorageDirectory(cmlParser.customScreenshotDirectoryName) # set Simulation output dir - it can be reset later - at this point only directory name is set. directory gets created later
-        
-        if re.match(".*\.xml$", fileName): # If filename ends with .xml
-            print "GOT FILE ",fileName
-                
-            pythonScriptName = CompuCellSetup.ExtractPythonScriptNameFromXML(fileName)
-            CompuCellSetup.simulationPaths.setPlayerSimulationXMLFileName(fileName)
-            
-            if pythonScriptName!="":
-                CompuCellSetup.simulationPaths.setPythonScriptNameFromXML(pythonScriptName) 
-        elif re.match(".*\.py$", fileName):     
-            # NOTE: extracting of xml file name from python script is done during script run time so we cannot use CompuCellSetup.simulationPaths.setXmlFileNameFromPython function here
-            CompuCellSetup.simulationPaths.setPlayerSimulationPythonScriptName(fileName)
-
-        elif re.match(".*\.cc3d$", fileName):     
-            cc3dSimulationDataHandler=loadCC3DFile(fileName,False)
-            
-            
-            
-            
          
+            
+            
+            
+            
+            
+            CompuCellSetup.simulationFileName=fileName
+            
+                
+            setSimulationResultStorageDirectory(cmlParser.customScreenshotDirectoryName) # set Simulation output dir - it can be reset later - at this point only directory name is set. directory gets created later
+            
+            if re.match(".*\.xml$", fileName): # If filename ends with .xml
+                print "GOT FILE ",fileName
+                    
+                pythonScriptName = CompuCellSetup.ExtractPythonScriptNameFromXML(fileName)
+                CompuCellSetup.simulationPaths.setPlayerSimulationXMLFileName(fileName)
+                
+                if pythonScriptName!="":
+                    CompuCellSetup.simulationPaths.setPythonScriptNameFromXML(pythonScriptName) 
+            elif re.match(".*\.py$", fileName):     
+                # NOTE: extracting of xml file name from python script is done during script run time so we cannot use CompuCellSetup.simulationPaths.setXmlFileNameFromPython function here
+                CompuCellSetup.simulationPaths.setPlayerSimulationPythonScriptName(fileName)
+
+            elif re.match(".*\.cc3d$", fileName):     
+                # cc3dSimulationDataHandler=loadCC3DFile(fileName,False)           
+                cc3dSimulationDataHandler=readCC3DFile(fileName)
+                
+             
+            
+            if cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource:
+                singleSimulation = False       
+                
+                customOutputPath,cc3dFileFullName=prepareParameterScan(cc3dSimulationDataHandler)
+                print 'customOutputPath=',customOutputPath
+                
+                if not cc3dFileFullName:
+                    raise AssertionError('Parameter Scan Complete') 
+                else:
+                    
+                    cc3dSimulationDataHandler=readCC3DFile(cc3dFileFullName)
+                    
+                    prepareSingleRun(cc3dSimulationDataHandler)
+                    
+            else:
+                prepareSingleRun(cc3dSimulationDataHandler)
+                
+                
+            # # # fLock.release()
+            
         
-        if cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource:
-            singleSimulation = False       
-        
+        import time
+        from random import random
+        # time.sleep(5*random())
 
         # for single run simulation we copy simulation files to the output directory
-        if  singleSimulation:
+        if  singleSimulation:            
             cc3dSimulationDataHandler.copySimulationDataFiles(CompuCellSetup.screenshotDirectoryName) 
             
      
@@ -350,9 +400,10 @@ except ExpatError,e:
 
 
 except AssertionError,e:
-    if CompuCellSetup.simulationObjectsCreated:
-        sim.finish()
+    if CompuCellSetup.simulationObjectsCreated:        
+        sim.finish()        
     print "Assertion Error: ",e.message
+    
 except CompuCellSetup.CC3DCPlusPlusError,e:
     print "RUNTIME ERROR IN C++ CODE: ",e.message
 except NameError,e:

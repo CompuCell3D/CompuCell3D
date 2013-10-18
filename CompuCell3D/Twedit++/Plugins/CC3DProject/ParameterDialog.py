@@ -82,7 +82,7 @@ class ParameterDialog(QDialog,ui_parameterdlg.Ui_ParameterDlg):
             except ValueError,e:
                 QMessageBox.warning(self,"Error Parsing Parameter List","Please make sure that parameter list entries have correct type")
                 return
-            psd.valueType=self.getValueType()
+            psd.valueType=parvaldlg.getValueType()
             # VALUE_TYPE_DICT_REVERSE[parvaldlg.getValueType()]
         else:
             #user canceled

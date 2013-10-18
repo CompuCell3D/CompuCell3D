@@ -836,7 +836,7 @@ class CC3DProject(QObject):
                 
             print 'self.scannedFileName=',self.scannedFileName,'\n\n\n\n\n'
             from CC3DProject.ParameterDialog import  ParameterDialog
-            pdlg=ParameterDialog(pScanResource.parameterScanEditor)
+            pdlg=ParameterDialog(self.parameterScanEditor)
             print 'DICT BEFORE=',csd.parameterScanResource.parameterScanFileToDataMap
             try:
                 pdlg.displayXMLScannableParameters(xmlElem,psXMLHandler.lineToAccessPath[line],pScanResource.path)
@@ -2058,6 +2058,10 @@ class CC3DProject(QObject):
         self.projectDataHandlers[projItem]=CC3DSimulationDataHandler(None)
         
         self.projectDataHandlers[projItem].readCC3DFileFormat(fileName)
+        # we read manually the content of the parameter spec file
+        if self.projectDataHandlers[projItem].cc3dSimulationData.parameterScanResource:
+            self.projectDataHandlers[projItem].cc3dSimulationData.parameterScanResource.readParameterScanSpecs()
+        
         
         self.__populateCC3DProjectWidget(projItem,fileName)
         

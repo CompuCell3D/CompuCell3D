@@ -84,10 +84,18 @@ class ParValDlg(QDialog,ui_parvaldlg.Ui_ParValDlg):
     def setAutoMinMax(self,_val,_valType=FLOAT):
         if _valType==STRING:return
         
-        minVal=0.2*_val
-        maxVal=2.0*_val
+        val=None
+        if _valType==FLOAT:
+            val=float(_val)
+        elif  _valType==INT:   
+            val=float(_val)
+            
         
-        if _val<0:
+        
+        minVal=0.2*val
+        maxVal=2.0*val
+        
+        if val<0:
             minVal,maxVal=maxVal,minVal
             
         if _valType==INT:
