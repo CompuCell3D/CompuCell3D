@@ -37,17 +37,19 @@ class ParValDlg(QDialog,ui_parvaldlg.Ui_ParValDlg):
     def guessParameterValueType(self,_val):
         ''' this fcn attempts to guess type of the parameter in this order:int,float, default string
         '''
+        if _val.find('.')>=0: 
+            try:
+                float(_val)
+                return FLOAT    
+            except ValueError,e:
+                pass
+        
         try:
             int(_val)
             return INT
         except ValueError,e:
             pass
             
-        try:
-            float(_val)
-            return FLOAT    
-        except ValueError,e:
-            pass
             
         return STRING    
             
@@ -168,12 +170,25 @@ class ParValDlg(QDialog,ui_parvaldlg.Ui_ParValDlg):
             distr=str(self.distrCB.currentText())
         except ValueError,e:
             return
+            
+        if minVal>maxVal:
+            minValStr=str(self.minLE.text())
+            maxValStr=str(self.maxLE.text())
+            minValStr,maxValStr=maxValStr,minValStr
+            
+            self.minLE.setText(minValStr)
+            self.maxLE.setText(maxValStr)
+            
+            minVal,maxVal=maxVal,minVal
+            
         # except:
             # return
             
         # if type=='string':
         if type==STRING:
             return
+            
+        values=[]
         
         if distr=='linear':
             if steps>1:
@@ -181,6 +196,29 @@ class ParValDlg(QDialog,ui_parvaldlg.Ui_ParValDlg):
                 values=[minVal+i*interval for i in range(steps)]                
             else:
                 values=[minVal]
+                
+        elif distr=='random':
+            from random import random
+            values=[minVal+random()*(maxVal-minVal) for i in range(steps)]                
+        elif distr=='log':
+            print 'generating log distr'
+            if minVal <0. or maxVal<0. :
+            
+                QMessageBox.warning(self,"Wrong Min/Max values","Please make sure that min and max values are positive for logarithmic distributions")
+                return
+            from math import log,exp
+            minLog,maxLog=log(minVal),log(maxVal)    
+            
+            if steps>1:
+                interval=(maxLog-minLog)/float(steps-1)
+                values=[minLog+i*interval for i in range(steps)]                
+            else:
+                values=[minLog]
+                
+            values=map(exp,values)
+                
+            
+                
             
         # if type=='int':        
         if type==INT:        

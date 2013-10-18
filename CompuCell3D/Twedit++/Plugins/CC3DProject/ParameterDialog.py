@@ -57,7 +57,9 @@ class ParameterDialog(QDialog,ui_parameterdlg.Ui_ParameterDlg):
         nameItem=self.paramTW.item(row,PARAMETER)
         
         valueItem=self.paramTW.item(row,VALUE)
-        value=float(valueItem.text())
+        
+        # value=float(valueItem.text())
+        value=str(valueItem.text())
         
         print 'TYPE=',TYPE
         typeItem=self.paramTW.item(row,TYPE)
@@ -73,7 +75,8 @@ class ParameterDialog(QDialog,ui_parameterdlg.Ui_ParameterDlg):
         # show param scan values generation dialog
         from ParValDlg import ParValDlg
         parvaldlg=ParValDlg(self)
-        parvaldlg.setAutoMinMax(value)
+        parvaldlg.initParameterScanData(_parValue=value,_parName=psd.name,_parType=psd.type,_parAccessPath=psd.accessPath)
+        # parvaldlg.setAutoMinMax(value)
         
         if parvaldlg.exec_():
             valueStr=str()
