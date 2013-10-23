@@ -17,7 +17,7 @@ MODULENAME='----MVCDrawView2D.py: '
 
 class MVCDrawView2D(MVCDrawViewBase):
     def __init__(self, _drawModel, qvtkWidget, parent=None):
-        MVCDrawViewBase.__init__(self,_drawModel,qvtkWidget, parent)
+        MVCDrawViewBase.__init__(self,_drawModel,qvtkWidget, parent)        
         
         self.initArea()
         self.setParams()
@@ -303,7 +303,7 @@ class MVCDrawView2D(MVCDrawViewBase):
         self.graphicsFrameWidget.ren.ResetCameraClippingRange()
         self.__initDist = distance #camera.GetDistance()
         self.Render() 
-        self.qvtkWidget.repaint()
+        self.qvtkWidget().repaint()
 
     def setDim(self, fieldDim):       
         self.dim = [fieldDim.x , fieldDim.y , fieldDim.z]
@@ -335,7 +335,7 @@ class MVCDrawView2D(MVCDrawViewBase):
 
     def drawCellField(self, _bsd, fieldType):
     
-            
+        
         
         import CompuCellSetup
 #        print
@@ -380,15 +380,27 @@ class MVCDrawView2D(MVCDrawViewBase):
                 return
 
 
-                
-            self.drawModel.initCellFieldActors((self.cellsActor,))
-    
-        
-#            print '   drawCellField:  currentActors=',self.currentActors
+            # # # import time    
+            # print 'INSIDE self.drawCellField BEFORE initCellFieldActors'    
+            
+            
+            # time.sleep(5)                
+            
+            self.drawModel.initCellFieldActors((self.cellsActor,))            
+            
+            
+            # # # print 'INSIDE self.drawCellField AFTER initCellFieldActors'    
+                        
+            # # # time.sleep(5)                
+            
+            # print '   drawCellField:  currentActors=',self.currentActors
+            
             if not self.currentActors.has_key("CellsActor"):
                 self.currentActors["CellsActor"] = self.cellsActor  
-                self.graphicsFrameWidget.ren.AddActor(self.cellsActor) 
-#                print '-----  added CELLS ACTOR'
+                self.graphicsFrameWidget.ren.AddActor(self.cellsActor)
+            
+
+            
         
         # Always draw outline of lattice
         
@@ -429,7 +441,7 @@ class MVCDrawView2D(MVCDrawViewBase):
             else:
                 self.drawClusterBorders2D()
         
-
+        
         self.Render()
         
         
@@ -478,7 +490,7 @@ class MVCDrawView2D(MVCDrawViewBase):
 #                self.drawClusterBorders2D()
         
         self.Render()
-        return
+        
         
     def drawConFieldHex(self,bsd,fieldType):
         self.drawModel.initConFieldHexActors((self.hexConActor,self.contourActor))    
@@ -844,7 +856,8 @@ class MVCDrawView2D(MVCDrawViewBase):
         # Better quality
         # Passes vtkRenderer. Takes actual screenshot of the region within the widget window
         # If other application are present within this region it will shoot them also
-
+        
+        
         renderLarge = vtk.vtkRenderLargeImage()
         renderLarge.SetInput(self.graphicsFrameWidget.ren)
         renderLarge.SetMagnification(1)
@@ -853,11 +866,16 @@ class MVCDrawView2D(MVCDrawViewBase):
         # We write out the image which causes the rendering to occur. If you
         # watch your screen you might see the pieces being rendered right
         # after one another.
+        # writer = vtk.vtkPNGWriter()
         writer = vtk.vtkPNGWriter()
         writer.SetInputConnection(renderLarge.GetOutputPort())
         print MODULENAME,"takeSimShot():  vtkPNGWriter, fileName=",fileName
+        
         writer.SetFileName(fileName)
+        print 'TRYING TO WRITE ',fileName
         writer.Write()
+        print 'WROTE ',fileName
+        
             
     def toolTip(self, cellG):
         return "Id:             %s\nType:       %s\nVolume:  %s" % (cellG.id, cellG.type, cellG.volume)

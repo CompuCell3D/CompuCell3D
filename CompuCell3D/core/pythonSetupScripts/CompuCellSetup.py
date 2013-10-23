@@ -395,6 +395,10 @@ def resetGlobals():
     global fieldRegistry
     fieldRegistry=FieldRegistry()
     
+    global simulationThreadObject
+    simulationThreadObject=None
+    
+    
     global appendedPaths
     for path in appendedPaths:
         # removing all occurences
@@ -681,7 +685,7 @@ def getCoreSimulationObjectsNewPlayer(_parseOnlyFlag=False, _cmlOnly=False):
         sim = CompuCell.Simulator()
         sim.setNewPlayerFlag(True)
         sim.setBasePath(simulationPaths.basePath)
-        if simthread is not None:
+        if simthread is not None:            
             simthread.setSimulator(sim)
 
         if simulationPaths.simulationXMLFileName!="":
@@ -735,7 +739,12 @@ def getCoreSimulationObjectsNewPlayer(_parseOnlyFlag=False, _cmlOnly=False):
         simulationObjectsCreated = True
                 
     if not _cmlOnly:
-        simulationThreadObject.sim = sim
+        # sys.exit()        
+        global simulationThreadObject
+        
+        # simulationThreadObject.sim = sim
+        simulationThreadObject.setSimulator(sim)
+        
         return sim,simulationThreadObject
     
     else:
@@ -970,7 +979,8 @@ def initializeSimulationObjects(sim,simthread):
             initModules(sim,cc3dXML2ObjConverterAdapter)
 
         sim.initializeCC3D()
-    
+        
+        
     print "SIMTHREAD=",simthread
     if simthread is not None:
         simthread.clearGraphicsFields()
@@ -1008,18 +1018,34 @@ def extraInitSimulationObjects(sim,simthread,_restartEnabled=False):
     else:
         
         sim.extraInit()#after all xml steppables and plugins have been loaded we call extraInit to complete initialization
+
+        # 62 mb    
+        
         if sim.getRecentErrorMessage()!="":        
             raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
     
         if simthread is not None and playerType!="CML":
             simthread.preStartInit()
             
+        
+        
         if not _restartEnabled: # start fcuntion does not get called during restart
             sim.start()
-            
+        # 71 mb
+
+        
+        # print 'extraInitSimulationObjects 1'
+        # import time
+        # time.sleep(5)        
+
+        
         if sim.getRecentErrorMessage()!="":        
             raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
     
+        # print 'extraInitSimulationObjects 2'
+        # import time
+        # time.sleep(5)        
+
         if simthread is not None and playerType!="CML":
             simthread.postStartInit()
   
@@ -1309,11 +1335,15 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
     print 'SIMULATION FILE NAME=',simthread.getSimFileName()
     global simulationFileName
     simulationFileName=simthread.getSimFileName()
+    
+    import weakref
     # restart manager
     import RestartManager
     restartManager=RestartManager.RestartManager(sim)
-    simthread.restartManager=restartManager
     
+    simthread.restartManager=weakref.ref(restartManager)
+    
+        
     # restartEnabled=restartManager.restartEnabled()
     restartEnabled=restartManager.restartEnabled()
     sim.setRestartEnabled(restartEnabled)
@@ -1326,10 +1356,25 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
     
     
 #    print MYMODULENAME,"mainLoopNewPlayer: _screenUpdateFrequency = ",_screenUpdateFrequency
+    # print '\n\n\n INSIDE mainLoopNewPlayer='
+    # import time
+    # time.sleep(5)
 
     extraInitSimulationObjects(sim,simthread,restartEnabled)
+    
+    
+    # # # return
+    # print '\n\n\n  AFTER EXTRA INIT INSIDE mainLoopNewPlayer='
+    # import time
+    # time.sleep(5)
+    
+    
+    
     # simthread.waitForInitCompletion()
     simthread.waitForPlayerTaskToFinish()
+    
+
+    
     
     runFinishFlag = True;
     
@@ -1340,9 +1385,10 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
             steppableRegistry.start()
         global customVisStorage
         
-        
-    simthread.steppablePostStartPrep()
+            
+    simthread.steppablePostStartPrep()    
     simthread.waitForPlayerTaskToFinish()
+    
     
     # #restart manager
     # import RestartManager

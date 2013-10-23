@@ -84,7 +84,7 @@ class ScreenshotManager:
     def __init__(self,_tabViewWidget):
         self.screenshotDataDict={}
         self.tabViewWidget=_tabViewWidget
-        print
+        # print
 #        print MODULENAME,'  ScreenshotManager: __init__(),   self.tabViewWidget=',self.tabViewWidget
 #        print MODULENAME,'  ScreenshotManager: __init__(),   type(self.tabViewWidget)=',type(self.tabViewWidget)
 #        print MODULENAME,'  ScreenshotManager: __init__(),   dir(self.tabViewWidget)=',dir(self.tabViewWidget)
@@ -124,7 +124,13 @@ class ScreenshotManager:
         self.screenshotGraphicsWidgetFieldTypesInitialized=False
         
         
+    def  cleanup(self):
+        # have to do cleanup to ensure some of the memory intensive resources e.g. self.screenshotGraphicsWidget get deallocated
+        self.screenshotGraphicsWidget.close()
+        self.screenshotGraphicsWidget=None
+        self.tabViewWidget=None
         
+    
     def produceScreenshotCoreName(self,_scrData):
         return str(_scrData.plotData[0])+"_"+str(_scrData.plotData[1])
         

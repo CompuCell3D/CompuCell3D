@@ -49,9 +49,6 @@ cc3dSimulationDataHandler=None
 def prepareParameterScan(_cc3dSimulationDataHandler):
     '''This fcn returns True if preparation of the next PS run was succesfull or False otherwise - this will usually happen when parameter scan reaches max iteration . 
     '''
-    # psu = _cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.psu # parameter scan utils
-
-    # print 'pscanFile=',_cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.path
     
     pScanFilePath = _cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.path # parameter scan file path
     psu = _cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.psu #parameter scan utils
@@ -61,57 +58,18 @@ def prepareParameterScan(_cc3dSimulationDataHandler):
     
     psu=ParameterScanUtils()
     psu.readParameterScanSpecs(pScanFilePath)
-    # print 'INITIAL READ O FPARAMETER SCAN------------------------------'
-    # print psu.getParameterScanSpecsXMLString()
-    # print 'END OF INITIAL READ O FPARAMETER SCAN------------------------------'
     
     paramScanSpecsDirName=os.path.dirname(pScanFilePath)
     
-    # # # lockFilePath=os.path.join(paramScanSpecsDirName,'.paramScanLock')
-    # # # if not os.path.isfile(lockFilePath):
-        # # # open(lockFilePath, 'a').close()
-    
-    # # reading and writing parameter scan specs to ensure ordering of the file is consisten with internal ordering of the psu 
-    # psu.normalizeParameterScanSpecs(pScanFilePath)
-    
-    
     outputDir = str(Configuration.getSetting('OutputLocation'))
 
-    # # # from FileLock import FileLock
-    # fLock=FileLock(file_name=pScanFilePath, timeout=15, delay=0.5)    
-    # # fLock=FileLock(file_name=lockFilePath, timeout=10, delay=0.05)    
-    
-    # # # print 'waiting for lock'
-    # # # fLock.acquire()
-    # # # print 'lock acquired'
-    
-    # # time.sleep(1)
-    # import time
-    # time.sleep(10)
-    
-    # # # print 'prepareOUTPUT DIR'
-    
-    # IMPORTANT : this call synchronizes the content of the psu object with the content of the param scan spec file
-    # we have to call it inside locked region to avoid possibility that outside locked region two or more cc3d simulations read the same content of the file and thus will attempt to create the same output dir 
-    # only one of them will succeed , all others will stop running . The simulation will finish but it will be much slower because only one process will remain
-    # # # psu.refreshParamSpecsContent(pScanFilePath) 
     
     customOutputPath=psu.prepareParameterScanOutputDirs(_outputDirRoot=outputDir)
-    # # # print 'AFTER prepareOUTPUT DIR, ',customOutputPath
-    # # # time.sleep(1)
     
     if not customOutputPath:
-        # # # fLock.release()
-        # # # print 'RELEASING THE LOCK'
-        # # # time.sleep(1)
         return False,False
         
-    # # # print 'customOutputPath=',customOutputPath    
-    # # # time.sleep(1)    
-    
     _cc3dSimulationDataHandler.copySimulationDataFiles(customOutputPath) 
-
-
     
     # tweak simulation files according to parameter scan file
     
@@ -130,17 +88,6 @@ def prepareParameterScan(_cc3dSimulationDataHandler):
     
     
     return customOutputPath,cc3dFileFullName
-    # # # loadCC3DFile(fileName = cc3dFileFullName , forceSingleRun = True)
-    
-    # # # # # # fLock.release()
-    
-    
-    # # # return True
-    
-    
-    
-
-    
 
 
 def prepareSingleRun(_cc3dSimulationDataHandler):
@@ -267,7 +214,7 @@ try:
     singleSimulation=True
     
     sim,simthread=None,None
-    
+            
     helpOnly = cmlParser.processCommandLineOptions()
     if helpOnly: 
         raise NameError('HelpOnly')
@@ -277,22 +224,14 @@ try:
     
         cc3dSimulationDataHandler=None
         
-        from FileLock import FileLock    
+        from FileLock import FileLock            
         with FileLock(file_name=fileName, timeout=10, delay=0.05)  as flock:
-        # fLock=FileLock(file_name=fileName, timeout=10, delay=0.05) 
-        # fLock.acquire()    
     
             CompuCellSetup.resetGlobals()   
             CompuCellSetup.simulationPaths = CompuCellSetup.SimulationPaths()    
             
             
             sim,simthread = CompuCellSetup.getCoreSimulationObjects(True)
-            # CompuCellSetup.cmlFieldHandler.outputFrequency=cmlParser.outputFrequency          
-
-         
-            
-            
-            
             
             
             CompuCellSetup.simulationFileName=fileName
@@ -339,19 +278,12 @@ try:
             # # # fLock.release()
             
         
-        import time
-        from random import random
-        # time.sleep(5*random())
-
         # for single run simulation we copy simulation files to the output directory
         if  singleSimulation:            
             cc3dSimulationDataHandler.copySimulationDataFiles(CompuCellSetup.screenshotDirectoryName) 
             
      
         if CompuCellSetup.simulationPaths.simulationPythonScriptName != "":
-            # fileObj=file(CompuCellSetup.simulationPaths.simulationPythonScriptName,"r")
-            # exec fileObj
-            # fileObj.close()
             execfile(CompuCellSetup.simulationPaths.simulationPythonScriptName)
         else:
             sim,simthread = CompuCellSetup.getCoreSimulationObjects()
@@ -397,7 +329,6 @@ except ExpatError,e:
         sim.finish()
     xmlFileName = CompuCellSetup.simulationPaths.simulationXMLFileName
     print "Error in XML File","File:\n "+xmlFileName+"\nhas the following problem\n"+e.message
-
 
 except AssertionError,e:
     if CompuCellSetup.simulationObjectsCreated:        

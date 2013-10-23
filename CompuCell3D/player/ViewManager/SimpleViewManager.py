@@ -55,6 +55,9 @@ class SimpleViewManager():
         menu.addAction(self.stepAct)
         menu.addAction(self.pauseAct)
         menu.addAction(self.stopAct)
+        
+        menu.addAction(self.addVTKWindowAct)        
+        
         menu.addSeparator()
         #--------------------
         menu.addAction(self.serializeAct)
@@ -360,6 +363,10 @@ class SimpleViewManager():
         self.stopAct = QAction(QIcon("player/icons/stop.png"), "&Stop", self)
         self.stopAct.setShortcut(Qt.CTRL + Qt.Key_X)
         self.serializeAct = QAction( "Serialize", self)
+        
+        self.addVTKWindowAct=QAction(QIcon("player/icons/stop.png"),'Add VTK Window',self )        
+        self.addVTKWindowAct.setShortcut(Qt.CTRL + Qt.Key_I)
+        
 
         # Why append?
         self.simActions.append(self.runAct)
@@ -367,6 +374,7 @@ class SimpleViewManager():
         self.simActions.append(self.pauseAct)
         self.simActions.append(self.stopAct)
         self.simActions.append(self.serializeAct)
+        self.simActions.append(self.addVTKWindowAct)
         
 
     def __initVisualActions(self):

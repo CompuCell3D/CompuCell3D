@@ -49,11 +49,40 @@ class MVCDrawViewBase():
 #        print MODULENAME,"graphicsFrameWidget=",graphicsFrameWidget
 #        print MODULENAME,"parent=",parent
         
-        self.drawModel = _drawModel
+        # # # self.drawModel = _drawModel
         self.parentWidget = parent
 #        print MODULENAME,'  __init__: parentWidget=',self.parentWidget
-        self.graphicsFrameWidget = graphicsFrameWidget
-        self.qvtkWidget = self.graphicsFrameWidget.qvtkWidget
+        # from weakref import ref
+        # self.graphicsFrameWidget = ref(graphicsFrameWidget)
+        # gfw=self.graphicsFrameWidget()
+        # self.qvtkWidget = self.graphicsFrameWidget.qvtkWidget
+        
+        
+        
+        
+        from weakref import ref
+        
+        dM = ref(_drawModel)
+        self.drawModel=dM()
+        
+        
+        gfw=ref(graphicsFrameWidget)
+        self.graphicsFrameWidget = gfw()
+        
+        
+        # qvtk=ref(self.graphicsFrameWidget.qvtkWidget)
+        
+        
+        # self.qvtkWidget = qvtk()
+        
+        self.qvtkWidget = ref(self.graphicsFrameWidget.qvtkWidget)
+        
+        
+        
+        # # # self.graphicsFrameWidget = graphicsFrameWidget
+        # # # self.qvtkWidget = self.graphicsFrameWidget.qvtkWidget
+        
+        
         self.currentDrawingFunction = None
         self.currentActors = {} # dictionary of current actors
         self.drawingFcnName = "" # holds a string describing name of the drawing fcn . Used to determine if current actors need to be removed before next drawing
@@ -63,12 +92,17 @@ class MVCDrawViewBase():
         self.currentFieldType = ("Cell_Field", FIELD_TYPES[0])
         self.__initDist = 0 # initial camera distance - used in zoom functions
         
+        
         #CUSTOM ACTORS
         self.customActors = {} #{visName: CustomActorsStorage() }
         self.currentCustomVisName = '' #stores name of the current custom visualization
         self.currentVisName = '' #stores name of the current visualization         
         self.cameraSettingsDict = {} # {fieldName:CameraSettings()}
-
+        
+    def __del__(self):
+        print '\n\n\n\n CLEANING UP MODULENAME'
+        
+        
     def setDrawingFunctionName(self,_fcnName):
         # print "\n\n\n THIS IS _fcnName=",_fcnName," self.drawingFcnName=",self.drawingFcnName
         
@@ -77,9 +111,32 @@ class MVCDrawViewBase():
         else:
             self.drawingFcnHasChanged = False
         self.drawingFcnName = _fcnName
+     
+    def clearEntireDisplay(self):
+        
+        actorsCollection=self.graphicsFrameWidget.ren.GetActors()
+        # print 'actorsCollection=',actorsCollection
+        actorsList=[]
+        numberOfActors=actorsCollection.GetNumberOfItems()
+        print 'numberOfActors=',numberOfActors
+        for i in range(numberOfActors):
+            actor=actorsCollection.GetItemAsObject(i)
+            actorsList.append(actor)
+            
+        for actor in actorsList:    
+            self.graphicsFrameWidget.ren.RemoveActor(actor)            
+            
+        actorsList =[]   
+        print 'actorsList=',actorsList    
         
     def clearDisplay(self):   # called whenever user selects a different field to render; beware NOT doing this because, for example, it wouldn't redraw a dynamic scalarbar
+        
 #        print MODULENAME,"   ---------  clearDisplay()"
+
+        # # # actorsCollection=self.graphicsFrameWidget.ren.GetActors()
+        # # # print 'actorsCollection=',actorsCollection
+
+        # # # print 'self.currentActors=',self.currentActors
         for actor in self.currentActors:
             self.graphicsFrameWidget.ren.RemoveActor(self.currentActors[actor])
             
@@ -107,7 +164,10 @@ class MVCDrawViewBase():
     def drawFieldLocal(self, _bsd,_useFieldComboBox=True):
         # print 'resetting camera in drawFieldLocal View base'
         # self.resetAllCameras()    
-    
+        # import time
+        # print 'BEFORE INSIDEE graphicsFrame.drawFieldLocal'    
+        # time.sleep(5)    
+        # return
         fieldType = ("Cell_Field", FIELD_TYPES[0])
 #        print MODULENAME,  "drawFieldLocal():  fieldType=",fieldType
         # print "DrawLocal"
@@ -115,12 +175,14 @@ class MVCDrawViewBase():
 #        print MODULENAME,  "drawFieldLocal():  plane=",plane
         self.drawModel.setDrawingParameters(_bsd,plane[0],plane[1],fieldType)
         
+        
         self.currentDrawingParameters.bsd = _bsd
         self.currentDrawingParameters.plane = plane[0]
         self.currentDrawingParameters.planePos = plane[1]
         self.currentDrawingParameters.fieldName = fieldType[0]
         self.currentDrawingParameters.fieldType = fieldType[1]        
         self.drawModel.setDrawingParametersObject(self.currentDrawingParameters)
+        
         
         if self.fieldTypes is not None:
             if _useFieldComboBox:
@@ -154,11 +216,21 @@ class MVCDrawViewBase():
             self.drawModel.setDrawingParametersObject(self.currentDrawingParameters)
             
         
+        
         self.drawField(_bsd,fieldType)        
-        self.qvtkWidget.repaint()
+        
+        # print 'AFTER INSIDEE graphicsFrame.drawFieldLocal'    
+        # time.sleep(5)           
+  
+        self.qvtkWidget().repaint()
+        
+
         
         
-    def drawField(self, _bsd, fieldType):         
+        
+    def drawField(self, _bsd, fieldType):   
+        
+        
         resetCamera = False # we reset camera only for visualizations for which camera settings are not in the dictionary and users have not requested custom cameras
         
         if self.drawingFcnHasChanged:            
@@ -166,22 +238,33 @@ class MVCDrawViewBase():
             
         drawField = getattr(self, "draw" + fieldType[1])   # e.g. "drawCellField"
         
-            
-        
         
         cs = None #camera settings
         
         if self.currentDrawingFunction != drawField: # changing type of drawing function e.g. from drawCellField to drawConField- need to remove actors that are currently displayed            
-            for actorName in self.currentActors.keys():                
+
+            for actorName in self.currentActors.keys():                                                
                 self.graphicsFrameWidget.ren.RemoveActor(self.currentActors[actorName])
                 del self.currentActors[actorName]
                 
-            self.currentDrawingFunction = drawField   
+            # to prevent cyclic reference we user weakre
+            from weakref import ref    
+            self.currentDrawingFunction = ref(drawField)
             
-            
+            # # # self.currentDrawingFunction = drawField   
+        
+        
+        
+        currentDrawingFunction=self.currentDrawingFunction() # obtaining object from weakref
+        if not currentDrawingFunction:return
+        print 'currentDrawingFunction=',currentDrawingFunction
+        # import time
+        # time.sleep(2)
+        # return
+        
         # here we handle actors for custom visualization when the name of the function does not change (it is drawCustomVis) but the name of the plot changes (hence actors have to be replaced with new actors)
         drawFieldCustomVis = getattr(self, "drawCustomVis")
-        if self.currentDrawingFunction==drawFieldCustomVis:
+        if currentDrawingFunction==drawFieldCustomVis:
             #check if actors the name of the custom vis has changed            
             if self.currentCustomVisName != self.currentDrawingParameters.fieldName:
                 self.currentCustomVisName = self.currentDrawingParameters.fieldName
@@ -214,12 +297,68 @@ class MVCDrawViewBase():
 
         self.currentVisName = self.currentDrawingParameters.fieldName    # updating current vis name        
         
+        
 
+        
+        
         drawField(_bsd, fieldType)        
+
+
+
+
         
         if resetCamera:
-            self.qvtkWidget.resetCamera() 
+            self.qvtkWidget().resetCamera() 
             self.cameraSettingsDict[fieldName] = self.getCurrentCameraSettings()
+        
+        # # # # here we handle actors for custom visualization when the name of the function does not change (it is drawCustomVis) but the name of the plot changes (hence actors have to be replaced with new actors)
+        # # # drawFieldCustomVis = getattr(self, "drawCustomVis")
+        # # # if self.currentDrawingFunction==drawFieldCustomVis:
+            # # # #check if actors the name of the custom vis has changed            
+            # # # if self.currentCustomVisName != self.currentDrawingParameters.fieldName:
+                # # # self.currentCustomVisName = self.currentDrawingParameters.fieldName
+
+                # # # for actorName in self.currentActors.keys():
+                    # # # self.graphicsFrameWidget.ren.RemoveActor(self.currentActors[actorName])
+                    # # # del self.currentActors[actorName]
+                
+        # # # try:
+        
+            # # # fieldName = self.currentDrawingParameters.fieldName                                   
+            # # # cs = self.cameraSettingsDict[fieldName]
+            
+            # # # if self.checkIfCameraSettingsHaveChanged(cs):
+                # # # if self.currentVisName==self.currentDrawingParameters.fieldName: # this section is called when camera setings have changed between calls to this fcn (e.g. when screen refreshes with new MCS data) and the visualzation field was not change by the user                    
+                    # # # cs = self.getCurrentCameraSettings()
+                    # # # self.cameraSettingsDict[fieldName] = cs
+                    
+                    
+                    # # # self.setCurrentCameraSettings(cs)
+                # # # else:                    # this section is called when camera settings have changed between calls to this function and visualization field changes. Before initializing camera with cs for new vis field setting we store cs for  previous vis field
+                    # # # self.cameraSettingsDict[self.currentVisName] = self.getCurrentCameraSettings()         
+                    
+                    # # # self.setCurrentCameraSettings(cs)
+        # # # except LookupError,e:
+            # # # resetCamera=True
+            
+            # # # if self.currentVisName!=self.currentDrawingParameters.fieldName and self.currentVisName!='': # this is called when user modifies camera in one vis and then changes vis to another  for which camera has not been set up                 
+                # # # self.cameraSettingsDict[self.currentVisName] = self.getCurrentCameraSettings()
+
+        # # # self.currentVisName = self.currentDrawingParameters.fieldName    # updating current vis name        
+        
+        
+
+        
+        
+        # # # drawField(_bsd, fieldType)        
+        
+
+
+
+        
+        # # # if resetCamera:
+            # # # self.qvtkWidget.resetCamera() 
+            # # # self.cameraSettingsDict[fieldName] = self.getCurrentCameraSettings()
         
        
     def resetAllCameras(self) :             
@@ -379,7 +518,7 @@ class MVCDrawViewBase():
         return (minCon, maxCon)
 
     # Just returns min and max concentration
-    def conMinMax(self):
+    def conMinMax(self):        
         return (self.drawModel.minCon, self.drawModel.maxCon)
     
     def frac(self, con, minCon, maxCon):

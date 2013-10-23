@@ -52,8 +52,22 @@ class MVCDrawModelBase():
         (self.minCon, self.maxCon) = (0, 0)
         
         self.parentWidget=parent
-        self.graphicsFrameWidget=graphicsFrameWidget
-        self.qvtkWidget=self.graphicsFrameWidget.qvtkWidget
+        
+        
+        # self.graphicsFrameWidget = graphicsFrameWidget()        
+        # self.qvtkWidget = self.graphicsFrameWidget.qvtkWidget
+        
+        from weakref import ref
+        gfw=ref(graphicsFrameWidget)
+        self.graphicsFrameWidget = gfw()
+        
+        # qvtk=ref(self.graphicsFrameWidget.qvtkWidget)
+        
+        self.qvtkWidget =ref(self.graphicsFrameWidget.qvtkWidget)       
+        # self.qvtkWidget = qvtk()        
+        
+        # # # self.graphicsFrameWidget=graphicsFrameWidget
+        # # # self.qvtkWidget=self.graphicsFrameWidget.qvtkWidget
         self.currentDrawingFunction=None       
         self.fieldTypes=None 
         self.currentDrawingParameters=None

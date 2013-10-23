@@ -1,8 +1,12 @@
+from __future__ import with_statement
+# enabling with statement in python 2.5
+
 # -*- coding: utf-8 -*-
 import os, sys
 import re
 import inspect
 import string
+import time
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -168,7 +172,12 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.nextSimulation = ""
         self.dlg = None
         
-
+        #parameter scan variables
+        self.singleSimulation=False
+        self.parameterScanFile=''
+        self.parameterScanOutputDir=''
+        
+        
     def getSimFileName(self):
         return self.__fileName
     
@@ -195,6 +204,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         return
 
     def setActiveSubWindowCustomSlot(self, window):
+        print 'INSIDE setActiveSubWindowCustomSlot'
 #        print MODULENAME,"setActiveSubWindow: window=",window
 #        print MODULENAME,'\n ------------------  setActiveSubWindowCustomSlot():  self.mdiWindowDict =', self.mdiWindowDict
         windowNames = self.plotWindowDict.keys()
@@ -202,11 +212,20 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 #          print MODULENAME,'     setActiveSubWindowCustomSlot():  windowName=', windowName
             
 #        print 'dir(window)=',dir(window)
-        if window:
+        print 'WINDOW=',window
+        
+        mdiWindow=self.findMDISubWindowForWidget(window)
+        if mdiWindow:
 #            self.setActiveSubWindow(window)
-            self.setActiveSubWindow(self.mdiWindowDict.values()[0])
+            self.setActiveSubWindow(mdiWindow)
 
             self.lastActiveWindow = window
+        
+        # if window:
+# #            self.setActiveSubWindow(window)
+            # self.setActiveSubWindow(self.mdiWindowDict.values()[0])
+
+            # self.lastActiveWindow = window
 #            print "MODULENAME,'         setActiveSubWindowCustomSlot(): self.lastActiveWindow.winId().__int__()=",self.lastActiveWindow.windowId().__int__()
 #            print MODULENAME,"         setActiveSubWindowCustomSlot(): self.lastActiveWindow is ",self.lastActiveWindow.windowTitle()
             
@@ -226,6 +245,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
 
     def updateActiveWindowVisFlags(self, window=None):
+        # return
         if window:
             dictKey = window.winId().__int__()
         else:
@@ -241,6 +261,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
     # Invoked whenever 'Window' menu is clicked. It does NOT modify lastActiveWindow directly (setActiveSubWindowCustomSlot does)
     def updateWindowMenu(self):   
+        
 #        if self.lastActiveWindow is not None:
 #            print MODULENAME,'------- updateWindowMenu(): (starting)  self.lastActiveWindow.winId()=',self.lastActiveWindow.winId()
         menusDict = self.__parent.getMenusDictionary()
@@ -329,8 +350,56 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             # action.setChecked(child == self.activeMdiChild())
             # action.triggered.connect(self.windowMapper.map)
             # self.windowMapper.setMapping(action, child)
-
-
+            
+    def findMDISubWindowForWidget(self,_widget):
+        # we look here for an mdiWindows that has widget which is same as _widget
+        for windowName, mdiWindow in self.mdiWindowDict.iteritems(): 
+            try:
+                if  self.windowDict[windowName] == _widget:
+                    return mdiWindow #
+            except LookupError,e:
+                pass
+        return None
+    
+    def addGraphicsWindowToWindowRegistry(self,_window):
+        self.graphicsWindowDict[self.windowCounter] = _window
+        self.windowDict[self.windowCounter] = _window
+        
+    def addMDIWindowToRegistry(self,_mdiWindow):
+        self.mdiWindowDict[self.windowCounter]=_mdiWindow
+        
+    def  removeWindowFromRegistry(self,_window):
+        _windowWidget=_window.widget()
+        self.removeWindowWidgetFromRegistry(_windowWidget=_windowWidget)
+        
+    def removeWindowWidgetFromRegistry(self,_windowWidget):
+    
+        #remove window from general-purpose self.windowDict
+        
+        
+        for windowName,windowWidget in self.windowDict.iteritems():
+                    
+                    if windowWidget == _windowWidget:                                            
+                        del self.windowDict[windowName]    
+                        
+                        del self.mdiWindowDict[windowName]
+                        
+                        # if self.mainGraphicsWindow == windowWidget :
+                            # self.mainGraphicsWindow = None
+                            
+                        if  self.lastActiveWindow == windowWidget:
+                            self.lastActiveWindow = None
+                        
+                        break
+                        
+        #try removing window from graphics Window dict
+        for windowName,windowWidget in self.graphicsWindowDict.iteritems():
+            
+            if windowWidget == _windowWidget:                                            
+                del self.graphicsWindowDict[windowName]    
+                break
+                        
+    
     def addNewPlotWindow(self):
         # from PlotManager import CustomPlot        
         # customPlot=CustomPlot(self.plotManager)
@@ -348,16 +417,17 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 #        print MODULENAME, '--------- addNewGraphicsWindow() '
         # if self.pauseAct.isEnabled():
             # self.__pauseSim()
+            
         if not self.simulationIsRunning:
             return
         self.simulation.drawMutex.lock()
     
         self.windowCounter += 1        
         newWindow = GraphicsFrameWidget(self)   # "newWindow" is actually a QFrame
+        self.addGraphicsWindowToWindowRegistry(newWindow)
         
-        
-        self.windowDict[self.windowCounter] = newWindow
-        self.graphicsWindowDict[self.windowCounter] = newWindow  
+        # self.windowDict[self.windowCounter] = newWindow
+        # self.graphicsWindowDict[self.windowCounter] = newWindow  
         
         newWindow.setWindowTitle("Aux Graphics Window "+str(self.windowCounter))
         newWindow.setZoomItems(self.zitems)   # Set zoomFixed parameters
@@ -390,7 +460,10 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         
        # self.simulation.setGraphicsWidget(self.mainGraphicsWindow)        
-        self.mdiWindowDict[self.windowCounter] = self.addSubWindow(newWindow)
+        # self.mdiWindowDict[self.windowCounter] = self.addSubWindow(newWindow)
+        mdiWindow= self.addSubWindow(newWindow)
+        self.addMDIWindowToRegistry(mdiWindow)
+        # self.mdiWindowDict[self.windowCounter] 
         self.updateActiveWindowVisFlags()
         
         
@@ -407,12 +480,29 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         newWindow.setInitialCrossSection(self.basicSimulationData)
         newWindow.setFieldTypesComboBox(self.fieldTypes)
 
+    
         
     def addVTKWindowToWorkspace(self):   # just called one time, for initial graphics window  (vs. addNewGraphicsWindow())
 #        print MODULENAME,' =================================addVTKWindowToWorkspace ========='
 #        dbgMsg(' addVTKWindowToWorkspace =========')
         # self.graphics2D = Graphics2DNew(self)     
+        # print 'BEFORE self.mainGraphicsWindow = GraphicsFrameWidget(self)'
+        # time.sleep(5)
+        
+        # print 'BEFORE ADD VTK WINDOW TO WORKSPACE'
+        # time.sleep(5)
+        
+        
         self.mainGraphicsWindow = GraphicsFrameWidget(self)
+        
+        # self.mainGraphicsWindow.deleteLater()
+        
+        # QTimer.singleShot(0, self.showNormal)
+        
+        # print 'AFTER DELETING GRAPHINCS WINDOW'
+        # time.sleep(5)
+        
+        
 #        print MODULENAME,'-------- type(self.mainGraphicsWindow)= ',type(self.mainGraphicsWindow)
 #        print MODULENAME,' ====================addVTKWindowToWorkspace(): type(self.mainGraphicsWindow)=',type(self.mainGraphicsWindow)
 #        print MODULENAME,' ====================addVTKWindowToWorkspace(): dir(self.mainGraphicsWindow)=',dir(self.mainGraphicsWindow)
@@ -422,14 +512,20 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             self.mainGraphicsWindow.move(self.lastPositionMainGraphicsWindow)
         else:
             self.lastPositionMainGraphicsWindow = self.mainGraphicsWindow.pos()
-
+        
+        
+        
         self.mainGraphicsWindow.setShown(False)
+        
         # self.connect(self, SIGNAL('configsChanged'), self.graphics2D.configsChanged)        
         self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWindow.draw2D.configsChanged) 
         self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWindow.draw3D.configsChanged)        
         self.mainGraphicsWindow.readSettings()
         self.simulation.setGraphicsWidget(self.mainGraphicsWindow)
+        
+        
         # self.addSubWindow(self.mainGraphicsWindow)
+        
         mdiSubWindow = self.addSubWindow(self.mainGraphicsWindow)
 #        print MODULENAME,'-------- type(mdiSubWindow)= ',type(mdiSubWindow)  # =  <class 'PyQt4.QtGui.QMdiSubWindow'>
 #        print MODULENAME,'-------- dir(mdiSubWindow)= ',dir(mdiSubWindow)
@@ -437,13 +533,18 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.mainGraphicsWindow.setConnects(self)
 #        mdiSubWindow.setGeometry(100,100,400,300)  # rwh: this is how we would specify the position/size of the window
         
+        
+        
         self.windowCounter += 1
-        self.windowDict[self.windowCounter] = self.mainGraphicsWindow
-        self.graphicsWindowDict[self.windowCounter] = self.mainGraphicsWindow
+        self.addGraphicsWindowToWindowRegistry(self.mainGraphicsWindow)
+        self.addMDIWindowToRegistry(mdiSubWindow)
+        
         self.graphicsWindowVisDict = {}   # re-init this dict
 #        print MODULENAME, '--------- addVTKWindowToWorkspace: graphicsWindowDict= ',self.graphicsWindowDict
-        
-        self.mdiWindowDict[self.windowCounter] = mdiSubWindow
+
+        # # # self.windowDict[self.windowCounter] = self.mainGraphicsWindow
+        # # # self.graphicsWindowDict[self.windowCounter] = self.mainGraphicsWindow        
+        # # # self.mdiWindowDict[self.windowCounter] = mdiSubWindow
 #        print MODULENAME, '--------- addVTKWindowToWorkspace: mdiWindowDict= ',self.mdiWindowDict
         
         # self.windowDict[self.windowCounter]=mdiSubWindow
@@ -451,67 +552,42 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         self.mainGraphicsWindow.setWindowTitle("Main Graphics Window "+str(self.windowCounter))
         self.lastActiveWindow = self.mainGraphicsWindow
-#        print MODULENAME,'  addVTKWindowToWorkspace:  self.lastActiveWindow=',self.lastActiveWindow
-#        print MODULENAME,'  addVTKWindowToWorkspace:  self.lastActiveWindow.winId().__int__()=',self.lastActiveWindow.winId().__int__()
         
-        # print "self.lastPositionMainGraphicsWindow=",self.lastPositionMainGraphicsWindow
-        # print "\n\n\n"
-        # import time
-        # time.sleep(3)
         
-        # self.activeWindow().move(10,80)
         
         self.setActiveSubWindowCustomSlot(self.mainGraphicsWindow)  # rwh: do this to "check" this in the "Window" menu
+        
         
         self.updateWindowMenu()
         self.updateActiveWindowVisFlags()
         
-#        import pdb; pdb.set_trace()
-        
-#        print MODULENAME,'   addVTKWindowToWorkspace():  move ...'
-#        print '------------ moving window!!!'
-#        print 'self.mainGraphicsWindow.tabPosition()=', self.mainGraphicsWindow.tabPosition() # GraphicsFrameWidget has no attribute named tabPosition
-#        print 'mdiSubWindow.tabPosition()=', mdiSubWindow.tabPosition()  #  'QMdiSubWindow' object has no attribute 'tabPosition'
-#        self.mainGraphicsWindow.move(1900,1800)   # rwh: it no worky
-#        self.mainGraphicsWindow.parentWidget.move(400,300)   # temporarily moves, but jumps back
-#        self.mainGraphicsWindow.parentWidget.move(200,100)   # temporarily moves, but jumps back
 
         
-#        self.mainGraphicsWindow._switchDim(True)   #rwh
-        
+    
     def removeAllVTKWindows(self,_leaveFirstWindowFlag=False):
-        # self.closeAllWindows()
-        # for windowName in self.graphicsWindowDict.keys():
-            # print "windowName=",windowName
-            # print "self.graphicsWindowDict=",self.graphicsWindowDict
-            # if _leaveFirstWindowFlag and windowName==1:
-                # print "leaving first window"
-                # continue
-            # # self.setActiveWindow(self.graphicsWindowDict[windowName])
-            # # self.closeActiveWindow()
-            # windowToRemove=self.graphicsWindowDict[windowName]
-            # print "removing window=",windowName
-            # del self.graphicsWindowDict[windowName]
-            # print "removing window=",windowName
-            # del self.windowDict[windowName]
-            # windowToRemove.close()
-            # self.windowCounter-=1   
 
         windowNames = self.graphicsWindowDict.keys()
+        print 'windowNames=',windowNames
+        print 'self.graphicsWindowDict=',self.graphicsWindowDict
+        
         for windowName in windowNames:
-            # print "windowName=",windowName
-            # print "self.graphicsWindowDict=",self.graphicsWindowDict
             if _leaveFirstWindowFlag and windowName==1:
                 # print "leaving first window"
                 continue
                 
-            # self.removeSubWindow(self.graphicsWindowDict[windowName])
-#            print MODULENAME," REMOVING window=",self.graphicsWindowDict[windowName]
-            # self.setActiveSubWindow(self.graphicsWindowDict[windowName])
             self.setActiveSubWindow(self.mdiWindowDict[windowName])
             self.closeActiveSubWindowSlot()
-            continue
             
+            
+            
+            continue
+        
+            
+        
+        print 'GOT HERE REMOVE ALL VTK'
+        print 'self.graphicsWindowDict=',self.graphicsWindowDict
+        print 'len(self.subWindowList())=',len(self.subWindowList())
+        
         self.updateWindowMenu()
 
 
@@ -572,23 +648,42 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             self.windowDict[windowName].showNormal()
     
     def closeActiveSubWindowSlot(self):   # this method is called whenever a user closes a graphics window
-        print MODULENAME,"   ----- closeActiveSubWindowSlot()"
+    
+        print 'BEFORE  closeActiveSubWindowSlot self.subWindowList().size()=',len(self.subWindowList())
+        
+        # print MODULENAME,"   ----- closeActiveSubWindowSlot()"
         activeWindow = self.activeSubWindow()
-        print "activeWindow=",activeWindow.widget()
+        if not activeWindow:return
+
+        activeWindow.close()
+        self.removeWindowFromRegistry(activeWindow)
+        
+        # print "activeWindow=",activeWindow.widget()
         # print "self.windowDict[1]=",self.windowDict[1]
         # print "self.graphicsWindowDict[1]=",self.graphicsWindowDict[1]
-        print MODULENAME,"closeActiveSubWindowSlot():   self.windowDict.keys()=",self.windowDict.keys()
-        for windowName in self.windowDict.keys():
-            print MODULENAME,"closeActiveSubWindowSlot():   windowName=",windowName    #  = 1,2, etc
-            if self.windowDict[windowName] == activeWindow.widget():
-                del self.windowDict[windowName]
-                if windowName in self.graphicsWindowDict.keys():
-                    del self.graphicsWindowDict[windowName]
-                    del self.mdiWindowDict[windowName]
-                activeWindow.close()
-                self.windowCounter -= 1 
+        # print MODULENAME,"closeActiveSubWindowSlot():   self.windowDict.keys()=",self.windowDict.keys()
+        
+        
+        
+        # # # for windowName in self.windowDict.keys():
+            # # # # print MODULENAME,"closeActiveSubWindowSlot():   windowName=",windowName    #  = 1,2, etc
+            # # # if self.windowDict[windowName] == activeWindow.widget():                
+                # # # # print 'self.removeSubWindow(activeWindow.widget())'
+                # # # # activeWindow.widget().deleteLater()
+                # # # # activeWindow.deleteLater()                
+                
+                # # # del self.windowDict[windowName]
+                # # # if windowName in self.graphicsWindowDict.keys():
+                    # # # del self.graphicsWindowDict[windowName]
+                    # # # del self.mdiWindowDict[windowName]
+                # # # activeWindow.close()
+                
+                # # # # self.windowCounter -= 1 
         
         self.updateWindowMenu()
+        
+        print 'self.windowDict=',self.windowDict    
+        print 'AFTER  closeActiveSubWindowSlot self.subWindowList().size()=',len(self.subWindowList())
         
         
     def processCommandLineOptions(self, opts):   # parse the command line (rf. player/compucell3d.pyw now)
@@ -795,7 +890,11 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 #            print MODULENAME,'prepareForNewSimulation(): setting cmlFieldHandler = None'
             CompuCellSetup.cmlFieldHandler = None # have to reinitialize cmlFieldHandler to None
             
+            
             self.simulation = SimulationThread(self)
+            
+            
+            
             
             self.connect(self.simulation,SIGNAL("simulationInitialized(bool)"),self.initializeSimulationViewWidget)
             self.connect(self.simulation,SIGNAL("steppablesStarted(bool)"),self.runSteppablePostStartPlayerPrep)            
@@ -804,11 +903,18 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             
             # self.connect(self.plotManager,SIGNAL("newPlotWindow(bool)"),self.addNewPlotWindow)
             self.plotManager.initSignalAndSlots()
+
             
             import PlayerPython
+            # print  'BEFORE FIELD STORAGE'
+            # time.sleep(5)
             self.fieldStorage = PlayerPython.FieldStorage()
             self.fieldExtractor = PlayerPython.FieldExtractor()
             self.fieldExtractor.setFieldStorage(self.fieldStorage)
+            # print  'AFTER FIELD STORAGE'
+            # time.sleep(5)
+            
+            
             
         self.simulation.setCallingWidget(self)    
         
@@ -824,9 +930,20 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.completedFirstMCS=False
         
     def __setupArea(self):
+        # print '------------------- __setupArea'
+        # time.sleep(5)
+        print 'before removeAllVTKWindows'
         self.removeAllVTKWindows()
+        print 'after removeAllVTKWindows'
         self.removeAllPlotWindows()
+        self.windowCounter=0
+        print 'before addVTKWindowToWorkspace'
         self.addVTKWindowToWorkspace()
+        print 'after addVTKWindowToWorkspace'
+        # print 'AFTER ------------------- __setupArea'
+        # time.sleep(5)
+        
+
         
         # print MODULENAME,'    __setupArea():   self.mdiWindowDict=',self.mdiWindowDict
 
@@ -1048,7 +1165,9 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                 self.FPPLinksAct.setChecked(False)
         
             CompuCellSetup.playerType="CMLResultReplay"
+            
             self.prepareForNewSimulation()
+                        
             CompuCellSetup.simulationPaths.setSimulationResultDescriptionFile(fileName)
             
             if self.__parent.latticeDataDock.isHidden():
@@ -1066,7 +1185,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         Configuration.setSetting("RecentFile",self.__fileName)
         Configuration.setSetting("RecentSimulations",self.__fileName) #  each loaded simulation has to be passed to a function which updates list of recent files
         
-        
+            
+
 
         
         # if self.saveSettings:
@@ -1083,6 +1203,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             
     def __loadCC3DFile(self,fileName):
 #        import CompuCellSetup        
+
         import CC3DSimulationDataHandler
         self.cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler(self)
         try:
@@ -1095,6 +1216,71 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             raise IOError("%s does not exist"%fileName)
             
         self.cc3dSimulationDataHandler.readCC3DFileFormat(fileName)
+        
+        if self.cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource:
+        
+            from FileLock import FileLock            
+            with FileLock(file_name=fileName, timeout=10, delay=0.05)  as flock:
+        
+                self.singleSimulation=False
+                self.parameterScanFile=self.cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.path # parameter scan file path
+                pScanFilePath=self.parameterScanFile
+              # We use separate ParameterScanUtils object to handle parameter scan 
+                from ParameterScanUtils import ParameterScanUtils
+                
+                psu=ParameterScanUtils()
+                
+                psu.readParameterScanSpecs(pScanFilePath)
+                
+                paramScanSpecsDirName=os.path.dirname(pScanFilePath)
+                
+                outputDir = str(Configuration.getSetting('OutputLocation'))
+
+                
+                customOutputPath=psu.prepareParameterScanOutputDirs(_outputDirRoot=outputDir)  
+                
+                #FIX ERROR MESSAGE TO INDICATE THE FILE WHICH COULD NOT BE CREATED
+                if not customOutputPath:
+                    raise AssertionError('Parameter Scan Error: Could not create simulation output directory: '+outputDir)
+                    return False,False
+                    
+                self.cc3dSimulationDataHandler.copySimulationDataFiles(customOutputPath)           
+                
+                
+                #construct path to the just-copied .cc3d file
+                cc3dFileBaseName=os.path.basename(self.cc3dSimulationDataHandler.cc3dSimulationData.path)
+                cc3dFileFullName=os.path.join(customOutputPath,cc3dFileBaseName)
+                
+                print 'cc3dFileFullName=',cc3dFileFullName
+                
+                
+                psu.replaceValuesInSimulationFiles(_pScanFileName = pScanFilePath, _simulationDir = customOutputPath)      
+                # save parameter Scan spec file with incremented ityeration
+                psu.saveParameterScanState(_pScanFileName = pScanFilePath)
+              
+              
+                if not customOutputPath:
+                    return False,False
+                    
+                
+                self.cc3dSimulationDataHandler.copySimulationDataFiles(customOutputPath) 
+                
+                from os.path import basename
+                self.__parent.setWindowTitle(self.trUtf8('ParameterScan: ')+self.trUtf8(basename(self.__fileName)+ self.trUtf8(' Iteration: ')+basename(customOutputPath)+" - CompuCell3D Player"))
+                
+                # read newly created .cc3d file     
+                self.cc3dSimulationDataHandler.readCC3DFileFormat(cc3dFileFullName)                      
+                
+                # # setting simultaion output dir names
+                self.customScreenshotDirectoryName=customOutputPath
+                CompuCellSetup.screenshotDirectoryName=customOutputPath
+                self.screenshotDirectoryName=customOutputPath
+                self.parameterScanOutputDir=customOutputPath
+                print 'self.screenshotDirectoryName=',self.screenshotDirectoryName
+                
+        else:
+            self.singleSimulation=True
+            
 #        print MODULENAME,'   __loadCC3DFile:  sim data:'
         print self.cc3dSimulationDataHandler.cc3dSimulationData
 #        print MODULENAME,'   end sim data'
@@ -1198,6 +1384,9 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.connect(self.stepAct,  SIGNAL('triggered()'), self.__stepSim)
         self.connect(self.pauseAct, SIGNAL('triggered()'), self.__pauseSim)
         self.connect(self.stopAct,  SIGNAL('triggered()'), self.__simulationStop)
+        
+        self.connect(self.addVTKWindowAct,  SIGNAL('triggered()'), self.__addVTKWindow)        
+        
         self.connect(self.serializeAct,  SIGNAL('triggered()'), self.__simulationSerialize)
         
         
@@ -1251,6 +1440,36 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         if self.mainGraphicsWindow is not None and isinstance(self.mainGraphicsWindow, (Graphics2D)):
             self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWindow.configsChanged)
 
+    def __addVTKWindow(self):
+        print '__addVTKWindow'
+        self.__setupArea()        
+        self.showDisplayWidgets()
+        # # # from mdi import MdiChild
+        
+        # # # # child = MdiChild()
+        
+        # # # child = GraphicsFrameWidget(self)
+        
+        # # # cone = vtk.vtkConeSource()
+        # # # cone.SetResolution(8)
+
+        # # # coneMapper = vtk.vtkPolyDataMapper()
+        # # # coneMapper.SetInput(cone.GetOutput())
+
+        # # # coneActor = vtk.vtkActor()
+        # # # coneActor.SetMapper(coneMapper)
+
+        # # # child.ren.AddActor(coneActor)
+        
+        # # # # self.connect(self, SIGNAL('configsChanged'), child.draw2D.configsChanged) 
+        # # # # self.connect(self, SIGNAL('configsChanged'), child.draw3D.configsChanged)        
+        
+        # # # self.  addSubWindow(child)
+        # # # child.show()
+        # # # print 'ADDED SUBWINDOW'
+        
+        
+        
         
     def setFieldType(self,_fieldTypeTuple):
         self.__fieldType=_fieldTypeTuple
@@ -1270,7 +1489,9 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         if self.saveSettings:                
             
             Configuration.syncPreferences()        
+            
             self.__simulationStop()
+            
             
             
             return
@@ -1357,6 +1578,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         # self.simulation.sem.release()      
    
     def createOutputDirs(self):
+
         import CompuCellSetup
 #        import pdb; pdb.set_trace()
         if self.customScreenshotDirectoryName=="":
@@ -1370,9 +1592,31 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             self.prevOutputDir = self.__outputDirectory
 #            print MODULENAME,'createOutputDirs:  self.prevOutputDir=',self.__outputDirectory
         else:
-            (self.screenshotDirectoryName,self.baseScreenshotName) = self.makeCustomSimDir(self.customScreenshotDirectoryName,self.__fileName)
-#            print MODULENAME, 'createOutputDirs(): (custom dir: screenshotDirectoryName,baseScreenshotName=',self.screenshotDirectoryName,', ',self.baseScreenshotName
-            CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
+            # for parameter scan the directories are created in __loadCC3DFile
+            if self.singleSimulation: 
+            
+                (self.screenshotDirectoryName,self.baseScreenshotName) = self.makeCustomSimDir(self.customScreenshotDirectoryName,self.__fileName)
+    #            print MODULENAME, 'createOutputDirs(): (custom dir: screenshotDirectoryName,baseScreenshotName=',self.screenshotDirectoryName,', ',self.baseScreenshotName
+                CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
+                
+            else:
+                self.screenshotDirectoryName=self.parameterScanOutputDir
+                
+                # fullFileName = os.path.abspath(_simulationFileName)
+                # (filePath,baseFileName) = os.path.split(fullFileName)
+                # baseFileNameForDirectory = baseFileName.replace('.','_')    
+                
+                pScanBaseFileName=os.path.basename(self.__fileName)
+                pScanBaseFileName,extension=os.path.splitext(pScanBaseFileName)
+                # .replace('.','_')                
+                screenshotSuffix=os.path.basename(self.screenshotDirectoryName)
+                
+                self.baseScreenshotName=pScanBaseFileName+'_'+screenshotSuffix
+                
+                print 'self.baseScreenshotName=',self.baseScreenshotName 
+                
+                
+            
             if self.screenshotDirectoryName == "":
                 self.__imageOutput = False # do not output screenshots when custom directory was not created or already exists
                     
@@ -1383,6 +1627,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             self.cmlHandlerCreated = True   # rwh
             
         self.resultStorageDirectory = os.path.join(self.screenshotDirectoryName,"LatticeData")
+        
 #        print MODULENAME, 'createOutputDirs(), lattice: resultStorageDirectory=',self.resultStorageDirectory
                 
 #        import CompuCellSetup
@@ -1394,7 +1639,15 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 #        else:
 #            print MODULENAME,'createOutputDirs():   type(self.mysim) = ',type(self.mysim)
 #            print MODULENAME,'createOutputDirs():   self.mysim = ',self.mysim
-        CompuCellSetup.initCMLFieldHandler(self.mysim,self.resultStorageDirectory,self.fieldStorage)  # also creates the /LatticeData dir
+
+        # simObj=self.mysim() # extracting object from weakref object wrapper
+        # if not simObj:return
+        
+        CompuCellSetup.initCMLFieldHandler(self.mysim(),self.resultStorageDirectory,self.fieldStorage)  # also creates the /LatticeData dir
+        # # # CompuCellSetup.initCMLFieldHandler(self.mysim,self.resultStorageDirectory,self.fieldStorage)  # also creates the /LatticeData dir
+        
+        
+        
 #        else:
 #            print MODULENAME,'createOutputDirs:  LatticeOutputOn is False'
 
@@ -1403,11 +1656,38 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 #        print MODULENAME,'  --------- initializeSimulationViewWidgetRegular:'
         # self.pifFromVTKAct.setEnabled(False)
         
-        self.fieldDim = self.simulation.sim.getPotts().getCellFieldG().getDim()
-        self.mysim = self.simulation.sim
+        sim=self.simulation.sim()
+        if sim:
+            self.fieldDim = sim.getPotts().getCellFieldG().getDim()
+            # any references to simulator shuold be weak to avoid possible memory leaks - when not using weak references one has to be super careful to set to Non all references to sim to break any reference cycles
+            # weakref is much easier to handle and code is cleaner
+            from weakref import ref
+            self.mysim = ref(sim)
+        
+        # # # self.fieldDim = self.simulation.sim.getPotts().getCellFieldG().getDim()
+        # # # self.mysim = self.simulation.sim
+        
+        
+        # # # print 'self.mysim=',self.mysim
+        # # # print 'self.fieldDim=',self.fieldDim
+        
+        
+        # # # print 'BEGINinitializeSimulationViewWidgetRegular'
+        # # # CompuCellSetup.resetGlobals()
+        # # # time.sleep(5)        
+        
+        # return
+        # # # sys.exit()
+        
+        
+        simObj=self.mysim() # extracting object from weakref object wrapper
+        if not simObj:
+            sys.exit()
+            return
+        
         
         if not self.cerrStreamBufOrig:#get original cerr stream buffer - do it only once per session
-            self.cerrStreamBufOrig = self.mysim.getCerrStreamBufOrig()
+            self.cerrStreamBufOrig = simObj.getCerrStreamBufOrig()
             
         # if Configuration.getVisualization("CC3DOutputOn"):
         if self.UI.viewmanager.cc3dOutputOnAct.isChecked():
@@ -1418,18 +1698,18 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                 stdErrConsole.clear()
                 addr = sip.unwrapinstance(stdErrConsole)
                 
-                self.mysim.setOutputRedirectionTarget(addr)
+                simObj.setOutputRedirectionTarget(addr)
                 #redirecting Python output to internal console
                 self.UI.useInternalConsoleForPythonOutput(True)      
             else:
                 #C++ output goes to system console
-                # self.mysim.setOutputRedirectionTarget(-1)
-                self.mysim.restoreCerrStreamBufOrig(self.cerrStreamBufOrig)
+                # simObj.setOutputRedirectionTarget(-1)
+                simObj.restoreCerrStreamBufOrig(self.cerrStreamBufOrig)
                 #Python output goes to system console
                 self.UI.enablePythonOutput(True)
         else:
             #silencing output from C++ 
-            self.mysim.setOutputRedirectionTarget(0)
+            simObj.setOutputRedirectionTarget(0)
             #silencing output from Python
             self.UI.enablePythonOutput(False)
                 
@@ -1437,14 +1717,23 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         # check if we will be outputting fields in vtk format
 #        import CompuCellSetup
         # print "THIS IS Configuration.getSetting(LatticeOutputOn)",Configuration.getSetting("LatticeOutputOn")
-        # print self.mysim
-        self.basicSimulationData.fieldDim = self.fieldDim
-        self.basicSimulationData.sim = self.mysim
-        self.basicSimulationData.numberOfSteps = self.mysim.getNumSteps()
+        # print simObj
         
+        self.basicSimulationData.fieldDim = self.fieldDim
+        self.basicSimulationData.sim = simObj
+        self.basicSimulationData.numberOfSteps = simObj.getNumSteps()
+        
+        # # # print 'BEFORE self.fieldStorage.allocateCellField'
+        # # # time.sleep(5)
         self.fieldStorage.allocateCellField(self.fieldDim)
-                
-        self.fieldExtractor.init(self.mysim)
+        
+        self.fieldExtractor.init(simObj)
+        # # # print 'AFTER self.fieldStorage.allocateCellField'
+        # # # time.sleep(5)
+        
+        
+       
+        
         
         self.screenshotNumberOfDigits = len(str(self.basicSimulationData.numberOfSteps))
         
@@ -1456,7 +1745,15 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         else:
             self.latticeType = Configuration.LATTICE_TYPES["Square"] # default choice
             
+        # print 'BEFORE prepareSimulationView'
+        # time.sleep(5)
+        
         self.prepareSimulationView()
+        
+        # print 'AFTER prepareSimulationView'
+        # time.sleep(5)
+ 
+        ####
         self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
         
         # print "self.screenshotManager",self.screenshotManager
@@ -1487,6 +1784,106 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
         # self.simulation.sem.tryAcquire()
         # self.simulation.sem.release()        
+        
+        
+        # # # if not self.cerrStreamBufOrig:#get original cerr stream buffer - do it only once per session
+            # # # self.cerrStreamBufOrig = self.mysim.getCerrStreamBufOrig()
+            
+        # # # # if Configuration.getVisualization("CC3DOutputOn"):
+        # # # if self.UI.viewmanager.cc3dOutputOnAct.isChecked():
+            # # # if Configuration.getSetting("UseInternalConsole"):
+                # # # #redirecting output from C++ to internal console
+                # # # import sip
+                # # # stdErrConsole = self.UI.console.getStdErrConsole() # we use __stdout console (see UI/Consile.py) as main output console for both stdout and std err from C++ and Python - sort of internal system console
+                # # # stdErrConsole.clear()
+                # # # addr = sip.unwrapinstance(stdErrConsole)
+                
+                # # # self.mysim.setOutputRedirectionTarget(addr)
+                # # # #redirecting Python output to internal console
+                # # # self.UI.useInternalConsoleForPythonOutput(True)      
+            # # # else:
+                # # # #C++ output goes to system console
+                # # # # self.mysim.setOutputRedirectionTarget(-1)
+                # # # self.mysim.restoreCerrStreamBufOrig(self.cerrStreamBufOrig)
+                # # # #Python output goes to system console
+                # # # self.UI.enablePythonOutput(True)
+        # # # else:
+            # # # #silencing output from C++ 
+            # # # self.mysim.setOutputRedirectionTarget(0)
+            # # # #silencing output from Python
+            # # # self.UI.enablePythonOutput(False)
+                
+        
+        # # # # check if we will be outputting fields in vtk format
+# # # #        import CompuCellSetup
+        # # # # print "THIS IS Configuration.getSetting(LatticeOutputOn)",Configuration.getSetting("LatticeOutputOn")
+        # # # # print self.mysim
+        
+        # # # self.basicSimulationData.fieldDim = self.fieldDim
+        # # # self.basicSimulationData.sim = self.mysim
+        # # # self.basicSimulationData.numberOfSteps = self.mysim.getNumSteps()
+        
+        # # # # # # print 'BEFORE self.fieldStorage.allocateCellField'
+        # # # # # # time.sleep(5)
+        # # # # # # self.fieldStorage.allocateCellField(self.fieldDim)
+        
+        # # # # # # self.fieldExtractor.init(self.mysim)
+        # # # # # # print 'AFTER self.fieldStorage.allocateCellField'
+        # # # # # # time.sleep(5)
+        
+        
+       
+        
+        
+        # # # self.screenshotNumberOfDigits = len(str(self.basicSimulationData.numberOfSteps))
+        
+# # # #        import CompuCellSetup
+        # # # latticeTypeStr = CompuCellSetup.ExtractLatticeType()
+# # # #        print MODULENAME,' initializeSimulationViewWidgetRegular():  latticeTypeStr=',latticeTypeStr
+        # # # if latticeTypeStr in Configuration.LATTICE_TYPES.keys():
+            # # # self.latticeType = Configuration.LATTICE_TYPES[latticeTypeStr]
+        # # # else:
+            # # # self.latticeType = Configuration.LATTICE_TYPES["Square"] # default choice
+            
+        # # # # print 'BEFORE prepareSimulationView'
+        # # # # time.sleep(5)
+        
+        # # # self.prepareSimulationView()
+        
+        # # # # print 'AFTER prepareSimulationView'
+        # # # # time.sleep(5)
+ 
+        # # # ####
+        # # # # # # self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
+        
+        # # # # # # # print "self.screenshotManager",self.screenshotManager
+        
+        # # # # # # if self.__screenshotDescriptionFileName != "":
+            # # # # # # self.screenshotManager.readScreenshotDescriptionFile(self.__screenshotDescriptionFileName)
+            
+        # # # if self.simulationIsStepping:
+            # # # # print "BEFORE STEPPING PAUSE REGULAR SIMULATION"
+            # # # self.__pauseSim()   
+        
+        
+# # # #        self.prepareXMLTreeView(self.__fileName)
+        # # # self.prepareXMLTreeView()
+        # # # # after this call I can access self.root_element of the XML File
+# # # #        self.multiWindowPlayerSettings(self.root_element)
+        # # # self.loadCustomPlayerSettings(self.root_element)
+        
+# # # #        print MODULENAME,' ---------leaving initializeSimulationViewWidgetRegular'
+        
+        # # # # creating simulation directory depending on whether user requests simulatin output or not
+# # # #        import CompuCellSetup
+# # # #        if  self.__imageOutput:     # self.__latticeOutputFlag
+# # # #        print MODULENAME,'initializeSimulationViewWidgetRegular():  self.__imageOutput, self.__latticeOutputFlag= ',self.__imageOutput,self.__latticeOutputFlag
+# # # #        if True:
+# # # #        if  self.__imageOutput or self.__latticeOutputFlag:
+# # # #            self.createOutputDirs()
+
+        # # # # self.simulation.sem.tryAcquire()
+        # # # # self.simulation.sem.release()        
     
     
     def initializeSimulationViewWidget(self):
@@ -1506,9 +1903,10 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             self.createOutputDirs()
             
         
-        #copy simulation files to output directory                       
-        if self.cc3dSimulationDataHandler and CompuCellSetup.screenshotDirectoryName != "":
-            self.cc3dSimulationDataHandler.copySimulationDataFiles(CompuCellSetup.screenshotDirectoryName)        
+        #copy simulation files to output directory  for simgle simulation- copying of the simulations files for parameter scan is doen in the __loadCC3DFile       
+        if self.singleSimulation:        
+            if self.cc3dSimulationDataHandler and CompuCellSetup.screenshotDirectoryName != "":
+                self.cc3dSimulationDataHandler.copySimulationDataFiles(CompuCellSetup.screenshotDirectoryName)        
 
             
 #        print MODULENAME, " initializeSimulationViewWidget():  before set_trace" 
@@ -1518,6 +1916,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 #        import pdb; pdb.set_trace()
             
     def runSteppablePostStartPlayerPrep(self):
+        
         self.setFieldTypes() 
         self.windowDict[1].setFieldTypesComboBox(self.fieldTypes) #we have only one window at this stage of the simulation run
         
@@ -1890,23 +2289,34 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         
     def handleCompletedStepRegular(self,_mcs):    
-#        print MODULENAME,'  handleCompletedStepRegular():  calling __drawField()='
+       
         self.__drawField()
+
+        
         
         self.simulation.drawMutex.lock()
         # will need to sync screenshots with simulation thread. Be sure before simulation thread writes new results all the screenshots are taken
 
-#        print MODULENAME, 'handleCompletedStepRegular():  __shotFrequency, __imageOutput = ',self.__shotFrequency,self.__imageOutput
+        print MODULENAME, 'handleCompletedStepRegular():  __shotFrequency, __imageOutput = ',self.__shotFrequency,self.__imageOutput
+
         if self.__imageOutput and not (self.__step % self.__shotFrequency):  # dumping images? Check modulo MCS #
             mcsFormattedNumber = string.zfill(str(self.__step),self.screenshotNumberOfDigits) # fills string wtih 0's up to self.screenshotNumberOfDigits width
             screenshotFileName = os.path.join(self.screenshotDirectoryName,self.baseScreenshotName+"_"+mcsFormattedNumber+".png")
 #            print '       handleCompletedStepRegular():  screenshotDirectoryName=',self.screenshotDirectoryName
 #            print '       handleCompletedStepRegular():  baseScreenshotName=',self.baseScreenshotName
 #            print MODULENAME,'  handleCompletedStepRegular():  calling takeSimShot w/ screenshotFileName=',screenshotFileName
-            self.mainGraphicsWindow.takeSimShot(screenshotFileName)
-            self.screenshotManager.outputScreenshots(self.screenshotDirectoryName,self.__step)
+            if _mcs!=0:
+                if self.mainGraphicsWindow: # self.mainGraphicsWindow can be closed by the user
+                    self.mainGraphicsWindow.takeSimShot(screenshotFileName)
             
-
+                    
+                
+            
+                # # # self.screenshotManager.outputScreenshots(self.screenshotDirectoryName,self.__step)
+            
+        print 'self.screenshotDirectoryName=',self.screenshotDirectoryName    
+        # sys.exit()
+        
 #        if (CompuCellSetup.cmlFieldHandler is not None) and self.__latticeOutputFlag and (not self.__step % self.__latticeOutputFrequency):  #rwh 
         if self.cmlHandlerCreated  and self.__latticeOutputFlag and (not self.__step % self.__latticeOutputFrequency):  #rwh 
 #            print MODULENAME,' handleCompletedStepRegular(): cmlFieldHandler.writeFields'
@@ -2021,9 +2431,13 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 #            self.simulation.screenshotFrequency = self.__shotFrequency
 #            self.simulation.latticeOutputFlag = self.__latticeOutputFlag
 #            self.simulation.latticeOutputFrequency = self.__latticeOutputFrequency
+            print '__runSim self.screenshotDirectoryName=',self.screenshotDirectoryName
             
             self.screenshotDirectoryName = ""
-                
+            print '__runSim self.screenshotDirectoryName=',self.screenshotDirectoryName
+            
+            # sys.exit()
+            
             if self.rollbackImporter:
                 self.rollbackImporter.uninstall()
                 
@@ -2056,15 +2470,23 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         # self.cc3dSender.sendToEditor(self.__fileName)
         # self.cc3dSender.issueOpenFileRequest(self.__fileName,20,5)
         # self.cc3dSender.send()
+        
+        
+
+        print 'GOT HERE __stepSim'
 
         if  self.completedFirstMCS and Configuration.getSetting("LatticeOutputOn") and not self.cmlHandlerCreated:  #rwh
 #            import CompuCellSetup
 #            print MODULENAME,'  __stepSim(): calling CompuCellSetup.createCMLFieldHandler()'
+
+
             CompuCellSetup.createCMLFieldHandler()
             self.cmlHandlerCreated = True   #rwh
+
             
             CompuCellSetup.initCMLFieldHandler(self.mysim,self.resultStorageDirectory,self.fieldStorage)
             CompuCellSetup.cmlFieldHandler.getInfoAboutFields()  #rwh
+            
             
         if self.simulationIsRunning and self.simulationIsStepping:
 #            print MODULENAME,'  __stepSim() - 1:'
@@ -2108,7 +2530,9 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
             import xml
             try: 
+
                 self.__loadSim(file)            
+                
             except AssertionError,e:
                 print "Assertion Error: ",e.message
                 self.handleErrorMessage("Assertion Error",e.message)
@@ -2119,8 +2543,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 #                import CompuCellSetup
                 xmlFileName = CompuCellSetup.simulationPaths.simulationXMLFileName
                 print "Error in XML File","File:\n "+xmlFileName+"\nhas the following problem\n"+e.message
-
-
+                
             self.runAct.setEnabled(True)
             self.pauseAct.setEnabled(False)
             self.stopAct.setEnabled(True)
@@ -2137,8 +2560,14 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                 self.rollbackImporter.uninstall()
                 
             self.rollbackImporter = RollbackImporter()
+
+            
+            # self.__setupArea() ####
+            # return
+            
             
             self.simulation.start()
+            
             
             self.simulationIsStepping = True
             self.simulationIsRunning = True
@@ -2205,6 +2634,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
     def drawFieldRegular(self):
 #        print MODULENAME,'  drawFieldRegular(): simulationIsRunning=',self.simulationIsRunning
 #        import pdb; pdb.set_trace()
+        
         if not self.simulationIsRunning:
             return    
     
@@ -2220,6 +2650,11 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.__step = self.simulation.getCurrentStep()
 #        print MODULENAME,'  drawFieldRegular(): __step=',self.__step
         
+
+        # self.simulation.drawMutex.unlock()
+        # return
+      
+        
         if self.mysim:
 #            print MODULENAME,'  drawFieldRegular(): in self.mysim block; windowDict.keys=',self.graphicsWindowDict.keys()
             for windowName in self.graphicsWindowDict.keys():
@@ -2229,9 +2664,15 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                 
                 #rwh: error if we try to invoke switchdim earlier    
                 (currentPlane, currentPlanePos) = graphicsFrame.getPlane()
-
+                
+                # print 'BEFORE graphicsFrame.drawFieldLocal'    
+                # time.sleep(5)
                 
                 graphicsFrame.drawFieldLocal(self.basicSimulationData)
+                
+                # print 'AFTER graphicsFrame.drawFieldLocal'    
+                # time.sleep(5)
+                
                     
                 self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())   # show MCS in lower-left GUI
         
@@ -2244,15 +2685,24 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         fieldDim=None
         if self.__viewManagerType=="Regular":
         
-            fieldDim = self.simulation.sim.getPotts().getCellFieldG().getDim()
+            simObj=self.mysim()
+            if not simObj:return
+            
+            fieldDim = simObj.getPotts().getCellFieldG().getDim()
+            # # # fieldDim = self.simulation.sim.getPotts().getCellFieldG().getDim()
             
             if fieldDim.x==self.fieldDim.x and fieldDim.y==self.fieldDim.y and fieldDim.z==self.fieldDim.z:
                 return False
                 
             self.fieldDim= fieldDim   
             self.basicSimulationData.fieldDim = self.fieldDim
-            self.basicSimulationData.sim = self.mysim
-            self.basicSimulationData.numberOfSteps = self.mysim.getNumSteps()
+            self.basicSimulationData.sim = simObj
+            self.basicSimulationData.numberOfSteps = simObj.getNumSteps()
+                
+            # # # self.fieldDim= fieldDim   
+            # # # self.basicSimulationData.fieldDim = self.fieldDim
+            # # # self.basicSimulationData.sim = self.mysim
+            # # # self.basicSimulationData.numberOfSteps = self.mysim.getNumSteps()
             
             return True
             
@@ -2296,29 +2746,31 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.__drawField()
     
     def __drawField(self):
-
-            
-        __drawFieldFcn = getattr(self, "drawField" + self.__viewManagerType)
-#        print MODULENAME, '__drawField():  calling ',"drawField"+self.__viewManagerType
         
+
+        __drawFieldFcn = getattr(self, "drawField" + self.__viewManagerType)
+        # # # print MODULENAME, '__drawField():  calling ',"drawField"+self.__viewManagerType
+        # time.sleep(5)
         
         
         # print 'self.__viewManagerType=',self.__viewManagerType        
         propertiesUpdated=self.updateSimulationProperties()
         # print 'propertiesUpdated=',propertiesUpdated
 
-            
+        
         if propertiesUpdated:            
             # __drawFieldFcn() # this call is actually unnecessary
             self.updateVisualization()   # for some reason cameras have to be initialized after drawing resized lattice and draw function has to be repeated
-
             
+        
+        
         __drawFieldFcn()
         
         # if propertiesUpdated:
             # __drawFieldFcn()
             
     def __updateStatusBar(self, step, conMinMax):
+        
         self.mcSteps.setText("MC Step: %s"% step)
         self.conSteps.setText("Min: %s Max: %s" % conMinMax)
            
@@ -2329,10 +2781,16 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.pauseAct.setEnabled(False)
         
     def __simulationStop(self):
+        # once user requests explicit stop of the simulation we stop regardless whether this is parameter scan or not. To stop parameter scan we reset vaiables used to seer parameter scanto their default (non-param scan) values
+        if not self.singleSimulation:
+            self.singleSimulation=True
+            self.parameterScanFile=''
+    
         if  not self.pauseAct.isEnabled():
             self.__stopSim()
         else:
             self.simulation.setStopSimulation(True)
+        
             
     def __simulationSerialize(self):        
         print self.simulation.restartManager        
@@ -2344,7 +2802,12 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
     
     def __stopSim(self):
-        # print "STOP SIMULATION"
+        
+        print "STOP SIMULATION"
+        print 'self.screenshotManager=',self.screenshotManager
+        if not self.simulation:
+            return
+            
         self.simulation.stop()
         self.simulation.wait()
         
@@ -2374,11 +2837,73 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             self.nextSimulation = ""
         
 #        import CompuCellSetup
-        CompuCellSetup.resetGlobals()
+        # # # CompuCellSetup.resetGlobals()
         # CompuCellSetup.simulationObjectsCreated = False
         # CompuCellSetup.simulationFileName=""
         # CompuCellSetup.screenshotDirectoryName=""
         
+        # When parameter scan is enabled , we restart the simulation after it finished running - it will start with new parameter scan interation
+        
+
+
+        # # # import time
+        # # # time.sleep(0.5)
+        # # # self.__runSim()
+        
+        
+        # # # from subprocess import Popen    
+
+        # # # # print "self.cc3dPath=",self.cc3dPath        
+        # # # popenArgs=['compucell3d.bat']
+        # # # if self.__fileName!="":
+            # # # popenArgs.append("-i")
+            # # # popenArgs.append(self.__fileName)
+        # # # # popenArgs.append("-i")
+        # # # # popenArgs.append("D:\\Program Files\\COMPUCELL3D_3.5.1_install2\\examples_PythonTutorial\\infoPrinterDemo\\infoPrinterDemo.cc3d" )
+            
+        # # # print 'Executing Popen command with following arguments=',popenArgs        
+        # # # self.cc3dProcess = Popen(popenArgs)
+        # # # sys.exit()
+        
+        
+        
+        # for windowName in self.graphicsWindowDict.keys():
+            # graphicsFrame = self.windowDict[windowName]
+            # graphicsFrame.clearDisplay()
+            # graphicsFrame.clearEntireDisplay()
+            # graphicsFrame.ren=None
+            
+        # # # print ' BEFORE REMOVE ALL VTK WINDOWS self.subWindowList().size()=',len(self.subWindowList())
+        # # # self.removeAllVTKWindows()
+        # # # print ' AFTER REMOVE ALL VTK WINDOWS self.subWindowList().size()=',len(self.subWindowList())        
+        # self.__runSim()
+        # self.screenshotManager=None
+        print 'self.screenshotManager=',self.screenshotManager
+        if self.screenshotManager:
+            self.screenshotManager.cleanup()
+        self.screenshotManager=None
+
+        self.graphicsWindowVisDict={}
+        # # # if self.simulation:
+            # # # if self.simulation.sim:
+                # # # self.simulation.sim.unloadModules()
+            # # # self.simulation.cleanup()
+            # print 'self.simulation=',self.simulation
+            # self.simulation=None
+        # self.simulation=None  
+        
+        # # # CompuCellSetup.simulationThreadObject.sim=None
+        # # # CompuCellSetup.simulationThreadObject=None
+        # # # self.basicSimulationData.sim = None
+        # # # self.mysim = None       
+        # # # CompuCellSetup.resetGlobals()
+        return
+        if not self.singleSimulation:
+            print 'start simulation again = parameter scan'
+            # we run parameter scan again by simulting pressing 'play' button
+            self.__runSim()
+            # self.singleSimulation=True
+            # self.parameterScanFile=''
         
         
         
@@ -2420,7 +2945,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 #        print MODULENAME, '----------  prepareDrawingArea'
         foo=1/0
         self.__setupArea()
-        self.mainGraphicsWindow = self.mainGraphicsWindow # Graphics2D by default
+        # # # self.mainGraphicsWindow = self.mainGraphicsWindow # Graphics2D by default
         self.__step = 0
         self.__loadSim(file)
         self.setSimParams()
@@ -2444,7 +2969,14 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
     # Shows simulation view tab
     def showSimView(self, file):
         
+        # print 'BEFORE __SETUPAREA'    
+        # time.sleep(5)
+        # # # print 'self.screenshotManager=',self.screenshotManager
+        # # # return        
         self.__setupArea()
+        
+        # print 'AFTER__SETUPAREA'    
+        # time.sleep(5)
         
         
         # Set to 'True' if it is a test tab
@@ -2460,9 +2992,14 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         """
         
         # Create self.mainGraphicsWindow  
-        self.mainGraphicsWindow = self.mainGraphicsWindow # Graphics2D by default
-        self.__step = 0
+        # # # self.mainGraphicsWindow = self.mainGraphicsWindow # Graphics2D by default
+        self.__step = 0        
+        
         self.showDisplayWidgets()
+        
+        simObj=self.mysim()
+        if not simObj:return
+    
         # # # self.mainGraphicsWindow.initSimArea(self.basicSimulationData)
         # # # self.graphics3D.initSimArea(self.basicSimulationData)
         
@@ -2473,16 +3010,23 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 #        print MODULENAME,'  ------- showSimView \n\n'
         
         if self.basicSimulationData.sim:
-            cellField = self.mysim.getPotts().getCellFieldG()
+            cellField = simObj.getPotts().getCellFieldG()
             # self.simulation.graphicsWidget.fillCellFieldData(cellField,"xy",0)
             
-#            print "        BEFORE DRAW FIELD(1) FROM showSimView()"
+            # print "        BEFORE DRAW FIELD(1) FROM showSimView()"
+            # time.sleep(5)
+            
             self.__drawField()
+            
+            # print "        AFTER DRAW FIELD(1) FROM showSimView()"
+            # time.sleep(5)
+     
+            
         
             # # Fields are available only after simulation is loaded
             self.setFieldTypes() 
         else:
-#            print "        BEFORE DRAW FIELD(2) FROM showSimView()"
+            # print "        BEFORE DRAW FIELD(2) FROM showSimView()"
             # if not self.simulation.dimensionChange():
             
                 
@@ -2490,6 +3034,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             self.__drawField()
             self.setFieldTypesCML() 
             
+        
 #        import pdb; pdb.set_trace()
         Configuration.initFieldsParams(self.fieldTypes.keys())
             
@@ -2501,6 +3046,54 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 #        self.mainGraphicsWindow.parentWidget.move(400,300)   # temporarily moves, but jumps back
 
         self.__layoutGraphicsWindows()
+    
+        
+        # # # # # # self.mainGraphicsWindow.initSimArea(self.basicSimulationData)
+        # # # # # # self.graphics3D.initSimArea(self.basicSimulationData)
+        
+        # # # self.__fieldType = ("Cell_Field", FIELD_TYPES[0])
+        
+        # # # # self.__fieldType = ("FGF", FIELD_TYPES[1])
+        
+# # # #        print MODULENAME,'  ------- showSimView \n\n'
+        
+        # # # if self.basicSimulationData.sim:
+            # # # cellField = self.mysim.getPotts().getCellFieldG()
+            # # # # self.simulation.graphicsWidget.fillCellFieldData(cellField,"xy",0)
+            
+            # # # # print "        BEFORE DRAW FIELD(1) FROM showSimView()"
+            # # # # time.sleep(5)
+            
+            # # # self.__drawField()
+            
+            # # # # print "        AFTER DRAW FIELD(1) FROM showSimView()"
+            # # # # time.sleep(5)
+     
+            
+        
+            # # # # # Fields are available only after simulation is loaded
+            # # # self.setFieldTypes() 
+        # # # else:
+            # # # # print "        BEFORE DRAW FIELD(2) FROM showSimView()"
+            # # # # if not self.simulation.dimensionChange():
+            
+                
+
+            # # # self.__drawField()
+            # # # self.setFieldTypesCML() 
+            
+        
+# # # #        import pdb; pdb.set_trace()
+        # # # Configuration.initFieldsParams(self.fieldTypes.keys())
+            
+        # # # # # # self.__setCrossSection()
+        # # # self.setInitialCrossSection(self.basicSimulationData)
+        # # # self.initGraphicsWidgetsFieldTypes()
+        # # # # self.closeTab.show()
+        # # # self.drawingAreaPrepared = True
+# # # #        self.mainGraphicsWindow.parentWidget.move(400,300)   # temporarily moves, but jumps back
+
+        # # # self.__layoutGraphicsWindows()
         
         
     def setFieldTypesCML(self):
@@ -2520,11 +3113,15 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
     def setFieldTypes(self):
         # Add cell field
 #        self.fieldTypes = {}
+        simObj=self.mysim()
+        if not simObj:return
+        
         self.fieldTypes["Cell_Field"] = FIELD_TYPES[0]  #"CellField" 
         
         # Add concentration fields How? I don't care how I got it at this time
         # print self.mysim.getPotts()
-        concFieldNameVec = self.mysim.getConcentrationFieldNameVector()
+        concFieldNameVec = simObj.getConcentrationFieldNameVector()
+        # # # concFieldNameVec = self.mysim.getConcentrationFieldNameVector()
         
         #putting concentration fields from simulator
         for fieldName in concFieldNameVec:
@@ -2766,7 +3363,9 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                         # sys.exit()
                     
                     self.__closeSim()
+                    print 'BEFORE showSimView'
                     self.showSimView(file)
+                    print 'AFTER showSimView'
                     
         self.drawingAreaPrepared = True
         self.updateActiveWindowVisFlags()  # needed in case switching from one sim to another (e.g. 1st has FPP, 2nd doesn't)

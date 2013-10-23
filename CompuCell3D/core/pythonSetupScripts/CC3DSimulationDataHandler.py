@@ -389,8 +389,7 @@ class CC3DSimulationDataHandler:
             # WE HAVE TO CALL MANUALLYreadParameterScanSpecs because if it is called each time CC3DSiulationDataHandler calls readCC3DFileFormat it may cause problems with parameter scan
             # namely one process will attempt to read parameter scan specs while another might try to write to it and error will get thrown and synchronization gets lost
             # plus readCC3DFileFormat should read .cc3d only , not files which are included from .cc3d
-            # ------------------------------------------------------------------ IMPORTANT IMPOTRANT ------------------------------------------------------------------
-            
+            # ------------------------------------------------------------------ IMPORTANT IMPOTRANT ------------------------------------------------------------------            
             # # # self.cc3dSimulationData.parameterScanResource.readParameterScanSpecs()
         
         resourceList = XMLUtils.CC3DXMLListPy(root_element.getElements("Resource"))

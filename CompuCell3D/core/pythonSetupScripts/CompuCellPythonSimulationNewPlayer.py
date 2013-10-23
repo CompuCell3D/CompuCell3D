@@ -189,6 +189,139 @@ def pythonErrorFormatter():
     print "COLUMN NUMBER:",colNumber
     return errorDescriptionLine,fileName,lineNumber,colNumber,codeLine
 
+
+# # # class Demo:
+    # # # def __init__(self):
+        # # # # self.array=[1.0 for i in xrange(50000000)]
+        
+        # # # from xml.parsers.expat import ExpatError
+        # # # import sys
+        # # # from os import environ
+        # # # import string
+        # # # import traceback
+
+        # # # python_module_path=os.environ["PYTHON_MODULE_PATH"]
+        # # # appended=sys.path.count(python_module_path)
+        # # # if not appended:
+            # # # sys.path.append(python_module_path)    
+        
+        # # # import CompuCell
+        # # # CompuCell.initializePlugins()
+        # # # # self.simthread = None
+        # # # # self.sim = None
+        
+        
+        # # # # sys.path.append(environ["PYTHON_MODULE_PATH"])
+        
+        
+        
+        # # # import SystemUtils
+        # # # SystemUtils.setSwigPaths()
+        # # # SystemUtils.initializeSystemResources()
+        
+        # # # # # # self.simulator=CompuCell.Simulator()
+        # # # import CompuCellSetup
+        
+        # # # sim,simthread = CompuCellSetup.getCoreSimulationObjects(True) # this only parses xml to extract initial info. No CC3D object is created at this point
+        
+        # # # self.simulationFileName='d:\\Program Files (x86)\\ps\\Demos\\Models\\cellsort\\cellsort_2D\\Simulation\\cellsort_2D.xml'
+        # # # self.cc3dXML2ObjConverter=None
+        # # # import XMLUtils
+        # # # self.cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
+        # # # self.root_element = self.cc3dXML2ObjConverter.Parse(self.simulationFileName)
+        # # # print 'root_element=',self.root_element.name
+
+
+        # # # self.simulator,self.simthread = CompuCellSetup.getCoreSimulationObjects()         
+        # # # CompuCellSetup.initializeSimulationObjects(self.simulator,self.simthread)
+        
+        # # # steppableRegistry = CompuCellSetup.getSteppableRegistry()
+        
+        # # # CompuCellSetup.mainLoop(self.simulator,self.simthread,steppableRegistry) # main loop - simulation is invoked inside this function
+        # # # CompuCellSetup.simulationThreadObject=None
+        
+        # # # # import weakref
+        # # # # sim=CompuCell.Simulator()
+        # # # # self.simulator=weakref.ref(sim)
+        # # # # # self.simulator=CompuCell.Simulator()
+        
+        # # # # # CompuCellSetup.initModules(self.simulator,self.cc3dXML2ObjConverter)#extracts Plugins, Steppables and Potts XML elements and passes it to the simulator
+        # # # # # self.simulator.initializeCC3D()
+        # # # # # self.simulator.extraInit()
+        # # # # # self.simulator.start()
+        
+        
+        # # # # self.simArray=[CompuCell.Point3D() for i in xrange(1000000)]    
+        # # # # self.simArray=[CompuCell.Simulator() for i in xrange(10000)]    
+        
+        
+# # # demo=Demo()
+# # # print 'DEMO CREATED'
+# # # import time
+# # # time.sleep(3)
+# # # # print 'array_len=',len(demo.array)
+
+# # # # demo.simArray=None
+# # # demo.simulator.unloadModules()
+# # # # # # demo.simulator=None
+# # # # demo.simthread.restartManager=None # using weakref takers care of it
+# # # demo=None
+
+# # # print 'DEMO DESTROYED'
+# # # import time
+# # # time.sleep(3)
+
+
+
+from xml.parsers.expat import ExpatError
+import sys
+from os import environ
+import string
+import traceback
+
+python_module_path=os.environ["PYTHON_MODULE_PATH"]
+appended=sys.path.count(python_module_path)
+if not appended:
+    sys.path.append(python_module_path)    
+
+import CompuCell
+CompuCell.initializePlugins()
+# simthread = None
+# sim = None
+
+
+# sys.path.append(environ["PYTHON_MODULE_PATH"])
+
+
+
+# # # # # # import SystemUtils
+# # # # # # SystemUtils.setSwigPaths()
+# # # # # # SystemUtils.initializeSystemResources()
+
+# # # # # # # # # simulator=CompuCell.Simulator()
+# # # # # # import CompuCellSetup
+
+# # # # # # sim,simthread = CompuCellSetup.getCoreSimulationObjects(True) # this only parses xml to extract initial info. No CC3D object is created at this point
+
+# # # # # # simulationFileName='d:\\Program Files (x86)\\ps\\Demos\\Models\\cellsort\\cellsort_2D\\Simulation\\cellsort_2D.xml'
+# # # # # # cc3dXML2ObjConverter=None
+# # # # # # import XMLUtils
+# # # # # # cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
+# # # # # # root_element = cc3dXML2ObjConverter.Parse(simulationFileName)
+# # # # # # print 'root_element=',root_element.name
+
+
+# # # # # # simulator,simthread = CompuCellSetup.getCoreSimulationObjects()         
+# # # # # # CompuCellSetup.initializeSimulationObjects(simulator,simthread)
+
+# # # # # # steppableRegistry = CompuCellSetup.getSteppableRegistry()
+
+# # # # # # CompuCellSetup.mainLoop(simulator,simthread,steppableRegistry) # main loop - simulation is invoked inside this function
+# # # # # # CompuCellSetup.simulationThreadObject=None
+
+# # # # # # simulator.unloadModules()
+
+
 try:
     from xml.parsers.expat import ExpatError
     import sys
@@ -203,8 +336,10 @@ try:
     
     # sys.path.append(environ["PYTHON_MODULE_PATH"])
     import CompuCellSetup
-
+        
     sim,simthread = CompuCellSetup.getCoreSimulationObjects(True) # this only parses xml to extract initial info. No CC3D object is created at this point
+    
+    
 
     if CompuCellSetup.simulationPaths.simulationPythonScriptName != "":
         # fileObj=file(CompuCellSetup.simulationPaths.simulationPythonScriptName,"r")
@@ -219,10 +354,18 @@ try:
         sim,simthread = CompuCellSetup.getCoreSimulationObjects() # here , once initial info has been extracted we starrt creating CC3D objects - e.g. Simulator is created in this Fcn call
         import CompuCell #notice importing CompuCell to main script has to be done after call to getCoreSimulationObjects()
         #import CompuCellSetup
-
+        
+        
         CompuCellSetup.initializeSimulationObjects(sim,simthread)
+                
         steppableRegistry = CompuCellSetup.getSteppableRegistry()
+        
         CompuCellSetup.mainLoop(sim,simthread,steppableRegistry) # main loop - simulation is invoked inside this function
+        
+        # # # sim,simthread=None,None
+        
+        # # # print '\n\n\n\n GOT HERE AFTER MAIN LOOP'
+        
 
 except IndentationError,e:
     print "CompuCellSetup.simulationObjectsCreated=",CompuCellSetup.simulationObjectsCreated

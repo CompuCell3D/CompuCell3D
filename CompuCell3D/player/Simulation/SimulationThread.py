@@ -86,6 +86,7 @@ class SimulationThread(QtCore.QThread):
         self.__simModel=None
         self.__mcs=0
         self.__fileWriter=None
+        self.sim=None # reference to CompuCell.Simulator()
 	
 	# Python 2.6 requires importing of Example, CompuCell and Player Python modules from an instance  of QThread class (here Simulation Thread inherits from QThread)
 	# Simulation Thread communicates with SimpleTabView using SignalSlot method. If we dont import the three modules then when SimulationThread emits siglan and SimpleTabView
@@ -96,6 +97,19 @@ class SimulationThread(QtCore.QThread):
 	import CompuCell
 	import PlayerPython
 
+    def setSimulator(self,_sim):
+        import weakref
+        if _sim:
+            self.sim=weakref.ref(_sim)
+        
+    def cleanup(self):
+        self.restartManager=None
+        
+        self.callingWidget=None
+        self.__simModel=None
+        self.__mcs=0
+        self.__fileWriter=None
+        self.sim=None
         
         
         # self.condition = QtCore.QWaitCondition()
@@ -143,6 +157,23 @@ class SimulationThread(QtCore.QThread):
     def postStartInit(self):#added for compatibility reasons
         
         self.sem.acquire()
+        
+        # print 'prepareSimulation'
+        # print self.restartManager
+        
+        # print self.callingWidget
+        # print self.__simModel
+        # print self.__mcs
+        # print self.__fileWriter
+        # print '\n\n\n\nself.sim=',self.sim
+        
+        
+        
+        # # sys.exit()
+        
+        # print 'POSTSTART INIT'
+        # import time
+        # time.sleep(5)        
         
         self.emitSimulationInitialized()
 
@@ -212,6 +243,7 @@ class SimulationThread(QtCore.QThread):
 
         
     def beforeStep(self,_mcs):
+    
         self.sem.acquire()
         self.sem.release()            
         self.semPause.acquire()
@@ -287,6 +319,7 @@ class SimulationThread(QtCore.QThread):
         self.semPause.release()
         
     def prepareSimulation(self):
+    
         import CompuCellSetup
         # CompuCellSetup.setSimulationXMLFileName(self.xmlFileName)
         (self.sim, self.simthread) = CompuCellSetup.getCoreSimulationObjects()
@@ -310,13 +343,25 @@ class SimulationThread(QtCore.QThread):
         self.emitErrorFormatted(_errorMessage)
 
         
-    def runUserPythonScript(self,_scriptFileName,_globals,_locals):
+    def runUserPythonScript(self,_scriptFileName,_globals,_locals):        
         import CompuCellSetup
+        
         CompuCellSetup.simulationThreadObject=self
             
         execfile("pythonSetupScripts/CompuCellPythonSimulationNewPlayer.py")
         
+        # # # CompuCellSetup.simulationThreadObject.sim=None
+        # # # CompuCellSetup.simulationThreadObject=None
+        
+        
+        # # # print 'AFTER EXECFILE'
+        # # # import time
+        # # # time.sleep(3)
+        # # # sys.exit()
+        
     def run(self):
+            
+    
         if self.runUserPythonScriptFlag:
             # print "runUserPythonScriptFlag=",self.runUserPythonScriptFlag
             globalDict={'simTabView':20}

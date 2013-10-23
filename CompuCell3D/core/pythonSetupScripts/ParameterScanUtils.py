@@ -10,9 +10,6 @@ from ParameterScanEnums import *
 from OrderedDict import OrderedDict
 
 
-
-
-
 def removeWhiteSpaces(_str):
     import re
     out_str=str(_str)
@@ -414,6 +411,7 @@ class ParameterScanUtils:
                     
         
         return root_elem.CC3DXMLElement.getCC3DXMLElementString()
+        
     def writeParameterScanSpecs(self,_pScanFileName):       
 
         import XMLUtils
@@ -444,65 +442,6 @@ class ParameterScanUtils:
                     
         root_elem.CC3DXMLElement.saveXML(_pScanFileName) 
         
-    # # # def writeParameterScanSpecs(self,_pScanFileName):
-    
-        # # # if not _pScanFileName:return
-                
-        # # # xmlString = self.getParameterScanSpecsXMLString()
-        # # # os.unlink(_pScanFileName)
-        # # # with open(_pScanFileName,'w') as file:  
-            # # # file.write('%s'%xmlString)
-            # # # file.flush()        
-        
-        # # # # # # import XMLUtils
-        # # # # # # from XMLUtils import ElementCC3D
-        # # # # # # import os    
-
-        # # # # # # root_elem=ElementCC3D('ParameterScan',{'version':'3.7.0'})
-        # # # # # # root_elem.ElementCC3D('OutputDirectory',{},self.outputDirectoryRelativePath)
-        
-        # # # # # # # print 'csd.parameterScanResource.parameterScanXMLElements=',self.parameterScanXMLElements
-        
-        # # # # # # xmlElemTmpStorage=[]
-        
-        # # # # # # # # print 'JUST BEFORE WRITING self.parameterScanFileToDataMap=',self.parameterScanFileToDataMap
-        
-        # # # # # # for fileName, parameterScanDataMap in self.parameterScanFileToDataMap.iteritems():
-            # # # # # # if len(parameterScanDataMap.keys()):
-                # # # # # # # # print ' adding paramList element =',fileName
-                # # # # # # paramListElem=root_elem.ElementCC3D('ParameterList',{'Resource':fileName})
-                
-                # # # # # # xmlElemTmpStorage.append(paramListElem)
-                
-                # # # # # # for hash, psd in parameterScanDataMap.iteritems():
-                    # # # # # # xmlElem=psd.toXMLElem()
-                    # # # # # # xmlElemTmpStorage.append(xmlElem)
-                    
-                    # # # # # # paramListElem.CC3DXMLElement.addChild(xmlElem.CC3DXMLElement)
-                    
-            
-            
-        # # # # # # # root_elem.CC3DXMLElement.saveXML(_pScanFileName) 
-        # # # # # # # aparently there seems to be a problem with the way  xml file writing is done in XMLUtils - 
-        # # # # # # # therefore decided to get string repressentatino of the XML and write it from Python
-
-        # # # # # # outFileName=os.path.abspath(_pScanFileName)
-        # # # # # # # from FileLock import FileLock    
-        # # # # # # # fLock=FileLock(file_name=outFileName, timeout=10, delay=0.05) 
-        # # # # # # # fLock.acquire()    
-        
-        # # # # # # xmlString=root_elem.CC3DXMLElement.getCC3DXMLElementString()
-        # # # with open(_pScanFileName,'w') as file:  
-            # # # file.write('%s'%xmlString)
-            # # # file.flush()
-
-        # # # # fLock.release()        
-        # # # # # # file=open(_pScanFileName,'w')            
-        # # # # # # file.close()
-        # # # # print 'xmlString=',xmlString
-        # # # # sys.exit()
-        
-        # # # # self.readParameterScanSpecs(_pScanFileName)
         
     def resetParameterScan(self,_pScanFileName):
         '''This function resets state of the parameter scan to the beginning
@@ -514,8 +453,6 @@ class ParameterScanUtils:
                 psd.currentIteration=0          
         
         self.writeParameterScanSpecs(_pScanFileName)    
-        
-    
     
     def prepareParameterScanOutputDirs(self,_outputDirRoot):
         import os
@@ -525,12 +462,6 @@ class ParameterScanUtils:
             pScanOutputDirRelPath='ParameterScan'
             
         customPath=os.path.join(_outputDirRoot,pScanOutputDirRelPath)    
-        
-
-        
-        # iterationId=self.computeIterationIdNumber(iteration)
-        
-        
         
         iterationId=self.computeCurrentIterationIdNumber()
         # print 'param SCAN XML=',self.getParameterScanSpecsXMLString()
