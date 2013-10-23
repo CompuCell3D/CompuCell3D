@@ -7,7 +7,7 @@ class NeighborTrackerPrinterSteppable(SteppableBasePy):
         SteppableBasePy.__init__(self,_simulator,_frequency)
 
     def step(self,mcs):
-        self.cellList=CellList(self.inventory)
+        
         for cell in self.cellList:            
             print "*********NEIGHBORS OF CELL WITH ID ",cell.id," *****************"
             for neighbor , commonSurfaceArea in self.getCellNeighborDataList(cell):                
