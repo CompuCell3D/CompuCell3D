@@ -649,12 +649,12 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
     
     def closeActiveSubWindowSlot(self):   # this method is called whenever a user closes a graphics window
     
-        print 'BEFORE  closeActiveSubWindowSlot self.subWindowList().size()=',len(self.subWindowList())
+        print '\n\n\n BEFORE  closeActiveSubWindowSlot self.subWindowList().size()=',len(self.subWindowList())
         
         # print MODULENAME,"   ----- closeActiveSubWindowSlot()"
         activeWindow = self.activeSubWindow()
         if not activeWindow:return
-
+            
         activeWindow.close()
         self.removeWindowFromRegistry(activeWindow)
         
@@ -833,16 +833,32 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         import CompuCellSetup
         CompuCellSetup.simulationFileName = self.__fileName
         
-        
-    def prepareForNewSimulation(self,_forceGenericInitialization=False):
-        """
-        This function creates new instance of computational thread and sets various flags to initial values i.e. to a state before the beginnig of the simulations
-        """
+    def resetControlButtonsAndActions(self):
         self.pauseAct.setEnabled(False)
         self.stopAct.setEnabled(False)
         self.openAct.setEnabled(True)
         self.openLDSAct.setEnabled(True)
         self.pifFromSimulationAct.setEnabled(False)
+        
+    def resetControlVariables(self):    
+        
+        self.steppingThroughSimulation = False
+        self.cmlHandlerCreated = False
+        
+        CompuCellSetup.simulationFileName=""
+        
+        self.drawingAreaPrepared=False
+        self.simulationIsRunning=False
+        
+        self.newDrawingUserRequest=False
+        self.completedFirstMCS=False
+    
+    def prepareForNewSimulation(self,_forceGenericInitialization=False,_inStopFcn=False):
+        """
+        This function creates new instance of computational thread and sets various flags to initial values i.e. to a state before the beginnig of the simulations
+        """
+        self.resetControlButtonsAndActions()
+        
         
         self.steppingThroughSimulation = False
         
@@ -850,8 +866,16 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         CompuCellSetup.viewManager = self
         CompuCellSetup.simulationFileName=""
         
+        print 'INSIDE PREPARE FOR NEWSIMULATION'
+        time.sleep(2)
+
+        
+        # if not _inStopFcn:
+
+        
         from BasicSimulationData import BasicSimulationData
         self.basicSimulationData = BasicSimulationData()
+        
         # this import has to be here not inside is statement to ensure that during switching from playing one type of files to another there is no "missing module" issue due to imoprer imports
         # import CMLResultReader 
         from Simulation.CMLResultReader import CMLResultReader                                
@@ -922,12 +946,13 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         # if not _forceGenericInitialization:    
             # self.simulation.setCallingWidget(self)            
             # self.__setupArea()
-            
-        self.drawingAreaPrepared=False
-        self.simulationIsRunning=False
+        self.resetControlVariables()    
         
-        self.newDrawingUserRequest=False
-        self.completedFirstMCS=False
+        # self.drawingAreaPrepared=False
+        # self.simulationIsRunning=False
+        
+        # self.newDrawingUserRequest=False
+        # self.completedFirstMCS=False
         
     def __setupArea(self):
         # print '------------------- __setupArea'
@@ -1054,9 +1079,13 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
     
     def __loadSim(self, file):
         # resetting reference to SimulationDataHandler
+        
+        self.prepareForNewSimulation(_forceGenericInitialization=True)
+        
         self.cc3dSimulationDataHandler=None
         
         fileName = str(self.__fileName)
+        print 'INSIDE LOADSIM file=',fileName
 #        print MODULENAME,"Load file ",fileName
         self.UI.console.bringUpOutputConsole()
         
@@ -1441,6 +1470,16 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWindow.configsChanged)
 
     def __addVTKWindow(self):
+        
+        # self.mainGraphicsWindow.close()
+        # self.removeAllVTKWindows()    
+        self.closeActiveSubWindowSlot()
+        
+            # self.simulation.stop()
+            # self.simulation.wait()
+        
+        return
+        
         print '__addVTKWindow'
         self.__setupArea()        
         self.showDisplayWidgets()
@@ -1485,12 +1524,21 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         # import time
         # time.sleep(3)
         
-        
+        print '\n\n\n\n closeEventSimpleTabView'
         if self.saveSettings:                
             
             Configuration.syncPreferences()        
             
-            self.__simulationStop()
+            print 'GOT HERE'
+            """
+            For some reason have to introduce delay to avoid problems with application becoming unresponsive
+            """
+            # # # import time
+            # # # time.sleep(0.5)
+            # self.simulation.stop()
+            # self.simulation.wait()
+                
+            # self.__simulationStop()
             
             
             
@@ -1504,8 +1552,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             self.simulation.stop()
             self.simulation.wait()
             
-            self.removeAllVTKWindows()
-            self.removeAllPlotWindows()
+            # # # self.removeAllVTKWindows()
+            # # # self.removeAllPlotWindows()
         
         
     # # Core method for running simulation
@@ -1754,7 +1802,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         # time.sleep(5)
  
         ####
-        self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
+        # # # self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
         
         # print "self.screenshotManager",self.screenshotManager
         
@@ -2474,6 +2522,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
 
         print 'GOT HERE __stepSim'
+        print 'self.completedFirstMCS=',self.completedFirstMCS
 
         if  self.completedFirstMCS and Configuration.getSetting("LatticeOutputOn") and not self.cmlHandlerCreated:  #rwh
 #            import CompuCellSetup
@@ -2487,7 +2536,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             CompuCellSetup.initCMLFieldHandler(self.mysim,self.resultStorageDirectory,self.fieldStorage)
             CompuCellSetup.cmlFieldHandler.getInfoAboutFields()  #rwh
             
-            
+        print 'self.simulationIsRunning,self.simulationIsStepping=',(self.simulationIsRunning,self.simulationIsStepping)    
         if self.simulationIsRunning and self.simulationIsStepping:
 #            print MODULENAME,'  __stepSim() - 1:'
             self.pauseAct.setEnabled(False)
@@ -2516,6 +2565,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             
             return
             
+        print 'self.drawingAreaPrepared=',self.drawingAreaPrepared    
+        
         if not self.drawingAreaPrepared:
         
             # checking if the simulation file is not an empty string 
@@ -2530,7 +2581,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
             import xml
             try: 
-
+                print '\n\n\n\n WILL TRY TO LOADSIM'
                 self.__loadSim(file)            
                 
             except AssertionError,e:
@@ -2807,9 +2858,15 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         print 'self.screenshotManager=',self.screenshotManager
         if not self.simulation:
             return
-            
+        
+        # self.removeAllVTKWindows()    
+        # time.sleep(2)
+        print '\n\n\n self.simulation.stopped=',self.simulation.stopped
+        
         self.simulation.stop()
         self.simulation.wait()
+        
+        
         
         # Configuration.setSetting("RecentSimulations",self.__fileName) # this is unnecessary we call it from settings each time we load simulation
         
@@ -2829,13 +2886,21 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         self.fieldTypes = {}   # re-init (empty) the fieldTypes dict, otherwise get previous/bogus fields in graphics win field combobox
         
-        self.prepareForNewSimulation(_forceGenericInitialization=True) 
+        self.mysim=None
+        self.resetControlButtonsAndActions()
+
+        
+        self.resetControlVariables()           
+        # # # self.prepareForNewSimulation(_forceGenericInitialization=True,_inStopFcn=True) 
         
         # in case there is pending simulation to be run we will put it a recent simulation so that it can be ready to run without going through open file dialog
         if self.nextSimulation != "":
             Configuration.setSetting("RecentSimulations",self.nextSimulation)
             self.nextSimulation = ""
+
         
+
+            
 #        import CompuCellSetup
         # # # CompuCellSetup.resetGlobals()
         # CompuCellSetup.simulationObjectsCreated = False
@@ -2878,10 +2943,14 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         # # # print ' AFTER REMOVE ALL VTK WINDOWS self.subWindowList().size()=',len(self.subWindowList())        
         # self.__runSim()
         # self.screenshotManager=None
-        print 'self.screenshotManager=',self.screenshotManager
-        if self.screenshotManager:
-            self.screenshotManager.cleanup()
-        self.screenshotManager=None
+        # # print 'self.screenshotManager=',self.screenshotManager
+        # if self.screenshotManager:
+            # self.screenshotManager.cleanup()
+        
+        # self.screenshotManager1=None
+        
+        return
+
 
         self.graphicsWindowVisDict={}
         # # # if self.simulation:

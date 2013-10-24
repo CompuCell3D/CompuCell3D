@@ -671,7 +671,7 @@ class GraphicsFrameWidget(QtGui.QFrame):
     # we need to reimplement closeEvent
     # def close(self):           
     def closeEvent(self,ev):
-        print 'closeEvent GRAPHICS FRAME'
+        print '\n\n\n closeEvent GRAPHICS FRAME'
         
         # cleaning up to release memory - notice that if we do not do this cleanup this widget will not be destroyed and will take sizeable portion of the memory 
         # not a big deal for a single simulation but repeated runs can easily exhaust all system memory
