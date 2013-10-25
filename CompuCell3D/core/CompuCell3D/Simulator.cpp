@@ -94,7 +94,8 @@ restartEnabled(false)
 Simulator::~Simulator() {
 	cerr<<"\n\n\n********************************************************************************"<<endl;	
 	cerr<<"\n\n\n\n INSIDE SIMULATOR DELETE \n\n\n\n "<<endl;	
-	cerr<<"\n\n\n********************************************************************************"<<endl;	
+	cerr<<"\n\n\n********************************************************************************"<<endl;
+	
 	delete classRegistry;
 	delete pUtils;
 

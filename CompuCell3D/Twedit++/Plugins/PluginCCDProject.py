@@ -1788,7 +1788,7 @@ class CC3DProject(QObject):
             # make new branch to store this item 
             item=QTreeWidgetItem(projItem)
             item.setText(0,"ParameterScan")
-            item.setIcon(0,QIcon(':/icons/save-simulation.png'))            
+            item.setIcon(0,QIcon(':/icons/scan_32x32.png'))            
             
             item1=QTreeWidgetItem(item)
             item1.setText(0,os.path.basename(_resource.path))            
@@ -2231,7 +2231,7 @@ class CC3DProject(QObject):
             # make new branch to store this item 
             item=QTreeWidgetItem(projItem)
             item.setText(0,"ParameterScan")
-            item.setIcon(0,QIcon(':/icons/save-simulation.png'))            
+            item.setIcon(0,QIcon(':/icons/scan_32x32.png'))            
             
             item1=QTreeWidgetItem(item)
             item1.setText(0,os.path.basename(psResource.path))            

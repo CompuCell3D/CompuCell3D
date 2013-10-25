@@ -69,17 +69,7 @@ namespace CompuCell3D {
 				potts->destroyCellG(cell,false);
          }
 		}
-
-		for( cInvItr = cellInventoryBegin() ; cInvItr !=cellInventoryEnd() ; ++cInvItr ){
-			cell=getCell(cInvItr);
-			//cell=*cInvItr;
-			if(!potts){
-				delete cell;
-         }
-         else{
-				potts->destroyCellG(cell,true);
-         }
-		}
+		inventory.clear();
 
 	}
 

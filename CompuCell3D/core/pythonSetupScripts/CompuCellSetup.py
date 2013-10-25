@@ -1492,6 +1492,7 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
         if sim.getRecentErrorMessage()!="":        
             raise CC3DCPlusPlusError(sim.getRecentErrorMessage())        
         steppableRegistry.finish()
+        sim.cleanAfterSimulation()
         simthread.simulationFinishedPostEvent(True)
         print "CALLING FINISH"
     else:
@@ -1597,6 +1598,8 @@ def mainLoopCML(sim, simthread, steppableRegistry= None, _screenUpdateFrequency 
     print "END OF SIMULATION  "
     if runFinishFlag:
         sim.finish()
+        steppableRegistry.finish()
+        sim.cleanAfterSimulation()
     else:
         sim.cleanAfterSimulation()
         print "CALLING UNLOAD MODULES"
