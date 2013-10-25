@@ -349,6 +349,7 @@ try:
         
         
         execfile(CompuCellSetup.simulationPaths.simulationPythonScriptName)
+        print "COMPLETED execfile in CompuCellPythonSimulationNewPlayer \n\n\n"
     else:
         print "INSIDE ELSE CompuCellPythonSimulationNewPlayer \n\n\n"        
         sim,simthread = CompuCellSetup.getCoreSimulationObjects() # here , once initial info has been extracted we starrt creating CC3D objects - e.g. Simulator is created in this Fcn call
@@ -371,7 +372,7 @@ except IndentationError,e:
     print "CompuCellSetup.simulationObjectsCreated=",CompuCellSetup.simulationObjectsCreated
     if CompuCellSetup.simulationObjectsCreated:        
         #sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -383,7 +384,7 @@ except AttributeError,e:
     print "CompuCellSetup.simulationObjectsCreated=",CompuCellSetup.simulationObjectsCreated
     if CompuCellSetup.simulationObjectsCreated:        
         #sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -393,7 +394,7 @@ except AttributeError,e:
 except SyntaxError,e:
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -404,7 +405,7 @@ except SyntaxError,e:
 except ValueError,e:
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -415,7 +416,7 @@ except ValueError,e:
 except TypeError,e:
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -426,7 +427,7 @@ except TypeError,e:
 except KeyError,e:
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -437,7 +438,7 @@ except KeyError,e:
 except IndexError,e:
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -448,7 +449,7 @@ except IndexError,e:
 except LookupError,e:
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -460,7 +461,7 @@ except LookupError,e:
 except NameError,e:
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -471,7 +472,7 @@ except NameError,e:
 except FloatingPointError,e:
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -482,7 +483,7 @@ except FloatingPointError,e:
 except ZeroDivisionError,e:
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -493,7 +494,7 @@ except ZeroDivisionError,e:
 except OverflowError,e:
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -504,7 +505,7 @@ except OverflowError,e:
 except ArithmeticError,e:
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -515,7 +516,7 @@ except ArithmeticError,e:
 except EOFError,e:
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -526,7 +527,7 @@ except EOFError,e:
 except IOError,e:
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -537,7 +538,7 @@ except IOError,e:
 except OSError,e:
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -548,7 +549,7 @@ except OSError,e:
 except ImportError,e:
     if CompuCellSetup.simulationObjectsCreated:
         # sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -563,7 +564,7 @@ except ImportError,e:
 # except BufferError,e:
     # if CompuCellSetup.simulationObjectsCreated:
         # # sim.finish()
-        # sim.unloadModules()
+        # sim.cleanAfterSimulation()
     # traceback_message=traceback.format_exc()
     # print traceback_message
     # import PlayerPython
@@ -573,7 +574,7 @@ except ImportError,e:
 except MemoryError,e:
     if CompuCellSetup.simulationObjectsCreated:
         # sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -584,7 +585,7 @@ except MemoryError,e:
 except ReferenceError,e:
     if CompuCellSetup.simulationObjectsCreated:
         # sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -595,7 +596,7 @@ except ReferenceError,e:
 except RuntimeError,e:
     if CompuCellSetup.simulationObjectsCreated:
         # sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -606,7 +607,7 @@ except RuntimeError,e:
 except SystemError,e:
     if CompuCellSetup.simulationObjectsCreated:
         # sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
@@ -617,7 +618,7 @@ except SystemError,e:
 except ExpatError,e:
     if CompuCellSetup.simulationObjectsCreated:
         # sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     xmlFileName=CompuCellSetup.simulationPaths.simulationXMLFileName
@@ -664,7 +665,7 @@ except ExpatError,e:
 except AssertionError,e:
     if CompuCellSetup.simulationObjectsCreated:
         # sim.finish()
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
     import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     print "Assertion Error: ",e.message
@@ -687,7 +688,7 @@ except:
         # sim.finish()
     if CompuCellSetup.simulationObjectsCreated:
         # sim.finish()       
-        sim.unloadModules()        
+        sim.cleanAfterSimulation()        
     traceback_message=traceback.format_exc()
     import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()

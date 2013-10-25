@@ -92,6 +92,9 @@ restartEnabled(false)
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Simulator::~Simulator() {
+	cerr<<"\n\n\n********************************************************************************"<<endl;	
+	cerr<<"\n\n\n\n INSIDE SIMULATOR DELETE \n\n\n\n "<<endl;	
+	cerr<<"\n\n\n********************************************************************************"<<endl;	
 	delete classRegistry;
 	delete pUtils;
 
@@ -418,8 +421,29 @@ void Simulator::finish() {
 	}
 
 }
+void Simulator::cleanAfterSimulation(){
 
+	potts.getCellInventory().cleanInventory();
+	unloadModules();
+}
 void Simulator::unloadModules(){
+	//CellInventory::cellInventoryIterator cInvItr;
+
+
+	//Coordinates3D<float> oldCM,newCM,v;
+	//CellG * cell;
+
+	//CellInventory * cellInventoryPtr=& potts.getCellInventory();
+
+ //  for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr ){
+	//   cell=cellInventoryPtr->getCell(cInvItr);;
+	//   potts.destroyCellG(cell, false);
+ //  }
+ //  for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr ){
+	//   cell=cellInventoryPtr->getCell(cInvItr);;
+	//   potts.destroyCellG(cell, true);
+ //  }
+
 	pluginManager.unload();
 	steppableManager.unload();
 }

@@ -151,7 +151,15 @@ namespace CompuCell3D {
 		virtual void finish();
 		// End Steppable interface
 
+		//these two functions are necessary to implement proper cleanup after the simulation 		
+		//1. First it cleans cell inventory, deallocating all dynamic attributes - this has to be done before unloading modules
+		//2. It unloads dynamic CC3D modules - pluginsd and steppables
+		void cleanAfterSimulation(); 
+		//unloads all the plugins - plugin destructors are called
 		void unloadModules();
+			
+	
+
 		void initializePottsCC3D(CC3DXMLElement * _xmlData);
 		void processMetadataCC3D(CC3DXMLElement * _xmlData);
 

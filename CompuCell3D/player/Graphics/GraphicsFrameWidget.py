@@ -48,6 +48,7 @@ from MVCDrawModel3D import MVCDrawModel3D
 
 MODULENAME = '---- GraphicsFrameWidget.py: '
 
+from weakref import ref
 
 class GraphicsFrameWidget(QtGui.QFrame):
     # def __init__(self, parent=None, wflags=QtCore.Qt.WindowFlags(), **kw):
@@ -104,6 +105,7 @@ class GraphicsFrameWidget(QtGui.QFrame):
         self.camera3D = self.ren.MakeCamera()        
         self.camera2D = self.ren.GetActiveCamera()
         self.ren.SetActiveCamera(self.camera2D)
+        
         
         self.currentDrawingObject = self.draw2D
         
@@ -425,6 +427,9 @@ class GraphicsFrameWidget(QtGui.QFrame):
             self.xyPlane = val
 #            self.projSpinBox.setValue(val)
 #            print ' _projSpinBoxChanged: set xy val=',val
+            print 'self.currentDrawingObject=',self.currentDrawingObject
+            print 'self.draw2D=',self.draw2D
+            
             self.currentDrawingObject.setPlane(self.currentProjection, self.xyPlane)
 #            self.parentWidget._drawField()
 
@@ -678,6 +683,7 @@ class GraphicsFrameWidget(QtGui.QFrame):
         
         self.clearEntireDisplay()        
         
+        
         self.qvtkWidget.close()
         self.qvtkWidget=None
         self.ren.SetActiveCamera(None)
@@ -688,13 +694,16 @@ class GraphicsFrameWidget(QtGui.QFrame):
         
         # return
         # cleaning up objects with cyclic references 
-        self.drawModel2D=None        
+        self.drawModel2D=None                
         self.draw2D=None        
+        
+        
         self.drawModel3D = None
         self.draw3D = None
         print 'self.currentDrawingObject=',self.currentDrawingObject
-        # return            
+        
         self.currentDrawingObject=None
+        
         
         self.camera3D = None
         self.camera2D = None

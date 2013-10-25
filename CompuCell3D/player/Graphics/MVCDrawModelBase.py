@@ -46,7 +46,7 @@ import string
 
 from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES,PLANES
         
-class MVCDrawModelBase():
+class MVCDrawModelBase:
     def __init__(self, graphicsFrameWidget, parent=None):
         
         (self.minCon, self.maxCon) = (0, 0)

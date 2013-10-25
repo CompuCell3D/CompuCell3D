@@ -167,7 +167,7 @@ class QVTKRenderWindowInteractor(QtOpenGL.QGLWidget):
         # QtGui.QWidget.__init__(self, parent, wflags|QtCore.Qt.MSWindowsOwnDC)
         QtOpenGL.QGLWidget.__init__(self, parent)
         
-        # # # self.array=[1.0 for i in xrange(50000000)]
+        # self.array=[1.0 for i in xrange(50000000)]
 
         if rw: # user-supplied render window
             self._RenderWindow = rw

@@ -1495,8 +1495,9 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
         simthread.simulationFinishedPostEvent(True)
         print "CALLING FINISH"
     else:
-        sim.unloadModules()
-        print "CALLING UNLOAD MODULES"
+        sim.cleanAfterSimulation()
+        # sim.unloadModules()
+        print "CALLING UNLOAD MODULES NEW PLAYER"
         if simthread is not None:
             simthread.sendStopSimulationRequest()
             simthread.simulationFinishedPostEvent(True)
@@ -1597,7 +1598,7 @@ def mainLoopCML(sim, simthread, steppableRegistry= None, _screenUpdateFrequency 
     if runFinishFlag:
         sim.finish()
     else:
-        sim.unloadModules()
+        sim.cleanAfterSimulation()
         print "CALLING UNLOAD MODULES"
             
     t2 = time.time()
@@ -1688,7 +1689,7 @@ def mainLoopCMLReplay(sim, simthread, steppableRegistry= None, _screenUpdateFreq
         simthread.simulationFinishedPostEvent(True)
         print "CALLING FINISH"
     else:
-        # sim.unloadModules()
+        # sim.cleanAfterSimulation()
         print "CALLING UNLOAD MODULES"
         if simthread is not None:
             simthread.sendStopSimulationRequest()

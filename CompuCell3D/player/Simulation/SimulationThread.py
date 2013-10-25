@@ -98,6 +98,8 @@ class SimulationThread(QtCore.QThread):
 	import PlayerPython
 
     def setSimulator(self,_sim):
+        # self.sim=_sim
+        # return
         import weakref
         if _sim:
             self.sim=weakref.ref(_sim)

@@ -30,7 +30,7 @@
 
 #include "BasicException.h"
 
-//#include <iostream>
+#include <iostream>
 
 BasicClassGroupFactory::~BasicClassGroupFactory() {
   for (unsigned int i = 0; i < classFactories.getSize(); i++)
@@ -60,8 +60,13 @@ void BasicClassGroupFactory::destroy(BasicClassGroup *group) {
 	 //cerr<<"group->classes[i]="<<group->classes[i]<<endl;
   //  classFactories[i]->destroy(group->classes[i]);
   //}
-
+//  cerr<<"classAccessors="<<classAccessors<<endl;		
+  cerr<<"group="<<group<<endl;
+  cerr<<"group->size="<<group->size<<endl;	
+  //cerr<<"classAccessors[0]="<<classAccessors[0]<<endl;
+  cerr<<"INSIDE DESTROY BasicClassGroupFactory"<<endl; 		
   for (unsigned int i = 0; i < group->size; i++){
+	
 	 //cerr<<"group->classes[i]="<<group->classes[i]<<endl;
     classAccessors[i]->deallocateClass(group);
   }

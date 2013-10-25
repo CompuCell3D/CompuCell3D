@@ -83,20 +83,26 @@ class ScreenshotData:
 class ScreenshotManager:
     def __init__(self,_tabViewWidget):
         self.screenshotDataDict={}
-        self.tabViewWidget=_tabViewWidget
+        from weakref import ref
+        self.tabViewWidget=ref(_tabViewWidget)
+        tvw=self.tabViewWidget()
         # print
 #        print MODULENAME,'  ScreenshotManager: __init__(),   self.tabViewWidget=',self.tabViewWidget
 #        print MODULENAME,'  ScreenshotManager: __init__(),   type(self.tabViewWidget)=',type(self.tabViewWidget)
 #        print MODULENAME,'  ScreenshotManager: __init__(),   dir(self.tabViewWidget)=',dir(self.tabViewWidget)
         # self.sim=self.tabViewWidget.sim
-        self.basicSimulationData=self.tabViewWidget.basicSimulationData
+        
+        self.basicSimulationData=tvw.basicSimulationData
+        self.basicSimulationData=tvw.basicSimulationData
         self.screenshotNumberOfDigits=len(str(self.basicSimulationData.numberOfSteps))
+        
         # self.screenshotNumberOfDigits=len(str(self.sim.getNumSteps()))
         self.maxNumberOfScreenshots=20 # we limit max number of screenshots to discourage users from using screenshots as their main analysis tool
                                        #a better solution is to store latice to a pif file and then do postprocessing 
         self.screenshotCounter3D=0
         
-        self.screenshotGraphicsWidget = GraphicsFrameWidget(self.tabViewWidget)
+        # self.screenshotGraphicsWidget = GraphicsFrameWidget(self.tabViewWidget)
+        self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw)
         
         xSize=Configuration.getSetting("Screenshot_X")
         ySize=Configuration.getSetting("Screenshot_Y")
@@ -120,16 +126,19 @@ class ScreenshotManager:
 #        self.tabViewWidget.updateActiveWindowVisFlags()
         
         self.screenshotGraphicsWidget.readSettings()
-        self.tabViewWidget.addSubWindow(self.screenshotGraphicsWidget)
+        # # # self.tabViewWidget.addSubWindow(self.screenshotGraphicsWidget)
+        tvw.addSubWindow(self.screenshotGraphicsWidget)
         self.screenshotGraphicsWidgetFieldTypesInitialized=False
         
         
-    def  cleanup(self):
+    def cleanup(self):
         # have to do cleanup to ensure some of the memory intensive resources e.g. self.screenshotGraphicsWidget get deallocated
-        self.screenshotGraphicsWidget.close()
-        self.screenshotGraphicsWidget=None
+        if self.screenshotGraphicsWidget:
+            print 'JUST BEFORE CLOSING self.screenshotGraphicsWidget'
+            self.screenshotGraphicsWidget.close()
+            self.screenshotGraphicsWidget=None
         self.tabViewWidget=None
-        
+        self.basicSimulationData=None
     
     def produceScreenshotCoreName(self,_scrData):
         return str(_scrData.plotData[0])+"_"+str(_scrData.plotData[1])
@@ -304,7 +313,9 @@ class ScreenshotManager:
             
 #            self.tabViewWidget.lastActiveWindow = self.screenshotGraphicsWidget
 #            print MODULENAME," add2DScreenshot(): win id=", self.tabViewWidget.lastActiveWindow.winId().__int__()
-            self.tabViewWidget.updateActiveWindowVisFlags(self.screenshotGraphicsWidget)
+            tvw=self.tabViewWidget()
+            if tvw:
+                tvw.updateActiveWindowVisFlags(self.screenshotGraphicsWidget)
             
             scrData.extractCameraInfo(_camera)   # so "camera" icon (save images) remembers camera view
             
@@ -349,7 +360,9 @@ class ScreenshotManager:
             scrData.screenshotGraphicsWidget=self.screenshotGraphicsWidget 
 #            self.tabViewWidget.lastActiveWindow = self.screenshotGraphicsWidget
 #            print MODULENAME," add3DScreenshot(): win id=", self.tabViewWidget.lastActiveWindow.winId().__int__()
-            self.tabViewWidget.updateActiveWindowVisFlags(self.screenshotGraphicsWidget)
+            tvw=self.tabViewWidget()
+            if tvw:
+                tvw.updateActiveWindowVisFlags(self.screenshotGraphicsWidget)
             
             scrData.extractCameraInfo(_camera)
 
@@ -373,7 +386,9 @@ class ScreenshotManager:
         mcsFormattedNumber = string.zfill(str(_mcs),self.screenshotNumberOfDigits) # fills string with 0's up to self.screenshotNumberOfDigits width
         
         if not self.screenshotGraphicsWidgetFieldTypesInitialized:
-            self.screenshotGraphicsWidget.setFieldTypesComboBox(self.tabViewWidget.fieldTypes)
+            tvw=self.tabViewWidget()
+            if tvw:
+                self.screenshotGraphicsWidget.setFieldTypesComboBox(tvw.fieldTypes)
         
         # apparently on linux and most likely OSX we need to resize screenshot window before each screenshot
         xSize=Configuration.getSetting("Screenshot_X")

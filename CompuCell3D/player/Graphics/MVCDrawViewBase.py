@@ -41,7 +41,7 @@ from CameraSettings import CameraSettings
 
 MODULENAME='----- MVCDrawViewBase.py: '
 
-class MVCDrawViewBase():
+class MVCDrawViewBase:
     def __init__(self, _drawModel , graphicsFrameWidget, parent=None):
         self.legendActor    = vtk.vtkScalarBarActor()
         self.legendActor.SetNumberOfLabels(8)
@@ -99,8 +99,8 @@ class MVCDrawViewBase():
         self.currentVisName = '' #stores name of the current visualization         
         self.cameraSettingsDict = {} # {fieldName:CameraSettings()}
         
-    def __del__(self):
-        print '\n\n\n\n CLEANING UP MODULENAME'
+    # def __del__(self):
+        # print '\n\n\n\n CLEANING UP ',MODULENAME
         
         
     def setDrawingFunctionName(self,_fcnName):
