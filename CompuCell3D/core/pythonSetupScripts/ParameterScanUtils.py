@@ -61,6 +61,29 @@ def nextIterationCartProd(currentIteration,maxVals):
         nextIteration[i]=0
     
     return nextIteration    
+
+def getParameterScanCommandLineArgList(_simFileName):
+    '''returns command line options for parameter scan WITHOUT actual run script. run script has to be fetched independently using getCC3DPlayerRunscriptPath or getCC3DPlayerRunscriptPath in SystemUtils
+    '''
+    import sys
+    # # # from SystemUtils import getCC3DPlayerRunscriptPath
+                    
+    # # # cc3dPath=getCC3DPlayerRunscriptPath()
+    reminderArgs=sys.argv[1:-1] # w skip first and last arguments 
+    # print 'reminderArgs=',reminderArgs
+
+    # check if arg -i <simulation name> exist
+    try:
+        idx=reminderArgs.index('-i')                    
+        # # # reminderArgs=reminderArgs[0:idx]+reminderArgs[idx+2:]
+    except ValueError,e:
+        # if -i <simulationName> does not exist we add it to command line
+        reminderArgs=['-i',_simFileName]+reminderArgs
+        
+    # cmdLineArgs=[cc3dPath]+reminderArgs
+    cmdLineArgs=reminderArgs
+    return cmdLineArgs
+    
     
 
 class XMLHandler:

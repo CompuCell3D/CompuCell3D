@@ -219,6 +219,16 @@ try:
     if helpOnly: 
         raise NameError('HelpOnly')
     fileName=cmlParser.getSimulationFileName()
+
+    consecutiveRunCounter=0    
+    maxNumberOfConsecutiveRuns=10
+    #extracting from the runScript maximum number of consecutive runs
+    try:
+        maxNumberOfConsecutiveRuns=int(os.environ["MAX_NUMBER_OF_CONSECUTIVE_RUNS"])
+    except:    # if for whatever reason we cannot do it we stay with the default value 
+        pass
+        
+    relaunch=False
     
     while(True): # by default we are looping the simulation to make sure parameter scans are handled properly
     
@@ -293,13 +303,37 @@ try:
             CompuCellSetup.initializeSimulationObjects(sim,simthread)
             steppableRegistry = CompuCellSetup.getSteppableRegistry()
             CompuCellSetup.mainLoop(sim,simthread,steppableRegistry) # main loop - simulation is invoked inside this function
+            sim.cleanAfterSimulation()
+            sim=None
         
         print 'FINISHED MAIN LOOP'        
         # jumping out of the loop when running single simulation. Will stay in the loop for e.g. parameter scan 
         if singleSimulation:
             break
+        else:
+            consecutiveRunCounter+=1
+            if consecutiveRunCounter>maxNumberOfConsecutiveRuns:
+                relaunch=True
+                break
+                
+    if relaunch:
+
+        
+        from ParameterScanUtils import getParameterScanCommandLineArgList
+        from SystemUtils import getCC3DRunScriptPath
+        
+        popenArgs =[getCC3DRunScriptPath()] +getParameterScanCommandLineArgList(fileName)
+        # print 'popenArgs=',popenArgs
+        
+        # print 'WILL RESTART RUN SCRIPT FOR PARAMETER SCAN'
+        # import time
+        # time.sleep(5)
+        
+        from subprocess import Popen
+        cc3dProcess = Popen(popenArgs)
         
 
+    
 except IndentationError,e:
     if CompuCellSetup.simulationObjectsCreated:
         sim.finish()

@@ -177,9 +177,15 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.parameterScanFile=''
         self.parameterScanOutputDir=''
         self.consecutiveRunCounter=0
-        self.maxNumberOfConsecutiveRuns=2
         
-        self.runAgainFlag=True
+        self.maxNumberOfConsecutiveRuns=50
+        #extracting from the runScript maximum number of consecutive runs
+        try:            
+            self.maxNumberOfConsecutiveRuns=int(os.environ["MAX_NUMBER_OF_CONSECUTIVE_RUNS"])
+        except:    # if for whatever reason we cannot do it we stay with the default value 
+            pass        
+        
+                
         
         
     def getSimFileName(self):
@@ -2308,24 +2314,13 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         # newly generated cc3d file is substituted instead of the "master" cc3d with parameter scan 
         # From user stand point whan matters is that the only thing that user needs to worry abuot is the "master" .cc3d project and this is what is opened in the player
         self.consecutiveRunCounter+=1
-        if self.consecutiveRunCounter>= self.maxNumberOfConsecutiveRuns:                
+        if self.consecutiveRunCounter>= self.maxNumberOfConsecutiveRuns:         
         
-            from SystemUtils import getCC3DRunscriptPath
-                            
-            cc3dPath=getCC3DRunscriptPath()
-            reminderArgs=sys.argv[1:-1] # w skip first and last arguments 
-            # print 'reminderArgs=',reminderArgs
+            from ParameterScanUtils import getParameterScanCommandLineArgList
+            from SystemUtils import getCC3DPlayerRunScriptPath
             
-            # check if arg -i <simulation name> exist
-            try:
-                idx=reminderArgs.index('-i')                    
-                # # # reminderArgs=reminderArgs[0:idx]+reminderArgs[idx+2:]
-            except ValueError,e:
-                # if -i <simulationName> does not exist we add it to command line
-                reminderArgs=['-i',fileName]+reminderArgs
-                
-            popenArgs=[cc3dPath]+reminderArgs
-
+            popenArgs =[getCC3DPlayerRunscriptPath()] +getParameterScanCommandLineArgList(fileName)
+            
             from subprocess import Popen
             cc3dProcess = Popen(popenArgs)
             sys.exit()                
