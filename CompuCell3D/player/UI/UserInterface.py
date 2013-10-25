@@ -428,15 +428,15 @@ class UserInterface(QMainWindow):
         # TEST CODE #############
         
         # # set up the model for Plugins
-        self.cpluginsDock = self.__createDockWindow("PluginsDock")
-        self.cplugins     = CPlugins(self.cpluginsDock, self.viewmanager)
-        self.pluginsModel = CPluginsModel("player/plugins.txt") # Populate data from plugins.txt
-        self.cplugins.setModel(self.pluginsModel)
-        self.cplugins.setParams()
-        #self.connect(self.cplugins, SIGNAL("doubleClicked(const QModelIndex &)"), self.__showPluginView)
+        # # # self.cpluginsDock = self.__createDockWindow("PluginsDock")
+        # # # self.cplugins     = CPlugins(self.cpluginsDock, self.viewmanager)
+        # # # self.pluginsModel = CPluginsModel("player/plugins.txt") # Populate data from plugins.txt
+        # # # self.cplugins.setModel(self.pluginsModel)
+        # # # self.cplugins.setParams()
+        # # # #self.connect(self.cplugins, SIGNAL("doubleClicked(const QModelIndex &)"), self.__showPluginView)
         
-        self.__setupDockWindow(self.cpluginsDock, Qt.LeftDockWidgetArea, self.cplugins, self.trUtf8("Plugins"))
-        self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea) 
+        # # # self.__setupDockWindow(self.cpluginsDock, Qt.LeftDockWidgetArea, self.cplugins, self.trUtf8("Plugins"))
+        # # # self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea) 
         
         self.latticeDataDock = self.__createDockWindow("LatticeDataDock")
         self.latticeDataModelTable     = LatticeDataModelTable(self.latticeDataDock, self.viewmanager)
@@ -558,8 +558,8 @@ class UserInterface(QMainWindow):
         self.__menus["view"].addAction(self.modelAct)
         self.modelAct.setChecked(not self.modelEditorDock.isHidden())
         
-        self.__menus["view"].addAction(self.pluginsAct)
-        self.pluginsAct.setChecked(not self.cpluginsDock.isHidden())
+        # # # self.__menus["view"].addAction(self.pluginsAct)
+        # # # self.pluginsAct.setChecked(not self.cpluginsDock.isHidden())
 
         self.__menus["view"].addAction(self.latticeDataAct)
         self.latticeDataAct.setChecked(not self.latticeDataDock.isHidden())
