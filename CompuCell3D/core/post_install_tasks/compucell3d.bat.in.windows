@@ -26,6 +26,13 @@
 
 @set CURRENT_DIRECTORY=%CD%
 
+
+REM removing duplicates from PATH environment variable - this variable can get recusrive addodn with each subsequent run resulting in windows shell error - also a good idea to keep PATH short anyway
+REM a bit ugly but works...
+python "%PREFIX_CC3D%\pythonSetupScripts\envVarSanitizer.py" "PATH" >%TMP%\cc3dtmppathfile
+@set /p PATH= < %TMP%\cc3dtmppathfile
+@del %TMP%\cc3dtmppathfile
+
 cd %PREFIX_CC3D%
 
 python "%PREFIX_CC3D%\player\compucell3d.pyw" %* --currentDir="%CURRENT_DIRECTORY%"

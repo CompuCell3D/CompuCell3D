@@ -477,8 +477,8 @@ class ParameterScanUtils:
             os.makedirs(customOutputPath)
         except :
             print 'COULD NOT WRITE customOutputPath=',customOutputPath
-            return None
-            raise AssertionError('Could not create directory '+customOutputPath+ ' . please make sure you have necessary write permissions')
+            # return None
+            raise AssertionError('Could not create directory '+customOutputPath+ ' . please make sure you have necessary write permissions or choose another directory')
             # print 'Could not create directory ',customOutputPath, ' . please make sure you have necessary write permissions'
             
             

@@ -176,6 +176,10 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.singleSimulation=False
         self.parameterScanFile=''
         self.parameterScanOutputDir=''
+        self.consecutiveRunCounter=0
+        self.maxNumberOfConsecutiveRuns=2
+        
+        self.runAgainFlag=True
         
         
     def getSimFileName(self):
@@ -1257,65 +1261,68 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.cc3dSimulationDataHandler.readCC3DFileFormat(fileName)
         
         if self.cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource:
-        
-            from FileLock import FileLock            
-            with FileLock(file_name=fileName, timeout=10, delay=0.05)  as flock:
-        
-                self.singleSimulation=False
-                self.parameterScanFile=self.cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.path # parameter scan file path
-                pScanFilePath=self.parameterScanFile
-              # We use separate ParameterScanUtils object to handle parameter scan 
-                from ParameterScanUtils import ParameterScanUtils
-                
-                psu=ParameterScanUtils()
-                
-                psu.readParameterScanSpecs(pScanFilePath)
-                
-                paramScanSpecsDirName=os.path.dirname(pScanFilePath)
-                
-                outputDir = str(Configuration.getSetting('OutputLocation'))
+            try:
+                from FileLock import FileLock            
+                with FileLock(file_name=fileName, timeout=10, delay=0.05)  as flock:
+            
+                    self.singleSimulation=False
+                    self.parameterScanFile=self.cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.path # parameter scan file path
+                    pScanFilePath=self.parameterScanFile
+                  # We use separate ParameterScanUtils object to handle parameter scan 
+                    from ParameterScanUtils import ParameterScanUtils
+                    
+                    psu=ParameterScanUtils()
+                    
+                    psu.readParameterScanSpecs(pScanFilePath)
+                    
+                    paramScanSpecsDirName=os.path.dirname(pScanFilePath)
+                    
+                    outputDir = str(Configuration.getSetting('OutputLocation'))
 
-                
-                customOutputPath=psu.prepareParameterScanOutputDirs(_outputDirRoot=outputDir)  
-                
-                #FIX ERROR MESSAGE TO INDICATE THE FILE WHICH COULD NOT BE CREATED
-                if not customOutputPath:
-                    raise AssertionError('Parameter Scan Error: Could not create simulation output directory: '+outputDir)
-                    return False,False
                     
-                self.cc3dSimulationDataHandler.copySimulationDataFiles(customOutputPath)           
-                
-                
-                #construct path to the just-copied .cc3d file
-                cc3dFileBaseName=os.path.basename(self.cc3dSimulationDataHandler.cc3dSimulationData.path)
-                cc3dFileFullName=os.path.join(customOutputPath,cc3dFileBaseName)
-                
-                print 'cc3dFileFullName=',cc3dFileFullName
-                
-                
-                psu.replaceValuesInSimulationFiles(_pScanFileName = pScanFilePath, _simulationDir = customOutputPath)      
-                # save parameter Scan spec file with incremented ityeration
-                psu.saveParameterScanState(_pScanFileName = pScanFilePath)
-              
-              
-                if not customOutputPath:
-                    return False,False
+                    customOutputPath=psu.prepareParameterScanOutputDirs(_outputDirRoot=outputDir)  
+                    # # # print 'customOutputPath=',customOutputPath
+                    #FIX ERROR MESSAGE TO INDICATE THE FILE WHICH COULD NOT BE CREATED
+                    # # # if not customOutputPath:                    
+                        # # # raise AssertionError('Parameter Scan Error: Could not create simulation output directory: '+outputDir)
+                        # # # return False,False
+                        
+                    self.cc3dSimulationDataHandler.copySimulationDataFiles(customOutputPath)           
                     
-                
-                self.cc3dSimulationDataHandler.copySimulationDataFiles(customOutputPath) 
-                
-                from os.path import basename
-                self.__parent.setWindowTitle(self.trUtf8('ParameterScan: ')+self.trUtf8(basename(self.__fileName)+ self.trUtf8(' Iteration: ')+basename(customOutputPath)+" - CompuCell3D Player"))
-                
-                # read newly created .cc3d file     
-                self.cc3dSimulationDataHandler.readCC3DFileFormat(cc3dFileFullName)                      
-                
-                # # setting simultaion output dir names
-                self.customScreenshotDirectoryName=customOutputPath
-                CompuCellSetup.screenshotDirectoryName=customOutputPath
-                self.screenshotDirectoryName=customOutputPath
-                self.parameterScanOutputDir=customOutputPath
-                print 'self.screenshotDirectoryName=',self.screenshotDirectoryName
+                    
+                    #construct path to the just-copied .cc3d file
+                    cc3dFileBaseName=os.path.basename(self.cc3dSimulationDataHandler.cc3dSimulationData.path)
+                    cc3dFileFullName=os.path.join(customOutputPath,cc3dFileBaseName)
+                    
+                    # # # print 'cc3dFileFullName=',cc3dFileFullName
+                    
+                    
+                    psu.replaceValuesInSimulationFiles(_pScanFileName = pScanFilePath, _simulationDir = customOutputPath)      
+                    # save parameter Scan spec file with incremented ityeration
+                    psu.saveParameterScanState(_pScanFileName = pScanFilePath)
+                  
+                  
+                    # # # if not customOutputPath:
+                        # # # return False,False
+                        
+                    
+                    self.cc3dSimulationDataHandler.copySimulationDataFiles(customOutputPath) 
+                    
+                    from os.path import basename
+                    self.__parent.setWindowTitle(self.trUtf8('ParameterScan: ')+self.trUtf8(basename(self.__fileName)+ self.trUtf8(' Iteration: ')+basename(customOutputPath)+" - CompuCell3D Player"))
+                    
+                    # read newly created .cc3d file     
+                    self.cc3dSimulationDataHandler.readCC3DFileFormat(cc3dFileFullName)                      
+                    
+                    # # setting simultaion output dir names
+                    self.customScreenshotDirectoryName=customOutputPath
+                    CompuCellSetup.screenshotDirectoryName=customOutputPath
+                    self.screenshotDirectoryName=customOutputPath
+                    self.parameterScanOutputDir=customOutputPath
+                    print 'self.screenshotDirectoryName=',self.screenshotDirectoryName
+                    
+            except AssertionError,e:# propagating exception
+                raise e
                 
         else:
             self.singleSimulation=True
@@ -2295,9 +2302,44 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         # # # self.__stopSim()
         self.__cleanAfterSimulation()
         
+    def launchNextParameterScanRun(self):
+        fileName=self.__fileName
+        # when runnign parameter scan after simulatino finish we run again the same simulation file. When cc3d project with parameter scan gets opened 'next iteration' simulation is generatet and this 
+        # newly generated cc3d file is substituted instead of the "master" cc3d with parameter scan 
+        # From user stand point whan matters is that the only thing that user needs to worry abuot is the "master" .cc3d project and this is what is opened in the player
+        self.consecutiveRunCounter+=1
+        if self.consecutiveRunCounter>= self.maxNumberOfConsecutiveRuns:                
+        
+            from SystemUtils import getCC3DRunscriptPath
+                            
+            cc3dPath=getCC3DRunscriptPath()
+            reminderArgs=sys.argv[1:-1] # w skip first and last arguments 
+            # print 'reminderArgs=',reminderArgs
+            
+            # check if arg -i <simulation name> exist
+            try:
+                idx=reminderArgs.index('-i')                    
+                # # # reminderArgs=reminderArgs[0:idx]+reminderArgs[idx+2:]
+            except ValueError,e:
+                # if -i <simulationName> does not exist we add it to command line
+                reminderArgs=['-i',fileName]+reminderArgs
+                
+            popenArgs=[cc3dPath]+reminderArgs
+
+            from subprocess import Popen
+            cc3dProcess = Popen(popenArgs)
+            sys.exit()                
+        else:
+            self.__runSim()
+        
+    
     def handleSimulationFinishedRegular(self,_flag):
-        print 'INSIDE handleSimulationFinishedRegular'
+        print 'INSIDE handleSimulationFinishedRegular'                
         self.__cleanAfterSimulation()
+        
+        if not self.singleSimulation:
+            self.launchNextParameterScanRun()
+
         # self.__stopSim()
     
     def handleSimulationFinished(self,_flag):
@@ -2847,6 +2889,9 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
     def __simulationStop(self):
         # once user requests explicit stop of the simulation we stop regardless whether this is parameter scan or not. To stop parameter scan we reset vaiables used to seer parameter scanto their default (non-param scan) values
+
+        self.runAgainFlag=False
+        
         if not self.singleSimulation:
             self.singleSimulation=True
             self.parameterScanFile=''

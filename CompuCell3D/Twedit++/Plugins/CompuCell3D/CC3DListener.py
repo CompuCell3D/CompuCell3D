@@ -296,16 +296,18 @@ class CC3DListener(QTcpServer):
         self.socketSender=None
         self.nextBlockSize=0
         
-        self.cc3dPath=None
+        from SystemUtils import getCC3DRunscriptPath
+        self.cc3dPath=getCC3DRunscriptPath()
         
-        if sys.platform.startswith('win'):
-            self.cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.bat')
-        elif sys.platform.startswith('darwin'):
-            self.cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.command')
-        else : # linux/unix
-            self.cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.sh')
+        
+        # # # if sys.platform.startswith('win'):
+            # # # self.cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.bat')
+        # # # elif sys.platform.startswith('darwin'):
+            # # # self.cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.command')
+        # # # else : # linux/unix
+            # # # self.cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.sh')
             
-        self.cc3dPath=os.path.abspath(self.cc3dPath)
+        # # # self.cc3dPath=os.path.abspath(self.cc3dPath)
 
         self.pluginObj=None
         self.cc3dProcess=None

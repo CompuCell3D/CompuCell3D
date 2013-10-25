@@ -34,6 +34,22 @@ def setSwigPaths():
         if not appended:
             sys.path.append(soslib_path)    
         # sys.path.append(environ["SOSLIB_PATH"])
+        
+def getCC3DRunscriptPath():        
+    import sys,os
+    from os import environ
+    
+    cc3dPath=None
+    if sys.platform.startswith('win'):
+        cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.bat')
+    elif sys.platform.startswith('darwin'):
+        cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.command')
+    else : # linux/unix
+        cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.sh')
+        
+    cc3dPath=os.path.abspath(cc3dPath)
+    return cc3dPath
+        
 
 def initializeSystemResources():
     platform=''
