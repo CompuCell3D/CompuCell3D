@@ -427,23 +427,6 @@ void Simulator::cleanAfterSimulation(){
 	unloadModules();
 }
 void Simulator::unloadModules(){
-	//CellInventory::cellInventoryIterator cInvItr;
-
-
-	//Coordinates3D<float> oldCM,newCM,v;
-	//CellG * cell;
-
-	//CellInventory * cellInventoryPtr=& potts.getCellInventory();
-
- //  for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr ){
-	//   cell=cellInventoryPtr->getCell(cInvItr);;
-	//   potts.destroyCellG(cell, false);
- //  }
- //  for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr ){
-	//   cell=cellInventoryPtr->getCell(cInvItr);;
-	//   potts.destroyCellG(cell, true);
- //  }
-
 	pluginManager.unload();
 	steppableManager.unload();
 }

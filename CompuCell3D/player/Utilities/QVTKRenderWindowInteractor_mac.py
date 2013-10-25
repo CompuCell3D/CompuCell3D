@@ -207,6 +207,8 @@ class QVTKRenderWindowInteractor(QtGui.QWidget):        # Mac
         # do all the necessary qt setup
         self.setAttribute(QtCore.Qt.WA_OpaquePaintEvent)
         self.setAttribute(QtCore.Qt.WA_PaintOnScreen)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        
         self.setMouseTracking(True) # get all mouse events
         self.setFocusPolicy(QtCore.Qt.WheelFocus)
         self.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding))
@@ -318,6 +320,18 @@ class QVTKRenderWindowInteractor(QtGui.QWidget):        # Mac
                                             ctrl, shift, chr(0), 0, None)
         self._Iren.LeaveEvent()
         
+    def closeEvent(self,_ev):        
+        print 'QVTK INTERACTOR CLOSE EVENT'
+        # cleaning up to release memory - notice that if we do not do this cleanup this widget will not be destroyed and will take sizeable portion of the memory 
+        # not a big deal for a single simulation but repeated runs can easily exhaust all system memory
+        super(QVTKRenderWindowInteractor,self).close()
+        
+        self._Iren.RemoveObservers('CreateTimerEvent')        
+        self._Iren.RemoveObservers('DestroyTimerEvent')    
+        self._Iren.GetRenderWindow().RemoveObservers('CursorChangedEvent')       
+        self.mousePressEventFcn  = None          
+        
+        
     def setMouseInteractionSchemeTo2D(self):
         self.mousePressEventFcn=self.mousePressEvent2DStyle
         
@@ -325,6 +339,7 @@ class QVTKRenderWindowInteractor(QtGui.QWidget):        # Mac
         self.mousePressEventFcn=self.mousePressEvent3DStyle    
         
     def mousePressEvent2DStyle(self,ev):
+    
         ctrl, shift = self._GetCtrlShift(ev)
         repeat = 0
         if ev.type() == QtCore.QEvent.MouseButtonDblClick:

@@ -2898,6 +2898,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             
         self.screenshotManager=None
         
+        CompuCellSetup.resetGlobals()
         print 'AFTER __cleanupAfterSimulation'
         
         
@@ -3133,8 +3134,10 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         self.showDisplayWidgets()
         
-        simObj=self.mysim()
-        if not simObj:return
+        simObj=None
+        if self.mysim:
+            simObj=self.mysim()
+            # if not simObj:return
     
         # # # self.mainGraphicsWindow.initSimArea(self.basicSimulationData)
         # # # self.graphics3D.initSimArea(self.basicSimulationData)

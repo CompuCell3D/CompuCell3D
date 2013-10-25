@@ -62,7 +62,7 @@ NeighborTrackerPlugin::~NeighborTrackerPlugin() {
 	pUtils->destroyLock(lockPtr);
 	delete lockPtr;
 	lockPtr=0;
-	cerr<<"\n\n\n DELETING NeighborTrackerPlugin"<<endl;
+	//cerr<<"\n\n\n DELETING NeighborTrackerPlugin"<<endl;
 }
 
 void NeighborTrackerPlugin::init(Simulator *_simulator, CC3DXMLElement *_xmlData) {
