@@ -50,8 +50,19 @@ def prepareParameterScan(_cc3dSimulationDataHandler):
     '''This fcn returns True if preparation of the next PS run was succesfull or False otherwise - this will usually happen when parameter scan reaches max iteration . 
     '''
     
-    pScanFilePath = _cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.path # parameter scan file path
-    psu = _cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.psu #parameter scan utils
+    pScanFilePath = _cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.path # parameter scan file path  
+    cc3dProjectPath = _cc3dSimulationDataHandler.cc3dSimulationData.path    
+    cc3dProjectDir = _cc3dSimulationDataHandler.cc3dSimulationData.basePath    
+    
+    # psu = _cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.psu #parameter scan utils
+    
+    # checking if simulation file directory is writeable if not parameterscan cannot run properly - writeable simulation fiel directory is requirement for parameter scan
+    if not os.access(cc3dProjectDir, os.W_OK):
+        raise AssertionError('parameter Scan Error: CC3D project directory:'+cc3dProjectDir+' has to be writeable. Please change permission on the directory of the .cc3d project')
+    # check if parameter scan file is writeable
+    if not os.access(pScanFilePath, os.W_OK):
+        raise AssertionError('parameter Scan Error: Parameter Scan xml file :'+pScanFilePath+ ' has to be writeable. Please change permission on this file')
+    
     
     # We use separate ParameterScanUtils object to handle parameter scan 
     from ParameterScanUtils import ParameterScanUtils

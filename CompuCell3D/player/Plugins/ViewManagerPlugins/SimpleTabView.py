@@ -1264,10 +1264,22 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                       QMessageBox.Ok )
             raise IOError("%s does not exist"%fileName)
             
-        self.cc3dSimulationDataHandler.readCC3DFileFormat(fileName)
+        self.cc3dSimulationDataHandler.readCC3DFileFormat(fileName)                
         
         if self.cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource:
+                                
+            cc3dProjectDir = os.path.dirname(fileName)
+            paramScanXMLFileName=self.cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.path
+            
+            # checking if simulation file directory is writeable if not parameterscan cannot run properly - writeable simulation fiel directory is requirement for parameter scan
+            if not os.access(cc3dProjectDir, os.W_OK):
+                raise AssertionError('parameter Scan Error: CC3D project directory:'+cc3dProjectDir+' has to be writeable. Please change permission on the directory of the .cc3d project')
+            # check if parameter scan file is writeable
+            if not os.access(paramScanXMLFileName, os.W_OK):
+                raise AssertionError('parameter Scan Error: Parameter Scan xml file :'+paramScanXMLFileName+ ' has to be writeable. Please change permission on this file')
+                                
             try:
+            
                 from FileLock import FileLock            
                 with FileLock(file_name=fileName, timeout=10, delay=0.05)  as flock:
             
