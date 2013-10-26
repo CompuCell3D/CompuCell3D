@@ -125,6 +125,10 @@ class ChangedTextHandler:
         currentTabWidget=self.editorWindow.panels[0]
         if self.editor.panel:
             currentTabWidget=self.editor.panel
+            
+         #for rean only editors we do not change tab icons   
+        if self.editor.isReadOnly(): return
+           
         if m: #document has been modified        
             index=currentTabWidget.indexOf(self.editor)
             currentTabWidget.setTabIcon(index,QtGui.QIcon(':/icons/document-edited.png'))

@@ -741,12 +741,18 @@ class CC3DProject(QObject):
         editor.setReadOnly(True)
         
 
-        activePanel, currentindex=self.__ui.getCurrentTabWidgetAndIndex()
-        activePanel.setTabText(currentindex,'Parameter Scan Tmp File')
+        
+        # # set tab font color color 
+        # tabBar=activePanel.tabBar()
+        # tabBar.setTabIcon()
+        # tabBar.setStyleSheet('background-color: blue;')
+        
         lexer=self.__ui.guessLexer("tmp"+pScanResource.fileTypeForEditor)
         if lexer[0]:
             editor.setLexer(lexer[0])
         self.__ui.setEditorProperties(editor)         
+
+
         
         editor.registerCustomContextMenu(self.createParameterScanMenu(editor))
         
@@ -781,6 +787,13 @@ class CC3DProject(QObject):
             
             editor.insertAt(open(self.scannedFileName).read(),0,0)
             editor.setModified(False)
+            
+        # setting graphical  properties for parameter scan editor tab widget      
+        activePanel, currentindex=self.__ui.getCurrentTabWidgetAndIndex()
+        activePanel.setTabText(currentindex,'Parameter Scan Tmp File')
+        activePanel.setTabIcon(currentindex,QIcon(':/icons/scan_32x32.png'))
+        tabBar=activePanel.tabBar()        
+        tabBar.setTabTextColor(currentindex,QColor('blue'))
             
         
     def __addToScan(self):
