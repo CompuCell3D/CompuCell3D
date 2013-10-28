@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'configurationdlg.ui'
+# Form implementation generated from reading ui file '.\configurationdlg.ui'
 #
-# Created: Mon Apr 23 18:46:38 2012
+# Created: Mon Oct 28 15:56:15 2013
 #      by: PyQt4 UI code generator 4.8.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,7 +17,7 @@ except AttributeError:
 class Ui_ConfigurationDlg(object):
     def setupUi(self, ConfigurationDlg):
         ConfigurationDlg.setObjectName(_fromUtf8("ConfigurationDlg"))
-        ConfigurationDlg.resize(433, 413)
+        ConfigurationDlg.resize(433, 420)
         ConfigurationDlg.setWindowTitle(QtGui.QApplication.translate("ConfigurationDlg", "Configuration", None, QtGui.QApplication.UnicodeUTF8))
         self.verticalLayout_3 = QtGui.QVBoxLayout(ConfigurationDlg)
         self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
@@ -133,13 +133,26 @@ class Ui_ConfigurationDlg(object):
         self.tabWidget.addTab(self.editingTab, _fromUtf8(""))
         self.tab_2 = QtGui.QWidget()
         self.tab_2.setObjectName(_fromUtf8("tab_2"))
-        self.gridLayout_3 = QtGui.QGridLayout(self.tab_2)
-        self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
+        self.verticalLayout_9 = QtGui.QVBoxLayout(self.tab_2)
+        self.verticalLayout_9.setObjectName(_fromUtf8("verticalLayout_9"))
+        self.horizontalLayout_8 = QtGui.QHBoxLayout()
+        self.horizontalLayout_8.setObjectName(_fromUtf8("horizontalLayout_8"))
+        self.verticalLayout_8 = QtGui.QVBoxLayout()
+        self.verticalLayout_8.setObjectName(_fromUtf8("verticalLayout_8"))
+        self.groupBox = QtGui.QGroupBox(self.tab_2)
+        self.groupBox.setTitle(QtGui.QApplication.translate("ConfigurationDlg", "Editor Theme", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setObjectName(_fromUtf8("groupBox"))
+        self.verticalLayout_5 = QtGui.QVBoxLayout(self.groupBox)
+        self.verticalLayout_5.setObjectName(_fromUtf8("verticalLayout_5"))
+        self.themeCB = QtGui.QComboBox(self.groupBox)
+        self.themeCB.setObjectName(_fromUtf8("themeCB"))
+        self.verticalLayout_5.addWidget(self.themeCB)
+        self.verticalLayout_8.addWidget(self.groupBox)
         self.fontGroupBox = QtGui.QGroupBox(self.tab_2)
         self.fontGroupBox.setTitle(QtGui.QApplication.translate("ConfigurationDlg", "Fonts", None, QtGui.QApplication.UnicodeUTF8))
         self.fontGroupBox.setObjectName(_fromUtf8("fontGroupBox"))
-        self.verticalLayout_5 = QtGui.QVBoxLayout(self.fontGroupBox)
-        self.verticalLayout_5.setObjectName(_fromUtf8("verticalLayout_5"))
+        self.verticalLayout_7 = QtGui.QVBoxLayout(self.fontGroupBox)
+        self.verticalLayout_7.setObjectName(_fromUtf8("verticalLayout_7"))
         self.verticalLayout_4 = QtGui.QVBoxLayout()
         self.verticalLayout_4.setObjectName(_fromUtf8("verticalLayout_4"))
         self.horizontalLayout_4 = QtGui.QHBoxLayout()
@@ -194,12 +207,14 @@ class Ui_ConfigurationDlg(object):
         self.fontSizeComboBox.setItemText(12, QtGui.QApplication.translate("ConfigurationDlg", "28", None, QtGui.QApplication.UnicodeUTF8))
         self.horizontalLayout_5.addWidget(self.fontSizeComboBox)
         self.verticalLayout_4.addLayout(self.horizontalLayout_5)
-        self.verticalLayout_5.addLayout(self.verticalLayout_4)
-        self.gridLayout_3.addWidget(self.fontGroupBox, 0, 0, 1, 1)
-        spacerItem4 = QtGui.QSpacerItem(138, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.gridLayout_3.addItem(spacerItem4, 0, 1, 1, 1)
-        spacerItem5 = QtGui.QSpacerItem(20, 223, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout_3.addItem(spacerItem5, 1, 0, 1, 1)
+        self.verticalLayout_7.addLayout(self.verticalLayout_4)
+        self.verticalLayout_8.addWidget(self.fontGroupBox)
+        self.horizontalLayout_8.addLayout(self.verticalLayout_8)
+        spacerItem4 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_8.addItem(spacerItem4)
+        self.verticalLayout_9.addLayout(self.horizontalLayout_8)
+        spacerItem5 = QtGui.QSpacerItem(17, 165, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_9.addItem(spacerItem5)
         self.tabWidget.addTab(self.tab_2, _fromUtf8(""))
         self.tab = QtGui.QWidget()
         self.tab.setObjectName(_fromUtf8("tab"))
@@ -265,6 +280,6 @@ class Ui_ConfigurationDlg(object):
 
     def retranslateUi(self, ConfigurationDlg):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.editingTab), QtGui.QApplication.translate("ConfigurationDlg", "Editing", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("ConfigurationDlg", "Fonts", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("ConfigurationDlg", "Style Config", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("ConfigurationDlg", "Plugins", None, QtGui.QApplication.UnicodeUTF8))
 

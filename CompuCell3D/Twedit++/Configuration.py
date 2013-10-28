@@ -51,6 +51,7 @@ class Configuration:
         self.defaultConfigs["PluginAutoloadData"]=QStringList()       
         self.defaultConfigs["BaseFontName"]=QString("Courier New")
         self.defaultConfigs["BaseFontSize"]=QString("10")
+        self.defaultConfigs["Theme"]=QString("Default")
         
         self.modifiedKeyboardShortcuts = {} # dictionary actionName->shortcut for modified keyboard shortcuts - only reassinged shortcuts are stored
         self.modifiedPluginsAutoloadData = {} # dictionary pluginName->autoLoad for modified plugin autoload data - only reassinged data are stored
@@ -75,7 +76,7 @@ class Configuration:
             else:
                 return self.defaultConfigs[_key]
                 
-        elif _key in ["BaseFontSize","BaseFontName"]:
+        elif _key in ["BaseFontSize","BaseFontName","Theme"]:
             val = self.settings.value(_key)
             if val.isValid():
                 return val.toString()
@@ -127,7 +128,7 @@ class Configuration:
             self.settings.setValue(_key,_value)
 
             
-        elif _key in ["BaseFontName","BaseFontSize"]: # string values
+        elif _key in ["BaseFontName","BaseFontSize","Theme"]: # string values
             self.settings.setValue(_key,QVariant(_value))
             
         elif _key in ["RecentDocuments","RecentDirectories","InitialSize","InitialPosition","ListOfOpenFiles","ListOfOpenFilesAndPanels","FRSyntax","FRFindHistory","FRReplaceHistory","FRFiltersHistory","FRDirectoryHistory","KeyboardShortcuts","PluginAutoloadData"]: # QSize, QPoint,QStringList , QString values

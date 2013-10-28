@@ -261,7 +261,15 @@ class EditorWindow(QMainWindow):
         ".html":"HTML",
         ".tex":"TeX"
         }
-
+        
+        self.configuration=Configuration()
+        
+        #used to manage color themes for Twedit++- parses xml configuration files written using notepad++ convention
+        from ThemeManager import ThemeManager
+        self.themeManager=ThemeManager()
+        self.themeManager.readThemes()
+        self.currentThemeName=str(self.configuration.setting("Theme"))
+        
         self.fileDialogFilters,self.filterExtensionsDict = self.prepareFileDialogFilters(self.extensionLanguageMap)
         
         self.findDialogForm=None # reference to findDialogForm - we check if current value is non-None to make sure we can create an instance. Multiple instances are disallowed
@@ -284,11 +292,13 @@ class EditorWindow(QMainWindow):
         self.deactivateChangeSensing=False
         
         self.curFile = ''
-        self.configuration=Configuration()
+
+
         
         self.zoomRange=self.configuration.setting("ZoomRange")
         
         
+
         self.resize(self.configuration.setting("InitialSize"))
         self.move(self.configuration.setting("InitialPosition"))
         
@@ -355,7 +365,15 @@ class EditorWindow(QMainWindow):
         self.findDock=self.__createDockWindow("Find Results")
         self.findDisplayWidget=FindDisplayWidget(self)
         self.__setupDockWindow(self.findDock, Qt.BottomDockWidgetArea, self.findDisplayWidget, self.trUtf8("Find In Files Results"))
-
+        
+        
+        self.themeManager.applyThemeToEditor(self.currentThemeName,self.findDisplayWidget)    
+        
+        # sys.exit()
+        
+        
+        
+        
         self.setCurrentFile('')
         self.setUnifiedTitleAndToolBarOnMac(True)
         
@@ -1057,6 +1075,7 @@ class EditorWindow(QMainWindow):
         """
             checks if document has been modified
         """
+        self.deactivateChangeSensing=True
         for editor in self.getEditorList():
             fileName=self.getEditorFileName(editor)
             try:
@@ -1086,7 +1105,8 @@ class EditorWindow(QMainWindow):
                         self.deactivateChangeSensing=True
                     else:                        
                         self.closeTab(editor.panel.indexOf(editor),False)
-                    
+
+        self.deactivateChangeSensing=False            
                 
     
 
@@ -1175,6 +1195,10 @@ class EditorWindow(QMainWindow):
             lexer.setFont(self.baseFont)   
             
         _editor.setFont(self.baseFont)              
+        # SCI_STYLESETFORE(int styleNumber, int colour)
+        # _editor.SendScintilla(QsciScintilla.SCI_STYLESETFORE,1,255)       
+        self.themeManager.applyThemeToEditor(self.currentThemeName,_editor)    
+        # self.themeManager.applyThemeToEditor('Choco',_editor)    
         
     def modificationChangedSlot(self, _flag):
         dbgMsg("THIS IS CHANGED DOCUMENT")
@@ -2280,11 +2304,14 @@ class EditorWindow(QMainWindow):
         
         editor=self.getActiveEditor()
         configurationDlg= ConfigurationDlg(editor,self)
+        oldThemeName=self.currentThemeName
         if configurationDlg.exec_():
             for key in self.configuration.updatedConfigs.keys():
                 dbgMsg("NEW SETTING = ",key,":",self.configuration.updatedConfigs[key])
                 configureFcn=getattr(self,"configure"+key)
                 configureFcn(self.configuration.updatedConfigs[key])
+        else:
+            self.applyTheme(oldThemeName)
         self.checkActions()                    
 
     def configureRestoreTabsOnStartup(self,_flag):
@@ -2294,6 +2321,25 @@ class EditorWindow(QMainWindow):
     
         self.configuration.setSetting("RestoreTabsOnStartup",_flag)
         
+    def configureTheme(self,_themeName):
+        """
+            fcn handling theme configuration change
+        """
+        # print 'APPLYING _themeName=',_themeName   
+        self.currentThemeName=str(_themeName)
+        self.configuration.setSetting("Theme",self.currentThemeName)        
+        
+    def applyTheme(self,_themeName):
+    
+        self.currentThemeName=str(_themeName)
+        for panel in self.panels:
+            for i in range(panel.count()):
+                editor=panel.widget(i)
+                self.themeManager.applyThemeToEditor(self.currentThemeName,editor)
+                
+        # applying theme to FindInFiles widget            
+        self.themeManager.applyThemeToEditor(self.currentThemeName,self.findDisplayWidget)    
+    
     def configureBaseFontName(self,_name):
         """
             fcn handling BaseFontName configuration change
@@ -2916,6 +2962,9 @@ class EditorWindow(QMainWindow):
                 self.commentStyleDict[activePanel.currentWidget()]=[lexer[1],lexer[2]] # associating comment style with the lexer
                 currentEncoding=self.getEditorFileEncoding(activePanel.currentWidget())
                 self.setPropertiesInEditorList(activePanel.currentWidget(),fileName,os.path.getmtime(str(fileName)),currentEncoding)
+                
+            #before returning we check if du to saveAs some documents have been modified
+            self.checkIfDocumentsWereModified()    
             return returnCode
 
         return False

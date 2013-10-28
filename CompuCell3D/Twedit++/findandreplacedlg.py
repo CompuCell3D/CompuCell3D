@@ -32,8 +32,9 @@ class FindInFilesResults:
         if self.lastLineAdded!=_lineNumber:
             if not _text.endsWith('\n'):
                 _text.append('\n')
-            self.lineOccurences.append([_lineNumber,_text])
-            self.lastLineAdded=_lineNumber
+            # internally lines numbers start from 0    but we have to display them as starting from 1 - it is de-factor a convention for text editors            
+            self.lineOccurences.append([_lineNumber+1,_text]) 
+            self.lastLineAdded=_lineNumber+1
             
         self.totalHits+=1
         
@@ -752,22 +753,26 @@ class FindDisplayWidget(QsciScintilla):
             self.SendScintilla(QsciScintilla.SCI_TOGGLEFOLD, lineClick)
 
     def onDoubleClick(self,_position,_line,_modifiers):
+        
         dbgMsg("position=",_position," line=",_line," modifiers=",_modifiers)
-#         print "position=",_position," line=",_line," modifiers=",_modifiers
+        # print "position=",_position," line=",_line," modifiers=",_modifiers
         lineText=str(self.text(_line))
+        
+        
         dbgMsg("line text=",lineText)
         lineNumberGroups=self.lineNumberExtractRegex.search(lineText)
         lineNumber=-1
         lineNumberWithFileName=-1
         try: 
             if lineNumberGroups:
-                lineNumber=int(lineNumberGroups.group(1))
+                lineNumber=int(lineNumberGroups.group(1))                                
+                lineNumber-=1# internally lines numbers start from 0    but we have to display them as starting from 1 - it is de-factor a convention for text editors            
                 dbgMsg("Searched text at line=",lineNumber)
                 lineNumberWithFileName = self.SendScintilla(QsciScintilla.SCI_GETFOLDPARENT, _line)    
         except IndexError,e:
             
             dbgMsg("Line number not found")
-
+        
         if lineNumberWithFileName>=0:
             dbgMsg("THIS IS LINE WITH FILE NAME:")
             lineWithFileName= str(self.text(lineNumberWithFileName))
@@ -968,15 +973,28 @@ class CustomLexer(QsciLexerCustom):
 class FindInFilesLexer(QsciLexerCustom):
     def __init__(self, parent):
         Qsci.QsciLexerCustom.__init__(self, parent)
-        self._styles = {
+        self._states = {
             0: 'Default',
             1: 'SearchInfo',
             2: 'FileInfo',
             3: 'LineInfo',
             4: 'TextToFind'
             }
-        for key,value in self._styles.iteritems():
+            
+        for key,value in self._states.iteritems():        
             setattr(self, value, key)
+
+        self._styles = {
+            'Default':0 ,
+            'SearchInfo':1 ,
+            'FileInfo': 2 ,
+            'LineNumber': 3 ,
+            'TextToFind':4 
+            }
+        for key,value in self._styles.iteritems():        
+            setattr(self, 'Style'+key, value)
+
+            
         self.editorWidget=parent
         self.colorizeEntireLineStates=[self.SearchInfo,self.FileInfo]
         
@@ -985,22 +1003,27 @@ class FindInFilesLexer(QsciLexerCustom):
         self.baseFontBold.setBold(True)
         self.searchText=""
         
+        self.lineNumberRegex=re.compile('[\d]+')
+        
+    def language(self):
+        return 'searchResult' #correspoints to np++ style naming in  xml style-file
+        
     def description(self, style):
         return self._styles.get(style, '')
-    #used by QsciLexer to style font colors
-    def defaultColor(self, style):
-        if style == self.Default:
-            return QtGui.QColor('#000000')
-        elif style == self.SearchInfo:
-            return QtGui.QColor('#0404B4')
-        elif style == self.FileInfo:
-            return QtGui.QColor('#04B404')
-        elif style == self.LineInfo:    
-            return QtGui.QColor('#000000')            
-        elif style == self.TextToFind:
-            return QtGui.QColor('#FF0000')
+    # #used by QsciLexer to style font colors
+    # def defaultColor(self, style):
+        # if style == self.Default:
+            # return QtGui.QColor('#000000')
+        # elif style == self.SearchInfo:
+            # return QtGui.QColor('#0404B4')
+        # elif style == self.FileInfo:
+            # return QtGui.QColor('#04B404')
+        # elif style == self.LineInfo:    
+            # return QtGui.QColor('#000000')            
+        # elif style == self.TextToFind:
+            # return QtGui.QColor('#FF0000')
             
-        return Qsci.QsciLexerCustom.defaultColor(self, style)
+        # return Qsci.QsciLexerCustom.defaultColor(self, style)
         
     #used by QsciLexer to style font properties    
     def defaultFont(self, style):
@@ -1016,19 +1039,19 @@ class FindInFilesLexer(QsciLexerCustom):
   
         return Qsci.QsciLexerCustom.defaultFont(self, style)  
         
-    #used by QsciLexer to style paper properties (background color)
-    def defaultPaper(self, style):
+    # #used by QsciLexer to style paper properties (background color)
+    # def defaultPaper(self, style):
 
-        if style == self.Default:
-            return QtGui.QColor('#FFFFFF')
-        elif style == self.SearchInfo:            
-            return QtGui.QColor('#A9D0F5')
-        elif style == self.FileInfo:
-            return QtGui.QColor('#E0F8E0')
-        elif style == self.TextToFind:
-            return QtGui.QColor('#F2F5A9')
+        # if style == self.Default:
+            # return QtGui.QColor('#FFFFFF')
+        # elif style == self.SearchInfo:            
+            # return QtGui.QColor('#A9D0F5')
+        # elif style == self.FileInfo:
+            # return QtGui.QColor('#E0F8E0')
+        # elif style == self.TextToFind:
+            # return QtGui.QColor('#F2F5A9')
   
-        return Qsci.QsciLexerCustom.defaultPaper(self, style)    
+        # return Qsci.QsciLexerCustom.defaultPaper(self, style)    
         
     # To colorize entire line containit Search or File info we use  defaultEolFill fcn   
     def defaultEolFill(self, style):
@@ -1038,6 +1061,7 @@ class FindInFilesLexer(QsciLexerCustom):
         return QsciLexerCustom.defaultEolFill(self, style)  
         
     def styleText(self, start, end):
+        
         editor = self.editor()
         if editor is None:
             return
@@ -1077,6 +1101,8 @@ class FindInFilesLexer(QsciLexerCustom):
         set_style = self.setStyling
         self.startStyling(start, 0x1f)
         
+        
+        
         # SCI = self.SendScintilla
         SCI=self.editorWidget.SendScintilla
         GETFOLDLEVEL = QsciScintilla.SCI_GETFOLDLEVEL
@@ -1086,11 +1112,14 @@ class FindInFilesLexer(QsciLexerCustom):
         NUMBERMASK = QsciScintilla.SC_FOLDLEVELNUMBERMASK
         WHITEFLAG = QsciScintilla.SC_FOLDLEVELWHITEFLAG
         # scintilla always asks to style whole lines
-       
+        
+        previousLine=''
+        same_word_counter=0
+        
         for line in source.splitlines(True):
             length = len(line)
             # dbgMsg("line=",line)
-            # dbgMsg(line)
+            # dbgMsg(line)            
             if line.startswith('\n'):
                 style=self.Default
                 dbgMsg("GOT EMPTY LINE")
@@ -1120,10 +1149,11 @@ class FindInFilesLexer(QsciLexerCustom):
                 # elif line.startswith('  File'):
                 elif line.startswith('  F'):
                     state = self.FileInfo
-                   
+                    # state=self.SearchInfo
                 # elif line.startswith('    Line'):    
                 elif line.startswith('   '):
                 
+                    state = self.SearchInfo
                     
                     if self.searchText!="":
                         # dbgMsg("self.searchText=",self.searchText)
@@ -1140,37 +1170,61 @@ class FindInFilesLexer(QsciLexerCustom):
                         startPos=0
                         # string line is not use to output to the screen it is local to this fcn therefore it is safe to use lower
                         pos = line.lower().find(self.searchText.lower())
-                        while pos!=-1:
+                        # print 'line=',line
+                        numberFinder = re.search(self.lineNumberRegex,line)
+                        posNumStart=-1
+                        posNumEnd=-1
                         
-                            set_style(pos-startPos, self.LineInfo) # styling begining of the line
-                            set_style(searchTextLength, self.TextToFind) # styling searchText of the line
+                        if numberFinder:
+                            posNumStart=numberFinder.start()
+                            posNumEnd=numberFinder.end()
+                            # print 'posNumStart,posNumEnd=',(posNumStart,posNumEnd)
+                            
+                        # styling 'line' word    
+                        set_style(posNumStart-startPos, self.StyleDefault)
+                        # styling line number
+                        set_style(posNumEnd-posNumStart, self.StyleLineNumber)
+                        # state=self.Default                        
+                        # length=length-posNumEnd # last value startPos if startPos point to the location right after last found searchText - to continue styling we tell lexer to style reminder of the line (length-startPos) with LineInfo style
+                        
+                        # styling text between : and beginning of the first occurence of searched text
+                        # # # set_style(pos-posNumEnd, self.StyleDefault)
+                        
+                        # # # startPos=pos
+                        # sometimes a single line will have multiple matched words . in that case we display multiple insrtances of this line coloring appropriate word find in consecutive lines 
+                        if line==previousLine:
+                            same_word_counter+=1
+                        else:
+                            same_word_counter=0
+                            
+                        startPos=posNumEnd
+                        local_same_word_counter=0
+                        while pos!=-1:
+                            set_style(pos-startPos, self.Default) # styling text between regular occurences of searched text                           
+                            if local_same_word_counter==same_word_counter:
+                                set_style(searchTextLength, self.TextToFind) # styling searchText of the line
+                            else:
+                                set_style(searchTextLength, self.Default) # styling searchText of the line
+                                
+                            local_same_word_counter+=1    
+                            
                             startPos=pos+searchTextLength
                             pos = line.find(self.searchText,startPos)
-                            state = self.LineInfo
                             
+                            state = self.Default
                         
-                        state = self.LineInfo
+
+                        state = self.Default
                         length=length-startPos # last value startPos if startPos point to the location right after last found searchText - to continue styling we tell lexer to style reminder of the line (length-startPos) with LineInfo style
+                        
                     else:
                         dbgMsg("DID NOT FIND SEARCH TEXT")
-                        # state = self.Default
-                        state = self.LineInfo
-                    
-                    # # the following will style lines like "x = 0"
-                    
-                    # pos = line.find('\tFile')
-                    
-                    # if pos > 0:
-                        # set_style(pos, self.SearchInfo) #styling LHS pos is the length of styled text
-                        # set_style(1, self.FileInfo)#styling = 1 is the length of styled text
-                        # length = length - pos - 1
-                        # state = self.SearchInfo
-                    # else:
-                        # state = self.Default
+                        state = self.Default
+
                 else:
-                    # state = self.Default
-                    state = self.LineInfo
-                
+                    state = self.Default
+                    # # # state = self.LineInfo
+            # print 'state after while =',state     
             set_style(length, state)
             # folding implementation goes here
             headerLevel = LEVELBASE | HEADERFLAG
@@ -1187,6 +1241,8 @@ class FindInFilesLexer(QsciLexerCustom):
                 SCI(SETFOLDLEVEL, index, LEVELBASE+2) # this is non-header fold line - since it is inside header level and headerLevel +1 i had to add +3 to the  LEVELBASE+2
                 
             index += 1
+            
+            previousLine=line
             
 class ConfigLexer(QsciLexerCustom):
     def __init__(self, parent):

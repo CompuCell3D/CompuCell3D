@@ -296,8 +296,8 @@ class CC3DListener(QTcpServer):
         self.socketSender=None
         self.nextBlockSize=0
         
-        from SystemUtils import getCC3DRunscriptPath
-        self.cc3dPath=getCC3DRunscriptPath()
+        from SystemUtils import getCC3DPlayerRunScriptPath
+        self.cc3dPath=getCC3DPlayerRunScriptPath()
         
         
         # # # if sys.platform.startswith('win'):

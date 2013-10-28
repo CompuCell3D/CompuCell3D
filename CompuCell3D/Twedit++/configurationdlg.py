@@ -30,14 +30,29 @@ class ConfigurationDlg(QDialog,ui_configurationdlg.Ui_ConfigurationDlg):
         self.setupUi(self)
         self.connect(self.pluginsLW,SIGNAL('currentItemChanged(QListWidgetItem *,QListWidgetItem *)'),self.updatePluginInfoOptions)
         
+        
         self.connect(self.loadOnStartupCHB,SIGNAL('clicked(bool)'),self.processLoadOnStartupChange)
         
         self.populatePluginsLW()
+        self.populateThemeCB()
+        
+        
+        
         
         if not MAC:
             self.cancelButton.setFocusPolicy(Qt.NoFocus)
         self.updateUi()
         
+        self.themeCB.currentIndexChanged.connect(self.changeEditorWindowTheme)        
+        
+    def changeEditorWindowTheme(self):
+        theme=self.themeCB.currentText()
+        self.editorWindow.applyTheme(theme)
+    
+    def populateThemeCB(self):
+        themeNameList=self.editorWindow.themeManager.getThemeNames()
+        for themeName in themeNameList:
+            self.themeCB.addItem(themeName)
     def updatePluginInfoOptions(self,_currentItem,_previousItem):
         print 'updatePluginInfoOptions'
         pm=self.editorWindow.pm
@@ -163,6 +178,8 @@ class ConfigurationDlg(QDialog,ui_configurationdlg.Ui_ConfigurationDlg):
         if configuration.setting("BaseFontSize")!=self.fontSizeComboBox.currentText():
             configuration.updatedConfigs["BaseFontSize"]=self.fontSizeComboBox.currentText()
             
+        if configuration.setting("Theme")!=self.themeCB.currentText():
+            configuration.updatedConfigs["Theme"]=self.themeCB.currentText()
             
         #store changed values in settings    
         for key in configuration.updatedConfigs.keys():
@@ -205,4 +222,10 @@ class ConfigurationDlg(QDialog,ui_configurationdlg.Ui_ConfigurationDlg):
                 break
         
         
+        #not ideal solution but should work
+        themeName=configuration.setting("Theme")
+        for idx in range(self.themeCB.count()):
+            if themeName==self.themeCB.itemText(idx):                        
+                self.themeCB.setCurrentIndex(idx)
+                break
 

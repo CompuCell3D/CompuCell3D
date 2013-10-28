@@ -618,7 +618,7 @@ class CC3DProject(QObject):
         
         self.actions["Serializer..."]=QtGui.QAction(QIcon(':/icons/save-simulation.png'),"Serializer...", self, shortcut="", statusTip="Edit serialization properties fo the simulation ", triggered=self.__serializerEdit)
         
-        self.actions["Close Project"]=QtGui.QAction("Close Project", self, shortcut="", statusTip="Close Project ", triggered=self.__closeProject)
+        self.actions["Close Project"]=QtGui.QAction("Close Project", self, shortcut="Ctrl+Shift+X", statusTip="Close Project ", triggered=self.__closeProject)
         
         self.actions["Show Project Panel"]=QtGui.QAction("Show Project Panel", self, shortcut="", statusTip="Show Project Panel")
         self.actions["Show Project Panel"].setCheckable(True)
@@ -654,7 +654,10 @@ class CC3DProject(QObject):
             from ParameterScanUtils import ParameterScanUtils as PSU
             psu=PSU()
             psu.resetParameterScan(pdh.cc3dSimulationData.parameterScanResource.path)
-            
+        #    
+            # self.__ui.deactivateChangeSensing=True
+            self.__ui.checkIfDocumentsWereModified()
+            # self.__ui.deactivateChangeSensing=False
         
     def __addParameterScan(self):
 
