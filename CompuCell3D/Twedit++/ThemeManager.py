@@ -124,11 +124,11 @@ class ThemeManager(object):
                     
         
     def npStrToQColor(self,_str):
-        print '_str=',_str
+        # # # print '_str=',_str
         r=int(_str[0:2],16)
         g=int(_str[2:4],16)
         b=int(_str[4:6],16)
-        print 'r,g,b=',(r,g,b)
+        # # # print 'r,g,b=',(r,g,b)
         # sys.exit()
         try:
             return QColor(int(_str[0:2],16),int(_str[2:4],16),int(_str[4:6],16))
@@ -138,7 +138,7 @@ class ThemeManager(object):
         
         
     def  npStrToSciColor(self,_str):   
-        print '_str=',_str
+        # # # print '_str=',_str
         # val = (int(_str[4:6],16)<<16)+(int(_str[2:4],16)<<8)+(int(_str[0:2],16))
         # val = int(_str[0:2],16)<<16+int(_str[2:4],16)<<8+int(_str[4:6],16)
         
@@ -148,50 +148,21 @@ class ThemeManager(object):
             return (int(_str[4:6],16)<<16)+(int(_str[2:4],16)<<8)+(int(_str[0:2],16))
         except ValueError,e:
             return None
-        
-    def applyThemeToEditor(self,_themeName,_editor):
-        try:    
-            theme=self.themeDict[_themeName]
-        except LookupError,e:
-            print type(_themeName)
-            print 'Could not find theme: '+_themeName+ ' in ThemeManager'
-            print 'got these themes=',self.themeDict.keys()
-            return
-        
             
-        lexer=_editor.lexer()        
-        
-        if not lexer:return
-        
-        print 'looking for language ',lexer.language()    
-        lexerLanguage=str(lexer.language())
-        
-        print 'lexerName=',lexerLanguage
-        print 'theme=',theme.name
-        print 'theme.lexerStyleDict.keys()=',theme.lexerStyleDict.keys()
-        lexerStyle=theme.getLexerStyle(lexerLanguage.lower())
-        
-        print 'lexerStyle=',lexerStyle
-        print 'theme.lexerStyleDict=',theme.lexerStyleDict
-        
-        if not lexerStyle: return
-        
-        #applying global styles
-        
-        
-        
+    def applyGlobalStyleItems(self,theme,_editor):
         N2C=self.npStrToQColor
         N2S=self.npStrToSciColor
         
-        
-        
-        
-        defaultStyle=theme.getGlobalStyle('Default Style')
+        defaultStyle=theme.getGlobalStyle('Global override')
         if defaultStyle:
-            lexer.setPaper(N2C(defaultStyle.bgColor))
-            # _editor.setCaretForegroundColor(N2C(caretStyle.fgColor))            
-        
-        
+            _editor.setPaper(N2C(defaultStyle.bgColor))
+            # for editor with lexers we set paper color for lexer as well otherwise page might have gaps in coloring
+            lexer=_editor.lexer()                       
+            if lexer:
+                lexer.setPaper(N2C(defaultStyle.bgColor))
+                
+            _editor.SendScintilla(QsciScintilla.SCI_STYLESETFORE,defaultStyle.styleID,N2S(defaultStyle.fgColor))             
+            _editor.SendScintilla(QsciScintilla.SCI_STYLESETBACK,defaultStyle.styleID,N2S(defaultStyle.bgColor)) 
         
         caretStyle=theme.getGlobalStyle('Caret colour')
 
@@ -225,42 +196,50 @@ class ThemeManager(object):
             _editor.SendScintilla(QsciScintilla.SCI_STYLESETBACK,lineNumMargStyle.styleID,N2S(lineNumMargStyle.bgColor)) 
             # _editor.SendScintilla(QsciScintilla.SCI_SETMARGINTYPEN,1,QsciScintilla.SC_MARGIN_BACK)           
         # _editor.SendScintilla(QsciScintilla.SCI_SETMARGINTYPEN,0,QsciScintilla.SC_MARGIN_FORE)           
+    
         
+    def applyThemeToEditor(self,_themeName,_editor):
+        N2C=self.npStrToQColor
+        N2S=self.npStrToSciColor
+    
+        try:    
+            theme=self.themeDict[_themeName]
+        except LookupError,e:
+            print type(_themeName)
+            print 'Could not find theme: '+_themeName+ ' in ThemeManager'
+            print 'got these themes=',self.themeDict.keys()
+            return
         
+            
+        lexer=_editor.lexer()        
         
-        # N2S('FF0000')
+        if not lexer:
+            print 'APPLYING GLOBAL STYLE ITEMS'
+            self.applyGlobalStyleItems(theme,_editor)
+            return
+
+        
+        # # # print 'looking for language ',lexer.language()    
+        lexerLanguage=str(lexer.language())
+        
+        # # # print 'lexerName=',lexerLanguage
+        # # # print 'theme=',theme.name
+        # # # print 'theme.lexerStyleDict.keys()=',theme.lexerStyleDict.keys()
+        lexerStyle=theme.getLexerStyle(lexerLanguage.lower())
+        
+        # # # print 'lexerStyle=',lexerStyle
+        # # # print 'theme.lexerStyleDict=',theme.lexerStyleDict
+        
+        if not lexerStyle:return
+        
+        #applying global styles
+        
+        self.applyGlobalStyleItems(theme,_editor)
+        
         
         for wordStyle in lexerStyle.wordStyles:
             _editor.SendScintilla(QsciScintilla.SCI_STYLESETFORE,wordStyle.styleID,N2S(wordStyle.fgColor))    
             _editor.SendScintilla(QsciScintilla.SCI_STYLESETBACK,wordStyle.styleID,N2S(wordStyle.bgColor))    
-            # # # if wordStyle.styleID==1:
-                # # # # _editor.SendScintilla(QsciScintilla.SCI_STYLESETFORE,wordStyle.styleID,int('FF000',16))       
-                # # # _editor.SendScintilla(QsciScintilla.SCI_STYLESETFORE,wordStyle.styleID,N2S('FF0000'))       
-            # # # else:
-            
-                # # # _editor.SendScintilla(QsciScintilla.SCI_STYLESETFORE,wordStyle.styleID,int(wordStyle.fgColor,16))       
-            # _editor.SendScintilla(QsciScintilla.SCI_STYLESETBACK,wordStyle.styleID,int(wordStyle.bgColor,16)) 
 
-            # if wordStyle.styleID==0:
-                # # lexer.setDefaultPaper(N2C(wordStyle.bgColor))
-                # lexer.setPaper(N2C(wordStyle.bgColor))
-                # # _editor.SendScintilla(QsciScintilla.SCI_SETWHITESPACEBACK,True,int(wordStyle.bgColor,16))       
-                # # _editor.SendScintilla(QsciScintilla.SCI_SETWHITESPACEFORE,True,int(wordStyle.bgColor,16))     
-                # # SCI_SETWHITESPACEBACK(bool useWhitespaceBackColour, int colour)
-                # # _editor.setPaper(N2C(wordStyle.bgColor))
-            # # elif wordStyle.styleID==1:    
-            # else:    
-                # _editor.SendScintilla(QsciScintilla.SCI_STYLESETFORE,wordStyle.styleID,int(wordStyle.fgColor,16))       
-                # _editor.SendScintilla(QsciScintilla.SCI_STYLESETBACK,wordStyle.styleID,int(wordStyle.bgColor,16)) 
-                
-            
-        
-        # sys.exit()
-        
-
-            
-        # _editor.setFont(self.baseFont)              
-        # # SCI_STYLESETFORE(int styleNumber, int colour)
-        # _editor.SendScintilla(QsciScintilla.SCI_STYLESETFORE,1,255)        
         
 

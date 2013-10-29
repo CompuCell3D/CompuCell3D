@@ -116,8 +116,10 @@ class FindAndReplaceHistory:
     def newSearchParameters(self,_text,_re,_cs,_wo,_wrap,_inSelection):
         flag=False
         if self.textToFind!=_text:
-            self.textToFind = _text        
+            self.textToFind = _text
+            # # # if str(self.textToFind).strip()!='':            
             self.findHistory.prepend(self.textToFind)
+                
             self.findHistory.removeDuplicates()
             if self.findHistory.count()>=self.historyLength:
                 self.findHistory.removeAt(self.findHistory.count() - 1)
@@ -147,6 +149,7 @@ class FindAndReplaceHistory:
         flag=False
         if self.textToFindIF!=_text:
             self.textToFindIF = _text        
+            # # # if str(self.textToFindIF).strip()!='':
             self.findHistory.prepend(self.textToFindIF)
             self.findHistory.removeDuplicates()
             if self.findHistory.count()>=self.historyLength:
@@ -156,9 +159,16 @@ class FindAndReplaceHistory:
             flag=True    
             
         if self.filtersIF!=_filters:
-            self.filtersIF = _filters        
-            self.filtersHistoryIF.prepend(self.filtersIF)
+            self.filtersIF = _filters
+            if str(self.filtersIF).strip()!='':
+                self.filtersHistoryIF.prepend(self.filtersIF)
+            print 'self.filtersHistoryIF=',len(self.filtersHistoryIF)
+            
             self.filtersHistoryIF.removeDuplicates()
+            print 'REMOVING DUPLICATES'
+            print 'self.filtersHistoryIF=',len(self.filtersHistoryIF)
+            for obj in self.filtersHistoryIF:
+                print 'filter=',obj
             if self.filtersHistoryIF.count()>=self.historyLength:
                 self.filtersHistoryIF.removeAt(self.filtersHistoryIF.count() - 1)
                 # self.filtersHistoryIF.removeLast()
@@ -167,8 +177,9 @@ class FindAndReplaceHistory:
             
             # dbgMsg(self.findHistory)
         if self.directoryIF!=_directory:
-            self.directoryIF = _directory        
-            self.directoryHistoryIF.prepend(self.directoryIF)
+            self.directoryIF = _directory    
+            if str(self.directoryIF).strip()!='':    
+                self.directoryHistoryIF.prepend(self.directoryIF)
             self.directoryHistoryIF.removeDuplicates()
             if self.directoryHistoryIF.count()>=self.historyLength:
                 self.directoryHistoryIF.removeAt(self.directoryHistoryIF.count() - 1)
@@ -186,7 +197,7 @@ class FindAndReplaceHistory:
         # pd("self.replaceText=",self.replaceText," _replaceText=",_replaceText)
         if self.replaceText!=_replaceText:
             self.replaceText=_replaceText
-            
+            # # # if str(self.replaceText).strip()!='':
             self.replaceHistory.prepend(self.replaceText)
             self.replaceHistory.removeDuplicates()
             if self.replaceHistory.count()>=self.historyLength:
@@ -203,7 +214,7 @@ class FindAndReplaceHistory:
         
         if self.replaceTextIF!=_replaceText:
             self.replaceTextIF=_replaceText
-            
+            # # # if str(self.replaceTextIF).strip()!='':
             self.replaceHistory.prepend(self.replaceTextIF)
             self.replaceHistory.removeDuplicates()
             if self.replaceHistory.count()>=self.historyLength:
@@ -525,11 +536,29 @@ class FindAndReplaceDlg(QDialog,ui_findinfilesdlg.Ui_FindInFiles):
         self.replaceComboBoxIF.addItems(_frh.replaceHistory)        
         
     def initializeAllSearchLists(self,_frh):        
+        
         self.initializeSearchLists(_frh)
         self.directoryComboBoxIF.clear()
         self.filtersComboBoxIF.clear()
         self.directoryComboBoxIF.addItems(_frh.directoryHistoryIF)
-        self.filtersComboBoxIF.addItems(_frh.filtersHistoryIF)
+        
+        # print len(_frh.filtersHistoryIF)
+        # print 
+        # for strObj in _frh.filtersHistoryIF:
+            # strObjPy=str(strObj)
+            # strObjPy.strip()
+            # if strObjPy!='':
+                # self.filtersComboBoxIF.addItem(strObjPy)
+            # print 'str=',strObj
+        self.filtersComboBoxIF.addItems(_frh.filtersHistoryIF)            
+        
+        # filtersTextToDisplayFirst=_frh.filtersHistoryIF.first()
+        # print '_frh.filtersHistoryIF.first()=',_frh.filtersHistoryIF.first()
+        
+        # self.filtersLineEditIF.setText(filtersTextToDisplayFirst)
+        # if filtersTextToDisplayFirst!='':            
+            # self.filtersComboBoxIF.addItem(filtersTextToDisplayFirst)
+        
         
     def findLineEditProcess(self,_text):
         dbgMsg("clicked Find Line Edit")
@@ -623,11 +652,11 @@ class FindAndReplaceDlg(QDialog,ui_findinfilesdlg.Ui_FindInFiles):
         
     @pyqtSignature("")
     def on_findAllButtonIF_clicked(self):       
-        self.searchingSignalIF.emit(str(self.findComboBoxIF.lineEdit().text()),str(self.filtersComboBoxIF.lineEdit().text()),str(self.directoryComboBoxIF.lineEdit().text()))
+        self.searchingSignalIF.emit(str(self.findComboBoxIF.lineEdit().text()),str(self.filtersComboBoxIF.lineEdit().text()).strip(),str(self.directoryComboBoxIF.lineEdit().text()).strip())
         
     @pyqtSignature("")
     def on_replaceButtonIF_clicked(self):        
-        self.replacingSignalIF.emit(str(self.findComboBoxIF.lineEdit().text()),str(self.replaceComboBoxIF.lineEdit().text()),str(self.filtersComboBoxIF.lineEdit().text()),str(self.directoryComboBoxIF.lineEdit().text()))
+        self.replacingSignalIF.emit(str(self.findComboBoxIF.lineEdit().text()),str(self.replaceComboBoxIF.lineEdit().text()),str(self.filtersComboBoxIF.lineEdit().text()).strip(),str(self.directoryComboBoxIF.lineEdit().text()).strip())
         
         
 # class FindDock

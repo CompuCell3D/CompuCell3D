@@ -16,6 +16,7 @@ class QsciScintillaCustom(QsciScintilla):
         self.CtrlKeyEquivalent=Qt.Key_Control
         self.scintillaDefinedLetterShortcuts=[ord('D'),ord('L'),ord('T'),ord('U'),ord('/')]
         self.customContextMenu=None
+        self.linesChanged.connect(self.linesChangedHandler)
         if sys.platform.startswith("darwin"):        
             self.CtrlKeyEquivalent=Qt.Key_Alt
             
@@ -104,4 +105,19 @@ class QsciScintillaCustom(QsciScintilla):
         # print "self.tabWidget=",self.tabWidget
         
         # # swap self.editorWindow.editTab with elf.editorWindow.editTabExtra
+        
+    def linesChangedHandler(self):
+        ''' adjusting width of the line number margin
+        '''
+        # print '__linesChangedHandler self.marginWidth(0)=',self.marginWidth(0)
+        if self.marginLineNumbers(0):
+            # self.setMarginLineNumbers(0, _flag)
+            numberOfLines=self.lines()
+            
+            from math import log        
+            
+            numberOfDigits= int(log(numberOfLines,10))+2 if numberOfLines>0 else 2
+            self.setMarginWidth(0,QString('0'*numberOfDigits))     
+                    
+    
         

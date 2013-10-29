@@ -993,19 +993,23 @@ class EditorWindow(QMainWindow):
         
         findHistoryList=self.configuration.setting("FRFindHistory")
         for i in range(findHistoryList.count()):
-            _frh.findHistory.append(findHistoryList[i])
+            if str(findHistoryList[i]).strip()!='':        # we do not wantany empyty strings here
+                _frh.findHistory.append(findHistoryList[i])
             
         replaceHistoryList=self.configuration.setting("FRReplaceHistory")            
         for i in range(replaceHistoryList.count()):
-            _frh.replaceHistory.append(replaceHistoryList[i])
+            if str(replaceHistoryList[i]).strip()!='':# we do not wantany empyty strings here
+                _frh.replaceHistory.append(replaceHistoryList[i])
             
         filtersHistoryList=self.configuration.setting("FRFiltersHistory")                        
         for i in range(filtersHistoryList.count()):
-            _frh.filtersHistoryIF.append(filtersHistoryList[i])
+            if str(filtersHistoryList[i]).strip()!='':# we do not wantany empyty strings here
+                _frh.filtersHistoryIF.append(filtersHistoryList[i])
             
         directoryHistoryList=self.configuration.setting("FRDirectoryHistory")                        
         for i in range(directoryHistoryList.count()):
-            _frh.directoryHistoryIF.append(directoryHistoryList[i])
+            if str(directoryHistoryList[i]).strip()!='':# we do not wantany empyty strings here
+                _frh.directoryHistoryIF.append(directoryHistoryList[i])
         
         _frh.syntaxIndex=self.configuration.setting("FRSyntaxIndex")        
         _frh.inSelection=self.configuration.setting("FRInSelection")
@@ -1117,8 +1121,10 @@ class EditorWindow(QMainWindow):
         """
         #lines are displayed on margin 0
         lineNumbersFlag=self.configuration.setting("DisplayLineNumbers")
-        _editor.setMarginLineNumbers(0, lineNumbersFlag)
-        _editor.setMarginWidth(0,QString('0'*8*int(lineNumbersFlag)))     
+        self.adjustLineNumbers(_editor,lineNumbersFlag)
+        
+        # # # _editor.setMarginLineNumbers(0, lineNumbersFlag)
+        # # # _editor.setMarginWidth(0,QString('0'*8*int(lineNumbersFlag)))     
         
         
         
@@ -1290,6 +1296,9 @@ class EditorWindow(QMainWindow):
         """
         editor=self.getActiveEditor()
         editor.cut()
+        # it is better to keep extended margin after removing text and wait till user saves file to adjust the width
+        # if self.configuration.setting('DisplayLineNumbers') and editor.marginWidth(0):
+            # self.adjustLineNumbers(editor,True)
     
         
     def paste(self):
@@ -1299,6 +1308,8 @@ class EditorWindow(QMainWindow):
 
         editor=self.getActiveEditor()
         editor.paste()
+        # if self.configuration.setting('DisplayLineNumbers') and editor.marginWidth(0):
+            # self.adjustLineNumbers(editor,True)
         
     def increaseIndent(self):
         """
@@ -1499,7 +1510,12 @@ class EditorWindow(QMainWindow):
             currentDocument (_mode=ALL_IN_CURRENT_DOC), all open files (_mode=ALL_IN_ALL_OPEN_DOCS) or all files (default mode)
             specified by _filters,_directory
         """
-    
+        import os
+        if not os.path.exists(_directory) or not os.path.isdir(_directory):
+            ret = QtGui.QMessageBox.warning(self, "Directory Error",
+                'Cannot search files in directory '+_directory+' because it does not exist' )
+            return
+            
         self.findDialogForm.setEnabled(False)
         dbgMsg("findInFiles")
         # ALL_IN_FILES=0
@@ -2474,12 +2490,20 @@ class EditorWindow(QMainWindow):
         """
             fcn handling DisplayLineNumbers configuration change
         """
-    
+        
         for panel in self.panels:
             for i in range(panel.count()):            
-                panel.widget(i).setMarginLineNumbers(0, _flag)
-                panel.widget(i).setMarginWidth(0,QString('0'*8*int(_flag)))     
+                editor=panel.widget(i)                
+                self.adjustLineNumbers(editor,_flag)
+ 
                 
+    def adjustLineNumbers(self,_editor,_flag):        
+        # print 'setting line margin ',_flag
+        _editor.setMarginLineNumbers(0, _flag)
+        _editor.linesChangedHandler()
+    
+        
+        
     def configureEnableAutocompletion(self,_flag):
         """
             fcn handling EnableAutocompletion configuration change
@@ -2551,6 +2575,9 @@ class EditorWindow(QMainWindow):
         activePanel.widget(editorIndex).modificationChanged.connect(self.textChangedHandlers[textEditLocal].handleModificationChanged)
         activePanel.widget(editorIndex).textChanged.connect(self.textChangedHandlers[textEditLocal].handleChangedText)
         activePanel.widget(editorIndex).cursorPositionChanged.connect(self.handleCursorPositionChanged)
+        
+        #applygin theme to new document        
+        self.themeManager.applyThemeToEditor(self.currentThemeName,activePanel.widget(editorIndex))                    
         
     def __openRecentDirectory(self):
         '''
@@ -2842,9 +2869,11 @@ class EditorWindow(QMainWindow):
         """
             slot - shows or hides line numbers (_depending on _flag) in the active editor  - updates View Menu
         """
-        editor=self.getActiveEditor()
-        editor.setMarginLineNumbers(0, _flag)
-        editor.setMarginWidth(0,QString('0'*8*int(_flag)))     
+        # print 'showLineNumbers ',_flag
+        editor=self.getActiveEditor()        
+        self.adjustLineNumbers(editor,_flag)
+        
+        # # # editor.setMarginWidth(0,QString('0'*8*int(_flag)))     
     
     def zoomIn(self):
         """
@@ -2889,6 +2918,7 @@ class EditorWindow(QMainWindow):
             slot - implements save As... functionality 
         """
         # self.deactivateChangeSensing=True
+        
         currentFilePath=None
         currentExtension=""
         try:
@@ -2897,6 +2927,12 @@ class EditorWindow(QMainWindow):
             # print "currentFilePath=",currentFilePath    
         except KeyError:
             pass
+            
+
+        # #adjusting line number margin width
+        # if self.configuration.setting('DisplayLineNumbers') and editor.marginWidth(0):
+            # self.adjustLineNumbers(editor,True)
+            
             
         if currentFilePath:
             fileSplit=os.path.splitext(str(currentFilePath))
@@ -3776,7 +3812,7 @@ class EditorWindow(QMainWindow):
             else:
                 self.showTabGuidelinesAct.setChecked(False)            
                 
-            if editor.marginWidth(0): # checking the width of margin 0
+            if editor.marginLineNumbers(0): # checking if margin 0 (default for line numbers) is enabled
                 self.showLineNumbersAct.setChecked(True)            
             else:
                 self.showLineNumbersAct.setChecked(False)            
@@ -4269,6 +4305,10 @@ class EditorWindow(QMainWindow):
             textEditLocal=_editor
         else:
             textEditLocal=self.getActiveEditor()            
+            
+        # if self.configuration.setting('DisplayLineNumbers') and textEditLocal.marginWidth(0):
+            # self.adjustLineNumbers(textEditLocal,True)
+            
             
         activeTab=textEditLocal.panel
         
