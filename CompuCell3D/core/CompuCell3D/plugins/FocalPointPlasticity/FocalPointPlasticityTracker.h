@@ -48,8 +48,8 @@ namespace CompuCell3D {
          ///have to define < operator if using a class in the set and no < operator is defined for this class
          bool operator<(const FocalPointPlasticityTrackerData & _rhs) const{
 			// notice that anchor links will be listed first and the last of such links will have highest anchorId 
-			 return neighborAddress < _rhs.neighborAddress || (!(neighborAddress < _rhs.neighborAddress) && anchorId<_rhs.anchorId);
-
+			 //return neighborAddress < _rhs.neighborAddress || (!(neighborAddress < _rhs.neighborAddress) && anchorId<_rhs.anchorId); //old and wrong implementation of comparison operator might give side effects on windows - it can crash CC3D or in some cases windows OS entirely
+             return neighborAddress < _rhs.neighborAddress || (!(_rhs.neighborAddress <neighborAddress ) && anchorId<_rhs.anchorId);
 
 
 			// return (neighborAddress && _rhs.neighborAddress) ? neighborAddress < _rhs.neighborAddress :
