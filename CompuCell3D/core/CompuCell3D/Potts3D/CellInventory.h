@@ -73,7 +73,8 @@ class /*DECLSPECIFIER*/ CellIdentifier{
          bool operator<(const CellIdentifier & _rhs) const{
             //return clusterId < _rhs.clusterId || (!(_rhs.clusterId < clusterId ) && cellId < _rhs.cellId);
 			// this ordering (first cell id, then cluster id) is necessary to get attemptFetchingCellById function working properly
-			return cellId < _rhs.cellId || (!(cellId < _rhs.cellId) && clusterId < _rhs.clusterId );
+			//return cellId < _rhs.cellId || (!(cellId < _rhs.cellId) && clusterId < _rhs.clusterId );//old and wrong implementation of comparison operator might give side effects on windows - it can crash CC3D or in some cases windows OS entirely
+			return cellId < _rhs.cellId || (!(_rhs.cellId < cellId) && clusterId < _rhs.clusterId );
 
          }
 
