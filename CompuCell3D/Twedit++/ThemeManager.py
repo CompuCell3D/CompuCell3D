@@ -23,7 +23,7 @@ class Theme(object):
         self.themeFileName=''
         self.lexerStyleDict={} # {llexerName:lexerStyle} e.g.  {'python':pythonlexerStyle}
         self.globalStyle={} #{name: style}
-        
+            
     def addGlobalStyle(self,_style):
         self.globalStyle[_style.name]=_style
 
@@ -189,14 +189,62 @@ class ThemeManager(object):
             _editor.setSelectionBackgroundColor(N2C(selectionStyle.bgColor))
         
         
-        #margin color
-        lineNumMargStyle=theme.getGlobalStyle('Line number margin')
-        if lineNumMargStyle:        
-            _editor.SendScintilla(QsciScintilla.SCI_STYLESETFORE,lineNumMargStyle.styleID,N2S(lineNumMargStyle.fgColor)) 
-            _editor.SendScintilla(QsciScintilla.SCI_STYLESETBACK,lineNumMargStyle.styleID,N2S(lineNumMargStyle.bgColor)) 
-            # _editor.SendScintilla(QsciScintilla.SCI_SETMARGINTYPEN,1,QsciScintilla.SC_MARGIN_BACK)           
-        # _editor.SendScintilla(QsciScintilla.SCI_SETMARGINTYPEN,0,QsciScintilla.SC_MARGIN_FORE)           
+        for style in theme.globalStyle.values():
+            if style.styleID>0:
+                _editor.SendScintilla(QsciScintilla.SCI_STYLESETFORE,style.styleID,N2S(style.fgColor)) 
+                _editor.SendScintilla(QsciScintilla.SCI_STYLESETBACK,style.styleID,N2S(style.bgColor)) 
+                _editor.SendScintilla(QsciScintilla.SCI_STYLESETBOLD,style.styleID,style.fontStyle) 
+
+        #fold style 
+        foldStyle=theme.getGlobalStyle('Fold')
+        if foldStyle:                    
+            foldMarkerEnums=[QsciScintilla. SC_MARKNUM_FOLDEREND , QsciScintilla. SC_MARKNUM_FOLDEROPENMID , QsciScintilla.SC_MARKNUM_FOLDERMIDTAIL,\
+            QsciScintilla.SC_MARKNUM_FOLDERTAIL , QsciScintilla.SC_MARKNUM_FOLDERSUB , QsciScintilla.SC_MARKNUM_FOLDER ,  QsciScintilla.SC_MARKNUM_FOLDEROPEN]    
+            # to be consistent with notepad++ we switch bgColor with fgColor to style fold markers    
+            for foldMarker in foldMarkerEnums:                
+                _editor.SendScintilla(QsciScintilla.SCI_MARKERSETFORE, foldMarker , N2S(foldStyle.bgColor)) # notice, marker foreground is styled using bgColor
+                _editor.SendScintilla(QsciScintilla.SCI_MARKERSETBACK,foldMarker , N2S(foldStyle.fgColor)) # notice, marker background is styled using fgColor
     
+            # # # _editor.SendScintilla(QsciScintilla.SCI_MARKERSETFORE,QsciScintilla. SC_MARKNUM_FOLDEROPENMID , N2S(foldStyle.fgColor))
+            # # # _editor.SendScintilla(QsciScintilla.SCI_MARKERSETBACK,QsciScintilla. SC_MARKNUM_FOLDEROPENMID , N2S(foldStyle.bgColor))
+
+
+            
+        # # # #margin color
+        # # # lineNumMargStyle=theme.getGlobalStyle('Line number margin')
+        # # # if lineNumMargStyle:        
+            # # # _editor.SendScintilla(QsciScintilla.SCI_STYLESETFORE,lineNumMargStyle.styleID,N2S(lineNumMargStyle.fgColor)) 
+            # # # _editor.SendScintilla(QsciScintilla.SCI_STYLESETBACK,lineNumMargStyle.styleID,N2S(lineNumMargStyle.bgColor)) 
+            # # # # _editor.SendScintilla(QsciScintilla.SCI_SETMARGINTYPEN,1,QsciScintilla.SC_MARGIN_BACK)           
+        # # # # _editor.SendScintilla(QsciScintilla.SCI_SETMARGINTYPEN,0,QsciScintilla.SC_MARGIN_FORE)           
+        
+        # # # #matching brace color
+        # # # matchingBraceStyle=theme.getGlobalStyle('Brace highlight style')
+        # # # if matchingBraceStyle:        
+            # # # _editor.SendScintilla(QsciScintilla.SCI_STYLESETFORE,matchingBraceStyle.styleID,N2S(matchingBraceStyle.fgColor)) 
+            # # # _editor.SendScintilla(QsciScintilla.SCI_STYLESETBACK,matchingBraceStyle.styleID,N2S(matchingBraceStyle.bgColor)) 
+            # # # _editor.SendScintilla(QsciScintilla.SCI_STYLESETBOLD,matchingBraceStyle.styleID,matchingBraceStyle.fontStyle) 
+
+        # # # #bad brace color
+        # # # badBraceStyle=theme.getGlobalStyle('Bad brace colour')
+        # # # if badBraceStyle:        
+            # # # _editor.SendScintilla(QsciScintilla.SCI_STYLESETFORE,badBraceStyle.styleID,N2S(badBraceStyle.fgColor)) 
+            # # # _editor.SendScintilla(QsciScintilla.SCI_STYLESETBACK,badBraceStyle.styleID,N2S(badBraceStyle.bgColor)) 
+            # # # _editor.SendScintilla(QsciScintilla.SCI_STYLESETBOLD,badBraceStyle.styleID,badBraceStyle.fontStyle) 
+
+
+        # # # #fold style 
+        # # # foldStyle=theme.getGlobalStyle('Fold')
+        # # # if badBraceStyle:        
+            # # # # _editor.SendScintilla(QsciScintilla.SCI_SETFOLDMARGINCOLOUR,1, N2S(foldStyle.bgColor)) 
+            # # # _editor.SendScintilla(QsciScintilla.SCI_SETFOLDMARGINHICOLOUR,1, N2S(foldStyle.bgColor)) 
+            # # # # _editor.SendScintilla(QsciScintilla.SCI_STYLESETBACK,badBraceStyle.styleID,N2S(badBraceStyle.bgColor)) 
+            # # # # _editor.SendScintilla(QsciScintilla.SCI_STYLESETBOLD,badBraceStyle.styleID,badBraceStyle.fontStyle) 
+            
+   # # # # SendMessage hSci, %SCI_StyleSetFore, %Style_BraceLight, %Red    'set brace highlighting color
+   # # # # SendMessage hSci, %SCI_StyleSetBack, %Style_BraceLight, %Yellow 'set brace highlighting color
+   # # # # SendMessage hSci, %SCI_StyleSetFore, %Style_BraceBad, %Green    'set brace bad color
+   # # # # SendMessage hSci, %SCI_StyleSetBack, %Style_BraceBad, %Red     'set brace bad color    
         
     def applyThemeToEditor(self,_themeName,_editor):
         N2C=self.npStrToQColor

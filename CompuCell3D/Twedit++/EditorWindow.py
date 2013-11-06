@@ -1510,11 +1510,14 @@ class EditorWindow(QMainWindow):
             currentDocument (_mode=ALL_IN_CURRENT_DOC), all open files (_mode=ALL_IN_ALL_OPEN_DOCS) or all files (default mode)
             specified by _filters,_directory
         """
+        
         import os
-        if not os.path.exists(_directory) or not os.path.isdir(_directory):
-            ret = QtGui.QMessageBox.warning(self, "Directory Error",
-                'Cannot search files in directory '+_directory+' because it does not exist' )
-            return
+        
+        if _directory.rstrip() !='':
+            if  not os.path.exists(_directory) or not os.path.isdir(_directory):
+                ret = QtGui.QMessageBox.warning(self, "Directory Error",
+                    'Cannot search files in directory '+_directory+' because it does not exist' )
+                return
             
         self.findDialogForm.setEnabled(False)
         dbgMsg("findInFiles")
