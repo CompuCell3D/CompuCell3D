@@ -153,6 +153,7 @@ class ThemeManager(object):
         N2C=self.npStrToQColor
         N2S=self.npStrToSciColor
         
+        
         defaultStyle=theme.getGlobalStyle('Global override')
         if defaultStyle:
             _editor.setPaper(N2C(defaultStyle.bgColor))
@@ -245,7 +246,26 @@ class ThemeManager(object):
    # # # # SendMessage hSci, %SCI_StyleSetBack, %Style_BraceLight, %Yellow 'set brace highlighting color
    # # # # SendMessage hSci, %SCI_StyleSetFore, %Style_BraceBad, %Green    'set brace bad color
    # # # # SendMessage hSci, %SCI_StyleSetBack, %Style_BraceBad, %Red     'set brace bad color    
+   
+    def getStyleFromTheme(self,_styleName,_themeName):    
+        N2C=self.npStrToQColor
+        N2S=self.npStrToSciColor    
+        try:    
+            theme=self.themeDict[_themeName]
+        except LookupError,e:
+            print type(_themeName)
+            print 'Could not find theme: '+_themeName+ ' in ThemeManager'
+            print 'got these themes=',self.themeDict.keys()
+            return None
         
+        style=theme.getGlobalStyle(_styleName)
+        if style:
+            return style
+        else:
+            return None
+   
+    
+    
     def applyThemeToEditor(self,_themeName,_editor):
         N2C=self.npStrToQColor
         N2S=self.npStrToSciColor

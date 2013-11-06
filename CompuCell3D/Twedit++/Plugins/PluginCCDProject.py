@@ -9,6 +9,7 @@
 """
 Module used to link Twedit++ with CompuCell3D.
 """
+# THIS HAS TO BE REVRITTEN USING MVC, otherwise ti is hard to maintain
 
 from PyQt4.QtCore import QObject, SIGNAL, QString
 from PyQt4.QtGui import QMessageBox
@@ -114,9 +115,9 @@ class CC3DProjectTreeWidget(QTreeWidget):
         
         self.projects={}
         self.itemToProject={}
-        
-        
-        
+        self.style=None # np++ style - usually this is Global override style defined in themes xml file
+        self.N2C=None # convenience function reference from theme manager to convert npp color convention to QColor
+        self.itemChanged.connect(self.__restyle)
     def setCC3DProjectPlugin(self,_plugin): 
         """
             Set reference to CC3DProject plugin
@@ -385,8 +386,33 @@ class CC3DProjectTreeWidget(QTreeWidget):
         if pdh.cc3dSimulationData.xmlScript!='':
             _menu.addAction(self.plugin.actions["Convert XML to Python"])
             self.plugin.xmlFileToConvert=str(pdh.cc3dSimulationData.xmlScript)
-                                 
+            
+    def __restyle(self):
+        root_item=self.invisibleRootItem()
+        self.styleChildItems(root_item,self.style)
+                
+    
+    def styleChildItems(self,_item,_style): 
+        if not _style: return
         
+        _item.setForeground(0,QBrush(self.N2C(_style.fgColor)))        
+        for idx in range(_item.childCount()):
+            childItem=_item.child(idx)
+            childItem.setForeground(0,QBrush(self.N2C(_style.fgColor)))
+            self.styleChildItems(childItem,_style)
+            
+    def applyStyleFromTheme(self,_styleName,_themeName):
+        themeManager=self.__ui.themeManager
+        self.style=themeManager.getStyleFromTheme(_styleName = _styleName , _themeName = _themeName)
+        
+        if self.style:
+            self.N2C=themeManager.npStrToQColor
+            pal=self.palette()
+            pal.setBrush( QPalette.Base, QBrush(self.N2C(self.style.bgColor)))
+
+            self.setPalette(pal)
+        
+        self.__restyle()
 
 class CC3DProject(QObject):
     """
@@ -422,7 +448,10 @@ class CC3DProject(QObject):
         # self.parameterScanXMLHandler=None
         # self.parameterScanFile=''
         
-        self.openCC3Dproject('C:/Users/m/CC3DProjects/CellSorting/CellSorting.cc3d')
+        # # # self.openCC3Dproject('C:/Users/m/CC3DProjects/CellSorting/CellSorting.cc3d')
+        # # # # self.treeWidget.applyStyle(self.defaultStyle)
+        self.treeWidget.applyStyleFromTheme(_styleName = 'Default Style' , _themeName = self.__ui.currentThemeName)
+        # # # self.styleItems()
         
     def getUI(self):
         return self.__ui
@@ -555,16 +584,28 @@ class CC3DProject(QObject):
     
     def updateRecentProjectDirectoriesMenu(self):
         self.__ui.updateRecentItemMenu(self,self.recentProjectDirectoriesMenu,self.__openRecentProjectDirectory,self.configuration,"RecentProjectDirectories")
-    
+        
+        
+    def applyStyleFromTheme(self,_styleDict):
+        print '_styleDict=',_styleDict
+        try:
+            styleName=_styleDict['styleName']
+            themeName=_styleDict['themeName']
+            print 'self.treeWidget=',self.treeWidget
+            
+            self.treeWidget.applyStyleFromTheme(_styleName = styleName , _themeName = themeName)
+        except LookupError,e:
+            return
+            
     def __initUI(self):
         self.cc3dProjectDock=self.__createDockWindow("CC3D Project")
         self.textEdit=QTextEdit()
         self.treeWidget=CC3DProjectTreeWidget()
         self.treeWidget.setCC3DProjectPlugin(self)
-
+        
+        
         self.__setupDockWindow(self.cc3dProjectDock,Qt.LeftDockWidgetArea,self.treeWidget,"CC3D Project")
-        # self.connect(self.cc3dProjectDock,    SIGNAL('visibilityChanged(bool)'),  self.__showProjectPanel)
-        return
+        
     
     def __createDockWindow(self, name):
         """

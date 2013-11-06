@@ -2357,8 +2357,12 @@ class EditorWindow(QMainWindow):
                 self.themeManager.applyThemeToEditor(self.currentThemeName,editor)
                 
         # applying theme to FindInFiles widget            
-        self.themeManager.applyThemeToEditor(self.currentThemeName,self.findDisplayWidget)    
-    
+        self.themeManager.applyThemeToEditor(self.currentThemeName,self.findDisplayWidget)
+        
+        #applying 'Global override' style to all plugins
+        #applying 'Default Style' style to all plugins
+        self.pm.runForAllPlugins(_functionName='applyStyleFromTheme',_argumentDict={'styleName':'Default Style','themeName':self.currentThemeName})
+
     def configureBaseFontName(self,_name):
         """
             fcn handling BaseFontName configuration change
