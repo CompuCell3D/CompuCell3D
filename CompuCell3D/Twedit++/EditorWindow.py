@@ -400,6 +400,7 @@ class EditorWindow(QMainWindow):
                 lexer.setFont(self.baseFont)   
                 
             textEditLocal.setFont(self.baseFont)             
+            self.setEditorProperties(textEditLocal)
             
         if not self.panels[0].count():
             self.panels[0].hide()
