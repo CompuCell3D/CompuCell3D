@@ -1093,9 +1093,11 @@ class EditorWindow(QMainWindow):
         _editor.setCaretLineVisible(True)
         _editor.setCaretLineBackgroundColor(QtGui.QColor('#EFEFFB'))        
         # _editor.modificationChanged.connect(self.modificationChangedSlot)
-        
-        # _editor.setEolMode(QsciScintilla.EolWindows) # SETTING EOL TO WINDOWS MESSES THINGS UP AS SAVE FCN (MOST LIKELY)ADS EXTRA CR SIGNS - 
-        # _editor.setEolMode(QsciScintilla.EolUnix) # SETTING EOL TO WINDOWS MESSES THINGS UP AS SAVE FCN (MOST LIKELY)ADS EXTRA CR SIGNS - 
+
+        if sys.platform.startswith('win'):        
+            _editor.setEolMode(QsciScintilla.EolWindows) # SETTING EOL TO WINDOWS MESSES THINGS UP AS SAVE FCN (MOST LIKELY)ADS EXTRA CR SIGNS -
+        else:
+            _editor.setEolMode(QsciScintilla.EolUnix) # SETTING EOL TO WINDOWS MESSES THINGS UP AS SAVE FCN (MOST LIKELY)ADS EXTRA CR SIGNS - 
         # _editor.setEolMode(QsciScintilla.EolMac) # SETTING EOL TO WINDOWS MESSES THINGS UP AS SAVE FCN (MOST LIKELY)ADS EXTRA CR SIGNS - 
         # _editor.setUtf8(True) # using UTF-8 encoding
         
