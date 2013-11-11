@@ -23,19 +23,21 @@ class SBMLSolverHelper(object):
 #         SteppableBasePy.__init__(self,_simulator,_frequency)
 
         try:
-            import RoadRunner
-            import RoadRunnerSetup
+        
+            import roadrunner
+            # # # import RoadRunner
+            # # # import RoadRunnerSetup
             import os
             import sys
             
             
-            self.tempDirPath=''
-            self.compilerSupportPath=''        
-            self.compilerExeFile=''
+            # # # self.tempDirPath=''
+            # # # self.compilerSupportPath=''        
+            # # # self.compilerExeFile=''
             
-            self.tempDirPath=RoadRunnerSetup.tempDirPath
-            self.compilerSupportPath=RoadRunnerSetup.compilerSupportPath            
-            self.compilerExeFile=RoadRunnerSetup.compilerExeFile 
+            # # # self.tempDirPath=RoadRunnerSetup.tempDirPath
+            # # # self.compilerSupportPath=RoadRunnerSetup.compilerSupportPath            
+            # # # self.compilerExeFile=RoadRunnerSetup.compilerExeFile 
             
         except ImportError,e:
             #replacing SBMLSolver API with wrror messages 
@@ -62,7 +64,7 @@ class SBMLSolverHelper(object):
         if coreModelName=='':
             coreModelName,ext=os.path.splitext(os.path.basename(_modelFile))
             
-
+        
         modelPathNormalized=self.normalizePath(_modelFile)
         
         dict_attrib = CompuCell.getPyAttrib(_cell)
@@ -72,32 +74,42 @@ class SBMLSolverHelper(object):
             sbmlDict=dict_attrib['SBMLSolver']
         else:
             dict_attrib['SBMLSolver']=sbmlDict    
-            
-        from RoadRunnerPy import RoadRunnerPy        
-        rr=RoadRunnerPy(modelPathNormalized,self.tempDirPath,self.compilerSupportPath,self.compilerExeFile)
         
+        
+        # # # from RoadRunnerPy import RoadRunnerPy        
+        # # # rr=RoadRunnerPy(modelPathNormalized,self.tempDirPath,self.compilerSupportPath,self.compilerExeFile)
         #setting stepSize
-        rr.stepSize=_stepSize            
+        # # # rr.stepSize=_stepSize                    
+        
+        from RoadRunnerPy import RoadRunnerPy         
+        rr=RoadRunnerPy(_sbmlFullPath=modelPathNormalized)
+        
+        print '\n\n\n HERE BEFORE LOAD'
+        rr.load(modelPathNormalized)
+        print '\n\n\n HERE AFTER LOAD'
+        
         
         sbmlDict[coreModelName]=rr
         
 
 
-        global sbmlModelCompilations
-        if not sbmlModelCompilations.has_key(modelPathNormalized):                
-            compiled=rr.loadSBMLFromFile(modelPathNormalized, True)
-            if not compiled:
-                raise RuntimeError('COULD NOT COMPILE SBML MODEL '+modelPathNormalized)
-            else:
-                sbmlModelCompilations[modelPathNormalized]=''
+        # # # global sbmlModelCompilations
+        # # # if not sbmlModelCompilations.has_key(modelPathNormalized):                
+            # # # compiled=rr.loadSBMLFromFile(modelPathNormalized, True)
+            # # # if not compiled:
+                # # # raise RuntimeError('COULD NOT COMPILE SBML MODEL '+modelPathNormalized)
+            # # # else:
+                # # # sbmlModelCompilations[modelPathNormalized]=''
 
-        else:
-            rr.loadSBMLFromFile(modelPathNormalized, False)
+        # # # else:
+            # # # rr.loadSBMLFromFile(modelPathNormalized, False)
             
         #setting initial conditions - this has to be done after loadingSBML
+        print 'before looping thorough initial values'
         for name,value in _initialConditions.iteritems():
-            rr.setValue(name,value)                
-    
+            rr.model[name]=value
+            # rr.setValue(name,value)                
+        print 'GOT HERE'
     def addSBMLToCellTypes(self,_modelFile='',_modelName='',_types=[],_stepSize=1.0,_initialConditions={}):        
         coreModelName=_modelName
         if coreModelName=='':
@@ -138,30 +150,39 @@ class SBMLSolverHelper(object):
                 modelPathNormalized=os.path.abspath(os.path.join(self.simulator.getBasePath(),modelPathNormalized))
         
         
-        from RoadRunnerPy import RoadRunnerPy            
-        rr=RoadRunnerPy(modelPathNormalized,self.tempDirPath,self.compilerSupportPath,self.compilerExeFile)
+        # # # from RoadRunnerPy import RoadRunnerPy            
+        # # # rr=RoadRunnerPy(modelPathNormalized,self.tempDirPath,self.compilerSupportPath,self.compilerExeFile)
+        # # # #setting stepSize
+        # # # rr.stepSize=_stepSize
+
+        from RoadRunnerPy import RoadRunnerPy         
+        rr=RoadRunnerPy(_sbmlFullPath=modelPathNormalized)
+        rr.load(modelPathNormalized)
         #setting stepSize
         rr.stepSize=_stepSize
+
+
         
-        global sbmlModelCompilations
-        global freeFloatingSBMLSimulator
-        if not sbmlModelCompilations.has_key(modelPathNormalized):                        
+        # # # global sbmlModelCompilations
+        # # # global freeFloatingSBMLSimulator
+        # # # if not sbmlModelCompilations.has_key(modelPathNormalized):                        
              
-            compiled=rr.loadSBMLFromFile(modelPathNormalized, True)
-            if not compiled:
-                raise RuntimeError('COULD NOT COMPILE SBML MODEL '+modelFile)
-            else:
-                sbmlModelCompilations[modelPathNormalized]=''
+            # # # compiled=rr.loadSBMLFromFile(modelPathNormalized, True)
+            # # # if not compiled:
+                # # # raise RuntimeError('COULD NOT COMPILE SBML MODEL '+modelFile)
+            # # # else:
+                # # # sbmlModelCompilations[modelPathNormalized]=''
 
-        else:
-            rr.loadSBMLFromFile(modelPathNormalized, False)
+        # # # else:
+            # # # rr.loadSBMLFromFile(modelPathNormalized, False)
             
-
+        global freeFloatingSBMLSimulator
         freeFloatingSBMLSimulator[_modelName]=rr        
         
         #setting initial conditions - this has to be done after loadingSBML
         for name,value in _initialConditions.iteritems():
-            rr.setValue(name,value)
+            rr.model[name]=value
+            # # # rr.setValue(name,value)
 
     def deleteSBMLFromCellIds(self,_modelName,_ids=[]):
         import CompuCell
@@ -292,14 +313,23 @@ class SBMLSolverHelper(object):
             else:
                 raise RuntimeError("Could not find model "+_modelName+' in the list of free floating SBML models')                 
         else:
-            return sbmlSimulator.getAdjustableSBMLParameters()
+        
+            # # # return sbmlSimulator.model
+            state={}
+            for name in sbmlSimulator.model.getFloatingSpeciesIds()+sbmlSimulator.model.getBoundarySpeciesIds() + sbmlSimulator.model.getGlobalParameterIds():
+                state[name]=sbmlSimulator.model[name]
+            return state    
+            # # # return sbmlSimulator.getAdjustableSBMLParameters()
         
     def setSBMLState(self,_modelName,_cell=None,_state={}):
         sbmlSimulator=self.getSBMLSimulator(_modelName,_cell)
         if not sbmlSimulator:
             return False
         else:
-            sbmlSimulator.setAdjustableSBMLParameters(_state)
+            
+            # # # sbmlSimulator.setAdjustableSBMLParameters(_state)
+            for name,value in _state.iteritems():
+                sbmlSimulator.model[name]=value            
             return True
             
     def getSBMLValue(self,_modelName,_valueName='',_cell=None):
@@ -310,14 +340,17 @@ class SBMLSolverHelper(object):
             else:
                 raise RuntimeError("Could not find model "+_modelName+' in the list of free floating SBML models')     
         else:
-            return sbmlSimulator.getValue(_valueName)       
+            return sbmlSimulator[_valueName]
+            # # # return sbmlSimulator.getValue(_valueName)       
 
     def setSBMLValue(self,_modelName,_valueName='',_value=0.0,_cell=None):
         sbmlSimulator=self.getSBMLSimulator(_modelName,_cell)
         if not sbmlSimulator:
             return False
         else:
-            return sbmlSimulator.setValue(_valueName,_value)
+            sbmlSimulator.model[_valueName]=_value
+            return True
+            # # # return sbmlSimulator.setValue(_valueName,_value)
             
 
     def copySBMLs(self,_fromCell,_toCell,_sbmlNames=[]):
@@ -350,20 +383,24 @@ class SBMLSolverHelper(object):
             sbmlDictTo=dict_attrib_to['SBMLSolver']
             
         for sbmlName in sbmlNamesToCopy:
-            try:
+            # # # try:
 #                 getSBMLState(self,_modelName,_cell=None)
-                stateFrom=self.getSBMLState(_modelName=sbmlName,_cell=_fromCell)
+            stateFrom=self.getSBMLState(_modelName=sbmlName,_cell=_fromCell)
+            
+            rrFrom=sbmlDictFrom[sbmlName]
+            sbmlFullPathFrom=rrFrom.sbmlFullPath
+            print 'sbmlFullPathFrom=',sbmlFullPathFrom
+            self.addSBMLToCell(_modelFile=sbmlFullPathFrom,_modelName=sbmlName,_cell=_toCell,_stepSize=rrFrom.stepSize,_initialConditions=stateFrom,_coreModelName=sbmlName,_modelPathNormalized=sbmlFullPathFrom)
                 
-                rrFrom=sbmlDictFrom[sbmlName]
-                sbmlFullPathFrom=rrFrom.sbmlFullPath
-                self.addSBMLToCell(_modelFile=sbmlFullPathFrom,_modelName=sbmlName,_cell=_toCell,_stepSize=rrFrom.stepSize,_initialConditions=stateFrom,_coreModelName=sbmlName,_modelPathNormalized=sbmlFullPathFrom)
-                
-            except RuntimeError,e:
-                print 'Ccould Not Get State for SBML simulator '+sbmlName+' in sbmlDictFrom: ',+__file__
-                continue    
-            except LookupError,e:    
-                print 'Could Not Get RoadRunner '+sbmlName+' in sbmlDictFrom: ',+__file__
-                continue
+            # # # except RuntimeError,e:
+                # # # print 'sbmlName=',sbmlName
+                # # # print '__file__=',__file__
+                # # # print 'Could Not Get State for SBML simulator '+sbmlName+' in sbmlDictFrom: '+__file__  
+                # # # sys.exit()    
+                # # # continue    
+            # # # except LookupError,e:    
+                # # # print 'Could Not Get RoadRunner '+sbmlName+' in sbmlDictFrom: ',+__file__
+                # # # continue
                 
         
     def normalizePath(self,_path):

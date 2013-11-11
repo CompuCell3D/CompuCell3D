@@ -95,6 +95,9 @@ installer_path=os.path.dirname(INSTALLER_NAME)
 
 inFile=open('CompuCell3D.nsi.tpl','r')
 nsiFilePath=os.path.join(installer_path,'CompuCell3D_installer.nsi')
+nsiFileDir=os.path.dirname(nsiFilePath)
+if not os.path.exists(nsiFileDir):
+    os.makedirs(nsiFileDir)
 nsiFile=open(nsiFilePath,'w')
 for line in inFile.readlines():
     line=line.rstrip()
