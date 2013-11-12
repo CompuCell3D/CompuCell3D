@@ -1,7 +1,7 @@
-global sbmlModelCompilations
-global freeFloatingSBMLSimulator
-sbmlModelCompilations={} #{sbml file name - full path:''}
-freeFloatingSBMLSimulator={} # {name:RoadRunnerPy}
+# # # global sbmlModelCompilations
+# # # global freeFloatingSBMLSimulator
+# # # sbmlModelCompilations={} #{sbml file name - full path:''}
+# # # freeFloatingSBMLSimulator={} # {name:RoadRunnerPy}
 
 
 
@@ -66,12 +66,15 @@ class SBMLSolverHelper(object):
         
                 
         from RoadRunnerPy import RoadRunnerPy         
-        rr=RoadRunnerPy(_sbmlFullPath=modelPathNormalized)
+        rr=RoadRunnerPy(_path=_modelFile)
+        # # # rr=RoadRunnerPy(_sbmlFullPath=modelPathNormalized)
         
         #setting stepSize
         rr.stepSize=_stepSize                    
-        #loading SBML and LLVM-ing it        
-        rr.load(modelPathNormalized)
+        #loading SBML and LLVM-ing it           
+        rr.loadSBML(_externalPath=modelPathNormalized)
+        
+        # # # rr.load(modelPathNormalized)
         #storing rr instance in the cell dictionary
         sbmlDict[coreModelName]=rr
             
@@ -121,14 +124,21 @@ class SBMLSolverHelper(object):
                 modelPathNormalized=os.path.abspath(os.path.join(self.simulator.getBasePath(),modelPathNormalized))
 
         from RoadRunnerPy import RoadRunnerPy         
-        rr=RoadRunnerPy(_sbmlFullPath=modelPathNormalized)
-        rr.load(modelPathNormalized)
+        # # # rr=RoadRunnerPy(_sbmlFullPath=modelPathNormalized)
+        # # # rr.load(modelPathNormalized)
+        rr=RoadRunnerPy(_path=_modelFile)
+        rr.loadSBML(_externalPath=modelPathNormalized)
+        
         #setting stepSize
         rr.stepSize=_stepSize
 
         #storing         
-        global freeFloatingSBMLSimulator
-        freeFloatingSBMLSimulator[_modelName]=rr        
+        
+        # # # global freeFloatingSBMLSimulator
+        # # # freeFloatingSBMLSimulator[_modelName]=rr        
+        
+        import CompuCellSetup
+        CompuCellSetup.freeFloatingSBMLSimulator[_modelName]=rr        
         
         #setting initial conditions - this has to be done after loadingSBML
         for name,value in _initialConditions.iteritems():
@@ -169,11 +179,17 @@ class SBMLSolverHelper(object):
                 pass            
         
     def deleteFreeFloatingSBML(self,_modelName):
-        global freeFloatingSBMLSimulator
-        try:
+        # # # global freeFloatingSBMLSimulator        
+        # # # try:
 
-            global freeFloatingSBMLSimulator
-            del freeFloatingSBMLSimulator[_modelName]
+            # # # global freeFloatingSBMLSimulator
+            # # # del freeFloatingSBMLSimulator[_modelName]
+        # # # except LookupError,e:
+            # # # pass    
+            
+        import CompuCellSetup
+        try:
+            del CompuCellSetup.freeFloatingSBMLSimulator[_modelName]
         except LookupError,e:
             pass    
         
@@ -216,22 +232,34 @@ class SBMLSolverHelper(object):
 
     def setStepSizeForFreeFloatingSBML(self, _modelName='',_stepSize=1.0):
         
+        # # # try:
+
+            # # # global freeFloatingSBMLSimulator
+            # # # sbmlSolver=freeFloatingSBMLSimulator[_modelName]
+        # # # except LookupError,e:
+            # # # return
+            
+        # # # sbmlSolver.stepSize=_stepSize    
+
         try:
 
-            global freeFloatingSBMLSimulator
-            sbmlSolver=freeFloatingSBMLSimulator[_modelName]
+            import CompuCellSetup
+            sbmlSolver=CompuCellSetup.freeFloatingSBMLSimulator[_modelName]
         except LookupError,e:
             return
             
         sbmlSolver.stepSize=_stepSize    
-
+        
 
     def timestepFreeFloatingSBML(self):    
         #timestepping free-floating SBML        
-        global freeFloatingSBMLSimulator
-        for modelName, rr in freeFloatingSBMLSimulator.iteritems():
-           rr.timestep() 
+        # # # global freeFloatingSBMLSimulator
+        # # # for modelName, rr in freeFloatingSBMLSimulator.iteritems():
+           # # # rr.timestep() 
         
+        import CompuCellSetup
+        for modelName, rr in CompuCellSetup.freeFloatingSBMLSimulator.iteritems():
+           rr.timestep() 
             
     def timestepSBML(self):        
         self.timestepCellSBML()
@@ -241,11 +269,26 @@ class SBMLSolverHelper(object):
         '''
         This function returns a reference to RoadRunnerPy or None 
         '''
+        # # # import CompuCell
+        # # # if not _cell:
+            # # # try:
+                # # # global freeFloatingSBMLSimulator
+                # # # return freeFloatingSBMLSimulator[_modelName]
+
+            # # # except LookupError,e:
+                # # # return None    
+        # # # else:  
+            # # # try:
+                # # # dict_attrib=CompuCell.getPyAttrib(_cell)                
+                # # # return dict_attrib['SBMLSolver'][_modelName]
+            # # # except LookupError,e:
+                # # # return None    
         import CompuCell
+        import CompuCellSetup
         if not _cell:
             try:
-                global freeFloatingSBMLSimulator
-                return freeFloatingSBMLSimulator[_modelName]
+                
+                return CompuCellSetup.freeFloatingSBMLSimulator[_modelName]
 
             except LookupError,e:
                 return None    
@@ -257,6 +300,8 @@ class SBMLSolverHelper(object):
                 return None    
             
     def getSBMLState(self,_modelName,_cell=None):
+        ''' returns instance of the RoadRunner.model which behaves as a python dictionary but has many entries some of which are non-assignable /non-mutable
+        '''
         sbmlSimulator=self.getSBMLSimulator(_modelName,_cell)
         if not sbmlSimulator:
             if _cell:
@@ -268,11 +313,25 @@ class SBMLSolverHelper(object):
             # print 'sbmlSimulator.model.keys()=',sbmlSimulator.model.keys()
             return sbmlSimulator.model
             
-            # # # state={}
-            # # # for name in sbmlSimulator.model.getFloatingSpeciesIds()+sbmlSimulator.model.getBoundarySpeciesIds() + sbmlSimulator.model.getGlobalParameterIds():
-                # # # state[name]=sbmlSimulator.model[name]
-            # # # return state    
 
+
+    def getSBMLStateAsPythonDict(self,_modelName,_cell=None):
+        ''' returns  python dictionary which has floating species, boundary species and global variables
+        '''
+    
+        sbmlSimulator=self.getSBMLSimulator(_modelName,_cell)
+        if not sbmlSimulator:
+            if _cell:
+                raise RuntimeError("Could not find model "+_modelName+' attached to cell.id=',_cell.id) 
+            else:
+                raise RuntimeError("Could not find model "+_modelName+' in the list of free floating SBML models')                 
+        else:
+        
+            
+            state={}
+            for name in sbmlSimulator.model.getFloatingSpeciesIds()+sbmlSimulator.model.getBoundarySpeciesIds() + sbmlSimulator.model.getGlobalParameterIds():
+                state[name]=sbmlSimulator.model[name]
+            return state    
         
     def setSBMLState(self,_modelName,_cell=None,_state={}):
         
@@ -337,12 +396,13 @@ class SBMLSolverHelper(object):
             
         for sbmlName in sbmlNamesToCopy:
 
-            stateFrom=self.getSBMLState(_modelName=sbmlName,_cell=_fromCell)
+            # # # stateFrom=self.getSBMLState(_modelName=sbmlName,_cell=_fromCell)
+            stateFrom=self.getSBMLStateAsPythonDict(_modelName=sbmlName,_cell=_fromCell)            
             
             rrFrom=sbmlDictFrom[sbmlName]
-            sbmlFullPathFrom=rrFrom.sbmlFullPath
-            
-            self.addSBMLToCell(_modelFile=sbmlFullPathFrom,_modelName=sbmlName,_cell=_toCell,_stepSize=rrFrom.stepSize,_initialConditions=stateFrom,_coreModelName=sbmlName,_modelPathNormalized=sbmlFullPathFrom)
+            pathFrom=rrFrom.path
+            pathFromNormalized=self.normalizePath(pathFrom)
+            self.addSBMLToCell(_modelFile=pathFrom,_modelName=sbmlName,_cell=_toCell,_stepSize=rrFrom.stepSize,_initialConditions=stateFrom,_coreModelName=sbmlName,_modelPathNormalized=pathFromNormalized)
                                 
         
     def normalizePath(self,_path):

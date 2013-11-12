@@ -44,6 +44,11 @@ playerType="old"
 global userStopSimulationFlag
 userStopSimulationFlag=False
 
+# list of free floating SBML solvers
+global freeFloatingSBMLSimulator
+freeFloatingSBMLSimulator={} # {name:RoadRunnerPy}
+
+
 MYMODULENAME = '------- CompuCellSetup.py: '
 
 from enums import*
@@ -405,6 +410,9 @@ def resetGlobals():
         sys.path.remove(path)
         
     appendedPaths=[]
+    
+    global freeFloatingSBMLSimulator
+    freeFloatingSBMLSimulator={}
     
 def setSimulationXMLFileName(_simulationFileName):
     global simulationPaths
