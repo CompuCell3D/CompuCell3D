@@ -31,6 +31,27 @@ namespace CompuCell3D {
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	CellInventory::~CellInventory()
 	{	
+		//using namespace std;
+		////Freeing up cell inventory has to be done
+		//CellInventory::cellInventoryIterator cInvItr;
+
+		//CellG * cell;
+
+		/////loop over all the cells in the inventory   
+		//for( cInvItr = cellInventoryBegin() ; cInvItr !=cellInventoryEnd() ; ++cInvItr ){
+		//	cell=getCell(cInvItr);
+		//	//cell=*cInvItr;
+		//	if(!potts){
+		//		delete cell;
+  //       }
+  //       else{
+		//		potts->destroyCellG(cell,false);
+  //       }
+		//}
+		cleanInventory();
+	}
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	void CellInventory::cleanInventory(){
 		using namespace std;
 		//Freeing up cell inventory has to be done
 		CellInventory::cellInventoryIterator cInvItr;
@@ -48,8 +69,10 @@ namespace CompuCell3D {
 				potts->destroyCellG(cell,false);
          }
 		}
+		inventory.clear();
 
 	}
+
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	void CellInventory::addToInventory(CellG * _cell){
 		inventory.insert(make_pair(CellIdentifier(_cell->id,_cell->clusterId),_cell));

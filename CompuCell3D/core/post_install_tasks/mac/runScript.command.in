@@ -19,6 +19,9 @@ echo "---- ---- ---- ---- ---- ---- ---- ---- "
 
 # the "PREFIX_CC3D" shell variable is used by CompuCell3D code, its name can NOT be modified:
 export PREFIX_CC3D=$(pwd)
+
+export MAX_NUMBER_OF_CONSECUTIVE_RUNS=50
+
 # current_directory=$(pwd)
 cd $PREFIX_CC3D
 echo " ====> CompuCell3D working directory: $PREFIX_CC3D"

@@ -92,6 +92,10 @@ restartEnabled(false)
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Simulator::~Simulator() {
+	cerr<<"\n\n\n********************************************************************************"<<endl;	
+	cerr<<"\n\n\n\n INSIDE SIMULATOR DELETE \n\n\n\n "<<endl;	
+	cerr<<"\n\n\n********************************************************************************"<<endl;
+	
 	delete classRegistry;
 	delete pUtils;
 
@@ -418,7 +422,11 @@ void Simulator::finish() {
 	}
 
 }
+void Simulator::cleanAfterSimulation(){
 
+	potts.getCellInventory().cleanInventory();
+	unloadModules();
+}
 void Simulator::unloadModules(){
 	pluginManager.unload();
 	steppableManager.unload();

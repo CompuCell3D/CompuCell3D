@@ -15,7 +15,8 @@ class QsciScintillaCustom(QsciScintilla):
         self.mousePressEventOrig=self.mousePressEvent
         self.CtrlKeyEquivalent=Qt.Key_Control
         self.scintillaDefinedLetterShortcuts=[ord('D'),ord('L'),ord('T'),ord('U'),ord('/')]
-        
+        self.customContextMenu=None
+        self.linesChanged.connect(self.linesChangedHandler)
         if sys.platform.startswith("darwin"):        
             self.CtrlKeyEquivalent=Qt.Key_Alt
             
@@ -41,7 +42,21 @@ class QsciScintillaCustom(QsciScintilla):
                 super(QsciScintillaCustom,self).keyPressEvent(event)
         else:
             super(QsciScintillaCustom,self).keyPressEvent(event)
-            
+    
+    def registerCustomContextMenu(self,_menu):
+        self.customContextMenu=_menu
+        
+    def unregisterCustomContextMenu(self):
+        self.customContextMenu=None
+        
+    def contextMenuEvent(self,_event):
+        if not self.customContextMenu:
+            super(QsciScintillaCustom,self).contextMenuEvent(_event)
+        else:
+            self.customContextMenu.exec_(_event.globalPos())
+        
+        
+    
     def keyPressEvent(self, event):   
         """
             senses if scintilla predefined keyboard shortcut was pressed.  
@@ -90,4 +105,19 @@ class QsciScintillaCustom(QsciScintilla):
         # print "self.tabWidget=",self.tabWidget
         
         # # swap self.editorWindow.editTab with elf.editorWindow.editTabExtra
+        
+    def linesChangedHandler(self):
+        ''' adjusting width of the line number margin
+        '''
+        # print '__linesChangedHandler self.marginWidth(0)=',self.marginWidth(0)
+        if self.marginLineNumbers(0):
+            # self.setMarginLineNumbers(0, _flag)
+            numberOfLines=self.lines()
+            
+            from math import log        
+            
+            numberOfDigits= int(log(numberOfLines,10))+2 if numberOfLines>0 else 2
+            self.setMarginWidth(0,QString('0'*numberOfDigits))     
+                    
+    
         

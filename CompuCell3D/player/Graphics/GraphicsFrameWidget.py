@@ -48,12 +48,20 @@ from MVCDrawModel3D import MVCDrawModel3D
 
 MODULENAME = '---- GraphicsFrameWidget.py: '
 
+from weakref import ref
 
 class GraphicsFrameWidget(QtGui.QFrame):
     # def __init__(self, parent=None, wflags=QtCore.Qt.WindowFlags(), **kw):
     def __init__(self, parent=None):
         QtGui.QFrame.__init__(self, parent)
+        
+        
+        
         self.qvtkWidget = QVTKRenderWindowInteractor(self)   # a QWidget
+        
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        
+        
         self.parentWidget = parent
         
         self.lineEdit = QtGui.QLineEdit()
@@ -74,7 +82,18 @@ class GraphicsFrameWidget(QtGui.QFrame):
         self.renWin.AddRenderer(self.ren)
 
 #        print MODULENAME,"GraphicsFrameWidget():__init__:   parent=",parent
+
+        #    some objects below create cyclic dependencies - the widget will not free its memory unless  in the close event e.g.  self.drawModel2D gets set to None
+        # # # from weakref import ref
         
+        # # # self_weakref=ref(self)
+        # # # self.drawModel2D = MVCDrawModel2D(self_weakref,parent)
+        # # # self.draw2D = MVCDrawView2D(self.drawModel2D,self_weakref,parent)
+        
+        # # # self.drawModel3D = MVCDrawModel3D(self_weakref,parent)
+        # # # self.draw3D = MVCDrawView3D(self.drawModel3D,self_weakref,parent)
+        
+
         self.drawModel2D = MVCDrawModel2D(self,parent)
         self.draw2D = MVCDrawView2D(self.drawModel2D,self,parent)
         
@@ -86,6 +105,7 @@ class GraphicsFrameWidget(QtGui.QFrame):
         self.camera3D = self.ren.MakeCamera()        
         self.camera2D = self.ren.GetActiveCamera()
         self.ren.SetActiveCamera(self.camera2D)
+        
         
         self.currentDrawingObject = self.draw2D
         
@@ -127,7 +147,7 @@ class GraphicsFrameWidget(QtGui.QFrame):
                 pass
             
                     
-            self.setDrawingStyle("3D")
+            # # # self.setDrawingStyle("3D")
     #        self.currentDrawingObject = self.draw3D
     #        self.draw3DFlag = True
     #        self.usedDraw3DFlag = False
@@ -137,6 +157,9 @@ class GraphicsFrameWidget(QtGui.QFrame):
 
     # def clearDisplayOnDemand(self):
         # self.draw2D.clearDisplay()
+        
+
+
         
     def resetAllCameras(self):
         print 'resetAllCameras in GraphicsFrame =',self
@@ -186,6 +209,7 @@ class GraphicsFrameWidget(QtGui.QFrame):
         self.drawModel3D.populateLookupTable()
         
     def Render(self):        
+        
 #        print MODULENAME, ' ---------Render():'
 #        Configuration.getSetting("CurrentFieldName",name)
         color = Configuration.getSetting("WindowColor")
@@ -403,6 +427,9 @@ class GraphicsFrameWidget(QtGui.QFrame):
             self.xyPlane = val
 #            self.projSpinBox.setValue(val)
 #            print ' _projSpinBoxChanged: set xy val=',val
+            print 'self.currentDrawingObject=',self.currentDrawingObject
+            print 'self.draw2D=',self.draw2D
+            
             self.currentDrawingObject.setPlane(self.currentProjection, self.xyPlane)
 #            self.parentWidget._drawField()
 
@@ -649,85 +676,46 @@ class GraphicsFrameWidget(QtGui.QFrame):
     # we need to reimplement closeEvent
     # def close(self):           
     def closeEvent(self,ev):
-        self.parentWidget.closeActiveSubWindowSlot()
+        print '\n\n\n closeEvent GRAPHICS FRAME'
+        
+        # cleaning up to release memory - notice that if we do not do this cleanup this widget will not be destroyed and will take sizeable portion of the memory 
+        # not a big deal for a single simulation but repeated runs can easily exhaust all system memory
+        
+        self.clearEntireDisplay()        
         
         
-# class FrameQVKT_new(QtGui.QFrame):
-    # def __init__(self, parent=None, wflags=QtCore.Qt.WindowFlags(), **kw):
-        # QtGui.QFrame.__init__(self, parent)
-        # self.qvtkWidget=QVTKRenderWindowInteractor_new(self)
-        # self.lineEdit=QtGui.QLineEdit()
+        self.qvtkWidget.close()
+        self.qvtkWidget=None
+        self.ren.SetActiveCamera(None)
         
-        # self.__initCrossSectionActions()
-        # self.cstb=self.initCrossSectionToolbar()        
+        self.ren=None
+        self.renWin=None
         
-        # layout=QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom)
-        # layout.addWidget(self.cstb)
-        # layout.addWidget(self.qvtkWidget)
-        # self.setLayout(layout)
         
-        # self.qvtkWidget.Initialize()
-        # self.qvtkWidget.Start()
+        # return
+        # cleaning up objects with cyclic references 
+        self.drawModel2D=None                
+        self.draw2D=None        
         
-        # self.ren = vtk.vtkRenderer()
-        # self.renWin=self.qvtkWidget.GetRenderWindow()
-        # self.renWin.AddRenderer(self.ren)
         
-    # def initCrossSectionToolbar(self):
-        # cstb = QtGui.QToolBar("CrossSection", self)
-        # #viewtb.setIconSize(QSize(20, 18))
-        # cstb.setObjectName("CrossSection")
-        # cstb.setToolTip("Cross Section")
+        self.drawModel3D = None
+        self.draw3D = None
+        print 'self.currentDrawingObject=',self.currentDrawingObject
         
-        # cstb.addWidget( QtGui.QLabel("  ")) # Spacer, just make it look pretty 
-        # cstb.addWidget(self.threeDRB)
-        # cstb.addWidget( QtGui.QLabel("  "))
-        # cstb.addWidget(self.xyRB)
-        # cstb.addWidget(self.xySB)
-        # cstb.addWidget( QtGui.QLabel("  "))
-        # cstb.addWidget(self.xzRB)
-        # cstb.addWidget(self.xzSB)
-        # cstb.addWidget( QtGui.QLabel("  "))
-        # cstb.addWidget(self.yzRB)
-        # cstb.addWidget(self.yzSB)
-        # cstb.addWidget( QtGui.QLabel("    "))
-        # cstb.addWidget(self.fieldComboBox)
+        self.currentDrawingObject=None
         
-        # return cstb
         
-    # def __initCrossSectionActions(self):
-        # # Do I need actions? Probably not, but will leave for a while
-        # self.threeDAct = QtGui.QAction(self)
-        # self.threeDRB  = QtGui.QRadioButton("3D")
-        # self.threeDRB.addAction(self.threeDAct)
+        self.camera3D = None
+        self.camera2D = None
+        
+        
+        
 
-        # self.xyAct = QtGui.QAction(self)
-        # self.xyRB  = QtGui.QRadioButton("xy")
-        # self.xyRB.addAction(self.xyAct)
-
-        # self.xySBAct = QtGui.QAction(self)
-        # self.xySB  = QtGui.QSpinBox()
-        # self.xySB.addAction(self.xySBAct)
-
-        # self.xzAct = QtGui.QAction(self)
-        # self.xzRB  = QtGui.QRadioButton("xz")
-        # self.xzRB.addAction(self.xzAct)
-
-        # self.xzSBAct = QtGui.QAction(self)
-        # self.xzSB  = QtGui.QSpinBox()
-        # self.xzSB.addAction(self.xzSBAct)
-
-        # self.yzAct = QtGui.QAction(self)
-        # self.yzRB  = QtGui.QRadioButton("yz")
-        # self.yzRB.addAction(self.yzAct)
-
-        # self.yzSBAct = QtGui.QAction(self)
-        # self.yzSB  = QtGui.QSpinBox()
-        # self.yzSB.addAction(self.yzSBAct)
-
-        # self.fieldComboBoxAct = QtGui.QAction(self)
-        # self.fieldComboBox  = QtGui.QComboBox()
-        # self.fieldComboBox.addAction(self.fieldComboBoxAct)
-        # self.fieldComboBox.addItem("-- Field Type --")
-        # #self.fieldComboBox.addItem("cAMP")
+        self.fieldTypes=None            
+        
+        self.parentWidget.removeWindowWidgetFromRegistry(self)
+        print 'AFTER CLOSE GFW self.graphicsWindowDict=',self.parentWidget.graphicsWindowDict 
+        print 'self.windowDict=',self.parentWidget.windowDict        
+        
+        self.parentWidget=None
         

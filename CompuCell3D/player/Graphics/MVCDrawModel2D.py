@@ -96,7 +96,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
     def initCellFieldActors(self, _actors):
 #        print MODULENAME,'  initCellFieldActors()'
-        
+
         if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.currentDrawingParameters.plane=="XY": # drawing in other planes will be done on a rectangular lattice
 #            self.initCellFieldHexActors(_bsd,fieldType,_actors)
             self.initCellFieldHexActors(_actors)
@@ -107,7 +107,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # # # print "drawing plane ",self.plane," planePos=",self.planePos
         # fieldDim = cellField.getDim()
         fieldDim = self.currentDrawingParameters.bsd.fieldDim
-        
         dimOrder = self.dimOrder(self.currentDrawingParameters.plane)
         self.dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]         
         
@@ -117,7 +116,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         
         self.cellTypeIntAddr=self.extractAddressIntFromVtkObject(self.cellType)
         # print "self.cellTypeIntAddr=",self.cellTypeIntAddr
-    
+        
 
 
 

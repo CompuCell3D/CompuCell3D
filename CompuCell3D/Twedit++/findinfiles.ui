@@ -288,16 +288,16 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="findAllInCurrentDocButton">
+          <widget class="QPushButton" name="findAllInOpenDocsButton">
            <property name="text">
-            <string>Find All in Current Doc</string>
+            <string>Find All in Open Docs</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="findAllInOpenDocsButton">
+          <widget class="QPushButton" name="findAllInCurrentDocButton">
            <property name="text">
-            <string>Find All in Open Docs</string>
+            <string>Find All in Current Doc</string>
            </property>
           </widget>
          </item>

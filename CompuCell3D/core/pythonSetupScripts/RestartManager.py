@@ -336,6 +336,8 @@ class RestartManager:
         self.loadCoreCellAttributes()       
         # load cell Python attributes
         self.loadPythonAttributes()      
+        # load SBMLSolvers -  free floating SBML Solvers are loaded and initialized and those associated with cell are initialized - they are loaded by  self.loadPythonAttributes
+        self.loadSBMLSolvers()
         # load bionetSolver Data
         self.loadBionetSolver()              
         # load adhesionFlex plugin
@@ -589,6 +591,59 @@ class RestartManager:
                     self.unpickleList(fullPath,cellList)
                 else:
                     self.unpickleDict(fullPath,cellList)
+                    
+    def loadSBMLSolvers(self):
+        
+        import CompuCellSetup    
+        import cPickle
+        from PySteppables import CellList
+        
+        # loading and initializing freeFloating SBML Simulators  - SBML solvers associated with cells are loaded (but not fully initialized) in the loadPythonAttributes
+        for resourceName, sd in self.__restartResourceDict.iteritems():
+            print 'resourceName=',resourceName
+            print 'sd=',sd
+        
+            if sd.objectName=='FreeFloatingSBMLSolvers' and sd.objectType=='Pickle':
+                print 'RESTORING FreeFloatingSBMLSolvers '
+                
+                fullPath=os.path.join(self.__restartDirectory,sd.fileName)
+                fullPath=os.path.abspath(fullPath) # normalizing path format
+                with open(fullPath,'r') as pf:                
+                    CompuCellSetup.freeFloatingSBMLSimulator=cPickle.load(pf)
+                    
+                # initializing  freeFloating SBML Simulators       
+                for modelName, sbmlSolver in CompuCellSetup.freeFloatingSBMLSimulator.iteritems():
+                    sbmlSolver.loadSBML(_externalPath=self.sim.getBasePath())
+            
+        # full initializing SBML solvers associated with cell  - we do that regardless whether we have freeFloatingSBMLSolver pickled file or not
+        inventory = self.sim.getPotts().getCellInventory()                
+        cellList = CellList(inventory)                        
+
+        # checking if cells have extra attribute
+        import CompuCell
+        for cell in cellList:             
+            if not CompuCell.isPyAttribValid(cell):
+                return
+            else:    
+                attrib=CompuCell.getPyAttrib(cell)
+                if isinstance(attrib,list):
+                    return
+                else:
+                    break
+        
+        for cell in cellList:             
+        
+            cellDict=CompuCell.getPyAttrib(cell)
+            try:
+                sbmlDict=cellDict['SBMLSolver']
+                print 'sbmlDict=',sbmlDict
+            except LookupError,e:
+                continue
+                
+            for modelName,sbmlSolver in  sbmlDict.iteritems():   
+                sbmlSolver.loadSBML(_externalPath=self.sim.getBasePath()) # this call fully initializes SBML Solver by loading sbmlMode ( relative path stored in sbmlSolver.path and root dir is passed using self.sim.getBasePath())
+                        
+
 
     def loadBionetSolver(self):
         
@@ -1258,10 +1313,11 @@ class RestartManager:
         # outputting core cell  attributes
         self.outputCoreCellAttributes(restartOutputPath,rstXMLElem)       
         # outputting cell Python attributes
-        self.outputPythonAttributes(restartOutputPath,rstXMLElem)     
+        self.outputPythonAttributes(restartOutputPath,rstXMLElem)                     
         # outputting bionetSolver
-        self.outputBionetSolver(restartOutputPath,rstXMLElem)             
-        
+        self.outputBionetSolver(restartOutputPath,rstXMLElem)          
+        # outputting FreeFloating SBMLSolvers - notice that SBML solvers assoaciated with a cell are pickled in the outputPythonAttributes function
+        self.outputFreeFloatingSBMLSolvers(restartOutputPath,rstXMLElem)        
         # outputting plugins
         # outputting AdhesionFlexPlugin
         self.outputAdhesionFlexPlugin(restartOutputPath,rstXMLElem)    
@@ -1555,8 +1611,25 @@ class RestartManager:
         nullFile.close()
         pf.close()        
 
+    def outputFreeFloatingSBMLSolvers(self,_restartOutputPath,_rstXMLElem): 
+        import SerializerDEPy
+        import CompuCellSetup    
+        import cPickle
         
+        sd=SerializerDEPy.SerializeData()
+        sd.moduleName='Python'
+        sd.moduleType='Python'
+        sd.objectName='FreeFloatingSBMLSolvers'
+        sd.objectType='Pickle'        
+        sd.fileName=os.path.join(_restartOutputPath,'FreeFloatingSBMLSolvers'+'.dat')
+        if CompuCellSetup.freeFloatingSBMLSimulator: # checking if freeFloatingSBMLSimulator is non-empty        
+            with open(sd.fileName,'w') as pf:
+                cPickle.dump(CompuCellSetup.freeFloatingSBMLSimulator,pf) 
+                self.appendXMLStub(_rstXMLElem,sd)
+                
+    
     def outputPythonAttributes(self,_restartOutputPath,_rstXMLElem):
+        # notice that this function also outputs SBMLSolver objects
         import SerializerDEPy
         import CompuCellSetup    
         import cPickle

@@ -187,7 +187,7 @@ void PIFInitializer::start() {
 		}
 	}
 	else {
-		//cerr << "Only Cell Types" << "\n";
+		//cerr <<"\n\n\n Only Cell Types" << "\n";
 		pif >> xLow;
 		int tmp = atoi(first.c_str());
 		spin = tmp;
@@ -250,7 +250,7 @@ void PIFInitializer::start() {
 					// cerr << "getline(pif,line): " << getline(pif,line) << endl;
 					//    cerr << "getline(piffline,line): " <<  getline(piffile,line) << endl;
 		}
-		while(getline(piffile,line)) {
+        while(getline(piffile,line) ) {
 			//cerr << "PINGPINGPINGPINGP5Ng" << endl;
 			istringstream pif(line);
 			pif >> spin >> celltype >> xLow;

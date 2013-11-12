@@ -125,6 +125,10 @@ class ChangedTextHandler:
         currentTabWidget=self.editorWindow.panels[0]
         if self.editor.panel:
             currentTabWidget=self.editor.panel
+            
+         #for rean only editors we do not change tab icons   
+        if self.editor.isReadOnly(): return
+           
         if m: #document has been modified        
             index=currentTabWidget.indexOf(self.editor)
             currentTabWidget.setTabIcon(index,QtGui.QIcon(':/icons/document-edited.png'))
@@ -257,7 +261,15 @@ class EditorWindow(QMainWindow):
         ".html":"HTML",
         ".tex":"TeX"
         }
-
+        
+        self.configuration=Configuration()
+        
+        #used to manage color themes for Twedit++- parses xml configuration files written using notepad++ convention
+        from ThemeManager import ThemeManager
+        self.themeManager=ThemeManager()
+        self.themeManager.readThemes()
+        self.currentThemeName=str(self.configuration.setting("Theme"))
+        
         self.fileDialogFilters,self.filterExtensionsDict = self.prepareFileDialogFilters(self.extensionLanguageMap)
         
         self.findDialogForm=None # reference to findDialogForm - we check if current value is non-None to make sure we can create an instance. Multiple instances are disallowed
@@ -280,11 +292,13 @@ class EditorWindow(QMainWindow):
         self.deactivateChangeSensing=False
         
         self.curFile = ''
-        self.configuration=Configuration()
+
+
         
         self.zoomRange=self.configuration.setting("ZoomRange")
         
         
+
         self.resize(self.configuration.setting("InitialSize"))
         self.move(self.configuration.setting("InitialPosition"))
         
@@ -351,7 +365,15 @@ class EditorWindow(QMainWindow):
         self.findDock=self.__createDockWindow("Find Results")
         self.findDisplayWidget=FindDisplayWidget(self)
         self.__setupDockWindow(self.findDock, Qt.BottomDockWidgetArea, self.findDisplayWidget, self.trUtf8("Find In Files Results"))
-
+        
+        
+        self.themeManager.applyThemeToEditor(self.currentThemeName,self.findDisplayWidget)    
+        
+        # sys.exit()
+        
+        
+        
+        
         self.setCurrentFile('')
         self.setUnifiedTitleAndToolBarOnMac(True)
         
@@ -378,6 +400,7 @@ class EditorWindow(QMainWindow):
                 lexer.setFont(self.baseFont)   
                 
             textEditLocal.setFont(self.baseFont)             
+            self.setEditorProperties(textEditLocal)
             
         if not self.panels[0].count():
             self.panels[0].hide()
@@ -454,6 +477,41 @@ class EditorWindow(QMainWindow):
             returns active editor - the one which has keyboard focus
         """
         return self.getActiveEditor()        
+        
+    def getCurrentTab(self):
+        """
+            returns active editor tab widget - the one which has keyboard focus
+        """
+        return self.activeTabWidget 
+
+    def getCurrentTabWidgetAndIndex(self):
+        """
+            returns active tab widget and current index- the one which has keyboard focus
+        """
+        
+        activePanel=self.getActivePanel()
+        tabIndex=activePanel.indexOf(activePanel.currentWidget())
+        
+        return activePanel,tabIndex
+
+        
+    def getTabWidgetAndWidgetIndex(self,_wgt):
+        
+        
+        tabIndex=self.panels[0].indexOf(_wgt)
+        
+        if tabIndex>=0:
+            return self.panels[0], tabIndex
+        else:
+            
+            
+            tabIndex=self.panels[1].indexOf(_wgt)
+            if tabIndex>=0:
+                return self.panels[1],tabIndex
+            else:
+                return None,-1
+                
+        
     
     def checkIfEditorExists(self,_editor):
         """
@@ -936,19 +994,23 @@ class EditorWindow(QMainWindow):
         
         findHistoryList=self.configuration.setting("FRFindHistory")
         for i in range(findHistoryList.count()):
-            _frh.findHistory.append(findHistoryList[i])
+            if str(findHistoryList[i]).strip()!='':        # we do not wantany empyty strings here
+                _frh.findHistory.append(findHistoryList[i])
             
         replaceHistoryList=self.configuration.setting("FRReplaceHistory")            
         for i in range(replaceHistoryList.count()):
-            _frh.replaceHistory.append(replaceHistoryList[i])
+            if str(replaceHistoryList[i]).strip()!='':# we do not wantany empyty strings here
+                _frh.replaceHistory.append(replaceHistoryList[i])
             
         filtersHistoryList=self.configuration.setting("FRFiltersHistory")                        
         for i in range(filtersHistoryList.count()):
-            _frh.filtersHistoryIF.append(filtersHistoryList[i])
+            if str(filtersHistoryList[i]).strip()!='':# we do not wantany empyty strings here
+                _frh.filtersHistoryIF.append(filtersHistoryList[i])
             
         directoryHistoryList=self.configuration.setting("FRDirectoryHistory")                        
         for i in range(directoryHistoryList.count()):
-            _frh.directoryHistoryIF.append(directoryHistoryList[i])
+            if str(directoryHistoryList[i]).strip()!='':# we do not wantany empyty strings here
+                _frh.directoryHistoryIF.append(directoryHistoryList[i])
         
         _frh.syntaxIndex=self.configuration.setting("FRSyntaxIndex")        
         _frh.inSelection=self.configuration.setting("FRInSelection")
@@ -1018,6 +1080,7 @@ class EditorWindow(QMainWindow):
         """
             checks if document has been modified
         """
+        self.deactivateChangeSensing=True
         for editor in self.getEditorList():
             fileName=self.getEditorFileName(editor)
             try:
@@ -1047,7 +1110,8 @@ class EditorWindow(QMainWindow):
                         self.deactivateChangeSensing=True
                     else:                        
                         self.closeTab(editor.panel.indexOf(editor),False)
-                    
+
+        self.deactivateChangeSensing=False            
                 
     
 
@@ -1058,8 +1122,10 @@ class EditorWindow(QMainWindow):
         """
         #lines are displayed on margin 0
         lineNumbersFlag=self.configuration.setting("DisplayLineNumbers")
-        _editor.setMarginLineNumbers(0, lineNumbersFlag)
-        _editor.setMarginWidth(0,QString('0'*8*int(lineNumbersFlag)))     
+        self.adjustLineNumbers(_editor,lineNumbersFlag)
+        
+        # # # _editor.setMarginLineNumbers(0, lineNumbersFlag)
+        # # # _editor.setMarginWidth(0,QString('0'*8*int(lineNumbersFlag)))     
         
         
         
@@ -1094,10 +1160,17 @@ class EditorWindow(QMainWindow):
         _editor.setCaretLineBackgroundColor(QtGui.QColor('#EFEFFB'))        
         # _editor.modificationChanged.connect(self.modificationChangedSlot)
 
-        if sys.platform.startswith('win'):        
-            _editor.setEolMode(QsciScintilla.EolWindows) # SETTING EOL TO WINDOWS MESSES THINGS UP AS SAVE FCN (MOST LIKELY)ADS EXTRA CR SIGNS -
+        if not sys.platform.startswith('win'):
+            _editor.setEolMode(QsciScintilla.EolUnix)
+
         else:
-            _editor.setEolMode(QsciScintilla.EolUnix) # SETTING EOL TO WINDOWS MESSES THINGS UP AS SAVE FCN (MOST LIKELY)ADS EXTRA CR SIGNS - 
+            _editor.setEolMode(QsciScintilla.EolWindows) # windows eol only on system whose name starts with 'win'
+            
+        # _editor.setEolMode(QsciScintilla.EolMac) # SETTING EOL TO WINDOWS MESSES THINGS UP AS SAVE FCN (MOST LIKELY)ADS EXTRA CR SIGNS - 
+        # _editor.setUtf8(True) # using UTF-8 encoding        
+        # _editor.setEolMode(QsciScintilla.EolWindows) # SETTING EOL TO WINDOWS MESSES THINGS UP AS SAVE FCN (MOST LIKELY)ADS EXTRA CR SIGNS - 
+        # _editor.setEolMode(QsciScintilla.EolUnix) # SETTING EOL TO WINDOWS MESSES THINGS UP AS SAVE FCN (MOST LIKELY)ADS EXTRA CR SIGNS - 
+
         # _editor.setEolMode(QsciScintilla.EolMac) # SETTING EOL TO WINDOWS MESSES THINGS UP AS SAVE FCN (MOST LIKELY)ADS EXTRA CR SIGNS - 
         # _editor.setUtf8(True) # using UTF-8 encoding
         
@@ -1138,6 +1211,10 @@ class EditorWindow(QMainWindow):
             lexer.setFont(self.baseFont)   
             
         _editor.setFont(self.baseFont)              
+        # SCI_STYLESETFORE(int styleNumber, int colour)
+        # _editor.SendScintilla(QsciScintilla.SCI_STYLESETFORE,1,255)       
+        self.themeManager.applyThemeToEditor(self.currentThemeName,_editor)    
+        # self.themeManager.applyThemeToEditor('Choco',_editor)    
         
     def modificationChangedSlot(self, _flag):
         dbgMsg("THIS IS CHANGED DOCUMENT")
@@ -1229,6 +1306,9 @@ class EditorWindow(QMainWindow):
         """
         editor=self.getActiveEditor()
         editor.cut()
+        # it is better to keep extended margin after removing text and wait till user saves file to adjust the width
+        # if self.configuration.setting('DisplayLineNumbers') and editor.marginWidth(0):
+            # self.adjustLineNumbers(editor,True)
     
         
     def paste(self):
@@ -1238,6 +1318,8 @@ class EditorWindow(QMainWindow):
 
         editor=self.getActiveEditor()
         editor.paste()
+        # if self.configuration.setting('DisplayLineNumbers') and editor.marginWidth(0):
+            # self.adjustLineNumbers(editor,True)
         
     def increaseIndent(self):
         """
@@ -1438,7 +1520,15 @@ class EditorWindow(QMainWindow):
             currentDocument (_mode=ALL_IN_CURRENT_DOC), all open files (_mode=ALL_IN_ALL_OPEN_DOCS) or all files (default mode)
             specified by _filters,_directory
         """
-    
+        
+        import os
+        
+        if _directory.rstrip() !='':
+            if  not os.path.exists(_directory) or not os.path.isdir(_directory):
+                ret = QtGui.QMessageBox.warning(self, "Directory Error",
+                    'Cannot search files in directory '+_directory+' because it does not exist' )
+                return
+            
         self.findDialogForm.setEnabled(False)
         dbgMsg("findInFiles")
         # ALL_IN_FILES=0
@@ -2243,11 +2333,14 @@ class EditorWindow(QMainWindow):
         
         editor=self.getActiveEditor()
         configurationDlg= ConfigurationDlg(editor,self)
+        oldThemeName=self.currentThemeName
         if configurationDlg.exec_():
             for key in self.configuration.updatedConfigs.keys():
                 dbgMsg("NEW SETTING = ",key,":",self.configuration.updatedConfigs[key])
                 configureFcn=getattr(self,"configure"+key)
                 configureFcn(self.configuration.updatedConfigs[key])
+        else:
+            self.applyTheme(oldThemeName)
         self.checkActions()                    
 
     def configureRestoreTabsOnStartup(self,_flag):
@@ -2257,6 +2350,29 @@ class EditorWindow(QMainWindow):
     
         self.configuration.setSetting("RestoreTabsOnStartup",_flag)
         
+    def configureTheme(self,_themeName):
+        """
+            fcn handling theme configuration change
+        """
+        # print 'APPLYING _themeName=',_themeName   
+        self.currentThemeName=str(_themeName)
+        self.configuration.setSetting("Theme",self.currentThemeName)        
+        
+    def applyTheme(self,_themeName):
+    
+        self.currentThemeName=str(_themeName)
+        for panel in self.panels:
+            for i in range(panel.count()):
+                editor=panel.widget(i)
+                self.themeManager.applyThemeToEditor(self.currentThemeName,editor)
+                
+        # applying theme to FindInFiles widget            
+        self.themeManager.applyThemeToEditor(self.currentThemeName,self.findDisplayWidget)
+        
+        #applying 'Global override' style to all plugins
+        #applying 'Default Style' style to all plugins
+        self.pm.runForAllPlugins(_functionName='applyStyleFromTheme',_argumentDict={'styleName':'Default Style','themeName':self.currentThemeName})
+
     def configureBaseFontName(self,_name):
         """
             fcn handling BaseFontName configuration change
@@ -2391,12 +2507,20 @@ class EditorWindow(QMainWindow):
         """
             fcn handling DisplayLineNumbers configuration change
         """
-    
+        
         for panel in self.panels:
             for i in range(panel.count()):            
-                panel.widget(i).setMarginLineNumbers(0, _flag)
-                panel.widget(i).setMarginWidth(0,QString('0'*8*int(_flag)))     
+                editor=panel.widget(i)                
+                self.adjustLineNumbers(editor,_flag)
+ 
                 
+    def adjustLineNumbers(self,_editor,_flag):        
+        # print 'setting line margin ',_flag
+        _editor.setMarginLineNumbers(0, _flag)
+        _editor.linesChangedHandler()
+    
+        
+        
     def configureEnableAutocompletion(self,_flag):
         """
             fcn handling EnableAutocompletion configuration change
@@ -2468,6 +2592,9 @@ class EditorWindow(QMainWindow):
         activePanel.widget(editorIndex).modificationChanged.connect(self.textChangedHandlers[textEditLocal].handleModificationChanged)
         activePanel.widget(editorIndex).textChanged.connect(self.textChangedHandlers[textEditLocal].handleChangedText)
         activePanel.widget(editorIndex).cursorPositionChanged.connect(self.handleCursorPositionChanged)
+        
+        #applygin theme to new document        
+        self.themeManager.applyThemeToEditor(self.currentThemeName,activePanel.widget(editorIndex))                    
         
     def __openRecentDirectory(self):
         '''
@@ -2759,9 +2886,11 @@ class EditorWindow(QMainWindow):
         """
             slot - shows or hides line numbers (_depending on _flag) in the active editor  - updates View Menu
         """
-        editor=self.getActiveEditor()
-        editor.setMarginLineNumbers(0, _flag)
-        editor.setMarginWidth(0,QString('0'*8*int(_flag)))     
+        # print 'showLineNumbers ',_flag
+        editor=self.getActiveEditor()        
+        self.adjustLineNumbers(editor,_flag)
+        
+        # # # editor.setMarginWidth(0,QString('0'*8*int(_flag)))     
     
     def zoomIn(self):
         """
@@ -2806,6 +2935,7 @@ class EditorWindow(QMainWindow):
             slot - implements save As... functionality 
         """
         # self.deactivateChangeSensing=True
+        
         currentFilePath=None
         currentExtension=""
         try:
@@ -2814,6 +2944,12 @@ class EditorWindow(QMainWindow):
             # print "currentFilePath=",currentFilePath    
         except KeyError:
             pass
+            
+
+        # #adjusting line number margin width
+        # if self.configuration.setting('DisplayLineNumbers') and editor.marginWidth(0):
+            # self.adjustLineNumbers(editor,True)
+            
             
         if currentFilePath:
             fileSplit=os.path.splitext(str(currentFilePath))
@@ -2879,6 +3015,9 @@ class EditorWindow(QMainWindow):
                 self.commentStyleDict[activePanel.currentWidget()]=[lexer[1],lexer[2]] # associating comment style with the lexer
                 currentEncoding=self.getEditorFileEncoding(activePanel.currentWidget())
                 self.setPropertiesInEditorList(activePanel.currentWidget(),fileName,os.path.getmtime(str(fileName)),currentEncoding)
+                
+            #before returning we check if du to saveAs some documents have been modified
+            self.checkIfDocumentsWereModified()    
             return returnCode
 
         return False
@@ -3690,7 +3829,7 @@ class EditorWindow(QMainWindow):
             else:
                 self.showTabGuidelinesAct.setChecked(False)            
                 
-            if editor.marginWidth(0): # checking the width of margin 0
+            if editor.marginLineNumbers(0): # checking if margin 0 (default for line numbers) is enabled
                 self.showLineNumbersAct.setChecked(True)            
             else:
                 self.showLineNumbersAct.setChecked(False)            
@@ -4183,6 +4322,10 @@ class EditorWindow(QMainWindow):
             textEditLocal=_editor
         else:
             textEditLocal=self.getActiveEditor()            
+            
+        # if self.configuration.setting('DisplayLineNumbers') and textEditLocal.marginWidth(0):
+            # self.adjustLineNumbers(textEditLocal,True)
+            
             
         activeTab=textEditLocal.panel
         

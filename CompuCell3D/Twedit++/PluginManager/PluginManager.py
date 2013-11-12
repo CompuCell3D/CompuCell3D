@@ -106,7 +106,19 @@ class PluginManager(QObject):
             print '************PLUGIN NAME=',pluginName
             print bpd
             self.loadPlugin(pluginName)
-			
+            
+    def runForAllPlugins(self,_functionName,_argumentDict):
+        '''attempts to run function (_functionName) with arguments given by _argumentDict for all plugins
+        '''
+        
+        for pluginName, plugin in self.__activePlugins.iteritems():
+            try:
+                function=getattr(plugin, _functionName)        
+                function(_argumentDict)
+            except:
+                print 'PLUGIN: ',pluginName,' COULD NOT APPLY ',_functionName ,' with arguments=',_argumentDict
+            
+        
     def getActivePlugin(self,_name):
 		try:
 			return self.__activePlugins[_name]

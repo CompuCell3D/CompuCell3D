@@ -121,7 +121,7 @@ class MVCDrawView3D(MVCDrawViewBase):
             self.drawModel.setDrawingParametersObject(self.currentDrawingParameters)
             
         self.drawField(_bsd,fieldType)
-        self.qvtkWidget.repaint()
+        self.qvtkWidget().repaint()
         # self.Render()
         # if not self.usedDraw3DFlag and len(self.currentActors.keys()):
         if not self.usedDraw3DFlag and self.graphicsFrameWidget.ren.GetActors().GetNumberOfItems():        
@@ -167,7 +167,7 @@ class MVCDrawView3D(MVCDrawViewBase):
         # self.GetCurrentRenderer().ResetCameraClippingRange()
         
         self.__initDist = distance #camera.GetDistance()
-        self.qvtkWidget.repaint()
+        self.qvtkWidget().repaint()
 
     def setDim(self, fieldDim):
         #self.dim = [fieldDim.x+1 , fieldDim.y+1 , fieldDim.z]

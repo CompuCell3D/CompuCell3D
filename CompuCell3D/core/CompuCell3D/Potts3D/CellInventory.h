@@ -118,6 +118,7 @@ class /*DECLSPECIFIER*/ CellInventory
 	    void initCellInventoryByMultiType(cellListByType_t *_inventoryByTypePtr,std::vector<int> * _typeVecPtr);
 
 		CompartmentInventory & getClusterInventory(){return compartmentInventory;}
+		void cleanInventory();
 
       //BasicClassGroup * getPtr(cellInventoryIterator _itr){return const_cast<BasicClassGroup*>(*_itr); }
    private:

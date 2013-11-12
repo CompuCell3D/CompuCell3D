@@ -1,3 +1,7 @@
+from __future__ import with_statement
+# enabling with statement in python 2.5
+
+    
 from xml.parsers import expat
 import CC3DXML
 from CC3DXML import *
@@ -157,7 +161,13 @@ class Xml2Obj(object):
         Parser.EndElementHandler = self.EndElement
         Parser.CharacterDataHandler = self.CharacterData
         # Parse the XML File
+        # # # with open(filename) as file:
+            # # # ParserStatus = Parser.Parse(file.read(),1)
+        file=open(filename)
+        
         ParserStatus = Parser.Parse(open(filename).read(),1)
+        file.close()
+
         return self.root
 
     def ParseString(self, _string):

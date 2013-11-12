@@ -745,7 +745,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         # watch your screen you might see the pieces being rendered right
         # after one another.
         writer = vtk.vtkPNGWriter()
-        writer.SetInputConnection(renderLarge.GetOutputPort())
+        writer.SetInputConnection(renderLarge.GetOutputPort())        
         # # # print "GOT HERE fileName=",fileName
         writer.SetFileName(fileName)
         

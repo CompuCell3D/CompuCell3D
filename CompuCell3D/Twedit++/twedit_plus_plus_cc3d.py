@@ -158,7 +158,7 @@ class Twedit(object):
         # self.mainWindow.processCommandLine()
         self.mainWindow.openFileList(self.fileList)
         QApplication.setWindowIcon(QIcon("Twedit++/icons/twedit-icon.png"))
-        
+
         self.mainWindow.raise_() # to make sure on OSX window is in the foreground
         
         if sys.platform.startswith('win'):    

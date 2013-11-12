@@ -4,6 +4,35 @@ import string
 
 MODULENAME = '------- pythonSetupScripts/CC3DSimulationDataHandler.py: '
 
+def findRelativePathSegments(basePath,p, rest=[]):
+    """
+        This function finds relative path segments of path p with respect to base path    
+        It returns list of relative path segments and flag whether operation succeeded or not    
+    """
+    h,t = os.path.split(p)
+    pathMatch=False
+    if h==basePath:
+        pathMatch=True
+        return [t]+rest,pathMatch
+    print "(h,t,pathMatch)=",(h,t,pathMatch)
+    if len(h) < 1: return [t]+rest,pathMatch
+    if len(t) < 1: return [h]+rest,pathMatch
+    return findRelativePathSegments(basePath,h,[t]+rest)
+    
+def findRelativePath(basePath,p):
+    relativePathSegments,pathMatch = findRelativePathSegments(basePath,p)
+    if pathMatch:
+        relativePath=""
+        for i in range(len(relativePathSegments)):
+            segment = relativePathSegments[i]
+            relativePath += segment
+            if i != len(relativePathSegments)-1:
+                relativePath += "/" # we use unix style separators - they work on all (3) platforms
+        return relativePath
+    else:
+        return p
+
+
 class GenericResource(object):
     def __init__(self,_resourceName=''):
         self.resourceName=_resourceName
@@ -50,7 +79,42 @@ class CC3DSerializerResource(GenericResource):
             attributeDict={"RestartDirectory":self.restartDirectory}
             _rootElem.ElementCC3D('RestartSimulation',attributeDict)
             print MODULENAME,'attributeDict=',attributeDict
+
+            
+from ParameterScanUtils import ParameterScanUtils       
+     
+class CC3DParameterScanResource(CC3DResource):
+    def __init__(self):        
+        CC3DResource.__init__(self)
+        self.resourceName='CC3DParameterScanResource'
+        self.type='ParameterScan'
+        self.basePath=''
         
+        self.parameterScanXMLElements = {}
+        self.parameterScanFileToDataMap = {} # {file name:dictionary of parameterScanData} parameterScanDataMap={hash:parameterScanData}
+        # self.parameterScanDataMap = {}
+        self.fileTypeForEditor = 'xml'
+        self.parameterScanXMLHandler = None
+        # self.parameterScanEditor=None
+        
+        self.psu=ParameterScanUtils() # ParameterScanUtils is the class where all parsing and parameter scan data processing takes place
+        
+    def addParameterScanData(self,_file,_psd):
+        print 'self.basePath=',self.basePath
+        print '_file=',_file
+        relativePath=findRelativePath(self.basePath,_file) # relative path of the scanned simulation file w.r.t. project directory
+        print 'relativePath=',relativePath
+        self.psu.addParameterScanData(relativePath,_psd)
+        
+    def readParameterScanSpecs(self):
+        self.psu.readParameterScanSpecs(self.path)
+
+    def writeParameterScanSpecs(self):
+        self.psu.writeParameterScanSpecs(self.path)
+        
+        
+        
+            
 class CC3DSimulationData:
     def __init__(self):
         self.pythonScript=""
@@ -65,6 +129,7 @@ class CC3DSimulationData:
         self.windowDict = {}
         
         self.serializerResource = None
+        self.parameterScanResource = None
         
         self.resources={} # dictionary of resource files with description (types, plugin, etc)
         self.path="" # full path to project file
@@ -76,6 +141,15 @@ class CC3DSimulationData:
         return "CC3DSIMULATIONDATA: "+self.basePath+"\n"+"\tpython file: "+self.pythonScript+"\n"+"\txml file: "+self.xmlScript+"\n"+\
         "\tpifFile="+self.pifFile+"\n"+"\twindow script="+self.windowScript + str(self.resources)
         
+    def addNewParameterScanResource(self):
+        self.parameterScanResource=CC3DParameterScanResource()
+        self.parameterScanResource.path=os.path.abspath(os.path.join(self.basePath,'Simulation/ParameterScanSpecs.xml'))
+        
+    def removeParameterScanResource(self):        
+        self.parameterScanResource=None    
+    
+
+    
     def addNewSerializerResource(self,_outFreq=0,_multipleRestartDirs=False,_format='text',_restartDir=''):
         self.serializerResource = CC3DSerializerResource()
         
@@ -83,6 +157,13 @@ class CC3DSimulationData:
         self.serializerResource.serializerAllowMultipleRestartDirectories = _multipleRestartDirs
         self.serializerResource.serializerFileFormat = _format    
         self.serializerResource.restartDirectory = _restartDir
+        
+    def getResourcesByType(self,_type):
+        resourceList=[]
+        for key,resource in self.resources.iteritems():
+            if resource.type==_type:
+                resourceList.append(resource)
+        return resourceList
         
     def restartEnabled(self):
         if self.serializerResource:
@@ -128,6 +209,7 @@ class CC3DSimulationData:
         
     def removeResource(self,_fileName):
         fileName=os.path.abspath(_fileName)
+        print 'TRYING TO REMOVE RESOURCE _fileName=',_fileName
         # file name can be associated with many resources - we have to erase all such associations
         if fileName==self.xmlScript:
             self.xmlScript=""
@@ -146,6 +228,9 @@ class CC3DSimulationData:
         except LookupError,e:
             pass
             
+        print 'After removing resources'    
+        
+        print  self.resources   
         return 
             
 class CC3DSimulationDataHandler:
@@ -158,7 +243,7 @@ class CC3DSimulationDataHandler:
         simulationPath = os.path.join(_dir,'Simulation')
         
         if not os.path.exists(simulationPath):
-            os.mkdir(simulationPath)
+            os.makedirs(simulationPath)
             
         #copy project file        
         try:            
@@ -177,7 +262,12 @@ class CC3DSimulationDataHandler:
             
         if self.cc3dSimulationData.windowScript!="":
             shutil.copy(self.cc3dSimulationData.windowScript,os.path.join(simulationPath,os.path.basename(self.cc3dSimulationData.windowScript))) 
-        
+            
+        if self.cc3dSimulationData.parameterScanResource:
+            
+            shutil.copy(self.cc3dSimulationData.parameterScanResource.path , os.path.join(simulationPath,os.path.basename(self.cc3dSimulationData.parameterScanResource.path))) 
+
+            
         #copy resource files
         fileNames = self.cc3dSimulationData.resources.keys()
         
@@ -264,6 +354,8 @@ class CC3DSimulationDataHandler:
             print MODULENAME,'  -------- self.cc3dSimulationData.windowDict= ',self.cc3dSimulationData.windowDict
                 
 
+                
+                
         if root_element.getFirstElement("SerializeSimulation"):
             serializeElem = root_element.getFirstElement("SerializeSimulation")
             self.cc3dSimulationData.serializerResource = CC3DSerializerResource()
@@ -285,6 +377,20 @@ class CC3DSimulationDataHandler:
             if restartElem.findAttribute("RestartDirectory"):                        
                 self.cc3dSimulationData.serializerResource.restartDirectory = restartElem.getAttribute("RestartDirectory")
         
+
+        if root_element.getFirstElement("ParameterScan"):
+            psFile = root_element.getFirstElement("ParameterScan").getText()
+            self.cc3dSimulationData.parameterScanResource= CC3DParameterScanResource()
+            self.cc3dSimulationData.parameterScanResource.path=os.path.abspath(os.path.join(bp,psFile)) #normalizing path to python script
+            self.cc3dSimulationData.parameterScanResource.type = 'ParameterScan'
+            self.cc3dSimulationData.parameterScanResource.basePath=self.cc3dSimulationData.basePath # setting same base path for parameter scan as for the project - necessary to get relative paths in the parameterSpec file
+            #reading content of XML parameter scan specs
+            # ------------------------------------------------------------------ IMPORTANT IMPOTRANT ------------------------------------------------------------------
+            # WE HAVE TO CALL MANUALLYreadParameterScanSpecs because if it is called each time CC3DSiulationDataHandler calls readCC3DFileFormat it may cause problems with parameter scan
+            # namely one process will attempt to read parameter scan specs while another might try to write to it and error will get thrown and synchronization gets lost
+            # plus readCC3DFileFormat should read .cc3d only , not files which are included from .cc3d
+            # ------------------------------------------------------------------ IMPORTANT IMPOTRANT ------------------------------------------------------------------            
+            # # # self.cc3dSimulationData.parameterScanResource.readParameterScanSpecs()
         
         resourceList = XMLUtils.CC3DXMLListPy(root_element.getElements("Resource"))
 #        print MODULENAME,'  readCC3DFileFormat():  resourceList=',resourceList
@@ -327,7 +433,7 @@ class CC3DSimulationDataHandler:
         if not _resource.copy:
             attributeDict["Copy"]="No"
             
-        return elName,attributeDict,self.findRelativePath(self.cc3dSimulationData.basePath,_resource.path)
+        return elName,attributeDict,findRelativePath(self.cc3dSimulationData.basePath,_resource.path)
     
     def writeCC3DFileFormat(self,_fileName):        
         from XMLUtils import ElementCC3D
@@ -384,35 +490,14 @@ class CC3DSimulationDataHandler:
         if csd.serializerResource:
             csd.serializerResource.appendXMLStub(simulationElement)
             
+        if csd.parameterScanResource:
+            elName,attributeDict,path = self.formatResourceElement(csd.parameterScanResource,'ParameterScan')
+            simulationElement.ElementCC3D(elName,attributeDict,path)
+            
         simulationElement.CC3DXMLElement.saveXML(str(_fileName))   
     
     # Based on code by  Cimarron Taylor
     # Date: July 6, 2003
     
-    def findRelativePathSegments(self,basePath,p, rest=[]):
-        """
-            This function finds relative path segments of path p with respect to base path    
-            It returns list of relative path segments and flag whether operation succeeded or not    
-        """
-        h,t = os.path.split(p)
-        pathMatch=False
-        if h==basePath:
-            pathMatch=True
-            return [t]+rest,pathMatch
-        print "(h,t,pathMatch)=",(h,t,pathMatch)
-        if len(h) < 1: return [t]+rest,pathMatch
-        if len(t) < 1: return [h]+rest,pathMatch
-        return self.findRelativePathSegments(basePath,h,[t]+rest)
-        
-    def findRelativePath(self,basePath,p):
-        relativePathSegments,pathMatch = self.findRelativePathSegments(basePath,p)
-        if pathMatch:
-            relativePath=""
-            for i in range(len(relativePathSegments)):
-                segment = relativePathSegments[i]
-                relativePath += segment
-                if i != len(relativePathSegments)-1:
-                    relativePath += "/" # we use unix style separators - they work on all (3) platforms
-            return relativePath
-        else:
-            return p
+
+    
