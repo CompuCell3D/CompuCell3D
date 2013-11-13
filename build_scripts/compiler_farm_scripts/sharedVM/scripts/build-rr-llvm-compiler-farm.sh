@@ -12,10 +12,8 @@ export number_of_cpus=8
 export install_path=~/install_projects_${VERSION}
 eval install_path=$install_path
 
-
-
-#pull latest CC3D_GIT
 cd $CC3D_GIT_DIR
+git checkout master
 git pull
 
 cd $RR_LLVM_GIT_DIR

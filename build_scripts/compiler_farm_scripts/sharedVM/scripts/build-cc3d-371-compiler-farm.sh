@@ -59,12 +59,4 @@ cd ${install_path}_deb
 
 cp *.deb $CC3D_BINARIES_DIR
 
-#this command can be executed password free if you do e.g. 
-# echo  "%m ALL=(ALL) NOPASSWD: /sbin/poweroff, /sbin/reboot, /sbin/shutdown" >> poweroff.sudo
-# sudo chmod 0440 poweroff.sudo
-# sudo mv poweroff.sudo /etc/sudoers.d/
-
-# /sbin/poweroff
-# cd $CC3D_BINARIES_DIR
-# svn add *
-# svn commit -m "build deb package "
+"
