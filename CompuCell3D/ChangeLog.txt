@@ -83,4 +83,26 @@ Version 3.6.2
         
      Bug Fixes:   
      
+Version 3.7.0
+
+    Additions:
+        
+        GPU Reaction-Diffusion Solvers (explicit and implicit)
+        RoadRunner-basedSBMLsolvers
+        Simplified and improved Steppable API (backward compatibility maintained)
+        Numpy-based syntax for field manipulation    
+        Demo integration with Dolfin- works on linux only
+        
+     Bug Fixes:   
      
+Version 3.7.1
+
+    Additions:
+        LLVM-based RoadRunner as a backendfor SBM Solver
+        Parameter Scans
+        Improved Twedit
+        On Windows switched compilers from VS2008 to VS 2010
+        
+     Bug Fixes:   
+        Fixed sneaky bug related to cell inventory ordering - affected windows only and when cells were deleted it could cause CC3D crash. Same for FocalPOintPLasticity plugin ordering of the links was buggy on windows. 
+        
