@@ -1,5 +1,5 @@
 # example command:
-# python .\win_cc3d_builder.py  -p D:/install_projects/3.7.1 -s D:/CC3D_GIT  -i D:/CC3D_FILES_SVN/binaries/3.7.1/windows
+# python .\win_cc3d_builder.py  -p D:/install_projects/3.7.1 -s D:/CC3D_GIT  -i D:/CC3D_FILES_SVN/binaries/3.7.1/windows -v 3.7.1.0
 
 
 import os,sys
@@ -46,7 +46,7 @@ CMAKE_PATH=os.path.abspath('C:/Program Files (x86)/CMake 2.8/bin/cmake.exe')
 
 CMAKE_GENERATOR_NAME='NMake Makefiles'
 
-# version has to have format 3.7.0.0 - four numbers otherwise NSIS crashes, strange...
+# version has to have format 3.7.1.0 - four numbers otherwise NSIS crashes, strange...
 
 # -------------- parsing command line
 from optparse import OptionParser
@@ -60,7 +60,6 @@ parser.add_option("-v", "--version", dest="version",action="store", type="string
 parser.add_option("--cc3d",  action="store_true", default=False, dest="cc3d",help='this option picks CompuCell3D to be compiled. Using it will require all other project files to be set individually')
 parser.add_option("--bionet",  action="store_true", default=False, dest="bionet",help='this option picks BionetSolver to be compiled. Using it will require all other project files to be set individually')
 parser.add_option("--celldraw",  action="store_true", default=False, dest="celldraw",help='this option picks BionetSolver to be compiled. Using it will require all other project files to be set individually')
-parser.add_option("--rr-depend",  action="store_true", default=False, dest="rr_depend",help='this option picks RR dependencies to be compiled. Using it will require all other project files to be set individually')
 parser.add_option("--rr",  action="store_true", default=False, dest="rr",help='this option picks RR to be compiled. Using it will require all other project files to be set individually')
 # parser.add_option('--build-installer',action='store_true', default=False, dest="build_installer",help='this option tells the script to build windows installer')
 
@@ -120,10 +119,6 @@ if options.celldraw:
     BUILD_ALL=False
     BUILD_CELLDRAW=True
     
-# # # if options.rr_depend:
-    # # # BUILD_ALL=False
-    # # # BUILD_RR_DEPEND=True
-
 if options.rr:
     BUILD_ALL=False
     BUILD_RR=True
@@ -136,8 +131,7 @@ if BUILD_ALL:
     BUILD_RR=True
     # # # BUILD_RR_DEPEND=True
     
-print 'BUILD_ALL=',BUILD_ALL
-print 'BUILD_RR=',BUILD_RR
+
 
 
 if not os.path.isdir(BUILD_ROOT):
@@ -169,8 +163,7 @@ if BUILD_BIONET:
 
     BIONET_SOURCE_PATH=os.path.abspath(os.path.join(SOURCE_ROOT,'BionetSolver/0.0.6'))
     BIONET_BUILD_PATH=os.path.abspath(os.path.join(BUILD_ROOT,'BionetSolver'))
-    
-    print 'BIONET_SOURCE_PATH=',BIONET_SOURCE_PATH  
+        
     
     if not os.path.isdir(BIONET_BUILD_PATH):   
         os.makedirs(BIONET_BUILD_PATH)
@@ -197,53 +190,13 @@ if  BUILD_CELLDRAW:
 
   ############# END OF  CELLDRAW 
 
-# # # if BUILD_RR_DEPEND:
-
-    # # # ############# BUILDING RR DEPENDENCIES
-    # # # RR_DEPEND_BUILD_PATH=os.path.abspath(os.path.join(BUILD_ROOT,'RRDepend'))
-    # # # RR_DEPEND_SOURCE_PATH=os.path.abspath(os.path.join(SOURCE_ROOT,'RoadRunner/ThirdParty'))
-    # # # CMAKE_C_FLAGS_RELEASE="/MD /Od /Ob0 /D NDEBUG"    
-    
-    # # # if not os.path.isdir(RR_DEPEND_BUILD_PATH):   
-        # # # os.makedirs(RR_DEPEND_BUILD_PATH)
-    # # # os. chdir(RR_DEPEND_BUILD_PATH)    
-
-    # # # subprocess.call([CMAKE_PATH,'-G', CMAKE_GENERATOR_NAME, '-DCMAKE_BUILD_TYPE:STRING=Release','-DCMAKE_INSTALL_PREFIX:PATH='+INSTALL_PREFIX+'_RR','-DCMAKE_C_FLAGS_RELEASE:STRING='+CMAKE_C_FLAGS_RELEASE, RR_DEPEND_SOURCE_PATH])    
-    
-    # # # subprocess.call(['nmake','install'])   
-    
-    # # # ############# END OF BUILDING RR DEPENDENCIES
-
 if BUILD_RR:
 
     ############# BUILDING RR - actually in this case we are copying prebuilt binaries
-    # rrBinariesDir=os.path.join(WIN_DEPENDENCIES_ROOT,'roadrunner')
-    # print 'rrBinariesDir=',rrBinariesDir
-    # os. chdir(rrBinariesDir)
-    import glob
-    rrFiles=glob.glob(RR_BINARIES_DIR+'/*')
-    print 'rrFiles=',rrFiles
-    destinationDir=os.path.join(INSTALL_PREFIX,'lib/python')
-    for rrFile in rrFiles:
-        print 'rrFile=',rrFile
-        print 'dst rrFile=',os.path.join(destinationDir,os.path.basename(rrFile))
-        shutil.copy(os.path.join(RR_BINARIES_DIR,rrFile),os.path.abspath(os.path.join(destinationDir,os.path.basename(rrFile))))
-    
-# # # if BUILD_RR:
-
-    # # # ############# BUILDING RR
-    # # # RR_BUILD_PATH=os.path.abspath(os.path.join(BUILD_ROOT,'RR'))
-    # # # RR_SOURCE_PATH=os.path.abspath(os.path.join(SOURCE_ROOT,'RoadRunner'))
-    
-    # # # if not os.path.isdir(RR_BUILD_PATH):   
-        # # # os.makedirs(RR_BUILD_PATH)
-    # # # os. chdir(RR_BUILD_PATH)    
-
-    # # # subprocess.call([CMAKE_PATH,'-G', CMAKE_GENERATOR_NAME ,'-DCMAKE_BUILD_TYPE:STRING=Release','-DCMAKE_INSTALL_PREFIX:PATH='+INSTALL_PREFIX+'_RR','-DBUILD_CC3D_EXTENSION:BOOL=ON','-DTHIRD_PARTY_INSTALL_FOLDER:PATH='+INSTALL_PREFIX+'_RR', RR_SOURCE_PATH])    
-    # # # subprocess.call(['nmake','install'])       
-    
-  # # # ############# END OF BUILDING RR
-
+    destinationDir=os.path.join(INSTALL_PREFIX,'lib/python/roadrunner')
+    if os.path.exists(destinationDir):
+        shutil.rmtree(destinationDir)
+    shutil.copytree(RR_BINARIES_DIR,destinationDir)
   
 if  BUILD_INSTALLER:    
     #revision number 
@@ -255,7 +208,7 @@ if  BUILD_INSTALLER:
     INSTALLER_NAME=os.path.abspath(os.path.join(INSTALLER_DIR,'setup-'+version+'v'+revisionNumber+'.exe'))
       
     os.chdir(CURRENT_DIR)    
-    subprocess.call(['python','win_cc3d_installer_creator.py','-d',INSTALL_PREFIX,' -v',INSTALLER_VERSION,'-i',INSTALLER_NAME])    
+    subprocess.call(['python','win_cc3d_installer_creator.py','-d',INSTALL_PREFIX,'-v',INSTALLER_VERSION,'-i',INSTALLER_NAME])    
     
   
 t2 = time.time()

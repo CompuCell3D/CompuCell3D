@@ -32,6 +32,7 @@ today=date.today()
 revisionNumber=str(today.year)+str(today.month).zfill(2)+str(today.day).zfill(2)
 version=options.version
 
+
 INSTALLER_NAME=options.installer_name
 
 if INSTALLER_NAME=='':

@@ -168,7 +168,10 @@ Section -Prerequisites
 
   SetOutPath $INSTDIR\Prerequisites
     File "${INSTALLATION_SOURCE_DIR}\Prerequisites\vcredist_x86.exe"
-    ExecWait "$INSTDIR\Prerequisites\vcredist_x86.exe /q:a /c:$\"VCREDI~1.EXE /q:a /c:$\"$\"msiexec /i vcredist.msi /qb!$\"$\" $\""    
+    ; ExecWait "$INSTDIR\Prerequisites\vcredist_x86.exe /q:a /c:$\"VCREDI~1.EXE /q:a /c:$\"$\"msiexec /i vcredist.msi /qb!$\"$\" $\""           
+    ExecWait "$INSTDIR\Prerequisites\vcredist_x86.exe /q /norestart"
+    
+    
     Goto vs2008Libs
   vs2008Libs:
   
