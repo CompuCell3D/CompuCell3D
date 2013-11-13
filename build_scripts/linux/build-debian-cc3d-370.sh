@@ -1,4 +1,4 @@
-# example command ./build-debian-cc3d-371.sh -s=~/CC3D_GIT -p=~/install_projects/3.7.0 -c=4
+# example command ./build-debian-cc3d.sh -s=~/CC3D_GIT -p=~/install_projects/3.7.0 -c=4
 #command line parsing
 
 function run_and_watch_status {
@@ -12,7 +12,7 @@ function run_and_watch_status {
     echo "STATUS=$status"
     if [ $status -ne 0 ]; then
         echo "error with $1"
-        exit $status
+        exit
     fi
     return $status    
 
@@ -23,7 +23,7 @@ export BUILD_ROOT=~/BuildCC3D
 export SOURCE_ROOT=~/CODE_TGIT_NEW
 export DEPENDENCIES_ROOT=~/install_projects
 export INSTALL_PREFIX=~/install_projects/cc3d
-export RR_INSTALL_PATH=~/install_projects_RR_LLVM/RR_LLVM
+
 
 export BUILD_CC3D=NO
 export BUILD_BIONET=NO
@@ -152,7 +152,6 @@ echo MAKE_MULTICORE= $MAKE_MULTICORE
 MAKE_MULTICORE_OPTION=-j$MAKE_MULTICORE
 echo OPTION=$MAKE_MULTICORE_OPTION
 
-
 mkdir -p $BUILD_ROOT
 mkdir -p $DEPENDENCIES_ROOT
 
@@ -240,49 +239,41 @@ then
   ############# END OF  CELLDRAW 
 fi
 
-if [ "$BUILD_RR" == YES ]
+if [ "$BUILD_RR_DEPEND" == YES ]
 then
-  ############# COPY EXISTING RR_LLVM PYTHON INSTALLATION
-  run_and_watch_status COPY_ROAD_RUNNER cp -r ${RR_INSTALL_PATH}/site-packages/roadrunner ${INSTALL_PREFIX}/lib/python  
-  ############# COPY EXISTING RR_LLVM PYTHON INSTALLATION
+  ############# BUILDING CC3D
+  mkdir -p $BUILD_ROOT/RRDepend
+  cd $BUILD_ROOT/RRDepend
+  
+
+  #checking if kernel is 32 or 64 bit
+  BITS=$( getconf LONG_BIT )
+
+  echo BITS = $BITS
+
+  OPTIMIZATION_FLAGS= 
+
+  if [ ! $BITS -eq 64 ]
+  then
+      
+      # since you cannot pass cmake options that have spaces to cmake command line the alternatice is to prepare initial CmakeCache.txt file and put those options there...
+      echo 'CMAKE_C_FLAGS_RELEASE:STRING=-O0 -DNDEBUG'>>CMakeCache.txt
+  fi  
+  
+
+  run_and_watch_status THIRD_PARTY_CMAKE_CONFIG cmake -G "Unix Makefiles"  -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_PREFIX}_RR -DCMAKE_BUILD_TYPE:STRING=Release $SOURCE_ROOT/RoadRunner/ThirdParty 
+  run_and_watch_status THIRD_PARTY_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION VERBOSE=1 && make install
+  ############# END OF BUILDING CC3D
 fi
 
-
-# # # if [ "$BUILD_RR_DEPEND" == YES ]
-# # # then
-  # # # ############# BUILDING CC3D
-  # # # mkdir -p $BUILD_ROOT/RRDepend
-  # # # cd $BUILD_ROOT/RRDepend
-  
-
-  # # # #checking if kernel is 32 or 64 bit
-  # # # BITS=$( getconf LONG_BIT )
-
-  # # # echo BITS = $BITS
-
-  # # # OPTIMIZATION_FLAGS= 
-
-  # # # if [ ! $BITS -eq 64 ]
-  # # # then
-      
-      # # # # since you cannot pass cmake options that have spaces to cmake command line the alternatice is to prepare initial CmakeCache.txt file and put those options there...
-      # # # echo 'CMAKE_C_FLAGS_RELEASE:STRING=-O0 -DNDEBUG'>>CMakeCache.txt
-  # # # fi  
-  
-
-  # # # run_and_watch_status THIRD_PARTY_CMAKE_CONFIG cmake -G "Unix Makefiles"  -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_PREFIX}_RR -DCMAKE_BUILD_TYPE:STRING=Release $SOURCE_ROOT/RoadRunner/ThirdParty 
-  # # # run_and_watch_status THIRD_PARTY_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION VERBOSE=1 && make install
-  # # # ############# END OF BUILDING CC3D
-# # # fi
-
-# # # if [ "$BUILD_RR" == YES ]
-# # # then
-  # # # ############# BUILDING CC3D
-  # # # mkdir -p $BUILD_ROOT/RR
-  # # # cd $BUILD_ROOT/RR
+if [ "$BUILD_RR" == YES ]
+then
+  ############# BUILDING CC3D
+  mkdir -p $BUILD_ROOT/RR
+  cd $BUILD_ROOT/RR
 
 
-  # # # run_and_watch_status RR_CMAKE_CONFIG cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_PREFIX}_RR -DBUILD_CC3D_EXTENSION:BOOL=ON -DTHIRD_PARTY_INSTALL_FOLDER:PATH=${INSTALL_PREFIX}_RR -DCC3D_INSTALL_PREFIX:PATH=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE:STRING=Release $SOURCE_ROOT/RoadRunner 
-  # # # run_and_watch_status RR_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION VERBOSE=1 && make install
-  # # # ############# END OF BUILDING CC3D
-# # # fi
+  run_and_watch_status RR_CMAKE_CONFIG cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_PREFIX}_RR -DBUILD_CC3D_EXTENSION:BOOL=ON -DTHIRD_PARTY_INSTALL_FOLDER:PATH=${INSTALL_PREFIX}_RR -DCC3D_INSTALL_PREFIX:PATH=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE:STRING=Release $SOURCE_ROOT/RoadRunner 
+  run_and_watch_status RR_COMPILE_AND_INSTALL make $MAKE_MULTICORE_OPTION VERBOSE=1 && make install
+  ############# END OF BUILDING CC3D
+fi

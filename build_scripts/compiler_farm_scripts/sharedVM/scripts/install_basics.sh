@@ -15,13 +15,21 @@
 # prior to enabling shared folders one has to install guest additions on guest system (in guest system Vbox window click  Devices->Install Guest Additions ...). If gues system is linux you must have dkms module installed before attempting to install guest additions
 sudo apt-get install mc build-essential dkms
 sudo useradd -G vboxsf m
-sudo apt-get install libvtk5-qt4-dev g++ swig libqwt5-qt4-dev python-qt4 python-qscintilla2 cmake-gui python-qt4-gl python-vtk python-qwt5-qt4 python-dev libxml2-dev build-essential git
+sudo apt-get install libvtk5-qt4-dev g++ swig libqwt5-qt4-dev python-qt4 python-qscintilla2 cmake-gui python-qt4-gl python-vtk python-qwt5-qt4 python-dev libxml2-dev build-essential git llvm-3.2-dev
 
 export CC3D_GIT_DIR=~/CC3D_GIT
 
 mkdir $CC3D_GIT_DIR
 cd $CC3D_GIT_DIR
 git clone https://github.com/CompuCell3D/CompuCell3D.git .
+
+
+export RR_LLVM_GIT_DIR=~/RR_LLVM_GIT
+
+mkdir $RR_LLVM_GIT_DIR
+cd $RR_LLVM_GIT_DIR
+git clone https://github.com/AndySomogyi/roadrunner.git .
+
 
 # adding group for folder sharing on VirtualBox
 sudo groupadd vboxsf

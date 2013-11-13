@@ -3,7 +3,7 @@ Version: <VERSION>
 Architecture: <ARCHITECTURE>
 Maintainer: Maciek Swat <mswat@indiana.edu>
 Installed-Size: <INSTALLED_SIZE>
-Depends: libc6, python2.6 | python2.7, libqtcore4 (>= 4:4.6.3), libqtgui4 (>= 4:4.6.3), libqt4-opengl,  python-opengl, python-qscintilla2 (>= 2.4.3), python-qt4 (>= 4.7.3), python-qt4-gl (>= 4.7.3), python-qwt5-qt4, python-sip, python-vtk (>= 5.4.2), python-numpy, build-essential, libxml2-dev 
+Depends: libc6, python2.6 | python2.7, libqtcore4 (>= 4:4.6.3), libqtgui4 (>= 4:4.6.3), libqt4-opengl,  python-opengl, python-qscintilla2 (>= 2.4.3), python-qt4 (>= 4.7.3), python-qt4-gl (>= 4.7.3), python-qwt5-qt4, python-sip, python-vtk (>= 5.4.2), python-numpy, build-essential, libxml2-dev <EXTRA_DEPS> 
 Section: science
 Priority: extra
 Homepage: www.compucell3d.org
