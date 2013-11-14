@@ -304,7 +304,7 @@ class ThemeManager(object):
         # # # print 'lexerName=',lexerLanguage
         # # # print 'theme=',theme.name
         # # # print 'theme.lexerStyleDict.keys()=',theme.lexerStyleDict.keys()
-        print 'lexer language=',lexerLanguage.lower()
+        # print 'lexer language=',lexerLanguage.lower()
         try:
             nppStylerLanguageName=self.sciltillaLexerToNppTheme[lexerLanguage.lower()]
         except LookupError,e:
@@ -314,7 +314,7 @@ class ThemeManager(object):
         lexerStyle=theme.getLexerStyle(nppStylerLanguageName)
         # # # lexerStyle=theme.getLexerStyle(lexerLanguage.lower())
         
-        print 'lexerStyle=',lexerStyle
+        # print 'lexerStyle=',lexerStyle
         # print 'theme.lexerStyleDict=',theme.lexerStyleDict
         
         if not lexerStyle:return
@@ -325,8 +325,8 @@ class ThemeManager(object):
         
         
         for wordStyle in lexerStyle.wordStyles:
-            print 'wordStyle.styleID=',wordStyle.styleID
-            print 'wordStyle.fgColor=',wordStyle.fgColor
+            # print 'wordStyle.styleID=',wordStyle.styleID
+            # print 'wordStyle.fgColor=',wordStyle.fgColor
             _editor.SendScintilla(QsciScintilla.SCI_STYLESETFORE,wordStyle.styleID,N2S(wordStyle.fgColor))    
             _editor.SendScintilla(QsciScintilla.SCI_STYLESETBACK,wordStyle.styleID,N2S(wordStyle.bgColor))    
 
