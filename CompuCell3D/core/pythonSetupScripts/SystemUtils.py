@@ -34,24 +34,7 @@ def setSwigPaths():
         if not appended:
             sys.path.append(soslib_path)    
         # sys.path.append(environ["SOSLIB_PATH"])
-        
-def getCC3DRunScriptPath():        
-    '''returns full path name to comand line run script
-    '''
-    import sys,os
-    from os import environ
-    
-    cc3dPath=None
-    if sys.platform.startswith('win'):
-        cc3dPath=os.path.join(environ['PREFIX_CC3D'],'runScript.bat')
-    elif sys.platform.startswith('darwin'):
-        cc3dPath=os.path.join(environ['PREFIX_CC3D'],'runScript.command')
-    else : # linux/unix
-        cc3dPath=os.path.join(environ['PREFIX_CC3D'],'runScript.sh')
-        
-    cc3dPath=os.path.abspath(cc3dPath)
-    return cc3dPath
-        
+                
 def getCC3DPlayerRunScriptPath():        
     '''returns full path name to player run script
     '''

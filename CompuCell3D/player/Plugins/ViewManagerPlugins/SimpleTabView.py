@@ -2330,8 +2330,12 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
             from ParameterScanUtils import getParameterScanCommandLineArgList
             from SystemUtils import getCC3DPlayerRunScriptPath
-            
-            popenArgs =[getCC3DPlayerRunscriptPath()] +getParameterScanCommandLineArgList(fileName)
+            print 'getCC3DPlayerRunScriptPath=',getCC3DPlayerRunScriptPath()
+            # had to use tw-line to do simple thing
+            cc3dPlayerRunScriptPath=getCC3DPlayerRunScriptPath()
+            popenArgs =[ cc3dPlayerRunScriptPath ] +getParameterScanCommandLineArgList(fileName)
+            # this code, although valid, will not work on Apple....
+            # popenArgs =[ getCC3DPlayerRunscriptPath() ] +getParameterScanCommandLineArgList(fileName)
             
             from subprocess import Popen
             cc3dProcess = Popen(popenArgs)
