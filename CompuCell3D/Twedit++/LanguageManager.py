@@ -223,6 +223,8 @@ class LanguageManager:
             editor.lexer().setFont(self.editorWindow.baseFont)  
             # print "commentStyle=",self.languageLexerDictionary[str(_language)][1:3]
             self.editorWindow.commentStyleDict[editor]= self.languageLexerDictionary[str(_language)][1:3]       
+            
+            self.editorWindow.setEditorProperties(editor) # after changing lexer we have to set its properties incluging those defined by themes
         except (KeyError,IndexError):
             pass
         

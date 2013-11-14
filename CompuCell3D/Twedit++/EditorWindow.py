@@ -1159,18 +1159,9 @@ class EditorWindow(QMainWindow):
         _editor.setCaretLineVisible(True)
         _editor.setCaretLineBackgroundColor(QtGui.QColor('#EFEFFB'))        
         # _editor.modificationChanged.connect(self.modificationChangedSlot)
-
-        if not sys.platform.startswith('win'):
-            _editor.setEolMode(QsciScintilla.EolUnix)
-
-        else:
-            _editor.setEolMode(QsciScintilla.EolWindows) # windows eol only on system whose name starts with 'win'
-            
-        # _editor.setEolMode(QsciScintilla.EolMac) # SETTING EOL TO WINDOWS MESSES THINGS UP AS SAVE FCN (MOST LIKELY)ADS EXTRA CR SIGNS - 
-        # _editor.setUtf8(True) # using UTF-8 encoding        
+        
         # _editor.setEolMode(QsciScintilla.EolWindows) # SETTING EOL TO WINDOWS MESSES THINGS UP AS SAVE FCN (MOST LIKELY)ADS EXTRA CR SIGNS - 
         # _editor.setEolMode(QsciScintilla.EolUnix) # SETTING EOL TO WINDOWS MESSES THINGS UP AS SAVE FCN (MOST LIKELY)ADS EXTRA CR SIGNS - 
-
         # _editor.setEolMode(QsciScintilla.EolMac) # SETTING EOL TO WINDOWS MESSES THINGS UP AS SAVE FCN (MOST LIKELY)ADS EXTRA CR SIGNS - 
         # _editor.setUtf8(True) # using UTF-8 encoding
         
@@ -3010,6 +3001,8 @@ class EditorWindow(QMainWindow):
                 else:# lexer could not be guessed - use default lexer
                     activePanel.currentWidget().setLexer(None)
                     
+                self.setEditorProperties(activePanel.currentWidget())   
+                
                 tabIndex=activePanel.indexOf(activePanel.currentWidget())
                 activePanel.setTabText(tabIndex,self.strippedName(fileName))
                 self.commentStyleDict[activePanel.currentWidget()]=[lexer[1],lexer[2]] # associating comment style with the lexer

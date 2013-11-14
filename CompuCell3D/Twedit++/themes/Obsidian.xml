@@ -304,7 +304,7 @@ Notepad++ Custom Style
             <WordsStyle name="STRING SINGLE" styleID="11" fgColor="FF8409" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
             <WordsStyle name="IDENTIFIER" styleID="12" fgColor="E0E2E4" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
         </LexerType>
-        <LexerType name="java" desc="Java" ext="">
+        <LexerType name="java" desc="Java" ext="">  
             <WordsStyle name="PREPROCESSOR" styleID="9" fgColor="A082BD" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
             <WordsStyle name="DEFAULT" styleID="11" fgColor="E0E2E4" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
             <WordsStyle name="INSTRUCTION WORD" styleID="5" fgColor="93C763" bgColor="293134" fontName="" fontStyle="1" fontSize="" keywordClass="instre1" />
@@ -323,18 +323,18 @@ Notepad++ Custom Style
             <WordsStyle name="COMMENT DOC KEYWORD ERROR" styleID="18" fgColor="6C788C" bgColor="293134" fontName="" fontStyle="1" fontSize="" />
         </LexerType>
         <LexerType name="javascript" desc="Javascript" ext="">
-            <WordsStyle name="DEFAULT" styleID="41" fgColor="E0E2E4" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
-            <WordsStyle name="NUMBER" styleID="45" fgColor="FFCD22" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
-            <WordsStyle name="WORD" styleID="46" fgColor="E0E2E4" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
-            <WordsStyle name="KEYWORD" styleID="47" fgColor="93C763" bgColor="293134" fontName="" fontStyle="1" fontSize="" keywordClass="instre1" />
-            <WordsStyle name="DOUBLESTRING" styleID="48" fgColor="EC7600" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
-            <WordsStyle name="SINGLESTRING" styleID="49" fgColor="EC7600" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
-            <WordsStyle name="SYMBOLS" styleID="50" fgColor="E8E2B7" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
-            <WordsStyle name="STRINGEOL" styleID="51" fgColor="E0E2E4" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
-            <WordsStyle name="REGEX" styleID="52" fgColor="D39745" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
-            <WordsStyle name="COMMENT" styleID="42" fgColor="818E96" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
-            <WordsStyle name="COMMENTLINE" styleID="43" fgColor="818E96" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
-            <WordsStyle name="COMMENTDOC" styleID="44" fgColor="6C788C" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
+            <WordsStyle name="DEFAULT" styleID="11" fgColor="E0E2E4" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
+            <WordsStyle name="NUMBER" styleID="4" fgColor="FFCD22" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
+            <WordsStyle name="WORD" styleID="16" fgColor="E0E2E4" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
+            <WordsStyle name="KEYWORD" styleID="9" fgColor="93C763" bgColor="293134" fontName="" fontStyle="1" fontSize="" keywordClass="instre1" />
+            <WordsStyle name="DOUBLESTRING" styleID="7" fgColor="EC7600" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
+            <WordsStyle name="SINGLESTRING" styleID="8" fgColor="EC7600" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
+            <WordsStyle name="SYMBOLS" styleID="9" fgColor="E8E2B7" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
+            <WordsStyle name="STRINGEOL" styleID="10" fgColor="E0E2E4" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
+            <WordsStyle name="REGEX" styleID="14" fgColor="D39745" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
+            <WordsStyle name="COMMENT" styleID="1" fgColor="818E96" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
+            <WordsStyle name="COMMENTLINE" styleID="2" fgColor="818E96" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
+            <WordsStyle name="COMMENTDOC" styleID="3" fgColor="6C788C" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
         </LexerType>
         <LexerType name="kix" desc="KiXtart" ext="">
             <WordsStyle name="DEFAULT" styleID="31" fgColor="E0E2E4" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
@@ -373,9 +373,9 @@ Notepad++ Custom Style
             <WordsStyle name="STRING" styleID="6" fgColor="EC7600" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
             <WordsStyle name="CHARACTER" styleID="7" fgColor="FF8409" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
             <WordsStyle name="OPERATOR" styleID="10" fgColor="E8E2B7" bgColor="293134" fontName="" fontStyle="0" fontSize="" />
-            <WordsStyle name="FUNC1" styleID="13" fgColor="678CB1" bgColor="293134" fontName="" fontStyle="0" fontSize="" keywordClass="instre2" />
+<!--             <WordsStyle name="FUNC1" styleID="13" fgColor="678CB1" bgColor="293134" fontName="" fontStyle="0" fontSize="" keywordClass="instre2" />
             <WordsStyle name="FUNC2" styleID="14" fgColor="678CB1" bgColor="293134" fontName="" fontStyle="0" fontSize="" keywordClass="type1" />
-            <WordsStyle name="FUNC3" styleID="15" fgColor="678CB1" bgColor="293134" fontName="" fontStyle="0" fontSize="" keywordClass="type2" />
+            <WordsStyle name="FUNC3" styleID="15" fgColor="678CB1" bgColor="293134" fontName="" fontStyle="0" fontSize="" keywordClass="type2" /> -->
         </LexerType>
         <LexerType name="makefile" desc="Makefile" ext="">
             <WordsStyle name="DEFAULT" styleID="0" fgColor="E0E2E4" bgColor="293134" fontName="" fontStyle="0" fontSize="" />

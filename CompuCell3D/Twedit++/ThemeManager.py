@@ -56,6 +56,9 @@ class ThemeManager(object):
         self.tweditRootPath = os.path.dirname(Configuration.__file__)
         self.themeDir=os.path.join(self.tweditRootPath,'themes')
         
+        # this dictionary translates scintilla lexer language name to the language names used by Notepad++ theme xml files. Usually no translation is necessary but for example c++ has to be translated to cpp to be able to find proper styling
+        self.sciltillaLexerToNppTheme={'c++':'cpp','c#':'cs','d':'cpp','fortran77':'fortran','idl':'python','javascript':'cpp','octave':'matlab','pov':'cpp','properties':'props','spice':'vhdl'}
+        
     def getThemeNames(self):
         
         themesSorted=sorted(self.themeDict.keys())        
@@ -154,7 +157,8 @@ class ThemeManager(object):
         N2S=self.npStrToSciColor
         
         
-        defaultStyle=theme.getGlobalStyle('Global override')
+        # defaultStyle=theme.getGlobalStyle('Global override')
+        defaultStyle=theme.getGlobalStyle('Default Style')
         if defaultStyle:
             _editor.setPaper(N2C(defaultStyle.bgColor))
             # for editor with lexers we set paper color for lexer as well otherwise page might have gaps in coloring
@@ -164,9 +168,15 @@ class ThemeManager(object):
                 
             _editor.SendScintilla(QsciScintilla.SCI_STYLESETFORE,defaultStyle.styleID,N2S(defaultStyle.fgColor))             
             _editor.SendScintilla(QsciScintilla.SCI_STYLESETBACK,defaultStyle.styleID,N2S(defaultStyle.bgColor)) 
-        
+            # since some lexers are using styles which are not defined in npp file it is a good idea to assign first all styles to some reasonable default style
+            # later, those styles defined by npp styles can be overwritten
+            for styleId in xrange(0,255):
+                _editor.SendScintilla(QsciScintilla.SCI_STYLESETFORE,styleId,N2S(defaultStyle.fgColor))             
+                _editor.SendScintilla(QsciScintilla.SCI_STYLESETBACK,styleId,N2S(defaultStyle.bgColor)) 
+                
+            
         caretStyle=theme.getGlobalStyle('Caret colour')
-
+        
         
         if caretStyle:
             _editor.setCaretForegroundColor(N2C(caretStyle.fgColor))            
@@ -267,6 +277,7 @@ class ThemeManager(object):
     
     
     def applyThemeToEditor(self,_themeName,_editor):
+        
         N2C=self.npStrToQColor
         N2S=self.npStrToSciColor
     
@@ -293,10 +304,18 @@ class ThemeManager(object):
         # # # print 'lexerName=',lexerLanguage
         # # # print 'theme=',theme.name
         # # # print 'theme.lexerStyleDict.keys()=',theme.lexerStyleDict.keys()
-        lexerStyle=theme.getLexerStyle(lexerLanguage.lower())
+        print 'lexer language=',lexerLanguage.lower()
+        try:
+            nppStylerLanguageName=self.sciltillaLexerToNppTheme[lexerLanguage.lower()]
+        except LookupError,e:
+            nppStylerLanguageName=lexerLanguage.lower()
+            
         
-        # # # print 'lexerStyle=',lexerStyle
-        # # # print 'theme.lexerStyleDict=',theme.lexerStyleDict
+        lexerStyle=theme.getLexerStyle(nppStylerLanguageName)
+        # # # lexerStyle=theme.getLexerStyle(lexerLanguage.lower())
+        
+        print 'lexerStyle=',lexerStyle
+        # print 'theme.lexerStyleDict=',theme.lexerStyleDict
         
         if not lexerStyle:return
         
@@ -306,6 +325,8 @@ class ThemeManager(object):
         
         
         for wordStyle in lexerStyle.wordStyles:
+            print 'wordStyle.styleID=',wordStyle.styleID
+            print 'wordStyle.fgColor=',wordStyle.fgColor
             _editor.SendScintilla(QsciScintilla.SCI_STYLESETFORE,wordStyle.styleID,N2S(wordStyle.fgColor))    
             _editor.SendScintilla(QsciScintilla.SCI_STYLESETBACK,wordStyle.styleID,N2S(wordStyle.bgColor))    
 
