@@ -14,7 +14,7 @@ class QsciScintillaCustom(QsciScintilla):
         self.panel=_panel        
         self.mousePressEventOrig=self.mousePressEvent
         self.CtrlKeyEquivalent=Qt.Key_Control
-        self.scintillaDefinedLetterShortcuts=[ord('D'),ord('L'),ord('T'),ord('U'),ord('/')]
+        self.scintillaDefinedLetterShortcuts=[ord('D'),ord('L'),ord('T'),ord('U'),ord('/'),ord(']')]
         self.customContextMenu=None
         self.linesChanged.connect(self.linesChangedHandler)
         if sys.platform.startswith("darwin"):        
