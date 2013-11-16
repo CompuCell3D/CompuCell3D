@@ -3319,7 +3319,7 @@ class EditorWindow(QMainWindow):
         am.addAction(self.convertEOLWinAct)                                                
         self.convertEOLUnixAct=QtGui.QAction("Unix EOL", self,statusTip="Convert End of Line Character to Unix Style",triggered=self.convertEolUnix) 
         am.addAction(self.convertEOLUnixAct)
-        self.convertEOLMacAct=QtGui.QAction("Mac EOL", self,statusTip="Convert End of Line Character to Mac Style",triggered=self.convertEolMac)        
+        self.convertEOLMacAct=QtGui.QAction("Mac OS 9 EOL", self,statusTip="Convert End of Line Character to Mac Style",triggered=self.convertEolMac)        
         am.addAction(self.convertEOLMacAct)
         
         self.undoAct= QtGui.QAction(QtGui.QIcon(':/icons/edit-undo.png'),"Undo", self, shortcut="Ctrl+Z",
@@ -3419,7 +3419,7 @@ class EditorWindow(QMainWindow):
         self.convertEOLMenu=self.editMenu.addMenu("Convert EOL")
         self.convertEOLMenu.addAction(am.actionDict["Windows EOL"])
         self.convertEOLMenu.addAction(am.actionDict["Unix EOL"])
-        self.convertEOLMenu.addAction(am.actionDict["Mac EOL"])
+        self.convertEOLMenu.addAction(am.actionDict["Mac OS 9 EOL"])
         
         self.editMenu.addSeparator()
         

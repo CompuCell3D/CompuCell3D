@@ -92,9 +92,9 @@ restartEnabled(false)
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Simulator::~Simulator() {
-	cerr<<"\n\n\n********************************************************************************"<<endl;	
-	cerr<<"\n\n\n\n INSIDE SIMULATOR DELETE \n\n\n\n "<<endl;	
-	cerr<<"\n\n\n********************************************************************************"<<endl;
+	// cerr<<"\n\n\n********************************************************************************"<<endl;	
+	// cerr<<"\n\n\n\n INSIDE SIMULATOR DELETE \n\n\n\n "<<endl;	
+	// cerr<<"\n\n\n********************************************************************************"<<endl;
 	
 	delete classRegistry;
 	delete pUtils;
@@ -207,10 +207,10 @@ void Simulator::serialize(){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Simulator::registerSteerableObject(SteerableObject * _steerableObject){
-	cerr<<"Dealing with _steerableObject->steerableName()="<<_steerableObject->steerableName()<<endl;   
+	// cerr<<"Dealing with _steerableObject->steerableName()="<<_steerableObject->steerableName()<<endl;   
 	std::map<std::string,SteerableObject *>::iterator mitr;
 	mitr=steerableObjectMap.find(_steerableObject->steerableName());
-	cerr<<"after find"<<endl;
+	// cerr<<"after find"<<endl;
 
 	ASSERT_OR_THROW("Steerable Object "+_steerableObject->steerableName()+" already exist!",  mitr==steerableObjectMap.end());
 
@@ -266,10 +266,10 @@ void Simulator::postEvent(CC3DEvent & _ev){
 		for (it_step = infos_step->begin(); it_step != infos_step->end(); it_step++){
 
 			steppableName=(*it_step)->getName();
-			cerr<<"processign steppable="<<steppableName<<endl;
+			// cerr<<"processign steppable="<<steppableName<<endl;
 			
 			if (steppableManager.isLoaded(steppableName)) {
-				cerr<<"SENDING EVENT TO THE STEPPABLE "<<steppableName<<endl;
+				// cerr<<"SENDING EVENT TO THE STEPPABLE "<<steppableName<<endl;
 				Steppable *steppable= steppableManager.get(steppableName);
 				steppable->handleEvent(_ev); 
 			}	
