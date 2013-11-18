@@ -1119,16 +1119,10 @@ class EditorWindow(QMainWindow):
     def setEditorProperties(self,_editor):
         """
             for each newly created editor this fcn sets all editor properties based on twedit configuration e.g. font size, display of EOL etc 
-        """
+        """        # this is essential on OSX otherwise after changing lexer line number font changes        _editor.setMarginsFont(self.baseFont) # we first set font for margin                 
         #lines are displayed on margin 0
         lineNumbersFlag=self.configuration.setting("DisplayLineNumbers")
-        self.adjustLineNumbers(_editor,lineNumbersFlag)
-        
-        # # # _editor.setMarginLineNumbers(0, lineNumbersFlag)
-        # # # _editor.setMarginWidth(0,QString('0'*8*int(lineNumbersFlag)))     
-        
-        
-        
+#         self.adjustLineNumbers(_editor,lineNumbersFlag,False) # we do not need to call it - line number adjuster is called automatically in QsciScintillaCustom.py - self.linesChanged.connect(self.linesChangedHandler)        
         useTabSpaces=self.configuration.setting("UseTabSpaces")
         
         
@@ -1137,7 +1131,7 @@ class EditorWindow(QMainWindow):
             _editor.setIndentationWidth(self.configuration.setting("TabSpaces"))                    
         else:
             _editor.setIndentationWidth(0)#If width is 0 then the value returned by tabWidth() is used                    
-        self.lineBookmark = _editor.markerDefine(QsciScintilla.SC_MARK_SHORTARROW) #All editors tab share same markers        
+        self.lineBookmark = _editor.markerDefine(QsciScintilla.SC_MARK_SHORTARROW,0) #All editors tab share same markers notice that ) denotes marker number - multiple calls to markerDefine with empty second argument cause marker assignment to have difference numbers and this causes problems        
         # _editor.setMarginMarkerMask(2,QsciScintilla.SC_MARK_SHORTARROW) # mask has to correspond to marker number returned by markerDefine or it has to simply be 0 not sure
         
         #Bookmarks are displayed on margin 1 but I have to pass 2 to set mask for margin 1  
@@ -1147,19 +1141,18 @@ class EditorWindow(QMainWindow):
         # dbgMsg("MASK 1=",_editor.marginMarkerMask(1))
         # dbgMsg("MASK 2=",_editor.marginMarkerMask(2))
         #enable bookmarking by click
-        _editor.setMarginSensitivity(1,True)        
-        _editor.marginClicked.connect(self.marginClickedHandler)
-        
+        _editor.setMarginSensitivity(1,True)        try:            
+            _editor.marginClicked.disconnect(self.marginClickedHandler)
+        except: # when margin clicked is disconnected call to disconnect throws exception              pass            _editor.marginClicked.connect(self.marginClickedHandler)        
         _editor.setMarkerBackgroundColor(QColor("lightsteelblue"), self.lineBookmark)
-        
         if self.configuration.setting("FoldText"):
             _editor.setFolding(QsciScintilla.BoxedTreeFoldStyle)
         else:
             _editor.setFolding(QsciScintilla.NoFoldStyle)
         _editor.setCaretLineVisible(True)
         _editor.setCaretLineBackgroundColor(QtGui.QColor('#EFEFFB'))        
-        # _editor.modificationChanged.connect(self.modificationChangedSlot)
-        
+        # _editor.modificationChanged.connect(self.modificationChangedSlot)        
+        if not sys.platform.startswith('win'):            _editor.setEolMode(QsciScintilla.EolUnix)        else:            _editor.setEolMode(QsciScintilla.EolWindows) # windows eol only on system whose name starts with 'win'            
         # _editor.setEolMode(QsciScintilla.EolWindows) # SETTING EOL TO WINDOWS MESSES THINGS UP AS SAVE FCN (MOST LIKELY)ADS EXTRA CR SIGNS - 
         # _editor.setEolMode(QsciScintilla.EolUnix) # SETTING EOL TO WINDOWS MESSES THINGS UP AS SAVE FCN (MOST LIKELY)ADS EXTRA CR SIGNS - 
         # _editor.setEolMode(QsciScintilla.EolMac) # SETTING EOL TO WINDOWS MESSES THINGS UP AS SAVE FCN (MOST LIKELY)ADS EXTRA CR SIGNS - 
@@ -1474,8 +1467,8 @@ class EditorWindow(QMainWindow):
         """
             shows find/replace dialog popup
         """
-        if self.findDialogForm:
-            self.findDialogForm.show()
+        if self.findDialogForm:            # this should deal with OSX issues                 self.findDialogForm.show()            self.findDialogForm.raise_()            self.findDialogForm.setFocus()            self.findDialogForm.activateWindow()            
+#             self.findDialogForm.show()
             return
             
         self.findDialogForm = FindAndReplaceDlg("",self)
@@ -1520,7 +1513,7 @@ class EditorWindow(QMainWindow):
                     'Cannot search files in directory '+_directory+' because it does not exist' )
                 return
             
-        self.findDialogForm.setEnabled(False)
+        self.findDialogForm.setButtonsEnabled(False)
         dbgMsg("findInFiles")
         # ALL_IN_FILES=0
         # ALL_IN_ALL_OPEN_DOCS=1
@@ -1570,7 +1563,7 @@ class EditorWindow(QMainWindow):
         elif _mode==ALL_IN_CURRENT_DOC:
             foundFiles=self.findAllInOpenDocs(_text,reFlag,True)
         else:
-            self.findDialogForm.setEnabled(True)
+            self.findDialogForm.setButtonsEnabled(True)
             return
             
 
@@ -1578,7 +1571,7 @@ class EditorWindow(QMainWindow):
         self.findDisplayWidget.addNewFindInFilesResults(findInFilesFormatter.produceSummaryRepr(foundFiles,_text))
         if not self.showFindInFilesDockAct.isChecked():
             self.showFindInFilesDockAct.trigger() # calling toggle does not emit triggered signal and thus action slot is not called. calling trigger does the trick
-        self.findDialogForm.setEnabled(True)    
+        self.findDialogForm.setButtonsEnabled(True)    
                     
     def findAllInOpenDocs(self,_text,_reFlag=False, _inCurrentDoc=False): 
         """
@@ -1715,7 +1708,7 @@ class EditorWindow(QMainWindow):
         newSearchFlag=self.findAndReplaceHistory.newReplaceParametersIF(_text,_replaceText,_filters,_directory)        
         # self.findDialogForm.initializeAllSearchLists(self.findAndReplaceHistory)
         
-        self.findDialogForm.setEnabled(False)
+        self.findDialogForm.setButtonsEnabled(False)
         #constructing the list of files to be searched based on directory and filters input
         
         import fnmatch
@@ -1747,7 +1740,7 @@ class EditorWindow(QMainWindow):
         elif _mode==ALL_IN_ALL_OPEN_DOCS: 
             replaceInFilesData=self.processReplaceInAllOpenDocs(_text,_replaceText,reFlag)
         else:
-            self.findDialogForm.setEnabled(True)
+            self.findDialogForm.setButtonsEnabled(True)
             return
         
         try:
@@ -1759,7 +1752,7 @@ class EditorWindow(QMainWindow):
         except IndexError:
             pass
             
-        self.findDialogForm.setEnabled(True)    
+        self.findDialogForm.setButtonsEnabled(True)    
    
     def processReplaceInAllOpenDocs(self,_text,_replaceText,_reFlag):
         """
@@ -1960,7 +1953,7 @@ class EditorWindow(QMainWindow):
         """
         
         editor=self.getActiveEditor() 
-        self.findDialogForm.setEnabled(False)
+        self.findDialogForm.setButtonsEnabled(False)
         reFlag=False
         
         if str(self.findDialogForm.syntaxComboBox.currentText())=="Regular expression":
@@ -1995,7 +1988,7 @@ class EditorWindow(QMainWindow):
                         message,
                         QtGui.QMessageBox.Ok )             
 
-        self.findDialogForm.setEnabled(True)    
+        self.findDialogForm.setButtonsEnabled(True)    
         
     def findNextSimple(self):
         """
@@ -2021,7 +2014,7 @@ class EditorWindow(QMainWindow):
             slot called whe user selects Replace repetidly in Find/replace dialog popup
         """
                         
-        self.findDialogForm.setEnabled(False)
+        self.findDialogForm.setButtonsEnabled(False)
         editor=self.getActiveEditor()
         
         reFlag=False
@@ -2050,7 +2043,7 @@ class EditorWindow(QMainWindow):
                 ret = QtGui.QMessageBox.information(self, "Replace",
                         message,
                         QtGui.QMessageBox.Ok )
-                self.findDialogForm.setEnabled(True)        
+                self.findDialogForm.setButtonsEnabled(True)        
                 return
                 
             
@@ -2065,19 +2058,19 @@ class EditorWindow(QMainWindow):
                 ret = QtGui.QMessageBox.information(self, "Replace",
                         message,
                         QtGui.QMessageBox.Ok )
-                self.findDialogForm.setEnabled(True)                
+                self.findDialogForm.setButtonsEnabled(True)                
                 return            
             
             editor.replace(self.findAndReplaceHistory.replaceText)
             
-        self.findDialogForm.setEnabled(True)
+        self.findDialogForm.setButtonsEnabled(True)
         
     def replaceAll(self,_text,_replaceText,_inSelectionFlag):
         """
             slot called when user clicks Replace All on Find/replace popup. _inSelection flag determines if replacement takes place in the entire document or only in the selected text
         """
         
-        self.findDialogForm.setEnabled(False)        
+        self.findDialogForm.setButtonsEnabled(False)        
         editor=self.getActiveEditor()
         
         reFlag=False
@@ -2119,7 +2112,7 @@ class EditorWindow(QMainWindow):
                 # ret = QtGui.QMessageBox.information(self, "Replace All",
                         # message,
                         # QtGui.QMessageBox.Ok )
-                self.findDialogForm.setEnabled(True)                
+                self.findDialogForm.setButtonsEnabled(True)                
                 return            
             line, index = editor.getCursorPosition()
             # print 'AFTER FIRST SEARCH line_to, index_to=',line_to, index_to
@@ -2183,7 +2176,7 @@ class EditorWindow(QMainWindow):
                 ret = QtGui.QMessageBox.information(self, "Replace All",
                         message,
                         QtGui.QMessageBox.Ok )
-                self.findDialogForm.setEnabled(True)                
+                self.findDialogForm.setButtonsEnabled(True)                
                 return                
             # previousLine,previousPos=editor.getCursorPosition()
             while foundFlag:
@@ -2205,7 +2198,7 @@ class EditorWindow(QMainWindow):
                 message,
                 QtGui.QMessageBox.Ok )
                 
-        self.findDialogForm.setEnabled(True)            
+        self.findDialogForm.setButtonsEnabled(True)            
         
     def marginClickedHandler(self,_margin,_line,_keyboardState):
         """
@@ -2498,7 +2491,6 @@ class EditorWindow(QMainWindow):
         """
             fcn handling DisplayLineNumbers configuration change
         """
-        
         for panel in self.panels:
             for i in range(panel.count()):            
                 editor=panel.widget(i)                
@@ -2509,7 +2501,7 @@ class EditorWindow(QMainWindow):
         # print 'setting line margin ',_flag
         _editor.setMarginLineNumbers(0, _flag)
         _editor.linesChangedHandler()
-    
+        
         
         
     def configureEnableAutocompletion(self,_flag):
@@ -2878,9 +2870,8 @@ class EditorWindow(QMainWindow):
             slot - shows or hides line numbers (_depending on _flag) in the active editor  - updates View Menu
         """
         # print 'showLineNumbers ',_flag
-        editor=self.getActiveEditor()        
+        editor=self.getActiveEditor()       
         self.adjustLineNumbers(editor,_flag)
-        
         # # # editor.setMarginWidth(0,QString('0'*8*int(_flag)))     
     
     def zoomIn(self):
@@ -2990,25 +2981,17 @@ class EditorWindow(QMainWindow):
                 lexer=self.guessLexer(fileName)
                 if lexer[0]:
                     activePanel.currentWidget().setLexer(lexer[0])             
-                    activePanel.currentWidget().setBraceMatching(lexer[3])
-                    if self.configuration.setting("FoldText"):
-                        activePanel.currentWidget().setFolding(QsciScintilla.BoxedTreeFoldStyle)
-                    else:
-                        activePanel.currentWidget().setFolding(QsciScintilla.NoFoldStyle)                
-                    activePanel.currentWidget().setWhitespaceVisibility(self.configuration.setting("DisplayWhitespace"))
-                    activePanel.currentWidget().setIndentationGuidesForegroundColor(self.indendationGuidesColor)
-                    activePanel.currentWidget().setIndentationGuides(self.configuration.setting("TabGuidelines"))  	
+                    activePanel.currentWidget().setBraceMatching(lexer[3])                     	
                 else:# lexer could not be guessed - use default lexer
                     activePanel.currentWidget().setLexer(None)
                     
-                self.setEditorProperties(activePanel.currentWidget())   
                 
                 tabIndex=activePanel.indexOf(activePanel.currentWidget())
                 activePanel.setTabText(tabIndex,self.strippedName(fileName))
                 self.commentStyleDict[activePanel.currentWidget()]=[lexer[1],lexer[2]] # associating comment style with the lexer
                 currentEncoding=self.getEditorFileEncoding(activePanel.currentWidget())
-                self.setPropertiesInEditorList(activePanel.currentWidget(),fileName,os.path.getmtime(str(fileName)),currentEncoding)
-                
+                self.setPropertiesInEditorList(activePanel.currentWidget(),fileName,os.path.getmtime(str(fileName)),currentEncoding)                
+                self.setEditorProperties(activePanel.currentWidget())
             #before returning we check if du to saveAs some documents have been modified
             self.checkIfDocumentsWereModified()    
             return returnCode
@@ -4092,7 +4075,6 @@ class EditorWindow(QMainWindow):
                 activeTab.addTab(textEditLocal,QtGui.QIcon(':/icons/document-clean.png'),self.strippedName(fileName))
                 textEditLocal.setFocus(Qt.MouseFocusReason)
                 self.setCurrentFile(fileName)
-
                 import codecs
 
                 # txt, encoding = Encoding.decode(file)
@@ -4113,7 +4095,7 @@ class EditorWindow(QMainWindow):
                 textEditLocal.setText(txt)
                 
                 if lexer[0]:
-                    textEditLocal.setLexer(lexer[0])
+                    textEditLocal.setLexer(lexer[0])                    
                     activeTab.currentWidget().setBraceMatching(lexer[3])                    
                     if self.configuration.setting("FoldText"):
                         textEditLocal.setFolding(QsciScintilla.BoxedTreeFoldStyle)
@@ -4150,13 +4132,8 @@ class EditorWindow(QMainWindow):
             textEditLocal.setText(txt)
             
             if lexer[0]:
-                textEditLocal.setLexer(lexer[0])        
-                activeTab.currentWidget().setBraceMatching(lexer[3])
-                if self.configuration.setting("FoldText"):
-                    textEditLocal.setFolding(QsciScintilla.BoxedTreeFoldStyle)
-                else:
-                    textEditLocal.setFolding(QsciScintilla.NoFoldStyle)
-            
+                textEditLocal.setLexer(lexer[0])                    activeTab.currentWidget().setBraceMatching(lexer[3])
+
             
         self.setEditorProperties(textEditLocal)                
         
@@ -4199,7 +4176,7 @@ class EditorWindow(QMainWindow):
         self.updateEncodingLabel()        
         dbgMsg(" SETTING fileName=",fileName," os.path.getmtime(fileName)=",os.path.getmtime(str(fileName)))
         self.statusBar().showMessage("File loaded", 2000)
-        
+                
         # self.addItemtoConfigurationStringList("RecentDocuments",fileName)
         
         

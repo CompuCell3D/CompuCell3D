@@ -399,7 +399,7 @@ class FindAndReplaceDlg(QDialog,ui_findinfilesdlg.Ui_FindInFiles):
             self.closeButton.setFocusPolicy(Qt.NoFocus)
         self.updateUi()
         
-    def tabChanged(self,idx):
+    def setButtonsEnabled(self,_flag):        # setEnabled on top widget blocks Qline edit keyboard focus on OSX . So instead we will enable each button individually        # notice we do not touch close or clear history buttons        self.findNextButton.setEnabled(_flag)        self.findAllInOpenDocsButton.setEnabled(_flag)        self.findAllInCurrentDocButton.setEnabled(_flag)        self.replaceButton.setEnabled(_flag)        self.replaceAllButton.setEnabled(_flag)        self.replaceAllInOpenDocsButton.setEnabled(_flag)        self.findAllButtonIF.setEnabled(_flag)        self.replaceButtonIF.setEnabled(_flag)            def tabChanged(self,idx):
         title=self.tabWidget.tabText(idx)
         dbgMsg("TITLE=",title)
         self.setWindowTitle(title)
