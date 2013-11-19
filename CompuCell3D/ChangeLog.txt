@@ -98,11 +98,13 @@ Version 3.7.0
 Version 3.7.1
 
     Additions:
-        LLVM-based RoadRunner as a backendfor SBM Solver
+        LLVM-based RoadRunner as a backend for SBML Solver
         Parameter Scans
         Improved Twedit
         On Windows switched compilers from VS2008 to VS 2010
         Added Serialization of SBMLSolver objects
+        Fixed memory leaks in the Player
+        Added proper cleanup functions to Simulator
         
      Bug Fixes:   
         Fixed sneaky bug related to cell inventory ordering - affected windows only and when cells were deleted it could cause CC3D crash. Same for FocalPOintPLasticity plugin ordering of the links was buggy on windows. 
