@@ -600,7 +600,14 @@ p, li { white-space: pre-wrap; }
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="fieldNameLE"/>
+       <widget class="QLineEdit" name="fieldNameLE">
+        <property name="minimumSize">
+         <size>
+          <width>120</width>
+          <height>0</height>
+         </size>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QLabel" name="label_19">
