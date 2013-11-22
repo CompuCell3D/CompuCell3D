@@ -467,10 +467,11 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             ptTmp=pt
         
         if not self.checkIfInTheLattice(ptTmp):
-            return
+            return None
         cell=self.potts.createCell()    
         cell.type=type
         self.cellField[ptTmp.x:ptTmp.x+xSize-1,ptTmp.y:ptTmp.y+ySize-1,ptTmp.z:ptTmp.z+zSize-1]=cell
+        return cell
        
     def newCell(self,type=0) :
         cell=self.potts.createCell()

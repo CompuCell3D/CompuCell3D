@@ -203,9 +203,11 @@ cell=self.attemptFetchingCellById(CELL_ID)
 self.deleteCell(cell)  
 
 ---------- #@Submenu@ Create Cell
-cell=self.potts.createCell()
-cell.type=self.TYPENAME # typeName capitalized
+cell=self.newCell(self.TYPENAME)
 self.cellField[x:x+4,y:y+4,0]=cell # size of cell will be 5x5x1
+
+---------- #@Submenu@ Create Cell (one liner)
+cell=self.createNewCell(self.TYPENAME, [10,10,0] , xSize=5,ySize=5,zSize=1) # args - type, location of seed point, x,y,z dimansions
 
 ---------- #@Submenu@ Create Cell (old style)
 pt=CompuCell.Point3D(50,50,0)
