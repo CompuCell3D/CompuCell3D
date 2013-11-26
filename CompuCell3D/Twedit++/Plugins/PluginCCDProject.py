@@ -900,8 +900,9 @@ class CC3DProject(QObject):
                 ret=pdlg.exec_()
                 if ret:                
                     haveNewItems=False
+                    csd.parameterScanResource.psu.refreshParamSpecsContent(pScanResource.path) # before adding new parameter scan we need to read file again om case user made any change
                     for key,val in pdlg.parameterScanDataMap.iteritems():
-                        print 'Adding key,val=',(key,val)
+                        print 'Adding key,val=',(key,val)                        
                         csd.parameterScanResource.addParameterScanData(self.scannedFileName,val)
                         haveNewItems=True
                         
@@ -957,7 +958,7 @@ class CC3DProject(QObject):
         
         
             
-        
+        self.__ui.checkIfDocumentsWereModified()
         # # # print 'DICT AFTER=',csd.parameterScanResource.parameterScanFileToDataMap
         # # # # get path to ParameterScan XML file
         # # # parScanResources=csd.getResourcesByType ('ParameterScan') 

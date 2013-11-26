@@ -145,6 +145,11 @@ class CC3DSimulationData:
         self.parameterScanResource=CC3DParameterScanResource()
         self.parameterScanResource.path=os.path.abspath(os.path.join(self.basePath,'Simulation/ParameterScanSpecs.xml'))
         
+        baseCoreName , ext=os.path.splitext(os.path.basename(self.path)) # extracting core simulation name from full cc3d project path
+        
+        self.parameterScanResource.psu.setOutputDirectoryRelativePath(baseCoreName+'_ParameterScan')
+        
+        
     def removeParameterScanResource(self):        
         self.parameterScanResource=None    
     
