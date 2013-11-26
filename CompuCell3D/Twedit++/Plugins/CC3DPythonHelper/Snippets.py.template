@@ -141,10 +141,10 @@ self.setSBMLState(_modelName='MODELNAME',_state=state)
 
 
 ---------- #@Submenu@  Set SBML Value for SBML in a specific cell
-self.getSBMLValue(_modelName='UNIQUE_MODEL_NAME',_valueName='VALUE_NAME',_value=0.1,_cell=cell) # value name can be e.g. species name 
+self.setSBMLValue(_modelName='UNIQUE_MODEL_NAME',_valueName='VALUE_NAME',_value=0.1,_cell=cell) # value name can be e.g. species name 
 
 ---------- #@Submenu@  Set SBML Value for Free Floating model
-self.getSBMLValue(_modelName='UNIQUE_MODEL_NAME',_valueName='VALUE_NAME',_value=0.1) # value name can be e.g. species name 
+self.setSBMLValue(_modelName='UNIQUE_MODEL_NAME',_valueName='VALUE_NAME',_value=0.1) # value name can be e.g. species name 
 
 
 ---------- #@Submenu@  Delete SBML from cell ids
