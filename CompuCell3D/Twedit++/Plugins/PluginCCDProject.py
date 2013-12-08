@@ -402,18 +402,54 @@ class CC3DProjectTreeWidget(QTreeWidget):
             self.styleChildItems(childItem,_style)
             
     def applyStyleFromTheme(self,_styleName,_themeName):
+
+
         themeManager=self.__ui.themeManager
         self.style=themeManager.getStyleFromTheme(_styleName = _styleName , _themeName = _themeName)
+
+#         print '_styleName=',_styleName
+#         print 'self.style=',self.style
+#         import time
+#         time.sleep(5)
+
+        self.setIconSize(QSize(16,16))
         
         if self.style:
             self.N2C=themeManager.npStrToQColor
+            qtVersion=str(QtCore.QT_VERSION_STR).split('.')
+            if qtVersion>=2:
+                bgColorQt=self.N2C(self.style.bgColor)
+                colorString='rgb('+str(bgColorQt.red())+','+str(bgColorQt.green())+','+str(bgColorQt.blue())+')'
+                # because we used style sheets for the qt app  (twedit_plus_plus.py) we have to use stylesheet to color QTreeWidget  
+                # at least on OSX 10.9 using stylesheets for the app requires using them to set properties of widget
+                self.setStyleSheet( "QTreeWidget {background-color: "+colorString+ " ;}" )
+            
+        else:
             pal=self.palette()
             pal.setBrush( QPalette.Base, QBrush(self.N2C(self.style.bgColor)))
-
             self.setPalette(pal)
-        
+            
         self.__restyle()
+        
+#         bgColorQt=self.N2C(self.style.bgColor)
+#         colorString='rgb('+str(bgColorQt.red())+','+str(bgColorQt.green())+','+str(bgColorQt.blue())+')'
+#         # because we used style sheets for the qt app  (twedit_plus_plus.py) we have to use stylesheet to color QTreeWidget  
+#         # at least on OSX 10.9 using stylesheets for the app requires using them to set properties of widget
+#         self.setStyleSheet( "QTreeWidget {background-color: "+colorString+ " ;}" )
+ 
 
+class CustomDockWidget(QDockWidget):
+    def __init__(self,_parent=None):
+        QDockWidget.__init__(self,_parent)
+        self.cc3dProject=None
+    def setCC3DProject(self,cc3dProject):
+        self.cc3dProject=cc3dProject
+            
+    def closeEvent(self,ev):
+        print 'close event custom dock widget'
+        self.cc3dProject.showProjectPanel(False)
+        ev.ignore()
+        
 class CC3DProject(QObject):
     """
     Class implementing the About plugin.
@@ -450,7 +486,7 @@ class CC3DProject(QObject):
         
         # # # self.openCC3Dproject('C:/Users/m/CC3DProjects/CellSorting/CellSorting.cc3d')
         # # # # self.treeWidget.applyStyle(self.defaultStyle)
-        self.treeWidget.applyStyleFromTheme(_styleName = 'Default Style' , _themeName = self.__ui.currentThemeName)
+        self.treeWidget.applyStyleFromTheme(_styleName = 'Default Style' , _themeName = self.__ui.currentThemeName)        
         # # # self.styleItems()
         
     def getUI(self):
@@ -478,6 +514,8 @@ class CC3DProject(QObject):
         for projItem in projItems:
             self.closeProjectUsingProjItem(projItem)
         
+        showCC3DProjectPanel=self.configuration.setSetting("ShowCC3DProjectPanel",not self.cc3dProjectDock.isHidden())
+      
         
         return
         # print "DEACTIVATE CC3D PLUGIN"
@@ -606,7 +644,10 @@ class CC3DProject(QObject):
         
         self.__setupDockWindow(self.cc3dProjectDock,Qt.LeftDockWidgetArea,self.treeWidget,"CC3D Project")
         
-    
+        showCC3DProjectPanel=self.configuration.setting("ShowCC3DProjectPanel")
+        if not showCC3DProjectPanel:
+            self.showProjectPanel(False)
+        
     def __createDockWindow(self, name):
         """
         Private method to create a dock window with common properties.
@@ -614,11 +655,15 @@ class CC3DProject(QObject):
         @param name object name of the new dock window (string or QString)
         @return the generated dock window (QDockWindow)
         """
-        dock = QDockWidget(self.__ui)
+
+        dock=CustomDockWidget(self.__ui)
+        dock.setCC3DProject(self)
+#         dock = QDockWidget(self.__ui)
+        
         dock.setObjectName(name)
         #dock.setFeatures(QDockWidget.DockWidgetFeatures(QDockWidget.AllDockWidgetFeatures))
         return dock
-        
+     
     def __setupDockWindow(self, dock, where, widget, caption):
         """
         Private method to configure the dock window created with __createDockWindow().
@@ -664,7 +709,7 @@ class CC3DProject(QObject):
         self.actions["Show Project Panel"]=QtGui.QAction("Show Project Panel", self, shortcut="", statusTip="Show Project Panel")
         self.actions["Show Project Panel"].setCheckable(True)
         self.actions["Show Project Panel"].setChecked(True)
-        self.connect(self.actions["Show Project Panel"],    SIGNAL('triggered(bool)'),  self.__showProjectPanel)
+        self.connect(self.actions["Show Project Panel"],    SIGNAL('triggered(bool)'),  self.showProjectPanel)
         
         self.actions["Add Steppable..."]=QtGui.QAction(QIcon(':/icons/addSteppable.png'),"Add Steppable...", self, shortcut="", statusTip="Adds Steppable to Python File (Cannot be Python Main Script) ", triggered=self.__addSteppable)
         self.actions["Convert XML to Python"]=QtGui.QAction(QIcon(':/icons/xml-icon.png'),"Convert XML to Python", self, shortcut="", statusTip="Converts XML into equivalent Python script", triggered=self.__convertXMLToPython)
@@ -1186,7 +1231,7 @@ class CC3DProject(QObject):
                 # return lineIdx
         
     
-    def __showProjectPanel(self,_flag):
+    def showProjectPanel(self,_flag):
         """
             THIS SLOT WILL BE CALLED MULTIPLE TIMES AS IT IS LINKED TO TWO DIFFERENT SIGNALS - THIS IS NOT A PROBLEM IN THIS PARTICULAR CASE THOUGH
         """
