@@ -137,9 +137,70 @@ class Twedit(object):
     
     def main(self,argv):
         
-
+        
         #global mainWindow
         app = CQApplication(argv)
+#         app.setStyleSheet("QPushButton { color: white }")
+#         app.setStyleSheet( "QDockWidget { titlebar-height: 20px; }" )
+
+#         app.setStyleSheet( "QToolButton{ height: 20px; width: 20px;}")
+#         app.setStyleSheet( "QToolBar{ icon-size: 100px; }")
+
+#         app.setStyleSheet( "QDockWidget::title {padding-top: 0px;}" )
+        qtVersion=str(QT_VERSION_STR).split('.') 
+        if qtVersion[1]>=2: # style sheets may not work properly for qt < 4.2
+            app.setStyleSheet( "QDockWidget::close-button, QDockWidget::float-button { padding: 0px;icon-size: 24px;}")
+        
+
+
+
+
+
+
+
+
+
+#         app.setStyleSheet( '''
+# QMenuBar {
+#     icon-size: 24px
+# }        
+        
+#         '''
+#         )        
+        
+#         app.setStyleSheet( '''
+# QMenuBar::item  {
+#     spacing: 3px; /* spacing between menu bar items */
+#     padding: 1px 4px;
+#     background: transparent;
+#     border-radius: 4px;
+# }        
+        
+#         '''
+#         )        
+        
+# QDockWidget::close-button, QDockWidget::float-button  {
+#     background: darkgray;
+#     padding: 0px;
+#     icon-size: 14px; 
+# }
+#         app.setStyleSheet( "QDockWidget::close-button { top: 0px; left: 0px; bottom: 0px; width: 100px;}" )        
+#         app.setStyleSheet( "QDockWidget::float-button { padding-top: 110px;}" )        
+#         app.setStyleSheet( "QDockWidget::title { padding: 110px-110px-110px-110px; }" )
+#         app.setStyleSheet( "QDockWidget::close-button { padding: 110px-110px-110px-110px; }" )
+#         app.setStyleSheet( "QDockWidget::float-button{ padding: 0px-0px-0px-0px; }" )        
+ 
+        
+#     QDockWidget::title  {
+#     text-align: left;
+#     background: lightgray;
+#     padding-left: 35px;
+# }    
+# QDockWidget  {
+#     border: 1px solid lightgray;
+#     titlebar-close-icon: url(close.png);
+#     titlebar-normal-icon: url(float.png);
+# }        
         
         pixmap = QPixmap("icons/lizard-at-a-computer-small.png")
         print "pixmap=",pixmap

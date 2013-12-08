@@ -145,6 +145,7 @@ class CustomTabBar(QTabBar):
     def __init__(self , _parent=None):
         QTabBar.__init__(self , _parent)
         self.tabWidget=_parent
+        self.setStyleSheet("QTabBar::tab { height: 20px;}");
         
     def mousePressEvent(self,event):        
         self.clickedTabPosition= self.tabWidget.tabBar().tabAt(event.pos())
@@ -263,6 +264,8 @@ class EditorWindow(QMainWindow):
         }
         
         self.configuration=Configuration()
+        
+        self.toolbarIconSize=QSize(32,32)
         
         #used to manage color themes for Twedit++- parses xml configuration files written using notepad++ convention
         from ThemeManager import ThemeManager
@@ -424,6 +427,7 @@ class EditorWindow(QMainWindow):
         
         
         self.pm=PluginManager(self)
+        self.setDefaultStyling()
         
         
         
@@ -443,7 +447,10 @@ class EditorWindow(QMainWindow):
     
         
         
-        
+    def setDefaultStyling(self):
+        for toolBarName, toolBar in self.toolBar.iteritems():
+            toolBar.setIconSize (self.toolbarIconSize)        
+    
     # fcns for accessing/manipulating dictionary storing tab/editor information
     def setProcessId(self,_id):
         """
@@ -3287,6 +3294,7 @@ class EditorWindow(QMainWindow):
                 
         self.decreaseIndentAct = QtGui.QAction(QtGui.QIcon(':/icons/format-indent-less.png'),"Decrease Indent", self, shortcut="Shift+Tab",
                 statusTip="Decrease Indent", triggered=self.decreaseIndent)  
+        
         am.addAction(self.decreaseIndentAct)                                
                 
         self.upperCaseAct=QtGui.QAction("Convert to UPPER case", self, shortcut="Ctrl+Shift+U",
@@ -3314,7 +3322,7 @@ class EditorWindow(QMainWindow):
                 statusTip="Redo", triggered=self.__redo)                   
         am.addAction(self.redoAct)                
         
-        self.configurationAct = QtGui.QAction(QtGui.QIcon(':/icons/configure.png'),"Configure...", self, shortcut="",
+        self.configurationAct = QtGui.QAction(QtGui.QIcon(':/icons/gear.png'),"Configure...", self, shortcut="",
                 statusTip="Configuration...", triggered=self.configurationUpdate)  
         am.addAction(self.configurationAct)                
         
@@ -3468,6 +3476,7 @@ class EditorWindow(QMainWindow):
     
         self.toolBar={}
         self.toolBar["File"] = self.addToolBar("File")
+        self.toolBar["File"].setIconSize (QSize(32,32))
         self.toolBar["File"].addAction(am.actionDict["New"])
         self.toolBar["File"].addAction(am.actionDict["Open..."])
         self.toolBar["File"].addAction(am.actionDict["Save"])
@@ -3487,7 +3496,12 @@ class EditorWindow(QMainWindow):
         
         self.toolBar["Configuration"] = self.addToolBar("Configurartion")
         self.toolBar["Configuration"].addAction(am.actionDict["Configure..."])
-        
+
+#         for toolBarName, toolBar in self.toolBar.iteritems():
+#             print 'toolBarName=',toolBarName
+#             toolBar.setIconSize (self.toolbarIconSize)
+
+#         sys.exit()    
         
         
     def createStatusBar(self):
