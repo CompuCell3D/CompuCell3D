@@ -1,3 +1,7 @@
+'''
+TO DO:
+* In the FindInFileResults display widget fi more than two occurences are found in the same line only the first one is highlighted 
+'''
 import re
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -29,25 +33,30 @@ class FindInFilesResults:
         self.totalHits=0
         self.unsavedFile=_unsavedFile
     def addLineWithText(self, _lineNumber,_text):
+        
         if self.lastLineAdded!=_lineNumber:
             if not _text.endsWith('\n'):
                 _text.append('\n')
             # internally lines numbers start from 0    but we have to display them as starting from 1 - it is de-factor a convention for text editors            
-            self.lineOccurences.append([_lineNumber+1,_text]) 
-            self.lastLineAdded=_lineNumber+1
-            
+            self.lineOccurences.append([_lineNumber+1,_text]) # for display purposes we add 1 to _lineNumber i.e. we display line numbers as if they were counted from 1
+            self.lastLineAdded=_lineNumber # for accounting purposes lastLineNumber added is _lineNumber i.e. the one which is counted from 0
+    
         self.totalHits+=1
+#         print 'totalHits=',self.totalHits
         
     def lastLineNumberAdded(self):
         return 
     #this function will properly format find in files result so that they can be properly interpretted by the lexer
     #have to make lexer more robust though...
     def produceSummaryRepr(self,findInFilesResultsList,_textToFind=""):
+        print 'lineOccurences=',findInFilesResultsList[0].lineOccurences
+        print 'number of elements in lineOccurences=',len(findInFilesResultsList[0].lineOccurences)
         findInFileResultRepr="" 
         allHits=0
         numberOfFiles=len(findInFilesResultsList)
         for findInFileResult in findInFilesResultsList:
             allHits+=findInFileResult.totalHits
+            print 'allHits=',allHits
             
             
             findInFileResultRepr+=findInFileResult.__str__()
@@ -292,12 +301,18 @@ class QLineEditCustom(QLineEdit):
         else:    
                     
             QLineEdit.keyPressEvent(self,event)
+            
+
         
     def focusInEvent(self,event): # this event handler is called first
-        
         self.selectAll()
         self.focusInCalled=True
         QLineEdit.focusInEvent(self,event)
+        
+    def showEvent(self,event): # this event handler is called first
+        self.selectAll()
+        self.focusInCalled=True
+        QLineEdit.showEvent(self,event)
        
     def focusOutEvent(self,event):
         self.deselect()
@@ -334,8 +349,8 @@ class FindAndReplaceDlg(QDialog,ui_findinfilesdlg.Ui_FindInFiles):
 
         self.findLineEdit=QLineEditCustom()
         
-        self.findLineEdit.setReturnKeyCallbackFcn(self.on_findNextButton_clicked) # to enable handling of the 'return' key pressed event 
-        self.findComboBox.setLineEdit(self.findLineEdit)
+        self.findLineEdit.setReturnKeyCallbackFcn(self.on_findNextButton_clicked) # to enable handling of the 'return' key pressed event         
+        self.findComboBox.setLineEdit(self.findLineEdit)   
         self.findComboBox.completer().setCaseSensitivity(1)
 
         self.replaceLineEdit=QLineEditCustom()
@@ -399,12 +414,22 @@ class FindAndReplaceDlg(QDialog,ui_findinfilesdlg.Ui_FindInFiles):
             self.closeButton.setFocusPolicy(Qt.NoFocus)
         self.updateUi()
         
+#         self.setWindowFlags(Qt.SubWindow|Qt.FramelessWindowHint |Qt.WindowSystemMenuHint |Qt.WindowStaysOnTopHint)
+#         if MAC:           
+#             self.setWindowFlags(Qt.Tool|self.windowFlags())
+        
     def setButtonsEnabled(self,_flag):        # setEnabled on top widget blocks Qline edit keyboard focus on OSX . So instead we will enable each button individually        # notice we do not touch close or clear history buttons        self.findNextButton.setEnabled(_flag)        self.findAllInOpenDocsButton.setEnabled(_flag)        self.findAllInCurrentDocButton.setEnabled(_flag)        self.replaceButton.setEnabled(_flag)        self.replaceAllButton.setEnabled(_flag)        self.replaceAllInOpenDocsButton.setEnabled(_flag)        self.findAllButtonIF.setEnabled(_flag)        self.replaceButtonIF.setEnabled(_flag)            def tabChanged(self,idx):
         title=self.tabWidget.tabText(idx)
         dbgMsg("TITLE=",title)
         self.setWindowTitle(title)
+        
+    def keyPressEvent(self,event):        
+        if event.key()==Qt.Key_Escape: # had to include it to ensure that on OSX find dialog closes after user presses ESC
+            self.close()
+            
     
     def changeEvent(self,event):
+        
         if event.type()==QEvent.ActivationChange:
             if self.transparencyGroupBox.isChecked() and self.onLosingFocusRButton.isChecked():
                 # opacity setting is often window manager dependent - e.g. on linux (KDE) you might need to enable desktop effects to enable transparency
