@@ -204,8 +204,9 @@ class Socket(QTcpSocket):
             # dbgMsg("GOING OVER LIST OF EDITORS")
             for editor in self.editorWindow.getEditorList():
                 try: # in case signal is not connected exception is thrown - we simply ignore it
-                    editor.setCaretLineBackgroundColor(QColor('#E0ECF8'))
+                    self.editorWindow .setEditorProperties(editor)   # restoring original styling for the editor                
                     editor.markerDelete(self.errorLine)
+                    # # # editor.setCaretLineBackgroundColor(QColor('#E0ECF8'))                    
                     editor.cursorPositionChanged.disconnect(self.cursorPositionChangedHandler)
                     self.errorLine=-1
                     
