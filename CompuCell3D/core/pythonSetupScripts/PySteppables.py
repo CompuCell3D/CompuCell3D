@@ -402,7 +402,7 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
                 import CompuCell
                 return [CompuCell.Point3D(boundaryPixelTrackerData.pixel) for boundaryPixelTrackerData in self.getCellBoundaryPixelList(_cell)]                
             else:                
-                return [(boundaryPixelTrackerData.pixel.x,boundaryPixelTrackerData.pixel.y,boundaryPixelTrackerData.pixel.z) for boundaryPixelTrackerData in self.getCellBoundaryPixelList(_cell)]
+                return [map(int,(boundaryPixelTrackerData.pixel.x,boundaryPixelTrackerData.pixel.y,boundaryPixelTrackerData.pixel.z)) for boundaryPixelTrackerData in self.getCellBoundaryPixelList(_cell)]
         except:
             raise AttributeError('Could not find BoundaryPixelTracker Plugin')        
         
@@ -420,7 +420,7 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
                 import CompuCell
                 return [CompuCell.Point3D(pixelTrackerData.pixel) for pixelTrackerData in self.getCellPixelList(_cell)]                
             else:                
-                return [(pixelTrackerData.pixel.x,pixelTrackerData.pixel.y,pixelTrackerData.pixel.z) for pixelTrackerData in self.getCellPixelList(_cell)]
+                return [map(int,(pixelTrackerData.pixel.x,pixelTrackerData.pixel.y,pixelTrackerData.pixel.z)) for pixelTrackerData in self.getCellPixelList(_cell)]
         except:
             raise AttributeError('Could not find PixelTracker Plugin')    
     
