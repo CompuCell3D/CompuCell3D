@@ -3583,8 +3583,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             defaultDir, 
             filter
             )
-        # converting Qstring to python string    
-        self.__fileName=str(self.__fileName)
+        # converting Qstring to python string    and normalizing path        
+        self.__fileName=os.path.abspath(str(self.__fileName))
         from os.path import basename
         # setting text for main window (self.__parent) title bar 
         self.__parent.setWindowTitle(self.trUtf8(basename(self.__fileName)+" - CompuCell3D Player"))
@@ -3642,8 +3642,12 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             defaultDir, 
             filter
             )
-        # converting Qstring to python string    
-        self.__fileName=str(self.__fileName)
+        # converting Qstring to python string and normalizing path   
+        self.__fileName=os.path.abspath(str(self.__fileName))
+        
+        print '__openSim: self.__fileName=',self.__fileName
+        
+        
         from os.path import basename
         # setting text for main window (self.__parent) title bar 
         self.__parent.setWindowTitle(self.trUtf8(basename(self.__fileName)+" - CompuCell3D Player"))
