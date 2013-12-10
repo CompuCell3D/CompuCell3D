@@ -118,6 +118,16 @@ class CC3DProjectTreeWidget(QTreeWidget):
         self.style=None # np++ style - usually this is Global override style defined in themes xml file
         self.N2C=None # convenience function reference from theme manager to convert npp color convention to QColor
         self.itemChanged.connect(self.__restyle)
+        
+        self.__iconDict={} # used to store icons for actions shown in the context menu - have to do this becaue of qt quirks on OSX  
+        self.hideContextMenuIcons=False        
+        import platform
+        mac_ver=platform.mac_ver()
+        if mac_ver[0]:
+            self.hideContextMenuIcons=True # on OSX we hide context menu icons
+            
+            
+            
     def setCC3DProjectPlugin(self,_plugin): 
         """
             Set reference to CC3DProject plugin
@@ -214,10 +224,28 @@ class CC3DProjectTreeWidget(QTreeWidget):
         elif projItem==self.currentItem():
             self.plugin.actions["Open XML/Python In Editor"].trigger()
             
+    def restoreIcons(self):
+
+        for action,icon in self.__iconDict.iteritems():
+            action.setIcon(icon)
+        
+        
+    def addActionToContextMenu(self,_menu,_action):
+
+
+        if self.hideContextMenuIcons:            
+            self.__iconDict[_action]=_action.icon()                
+            _action.setIcon(QIcon())
+        
+        _menu.addAction(_action)
+        
     def contextMenuEvent(self , event):
-    
+        
+        self.__iconDict={} # resetting icon dictionary
     
         menu=QMenu(self)
+        
+        menu.aboutToHide.connect(self.restoreIcons)
         
         projItem=self.getProjectParent(self.currentItem())       
         
@@ -229,22 +257,25 @@ class CC3DProjectTreeWidget(QTreeWidget):
             return              
         
         if self.currentItem()==projItem:            
-            menu.addAction(self.plugin.actions["Open XML/Python In Editor"])
-            menu.addAction(self.plugin.actions["Open in Player"])
-            menu.addAction(self.plugin.actions["Add Parameter Scan"])    
+            
+            self.addActionToContextMenu(menu,self.plugin.actions["Open XML/Python In Editor"])
+            self.addActionToContextMenu(menu,self.plugin.actions["Open in Player"])
+            self.addActionToContextMenu(menu,self.plugin.actions["Add Parameter Scan"])
+            
+            
             
             #--------------------------------------------------------------------
             menu.addSeparator()
             if not pdh.cc3dSimulationData.serializerResource:
-                menu.addAction(self.plugin.actions["Add Serializer..."])
+                self.addActionToContextMenu(menu,self.plugin.actions["Add Serializer..."])                
                 #--------------------------------------------------------------------
                 menu.addSeparator()
             
         
         # menu.addAction(self.plugin.actions["Open CC3D Project..."])
         if self.getFullPath(self.currentItem())!="":
-            menu.addAction(self.plugin.actions["Open In Editor"])
-            menu.addAction(self.plugin.actions["Properties"])
+            self.addActionToContextMenu(menu,self.plugin.actions["Open In Editor"])
+            self.addActionToContextMenu(menu,self.plugin.actions["Properties"])
             #--------------------------------------------------------------------
             self.addGenerateSteppableMenu(menu,projItem)
             self.addConvertXMLToPythonMenu(menu,projItem)            
@@ -260,13 +291,13 @@ class CC3DProjectTreeWidget(QTreeWidget):
         resourceName=self.getResourceName(self.currentItem())
         print '\n\n\n RESOURCENAME',resourceName
         if resourceName=='CC3DSerializerResource':            
-            menu.addAction(self.plugin.actions["Serializer..."])    
+            self.addActionToContextMenu(menu,self.plugin.actions["Serializer..."])    
             
         # if resourceName=='CC3DParameterScanResource':            
             # menu.addAction(self.plugin.actions["Reset Parameter Scan"])    
         
-        menu.addAction(self.plugin.actions["Save CC3D Project"])
-        menu.addAction(self.plugin.actions["Add Resource..."])
+        self.addActionToContextMenu(menu,self.plugin.actions["Save CC3D Project"])
+        self.addActionToContextMenu(menu,self.plugin.actions["Add Resource..."])
         
         
         
@@ -275,7 +306,7 @@ class CC3DProjectTreeWidget(QTreeWidget):
         # if selection.size():
             # menu.addAction(self.plugin.actions["Remove Resources"])
             
-        menu.addAction(self.plugin.actions["Remove Resources"])
+        self.addActionToContextMenu(menu,self.plugin.actions["Remove Resources"])
         
         
         
@@ -288,7 +319,7 @@ class CC3DProjectTreeWidget(QTreeWidget):
             
         #--------------------------------------------------------------------
         menu.addSeparator()
-        menu.addAction(self.plugin.actions["Close Project"])
+        self.addActionToContextMenu(menu,self.plugin.actions["Close Project"])
             
         # if self.currentItem().parent()==self:            
             # print "GOT TOP LEVEL ITEM"
@@ -315,7 +346,7 @@ class CC3DProjectTreeWidget(QTreeWidget):
         try:
             cc3dResource=pdh.cc3dSimulationData.resources[itemFullPath]
             if cc3dResource.type=="Python":
-                _menu.addAction(self.plugin.actions["Add Steppable..."])
+                self.addActionToContextMenu(_menu,self.plugin.actions["Add Steppable..."])
                                  
         except LookupError,e:
             return
@@ -335,18 +366,18 @@ class CC3DProjectTreeWidget(QTreeWidget):
         basename, extension = os.path.splitext(itemFullPath)
         #adding menu to parameter scan xml file
         if pdh.cc3dSimulationData.parameterScanResource and itemFullPath==pdh.cc3dSimulationData.parameterScanResource.path:
-            _menu.addAction(self.plugin.actions["Reset Parameter Scan"])
+            self.addActionToContextMenu(_menu,self.plugin.actions["Reset Parameter Scan"])
             
         #adding menu to parameter scan node
         if resourceName=='CC3DParameterScanResource':            
-            _menu.addAction(self.plugin.actions["Reset Parameter Scan"])    
+            self.addActionToContextMenu(_menu,self.plugin.actions["Reset Parameter Scan"])    
             
             
             
         try:
             cc3dResource=pdh.cc3dSimulationData.resources[itemFullPath]
             if cc3dResource.type=="Python":
-                _menu.addAction(self.plugin.actions["Open Scan Editor"])
+                self.addActionToContextMenu(_menu,self.plugin.actions["Open Scan Editor"])
                                  
         except LookupError,e:
             pass
@@ -354,7 +385,7 @@ class CC3DProjectTreeWidget(QTreeWidget):
 
         
         if pdh.cc3dSimulationData.xmlScript==itemFullPath or pdh.cc3dSimulationData.pythonScript==itemFullPath:
-            _menu.addAction(self.plugin.actions["Open Scan Editor"])
+            self.addActionToContextMenu(_menu,self.plugin.actions["Open Scan Editor"])
             
         _menu.addSeparator()        
     
@@ -378,13 +409,13 @@ class CC3DProjectTreeWidget(QTreeWidget):
         
         print 'extension=',extension
         if extension.lower()=='.xml':
-            _menu.addAction(self.plugin.actions["Convert XML to Python"])
+            self.addActionToContextMenu(_menu,self.plugin.actions["Convert XML to Python"])
             self.plugin.xmlFileToConvert=itemFullPath
             
             return             
         
         if pdh.cc3dSimulationData.xmlScript!='':
-            _menu.addAction(self.plugin.actions["Convert XML to Python"])
+            self.addActionToContextMenu(_menu,self.plugin.actions["Convert XML to Python"])
             self.plugin.xmlFileToConvert=str(pdh.cc3dSimulationData.xmlScript)
             
     def __restyle(self):
@@ -404,9 +435,10 @@ class CC3DProjectTreeWidget(QTreeWidget):
     def applyStyleFromTheme(self,_styleName,_themeName):
 
 
+        
         themeManager=self.__ui.themeManager
         self.style=themeManager.getStyleFromTheme(_styleName = _styleName , _themeName = _themeName)
-
+        
 #         print '_styleName=',_styleName
 #         print 'self.style=',self.style
 #         import time
@@ -469,6 +501,12 @@ class CC3DProject(QObject):
         self.projectDataHandlers={}
         self.openProjectsDict={}
         
+        self.hideContextMenuIcons=False        
+        import platform
+        mac_ver=platform.mac_ver()
+        if mac_ver[0]:
+            self.hideContextMenuIcons=True # on OSX we hide context menu icons
+        
         # self.listener=CompuCell3D.CC3DListener.CC3DListener(self.__ui)
         # self.listener.setPluginObject(self)
         self.__initActions()        
@@ -484,10 +522,18 @@ class CC3DProject(QObject):
         # self.parameterScanXMLHandler=None
         # self.parameterScanFile=''
         
+        self.openCC3Dproject("/Users/m/install_projects/CC3D_3.7.1/Demos/SBMLSolverExamples/SBMLSolver/SBMLSolver.cc3d")
+        
         # # # self.openCC3Dproject('C:/Users/m/CC3DProjects/CellSorting/CellSorting.cc3d')
         # # # # self.treeWidget.applyStyle(self.defaultStyle)
         self.treeWidget.applyStyleFromTheme(_styleName = 'Default Style' , _themeName = self.__ui.currentThemeName)        
         # # # self.styleItems()
+
+        self.hideContextMenuIcons=False        
+        import platform
+        mac_ver=platform.mac_ver()
+        if mac_ver[0]:
+            self.hideContextMenuIcons=True # on OSX we hide context menu icons
         
     def getUI(self):
         return self.__ui
@@ -712,11 +758,16 @@ class CC3DProject(QObject):
         self.connect(self.actions["Show Project Panel"],    SIGNAL('triggered(bool)'),  self.showProjectPanel)
         
         self.actions["Add Steppable..."]=QtGui.QAction(QIcon(':/icons/addSteppable.png'),"Add Steppable...", self, shortcut="", statusTip="Adds Steppable to Python File (Cannot be Python Main Script) ", triggered=self.__addSteppable)
+        
         self.actions["Convert XML to Python"]=QtGui.QAction(QIcon(':/icons/xml-icon.png'),"Convert XML to Python", self, shortcut="", statusTip="Converts XML into equivalent Python script", triggered=self.__convertXMLToPython)
         
         self.actions["Add Parameter Scan"]=QtGui.QAction(QIcon(':/icons/scan_32x32.png'),"Add Parameter Scan", self, shortcut="Ctrl+Shift+P", statusTip="Add Parameter Scan ", triggered=self.__addParameterScan)        
-        
-        self.actions["Add To Scan..."]=QtGui.QAction(QIcon(':/icons/add.png'),"Add To Scan...", self, shortcut="Ctrl+I", statusTip="Add Parameter To Scan", triggered=self.__addToScan)        
+
+        #on osx 10.9 context menu icons are not rendered properly so we do not include them at all on OSX
+        if self.hideContextMenuIcons: addToScanIcon=QIcon()
+        else:addToScanIcon=QIcon(':/icons/add.png')               
+
+        self.actions["Add To Scan..."]=QtGui.QAction(addToScanIcon,"Add To Scan...", self, shortcut="Ctrl+I", statusTip="Add Parameter To Scan", triggered=self.__addToScan)        
         self.actions['Open Scan Editor']=QtGui.QAction(QIcon(':/icons/editor.png'),"Open Scan Editor", self, shortcut="", statusTip="Open Scan Editor", triggered=self.__openScanEditor)        
         self.actions['Reset Parameter Scan']=QtGui.QAction(QIcon(':/icons/reset_32x32.png'),"Reset Parameter Scan", self, shortcut="", statusTip="Reset Parameter Scan", triggered=self.__resetParameterScan)                        
 
@@ -1018,11 +1069,32 @@ class CC3DProject(QObject):
 
         
         
+    def restoreIcons(self):
+        print 'restore icons for scan menu'
+        for action,icon in self.__iconDict.iteritems():
+            action.setIcon(icon)
+        
+        
+    def addActionToContextMenu(self,_menu,_action):
+
+#         if self.hideContextMenuIcons:            
+#             self.__iconDict[_action]=_action.icon()                
+#             _action.setIcon(QIcon())
+            
+        _menu.addAction(_action)
+        
+
         
     def  createParameterScanMenu(self,_widget):
+        self.__iconDict={} # resetting icon dictionary
+        self.hideContextMenuIcons=True
+        
         menu=QMenu(_widget)
         
-        menu.addAction(self.actions["Add To Scan..."])
+        menu.aboutToHide.connect(self.restoreIcons)
+        
+        self.addActionToContextMenu(menu,self.actions["Add To Scan..."])
+#         menu.addAction(self.actions["Add To Scan..."])
         
         return menu
         
@@ -2129,7 +2201,7 @@ class CC3DProject(QObject):
     
         
     
-    def openCC3Dproject(self,fileName):
+    def openCC3Dproject(self,fileName):        
         projExist=True
         
         self.__ui.addItemtoConfigurationStringList(self.configuration,"RecentProjects",fileName)  

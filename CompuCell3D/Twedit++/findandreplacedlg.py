@@ -49,14 +49,14 @@ class FindInFilesResults:
     #this function will properly format find in files result so that they can be properly interpretted by the lexer
     #have to make lexer more robust though...
     def produceSummaryRepr(self,findInFilesResultsList,_textToFind=""):
-        print 'lineOccurences=',findInFilesResultsList[0].lineOccurences
-        print 'number of elements in lineOccurences=',len(findInFilesResultsList[0].lineOccurences)
+#         print 'lineOccurences=',findInFilesResultsList[0].lineOccurences
+#         print 'number of elements in lineOccurences=',len(findInFilesResultsList[0].lineOccurences)
         findInFileResultRepr="" 
         allHits=0
         numberOfFiles=len(findInFilesResultsList)
         for findInFileResult in findInFilesResultsList:
             allHits+=findInFileResult.totalHits
-            print 'allHits=',allHits
+#             print 'allHits=',allHits
             
             
             findInFileResultRepr+=findInFileResult.__str__()
@@ -415,8 +415,8 @@ class FindAndReplaceDlg(QDialog,ui_findinfilesdlg.Ui_FindInFiles):
         self.updateUi()
         
 #         self.setWindowFlags(Qt.SubWindow|Qt.FramelessWindowHint |Qt.WindowSystemMenuHint |Qt.WindowStaysOnTopHint)
-#         if MAC:           
-#             self.setWindowFlags(Qt.Tool|self.windowFlags())
+        if MAC:           
+            self.setWindowFlags(Qt.Tool|self.windowFlags())
         
     def setButtonsEnabled(self,_flag):        # setEnabled on top widget blocks Qline edit keyboard focus on OSX . So instead we will enable each button individually        # notice we do not touch close or clear history buttons        self.findNextButton.setEnabled(_flag)        self.findAllInOpenDocsButton.setEnabled(_flag)        self.findAllInCurrentDocButton.setEnabled(_flag)        self.replaceButton.setEnabled(_flag)        self.replaceAllButton.setEnabled(_flag)        self.replaceAllInOpenDocsButton.setEnabled(_flag)        self.findAllButtonIF.setEnabled(_flag)        self.replaceButtonIF.setEnabled(_flag)            def tabChanged(self,idx):
         title=self.tabWidget.tabText(idx)

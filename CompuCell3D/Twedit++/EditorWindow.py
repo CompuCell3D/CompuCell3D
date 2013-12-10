@@ -1207,6 +1207,8 @@ class EditorWindow(QMainWindow):
         self.themeManager.applyThemeToEditor(self.currentThemeName,_editor)    
         # self.themeManager.applyThemeToEditor('Choco',_editor)    
         
+        _editor.zoomTo(self.zoomRange)
+        
     def modificationChangedSlot(self, _flag):
         dbgMsg("THIS IS CHANGED DOCUMENT")
                             
@@ -4162,8 +4164,7 @@ class EditorWindow(QMainWindow):
         
         self.checkActions()
         
-        editor.zoomTo(self.zoomRange)
-        
+#         editor.zoomTo(self.zoomRange) # we set zoom in setEditorproperties
         
         self.commentStyleDict[editor]=[lexer[1],lexer[2]] # associating comment style with the lexer
         
