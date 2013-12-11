@@ -1091,7 +1091,7 @@ class EditorWindow(QMainWindow):
         for editor in self.getEditorList():
             fileName=self.getEditorFileName(editor)
             try:
-                if fileName!='' and os.path.getmtime(str(fileName))>self.getEditorFileModificationTime(editor):
+                if fileName!='' and os.path.getmtime(str(fileName))!=self.getEditorFileModificationTime(editor):
                     dbgMsg("DOCUMENT ",fileName, " was modified")
                     reloadFlag=self.maybeReload(editor)
                     if not reloadFlag:
