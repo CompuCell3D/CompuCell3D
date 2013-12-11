@@ -982,7 +982,7 @@ void DiffusionSolverFE<Cruncher>::secreteSingleField(unsigned int idx){
 template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::secreteConstantConcentrationSingleField(unsigned int idx){
 
-	std::cerr<<"***************here secreteConstantConcentrationSingleField***************\n";
+	// std::cerr<<"***************here secreteConstantConcentrationSingleField***************\n";
 
 	SecretionData & secrData=diffSecrFieldTuppleVec[idx].secrData;
 
