@@ -102,7 +102,7 @@
 
 %typemap(in) CompuCell3D::Point3D  (CompuCell3D::Point3D pt)  {
   /* Check if is a list */
-  // cerr<<"inside point3D conversion typemap"<<endl;
+//     cerr<<"inside point3D conversion typemap"<<endl;
     if (PyList_Check($input)) {
         int size = PyList_Size($input);        
         if (size==3){
@@ -177,6 +177,8 @@
 
 %typemap(in) CompuCell3D::Point3D &  (CompuCell3D::Point3D pt)  { // note that (CompuCell3D::Point3D pt) causes pt to be allocated on the stack - no need to worry abuot freeing memory
   /* Check if is a list */
+//     cerr<<"inside point3D conversion typemap"<<endl;
+    
     if (PyList_Check($input)) {
         int size = PyList_Size($input);        
         if (size==3){
@@ -226,9 +228,6 @@
         }else{
             SWIG_exception(SWIG_ValueError,"The values in the array should be either floating point numbers or inttegers. Please use explicit type conversion for all the values");
         }
-        
-        
-        
         
         $1=&pt;        
     }else{

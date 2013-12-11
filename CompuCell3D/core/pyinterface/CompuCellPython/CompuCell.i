@@ -528,8 +528,37 @@ using namespace CompuCell3D;
     if (!PyTuple_Check( _indexTuple) || PyTuple_GET_SIZE(_indexTuple)!=3){
         throw std::runtime_error(std::string(#type)+std::string(": Wrong Syntax: Expected someting like: field[1,2,3]"));
     }
+    PyObject *xCoord=PyTuple_GetItem(_indexTuple,0);
+    PyObject *yCoord=PyTuple_GetItem(_indexTuple,1);
+    PyObject *zCoord=PyTuple_GetItem(_indexTuple,2);
+    Py_ssize_t  x,y,z;
 
-    return self->get(Point3D(PyInt_AsLong(PyTuple_GetItem(_indexTuple,0)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,1)),PyInt_AsLong(PyTuple_GetItem(_indexTuple,2))));    
+    //x-coord
+    if (PyInt_Check(xCoord)){
+        x=PyInt_AsLong(PyTuple_GetItem(_indexTuple,0));
+    }else if (PyLong_Check(xCoord)){
+        x=PyLong_AsLong(PyTuple_GetItem(_indexTuple,0));
+    }else{
+        throw std::runtime_error("Wrong Type (X): only integer values are allowed here");
+    }    
+    //y-coord
+    if (PyInt_Check(yCoord)){
+        y=PyInt_AsLong(PyTuple_GetItem(_indexTuple,1));
+    }else if (PyLong_Check(yCoord)){
+        y=PyLong_AsLong(PyTuple_GetItem(_indexTuple,1));
+    }else{
+        throw std::runtime_error("Wrong Type (Y): only integer values are allowed here");
+    }    
+    //z-coord    
+    if (PyInt_Check(zCoord)){
+        z=PyInt_AsLong(PyTuple_GetItem(_indexTuple,2));
+    }else if (PyLong_Check(zCoord)){
+        z=PyLong_AsLong(PyTuple_GetItem(_indexTuple,2));
+    }else{
+        throw std::runtime_error("Wrong Type (Z): only integer values are allowed here");
+    }
+    
+    return self->get(Point3D(x,y,z));    
   }
 
 %enddef
@@ -567,9 +596,17 @@ FIELD3DEXTENDERBASE(type,returnType)
 
         
     }else{
-        start_x=PyInt_AsLong(PyTuple_GetItem(_indexTuple,0));
-        stop_x=start_x;
-        step_x=1;
+        if (PyInt_Check(xCoord)){
+            start_x=PyInt_AsLong(PyTuple_GetItem(_indexTuple,0));
+            stop_x=start_x;
+            step_x=1;
+        }else if (PyLong_Check(xCoord)){
+            start_x=PyLong_AsLong(PyTuple_GetItem(_indexTuple,0));
+            stop_x=start_x;
+            step_x=1;          
+        }else{
+            throw std::runtime_error("Wrong Type (X): only integer values are allowed here");
+        }
     }
 
     if (PySlice_Check(yCoord)){
@@ -583,9 +620,17 @@ FIELD3DEXTENDERBASE(type,returnType)
         
         
     }else{
-        start_y=PyInt_AsLong(PyTuple_GetItem(_indexTuple,1));
-        stop_y=start_y;
-        step_y=1;
+        if (PyInt_Check(yCoord)){
+            start_y=PyInt_AsLong(PyTuple_GetItem(_indexTuple,1));
+            stop_y=start_y;
+            step_y=1;
+        }else if (PyLong_Check(yCoord)){
+            start_y=PyLong_AsLong(PyTuple_GetItem(_indexTuple,1));
+            stop_y=start_y;
+            step_y=1;          
+        }else{
+            throw std::runtime_error("Wrong Type (Y): only integer values are allowed here");
+        }
     }
     
     if (PySlice_Check(zCoord)){
@@ -594,9 +639,18 @@ FIELD3DEXTENDERBASE(type,returnType)
         
         
     }else{
-        start_z=PyInt_AsLong(PyTuple_GetItem(_indexTuple,2));
-        stop_z=start_z;
-        step_z=1;
+        if (PyInt_Check(zCoord)){
+            start_z=PyInt_AsLong(PyTuple_GetItem(_indexTuple,2));
+            stop_z=start_z;
+            step_z=1;
+        }else if (PyLong_Check(zCoord)){
+            start_z=PyLong_AsLong(PyTuple_GetItem(_indexTuple,2));
+            stop_z=start_z;
+            step_z=1;          
+        }else{
+            throw std::runtime_error("Wrong Type (Z): only integer values are allowed here");
+        }
+
     }
 
     
@@ -606,7 +660,7 @@ FIELD3DEXTENDERBASE(type,returnType)
     // cerr<<"sliceLength="<<sliceLength<<endl;
     
     
-    int x,y,z;
+//     int x,y,z;
     PyObject *sliceX=0,*sliceY=0,* sliceZ=0;
     
     for (Py_ssize_t x=start_x ; x<=stop_x ; x+=step_x)
@@ -657,6 +711,7 @@ FIELD3DEXTENDERBASE(type,returnType)
     }
     
     VolumeTrackerPlugin *volumeTrackerPlugin=(VolumeTrackerPlugin *)_volumeTrackerPlugin;
+       
     
     PyObject *xCoord=PyTuple_GetItem(_indexTuple,0);
     PyObject *yCoord=PyTuple_GetItem(_indexTuple,1);
@@ -668,26 +723,41 @@ FIELD3DEXTENDERBASE(type,returnType)
     
     Dim3D dim=self->getDim();
     
-    if (PySlice_Check(xCoord)){
-
+    if (PySlice_Check(xCoord)){    
         PySlice_GetIndicesEx((PySliceObject*)xCoord,dim.x-1,&start_x,&stop_x,&step_x,&sliceLength);
-
         
     }else{
-        start_x=PyInt_AsLong(PyTuple_GetItem(_indexTuple,0));
-        stop_x=start_x;
-        step_x=1;
+        if (PyInt_Check(xCoord)){
+            start_x=PyInt_AsLong(PyTuple_GetItem(_indexTuple,0));
+            stop_x=start_x;
+            step_x=1;
+        }else if (PyLong_Check(xCoord)){
+            start_x=PyLong_AsLong(PyTuple_GetItem(_indexTuple,0));
+            stop_x=start_x;
+            step_x=1;          
+        }else{
+            throw std::runtime_error("Wrong Type (X): only values are allowed here");
+        }
+        
     }
-
+    
     if (PySlice_Check(yCoord)){
         
         PySlice_GetIndicesEx((PySliceObject*)yCoord,dim.y-1,&start_y,&stop_y,&step_y,&sliceLength);
         
         
     }else{
-        start_y=PyInt_AsLong(PyTuple_GetItem(_indexTuple,1));
-        stop_y=start_y;
-        step_y=1;
+        if (PyInt_Check(yCoord)){
+            start_y=PyInt_AsLong(PyTuple_GetItem(_indexTuple,1));
+            stop_y=start_y;
+            step_y=1;
+        }else if (PyLong_Check(yCoord)){
+            start_y=PyLong_AsLong(PyTuple_GetItem(_indexTuple,1));
+            stop_y=start_y;
+            step_y=1;          
+        }else{
+            throw std::runtime_error("Wrong Type (Y): only integer values are allowed here");
+        }
     }
     
     if (PySlice_Check(zCoord)){
@@ -696,11 +766,19 @@ FIELD3DEXTENDERBASE(type,returnType)
         
         
     }else{
-        start_z=PyInt_AsLong(PyTuple_GetItem(_indexTuple,2));
-        stop_z=start_z;
-        step_z=1;
+        if (PyInt_Check(zCoord)){
+            start_z=PyInt_AsLong(PyTuple_GetItem(_indexTuple,2));
+            stop_z=start_z;
+            step_z=1;
+        }else if (PyLong_Check(zCoord)){
+            start_z=PyLong_AsLong(PyTuple_GetItem(_indexTuple,2));
+            stop_z=start_z;
+            step_z=1;          
+        }else{
+            throw std::runtime_error("Wrong Type (Z): only integer values are allowed here");
+        }
     }
-
+   
     
 //     cerr<<"start x="<< start_x<<endl;
 //     cerr<<"stop x="<< stop_x<<endl;
@@ -708,7 +786,7 @@ FIELD3DEXTENDERBASE(type,returnType)
 //     cerr<<"sliceLength="<<sliceLength<<endl;
     
     
-    int x,y,z;
+//     int x,y,z;
     PyObject *sliceX=0,*sliceY=0,* sliceZ=0;
     
     for (Py_ssize_t x=start_x ; x<=stop_x ; x+=step_x)
