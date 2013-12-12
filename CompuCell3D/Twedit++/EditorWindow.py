@@ -3984,9 +3984,9 @@ class EditorWindow(QMainWindow):
         file=None    
         
         try:
-            print 'opening file ',fileName
+# # #             print 'opening file ',fileName
             file = open(fileName, 'r')
-            print 'DONE READING: file ',fileName
+# # #             print 'DONE READING: file ',fileName
         except:
             if not _restoreFlag:
                 QtGui.QMessageBox.warning(self, "Twedit++",
