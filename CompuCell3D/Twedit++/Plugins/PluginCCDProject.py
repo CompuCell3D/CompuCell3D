@@ -522,7 +522,7 @@ class CC3DProject(QObject):
         # self.parameterScanXMLHandler=None
         # self.parameterScanFile=''
         
-        self.openCC3Dproject("/Users/m/install_projects/CC3D_3.7.1/Demos/SBMLSolverExamples/SBMLSolver/SBMLSolver.cc3d")
+        # self.openCC3Dproject("/Users/m/install_projects/CC3D_3.7.1/Demos/SBMLSolverExamples/SBMLSolver/SBMLSolver.cc3d")
         
         # # # self.openCC3Dproject('C:/Users/m/CC3DProjects/CellSorting/CellSorting.cc3d')
         # # # # self.treeWidget.applyStyle(self.defaultStyle)
