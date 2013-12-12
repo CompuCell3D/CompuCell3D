@@ -25,6 +25,7 @@
 
 #include <CompuCell3D/CC3D.h>
 
+
 #include "ContactLocalProductData.h"
 
 // // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
