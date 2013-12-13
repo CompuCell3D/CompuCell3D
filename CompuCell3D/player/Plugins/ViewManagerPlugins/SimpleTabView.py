@@ -1231,8 +1231,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             
             self.prepareLatticeDataView()
         
-        Configuration.setSetting("RecentFile",self.__fileName)
-        Configuration.setSetting("RecentSimulations",self.__fileName) #  each loaded simulation has to be passed to a function which updates list of recent files
+        Configuration.setSetting("RecentFile",os.path.abspath(self.__fileName))
+        Configuration.setSetting("RecentSimulations",os.path.abspath(self.__fileName)) #  each loaded simulation has to be passed to a function which updates list of recent files
         
             
 
@@ -2929,9 +2929,9 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.fieldTypes = {}   # re-init (empty) the fieldTypes dict, otherwise get previous/bogus fields in graphics win field combobox
     
         if Configuration.getSetting("ClosePlayerAfterSimulationDone") or self.closePlayerAfterSimulationDone:
-            Configuration.setSetting("RecentFile",self.__fileName)
+            Configuration.setSetting("RecentFile",os.path.abspath(self.__fileName))
             
-            Configuration.setSetting("RecentSimulations",self.__fileName)
+            Configuration.setSetting("RecentSimulations",os.path.abspath(self.__fileName))
             
             if self.saveSettings:                
                 Configuration.syncPreferences()        
@@ -3610,6 +3610,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         
         import CompuCellSetup
+        self.__fileName=os.path.abspath(self.__fileName)
         CompuCellSetup.simulationFileName=self.__fileName    
         Configuration.setSetting("RecentFile",self.__fileName)
         Configuration.setSetting("RecentSimulations",self.__fileName) #  each loaded simulation has to be passed to a function which updates list of recent files
