@@ -46,9 +46,13 @@ using namespace CompuCell3D;
 
 
 
-ContactLocalProductPlugin::ContactLocalProductPlugin() : 
-    pUtils(0),
-	xmlData(0), 
+ContactLocalProductPlugin::ContactLocalProductPlugin():
+   pUtils(0),
+   potts(0),
+   sim(0),
+   contactProductDataAccessorPtr(0),
+   automaton(0),
+   xmlData(0),
    depth(1),
    weightDistance(false),
    contactEnergyPtr(&ContactLocalProductPlugin::contactEnergyLinear),
