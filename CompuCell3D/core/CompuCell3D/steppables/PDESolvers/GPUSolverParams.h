@@ -55,6 +55,7 @@ typedef struct UniSolverParams{//TODO: some of them are field params, not a solv
 	int xDim;
 	int yDim;
 	int zDim;
+    int extraTimesPerMCS;
 
 } UniSolverParams_t;
 

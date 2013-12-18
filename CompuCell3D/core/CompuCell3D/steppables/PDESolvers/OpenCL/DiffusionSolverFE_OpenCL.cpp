@@ -80,7 +80,7 @@ void DiffusionSolverFE_OpenCL::diffuseSingleFieldImpl(ConcentrationField_t &conc
 	ASSERT_OR_THROW("Threshold is not supported yet",	!diffData.useThresholds);
 	//ASSERT_OR_THROW("2D domains are not supported yet",fieldDim.x!=1&&fieldDim.y!=1&&fieldDim.z!=1);
 	const size_t globalWorkSize[]={fieldDim.x, fieldDim.y, fieldDim.z};
-
+    
 	SetSolverParams(diffData);
 	
 	float *h_Field=concentrationField.getContainer();
@@ -129,6 +129,8 @@ void DiffusionSolverFE_OpenCL::SetSolverParams(DiffusionData const &diffData)
         // // // break;
 	}
 //	h_solverParams.dt=diffData.deltaT;
+
+    h_solverParams.extraTimesPerMCS=diffData.extraTimesPerMCS;    
 	h_solverParams.dx=diffData.deltaX;
 	h_solverParams.hexLattice=(latticeType==HEXAGONAL_LATTICE);
 	h_solverParams.nbhdConcLen=nbhdConcLen;
