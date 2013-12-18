@@ -370,3 +370,7 @@ void DiffusionSolverFE_CPU_Implicit::initCellTypesAndBoundariesImpl(){
 	//do nothing on CPU
 }
 
+std::string DiffusionSolverFE_CPU_Implicit::toStringImpl(){
+    return "DiffusionSolverFE_Implicit";
+}
+

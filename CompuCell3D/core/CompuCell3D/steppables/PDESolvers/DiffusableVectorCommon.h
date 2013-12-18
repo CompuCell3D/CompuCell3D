@@ -35,6 +35,7 @@ namespace CompuCell3D {
 		  concentrationFieldVector(0),maxNeighborIndex(0),boundaryStrategy(0)
 		  {
 			using namespace std;
+            boundaryStrategy=BoundaryStrategy::getInstance();
 			cerr<<"Default constructor DiffusableVectorCommon"<<endl;
 
 		};
@@ -72,8 +73,7 @@ namespace CompuCell3D {
 
 		virtual void allocateDiffusableFieldVector(unsigned int numberOfFields,Dim3D fieldDim)
 		{
-			fieldDimLocal=fieldDim;
-			boundaryStrategy=BoundaryStrategy::getInstance();
+			fieldDimLocal=fieldDim;			
 			//       maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(1.1); 
 			maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);//for nearest neighbors only
 			//       const std::vector<Point3D> & offsetVecRef=BoundaryStrategy::getInstance()->getOffsetVec();

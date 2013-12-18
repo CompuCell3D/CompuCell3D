@@ -172,9 +172,13 @@ protected:
    bool haveCouplingTerms;
    std::vector<DiffusionSecretionDiffusionFEFieldTupple<Cruncher> >  diffSecrFieldTuppleVec;
 	//vector<string> concentrationFieldNameVectorTmp;
-
+    
+    //used to deal with large diffusion constants
    int scalingExtraMCS;
    std::vector<int> scalingExtraMCSVec; //TODO: check if used
+   std::vector<float> maxDiffConstVec;
+    float maxStableDiffConstant;           
+   
    std::vector<float> diffConstVec; 
    std::vector<float> decayConstVec; 
 
@@ -202,7 +206,8 @@ protected:
    virtual void initCellTypesAndBoundariesImpl()=0;
 
    virtual void solverSpecific(CC3DXMLElement *_xmlData)=0;//reading solver-specific information from XML file
-
+   virtual std::string toStringImpl()=0; //to string has to be customized too it has to return correct name for the solver depending if it is GPU or CPU solver
+    
    //for debugging
    template <typename ConcentrationField_t>
    void CheckConcentrationField(ConcentrationField_t &concentrationField)const;
@@ -247,6 +252,7 @@ protected:
 	unsigned int fieldsCount()const{return diffSecrFieldTuppleVec.size(); }
 		/*template <typename ConcentrationField_t>
 		ConcentrationField_t const* getConcentrationField(int n)const;*/
+
 
 };
 

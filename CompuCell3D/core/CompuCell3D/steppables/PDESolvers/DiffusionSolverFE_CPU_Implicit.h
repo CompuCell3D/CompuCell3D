@@ -35,6 +35,7 @@ protected:
 	virtual void extraInitImpl();
 	virtual void initCellTypesAndBoundariesImpl();
 	virtual void solverSpecific(CC3DXMLElement *_xmlData);//reading solver-specific information from XML file
+    virtual std::string toStringImpl();    
 private:
 	void Implicit(ConcentrationField_t const &concentrationField, DiffusionData const &diffData, 
 		 EigenRealVector const &b, EigenRealVector &x);

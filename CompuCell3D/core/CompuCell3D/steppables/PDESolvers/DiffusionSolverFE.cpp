@@ -97,6 +97,7 @@ DiffusionSolverFE<Cruncher>::DiffusionSolverFE()
 	diffusionLatticeScalingFactor=1.0;
 	autoscaleDiffusion=false;
 	cellTypeMonitorPlugin=0;
+    maxStableDiffConstant=0.23;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
@@ -112,6 +113,10 @@ DiffusionSolverFE<Cruncher>::~DiffusionSolverFE()
 template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant)
 {
+    if (!maxDiffConstVec.size()){ //we will pass empty vector from update function . At the time of calling the update function we have no knowledge of maxDiffConstVec, maxStableDiffConstant
+        return;
+    }
+    
 	//scaling of diffusion and secretion coeeficients
 	for(unsigned int i = 0; i < diffSecrFieldTuppleVec.size(); i++){
 		scalingExtraMCSVec[i] = ceil(maxDiffConstVec[i]/maxStableDiffConstant); //compute number of calls to diffusion solver
@@ -184,17 +189,43 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
 
 	pUtils=simulator->getParallelUtils();
 
-	cerr<<"INSIDE INIT"<<endl;
-
-	
-
 	///setting member function pointers
 	diffusePtr=&DiffusionSolverFE::diffuse;
 	secretePtr=&DiffusionSolverFE::secrete;
 
+    //determinign max stable diffusion constant has to be done before calling update
+	maxStableDiffConstant=0.23;
+	if(static_cast<Cruncher*>(this)->getBoundaryStrategy()->getLatticeType()==HEXAGONAL_LATTICE) {
+		if (fieldDim.x==1 || fieldDim.y==1||fieldDim.z==1){ //2D simulation we ignore 1D simulations in CC3D they make no sense and we assume users will not attempt to run 1D simulations with CC3D		
+			maxStableDiffConstant=0.16f;
+		}else{//3D
+			maxStableDiffConstant=0.08f;
+		}
+	}else{//Square lattice
+		if (fieldDim.x==1 || fieldDim.y==1||fieldDim.z==1){ //2D simulation we ignore 1D simulations in CC3D they make no sense and we assume users will not attempt to run 1D simulations with CC3D				
+			maxStableDiffConstant=0.23f;
+		}else{//3D
+			maxStableDiffConstant=0.14f;
+		}
+	}
+	
+
+	//determining latticeType and setting diffusionLatticeScalingFactor
+	//When you evaluate div as a flux through the surface divided bby volume those scaling factors appear automatically. On cartesian lattife everythink is one so this is easy to forget that on different lattices they are not1
+	diffusionLatticeScalingFactor=1.0;
+	if (static_cast<Cruncher*>(this)->getBoundaryStrategy()->getLatticeType()==HEXAGONAL_LATTICE){
+		if (fieldDim.x==1 || fieldDim.y==1||fieldDim.z==1){ //2D simulation we ignore 1D simulations in CC3D they make no sense and we assume users will not attempt to run 1D simulations with CC3D
+			diffusionLatticeScalingFactor=1.0f/sqrt(3.0f);// (2/3)/dL^2 dL=sqrt(2/sqrt(3)) so (2/3)/dL^2=1/sqrt(3)
+		}else{//3D simulation
+			diffusionLatticeScalingFactor=pow(2.0f,-4.0f/3.0f); //(1/2)/dL^2 dL dL^2=2**(1/3) so (1/2)/dL^2=1/(2.0*2^(1/3))=2^(-4/3)
+		}
+
+	}    
+    
 	update(_xmlData,true);
 
-	cerr<<"AFTER UPDATE"<<endl;
+
+    	
 
 	numberOfFields=diffSecrFieldTuppleVec.size();
 
@@ -216,10 +247,8 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
 
 	float maxDiffConst = 0.0;
 	scalingExtraMCS = 0;
-	std::vector<float> maxDiffConstVec; 
+	
 
-	scalingExtraMCSVec.assign(diffSecrFieldTuppleVec.size(),0);
-	maxDiffConstVec.assign(diffSecrFieldTuppleVec.size(),0.0);
 
 	for(unsigned int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
 		pos=diffSecrFieldTuppleVec[i].diffData.couplingDataVec.begin();
@@ -309,34 +338,34 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
 
 	// //check diffusion constant and scale extraTimesPerMCS
 
-	float maxStableDiffConstant=0.23;
-	if(static_cast<Cruncher*>(this)->getBoundaryStrategy()->getLatticeType()==HEXAGONAL_LATTICE) {
-		if (fieldDim.x==1 || fieldDim.y==1||fieldDim.z==1){ //2D simulation we ignore 1D simulations in CC3D they make no sense and we assume users will not attempt to run 1D simulations with CC3D		
-			maxStableDiffConstant=0.16f;
-		}else{//3D
-			maxStableDiffConstant=0.08f;
-		}
-	}else{//Square lattice
-		if (fieldDim.x==1 || fieldDim.y==1||fieldDim.z==1){ //2D simulation we ignore 1D simulations in CC3D they make no sense and we assume users will not attempt to run 1D simulations with CC3D				
-			maxStableDiffConstant=0.23f;
-		}else{//3D
-			maxStableDiffConstant=0.14f;
-		}
-	}
+	// // // maxStableDiffConstant=0.23;
+	// // // if(static_cast<Cruncher*>(this)->getBoundaryStrategy()->getLatticeType()==HEXAGONAL_LATTICE) {
+		// // // if (fieldDim.x==1 || fieldDim.y==1||fieldDim.z==1){ //2D simulation we ignore 1D simulations in CC3D they make no sense and we assume users will not attempt to run 1D simulations with CC3D		
+			// // // maxStableDiffConstant=0.16f;
+		// // // }else{//3D
+			// // // maxStableDiffConstant=0.08f;
+		// // // }
+	// // // }else{//Square lattice
+		// // // if (fieldDim.x==1 || fieldDim.y==1||fieldDim.z==1){ //2D simulation we ignore 1D simulations in CC3D they make no sense and we assume users will not attempt to run 1D simulations with CC3D				
+			// // // maxStableDiffConstant=0.23f;
+		// // // }else{//3D
+			// // // maxStableDiffConstant=0.14f;
+		// // // }
+	// // // }
 
-	Scale(maxDiffConstVec, maxStableDiffConstant);//TODO: remove for implicit solvers?
+	// // // // // // Scale(maxDiffConstVec, maxStableDiffConstant);//TODO: remove for implicit solvers?
 
-	//determining latticeType and setting diffusionLatticeScalingFactor
-	//When you evaluate div as a flux through the surface divided bby volume those scaling factors appear automatically. On cartesian lattife everythink is one so this is easy to forget that on different lattices they are not1
-	diffusionLatticeScalingFactor=1.0;
-	if (static_cast<Cruncher*>(this)->getBoundaryStrategy()->getLatticeType()==HEXAGONAL_LATTICE){
-		if (fieldDim.x==1 || fieldDim.y==1||fieldDim.z==1){ //2D simulation we ignore 1D simulations in CC3D they make no sense and we assume users will not attempt to run 1D simulations with CC3D
-			diffusionLatticeScalingFactor=1.0f/sqrt(3.0f);// (2/3)/dL^2 dL=sqrt(2/sqrt(3)) so (2/3)/dL^2=1/sqrt(3)
-		}else{//3D simulation
-			diffusionLatticeScalingFactor=pow(2.0f,-4.0f/3.0f); //(1/2)/dL^2 dL dL^2=2**(1/3) so (1/2)/dL^2=1/(2.0*2^(1/3))=2^(-4/3)
-		}
+	// // // //determining latticeType and setting diffusionLatticeScalingFactor
+	// // // //When you evaluate div as a flux through the surface divided bby volume those scaling factors appear automatically. On cartesian lattife everythink is one so this is easy to forget that on different lattices they are not1
+	// // // diffusionLatticeScalingFactor=1.0;
+	// // // if (static_cast<Cruncher*>(this)->getBoundaryStrategy()->getLatticeType()==HEXAGONAL_LATTICE){
+		// // // if (fieldDim.x==1 || fieldDim.y==1||fieldDim.z==1){ //2D simulation we ignore 1D simulations in CC3D they make no sense and we assume users will not attempt to run 1D simulations with CC3D
+			// // // diffusionLatticeScalingFactor=1.0f/sqrt(3.0f);// (2/3)/dL^2 dL=sqrt(2/sqrt(3)) so (2/3)/dL^2=1/sqrt(3)
+		// // // }else{//3D simulation
+			// // // diffusionLatticeScalingFactor=pow(2.0f,-4.0f/3.0f); //(1/2)/dL^2 dL dL^2=2**(1/3) so (1/2)/dL^2=1/(2.0*2^(1/3))=2^(-4/3)
+		// // // }
 
-	}
+	// // // }
 	//this is no longer the case - we kept this option form backward compatibility reasons for flexibleDiffusion solver
 	////we only autoscale diffusion when user requests it explicitely
 	//if (!autoscaleDiffusion){
@@ -605,12 +634,8 @@ void DiffusionSolverFE<Cruncher>::stepImpl(const unsigned int _currentStep)
 
 			}
 		}
-
-		//cerr<<"Making "<<scalingExtraMCSVec[i]<<" extra diffusion steps"<<endl;
+		
 		for(int extraMCS = 0; extraMCS < scalingExtraMCSVec[i]; extraMCS++) {
-//			std::cout<<"field #"<<i<<"; diffConst is: "<<diffSecrFieldTuppleVec[i].diffData.diffConst<<"; "<<
-//				diffSecrFieldTuppleVec[i].diffData.diffCoef[0]<<"; "<<
-//				diffSecrFieldTuppleVec[i].diffData.diffCoef[1]<<std::endl;
 			diffuseSingleField(i);
 			for(unsigned int j = 0 ; j <diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.size() ; ++j){
 				(this->*diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec[j])(i);
@@ -824,7 +849,7 @@ bool DiffusionSolverFE<Cruncher>::hasExtraLayer()const{
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::secreteSingleField(unsigned int idx){
-
+    
 	SecretionData & secrData=diffSecrFieldTuppleVec[idx].secrData;
 
 	float maxUptakeInMedium=0.0;
@@ -843,7 +868,11 @@ void DiffusionSolverFE<Cruncher>::secreteSingleField(unsigned int idx){
 	bool secreteInMedium=false;
 	//the assumption is that medium has type ID 0
 	mitrShared=secrData.typeIdSecrConstMap.find(automaton->getTypeId("Medium"));
-
+    // // // cerr<<"secreteSingleField idx="<<idx<<endl;
+    // // // for (std::map<unsigned char,float>::iterator mitr=secrData.typeIdSecrConstMap.begin() ; mitr != secrData.typeIdSecrConstMap.end() ; ++mitr){
+        // // // cerr<<"type="<<(int)mitr->first<<" secrConst="<<mitr->second<<endl;
+    // // // }
+    
 	if( mitrShared != end_mitr){
 		secreteInMedium=true;
 		secrConstMedium=mitrShared->second;
@@ -1464,7 +1493,7 @@ void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullIni
 
 	//notice, only basic steering is enabled for PDE solvers - changing diffusion constants, do -not-diffuse to types etc...
 	// Coupling coefficients cannot be changed and also there is no way to allocate extra fields while simulation is running
-
+    cerr<<"\n\n\n\n\n INSIDE UPDATE XML"<<endl;
 	if(potts->getDisplayUnitsFlag()){
 		Unit diffConstUnit=powerUnit(potts->getLengthUnit(),2)/potts->getTimeUnit();
 		Unit decayConstUnit=1/potts->getTimeUnit();
@@ -1718,11 +1747,27 @@ void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullIni
 			}
 		}
 	}
+    
+    //allocating  maxDiffConstVec and  scalingExtraMCSVec   
+	scalingExtraMCSVec.assign(diffSecrFieldTuppleVec.size(),0);
+	maxDiffConstVec.assign(diffSecrFieldTuppleVec.size(),0.0);
+    
+    //finding maximum diffusion coefficients for each field
+    for(unsigned int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i){
+		for(int currentCellType = 0; currentCellType < UCHAR_MAX+1; currentCellType++) {
+			//                 cout << "diffCoef[currentCellType]: " << diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType] << endl;
+			maxDiffConstVec[i] = (maxDiffConstVec[i] < diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType]) ? diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType]: maxDiffConstVec[i];
+		}
+    }
+    
+	Scale(maxDiffConstVec, maxStableDiffConstant);//TODO: remove for implicit solvers?    
+    
 }
 
 template <class Cruncher>
 std::string DiffusionSolverFE<Cruncher>::toString(){ //TODO: overload in cruncher?
-	return "DiffusionSolverFE";
+    
+    return toStringImpl();	
 }
 
 template <class Cruncher>
