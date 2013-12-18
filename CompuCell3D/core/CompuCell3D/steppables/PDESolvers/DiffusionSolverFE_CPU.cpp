@@ -19,6 +19,8 @@ int flatInd(int x, int y, int z, Dim3D const&dim){
 	return z*dim.x*dim.y+y*dim.x+x;
 }
 
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void  DiffusionSolverFE_CPU::handleEventLocal(CC3DEvent & _event){	
@@ -497,4 +499,9 @@ void DiffusionSolverFE_CPU::extraInitImpl(){
 
 void DiffusionSolverFE_CPU::initCellTypesAndBoundariesImpl(){
 	//do nothing on CPU
+}
+
+
+std::string DiffusionSolverFE_CPU::toStringImpl(){
+    return "DiffusionSolverFE";
 }

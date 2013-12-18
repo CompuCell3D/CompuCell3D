@@ -79,7 +79,6 @@ void DiffusionSolverFE_OpenCL::diffuseSingleFieldImpl(ConcentrationField_t &conc
 	ASSERT_OR_THROW("Box watcher is not supported yet", !diffData.useBoxWatcher);
 	ASSERT_OR_THROW("Threshold is not supported yet",	!diffData.useThresholds);
 	//ASSERT_OR_THROW("2D domains are not supported yet",fieldDim.x!=1&&fieldDim.y!=1&&fieldDim.z!=1);
-
 	const size_t globalWorkSize[]={fieldDim.x, fieldDim.y, fieldDim.z};
 
 	SetSolverParams(diffData);
@@ -122,8 +121,12 @@ void DiffusionSolverFE_OpenCL::SetSolverParams(DiffusionData const &diffData)
 	
 	UniSolverParams_t  h_solverParams;
 	for( int i=0; i<UCHAR_MAX; ++i){
+       
 		h_solverParams.diffCoef[i]=diffData.diffCoef[i];
 		h_solverParams.decayCoef[i]=diffData.decayCoef[i];
+        
+        // // // cerr<<"h_solverParams.diffCoef["<<i<<"]="<<h_solverParams.diffCoef[i]<<" decay="<<h_solverParams.decayCoef[i]<<endl;
+        // // // break;
 	}
 //	h_solverParams.dt=diffData.deltaT;
 	h_solverParams.dx=diffData.deltaX;
@@ -131,6 +134,7 @@ void DiffusionSolverFE_OpenCL::SetSolverParams(DiffusionData const &diffData)
 	h_solverParams.nbhdConcLen=nbhdConcLen;
 	h_solverParams.nbhdDiffLen=nbhdDiffLen;
 
+    // cerr<<"h_solverParams.nbhdConcLen="<<h_solverParams.nbhdConcLen<<" h_solverParams.nbhdDiffLen="<<h_solverParams.nbhdDiffLen<<endl;
 	h_solverParams.xDim=fieldDim.x;
 	h_solverParams.yDim=fieldDim.y;
 	h_solverParams.zDim=fieldDim.z;
@@ -139,7 +143,7 @@ void DiffusionSolverFE_OpenCL::SetSolverParams(DiffusionData const &diffData)
 
 	oclHelper->WriteBuffer(d_solverParams, &h_solverParams, 1);
 
-	float dt=diffData.deltaT;
+	float dt=diffData.deltaT;    
 	cl_int err  = clSetKernelArg(kernel, 8, sizeof(dt), &dt);//local cell type
 	ASSERT_OR_THROW("Can't pass time step to prod kernel\n", err==CL_SUCCESS);
 
@@ -215,7 +219,12 @@ void DiffusionSolverFE_OpenCL::extraInitImpl(){
 
 	try{
 		OCLNeighbourIndsInfo onii=OCLNeighbourIndsInfo::Init(latticeType, fieldDim, getBoundaryStrategy(), hexOffsetArray, offsetVecCartesian);
-
+        
+        
+        //IMPORTANT: these two variables are crucial and they have to be set here otherwise opencl kernel will not work properly . They determine the size of offset vectors
+        nbhdConcLen=onii.mh_nbhdConcShifts.size();
+        nbhdDiffLen=onii.mh_nbhdDiffShifts.size();
+    
 		d_nbhdDiffShifts=oclHelper->CreateBuffer(CL_MEM_READ_ONLY, sizeof(cl_int4)*onii.mh_nbhdDiffShifts.size());
 		d_nbhdConcShifts=oclHelper->CreateBuffer(CL_MEM_READ_ONLY, sizeof(cl_int4)*onii.mh_nbhdConcShifts.size());
 
@@ -230,6 +239,7 @@ void DiffusionSolverFE_OpenCL::extraInitImpl(){
 		ASSERT_OR_THROW("exception caught", false);
 	}
 
+    
 	cerr<<"extraInitImpl finished\n";
 	
 }
@@ -353,4 +363,8 @@ void DiffusionSolverFE_OpenCL::initCellTypesAndBoundariesImpl(){
 void DiffusionSolverFE_OpenCL::finish(){
 //	cerr<<totalTransferTime<<"s for memory transfer to and from device"<<endl;
 //	cerr<<totalSolveTime<<"s for solving itself"<<endl;
+}
+
+std::string DiffusionSolverFE_OpenCL::toStringImpl(){
+    return "DiffusionSolverFE_OpenCL";
 }

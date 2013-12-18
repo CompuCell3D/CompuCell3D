@@ -35,7 +35,8 @@ class ReactionDiffusionSolverFE_OpenCL_Implicit:
 
 	size_t m_fieldLen;
 
-	
+    virtual std::string toStringImpl();
+    
 private:
 	//object factory to make solver of an appropriate class
 	Solver *makeSolver()const;

@@ -25,6 +25,7 @@ protected:
 	virtual void extraInitImpl();
 	virtual void initCellTypesAndBoundariesImpl();
 	virtual void solverSpecific(CC3DXMLElement *_xmlData);//reading solver-specific information from XML file
+    virtual std::string toStringImpl();
 private:
 	//void CheckConcentrationField(ConcentrationField_t &concentrationField)const;
 };

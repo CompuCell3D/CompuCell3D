@@ -281,3 +281,7 @@ void ReactionDiffusionSolverFE_OpenCL_Implicit::diffuseSingleFieldImpl(
 {
 	//ASSERT_OR_THROW("not implemented", false);
 }
+
+std::string ReactionDiffusionSolverFE_OpenCL_Implicit::toStringImpl(){
+    return "ReactionDiffusionSolverFE_OpenCL_Implicit";
+}
