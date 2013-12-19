@@ -216,6 +216,7 @@ class EditorWindow(QMainWindow):
         super(EditorWindow, self).__init__()
         self.setWindowIcon(QtGui.QIcon(":/icons/twedit-icon.png"))
         
+        
         self.extensionLanguageMap={".py":"Python",
         ".pyw":"Python",
         ".xml":"XML",
@@ -2079,6 +2080,7 @@ class EditorWindow(QMainWindow):
             slot called when user clicks Replace All on Find/replace popup. _inSelection flag determines if replacement takes place in the entire document or only in the selected text
         """
         
+        
         self.findDialogForm.setButtonsEnabled(False)        
         editor=self.getActiveEditor()
         
@@ -2168,8 +2170,7 @@ class EditorWindow(QMainWindow):
             # print 'index_mark=',index_mark
             
             editor.setSelection(line_from, index_from,line_to, index_mark )    
-        elif not inSelectionFlag:
-        
+        elif not inSelectionFlag:            
             line_from=0 
             index_from=0
             line_before, index_before = editor.getCursorPosition()
@@ -2179,7 +2180,7 @@ class EditorWindow(QMainWindow):
             self.findAndReplaceHistory.wo,\
             False,\
             True,line_from,index_from,False)     
-            editor.beginUndoAction() # undo                    
+                                
             if not foundFlag:                
                 message="Cannot find \"<b>%s</b>\""%self.findAndReplaceHistory.textToFind
                 ret = QtGui.QMessageBox.information(self, "Replace All",
@@ -2188,6 +2189,8 @@ class EditorWindow(QMainWindow):
                 self.findDialogForm.setButtonsEnabled(True)                
                 return                
             # previousLine,previousPos=editor.getCursorPosition()
+            
+            editor.beginUndoAction() # undo
             while foundFlag:
                 editor.replace(self.findAndReplaceHistory.replaceText)
                 substitutionCounter+=1 
@@ -3984,9 +3987,9 @@ class EditorWindow(QMainWindow):
         file=None    
         
         try:
-# # #             print 'opening file ',fileName
+            print 'opening file ',fileName
             file = open(fileName, 'r')
-# # #             print 'DONE READING: file ',fileName
+            print 'DONE READING: file ',fileName
         except:
             if not _restoreFlag:
                 QtGui.QMessageBox.warning(self, "Twedit++",
