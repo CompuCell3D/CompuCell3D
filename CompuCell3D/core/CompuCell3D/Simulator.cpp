@@ -973,6 +973,7 @@ void Simulator::steer(){
 			mitr=steerableObjectMap.find(moduleName);
 			if(mitr!=steerableObjectMap.end()){
 				mitr->second->update(ps.updateSteppableCC3DXMLElementVector[i]);
+                
 				//now overwrite pointer to existing copy of the module data
 				for(size_t j=0 ; j < ps.steppableCC3DXMLElementVector.size(); ++j){
 					if(ps.steppableCC3DXMLElementVector[j]->getAttribute("Type")==moduleName)

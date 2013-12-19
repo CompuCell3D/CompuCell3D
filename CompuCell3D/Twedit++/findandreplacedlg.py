@@ -351,11 +351,13 @@ class FindAndReplaceDlg(QDialog,ui_findinfilesdlg.Ui_FindInFiles):
         
         self.findLineEdit.setReturnKeyCallbackFcn(self.on_findNextButton_clicked) # to enable handling of the 'return' key pressed event         
         self.findComboBox.setLineEdit(self.findLineEdit)   
-        self.findComboBox.completer().setCaseSensitivity(1)
+        self.findComboBox.setCompleter(None) # we do not want autompletion here it is annoying
+        # self.findComboBox.completer().setCaseSensitivity(1)
 
         self.replaceLineEdit=QLineEditCustom()
         self.replaceComboBox.setLineEdit(self.replaceLineEdit)
-        self.replaceComboBox.completer().setCaseSensitivity(1)
+        self.replaceComboBox.setCompleter(None) # we do not want autompletion here it is annoying
+        # self.replaceComboBox.completer().setCaseSensitivity(1)
 
         # there are issues with Drawer dialog not getting focus when being displayed on linux
         # they are also not positioned properly so, we use "regular" windows 
@@ -370,18 +372,22 @@ class FindAndReplaceDlg(QDialog,ui_findinfilesdlg.Ui_FindInFiles):
         self.findLineEditIF=QLineEditCustom()
         self.findLineEditIF.setReturnKeyCallbackFcn(self.on_findAllButtonIF_clicked) # to enable handling of the 'return' key pressed event 
         self.findComboBoxIF.setLineEdit(self.findLineEditIF)
-        self.findComboBoxIF.completer().setCaseSensitivity(1)
+        self.findComboBoxIF.setCompleter(None) # we do not want autompletion here it is annoying
+        # self.findComboBoxIF.completer().setCaseSensitivity(1)
         self.replaceLineEditIF=QLineEditCustom()
         self.replaceComboBoxIF.setLineEdit(self.replaceLineEditIF)
-        self.replaceComboBoxIF.completer().setCaseSensitivity(1)
+        self.replaceComboBoxIF.setCompleter(None) # we do not want autompletion here it is annoying
+        # self.replaceComboBoxIF.completer().setCaseSensitivity(1)
 
         self.filtersLineEditIF=QLineEditCustom()
         self.filtersComboBoxIF.setLineEdit(self.filtersLineEditIF)
-        self.filtersComboBoxIF.completer().setCaseSensitivity(1)
+        self.filtersComboBoxIF.setCompleter(None) # we do not want autompletion here it is annoying
+        # self.filtersComboBoxIF.completer().setCaseSensitivity(1)
         
         self.directoryLineEditIF=QLineEditCustom()
         self.directoryComboBoxIF.setLineEdit(self.directoryLineEditIF)
-        self.directoryComboBoxIF.completer().setCaseSensitivity(1)
+        self.directoryComboBoxIF.setCompleter(None) # we do not want autompletion here it is annoying
+        # self.directoryComboBoxIF.completer().setCaseSensitivity(1)
 
         
         # self.findComboBox.setCompleter(0) # disallow word completion
