@@ -15,7 +15,7 @@ Is this how soslib works now? If so I would celanup the interface (API) you use 
 import platform
 mac_ver=platform.mac_ver()
 version_number=mac_ver[0]
-if version_number[0]:
+if version_number:
     version_split=version_number.split('.')
     if int(version_split[1])>=9:
         message=''' bionetSolver and bionetAPI are deprecated. Please use SBMLSolver instead. It is better, cleaner, easier to use, faster and overall much better choice than old-style BionetSolver/BionerAPI. For more details on how to use SBMLSolvedr please see CC3D Python scripting manual on http://www.compucell3d.org/Manual.     
