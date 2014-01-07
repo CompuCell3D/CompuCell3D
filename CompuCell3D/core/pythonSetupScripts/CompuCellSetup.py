@@ -1100,7 +1100,7 @@ def createVectorFieldPy(_dim,_fieldName):
         ndarrayAdapter=cmlFieldHandler.fieldStorage.createVectorFieldPy(_dim,_fieldName)
         ndarrayAdapter.initFromNumpy(fieldNP) # initializing  numpyAdapter using numpy array (copy dims and data ptr)        
         fieldRegistry.addNewField(ndarrayAdapter,_fieldName,VECTOR_FIELD)
-        fieldRegistry.addNewField(fieldNP,_fieldName+'_npy',VECTOR_FIELD)
+        fieldRegistry.addNewField(fieldNP,_fieldName+'_npy',VECTOR_FIELD_NPY)
         return fieldNP
         
     else:
@@ -1109,7 +1109,7 @@ def createVectorFieldPy(_dim,_fieldName):
         ndarrayAdapter=simulationThreadObject.callingWidget.fieldStorage.createVectorFieldPy(_dim,_fieldName)
         ndarrayAdapter.initFromNumpy(fieldNP) # initializing  numpyAdapter using numpy array (copy dims and data ptr)        
         fieldRegistry.addNewField(ndarrayAdapter,_fieldName,VECTOR_FIELD)
-        fieldRegistry.addNewField(fieldNP,_fieldName+'_npy',VECTOR_FIELD)
+        fieldRegistry.addNewField(fieldNP,_fieldName+'_npy',VECTOR_FIELD_NPY)
         return fieldNP
         
         
@@ -1233,7 +1233,7 @@ def createFloatFieldPy(_dim,_fieldName):
         ndarrayAdapter=cmlFieldHandler.fieldStorage.createFloatFieldPy(_dim,_fieldName)
         ndarrayAdapter.initFromNumpy(fieldNP) # initializing  numpyAdapter using numpy array (copy dims and data ptr)
         fieldRegistry.addNewField(ndarrayAdapter,_fieldName,SCALAR_FIELD)
-        fieldRegistry.addNewField(fieldNP,_fieldName+'_npy',SCALAR_FIELD)
+        fieldRegistry.addNewField(fieldNP,_fieldName+'_npy',SCALAR_FIELD_NPY)
         return fieldNP
     else:
         import numpy as np
@@ -1241,7 +1241,7 @@ def createFloatFieldPy(_dim,_fieldName):
         ndarrayAdapter=simulationThreadObject.callingWidget.fieldStorage.createFloatFieldPy(_dim,_fieldName) 
         ndarrayAdapter.initFromNumpy(fieldNP) # initializing  numpyAdapter using numpy array (copy dims and data ptr)
         fieldRegistry.addNewField(ndarrayAdapter,_fieldName,SCALAR_FIELD)
-        fieldRegistry.addNewField(fieldNP,_fieldName+'_npy',SCALAR_FIELD)
+        fieldRegistry.addNewField(fieldNP,_fieldName+'_npy',SCALAR_FIELD_NPY)
         return fieldNP
 
 
