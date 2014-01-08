@@ -44,7 +44,15 @@ using namespace std;
 
 
 
-CellOrientationPlugin::CellOrientationPlugin() :  cellFieldG(0), lambdaCellOrientation(0.0),changeEnergyFcnPtr(&CellOrientationPlugin::changeEnergyPixelBased), boundaryStrategy(0){	
+CellOrientationPlugin::CellOrientationPlugin() :  potts(0),
+		simulator(0),
+		cellFieldG(0),
+		polarizationVectorAccessorPtr(0),
+		lambdaCellOrientation(0.0),
+		changeEnergyFcnPtr(&CellOrientationPlugin::changeEnergyPixelBased),
+		boundaryStrategy(0),
+		lambdaFlexFlag(false)
+{
 }
 
 void CellOrientationPlugin::setLambdaCellOrientation(CellG * _cell, double _lambda){

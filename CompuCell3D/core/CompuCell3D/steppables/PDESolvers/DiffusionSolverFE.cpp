@@ -1,4 +1,4 @@
-#include "DiffusionSolverFE.h"cell
+#include "DiffusionSolverFE.h"
 #include <CompuCell3D/Simulator.h>
 #include <CompuCell3D/Automaton/Automaton.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>
@@ -87,6 +87,7 @@ template <class Cruncher>
 DiffusionSolverFE<Cruncher>::DiffusionSolverFE()
 :deltaX(1.0),deltaT(1.0), latticeType(SQUARE_LATTICE)
 {
+	potts=0;
 	serializerPtr=0;
 	pUtils=0;
 	serializeFlag=false;
@@ -98,6 +99,22 @@ DiffusionSolverFE<Cruncher>::DiffusionSolverFE()
 	autoscaleDiffusion=false;
 	cellTypeMonitorPlugin=0;
     maxStableDiffConstant=0.23;
+    automaton=0;
+    cellFieldG=0;
+    cellInventoryPtr=0;
+    currentStep=-1;
+    decayConst=0.0;
+    diffConst=0.0;
+    diffusePtr=0;
+    dt_dx2=0.0;
+    h_celltype_field=0;
+    simPtr=0;
+    secretePtr=0;
+    m_RDTime=0.0;
+    maxDiffusionZ=-1;
+    numberOfFields=0;
+    scalingExtraMCS=-1;
+
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
