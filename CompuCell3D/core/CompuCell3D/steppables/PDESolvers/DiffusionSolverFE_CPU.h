@@ -16,17 +16,30 @@ public:
 	virtual ~DiffusionSolverFE_CPU(void);
 
 	//TODO: check if can use a constant diffData here
-	void diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData /*const*/ &diffData);
+	// // // void diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData /*const*/ &diffData);
+    // // // virtual void boundaryConditionInitImpl(int idx);    
     virtual void handleEventLocal(CC3DEvent & _event);
 		
 protected:
 	//virtual void diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData &diffData);
+    
+   virtual void secreteSingleField(unsigned int idx);
+
+   virtual void secreteOnContactSingleField(unsigned int idx);
+
+   virtual void secreteConstantConcentrationSingleField(unsigned int idx);
+    
+    
 	virtual void initImpl();
 	virtual void extraInitImpl();
 	virtual void initCellTypesAndBoundariesImpl();
+    virtual void stepImpl(const unsigned int _currentStep);
+    virtual void diffuseSingleField(unsigned int idx);    
 	virtual void solverSpecific(CC3DXMLElement *_xmlData);//reading solver-specific information from XML file
+    
     virtual std::string toStringImpl();
 private:
+    void getMinMaxBox(bool useBoxWatcher, int threadNumber, Dim3D &minDim, Dim3D &maxDim)const;
 	//void CheckConcentrationField(ConcentrationField_t &concentrationField)const;
 };
 

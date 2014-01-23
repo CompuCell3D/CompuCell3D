@@ -28,10 +28,25 @@ class PDESOLVERS_EXPORT DiffusionSolverFE_OpenCL :
 	OpenCLHelper *oclHelper;
 	cl_mem d_concentrationField;
 	cl_mem d_cellTypes;
+    cl_mem d_cellIds;    
 	cl_mem d_scratchField;
 	cl_mem d_solverParams;
+    cl_mem d_bcSpecifier;
+    
+    
+    //secretionData
+    cl_mem d_secretionData;
 	//cl_mem d_fieldSize;
-
+    
+    //ptrs used to efficiently swap memory on the device
+    cl_mem * concDevPtr; 
+    cl_mem * scratchDevPtr;
+    
+    bool d_cellIdsAllocated;
+    
+    int concFieldArgPosition, scratchFieldArgPosition; //positions of concentration and scratch fields in kernel argument list
+    
+    
 	cl_mem d_nbhdConcShifts, d_nbhdDiffShifts;
 	
 	cl_int nbhdConcLen;
@@ -50,17 +65,32 @@ public:
 	virtual ~DiffusionSolverFE_OpenCL(void);
 
 	void diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData const &diffData);
+    // // // virtual void boundaryConditionInitImpl(int idx);    
 	virtual void handleEventLocal(CC3DEvent & _event);
-
+    
 	virtual void finish();
 
 protected:
 	//virtual void diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData &diffData);
+    
+    
 	virtual void initImpl();
 	virtual void extraInitImpl();
 	virtual void initCellTypesAndBoundariesImpl();
+    virtual void boundaryConditionInit(int idx);
+    virtual void stepImpl(const unsigned int _currentStep);
+    virtual void boundaryConditionGPUSetup(int idx);
+    virtual void diffuseSingleField(unsigned int idx);    
+    
+    virtual void secreteSingleField(unsigned int idx);
+
+    virtual void secreteOnContactSingleField(unsigned int idx);
+
+    virtual void secreteConstantConcentrationSingleField(unsigned int idx);    
+    
 	virtual void solverSpecific(CC3DXMLElement *_xmlData);//reading solver-specific information from XML file
     virtual std::string toStringImpl();    
+    void initSecretionData();
 	
 private:
 
@@ -77,13 +107,24 @@ private:
 	void CreateKernel();
 
 	void SetConstKernelArguments();//set parameters that won't change during simualtion, like buffers' handles
-	void SetSolverParams(DiffusionData const &diffData);//set parameters that can be changed duting simulation, like a time step
-
-    cl_kernel kernel;
+	void SetSolverParams(DiffusionData  &diffData, SecretionData  &secrData);//set parameters that can be changed duting simulation, like a time step
+    void prepSecreteOnContactSingleField(unsigned int idx); //creates and moves bufferes to GPU only when SecreteOnContact is requested
+    void prepCellId(unsigned int idx); //initializes cell field boundaries  -  needed by SecreteOnContact - called once per field
+    
+    int iterationNumber; // this variable is important because other routines can sense if this is first or subsequent call to diffuse or secrete functions. Some work in this functions has to be done during initial call and skipped in others
+    
+    cl_kernel kernelUniDiff;
+    cl_kernel kernelBoundaryConditionInit;
+    cl_kernel kernelBoundaryConditionInitLatticeCorners;
+    cl_kernel secreteSingleFieldKernel;
+    cl_kernel secreteConstantConcentrationSingleFieldKernel;
+    cl_kernel secreteOnContactSingleFieldKernel;
+    
 	cl_program program;
-
+    
 	size_t field_len;
 	size_t localWorkSize[3];//block size
+    size_t globalWorkSize[3];//fieldDim
 };
 
 }//CompuCell3D 

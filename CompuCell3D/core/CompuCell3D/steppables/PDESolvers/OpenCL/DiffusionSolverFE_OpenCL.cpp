@@ -22,7 +22,11 @@
 
 using namespace CompuCell3D;
 
-DiffusionSolverFE_OpenCL::DiffusionSolverFE_OpenCL(void):DiffusableVectorCommon<float, Array3DCUDA>(),oclHelper(NULL), d_cellTypes(NULL),
+DiffusionSolverFE_OpenCL::DiffusionSolverFE_OpenCL(void):
+    DiffusableVectorCommon<float, Array3DCUDA>(),
+    oclHelper(NULL), 
+    d_cellTypes(NULL),
+    d_cellIdsAllocated(false),
 //	totalSolveTime(0.),
 //	totalTransferTime(0.),
 	gpuDeviceIndex(-1)
@@ -50,19 +54,42 @@ DiffusionSolverFE_OpenCL::~DiffusionSolverFE_OpenCL(void)
 
 		res=clReleaseMemObject(d_cellTypes);
 		ASSERT_OR_THROW("Can not release d_cellTypes", res==CL_SUCCESS);
-
+        
+        if (d_cellIdsAllocated){
+            res=clReleaseMemObject(d_cellIds);
+            ASSERT_OR_THROW("Can not release d_cellIds", res==CL_SUCCESS);
+        }
+        
 		res=clReleaseMemObject(d_solverParams);
 		ASSERT_OR_THROW("Can not release d_solverParams", res==CL_SUCCESS);
 
+		res=clReleaseMemObject(d_bcSpecifier);
+		ASSERT_OR_THROW("Can not release d_bcSpecifier", res==CL_SUCCESS);        
+        
 		res=clReleaseMemObject(d_scratchField);
 		ASSERT_OR_THROW("Can not release d_scratchField", res==CL_SUCCESS);
 
 		res=clReleaseMemObject(d_concentrationField);
 		ASSERT_OR_THROW("Can not release d_concentrationField", res==CL_SUCCESS);
 
-		res=clReleaseKernel(kernel);
-		ASSERT_OR_THROW("Can not release kernel", res==CL_SUCCESS);
+		res=clReleaseKernel(kernelUniDiff);
+		ASSERT_OR_THROW("Can not release kernelUniDiff", res==CL_SUCCESS);
+        
+		res=clReleaseKernel(kernelBoundaryConditionInit);
+		ASSERT_OR_THROW("Can not release kernelBoundaryConditionInit", res==CL_SUCCESS);
 
+		res=clReleaseKernel(kernelBoundaryConditionInitLatticeCorners);
+		ASSERT_OR_THROW("Can not release kernelBoundaryConditionInit", res==CL_SUCCESS);
+
+		res=clReleaseKernel(secreteSingleFieldKernel);
+		ASSERT_OR_THROW("Can not release secreteSingleFieldKernel", res==CL_SUCCESS);
+
+		res=clReleaseKernel(secreteConstantConcentrationSingleFieldKernel);
+		ASSERT_OR_THROW("Can not release secreteConstantConcentrationSingleFieldKernel", res==CL_SUCCESS);
+        
+		res=clReleaseKernel(secreteOnContactSingleFieldKernel);
+		ASSERT_OR_THROW("Can not release secreteOnContactSingleFieldKernel", res==CL_SUCCESS);
+        
 		res=clReleaseProgram(program);
 		ASSERT_OR_THROW("Can not release program", res==CL_SUCCESS);
 
@@ -70,64 +97,512 @@ DiffusionSolverFE_OpenCL::~DiffusionSolverFE_OpenCL(void)
 	}
 }
 
+
+void DiffusionSolverFE_OpenCL::secreteSingleField(unsigned int idx){
+    // cerr<<"CALLING SECRETE SINGLE FIELD KERNEL"<<endl;
+    
+    //notice concDevPtr is set elsewhere - no need to set it here
+    cl_int errArg= clSetKernelArg(secreteSingleFieldKernel, 0, sizeof(cl_mem), concDevPtr);    
+    ASSERT_OR_THROW("Can not set secreteSingleFieldKernel  arguments\n", errArg==CL_SUCCESS);    
+        
+    cl_int err = oclHelper->EnqueueNDRangeKernel(secreteSingleFieldKernel, 3, globalWorkSize, localWorkSize);
+    ASSERT_OR_THROW("secreteSingleFieldKernel failed", err==CL_SUCCESS);
+
+
+}
+
+void DiffusionSolverFE_OpenCL::secreteOnContactSingleField(unsigned int idx){
+
+    //first we initialize h_cellid_field using BC specification
+    prepSecreteOnContactSingleField(idx);
+    
+    //notice concDevPtr is set elsewhere - no need to set it here
+    cl_int errArg= clSetKernelArg(secreteOnContactSingleFieldKernel, 0, sizeof(cl_mem), concDevPtr);    
+    ASSERT_OR_THROW("Can not set secreteOnContactSingleFieldKernel  arguments\n", errArg==CL_SUCCESS);    
+        
+    cl_int err = oclHelper->EnqueueNDRangeKernel(secreteOnContactSingleFieldKernel, 3, globalWorkSize, localWorkSize);
+    ASSERT_OR_THROW("secreteOnContactSingleFieldKernel failed", err==CL_SUCCESS);    
+}
+
+void DiffusionSolverFE_OpenCL::prepCellId(unsigned int idx){
+
+	bool detailedBCFlag=bcSpecFlagVec[idx];
+	BoundaryConditionSpecifier & bcSpec=bcSpecVec[idx];
+    
+    bool periodicX=false,periodicY=false,periodicZ=false;
+    float NON_CELL=-2.0; //we assume medium cell id is -1 not zero because normally cells in older versions of CC3D we allwoed cells with id 0 . For that reason we set NON_CEll to -2.0
+    
+    if (detailedBCFlag){
+        if (bcSpec.planePositions[MIN_X]==PERIODIC || bcSpec.planePositions[MAX_X]==PERIODIC){
+            periodicX=true;
+        }
+    }else if (periodicBoundaryCheckVector[0]){
+        periodicX=true;
+    }
+
+    if (detailedBCFlag){
+        if (bcSpec.planePositions[MIN_Y]==PERIODIC || bcSpec.planePositions[MAX_Y]==PERIODIC){
+            periodicY=true;
+        }
+    }else if (periodicBoundaryCheckVector[1]){
+        periodicY=true;
+    }
+    
+    if (detailedBCFlag){
+        if (bcSpec.planePositions[MIN_Z]==PERIODIC || bcSpec.planePositions[MAX_Z]==PERIODIC){
+            periodicZ=true;
+        }
+    }else if (periodicBoundaryCheckVector[2]){
+        periodicZ=true;
+    }
+    
+    if (periodicX){
+        int x=0;
+        for(int y=0 ; y< workFieldDim.y-1; ++y)
+            for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+                h_cellid_field->setDirect(x,y,z,h_cellid_field->getDirect(fieldDim.x,y,z));           
+            }
+
+            x=fieldDim.x+1;
+            for(int y=0 ; y< workFieldDim.y-1; ++y)
+                for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+                    h_cellid_field->setDirect(x,y,z,h_cellid_field->getDirect(1,y,z));
+                }    
+    }else{
+        int x=0;
+        for(int y=0 ; y< workFieldDim.y-1; ++y)
+            for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+                h_cellid_field->setDirect(x,y,z,NON_CELL);           
+            }
+
+            x=fieldDim.x+1;
+            for(int y=0 ; y< workFieldDim.y-1; ++y)
+                for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+                    h_cellid_field->setDirect(x,y,z,NON_CELL);
+                }        
+    }
+    
+    if (periodicY){
+        int y=0;
+        for(int x=0 ; x< workFieldDim.x-1; ++x)
+            for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+                h_cellid_field->setDirect(x,y,z,h_cellid_field->getDirect(x,fieldDim.y,z));
+            }
+
+            y=fieldDim.y+1;
+            for(int x=0 ; x< workFieldDim.x-1; ++x)
+                for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+                    h_cellid_field->setDirect(x,y,z,h_cellid_field->getDirect(x,1,z));
+                }    
+    }else{
+        int y=0;
+        for(int x=0 ; x< workFieldDim.x-1; ++x)
+            for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+                h_cellid_field->setDirect(x,y,z,NON_CELL);
+            }
+
+            y=fieldDim.y+1;
+            for(int x=0 ; x< workFieldDim.x-1; ++x)
+                for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+                    h_cellid_field->setDirect(x,y,z,NON_CELL);
+                }    
+
+    }    
+    
+    if(periodicZ){
+        int z=0;
+        for(int x=0 ; x< workFieldDim.x-1; ++x)
+            for(int y=0 ; y<workFieldDim.y-1 ; ++y){
+                h_cellid_field->setDirect(x,y,z,h_cellid_field->getDirect(x,y,fieldDim.z));
+            }
+
+            z=fieldDim.z+1;
+            for(int x=0 ; x< workFieldDim.x-1; ++x)
+                for(int y=0 ; y<workFieldDim.y-1 ; ++y){
+                    h_cellid_field->setDirect(x,y,z,h_cellid_field->getDirect(x,y,1));
+                }
+    
+    }else{
+        int z=0;
+        for(int x=0 ; x< workFieldDim.x-1; ++x)
+            for(int y=0 ; y<workFieldDim.y-1 ; ++y){
+                h_cellid_field->setDirect(x,y,z,NON_CELL);
+            }
+
+            z=fieldDim.z+1;
+            for(int x=0 ; x< workFieldDim.x-1; ++x)
+                for(int y=0 ; y<workFieldDim.y-1 ; ++y){
+                    h_cellid_field->setDirect(x,y,z,NON_CELL);
+                }    
+    }
+
+}
+void DiffusionSolverFE_OpenCL::prepSecreteOnContactSingleField(unsigned int idx){
+
+    if (!iterationNumber){ //only first call to secreteOnContact for a given MCS will prep cellId field 
+        prepCellId(idx);
+    }
+    
+    if (!d_cellIdsAllocated){            
+        
+        size_t mem_size_cellid_field = h_cellid_field->getArraySize()*sizeof(float);
+        d_cellIds=oclHelper->CreateBuffer(CL_MEM_READ_ONLY, mem_size_cellid_field);
+
+        cl_int err= clSetKernelArg(secreteOnContactSingleFieldKernel, 0, sizeof(cl_mem), &d_concentrationField);    
+        err= err | clSetKernelArg(secreteOnContactSingleFieldKernel, 1, sizeof(cl_mem), &d_cellTypes);        
+        err= err | clSetKernelArg(secreteOnContactSingleFieldKernel, 2, sizeof(cl_mem), &d_cellIds); 
+        err= err | clSetKernelArg(secreteOnContactSingleFieldKernel, 3, sizeof(cl_mem), &d_solverParams); 
+        err= err | clSetKernelArg(secreteOnContactSingleFieldKernel, 4, sizeof(cl_mem), &d_nbhdConcShifts);        
+        err= err | clSetKernelArg(secreteOnContactSingleFieldKernel, 5, sizeof(unsigned char)*(localWorkSize[0]+2)*(localWorkSize[1]+2)*(localWorkSize[2]+2), NULL);//local cell type    
+        err= err | clSetKernelArg(secreteOnContactSingleFieldKernel, 6, sizeof(float)*(localWorkSize[0]+2)*(localWorkSize[1]+2)*(localWorkSize[2]+2), NULL);//local cell type    
+        ASSERT_OR_THROW("Can not set secreteOnContactSingleFieldKernel  arguments\n", err==CL_SUCCESS);
+        
+        
+        d_cellIdsAllocated=true;
+
+    }
+    
+    if (!iterationNumber){ //only first call to secrete on contact needs to transfer cellid field to device
+        ASSERT_OR_THROW("Can not write transfer h_cellid_field to the device\n", oclHelper->WriteBuffer(d_cellIds, h_cellid_field->getContainer(), h_cellid_field->getArraySize())==CL_SUCCESS);        
+    
+        ASSERT_OR_THROW("Can not set  secreteOnContactSingleFieldKernel d_cellIds argument\n", clSetKernelArg(secreteOnContactSingleFieldKernel, 2, sizeof(cl_mem), &d_cellIds) == CL_SUCCESS);
+    }    
+    
+}
+
+void DiffusionSolverFE_OpenCL::secreteConstantConcentrationSingleField(unsigned int idx){
+
+    
+    //notice concDevPtr is set elsewhere - no need to set it here
+    cl_int errArg= clSetKernelArg(secreteConstantConcentrationSingleFieldKernel, 0, sizeof(cl_mem), concDevPtr);    
+    ASSERT_OR_THROW("Can not set secreteConstantConcentrationSingleFieldKernel  arguments\n", errArg==CL_SUCCESS);    
+        
+    cl_int err = oclHelper->EnqueueNDRangeKernel(secreteConstantConcentrationSingleFieldKernel, 3, globalWorkSize, localWorkSize);
+    ASSERT_OR_THROW("secreteConstantConcentrationSingleFieldKernel failed", err==CL_SUCCESS);    
+}
+
+
+
+//initializes and transfers to GPU BCSpecifier structure - nothing else. Actual BC initialization is done inside boundaryConditionInitKernel on GPU
+void DiffusionSolverFE_OpenCL::boundaryConditionGPUSetup(int idx){ 
+    // in the GPU Solver we initialize boundary conditions in the kernel
+    // cerr<<"INITIALIZING BC IN THE GPU CODE OVERLOADED FCN"<<endl;
+    
+    
+    //***************** BC INIT
+	bool detailedBCFlag=bcSpecFlagVec[idx];
+	BoundaryConditionSpecifier & bcSpec=bcSpecVec[idx];
+    
+    BCSpecifier bcSpecifier;
+    //by default we set all BC's to periodic - note due to OpenCL limitation we cannot include constructory for the BCSpecifier structure - hence manunal initialization here
+    for (int i = 0 ; i < 6 ; ++i){
+        bcSpecifier.planePositions[i] = PERIODIC;    
+        bcSpecifier.values[i] = 0.0;    
+    }
+    // cerr<<"detailedBCFlag="<<detailedBCFlag<<endl;
+    if (detailedBCFlag){
+        for (int i = 0 ; i < 6 ; ++i){
+            bcSpecifier.planePositions[i] = bcSpec.planePositions[i] ;
+            bcSpecifier.values[i] = bcSpec.values[i] ;    
+        }
+    }else{
+        if(periodicBoundaryCheckVector[0]){//periodic boundary conditions were set in x direction	
+            bcSpecifier.planePositions[MIN_X]=PERIODIC;
+			bcSpecifier.planePositions[MAX_X]=PERIODIC;
+        }else{//noFlux BC
+            bcSpecifier.planePositions[MIN_X]=CONSTANT_DERIVATIVE;
+			bcSpecifier.planePositions[MAX_X]=CONSTANT_DERIVATIVE;
+            bcSpecifier.values[MIN_X]=0.0;
+			bcSpecifier.values[MAX_X]=0.0;
+        
+        }
+        
+        if(periodicBoundaryCheckVector[1]){//periodic boundary conditions were set in y direction	
+            bcSpecifier.planePositions[MIN_Y]=PERIODIC;
+			bcSpecifier.planePositions[MAX_Y]=PERIODIC;
+
+        }else{//noFlux BC
+            bcSpecifier.planePositions[MIN_Y]=CONSTANT_DERIVATIVE;
+			bcSpecifier.planePositions[MAX_Y]=CONSTANT_DERIVATIVE;
+            bcSpecifier.values[MIN_Y]=0.0;
+			bcSpecifier.values[MAX_Y]=0.0;        
+        }
+
+        if(periodicBoundaryCheckVector[2]){//periodic boundary conditions were set in z direction	
+            bcSpecifier.planePositions[MIN_Z]=PERIODIC;
+			bcSpecifier.planePositions[MAX_Z]=PERIODIC;
+
+        }else{//noFlux BC
+            bcSpecifier.planePositions[MIN_Z]=CONSTANT_DERIVATIVE;
+			bcSpecifier.planePositions[MAX_Z]=CONSTANT_DERIVATIVE;
+            bcSpecifier.values[MIN_Z]=0.0;
+			bcSpecifier.values[MAX_Z]=0.0;          
+        }
+
+        
+    }
+    
+    
+    // // // for (int i = 0 ; i < 6 ; ++i){
+        // // // cerr<<"planePositions["<<i<<"]="<<bcSpecifier.planePositions[i] <<endl;
+        // // // cerr<<"values["<<i<<"]="<<bcSpecifier.values[i] <<endl;
+        
+    // // // }        
+    
+}
+
+
+void DiffusionSolverFE_OpenCL::boundaryConditionInit(int idx){
+    
+    //notice concDevPtr is set elsewhere - no need to set it here
+    cl_int errArgBCI= clSetKernelArg(kernelBoundaryConditionInit, 0, sizeof(cl_mem), concDevPtr);    
+    ASSERT_OR_THROW("Can not set boundaryConditionInitKernel  arguments\n", errArgBCI==CL_SUCCESS);    
+    
+    cl_int errBCI = oclHelper->EnqueueNDRangeKernel(kernelBoundaryConditionInit, 3, globalWorkSize, localWorkSize);
+    ASSERT_OR_THROW("kernelBoundaryConditionInit failed", errBCI==CL_SUCCESS);
+
+}
+
+void DiffusionSolverFE_OpenCL::stepImpl(const unsigned int _currentStep){
+
+
+
+	for(unsigned int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i ){
+        this->boundaryConditionGPUSetup(i); //initializes and transfers to GPU BCSpecifier structure - nothing else. Actual BC initialization is done inside boundaryConditionInitKernel on GPU. Notice: secreteOnContactKernel also uses bcSpecifier
+
+        //initializing ptrs to conc and scratch fields
+        concDevPtr = &d_concentrationField; 
+        scratchDevPtr = &d_scratchField;        
+        
+        DiffusionData & diffData = diffSecrFieldTuppleVec[i].diffData;
+        SecretionData  &secrData = diffSecrFieldTuppleVec[i].secrData;
+        
+        ConcentrationField_t & concentrationField = *(this)->getConcentrationField(i);        
+        
+        ASSERT_OR_THROW("Coupling Terms are not supported yet", !haveCouplingTerms);
+        ASSERT_OR_THROW("Box watcher is not supported yet", !diffData.useBoxWatcher);
+        ASSERT_OR_THROW("Threshold is not supported yet",	!diffData.useThresholds);
+        
+        
+        initCellTypesAndBoundariesImpl(); //this sends type array to device - most likely this can be done one per stepImpl call. For now leaving it here
+        ///////////
+        
+        
+        
+        // cerr<<"diffuseSingleFieldImpl: THIS IS EXTRA TIMES PER MCS="<<diffData.extraTimesPerMCS<<endl;
+        
+        SetSolverParams(diffData,secrData); //transfer diffusion data and other useful parameters describing PDE to device
+        
+        float *h_Field=concentrationField.getContainer();
+
+        fieldHostToDevice(h_Field);//transfer conc field to device
+        
+        iterationNumber=0; // this variable is important because other routines can sense if this is first or subsequent call to diffuse or secrete functions. Some work in this functions has to be done during initial call and skipped in others
+        
+        if (scaleSecretion){
+        
+            if (!scalingExtraMCSVec[i]){ //we do not call diffusion step but call secretion - this happens when diffusion const is 0 but we still want to have secretion
+                for(unsigned int j = 0 ; j <diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.size() ; ++j){
+                    (this->*diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec[j])(i);
+                }
+            }
+            
+            for(int extraMCS = 0; extraMCS < scalingExtraMCSVec[i]; extraMCS++) {                                    
+                diffuseSingleField(i); // this also initializes boundary conditions
+                for(unsigned int j = 0 ; j <diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.size() ; ++j){
+                    (this->*diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec[j])(i);
+                }                 
+                iterationNumber++;    
+            }        
+        }else{ //solver behaves as FlexibleDiffusionSolver - i.e. secretion is done at once followed by multiple diffusive steps
+            for(unsigned int j = 0 ; j <diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.size() ; ++j){
+                (this->*diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec[j])(i);
+            }        
+
+            for(int extraMCS = 0; extraMCS < scalingExtraMCSVec[i]; extraMCS++) {                                    
+                diffuseSingleField(i); // this also initializes boundary conditions
+                iterationNumber++;    
+            }                    
+        
+        
+        }
+        
+        
+        oclHelper->Finish();
+        fieldDeviceToHost(h_Field); //transfer conc field to back to host memory
+        
+        
+        // float totConc=0.0;
+		// for (int z = 1; z < fieldDim.z+1; z++)
+			// for (int y = 1; y < fieldDim.y+1; y++)
+				// for (int x = 1; x < fieldDim.x+1; x++){
+                    
+                    // totConc+=concentrationField.getDirect(x,y,z);
+                // }                
+    // cerr<<"\n\n\n TOTAL CONCENTRATION="<<totConc<<endl;        
+        
+
+	}	
+    
+}
+
+
+void DiffusionSolverFE_OpenCL::diffuseSingleField(unsigned int idx){
+    
+    cl_mem * tmpDevPtr;
+    cl_int errArgBCI;
+    cl_int errBCI;
+    
+    //initialize boundary conditions
+    errArgBCI= clSetKernelArg(kernelBoundaryConditionInit, 0, sizeof(cl_mem), concDevPtr);    
+    ASSERT_OR_THROW("Can not set boundaryConditionInitKernel  arguments\n", errArgBCI==CL_SUCCESS);    
+
+    // cerr<<"globalWorkSize=["<<globalWorkSize[0]<<","<<globalWorkSize[1]<<","<<globalWorkSize[2]<<"']"<<endl;
+    // cerr<<"localWorkSize=["<<localWorkSize[0]<<","<<localWorkSize[1]<<","<<localWorkSize[2]<<"']"<<endl;
+    
+    errArgBCI= oclHelper->EnqueueNDRangeKernel(kernelBoundaryConditionInit, 3, globalWorkSize, localWorkSize);
+    ASSERT_OR_THROW("kernelBoundaryConditionInit failed", errBCI==CL_SUCCESS);
+
+    if (latticeType!=SQUARE_LATTICE){
+        //initialize boundary conditions Lattice Corners - necessary only for hex lattice
+        errArgBCI= clSetKernelArg( kernelBoundaryConditionInitLatticeCorners, 0, sizeof(cl_mem), concDevPtr);    
+        ASSERT_OR_THROW("Can not set boundaryConditionInitLatticeCornersKernel  arguments\n", errArgBCI==CL_SUCCESS);      
+
+        errBCI = oclHelper->EnqueueNDRangeKernel( kernelBoundaryConditionInitLatticeCorners, 3, globalWorkSize, localWorkSize);
+        ASSERT_OR_THROW("kernelBoundaryConditionInitLatticeCorners failed", errBCI==CL_SUCCESS);
+    }
+    
+    //diffusion step
+    cl_int errArg= clSetKernelArg(kernelUniDiff, concFieldArgPosition, sizeof(cl_mem), concDevPtr);
+    errArg  = errArg | clSetKernelArg(kernelUniDiff,scratchFieldArgPosition , sizeof(cl_mem), scratchDevPtr);    
+    ASSERT_OR_THROW("Swapping scratch and concentration field failed", errArg==CL_SUCCESS);
+    
+    cl_int err = oclHelper->EnqueueNDRangeKernel(kernelUniDiff, 3, globalWorkSize, localWorkSize);    
+    if(err!=CL_SUCCESS)
+        cerr<<oclHelper->ErrorString(err)<<endl;
+    ASSERT_OR_THROW("Diffusion Kernel failed", err==CL_SUCCESS);
+    
+    //swapping pointers    
+    tmpDevPtr=concDevPtr;
+    concDevPtr=scratchDevPtr;
+    scratchDevPtr=tmpDevPtr;        
+    
+    
+}
+
 void DiffusionSolverFE_OpenCL::diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData const &diffData)
 {
-
-	//cerr<<"diffuseSingleFieldImpl\n";
-
-	ASSERT_OR_THROW("Coupling Terms are not supported yet", !haveCouplingTerms);
-	ASSERT_OR_THROW("Box watcher is not supported yet", !diffData.useBoxWatcher);
-	ASSERT_OR_THROW("Threshold is not supported yet",	!diffData.useThresholds);
-	//ASSERT_OR_THROW("2D domains are not supported yet",fieldDim.x!=1&&fieldDim.y!=1&&fieldDim.z!=1);
-	const size_t globalWorkSize[]={fieldDim.x, fieldDim.y, fieldDim.z};
-    
-	SetSolverParams(diffData);
-	
-	float *h_Field=concentrationField.getContainer();
-
-	fieldHostToDevice(h_Field);
-	//cerr<<"calling a kernel...\n";
-	//cerr<<"Block size is: "<<localWorkSize[0]<<"x"<<localWorkSize[1]<<"x"<<localWorkSize[2]<<
-	//	"; globalWorkSize is: "<<globalWorkSize[0]<<"x"<<globalWorkSize[1]<<"x"<<globalWorkSize[2]<<endl;
-//	LARGE_INTEGER tb, te;
-//	QueryPerformanceCounter(&tb);
-	cl_int err = oclHelper->EnqueueNDRangeKernel(kernel, 3, globalWorkSize, localWorkSize);
-	oclHelper->Finish();
-//	QueryPerformanceCounter(&te);
-//	totalSolveTime+=(double)(te.QuadPart-tb.QuadPart)/(double)fq.QuadPart;
-	if(err!=CL_SUCCESS)
-		cerr<<oclHelper->ErrorString(err)<<endl;
-	ASSERT_OR_THROW("Kernel failed", err==CL_SUCCESS);
-	fieldDeviceToHost(h_Field);
+            
+//empty function - not used here
 }
 
 void DiffusionSolverFE_OpenCL::SetConstKernelArguments()
 {
 	int kArg=0;
-	cl_int err= clSetKernelArg(kernel, kArg++, sizeof(cl_mem), &d_concentrationField);
-	err  = err | clSetKernelArg(kernel, kArg++, sizeof(cl_mem), &d_cellTypes);
-	err  = err | clSetKernelArg(kernel, kArg++, sizeof(cl_mem), &d_solverParams);
-	err  = err | clSetKernelArg(kernel, kArg++, sizeof(cl_mem), &d_nbhdConcShifts);
-	err  = err | clSetKernelArg(kernel, kArg++, sizeof(cl_mem), &d_nbhdDiffShifts);
-	err  = err | clSetKernelArg(kernel, kArg++, sizeof(cl_mem), &d_scratchField);
-	err  = err | clSetKernelArg(kernel, kArg++, sizeof(float)*(localWorkSize[0]+2)*(localWorkSize[1]+2)*(localWorkSize[2]+2), NULL);//local field
-	err  = err | clSetKernelArg(kernel, kArg++, sizeof(unsigned char)*(localWorkSize[0]+2)*(localWorkSize[1]+2)*(localWorkSize[2]+2), NULL);//local cell type
+    concFieldArgPosition=kArg++;    
+	cl_int err= clSetKernelArg(kernelUniDiff, concFieldArgPosition, sizeof(cl_mem), &d_concentrationField);
+    
+	err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_cellTypes);
+	err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_solverParams);
+	err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_nbhdConcShifts);
+	err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_nbhdDiffShifts);
+    
+    scratchFieldArgPosition=kArg++;
+	err  = err | clSetKernelArg(kernelUniDiff,scratchFieldArgPosition , sizeof(cl_mem), &d_scratchField);
+	err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(float)*(localWorkSize[0]+2)*(localWorkSize[1]+2)*(localWorkSize[2]+2), NULL);//local field
+	err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(unsigned char)*(localWorkSize[0]+2)*(localWorkSize[1]+2)*(localWorkSize[2]+2), NULL);//local cell type
 
-	ASSERT_OR_THROW("Can not set kernel's arguments\n", err==CL_SUCCESS);
+	ASSERT_OR_THROW("Can not set uniDiff kernel's arguments\n", err==CL_SUCCESS);
+    
+    ///********************************** BC Kernel
+    err= clSetKernelArg(kernelBoundaryConditionInit, 0, sizeof(cl_mem), &d_concentrationField);    
+    err= err | clSetKernelArg(kernelBoundaryConditionInit, 1, sizeof(cl_mem), &d_solverParams);    
+    err= err | clSetKernelArg(kernelBoundaryConditionInit, 2, sizeof(cl_mem), &d_bcSpecifier);        
+    ASSERT_OR_THROW("Can not set boundaryConditionInitKernel  arguments\n", err==CL_SUCCESS);
+
+
+    ///********************************** BC Kernel Lattice Corners
+    err= clSetKernelArg(kernelBoundaryConditionInitLatticeCorners, 0, sizeof(cl_mem), &d_concentrationField);    
+    err= err | clSetKernelArg(kernelBoundaryConditionInitLatticeCorners, 1, sizeof(cl_mem), &d_solverParams);    
+    err= err | clSetKernelArg(kernelBoundaryConditionInitLatticeCorners, 2, sizeof(cl_mem), &d_bcSpecifier);    
+    ASSERT_OR_THROW("Can not set boundaryConditionInitLatticeCornersKernel  arguments\n", err==CL_SUCCESS);
+
+    
+    ///********************************** secreteSingleFieldKernel
+    err= clSetKernelArg(secreteSingleFieldKernel, 0, sizeof(cl_mem), &d_concentrationField);    
+    err= err | clSetKernelArg(secreteSingleFieldKernel, 1, sizeof(cl_mem), &d_cellTypes);        
+    err= err | clSetKernelArg(secreteSingleFieldKernel, 2, sizeof(cl_mem), &d_solverParams);    
+    ASSERT_OR_THROW("Can not set secreteSingleFieldKernel  arguments\n", err==CL_SUCCESS);
+            
+    ///********************************** secreteConstantConcentrationSingleFieldKernel
+    err= clSetKernelArg(secreteConstantConcentrationSingleFieldKernel, 0, sizeof(cl_mem), &d_concentrationField);    
+    err= err | clSetKernelArg(secreteConstantConcentrationSingleFieldKernel, 1, sizeof(cl_mem), &d_cellTypes);        
+    err= err | clSetKernelArg(secreteConstantConcentrationSingleFieldKernel, 2, sizeof(cl_mem), &d_solverParams);    
+    ASSERT_OR_THROW("Can not set secreteConstantConcentrationSingleFieldKernel  arguments\n", err==CL_SUCCESS);
+    
+    
+    ///********************************** secreteConstantConcentrationSingleFieldKernel    
+    // arguments for this call are set in prepSecreteOnContactSingleField fcn
+    
 }
 
-void DiffusionSolverFE_OpenCL::SetSolverParams(DiffusionData const &diffData)
+void DiffusionSolverFE_OpenCL::SetSolverParams(DiffusionData  &diffData, SecretionData  &secrData)
 {
 	
 	UniSolverParams_t  h_solverParams;
-	for( int i=0; i<UCHAR_MAX; ++i){
+	for( int i=0; i<UCHAR_MAX+1; ++i){
        
 		h_solverParams.diffCoef[i]=diffData.diffCoef[i];
 		h_solverParams.decayCoef[i]=diffData.decayCoef[i];
-        
-        // // // cerr<<"h_solverParams.diffCoef["<<i<<"]="<<h_solverParams.diffCoef[i]<<" decay="<<h_solverParams.decayCoef[i]<<endl;
-        // // // break;
+
+        h_solverParams.secretionData[i][SECRETION_CONST]=h_solverParams.secretionData[i][MAX_UPTAKE]=h_solverParams.secretionData[i][RELATIVE_UPTAKE]=0.0; //zeroing all secreData  
+        h_solverParams.secretionConstantConcentrationData[i]=0.0;
+        for ( int j = 0 ; j < UCHAR_MAX+2 ; ++j ){
+            h_solverParams.secretionOnContactData[i][j]=0.0;
+        }
+
 	}
+    
+    //assigning secretion data 
+    
+    for (std::map<unsigned char,float>::iterator mitr=secrData.typeIdSecrConstMap.begin() ; mitr != secrData.typeIdSecrConstMap.end() ; ++mitr){
+        h_solverParams.secretionData[mitr->first][SECRETION_CONST]=mitr->second;               
+    }
+    
+    for (std::map<unsigned char,UptakeData>::iterator mitr=secrData.typeIdUptakeDataMap.begin() ; mitr != secrData.typeIdUptakeDataMap.end() ; ++mitr){
+        h_solverParams.secretionData[mitr->first][MAX_UPTAKE]=mitr->second.maxUptake;
+        h_solverParams.secretionData[mitr->first][RELATIVE_UPTAKE]=mitr->second.relativeUptakeRate;
+    }
+    
+	if(secrData.typeIdUptakeDataMap.size()){
+		  h_solverParams.secretionDoUptake=1;
+	}else{
+        h_solverParams.secretionDoUptake=0;
+    }    
+    
+    
+    //assigning secretionConstantConcentrationData
+    for (std::map<unsigned char,float>::iterator mitr=secrData.typeIdSecrConstConstantConcentrationMap.begin() ; mitr != secrData.typeIdSecrConstConstantConcentrationMap.end() ; ++mitr){
+        h_solverParams.secretionConstantConcentrationData[mitr->first] = mitr->second;
+    }
+    
+    //assigning secretionOnContactData
+    for (std::map<unsigned char,SecretionOnContactData>::iterator mitr=secrData.typeIdSecrOnContactDataMap.begin() ; mitr != secrData.typeIdSecrOnContactDataMap.end() ; ++mitr){
+        unsigned char cell_type=mitr->first;
+        SecretionOnContactData  & secretionOnContactData=mitr->second;
+        // std::map<unsigned char, float> & contactCellMap=mitr->second;
+        
+        
+        for (std::map<unsigned char, float>::iterator mitr_ccm = secretionOnContactData.contactCellMap.begin() ; mitr_ccm != secretionOnContactData.contactCellMap.end() ; ++mitr_ccm){
+            unsigned char contact_cell_type=mitr_ccm->first;
+            
+            h_solverParams.secretionOnContactData[cell_type][contact_cell_type]=mitr_ccm->second;
+            h_solverParams.secretionOnContactData[cell_type][UCHAR_MAX+1]=1.0; // setting flag that indicates that cell_type has secrete on contact data set on
+        
+        }
+    }
+    
+    
 //	h_solverParams.dt=diffData.deltaT;
 
     h_solverParams.extraTimesPerMCS=diffData.extraTimesPerMCS;    
@@ -145,13 +620,11 @@ void DiffusionSolverFE_OpenCL::SetSolverParams(DiffusionData const &diffData)
 
 	oclHelper->WriteBuffer(d_solverParams, &h_solverParams, 1);
 
-	float dt=diffData.deltaT;    
-	cl_int err  = clSetKernelArg(kernel, 8, sizeof(dt), &dt);//local cell type
+	float dt=diffData.deltaT;        
+	cl_int err  = clSetKernelArg(kernelUniDiff, 8, sizeof(dt), &dt);//local cell type
 	ASSERT_OR_THROW("Can't pass time step to prod kernel\n", err==CL_SUCCESS);
 
-	//clSetKernelArg(kernel, 3, sizeof(float), &d_solverParams);
-	//oclHelper->Finish();
-	
+    
 }
 
 void DiffusionSolverFE_OpenCL::solverSpecific(CC3DXMLElement *_xmlData){
@@ -173,13 +646,29 @@ void DiffusionSolverFE_OpenCL::initImpl(){
 
 	//cerr<<"Requested GPU device index is "<<gpuDeviceIndex<<endl;
 	oclHelper=new OpenCLHelper(gpuDeviceIndex);
-
+    
+    
 	localWorkSize[0]=BLOCK_SIZE;
 	localWorkSize[1]=BLOCK_SIZE;
 	//TODO: BLOCK size can be non-optimal in terms of maximum performance
-	localWorkSize[2]=std::min(oclHelper->getMaxWorkGroupSize()/(BLOCK_SIZE*BLOCK_SIZE),  size_t(fieldDim.z));
+	localWorkSize[2]=std::min(oclHelper->getMaxWorkGroupSize()/(BLOCK_SIZE*BLOCK_SIZE),  size_t(fieldDim.z));  
+    
+    int xReminder=fieldDim.x % localWorkSize[0];
+    int yReminder=fieldDim.y % localWorkSize[1];
+    int zReminder=fieldDim.z % localWorkSize[2];
+    
+    
+	globalWorkSize[0]=fieldDim.x+( (fieldDim.x % localWorkSize[0] ) ? localWorkSize[0] : 0) - xReminder; // we add extra layer of localWorkSize[0] in case fieldDim.x is not divisible by localWorkSize[0]
+    globalWorkSize[1]=fieldDim.y+( (fieldDim.y % localWorkSize[1])  ? localWorkSize[1] : 0) - yReminder; // we add extra layer of localWorkSize[1] in case fieldDim.y is not divisible by localWorkSize[1]
+    globalWorkSize[2]=fieldDim.z+( (fieldDim.z % localWorkSize[2])  ? localWorkSize[2] : 0) - zReminder; // we add extra layer of localWorkSize[2] in case fieldDim.z is not divisible by localWorkSize[2]
+    
 
-	
+	// globalWorkSize[0]=fieldDim.x+( fieldDim.x % fieldDim.x ? localWorkSize[0] : 0); // we add extra layer of localWorkSize[0] in case fieldDim.x is not divisible by localWorkSize[0]
+    // globalWorkSize[1]=fieldDim.y+( fieldDim.y % fieldDim.y ? localWorkSize[1] : 0); // we add extra layer of localWorkSize[1] in case fieldDim.y is not divisible by localWorkSize[1]
+    // globalWorkSize[2]=fieldDim.z;
+    
+     
+    
 	field_len=h_celltype_field->getArraySize();
 	gpuAlloc(field_len);
 
@@ -202,14 +691,19 @@ void DiffusionSolverFE_OpenCL::gpuAlloc(size_t fieldLen){
 	size_t mem_size_field=fieldLen*sizeof(float);
 	size_t mem_size_celltype_field=fieldLen*sizeof(unsigned char);
 
-	d_concentrationField=oclHelper->CreateBuffer(CL_MEM_READ_ONLY, mem_size_field);
+	// // // d_concentrationField=oclHelper->CreateBuffer(CL_MEM_READ_ONLY, mem_size_field);
+    d_concentrationField=oclHelper->CreateBuffer(CL_MEM_READ_WRITE, mem_size_field);
 	d_cellTypes=oclHelper->CreateBuffer(CL_MEM_READ_ONLY, mem_size_celltype_field);
 	d_scratchField=oclHelper->CreateBuffer(CL_MEM_WRITE_ONLY, mem_size_field);
 	
 	d_solverParams=oclHelper->CreateBuffer(CL_MEM_READ_ONLY, sizeof(UniSolverParams_t));
 	
-	//cl_int4 fieldDim4={fieldDim.x,fieldDim.y,fieldDim.z};//to be on a safe side I use the OpenCL 
-	//oclHelper->WriteBuffer(d_fieldSize, &fieldDim4, 1);
+    d_bcSpecifier=oclHelper->CreateBuffer(CL_MEM_READ_ONLY, sizeof(BCSpecifier));
+    
+    //allocating secretionData - 2D array indexed by type entries are {secretion constant, maxUptake, relativeUptake}
+    size_t secrDataSize=3*(UCHAR_MAX+1)*sizeof(float);
+    d_secretionData=oclHelper->CreateBuffer(CL_MEM_READ_WRITE, secrDataSize);
+    
 		
 }
 
@@ -224,8 +718,10 @@ void DiffusionSolverFE_OpenCL::extraInitImpl(){
         
         
         //IMPORTANT: these two variables are crucial and they have to be set here otherwise opencl kernel will not work properly . They determine the size of offset vectors
-        nbhdConcLen=onii.mh_nbhdConcShifts.size();
-        nbhdDiffLen=onii.mh_nbhdDiffShifts.size();
+        // nbhdConcLen=onii.mh_nbhdConcShifts.size();
+        // nbhdDiffLen=onii.mh_nbhdDiffShifts.size();
+        nbhdConcLen=onii.m_nbhdConcLen;
+        nbhdDiffLen=onii.m_nbhdDiffLen;
     
 		d_nbhdDiffShifts=oclHelper->CreateBuffer(CL_MEM_READ_ONLY, sizeof(cl_int4)*onii.mh_nbhdDiffShifts.size());
 		d_nbhdConcShifts=oclHelper->CreateBuffer(CL_MEM_READ_ONLY, sizeof(cl_int4)*onii.mh_nbhdConcShifts.size());
@@ -234,7 +730,26 @@ void DiffusionSolverFE_OpenCL::extraInitImpl(){
 
 		err = err | oclHelper->WriteBuffer(d_nbhdConcShifts, &onii.mh_nbhdConcShifts[0], onii.mh_nbhdConcShifts.size());
 		ASSERT_OR_THROW("Can not initialize shifts", err==CL_SUCCESS);
-
+        
+        // // // cerr<<"\n\n\n\n\n\n\n\n\n HEX SOLVE SHIFTS"<<endl;
+        // // // Point3D pt (21,21,0);
+		// // // for(int i=0; i<nbhdConcLen; ++i){        
+            
+            
+            // // // int row=(pt.z%3)*2+pt.y%2;
+            
+            
+            
+            // // // cl_int4 shift=onii.mh_nbhdConcShifts[row*nbhdConcLen+i];
+            // // // cerr<<"i="<<i<<" row="<<row<<" shift=["<<shift.s[0]<<","<<shift.s[1]<<","<<shift.s[2]<<"]"<<endl;
+            // // // // return nbhdConcEff[row*offsetLen+ind];        
+        
+			// // // // int4 shift=getShift(g_ind+(int4)(-1,-1,-1,0), i, solverParams->hexLattice, nbhdConcShifts, solverParams->nbhdConcLen);
+			// // // // int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			// // // // concentrationSum+=l_field[lInd];
+		// // // }        
+        
+        
 		//set the arguements of our kernel 
 		SetConstKernelArguments();
 	}catch(...){
@@ -245,41 +760,6 @@ void DiffusionSolverFE_OpenCL::extraInitImpl(){
 	cerr<<"extraInitImpl finished\n";
 	
 }
-
-//for debugging
-/*void DiffusionSolverFE_OpenCL::CheckConcentrationField(float const *h_field)const{
-	//size_t lim=(h_solverParamPtr->dimx+2)*(h_solverParamPtr->dimy+2)*(h_solverParamPtr->dimz+2);
-	//cerr<<field_len<<" "<<lim<<endl;
-	//for(size_t i=0; i<lim; ++i){
-	//	h_field[i]=2.f;
-	//}
-	//cerr<<h_field[800]<<endl;
-	double sum=0.f;
-	float minVal=numeric_limits<float>::max();
-	float maxVal=-numeric_limits<float>::max();
-	for(int z=1; z<=fieldDim.z; ++z){
-		for(int y=1; y<=fieldDim.y; ++y){
-			for(int x=1; x<=fieldDim.x; ++x){
-				float val=h_field[z*(fieldDim.x+2)*(fieldDim.y+2)+y*(fieldDim.x+2)+x];
-#ifdef _WIN32
-				if(!_finite(val)){
-#else
-				if(!finite(val)){
-#endif
-					cerr<<"NaN at position: "<<x<<"x"<<y<<"x"<<z<<endl;
-					continue;
-				}
-				//if(val!=0) 
-				//	cerr<<"f("<<x<<","<<y<<","<<z<<")="<<val<<"  ";
-				sum+=val;
-				minVal=std::min(val, minVal);
-				maxVal=std::max(val, maxVal);
-			}
-		}
-	}
-
-	cerr<<"min: "<<minVal<<"; max: "<<maxVal<<" "<<sum<<endl;
-}*/
 
 void DiffusionSolverFE_OpenCL::fieldHostToDevice(float const *h_field){
 
@@ -304,44 +784,14 @@ void DiffusionSolverFE_OpenCL::fieldHostToDevice(float const *h_field){
 
 void DiffusionSolverFE_OpenCL::fieldDeviceToHost(float *h_field)const{
 	ASSERT_OR_THROW("oclHelper object must be initialized", oclHelper);
-
-//	LARGE_INTEGER tb, te;
-//	QueryPerformanceCounter(&tb);
-	if(oclHelper->ReadBuffer(d_scratchField, h_field, field_len)!=CL_SUCCESS){
+    // cerr<<"BUFFER LENGTH="<<field_len<<" "<<h_celltype_field->getArraySize()<<endl;
+	if(oclHelper->ReadBuffer(*concDevPtr, h_field, field_len)!=CL_SUCCESS){
 		ASSERT_OR_THROW("Can not read from device buffer", false);
 	}
-//	QueryPerformanceCounter(&te);
-//	totalTransferTime+=(double)(te.QuadPart-tb.QuadPart)/(double)fq.QuadPart;
-
-	//TODO: disable code
-	//cerr<<"after: ";
-	//CheckConcentrationField(h_field);
 }
 
 string DiffusionSolverFE_OpenCL::diffKernelName(){
-
-	//cerr<<"latticeType="<<latticeType<<endl;
-	/*if(latticeType==HEXAGONAL_LATTICE){
-		if(fieldDim.z==1){
-			return "diffHexagonal2D1";
-		}else{
-			ASSERT_OR_THROW("Domain dimensions along x and y axis must be > 1", fieldDim.x>1&&fieldDim.y>1);
-			return "diffHexagonal3D";
-		}
-	}
-	else{
-		cerr<<"latticeType="<<latticeType<<endl;
-		ASSERT_OR_THROW("Unknown type of lattice", latticeType==SQUARE_LATTICE)
-		if(fieldDim.z==1){
-			return "diffCartesian2D";
-		}else{
-			ASSERT_OR_THROW("Domain dimensions along x and y axis must be > 1", fieldDim.x>1&&fieldDim.y>1);
-			return "diffCartesian3D";
-		}
-	}*/
-
 	return "uniDiff";
-			
 }
 
 void DiffusionSolverFE_OpenCL::CreateKernel(){
@@ -350,21 +800,49 @@ void DiffusionSolverFE_OpenCL::CreateKernel(){
 	cerr<<"kernel "<<kernelName<<" used"<<endl;
 	//string kernelName="hexDiff";
 	cl_int err;
-	kernel = clCreateKernel(program, kernelName.c_str(), &err);
-	printf("clCreateKernel for kernel %s: %s\n", kernelName.c_str(), oclHelper->ErrorString(err));
-	ASSERT_OR_THROW("Can not create a kernel", err==CL_SUCCESS);
-	
+	kernelUniDiff = clCreateKernel(program, kernelName.c_str(), &err);
+	printf("clCreateKernel for kernelUniDiff %s: %s\n", kernelName.c_str(), oclHelper->ErrorString(err));
+	ASSERT_OR_THROW("Can not create a kernelUniDiff", err==CL_SUCCESS);
+    
+    
+    kernelBoundaryConditionInit = clCreateKernel(program, "boundaryConditionInitKernel" , &err);
+	printf("clCreateKernel for kernel %s: %s\n", "boundaryConditionInitKernel" , oclHelper->ErrorString(err));
+	ASSERT_OR_THROW("Can not create a boundaryConditionInitKernel", err==CL_SUCCESS);
+    
+    kernelBoundaryConditionInitLatticeCorners = clCreateKernel(program, "boundaryConditionInitLatticeCornersKernel" , &err);
+	printf("clCreateKernel for kernel %s: %s\n", "boundaryConditionInitLatticeCornersKernel" , oclHelper->ErrorString(err));
+	ASSERT_OR_THROW("Can not create a boundaryConditionInitLatticeCornersKernel", err==CL_SUCCESS);   
+    
+    
+    secreteSingleFieldKernel = clCreateKernel(program, "secreteSingleFieldKernel" , &err); 
+	printf("clCreateKernel for kernel %s: %s\n", "secreteSingleFieldKernel" , oclHelper->ErrorString(err));
+	ASSERT_OR_THROW("Can not create secreteSingleFieldKernel", err==CL_SUCCESS);
+    
+    
+    secreteConstantConcentrationSingleFieldKernel = clCreateKernel(program, "secreteConstantConcentrationSingleFieldKernel" , &err); 
+	printf("clCreateKernel for kernel %s: %s\n", "secreteConstantConcentrationSingleFieldKernel" , oclHelper->ErrorString(err));
+	ASSERT_OR_THROW("Can not create secreteConstantConcentrationSingleFieldKernel", err==CL_SUCCESS);
+
+    secreteOnContactSingleFieldKernel = clCreateKernel(program, "secreteOnContactSingleFieldKernel" , &err); 
+	printf("clCreateKernel for kernel %s: %s\n", "secreteOnContactSingleFieldKernel" , oclHelper->ErrorString(err));
+	ASSERT_OR_THROW("Can not create secreteOnContactSingleFieldKernel", err==CL_SUCCESS);
+
+    
+    
 }
 
+void DiffusionSolverFE_OpenCL::initSecretionData(){
+}
+
+
+
 void DiffusionSolverFE_OpenCL::initCellTypesAndBoundariesImpl(){
-	//cerr<<"Copying Cell Types array to GPU...\n";
 	cl_int err=oclHelper->WriteBuffer(d_cellTypes, h_celltype_field->getContainer(), field_len); 
 	ASSERT_OR_THROW("Can not copy Cell Type field to GPU", err==CL_SUCCESS);
 }
 
 void DiffusionSolverFE_OpenCL::finish(){
-//	cerr<<totalTransferTime<<"s for memory transfer to and from device"<<endl;
-//	cerr<<totalSolveTime<<"s for solving itself"<<endl;
+
 }
 
 std::string DiffusionSolverFE_OpenCL::toStringImpl(){

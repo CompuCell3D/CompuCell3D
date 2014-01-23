@@ -723,15 +723,15 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 	{
 		if(ppdCC3DPtr->boundary_x=="Periodic")
 		{
-			ASSERT_OR_THROW("For hexagonal lattice and x periodic boundary conditions x dimension must be and even number",!(ppdCC3DPtr->dim.x%2));
+			ASSERT_OR_THROW("For hexagonal lattice and x periodic boundary conditions x dimension must be an even number",!(ppdCC3DPtr->dim.x%2));
 		}
 		if(ppdCC3DPtr->boundary_y=="Periodic")
 		{
-			ASSERT_OR_THROW("For hexagonal lattice and y periodic boundary conditions y dimension must be and even number",!(ppdCC3DPtr->dim.y%2));
+			ASSERT_OR_THROW("For hexagonal lattice and y periodic boundary conditions y dimension must be an even number",!(ppdCC3DPtr->dim.y%2));
 		}
 		if(ppdCC3DPtr->boundary_z=="Periodic")
 		{
-			ASSERT_OR_THROW("For hexagonal lattice and z periodic boundary conditions z dimension must be a number which is divisible by 3",!(ppdCC3DPtr->dim.z%3));
+			ASSERT_OR_THROW("For hexagonal lattice and z periodic boundary conditions z dimension must be a number divisible by 3",!(ppdCC3DPtr->dim.z%3));
 		}
 
 		BoundaryStrategy::instantiate(ppdCC3DPtr->boundary_x, ppdCC3DPtr->boundary_y, ppdCC3DPtr->boundary_z, ppdCC3DPtr->shapeAlgorithm, ppdCC3DPtr->shapeIndex, ppdCC3DPtr->shapeSize, ppdCC3DPtr->shapeInputfile,HEXAGONAL_LATTICE);

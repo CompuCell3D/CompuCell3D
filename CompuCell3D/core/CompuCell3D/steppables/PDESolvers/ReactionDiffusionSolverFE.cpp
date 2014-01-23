@@ -1487,6 +1487,10 @@ void ReactionDiffusionSolverFE::update(CC3DXMLElement *_xmlData, bool _fullInitF
 		diffSecrFieldTuppleVec.push_back(DiffusionSecretionRDFieldTupple());
 		DiffusionData & diffData=diffSecrFieldTuppleVec[diffSecrFieldTuppleVec.size()-1].diffData;
 		SecretionData & secrData=diffSecrFieldTuppleVec[diffSecrFieldTuppleVec.size()-1].secrData;
+        
+        if(diffFieldXMLVec[i]->findAttribute("Name")){
+            diffData.fieldName=diffFieldXMLVec[i]->getAttribute("Name");
+        }               
 
 		if(diffFieldXMLVec[i]->findElement("DiffusionData"))
 			diffData.update(diffFieldXMLVec[i]->getFirstElement("DiffusionData"));
@@ -1569,6 +1573,27 @@ void ReactionDiffusionSolverFE::update(CC3DXMLElement *_xmlData, bool _fullInitF
 
 			}
 
+            if ( boundaryStrategy->getLatticeType() == HEXAGONAL_LATTICE){
+                // static_cast<Cruncher*>(this)->getBoundaryStrategy()->getLatticeType();
+                if (bcSpec.planePositions[BoundaryConditionSpecifier::MIN_Z] == BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[BoundaryConditionSpecifier::MAX_Z] == BoundaryConditionSpecifier::PERIODIC){
+                    if (fieldDim.z>1 && fieldDim.z%3){
+                        ASSERT_OR_THROW("For Periodic Boundary Conditions On Hex Lattice the Z Dimension Has To Be Divisible By 3", false);
+                    }
+                }
+
+                if (bcSpec.planePositions[BoundaryConditionSpecifier::MIN_X] == BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[BoundaryConditionSpecifier::MAX_X] == BoundaryConditionSpecifier::PERIODIC){
+                    if (fieldDim.x%2 ){
+                        ASSERT_OR_THROW("For Periodic Boundary Conditions On Hex Lattice the X Dimension Has To Be Divisible By 2 ", false);
+                    }
+                }                
+                
+                if (bcSpec.planePositions[BoundaryConditionSpecifier::MIN_Y] == BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[BoundaryConditionSpecifier::MAX_Y] == BoundaryConditionSpecifier::PERIODIC){
+                    if (fieldDim.y%2 ){
+                        ASSERT_OR_THROW("For Periodic Boundary Conditions On Hex Lattice the Y Dimension Has To Be Divisible By 2 ", false);
+                    }
+                }                
+            }             
+            
 		}
 
 

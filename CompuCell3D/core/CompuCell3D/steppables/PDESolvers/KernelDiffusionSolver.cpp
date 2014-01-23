@@ -1147,6 +1147,9 @@ void KernelDiffusionSolver::update(CC3DXMLElement *_xmlData, bool _fullInitFlag)
 			kernel.push_back(diffFieldXMLVec[i]->getFirstElement("Kernel")->getUInt());
 		}
 
+        if(diffFieldXMLVec[i]->findAttribute("Name")){
+            diffData.fieldName=diffFieldXMLVec[i]->getAttribute("Name");
+        }               
 
 		if(diffFieldXMLVec[i]->findElement("DiffusionData"))
 			diffData.update(diffFieldXMLVec[i]->getFirstElement("DiffusionData"));

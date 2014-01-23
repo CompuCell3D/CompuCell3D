@@ -1612,13 +1612,26 @@ void FastDiffusionSolver2DFE::update(CC3DXMLElement *_xmlData, bool _fullInitFla
 	diffSecrFieldTuppleVec.clear();
 	bcSpecVec.clear();
 	bcSpecFlagVec.clear();
-
+    
+    BoundaryStrategy * boundaryStrategyLocal = BoundaryStrategy::getInstance();
+    cerr<<"TRYING TO DETERMINE LATTICE TYPE"<<endl;
+    if (boundaryStrategyLocal->getLatticeType() == HEXAGONAL_LATTICE){
+        ASSERT_OR_THROW("Fast Diffusion Solver 2D Does Not Work On Hex Lattice ", false);
+    }
+    
+    ASSERT_OR_THROW("Fast Diffusion Solver 2D Does Requires Z Dimension to Be 1 ", fieldDim.z==1);
+    
+    
 	CC3DXMLElementList diffFieldXMLVec=_xmlData->getElements("DiffusionField");
 	for(unsigned int i = 0 ; i < diffFieldXMLVec.size() ; ++i ){
 		diffSecrFieldTuppleVec.push_back(DiffusionSecretionFastFieldTupple());
 		DiffusionData & diffData=diffSecrFieldTuppleVec[diffSecrFieldTuppleVec.size()-1].diffData;
 		SecretionData & secrData=diffSecrFieldTuppleVec[diffSecrFieldTuppleVec.size()-1].secrData;
-
+        
+        if(diffFieldXMLVec[i]->findAttribute("Name")){
+            diffData.fieldName=diffFieldXMLVec[i]->getAttribute("Name");
+        }       
+        
 		if(diffFieldXMLVec[i]->findElement("DiffusionData"))
 			diffData.update(diffFieldXMLVec[i]->getFirstElement("DiffusionData"));
 
@@ -1632,6 +1645,8 @@ void FastDiffusionSolver2DFE::update(CC3DXMLElement *_xmlData, bool _fullInitFla
 		bcSpecFlagVec.push_back(false);
 		bcSpecVec.push_back(BoundaryConditionSpecifier());
 
+        
+        
 		if (diffFieldXMLVec[i]->findElement("BoundaryConditions")){
 			bcSpecFlagVec[bcSpecFlagVec.size()-1]=true;
 			BoundaryConditionSpecifier & bcSpec = bcSpecVec[bcSpecVec.size()-1];

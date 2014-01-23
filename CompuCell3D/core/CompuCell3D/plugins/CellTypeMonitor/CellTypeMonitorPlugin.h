@@ -40,7 +40,7 @@ namespace CompuCell3D {
     template <class T> class Field3D;
     template <class T> class WatchableField3D;
 
-    class CELLTYPEMONITOR_EXPORT  CellTypeMonitorPlugin : public Plugin  ,public CellGChangeWatcher {
+    class CELLTYPEMONITOR_EXPORT CellTypeMonitorPlugin : public Plugin  ,public CellGChangeWatcher {
         
     private:    
                         
@@ -59,16 +59,17 @@ namespace CompuCell3D {
         BoundaryStrategy *boundaryStrategy;
         WatchableField3D<CellG *> *cellFieldG;
         Array3DCUDA<unsigned char> * cellTypeArray;
+        // Array3DCUDA<int> * cellIdArray; // this should have been Array3DCUDA<long> but openCL on windows does not "like" longs so I am using int . 
+        Array3DCUDA<float> * cellIdArray; // this should have been Array3DCUDA<long> but openCL on windows does not "like" longs so I am using float . 
         unsigned char mediumType;
     public:
 
         CellTypeMonitorPlugin();
         virtual ~CellTypeMonitorPlugin();
-        
-                        
 
         virtual Array3DCUDA<unsigned char> * getCellTypeArray(){return cellTypeArray;}
-                
+        virtual Array3DCUDA<float> * getCellIdArray(){return cellIdArray;}
+        
         // CellChangeWatcher interface
         virtual void field3DChange(const Point3D &pt, CellG *newCell, CellG *oldCell);
                 

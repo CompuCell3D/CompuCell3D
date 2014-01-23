@@ -990,6 +990,10 @@ void SteadyStateDiffusionSolver2D::update(CC3DXMLElement *_xmlData, bool _fullIn
 		diffSecrFieldTuppleVec.push_back(SteadyStateDiffusionSecretionFieldTupple());
 		DiffusionData & diffData=diffSecrFieldTuppleVec[diffSecrFieldTuppleVec.size()-1].diffData;
 		SecretionData & secrData=diffSecrFieldTuppleVec[diffSecrFieldTuppleVec.size()-1].secrData;
+        
+        if(diffFieldXMLVec[i]->findAttribute("Name")){
+            diffData.fieldName=diffFieldXMLVec[i]->getAttribute("Name");
+        }               
 
 		if(diffFieldXMLVec[i]->findElement("DiffusionData"))
 			diffData.update(diffFieldXMLVec[i]->getFirstElement("DiffusionData"));
