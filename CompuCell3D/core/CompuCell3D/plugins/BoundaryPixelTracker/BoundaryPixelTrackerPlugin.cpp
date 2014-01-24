@@ -38,7 +38,7 @@ using namespace std;
 #include "BoundaryPixelTrackerPlugin.h"
 
 BoundaryPixelTrackerPlugin::BoundaryPixelTrackerPlugin():
-simulator(0),potts(0),boundaryStrategy(0),xmlData(0)    
+simulator(0),potts(0),boundaryStrategy(0),xmlData(0),maxNeighborIndex(0)
 {}
 
 BoundaryPixelTrackerPlugin::~BoundaryPixelTrackerPlugin() {}
