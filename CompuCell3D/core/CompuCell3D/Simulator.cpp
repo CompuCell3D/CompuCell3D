@@ -80,7 +80,7 @@ restartEnabled(false)
 	currstep=-1;
 	classRegistry = new ClassRegistry(this);
 	pUtils=new ParallelUtilsOpenMP();
-
+    pUtilsSingle=new ParallelUtilsOpenMP();
 
 	simulatorIsStepping=false;
 	potts.setSimulator(this);
@@ -98,7 +98,8 @@ Simulator::~Simulator() {
 	
 	delete classRegistry;
 	delete pUtils;
-
+    delete pUtilsSingle;
+    
 #ifdef QT_WRAPPERS_AVAILABLE
 	//restoring original cerr stream buffer
 	if (cerrStreamBufOrig)
@@ -468,6 +469,18 @@ void Simulator::processMetadataCC3D(CC3DXMLElement * _xmlData){
 			potts.setDebugOutputFrequency(debugOutputFrequency>0 ?debugOutputFrequency: 0);
 			ppdCC3DPtr->debugOutputFrequency=debugOutputFrequency;
 		}
+        
+        CC3DXMLElementList npmVec=_xmlData->getElements("NonParallelModule");
+        
+        for (size_t i = 0 ; i<npmVec.size(); ++i){
+            // this is simple initialization because for now we only allow Potts to have non-parallel execution. Adding more functionalty later will be straight-forward
+            string moduleName=npmVec[i]->getAttribute("Name");
+            if (moduleName=="Potts"){
+                potts.setParallelUtils(pUtilsSingle);
+            }
+        }
+        
+        
 
 }
 
@@ -483,8 +496,14 @@ void Simulator::initializeCC3D(){
 
 		//initializing parallel utils  - OpenMP
 		pUtils->init(potts.getCellFieldG()->getDim());
+        potts.setParallelUtils(pUtils); // by default Potts gets pUtls which can have multiple threads
+        
+        //initializing parallel utils  - OpenMP  - for single CPU runs of selecte modules
+        pUtilsSingle->init(potts.getCellFieldG()->getDim());
 
-		//after pUtils have been initialized we process metadata
+        
+        
+		//after pUtils have been initialized we process metadata -  in this function potts may get pUtils limiting it to use single thread
 		processMetadataCC3D(ps.metadataCC3DXMLElement);
 
 

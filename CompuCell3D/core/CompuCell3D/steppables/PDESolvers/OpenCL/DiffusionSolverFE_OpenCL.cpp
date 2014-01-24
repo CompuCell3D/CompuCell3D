@@ -33,13 +33,13 @@ DiffusionSolverFE_OpenCL::DiffusionSolverFE_OpenCL(void):
 {
 //	QueryPerformanceFrequency(&fq);
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE_OpenCL::handleEventLocal(CC3DEvent & _event){
 	if (_event.id==LATTICE_RESIZE){
 		// CODE WHICH HANDLES CELL LATTICE RESIZE
 	}
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 DiffusionSolverFE_OpenCL::~DiffusionSolverFE_OpenCL(void)
 {
 	if(oclHelper){
@@ -96,7 +96,7 @@ DiffusionSolverFE_OpenCL::~DiffusionSolverFE_OpenCL(void)
 		delete oclHelper;
 	}
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void DiffusionSolverFE_OpenCL::secreteSingleField(unsigned int idx){
     // cerr<<"CALLING SECRETE SINGLE FIELD KERNEL"<<endl;
@@ -110,7 +110,7 @@ void DiffusionSolverFE_OpenCL::secreteSingleField(unsigned int idx){
 
 
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE_OpenCL::secreteOnContactSingleField(unsigned int idx){
 
     //first we initialize h_cellid_field using BC specification
@@ -123,7 +123,7 @@ void DiffusionSolverFE_OpenCL::secreteOnContactSingleField(unsigned int idx){
     cl_int err = oclHelper->EnqueueNDRangeKernel(secreteOnContactSingleFieldKernel, 3, globalWorkSize, localWorkSize);
     ASSERT_OR_THROW("secreteOnContactSingleFieldKernel failed", err==CL_SUCCESS);    
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE_OpenCL::prepCellId(unsigned int idx){
 
 	bool detailedBCFlag=bcSpecFlagVec[idx];
@@ -237,6 +237,7 @@ void DiffusionSolverFE_OpenCL::prepCellId(unsigned int idx){
     }
 
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE_OpenCL::prepSecreteOnContactSingleField(unsigned int idx){
 
     if (!iterationNumber){ //only first call to secreteOnContact for a given MCS will prep cellId field 
@@ -269,7 +270,7 @@ void DiffusionSolverFE_OpenCL::prepSecreteOnContactSingleField(unsigned int idx)
     }    
     
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE_OpenCL::secreteConstantConcentrationSingleField(unsigned int idx){
 
     
@@ -280,8 +281,7 @@ void DiffusionSolverFE_OpenCL::secreteConstantConcentrationSingleField(unsigned 
     cl_int err = oclHelper->EnqueueNDRangeKernel(secreteConstantConcentrationSingleFieldKernel, 3, globalWorkSize, localWorkSize);
     ASSERT_OR_THROW("secreteConstantConcentrationSingleFieldKernel failed", err==CL_SUCCESS);    
 }
-
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //initializes and transfers to GPU BCSpecifier structure - nothing else. Actual BC initialization is done inside boundaryConditionInitKernel on GPU
 void DiffusionSolverFE_OpenCL::boundaryConditionGPUSetup(int idx){ 
@@ -350,7 +350,7 @@ void DiffusionSolverFE_OpenCL::boundaryConditionGPUSetup(int idx){
     // // // }        
     
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void DiffusionSolverFE_OpenCL::boundaryConditionInit(int idx){
     
@@ -445,7 +445,7 @@ void DiffusionSolverFE_OpenCL::stepImpl(const unsigned int _currentStep){
 	}	
     
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void DiffusionSolverFE_OpenCL::diffuseSingleField(unsigned int idx){
     
@@ -490,12 +490,8 @@ void DiffusionSolverFE_OpenCL::diffuseSingleField(unsigned int idx){
     
 }
 
-void DiffusionSolverFE_OpenCL::diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData const &diffData)
-{
-            
-//empty function - not used here
-}
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE_OpenCL::SetConstKernelArguments()
 {
 	int kArg=0;
@@ -545,7 +541,7 @@ void DiffusionSolverFE_OpenCL::SetConstKernelArguments()
     // arguments for this call are set in prepSecreteOnContactSingleField fcn
     
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE_OpenCL::SetSolverParams(DiffusionData  &diffData, SecretionData  &secrData)
 {
 	
@@ -626,7 +622,7 @@ void DiffusionSolverFE_OpenCL::SetSolverParams(DiffusionData  &diffData, Secreti
 
     
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE_OpenCL::solverSpecific(CC3DXMLElement *_xmlData){
 	//getting requested GPU device index
 	if(_xmlData->findElement("GPUDeviceIndex")){
@@ -638,7 +634,7 @@ void DiffusionSolverFE_OpenCL::solverSpecific(CC3DXMLElement *_xmlData){
 	}
 
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE_OpenCL::initImpl(){
 
 	if(gpuDeviceIndex==-1)
@@ -678,11 +674,11 @@ void DiffusionSolverFE_OpenCL::initImpl(){
 
 	if(!oclHelper->LoadProgram(kernelSource, 2, program)){
 		ASSERT_OR_THROW("Can't load the OpenCL kernel", false);
-	}
-
-	
+	}	
 	
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void DiffusionSolverFE_OpenCL::gpuAlloc(size_t fieldLen){
 	cerr<<"Allocating GPU memory for the field of length "<<fieldLen<<"\n";
@@ -703,10 +699,10 @@ void DiffusionSolverFE_OpenCL::gpuAlloc(size_t fieldLen){
     //allocating secretionData - 2D array indexed by type entries are {secretion constant, maxUptake, relativeUptake}
     size_t secrDataSize=3*(UCHAR_MAX+1)*sizeof(float);
     d_secretionData=oclHelper->CreateBuffer(CL_MEM_READ_WRITE, secrDataSize);
-    
-		
+    		
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void DiffusionSolverFE_OpenCL::extraInitImpl(){
 
@@ -760,7 +756,7 @@ void DiffusionSolverFE_OpenCL::extraInitImpl(){
 	cerr<<"extraInitImpl finished\n";
 	
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE_OpenCL::fieldHostToDevice(float const *h_field){
 
 	//cerr<<"before: ";
@@ -789,7 +785,7 @@ void DiffusionSolverFE_OpenCL::fieldDeviceToHost(float *h_field)const{
 		ASSERT_OR_THROW("Can not read from device buffer", false);
 	}
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 string DiffusionSolverFE_OpenCL::diffKernelName(){
 	return "uniDiff";
 }
@@ -830,21 +826,21 @@ void DiffusionSolverFE_OpenCL::CreateKernel(){
     
     
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE_OpenCL::initSecretionData(){
 }
 
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void DiffusionSolverFE_OpenCL::initCellTypesAndBoundariesImpl(){
 	cl_int err=oclHelper->WriteBuffer(d_cellTypes, h_celltype_field->getContainer(), field_len); 
 	ASSERT_OR_THROW("Can not copy Cell Type field to GPU", err==CL_SUCCESS);
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE_OpenCL::finish(){
 
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::string DiffusionSolverFE_OpenCL::toStringImpl(){
     return "DiffusionSolverFE_OpenCL";
 }

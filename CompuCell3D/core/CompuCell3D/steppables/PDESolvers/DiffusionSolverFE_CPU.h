@@ -37,6 +37,8 @@ protected:
     virtual void diffuseSingleField(unsigned int idx);    
 	virtual void solverSpecific(CC3DXMLElement *_xmlData);//reading solver-specific information from XML file
     
+    virtual void boundaryConditionInit(int idx);    
+    
     virtual std::string toStringImpl();
 private:
     void getMinMaxBox(bool useBoxWatcher, int threadNumber, Dim3D &minDim, Dim3D &maxDim)const;

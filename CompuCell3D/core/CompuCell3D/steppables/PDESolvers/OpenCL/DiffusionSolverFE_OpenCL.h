@@ -62,10 +62,8 @@ class PDESOLVERS_EXPORT DiffusionSolverFE_OpenCL :
 public:
 	typedef Array3DCUDA<float> ConcentrationField_t;//TODO: check if I can automate this type deduction
 	DiffusionSolverFE_OpenCL(void);
-	virtual ~DiffusionSolverFE_OpenCL(void);
+	virtual ~DiffusionSolverFE_OpenCL(void);	
 
-	void diffuseSingleFieldImpl(ConcentrationField_t &concentrationField, DiffusionData const &diffData);
-    // // // virtual void boundaryConditionInitImpl(int idx);    
 	virtual void handleEventLocal(CC3DEvent & _event);
     
 	virtual void finish();

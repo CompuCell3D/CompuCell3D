@@ -36,15 +36,6 @@
 #include <fstream>
 #include <sstream>
 #include <omp.h>
-//#define NUMBER_OF_THREADS 4
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// std::ostream & operator<<(std::ostream & out,CompuCell3D::DiffusionData & diffData){
-//
-//
-// }
 
 using namespace CompuCell3D;
 using namespace std;
@@ -126,8 +117,7 @@ DiffusionSolverFE<Cruncher>::~DiffusionSolverFE()
 		serializerPtr=0;
 	}
 }
-
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant)
 {
@@ -179,7 +169,7 @@ void DiffusionSolverFE<Cruncher>::Scale(std::vector<float> const &maxDiffConstVe
 	}
     
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
 bool DiffusionSolverFE<Cruncher>::hasAdditionalTerms()const{
 
@@ -246,9 +236,6 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
 	}    
     
 	update(_xmlData,true);
-
-
-    	
 
 	numberOfFields=diffSecrFieldTuppleVec.size();
 
@@ -358,44 +345,9 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
 	}
 
 	float extraCheck;
-
+    
 	// //check diffusion constant and scale extraTimesPerMCS
-
-	// // // maxStableDiffConstant=0.23;
-	// // // if(static_cast<Cruncher*>(this)->getBoundaryStrategy()->getLatticeType()==HEXAGONAL_LATTICE) {
-		// // // if (fieldDim.x==1 || fieldDim.y==1||fieldDim.z==1){ //2D simulation we ignore 1D simulations in CC3D they make no sense and we assume users will not attempt to run 1D simulations with CC3D		
-			// // // maxStableDiffConstant=0.16f;
-		// // // }else{//3D
-			// // // maxStableDiffConstant=0.08f;
-		// // // }
-	// // // }else{//Square lattice
-		// // // if (fieldDim.x==1 || fieldDim.y==1||fieldDim.z==1){ //2D simulation we ignore 1D simulations in CC3D they make no sense and we assume users will not attempt to run 1D simulations with CC3D				
-			// // // maxStableDiffConstant=0.23f;
-		// // // }else{//3D
-			// // // maxStableDiffConstant=0.14f;
-		// // // }
-	// // // }
-
-	// // // // // // Scale(maxDiffConstVec, maxStableDiffConstant);//TODO: remove for implicit solvers?
-
-	// // // //determining latticeType and setting diffusionLatticeScalingFactor
-	// // // //When you evaluate div as a flux through the surface divided bby volume those scaling factors appear automatically. On cartesian lattife everythink is one so this is easy to forget that on different lattices they are not1
-	// // // diffusionLatticeScalingFactor=1.0;
-	// // // if (static_cast<Cruncher*>(this)->getBoundaryStrategy()->getLatticeType()==HEXAGONAL_LATTICE){
-		// // // if (fieldDim.x==1 || fieldDim.y==1||fieldDim.z==1){ //2D simulation we ignore 1D simulations in CC3D they make no sense and we assume users will not attempt to run 1D simulations with CC3D
-			// // // diffusionLatticeScalingFactor=1.0f/sqrt(3.0f);// (2/3)/dL^2 dL=sqrt(2/sqrt(3)) so (2/3)/dL^2=1/sqrt(3)
-		// // // }else{//3D simulation
-			// // // diffusionLatticeScalingFactor=pow(2.0f,-4.0f/3.0f); //(1/2)/dL^2 dL dL^2=2**(1/3) so (1/2)/dL^2=1/(2.0*2^(1/3))=2^(-4/3)
-		// // // }
-
-	// // // }
-	//this is no longer the case - we kept this option form backward compatibility reasons for flexibleDiffusion solver
-	////we only autoscale diffusion when user requests it explicitely
-	//if (!autoscaleDiffusion){
-	//	diffusionLatticeScalingFactor=1.0;
-	//}
-
-
+    
 	bool pluginAlreadyRegisteredFlag;
 	cellTypeMonitorPlugin=(CellTypeMonitorPlugin*)Simulator::pluginManager.get("CellTypeMonitor",&pluginAlreadyRegisteredFlag);
 	if(!pluginAlreadyRegisteredFlag){
@@ -404,7 +356,6 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
         h_cellid_field=cellTypeMonitorPlugin->getCellIdArray();
 
 	}
-
 
 	simulator->registerSteerableObject(this);
 
@@ -473,7 +424,7 @@ bool DiffusionSolverFE<Cruncher>::checkIfOffsetInArray(Point3D _pt, vector<Point
 	}
 	return false;
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::prepareForwardDerivativeOffsets(){
 	latticeType=static_cast<Cruncher*>(this)->getBoundaryStrategy()->getLatticeType();
@@ -492,7 +443,6 @@ void DiffusionSolverFE<Cruncher>::prepareForwardDerivativeOffsets(){
 			hexOffsetArray[0].push_back(Point3D(1,1,0));
 			hexOffsetArray[0].push_back(Point3D(1,0,0));
 
-
 			hexOffsetArray[1].push_back(Point3D(0,1,0));
 			hexOffsetArray[1].push_back(Point3D(-1,1,0));
 			hexOffsetArray[1].push_back(Point3D(1,0,0));
@@ -500,12 +450,8 @@ void DiffusionSolverFE<Cruncher>::prepareForwardDerivativeOffsets(){
 			hexOffsetArray[2]=hexOffsetArray[0];
 			hexOffsetArray[4]=hexOffsetArray[0];
 
-
 			hexOffsetArray[3]=hexOffsetArray[1];
 			hexOffsetArray[5]=hexOffsetArray[1];
-
-
-
 
 		}else{ //3D case - we assume that forward derivatives are calculated using 3 sides with z=1 and 3 sides which have same offsets os for 2D case (with z=0)
 			hexOffsetArray.assign(maxHexArraySize,vector<Point3D>(6));
@@ -518,8 +464,6 @@ void DiffusionSolverFE<Cruncher>::prepareForwardDerivativeOffsets(){
 			hexOffsetArray[0][4]=Point3D(0,0,1);
 			hexOffsetArray[0][5]=Point3D(1,0,1);
 
-
-
 			//y%2=1 and z%3=0						
 			hexOffsetArray[1][0]=Point3D(-1,1,0);
 			hexOffsetArray[1][1]=Point3D(0,1,0);
@@ -527,7 +471,6 @@ void DiffusionSolverFE<Cruncher>::prepareForwardDerivativeOffsets(){
 			hexOffsetArray[1][3]=Point3D(-1,0,1);
 			hexOffsetArray[1][4]=Point3D(0,0,1);
 			hexOffsetArray[1][5]=Point3D(0,-1,1);
-
 
 			//y%2=0 and z%3=1						
 			hexOffsetArray[2][0]=Point3D(-1,1,0);
@@ -537,7 +480,6 @@ void DiffusionSolverFE<Cruncher>::prepareForwardDerivativeOffsets(){
 			hexOffsetArray[2][4]=Point3D(0,0,1);
 			hexOffsetArray[2][5]=Point3D(-1,1,1);
 
-
 			//y%2=1 and z%3=1						
 			hexOffsetArray[3][0]=Point3D(0,1,0);
 			hexOffsetArray[3][1]=Point3D(1,1,0);
@@ -546,7 +488,6 @@ void DiffusionSolverFE<Cruncher>::prepareForwardDerivativeOffsets(){
 			hexOffsetArray[3][4]=Point3D(0,0,1);
 			hexOffsetArray[3][5]=Point3D(1,1,1);
 
-
 			//y%2=0 and z%3=2						
 			hexOffsetArray[4][0]=Point3D(-1,1,0);
 			hexOffsetArray[4][1]=Point3D(0,1,0);
@@ -554,7 +495,6 @@ void DiffusionSolverFE<Cruncher>::prepareForwardDerivativeOffsets(){
 			hexOffsetArray[4][3]=Point3D(-1,0,1);
 			hexOffsetArray[4][4]=Point3D(0,0,1);
 			hexOffsetArray[4][5]=Point3D(0,-1,1);
-
 
 			//y%2=1 and z%3=2						
 			hexOffsetArray[5][0]=Point3D(0,1,0);
@@ -579,9 +519,7 @@ void DiffusionSolverFE<Cruncher>::prepareForwardDerivativeOffsets(){
 
 	}
 
-
 }
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
@@ -645,66 +583,12 @@ void DiffusionSolverFE<Cruncher>::initializeConcentration()
 
 	}
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::stepImpl(const unsigned int _currentStep)
 {
-	// // // for(unsigned int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i ){
-		// // // for(unsigned int j = 0 ; j <diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.size() ; ++j){
-			// // // (this->*diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec[j])(i);
-
-		// // // }
-
-		// // // diffuseSingleField(i);	
-    // // // // // // for(int extraMCS = 0; extraMCS < scalingExtraMCSVec[i]; extraMCS++) {
-        // // // // // // diffuseSingleField(i);
-    // // // // // // }
-	// // // }	
+    // implemented separately in GPU and CPU code
 }
-
-
-// template <class Cruncher>
-// void DiffusionSolverFE<Cruncher>::stepImpl(const unsigned int _currentStep)
-// {
-	// //cerr<<"diffSecrFieldTuppleVec.size()="<<diffSecrFieldTuppleVec.size()<<endl;
-	// for(unsigned int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i ){
-		// cerr<<"scalingExtraMCSVec[i]="<<scalingExtraMCSVec[i]<<endl;
-		// if (!scalingExtraMCSVec[i]){ //we do not call diffusion step but call secretion
-			// for(unsigned int j = 0 ; j <diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.size() ; ++j){
-				// (this->*diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec[j])(i);
-
-			// }
-		// }
-		
-		// for(int extraMCS = 0; extraMCS < scalingExtraMCSVec[i]; extraMCS++) {
-			// diffuseSingleField(i);
-		// }
-	// }
-// }
-
-
-
-// // // template <class Cruncher>
-// // // void DiffusionSolverFE<Cruncher>::stepImpl(const unsigned int _currentStep)
-// // // {
-	// // // //cerr<<"diffSecrFieldTuppleVec.size()="<<diffSecrFieldTuppleVec.size()<<endl;
-	// // // for(unsigned int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i ){
-		// // // //cerr<<"scalingExtraMCSVec[i]="<<scalingExtraMCSVec[i]<<endl;
-		// // // if (!scalingExtraMCSVec[i]){ //we do not call diffusion step but call secretion
-			// // // for(unsigned int j = 0 ; j <diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.size() ; ++j){
-				// // // (this->*diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec[j])(i);
-
-			// // // }
-		// // // }
-		
-		// // // for(int extraMCS = 0; extraMCS < scalingExtraMCSVec[i]; extraMCS++) {
-			// // // diffuseSingleField(i);
-			// // // for(unsigned int j = 0 ; j <diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.size() ; ++j){
-				// // // (this->*diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec[j])(i);
-			// // // }
-		// // // }
-	// // // }
-// // // }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
@@ -725,180 +609,9 @@ void DiffusionSolverFE<Cruncher>::step(const unsigned int _currentStep) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// // // template <class Cruncher>
-// // // void DiffusionSolverFE<Cruncher>::getMinMaxBox(bool useBoxWatcher, int threadNumber, Dim3D &minDim, Dim3D &maxDim)const{
-	// // // bool isMaxThread;
-	// // // if(useBoxWatcher){
-		// // // minDim=pUtils->getFESolverPartitionWithBoxWatcher(threadNumber).first;
-		// // // maxDim=pUtils->getFESolverPartitionWithBoxWatcher(threadNumber).second;
-
-		// // // isMaxThread=(threadNumber==pUtils->getNumberOfWorkNodesFESolverWithBoxWatcher()-1);
-
-	// // // }else{
-		// // // minDim=pUtils->getFESolverPartition(threadNumber).first;
-		// // // maxDim=pUtils->getFESolverPartition(threadNumber).second;
-
-		// // // isMaxThread=(threadNumber==pUtils->getNumberOfWorkNodesFESolver()-1);
-	// // // }
-
-	// // // if(!hasExtraLayer()){
-		// // // if(threadNumber==0){
-			// // // minDim-=Dim3D(1,1,1);
-		// // // }
-
-		// // // if(isMaxThread){
-			// // // maxDim-=Dim3D(1,1,1);
-		// // // }
-	// // // }
-// // // }
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::secreteOnContactSingleField(unsigned int idx){
-
-	// // // SecretionData & secrData=diffSecrFieldTuppleVec[idx].secrData;
-
-	// // // std::map<unsigned char,SecretionOnContactData>::iterator mitrShared;
-	// // // std::map<unsigned char,SecretionOnContactData>::iterator end_mitr=secrData.typeIdSecrOnContactDataMap.end();
-
-	// // // typename Cruncher::ConcentrationField_t & concentrationField= *static_cast<Cruncher *>(this)->getConcentrationField(idx);
-	
-	// // // std::map<unsigned char, float> * contactCellMapMediumPtr;
-	// // // std::map<unsigned char, float> * contactCellMapPtr;
-
-
-	// // // bool secreteInMedium=false;
-	// // // //the assumption is that medium has type ID 0
-	// // // mitrShared=secrData.typeIdSecrOnContactDataMap.find(automaton->getTypeId("Medium"));
-
-	// // // if(mitrShared != end_mitr ){
-		// // // secreteInMedium=true;
-		// // // contactCellMapMediumPtr = &(mitrShared->second.contactCellMap);
-	// // // }
-
-
-	// // // //HAVE TO WATCH OUT FOR SHARED/PRIVATE VARIABLES
-	// // // DiffusionData & diffData = diffSecrFieldTuppleVec[idx].diffData;
-
-	// // // if(diffData.useBoxWatcher){
-
-		// // // unsigned x_min=1,x_max=fieldDim.x+1;
-		// // // unsigned y_min=1,y_max=fieldDim.y+1;
-		// // // unsigned z_min=1,z_max=fieldDim.z+1;
-
-		// // // Dim3D minDimBW;		
-		// // // Dim3D maxDimBW;
-		// // // Point3D minCoordinates=*(boxWatcherSteppable->getMinCoordinatesPtr());
-		// // // Point3D maxCoordinates=*(boxWatcherSteppable->getMaxCoordinatesPtr());
-		// // // //cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
-		// // // x_min=minCoordinates.x+1;
-		// // // x_max=maxCoordinates.x+1;
-		// // // y_min=minCoordinates.y+1;
-		// // // y_max=maxCoordinates.y+1;
-		// // // z_min=minCoordinates.z+1;
-		// // // z_max=maxCoordinates.z+1;
-
-		// // // minDimBW=Dim3D(x_min,y_min,z_min);
-		// // // maxDimBW=Dim3D(x_max,y_max,z_max);
-		// // // pUtils->calculateFESolverPartitionWithBoxWatcher(minDimBW,maxDimBW);
-
-	// // // }
-
-	// // // pUtils->prepareParallelRegionFESolvers(diffData.useBoxWatcher);
-// // // #pragma omp parallel
-	// // // {	
-
-		// // // std::map<unsigned char,SecretionOnContactData>::iterator mitr;
-		// // // std::map<unsigned char, float>::iterator mitrTypeConst;
-
-		// // // float currentConcentration;
-		// // // float secrConst;
-		// // // float secrConstMedium=0.0;
-
-		// // // CellG *currentCellPtr;
-		// // // Point3D pt;
-		// // // Neighbor n;
-		// // // CellG *nCell=0;
-		// // // WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
-		// // // unsigned char type;
-
-		// // // int threadNumber=pUtils->getCurrentWorkNodeNumber();
-
-		// // // bool hasExtraBndLayer=hasExtraLayer();
-
-		// // // Dim3D minDim;		
-		// // // Dim3D maxDim;
-
-		// // // getMinMaxBox(diffData.useBoxWatcher, threadNumber, minDim, maxDim);
-		
-		// // // for (int z = minDim.z; z < maxDim.z; z++)
-			// // // for (int y = minDim.y; y < maxDim.y; y++)
-				// // // for (int x = minDim.x; x < maxDim.x; x++){
-					// // // if(hasExtraBndLayer)
-						// // // pt=Point3D(x-1,y-1,z-1);
-					// // // else
-						// // // pt=Point3D(x,y,z);
-					// // // ///**
-					// // // currentCellPtr=cellFieldG->getQuick(pt);
-					// // // //             currentCellPtr=cellFieldG->get(pt);
-					// // // currentConcentration = concentrationField.getDirect(x,y,z);
-
-					// // // if(secreteInMedium && ! currentCellPtr){
-						// // // for (unsigned int i = 0  ; i<=static_cast<Cruncher *>(this)->getMaxNeighborIndex(); ++i ){
-							// // // n=static_cast<Cruncher *>(this)->getBoundaryStrategy()->getNeighborDirect(pt,i);
-							// // // if(!n.distance)//not a valid neighbor
-								// // // continue;
-							// // // ///**
-							// // // nCell = fieldG->get(n.pt);
-							// // // //                      nCell = fieldG->get(n.pt);
-							// // // if(nCell)
-								// // // type=nCell->type;
-							// // // else
-								// // // type=0;
-
-							// // // mitrTypeConst=contactCellMapMediumPtr->find(type);
-
-							// // // if(mitrTypeConst != contactCellMapMediumPtr->end()){//OK to secrete, contact detected
-								// // // secrConstMedium = mitrTypeConst->second;
-
-								// // // concentrationField.setDirect(x,y,z,currentConcentration+secrConstMedium);
-							// // // }
-						// // // }
-						// // // continue;
-					// // // }
-
-					// // // if(currentCellPtr){
-						// // // mitr=secrData.typeIdSecrOnContactDataMap.find(currentCellPtr->type);
-						// // // if(mitr!=end_mitr){
-
-							// // // contactCellMapPtr = &(mitr->second.contactCellMap);
-
-							// // // for (unsigned int i = 0  ; i<=static_cast<Cruncher *>(this)->getMaxNeighborIndex(); ++i ){
-
-								// // // n=static_cast<Cruncher *>(this)->getBoundaryStrategy()->getNeighborDirect(pt,i);
-								// // // if(!n.distance)//not a valid neighbor
-									// // // continue;
-								// // // ///**
-								// // // nCell = fieldG->get(n.pt);
-								// // // //                      nCell = fieldG->get(n.pt);
-								// // // if(nCell)
-									// // // type=nCell->type;
-								// // // else
-									// // // type=0;
-
-								// // // if (currentCellPtr==nCell) continue; //skip secretion in pixels belongin to the same cell
-
-								// // // mitrTypeConst=contactCellMapPtr->find(type);
-								// // // if(mitrTypeConst != contactCellMapPtr->end()){//OK to secrete, contact detected
-									// // // secrConst=mitrTypeConst->second;
-									// // // //                         concentrationField->set(pt,currentConcentration+secrConst);
-									// // // concentrationField.setDirect(x,y,z,currentConcentration+secrConst);
-								// // // }
-							// // // }
-						// // // // }
-					// // // }
-				// // // }
-	// // // }
+    // implemented separately in GPU and CPU code
 }
 
 
@@ -911,269 +624,12 @@ bool DiffusionSolverFE<Cruncher>::hasExtraLayer()const{
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::secreteSingleField(unsigned int idx){
-    
-	// // // // SecretionData & secrData=diffSecrFieldTuppleVec[idx].secrData;
-
-	// // // // float maxUptakeInMedium=0.0;
-	// // // // float relativeUptakeRateInMedium=0.0;
-	// // // // float secrConstMedium=0.0;
-
-	// // // // std::map<unsigned char,float>::iterator mitrShared;
-	// // // // std::map<unsigned char,float>::iterator end_mitr=secrData.typeIdSecrConstMap.end();
-	// // // // std::map<unsigned char,UptakeData>::iterator mitrUptakeShared;
-	// // // // std::map<unsigned char,UptakeData>::iterator end_mitrUptake=secrData.typeIdUptakeDataMap.end();
-
-	// // // // typename Cruncher::ConcentrationField_t &concentrationField= *static_cast<Cruncher *>(this)->getConcentrationField(idx);
-
-	// // // // bool doUptakeFlag=false;
-	// // // // bool uptakeInMediumFlag=false;
-	// // // // bool secreteInMedium=false;
-	// // // // //the assumption is that medium has type ID 0
-	// // // // mitrShared=secrData.typeIdSecrConstMap.find(automaton->getTypeId("Medium"));
-    // // // // // // // cerr<<"secreteSingleField idx="<<idx<<endl;
-    // // // // // // // for (std::map<unsigned char,float>::iterator mitr=secrData.typeIdSecrConstMap.begin() ; mitr != secrData.typeIdSecrConstMap.end() ; ++mitr){
-        // // // // // // // cerr<<"type="<<(int)mitr->first<<" secrConst="<<mitr->second<<endl;
-    // // // // // // // }
-    
-	// // // // if( mitrShared != end_mitr){
-		// // // // secreteInMedium=true;
-		// // // // secrConstMedium=mitrShared->second;
-	// // // // }
-
-	// // // // //uptake for medium setup
-	// // // // if(secrData.typeIdUptakeDataMap.size()){
-		// // // // doUptakeFlag=true;
-	// // // // }
-	// // // // //uptake for medium setup
-	// // // // if(doUptakeFlag){
-		// // // // mitrUptakeShared=secrData.typeIdUptakeDataMap.find(automaton->getTypeId("Medium"));
-		// // // // if(mitrUptakeShared != end_mitrUptake){
-			// // // // maxUptakeInMedium=mitrUptakeShared->second.maxUptake;
-			// // // // relativeUptakeRateInMedium=mitrUptakeShared->second.relativeUptakeRate;
-			// // // // uptakeInMediumFlag=true;
-
-		// // // // }
-	// // // // }
-
-	// // // // //HAVE TO WATCH OUT FOR SHARED/PRIVATE VARIABLES
-	// // // // DiffusionData & diffData = diffSecrFieldTuppleVec[idx].diffData;
-	// // // // if(diffData.useBoxWatcher){
-
-		// // // // unsigned x_min=1,x_max=fieldDim.x+1;
-		// // // // unsigned y_min=1,y_max=fieldDim.y+1;
-		// // // // unsigned z_min=1,z_max=fieldDim.z+1;
-
-		// // // // Dim3D minDimBW;		
-		// // // // Dim3D maxDimBW;
-		// // // // Point3D minCoordinates=*(boxWatcherSteppable->getMinCoordinatesPtr());
-		// // // // Point3D maxCoordinates=*(boxWatcherSteppable->getMaxCoordinatesPtr());
-		// // // // //cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
-		// // // // x_min=minCoordinates.x+1;
-		// // // // x_max=maxCoordinates.x+1;
-		// // // // y_min=minCoordinates.y+1;
-		// // // // y_max=maxCoordinates.y+1;
-		// // // // z_min=minCoordinates.z+1;
-		// // // // z_max=maxCoordinates.z+1;
-
-		// // // // minDimBW=Dim3D(x_min,y_min,z_min);
-		// // // // maxDimBW=Dim3D(x_max,y_max,z_max);
-		// // // // pUtils->calculateFESolverPartitionWithBoxWatcher(minDimBW,maxDimBW);
-
-	// // // // }
-
-	// // // // //cerr<<"SECRETE SINGLE FIELD"<<endl;
-
-
-	// // // // pUtils->prepareParallelRegionFESolvers(diffData.useBoxWatcher);
-
-
-// // // // #pragma omp parallel
-	// // // // {	
-
-		// // // // CellG *currentCellPtr;
-		// // // // //Field3DImpl<float> * concentrationField=concentrationFieldVector[idx];
-		// // // // float currentConcentration;
-		// // // // float secrConst;
-
-
-		// // // // std::map<unsigned char,float>::iterator mitr;
-		// // // // std::map<unsigned char,UptakeData>::iterator mitrUptake;
-
-		// // // // Point3D pt;
-		// // // // int threadNumber=pUtils->getCurrentWorkNodeNumber();
-
-
-		// // // // bool hasExtraBndLayer=hasExtraLayer();
-
-		// // // // Dim3D minDim;		
-		// // // // Dim3D maxDim;
-
-		// // // // getMinMaxBox(diffData.useBoxWatcher, threadNumber, minDim, maxDim);
-		
-
-		// // // // for (int z = minDim.z; z < maxDim.z; z++)
-			// // // // for (int y = minDim.y; y < maxDim.y; y++)
-				// // // // for (int x = minDim.x; x < maxDim.x; x++){
-
-					// // // // if(hasExtraBndLayer)
-						// // // // pt=Point3D(x-1,y-1,z-1);
-					// // // // else
-						// // // // pt=Point3D(x,y,z);
-					// // // // //             cerr<<"pt="<<pt<<" is valid "<<cellFieldG->isValid(pt)<<endl;
-					// // // // ///**
-					// // // // currentCellPtr=cellFieldG->getQuick(pt);
-					// // // // //             currentCellPtr=cellFieldG->get(pt);
-					// // // // //             cerr<<"THIS IS PTR="<<currentCellPtr<<endl;
-
-					// // // // //             if(currentCellPtr)
-					// // // // //                cerr<<"This is id="<<currentCellPtr->id<<endl;
-					// // // // //currentConcentration = concentrationField.getDirect(x,y,z);
-
-					// // // // currentConcentration = concentrationField.getDirect(x,y,z);
-
-					// // // // if(secreteInMedium && ! currentCellPtr){
-						// // // // concentrationField.setDirect(x,y,z,currentConcentration+secrConstMedium);
-					// // // // }
-
-					// // // // if(currentCellPtr){											
-						// // // // mitr=secrData.typeIdSecrConstMap.find(currentCellPtr->type);
-						// // // // if(mitr!=end_mitr){
-							// // // // secrConst=mitr->second;
-							// // // // concentrationField.setDirect(x,y,z,currentConcentration+secrConst);
-						// // // // }
-					// // // // }
-
-					// // // // if(doUptakeFlag){
-
-						// // // // if(uptakeInMediumFlag && ! currentCellPtr){						
-							// // // // if(currentConcentration*relativeUptakeRateInMedium>maxUptakeInMedium){
-								// // // // concentrationField.setDirect(x,y,z,concentrationField.getDirect(x,y,z)-maxUptakeInMedium);
-							// // // // }else{
-								// // // // concentrationField.setDirect(x,y,z,concentrationField.getDirect(x,y,z) - currentConcentration*relativeUptakeRateInMedium);
-							// // // // }
-						// // // // }
-						// // // // if(currentCellPtr){
-
-							// // // // mitrUptake=secrData.typeIdUptakeDataMap.find(currentCellPtr->type);
-							// // // // if(mitrUptake!=end_mitrUptake){								
-								// // // // if(currentConcentration*mitrUptake->second.relativeUptakeRate > mitrUptake->second.maxUptake){
-									// // // // concentrationField.setDirect(x,y,z,concentrationField.getDirect(x,y,z)-mitrUptake->second.maxUptake);
-									// // // // //cerr<<" uptake concentration="<< currentConcentration<<" relativeUptakeRate="<<mitrUptake->second.relativeUptakeRate<<" subtract="<<mitrUptake->second.maxUptake<<endl;
-								// // // // }else{
-									// // // // concentrationField.setDirect(x,y,z,concentrationField.getDirect(x,y,z)-currentConcentration*mitrUptake->second.relativeUptakeRate);
-									// // // // //cerr<<"concentration="<< currentConconcentrationField.getDirect(x,y,z)- currentConcentration*mitrUptake->second.relativeUptakeRate);
-								// // // // }
-							// // // // }
-						// // // // }
-					// // // // }
-				// // // // }
-	// // // // }
+    // implemented separately in GPU and CPU code
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::secreteConstantConcentrationSingleField(unsigned int idx){
-
-	// // // // std::cerr<<"***************here secreteConstantConcentrationSingleField***************\n";
-
-	// // // SecretionData & secrData=diffSecrFieldTuppleVec[idx].secrData;
-
-	// // // std::map<unsigned char,float>::iterator mitrShared;
-	// // // std::map<unsigned char,float>::iterator end_mitr=secrData.typeIdSecrConstConstantConcentrationMap.end();
-
-
-	// // // float secrConstMedium=0.0;
-
-	// // // typename Cruncher::ConcentrationField_t & concentrationField = *static_cast<Cruncher *>(this)->getConcentrationField(idx);
-	
-	// // // bool secreteInMedium=false;
-	// // // //the assumption is that medium has type ID 0
-	// // // mitrShared=secrData.typeIdSecrConstConstantConcentrationMap.find(automaton->getTypeId("Medium"));
-
-	// // // if( mitrShared != end_mitr){
-		// // // secreteInMedium=true;
-		// // // secrConstMedium=mitrShared->second;
-	// // // }
-
-
-	// // // //HAVE TO WATCH OUT FOR SHARED/PRIVATE VARIABLES
-	// // // DiffusionData & diffData = diffSecrFieldTuppleVec[idx].diffData;
-	// // // if(diffData.useBoxWatcher){
-
-		// // // unsigned x_min=1,x_max=fieldDim.x+1;
-		// // // unsigned y_min=1,y_max=fieldDim.y+1;
-		// // // unsigned z_min=1,z_max=fieldDim.z+1;
-
-		// // // Dim3D minDimBW;		
-		// // // Dim3D maxDimBW;
-		// // // Point3D minCoordinates=*(boxWatcherSteppable->getMinCoordinatesPtr());
-		// // // Point3D maxCoordinates=*(boxWatcherSteppable->getMaxCoordinatesPtr());
-		// // // //cerr<<"FLEXIBLE DIFF SOLVER maxCoordinates="<<maxCoordinates<<" minCoordinates="<<minCoordinates<<endl;
-		// // // x_min=minCoordinates.x+1;
-		// // // x_max=maxCoordinates.x+1;
-		// // // y_min=minCoordinates.y+1;
-		// // // y_max=maxCoordinates.y+1;
-		// // // z_min=minCoordinates.z+1;
-		// // // z_max=maxCoordinates.z+1;
-
-		// // // minDimBW=Dim3D(x_min,y_min,z_min);
-		// // // maxDimBW=Dim3D(x_max,y_max,z_max);
-		// // // pUtils->calculateFESolverPartitionWithBoxWatcher(minDimBW,maxDimBW);
-
-	// // // }
-
-	// // // pUtils->prepareParallelRegionFESolvers(diffData.useBoxWatcher);
-
-// // // #pragma omp parallel
-	// // // {	
-
-		// // // CellG *currentCellPtr;
-		// // // //Field3DImpl<float> * concentrationField=concentrationFieldVector[idx];
-		// // // float currentConcentration;
-		// // // float secrConst;
-
-		// // // std::map<unsigned char,float>::iterator mitr;
-
-		// // // Point3D pt;
-		// // // int threadNumber=pUtils->getCurrentWorkNodeNumber();
-
-		// // // bool hasExtraBndLayer=hasExtraLayer();
-
-		// // // Dim3D minDim;		
-		// // // Dim3D maxDim;
-
-		// // // getMinMaxBox(diffData.useBoxWatcher, threadNumber, minDim, maxDim);
-		
-		// // // for (int z = minDim.z; z < maxDim.z; z++)
-			// // // for (int y = minDim.y; y < maxDim.y; y++)
-				// // // for (int x = minDim.x; x < maxDim.x; x++){
-
-					// // // if(hasExtraBndLayer)
-						// // // pt=Point3D(x-1,y-1,z-1);
-					// // // else
-						// // // pt=Point3D(x,y,z);
-					// // // //             cerr<<"pt="<<pt<<" is valid "<<cellFieldG->isValid(pt)<<endl;
-					// // // ///**
-					// // // currentCellPtr=cellFieldG->getQuick(pt);
-					// // // //             currentCellPtr=cellFieldG->get(pt);
-					// // // //             cerr<<"THIS IS PTR="<<currentCellPtr<<endl;
-
-					// // // //             if(currentCellPtr)
-					// // // //                cerr<<"This is id="<<currentCellPtr->id<<endl;
-					// // // //currentConcentration = concentrationArray[x][y][z];
-
-					// // // if(secreteInMedium && ! currentCellPtr){
-						// // // concentrationField.setDirect(x,y,z,secrConstMedium);
-					// // // }
-
-					// // // if(currentCellPtr){
-						// // // mitr=secrData.typeIdSecrConstConstantConcentrationMap.find(currentCellPtr->type);
-						// // // if(mitr!=end_mitr){
-							// // // secrConst=mitr->second;
-							// // // concentrationField.setDirect(x,y,z,secrConst);
-						// // // }
-					// // // }
-				// // // }
-	// // // }
+    // implemented separately in GPU and CPU code
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
@@ -1206,285 +662,13 @@ float DiffusionSolverFE<Cruncher>::couplingTerm(Point3D & _pt,std::vector<Coupli
 template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::boundaryConditionInit(int idx){
     
-    // static_cast<Cruncher *>(this)->boundaryConditionInitImpl(idx);
-    // return;
-        
-	typename Cruncher::ConcentrationField_t & _array = *static_cast<Cruncher *>(this)->getConcentrationField(idx);
-	bool detailedBCFlag=bcSpecFlagVec[idx];
-	BoundaryConditionSpecifier & bcSpec=bcSpecVec[idx];
-	DiffusionData & diffData = diffSecrFieldTuppleVec[idx].diffData;
-	float deltaX=diffData.deltaX;
-
-	//ConcentrationField_t & _array=*concentrationField;
-	if (!detailedBCFlag){
-		//dealing with periodic boundary condition in x direction
-		//have to use internalDim-1 in the for loop as max index because otherwise with extra shitf if we used internalDim we run outside the lattice
-		if(periodicBoundaryCheckVector[0]){//periodic boundary conditions were set in x direction	
-			//x - periodic
-			int x=0;
-			for(int y=0 ; y< workFieldDim.y-1; ++y)
-				for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-					_array.setDirect(x,y,z,_array.getDirect(fieldDim.x,y,z));
-				}
-
-				x=fieldDim.x+1;
-				for(int y=0 ; y< workFieldDim.y-1; ++y)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,_array.getDirect(1,y,z));
-					}
-		}else{//noFlux BC
-			int x=0;
-			for(int y=0 ; y< workFieldDim.y-1; ++y)
-				for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-					_array.setDirect(x,y,z,_array.getDirect(x+1,y,z));
-				}
-
-				x=fieldDim.x+1;
-				for(int y=0 ; y< workFieldDim.y-1; ++y)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,_array.getDirect(x-1,y,z));
-					}
-		}
-
-		//dealing with periodic boundary condition in y direction
-		if(periodicBoundaryCheckVector[1]){//periodic boundary conditions were set in x direction
-			int y=0;
-			for(int x=0 ; x< workFieldDim.x-1; ++x)
-				for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-					_array.setDirect(x,y,z,_array.getDirect(x,fieldDim.y,z));
-				}
-
-				y=fieldDim.y+1;
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,_array.getDirect(x,1,z));
-					}
-		}else{//NoFlux BC
-			int y=0;
-			for(int x=0 ; x< workFieldDim.x-1; ++x)
-				for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-					_array.setDirect(x,y,z,_array.getDirect(x,y+1,z));
-				}
-
-				y=fieldDim.y+1;
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,_array.getDirect(x,y-1,z));
-					}
-		}
-
-		//dealing with periodic boundary condition in z direction
-		if(periodicBoundaryCheckVector[2]){//periodic boundary conditions were set in x direction
-			int z=0;
-			for(int x=0 ; x< workFieldDim.x-1; ++x)
-				for(int y=0 ; y<workFieldDim.y-1 ; ++y){
-					_array.setDirect(x,y,z,_array.getDirect(x,y,fieldDim.z));
-				}
-
-				z=fieldDim.z+1;
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
-						_array.setDirect(x,y,z,_array.getDirect(x,y,1));
-					}
-		}else{//Noflux BC
-			int z=0;
-			for(int x=0 ; x< workFieldDim.x-1; ++x)
-				for(int y=0 ; y<workFieldDim.y-1 ; ++y){
-					_array.setDirect(x,y,z,_array.getDirect(x,y,z+1));
-				}
-
-				z=fieldDim.z+1;
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
-						_array.setDirect(x,y,z,_array.getDirect(x,y,z-1));
-					}
-		}
-
-	}else{
-		//detailed specification of boundary conditions
-		// X axis
-		if (bcSpec.planePositions[0]==BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[1]==BoundaryConditionSpecifier::PERIODIC){
-			int x=0;
-			for(int y=0 ; y< workFieldDim.y-1; ++y)
-				for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-					_array.setDirect(x,y,z,_array.getDirect(fieldDim.x,y,z));
-				}
-
-				x=fieldDim.x+1;
-				for(int y=0 ; y< workFieldDim.y-1; ++y)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,_array.getDirect(1,y,z));
-					}
-
-		}else{
-
-			if (bcSpec.planePositions[0]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[0];
-				int x=0;
-				for(int y=0 ; y< workFieldDim.y-1; ++y)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,cValue);
-					}
-
-			}else if(bcSpec.planePositions[0]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[0];
-				int x=0;
-
-				for(int y=0 ; y< workFieldDim.y-1; ++y)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,_array.getDirect(1,y,z)-cdValue*deltaX);
-					}
-
-			}
-
-			if (bcSpec.planePositions[1]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[1];
-				int x=fieldDim.x+1;
-				for(int y=0 ; y< workFieldDim.y-1; ++y)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,cValue);
-					}
-
-			}else if(bcSpec.planePositions[1]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[1];
-				int x=fieldDim.x+1;
-
-				for(int y=0 ; y< workFieldDim.y-1; ++y)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,_array.getDirect(x-1,y,z)+cdValue*deltaX);
-					}
-
-			}
-
-		}
-		//detailed specification of boundary conditions
-		// Y axis
-		if (bcSpec.planePositions[2]==BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[3]==BoundaryConditionSpecifier::PERIODIC){
-			int y=0;
-			for(int x=0 ; x< workFieldDim.x-1; ++x)
-				for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-					_array.setDirect(x,y,z,_array.getDirect(x,fieldDim.y,z));
-				}
-
-				y=fieldDim.y+1;
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,_array.getDirect(x,1,z));
-					}
-
-		}else{
-
-			if (bcSpec.planePositions[2]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[2];
-				int y=0;
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,cValue);
-					}
-
-			}else if(bcSpec.planePositions[2]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[2];
-				int y=0;
-
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,_array.getDirect(x,1,z)-cdValue*deltaX);
-					}
-
-			}
-
-			if (bcSpec.planePositions[3]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[3];
-				int y=fieldDim.y+1;
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,cValue);
-					}
-
-			}else if(bcSpec.planePositions[3]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[3];
-				int y=fieldDim.y+1;
-
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
-						_array.setDirect(x,y,z,_array.getDirect(x,y-1,z)+cdValue*deltaX);
-					}
-			}
-
-		}
-		//detailed specification of boundary conditions
-		// Z axis
-		if (bcSpec.planePositions[4]==BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[5]==BoundaryConditionSpecifier::PERIODIC){
-			int z=0;
-			for(int x=0 ; x< workFieldDim.x-1; ++x)
-				for(int y=0 ; y<workFieldDim.y-1 ; ++y){
-					_array.setDirect(x,y,z,_array.getDirect(x,y,fieldDim.z));
-				}
-
-				z=fieldDim.z+1;
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
-						_array.setDirect(x,y,z,_array.getDirect(x,y,1));
-					}
-
-		}else{
-
-			if (bcSpec.planePositions[4]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[4];
-				int z=0;
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
-						_array.setDirect(x,y,z,cValue);
-					}
-
-			}else if(bcSpec.planePositions[4]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[4];
-				int z=0;
-
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
-						_array.setDirect(x,y,z,_array.getDirect(x,y,1)-cdValue*deltaX);
-					}
-
-			}
-
-			if (bcSpec.planePositions[5]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-				float cValue= bcSpec.values[5];
-				int z=fieldDim.z+1;
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
-						_array.setDirect(x,y,z,cValue);
-					}
-
-			}else if(bcSpec.planePositions[5]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-				float cdValue= bcSpec.values[5];
-				int z=fieldDim.z+1;
-
-				for(int x=0 ; x< workFieldDim.x-1; ++x)
-					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
-						_array.setDirect(x,y,z,_array.getDirect(x,y,z-1)+cdValue*deltaX);
-					}
-			}
-
-		}
-
-	}
+   // implemented separately in GPU and CPU code
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::diffuseSingleField(unsigned int idx)
 {
-    // // // // this has to be moved as implementation function  OR make it virtual and overload in GPU code
-	// // // boundaryConditionInit(idx);//initializing boundary conditions
-    
-    // // // // // // static_cast<Cruncher *>(this)->boundaryConditionInitImpl(idx);
-
-	// // // DiffusionData & diffData = diffSecrFieldTuppleVec[idx].diffData;
-	// // // typename Cruncher::ConcentrationField_t & concentrationField = *static_cast<Cruncher *>(this)->getConcentrationField(idx);
-
-	// // // initCellTypesAndBoundariesImpl();
-	// // // static_cast<Cruncher *>(this)->diffuseSingleFieldImpl(concentrationField, diffData);
-	
+   // implemented separately in GPU and CPU code	
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1499,7 +683,7 @@ bool DiffusionSolverFE<Cruncher>::isBoudaryRegion(int x, int y, int z, Dim3D dim
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::diffuse() {
-
+// implemented separately in GPU and CPU code
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1860,19 +1044,19 @@ void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullIni
 	Scale(maxDiffConstVec, maxStableDiffConstant);//TODO: remove for implicit solvers?    
     
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
 std::string DiffusionSolverFE<Cruncher>::toString(){ //TODO: overload in cruncher?
     
     return toStringImpl();	
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
 std::string DiffusionSolverFE<Cruncher>::steerableName(){
 	return toString();
 }
 
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //The explicit instantiation part.
 //Add new solvers here
 template class DiffusionSolverFE<DiffusionSolverFE_CPU>; 
