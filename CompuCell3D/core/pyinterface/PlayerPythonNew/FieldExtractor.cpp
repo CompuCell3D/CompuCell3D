@@ -791,7 +791,7 @@ void FieldExtractor::fillBorderData2DHex(long _pointArrayAddr ,long _linesArrayA
 }
 
 void FieldExtractor::fillClusterBorderData2D(long _pointArrayAddr ,long _linesArrayAddr, std::string _plane ,  int _pos){
-        //this function has to be redone in the same spirit as fillBorderData2DHex
+        
 
 	vtkPoints *points = (vtkPoints *)_pointArrayAddr;
 	vtkCellArray * lines=(vtkCellArray *)_linesArrayAddr;
@@ -907,7 +907,7 @@ void FieldExtractor::fillClusterBorderData2D(long _pointArrayAddr ,long _linesAr
 }
 
 void FieldExtractor::fillClusterBorderData2DHex(long _pointArrayAddr ,long _linesArrayAddr, std::string _plane ,  int _pos){
-
+    //this function has to be redone in the same spirit as fillBorderData2DHex
 	vtkPoints *points = (vtkPoints *)_pointArrayAddr;
 	vtkCellArray * lines = (vtkCellArray *)_linesArrayAddr;
 
@@ -948,192 +948,393 @@ void FieldExtractor::fillClusterBorderData2DHex(long _pointArrayAddr ,long _line
 
 			if (cellFieldG->get(pt) == 0) continue;
 			long clusterId = cellFieldG->get(pt)->clusterId;
+            if (pt.z%3==0){ // z divisible by 3
+                if(pt.y%2){ //y_odd
+                    if(pt.x-1>=0){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[4]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[5]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if(pt.x-1>=0 && pt.y+1<dim[1]){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[5]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[0]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.y+1<dim[1]){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[0]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[1]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.x+1<dim[0]){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[1]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[2]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.y-1>=0){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[2]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[3]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if(pt.x-1>=0 && pt.y-1>=0){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[3]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[4]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
 
-			if(pt.y%2){ //y_odd
-				if(pt.x-1>=0){
-					ptN.x=pt.x-1;
-					ptN.y=pt.y;
-					ptN.z=pt.z;
-					if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
-						Coordinates3D<double> hexCoordsP1=hexagonVertices[4]+hexCoords;
-						Coordinates3D<double> hexCoordsP2=hexagonVertices[5]+hexCoords;
-						points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
-						points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
-						pc+=2;
-						lines->InsertNextCell(2);
-						lines->InsertCellPoint(pc-2);
-						lines->InsertCellPoint(pc-1);
-					}
-				}
-				if(pt.x-1>=0 && pt.y+1<dim[1]){
-					ptN.x=pt.x-1;
-					ptN.y=pt.y+1;
-					ptN.z=pt.z;
-					if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
-						Coordinates3D<double> hexCoordsP1=hexagonVertices[5]+hexCoords;
-						Coordinates3D<double> hexCoordsP2=hexagonVertices[0]+hexCoords;
-						points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
-						points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
-						pc+=2;
-						lines->InsertNextCell(2);
-						lines->InsertCellPoint(pc-2);
-						lines->InsertCellPoint(pc-1);
-					}
-				}
-				if( pt.y+1<dim[1]){
-					ptN.x=pt.x;
-					ptN.y=pt.y+1;
-					ptN.z=pt.z;
-					if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
-						Coordinates3D<double> hexCoordsP1=hexagonVertices[0]+hexCoords;
-						Coordinates3D<double> hexCoordsP2=hexagonVertices[1]+hexCoords;
-						points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
-						points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
-						pc+=2;
-						lines->InsertNextCell(2);
-						lines->InsertCellPoint(pc-2);
-						lines->InsertCellPoint(pc-1);
-					}
-				}
-				if( pt.x+1<dim[0]){
-					ptN.x=pt.x+1;
-					ptN.y=pt.y;
-					ptN.z=pt.z;
-					if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
-						Coordinates3D<double> hexCoordsP1=hexagonVertices[1]+hexCoords;
-						Coordinates3D<double> hexCoordsP2=hexagonVertices[2]+hexCoords;
-						points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
-						points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
-						pc+=2;
-						lines->InsertNextCell(2);
-						lines->InsertCellPoint(pc-2);
-						lines->InsertCellPoint(pc-1);
-					}
-				}
-				if( pt.y-1>=0){
-					ptN.x=pt.x;
-					ptN.y=pt.y-1;
-					ptN.z=pt.z;
-					if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
-						Coordinates3D<double> hexCoordsP1=hexagonVertices[2]+hexCoords;
-						Coordinates3D<double> hexCoordsP2=hexagonVertices[3]+hexCoords;
-						points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
-						points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
-						pc+=2;
-						lines->InsertNextCell(2);
-						lines->InsertCellPoint(pc-2);
-						lines->InsertCellPoint(pc-1);
-					}
-				}
-				if(pt.x-1>=0 && pt.y-1>=0){
-					ptN.x=pt.x-1;
-					ptN.y=pt.y-1;
-					ptN.z=pt.z;
-					if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
-						Coordinates3D<double> hexCoordsP1=hexagonVertices[3]+hexCoords;
-						Coordinates3D<double> hexCoordsP2=hexagonVertices[4]+hexCoords;
-						points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
-						points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
-						pc+=2;
-						lines->InsertNextCell(2);
-						lines->InsertCellPoint(pc-2);
-						lines->InsertCellPoint(pc-1);
-					}
-				}
+                }else{//y_even
 
-			}else{//y_even
+                    if(pt.x-1>=0){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[4]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[5]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.y+1<dim[1]){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[5]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[0]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if(pt.x+1<dim[0] && pt.y+1<dim[1]){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[0]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[1]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if(pt.x+1<dim[0] ){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[1]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[2]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if(pt.x+1<dim[0] && pt.y-1>=0 ){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[2]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[3]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.y-1>=0 ){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[3]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[4]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                }
+            }else{//apparently for  pt.z%3==1 and pt.z%3==2 xy hex shifts are the same so one code serves them both
+                if(pt.y%2){ //y_odd
+                    if(pt.x-1>=0){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[4]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[5]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if(pt.x-1>=0 && pt.y+1<dim[1]){
+                        // ptN.x=pt.x-1;
+                        // ptN.y=pt.y+1;
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y-1;
+                        
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[2]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[3]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.y+1<dim[1]){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[5]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[0]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.x+1<dim[0]){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[1]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[2]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.y-1>=0){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[3]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[4]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if(pt.x-1>=0 && pt.y-1>=0){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[0]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[1]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    
+                }else{ //yeven
+                
+                    if(pt.x-1>=0){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[4]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[5]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if(pt.x-1>=0 && pt.y+1<dim[1]){
+                        // ptN.x=pt.x-1;
+                        // ptN.y=pt.y+1;
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y+1;
+                        
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[5]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[0]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.y+1<dim[1]){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y+1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[0]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[1]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.x+1<dim[0]){
+                        ptN.x=pt.x+1;
+                        ptN.y=pt.y;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[1]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[2]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if( pt.y-1>=0){
+                        ptN.x=pt.x;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[2]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[3]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
+                    if(pt.x-1>=0 && pt.y-1>=0){
+                        ptN.x=pt.x-1;
+                        ptN.y=pt.y-1;
+                        ptN.z=pt.z;
+                        if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
+                            Coordinates3D<double> hexCoordsP1=hexagonVertices[3]+hexCoords;
+                            Coordinates3D<double> hexCoordsP2=hexagonVertices[4]+hexCoords;
+                            points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
+                            points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
+                            pc+=2;
+                            lines->InsertNextCell(2);
+                            lines->InsertCellPoint(pc-2);
+                            lines->InsertCellPoint(pc-1);
+                        }
+                    }
 
-				if(pt.x-1>=0){
-					ptN.x=pt.x-1;
-					ptN.y=pt.y;
-					ptN.z=pt.z;
-					if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
-						Coordinates3D<double> hexCoordsP1=hexagonVertices[4]+hexCoords;
-						Coordinates3D<double> hexCoordsP2=hexagonVertices[5]+hexCoords;
-						points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
-						points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
-						pc+=2;
-						lines->InsertNextCell(2);
-						lines->InsertCellPoint(pc-2);
-						lines->InsertCellPoint(pc-1);
-					}
-				}
-				if( pt.y+1<dim[1]){
-					ptN.x=pt.x;
-					ptN.y=pt.y+1;
-					ptN.z=pt.z;
-					if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
-						Coordinates3D<double> hexCoordsP1=hexagonVertices[5]+hexCoords;
-						Coordinates3D<double> hexCoordsP2=hexagonVertices[0]+hexCoords;
-						points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
-						points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
-						pc+=2;
-						lines->InsertNextCell(2);
-						lines->InsertCellPoint(pc-2);
-						lines->InsertCellPoint(pc-1);
-					}
-				}
-				if(pt.x+1<dim[0] && pt.y+1<dim[1]){
-					ptN.x=pt.x+1;
-					ptN.y=pt.y+1;
-					ptN.z=pt.z;
-					if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
-						Coordinates3D<double> hexCoordsP1=hexagonVertices[0]+hexCoords;
-						Coordinates3D<double> hexCoordsP2=hexagonVertices[1]+hexCoords;
-						points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
-						points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
-						pc+=2;
-						lines->InsertNextCell(2);
-						lines->InsertCellPoint(pc-2);
-						lines->InsertCellPoint(pc-1);
-					}
-				}
-				if(pt.x+1<dim[0] ){
-					ptN.x=pt.x+1;
-					ptN.y=pt.y;
-					ptN.z=pt.z;
-					if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
-						Coordinates3D<double> hexCoordsP1=hexagonVertices[1]+hexCoords;
-						Coordinates3D<double> hexCoordsP2=hexagonVertices[2]+hexCoords;
-						points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
-						points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
-						pc+=2;
-						lines->InsertNextCell(2);
-						lines->InsertCellPoint(pc-2);
-						lines->InsertCellPoint(pc-1);
-					}
-				}
-				if(pt.x+1<dim[0] && pt.y-1>=0 ){
-					ptN.x=pt.x+1;
-					ptN.y=pt.y-1;
-					ptN.z=pt.z;
-					if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
-						Coordinates3D<double> hexCoordsP1=hexagonVertices[2]+hexCoords;
-						Coordinates3D<double> hexCoordsP2=hexagonVertices[3]+hexCoords;
-						points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
-						points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
-						pc+=2;
-						lines->InsertNextCell(2);
-						lines->InsertCellPoint(pc-2);
-						lines->InsertCellPoint(pc-1);
-					}
-				}
-				if( pt.y-1>=0 ){
-					ptN.x=pt.x;
-					ptN.y=pt.y-1;
-					ptN.z=pt.z;
-					if((cellFieldG->get(ptN) == 0) || clusterId != cellFieldG->get(ptN)->clusterId ){
-						Coordinates3D<double> hexCoordsP1=hexagonVertices[3]+hexCoords;
-						Coordinates3D<double> hexCoordsP2=hexagonVertices[4]+hexCoords;
-						points->InsertNextPoint(hexCoordsP1.x,hexCoordsP1.y,0.0);
-						points->InsertNextPoint(hexCoordsP2.x,hexCoordsP2.y,0.0);
-						pc+=2;
-						lines->InsertNextCell(2);
-						lines->InsertCellPoint(pc-2);
-						lines->InsertCellPoint(pc-1);
-					}
-				}
-			}
+                
+                
+                }
+            
+            
+            }
+            
+            
 		}
 }
 
