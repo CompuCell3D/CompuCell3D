@@ -472,12 +472,12 @@ void DiffusionSolverFE_CPU::getMinMaxBox(bool useBoxWatcher, int threadNumber, D
 	}
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 void DiffusionSolverFE_CPU::boundaryConditionInit(int idx){
     // static_cast<Cruncher *>(this)->boundaryConditionInitImpl(idx);
     // return;
         
-	ConcentrationField_t & _array = *this->getConcentrationField(idx);
+	ConcentrationField_t & _array = *this->getConcentrationField(idx);    
+    
 	bool detailedBCFlag=bcSpecFlagVec[idx];
 	BoundaryConditionSpecifier & bcSpec=bcSpecVec[idx];
 	DiffusionData & diffData = diffSecrFieldTuppleVec[idx].diffData;
@@ -493,24 +493,28 @@ void DiffusionSolverFE_CPU::boundaryConditionInit(int idx){
 			for(int y=0 ; y< workFieldDim.y-1; ++y)
 				for(int z=0 ; z<workFieldDim.z-1 ; ++z){
 					_array.setDirect(x,y,z,_array.getDirect(fieldDim.x,y,z));
+                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(fieldDim.x,y,z));                    
 				}
 
 				x=fieldDim.x+1;
 				for(int y=0 ; y< workFieldDim.y-1; ++y)
 					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
 						_array.setDirect(x,y,z,_array.getDirect(1,y,z));
+                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(1,y,z));
 					}
 		}else{//noFlux BC
 			int x=0;
 			for(int y=0 ; y< workFieldDim.y-1; ++y)
 				for(int z=0 ; z<workFieldDim.z-1 ; ++z){
 					_array.setDirect(x,y,z,_array.getDirect(x+1,y,z));
+                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x+1,y,z));
 				}
 
 				x=fieldDim.x+1;
 				for(int y=0 ; y< workFieldDim.y-1; ++y)
 					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
 						_array.setDirect(x,y,z,_array.getDirect(x-1,y,z));
+                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x-1,y,z));
 					}
 		}
 
@@ -520,24 +524,28 @@ void DiffusionSolverFE_CPU::boundaryConditionInit(int idx){
 			for(int x=0 ; x< workFieldDim.x-1; ++x)
 				for(int z=0 ; z<workFieldDim.z-1 ; ++z){
 					_array.setDirect(x,y,z,_array.getDirect(x,fieldDim.y,z));
+                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,fieldDim.y,z));
 				}
 
 				y=fieldDim.y+1;
 				for(int x=0 ; x< workFieldDim.x-1; ++x)
 					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
 						_array.setDirect(x,y,z,_array.getDirect(x,1,z));
+                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,1,z));
 					}
 		}else{//NoFlux BC
 			int y=0;
 			for(int x=0 ; x< workFieldDim.x-1; ++x)
 				for(int z=0 ; z<workFieldDim.z-1 ; ++z){
 					_array.setDirect(x,y,z,_array.getDirect(x,y+1,z));
+                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y+1,z));
 				}
 
 				y=fieldDim.y+1;
 				for(int x=0 ; x< workFieldDim.x-1; ++x)
 					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
 						_array.setDirect(x,y,z,_array.getDirect(x,y-1,z));
+                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y-1,z));
 					}
 		}
 
@@ -547,24 +555,28 @@ void DiffusionSolverFE_CPU::boundaryConditionInit(int idx){
 			for(int x=0 ; x< workFieldDim.x-1; ++x)
 				for(int y=0 ; y<workFieldDim.y-1 ; ++y){
 					_array.setDirect(x,y,z,_array.getDirect(x,y,fieldDim.z));
+                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,fieldDim.z));
 				}
 
 				z=fieldDim.z+1;
 				for(int x=0 ; x< workFieldDim.x-1; ++x)
 					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
 						_array.setDirect(x,y,z,_array.getDirect(x,y,1));
+                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,1));
 					}
 		}else{//Noflux BC
 			int z=0;
 			for(int x=0 ; x< workFieldDim.x-1; ++x)
 				for(int y=0 ; y<workFieldDim.y-1 ; ++y){
 					_array.setDirect(x,y,z,_array.getDirect(x,y,z+1));
+                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,z+1));
 				}
 
 				z=fieldDim.z+1;
 				for(int x=0 ; x< workFieldDim.x-1; ++x)
 					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
 						_array.setDirect(x,y,z,_array.getDirect(x,y,z-1));
+                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,z-1));
 					}
 		}
 
@@ -576,16 +588,18 @@ void DiffusionSolverFE_CPU::boundaryConditionInit(int idx){
 			for(int y=0 ; y< workFieldDim.y-1; ++y)
 				for(int z=0 ; z<workFieldDim.z-1 ; ++z){
 					_array.setDirect(x,y,z,_array.getDirect(fieldDim.x,y,z));
+                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(fieldDim.x,y,z));
 				}
 
 				x=fieldDim.x+1;
 				for(int y=0 ; y< workFieldDim.y-1; ++y)
 					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
 						_array.setDirect(x,y,z,_array.getDirect(1,y,z));
+                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(1,y,z));
 					}
 
 		}else{
-
+            
 			if (bcSpec.planePositions[0]==BoundaryConditionSpecifier::CONSTANT_VALUE){
 				float cValue= bcSpec.values[0];
 				int x=0;
@@ -632,12 +646,14 @@ void DiffusionSolverFE_CPU::boundaryConditionInit(int idx){
 			for(int x=0 ; x< workFieldDim.x-1; ++x)
 				for(int z=0 ; z<workFieldDim.z-1 ; ++z){
 					_array.setDirect(x,y,z,_array.getDirect(x,fieldDim.y,z));
+                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,fieldDim.y,z));
 				}
 
 				y=fieldDim.y+1;
 				for(int x=0 ; x< workFieldDim.x-1; ++x)
 					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
 						_array.setDirect(x,y,z,_array.getDirect(x,1,z));
+                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,1,z));
 					}
 
 		}else{
@@ -687,12 +703,14 @@ void DiffusionSolverFE_CPU::boundaryConditionInit(int idx){
 			for(int x=0 ; x< workFieldDim.x-1; ++x)
 				for(int y=0 ; y<workFieldDim.y-1 ; ++y){
 					_array.setDirect(x,y,z,_array.getDirect(x,y,fieldDim.z));
+                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,fieldDim.z));
 				}
 
 				z=fieldDim.z+1;
 				for(int x=0 ; x< workFieldDim.x-1; ++x)
 					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
 						_array.setDirect(x,y,z,_array.getDirect(x,y,1));
+                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,1));
 					}
 
 		}else{
@@ -738,12 +756,20 @@ void DiffusionSolverFE_CPU::boundaryConditionInit(int idx){
 
 	}
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Dim3D DiffusionSolverFE_CPU::getInternalDim(){
+        return getConcentrationField(0)->getInternalDim();    
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE_CPU::stepImpl(const unsigned int _currentStep){
 
 
 	for(unsigned int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i ){
 		//cerr<<"scalingExtraMCSVec[i]="<<scalingExtraMCSVec[i]<<endl;
+        
+        prepCellTypeField(i); // here we initialize celltype array  boundaries - we do it once per  MCS
         
         if (scaleSecretion){
             if (!scalingExtraMCSVec[i]){ //we do not call diffusion step but call secretion - this happens when diffusion const is 0 but we still want to have secretion
@@ -989,7 +1015,27 @@ void DiffusionSolverFE_CPU::diffuseSingleField(unsigned int idx){
 		// for (int z = minDim.z; z < maxDim.z; z++)
 			// for (int y = minDim.y; y < maxDim.y; y++)
 				// for (int x = minDim.x; x < maxDim.x; x++){
+                
+                 
+                    // totConc+=concentrationField.getDirect(x,y,z);
+                // }                
+    // cerr<<"TOTAL CONCENTRATION="<<totConc<<endl;
+                
+                
+        // float totConc=0.0;
+		// for (int z = minDim.z; z < maxDim.z; z++)
+			// for (int y = minDim.y; y < maxDim.y; y++)
+				// for (int x = minDim.x; x < maxDim.x; x++){
+                
+                    // if (x>54 && z >10 && y >8){
                     
+                        // // cerr<<"("<<x<<","<<y<<","<<z<<")="<<concentrationField.getDirect(x,y,z)<<endl;
+                        // cerr<<"cellType("<<x<<","<<y<<","<<z<<")="<<(int)cellTypeArray.getDirect(x,y,z)<<endl;
+                    // }                
+                    // // if (x>54 && z >10 && y >8)
+                    // // if (concentrationField.getDirect(x,y,z) !=0.0){
+                        // // cerr<<"("<<x<<","<<y<<","<<z<<")="<<concentrationField.getDirect(x,y,z)<<endl;
+                    // // }                    
                     // totConc+=concentrationField.getDirect(x,y,z);
                 // }                
     // cerr<<"TOTAL CONCENTRATION="<<totConc<<endl;

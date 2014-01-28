@@ -87,6 +87,10 @@ protected:
     virtual void secreteConstantConcentrationSingleField(unsigned int idx);    
     
 	virtual void solverSpecific(CC3DXMLElement *_xmlData);//reading solver-specific information from XML file
+    
+    
+    virtual Dim3D getInternalDim();
+    
     virtual std::string toStringImpl();    
     void initSecretionData();
 	
@@ -117,6 +121,7 @@ private:
     cl_kernel secreteSingleFieldKernel;
     cl_kernel secreteConstantConcentrationSingleFieldKernel;
     cl_kernel secreteOnContactSingleFieldKernel;
+    // cl_kernel myKernel;
     
 	cl_program program;
     

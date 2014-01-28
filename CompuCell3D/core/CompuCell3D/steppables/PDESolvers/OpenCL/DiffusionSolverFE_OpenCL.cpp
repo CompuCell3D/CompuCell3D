@@ -123,6 +123,15 @@ void DiffusionSolverFE_OpenCL::secreteOnContactSingleField(unsigned int idx){
     cl_int err = oclHelper->EnqueueNDRangeKernel(secreteOnContactSingleFieldKernel, 3, globalWorkSize, localWorkSize);
     ASSERT_OR_THROW("secreteOnContactSingleFieldKernel failed", err==CL_SUCCESS);    
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Dim3D DiffusionSolverFE_OpenCL::getInternalDim(){
+        //notice that because we are using soe of the prewritten fcns from CPU diffusion solvers and CPU diffusion solver workFieldDim is (+1,+1,+1) greater than Cuda (due to extra scratch field built in in CPU field) we increase internalDim here 
+        //and leave CPU code as ias. This is a hack but for now it will do
+        return getConcentrationField(0)->getInternalDim()+Dim3D(1,1,1);;
+    
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE_OpenCL::prepCellId(unsigned int idx){
 
@@ -131,6 +140,8 @@ void DiffusionSolverFE_OpenCL::prepCellId(unsigned int idx){
     
     bool periodicX=false,periodicY=false,periodicZ=false;
     float NON_CELL=-2.0; //we assume medium cell id is -1 not zero because normally cells in older versions of CC3D we allwoed cells with id 0 . For that reason we set NON_CEll to -2.0
+    
+    Dim3D workFieldDimInternal=getInternalDim();
     
     if (detailedBCFlag){
         if (bcSpec.planePositions[MIN_X]==PERIODIC || bcSpec.planePositions[MAX_X]==PERIODIC){
@@ -158,52 +169,52 @@ void DiffusionSolverFE_OpenCL::prepCellId(unsigned int idx){
     
     if (periodicX){
         int x=0;
-        for(int y=0 ; y< workFieldDim.y-1; ++y)
-            for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+        for(int y=0 ; y< workFieldDimInternal.y-1; ++y)
+            for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
                 h_cellid_field->setDirect(x,y,z,h_cellid_field->getDirect(fieldDim.x,y,z));           
             }
 
             x=fieldDim.x+1;
-            for(int y=0 ; y< workFieldDim.y-1; ++y)
-                for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+            for(int y=0 ; y< workFieldDimInternal.y-1; ++y)
+                for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
                     h_cellid_field->setDirect(x,y,z,h_cellid_field->getDirect(1,y,z));
                 }    
     }else{
         int x=0;
-        for(int y=0 ; y< workFieldDim.y-1; ++y)
-            for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+        for(int y=0 ; y< workFieldDimInternal.y-1; ++y)
+            for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
                 h_cellid_field->setDirect(x,y,z,NON_CELL);           
             }
 
             x=fieldDim.x+1;
-            for(int y=0 ; y< workFieldDim.y-1; ++y)
-                for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+            for(int y=0 ; y< workFieldDimInternal.y-1; ++y)
+                for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
                     h_cellid_field->setDirect(x,y,z,NON_CELL);
                 }        
     }
     
     if (periodicY){
         int y=0;
-        for(int x=0 ; x< workFieldDim.x-1; ++x)
-            for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+        for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
+            for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
                 h_cellid_field->setDirect(x,y,z,h_cellid_field->getDirect(x,fieldDim.y,z));
             }
 
             y=fieldDim.y+1;
-            for(int x=0 ; x< workFieldDim.x-1; ++x)
-                for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+            for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
+                for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
                     h_cellid_field->setDirect(x,y,z,h_cellid_field->getDirect(x,1,z));
                 }    
     }else{
         int y=0;
-        for(int x=0 ; x< workFieldDim.x-1; ++x)
-            for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+        for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
+            for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
                 h_cellid_field->setDirect(x,y,z,NON_CELL);
             }
 
             y=fieldDim.y+1;
-            for(int x=0 ; x< workFieldDim.x-1; ++x)
-                for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+            for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
+                for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
                     h_cellid_field->setDirect(x,y,z,NON_CELL);
                 }    
 
@@ -211,27 +222,27 @@ void DiffusionSolverFE_OpenCL::prepCellId(unsigned int idx){
     
     if(periodicZ){
         int z=0;
-        for(int x=0 ; x< workFieldDim.x-1; ++x)
-            for(int y=0 ; y<workFieldDim.y-1 ; ++y){
+        for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
+            for(int y=0 ; y<workFieldDimInternal.y-1 ; ++y){
                 h_cellid_field->setDirect(x,y,z,h_cellid_field->getDirect(x,y,fieldDim.z));
             }
 
             z=fieldDim.z+1;
-            for(int x=0 ; x< workFieldDim.x-1; ++x)
-                for(int y=0 ; y<workFieldDim.y-1 ; ++y){
+            for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
+                for(int y=0 ; y<workFieldDimInternal.y-1 ; ++y){
                     h_cellid_field->setDirect(x,y,z,h_cellid_field->getDirect(x,y,1));
                 }
     
     }else{
         int z=0;
-        for(int x=0 ; x< workFieldDim.x-1; ++x)
-            for(int y=0 ; y<workFieldDim.y-1 ; ++y){
+        for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
+            for(int y=0 ; y<workFieldDimInternal.y-1 ; ++y){
                 h_cellid_field->setDirect(x,y,z,NON_CELL);
             }
 
             z=fieldDim.z+1;
-            for(int x=0 ; x< workFieldDim.x-1; ++x)
-                for(int y=0 ; y<workFieldDim.y-1 ; ++y){
+            for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
+                for(int y=0 ; y<workFieldDimInternal.y-1 ; ++y){
                     h_cellid_field->setDirect(x,y,z,NON_CELL);
                 }    
     }
@@ -338,28 +349,33 @@ void DiffusionSolverFE_OpenCL::boundaryConditionGPUSetup(int idx){
             bcSpecifier.values[MIN_Z]=0.0;
 			bcSpecifier.values[MAX_Z]=0.0;          
         }
-
         
     }
     
     
-    // // // for (int i = 0 ; i < 6 ; ++i){
-        // // // cerr<<"planePositions["<<i<<"]="<<bcSpecifier.planePositions[i] <<endl;
-        // // // cerr<<"values["<<i<<"]="<<bcSpecifier.values[i] <<endl;
+    // for (int i = 0 ; i < 6 ; ++i){
+        // cerr<<"planePositions["<<i<<"]="<<bcSpecifier.planePositions[i] <<endl;
+        // cerr<<"values["<<i<<"]="<<bcSpecifier.values[i] <<endl;
         
-    // // // }        
+    // }        
+    
+	cl_int err=oclHelper->WriteBuffer(d_bcSpecifier, &bcSpecifier, 1); 
+	ASSERT_OR_THROW("Can not copy Cell Type field to GPU", err==CL_SUCCESS);
+    
     
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+
 void DiffusionSolverFE_OpenCL::boundaryConditionInit(int idx){
+    cerr<<"CALLING FROM< OPEN CL boundaryConditionInit="<<endl;
+    // // // //notice concDevPtr is set elsewhere - no need to set it here
+    // // // cl_int errArgBCI= clSetKernelArg(kernelBoundaryConditionInit, 0, sizeof(cl_mem), concDevPtr);    
+    // // // ASSERT_OR_THROW("Can not set boundaryConditionInitKernel  arguments\n", errArgBCI==CL_SUCCESS);    
     
-    //notice concDevPtr is set elsewhere - no need to set it here
-    cl_int errArgBCI= clSetKernelArg(kernelBoundaryConditionInit, 0, sizeof(cl_mem), concDevPtr);    
-    ASSERT_OR_THROW("Can not set boundaryConditionInitKernel  arguments\n", errArgBCI==CL_SUCCESS);    
-    
-    cl_int errBCI = oclHelper->EnqueueNDRangeKernel(kernelBoundaryConditionInit, 3, globalWorkSize, localWorkSize);
-    ASSERT_OR_THROW("kernelBoundaryConditionInit failed", errBCI==CL_SUCCESS);
+    // // // cl_int errBCI = oclHelper->EnqueueNDRangeKernel(kernelBoundaryConditionInit, 3, globalWorkSize, localWorkSize);
+    // // // ASSERT_OR_THROW("newkernelBoundaryConditionInit failed", errBCI==CL_SUCCESS);
 
 }
 
@@ -370,6 +386,8 @@ void DiffusionSolverFE_OpenCL::stepImpl(const unsigned int _currentStep){
 	for(unsigned int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i ){
         this->boundaryConditionGPUSetup(i); //initializes and transfers to GPU BCSpecifier structure - nothing else. Actual BC initialization is done inside boundaryConditionInitKernel on GPU. Notice: secreteOnContactKernel also uses bcSpecifier
 
+        
+        
         //initializing ptrs to conc and scratch fields
         concDevPtr = &d_concentrationField; 
         scratchDevPtr = &d_scratchField;        
@@ -383,11 +401,12 @@ void DiffusionSolverFE_OpenCL::stepImpl(const unsigned int _currentStep){
         ASSERT_OR_THROW("Box watcher is not supported yet", !diffData.useBoxWatcher);
         ASSERT_OR_THROW("Threshold is not supported yet",	!diffData.useThresholds);
         
+        prepCellTypeField(i); // here we initialize celltype array  boundaries - we do it once per  MCS
         
         initCellTypesAndBoundariesImpl(); //this sends type array to device - most likely this can be done one per stepImpl call. For now leaving it here
         ///////////
         
-        
+        // boundaryConditionInit(i);
         
         // cerr<<"diffuseSingleFieldImpl: THIS IS EXTRA TIMES PER MCS="<<diffData.extraTimesPerMCS<<endl;
         
@@ -400,7 +419,7 @@ void DiffusionSolverFE_OpenCL::stepImpl(const unsigned int _currentStep){
         iterationNumber=0; // this variable is important because other routines can sense if this is first or subsequent call to diffuse or secrete functions. Some work in this functions has to be done during initial call and skipped in others
         
         if (scaleSecretion){
-        
+            // cerr<<"DIFFUSION SOLVER REGULAR NON_FLEXIBLE"<<endl;
             if (!scalingExtraMCSVec[i]){ //we do not call diffusion step but call secretion - this happens when diffusion const is 0 but we still want to have secretion
                 for(unsigned int j = 0 ; j <diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.size() ; ++j){
                     (this->*diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec[j])(i);
@@ -432,11 +451,26 @@ void DiffusionSolverFE_OpenCL::stepImpl(const unsigned int _currentStep){
         fieldDeviceToHost(h_Field); //transfer conc field to back to host memory
         
         
+        // float totConc=0.0;        
+		// for (int z = 1; z < fieldDim.z+2; z++)
+			// for (int y = 1; y < fieldDim.y+2; y++)
+				// for (int x = 1; x < fieldDim.x+2; x++){
+
+                    // totConc+=concentrationField.getDirect(x,y,z);
+                // }                
+    // cerr<<"\n\n\n TOTAL CONCENTRATION="<<totConc<<endl;          
+        
         // float totConc=0.0;
-		// for (int z = 1; z < fieldDim.z+1; z++)
-			// for (int y = 1; y < fieldDim.y+1; y++)
-				// for (int x = 1; x < fieldDim.x+1; x++){
+        // Array3DCUDA<unsigned char> & cellTypeArray= *h_celltype_field;
+		// for (int z = 1; z < fieldDim.z+2; z++)
+			// for (int y = 1; y < fieldDim.y+2; y++)
+				// for (int x = 1; x < fieldDim.x+2; x++){
+                    // // if (concentrationField.getDirect(x,y,z) !=0.0){
+                    // if (x>54 && z >10 && y >8){
                     
+                        // // cerr<<"("<<x<<","<<y<<","<<z<<")="<<concentrationField.getDirect(x,y,z)<<endl;
+                        // cerr<<"cellType("<<x<<","<<y<<","<<z<<")="<<(int)cellTypeArray.getDirect(x,y,z)<<endl;
+                    // }
                     // totConc+=concentrationField.getDirect(x,y,z);
                 // }                
     // cerr<<"\n\n\n TOTAL CONCENTRATION="<<totConc<<endl;        
@@ -453,15 +487,18 @@ void DiffusionSolverFE_OpenCL::diffuseSingleField(unsigned int idx){
     cl_int errArgBCI;
     cl_int errBCI;
     
-    //initialize boundary conditions
+    
+    // //initialize boundary conditions
     errArgBCI= clSetKernelArg(kernelBoundaryConditionInit, 0, sizeof(cl_mem), concDevPtr);    
     ASSERT_OR_THROW("Can not set boundaryConditionInitKernel  arguments\n", errArgBCI==CL_SUCCESS);    
 
     // cerr<<"globalWorkSize=["<<globalWorkSize[0]<<","<<globalWorkSize[1]<<","<<globalWorkSize[2]<<"']"<<endl;
     // cerr<<"localWorkSize=["<<localWorkSize[0]<<","<<localWorkSize[1]<<","<<localWorkSize[2]<<"']"<<endl;
     
-    errArgBCI= oclHelper->EnqueueNDRangeKernel(kernelBoundaryConditionInit, 3, globalWorkSize, localWorkSize);
+    errBCI= oclHelper->EnqueueNDRangeKernel(kernelBoundaryConditionInit, 3, globalWorkSize, localWorkSize);
     ASSERT_OR_THROW("kernelBoundaryConditionInit failed", errBCI==CL_SUCCESS);
+    
+    
 
     if (latticeType!=SQUARE_LATTICE){
         //initialize boundary conditions Lattice Corners - necessary only for hex lattice
@@ -509,6 +546,13 @@ void DiffusionSolverFE_OpenCL::SetConstKernelArguments()
 	err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(unsigned char)*(localWorkSize[0]+2)*(localWorkSize[1]+2)*(localWorkSize[2]+2), NULL);//local cell type
 
 	ASSERT_OR_THROW("Can not set uniDiff kernel's arguments\n", err==CL_SUCCESS);
+    
+    // ///********************************** myKernel
+    // err= clSetKernelArg(myKernel, 0, sizeof(cl_mem), &d_concentrationField);    
+    // err= err | clSetKernelArg(myKernel, 1, sizeof(cl_mem), &d_solverParams);    
+    // err= err | clSetKernelArg(myKernel, 2, sizeof(cl_mem), &d_bcSpecifier);        
+    // ASSERT_OR_THROW("Can not set myKernel  arguments\n", err==CL_SUCCESS);    
+    
     
     ///********************************** BC Kernel
     err= clSetKernelArg(kernelBoundaryConditionInit, 0, sizeof(cl_mem), &d_concentrationField);    
@@ -799,7 +843,7 @@ void DiffusionSolverFE_OpenCL::CreateKernel(){
 	kernelUniDiff = clCreateKernel(program, kernelName.c_str(), &err);
 	printf("clCreateKernel for kernelUniDiff %s: %s\n", kernelName.c_str(), oclHelper->ErrorString(err));
 	ASSERT_OR_THROW("Can not create a kernelUniDiff", err==CL_SUCCESS);
-    
+
     
     kernelBoundaryConditionInit = clCreateKernel(program, "boundaryConditionInitKernel" , &err);
 	printf("clCreateKernel for kernel %s: %s\n", "boundaryConditionInitKernel" , oclHelper->ErrorString(err));

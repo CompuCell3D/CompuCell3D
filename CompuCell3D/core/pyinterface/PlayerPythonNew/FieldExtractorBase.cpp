@@ -123,19 +123,35 @@ std::vector<int> FieldExtractorBase::dimOrder(std::string _plane){
 }
 
 Coordinates3D<double> FieldExtractorBase::HexCoordXY(unsigned int x,unsigned int y,unsigned int z){
+    //coppied from BoundaryStrategy.cpp HexCoord fcn
+   if((z%3)==1){//odd z e.g. z=1
 
-	if(z%2){//odd z
-		if(y%2)//odd
-			return Coordinates3D<double>(x , sqrt(3.0)/2.0*(y+2.0/3.0), z*sqrt(6.0)/3.0 );
-		else//#even
-			return Coordinates3D<double>( x+0.5 ,  sqrt(3.0)/2.0*(y+2.0/3.0) , z*sqrt(6.0)/3.0);
-	}
-	else{
-		if(y%2)//#odd
-			return Coordinates3D<double>(x , sqrt(3.0)/2.0*y, z*sqrt(6.0)/3.0 );
-		else//even
-			return Coordinates3D<double>( x+0.5 ,  sqrt(3.0)/2.0*y , z*sqrt(6.0)/3.0);
-	}
+      if(y%2)
+         return Coordinates3D<double>(x+0.5 , sqrt(3.0)/2.0*(y+2.0/6.0), z*sqrt(6.0)/3.0);
+      else//even
+         return Coordinates3D<double>( x ,  sqrt(3.0)/2.0*(y+2.0/6.0) , z*sqrt(6.0)/3.0);
+
+
+   }else if((z%3)==2){ //e.g. z=2
+
+
+      if(y%2)
+         return Coordinates3D<double>(x+0.5 , sqrt(3.0)/2.0*(y-2.0/6.0), z*sqrt(6.0)/3.0);
+      else//even
+         return Coordinates3D<double>( x ,  sqrt(3.0)/2.0*(y-2.0/6.0) , z*sqrt(6.0)/3.0);
+
+
+
+
+   }
+   else{//z divible by 3 - includes z=0
+      if(y%2)
+         return Coordinates3D<double>(x , sqrt(3.0)/2.0*y, z*sqrt(6.0)/3.0);
+      else//even
+         return Coordinates3D<double>( x+0.5 ,  sqrt(3.0)/2.0*y , z*sqrt(6.0)/3.0);
+   }
+
+
 }
 
 void FieldExtractorBase::fillCellFieldData2D(long _cellTypeArrayAddr , std::string _plane ,  int _pos){}

@@ -422,7 +422,7 @@ __kernel void boundaryConditionInitLatticeCornersKernel( __global float* g_field
                 g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+2,z,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(1,gid_y+2,z,0))];
             }
         }       
-    }else{ // this part of bc init for hex lattice does not fully make sense but is equivalent to CPU code thus for now , to have two codes behave in similar fashio I keep it like that
+    }else{ // this part of bc init for hex lattice does not fully make sense but is equivalent to CPU code thus for now , to have two codes behave in similar fashion I keep it like that
         if (gid_x==0 && gid_y==0 && gid_z==0){
             if (bcSpecifier->planePositions[MIN_X]==CONSTANT_VALUE){    
             
@@ -647,9 +647,20 @@ __kernel void boundaryConditionInitLatticeCornersKernel( __global float* g_field
 }              
 
 
+__kernel void myKernel(__global float* g_field, __global UniSolverParams_t  const *solverParams, __global BCSpecifier  const *bcSpecifier) 
+{                
+    int bx=get_group_id(0);
+    int by=get_group_id(1);
+    int bz=get_group_id(2);
+}
 
-__kernel void boundaryConditionInitKernel( __global float* g_field, __global UniSolverParams_t  const *solverParams, __global BCSpecifier  const *bcSpecifier)              
+
+
+__kernel void boundaryConditionInitKernel( __global float* g_field, __global UniSolverParams_t  const *solverParams, __global BCSpecifier  const *bcSpecifier)           
+
 {
+
+    
     
     int bx=get_group_id(0);
     int by=get_group_id(1);
@@ -697,6 +708,10 @@ __kernel void boundaryConditionInitKernel( __global float* g_field, __global Uni
         // X axis
     float deltaX=solverParams->dx;    
     
+    // g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+1,0))]=bcSpecifier->values[MIN_X];
+    // return;
+    // bcSpecifier->planePositions[MAX_X];
+    // return;
     //x- axis
     if (bcSpecifier->planePositions[MIN_X] == PERIODIC|| bcSpecifier->planePositions[MAX_X]==PERIODIC){
         
@@ -725,7 +740,7 @@ __kernel void boundaryConditionInitKernel( __global float* g_field, __global Uni
         
         else if (gid_x==g_dim.x-1){ 
             if (bcSpecifier->planePositions[MAX_X]==CONSTANT_VALUE){    
-                g_field[ext3DIndToLinear(g_dim, (int4)(g_dim.x,gid_y+1,gid_z+1,0))]=bcSpecifier->values[MAX_X];
+                g_field[ext3DIndToLinear(g_dim, (int4)(g_dim.x+1,gid_y+1,gid_z+1,0))]=bcSpecifier->values[MAX_X];
                 
             }else if (bcSpecifier->planePositions[MAX_X]==CONSTANT_DERIVATIVE){ 
                 g_field[ext3DIndToLinear(g_dim, (int4)(g_dim.x+1 , gid_y+1,gid_z+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(g_dim.x , gid_y+1,gid_z+1,0))]+bcSpecifier->values[MAX_X]*deltaX;
@@ -814,6 +829,7 @@ __kernel void uniDiff(__global float* g_field,
 	float dt
     )    
 {
+    
     int bx=get_group_id(0);
     int by=get_group_id(1);
     int bz=get_group_id(2);
@@ -863,15 +879,15 @@ __kernel void uniDiff(__global float* g_field,
     if(solverParams->hexLattice){
         //this part is slow - essentially we do unnecessary multiple copies of data but the code is simple to uinderstand. I tried doing series of if-else statements in addition to copying faces but this always resulted in runtime-error. 
         // I leave it in it for now, maybe later I can debug it better
+        int4 corner_offset1[26]={(int4)(1,0,0,0) , (int4)(1,1,0,0) , (int4)(0,1,0,0) , (int4)(-1,1,0,0) , (int4)(-1,0,0,0) , (int4)(-1,-1,0,0) , (int4)(0,-1,0,0) , (int4)(1,-1,0,0),
+        (int4)(1,0,1,0) , (int4)(1,1,1,0) , (int4)(0,1,1,0) , (int4)(-1,1,1,0) , (int4)(-1,0,1,0) , (int4)(-1,-1,1,0) , (int4)(0,-1,1,0) , (int4)(1,-1,1,0) , (int4)(0,0,1,0),
+        (int4)(1,0,-1,0) , (int4)(1,1,-1,0) , (int4)(0,1,-1,0) , (int4)(-1,1,-1,0) , (int4)(-1,0,-1,0) , (int4)(-1,-1,-1,0) , (int4)(0,-1,-1,0) , (int4)(1,-1,-1,0) , (int4)(0,0,-1,0)         
+        };     
         
         for (int i = 0 ; i < 26 ; ++i){
        
-            int4 corner_offset1[26]={(int4)(1,0,0,0) , (int4)(1,1,0,0) , (int4)(0,1,0,0) , (int4)(-1,1,0,0) , (int4)(-1,0,0,0) , (int4)(-1,-1,0,0) , (int4)(0,-1,0,0) , (int4)(1,-1,0,0),
-            (int4)(1,0,1,0) , (int4)(1,1,1,0) , (int4)(0,1,1,0) , (int4)(-1,1,1,0) , (int4)(-1,0,1,0) , (int4)(-1,-1,1,0) , (int4)(0,-1,1,0) , (int4)(1,-1,1,0) , (int4)(0,0,1,0),
-            (int4)(1,0,-1,0) , (int4)(1,1,-1,0) , (int4)(0,1,-1,0) , (int4)(-1,1,-1,0) , (int4)(-1,0,-1,0) , (int4)(-1,-1,-1,0) , (int4)(0,-1,-1,0) , (int4)(1,-1,-1,0) , (int4)(0,0,-1,0)
-            };     
-            
             l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+1,0) + corner_offset1[i] ) ]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+1,0) + corner_offset1[i])];
+            l_cellType[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+1,0) + corner_offset1[i] ) ]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+1,0) + corner_offset1[i])];
             // barrier(CLK_LOCAL_MEM_FENCE);     
         }    
         
@@ -880,28 +896,34 @@ __kernel void uniDiff(__global float* g_field,
         //copying faces
         if (tx==0){
             l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+1,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+1,gid_z+1,0))];  //central pixel                      
+            l_cellType[ext3DIndToLinear(l_dim, (int4)(tx,ty+1,tz+1,0))]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+1,gid_z+1,0))];  //central pixel                      
         }
         
         if (tx==l_dim_x-1){
             l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+1,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+1,gid_z+1,0))];        
+            l_cellType[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+1,tz+1,0))]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+1,gid_z+1,0))];        
         }
         
       
         if (ty==0){
-            l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y,gid_z+1,0))];        
+            l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y,gid_z+1,0))];
+            l_cellType[ext3DIndToLinear(l_dim, (int4)(tx+1,ty,tz+1,0))]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y,gid_z+1,0))];
         }
         
       
         if (ty==l_dim_y-1){
             l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+2,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+2,gid_z+1,0))];
+            l_cellType[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+2,tz+1,0))]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+2,gid_z+1,0))];
         }
       
         if (tz==0){
             l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z,0))];
+            l_cellType[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz,0))]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z,0))];
         }
       
         if (tz==l_dim_z-1){
             l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+2,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+2,0))];
+            l_cellType[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+2,0))]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+2,0))];
         }
     }    
     
@@ -910,7 +932,7 @@ __kernel void uniDiff(__global float* g_field,
     
 	float currentConcentration=l_field[l_linearInd];
 	float concentrationSum=0.f;
-      
+        
     // // // return;        
     
 	if(solverParams->hexLattice){
@@ -929,7 +951,6 @@ __kernel void uniDiff(__global float* g_field,
 		concentrationSum-=solverParams->nbhdConcLen*currentConcentration;
 	}
     
-
 	
 	unsigned char curentCelltype=l_cellType[l_linearInd];
 	float currentDiffCoef=solverParams->diffCoef[curentCelltype];
@@ -954,6 +975,8 @@ __kernel void uniDiff(__global float* g_field,
 	float dt_dx2=dt/dx2;
 
     float scratch=dt_dx2*(concentrationSum+varDiffSumTerm)+(1.f-dt*solverParams->decayCoef[curentCelltype])*currentConcentration;
+    
+        
     
     g_scratch[g_linearInd]=scratch;
             

@@ -245,7 +245,10 @@ public:
 
 protected:
 	virtual void Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant);
-
+    
+    virtual void prepCellTypeField(int idx);
+    virtual Dim3D getInternalDim();
+    
 	//if an array used for storing has an extra boundary layer around it
 	virtual bool hasExtraLayer()const;
 

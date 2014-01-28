@@ -682,6 +682,143 @@ bool DiffusionSolverFE<Cruncher>::isBoudaryRegion(int x, int y, int z, Dim3D dim
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
+Dim3D DiffusionSolverFE<Cruncher>::getInternalDim(){
+    return Dim3D();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template <class Cruncher>
+void DiffusionSolverFE<Cruncher>::prepCellTypeField(int idx){
+
+    // here we set up cellTypeArray boundaries
+    Array3DCUDA<unsigned char> & cellTypeArray= *h_celltype_field;   
+    BoundaryConditionSpecifier & bcSpec=bcSpecVec[idx];
+    int numberOfIters=1;
+    
+    // for (int i = 0 ; i < 6 ; ++i){
+        // cerr<<"PREP planePositions["<<i<<"]="<<bcSpec.planePositions[i] <<endl;
+        // cerr<<"PREP values["<<i<<"]="<<bcSpec.values[i] <<endl;
+        
+    // }  
+    // cerr<<"PREP workFieldDim="<<workFieldDim<<endl;
+    // cerr<<"PREP fieldDim="<<fieldDim<<endl;
+    
+    if (static_cast<Cruncher*>(this)->getBoundaryStrategy()->getLatticeType() == HEXAGONAL_LATTICE ){ //for hex lattice we need two passes to correctly initialize lattice corners
+        numberOfIters=2;
+    }    
+    
+    Dim3D workFieldDimInternal=getInternalDim();
+    
+    for (int iter = 0 ; iter < numberOfIters ; ++iter){
+        if(periodicBoundaryCheckVector[0] || bcSpec.planePositions[0]==BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[1]==BoundaryConditionSpecifier::PERIODIC){
+            //x - periodic
+            int x=0;
+            for(int y=0 ; y< workFieldDimInternal.y-1; ++y)
+                for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
+                    
+                    cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(fieldDim.x,y,z));                    
+                }
+
+                x=fieldDim.x+1;
+                for(int y=0 ; y< workFieldDimInternal.y-1; ++y)
+                    for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
+                        
+                        cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(1,y,z));
+                    }    
+                    
+        }else{
+            int x=0;
+            for(int y=0 ; y< workFieldDimInternal.y-1; ++y)
+                for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
+                    cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x+1,y,z));
+                }
+
+                x=fieldDim.x+1;
+                for(int y=0 ; y< workFieldDimInternal.y-1; ++y)
+                    for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
+                        cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x-1,y,z));
+                    }    
+        
+        }
+        
+        if(periodicBoundaryCheckVector[1] || bcSpec.planePositions[2]==BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[3]==BoundaryConditionSpecifier::PERIODIC){
+            int y=0;
+            for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
+                for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){                
+                    cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,fieldDim.y,z));
+                }
+
+                y=fieldDim.y+1;
+                for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
+                    for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
+                        cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,1,z));
+                    }    
+        }else{
+            int y=0;
+            for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
+                for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){                
+                    cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y+1,z));
+                }
+
+                y=fieldDim.y+1;
+                for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
+                    for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
+                        cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y-1,z));
+                    }    
+        }
+        
+        if(periodicBoundaryCheckVector[2] || bcSpec.planePositions[4]==BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[5]==BoundaryConditionSpecifier::PERIODIC){    
+        
+            int z=0;
+            for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
+                for(int y=0 ; y<workFieldDimInternal.y-1 ; ++y){                
+                    cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,fieldDim.z));
+                }
+
+                z=fieldDim.z+1;
+                for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
+                    for(int y=0 ; y<workFieldDimInternal.y-1 ; ++y){
+                        cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,1));
+                    }    
+        
+        }else{    
+        
+            int z=0;
+            for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
+                for(int y=0 ; y<workFieldDimInternal.y-1 ; ++y){
+                    cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,z+1));
+                }
+
+                z=fieldDim.z+1;
+                for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
+                    for(int y=0 ; y<workFieldDimInternal.y-1 ; ++y){
+                        cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,z-1));
+                    }    
+        
+        
+        }
+    }
+  
+        
+        
+		// for (int z = 1; z < fieldDim.z+2; z++)
+			// for (int y = 1; y < fieldDim.y+2; y++)
+				// for (int x = 1; x < fieldDim.x+2; x++){
+                    // // if (concentrationField.getDirect(x,y,z) !=0.0){
+                    // // if (x>54 && z >10 && y >8){
+                        // if (cellTypeArray.getDirect(x,y,z)){
+                        // // cerr<<"("<<x<<","<<y<<","<<z<<")="<<concentrationField.getDirect(x,y,z)<<endl;
+                        // cerr<<"PREP cellType("<<x<<","<<y<<","<<z<<")="<<(int)cellTypeArray.getDirect(x,y,z)<<endl;
+                    // }
+                    
+                // }    
+  
+    
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::diffuse() {
 // implemented separately in GPU and CPU code
 
