@@ -27,6 +27,11 @@ FieldExtractorBase::FieldExtractorBase()
 	hexagonVertices.push_back(Coordinates3D<double>(0. , -sqrt_3_3, 0.0));
 	hexagonVertices.push_back(Coordinates3D<double>(-0.5 , -0.5*sqrt_3_3, 0.0));
 	hexagonVertices.push_back(Coordinates3D<double>(-0.5, 0.5*sqrt_3_3, 0.0));
+    
+    cartesianVertices.push_back(Coordinates3D<double>(0.0, 0.0, 0.0));
+    cartesianVertices.push_back(Coordinates3D<double>(0.0, 1.0, 0.0));
+    cartesianVertices.push_back(Coordinates3D<double>(1.0, 1.0, 0.0));
+    cartesianVertices.push_back(Coordinates3D<double>(1.0, 0.0, 0.0));
 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -25,6 +25,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         ## Set up the mappers (2D) for cell vis.
         self.cellsMapper    = vtk.vtkPolyDataMapper()
         self.hexCellsMapper = vtk.vtkPolyDataMapper()
+        self.cartesianCellsMapper = vtk.vtkPolyDataMapper()
         self.borderMapper   = vtk.vtkPolyDataMapper()
         self.borderMapperHex   = vtk.vtkPolyDataMapper()
         self.clusterBorderMapper   = vtk.vtkPolyDataMapper()
@@ -37,6 +38,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         ## Set up the mappers (2D) for concentration field.
         self.conMapper      = vtk.vtkPolyDataMapper()
         self.hexConMapper   = vtk.vtkPolyDataMapper()
+        self.cartesianConMapper   = vtk.vtkPolyDataMapper()
         self.contourMapper  = vtk.vtkPolyDataMapper()
         self.glyphsMapper   = vtk.vtkPolyDataMapper()
         
@@ -402,13 +404,196 @@ class MVCDrawModel2D(MVCDrawModelBase):
         fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillScalarFieldCellLevelData2D") # this is simply a "pointer" to function        
         self.drawScalarFieldData(sim,fieldType,fillScalarField)  # in MVCDrawView2D
         
+    # def drawScalarField(self, sim, fieldType):
+        # print MODULENAME,'  drawScalarField()'
+        # if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
+            # self.drawScalarFieldHex(sim,fieldType)
+            # return        
+        # fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillScalarFieldData2D") # this is simply a "pointer" to function        
+        # self.drawScalarFieldData(sim,fieldType,fillScalarField)  # in MVCDrawView2D
+    
     def drawScalarField(self, sim, fieldType):
-        print MODULENAME,'  drawScalarField()'
+        # print MODULENAME,'  drawScalarField()'
+        # print '\n\n\n\n\n drawScalarField',MODULENAME
         if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
             self.drawScalarFieldHex(sim,fieldType)
             return        
-        fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillScalarFieldData2D") # this is simply a "pointer" to function        
-        self.drawScalarFieldData(sim,fieldType,fillScalarField)  # in MVCDrawView2D
+        fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillConFieldData2D") # this is simply a "pointer" to function        
+        self.drawScalarFieldData(sim,fieldType,fillScalarField)  # in MVCDrawView2D    
+    
+
+    def initializeContoursCartesian(self,_dim,_conArray,_minMax,_contourActor):
+#        print MODULENAME,'   initializeContoursHex():  _conArray=',_conArray
+        data = vtk.vtkImageData()
+        data.SetDimensions(_dim[0], _dim[1], 1)        
+        data.SetScalarTypeToUnsignedChar()      
+        data.GetPointData().SetScalars(_conArray)
+        field = vtk.vtkImageDataGeometryFilter()        
+        # field.SetExtent(0, _dim[0], 0, int((_dim[1])*math.sqrt(3.0)), 0, 0)
+        # field.SetExtent(0, _dim[0], 0, _dim[1]/2, 0, 0)
+        field.SetInput(data)
+        transform = vtk.vtkTransform()
+        # transform.Scale(1,math.sqrt(3.0)/2.0,1)
+        transform.Translate(0.5,0.5,0) # for some reason there is   is offset  of (0.5,0.5,0) when generating contours
+        
+        isoContour = vtk.vtkContourFilter()
+        
+#        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):
+        if True:
+            isoContour.SetInputConnection(field.GetOutputPort())
+            isoContour.GenerateValues(Configuration.getSetting("NumberOfContourLines",self.currentDrawingParameters.fieldName)+2, _minMax)
+            
+            tpd1 = vtk.vtkTransformPolyDataFilter()
+            tpd1.SetInputConnection(isoContour.GetOutputPort())
+            tpd1.SetTransform(transform)
+            
+            # self.contourMapper.SetInputConnection(contour.GetOutputPort())
+            self.contourMapper.SetInputConnection(tpd1.GetOutputPort())
+            self.contourMapper.SetLookupTable(self.ctlut)
+            self.contourMapper.SetScalarRange(_minMax) 
+            self.contourMapper.ScalarVisibilityOff()
+            _contourActor.SetMapper(self.contourMapper)
+    
+    
+    # def initScalarFieldCartesianActors(self,_actors):
+    def initScalarFieldCartesianActors(self, _fillScalarField,_actors):    
+            
+        # cellField  = sim.getPotts().getCellFieldG()
+        # conField   = CompuCell.getConcentrationField(sim, fieldType[0]) 
+        conFieldName = self.currentDrawingParameters.fieldName       
+        # print MODULENAME,'   initScalarFieldHexActors():  conFieldName=',conFieldName
+        
+        # # # print "drawing plane ",self.plane," planePos=",self.planePos
+        fieldDim = self.currentDrawingParameters.bsd.fieldDim
+        dimOrder    = self.dimOrder(self.currentDrawingParameters.plane)
+        self.dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]         
+            
+        self.conArray = vtk.vtkDoubleArray()
+        self.conArray.SetName("concentration")
+        self.conArrayIntAddr=self.extractAddressIntFromVtkObject(self.conArray)
+        self.cartesianPointsCon = vtk.vtkPoints()
+        # self.hexPoints.SetName("hexpoints")
+        self.cartesianPointsConIntAddr=self.extractAddressIntFromVtkObject(self.cartesianPointsCon)
+        
+        # ***************************************************************************    
+        self.cartesianCellsCon=vtk.vtkCellArray()
+		
+        self.cartesianCellsConIntAddr=self.extractAddressIntFromVtkObject(self.cartesianCellsCon)
+		
+        self.cartesianCellsConPolyData=vtk.vtkPolyData()
+        
+        # *************************************************************************** 
+        # # # fillSuccessful=self.parentWidget.fieldExtractor.fillConFieldData2DCartesian(self.conArrayIntAddr,self.cartesianCellsConIntAddr,self.cartesianPointsConIntAddr,conFieldName,self.currentDrawingParameters.plane, self.currentDrawingParameters.planePos)             
+        
+        fillSuccessful=_fillScalarField(self.conArrayIntAddr,self.cartesianCellsConIntAddr,self.cartesianPointsConIntAddr,conFieldName,self.currentDrawingParameters.plane, self.currentDrawingParameters.planePos)                     
+        # print 'fillSuccessful=',fillSuccessful
+        if not fillSuccessful:
+            return
+
+        range=self.conArray.GetRange()
+        self.minCon=range[0]
+        self.maxCon=range[1]
+        dim_0=self.dim[0]+1
+        dim_1=self.dim[1]+1
+        
+        if Configuration.getSetting("MinRangeFixed",self.currentDrawingParameters.fieldName):
+            self.minCon=Configuration.getSetting("MinRange",self.currentDrawingParameters.fieldName)            
+                        
+        if Configuration.getSetting("MaxRangeFixed",self.currentDrawingParameters.fieldName):
+            self.maxCon=Configuration.getSetting("MaxRange",self.currentDrawingParameters.fieldName)
+        
+#        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):
+        if True:
+            contourActor=_actors[1]
+            self.initializeContoursCartesian([self.dim[0], self.dim[1]],self.conArray,[self.minCon, self.maxCon],contourActor)        
+            
+
+        self.cartesianCellsConPolyData.GetCellData().SetScalars(self.conArray)
+        self.cartesianCellsConPolyData.SetPoints(self.cartesianPointsCon)
+        self.cartesianCellsConPolyData.SetPolys(self.cartesianCellsCon)
+		
+        self.conMapper.SetInput(self.cartesianCellsConPolyData)
+        self.conMapper.ScalarVisibilityOn()
+        self.conMapper.SetLookupTable(self.clut)
+        self.conMapper.SetScalarRange(self.minCon, self.maxCon)
+        
+        _actors[0].SetMapper(self.conMapper)        
+    
+        # # concentration contours
+        # numIsos = Configuration.getSetting("NumberOfContourLines",conFieldName)
+        # dim_0 = self.dim[0]+1
+        # dim_1 = self.dim[1]+1
+
+        # data = vtk.vtkImageData()
+        # data.SetDimensions(dim_0, dim_1, 1)
+        # # print "dim_0,dim_1",(dim_0,dim_1)
+        # data.SetScalarTypeToUnsignedChar()      
+        # data.GetPointData().SetScalars(self.conArray)
+        
+        # field = vtk.vtkImageDataGeometryFilter()
+        # field.SetInput(data)
+        # field.SetExtent(0, dim_0, 0, dim_1, 0, 0)
+        
+# #        spoints = vtk.vtkStructuredPoints()
+# #        spoints.SetDimensions(self.dim[0]+2, self.dim[1]+2, self.dim[2]+2)  #  only add 2 if we're filling in an extra boundary (rf. FieldExtractor.cpp)
+# #        spoints.GetPointData().SetScalars(self.conArray)
+        
+# #        voi = vtk.vtkExtractVOI()
+# #        voi.SetInput(spoints)
+# #        voi.SetVOI(1,self.dim[0]-1, 1,self.dim[1]-1, 1,self.dim[2]-1 )
+        
+        # isoContour = vtk.vtkContourFilter()
+# #        isoContour.SetInputConnection(voi.GetOutputPort())
+        # isoContour.SetInputConnection(field.GetOutputPort())
+
+        
+        # isoValList = self.getIsoValues(conFieldName)
+# #        print MODULENAME, 'initScalarFieldActors():  getIsoValues=',isoValList
+        
+        # printIsoValues = False
+# #        if printIsoValues:  print MODULENAME, ' isovalues= ',
+        # isoNum = 0
+        # for isoVal in isoValList:
+            # try:
+                # if printIsoValues:  print MODULENAME, '  initScalarFieldActors(): setting (specific) isoval= ',isoVal
+                # isoContour.SetValue(isoNum, isoVal)
+                # isoNum += 1
+            # except:
+                # print MODULENAME, '  initScalarFieldDataActors(): cannot convert to float: ',self.isovalStr[idx]
+        # if isoNum > 0:  isoNum += 1
+# #        print MODULENAME, '  after specific isovalues, isoNum=',isoNum
+# #        numIsos = Configuration.getSetting("NumberOfContourLines")
+# #        print MODULENAME, '  Next, do range of isovalues: min,max, # isos=',self.minCon,self.maxCon,numIsos
+        # delIso = (self.maxCon - self.minCon)/(numIsos+1)  # exclude the min,max for isovalues
+# #        print MODULENAME, '  initScalarFieldActors(): delIso= ',delIso
+        # isoVal = self.minCon + delIso
+        # for idx in xrange(numIsos):
+            # if printIsoValues:  print MODULENAME, '  initScalarFieldDataActors(): isoNum, isoval= ',isoNum,isoVal
+            # isoContour.SetValue(isoNum, isoVal)
+            # isoNum += 1
+            # isoVal += delIso
+        # if printIsoValues:  print 
+        
+        
+        # isoContour.SetInputConnection(field.GetOutputPort())  # rwh?
+# #        isoContour.GenerateValues(Configuration.getSetting("NumberOfContourLines",self.currentDrawingParameters.fieldName)+2, [self.minCon, self.maxCon])
+
+        # self.contourMapper.SetInputConnection(isoContour.GetOutputPort())
+        # self.contourMapper.SetLookupTable(self.ctlut)
+        # self.contourMapper.SetScalarRange(self.minCon, self.maxCon)
+        # self.contourMapper.ScalarVisibilityOff()  # this is required to do a SetColor on the actor's property
+# #            print MODULENAME,' initScalarFieldActors:  setColor=1,0,0'
+# #            contourActor.GetProperty().SetColor(1.,0.,0.)
+# #        if Configuration.getSetting("ContoursOn",conFieldName):
+        # contourActor = _actors[1]
+        # contourActor.SetMapper(self.contourMapper)
+        
+        # color = Configuration.getSetting("ContourColor")  # want to avoid this; only update when Prefs changes
+        # contourActor.GetProperty().SetColor(float(color.red())/255, float(color.green())/255, float(color.blue())/255)
+
+    
+    
+    
     
     
     def initScalarFieldActors(self, _fillScalarField,_actors):

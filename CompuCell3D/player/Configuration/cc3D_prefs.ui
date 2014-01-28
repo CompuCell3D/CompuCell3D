@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>656</width>
-    <height>570</height>
+    <width>554</width>
+    <height>454</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -817,6 +817,25 @@
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_15">
+           <item>
+            <widget class="QGroupBox" name="groupBox_6">
+             <property name="title">
+              <string>General properties</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_19">
+              <item>
+               <widget class="QCheckBox" name="pixelizedScalarFieldCB">
+                <property name="toolTip">
+                 <string>Checking this box will cause cartesian concentration field in 2D be drawn using explicit pixels providing &quot;exact&quot; representation of the field. Unchecked box will mean that field will be smoothed. </string>
+                </property>
+                <property name="text">
+                 <string>Pixelized scalar plot (&quot;exact&quot;)</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_6">
              <item>

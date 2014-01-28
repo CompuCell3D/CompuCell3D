@@ -47,6 +47,7 @@ class Configuration():
         defaultConfigs["GraphicsWinHeight"] = 400; paramTypeInt.append("GraphicsWinHeight")
         defaultConfigs["UseInternalConsole"] = False; paramTypeBool.append("UseInternalConsole")
         defaultConfigs["ClosePlayerAfterSimulationDone"] = False; paramTypeBool.append("ClosePlayerAfterSimulationDone")
+        
         # defaultConfigs["ProjectLocation"] = QString(os.path.join(os.path.expanduser('~'),'CC3DProjects')); paramTypeString.append("ProjectLocation")
         defaultConfigs["ProjectLocation"] = QString(os.path.join(environ['PREFIX_CC3D'],'Demos')); paramTypeString.append("ProjectLocation")
         
@@ -85,6 +86,9 @@ class Configuration():
 
 
         # Field tab (combines what used to be Colormap tab and Vectors tab)
+        
+        defaultConfigs["PixelizedScalarField"] = False; paramTypeBool.append("PixelizedScalarField")
+        
         defaultConfigs["FieldIndex"] = 0; paramTypeInt.append("FieldIndex")
         defaultConfigs["MinRange"] = 0.0; paramTypeDouble.append("MinRange")
         defaultConfigs["MinRangeFixed"] = False; paramTypeBool.append("MinRangeFixed")
