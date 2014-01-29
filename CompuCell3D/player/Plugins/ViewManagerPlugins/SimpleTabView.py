@@ -2469,6 +2469,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
 
     def updateSimPrefs(self):
+        
         self.simulation.screenUpdateFrequency = self.__updateScreen
         self.simulation.imageOutputFlag = self.__imageOutput
         self.simulation.screenshotFrequency = self.__shotFrequency
@@ -2477,6 +2478,9 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
 
     def __runSim(self):
+    
+        self.simulation.screenUpdateFrequency = self.__updateScreen # when we run simulation we ensure that self.simulation.screenUpdateFrequency is whatever is written in the settings
+        
 #        print MODULENAME,'__runSim():  self.__fileName =', self.__fileName
         if  Configuration.getSetting("LatticeOutputOn") and not self.cmlHandlerCreated:
 #            import CompuCellSetup
@@ -2587,7 +2591,9 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         # self.cc3dSender.send()
         
         
-
+        self.simulation.screenUpdateFrequency = 1 # when we step we need to ensure screenUpdateFrequency is 1
+        
+        
         print 'GOT HERE __stepSim'
         print 'self.completedFirstMCS=',self.completedFirstMCS
 
