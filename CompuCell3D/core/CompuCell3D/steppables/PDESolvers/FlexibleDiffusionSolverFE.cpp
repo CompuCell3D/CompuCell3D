@@ -1296,13 +1296,13 @@ void FlexibleDiffusionSolverFE::diffuseSingleField(unsigned int idx){
 
 				}
 
-         float totConc=0.0;       
-		for (int z = minDim.z; z < maxDim.z; z++)
-			for (int y = minDim.y; y < maxDim.y; y++)
-				for (int x = minDim.x; x < maxDim.x; x++){
-					totConc += concentrationField.getDirect(x,y,z);
-                }
-                cerr<<"TOTAL CONCENTRATION FLEXIBLE DIFFUSION SOLVER="<<totConc<<endl;
+         // float totConc=0.0;       
+		// for (int z = minDim.z; z < maxDim.z; z++)
+			// for (int y = minDim.y; y < maxDim.y; y++)
+				// for (int x = minDim.x; x < maxDim.x; x++){
+					// totConc += concentrationField.getDirect(x,y,z);
+                // }
+                // cerr<<"TOTAL CONCENTRATION FLEXIBLE DIFFUSION SOLVER="<<totConc<<endl;
 	}
 		//haveCouplingTerms flag is set only when user defines coupling terms AND does not use extraTimesPerMCS - haveCouplingTerms option is kept only for legacy reasons
 		//it it best to start using ReactionDiffusionSolver instead

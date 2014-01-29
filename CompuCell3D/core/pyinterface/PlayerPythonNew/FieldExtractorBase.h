@@ -72,6 +72,8 @@ namespace CompuCell3D{
 	protected:
 		std::vector<Coordinates3D<double> > hexagonVertices;
         std::vector<Coordinates3D<double> > cartesianVertices;
+        
+        
 
 	};
 };

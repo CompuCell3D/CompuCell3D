@@ -73,7 +73,7 @@ class Settings():
 
         self.concentrationLimitsOn    = settings.value("/concentrationLimitsOn",  QVariant(False)).toBool()
         self.contoursOn     = settings.value("/contoursOn",             QVariant(False)).toBool()
-        self.numberOfContourLines,ok     = settings.value("/numberOfContourLines",             QVariant(5)).toInt()
+        self.numberOfContourLines,ok     = settings.value("/numberOfContourLines",             QVariant(0)).toInt()
         self.curFile        = settings.value("/recentFile",             QVariant("cellsort_2D.xml")).toString()
         self.useXMLFileFlag = settings.value("/useXMLFileFlag",         QVariant(False)).toBool()
         self.fileXML        = settings.value("/fileXML",                QVariant("cellsort_2D.xml")).toString()

@@ -2412,7 +2412,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.simulation.drawMutex.lock()
         # will need to sync screenshots with simulation thread. Be sure before simulation thread writes new results all the screenshots are taken
 
-        print MODULENAME, 'handleCompletedStepRegular():  __shotFrequency, __imageOutput = ',self.__shotFrequency,self.__imageOutput
+        # print MODULENAME, 'handleCompletedStepRegular():  __shotFrequency, __imageOutput = ',self.__shotFrequency,self.__imageOutput
 
         if self.__imageOutput and not (self.__step % self.__shotFrequency):  # dumping images? Check modulo MCS #
             mcsFormattedNumber = string.zfill(str(self.__step),self.screenshotNumberOfDigits) # fills string wtih 0's up to self.screenshotNumberOfDigits width

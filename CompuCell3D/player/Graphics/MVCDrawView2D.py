@@ -684,6 +684,7 @@ class MVCDrawView2D(MVCDrawViewBase):
         # Perhaps there is switch in vtkImageDataGeometryFilter or related vtk object that will draw nice pixels but for now we are sticking with this somewhat repetitive code             
             self.drawModel.initScalarFieldCartesianActors(_fillScalarField,(self.conActor,self.contourActor,))
         else:   
+            print 'DRAWING SCALAR FIELD DATA'
             self.drawModel.initScalarFieldActors(_fillScalarField,(self.conActor,self.contourActor,))
         
         if not self.currentActors.has_key("ConActor"):

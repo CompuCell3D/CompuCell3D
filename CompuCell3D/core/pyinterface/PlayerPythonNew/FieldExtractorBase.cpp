@@ -33,6 +33,7 @@ FieldExtractorBase::FieldExtractorBase()
     cartesianVertices.push_back(Coordinates3D<double>(1.0, 1.0, 0.0));
     cartesianVertices.push_back(Coordinates3D<double>(1.0, 0.0, 0.0));
 
+
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FieldExtractorBase::~FieldExtractorBase(){

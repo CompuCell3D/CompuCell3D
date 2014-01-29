@@ -100,7 +100,7 @@ class Configuration():
         defaultConfigs["LegendEnable"] = True; paramTypeBool.append("LegendEnable")
         
         defaultConfigs["ScalarIsoValues"] = QString(" "); paramTypeString.append("ScalarIsoValues")
-        defaultConfigs["NumberOfContourLines"] = 5; paramTypeInt.append("NumberOfContourLines")
+        defaultConfigs["NumberOfContourLines"] = 0; paramTypeInt.append("NumberOfContourLines")
 #        defaultConfigs["ContoursOn"] = False; paramTypeBool.append("ContoursOn")
         
         
@@ -338,7 +338,9 @@ def getSetting(_key, fieldName=None):  # we append an optional fieldName now to 
 
                     fieldDictNew[str(key)] = dictVals
                     knt += 1
-
+                    
+                # print 'fieldDictNew=',fieldDictNew    
+                
                 return fieldDictNew
             else:
                 fieldDict = Configuration.defaultConfigs[_key]

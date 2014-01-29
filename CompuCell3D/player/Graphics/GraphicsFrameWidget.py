@@ -427,8 +427,8 @@ class GraphicsFrameWidget(QtGui.QFrame):
             self.xyPlane = val
 #            self.projSpinBox.setValue(val)
 #            print ' _projSpinBoxChanged: set xy val=',val
-            print 'self.currentDrawingObject=',self.currentDrawingObject
-            print 'self.draw2D=',self.draw2D
+            # print 'self.currentDrawingObject=',self.currentDrawingObject
+            # print 'self.draw2D=',self.draw2D
             
             self.currentDrawingObject.setPlane(self.currentProjection, self.xyPlane)
 #            self.parentWidget._drawField()
@@ -676,7 +676,7 @@ class GraphicsFrameWidget(QtGui.QFrame):
     # we need to reimplement closeEvent
     # def close(self):           
     def closeEvent(self,ev):
-        print '\n\n\n closeEvent GRAPHICS FRAME'
+        # print '\n\n\n closeEvent GRAPHICS FRAME'
         
         # cleaning up to release memory - notice that if we do not do this cleanup this widget will not be destroyed and will take sizeable portion of the memory 
         # not a big deal for a single simulation but repeated runs can easily exhaust all system memory
@@ -700,7 +700,7 @@ class GraphicsFrameWidget(QtGui.QFrame):
         
         self.drawModel3D = None
         self.draw3D = None
-        print 'self.currentDrawingObject=',self.currentDrawingObject
+        # print 'self.currentDrawingObject=',self.currentDrawingObject
         
         self.currentDrawingObject=None
         
@@ -714,8 +714,8 @@ class GraphicsFrameWidget(QtGui.QFrame):
         self.fieldTypes=None            
         
         self.parentWidget.removeWindowWidgetFromRegistry(self)
-        print 'AFTER CLOSE GFW self.graphicsWindowDict=',self.parentWidget.graphicsWindowDict 
-        print 'self.windowDict=',self.parentWidget.windowDict        
+        # print 'AFTER CLOSE GFW self.graphicsWindowDict=',self.parentWidget.graphicsWindowDict 
+        # print 'self.windowDict=',self.parentWidget.windowDict        
         
         self.parentWidget=None
         

@@ -183,8 +183,19 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # field.SetExtent(0, _dim[0], 0, _dim[1]/2, 0, 0)
         field.SetInput(data)
         transform = vtk.vtkTransform()
+        # transform.Scale(1,math.sqrt(3.0)/2.0,1)
+        # transform.Translate(0,math.sqrt(3.0)/2.0,0)
+        
+        
         transform.Scale(1,math.sqrt(3.0)/2.0,1)
-        transform.Translate(0,math.sqrt(3.0)/2.0,0)
+        if self.currentDrawingParameters.planePos % 3 == 0:
+            transform.Translate(0.5,0,0) #z%3==0
+        elif self.currentDrawingParameters.planePos % 3 == 1:   
+            transform.Translate(0,math.sqrt(3.0)/4.0,0)#z%3==1
+        else:    
+            transform.Translate(0.0,-math.sqrt(3.0)/4.0,0) #z%3==2
+        
+        
         
         isoContour = vtk.vtkContourFilter()
         
@@ -495,6 +506,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.maxCon=range[1]
         dim_0=self.dim[0]+1
         dim_1=self.dim[1]+1
+                
         
         if Configuration.getSetting("MinRangeFixed",self.currentDrawingParameters.fieldName):
             self.minCon=Configuration.getSetting("MinRange",self.currentDrawingParameters.fieldName)            
@@ -518,78 +530,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.conMapper.SetScalarRange(self.minCon, self.maxCon)
         
         _actors[0].SetMapper(self.conMapper)        
-    
-        # # concentration contours
-        # numIsos = Configuration.getSetting("NumberOfContourLines",conFieldName)
-        # dim_0 = self.dim[0]+1
-        # dim_1 = self.dim[1]+1
-
-        # data = vtk.vtkImageData()
-        # data.SetDimensions(dim_0, dim_1, 1)
-        # # print "dim_0,dim_1",(dim_0,dim_1)
-        # data.SetScalarTypeToUnsignedChar()      
-        # data.GetPointData().SetScalars(self.conArray)
-        
-        # field = vtk.vtkImageDataGeometryFilter()
-        # field.SetInput(data)
-        # field.SetExtent(0, dim_0, 0, dim_1, 0, 0)
-        
-# #        spoints = vtk.vtkStructuredPoints()
-# #        spoints.SetDimensions(self.dim[0]+2, self.dim[1]+2, self.dim[2]+2)  #  only add 2 if we're filling in an extra boundary (rf. FieldExtractor.cpp)
-# #        spoints.GetPointData().SetScalars(self.conArray)
-        
-# #        voi = vtk.vtkExtractVOI()
-# #        voi.SetInput(spoints)
-# #        voi.SetVOI(1,self.dim[0]-1, 1,self.dim[1]-1, 1,self.dim[2]-1 )
-        
-        # isoContour = vtk.vtkContourFilter()
-# #        isoContour.SetInputConnection(voi.GetOutputPort())
-        # isoContour.SetInputConnection(field.GetOutputPort())
-
-        
-        # isoValList = self.getIsoValues(conFieldName)
-# #        print MODULENAME, 'initScalarFieldActors():  getIsoValues=',isoValList
-        
-        # printIsoValues = False
-# #        if printIsoValues:  print MODULENAME, ' isovalues= ',
-        # isoNum = 0
-        # for isoVal in isoValList:
-            # try:
-                # if printIsoValues:  print MODULENAME, '  initScalarFieldActors(): setting (specific) isoval= ',isoVal
-                # isoContour.SetValue(isoNum, isoVal)
-                # isoNum += 1
-            # except:
-                # print MODULENAME, '  initScalarFieldDataActors(): cannot convert to float: ',self.isovalStr[idx]
-        # if isoNum > 0:  isoNum += 1
-# #        print MODULENAME, '  after specific isovalues, isoNum=',isoNum
-# #        numIsos = Configuration.getSetting("NumberOfContourLines")
-# #        print MODULENAME, '  Next, do range of isovalues: min,max, # isos=',self.minCon,self.maxCon,numIsos
-        # delIso = (self.maxCon - self.minCon)/(numIsos+1)  # exclude the min,max for isovalues
-# #        print MODULENAME, '  initScalarFieldActors(): delIso= ',delIso
-        # isoVal = self.minCon + delIso
-        # for idx in xrange(numIsos):
-            # if printIsoValues:  print MODULENAME, '  initScalarFieldDataActors(): isoNum, isoval= ',isoNum,isoVal
-            # isoContour.SetValue(isoNum, isoVal)
-            # isoNum += 1
-            # isoVal += delIso
-        # if printIsoValues:  print 
-        
-        
-        # isoContour.SetInputConnection(field.GetOutputPort())  # rwh?
-# #        isoContour.GenerateValues(Configuration.getSetting("NumberOfContourLines",self.currentDrawingParameters.fieldName)+2, [self.minCon, self.maxCon])
-
-        # self.contourMapper.SetInputConnection(isoContour.GetOutputPort())
-        # self.contourMapper.SetLookupTable(self.ctlut)
-        # self.contourMapper.SetScalarRange(self.minCon, self.maxCon)
-        # self.contourMapper.ScalarVisibilityOff()  # this is required to do a SetColor on the actor's property
-# #            print MODULENAME,' initScalarFieldActors:  setColor=1,0,0'
-# #            contourActor.GetProperty().SetColor(1.,0.,0.)
-# #        if Configuration.getSetting("ContoursOn",conFieldName):
-        # contourActor = _actors[1]
-        # contourActor.SetMapper(self.contourMapper)
-        
-        # color = Configuration.getSetting("ContourColor")  # want to avoid this; only update when Prefs changes
-        # contourActor.GetProperty().SetColor(float(color.red())/255, float(color.green())/255, float(color.blue())/255)
 
     
     
@@ -651,6 +591,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
         dim_0 = self.dim[0]+1
         dim_1 = self.dim[1]+1
 
+        print 'dim_0,dim_1=',(dim_0,dim_1)
+        
         data = vtk.vtkImageData()
         data.SetDimensions(dim_0, dim_1, 1)
         # print "dim_0,dim_1",(dim_0,dim_1)
@@ -720,9 +662,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         
         self.conMapper.SetInputConnection(field.GetOutputPort()) # port index = 0
+        
         self.conMapper.ScalarVisibilityOn()
         self.conMapper.SetLookupTable(self.clut)
         self.conMapper.SetScalarRange(self.minCon, self.maxCon) #0, self.clut.GetNumberOfColors()) # may manually set range so that type reassignment will not be scalled dynamically when one type is missing
+        
         self.conMapper.SetScalarModeToUsePointData()
         
         _actors[0].SetMapper(self.conMapper)   # concentration actor
