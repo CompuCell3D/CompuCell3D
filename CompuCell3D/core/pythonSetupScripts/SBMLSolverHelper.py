@@ -339,7 +339,9 @@ class SBMLSolverHelper(object):
         if not sbmlSimulator:
             return False
         else:
-            
+        
+            if _state==sbmlSimulator.model: # no need to do anything when all the state changes are done on model
+                return True             
             
             for name,value in _state.iteritems():      
                 sbmlSimulator.model[name]=value            
