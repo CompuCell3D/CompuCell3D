@@ -537,7 +537,7 @@ class CC3DXMLGenerator:
                 kdiffSolverElem=self.cc3d.ElementCC3D("Steppable",{"Type":"KernelDiffusionSolver"})
                 
                 for fieldName in fieldNames:
-                    diffFieldElem=kdiffSolverElem.ElementCC3D("DiffusionField")
+                    diffFieldElem=kdiffSolverElem.ElementCC3D("DiffusionField",{"Name":fieldName})
                     diffFieldElem.ElementCC3D("Kernel",{},"4")
                     diffData=diffFieldElem.ElementCC3D("DiffusionData")
                     diffData.ElementCC3D("FieldName",{},fieldName)
@@ -564,7 +564,7 @@ class CC3DXMLGenerator:
                 diffSolverElem=self.cc3d.ElementCC3D("Steppable",{"Type":solver})
                 
                 for fieldName in fieldNames:
-                    diffFieldElem=diffSolverElem.ElementCC3D("DiffusionField")
+                    diffFieldElem=diffSolverElem.ElementCC3D("DiffusionField",{"Name":fieldName})
                     
                     diffData=diffFieldElem.ElementCC3D("DiffusionData")                    
                     diffData.ElementCC3D("FieldName",{},fieldName)
@@ -599,7 +599,7 @@ class CC3DXMLGenerator:
                 diffSolverElem=self.cc3d.ElementCC3D("Steppable",{"Type":solverName})
                 
                 for fieldName in fieldNames:
-                    diffFieldElem=diffSolverElem.ElementCC3D("DiffusionField")
+                    diffFieldElem=diffSolverElem.ElementCC3D("DiffusionField",{"Name":fieldName})
                     
                     diffData=diffFieldElem.ElementCC3D("DiffusionData")                    
                     diffData.ElementCC3D("FieldName",{},fieldName)

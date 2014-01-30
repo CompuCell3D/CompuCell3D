@@ -132,6 +132,45 @@ class CC3DMLGeneratorBase:
         mElement.ElementCC3D("NeighborOrder",{},gpd["NeighborOrder"])   
         if gpd["LatticeType"] != "Square":
             mElement.ElementCC3D("LatticeType",{},gpd["LatticeType"])   
+
+    @GenerateDecorator('Metadata',['',''])        
+    def generateMetadataSimulationProperties(self,*args,**kwds):
+        cellTypeData=self.cellTypeData
+        mElement=self.mElement
+        
+        mElement.addComment("newline")
+        mElement.addComment("Basic properties simulation")        
+        
+        
+        mElement.ElementCC3D("NumberOfProcessors",{},2)
+        mElement.ElementCC3D("DebugOutputFrequency",{},100)        
+        nonParallelElem=mElement.ElementCC3D("NonParallelModule",{"Name":"Potts"})
+        nonParallelElem.commentOutElement()        
+
+    @GenerateDecorator('Metadata',['',''])        
+    def generateMetadataDebugOutputFrequency(self,*args,**kwds):
+        cellTypeData=self.cellTypeData
+        mElement=self.mElement
+
+        mElement.ElementCC3D("DebugOutputFrequency",{},100)        
+        
+
+    @GenerateDecorator('Metadata',['',''])        
+    def generateMetadataParallelExecution(self,*args,**kwds):
+        cellTypeData=self.cellTypeData
+        mElement=self.mElement
+
+        mElement.ElementCC3D("NumberOfProcessors",{},2)   
+
+
+    @GenerateDecorator('Metadata',['',''])        
+    def generateMetadataParallelExecutionSingleCPUPotts(self,*args,**kwds):
+        cellTypeData=self.cellTypeData
+        mElement=self.mElement
+
+        mElement.ElementCC3D("NumberOfProcessors",{},2)   
+        mElement.ElementCC3D("NonParallelModule",{"Name":"Potts"})
+        
             
     @GenerateDecorator('Plugin',['Name','CellType'])         
     def generateCellTypePlugin(self,*args,**kwds):
@@ -1014,7 +1053,7 @@ class CC3DMLGeneratorBase:
 
             if solver=='DiffusionSolverFE':
 
-                diffFieldElem=mElement.ElementCC3D("DiffusionField")
+                diffFieldElem=mElement.ElementCC3D("DiffusionField",{"Name":fieldName})
                 
                 diffData=diffFieldElem.ElementCC3D("DiffusionData")                    
                 diffData.ElementCC3D("FieldName",{},fieldName)
@@ -1119,7 +1158,7 @@ class CC3DMLGeneratorBase:
 
             if solver=='FlexibleDiffusionSolverFE':
 
-                diffFieldElem=mElement.ElementCC3D("DiffusionField")
+                diffFieldElem=mElement.ElementCC3D("DiffusionField",{"Name":fieldName})
                 
                 diffData=diffFieldElem.ElementCC3D("DiffusionData")                    
                 diffData.ElementCC3D("FieldName",{},fieldName)
@@ -1197,7 +1236,7 @@ class CC3DMLGeneratorBase:
 
             if solver=='FastDiffusionSolver2DFE':
 
-                diffFieldElem=mElement.ElementCC3D("DiffusionField")
+                diffFieldElem=mElement.ElementCC3D("DiffusionField",{"Name":fieldName})
                 
                 diffData=diffFieldElem.ElementCC3D("DiffusionData")                    
                 diffData.ElementCC3D("FieldName",{},fieldName)
@@ -1261,7 +1300,7 @@ class CC3DMLGeneratorBase:
 
             if solver=='KernelDiffusionSolver':
 
-                diffFieldElem=mElement.ElementCC3D("DiffusionField")
+                diffFieldElem=mElement.ElementCC3D("DiffusionField",{"Name":fieldName})
                 diffFieldElem.ElementCC3D("Kernel",{},"4")
                 diffData=diffFieldElem.ElementCC3D("DiffusionData")
                 diffData.ElementCC3D("FieldName",{},fieldName)
@@ -1344,7 +1383,7 @@ class CC3DMLGeneratorBase:
 
             if solver=='SteadyStateDiffusionSolver':
 
-                diffFieldElem=mElement.ElementCC3D("DiffusionField")                
+                diffFieldElem=mElement.ElementCC3D("DiffusionField",{"Name":fieldName})              
                 
                 diffData=diffFieldElem.ElementCC3D("DiffusionData")                    
                 diffData.ElementCC3D("FieldName",{},fieldName)

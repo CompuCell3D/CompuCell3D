@@ -146,7 +146,7 @@ class CC3DMLHelper(QObject):
         self.cc3dmlMenuAction=self.__ui.menuBar().insertMenu(self.__ui.fileMenu.menuAction(),self.cc3dmlMenu)
         
     def getActionGroupAssignment(self, _actionName):
-        groupActionListNames=["Plugins","Steppables","Potts"]
+        groupActionListNames=["Plugins","Steppables","Potts","Metadata"]
         actionName=str(_actionName)
         for name in groupActionListNames:
             if actionName.startswith(name):
@@ -161,6 +161,9 @@ class CC3DMLHelper(QObject):
         
         keys=self.snippetDictionary.keys()
         keys.sort()
+        
+
+        
         for key in keys:
             actionGroupName=self.getActionGroupAssignment(key)
 
