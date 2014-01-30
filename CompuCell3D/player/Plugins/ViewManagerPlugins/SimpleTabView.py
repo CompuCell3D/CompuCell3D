@@ -214,7 +214,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         return
 
     def setActiveSubWindowCustomSlot(self, window):
-        print 'INSIDE setActiveSubWindowCustomSlot'
+        # print 'INSIDE setActiveSubWindowCustomSlot'
 #        print MODULENAME,"setActiveSubWindow: window=",window
 #        print MODULENAME,'\n ------------------  setActiveSubWindowCustomSlot():  self.mdiWindowDict =', self.mdiWindowDict
         windowNames = self.plotWindowDict.keys()
@@ -222,7 +222,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 #          print MODULENAME,'     setActiveSubWindowCustomSlot():  windowName=', windowName
             
 #        print 'dir(window)=',dir(window)
-        print 'WINDOW=',window
+        # print 'WINDOW=',window
         
         mdiWindow=self.findMDISubWindowForWidget(window)
         if mdiWindow:
@@ -2873,7 +2873,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
 
         __drawFieldFcn = getattr(self, "drawField" + self.__viewManagerType)
-        # # # print MODULENAME, '__drawField():  calling ',"drawField"+self.__viewManagerType
+        # print MODULENAME, '__drawField():  calling ',"drawField"+self.__viewManagerType
         # time.sleep(5)
         
         
@@ -3379,7 +3379,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 #        print MODULENAME,' showDisplayWidgets'
         
         # This block of code simply checks to see if some plugins assoc'd with Vis are defined
-#        import CompuCellSetup, XMLUtils
+#        import CompuCellSetup, XMLUtils        
         import XMLUtils
 #        print MODULENAME,' dir(XMLUtils)= ',dir(XMLUtils)
         if CompuCellSetup.cc3dXML2ObjConverter != None:
@@ -3444,6 +3444,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             
         if self.borderAct.isChecked():          # Vis menu "Cell Borders" check box
             self.mainGraphicsWindow.showBorder()
+        else:
+            self.mainGraphicsWindow.hideBorder()
             
         if self.clusterBorderAct.isChecked():          # Vis menu "Cluster Borders" check box
             self.mainGraphicsWindow.showClusterBorder()
@@ -3748,17 +3750,44 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.simulation.drawMutex.lock()
         self.updateActiveWindowVisFlags()
         if self.cellsAct.isEnabled():
-            if checked:
-#                if self.mainGraphicsWindow is not None:
-#                    self.mainGraphicsWindow.showCells()
-                if self.lastActiveWindow is not None:
-                    self.lastActiveWindow.showCells()
-#                self.cellsAct.setChecked(True)
-            else:
-#                if self.mainGraphicsWindow is not None:
-#                    self.mainGraphicsWindow.hideCells()
-                if self.lastActiveWindow is not None:
-                    self.lastActiveWindow.hideCells()
+        
+            for windowName, window in self.graphicsWindowDict.iteritems():                
+                try:
+                    if checked:
+                        window.showCells()
+                        self.cellsAct.setChecked(True)
+                    else:
+                        window.hideCells()
+                        self.cellsAct.setChecked(False)
+                except AttributeError,e:
+                    pass
+                self.updateActiveWindowVisFlags(window)    
+            # # # for windowName, window in self.graphicsWindowVisDict.iteritems():
+                # # # print 'showing cells for window ',windowName, 'checked=',checked
+                # # # try:
+                    # # # if checked:
+                        # # # print 'will check cells'
+                        # # # window.showCells()
+                        
+                    # # # else:
+                        # # # window.hideCells()
+                # # # except AttributeError,e:
+                    # # # pass
+                                
+            
+            # # # if checked:
+# # # #                if self.mainGraphicsWindow is not None:
+# # # #                    self.mainGraphicsWindow.showCells()
+                # # # if self.lastActiveWindow is not None:
+                    # # # self.lastActiveWindow.showCells()
+# # # #                self.cellsAct.setChecked(True)
+            # # # else:
+# # # #                if self.mainGraphicsWindow is not None:
+# # # #                    self.mainGraphicsWindow.hideCells()
+                # # # if self.lastActiveWindow is not None:
+                    # # # self.lastActiveWindow.hideCells()
+                    
+                    
 #                self.cellsAct.setChecked(False)
 #        else:
 #            print '======== SimpleTabView.py:  __checkCells, cellsAct NOT Enabled!!'
@@ -3773,17 +3802,32 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.updateActiveWindowVisFlags()
         
         if self.borderAct.isEnabled():
-            if checked:
-#                if self.mainGraphicsWindow is not None:
-                if self.lastActiveWindow is not None:
-#                    print MODULENAME,"  __checkBorder: type(self.lastActiveWindow)=",type(self.lastActiveWindow)
-#                    print MODULENAME,"  __checkBorder: dir(self.lastActiveWindow)=",dir(self.lastActiveWindow)
-                    self.lastActiveWindow.showBorder()
-                self.borderAct.setChecked(True)
-            else:
-                if self.lastActiveWindow is not None:
-                    self.lastActiveWindow.hideBorder()
-                self.borderAct.setChecked(False)
+        
+            for windowName, window in self.graphicsWindowDict.iteritems():    
+                try:
+                    if checked:
+                        window.showBorder()
+                        self.borderAct.setChecked(True)
+                    else:
+                        window.hideBorder()
+                        self.borderAct.setChecked(False)
+                except AttributeError,e:
+                    pass
+        
+                self.updateActiveWindowVisFlags(window)
+            # if checked:
+# #                if self.mainGraphicsWindow is not None:
+                # if self.lastActiveWindow is not None:
+# #                    print MODULENAME,"  __checkBorder: type(self.lastActiveWindow)=",type(self.lastActiveWindow)
+# #                    print MODULENAME,"  __checkBorder: dir(self.lastActiveWindow)=",dir(self.lastActiveWindow)
+                    # self.lastActiveWindow.showBorder()
+                # self.borderAct.setChecked(True)
+            # else:
+                # if self.lastActiveWindow is not None:
+                    # self.lastActiveWindow.hideBorder()
+                # self.borderAct.setChecked(False)
+                
+                
         self.simulation.drawMutex.unlock()
         
         
@@ -3794,14 +3838,33 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
         self.updateActiveWindowVisFlags()
         if self.clusterBorderAct.isEnabled():
-            if checked:
-                if self.lastActiveWindow is not None:
-                    self.lastActiveWindow.showClusterBorder()
-                self.clusterBorderAct.setChecked(True)
-            else:
-                if self.lastActiveWindow is not None:
-                    self.lastActiveWindow.hideClusterBorder()
-                self.clusterBorderAct.setChecked(False)
+
+            for windowName, window in self.graphicsWindowDict.iteritems():                
+                try:
+                    if checked:
+                        window.showClusterBorder()
+                        self.clusterBorderAct.setChecked(True)
+
+                    else:
+                        window.hideClusterBorder()
+                        self.clusterBorderAct.setChecked(False)
+
+                except AttributeError,e:
+                    pass        
+                    
+                self.updateActiveWindowVisFlags(window)                    
+        
+        
+        
+            # # # if checked:
+                # # # if self.lastActiveWindow is not None:
+                    # # # self.lastActiveWindow.showClusterBorder()
+                # # # self.clusterBorderAct.setChecked(True)
+            # # # else:
+                # # # if self.lastActiveWindow is not None:
+                    # # # self.lastActiveWindow.hideClusterBorder()
+                # # # self.clusterBorderAct.setChecked(False)
+                
         self.simulation.drawMutex.unlock()
 
 
@@ -3811,29 +3874,55 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.updateActiveWindowVisFlags()
         
         if self.cellGlyphsAct.isEnabled():
-            if checked:
-                if self.lastActiveWindow is not None:
-                    # Check for CenterOfMass plugin - improve to not even allow glyphs if no CoM
-#                    print MODULENAME,'__checkCellGlyphs(): ---- dir(self.simulation) =', dir(self.simulation)
-#                    print MODULENAME,'__checkCellGlyphs(): ---- self.simulation.children =', self.simulation.children
-#                    print MODULENAME,'---- CoM = ',self.mainGraphicsWindow.drawModel2D.currentDrawingParameters.bsd.sim.getCC3DModuleData("Plugin","CenterOfMass")
-                    if not self.pluginCOMDefined:
-                        QMessageBox.warning(self, "Message", 
-                                        "Warning: You have not defined a CenterOfMass plugin",
-                                        QMessageBox.Ok)
-                        self.cellGlyphsAct.setChecked(False)
-                        Configuration.setSetting("CellGlyphsOn",False)
-
-                        self.simulation.drawMutex.unlock()
-                        return
-                    else:
-                        self.lastActiveWindow.showCellGlyphs()
-                        
-                self.cellGlyphsAct.setChecked(True)
-            else:
-                if self.lastActiveWindow is not None:
-                    self.lastActiveWindow.hideCellGlyphs()
+            if not self.pluginCOMDefined:
+                QMessageBox.warning(self, "Message", 
+                                "Warning: You have not defined a CenterOfMass plugin",
+                                QMessageBox.Ok)
                 self.cellGlyphsAct.setChecked(False)
+                Configuration.setSetting("CellGlyphsOn",False)
+
+                self.simulation.drawMutex.unlock()
+                return        
+        
+            for windowName, window in self.graphicsWindowDict.iteritems():                
+                try:
+                    if checked:
+                        window.showCellGlyphs()
+                        self.cellGlyphsAct.setChecked(True)
+
+                    else:
+                        window.hideCellGlyphs()
+                        self.cellGlyphsAct.setChecked(False)
+
+                except AttributeError,e:
+                    pass              
+        
+                self.updateActiveWindowVisFlags(window)        
+        
+        
+            # # # if checked:
+                # # # if self.lastActiveWindow is not None:
+                    # # # # Check for CenterOfMass plugin - improve to not even allow glyphs if no CoM
+# # # #                    print MODULENAME,'__checkCellGlyphs(): ---- dir(self.simulation) =', dir(self.simulation)
+# # # #                    print MODULENAME,'__checkCellGlyphs(): ---- self.simulation.children =', self.simulation.children
+# # # #                    print MODULENAME,'---- CoM = ',self.mainGraphicsWindow.drawModel2D.currentDrawingParameters.bsd.sim.getCC3DModuleData("Plugin","CenterOfMass")
+                    # # # if not self.pluginCOMDefined:
+                        # # # QMessageBox.warning(self, "Message", 
+                                        # # # "Warning: You have not defined a CenterOfMass plugin",
+                                        # # # QMessageBox.Ok)
+                        # # # self.cellGlyphsAct.setChecked(False)
+                        # # # Configuration.setSetting("CellGlyphsOn",False)
+
+                        # # # self.simulation.drawMutex.unlock()
+                        # # # return
+                    # # # else:
+                        # # # self.lastActiveWindow.showCellGlyphs()
+                        
+                # # # self.cellGlyphsAct.setChecked(True)
+            # # # else:
+                # # # if self.lastActiveWindow is not None:
+                    # # # self.lastActiveWindow.hideCellGlyphs()
+                # # # self.cellGlyphsAct.setChecked(False)
 #        else:
 #            print MODULENAME,'  __checkCellGlyphs, cellGlyphsAct NOT Enabled!!'
         self.simulation.drawMutex.unlock()
@@ -3851,30 +3940,56 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.updateActiveWindowVisFlags()
         
         if self.FPPLinksAct.isEnabled():
-            if checked:
-                if self.lastActiveWindow is not None:
-#                    Check for FPP plugin - improve to not even allow glyphs if no CoM
-#                    print '---- dir(self.simulation) =', dir(self.simulation)
-#                    print MODULENAME,'---- CoM = ',self.mainGraphicsWindow.drawModel2D.currentDrawingParameters.bsd.sim.getCC3DModuleData("Plugin","CenterOfMass")
-#                    print 'dir(self.mainGraphicsWindow)=',dir(self.mainGraphicsWindow)
-                    if not self.pluginFPPDefined:
-                        QMessageBox.warning(self, "Message", 
-                                        "Warning: You have not defined a FocalPointPlasticity plugin",
-                                        QMessageBox.Ok)
-                        self.FPPLinksAct.setChecked(False)
-                        Configuration.setSetting("FPPLinksOn",False)
-
-                        self.simulation.drawMutex.unlock()
-                        return
-                    else:
-                        self.lastActiveWindow.showFPPLinks()
-                        
-                self.FPPLinksAct.setChecked(True)
-            else:
-#                print ' in hide block'
-                if self.lastActiveWindow is not None:
-                    self.lastActiveWindow.hideFPPLinks()
+        
+            if not self.pluginFPPDefined:
+                QMessageBox.warning(self, "Message", 
+                                "Warning: You have not defined a FocalPointPlasticity plugin",
+                                QMessageBox.Ok)
                 self.FPPLinksAct.setChecked(False)
+                Configuration.setSetting("FPPLinksOn",False)
+
+                self.simulation.drawMutex.unlock()
+                return        
+        
+            for windowName, window in self.graphicsWindowDict.iteritems():                
+                try:
+                    if checked:
+                        window.showFPPLinks()
+                        self.FPPLinksAct.setChecked(True)
+
+                    else:
+                        window.hideFPPLinks()
+                        self.FPPLinksAct.setChecked(False)
+
+                except AttributeError,e:
+                    pass             
+        
+                self.updateActiveWindowVisFlags(window)        
+        
+            # # # if checked:
+                # # # if self.lastActiveWindow is not None:
+# # # #                    Check for FPP plugin - improve to not even allow glyphs if no CoM
+# # # #                    print '---- dir(self.simulation) =', dir(self.simulation)
+# # # #                    print MODULENAME,'---- CoM = ',self.mainGraphicsWindow.drawModel2D.currentDrawingParameters.bsd.sim.getCC3DModuleData("Plugin","CenterOfMass")
+# # # #                    print 'dir(self.mainGraphicsWindow)=',dir(self.mainGraphicsWindow)
+                    # # # if not self.pluginFPPDefined:
+                        # # # QMessageBox.warning(self, "Message", 
+                                        # # # "Warning: You have not defined a FocalPointPlasticity plugin",
+                                        # # # QMessageBox.Ok)
+                        # # # self.FPPLinksAct.setChecked(False)
+                        # # # Configuration.setSetting("FPPLinksOn",False)
+
+                        # # # self.simulation.drawMutex.unlock()
+                        # # # return
+                    # # # else:
+                        # # # self.lastActiveWindow.showFPPLinks()
+                        
+                # # # self.FPPLinksAct.setChecked(True)
+            # # # else:
+# # # #                print ' in hide block'
+                # # # if self.lastActiveWindow is not None:
+                    # # # self.lastActiveWindow.hideFPPLinks()
+                # # # self.FPPLinksAct.setChecked(False)
 #        else:
 #            print '======== SimpleTabView.py:  __checkFPPLinks, FPPLinksAct NOT Enabled!!'
         self.simulation.drawMutex.unlock()
@@ -3894,29 +4009,61 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.updateActiveWindowVisFlags()
         
         if self.FPPLinksColorAct.isEnabled():
-            if checked:
-                if self.lastActiveWindow is not None:
-#                    Check for FPP plugin - improve to not even allow glyphs if no CoM
-#                    print '---- dir(self.simulation) =', dir(self.simulation)
-#                    print MODULENAME,'---- CoM = ',self.mainGraphicsWindow.drawModel2D.currentDrawingParameters.bsd.sim.getCC3DModuleData("Plugin","CenterOfMass")
-#                    print 'dir(self.mainGraphicsWindow)=',dir(self.mainGraphicsWindow)
-                    if not self.pluginFPPDefined:
-                        QMessageBox.warning(self, "Message", 
-                                        "Warning: You have not defined a FocalPointPlasticity plugin",
-                                        QMessageBox.Ok)
-                        self.FPPLinksColorAct.setChecked(False)
-                        Configuration.setSetting("FPPLinksColorOn",False)
+        
+            if self.lastActiveWindow is not None:
+    #                    Check for FPP plugin - improve to not even allow glyphs if no CoM
+    #                    print '---- dir(self.simulation) =', dir(self.simulation)
+    #                    print MODULENAME,'---- CoM = ',self.mainGraphicsWindow.drawModel2D.currentDrawingParameters.bsd.sim.getCC3DModuleData("Plugin","CenterOfMass")
+    #                    print 'dir(self.mainGraphicsWindow)=',dir(self.mainGraphicsWindow)
+                if not self.pluginFPPDefined:
+                    QMessageBox.warning(self, "Message", 
+                                    "Warning: You have not defined a FocalPointPlasticity plugin",
+                                    QMessageBox.Ok)
+                    self.FPPLinksColorAct.setChecked(False)
+                    Configuration.setSetting("FPPLinksColorOn",False)
 
-                        self.simulation.drawMutex.unlock()
-                        return
+                    self.simulation.drawMutex.unlock()
+                    return
+        
+        
+            for windowName, window in self.graphicsWindowDict.iteritems():                
+                try:
+                    if checked:
+                        window.showFPPLinksColor()                        
+                        self.FPPLinksColorAct.setChecked(True)
                     else:
-                        self.lastActiveWindow.showFPPLinksColor()
+                        window.hideFPPLinksColor()
+                        self.FPPLinksColorAct.setChecked(False)
+
+                except AttributeError,e:
+                    pass             
+        
+                self.updateActiveWindowVisFlags(window)        
+        
+        
+            # # # if checked:
+                # # # if self.lastActiveWindow is not None:
+# # # #                    Check for FPP plugin - improve to not even allow glyphs if no CoM
+# # # #                    print '---- dir(self.simulation) =', dir(self.simulation)
+# # # #                    print MODULENAME,'---- CoM = ',self.mainGraphicsWindow.drawModel2D.currentDrawingParameters.bsd.sim.getCC3DModuleData("Plugin","CenterOfMass")
+# # # #                    print 'dir(self.mainGraphicsWindow)=',dir(self.mainGraphicsWindow)
+                    # # # if not self.pluginFPPDefined:
+                        # # # QMessageBox.warning(self, "Message", 
+                                        # # # "Warning: You have not defined a FocalPointPlasticity plugin",
+                                        # # # QMessageBox.Ok)
+                        # # # self.FPPLinksColorAct.setChecked(False)
+                        # # # Configuration.setSetting("FPPLinksColorOn",False)
+
+                        # # # self.simulation.drawMutex.unlock()
+                        # # # return
+                    # # # else:
+                        # # # self.lastActiveWindow.showFPPLinksColor()
                         
-                self.FPPLinksColorAct.setChecked(True)
-            else:
-                if self.lastActiveWindow is not None:
-                    self.lastActiveWindow.hideFPPLinksColor()
-                self.FPPLinksColorAct.setChecked(False)
+                # # # self.FPPLinksColorAct.setChecked(True)
+            # # # else:
+                # # # if self.lastActiveWindow is not None:
+                    # # # self.lastActiveWindow.hideFPPLinksColor()
+                # # # self.FPPLinksColorAct.setChecked(False)
 #        else:
 #            print '======== SimpleTabView.py:  __checkFPPLinks, FPPLinksAct NOT Enabled!!'
         self.simulation.drawMutex.unlock()
@@ -3924,14 +4071,31 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
     def __checkContour(self, checked):
         if self.contourAct.isEnabled():
-            if checked:
-                if self.lastActiveWindow is not None:
-                    self.lastActiveWindow.showContours(True)
-                self.contourAct.setChecked(True)
-            else:
-                if self.lastActiveWindow is not None:
-                    self.lastActiveWindow.showContours(False)
-                self.contourAct.setChecked(False)
+
+            for windowName, window in self.graphicsWindowDict.iteritems():                
+                try:
+                    if checked:
+                        window.showContours(True)
+                        self.contourAct.setChecked(True)
+                    else:
+                        windos.showContours(False)
+                        self.contourAct.setChecked(False)
+
+                except AttributeError,e:
+                    pass             
+        
+                self.updateActiveWindowVisFlags(window)  
+
+        
+        
+            # # # if checked:            
+                # # # if self.lastActiveWindow is not None:
+                    # # # self.lastActiveWindow.showContours(True)
+                # # # self.contourAct.setChecked(True)
+            # # # else:
+                # # # if self.lastActiveWindow is not None:
+                    # # # self.lastActiveWindow.showContours(False)
+                # # # self.contourAct.setChecked(False)
 
     def __checkLimits(self, checked):
         pass

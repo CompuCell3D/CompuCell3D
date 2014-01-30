@@ -86,7 +86,7 @@ class MVCDrawView2D(MVCDrawViewBase):
 
     #----------------------------------------------------------------------------
     def showBorder(self):
-        # # # print " SHOW BORDERS self.parentWidget.borderAct.isEnabled()=",self.parentWidget.borderAct.isEnabled()
+        # print " SHOW BORDERS self.parentWidget.borderAct.isEnabled()=",self.parentWidget.borderAct.isEnabled()
         Configuration.setSetting("CellBordersOn",True)
 #        print MODULENAME,' showBorder ============'
         if not self.currentActors.has_key("BorderActor"):
@@ -98,7 +98,7 @@ class MVCDrawView2D(MVCDrawViewBase):
         #self.graphicsFrameWidget.repaint()        
     
     def hideBorder(self):
-#        print MODULENAME,'\n  ==================== hideBorder() ============'
+        # print MODULENAME,'\n\n\n\n\n\n  ==================== hideBorder() ============'
 #        print MODULENAME,' hideBorder():  graphicsFrameWidget.winId(), lastActiveWindow.winId(), ',self.graphicsFrameWidget.winId(),self.parentWidget.lastActiveWindow.winId()
         Configuration.setSetting("CellBordersOn",False)
 #        print MODULENAME,' hideBorder():  self.currentActors.keys()=',self.currentActors.keys()
@@ -107,9 +107,10 @@ class MVCDrawView2D(MVCDrawViewBase):
             del self.currentActors["BorderActor"] 
             self.graphicsFrameWidget.ren.RemoveActor(self.borderActor)
 #            self.parentWidget.lastActiveWindow.ren.RemoveActor(self.borderActor)
+        
         self.Render()
-#        self.graphicsFrameWidget.repaint()
-        self.parentWidget.lastActiveWindow.repaint()
+        self.graphicsFrameWidget.repaint()
+        # self.parentWidget.lastActiveWindow.repaint()
         
     #----------------------------------------------------------------------------
     def showClusterBorder(self):
@@ -129,22 +130,22 @@ class MVCDrawView2D(MVCDrawViewBase):
     #----------------------------------------------------------------------------
     def showCells(self):
         Configuration.setSetting("CellsOn",True)
-#        print MODULENAME,' showCells() '
+        # print MODULENAME,' \n\n\n\n\n\n showCells() '
         if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
             if not self.currentActors.has_key("HexCellsActor"):
                 self.currentActors["HexCellsActor"] = self.hexCellsActor  
                 self.graphicsFrameWidget.ren.AddActor(self.hexCellsActor)
         else:
-            if not self.currentActors.has_key("CellsActor"):
+            if not self.currentActors.has_key("CellsActor"):                
                 self.currentActors["CellsActor"]=self.cellsActor  
                 self.graphicsFrameWidget.ren.AddActor(self.cellsActor)
         # print "self.currentActors.keys()=",self.currentActors.keys()
         # Don't re-render until next calc step since it could show previous/incorrect actor
-        #self.Render()
-        #self.graphicsFrameWidget.repaint()
+        # self.Render()
+        # self.graphicsFrameWidget.repaint()
         
     def hideCells(self):
-        print MODULENAME,'  hideCells():  type(self.graphicsFrameWidget)= ',type(self.graphicsFrameWidget)
+        # print MODULENAME,'  hideCells():  type(self.graphicsFrameWidget)= ',type(self.graphicsFrameWidget)
 #        print MODULENAME,'  hideCells():  type(self.parentWidget)= ',type(self.parentWidget)
 #        print MODULENAME,'  hideCells():  self.parentWidget.lastActiveWindow= ',self.parentWidget.lastActiveWindow
 #        print MODULENAME,'  hideCells():  type(self.lastActiveWindow)= ',type(self.lastActiveWindow)
@@ -155,11 +156,11 @@ class MVCDrawView2D(MVCDrawViewBase):
 #            self.parentWidget.lastActiveWindow.ren.RemoveActor(self.hexCellsActor)
         if self.currentActors.has_key("CellsActor"):
             del self.currentActors["CellsActor"] 
-#            self.graphicsFrameWidget.ren.RemoveActor(self.cellsActor)
-            self.parentWidget.lastActiveWindow.ren.RemoveActor(self.cellsActor)
+            self.graphicsFrameWidget.ren.RemoveActor(self.cellsActor)
+            # self.parentWidget.lastActiveWindow.ren.RemoveActor(self.cellsActor)
         self.Render()
-#        self.graphicsFrameWidget.repaint()
-        self.parentWidget.lastActiveWindow.repaint()
+        self.graphicsFrameWidget.repaint()
+        # self.parentWidget.lastActiveWindow.repaint()
 
     def hideAllActors(self):   # never used?
         removedActors=[]
@@ -388,8 +389,9 @@ class MVCDrawView2D(MVCDrawViewBase):
             
             
             # time.sleep(5)                
-            
+            # if self.parentWidget.graphicsWindowVisDict[dictKey][0]:            
             self.drawModel.initCellFieldActors((self.cellsActor,))            
+            
             
             
             # # # print 'INSIDE self.drawCellField AFTER initCellFieldActors'    
