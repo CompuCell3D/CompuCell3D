@@ -20,6 +20,7 @@ SET (HEADER_FILES
   DiffusableGraph.h
   ReactionDiffusionSolverFE_SavHog.h
   ReactionDiffusionSolverFE.h
+  FlexibleReactionDiffusionSolverFE.h
   AdvectionDiffusionSolverFE.h
   Diffusable.h
   DiffusableVector2D.h
@@ -187,6 +188,7 @@ ADD_COMPUCELL3D_STEPPABLE(PDESolvers
   KernelDiffusionSolver.cpp
   ReactionDiffusionSolverFE_SavHog.cpp
   ReactionDiffusionSolverFE.cpp
+  FlexibleReactionDiffusionSolverFE.cpp
   HW3CRT.c 
   HWSCRT.c
 #  ${CUDA_SRCS}

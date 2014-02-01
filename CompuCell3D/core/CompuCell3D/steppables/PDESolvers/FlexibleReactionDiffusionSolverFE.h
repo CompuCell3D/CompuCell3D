@@ -1,5 +1,5 @@
-#ifndef COMPUCELL3DREACTIONDIFFUSIONSOLVERFE_H
-#define COMPUCELL3DREACTIONDIFFUSIONSOLVERFE_H
+#ifndef COMPUCELL3DFLEXIBLEREACTIONDIFFUSIONSOLVERFE_H
+#define COMPUCELL3DFLEXIBLEREACTIONDIFFUSIONSOLVERFE_H
 
 
 #include <CompuCell3D/Steppable.h>
@@ -45,11 +45,10 @@ class Automaton;
 
 class BoxWatcher;
 
-class CellTypeMonitorPlugin ;
 class DiffusionData;
 class SecretionDataFlex;
-class ReactionDiffusionSolverSerializer;
-class TestReactionDiffusionSolver; // Testing ReactionDiffusionSolverFE
+class FlexibleReactionDiffusionSolverSerializer;
+class TestReactionDiffusionSolver; // Testing FlexibleReactionDiffusionSolverFE
 class ParallelUtilsOpenMP;
 
 
@@ -58,47 +57,34 @@ template <typename Y> class Field3DImpl;
 template <typename Y> class WatchableField3D;
 
 
-class ReactionDiffusionSolverFE;
+class FlexibleReactionDiffusionSolverFE;
 
-class PDESOLVERS_EXPORT SecretionDataRD:public SecretionData{
+class PDESOLVERS_EXPORT FlexibleSecretionDataRD:public SecretionData{
    public:
-      typedef void (ReactionDiffusionSolverFE::*secrSingleFieldFcnPtr_t)(unsigned int);
+      typedef void (FlexibleReactionDiffusionSolverFE::*secrSingleFieldFcnPtr_t)(unsigned int);
       std::vector<secrSingleFieldFcnPtr_t> secretionFcnPtrVec;
 };
 
-class PDESOLVERS_EXPORT DiffusionSecretionRDFieldTupple{
+class PDESOLVERS_EXPORT FlexibleDiffusionSecretionRDFieldTupple{
    public:
       DiffusionData diffData;
-      SecretionDataRD secrData;
+      FlexibleSecretionDataRD secrData;
       DiffusionData * getDiffusionData(){return &diffData;}
-      SecretionDataRD * getSecretionData(){return &secrData;}
+      FlexibleSecretionDataRD * getSecretionData(){return &secrData;}
 };
 
-class SortedPositionTracker{ // simple class that is used to sort field positions according to number of diffusion step calls
-public:
-	SortedPositionTracker(int  _originalPosition=0, int _sortedValue=0){
-		originalPosition=_originalPosition;
-		sortedValue=_sortedValue;
-	}
-	bool operator < (SortedPositionTracker & _spt){
-		return this->sortedValue<_spt.sortedValue;
-	}
 
-	int sortedValue;
-	int originalPosition;
-};
-
-class PDESOLVERS_EXPORT ReactionDiffusionSolverFE :public DiffusableVectorCommon<float, Array3DContiguous>, public Steppable
+class PDESOLVERS_EXPORT FlexibleReactionDiffusionSolverFE :public DiffusableVectorCommon<float, Array3DContiguous>, public Steppable
 {
 
-  friend class ReactionDiffusionSolverSerializer;
+  friend class FlexibleReactionDiffusionSolverSerializer;
 
   // For Testing
   friend class TestReactionDiffusionSolver; // In production version you need to enclose with #ifdef #endif
 
   public :
-   typedef void (ReactionDiffusionSolverFE::*diffSecrFcnPtr_t)(void);
-   typedef void (ReactionDiffusionSolverFE::*secrSingleFieldFcnPtr_t)(unsigned int);
+   typedef void (FlexibleReactionDiffusionSolverFE::*diffSecrFcnPtr_t)(void);
+   typedef void (FlexibleReactionDiffusionSolverFE::*secrSingleFieldFcnPtr_t)(unsigned int);
    typedef float precision_t;
    //typedef Array3DBorders<precision_t>::ContainerType Array3D_t;
    typedef Array3DContiguous<precision_t> ConcentrationField_t;
@@ -107,8 +93,6 @@ class PDESOLVERS_EXPORT ReactionDiffusionSolverFE :public DiffusableVectorCommon
 
 	float diffusionLatticeScalingFactor; // for hex in 2Dlattice it is 2/3.0 , for 3D is 1/2.0, for cartesian lattice it is 1
 	bool autoscaleDiffusion;
-
-	bool scaleSecretion; // this flag is set to true. If user sets it to false via XML then DiffusionSolver will behave like FlexibleDiffusion solver - i.e. secretion will be done in one step followed by multiple diffusive steps
 
 protected:
 
@@ -127,41 +111,10 @@ protected:
    WatchableField3D<CellG *> *cellFieldG;
    Automaton *automaton;
    
+ 
 
-   //////part copied from DiffusionSolverFE 
-
-   std::vector<int> scalingExtraMCSVec; //TODO: check if used
-   std::vector<float> maxDiffConstVec;
-   float maxStableDiffConstant;           
-
-   std::vector<float> diffConstVec; 
-   std::vector<float> decayConstVec; 
-
-   CellTypeMonitorPlugin *cellTypeMonitorPlugin;
-   Array3DCUDA<unsigned char> * h_celltype_field;
-   Array3DCUDA<float> * h_cellid_field;
-
-   std::vector<std::vector<Point3D> > hexOffsetArray;
-   std::vector<Point3D> offsetVecCartesian;
-   LatticeType latticeType;
-
-   const std::vector<Point3D> & getOffsetVec(Point3D & pt) const {
-      if(latticeType==HEXAGONAL_LATTICE){
-         return hexOffsetArray[(pt.z%3)*2+pt.y%2];
-      }else{
-         return offsetVecCartesian;
-      }
-   }
-  
-   void prepareForwardDerivativeOffsets();
-   void Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant);
-   virtual void prepCellTypeField(int idx);
-   virtual Dim3D getInternalDim();
-   //////end of part copied from DiffusionSolverFE
-
-   int maxNumberOfDiffusionCalls;// this number determines how many times ALL fields will be diffused
-
-
+//    std::vector<DiffusionData> diffDataVec;
+//    std::vector<SecretionDataFlex> secrDataVec;
    std::vector<bool> periodicBoundaryCheckVector;
 
    std::vector<BoundaryConditionSpecifier> bcSpecVec;
@@ -169,7 +122,9 @@ protected:
 
 	bool useBoxWatcher;
 
-
+	//////std::vector<std::vector<mu::Parser> > parserVec;	
+	//////std::vector<vector<double> > variableConcentrationVecMu;
+	//////std::vector<double> variableCellTypeMu;
 
 	std::vector<std::vector<mu::Parser> > parserVec;	
 	std::vector<vector<double> > variableConcentrationVecMu;
@@ -182,8 +137,8 @@ protected:
 
    CellInventory *cellInventoryPtr;
 
-   void (ReactionDiffusionSolverFE::*diffusePtr)(void);///ptr to member method - Forward Euler diffusion solver
-   void (ReactionDiffusionSolverFE::*secretePtr)(void);///ptr to member method - Forward Euler diffusion solver
+   void (FlexibleReactionDiffusionSolverFE::*diffusePtr)(void);///ptr to member method - Forward Euler diffusion solver
+   void (FlexibleReactionDiffusionSolverFE::*secretePtr)(void);///ptr to member method - Forward Euler diffusion solver
    void diffuse();
    void solveRDEquations();
    void solveRDEquationsSingleField(unsigned int idx);
@@ -209,16 +164,16 @@ protected:
    bool readFromFileFlag;
    unsigned int serializeFrequency;
 
-   ReactionDiffusionSolverSerializer *serializerPtr;
+   FlexibleReactionDiffusionSolverSerializer *serializerPtr;
    bool haveCouplingTerms;
-	std::vector<DiffusionSecretionRDFieldTupple>  diffSecrFieldTuppleVec;
+	std::vector<FlexibleDiffusionSecretionRDFieldTupple>  diffSecrFieldTuppleVec;
 	//vector<string> concentrationFieldNameVectorTmp;
 
 public:
 
-    ReactionDiffusionSolverFE();
+    FlexibleReactionDiffusionSolverFE();
 
-    virtual ~ReactionDiffusionSolverFE();
+    virtual ~FlexibleReactionDiffusionSolverFE();
 
 
     virtual void init(Simulator *_simulator, CC3DXMLElement *_xmlData=0);
@@ -237,15 +192,15 @@ public:
 
 };
 
-class PDESOLVERS_EXPORT ReactionDiffusionSolverSerializer: public Serializer{
+class PDESOLVERS_EXPORT FlexibleReactionDiffusionSolverSerializer: public Serializer{
    public:
-      ReactionDiffusionSolverSerializer():Serializer(){
+      FlexibleReactionDiffusionSolverSerializer():Serializer(){
          solverPtr=0;
          serializedFileExtension="dat";
          currentStep=0;
       }
-      ~ReactionDiffusionSolverSerializer(){}
-      ReactionDiffusionSolverFE * solverPtr;
+      ~FlexibleReactionDiffusionSolverSerializer(){}
+      FlexibleReactionDiffusionSolverFE * solverPtr;
       virtual void serialize();
       virtual void readFromFile();
       void setCurrentStep(unsigned int _currentStep){currentStep=_currentStep;}
