@@ -181,6 +181,32 @@ bool BoundaryStrategy::isValid(const Point3D &pt) const {
 }
 
 /*
+ * Check to see if the given point lies inside the field dimensions
+ *
+ * @param pt Point3D
+ * @param customDim Dim3D*
+ * @return bool 
+ */
+
+bool BoundaryStrategy::isValidCustomDim(const Point3D &pt, const Dim3D & customDim) const
+{
+    // check to see if the point lies in the dimensions before applying the
+    // shape algorithm
+
+
+
+ if (0 <= pt.x && pt.x < customDim.x &&
+                   0 <= pt.y && pt.y < customDim.y &&
+                   0 <= pt.z && pt.z < customDim.z ) {
+     return algorithm->inGrid(pt);
+ }
+
+     return false;
+
+}
+
+
+/*
  * Check to see if the given coordinate  lies inside the 
  * max value for that axis
  *
@@ -271,7 +297,7 @@ void BoundaryStrategy::setDim(const Dim3D theDim) {
  * @return Point3D Valid Neighbor
  */
 Point3D BoundaryStrategy::getNeighbor(const Point3D& pt, unsigned int& token, double& distance, bool checkBounds)const
-{
+{    
 	Neighbor n;
 	Point3D p;
 	int x;
@@ -325,6 +351,77 @@ Point3D BoundaryStrategy::getNeighbor(const Point3D& pt, unsigned int& token, do
 	return p;
 
 }
+
+/*
+ * Retrieves a neighbor for a given point after applying
+ * boundary conditions as configured
+ *
+ * @param pt Point3D
+ * @param token int
+ * @param distance int
+ * @param customDim Dim3D
+ * @param checkBounds bool
+ *
+ * @return Point3D Valid Neighbor
+ */
+// this function returns neighbor but takes extra dim as an argument  menaning we can use it for lattices of size different than simulation dim. used in prepareOffsets functions
+Point3D BoundaryStrategy::getNeighborCustomDim(const Point3D& pt, unsigned int& token,double& distance, const Dim3D & customDim, bool checkBounds )const
+{
+    
+	Neighbor n;
+	Point3D p;
+	int x;
+	int y;
+	int z;
+	bool x_bool;
+	bool y_bool;
+	bool z_bool;
+
+	NeighborFinder::destroy();
+
+	while(true) 
+	{
+		// Get a neighbor from the NeighborFinder 
+		n = NeighborFinder::getInstance()->getNeighbor(token);
+		x = (pt + n.pt).x;
+		y = (pt + n.pt).y;
+		z = (pt + n.pt).z;
+
+		token++;
+
+		if(!checkBounds || isValidCustomDim(pt + n.pt,customDim))         
+		{
+			// Valid Neighbor
+			break;
+		} 
+		else 
+		{
+			if (regular) 
+			{
+				// For each coordinate, if it is not valid, apply condition
+				x_bool = (isValid(x,customDim.x) ? true : strategy_x->applyCondition(x, customDim.x));
+				y_bool = (isValid(y,customDim.y) ? true : strategy_y->applyCondition(y, customDim.y));
+				z_bool = (isValid(z,customDim.z) ? true : strategy_z->applyCondition(z, customDim.z));
+
+				// If all the coordinates of the neighbor are valid then return the
+				// neighbor
+				if(x_bool && y_bool && z_bool) 
+				{
+					break; 
+				}
+			} 
+		}
+	}
+
+	distance = n.distance;
+	p.x = x;
+	p.y = y;
+	p.z = z;
+
+	return p;
+
+}
+
 
 int BoundaryStrategy::getNumPixels(int x, int y, int z) const  {
 
@@ -444,8 +541,29 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance){
    
    vector<Point3D> offsetVecTmp;
    vector<float> distanceVecTmp;
-   Field3DImpl<char> tempField(dim,a);
-   Point3D ctPt(dim.x/2,dim.y/2,dim.z/2);
+   Dim3D tmpFieldDim;
+   
+   tmpFieldDim=dim;
+   if (dim.z !=1 && tmpFieldDim.z<15){ // to generate coorect offsets we need to have tmpField which is large enouigh for our algorithm in non-flad z dimension
+        tmpFieldDim.z=15;
+   } 
+   
+   if (dim.y !=1 && tmpFieldDim.y<10){  // to generate coorect offsets we need to have tmpField which is large enouigh for our algorithm in non-flad y dimension
+        tmpFieldDim.z=10;
+   }
+   
+   if (dim.x !=1 && tmpFieldDim.x<10){  // to generate coorect offsets we need to have tmpField which is large enouigh for our algorithm in non-flad z dimension
+        tmpFieldDim.x=10;
+   }
+   
+   
+   // Field3DImpl<char> tempField(dim,a);
+   // Point3D ctPt(dim.x/2,dim.y/2,dim.z/2);
+   
+   Field3DImpl<char> tempField(tmpFieldDim,a);
+   Point3D ctPt(tmpFieldDim.x/2 , tmpFieldDim.y/2 , tmpFieldDim.z/2);   
+   cerr<<"_maxDistance="<<_maxDistance<<endl;
+      
 #ifdef _DEBUG
    cerr<<"center point="<<ctPt<<endl;
 #endif
@@ -659,7 +777,8 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance){
     indexHex=0;    
    for (indexHex=0 ; indexHex<maxHexArraySize; ++indexHex){
 
-      cerr<<"INDEX HEX="<<indexHex<<endl;   
+      cerr<<"INDEX HEX="<<indexHex<<" hexOffsetArray[indexHex].size()="<<hexOffsetArray[indexHex].size()<<endl;   
+      
       for( int i = 0 ; i < hexOffsetArray[indexHex].size() ; ++i){
       cerr<<" This is offset["<<i<<"]="<<hexOffsetArray[indexHex][i]<<" distance="<<hexDistanceArray[indexHex][i]<<endl;
       }
@@ -749,10 +868,21 @@ void BoundaryStrategy::getOffsetsAndDistances(
    }else{
       ctPtTrans=Coordinates3D<double>(ctPt.x,ctPt.y,ctPt.z);
    }
+   
+   // cerr<<"getOffsetsAndDistances"<<endl;
+   // cerr<<"ctPt="<<ctPt<<endl;
+   // cerr<<"dim="<<dim<<endl;
+   // cerr<<"tempField.getDim()="<<tempField.getDim()<<endl;
 
-
+   Dim3D tmpFieldDim = tempField.getDim();
+   
    while (true) {
-      n = tempField.getNeighbor(ctPt, token, distance, false);
+      // calling  getNeighbor via field interface changes checkBounds from false to true... 
+      // calling getNeighbor directly requires does not set checkBounds to true       
+      n=getNeighborCustomDim(ctPt, token, distance,tmpFieldDim, true); // notice that we cannot in general use regular getNeighbor because this fcn assumes that dimension of the thmField are same as the dimensions of simulation field
+      // n = tempField.getNeighbor(ctPt, token, distance, false); // calling  getNeighbor via field interface changes checkBounds from false to true... 
+      // n = getNeighbor(ctPt, token, distance, true);
+      // cerr<<"distance="<<distance<<endl;
       if (distance > maxDistance*2.0) break; //2.0 factor is to ensure you visit enough neighbors for different kind of lattices
                                              //This factor is purly heuristic and may need to be increased in certain cases
       
