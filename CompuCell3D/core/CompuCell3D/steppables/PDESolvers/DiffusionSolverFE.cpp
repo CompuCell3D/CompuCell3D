@@ -106,12 +106,18 @@ DiffusionSolverFE<Cruncher>::DiffusionSolverFE()
     maxDiffusionZ=-1;
     numberOfFields=0;
     scalingExtraMCS=-1;
+    bc_indicator_field=0;
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
 DiffusionSolverFE<Cruncher>::~DiffusionSolverFE()
 {
+    if (bc_indicator_field){
+        delete bc_indicator_field;
+        bc_indicator_field = 0;       
+    }
+    
 	if(serializerPtr){
 		delete serializerPtr ; 
 		serializerPtr=0;
@@ -235,7 +241,39 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
 
 	}    
     
+	periodicBoundaryCheckVector.assign(3,false);
+	string boundaryName;
+	boundaryName=potts->getBoundaryXName();
+	changeToLower(boundaryName);
+	if(boundaryName=="periodic")  {
+		periodicBoundaryCheckVector[0]=true;
+	}
+	boundaryName=potts->getBoundaryYName();
+	changeToLower(boundaryName);
+	if(boundaryName=="periodic")  {
+		periodicBoundaryCheckVector[1]=true;
+	}
+
+	boundaryName=potts->getBoundaryZName();
+	changeToLower(boundaryName);
+	if(boundaryName=="periodic")  {
+		periodicBoundaryCheckVector[2]=true;
+	}
+    
+    
+
+    
+    
+    
+    
 	update(_xmlData,true);
+    
+    latticeType=static_cast<Cruncher*>(this)->getBoundaryStrategy()->getLatticeType();
+    if (latticeType==HEXAGONAL_LATTICE){
+        bc_indicator_field = new    Array3DCUDA<signed char> (fieldDim,BoundaryConditionSpecifier::INTERNAL);// BoundaryConditionSpecifier::INTERNAL= -1
+        boundaryConditionIndicatorInit(); // initializing the array which will be used to guide solver when to use BC values in the diffusion algorithm and when to use generic algorithm (i.e. the one for "internal pixels")
+    }        
+    
 
 	numberOfFields=diffSecrFieldTuppleVec.size();
 
@@ -325,24 +363,6 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
 
 
 
-	periodicBoundaryCheckVector.assign(3,false);
-	string boundaryName;
-	boundaryName=potts->getBoundaryXName();
-	changeToLower(boundaryName);
-	if(boundaryName=="periodic")  {
-		periodicBoundaryCheckVector[0]=true;
-	}
-	boundaryName=potts->getBoundaryYName();
-	changeToLower(boundaryName);
-	if(boundaryName=="periodic")  {
-		periodicBoundaryCheckVector[1]=true;
-	}
-
-	boundaryName=potts->getBoundaryZName();
-	changeToLower(boundaryName);
-	if(boundaryName=="periodic")  {
-		periodicBoundaryCheckVector[2]=true;
-	}
 
 	float extraCheck;
     
@@ -356,12 +376,113 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
         h_cellid_field=cellTypeMonitorPlugin->getCellIdArray();
 
 	}
+    
 
+    
 	simulator->registerSteerableObject(this);
 
 	//platform-specific initialization
 	initImpl();
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template <class Cruncher>
+void DiffusionSolverFE<Cruncher>::boundaryConditionIndicatorInit(){
+
+    // bool detailedBCFlag=bcSpecFlagVec[idx];
+    // BoundaryConditionSpecifier & bcSpec=bcSpecVec[idx];
+    Array3DCUDA<signed char> & bcField = *bc_indicator_field;
+    
+
+        
+        if (fieldDim.z>2){// if z dimension is "flat" we do not mark bc 
+            // Z axis  - external boundary layer
+            for(int x=0 ; x< fieldDim.x+2; ++x)
+                for(int y=0 ; y<fieldDim.y+2 ; ++y){
+                    bcField.setDirect(x,y,0,BoundaryConditionSpecifier::MIN_Z);
+                }
+
+            // Z axis  - external boundary layer
+            for(int x=0 ; x< fieldDim.x+2; ++x)
+                for(int y=0 ; y<fieldDim.y+2 ; ++y){
+                    bcField.setDirect(x,y,fieldDim.z+1,BoundaryConditionSpecifier::MAX_Z);
+                }            
+                
+            // Z axis  - internal boundary layer    
+            for(int x=1 ; x< fieldDim.x+1; ++x)
+                for(int y=1 ; y<fieldDim.y+1 ; ++y){
+                    bcField.setDirect(x,y,1,BoundaryConditionSpecifier::BOUNDARY);
+                }
+
+            // Z axis  - internal boundary layer    
+            for(int x=1; x< fieldDim.x+1; ++x)
+                for(int y=1 ; y<fieldDim.y+1 ; ++y){
+                    bcField.setDirect(x,y,fieldDim.z,BoundaryConditionSpecifier::BOUNDARY);
+                }                       
+                
+        }        
+        
+        //BC a long x axis will be set second  - meaning all corner pixels will ge set according to x or y axis depending on location
+        
+        if (fieldDim.y>2){// if y dimension is "flat" we do not mark bc 
+            // Y axis - external boundary layer                
+            for(int x=0 ; x< fieldDim.x+2; ++x)
+                for(int z=0 ; z<fieldDim.z+2 ; ++z){
+                    bcField.setDirect(x,0,z,BoundaryConditionSpecifier::MIN_Y);
+                    
+                }
+            // Y axis - external boundary layer                
+            for(int x=0 ; x< fieldDim.x+2; ++x)
+                for(int z=0 ; z<fieldDim.z+2 ; ++z){
+                    bcField.setDirect(x,fieldDim.y+1,z,BoundaryConditionSpecifier::MAX_Y);
+                }    
+                
+            // Y axis - internal boundary layer                
+            for(int x=1 ; x< fieldDim.x+1; ++x)
+                for(int z=1 ; z<fieldDim.z+1 ; ++z){
+                    bcField.setDirect(x,1,z,BoundaryConditionSpecifier::BOUNDARY);
+                    
+                }
+                
+            // Y axis - internal boundary layer                
+            for(int x=1 ; x< fieldDim.x+1; ++x)
+                for(int z=1 ; z<fieldDim.z+1 ; ++z){
+                    bcField.setDirect(x,fieldDim.y,z,BoundaryConditionSpecifier::BOUNDARY);
+                }                   
+                
+        }
+
+        //BC a long x axis will be set last  - meaning all corner pixels will ge set according to x axis
+		if (fieldDim.x>2){ // if x dimension is "flat" we do not mark bc 
+        
+            // X axis - external boundary layer                
+            for(int y=0 ; y< fieldDim.y+2; ++y)
+                for(int z=0 ; z<fieldDim.z+2 ; ++z){
+                    bcField.setDirect(0,y,z,BoundaryConditionSpecifier::MIN_X);                   
+                }
+            // X axis - external boundary layer                    
+            for(int y=0 ; y< fieldDim.y+2; ++y)
+                for(int z=0 ; z<fieldDim.z+2 ; ++z){
+                    bcField.setDirect(fieldDim.x+1,y,z, BoundaryConditionSpecifier::MAX_X);
+                }        
+                
+                
+            // X axis - internal boundary layer                
+            for(int y=1 ; y< fieldDim.y+1; ++y)
+                for(int z=1 ; z<fieldDim.z+1 ; ++z){
+                    bcField.setDirect(1,y,z, BoundaryConditionSpecifier::BOUNDARY);
+                }
+                
+            // X axis - internal boundary layer                    
+            for(int y=1 ; y< fieldDim.y+1; ++y)
+                for(int z=1 ; z<fieldDim.z+1 ; ++z){
+                    bcField.setDirect(fieldDim.x,y,z,BoundaryConditionSpecifier::BOUNDARY);                                        
+                }                    
+                
+        }    
+    
+}
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class Cruncher>
 void DiffusionSolverFE<Cruncher>::extraInit(Simulator *simulator){
@@ -1118,6 +1239,42 @@ void DiffusionSolverFE<Cruncher>::update(CC3DXMLElement *_xmlData, bool _fullIni
                     }
                 }                
             }
+        }else{ //translating default  BCs defined in Potts into BoundaryConditionSpecifier structure
+        
+            bcSpecFlagVec[bcSpecFlagVec.size()-1]=true;
+            BoundaryConditionSpecifier & bcSpec = bcSpecVec[bcSpecVec.size()-1];
+            
+            if(periodicBoundaryCheckVector[0]){//periodic boundary conditions were set in x direction	
+                bcSpec.planePositions[BoundaryConditionSpecifier::MIN_X]=BoundaryConditionSpecifier::PERIODIC;
+                bcSpec.planePositions[BoundaryConditionSpecifier::MAX_X]=BoundaryConditionSpecifier::PERIODIC;
+            }else{//no-flux boundary conditions were set in x direction	
+                bcSpec.planePositions[BoundaryConditionSpecifier::MIN_X]=BoundaryConditionSpecifier::CONSTANT_DERIVATIVE;
+                bcSpec.planePositions[BoundaryConditionSpecifier::MAX_X]=BoundaryConditionSpecifier::CONSTANT_DERIVATIVE;
+                bcSpec.values[BoundaryConditionSpecifier::MIN_X]=0.0;
+                bcSpec.values[BoundaryConditionSpecifier::MAX_X]=0.0;                            
+            }
+
+            if(periodicBoundaryCheckVector[1]){//periodic boundary conditions were set in x direction	
+                bcSpec.planePositions[BoundaryConditionSpecifier::MIN_Y]=BoundaryConditionSpecifier::PERIODIC;
+                bcSpec.planePositions[BoundaryConditionSpecifier::MAX_Y]=BoundaryConditionSpecifier::PERIODIC;
+            }else{//no-flux boundary conditions were set in x direction	
+                bcSpec.planePositions[BoundaryConditionSpecifier::MIN_Y]=BoundaryConditionSpecifier::CONSTANT_DERIVATIVE;
+                bcSpec.planePositions[BoundaryConditionSpecifier::MAX_Y]=BoundaryConditionSpecifier::CONSTANT_DERIVATIVE;
+                bcSpec.values[BoundaryConditionSpecifier::MIN_Y]=0.0;
+                bcSpec.values[BoundaryConditionSpecifier::MAX_Y]=0.0;                            
+            }
+
+            if(periodicBoundaryCheckVector[2]){//periodic boundary conditions were set in x direction	
+                bcSpec.planePositions[BoundaryConditionSpecifier::MIN_Z]=BoundaryConditionSpecifier::PERIODIC;
+                bcSpec.planePositions[BoundaryConditionSpecifier::MAX_Z]=BoundaryConditionSpecifier::PERIODIC;
+            }else{//no-flux boundary conditions were set in x direction	
+                bcSpec.planePositions[BoundaryConditionSpecifier::MIN_Z]=BoundaryConditionSpecifier::CONSTANT_DERIVATIVE;
+                bcSpec.planePositions[BoundaryConditionSpecifier::MAX_Z]=BoundaryConditionSpecifier::CONSTANT_DERIVATIVE;
+                bcSpec.values[BoundaryConditionSpecifier::MIN_Z]=0.0;
+                bcSpec.values[BoundaryConditionSpecifier::MAX_Z]=0.0;                            
+            }
+            
+            
         }
 	}
 

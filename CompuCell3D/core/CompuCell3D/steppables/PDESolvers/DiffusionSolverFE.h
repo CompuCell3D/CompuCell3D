@@ -154,6 +154,7 @@ protected:
    void readConcentrationField(std::string fileName,ConcentrationField_t *concentrationField);
    //void boundaryConditionInit(ConcentrationField_t *concentrationField);
    
+   virtual void boundaryConditionIndicatorInit(); // this function initializes indicator only not the actual boundary conditions used on non-cartesian lattices
    virtual void boundaryConditionInit(int idx);
    bool isBoudaryRegion(int x, int y, int z, Dim3D dim);
 
@@ -188,6 +189,9 @@ protected:
    Array3DCUDA<unsigned char> * h_celltype_field;
    Array3DCUDA<float> * h_cellid_field;
 
+   Array3DCUDA<signed char> * bc_indicator_field;
+   
+   
    std::vector<std::vector<Point3D> > hexOffsetArray;
    std::vector<Point3D> offsetVecCartesian;
    LatticeType latticeType;
