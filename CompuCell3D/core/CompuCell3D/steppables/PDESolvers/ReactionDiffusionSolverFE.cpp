@@ -89,11 +89,18 @@ ReactionDiffusionSolverFE::ReactionDiffusionSolverFE()
 	autoscaleDiffusion=false;
 	scaleSecretion=true;
 	maxNumberOfDiffusionCalls=1;
+    bc_indicator_field=0;
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ReactionDiffusionSolverFE::~ReactionDiffusionSolverFE()
 {
+
+    if (bc_indicator_field){
+        delete bc_indicator_field;
+        bc_indicator_field = 0;       
+    }
+
 	if(serializerPtr)
 		delete serializerPtr ; serializerPtr=0;
 }
@@ -258,8 +265,34 @@ void ReactionDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
 	}
 
 
+	periodicBoundaryCheckVector.assign(3,false);
+	string boundaryName;
+	boundaryName=potts->getBoundaryXName();
+	changeToLower(boundaryName);
+	if(boundaryName=="periodic")  {
+		periodicBoundaryCheckVector[0]=true;
+	}
+	boundaryName=potts->getBoundaryYName();
+	changeToLower(boundaryName);
+	if(boundaryName=="periodic")  {
+		periodicBoundaryCheckVector[1]=true;
+	}
+
+	boundaryName=potts->getBoundaryZName();
+	changeToLower(boundaryName);
+	if(boundaryName=="periodic")  {
+		periodicBoundaryCheckVector[2]=true;
+	}
+
 	update(_xmlData,true);
 
+    latticeType=this->getBoundaryStrategy()->getLatticeType();
+    //if (latticeType==HEXAGONAL_LATTICE){
+	{
+        bc_indicator_field = new    Array3DCUDA<signed char> (fieldDim,BoundaryConditionSpecifier::INTERNAL);// BoundaryConditionSpecifier::INTERNAL= -1
+        boundaryConditionIndicatorInit(); // initializing the array which will be used to guide solver when to use BC values in the diffusion algorithm and when to use generic algorithm (i.e. the one for "internal pixels")
+    }         
+    
 	//numberOfFields=diffSecrFieldTuppleVec.size();
 
 
@@ -315,24 +348,6 @@ void ReactionDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
 
 	//    exit(0);
 
-	periodicBoundaryCheckVector.assign(3,false);
-	string boundaryName;
-	boundaryName=potts->getBoundaryXName();
-	changeToLower(boundaryName);
-	if(boundaryName=="periodic")  {
-		periodicBoundaryCheckVector[0]=true;
-	}
-	boundaryName=potts->getBoundaryYName();
-	changeToLower(boundaryName);
-	if(boundaryName=="periodic")  {
-		periodicBoundaryCheckVector[1]=true;
-	}
-
-	boundaryName=potts->getBoundaryZName();
-	changeToLower(boundaryName);
-	if(boundaryName=="periodic")  {
-		periodicBoundaryCheckVector[2]=true;
-	}
 
 
 
@@ -354,6 +369,103 @@ void ReactionDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
 
 	simulator->registerSteerableObject(this);
 
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ReactionDiffusionSolverFE::boundaryConditionIndicatorInit(){
+
+    // bool detailedBCFlag=bcSpecFlagVec[idx];
+    // BoundaryConditionSpecifier & bcSpec=bcSpecVec[idx];
+    Array3DCUDA<signed char> & bcField = *bc_indicator_field;
+    
+
+        
+        if (fieldDim.z>2){// if z dimension is "flat" we do not mark bc 
+            // Z axis  - external boundary layer
+            for(int x=0 ; x< fieldDim.x+2; ++x)
+                for(int y=0 ; y<fieldDim.y+2 ; ++y){
+                    bcField.setDirect(x,y,0,BoundaryConditionSpecifier::MIN_Z);
+                }
+
+            // Z axis  - external boundary layer
+            for(int x=0 ; x< fieldDim.x+2; ++x)
+                for(int y=0 ; y<fieldDim.y+2 ; ++y){
+                    bcField.setDirect(x,y,fieldDim.z+1,BoundaryConditionSpecifier::MAX_Z);
+                }            
+                
+            // Z axis  - internal boundary layer    
+            for(int x=1 ; x< fieldDim.x+1; ++x)
+                for(int y=1 ; y<fieldDim.y+1 ; ++y){
+                    bcField.setDirect(x,y,1,BoundaryConditionSpecifier::BOUNDARY);
+                }
+
+            // Z axis  - internal boundary layer    
+            for(int x=1; x< fieldDim.x+1; ++x)
+                for(int y=1 ; y<fieldDim.y+1 ; ++y){
+                    bcField.setDirect(x,y,fieldDim.z,BoundaryConditionSpecifier::BOUNDARY);
+                }                       
+                
+        }        
+        
+        //BC a long x axis will be set second  - meaning all corner pixels will ge set according to x or y axis depending on location
+        
+        if (fieldDim.y>2){// if y dimension is "flat" we do not mark bc 
+            // Y axis - external boundary layer                
+            for(int x=0 ; x< fieldDim.x+2; ++x)
+                for(int z=0 ; z<fieldDim.z+2 ; ++z){
+                    bcField.setDirect(x,0,z,BoundaryConditionSpecifier::MIN_Y);
+                    
+                }
+            // Y axis - external boundary layer                
+            for(int x=0 ; x< fieldDim.x+2; ++x)
+                for(int z=0 ; z<fieldDim.z+2 ; ++z){
+                    bcField.setDirect(x,fieldDim.y+1,z,BoundaryConditionSpecifier::MAX_Y);
+                }    
+                
+            // Y axis - internal boundary layer                
+            for(int x=1 ; x< fieldDim.x+1; ++x)
+                for(int z=1 ; z<fieldDim.z+1 ; ++z){
+                    bcField.setDirect(x,1,z,BoundaryConditionSpecifier::BOUNDARY);
+                    
+                }
+                
+            // Y axis - internal boundary layer                
+            for(int x=1 ; x< fieldDim.x+1; ++x)
+                for(int z=1 ; z<fieldDim.z+1 ; ++z){
+                    bcField.setDirect(x,fieldDim.y,z,BoundaryConditionSpecifier::BOUNDARY);
+                }                   
+                
+        }
+
+        //BC a long x axis will be set last  - meaning all corner pixels will ge set according to x axis
+		if (fieldDim.x>2){ // if x dimension is "flat" we do not mark bc 
+        
+            // X axis - external boundary layer                
+            for(int y=0 ; y< fieldDim.y+2; ++y)
+                for(int z=0 ; z<fieldDim.z+2 ; ++z){
+                    bcField.setDirect(0,y,z,BoundaryConditionSpecifier::MIN_X);                   
+                }
+            // X axis - external boundary layer                    
+            for(int y=0 ; y< fieldDim.y+2; ++y)
+                for(int z=0 ; z<fieldDim.z+2 ; ++z){
+                    bcField.setDirect(fieldDim.x+1,y,z, BoundaryConditionSpecifier::MAX_X);
+                }        
+                
+                
+            // X axis - internal boundary layer                
+            for(int y=1 ; y< fieldDim.y+1; ++y)
+                for(int z=1 ; z<fieldDim.z+1 ; ++z){
+                    bcField.setDirect(1,y,z, BoundaryConditionSpecifier::BOUNDARY);
+                }
+                
+            // X axis - internal boundary layer                    
+            for(int y=1 ; y< fieldDim.y+1; ++y)
+                for(int z=1 ; z<fieldDim.z+1 ; ++z){
+                    bcField.setDirect(fieldDim.x,y,z,BoundaryConditionSpecifier::BOUNDARY);                                        
+                }                    
+                
+        }    
+    
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1496,6 +1608,12 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx){
 
 
 	ConcentrationField_t * concentrationFieldPtr=concentrationFieldVector[idx];
+
+    Array3DCUDA<signed char> &bcField=*bc_indicator_field;
+    
+    BoundaryConditionSpecifier & bcSpec=bcSpecVec[idx];    
+    
+    
 	//boundaryConditionInit(idx);//initializing boundary conditions this gets called in the step fcn
 	//boundaryConditionInit(concentrationFieldPtr);//initializing boundary conditions
 
@@ -1580,165 +1698,221 @@ void ReactionDiffusionSolverFE::solveRDEquationsSingleField(unsigned int idx){
 
 			ExpressionEvaluator &ev=eedVec[idx][threadNumber];
 
+            if(latticeType==HEXAGONAL_LATTICE) {
+                for (int z = minDim.z; z < maxDim.z; z++)
+                    for (int y = minDim.y; y < maxDim.y; y++)
+                        for (int x = minDim.x; x < maxDim.x; x++){
 
-			for (int z = minDim.z; z < maxDim.z; z++)
-				for (int y = minDim.y; y < maxDim.y; y++)
-					for (int x = minDim.x; x < maxDim.x; x++){
-
-						currentConcentration = concentrationField.getDirect(x,y,z);
-						currentCellType=cellTypeArray.getDirect(x,y,z);
-						currentDiffCoef=diffCoef[currentCellType];
-						pt=Point3D(x-1,y-1,z-1);
-
-
-						updatedConcentration=0.0;
-						concentrationSum=0.0;
-						varDiffSumTerm=0.0;
-		
+                            currentConcentration = concentrationField.getDirect(x,y,z);
+                            currentCellType=cellTypeArray.getDirect(x,y,z);
+                            currentDiffCoef=diffCoef[currentCellType];
+                            pt=Point3D(x-1,y-1,z-1);
 
 
-						ev[0]=currentCellType;
-						//setting up x,y,z variables
-						ev[1]=pt.x; //x-variable
-						ev[2]=pt.y; //y-variable
-						ev[3]=pt.z; //z-variable
-
-						//getting concentrations at x,y,z for all the fields	
-						for (int fieldIdx=0 ; fieldIdx<numberOfFields; ++fieldIdx){						
-							ConcentrationField_t & concentrationField = *concentrationFieldVector[fieldIdx];
-							ev[4+fieldIdx]=concentrationField.getDirect(x,y,z);
-						}
-
-						//loop over nearest neighbors
-						const std::vector<Point3D> & offsetVecRef=boundaryStrategy->getOffsetVec(pt);
-						for (register int i = 0  ; i<=maxNeighborIndex /*offsetVec.size()*/ ; ++i ){
-							const Point3D & offset = offsetVecRef[i];
-
-							concentrationSum += concentrationField.getDirect(x+offset.x,y+offset.y,z+offset.z);
-
-						}
-
-						concentrationSum -= (maxNeighborIndex+1)*currentConcentration;
-					
-						concentrationSum*=currentDiffCoef;
-						//                                         cout << " diffCoef[currentCellType]: " << diffCoef[currentCellType] << endl;    
+                            updatedConcentration=0.0;
+                            concentrationSum=0.0;
+                            varDiffSumTerm=0.0;
+            
 
 
-					
-						//using forward first derivatives - cartesian lattice 3D
-						if (variableDiffusionCoefficientFlag){
+                            ev[0]=currentCellType;
+                            //setting up x,y,z variables
+                            ev[1]=pt.x; //x-variable
+                            ev[2]=pt.y; //y-variable
+                            ev[3]=pt.z; //z-variable
 
-							const std::vector<Point3D> & offsetFDVecRef=getOffsetVec(pt); //offsets for forward derivatives
+                            //getting concentrations at x,y,z for all the fields	
+                            for (int fieldIdx=0 ; fieldIdx<numberOfFields; ++fieldIdx){						
+                                ConcentrationField_t & concentrationField = *concentrationFieldVector[fieldIdx];
+                                ev[4+fieldIdx]=concentrationField.getDirect(x,y,z);
+                            }
 
+                            //loop over nearest neighbors
+                            if(bcField.getDirect(x,y,z)==BoundaryConditionSpecifier::INTERNAL){//internal pixel
+                            
+                                const std::vector<Point3D> & offsetVecRef=boundaryStrategy->getOffsetVec(pt);
+                                for (register int i = 0  ; i<=maxNeighborIndex /*offsetVec.size()*/ ; ++i ){
+                                    const Point3D & offset = offsetVecRef[i];
 
-							for (register int i = 0  ; i<offsetFDVecRef.size() ; ++i ){
-								const Point3D & offsetFD = offsetFDVecRef[i];
-								varDiffSumTerm+=(diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)-concentrationField.getDirect(x,y,z));
-							}
+                                    concentrationSum += concentrationField.getDirect(x+offset.x,y+offset.y,z+offset.z);
 
-						}
+                                }
 
-						updatedConcentration=(concentrationSum+varDiffSumTerm)+(1-decayCoef[currentCellType])*currentConcentration;
-
-						updatedConcentration+=dt*ev.eval(); //reaction terms are scaled here all other constants e.g. diffusion or secretion constants are scaled in the Scale function
-					
-
-						////imposing artificial limits on allowed concentration
-						//if(diffData.useThresholds){
-						//	if(updatedConcentration>diffData.maxConcentration){
-						//		updatedConcentration=diffData.maxConcentration;
-						//	}
-						//	if(updatedConcentration<diffData.minConcentration){
-						//		updatedConcentration=diffData.minConcentration;
-						//	}
-						//}
-
-					
-						concentrationField.setDirectSwap(x,y,z,updatedConcentration);//updating scratch
+                                concentrationSum -= (maxNeighborIndex+1)*currentConcentration;
+                            
+                                concentrationSum*=currentDiffCoef;
+                                //                                         cout << " diffCoef[currentCellType]: " << diffCoef[currentCellType] << endl;    
 
 
+                            
+                                //using forward first derivatives - cartesian lattice 3D
+                                if (variableDiffusionCoefficientFlag){
 
-						////////pt=Point3D(x-1,y-1,z-1);
-
-						////////currentCellPtr=cellFieldG->getQuick(pt);
-						////////currentConcentration = concentrationField.getDirect(x,y,z);
-
-						////////if (currentCellPtr)
-						////////	ev[0]=currentCellPtr->type; //0 is idx to cell type var in exp evaluator							
-						////////else
-						////////	ev[0]=0;							
-
-						//////////setting up x,y,z variables
-						////////ev[1]=pt.x; //x-variable
-						////////ev[2]=pt.y; //y-variable
-						////////ev[3]=pt.z; //z-variable
-
-						//////////getting concentrations at x,y,z for all the fields	
-						////////for (int fieldIdx=0 ; fieldIdx<numberOfFields; ++fieldIdx){						
-						////////	ConcentrationField_t & concentrationField = *concentrationFieldVector[fieldIdx];
-						////////	ev[4+fieldIdx]=concentrationField.getDirect(x,y,z);
-						////////}
-
-				
+                                    const std::vector<Point3D> & offsetFDVecRef=getOffsetVec(pt); //offsets for forward derivatives
 
 
+                                    for (register int i = 0  ; i<offsetFDVecRef.size() ; ++i ){
+                                        const Point3D & offsetFD = offsetFDVecRef[i];
+                                        varDiffSumTerm+=(diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)-concentrationField.getDirect(x,y,z));
+                                    }
 
-						//////////DoNotDiffuseTo means do not solve RD equations for points occupied by this cell type
-						////////if(avoidMedium && !currentCellPtr){//if medium is to be avoided
-						////////	concentrationField.setDirectSwap(x,y,z,variableConcentrationVecMu[threadNumber][idx]);
-						////////	continue;
-						////////}
+                                }
+                            }else{
+                                
+                                //loop over nearest neighbors
+                                const std::vector<Point3D> & offsetVecRef=boundaryStrategy->getOffsetVec(pt);
 
-						////////if(currentCellPtr && diffData.avoidTypeIdSet.find(currentCellPtr->type)!=diffData.avoidTypeIdSet.end()){
+								for (register int i = 0  ; i<=maxNeighborIndex /*offsetVec.size()*/ ; ++i ){
+                            
+									const Point3D & offset = offsetVecRef[i];
+									signed char nBcIndicator=bcField.getDirect(x+offset.x,y+offset.y,z+offset.z);
+									if (nBcIndicator==BoundaryConditionSpecifier::INTERNAL || nBcIndicator==BoundaryConditionSpecifier::BOUNDARY){ // for pixel neighbors which are internal or boundary pixels  calculations use default "internal pixel" algorithm. boundary pixel means belonging to the lattice but touching boundary
+										concentrationSum += concentrationField.getDirect(x+offset.x,y+offset.y,z+offset.z);
 
-						////////	concentrationField.setDirectSwap(x,y,z,variableConcentrationVecMu[threadNumber][idx]);
-						////////	continue; // avoid user defined types
-						////////}
+									}else{
+										if (bcSpec.planePositions[nBcIndicator]==BoundaryConditionSpecifier::PERIODIC){// for pixel neighbors which are external pixels with periodic BC  calculations use default "internal pixel" algorithm
+											concentrationSum += concentrationField.getDirect(x+offset.x,y+offset.y,z+offset.z);
+										}else if (bcSpec.planePositions[nBcIndicator]==BoundaryConditionSpecifier::CONSTANT_VALUE){
+											concentrationSum += bcSpec.values[nBcIndicator];
+										}else if (bcSpec.planePositions[nBcIndicator]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
+											if (nBcIndicator==BoundaryConditionSpecifier::MIN_X || nBcIndicator==BoundaryConditionSpecifier::MIN_Y || nBcIndicator==BoundaryConditionSpecifier::MIN_Z){ // for "left hand side" edges of the lattice the sign of the derivative expression is '-'
+												   concentrationSum += concentrationField.getDirect(x,y,z)-bcSpec.values[nBcIndicator]*deltaX; // notice we use values of the field of the central pixel not of the neiighbor. The neighbor is outside of the lattice and for non cartesian lattice with non periodic BC cannot be trusted to hold appropriate value
+											}else{ // for "left hand side" edges of the lattice the sign of  the derivative expression is '+'
+												concentrationSum += concentrationField.getDirect(x,y,z)+bcSpec.values[nBcIndicator]*deltaX ;// notice we use values of the field of the central pixel not of the neiighbor. The neighbor is outside of the lattice and for non cartesian lattice with non periodic BC cannot be trusted to hold appropriate value
+											}
+										}
+									}                                
+								}
 
-						////////updatedConcentration=0.0;
-						////////concentrationSum=0.0;
-						////////neighborCounter=0;
+                                concentrationSum -= (maxNeighborIndex+1)*currentConcentration;
+                                
+                                concentrationSum*=currentDiffCoef;      
+                            
 
-						//////////loop over nearest neighbors
-						////////CellG *neighborCellPtr=0;
-						////////const std::vector<Point3D> & offsetVecRef=boundaryStrategy->getOffsetVec(pt);
-						//////////          cerr<<"maxNeighborIndex="<<maxNeighborIndex<<endl;
+                                //using forward first derivatives - cartesian lattice 3D
+                                if (variableDiffusionCoefficientFlag){
 
-						////////for (int i = 0  ; i<=maxNeighborIndex /*offsetVec.size()*/ ; ++i ){ 
-						////////	const Point3D & offset = offsetVecRef[i];
-
-
-						////////	if(diffData.avoidTypeIdSet.size()||avoidMedium){ //means user defined types to avoid in terms of the diffusion
-
-						////////		n=pt+offsetVecRef[i];
-						////////		neighborCellPtr=cellFieldG->get(n);
-						////////		if(avoidMedium && !neighborCellPtr) continue; // avoid medium if specified by the user
-						////////		if(neighborCellPtr && diffData.avoidTypeIdSet.find(neighborCellPtr->type)!=diffData.avoidTypeIdSet.end()) continue;//avoid user specified types
-						////////	}
-						////////	concentrationSum += concentrationField.getDirect(x+offset.x,y+offset.y,z+offset.z);
-
-						////////	++neighborCounter;
-
-						////////}
-
-
-						////////updatedConcentration =  dt_dx2*diffusionLatticeScalingFactor*diffConst*(concentrationSum - neighborCounter*currentConcentration)+currentConcentration;
-
-						//////////additionalTerm contributions
+									const std::vector<Point3D> & offsetFDVecRef=getOffsetVec(pt); //offsets for forward derivatives
 
 
-						//////////updatedConcentration+=deltaT*parserVec[threadNumber][idx].Eval();
-						////////updatedConcentration+=deltaT*ev.eval();
+									for (register int i = 0  ; i<offsetFDVecRef.size() ; ++i ){
+                                
+										const Point3D & offsetFD = offsetFDVecRef[i];
+										signed char nBcIndicator=bcField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z);
+                                    
+										if (nBcIndicator==BoundaryConditionSpecifier::INTERNAL  || nBcIndicator==BoundaryConditionSpecifier::BOUNDARY){// for pixel neighbors which are internal or boundary pixels  calculations use default "internal pixel" algorithm. boundary pixel means belonging to the lattice but touching boundary
+                                    
+											varDiffSumTerm+=(diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)-concentrationField.getDirect(x,y,z));
+                                        
+										}else{
+											if (bcSpec.planePositions[nBcIndicator]==BoundaryConditionSpecifier::PERIODIC){// for pixel neighbors which are external pixels with periodic BC  calculations use default "internal pixel" algorithm
+												concentrationSum += (diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)-concentrationField.getDirect(x,y,z));
+                                            
+											}else if (bcSpec.planePositions[nBcIndicator]==BoundaryConditionSpecifier::CONSTANT_VALUE){
+                                        
+												concentrationSum += (diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*( bcSpec.values[nBcIndicator]-concentrationField.getDirect(x,y,z));
+                                            
+											}else if (bcSpec.planePositions[nBcIndicator]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
+                                        
+												if (nBcIndicator==BoundaryConditionSpecifier::MIN_X || nBcIndicator==BoundaryConditionSpecifier::MIN_Y || nBcIndicator==BoundaryConditionSpecifier::MIN_Z){ // for "left hand side" edges of the lattice the sign of the derivative expression is '-'
+										
+														// for non-periodic bc diff coeff of neighbor pixels which are in the external boundary os the same as diff coef of current pixel. hece no extra term here
+														// varDiffSumTerm+=(diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x,y,z)-bcSpec.values[nBcIndicator]*deltaX-concentrationField.getDirect(x,y,z));                                                    
+                                                   
+												}else{ // for "left hand side" edges of the lattice the sign of  the derivative expression is '+'
+													// for non-periodic bc diff coeff of neighbor pixels which are in the external boundary os the same as diff coef of current pixel. hece no extra term here
+													// varDiffSumTerm+=(diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x,y,z)+bcSpec.values[nBcIndicator]*deltaX-concentrationField.getDirect(x,y,z));                                                
+												}
+                                            
+										
+                                            
+											}                                    
+										}
+									}
+
+                                }
 
 
 
+                            
+                            }
+                            
+                            
+                            
+                            updatedConcentration=(concentrationSum+varDiffSumTerm)+(1-decayCoef[currentCellType])*currentConcentration;
+
+                            updatedConcentration+=dt*ev.eval(); //reaction terms are scaled here all other constants e.g. diffusion or secretion constants are scaled in the Scale function
+                            concentrationField.setDirectSwap(x,y,z,updatedConcentration);//updating scratch
+
+                        }
+                }else{
+                
+                    for (int z = minDim.z; z < maxDim.z; z++)
+                        for (int y = minDim.y; y < maxDim.y; y++)
+                            for (int x = minDim.x; x < maxDim.x; x++){
+
+                                currentConcentration = concentrationField.getDirect(x,y,z);
+                                currentCellType=cellTypeArray.getDirect(x,y,z);
+                                currentDiffCoef=diffCoef[currentCellType];
+                                pt=Point3D(x-1,y-1,z-1);
 
 
-						////////concentrationField.setDirectSwap(x,y,z,updatedConcentration);//updating scratch
+                                updatedConcentration=0.0;
+                                concentrationSum=0.0;
+                                varDiffSumTerm=0.0;
+                
 
 
-					}
+                                ev[0]=currentCellType;
+                                //setting up x,y,z variables
+                                ev[1]=pt.x; //x-variable
+                                ev[2]=pt.y; //y-variable
+                                ev[3]=pt.z; //z-variable
 
+                                //getting concentrations at x,y,z for all the fields	
+                                for (int fieldIdx=0 ; fieldIdx<numberOfFields; ++fieldIdx){						
+                                    ConcentrationField_t & concentrationField = *concentrationFieldVector[fieldIdx];
+                                    ev[4+fieldIdx]=concentrationField.getDirect(x,y,z);
+                                }
+
+                                //loop over nearest neighbors
+                                const std::vector<Point3D> & offsetVecRef=boundaryStrategy->getOffsetVec(pt);
+                                for (register int i = 0  ; i<=maxNeighborIndex /*offsetVec.size()*/ ; ++i ){
+                                    const Point3D & offset = offsetVecRef[i];
+
+                                    concentrationSum += concentrationField.getDirect(x+offset.x,y+offset.y,z+offset.z);
+
+                                }
+
+                                concentrationSum -= (maxNeighborIndex+1)*currentConcentration;
+                            
+                                concentrationSum*=currentDiffCoef;
+                                //                                         cout << " diffCoef[currentCellType]: " << diffCoef[currentCellType] << endl;    
+
+
+                            
+                                //using forward first derivatives - cartesian lattice 3D
+                                if (variableDiffusionCoefficientFlag){
+
+                                    const std::vector<Point3D> & offsetFDVecRef=getOffsetVec(pt); //offsets for forward derivatives
+
+
+                                    for (register int i = 0  ; i<offsetFDVecRef.size() ; ++i ){
+                                        const Point3D & offsetFD = offsetFDVecRef[i];
+                                        varDiffSumTerm+=(diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)-concentrationField.getDirect(x,y,z));
+                                    }
+
+                                }
+
+                                updatedConcentration=(concentrationSum+varDiffSumTerm)+(1-decayCoef[currentCellType])*currentConcentration;
+
+                                updatedConcentration+=dt*ev.eval(); //reaction terms are scaled here all other constants e.g. diffusion or secretion constants are scaled in the Scale function
+                                concentrationField.setDirectSwap(x,y,z,updatedConcentration);//updating scratch
+
+                            }                
+                
+                
+                }
 
 
 		} catch (mu::Parser::exception_type &e)
@@ -2075,10 +2249,47 @@ void ReactionDiffusionSolverFE::update(CC3DXMLElement *_xmlData, bool _fullInitF
                 }                
             }             
             
-		}
+		}else{ //translating default  BCs defined in Potts into BoundaryConditionSpecifier structure
+        
+            bcSpecFlagVec[bcSpecFlagVec.size()-1]=true;
+            BoundaryConditionSpecifier & bcSpec = bcSpecVec[bcSpecVec.size()-1];
+            
+            if(periodicBoundaryCheckVector[0]){//periodic boundary conditions were set in x direction	
+                bcSpec.planePositions[BoundaryConditionSpecifier::MIN_X]=BoundaryConditionSpecifier::PERIODIC;
+                bcSpec.planePositions[BoundaryConditionSpecifier::MAX_X]=BoundaryConditionSpecifier::PERIODIC;
+            }else{//no-flux boundary conditions were set in x direction	
+                bcSpec.planePositions[BoundaryConditionSpecifier::MIN_X]=BoundaryConditionSpecifier::CONSTANT_DERIVATIVE;
+                bcSpec.planePositions[BoundaryConditionSpecifier::MAX_X]=BoundaryConditionSpecifier::CONSTANT_DERIVATIVE;
+                bcSpec.values[BoundaryConditionSpecifier::MIN_X]=0.0;
+                bcSpec.values[BoundaryConditionSpecifier::MAX_X]=0.0;                            
+            }
+
+            if(periodicBoundaryCheckVector[1]){//periodic boundary conditions were set in x direction	
+                bcSpec.planePositions[BoundaryConditionSpecifier::MIN_Y]=BoundaryConditionSpecifier::PERIODIC;
+                bcSpec.planePositions[BoundaryConditionSpecifier::MAX_Y]=BoundaryConditionSpecifier::PERIODIC;
+            }else{//no-flux boundary conditions were set in x direction	
+                bcSpec.planePositions[BoundaryConditionSpecifier::MIN_Y]=BoundaryConditionSpecifier::CONSTANT_DERIVATIVE;
+                bcSpec.planePositions[BoundaryConditionSpecifier::MAX_Y]=BoundaryConditionSpecifier::CONSTANT_DERIVATIVE;
+                bcSpec.values[BoundaryConditionSpecifier::MIN_Y]=0.0;
+                bcSpec.values[BoundaryConditionSpecifier::MAX_Y]=0.0;                            
+            }
+
+            if(periodicBoundaryCheckVector[2]){//periodic boundary conditions were set in x direction	
+                bcSpec.planePositions[BoundaryConditionSpecifier::MIN_Z]=BoundaryConditionSpecifier::PERIODIC;
+                bcSpec.planePositions[BoundaryConditionSpecifier::MAX_Z]=BoundaryConditionSpecifier::PERIODIC;
+            }else{//no-flux boundary conditions were set in x direction	
+                bcSpec.planePositions[BoundaryConditionSpecifier::MIN_Z]=BoundaryConditionSpecifier::CONSTANT_DERIVATIVE;
+                bcSpec.planePositions[BoundaryConditionSpecifier::MAX_Z]=BoundaryConditionSpecifier::CONSTANT_DERIVATIVE;
+                bcSpec.values[BoundaryConditionSpecifier::MIN_Z]=0.0;
+                bcSpec.values[BoundaryConditionSpecifier::MAX_Z]=0.0;                            
+            }
+        
+        
+        }
 
 
 	}
+    
 	if(_xmlData->findElement("Serialize")){
 
 		serializeFlag=true;

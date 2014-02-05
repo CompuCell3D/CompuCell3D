@@ -269,7 +269,8 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
 	update(_xmlData,true);
     
     latticeType=static_cast<Cruncher*>(this)->getBoundaryStrategy()->getLatticeType();
-    if (latticeType==HEXAGONAL_LATTICE){
+    // if (latticeType==HEXAGONAL_LATTICE){
+    {
         bc_indicator_field = new    Array3DCUDA<signed char> (fieldDim,BoundaryConditionSpecifier::INTERNAL);// BoundaryConditionSpecifier::INTERNAL= -1
         boundaryConditionIndicatorInit(); // initializing the array which will be used to guide solver when to use BC values in the diffusion algorithm and when to use generic algorithm (i.e. the one for "internal pixels")
     }        
@@ -830,33 +831,40 @@ void DiffusionSolverFE<Cruncher>::prepCellTypeField(int idx){
     
     Dim3D workFieldDimInternal=getInternalDim();
     
+    // cerr<<"workFieldDimInternal="<<workFieldDimInternal<<endl;
+    // cerr<<"fieldDim="<<fieldDim<<endl;
+    
     for (int iter = 0 ; iter < numberOfIters ; ++iter){
         if(periodicBoundaryCheckVector[0] || bcSpec.planePositions[0]==BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[1]==BoundaryConditionSpecifier::PERIODIC){
             //x - periodic
             int x=0;
-            for(int y=0 ; y< workFieldDimInternal.y-1; ++y)
-                for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
+            // for(int y=0 ; y< workFieldDimInternal.y-1; ++y)
+                // for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
+            for(int y=0 ; y< fieldDim.y+2; ++y)
+                for(int z=0 ; z<fieldDim.z+2 ; ++z){
                     
                     cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(fieldDim.x,y,z));                    
                 }
 
                 x=fieldDim.x+1;
-                for(int y=0 ; y< workFieldDimInternal.y-1; ++y)
-                    for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
+                for(int y=0 ; y< fieldDim.y+2; ++y)
+                    for(int z=0 ; z<fieldDim.z+2 ; ++z){
                         
                         cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(1,y,z));
                     }    
                     
         }else{
             int x=0;
-            for(int y=0 ; y< workFieldDimInternal.y-1; ++y)
-                for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
+            // for(int y=0 ; y< workFieldDimInternal.y-1; ++y)
+                // for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
+            for(int y=0 ; y< fieldDim.y+2; ++y)
+                for(int z=0 ; z<fieldDim.z+2 ; ++z){                
                     cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x+1,y,z));
                 }
 
                 x=fieldDim.x+1;
-                for(int y=0 ; y< workFieldDimInternal.y-1; ++y)
-                    for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
+            for(int y=0 ; y< fieldDim.y+2; ++y)
+                for(int z=0 ; z<fieldDim.z+2 ; ++z){                
                         cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x-1,y,z));
                     }    
         
@@ -864,26 +872,30 @@ void DiffusionSolverFE<Cruncher>::prepCellTypeField(int idx){
         
         if(periodicBoundaryCheckVector[1] || bcSpec.planePositions[2]==BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[3]==BoundaryConditionSpecifier::PERIODIC){
             int y=0;
-            for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
-                for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){                
+            for(int x=0 ; x< fieldDim.x+2; ++x)
+                for(int z=0 ; z<fieldDim.z+2 ; ++z){                
                     cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,fieldDim.y,z));
                 }
 
                 y=fieldDim.y+1;
-                for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
-                    for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
+                for(int x=0 ; x< fieldDim.x+2; ++x)
+                    for(int z=0 ; z<fieldDim.z+2 ; ++z){
                         cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,1,z));
                     }    
         }else{
             int y=0;
-            for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
-                for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){                
+            for(int x=0 ; x< fieldDim.x+2; ++x)
+                for(int z=0 ; z<fieldDim.z+2 ; ++z){                
+            // for(int x=0 ; x< fieldDim.x+2; ++x)
+                // for(int z=0 ; z<fieldDim.z+2 ; ++z){                  
                     cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y+1,z));
                 }
 
                 y=fieldDim.y+1;
-                for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
-                    for(int z=0 ; z<workFieldDimInternal.z-1 ; ++z){
+                for(int x=0 ; x< fieldDim.x+2; ++x)
+                    for(int z=0 ; z<fieldDim.z+2 ; ++z){
+            // for(int x=0 ; x< fieldDim.x+2; ++x)
+                // for(int z=0 ; z<fieldDim.z+2 ; ++z){                                      
                         cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y-1,z));
                     }    
         }
@@ -891,28 +903,28 @@ void DiffusionSolverFE<Cruncher>::prepCellTypeField(int idx){
         if(periodicBoundaryCheckVector[2] || bcSpec.planePositions[4]==BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[5]==BoundaryConditionSpecifier::PERIODIC){    
         
             int z=0;
-            for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
-                for(int y=0 ; y<workFieldDimInternal.y-1 ; ++y){                
+            for(int x=0 ; x< fieldDim.x+2; ++x)
+                for(int y=0 ; y<fieldDim.y+2 ; ++y){                
                     cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,fieldDim.z));
                 }
 
                 z=fieldDim.z+1;
-                for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
-                    for(int y=0 ; y<workFieldDimInternal.y-1 ; ++y){
+                for(int x=0 ; x< fieldDim.x+2; ++x)
+                    for(int y=0 ; y<fieldDim.y+2 ; ++y){
                         cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,1));
                     }    
         
         }else{    
         
             int z=0;
-            for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
-                for(int y=0 ; y<workFieldDimInternal.y-1 ; ++y){
+            for(int x=0 ; x< fieldDim.x+2; ++x)
+                for(int y=0 ; y<fieldDim.y+2 ; ++y){
                     cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,z+1));
                 }
 
                 z=fieldDim.z+1;
-                for(int x=0 ; x< workFieldDimInternal.x-1; ++x)
-                    for(int y=0 ; y<workFieldDimInternal.y-1 ; ++y){
+                for(int x=0 ; x< fieldDim.x+2; ++x)
+                    for(int y=0 ; y<fieldDim.y+2 ; ++y){
                         cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,z-1));
                     }    
         

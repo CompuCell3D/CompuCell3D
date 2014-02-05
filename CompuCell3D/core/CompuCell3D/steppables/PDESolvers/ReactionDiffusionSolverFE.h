@@ -140,6 +140,8 @@ protected:
    CellTypeMonitorPlugin *cellTypeMonitorPlugin;
    Array3DCUDA<unsigned char> * h_celltype_field;
    Array3DCUDA<float> * h_cellid_field;
+   
+   Array3DCUDA<signed char> * bc_indicator_field;   
 
    std::vector<std::vector<Point3D> > hexOffsetArray;
    std::vector<Point3D> offsetVecCartesian;
@@ -157,6 +159,9 @@ protected:
    void Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant);
    virtual void prepCellTypeField(int idx);
    virtual Dim3D getInternalDim();
+   
+   virtual void boundaryConditionIndicatorInit(); // this function initializes indicator only not the actual boundary conditions used on non-cartesian lattices
+   
    //////end of part copied from DiffusionSolverFE
 
    int maxNumberOfDiffusionCalls;// this number determines how many times ALL fields will be diffused
