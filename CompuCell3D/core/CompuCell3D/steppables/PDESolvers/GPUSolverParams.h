@@ -17,7 +17,7 @@
 #endif
 
 // Thread block size
-#define BLOCK_SIZE 8
+#define BLOCK_SIZE 16
 
 typedef struct SolverParams{
 	unsigned int dimx,dimy,dimz;
@@ -42,8 +42,8 @@ enum BCType_GPU{
     CONSTANT_DERIVATIVE
 };
 
-enum BCPosition_GPU{
-    MIN_X=0, MAX_X,
+enum BCPosition_GPU{INTERNAL=-2,BOUNDARY,
+    MIN_X, MAX_X,
     MIN_Y, MAX_Y,
     MIN_Z, MAX_Z
 };

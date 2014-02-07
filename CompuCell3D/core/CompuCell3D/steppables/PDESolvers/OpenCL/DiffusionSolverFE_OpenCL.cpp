@@ -26,6 +26,7 @@ DiffusionSolverFE_OpenCL::DiffusionSolverFE_OpenCL(void):
     DiffusableVectorCommon<float, Array3DCUDA>(),
     oclHelper(NULL), 
     d_cellTypes(NULL),
+    d_bcIndicator(NULL),
     d_cellIdsAllocated(false),
 //	totalSolveTime(0.),
 //	totalTransferTime(0.),
@@ -54,6 +55,10 @@ DiffusionSolverFE_OpenCL::~DiffusionSolverFE_OpenCL(void)
 
 		res=clReleaseMemObject(d_cellTypes);
 		ASSERT_OR_THROW("Can not release d_cellTypes", res==CL_SUCCESS);
+
+		res=clReleaseMemObject(d_bcIndicator);
+		ASSERT_OR_THROW("Can not release d_bcIndicator", res==CL_SUCCESS);
+        
         
         if (d_cellIdsAllocated){
             res=clReleaseMemObject(d_cellIds);
@@ -74,6 +79,9 @@ DiffusionSolverFE_OpenCL::~DiffusionSolverFE_OpenCL(void)
 
 		res=clReleaseKernel(kernelUniDiff);
 		ASSERT_OR_THROW("Can not release kernelUniDiff", res==CL_SUCCESS);
+
+		res=clReleaseKernel(kernelUniDiffNew);
+		ASSERT_OR_THROW("Can not release kernelUniDiffNew", res==CL_SUCCESS);
         
 		res=clReleaseKernel(kernelBoundaryConditionInit);
 		ASSERT_OR_THROW("Can not release kernelBoundaryConditionInit", res==CL_SUCCESS);
@@ -452,9 +460,9 @@ void DiffusionSolverFE_OpenCL::stepImpl(const unsigned int _currentStep){
         
         
         // float totConc=0.0;        
-		// for (int z = 1; z < fieldDim.z+2; z++)
-			// for (int y = 1; y < fieldDim.y+2; y++)
-				// for (int x = 1; x < fieldDim.x+2; x++){
+		// for (int z = 1; z < fieldDim.z+1; z++)
+			// for (int y = 1; y < fieldDim.y+1; y++)
+				// for (int x = 1; x < fieldDim.x+1; x++){
 
                     // totConc+=concentrationField.getDirect(x,y,z);
                 // }                
@@ -510,14 +518,29 @@ void DiffusionSolverFE_OpenCL::diffuseSingleField(unsigned int idx){
     }
     
     //diffusion step
-    cl_int errArg= clSetKernelArg(kernelUniDiff, concFieldArgPosition, sizeof(cl_mem), concDevPtr);
-    errArg  = errArg | clSetKernelArg(kernelUniDiff,scratchFieldArgPosition , sizeof(cl_mem), scratchDevPtr);    
-    ASSERT_OR_THROW("Swapping scratch and concentration field failed", errArg==CL_SUCCESS);
+    // // // cl_int errArg= clSetKernelArg(kernelUniDiff, concFieldArgPosition, sizeof(cl_mem), concDevPtr);
+    // // // errArg  = errArg | clSetKernelArg(kernelUniDiff,scratchFieldArgPosition , sizeof(cl_mem), scratchDevPtr);    
+    // // // ASSERT_OR_THROW("Setting concentration and scratch field arguments for diffusion kernel failed", errArg==CL_SUCCESS);
     
-    cl_int err = oclHelper->EnqueueNDRangeKernel(kernelUniDiff, 3, globalWorkSize, localWorkSize);    
+    // // // cl_int err = oclHelper->EnqueueNDRangeKernel(kernelUniDiff, 3, globalWorkSize, localWorkSize);    
+    // // // if(err!=CL_SUCCESS)
+        // // // cerr<<oclHelper->ErrorString(err)<<endl;
+    // // // ASSERT_OR_THROW("Diffusion Kernel failed", err==CL_SUCCESS);
+
+
+    cl_int errArg= clSetKernelArg(kernelUniDiffNew, concFieldArgPosition, sizeof(cl_mem), concDevPtr);
+    errArg  = errArg | clSetKernelArg(kernelUniDiffNew,scratchFieldArgPosition , sizeof(cl_mem), scratchDevPtr);    
+    errArg  = errArg | clSetKernelArg(kernelUniDiffNew,9 , sizeof(cl_mem), &d_bcIndicator);    
+    errArg  = errArg | clSetKernelArg(kernelUniDiffNew,10 , sizeof(cl_mem), &d_bcSpecifier);    
+    ASSERT_OR_THROW("Setting concentration and scratch field arguments for diffusion kernel failed", errArg==CL_SUCCESS);
+    
+    
+    
+    cl_int err = oclHelper->EnqueueNDRangeKernel(kernelUniDiffNew, 3, globalWorkSize, localWorkSize);    
     if(err!=CL_SUCCESS)
         cerr<<oclHelper->ErrorString(err)<<endl;
     ASSERT_OR_THROW("Diffusion Kernel failed", err==CL_SUCCESS);
+
     
     //swapping pointers    
     tmpDevPtr=concDevPtr;
@@ -532,8 +555,9 @@ void DiffusionSolverFE_OpenCL::diffuseSingleField(unsigned int idx){
 void DiffusionSolverFE_OpenCL::SetConstKernelArguments()
 {
 	int kArg=0;
+    cl_int err;
     concFieldArgPosition=kArg++;    
-	cl_int err= clSetKernelArg(kernelUniDiff, concFieldArgPosition, sizeof(cl_mem), &d_concentrationField);
+	err= clSetKernelArg(kernelUniDiff, concFieldArgPosition, sizeof(cl_mem), &d_concentrationField);
     
 	err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_cellTypes);
 	err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_solverParams);
@@ -546,6 +570,25 @@ void DiffusionSolverFE_OpenCL::SetConstKernelArguments()
 	err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(unsigned char)*(localWorkSize[0]+2)*(localWorkSize[1]+2)*(localWorkSize[2]+2), NULL);//local cell type
 
 	ASSERT_OR_THROW("Can not set uniDiff kernel's arguments\n", err==CL_SUCCESS);
+    
+    /// uniDiffNew
+    kArg=0;
+    concFieldArgPosition=kArg++;
+	err= clSetKernelArg(kernelUniDiffNew, concFieldArgPosition, sizeof(cl_mem), &d_concentrationField);
+    
+	err  = err | clSetKernelArg(kernelUniDiffNew, kArg++, sizeof(cl_mem), &d_cellTypes);
+	err  = err | clSetKernelArg(kernelUniDiffNew, kArg++, sizeof(cl_mem), &d_solverParams);
+	err  = err | clSetKernelArg(kernelUniDiffNew, kArg++, sizeof(cl_mem), &d_nbhdConcShifts);
+	err  = err | clSetKernelArg(kernelUniDiffNew, kArg++, sizeof(cl_mem), &d_nbhdDiffShifts);
+    
+    scratchFieldArgPosition=kArg++;
+	err  = err | clSetKernelArg(kernelUniDiffNew,scratchFieldArgPosition , sizeof(cl_mem), &d_scratchField);
+	err  = err | clSetKernelArg(kernelUniDiffNew, kArg++, sizeof(float)*(localWorkSize[0]+2)*(localWorkSize[1]+2)*(localWorkSize[2]+2), NULL);//local field
+	err  = err | clSetKernelArg(kernelUniDiffNew, kArg++, sizeof(unsigned char)*(localWorkSize[0]+2)*(localWorkSize[1]+2)*(localWorkSize[2]+2), NULL);//local cell type
+
+	ASSERT_OR_THROW("Can not set uniDiffNew kernel's arguments\n", err==CL_SUCCESS);
+    
+    
     
     // ///********************************** myKernel
     // err= clSetKernelArg(myKernel, 0, sizeof(cl_mem), &d_concentrationField);    
@@ -659,10 +702,14 @@ void DiffusionSolverFE_OpenCL::SetSolverParams(DiffusionData  &diffData, Secreti
 	//cerr<<"dt="<<h_solverParams.dt<<"; dx="<<h_solverParams.dx<<endl;
 
 	oclHelper->WriteBuffer(d_solverParams, &h_solverParams, 1);
-
+    cl_int err;    
 	float dt=diffData.deltaT;        
-	cl_int err  = clSetKernelArg(kernelUniDiff, 8, sizeof(dt), &dt);//local cell type
-	ASSERT_OR_THROW("Can't pass time step to prod kernel\n", err==CL_SUCCESS);
+    
+	err  = clSetKernelArg(kernelUniDiff, 8, sizeof(dt), &dt);//local cell type
+	ASSERT_OR_THROW("Can't pass time step to kernelUniDiff kernel\n", err==CL_SUCCESS);
+    
+	err  = clSetKernelArg(kernelUniDiffNew, 8, sizeof(dt), &dt);//local cell type
+	ASSERT_OR_THROW("Can't pass time step to kernelUniDiffNew kernel\n", err==CL_SUCCESS);    
 
     
 }
@@ -691,7 +738,12 @@ void DiffusionSolverFE_OpenCL::initImpl(){
 	localWorkSize[0]=BLOCK_SIZE;
 	localWorkSize[1]=BLOCK_SIZE;
 	//TODO: BLOCK size can be non-optimal in terms of maximum performance
-	localWorkSize[2]=std::min(oclHelper->getMaxWorkGroupSize()/(BLOCK_SIZE*BLOCK_SIZE),  size_t(fieldDim.z));  
+    // on some low-end GPUs we need to limit  number of workers because if the kernel code is too large those cards will go out of  resources  - here we put heuristic 0.8 factor limiting number of threads - this will give slightly worse performence but will avoid crashes
+    size_t optimal_z_dim=0.8*(oclHelper->getMaxWorkGroupSize()/(BLOCK_SIZE*BLOCK_SIZE));
+    localWorkSize[2]=std::min( optimal_z_dim ,  size_t(fieldDim.z));  
+	// localWorkSize[2]=std::min(oclHelper->getMaxWorkGroupSize())=/(BLOCK_SIZE*BLOCK_SIZE),  size_t(fieldDim.z));  
+    
+    
     
     int xReminder=fieldDim.x % localWorkSize[0];
     int yReminder=fieldDim.y % localWorkSize[1];
@@ -730,10 +782,12 @@ void DiffusionSolverFE_OpenCL::gpuAlloc(size_t fieldLen){
 
 	size_t mem_size_field=fieldLen*sizeof(float);
 	size_t mem_size_celltype_field=fieldLen*sizeof(unsigned char);
+    size_t mem_size_bcIndicator_field=fieldLen*sizeof(signed char);
 
 	// // // d_concentrationField=oclHelper->CreateBuffer(CL_MEM_READ_ONLY, mem_size_field);
     d_concentrationField=oclHelper->CreateBuffer(CL_MEM_READ_WRITE, mem_size_field);
 	d_cellTypes=oclHelper->CreateBuffer(CL_MEM_READ_ONLY, mem_size_celltype_field);
+    d_bcIndicator=oclHelper->CreateBuffer(CL_MEM_READ_ONLY, mem_size_bcIndicator_field);
 	d_scratchField=oclHelper->CreateBuffer(CL_MEM_WRITE_ONLY, mem_size_field);
 	
 	d_solverParams=oclHelper->CreateBuffer(CL_MEM_READ_ONLY, sizeof(UniSolverParams_t));
@@ -844,6 +898,11 @@ void DiffusionSolverFE_OpenCL::CreateKernel(){
 	printf("clCreateKernel for kernelUniDiff %s: %s\n", kernelName.c_str(), oclHelper->ErrorString(err));
 	ASSERT_OR_THROW("Can not create a kernelUniDiff", err==CL_SUCCESS);
 
+
+	kernelUniDiffNew = clCreateKernel(program, "uniDiffNew", &err);
+	printf("clCreateKernel for kernelUniDiffNew %s: %s\n", "uniDiffNew", oclHelper->ErrorString(err));
+	ASSERT_OR_THROW("Can not create a kernelUniDiffNew", err==CL_SUCCESS);
+
     
     kernelBoundaryConditionInit = clCreateKernel(program, "boundaryConditionInitKernel" , &err);
 	printf("clCreateKernel for kernel %s: %s\n", "boundaryConditionInitKernel" , oclHelper->ErrorString(err));
@@ -862,6 +921,7 @@ void DiffusionSolverFE_OpenCL::CreateKernel(){
     secreteConstantConcentrationSingleFieldKernel = clCreateKernel(program, "secreteConstantConcentrationSingleFieldKernel" , &err); 
 	printf("clCreateKernel for kernel %s: %s\n", "secreteConstantConcentrationSingleFieldKernel" , oclHelper->ErrorString(err));
 	ASSERT_OR_THROW("Can not create secreteConstantConcentrationSingleFieldKernel", err==CL_SUCCESS);
+    
 
     secreteOnContactSingleFieldKernel = clCreateKernel(program, "secreteOnContactSingleFieldKernel" , &err); 
 	printf("clCreateKernel for kernel %s: %s\n", "secreteOnContactSingleFieldKernel" , oclHelper->ErrorString(err));
@@ -879,6 +939,10 @@ void DiffusionSolverFE_OpenCL::initSecretionData(){
 void DiffusionSolverFE_OpenCL::initCellTypesAndBoundariesImpl(){
 	cl_int err=oclHelper->WriteBuffer(d_cellTypes, h_celltype_field->getContainer(), field_len); 
 	ASSERT_OR_THROW("Can not copy Cell Type field to GPU", err==CL_SUCCESS);
+    
+	err=oclHelper->WriteBuffer(d_bcIndicator, bc_indicator_field->getContainer(), field_len); 
+	ASSERT_OR_THROW("Can not copy Boundary Condition Indicator fields field to GPU", err==CL_SUCCESS);
+    
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE_OpenCL::finish(){

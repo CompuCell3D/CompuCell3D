@@ -33,6 +33,8 @@ class PDESOLVERS_EXPORT DiffusionSolverFE_OpenCL :
 	cl_mem d_solverParams;
     cl_mem d_bcSpecifier;
     
+    cl_mem d_bcIndicator; // indicates which pixels are in the lattice  interior and whic at the boundary and which at the external boundary
+    
     
     //secretionData
     cl_mem d_secretionData;
@@ -116,6 +118,7 @@ private:
     int iterationNumber; // this variable is important because other routines can sense if this is first or subsequent call to diffuse or secrete functions. Some work in this functions has to be done during initial call and skipped in others
     
     cl_kernel kernelUniDiff;
+    cl_kernel kernelUniDiffNew;
     cl_kernel kernelBoundaryConditionInit;
     cl_kernel kernelBoundaryConditionInitLatticeCorners;
     cl_kernel secreteSingleFieldKernel;

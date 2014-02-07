@@ -995,6 +995,7 @@ void DiffusionSolverFE_CPU::diffuseSingleField(unsigned int idx){
         for (int z = minDim.z; z < maxDim.z; z++)
             for (int y = minDim.y; y < maxDim.y; y++)
                 for (int x = minDim.x; x < maxDim.x; x++){
+                
                     currentConcentration = concentrationField.getDirect(x,y,z);
                     currentCellType=cellTypeArray.getDirect(x,y,z);
                     currentDiffCoef=diffCoef[currentCellType];
@@ -1007,6 +1008,7 @@ void DiffusionSolverFE_CPU::diffuseSingleField(unsigned int idx){
                     
                     // cerr<<" x,y,z="<<x<<","<<y<<","<<z<<" bcField.getDirect(x,y,z)="<<(int)bcField.getDirect(x,y,z)<<" maxNeighborIndex="<<maxNeighborIndex<<endl;
                     if(bcField.getDirect(x,y,z)==BoundaryConditionSpecifier::INTERNAL){//internal pixel
+                    // if(true){
                         //loop over nearest neighbors
                         const std::vector<Point3D> & offsetVecRef=boundaryStrategy->getOffsetVec(pt);
                         for (register int i = 0  ; i<=maxNeighborIndex /*offsetVec.size()*/ ; ++i ){
@@ -1069,7 +1071,12 @@ void DiffusionSolverFE_CPU::diffuseSingleField(unsigned int idx){
                         
                         concentrationSum*=currentDiffCoef;
                         //                                         cout << " diffCoef[currentCellType]: " << diffCoef[currentCellType] << endl;    
-
+                        
+                        // cerr<<"VISITING PIXEL="<<pt+Point3D(1,1,1)<<"  cellTypeArray.getDirect(x,y,z)="<<(int)cellTypeArray.getDirect(x,y,z)<<endl;
+                        
+                        // // // varDiffSumTerm = cellTypeArray.getDirect(x,y,z);
+                        // // // concentrationField.setDirectSwap(x,y,z,varDiffSumTerm);//updating scratch
+                        
                         //using forward first derivatives - cartesian lattice 3D
                         if (variableDiffusionCoefficientFlag){
 
@@ -1079,23 +1086,30 @@ void DiffusionSolverFE_CPU::diffuseSingleField(unsigned int idx){
                             // }
                             const std::vector<Point3D> & offsetFDVecRef=getOffsetVec(pt); //offsets for forward derivatives
 
-
+                            
                             for (register int i = 0  ; i<offsetFDVecRef.size() ; ++i ){
                             
                                 const Point3D & offsetFD = offsetFDVecRef[i];
                                 signed char nBcIndicator=bcField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z);
                                 
+                                // varDiffSumTerm = cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z);
+                                // varDiffSumTerm=nBcIndicator;
+                                // break;
+                                    
                                 if (nBcIndicator==BoundaryConditionSpecifier::INTERNAL  || nBcIndicator==BoundaryConditionSpecifier::BOUNDARY){// for pixel neighbors which are internal or boundary pixels  calculations use default "internal pixel" algorithm. boundary pixel means belonging to the lattice but touching boundary
                                 
-                                    varDiffSumTerm+=(diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)-concentrationField.getDirect(x,y,z));
+                                    varDiffSumTerm += (diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)-concentrationField.getDirect(x,y,z));
+                                    // cerr<<"shiftedPt="<<pt+Point3D(1,1,1)+offsetFD<<" c="<<concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)<<endl;
+                                    // varDiffSumTerm +=concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z);
+                                    
                                     
                                 }else{
                                     if (bcSpec.planePositions[nBcIndicator]==BoundaryConditionSpecifier::PERIODIC){// for pixel neighbors which are external pixels with periodic BC  calculations use default "internal pixel" algorithm
-                                        concentrationSum += (diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)-concentrationField.getDirect(x,y,z));
+                                        varDiffSumTerm += (diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)-concentrationField.getDirect(x,y,z));
                                         
                                     }else if (bcSpec.planePositions[nBcIndicator]==BoundaryConditionSpecifier::CONSTANT_VALUE){
                                     
-                                        concentrationSum += (diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*( bcSpec.values[nBcIndicator]-concentrationField.getDirect(x,y,z));
+                                        varDiffSumTerm += (diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*( bcSpec.values[nBcIndicator]-concentrationField.getDirect(x,y,z));
                                         
                                     }else if (bcSpec.planePositions[nBcIndicator]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
                                     
@@ -1125,8 +1139,9 @@ void DiffusionSolverFE_CPU::diffuseSingleField(unsigned int idx){
                     }                        
                     updatedConcentration=(concentrationSum+varDiffSumTerm)+(1-decayCoef[currentCellType])*currentConcentration;
 
+                    // updatedConcentration=concentrationSum;
+                    // updatedConcentration=currentDiffCoef;
                     
-
                     //imposing artificial limits on allowed concentration
                     if(diffData.useThresholds){
                         if(updatedConcentration>diffData.maxConcentration){
@@ -1142,15 +1157,7 @@ void DiffusionSolverFE_CPU::diffuseSingleField(unsigned int idx){
 
                 }        
                 
-        float totConc=0.0;
-        for (int z = minDim.z; z < maxDim.z; z++)
-            for (int y = minDim.y; y < maxDim.y; y++)
-                for (int x = minDim.x; x < maxDim.x; x++){
-                
-                 
-                    totConc+=concentrationField.getDirect(x,y,z);
-                }                
-        cerr<<"TOTAL CONCENTRATION="<<totConc<<endl;                    
+                  
         
         
     }
@@ -1158,6 +1165,17 @@ void DiffusionSolverFE_CPU::diffuseSingleField(unsigned int idx){
 	concentrationField.swapArrays();
 
 
+    
+        // float totConc=0.0;
+        // for (int z = 1; z < fieldDim.z+1; z++)
+            // for (int y =1; y < fieldDim.y+1; y++)
+                // for (int x = 1; x < fieldDim.x+1; x++){
+                
+                 
+                    // totConc+=concentrationField.getDirect(x,y,z);
+                // }                
+        // cerr<<"TOTAL CONCENTRATION="<<totConc<<endl;      
+    
 }
 
 
