@@ -47,6 +47,7 @@ class PDESOLVERS_EXPORT DiffusionSolverFE_OpenCL :
     bool d_cellIdsAllocated;
     
     int concFieldArgPosition, scratchFieldArgPosition; //positions of concentration and scratch fields in kernel argument list
+    int bcSpecifierArgPosition, bcIndicatorArgPosition; //positions of bcIndicator and bcSpecifier
     
     
 	cl_mem d_nbhdConcShifts, d_nbhdDiffShifts;

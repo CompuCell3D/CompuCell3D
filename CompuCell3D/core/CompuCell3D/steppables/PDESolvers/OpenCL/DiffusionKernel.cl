@@ -818,184 +818,20 @@ __kernel void boundaryConditionInitKernel( __global float* g_field, __global Uni
 }    
 
 
-__kernel void uniDiff(__global float* g_field,
-    __global const unsigned char * g_cellType,
-	__global UniSolverParams_t  const *solverParams,
-	__constant int4 const *nbhdConcShifts, 
-	__constant int4 const *nbhdDiffShifts, 
-    __global float* g_scratch,
-    __local float *l_field,
-	__local unsigned char *l_cellType,
-	float dt
-    )    
-{
-    
-    int bx=get_group_id(0);
-    int by=get_group_id(1);
-    int bz=get_group_id(2);
-    
-    int gid_x=get_global_id(0);
-    int gid_y=get_global_id(1);
-    int gid_z=get_global_id(2);
-    
-    int tx=get_local_id(0);
-    int ty=get_local_id(1);
-    int tz=get_local_id(2);
-    
-    int l_dim_x=get_local_size(0);
-    int l_dim_y=get_local_size(1);
-    int l_dim_z=get_local_size(2);
-    
-	//there is a border of 1 pixel around the domain, so shifting by 1 at all dimensions
 
-    int4 g_ind={gid_x+1, gid_y+1, gid_z+1, 0};
-
-	if(g_ind.x>solverParams->xDim||g_ind.y>solverParams->yDim||g_ind.z>solverParams->zDim)
-		return;
-	
-    int4 l_ind_orig={tx,  ty, tz, 0};
-    
-
-    int4 l_ind={tx+1,  ty+1,  tz+1, 0};
-
-	// // // int4 g_dim={get_global_size(0), get_global_size(1), get_global_size(2), 0};
-    int4 g_dim={solverParams->xDim, solverParams->yDim, solverParams->zDim, 0}; // g_dim has to have dimensions of field not of the workSize - after all we use g_dim to access arrays and those are indexed using user specified lattice dim , not work size 
-    
-    
-
-    int4 l_dim={l_dim_x,  l_dim_x,  l_dim_x, 0};
-
-        
-	int g_linearInd=ext3DIndToLinear(g_dim, g_ind);//index of a current work item in a global space
-	int l_linearInd=ext3DIndToLinear(l_dim, l_ind);//index of a current work item in a local space (in a block of shared memory)
-    
-    // moving data from global to local
-    l_field[l_linearInd]=g_field[g_linearInd];
-    l_cellType[l_linearInd]=g_cellType[g_linearInd];
-        
-    barrier(CLK_LOCAL_MEM_FENCE);     
-    
-    
-    if(solverParams->hexLattice){
-        //this part is slow - essentially we do unnecessary multiple copies of data but the code is simple to uinderstand. I tried doing series of if-else statements in addition to copying faces but this always resulted in runtime-error. 
-        // I leave it in it for now, maybe later I can debug it better
-        int4 corner_offset1[26]={(int4)(1,0,0,0) , (int4)(1,1,0,0) , (int4)(0,1,0,0) , (int4)(-1,1,0,0) , (int4)(-1,0,0,0) , (int4)(-1,-1,0,0) , (int4)(0,-1,0,0) , (int4)(1,-1,0,0),
-        (int4)(1,0,1,0) , (int4)(1,1,1,0) , (int4)(0,1,1,0) , (int4)(-1,1,1,0) , (int4)(-1,0,1,0) , (int4)(-1,-1,1,0) , (int4)(0,-1,1,0) , (int4)(1,-1,1,0) , (int4)(0,0,1,0),
-        (int4)(1,0,-1,0) , (int4)(1,1,-1,0) , (int4)(0,1,-1,0) , (int4)(-1,1,-1,0) , (int4)(-1,0,-1,0) , (int4)(-1,-1,-1,0) , (int4)(0,-1,-1,0) , (int4)(1,-1,-1,0) , (int4)(0,0,-1,0)         
-        };     
-        
-        for (int i = 0 ; i < 26 ; ++i){
-       
-            l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+1,0) + corner_offset1[i] ) ]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+1,0) + corner_offset1[i])];
-            l_cellType[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+1,0) + corner_offset1[i] ) ]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+1,0) + corner_offset1[i])];
-            // barrier(CLK_LOCAL_MEM_FENCE);     
-        }    
-        
-        
-    }else{
-        //copying faces
-        if (tx==0){
-            l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+1,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+1,gid_z+1,0))];  //central pixel                      
-            l_cellType[ext3DIndToLinear(l_dim, (int4)(tx,ty+1,tz+1,0))]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+1,gid_z+1,0))];  //central pixel                      
-        }
-        
-        if (tx==l_dim_x-1){
-            l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+1,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+1,gid_z+1,0))];        
-            l_cellType[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+1,tz+1,0))]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+1,gid_z+1,0))];        
-        }
-        
-      
-        if (ty==0){
-            l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y,gid_z+1,0))];
-            l_cellType[ext3DIndToLinear(l_dim, (int4)(tx+1,ty,tz+1,0))]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y,gid_z+1,0))];
-        }
-        
-      
-        if (ty==l_dim_y-1){
-            l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+2,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+2,gid_z+1,0))];
-            l_cellType[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+2,tz+1,0))]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+2,gid_z+1,0))];
-        }
-      
-        if (tz==0){
-            l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z,0))];
-            l_cellType[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz,0))]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z,0))];
-        }
-      
-        if (tz==l_dim_z-1){
-            l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+2,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+2,0))];
-            l_cellType[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+2,0))]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+2,0))];
-        }
-    }    
-    
-    barrier(CLK_LOCAL_MEM_FENCE);     
-
-    
-	float currentConcentration=l_field[l_linearInd];
-	float concentrationSum=0.f;
-        
-    // // // return;        
-    
-	if(solverParams->hexLattice){
-		for(int i=0; i<solverParams->nbhdConcLen; ++i){
-			int4 shift=getShift(g_ind+(int4)(-1,-1,-1,0), i, solverParams->hexLattice, nbhdConcShifts, solverParams->nbhdConcLen);
-			int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
-			concentrationSum+=l_field[lInd];
-		}
-		concentrationSum-=solverParams->nbhdConcLen*currentConcentration;
-	}else{
-		for(int i=0; i<solverParams->nbhdConcLen; ++i){
-			int4 shift=nbhdConcShifts[i];
-			int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
-			concentrationSum+=l_field[lInd];
-		}
-		concentrationSum-=solverParams->nbhdConcLen*currentConcentration;
-	}
-    
-	
-	unsigned char curentCelltype=l_cellType[l_linearInd];
-	float currentDiffCoef=solverParams->diffCoef[curentCelltype];
-	
-	concentrationSum*=currentDiffCoef;
-	
-	float varDiffSumTerm=0.f;
-	if(solverParams->hexLattice){
-		for(int i=0; i<solverParams->nbhdDiffLen; ++i){
-			int4 shift=getShift(g_ind+(int4)(-1,-1,-1, 0), i, solverParams->hexLattice, nbhdDiffShifts, solverParams->nbhdDiffLen);
-			int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
-			varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
-		}
-	}else{
-		for(int i=0; i<solverParams->nbhdDiffLen; ++i){
-			int lInd=ext3DIndToLinear(l_dim, l_ind+nbhdDiffShifts[i]);
-			varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
-		}
-	}
-	    
-	float dx2=solverParams->dx*solverParams->dx;
-	float dt_dx2=dt/dx2;
-
-    float scratch=dt_dx2*(concentrationSum+varDiffSumTerm)+(1.f-dt*solverParams->decayCoef[curentCelltype])*currentConcentration;
-    
-        
-    
-    g_scratch[g_linearInd]=scratch;
-            
-}
 
 
 
 __kernel void uniDiffNew(__global float* g_field,
-    __global const unsigned char * g_cellType,
+    __global float* g_scratch,    
 	__global UniSolverParams_t  const *solverParams,
+    __global BCSpecifier  const *bcSpecifier,
+    __global const unsigned char * g_cellType,    
+    __global const signed char *g_bcIndicator,        
 	__constant int4 const *nbhdConcShifts, 
-	__constant int4 const *nbhdDiffShifts, 
-    __global float* g_scratch,
+	__constant int4 const *nbhdDiffShifts,     
     __local float *l_field,
-	__local unsigned char *l_cellType,
-	float dt,
-    __global const signed char *g_bcIndicator,
-    __global BCSpecifier  const *bcSpecifier
-    
+	__local unsigned char *l_cellType
     )    
 {
     //because enums are not supported in opencl kernels we simply instantiate them as regular variables
@@ -1204,7 +1040,9 @@ __kernel void uniDiffNew(__global float* g_field,
 
     
 	float dx2=solverParams->dx*solverParams->dx;
+    float dt=solverParams->dx*solverParams->dt;
 	float dt_dx2=dt/dx2;
+    
 
     float scratch=dt_dx2*(concentrationSum+varDiffSumTerm)+(1.f-dt*solverParams->decayCoef[curentCelltype])*currentConcentration;
     
@@ -1322,3 +1160,179 @@ float diffOpDiag(float dx2, int nbhdLen, float currDiffCoeff, bool bnd){
 
 
 
+// old kernel - worked fine for cartesian lattice had issues on hex with non-operiodic bc
+
+// // // // __kernel void uniDiff(__global float* g_field,
+    // // // // __global const unsigned char * g_cellType,
+	// // // // __global UniSolverParams_t  const *solverParams,
+	// // // // __constant int4 const *nbhdConcShifts, 
+	// // // // __constant int4 const *nbhdDiffShifts, 
+    // // // // __global float* g_scratch,
+    // // // // __local float *l_field,
+	// // // // __local unsigned char *l_cellType,
+	// // // // float dt
+    // // // // )    
+    
+// // // __kernel void uniDiff(__global float* g_field,
+    // // // __global float* g_scratch,
+    // // // __global UniSolverParams_t  const *solverParams,
+    // // // __global const unsigned char * g_cellType,	
+	// // // __constant int4 const *nbhdConcShifts, 
+	// // // __constant int4 const *nbhdDiffShifts,     
+    // // // __local float *l_field,
+	// // // __local unsigned char *l_cellType	
+    // // // )      
+// // // {
+    
+    // // // int bx=get_group_id(0);
+    // // // int by=get_group_id(1);
+    // // // int bz=get_group_id(2);
+    
+    // // // int gid_x=get_global_id(0);
+    // // // int gid_y=get_global_id(1);
+    // // // int gid_z=get_global_id(2);
+    
+    // // // int tx=get_local_id(0);
+    // // // int ty=get_local_id(1);
+    // // // int tz=get_local_id(2);
+    
+    // // // int l_dim_x=get_local_size(0);
+    // // // int l_dim_y=get_local_size(1);
+    // // // int l_dim_z=get_local_size(2);
+    
+	// // // //there is a border of 1 pixel around the domain, so shifting by 1 at all dimensions
+
+    // // // int4 g_ind={gid_x+1, gid_y+1, gid_z+1, 0};
+
+	// // // if(g_ind.x>solverParams->xDim||g_ind.y>solverParams->yDim||g_ind.z>solverParams->zDim)
+		// // // return;
+	
+    // // // int4 l_ind_orig={tx,  ty, tz, 0};
+    
+
+    // // // int4 l_ind={tx+1,  ty+1,  tz+1, 0};
+
+	// // // // // // int4 g_dim={get_global_size(0), get_global_size(1), get_global_size(2), 0};
+    // // // int4 g_dim={solverParams->xDim, solverParams->yDim, solverParams->zDim, 0}; // g_dim has to have dimensions of field not of the workSize - after all we use g_dim to access arrays and those are indexed using user specified lattice dim , not work size 
+    
+    
+
+    // // // int4 l_dim={l_dim_x,  l_dim_x,  l_dim_x, 0};
+
+        
+	// // // int g_linearInd=ext3DIndToLinear(g_dim, g_ind);//index of a current work item in a global space
+	// // // int l_linearInd=ext3DIndToLinear(l_dim, l_ind);//index of a current work item in a local space (in a block of shared memory)
+    
+    // // // // moving data from global to local
+    // // // l_field[l_linearInd]=g_field[g_linearInd];
+    // // // l_cellType[l_linearInd]=g_cellType[g_linearInd];
+        
+    // // // barrier(CLK_LOCAL_MEM_FENCE);     
+    
+    
+    // // // if(solverParams->hexLattice){
+        // // // //this part is slow - essentially we do unnecessary multiple copies of data but the code is simple to uinderstand. I tried doing series of if-else statements in addition to copying faces but this always resulted in runtime-error. 
+        // // // // I leave it in it for now, maybe later I can debug it better
+        // // // int4 corner_offset1[26]={(int4)(1,0,0,0) , (int4)(1,1,0,0) , (int4)(0,1,0,0) , (int4)(-1,1,0,0) , (int4)(-1,0,0,0) , (int4)(-1,-1,0,0) , (int4)(0,-1,0,0) , (int4)(1,-1,0,0),
+        // // // (int4)(1,0,1,0) , (int4)(1,1,1,0) , (int4)(0,1,1,0) , (int4)(-1,1,1,0) , (int4)(-1,0,1,0) , (int4)(-1,-1,1,0) , (int4)(0,-1,1,0) , (int4)(1,-1,1,0) , (int4)(0,0,1,0),
+        // // // (int4)(1,0,-1,0) , (int4)(1,1,-1,0) , (int4)(0,1,-1,0) , (int4)(-1,1,-1,0) , (int4)(-1,0,-1,0) , (int4)(-1,-1,-1,0) , (int4)(0,-1,-1,0) , (int4)(1,-1,-1,0) , (int4)(0,0,-1,0)         
+        // // // };     
+        
+        // // // for (int i = 0 ; i < 26 ; ++i){
+       
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+1,0) + corner_offset1[i] ) ]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+1,0) + corner_offset1[i])];
+            // // // l_cellType[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+1,0) + corner_offset1[i] ) ]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+1,0) + corner_offset1[i])];
+            // // // // barrier(CLK_LOCAL_MEM_FENCE);     
+        // // // }    
+        
+        
+    // // // }else{
+        // // // //copying faces
+        // // // if (tx==0){
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+1,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+1,gid_z+1,0))];  //central pixel                      
+            // // // l_cellType[ext3DIndToLinear(l_dim, (int4)(tx,ty+1,tz+1,0))]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+1,gid_z+1,0))];  //central pixel                      
+        // // // }
+        
+        // // // if (tx==l_dim_x-1){
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+1,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+1,gid_z+1,0))];        
+            // // // l_cellType[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+1,tz+1,0))]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+1,gid_z+1,0))];        
+        // // // }
+        
+      
+        // // // if (ty==0){
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y,gid_z+1,0))];
+            // // // l_cellType[ext3DIndToLinear(l_dim, (int4)(tx+1,ty,tz+1,0))]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y,gid_z+1,0))];
+        // // // }
+        
+      
+        // // // if (ty==l_dim_y-1){
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+2,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+2,gid_z+1,0))];
+            // // // l_cellType[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+2,tz+1,0))]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+2,gid_z+1,0))];
+        // // // }
+      
+        // // // if (tz==0){
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z,0))];
+            // // // l_cellType[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz,0))]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z,0))];
+        // // // }
+      
+        // // // if (tz==l_dim_z-1){
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+2,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+2,0))];
+            // // // l_cellType[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+2,0))]=g_cellType[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+2,0))];
+        // // // }
+    // // // }    
+    
+    // // // barrier(CLK_LOCAL_MEM_FENCE);     
+
+    
+	// // // float currentConcentration=l_field[l_linearInd];
+	// // // float concentrationSum=0.f;
+        
+    // // // // // // return;        
+    
+	// // // if(solverParams->hexLattice){
+		// // // for(int i=0; i<solverParams->nbhdConcLen; ++i){
+			// // // int4 shift=getShift(g_ind+(int4)(-1,-1,-1,0), i, solverParams->hexLattice, nbhdConcShifts, solverParams->nbhdConcLen);
+			// // // int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			// // // concentrationSum+=l_field[lInd];
+		// // // }
+		// // // concentrationSum-=solverParams->nbhdConcLen*currentConcentration;
+	// // // }else{
+		// // // for(int i=0; i<solverParams->nbhdConcLen; ++i){
+			// // // int4 shift=nbhdConcShifts[i];
+			// // // int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			// // // concentrationSum+=l_field[lInd];
+		// // // }
+		// // // concentrationSum-=solverParams->nbhdConcLen*currentConcentration;
+	// // // }
+    
+	
+	// // // unsigned char curentCelltype=l_cellType[l_linearInd];
+	// // // float currentDiffCoef=solverParams->diffCoef[curentCelltype];
+	
+	// // // concentrationSum*=currentDiffCoef;
+	
+	// // // float varDiffSumTerm=0.f;
+	// // // if(solverParams->hexLattice){
+		// // // for(int i=0; i<solverParams->nbhdDiffLen; ++i){
+			// // // int4 shift=getShift(g_ind+(int4)(-1,-1,-1, 0), i, solverParams->hexLattice, nbhdDiffShifts, solverParams->nbhdDiffLen);
+			// // // int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			// // // varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
+		// // // }
+	// // // }else{
+		// // // for(int i=0; i<solverParams->nbhdDiffLen; ++i){
+			// // // int lInd=ext3DIndToLinear(l_dim, l_ind+nbhdDiffShifts[i]);
+			// // // varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
+		// // // }
+	// // // }
+	    
+	// // // float dx2=solverParams->dx*solverParams->dx;
+    // // // float dt=solverParams->dx*solverParams->dt;
+	// // // float dt_dx2=dt/dx2;
+
+    // // // float scratch=dt_dx2*(concentrationSum+varDiffSumTerm)+(1.f-dt*solverParams->decayCoef[curentCelltype])*currentConcentration;
+    
+        
+    
+    // // // g_scratch[g_linearInd]=scratch;
+            
+// // // }

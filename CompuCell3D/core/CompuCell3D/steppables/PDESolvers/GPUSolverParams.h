@@ -75,6 +75,7 @@ typedef struct UniSolverParams{//TODO: some of them are field params, not a solv
     float  secretionOnContactData[UCHAR_MAX+1][UCHAR_MAX+2]; // secretionOnContactData[cell_type][UCHAR_MAX+1] is a flag that says whether cell_type has any secrete on contact data or not
     int secretionDoUptake;
 	float dx;//cell size
+    float dt;//cell size
 	int hexLattice;//size of bool is not defined in OpenCL
 
 //TODO: update for hexagonal mesh	
