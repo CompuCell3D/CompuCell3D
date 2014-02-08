@@ -77,11 +77,8 @@ DiffusionSolverFE_OpenCL::~DiffusionSolverFE_OpenCL(void)
 		res=clReleaseMemObject(d_concentrationField);
 		ASSERT_OR_THROW("Can not release d_concentrationField", res==CL_SUCCESS);
 
-		// res=clReleaseKernel(kernelUniDiff);
-		// ASSERT_OR_THROW("Can not release kernelUniDiff", res==CL_SUCCESS);
-
-		res=clReleaseKernel(kernelUniDiffNew);
-		ASSERT_OR_THROW("Can not release kernelUniDiffNew", res==CL_SUCCESS);
+		res=clReleaseKernel(kernelUniDiff);
+		ASSERT_OR_THROW("Can not release kernelUniDiff", res==CL_SUCCESS);
         
 		res=clReleaseKernel(kernelBoundaryConditionInit);
 		ASSERT_OR_THROW("Can not release kernelBoundaryConditionInit", res==CL_SUCCESS);
@@ -377,13 +374,7 @@ void DiffusionSolverFE_OpenCL::boundaryConditionGPUSetup(int idx){
 
 
 void DiffusionSolverFE_OpenCL::boundaryConditionInit(int idx){
-    cerr<<"CALLING FROM< OPEN CL boundaryConditionInit="<<endl;
-    // // // //notice concDevPtr is set elsewhere - no need to set it here
-    // // // cl_int errArgBCI= clSetKernelArg(kernelBoundaryConditionInit, 0, sizeof(cl_mem), concDevPtr);    
-    // // // ASSERT_OR_THROW("Can not set boundaryConditionInitKernel  arguments\n", errArgBCI==CL_SUCCESS);    
-    
-    // // // cl_int errBCI = oclHelper->EnqueueNDRangeKernel(kernelBoundaryConditionInit, 3, globalWorkSize, localWorkSize);
-    // // // ASSERT_OR_THROW("newkernelBoundaryConditionInit failed", errBCI==CL_SUCCESS);
+
 
 }
 
@@ -518,27 +509,17 @@ void DiffusionSolverFE_OpenCL::diffuseSingleField(unsigned int idx){
     }
     
     //diffusion step
-    // // // cl_int errArg= clSetKernelArg(kernelUniDiff, concFieldArgPosition, sizeof(cl_mem), concDevPtr);
-    // // // errArg  = errArg | clSetKernelArg(kernelUniDiff,scratchFieldArgPosition , sizeof(cl_mem), scratchDevPtr);    
-    // // // ASSERT_OR_THROW("Setting concentration and scratch field arguments for diffusion kernel failed", errArg==CL_SUCCESS);
+    cl_int errArg= clSetKernelArg(kernelUniDiff, concFieldArgPosition, sizeof(cl_mem), concDevPtr);
+    errArg  = errArg | clSetKernelArg(kernelUniDiff,scratchFieldArgPosition , sizeof(cl_mem), scratchDevPtr);    
     
-    // // // cl_int err = oclHelper->EnqueueNDRangeKernel(kernelUniDiff, 3, globalWorkSize, localWorkSize);    
-    // // // if(err!=CL_SUCCESS)
-        // // // cerr<<oclHelper->ErrorString(err)<<endl;
-    // // // ASSERT_OR_THROW("Diffusion Kernel failed", err==CL_SUCCESS);
-
-
-    cl_int errArg= clSetKernelArg(kernelUniDiffNew, concFieldArgPosition, sizeof(cl_mem), concDevPtr);
-    errArg  = errArg | clSetKernelArg(kernelUniDiffNew,scratchFieldArgPosition , sizeof(cl_mem), scratchDevPtr);    
-    
-    errArg  = errArg | clSetKernelArg(kernelUniDiffNew,bcSpecifierArgPosition , sizeof(cl_mem), &d_bcSpecifier);    
-    errArg  = errArg | clSetKernelArg(kernelUniDiffNew, bcIndicatorArgPosition, sizeof(cl_mem), &d_bcIndicator);    
+    errArg  = errArg | clSetKernelArg(kernelUniDiff,bcSpecifierArgPosition , sizeof(cl_mem), &d_bcSpecifier);    
+    errArg  = errArg | clSetKernelArg(kernelUniDiff, bcIndicatorArgPosition, sizeof(cl_mem), &d_bcIndicator);    
     
     ASSERT_OR_THROW("Setting concentration and scratch field arguments for diffusion kernel failed", errArg==CL_SUCCESS);
     
     
     
-    cl_int err = oclHelper->EnqueueNDRangeKernel(kernelUniDiffNew, 3, globalWorkSize, localWorkSize);    
+    cl_int err = oclHelper->EnqueueNDRangeKernel(kernelUniDiff, 3, globalWorkSize, localWorkSize);    
     if(err!=CL_SUCCESS)
         cerr<<oclHelper->ErrorString(err)<<endl;
     ASSERT_OR_THROW("Diffusion Kernel failed", err==CL_SUCCESS);
@@ -558,57 +539,32 @@ void DiffusionSolverFE_OpenCL::SetConstKernelArguments()
 {
 	int kArg=0;
     cl_int err;
-    // concFieldArgPosition=kArg++;    
-	// err= clSetKernelArg(kernelUniDiff, concFieldArgPosition, sizeof(cl_mem), &d_concentrationField);
-
-    // scratchFieldArgPosition=kArg++;
-	// err  = err | clSetKernelArg(kernelUniDiff,scratchFieldArgPosition , sizeof(cl_mem), &d_scratchField);
     
-    // err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_solverParams);
-	// err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_cellTypes);	
-	// err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_nbhdConcShifts);
-	// err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_nbhdDiffShifts);    
-	// err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(float)*(localWorkSize[0]+2)*(localWorkSize[1]+2)*(localWorkSize[2]+2), NULL);//local field
-	// err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(unsigned char)*(localWorkSize[0]+2)*(localWorkSize[1]+2)*(localWorkSize[2]+2), NULL);//local cell type
-
-	// ASSERT_OR_THROW("Can not set uniDiff kernel's arguments\n", err==CL_SUCCESS);
-    
-    
-
-    
-    /// uniDiffNew
+    /// UniDiff
     kArg=0;
     
     concFieldArgPosition=kArg++;
-	err= clSetKernelArg(kernelUniDiffNew, concFieldArgPosition, sizeof(cl_mem), &d_concentrationField);
+	err= clSetKernelArg(kernelUniDiff, concFieldArgPosition, sizeof(cl_mem), &d_concentrationField);
     
     scratchFieldArgPosition=kArg++;
-	err  = err | clSetKernelArg(kernelUniDiffNew,scratchFieldArgPosition , sizeof(cl_mem), &d_scratchField);    
+	err  = err | clSetKernelArg(kernelUniDiff,scratchFieldArgPosition , sizeof(cl_mem), &d_scratchField);    
     
-    err  = err | clSetKernelArg(kernelUniDiffNew, kArg++, sizeof(cl_mem), &d_solverParams);
+    err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_solverParams);
     
     bcSpecifierArgPosition=kArg++;
-    err  = err | clSetKernelArg(kernelUniDiffNew, bcSpecifierArgPosition , sizeof(cl_mem), &d_bcSpecifier);        
-	err  = err | clSetKernelArg(kernelUniDiffNew, kArg++, sizeof(cl_mem), &d_cellTypes);
+    err  = err | clSetKernelArg(kernelUniDiff, bcSpecifierArgPosition , sizeof(cl_mem), &d_bcSpecifier);        
+	err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_cellTypes);
     
     bcIndicatorArgPosition=kArg++;
-    err  = err | clSetKernelArg(kernelUniDiffNew,bcIndicatorArgPosition , sizeof(cl_mem), &d_bcIndicator);    
+    err  = err | clSetKernelArg(kernelUniDiff,bcIndicatorArgPosition , sizeof(cl_mem), &d_bcIndicator);    
 	
-	err  = err | clSetKernelArg(kernelUniDiffNew, kArg++, sizeof(cl_mem), &d_nbhdConcShifts);
-	err  = err | clSetKernelArg(kernelUniDiffNew, kArg++, sizeof(cl_mem), &d_nbhdDiffShifts);
+	err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_nbhdConcShifts);
+	err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_nbhdDiffShifts);
     
-	err  = err | clSetKernelArg(kernelUniDiffNew, kArg++, sizeof(float)*(localWorkSize[0]+2)*(localWorkSize[1]+2)*(localWorkSize[2]+2), NULL);//local field
-	err  = err | clSetKernelArg(kernelUniDiffNew, kArg++, sizeof(unsigned char)*(localWorkSize[0]+2)*(localWorkSize[1]+2)*(localWorkSize[2]+2), NULL);//local cell type
+	err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(float)*(localWorkSize[0]+2)*(localWorkSize[1]+2)*(localWorkSize[2]+2), NULL);//local field
+	err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(unsigned char)*(localWorkSize[0]+2)*(localWorkSize[1]+2)*(localWorkSize[2]+2), NULL);//local cell type
 
-	ASSERT_OR_THROW("Can not set uniDiffNew kernel's arguments\n", err==CL_SUCCESS);
-    
-    
-    
-    // ///********************************** myKernel
-    // err= clSetKernelArg(myKernel, 0, sizeof(cl_mem), &d_concentrationField);    
-    // err= err | clSetKernelArg(myKernel, 1, sizeof(cl_mem), &d_solverParams);    
-    // err= err | clSetKernelArg(myKernel, 2, sizeof(cl_mem), &d_bcSpecifier);        
-    // ASSERT_OR_THROW("Can not set myKernel  arguments\n", err==CL_SUCCESS);    
+	ASSERT_OR_THROW("Can not set uniDiff kernel's arguments\n", err==CL_SUCCESS);
     
     
     ///********************************** BC Kernel
@@ -712,23 +668,13 @@ void DiffusionSolverFE_OpenCL::SetSolverParams(DiffusionData  &diffData, Secreti
     // cerr<<"h_solverParams.nbhdConcLen="<<h_solverParams.nbhdConcLen<<" h_solverParams.nbhdDiffLen="<<h_solverParams.nbhdDiffLen<<endl;
     
     
-    
-    
 	h_solverParams.xDim=fieldDim.x;
 	h_solverParams.yDim=fieldDim.y;
 	h_solverParams.zDim=fieldDim.z;
 
-	//cerr<<"dt="<<h_solverParams.dt<<"; dx="<<h_solverParams.dx<<endl;
 
 	oclHelper->WriteBuffer(d_solverParams, &h_solverParams, 1);
-    // cl_int err;    
-	// float dt=diffData.deltaT;        
-    
-	// err  = clSetKernelArg(kernelUniDiff, 8, sizeof(dt), &dt);//local cell type
-	// ASSERT_OR_THROW("Can't pass time step to kernelUniDiff kernel\n", err==CL_SUCCESS);
-    
-	// err  = clSetKernelArg(kernelUniDiffNew, 8, sizeof(dt), &dt);//local cell type
-	// ASSERT_OR_THROW("Can't pass time step to kernelUniDiffNew kernel\n", err==CL_SUCCESS);    
+  
 
     
 }
@@ -903,24 +849,16 @@ void DiffusionSolverFE_OpenCL::fieldDeviceToHost(float *h_field)const{
 	}
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-string DiffusionSolverFE_OpenCL::diffKernelName(){
-	return "uniDiff";
-}
+
 
 void DiffusionSolverFE_OpenCL::CreateKernel(){
     //initialize our kernel from the program
-	string kernelName=diffKernelName();
-	cerr<<"kernel "<<kernelName<<" used"<<endl;
-	//string kernelName="hexDiff";
+
 	cl_int err;
-	// kernelUniDiff = clCreateKernel(program, kernelName.c_str(), &err);
-	// printf("clCreateKernel for kernelUniDiff %s: %s\n", kernelName.c_str(), oclHelper->ErrorString(err));
-	// ASSERT_OR_THROW("Can not create a kernelUniDiff", err==CL_SUCCESS);
 
-
-	kernelUniDiffNew = clCreateKernel(program, "uniDiffNew", &err);
-	printf("clCreateKernel for kernelUniDiffNew %s: %s\n", "uniDiffNew", oclHelper->ErrorString(err));
-	ASSERT_OR_THROW("Can not create a kernelUniDiffNew", err==CL_SUCCESS);
+	kernelUniDiff = clCreateKernel(program, "uniDiff", &err);
+	printf("clCreateKernel for kernelUniDiff %s: %s\n", "uniDiff", oclHelper->ErrorString(err));
+	ASSERT_OR_THROW("Can not create a kernelUniDiff", err==CL_SUCCESS);
 
     
     kernelBoundaryConditionInit = clCreateKernel(program, "boundaryConditionInitKernel" , &err);

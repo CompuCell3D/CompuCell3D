@@ -822,7 +822,7 @@ __kernel void boundaryConditionInitKernel( __global float* g_field, __global Uni
 
 
 
-__kernel void uniDiffNew(__global float* g_field,
+__kernel void uniDiff(__global float* g_field,
     __global float* g_scratch,    
 	__global UniSolverParams_t  const *solverParams,
     __global BCSpecifier  const *bcSpecifier,

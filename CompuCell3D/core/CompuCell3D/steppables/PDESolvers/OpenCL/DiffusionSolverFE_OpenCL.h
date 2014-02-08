@@ -102,8 +102,8 @@ private:
 	//for debugging
 	//void CheckConcentrationField(float const *h_field)const;
 
-	//kernel's name selector
-	std::string diffKernelName();
+	
+	
 
 	//TODO: remove parameter
 	void gpuAlloc(size_t fieldLen);
@@ -118,8 +118,8 @@ private:
     
     int iterationNumber; // this variable is important because other routines can sense if this is first or subsequent call to diffuse or secrete functions. Some work in this functions has to be done during initial call and skipped in others
     
-    // cl_kernel kernelUniDiff;
-    cl_kernel kernelUniDiffNew;
+    
+    cl_kernel kernelUniDiff;
     cl_kernel kernelBoundaryConditionInit;
     cl_kernel kernelBoundaryConditionInitLatticeCorners;
     cl_kernel secreteSingleFieldKernel;
