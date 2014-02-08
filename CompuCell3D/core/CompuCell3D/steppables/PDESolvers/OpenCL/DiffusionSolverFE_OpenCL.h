@@ -118,7 +118,7 @@ private:
     
     int iterationNumber; // this variable is important because other routines can sense if this is first or subsequent call to diffuse or secrete functions. Some work in this functions has to be done during initial call and skipped in others
     
-    cl_kernel kernelUniDiff;
+    // cl_kernel kernelUniDiff;
     cl_kernel kernelUniDiffNew;
     cl_kernel kernelBoundaryConditionInit;
     cl_kernel kernelBoundaryConditionInitLatticeCorners;

@@ -77,8 +77,8 @@ DiffusionSolverFE_OpenCL::~DiffusionSolverFE_OpenCL(void)
 		res=clReleaseMemObject(d_concentrationField);
 		ASSERT_OR_THROW("Can not release d_concentrationField", res==CL_SUCCESS);
 
-		res=clReleaseKernel(kernelUniDiff);
-		ASSERT_OR_THROW("Can not release kernelUniDiff", res==CL_SUCCESS);
+		// res=clReleaseKernel(kernelUniDiff);
+		// ASSERT_OR_THROW("Can not release kernelUniDiff", res==CL_SUCCESS);
 
 		res=clReleaseKernel(kernelUniDiffNew);
 		ASSERT_OR_THROW("Can not release kernelUniDiffNew", res==CL_SUCCESS);
@@ -558,20 +558,20 @@ void DiffusionSolverFE_OpenCL::SetConstKernelArguments()
 {
 	int kArg=0;
     cl_int err;
-    concFieldArgPosition=kArg++;    
-	err= clSetKernelArg(kernelUniDiff, concFieldArgPosition, sizeof(cl_mem), &d_concentrationField);
+    // concFieldArgPosition=kArg++;    
+	// err= clSetKernelArg(kernelUniDiff, concFieldArgPosition, sizeof(cl_mem), &d_concentrationField);
 
-    scratchFieldArgPosition=kArg++;
-	err  = err | clSetKernelArg(kernelUniDiff,scratchFieldArgPosition , sizeof(cl_mem), &d_scratchField);
+    // scratchFieldArgPosition=kArg++;
+	// err  = err | clSetKernelArg(kernelUniDiff,scratchFieldArgPosition , sizeof(cl_mem), &d_scratchField);
     
-    err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_solverParams);
-	err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_cellTypes);	
-	err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_nbhdConcShifts);
-	err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_nbhdDiffShifts);    
-	err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(float)*(localWorkSize[0]+2)*(localWorkSize[1]+2)*(localWorkSize[2]+2), NULL);//local field
-	err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(unsigned char)*(localWorkSize[0]+2)*(localWorkSize[1]+2)*(localWorkSize[2]+2), NULL);//local cell type
+    // err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_solverParams);
+	// err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_cellTypes);	
+	// err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_nbhdConcShifts);
+	// err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(cl_mem), &d_nbhdDiffShifts);    
+	// err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(float)*(localWorkSize[0]+2)*(localWorkSize[1]+2)*(localWorkSize[2]+2), NULL);//local field
+	// err  = err | clSetKernelArg(kernelUniDiff, kArg++, sizeof(unsigned char)*(localWorkSize[0]+2)*(localWorkSize[1]+2)*(localWorkSize[2]+2), NULL);//local cell type
 
-	ASSERT_OR_THROW("Can not set uniDiff kernel's arguments\n", err==CL_SUCCESS);
+	// ASSERT_OR_THROW("Can not set uniDiff kernel's arguments\n", err==CL_SUCCESS);
     
     
 
@@ -913,9 +913,9 @@ void DiffusionSolverFE_OpenCL::CreateKernel(){
 	cerr<<"kernel "<<kernelName<<" used"<<endl;
 	//string kernelName="hexDiff";
 	cl_int err;
-	kernelUniDiff = clCreateKernel(program, kernelName.c_str(), &err);
-	printf("clCreateKernel for kernelUniDiff %s: %s\n", kernelName.c_str(), oclHelper->ErrorString(err));
-	ASSERT_OR_THROW("Can not create a kernelUniDiff", err==CL_SUCCESS);
+	// kernelUniDiff = clCreateKernel(program, kernelName.c_str(), &err);
+	// printf("clCreateKernel for kernelUniDiff %s: %s\n", kernelName.c_str(), oclHelper->ErrorString(err));
+	// ASSERT_OR_THROW("Can not create a kernelUniDiff", err==CL_SUCCESS);
 
 
 	kernelUniDiffNew = clCreateKernel(program, "uniDiffNew", &err);
