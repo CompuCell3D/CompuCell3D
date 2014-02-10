@@ -3,7 +3,13 @@
 # # # sbmlModelCompilations={} #{sbml file name - full path:''}
 # # # freeFloatingSBMLSimulator={} # {name:RoadRunnerPy}
 
-
+class SBMLSolverSimulateOptions(object):
+    def __init__(self):        
+        self.absolute=1e-10
+        self.relative=1e-5
+        self.stiff=False
+        
+        
 
 # this function will replace all API functions which refer to SBMLSolver in the event that no SBMLSolver event is installed
 def SBMLSolverError(self, *args,**kwrds):
@@ -41,7 +47,14 @@ class SBMLSolverHelper(object):
                 SBMLSolverHelper.removeAttribute(apiName)
                 setattr(SBMLSolverHelper, apiName, types.MethodType(SBMLSolverError, SBMLSolverHelper)) 
 
-    def addSBMLToCell(self,_modelFile,_modelName='',_cell=None,_stepSize=1.0,_initialConditions={},_coreModelName='',_modelPathNormalized=''):
+    def addSBMLToCell(self,_modelFile,_modelName='',_cell=None,_stepSize=1.0,_initialConditions={},_coreModelName='',_modelPathNormalized='',_options={}):
+        '''
+        _options is a dictionary with the following keys:
+        
+        absolute - determines absolute tolerance default 1e-10
+        relative - determines relative tolerance default 1e-5
+        stiff - determines if using stiff solver or not default False
+        '''
         import os
         import sys
         import CompuCell
@@ -81,19 +94,33 @@ class SBMLSolverHelper(object):
         #setting initial conditions - this has to be done after loadingSBML       
         for name,value in _initialConditions.iteritems():
             rr.model[name]=value
+
+        # we are turning off dynamic python properties because rr is not used in the interactive mode.         
+        try:
+            rr.options.disablePythonDynamicProperties = True
+        except:
+            pass    
+        
+        
+        # setting output results array size 
+        rr.selections=[] # by default we do not request any output array at each intergration step
+        
+        # in case user passes simulate options we set the here        
+        for name , value in _options.iteritems():
+            setattr(rr.simulateOptions,name,value)
         
         
         
-    def addSBMLToCellTypes(self,_modelFile='',_modelName='',_types=[],_stepSize=1.0,_initialConditions={}):        
+    def addSBMLToCellTypes(self,_modelFile='',_modelName='',_types=[],_stepSize=1.0,_initialConditions={},_options={}):        
         coreModelName=_modelName
         if coreModelName=='':
             coreModelName,ext=os.path.splitext(os.path.basename(_modelFile))
         
         modelPathNormalized=self.normalizePath(_modelFile)   
         for cell in self.cellListByType(*_types):
-            self.addSBMLToCell(_modelFile=_modelFile,_modelName=_modelName,_cell=cell,_stepSize=_stepSize,_initialConditions=_initialConditions,_coreModelName=coreModelName,_modelPathNormalized=modelPathNormalized)
+            self.addSBMLToCell(_modelFile=_modelFile,_modelName=_modelName,_cell=cell,_stepSize=_stepSize,_initialConditions=_initialConditions,_coreModelName=coreModelName,_modelPathNormalized=modelPathNormalized, _options=_options)
 
-    def addSBMLToCellIds(self,_modelFile,_modelName='',_ids=[],_stepSize=1.0,_initialConditions={}):
+    def addSBMLToCellIds(self,_modelFile,_modelName='',_ids=[],_stepSize=1.0,_initialConditions={},_options={}):
         
         coreModelName=_modelName
         if coreModelName=='':
@@ -108,9 +135,9 @@ class SBMLSolverHelper(object):
                 
                 continue
                 
-            self.addSBMLToCell(_modelFile=_modelFile,_modelName=_modelName,_cell=cell,_stepSize=_stepSize,_initialConditions=_initialConditions,_coreModelName=coreModelName,_modelPathNormalized=modelPathNormalized)
+            self.addSBMLToCell(_modelFile=_modelFile,_modelName=_modelName,_cell=cell,_stepSize=_stepSize,_initialConditions=_initialConditions,_coreModelName=coreModelName,_modelPathNormalized=modelPathNormalized,_options=_options)
 
-    def addFreeFloatingSBML(self,_modelFile,_modelName,_stepSize=1.0,_initialConditions={}):
+    def addFreeFloatingSBML(self,_modelFile,_modelName,_stepSize=1.0,_initialConditions={},_options={}):
         
             
 #         modelPathNormalized=os.path.abspath(_modelFile)    
@@ -144,6 +171,18 @@ class SBMLSolverHelper(object):
         for name,value in _initialConditions.iteritems():
             rr.model[name]=value
             # # # rr.setValue(name,value)
+            
+        try:
+            rr.options.disablePythonDynamicProperties = True
+        except:
+            pass    
+            
+        # setting output results array size 
+        rr.selections=[] # by default we do not request any output array at each intergration step
+        
+        # in case user passes simulate options we set the here        
+        for name , value in _options.iteritems():
+            setattr(rr.simulateOptions,name,value)            
 
     def deleteSBMLFromCellIds(self,_modelName,_ids=[]):
         import CompuCell
@@ -302,49 +341,78 @@ class SBMLSolverHelper(object):
     def getSBMLState(self,_modelName,_cell=None):
         ''' returns instance of the RoadRunner.model which behaves as a python dictionary but has many entries some of which are non-assignable /non-mutable
         '''
-        sbmlSimulator=self.getSBMLSimulator(_modelName,_cell)
-        if not sbmlSimulator:
+        
+        sbmlSimulator=self.getSBMLSimulator(_modelName,_cell)  
+        try:            
+        
+            # import roadrunner
+            # return dict(sbmlSimulator.model.items(roadrunner.SelectionRecord.STATE_VECTOR))
+            return sbmlSimulator.model
+        except:
             if _cell:
                 raise RuntimeError("Could not find model "+_modelName+' attached to cell.id=',_cell.id) 
             else:
                 raise RuntimeError("Could not find model "+_modelName+' in the list of free floating SBML models')                 
-        else:
         
-            # print 'sbmlSimulator.model.keys()=',sbmlSimulator.model.keys()
-            return sbmlSimulator.model
+            
+            
+        # if sbmlSimulator:
+            # return sbmlSimulator.model
+        # else:
+            # return None
+            
+        # if not sbmlSimulator:
+            # if _cell:
+                # raise RuntimeError("Could not find model "+_modelName+' attached to cell.id=',_cell.id) 
+            # else:
+                # raise RuntimeError("Could not find model "+_modelName+' in the list of free floating SBML models')                 
+        # else:
+            # return None
+            # # print 'sbmlSimulator.model.keys()=',sbmlSimulator.model.keys()
+            # # return sbmlSimulator.model
+            # import roadrunner
+            # return dict(sbmlSimulator.model.items(roadrunner.SelectionRecord.STATE_VECTOR))
+            
             
 
 
     def getSBMLStateAsPythonDict(self,_modelName,_cell=None):
         ''' returns  python dictionary which has floating species, boundary species and global variables
         '''
-    
-        sbmlSimulator=self.getSBMLSimulator(_modelName,_cell)
-        if not sbmlSimulator:
-            if _cell:
-                raise RuntimeError("Could not find model "+_modelName+' attached to cell.id=',_cell.id) 
-            else:
-                raise RuntimeError("Could not find model "+_modelName+' in the list of free floating SBML models')                 
-        else:
+        return self.getSBMLState(_modelName,_cell)
+        
+        # old code
+        # sbmlSimulator=self.getSBMLSimulator(_modelName,_cell)
+        # if not sbmlSimulator:
+            # if _cell:
+                # raise RuntimeError("Could not find model "+_modelName+' attached to cell.id=',_cell.id) 
+            # else:
+                # raise RuntimeError("Could not find model "+_modelName+' in the list of free floating SBML models')                 
+        # else:
         
             
-            state={}
-            for name in sbmlSimulator.model.getFloatingSpeciesIds()+sbmlSimulator.model.getBoundarySpeciesIds() + sbmlSimulator.model.getGlobalParameterIds():
-                state[name]=sbmlSimulator.model[name]
-            return state    
+            # state={}
+            # for name in sbmlSimulator.model.getFloatingSpeciesIds()+sbmlSimulator.model.getBoundarySpeciesIds() + sbmlSimulator.model.getGlobalParameterIds():
+                # state[name]=sbmlSimulator.model[name]
+            # return state    
         
     def setSBMLState(self,_modelName,_cell=None,_state={}):
         
         sbmlSimulator=self.getSBMLSimulator(_modelName,_cell)
+        
         if not sbmlSimulator:
             return False
         else:
-        
+            
             if _state==sbmlSimulator.model: # no need to do anything when all the state changes are done on model
                 return True             
             
-            for name,value in _state.iteritems():      
-                sbmlSimulator.model[name]=value            
+            for name,value in _state.iteritems():                                 
+                try:
+                    sbmlSimulator.model[name]=value            
+                except :                    
+                    pass
+                    
             return True
             
     def getSBMLValue(self,_modelName,_valueName='',_cell=None):
