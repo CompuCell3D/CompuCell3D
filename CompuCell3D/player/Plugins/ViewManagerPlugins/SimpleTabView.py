@@ -1337,7 +1337,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                     CompuCellSetup.screenshotDirectoryName=customOutputPath
                     self.screenshotDirectoryName=customOutputPath
                     self.parameterScanOutputDir=customOutputPath
-                    print 'self.screenshotDirectoryName=',self.screenshotDirectoryName
+                    # print 'self.screenshotDirectoryName=',self.screenshotDirectoryName
                     
             except AssertionError,e:# propagating exception
                 raise e
@@ -2429,7 +2429,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             if self.screenshotManager:              
                 self.screenshotManager.outputScreenshots(self.screenshotDirectoryName,self.__step)
             
-        print 'self.screenshotDirectoryName=',self.screenshotDirectoryName    
+        # print 'self.screenshotDirectoryName=',self.screenshotDirectoryName    
         # sys.exit()
         
 #        if (CompuCellSetup.cmlFieldHandler is not None) and self.__latticeOutputFlag and (not self.__step % self.__latticeOutputFrequency):  #rwh 
