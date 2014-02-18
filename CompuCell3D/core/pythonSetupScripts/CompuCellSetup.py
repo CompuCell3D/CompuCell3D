@@ -48,6 +48,9 @@ userStopSimulationFlag=False
 global freeFloatingSBMLSimulator
 freeFloatingSBMLSimulator={} # {name:RoadRunnerPy}
 
+global globalSBMLSimulatorOptions
+globalSBMLSimulatorOptions=None # {optionName:Value}
+
 
 MYMODULENAME = '------- CompuCellSetup.py: '
 
@@ -413,6 +416,9 @@ def resetGlobals():
     
     global freeFloatingSBMLSimulator
     freeFloatingSBMLSimulator={}
+    
+    global globalSBMLSimulatorOptions
+    globalSBMLSimulatorOptions=None
     
 def setSimulationXMLFileName(_simulationFileName):
     global simulationPaths
