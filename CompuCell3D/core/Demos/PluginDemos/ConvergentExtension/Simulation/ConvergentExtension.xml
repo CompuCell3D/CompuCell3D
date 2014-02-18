@@ -44,13 +44,7 @@
 
  
  
-<!--  <Steppable Type="BlobInitializer">
-   <Gap>0</Gap>
-   <Width>5</Width>
-   <CellSortInit>yes</CellSortInit>   
-   <Radius>40</Radius>
- </Steppable>
- --> 
+
  
   <Steppable Type="UniformInitializer">
    <Region>

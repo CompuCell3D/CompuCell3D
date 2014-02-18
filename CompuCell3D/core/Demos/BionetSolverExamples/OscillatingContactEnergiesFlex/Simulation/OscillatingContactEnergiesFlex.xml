@@ -29,12 +29,15 @@
    <NeighborOrder>2</NeighborOrder>
  </Plugin>
 
- <Steppable Type="BlobInitializer">
-   <Gap>0</Gap>
-   <Width>8</Width>
-   <CellSortInit>yes</CellSortInit>   
-   <Radius>40</Radius>
- </Steppable>
+<Steppable Type="BlobInitializer">   
+   <Region>
+      <Center x="100" y="100" z="0"/>
+      <Radius>40</Radius>
+      <Gap>0</Gap>
+      <Width>8</Width>
+      <Types>Blue,Green</Types>
+   </Region>
+</Steppable> 
 
 </CompuCell3D>
 

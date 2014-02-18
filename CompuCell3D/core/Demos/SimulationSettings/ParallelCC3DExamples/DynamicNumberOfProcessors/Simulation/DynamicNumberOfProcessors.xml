@@ -57,11 +57,14 @@
    </DiffusionField>
 </Steppable>
 
- <Steppable Type="BlobInitializer">
-   <Gap>0</Gap>
-   <Width>5</Width>
-   <CellSortInit>yes</CellSortInit>   
-   <Radius>80</Radius>
- </Steppable>
+<Steppable Type="BlobInitializer">   
+   <Region>
+      <Center x="100" y="100" z="0"/>
+      <Radius>80</Radius>
+      <Gap>0</Gap>
+      <Width>5</Width>
+      <Types>Condensing,NonCondensing</Types>
+   </Region>
+</Steppable>
 
 </CompuCell3D>
