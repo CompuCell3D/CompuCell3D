@@ -1,6 +1,6 @@
  <CompuCell3D>
-  <Metadata>    
-    <VirtualProcessingUnits ThreadsPerVPU="1">4</VirtualProcessingUnits>
+  <Metadata>        
+    <NumberOfProcessors>4</NumberOfProcessors>
     <DebugOutputFrequency>100</DebugOutputFrequency>     
  </Metadata> 
  

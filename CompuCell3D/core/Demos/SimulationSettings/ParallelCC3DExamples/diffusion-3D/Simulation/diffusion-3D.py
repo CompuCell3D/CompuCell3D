@@ -6,7 +6,7 @@ def configureSimulation(sim):
     cc3d=ElementCC3D("CompuCell3D")
 
     metadata=cc3d.ElementCC3D("Metadata")
-    metadata.ElementCC3D("VirtualProcessingUnits",{"ThreadsPerVPU":1},4)
+    metadata.ElementCC3D("NumberOfProcessors",{},4)
     
     potts=cc3d.ElementCC3D("Potts")
     potts.ElementCC3D("Dimensions",{"x":dim,"y":dim,"z":dim})
