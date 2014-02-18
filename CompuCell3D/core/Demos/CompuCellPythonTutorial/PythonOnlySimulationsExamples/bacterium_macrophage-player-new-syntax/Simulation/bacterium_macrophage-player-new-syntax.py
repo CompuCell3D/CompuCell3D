@@ -37,10 +37,10 @@ def configureSimulation(sim):
     contact.ElementCC3D("Energy", {"Type1":"Wall", "Type2":"Macrophage"},50)
 
     chemotaxis=cc3d.ElementCC3D("Plugin",{"Name":"Chemotaxis"})
-    chemicalField=chemotaxis.ElementCC3D("ChemicalField", {"Source":"FlexibleDiffusionSolverFE", "Name":"ATTR"})
+    chemicalField=chemotaxis.ElementCC3D("ChemicalField", {"Source":"DiffusionSolverFE", "Name":"ATTR"})
     chemicalField.ElementCC3D("ChemotaxisByType", {"Type":"Macrophage" ,"Lambda":200})
 
-    flexDiffSolver=cc3d.ElementCC3D("Steppable",{"Type":"FlexibleDiffusionSolverFE"})
+    flexDiffSolver=cc3d.ElementCC3D("Steppable",{"Type":"DiffusionSolverFE"})
     diffusionField=flexDiffSolver.ElementCC3D("DiffusionField")
     diffusionData=diffusionField.ElementCC3D("DiffusionData")
     diffusionData.ElementCC3D("FieldName",{},"ATTR")

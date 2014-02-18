@@ -37,7 +37,7 @@
 
  <Plugin Name="CenterOfMass"/>
  
- <Steppable Type="FlexibleDiffusionSolverFE">
+ <Steppable Type="DiffusionSolverFE">
     <DiffusionField>
        <DiffusionData>
           <FieldName>FGF</FieldName>

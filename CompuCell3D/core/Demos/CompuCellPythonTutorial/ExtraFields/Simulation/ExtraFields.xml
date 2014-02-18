@@ -24,7 +24,7 @@
    <Radius>20</Radius>
  </Steppable>
 
- <Steppable Type="FlexibleDiffusionSolverFE">
+ <Steppable Type="DiffusionSolverFE">
      <DiffusionField>
         <DiffusionData>
             <FieldName>FGF</FieldName>

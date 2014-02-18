@@ -18,7 +18,7 @@ def configureSimulation(sim):
     cellType.ElementCC3D("CellType", {"TypeName":"Medium", "TypeId":"0"})
 
 
-    flexDiffSolver=cc3d.ElementCC3D("Steppable",{"Type":"FlexibleDiffusionSolverFE"})
+    flexDiffSolver=cc3d.ElementCC3D("Steppable",{"Type":"DiffusionSolverFE"})
     diffusionField=flexDiffSolver.ElementCC3D("DiffusionField")
     diffusionData=diffusionField.ElementCC3D("DiffusionData")
     diffusionData.ElementCC3D("FieldName",{},"FGF")

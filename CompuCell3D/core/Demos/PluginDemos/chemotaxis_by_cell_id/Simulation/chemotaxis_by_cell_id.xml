@@ -50,13 +50,13 @@
  
  
 <Plugin Name="Chemotaxis">    
-   <ChemicalField Source="FlexibleDiffusionSolverFE" Name="ATTR">
+   <ChemicalField Source="DiffusionSolverFE" Name="ATTR">
 <!--     <ChemotaxisByType Type="Macrophage" Lambda="20"/>   	 -->
    </ChemicalField> 
  </Plugin>
 
 
- <Steppable Type="FlexibleDiffusionSolverFE">
+ <Steppable Type="DiffusionSolverFE">
      <DiffusionField>
         <DiffusionData>
             <FieldName>ATTR</FieldName>

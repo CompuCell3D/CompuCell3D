@@ -35,7 +35,7 @@
    <NeighborOrder>2</NeighborOrder>
  </Plugin>
  
-<Steppable Type="FlexibleDiffusionSolverFE">
+<Steppable Type="DiffusionSolverFE">
    
    <!-- Specification of PDE solvers -->
    <DiffusionField>

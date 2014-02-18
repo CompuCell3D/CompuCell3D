@@ -42,14 +42,14 @@
     <TemplateType TypeName="psi" TypeId="41"/>
     <TemplateType TypeName="omega" TypeId="59"/>
 
-	<TemplateChemicalField Source="FlexibleDiffusionSolverFE" Name="FGF">                                                                                                                                       
+	<TemplateChemicalField Source="DiffusionSolverFE" Name="FGF">                                                                                                                                       
         <TemplateChemotaxisByType Type="Amoeba" Lambda="0"/>                                                                                                                                                   
         <TemplateChemotaxisByType Type="Bacteria" Lambda="2000000" SaturationCoef="1"/>                                                                                                                        
    </TemplateChemicalField>    
 
  </Plugin>
  
-  <Steppable Type="FlexibleDiffusionSolverFE">
+  <Steppable Type="DiffusionSolverFE">
      <DiffusionField>
         <DiffusionData>
             <FieldName>FGF</FieldName>
