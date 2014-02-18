@@ -524,6 +524,38 @@ using namespace CompuCell3D;
     return s.str();
   }
   
+  returnType min(){
+    returnType minVal=self->get(Point3D(0,0,0));
+    
+    Dim3D dim=self->getDim();
+    
+    for (int x=0 ; x<dim.x ; ++x)
+        for (int y=0 ; y<dim.y ; ++y)
+            for (int z=0 ; z<dim.z ; ++z){
+                returnType val = self->get(Point3D(x,y,z));
+                if (val<minVal) minVal=val;            
+            }
+            
+    return minVal;        
+    
+  }
+  
+  returnType max(){
+    returnType maxVal=self->get(Point3D(0,0,0));
+    
+    Dim3D dim=self->getDim();
+    
+    for (int x=0 ; x<dim.x ; ++x)
+        for (int y=0 ; y<dim.y ; ++y)
+            for (int z=0 ; z<dim.z ; ++z){
+                returnType val = self->get(Point3D(x,y,z));
+                if (val>maxVal) maxVal=val;            
+            }
+            
+    return maxVal;        
+    
+  }  
+  
   returnType __getitem__(PyObject *_indexTuple) {
     if (!PyTuple_Check( _indexTuple) || PyTuple_GET_SIZE(_indexTuple)!=3){
         throw std::runtime_error(std::string(#type)+std::string(": Wrong Syntax: Expected someting like: field[1,2,3]"));
