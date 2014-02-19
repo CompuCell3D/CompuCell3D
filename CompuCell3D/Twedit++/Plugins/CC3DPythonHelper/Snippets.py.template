@@ -159,6 +159,15 @@ self.deleteSBMLFromCell(_modelName='MODEL_NAME',_cell=cell)
 ---------- #@Submenu@  Delete Free Floating SBML 
 self.deleteFreeFloatingSBML(_modelName='UNIQUE_MODEL_NAME')
 
+---------- #@Submenu@  Set SBML Integrator  Global Options
+# adding options that setup SBML solver integrator - these are optional but useful when encounteting integration instabilities              
+#relative is relative tolerance, absolute is absolute tolerance, steps is the initial number of integration steps for each integration interval (higher number does not result in slower simulateion, quite to the contrary), stiff set to true will use stiff ODE solver
+options={'relative':1e-10,'absolute':1e-12,'steps':10,'stiff':False}
+self.setSBMLGlobalOptions(options)
+
+---------- #@Submenu@  Get SBML Integrator  Global Options
+# returns current options - can be None if no global options were set
+options=self.getSBMLGlobalOptions()
 
 
 =============== #@Menu@ Cell Constraints
@@ -273,6 +282,13 @@ for compartments in self.clusters:
 
 ---------- #@Submenu@ Get Field Reference
 field=self.getConcentrationField("NAME OF THE FIELD TO OUTPUT")
+
+---------- #@Submenu@ Get Field Min Value
+minValue=field.min()
+
+---------- #@Submenu@ Get Field Max Value
+minValue=field.max()
+
 
 ---------- #@Submenu@ Get Field Value
 value=field[10,10,0]
