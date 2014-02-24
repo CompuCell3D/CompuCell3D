@@ -228,9 +228,12 @@ def getSetting(_key, fieldName=None):  # we append an optional fieldName now to 
             
 
             fieldsDict = getSimFieldsParams()
-
-            paramsDict = fieldsDict[fieldName]
-
+            
+            try:
+                paramsDict = fieldsDict[fieldName]
+            except LookupError,e:
+                return getSetting(_key) # returning default value stored in the setting for the field
+                
             if _key == 'ArrowColor':  
 
                 val = paramsDict[_key]
