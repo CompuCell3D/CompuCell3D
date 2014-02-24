@@ -2185,7 +2185,11 @@ bool FieldExtractor::fillVectorFieldData2DHex(long _pointsArrayIntAddr,long _vec
 // 			vecTmpCoord[0]=vecTmp.x;
 // 			vecTmpCoord[1]=vecTmp.y;
 // 			vecTmpCoord[2]=vecTmp.z;
-
+                    
+                        vecTmpCoord[0]=x;
+                        vecTmpCoord[1]=y;
+                        vecTmpCoord[2]=z;
+                    
 			if(x!=0.0 || y!=0.0 || z!=0.0){
 				Coordinates3D<double> hexCoords=HexCoordXY(pt.x,pt.y,pt.z);
 				pointsArray->InsertPoint(offset, hexCoords.x,hexCoords.y,0.0);
