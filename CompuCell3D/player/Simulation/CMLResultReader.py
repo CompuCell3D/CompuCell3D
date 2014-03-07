@@ -7,9 +7,40 @@ import os
 import os.path
 import SimulationThread
 
+(STOP_STATE,RUN_STATE,STEP_STATE,PAUSE_STATE)=range(0,4)
+
 MODULENAME = '---- CMLResultReader.py: '
 
+
+class DataReader(QThread):
+    
+    data_read = pyqtSignal(int, name='data_read')
+    
+    def __init__(self, parent=None):
+        QThread.__init__(self,parent)        
+        self.cmlReader=parent
+        self.i=0
+        
+    def setStep(self,_step):
+        self.i=_step
+        
+    def run(self):
+        
+        readState=self.cmlReader.readSimulationDataNonBlocking(self.i)
+        if readState:
+            self.data_read.emit(self.i)
+        else:
+            self.data_read.emit(-1)
+
+
+
 class CMLResultReader(SimulationThread.SimulationThread):    
+    
+    data_read = pyqtSignal(int, name='data_read')
+    
+    initial_data_read = pyqtSignal(bool, name='initial_data_read')
+    subsequent_data_read = pyqtSignal(int, name='subsequent_data_read')
+    final_data_read = pyqtSignal(bool, name='final_data_read')    
     
     # CONSTRUCTOR 
     def __init__(self, parent=None):
@@ -35,13 +66,18 @@ class CMLResultReader(SimulationThread.SimulationThread):
         self.numberOfSteps=0;
         self.__directAccessFlag=False
         self.__mcsDirectAccess=0;
-        self.counter=0
+        # self.counter=0
         self.newFileBeingLoaded=False
         self.readFileSem=QSemaphore(1)
         self.typeIdTypeNameDict={}
         self.__fileWriter=None
         self.typeIdTypeNameCppMap=None # C++ map<int,string> providing mapping from type id to type name
         self.customVis = None
+        self.__ui=parent
+        
+        self.stepCounter=0
+        self.reading=False
+        self.state=STOP_STATE
         
         
     
@@ -53,7 +89,51 @@ class CMLResultReader(SimulationThread.SimulationThread):
 	import Example
 	import CompuCell
 	import PlayerPython
-
+    
+    
+    def gotData(self,_i):
+        # print '\n\n\n       GOT DATA FOR STEP ',_i
+        # print '\n\n'
+        self.dataReader.data_read.disconnect(self.gotData)
+        self.reading=False
+        if _i==0:
+            self.initial_data_read.emit(True)
+        if _i<0: # meaning read did not succeed
+            self.setStopState()
+            self.final_data_read.emit(True)
+        else:
+            self.subsequent_data_read.emit(_i)    
+    
+    def setRunState(self):
+        self.state=RUN_STATE
+        
+    def setStepState(self):
+        self.state=STEP_STATE
+        
+    def setPauseState(self):
+        self.state=PAUSE_STATE
+        
+    def setStopState(self):
+        self.state=STOP_STATE
+        
+    def keepGoing(self):
+        if self.state==RUN_STATE:
+            self.step()
+    
+    def step(self):
+        # ignoring step requests while reading operation is pending
+        if self.reading: 
+            return
+            
+        self.dataReader=DataReader(parent=self)
+        self.dataReader.setStep(self.stepCounter)        
+        self.dataReader.data_read.connect(self.gotData)        
+        
+        self.stepCounter+=1
+        
+        self.reading=True # flag indicating that reading is taking place
+        self.dataReader.start()        
+    
     def dimensionChange(self):   
         # print 'self.fieldDimPrevious=',self.fieldDimPrevious
         # print 'self.fieldDim=',self.fieldDim
@@ -68,8 +148,48 @@ class CMLResultReader(SimulationThread.SimulationThread):
     def resetDimensionChangeMonitoring(self):
         # this reset is necessary to avoid recursive calls in the SimpleTabView -- this code needs to be changed because at this point it looks horrible
         self.fieldDimPrevious=self.fieldDim 
+
+    def readSimulationDataNonBlocking(self,_i):
+        
+        self.newFileBeingLoaded=True # this flag is used to prevent calling  draw function when new data is read from hard drive
+        # print "LOCKED self.newFileBeingLoaded=",self.newFileBeingLoaded
+        # self.drawMutex.lock()
+        if _i >= len(self.ldsFileList):
+            return False
+            
+        fileName = self.ldsFileList[_i]
+        
+        self.simulationDataReader = vtk.vtkStructuredPointsReader()
+        
+        
+        self.currentFileName = os.path.join(self.ldsDir,fileName)
+        print 'self.currentFileName=',self.currentFileName
+        self.simulationDataReader.SetFileName(self.currentFileName)
+        # print "path= ", os.path.join(self.ldsDir,fileName)
+        
+        
+        dataReaderIntAddr = self.__ui.extractAddressIntFromVtkObject(self.simulationDataReader)
+        self.__ui.fieldExtractor.readVtkStructuredPointsData(dataReaderIntAddr)  # swig wrapper  on top of     vtkStructuredPointsReader.Update()  - releases GIL, hence can be used in multithreaded program that does not block GUI
+        # # # self.simulationDataReader.Update() # does not erlease GIL - VTK ISSUE - cannot be used in multithreaded program - blocks GUI
+        self.simulationData = self.simulationDataReader.GetOutput()
+
+        
+        import CompuCell
+        self.fieldDimPrevious=self.fieldDim
+        # self.fieldDimPrevious=CompuCell.Dim3D()
+        
+        dimFromVTK=self.simulationData.GetDimensions()
+        
+        self.fieldDim=CompuCell.Dim3D(dimFromVTK[0],dimFromVTK[1],dimFromVTK[2])
+
+        
+        self.currentStep = self.frequency * _i
+        self.setCurrentStep(self.currentStep)
+        return True
+
         
     def readSimulationData(self,_i):
+        
         # self.counter+=1
         # if self.counter>3:
             # return
@@ -241,9 +361,10 @@ class CMLResultReader(SimulationThread.SimulationThread):
         pass
         
     def run(self):
-        
+        return
         globalDict={'simTabView':20}
         localDict={}
-    
+        print 'self.pythonFileName=',self.pythonFileName
         self.runUserPythonScript(self.pythonFileName,globalDict,localDict)
         return
+        
