@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# necessary to enforce standard convention for numeric values specification on non-English OS
+export LC_NUMERIC="C.UTF-8" 
+
+
 export PREFIX_CC3D=@COMPUCELL_INSTALL_DIR@
 
 export PYTHON_MODULE_PATH=${PREFIX_CC3D}/pythonSetupScripts
