@@ -119,7 +119,7 @@ class SimulationThread(QtCore.QThread):
         if self.__fileWriter is None:
             import PlayerPython
             self.__fileWriter=PlayerPython.FieldWriter()       
-            self.__fileWriter.init(self.sim)
+            self.__fileWriter.init(self.sim()) #note self.sim is a weak reference so to pass underlying object to swigged-fcn we need to derefernce it by using self.sim() expression
         self.__fileWriter.generatePIFFileFromCurrentStateOfSimulation(_pifFileName)
         
     def getCurrentStep(self):
