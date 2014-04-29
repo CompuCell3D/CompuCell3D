@@ -1333,7 +1333,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                         # # # return False,False
                         
                     
-                    self.cc3dSimulationDataHandler.copySimulationDataFiles(customOutputPath) 
+                    
                     
                     from os.path import basename
                     self.__parent.setWindowTitle(self.trUtf8('ParameterScan: ')+self.trUtf8(basename(self.__fileName)+ self.trUtf8(' Iteration: ')+basename(customOutputPath)+" - CompuCell3D Player"))
