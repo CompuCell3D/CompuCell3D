@@ -1501,7 +1501,15 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
                 
         
     print "END OF SIMULATION  "
+    
     if runFinishFlag:
+        # we emit request to finish simulation
+        simthread.emitFinishRequest()        
+        # then we wait for GUI thread to unlock the finishMutex - it will only happen when all tasks in the GUI thread are completed (especially those that need simulator object to stay alive)
+        simthread.finishMutex.lock()
+        simthread.finishMutex.unlock()
+        # at this point GUI thread finished all the tasks for which simulator had to stay alive  and we can proceed to destroy simulator
+        
         sim.finish()
         if sim.getRecentErrorMessage()!="":        
             raise CC3DCPlusPlusError(sim.getRecentErrorMessage())        

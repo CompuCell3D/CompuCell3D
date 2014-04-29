@@ -947,6 +947,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             self.connect(self.simulation,SIGNAL("steppablesStarted(bool)"),self.runSteppablePostStartPlayerPrep)            
             self.connect(self.simulation,SIGNAL("simulationFinished(bool)"),self.handleSimulationFinished)
             self.connect(self.simulation,SIGNAL("completedStep(int)"),self.handleCompletedStep)
+            self.connect(self.simulation,SIGNAL("finishRequest(bool)"),self.handleFinishRequest)
             
             # self.connect(self.plotManager,SIGNAL("newPlotWindow(bool)"),self.addNewPlotWindow)
             self.plotManager.initSignalAndSlots()
@@ -2253,8 +2254,20 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         self.cmlReplayManager.keepGoing()
         
+    def handleFinishRequest(self,_flag):
+        #this ensures that all the tasks in the GUI thread that need simulator to be alive are completed before proceeding further with finalizing the simulation 
+        #e.g. SimpleTabViewpy. function handleCompletedStepRegular may need a lot of time to output simulations fields and those fields need to have alive simulator otherwise accessing to destroyed field will lead to segmentation fault
+        
+        self.simulation.drawMutex.lock()
+        self.simulation.drawMutex.unlock()
+        
+        # this releases finish mutex which is a signal to simulation thread that is is OK to finish
+        self.simulation.finishMutex.unlock()
+        
+        
     def handleCompletedStepRegular(self,_mcs):    
-       
+        
+        
         self.__drawField()
 
         
@@ -2285,9 +2298,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 #        if (CompuCellSetup.cmlFieldHandler is not None) and self.__latticeOutputFlag and (not self.__step % self.__latticeOutputFrequency):  #rwh 
         if self.cmlHandlerCreated  and self.__latticeOutputFlag and (not self.__step % self.__latticeOutputFrequency):  #rwh 
 #            print MODULENAME,' handleCompletedStepRegular(): cmlFieldHandler.writeFields'
-#            import CompuCellSetup
+#            import CompuCellSetup          
             CompuCellSetup.cmlFieldHandler.writeFields(self.__step)
-            
             
         self.simulation.drawMutex.unlock()
         
@@ -2297,7 +2309,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         self.simulation.sem.tryAcquire()
         self.simulation.sem.release()
-    
+        
+        
     
     def handleCompletedStep(self,_mcs):
 
@@ -2412,6 +2425,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
 
             if  Configuration.getSetting("LatticeOutputOn") and not self.cmlHandlerCreated:
+                import CompuCellSetup
                 CompuCellSetup.createCMLFieldHandler()
                 self.cmlHandlerCreated = True
     #            CompuCellSetup.initCMLFieldHandler(self.mysim,self.resultStorageDirectory,self.fieldStorage)

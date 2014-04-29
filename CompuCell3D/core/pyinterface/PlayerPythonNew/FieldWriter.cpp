@@ -246,7 +246,6 @@ bool FieldWriter::addConFieldForOutput(std::string _conFieldName){
 	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)	
 		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
 			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
-
 				conArray->SetValue(offset,conFieldPtr->get(pt));
 				++offset;
 			}
