@@ -1534,10 +1534,17 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 			if(distance>maxDistanceLocal){
 				CellG* removedNeighbor=sitr->neighborAddress;
 
-				//toBeRemovedNeighborsOfNewCell.push_back(removedNeighbor);
+				// // // cerr<<"REMOVE NEW "<<distance<<endl;
+                // // // cerr<<"internalPlastNeighbors.size()="<<internalPlastNeighbors.size()<<endl;
+                // // // cerr<<"removedNeighbor->xCM="<<removedNeighbor->xCM<<" removedNeighbor->yCM="<<removedNeighbor->yCM<<" removedNeighbor->zCM="<<removedNeighbor->zCM<<endl;
+				// // // cerr<<"removedNeighbor="<<removedNeighbor<<" id="<<removedNeighbor->id<<" extraAttribPtr="<<removedNeighbor->extraAttribPtr<<" volume="<<removedNeighbor->volume<<" tv="<<removedNeighbor->targetVolume<<" lv="<<removedNeighbor->lambdaVolume<<endl;
+				// // // cerr<<"newCell="<<newCell<<" id="<<newCell->id<<" extraAttribPtr="<<removedNeighbor->extraAttribPtr<<" volume="<<newCell->volume<<" tv="<<newCell->targetVolume<<" lv="<<newCell->lambdaVolume<<endl;
 
-				//cerr<<"removedNeighbor.id="<<removedNeighbor->id<<" of newCell->id="<<newCell->id<<endl;
-
+				// // // for (std::set<FocalPointPlasticityTrackerData>::iterator sitr1=internalPlastNeighbors.begin() ; sitr1 != internalPlastNeighbors.end() ; ++sitr1 ){
+					// // // if (sitr1->neighborAddress->id==removedNeighbor->id){
+						// // // cerr<<"removing neighbor.id="<<sitr1->neighborAddress->id<<endl;	
+					// // // }
+				// // // }
 				std::set<FocalPointPlasticityTrackerData> & plastNeighborsRemovedNeighbor=
 					focalPointPlasticityTrackerAccessor.get(removedNeighbor->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
 
@@ -1623,7 +1630,10 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 
 		//go over compartments
 		std::set<FocalPointPlasticityTrackerData> & internalPlastNeighbors=focalPointPlasticityTrackerAccessor.get(oldCell->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
-
+        
+        
+        
+        
 		for(sitr=internalPlastNeighbors.begin() ; sitr != internalPlastNeighbors.end() ; ++sitr){
 			//we remove only one cell at a time even though we could do it for many cells many cells
 			double xCMNeighbor=sitr->neighborAddress->xCM/float(sitr->neighborAddress->volume);
@@ -1641,15 +1651,36 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 			if(distance>maxDistanceLocal){
 
 				CellG* removedNeighbor=sitr->neighborAddress;
+                
+				// // // cerr<<"REMOVE OLD "<<distance<<endl;
+                // // // cerr<<"internalPlastNeighbors.size()="<<internalPlastNeighbors.size()<<endl;
+                // // // cerr<<"removedNeighbor->xCM="<<removedNeighbor->xCM<<" removedNeighbor->yCM="<<removedNeighbor->yCM<<" removedNeighbor->zCM="<<removedNeighbor->zCM<<endl;
+				// // // cerr<<"removedNeighbor="<<removedNeighbor<<" id="<<removedNeighbor->id<<" extraAttribPtr="<<removedNeighbor->extraAttribPtr<<" volume="<<removedNeighbor->volume<<" tv="<<removedNeighbor->targetVolume<<" lv="<<removedNeighbor->lambdaVolume<<endl;
+				// // // cerr<<"oldCell="<<oldCell<<" id="<<oldCell->id<<" extraAttribPtr="<<removedNeighbor->extraAttribPtr<<" volume="<<oldCell->volume<<" tv="<<oldCell->targetVolume<<" lv="<<oldCell->lambdaVolume<<endl;
+                
+				
+				// // // for (std::set<FocalPointPlasticityTrackerData>::iterator sitr1=internalPlastNeighbors.begin() ; sitr1 != internalPlastNeighbors.end() ; ++sitr1 ){
+					// // // if (sitr1->neighborAddress->id==removedNeighbor->id){
+						// // // cerr<<"removing neighbor.id="<<sitr1->neighborAddress->id<<endl;	
+					// // // }
+				// // // }
 
-				std::set<FocalPointPlasticityTrackerData> & plastNeighborsRemovedNeighbor=
+
+                
+                
+                
+				std::set<FocalPointPlasticityTrackerData> & internalPlastNeighborsRemovedNeighbor=
 					focalPointPlasticityTrackerAccessor.get(removedNeighbor->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
 
-				plastNeighborsRemovedNeighbor.erase(FocalPointPlasticityTrackerData(oldCell));
+				internalPlastNeighborsRemovedNeighbor.erase(FocalPointPlasticityTrackerData(oldCell));
 				//plastNeighborsRemovedNeighbor.erase(FocalPointPlasticityTrackerData(removedNeighbor));
 
 				//plastNeighbors.erase(sitr);
-				plastNeighbors.erase(FocalPointPlasticityTrackerData(sitr->neighborAddress));
+				// // // plastNeighbors.erase(FocalPointPlasticityTrackerData(sitr->neighborAddress));
+                internalPlastNeighbors.erase(FocalPointPlasticityTrackerData(sitr->neighborAddress));
+                
+                
+                
 				break; 
 			}
 		}
