@@ -816,10 +816,17 @@ class CC3DMLGeneratorBase:
         bfElement=mElement.ElementCC3D("BindingFormula",{'Name':'Binary'})
         bfElement.ElementCC3D("Formula",{},formula)
         varElement=bfElement.ElementCC3D("Variables")
-        adhMatrixElement=varElement.ElementCC3D("AdhesionMatrix")
+        adhMatrixElement=varElement.ElementCC3D("AdhesionInteractionMatrix")
+        
+        repetitionDict={}
+        
         for idx1,afprops1 in afData.iteritems():      
             for idx2,afprops2 in afData.iteritems():                  
-        
+                if afprops2+'_'+afprops1 in repetitionDict.keys(): # to avoid duplicate entries
+                    continue
+                else:    
+                    repetitionDict[afprops1+'_'+afprops2]=0
+                
                 attrDict={"Molecule1":afprops1,"Molecule2":afprops2}                            
                 adhMatrixElement.ElementCC3D("BindingParameter",attrDict,0.5)
                 
