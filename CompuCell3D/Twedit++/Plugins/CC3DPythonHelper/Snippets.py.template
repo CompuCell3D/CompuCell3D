@@ -230,6 +230,32 @@ cell=self.cellField[10,11,0]
 shiftVector=CompuCell.Point3D(20,20,0)
 self.moveCell(cell,shiftVector)
 
+=============== #@Menu@ Distances, Vectors
+
+---------- #@Submenu@ Distance Vector Between Cells
+vec=self.distanceVectorBetweenCells(CELL1,CELL2)
+
+---------- #@Submenu@ Distance Vector Between Cells (Invariant)
+vec=self.invariantDistanceVectorBetweenCells(CELL1,CELL2)
+
+---------- #@Submenu@ Distance  Between Cells
+vec=self.distanceBetweenCells(CELL1,CELL2)
+
+---------- #@Submenu@ Distance  Between Cells (Invariant)
+vec=self.invariantDistanceBetweenCells(CELL1,CELL2)
+
+---------- #@Submenu@ Distance Vector Between Points
+vec=self.distance(_from=[10,10,0],_to=[11,11,0])
+
+---------- #@Submenu@ Distance Vector Between Points (Invariant)
+vec=self.invariantDistanceVector(_from=[10,10,0],_to=[11,11,0])
+
+---------- #@Submenu@ Distance Vector Between Points (Invariant, Integer)
+vec=self.invariantDistanceVectorInteger(_from=[10,10,0],_to=[11,11,0])
+
+---------- #@Submenu@  Vector Norm
+norm=self.vectorNorm(VECTOR)
+
 
 
 =============== #@Menu@ Visit
@@ -432,7 +458,44 @@ for fppd in self.getFocalPointPlasticityDataList(cell):
 for fppd in self.getInternalFocalPointPlasticityDataList(cell):
     print "fppd.neighborId",fppd.neighborAddress.id, " lambda=",fppd.lambdaDistance, " targetDistance=",fppd.targetDistance
     self.focalPointPlasticityPlugin.setInternalFocalPointPlasticityParameters(cell,fppd.neighborAddress,1.0,7.0,20.0)  # arguments are (cell1,cell2,lambda,targetDistance,maxDistance)     
+    
+---------- #@Submenu@ Create FPP Link 
+# Make sure FocalPointPlacticity plugin is loaded
+self.focalPointPlasticityPlugin.createFocalPointPlasticityLink(CELL1 , CELL2 , LAMBDA , TARGET_DISTANCE , MAX_DISTANCE)		
 
+---------- #@Submenu@ Create FPP Link (Within Cluster)
+# Make sure FocalPointPlacticity plugin is loaded
+self.focalPointPlasticityPlugin.createInternalFocalPointPlasticityLink(CELL1 , CELL2 , LAMBDA , TARGET_DISTANCE , MAX_DISTANCE)
+
+---------- #@Submenu@ Get Lambda for FPP Link (Within Cluster)
+# Make sure FocalPointPlacticity plugin is loaded
+self.focalPointPlasticityPlugin.getPlasticityParametersLambdaDistance(CELL1 , CELL2)
+
+---------- #@Submenu@ Get Target Distance for FPP Link (Within Cluster)
+# Make sure FocalPointPlacticity plugin is loaded
+self.focalPointPlasticityPlugin.getPlasticityParametersTargetDistance(CELL1 , CELL2)
+
+
+---------- #@Submenu@ Delete FPP Link 
+# Make sure FocalPointPlacticity plugin is loaded
+self.focalPointPlasticityPlugin.deleteFocalPointPlasticityLink(CELL1 , CELL2)		
+
+---------- #@Submenu@ Delete FPP Link (Within Cluster)
+# Make sure FocalPointPlacticity plugin is loaded
+self.focalPointPlasticityPlugin.deleteInternalFocalPointPlasticityLink(CELL1 , CELL2)
+
+---------- #@Submenu@ Create Anchor 
+# Make sure FocalPointPlacticity plugin is loaded
+anchorId = self.focalPointPlasticityPlugin.createAnchor(CELL, LAMBDA , TARGET_DISTANCE , MAX_DISTANCE , ANCHOR_X , ANCHOR_Y , ANCHOR_Z)
+
+---------- #@Submenu@ Delete Anchor 
+# Make sure FocalPointPlacticity plugin is loaded
+self.focalPointPlasticityPlugin.deleteAnchor(CELL, ANCHOR_ID)
+
+---------- #@Submenu@ Set Anchor Parameters
+self.focalPointPlasticityPlugin.setAnchorParameters(CELL , ANCHOR_ID , LAMBDA , TARGET_DISTANCE , MAX_DISTANCE , ANCHOR_X , ANCHOR_Y , ANCHOR_Z)
+
+    
 =============== #@Menu@ Adhesion Flex
 
 ---------- #@Submenu@ Get Molecule Dens. By Name
