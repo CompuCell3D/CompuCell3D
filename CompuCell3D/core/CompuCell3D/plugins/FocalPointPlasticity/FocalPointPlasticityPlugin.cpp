@@ -875,7 +875,7 @@ double FocalPointPlasticityPlugin::tryAddingNewJunction(const Point3D &pt,const 
 		set<FocalPointPlasticityTrackerData>::iterator sitr=
 			focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->focalPointPlasticityNeighbors.find(FocalPointPlasticityTrackerData(nCell));
 		if(sitr==focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->focalPointPlasticityNeighbors.end()){
-			//new connection allowed
+			//new connection allowed			
 			newJunctionInitiatedFlag=true;
 			newNeighbor=nCell;
 			break; 
@@ -1345,7 +1345,16 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 	//	cerr<<"\t\t newCell 1082 volume="<<newCell->volume<<endl;
 	//}
 
-	if(newJunctionInitiatedFlag){
+	//because newJunctionInitiatedFlag is in principle "global" variable changing lattice configuration from python e.g. delete cell
+	// can cause newJunctionInitiatedFlag be still after last change and thus falsly indicate new junction even when cell is e.g. Medium
+
+
+
+	if(newJunctionInitiatedFlag && newCell){ 
+
+		// we reset the flags here to avoid  keeping true value in the "global" class-wide variable- this might have ide effects
+		newJunctionInitiatedFlag = false;
+
 		//if(newCell->id==1082 ||newNeighbor->id==1082  ){
 		//cerr<<"newJunctionInitiatedFlag="<<newJunctionInitiatedFlag<<" newCell="<<newCell->id<<endl;
 		//cerr<<"newJunctionInitiatedFlag="<<newJunctionInitiatedFlag<<" newNeighborCell="<<newNeighbor->id<<endl;
@@ -1390,8 +1399,14 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 		return;
 	}
 
+	//because newJunctionInitiatedFlag is in principle "global" variable changing lattice configuration from python e.g. delete cell
+	// can cause newJunctionInitiatedFlag be still after last change and thus falsly indicate new junction even when cell is e.g. Medium
 
-	if (newJunctionInitiatedFlagWithinCluster){
+	if (newJunctionInitiatedFlagWithinCluster && newCell){
+
+		// we reset the flags here to avoid  keeping true value in the "global" class-wide variable- this might have ide effects		
+		newJunctionInitiatedFlagWithinCluster = false;
+
 		//if(newCell->id==1082 ||newNeighbor->id==1082  ){
 		//cerr<<"newJunctionInitiatedFlagWithinCluster="<<newJunctionInitiatedFlagWithinCluster<<" newCell="<<newCell->id<<endl;
 		//cerr<<"newJunctionInitiatedFlagWithinCluster="<<newJunctionInitiatedFlagWithinCluster<<" newNeighborCell="<<newNeighbor->id<<endl;
@@ -1437,6 +1452,10 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 		//}
 		return;
 	}
+
+	// we reset the flags here to avoid  keeping true value in the "global" class-wide variable- this might have ide effects
+	newJunctionInitiatedFlag = false;
+	newJunctionInitiatedFlagWithinCluster = false;
 
 	if(newCell){
 		double xCMNew=newCell->xCM/float(newCell->volume);
