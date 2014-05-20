@@ -346,8 +346,7 @@ void SteadyStateDiffusionSolver::step(const unsigned int _currentStep) {
 
 	currentStep=_currentStep;
 
-	//secrete function resets field to 0. If there is no user-specified secretion we have to explicitely reset the field
-
+	//secrete function resets field to 0. If there is no user-specified secretion we have to explicitely reset the field    
 	(this->*secretePtr)();
 
 	(this->*diffusePtr)();
@@ -580,29 +579,31 @@ void SteadyStateDiffusionSolver::secreteSingleField(unsigned int idx){
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void SteadyStateDiffusionSolver::secrete() {
-
+    
 	for(unsigned int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i ){
+        if (manageSecretionInPythonVec[i]){
+            //do nothing here we do all manipulation in Python
+        }else{
+            //handle Oxygen Secretion
+            //cerr<<"diffSecrFieldTuppleVec[i].oxygenSecretionData.size()="<<diffSecrFieldTuppleVec[i].oxygenSecretionData.size()<<endl;
+            if(diffSecrFieldTuppleVec[i].oxygenSecretionData.size()){ //if there is any oxygen secretion data specified for this field use oxygen secretion mode
+                secreteOxygenSingleField(i);
+                continue; //ignore other secretion modes
+            }
 
-		//handle Oxygen Secretion
-		//cerr<<"diffSecrFieldTuppleVec[i].oxygenSecretionData.size()="<<diffSecrFieldTuppleVec[i].oxygenSecretionData.size()<<endl;
-		if(diffSecrFieldTuppleVec[i].oxygenSecretionData.size()){ //if there is any oxygen secretion data specified for this field use oxygen secretion mode
-			secreteOxygenSingleField(i);
-			continue; //ignore other secretion modes
-		}
+            if (diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.size()){
+                for(unsigned int j = 0 ; j <diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.size() ; ++j){			
+                    (this->*diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec[j])(i);
+                }
+            }else{
+                //secrete function resets field to 0. If there is no user-specified secretion we have to explicitely reset the field
+                ConcentrationField_t * concentrationFieldPtr=concentrationFieldVector[i];
+                vector<double> & containerRef=concentrationFieldPtr->getContainerRef();
 
-		if (diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.size()){
-			for(unsigned int j = 0 ; j <diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.size() ; ++j){			
-				(this->*diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec[j])(i);
-			}
-		}else{
-			//secrete function resets field to 0. If there is no user-specified secretion we have to explicitely reset the field
-			ConcentrationField_t * concentrationFieldPtr=concentrationFieldVector[i];
-			vector<double> & containerRef=concentrationFieldPtr->getContainerRef();
+                containerRef.assign(containerRef.size(),0.0); //zero concentration vector
 
-			containerRef.assign(containerRef.size(),0.0); //zero concentration vector
-
-		}
-
+            }
+        }
 
 
 	}
@@ -1102,12 +1103,21 @@ void SteadyStateDiffusionSolver::update(CC3DXMLElement *_xmlData, bool _fullInit
 
 	bcSpecVec.clear();
 
+    manageSecretionInPythonVec.clear();
+    
 	CC3DXMLElementList diffFieldXMLVec=_xmlData->getElements("DiffusionField");
 	for(unsigned int i = 0 ; i < diffFieldXMLVec.size() ; ++i ){
+    
+        manageSecretionInPythonVec.push_back(false); // we set manage secretion in Python flag to False by default
+        
 		diffSecrFieldTuppleVec.push_back(DiffusionSecretionFastFieldTupple3D());
 		DiffusionData & diffData=diffSecrFieldTuppleVec[diffSecrFieldTuppleVec.size()-1].diffData;
 		SecretionData & secrData=diffSecrFieldTuppleVec[diffSecrFieldTuppleVec.size()-1].secrData;
 		vector<OxygenSecretionParameters> & oxygenSecretionData= diffSecrFieldTuppleVec[diffSecrFieldTuppleVec.size()-1].oxygenSecretionData;
+        
+        if (diffFieldXMLVec[i]->findElement("ManageSecretionInPython")){
+            manageSecretionInPythonVec[i]=true;
+        }
         
         if(diffFieldXMLVec[i]->findAttribute("Name")){
             diffData.fieldName=diffFieldXMLVec[i]->getAttribute("Name");
