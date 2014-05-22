@@ -93,7 +93,21 @@ class GenerateDecorator(object):
 class CC3DMLGeneratorBase:
     def __init__(self,simulationDir='',simulationName=''):
         self.element=None
-        self.cc3d=ElementCC3D("CompuCell3D",{"version":"3.6.2"})
+        version='3.6.2'
+        revision=''
+        try:
+            
+            from Version import getVersionAsString,getSVNRevision
+            
+            version = getVersionAsString()
+            revision=getSVNRevision()            
+        except ImportError:
+            print 'COULD NOT IMPORT Version.py'            
+        except:
+            pass
+            
+        self.cc3d=ElementCC3D("CompuCell3D",{"Version":version,'Revision':revision})   
+        # self.cc3d=ElementCC3D("CompuCell3D",{"version":"3.6.2"})
         self.simulationDir=simulationDir
         self.simulationName=simulationName
         self.fileName=''
