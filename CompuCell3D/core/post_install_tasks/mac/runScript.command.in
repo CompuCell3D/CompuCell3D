@@ -100,7 +100,7 @@ echo " ====> PATH: $PATH"
 
 
 echo "---- ---- ---- ---- ---- ---- ---- ---- "
-echo 'Hello World. Python --version says:'
+echo 'Python --version says:'
 echo "---- ---- ---- ---- ---- ---- ---- ---- "
 ${PYTHON_EXEC} --version
 echo "---- ---- ---- ---- ---- ---- ---- ---- "
