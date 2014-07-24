@@ -212,8 +212,11 @@ cell=self.attemptFetchingCellById(CELL_ID)
 self.deleteCell(cell)  
 
 ---------- #@Submenu@ Create Cell
+x=X_POSITION
+y=Y_POSITION
+size=SIZE
 cell=self.newCell(self.TYPENAME)
-self.cellField[x:x+4,y:y+4,0]=cell # size of cell will be 5x5x1
+self.cellField[x:x+size-1,y:y+size-1,0]=cell # size of cell will be SIZExSIZEx1
 
 ---------- #@Submenu@ Create Cell (one liner)
 cell=self.createNewCell(self.TYPENAME, [10,10,0] , xSize=5,ySize=5,zSize=1) # args - type, location of seed point, x,y,z dimansions
