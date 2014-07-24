@@ -1130,7 +1130,7 @@ public:
    }
 
    void printModuleName(ParseData * source){
-      cerr<<"moduleName="<<source->moduleName<<endl;
+      cerr<<"ModuleName="<<source->moduleName<<endl;
    }
 
 %}
