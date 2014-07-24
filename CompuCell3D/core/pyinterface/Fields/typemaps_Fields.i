@@ -85,7 +85,7 @@
             PyObject * xPyRef=PyObject_GetAttrString($input,"x"); dim.x=(short)PyInt_AsLong(xPyRef); Py_DECREF(xPyRef);
             PyObject * yPyRef=PyObject_GetAttrString($input,"y"); dim.y=(short)PyInt_AsLong(yPyRef); Py_DECREF(yPyRef);
             PyObject * zPyRef=PyObject_GetAttrString($input,"z"); dim.z=(short)PyInt_AsLong(zPyRef); Py_DECREF(zPyRef);    
-            $1=dim;
+            $1=&dim;
         } else {
         
             SWIG_exception(SWIG_ValueError,"Expected CompuCell.Dim3D object."); //have to use SWIG_exception to throw exception from typemap - simple throw seems not to work in this case

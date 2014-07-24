@@ -309,12 +309,24 @@ class BS{
     
     float get(CompuCell3D::Point3D &  pt){
         cerr<<"got new get request"<<endl;
+        return 0.0;
     }
 
     float getNonRef(CompuCell3D::Point3D   pt){
         cerr<<"got new get Non ref request"<<endl;
+        return 0.0;
     }
 
+    float getByDim(CompuCell3D::Dim3D & dim){
+        cerr<<"got ByDim new get request"<<endl;
+        return 0.0;
+    }
+
+    float getByDimNonRef(CompuCell3D::Dim3D dim){
+        cerr<<"got ByDim new get Non ref request"<<endl;
+        return 0.0;
+    }
+    
     
     // void getNeighborDirect(Point3D  pt,unsigned int   idx ,bool checkBounds=true, bool calculatePtTrans=false){
     void getNeighborDirect(CompuCell3D::Point3D &  pt,unsigned int idx =10,bool checkBounds=true, bool calculatePtTrans=false) const {
