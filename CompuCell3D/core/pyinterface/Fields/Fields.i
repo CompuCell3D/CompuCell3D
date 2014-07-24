@@ -299,11 +299,22 @@
 
 %inline %{
 
+    
+    
 class BS{
     public:
     BS(void){
         cerr<<"BS constructor"<<endl;
     }
+    
+    float get(CompuCell3D::Point3D &  pt){
+        cerr<<"got new get request"<<endl;
+    }
+
+    float getNonRef(CompuCell3D::Point3D   pt){
+        cerr<<"got new get Non ref request"<<endl;
+    }
+
     
     // void getNeighborDirect(Point3D  pt,unsigned int   idx ,bool checkBounds=true, bool calculatePtTrans=false){
     void getNeighborDirect(CompuCell3D::Point3D &  pt,unsigned int idx =10,bool checkBounds=true, bool calculatePtTrans=false) const {
@@ -312,10 +323,13 @@ class BS{
         cerr<<"pt="<<pt<<endl;        
     }
     
+    
 };
 
 
 %}
+
+
 
 
 // turns on proper handling of default arguments - only one wrapper code will get generated for a function
