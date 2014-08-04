@@ -11,6 +11,8 @@ import Configuration
 import vtk, math
 import sys, os
 
+VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
+
 MODULENAME='==== MVCDrawView3D.py:  '
 
 class MVCDrawView3D(MVCDrawViewBase):
@@ -224,7 +226,13 @@ class MVCDrawView3D(MVCDrawViewBase):
             self.outlineDim=outlineDimTmp
         
             outline = vtk.vtkOutlineFilter()
-            outline.SetInput(_imageData)
+            
+            if VTK_MAJOR_VERSION>=6:
+                outline.SetInputData(_imageData)
+            else:    
+                outline.SetInput(_imageData)
+            
+            
             outlineMapper = vtk.vtkPolyDataMapper()
             outlineMapper.SetInputConnection(outline.GetOutputPort())
         
@@ -484,7 +492,9 @@ class MVCDrawView3D(MVCDrawViewBase):
     #-------------------------------------------------------------------------
     def takeSimShot(self, fileName):
         renderLarge = vtk.vtkRenderLargeImage()
-        renderLarge.SetInput(self.graphicsFrameWidget.ren)
+    
+        renderLarge.SetInput(self.graphicsFrameWidget.ren)         
+        
         renderLarge.SetMagnification(1)
 
         # We write out the image which causes the rendering to occur. If you

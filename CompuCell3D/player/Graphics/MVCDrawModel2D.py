@@ -10,6 +10,9 @@ import vtk, math
 import sys, os
 import string
 
+VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
+
+
 MODULENAME='----- MVCDrawModel2D.py:  '
 
 
@@ -88,7 +91,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
             # self.outlineDim=outlineDimTmp
         
         outline = vtk.vtkOutlineFilter()
-        outline.SetInput(outlineData)
+        
+        if VTK_MAJOR_VERSION>=6:
+            outline.SetInputData(outlineData)
+        else:    
+            outline.SetInput(outlineData)
+        
+        
         outlineMapper = vtk.vtkPolyDataMapper()
         outlineMapper.SetInputConnection(outline.GetOutputPort())
     
@@ -163,8 +172,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.hexCellsPolyData.GetCellData().SetScalars(self.cellType)
         self.hexCellsPolyData.SetPoints(self.hexPoints)
         self.hexCellsPolyData.SetPolys(self.hexCells)
+        
+        if VTK_MAJOR_VERSION>=6:
+            self.hexCellsMapper.SetInputData(self.hexCellsPolyData)
+        else:    
+            self.hexCellsMapper.SetInput(self.hexCellsPolyData)
 		
-        self.hexCellsMapper.SetInput(self.hexCellsPolyData)
+        
         self.hexCellsMapper.ScalarVisibilityOn()
         self.hexCellsMapper.SetLookupTable(self.celltypeLUT)
         self.hexCellsMapper.SetScalarRange(0,self.celltypeLUTMax)
@@ -181,7 +195,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
         field       = vtk.vtkImageDataGeometryFilter()        
         # field.SetExtent(0, _dim[0], 0, int((_dim[1])*math.sqrt(3.0)), 0, 0)
         # field.SetExtent(0, _dim[0], 0, _dim[1]/2, 0, 0)
-        field.SetInput(data)
+        
+        if VTK_MAJOR_VERSION>=6:
+            field.SetInputData(data)
+        else:    
+            field.SetInput(data)
+        
+        
         transform = vtk.vtkTransform()
         # transform.Scale(1,math.sqrt(3.0)/2.0,1)
         # transform.Translate(0,math.sqrt(3.0)/2.0,0)
@@ -271,8 +291,15 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.hexCellsConPolyData.GetCellData().SetScalars(self.conArray)
         self.hexCellsConPolyData.SetPoints(self.hexPointsCon)
         self.hexCellsConPolyData.SetPolys(self.hexCellsCon)
-		
-        self.hexConMapper.SetInput(self.hexCellsConPolyData)
+
+        if VTK_MAJOR_VERSION>=6:
+            self.hexConMapper.SetInputData(self.hexCellsConPolyData)
+        else:    
+            self.hexConMapper.SetInput(self.hexCellsConPolyData)
+
+
+        
+        
         self.hexConMapper.ScalarVisibilityOn()
         self.hexConMapper.SetLookupTable(self.clut)
         self.hexConMapper.SetScalarRange(self.minCon, self.maxCon)
@@ -329,8 +356,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.hexCellsConPolyData.GetCellData().SetScalars(self.conArray)
         self.hexCellsConPolyData.SetPoints(self.hexPointsCon)
         self.hexCellsConPolyData.SetPolys(self.hexCellsCon)
-		
-        self.hexConMapper.SetInput(self.hexCellsConPolyData)
+
+        if VTK_MAJOR_VERSION>=6:
+            self.hexConMapper.SetInputData(self.hexCellsConPolyData)
+        else:    
+            self.hexConMapper.SetInput(self.hexCellsConPolyData)
+        
         self.hexConMapper.ScalarVisibilityOn()
         self.hexConMapper.SetLookupTable(self.clut)
         self.hexConMapper.SetScalarRange(self.minCon, self.maxCon)
@@ -390,8 +421,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.hexCellsConPolyData.GetCellData().SetScalars(self.conArray)
         self.hexCellsConPolyData.SetPoints(self.hexPointsCon)
         self.hexCellsConPolyData.SetPolys(self.hexCellsCon)
+        if VTK_MAJOR_VERSION>=6:
+            self.hexConMapper.SetInputData(self.hexCellsConPolyData)
+        else:    
+            self.hexConMapper.SetInput(self.hexCellsConPolyData)
 		
-        self.hexConMapper.SetInput(self.hexCellsConPolyData)
+        
         self.hexConMapper.ScalarVisibilityOn()
         self.hexConMapper.SetLookupTable(self.clut)
         self.hexConMapper.SetScalarRange(self.minCon, self.maxCon)
@@ -437,12 +472,21 @@ class MVCDrawModel2D(MVCDrawModelBase):
 #        print MODULENAME,'   initializeContoursHex():  _conArray=',_conArray
         data = vtk.vtkImageData()
         data.SetDimensions(_dim[0], _dim[1], 1)        
-        data.SetScalarTypeToUnsignedChar()      
+        
+        data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR,3)  
+        
+#         data.SetScalarTypeToUnsignedChar()      
+        
+        
         data.GetPointData().SetScalars(_conArray)
         field = vtk.vtkImageDataGeometryFilter()        
         # field.SetExtent(0, _dim[0], 0, int((_dim[1])*math.sqrt(3.0)), 0, 0)
         # field.SetExtent(0, _dim[0], 0, _dim[1]/2, 0, 0)
-        field.SetInput(data)
+        if VTK_MAJOR_VERSION>=6:
+            field.SetInputData(data)
+        else:    
+            field.SetInput(data)
+        
         transform = vtk.vtkTransform()
         # transform.Scale(1,math.sqrt(3.0)/2.0,1)
         transform.Translate(0.5,0.5,0) # for some reason there is   is offset  of (0.5,0.5,0) when generating contours
@@ -523,8 +567,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.cartesianCellsConPolyData.GetCellData().SetScalars(self.conArray)
         self.cartesianCellsConPolyData.SetPoints(self.cartesianPointsCon)
         self.cartesianCellsConPolyData.SetPolys(self.cartesianCellsCon)
-		
-        self.conMapper.SetInput(self.cartesianCellsConPolyData)
+        
+        if VTK_MAJOR_VERSION>=6:
+            self.conMapper.SetInputData(self.cartesianCellsConPolyData)
+        else:    
+            self.conMapper.SetInput(self.cartesianCellsConPolyData)
+        
         self.conMapper.ScalarVisibilityOn()
         self.conMapper.SetLookupTable(self.clut)
         self.conMapper.SetScalarRange(self.minCon, self.maxCon)
@@ -596,11 +644,20 @@ class MVCDrawModel2D(MVCDrawModelBase):
         data = vtk.vtkImageData()
         data.SetDimensions(dim_0, dim_1, 1)
         # print "dim_0,dim_1",(dim_0,dim_1)
-        data.SetScalarTypeToUnsignedChar()      
+#         data.SetScalarTypeToUnsignedChar()    
+
+        data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR,3)      
+        
         data.GetPointData().SetScalars(self.conArray)
         
         field = vtk.vtkImageDataGeometryFilter()
-        field.SetInput(data)
+        
+        if VTK_MAJOR_VERSION>=6:
+            field.SetInputData(data)
+        else:    
+            field.SetInput(data)
+                
+        
         field.SetExtent(0, dim_0, 0, dim_1, 0, 0)
         
 #        spoints = vtk.vtkStructuredPoints()
@@ -754,8 +811,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
         
 
         glyphs=vtk.vtkGlyph3D()
+        
+        if VTK_MAJOR_VERSION>=6:
+            glyphs.SetInputData(vectorGrid)
+        else:    
+            glyphs.SetInput(vectorGrid)
 
-        glyphs.SetInput(vectorGrid)
+        
         glyphs.SetSourceConnection(cone.GetOutputPort())
         #glyphs.SetScaleModeToScaleByVector()        
         # glyphs.SetColorModeToColorByVector()
@@ -874,7 +936,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
         
         glyphs=vtk.vtkGlyph3D()
 
-        glyphs.SetInput(vectorGrid)
+        if VTK_MAJOR_VERSION>=6:
+            glyphs.SetInputData(vectorGrid)
+        else:    
+            glyphs.SetInput(vectorGrid)
+        
         glyphs.SetSourceConnection(cone.GetOutputPort())
         #glyphs.SetScaleModeToScaleByVector()
         # glyphs.SetColorModeToColorByVector()
@@ -988,7 +1054,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         glyphs=vtk.vtkGlyph3D()
 
-        glyphs.SetInput(vectorGrid)
+        if VTK_MAJOR_VERSION>=6:
+            glyphs.SetInputData(vectorGrid)
+        else:    
+            glyphs.SetInput(vectorGrid)
+
         glyphs.SetSourceConnection(cone.GetOutputPort())
         #glyphs.SetScaleModeToScaleByVector()
         # glyphs.SetColorModeToColorByVector()
@@ -1392,7 +1462,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         borders.SetPoints(points)
         borders.SetLines(lines)
         
-        self.borderMapper.SetInput(borders)
+        if VTK_MAJOR_VERSION>=6:
+            self.borderMapper.SetInputData(borders)
+        else:    
+            self.borderMapper.SetInput(borders)
+        
+        
         _actors[0].SetMapper(self.borderMapper)
         # self.setBorderColor() 
 
@@ -1426,7 +1501,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         borders.SetPoints(points)
         borders.SetLines(lines)
 
-        self.borderMapperHex.SetInput(borders)
+        if VTK_MAJOR_VERSION>=6:
+            self.borderMapperHex.SetInputData(borders)
+        else:    
+            self.borderMapperHex.SetInput(borders)
+
+        
         _actors[0].SetMapper(self.borderMapperHex)
         # self.setBorderColor() 
         # if not self.currentActors.has_key("BorderActor"):
@@ -1453,7 +1533,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
         borders.SetPoints(points)
         borders.SetLines(lines)
         
-        self.clusterBorderMapper.SetInput(borders)
+        if VTK_MAJOR_VERSION>=6:
+            self.clusterBorderMapper.SetInputData(borders)
+        else:    
+            self.clusterBorderMapper.SetInput(borders)        
+        
         clusterBordersActor.SetMapper(self.clusterBorderMapper)
         
     def initClusterBordersActors2DHex(self,clusterBordersActor):
@@ -1470,7 +1554,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         borders.SetPoints(points)
         borders.SetLines(lines)
         
-        self.clusterBorderMapperHex.SetInput(borders)
+        if VTK_MAJOR_VERSION>=6:
+            self.clusterBorderMapperHex.SetInputData(borders)
+        else:    
+            self.clusterBorderMapperHex.SetInput(borders)
+            
+        
         clusterBordersActor.SetMapper(self.clusterBorderMapperHex)
         
 #--------------------------------------------------------------------------------------------------
@@ -1586,7 +1675,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
         #gs.CrossOff()
 
         centroidGlyph = vtk.vtkGlyph3D()
-        centroidGlyph.SetInput(centroidsPD)
+        if VTK_MAJOR_VERSION>=6:
+            centroidGlyph.SetInputData(centroidsPD)
+        else:    
+            centroidGlyph.SetInput(centroidsPD)
+        
         centroidGlyph.SetSource(centroidGS.GetOutput())
 #        centroidGlyph.SetScaleFactor( 0.2 )  # rwh: should this lattice size dependent or cell vol or ?
         glyphScale = Configuration.getSetting("CellGlyphScale")
@@ -1603,8 +1696,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
 #        centroidGlyph.SetInputArrayToProcess(0,0,0,0,"CellVolumes")
         centroidGlyph.SetInputArrayToProcess(0,0,0,0,"CellScalars")
 
-
-        self.cellGlyphsMapper.SetInput(centroidGlyph.GetOutput())
+        if VTK_MAJOR_VERSION>=6:
+            self.cellGlyphsMapper.SetInputData(centroidGlyph.GetOutput())
+        else:    
+            self.cellGlyphsMapper.SetInput(centroidGlyph.GetOutput())
+        
         self.cellGlyphsMapper.SetScalarRange(0,self.celltypeLUTMax)
         self.cellGlyphsMapper.ScalarVisibilityOn()
         self.cellGlyphsMapper.SetLookupTable(self.celltypeLUT)
@@ -1689,7 +1785,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         FPPLinksPD.SetPoints(points)
         FPPLinksPD.SetLines(lines)
         
-        self.FPPLinksMapper.SetInput(FPPLinksPD)
+        if VTK_MAJOR_VERSION>=6:
+            self.FPPLinksMapper.SetInputData(FPPLinksPD)
+        else:    
+            self.FPPLinksMapper.SetInput(FPPLinksPD)
+        
+        
         
         fppActor.SetMapper(self.FPPLinksMapper)
 
@@ -1936,7 +2037,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         FPPLinksPD.Update()
         
-        self.FPPLinksMapper.SetInput(FPPLinksPD)
+        if VTK_MAJOR_VERSION>=6:
+            self.FPPLinksMapper.SetInputData(FPPLinksPD)
+        else:    
+            self.FPPLinksMapper.SetInput(FPPLinksPD)        
+        
 
 #        self.FPPLinksMapper.SetScalarModeToUseCellFieldData()
         
@@ -2189,8 +2294,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         FPPLinksPD.SetLines(lines)
 
         FPPLinksPD.Update()
+        if VTK_MAJOR_VERSION>=6:
+            self.FPPLinksMapper.SetInputData(FPPLinksPD)
+        else:    
+            self.FPPLinksMapper.SetInput(FPPLinksPD)        
+                
         
-        self.FPPLinksMapper.SetInput(FPPLinksPD)
 
 #        self.FPPLinksMapper.SetScalarModeToUseCellFieldData()
         
@@ -2466,7 +2575,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
         
         FPPLinksPD.GetCellData().SetScalars(colorScalars)
         
-        self.FPPLinksMapper.SetInput(FPPLinksPD)
+        if VTK_MAJOR_VERSION>=6:
+            self.FPPLinksMapper.SetInputData(FPPLinksPD)
+        else:    
+            self.FPPLinksMapper.SetInput(FPPLinksPD)        
+        
 
         self.FPPLinksMapper.SetScalarModeToUseCellFieldData()
         self.FPPLinksMapper.SelectColorArray("fpp_scalar")
@@ -2729,7 +2842,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
         
         cellsPlane=vtk.vtkImageDataGeometryFilter()
         cellsPlane.SetExtent(0,dim[0],0,dim[1],0,0)
-        cellsPlane.SetInput(uGridConc)
+        if VTK_MAJOR_VERSION>=6:
+            cellsPlane.SetInputData(uGridConc)
+        else:    
+            cellsPlane.SetInput(uGridConc)
         
         # concMapper=self.cellsMapper
 

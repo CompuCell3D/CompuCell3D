@@ -320,7 +320,12 @@ class MVCDrawView2D(MVCDrawViewBase):
         outlineData.SetDimensions(_dim[0], _dim[1], 1)
 
         outline = vtk.vtkOutlineFilter()
-        outline.SetInput(outlineData)
+        
+        if VTK_MAJOR_VERSION>=6:
+            outline.SetInputData(outlineData)
+        else:    
+            outline.SetInput(outlineData)
+                
         outlineMapper = vtk.vtkPolyDataMapper()
         outlineMapper.SetInputConnection(outline.GetOutputPort())
     
