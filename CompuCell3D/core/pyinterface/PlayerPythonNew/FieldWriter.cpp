@@ -86,8 +86,11 @@ void FieldWriter::writeFields(std::string _fileName){
 //	    latticeDataWriter->SetFileTypeToBinary();
 //	else
 //	    latticeDataWriter->SetFileTypeToASCII();
-
-	latticeDataWriter->SetInputData(latticeData);
+        #ifdef VTK6
+            latticeDataWriter->SetInputData(latticeData);
+        #else
+            latticeDataWriter->SetInput(latticeData);
+        #endif
 	int dim[3];
 	latticeData->GetDimensions(dim);
 	//cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;

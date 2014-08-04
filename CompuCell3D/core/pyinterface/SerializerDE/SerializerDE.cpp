@@ -109,8 +109,12 @@ bool SerializerDE::serializeCellField(SerializeData &_sd){
 	    fieldDataWriter->SetFileTypeToBinary();
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
-
-	fieldDataWriter->SetInputData(fieldData);
+        #ifdef VTK6
+            fieldDataWriter->SetInputData(fieldData);
+        #else
+            fieldDataWriter->SetInput(fieldData);
+        #endif 
+        
 	//int dim[3];
 	//latticeData->GetDimensions(dim);
 	////cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;
@@ -248,8 +252,13 @@ bool SerializerDE::serializeConcentrationField(SerializeData &_sd){
 	    fieldDataWriter->SetFileTypeToBinary();
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
-
-	fieldDataWriter->SetInputData(fieldData);
+        
+        #ifdef VTK6
+            fieldDataWriter->SetInputData(fieldData);
+        #else
+            fieldDataWriter->SetInput(fieldData);
+        #endif
+        
 	//int dim[3];
 	//latticeData->GetDimensions(dim);
 	////cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;
@@ -354,8 +363,11 @@ bool SerializerDE::serializeScalarField(SerializeData &_sd){
 	    fieldDataWriter->SetFileTypeToBinary();
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
-
-	fieldDataWriter->SetInputData(fieldData);
+        #ifdef VTK6
+            fieldDataWriter->SetInputData(fieldData);
+        #else
+            fieldDataWriter->SetInput(fieldData);
+        #endif
 	//int dim[3];
 	//latticeData->GetDimensions(dim);
 	////cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;
@@ -471,8 +483,12 @@ bool SerializerDE::serializeScalarFieldCellLevel(SerializeData &_sd){
 	    fieldDataWriter->SetFileTypeToBinary();
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
-
-	fieldDataWriter->SetInputData(fieldData);
+        #ifdef VTK6
+            fieldDataWriter->SetInputData(fieldData);
+        #else
+            fieldDataWriter->SetInput(fieldData);
+        #endif
+        
 	//int dim[3];
 	//latticeData->GetDimensions(dim);
 	////cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;
@@ -590,8 +606,13 @@ bool SerializerDE::serializeVectorField(SerializeData &_sd){
 	    fieldDataWriter->SetFileTypeToBinary();
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
-
-	fieldDataWriter->SetInputData(fieldData);
+        
+        #ifdef VTK6
+            fieldDataWriter->SetInputData(fieldData);
+        #else
+            fieldDataWriter->SetInput(fieldData);
+        #endif
+        
 	//int dim[3];
 	//latticeData->GetDimensions(dim);
 	////cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;
@@ -711,8 +732,11 @@ bool SerializerDE::serializeVectorFieldCellLevel(SerializeData &_sd){
 	    fieldDataWriter->SetFileTypeToBinary();
 	else
 	    fieldDataWriter->SetFileTypeToASCII();
-
-	fieldDataWriter->SetInputData(fieldData);
+        #ifdef VTK6
+            fieldDataWriter->SetInputData(fieldData);
+        #else
+            fieldDataWriter->SetInput(fieldData);
+        #endif
 	//int dim[3];
 	//latticeData->GetDimensions(dim);
 	////cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;
