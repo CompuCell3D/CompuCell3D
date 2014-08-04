@@ -87,7 +87,7 @@ void FieldWriter::writeFields(std::string _fileName){
 //	else
 //	    latticeDataWriter->SetFileTypeToASCII();
 
-	latticeDataWriter->SetInput(latticeData);
+	latticeDataWriter->SetInputData(latticeData);
 	int dim[3];
 	latticeData->GetDimensions(dim);
 	//cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;

@@ -15,7 +15,13 @@ SET(SRCS
    FieldWriter.cpp
 )
 FIND_PACKAGE(VTK REQUIRED)
+if (${VTK_MAJOR_VERSION} EQUAL "6")    
+    SET(VTK_LIBS vtkRenderingOpenGL vtkInteractionStyle vtkRenderingVolumeOpenGL vtkIOLegacy)
+endif()
 
+if (${VTK_MAJOR_VERSION} EQUAL "5")    
+    SET(VTK_LIBS vtkVolumeRendering vtkHybrid vtkFiltering vtkCommon)
+endif()
 
 INCLUDE_DIRECTORIES(
    ${COMPUCELL3D_SOURCE_DIR}/core/CompuCellPlayer/simthread
@@ -39,21 +45,16 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
        CompuCellLibShared
        BasicUtilsStatic
        ${PYTHON_LIBRARIES}
+       ${VTK_LIBS}	
        # simthreadShared
-       vtkVolumeRendering 
-       vtkHybrid 
-       vtkFiltering 
-       vtkCommon
+
     )
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     SET(LIBS
        CompuCellLibShared
        BasicUtilsShared
        ${PYTHON_LIBRARIES}
-       vtkVolumeRendering 
-       vtkHybrid 
-       vtkFiltering 
-       vtkCommon
+       ${VTK_LIBS}
        
        # simthreadShared
     )
