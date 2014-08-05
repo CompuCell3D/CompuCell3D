@@ -472,10 +472,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
 #        print MODULENAME,'   initializeContoursHex():  _conArray=',_conArray
         data = vtk.vtkImageData()
         data.SetDimensions(_dim[0], _dim[1], 1)        
-        
-        data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR,3)  
-        
-#         data.SetScalarTypeToUnsignedChar()      
+
+        if VTK_MAJOR_VERSION  >= 6:      
+            data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR,3)  
+        else:
+            data.SetScalarTypeToUnsignedChar()      
         
         
         data.GetPointData().SetScalars(_conArray)
@@ -644,10 +645,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
         data = vtk.vtkImageData()
         data.SetDimensions(dim_0, dim_1, 1)
         # print "dim_0,dim_1",(dim_0,dim_1)
-#         data.SetScalarTypeToUnsignedChar()    
-
-        data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR,3)      
         
+#         
+        if VTK_MAJOR_VERSION >= 6:
+            data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR,3)      
+        else:
+            data.SetScalarTypeToUnsignedChar()    
+            
         data.GetPointData().SetScalars(self.conArray)
         
         field = vtk.vtkImageDataGeometryFilter()

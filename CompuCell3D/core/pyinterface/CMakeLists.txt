@@ -42,7 +42,9 @@ IF(SWIG_FOUND)
 
     FIND_PACKAGE(VTK REQUIRED)
     message("VTK_MAJOR_VERSION=" ${VTK_MAJOR_VERSION})
-    add_definitions(-DVTK6)
+    if (${VTK_MAJOR_VERSION} EQUAL "6")    
+        add_definitions(-DVTK6)
+    endif()    
     
 
     add_subdirectory(PlayerPythonNew)
