@@ -46,7 +46,7 @@
 
 
 <Plugin Name="Chemotaxis">
-   <ChemicalField Source="DiffusionSolverFE" Name="FGF">
+   <ChemicalField Name="FGF">
 	<ChemotaxisByType Type="Amoeba" Lambda="3"/>    
 	<ChemotaxisByType Type="Bacteria" Lambda="2"/>
    </ChemicalField>

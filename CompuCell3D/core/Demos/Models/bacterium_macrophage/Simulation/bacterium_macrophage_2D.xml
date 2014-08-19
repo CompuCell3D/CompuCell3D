@@ -49,7 +49,7 @@
 
 
 <Plugin Name="Chemotaxis">
-   <ChemicalField Source="DiffusionSolverFE" Name="ATTR" >
+   <ChemicalField Name="ATTR" >
 	<ChemotaxisByType Type="Macrophage" Lambda="200"/>   	
    </ChemicalField>
    
@@ -62,16 +62,14 @@
             <FieldName>ATTR</FieldName>
             <DiffusionConstant>0.10</DiffusionConstant>
             <DecayConstant>0.000</DecayConstant>
-            <DoNotDiffuseTo>Wall</DoNotDiffuseTo> 
+            <DiffusionCoefficient CellType="Wall">0.0</DiffusionCoefficient>            
         </DiffusionData>
 	<SecretionData>
-            <!--<SecretionOnContact Type="Amoeba" SecreteOnContactWith="Medium">0.00</SecretionOnContact>-->
-            <!--SecretionOnContact Type="Medium" SecreteOnContactWith="Amoeba">0.1</SecretionOnContact-->
             <Secretion Type="Bacterium">200</Secretion>
         </SecretionData>
-
     </DiffusionField>
  </Steppable>
+
 
 
  <Steppable Type="PIFInitializer">
