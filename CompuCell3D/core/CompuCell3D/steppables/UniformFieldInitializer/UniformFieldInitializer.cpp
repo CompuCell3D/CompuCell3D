@@ -101,10 +101,11 @@ void UniformFieldInitializer::init(Simulator *simulator,  CC3DXMLElement * _xmlD
 			initData.gap=regionVec[i]->getFirstElement("Gap")->getUInt();
 		if(regionVec[i]->findElement("Width"))
 			initData.width=regionVec[i]->getFirstElement("Width")->getUInt();
-		if(regionVec[i]->findElement("Types")){
-			initData.typeNamesString=regionVec[i]->getFirstElement("Types")->getText();
-			parseStringIntoList(initData.typeNamesString , initData.typeNames , ",");
-		}
+
+		ASSERT_OR_THROW("UniformInitializer requires Types element inside Region section.See manual for details.",regionVec[i]->getFirstElement("Types"));
+		initData.typeNamesString=regionVec[i]->getFirstElement("Types")->getText();
+		parseStringIntoList(initData.typeNamesString , initData.typeNames , ",");
+
 		if(regionVec[i]->findElement("BoxMax")){
 			initData.boxMax.x=regionVec[i]->getFirstElement("BoxMax")->getAttributeAsUInt("x");
 			initData.boxMax.y=regionVec[i]->getFirstElement("BoxMax")->getAttributeAsUInt("y");

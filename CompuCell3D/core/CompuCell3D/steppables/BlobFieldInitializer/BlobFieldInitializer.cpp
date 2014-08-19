@@ -120,15 +120,26 @@ void BlobFieldInitializer::init(Simulator *simulator,  CC3DXMLElement * _xmlData
 	blobInitializerData.clear();
 
 	CC3DXMLElementList regionVec=_xmlData->getElements("Region");
+	
 
 	for (int i = 0 ; i<regionVec.size(); ++i){
 		BlobFieldInitializerData initData;
+		ASSERT_OR_THROW("BlobInitializer requires Radius element inside Region section.See manual for details.",regionVec[i]->getFirstElement("Radius"));
 		initData.radius=regionVec[i]->getFirstElement("Radius")->getUInt();
-		initData.gap=regionVec[i]->getFirstElement("Gap")->getUInt();
-		initData.width=regionVec[i]->getFirstElement("Width")->getUInt();
+		if (regionVec[i]->getFirstElement("Gap")){
+			initData.gap=regionVec[i]->getFirstElement("Gap")->getUInt();
+		}
+
+		if (regionVec[i]->getFirstElement("Width")){
+			initData.width=regionVec[i]->getFirstElement("Width")->getUInt();
+		}
+
+		ASSERT_OR_THROW("BlobInitializer requires Types element inside Region section.See manual for details.",regionVec[i]->getFirstElement("Types"));
 		initData.typeNamesString=regionVec[i]->getFirstElement("Types")->cdata;
 
 		parseStringIntoList(initData.typeNamesString , initData.typeNames , ",");
+
+		ASSERT_OR_THROW("BlobInitializer requires Center element inside Region section.See manual for details.",regionVec[i]->getFirstElement("Center"));
 
 		initData.center.x=regionVec[i]->getFirstElement("Center")->getAttributeAsUInt("x");
 		initData.center.y=regionVec[i]->getFirstElement("Center")->getAttributeAsUInt("y");
