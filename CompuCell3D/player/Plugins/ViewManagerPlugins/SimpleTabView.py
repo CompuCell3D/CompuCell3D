@@ -429,7 +429,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 #        print MODULENAME, '--------- addNewGraphicsWindow() '
         # if self.pauseAct.isEnabled():
             # self.__pauseSim()
-            
+                
         if not self.simulationIsRunning:
             return
         self.simulation.drawMutex.lock()
@@ -493,6 +493,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         newWindow.setFieldTypesComboBox(self.fieldTypes)
 
     
+    def activateMainGraphicsWindow(self):
+        self.setActiveSubWindow(self.mainMdiSubWindow)
         
     def addVTKWindowToWorkspace(self):   # just called one time, for initial graphics window  (vs. addNewGraphicsWindow())
 #        print MODULENAME,' =================================addVTKWindowToWorkspace ========='
@@ -503,8 +505,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         # print 'BEFORE ADD VTK WINDOW TO WORKSPACE'
         # time.sleep(5)
-        
-
+        # print 'addVTKWindowToWorkspace'        
         self.mainGraphicsWindow = GraphicsFrameWidget(self)
         
         # self.mainGraphicsWindow.deleteLater()
@@ -539,6 +540,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         # self.addSubWindow(self.mainGraphicsWindow)
         
         mdiSubWindow = self.addSubWindow(self.mainGraphicsWindow)
+        self.mainMdiSubWindow = mdiSubWindow
 #        print MODULENAME,'-------- type(mdiSubWindow)= ',type(mdiSubWindow)  # =  <class 'PyQt4.QtGui.QMdiSubWindow'>
 #        print MODULENAME,'-------- dir(mdiSubWindow)= ',dir(mdiSubWindow)
         self.mainGraphicsWindow.show()

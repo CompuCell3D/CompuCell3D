@@ -102,7 +102,9 @@ class ScreenshotManager:
         self.screenshotCounter3D=0
         
         # self.screenshotGraphicsWidget = GraphicsFrameWidget(self.tabViewWidget)
+        print 'CREATING SCREENSHOT WINDOW'
         self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw)
+        self.screenshotGraphicsWidget.screenshotWindowFlag=True
         
         xSize=Configuration.getSetting("Screenshot_X")
         ySize=Configuration.getSetting("Screenshot_Y")
@@ -127,7 +129,13 @@ class ScreenshotManager:
         
         self.screenshotGraphicsWidget.readSettings()
         # # # self.tabViewWidget.addSubWindow(self.screenshotGraphicsWidget)
-        tvw.addSubWindow(self.screenshotGraphicsWidget)
+        self.screenshotSubWindow=tvw.addSubWindow(self.screenshotGraphicsWidget)
+        
+        #necessary to avoid spurious maximization of screenshot window. possible bug either in Player or in QMDIArea
+        self.screenshotSubWindow.showMinimized()
+        self.screenshotSubWindow.hide()
+        
+        
         self.screenshotGraphicsWidgetFieldTypesInitialized=False
         
         
@@ -396,10 +404,14 @@ class ScreenshotManager:
         self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().SetSize(xSize,ySize) # default size
         self.screenshotGraphicsWidget.qvtkWidget.resize(xSize,ySize)
         
+        if  not sys.platform.startswith('win'):   # we hide and restore screenshot window on linux and OSX only on windows it is not necessary                 
+            self.screenshotSubWindow.showNormal()
+            self.screenshotSubWindow.show()
+        
         
 # self.screenshotGraphicsWidget.setShown(True)
         winsize = self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().GetSize()
-        print 'ADDITIONAL SCREENSHOT WINDOW SIZE=',winsize
+        # print 'ADDITIONAL SCREENSHOT WINDOW SIZE=',winsize
 # # #         self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().SetSize(winsize[0],winsize[1])
 
 #        print MODULENAME,'outputScreenshots(): type(winsize), [0],[1]=',type(winsize),winsize[0],winsize[1]
@@ -474,3 +486,8 @@ class ScreenshotManager:
         
             if sys.platform=='darwin' or sys.platform=='Linux' or sys.platform=='linux' or sys.platform=='linux2':
                 scrData.screenshotGraphicsWidget.setShown(False)
+                
+        if  not sys.platform.startswith('win'):      # we hide and restore screenshot window on linux and OSX only on windows it is not necessary      
+            self.screenshotSubWindow.showNormal()
+            self.screenshotSubWindow.hide()
+                

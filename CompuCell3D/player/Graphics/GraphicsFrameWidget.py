@@ -56,6 +56,9 @@ class GraphicsFrameWidget(QtGui.QFrame):
         QtGui.QFrame.__init__(self, parent)
         
         
+        # print '\n\n\n\n\n CREATING NEW GRAPHICS FRAME WIDGET ',self
+        
+        
         
         self.qvtkWidget = QVTKRenderWindowInteractor(self)   # a QWidget
         
@@ -63,6 +66,8 @@ class GraphicsFrameWidget(QtGui.QFrame):
         
         
         self.parentWidget = parent
+        
+        
         
         self.lineEdit = QtGui.QLineEdit()
         
@@ -146,7 +151,7 @@ class GraphicsFrameWidget(QtGui.QFrame):
             except IOError:
                 pass
             
-                    
+        self.screenshotWindowFlag=False
             # # # self.setDrawingStyle("3D")
     #        self.currentDrawingObject = self.draw3D
     #        self.draw3DFlag = True
@@ -158,8 +163,41 @@ class GraphicsFrameWidget(QtGui.QFrame):
     # def clearDisplayOnDemand(self):
         # self.draw2D.clearDisplay()
         
-
-
+    # def changeStateMonitor(self,oldState,newState):
+        # print 'oldState=',oldState
+        # print 'newState=',newState
+        
+    # def sizeHint(self):
+        # return QSize(400,400)
+        
+    # def changeEvent(self, ev):
+        # print 'INSIDE CHANGE EVENT', self, ' type=',ev.type()
+        # if ev.type() == QEvent.WindowStateChange:
+            # ev.ignore()
+            # print 'CHANGING STATE OF THE QWINDOW'
+            # print 'max=',self.isMaximized(),' min=',self.isMinimized()
+            
+            # if self.isMaximized()  and self.screenshotWindowFlag:
+                # self.qvtkWidget.GetRenderWindow().SetSize(400,400) # default size
+                # self.qvtkWidget.resize(400,400)
+        
+                # self.showNormal()
+                # self.hide()
+                
+                # print 'self.parent=',
+                # # self.parentWidget.activateMainGraphicsWindow()
+                # # self.setShown(False)                  
+                # # self.showMinimized()
+                # # self.parent.activatePreviousSubWindow()
+                
+            
+            
+    # def  resizeEvent(self, ev) :
+        # print 'THIS IS RESIZE EVENT'
+        # print 'resizing graphics window ',self, 'ev.type()=',ev.type(), ' isMaximized=',self.isMaximized()
+        # if self.isMaximized():
+            # ev.ignore()
+        
         
     def resetAllCameras(self):
         print 'resetAllCameras in GraphicsFrame =',self
