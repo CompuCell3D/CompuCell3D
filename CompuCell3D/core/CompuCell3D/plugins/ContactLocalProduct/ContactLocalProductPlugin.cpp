@@ -113,6 +113,13 @@ void ContactLocalProductPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlD
 
 void ContactLocalProductPlugin::extraInit(Simulator *simulator){
 	update(xmlData,true);
+
+	Automaton * cellTypePluginAutomaton = potts->getAutomaton();
+	if (cellTypePluginAutomaton){
+		ASSERT_OR_THROW("The size of matrix of contact specificity coefficients has must equal max_cell_type_id+1. You must list specificity coefficients between all cel types", 
+		contactSpecificityArray.size() == ((unsigned int)cellTypePluginAutomaton->getMaxTypeId()+1) );
+	}
+
 }
 
 

@@ -69,7 +69,6 @@ void ContactMultiCadPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData)
 
 void ContactMultiCadPlugin::extraInit(Simulator *simulator){
    update(xmlData,true);
-	
 }
 
 
