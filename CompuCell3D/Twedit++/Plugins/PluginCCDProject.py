@@ -2212,16 +2212,15 @@ class CC3DProject(QObject):
         
             return     
 
-#         print 'pdh=',pdh
+        # note, a lot of the code here was written assuming we will not need to reopen the project
+        # however it turns out that proper handling of such situation woudl require more fefactoring so I decided to 
+        # close new project and reopen it (users will need to open their files) 
+        # Once we refactor this plugin we can always add proper handling without requiring project to be reopened
         csd=pdh.cc3dSimulationData
 #         print 'csd.xmlScriptResource.path=',csd.xmlScriptResource.path
         
         fn2ew = self.__ui.getFileNameToEditorWidgetMap()
-# # #         print 'fn2ew=',fn2ew
-# # #         editor = fn2ew [csd.xmlScriptResource.path]
-# # #         print 'EDITOR MODIFIED = ',editor.isModified()
-        
-# # #         return
+
 
         if os.path.exists(projectDirName):
             ret=QMessageBox.warning(tw,"Directory or File %s Already Exists"%(projectCoreName) ,"Please choose different name for the project. Directory or file %s already exists"%(os.path.join(projectDirName,projectCoreName)),QMessageBox.Ok)    
@@ -2237,10 +2236,7 @@ class CC3DProject(QObject):
         for resourceKey, resource in csd.resources.iteritems():        
             resourceList.append(resource)
             
-#         for resourceName in coreCsdResourceNames:
-#             resource=getattr(csd,resourceName)
 
-#         print 'len(resourceList)=',len(resourceList)
         
         for resource in resourceList:
             
@@ -2266,11 +2262,7 @@ class CC3DProject(QObject):
 # # #             print 'changing resource.path=',resource.path,' to ',newResourcePath
             resource.path = newResourcePath
 
-# # #             core,ext=os.path.splitext(resource.path)
-# # #             if ext=='.xml':
-# # #                 print 'resource=',type(resource)
-# # #                 print 'type(pdh.cc3dSimulationData) = ' , pdh.cc3dSimulationData
-# # #                 print 'pdh.cc3dSimulationData.xmlScript=',pdh.cc3dSimulationData.xmlScript
+
                 
             try:
                 
@@ -2291,7 +2283,11 @@ class CC3DProject(QObject):
         csd.path=cc3dProjectFileName
         csd.basePath=os.path.dirname(csd.path)
         
+#         self.__closeProject()
+        self.closeProjectUsingProjItem(projItem)
+        self.openCC3Dproject(cc3dProjectFileName)
         
+
 #         print 'AFTER CHANGES csd.xmlScriptResource.path=',csd.xmlScriptResource.path
 #         print 'AFTER CHANGES csd.xmlScriptResource.path=',pdh.cc3dSimulationData.xmlScriptResource.path
 #         print 'AFTER CHANGES csd.xmlScript=',pdh.cc3dSimulationData.xmlScript
