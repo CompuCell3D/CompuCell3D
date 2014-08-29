@@ -145,6 +145,7 @@ class CustomTabBar(QTabBar):
     def __init__(self , _parent=None):
         QTabBar.__init__(self , _parent)
         self.tabWidget=_parent
+        self.setStyleSheet("QTabBar::tab { height: 20px;}");
         
     def mousePressEvent(self,event):        
         self.clickedTabPosition= self.tabWidget.tabBar().tabAt(event.pos())
@@ -215,6 +216,7 @@ class EditorWindow(QMainWindow):
         super(EditorWindow, self).__init__()
         self.setWindowIcon(QtGui.QIcon(":/icons/twedit-icon.png"))
         
+        
         self.extensionLanguageMap={".py":"Python",
         ".pyw":"Python",
         ".xml":"XML",
@@ -263,6 +265,8 @@ class EditorWindow(QMainWindow):
         }
         
         self.configuration=Configuration()
+        
+        self.toolbarIconSize=QSize(32,32)
         
         #used to manage color themes for Twedit++- parses xml configuration files written using notepad++ convention
         from ThemeManager import ThemeManager
@@ -424,6 +428,7 @@ class EditorWindow(QMainWindow):
         
         
         self.pm=PluginManager(self)
+        self.setDefaultStyling()
         
         
         
@@ -443,7 +448,10 @@ class EditorWindow(QMainWindow):
     
         
         
-        
+    def setDefaultStyling(self):
+        for toolBarName, toolBar in self.toolBar.iteritems():
+            toolBar.setIconSize (self.toolbarIconSize)        
+    
     # fcns for accessing/manipulating dictionary storing tab/editor information
     def setProcessId(self,_id):
         """
@@ -725,6 +733,26 @@ class EditorWindow(QMainWindow):
             return self.activeTabWidget.currentWidget()
         else:    # default choice when active tab widget is None
             return self.panels[0].currentWidget()   
+    
+    def setActiveEditor(self,_editor):
+        ''' sets _editor widget active - chooses correct panel and then makes _editor active '''
+        
+        # locating index of the widget and a pane to which it belongs
+
+        widgetIndex=-1
+        panelIndex=-1
+        for i in range(2):
+            widgetIndex = self.panels[i].indexOf(_editor)
+            if widgetIndex >=0:
+                panelIndex=i    
+                break
+            
+        if widgetIndex >=0 and panelIndex >= 0:
+            self.panels[panelIndex].setCurrentWidget(_editor)
+            _editor.setFocus(Qt.MouseFocusReason)
+            
+
+        
         
     def getActivePanel(self):   
         """ 
@@ -1084,7 +1112,7 @@ class EditorWindow(QMainWindow):
         for editor in self.getEditorList():
             fileName=self.getEditorFileName(editor)
             try:
-                if fileName!='' and os.path.getmtime(str(fileName))>self.getEditorFileModificationTime(editor):
+                if fileName!='' and os.path.getmtime(str(fileName))!=self.getEditorFileModificationTime(editor):
                     dbgMsg("DOCUMENT ",fileName, " was modified")
                     reloadFlag=self.maybeReload(editor)
                     if not reloadFlag:
@@ -1199,6 +1227,8 @@ class EditorWindow(QMainWindow):
         # _editor.SendScintilla(QsciScintilla.SCI_STYLESETFORE,1,255)       
         self.themeManager.applyThemeToEditor(self.currentThemeName,_editor)    
         # self.themeManager.applyThemeToEditor('Choco',_editor)    
+        
+        _editor.zoomTo(self.zoomRange)
         
     def modificationChangedSlot(self, _flag):
         dbgMsg("THIS IS CHANGED DOCUMENT")
@@ -2070,6 +2100,7 @@ class EditorWindow(QMainWindow):
             slot called when user clicks Replace All on Find/replace popup. _inSelection flag determines if replacement takes place in the entire document or only in the selected text
         """
         
+        
         self.findDialogForm.setButtonsEnabled(False)        
         editor=self.getActiveEditor()
         
@@ -2159,8 +2190,7 @@ class EditorWindow(QMainWindow):
             # print 'index_mark=',index_mark
             
             editor.setSelection(line_from, index_from,line_to, index_mark )    
-        elif not inSelectionFlag:
-        
+        elif not inSelectionFlag:            
             line_from=0 
             index_from=0
             line_before, index_before = editor.getCursorPosition()
@@ -2170,7 +2200,7 @@ class EditorWindow(QMainWindow):
             self.findAndReplaceHistory.wo,\
             False,\
             True,line_from,index_from,False)     
-            editor.beginUndoAction() # undo                    
+                                
             if not foundFlag:                
                 message="Cannot find \"<b>%s</b>\""%self.findAndReplaceHistory.textToFind
                 ret = QtGui.QMessageBox.information(self, "Replace All",
@@ -2179,6 +2209,8 @@ class EditorWindow(QMainWindow):
                 self.findDialogForm.setButtonsEnabled(True)                
                 return                
             # previousLine,previousPos=editor.getCursorPosition()
+            
+            editor.beginUndoAction() # undo
             while foundFlag:
                 editor.replace(self.findAndReplaceHistory.replaceText)
                 substitutionCounter+=1 
@@ -2912,7 +2944,7 @@ class EditorWindow(QMainWindow):
 
         return self.saveAs()
 
-    def saveAs(self,suggestedName=None):
+    def saveAs(self,suggestedName=None,_editor=None):
         """
             slot - implements save As... functionality 
         """
@@ -2920,8 +2952,15 @@ class EditorWindow(QMainWindow):
         
         currentFilePath=None
         currentExtension=""
+               
+        editor=None
+        
         try:
-            editor=self.getActiveEditor()
+            if _editor:
+                editor=_editor
+            else:
+                editor=self.getActiveEditor()
+                
             currentFilePath=self.getEditorFileName(editor)   
             # print "currentFilePath=",currentFilePath    
         except KeyError:
@@ -3287,6 +3326,7 @@ class EditorWindow(QMainWindow):
                 
         self.decreaseIndentAct = QtGui.QAction(QtGui.QIcon(':/icons/format-indent-less.png'),"Decrease Indent", self, shortcut="Shift+Tab",
                 statusTip="Decrease Indent", triggered=self.decreaseIndent)  
+        
         am.addAction(self.decreaseIndentAct)                                
                 
         self.upperCaseAct=QtGui.QAction("Convert to UPPER case", self, shortcut="Ctrl+Shift+U",
@@ -3314,7 +3354,7 @@ class EditorWindow(QMainWindow):
                 statusTip="Redo", triggered=self.__redo)                   
         am.addAction(self.redoAct)                
         
-        self.configurationAct = QtGui.QAction(QtGui.QIcon(':/icons/configure.png'),"Configure...", self, shortcut="",
+        self.configurationAct = QtGui.QAction(QtGui.QIcon(':/icons/gear.png'),"Configure...", self, shortcut="",
                 statusTip="Configuration...", triggered=self.configurationUpdate)  
         am.addAction(self.configurationAct)                
         
@@ -3468,6 +3508,7 @@ class EditorWindow(QMainWindow):
     
         self.toolBar={}
         self.toolBar["File"] = self.addToolBar("File")
+        self.toolBar["File"].setIconSize (QSize(32,32))
         self.toolBar["File"].addAction(am.actionDict["New"])
         self.toolBar["File"].addAction(am.actionDict["Open..."])
         self.toolBar["File"].addAction(am.actionDict["Save"])
@@ -3487,7 +3528,12 @@ class EditorWindow(QMainWindow):
         
         self.toolBar["Configuration"] = self.addToolBar("Configurartion")
         self.toolBar["Configuration"].addAction(am.actionDict["Configure..."])
-        
+
+#         for toolBarName, toolBar in self.toolBar.iteritems():
+#             print 'toolBarName=',toolBarName
+#             toolBar.setIconSize (self.toolbarIconSize)
+
+#         sys.exit()    
         
         
     def createStatusBar(self):
@@ -4148,8 +4194,7 @@ class EditorWindow(QMainWindow):
         
         self.checkActions()
         
-        editor.zoomTo(self.zoomRange)
-        
+#         editor.zoomTo(self.zoomRange) # we set zoom in setEditorproperties
         
         self.commentStyleDict[editor]=[lexer[1],lexer[2]] # associating comment style with the lexer
         
