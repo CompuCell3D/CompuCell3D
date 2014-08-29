@@ -117,10 +117,12 @@ class CC3DParameterScanResource(CC3DResource):
             
 class CC3DSimulationData:
     def __init__(self):
-        self.pythonScript=""
-        self.xmlScript=""
-        self.pifFile=""
-        self.windowScript=""
+        # unfortunately there were double-definitions of resources some are refered via. xmlScript and some via xmlScriptREsource
+        #  I fixed this mess with properties. But in the long run the clean API should take care of those issues 
+#         self.__pythonScript=""
+#         self.__xmlScript=""
+#         self.pifFile=""
+#         self.windowScript=""
         
         self.pythonScriptResource = CC3DResource()
         self.xmlScriptResource = CC3DResource()
@@ -136,10 +138,45 @@ class CC3DSimulationData:
         self.basePath="" # full path to the directory of project file
         
         self.version="3.5.1"
+    
+    @property
+    def pythonScript(self):
+        return self.pythonScriptResource.path    
         
-    def __str__(self):
-        return "CC3DSIMULATIONDATA: "+self.basePath+"\n"+"\tpython file: "+self.pythonScript+"\n"+"\txml file: "+self.xmlScript+"\n"+\
-        "\tpifFile="+self.pifFile+"\n"+"\twindow script="+self.windowScript + str(self.resources)
+    @pythonScript.setter
+    def pythonScript(self,_val):
+        self.pythonScriptResource.path = _val                
+
+
+    @property
+    def xmlScript(self):
+#         print 'returning self.xmlScriptResource.path=',self.xmlScriptResource.path        
+        return self.xmlScriptResource.path 
+        
+    @xmlScript.setter
+    def xmlScript(self,_val):        
+        self.xmlScriptResource.path = _val
+        
+    @property
+    def pifFile(self):
+        return self.pifFileResource.path    
+        
+    @pifFile.setter
+    def pifFile(self,_val):
+        self.pifFileResource.path = _val                
+
+    @property
+    def windowScript(self):
+        return self.windowScriptResource.path    
+        
+    @windowScript.setter
+    def windowScript(self,_val):
+        self.windowScriptResource.path = _val                
+
+
+#     def __str__(self):
+#         return "CC3DSIMULATIONDATA: "+self.basePath+"\n"+"\tpython file: "+self.pythonScript+"\n"+"\txml file: "+self.xmlScript+"\n"+\
+#         "\tpifFile="+self.pifFile+"\n"+"\twindow script="+self.windowScript + str(self.resources)
         
     def addNewParameterScanResource(self):
         self.parameterScanResource=CC3DParameterScanResource()
@@ -180,26 +217,34 @@ class CC3DSimulationData:
         self.serializerResource=None
     
     def addNewResource(self,_fileName,_type):   # called by Twedit
-        print 'type(_fileName)=',type(_fileName)
+# # #         print 'type(_fileName)=',type(_fileName)
+# # #         print '_fileName=',_fileName
+# # #         print 'resource type=',_type
+        
         if _type=="XMLScript":
-            self.xmlScript = os.path.abspath(_fileName)
-            self.xmlScriptResource.path = self.xmlScript
+# # #             self.xmlScript = os.path.abspath(_fileName)
+            self.xmlScriptResource.path = os.path.abspath(_fileName)
             self.xmlScriptResource.type = "XML"
             return 
         
         if _type=="PythonScript":
-            self.pythonScript = os.path.abspath(_fileName)
-            self.pythonScriptResource.path = self.pythonScript
+# # #             self.pythonScript = os.path.abspath(_fileName)
+            self.pythonScriptResource.path = os.path.abspath(_fileName)
             self.pythonScriptResource.type = "Python"
             return 
             
         if _type=="PIFFile":        
             # we have to check if there is  PIF file assigned resource. If so we do not want to modify 
             # this resource, rather add another one as a generic type of resource
+            
+# # #             print 'self.pifFileResource.path=',self.pifFileResource.path
+            
             if self.pifFileResource.path=='':
-                self.pifFile = os.path.abspath(_fileName)
-                self.pifFileResource.path = self.pifFile
+# # #                 self.pifFile = os.path.abspath(_fileName)
+#                 print '_fileName=',_fileName
+                self.pifFileResource.path = os.path.abspath(_fileName)
                 self.pifFileResource.type = "PIFFile"
+            
             # we will also add PIF File as generic resource
         
         # adding generic resource type - user specified        
@@ -217,15 +262,15 @@ class CC3DSimulationData:
         print 'TRYING TO REMOVE RESOURCE _fileName=',_fileName
         # file name can be associated with many resources - we have to erase all such associations
         if fileName==self.xmlScript:
-            self.xmlScript=""
+# # #             self.xmlScript=""
             self.xmlScriptResource = CC3DResource()
             
         if fileName==self.pythonScript:
-            self.pythonScript=""
+# # #             self.pythonScript=""
             self.pythonScriptResource = CC3DResource()
             
         if fileName==self.pifFile:
-            self.pifFile=""
+# # #             self.pifFile=""
             self.pifFileResource = CC3DResource()
 
         try:
@@ -296,31 +341,47 @@ class CC3DSimulationDataHandler:
         root_element = xml2ObjConverter.Parse(fileFullPath) # this is simulation element
         
         if root_element.getFirstElement("XMLScript"):
-            self.cc3dSimulationData.xmlScript = root_element.getFirstElement("XMLScript").getText()
+            xmlScriptRelative = root_element.getFirstElement("XMLScript").getText()            
+# # #             self.cc3dSimulationData.xmlScript = root_element.getFirstElement("XMLScript").getText()
 #            print MODULENAME,'  readCC3DFileFormat():  found XMLScript, getText=',self.cc3dSimulationData.xmlScript
-            self.cc3dSimulationData.xmlScript = os.path.abspath(os.path.join(bp,self.cc3dSimulationData.xmlScript)) #normalizing path to xml script
-            self.cc3dSimulationData.xmlScriptResource.path = self.cc3dSimulationData.xmlScript
+# # #             self.cc3dSimulationData.xmlScript = os.path.abspath(os.path.join(bp,self.cc3dSimulationData.xmlScript)) #normalizing path to xml script
+# # #             self.cc3dSimulationData.xmlScriptResource.path = self.cc3dSimulationData.xmlScript
+            self.cc3dSimulationData.xmlScriptResource.path = os.path.abspath(os.path.join(bp,xmlScriptRelative)) #normalizing path to xml script
             self.cc3dSimulationData.xmlScriptResource.type = "XMLScript"
             
         if root_element.getFirstElement("PythonScript"):
-            self.cc3dSimulationData.pythonScript = root_element.getFirstElement("PythonScript").getText()
-#            print MODULENAME,'  readCC3DFileFormat():  found PythonScript, getText=',self.cc3dSimulationData.pythonScript
-            self.cc3dSimulationData.pythonScript = os.path.abspath(os.path.join(bp,self.cc3dSimulationData.pythonScript)) #normalizing path to python script
-            self.cc3dSimulationData.pythonScriptResource.path = self.cc3dSimulationData.pythonScript
+            pythonScriptRelative = root_element.getFirstElement("PythonScript").getText()
+            self.cc3dSimulationData.pythonScriptResource.path = os.path.abspath(os.path.join(bp,pythonScriptRelative)) #normalizing path to python script
+            
+            
+# # #             self.cc3dSimulationData.pythonScript = root_element.getFirstElement("PythonScript").getText()
+# # # #            print MODULENAME,'  readCC3DFileFormat():  found PythonScript, getText=',self.cc3dSimulationData.pythonScript
+# # #             self.cc3dSimulationData.pythonScript = os.path.abspath(os.path.join(bp,self.cc3dSimulationData.pythonScript)) #normalizing path to python script
+# # #             self.cc3dSimulationData.pythonScriptResource.path = self.cc3dSimulationData.pythonScript
             self.cc3dSimulationData.pythonScriptResource.type = "PythonScript"
 
         if root_element.getFirstElement("PIFFile"):
-            self.cc3dSimulationData.pifFile = root_element.getFirstElement("PIFFile").getText()
-#            print MODULENAME,'  readCC3DFileFormat():  found PIFFile'
-            self.cc3dSimulationData.pifFile = os.path.abspath(os.path.join(bp,self.cc3dSimulationData.pifFile)) #normalizing path
-            self.cc3dSimulationData.pifFileResource.path = self.cc3dSimulationData.pifFile
+            
+            pifFileRelative = root_element.getFirstElement("PIFFile").getText()            
+            self.cc3dSimulationData.pifFileResource.path = os.path.abspath(os.path.join(bp,pifFileRelative)) #normalizing path
+            
+            
+# # #             self.cc3dSimulationData.pifFile = root_element.getFirstElement("PIFFile").getText()
+# # # #            print MODULENAME,'  readCC3DFileFormat():  found PIFFile'
+# # #             self.cc3dSimulationData.pifFile = os.path.abspath(os.path.join(bp,self.cc3dSimulationData.pifFile)) #normalizing path
+# # #             self.cc3dSimulationData.pifFileResource.path = self.cc3dSimulationData.pifFile
             self.cc3dSimulationData.pifFileResource.type = "PIFFile"
             
         if root_element.getFirstElement("WindowScript"):
-            self.cc3dSimulationData.windowScript = root_element.getFirstElement("WindowScript").getText()
-#            print MODULENAME,'  readCC3DFileFormat():  found WindowScript, getText=',self.cc3dSimulationData.windowScript
-            self.cc3dSimulationData.windowScript = os.path.abspath(os.path.join(bp,self.cc3dSimulationData.windowScript)) #normalizing path
-            self.cc3dSimulationData.windowScriptResource.path = self.cc3dSimulationData.windowScript
+            
+            windowScriptRelative = root_element.getFirstElement("WindowScript").getText()
+            self.cc3dSimulationData.windowScriptResource.path = os.path.abspath(os.path.join(bp,windowScriptRelative)) #normalizing path            
+            
+            
+# # #             self.cc3dSimulationData.windowScript = root_element.getFirstElement("WindowScript").getText()
+# # # #            print MODULENAME,'  readCC3DFileFormat():  found WindowScript, getText=',self.cc3dSimulationData.windowScript
+# # #             self.cc3dSimulationData.windowScript = os.path.abspath(os.path.join(bp,self.cc3dSimulationData.windowScript)) #normalizing path
+# # #             self.cc3dSimulationData.windowScriptResource.path = self.cc3dSimulationData.windowScript
             self.cc3dSimulationData.windowScriptResource.type = "WindowScript"
 #                    if playerSettingsElement:
 #            windowsXml2Obj = XMLUtils.Xml2Obj()
@@ -441,20 +502,24 @@ class CC3DSimulationDataHandler:
         return elName,attributeDict,findRelativePath(self.cc3dSimulationData.basePath,_resource.path)
     
     def writeCC3DFileFormat(self,_fileName):        
+#         print '\n\n\n will write ',_fileName
         from XMLUtils import ElementCC3D
         csd=self.cc3dSimulationData
         simulationElement = ElementCC3D("Simulation",{"version":csd.version})
         
         if csd.xmlScriptResource.path!="":
             elName,attributeDict,path = self.formatResourceElement(csd.xmlScriptResource,"XMLScript")
+#             print 'ADDING XML ',path
             simulationElement.ElementCC3D(elName,attributeDict,path)
             
         if csd.pythonScriptResource.path!="":
             elName,attributeDict,path = self.formatResourceElement(csd.pythonScriptResource,"PythonScript")
+#             print 'ADDING PYTHON ',path
             simulationElement.ElementCC3D(elName,attributeDict,path)
             
         if csd.pifFileResource.path!="":
             elName,attributeDict,path = self.formatResourceElement(csd.pifFileResource,"PIFFile")
+#             print 'ADDING PIF ',path
             simulationElement.ElementCC3D(elName,attributeDict,path)
             
         if csd.windowScriptResource.path!="":
