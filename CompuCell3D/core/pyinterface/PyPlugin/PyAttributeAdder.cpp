@@ -64,7 +64,8 @@ void PyAttributeAdder::destroyAttribute(CellG * _cell){
         //we aquire GIL and then release it once we are done
         PyGILState_STATE gstate;
         gstate = PyGILState_Ensure();
-
+        
+   // // // PyDict_Clear(_cell->pyAttrib) ; // perhaps we should call this explicitely to clear dictionary before decrementing reference count
    Py_DECREF(_cell->pyAttrib);
    
    PyGILState_Release(gstate);

@@ -80,7 +80,7 @@ namespace CompuCell3D {
 
 		std::string basePath;
 		bool restartEnabled;
-
+        
 
 	public:
 
@@ -89,7 +89,8 @@ namespace CompuCell3D {
 		PottsParseData ppd;
 		PottsParseData *ppdPtr;
 		ParallelUtilsOpenMP *pUtils;
-
+        ParallelUtilsOpenMP *pUtilsSingle; // stores same information as pUtils but assumes that we use only single CPU - used in modules for which user requests single CPU runs e.g. Potts with large cells
+        
 		double simValue;
 		
 		void setOutputRedirectionTarget(long  _ptr);
@@ -115,6 +116,7 @@ namespace CompuCell3D {
 		void setBasePath(std::string _bp){basePath=_bp;}
 
 		ParallelUtilsOpenMP * getParallelUtils(){return pUtils;}
+        ParallelUtilsOpenMP * getParallelUtilsSingleThread(){return pUtilsSingle;}
 
 
 		BoundaryStrategy * getBoundaryStrategy();

@@ -1,4 +1,6 @@
 import sys, os
+import vtk
+VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
 
 MODULENAME='----- MVCDrawModelBase.py: '
 
@@ -321,10 +323,13 @@ class MVCDrawModelBase:
 
         legendActor.SetWidth(0.1)
         legendActor.SetHeight(0.9)
+        
+        if VTK_MAJOR_VERSION>=6:
+            legendActor.SetTitle('')
 
         # You don't actually need to make contrast for the text as
         # it has shadow!
-        text = legendActor.GetLabelTextProperty()
+        text = legendActor.GetLabelTextProperty()        
         #text.SetFontSize(12) # For some reason it doesn't make effect
         text.BoldOff()
         text.SetColor(1.0, 1.0, 1.0)

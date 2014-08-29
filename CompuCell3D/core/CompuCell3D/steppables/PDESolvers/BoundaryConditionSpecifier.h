@@ -10,8 +10,8 @@ struct PDESOLVERS_EXPORT BoundaryConditionSpecifier{
 		CONSTANT_DERIVATIVE
 	};
 
-	enum BCPosition{
-		MIN_X=0, MAX_X,
+	enum BCPosition{INTERNAL=-2,BOUNDARY,
+		MIN_X, MAX_X,
 		MIN_Y, MAX_Y,
 		MIN_Z, MAX_Z
 	};

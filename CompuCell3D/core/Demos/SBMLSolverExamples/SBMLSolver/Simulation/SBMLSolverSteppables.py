@@ -8,7 +8,11 @@ class SBMLSolverSteppable(SteppableBasePy):
         SteppableBasePy.__init__(self,_simulator,_frequency)
         
     def start(self):
- 
+
+        # adding options that setup SBML solver integrator - these are optional but useful when encounteting integration instabilities              
+        options={'relative':1e-10,'absolute':1e-12,'steps':10}
+        self.setSBMLGlobalOptions(options)
+
        
         modelFile='Simulation/test_1.xml'
         

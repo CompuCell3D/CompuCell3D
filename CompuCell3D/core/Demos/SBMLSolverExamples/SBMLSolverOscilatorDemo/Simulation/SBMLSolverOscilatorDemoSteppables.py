@@ -18,7 +18,12 @@ class SBMLSolverOscilatorDemoSteppable(SteppableBasePy):
             cell.targetVolume=25
             cell.lambdaVolume=2.0
             
-        #SBML SOLVER            
+        #SBML SOLVER          
+        
+        # adding options that setup SBML solver integrator - these are optional but useful when encounteting integration instabilities       
+        options={'relative':1e-10,'absolute':1e-12,'steps':10}
+        self.setSBMLGlobalOptions(options)
+        
         modelFile='Simulation/oscli.sbml' # this can be e.g. partial path 'Simulation/osci.sbml'
         stepSize=0.02
             

@@ -32,10 +32,10 @@
          
          
         if (SWIG_IsOK(res)) {
-            
-            dim.x=(short)PyInt_AsLong(PyObject_GetAttrString($input,"x"));
-            dim.y=(short)PyInt_AsLong(PyObject_GetAttrString($input,"y"));
-            dim.z=(short)PyInt_AsLong(PyObject_GetAttrString($input,"z"));
+            //Notice that we have to call PyDECREF on return value from PyObject_GetAttrString otherwise we leak memory!    
+            PyObject * xPyRef=PyObject_GetAttrString($input,"x"); dim.x=(short)PyInt_AsLong(xPyRef); Py_DECREF(xPyRef);
+            PyObject * yPyRef=PyObject_GetAttrString($input,"y"); dim.y=(short)PyInt_AsLong(yPyRef); Py_DECREF(yPyRef);
+            PyObject * zPyRef=PyObject_GetAttrString($input,"z"); dim.z=(short)PyInt_AsLong(zPyRef); Py_DECREF(zPyRef);    
             $1=dim;
         } else {
         
@@ -82,9 +82,10 @@
          
          
         if (SWIG_IsOK(res)) {            
-            dim.x=(short)PyInt_AsLong(PyObject_GetAttrString($input,"x"));
-            dim.y=(short)PyInt_AsLong(PyObject_GetAttrString($input,"y"));
-            dim.z=(short)PyInt_AsLong(PyObject_GetAttrString($input,"z"));
+            //Notice that we have to call PyDECREF on return value from PyObject_GetAttrString otherwise we leak memory!    
+            PyObject * xPyRef=PyObject_GetAttrString($input,"x"); dim.x=(short)PyInt_AsLong(xPyRef); Py_DECREF(xPyRef);
+            PyObject * yPyRef=PyObject_GetAttrString($input,"y"); dim.y=(short)PyInt_AsLong(yPyRef); Py_DECREF(yPyRef);
+            PyObject * zPyRef=PyObject_GetAttrString($input,"z"); dim.z=(short)PyInt_AsLong(zPyRef); Py_DECREF(zPyRef);    
             $1=&dim;
         } else {
         
@@ -102,7 +103,7 @@
 
 %typemap(in) CompuCell3D::Point3D  (CompuCell3D::Point3D pt)  {
   /* Check if is a list */
-  // cerr<<"inside point3D conversion typemap"<<endl;
+//     cerr<<"inside point3D conversion typemap"<<endl;
     if (PyList_Check($input)) {
         int size = PyList_Size($input);        
         if (size==3){
@@ -160,10 +161,10 @@
          
          
         if (SWIG_IsOK(res)) {
-            // CompuCell3D::Point3D pt;    
-            pt.x=(short)PyInt_AsLong(PyObject_GetAttrString($input,"x"));
-            pt.y=(short)PyInt_AsLong(PyObject_GetAttrString($input,"y"));
-            pt.z=(short)PyInt_AsLong(PyObject_GetAttrString($input,"z"));
+            //Notice that we have to call PyDECREF on return value from PyObject_GetAttrString otherwise we leak memory!    
+            PyObject * xPyRef=PyObject_GetAttrString($input,"x"); pt.x=(short)PyInt_AsLong(xPyRef); Py_DECREF(xPyRef);
+            PyObject * yPyRef=PyObject_GetAttrString($input,"y"); pt.y=(short)PyInt_AsLong(yPyRef); Py_DECREF(yPyRef);
+            PyObject * zPyRef=PyObject_GetAttrString($input,"z"); pt.z=(short)PyInt_AsLong(zPyRef); Py_DECREF(zPyRef);    
             $1=pt;
         } else {
         
@@ -177,6 +178,8 @@
 
 %typemap(in) CompuCell3D::Point3D &  (CompuCell3D::Point3D pt)  { // note that (CompuCell3D::Point3D pt) causes pt to be allocated on the stack - no need to worry abuot freeing memory
   /* Check if is a list */
+//     cerr<<"inside point3D conversion typemap"<<endl;
+    
     if (PyList_Check($input)) {
         int size = PyList_Size($input);        
         if (size==3){
@@ -227,9 +230,6 @@
             SWIG_exception(SWIG_ValueError,"The values in the array should be either floating point numbers or inttegers. Please use explicit type conversion for all the values");
         }
         
-        
-        
-        
         $1=&pt;        
     }else{
         
@@ -237,10 +237,10 @@
          
          
         if (SWIG_IsOK(res)) {
-            // CompuCell3D::Point3D pt;    
-            pt.x=(short)PyInt_AsLong(PyObject_GetAttrString($input,"x"));
-            pt.y=(short)PyInt_AsLong(PyObject_GetAttrString($input,"y"));
-            pt.z=(short)PyInt_AsLong(PyObject_GetAttrString($input,"z"));
+            //Notice that we have to call PyDECREF on return value from PyObject_GetAttrString otherwise we leak memory!    
+            PyObject * xPyRef=PyObject_GetAttrString($input,"x"); pt.x=(short)PyInt_AsLong(xPyRef); Py_DECREF(xPyRef);
+            PyObject * yPyRef=PyObject_GetAttrString($input,"y"); pt.y=(short)PyInt_AsLong(yPyRef); Py_DECREF(yPyRef);
+            PyObject * zPyRef=PyObject_GetAttrString($input,"z"); pt.z=(short)PyInt_AsLong(zPyRef); Py_DECREF(zPyRef);    
             $1=&pt;
         } else {
         
@@ -317,10 +317,10 @@
          
          
         if (SWIG_IsOK(res)) {
-            // CompuCell3D::Point3D pt;    
-            coord.x=(double)PyFloat_AsDouble(PyObject_GetAttrString($input,"x"));
-            coord.y=(double)PyFloat_AsDouble(PyObject_GetAttrString($input,"y"));
-            coord.z=(double)PyFloat_AsDouble(PyObject_GetAttrString($input,"z"));
+            //Notice that we have to call PyDECREF on return value from PyObject_GetAttrString otherwise we leak memory!    
+            PyObject * xPyRef=PyObject_GetAttrString($input,"x"); coord.x=(double)PyFloat_AsDouble(xPyRef); Py_DECREF(xPyRef);
+            PyObject * yPyRef=PyObject_GetAttrString($input,"y"); coord.y=(double)PyFloat_AsDouble(yPyRef); Py_DECREF(yPyRef);
+            PyObject * zPyRef=PyObject_GetAttrString($input,"z"); coord.z=(double)PyFloat_AsDouble(zPyRef); Py_DECREF(zPyRef);    
             $1=coord;
         } else {
         
@@ -382,10 +382,10 @@
          
          
         if (SWIG_IsOK(res)) {
-            // CompuCell3D::Point3D pt;    
-            coord.x=(double)PyFloat_AsDouble(PyObject_GetAttrString($input,"x"));
-            coord.y=(double)PyFloat_AsDouble(PyObject_GetAttrString($input,"y"));
-            coord.z=(double)PyFloat_AsDouble(PyObject_GetAttrString($input,"z"));
+            //Notice that we have to call PyDECREF on return value from PyObject_GetAttrString otherwise we leak memory!    
+            PyObject * xPyRef=PyObject_GetAttrString($input,"x"); coord.x=(double)PyFloat_AsDouble(xPyRef); Py_DECREF(xPyRef);
+            PyObject * yPyRef=PyObject_GetAttrString($input,"y"); coord.y=(double)PyFloat_AsDouble(yPyRef); Py_DECREF(yPyRef);
+            PyObject * zPyRef=PyObject_GetAttrString($input,"z"); coord.z=(double)PyFloat_AsDouble(zPyRef); Py_DECREF(zPyRef);    
             $1=&coord;
         } else {
         

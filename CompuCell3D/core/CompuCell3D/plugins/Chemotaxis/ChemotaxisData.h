@@ -173,7 +173,7 @@ namespace CompuCell3D {
       public:
          ChemotaxisFieldData()
          {}
-         std::string chemicalFieldSource;
+         std::string chemicalFieldSource;//this is deprecated. have to check if used in python wrapper 
          std::string chemicalFieldName;
          std::vector<ChemotaxisData> vecChemotaxisData;
          ChemotaxisData *ChemotaxisByType(){

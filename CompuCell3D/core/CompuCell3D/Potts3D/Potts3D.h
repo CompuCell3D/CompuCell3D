@@ -182,6 +182,7 @@ namespace CompuCell3D {
 	Unit energyUnit;
 	bool displayUnitsFlag;
 	double temperature;
+    ParallelUtilsOpenMP *pUtils;
     
   public:
 
@@ -274,7 +275,7 @@ namespace CompuCell3D {
 
     /// Return the automaton for this simulation.
     virtual Automaton* getAutomaton();
-    
+    void setParallelUtils(ParallelUtilsOpenMP *_pUtils){pUtils=_pUtils;}
     /** 
      * Set the acceptance function.  This is DefaultAcceptanceFunction
      * by default.

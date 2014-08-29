@@ -34,11 +34,11 @@ def configureSimulation(sim):
 
 
     chemotaxis=cc3d.ElementCC3D("Plugin",{"Name":"Chemotaxis"})
-    chemicalField=chemotaxis.ElementCC3D("ChemicalField", {"Source":"FlexibleDiffusionSolverFE", "Name":"FGF"})
+    chemicalField=chemotaxis.ElementCC3D("ChemicalField", {"Source":"DiffusionSolverFE", "Name":"FGF"})
     chemicalField.ElementCC3D("ChemotaxisByType", {"Type":"Amoeba" ,"Lambda":3})
     chemicalField.ElementCC3D("ChemotaxisByType", {"Type":"Bacteria" ,"Lambda":2})
 
-    flexDiffSolver=cc3d.ElementCC3D("Steppable",{"Type":"FlexibleDiffusionSolverFE"})
+    flexDiffSolver=cc3d.ElementCC3D("Steppable",{"Type":"DiffusionSolverFE"})
     diffusionField=flexDiffSolver.ElementCC3D("DiffusionField")
     diffusionData=diffusionField.ElementCC3D("DiffusionData")
     diffusionData.ElementCC3D("FieldName",{},"FGF")

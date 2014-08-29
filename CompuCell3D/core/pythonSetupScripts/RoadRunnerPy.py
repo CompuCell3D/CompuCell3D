@@ -28,16 +28,30 @@ class RoadRunnerPy(RoadRunner):
             self.timeEnd=self.timeStart+_numSteps*_stepSize # we integrate with custom step size
         else:    
             self.timeEnd=self.timeStart+_numSteps*self.stepSize #we integrate with predefined step size
+            
         
-        self.simulateOptions.steps=1
+#         print 'absolute=',self.simulateOptions.absolute
+#         print 'relative=',self.simulateOptions.relative
+#         print 'stiff=',self.simulateOptions.stiff        
+#         print 'steps=',self.simulateOptions.steps        
+
+        # note that in general wnumber of steps should be higher - CVODE will use bigger steps when it can but setting steps to low number might actually caus instabilities.
+        # note that using higher numbers does not really increase simulation time, actuallt it may shorten it - CVODE is better in going from short to long step than the other way around    
+
+#         steps is 1 by default    
+#         self.simulateOptions.steps=1
         self.simulateOptions.start=self.timeStart
         self.simulateOptions.end=self.timeEnd        
+
         self.simulate()
         self.timeStart=self.timeEnd
         
     def prepareState(self):
         self.__state={}
-        self.__state['SimulateOptions'] ={'stepSize':self.stepSize,'timeStart':self.timeStart,'timeEnd':self.timeEnd}# integratorSettings
+        #first line covers RRPython variables, second addresses rr.simulateOptions entries 
+        self.__state['SimulateOptions'] ={'stepSize':self.stepSize,'timeStart':self.timeStart,'timeEnd':self.timeEnd,\
+        'relative':self.simulateOptions.relative,'absolute':self.simulateOptions.absolute,'stiff':self.simulateOptions.stiff,'steps':self.simulateOptions.steps}# integratorSettings
+        
         self.__state['ModelState']={}
         modelState=self.__state['ModelState']
         m=self.model
@@ -72,7 +86,7 @@ class RoadRunnerPy(RoadRunner):
                 else:
                     raise IOError('loadSBMLError : RoadRunnerPy could not find '+_externalPath+' in the filesystem')
                     
-        # # # print 'self.absPath=',self.absPath                
+          
         
         self.load(self.absPath)
         try:
@@ -84,6 +98,16 @@ class RoadRunnerPy(RoadRunner):
             self.stepSize=simulateOptions['stepSize']
             self.timeStart=simulateOptions['timeStart']
             self.timeEnd=simulateOptions['timeEnd']
+            
+            #setting rr.simulateOPtions object entries
+            try: # older restart files might not have these options so will try to import what I can
+                self.simulateOptions.relative = simulateOptions['relative']
+                self.simulateOptions.absolute = simulateOptions['absolute']
+                self.simulateOptions.stiff = simulateOptions['stiff']            
+                self.simulateOptions.steps = simulateOptions['steps']            
+            except :
+                pass
+            
         except LookupError,e:
             pass
         # after using self.__state to initialize state of the model we set state dictionary to empty dicctionary

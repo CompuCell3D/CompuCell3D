@@ -875,7 +875,7 @@ double FocalPointPlasticityPlugin::tryAddingNewJunction(const Point3D &pt,const 
 		set<FocalPointPlasticityTrackerData>::iterator sitr=
 			focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->focalPointPlasticityNeighbors.find(FocalPointPlasticityTrackerData(nCell));
 		if(sitr==focalPointPlasticityTrackerAccessor.get(newCell->extraAttribPtr)->focalPointPlasticityNeighbors.end()){
-			//new connection allowed
+			//new connection allowed			
 			newJunctionInitiatedFlag=true;
 			newNeighbor=nCell;
 			break; 
@@ -1345,7 +1345,16 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 	//	cerr<<"\t\t newCell 1082 volume="<<newCell->volume<<endl;
 	//}
 
-	if(newJunctionInitiatedFlag){
+	//because newJunctionInitiatedFlag is in principle "global" variable changing lattice configuration from python e.g. delete cell
+	// can cause newJunctionInitiatedFlag be still after last change and thus falsly indicate new junction even when cell is e.g. Medium
+
+
+
+	if(newJunctionInitiatedFlag && newCell){ 
+
+		// we reset the flags here to avoid  keeping true value in the "global" class-wide variable- this might have ide effects
+		newJunctionInitiatedFlag = false;
+
 		//if(newCell->id==1082 ||newNeighbor->id==1082  ){
 		//cerr<<"newJunctionInitiatedFlag="<<newJunctionInitiatedFlag<<" newCell="<<newCell->id<<endl;
 		//cerr<<"newJunctionInitiatedFlag="<<newJunctionInitiatedFlag<<" newNeighborCell="<<newNeighbor->id<<endl;
@@ -1390,8 +1399,14 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 		return;
 	}
 
+	//because newJunctionInitiatedFlag is in principle "global" variable changing lattice configuration from python e.g. delete cell
+	// can cause newJunctionInitiatedFlag be still after last change and thus falsly indicate new junction even when cell is e.g. Medium
 
-	if (newJunctionInitiatedFlagWithinCluster){
+	if (newJunctionInitiatedFlagWithinCluster && newCell){
+
+		// we reset the flags here to avoid  keeping true value in the "global" class-wide variable- this might have ide effects		
+		newJunctionInitiatedFlagWithinCluster = false;
+
 		//if(newCell->id==1082 ||newNeighbor->id==1082  ){
 		//cerr<<"newJunctionInitiatedFlagWithinCluster="<<newJunctionInitiatedFlagWithinCluster<<" newCell="<<newCell->id<<endl;
 		//cerr<<"newJunctionInitiatedFlagWithinCluster="<<newJunctionInitiatedFlagWithinCluster<<" newNeighborCell="<<newNeighbor->id<<endl;
@@ -1437,6 +1452,10 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 		//}
 		return;
 	}
+
+	// we reset the flags here to avoid  keeping true value in the "global" class-wide variable- this might have ide effects
+	newJunctionInitiatedFlag = false;
+	newJunctionInitiatedFlagWithinCluster = false;
 
 	if(newCell){
 		double xCMNew=newCell->xCM/float(newCell->volume);
@@ -1534,10 +1553,17 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 			if(distance>maxDistanceLocal){
 				CellG* removedNeighbor=sitr->neighborAddress;
 
-				//toBeRemovedNeighborsOfNewCell.push_back(removedNeighbor);
+				// // // cerr<<"REMOVE NEW "<<distance<<endl;
+                // // // cerr<<"internalPlastNeighbors.size()="<<internalPlastNeighbors.size()<<endl;
+                // // // cerr<<"removedNeighbor->xCM="<<removedNeighbor->xCM<<" removedNeighbor->yCM="<<removedNeighbor->yCM<<" removedNeighbor->zCM="<<removedNeighbor->zCM<<endl;
+				// // // cerr<<"removedNeighbor="<<removedNeighbor<<" id="<<removedNeighbor->id<<" extraAttribPtr="<<removedNeighbor->extraAttribPtr<<" volume="<<removedNeighbor->volume<<" tv="<<removedNeighbor->targetVolume<<" lv="<<removedNeighbor->lambdaVolume<<endl;
+				// // // cerr<<"newCell="<<newCell<<" id="<<newCell->id<<" extraAttribPtr="<<removedNeighbor->extraAttribPtr<<" volume="<<newCell->volume<<" tv="<<newCell->targetVolume<<" lv="<<newCell->lambdaVolume<<endl;
 
-				//cerr<<"removedNeighbor.id="<<removedNeighbor->id<<" of newCell->id="<<newCell->id<<endl;
-
+				// // // for (std::set<FocalPointPlasticityTrackerData>::iterator sitr1=internalPlastNeighbors.begin() ; sitr1 != internalPlastNeighbors.end() ; ++sitr1 ){
+					// // // if (sitr1->neighborAddress->id==removedNeighbor->id){
+						// // // cerr<<"removing neighbor.id="<<sitr1->neighborAddress->id<<endl;	
+					// // // }
+				// // // }
 				std::set<FocalPointPlasticityTrackerData> & plastNeighborsRemovedNeighbor=
 					focalPointPlasticityTrackerAccessor.get(removedNeighbor->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
 
@@ -1623,7 +1649,10 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 
 		//go over compartments
 		std::set<FocalPointPlasticityTrackerData> & internalPlastNeighbors=focalPointPlasticityTrackerAccessor.get(oldCell->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
-
+        
+        
+        
+        
 		for(sitr=internalPlastNeighbors.begin() ; sitr != internalPlastNeighbors.end() ; ++sitr){
 			//we remove only one cell at a time even though we could do it for many cells many cells
 			double xCMNeighbor=sitr->neighborAddress->xCM/float(sitr->neighborAddress->volume);
@@ -1641,15 +1670,36 @@ void FocalPointPlasticityPlugin::field3DChange(const Point3D &pt, CellG *newCell
 			if(distance>maxDistanceLocal){
 
 				CellG* removedNeighbor=sitr->neighborAddress;
+                
+				// // // cerr<<"REMOVE OLD "<<distance<<endl;
+                // // // cerr<<"internalPlastNeighbors.size()="<<internalPlastNeighbors.size()<<endl;
+                // // // cerr<<"removedNeighbor->xCM="<<removedNeighbor->xCM<<" removedNeighbor->yCM="<<removedNeighbor->yCM<<" removedNeighbor->zCM="<<removedNeighbor->zCM<<endl;
+				// // // cerr<<"removedNeighbor="<<removedNeighbor<<" id="<<removedNeighbor->id<<" extraAttribPtr="<<removedNeighbor->extraAttribPtr<<" volume="<<removedNeighbor->volume<<" tv="<<removedNeighbor->targetVolume<<" lv="<<removedNeighbor->lambdaVolume<<endl;
+				// // // cerr<<"oldCell="<<oldCell<<" id="<<oldCell->id<<" extraAttribPtr="<<removedNeighbor->extraAttribPtr<<" volume="<<oldCell->volume<<" tv="<<oldCell->targetVolume<<" lv="<<oldCell->lambdaVolume<<endl;
+                
+				
+				// // // for (std::set<FocalPointPlasticityTrackerData>::iterator sitr1=internalPlastNeighbors.begin() ; sitr1 != internalPlastNeighbors.end() ; ++sitr1 ){
+					// // // if (sitr1->neighborAddress->id==removedNeighbor->id){
+						// // // cerr<<"removing neighbor.id="<<sitr1->neighborAddress->id<<endl;	
+					// // // }
+				// // // }
 
-				std::set<FocalPointPlasticityTrackerData> & plastNeighborsRemovedNeighbor=
+
+                
+                
+                
+				std::set<FocalPointPlasticityTrackerData> & internalPlastNeighborsRemovedNeighbor=
 					focalPointPlasticityTrackerAccessor.get(removedNeighbor->extraAttribPtr)->internalFocalPointPlasticityNeighbors;
 
-				plastNeighborsRemovedNeighbor.erase(FocalPointPlasticityTrackerData(oldCell));
+				internalPlastNeighborsRemovedNeighbor.erase(FocalPointPlasticityTrackerData(oldCell));
 				//plastNeighborsRemovedNeighbor.erase(FocalPointPlasticityTrackerData(removedNeighbor));
 
 				//plastNeighbors.erase(sitr);
-				plastNeighbors.erase(FocalPointPlasticityTrackerData(sitr->neighborAddress));
+				// // // plastNeighbors.erase(FocalPointPlasticityTrackerData(sitr->neighborAddress));
+                internalPlastNeighbors.erase(FocalPointPlasticityTrackerData(sitr->neighborAddress));
+                
+                
+                
 				break; 
 			}
 		}

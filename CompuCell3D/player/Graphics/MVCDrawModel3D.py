@@ -10,7 +10,10 @@ import Configuration
 import vtk, math
 import sys, os
 
+VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
+
 MODULENAME='------  MVCDrawModel3D.py'
+
 
 class MVCDrawModel3D(MVCDrawModelBase):
     def __init__(self, qvtkWidget, parent=None):
@@ -92,7 +95,13 @@ class MVCDrawModel3D(MVCDrawModelBase):
             # self.outlineDim=outlineDimTmp
         
         outline = vtk.vtkOutlineFilter()
-        outline.SetInput(outlineData)
+        
+        if VTK_MAJOR_VERSION>=6:
+            outline.SetInputData(outlineData)
+        else:    
+            outline.SetInput(outlineData)
+        
+
         outlineMapper = vtk.vtkPolyDataMapper()
         outlineMapper.SetInputConnection(outline.GetOutputPort())
     
@@ -180,7 +189,14 @@ class MVCDrawModel3D(MVCDrawModelBase):
         voi = vtk.vtkExtractVOI()
 ##        voi.SetInputConnection(uGrid.GetOutputPort())
 #        voi.SetInput(uGrid.GetOutput())
-        voi.SetInput(cellTypeImageData)
+
+        if VTK_MAJOR_VERSION>=6:
+            voi.SetInputData(cellTypeImageData)
+        else:    
+            voi.SetInput(cellTypeImageData)
+
+
+        
 #        voi.SetVOI(1,self.dim[0]-1, 1,self.dim[1]-1, 1,self.dim[2]-1 )  # crop out the artificial boundary layer that we created
         voi.SetVOI(0,249, 0,189, 0,170)
         
@@ -196,7 +212,14 @@ class MVCDrawModel3D(MVCDrawModelBase):
         # actorCounter=0
         # for i in usedCellTypesList:
         for actorCounter in xrange(len(self.usedCellTypesList)):
-            filterList[actorCounter].SetInput(cellTypeImageData)
+            
+            if VTK_MAJOR_VERSION>=6:
+                filterList[actorCounter].SetInputData(cellTypeImageData)
+            else:    
+                filterList[actorCounter].SetInput(cellTypeImageData)
+            
+            
+            
 #            filterList[actorCounter].SetInputConnection(voi.GetOutputPort())
 
             # filterList[actorCounter].SetValue(0, usedCellTypesList[actorCounter])
@@ -248,7 +271,14 @@ class MVCDrawModel3D(MVCDrawModelBase):
 #        print '-------------- NOTE:  drawing 3D Cell Borders is in beta ----------------'
         for actorCounter in xrange(len(self.usedCellTypesList)):
 #            print MODULENAME,' initCellFieldBordersActors(): actorCounter=',actorCounter,
-            filterList[actorCounter].SetInput(cellTypeImageData)
+
+            if VTK_MAJOR_VERSION>=6:
+                filterList[actorCounter].SetInputData(cellTypeImageData)
+            else:    
+                filterList[actorCounter].SetInput(cellTypeImageData)
+
+
+            
             # filterList[actorCounter].SetValue(0, usedCellTypesList[actorCounter])
             
 #            print MODULENAME,' initCellFieldBordersActors():  type(self.cellType)=',type(self.cellType)   # duh, 'vtkObject'
@@ -492,7 +522,14 @@ class MVCDrawModel3D(MVCDrawModelBase):
         voi = vtk.vtkExtractVOI()
 ##        voi.SetInputConnection(uGrid.GetOutputPort())
 #        voi.SetInput(uGrid.GetOutput())
-        voi.SetInput(uGrid)
+
+        if VTK_MAJOR_VERSION>=6:
+            voi.SetInputData(uGrid)
+        else:    
+            voi.SetInput(uGrid)
+
+
+        
         voi.SetVOI(1,self.dim[0]-1, 1,self.dim[1]-1, 1,self.dim[2]-1 )  # crop out the artificial boundary layer that we created
         
         isoContour = vtk.vtkContourFilter()
@@ -645,8 +682,13 @@ class MVCDrawModel3D(MVCDrawModelBase):
             self.maxMagnitude = Configuration.getSetting("MaxRange",conFieldName)
             
         glyphs = vtk.vtkGlyph3D()
+        
+        if VTK_MAJOR_VERSION>=6:
+            glyphs.SetInputData(vectorGrid)
+        else:    
+            glyphs.SetInput(vectorGrid)
 
-        glyphs.SetInput(vectorGrid)
+        
         glyphs.SetSourceConnection(cone.GetOutputPort())
         #glyphs.SetScaleModeToScaleByVector()
         # glyphs.SetColorModeToColorByVector()
@@ -738,7 +780,12 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
     def takeSimShot(self, fileName):
         renderLarge = vtk.vtkRenderLargeImage()
-        renderLarge.SetInput(self.graphicsFrameWidget.ren)
+        if VTK_MAJOR_VERSION>=6:
+            renderLarge.SetInputData(self.graphicsFrameWidget.ren)
+        else:    
+            renderLarge.SetInput(self.graphicsFrameWidget.ren)
+        
+
         renderLarge.SetMagnification(1)
 
         # We write out the image which causes the rendering to occur. If you
@@ -991,7 +1038,12 @@ class MVCDrawModel3D(MVCDrawModelBase):
         centroidGS.SetPhiResolution(phiRes)
 
         centroidGlyph = vtk.vtkGlyph3D()
-        centroidGlyph.SetInput(centroidsPD)
+        
+        if VTK_MAJOR_VERSION>=6:
+            centroidGlyph.SetInputData(centroidsPD)
+        else:    
+            centroidGlyph.SetInput(centroidsPD)        
+        
         centroidGlyph.SetSource(centroidGS.GetOutput())
         
         glyphScale = Configuration.getSetting("CellGlyphScale")            
@@ -1009,7 +1061,13 @@ class MVCDrawModel3D(MVCDrawModelBase):
         centroidGlyph.SetInputArrayToProcess(3,0,0,0,"CellTypes")
         centroidGlyph.SetInputArrayToProcess(0,0,0,0,"CellScalars")
 
-        self.cellGlyphsMapper.SetInput(centroidGlyph.GetOutput())
+        if VTK_MAJOR_VERSION>=6:
+            self.cellGlyphsMapper.SetInputData(centroidGlyph.GetOutput())
+        else:    
+            self.cellGlyphsMapper.SetInput(centroidGlyph.GetOutput())
+
+
+        
         self.cellGlyphsMapper.SetScalarRange(0,self.celltypeLUTMax)
         self.cellGlyphsMapper.ScalarVisibilityOn()
         
@@ -1314,7 +1372,13 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         FPPLinksPD.Update()
         
-        self.FPPLinksMapper.SetInput(FPPLinksPD)
+        if VTK_MAJOR_VERSION>=6:
+            self.FPPLinksMapper.SetInputData(FPPLinksPD)
+        else:    
+            self.FPPLinksMapper.SetInput(FPPLinksPD)
+        
+        
+        
 
 #        self.FPPLinksMapper.SetScalarModeToUseCellFieldData()
         
@@ -1609,7 +1673,13 @@ class MVCDrawModel3D(MVCDrawModelBase):
         FPPLinksPD.Update()
         FPPLinksPD.GetCellData().SetScalars(colorScalars)
         
-        self.FPPLinksMapper.SetInput(FPPLinksPD)
+        if VTK_MAJOR_VERSION>=6:
+            self.FPPLinksMapper.SetInputData(FPPLinksPD)
+        else:    
+            self.FPPLinksMapper.SetInput(FPPLinksPD)
+        
+        
+        
 
         self.FPPLinksMapper.SetScalarModeToUseCellFieldData()
         self.FPPLinksMapper.SelectColorArray("fpp_scalar")

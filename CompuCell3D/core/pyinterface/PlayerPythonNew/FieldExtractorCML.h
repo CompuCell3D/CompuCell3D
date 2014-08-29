@@ -21,6 +21,7 @@ class vtkFloatArray;
 class vtkPoints;
 class vtkCellArray;
 class vtkStructuredPoints;
+class vtkStructuredPointsReader;
 class vtkObject;
 
 
@@ -82,7 +83,8 @@ namespace CompuCell3D{
 		virtual std::vector<int> fillCellFieldData3D(long _cellTypeArrayAddr, long _cellIdArrayAddr);
 		virtual bool fillConFieldData3D(long _conArrayAddr ,long _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec);
 
-
+        virtual bool readVtkStructuredPointsData(long _structuredPointsReaderAddr);
+        
 		void setFieldDim(Dim3D _dim);
 		Dim3D getFieldDim();
 		void setSimulationData(long _structuredPointsAddr);

@@ -75,7 +75,8 @@ recentlyCreatedClusterId(1),
 debugOutputFrequency(10),
 sim(0),
 automaton(0),
-temperature(0.0)
+temperature(0.0),
+pUtils(0)
 
 {
 	neighbors.assign(100,Point3D());//statically allocated this buffer maybe will come with something better later
@@ -102,7 +103,8 @@ recentlyCreatedClusterId(1),
 debugOutputFrequency(10),
 sim(0),
 automaton(0),
-temperature(0.0)
+temperature(0.0),
+pUtils(0)
 
 {
 	neighbors.assign(100,Point3D());//statically allocated this buffer maybe will come with something better later
@@ -498,7 +500,8 @@ unsigned int Potts3D::metropolis(const unsigned int steps, const double temp) {
 unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp) {
 	ASSERT_OR_THROW("Potts3D: cell field G not initialized", cellFieldG);
 
-	ParallelUtilsOpenMP * pUtils=sim->getParallelUtils();
+	// ParallelUtilsOpenMP * pUtils=sim->getParallelUtils();
+    
 
 	ASSERT_OR_THROW("MetropolisList algorithm works only in single processor mode. Please change number of processors to 1",pUtils->getNumberOfWorkNodesPotts()==1);
 
@@ -666,7 +669,7 @@ Point3D Potts3D::getFlipNeighbor(){
 
 unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp) {
 	ASSERT_OR_THROW("Potts3D: cell field G not initialized", cellFieldG);
-	ParallelUtilsOpenMP * pUtils=sim->getParallelUtils();
+	// // // ParallelUtilsOpenMP * pUtils=sim->getParallelUtils();
 
 	if (customAcceptanceExpressionDefined){
 		customAcceptanceFunction.initialize(this->sim); //actual initialization will happen only once at MCS=0 all other calls will return without doing anything
@@ -710,11 +713,11 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 	unsigned int numberOfSections=pUtils->getNumberOfSubgridSectionsPotts();
 
 	currentAttempt=0; //reset current attepmt counter
-	//for (int i = 0 ; i < numberOfThreads ; ++i)
-	//	for (int s = 0 ; s < numberOfSections; ++s){
-	//		pair<Dim3D,Dim3D> sectionDims=pUtils->getPottsSection(i,s);
-	//		cerr<<" thread="<<i<<" section="<<s<<" minDim="<<sectionDims.first<<" maxDim="<<sectionDims.second<<endl;
-	//	}
+	// for (int i = 0 ; i < numberOfThreads ; ++i)
+		// for (int s = 0 ; s < numberOfSections; ++s){
+			// pair<Dim3D,Dim3D> sectionDims=pUtils->getPottsSection(i,s);
+			// cerr<<" thread="<<i<<" section="<<s<<" minDim="<<sectionDims.first<<" maxDim="<<sectionDims.second<<endl;
+		// }
 	//THESE VARIABLES ARE SHARED
 	flips = 0;
 	attemptedEC=0;
@@ -756,7 +759,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 		BasicRandomNumberGeneratorNonStatic * rand = randNSVec[currentWorkNodeNumber].getInstance();
 		BoundaryStrategy * boundaryStrategy = BoundaryStrategy::getInstance();
 
-		//cerr<<"subgridSectionOrderVec.size()="<<subgridSectionOrderVec.size()<<endl;
+		// cerr<<"subgridSectionOrderVec.size()="<<subgridSectionOrderVec.size()<<endl;
 		//iterating over subgridSections
 		for (int s = 0 ; s<subgridSectionOrderVec.size() ; ++s){
 
@@ -941,7 +944,9 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const double temp) {
 	ASSERT_OR_THROW("Potts3D: cell field G not initialized", cellFieldG);
 
-	ParallelUtilsOpenMP * pUtils=sim->getParallelUtils();
+	// // // ParallelUtilsOpenMP * pUtils=sim->getParallelUtils();
+    
+    
 	if (customAcceptanceExpressionDefined){
 		customAcceptanceFunction.initialize(this->sim); //actual initialization will happen only once at MCS=0 all other calls will return without doing anything
 	}

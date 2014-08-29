@@ -39,6 +39,14 @@ IF(SWIG_FOUND)
 # endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)            
 
 #    add_subdirectory(PlayerPythonOld)
+
+    FIND_PACKAGE(VTK REQUIRED)
+    message("VTK_MAJOR_VERSION=" ${VTK_MAJOR_VERSION})
+    if (${VTK_MAJOR_VERSION} EQUAL "6")    
+        add_definitions(-DVTK6)
+    endif()    
+    
+
     add_subdirectory(PlayerPythonNew)
     add_subdirectory(SerializerDE)
     add_subdirectory(PyPlugin)

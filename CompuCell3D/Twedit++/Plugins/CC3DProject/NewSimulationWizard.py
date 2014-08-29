@@ -46,7 +46,9 @@ class NewSimulationWizard(QWizard,ui_newsimulationwizard.Ui_NewSimulationWizard)
         self.plotTypeCB.setHidden(True)
         self.plotAddPB.setHidden(True)
         
-        
+        if sys.platform.startswith('win'):
+            self.setWizardStyle(QWizard.ClassicStyle)
+    
     def keyPressEvent(self, event):            
         
         if self.currentPage()==self.pageDict["CellType"][0]:

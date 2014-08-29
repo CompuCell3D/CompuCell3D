@@ -45,7 +45,7 @@
    
    
       <Plugin Name="Chemotaxis">
-      <ChemicalField Name="ATTR" Source="DiffusionSolverFE">
+      <ChemicalField Name="ATTR">
          <ChemotaxisByType Lambda="1.0" Type="Macrophage"/>
       </ChemicalField>
    </Plugin>

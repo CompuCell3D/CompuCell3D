@@ -1,0 +1,1423 @@
+// __kernel void uniDiff(__global float* g_field,
+    // __global const unsigned char * g_cellType,
+	// __global UniSolverParams_t  const *solverParams,
+	// __constant int4 const *nbhdConcShifts, 
+	// __constant int4 const *nbhdDiffShifts, 
+    // __global float* g_scratch,
+    // __local float *l_field,
+	// __local unsigned char *l_cellType,
+	// float dt
+    // )    
+// {
+    // int bx=get_group_id(0);
+    // int by=get_group_id(1);
+    // int bz=get_group_id(2);
+    
+    // int gid_x=get_global_id(0);
+    // int gid_y=get_global_id(1);
+    // int gid_z=get_global_id(2);
+    
+    // int tx=get_local_id(0);
+    // int ty=get_local_id(1);
+    // int tz=get_local_id(2);
+    
+    // int l_dim_x=get_local_size(0);
+    // int l_dim_y=get_local_size(1);
+    // int l_dim_z=get_local_size(2);
+    
+	// //there is a border of 1 pixel around the domain, so shifting by 1 at all dimensions
+	// // int4 g_ind={get_global_id(0)+1, get_global_id(1)+1, get_global_id(2)+1, 0};
+    // int4 g_ind={gid_x+1, gid_y+1, gid_z+1, 0};
+
+	// if(g_ind.x>solverParams->xDim||g_ind.y>solverParams->yDim||g_ind.z>solverParams->zDim)
+		// return;
+	
+    // int4 l_ind_orig={tx,  ty, tz, 0};
+    
+	// // int4 l_ind={get_local_id(0)+1,  get_local_id(1)+1,  get_local_id(2)+1, 0};
+    // int4 l_ind={tx+1,  ty+1,  tz+1, 0};
+
+	// int4 g_dim={get_global_size(0), get_global_size(1), get_global_size(2), 0};
+    
+    
+	// // int4 l_dim={get_local_size(0),  get_local_size(1),  get_local_size(2), 0};
+    // int4 l_dim={l_dim_x,  l_dim_x,  l_dim_x, 0};
+
+    
+	// int g_linearInd=ext3DIndToLinear(g_dim, g_ind);//index of a current work item in a global space
+	// int l_linearInd=ext3DIndToLinear(l_dim, l_ind);//index of a current work item in a local space (in a block of shared memory)
+    
+    // // moving data from global to local
+    // l_field[l_linearInd]=g_field[g_linearInd];
+    // l_cellType[l_linearInd]=g_cellType[g_linearInd];
+    
+
+    
+    // // barrier(CLK_LOCAL_MEM_FENCE);     
+    // //end of boundaryConditionInit
+    
+    
+    // if (tx==0){
+        // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+1,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+1,gid_z+1,0))];
+        
+    // }
+
+    // if (tx==l_dim_x-1){
+        // l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+1,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+1,gid_z+1,0))];
+    // }
+
+    // if (ty==0){
+        // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y,gid_z+1,0))];
+    // }
+
+    // if (ty==l_dim_y-1){
+        // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+2,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+2,gid_z+1,0))];
+    // }
+
+    // if (tz==0){
+        // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z,0))];
+    // }
+
+    // if (tz==l_dim_z-1){
+        // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+2,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+2,0))];
+    // }
+    
+    
+	// barrier(CLK_LOCAL_MEM_FENCE);        
+    // // ***************
+    // // ***************
+    // // ***************
+    
+	// float currentConcentration=l_field[l_linearInd];
+	// float concentrationSum=0.f;
+    
+    // // // // return;        
+    // // if (g_ind.x==1 && g_ind.y==1){
+        // // printf("OPEN CL KERNEL n");
+        
+    // // }
+	// if(solverParams->hexLattice){
+		// for(int i=0; i<solverParams->nbhdConcLen; ++i){
+            // // int4 shift=getShift(g_ind+(int4)(0,0,-1,0),  i, solverParams->hexLattice, nbhdConcShifts, solverParams->nbhdConcLen);  
+			// int4 shift=getShift(g_ind+(int4)(-1,-1,-1,0), i, solverParams->hexLattice, nbhdConcShifts, solverParams->nbhdConcLen);
+			// // int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			// // concentrationSum+=l_field[lInd];
+             
+             
+            // if (g_ind.x==21 && g_ind.y==21) {           
+                // // // g_scratch[ext3DIndToLinear(g_dim, g_ind+(int4)(-1,0,0,0) )]=10000;
+                // // // g_scratch[ext3DIndToLinear(g_dim, g_ind+(int4)(-1,1,0,0) )]=10000;
+                // // g_scratch[ext3DIndToLinear(g_dim, g_ind)]=2000;
+                // // g_scratch[ext3DIndToLinear(g_dim, g_ind+shift )]=10000;
+                // // // g_scratch[ext3DIndToLinear(g_dim,g_ind)]=7000;   
+                // // g_scratch[ext3DIndToLinear(g_dim,g_ind)]=0;   
+                // // g_scratch[ext3DIndToLinear(g_dim, (int4)(1,i+1,1,0) )]=shift.x*5000;
+                // // g_scratch[ext3DIndToLinear(g_dim, (int4)(2,i+1,1,0) )]=shift.y*5000;
+                // // g_scratch[ext3DIndToLinear(g_dim, (int4)(3,i+1,1,0) )]=shift.z*5000;                
+            // }
+            
+            // if (g_ind.x==21 && g_ind.y==21){
+                // g_scratch[ext3DIndToLinear(g_dim, (int4)(1,i+1,1,0) )]=shift.x*5000;
+                // g_scratch[ext3DIndToLinear(g_dim, (int4)(2,i+1,1,0) )]=shift.y*5000;
+                // g_scratch[ext3DIndToLinear(g_dim, (int4)(3,i+1,1,0) )]=shift.z*5000;
+            // }
+            
+		// }
+        
+		// // for(int i=0; i<solverParams->nbhdDiffLen; ++i){
+        
+			// // int4 shift=getShift(g_ind+(int4)(-1,-1,-1, 0), i, solverParams->hexLattice, nbhdDiffShifts, solverParams->nbhdDiffLen);
+            // // if (g_ind.x==21 && g_ind.y==21) { 
+                // // g_scratch[ext3DIndToLinear(g_dim, (int4)(1,i+1,1,0) )]=shift.x*5000;
+                // // g_scratch[ext3DIndToLinear(g_dim, (int4)(2,i+1,1,0) )]=shift.y*5000;
+                // // g_scratch[ext3DIndToLinear(g_dim, (int4)(3,i+1,1,0) )]=shift.z*5000;                
+            // // }
+        
+        // // }   
+		// // // // concentrationSum-=solverParams->nbhdConcLen*currentConcentration;
+	// }else{
+		// for(int i=0; i<solverParams->nbhdConcLen; ++i){
+			// int4 shift=nbhdConcShifts[i];
+			// int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			// concentrationSum+=l_field[lInd];
+		// }
+		// // // // concentrationSum-=solverParams->nbhdConcLen*currentConcentration;
+	// }
+		
+	// // g_scratch[g_linearInd]=concentrationSum;
+	
+
+	// unsigned char curentCelltype=l_cellType[l_linearInd];
+	// float currentDiffCoef=solverParams->diffCoef[curentCelltype];
+	
+	// // // // concentrationSum*=currentDiffCoef;
+	
+	// float varDiffSumTerm=0.f;
+	// // // // if(solverParams->hexLattice){
+		// // // // for(int i=0; i<solverParams->nbhdDiffLen; ++i){
+			// // // // int4 shift=getShift(g_ind+(int4)(-1,-1,-1, 0), i, solverParams->hexLattice, nbhdDiffShifts, solverParams->nbhdDiffLen);
+			// // // // int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			// // // // varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
+		// // // // }
+	// // // // }else{
+		// // // // for(int i=0; i<solverParams->nbhdDiffLen; ++i){
+			// // // // int lInd=ext3DIndToLinear(l_dim, l_ind+nbhdDiffShifts[i]);
+			// // // // varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
+		// // // // }
+	// // // // }
+	
+
+	// // // // float dx2=solverParams->dx*solverParams->dx;
+	// // // // float dt_dx2=dt/dx2;
+
+    // // // // float scratch=concentrationSum;
+    // // // // if (currentConcentration==2000){
+        // // // // scratch=10000;
+    // // // // }
+    // // // // // // // float scratch=dt_dx2*(concentrationSum+varDiffSumTerm)+(1.f-dt*solverParams->decayCoef[curentCelltype])*currentConcentration;
+
+	// // // // g_scratch[g_linearInd]=scratch;
+
+	
+// }
+
+
+// __kernel void uniDiff(__global const float* g_field,
+    // __global const unsigned char * g_cellType,
+	// __global UniSolverParams_t  const *solverParams,
+	// __constant int4 const *nbhdConcShifts, 
+	// __constant int4 const *nbhdDiffShifts, 
+    // __global float* g_scratch,
+    // __local float *l_field,
+	// __local unsigned char *l_cellType,
+	// float dt
+    // )
+// // // __kernel void uniDiff(__global float* g_field,
+    // // // __global const unsigned char * g_cellType,
+	// // // __global UniSolverParams_t  const *solverParams,
+	// // // __constant int4 const *nbhdConcShifts, 
+	// // // __constant int4 const *nbhdDiffShifts, 
+    // // // __global float* g_scratch,
+    // // // __local float *l_field,
+	// // // __local unsigned char *l_cellType,
+	// // // float dt
+    // // // )    
+// // // {
+    // // // int bx=get_group_id(0);
+    // // // int by=get_group_id(1);
+    // // // int bz=get_group_id(2);
+    
+    // // // int gid_x=get_global_id(0);
+    // // // int gid_y=get_global_id(1);
+    // // // int gid_z=get_global_id(2);
+    
+    // // // int tx=get_local_id(0);
+    // // // int ty=get_local_id(1);
+    // // // int tz=get_local_id(2);
+    
+    // // // int l_dim_x=get_local_size(0);
+    // // // int l_dim_y=get_local_size(1);
+    // // // int l_dim_z=get_local_size(2);
+    
+	// // // //there is a border of 1 pixel around the domain, so shifting by 1 at all dimensions
+	// // // // int4 g_ind={get_global_id(0)+1, get_global_id(1)+1, get_global_id(2)+1, 0};
+    // // // int4 g_ind={gid_x+1, gid_y+1, gid_z+1, 0};
+
+	// // // if(g_ind.x>solverParams->xDim||g_ind.y>solverParams->yDim||g_ind.z>solverParams->zDim)
+		// // // return;
+	
+    // // // int4 l_ind_orig={tx,  ty, tz, 0};
+    
+	// // // // int4 l_ind={get_local_id(0)+1,  get_local_id(1)+1,  get_local_id(2)+1, 0};
+    // // // int4 l_ind={tx+1,  ty+1,  tz+1, 0};
+
+	// // // int4 g_dim={get_global_size(0), get_global_size(1), get_global_size(2), 0};
+    
+    
+	// // // // int4 l_dim={get_local_size(0),  get_local_size(1),  get_local_size(2), 0};
+    // // // int4 l_dim={l_dim_x,  l_dim_x,  l_dim_x, 0};
+
+    
+	// // // int g_linearInd=ext3DIndToLinear(g_dim, g_ind);//index of a current work item in a global space
+	// // // int l_linearInd=ext3DIndToLinear(l_dim, l_ind);//index of a current work item in a local space (in a block of shared memory)
+    
+    // // // // moving data from global to local
+    // // // l_field[l_linearInd]=g_field[g_linearInd];
+    // // // l_cellType[l_linearInd]=g_cellType[g_linearInd];
+    
+
+    
+    // // // // barrier(CLK_LOCAL_MEM_FENCE);     
+    // // // //end of boundaryConditionInit
+    
+    // // // // // // if (tx==0 && ty==0){
+        // // // // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y,gid_z+1,0))]; 
+    // // // // // // }
+    
+    // // // // // // if (tx==l_dim_x-1 && ty==0){
+        // // // // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y,gid_z+1,0))]; 
+    // // // // // // }
+    
+    // // // // // // if (tx==l_dim_x-1 && ty==l_dim_y-1){
+        // // // // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+2,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+2,gid_z+1,0))]; 
+    // // // // // // }
+    
+    // // // // // // if (tx==0 && ty==l_dim_y-1){
+        // // // // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+2,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+2,gid_z+1,0))]; 
+    // // // // // // }
+    
+    
+    
+    
+    // // // if (tx==0 && tz==0){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty,tz,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y,gid_z,0))];
+                
+        // // // if (ty==l_dim.y-1){
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+1,tz,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+1,gid_z,0))];               
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+2,tz,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+2,gid_z,0))];               
+        // // // }
+        
+    // // // }
+          
+    
+    
+    // // // if (tx==l_dim.x-1 && tz==0){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty,tz,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y,gid_z,0))];               
+        // // // if (ty==l_dim.y-1){
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+1,tz,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+1,gid_z,0))];               
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+2,tz,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+2,gid_z,0))];               
+        // // // }
+    // // // }
+    
+    
+    
+    // // // if (tx==0 && tz==l_dim.z-1){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty,tz+2,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y,gid_z+2,0))];               
+        // // // if (ty==l_dim.y-1){
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+1,tz+2,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+1,gid_z+2,0))];               
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+2,tz+2,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+2,gid_z+2,0))];               
+        // // // }
+    // // // }
+    
+    
+    
+    // // // if (tx==l_dim.x-1 && tz==l_dim.z-1){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty,tz+2,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y,gid_z+2,0))];               
+        // // // if (ty==l_dim.y-1){
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+1,tz+2,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+1,gid_z+2,0))];               
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+2,tz+2,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+2,gid_z+2,0))];               
+        // // // }
+    // // // }    
+     
+    
+    // // // barrier(CLK_LOCAL_MEM_FENCE);    
+    
+    // // // if (tx==0){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+1,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+1,gid_z+1,0))];  //central pixel              
+        
+    // // // }
+
+    // // // return;
+    // // // if (tx==l_dim_x-1){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+1,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+1,gid_z+1,0))];
+        
+    // // // }
+
+    
+    
+    // // // if (ty==0){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y,gid_z+1,0))];        
+    // // // }
+    
+    
+    // // // if (ty==l_dim_y-1){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+2,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+2,gid_z+1,0))];
+    // // // }
+    
+  
+    // // // if (tz==0){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z,0))];
+    // // // }
+
+  
+    // // // if (tz==l_dim_z-1){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+2,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+2,0))];
+    // // // }
+  
+    // // // return;
+  
+    
+	// // // barrier(CLK_LOCAL_MEM_FENCE);        
+    // // // // ***************
+    // // // // ***************
+    // // // // ***************
+    
+	// // // float currentConcentration=l_field[l_linearInd];
+	// // // float concentrationSum=0.f;
+    
+    // // // // // // return;        
+    
+	// // // if(solverParams->hexLattice){
+		// // // for(int i=0; i<solverParams->nbhdConcLen; ++i){
+			// // // int4 shift=getShift(g_ind+(int4)(-1,-1,-1,0), i, solverParams->hexLattice, nbhdConcShifts, solverParams->nbhdConcLen);
+			// // // int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			// // // concentrationSum+=l_field[lInd];
+		// // // }
+		// // // concentrationSum-=solverParams->nbhdConcLen*currentConcentration;
+	// // // }else{
+		// // // for(int i=0; i<solverParams->nbhdConcLen; ++i){
+			// // // int4 shift=nbhdConcShifts[i];
+			// // // int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			// // // concentrationSum+=l_field[lInd];
+		// // // }
+		// // // concentrationSum-=solverParams->nbhdConcLen*currentConcentration;
+	// // // }
+		
+	// // // // g_scratch[g_linearInd]=concentrationSum;
+	
+
+	// // // unsigned char curentCelltype=l_cellType[l_linearInd];
+	// // // float currentDiffCoef=solverParams->diffCoef[curentCelltype];
+	
+	// // // concentrationSum*=currentDiffCoef;
+	
+	// // // float varDiffSumTerm=0.f;
+	// // // if(solverParams->hexLattice){
+		// // // for(int i=0; i<solverParams->nbhdDiffLen; ++i){
+			// // // int4 shift=getShift(g_ind+(int4)(-1,-1,-1, 0), i, solverParams->hexLattice, nbhdDiffShifts, solverParams->nbhdDiffLen);
+			// // // int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			// // // varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
+		// // // }
+	// // // }else{
+		// // // for(int i=0; i<solverParams->nbhdDiffLen; ++i){
+			// // // int lInd=ext3DIndToLinear(l_dim, l_ind+nbhdDiffShifts[i]);
+			// // // varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
+		// // // }
+	// // // }
+	
+
+	// // // float dx2=solverParams->dx*solverParams->dx;
+	// // // float dt_dx2=dt/dx2;
+
+    // // // float scratch=dt_dx2*(concentrationSum+varDiffSumTerm)+(1.f-dt*solverParams->decayCoef[curentCelltype])*currentConcentration;
+
+	// // // g_scratch[g_linearInd]=scratch;
+
+	
+// // // }
+
+
+
+__kernel void uniDiff(__global float* g_field,
+    __global const unsigned char * g_cellType,
+	__global UniSolverParams_t  const *solverParams,
+	__constant int4 const *nbhdConcShifts, 
+	__constant int4 const *nbhdDiffShifts, 
+    __global float* g_scratch,
+    __local float *l_field,
+	__local unsigned char *l_cellType,
+	float dt
+    )    
+{
+    int bx=get_group_id(0);
+    int by=get_group_id(1);
+    int bz=get_group_id(2);
+    
+    int gid_x=get_global_id(0);
+    int gid_y=get_global_id(1);
+    int gid_z=get_global_id(2);
+    
+    int tx=get_local_id(0);
+    int ty=get_local_id(1);
+    int tz=get_local_id(2);
+    
+    int l_dim_x=get_local_size(0);
+    int l_dim_y=get_local_size(1);
+    int l_dim_z=get_local_size(2);
+    
+    
+    int4 corner_offset1[26]={(int4)(1,0,0,0) , (int4)(1,1,0,0) , (int4)(0,1,0,0) , (int4)(-1,1,0,0) , (int4)(-1,0,0,0) , (int4)(-1,-1,0,0) , (int4)(0,-1,0,0) , (int4)(1,-1,0,0),
+    (int4)(1,0,1,0) , (int4)(1,1,1,0) , (int4)(0,1,1,0) , (int4)(-1,1,1,0) , (int4)(-1,0,1,0) , (int4)(-1,-1,1,0) , (int4)(0,-1,1,0) , (int4)(1,-1,1,0) , (int4)(0,0,1,0),
+    (int4)(1,0,-1,0) , (int4)(1,1,-1,0) , (int4)(0,1,-1,0) , (int4)(-1,1,-1,0) , (int4)(-1,0,-1,0) , (int4)(-1,-1,-1,0) , (int4)(0,-1,-1,0) , (int4)(1,-1,-1,0) , (int4)(0,0,-1,0)
+    };
+    
+    // (int4)(1,0,-1,0) , (int4)(1,1,-1,0) , (int4)(0,1-,1,0) , (int4)(-1,1,-1,0) , (int4)(-1,0,-1,0) , (int4)(-1,-1,-1,0) , (int4)(0,-1,-1,0) , (int4)(1,-1,-1,0), (int4)(0,0,-1,0)
+    
+    
+    // int4 corner_offset1[8]={(int4)(1,0,0,0),(int4)(1,1,0,0),(int4)(0,1,0,0),(int4)(-1,1,0,0),(int4)(-1,0,0,0),(int4)(-1,-1,0,0),(int4)(0,-1,0,0),(int4)(1,-1,0,0)};
+    
+    // int4 corner_offset2[8]={(int4)(1,0,1,0),(int4)(1,1,1,0),(int4)(0,1,1,0),(int4)(-1,1,1,0),(int4)(-1,0,1,0),(int4)(-1,-1,1,0),(int4)(0,-1,1,0),(int4)(1,-1,1,0)};
+    // int4 corner_offset3[8]={ (int4)(1,0,-1,0) , (int4)(1,1,-1,0) , (int4)(0,1-,1,0) , (int4)(-1,1,-1,0) , (int4)(-1,0,-1,0) , (int4)(-1,-1,-1,0) , (int4)(0,-1,-1,0) , (int4)(1,-1,-1,0) };
+	//there is a border of 1 pixel around the domain, so shifting by 1 at all dimensions
+	// int4 g_ind={get_global_id(0)+1, get_global_id(1)+1, get_global_id(2)+1, 0};
+    int4 g_ind={gid_x+1, gid_y+1, gid_z+1, 0};
+
+	if(g_ind.x>solverParams->xDim||g_ind.y>solverParams->yDim||g_ind.z>solverParams->zDim)
+		return;
+	
+    int4 l_ind_orig={tx,  ty, tz, 0};
+    
+	// int4 l_ind={get_local_id(0)+1,  get_local_id(1)+1,  get_local_id(2)+1, 0};
+    int4 l_ind={tx+1,  ty+1,  tz+1, 0};
+
+	int4 g_dim={get_global_size(0), get_global_size(1), get_global_size(2), 0};
+    
+    
+	// int4 l_dim={get_local_size(0),  get_local_size(1),  get_local_size(2), 0};
+    int4 l_dim={l_dim_x,  l_dim_x,  l_dim_x, 0};
+
+    
+	int g_linearInd=ext3DIndToLinear(g_dim, g_ind);//index of a current work item in a global space
+	int l_linearInd=ext3DIndToLinear(l_dim, l_ind);//index of a current work item in a local space (in a block of shared memory)
+    
+    // moving data from global to local
+    l_field[l_linearInd]=g_field[g_linearInd];
+    l_cellType[l_linearInd]=g_cellType[g_linearInd];
+        
+    barrier(CLK_LOCAL_MEM_FENCE);     
+    
+    // if(solverParams->hexLattice){
+        // if (tx==0 || ty==0 || tz==0 || tx==l_dim.x-1 || ty==l_dim.y-1 || tz==l_dim.z-1){// pick only corner/edge threads
+            // for (int i = 0 ; i < 26 ; ++i){
+                
+                // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+1,0) + corner_offset1[i] ) ]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+1,0) + corner_offset1[i])];
+                // barrier(CLK_LOCAL_MEM_FENCE);     
+            // }
+        // }
+    // }    
+
+    // int4 corner_offset[8]={
+    // (int4)(0,0,0,0) , (int4)(0,0,l_dim.z+1,0) , 
+    // (int4)(0,l_dim.y+1,0,0) , (int4)(0,l_dim.y+1,l_dim.z+1,0) ,
+    // (int4)(l_dim.x+1,0,0,0) , (int4)(l_dim.x+1,0,l_dim.z+1,0) ,
+    // (int4)(l_dim.x+1,l_dim.y+1,0,0) , (int4)(l_dim.x+1,l_dim.y+1,l_dim.z+1,0) ,
+    // };
+    
+    // int4 corner_offset[8]={
+    // (int4)(0,0,0,0) ,(int4)(0,0,l_dim.z+1,0) ,(int4)(0,l_dim.y+1,0,0) ,(int4)(0,l_dim.y+1,l_dim.z+1,0) ,(int4)(l_dim.x+1,0,0,0) ,(int4)(l_dim.x+1,0,l_dim.z+1,0) , (int4)(l_dim.x+1,l_dim.y+1,0,0) , (int4)(l_dim.x+1,l_dim.y+1,l_dim.z+1,0)
+    // };    
+    
+    // if (tx==0 || ty==0 || tz==0 || tx==l_dim.x-1 || ty==l_dim.y-1 || tz==l_dim.z-1){
+        // for (int i = 0 ; i <8 ;++i){
+            // l_field[ext3DIndToLinear(l_dim, (int4)(0,0,0,0) + corner_offset[i])] = g_field[ext3DIndToLinear(g_dim, (int4)(l_dim.x*bx , l_dim.y*by , l_dim.z*bz , 0) +  corner_offset[i]) ];
+            // barrier(CLK_LOCAL_MEM_FENCE);
+        // }    
+        
+    // }
+    
+
+    
+    
+    
+    // if (tx==0 && ty==0 && tz==0){
+        // for (int i = 0 ; i <8 ;++i){
+            // l_field[ext3DIndToLinear(l_dim, (int4)(0,0,0,0) + corner_offset[i])] = g_field[ext3DIndToLinear(g_dim, (int4)(l_dim.x*bx , l_dim.y*by , l_dim.z*bz , 0) +  corner_offset[i]) ];
+            // barrier(CLK_LOCAL_MEM_FENCE);
+        // }
+        // // l_field[ext3DIndToLinear(l_dim, (int4)(0,0,0,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(g_dim.x*bx , g_dim.y*by , g_dim.z*bz , 0)) ];
+        // // l_field[ext3DIndToLinear(l_dim, (int4)(0,0,l_dim.z+1,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(g_dim.x*bx,g_dim.y*by,g_dim.z*bz+l_dim.z+1,0)) ];
+
+        // // l_field[ext3DIndToLinear(l_dim, (int4)(0,l_dim.y+1,0,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(g_dim.x*bx , g_dim.y*by+l_dim.y+1 , g_dim.z*bz , 0)) ];
+        // // l_field[ext3DIndToLinear(l_dim, (int4)(0,l_dim.y+1,l_dim.z+1,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(g_dim.x*bx , g_dim.y*by+l_dim.y+1 , g_dim.z*bz+l_dim.z+1,0)) ];
+
+        // // l_field[ext3DIndToLinear(l_dim, (int4)(l_dim.x+1,0,0,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(g_dim.x*bx+l_dim.x+1 , g_dim.y*by , g_dim.z*bz , 0)) ];
+        // // l_field[ext3DIndToLinear(l_dim, (int4)(l_dim.x+1,0,l_dim.z+1,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(g_dim.x*bx +l_dim.x+1, g_dim.y*by , g_dim.z*bz+l_dim.z+1,0)) ];
+
+        // // l_field[ext3DIndToLinear(l_dim, (int4)(l_dim.x+1,l_dim.y+1,0,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(g_dim.x*bx+l_dim.x+1 , g_dim.y*by+l_dim.y+1 , g_dim.z*bz , 0)) ];
+        // // l_field[ext3DIndToLinear(l_dim, (int4)(l_dim.x+1,l_dim.y+1,l_dim.z+1,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(g_dim.x*bx +l_dim.x+1, g_dim.y*by+l_dim.y+1 , g_dim.z*bz+l_dim.z+1,0)) ];
+        
+        
+        // // l_field[ext3DIndToLinear(l_dim, (int4)(0,l_dim.y+1,tz,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(0,g_dim.y*by+ty+1,gid_z,0)) ];        
+        // // l_field[ext3DIndToLinear(l_dim, (int4)(0,l_dim.y+1,l_dim.z+1,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,g_dim.y*by+ty+1,l_dim.z+1,0)) ];        
+        
+        // // l_field[ext3DIndToLinear(l_dim, (int4)(l_dim.x+1,ty,tz,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(g_dim.x*bx+tx+1 , ty , gid_z , 0)) ];        
+        // // l_field[ext3DIndToLinear(l_dim, (int4)(l_dim.x+1,ty,l_dim.z+1,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(g_dim.x*bx+tx+1,g_dim.y*by+ty+1,l_dim.z+1,0)) ];        
+        
+        
+    // }
+    
+    barrier(CLK_LOCAL_MEM_FENCE);
+    
+    
+    
+    //edges  along z axis   
+    if (tx==0 && ty==0){
+        if (tz==0){
+            l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty,tz,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y,gid_z,0)) ];
+            
+            l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty,tz+1,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y,gid_z+1,0)) ];
+            
+        }else if (tz==l_dim.z-1){            
+            l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty,tz+1,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y,gid_z+1,0)) ];
+            
+            l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty,tz+1,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y,gid_z+1,0)) ];
+            
+        }
+        else{
+            l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty,tz+1,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y,gid_z+1,0)) ];
+            
+        }
+        
+     
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+    
+    if (tx==0 && ty==l_dim.y-1){
+        l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+2,tz+1,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+2,gid_z+1,0)) ];
+    }
+
+    barrier(CLK_LOCAL_MEM_FENCE);
+    
+    if (tx==l_dim.x-1 && ty==l_dim.y-1){
+        l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+2,tz+1,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+2,gid_z+1,0)) ];
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+    
+    if (tx==l_dim.x-1 && ty==0){
+        l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty,tz+1,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y,gid_z+1,0)) ];
+    }
+    
+    //edges  along x axis            
+    if (ty==0 && tz==0){
+        l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty,tz,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y,gid_z,0)) ];
+    }
+    
+    if (ty==0 && tz==l_dim.z-1){
+        l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty,tz+2,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y,gid_z+2,0)) ];
+    }
+    
+    if (ty==l_dim.y-1 && tz==l_dim.z-1){
+        l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+2,tz+2,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+2,gid_z+2,0)) ];
+    }
+
+    if (ty==l_dim.y-1 && tz==0){
+        l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+2,tz,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+2,gid_z,0)) ];
+    }
+
+    
+    
+    
+    
+    //edges  along y axis            
+    if (tx==0 && tz==0){
+        l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+1,tz,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+1,gid_z,0)) ];
+    }
+
+    if (tx==0 && tz==l_dim.z-1){
+        l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+1,tz+2,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+1,gid_z+2,0)) ];
+    }
+
+    if (tx==l_dim.x-1 && tz==l_dim.z-1){
+        l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+1,tz+2,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+1,gid_z+2,0)) ];
+    }
+    
+    if (tx==l_dim.x-1 && tz==0){
+        l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+1,tz,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+1,gid_z,0)) ];
+    }
+    
+    barrier(CLK_LOCAL_MEM_FENCE);    
+    
+    
+    
+    //copying faces
+    if (tx==0){
+        l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+1,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+1,gid_z+1,0))];  //central pixel              
+        
+    }
+    
+    if (tx==l_dim_x-1){
+        l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+1,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+1,gid_z+1,0))];
+        
+    }
+    
+  
+    if (ty==0){
+        l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y,gid_z+1,0))];        
+    }
+    
+  
+    if (ty==l_dim_y-1){
+        l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+2,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+2,gid_z+1,0))];
+    }
+  
+    if (tz==0){
+        l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z,0))];
+    }
+  
+    if (tz==l_dim_z-1){
+        l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+2,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+2,0))];
+    }
+  	
+	barrier(CLK_LOCAL_MEM_FENCE);      
+    
+    // ***************
+    // ***************
+    // ***************
+    
+	float currentConcentration=l_field[l_linearInd];
+	float concentrationSum=0.f;
+      
+    // // // return;        
+    
+	if(solverParams->hexLattice){
+		for(int i=0; i<solverParams->nbhdConcLen; ++i){
+			int4 shift=getShift(g_ind+(int4)(-1,-1,-1,0), i, solverParams->hexLattice, nbhdConcShifts, solverParams->nbhdConcLen);
+			int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			concentrationSum+=l_field[lInd];
+		}
+		concentrationSum-=solverParams->nbhdConcLen*currentConcentration;
+	}else{
+		for(int i=0; i<solverParams->nbhdConcLen; ++i){
+			int4 shift=nbhdConcShifts[i];
+			int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			concentrationSum+=l_field[lInd];
+		}
+		concentrationSum-=solverParams->nbhdConcLen*currentConcentration;
+	}
+		
+	// // g_scratch[g_linearInd]=concentrationSum;
+	
+	unsigned char curentCelltype=l_cellType[l_linearInd];
+	float currentDiffCoef=solverParams->diffCoef[curentCelltype];
+	
+	concentrationSum*=currentDiffCoef;
+	
+	float varDiffSumTerm=0.f;
+	if(solverParams->hexLattice){
+		for(int i=0; i<solverParams->nbhdDiffLen; ++i){
+			int4 shift=getShift(g_ind+(int4)(-1,-1,-1, 0), i, solverParams->hexLattice, nbhdDiffShifts, solverParams->nbhdDiffLen);
+			int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
+		}
+	}else{
+		for(int i=0; i<solverParams->nbhdDiffLen; ++i){
+			int lInd=ext3DIndToLinear(l_dim, l_ind+nbhdDiffShifts[i]);
+			varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
+		}
+	}
+	    
+	float dx2=solverParams->dx*solverParams->dx;
+	float dt_dx2=dt/dx2;
+
+    float scratch=dt_dx2*(concentrationSum+varDiffSumTerm)+(1.f-dt*solverParams->decayCoef[curentCelltype])*currentConcentration;
+    
+    
+    
+	// g_scratch[g_linearInd]=scratch;
+    
+    g_scratch[g_linearInd]=scratch;
+    
+    // float newVar=concentrationSum;
+    // g_scratch[g_linearInd]=newVar;
+    // return;
+    
+    // // if (newVar!=newVar){//Nan
+    // if (newVar!=newVar){//Nan
+        // g_scratch[g_linearInd]=1000;
+    // }else{
+        // g_scratch[g_linearInd]=3000;
+    // }
+    // // g_scratch[g_linearInd]=newVar;
+        
+}
+
+
+
+__kernel void uniDiff(__global float* g_field,
+    __global const unsigned char * g_cellType,
+	__global UniSolverParams_t  const *solverParams,
+	__constant int4 const *nbhdConcShifts, 
+	__constant int4 const *nbhdDiffShifts, 
+    __global float* g_scratch,
+    __local float *l_field,
+	__local unsigned char *l_cellType,
+	float dt
+    )    
+{
+    int bx=get_group_id(0);
+    int by=get_group_id(1);
+    int bz=get_group_id(2);
+    
+    int gid_x=get_global_id(0);
+    int gid_y=get_global_id(1);
+    int gid_z=get_global_id(2);
+    
+    int tx=get_local_id(0);
+    int ty=get_local_id(1);
+    int tz=get_local_id(2);
+    
+    int l_dim_x=get_local_size(0);
+    int l_dim_y=get_local_size(1);
+    int l_dim_z=get_local_size(2);
+    
+    
+    int4 corner_offset1[26]={(int4)(1,0,0,0) , (int4)(1,1,0,0) , (int4)(0,1,0,0) , (int4)(-1,1,0,0) , (int4)(-1,0,0,0) , (int4)(-1,-1,0,0) , (int4)(0,-1,0,0) , (int4)(1,-1,0,0),
+    (int4)(1,0,1,0) , (int4)(1,1,1,0) , (int4)(0,1,1,0) , (int4)(-1,1,1,0) , (int4)(-1,0,1,0) , (int4)(-1,-1,1,0) , (int4)(0,-1,1,0) , (int4)(1,-1,1,0) , (int4)(0,0,1,0),
+    (int4)(1,0,-1,0) , (int4)(1,1,-1,0) , (int4)(0,1,-1,0) , (int4)(-1,1,-1,0) , (int4)(-1,0,-1,0) , (int4)(-1,-1,-1,0) , (int4)(0,-1,-1,0) , (int4)(1,-1,-1,0) , (int4)(0,0,-1,0)
+    };
+    
+    // (int4)(1,0,-1,0) , (int4)(1,1,-1,0) , (int4)(0,1-,1,0) , (int4)(-1,1,-1,0) , (int4)(-1,0,-1,0) , (int4)(-1,-1,-1,0) , (int4)(0,-1,-1,0) , (int4)(1,-1,-1,0), (int4)(0,0,-1,0)
+    
+    
+    // int4 corner_offset1[8]={(int4)(1,0,0,0),(int4)(1,1,0,0),(int4)(0,1,0,0),(int4)(-1,1,0,0),(int4)(-1,0,0,0),(int4)(-1,-1,0,0),(int4)(0,-1,0,0),(int4)(1,-1,0,0)};
+    
+    // int4 corner_offset2[8]={(int4)(1,0,1,0),(int4)(1,1,1,0),(int4)(0,1,1,0),(int4)(-1,1,1,0),(int4)(-1,0,1,0),(int4)(-1,-1,1,0),(int4)(0,-1,1,0),(int4)(1,-1,1,0)};
+    // int4 corner_offset3[8]={ (int4)(1,0,-1,0) , (int4)(1,1,-1,0) , (int4)(0,1-,1,0) , (int4)(-1,1,-1,0) , (int4)(-1,0,-1,0) , (int4)(-1,-1,-1,0) , (int4)(0,-1,-1,0) , (int4)(1,-1,-1,0) };
+	//there is a border of 1 pixel around the domain, so shifting by 1 at all dimensions
+	// int4 g_ind={get_global_id(0)+1, get_global_id(1)+1, get_global_id(2)+1, 0};
+    int4 g_ind={gid_x+1, gid_y+1, gid_z+1, 0};
+
+	if(g_ind.x>solverParams->xDim||g_ind.y>solverParams->yDim||g_ind.z>solverParams->zDim)
+		return;
+	
+    int4 l_ind_orig={tx,  ty, tz, 0};
+    
+	// int4 l_ind={get_local_id(0)+1,  get_local_id(1)+1,  get_local_id(2)+1, 0};
+    int4 l_ind={tx+1,  ty+1,  tz+1, 0};
+
+	int4 g_dim={get_global_size(0), get_global_size(1), get_global_size(2), 0};
+    
+    
+	// int4 l_dim={get_local_size(0),  get_local_size(1),  get_local_size(2), 0};
+    int4 l_dim={l_dim_x,  l_dim_x,  l_dim_x, 0};
+
+    
+	int g_linearInd=ext3DIndToLinear(g_dim, g_ind);//index of a current work item in a global space
+	int l_linearInd=ext3DIndToLinear(l_dim, l_ind);//index of a current work item in a local space (in a block of shared memory)
+    
+    // moving data from global to local
+    l_field[l_linearInd]=g_field[g_linearInd];
+    l_cellType[l_linearInd]=g_cellType[g_linearInd];
+        
+    barrier(CLK_LOCAL_MEM_FENCE);     
+    
+    // if(solverParams->hexLattice){
+        // if (tx==0 || ty==0 || tz==0 || tx==l_dim.x-1 || ty==l_dim.y-1 || tz==l_dim.z-1){// pick only corner/edge threads
+            // for (int i = 0 ; i < 26 ; ++i){
+                
+                // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+1,0) + corner_offset1[i] ) ]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+1,0) + corner_offset1[i])];
+                // barrier(CLK_LOCAL_MEM_FENCE);     
+            // }
+        // }
+    // }    
+    if(solverParams->hexLattice){
+        //this part is slow - essentially we do unnecessary multiple copies of data but the code is simple to uinderstand. I tried doing series of if-else statements in addition to copying faces but this always resulted in runtime-error. 
+        // I leave it in it for now, maybe later I can debug it better
+        for (int i = 0 ; i < 26 ; ++i){
+            
+            l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+1,0) + corner_offset1[i] ) ]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+1,0) + corner_offset1[i])];
+            // barrier(CLK_LOCAL_MEM_FENCE);     
+        }    
+    }else{
+        //copying faces
+        if (tx==0){
+            l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+1,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+1,gid_z+1,0))];  //central pixel                      
+        }
+        
+        if (tx==l_dim_x-1){
+            l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+1,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+1,gid_z+1,0))];        
+        }
+        
+      
+        if (ty==0){
+            l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y,gid_z+1,0))];        
+        }
+        
+      
+        if (ty==l_dim_y-1){
+            l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+2,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+2,gid_z+1,0))];
+        }
+      
+        if (tz==0){
+            l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z,0))];
+        }
+      
+        if (tz==l_dim_z-1){
+            l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+2,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+2,0))];
+        }
+    }    
+    barrier(CLK_LOCAL_MEM_FENCE);     
+    // int4 corner_offset[8]={
+    // (int4)(0,0,0,0) , (int4)(0,0,l_dim.z+1,0) , 
+    // (int4)(0,l_dim.y+1,0,0) , (int4)(0,l_dim.y+1,l_dim.z+1,0) ,
+    // (int4)(l_dim.x+1,0,0,0) , (int4)(l_dim.x+1,0,l_dim.z+1,0) ,
+    // (int4)(l_dim.x+1,l_dim.y+1,0,0) , (int4)(l_dim.x+1,l_dim.y+1,l_dim.z+1,0) ,
+    // };
+    
+    // int4 corner_offset[8]={
+    // (int4)(0,0,0,0) ,(int4)(0,0,l_dim.z+1,0) ,(int4)(0,l_dim.y+1,0,0) ,(int4)(0,l_dim.y+1,l_dim.z+1,0) ,(int4)(l_dim.x+1,0,0,0) ,(int4)(l_dim.x+1,0,l_dim.z+1,0) , (int4)(l_dim.x+1,l_dim.y+1,0,0) , (int4)(l_dim.x+1,l_dim.y+1,l_dim.z+1,0)
+    // };    
+    
+    // if (tx==0 || ty==0 || tz==0 || tx==l_dim.x-1 || ty==l_dim.y-1 || tz==l_dim.z-1){
+        // for (int i = 0 ; i <8 ;++i){
+            // l_field[ext3DIndToLinear(l_dim, (int4)(0,0,0,0) + corner_offset[i])] = g_field[ext3DIndToLinear(g_dim, (int4)(l_dim.x*bx , l_dim.y*by , l_dim.z*bz , 0) +  corner_offset[i]) ];
+            // barrier(CLK_LOCAL_MEM_FENCE);
+        // }    
+        
+    // }
+    
+
+    
+    
+    
+    // if (tx==0 && ty==0 && tz==0){
+        // for (int i = 0 ; i <8 ;++i){
+            // l_field[ext3DIndToLinear(l_dim, (int4)(0,0,0,0) + corner_offset[i])] = g_field[ext3DIndToLinear(g_dim, (int4)(l_dim.x*bx , l_dim.y*by , l_dim.z*bz , 0) +  corner_offset[i]) ];
+            // barrier(CLK_LOCAL_MEM_FENCE);
+        // }
+        
+    // }
+    
+    // // // barrier(CLK_LOCAL_MEM_FENCE);
+    
+    
+    
+    // // // //edges  along z axis   
+    // // // if (tx==0 && ty==0){
+        // // // if (tz==0){
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty,tz,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y,gid_z,0)) ];
+            
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty,tz+1,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y,gid_z+1,0)) ];
+            
+        // // // }else if (tz==l_dim.z-1){            
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty,tz+1,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y,gid_z+1,0)) ];
+            
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty,tz+1,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y,gid_z+1,0)) ];
+            
+        // // // }
+        // // // else{
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty,tz+1,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y,gid_z+1,0)) ];
+            
+        // // // }
+        
+     
+    // // // }
+    // // // barrier(CLK_LOCAL_MEM_FENCE);
+    
+    // // // if (tx==0 && ty==l_dim.y-1){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+2,tz+1,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+2,gid_z+1,0)) ];
+    // // // }
+
+    
+    
+    // // // if (tx==l_dim.x-1 && ty==l_dim.y-1){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+2,tz+1,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+2,gid_z+1,0)) ];
+    // // // }
+    
+    
+    // // // if (tx==l_dim.x-1 && ty==0){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty,tz+1,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y,gid_z+1,0)) ];
+    // // // }
+    
+    // // // //edges  along x axis            
+    // // // if (ty==0 && tz==0){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty,tz,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y,gid_z,0)) ];
+    // // // }
+    
+    // // // if (ty==0 && tz==l_dim.z-1){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty,tz+2,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y,gid_z+2,0)) ];
+    // // // }
+    
+    // // // if (ty==l_dim.y-1 && tz==l_dim.z-1){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+2,tz+2,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+2,gid_z+2,0)) ];
+    // // // }
+
+    // // // if (ty==l_dim.y-1 && tz==0){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+2,tz,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+2,gid_z,0)) ];
+    // // // }
+
+    
+    // // // barrier(CLK_LOCAL_MEM_FENCE);
+    
+    
+    // // // //edges  along y axis            
+    // // // if (tx==0 && tz==0){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+1,tz,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+1,gid_z,0)) ];
+    // // // }
+
+    // // // if (tx==0 && tz==l_dim.z-1){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+1,tz+2,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+1,gid_z+2,0)) ];
+    // // // }
+
+    // // // if (tx==l_dim.x-1 && tz==l_dim.z-1){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+1,tz+2,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+1,gid_z+2,0)) ];
+    // // // }
+    
+    // // // if (tx==l_dim.x-1 && tz==0){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+1,tz,0))] = g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+1,gid_z,0)) ];
+    // // // }
+    
+    // // // barrier(CLK_LOCAL_MEM_FENCE);    
+    
+    
+    
+    // // // //copying faces
+    // // // if (tx==0){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+1,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+1,gid_z+1,0))];  //central pixel                      
+    // // // }
+    
+    // // // if (tx==l_dim_x-1){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+1,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+1,gid_z+1,0))];        
+    // // // }
+    
+  
+    // // // if (ty==0){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y,gid_z+1,0))];        
+    // // // }
+    
+  
+    // // // if (ty==l_dim_y-1){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+2,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+2,gid_z+1,0))];
+    // // // }
+  
+    // // // if (tz==0){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z,0))];
+    // // // }
+  
+    // // // if (tz==l_dim_z-1){
+        // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+2,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+2,0))];
+    // // // }
+  	
+	// // // barrier(CLK_LOCAL_MEM_FENCE);      
+    
+    // ***************
+    // ***************
+    // ***************
+    
+	float currentConcentration=l_field[l_linearInd];
+	float concentrationSum=0.f;
+      
+    // // // return;        
+    
+	if(solverParams->hexLattice){
+		for(int i=0; i<solverParams->nbhdConcLen; ++i){
+			int4 shift=getShift(g_ind+(int4)(-1,-1,-1,0), i, solverParams->hexLattice, nbhdConcShifts, solverParams->nbhdConcLen);
+			int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			concentrationSum+=l_field[lInd];
+		}
+		concentrationSum-=solverParams->nbhdConcLen*currentConcentration;
+	}else{
+		for(int i=0; i<solverParams->nbhdConcLen; ++i){
+			int4 shift=nbhdConcShifts[i];
+			int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			concentrationSum+=l_field[lInd];
+		}
+		concentrationSum-=solverParams->nbhdConcLen*currentConcentration;
+	}
+    
+	// g_scratch[g_linearInd]=concentrationSum;	
+    
+	// // g_scratch[g_linearInd]=concentrationSum;
+	
+	unsigned char curentCelltype=l_cellType[l_linearInd];
+	float currentDiffCoef=solverParams->diffCoef[curentCelltype];
+	
+	concentrationSum*=currentDiffCoef;
+	
+	float varDiffSumTerm=0.f;
+	if(solverParams->hexLattice){
+		for(int i=0; i<solverParams->nbhdDiffLen; ++i){
+			int4 shift=getShift(g_ind+(int4)(-1,-1,-1, 0), i, solverParams->hexLattice, nbhdDiffShifts, solverParams->nbhdDiffLen);
+			int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
+		}
+	}else{
+		for(int i=0; i<solverParams->nbhdDiffLen; ++i){
+			int lInd=ext3DIndToLinear(l_dim, l_ind+nbhdDiffShifts[i]);
+			varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
+		}
+	}
+	    
+	float dx2=solverParams->dx*solverParams->dx;
+	float dt_dx2=dt/dx2;
+
+    float scratch=dt_dx2*(concentrationSum+varDiffSumTerm)+(1.f-dt*solverParams->decayCoef[curentCelltype])*currentConcentration;
+    
+    
+    
+	// g_scratch[g_linearInd]=scratch;
+    
+    g_scratch[g_linearInd]=scratch;
+    
+    // // float newVar=concentrationSum;
+    // // g_scratch[g_linearInd]=newVar;
+    // // return;
+    
+    // // // if (newVar!=newVar){//Nan
+    // // if (newVar!=newVar){//Nan
+        // // g_scratch[g_linearInd]=1000;
+    // // }else{
+        // // g_scratch[g_linearInd]=3000;
+    // // }
+    // // // g_scratch[g_linearInd]=newVar;
+        
+}
+
+
+
+__kernel void uniDiff(__global float* g_field,
+    __global const unsigned char * g_cellType,
+	__global UniSolverParams_t  const *solverParams,
+	__constant int4 const *nbhdConcShifts, 
+	__constant int4 const *nbhdDiffShifts, 
+    __global float* g_scratch,
+    __local float *l_field,
+	__local unsigned char *l_cellType,
+	float dt
+    )    
+{
+    int bx=get_group_id(0);
+    int by=get_group_id(1);
+    int bz=get_group_id(2);
+    
+    int gid_x=get_global_id(0);
+    int gid_y=get_global_id(1);
+    int gid_z=get_global_id(2);
+    
+    int tx=get_local_id(0);
+    int ty=get_local_id(1);
+    int tz=get_local_id(2);
+    
+    int l_dim_x=get_local_size(0);
+    int l_dim_y=get_local_size(1);
+    int l_dim_z=get_local_size(2);
+    
+    
+    // int4 corner_offset1[26]={(int4)(1,0,0,0) , (int4)(1,1,0,0) , (int4)(0,1,0,0) , (int4)(-1,1,0,0) , (int4)(-1,0,0,0) , (int4)(-1,-1,0,0) , (int4)(0,-1,0,0) , (int4)(1,-1,0,0),
+    // (int4)(1,0,1,0) , (int4)(1,1,1,0) , (int4)(0,1,1,0) , (int4)(-1,1,1,0) , (int4)(-1,0,1,0) , (int4)(-1,-1,1,0) , (int4)(0,-1,1,0) , (int4)(1,-1,1,0) , (int4)(0,0,1,0),
+    // (int4)(1,0,-1,0) , (int4)(1,1,-1,0) , (int4)(0,1,-1,0) , (int4)(-1,1,-1,0) , (int4)(-1,0,-1,0) , (int4)(-1,-1,-1,0) , (int4)(0,-1,-1,0) , (int4)(1,-1,-1,0) , (int4)(0,0,-1,0)
+    // };
+    
+
+	//there is a border of 1 pixel around the domain, so shifting by 1 at all dimensions
+
+    int4 g_ind={gid_x+1, gid_y+1, gid_z+1, 0};
+
+	if(g_ind.x>solverParams->xDim||g_ind.y>solverParams->yDim||g_ind.z>solverParams->zDim)
+		return;
+	
+    int4 l_ind_orig={tx,  ty, tz, 0};
+    
+
+    int4 l_ind={tx+1,  ty+1,  tz+1, 0};
+
+	int4 g_dim={get_global_size(0), get_global_size(1), get_global_size(2), 0};
+    
+    
+
+    int4 l_dim={l_dim_x,  l_dim_x,  l_dim_x, 0};
+
+        
+	int g_linearInd=ext3DIndToLinear(g_dim, g_ind);//index of a current work item in a global space
+	int l_linearInd=ext3DIndToLinear(l_dim, l_ind);//index of a current work item in a local space (in a block of shared memory)
+    
+    // moving data from global to local
+    l_field[l_linearInd]=g_field[g_linearInd];
+    l_cellType[l_linearInd]=g_cellType[g_linearInd];
+        
+    barrier(CLK_LOCAL_MEM_FENCE);     
+    
+
+    if(solverParams->hexLattice){
+        //this part is slow - essentially we do unnecessary multiple copies of data but the code is simple to uinderstand. I tried doing series of if-else statements in addition to copying faces but this always resulted in runtime-error. 
+        // I leave it in it for now, maybe later I can debug it better
+        
+        for (int i = 0 ; i < 26 ; ++i){
+       
+            int4 corner_offset1[26]={(int4)(1,0,0,0) , (int4)(1,1,0,0) , (int4)(0,1,0,0) , (int4)(-1,1,0,0) , (int4)(-1,0,0,0) , (int4)(-1,-1,0,0) , (int4)(0,-1,0,0) , (int4)(1,-1,0,0),
+            (int4)(1,0,1,0) , (int4)(1,1,1,0) , (int4)(0,1,1,0) , (int4)(-1,1,1,0) , (int4)(-1,0,1,0) , (int4)(-1,-1,1,0) , (int4)(0,-1,1,0) , (int4)(1,-1,1,0) , (int4)(0,0,1,0),
+            (int4)(1,0,-1,0) , (int4)(1,1,-1,0) , (int4)(0,1,-1,0) , (int4)(-1,1,-1,0) , (int4)(-1,0,-1,0) , (int4)(-1,-1,-1,0) , (int4)(0,-1,-1,0) , (int4)(1,-1,-1,0) , (int4)(0,0,-1,0)
+            };     
+            
+            l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+1,0) + corner_offset1[i] ) ]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+1,0) + corner_offset1[i])];
+            // barrier(CLK_LOCAL_MEM_FENCE);     
+        }    
+        
+        
+    }else{
+        //copying faces
+        if (tx==0){
+            l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+1,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+1,gid_z+1,0))];  //central pixel                      
+        }
+        
+        if (tx==l_dim_x-1){
+            l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+1,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+1,gid_z+1,0))];        
+        }
+        
+      
+        if (ty==0){
+            l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y,gid_z+1,0))];        
+        }
+        
+      
+        if (ty==l_dim_y-1){
+            l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+2,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+2,gid_z+1,0))];
+        }
+      
+        if (tz==0){
+            l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z,0))];
+        }
+      
+        if (tz==l_dim_z-1){
+            l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+2,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+2,0))];
+        }
+    }    
+    
+    barrier(CLK_LOCAL_MEM_FENCE);     
+
+    
+
+    
+    // int4 corner_offsets[2][2][2][4];
+    
+    // // FORMAT: int4 corner_offsets[0][0][0][4]={(int4)(-1,-1,-1,0) - offset to corner  , offset to edge 1 (int4)(-1,-1,0,0) , offset to edge 2 (int4)(-1,0,-1,0), offset to edge 3 (int4)(0,-1,-1,0) }; //    
+    
+    // corner_offsets[0][0][0][0] = (int4)(-1,-1,-1,0) ;
+    // corner_offsets[0][0][0][1] = (int4)(0,-1,-1,0) ;
+    // corner_offsets[0][0][0][2] = (int4)(-1,0,-1,0) ;
+    // corner_offsets[0][0][0][3] = (int4)(-1,-1,0,0) ;
+    
+    // corner_offsets[1][0][0][0] = (int4)(+1,-1,-1,0) ;
+    // corner_offsets[1][0][0][1] = (int4)(0,-1,-1,0) ;
+    // corner_offsets[1][0][0][2] = (int4)(+1,0,-1,0) ;
+    // corner_offsets[1][0][0][3] = (int4)(+1,-1,0,0) ;
+
+    // corner_offsets[0][1][0][0] = (int4)(-1,+1,-1,0) ;
+    // corner_offsets[0][1][0][1] = (int4)(0,+1,-1,0) ;
+    // corner_offsets[0][1][0][2] = (int4)(-1,0,-1,0) ;
+    // corner_offsets[0][1][0][3] = (int4)(-1,+1,0,0) ;
+    
+    // corner_offsets[1][1][0][0] = (int4)(+1,+1,-1,0) ;
+    // corner_offsets[1][1][0][1] = (int4)(0,+1,-1,0) ;
+    // corner_offsets[1][1][0][2] = (int4)(+1,0,-1,0) ;
+    // corner_offsets[1][1][0][3] = (int4)(+1,+1,0,0) ;
+
+
+    // corner_offsets[0][0][1][0] = (int4)(-1,-1,+1,0) ;
+    // corner_offsets[0][0][1][1] = (int4)(0,-1,+1,0) ;
+    // corner_offsets[0][0][1][2] = (int4)(-1,0,+1,0) ;
+    // corner_offsets[0][0][1][3] = (int4)(-1,-1,0,0) ;
+
+    // corner_offsets[1][0][1][0] = (int4)(+1,-1,+1,0) ;
+    // corner_offsets[1][0][1][1] = (int4)(0,-1,+1,0) ;
+    // corner_offsets[1][0][1][2] = (int4)(+1,0,+1,0) ;
+    // corner_offsets[1][0][1][3] = (int4)(+1,-1,0,0) ;
+
+
+    // corner_offsets[0][1][1][0] = (int4)(-1,+1,+1,0) ;
+    // corner_offsets[0][1][1][1] = (int4)(0,+1,+1,0) ;
+    // corner_offsets[0][1][1][2] = (int4)(-1,0,+1,0) ;
+    // corner_offsets[0][1][1][3] = (int4)(-1,+1,0,0) ;
+
+    // corner_offsets[1][1][1][0] = (int4)(+1,+1,+1,0) ;
+    // corner_offsets[1][1][1][1] = (int4)(0,+1,+1,0) ;
+    // corner_offsets[1][1][1][2] = (int4)(+1,0,+1,0) ;
+    // corner_offsets[1][1][1][3] = (int4)(+1,+1,0,0) ;
+
+    // // // int4 corner_offsets[4] = {(int4)(+1,+1,+1,0) , (int4)(0,+1,+1,0) , (int4)(+1,0,+1,0), (int4)(+1,+1,0,0)};
+    // // // if(solverParams->hexLattice){
+        // // // int i_x=floor(tx/l_dim.x+0.5);
+        // // // int i_y=floor(ty/l_dim.y+0.5);
+        // // // int i_z=floor(tz/l_dim.z+0.5);
+        
+        // // // for (int i = 0 ; i < 4 ; ++i){
+            // // // // int4 offset=corner_offsets[(int)floor(tx/l_dim.x+0.5)][(int)floor(ty/l_dim.y+0.5)][(int)floor(ty/l_dim.z+0.5)][i];
+            // // // // int4 offset=corner_offsets[i_x][i_y][i_z][i];
+            // // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+1,0) + offset ) ]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+1,0) + offset)];
+            
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+1,0) + corner_offsets[i] ) ]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+1,0) +corner_offsets[i] ) ];
+            
+            
+            
+        // // // }    
+    // // // }        
+
+    // // // int4 corner_offsets[2][2][2][7];
+    
+    // // // //FORMAT: int4 corner_offsets[0][0][0][4]={(int4)(-1,-1,-1,0) - offset to corner  , offset to edge 1 (int4)(-1,-1,0,0) , offset to edge 2 (int4)(-1,0,-1,0), offset to edge 3 (int4)(0,-1,-1,0) }; //    
+    
+    // // // corner_offsets[0][0][0][0] = (int4)(-1,-1,-1,0) ;
+    // // // corner_offsets[0][0][0][1] = (int4)(0,-1,-1,0) ;
+    // // // corner_offsets[0][0][0][2] = (int4)(-1,0,-1,0) ;
+    // // // corner_offsets[0][0][0][3] = (int4)(-1,-1,0,0) ;
+    // // // corner_offsets[0][0][0][4] = (int4)(-1,0,0,0) ; //x shift
+    // // // corner_offsets[0][0][0][5] = (int4)(0,-1,0,0) ; //y shift
+    // // // corner_offsets[0][0][0][6] = (int4)(0,0,-1,0) ; //z shift
+
+
+    
+    // // // corner_offsets[1][0][0][0] = (int4)(+1,-1,-1,0) ;
+    // // // corner_offsets[1][0][0][1] = (int4)(0,-1,-1,0) ;
+    // // // corner_offsets[1][0][0][2] = (int4)(+1,0,-1,0) ;
+    // // // corner_offsets[1][0][0][3] = (int4)(+1,-1,0,0) ;    
+    // // // corner_offsets[1][0][0][4] = (int4)(+1,0,0,0) ;
+    // // // corner_offsets[1][0][0][5] = (int4)(0,-1,0,0) ;
+    // // // corner_offsets[1][0][0][6] = (int4)(0,0,-1,0) ;
+    
+    
+    // // // corner_offsets[0][1][0][0] = (int4)(-1,+1,-1,0) ;
+    // // // corner_offsets[0][1][0][1] = (int4)(0,+1,-1,0) ;
+    // // // corner_offsets[0][1][0][2] = (int4)(-1,0,-1,0) ;
+    // // // corner_offsets[0][1][0][3] = (int4)(-1,+1,0,0) ;
+    // // // corner_offsets[0][1][0][4] = (int4)(-1,0,0,0) ;
+    // // // corner_offsets[0][1][0][5] = (int4)(0,+1,0,0) ;
+    // // // corner_offsets[0][1][0][6] = (int4)(0,0,-1,0) ;    
+        
+    // // // corner_offsets[1][1][0][0] = (int4)(+1,+1,-1,0) ;
+    // // // corner_offsets[1][1][0][1] = (int4)(0,+1,-1,0) ;
+    // // // corner_offsets[1][1][0][2] = (int4)(+1,0,-1,0) ;
+    // // // corner_offsets[1][1][0][3] = (int4)(+1,+1,0,0) ;
+    // // // corner_offsets[1][1][0][4] = (int4)(+1,0,0,0) ;
+    // // // corner_offsets[1][1][0][5] = (int4)(0,+1,0,0) ;
+    // // // corner_offsets[1][1][0][6] = (int4)(0,0,-1,0) ;
+
+
+    // // // corner_offsets[0][0][1][0] = (int4)(-1,-1,+1,0) ;
+    // // // corner_offsets[0][0][1][1] = (int4)(0,-1,+1,0) ;
+    // // // corner_offsets[0][0][1][2] = (int4)(-1,0,+1,0) ;
+    // // // corner_offsets[0][0][1][3] = (int4)(-1,-1,0,0) ;
+    // // // corner_offsets[0][0][1][4] = (int4)(-1,0,0,0) ;
+    // // // corner_offsets[0][0][1][5] = (int4)(0,-1,0,0) ;
+    // // // corner_offsets[0][0][1][6] = (int4)(0,0,+1,0) ;    
+    
+
+    // // // corner_offsets[1][0][1][0] = (int4)(+1,-1,+1,0) ;
+    // // // corner_offsets[1][0][1][1] = (int4)(0,-1,+1,0) ;
+    // // // corner_offsets[1][0][1][2] = (int4)(+1,0,+1,0) ;
+    // // // corner_offsets[1][0][1][3] = (int4)(+1,-1,0,0) ;
+    // // // corner_offsets[1][0][1][4] = (int4)(+1,0,0,0) ;
+    // // // corner_offsets[1][0][1][5] = (int4)(0,-1,0,0) ;
+    // // // corner_offsets[1][0][1][6] = (int4)(0,0,+1,0) ;
+
+    // // // corner_offsets[0][1][1][0] = (int4)(-1,+1,+1,0) ;
+    // // // corner_offsets[0][1][1][1] = (int4)(0,+1,+1,0) ;
+    // // // corner_offsets[0][1][1][2] = (int4)(-1,0,+1,0) ;
+    // // // corner_offsets[0][1][1][3] = (int4)(-1,+1,0,0) ;
+    // // // corner_offsets[0][1][1][4] = (int4)(-1,0,0,0) ;
+    // // // corner_offsets[0][1][1][5] = (int4)(0,+1,0,0) ;
+    // // // corner_offsets[0][1][1][6] = (int4)(0,0,+1,0) ;    
+
+    // // // corner_offsets[1][1][1][0] = (int4)(+1,+1,+1,0) ;
+    // // // corner_offsets[1][1][1][1] = (int4)(0,+1,+1,0) ;
+    // // // corner_offsets[1][1][1][2] = (int4)(+1,0,+1,0) ;
+    // // // corner_offsets[1][1][1][3] = (int4)(+1,+1,0,0) ;
+    // // // corner_offsets[1][1][1][4] = (int4)(+1,0,0,0) ;
+    // // // corner_offsets[1][1][1][5] = (int4)(0,+1,0,0) ;
+    // // // corner_offsets[1][1][1][6] = (int4)(0,0,+1,0) ;    
+    
+    // // // if(solverParams->hexLattice){
+        // // // int i_x=floor(tx/l_dim.x+0.5);
+        // // // int i_y=floor(ty/l_dim.y+0.5);
+        // // // int i_z=floor(tz/l_dim.z+0.5);
+        
+        // // // for (int i = 0 ; i < 7 ; ++i){
+            // // // // int4 offset=corner_offsets[(int)floor(tx/l_dim.x+0.5)][(int)floor(ty/l_dim.y+0.5)][(int)floor(ty/l_dim.z+0.5)][i];
+            // // // // int4 offset=corner_offsets[i_x][i_y][i_z][i];
+            // // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+1,0) + offset ) ]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+1,0) + offset)];
+            
+            // // // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+1,0) + corner_offsets[i_x][i_y][i_z][i] ) ]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+1,0) + corner_offsets[i_x][i_y][i_z][i])];
+            
+            
+        // // // }    
+    // // // }    
+    
+    barrier(CLK_LOCAL_MEM_FENCE);   
+    
+        // //copying faces
+        // if (tx==0){
+            // l_field[ext3DIndToLinear(l_dim, (int4)(tx,ty+1,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x,gid_y+1,gid_z+1,0))];  //central pixel                      
+        // }
+        
+        // if (tx==l_dim_x-1){
+            // l_field[ext3DIndToLinear(l_dim, (int4)(tx+2,ty+1,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+2,gid_y+1,gid_z+1,0))];        
+        // }
+        
+      
+        // if (ty==0){
+            // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y,gid_z+1,0))];        
+        // }
+        
+      
+        // if (ty==l_dim_y-1){
+            // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+2,tz+1,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+2,gid_z+1,0))];
+        // }
+      
+        // if (tz==0){
+            // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z,0))];
+        // }
+      
+        // if (tz==l_dim_z-1){
+            // l_field[ext3DIndToLinear(l_dim, (int4)(tx+1,ty+1,tz+2,0))]=g_field[ext3DIndToLinear(g_dim, (int4)(gid_x+1,gid_y+1,gid_z+2,0))];
+        // }    
+    
+    
+    // barrier(CLK_LOCAL_MEM_FENCE);     
+    
+    // int4 corner_offsets[0][0][0]={(int4)(-1,-1,-1,0) , (int4)(-1,-1,0,0) , (int4)(-1,0,-1,0) , (int4)(0,-1,-1,0) }; 
+    
+    // int4 corner_offsets[1][0][0][4]={(int4)(+1,-1,-1,0) , (int4)(+1,-1,0,0), (int4)(+1,0,-1,0), (int4)(0,-1,-1,0)  };
+    
+    // int4 corner_offsets[0][1][0][4]={(int4)(-1,+1,-1,0) , (int4)(-1,+1,0,0) , (int4)(-1,0,-1,0) , (int4)(0,-1,-1,0) }; 
+    
+    
+    // int4 corner_offset1[8][3]={(int4)(1,0,0,0) , (int4)(1,1,0,0) , (int4)(0,1,0,0) , (int4)(-1,1,0,0) , (int4)(-1,0,0,0) , (int4)(-1,-1,0,0) , (int4)(0,-1,0,0) , (int4)(1,-1,0,0),
+    // (int4)(1,0,1,0) , (int4)(1,1,1,0) , (int4)(0,1,1,0) , (int4)(-1,1,1,0) , (int4)(-1,0,1,0) , (int4)(-1,-1,1,0) , (int4)(0,-1,1,0) , (int4)(1,-1,1,0) , (int4)(0,0,1,0),
+    // (int4)(1,0,-1,0) , (int4)(1,1,-1,0) , (int4)(0,1,-1,0) , (int4)(-1,1,-1,0) , (int4)(-1,0,-1,0) , (int4)(-1,-1,-1,0) , (int4)(0,-1,-1,0) , (int4)(1,-1,-1,0) , (int4)(0,0,-1,0)
+    // };        
+    
+    
+    
+    
+	float currentConcentration=l_field[l_linearInd];
+	float concentrationSum=0.f;
+      
+    // // // return;        
+    
+	if(solverParams->hexLattice){
+		for(int i=0; i<solverParams->nbhdConcLen; ++i){
+			int4 shift=getShift(g_ind+(int4)(-1,-1,-1,0), i, solverParams->hexLattice, nbhdConcShifts, solverParams->nbhdConcLen);
+			int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			concentrationSum+=l_field[lInd];
+		}
+		concentrationSum-=solverParams->nbhdConcLen*currentConcentration;
+	}else{
+		for(int i=0; i<solverParams->nbhdConcLen; ++i){
+			int4 shift=nbhdConcShifts[i];
+			int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			concentrationSum+=l_field[lInd];
+		}
+		concentrationSum-=solverParams->nbhdConcLen*currentConcentration;
+	}
+    
+
+	
+	unsigned char curentCelltype=l_cellType[l_linearInd];
+	float currentDiffCoef=solverParams->diffCoef[curentCelltype];
+	
+	concentrationSum*=currentDiffCoef;
+	
+	float varDiffSumTerm=0.f;
+	if(solverParams->hexLattice){
+		for(int i=0; i<solverParams->nbhdDiffLen; ++i){
+			int4 shift=getShift(g_ind+(int4)(-1,-1,-1, 0), i, solverParams->hexLattice, nbhdDiffShifts, solverParams->nbhdDiffLen);
+			int lInd=ext3DIndToLinear(l_dim, l_ind+shift);
+			varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
+		}
+	}else{
+		for(int i=0; i<solverParams->nbhdDiffLen; ++i){
+			int lInd=ext3DIndToLinear(l_dim, l_ind+nbhdDiffShifts[i]);
+			varDiffSumTerm+=(solverParams->diffCoef[l_cellType[lInd]]-currentDiffCoef)*(l_field[lInd]-currentConcentration);
+		}
+	}
+	    
+	float dx2=solverParams->dx*solverParams->dx;
+	float dt_dx2=dt/dx2;
+
+    float scratch=dt_dx2*(concentrationSum+varDiffSumTerm)+(1.f-dt*solverParams->decayCoef[curentCelltype])*currentConcentration;
+    
+    g_scratch[g_linearInd]=scratch;
+            
+}
+
+
+

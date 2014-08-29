@@ -560,6 +560,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 #        Configuration.updateSimFieldsParams(fname)
         self.updateFieldParams(fname)
 
+        Configuration.setSetting("PixelizedScalarField", self.pixelizedScalarFieldCB.isChecked())
+        
         Configuration.setSetting("MinRange", self.fieldMinRange.text())
         Configuration.setSetting("MinRangeFixed", self.fieldMinRangeFixedCheckBox.isChecked())
         Configuration.setSetting("MaxRange", self.fieldMaxRange.text())
@@ -665,6 +667,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
         
         fp = Configuration.getSetting("FieldParams")
+        
+        self.pixelizedScalarFieldCB.setChecked(Configuration.getSetting("PixelizedScalarField"))
         
         self.fieldMinRange.setText( str(Configuration.getSetting("MinRange")))
         self.fieldMinRangeFixedCheckBox.setChecked(Configuration.getSetting("MinRangeFixed"))

@@ -29,8 +29,8 @@ class ChemotaxisSteeringOldStyle(SteppablePy):
             chemotaxisXMLData=self.simulator.getCC3DModuleData("Plugin","Chemotaxis")
             # check if we were able to successfully get the section from simulator
             if chemotaxisXMLData:
-                # get <ChemicalField Source="FlexibleDiffusionSolverFE" Name="ATTR" > element  
-                chemicalField=chemotaxisXMLData.getFirstElement("ChemicalField",d2mss({"Source":"FlexibleDiffusionSolverFE", "Name":"ATTR"}))
+                # get <ChemicalField Source="DiffusionSolverFE" Name="ATTR" > element  
+                chemicalField=chemotaxisXMLData.getFirstElement("ChemicalField",d2mss({"Source":"DiffusionSolverFE", "Name":"ATTR"}))
                 # check if the attempt was succesful
                 if chemicalField:
                     # get <ChemotaxisByType Type="Macrophage" Lambda="xxx"/> - notice we only specify "Type":"Macrophage" because Lambda is subject to change - i.e. this is steerable parameter

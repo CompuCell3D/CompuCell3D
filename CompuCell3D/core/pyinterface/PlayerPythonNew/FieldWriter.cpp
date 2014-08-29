@@ -86,8 +86,11 @@ void FieldWriter::writeFields(std::string _fileName){
 //	    latticeDataWriter->SetFileTypeToBinary();
 //	else
 //	    latticeDataWriter->SetFileTypeToASCII();
-
-	latticeDataWriter->SetInput(latticeData);
+        #ifdef VTK6
+            latticeDataWriter->SetInputData(latticeData);
+        #else
+            latticeDataWriter->SetInput(latticeData);
+        #endif
 	int dim[3];
 	latticeData->GetDimensions(dim);
 	//cerr<<"dim 0="<<dim[0]<<" dim 1="<<dim[1]<<" dim 2="<<dim[2]<<endl;
@@ -246,7 +249,6 @@ bool FieldWriter::addConFieldForOutput(std::string _conFieldName){
 	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)	
 		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
 			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
-
 				conArray->SetValue(offset,conFieldPtr->get(pt));
 				++offset;
 			}

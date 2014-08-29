@@ -94,9 +94,9 @@ class PDESOLVERS_EXPORT DiffusionSolverFE : public Steppable
 	
 	float diffusionLatticeScalingFactor; // for hex in 2Dlattice it is 2/3.0 , for 3D is 1/2.0, for cartesian lattice it is 1
 	bool autoscaleDiffusion;
+    bool scaleSecretion; // this flag is set to true. If user sets it to false via XML then DiffusionSolver will behave like FlexibleDiffusion solver - i.e. secretion will be done in one step followed by multiple diffusive steps
 
-private:
-	void getMinMaxBox(bool useBoxWatcher, int threadNumber, Dim3D &minDim, Dim3D &maxDim)const;
+	
 
 protected:
 
@@ -129,6 +129,8 @@ protected:
    void (DiffusionSolverFE::*diffusePtr)(void);///ptr to member method - Forward Euler diffusion solver
    void (DiffusionSolverFE::*secretePtr)(void);///ptr to member method - Forward Euler diffusion solver
 
+   
+   
    bool hasAdditionalTerms()const;
 
    void diffuse();
@@ -136,11 +138,11 @@ protected:
    void secrete();
    void secreteOnContact();
 
-   void secreteSingleField(unsigned int idx);
+   virtual void secreteSingleField(unsigned int idx);
 
-   void secreteOnContactSingleField(unsigned int idx);
+   virtual void secreteOnContactSingleField(unsigned int idx);
 
-   void secreteConstantConcentrationSingleField(unsigned int idx);
+   virtual void secreteConstantConcentrationSingleField(unsigned int idx);
 
    template <typename ConcentrationField_t>
    void scrarch2Concentration(ConcentrationField_t *concentrationField, ConcentrationField_t *scratchField);
@@ -152,7 +154,8 @@ protected:
    void readConcentrationField(std::string fileName,ConcentrationField_t *concentrationField);
    //void boundaryConditionInit(ConcentrationField_t *concentrationField);
    
-   void boundaryConditionInit(int idx);
+   virtual void boundaryConditionIndicatorInit(); // this function initializes indicator only not the actual boundary conditions used on non-cartesian lattices
+   virtual void boundaryConditionInit(int idx);
    bool isBoudaryRegion(int x, int y, int z, Dim3D dim);
 
    unsigned int numberOfFields;
@@ -172,15 +175,23 @@ protected:
    bool haveCouplingTerms;
    std::vector<DiffusionSecretionDiffusionFEFieldTupple<Cruncher> >  diffSecrFieldTuppleVec;
 	//vector<string> concentrationFieldNameVectorTmp;
-
+    
+    //used to deal with large diffusion constants
    int scalingExtraMCS;
    std::vector<int> scalingExtraMCSVec; //TODO: check if used
+   std::vector<float> maxDiffConstVec;
+    float maxStableDiffConstant;           
+   
    std::vector<float> diffConstVec; 
    std::vector<float> decayConstVec; 
 
    CellTypeMonitorPlugin *cellTypeMonitorPlugin;
    Array3DCUDA<unsigned char> * h_celltype_field;
+   Array3DCUDA<float> * h_cellid_field;
 
+   Array3DCUDA<signed char> * bc_indicator_field;
+   
+   
    std::vector<std::vector<Point3D> > hexOffsetArray;
    std::vector<Point3D> offsetVecCartesian;
    LatticeType latticeType;
@@ -202,7 +213,8 @@ protected:
    virtual void initCellTypesAndBoundariesImpl()=0;
 
    virtual void solverSpecific(CC3DXMLElement *_xmlData)=0;//reading solver-specific information from XML file
-
+   virtual std::string toStringImpl()=0; //to string has to be customized too it has to return correct name for the solver depending if it is GPU or CPU solver
+    
    //for debugging
    template <typename ConcentrationField_t>
    void CheckConcentrationField(ConcentrationField_t &concentrationField)const;
@@ -237,16 +249,20 @@ public:
 
 protected:
 	virtual void Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant);
-
+    
+    virtual void prepCellTypeField(int idx);
+    virtual Dim3D getInternalDim();
+    
 	//if an array used for storing has an extra boundary layer around it
 	virtual bool hasExtraLayer()const;
 
-	void diffuseSingleField(unsigned int idx);
+	virtual void diffuseSingleField(unsigned int idx);
 	virtual void stepImpl(const unsigned int _currentStep);
 
 	unsigned int fieldsCount()const{return diffSecrFieldTuppleVec.size(); }
 		/*template <typename ConcentrationField_t>
 		ConcentrationField_t const* getConcentrationField(int n)const;*/
+
 
 };
 

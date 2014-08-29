@@ -159,6 +159,15 @@ self.deleteSBMLFromCell(_modelName='MODEL_NAME',_cell=cell)
 ---------- #@Submenu@  Delete Free Floating SBML 
 self.deleteFreeFloatingSBML(_modelName='UNIQUE_MODEL_NAME')
 
+---------- #@Submenu@  Set SBML Integrator  Global Options
+# adding options that setup SBML solver integrator - these are optional but useful when encounteting integration instabilities              
+#relative is relative tolerance, absolute is absolute tolerance, steps is the initial number of integration steps for each integration interval (higher number does not result in slower simulateion, quite to the contrary), stiff set to true will use stiff ODE solver
+options={'relative':1e-10,'absolute':1e-12,'steps':10,'stiff':False}
+self.setSBMLGlobalOptions(options)
+
+---------- #@Submenu@  Get SBML Integrator  Global Options
+# returns current options - can be None if no global options were set
+options=self.getSBMLGlobalOptions()
 
 
 =============== #@Menu@ Cell Constraints
@@ -203,8 +212,11 @@ cell=self.attemptFetchingCellById(CELL_ID)
 self.deleteCell(cell)  
 
 ---------- #@Submenu@ Create Cell
+x=X_POSITION
+y=Y_POSITION
+size=SIZE
 cell=self.newCell(self.TYPENAME)
-self.cellField[x:x+4,y:y+4,0]=cell # size of cell will be 5x5x1
+self.cellField[x:x+size-1,y:y+size-1,0]=cell # size of cell will be SIZExSIZEx1
 
 ---------- #@Submenu@ Create Cell (one liner)
 cell=self.createNewCell(self.TYPENAME, [10,10,0] , xSize=5,ySize=5,zSize=1) # args - type, location of seed point, x,y,z dimansions
@@ -220,6 +232,32 @@ cell=self.cellField[10,11,0]
 # Shifting entire cell by a 'shiftVector'         
 shiftVector=CompuCell.Point3D(20,20,0)
 self.moveCell(cell,shiftVector)
+
+=============== #@Menu@ Distances, Vectors
+
+---------- #@Submenu@ Distance Vector Between Cells
+vec=self.distanceVectorBetweenCells(CELL1,CELL2)
+
+---------- #@Submenu@ Distance Vector Between Cells (Invariant)
+vec=self.invariantDistanceVectorBetweenCells(CELL1,CELL2)
+
+---------- #@Submenu@ Distance  Between Cells
+vec=self.distanceBetweenCells(CELL1,CELL2)
+
+---------- #@Submenu@ Distance  Between Cells (Invariant)
+vec=self.invariantDistanceBetweenCells(CELL1,CELL2)
+
+---------- #@Submenu@ Distance Vector Between Points
+vec=self.distance(_from=[10,10,0],_to=[11,11,0])
+
+---------- #@Submenu@ Distance Vector Between Points (Invariant)
+vec=self.invariantDistanceVector(_from=[10,10,0],_to=[11,11,0])
+
+---------- #@Submenu@ Distance Vector Between Points (Invariant, Integer)
+vec=self.invariantDistanceVectorInteger(_from=[10,10,0],_to=[11,11,0])
+
+---------- #@Submenu@  Vector Norm
+norm=self.vectorNorm(VECTOR)
 
 
 
@@ -273,6 +311,13 @@ for compartments in self.clusters:
 
 ---------- #@Submenu@ Get Field Reference
 field=self.getConcentrationField("NAME OF THE FIELD TO OUTPUT")
+
+---------- #@Submenu@ Get Field Min Value
+minValue=field.min()
+
+---------- #@Submenu@ Get Field Max Value
+minValue=field.max()
+
 
 ---------- #@Submenu@ Get Field Value
 value=field[10,10,0]
@@ -416,7 +461,44 @@ for fppd in self.getFocalPointPlasticityDataList(cell):
 for fppd in self.getInternalFocalPointPlasticityDataList(cell):
     print "fppd.neighborId",fppd.neighborAddress.id, " lambda=",fppd.lambdaDistance, " targetDistance=",fppd.targetDistance
     self.focalPointPlasticityPlugin.setInternalFocalPointPlasticityParameters(cell,fppd.neighborAddress,1.0,7.0,20.0)  # arguments are (cell1,cell2,lambda,targetDistance,maxDistance)     
+    
+---------- #@Submenu@ Create FPP Link 
+# Make sure FocalPointPlacticity plugin is loaded
+self.focalPointPlasticityPlugin.createFocalPointPlasticityLink(CELL1 , CELL2 , LAMBDA , TARGET_DISTANCE , MAX_DISTANCE)		
 
+---------- #@Submenu@ Create FPP Link (Within Cluster)
+# Make sure FocalPointPlacticity plugin is loaded
+self.focalPointPlasticityPlugin.createInternalFocalPointPlasticityLink(CELL1 , CELL2 , LAMBDA , TARGET_DISTANCE , MAX_DISTANCE)
+
+---------- #@Submenu@ Get Lambda for FPP Link (Within Cluster)
+# Make sure FocalPointPlacticity plugin is loaded
+self.focalPointPlasticityPlugin.getPlasticityParametersLambdaDistance(CELL1 , CELL2)
+
+---------- #@Submenu@ Get Target Distance for FPP Link (Within Cluster)
+# Make sure FocalPointPlacticity plugin is loaded
+self.focalPointPlasticityPlugin.getPlasticityParametersTargetDistance(CELL1 , CELL2)
+
+
+---------- #@Submenu@ Delete FPP Link 
+# Make sure FocalPointPlacticity plugin is loaded
+self.focalPointPlasticityPlugin.deleteFocalPointPlasticityLink(CELL1 , CELL2)		
+
+---------- #@Submenu@ Delete FPP Link (Within Cluster)
+# Make sure FocalPointPlacticity plugin is loaded
+self.focalPointPlasticityPlugin.deleteInternalFocalPointPlasticityLink(CELL1 , CELL2)
+
+---------- #@Submenu@ Create Anchor 
+# Make sure FocalPointPlacticity plugin is loaded
+anchorId = self.focalPointPlasticityPlugin.createAnchor(CELL, LAMBDA , TARGET_DISTANCE , MAX_DISTANCE , ANCHOR_X , ANCHOR_Y , ANCHOR_Z)
+
+---------- #@Submenu@ Delete Anchor 
+# Make sure FocalPointPlacticity plugin is loaded
+self.focalPointPlasticityPlugin.deleteAnchor(CELL, ANCHOR_ID)
+
+---------- #@Submenu@ Set Anchor Parameters
+self.focalPointPlasticityPlugin.setAnchorParameters(CELL , ANCHOR_ID , LAMBDA , TARGET_DISTANCE , MAX_DISTANCE , ANCHOR_X , ANCHOR_Y , ANCHOR_Z)
+
+    
 =============== #@Menu@ Adhesion Flex
 
 ---------- #@Submenu@ Get Molecule Dens. By Name

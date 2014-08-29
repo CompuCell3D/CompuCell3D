@@ -257,7 +257,7 @@ class MVCDrawViewBase:
         
         currentDrawingFunction=self.currentDrawingFunction() # obtaining object from weakref
         if not currentDrawingFunction:return
-        print 'currentDrawingFunction=',currentDrawingFunction
+        # print 'currentDrawingFunction=',currentDrawingFunction
         # import time
         # time.sleep(2)
         # return

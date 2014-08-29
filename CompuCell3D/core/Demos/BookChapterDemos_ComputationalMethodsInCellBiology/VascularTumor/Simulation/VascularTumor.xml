@@ -64,13 +64,13 @@
    </Plugin>
 
    <Plugin Name="Chemotaxis">
-      <ChemicalField  Source="FlexibleDiffusionSolverFE"  Name="VEGF1">
+      <ChemicalField  Name="VEGF1">
          <ChemotaxisByType  Type="NeoVascular"  Lambda="8000"  ChemotactTowards="Medium,Proliferating,Necrotic" />
       </ChemicalField>
-      <ChemicalField  Source="FlexibleDiffusionSolverFE"  Name="VEGF2">
+      <ChemicalField    Name="VEGF2">
          <ChemotaxisByType  Type="NeoVascular"  Lambda="1000"  ChemotactTowards="Medium,Proliferating,Necrotic" SaturationCoef="0.05"/>
       </ChemicalField>
-      <ChemicalField  Source="FlexibleDiffusionSolverFE"  Name="VEGF1">
+      <ChemicalField   Name="VEGF1">
          <ChemotaxisByType  Type="Vascular"  Lambda="8000"  ChemotactTowards="Medium,Proliferating,Necrotic" />
       </ChemicalField>
    </Plugin>

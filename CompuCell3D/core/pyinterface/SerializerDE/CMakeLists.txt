@@ -7,7 +7,16 @@ SET(SRCS
 
 
   
-FIND_PACKAGE(VTK REQUIRED)
+# FIND_PACKAGE(VTK REQUIRED)
+# message("VTK_MAJOR_VERSION=" ${VTK_MAJOR_VERSION})
+
+if (${VTK_MAJOR_VERSION} EQUAL "6")    
+    SET(VTK_LIBS vtkRenderingOpenGL vtkInteractionStyle vtkRenderingVolumeOpenGL vtkIOLegacy)
+endif()
+
+if (${VTK_MAJOR_VERSION} EQUAL "5")    
+    SET(VTK_LIBS vtkVolumeRendering vtkHybrid vtkFiltering vtkCommon)
+endif()
 
 
 INCLUDE_DIRECTORIES(
@@ -28,24 +37,19 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
        BasicUtilsStatic
        FieldExtractor
        ${PYTHON_LIBRARIES}
+       ${VTK_LIBS}
        # simthreadShared
-       vtkVolumeRendering 
-       vtkHybrid 
-       vtkFiltering 
-       vtkCommon
+
     )
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+    
+    
     SET(LIBS
        CompuCellLibShared
        BasicUtilsShared       
        FieldExtractor
        ${PYTHON_LIBRARIES}
-       vtkVolumeRendering 
-       vtkHybrid 
-       vtkFiltering 
-       vtkCommon
-       
-       # simthreadShared
+       ${VTK_LIBS} 
     )
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 

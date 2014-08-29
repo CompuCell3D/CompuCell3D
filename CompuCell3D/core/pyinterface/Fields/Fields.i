@@ -214,10 +214,10 @@
          
          
         if (SWIG_IsOK(res)) {
-            // CompuCell3D::Point3D pt;    
-            coord.x=(double)PyFloat_AsDouble(PyObject_GetAttrString($input,"x"));
-            coord.y=(double)PyFloat_AsDouble(PyObject_GetAttrString($input,"y"));
-            coord.z=(double)PyFloat_AsDouble(PyObject_GetAttrString($input,"z"));
+            //Notice that we have to call PyDECREF on return value from PyObject_GetAttrString otherwise we leak memory!    
+            PyObject * xPyRef=PyObject_GetAttrString($input,"x"); coord.x=(double)PyFloat_AsDouble(xPyRef); Py_DECREF(xPyRef);
+            PyObject * yPyRef=PyObject_GetAttrString($input,"y"); coord.y=(double)PyFloat_AsDouble(yPyRef); Py_DECREF(yPyRef);
+            PyObject * zPyRef=PyObject_GetAttrString($input,"z"); coord.z=(double)PyFloat_AsDouble(zPyRef); Py_DECREF(zPyRef);    
             $1=coord;
         } else {
         
@@ -279,10 +279,12 @@
          
          
         if (SWIG_IsOK(res)) {
-            // CompuCell3D::Point3D pt;    
-            coord.x=(double)PyFloat_AsDouble(PyObject_GetAttrString($input,"x"));
-            coord.y=(double)PyFloat_AsDouble(PyObject_GetAttrString($input,"y"));
-            coord.z=(double)PyFloat_AsDouble(PyObject_GetAttrString($input,"z"));
+            
+            //Notice that we have to call PyDECREF on return value from PyObject_GetAttrString otherwise we leak memory!    
+            PyObject * xPyRef=PyObject_GetAttrString($input,"x"); coord.x=(double)PyFloat_AsDouble(xPyRef); Py_DECREF(xPyRef);
+            PyObject * yPyRef=PyObject_GetAttrString($input,"y"); coord.y=(double)PyFloat_AsDouble(yPyRef); Py_DECREF(yPyRef);
+            PyObject * zPyRef=PyObject_GetAttrString($input,"z"); coord.z=(double)PyFloat_AsDouble(zPyRef); Py_DECREF(zPyRef);    
+
             $1=&coord;
         } else {
         
@@ -299,11 +301,44 @@
 
 %inline %{
 
+    
+    
 class BS{
     public:
     BS(void){
         cerr<<"BS constructor"<<endl;
     }
+    
+    float get(CompuCell3D::Point3D &  pt){
+        cerr<<"got new get request"<<endl;
+        return 0.0;
+    }
+
+    float getNonRef(CompuCell3D::Point3D   pt){
+        cerr<<"got new get Non ref request"<<endl;
+        return 0.0;
+    }
+
+    float getByDim(CompuCell3D::Dim3D & dim){
+        cerr<<"got ByDim new get request"<<endl;
+        return 0.0;
+    }
+
+    float getByDimNonRef(CompuCell3D::Dim3D dim){
+        cerr<<"got ByDim new get Non ref request"<<endl;
+        return 0.0;
+    }
+
+    float getByCoord(Coordinates3D<double> & coord){
+        cerr<<"got ByCoord new get request"<<endl;
+        return 0.0;
+    }
+
+    float getByCoordNonRef(Coordinates3D<double> coord){
+        cerr<<"got ByCoord new get Non ref request"<<endl;
+        return 0.0;
+    }
+    
     
     // void getNeighborDirect(Point3D  pt,unsigned int   idx ,bool checkBounds=true, bool calculatePtTrans=false){
     void getNeighborDirect(CompuCell3D::Point3D &  pt,unsigned int idx =10,bool checkBounds=true, bool calculatePtTrans=false) const {
@@ -312,10 +347,13 @@ class BS{
         cerr<<"pt="<<pt<<endl;        
     }
     
+    
 };
 
 
 %}
+
+
 
 
 // turns on proper handling of default arguments - only one wrapper code will get generated for a function

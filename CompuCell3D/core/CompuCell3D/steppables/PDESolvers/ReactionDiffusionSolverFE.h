@@ -45,6 +45,7 @@ class Automaton;
 
 class BoxWatcher;
 
+class CellTypeMonitorPlugin ;
 class DiffusionData;
 class SecretionDataFlex;
 class ReactionDiffusionSolverSerializer;
@@ -73,6 +74,19 @@ class PDESOLVERS_EXPORT DiffusionSecretionRDFieldTupple{
       SecretionDataRD * getSecretionData(){return &secrData;}
 };
 
+class SortedPositionTracker{ // simple class that is used to sort field positions according to number of diffusion step calls
+public:
+	SortedPositionTracker(int  _originalPosition=0, int _sortedValue=0){
+		originalPosition=_originalPosition;
+		sortedValue=_sortedValue;
+	}
+	bool operator < (SortedPositionTracker & _spt){
+		return this->sortedValue<_spt.sortedValue;
+	}
+
+	int sortedValue;
+	int originalPosition;
+};
 
 class PDESOLVERS_EXPORT ReactionDiffusionSolverFE :public DiffusableVectorCommon<float, Array3DContiguous>, public Steppable
 {
@@ -94,6 +108,8 @@ class PDESOLVERS_EXPORT ReactionDiffusionSolverFE :public DiffusableVectorCommon
 	float diffusionLatticeScalingFactor; // for hex in 2Dlattice it is 2/3.0 , for 3D is 1/2.0, for cartesian lattice it is 1
 	bool autoscaleDiffusion;
 
+	bool scaleSecretion; // this flag is set to true. If user sets it to false via XML then DiffusionSolver will behave like FlexibleDiffusion solver - i.e. secretion will be done in one step followed by multiple diffusive steps
+
 protected:
 
    Potts3D *potts;
@@ -110,9 +126,47 @@ protected:
    unsigned int extraTimesPerMCS;
    WatchableField3D<CellG *> *cellFieldG;
    Automaton *automaton;
+   
 
-//    std::vector<DiffusionData> diffDataVec;
-//    std::vector<SecretionDataFlex> secrDataVec;
+   //////part copied from DiffusionSolverFE 
+
+   std::vector<int> scalingExtraMCSVec; //TODO: check if used
+   std::vector<float> maxDiffConstVec;
+   float maxStableDiffConstant;           
+
+   std::vector<float> diffConstVec; 
+   std::vector<float> decayConstVec; 
+
+   CellTypeMonitorPlugin *cellTypeMonitorPlugin;
+   Array3DCUDA<unsigned char> * h_celltype_field;
+   Array3DCUDA<float> * h_cellid_field;
+   
+   Array3DCUDA<signed char> * bc_indicator_field;   
+
+   std::vector<std::vector<Point3D> > hexOffsetArray;
+   std::vector<Point3D> offsetVecCartesian;
+   LatticeType latticeType;
+
+   const std::vector<Point3D> & getOffsetVec(Point3D & pt) const {
+      if(latticeType==HEXAGONAL_LATTICE){
+         return hexOffsetArray[(pt.z%3)*2+pt.y%2];
+      }else{
+         return offsetVecCartesian;
+      }
+   }
+  
+   void prepareForwardDerivativeOffsets();
+   void Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant);
+   virtual void prepCellTypeField(int idx);
+   virtual Dim3D getInternalDim();
+   
+   virtual void boundaryConditionIndicatorInit(); // this function initializes indicator only not the actual boundary conditions used on non-cartesian lattices
+   
+   //////end of part copied from DiffusionSolverFE
+
+   int maxNumberOfDiffusionCalls;// this number determines how many times ALL fields will be diffused
+
+
    std::vector<bool> periodicBoundaryCheckVector;
 
    std::vector<BoundaryConditionSpecifier> bcSpecVec;
@@ -120,9 +174,7 @@ protected:
 
 	bool useBoxWatcher;
 
-	//////std::vector<std::vector<mu::Parser> > parserVec;	
-	//////std::vector<vector<double> > variableConcentrationVecMu;
-	//////std::vector<double> variableCellTypeMu;
+
 
 	std::vector<std::vector<mu::Parser> > parserVec;	
 	std::vector<vector<double> > variableConcentrationVecMu;

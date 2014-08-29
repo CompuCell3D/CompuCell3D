@@ -76,7 +76,7 @@ namespace CompuCell3D {
     virtual unsigned char getCellType(const CellG*) const;
     virtual std::string getTypeName(const char type) const;
     virtual unsigned char getTypeId(const std::string typeName) const;
-
+	virtual unsigned char getMaxTypeId() const;
     
 
 

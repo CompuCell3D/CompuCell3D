@@ -506,22 +506,26 @@ void SteadyStateDiffusionSolver2D::secreteSingleField(unsigned int idx){
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void SteadyStateDiffusionSolver2D::secrete() {
-
+    
 	for(unsigned int i = 0 ; i < diffSecrFieldTuppleVec.size() ; ++i ){
-		if (diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.size()){
-			for(unsigned int j = 0 ; j <diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.size() ; ++j){
-				(this->*diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec[j])(i);
-			}
-		}else{
-			//secrete function resets field to 0. If there is no user-specified secretion we have to explicitely reset the field
-			ConcentrationField_t * concentrationFieldPtr=concentrationFieldVector[i];
-			vector<double> & containerRef=concentrationFieldPtr->getContainerRef();
+    
+        if (manageSecretionInPythonVec[i]){
+            //do nothing here we do all manipulation in Python        
+        }else{
+            if (diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.size()){
+                for(unsigned int j = 0 ; j <diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec.size() ; ++j){
+                    (this->*diffSecrFieldTuppleVec[i].secrData.secretionFcnPtrVec[j])(i);
+                }
+            }else{
+                //secrete function resets field to 0. If there is no user-specified secretion we have to explicitely reset the field
+                ConcentrationField_t * concentrationFieldPtr=concentrationFieldVector[i];
+                vector<double> & containerRef=concentrationFieldPtr->getContainerRef();
 
-			containerRef.assign(containerRef.size(),0.0); //zero concentration vector
-			
-		}
-	}
-
+                containerRef.assign(containerRef.size(),0.0); //zero concentration vector
+                
+            }
+        }
+    }
 
 
 }
@@ -984,12 +988,25 @@ void SteadyStateDiffusionSolver2D::update(CC3DXMLElement *_xmlData, bool _fullIn
 
 
 	bcSpecVec.clear();
+    
+    manageSecretionInPythonVec.clear();
 
 	CC3DXMLElementList diffFieldXMLVec=_xmlData->getElements("DiffusionField");
 	for(unsigned int i = 0 ; i < diffFieldXMLVec.size() ; ++i ){
+    
+        manageSecretionInPythonVec.push_back(false); // we set manage secretion in Python flag to False by default
+        
 		diffSecrFieldTuppleVec.push_back(SteadyStateDiffusionSecretionFieldTupple());
 		DiffusionData & diffData=diffSecrFieldTuppleVec[diffSecrFieldTuppleVec.size()-1].diffData;
 		SecretionData & secrData=diffSecrFieldTuppleVec[diffSecrFieldTuppleVec.size()-1].secrData;
+        
+        if (diffFieldXMLVec[i]->findElement("ManageSecretionInPython")){
+            manageSecretionInPythonVec[i]=true;
+        }        
+        
+        if(diffFieldXMLVec[i]->findAttribute("Name")){
+            diffData.fieldName=diffFieldXMLVec[i]->getAttribute("Name");
+        }               
 
 		if(diffFieldXMLVec[i]->findElement("DiffusionData"))
 			diffData.update(diffFieldXMLVec[i]->getFirstElement("DiffusionData"));

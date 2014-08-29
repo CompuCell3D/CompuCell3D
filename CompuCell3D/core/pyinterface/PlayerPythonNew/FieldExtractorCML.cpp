@@ -15,6 +15,7 @@
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
 #include <vtkStructuredPoints.h>
+#include <vtkStructuredPointsReader.h>
 #include <algorithm>
 #include <cmath>
 #include <set>
@@ -1160,4 +1161,11 @@ bool FieldExtractorCML::fillScalarFieldData3D(long _conArrayAddr ,long _cellType
 bool FieldExtractorCML::fillScalarFieldCellLevelData3D(long _conArrayAddr ,long _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec){
 
 	return fillConFieldData3D(_conArrayAddr ,_cellTypeArrayAddr, _conFieldName, _typesInvisibeVec);
+}
+
+
+bool FieldExtractorCML::readVtkStructuredPointsData(long _structuredPointsReaderAddr){
+    vtkStructuredPointsReader * reader=(vtkStructuredPointsReader *)_structuredPointsReaderAddr;
+    reader->Update();
+    return true;
 }

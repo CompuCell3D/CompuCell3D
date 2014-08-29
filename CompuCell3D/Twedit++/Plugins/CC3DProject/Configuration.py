@@ -12,41 +12,11 @@ class Configuration:
         self.settings=_settings
         #default settings
         self.defaultConfigs={}
-        # self.defaultConfigs["TabSpaces"]=4
-        # self.defaultConfigs["UseTabSpaces"]=True
-        # self.defaultConfigs["DisplayLineNumbers"]=True
-        # self.defaultConfigs["FoldText"]=True
-        # self.defaultConfigs["TabGuidelines"]=True
-        # self.defaultConfigs["DisplayWhitespace"]=False
-        # self.defaultConfigs["DisplayEOL"]=False
-        # self.defaultConfigs["WrapLines"]=False
-        # self.defaultConfigs["ShowWrapSymbol"]=False
-        # self.defaultConfigs["DontShowWrapLinesWarning"]=False
-        # self.defaultConfigs["RestoreTabsOnStartup"]=True
-        # self.defaultConfigs["EnableAutocompletion"]=False
-        # self.defaultConfigs["AutocompletionThreshold"]=2
-        # self.defaultConfigs["InitialSize"]=QSize(600,600)
-        # self.defaultConfigs["InitialPosition"]=QPoint(0,0)
-        # self.defaultConfigs["ListOfOpenFiles"]=QStringList()
-        # self.defaultConfigs["FRFindHistory"]=QStringList() #FR stands for Find & Replace
-        # self.defaultConfigs["FRReplaceHistory"]=QStringList()
-        # self.defaultConfigs["FRFiltersHistory"]=QStringList()
-        # self.defaultConfigs["FRDirectoryHistory"]=QStringList()
-        # self.defaultConfigs["FRInSelection"]=False
-        # self.defaultConfigs["FRInAllSubfolders"]=False
-        # self.defaultConfigs["FRSyntaxIndex"]=0
-        # self.defaultConfigs["FRTransparencyEnable"]=True
-        # self.defaultConfigs["FROnLosingFocus"]=True        
-        # self.defaultConfigs["FRAlways"]=False
-        # self.defaultConfigs["FROpacity"]=75
-        # self.defaultConfigs["ZoomRange"]=0
-        # self.defaultConfigs["ZoomRangeFindDisplayWidget"]=0
-        # self.defaultConfigs["CurrentTabIndex"]=-1 # index of the current tab  - 1 means we should make last open tab current
-        # self.defaultConfigs["KeyboardShortcuts"]=QStringList()
         self.defaultConfigs["RecentProject"]=QString("")
         self.defaultConfigs["RecentNewProjectDir"]=QString("")
         self.defaultConfigs["RecentProjects"]=QStringList()
         self.defaultConfigs["RecentProjectDirectories"]=QStringList()        
+        self.defaultConfigs["ShowCC3DProjectPanel"]=True
         
         
         self.modifiedKeyboardShortcuts={} # dictionary actionName->shortcut for modified keyboard shortcuts - only reassinged shortcuts are stored
@@ -63,15 +33,14 @@ class Configuration:
         # return self.configs[_key]
 
     def setting(self,_key):
-        # if _key in ["UseTabSpaces","DisplayLineNumbers","FoldText","TabGuidelines","DisplayWhitespace","DisplayEOL","WrapLines","ShowWrapSymbol","DontShowWrapLinesWarning",\
-        # "RestoreTabsOnStartup","EnableAutocompletion","FRInSelection","FRInAllSubfolders","FRTransparencyEnable","FROnLosingFocus","FRAlways"]: # Boolean values
-            # val = self.settings.value(_key)
-            # if val.isValid():
-                # return val.toBool()
-            # else:
-                # return self.defaultConfigs[_key]
+        if _key in ["ShowCC3DProjectPanel"]: # Boolean values
+            val = self.settings.value(_key)
+            if val.isValid():
+                return val.toBool()
+            else:
+                return self.defaultConfigs[_key]
                 
-        if _key in ["RecentProject","RecentNewProjectDir"]:
+        elif _key in ["RecentProject","RecentNewProjectDir"]:
             val = self.settings.value(_key)
             if val.isValid():
                 return val.toString()
@@ -84,7 +53,7 @@ class Configuration:
                 return val.toStringList() 
             else:
                 return self.defaultConfigs[_key]
-            
+
         # elif _key in ["TabSpaces","ZoomRange","ZoomRangeFindDisplayWidget","AutocompletionThreshold","FRSyntaxIndex","FROpacity","CurrentTabIndex"]: # integer values
             # val = self.settings.value(_key)
             # if val.isValid():
@@ -109,9 +78,8 @@ class Configuration:
 
                 
     def setSetting(self,_key,_value):
-        # if _key in ["UseTabSpaces","DisplayLineNumbers","FoldText","TabGuidelines","DisplayWhitespace","DisplayEOL","WrapLines","ShowWrapSymbol","DontShowWrapLinesWarning",\
-        # "RestoreTabsOnStartup","EnableAutocompletion","FRInSelection","FRInAllSubfolders","FRTransparencyEnable","FROnLosingFocus","FRAlways"]: # Boolean values
-            # self.settings.setValue(_key,QVariant(_value))
+        if _key in ["ShowCC3DProjectPanel"]: # Boolean values
+            self.settings.setValue(_key,QVariant(_value))
             
         # elif _key in ["TabSpaces","ZoomRange","ZoomRangeFindDisplayWidget","AutocompletionThreshold","FRSyntaxIndex","FROpacity","CurrentTabIndex"]: # integer values
             # self.settings.setValue(_key,_value)

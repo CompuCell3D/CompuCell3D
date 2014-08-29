@@ -78,6 +78,8 @@ void CellTypePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData){
 
 }
 
+
+
 void CellTypePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
   
       typeNameMap.clear();
@@ -170,6 +172,14 @@ unsigned char CellTypePlugin::getTypeId(const string typeName) const {
 }
 
 
+unsigned char CellTypePlugin::getMaxTypeId() const {
+	cerr<<"typeNameMap.size()="<<typeNameMap.size()<<endl;
+	if (! typeNameMap.size()){
+		return 0;
+	}else{
+		return (--(typeNameMap.end()))->first; //returning last type number (unsigned char) 
+	}
+}
 
 //void CellTypePlugin::readXML(XMLPullParser &in) {
 //   

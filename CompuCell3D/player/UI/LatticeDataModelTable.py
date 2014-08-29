@@ -14,6 +14,12 @@ class LatticeDataModelTable(QTableView):
         self.setAlternatingRowColors (True)
         self.horizontalHeader().setStretchLastSection(True)        
         
+        import sys
+        if not sys.platform.startswith('darwin'): # on OSX we do not resize row height, we do it only on windows and linux
+            verticalHeader = self.verticalHeader()
+            verticalHeader.setResizeMode(QHeaderView.Fixed)
+            verticalHeader.setDefaultSectionSize(20)     
+            
         # vm - viewmanager, instance of class TabView
         self.vm = vm
         #self.__resizeColumns()
@@ -27,8 +33,10 @@ class LatticeDataModelTable(QTableView):
         
         # assert self.model().
         # print self.model()
-        for i in range(0, self.model().rowCount()):
-            self.setRowHeight(i, 20)
+        # import sys
+        # if not sys.platform.startswith('darwin'): # on OSX we do not resize row height
+            # for i in range(0, self.model().rowCount()):
+                # self.setRowHeight(i, 20)
 
         self.setColumnWidth(0, 130)
         #self.cplugins.setColumnWidth(1, 200)

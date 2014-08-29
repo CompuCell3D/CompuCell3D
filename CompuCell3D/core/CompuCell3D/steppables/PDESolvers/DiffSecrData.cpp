@@ -122,7 +122,7 @@ void DiffusionData::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	if(_xmlData->findElement("InitialConcentrationExpression"))
 		initialConcentrationExpression=_xmlData->getFirstElement("InitialConcentrationExpression")->getText();
 
-	if(_xmlData->findElement("FieldName"))
+	if(_xmlData->findElement("FieldName") && !fieldName.size() ) //nottice that field name may be extracted from this element  <DiffusionField Name="FGF"> 
 		fieldName=_xmlData->getFirstElement("FieldName")->getText();
 
 	if(_xmlData->findElement("AdditionalTerm"))

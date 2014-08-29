@@ -47,6 +47,7 @@ class Configuration():
         defaultConfigs["GraphicsWinHeight"] = 400; paramTypeInt.append("GraphicsWinHeight")
         defaultConfigs["UseInternalConsole"] = False; paramTypeBool.append("UseInternalConsole")
         defaultConfigs["ClosePlayerAfterSimulationDone"] = False; paramTypeBool.append("ClosePlayerAfterSimulationDone")
+        
         # defaultConfigs["ProjectLocation"] = QString(os.path.join(os.path.expanduser('~'),'CC3DProjects')); paramTypeString.append("ProjectLocation")
         defaultConfigs["ProjectLocation"] = QString(os.path.join(environ['PREFIX_CC3D'],'Demos')); paramTypeString.append("ProjectLocation")
         
@@ -85,6 +86,9 @@ class Configuration():
 
 
         # Field tab (combines what used to be Colormap tab and Vectors tab)
+        
+        defaultConfigs["PixelizedScalarField"] = False; paramTypeBool.append("PixelizedScalarField")
+        
         defaultConfigs["FieldIndex"] = 0; paramTypeInt.append("FieldIndex")
         defaultConfigs["MinRange"] = 0.0; paramTypeDouble.append("MinRange")
         defaultConfigs["MinRangeFixed"] = False; paramTypeBool.append("MinRangeFixed")
@@ -96,7 +100,7 @@ class Configuration():
         defaultConfigs["LegendEnable"] = True; paramTypeBool.append("LegendEnable")
         
         defaultConfigs["ScalarIsoValues"] = QString(" "); paramTypeString.append("ScalarIsoValues")
-        defaultConfigs["NumberOfContourLines"] = 5; paramTypeInt.append("NumberOfContourLines")
+        defaultConfigs["NumberOfContourLines"] = 0; paramTypeInt.append("NumberOfContourLines")
 #        defaultConfigs["ContoursOn"] = False; paramTypeBool.append("ContoursOn")
         
         
@@ -224,9 +228,12 @@ def getSetting(_key, fieldName=None):  # we append an optional fieldName now to 
             
 
             fieldsDict = getSimFieldsParams()
-
-            paramsDict = fieldsDict[fieldName]
-
+            
+            try:
+                paramsDict = fieldsDict[fieldName]
+            except LookupError,e:
+                return getSetting(_key) # returning default value stored in the setting for the field
+                
             if _key == 'ArrowColor':  
 
                 val = paramsDict[_key]
@@ -334,7 +341,9 @@ def getSetting(_key, fieldName=None):  # we append an optional fieldName now to 
 
                     fieldDictNew[str(key)] = dictVals
                     knt += 1
-
+                    
+                # print 'fieldDictNew=',fieldDictNew    
+                
                 return fieldDictNew
             else:
                 fieldDict = Configuration.defaultConfigs[_key]

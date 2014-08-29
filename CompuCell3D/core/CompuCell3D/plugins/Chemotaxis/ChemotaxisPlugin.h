@@ -23,16 +23,10 @@
 #ifndef CHEMOTAXISPLUGIN_H
 #define CHEMOTAXISPLUGIN_H
 
- #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Potts3D/EnergyFunction.h>
-
-// // // #include <CompuCell3D/Plugin.h>
-// // // #include <CompuCell3D/Potts3D/Stepper.h>
-// // // #include <BasicUtils/BasicClassGroup.h>
-
+#include <CompuCell3D/CC3D.h>
 #include "ChemotaxisData.h"
 #include "ChemotaxisDLLSpecifier.h"
-// // // #include <map>
+
 
 class CC3DXMLElement;
 namespace CompuCell3D {

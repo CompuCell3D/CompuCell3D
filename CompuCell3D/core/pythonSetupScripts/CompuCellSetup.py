@@ -48,6 +48,9 @@ userStopSimulationFlag=False
 global freeFloatingSBMLSimulator
 freeFloatingSBMLSimulator={} # {name:RoadRunnerPy}
 
+global globalSBMLSimulatorOptions
+globalSBMLSimulatorOptions=None # {optionName:Value}
+
 
 MYMODULENAME = '------- CompuCellSetup.py: '
 
@@ -413,6 +416,9 @@ def resetGlobals():
     
     global freeFloatingSBMLSimulator
     freeFloatingSBMLSimulator={}
+    
+    global globalSBMLSimulatorOptions
+    globalSBMLSimulatorOptions=None
     
 def setSimulationXMLFileName(_simulationFileName):
     global simulationPaths
@@ -1100,7 +1106,7 @@ def createVectorFieldPy(_dim,_fieldName):
         ndarrayAdapter=cmlFieldHandler.fieldStorage.createVectorFieldPy(_dim,_fieldName)
         ndarrayAdapter.initFromNumpy(fieldNP) # initializing  numpyAdapter using numpy array (copy dims and data ptr)        
         fieldRegistry.addNewField(ndarrayAdapter,_fieldName,VECTOR_FIELD)
-        fieldRegistry.addNewField(fieldNP,_fieldName+'_npy',VECTOR_FIELD)
+        fieldRegistry.addNewField(fieldNP,_fieldName+'_npy',VECTOR_FIELD_NPY)
         return fieldNP
         
     else:
@@ -1109,7 +1115,7 @@ def createVectorFieldPy(_dim,_fieldName):
         ndarrayAdapter=simulationThreadObject.callingWidget.fieldStorage.createVectorFieldPy(_dim,_fieldName)
         ndarrayAdapter.initFromNumpy(fieldNP) # initializing  numpyAdapter using numpy array (copy dims and data ptr)        
         fieldRegistry.addNewField(ndarrayAdapter,_fieldName,VECTOR_FIELD)
-        fieldRegistry.addNewField(fieldNP,_fieldName+'_npy',VECTOR_FIELD)
+        fieldRegistry.addNewField(fieldNP,_fieldName+'_npy',VECTOR_FIELD_NPY)
         return fieldNP
         
         
@@ -1233,7 +1239,7 @@ def createFloatFieldPy(_dim,_fieldName):
         ndarrayAdapter=cmlFieldHandler.fieldStorage.createFloatFieldPy(_dim,_fieldName)
         ndarrayAdapter.initFromNumpy(fieldNP) # initializing  numpyAdapter using numpy array (copy dims and data ptr)
         fieldRegistry.addNewField(ndarrayAdapter,_fieldName,SCALAR_FIELD)
-        fieldRegistry.addNewField(fieldNP,_fieldName+'_npy',SCALAR_FIELD)
+        fieldRegistry.addNewField(fieldNP,_fieldName+'_npy',SCALAR_FIELD_NPY)
         return fieldNP
     else:
         import numpy as np
@@ -1241,7 +1247,7 @@ def createFloatFieldPy(_dim,_fieldName):
         ndarrayAdapter=simulationThreadObject.callingWidget.fieldStorage.createFloatFieldPy(_dim,_fieldName) 
         ndarrayAdapter.initFromNumpy(fieldNP) # initializing  numpyAdapter using numpy array (copy dims and data ptr)
         fieldRegistry.addNewField(ndarrayAdapter,_fieldName,SCALAR_FIELD)
-        fieldRegistry.addNewField(fieldNP,_fieldName+'_npy',SCALAR_FIELD)
+        fieldRegistry.addNewField(fieldNP,_fieldName+'_npy',SCALAR_FIELD_NPY)
         return fieldNP
 
 
@@ -1495,7 +1501,15 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
                 
         
     print "END OF SIMULATION  "
+    
     if runFinishFlag:
+        # we emit request to finish simulation
+        simthread.emitFinishRequest()        
+        # then we wait for GUI thread to unlock the finishMutex - it will only happen when all tasks in the GUI thread are completed (especially those that need simulator object to stay alive)
+        simthread.finishMutex.lock()
+        simthread.finishMutex.unlock()
+        # at this point GUI thread finished all the tasks for which simulator had to stay alive  and we can proceed to destroy simulator
+        
         sim.finish()
         if sim.getRecentErrorMessage()!="":        
             raise CC3DCPlusPlusError(sim.getRecentErrorMessage())        
@@ -1618,96 +1632,96 @@ def mainLoopCML(sim, simthread, steppableRegistry= None, _screenUpdateFrequency 
     #In exception handlers you have to call sim.finish to unload the plugins .
     #We may need to introduce new funuction name (e.g. unload) because finish does more than unloading
 
-def mainLoopCMLReplay(sim, simthread, steppableRegistry= None, _screenUpdateFrequency = None):
-    # have to read fsimulation data (vtk file) before proceeding to extrainit.
-    # this is because extra init will send a signal to initialize simulation view but simulation view refers to simulation data. therefore this data better be ready
-    global globalSteppableRegistry  #rwh2
-    globalSteppableRegistry=steppableRegistry
+# # # def mainLoopCMLReplay(sim, simthread, steppableRegistry= None, _screenUpdateFrequency = None):
+    # # # # have to read fsimulation data (vtk file) before proceeding to extrainit.
+    # # # # this is because extra init will send a signal to initialize simulation view but simulation view refers to simulation data. therefore this data better be ready
+    # # # global globalSteppableRegistry  #rwh2
+    # # # globalSteppableRegistry=steppableRegistry
     
-    if simthread:
-        simthread.readSimulationData(0)
-        if not simthread.simulationData:
-            simthread.simulationFinishedPostEvent(True)
-            return
-    else:
-        return
+    # # # if simthread:
+        # # # simthread.readSimulationData(0)
+        # # # if not simthread.simulationData:
+            # # # simthread.simulationFinishedPostEvent(True)
+            # # # return
+    # # # else:
+        # # # return
         
-    extraInitSimulationObjects(sim,simthread)
-    # simthread.waitForInitCompletion()
-    simthread.waitForPlayerTaskToFinish()
+    # # # extraInitSimulationObjects(sim,simthread)
+    # # # # simthread.waitForInitCompletion()
+    # # # simthread.waitForPlayerTaskToFinish()
     
-    runFinishFlag = True;
+    # # # runFinishFlag = True;
     
-    if not steppableRegistry is None:
-        steppableRegistry.init(sim)
-        steppableRegistry.start()
+    # # # if not steppableRegistry is None:
+        # # # steppableRegistry.init(sim)
+        # # # steppableRegistry.start()
     
-    # simthread.waitForInitCompletion()
+    # # # # simthread.waitForInitCompletion()
     
-    screenUpdateFrequency=1
-    numberOfSteps = len(simthread.ldsFileList)
+    # # # screenUpdateFrequency=1
+    # # # numberOfSteps = len(simthread.ldsFileList)
     
-    # for i in range(numberOfSteps):
-    i=0
-    mcsDirectAccess=0
-    directAccessFlag=False
-    while i<numberOfSteps :
-        # print 'i=',i
-        # print 'COMPUCELLSETUP field dim before=',simthread.fieldDim
+    # # # # for i in range(numberOfSteps):
+    # # # i=0
+    # # # mcsDirectAccess=0
+    # # # directAccessFlag=False
+    # # # while i<numberOfSteps :
+        # # # # print 'i=',i
+        # # # # print 'COMPUCELLSETUP field dim before=',simthread.fieldDim
         
-        if simthread is not None:
-            mcsDirectAccess,directAccessFlag = simthread.getCurrentStepDirectAccess()
-        if directAccessFlag:
-#            print MYMODULENAME," mainLoopCMLReplay():  GOT DIRECT FLAG AND mcsDirectAccess=",mcsDirectAccess
-            simthread.resetDirectAccessFlag()
-            i = mcsDirectAccess
+        # # # if simthread is not None:
+            # # # mcsDirectAccess,directAccessFlag = simthread.getCurrentStepDirectAccess()
+        # # # if directAccessFlag:
+# # # #            print MYMODULENAME," mainLoopCMLReplay():  GOT DIRECT FLAG AND mcsDirectAccess=",mcsDirectAccess
+            # # # simthread.resetDirectAccessFlag()
+            # # # i = mcsDirectAccess
             
-        # print "working on MCS " , i
-        if simthread is not None:
-            if i!=0: # new data for step 0 is already read
+        # # # # print "working on MCS " , i
+        # # # if simthread is not None:
+            # # # if i!=0: # new data for step 0 is already read
                 
-                simthread.readSimulationData(i)    
-                # print 'field dim after=',simthread.fieldDim
+                # # # simthread.readSimulationData(i)    
+                # # # # print 'field dim after=',simthread.fieldDim
                 
-            simthread.beforeStep(i)                
-            # print "simthread=",simthread
-            if simthread.getStopSimulation():
-                runFinishFlag=False
-                break
-        if i>=numberOfSteps:
-            break                 
+            # # # simthread.beforeStep(i)                
+            # # # # print "simthread=",simthread
+            # # # if simthread.getStopSimulation():
+                # # # runFinishFlag=False
+                # # # break
+        # # # if i>=numberOfSteps:
+            # # # break                 
 
 
-        screenUpdateFrequency = simthread.getScreenUpdateFrequency()
-        screenshotFrequency=simthread.getScreenshotFrequency()
+        # # # screenUpdateFrequency = simthread.getScreenUpdateFrequency()
+        # # # screenshotFrequency=simthread.getScreenshotFrequency()
         
-#        print MYMODULENAME,"screenUpdateFrequency=",screenUpdateFrequency," screenshotFrequency=",screenshotFrequency
-        simthread.loopWork(i)
-        simthread.loopWorkPostEvent(i)
-        screenUpdateFrequency = simthread.getScreenUpdateFrequency()
-        i+=1
-        # if ((not i % screenUpdateFrequency) or (not i % screenshotFrequency)) and simthread is not None:
-            # simthread.loopWork(i)
-            # simthread.loopWorkPostEvent(i)
-            # screenUpdateFrequency = simthread.getScreenUpdateFrequency()
+# # # #        print MYMODULENAME,"screenUpdateFrequency=",screenUpdateFrequency," screenshotFrequency=",screenshotFrequency
+        # # # simthread.loopWork(i)
+        # # # simthread.loopWorkPostEvent(i)
+        # # # screenUpdateFrequency = simthread.getScreenUpdateFrequency()
+        # # # i+=1
+        # # # # if ((not i % screenUpdateFrequency) or (not i % screenshotFrequency)) and simthread is not None:
+            # # # # simthread.loopWork(i)
+            # # # # simthread.loopWorkPostEvent(i)
+            # # # # screenUpdateFrequency = simthread.getScreenUpdateFrequency()
 
-    print "END OF SIMULATION  "
-    if runFinishFlag:
-        # sim.finish()
-        # if sim.getRecentErrorMessage()!="":        
-            # raise CC3DCPlusPlusError(sim.getRecentErrorMessage())        
-        # steppableRegistry.finish()
-        simthread.simulationFinishedPostEvent(True)
-        print "CALLING FINISH"
-    else:
-        # sim.cleanAfterSimulation()
-        print "CALLING UNLOAD MODULES"
-        if simthread is not None:
-            simthread.sendStopSimulationRequest()
-            simthread.simulationFinishedPostEvent(True)
+    # # # print "END OF SIMULATION  "
+    # # # if runFinishFlag:
+        # # # # sim.finish()
+        # # # # if sim.getRecentErrorMessage()!="":        
+            # # # # raise CC3DCPlusPlusError(sim.getRecentErrorMessage())        
+        # # # # steppableRegistry.finish()
+        # # # simthread.simulationFinishedPostEvent(True)
+        # # # print "CALLING FINISH"
+    # # # else:
+        # # # # sim.cleanAfterSimulation()
+        # # # print "CALLING UNLOAD MODULES"
+        # # # if simthread is not None:
+            # # # simthread.sendStopSimulationRequest()
+            # # # simthread.simulationFinishedPostEvent(True)
     
-    #In exception handlers you have to call sim.finish to unload the plugins .
-    #We may need to introduce new funuction name (e.g. unload) because finish does more than unloading
+    # # # #In exception handlers you have to call sim.finish to unload the plugins .
+    # # # #We may need to introduce new funuction name (e.g. unload) because finish does more than unloading
 
     
 def mainLoop(sim, simthread, steppableRegistry= None, _screenUpdateFrequency = None):

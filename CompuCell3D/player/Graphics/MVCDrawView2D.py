@@ -21,6 +21,9 @@ class MVCDrawView2D(MVCDrawViewBase):
         
         self.initArea()
         self.setParams()
+        
+        self.pixelizedScalarField=Configuration.getSetting("PixelizedScalarField")
+        # self.scalarFieldDrawExact=False
 #        self.simIs3D = self.getSim3DFlag()
         
     # Sets up the VTK simulation area 
@@ -83,7 +86,7 @@ class MVCDrawView2D(MVCDrawViewBase):
 
     #----------------------------------------------------------------------------
     def showBorder(self):
-        # # # print " SHOW BORDERS self.parentWidget.borderAct.isEnabled()=",self.parentWidget.borderAct.isEnabled()
+        # print " SHOW BORDERS self.parentWidget.borderAct.isEnabled()=",self.parentWidget.borderAct.isEnabled()
         Configuration.setSetting("CellBordersOn",True)
 #        print MODULENAME,' showBorder ============'
         if not self.currentActors.has_key("BorderActor"):
@@ -95,7 +98,7 @@ class MVCDrawView2D(MVCDrawViewBase):
         #self.graphicsFrameWidget.repaint()        
     
     def hideBorder(self):
-#        print MODULENAME,'\n  ==================== hideBorder() ============'
+        # print MODULENAME,'\n\n\n\n\n\n  ==================== hideBorder() ============'
 #        print MODULENAME,' hideBorder():  graphicsFrameWidget.winId(), lastActiveWindow.winId(), ',self.graphicsFrameWidget.winId(),self.parentWidget.lastActiveWindow.winId()
         Configuration.setSetting("CellBordersOn",False)
 #        print MODULENAME,' hideBorder():  self.currentActors.keys()=',self.currentActors.keys()
@@ -104,9 +107,10 @@ class MVCDrawView2D(MVCDrawViewBase):
             del self.currentActors["BorderActor"] 
             self.graphicsFrameWidget.ren.RemoveActor(self.borderActor)
 #            self.parentWidget.lastActiveWindow.ren.RemoveActor(self.borderActor)
+        
         self.Render()
-#        self.graphicsFrameWidget.repaint()
-        self.parentWidget.lastActiveWindow.repaint()
+        self.graphicsFrameWidget.repaint()
+        # self.parentWidget.lastActiveWindow.repaint()
         
     #----------------------------------------------------------------------------
     def showClusterBorder(self):
@@ -126,22 +130,22 @@ class MVCDrawView2D(MVCDrawViewBase):
     #----------------------------------------------------------------------------
     def showCells(self):
         Configuration.setSetting("CellsOn",True)
-#        print MODULENAME,' showCells() '
+        # print MODULENAME,' \n\n\n\n\n\n showCells() '
         if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
             if not self.currentActors.has_key("HexCellsActor"):
                 self.currentActors["HexCellsActor"] = self.hexCellsActor  
                 self.graphicsFrameWidget.ren.AddActor(self.hexCellsActor)
         else:
-            if not self.currentActors.has_key("CellsActor"):
+            if not self.currentActors.has_key("CellsActor"):                
                 self.currentActors["CellsActor"]=self.cellsActor  
                 self.graphicsFrameWidget.ren.AddActor(self.cellsActor)
         # print "self.currentActors.keys()=",self.currentActors.keys()
         # Don't re-render until next calc step since it could show previous/incorrect actor
-        #self.Render()
-        #self.graphicsFrameWidget.repaint()
+        # self.Render()
+        # self.graphicsFrameWidget.repaint()
         
     def hideCells(self):
-        print MODULENAME,'  hideCells():  type(self.graphicsFrameWidget)= ',type(self.graphicsFrameWidget)
+        # print MODULENAME,'  hideCells():  type(self.graphicsFrameWidget)= ',type(self.graphicsFrameWidget)
 #        print MODULENAME,'  hideCells():  type(self.parentWidget)= ',type(self.parentWidget)
 #        print MODULENAME,'  hideCells():  self.parentWidget.lastActiveWindow= ',self.parentWidget.lastActiveWindow
 #        print MODULENAME,'  hideCells():  type(self.lastActiveWindow)= ',type(self.lastActiveWindow)
@@ -152,11 +156,11 @@ class MVCDrawView2D(MVCDrawViewBase):
 #            self.parentWidget.lastActiveWindow.ren.RemoveActor(self.hexCellsActor)
         if self.currentActors.has_key("CellsActor"):
             del self.currentActors["CellsActor"] 
-#            self.graphicsFrameWidget.ren.RemoveActor(self.cellsActor)
-            self.parentWidget.lastActiveWindow.ren.RemoveActor(self.cellsActor)
+            self.graphicsFrameWidget.ren.RemoveActor(self.cellsActor)
+            # self.parentWidget.lastActiveWindow.ren.RemoveActor(self.cellsActor)
         self.Render()
-#        self.graphicsFrameWidget.repaint()
-        self.parentWidget.lastActiveWindow.repaint()
+        self.graphicsFrameWidget.repaint()
+        # self.parentWidget.lastActiveWindow.repaint()
 
     def hideAllActors(self):   # never used?
         removedActors=[]
@@ -316,7 +320,12 @@ class MVCDrawView2D(MVCDrawViewBase):
         outlineData.SetDimensions(_dim[0], _dim[1], 1)
 
         outline = vtk.vtkOutlineFilter()
-        outline.SetInput(outlineData)
+        
+        if VTK_MAJOR_VERSION>=6:
+            outline.SetInputData(outlineData)
+        else:    
+            outline.SetInput(outlineData)
+                
         outlineMapper = vtk.vtkPolyDataMapper()
         outlineMapper.SetInputConnection(outline.GetOutputPort())
     
@@ -385,8 +394,9 @@ class MVCDrawView2D(MVCDrawViewBase):
             
             
             # time.sleep(5)                
-            
+            # if self.parentWidget.graphicsWindowVisDict[dictKey][0]:            
             self.drawModel.initCellFieldActors((self.cellsActor,))            
+            
             
             
             # # # print 'INSIDE self.drawCellField AFTER initCellFieldActors'    
@@ -601,26 +611,88 @@ class MVCDrawView2D(MVCDrawViewBase):
             self.drawConFieldHex(sim,fieldType)
             return
             
-        fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillConFieldData2D") # this is simply a "pointer" to function       
+        fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillConFieldData2D") # this is simply a "pointer" to function 
+        
+        if self.pixelizedScalarField:  # when user requests we draw cartesian scalar field using exact pixels  not smopothed out regions as given by sinple vtkImageData scalar visualization. 
+        # Perhaps there is switch in vtkImageDataGeometryFilter or related vtk object that will draw nice pixels but for now we are sticking with this somewhat repetitive code     
+            fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillConFieldData2DCartesian") # this is simply a "pointer" to function       
+            
         self.drawScalarFieldData(sim,fieldType,fillScalarField)
         
     def drawScalarFieldCellLevel(self, sim, fieldType):
         if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
             self.drawScalarFieldCellLevelHex(sim,fieldType)
             return    
+            
         fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillScalarFieldCellLevelData2D") # this is simply a "pointer" to function        
+        
+        if self.pixelizedScalarField:  # when user requests we draw cartesian scalar field using exact pixels  not smopothed out regions as given by sinple vtkImageData scalar visualization. 
+        # Perhaps there is switch in vtkImageDataGeometryFilter or related vtk object that will draw nice pixels but for now we are sticking with this somewhat repetitive code     
+            fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillScalarFieldCellLevelData2DCartesian") # this is simply a "pointer" to function        
         self.drawScalarFieldData(sim,fieldType,fillScalarField)
         
     def drawScalarField(self, sim, fieldType):
         if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
             self.drawScalarFieldHex(sim,fieldType)
             return        
-        fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillScalarFieldData2D") # this is simply a "pointer" to function        
+            
+        fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillScalarFieldData2D") # this is simply a "pointer" to function 
+        
+        if self.pixelizedScalarField:  # when user requests we draw cartesian scalar field using exact pixels  not smopothed out regions as given by sinple vtkImageData scalar visualization. 
+        # Perhaps there is switch in vtkImageDataGeometryFilter or related vtk object that will draw nice pixels but for now we are sticking with this somewhat repetitive code             
+            fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillScalarFieldData2DCartesian") # this is simply a "pointer" to function               
+            
         self.drawScalarFieldData(sim,fieldType,fillScalarField)
     
+    # # # def drawScalarFieldData(self, _bsd, fieldType,_fillScalarField):
+# # # #        print MODULENAME, '------ drawScalarFieldData'
+        # # # self.drawModel.initScalarFieldActors(_fillScalarField,(self.conActor,self.contourActor,))
+        
+        # # # if not self.currentActors.has_key("ConActor"):
+            # # # self.currentActors["ConActor"]=self.conActor  
+            # # # self.graphicsFrameWidget.ren.AddActor(self.conActor) 
+            
+            # # # actorProperties=vtk.vtkProperty()
+            # # # actorProperties.SetOpacity(1.0)
+            
+            # # # self.conActor.SetProperty(actorProperties)
+            
+        # # # if Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName):            
+            # # # self.drawModel.prepareLegendActors((self.drawModel.conMapper,),(self.legendActor,))
+            # # # self.showLegend(True)
+        # # # else:
+            # # # self.showLegend(False)
+
+        # # # if self.parentWidget.borderAct.isChecked():
+            # # # self.drawBorders2D() 
+        # # # else:
+            # # # self.hideBorder()
+
+# # # #        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):                        
+# # # #            self.showContours(True)
+# # # #        else:
+# # # #            self.showContours(False)
+        # # # self.showContours(True)
+            
+        # # # self.drawModel.prepareOutlineActors((self.outlineActor,))       
+        # # # self.showOutlineActor()    
+        
+        # # # # FIXME: 
+        # # # # self.drawContourLines()
+        # # # # # # print "DRAW CON FIELD NUMBER OF ACTORS = ",self.ren.GetActors().GetNumberOfItems()
+        # # # # self.repaint()
+        # # # self.Render()
+
     def drawScalarFieldData(self, _bsd, fieldType,_fillScalarField):
-#        print MODULENAME, '------ drawScalarFieldData'
-        self.drawModel.initScalarFieldActors(_fillScalarField,(self.conActor,self.contourActor,))
+        # print MODULENAME, '------ drawScalarFieldData'
+        # self.drawModel.initScalarFieldCartesianActors(_fillScalarField) 
+        
+        if self.pixelizedScalarField:  # when user requests we draw cartesian scalar field using exact pixels  not smopothed out regions as given by sinple vtkImageData scalar visualization. 
+        # Perhaps there is switch in vtkImageDataGeometryFilter or related vtk object that will draw nice pixels but for now we are sticking with this somewhat repetitive code             
+            self.drawModel.initScalarFieldCartesianActors(_fillScalarField,(self.conActor,self.contourActor,))
+        else:   
+            print 'DRAWING SCALAR FIELD DATA'
+            self.drawModel.initScalarFieldActors(_fillScalarField,(self.conActor,self.contourActor,))
         
         if not self.currentActors.has_key("ConActor"):
             self.currentActors["ConActor"]=self.conActor  
@@ -632,7 +704,7 @@ class MVCDrawView2D(MVCDrawViewBase):
             self.conActor.SetProperty(actorProperties)
             
         if Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName):            
-            self.drawModel.prepareLegendActors((self.drawModel.conMapper,),(self.legendActor,))
+            self.drawModel.prepareLegendActors((self.drawModel.conMapper,),(self.legendActor,))            
             self.showLegend(True)
         else:
             self.showLegend(False)

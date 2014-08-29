@@ -20,35 +20,14 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
- #include <CompuCell3D/CC3D.h>
+#include <CompuCell3D/CC3D.h>
 
-// // // #include <CompuCell3D/Automaton/Automaton.h>
-// // // #include <CompuCell3D/Field3D/Dim3D.h>
-// // // #include <CompuCell3D/ClassRegistry.h>
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/Field3DIO.h>
-// // // #include <CompuCell3D/Potts3D/Cell.h>
 #include <CompuCell3D/steppables/PDESolvers/DiffusableVector.h>
 
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/ClassRegistry.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
 
 using namespace CompuCell3D;
 
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-// // // #include <BasicUtils/BasicClassFactoryBase.h>
-// // // #include <PublicUtilities/StringUtils.h>
-// // // #include <map>
-// // // #include <string>
-// // // #include <fstream>
-// // // #include <iostream>
-// // // #include <sstream>
 using namespace std;
-
-
 
 #include "ChemotaxisData.h"
 #include "ChemotaxisPlugin.h"
@@ -138,7 +117,7 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		chemotaxisFieldDataVec.push_back(ChemotaxisFieldData());
 		ChemotaxisFieldData & cfd=chemotaxisFieldDataVec[chemotaxisFieldDataVec.size()-1];
 
-		cfd.chemicalFieldSource = chemicalFieldXMlList[i]->getAttribute("Source");
+		//cfd.chemicalFieldSource = chemicalFieldXMlList[i]->getAttribute("Source");// deprecated
 		cfd.chemicalFieldName =chemicalFieldXMlList[i]->getAttribute("Name");
 
 		cfd.vecChemotaxisData.clear();
@@ -163,7 +142,10 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 				cd.formulaName="SaturationLinearChemotaxisFormula";
 			}
 			if(chemotactByTypeXMlList[j]->findAttribute("ChemotactTowards")){
+				//ASSERT_OR_THROW("ChemotactTowards is deprecated now. Please replace it with ChemotactAtInterfaceWith.",chemotaxisFieldDataVec.size());
 				cd.chemotactTowardsTypesString=chemotactByTypeXMlList[j]->getAttribute("ChemotactTowards");
+			}else if (chemotactByTypeXMlList[j]->findAttribute("ChemotactAtInterfaceWith")){// both keywords are OK
+				cd.chemotactTowardsTypesString=chemotactByTypeXMlList[j]->getAttribute("ChemotactAtInterfaceWith");
 			}
 			//cerr<<"cd.typeName="<<cd.typeName<<" cd.lambda="<<endl;
 
@@ -172,11 +154,14 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	}
 	//Now after parsing XMLtree we initialize things
 
+	ASSERT_OR_THROW("You forgot to define the body of chemotaxis plugin. See manual for details",chemotaxisFieldDataVec.size());
+
 	automaton=potts->getAutomaton();
 
 	unsigned char maxType=0;
 	//first will find max type value
-	cerr<<"chemotaxisFieldDataVec[0].vecChemotaxisData.size()="<<chemotaxisFieldDataVec[0].vecChemotaxisData.size()<<endl;
+
+//	cerr<<"chemotaxisFieldDataVec[0].vecChemotaxisData.size()="<<chemotaxisFieldDataVec[0].vecChemotaxisData.size()<<endl;
 
 	for(int i = 0 ; i < chemotaxisFieldDataVec.size() ; ++ i)
 		for(int j = 0 ; j < chemotaxisFieldDataVec[i].vecChemotaxisData.size() ; ++j){
@@ -250,8 +235,6 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 			}
 
 			//Now need to initialize field pointers
-			ClassRegistry *classRegistry=sim->getClassRegistry();
-			Steppable * steppable;
 			cerr<<"chemicalFieldSourceVec.size()="<<chemotaxisFieldDataVec.size()<<endl;
 			fieldVec.clear();
 			fieldVec.assign(chemotaxisFieldDataVec.size(),0);//allocate fieldVec
@@ -273,19 +256,7 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 					}
 				}
-				//else{
-					//cerr<<"WILL REQUEST "<<chemotaxisFieldDataVec[i].chemicalFieldSource<<endl;
-					//steppable=classRegistry->getStepper(chemotaxisFieldDataVec[i].chemicalFieldSource);
-					//cerr<<"flex solver steppble obj="<<steppable<<endl;
-					//cerr<<"fieldVec.size()="<<fieldVec.size()<<endl;
-					////fieldVec[i]=((DiffusableVector<float> *) steppable)->getConcentrationField(chemotaxisFieldDataVec[i].chemicalFieldName);
-					//fieldVec[i]=((DiffusableVector<float> *) steppable)->getConcentrationField(chemotaxisFieldDataVec[i].chemicalFieldName);
-					//
-					//cerr<<"fieldVec[i]="<<fieldVec[i]<<endl;
-					//fieldNameVec[i]=chemotaxisFieldDataVec[i].chemicalFieldName;
-					//cerr<<"fieldNameVec[]="<<fieldNameVec[i]<<endl;
-					//ASSERT_OR_THROW("No chemical field has been loaded!", fieldVec[i]);
-				//}
+	
 			}
 
 }

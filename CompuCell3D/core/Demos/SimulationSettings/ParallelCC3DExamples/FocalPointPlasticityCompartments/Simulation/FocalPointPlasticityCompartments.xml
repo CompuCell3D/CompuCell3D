@@ -1,7 +1,7 @@
  <CompuCell3D>
  
    <Metadata>
-    <VirtualProcessingUnits ThreadsPerVPU="1">4</VirtualProcessingUnits>
+    <NumberOfProcessors>4</NumberOfProcessors>
  </Metadata> 
  
  <Potts>

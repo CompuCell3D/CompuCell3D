@@ -7,11 +7,16 @@ from PyQt4.QtCore import *
     
 class SimulationThread(QtCore.QThread):
 
-    __pyqtSignals__ = ("completedStep(int)","simulationInitialized(bool)","simulationInitialized(bool)","errorOccured(QString,QString)","simulationFinished(bool)","errorOccuredDetailed(QString,QString,int,int,QString)","errorFormatted(QString)",)
+    __pyqtSignals__ = ("completedStep(int)","simulationInitialized(bool)","simulationInitialized(bool)","errorOccured(QString,QString)","simulationFinished(bool)","finishRequest(bool)","errorOccuredDetailed(QString,QString,int,int,QString)","errorFormatted(QString)",)
 
     @QtCore.pyqtSignature("emitCompletedStep(int)")
     def emitCompletedStep(self,_mcs=None):
         self.emit(SIGNAL("completedStep(int)") , _mcs)
+
+    @QtCore.pyqtSignature("emitFinishRequest(bool)")
+    def emitFinishRequest(self,_flag=True):
+        print 'emiting finish request'
+        self.emit(SIGNAL("finishRequest(bool)"), _flag)
         
 
     @QtCore.pyqtSignature("simulationInitialized(bool)")
@@ -64,6 +69,9 @@ class SimulationThread(QtCore.QThread):
         self.semPause=QSemaphore(1)
         # self.mutex = QtCore.QMutex()
         self.drawMutex = QtCore.QMutex()
+        self.finishMutex = QtCore.QMutex()
+        self.finishMutex.lock() # this mutex will be unlocked externally when it is ok for simulation to finish
+        
         # self.pauseMutex = QtCore.QMutex()
         self.simulationInitialized=False
         self.stopThreadFlag=False
@@ -119,7 +127,7 @@ class SimulationThread(QtCore.QThread):
         if self.__fileWriter is None:
             import PlayerPython
             self.__fileWriter=PlayerPython.FieldWriter()       
-            self.__fileWriter.init(self.sim)
+            self.__fileWriter.init(self.sim()) #note self.sim is a weak reference so to pass underlying object to swigged-fcn we need to derefernce it by using self.sim() expression
         self.__fileWriter.generatePIFFileFromCurrentStateOfSimulation(_pifFileName)
         
     def getCurrentStep(self):

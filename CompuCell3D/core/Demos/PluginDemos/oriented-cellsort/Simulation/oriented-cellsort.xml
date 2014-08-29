@@ -49,11 +49,14 @@
  <Plugin Name="MomentOfInertia"/>
 
 
- <Steppable Type="BlobInitializer">
-   <Gap>0</Gap>
-   <Width>5</Width>
-   <CellSortInit>yes</CellSortInit>   
-   <Radius>40</Radius>
- </Steppable>
+<Steppable Type="BlobInitializer">   
+   <Region>
+      <Center x="50" y="50" z="0"/>
+      <Radius>40</Radius>
+      <Gap>0</Gap>
+      <Width>5</Width>
+      <Types>Condensing,NonCondensing</Types>
+   </Region>
+</Steppable>
 
 </CompuCell3D>

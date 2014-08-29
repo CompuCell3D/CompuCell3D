@@ -293,7 +293,7 @@ class ThemeManager(object):
         lexer=_editor.lexer()        
         
         if not lexer:
-            print 'APPLYING GLOBAL STYLE ITEMS'
+#             print 'APPLYING GLOBAL STYLE ITEMS'
             self.applyGlobalStyleItems(theme,_editor)
             return
 

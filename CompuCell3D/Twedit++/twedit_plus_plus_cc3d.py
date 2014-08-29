@@ -137,9 +137,21 @@ class Twedit(object):
     
     def main(self,argv):
         
-
+        
         #global mainWindow
         app = CQApplication(argv)
+
+        qtVersion=str(QT_VERSION_STR).split('.') 
+        import platform
+        
+        if platform.mac_ver()[0]!='' and qtVersion[1]>=2: # style sheets may not work properly for qt < 4.2
+            app.setStyleSheet( "QDockWidget::close-button, QDockWidget::float-button { padding: 0px;icon-size: 24px;}")
+        
+
+
+
+
+
         
         pixmap = QPixmap("icons/lizard-at-a-computer-small.png")
         print "pixmap=",pixmap

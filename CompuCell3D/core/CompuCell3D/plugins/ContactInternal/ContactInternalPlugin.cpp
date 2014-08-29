@@ -59,6 +59,13 @@ void ContactInternalPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData)
 
 void ContactInternalPlugin::extraInit(Simulator *simulator){
 	update(xmlData,true);
+
+	Automaton * cellTypePluginAutomaton = potts->getAutomaton();
+	if (cellTypePluginAutomaton){
+		ASSERT_OR_THROW("The size of matrix of internal contact energy coefficients has must equal max_cell_type_id+1. You must list interactions coefficients between all cel types, even though they might not be part of a compartmentalized cell", 
+		internalEnergyArray.size() == ((unsigned int)cellTypePluginAutomaton->getMaxTypeId()+1) );
+	}
+
 }
 
 double ContactInternalPlugin::changeEnergy(const Point3D &pt,

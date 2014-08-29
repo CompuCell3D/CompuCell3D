@@ -61,12 +61,15 @@
 
 
 
- <Steppable Type="BlobInitializer">
-   <Gap>0</Gap>
-   <Width>5</Width> <!-- cell size -->
-   <CellSortInit>yes</CellSortInit>   
-   <Radius>50</Radius> <!-- blob size -->
- </Steppable>
+<Steppable Type="BlobInitializer">   
+   <Region>
+      <Center x="100" y="100" z="0"/>
+      <Radius>50</Radius>
+      <Gap>0</Gap>
+      <Width>5</Width>
+      <Types>CadExpLevel1,CadExpLevel2</Types>
+   </Region>
+</Steppable>
 
 
 

@@ -443,12 +443,11 @@ void AdhesionFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	//initializing binding parameter array
 	int sizeBindingArray=moleculeNameIndexMap.size();
 
-
 	int indexBindingArray ;
 	bindingParameterArray.clear();
 	bindingParameterArray.assign(sizeBindingArray,vector<double>(sizeBindingArray,0.0));
 	bindingParameters_t::iterator bmitr;
-
+	
 	for(int i = 0 ; i < sizeBindingArray ; ++i)
 		for(int j = 0 ; j < sizeBindingArray ; ++j){
 

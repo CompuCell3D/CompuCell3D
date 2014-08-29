@@ -6,7 +6,7 @@ def configureSimulation(sim):
     cc3d=ElementCC3D("CompuCell3D")
 
     metadata=cc3d.ElementCC3D("Metadata")
-    metadata.ElementCC3D("VirtualProcessingUnits",{"ThreadsPerVPU":1},4)
+    metadata.ElementCC3D("NumberOfProcessors",{},4)
     
     potts=cc3d.ElementCC3D("Potts")
     potts.ElementCC3D("Dimensions",{"x":dim,"y":dim,"z":dim})
@@ -18,7 +18,7 @@ def configureSimulation(sim):
     cellType.ElementCC3D("CellType", {"TypeName":"Medium", "TypeId":"0"})
 
 
-    flexDiffSolver=cc3d.ElementCC3D("Steppable",{"Type":"FlexibleDiffusionSolverFE"})
+    flexDiffSolver=cc3d.ElementCC3D("Steppable",{"Type":"DiffusionSolverFE"})
     diffusionField=flexDiffSolver.ElementCC3D("DiffusionField")
     diffusionData=diffusionField.ElementCC3D("DiffusionData")
     diffusionData.ElementCC3D("FieldName",{},"FGF")

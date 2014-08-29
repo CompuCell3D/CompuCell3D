@@ -10,6 +10,9 @@ import vtk, math
 import sys, os
 import string
 
+VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
+
+
 MODULENAME='----- MVCDrawModel2D.py:  '
 
 
@@ -25,6 +28,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         ## Set up the mappers (2D) for cell vis.
         self.cellsMapper    = vtk.vtkPolyDataMapper()
         self.hexCellsMapper = vtk.vtkPolyDataMapper()
+        self.cartesianCellsMapper = vtk.vtkPolyDataMapper()
         self.borderMapper   = vtk.vtkPolyDataMapper()
         self.borderMapperHex   = vtk.vtkPolyDataMapper()
         self.clusterBorderMapper   = vtk.vtkPolyDataMapper()
@@ -37,6 +41,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         ## Set up the mappers (2D) for concentration field.
         self.conMapper      = vtk.vtkPolyDataMapper()
         self.hexConMapper   = vtk.vtkPolyDataMapper()
+        self.cartesianConMapper   = vtk.vtkPolyDataMapper()
         self.contourMapper  = vtk.vtkPolyDataMapper()
         self.glyphsMapper   = vtk.vtkPolyDataMapper()
         
@@ -86,7 +91,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
             # self.outlineDim=outlineDimTmp
         
         outline = vtk.vtkOutlineFilter()
-        outline.SetInput(outlineData)
+        
+        if VTK_MAJOR_VERSION>=6:
+            outline.SetInputData(outlineData)
+        else:    
+            outline.SetInput(outlineData)
+        
+        
         outlineMapper = vtk.vtkPolyDataMapper()
         outlineMapper.SetInputConnection(outline.GetOutputPort())
     
@@ -161,8 +172,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.hexCellsPolyData.GetCellData().SetScalars(self.cellType)
         self.hexCellsPolyData.SetPoints(self.hexPoints)
         self.hexCellsPolyData.SetPolys(self.hexCells)
+        
+        if VTK_MAJOR_VERSION>=6:
+            self.hexCellsMapper.SetInputData(self.hexCellsPolyData)
+        else:    
+            self.hexCellsMapper.SetInput(self.hexCellsPolyData)
 		
-        self.hexCellsMapper.SetInput(self.hexCellsPolyData)
+        
         self.hexCellsMapper.ScalarVisibilityOn()
         self.hexCellsMapper.SetLookupTable(self.celltypeLUT)
         self.hexCellsMapper.SetScalarRange(0,self.celltypeLUTMax)
@@ -179,10 +195,27 @@ class MVCDrawModel2D(MVCDrawModelBase):
         field       = vtk.vtkImageDataGeometryFilter()        
         # field.SetExtent(0, _dim[0], 0, int((_dim[1])*math.sqrt(3.0)), 0, 0)
         # field.SetExtent(0, _dim[0], 0, _dim[1]/2, 0, 0)
-        field.SetInput(data)
+        
+        if VTK_MAJOR_VERSION>=6:
+            field.SetInputData(data)
+        else:    
+            field.SetInput(data)
+        
+        
         transform = vtk.vtkTransform()
+        # transform.Scale(1,math.sqrt(3.0)/2.0,1)
+        # transform.Translate(0,math.sqrt(3.0)/2.0,0)
+        
+        
         transform.Scale(1,math.sqrt(3.0)/2.0,1)
-        transform.Translate(0,math.sqrt(3.0)/2.0,0)
+        if self.currentDrawingParameters.planePos % 3 == 0:
+            transform.Translate(0.5,0,0) #z%3==0
+        elif self.currentDrawingParameters.planePos % 3 == 1:   
+            transform.Translate(0,math.sqrt(3.0)/4.0,0)#z%3==1
+        else:    
+            transform.Translate(0.0,-math.sqrt(3.0)/4.0,0) #z%3==2
+        
+        
         
         isoContour = vtk.vtkContourFilter()
         
@@ -258,8 +291,15 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.hexCellsConPolyData.GetCellData().SetScalars(self.conArray)
         self.hexCellsConPolyData.SetPoints(self.hexPointsCon)
         self.hexCellsConPolyData.SetPolys(self.hexCellsCon)
-		
-        self.hexConMapper.SetInput(self.hexCellsConPolyData)
+
+        if VTK_MAJOR_VERSION>=6:
+            self.hexConMapper.SetInputData(self.hexCellsConPolyData)
+        else:    
+            self.hexConMapper.SetInput(self.hexCellsConPolyData)
+
+
+        
+        
         self.hexConMapper.ScalarVisibilityOn()
         self.hexConMapper.SetLookupTable(self.clut)
         self.hexConMapper.SetScalarRange(self.minCon, self.maxCon)
@@ -316,8 +356,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.hexCellsConPolyData.GetCellData().SetScalars(self.conArray)
         self.hexCellsConPolyData.SetPoints(self.hexPointsCon)
         self.hexCellsConPolyData.SetPolys(self.hexCellsCon)
-		
-        self.hexConMapper.SetInput(self.hexCellsConPolyData)
+
+        if VTK_MAJOR_VERSION>=6:
+            self.hexConMapper.SetInputData(self.hexCellsConPolyData)
+        else:    
+            self.hexConMapper.SetInput(self.hexCellsConPolyData)
+        
         self.hexConMapper.ScalarVisibilityOn()
         self.hexConMapper.SetLookupTable(self.clut)
         self.hexConMapper.SetScalarRange(self.minCon, self.maxCon)
@@ -377,8 +421,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.hexCellsConPolyData.GetCellData().SetScalars(self.conArray)
         self.hexCellsConPolyData.SetPoints(self.hexPointsCon)
         self.hexCellsConPolyData.SetPolys(self.hexCellsCon)
+        if VTK_MAJOR_VERSION>=6:
+            self.hexConMapper.SetInputData(self.hexCellsConPolyData)
+        else:    
+            self.hexConMapper.SetInput(self.hexCellsConPolyData)
 		
-        self.hexConMapper.SetInput(self.hexCellsConPolyData)
+        
         self.hexConMapper.ScalarVisibilityOn()
         self.hexConMapper.SetLookupTable(self.clut)
         self.hexConMapper.SetScalarRange(self.minCon, self.maxCon)
@@ -402,13 +450,139 @@ class MVCDrawModel2D(MVCDrawModelBase):
         fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillScalarFieldCellLevelData2D") # this is simply a "pointer" to function        
         self.drawScalarFieldData(sim,fieldType,fillScalarField)  # in MVCDrawView2D
         
+    # def drawScalarField(self, sim, fieldType):
+        # print MODULENAME,'  drawScalarField()'
+        # if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
+            # self.drawScalarFieldHex(sim,fieldType)
+            # return        
+        # fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillScalarFieldData2D") # this is simply a "pointer" to function        
+        # self.drawScalarFieldData(sim,fieldType,fillScalarField)  # in MVCDrawView2D
+    
     def drawScalarField(self, sim, fieldType):
-        print MODULENAME,'  drawScalarField()'
+        # print MODULENAME,'  drawScalarField()'
+        # print '\n\n\n\n\n drawScalarField',MODULENAME
         if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
             self.drawScalarFieldHex(sim,fieldType)
             return        
-        fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillScalarFieldData2D") # this is simply a "pointer" to function        
-        self.drawScalarFieldData(sim,fieldType,fillScalarField)  # in MVCDrawView2D
+        fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillConFieldData2D") # this is simply a "pointer" to function        
+        self.drawScalarFieldData(sim,fieldType,fillScalarField)  # in MVCDrawView2D    
+    
+
+    def initializeContoursCartesian(self,_dim,_conArray,_minMax,_contourActor):
+#        print MODULENAME,'   initializeContoursHex():  _conArray=',_conArray
+        data = vtk.vtkImageData()
+        data.SetDimensions(_dim[0], _dim[1], 1)        
+
+        if VTK_MAJOR_VERSION  >= 6:      
+            data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR,3)  
+        else:
+            data.SetScalarTypeToUnsignedChar()      
+        
+        
+        data.GetPointData().SetScalars(_conArray)
+        field = vtk.vtkImageDataGeometryFilter()        
+        # field.SetExtent(0, _dim[0], 0, int((_dim[1])*math.sqrt(3.0)), 0, 0)
+        # field.SetExtent(0, _dim[0], 0, _dim[1]/2, 0, 0)
+        if VTK_MAJOR_VERSION>=6:
+            field.SetInputData(data)
+        else:    
+            field.SetInput(data)
+        
+        transform = vtk.vtkTransform()
+        # transform.Scale(1,math.sqrt(3.0)/2.0,1)
+        transform.Translate(0.5,0.5,0) # for some reason there is   is offset  of (0.5,0.5,0) when generating contours
+        
+        isoContour = vtk.vtkContourFilter()
+        
+#        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):
+        if True:
+            isoContour.SetInputConnection(field.GetOutputPort())
+            isoContour.GenerateValues(Configuration.getSetting("NumberOfContourLines",self.currentDrawingParameters.fieldName)+2, _minMax)
+            
+            tpd1 = vtk.vtkTransformPolyDataFilter()
+            tpd1.SetInputConnection(isoContour.GetOutputPort())
+            tpd1.SetTransform(transform)
+            
+            # self.contourMapper.SetInputConnection(contour.GetOutputPort())
+            self.contourMapper.SetInputConnection(tpd1.GetOutputPort())
+            self.contourMapper.SetLookupTable(self.ctlut)
+            self.contourMapper.SetScalarRange(_minMax) 
+            self.contourMapper.ScalarVisibilityOff()
+            _contourActor.SetMapper(self.contourMapper)
+    
+    
+    # def initScalarFieldCartesianActors(self,_actors):
+    def initScalarFieldCartesianActors(self, _fillScalarField,_actors):    
+            
+        # cellField  = sim.getPotts().getCellFieldG()
+        # conField   = CompuCell.getConcentrationField(sim, fieldType[0]) 
+        conFieldName = self.currentDrawingParameters.fieldName       
+        # print MODULENAME,'   initScalarFieldHexActors():  conFieldName=',conFieldName
+        
+        # # # print "drawing plane ",self.plane," planePos=",self.planePos
+        fieldDim = self.currentDrawingParameters.bsd.fieldDim
+        dimOrder    = self.dimOrder(self.currentDrawingParameters.plane)
+        self.dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]         
+            
+        self.conArray = vtk.vtkDoubleArray()
+        self.conArray.SetName("concentration")
+        self.conArrayIntAddr=self.extractAddressIntFromVtkObject(self.conArray)
+        self.cartesianPointsCon = vtk.vtkPoints()
+        # self.hexPoints.SetName("hexpoints")
+        self.cartesianPointsConIntAddr=self.extractAddressIntFromVtkObject(self.cartesianPointsCon)
+        
+        # ***************************************************************************    
+        self.cartesianCellsCon=vtk.vtkCellArray()
+		
+        self.cartesianCellsConIntAddr=self.extractAddressIntFromVtkObject(self.cartesianCellsCon)
+		
+        self.cartesianCellsConPolyData=vtk.vtkPolyData()
+        
+        # *************************************************************************** 
+        # # # fillSuccessful=self.parentWidget.fieldExtractor.fillConFieldData2DCartesian(self.conArrayIntAddr,self.cartesianCellsConIntAddr,self.cartesianPointsConIntAddr,conFieldName,self.currentDrawingParameters.plane, self.currentDrawingParameters.planePos)             
+        
+        fillSuccessful=_fillScalarField(self.conArrayIntAddr,self.cartesianCellsConIntAddr,self.cartesianPointsConIntAddr,conFieldName,self.currentDrawingParameters.plane, self.currentDrawingParameters.planePos)                     
+        # print 'fillSuccessful=',fillSuccessful
+        if not fillSuccessful:
+            return
+
+        range=self.conArray.GetRange()
+        self.minCon=range[0]
+        self.maxCon=range[1]
+        dim_0=self.dim[0]+1
+        dim_1=self.dim[1]+1
+                
+        
+        if Configuration.getSetting("MinRangeFixed",self.currentDrawingParameters.fieldName):
+            self.minCon=Configuration.getSetting("MinRange",self.currentDrawingParameters.fieldName)            
+                        
+        if Configuration.getSetting("MaxRangeFixed",self.currentDrawingParameters.fieldName):
+            self.maxCon=Configuration.getSetting("MaxRange",self.currentDrawingParameters.fieldName)
+        
+#        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):
+        if True:
+            contourActor=_actors[1]
+            self.initializeContoursCartesian([self.dim[0], self.dim[1]],self.conArray,[self.minCon, self.maxCon],contourActor)        
+            
+
+        self.cartesianCellsConPolyData.GetCellData().SetScalars(self.conArray)
+        self.cartesianCellsConPolyData.SetPoints(self.cartesianPointsCon)
+        self.cartesianCellsConPolyData.SetPolys(self.cartesianCellsCon)
+        
+        if VTK_MAJOR_VERSION>=6:
+            self.conMapper.SetInputData(self.cartesianCellsConPolyData)
+        else:    
+            self.conMapper.SetInput(self.cartesianCellsConPolyData)
+        
+        self.conMapper.ScalarVisibilityOn()
+        self.conMapper.SetLookupTable(self.clut)
+        self.conMapper.SetScalarRange(self.minCon, self.maxCon)
+        
+        _actors[0].SetMapper(self.conMapper)        
+
+    
+    
+    
     
     
     def initScalarFieldActors(self, _fillScalarField,_actors):
@@ -466,14 +640,28 @@ class MVCDrawModel2D(MVCDrawModelBase):
         dim_0 = self.dim[0]+1
         dim_1 = self.dim[1]+1
 
+        print 'dim_0,dim_1=',(dim_0,dim_1)
+        
         data = vtk.vtkImageData()
         data.SetDimensions(dim_0, dim_1, 1)
         # print "dim_0,dim_1",(dim_0,dim_1)
-        data.SetScalarTypeToUnsignedChar()      
+        
+#         
+        if VTK_MAJOR_VERSION >= 6:
+            data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR,3)      
+        else:
+            data.SetScalarTypeToUnsignedChar()    
+            
         data.GetPointData().SetScalars(self.conArray)
         
         field = vtk.vtkImageDataGeometryFilter()
-        field.SetInput(data)
+        
+        if VTK_MAJOR_VERSION>=6:
+            field.SetInputData(data)
+        else:    
+            field.SetInput(data)
+                
+        
         field.SetExtent(0, dim_0, 0, dim_1, 0, 0)
         
 #        spoints = vtk.vtkStructuredPoints()
@@ -535,9 +723,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         
         self.conMapper.SetInputConnection(field.GetOutputPort()) # port index = 0
+        
         self.conMapper.ScalarVisibilityOn()
         self.conMapper.SetLookupTable(self.clut)
         self.conMapper.SetScalarRange(self.minCon, self.maxCon) #0, self.clut.GetNumberOfColors()) # may manually set range so that type reassignment will not be scalled dynamically when one type is missing
+        
         self.conMapper.SetScalarModeToUsePointData()
         
         _actors[0].SetMapper(self.conMapper)   # concentration actor
@@ -625,8 +815,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
         
 
         glyphs=vtk.vtkGlyph3D()
+        
+        if VTK_MAJOR_VERSION>=6:
+            glyphs.SetInputData(vectorGrid)
+        else:    
+            glyphs.SetInput(vectorGrid)
 
-        glyphs.SetInput(vectorGrid)
+        
         glyphs.SetSourceConnection(cone.GetOutputPort())
         #glyphs.SetScaleModeToScaleByVector()        
         # glyphs.SetColorModeToColorByVector()
@@ -745,7 +940,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
         
         glyphs=vtk.vtkGlyph3D()
 
-        glyphs.SetInput(vectorGrid)
+        if VTK_MAJOR_VERSION>=6:
+            glyphs.SetInputData(vectorGrid)
+        else:    
+            glyphs.SetInput(vectorGrid)
+        
         glyphs.SetSourceConnection(cone.GetOutputPort())
         #glyphs.SetScaleModeToScaleByVector()
         # glyphs.SetColorModeToColorByVector()
@@ -859,7 +1058,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         glyphs=vtk.vtkGlyph3D()
 
-        glyphs.SetInput(vectorGrid)
+        if VTK_MAJOR_VERSION>=6:
+            glyphs.SetInputData(vectorGrid)
+        else:    
+            glyphs.SetInput(vectorGrid)
+
         glyphs.SetSourceConnection(cone.GetOutputPort())
         #glyphs.SetScaleModeToScaleByVector()
         # glyphs.SetColorModeToColorByVector()
@@ -1263,7 +1466,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         borders.SetPoints(points)
         borders.SetLines(lines)
         
-        self.borderMapper.SetInput(borders)
+        if VTK_MAJOR_VERSION>=6:
+            self.borderMapper.SetInputData(borders)
+        else:    
+            self.borderMapper.SetInput(borders)
+        
+        
         _actors[0].SetMapper(self.borderMapper)
         # self.setBorderColor() 
 
@@ -1297,7 +1505,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         borders.SetPoints(points)
         borders.SetLines(lines)
 
-        self.borderMapperHex.SetInput(borders)
+        if VTK_MAJOR_VERSION>=6:
+            self.borderMapperHex.SetInputData(borders)
+        else:    
+            self.borderMapperHex.SetInput(borders)
+
+        
         _actors[0].SetMapper(self.borderMapperHex)
         # self.setBorderColor() 
         # if not self.currentActors.has_key("BorderActor"):
@@ -1324,7 +1537,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
         borders.SetPoints(points)
         borders.SetLines(lines)
         
-        self.clusterBorderMapper.SetInput(borders)
+        if VTK_MAJOR_VERSION>=6:
+            self.clusterBorderMapper.SetInputData(borders)
+        else:    
+            self.clusterBorderMapper.SetInput(borders)        
+        
         clusterBordersActor.SetMapper(self.clusterBorderMapper)
         
     def initClusterBordersActors2DHex(self,clusterBordersActor):
@@ -1341,7 +1558,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         borders.SetPoints(points)
         borders.SetLines(lines)
         
-        self.clusterBorderMapperHex.SetInput(borders)
+        if VTK_MAJOR_VERSION>=6:
+            self.clusterBorderMapperHex.SetInputData(borders)
+        else:    
+            self.clusterBorderMapperHex.SetInput(borders)
+            
+        
         clusterBordersActor.SetMapper(self.clusterBorderMapperHex)
         
 #--------------------------------------------------------------------------------------------------
@@ -1457,7 +1679,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
         #gs.CrossOff()
 
         centroidGlyph = vtk.vtkGlyph3D()
-        centroidGlyph.SetInput(centroidsPD)
+        if VTK_MAJOR_VERSION>=6:
+            centroidGlyph.SetInputData(centroidsPD)
+        else:    
+            centroidGlyph.SetInput(centroidsPD)
+        
         centroidGlyph.SetSource(centroidGS.GetOutput())
 #        centroidGlyph.SetScaleFactor( 0.2 )  # rwh: should this lattice size dependent or cell vol or ?
         glyphScale = Configuration.getSetting("CellGlyphScale")
@@ -1474,8 +1700,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
 #        centroidGlyph.SetInputArrayToProcess(0,0,0,0,"CellVolumes")
         centroidGlyph.SetInputArrayToProcess(0,0,0,0,"CellScalars")
 
-
-        self.cellGlyphsMapper.SetInput(centroidGlyph.GetOutput())
+        if VTK_MAJOR_VERSION>=6:
+            self.cellGlyphsMapper.SetInputData(centroidGlyph.GetOutput())
+        else:    
+            self.cellGlyphsMapper.SetInput(centroidGlyph.GetOutput())
+        
         self.cellGlyphsMapper.SetScalarRange(0,self.celltypeLUTMax)
         self.cellGlyphsMapper.ScalarVisibilityOn()
         self.cellGlyphsMapper.SetLookupTable(self.celltypeLUT)
@@ -1560,7 +1789,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         FPPLinksPD.SetPoints(points)
         FPPLinksPD.SetLines(lines)
         
-        self.FPPLinksMapper.SetInput(FPPLinksPD)
+        if VTK_MAJOR_VERSION>=6:
+            self.FPPLinksMapper.SetInputData(FPPLinksPD)
+        else:    
+            self.FPPLinksMapper.SetInput(FPPLinksPD)
+        
+        
         
         fppActor.SetMapper(self.FPPLinksMapper)
 
@@ -1807,7 +2041,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         FPPLinksPD.Update()
         
-        self.FPPLinksMapper.SetInput(FPPLinksPD)
+        if VTK_MAJOR_VERSION>=6:
+            self.FPPLinksMapper.SetInputData(FPPLinksPD)
+        else:    
+            self.FPPLinksMapper.SetInput(FPPLinksPD)        
+        
 
 #        self.FPPLinksMapper.SetScalarModeToUseCellFieldData()
         
@@ -2060,8 +2298,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         FPPLinksPD.SetLines(lines)
 
         FPPLinksPD.Update()
+        if VTK_MAJOR_VERSION>=6:
+            self.FPPLinksMapper.SetInputData(FPPLinksPD)
+        else:    
+            self.FPPLinksMapper.SetInput(FPPLinksPD)        
+                
         
-        self.FPPLinksMapper.SetInput(FPPLinksPD)
 
 #        self.FPPLinksMapper.SetScalarModeToUseCellFieldData()
         
@@ -2337,7 +2579,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
         
         FPPLinksPD.GetCellData().SetScalars(colorScalars)
         
-        self.FPPLinksMapper.SetInput(FPPLinksPD)
+        if VTK_MAJOR_VERSION>=6:
+            self.FPPLinksMapper.SetInputData(FPPLinksPD)
+        else:    
+            self.FPPLinksMapper.SetInput(FPPLinksPD)        
+        
 
         self.FPPLinksMapper.SetScalarModeToUseCellFieldData()
         self.FPPLinksMapper.SelectColorArray("fpp_scalar")
@@ -2600,7 +2846,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
         
         cellsPlane=vtk.vtkImageDataGeometryFilter()
         cellsPlane.SetExtent(0,dim[0],0,dim[1],0,0)
-        cellsPlane.SetInput(uGridConc)
+        if VTK_MAJOR_VERSION>=6:
+            cellsPlane.SetInputData(uGridConc)
+        else:    
+            cellsPlane.SetInput(uGridConc)
         
         # concMapper=self.cellsMapper
 

@@ -55,7 +55,7 @@ void CellTypeMonitorPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData)
    
     Dim3D fieldDim=cellFieldG->getDim();
     cellTypeArray=new Array3DCUDA<unsigned char>(fieldDim,mediumType);
-    
+    cellIdArray=new Array3DCUDA<float>(fieldDim,-1); //we assume medium cell id is -1 not zero because normally cells in older versions of CC3D we allwoed cells with id 0 
     
     
     potts->registerCellGChangeWatcher(this);    
@@ -76,8 +76,10 @@ void CellTypeMonitorPlugin::field3DChange(const Point3D &pt, CellG *newCell, Cel
     // here we keep track of a cell type at a given position 
     if (newCell){
         cellTypeArray->set(pt,newCell->type);		
+        cellIdArray->set(pt,newCell->id);		
     }else{        
         cellTypeArray->set(pt,0);
+        cellIdArray->set(pt,0);		
     }
 
 //     if (oldCell){

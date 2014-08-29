@@ -135,7 +135,8 @@ protected:
    WatchableField3D<CellG *> *cellFieldG;
    Automaton *automaton;
 
-
+   std::vector<bool> manageSecretionInPythonVec; // this flag indicates that secretion will be done entirely in Python and user is fully responsible for proper setup of the solver
+   
    std::vector<bool> periodicBoundaryCheckVector;
 
    std::vector<BoundaryConditionSpecifier> bcSpecVec;

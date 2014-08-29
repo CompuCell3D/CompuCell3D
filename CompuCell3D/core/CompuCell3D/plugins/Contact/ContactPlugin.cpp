@@ -66,6 +66,12 @@ void ContactPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
 void ContactPlugin::extraInit(Simulator *simulator){
 	update(xmlData,true);
+	Automaton * cellTypePluginAutomaton = potts->getAutomaton();
+	if (cellTypePluginAutomaton){
+		ASSERT_OR_THROW("The size of matrix of contact energy coefficients has must equal max_cell_type_id+1. You must list interactions coefficients between all cel types", 
+		contactEnergyArray.size() == ((unsigned int)cellTypePluginAutomaton->getMaxTypeId()+1) );
+	}
+
 }
 
 void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){

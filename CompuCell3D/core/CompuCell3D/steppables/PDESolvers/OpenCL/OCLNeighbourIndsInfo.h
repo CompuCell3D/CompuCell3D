@@ -28,10 +28,12 @@ OCLNeighbourIndsInfo OCLNeighbourIndsInfo::Init(LatticeType latticeType, Dim3D d
 	if(latticeType==HEXAGONAL_LATTICE){
 		cerr<<"Hexagonal lattice used"<<endl;
 		if(dim.z==1){
+            cerr<<"setting res.m_nbhdConcLen=6"<<endl;
 			res.m_nbhdConcLen=6;
 			res.m_nbhdDiffLen=3;
 			layers=2;
 		}else{
+            cerr<<"setting res.m_nbhdConcLen=12"<<endl;
 			res.m_nbhdConcLen=12;
 			res.m_nbhdDiffLen=6;
 			layers=6;
@@ -55,7 +57,7 @@ OCLNeighbourIndsInfo OCLNeighbourIndsInfo::Init(LatticeType latticeType, Dim3D d
 		res.mh_nbhdDiffShifts.resize(layers*res.m_nbhdDiffLen);
 		res.mh_nbhdConcShifts.resize(layers*res.m_nbhdConcLen);
 
-		if(dim.z!=1){
+		if(dim.z!=1 || dim.z==1){
 					
 			std::vector<std::vector<Point3D> > bhoa;
 			bs->getHexOffsetArray(bhoa);
@@ -86,27 +88,35 @@ OCLNeighbourIndsInfo OCLNeighbourIndsInfo::Init(LatticeType latticeType, Dim3D d
 					res.mh_nbhdConcShifts[offset+j]=shift;
 				}
 			}
-		}else
-		{//2D
-			int yShifts[12]={0,1,1,0,-1,-1,
-				0,1,1,0,-1,-1};
-			int xShifts[12]={-1, -1, 0, 1, 0,-1,
-				-1,0,1,1,1,0};
-
-			//cerr<<"qq4.1 "<<h_nbhdConcShifts.size()<<" "<<h_nbhdDiffShifts.size()<<endl;
-			for(int i=0; i<2; ++i){
-				for(int j=0; j<6; ++j)
-				{
-					//cerr<<"1 i="<<i<<"j="<<j<<endl;
-					cl_int4 shift={xShifts[6*i+j], yShifts[6*i+j], 0, 0};
-					res.mh_nbhdConcShifts[6*i+j]=shift;
-					//cerr<<"2 i="<<i<<"j="<<j<<endl;
-					if(j<3)
-						res.mh_nbhdDiffShifts[3*i+j]=shift;
-					//cerr<<"3 i="<<i<<"j="<<j<<endl;
-				}
-			}
 		}
+        //unnecessary code
+        // // // else
+		// // // {//2D
+        
+			// // // int yShifts[12]={0,1,1,0,-1,-1,
+            // // // 0,1,1,0,-1,-1};
+			// // // int xShifts[12]={-1,0,1,1,1,0,
+            // // // -1, -1, 0, 1, 0,-1};
+        
+			// // // // int yShifts[12]={0,1,1,0,-1,-1,
+				// // // // 0,1,1,0,-1,-1};
+			// // // // int xShifts[12]={-1, -1, 0, 1, 0,-1,
+				// // // // -1,0,1,1,1,0};
+
+			// // // //cerr<<"qq4.1 "<<h_nbhdConcShifts.size()<<" "<<h_nbhdDiffShifts.size()<<endl;
+			// // // for(int i=0; i<2; ++i){
+				// // // for(int j=0; j<6; ++j)
+				// // // {
+					// // // //cerr<<"1 i="<<i<<"j="<<j<<endl;
+					// // // cl_int4 shift={xShifts[6*i+j], yShifts[6*i+j], 0, 0};
+					// // // res.mh_nbhdConcShifts[6*i+j]=shift;
+					// // // //cerr<<"2 i="<<i<<"j="<<j<<endl;
+					// // // if(j<3)
+						// // // res.mh_nbhdDiffShifts[3*i+j]=shift;
+					// // // //cerr<<"3 i="<<i<<"j="<<j<<endl;
+				// // // }
+			// // // }
+		// // // }
 
 	}//if(latticeType==HEXAGONAL_LATTICE)
 	else{

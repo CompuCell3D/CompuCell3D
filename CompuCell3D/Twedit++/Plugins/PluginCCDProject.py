@@ -524,7 +524,9 @@ class CC3DProject(QObject):
         
         # self.openCC3Dproject("/Users/m/install_projects/CC3D_3.7.1/Demos/SBMLSolverExamples/SBMLSolver/SBMLSolver.cc3d")
         
-        self.openCC3Dproject('/home/m/CC3DProjects/CellSorting/CellSorting.cc3d')
+
+        # # # self.openCC3Dproject('/home/m/CC3DProjects/CellSorting/CellSorting.cc3d')
+
         # # # # self.treeWidget.applyStyle(self.defaultStyle)
         self.treeWidget.applyStyleFromTheme(_styleName = 'Default Style' , _themeName = self.__ui.currentThemeName)        
         # # # self.styleItems()

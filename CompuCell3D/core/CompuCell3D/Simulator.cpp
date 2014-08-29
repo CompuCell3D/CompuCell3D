@@ -80,7 +80,7 @@ restartEnabled(false)
 	currstep=-1;
 	classRegistry = new ClassRegistry(this);
 	pUtils=new ParallelUtilsOpenMP();
-
+    pUtilsSingle=new ParallelUtilsOpenMP();
 
 	simulatorIsStepping=false;
 	potts.setSimulator(this);
@@ -98,7 +98,8 @@ Simulator::~Simulator() {
 	
 	delete classRegistry;
 	delete pUtils;
-
+    delete pUtilsSingle;
+    
 #ifdef QT_WRAPPERS_AVAILABLE
 	//restoring original cerr stream buffer
 	if (cerrStreamBufOrig)
@@ -468,6 +469,18 @@ void Simulator::processMetadataCC3D(CC3DXMLElement * _xmlData){
 			potts.setDebugOutputFrequency(debugOutputFrequency>0 ?debugOutputFrequency: 0);
 			ppdCC3DPtr->debugOutputFrequency=debugOutputFrequency;
 		}
+        
+        CC3DXMLElementList npmVec=_xmlData->getElements("NonParallelModule");
+        
+        for (size_t i = 0 ; i<npmVec.size(); ++i){
+            // this is simple initialization because for now we only allow Potts to have non-parallel execution. Adding more functionalty later will be straight-forward
+            string moduleName=npmVec[i]->getAttribute("Name");
+            if (moduleName=="Potts"){
+                potts.setParallelUtils(pUtilsSingle);
+            }
+        }
+        
+        
 
 }
 
@@ -483,8 +496,14 @@ void Simulator::initializeCC3D(){
 
 		//initializing parallel utils  - OpenMP
 		pUtils->init(potts.getCellFieldG()->getDim());
+        potts.setParallelUtils(pUtils); // by default Potts gets pUtls which can have multiple threads
+        
+        //initializing parallel utils  - OpenMP  - for single CPU runs of selecte modules
+        pUtilsSingle->init(potts.getCellFieldG()->getDim());
 
-		//after pUtils have been initialized we process metadata
+        
+        
+		//after pUtils have been initialized we process metadata -  in this function potts may get pUtils limiting it to use single thread
 		processMetadataCC3D(ps.metadataCC3DXMLElement);
 
 
@@ -723,15 +742,15 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 	{
 		if(ppdCC3DPtr->boundary_x=="Periodic")
 		{
-			ASSERT_OR_THROW("For hexagonal lattice and x periodic boundary conditions x dimension must be and even number",!(ppdCC3DPtr->dim.x%2));
+			ASSERT_OR_THROW("For hexagonal lattice and x periodic boundary conditions x dimension must be an even number",!(ppdCC3DPtr->dim.x%2));
 		}
 		if(ppdCC3DPtr->boundary_y=="Periodic")
 		{
-			ASSERT_OR_THROW("For hexagonal lattice and y periodic boundary conditions y dimension must be and even number",!(ppdCC3DPtr->dim.y%2));
+			ASSERT_OR_THROW("For hexagonal lattice and y periodic boundary conditions y dimension must be an even number",!(ppdCC3DPtr->dim.y%2));
 		}
 		if(ppdCC3DPtr->boundary_z=="Periodic")
 		{
-			ASSERT_OR_THROW("For hexagonal lattice and z periodic boundary conditions z dimension must be a number which is divisible by 3",!(ppdCC3DPtr->dim.z%3));
+			ASSERT_OR_THROW("For hexagonal lattice and z periodic boundary conditions z dimension must be a number divisible by 3",!(ppdCC3DPtr->dim.z%3));
 		}
 
 		BoundaryStrategy::instantiate(ppdCC3DPtr->boundary_x, ppdCC3DPtr->boundary_y, ppdCC3DPtr->boundary_z, ppdCC3DPtr->shapeAlgorithm, ppdCC3DPtr->shapeIndex, ppdCC3DPtr->shapeSize, ppdCC3DPtr->shapeInputfile,HEXAGONAL_LATTICE);
@@ -973,6 +992,7 @@ void Simulator::steer(){
 			mitr=steerableObjectMap.find(moduleName);
 			if(mitr!=steerableObjectMap.end()){
 				mitr->second->update(ps.updateSteppableCC3DXMLElementVector[i]);
+                
 				//now overwrite pointer to existing copy of the module data
 				for(size_t j=0 ; j < ps.steppableCC3DXMLElementVector.size(); ++j){
 					if(ps.steppableCC3DXMLElementVector[j]->getAttribute("Type")==moduleName)

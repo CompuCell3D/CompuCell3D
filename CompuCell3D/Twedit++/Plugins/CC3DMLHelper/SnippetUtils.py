@@ -33,7 +33,7 @@ class MultiDimDict(dict):
 
 
 class SnippetDecorator(object):
-    def __init__(self, _moduleType,_moduleName):
+    def __init__(self, _moduleType,_moduleName,_menuName=None,_submenuName=None):
         global dictOfModules
         
         self.moduleType=_moduleType
@@ -41,12 +41,20 @@ class SnippetDecorator(object):
         try:            
             dictOfModules[_moduleName[1][0]]=_moduleType        
         except IndexError,e:
-            if self.moduleType =='Potts':
-                dictOfModules['Potts']='Potts'        
+            if _menuName and _submenuName:
+                dictOfModules[_submenuName]=_moduleType
+                # print '_menuName=',_menuName
+
+                return    
+        
+            # if self.moduleType =='Potts':
+                # dictOfModules['Potts']='Potts'
+            # elif self.moduleType =='Metadata':        
+                # dictOfModules['Metadata']='Metadata'
             else:    
                 print 'Index error in  SnippetDecorator: ',e.__str__()
             
-        print '\n\n\n\n\n\n',_moduleName,_moduleType
+        # print '\n\n\n\n\n\n',_moduleName,_moduleType
         
     def __call__(self, _decoratedFn):
         @functools.wraps(_decoratedFn)
@@ -116,13 +124,20 @@ class SnippetUtils(object):
         global dictOfModules        
         # print 'dictOfModules=',dictOfModules
         for moduleName, moduleType in dictOfModules.iteritems():
+            # print  'moduleName=',moduleName,' moduleType=',moduleType
             
             if moduleType=='Plugin':
                 self.handlerDict['Plugins '+moduleName]=getattr(self,'handle'+moduleName)
             elif moduleType=='Steppable':
                 self.handlerDict['Steppables '+moduleName]=getattr(self,'handle'+moduleName)
-            elif moduleType=='Potts':
-                self.handlerDict['Potts '+'Simulation Configuration']=getattr(self,'handle'+'Potts')
+            # elif moduleType=='Potts':
+                # self.handlerDict['Potts '+'Simulation Configuration']=getattr(self,'handle'+'Potts')                
+            elif moduleType in ['Metadata', 'Potts' ]:
+                self.handlerDict[moduleType+moduleName]=getattr(self,'handle'+moduleType+moduleName.replace(' ' ,''))
+                
+            # elif moduleType=='Metadata':
+                # self.handlerDict[moduleType+moduleName]=getattr(self,'handle'+moduleType+moduleName.replace(' ' ,''))
+                # self.handlerDict['Metadata '+'Simulation Properties']=getattr(self,'handle'+'Metadata')
                 
         #non-decorated entries
         # self.handlerDict["Plugins CellType"]=self.handleCellType
@@ -130,7 +145,8 @@ class SnippetUtils(object):
         # old definition    
         # self.handlerDict["Plugins Contact"]=self.handleContact
         # self.handlerDict["Plugins ContactCompartment"]=self.handleContactCompartment
-        
+        # import time
+        # time.sleep(5)
         
     def getHandlersDict(self):
         return self.handlerDict
@@ -870,8 +886,9 @@ class SnippetUtils(object):
             newSnippet=newXMLElement.getCC3DXMLElementString()
         return newSnippet                
             
-    @SnippetDecorator('Potts',['',[]])
-    def handlePotts(self,*args,**kwds):
+    @SnippetDecorator('Potts',['',[]],'Potts','CPM Configuration')
+    # def handlePotts(self,*args,**kwds):
+    def handlePottsCPMConfiguration(self,*args,**kwds):    
         cellTypeData=kwds['data']
         editor=kwds['editor']
         newSnippet=''
@@ -880,7 +897,53 @@ class SnippetUtils(object):
         
         newSnippet=newXMLElement.getCC3DXMLElementString()
         return newSnippet                
-       
+
+    @SnippetDecorator('Metadata',['',[]],'Metadata','Simulation Properties')
+    def handleMetadataSimulationProperties(self,*args,**kwds):
+        cellTypeData=kwds['data']
+        editor=kwds['editor']
+        newSnippet=''
+
+        newXMLElement=self.generator.generateMetadataSimulationProperties(*args,**kwds)
+        
+        newSnippet=newXMLElement.getCC3DXMLElementString()
+        return newSnippet                
+
+    @SnippetDecorator('Metadata',['',[]],'Metadata','Debug Output Frequency')
+    def handleMetadataDebugOutputFrequency(self,*args,**kwds):
+        cellTypeData=kwds['data']
+        editor=kwds['editor']
+        newSnippet=''
+
+        newXMLElement=self.generator.generateMetadataDebugOutputFrequency(*args,**kwds)
+        
+        newSnippet=newXMLElement.getCC3DXMLElementString()
+        return newSnippet                
+
+        
+    @SnippetDecorator('Metadata',['',[]],'Metadata','Parallel Execution')
+    def handleMetadataParallelExecution(self,*args,**kwds):
+        cellTypeData=kwds['data']
+        editor=kwds['editor']
+        newSnippet=''
+
+        newXMLElement=self.generator.generateMetadataParallelExecution(*args,**kwds)
+        
+        newSnippet=newXMLElement.getCC3DXMLElementString()
+        return newSnippet                
+        
+    @SnippetDecorator('Metadata',['',[]],'Metadata','Parallel Execution Single CPU Potts')
+    def handleMetadataParallelExecutionSingleCPUPotts(self,*args,**kwds):
+        cellTypeData=kwds['data']
+        editor=kwds['editor']
+        newSnippet=''
+
+        newXMLElement=self.generator.generateMetadataParallelExecutionSingleCPUPotts(*args,**kwds)
+        
+        newSnippet=newXMLElement.getCC3DXMLElementString()
+        return newSnippet   
+        
+        
     def getNeighborOrder(self,_root_element):
         if not _root_element:
             return 1
