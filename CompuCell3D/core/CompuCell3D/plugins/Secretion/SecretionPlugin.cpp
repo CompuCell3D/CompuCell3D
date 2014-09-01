@@ -67,6 +67,12 @@ SecretionPlugin::~SecretionPlugin()
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void SecretionPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 
+	// IMPORTANT: listing secretion data inside secretion plugin will cause big slowdown of the program. The slowdown is even worse with multiple processors. This has to do
+	// with necessity to synchronize between threads when executing secretion i.e. we have to make sure that only one thread executes secretion and 
+	// because we do the checks every pixel copy attempt we get really bad performance with multiple cores.
+	// The bottom line: this plugin shuld be only used to implement custom secretion i.e. on a per-cell basis. Secretion by type should be specified in the PDE solver
+	// REMARK: Secretion plugin is to be used to do "per cell" secretion (using python scripting) 
+
 	xmlData=_xmlData;
 	sim=simulator;
 
@@ -162,8 +168,8 @@ FieldSecretor SecretionPlugin::getFieldSecretor(std::string _fieldName){
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void SecretionPlugin::step(){
-
-	// cerr<<"inside STEP"<<endl;
+	
+	 //cerr<<"inside STEP SECRETION PLUGIN"<<endl;
 	unsigned int currentStep;
 	unsigned int currentAttempt;
 	unsigned int numberOfAttempts;
@@ -172,7 +178,7 @@ void SecretionPlugin::step(){
 	currentStep=sim->getStep();
 	currentAttempt=potts->getCurrentAttempt();
 	numberOfAttempts=potts->getNumberOfAttempts();
-
+	
 
 
 
@@ -183,6 +189,7 @@ void SecretionPlugin::step(){
 		if( ! ((currentAttempt-reminder) % ratio ) && currentAttempt>reminder ){
 			for(unsigned int j = 0 ; j <secretionDataPVec[i].secretionFcnPtrVec.size() ; ++j){
 				(this->*secretionDataPVec[i].secretionFcnPtrVec[j])(i);
+				//cerr<<"currentStep="<<currentStep<<" currentAttempt="<<currentAttempt<<" numberOfAttempts="<<numberOfAttempts<<endl;
 			}
 
 			//          (this->*secrDataVec[i].secretionFcnPtrVec[j])(i);
@@ -224,6 +231,18 @@ void SecretionPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	}
 
 	CC3DXMLElementList secrXMLVec=_xmlData->getElements("Field");
+
+	// we unregister secretion fixed stepper when there is no XML secretion data. 
+	// IMPORTANT: listing secretion data inside secretion plugin will cause big slowdown of the program. The slowdown is even worse with multiple processors. This has to do
+	// with necessity to synchronize between threads when executing secretion i.e. we have to make sure that only one thread executes secretion and 
+	// because we do the checks every pixel copy attempt we get really bad performance with multiple cores.
+	// The bottom line: this plugin shuld be only used to implement custom secretion i.e. on a per-cell basis. Secretion by type should be specified in the PDE solver
+	// REMARK: Secretion plugin is to be used to do "per cell" secretion (using python scripting) 
+
+	if (! secrXMLVec.size()){
+		potts->unregisterFixedStepper(this);
+	}
+
 	for(unsigned int i = 0 ; i < secrXMLVec.size() ; ++i ){
 
 		secretionDataPVec.push_back(SecretionDataP());

@@ -30,3 +30,7 @@ using namespace CompuCell3D;
 BasicPluginProxy<Plugin, SecretionPlugin> 
 secretionProxy("Secretion", "Implements Celular Secretion",
 	    &Simulator::pluginManager);
+
+BasicPluginProxy<Plugin, SecretionPlugin> 
+secretionLocalFlexProxy("SecretionLocalFlex", "Implements Celular Secretion",
+	    &Simulator::pluginManager);

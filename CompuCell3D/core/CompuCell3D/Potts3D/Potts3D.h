@@ -303,7 +303,7 @@ namespace CompuCell3D {
     /// Add a potts stepper to be called after each potts step.
     virtual void registerStepper(Stepper *stepper);
     virtual void registerFixedStepper(FixedStepper *fixedStepper, bool _front=false);
-
+	virtual void unregisterFixedStepper(FixedStepper *fixedStepper);
     /** 
      * @return Current energy.
      */

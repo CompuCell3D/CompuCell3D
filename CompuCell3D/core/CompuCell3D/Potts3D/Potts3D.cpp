@@ -337,7 +337,7 @@ void Potts3D::registerStepper(Stepper *stepper) {
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Potts3D::registerFixedStepper(FixedStepper *fixedStepper,bool _front) {
-	ASSERT_OR_THROW("registerStepper() stepper cannot be NULL!", fixedStepper);
+	ASSERT_OR_THROW("registerStepper() fixed stepper cannot be NULL!", fixedStepper);
 	if (_front){
 		//fixedSteppers is small so using deque as temporary storage to insert at the begining of vector is OK
 		deque<FixedStepper *> tmpDeque(fixedSteppers.begin(),fixedSteppers.end());
@@ -346,6 +346,16 @@ void Potts3D::registerFixedStepper(FixedStepper *fixedStepper,bool _front) {
 	}else{
 
 		fixedSteppers.push_back(fixedStepper);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Potts3D::unregisterFixedStepper(FixedStepper *_fixedStepper) {
+	ASSERT_OR_THROW("unregisterStepper() fixed stepper cannot be NULL!", _fixedStepper);
+	std::vector<FixedStepper *>::iterator pos;
+	pos=find(fixedSteppers.begin(),fixedSteppers.end(),_fixedStepper);
+	if (pos != fixedSteppers.end()){
+		fixedSteppers.erase(pos);
 	}
 }
 
@@ -554,8 +564,7 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
 
 
 
-			Point3D pt;
-
+			Point3D pt;			
 			// Pick a random point
 			pt.x = rand->getInteger(minCoordinates.x, maxCoordinates.x - 1);
 			pt.y = rand->getInteger(minCoordinates.y, maxCoordinates.y - 1);
@@ -745,6 +754,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 	pUtils->prepareParallelRegionPotts();
 	pUtils->allowNestedParallelRegions(true); //necessary in case we use e.g. PDE solver caller which in turn calls parallel PDE solver
 	//omp_set_nested(true);
+	
 #pragma omp parallel
 	{
 
@@ -775,6 +785,9 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 			//				{
 			//				cerr<<" thread="<<currentWorkNodeNumber<<" section="<<s<<" minDim="<<sectionDims.first<<" maxDim="<<sectionDims.second<<" numberOfAttemptsLocal="<<numberOfAttemptsLocal<<endl;
 			//				}
+
+			//numberOfAttemptsLocal=5;
+
 			for (unsigned int i = 0; i < numberOfAttemptsLocal; ++i) {
 
 
@@ -785,8 +798,12 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
 				if (fixedSteppers.size()){
 #pragma omp critical
-					{							
+					{			
+						//IMPORTANT: fixed steppers cause really bad performance with multiple processor runs. Currently only two of them are supported 
+						// PDESolverCaller plugin and Secretion plugin. PDESolverCaller is deprecated and Secretion plugin section that mimics functionality of PDE sovler Secretion data section is depreecated as well
+						// However Secretion plugin can be used to do "per cell" secretion (using python scripting). This will not slow down multicore simulation
 
+						//cerr<<"pUtils->getCurrentWorkNodeNumber()="<<pUtils->getCurrentWorkNodeNumber()<<" currentAttempt="<<currentAttempt<<endl;
 						for (unsigned int j = 0; j < fixedSteppers.size(); j++)
 							fixedSteppers[j]->step();
 
