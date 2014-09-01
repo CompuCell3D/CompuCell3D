@@ -64,19 +64,19 @@ namespace CompuCell3D {
 		unsigned int maxNeighborIndex;
 		WatchableField3D<CellG *> *cellFieldG;
 
-
-		bool secreteInsideCell(CellG * _cell, float _amount);
-		bool secreteInsideCellAtBoundary(CellG * _cell, float _amount);
-		bool secreteInsideCellAtBoundaryOnContactWith(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec);
-		bool secreteOutsideCellAtBoundary(CellG * _cell, float _amount);
-		bool secreteOutsideCellAtBoundaryOnContactWith(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec);
+		//IMPORTANT to handle exceptions properly all _secrete functinos have secrete counterpart defined int he %extend CompuCell3D::Field secretor in the CompuCellExtraDeclarations.i
+		bool _secreteInsideCell(CellG * _cell, float _amount);
+		bool _secreteInsideCellAtBoundary(CellG * _cell, float _amount);
+		bool _secreteInsideCellAtBoundaryOnContactWith(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec);
+		bool _secreteOutsideCellAtBoundary(CellG * _cell, float _amount);
+		bool _secreteOutsideCellAtBoundaryOnContactWith(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec);
 		bool secreteInsideCellAtCOM(CellG * _cell, float _amount);
 
-		bool uptakeInsideCell(CellG * _cell, float _maxUptake, float _relativeUptake);
-		bool uptakeInsideCellAtBoundary(CellG * _cell, float _maxUptake, float _relativeUptake);
-		bool uptakeInsideCellAtBoundaryOnContactWith(CellG * _cell, float _maxUptake, float _relativeUptake,const std::vector<unsigned char> & _onContactVec);
-		bool uptakeOutsideCellAtBoundary(CellG * _cell, float _maxUptake, float _relativeUptake);
-		bool uptakeOutsideCellAtBoundaryOnContactWith(CellG * _cell, float _maxUptake, float _relativeUptake,const std::vector<unsigned char> & _onContactVec);
+		bool _uptakeInsideCell(CellG * _cell, float _maxUptake, float _relativeUptake);
+		bool _uptakeInsideCellAtBoundary(CellG * _cell, float _maxUptake, float _relativeUptake);
+		bool _uptakeInsideCellAtBoundaryOnContactWith(CellG * _cell, float _maxUptake, float _relativeUptake,const std::vector<unsigned char> & _onContactVec);
+		bool _uptakeOutsideCellAtBoundary(CellG * _cell, float _maxUptake, float _relativeUptake);
+		bool _uptakeOutsideCellAtBoundaryOnContactWith(CellG * _cell, float _maxUptake, float _relativeUptake,const std::vector<unsigned char> & _onContactVec);
 		bool uptakeInsideCellAtCOM(CellG * _cell, float _maxUptake, float _relativeUptake);
 
 	};

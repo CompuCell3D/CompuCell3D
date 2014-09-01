@@ -28,8 +28,13 @@ cellFieldG(0)
 FieldSecretor::~FieldSecretor()
 {}
 
-bool FieldSecretor::secreteInsideCell(CellG * _cell, float _amount){
-	if (!pixelTrackerPlugin){
+// NOTICE, exceptions are thrown from the python wrapper functions defined in CompuCellExtraDeclarations.i
+
+bool FieldSecretor::_secreteInsideCell(CellG * _cell, float _amount){
+	
+	
+	if (!pixelTrackerPlugin){		
+		ASSERT_OR_THROW("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function",pixelTrackerPlugin);
 		return false;
 	}
 	BasicClassAccessor<PixelTracker> *pixelTrackerAccessorPtr=pixelTrackerPlugin->getPixelTrackerAccessorPtr();
@@ -43,7 +48,7 @@ bool FieldSecretor::secreteInsideCell(CellG * _cell, float _amount){
 	return true;
 }
 
-bool FieldSecretor::secreteInsideCellAtBoundary(CellG * _cell, float _amount){
+bool FieldSecretor::_secreteInsideCellAtBoundary(CellG * _cell, float _amount){
 
 	if (!boundaryPixelTrackerPlugin){
 		return false;
@@ -64,7 +69,7 @@ bool FieldSecretor::secreteInsideCellAtBoundary(CellG * _cell, float _amount){
 
 }
 
-bool FieldSecretor::secreteInsideCellAtBoundaryOnContactWith(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec){
+bool FieldSecretor::_secreteInsideCellAtBoundaryOnContactWith(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec){
 	
 	set<unsigned char> onContactSet(_onContactVec.begin(),_onContactVec.end());
 
@@ -115,7 +120,7 @@ bool FieldSecretor::secreteInsideCellAtBoundaryOnContactWith(CellG * _cell, floa
 }
 
 
-bool FieldSecretor::secreteOutsideCellAtBoundary(CellG * _cell, float _amount){
+bool FieldSecretor::_secreteOutsideCellAtBoundary(CellG * _cell, float _amount){
 
 	if (!boundaryPixelTrackerPlugin){
 		return false;
@@ -161,7 +166,7 @@ bool FieldSecretor::secreteOutsideCellAtBoundary(CellG * _cell, float _amount){
 }
 
 
-bool FieldSecretor::secreteOutsideCellAtBoundaryOnContactWith(CellG * _cell, float _amount, const std::vector<unsigned char> & _onContactVec){
+bool FieldSecretor::_secreteOutsideCellAtBoundaryOnContactWith(CellG * _cell, float _amount, const std::vector<unsigned char> & _onContactVec){
 
 	set<unsigned char> onContactSet(_onContactVec.begin(),_onContactVec.end());
 
@@ -225,7 +230,7 @@ bool FieldSecretor::secreteInsideCellAtCOM(CellG * _cell, float _amount){
 
 }
 
-bool FieldSecretor::uptakeInsideCell(CellG * _cell, float _maxUptake, float _relativeUptake){
+bool FieldSecretor::_uptakeInsideCell(CellG * _cell, float _maxUptake, float _relativeUptake){
 
 	if (!boundaryPixelTrackerPlugin){
 		return false;
@@ -251,7 +256,7 @@ bool FieldSecretor::uptakeInsideCell(CellG * _cell, float _maxUptake, float _rel
 	return true;
 }
 
-bool FieldSecretor::uptakeInsideCellAtBoundary(CellG * _cell, float _maxUptake, float _relativeUptake){
+bool FieldSecretor::_uptakeInsideCellAtBoundary(CellG * _cell, float _maxUptake, float _relativeUptake){
 
 	if (!boundaryPixelTrackerPlugin){
 		return false;
@@ -276,7 +281,7 @@ bool FieldSecretor::uptakeInsideCellAtBoundary(CellG * _cell, float _maxUptake, 
 	return true;
 }
 
-bool FieldSecretor::uptakeInsideCellAtBoundaryOnContactWith(CellG * _cell, float _maxUptake, float _relativeUptake,const std::vector<unsigned char> & _onContactVec){
+bool FieldSecretor::_uptakeInsideCellAtBoundaryOnContactWith(CellG * _cell, float _maxUptake, float _relativeUptake,const std::vector<unsigned char> & _onContactVec){
 
 	set<unsigned char> onContactSet(_onContactVec.begin(),_onContactVec.end());
 
@@ -340,7 +345,7 @@ bool FieldSecretor::uptakeInsideCellAtBoundaryOnContactWith(CellG * _cell, float
 
 
 
-bool FieldSecretor::uptakeOutsideCellAtBoundary(CellG * _cell, float _maxUptake, float _relativeUptake){
+bool FieldSecretor::_uptakeOutsideCellAtBoundary(CellG * _cell, float _maxUptake, float _relativeUptake){
 
 	if (!boundaryPixelTrackerPlugin){
 		return false;
@@ -393,7 +398,7 @@ bool FieldSecretor::uptakeOutsideCellAtBoundary(CellG * _cell, float _maxUptake,
 
 }
 
-bool FieldSecretor::uptakeOutsideCellAtBoundaryOnContactWith(CellG * _cell, float _maxUptake, float _relativeUptake,const std::vector<unsigned char> & _onContactVec){
+bool FieldSecretor::_uptakeOutsideCellAtBoundaryOnContactWith(CellG * _cell, float _maxUptake, float _relativeUptake,const std::vector<unsigned char> & _onContactVec){
 
 	set<unsigned char> onContactSet(_onContactVec.begin(),_onContactVec.end());
 
