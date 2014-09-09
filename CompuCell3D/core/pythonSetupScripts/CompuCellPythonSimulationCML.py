@@ -36,7 +36,7 @@ setVTKPaths()
 
 import os          
 import sys
-import Configuration
+# import Configuration # we do not import Configuration in order to avoid PyQt4 dependency for runScript
 import time
 
 """ Have to import vtk from command line script to make sure vtk output works"""
@@ -44,6 +44,18 @@ import time
 
 cc3dSimulationDataHandler=None
 
+
+def getRootOutputDir() :
+    '''returns output location stored in the Configuration's 'OutputLocation' entry.
+      if it cannot import Configuration it returns os.path.join(os.path.expanduser('~'),'CC3DWorkspace')
+    '''
+    try:
+        import Configuration
+        outputDir = str(Configuration.getSetting('OutputLocation'))                                    
+    except:
+        return os.path.abspath(os.path.join(os.path.expanduser('~'),'CC3DWorkspace'))        
+        
+    return outputDir
 
 
 def prepareParameterScan(_cc3dSimulationDataHandler):
@@ -72,9 +84,10 @@ def prepareParameterScan(_cc3dSimulationDataHandler):
     
     paramScanSpecsDirName=os.path.dirname(pScanFilePath)
     
-    outputDir = str(Configuration.getSetting('OutputLocation'))
-
     
+    
+    outputDir = getRootOutputDir() # output dir is determined in a way that dpes not require PyQt4  and Configuration module
+        
     customOutputPath=psu.prepareParameterScanOutputDirs(_outputDirRoot=outputDir)
     
     if not customOutputPath:
@@ -120,20 +133,16 @@ def prepareSingleRun(_cc3dSimulationDataHandler):
     
         
         CompuCellSetup.simulationPaths.setPlayerSimulationXMLFileName(_cc3dSimulationDataHandler.cc3dSimulationData.xmlScript)
+        
     
 def setSimulationResultStorageDirectory(_dir=''):
     if _dir != '':    
         CompuCellSetup.simulationPaths.setSimulationResultStorageDirectory(_dir,False)
     else:
-        outputDir = str(Configuration.getSetting('OutputLocation'))                                    
+        outputDir = getRootOutputDir()                                   
         simulationResultsDirectoryName , baseFileNameForDirectory = CompuCellSetup.getNameForSimDir(fileName,outputDir)
         
-        CompuCellSetup.simulationPaths.setSimulationResultStorageDirectoryDirect(simulationResultsDirectoryName)        
-        print 'simulationResultsDirectoryName , baseFileNameForDirectory=',(simulationResultsDirectoryName , baseFileNameForDirectory)
-        
- 
- 
-    
+        CompuCellSetup.simulationPaths.setSimulationResultStorageDirectoryDirect(simulationResultsDirectoryName)                
  
 def readCC3DFile(fileName):
     import CompuCellSetup
@@ -218,6 +227,7 @@ try:
     from os import environ
     import string
     import traceback
+    import time
     CompuCellSetup.playerType="CML"
 
     cmlParser=CompuCellSetup.cmlParser
@@ -227,6 +237,7 @@ try:
     sim,simthread=None,None
             
     helpOnly = cmlParser.processCommandLineOptions()
+    
     if helpOnly: 
         raise NameError('HelpOnly')
     fileName=cmlParser.getSimulationFileName()
@@ -254,12 +265,10 @@ try:
             
             sim,simthread = CompuCellSetup.getCoreSimulationObjects(True)
             
-            
-            CompuCellSetup.simulationFileName=fileName
-            
+            CompuCellSetup.simulationFileName=fileName            
                 
             setSimulationResultStorageDirectory(cmlParser.customScreenshotDirectoryName) # set Simulation output dir - it can be reset later - at this point only directory name is set. directory gets created later
-            
+            # print 'GOT HERE'
             if re.match(".*\.xml$", fileName): # If filename ends with .xml
                 print "GOT FILE ",fileName
                     
@@ -276,13 +285,12 @@ try:
                 # cc3dSimulationDataHandler=loadCC3DFile(fileName,False)           
                 cc3dSimulationDataHandler=readCC3DFile(fileName)
                 
-             
             
             if cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource:
                 singleSimulation = False       
                 
-                customOutputPath,cc3dFileFullName=prepareParameterScan(cc3dSimulationDataHandler)
-                print 'customOutputPath=',customOutputPath
+                customOutputPath,cc3dFileFullName = prepareParameterScan(cc3dSimulationDataHandler)
+                print 'customOutputPath=' , customOutputPath
                 
                 if not cc3dFileFullName:
                     raise AssertionError('Parameter Scan Complete') 
@@ -316,8 +324,8 @@ try:
             CompuCellSetup.mainLoop(sim,simthread,steppableRegistry) # main loop - simulation is invoked inside this function
             sim.cleanAfterSimulation()
             sim=None
-        
-        print 'FINISHED MAIN LOOP'        
+            
+        print 'FINISHED MAIN LOOP'     
         # jumping out of the loop when running single simulation. Will stay in the loop for e.g. parameter scan 
         if singleSimulation:
             break
@@ -328,9 +336,8 @@ try:
                 break
                 
     if relaunch:
-
-        
-        from ParameterScanUtils import getParameterScanCommandLineArgList
+                
+        from ParameterScanUtils import getParameterScanCommandLineArgList        
         from SystemUtils import getCC3DRunScriptPath
         
         popenArgs =[getCC3DRunScriptPath()] +getParameterScanCommandLineArgList(fileName)
@@ -343,7 +350,7 @@ try:
         from subprocess import Popen
         cc3dProcess = Popen(popenArgs)
         
-
+        
     
 except IndentationError,e:
     if CompuCellSetup.simulationObjectsCreated:
