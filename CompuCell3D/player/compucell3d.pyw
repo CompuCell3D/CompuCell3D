@@ -55,8 +55,14 @@ def main(argv):
     
     pixmap = QPixmap("icons/splash_angio.png")
     splash = QSplashScreen(pixmap)
-    splash.show()
     
+
+    splash.show()
+
+    
+    if sys.platform.startswith('darwin'):
+        splash.raise_()    
+
     # RWH:  not sure why vtk was being imported here
     #splash.showMessage("Loading VTK modules...",Qt.AlignLeft,  Qt.white)
     # import vtk    
@@ -77,6 +83,7 @@ def main(argv):
     firstMessage=baseMessage+"Loading User Interface ..."
     
     splash.showMessage(firstMessage,Qt.AlignLeft,  Qt.white)
+
     # splash.showMessage("Loading User Interface ...",Qt.AlignLeft,  Qt.white)
     from UI.UserInterface import UserInterface    
     from CQt.CQApplication import CQApplication
@@ -93,7 +100,7 @@ def main(argv):
     import PlayerPython # from now on import PlayerPython will import PlayerPythonNew
     
     app.processEvents()
-    
+
     print 'compucell3d.pyw:   type(argv)=',type(argv)
     print 'compucell3d.pyw:   argv=',argv
     
