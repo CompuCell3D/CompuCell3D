@@ -36,11 +36,12 @@ class HistPlotSteppable(SteppableBasePy):
         self.pW.addHistPlotData('Hist 3',n3,bins3)
         self.pW.addHistPlotData('Hist 1',n,bins)
         self.pW.showAllHistPlots()
-    
+
+        fileName="HistPlots_"+str(mcs)+".txt"
+        self.pW.savePlotAsData(fileName,CSV_FORMAT)
+
         fileName="HistPlots_"+str(mcs)+".png"
         self.pW.savePlotAsPNG(fileName,1000,1000) # here we specify size of the image saved - default is 400 x 400
-        fileName="HistPlots_"+str(mcs)+".txt"
-        self.pW.savePlotAsData(fileName)
     
 class BarPlotSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=10):
@@ -62,4 +63,6 @@ class BarPlotSteppable(SteppableBasePy):
     
         fileName="BarPlots_"+str(mcs)+".png"
         self.pW.savePlotAsPNG(fileName,1000,1000) # here we specify size of the image saved - default is 400 x 400
-    
+
+        fileName="BarPlots_"+str(mcs)+".txt"
+        self.pW.savePlotAsData(fileName,CSV_FORMAT)

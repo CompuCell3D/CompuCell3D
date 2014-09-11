@@ -42,7 +42,7 @@ class ExtraPlotSteppable(SteppableBasePy):
         if mcs<50:            
             fileName='ExtraPlots_'+str(mcs)+'.png'
             self.pW.savePlotAsPNG(fileName,1000,1000) # here we specify size of the image saved - default is 400 x 400
-            self.pW.savePlotAsData(fileName+'.txt')
+            self.pW.savePlotAsData(fileName+'.txt',CSV_FORMAT)
                 
 class ExtraMultiPlotSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=10):
