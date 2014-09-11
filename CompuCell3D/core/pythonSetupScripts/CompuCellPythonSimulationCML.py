@@ -284,7 +284,17 @@ try:
             elif re.match(".*\.cc3d$", fileName):     
                 # cc3dSimulationDataHandler=loadCC3DFile(fileName,False)           
                 cc3dSimulationDataHandler=readCC3DFile(fileName)
-                
+                import Version            
+                currentVersion=Version.getVersionAsString()    
+                currentVersionInt=currentVersion.replace('.','')
+                projectVersion=cc3dSimulationDataHandler.cc3dSimulationData.version
+                projectVersionInt=projectVersion.replace('.','')
+                if int(projectVersionInt)>int(currentVersionInt):                
+                    print '\n\n\n--------------- COMPUCELL3D VERSION MISMATCH\n\n'
+                    print 'Your CompuCell3D version %s might be too old for the project you are trying to run.\n The least version project requires is %s. \n You may run project at your own risk'%(currentVersion,projectVersion)
+                    import time
+                    time.sleep(5)
+
             
             if cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource:
                 singleSimulation = False       
