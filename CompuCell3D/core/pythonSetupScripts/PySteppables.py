@@ -5,7 +5,7 @@
 # necessary to keep refernces to attribute adder and dictAdder current
 global pyAttributeAdder
 global dictAdder
-
+from enums import *
 
 pyAttributeAdder=None
 dictAdder=None

@@ -24,8 +24,8 @@ MODULENAME='----- PlotManagerVTK.py: '
 #=====================================================================
 # class PlotWindowInterface(PlotManagerSetup.PlotWindowInterfaceBase, QtCore.QObject):
 class PlotWindowInterface(QtCore.QObject):
-    # showPlotSignal = QtCore.pyqtSignal( (QtCore.QString,QtCore.QMutex, ))
-    showPlotSignal = QtCore.pyqtSignal( ('char*',QtCore.QMutex, ))
+    showPlotSignal = QtCore.pyqtSignal( (QtCore.QString,QtCore.QMutex, ))
+    # showPlotSignal = QtCore.pyqtSignal( ('char*',QtCore.QMutex, ))
     showAllPlotsSignal = QtCore.pyqtSignal( (QtCore.QMutex, ))
 #    showHistPlotSignal = QtCore.pyqtSignal( ('char*',QtCore.QMutex, ))
 #    showAllHistPlotsSignal = QtCore.pyqtSignal( (QtCore.QMutex, ))
@@ -233,9 +233,10 @@ class PlotWindowInterface(QtCore.QObject):
     def showPlot(self,_plotName):
         print MODULENAME,'  showPlot():   _plotName=',_plotName
         self.plotWindowInterfaceMutex.lock()
-        self.showPlotSignal.emit(_plotName,self.plotWindowInterfaceMutex)
+        self.showPlotSignal.emit(QString(_plotName),self.plotWindowInterfaceMutex)
         
-    def __showPlot(self,_plotName,_mutex=None):
+    def __showPlot(self,plotName,_mutex=None):
+        _plotName=QString(plotName)
         print MODULENAME,'  __showPlot():   self.plotData.keys()=',self.plotData.keys()
         print MODULENAME,'  __showPlot():   self.plotDrawingObjects.keys()=',self.plotDrawingObjects.keys()
 #        if (not _plotName in self.plotData.keys() ) or (not _plotName in self.plotDrawingObjects.keys() ):                        

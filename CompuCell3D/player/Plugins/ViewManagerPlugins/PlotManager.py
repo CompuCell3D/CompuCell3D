@@ -10,20 +10,34 @@ from PyQt4.Qwt5.anynumpy import *
 
 import PlotManagerSetup
 import os, Configuration 
+from enums import *
 
 MODULENAME = '---- PlotManager.py: '
 
+PLOT_TYPE_POSITION=3
+(XYPLOT,HISTOGRAM,BARPLOT)=range(0,3)
+MAX_FIELD_LEGTH=25
+
+# Notice histogram and Bar Plot implementations need more work. They are functional but have a bit strange syntax and for Bar Plot we can only plot one series per plot
     
 # class PlotWindowInterface(PlotManagerSetup.PlotWindowInterfaceBase,QtCore.QObject):
 class PlotWindowInterface(QtCore.QObject):
     # showPlotSignal = QtCore.pyqtSignal( (QtCore.QString,QtCore.QMutex, ))
-    showPlotSignal = QtCore.pyqtSignal( ('char*',QtCore.QMutex, ))
+    # showBarCurvePlotSignal = QtCore.pyqtSignal( ('char*',QtCore.QMutex, ))
+    # savePlotAsPNGSignal=QtCore.pyqtSignal( ('char*','int','int',QtCore.QMutex, )) #savePlotAsPNG has to emit signal with locking mutex to work correctly
+    # showPlotSignal = QtCore.pyqtSignal( ('char*',QtCore.QMutex, ))
+    # showHistPlotSignal = QtCore.pyqtSignal( ('char*',QtCore.QMutex, ))
+    
+    #IMPORTANT: turns out that using QString in signals is essential to get correct behavior. for some reason using char * in signal may malfunction e.g. wrong string is sent to slot. 
+    showPlotSignal = QtCore.pyqtSignal( (QtCore.QString,QtCore.QMutex, ))
     showAllPlotsSignal=QtCore.pyqtSignal( (QtCore.QMutex, ))
-    showHistPlotSignal = QtCore.pyqtSignal( ('char*',QtCore.QMutex, ))
+    showHistPlotSignal = QtCore.pyqtSignal( (QtCore.QString,QtCore.QMutex, ))
     showAllHistPlotsSignal=QtCore.pyqtSignal( (QtCore.QMutex, ))
-    showBarCurvePlotSignal = QtCore.pyqtSignal( ('char*',QtCore.QMutex, ))
+    
+    showBarCurvePlotSignal = QtCore.pyqtSignal( (QtCore.QString,QtCore.QMutex, ))
     showAllBarCurvePlotsSignal=QtCore.pyqtSignal( (QtCore.QMutex, ))
-    savePlotAsPNGSignal=QtCore.pyqtSignal( ('char*','int','int',QtCore.QMutex, )) #savePlotAsPNG has to emit signal with locking mutex to work correctly
+    
+    savePlotAsPNGSignal=QtCore.pyqtSignal( (QtCore.QString,'int','int',QtCore.QMutex, )) #savePlotAsPNG has to emit signal with locking mutex to work correctly
     
     def __init__(self,_plotWindow=None):
         # PlotManagerSetup.PlotWindowInterfaceBase.__init__(self,_plotWindow)
@@ -43,6 +57,7 @@ class PlotWindowInterface(QtCore.QObject):
         
         self.eraseAllFlag=False
         self.logScaleFlag=False
+        self.title=''
         
     def getQWTPLotWidget(self): # returns native QWT widget to be manipulated by expert users
         return self.plotWindow        
@@ -64,6 +79,7 @@ class PlotWindowInterface(QtCore.QObject):
         self.pW.replot()
         
     def setTitle(self,_title):
+        self.title=str(_title)
         self.pW.setTitle(_title)
         
     def setTitleSize(self,_size):
@@ -108,7 +124,8 @@ class PlotWindowInterface(QtCore.QObject):
         
     def addPlot(self,_plotName,_style="Lines",_color='black',_size=1):
         # self.plotData[_plotName]=[arange(0),arange(0),False]
-        self.plotData[_plotName]=[array([],dtype=double),array([],dtype=double),False]
+        
+        self.plotData[_plotName]=[array([],dtype=double),array([],dtype=double),False,XYPLOT]
         
         self.plotDrawingObjects[_plotName]={"curve":Qwt.QwtPlotCurve(_plotName),"LineWidth":_size,"LineColor":_color}
         plotStyle=getattr(Qwt.QwtPlotCurve,_style)
@@ -142,8 +159,8 @@ class PlotWindowInterface(QtCore.QObject):
             data[self.dirtyFlagIndex]=True
             
     def eraseData(self,_plotName):
-        
-        self.plotData[_plotName]=[array([],dtype=double),array([],dtype=double),False]
+        plotType=self.plotData[_plotName][PLOT_TYPE_POSITION]
+        self.plotData[_plotName]=[array([],dtype=double),array([],dtype=double),False,plotType]
 
     def addDataPoint(self,_plotName, _x,_y):        
     
@@ -228,14 +245,14 @@ class PlotWindowInterface(QtCore.QObject):
 
     def showPlot(self,_plotName):
         self.plotWindowInterfaceMutex.lock()
-        self.showPlotSignal.emit(_plotName,self.plotWindowInterfaceMutex)
+        self.showPlotSignal.emit(QString(_plotName),self.plotWindowInterfaceMutex)
      
     def  savePlotAsPNG(self,_fileName,_sizeX=400,_sizeY=400) :
-        self.plotWindowInterfaceMutex.lock()
-        self.savePlotAsPNGSignal.emit(_fileName,_sizeX,_sizeY,self.plotWindowInterfaceMutex)
+        self.plotWindowInterfaceMutex.lock()        
+        self.savePlotAsPNGSignal.emit(QString(_fileName),_sizeX,_sizeY,self.plotWindowInterfaceMutex)
         
     def __savePlotAsPNG(self,_fileName,_sizeX,_sizeY,_mutex):        
-        
+        fileName=str(_fileName)
 #        pixmap=QPixmap(_sizeX,_sizeY)  # worked on Windows, but not Linux/OSX
 #        pixmap.fill(QColor("white"))
         
@@ -253,7 +270,7 @@ class PlotWindowInterface(QtCore.QObject):
         import CompuCellSetup
         outDir=CompuCellSetup.getSimulationOutputDir()
         
-        outfile = os.path.join(outDir,_fileName)
+        outfile = os.path.join(outDir,fileName)
 #        print '--------- savePlotAsPNG: outfile=',outfile
         imgmap.save(outfile,"PNG")
         _mutex.unlock()
@@ -277,35 +294,89 @@ class PlotWindowInterface(QtCore.QObject):
 # #        print '--------- savePlotAsPNG: outfile=',outfile
         # imgmap.save(outfile,"PNG")
         
+    def writeOutHeader(self, _file,_plotName, _outputFormat=LEGACY_FORMAT):
+    
+        if _outputFormat==LEGACY_FORMAT:
         
-    def savePlotAsData(self,_fileName):        
-# # #         if Configuration.getSetting("OutputToProjectOn"):
-# # #             outDir = str(Configuration.getSetting("ProjectLocation"))
-# # #         else:
-# # #             outDir = str(Configuration.getSetting("OutputLocation"))  # may to dump into image/lattice output dir instead
+            _file.write(_plotName+ '\n')
+            return 0 # field width
+            
+        elif _outputFormat==CSV_FORMAT:
+        
+            plotName = _plotName.replace(' ' , '_')
+            
+            fieldSize = len(plotName)+2 # +2 is for _x or _y
+            if MAX_FIELD_LEGTH > fieldSize:           
+                fieldSize=MAX_FIELD_LEGTH
+                
+            fmt=''
+            fmt+='{0:>'+str(fieldSize)+'},'
+            fmt+='{1:>'+str(fieldSize)+'}\n'
+                        
+            _file.write(fmt.format(plotName+'_x',plotName+'_y') )
+            
+            return fieldSize
+            
+        else:
+            raise LookupError(MODULENAME+" writeOutHeader :"+"Requested output format: "+outputFormat+" does not exist")
+            
+            
+    def savePlotAsData(self,_fileName,_outputFormat=LEGACY_FORMAT):        
+        # PLOT_TYPE_POSITION=3
+# (XYPLOT,HISTOGRAM,BARPLOT)=range(0,3)
 
         import CompuCellSetup
         outDir=CompuCellSetup.getSimulationOutputDir()   
             
         outfile = os.path.join(outDir,_fileName)
-        print MODULENAME,'  savePlotAsData():   outfile=',outfile
+        # print MODULENAME,'  savePlotAsData():   outfile=',outfile
         fpout = open(outfile, "w")
-#        print MODULENAME,'  self.plotData= ',self.plotData
-        for idx in range(len(self.plotData)):
-#            print MODULENAME,'  savePlotAsData():   ------- idx,name=',idx, self.plotData.keys()[idx]
-            fpout.write(self.plotData.keys()[idx] + '\n')
-            xvals = self.plotData.values()[idx][0]
-            yvals = self.plotData.values()[idx][1]
-#            print MODULENAME,'  savePlotAsData():   xvals=',xvals
-#            print MODULENAME,'  savePlotAsData():   yvals=',yvals
-            for jdx in range(len(xvals)):
-                xyStr = "%f  %f\n" % (xvals[jdx],yvals[jdx])
-                fpout.write(xyStr)
+        # print MODULENAME,'  self.plotData= ',self.plotData
         
-#        if (not _plotName in self.plotData.keys() ) or (not _plotName in self.plotDrawingObjects.keys() ):                        
+        for plotName,plotData  in self.plotData.iteritems():
+            # fpout.write(plotName+ '\n')
+            fieldSize=self.writeOutHeader( _file=fpout,_plotName=plotName, _outputFormat=_outputFormat)
+            
+            xvals = plotData[0]
+            yvals = plotData[1]
+            # print MODULENAME,'  savePlotAsData():   xvals=',xvals
+            # print MODULENAME,'  savePlotAsData():   yvals=',yvals
+            if _outputFormat==LEGACY_FORMAT:
+                if plotData[PLOT_TYPE_POSITION]==XYPLOT or plotData[PLOT_TYPE_POSITION]==BARPLOT:
+                    for jdx in range(len(xvals)):
+                        xyStr = "%f  %f\n" % (xvals[jdx],yvals[jdx])
+                        fpout.write(xyStr)            
+                elif plotData[PLOT_TYPE_POSITION]==HISTOGRAM:
+                    for jdx in range(len(xvals)-1):
+                        xyStr = "%f  %f\n" % (xvals[jdx],yvals[jdx])
+                        fpout.write(xyStr)            
+                        
+            elif  _outputFormat==CSV_FORMAT:
+                fmt=''
+                fmt+='{0:>'+str(fieldSize)+'},'
+                fmt+='{1:>'+str(fieldSize)+'}\n'
+
+                if plotData[PLOT_TYPE_POSITION]==XYPLOT or plotData[PLOT_TYPE_POSITION]==BARPLOT:
+                    for jdx in range(len(xvals)):
+                    
+                        xyStr = fmt.format(xvals[jdx],yvals[jdx])
+                        # "%f  %f\n" % (xvals[jdx],yvals[jdx])
+                        fpout.write(xyStr)            
+                elif plotData[PLOT_TYPE_POSITION]==HISTOGRAM:
+                    for jdx in range(len(xvals)-1):
+                        xyStr = fmt.format(xvals[jdx],yvals[jdx])
+                        # xyStr = "%f  %f\n" % (xvals[jdx],yvals[jdx])
+                        fpout.write(xyStr)            
+
+                
+            else:
+                raise LookupError(MODULENAME+" savePlotAsData :"+"Requested output format: "+outputFormat+" does not exist")
+            fpout.write('\n') #separating data series by a line                           
+        
         fpout.close()
         
-    def __showPlot(self,_plotName,_mutex=None):
+    def __showPlot(self,plotName,_mutex=None):
+        _plotName=str(plotName)
         if (not _plotName in self.plotData.keys() ) or (not _plotName in self.plotDrawingObjects.keys() ):                        
             return
         if not self.plotData[_plotName][self.dirtyFlagIndex]:                        
@@ -355,7 +426,8 @@ class PlotWindowInterface(QtCore.QObject):
         self.plotWindowInterfaceMutex.lock()
         self.showAllHistPlotsSignal.emit(self.plotWindowInterfaceMutex)
 
-    def __showHistPlot(self,_plotName,_mutex=None):
+    def __showHistPlot(self,plotName,_mutex=None):
+      _plotName=str(plotName)
       print _plotName
       self.histogram.attach(self.pW)
       self.pW.replot()
@@ -371,6 +443,10 @@ class PlotWindowInterface(QtCore.QObject):
         # print 'addHistPlotData'
         # print '_values=',_values
         # print '_intervals=',_intervals
+        # self.plotData[_plotName]=[array([],dtype=double),array([],dtype=double),False]        
+        
+        self.plotData[str(_plotName)]=[_intervals,_values,False,HISTOGRAM]        
+        
         intervals = []
         valLength = len(_values)
         values = Qwt.QwtArrayDouble(valLength)
@@ -425,6 +501,9 @@ class PlotWindowInterface(QtCore.QObject):
         self.showAllHistPlotsSignal.emit(self.plotWindowInterfaceMutex)
 
     def addBarPlotData(self,_values,_positions,_width=1):
+        
+        self.plotData[self.title]=[_positions,_values,False,BARPLOT] 
+        
         for bar in self.pW.itemList():
             if isinstance(bar, BarCurve):
                 bar.detach()
@@ -443,6 +522,7 @@ class PlotWindowInterface(QtCore.QObject):
         self.showAllBarCurvePlotsSignal.emit(self.plotWindowInterfaceMutex)
 
     def __showBarCurvePlot(self,_plotName,_mutex=None):
+        plotName=str(_plotName)
         self.pW.replot()
         self.plotWindowInterfaceMutex.unlock()
       
