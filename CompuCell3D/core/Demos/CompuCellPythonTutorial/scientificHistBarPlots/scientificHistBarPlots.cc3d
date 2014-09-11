@@ -1,4 +1,4 @@
-<Simulation version="3.5.1">
+<Simulation version="3.7.3">
     <XMLScript>Simulation/Foam_Coarsening.xml</XMLScript>    
     <PythonScript>Simulation/scientificHistBarPlots.py</PythonScript> 
     <Resource Type="Python">Simulation/scientificHistBarPlotsSteppables.py</Resource>    
