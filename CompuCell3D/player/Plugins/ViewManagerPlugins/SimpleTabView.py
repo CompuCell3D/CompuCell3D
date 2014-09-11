@@ -1277,6 +1277,20 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             raise IOError("%s does not exist"%fileName)
             
         self.cc3dSimulationDataHandler.readCC3DFileFormat(fileName)                
+        #check if current CC3D version is greater or equal to the version (minimal required version) specified in the project
+        import Version            
+        currentVersion=Version.getVersionAsString()    
+        currentVersionInt=currentVersion.replace('.','')
+        projectVersion=self.cc3dSimulationDataHandler.cc3dSimulationData.version
+        projectVersionInt=projectVersion.replace('.','')
+        print 'projectVersion=',projectVersion
+        print 'currentVersion=',currentVersion        
+
+        if int(projectVersionInt)>int(currentVersionInt):
+            msg = QMessageBox.warning(self, "CompuCell3D Version Mismatch", \
+                      "Your CompuCell3D version <b>%s</b> might be too old for the project you are trying to run. The least version project requires is <b>%s</b>. You may run project at your own risk"%(currentVersion,projectVersion), \
+                      QMessageBox.Ok )
+            
         
         if self.cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource:
                                 

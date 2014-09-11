@@ -340,6 +340,12 @@ class CC3DSimulationDataHandler:
         bp = self.cc3dSimulationData.basePath
         root_element = xml2ObjConverter.Parse(fileFullPath) # this is simulation element
         
+        version='0'
+        
+        if root_element.findAttribute('version'):
+            version = root_element.getAttribute('version')
+            self.cc3dSimulationData.version=version
+        
         if root_element.getFirstElement("XMLScript"):
             xmlScriptRelative = root_element.getFirstElement("XMLScript").getText()            
 # # #             self.cc3dSimulationData.xmlScript = root_element.getFirstElement("XMLScript").getText()
