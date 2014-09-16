@@ -233,7 +233,7 @@ cell=self.cellField[10,11,0]
 shiftVector=CompuCell.Point3D(20,20,0)
 self.moveCell(cell,shiftVector)
 
-=============== #@Menu@ Distances, Vectors
+=============== #@Menu@ Distances, Vectors, Transformations
 
 ---------- #@Submenu@ Distance Vector Between Cells
 vec=self.distanceVectorBetweenCells(CELL1,CELL2)
@@ -256,10 +256,14 @@ vec=self.invariantDistanceVector(_from=[10,10,0],_to=[11,11,0])
 ---------- #@Submenu@ Distance Vector Between Points (Invariant, Integer)
 vec=self.invariantDistanceVectorInteger(_from=[10,10,0],_to=[11,11,0])
 
----------- #@Submenu@  Vector Norm
+---------- #@Submenu@ Vector Norm
 norm=self.vectorNorm(VECTOR)
 
+---------- #@Submenu@ Hex: Hex 2 Cartesian
+pt=self.hex2Cartesian(_in=COORDS) # returns Point3D
 
+---------- #@Submenu@ Hex: Cartesian 2 Hex
+coords=self.cartesian2Hex(_in=POINT3D) # retutns Coordinates<double>
 
 =============== #@Menu@ Visit
 
@@ -438,7 +442,7 @@ cell.fluctAmpl=50
 
 ---------- #@Submenu@ Inertia Tensor
 # READ ONLY ACCESS        
-iXX=cell.iXX
+iXX=cell.iXX 
 iYY=cell.iYY
 iZZ=cell.iZZ
 iXY=cell.iXY

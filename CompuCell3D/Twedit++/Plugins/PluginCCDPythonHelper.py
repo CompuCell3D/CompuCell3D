@@ -64,6 +64,8 @@ class CC3DPythonHelper(QObject):
         self.blockStatementRegex=re.compile(':[\s]*$') # block statement - : followed by whitespaces at the end of the line
         self.blockStatementWithCommentRegex=re.compile(':[\s]*[#]+[\s\S]*$') # block statement - : followed by whitespaces at the end of the line
         
+#         self.lineWithCommentAtTheEndRegex=re.compile('([\s\S]*)([[#]+[\s\S]*]*)$') # line with comment at the end
+        self.lineWithCommentAtTheEndRegex=re.compile('([^#]*)([\s\S]*)') # line with comment at the end first group matches anythin except '#' the remainig group catches the rest of the line
         
     def initialize(self):
         '''  
@@ -223,12 +225,31 @@ bionetAPI.loadSBMLModel(modelName, modelPath,modelNickname,  integrationStep)
         indentationLevels , indentConsistency=self.findIndentationForSnippet(editor,curLine)
         print "indentationLevels=",indentationLevels," consistency=",indentConsistency
         
+        removeComments=False
+        
         textLines=text.splitlines(True)
         for i in range(len(textLines)):
             textLines[i]=' '*editor.indentationWidth()*indentationLevels+textLines[i]
+            try: # since we dont want twedit to crash when removing coments the code catches all exceptions
+                if removeComments:
+                    commentFound=re.match(self.commentRegex,textLines[i])
+                    if commentFound: #if it is 'regular' line we check if this line is begining of a block statement
+                        textLines[i]=''
+                    else:
+                        # print 'could not find whole line comment will search eol comment'
+                        match=re.match(self.lineWithCommentAtTheEndRegex,textLines[i])
+                        if match:
+                            matchGroups=match.groups()
+                            if matchGroups[1]!='':
+#                                 print 'before textLines[i]=',textLines[i]
+                                textLines[i] = self.lineWithCommentAtTheEndRegex .sub (r"\1\n",textLines[i])
+#                                 print 'after textLines[i]=',textLines[i]                        
+            
+            except:
+                print 'ERROR WHEN REMOVING COMMENTS IN ', textLines[i]
+                
         
         indentedText=''.join(textLines)
-        
         currentLineText=str(editor.text(curLine))
         nonwhitespaceFound =re.match(self.nonwhitespaceRegex, currentLineText)
         print "currentLineText=",currentLineText," nonwhitespaceFound=",nonwhitespaceFound
