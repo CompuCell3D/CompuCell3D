@@ -3362,7 +3362,15 @@ class EditorWindow(QMainWindow):
                 statusTip="Reassign keyboard shortcuts", triggered=self.keyboardShortcuts)  
         am.addAction(self.keyboardShortcutsAct)                
         
-                
+
+        self.switchToTabOnTheLeftAct = QtGui.QAction("Switch To Tab On The Left", self, shortcut="Ctrl+1",
+                statusTip="Switch To Tab On The Left", triggered=self.switchToTabOnTheLeft)  
+        am.addAction(self.switchToTabOnTheLeftAct) 
+
+        self.switchToTabOnTheRightAct = QtGui.QAction("Switch To Tab On The Right", self, shortcut="Ctrl+2",
+                statusTip="Switch To Tab On The Right", triggered=self.switchToTabOnTheRight)  
+        am.addAction(self.switchToTabOnTheRightAct)                
+
         self.aboutAct = QtGui.QAction("&About", self,
                 statusTip="Show the application's About box",
                 triggered=self.about)
@@ -3473,6 +3481,8 @@ class EditorWindow(QMainWindow):
         self.viewMenu.addAction(am.actionDict["Close Tab"])
         self.viewMenu.addAction(am.actionDict["Zoom In"])
         self.viewMenu.addAction(am.actionDict["Zoom Out"])
+        self.fileMenu.addAction(am.actionDict["Switch To Tab On The Left"])
+        self.fileMenu.addAction(am.actionDict["Switch To Tab On The Right"])        
         self.viewMenu.addSeparator()
         #---------------------------
         self.viewMenu.addAction(am.actionDict["Wrap Lines"])  
@@ -3553,7 +3563,19 @@ class EditorWindow(QMainWindow):
         else:
             self.findDock.hide()
 
-            
+    def switchToTabOnTheLeft(self):
+        activePanel = self.getActivePanel()
+        currentIndex=activePanel.currentIndex()
+        if currentIndex>=1:
+            activePanel.setCurrentIndex(currentIndex-1) 
+        
+    def switchToTabOnTheRight(self):
+        activePanel = self.getActivePanel()
+        currentIndex=activePanel.currentIndex()
+        if currentIndex < activePanel.count()-1:
+            activePanel.setCurrentIndex(currentIndex+1) 
+
+        
     def keyboardShortcuts(self):
         """
             slot - displays dialog for keyboard shortcut modifications
