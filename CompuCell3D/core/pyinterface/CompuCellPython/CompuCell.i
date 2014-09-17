@@ -261,6 +261,22 @@ using namespace CompuCell3D;
 %template (Coordinates3DDouble) Coordinates3D<double>; 
 
 
+// %extend Coordinates3DDouble{
+  // std::string __str__(){
+    // std::ostringstream s;
+    // s<<(*self);
+    // return s.str();
+  // }
+// }  
+
+
+%extend Coordinates3D<double>{
+  std::string __str__(){
+    std::ostringstream s;
+    s<<"("<<(*self)<<")";
+    return s.str();
+  }
+}  
 
 
 // turns on proper handling of default arguments - only one wrapper code will get generated for a function
