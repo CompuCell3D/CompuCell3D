@@ -205,6 +205,7 @@ namespace CompuCell3D {
                void prepareNeighborListsSquare(float _maxDistance=4.0);
                void prepareNeighborListsHex(float _maxDistance=4.0);
                Coordinates3D<double> HexCoord(const Point3D & _pt)const;
+               Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)const;
                Coordinates3D<double> calculatePointCoordinates(const Point3D & _pt)const;
 
                bool precisionCompare(float _x,float _y,float _prec=1e-6);

@@ -53,6 +53,8 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         self.clusterList=ClusterList(self.inventory) 
         self.clusters=Clusters(self.inventory)
         
+        self.boundaryStrategy=self.simulator.getBoundaryStrategy()
+        
         self.__modulesToUpdateDict={} #keeps modules to update   
         
         import CompuCellSetup
@@ -699,15 +701,72 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         return numpy.array([float(_pt.x),float(_pt.y),float(_pt.z)])
         
     def numpyToPoint3D(self, _array):
-        '''
-        This function converts floating point numpy array(vector) of size 3 into CompuCell.Point3D 
-        '''        
         import CompuCell
         pt=CompuCell.Point3D()
         pt.x=_array[0]
         pt.y=_array[1]
         pt.z=_array[2]
         return pt
+        
+
+    def cartesian2Hex(self,_in):
+        '''
+        this transformation takes coordinates of a point on a cartesian lattice and returns hex coordinates 
+        It is coded as HexCoord fcn in BoundaryStrategy.cpp. 
+        NOTE: there is c++ implementation of this function which is much faster and 
+        Argument: _in is either a tuple or a list or array with 3 elements or Point3D object        
+        returns Coordinates3D<double>
+        '''        
+        return self.boundaryStrategy.HexCoord(_in) 
+
+    def hex2Cartesian(self,_in):
+        '''
+        this transformation takes coordinates of a point on a hex lattice and returns integer coordinates of cartesian pixel that is nearest given point on hex lattice 
+        It is the inverse transformation of the one coded in HexCoord in BoundaryStrategy.cpp (see Hex2Cartesian). 
+       
+        Argument: _in is either a tuple or a list or array with 3 elements or Coordinates3D<double> object        
+        returns Point3D
+        '''        
+        return self.boundaryStrategy.Hex2Cartesian(_in) 
+        
+    def hex2CartesianPython(self,_in):
+        '''
+        this transformation takes coordinates of a point on ahex lattice and returns integer coordinates of cartesian pixel that is nearest given point on hex lattice 
+        It is the inverse transformation of the one coded in HexCoord in BoundaryStrategy.cpp. 
+        NOTE: there is c+= implementation of this function which is much faster and 
+        Argument: _in is either a tuple or a list or array with 3 elements
+        '''        
+        z_segments = int( round( _in[2]/(sqrt(6.0)/3.0) ) )     
+        
+        
+        if (z_segments%3) == 1:    
+            y_segments =  int( round ( _in[1]/ (sqrt(3.0)/2.0) -2.0/6.0 ) )
+            
+            if y_segments%2:
+              
+                return Point3D( int(round(_in[0]-0.5)) ,y_segments , z_segments)            
+                
+            else:
+              
+                return Point3D ( int(round(_in[0])) ,  y_segments , z_segments)
+             
+        elif (z_segments%3) == 2:
+        
+            y_segments =  int( round ( _in[1]/ (sqrt(3.0)/2.0) +2.0/6.0 ) )
+        
+            if y_segments%2:
+                return Point3D( int(round(_in[0]-0.5)) ,y_segments , z_segments)            
+            else:
+                return Point3D( int(round(_in[0])) ,  y_segments , z_segments)
+             
+        else:    
+            y_segments =  int( round ( _in[1]/ (sqrt(3.0)/2.0) ) )
+            
+            if y_segments%2:
+                return Point3D( int(round(_in[0])) ,y_segments , z_segments)            
+            else:
+                return Point3D( int(round(_in[0]-0.5)) ,  y_segments , z_segments)
+            
         
     def getSteppableListByClassName(self,_className):    
         '''
