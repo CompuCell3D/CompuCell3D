@@ -373,12 +373,10 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
 	cellTypeMonitorPlugin=(CellTypeMonitorPlugin*)Simulator::pluginManager.get("CellTypeMonitor",&pluginAlreadyRegisteredFlag);
 	if(!pluginAlreadyRegisteredFlag){
 		cellTypeMonitorPlugin->init(simulator);	
-		h_celltype_field=cellTypeMonitorPlugin->getCellTypeArray();
-        h_cellid_field=cellTypeMonitorPlugin->getCellIdArray();
-
 	}
     
-
+        h_celltype_field=cellTypeMonitorPlugin->getCellTypeArray();
+        h_cellid_field=cellTypeMonitorPlugin->getCellIdArray();
     
 	simulator->registerSteerableObject(this);
 
