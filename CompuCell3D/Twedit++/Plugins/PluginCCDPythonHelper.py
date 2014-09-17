@@ -17,6 +17,8 @@ from PyQt4 import QtCore, QtGui
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from CC3DPythonHelper.Configuration  import Configuration
+
 import os.path
 import string
 import re
@@ -54,7 +56,11 @@ class CC3DPythonHelper(QObject):
         """
         QObject.__init__(self, ui)
         self.__ui = ui
-                
+        
+        self.__ui = ui        
+        self.configuration=Configuration(self.__ui.configuration.settings)
+        
+        self.actions={}                
         self.initialize()   
         
         # useful regular expressions
@@ -66,6 +72,8 @@ class CC3DPythonHelper(QObject):
         
 #         self.lineWithCommentAtTheEndRegex=re.compile('([\s\S]*)([[#]+[\s\S]*]*)$') # line with comment at the end
         self.lineWithCommentAtTheEndRegex=re.compile('([^#]*)([\s\S]*)') # line with comment at the end first group matches anythin except '#' the remainig group catches the rest of the line
+        
+        self.skipCommentsFlag = False
         
     def initialize(self):
         '''  
@@ -111,7 +119,8 @@ class CC3DPythonHelper(QObject):
         self.cc3dPythonMenu.clear()
         
         # self.cppMenuAction = self.__ui.menuBar().insertMenu(self.__ui.fileMenu.menuAction(),self.cc3dcppMenu)
-        
+                
+        skipCommentsInPythonSnippets=self.configuration.setSetting("SkipCommentsInPythonSnippets",self.actions["Skip Comments In Python Snippets"].isChecked())        
         self.__ui.menuBar().removeAction(self.cc3dPythonMenuAction)
         
         self.initialize()
@@ -124,11 +133,16 @@ class CC3DPythonHelper(QObject):
         self.cc3dPythonMenuAction=self.__ui.menuBar().insertMenu(self.__ui.fileMenu.menuAction(),self.cc3dPythonMenu)
         
         
+        
+        
     def __initActions(self):
         """
         Private method to initialize the actions.
         """
         # lists begining of action names which will be grouped 
+        
+        
+        
         self.snippetDictionary={}
         psmp=SnippetMenuParser()
         snippetFilePath=os.path.abspath(os.path.join(os.path.dirname(__file__),'CC3DPythonHelper/Snippets.py.template'))
@@ -154,10 +168,22 @@ class CC3DPythonHelper(QObject):
                 self.actions[actionKey]=action
                 self.__ui.connect(action,SIGNAL("triggered()"),self.snippetMapper,SLOT("map()"))
                 self.snippetMapper.setMapping(action, actionKey)
-
                 
-  
+
+        self.actions["Skip Comments In Python Snippets"]=QtGui.QAction("Skip Comments In Python Snippets", self, shortcut="", statusTip="Skip Comments In Python Snippets")                
+        self.actions["Skip Comments In Python Snippets"].setCheckable(True)              
+        flag=self.configuration.setting("SkipCommentsInPythonSnippets")
+        self.skipCommentsInPythonSnippets(flag)
+        self.actions["Skip Comments In Python Snippets"].setChecked(flag)        
+        self.connect(self.actions["Skip Comments In Python Snippets"],    SIGNAL('triggered(bool)'),  self.skipCommentsInPythonSnippets)  
         
+        
+        self.cc3dPythonMenu.addSeparator()
+        #---------------------------------------
+        self.cc3dPythonMenu.addAction(self.actions["Skip Comments In Python Snippets"])
+        
+    def skipCommentsInPythonSnippets(self,_flag):
+        self.skipCommentsFlag=_flag
         
     def  __insertSnippet(self,_snippetName):        
         # print "GOT REQUEST FOR SNIPPET ",_snippetName
@@ -225,13 +251,13 @@ bionetAPI.loadSBMLModel(modelName, modelPath,modelNickname,  integrationStep)
         indentationLevels , indentConsistency=self.findIndentationForSnippet(editor,curLine)
         print "indentationLevels=",indentationLevels," consistency=",indentConsistency
         
-        removeComments=False
+        
         
         textLines=text.splitlines(True)
         for i in range(len(textLines)):
             textLines[i]=' '*editor.indentationWidth()*indentationLevels+textLines[i]
             try: # since we dont want twedit to crash when removing coments the code catches all exceptions
-                if removeComments:
+                if self.skipCommentsFlag:
                     commentFound=re.match(self.commentRegex,textLines[i])
                     if commentFound: #if it is 'regular' line we check if this line is begining of a block statement
                         textLines[i]=''

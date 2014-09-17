@@ -265,6 +265,16 @@ pt=self.hex2Cartesian(_in=COORDS) # returns Point3D
 ---------- #@Submenu@ Hex: Cartesian 2 Hex
 coords=self.cartesian2Hex(_in=POINT3D) # retutns Coordinates<double>
 
+---------- #@Submenu@ Numpy: Point3D To Numpy Array
+ptArray=self.point3DToNumpy(PT)
+
+---------- #@Submenu@ Numpy: Numpy Array To Point3D 
+pt=self.numpyToPoint3D(PT_ARRAY)
+
+---------- #@Submenu@ Hex: Cartesian 2 Hex
+coords=self.cartesian2Hex(_in=POINT3D) # retutns Coordinates<double>
+
+
 =============== #@Menu@ Visit
 
 ---------- #@Submenu@ All Cells
