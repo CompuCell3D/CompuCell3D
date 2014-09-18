@@ -146,6 +146,7 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 				if(_xmlData->getFirstElement("NeighborOrder")){
 
 					maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());	
+// 					exit(0);
 				}else{
 					maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
 
@@ -206,7 +207,7 @@ double ContactPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const 
 
 		}
 	}else{
-		//       cerr<<"maxNeighborIndex="<<maxNeighborIndex<<endl;
+
 		for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
 			neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
 			if(!neighbor.distance){
@@ -255,6 +256,7 @@ double ContactPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const 
 
 	//cerr<<"pt="<<pt<<" energy="<<energy<<endl;
 	//cerr<<"energy="<<energy<<endl;
+
 	return energy;
 }
 

@@ -42,6 +42,7 @@
 #include <CompuCell3D/Field3D/Neighbor.h>
 #include <CompuCell3D/Field3D/NeighborFinder.h>
 #include <map>
+#include <sstream>
 #include <Utils/Coordinates3D.h>
 
 
@@ -56,7 +57,7 @@
 
 #define roundf(a) ((fmod(a,1)<0.5)?floor(a):ceil(a))
 
-//#define _DEBUG
+// #define _DEBUG
 
 using namespace std;
 using namespace CompuCell3D;
@@ -76,7 +77,7 @@ BoundaryStrategy::BoundaryStrategy(){
    regular = true; 
    neighborListsInitializedFlag=false;
    latticeType=SQUARE_LATTICE;
-
+   maxNeighborOrder=0;
    //unsigned int maxHexArraySize=(Y_ODD|Z_ODD|X_ODD|Y_EVEN|Z_EVEN|X_EVEN)+1;
 
    unsigned int maxHexArraySize=6;
@@ -103,7 +104,7 @@ BoundaryStrategy::BoundaryStrategy(string boundary_x, string boundary_y,
    regular = true;
    neighborListsInitializedFlag=false;
    this->latticeType=latticeType;
-   
+   maxNeighborOrder=0;
    //unsigned int maxHexArraySize=(Y_ODD|Z_ODD|X_ODD|Y_EVEN|Z_EVEN|X_EVEN)+1;
    unsigned int maxHexArraySize=6;
 #ifdef _DEBUG
@@ -607,7 +608,7 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance){
    
    Field3DImpl<char> tempField(tmpFieldDim,a);
    Point3D ctPt(tmpFieldDim.x/2 , tmpFieldDim.y/2 , tmpFieldDim.z/2);   
-   cerr<<"_maxDistance="<<_maxDistance<<endl;
+//    cerr<<"_maxDistance="<<_maxDistance<<endl;
       
 #ifdef _DEBUG
    cerr<<"center point="<<ctPt<<endl;
@@ -630,7 +631,7 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance){
 	  ctPtTmp.z+=3-ctPtTmp.z % 3;// make it divisible by 3 in case it is not
 #ifdef _DEBUG
 		cerr<<"ctPtTmp.y % 2 ="<<ctPtTmp.y % 2 << " ctPtTmp.y % 2="<<ctPtTmp.y % 2<<endl;
-		cerr<<"  WILL USE CENTER POINT="<<ctPtTmp<<"Y_EVEN|Z_EVEN "<<(Y_EVEN|Z_EVEN)<<endl;
+// 		cerr<<"  WILL USE CENTER POINT="<<ctPtTmp<<"Y_EVEN|Z_EVEN "<<(Y_EVEN|Z_EVEN)<<endl;
 #endif
       getOffsetsAndDistances(ctPtTmp,_maxDistance,tempField,hexOffsetArray[indexHex],hexDistanceArray[indexHex],hexNeighborOrderIndexArray[indexHex]);
 
@@ -669,7 +670,7 @@ void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance){
 #ifdef _DEBUG
 		cerr<<"ctPtTmp.y % 2 ="<<ctPtTmp.y % 2 << " !ctPtTmp.y % 2="<<!(ctPtTmp.y % 2)<<endl;
 
-		cerr<<"  WILL USE CENTER POINT="<<ctPtTmp<<"Y_ODD|Z_EVEN "<<(Y_ODD|Z_EVEN)<<endl;
+// 		cerr<<"  WILL USE CENTER POINT="<<ctPtTmp<<"Y_ODD|Z_EVEN "<<(Y_ODD|Z_EVEN)<<endl;
 #endif
       getOffsetsAndDistances(ctPtTmp,_maxDistance,tempField,hexOffsetArray[indexHex],hexDistanceArray[indexHex],hexNeighborOrderIndexArray[indexHex]);
 
@@ -993,11 +994,23 @@ void BoundaryStrategy::getOffsetsAndDistances(
 }
 
 void BoundaryStrategy::prepareNeighborListsSquare(float _maxDistance){
-   
+//    cerr<<"_maxDistance="<<_maxDistance<<endl;
+
    char a='0';
    Field3DImpl<char> tempField(dim,a);
    int margin=2*fabs(_maxDistance)+1;
+//    cerr<<"margin="<<margin<<" distance="<<_maxDistance<<endl;
    Point3D ctPt(dim.x/2,dim.y/2,dim.z/2);
+//    if (margin > dim.x/2 && margin > dim.y/2 && margin > dim.z/2){
+   if (3*_maxDistance > dim.x && 3*_maxDistance > dim.y && 3*_maxDistance> dim.z){
+     
+      ostringstream outStr;
+      outStr<<"NeighborOrder too large for this lattice. Increase lattice size so that at least two dimensions ";
+      outStr<<"are greater than 3*_maxDistance. "<<endl;
+      outStr <<" Trying to fetch neighbors with _maxDistance ="<<_maxDistance<<endl;
+      ASSERT_OR_THROW(outStr.str().c_str(),false);
+   }
+   
    getOffsetsAndDistances(ctPt,_maxDistance,tempField,offsetVec,distanceVec,neighborOrderIndexVec);
 
 #ifdef _DEBUG
@@ -1057,7 +1070,7 @@ void BoundaryStrategy::prepareNeighborLists(float _maxDistance){
 
 }
 
-unsigned int  BoundaryStrategy::getMaxNeighborOrder()const{
+unsigned int  BoundaryStrategy::getMaxNeighborOrder(){
 
    //determining max neighborOrder
    unsigned int maxNeighborOrder=1;
@@ -1066,7 +1079,7 @@ unsigned int  BoundaryStrategy::getMaxNeighborOrder()const{
 
 
    while(true){
-      currentMaxIdx=getMaxNeighborIndexFromNeighborOrder(maxNeighborOrder);
+      currentMaxIdx=getMaxNeighborIndexFromNeighborOrderNoGen(maxNeighborOrder);
 
       if(previousMaxIdx==currentMaxIdx)
          break;
@@ -1081,16 +1094,17 @@ unsigned int  BoundaryStrategy::getMaxNeighborOrder()const{
 
 void BoundaryStrategy::prepareNeighborListsBasedOnNeighborOrder(unsigned int _neighborOrder){
 
-   unsigned int maxNeighborOrder=getMaxNeighborOrder();
-   //cerr<<"maxNeighborOrder="<<maxNeighborOrder<<endl;
+//    unsigned int maxNeighborOrder=getMaxNeighborOrder();
+   maxNeighborOrder=getMaxNeighborOrder(); 
+//    cerr<<"maxNeighborOrder="<<maxNeighborOrder<<" _neighborOrder="<<_neighborOrder<<endl;
 
    while((maxNeighborOrder-4)<_neighborOrder){ //making sure there is enough higher order neighbors in the list
-      //cerr<<"RECALCULATING NEIGHBOR LIST"<<endl;
+//       cerr<<"RECALCULATING NEIGHBOR LIST"<<endl;
       prepareNeighborLists(2.0*maxDistance);
       maxNeighborOrder=getMaxNeighborOrder();
-      //cerr<<"current maxNeighborOrder="<<maxNeighborOrder<<endl;
+//       cerr<<"current maxNeighborOrder="<<maxNeighborOrder<<endl;
    }
-
+//    exit(0); 
 }
 
 
@@ -1106,10 +1120,35 @@ void BoundaryStrategy::prepareNeighborListsBasedOnNeighborOrder(unsigned int _ne
 //
 //}
 
-unsigned int BoundaryStrategy::getMaxNeighborIndexFromNeighborOrder(unsigned int _neighborOrder)const{
+unsigned int BoundaryStrategy::getMaxNeighborIndexFromNeighborOrder(unsigned int _neighborOrder){
+  //this function first checks if there is  enough offsets generated and if not it generates extra offsets and then returns correct neighbor order
+  
+  
    //Now determine max neighbor index from a list of neighbor offsets
    unsigned int maxNeighborIndex=0;
    unsigned int orderCounter=1;
+   
+   //we check if existing max neighbor order is less that requested neighbor order and if so we generate more neighbor offsets 
+   if (maxNeighborOrder<_neighborOrder){
+//     cerr<<"BEFORE prepareNeighborListsBasedOnNeighborOrder "<<maxNeighborOrder<<endl; 
+    prepareNeighborListsBasedOnNeighborOrder(_neighborOrder);	 
+//     cerr<<"AFTER prepareNeighborListsBasedOnNeighborOrder "<<maxNeighborOrder<<endl;
+   }
+   
+   return getMaxNeighborIndexFromNeighborOrderNoGen(_neighborOrder);
+   
+
+}
+
+
+unsigned int BoundaryStrategy::getMaxNeighborIndexFromNeighborOrderNoGen(unsigned int _neighborOrder) const{
+  //this function returns whatever maxNeighborIndex exist for a given neighbororder. If neighborOrder is higher that maxNeighborOrder
+  //this function DOES NOT generate extra offsets so the maxNeighborOrder may correspond to a smaller neighbor order than in the requested _neighborOrder 
+
+  //Now determine max neighbor index from a list of neighbor offsets
+   unsigned int maxNeighborIndex=0;
+   unsigned int orderCounter=1;
+   
 
    if(latticeType==HEXAGONAL_LATTICE){
       //unsigned int indexHex=Y_EVEN|Z_EVEN;     
@@ -1131,29 +1170,36 @@ unsigned int BoundaryStrategy::getMaxNeighborIndexFromNeighborOrder(unsigned int
             }
          }
       }
+//       cerr<<"NO GEN LAST RETURN HEX ="<<maxNeighborIndex<<endl;
       return --maxNeighborIndex;
       
    }
    else{
 
       double currentDepth=distanceVec[0];
-
+//       cerr<<" distanceVec.size()="<<distanceVec.size()<<" currentDepth="<<currentDepth<<endl;
+     
       for(int i = 0 ; i < distanceVec.size() ; ++i){
+	++maxNeighborIndex;
          if(distanceVec[i]>(currentDepth+0.005)){//0.005 is to account for possible numerical approximations in double or float numbers
             currentDepth=distanceVec[i];
             ++orderCounter;
+// 	    cerr<<"NO GEN currentDepth="<<currentDepth<<endl;
             if(orderCounter>_neighborOrder){
                maxNeighborIndex=i-1;
+	       
                return maxNeighborIndex;
             }
          }
       }
+//       cerr<<"NO GEN LAST RETURN ="<<maxNeighborIndex<<endl;
+      
       return --maxNeighborIndex;
    }
 }
 
 
-unsigned int BoundaryStrategy::getMaxNeighborIndexFromDepth(float depth)const{
+unsigned int BoundaryStrategy::getMaxNeighborIndexFromDepth(float depth){
    //Now determine max neighbor index from a list of neighbor offsets
 
    unsigned int maxNeighborIndex=0;
@@ -1190,7 +1236,7 @@ unsigned int BoundaryStrategy::getMaxNeighborIndexFromDepth(float depth)const{
 Neighbor BoundaryStrategy::getNeighborDirect(Point3D & pt,unsigned int idx, bool checkBounds,bool calculatePtTrans )const {
    Neighbor n;
 //    n.pt=pt+offsetVec[idx];
-
+//   cerr<<"gnd pt="<<pt<<" idx="<<idx<<" offsetVec.size()="<<offsetVec.size()<<endl;
    unsigned int indexHex;
 
    if(latticeType==HEXAGONAL_LATTICE){

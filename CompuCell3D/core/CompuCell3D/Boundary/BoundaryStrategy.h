@@ -118,6 +118,8 @@ namespace CompuCell3D {
 
                LatticeType latticeType;
 			   int maxOffset;
+			   
+	       unsigned int maxNeighborOrder;			   
 
           public:
 
@@ -168,12 +170,13 @@ namespace CompuCell3D {
                const std::vector<unsigned int> & getNeighborOrderIndexVec() const {return neighborOrderIndexVec;}
                Neighbor getNeighborDirect(Point3D & pt,unsigned int idx ,bool checkBounds=true, bool calculatePtTrans=false)const ;
                float getMaxDistance()const{return maxDistance;}
-               unsigned int getMaxNeighborIndexFromDepth(float depth)const;
+               unsigned int getMaxNeighborIndexFromDepth(float depth);
 
-               unsigned int getMaxNeighborOrder()const;
+               unsigned int getMaxNeighborOrder();
 
-               unsigned int getMaxNeighborIndexFromNeighborOrder(unsigned int _neighborOrder)const;
-               
+
+               unsigned int getMaxNeighborIndexFromNeighborOrder(unsigned int _neighborOrder);
+               unsigned int getMaxNeighborIndexFromNeighborOrderNoGen(unsigned int _neighborOrder) const;               
                ~BoundaryStrategy();
    
                /*
