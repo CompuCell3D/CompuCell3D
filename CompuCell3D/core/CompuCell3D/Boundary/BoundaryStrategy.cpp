@@ -1100,7 +1100,8 @@ void BoundaryStrategy::prepareNeighborListsBasedOnNeighborOrder(unsigned int _ne
 
    while((maxNeighborOrder-4)<_neighborOrder){ //making sure there is enough higher order neighbors in the list
 //       cerr<<"RECALCULATING NEIGHBOR LIST"<<endl;
-      prepareNeighborLists(2.0*maxDistance);
+//       prepareNeighborLists(2.0*maxDistance);
+     prepareNeighborLists(maxDistance+2.0); // this results in faster generation of neighbors for reasonable neighbor order
       maxNeighborOrder=getMaxNeighborOrder();
 //       cerr<<"current maxNeighborOrder="<<maxNeighborOrder<<endl;
    }
