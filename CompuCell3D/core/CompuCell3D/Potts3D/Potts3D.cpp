@@ -306,7 +306,7 @@ void  Potts3D::setFluctuationAmplitudeFunctionByName(std::string _fluctuationAmp
 		delete fluctAmplFcn;
 		fluctAmplFcn=new MaxFluctuationAmplitudeFunction(this);
 
-	}else if (_fluctuationAmplitudeFunctionName=="ArithmetcAverage"){
+	}else if (_fluctuationAmplitudeFunctionName=="ArithmeticAverage"){
 
 		delete fluctAmplFcn;
 		fluctAmplFcn=new ArithmeticAverageFluctuationAmplitudeFunction(this);
