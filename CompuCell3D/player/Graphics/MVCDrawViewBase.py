@@ -41,6 +41,11 @@ from CameraSettings import CameraSettings
 
 MODULENAME='----- MVCDrawViewBase.py: '
 
+XZ_Z_SCALE=math.sqrt(6.0)/3.0
+YZ_Y_SCALE=math.sqrt(3.0)/2.0
+YZ_Z_SCALE=math.sqrt(6.0)/3.0
+
+
 class MVCDrawViewBase:
     def __init__(self, _drawModel , graphicsFrameWidget, parent=None):
         self.legendActor    = vtk.vtkScalarBarActor()
@@ -183,7 +188,9 @@ class MVCDrawViewBase:
         self.currentDrawingParameters.fieldType = fieldType[1]        
         self.drawModel.setDrawingParametersObject(self.currentDrawingParameters)
         
-        
+
+            
+            
         if self.fieldTypes is not None:
             if _useFieldComboBox:
                 name = str(self.graphicsFrameWidget.fieldComboBox.currentText())
@@ -216,12 +223,34 @@ class MVCDrawViewBase:
             self.drawModel.setDrawingParametersObject(self.currentDrawingParameters)
             
         
-        
+       
         self.drawField(_bsd,fieldType)        
         
         # print 'AFTER INSIDEE graphicsFrame.drawFieldLocal'    
         # time.sleep(5)           
   
+        
+#         print 'plane ',plane 
+#         print self.parentWidget.latticeType
+#         print self.currentActors
+        if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.getSim3DFlag():
+            for actorName, actor in self.currentActors.iteritems():
+                if not hasattr(actor,'SetScale'): # skipping all the actors that cannot be scaled
+                    continue
+                if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"]:
+                    if self.plane=="XY":
+                        actor.SetScale(1.0,1.0,1.0)
+#                         print 'XY actorName=',actorName," scale=",actor.GetScale()     
+                    
+                    elif self.plane=="XZ":
+                        actor.SetScale(1.0,XZ_Z_SCALE,1.0)     
+#                         print 'XZ actorName=',actorName," scale=",actor.GetScale()                       
+
+                    elif self.plane=="YZ":
+                        actor.SetScale(YZ_Y_SCALE,YZ_Z_SCALE,1.0)
+#                         print 'YZ actorName=',actorName," scale=",actor.GetScale()     
+
+
         self.qvtkWidget().repaint()
         
 
