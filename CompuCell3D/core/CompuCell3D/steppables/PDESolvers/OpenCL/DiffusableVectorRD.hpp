@@ -154,7 +154,7 @@ void DiffusableVectorRDOpenCLImpl<Real_t>::allocateDiffusableFieldVector(unsigne
 	m_concentrationFieldNameVector.resize(numberOfFields);
 
 	m_boundaryStrategy=BoundaryStrategy::getInstance();
-	m_maxNeighborIndex=m_boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);//for nearest neighbors only
+	m_maxNeighborIndex=m_boundaryStrategy->getMaxNeighborIndexFromNeighborOrderNoGen(1);//for nearest neighbors only
 
 	std::vector<unique_proxy_ptr>().swap(m_proxies);
 	m_proxies.reserve(numberOfFields);
