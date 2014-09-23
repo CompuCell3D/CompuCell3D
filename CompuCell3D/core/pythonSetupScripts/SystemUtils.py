@@ -67,7 +67,15 @@ def getCC3DRunScriptPath() :
         
     cc3dPath=os.path.abspath(cc3dPath)
     return cc3dPath
-    
+
+def getCommandLineArgList():
+    '''returns command line options for parameter scan WITHOUT actual run script. run script has to be fetched independently using getCC3DPlayerRunscriptPath or getCC3DPlayerRunscriptPath in SystemUtils
+    '''
+    import sys
+    reminderArgs=sys.argv[1:] 
+    return reminderArgs
+
+
 def initializeSystemResources():
     platform=''
     RTLD_GLOBAL=0x0

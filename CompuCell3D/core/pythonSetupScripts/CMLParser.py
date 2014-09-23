@@ -13,19 +13,21 @@ class CMLParser:
         self.customScreenshotDirectoryName=""
         self.outputFrequency=1
         self.outputFileCoreName="Step"
+        self.exitWhenDone=False
+        self.maxNumberOfRuns=-1
         startSimulation=False
         
         opts=None
         args=None
         try:
-            opts, args = getopt.getopt(sys.argv[1:], "i:s:o:f:c:h", ["help","noOutput","exitWhenDone","currentDir=","outputFrequency="])
+            opts, args = getopt.getopt(sys.argv[1:], "i:s:o:f:c:h", ["help","noOutput","exitWhenDone","currentDir=","outputFrequency=","maxNumberOfRuns="])
             print "opts=",opts
             print "args=",args
         except getopt.GetoptError, err:
             # print help information and exit:
             print str(err) # will print something like "option -a not recognized"
             # self.usage()
-            sys.exit(2)
+            sys.exit(1)
         output = None
         verbose = False
         currentDir=""
@@ -54,7 +56,12 @@ class CMLParser:
             elif o in ("--currentDir"):
                 currentDir=a
                 print "currentDirectory=",currentDir
+            elif o in ("--exitWhenDone"):
+                self.exitWhenDone=True                    
+            elif o in ("--maxNumberOfRuns"):
+                self.maxNumberOfRuns=int(a)
                 
+            
             # elif o in ("--exitWhenDone"):             
                 # self.closePlayerAfterSimulationDone=True 
                 

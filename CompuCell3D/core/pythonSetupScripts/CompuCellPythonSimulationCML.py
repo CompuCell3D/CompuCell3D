@@ -33,9 +33,19 @@ def setVTKPaths():
 setVTKPaths()
 # print "PATH=",sys.path  
 
+import os,sys
+from os import environ
+python_module_path=os.environ["PYTHON_MODULE_PATH"]
+appended=sys.path.count(python_module_path)
+if not appended:
+    sys.path.append(python_module_path)
 
-import os          
-import sys
+swig_lib_install_path=os.environ["SWIG_LIB_INSTALL_DIR"]
+appended=sys.path.count(swig_lib_install_path)
+if not appended:
+    sys.path.append(swig_lib_install_path)
+
+
 # import Configuration # we do not import Configuration in order to avoid PyQt4 dependency for runScript
 import time
 
@@ -44,6 +54,7 @@ import time
 
 cc3dSimulationDataHandler=None
 
+import ParameterScanEnums    
 
 def getRootOutputDir() :
     '''returns output location stored in the Configuration's 'OutputLocation' entry.
@@ -70,10 +81,12 @@ def prepareParameterScan(_cc3dSimulationDataHandler):
     
     # checking if simulation file directory is writeable if not parameterscan cannot run properly - writeable simulation fiel directory is requirement for parameter scan
     if not os.access(cc3dProjectDir, os.W_OK):
-        raise AssertionError('parameter Scan Error: CC3D project directory:'+cc3dProjectDir+' has to be writeable. Please change permission on the directory of the .cc3d project')
+#         raise AssertionError('parameter Scan Error: CC3D project directory:'+cc3dProjectDir+' has to be writeable. Please change permission on the directory of the .cc3d project')
+        raise AssertionError('Parameter Scan ERRORCODE='+str(ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE)+': : CC3D project directory:'+cc3dProjectDir+' has to be writeable. Please change permission on the directory of the .cc3d project') 
     # check if parameter scan file is writeable
     if not os.access(pScanFilePath, os.W_OK):
-        raise AssertionError('parameter Scan Error: Parameter Scan xml file :'+pScanFilePath+ ' has to be writeable. Please change permission on this file')
+        raise AssertionError('Parameter Scan ERRORCODE='+str(ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE)+': Parameter Scan xml file :'+pScanFilePath+ ' has to be writeable. Please change permission on this file') 
+#         raise AssertionError('parameter Scan Error: Parameter Scan xml file :'+pScanFilePath+ ' has to be writeable. Please change permission on this file')
     
     
     # We use separate ParameterScanUtils object to handle parameter scan 
@@ -176,7 +189,8 @@ def loadCC3DFile(fileName,forceSingleRun=False):
         if cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource:
             preparationSuccessful=prepareParameterScan(cc3dSimulationDataHandler)
             if not preparationSuccessful:
-                raise AssertionError('Parameter Scan Complete')
+#                 raise AssertionError('Parameter Scan Complete')
+                raise AssertionError('Parameter Scan ERRORCODE='+str(ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE)+': Parameter Scan Complete') 
             
         else:
             prepareSingleRun(cc3dSimulationDataHandler)
@@ -188,16 +202,7 @@ def loadCC3DFile(fileName,forceSingleRun=False):
 
 import vtk     
 
-from os import environ
-python_module_path=os.environ["PYTHON_MODULE_PATH"]
-appended=sys.path.count(python_module_path)
-if not appended:
-    sys.path.append(python_module_path)
 
-swig_lib_install_path=os.environ["SWIG_LIB_INSTALL_DIR"]
-appended=sys.path.count(swig_lib_install_path)
-if not appended:
-    sys.path.append(swig_lib_install_path)
         
 # sys.path.append(environ["PYTHON_MODULE_PATH"])
 # sys.path.append(os.environ["SWIG_LIB_INSTALL_DIR"])
@@ -234,9 +239,13 @@ try:
     
     singleSimulation=True
     
+    relaunch=False
+    allowRelaunch=True
+        
     sim,simthread=None,None
-            
+    print 'BEFORE cmlParser.processCommandLineOptions() \n\n\n\n'            
     helpOnly = cmlParser.processCommandLineOptions()
+    print 'GOT PAST cmlParser.processCommandLineOptions() \n\n\n\n'
     
     if helpOnly: 
         raise NameError('HelpOnly')
@@ -247,10 +256,20 @@ try:
     #extracting from the runScript maximum number of consecutive runs
     try:
         maxNumberOfConsecutiveRuns=int(os.environ["MAX_NUMBER_OF_CONSECUTIVE_RUNS"])
+        if cmlParser.maxNumberOfRuns>0:
+            maxNumberOfConsecutiveRuns = cmlParser.maxNumberOfRuns
+        
+        # we reset max number of consecutive runs to 1 because we want each simulation in parameter scan
+        # initiated by the psrun.py script to be an independent run after which runScript terminatesrestarts again for the next run
+        if cmlParser.exitWhenDone:
+            maxNumberOfConsecutiveRuns=1
+            allowRelaunch=False            
     except:    # if for whatever reason we cannot do it we stay with the default value 
         pass
         
-    relaunch=False
+    
+    
+    
     
     while(True): # by default we are looping the simulation to make sure parameter scans are handled properly
     
@@ -336,31 +355,39 @@ try:
             sim=None
             
         print 'FINISHED MAIN LOOP'     
+#         if not allowRelanuch:    
+#             break
+            
         # jumping out of the loop when running single simulation. Will stay in the loop for e.g. parameter scan 
         if singleSimulation:
             break
         else:
             consecutiveRunCounter+=1
-            if consecutiveRunCounter>maxNumberOfConsecutiveRuns:
+            if consecutiveRunCounter>=maxNumberOfConsecutiveRuns:
                 relaunch=True
                 break
                 
-    if relaunch:
-                
+#     print 'allowRelaunch=',allowRelaunch,' relaunch=',relaunch
+    
+    
+    if allowRelaunch and relaunch:
+        
         from ParameterScanUtils import getParameterScanCommandLineArgList        
         from SystemUtils import getCC3DRunScriptPath
         
         popenArgs =[getCC3DRunScriptPath()] +getParameterScanCommandLineArgList(fileName)
         # print 'popenArgs=',popenArgs
         
-        # print 'WILL RESTART RUN SCRIPT FOR PARAMETER SCAN'
-        # import time
-        # time.sleep(5)
+#         print 'WILL RESTART RUN SCRIPT FOR PARAMETER SCAN'
+#         import time
+#         time.sleep(5)
         
         from subprocess import Popen
         cc3dProcess = Popen(popenArgs)
         
         
+        
+    
     
 except IndentationError,e:
     if CompuCellSetup.simulationObjectsCreated:
@@ -394,15 +421,19 @@ except ExpatError,e:
 
 except AssertionError,e:
     if CompuCellSetup.simulationObjectsCreated:        
-        sim.finish()        
-    print "Assertion Error: ",e.message
+        sim.finish()     
+    print "Assertion Error: ",e.message 
+    import ParameterScanEnums    
+    if e.message.startswith('Parameter Scan ERRORCODE='+str(ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE)):
+        sys.exit(ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE)
+    
     
 except CompuCellSetup.CC3DCPlusPlusError,e:
     print "RUNTIME ERROR IN C++ CODE: ",e.message
 except NameError,e:
     pass
 except:
-    print 'GENERAL EXCEPTION \n\n\n\n'
+#     print 'GENERAL EXCEPTION \n\n\n\n'
     if CompuCellSetup.simulationObjectsCreated:
         sim.finish()
     if helpOnly:
@@ -410,4 +441,5 @@ except:
     else:
         traceback_message = traceback.format_exc()
         print "Unexpected Error:",traceback_message
+
 

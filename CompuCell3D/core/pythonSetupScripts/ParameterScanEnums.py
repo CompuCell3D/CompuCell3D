@@ -17,4 +17,6 @@ VALUE_TYPE_DICT_REVERSE={} # dictionry comprehension does not work for 2.6 and e
 for k, v in VALUE_TYPE_DICT.items():
 	VALUE_TYPE_DICT_REVERSE[v]=k
 
+(SCAN_FINISHED_OR_DIRECTORY_ISSUE,)=range(2,3)
+
 

@@ -501,7 +501,7 @@ class ParameterScanUtils:
         except :
             print 'COULD NOT WRITE customOutputPath=',customOutputPath
             # return None
-            raise AssertionError('Could not create directory '+customOutputPath+ ' . please make sure you have necessary write permissions or choose another directory')
+            raise AssertionError('Parameter Scan ERRORCODE='+str(SCAN_FINISHED_OR_DIRECTORY_ISSUE)+': Could not create directory '+customOutputPath+ ' . It is likely that parameter scan has finished running or you may have permission issues preventing directory creation. If it is the latter, please make sure you have necessary write permissions or choose another directory')
             # print 'Could not create directory ',customOutputPath, ' . please make sure you have necessary write permissions'
             
             

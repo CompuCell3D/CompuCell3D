@@ -417,6 +417,9 @@ except TypeError,e:
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
         sim.cleanAfterSimulation()
+    print 'e.message=',e
+    print 'traceback=',traceback
+        
     traceback_message=traceback.format_exc()
     print traceback_message
     import PlayerPython
