@@ -120,7 +120,11 @@ echo " "
 echo " Now starting CompuCell3D $COMPUCELL3D_MAJOR_VERSION.$COMPUCELL3D_MINOR_VERSION.$COMPUCELL3D_BUILD_VERSION  in GUI mode:"
 echo " "
 # python ${PREFIX_CC3D}/player/compucell3d.pyw $* --currentDir=${current_directory}
+
+export exit_code=0
 ${PYTHON_EXEC} ${PREFIX_CC3D}/player/compucell3d.pyw $* --currentDir=${PREFIX_CC3D}
+exit_code=$?
 
 # cd ${current_directory}
 cd ${PREFIX_CC3D}
+exit ${exit_code}
