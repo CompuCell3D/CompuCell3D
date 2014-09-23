@@ -77,8 +77,8 @@ try:
 except getopt.GetoptError, err:
     # print help information and exit:
     print str(err) # will print something like "option -a not recognized"
-    # self.usage()
-    sys.exit(1)
+
+    sys.exit(0)
 
 for o, a in opts:
     print "o=",o
@@ -88,22 +88,14 @@ for o, a in opts:
     if o in ("--help"):    
         printHelp()
         sys.exit(0)
-# sys.exit()
 
 
-#check is maxNumberOfRuns is set
-# for 
 
-# HAVE TO CHECK IF CC3D PROJECT IS REALLY PARAMETER SCAN PROJECT - DONT WANT TO RUN REGULAR PROJECT USING THIS SCRIPT 
-# sys.exit()
-# print 'WILL RESTART RUN SCRIPT FOR PARAMETER SCAN'
-# import time
-# time.sleep(5)
 import subprocess
 from subprocess import Popen
 
 
-# # # for i in range(3):
+
 if maxNumberOfRuns<0:
     while True:
         try:    
@@ -143,45 +135,3 @@ else:
         
         
         
-import time
-
-# python ${PREFIX_CC3D}/player/CompuCellPythonSimulationCML.py $* --currentDir=${current_directory}
-
-# # # PREFIX_CC3D=os.environ["PREFIX_CC3D"]
-# # # print 'PREFIX_CC3D=',PREFIX_CC3D
-# # # popenArgs[0]=os.path.join(PREFIX_CC3D,'player','CompuCellPythonSimulationCML.py')
-# # # popenArgs=['python']+popenArgs
-# # # print 'popenArgs=',popenArgs
-# # # print '\n\n\n\n\n\n\n\n'
-# # # cc3dProcess = Popen(popenArgs)
-
-# sys.exit(0)
-
-# def callScan():
-    
-#     try:
-#     #     cc3dProcess = Popen(popenArgs).communicate()
-# #         cc3dProcess = Popen(popenArgs).communicate()
-        
-# #         
-
-# #         print 'LAUNCHED CC3D\n\n\n\n\n'
-# #         rc=cc3dProcess.returncode
-# #         print 'THIS IS RETURN CODE=', rc
-
-# #         rc=subprocess.check_call(popenArgs)
-        
-#         cc3dProcess = Popen(popenArgs)
-#         sys.exit(2)
-#         time.sleep(5)
-#         streamdata=cc3dProcess.communicate()        
-#         rc=cc3dProcess.returncode
-#         print 'THIS IS RETURN CODE=', rc
-#         time.sleep(5)
-        
-#     except KeyboardInterrupt:
-#         print 'User stopped the run'
-#         sys.exit(0)
-
-
-# callScan()
