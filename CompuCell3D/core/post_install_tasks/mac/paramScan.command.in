@@ -108,7 +108,7 @@ echo "---- ---- ---- ---- ---- ---- ---- ---- "
 # python ${PREFIX_CC3D}/player/CompuCellPythonSimulationCML.py $* --currentDir=${current_directory}
 
 export exit_code=0
-${PYTHON_EXEC} ${PREFIX_CC3D}/player/parameterScanRun.py $* --currentDir=${PREFIX_CC3D}
+${PYTHON_EXEC} ${PREFIX_CC3D}/player/ParameterScanRun.py $* --currentDir=${PREFIX_CC3D}
 exit_code=$?
 
 # cd ${current_directory}

@@ -33,7 +33,7 @@ export SOSLIB_PATH=${PREFIX_CC3D}/examplesSoslib
 
 echo "CompuCell3D - version $COMPUCELL3D_MAJOR_VERSION.$COMPUCELL3D_MINOR_VERSION.$COMPUCELL3D_BUILD_VERSION"
 export exit_code=0
-python ${PREFIX_CC3D}/player/parameterScanRun.py $* --currentDir=${current_directory}
+python ${PREFIX_CC3D}/player/ParameterScanRun.py $* --currentDir=${current_directory}
 exit_code=$?
 
 
