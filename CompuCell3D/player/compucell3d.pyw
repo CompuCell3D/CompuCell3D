@@ -111,7 +111,7 @@ def main(argv):
 #        opts, args = getopt.getopt(sys.argv[1:], "i:s:o:f:c:h", ["help","noOutput","exitWhenDone","currentDir=","outputFrequency=","port=","tweditPID=","prefs=" ])
         print '   argv[0:] =',argv[0:]
 #        opts, args = getopt.getopt(argv[1:],  ["prefs="])
-        opts, args = getopt.getopt(argv[0:],  "i:s:o:f:c:h:p:w:", ["help","noOutput","exitWhenDone","currentDir=","outputFrequency=","port=","tweditPID=","prefs=" ])
+        opts, args = getopt.getopt(argv[0:],  "i:s:o:f:c:h:p:w:", ["help","noOutput","exitWhenDone","guiScan","currentDir=","outputFrequency=","port=","tweditPID=","prefs=","maxNumberOfRuns=" ])
         print "type(opts), opts=",type(opts),opts
         print "type(args), args=",type(args),args
     except getopt.GetoptError, err:
@@ -142,6 +142,7 @@ def main(argv):
     # process reminder of the command line options
     if argv != "":
         mainWindow.viewmanager.processCommandLineOptions(opts)
+
     
     mainWindow.show()
     splash.finish(mainWindow)

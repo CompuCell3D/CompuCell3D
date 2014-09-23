@@ -725,7 +725,6 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         port =-1
         tweditPID=-1
         # connectTwedit=False
-        
         self.__prefsFile = "cc3d_default"  # default name of QSettings .ini file (in ~/.config/Biocomplexity on *nix)
         for o, a in opts:
             print "o=",o
@@ -773,6 +772,16 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                 
             elif o in ("--exitWhenDone"):             
                 self.closePlayerAfterSimulationDone=True 
+            elif o in ("--guiScan"):# when user uses gui to do parameter scan all we have to do is to set self.closePlayerAfterSimulationDone to True
+                self.closePlayerAfterSimulationDone=True
+                # we reset max number of consecutive runs to 1 because we want each simulation in parameter scan
+                # initiated by the psrun.py script to be an independent run after which player gets closed and reopened again for the next run
+                self.maxNumberOfConsecutiveRuns=1    
+                
+                pass
+            elif o in ("--maxNumberOfRuns"):
+                self.maxNumberOfConsecutiveRuns=int(a)
+                
                 
             # elif o in ("--connectTwedit"):             
                 # connectTwedit=True 
@@ -1027,13 +1036,20 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                                   QMessageBox.Ok)
 
         # # # self.__stopSim()
-        self.__cleanAfterSimulation()
-        
-        syntaxErrorConsole=self.UI.console.getSyntaxErrorConsole()    
-        text="Search \"file.xml\"\n"
-        text+="    file.xml\n"
-        text+=_traceback_message
-        syntaxErrorConsole.setText(text)
+#         print 'INSIDE HANDLE ERROR MESSAGE'
+#         print '_errorType=',_errorType
+#         print '_traceback_message=',_traceback_message
+        import ParameterScanEnums
+        if _errorType=='Assertion Error' and _traceback_message.startswith('Parameter Scan ERRORCODE='+str(ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE)):            
+            self.__cleanAfterSimulation(_exitCode=ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE)
+        else:
+            self.__cleanAfterSimulation()
+            print 'errorType=',_errorType
+            syntaxErrorConsole=self.UI.console.getSyntaxErrorConsole()    
+            text="Search \"file.xml\"\n"
+            text+="    file.xml\n"
+            text+=_traceback_message
+            syntaxErrorConsole.setText(text)
     
     # def handleErrorMessageDetailed(self,_errorType,_file,_line,_col,_traceback_message):
         # print "INSIDE handleErrorMessageDetailed"
@@ -1365,7 +1381,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                     self.parameterScanOutputDir=customOutputPath
                     # print 'self.screenshotDirectoryName=',self.screenshotDirectoryName
                     
-            except AssertionError,e:# propagating exception
+            except AssertionError,e:# propagating exception                
                 raise e
                 
         else:
@@ -2373,7 +2389,13 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                 self.__loadSim(file)            
             except AssertionError,e:
                 print "Assertion Error: ",e.message
+
                 self.handleErrorMessage("Assertion Error",e.message)
+                import ParameterScanEnums
+                if _errorType=='Assertion Error' and _traceback_message.startswith('Parameter Scan ERRORCODE='+str(ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE)):            
+#                     print 'Exiting inside prepare simulation '    
+                    sys.exit(ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE)                
+                
                 return                
             except xml.parsers.expat.ExpatError,e:
                 # if CompuCellSetup.simulationObjectsCreated:
@@ -2780,7 +2802,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.simulation.restartManager.outputRestartFiles(currentStep,True)
         
         
-    def __cleanAfterSimulation(self):
+    def __cleanAfterSimulation(self,_exitCode=0):
         self.resetControlButtonsAndActions()
         self.resetControlVariables()       
         
@@ -2794,7 +2816,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             if self.saveSettings:                
                 Configuration.syncPreferences()        
 
-            sys.exit()
+            sys.exit(_exitCode)
     
         # in case there is pending simulation to be run we will put it a recent simulation so that it can be ready to run without going through open file dialog
         if self.nextSimulation != "":
