@@ -41,7 +41,7 @@ tmpFile.close()
 # outFile.close()
 
 
-# Modifying run script for new Player
+# Modifying compucell3d.bat run script 
 tmpFile=open("tmp.bat","w")
 tmpFile.write("%s\n"%("@ECHO OFF"))
 tmpFile.write("%s\n"%("@SET PREFIX_CC3D="+PREFIX_CC3D))
@@ -67,7 +67,7 @@ for x in fileList:
 outFile.close()
 
 
-# Modifying run script for new Player
+# Modifying runScript.bat 
 tmpFile=open("tmp.bat","w")
 tmpFile.write("%s\n"%("@ECHO OFF"))
 tmpFile.write("%s\n"%("@SET PREFIX_CC3D="+PREFIX_CC3D))
@@ -92,7 +92,34 @@ for x in fileList:
 
 outFile.close()
 
-# Modifying run script for new Player
+
+# Modifying paramScan.bat script 
+tmpFile=open("tmp.bat","w")
+tmpFile.write("%s\n"%("@ECHO OFF"))
+tmpFile.write("%s\n"%("@SET PREFIX_CC3D="+PREFIX_CC3D))
+tmpFile.write("%s\n"%("@SET PYTHON_INSTALL_PATH="+PYTHON_INSTALL_PATH))
+tmpFile.close()
+
+#concatenate
+outFile=open("paramScan.bat","w")
+
+#fileList to concatenate
+fileList=["tmp.bat","paramScan.bat.in.v2"]
+
+# print "CWD=",os.getcwd()
+
+for x in fileList:
+    print "Processing ",x
+    file=open(x,'r')
+    data=file.read()
+    file.close()
+    outFile.write(data)
+    os.remove(x)
+
+outFile.close()
+
+
+# Modifying twedit++ run script 
 tmpFile=open("tmp.bat","w")
 tmpFile.write("%s\n"%("@ECHO OFF"))
 tmpFile.write("%s\n"%("@SET PREFIX_CC3D="+PREFIX_CC3D))
@@ -117,6 +144,8 @@ for x in fileList:
 
 outFile.close()
 
+
+# Modifying celldraw run script
 
 import os.path
 if os.path.isfile("celldraw.bat.in.v2"):

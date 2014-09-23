@@ -37,9 +37,14 @@ python "%PREFIX_CC3D%\pythonSetupScripts\envVarSanitizer.py" "PATH" >%TMP%\cc3dt
 
 cd %PREFIX_CC3D%
 
+@SET exit_code=0
 python "%PREFIX_CC3D%\player\CompuCellPythonSimulationCML.py" %* --currentDir="%CURRENT_DIRECTORY%"
+@SET exit_code= %errorlevel%
+
 goto simulationend
 
 :simulationend
    echo "SIMULATION FINISHED"
    cd %CURRENT_DIRECTORY%
+   
+exit /b %exit_code%    

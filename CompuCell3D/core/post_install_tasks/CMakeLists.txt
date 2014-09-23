@@ -19,6 +19,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/compucell3d.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat @ONLY)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/runScript.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat @ONLY)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/paramScan.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat @ONLY)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/twedit++.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat @ONLY)  
   
   
@@ -26,6 +27,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   INSTALL(FILES 
   ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat
   ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat
+  ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat
   ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat
   DESTINATION ${CMAKE_INSTALL_PREFIX})
 
@@ -42,6 +44,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   
   INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/compucell3d.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})  
   INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/runScript.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})  
+  INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/paramScan.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})
   INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/twedit++.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})  
   
 elseif (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)  
