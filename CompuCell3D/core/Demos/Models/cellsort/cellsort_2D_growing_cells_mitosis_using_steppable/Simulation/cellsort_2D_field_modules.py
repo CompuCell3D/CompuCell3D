@@ -63,9 +63,22 @@ class MitosisSteppable(MitosisSteppableBase):
             childCell.type=3
 
         #get a reference to lists storing Mitosis data
-        parentCellList=CompuCell.getPyAttrib(parentCell)
-        childCellList=CompuCell.getPyAttrib(childCell)
+        parentCellDict=CompuCell.getPyAttrib(parentCell)
+        childCellDict=CompuCell.getPyAttrib(childCell)
+        
+        try:
+            parentCellList=parentCellDict['lineage_list']
+        except LookupError,e:
+            parentCellDict['lineage_list']=[]
+            parentCellList=parentCellDict['lineage_list']
 
+        try:
+            childCellList=childCellDict['lineage_list']
+        except LookupError,e:
+            childCellDict['lineage_list']=[]
+            childCellList=childCellDict['lineage_list']
+            
+            
         ##will record mitosis data in parent and offspring cells
         mcs=self.simulator.getStep()
         mitData=MitosisData(mcs,parentCell.id,parentCell.type,childCell.id,childCell.type)
