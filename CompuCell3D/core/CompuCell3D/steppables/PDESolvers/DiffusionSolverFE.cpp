@@ -207,6 +207,8 @@ void DiffusionSolverFE<Cruncher>::init(Simulator *_simulator, CC3DXMLElement *_x
 
 
 	pUtils=simulator->getParallelUtils();
+    
+    // pUtils=simulator->getParallelUtilsSingleThread();
 
 	///setting member function pointers
 	diffusePtr=&DiffusionSolverFE::diffuse;

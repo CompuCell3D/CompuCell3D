@@ -778,9 +778,12 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
 			pair<Dim3D,Dim3D> sectionDims=pUtils->getPottsSection(currentWorkNodeNumber,s);
 			numberOfAttemptsLocal=(int)(sectionDims.second.x-sectionDims.first.x)*(sectionDims.second.y-sectionDims.first.y)*(sectionDims.second.z-sectionDims.first.z)*sim->getFlip2DimRatio();
-			//cerr<<"sectionDims.first="<<sectionDims.first<<endl;
-			//cerr<<"sectionDims.second="<<sectionDims.second<<endl;
-
+// #pragma omp critical
+// {           
+            // cerr<<"currentWorkNodeNumber ="<<currentWorkNodeNumber <<endl ;
+			// cerr<<"sectionDims.first="<<sectionDims.first<<endl;
+			// cerr<<"sectionDims.second="<<sectionDims.second<<endl;
+// }
 			//#pragma omp critical
 			//				{
 			//				cerr<<" thread="<<currentWorkNodeNumber<<" section="<<s<<" minDim="<<sectionDims.first<<" maxDim="<<sectionDims.second<<" numberOfAttemptsLocal="<<numberOfAttemptsLocal<<endl;
