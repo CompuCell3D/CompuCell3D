@@ -113,7 +113,12 @@ Version 3.7.1
 Version 3.7.2 July 2014
     Additions:
         Made secretion in the GPU solvers run on GPU not on CPU as before - performance gain
-    
+        Improved roadrunner SBML Solver - faster than before and with more user-configurable options
+        Improved GPU and CPU PDE Solvers - fixed small bugs on hex lattice with non-periodic boundary conditions
+        Updated Twedit helper menu
+        Fixed OSX player freeze when replaying VTK files
+        Added min/max functions to the chemical field for faster performance
+        
     BugFixes: 
         Fixed memory leaks in some field-accessing functions (swig-wrapped functions)
         Fixed GPU solvers for 3D
@@ -126,10 +131,10 @@ Version 3.7.2 July 2014
 Version 3.7.3 Sept 2014
 
     This is bug fix release with only small additions
-    Addition:
+    Additions:
         paramScan script that runs parameter scan in a fault-tolerant way. Even if simulation crashes for whatever reason, the next one in the parameter scan will be started
         Added new format to save plot data (csv)
-        Added hex2Cartesian and 
+        Added hex2Cartesian and cartesin2Hex functions
         Added option to turn off comments in Python snippets inserted from CC3D Python menu
         Added support for VTK6
         Stopped reqauiring PyQt/Qt for command line runs
@@ -139,5 +144,5 @@ Version 3.7.3 Sept 2014
         Fixed saving plots and plots data 
         Fixed saving .cc3d projects in the new directory aka Save Project As ...
         Fixed visualization scaling for 2D projectsion on hex lattice
-        Fixed generation of higher neighobor order on demand. Current implementation was good up to 8th neares neighbor. Now we can use 20 or 30 or even higher 
+        Fixed generation of higher neighbor order on demand. Current implementation was good up to 8th nearest neighbor. Now we can use 20 or 30 or even higher 
         Fixed how secretion plugin is handled in openMP - now when user does all secretion in Python there is no thread blocking in open mp to execute fixed stepper - see manual for more details
