@@ -16,6 +16,17 @@ ENDIF (APPLE)
 
 FIND_PACKAGE (OpenMP)    
 
+#Build Cellular Automaton Model
+OPTION(BUILD_CA "Build shared libraries" ON)
+
+#Build CC3D Steppables
+OPTION(BUILD_CC3D_PLUGINS "Build CC3D Plugins" OFF)
+
+#Build CC3D Steppables
+OPTION(BUILD_CC3D_STEPPABLES "Build CC3D Steppables" OFF)
+
+
+
 # Should we build shared libraries
 OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
