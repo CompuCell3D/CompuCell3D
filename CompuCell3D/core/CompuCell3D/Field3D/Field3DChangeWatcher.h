@@ -39,8 +39,11 @@ namespace CompuCell3D {
      * @param newValue The current value.
      * @param oldValue The previous value.
      */
+    // virtual void field3DChange(const Point3D &pt, T newValue,
+			       // T oldValue) = 0;
     virtual void field3DChange(const Point3D &pt, T newValue,
-			       T oldValue) = 0;
+			       T oldValue) {};
+                   
   };
 };
 #endif
