@@ -22,16 +22,16 @@ namespace CompuCell3D {
       CACell():
         type(0),
 
-		xCOM(0),yCOM(0),zCOM(0),
-		xCOMPrev(0),yCOMPrev(0),zCOMPrev(0),
+		xCOM(-1),yCOM(-1),zCOM(-1),
+		xCOMPrev(-1),yCOMPrev(-1),zCOMPrev(-1),
         id(0),
         clusterId(0),
         extraAttribPtr(0),
         pyAttrib(0)
       {}
       unsigned char type;
-	  double xCOM,yCOM,zCOM; // numerator of center of mass expression (components)
-	  double xCOMPrev,yCOMPrev,zCOMPrev; // previous center of mass 
+	  long xCOM,yCOM,zCOM; // numerator of center of mass expression (components)
+	  long xCOMPrev,yCOMPrev,zCOMPrev; // previous center of mass 
       long id; //id of a cell
       long clusterId; //clusterId to which cell belongs - for now notused but I keep it just in case
 
