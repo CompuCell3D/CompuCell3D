@@ -31,6 +31,7 @@
 #include "Zap.h"
 
 #include <string>
+#include <sstream>
 #include <iostream>
 #include <list>
 
@@ -108,7 +109,13 @@ public:
   BasicSmartPointer<BasicException> getCause() const {return cause;}
 
   BasicSmartPointer<std::list<std::string> > getTrace() const {return trace;}
-
+  
+  std::runtime_error toRuntimeError(){
+    std::ostringstream ostr;
+    print(ostr);
+    return std::runtime_error(ostr.str());    
+  }  
+  
   /** 
    * Prints the complete exception recuring down to the cause exception if
    * not null.  WARNING: If there are many layers of causes this function
@@ -187,5 +194,8 @@ inline std::ostream &operator<<(std::ostream &stream,
 #define THROW(msg) throw BasicException((msg), FILE_LOCATION)
 #define THROWC(msg, cause) throw BasicException((msg), FILE_LOCATION, (cause))
 #define ASSERT_OR_THROW(msg, condition) {if (!(condition)) THROW(msg);}
+
+#define RUNTIME_THROW(msg) throw BasicException((msg), FILE_LOCATION).toRuntimeError()
+#define RUNTIME_ASSERT_OR_THROW(msg, condition) {if (!(condition)) RUNTIME_THROW(msg);}
 
 #endif
