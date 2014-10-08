@@ -29,7 +29,7 @@ class CASHARED_EXPORT CAManager{
         ~CAManager();
 
         void createCellField(const Dim3D & _dim);
-		void destroyCell(CACell *  _cell, bool _flag);
+		void destroyCell(CACell *  _cell, bool _flag=true);
 		CACell * createAndPositionCell(const Point3D &pt, long _clusterId=-1);
         CACell * createCell(long _clusterId=-1);
 		void registerCellFieldChangeWatcher(CACellFieldChangeWatcher * _watcher);
@@ -37,11 +37,18 @@ class CASHARED_EXPORT CAManager{
         Field3D<CACell *> * getCellField();
 		void positionCell(const Point3D &_pt,CACell *  _cell);
 		CACellInventory * getCellInventory();
+
+		void setCellToDelete(CACell * _cell); //sets ptr of a cell to be deleted
+
+		void cleanup(); //used to delete cells
+
     protected:
         WatchableField3D<CACell *> *cellField;
 		CACellInventory cellInventory;
 		long recentlyCreatedCellId;
 		long recentlyCreatedClusterId;
+
+		CACell * cellToDelete;
 
 		
 };

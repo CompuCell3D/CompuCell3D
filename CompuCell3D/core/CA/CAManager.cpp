@@ -14,7 +14,7 @@
 using namespace std;
 using namespace CompuCell3D;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-CAManager::CAManager():cellField(0),recentlyCreatedCellId(1),recentlyCreatedClusterId(1)
+CAManager::CAManager():cellField(0),recentlyCreatedCellId(1),recentlyCreatedClusterId(1),cellToDelete(0)
 {}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 CAManager::~CAManager()
@@ -49,8 +49,32 @@ void CAManager::registerCellFieldChangeWatcher(CACellFieldChangeWatcher * _watch
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void CAManager::destroyCell(CACell *  _cell, bool _flag){
+void CAManager::setCellToDelete(CACell * _cell){ 
+	//sets ptr of a cell to be deleted
+	cellToDelete=_cell;
+
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CAManager::cleanup(){
+	//used to delete cells
+	if (cellToDelete){
+		destroyCell(cellToDelete);
+		cellToDelete=0;
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CAManager::destroyCell(CACell *  _cell, bool _removeFromInventory){
 	cerr<<"inside destroy cell"<<endl;
+	//had to introduce these two cases because in the Cell inventory destructor we deallocate memory of pointers stored int the set
+	//Since this is done during interation over set changing pointer (cell=0) or removing anything from set might corrupt container or invalidate iterators
+	if(_removeFromInventory){
+		cellInventory.removeFromInventory(_cell);
+		delete _cell;
+		_cell=0;
+	}else{
+		delete _cell;
+	}
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void CAManager::positionCell(const Point3D &_pt,CACell *  _cell){
@@ -63,6 +87,7 @@ void CAManager::positionCell(const Point3D &_pt,CACell *  _cell){
 	}
 
 	cellField->set(_pt,_cell); 
+	cleanup(); // in CA each repositionning of cell has high chance of overwritting (hence deleting) another cell. Therefore we call cleanup often
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

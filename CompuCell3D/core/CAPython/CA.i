@@ -247,12 +247,65 @@ using namespace CompuCell3D;
 %template(cellfieldImpl) Field3DImpl<CACell *>;
 %template(watchablecellfield) WatchableField3D<CACell *>;
 
-
 %include <CompuCell3D/Field3D/Field3DChangeWatcher.h>
 %template (Field3DChangeWatcherTemplate) Field3DChangeWatcher<CACell*>;
 
- %include <CA/CACellFieldChangeWatcher.h>
+%include <CA/CACellFieldChangeWatcher.h>
 
+
+%inline %{
+
+class STLPyIteratorCINV
+{
+public:
+
+    CompuCell3D::CACellInventory::cellInventoryContainerType::iterator current;
+    CompuCell3D::CACellInventory::cellInventoryContainerType::iterator begin;
+    CompuCell3D::CACellInventory::cellInventoryContainerType::iterator end;
+
+
+    STLPyIteratorCINV(CompuCell3D::CACellInventory::cellInventoryContainerType& a)
+    {
+      initialize(a);
+    }
+
+    STLPyIteratorCINV()
+    {
+    }
+
+
+     CompuCell3D::CACell * getCurrentRef(){
+      return const_cast<CompuCell3D::CACell * >(current->second);
+      // return const_cast<CompuCell3D::CellG * >(*current);
+    }
+    void initialize(CompuCell3D::CACellInventory::cellInventoryContainerType& a){
+        begin = a.begin();
+        end = a.end();
+    }
+    bool isEnd(){return current==end;}
+    bool isBegin(){return current==begin;}
+    void setToBegin(){current=begin;}
+
+    void previous(){
+        if(current != begin){
+
+            --current;
+         }
+
+    }
+
+    void next()
+    {
+
+        if(current != end){
+
+            ++current;
+         }
+
+
+    }
+};
+%}
 
 
 

@@ -47,6 +47,8 @@ void CenterOfMassMonitor::init(CAManager *_caManager){
 }
 
 void CenterOfMassMonitor::field3DChange(const Point3D &pt, CACell *newCell,CACell * oldCell) {
+	
+	
 
 	if (newCell){
 		//when we move cell to a different location, in CA we set its previous site to NULL ptr because CA cell can only occupy one lattice site 
@@ -58,6 +60,11 @@ void CenterOfMassMonitor::field3DChange(const Point3D &pt, CACell *newCell,CACel
 		newCell->xCOM = pt.x;
 		newCell->yCOM = pt.y;
 		newCell->zCOM = pt.z;
+
+		if (oldCell){ // this means that oldCell is being overwritten thus we will add it to list of cells to delete 
+			caManager->setCellToDelete(oldCell);
+		}
+
 	}
 
     cerr<<"field 3d change center of mass monitor"<<endl;
@@ -67,6 +74,7 @@ void CenterOfMassMonitor::field3DChange(const Point3D &pt, CACell *newCell,CACel
 	}
 
 	cerr<<"oldCell="<<oldCell<<endl;
+
 }
 
 
