@@ -1,0 +1,18 @@
+SET (SRCS CenterOfMassMonitor.cpp)
+
+INCLUDE_DIRECTORIES ( 
+    ${COMPUCELL3D_SOURCE_DIR}/core
+    )
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+   ADD_SHARED_LIBRARY(CenterOfMassMonitor ${SRCS} LINK_LIBRARIES CAShared)
+   # ADD_SHARED_LIBRARY(CA ${SRCS})
+else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+   # ADD_SHARED_LIBRARY(CA ${SRCS})
+   ADD_SHARED_LIBRARY(CenterOfMassMonitor ${SRCS} LINK_LIBRARIES CAShared)
+endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+
+INSTALL_FILES(/include/CompuCell3D/CA/modules .h
+  CenterOfMassMonitor)
+
+
