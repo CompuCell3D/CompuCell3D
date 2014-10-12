@@ -37,6 +37,9 @@ globalSteppableRegistry=None #rwh2
 global cmlFieldHandler
 cmlFieldHandler=None
 playerType="old"
+
+import enums
+playerModel=enums.PLAYER_CPM
 # global cc3dXML2ObjConverter_1
 # cc3dXML2ObjConverter_1=None
 # cc3dXML2ObjConverter_2=None
