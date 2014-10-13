@@ -1021,20 +1021,40 @@ void DiffusionSolverFE_CPU::diffuseSingleField(unsigned int idx){
                         concentrationSum -= (maxNeighborIndex+1)*currentConcentration;
                         
                         concentrationSum*=currentDiffCoef;
+
+						 
+
+
                         //                                         cout << " diffCoef[currentCellType]: " << diffCoef[currentCellType] << endl;    
 
 
                         
                         //using forward first derivatives - cartesian lattice 3D
                         if (variableDiffusionCoefficientFlag){
+							concentrationSum/=2.0;
+							//////float c0=concentrationField.getDirect(x,y,z);
+							//////varDiffSumTerm += diffCoef[cellTypeArray.getDirect(x+1,y,z)]*(concentrationField.getDirect(x+1,y,z)-c0);
+							//////varDiffSumTerm += diffCoef[cellTypeArray.getDirect(x-1,y,z)]*(concentrationField.getDirect(x-1,y,z)-c0);
+							//////varDiffSumTerm += diffCoef[cellTypeArray.getDirect(x,y+1,z)]*(concentrationField.getDirect(x,y+1,z)-c0);
+							//////varDiffSumTerm += diffCoef[cellTypeArray.getDirect(x,y-1,z)]*(concentrationField.getDirect(x,y-1,z)-c0);
+							//////varDiffSumTerm /=2.0;
 
-                            const std::vector<Point3D> & offsetFDVecRef=getOffsetVec(pt); //offsets for forward derivatives
+							//loop over nearest neighbors
+							const std::vector<Point3D> & offsetVecRef=boundaryStrategy->getOffsetVec(pt);
 
-
-                            for (register int i = 0  ; i<offsetFDVecRef.size() ; ++i ){
-                                const Point3D & offsetFD = offsetFDVecRef[i];
-                                varDiffSumTerm+=(diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)-concentrationField.getDirect(x,y,z));
+                            for (register int i = 0  ; i<=maxNeighborIndex ; ++i ){
+                                const Point3D & offset = offsetVecRef[i];								
+								varDiffSumTerm += diffCoef[cellTypeArray.getDirect(x+offset.x,y+offset.y,z+offset.z)]*(concentrationField.getDirect(x+offset.x,y+offset.y,z+offset.z)-currentConcentration);
                             }
+							varDiffSumTerm /=2.0;
+
+                            //////const std::vector<Point3D> & offsetFDVecRef=getOffsetVec(pt); //offsets for forward derivatives
+
+
+                            //////for (register int i = 0  ; i<offsetFDVecRef.size() ; ++i ){
+                            //////    const Point3D & offsetFD = offsetFDVecRef[i];
+                            //////    varDiffSumTerm+=(diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)-concentrationField.getDirect(x,y,z));
+                            //////}
 
                         }
                     }else{ // BOUNDARY pixel - boundary pixel means belonging to the lattice but touching boundary
@@ -1070,6 +1090,10 @@ void DiffusionSolverFE_CPU::diffuseSingleField(unsigned int idx){
                         concentrationSum -= (maxNeighborIndex+1)*currentConcentration;
                         
                         concentrationSum*=currentDiffCoef;
+
+						 
+
+
                         //                                         cout << " diffCoef[currentCellType]: " << diffCoef[currentCellType] << endl;    
                         
                         // cerr<<"VISITING PIXEL="<<pt+Point3D(1,1,1)<<"  cellTypeArray.getDirect(x,y,z)="<<(int)cellTypeArray.getDirect(x,y,z)<<endl;
@@ -1077,64 +1101,104 @@ void DiffusionSolverFE_CPU::diffuseSingleField(unsigned int idx){
                         // // // varDiffSumTerm = cellTypeArray.getDirect(x,y,z);
                         // // // concentrationField.setDirectSwap(x,y,z,varDiffSumTerm);//updating scratch
                         
+
                         //using forward first derivatives - cartesian lattice 3D
                         if (variableDiffusionCoefficientFlag){
-
+							concentrationSum/=2.0;
                             // if (x>=0 &&x <6 && y>=0 &&y<=6){
                             // cerr<<endl;
                             // cerr<<"VISITING PIXEL="<<pt+Point3D(1,1,1)<<" variableDiffusionCoefficientFlag "<<endl;
                             // }
-                            const std::vector<Point3D> & offsetFDVecRef=getOffsetVec(pt); //offsets for forward derivatives
+                            
+							const std::vector<Point3D> & offsetVecRef=boundaryStrategy->getOffsetVec(pt);
 
-                            
-                            for (register int i = 0  ; i<offsetFDVecRef.size() ; ++i ){
-                            
-                                const Point3D & offsetFD = offsetFDVecRef[i];
-                                signed char nBcIndicator=bcField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z);
-                                
-                                // varDiffSumTerm = cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z);
-                                // varDiffSumTerm=nBcIndicator;
-                                // break;
-                                    
-                                if (nBcIndicator==BoundaryConditionSpecifier::INTERNAL  || nBcIndicator==BoundaryConditionSpecifier::BOUNDARY){// for pixel neighbors which are internal or boundary pixels  calculations use default "internal pixel" algorithm. boundary pixel means belonging to the lattice but touching boundary
-                                
-                                    varDiffSumTerm += (diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)-concentrationField.getDirect(x,y,z));
-                                    // cerr<<"shiftedPt="<<pt+Point3D(1,1,1)+offsetFD<<" c="<<concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)<<endl;
-                                    // varDiffSumTerm +=concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z);
-                                    
-                                    
-                                }else{
-                                    if (bcSpec.planePositions[nBcIndicator]==BoundaryConditionSpecifier::PERIODIC){// for pixel neighbors which are external pixels with periodic BC  calculations use default "internal pixel" algorithm
-                                        varDiffSumTerm += (diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)-concentrationField.getDirect(x,y,z));
-                                        
-                                    }else if (bcSpec.planePositions[nBcIndicator]==BoundaryConditionSpecifier::CONSTANT_VALUE){
-                                    
-                                        varDiffSumTerm += (diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*( bcSpec.values[nBcIndicator]-concentrationField.getDirect(x,y,z));
-                                        
-                                    }else if (bcSpec.planePositions[nBcIndicator]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
-                                    
-                                        if (nBcIndicator==BoundaryConditionSpecifier::MIN_X || nBcIndicator==BoundaryConditionSpecifier::MIN_Y || nBcIndicator==BoundaryConditionSpecifier::MIN_Z){ // for "left hand side" edges of the lattice the sign of the derivative expression is '-'
-                                                // if (x>=0 &&x <6 && y>=0 &&y<=6){
-                                                    // cerr<<"*************** current cell type="<<currentCellType<<endl;
-                                                    // cerr<<" x,y,z =" <<x+offsetFD.x<<","<<y+offsetFD.y<<","<<z+offsetFD.z<<" c="<<concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)<<" bcSpec.values[nBcIndicator]="<<bcSpec.values[nBcIndicator]<<" nBcIndicator="<<(int)nBcIndicator<<endl;                                                    
-                                                    // cerr<<" currentDiffCoef="<<currentDiffCoef<<" neighborDiffCoef="<<diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]<<" cellType="<<(int)cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)<<endl;
-                                                    // cerr<<"offsetFD="<<offsetFD<<endl;
-                                                    // float term=(diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x,y,z)-bcSpec.values[nBcIndicator]*deltaX-concentrationField.getDirect(x,y,z));                                                    ;
-                                                    // cerr<<"term="<<term<<endl;
-                                                // }
-                                                // for non-periodic bc diff coeff of neighbor pixels which are in the external boundary os the same as diff coef of current pixel. hece no extra term here
-                                                // varDiffSumTerm+=(diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x,y,z)-bcSpec.values[nBcIndicator]*deltaX-concentrationField.getDirect(x,y,z));                                                    
-                                               
-                                        }else{ // for "left hand side" edges of the lattice the sign of  the derivative expression is '+'
-                                            // for non-periodic bc diff coeff of neighbor pixels which are in the external boundary os the same as diff coef of current pixel. hece no extra term here
-                                            // varDiffSumTerm+=(diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x,y,z)+bcSpec.values[nBcIndicator]*deltaX-concentrationField.getDirect(x,y,z));                                                
-                                        }                                                                        
-                                        
-                                    }                                    
-                                }
+                            for (register int i = 0  ; i<=maxNeighborIndex ; ++i ){
+                                const Point3D & offset = offsetVecRef[i];			
+								signed char nBcIndicator=bcField.getDirect(x+offset.x,y+offset.y,z+offset.z);
+								float c_offset = concentrationField.getDirect(x+offset.x,y+offset.y,z+offset.z);
+								//for pixels belonging to outside boundary we have to use boundary conditions to determine the value of the concentration at this pixel
+								if (! (nBcIndicator==BoundaryConditionSpecifier::INTERNAL)  && !(nBcIndicator==BoundaryConditionSpecifier::BOUNDARY) ){
+									if (bcSpec.planePositions[nBcIndicator]==BoundaryConditionSpecifier::PERIODIC){
+										//for periodic BC we do nothing we simply use whatever is returned by concentrationField.getDirect(x+offset.x,y+offset.y,z+offset.z)
+									}else if (bcSpec.planePositions[nBcIndicator]==BoundaryConditionSpecifier::CONSTANT_VALUE){
+										c_offset=bcSpec.values[nBcIndicator];
+									}else if (bcSpec.planePositions[nBcIndicator]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
+										if (nBcIndicator==BoundaryConditionSpecifier::MIN_X || nBcIndicator==BoundaryConditionSpecifier::MIN_Y || nBcIndicator==BoundaryConditionSpecifier::MIN_Z){ // for "left hand side" edges of the lattice the sign of the derivative expression is '-'
+												// cerr<<" x,y,z =" <<x+offset.x<<","<<y+offset.y<<","<<z+offset.z<<" c="<<concentrationField.getDirect(x+offset.x,y+offset.y,z+offset.z)<<" bcSpec.values[nBcIndicator]="<<bcSpec.values[nBcIndicator]<<" nBcIndicator="<<(int)nBcIndicator<<endl;
+												// cerr<<" MIN (x,y,z)="<<x<<","<<y<<","<<z<<" c="<<concentrationField.getDirect(x,y,z)<<" nnBcIndicator="<<(int)nBcIndicator<<" bcSpec.values[nBcIndicator]="<<bcSpec.values[nBcIndicator]<<" concentrationField.getDirect(x,y,z)-bcSpec.values[nBcIndicator]*deltaX="<<concentrationField.getDirect(x,y,z)-bcSpec.values[nBcIndicator]*deltaX<<endl;
+											   c_offset= currentConcentration - bcSpec.values[nBcIndicator]*deltaX; // notice we use values of the field of the central pixel not of the neiighbor. The neighbor is outside of the lattice and for non cartesian lattice with non periodic BC cannot be trusted to hold appropriate value
+										}else{ // for "left hand side" edges of the lattice the sign of  the derivative expression is '+'
+											// cerr<<" MAX (x,y,z)="<<x<<","<<y<<","<<z<<" c="<<concentrationField.getDirect(x,y,z)<<" nnBcIndicator="<<(int)nBcIndicator<<" bcSpec.values[nBcIndicator]="<<bcSpec.values[nBcIndicator]<<" concentrationField.getDirect(x,y,z)-bcSpec.values[nBcIndicator]*deltaX="<<concentrationField.getDirect(x,y,z)+bcSpec.values[nBcIndicator]*deltaX<<endl;                                            
+											c_offset = currentConcentration + bcSpec.values[nBcIndicator]*deltaX ;// notice we use values of the field of the central pixel not of the neiighbor. The neighbor is outside of the lattice and for non cartesian lattice with non periodic BC cannot be trusted to hold appropriate value
+										}
+									}
+								}
+
+								varDiffSumTerm += diffCoef[cellTypeArray.getDirect(x+offset.x,y+offset.y,z+offset.z)]*(c_offset-currentConcentration);
                             }
+                            
+							varDiffSumTerm /= 2.0;
 
-                        }                        
+                        }
+
+                        //////////using forward first derivatives - cartesian lattice 3D
+                        ////////if (variableDiffusionCoefficientFlag){
+
+                        ////////    // if (x>=0 &&x <6 && y>=0 &&y<=6){
+                        ////////    // cerr<<endl;
+                        ////////    // cerr<<"VISITING PIXEL="<<pt+Point3D(1,1,1)<<" variableDiffusionCoefficientFlag "<<endl;
+                        ////////    // }
+                        ////////    const std::vector<Point3D> & offsetFDVecRef=getOffsetVec(pt); //offsets for forward derivatives
+
+                        ////////    
+                        ////////    for (register int i = 0  ; i<offsetFDVecRef.size() ; ++i ){
+                        ////////    
+                        ////////        const Point3D & offsetFD = offsetFDVecRef[i];
+                        ////////        signed char nBcIndicator=bcField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z);
+                        ////////        
+                        ////////        // varDiffSumTerm = cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z);
+                        ////////        // varDiffSumTerm=nBcIndicator;
+                        ////////        // break;
+                        ////////            
+                        ////////        if (nBcIndicator==BoundaryConditionSpecifier::INTERNAL  || nBcIndicator==BoundaryConditionSpecifier::BOUNDARY){// for pixel neighbors which are internal or boundary pixels  calculations use default "internal pixel" algorithm. boundary pixel means belonging to the lattice but touching boundary
+                        ////////        
+                        ////////            varDiffSumTerm += (diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)-concentrationField.getDirect(x,y,z));
+                        ////////            // cerr<<"shiftedPt="<<pt+Point3D(1,1,1)+offsetFD<<" c="<<concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)<<endl;
+                        ////////            // varDiffSumTerm +=concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z);
+                        ////////            
+                        ////////            
+                        ////////        }else{
+                        ////////            if (bcSpec.planePositions[nBcIndicator]==BoundaryConditionSpecifier::PERIODIC){// for pixel neighbors which are external pixels with periodic BC  calculations use default "internal pixel" algorithm
+                        ////////                varDiffSumTerm += (diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)-concentrationField.getDirect(x,y,z));
+                        ////////                
+                        ////////            }else if (bcSpec.planePositions[nBcIndicator]==BoundaryConditionSpecifier::CONSTANT_VALUE){
+                        ////////            
+                        ////////                varDiffSumTerm += (diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*( bcSpec.values[nBcIndicator]-concentrationField.getDirect(x,y,z));
+                        ////////                
+                        ////////            }else if (bcSpec.planePositions[nBcIndicator]==BoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
+                        ////////            
+                        ////////                if (nBcIndicator==BoundaryConditionSpecifier::MIN_X || nBcIndicator==BoundaryConditionSpecifier::MIN_Y || nBcIndicator==BoundaryConditionSpecifier::MIN_Z){ // for "left hand side" edges of the lattice the sign of the derivative expression is '-'
+                        ////////                        // if (x>=0 &&x <6 && y>=0 &&y<=6){
+                        ////////                            // cerr<<"*************** current cell type="<<currentCellType<<endl;
+                        ////////                            // cerr<<" x,y,z =" <<x+offsetFD.x<<","<<y+offsetFD.y<<","<<z+offsetFD.z<<" c="<<concentrationField.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)<<" bcSpec.values[nBcIndicator]="<<bcSpec.values[nBcIndicator]<<" nBcIndicator="<<(int)nBcIndicator<<endl;                                                    
+                        ////////                            // cerr<<" currentDiffCoef="<<currentDiffCoef<<" neighborDiffCoef="<<diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]<<" cellType="<<(int)cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)<<endl;
+                        ////////                            // cerr<<"offsetFD="<<offsetFD<<endl;
+                        ////////                            // float term=(diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x,y,z)-bcSpec.values[nBcIndicator]*deltaX-concentrationField.getDirect(x,y,z));                                                    ;
+                        ////////                            // cerr<<"term="<<term<<endl;
+                        ////////                        // }
+                        ////////                        // for non-periodic bc diff coeff of neighbor pixels which are in the external boundary os the same as diff coef of current pixel. hece no extra term here
+                        ////////                        // varDiffSumTerm+=(diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x,y,z)-bcSpec.values[nBcIndicator]*deltaX-concentrationField.getDirect(x,y,z));                                                    
+                        ////////                       
+                        ////////                }else{ // for "left hand side" edges of the lattice the sign of  the derivative expression is '+'
+                        ////////                    // for non-periodic bc diff coeff of neighbor pixels which are in the external boundary os the same as diff coef of current pixel. hece no extra term here
+                        ////////                    // varDiffSumTerm+=(diffCoef[cellTypeArray.getDirect(x+offsetFD.x,y+offsetFD.y,z+offsetFD.z)]-currentDiffCoef)*(concentrationField.getDirect(x,y,z)+bcSpec.values[nBcIndicator]*deltaX-concentrationField.getDirect(x,y,z));                                                
+                        ////////                }                                                                        
+                        ////////                
+                        ////////            }                                    
+                        ////////        }
+                        ////////    }
+
+                        ////////}                        
 
                     }                        
                     updatedConcentration=(concentrationSum+varDiffSumTerm)+(1-decayCoef[currentCellType])*currentConcentration;
@@ -1165,16 +1229,19 @@ void DiffusionSolverFE_CPU::diffuseSingleField(unsigned int idx){
 	concentrationField.swapArrays();
 
 
-    
-        // float totConc=0.0;
-        // for (int z = 1; z < fieldDim.z+1; z++)
-            // for (int y =1; y < fieldDim.y+1; y++)
-                // for (int x = 1; x < fieldDim.x+1; x++){
-                
-                 
-                    // totConc+=concentrationField.getDirect(x,y,z);
-                // }                
-        // cerr<<"TOTAL CONCENTRATION="<<totConc<<endl;      
+		//ofstream out ("data_reg.out");
+  //       float totConc=0.0;
+  //       for (int z = 1; z < fieldDim.z+1; z++)
+  //           for (int y =1; y < fieldDim.y+1; y++)
+  //               for (int x = 1; x < fieldDim.x+1; x++){
+  //              
+  //                  if (concentrationField.getDirect(x,y,z) !=0.0){
+  //                      //cerr<<"("<<x<<","<<y<<","<<z<<")="<<concentrationField.getDirect(x,y,z)<<endl;
+		//				out<<"("<<x<<","<<y<<","<<z<<")="<<concentrationField.getDirect(x,y,z)<<endl;
+  //                  }                 
+  //                   totConc+=concentrationField.getDirect(x,y,z);
+  //               }                
+  //       cerr<<"TOTAL CONCENTRATION="<<totConc<<endl;      
     
 }
 
