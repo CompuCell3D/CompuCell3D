@@ -273,7 +273,6 @@ public:
     {
     }
 
-
      CompuCell3D::CACell * getCurrentRef(){
       return const_cast<CompuCell3D::CACell * >(current->second);
       // return const_cast<CompuCell3D::CellG * >(*current);
@@ -308,6 +307,7 @@ public:
 %}
 
 
+%template(vectorstring) std::vector<std::string>;
 
 //CA modules
 %include <CA/modules/CenterOfMassMonitor.h>

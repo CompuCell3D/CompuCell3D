@@ -13,6 +13,10 @@
 @SET PYTHON_MODULE_EXTRA_PATH=%CD%
 @SET PYTHON_DEPS_PATH=%PREFIX_CC3D%\lib\PythonDeps
 
+@SET PYTHONPATH=%SWIG_LIB_INSTALL_DIR%;%PYTHONPATH%
+@SET PYTHONPATH=%PREFIX_CC3D%;%PYTHONPATH%
+@SET PYTHONPATH=%PREFIX_CC3D%/playerCA;%PYTHONPATH%
+
 
 @SET VTKPATH=%PREFIX_CC3D%\bin
 
@@ -27,9 +31,6 @@
 
 @set CURRENT_DIRECTORY=%CD%
 
-@SET PYTHONPATH=%SWIG_LIB_INSTALL_DIR%;%PYTHONPATH%
-@SET PYTHONPATH=%PREFIX_CC3D%;%PYTHONPATH%
-
 
 REM removing duplicates from PATH environment variable - this variable can get recusrive addodn with each subsequent run resulting in windows shell error - also a good idea to keep PATH short anyway
 REM a bit ugly but works...
@@ -40,9 +41,7 @@ python "%PREFIX_CC3D%\pythonSetupScripts\envVarSanitizer.py" "PATH" >%TMP%\cc3dt
 cd %PREFIX_CC3D%
 
 @SET exit_code=0
-REM python "%PREFIX_CC3D%\player\compucell3d.pyw" %* --currentDir="%CURRENT_DIRECTORY%"
-REM "%PREFIX_CC3D%\bin\CACL.exe" %* --currentDir="%CURRENT_DIRECTORY%"
-python "%PREFIX_CC3D%\ca.py" %* --currentDir="%CURRENT_DIRECTORY%"
+python "%PREFIX_CC3D%\playerCA\caplayer.pyw" %* --currentDir="%CURRENT_DIRECTORY%"
 @SET exit_code= %errorlevel%
 
 goto simulationend

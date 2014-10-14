@@ -646,6 +646,95 @@ def setSimulationXMLDescriptionNewPlayer(_xmlTree):
 def getScreenshotDirectoryName():
     global screenshotDirectoryName
     return screenshotDirectoryName    
+
+def getCoreCASimulationObjects(_parseOnlyFlag=False, _cmlOnly=False):
+    import sys
+    from os import environ
+    import string
+    python_module_path = os.environ["PYTHON_MODULE_PATH"]
+    appended = sys.path.count(python_module_path)
+    if not appended:
+        sys.path.append(python_module_path)    
+    
+    # sys.path.append(environ["PYTHON_MODULE_PATH"])
+
+    import SystemUtils
+    SystemUtils.setSwigPaths()
+    SystemUtils.initializeSystemResources()
+    # # # # this dummy library was necessary to get restarting of the Python interpreter from C++ to work with SWIG generated libraries
+    # # # import Example
+
+    # # # import CompuCell
+    # # # CompuCell.initializePlugins()
+    import CA
+    simthread = None
+    sim = None
+
+    
+    global simulationPaths
+    if not _parseOnlyFlag:
+        sim = CA.CAManager()
+        # sim.setNewPlayerFlag(True)
+        # sim.setBasePath(simulationPaths.basePath)
+        if simthread is not None:            
+            simthread.setSimulator(sim)
+
+        if simulationPaths.simulationXMLFileName!="":
+            global simulationPaths
+            global cc3dXML2ObjConverter
+            import XMLUtils
+
+            parseXML(simulationPaths.simulationXMLFileName)
+
+            if cc3dXML2ObjConverter.root.findElement("PythonScript"):
+                simulationPaths.setPythonScriptNameFromXML(cc3dXML2ObjConverter.root.getFirstElement("PythonScript").getText())
+
+        simulationPaths.ensurePathsConsistency()
+
+
+
+            
+        #here I will append path to search paths based on the paths to XML file and Python script paths
+        global appendedPaths
+        if simulationPaths.playerSimulationPythonScriptPath != "":
+            sys.path.insert(0,simulationPaths.playerSimulationPythonScriptPath)
+            appendedPaths.append(simulationPaths.playerSimulationPythonScriptPath)
+
+        if simulationPaths.pathToPythonScriptNameFromXML !="":
+            sys.path.insert(0,simulationPaths.pathToPythonScriptNameFromXML)
+            appendedPaths.append(simulationPaths.pathToPythonScriptNameFromXML)
+
+        if simulationPaths.playerSimulationXMLFilePath !="":
+            sys.path.insert(0,simulationPaths.playerSimulationXMLFilePath)
+            appendedPaths.append(simulationPaths.playerSimulationXMLFilePath)
+
+        if simulationPaths.pathToxmlFileNameFromPython!="":
+            sys.path.insert(0,simulationPaths.pathToxmlFileNameFromPython)
+            appendedPaths.append(simulationPaths.pathToxmlFileNameFromPython)
+            
+        # initModules(sim)#extracts Plugins, Steppables and Potts XML elements and passes it to the simulator
+
+
+        global simulationObjectsCreated
+        simulationObjectsCreated = True
+                
+    if not _cmlOnly:
+        # sys.exit()        
+        global simulationThreadObject
+        
+        # simulationThreadObject.sim = sim
+        simulationThreadObject.setSimulator(sim)
+        
+        return sim,simulationThreadObject
+    
+    else:
+        global cmlFieldHandler
+        # import CMLFieldHandler        
+        # cmlFieldHandler=CMLFieldHandler.CMLFieldHandler()
+        # cmlFieldHandler.sim=sim
+        createCMLFileHandler(sim)      
+        return sim,cmlFieldHandler    
+
     
 
 def getCoreSimulationObjectsNewPlayer(_parseOnlyFlag=False, _cmlOnly=False):

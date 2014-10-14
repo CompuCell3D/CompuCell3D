@@ -4,6 +4,8 @@
 
 #include "CADLLSpecifier.h"
 #include "CACellInventory.h"
+#include <vector>
+#include <string>
 
 
 namespace CompuCell3D {
@@ -38,7 +40,19 @@ class CASHARED_EXPORT CAManager{
 		void positionCell(const Point3D &_pt,CACell *  _cell);
 		CACellInventory * getCellInventory();
 
+		//old simulator interface namning convention
+		int getNumSteps();
+		void setNumSteps(int _numSteps);
+		int getCurrentStep();
+		void step(int i);
+		std::vector<std::string> getConcentrationFieldNameVector();
+
+		void cleanAfterSimulation();
+
+
 		void setCellToDelete(CACell * _cell); //sets ptr of a cell to be deleted
+
+		
 
 		void cleanup(); //used to delete cells
 
@@ -47,7 +61,8 @@ class CASHARED_EXPORT CAManager{
 		CACellInventory cellInventory;
 		long recentlyCreatedCellId;
 		long recentlyCreatedClusterId;
-
+		int numSteps;
+		int currentStep;
 		CACell * cellToDelete;
 
 		

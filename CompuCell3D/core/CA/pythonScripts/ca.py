@@ -1,10 +1,19 @@
+import sys,os
+print ''
+print sys.path
+print os.environ['PYTHONPATH']
+
+
 import math
 
 print 'This is CA Python run module'
 
 import CA
+# import Simulation.SimulationThreadCA
+from Simulation.SimulationThreadCA import SimulationThreadCA
 
 caManager=CA.CAManager()
+caManager.setNumSteps(10)
 print 'caManager=',dir(caManager)
 
 from CAPyUtils import DemoSteppable
@@ -82,4 +91,43 @@ print 'cell inventory size=',caManager.getCellInventory().getSize()
 
 
 ds.step(2)
+
+
+simthread=CompuCellSetup.simulationThreadObject
+
+simthread.setSimulator(caManager)
+
+simthread.postStartInit()
+simthread.waitForPlayerTaskToFinish()
+
+beginingStep=0
+i=beginingStep
+
+while True:
+    simthread.beforeStep(i)
+    caManager.step(i)
+    simthread.loopWork(i)
+    simthread.loopWorkPostEvent(i)
+    screenUpdateFrequency = simthread.getScreenUpdateFrequency()
+   
+    i+=1        
+    if i>=caManager.getNumSteps():
+        break    
+    
+caManager.cleanAfterSimulation()
+# sim.unloadModules()
+print "CALLING UNLOAD MODULES NEW PLAYER"
+if simthread is not None:
+    simthread.sendStopSimulationRequest()
+    simthread.simulationFinishedPostEvent(True)
+
+    
+# import time
+# time.sleep(3)
+
+import CompuCellSetup
+print 'CompuCellSetup.playerType=',CompuCellSetup.playerType
+print 'CompuCellSetup.playerModel=',CompuCellSetup.playerModel
+print 'CompuCellSetup.simulationThreadObject=',CompuCellSetup.simulationThreadObject
+
 
