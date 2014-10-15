@@ -33,6 +33,9 @@ appendedPaths=[]
 global globalSteppableRegistry #rwh2
 globalSteppableRegistry=None #rwh2
 
+global cc3dSimulationDataHandler
+cc3dSimulationDataHandler=None
+
 
 global cmlFieldHandler
 cmlFieldHandler=None
@@ -647,6 +650,38 @@ def getScreenshotDirectoryName():
     global screenshotDirectoryName
     return screenshotDirectoryName    
 
+# # # def loadCC3DFile(_fileName):
+    
+    # # # try:
+        # # # f=open(_fileName,'r')
+        # # # f.close()
+    # # # except IOError,e:
+        # # # raise IOError("%s does not exist"%_fileName)    
+        
+    # # # global cc3dSimulationDataHandler
+    # # # global simulationPaths
+    
+    # # # import CC3DSimulationDataHandler
+    # # # cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler(self)    
+    # # # cc3dSimulationDataHandler.readCC3DFileFormat(_fileName)
+
+    # # # CompuCellSetup.simulationPaths.setSimulationBasePath(cc3dSimulationDataHandler.cc3dSimulationData.basePath)
+
+    # # # # print self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript
+    
+    
+    # # # if self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript != "":       
+        # # # # self.simulation.setRunUserPythonScriptFlag(True)
+        # # # # print 'self.simulation=',self.simulation
+        # # # # sys.exit()
+        # # # simulationPaths.setPlayerSimulationPythonScriptName(cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
+        # # # if cc3dSimulationDataHandler.cc3dSimulationData.xmlScript!="":
+            # # # simulationPaths.setPlayerSimulationXMLFileName(cc3dSimulationDataHandler.cc3dSimulationData.xmlScript)
+            
+    # # # elif cc3dSimulationDataHandler.cc3dSimulationData.xmlScript != "":
+        # # # simulation.setRunUserPythonScriptFlag(True)
+        # # # simulationPaths.setPlayerSimulationXMLFileName(cc3dSimulationDataHandler.cc3dSimulationData.xmlScript)    
+    
 def getCoreCASimulationObjects(_parseOnlyFlag=False, _cmlOnly=False):
     import sys
     from os import environ

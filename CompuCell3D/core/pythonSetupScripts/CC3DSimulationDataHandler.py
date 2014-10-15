@@ -138,6 +138,7 @@ class CC3DSimulationData:
         self.basePath="" # full path to the directory of project file
         
         self.version="3.5.1"
+        self.modeltype='CPM'
     
     @property
     def pythonScript(self):
@@ -341,11 +342,17 @@ class CC3DSimulationDataHandler:
         root_element = xml2ObjConverter.Parse(fileFullPath) # this is simulation element
         
         version='0'
+        modeltype='CPM'
         
         if root_element.findAttribute('version'):
             version = root_element.getAttribute('version')
             self.cc3dSimulationData.version=version
-        
+
+        if root_element.findAttribute('modeltype'):
+            modeltype = root_element.getAttribute('modeltype')
+            self.cc3dSimulationData.modeltype=modeltype
+
+            
         if root_element.getFirstElement("XMLScript"):
             xmlScriptRelative = root_element.getFirstElement("XMLScript").getText()            
 # # #             self.cc3dSimulationData.xmlScript = root_element.getFirstElement("XMLScript").getText()
