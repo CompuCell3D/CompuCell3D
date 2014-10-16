@@ -1,0 +1,79 @@
+#include "CACellStack.h"
+#include "CACell.h"
+#include <iostream>
+
+
+#include <limits>
+
+#undef max
+#undef min
+
+//#define _DEBUG
+
+using namespace std;
+
+namespace CompuCell3D {
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+CACellStack::CACellStack(int _capacity):
+fillLevel(0),
+capacity(_capacity)
+{
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+CACellStack::~CACellStack(){
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool CACellStack::appendCell(CACell * _cell){
+	if (isFull()) return false;
+	stack[_cell->id]=_cell;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+CACell * CACellStack::appendCellForce(CACell * _cell){
+	CACell * removedCell=0;
+#ifdef _DEBUG
+	cerr<<"CACellStack capacity="<<capacity<<endl;
+#endif
+	if (isFull()){
+		//removing last entry
+		std::map<long,CACell *>::iterator mitr=stack.end();
+		--mitr;
+		removedCell=mitr->second;
+
+		stack.erase(mitr);
+	}
+
+	appendCell(_cell);
+	return removedCell; 
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void CACellStack::deleteCell(CACell * _cell){
+	
+	
+	std::map<long,CACell *>::iterator mitr=stack.find(_cell->id);
+	if (mitr != stack.end()){
+		stack.erase(mitr);
+	}
+	
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CACell * CACellStack::getCellByIdx(int _idx){
+	//no bound checking in this function...
+	std::map<long,CACell *>::iterator mitr=stack.begin();
+	advance(mitr,_idx);
+	return mitr->second;
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+}

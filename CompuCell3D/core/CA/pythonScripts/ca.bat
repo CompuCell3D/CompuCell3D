@@ -41,8 +41,8 @@ cd %PREFIX_CC3D%
 
 @SET exit_code=0
 REM python "%PREFIX_CC3D%\player\compucell3d.pyw" %* --currentDir="%CURRENT_DIRECTORY%"
-REM "%PREFIX_CC3D%\bin\CACL.exe" %* --currentDir="%CURRENT_DIRECTORY%"
-python "%PREFIX_CC3D%\ca.py" %* --currentDir="%CURRENT_DIRECTORY%"
+"%PREFIX_CC3D%\bin\CACL.exe" %* --currentDir="%CURRENT_DIRECTORY%"
+REM python "%PREFIX_CC3D%\ca.py" %* --currentDir="%CURRENT_DIRECTORY%"
 @SET exit_code= %errorlevel%
 
 goto simulationend

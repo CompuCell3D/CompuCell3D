@@ -21,14 +21,15 @@
 %{
 // CompuCell3D Include Files
 // #include <Potts3D/Cell.h>
-// #include <CompuCell3D/Field3D/Neighbor.h>
-// #include <CompuCell3D/Boundary/BoundaryStrategy.h>
+#include <CompuCell3D/Field3D/Neighbor.h>
+#include <CompuCell3D/Boundary/BoundaryStrategy.h>
 #include <CompuCell3D/Field3D/Field3D.h>
 #include <CompuCell3D/Field3D/Field3DImpl.h>
 #include <CompuCell3D/Field3D/WatchableField3D.h>
 #include <CA/CACell.h>
 #include <CA/CAManager.h>
 #include <CA/CACellInventory.h>
+#include <CA/CACellStack.h>
 
 //necessary to get registration of change watcher working in Python
 #include <CompuCell3D/Field3D/Field3DChangeWatcher.h>
@@ -130,6 +131,7 @@ using namespace CompuCell3D;
 
 //have to include all  export definitions for modules which are wrapped to avoid problems with interpreting by swig win32 specific c++ extensions...
 #define CASHARED_EXPORT
+#define BOUNDARYSHARED_EXPORT
 
 //modules #defines
 #define CENTEROFMASSMONITOR_EXPORT
@@ -217,11 +219,10 @@ using namespace CompuCell3D;
 //typemaps for Point3D, Dim3D, Coordinates3D<double> - enable more convenient Python syntax e.g. Point3D can be specified as a list/tuple with 3 numerical elements
 // // // %include "typemaps_CC3D.i"
 
-// // // %include <CompuCell3D/Field3D/Neighbor.h>
-// // // %include <CompuCell3D/Boundary/BoundaryStrategy.h>
+%include <CompuCell3D/Field3D/Neighbor.h>
+%include <CompuCell3D/Boundary/BoundaryStrategy.h>
 
 
-    
    
     
 using namespace CompuCell3D;
@@ -233,19 +234,29 @@ using namespace CompuCell3D;
 
 
 %include "CA/CACell.h"
+%include "CA/CACellStack.h"
 %include "CA/CACellInventory.h"
 %include "CA/CAManager.h"
 
-
+//Field3D<CACell*>
 %ignore Field3D<CACell*>::typeStr;
 %ignore Field3DImpl<CACell*>::typeStr;
 %ignore WatchableField3D<CACell*>::typeStr;
 
-
-
 %template(cellfield) Field3D<CACell *>;
 %template(cellfieldImpl) Field3DImpl<CACell *>;
 %template(watchablecellfield) WatchableField3D<CACell *>;
+
+//Field3D<CACellStack*>
+%ignore Field3D<CACellStack*>::typeStr;
+%ignore Field3DImpl<CACellStack*>::typeStr;
+%ignore WatchableField3D<CACellStack*>::typeStr;
+
+%template(cellstackfield) Field3D<CACellStack *>;
+%template(cellstackfieldImpl) Field3DImpl<CACellStack *>;
+%template(watchablecellstackfield) WatchableField3D<CACellStack *>;
+
+
 
 %include <CompuCell3D/Field3D/Field3DChangeWatcher.h>
 %template (Field3DChangeWatcherTemplate) Field3DChangeWatcher<CACell*>;
@@ -308,6 +319,8 @@ public:
 
 
 %template(vectorstring) std::vector<std::string>;
+%template(vectorCACellPtr) std::vector<CACell*>;
+
 
 //CA modules
 %include <CA/modules/CenterOfMassMonitor.h>

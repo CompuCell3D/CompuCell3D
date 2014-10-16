@@ -12,6 +12,8 @@
 #undef max
 #undef min
 
+//#define _DEBUG
+
 using namespace std;
 
 using namespace CompuCell3D;
@@ -42,6 +44,9 @@ using namespace CompuCell3D;
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	void CACellInventory::cleanInventory(){
 		using namespace std;
+#ifdef DEBUG
+		cerr<<"INSIDE CELAN INVENTORY"<<endl;
+#endif
 		//Freeing up cell inventory has to be done
 		CACellInventory::cellInventoryIterator cInvItr;
 
@@ -50,6 +55,10 @@ using namespace CompuCell3D;
 		///loop over all the cells in the inventory   
 		for( cInvItr = cellInventoryBegin() ; cInvItr !=cellInventoryEnd() ; ++cInvItr ){
 			cell=getCell(cInvItr);
+#ifdef DEBUG
+			cerr<<"caManager="<<caManager<<" WILL DESTROY CELL "<<cell<<endl;
+#endif
+
 			//cell=*cInvItr;
 			if(!caManager){
 				delete cell;
@@ -61,6 +70,18 @@ using namespace CompuCell3D;
 		inventory.clear();
 
 	}
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	std::vector<CACell *> *CACellInventory:: generateCellVector(){
+		cellVector.assign(inventory.size(),0);
+		long i=0;
+		for (cellInventoryIterator mitr = inventory.begin() ; mitr != inventory.end() ; ++mitr){
+			cellVector[i]=mitr->second;
+			++i;
+		}
+
+		return &cellVector;
+	};
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	void CACellInventory::addToInventory(CACell * _cell){

@@ -72,6 +72,9 @@ class CASHARED_EXPORT CACellInventory
 		CACell * getCellByIds(long _id,long clusterId);    // this implementation will ignore clusterId, for now     
 		CACell * attemptFetchingCellById(long _id);
 
+		std::vector<CACell *> * generateCellVector();
+
+
 
 		CACell * getCell(cellInventoryIterator & _itr){return _itr->second;}
 		// CACellList  getClusterCells(long _clusterId);
@@ -86,6 +89,7 @@ class CASHARED_EXPORT CACellInventory
     private:
         cellInventoryContainerType inventory;
         CAManager *caManager;
+		std::vector<CACell *> cellVector; 
       // CompartmentInventory compartmentInventory;
      
 };

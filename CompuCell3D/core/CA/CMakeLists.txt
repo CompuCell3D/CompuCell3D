@@ -1,5 +1,6 @@
 SET(SRCS
   CAManager.cpp
+  CACellStack.cpp
   CACellInventory.cpp
   )
 
@@ -17,7 +18,10 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 INSTALL_FILES(/include/CompuCell3D/CA/CAManager .h
-  CAManager)
+  CAManager
+  CACell
+  CACellStack
+  )
 
 ADD_SUBDIRECTORY(modules) # those are equivalents of old style plugins
 

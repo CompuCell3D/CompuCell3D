@@ -227,13 +227,17 @@ bool BoundaryStrategy::isValid(const int coordinate, const int max_value)const{
  * @param dim Dim3D
  */
 void BoundaryStrategy::setDim(const Dim3D theDim) {
-//     cerr<<"calling setDim again"<<endl;
+    // cerr<<"calling setDim again"<<endl;
     Dim3D oldDim(dim);
 
     dim = theDim;
+    
     algorithm->setDim(theDim);
+    
     if(! neighborListsInitializedFlag){
+      // cerr<<"before  prepareNeighborLists" <<endl;
       prepareNeighborLists();
+      // cerr<<"After  prepareNeighborLists" <<endl;
       neighborListsInitializedFlag=true;
     }
     

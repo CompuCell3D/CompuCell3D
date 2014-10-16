@@ -1,0 +1,5 @@
+<Simulation version="3.7.3" modeltype="CA">
+
+    <PythonScript>Simulation/caproject_new.py</PythonScript>         
+
+</Simulation>

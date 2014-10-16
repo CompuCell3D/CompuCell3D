@@ -240,8 +240,8 @@ try:
         # fileObj.close()        
         print "INSIDE IF CompuCellPythonSimulationNewPlayer \n\n\n"
         
-        
-        execfile(pythonScript)
+        d = dict(locals(), **globals())
+        execfile(pythonScript,d,d)
         print "COMPLETED execfile in CompuCellPythonSimulationNewPlayer \n\n\n"
     else:
         print "INSIDE ELSE CompuCellPythonSimulationNewPlayer \n\n\n"        
