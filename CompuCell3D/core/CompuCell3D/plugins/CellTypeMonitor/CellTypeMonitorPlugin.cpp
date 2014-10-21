@@ -34,7 +34,7 @@ CellTypeMonitorPlugin::~CellTypeMonitorPlugin() {
     pUtils->destroyLock(lockPtr);
     delete lockPtr;
     lockPtr=0;
-	cerr<<"THIS IS size of the cellTypeArray "<<cellTypeArray->getDim()<<endl;
+	//cerr<<"THIS IS size of the cellTypeArray "<<cellTypeArray->getDim()<<endl;
     if (cellTypeArray){
         delete cellTypeArray;
         cellTypeArray=0;
