@@ -78,6 +78,8 @@ namespace CompuCell3D {
 
         virtual void extraInit(Simulator *simulator);
 
+		virtual void handleEvent(CC3DEvent & _event);
+
         //Steerrable interface
         virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
         virtual std::string steerableName();

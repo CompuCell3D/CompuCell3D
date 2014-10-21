@@ -75,7 +75,7 @@ public:
 
     virtual ~Field3DImpl() {
         if(field){
-            delete field;
+            delete [] field;
             field=0;
         }
             

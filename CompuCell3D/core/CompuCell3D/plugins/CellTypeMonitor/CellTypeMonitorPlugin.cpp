@@ -34,12 +34,56 @@ CellTypeMonitorPlugin::~CellTypeMonitorPlugin() {
     pUtils->destroyLock(lockPtr);
     delete lockPtr;
     lockPtr=0;
-    
+	cerr<<"THIS IS size of the cellTypeArray "<<cellTypeArray->getDim()<<endl;
     if (cellTypeArray){
         delete cellTypeArray;
         cellTypeArray=0;
+        delete cellIdArray;
+        cellIdArray=0;
+
+
     }
 }
+
+void CellTypeMonitorPlugin::handleEvent(CC3DEvent & _event){
+	if (_event.id!=LATTICE_RESIZE){
+		return;
+	}
+	
+    cellFieldG=(WatchableField3D<CellG *> *)potts->getCellFieldG();
+    
+	CC3DEventLatticeResize ev = static_cast<CC3DEventLatticeResize&>(_event);
+	
+	
+    Array3DCUDA<unsigned char> * cellTypeArray_new = new Array3DCUDA<unsigned char>(ev.newDim,mediumType);
+    Array3DCUDA<float> * cellIdArray_new = new Array3DCUDA<float>(ev.newDim,-1); //we assume medium cell id is -1 not zero because normally cells in older versions of CC3D we allwoed cells with id 0 
+	// cerr<<"CellTypeMonitorPlugin::handleEvent="<<endl;
+	// cerr<<"cellFieldG ->getDim()="<<cellFieldG ->getDim()<<endl;
+
+	for (int x = 0; x < ev.newDim.x; x++)
+	    for (int y = 0; y < ev.newDim.y; y++)
+		    for (int z = 0; z < ev.newDim.z; z++){
+				Point3D pt(x,y,z);
+				CellG * cell = cellFieldG->get(pt);
+				if (cell){
+					cellTypeArray_new->set(pt,cell->type);
+					cellIdArray_new->set(pt,cell->id);
+				}
+			}
+	
+        delete cellTypeArray;
+        cellTypeArray=0;
+        delete cellIdArray;
+        cellIdArray=0;
+
+		cellTypeArray = cellTypeArray_new;
+		cellIdArray = cellIdArray_new;
+
+
+
+
+}
+
 
 void CellTypeMonitorPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     xmlData=_xmlData;
