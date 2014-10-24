@@ -86,11 +86,13 @@ IF(SWIG_FOUND)
     INSTALL(FILES ${python_files_path}/CA.py DESTINATION lib/python)    
 
 
-
+    add_subdirectory(CAPyPlayer)
  
 ELSE(SWIG_FOUND)
     message("could not find SWIG in your system")
 ENDIF(SWIG_FOUND)
+
+
 
 
 # IF(SWIG_FOUND)

@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 
+class BasicRandomNumberGeneratorNonStatic ;
 
 namespace CompuCell3D {
 class Dim3D;
@@ -24,7 +25,8 @@ class CACellFieldChangeWatcher;
 
   class BoundaryStrategy;
 
-
+  
+  class ProbabilityFunction ;
   class CACell;
   class CACellStack;
 
@@ -68,6 +70,14 @@ class CASHARED_EXPORT CAManager{
 
 		void cleanup(); //used to delete cells
 
+
+		//Simulation utils
+		void registerProbabilityFunction(ProbabilityFunction *_fcn);
+		void setNeighborOrder(int _no);
+		int getNeighborOrder();
+
+		void runCAAlgorithm(int _mcs);
+
     protected:
         WatchableField3D<CACell *> *cellField;
 		WatchableField3D<CACellStack *> *cellFieldS;
@@ -80,7 +90,11 @@ class CASHARED_EXPORT CAManager{
 		int currentStep;
 		CACell * cellToDelete;
 		BoundaryStrategy *boundaryStrategy;
+		int neighborOrder;
 
+		std::vector<ProbabilityFunction *> probFcnRegistry;
+
+		BasicRandomNumberGeneratorNonStatic * rand; 
 		
 };
 };

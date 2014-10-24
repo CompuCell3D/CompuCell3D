@@ -2,3 +2,6 @@
 (LEGACY_FORMAT,CSV_FORMAT)=range(0,2)
 
 (PLAYER_CPM,PLAYER_CA)=range(0,2)
+
+FIELD_TYPES = ("CellField", "ConField", "ScalarField", "ScalarFieldCellLevel", "VectorField", "VectorFieldCellLevel","CustomVis")
+PLANES      = ("xy", "xz", "yz")

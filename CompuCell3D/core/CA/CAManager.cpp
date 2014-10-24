@@ -2,10 +2,14 @@
 #include "CACell.h"
 #include "CACellStack.h"
 #include "CACellFieldChangeWatcher.h"
+#include "ProbabilityFunction.h"
 
 #include <CompuCell3D/Field3D/Dim3D.h>
 #include <CompuCell3D/Field3D/Point3D.h>
 #include <CompuCell3D/Field3D/WatchableField3D.h>
+
+
+#include <BasicUtils/BasicRandomNumberGenerator.h>
 
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 
@@ -27,8 +31,9 @@ cellToDelete(0),
 numSteps(0),
 currentStep(0),
 cellCarryingCapacity(1),
-boundaryStrategy(0)
-
+boundaryStrategy(0),
+rand (0),
+neighborOrder(1)
 {
 
 	//BoundaryStrategy::instantiate(ppdCC3DPtr->boundary_x, ppdCC3DPtr->boundary_y, ppdCC3DPtr->boundary_z, ppdCC3DPtr->shapeAlgorithm, ppdCC3DPtr->shapeIndex, ppdCC3DPtr->shapeSize, ppdCC3DPtr->shapeInputfile,HEXAGONAL_LATTICE);
@@ -36,6 +41,16 @@ boundaryStrategy(0)
 
 	cellInventory.setCAManagerPtr(this);
 	boundaryStrategy=BoundaryStrategy::getInstance();
+
+	
+	rand = new BasicRandomNumberGeneratorNonStatic;
+	
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CAManager::registerProbabilityFunction(ProbabilityFunction * _fcn){
+	probFcnRegistry.push_back(_fcn);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -47,7 +62,12 @@ BoundaryStrategy * CAManager::getBoundaryStrategy(){
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 CAManager::~CAManager()
-{}
+{
+	if (rand){
+		delete rand;
+		rand = 0;
+	}
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int CAManager::getCellCarryingCapacity(){
 	return cellCarryingCapacity;
@@ -73,6 +93,7 @@ int CAManager::getCurrentStep(){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void CAManager::step(int _i){
 	currentStep=_i;
+	runCAAlgorithm(_i);
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void CAManager::cleanAfterSimulation(){
@@ -284,4 +305,50 @@ CACell * CAManager::createCell(long _clusterId){
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CAManager::setNeighborOrder(int _no){
+	neighborOrder=_no;
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+int CAManager::getNeighborOrder(){
+	return neighborOrder;
+}
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void CAManager::runCAAlgorithm(int _mcs){
+
+	Point3D pt;
+	Dim3D fieldDim=cellFieldS->getDim();
+	unsigned int maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(neighborOrder);
+
+	long numberOfAttempts = fieldDim.x*fieldDim.y*fieldDim.z;
+
+	for (long i =0; i < numberOfAttempts ; ++i){
+		//pick source
+		pt.x = rand->getInteger(0, fieldDim.x-1);
+		pt.y = rand->getInteger(0, fieldDim.y-1);
+		pt.z = rand->getInteger(0, fieldDim.z-1);
+		
+		unsigned int directIdx = rand->getInteger(0, maxNeighborIndex);
+		Neighbor n = boundaryStrategy->getNeighborDirect(pt,directIdx);
+
+
+		if(!n.distance){
+			//if distance is 0 then the neighbor returned is invalid
+			continue;
+		}
+		//targetPixel
+		Point3D changePixel = n.pt;
+
+		double prob=0.0;
+		for (unsigned int idx = 0 ; idx < probFcnRegistry.size() ; ++idx ){
+			
+			prob += probFcnRegistry[idx]->calculate(pt,changePixel);
+
+		}
+
+		//cerr<<"prob="<<prob<<endl;
+
+	}
+}
