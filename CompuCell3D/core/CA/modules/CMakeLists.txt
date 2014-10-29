@@ -36,3 +36,4 @@ INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
 # # # INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_DIR})
 
 add_subdirectory(CanonicalProbability)  
+add_subdirectory(PDESolvers)  

@@ -3,6 +3,8 @@
 
 %module ("threads"=1) CA
 
+%import "CoreObjects.i"
+
 %include "typemaps.i"
 
 // ************************************************************
@@ -140,24 +142,24 @@ using namespace CompuCell3D;
 // %include <dolfin/mesh/Mesh.h>
 
 // we have to include files for objects that we will type-map before including definitions of corresponding typemaps
-%include "Field3D/Point3D.h"
-%include "Field3D/Dim3D.h"
-
-%extend CompuCell3D::Point3D{
-  std::string __str__(){
-    std::ostringstream s;
-    s<<(*self);
-    return s.str();
-  }
-};
-
-%extend CompuCell3D::Dim3D{
-  std::string __str__(){
-    std::ostringstream s;
-    s<<(*self);
-    return s.str();
-  }
-};
+//%include "Field3D/Point3D.h"
+//%include "Field3D/Dim3D.h"
+//
+//%extend CompuCell3D::Point3D{
+//  std::string __str__(){
+//    std::ostringstream s;
+//    s<<(*self);
+//    return s.str();
+//  }
+//};
+//
+//%extend CompuCell3D::Dim3D{
+//  std::string __str__(){
+//    std::ostringstream s;
+//    s<<(*self);
+//    return s.str();
+//  }
+//};
 
 // %extend CompuCell3D::Point3D{
   // std::string __str__(){
@@ -223,7 +225,7 @@ using namespace CompuCell3D;
 %include <CompuCell3D/Boundary/BoundaryStrategy.h>
 
 
-   
+
     
 using namespace CompuCell3D;
 
@@ -256,7 +258,10 @@ using namespace CompuCell3D;
 %template(cellstackfieldImpl) Field3DImpl<CACellStack *>;
 %template(watchablecellstackfield) WatchableField3D<CACellStack *>;
 
-
+//
+//// floatfield
+//%ignore CompuCell3D::Field3D<float>::typeStr;
+//%template(floatfield) CompuCell3D::Field3D<float>;
 
 %include <CompuCell3D/Field3D/Field3DChangeWatcher.h>
 %template (Field3DChangeWatcherTemplate) Field3DChangeWatcher<CACell*>;

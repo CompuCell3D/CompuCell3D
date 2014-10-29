@@ -33,7 +33,8 @@ currentStep(0),
 cellCarryingCapacity(1),
 boundaryStrategy(0),
 rand (0),
-neighborOrder(1)
+neighborOrder(1),
+maxProb(1.0)
 {
 
 	//BoundaryStrategy::instantiate(ppdCC3DPtr->boundary_x, ppdCC3DPtr->boundary_y, ppdCC3DPtr->boundary_z, ppdCC3DPtr->shapeAlgorithm, ppdCC3DPtr->shapeIndex, ppdCC3DPtr->shapeSize, ppdCC3DPtr->shapeInputfile,HEXAGONAL_LATTICE);
@@ -116,10 +117,6 @@ void CAManager::cleanAfterSimulation(){
 }
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::vector<std::string> CAManager::getConcentrationFieldNameVector(){
-	return std::vector<std::string>();
-}
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -313,6 +310,48 @@ int CAManager::getNeighborOrder(){
 	return neighborOrder;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CAManager::setMaxProb(float _maxProb){
+	maxProb=_maxProb;
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+float CAManager::getMaxProb(){
+	return maxProb;
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CAManager::registerConcentrationField(std::string _name,Field3D<float>* _fieldPtr){
+	std::map<std::string,Field3D<float>*>::iterator mitr = 	concentrationFieldNameMap.find(_name);
+	RUNTIME_ASSERT_OR_THROW("Cannot register field. Field "+_name+" already registered", mitr==concentrationFieldNameMap.end());
+
+	concentrationFieldNameMap.insert(std::make_pair(_name,_fieldPtr));
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+std::map<std::string,Field3D<float>*> & CAManager::getConcentrationFieldNameMap(){
+	return concentrationFieldNameMap;
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Field3D<float>* CAManager::getConcentrationField(std::string _fieldName){
+	      std::map<std::string,Field3D<float>*> & fieldMap=this->getConcentrationFieldNameMap();
+	  //cerr<<" mapSize="<<fieldMap.size()<<endl;
+      std::map<std::string,Field3D<float>*>::iterator mitr;
+      mitr=fieldMap.find(_fieldName);
+      if(mitr!=fieldMap.end()){
+         return mitr->second;
+      }else{
+         return 0;
+      }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+std::vector<std::string> CAManager::getConcentrationFieldNameVector(){
+	vector<string> fieldNameVec;
+	std::map<std::string,Field3D<float>*>::iterator mitr;
+	for (mitr=concentrationFieldNameMap.begin()  ; mitr !=concentrationFieldNameMap.end() ; ++mitr){
+		fieldNameVec.push_back(mitr->first);	
+	}
+	return fieldNameVec;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -333,11 +372,19 @@ void CAManager::runCAAlgorithm(int _mcs){
 		unsigned int directIdx = rand->getInteger(0, maxNeighborIndex);
 		Neighbor n = boundaryStrategy->getNeighborDirect(pt,directIdx);
 
+		CACellStack * sourceStack = cellFieldS->get(pt);
+		if (!sourceStack){
+			continue; //no source stack
+		}else if (sourceStack->getFillLevel()==0){
+			continue ; //empty source stack
+		}
+
 
 		if(!n.distance){
 			//if distance is 0 then the neighbor returned is invalid
 			continue;
 		}
+
 		//targetPixel
 		Point3D changePixel = n.pt;
 
@@ -348,6 +395,11 @@ void CAManager::runCAAlgorithm(int _mcs){
 
 		}
 
+		if (rand->getRatio() < prob){
+			//do the move
+
+		}
+		
 		//cerr<<"prob="<<prob<<endl;
 
 	}

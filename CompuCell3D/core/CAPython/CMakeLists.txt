@@ -65,6 +65,34 @@ IF(SWIG_FOUND)
         # # # ${COMPUCELL3D_SOURCE_DIR}/core/pyinterface/PyPlugin
  
     )    
+    
+    SET_SOURCE_FILES_PROPERTIES(CoreObjects.i  PROPERTIES CPLUSPLUS ON)
+    # SET_SOURCE_FILES_PROPERTIES(CompuCellPython.i CompuCellAuxPython.i PROPERTIES SWIG_FLAGS "-includeall")
+    SWIG_ADD_MODULE(CoreObjects python CoreObjects.i)
+
+
+    if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+      SET_TARGET_PROPERTIES(_CoreObjects PROPERTIES SUFFIX ".pyd") # changes dll name to pyd sop that it is compatible with new Python standard
+    endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+
+    SWIG_LINK_LIBRARIES(CoreObjects ${LIBS} ${LIBS_AUX})
+    #TARGET_LINK_LIBRARIES(_CompuCell ${LIBS})
+
+
+    install_targets(/lib/python _CoreObjects)
+
+    set(python_files_path ${CMAKE_BINARY_DIR}/core/CAPython)
+    
+    INSTALL(FILES ${python_files_path}/CoreObjects.py DESTINATION lib/python) 
+    
+    
+    
+    
+    
+    
+    
+    
+    
  
     SET_SOURCE_FILES_PROPERTIES(CA.i  PROPERTIES CPLUSPLUS ON)
     # SET_SOURCE_FILES_PROPERTIES(CompuCellPython.i CompuCellAuxPython.i PROPERTIES SWIG_FLAGS "-includeall")

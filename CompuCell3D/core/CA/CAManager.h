@@ -59,7 +59,7 @@ class CASHARED_EXPORT CAManager{
 		void setNumSteps(int _numSteps);
 		int getCurrentStep();
 		void step(int i);
-		std::vector<std::string> getConcentrationFieldNameVector();
+		
 
 		void cleanAfterSimulation();
 
@@ -78,10 +78,20 @@ class CASHARED_EXPORT CAManager{
 
 		void runCAAlgorithm(int _mcs);
 
+		void setMaxProb(float _maxProb);
+		float getMaxProb();
+
+		//concentration fields
+		void registerConcentrationField(std::string _name,Field3D<float>* _fieldPtr);
+		std::map<std::string,Field3D<float>*> & getConcentrationFieldNameMap();
+		Field3D<float>* getConcentrationField(std::string _fieldName);
+		std::vector<std::string> getConcentrationFieldNameVector();
+
     protected:
         WatchableField3D<CACell *> *cellField;
 		WatchableField3D<CACellStack *> *cellFieldS;
 		int cellCarryingCapacity;
+		float maxProb;
 
 		CACellInventory cellInventory;
 		long recentlyCreatedCellId;
@@ -95,6 +105,9 @@ class CASHARED_EXPORT CAManager{
 		std::vector<ProbabilityFunction *> probFcnRegistry;
 
 		BasicRandomNumberGeneratorNonStatic * rand; 
+
+		std::map<std::string,Field3D<float>*> concentrationFieldNameMap;
+
 		
 };
 };
