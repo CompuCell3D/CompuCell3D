@@ -2,8 +2,27 @@
 
 
 %module ("threads"=1) PDESolvers
+
+//enables better handling of STL exceptions
+%include "exception.i"
+// C++ std::string handling
+%include "std_string.i"
+
+// C++ std::map handling
+%include "std_map.i"
+
+// C++ std::map handling
+%include "std_set.i"
+
+// C++ std::map handling
+%include "std_vector.i"
+
+%include "stl.i"
+
+
 %import "../../../CAPython/CoreObjects.i"
 //%import "../CoreObjects.i"
+
 
 %include "typemaps.i"
 
@@ -26,6 +45,7 @@
 //#include <CompuCell3D/Field3D/Dim3D.h>
 
 #include <CompuCell3D/Field3D/Array3D.h>
+#include <CA/modules/PDESolvers/DiffSecrData.h>
 #include <CA/modules/PDESolvers/DiffusionSolverFE.h>
 
 
@@ -41,26 +61,26 @@ using namespace CompuCell3D;
 
 
 
-%include stl.i //to ensure stl functionality 
-
-// // // %include "CompuCellExtraIncludes.i"
-
-// C++ std::string handling
-%include "std_string.i"
-
-// C++ std::map handling
-%include "std_map.i"
-
-// C++ std::map handling
-%include "std_set.i"
-
-// C++ std::map handling
-%include "std_vector.i"
-
-%include "stl.i"
-
-//enables better handling of STL exceptions
-%include "exception.i"
+//////%include stl.i //to ensure stl functionality 
+//////
+//////// // // %include "CompuCellExtraIncludes.i"
+//////
+//////// C++ std::string handling
+//////%include "std_string.i"
+//////
+//////// C++ std::map handling
+//////%include "std_map.i"
+//////
+//////// C++ std::map handling
+//////%include "std_set.i"
+//////
+//////// C++ std::map handling
+//////%include "std_vector.i"
+//////
+//////%include "stl.i"
+//////
+////////enables better handling of STL exceptions
+//////%include "exception.i"
 
 %exception {
   try {
@@ -98,6 +118,9 @@ using namespace CompuCell3D;
 //////%include <CA/modules/PDESolvers/DiffusableVectorCommon.h>
 //////
 %template(stdvectorstring) std::vector<std::string>;
+
+//%ignore CompuCell3D::SecretionData::secretionConst;
+%include <CA/modules/PDESolvers/DiffSecrData.h>
 %include <CA/modules/PDESolvers/DiffusionSolverFE.h>
 
 

@@ -3,7 +3,7 @@
 #include <CA/CACellStack.h>
 #include <CompuCell3D/Field3D/WatchableField3D.h>
 
-
+//#define _DEBUG
 using namespace CompuCell3D;
 using namespace std;
 
@@ -44,9 +44,11 @@ float CanonicalProbability::calculate(const Point3D & _source, const Point3D & _
 	
 	if (targetStack ){
 		targetFillLevel = targetStack -> getFillLevel() ;
+#ifdef _DEBUG
 		cerr<<"_source="<<_source<<" _target="<<_target<<endl;
 		cerr<<"targetFillLevel ="<<targetFillLevel <<endl;
 		cerr<<"carryingCapacity  = " <<carryingCapacity <<endl;
+#endif
 
 	}
 
@@ -55,7 +57,10 @@ float CanonicalProbability::calculate(const Point3D & _source, const Point3D & _
 	*(carryingCapacity-targetFillLevel)/(float)(carryingCapacity);
 
 	if (targetStack ){
+		
+#ifdef _DEBUG
 		cerr<<"prob="<<prob<<endl;
+#endif
 	}
 
     return prob;

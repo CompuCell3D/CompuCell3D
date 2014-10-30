@@ -17,6 +17,9 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <PublicUtilities/Algorithms_CC3D.h>
+
+#include <algorithm>
 //#define _DEBUG
 
 using namespace std;
@@ -220,20 +223,33 @@ CACell * CAManager::createAndPositionCell(const Point3D & pt, long _clusterId){
 void CAManager::positionCellS(const Point3D &_pt,CACell *  _cell){
 	if (!_cell) return; 
 	CACellStack * cellStack = cellFieldS->get(_pt);
+	
 #ifdef _DEBUG
 	cerr<<"cellStack ="<<cellStack <<endl;
 #endif
-	
+
+	if (_cell->xCOM >= 0){
+		//here we remove cell from its current location in the field of cell stacks
+		CACellStack * currentStack = cellFieldS->get(Point3D(_cell->xCOM,_cell->yCOM,_cell->zCOM));		
+		currentStack->deleteCell(_cell);
+	}
+
+	//here we assign cell to new cell stack
 	if (! cellStack ){
 		cellStack = new CACellStack(cellCarryingCapacity);
 		cellFieldS->set(_pt,cellStack);
 	}
+
 
 	_cell->xCOM=_pt.x;
 	_cell->yCOM=_pt.y;
 	_cell->zCOM=_pt.z;
 
 	cellToDelete = cellStack ->appendCellForce(_cell);
+
+	if (cellToDelete){
+		cerr<<" will be deleteing cell = "<<cellToDelete->id<<" cellToDelete="<<cellToDelete<<"  at location="<<_pt<<endl;
+	}
 #ifdef _DEBUG
 	cerr<<"from appendCelLForce cellToDelete = "<<cellToDelete <<endl;
 #endif
@@ -363,44 +379,182 @@ void CAManager::runCAAlgorithm(int _mcs){
 
 	long numberOfAttempts = fieldDim.x*fieldDim.y*fieldDim.z;
 
-	for (long i =0; i < numberOfAttempts ; ++i){
-		//pick source
-		pt.x = rand->getInteger(0, fieldDim.x-1);
-		pt.y = rand->getInteger(0, fieldDim.y-1);
-		pt.z = rand->getInteger(0, fieldDim.z-1);
-		
-		unsigned int directIdx = rand->getInteger(0, maxNeighborIndex);
-		Neighbor n = boundaryStrategy->getNeighborDirect(pt,directIdx);
-
-		CACellStack * sourceStack = cellFieldS->get(pt);
-		if (!sourceStack){
-			continue; //no source stack
-		}else if (sourceStack->getFillLevel()==0){
-			continue ; //empty source stack
-		}
+	cerr<<"maxNeighborIndex="<<maxNeighborIndex<<endl;
+	vector<float> zeroVec;
+	vector<float> probVec;
+	vector<int> positionVec;
+	vector<Point3D> neighborVec;
 
 
-		if(!n.distance){
-			//if distance is 0 then the neighbor returned is invalid
-			continue;
-		}
+	zeroVec.assign(maxNeighborIndex+1,0.0);
+	positionVec.assign(maxNeighborIndex+1,0);
+	neighborVec.assign(maxNeighborIndex+1,Point3D());
 
-		//targetPixel
-		Point3D changePixel = n.pt;
-
-		double prob=0.0;
-		for (unsigned int idx = 0 ; idx < probFcnRegistry.size() ; ++idx ){
-			
-			prob += probFcnRegistry[idx]->calculate(pt,changePixel);
-
-		}
-
-		if (rand->getRatio() < prob){
-			//do the move
-
-		}
-		
-		//cerr<<"prob="<<prob<<endl;
-
+	for (std::size_t i = 0 ; i < positionVec.size() ; ++i){
+		positionVec[i]=i;
 	}
+
+
+	vector<CACell *> * cellVectorPtr = cellInventory.generateCellVector();
+	vector<CACell *> & cellVector = *cellVectorPtr;
+
+	long int cellVecSize = cellVector.size();
+
+	////c++ is a mess when it comes to backward compatibiiuty random-shuffle algorithm is best example... decided to explicitely code it
+	// for (long int i=cellVecSize-1; i>0; --i) {
+	//	swap (cellVector[i],cellVector[rand->getInteger(0, i+1)]);
+	// }
+
+	shuffleSTLContainer(cellVector , *rand);
+
+	cerr<<"cellVecSize ="<<cellVecSize <<endl;
+	 for (long int i= 0 ; i < cellVecSize ; ++i){
+		 CACell * cell = cellVector[i];
+			 
+		 probVec = zeroVec;
+		 //cerr<<"cell="<<cell<<" type="<<(int)cell->type<<" id="<<cell->id<<endl;
+		 pt.x = cell->xCOM;
+		 pt.y = cell->yCOM;
+		 pt.z = cell->zCOM;
+		 //cerr<<"comPt="<<pt<<endl;
+
+		 for (int idx = 0 ; idx <=maxNeighborIndex ; ++idx){
+			//cerr<<"idx="<<idx<<endl;
+			//cerr<<"boundaryStrategy="<<boundaryStrategy<<endl;
+			Neighbor n = boundaryStrategy->getNeighborDirect(pt,idx);
+			
+			if(!n.distance) {
+				neighborVec[idx]=Point3D();
+				continue;
+			}
+			 
+			double prob = 0.0;
+			for (unsigned int pdx = 0 ; pdx < probFcnRegistry.size() ; ++pdx ){			
+				prob += probFcnRegistry[pdx]->calculate(pt , n.pt);
+			}
+			
+			//cerr<<"idx="<<idx<<" prob="<<prob<<endl;			
+			 probVec[idx] = prob;
+			 neighborVec[idx] = n.pt;
+		 }
+		 
+		 //shuffling position vec that we will use in calculating probabilities
+		 float randomNumber=rand->getRatio();
+		 
+		 float probTest=0.0;
+
+		 Point3D changePixel ;
+
+		 bool moveCell=false;
+		 
+		 shuffleSTLContainer(positionVec , *rand);
+		 
+		 //int zeroIdx=0;
+		 //float beforeProb=0.0;
+		 //float afterProb=0.0;
+		 for (int idx = 0 ; idx < positionVec.size() ; ++idx){
+			 //beforeProb=probTest;
+			 probTest += probVec[positionVec[idx]];
+			 //afterProb = probTest;
+			 //cerr<<" idx="<<idx<<" positionVec[idx]="<<positionVec[idx]<<" probVec[positionVec[idx]]="<<probVec[positionVec[idx]]<<endl;
+			 //cerr<<"neighborVec [positionVec[idx]]="<<neighborVec [positionVec[idx]]<<endl;
+			 //if (probVec[positionVec[idx]]==0.0){
+				// zeroIdx=idx;
+				// cerr<<" idx="<<idx<<" positionVec[idx]="<<positionVec[idx]<<" probVec[positionVec[idx]]="<<probVec[positionVec[idx]]<<endl;
+				// cerr<<" prob=0 neighborVec [positionVec[idx]]="<<neighborVec [positionVec[idx]]<<endl;
+			 //}
+
+			 if (randomNumber < probTest ){
+				 //if (idx==zeroIdx){
+					// cerr<<"randomNumber "<<randomNumber <<"probTest"<<probTest<<endl;
+					// cerr<<"FINAL IDX="<<idx<<"  neighborVec [positionVec[idx]]="<<neighborVec [positionVec[idx]]<<endl;
+					// cerr<<"beforeProb="<<beforeProb<<" afterProb="<<afterProb<<" check="<<(beforeProb==afterProb)<<endl;
+				 //}
+				 changePixel =neighborVec [positionVec[idx]];
+				 moveCell=true;
+				 break;
+			 }
+
+		 }
+		 
+		 //cerr<<"\n\n\n\nmoveCell="<<moveCell<<endl;
+		 //cerr<<"changePixel="<<changePixel<<endl;
+		 
+		 
+		 if (moveCell){
+
+			//CACellStack * cellStack = cellFieldS->get(changePixel);
+	
+
+
+			////if (cell->xCOM >= 0){
+			////	//here we remove cell from its current location in the field of cell stacks
+			////	CACellStack * currentStack = cellFieldS->get(Point3D(cell->xCOM,cell->yCOM,cell->zCOM));		
+			////	currentStack->deleteCell(cell);
+			////}
+
+			////here we assign cell to new cell stack
+			//if (! cellStack ){
+			//	cellStack = new CACellStack(cellCarryingCapacity);
+			//	cellFieldS->set(changePixel,cellStack);
+			//}
+
+			////cerr<<"changePixel="<<changePixel<<endl;
+			//cell->xCOM=changePixel.x;
+			//cell->yCOM=changePixel.y;
+			//cell->zCOM=changePixel.z;
+
+			////cellToDelete = cellStack ->appendCellForce(cell);
+			 
+			 positionCellS(changePixel,cell);
+		 }
+
+
+
+
+	 }
+	
+
+	//for (long i =0; i < numberOfAttempts ; ++i){
+	//	//pick source
+	//	pt.x = rand->getInteger(0, fieldDim.x-1);
+	//	pt.y = rand->getInteger(0, fieldDim.y-1);
+	//	pt.z = rand->getInteger(0, fieldDim.z-1);
+	//	
+	//	unsigned int directIdx = rand->getInteger(0, maxNeighborIndex);
+	//	Neighbor n = boundaryStrategy->getNeighborDirect(pt,directIdx);
+
+	//	CACellStack * sourceStack = cellFieldS->get(pt);
+	//	if (!sourceStack){
+	//		continue; //no source stack
+	//	}else if (sourceStack->getFillLevel()==0){
+	//		continue ; //empty source stack
+	//	}
+
+
+	//	if(!n.distance){
+	//		//if distance is 0 then the neighbor returned is invalid
+	//		continue;
+	//	}
+
+	//	//targetPixel
+	//	Point3D changePixel = n.pt;
+
+	//	double prob = 0.0;
+	//	for (unsigned int idx = 0 ; idx < probFcnRegistry.size() ; ++idx ){
+	//		
+	//		prob += probFcnRegistry[idx]->calculate(pt,changePixel);
+
+	//	}
+
+
+
+	//	if (rand->getRatio() < prob){
+	//		//do the move
+
+	//	}
+	//	
+	//	//cerr<<"prob="<<prob<<endl;
+
+	//}
 }

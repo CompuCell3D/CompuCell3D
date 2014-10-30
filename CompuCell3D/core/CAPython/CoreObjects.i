@@ -16,6 +16,10 @@
 
 
 %include <windows.i>
+//enables better handling of STL exceptions
+// %include "exception.i"
+// // C++ std::vector handling
+// %include "std_vector.i"
 
 %{
 // CompuCell3D Include Files
@@ -43,27 +47,27 @@ using namespace CompuCell3D;
 // C++ std::string handling
 %include "std_string.i"
 
-// // // // C++ std::map handling
-// // // %include "std_map.i"
+// C++ std::map handling
+%include "std_map.i"
 
-// // // // C++ std::map handling
-// // // %include "std_set.i"
+// C++ std::map handling
+%include "std_set.i"
 
-// // // // C++ std::map handling
-// // // %include "std_vector.i"
+// C++ std::vector handling
+%include "std_vector.i"
 
-// // // %include "stl.i"
+%include "stl.i"
 
-// // // //enables better handling of STL exceptions
-// // // %include "exception.i"
+//enables better handling of STL exceptions
+%include "exception.i"
 
-// // // %exception {
-  // // // try {
-    // // // $action
-  // // // } catch (const std::exception& e) {
-    // // // SWIG_exception(SWIG_RuntimeError, e.what());
-  // // // }
-// // // }
+%exception {
+  try {
+    $action
+  } catch (const std::exception& e) {
+    SWIG_exception(SWIG_RuntimeError, e.what());
+  }
+}
 
 // %include "swig_includes/numpy.i"
 // %include "pyinterface/swig_includes/numpy.i"
@@ -109,4 +113,5 @@ using namespace CompuCell3D;
  }
 };
 
+%template(vectorfloat) std::vector<float>;
 

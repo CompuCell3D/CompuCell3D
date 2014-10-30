@@ -3,6 +3,23 @@
 
 %module ("threads"=1) CA
 
+// C++ std::string handling
+%include "std_string.i"
+
+// C++ std::map handling
+%include "std_map.i"
+
+// C++ std::map handling
+%include "std_set.i"
+
+// C++ std::map handling
+%include "std_vector.i"
+
+%include "stl.i"
+
+//enables better handling of STL exceptions
+%include "exception.i"
+
 %import "CoreObjects.i"
 
 %include "typemaps.i"
@@ -69,22 +86,22 @@ using namespace CompuCell3D;
 
 // // // %include "CompuCellExtraIncludes.i"
 
-// C++ std::string handling
-%include "std_string.i"
-
-// C++ std::map handling
-%include "std_map.i"
-
-// C++ std::map handling
-%include "std_set.i"
-
-// C++ std::map handling
-%include "std_vector.i"
-
-%include "stl.i"
-
-//enables better handling of STL exceptions
-%include "exception.i"
+//////// C++ std::string handling
+//////%include "std_string.i"
+//////
+//////// C++ std::map handling
+//////%include "std_map.i"
+//////
+//////// C++ std::map handling
+//////%include "std_set.i"
+//////
+//////// C++ std::map handling
+//////%include "std_vector.i"
+//////
+//////%include "stl.i"
+//////
+////////enables better handling of STL exceptions
+//////%include "exception.i"
 
 %exception {
   try {

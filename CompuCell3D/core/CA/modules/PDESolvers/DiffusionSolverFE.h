@@ -4,6 +4,7 @@
 
 #include <string>
 #include "DiffusableVectorCommon.h"
+#include "DiffSecrData.h"
 #include "PDESolversDLLSpecifier.h"
 
 
@@ -16,7 +17,7 @@ class PDESOLVERS_EXPORT DiffusionSolverFE :
 {
 	
 public:
-	typedef Array3DContiguous<float> ConcentrationField_t;//TODO: check if I can automate this type deduction
+	typedef Array3DContiguous<float> ConcentrationField_t;//TODO: check if I can automate this type deduction	
     DiffusionSolverFE(void);
 	virtual ~DiffusionSolverFE(void);
     std::string printSolverName();
@@ -24,11 +25,19 @@ public:
 	void init(CAManager *_caManager);
 
 	void diffuseSingleField(int i=0);
+	void secreteSingleField(int i=0);
 
+	DiffusionData * getDiffusionData(std::string _fieldName);
+	SecretionData * getSecretionData(std::string _fieldName);
+	int findIndexForFieldName(std::string _fieldName);
+	void step(int mcs);
 
 private:
 	Dim3D workFieldDim;
 	CAManager * caManager;
+	std::vector<DiffusionData> diffDataVec;
+	std::vector<SecretionData> secretionDataVec;
+	std::map<std::string,unsigned int> fieldName2Index;
 		
 };
 

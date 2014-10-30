@@ -88,6 +88,8 @@ class CASHARED_EXPORT CAManager{
 		std::vector<std::string> getConcentrationFieldNameVector();
 
     protected:
+		
+
         WatchableField3D<CACell *> *cellField;
 		WatchableField3D<CACellStack *> *cellFieldS;
 		int cellCarryingCapacity;

@@ -1,6 +1,8 @@
 #include "DiffusionSolverFE.h"
 #include <CA/CAManager.h>
+#include <CA/CACell.h>
 #include <CA/CACellStack.h>
+
 
 using namespace std;
 using namespace CompuCell3D;
@@ -31,12 +33,27 @@ void DiffusionSolverFE::createFields(Dim3D _dim, std::vector<string> _fieldNames
 		cerr<<"GOT THIS FIELD NAME"<<_fieldNamesVec[i]<<endl;
 	}
 
-	this->allocateDiffusableFieldVector(_fieldNamesVec.size(),_dim); 
+	unsigned int numberOfFields = _fieldNamesVec.size();
 
-	for(unsigned int i=0 ; i < _fieldNamesVec.size() ; ++i){
+	this->allocateDiffusableFieldVector(numberOfFields ,_dim); 
+
+	//allocating default DiffusionData vector
+	diffDataVec.clear();
+	diffDataVec.assign(numberOfFields ,DiffusionData());
+
+	//allocating default SecretionData vector
+	secretionDataVec.clear();
+	secretionDataVec.assign(numberOfFields ,  SecretionData() );
+
+	fieldName2Index.clear();
+
+	for(unsigned int i=0 ; i < numberOfFields  ; ++i){
 		string fieldName = _fieldNamesVec[i];
 		this->setConcentrationFieldName(i,fieldName);
 		caManager->registerConcentrationField(fieldName,getConcentrationField(i));
+
+		//setting up fieldName2Index dictionary
+		fieldName2Index.insert(make_pair(fieldName,i));
 		this->getConcentrationField(i)->set(Point3D(10,10,i*10),20.0);
 	}
 
@@ -44,12 +61,48 @@ void DiffusionSolverFE::createFields(Dim3D _dim, std::vector<string> _fieldNames
 	workFieldDim=this->getConcentrationField(0)->getInternalDim();
 
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+int DiffusionSolverFE::findIndexForFieldName(std::string _fieldName){
+	std::map<std::string,unsigned int>::iterator mitr = fieldName2Index.find(_fieldName);
+	if(mitr != fieldName2Index.end()){
+		return mitr->second;
+	}
+	return -1;
+}
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+DiffusionData * DiffusionSolverFE::getDiffusionData(std::string _fieldName){
+	int idx = findIndexForFieldName(_fieldName);
+	
+	if(idx>=0){
+		return & diffDataVec[idx];
+	}
+
+	return 0;
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+SecretionData * DiffusionSolverFE::getSecretionData(std::string _fieldName){
+	int idx = findIndexForFieldName(_fieldName);
+	
+	if(idx>=0){
+		return & secretionDataVec[idx];
+	}
+
+	return 0;
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE::diffuseSingleField(int i){
 
-		float currentDiffCoef=0.1;
-		float currentDecayCoef=0.0001;
+		DiffusionData & diffData=diffDataVec[i];
+		float currentDiffCoef=diffData.diffConst;
+		float currentDecayCoef=diffData.decayConst;
+		cerr<<"fieldName="<<getConcentrationFieldName(i)<<endl;
+		cerr<<"diffData.diffConst="<<diffData.diffConst<<endl;
+		cerr<<"diffData.decayConst="<<diffData.decayConst<<endl;
+		//float currentDiffCoef=0.1;
+		//float currentDecayCoef=0.0001;
 		
 		float currentConcentration = 0.0;
 		float updatedConcentration,concentrationSum,varDiffSumTerm;
@@ -94,4 +147,62 @@ void DiffusionSolverFE::diffuseSingleField(int i){
 				}
 
 				concentrationField.swapArrays();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void DiffusionSolverFE::secreteSingleField(int i){
+
+		SecretionData & secrData=secretionDataVec[i];
+		float currentConcentration = 0.0;
+		float updatedConcentration,concentrationSum,varDiffSumTerm;
+
+		
+		/*Array3DContiguous<float> & concentrationField =(Array3DContiguous<float>) *(this->getConcentrationField(i));*/
+		Array3DContiguous<float>  * concentrationFieldPtr =(Array3DContiguous<float> *) this->getConcentrationField(i);
+		Array3DContiguous<float> & concentrationField = *concentrationFieldPtr;
+
+		Field3D<CACellStack *> * cellField = caManager->getCellFieldS();
+		CACellStack * cellStack;
+		
+
+        for (int z = 1; z < workFieldDim.z-1; z++)
+            for (int y = 1; y < workFieldDim.y-1; y++)
+                for (int x = 1; x < workFieldDim.x-1; x++){
+					Point3D pt(x-1,y-1,z-1);
+					cellStack = cellField->get(pt);
+					
+					if (!cellStack) continue;
+
+					currentConcentration = concentrationField.getDirect(x,y,z);
+
+					int fillLevel = cellStack->getFillLevel();
+					//cerr<<"fillLevel="<<fillLevel<<" pt="<<pt<<endl;
+					//cerr<<"currentConcentration="<<currentConcentration<<endl;
+
+					for (int i = 0 ; i < fillLevel ; ++i){
+						CACell * cell = cellStack->getCellByIdx(i);
+						//cerr<<"cell->type="<<(int)cell->type<<endl;
+						//cerr<<"secr const="<<secrData.secretionConst[cell->type]<<endl;
+						currentConcentration += secrData.secretionConst[cell->type];
+					}
+
+					concentrationField.setDirect(x,y,z,currentConcentration);
+				}
+
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void DiffusionSolverFE::step(int mcs){
+
+	int numberOfFields=diffDataVec.size();
+
+	cerr<<"This is step fcn numberOfFields="<<numberOfFields<<endl;
+	
+
+	for (int i  = 0 ; i < numberOfFields ; ++i){
+		secreteSingleField(i);
+		diffuseSingleField(i);
+	}
+
 }
