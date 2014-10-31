@@ -8,13 +8,23 @@ def SBMLSolverError(self, *args,**kwrds):
 
 
 class SBMLSolverHelper(object):
+    modeltype='CPM'
+    
     @classmethod
-    def removeAttribute(cls, name):
+    def setModelType(cls, name):        
+        SBMLSolverHelper.modeltype=name
+        
+    
+    @classmethod
+    def removeAttribute(cls, name):        
         print 'cls=',cls
         return delattr(cls, name)    
-    
+        
+     
     def __init__(self):        
-
+        
+        
+        
         try:
         
             import roadrunner
@@ -34,7 +44,22 @@ class SBMLSolverHelper(object):
             for apiName in SBMLSolverAPI:
                 SBMLSolverHelper.removeAttribute(apiName)
                 setattr(SBMLSolverHelper, apiName, types.MethodType(SBMLSolverError, SBMLSolverHelper)) 
-
+                
+        self.getCellDictionaryAttribute = self.getCPMCellDictionaryAttribute
+        
+        if SBMLSolverHelper.modeltype=='CA':
+            self.getCellDictionaryAttribute = self.getCACellDictionaryAttribute
+    
+    def getCACellDictionaryAttribute(self,_cell):
+        import CA
+        return CA.getPyAttrib(_cell) 
+        
+    def getCPMCellDictionaryAttribute(self,_cell):
+        import CompuCell
+        return CompuCell.getPyAttrib(_cell) 
+        
+    def getCellDictionaryAttribute(self,_cell):pass
+    
     def addSBMLToCell(self,_modelFile,_modelName='',_cell=None,_stepSize=1.0,_initialConditions={},_coreModelName='',_modelPathNormalized='',_options=None):
         '''
         _options is a dictionary with the following keys:
@@ -45,7 +70,7 @@ class SBMLSolverHelper(object):
         '''
         import os
         import sys
-        import CompuCell
+# # #         import CompuCell
         
         
         coreModelName=_modelName
@@ -55,7 +80,9 @@ class SBMLSolverHelper(object):
         
         modelPathNormalized=self.normalizePath(_modelFile)
         
-        dict_attrib = CompuCell.getPyAttrib(_cell)
+# # #         dict_attrib = CompuCell.getPyAttrib(_cell)
+
+        dict_attrib = self.getCellDictionaryAttribute(_cell)
         
         sbmlDict={}
         if dict_attrib.has_key('SBMLSolver'):
@@ -109,10 +136,11 @@ class SBMLSolverHelper(object):
         return CompuCellSetup.globalSBMLSimulatorOptions
         
     def setSBMLGlobalOptions(self,_options):
+        print 'INSIDE setSBMLGlobalOptions'
         import CompuCellSetup
         CompuCellSetup.globalSBMLSimulatorOptions=_options
         
-    def addSBMLToCellTypes(self,_modelFile='',_modelName='',_types=[],_stepSize=1.0,_initialConditions={},_options={}):        
+    def addSBMLToCellTypes(self,_modelFile='',_modelName='',_types=[],_stepSize=1.0,_initialConditions={},_options={}):         
         coreModelName=_modelName
         if coreModelName=='':
             coreModelName,ext=os.path.splitext(os.path.basename(_modelFile))
@@ -142,14 +170,16 @@ class SBMLSolverHelper(object):
         
             
 #         modelPathNormalized=os.path.abspath(_modelFile)    
-        
         modelPathNormalized=self.normalizePath(_modelFile)
         try:
             f=open(modelPathNormalized,'r')
             f.close()
-        except IOError, e:
-            if self.simulator.getBasePath()!='':
-                modelPathNormalized=os.path.abspath(os.path.join(self.simulator.getBasePath(),modelPathNormalized))
+        except IOError, e:            
+            if self.getBasePath()!='':
+                modelPathNormalized=os.path.abspath(os.path.join(self.getBasePath(),modelPathNormalized))
+            
+# # #             if self.simulator.getBasePath()!='':
+# # #                 modelPathNormalized=os.path.abspath(os.path.join(self.simulator.getBasePath(),modelPathNormalized))
 
         from RoadRunnerPy import RoadRunnerPy         
         rr=RoadRunnerPy(_path=_modelFile)
@@ -185,13 +215,14 @@ class SBMLSolverHelper(object):
                     setattr(rr.simulateOptions,name,value)           
 
     def deleteSBMLFromCellIds(self,_modelName,_ids=[]):
-        import CompuCell
+# # #         import CompuCell
         for id in _ids:
             cell=self.inventory.attemptFetchingCellById(id)
             if not cell:
                 continue
                 
-            dict_attrib=CompuCell.getPyAttrib(cell)            
+# # #             dict_attrib=CompuCell.getPyAttrib(cell)
+            dict_attrib = self.getCellDictionaryAttribute(cell)
             try:
                 sbmlDict=dict_attrib['SBMLSolver']
                 del sbmlDict[_modelName]
@@ -199,9 +230,10 @@ class SBMLSolverHelper(object):
                 pass    
 
     def deleteSBMLFromCellTypes(self,_modelName,_types=[]):
-        import CompuCell
+# # #         import CompuCell
         for cell in self.cellListByType(*_types):
-            dict_attrib=CompuCell.getPyAttrib(cell)            
+# # #             dict_attrib=CompuCell.getPyAttrib(cell)  
+            dict_attrib = self.getCellDictionaryAttribute(cell)          
             try:
                 sbmlDict=dict_attrib['SBMLSolver']
                 del sbmlDict[_modelName]
@@ -209,8 +241,9 @@ class SBMLSolverHelper(object):
                 pass    
                 
     def deleteSBMLFromCell(self,_modelName='',_cell=None):
-            import CompuCell
-            dict_attrib=CompuCell.getPyAttrib(_cell)            
+# # #             import CompuCell
+# # #             dict_attrib=CompuCell.getPyAttrib(_cell) 
+            dict_attrib = self.getCellDictionaryAttribute(_cell)           
             try:
                 sbmlDict=dict_attrib['SBMLSolver']
                 del sbmlDict[_modelName]
@@ -227,11 +260,12 @@ class SBMLSolverHelper(object):
         
         
     def timestepCellSBML(self):
-        import CompuCell
+# # #         import CompuCell
         
         #timestepping SBML attached to cells
         for cell in self.cellList:
-            dict_attrib=CompuCell.getPyAttrib(cell)
+# # #             dict_attrib=CompuCell.getPyAttrib(cell)
+            dict_attrib = self.getCellDictionaryAttribute(cell)
             if dict_attrib.has_key('SBMLSolver'):
                 sbmlDict=dict_attrib['SBMLSolver']
             
@@ -241,8 +275,10 @@ class SBMLSolverHelper(object):
                     
         
     def setStepSizeForCell(self, _modelName='',_cell=None,_stepSize=1.0):
-        import CompuCell        
-        dict_attrib = CompuCell.getPyAttrib(_cell)
+# # #         import CompuCell        
+# # #         dict_attrib = CompuCell.getPyAttrib(_cell)
+
+        dict_attrib = self.getCellDictionaryAttribute(_cell)        
         
         try:
             sbmlSolver=dict_attrib['SBMLSolver'][_modelName]
@@ -288,7 +324,7 @@ class SBMLSolverHelper(object):
         '''
         This function returns a reference to RoadRunnerPy or None 
         '''
-        import CompuCell
+# # #         import CompuCell
         import CompuCellSetup
         if not _cell:
             try:
@@ -299,7 +335,8 @@ class SBMLSolverHelper(object):
                 return None    
         else:  
             try:
-                dict_attrib=CompuCell.getPyAttrib(_cell)                
+# # #                 dict_attrib=CompuCell.getPyAttrib(_cell) 
+                dict_attrib = self.getCellDictionaryAttribute(_cell)
                 return dict_attrib['SBMLSolver'][_modelName]
             except LookupError,e:
                 return None    
@@ -372,11 +409,12 @@ class SBMLSolverHelper(object):
 
     def copySBMLs(self,_fromCell,_toCell,_sbmlNames=[],_options=None):
         sbmlNamesToCopy=[]
-        import CompuCell
+# # #         import CompuCell
         if not(len(_sbmlNames)): 
             #if user does not specify _sbmlNames we copy all SBML networks
             try:
-                dict_attrib=CompuCell.getPyAttrib(_fromCell)                
+# # #                 dict_attrib=CompuCell.getPyAttrib(_fromCell)  
+                dict_attrib = self.getCellDictionaryAttribute(_fromCell)              
                 sbmlDict=dict_attrib['SBMLSolver']
                 sbmlNamesToCopy=sbmlDict.keys()
             except LookupError,e:
@@ -385,14 +423,16 @@ class SBMLSolverHelper(object):
             sbmlNamesToCopy=_sbmlNames
             
         try:
-            dict_attrib_from=CompuCell.getPyAttrib(_fromCell)                
+# # #             dict_attrib_from=CompuCell.getPyAttrib(_fromCell)
+            dict_attrib = self.getCellDictionaryAttribute(_fromCell)            
             sbmlDictFrom=dict_attrib_from['SBMLSolver']
         except LookupError,e:    
             # if  _fromCell does not have SBML networks there is nothing to copy
             return
         
         try:
-            dict_attrib_to=CompuCell.getPyAttrib(_toCell)                
+# # #             dict_attrib_to=CompuCell.getPyAttrib(_toCell) 
+            dict_attrib = self.getCellDictionaryAttribute(_toCell)            
             sbmlDictTo=dict_attrib_to['SBMLSolver']
         except LookupError,e:    
             #if _toCell does not have SBMLSolver dictionary entry we simply add it
@@ -409,6 +449,9 @@ class SBMLSolverHelper(object):
             pathFromNormalized=self.normalizePath(pathFrom)
             self.addSBMLToCell(_modelFile=pathFrom,_modelName=sbmlName,_cell=_toCell,_stepSize=rrFrom.stepSize,_initialConditions=stateFrom,_coreModelName=sbmlName,_modelPathNormalized=pathFromNormalized,_options=_options)
                                 
+    def getBasePath(self):
+        import CompuCellSetup
+        return CompuCellSetup.simulationPaths.basePath 
         
     def normalizePath(self,_path):
         '''
@@ -417,12 +460,15 @@ class SBMLSolverHelper(object):
         import os
         import sys
         
+        
         pathNormalized=_path
         try:
             f=open(pathNormalized,'r')
             f.close()            
         except IOError, e:
-            if self.simulator.getBasePath()!='':
-                pathNormalized=os.path.abspath(os.path.join(self.simulator.getBasePath(),pathNormalized))
+            
+# # #             if self.simulator.getBasePath()!='':                
+            if self.getBasePath()!='':
+                pathNormalized=os.path.abspath(os.path.join(self.getBasePath(),pathNormalized))
             
         return pathNormalized    

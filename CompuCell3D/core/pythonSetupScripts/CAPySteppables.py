@@ -1,6 +1,10 @@
 
-class CAPySteppableBase(object):
+from SBMLSolverHelper import SBMLSolverHelper
+
+class CAPySteppableBase(SBMLSolverHelper):
     def __init__(self,_caManager,_frequency=1):
+        SBMLSolverHelper.setModelType('CA')
+        SBMLSolverHelper.__init__(self) 
         self.caManager = _caManager
         self.frequency =_frequency
         self.inventory = self.caManager.getCellInventory()        
@@ -8,6 +12,7 @@ class CAPySteppableBase(object):
         self.cellListByType = CellListByType(self.inventory)          
         self.cellField = self.caManager.getCellFieldS()
         self.dim = self.cellField.getDim()
+        
         
     def getDictionaryAttribute(self,_cell):
         # access/modification of a dictionary attached to cell - make sure to decalare in main script that you will use such attribute
