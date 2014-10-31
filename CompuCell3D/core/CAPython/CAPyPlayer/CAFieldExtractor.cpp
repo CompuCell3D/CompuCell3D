@@ -27,6 +27,12 @@ using namespace CompuCell3D;
 
 CAFieldExtractor::CAFieldExtractor():caManager(0)
 {
+	cartesianVertices.push_back(Coordinates3D<double>(0.0, 0.0, 0.0));
+    cartesianVertices.push_back(Coordinates3D<double>(0.0, 1.0, 0.0));
+    cartesianVertices.push_back(Coordinates3D<double>(1.0, 1.0, 0.0));
+    cartesianVertices.push_back(Coordinates3D<double>(1.0, 0.0, 0.0));
+
+
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 CAFieldExtractor::~CAFieldExtractor(){
@@ -178,6 +184,91 @@ void CAFieldExtractor::fillCellFieldData3D(long _cellTypeArrayAddr , long _centr
 
 			}
 		}
+
+}
+
+bool CAFieldExtractor::fillScalarFieldData2DCartesian(long _conArrayAddr,long _cartesianCellsArrayAddr ,long _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
+	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
+	vtkCellArray * _cartesianCellsArray=(vtkCellArray*)_cartesianCellsArrayAddr;
+	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
+
+	Field3D<float>* conFieldPtr=caManager->getConcentrationField(_conFieldName);
+		
+
+	cerr<<"conFieldPtr="<<conFieldPtr<<endl;
+
+	if(!conFieldPtr)
+		return false;
+
+    
+	//Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
+	Dim3D fieldDim=conFieldPtr->getDim();
+
+	vector<int> fieldDimVec(3,0);
+	fieldDimVec[0]=fieldDim.x;
+	fieldDimVec[1]=fieldDim.y;
+	fieldDimVec[2]=fieldDim.z;
+
+	vector<int> pointOrderVec=pointOrder(_plane);
+	vector<int> dimOrderVec=dimOrder(_plane);
+
+	vector<int> dim(3,0);
+	dim[0]=fieldDimVec[dimOrderVec[0]];
+	dim[1]=fieldDimVec[dimOrderVec[1]];
+	dim[2]=fieldDimVec[dimOrderVec[2]];
+
+
+    
+
+
+	int offset=0;
+
+	Point3D pt;
+	vector<int> ptVec(3,0);
+
+	double con;
+	long pc=0;
+	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+    
+    
+	for(int j =0 ; j<dim[1] ; ++j)
+		for(int i =0 ; i<dim[0] ; ++i){
+			ptVec[0]=i;
+			ptVec[1]=j;
+			ptVec[2]=_pos;
+
+			pt.x=ptVec[pointOrderVec[0]];
+			pt.y=ptVec[pointOrderVec[1]];
+			pt.z=ptVec[pointOrderVec[2]];
+
+			if (i==dim[0] || j==dim[1]){
+				con=0.0;
+			}else{
+				//con = (*conFieldPtr)[pt.x][pt.y][pt.z];
+				con = conFieldPtr->get(pt);
+				
+			}
+            //cerr<<"pt="<<pt<<" conc="<<con<<endl;
+            Coordinates3D<double> coords(ptVec[0],ptVec[1],0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
+			for (int idx=0 ; idx<4 ; ++idx){
+			  Coordinates3D<double> cartesianVertex=cartesianVertices[idx]+coords; 
+			  //cerr<<"cartesianVertex="<<cartesianVertex<<endl;
+ 			 _pointsArray->InsertNextPoint(cartesianVertex.x,cartesianVertex.y,0.0);
+			 //cerr<<"after inserting into points array"<<endl;
+			}               
+            
+			pc+=4;
+			vtkIdType cellId = _cartesianCellsArray->InsertNextCell(4);
+			_cartesianCellsArray->InsertCellPoint(pc-4);
+			_cartesianCellsArray->InsertCellPoint(pc-3);
+			_cartesianCellsArray->InsertCellPoint(pc-2);
+			_cartesianCellsArray->InsertCellPoint(pc-1);
+
+			conArray->InsertNextValue( con);
+			++offset;
+		}
+        
+		return true;
 
 }
 

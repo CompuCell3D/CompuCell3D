@@ -45,6 +45,9 @@ namespace CompuCell3D{
 
 		virtual void fillCellFieldData2D(long _cellTypeArrayAddr , long _centroidPointsAddr, long _scaleRadiusArrayAddr, std::string _plane ,  int _pos);
         virtual void fillCellFieldData3D(long _cellTypeArrayAddr , long _centroidPointsAddr, long _scaleRadiusArrayAddr);
+
+		virtual bool fillScalarFieldData2DCartesian(long _conArrayAddr,long _cartesianCellsArrayAddr ,long _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos);
+
 		// virtual void fillCellFieldData2DHex_old(long _cellTypeArrayAddr ,long _pointsArrayAddr, std::string _plane ,  int _pos);
         
 	    // virtual void fillCellFieldData2DHex(long _cellTypeArrayAddr,long _hexCellsArrayAddr ,long _pointsArrayAddr, std::string _plane ,  int _pos);
@@ -98,6 +101,7 @@ namespace CompuCell3D{
 
 		void init(CAManager * _caManager);
 	private:
+		std::vector<Coordinates3D<double> > cartesianVertices;
 		// FieldStorage * fsPtr;
 	};
 };
