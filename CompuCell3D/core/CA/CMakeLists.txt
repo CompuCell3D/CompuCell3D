@@ -4,10 +4,14 @@ SET(SRCS
   CACellInventory.cpp
   )
 
+FIND_PACKAGE(PythonLibs)
+FIND_PACKAGE(PythonInterp)
+  
 INCLUDE_DIRECTORIES ( 
     ${COMPUCELL3D_SOURCE_DIR}/core
     )
 
+INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
     
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
    ADD_SHARED_LIBRARY(CA ${SRCS} LINK_LIBRARIES BoundaryShared Field3DStatic)
@@ -27,5 +31,5 @@ ADD_SUBDIRECTORY(modules) # those are equivalents of old style plugins
 
   
 ADD_EXECUTABLE(CACL main.cpp)
-TARGET_LINK_LIBRARIES(CACL CAShared)
+TARGET_LINK_LIBRARIES(CACL CAShared ${PYTHON_LIBRARIES})
 INSTALL_TARGETS(/bin CACL)  

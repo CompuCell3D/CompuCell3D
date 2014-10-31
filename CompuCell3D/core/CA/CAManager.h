@@ -1,13 +1,21 @@
 #ifndef CAMANAGER_H
 #define CAMANAGER_H
 
+ #include <BasicUtils/BasicDynamicClassFactory.h>
 
+ #include <BasicUtils/BasicClassAccessor.h>
+ #include <BasicUtils/BasicClassGroupFactory.h>
+ #include <BasicUtils/BasicClassGroup.h>
 #include "CADLLSpecifier.h"
 #include "CACellInventory.h"
 #include <vector>
 #include <string>
 
+#include <Python.h>
+
+
 class BasicRandomNumberGeneratorNonStatic ;
+
 
 namespace CompuCell3D {
 class Dim3D;
@@ -41,6 +49,9 @@ class CASHARED_EXPORT CAManager{
 		CACell * createAndPositionCell(const Point3D &pt, long _clusterId=-1);
 		CACell * createAndPositionCellS(const Point3D & pt, long _clusterId=-1);
 
+		//cell creation functions
+		void registerClassAccessor(BasicClassAccessorBase *_accessor);
+		void registerPythonAttributeAdderObject(PyObject *_attrAdder);
         CACell * createCell(long _clusterId=-1);
 		void registerCellFieldChangeWatcher(CACellFieldChangeWatcher * _watcher);
 		//WatchableField3D<CACell *> * getCellField();
@@ -49,6 +60,10 @@ class CASHARED_EXPORT CAManager{
 
 		void positionCell(const Point3D &_pt,CACell *  _cell);
 		void positionCellS(const Point3D &_pt,CACell *  _cell); //positions cells in the stack field
+
+
+
+
 		CACellInventory * getCellInventory();
 
 		void setCellCarryingCapacity(int _depth);
@@ -88,7 +103,7 @@ class CASHARED_EXPORT CAManager{
 		std::vector<std::string> getConcentrationFieldNameVector();
 
     protected:
-		
+		BasicClassGroupFactory cellFactoryGroup;
 
         WatchableField3D<CACell *> *cellField;
 		WatchableField3D<CACellStack *> *cellFieldS;
@@ -109,6 +124,7 @@ class CASHARED_EXPORT CAManager{
 		BasicRandomNumberGeneratorNonStatic * rand; 
 
 		std::map<std::string,Field3D<float>*> concentrationFieldNameMap;
+		std::vector<PyObject *> attrAdderPyObjectVec;
 
 		
 };

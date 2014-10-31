@@ -183,6 +183,23 @@ void CAManager::destroyCell(CACell *  _cell, bool _removeFromInventory){
 #ifdef _DEBUG
 	cerr<<"inside destroy cell"<<endl;
 #endif
+
+	if(_cell->extraAttribPtr){
+		cellFactoryGroup.destroy(_cell->extraAttribPtr);
+		_cell->extraAttribPtr=0;
+	}
+	if(_cell->pyAttrib && attrAdderPyObjectVec.size()){
+        PyGILState_STATE gstate;
+        gstate = PyGILState_Ensure();
+		Py_DECREF(_cell->pyAttrib);
+   
+		PyGILState_Release(gstate);
+	}
+
+	//////if(_cell->pyAttrib && _attrAdder){
+	//////	attrAdder->destroyAttribute(_cell);
+	//////}
+
 	//had to introduce these two cases because in the Cell inventory destructor we deallocate memory of pointers stored int the set
 	//Since this is done during interation over set changing pointer (cell=0) or removing anything from set might corrupt container or invalidate iterators
 	if(_removeFromInventory){
@@ -278,12 +295,23 @@ CACell * CAManager::createAndPositionCellS(const Point3D & pt, long _clusterId){
 	//cellField->set(pt, cell);
 	return cell;
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CAManager::registerClassAccessor(BasicClassAccessorBase *_accessor){
+	RUNTIME_ASSERT_OR_THROW("registerClassAccessor() _accessor cannot be NULL!", _accessor);
 
+	cellFactoryGroup.registerClass(_accessor);
+
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CAManager::registerPythonAttributeAdderObject(PyObject *_attrAdder){
+	attrAdderPyObjectVec.push_back(_attrAdder);
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 CACell * CAManager::createCell(long _clusterId){
 	CACell * cell = new CACell();
-	//////cell->extraAttribPtr=cellFactoryGroup.create();
+	cell->extraAttribPtr=cellFactoryGroup.create();
+
 	cell->id=recentlyCreatedCellId;
 	cell->clusterId=cell->id; // for now we do not allow compartmentalized cells
 	++recentlyCreatedCellId;
@@ -310,6 +338,21 @@ CACell * CAManager::createCell(long _clusterId){
 #ifdef _DEBUG
 	cerr<<"inventory size="<<cellInventory.getSize()<<endl;
 #endif _DEBUG
+
+	if (attrAdderPyObjectVec.size()){
+		// since we are using threads (swig generated modules are fully "threaded") and and use C/API we better make sure that before doing anything in python
+		//we aquire GIL and then release it once we are done
+		PyGILState_STATE gstate;
+		gstate = PyGILState_Ensure();
+	
+	   PyObject *obj;
+	   obj = PyObject_CallMethod(attrAdderPyObjectVec[0],"addAttribute",0);
+	   cell->pyAttrib=obj;
+
+		PyGILState_Release(gstate);
+
+
+	}
 	//////if(attrAdder){
 	//////	attrAdder->addAttribute(cell);
 	//////}

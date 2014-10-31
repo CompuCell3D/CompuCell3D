@@ -40,6 +40,8 @@
 %{
 // CompuCell3D Include Files
 // #include <Potts3D/Cell.h>
+#include <Python.h>
+
 #include <CompuCell3D/Field3D/Neighbor.h>
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 #include <CompuCell3D/Field3D/Field3D.h>
@@ -257,6 +259,21 @@ using namespace CompuCell3D;
 %include "CA/CACellInventory.h"
 %include "CA/CAManager.h"
 
+
+%inline %{
+   PyObject * getPyAttrib(CompuCell3D::CACell * _cell){
+      Py_INCREF(_cell->pyAttrib);
+      return _cell->pyAttrib;
+   }
+   
+   bool isPyAttribValid(CompuCell3D::CACell * _cell){
+      return (bool) _cell->pyAttrib;
+
+   }   
+%}
+
+
+
 //Field3D<CACell*>
 %ignore Field3D<CACell*>::typeStr;
 %ignore Field3DImpl<CACell*>::typeStr;
@@ -339,8 +356,14 @@ public:
 };
 %}
 
+%include "pyinterface/CompuCellPython/STLPyIteratorMap.h"
+
+%template(mapLongCACellPtr)std::map<long,CACell *> ;
+
+%template (mapLongCACellPtrPyItr) STLPyIteratorMap<std::map<long, CompuCell3D::CACell *>, CompuCell3D::CACell *>;
 
 %template(vectorstring) std::vector<std::string>;
+%template(vectorint) std::vector<int>;
 %template(vectorCACellPtr) std::vector<CACell*>;
 
 
