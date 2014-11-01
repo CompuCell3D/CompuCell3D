@@ -15,13 +15,13 @@
 
 
 
-#include "PDESolversDLLSpecifier.h"
+#include "CAPDESolversDLLSpecifier.h"
 
 
 namespace CompuCell3D {
 
 
-class PDESOLVERS_EXPORT DiffusionData  {
+class CAPDESOLVERS_EXPORT DiffusionData  {
       
    public:
       DiffusionData():
@@ -37,7 +37,7 @@ class PDESOLVERS_EXPORT DiffusionData  {
 };
 
 
-class PDESOLVERS_EXPORT SecretionData{
+class CAPDESOLVERS_EXPORT SecretionData{
    protected:
       
    public:

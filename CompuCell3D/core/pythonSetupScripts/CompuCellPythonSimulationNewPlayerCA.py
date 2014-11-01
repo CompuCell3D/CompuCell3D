@@ -239,7 +239,7 @@ try:
         # exec fileObj
         # fileObj.close()        
         print "INSIDE IF CompuCellPythonSimulationNewPlayer \n\n\n"
-        
+        # print CompuCellSetup.simulationThreadObject
         d = dict(locals(), **globals())
         execfile(pythonScript,d,d)
         print "COMPLETED execfile in CompuCellPythonSimulationNewPlayer \n\n\n"
@@ -263,24 +263,33 @@ try:
 
 except IndentationError,e:
     print "CompuCellSetup.simulationObjectsCreated=",CompuCellSetup.simulationObjectsCreated
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
+    
     if CompuCellSetup.simulationObjectsCreated:        
         #sim.finish()
         sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
-    import PlayerPython
+    # import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     # simthread.handleErrorMessage("Python Indentation Error",traceback_message)
+    
+    print 'CompuCellSetup.simulationthreadObject=',CompuCellSetup.simulationThreadObject
+    print 'sim,simthread=',(sim,simthread)
     simthread.handleErrorFormatted(pythonTracebackFormatter())
     
 except AttributeError,e:
-    print "CompuCellSetup.simulationObjectsCreated=",CompuCellSetup.simulationObjectsCreated
+    # print "CompuCellSetup.simulationObjectsCreated=",CompuCellSetup.simulationObjectsCreated
+    # print 'sim,simthread=',(sim,simthread)
+    # sim,simthread = CompuCellSetup.getCoreCASimulationObjects()
+    
+    # sys.exit()
     if CompuCellSetup.simulationObjectsCreated:        
         #sim.finish()
         sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
-    import PlayerPython
+    # import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     # simthread.handleErrorMessage("Attribute Error",traceback_message)    
     simthread.handleErrorFormatted(pythonTracebackFormatter())
@@ -355,12 +364,16 @@ except LookupError,e:
     
   
 except NameError,e:
+
+    print "CompuCellSetup.simulationObjectsCreated=",CompuCellSetup.simulationObjectsCreated
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
+    print 'sim,simthread=',(sim,simthread)
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
         sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
-    import PlayerPython
+    # import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     # simthread.handleErrorMessage("Python Name Error",traceback_message)    
     simthread.handleErrorFormatted(pythonTracebackFormatter())

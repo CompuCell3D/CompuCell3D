@@ -1,7 +1,7 @@
 // -*-c++-*-
 
 
-%module ("threads"=1) PDESolvers
+%module ("threads"=1) CAPDESolvers
 
 //enables better handling of STL exceptions
 %include "exception.i"
@@ -45,8 +45,8 @@
 //#include <CompuCell3D/Field3D/Dim3D.h>
 
 #include <CompuCell3D/Field3D/Array3D.h>
-#include <CA/modules/PDESolvers/DiffSecrData.h>
-#include <CA/modules/PDESolvers/DiffusionSolverFE.h>
+#include <CA/modules/CAPDESolvers/DiffSecrData.h>
+#include <CA/modules/CAPDESolvers/DiffusionSolverFE.h>
 
 
 
@@ -104,7 +104,7 @@ using namespace CompuCell3D;
 // ******************************
 // Third Party Classes
 // ******************************
-#define PDESOLVERS_EXPORT
+#define CAPDESOLVERS_EXPORT
 
 //%include <CompuCell3D/Field3D/Point3D.h>
 //%include <CompuCell3D/Field3D/Dim3D.h>
@@ -120,7 +120,7 @@ using namespace CompuCell3D;
 %template(stdvectorstring) std::vector<std::string>;
 
 //%ignore CompuCell3D::SecretionData::secretionConst;
-%include <CA/modules/PDESolvers/DiffSecrData.h>
-%include <CA/modules/PDESolvers/DiffusionSolverFE.h>
+%include <CA/modules/CAPDESolvers/DiffSecrData.h>
+%include <CA/modules/CAPDESolvers/DiffusionSolverFE.h>
 
 

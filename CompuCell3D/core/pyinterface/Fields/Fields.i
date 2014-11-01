@@ -2,6 +2,23 @@
 // Module Name
 %module("threads"=1) Fields
 
+// C++ std::string handling
+%include "std_string.i"
+
+// C++ std::map handling
+%include "std_map.i"
+
+// C++ std::map handling
+%include "std_set.i"
+
+// C++ std::map handling
+%include "std_vector.i"
+
+%include "stl.i"
+
+//enables better handling of STL exceptions
+%include "exception.i"
+
 //%module Example
 // ************************************************************
 // Module Includes 
@@ -112,7 +129,7 @@
 
 
 
-
+%ignore BasicException::toRuntimeError;
 %include <BasicUtils/BasicException.h>
 
 

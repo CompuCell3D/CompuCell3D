@@ -917,6 +917,7 @@ FIELD3DEXTENDER(Field3D<int>,int)
 %include <PublicUtilities/NumericalUtils.h>
 %include <PublicUtilities/Vector3.h>
 
+%ignore BasicException::toRuntimeError;
 %include <BasicUtils/BasicException.h>
 
 

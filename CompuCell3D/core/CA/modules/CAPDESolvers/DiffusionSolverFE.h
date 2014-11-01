@@ -5,14 +5,14 @@
 #include <string>
 #include "DiffusableVectorCommon.h"
 #include "DiffSecrData.h"
-#include "PDESolversDLLSpecifier.h"
+#include "CAPDESolversDLLSpecifier.h"
 
 
 namespace CompuCell3D {
 
 class CAManager;
 
-class PDESOLVERS_EXPORT DiffusionSolverFE :
+class CAPDESOLVERS_EXPORT DiffusionSolverFE :
 	 public DiffusableVectorCommon<float, Array3DContiguous>
 {
 	

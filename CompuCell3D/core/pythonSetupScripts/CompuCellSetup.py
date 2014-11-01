@@ -683,6 +683,22 @@ def getScreenshotDirectoryName():
         # # # simulationPaths.setPlayerSimulationXMLFileName(cc3dSimulationDataHandler.cc3dSimulationData.xmlScript)    
     
 def getCoreCASimulationObjects(_parseOnlyFlag=False, _cmlOnly=False):
+    
+    global simulationThreadObject
+    if not _parseOnlyFlag:
+        import CA
+        caManager = CA.CAManager()
+        if simulationThreadObject is not None:    
+            simulationThreadObject.setSimulator(caManager)        
+        
+        global simulationObjectsCreated
+        simulationObjectsCreated = True            
+    
+        return caManager,simulationThreadObject
+    else:
+        print 'returning simulationThreadObject=',simulationThreadObject
+        return simulationThreadObject.sim(),simulationThreadObject
+
     import sys
     from os import environ
     import string
