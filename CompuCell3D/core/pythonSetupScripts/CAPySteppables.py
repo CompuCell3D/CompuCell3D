@@ -27,7 +27,13 @@ class CAPySteppableBase(SBMLSolverHelper):
 
     def finish(self):
         pass        
-        
+
+    def addNewPlotWindow(self, _title='',_xAxisTitle='',_yAxisTitle='',_xScaleType='linear',_yScaleType='linear'):
+        import CompuCellSetup
+        return CompuCellSetup.addNewPlotWindow(_title,_xAxisTitle,_yAxisTitle,_xScaleType,_yScaleType)
+    
+
+
 class CellList(object):
     def __init__(self,_inventory):
         self.inventory = _inventory

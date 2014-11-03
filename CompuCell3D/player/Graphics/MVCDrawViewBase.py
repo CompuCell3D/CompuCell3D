@@ -34,7 +34,8 @@ import Configuration
 import vtk, math
 #import sys, os
 
-from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES,PLANES
+# from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES,PLANES
+from enums import *
 from DrawingParameters import DrawingParameters
 from CustomActorsStorage import CustomActorsStorage
 from CameraSettings import CameraSettings
@@ -170,7 +171,7 @@ class MVCDrawViewBase:
         # print 'resetting camera in drawFieldLocal View base'
         # self.resetAllCameras()    
         # import time
-        # print 'BEFORE INSIDEE graphicsFrame.drawFieldLocal'    
+        print 'BEFORE INSIDEE graphicsFrame.drawFieldLocal'    
         # time.sleep(5)    
         # return
         fieldType = ("Cell_Field", FIELD_TYPES[0])

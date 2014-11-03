@@ -25,6 +25,7 @@ import Configuration
 # # print "PATH=",sys.path  
 
 
+
 from PyQt4 import QtCore, QtGui,QtOpenGL
 import vtk
 from PyQt4.QtCore import *
@@ -112,6 +113,25 @@ class GraphicsFrameWidget(QtGui.QFrame):
         self.ren.SetActiveCamera(self.camera2D)
         
         
+        #INITILIZE MODEL SPECIFIC MODEL DRAW AND VIEW OBJECTS
+        self.modelSpecificDrawModel2D,self.modelSpecificDrawModel3D,self.modelSpecificDrawView2D,self.modelSpecificDrawView3D = None,None,None,None
+        if parent.modelSpecificTabView:
+            self.modelSpecificDrawModel2D,self.modelSpecificDrawModel3D,self.modelSpecificDrawView2D,self.modelSpecificDrawView3D = parent.modelSpecificTabView.produceModelSpecificGraphicsModelsAndViews()
+        
+        if self.modelSpecificDrawView2D:
+            self.modelSpecificDrawView2D.initMasterDrawView(self.draw2D)
+
+        if self.modelSpecificDrawView3D:
+            self.modelSpecificDrawView3D.initMasterDrawView(self.draw3D)
+            
+            
+        if self.modelSpecificDrawModel2D:
+            self.modelSpecificDrawModel2D.initMasterDrawModel(self.drawModel2D)
+
+        if self.modelSpecificDrawModel3D:
+            self.modelSpecificDrawModel3D.initMasterDrawModel(self.drawModel3D)
+
+            
         self.currentDrawingObject = self.draw2D
         
         

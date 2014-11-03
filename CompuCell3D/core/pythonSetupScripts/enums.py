@@ -5,3 +5,5 @@
 
 FIELD_TYPES = ("CellField", "ConField", "ScalarField", "ScalarFieldCellLevel", "VectorField", "VectorFieldCellLevel","CustomVis")
 PLANES      = ("xy", "xz", "yz")
+
+(PLAYER_CC3D, PLAYER_DML, PLAYER_PY,PLAYER_XML) = range(0,4)

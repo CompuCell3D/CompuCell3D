@@ -101,9 +101,10 @@ class SimulationThread(QtCore.QThread):
 	# processes this signal in a slot (e.g. initializeSimulationViewWidget) than calling a member function of an object from e.g. Player Python (self.fieldStorage.allocateCellField(self.fieldDim))
 	# results in segfault. Python 2.5 does not have this issue. Anyway this seems to work on Linux with Python 2.6
 	# This might be a problem only on Linux 
-	import Example    
-	import CompuCell
-	import PlayerPython
+    
+	# import Example
+	# import CompuCell
+	# import PlayerPython
 
     def setSimulator(self,_sim):
         # self.sim=_sim

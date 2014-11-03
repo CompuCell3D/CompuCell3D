@@ -5,11 +5,13 @@ from PyQt4.QtGui import *
 from Utilities.QVTKRenderWidget import QVTKRenderWidget
 # from GraphicsNew import GraphicsNew
 from MVCDrawViewBase import MVCDrawViewBase
-from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES
+# from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES
+from enums import *
 import Configuration
 import vtk, math
 import sys, os
 import string
+# from enums import *
 
 CONTOUR_ALLOWED_FIELD_TYPES=[FIELD_TYPES[1],FIELD_TYPES[2],FIELD_TYPES[3]]
 
@@ -341,12 +343,25 @@ class MVCDrawView2D(MVCDrawViewBase):
         self.graphicsFrameWidget.ren.RemoveActor(self.outlineActor)
         del self.currentActors["Outline"]
 
-
+        
+        
     def drawCellField(self, _bsd, fieldType):
-    
-        
-        
         import CompuCellSetup
+        
+        # if self.parentWidget.modelSpecificTabView:
+            
+        if self.graphicsFrameWidget.modelSpecificDrawView2D:
+           self.graphicsFrameWidget.modelSpecificDrawView2D.drawCellField(_bsd, fieldType)
+           return
+           
+        # if CompuCellSetup.playerModel==PLAYER_CA:
+            # print '\n\n\n GOT PLAYER CA'    
+            # # self.drawCellFieldCA(_bsd, fieldType)
+            # self.drawCellGlyphs2D()
+            # return
+        
+        
+        
 #        print
 #        print MODULENAME,'  drawCellField():   type(_bsd)=',type(_bsd)
 #        print MODULENAME,'  drawCellField():   self.graphicsFrameWidget=',self.graphicsFrameWidget
@@ -375,7 +390,7 @@ class MVCDrawView2D(MVCDrawViewBase):
         
 #        print MODULENAME,' drawCellField(): self.parentWidget.graphicsWindowVisDict=',self.parentWidget.graphicsWindowVisDict
 #        print MODULENAME,' drawCellField(): dictKey=',dictKey
-
+        print 'drawCellField MVCDrawView'
             
         if self.parentWidget.graphicsWindowVisDict[dictKey][0] or self.getSim3DFlag():  # rwh: for multi-window bug fix;  rwh: hack for FPP
 #        if self.parentWidget.graphicsWindowVisDict[self.parentWidget.lastActiveWindow.winId()][0] or self.getSim3DFlag():  # rwh: for multi-window bug fix;  rwh: hack for FPP
@@ -607,6 +622,11 @@ class MVCDrawView2D(MVCDrawViewBase):
         self.Render()
         
     def drawConField(self, sim, fieldType):
+    
+        if self.graphicsFrameWidget.modelSpecificDrawView2D:
+           self.graphicsFrameWidget.modelSpecificDrawView2D.drawConField(sim, fieldType)
+           return
+    
         if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
             self.drawConFieldHex(sim,fieldType)
             return
@@ -1052,6 +1072,9 @@ class MVCDrawView2D(MVCDrawViewBase):
             if actorsCollection.GetLastItem() != self.borderActor:
                 self.graphicsFrameWidget.ren.RemoveActor(self.cellGlyphsActor)
                 self.graphicsFrameWidget.ren.AddActor(self.cellGlyphsActor) 
+                
+        self.drawModel.prepareOutlineActors((self.outlineActor,))
+        self.showOutlineActor()                
         # print "self.currentActors.keys()=",self.currentActors.keys()    
 
     def drawFPPLinks2D(self):

@@ -46,6 +46,7 @@ class UserInterface(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
         self.argv=None
+        self.modelEditorDock=None
         # self.resize(QSize(900, 650))
         QApplication.setWindowIcon(QIcon("player/icons/cc3d_64x64_logo.png"))
         self.setWindowIcon(QIcon("player/icons/cc3d_64x64_logo.png"))
@@ -398,17 +399,20 @@ class UserInterface(QMainWindow):
         # self.setCentralWidget(self.display3D)
         
         # Set up the model for the Model Editor
-        self.modelEditorDock = self.__createDockWindow("ModelEditorDock")
-        modelEditor = ModelEditor(self.modelEditorDock)      
-        
-        # self.model = SimModel(QDomDocument(), self.modelEditorDock) # Do I need parent self.modelEditorDock
-        self.model = SimModel(None, self.modelEditorDock) # Do I need parent self.modelEditorDock
-        modelEditor.setModel(self.model) # Set the default model
-        modelEditor.setItemDelegate(SimDelegate(self))
-        modelEditor.setParams()
-        modelEditor.setSelectionBehavior(QAbstractItemView.SelectItems)
-        self.viewmanager.setModelEditor(modelEditor) # Sets the Model Editor in the ViewManager
-        self.__setupDockWindow(self.modelEditorDock, Qt.LeftDockWidgetArea, modelEditor, self.trUtf8("Model Editor")) # projectBrowser  
+        import CompuCellSetup
+        from enums import * 
+        if CompuCellSetup.playerModel == PLAYER_CPM:
+            self.modelEditorDock = self.__createDockWindow("ModelEditorDock")
+            modelEditor = ModelEditor(self.modelEditorDock)      
+            
+            # self.model = SimModel(QDomDocument(), self.modelEditorDock) # Do I need parent self.modelEditorDock
+            self.model = SimModel(None, self.modelEditorDock) # Do I need parent self.modelEditorDock
+            modelEditor.setModel(self.model) # Set the default model
+            modelEditor.setItemDelegate(SimDelegate(self))
+            modelEditor.setParams()
+            modelEditor.setSelectionBehavior(QAbstractItemView.SelectItems)
+            self.viewmanager.setModelEditor(modelEditor) # Sets the Model Editor in the ViewManager
+            self.__setupDockWindow(self.modelEditorDock, Qt.LeftDockWidgetArea, modelEditor, self.trUtf8("Model Editor")) # projectBrowser  
 
         _simulationFileName="D:\Program Files\COMPUCELL3D_3.4.0\Demos\cellsort_2D\cellsort_2D.xml"
         # self.viewmanager.prepareXMLTreeView(_simulationFileName)
@@ -556,12 +560,16 @@ class UserInterface(QMainWindow):
 
         self.__menus["view"].addSeparator()
         self.__menus["view"].addAction(self.modelAct)
-        self.modelAct.setChecked(not self.modelEditorDock.isHidden())
+        
+        if self.modelEditorDock: # not all model implementations will use this dock window
+            self.modelAct.setChecked(not self.modelEditorDock.isHidden())
+            
         
         # # # self.__menus["view"].addAction(self.pluginsAct)
         # # # self.pluginsAct.setChecked(not self.cpluginsDock.isHidden())
 
         self.__menus["view"].addAction(self.latticeDataAct)
+        
         self.latticeDataAct.setChecked(not self.latticeDataDock.isHidden())
 
         

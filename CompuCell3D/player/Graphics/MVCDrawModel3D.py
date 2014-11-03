@@ -9,6 +9,7 @@ from MVCDrawModelBase import MVCDrawModelBase
 import Configuration
 import vtk, math
 import sys, os
+from enums import *
 
 VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
 
@@ -947,8 +948,132 @@ class MVCDrawModel3D(MVCDrawModelBase):
 #                    offset += 1
         
         return (minCon, maxCon)
+        
+    # # # def initCellGlyphsActor3DCA(self, _glyphActor, _invisibleCellTypes):
+        # # # print 'INSIDE initCellGlyphsActor3D'
+        # # # fieldDim = self.currentDrawingParameters.bsd.fieldDim
+        
+        # # # # # # import CA
+        # # # # # # pt=CA.Point3D()
+        # # # # # # ptVec=[0,0,0]        
+        
 
+        # # # caManager = self.parentWidget.mysim()
+        
+        # # # cellFieldS=caManager.getCellFieldS()
+
+        # # # centroidPoints = vtk.vtkPoints()
+        # # # cellTypes = vtk.vtkIntArray()
+        # # # cellTypes.SetName("CellTypes")
+        
+# # # #        cellVolumes = vtk.vtkIntArray()
+# # # #        cellVolumes.SetName("CellVolumes")
+        # # # cellScalars = vtk.vtkFloatArray()
+        # # # cellScalars.SetName("CellScalars") # used to store size of the glyph - we are using 0.5 for now
+        
+        # # # cellTypeIntAddr = self.extractAddressIntFromVtkObject(cellTypes)
+        # # # centroidPointsAddr = self.extractAddressIntFromVtkObject(centroidPoints)
+        # # # cellScalarsAddr = self.extractAddressIntFromVtkObject(cellScalars)        
+        
+        
+        
+        # # # self.parentWidget.fieldExtractor.fillCellFieldData3D(cellTypeIntAddr ,centroidPointsAddr, cellScalarsAddr)          
+        # # # # pt=CA.Point3D()
+        # # # # from random import random
+        # # # # for x in xrange(fieldDim.x):
+            # # # # for y in xrange(fieldDim.y):
+                # # # # for z in xrange(fieldDim.z):
+                    
+                    # # # # pt.x=x
+                    # # # # pt.y=y
+                    # # # # pt.z=z
+                    
+                    # # # # cellStack = cellFieldS.get(pt)                  
+                    # # # # if not cellStack:
+                        # # # # pass
+                        # # # # # print 'pt=',pt, ' cellStack=',cellStack
+                    # # # # else:
+                        # # # # # print 'pt=',pt, ' cellStack=',cellStack
+                        # # # # size=cellStack.getFillLevel()
+                        
+                        # # # # for idx in xrange(size):
+                            # # # # cell=cellStack.getCellByIdx(idx)                            
+                            # # # # # print 'firstCell.id=',cell.id,' type=',cell.type                    
+                            # # # # if size>1:
+                                # # # # # centroidPoints.InsertNextPoint(pt.x+random(),pt.y+random(),pt.z+random())
+                                # # # # centroidPoints.InsertNextPoint(pt.x+idx/(size*1.0),pt.y+idx/(size*1.0),pt.z+idx/(size*1.0))
+                            # # # # else:
+                                # # # # centroidPoints.InsertNextPoint(pt.x,pt.y,pt.z)
+                                
+                            # # # # cellTypes.InsertNextValue(cell.type)                    
+                            # # # # cellScalars.InsertNextValue(0.5) 
+
+                        # # # # size=cellStack.getFillLevel()                             
+                            
+        # # # centroidsPD = vtk.vtkPolyData()
+        # # # centroidsPD.SetPoints(centroidPoints)
+        # # # centroidsPD.GetPointData().SetScalars(cellTypes)
+
+# # # #        if self.scaleGlyphsByVolume:
+        # # # centroidsPD.GetPointData().AddArray(cellScalars)
+
+        # # # centroidGS = vtk.vtkSphereSource()
+        # # # thetaRes = Configuration.getSetting("CellGlyphThetaRes")     # todo: make class attrib; update only when changes
+        # # # phiRes = Configuration.getSetting("CellGlyphPhiRes")            
+        # # # centroidGS.SetThetaResolution(thetaRes)  # increase these values for a higher-res sphere glyph
+        # # # centroidGS.SetPhiResolution(phiRes)
+
+        # # # centroidGlyph = vtk.vtkGlyph3D()
+        
+        # # # if VTK_MAJOR_VERSION>=6:
+            # # # centroidGlyph.SetInputData(centroidsPD)
+        # # # else:    
+            # # # centroidGlyph.SetInput(centroidsPD)        
+        
+        # # # centroidGlyph.SetSource(centroidGS.GetOutput())
+        
+        # # # glyphScale = Configuration.getSetting("CellGlyphScale")            
+        # # # centroidGlyph.SetScaleFactor( glyphScale )
+        # # # centroidGlyph.SetIndexModeToScalar()
+        # # # centroidGlyph.SetRange(0,self.celltypeLUTMax)
+
+        # # # centroidGlyph.SetColorModeToColorByScalar()
+# # # #        if self.scaleGlyphsByVolume:
+        # # # centroidGlyph.SetScaleModeToScaleByScalar()
+        
+# # # #        centroidGlyph.SetScaleModeToDataScalingOff()  # call this to disable scaling by scalar value
+# # # #        centroidGlyph.SetScaleModeToDataScalingOn()   # method doesn't even exist?!
+
+        # # # centroidGlyph.SetInputArrayToProcess(3,0,0,0,"CellTypes")
+        # # # centroidGlyph.SetInputArrayToProcess(0,0,0,0,"CellScalars")
+
+        # # # if VTK_MAJOR_VERSION>=6:
+            # # # self.cellGlyphsMapper.SetInputData(centroidGlyph.GetOutput())
+        # # # else:    
+            # # # self.cellGlyphsMapper.SetInput(centroidGlyph.GetOutput())
+        
+        # # # self.cellGlyphsMapper.SetScalarRange(0,self.celltypeLUTMax)
+        # # # self.cellGlyphsMapper.ScalarVisibilityOn()
+        
+        # # # self.cellGlyphsMapper.SetLookupTable(self.celltypeLUT)   # defined in parent class
+# # # #        print MODULENAME,' usedCellTypesList=' ,self.usedCellTypesList
+
+        # # # _glyphActor.SetMapper(self.cellGlyphsMapper)  # Note: we don't need to scale actor for hex lattice here since using cell info
+                
+        
+    
     def initCellGlyphsActor3D(self, _glyphActor, _invisibleCellTypes):
+        if self.graphicsFrameWidget.modelSpecificDrawModel3D:
+           self.graphicsFrameWidget.modelSpecificDrawModel3D.initCellGlyphsActor3D( _glyphActor,_invisibleCellTypes)
+           return    
+    
+        # # # import CompuCellSetup
+        # # # if CompuCellSetup.playerModel==PLAYER_CA:
+            # # # print '\n\n\n GOT PLAYER CA'    
+            # # # # self.drawCellFieldCA(_bsd, fieldType)
+            # # # self.initCellGlyphsActor3DCA(_glyphActor,_invisibleCellTypes)
+            # # # return
+    
 #        print MODULENAME,'  ---initCellGlyphsActor3D'
 #        print MODULENAME,'    _invisibleCellTypes=', _invisibleCellTypes
 

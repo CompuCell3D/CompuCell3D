@@ -4,14 +4,17 @@ from PyQt4.QtGui import *
 
 from Utilities.QVTKRenderWidget import QVTKRenderWidget
 
-from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES,PLANES
-
+# from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES,PLANES
+# from enums import *
 from MVCDrawViewBase import MVCDrawViewBase
 import Configuration
 import vtk, math
 import sys, os
+from enums import *
 
 VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
+
+
 
 MODULENAME='==== MVCDrawView3D.py:  '
 
@@ -279,6 +282,18 @@ class MVCDrawView3D(MVCDrawViewBase):
         self.graphicsFrameWidget.ren.AddActor(axisTextActor)    
         
     def drawCellField(self, bsd, fieldType):
+    
+        if self.graphicsFrameWidget.modelSpecificDrawView3D:
+           self.graphicsFrameWidget.modelSpecificDrawView3D.drawCellField(bsd, fieldType)
+           return
+           
+        # import CompuCellSetup
+        # if CompuCellSetup.playerModel==PLAYER_CA:
+            # print '\n\n\n GOT PLAYER CA'    
+            # # self.drawCellFieldCA(_bsd, fieldType)
+            # self.drawCellGlyphs3D()
+            # return    
+    
 #        print MODULENAME, '  drawCellField():    calling drawModel.extractCellFieldData()'
         self.usedCellTypesList = self.drawModel.extractCellFieldData()
         numberOfActors = len(self.usedCellTypesList)
@@ -421,6 +436,10 @@ class MVCDrawView3D(MVCDrawViewBase):
             if actorsCollection.GetLastItem()!=self.borderActor:
                 self.graphicsFrameWidget.ren.RemoveActor(self.cellGlyphsActor)
                 self.graphicsFrameWidget.ren.AddActor(self.cellGlyphsActor) 
+                
+        self.drawModel.prepareOutlineActors((self.outlineActor,))
+        self.showOutlineActor()                
+        
         # print "self.currentActors.keys()=",self.currentActors.keys()  
     
     def showCellGlyphs(self):

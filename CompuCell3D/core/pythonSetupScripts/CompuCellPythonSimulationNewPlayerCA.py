@@ -279,6 +279,7 @@ except IndentationError,e:
     simthread.handleErrorFormatted(pythonTracebackFormatter())
     
 except AttributeError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     # print "CompuCellSetup.simulationObjectsCreated=",CompuCellSetup.simulationObjectsCreated
     # print 'sim,simthread=',(sim,simthread)
     # sim,simthread = CompuCellSetup.getCoreCASimulationObjects()
@@ -294,6 +295,7 @@ except AttributeError,e:
     # simthread.handleErrorMessage("Attribute Error",traceback_message)    
     simthread.handleErrorFormatted(pythonTracebackFormatter())
 except SyntaxError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
         sim.cleanAfterSimulation()
@@ -305,6 +307,7 @@ except SyntaxError,e:
     
     # simthread.handleErrorMessage("Python Syntax Error",traceback_message)
 except ValueError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
         sim.cleanAfterSimulation()
@@ -316,6 +319,7 @@ except ValueError,e:
     simthread.handleErrorFormatted(pythonTracebackFormatter())
     
 except TypeError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
         sim.cleanAfterSimulation()
@@ -330,6 +334,7 @@ except TypeError,e:
     simthread.handleErrorFormatted(pythonTracebackFormatter())
 
 except KeyError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
         sim.cleanAfterSimulation()
@@ -341,6 +346,7 @@ except KeyError,e:
     simthread.handleErrorFormatted(pythonTracebackFormatter())    
     
 except IndexError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
         sim.cleanAfterSimulation()
@@ -352,6 +358,7 @@ except IndexError,e:
     simthread.handleErrorFormatted(pythonTracebackFormatter())
     
 except LookupError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
         sim.cleanAfterSimulation()
@@ -379,6 +386,7 @@ except NameError,e:
     simthread.handleErrorFormatted(pythonTracebackFormatter())
     
 except FloatingPointError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
         sim.cleanAfterSimulation()
@@ -390,6 +398,7 @@ except FloatingPointError,e:
     simthread.handleErrorFormatted(pythonTracebackFormatter())
     
 except ZeroDivisionError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
         sim.cleanAfterSimulation()
@@ -401,6 +410,7 @@ except ZeroDivisionError,e:
     simthread.handleErrorFormatted(pythonTracebackFormatter())
     
 except OverflowError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
         sim.cleanAfterSimulation()
@@ -412,6 +422,7 @@ except OverflowError,e:
     simthread.handleErrorFormatted(pythonTracebackFormatter())
     
 except ArithmeticError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
         sim.cleanAfterSimulation()
@@ -423,6 +434,7 @@ except ArithmeticError,e:
     simthread.handleErrorFormatted(pythonTracebackFormatter())
 
 except EOFError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
         sim.cleanAfterSimulation()
@@ -434,6 +446,7 @@ except EOFError,e:
     simthread.handleErrorFormatted(pythonTracebackFormatter())
     
 except IOError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
         sim.cleanAfterSimulation()
@@ -445,6 +458,7 @@ except IOError,e:
     simthread.handleErrorFormatted(pythonTracebackFormatter())
 
 except OSError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     if CompuCellSetup.simulationObjectsCreated:
         #sim.finish()
         sim.cleanAfterSimulation()
@@ -456,6 +470,7 @@ except OSError,e:
     simthread.handleErrorFormatted(pythonTracebackFormatter())
     
 except ImportError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     if CompuCellSetup.simulationObjectsCreated:
         # sim.finish()
         sim.cleanAfterSimulation()
@@ -484,6 +499,7 @@ except ImportError,e:
     # simthread.handleErrorMessage("Python Buffer Error",traceback_message)    
 
 except MemoryError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     if CompuCellSetup.simulationObjectsCreated:
         # sim.finish()
         sim.cleanAfterSimulation()
@@ -495,6 +511,7 @@ except MemoryError,e:
     simthread.handleErrorFormatted(pythonTracebackFormatter())    
 
 except ReferenceError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     if CompuCellSetup.simulationObjectsCreated:
         # sim.finish()
         sim.cleanAfterSimulation()
@@ -506,6 +523,7 @@ except ReferenceError,e:
     simthread.handleErrorFormatted(pythonTracebackFormatter())
 
 except RuntimeError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     if CompuCellSetup.simulationObjectsCreated:
         # sim.finish()
         sim.cleanAfterSimulation()
@@ -517,6 +535,7 @@ except RuntimeError,e:
     simthread.handleErrorFormatted(pythonTracebackFormatter())
     
 except SystemError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     if CompuCellSetup.simulationObjectsCreated:
         # sim.finish()
         sim.cleanAfterSimulation()
@@ -528,6 +547,7 @@ except SystemError,e:
     simthread.handleErrorFormatted(pythonTracebackFormatter())
     
 except ExpatError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     if CompuCellSetup.simulationObjectsCreated:
         # sim.finish()
         sim.cleanAfterSimulation()
@@ -575,6 +595,7 @@ except ExpatError,e:
     simthread.handleErrorFormatted(tracebackMessage)
 
 except AssertionError,e:
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     if CompuCellSetup.simulationObjectsCreated:
         # sim.finish()
         sim.cleanAfterSimulation()
@@ -589,7 +610,8 @@ except CompuCellSetup.CC3DCPlusPlusError,e:
     # print "CompuCellSetup.simulationObjectsCreated=",CompuCellSetup.simulationObjectsCreated
     # if CompuCellSetup.simulationObjectsCreated:
         # sim.finish()
-    import PlayerPython
+    # import PlayerPython
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)
     # simthread=PlayerPython.getSimthreadBasePtr()    
     print "RUNTIME ERROR IN C++ CODE: ",e.message
     simthread.handleErrorMessage("RUNTIME ERROR IN C++ CODE",e.message)
@@ -598,6 +620,7 @@ except CompuCellSetup.CC3DCPlusPlusError,e:
 except:
     # if CompuCellSetup.simulationObjectsCreated and CompuCellSetup.playerType=="new":
         # sim.finish()
+    sim,simthread = CompuCellSetup.getCoreCASimulationObjects(_parseOnlyFlag=True)    
     if CompuCellSetup.simulationObjectsCreated:
         # sim.finish()       
         sim.cleanAfterSimulation()        

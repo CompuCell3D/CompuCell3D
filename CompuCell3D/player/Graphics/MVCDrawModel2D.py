@@ -10,6 +10,9 @@ import vtk, math
 import sys, os
 import string
 
+from enums import *
+import CompuCellSetup
+
 VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
 
 
@@ -104,10 +107,137 @@ class MVCDrawModel2D(MVCDrawModelBase):
         _actors[0].SetMapper(outlineMapper)
         _actors[0].GetProperty().SetColor(1, 1, 1)        
         # self.outlineDim=_imageData.GetDimensions()
+        
+    # # # def fillCellFieldData2DCA(self, _cellTypeArray, _plane, _planePos):
+    
+
+        
+        # # # print 'self.parentWidget.fieldExtractor=',self.parentWidget.fieldExtractor
+        
+        # # # print '_plane=',_plane
+        # # # print '_planePos=',_planePos
+        # # # caManager = self.parentWidget.mysim()
+        # # # cellField=caManager.getCellField()
+        # # # fieldDim=cellField.getDim()
+        
+        # # # fieldDimVec=[fieldDim.x,fieldDim.y,fieldDim.z]
+        
+        # # # pointOrderVec=self.pointOrder(_plane)
+        # # # dimOrderVec=self.dimOrder(_plane)
+        # # # dim=[0,0,0]
+        
+        # # # dim[0]=fieldDimVec[dimOrderVec[0]];
+        # # # dim[1]=fieldDimVec[dimOrderVec[1]];
+        # # # dim[2]=fieldDimVec[dimOrderVec[2]];        
+        
+        
+        # # # print 'pointOrderVec=',pointOrderVec
+        # # # print 'dimOrderVec=',dimOrderVec
+        
+        # # # print 'dim=',dim
+        
+        # # # _cellTypeArray.SetNumberOfValues((dim[1]+2)*(dim[0]+1))
+        
+        
+        
+        # # # from random import random
+        
+        # # # arrayLength=(dim[1]+2)*(dim[0]+1)        
+        # # # for i in xrange(arrayLength):
+            # # # _cellTypeArray.InsertValue(i, 0)        
+        
+        
+        # # # import CA
+        # # # pt=CA.Point3D()
+        # # # ptVec=[0,0,0]        
+        
+        # # # off=0   
+        # # # off=dim[0]+1    
+        # # # for j in xrange(dim[1]+1):
+            # # # for i in xrange(dim[0]+1):
+                # # # if i==0 and j==0:
+                    # # # _cellTypeArray.SetValue(off,2)
+                    
+                # # # ptVec[0]=i;
+                # # # ptVec[1]=j;
+                # # # ptVec[2]=_planePos;        
+
+
+                # # # pt.x=ptVec[pointOrderVec[0]];
+                # # # pt.y=ptVec[pointOrderVec[1]];
+                # # # pt.z=ptVec[pointOrderVec[2]];
+                
+
+                # # # cell=cellField.get(pt)                  
+                # # # if not cell:
+                    # # # type=0
+                # # # else:
+                    # # # type=cell.type
+
+                # # # _cellTypeArray.InsertValue(off, type)
+                    
+                # # # off+=1
+        
+          
+
+        
+        
+        
+    # # # def initCellFieldActorsCA(self, _actors):
+        # # # print MODULENAME,'  initCellFieldActorsCA()'    
+        # # # print '_actors=',_actors
+        
+
+
+        # # # # # # if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.currentDrawingParameters.plane=="XY": # drawing in other planes will be done on a rectangular lattice
+# # # # # # #            self.initCellFieldHexActors(_bsd,fieldType,_actors)
+            # # # # # # self.initCellFieldHexActors(_actors)
+            # # # # # # return
+            
+        
+        
+        # # # # # # print "drawing plane ",self.plane," planePos=",self.planePos
+        # # # # fieldDim = cellField.getDim()
+        # # # fieldDim = self.currentDrawingParameters.bsd.fieldDim
+        # # # dimOrder = self.dimOrder(self.currentDrawingParameters.plane)
+        # # # self.dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]         
+        
+        # # # self.cellType = vtk.vtkIntArray()
+        # # # self.cellType.SetName("celltype")
+        # # # # self.cellTypeIntAddr=self.parentWidget.fieldExtractor.unmangleSWIGVktPtr(self.cellType.__this_)
+        
+
+        
+        # # # # # # self.cellTypeIntAddr=self.extractAddressIntFromVtkObject(self.cellType)
+        # # # # # # # print "self.cellTypeIntAddr=",self.cellTypeIntAddr
+        
+
+
+        # # # self.fillCellFieldData2DCA(self.cellType,self.currentDrawingParameters.plane,self.currentDrawingParameters.planePos)
+        # # # # # # self.parentWidget.fieldExtractor.fillCellFieldData2D(self.cellTypeIntAddr,self.currentDrawingParameters.plane, self.currentDrawingParameters.planePos)
+        
+        # # # # # # # Python function used during prototyping
+        # # # # # # # self.fillCellFieldData(cellField,self.plane, self.planePos)
+        
+        
+        # # # self.initCellFieldActorsData(_actors)
+        
 
     def initCellFieldActors(self, _actors):
-#        print MODULENAME,'  initCellFieldActors()'
-
+        print MODULENAME,'  initCellFieldActors()'
+        print 'CompuCellSetup.playerModel=',CompuCellSetup.playerModel
+        print '\n\n\n before checking for PLAYER CA'
+        
+        # # # if self.graphicsFrameWidget.modelSpecificDrawModel2D:
+           # # # self.graphicsFrameWidget.modelSpecificDrawModel2D.initCellFieldActors(_actors)
+           # # # return
+           
+        # if CompuCellSetup.playerModel==PLAYER_CA:
+            # print '\n\n\n GOT PLAYER CA'    
+            # self.initCellFieldActorsCA(_actors)
+            # return
+        
+        
         if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.currentDrawingParameters.plane=="XY": # drawing in other planes will be done on a rectangular lattice
 #            self.initCellFieldHexActors(_bsd,fieldType,_actors)
             self.initCellFieldHexActors(_actors)
@@ -125,7 +255,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.cellType.SetName("celltype")
         # self.cellTypeIntAddr=self.parentWidget.fieldExtractor.unmangleSWIGVktPtr(self.cellType.__this_)
         
-        self.cellTypeIntAddr=self.extractAddressIntFromVtkObject(self.cellType)
+
+        
+        self.cellTypeIntAddr = self.extractAddressIntFromVtkObject(self.cellType)
         # print "self.cellTypeIntAddr=",self.cellTypeIntAddr
         
 
@@ -513,7 +645,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
     
     # def initScalarFieldCartesianActors(self,_actors):
     def initScalarFieldCartesianActors(self, _fillScalarField,_actors):    
-            
+
+        # if self.graphicsFrameWidget.modelSpecificDrawmodel2D:
+           # self.graphicsFrameWidget.modelSpecificDrawmodel2D.initScalarFieldCartesianActors(sim, fieldType)
+           # return
+    
         # cellField  = sim.getPotts().getCellFieldG()
         # conField   = CompuCell.getConcentrationField(sim, fieldType[0]) 
         conFieldName = self.currentDrawingParameters.fieldName       
@@ -541,7 +677,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # *************************************************************************** 
         # # # fillSuccessful=self.parentWidget.fieldExtractor.fillConFieldData2DCartesian(self.conArrayIntAddr,self.cartesianCellsConIntAddr,self.cartesianPointsConIntAddr,conFieldName,self.currentDrawingParameters.plane, self.currentDrawingParameters.planePos)             
         
-        fillSuccessful=_fillScalarField(self.conArrayIntAddr,self.cartesianCellsConIntAddr,self.cartesianPointsConIntAddr,conFieldName,self.currentDrawingParameters.plane, self.currentDrawingParameters.planePos)                     
+        fillSuccessful = _fillScalarField(self.conArrayIntAddr,self.cartesianCellsConIntAddr,self.cartesianPointsConIntAddr,conFieldName,self.currentDrawingParameters.plane, self.currentDrawingParameters.planePos)                     
         # print 'fillSuccessful=',fillSuccessful
         if not fillSuccessful:
             return
@@ -1567,8 +1703,179 @@ class MVCDrawModel2D(MVCDrawModelBase):
         clusterBordersActor.SetMapper(self.clusterBorderMapperHex)
         
 #--------------------------------------------------------------------------------------------------
+
+    # # # def initCellGlyphsActor2DCA(self,cellGlyphActor):
+        # # # print MODULENAME,'  initCellGlyphsActor2DCA'
+        
+
+        
+        # # # fieldDim = self.currentDrawingParameters.bsd.fieldDim
+        # # # dimOrder = self.dimOrder(self.currentDrawingParameters.plane)
+        # # # self.dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]         
+        
+      
+        
+        # # # plane = self.currentDrawingParameters.plane
+        # # # planePos = self.currentDrawingParameters.planePos
+
+        
+       
+        
+        # # # print '_plane=',plane
+        # # # print '_planePos=',planePos
+        # # # caManager = self.parentWidget.mysim()
+        # # # cellField=caManager.getCellField()
+        # # # fieldDim=cellField.getDim()
+        
+        # # # fieldDimVec=[fieldDim.x,fieldDim.y,fieldDim.z]
+        
+        # # # pointOrderVec=self.pointOrder(plane)
+        # # # dimOrderVec=self.dimOrder(plane)
+        # # # dim=[0,0,0]
+        
+        # # # dim[0]=fieldDimVec[dimOrderVec[0]];
+        # # # dim[1]=fieldDimVec[dimOrderVec[1]];
+        # # # dim[2]=fieldDimVec[dimOrderVec[2]];        
+        
+        
+        # # # print 'pointOrderVec=',pointOrderVec
+        # # # print 'dimOrderVec=',dimOrderVec
+        
+        # # # print 'dim=',dim
+        
+
+        
+        
+     
+        
+        
+        # # # import CA
+        # # # pt=CA.Point3D()
+        # # # ptVec=[0,0,0]        
+        
+
+        
+        
+        # # # cellFieldS=caManager.getCellFieldS()
+
+        # # # centroidPoints = vtk.vtkPoints()
+        # # # cellTypes = vtk.vtkIntArray()
+        # # # cellTypes.SetName("CellTypes")
+        
+        # # # cellScalars = vtk.vtkFloatArray()
+        # # # cellScalars.SetName("CellScalars") # used for store radius of the glyph
+        
+        
+        
+        # # # cellTypeIntAddr = self.extractAddressIntFromVtkObject(cellTypes)
+        # # # centroidPointsAddr = self.extractAddressIntFromVtkObject(centroidPoints)
+        # # # cellScalarsAddr = self.extractAddressIntFromVtkObject(cellScalars)
+        
+        
+        # # # self.parentWidget.fieldExtractor.fillCellFieldData2D(cellTypeIntAddr ,centroidPointsAddr, cellScalarsAddr, plane ,   planePos)          
+# # # #        cellVolumes = vtk.vtkIntArray()
+# # # #        cellVolumes.SetName("CellVolumes")
+        # # # # # # from random import random
+        # # # # # # for j in xrange(dim[1]+1):
+            # # # # # # for i in xrange(dim[0]+1):
+                # # # # # # ptVec[0]=i;
+                # # # # # # ptVec[1]=j;
+                # # # # # # ptVec[2]=planePos;        
+
+
+                # # # # # # pt.x=ptVec[pointOrderVec[0]];
+                # # # # # # pt.y=ptVec[pointOrderVec[1]];
+                # # # # # # pt.z=ptVec[pointOrderVec[2]];            
+                
+                # # # # # # cellStack=cellFieldS.get(pt)                  
+                # # # # # # if not cellStack:
+                    # # # # # # pass
+                    # # # # # # # print 'pt=',pt, ' cellStack=',cellStack
+                # # # # # # else:
+                    # # # # # # # print 'pt=',pt, ' cellStack=',cellStack
+                    # # # # # # # # # cell=cellStack.getCellByIdx(0)                            
+                    # # # # # # # # # centroidPoints.InsertNextPoint(i+random(),j+random(),0.0)
+                    
+                    # # # # # # # # # cellTypes.InsertNextValue(cell.type)                    
+                    # # # # # # # # # cellScalars.InsertNextValue(1.0)                     
+
+                    
+                    # # # # # # size=cellStack.getFillLevel()
+                    
+                    # # # # # # for idx in xrange(size):
+                        # # # # # # cell=cellStack.getCellByIdx(idx)                            
+                        # # # # # # # print 'firstCell.id=',cell.id,' type=',cell.type                    
+                        # # # # # # if size>1:
+                            # # # # # # centroidPoints.InsertNextPoint(i+random(),j+random(),0.0)
+                        # # # # # # else:
+                            # # # # # # centroidPoints.InsertNextPoint(i,j,0.0)
+                        # # # # # # cellTypes.InsertNextValue(cell.type)                    
+                        # # # # # # cellScalars.InsertNextValue(0.5) 
+                    
+                    # # # # # # # type=cell.type
+            
+        # # # centroidsPD = vtk.vtkPolyData()
+        # # # centroidsPD.SetPoints(centroidPoints)
+        # # # centroidsPD.GetPointData().SetScalars(cellTypes)        
+        # # # centroidsPD.GetPointData().AddArray(cellScalars)  # scale by ~radius
+
+        # # # centroidGS = vtk.vtkGlyphSource2D()
+        # # # centroidGS.SetGlyphTypeToCircle()
+        # # # # #centroidGS.SetScale(1)
+        # # # # #gs.FilledOff()
+        # # # # #gs.CrossOff()
+
+        # # # centroidGlyph = vtk.vtkGlyph3D()
+        # # # if VTK_MAJOR_VERSION>=6:
+            # # # centroidGlyph.SetInputData(centroidsPD)
+        # # # else:    
+            # # # centroidGlyph.SetInput(centroidsPD)
+        
+        # # # centroidGlyph.SetSource(centroidGS.GetOutput())
+# # # #        centroidGlyph.SetScaleFactor( 0.2 )  # rwh: should this lattice size dependent or cell vol or ?
+        # # # # # # glyphScale = Configuration.getSetting("CellGlyphScale")
+        # # # # # # centroidGlyph.SetScaleFactor( glyphScale )
+        # # # centroidGlyph.SetScaleFactor( True )
+        # # # #centroidGlyph.SetIndexModeToScalar()
+        # # # #centroidGlyph.SetRange(0,2)
+
+        # # # #centroidGlyph.SetScaleModeToDataScalingOff()
+        # # # centroidGlyph.SetColorModeToColorByScalar()
+        # # # centroidGlyph.SetScaleModeToScaleByScalar()
+        # # # centroidGlyph.SetRange(0,self.celltypeLUTMax)
+
+        # # # centroidGlyph.SetInputArrayToProcess(3,0,0,0,"CellTypes")
+# # # #        centroidGlyph.SetInputArrayToProcess(0,0,0,0,"CellVolumes")
+        # # # centroidGlyph.SetInputArrayToProcess(0,0,0,0,"CellScalars")
+
+        # # # if VTK_MAJOR_VERSION>=6:
+            # # # self.cellGlyphsMapper.SetInputData(centroidGlyph.GetOutput())
+        # # # else:    
+            # # # self.cellGlyphsMapper.SetInput(centroidGlyph.GetOutput())
+        
+        # # # self.cellGlyphsMapper.SetScalarRange(0,self.celltypeLUTMax)
+        # # # self.cellGlyphsMapper.ScalarVisibilityOn()
+        # # # self.cellGlyphsMapper.SetLookupTable(self.celltypeLUT)
+        
+        # # # cellGlyphActor.SetMapper(self.cellGlyphsMapper)
+            
+        
+        # # # return
+    
+
+
     def initCellGlyphsActor2D(self,cellGlyphActor):
 #        print MODULENAME,'  initCellGlyphsActor2D'
+
+        if self.graphicsFrameWidget.modelSpecificDrawModel2D:
+           self.graphicsFrameWidget.modelSpecificDrawModel2D.initCellGlyphsActor2D( cellGlyphActor)
+           return
+
+        # # # if CompuCellSetup.playerModel==PLAYER_CA:
+            # # # print '\n\n\n GOT PLAYER CA'    
+            # # # # self.drawCellFieldCA(_bsd, fieldType)
+            # # # self.initCellGlyphsActor2DCA(cellGlyphActor)
+            # # # return
 
         from PySteppables import CellList
 
@@ -2834,14 +3141,14 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 
     def initCellFieldActorsData(self,_actors):
         import string
-        
+        # print 'self.dim=',self.dim
         dim=[self.dim[0]+1,self.dim[1]+1,self.dim[2]+1]
 #        dim = [self.dim[0],self.dim[1],self.dim[2]]  #rwh
 #        print MODULENAME,'  initCellFieldActorsData(),   dim=',dim
         
         uGridConc = vtk.vtkStructuredPoints()
         uGridConc.SetDimensions(dim[0],dim[1],dim[2])
-        
+        # print 'self.cellType=',self.cellType
         uGridConc.GetPointData().SetScalars(self.cellType)
         
         cellsPlane=vtk.vtkImageDataGeometryFilter()

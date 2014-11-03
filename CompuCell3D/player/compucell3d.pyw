@@ -97,8 +97,14 @@ def main(argv):
     import CompuCellSetup
     
     CompuCellSetup.playerType="new" # the value of CompuCellSetup.playerType (can be "new" or "old") determines which PlayerPython module will be loaded. For the new player we want PlayerPythonNew
-    import PlayerPython # from now on import PlayerPython will import PlayerPythonNew
-    
+    import enums
+    # CompuCellSetup.playerModel=enums.PLAYER_CA    
+    # if CompuCellSetup.playerModel == enums.PLAYER_CPM:  
+    try:
+        import PlayerPython # from now on import PlayerPython will import PlayerPythonNew
+    except ImportError,e:
+        print 'Could not import PlayerPython: ', e
+        
     app.processEvents()
 
     print 'compucell3d.pyw:   type(argv)=',type(argv)
@@ -132,6 +138,8 @@ def main(argv):
             Configuration.setPrefsFile(a)
             # Configuration.mySettings = QSettings(QSettings.IniFormat, QSettings.UserScope, "Biocomplexity", a)
             # Configuration.setSetting("PreferencesFile", a)            
+    
+
     
     
     from UI.UserInterface import UserInterface    
