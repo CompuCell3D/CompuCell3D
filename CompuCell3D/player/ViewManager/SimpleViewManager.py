@@ -30,6 +30,8 @@ class SimpleViewManager():
         self.initActions()
         self.ui = ui
    
+        self.submenuDict = {}
+        
     def initFileMenu(self):
         menu = QMenu(QApplication.translate('ViewManager', '&File'), self.ui)
         menu.addAction(self.openAct)
@@ -44,6 +46,7 @@ class SimpleViewManager():
         # menu.addAction(self.closeAct)
         menu.addSeparator()
         recentSimulationsMenu=menu.addMenu("Recent Simulations...")
+        self.submenuDict['Recent Simulations...'] = recentSimulationsMenu
         menu.addSeparator()
         menu.addAction(self.exitAct)
         

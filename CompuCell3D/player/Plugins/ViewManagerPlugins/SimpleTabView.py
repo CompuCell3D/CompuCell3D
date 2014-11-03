@@ -2833,6 +2833,34 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                     self.rollbackImporter.uninstall()
                     
                 self.rollbackImporter = RollbackImporter()
+                
+    def updateActions(self):
+        if self.simulationIsRunning or self.simulationIsStepping or not self.pauseAct.isEnabled():
+            self.openScreenshotDescriptionAct.setEnabled(False)
+            self.submenuDict['Recent Simulations...'].menuAction().setEnabled(False)
+            
+        if not self.stopAct.isEnabled():
+            self.openScreenshotDescriptionAct.setEnabled(True)
+            self.submenuDict['Recent Simulations...'].menuAction().setEnabled(True)
+            
+        if self.modeltype == 'CA':
+            self.borderAct.setEnabled(False)
+            self.clusterBorderAct.setEnabled(False)
+            self.cellGlyphsAct.setEnabled(False)
+            self.FPPLinksAct.setEnabled(False)
+            self.cellGlyphsAct.setEnabled(False)
+        elif self.modeltype == 'CPM':            
+            self.borderAct.setEnabled(True)
+            self.clusterBorderAct.setEnabled(True)
+            self.cellGlyphsAct.setEnabled(True)
+            self.FPPLinksAct.setEnabled(True)
+            self.cellGlyphsAct.setEnabled(True)
+            
+        # menuDictionary=  self.ui.getMenusDictionary()
+        # fileMenu = menuDictionary['file']
+        # print 'fileMenu=',fileMenu    
+        # print 'self.ui = ',self.ui.menuBar()
+        # sys.exit()    
         
     def __runSim(self):
     
@@ -2945,6 +2973,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                 self.openLDSAct.setEnabled(False)
                 
                 self.simulation.start()
+                self.updateActions()
 
 
             if  self.completedFirstMCS and Configuration.getSetting("LatticeOutputOn") and not self.cmlHandlerCreated:  #rwh
@@ -2960,7 +2989,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                 self.simulation.semPause.release()
                 self.stepAct.setEnabled(False)
                 self.pauseAct.setEnabled(False)
-                
+                self.updateActions()
                 return
             
             # if Pause button is enabled
@@ -2979,7 +3008,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                 self.simulation.screenUpdateFrequency = 1
                 self.simulation.screenshotFrequency = self.__shotFrequency
                 self.simulationIsStepping = True
-                
+                self.updateActions()
                 return
                 
                 
@@ -3340,7 +3369,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             print 'self.simulation.setStopSimulation TRUE\n\n'     
             self.simulation.setStopSimulation(True)
         
-            
+        self.updateActions()
+       
     def __simulationSerialize(self):        
         print self.simulation.restartManager        
         currentStep=self.simulation.sim.getStep()        
