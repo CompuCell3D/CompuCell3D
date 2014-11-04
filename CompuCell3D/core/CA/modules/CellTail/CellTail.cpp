@@ -27,7 +27,9 @@ void CellTail::init(CAManager *_caManager){
 
 }
 void CellTail::field3DChange(CACell *_movingCell, CACellStack *_sourceCellStack,CACellStack *_targetCellStack){
-
+	 if (! _sourceCellStack || ! _targetCellStack) 	return; //we only tun this is target and source stacks are non-zero
+	 cerr<<"moving cell ="<<_movingCell<<" id="<<_movingCell->id<<" source pt="<<_sourceCellStack<<" target pt="<<_targetCellStack<<endl;
+	 cerr<<"moving cell ="<<_movingCell<<" id="<<_movingCell->id<<" source pt="<<_sourceCellStack->getLocation()<<" target pt="<<_targetCellStack->getLocation()<<endl;
 }
 //void CellTail::field3DChange(CACell *_movingCell, CACellStack *_sourceCellStack,CACellStack *_targetCellStack){
 //    cerr<<"moving cell ="<<_movingCell<<" id="<<_movingCell->id<<" source pt="<<_sourceCellStack->getLocation()<<" target pt="<<_targetCellStack->getLocation()<<endl;

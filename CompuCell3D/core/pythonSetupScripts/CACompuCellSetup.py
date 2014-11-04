@@ -14,11 +14,32 @@ class CASimulationPy(object):
         self.probabilityFunctionRegistry={}    
         self.steppableRegistry = OrderedDict() # {steppablename:[list of steppables with a given name]}
         self.steppableBeforeMCSRegistry = OrderedDict() # {steppablename:[list of steppables with a given name]}
+        self.fieldChangeWatcherRegistry = {}
         
 #         self.pySteppableRegistry = {}
 #         self.pySteppableBeforeMCSRegistry = {}
     
+    def registerFieldChangeWatcher(self,_fieldChangeWatcher):
+        _fieldChangeWatcher.init(self.caManager)
+        self.fieldChangeWatcherRegistry[_fieldChangeWatcher.toString()] = _fieldChangeWatcher
         
+        self.caManager.registerCACellStackFieldChangeWatcher(_fieldChangeWatcher)
+        return _fieldChangeWatcher
+        
+        
+    def registerFieldChangeWatcherByName(self,_fieldChangeWatcherName):
+        try:
+            exec("from "+_fieldChangeWatcherName+" import "+_fieldChangeWatcherName+"\n")
+            fieldChangeWatcher=eval(_fieldChangeWatcherName+"()")
+            self.fieldChangeWatcherRegistry[fieldChangeWatcher.toString()]=fieldChangeWatcher                
+            fieldChangeWatcher.init(self.caManager)
+            self.caManager.registerCACellStackFieldChangeWatcher(fieldChangeWatcher)
+            return fieldChangeWatcher
+        except ImportError:
+            print 'COULD NOT IMPORT ',_fieldChangeWatcherName        
+            return None
+    
+    
     def registerProbabilityFunction(self,_probFunction):
         _probFunction.init(self.caManager)
         self.probabilityFunctionRegistry[_probFunction.toString()] = _probFunction
@@ -79,7 +100,8 @@ class CASimulationPy(object):
     def registerBeforeMCSSolver(self,_steppable):
         return self.registerBeforeSteppable(_steppable)
         
-
+    
+    
     def registerSteppableByName(self,_steppableName):
         
         try:
