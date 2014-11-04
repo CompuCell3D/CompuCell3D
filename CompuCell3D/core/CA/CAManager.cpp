@@ -1,7 +1,7 @@
 #include "CAManager.h"
 #include "CACell.h"
 #include "CACellStack.h"
-#include "CACellFieldChangeWatcher.h"
+#include "CACellStackFieldChangeWatcher.h"
 #include "ProbabilityFunction.h"
 
 #include <CompuCell3D/Field3D/Dim3D.h>
@@ -19,6 +19,8 @@
 #include <string>
 #include <PublicUtilities/Algorithms_CC3D.h>
 
+
+
 #include <algorithm>
 //#define _DEBUG
 
@@ -26,7 +28,7 @@ using namespace std;
 using namespace CompuCell3D;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 CAManager::CAManager():
-cellField(0),
+//cellField(0),
 cellFieldS(0),
 recentlyCreatedCellId(1),
 recentlyCreatedClusterId(1),
@@ -128,8 +130,8 @@ void CAManager::createCellField(const Dim3D & _dim){
     cerr<<"creating field"<<endl;
     cerr<<"Will create field of dimension="<<_dim<<endl;
 #endif
-	RUNTIME_ASSERT_OR_THROW("CA: createCellField() cell field already created!", !cellField);
-	cellField = new WatchableField3D<CACell *>(_dim, 0); //added    
+	//RUNTIME_ASSERT_OR_THROW("CA: createCellField() cell field already created!", !cellField);
+	//cellField = new WatchableField3D<CACell *>(_dim, 0); //added    
 
 	RUNTIME_ASSERT_OR_THROW("CA: createCellField() cell field S already created!", !cellFieldS);
 	cellFieldS = new WatchableField3D<CACellStack *>(_dim, 0); //added    
@@ -143,26 +145,34 @@ CACellInventory * CAManager::getCellInventory(){
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//WatchableField3D<CACell *> * CAManager::getCellField(){
+Field3D<CACellStack *> * CAManager::getCellField(){
+	return getCellFieldS();
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Field3D<CACell *> * CAManager::getCellField(){
 //	return cellField;
 //}
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Field3D<CACell *> * CAManager::getCellField(){
-	return cellField;
-}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Field3D<CACellStack *> * CAManager::getCellFieldS(){
 	return cellFieldS;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void CAManager::registerCellFieldChangeWatcher(CACellFieldChangeWatcher * _watcher){
-	RUNTIME_ASSERT_OR_THROW("registerCellFieldChangeWatcher _watcher cannot be NULL!",_watcher);
-	RUNTIME_ASSERT_OR_THROW("registerCellFieldChangeWatcher cellField cannot be NULL!",cellField);
+void CAManager::registerCACellStackFieldChangeWatcher(CACellStackFieldChangeWatcher * _watcher){
+	RUNTIME_ASSERT_OR_THROW("registerCACellStackFieldChangeWatcher _watcher cannot be NULL!",_watcher);
+	//RUNTIME_ASSERT_OR_THROW("registerCellFieldChangeWatcher cellField cannot be NULL!",cellField);
 
-	cellField->addChangeWatcher(_watcher); 
+	caCellStackWatcherRegistry.push_back(_watcher);
 
 }
+
+//void CAManager::registerCellFieldChangeWatcher(CACellFieldChangeWatcher * _watcher){
+//	RUNTIME_ASSERT_OR_THROW("registerCellFieldChangeWatcher _watcher cannot be NULL!",_watcher);
+//	RUNTIME_ASSERT_OR_THROW("registerCellFieldChangeWatcher cellField cannot be NULL!",cellField);
+//
+//	cellField->addChangeWatcher(_watcher); 
+//
+//}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void CAManager::setCellToDelete(CACell * _cell){ 
 	//sets ptr of a cell to be deleted
@@ -211,50 +221,52 @@ void CAManager::destroyCell(CACell *  _cell, bool _removeFromInventory){
 	}
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void CAManager::positionCell(const Point3D &_pt,CACell *  _cell){
-	if (!_cell) return; 
-
-	//when we move cell to a different location, in CA we set its previous site to NULL ptr because CA cell can only occupy one lattice site 
-	if (_cell->xCOM >= 0 ){
-		//when cell has been initialized and allocated at least c to a lattice site (_cell->xCOM  is > 0) that when we move cell to a different location we have to assign old cell's site to NULL pointer
-		cellField->set(Point3D(_cell->xCOM,_cell->yCOM,_cell->zCOM),0); 
-	}
-
-	cellField->set(_pt,_cell); 
-	cleanup(); // in CA each repositionning of cell has high chance of overwritting (hence deleting) another cell. Therefore we call cleanup often
-
-}
+//void CAManager::positionCell(const Point3D &_pt,CACell *  _cell){
+//	if (!_cell) return; 
+//
+//	//when we move cell to a different location, in CA we set its previous site to NULL ptr because CA cell can only occupy one lattice site 
+//	if (_cell->xCOM >= 0 ){
+//		//when cell has been initialized and allocated at least c to a lattice site (_cell->xCOM  is > 0) that when we move cell to a different location we have to assign old cell's site to NULL pointer
+//		cellField->set(Point3D(_cell->xCOM,_cell->yCOM,_cell->zCOM),0); 
+//	}
+//
+//	cellField->set(_pt,_cell); 
+//	cleanup(); // in CA each repositionning of cell has high chance of overwritting (hence deleting) another cell. Therefore we call cleanup often
+//
+//}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-CACell * CAManager::createAndPositionCell(const Point3D & pt, long _clusterId){
-	
-	RUNTIME_ASSERT_OR_THROW("CA: createAndPositionCell cell field needs to be created first!", cellField);
-	RUNTIME_ASSERT_OR_THROW("createCell() cellField point out of range!", cellField->isValid(pt));
-	
-	CACell * cell=createCell(_clusterId);
-	positionCell(pt, cell);
-
-	//cellField->set(pt, cell);
-	return cell;
-}
+//CACell * CAManager::createAndPositionCell(const Point3D & pt, long _clusterId){
+//	
+//	RUNTIME_ASSERT_OR_THROW("CA: createAndPositionCell cell field needs to be created first!", cellField);
+//	RUNTIME_ASSERT_OR_THROW("createCell() cellField point out of range!", cellField->isValid(pt));
+//	
+//	CACell * cell=createCell(_clusterId);
+//	positionCell(pt, cell);
+//
+//	//cellField->set(pt, cell);
+//	return cell;
+//}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void CAManager::positionCellS(const Point3D &_pt,CACell *  _cell){
 	if (!_cell) return; 
-	CACellStack * cellStack = cellFieldS->get(_pt);
+	CACellStack * targetCellStack = cellFieldS->get(_pt);
 	
 #ifdef _DEBUG
 	cerr<<"cellStack ="<<cellStack <<endl;
+	cerr<<"_cell->xCOM ="<<_cell->xCOM <<endl;
 #endif
 
+	CACellStack * sourceCellStack = 0;
 	if (_cell->xCOM >= 0){
 		//here we remove cell from its current location in the field of cell stacks
-		CACellStack * currentStack = cellFieldS->get(Point3D(_cell->xCOM,_cell->yCOM,_cell->zCOM));		
-		currentStack->deleteCell(_cell);
+		sourceCellStack = cellFieldS->get(Point3D(_cell->xCOM,_cell->yCOM,_cell->zCOM));		
+		sourceCellStack->deleteCell(_cell);
 	}
 
 	//here we assign cell to new cell stack
-	if (! cellStack ){
-		cellStack = new CACellStack(cellCarryingCapacity);
-		cellFieldS->set(_pt,cellStack);
+	if (! targetCellStack ){
+		targetCellStack = new CACellStack(cellCarryingCapacity,_pt);
+		cellFieldS->set(_pt,targetCellStack);
 	}
 
 
@@ -262,8 +274,15 @@ void CAManager::positionCellS(const Point3D &_pt,CACell *  _cell){
 	_cell->yCOM=_pt.y;
 	_cell->zCOM=_pt.z;
 
-	cellToDelete = cellStack ->appendCellForce(_cell);
+	cellToDelete = targetCellStack ->forceAppendCell(_cell);
 
+	//after we move cell we have to run all CACellStackFieldWatchers
+	for (unsigned int i = 0 ; i < caCellStackWatcherRegistry.size() ; ++i){
+		
+		caCellStackWatcherRegistry[i]->field3DChange(_cell,sourceCellStack,targetCellStack);
+		//caCellStackWatcherRegistry[i]->field3DChange(_cell,sourceCellStack,targetCellStack);
+	}
+		
 	if (cellToDelete){
 		cerr<<" will be deleteing cell = "<<cellToDelete->id<<" cellToDelete="<<cellToDelete<<"  at location="<<_pt<<endl;
 	}
@@ -473,7 +492,7 @@ void CAManager::runCAAlgorithm(int _mcs){
 			 
 			double prob = 0.0;
 			for (unsigned int pdx = 0 ; pdx < probFcnRegistry.size() ; ++pdx ){			
-				prob += probFcnRegistry[pdx]->calculate(pt , n.pt);
+				prob += probFcnRegistry[pdx]->calculate(cell, pt , n.pt);
 			}
 			
 			//cerr<<"idx="<<idx<<" prob="<<prob<<endl;			

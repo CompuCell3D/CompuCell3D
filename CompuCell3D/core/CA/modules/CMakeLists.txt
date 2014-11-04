@@ -35,6 +35,7 @@ INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
 # # # INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include)
 # # # INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_DIR})
 
-add_subdirectory(CenterOfMassmonitor)  
+# add_subdirectory(CenterOfMassMonitor)  
 add_subdirectory(CanonicalProbability)  
 add_subdirectory(CAPDESolvers)  
+add_subdirectory(CellTail)

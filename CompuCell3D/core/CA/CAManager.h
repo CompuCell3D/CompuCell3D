@@ -20,7 +20,7 @@ class BasicRandomNumberGeneratorNonStatic ;
 namespace CompuCell3D {
 class Dim3D;
 class Point3D;
-class CACellFieldChangeWatcher;
+class CACellStackFieldChangeWatcher;
 
   template<typename T>
   class WatchableField3D;
@@ -46,19 +46,19 @@ class CASHARED_EXPORT CAManager{
 
         void createCellField(const Dim3D & _dim);
 		void destroyCell(CACell *  _cell, bool _flag=true);
-		CACell * createAndPositionCell(const Point3D &pt, long _clusterId=-1);
+		//CACell * createAndPositionCell(const Point3D &pt, long _clusterId=-1);
 		CACell * createAndPositionCellS(const Point3D & pt, long _clusterId=-1);
 
 		//cell creation functions
 		void registerClassAccessor(BasicClassAccessorBase *_accessor);
 		void registerPythonAttributeAdderObject(PyObject *_attrAdder);
         CACell * createCell(long _clusterId=-1);
-		void registerCellFieldChangeWatcher(CACellFieldChangeWatcher * _watcher);
-		//WatchableField3D<CACell *> * getCellField();
-        Field3D<CACell *> * getCellField();
+		void registerCACellStackFieldChangeWatcher(CACellStackFieldChangeWatcher * _watcher);
+		Field3D<CACellStack *> * getCellField();
+        
 		Field3D<CACellStack *> * getCellFieldS();
 
-		void positionCell(const Point3D &_pt,CACell *  _cell);
+		//void positionCell(const Point3D &_pt,CACell *  _cell);
 		void positionCellS(const Point3D &_pt,CACell *  _cell); //positions cells in the stack field
 
 
@@ -105,7 +105,7 @@ class CASHARED_EXPORT CAManager{
     protected:
 		BasicClassGroupFactory cellFactoryGroup;
 
-        WatchableField3D<CACell *> *cellField;
+        //WatchableField3D<CACell *> *cellField;
 		WatchableField3D<CACellStack *> *cellFieldS;
 		int cellCarryingCapacity;
 		float maxProb;
@@ -125,6 +125,8 @@ class CASHARED_EXPORT CAManager{
 
 		std::map<std::string,Field3D<float>*> concentrationFieldNameMap;
 		std::vector<PyObject *> attrAdderPyObjectVec;
+
+		std::vector<CACellStackFieldChangeWatcher *> caCellStackWatcherRegistry;
 
 		
 };

@@ -17,11 +17,11 @@ int main(){
 		cerr<<"inside main"<<endl;
 		CAManager caManager;
     
-		caManager.createCellField(Dim3D(10,10,10));
+		//caManager.createCellField(Dim3D(10,10,10));
 
-		CACell *cell =  caManager.createAndPositionCell(Point3D(9,0,1));
+		//CACell *cell =  caManager.createAndPositionCell(Point3D(9,0,1));
     
-		cerr<<"cell->type="<<(int)cell->type<<endl;
+		//cerr<<"cell->type="<<(int)cell->type<<endl;
 
 	}catch (BasicException & e){
 		cerr<<e<<endl;

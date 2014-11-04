@@ -15,11 +15,11 @@ using namespace std;
 namespace CompuCell3D {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-CACellStack::CACellStack(int _capacity):
+CACellStack::CACellStack(int _capacity,Point3D _pt):
 fillLevel(0),
-capacity(_capacity)
+capacity(_capacity),
+pt(_pt)
 {
-
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -28,16 +28,18 @@ CACellStack::~CACellStack(){
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool CACellStack::appendCell(CACell * _cell){
-	if (isFull()) return false;
+CACell * CACellStack::appendCell(CACell * _cell){
+	if (isFull()) return 0;
 	stack[_cell->id]=_cell;
+	fillLevel += _cell->size;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-CACell * CACellStack::appendCellForce(CACell * _cell){
+CACell * CACellStack::forceAppendCell(CACell * _cell){
 	CACell * removedCell=0;
 #ifdef _DEBUG
 	cerr<<"CACellStack capacity="<<capacity<<endl;
+	cerr<<"isFull()="<<isFull()<<endl;
 #endif
 	if (isFull()){
 		//removing last entry
@@ -46,9 +48,14 @@ CACell * CACellStack::appendCellForce(CACell * _cell){
 		removedCell=mitr->second;
 
 		stack.erase(mitr);
+
+		fillLevel -= removedCell->size;
 	}
 
 	appendCell(_cell);
+
+	fillLevel += _cell->size;
+
 	return removedCell; 
 }
 
@@ -60,6 +67,7 @@ void CACellStack::deleteCell(CACell * _cell){
 	std::map<long,CACell *>::iterator mitr=stack.find(_cell->id);
 	if (mitr != stack.end()){
 		stack.erase(mitr);
+		fillLevel -= mitr->second->size;
 	}
 	
 }

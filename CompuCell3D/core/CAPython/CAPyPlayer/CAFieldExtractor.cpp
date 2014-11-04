@@ -138,10 +138,11 @@ void CAFieldExtractor::fillCellFieldData2D(long _cellTypeArrayAddr , long _centr
 
             cellStack = cellField->get(pt);
 			if (cellStack){
-				int size = cellStack->getFillLevel();
-				for (int idx  = 0 ; idx < size ; ++idx){
+				
+				unsigned int numCells = cellStack->getNumCells();
+				for (unsigned int idx  = 0 ; idx < numCells ; ++idx){
 					CACell * cell = cellStack->getCellByIdx(idx);
-					_centroidPoints -> InsertNextPoint(i+idx/(float)size,j+idx/(float)size,0.0);
+					_centroidPoints -> InsertNextPoint(i+idx/(float)numCells,j+idx/(float)numCells,0.0);
 					_cellTypeArray->InsertNextValue(cell->type);
 					_scaleRadiusArray ->InsertNextValue(0.5); //or now we use size 0.5 for all glyphs this might change 
 
@@ -173,10 +174,10 @@ void CAFieldExtractor::fillCellFieldData3D(long _cellTypeArrayAddr , long _centr
 		
 				cellStack = cellField->get(pt);
 				if (cellStack){
-					int size = cellStack->getFillLevel();
-					for (int idx  = 0 ; idx < size ; ++idx){
+					unsigned int numCells = cellStack->getNumCells();
+					for (int idx  = 0 ; idx < numCells ; ++idx){
 						CACell * cell = cellStack->getCellByIdx(idx);
-						_centroidPoints -> InsertNextPoint(pt.x+idx/(float)size,pt.y+idx/(float)size,pt.z+idx/(float)size);
+						_centroidPoints -> InsertNextPoint(pt.x+idx/(float)numCells,pt.y+idx/(float)numCells,pt.z+idx/(float)numCells);
 						_cellTypeArray->InsertNextValue(cell->type);
 						_scaleRadiusArray ->InsertNextValue(0.5); //or now we use size 0.5 for all glyphs this might change 
 

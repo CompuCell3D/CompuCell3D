@@ -26,6 +26,7 @@ namespace CompuCell3D {
 		xCOMPrev(-1),yCOMPrev(-1),zCOMPrev(-1),
         id(0),
         clusterId(0),
+		size(1),
         extraAttribPtr(0),
         pyAttrib(0)
       {}
@@ -34,7 +35,7 @@ namespace CompuCell3D {
 	  long xCOMPrev,yCOMPrev,zCOMPrev; // previous center of mass 
       long id; //id of a cell
       long clusterId; //clusterId to which cell belongs - for now notused but I keep it just in case
-
+	  int size; //size of the cell
       BasicClassGroup *extraAttribPtr;
 
       PyObject *pyAttrib;

@@ -30,7 +30,7 @@ SET(CMAKE_SWIG_FLAGS "")
 
 IF(SWIG_FOUND)
 
-    SET(LIBS_AUX CenterOfMassMonitorShared)
+    # SET(LIBS_AUX CenterOfMassMonitorShared)
     
     if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
         SET(LIBS

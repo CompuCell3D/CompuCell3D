@@ -33,7 +33,7 @@ void CanonicalProbability::init(CAManager *_caManager){
 std::string CanonicalProbability::toString(){return "CanonicalProbability";}
 
 
-float CanonicalProbability::calculate(const Point3D & _source, const Point3D & _target){
+float CanonicalProbability::calculate(const CACell * _sourceCell, const Point3D & _source, const Point3D & _target){
 	
 	
 

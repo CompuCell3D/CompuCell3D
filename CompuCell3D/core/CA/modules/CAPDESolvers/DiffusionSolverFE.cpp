@@ -184,11 +184,11 @@ void DiffusionSolverFE::secreteSingleField(int i){
 
 					currentConcentration = concentrationField.getDirect(x,y,z);
 
-					int fillLevel = cellStack->getFillLevel();
+					unsigned int numCells = cellStack->getNumCells();
 					//cerr<<"fillLevel="<<fillLevel<<" pt="<<pt<<endl;
 					//cerr<<"currentConcentration="<<currentConcentration<<endl;
 
-					for (int i = 0 ; i < fillLevel ; ++i){
+					for (unsigned int i = 0 ; i < numCells ; ++i){
 						CACell * cell = cellStack->getCellByIdx(i);
 						//cerr<<"cell->type="<<(int)cell->type<<endl;
 						//cerr<<"secr const="<<secrData.secretionConst[cell->type]<<endl;

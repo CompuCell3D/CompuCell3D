@@ -30,7 +30,7 @@ SET(CMAKE_SWIG_FLAGS "")
 
 IF(SWIG_FOUND)
     add_subdirectory(CC3DXML)
-    # # # if(NOT BUILD_CA)
+    if(NOT BUILD_CA)
         add_subdirectory(CompuCellPython)
         
     # if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)        
@@ -53,7 +53,7 @@ IF(SWIG_FOUND)
         add_subdirectory(PyPlugin)
         add_subdirectory(Example)
         add_subdirectory(Fields)
-    # # # endif(NOT BUILD_CA)
+    endif(NOT BUILD_CA)
     
 if(USE_DOLFIN)    
     add_subdirectory(dolfinCC3D)

@@ -30,7 +30,7 @@
 
 //necessary to get registration of change watcher working in Python
 #include <CompuCell3D/Field3D/Field3DChangeWatcher.h>
-#include <CA/CACellFieldChangeWatcher.h>
+#include <CA/CACellStackFieldChangeWatcher.h>
 
 
 // Namespaces
@@ -122,5 +122,5 @@ using namespace CompuCell3D;
 %include <CompuCell3D/Field3D/Field3DChangeWatcher.h>
 %template (Field3DChangeWatcherTemplate) CompuCell3D::Field3DChangeWatcher<CACell*>;
 
-%include <CA/CACellFieldChangeWatcher.h>
+%include <CA/CACellStackFieldChangeWatcher.h>
 

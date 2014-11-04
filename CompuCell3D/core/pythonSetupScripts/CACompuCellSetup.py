@@ -147,35 +147,11 @@ class CASimulationPy(object):
         self.caManager.setNumSteps(self.numSteps)
         
         self.caManager.createCellField(self.dim)
-        self.cellField = self.caManager.getCellField()
+        self.cellField = self.caManager.getCellFieldS()
         
-        import CenterOfMassMonitor
-
-        self.moduleRegistry['CenterOfMassMonitor']=CenterOfMassMonitor.CenterOfMassMonitor()    
-
-        print "self.moduleRegistry['CenterOfMassMonitor']=",self.moduleRegistry['CenterOfMassMonitor']
-        print 'dir=',dir(self.moduleRegistry['CenterOfMassMonitor'])
-#         sys.exit()
-        self.moduleRegistry['CenterOfMassMonitor'].init(self.caManager)
-        self.caManager.registerCellFieldChangeWatcher(self.moduleRegistry['CenterOfMassMonitor'])        
-
-        print 'self.dim=',self.dim 
-        print 'self.globalCarryingCapacity=',self.globalCarryingCapacity
+        # print 'self.dim=',self.dim 
+        # print 'self.globalCarryingCapacity=',self.globalCarryingCapacity
         
-#     def createCAManager(self, fieldDim):
-        
-#         import CA
-#         self.caManager=CA.CAmanager()
-        
-#         if fieldDim.x != 1 and fieldDim.y != 1 and fieldDim.z != 1:
-#             self.neighborOrder = 3
-            
-#         self.caManager.setNeighborOrder(self.neighborOrder)
-        
-#     def setGlobalCarryingCapacity(self, _carryingCapacity):
-#         caManager.setCellCarryingCapacity(carryingCapacity)
-    
-    
     def mainLoop(self):
         import CompuCellSetup
         simthread=CompuCellSetup.simulationThreadObject
