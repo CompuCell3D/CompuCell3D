@@ -30,7 +30,10 @@ public:
 	DiffusionData * getDiffusionData(std::string _fieldName);
 	SecretionData * getSecretionData(std::string _fieldName);
 	int findIndexForFieldName(std::string _fieldName);
-	void step(int mcs);
+
+	virtual void start();
+	virtual void step(int mcs);
+	virtual std::string toString();
 
 private:
 	Dim3D workFieldDim;

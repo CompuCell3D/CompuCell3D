@@ -20,6 +20,7 @@
 //enables better handling of STL exceptions
 %include "exception.i"
 
+//this imports core objects that are shared between different modules
 %import "CoreObjects.i"
 
 %include "typemaps.i"
@@ -53,12 +54,12 @@
 #include <CA/CACellStack.h>
 
 //necessary to get registration of change watcher working in Python
-#include <CompuCell3D/Field3D/Field3DChangeWatcher.h>
-#include <CA/CACellFieldChangeWatcher.h>
+// // // #include <CompuCell3D/Field3D/Field3DChangeWatcher.h>
+// // // #include <CA/CACellFieldChangeWatcher.h>
 
 
 //CA modules
-#include <CA/modules/CenterOfMassMonitor.h>
+// // // #include <CA/modules/CenterOfMassMonitor.h>
 
 
 
@@ -155,7 +156,7 @@ using namespace CompuCell3D;
 #define BOUNDARYSHARED_EXPORT
 
 //modules #defines
-#define CENTEROFMASSMONITOR_EXPORT
+// // // #define CENTEROFMASSMONITOR_EXPORT
 
 
 // %include <dolfin/mesh/Mesh.h>
@@ -297,10 +298,10 @@ using namespace CompuCell3D;
 //%ignore CompuCell3D::Field3D<float>::typeStr;
 //%template(floatfield) CompuCell3D::Field3D<float>;
 
-%include <CompuCell3D/Field3D/Field3DChangeWatcher.h>
-%template (Field3DChangeWatcherTemplate) Field3DChangeWatcher<CACell*>;
+// // // %include <CompuCell3D/Field3D/Field3DChangeWatcher.h>
+// // // %template (Field3DChangeWatcherTemplate) Field3DChangeWatcher<CACell*>;
 
-%include <CA/CACellFieldChangeWatcher.h>
+// // // %include <CA/CACellFieldChangeWatcher.h>
 
 
 %inline %{
@@ -368,5 +369,5 @@ public:
 
 
 //CA modules
-%include <CA/modules/CenterOfMassMonitor.h>
+// // // %include <CA/modules/CenterOfMassMonitor.h>
 

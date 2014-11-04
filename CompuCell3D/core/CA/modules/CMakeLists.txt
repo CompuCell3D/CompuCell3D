@@ -1,19 +1,19 @@
-SET (SRCS CenterOfMassMonitor.cpp)
+# # # SET (SRCS CenterOfMassMonitor.cpp)
 
-INCLUDE_DIRECTORIES ( 
-    ${COMPUCELL3D_SOURCE_DIR}/core
-    )
+# # # INCLUDE_DIRECTORIES ( 
+    # # # ${COMPUCELL3D_SOURCE_DIR}/core
+    # # # )
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-   ADD_SHARED_LIBRARY(CenterOfMassMonitor ${SRCS} LINK_LIBRARIES CAShared)
-   # ADD_SHARED_LIBRARY(CA ${SRCS})
-else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-   # ADD_SHARED_LIBRARY(CA ${SRCS})
-   ADD_SHARED_LIBRARY(CenterOfMassMonitor ${SRCS} LINK_LIBRARIES CAShared)
-endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+# # # if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+   # # # ADD_SHARED_LIBRARY(CenterOfMassMonitor ${SRCS} LINK_LIBRARIES CAShared)
+   # # # # ADD_SHARED_LIBRARY(CA ${SRCS})
+# # # else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+   # # # # ADD_SHARED_LIBRARY(CA ${SRCS})
+   # # # ADD_SHARED_LIBRARY(CenterOfMassMonitor ${SRCS} LINK_LIBRARIES CAShared)
+# # # endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
-INSTALL_FILES(/include/CompuCell3D/CA/modules .h
-  CenterOfMassMonitor)
+# # # INSTALL_FILES(/include/CompuCell3D/CA/modules .h
+  # # # CenterOfMassMonitor)
 
 # here we setup SWIG for all subdirectories  
 include(${COMPUCELL3D_SOURCE_DIR}/core/pyinterface/FindSWIG.cmake) # this is slightly modified FindSWIG.cmake file -  had to tune it to work with OSX
@@ -35,5 +35,6 @@ INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
 # # # INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include)
 # # # INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_DIR})
 
+add_subdirectory(CenterOfMassmonitor)  
 add_subdirectory(CanonicalProbability)  
 add_subdirectory(CAPDESolvers)  

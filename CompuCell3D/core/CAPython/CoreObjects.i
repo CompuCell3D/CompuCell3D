@@ -28,6 +28,10 @@
 
 #include <CompuCell3D/Field3D/Field3D.h>
 
+//necessary to get registration of change watcher working in Python
+#include <CompuCell3D/Field3D/Field3DChangeWatcher.h>
+#include <CA/CACellFieldChangeWatcher.h>
+
 
 // Namespaces
 using namespace std;
@@ -114,4 +118,9 @@ using namespace CompuCell3D;
 };
 
 %template(vectorfloat) std::vector<float>;
+
+%include <CompuCell3D/Field3D/Field3DChangeWatcher.h>
+%template (Field3DChangeWatcherTemplate) CompuCell3D::Field3DChangeWatcher<CACell*>;
+
+%include <CA/CACellFieldChangeWatcher.h>
 
