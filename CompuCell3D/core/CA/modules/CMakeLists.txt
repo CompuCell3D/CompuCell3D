@@ -37,5 +37,6 @@ INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
 
 # add_subdirectory(CenterOfMassMonitor)  
 add_subdirectory(CanonicalProbability)  
+add_subdirectory(ChemotaxisProbability)
 add_subdirectory(CAPDESolvers)  
 add_subdirectory(CellTail)

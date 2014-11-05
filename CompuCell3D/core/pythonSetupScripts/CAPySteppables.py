@@ -63,12 +63,13 @@ class CellListIterator(object):
 # iterating ofver inventory of cells of a given type
 class CellListByType:
     def __init__(self,_inventory,*args):            
-        import CA
+        from CA import mapLongCACellPtr
+        from CoreObjects import vectorint 
         self.inventory = _inventory
         
-        self.types=CA.vectorint()
+        self.types=vectorint()
         
-        self.inventoryByType=CA.mapLongCACellPtr()
+        self.inventoryByType=mapLongCACellPtr()
         
         self.initTypeVec(args)
         self.inventory.initCellInventoryByMultiType(self.inventoryByType , self.types)  

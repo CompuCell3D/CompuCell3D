@@ -363,8 +363,8 @@ public:
 
 %template (mapLongCACellPtrPyItr) STLPyIteratorMap<std::map<long, CompuCell3D::CACell *>, CompuCell3D::CACell *>;
 
-%template(vectorstring) std::vector<std::string>;
-%template(vectorint) std::vector<int>;
+//////%template(vectorstring) std::vector<std::string>;
+//////%template(vectorint) std::vector<int>;
 %template(vectorCACellPtr) std::vector<CACell*>;
 
 

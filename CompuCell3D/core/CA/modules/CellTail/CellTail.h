@@ -31,6 +31,9 @@ namespace CompuCell3D {
    CAManager *caManager;
    Field3D<CACell *> * cellField;
 
+   std::map<unsigned char,std::pair<unsigned char, int> > movingTypeId2TailTypeIdMap;
+   typedef std::map<unsigned char,std::pair<unsigned char, int> >::iterator mitr_t;
+
 
 
 
@@ -40,6 +43,7 @@ namespace CompuCell3D {
     virtual ~CellTail();
     
 	void init(CAManager *_caManager);
+	void setMovingCellTrail(std::string _movingCellType, std::string _tailCellType,int _tailCellSize=1);
 
     // CACellStackFieldChangeWatcherinterface
     virtual void field3DChange(CACell *_movingCell, CACellStack *_sourceCellStack,CACellStack *_targetCellStack);  

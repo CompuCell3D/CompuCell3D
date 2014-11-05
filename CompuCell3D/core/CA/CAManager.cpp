@@ -11,6 +11,7 @@
 
 #include <BasicUtils/BasicRandomNumberGenerator.h>
 
+
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 
 #include <CompuCell3D/Boundary/BoundaryTypeDefinitions.h>
@@ -53,7 +54,43 @@ maxProb(1.0)
 	
 
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+std::string CAManager::getTypeName(const char _type) const{
+  std::map<unsigned char,std::string>::const_iterator typeNameMapItr=id2TypeName.find((const unsigned char)_type);
 
+  
+  if(typeNameMapItr!=id2TypeName.end()){
+      return typeNameMapItr->second;
+  }else{
+	  ostringstream ostr;
+	  ostr<<(int)_type;
+
+      RUNTIME_ASSERT_OR_THROW("getTypeName: Unknown cell type"+ostr.str(),false);
+	  //RUNTIME_ASSERT_OR_THROW("CA: createCellField() cell field S already created!", !cellFieldS);
+  }
+	
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+unsigned char CAManager::getTypeId(const std::string _typeName) const{
+  std::map<std::string,unsigned char>::const_iterator nameTypeMapItr=typeName2Id.find(_typeName);
+  
+  
+  if(nameTypeMapItr!=typeName2Id.end()){
+      return nameTypeMapItr->second;
+  }else{
+      RUNTIME_ASSERT_OR_THROW("getTypeName: Unknown cell type  " + _typeName + "!",false);
+  }
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CAManager::setTypeNameTypeId(std::string _typeName, unsigned char _typeId){
+	id2TypeName.insert(make_pair(_typeId,_typeName));
+	typeName2Id.insert(make_pair(_typeName,_typeId));
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CAManager::clearCellTypeInfo(){
+	id2TypeName.clear();
+	typeName2Id.clear();
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void CAManager::registerProbabilityFunction(ProbabilityFunction * _fcn){
 	probFcnRegistry.push_back(_fcn);
@@ -387,7 +424,18 @@ void CAManager::setNeighborOrder(int _no){
 int CAManager::getNeighborOrder(){
 	return neighborOrder;
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CAManager::setFrozenType(unsigned char _type){
+	frozenTypesSet.insert(_type);
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+std::vector<unsigned char> CAManager::getFrozenTypeVec(){
+	return vector<unsigned char>(frozenTypesSet.begin(),frozenTypesSet.end());
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool CAManager::isFrozen(unsigned char _type){
+	return frozenTypesSet.find(_type) != frozenTypesSet.end();
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void CAManager::setMaxProb(float _maxProb){
 	maxProb=_maxProb;
@@ -472,7 +520,8 @@ void CAManager::runCAAlgorithm(int _mcs){
 	cerr<<"cellVecSize ="<<cellVecSize <<endl;
 	 for (long int i= 0 ; i < cellVecSize ; ++i){
 		 CACell * cell = cellVector[i];
-			 
+		 if (isFrozen(cell->type)) continue;
+
 		 probVec = zeroVec;
 		 //cerr<<"cell="<<cell<<" type="<<(int)cell->type<<" id="<<cell->id<<endl;
 		 pt.x = cell->xCOM;
@@ -494,7 +543,7 @@ void CAManager::runCAAlgorithm(int _mcs){
 			for (unsigned int pdx = 0 ; pdx < probFcnRegistry.size() ; ++pdx ){			
 				prob += probFcnRegistry[pdx]->calculate(cell, pt , n.pt);
 			}
-			
+			if (prob<0.0) prob=0.0; //if probability is negative means we have e.g. strong chemical gradient and are considereing move in the opposite direction in this case we set prob to 0
 			//cerr<<"idx="<<idx<<" prob="<<prob<<endl;			
 			 probVec[idx] = prob;
 			 neighborVec[idx] = n.pt;

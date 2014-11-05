@@ -3,6 +3,7 @@
 
 
 #include <string>
+#include <CA/CASteppable.h>
 #include "DiffusableVectorCommon.h"
 #include "DiffSecrData.h"
 #include "CAPDESolversDLLSpecifier.h"
@@ -12,7 +13,7 @@ namespace CompuCell3D {
 
 class CAManager;
 
-class CAPDESOLVERS_EXPORT DiffusionSolverFE :
+class CAPDESOLVERS_EXPORT DiffusionSolverFE :public CASteppable, 
 	 public DiffusableVectorCommon<float, Array3DContiguous>
 {
 	
@@ -31,9 +32,12 @@ public:
 	SecretionData * getSecretionData(std::string _fieldName);
 	int findIndexForFieldName(std::string _fieldName);
 
-	virtual void start();
-	virtual void step(int mcs);
+	//CASteppable API
+    virtual void start();
+    virtual void step(const unsigned int currentStep) ;
 	virtual std::string toString();
+    
+    
 
 private:
 	Dim3D workFieldDim;

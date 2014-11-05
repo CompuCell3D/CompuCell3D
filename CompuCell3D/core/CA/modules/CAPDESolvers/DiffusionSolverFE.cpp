@@ -8,7 +8,7 @@ using namespace std;
 using namespace CompuCell3D;
 
 
-DiffusionSolverFE::DiffusionSolverFE(void):DiffusableVectorCommon<float, Array3DContiguous>(),caManager(0)
+DiffusionSolverFE::DiffusionSolverFE(void):CASteppable(),DiffusableVectorCommon<float, Array3DContiguous>(),caManager(0)
 {
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -63,7 +63,7 @@ void DiffusionSolverFE::createFields(Dim3D _dim, std::vector<string> _fieldNames
 
 		//setting up fieldName2Index dictionary
 		fieldName2Index.insert(make_pair(fieldName,i));
-		this->getConcentrationField(i)->set(Point3D(10,10,i*10),20.0);
+		//this->getConcentrationField(i)->set(Point3D(10,10,i*10),20.0);
 	}
 
 
@@ -202,7 +202,7 @@ void DiffusionSolverFE::secreteSingleField(int i){
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void DiffusionSolverFE::step(int mcs){
+void DiffusionSolverFE::step(const unsigned int){
 
 	int numberOfFields=diffDataVec.size();
 

@@ -118,9 +118,14 @@ using namespace CompuCell3D;
 };
 
 %template(vectorfloat) std::vector<float>;
+%template(vectorunsignedchar) std::vector<unsigned char>;
+%template(vectorstring) std::vector<std::string>;
+%template(vectorint) std::vector<int>;
+
+//%template(vectorCACellPtr) std::vector<CACell*>;
+//%template(mapLongCACellPtr)std::map<long,CACell *> ;
 
 %include <CompuCell3D/Field3D/Field3DChangeWatcher.h>
 %template (Field3DChangeWatcherTemplate) CompuCell3D::Field3DChangeWatcher<CACell*>;
 
 %include <CA/CACellStackFieldChangeWatcher.h>
-

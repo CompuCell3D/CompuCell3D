@@ -9,6 +9,7 @@
 #include "CADLLSpecifier.h"
 #include "CACellInventory.h"
 #include <vector>
+#include <set>
 #include <string>
 
 #include <Python.h>
@@ -102,6 +103,19 @@ class CASHARED_EXPORT CAManager{
 		Field3D<float>* getConcentrationField(std::string _fieldName);
 		std::vector<std::string> getConcentrationFieldNameVector();
 
+		void setFrozenType(unsigned char _type);
+		std::vector<unsigned char> getFrozenTypeVec();
+		bool isFrozen(unsigned char _type);
+
+	    std::string getTypeName(const char _type) const;
+		unsigned char getTypeId(const std::string _typeName) const;
+		void setTypeNameTypeId(std::string _typeName, unsigned char _typeId);
+        void clearCellTypeInfo();
+
+
+
+
+
     protected:
 		BasicClassGroupFactory cellFactoryGroup;
 
@@ -127,6 +141,9 @@ class CASHARED_EXPORT CAManager{
 		std::vector<PyObject *> attrAdderPyObjectVec;
 
 		std::vector<CACellStackFieldChangeWatcher *> caCellStackWatcherRegistry;
+		std::set<unsigned char> frozenTypesSet;
+		std::map<std::string, unsigned char> typeName2Id;
+		std::map<unsigned char, std::string> id2TypeName;
 
 		
 };

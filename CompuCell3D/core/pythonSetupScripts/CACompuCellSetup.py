@@ -7,6 +7,8 @@ class CASimulationPy(object):
         self.simthread =None
         self.cellField=None
         self.numSteps=0
+        self.cellTypeDict = {} # {id:[celltypename,frozen(bool)]}
+        self.inverseCellTypeDict = {} # {celltypeName:[id,frozen(bool)]}
         from PyDictAdder import DictAdder        
         self.dictAdder=DictAdder()
         
@@ -18,7 +20,34 @@ class CASimulationPy(object):
         
 #         self.pySteppableRegistry = {}
 #         self.pySteppableBeforeMCSRegistry = {}
-    
+
+    def setCellTypeInfo(self,_cellTypeDict):
+        #resetting dictionaries
+        self.cellTypeDict = {}
+        self.inverseCellTypeDict = {}
+        self.caManager.clearCellTypeInfo()
+        
+        for typeId, cellTypeName , in _cellTypeDict.iteritems():                    
+            self.cellTypeDict[typeId] = [cellTypeName,False]
+            self.inverseCellTypeDict[cellTypeName] =  [typeId, False]
+            self.caManager.setTypeNameTypeId(cellTypeName,typeId)
+            
+    def setFrozenTypes(self,_frozenTypeList):
+        for typename in _frozenTypeList:
+            try:
+                self.inverseCellTypeDict[typename][1]=True                
+                id=self.inverseCellTypeDict[typename][0]
+                self.cellTypeDict[id][1]=True
+            except LookupError:
+                pass    
+            except IndexError:
+                pass
+                
+        for typeid,typeInfo in self.cellTypeDict.iteritems():
+            if typeInfo[1]==True : #frozen flag is set
+                print 'SETTING FROZEN TYPE ID = ',typeid                
+                self.caManager.setFrozenType(typeid)
+                
     def registerFieldChangeWatcher(self,_fieldChangeWatcher):
         _fieldChangeWatcher.init(self.caManager)
         self.fieldChangeWatcherRegistry[_fieldChangeWatcher.toString()] = _fieldChangeWatcher

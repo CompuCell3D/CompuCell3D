@@ -117,7 +117,8 @@ using namespace CompuCell3D;
 //////
 //////%include <CA/modules/PDESolvers/DiffusableVectorCommon.h>
 //////
-%template(stdvectorstring) std::vector<std::string>;
+
+//////%template(stdvectorstring) std::vector<std::string>;
 
 //%ignore CompuCell3D::SecretionData::secretionConst;
 %include <CA/modules/CAPDESolvers/DiffSecrData.h>
