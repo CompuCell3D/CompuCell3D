@@ -60,7 +60,7 @@ class CASHARED_EXPORT CAManager{
 		Field3D<CACellStack *> * getCellFieldS();
 
 		//void positionCell(const Point3D &_pt,CACell *  _cell);
-		void positionCellS(const Point3D &_pt,CACell *  _cell); //positions cells in the stack field
+		bool positionCellS(const Point3D &_pt,CACell *  _cell); //positions cells in the stack field
 
 
 
@@ -76,6 +76,7 @@ class CASHARED_EXPORT CAManager{
 		int getCurrentStep();
 		void step(int i);
 		
+		virtual void extraInit();
 
 		void cleanAfterSimulation();
 

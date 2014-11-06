@@ -9,7 +9,7 @@ namespace CompuCell3D {
   class CACellStack;
   
   class CACellStackFieldChangeWatcher {
-    public:
+    public:	
     virtual void field3DChange(CACell *_movingCell, CACellStack *_sourceCellStack,CACellStack *_targetCellStack){} 
   };
 

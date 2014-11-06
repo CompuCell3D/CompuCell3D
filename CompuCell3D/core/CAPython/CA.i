@@ -351,8 +351,6 @@ public:
 
             ++current;
          }
-
-
     }
 };
 %}

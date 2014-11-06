@@ -23,6 +23,10 @@ void CellTail::init(CAManager *_caManager){
 	RUNTIME_ASSERT_OR_THROW("CellTail::init _caManager cannot be NULL!",_caManager);
 	caManager=_caManager;		
 }
+//////////////////////////////////////////////////////////////////////////////////////////
+void CellTail::extraInit(){
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////
 void CellTail::setMovingCellTrail(std::string _movingCellType, std::string _tailCellType, int _tailCellSize){
@@ -40,22 +44,24 @@ void CellTail::field3DChange(CACell *_movingCell, CACellStack *_sourceCellStack,
 	 mitr_t mitr = movingTypeId2TailTypeIdMap.find(_movingCell->type);
 	 if (mitr !=  movingTypeId2TailTypeIdMap.end() ){
 		 int tailCellSize = mitr->second.second;
-		 int tailCelltype = mitr->second.first;
+		 int tailCellType = mitr->second.first;
 		 if (_sourceCellStack->getCapacity() - _sourceCellStack->getFillLevel() >= tailCellSize){
 
 			 bool createNewCellFlag=true;
 			 for (int i =  0 ; i < _sourceCellStack->getNumCells() ; ++i){
 				 CACell * cellS = _sourceCellStack->getCellByIdx(i);
-				 if (cellS->type == tailCelltype ){
+				 if (cellS->type == tailCellType ){
 					 createNewCellFlag=false; //we do not create tail if the cell like that already exists
 					 break;
 				 }
 			 }
 			 if (createNewCellFlag){
-				 CACell * cell = caManager->createCell();
-				 cell -> type = mitr->second.first;
-				 cerr<<"leaving trail with cell type="<<(int)cell -> type <<endl;
-				 _sourceCellStack ->forceAppendCell(cell);
+				 if (_sourceCellStack->canFit(tailCellSize)){
+					 CACell * cell = caManager->createCell();
+					 cell -> type = mitr->second.first;
+					 cerr<<"leaving trail with cell type="<<(int)cell -> type <<endl;
+					 _sourceCellStack ->appendCell(cell);
+				 }
 			 }
 		 }
 		 

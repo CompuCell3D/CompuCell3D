@@ -8,7 +8,7 @@ using namespace std;
 using namespace CompuCell3D;
 
 
-DiffusionSolverFE::DiffusionSolverFE(void):CASteppable(),DiffusableVectorCommon<float, Array3DContiguous>(),caManager(0)
+DiffusionSolverFE::DiffusionSolverFE(void):CASteppable(),DiffusableVectorCommon<float, Array3DContiguous>(),caManager(0),maxStableDiffConstant(0.23f)
 {
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -20,7 +20,11 @@ void DiffusionSolverFE::init(CAManager *_caManager){
 	caManager = _caManager;
 	
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void DiffusionSolverFE::extraInit(){
+	//called right before simulation run to finish initialization
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE::start(){
 	cerr<<"INSIDE "<<toString()<<endl;
 }

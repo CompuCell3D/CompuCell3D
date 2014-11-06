@@ -3,6 +3,7 @@
 
  
 #include <CompuCell3D/Field3D/Dim3D.h>
+#include <CA/SimulationObject.h>
 #include <CA/CACellStackFieldChangeWatcher.h>
 
 
@@ -21,7 +22,7 @@ namespace CompuCell3D {
   class Field3D;  
 
 
-  class CELLTAIL_EXPORT CellTail : public CACellStackFieldChangeWatcher {
+  class CELLTAIL_EXPORT CellTail : public SimulationObject, public CACellStackFieldChangeWatcher {
     
     
   private:
@@ -42,13 +43,16 @@ namespace CompuCell3D {
     CellTail();
     virtual ~CellTail();
     
-	void init(CAManager *_caManager);
+	virtual void init(CAManager *_caManager);		        
+	virtual void extraInit();
+    virtual std::string toString();		
+
 	void setMovingCellTrail(std::string _movingCellType, std::string _tailCellType,int _tailCellSize=1);
 
     // CACellStackFieldChangeWatcherinterface
     virtual void field3DChange(CACell *_movingCell, CACellStack *_sourceCellStack,CACellStack *_targetCellStack);  
 	
-    virtual std::string toString();
+
 	// virtual std::string steerableName();
   };
 };

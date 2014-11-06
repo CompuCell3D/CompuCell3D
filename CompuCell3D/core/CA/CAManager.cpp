@@ -55,6 +55,11 @@ maxProb(1.0)
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CAManager::extraInit(){
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::string CAManager::getTypeName(const char _type) const{
   std::map<unsigned char,std::string>::const_iterator typeNameMapItr=id2TypeName.find((const unsigned char)_type);
 
@@ -284,8 +289,9 @@ void CAManager::destroyCell(CACell *  _cell, bool _removeFromInventory){
 //	return cell;
 //}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void CAManager::positionCellS(const Point3D &_pt,CACell *  _cell){
-	if (!_cell) return; 
+bool CAManager::positionCellS(const Point3D &_pt,CACell *  _cell){
+
+	if (!_cell) return false; 
 	CACellStack * targetCellStack = cellFieldS->get(_pt);
 	
 #ifdef _DEBUG
@@ -297,7 +303,7 @@ void CAManager::positionCellS(const Point3D &_pt,CACell *  _cell){
 	if (_cell->xCOM >= 0){
 		//here we remove cell from its current location in the field of cell stacks
 		sourceCellStack = cellFieldS->get(Point3D(_cell->xCOM,_cell->yCOM,_cell->zCOM));		
-		sourceCellStack->deleteCell(_cell);
+		sourceCellStack->removeCell(_cell);
 	}
 
 	//here we assign cell to new cell stack
@@ -306,27 +312,72 @@ void CAManager::positionCellS(const Point3D &_pt,CACell *  _cell){
 		cellFieldS->set(_pt,targetCellStack);
 	}
 
+	//initialization of COM takes place in the CellStack
+	//_cell->xCOM=_pt.x;
+	//_cell->yCOM=_pt.y;
+	//_cell->zCOM=_pt.z;
 
-	_cell->xCOM=_pt.x;
-	_cell->yCOM=_pt.y;
-	_cell->zCOM=_pt.z;
+	bool appendSuccessful = targetCellStack->appendCell(_cell);
+    if (!appendSuccessful) return appendSuccessful;
+    
+    
+    //after we move cell we have to run all CACellStackFieldWatchers
+    for (unsigned int i = 0 ; i < caCellStackWatcherRegistry.size() ; ++i){
+        
+        caCellStackWatcherRegistry[i]->field3DChange(_cell,sourceCellStack,targetCellStack);
+        //caCellStackWatcherRegistry[i]->field3DChange(_cell,sourceCellStack,targetCellStack);
+    }
+	return true;
+	// if (cellToDelete){
+		// cerr<<" will be deleteing cell = "<<cellToDelete->id<<" cellToDelete="<<cellToDelete<<"  at location="<<_pt<<endl;
+	// }
+// #ifdef _DEBUG
+	// cerr<<"from appendCelLForce cellToDelete = "<<cellToDelete <<endl;
+// #endif
+	// cleanup(); // in CA each repositionning of cell has high chance of overwritting (hence deleting) another cell. Therefore we call cleanup often
+	
+	// // // if (!_cell) return; 
+	// // // CACellStack * targetCellStack = cellFieldS->get(_pt);
+	
+// // // #ifdef _DEBUG
+	// // // cerr<<"cellStack ="<<cellStack <<endl;
+	// // // cerr<<"_cell->xCOM ="<<_cell->xCOM <<endl;
+// // // #endif
 
-	cellToDelete = targetCellStack ->forceAppendCell(_cell);
+	// // // CACellStack * sourceCellStack = 0;
+	// // // if (_cell->xCOM >= 0){
+		// // // //here we remove cell from its current location in the field of cell stacks
+		// // // sourceCellStack = cellFieldS->get(Point3D(_cell->xCOM,_cell->yCOM,_cell->zCOM));		
+		// // // sourceCellStack->deleteCell(_cell);
+	// // // }
 
-	//after we move cell we have to run all CACellStackFieldWatchers
-	for (unsigned int i = 0 ; i < caCellStackWatcherRegistry.size() ; ++i){
+	// // // //here we assign cell to new cell stack
+	// // // if (! targetCellStack ){
+		// // // targetCellStack = new CACellStack(cellCarryingCapacity,_pt);
+		// // // cellFieldS->set(_pt,targetCellStack);
+	// // // }
+
+
+	// // // _cell->xCOM=_pt.x;
+	// // // _cell->yCOM=_pt.y;
+	// // // _cell->zCOM=_pt.z;
+
+	// // // cellToDelete = targetCellStack ->forceAppendCell(_cell);
+
+	// // // //after we move cell we have to run all CACellStackFieldWatchers
+	// // // for (unsigned int i = 0 ; i < caCellStackWatcherRegistry.size() ; ++i){
 		
-		caCellStackWatcherRegistry[i]->field3DChange(_cell,sourceCellStack,targetCellStack);
-		//caCellStackWatcherRegistry[i]->field3DChange(_cell,sourceCellStack,targetCellStack);
-	}
+		// // // caCellStackWatcherRegistry[i]->field3DChange(_cell,sourceCellStack,targetCellStack);
+		// // // //caCellStackWatcherRegistry[i]->field3DChange(_cell,sourceCellStack,targetCellStack);
+	// // // }
 		
-	if (cellToDelete){
-		cerr<<" will be deleteing cell = "<<cellToDelete->id<<" cellToDelete="<<cellToDelete<<"  at location="<<_pt<<endl;
-	}
-#ifdef _DEBUG
-	cerr<<"from appendCelLForce cellToDelete = "<<cellToDelete <<endl;
-#endif
-	cleanup(); // in CA each repositionning of cell has high chance of overwritting (hence deleting) another cell. Therefore we call cleanup often
+	// // // if (cellToDelete){
+		// // // cerr<<" will be deleteing cell = "<<cellToDelete->id<<" cellToDelete="<<cellToDelete<<"  at location="<<_pt<<endl;
+	// // // }
+// // // #ifdef _DEBUG
+	// // // cerr<<"from appendCelLForce cellToDelete = "<<cellToDelete <<endl;
+// // // #endif
+	// // // cleanup(); // in CA each repositionning of cell has high chance of overwritting (hence deleting) another cell. Therefore we call cleanup often
 	
 
 	////when we move cell to a different location, in CA we set its previous site to NULL ptr because CA cell can only occupy one lattice site 

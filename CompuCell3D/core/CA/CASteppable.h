@@ -3,7 +3,7 @@
 
 #include <CompuCell3D/Field3D/Point3D.h>
 #include <CompuCell3D/Field3D/Dim3D.h>
-
+#include "SimulationObject.h"
 
 namespace CompuCell3D{
 
@@ -15,7 +15,7 @@ namespace CompuCell3D{
   template<typename T>
   class Field3D;
   
-  class CASteppable {
+  class CASteppable :public SimulationObject {
   public:
     int frequency;
 

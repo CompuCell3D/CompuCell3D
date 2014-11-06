@@ -23,7 +23,7 @@ public:
 	virtual ~DiffusionSolverFE(void);
     std::string printSolverName();
 	void createFields(Dim3D _dim, std::vector<string> _fieldNamesVec);
-	void init(CAManager *_caManager);
+
 
 	void diffuseSingleField(int i=0);
 	void secreteSingleField(int i=0);
@@ -33,6 +33,8 @@ public:
 	int findIndexForFieldName(std::string _fieldName);
 
 	//CASteppable API
+	virtual void init(CAManager *_caManager);
+	virtual void extraInit();
     virtual void start();
     virtual void step(const unsigned int currentStep) ;
 	virtual std::string toString();
@@ -45,7 +47,8 @@ private:
 	std::vector<DiffusionData> diffDataVec;
 	std::vector<SecretionData> secretionDataVec;
 	std::map<std::string,unsigned int> fieldName2Index;
-		
+	float maxStableDiffConstant;
+
 };
 
 };//CompuCell3D 

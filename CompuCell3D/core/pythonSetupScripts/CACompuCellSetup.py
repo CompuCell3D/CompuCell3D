@@ -158,7 +158,15 @@ class CASimulationPy(object):
             
         for steppable in self.steppablesBeforeMCS():
             steppable.start()
-    
+            
+    def extraInit(self):        
+        for steppable in self.steppables():
+            try:
+                steppable.extraInit() #not all steppables will have extra init e.g. Python steppables may not have this
+            except AttributeError:
+                pass
+
+
     def step(self, i):        
         for steppable in self.steppables():
             steppable.step(i) 
@@ -215,6 +223,8 @@ class CASimulationPy(object):
         # # #     steppableRegistry.start()
 
 
+        self.extraInit() #calling extrainit
+        
         simthread.postStartInit()
         simthread.waitForPlayerTaskToFinish()
 

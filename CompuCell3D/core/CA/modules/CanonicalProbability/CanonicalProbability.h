@@ -25,7 +25,7 @@ namespace CompuCell3D{
 
 
 
-        //ProbabilityFunction interface
+        //ProbabilityFunction interface - skipping extraInit
         virtual void init(CAManager *_caManager);
         virtual std::string toString();
         virtual float calculate(const CACell * _sourceCell,const Point3D & _source, const Point3D & _target);    
