@@ -23,6 +23,7 @@ public:
 	virtual ~DiffusionSolverFE(void);
     std::string printSolverName();
 	void createFields(Dim3D _dim, std::vector<string> _fieldNamesVec);
+	void addFields(std::vector<string> _fieldNamesVec);
 
 
 	void diffuseSingleField(int i=0);
@@ -46,6 +47,7 @@ private:
 	CAManager * caManager;
 	std::vector<DiffusionData> diffDataVec;
 	std::vector<SecretionData> secretionDataVec;
+	std::vector<string> fieldNamesVec;
 	std::map<std::string,unsigned int> fieldName2Index;
 	float maxStableDiffConstant;
 

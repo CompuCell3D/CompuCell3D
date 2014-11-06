@@ -124,4 +124,12 @@ using namespace CompuCell3D;
 %include <CA/modules/CAPDESolvers/DiffSecrData.h>
 %include <CA/modules/CAPDESolvers/DiffusionSolverFE.h>
 
+%extend CompuCell3D::DiffusionSolverFE{
+      %pythoncode %{
+    def addFieldsPy(self,_fieldList):
+        print '_fieldList=',_fieldList
+        self.addFields(['FGF','VEGF'])
+	%}
+};
+
 

@@ -23,6 +23,7 @@ void DiffusionSolverFE::init(CAManager *_caManager){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE::extraInit(){
 	//called right before simulation run to finish initialization
+
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE::start(){
@@ -39,9 +40,46 @@ std::string DiffusionSolverFE::printSolverName(){
     return string(" THIS IS DIFFUSION SOLVER FE");
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void DiffusionSolverFE::addFields(std::vector<string> _fieldNamesVec){
+
+	fieldNamesVec=_fieldNamesVec;
+
+	unsigned int numberOfFields = _fieldNamesVec.size();
+	Dim3D dim = caManager->getCellFieldS()->getDim();
+
+	this->allocateDiffusableFieldVector(numberOfFields ,dim); 
+
+	for (int i = 0 ;  i < _fieldNamesVec.size() ; ++i){
+		cerr<<"GOT THIS FIELD NAME"<<_fieldNamesVec[i]<<endl;
+	}
+
+	//allocating default DiffusionData vector
+	diffDataVec.clear();
+	diffDataVec.assign(numberOfFields ,DiffusionData());
+
+	//allocating default SecretionData vector
+	secretionDataVec.clear();
+	secretionDataVec.assign(numberOfFields ,  SecretionData() );
+
+	fieldName2Index.clear();
+
+	for(unsigned int i=0 ; i < numberOfFields  ; ++i){
+		string fieldName = _fieldNamesVec[i];
+		this->setConcentrationFieldName(i,fieldName);
+		caManager->registerConcentrationField(fieldName,getConcentrationField(i));
+
+		//setting up fieldName2Index dictionary
+		fieldName2Index.insert(make_pair(fieldName,i));
+		//this->getConcentrationField(i)->set(Point3D(10,10,i*10),20.0);
+	}
+
+
+	workFieldDim=this->getConcentrationField(0)->getInternalDim();
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE::createFields(Dim3D _dim, std::vector<string> _fieldNamesVec){
 	cerr<<"Dim3D = "<<_dim<<endl;
-
+	fieldNamesVec=_fieldNamesVec;
 	for (int i = 0 ;  i < _fieldNamesVec.size() ; ++i){
 		cerr<<"GOT THIS FIELD NAME"<<_fieldNamesVec[i]<<endl;
 	}

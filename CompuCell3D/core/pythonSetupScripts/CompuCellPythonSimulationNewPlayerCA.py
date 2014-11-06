@@ -301,7 +301,7 @@ except SyntaxError,e:
         sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
-    import PlayerPython
+#     import PlayerPython
     
     simthread.handleErrorFormatted(pythonTracebackFormatter())
     
@@ -313,7 +313,7 @@ except ValueError,e:
         sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
-    import PlayerPython
+#     import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     # simthread.handleErrorMessage("Python Value Error",traceback_message)
     simthread.handleErrorFormatted(pythonTracebackFormatter())
@@ -328,7 +328,7 @@ except TypeError,e:
         
     traceback_message=traceback.format_exc()
     print traceback_message
-    import PlayerPython
+#     import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     # simthread.handleErrorMessage("Python Type Error",traceback_message)    
     simthread.handleErrorFormatted(pythonTracebackFormatter())
@@ -340,7 +340,7 @@ except KeyError,e:
         sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
-    import PlayerPython
+#     import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     # simthread.handleErrorMessage("Python Key Error",traceback_message) 
     simthread.handleErrorFormatted(pythonTracebackFormatter())    
@@ -352,7 +352,7 @@ except IndexError,e:
         sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
-    import PlayerPython
+#     import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     # simthread.handleErrorMessage("Python Index Error",traceback_message)  
     simthread.handleErrorFormatted(pythonTracebackFormatter())
@@ -364,7 +364,7 @@ except LookupError,e:
         sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
-    import PlayerPython
+#     import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     # simthread.handleErrorMessage("Python Lookup Error",traceback_message)
     simthread.handleErrorFormatted(pythonTracebackFormatter())
@@ -392,7 +392,7 @@ except FloatingPointError,e:
         sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
-    import PlayerPython
+#     import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     # simthread.handleErrorMessage("Python Floating Point Error",traceback_message) 
     simthread.handleErrorFormatted(pythonTracebackFormatter())
@@ -404,7 +404,7 @@ except ZeroDivisionError,e:
         sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
-    import PlayerPython
+#     import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     # simthread.handleErrorMessage("Python Zero Division Error",traceback_message) 
     simthread.handleErrorFormatted(pythonTracebackFormatter())
@@ -428,7 +428,7 @@ except ArithmeticError,e:
         sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
-    import PlayerPython
+#     import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     # simthread.handleErrorMessage("Python Arithmetic Error",traceback_message)
     simthread.handleErrorFormatted(pythonTracebackFormatter())
@@ -440,7 +440,7 @@ except EOFError,e:
         sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
-    import PlayerPython
+#     import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     # simthread.handleErrorMessage("Python EOF Error",traceback_message)
     simthread.handleErrorFormatted(pythonTracebackFormatter())
@@ -452,7 +452,7 @@ except IOError,e:
         sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
-    import PlayerPython
+#     import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     # simthread.handleErrorMessage("Python IO Error",traceback_message)
     simthread.handleErrorFormatted(pythonTracebackFormatter())
@@ -464,7 +464,7 @@ except OSError,e:
         sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
-    import PlayerPython
+#     import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     # simthread.handleErrorMessage("Python OS Error",traceback_message)
     simthread.handleErrorFormatted(pythonTracebackFormatter())
@@ -505,7 +505,7 @@ except MemoryError,e:
         sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
-    import PlayerPython
+#     import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     # simthread.handleErrorMessage("Python Memory Error",traceback_message) 
     simthread.handleErrorFormatted(pythonTracebackFormatter())    
@@ -517,7 +517,7 @@ except ReferenceError,e:
         sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
-    import PlayerPython
+#     import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     # simthread.handleErrorMessage("Python Reference Error",traceback_message)
     simthread.handleErrorFormatted(pythonTracebackFormatter())
@@ -529,7 +529,7 @@ except RuntimeError,e:
         sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
-    import PlayerPython
+#     import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     # simthread.handleErrorMessage("Python Runtime Error",traceback_message)  
     simthread.handleErrorFormatted(pythonTracebackFormatter())
@@ -541,7 +541,7 @@ except SystemError,e:
         sim.cleanAfterSimulation()
     traceback_message=traceback.format_exc()
     print traceback_message
-    import PlayerPython
+#     import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     # simthread.handleErrorMessage("Python System Error",traceback_message)  
     simthread.handleErrorFormatted(pythonTracebackFormatter())
@@ -551,7 +551,7 @@ except ExpatError,e:
     if CompuCellSetup.simulationObjectsCreated:
         # sim.finish()
         sim.cleanAfterSimulation()
-    import PlayerPython
+#     import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     xmlFileName=CompuCellSetup.simulationPaths.simulationXMLFileName
     print "Error in XML File","File:\n "+xmlFileName+"\nhas the following problem\n"+e.message
@@ -599,7 +599,7 @@ except AssertionError,e:
     if CompuCellSetup.simulationObjectsCreated:
         # sim.finish()
         sim.cleanAfterSimulation()
-    import PlayerPython
+#     import PlayerPython
     # simthread=PlayerPython.getSimthreadBasePtr()
     print "Assertion Error: ",e.message
     # simthread.handleErrorMessage("Assertion Error",e.message)
