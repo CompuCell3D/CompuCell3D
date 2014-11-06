@@ -1,0 +1,5 @@
+<Simulation version="3.7.3" modeltype='CA'>
+   <PythonScript Type="PythonScript">Simulation/vascular_network.py</PythonScript>
+   <Resource Type="SBML">Simulation/oscli.sbml</Resource>
+   <Resource Type="DataFile">Simulation/VesselLocations.dat</Resource>
+</Simulation>
