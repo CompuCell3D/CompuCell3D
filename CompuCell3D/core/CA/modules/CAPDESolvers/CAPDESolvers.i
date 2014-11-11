@@ -128,8 +128,49 @@ using namespace CompuCell3D;
       %pythoncode %{
     def addFieldsPy(self,_fieldList):
         print '_fieldList=',_fieldList
-        self.addFields(['FGF','VEGF'])
+        self.addFields(['FGF','VEGF'])            
+	
+
+    def addField(self,*args,**kwds):
+        
+        try:
+            fieldName=kwds['Name']
+            self.addDiffusionAndSecretionData(fieldName)
+            diffData = self.getDiffusionData(fieldName)
+            secrData = self.getSecretionData(fieldName)
+        except LookupError:
+            raise AttributeError('The field you define needs to have a name! Use "Name" as an argument of the "addField" function')
+        
+        diffDataPy=None
+        secrDataPy=None
+        try:
+            diffDataPy=kwds['DiffusionData']
+        except LookupError:
+            pass 
+                
+        try:
+            secrDataPy=kwds['SecretionData']
+        except LookupError:
+            pass 
+
+        try:
+            diffData.diffConst = diffDataPy['DiffusionConstant']
+        except LookupError:
+            pass 
+
+        try:
+            diffData.decayConst = diffDataPy['DecayConstant']
+        except LookupError:
+            pass 
+
+        
+        for typeName in secrDataPy.keys():
+            
+            secrData.setTypeNameSecrConst(typeName,secrDataPy[typeName])
+
 	%}
+
+
 };
 
 

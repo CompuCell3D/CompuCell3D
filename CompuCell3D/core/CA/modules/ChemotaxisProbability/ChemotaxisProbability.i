@@ -80,3 +80,30 @@ using namespace CompuCell3D;
 %include <CA/ProbabilityFunction.h>
 %include <CA/modules/ChemotaxisProbability/ChemotaxisProbability.h>
 
+%extend CompuCell3D::ChemotaxisProbability{
+      %pythoncode %{
+
+    def addChemotaxisData(self,*args,**kwds):
+        
+        try:
+            fieldName=kwds['FieldName']
+        except LookupError:
+            raise LookupError('You need to specify chemical field for chemotaxis to work ! Use "FieldName" as an argument of the "addChemotaxisData" function')
+
+        try:
+            chemotaxingType=kwds['ChemotaxingType']
+        except LookupError:
+            raise LookupError('You need to specify chemotaxing cell type for chemotaxis to work ! Use "ChemotaxingType" as an argument of the "addChemotaxisData" function')
+        
+        try:
+            lambda_=kwds['Lambda']
+        except LookupError:
+            raise LookupError('You need to specify lambda chemotaxis for chemotaxis to work ! Use "Lambda" as an argument of the "addChemotaxisData" function')
+
+        self._addChemotaxisData(fieldName,chemotaxingType,float(lambda_))
+
+	%}
+
+
+};
+

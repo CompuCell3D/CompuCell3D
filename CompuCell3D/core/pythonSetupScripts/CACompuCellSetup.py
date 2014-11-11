@@ -13,10 +13,10 @@ class CASimulationPy(object):
         self.dictAdder=DictAdder()
         
         self.moduleRegistry={} # stores modules in the registry
-        self.probabilityFunctionRegistry={}    
+        self.probabilityFunctionRegistry=OrderedDict()    
         self.steppableRegistry = OrderedDict() # {steppablename:[list of steppables with a given name]}
         self.steppableBeforeMCSRegistry = OrderedDict() # {steppablename:[list of steppables with a given name]}
-        self.fieldChangeWatcherRegistry = {}
+        self.fieldChangeWatcherRegistry = OrderedDict()
         
 #         self.pySteppableRegistry = {}
 #         self.pySteppableBeforeMCSRegistry = {}
@@ -88,8 +88,7 @@ class CASimulationPy(object):
         except ImportError:
             print 'COULD NOT IMPORT ',_probFunctionName        
             return None
-    
-
+        
     def __registerModule(self,_module,_registry):
         try: # not all modules will havbe init function. only C++ steppables have it. Python steppables dont have this fcn
             _module.init(self.caManager)
@@ -123,9 +122,27 @@ class CASimulationPy(object):
         return self.__registerModule(_steppable,self.steppableBeforeMCSRegistry)
 
 
-    def registerSolver(self,_steppable):
-        return self.registerSteppable(_steppable)
+#     def registerSolver(self,_steppable):
+#         return self.registerSteppable(_steppable)
         
+    def registerSolver(self,_solver):
+        _solver.init(self.caManager)
+        self.registerSteppable(_solver)
+        return _solver        
+
+    def registerSolverByName(self,_solverName):
+        try:
+            if _solverName in ['DiffusionSolverFE']:
+                import CAPDESolvers
+                exec("from CAPDESolvers import "+_solverName+"\n")
+                solver=eval(_solverName+"()")
+                solver.init(self.caManager)
+                self.registerSolver(solver)                
+                return solver
+        except ImportError:
+            print 'COULD NOT IMPORT ',_solverName        
+            return None
+
     def registerBeforeMCSSolver(self,_steppable):
         return self.registerBeforeSteppable(_steppable)
         
@@ -160,6 +177,20 @@ class CASimulationPy(object):
             steppable.start()
             
     def extraInit(self):        
+        
+        for probFuncName, probFunc in  self.probabilityFunctionRegistry.iteritems():
+            try:
+                probFunc.extraInit() #not all probFunc will have extraInit 
+            except AttributeError:
+                pass
+            
+        for changeWatcherName, changeWatcher in self.fieldChangeWatcherRegistry.iteritems():
+            try:
+                changeWatcher.extraInit() #not all probFunc will have extraInit 
+            except AttributeError:
+                pass
+            
+        
         for steppable in self.steppables():
             try:
                 steppable.extraInit() #not all steppables will have extra init e.g. Python steppables may not have this
@@ -167,6 +198,29 @@ class CASimulationPy(object):
                 pass
 
 
+    def extraInit2(self):        
+
+        for probFuncName, probFunc in  self.probabilityFunctionRegistry.iteritems():
+            try:
+                probFunc.extraInit2() #not all probFunc will have extraInit 
+            except AttributeError:
+#                 print 'ISSUE WITH probFuncName=',probFuncName
+                pass
+            
+        for changeWatcherName, changeWatcher in self.fieldChangeWatcherRegistry.iteritems():
+            try:
+                changeWatcher.extraInit2() #not all probFunc will have extraInit 
+            except AttributeError:
+                pass
+
+        for steppable in self.steppables():
+            try:
+                steppable.extraInit2() #not all steppables will have extraInit1 e.g. Python steppables may not have this
+            except AttributeError:
+                pass
+
+        
+        
     def step(self, i):        
         for steppable in self.steppables():
             steppable.step(i) 
@@ -222,8 +276,11 @@ class CASimulationPy(object):
         # # # if not steppableRegistry is None:    
         # # #     steppableRegistry.start()
 
-
+        #first stage initialization
         self.extraInit() #calling extrainit
+        
+        #second stage initialization
+        self.extraInit2() #calling extrainit1
         
         simthread.postStartInit()
         simthread.waitForPlayerTaskToFinish()

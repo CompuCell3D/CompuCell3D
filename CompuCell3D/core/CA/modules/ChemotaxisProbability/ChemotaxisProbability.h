@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <CA/ProbabilityFunction.h>
 #include "ChemotaxisProbabilityDLLSpecifier.h"
 
@@ -26,6 +27,7 @@ namespace CompuCell3D{
 		float lambda;
 		unsigned char type;
 		std::string typeName;
+        std::string fieldName;
 		Field3D<float> * concField;
 
 	};
@@ -35,12 +37,13 @@ namespace CompuCell3D{
 		//std::map<std::string,std::vector<ChemotaxisData> > chemotaxisDataMap;
 
 		std::vector<std::vector<ChemotaxisData> > vecChemotaxisDataByType;
+        std::map<std::string, std::vector<ChemotaxisData> > mapType2ChemotaxisDataVec;
 	public:
     
         ChemotaxisProbability();
         virtual ~ChemotaxisProbability();
         //local API
-        void addChemotixisData(std::string _fieldName, std::string _typeName, float _lambda);
+        void _addChemotaxisData(std::string _fieldName, std::string _typeName, float _lambda);
 		void clearChemotaxisData();
 		float diffCoeff;
 		float deltaT;
@@ -49,6 +52,8 @@ namespace CompuCell3D{
 
         //ProbabilityFunction interface
         virtual void init(CAManager *_caManager);
+        virtual void extraInit();
+        virtual void extraInit2();
         virtual std::string toString();
         virtual float calculate(const CACell * _sourceCell,const Point3D & _source, const Point3D & _target);    
 

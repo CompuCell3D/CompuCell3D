@@ -31,8 +31,8 @@ class CAPDESOLVERS_EXPORT DiffusionData  {
 	  {}
       float diffConst;
       float decayConst; 
-
-
+      std::string name;
+      
       friend std::ostream & operator<<(std::ostream & out,CompuCell3D::DiffusionData & diffData);
 };
 
@@ -48,8 +48,12 @@ class CAPDESOLVERS_EXPORT SecretionData{
       }
 	  float getSecrConst(unsigned int i){return secretionConst[i];}
 	  void setSecrConst(unsigned int i,float val){secretionConst[i]=val;}
+      void setTypeNameSecrConst(std::string typeName,float val){secretionMap[typeName]=val;}
+
+      std::string name;
 
       std::vector<float>  secretionConst;
+      std::map<std::string, float> secretionMap;
 	  
 
 

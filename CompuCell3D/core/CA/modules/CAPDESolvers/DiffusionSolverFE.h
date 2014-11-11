@@ -25,6 +25,12 @@ public:
 	void createFields(Dim3D _dim, std::vector<string> _fieldNamesVec);
 	void addFields(std::vector<string> _fieldNamesVec);
 
+    void addDiffusionAndSecretionData(std::string _fieldName);
+
+    void initializeSolver();
+
+    void printConfiguration();
+    //SecretionData & addSecretionData();
 
 	void diffuseSingleField(int i=0);
 	void secreteSingleField(int i=0);
@@ -50,6 +56,7 @@ private:
 	std::vector<string> fieldNamesVec;
 	std::map<std::string,unsigned int> fieldName2Index;
 	float maxStableDiffConstant;
+    int fieldIdxCounter;
 
 };
 

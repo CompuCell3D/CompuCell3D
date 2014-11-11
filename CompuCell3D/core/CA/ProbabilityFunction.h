@@ -26,8 +26,9 @@ namespace CompuCell3D{
     public:
         ProbabilityFunction():caManager(0){}
 		//SimulationObject API
-        virtual void init(CAManager *_caManager){}
-		virtual void extraInit(){}
+  //      virtual void init(CAManager *_caManager){}
+		//virtual void extraInit(){}
+		//virtual void extraInit2(){}
         virtual std::string toString(){return "ProbabilityFunction";}
 
         virtual float calculate(const CACell * _sourceCell,const Point3D & _source, const Point3D & _target){return 1.0;};

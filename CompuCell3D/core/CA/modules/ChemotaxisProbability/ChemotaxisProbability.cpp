@@ -24,6 +24,29 @@ ProbabilityFunction()
 ChemotaxisProbability::~ChemotaxisProbability(){}
 
 //////////////////////////////////////////////////////////////////////////////////////////
+void ChemotaxisProbability::extraInit(){
+
+}
+//////////////////////////////////////////////////////////////////////////////////////////
+void ChemotaxisProbability::extraInit2(){
+    //chemotaxis has to initializedin stage 2 init call because it needs information abount cell type and diffusion fields
+
+    for (map<string, vector<ChemotaxisData> >::iterator mitr = mapType2ChemotaxisDataVec.begin() ; mitr != mapType2ChemotaxisDataVec.end() ; ++mitr){
+        vector<ChemotaxisData> & chemDataVec = mitr->second;
+        for (vector<ChemotaxisData>::iterator vitr= chemDataVec.begin() ; vitr != chemDataVec.end() ; ++vitr){
+            //here we are "translating" fieldna dn cell type names to pointers and unsigned chars respectively
+            ChemotaxisData & chemData = *vitr;
+            chemData.concField = caManager->getConcentrationField(chemData.fieldName);
+            chemData.type = caManager->getTypeId(chemData.typeName);
+
+            vecChemotaxisDataByType[chemData.type].push_back(chemData);
+            //cerr<<"adding chemData.type="<<(int)chemData.type<<" chemData.concField="<<chemData.concField<<endl;
+        }
+    }
+    
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
 
 void ChemotaxisProbability::init(CAManager *_caManager){
     caManager = _caManager;
@@ -32,15 +55,23 @@ void ChemotaxisProbability::init(CAManager *_caManager){
 	carryingCapacity = caManager ->getCellCarryingCapacity();
 
 }
-//////////////////////////////////////////////////////////////////////////////////////////
-void ChemotaxisProbability::addChemotixisData(std::string _fieldName, std::string _typeName, float _lambda){
-	ChemotaxisData chemData;
-	chemData.typeName=_typeName;
-	chemData.type = caManager->getTypeId(_typeName);
-	chemData.concField = caManager->getConcentrationField(_fieldName);
-	chemData.lambda=_lambda;
 
-	vecChemotaxisDataByType[chemData.type].push_back(chemData);
+//////////////////////////////////////////////////////////////////////////////////////////
+void ChemotaxisProbability::_addChemotaxisData(std::string _fieldName, std::string _typeName, float _lambda){
+	//ChemotaxisData chemData;
+	//chemData.typeName=_typeName;
+	//chemData.type = caManager->getTypeId(_typeName);
+	//chemData.concField = caManager->getConcentrationField(_fieldName);
+	//chemData.lambda=_lambda;
+
+	//vecChemotaxisDataByType[chemData.type].push_back(chemData);
+
+    ChemotaxisData chemData;
+    chemData.typeName=_typeName;
+    chemData.fieldName=_fieldName;
+    chemData.lambda=_lambda;
+
+    mapType2ChemotaxisDataVec[_typeName].push_back(chemData);
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -58,6 +89,8 @@ float ChemotaxisProbability::calculate(const CACell * _sourceCell, const Point3D
 	if (!_sourceCell) return 0.0;
 
 	vector<ChemotaxisData> & chemotaxisDataVec = vecChemotaxisDataByType[_sourceCell->type];
+    cerr<<"_sourceCell->type="<<(int)_sourceCell->type<<" chemotaxisDataVec.size()="<<chemotaxisDataVec.size()<<endl;
+    
 	if (! chemotaxisDataVec .size()) return 0.0;
 
 	CACellStack * sourceStack = cellFieldS -> get(_source);
@@ -75,7 +108,8 @@ float ChemotaxisProbability::calculate(const CACell * _sourceCell, const Point3D
 	}
 
 	float prob = 0.0;
-	for (int i  = 0 ; i < chemotaxisDataVec .size() ; ++i){
+    
+	for (int i  = 0 ; i < chemotaxisDataVec.size() ; ++i){
 		ChemotaxisData & chemData = chemotaxisDataVec[i];
 		cerr<<"_source="<<_source<<" _target="<<_target<<endl;
 		cerr<<"celltype="<<(int)_sourceCell->type<<endl;

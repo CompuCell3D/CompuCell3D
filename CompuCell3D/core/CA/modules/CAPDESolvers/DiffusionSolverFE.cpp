@@ -8,7 +8,7 @@ using namespace std;
 using namespace CompuCell3D;
 
 
-DiffusionSolverFE::DiffusionSolverFE(void):CASteppable(),DiffusableVectorCommon<float, Array3DContiguous>(),caManager(0),maxStableDiffConstant(0.23f)
+DiffusionSolverFE::DiffusionSolverFE(void):CASteppable(),DiffusableVectorCommon<float, Array3DContiguous>(),caManager(0),maxStableDiffConstant(0.23f),fieldIdxCounter(0)
 {
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,41 @@ void DiffusionSolverFE::init(CAManager *_caManager){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE::extraInit(){
 	//called right before simulation run to finish initialization
-
+    initializeSolver();
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void DiffusionSolverFE::initializeSolver(){
+
+    
+	unsigned int numberOfFields = diffDataVec.size();
+	Dim3D dim = caManager->getCellFieldS()->getDim();
+
+	this->allocateDiffusableFieldVector(numberOfFields ,dim); 
+
+	//fieldName2Index.clear();
+
+	for(unsigned int i=0 ; i < numberOfFields  ; ++i){
+		//string fieldName = _fieldNamesVec[i];
+        SecretionData & secrData = secretionDataVec[i];
+        string fieldName = diffDataVec[i].name;
+		this->setConcentrationFieldName(i,fieldName);
+		caManager->registerConcentrationField(fieldName,getConcentrationField(i));
+
+		//setting up fieldName2Index dictionary
+		//fieldName2Index.insert(make_pair(fieldName,i));
+		//this->getConcentrationField(i)->set(Point3D(10,10,i*10),20.0);
+        for ( std::map<std::string, float>::iterator mitr = secrData.secretionMap.begin()  ; mitr != secrData.secretionMap.end() ; ++mitr){
+            
+            secrData.secretionConst[caManager->getTypeId(mitr->first)]=mitr->second;
+        }
+
+	}
+
+
+	workFieldDim=this->getConcentrationField(0)->getInternalDim();
+    
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE::start(){
 	cerr<<"INSIDE "<<toString()<<endl;
@@ -39,6 +72,43 @@ std::string DiffusionSolverFE::toString(){
 std::string DiffusionSolverFE::printSolverName(){
     return string(" THIS IS DIFFUSION SOLVER FE");
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void DiffusionSolverFE::printConfiguration(){
+
+    for (int i  = 0 ; i < diffDataVec.size() ; ++i){
+        cerr<<"FIELD NAME: "<<diffDataVec[i].name<<endl;
+        cerr<<"diffConst "<<diffDataVec[i].diffConst<<endl;
+        cerr<<"decayConst "<<diffDataVec[i].decayConst<<endl;
+        cerr<<"************Secretion*************"<<endl;
+        SecretionData & secrData = secretionDataVec[i];
+        for (std::map<std::string, float>::iterator mitr =  secrData.secretionMap.begin() ; mitr !=  secrData.secretionMap.end(); ++ mitr){
+            cerr<<"Secretion: type = "<<mitr->first<<" amount = "<<mitr->second<<endl;
+        }
+        cerr<<endl;
+    }
+        
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void DiffusionSolverFE::addDiffusionAndSecretionData(std::string _fieldName){
+
+    diffDataVec.push_back(DiffusionData());
+    (--diffDataVec.end())->name = _fieldName;
+    secretionDataVec.push_back(SecretionData());
+    (--secretionDataVec.end())->name = _fieldName;
+    fieldName2Index.insert(make_pair(_fieldName,fieldIdxCounter));
+
+    ++fieldIdxCounter;
+    
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//SecretionData & DiffusionSolverFE::addSecretionData(){
+//    secretionDataVec.push_back(SecretionData());
+//    return *(--secretionDataVec.end());
+//}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE::addFields(std::vector<string> _fieldNamesVec){
 
