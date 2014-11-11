@@ -449,12 +449,15 @@ void DiffusionSolverFE_OpenCL::stepImpl(const unsigned int _currentStep){
         oclHelper->Finish();
         fieldDeviceToHost(h_Field); //transfer conc field to back to host memory
         
-        
+        // ofstream out ("data_opencl.out");
         // float totConc=0.0;        
 		// for (int z = 1; z < fieldDim.z+1; z++)
 			// for (int y = 1; y < fieldDim.y+1; y++)
 				// for (int x = 1; x < fieldDim.x+1; x++){
-
+                    // if (concentrationField.getDirect(x,y,z) !=0.0){
+                        // // cerr<<"("<<x<<","<<y<<","<<z<<")="<<concentrationField.getDirect(x,y,z)<<endl;
+                        // out<<"("<<x<<","<<y<<","<<z<<")="<<concentrationField.getDirect(x,y,z)<<endl;
+                    // }
                     // totConc+=concentrationField.getDirect(x,y,z);
                 // }                
     // cerr<<"\n\n\n TOTAL CONCENTRATION="<<totConc<<endl;          
@@ -665,7 +668,7 @@ void DiffusionSolverFE_OpenCL::SetSolverParams(DiffusionData  &diffData, Secreti
 	h_solverParams.nbhdConcLen=nbhdConcLen;
 	h_solverParams.nbhdDiffLen=nbhdDiffLen;
 
-    // cerr<<"h_solverParams.nbhdConcLen="<<h_solverParams.nbhdConcLen<<" h_solverParams.nbhdDiffLen="<<h_solverParams.nbhdDiffLen<<endl;
+    cerr<<"h_solverParams.nbhdConcLen="<<h_solverParams.nbhdConcLen<<" h_solverParams.nbhdDiffLen="<<h_solverParams.nbhdDiffLen<<endl;
     
     
 	h_solverParams.xDim=fieldDim.x;
