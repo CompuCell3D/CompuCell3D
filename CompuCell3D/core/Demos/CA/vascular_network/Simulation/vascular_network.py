@@ -6,7 +6,6 @@ print os.environ['PYTHONPATH']
 
 import math
 
-
 import CoreObjects
 from CoreObjects import Point3D, Dim3D
 import CA
@@ -208,76 +207,47 @@ fieldDim=caSimulation.dim
 
 solverRegistry=caSimulation.steppableRegistry
 
-import CompuCellSetup
-# # # caManager,simthread = CompuCellSetup.getCoreCASimulationObjects(False)
-
 caManager = caSimulation.caManager 
 
 #PLUGINS 
-
 #CELL TYPE INFO
 caSimulation.setCellTypeInfo({1:'Cancer',2:'Stem',3:'Vascular',4:'Tip'})
 caSimulation.setFrozenTypes(['Cancer','Vascular'])
-
-
-
-
-
-#SOLVERS 
-import CAPDESolvers
-dSolverFE = CAPDESolvers.DiffusionSolverFE()
-
-caSimulation.registerSteppable(dSolverFE)
-
-
-# dSolverFE.createFields(fieldDim,['FGF','VEGF'])
-dSolverFE.addFieldsPy(['FGF','VEGF'])
-
-fgfDiffData=dSolverFE.getDiffusionData('FGF')
-fgfDiffData.diffConst=0.12
-fgfDiffData.decayConst=0.0001
-
-fgfSecrData = dSolverFE.getSecretionData('FGF')
-print dir(fgfSecrData.secretionConst)
-fgfSecrData.secretionConst[1]=0.1
-
-
-vegfDiffData=dSolverFE.getDiffusionData('VEGF')
-vegfDiffData.diffConst=0.10
-vegfDiffData.decayConst=0.00001
-
-vegfSecrData = dSolverFE.getSecretionData('VEGF')
-# print dir(fgfSecrData.secretionConst)
-vegfSecrData.secretionConst[1]=100.1
 
 #PROBABILITY FUNCTION
 cp = caSimulation.registerProbabilityFunctionByName('CanonicalProbability')
 cp.diffCoeff = 0.1
 cp.deltaT = 1.0
 
-
 chemPr = caSimulation.registerProbabilityFunctionByName('ChemotaxisProbability')
 chemPr.diffCoeff = 0.1
 chemPr.deltaT = 1.0
-chemPr.addChemotixisData('VEGF', 'Tip', 100.0)
+chemPr.addChemotaxisData(FieldName='VEGF', ChemotaxingType='Tip', Lambda=100.0)
 
 
 cellTail = caSimulation.registerFieldChangeWatcherByName('CellTail')
 cellTail.setMovingCellTrail('Tip','Vascular',2) 
-# print cellTail.toString ()
 
 
-#PYTHON STEPPABLES
-# mitosisSteppable=MitosisSteppable(caManager)
-# caSimulation.registerSteppable(mitosisSteppable)
+#SOLVERS  
+dSolverFE = caSimulation.registerSolverByName('DiffusionSolverFE')
 
-# oscillatorSteppable = SBMLOscillator(caManager)
-# caSimulation.registerSteppable(oscillatorSteppable)
+dSolverFE.addField(\
+Name='FGF',\
+DiffusionData = {'DiffusionConstant':0.1,'DecayConstant':0.0001},\
+SecretionData = {'Vascular':0.1}
+)
+
+dSolverFE.addField(\
+Name='VEGF',\
+DiffusionData = {'DiffusionConstant':0.1,'DecayConstant':0.0001},\
+SecretionData = {'Cancer':100.1}
+)
+
+# dSolverFE.printConfiguration()
 
 vascularSteppable = VascularSteppable(caManager)
 caSimulation.registerSteppable(vascularSteppable)
-
-
 
 caSimulation.mainLoop()
 
