@@ -1,5 +1,5 @@
-#ifndef CELLTAIL_H
-#define CELLTAIL_H
+#ifndef CELLTRAIL_H
+#define CELLTRAIL_H
 
  
 #include <CompuCell3D/Field3D/Dim3D.h>
@@ -11,7 +11,7 @@
 #define roundf(a) ((fmod(a,1)<0.5)?floor(a):ceil(a))
 
 
-#include "CellTailDLLSpecifier.h"
+#include "CellTrailDLLSpecifier.h"
 
 namespace CompuCell3D {
   class CACell;
@@ -22,7 +22,7 @@ namespace CompuCell3D {
   class Field3D;  
 
 
-  class CELLTAIL_EXPORT CellTail : public SimulationObject, public CACellStackFieldChangeWatcher {
+  class CELLTRAIL_EXPORT CellTrail : public SimulationObject, public CACellStackFieldChangeWatcher {
     
     
   private:
@@ -32,7 +32,7 @@ namespace CompuCell3D {
    CAManager *caManager;
    Field3D<CACell *> * cellField;
 
-   std::map<unsigned char,std::pair<unsigned char, int> > movingTypeId2TailTypeIdMap;
+   std::map<unsigned char,std::pair<unsigned char, int> > movingTypeId2TrailTypeIdMap;
    typedef std::map<unsigned char,std::pair<unsigned char, int> >::iterator mitr_t;
 
 
@@ -40,14 +40,14 @@ namespace CompuCell3D {
 
 
   public:
-    CellTail();
-    virtual ~CellTail();
+    CellTrail();
+    virtual ~CellTrail();
     
 	virtual void init(CAManager *_caManager);		        
 	virtual void extraInit();
     virtual std::string toString();		
 
-	void setMovingCellTrail(std::string _movingCellType, std::string _tailCellType,int _tailCellSize=1);
+	void _addMovingCellTrail(std::string _movingCellType, std::string _trailCellType,int _trailCellSize=1);
 
     // CACellStackFieldChangeWatcherinterface
     virtual void field3DChange(CACell *_movingCell, CACellStack *_sourceCellStack,CACellStack *_targetCellStack);  

@@ -1,9 +1,9 @@
-SET(MODULE_NAME CellTail)
+SET(MODULE_NAME CellTrail)
 
 # MESSAGE(NUMPY_INCLUDE_DIR ${NUMPY_INCLUDE_DIR})
 
 SET(SRCS
-   CellTail.cpp
+   CellTrail.cpp
 )
 
 

@@ -1,7 +1,7 @@
 // -*-c++-*-
 
 
-%module ("threads"=1) CellTail
+%module ("threads"=1) CellTrail
 
 %include "typemaps.i"
 
@@ -42,7 +42,7 @@
 %{
 
 // #include <CA/ProbabilityFunction.h>
-#include <CA/modules/CellTail/CellTail.h>
+#include <CA/modules/CellTrail/CellTrail.h>
 
 
 // Namespaces
@@ -99,7 +99,35 @@ using namespace CompuCell3D;
 // ******************************
 // Third Party Classes
 // ******************************
-#define CELLTAIL_EXPORT
+#define CELLTRAIL_EXPORT
 // // // %include <CA/ProbabilityFunction.h>
-%include <CA/modules/CellTail/CellTail.h>
+%include <CA/modules/CellTrail/CellTrail.h>
 
+%extend CompuCell3D::CellTrail{
+      %pythoncode %{
+
+    def addMovingCellTrail(self,*args,**kwds):
+    
+    
+        trailCellSize=1
+        try:
+            movingCellType=kwds['MovingCellType']
+        except LookupError:
+            raise LookupError('You need to specify moving cell type for CellTrail to work ! Use "MovingCellType" as an argument of the "addMovingCellTrail" function')
+
+        try:
+            trailCellType=kwds['TrailCellType']
+        except LookupError:
+            raise LookupError('You need to specify trail cell type for CellTrail to work ! Use "TrailCellType" as an argument of the "addMovingCellTrail" function')
+        
+        try:
+            trailCellSize=kwds['TrailCellSize']
+        except LookupError:
+            pass
+
+        self._addMovingCellTrail(movingCellType,trailCellType,int(trailCellSize) )
+
+	%}
+
+
+};

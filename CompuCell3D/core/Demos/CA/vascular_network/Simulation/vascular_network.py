@@ -225,8 +225,8 @@ chemPr.deltaT = 1.0
 chemPr.addChemotaxisData(FieldName='VEGF', ChemotaxingType='Tip', Lambda=100.0)
 
 
-cellTail = caSimulation.registerFieldChangeWatcherByName('CellTail')
-cellTail.setMovingCellTrail('Tip','Vascular',2) 
+cellTrail = caSimulation.registerFieldChangeWatcherByName('CellTrail')
+cellTrail.addMovingCellTrail(MovingCellType='Tip',TrailCellType='Vascular',TrailCellSize=2) 
 
 
 #SOLVERS  
