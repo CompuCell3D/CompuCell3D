@@ -1,4 +1,5 @@
 import vtk 
+import Configuration
 
 VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
 
@@ -271,7 +272,14 @@ class CAMVCDrawModel2D(object):
         cartesianCellsConPolyData.SetPoints(pointsArray)
         cartesianCellsConPolyData.SetPolys(cartesianCellsArray)
         
+        self.mdm.minCon=minCon
+        self.mdm.maxCon=maxCon
         
+        if Configuration.getSetting("MinRangeFixed",self.mdm.currentDrawingParameters.fieldName):
+            self.mdm.minCon=Configuration.getSetting("MinRange",self.mdm.currentDrawingParameters.fieldName)            
+                        
+        if Configuration.getSetting("MaxRangeFixed",self.mdm.currentDrawingParameters.fieldName):
+            self.mdm.maxCon=Configuration.getSetting("MaxRange",self.mdm.currentDrawingParameters.fieldName)          
         
         if VTK_MAJOR_VERSION>=6:
             self.mdm.conMapper.SetInputData(cartesianCellsConPolyData)

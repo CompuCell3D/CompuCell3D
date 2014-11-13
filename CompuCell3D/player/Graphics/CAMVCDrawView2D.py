@@ -1,4 +1,5 @@
 import vtk
+import Configuration
 
 class CAMVCDrawView2D(object):
     def __init__(self,_masterDrawView=None):
@@ -32,11 +33,11 @@ class CAMVCDrawView2D(object):
             
             self.mdv.conActor.SetProperty(actorProperties)
             
-        # # # if Configuration.getSetting("LegendEnable",self.mdv.currentDrawingParameters.fieldName):            
-            # # # self.drawModel.prepareLegendActors((self.drawModel.conMapper,),(self.legendActor,))            
-            # # # self.showLegend(True)
-        # # # else:
-            # # # self.showLegend(False)
+        if Configuration.getSetting("LegendEnable",self.mdv.currentDrawingParameters.fieldName):            
+            self.mdv.drawModel.prepareLegendActors((self.mdv.drawModel.conMapper,),(self.mdv.legendActor,))            
+            self.mdv.showLegend(True)
+        else:
+            self.mdv.showLegend(False)
 
         # # if self.parentWidget.borderAct.isChecked():
             # # self.drawBorders2D() 
