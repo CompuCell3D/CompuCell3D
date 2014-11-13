@@ -6,6 +6,7 @@
 #include <CA/CASteppable.h>
 #include "DiffusableVectorCommon.h"
 #include "DiffSecrData.h"
+#include "CABoundaryConditionSpecifier.h"
 #include "CAPDESolversDLLSpecifier.h"
 
 
@@ -18,6 +19,7 @@ class CAPDESOLVERS_EXPORT DiffusionSolverFE :public CASteppable,
 {
 	
 public:
+    
 	typedef Array3DContiguous<float> ConcentrationField_t;//TODO: check if I can automate this type deduction	
     DiffusionSolverFE(void);
 	virtual ~DiffusionSolverFE(void);
@@ -37,7 +39,10 @@ public:
 
 	DiffusionData * getDiffusionData(std::string _fieldName);
 	SecretionData * getSecretionData(std::string _fieldName);
+    CABoundaryConditionSpecifier * getBoundaryConditionData(std::string _fieldName);
+
 	int findIndexForFieldName(std::string _fieldName);
+    void DiffusionSolverFE::boundaryConditionInit(int idx);
 
 	//CASteppable API
 	virtual void init(CAManager *_caManager);
@@ -49,13 +54,20 @@ public:
     
 
 private:
+    void Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant);
 	Dim3D workFieldDim;
 	CAManager * caManager;
 	std::vector<DiffusionData> diffDataVec;
 	std::vector<SecretionData> secretionDataVec;
+    std::vector<float> maxDiffConstVec;
+    std::vector<float> scalingTimesPerMCSVec;
+
+    std::vector<CABoundaryConditionSpecifier> bcSpecVec;
+
 	std::vector<string> fieldNamesVec;
 	std::map<std::string,unsigned int> fieldName2Index;
 	float maxStableDiffConstant;
+    float diffusionLatticeScalingFactor;
     int fieldIdxCounter;
 
 };

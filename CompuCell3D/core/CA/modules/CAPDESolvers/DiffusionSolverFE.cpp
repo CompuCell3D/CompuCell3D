@@ -8,7 +8,7 @@ using namespace std;
 using namespace CompuCell3D;
 
 
-DiffusionSolverFE::DiffusionSolverFE(void):CASteppable(),DiffusableVectorCommon<float, Array3DContiguous>(),caManager(0),maxStableDiffConstant(0.23f),fieldIdxCounter(0)
+DiffusionSolverFE::DiffusionSolverFE(void):CASteppable(),DiffusableVectorCommon<float, Array3DContiguous>(),caManager(0),maxStableDiffConstant(0.23f),diffusionLatticeScalingFactor(1.0f),fieldIdxCounter(0)
 {
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -33,6 +33,7 @@ void DiffusionSolverFE::initializeSolver(){
 	Dim3D dim = caManager->getCellFieldS()->getDim();
 
 	this->allocateDiffusableFieldVector(numberOfFields ,dim); 
+    
 
 	//fieldName2Index.clear();
 
@@ -55,7 +56,78 @@ void DiffusionSolverFE::initializeSolver(){
 
 
 	workFieldDim=this->getConcentrationField(0)->getInternalDim();
+
+    //dealing with max diffusion constant
+	maxStableDiffConstant=0.23;
+	if(caManager->getBoundaryStrategy()->getLatticeType()==HEXAGONAL_LATTICE) {
+		if (dim.x==1 || dim.y==1||dim.z==1){ //2D simulation we ignore 1D simulations in CC3D they make no sense and we assume users will not attempt to run 1D simulations with CC3D		
+			maxStableDiffConstant=0.16f;
+		}else{//3D
+			maxStableDiffConstant=0.08f;
+		}
+	}else{//Square lattice
+		if (dim.x==1 || dim.y==1||dim.z==1){ //2D simulation we ignore 1D simulations in CC3D they make no sense and we assume users will not attempt to run 1D simulations with CC3D				
+			maxStableDiffConstant=0.23f;
+		}else{//3D
+			maxStableDiffConstant=0.14f;
+		}
+	}
+	
+
+	//determining latticeType and setting diffusionLatticeScalingFactor
+	//When you evaluate div as a flux through the surface divided bby volume those scaling factors appear automatically. On cartesian lattife everythink is one so this is easy to forget that on different lattices they are not1
+	diffusionLatticeScalingFactor=1.0;
+	if (caManager->getBoundaryStrategy()->getLatticeType()==HEXAGONAL_LATTICE){
+		if (dim.x==1 || dim.y==1||dim.z==1){ //2D simulation we ignore 1D simulations in CC3D they make no sense and we assume users will not attempt to run 1D simulations with CC3D
+			diffusionLatticeScalingFactor=1.0f/sqrt(3.0f);// (2/3)/dL^2 dL=sqrt(2/sqrt(3)) so (2/3)/dL^2=1/sqrt(3)
+		}else{//3D simulation
+			diffusionLatticeScalingFactor=pow(2.0f,-4.0f/3.0f); //(1/2)/dL^2 dL dL^2=2**(1/3) so (1/2)/dL^2=1/(2.0*2^(1/3))=2^(-4/3)
+		}
+
+	}    
+
+
+    //allocating  maxDiffConstVec and  scalingTimesPerMCSVec   
+	scalingTimesPerMCSVec.assign(numberOfFields,0);
+	maxDiffConstVec.assign(numberOfFields,0.0);
     
+    //finding maximum diffusion coefficients for each field
+    for(unsigned int i = 0 ; i < numberOfFields ; ++i){
+		//for(int currentCellType = 0; currentCellType < UCHAR_MAX+1; currentCellType++) {
+			//                 cout << "diffCoef[currentCellType]: " << diffSecrFieldTuppleVec[i].diffData.diffCoef[currentCellType] << endl;
+		maxDiffConstVec[i] = (maxDiffConstVec[i] <  diffDataVec[i].diffConst) ? diffDataVec[i].diffConst: maxDiffConstVec[i];
+    }
+    
+	Scale(maxDiffConstVec, maxStableDiffConstant);//TODO: remove for implicit solvers? 
+    
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void DiffusionSolverFE::Scale(std::vector<float> const &maxDiffConstVec, float maxStableDiffConstant){
+   if (!maxDiffConstVec.size()){ //we will pass empty vector from update function . At the time of calling the update function we have no knowledge of maxDiffConstVec, maxStableDiffConstant
+        return;
+    }
+
+	for(unsigned int i = 0; i < diffDataVec.size(); i++){
+		scalingTimesPerMCSVec[i] = ceil(maxDiffConstVec[i]/maxStableDiffConstant); //compute number of calls to diffusion solver
+		if (scalingTimesPerMCSVec[i]==0)
+			continue;
+        //diffusion data
+        diffDataVec[i].timesPerMCS=scalingTimesPerMCSVec[i];
+        diffDataVec[i].diffConst /= scalingTimesPerMCSVec[i];
+        diffDataVec[i].decayConst /= scalingTimesPerMCSVec[i];		
+
+        //secretion data
+        std::map<std::string, float> & secretionMap = secretionDataVec[i].secretionMap;
+        for (std::map<std::string, float>::iterator mitr = secretionMap.begin() ; mitr != secretionMap.end() ; ++mitr){
+            mitr->second /= scalingTimesPerMCSVec[i];
+        }
+
+    }
+
+    
+
+
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -100,6 +172,7 @@ void DiffusionSolverFE::addDiffusionAndSecretionData(std::string _fieldName){
     secretionDataVec.push_back(SecretionData());
     (--secretionDataVec.end())->name = _fieldName;
     fieldName2Index.insert(make_pair(_fieldName,fieldIdxCounter));
+    bcSpecVec.push_back(CABoundaryConditionSpecifier());
 
     ++fieldIdxCounter;
     
@@ -214,28 +287,39 @@ SecretionData * DiffusionSolverFE::getSecretionData(std::string _fieldName){
 	return 0;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+CABoundaryConditionSpecifier * DiffusionSolverFE::getBoundaryConditionData(std::string _fieldName){
+	int idx = findIndexForFieldName(_fieldName);
+	
+	if(idx>=0){
+		return & bcSpecVec[idx];
+	}
+
+	return 0;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE::diffuseSingleField(int i){
 
 		DiffusionData & diffData=diffDataVec[i];
 		float currentDiffCoef=diffData.diffConst;
 		float currentDecayCoef=diffData.decayConst;
-		cerr<<"fieldName="<<getConcentrationFieldName(i)<<endl;
-		cerr<<"diffData.diffConst="<<diffData.diffConst<<endl;
-		cerr<<"diffData.decayConst="<<diffData.decayConst<<endl;
+		//cerr<<"fieldName="<<getConcentrationFieldName(i)<<endl;
+		//cerr<<"diffData.diffConst="<<diffData.diffConst<<endl;
+		//cerr<<"diffData.decayConst="<<diffData.decayConst<<endl;
 		//float currentDiffCoef=0.1;
 		//float currentDecayCoef=0.0001;
 		
 		float currentConcentration = 0.0;
 		float updatedConcentration,concentrationSum,varDiffSumTerm;
-		cerr<<"i="<<i<<endl;
+		//cerr<<"i="<<i<<endl;
 		
 		/*Array3DContiguous<float> & concentrationField =(Array3DContiguous<float>) *(this->getConcentrationField(i));*/
 		Array3DContiguous<float>  * concentrationFieldPtr =(Array3DContiguous<float> *) this->getConcentrationField(i);
 		Array3DContiguous<float> & concentrationField = *concentrationFieldPtr;
 		
 		Point3D pt;
-		cerr<<"workFieldDim="<<workFieldDim<<endl;
-		cerr<<"concentrationField.getDim()="<<concentrationField.getDim()<<endl;
+		//cerr<<"workFieldDim="<<workFieldDim<<endl;
+		//cerr<<"concentrationField.getDim()="<<concentrationField.getDim()<<endl;
         for (int z = 1; z < workFieldDim.z-1; z++)
             for (int y = 1; y < workFieldDim.y-1; y++)
                 for (int x = 1; x < workFieldDim.x-1; x++){
@@ -312,18 +396,223 @@ void DiffusionSolverFE::secreteSingleField(int i){
 
 
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void DiffusionSolverFE::boundaryConditionInit(int idx){
+    // static_cast<Cruncher *>(this)->boundaryConditionInitImpl(idx);
+    // return;
+        
+	ConcentrationField_t & _array = *this->getConcentrationField(idx);    
+    
+	Dim3D fieldDim = _array.getDim();
+	CABoundaryConditionSpecifier & bcSpec=bcSpecVec[idx];
+	//DiffusionData & diffData = diffSecrFieldTuppleVec[idx].diffData;
+	//float deltaX=diffData.deltaX;
+    float deltaX=1.0; // spacing is always 1.0 in CC3D solvers
+
+	//ConcentrationField_t & _array=*concentrationField;
+	
+		//detailed specification of boundary conditions
+		// X axis
+		if (bcSpec.planePositions[0]==CABoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[1]==CABoundaryConditionSpecifier::PERIODIC){
+			int x=0;
+			for(int y=0 ; y< workFieldDim.y-1; ++y)
+				for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+					_array.setDirect(x,y,z,_array.getDirect(fieldDim.x,y,z));
+                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(fieldDim.x,y,z));
+				}
+
+				x=fieldDim.x+1;
+				for(int y=0 ; y< workFieldDim.y-1; ++y)
+					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+						_array.setDirect(x,y,z,_array.getDirect(1,y,z));
+                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(1,y,z));
+					}
+
+		}else{
+            
+			if (bcSpec.planePositions[0]==CABoundaryConditionSpecifier::CONSTANT_VALUE){
+				float cValue= bcSpec.values[0];
+				int x=0;
+				for(int y=0 ; y< workFieldDim.y-1; ++y)
+					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+						_array.setDirect(x,y,z,cValue);
+					}
+
+			}else if(bcSpec.planePositions[0]==CABoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
+				float cdValue= bcSpec.values[0];
+				int x=0;
+
+				for(int y=0 ; y< workFieldDim.y-1; ++y)
+					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+						_array.setDirect(x,y,z,_array.getDirect(1,y,z)-cdValue*deltaX);
+					}
+
+			}
+
+			if (bcSpec.planePositions[1]==CABoundaryConditionSpecifier::CONSTANT_VALUE){
+				float cValue= bcSpec.values[1];
+				int x=fieldDim.x+1;
+				for(int y=0 ; y< workFieldDim.y-1; ++y)
+					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+						_array.setDirect(x,y,z,cValue);
+					}
+
+			}else if(bcSpec.planePositions[1]==CABoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
+				float cdValue= bcSpec.values[1];
+				int x=fieldDim.x+1;
+
+				for(int y=0 ; y< workFieldDim.y-1; ++y)
+					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+						_array.setDirect(x,y,z,_array.getDirect(x-1,y,z)+cdValue*deltaX);
+					}
+
+			}
+
+		}
+		//detailed specification of boundary conditions
+		// Y axis
+		if (bcSpec.planePositions[2]==CABoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[3]==CABoundaryConditionSpecifier::PERIODIC){
+			int y=0;
+			for(int x=0 ; x< workFieldDim.x-1; ++x)
+				for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+					_array.setDirect(x,y,z,_array.getDirect(x,fieldDim.y,z));
+                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,fieldDim.y,z));
+				}
+
+				y=fieldDim.y+1;
+				for(int x=0 ; x< workFieldDim.x-1; ++x)
+					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+						_array.setDirect(x,y,z,_array.getDirect(x,1,z));
+                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,1,z));
+					}
+
+		}else{
+
+			if (bcSpec.planePositions[2]==CABoundaryConditionSpecifier::CONSTANT_VALUE){
+				float cValue= bcSpec.values[2];
+				int y=0;
+				for(int x=0 ; x< workFieldDim.x-1; ++x)
+					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+						_array.setDirect(x,y,z,cValue);
+					}
+
+			}else if(bcSpec.planePositions[2]==CABoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
+				float cdValue= bcSpec.values[2];
+				int y=0;
+
+				for(int x=0 ; x< workFieldDim.x-1; ++x)
+					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+						_array.setDirect(x,y,z,_array.getDirect(x,1,z)-cdValue*deltaX);
+					}
+
+			}
+
+			if (bcSpec.planePositions[3]==CABoundaryConditionSpecifier::CONSTANT_VALUE){
+				float cValue= bcSpec.values[3];
+				int y=fieldDim.y+1;
+				for(int x=0 ; x< workFieldDim.x-1; ++x)
+					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+						_array.setDirect(x,y,z,cValue);
+					}
+
+			}else if(bcSpec.planePositions[3]==CABoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
+				float cdValue= bcSpec.values[3];
+				int y=fieldDim.y+1;
+
+				for(int x=0 ; x< workFieldDim.x-1; ++x)
+					for(int z=0 ; z<workFieldDim.z-1 ; ++z){
+						_array.setDirect(x,y,z,_array.getDirect(x,y-1,z)+cdValue*deltaX);
+					}
+			}
+
+		}
+		//detailed specification of boundary conditions
+		// Z axis
+		if (bcSpec.planePositions[4]==CABoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[5]==CABoundaryConditionSpecifier::PERIODIC){
+			int z=0;
+			for(int x=0 ; x< workFieldDim.x-1; ++x)
+				for(int y=0 ; y<workFieldDim.y-1 ; ++y){
+					_array.setDirect(x,y,z,_array.getDirect(x,y,fieldDim.z));
+                    // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,fieldDim.z));
+				}
+
+				z=fieldDim.z+1;
+				for(int x=0 ; x< workFieldDim.x-1; ++x)
+					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
+						_array.setDirect(x,y,z,_array.getDirect(x,y,1));
+                        // cellTypeArray.setDirect(x,y,z,cellTypeArray.getDirect(x,y,1));
+					}
+
+		}else{
+
+			if (bcSpec.planePositions[4]==CABoundaryConditionSpecifier::CONSTANT_VALUE){
+				float cValue= bcSpec.values[4];
+				int z=0;
+				for(int x=0 ; x< workFieldDim.x-1; ++x)
+					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
+						_array.setDirect(x,y,z,cValue);
+					}
+
+			}else if(bcSpec.planePositions[4]==CABoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
+				float cdValue= bcSpec.values[4];
+				int z=0;
+
+				for(int x=0 ; x< workFieldDim.x-1; ++x)
+					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
+						_array.setDirect(x,y,z,_array.getDirect(x,y,1)-cdValue*deltaX);
+					}
+
+			}
+
+			if (bcSpec.planePositions[5]==CABoundaryConditionSpecifier::CONSTANT_VALUE){
+				float cValue= bcSpec.values[5];
+				int z=fieldDim.z+1;
+				for(int x=0 ; x< workFieldDim.x-1; ++x)
+					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
+						_array.setDirect(x,y,z,cValue);
+					}
+
+			}else if(bcSpec.planePositions[5]==CABoundaryConditionSpecifier::CONSTANT_DERIVATIVE){
+				float cdValue= bcSpec.values[5];
+				int z=fieldDim.z+1;
+
+				for(int x=0 ; x< workFieldDim.x-1; ++x)
+					for(int y=0 ; y<workFieldDim.y-1 ; ++y){
+						_array.setDirect(x,y,z,_array.getDirect(x,y,z-1)+cdValue*deltaX);
+					}
+			}
+
+		}
+
+	
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DiffusionSolverFE::step(const unsigned int){
 
 	int numberOfFields=diffDataVec.size();
 
-	cerr<<"This is step fcn numberOfFields="<<numberOfFields<<endl;
+	//cerr<<"This is step fcn numberOfFields="<<numberOfFields<<endl;
 	
+    for (int i  = 0 ; i < numberOfFields ; ++i){
+            if (!scalingTimesPerMCSVec[i]){ //we do not call diffusion step but call secretion - this happens when diffusion const is 0 but we still want to have secretion
+                secreteSingleField(i);
+            }
+            
+            //cerr<<"scalingTimesPerMCSVec[i]="<<scalingTimesPerMCSVec[i]<<" diffDonst="<<this->diffDataVec[i].diffConst<<endl;
+            for(int timesPerMCS = 0; timesPerMCS < scalingTimesPerMCSVec[i]; timesPerMCS ++) {
+                
+                boundaryConditionInit(i);//initializing boundary conditions
+                diffuseSingleField(i);
+                secreteSingleField(i);            
+            }
 
-	for (int i  = 0 ; i < numberOfFields ; ++i){
-		secreteSingleField(i);
-		diffuseSingleField(i);
-	}
+    }
+
+
+	//for (int i  = 0 ; i < numberOfFields ; ++i){
+	//	secreteSingleField(i);
+	//	diffuseSingleField(i);
+	//}
 
 }

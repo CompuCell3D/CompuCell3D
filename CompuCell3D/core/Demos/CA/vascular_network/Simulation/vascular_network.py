@@ -235,13 +235,15 @@ dSolverFE = caSimulation.registerSolverByName('DiffusionSolverFE')
 dSolverFE.addField(\
 Name='FGF',\
 DiffusionData = {'DiffusionConstant':0.1,'DecayConstant':0.0001},\
-SecretionData = {'Vascular':0.1}
+SecretionData = {'Vascular':0.1},
+BoundaryConditions = {'X':[ {'Position':'Min','ConstantValue':10}, {'Position':'Max','ConstantValue':5} ] }
 )
 
 dSolverFE.addField(\
 Name='VEGF',\
-DiffusionData = {'DiffusionConstant':0.1,'DecayConstant':0.0001},\
-SecretionData = {'Cancer':100.1}
+DiffusionData = {'DiffusionConstant':10.1,'DecayConstant':0.0001},\
+SecretionData = {'Cancer':100.1},
+BoundaryConditions = {'X':'Periodic', 'Y':'Periodic' }
 )
 
 # dSolverFE.printConfiguration()

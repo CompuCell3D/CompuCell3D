@@ -27,10 +27,12 @@ class CAPDESOLVERS_EXPORT DiffusionData  {
       DiffusionData():
       
       diffConst(0.0),
-      decayConst(0.0)
+      decayConst(0.0),
+      timesPerMCS(0)
 	  {}
       float diffConst;
       float decayConst; 
+      unsigned int timesPerMCS;
       std::string name;
       
       friend std::ostream & operator<<(std::ostream & out,CompuCell3D::DiffusionData & diffData);
