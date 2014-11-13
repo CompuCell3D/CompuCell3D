@@ -697,7 +697,10 @@ def getCoreCASimulationObjects(_parseOnlyFlag=False, _cmlOnly=False):
         return caManager,simulationThreadObject
     else:
         print 'returning simulationThreadObject=',simulationThreadObject
-        return simulationThreadObject.sim(),simulationThreadObject
+        try:
+            return simulationThreadObject.sim(),simulationThreadObject
+        except TypeError:
+            return None,simulationThreadObject
 
     import sys
     from os import environ
