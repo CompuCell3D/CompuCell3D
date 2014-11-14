@@ -90,7 +90,7 @@ class CATabView(object):
         if self.mtv.newDrawingUserRequest:
             self.mtv.newDrawingUserRequest = False
             if self.mtv.pauseAct.isEnabled():
-                self.pauseSim()
+                self.mtv.pauseSim()
         self.mtv.simulation.drawMutex.lock()
         
         # self.__step = self.mtv.simulation.getCurrentStep()
