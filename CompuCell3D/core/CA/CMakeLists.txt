@@ -42,12 +42,15 @@ INSTALL_FILES(/include/CompuCell3D/CA/CAManager .h
 ADD_SUBDIRECTORY(modules) # those are equivalents of old style plugins
 
   
-ADD_EXECUTABLE(CACL main.cpp)
-TARGET_LINK_LIBRARIES(CACL CAShared ${PYTHON_LIBRARIES})
-INSTALL_TARGETS(/bin CACL)  
+# # # ADD_EXECUTABLE(CACL main.cpp)
+# # # TARGET_LINK_LIBRARIES(CACL CAShared ${PYTHON_LIBRARIES})
+# # # INSTALL_TARGETS(/bin CACL)  
+# # # SET_PROPERTY(TARGET CACL  PROPERTY FOLDER "CA/CA")
+
 
 #folder setup for better display iof projects in the IDE's          
 SET_PROPERTY(TARGET CAShared  PROPERTY FOLDER "CA/CA")
+
 
 
 

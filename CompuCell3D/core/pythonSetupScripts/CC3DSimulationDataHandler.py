@@ -518,7 +518,8 @@ class CC3DSimulationDataHandler:
 #         print '\n\n\n will write ',_fileName
         from XMLUtils import ElementCC3D
         csd=self.cc3dSimulationData
-        simulationElement = ElementCC3D("Simulation",{"version":csd.version})
+        simulationElement = ElementCC3D("Simulation",{"version":csd.version,'modeltype':csd.modeltype})
+        # simulationElement = ElementCC3D("Simulation",{"version":csd.version})
         
         if csd.xmlScriptResource.path!="":
             elName,attributeDict,path = self.formatResourceElement(csd.xmlScriptResource,"XMLScript")
