@@ -21,7 +21,7 @@
 %include "exception.i"
 
 //this imports core objects that are shared between different modules
-%import "CoreObjects.i"
+%import "CAPython/CoreObjects/CoreObjects.i"
 
 %include "typemaps.i"
 

@@ -121,4 +121,11 @@ set(python_files_path ${CMAKE_BINARY_DIR}/core/CAPython/CAPyPlayer)
 
 INSTALL(FILES ${python_files_path}/CAFieldUtils.py
 	      DESTINATION lib/python)
+          
+#folder setup for better display iof projects in the IDE's                    
+SET_PROPERTY(TARGET CAFieldUtilsShared  PROPERTY FOLDER "CA/CAFieldUtils")           
+SET_PROPERTY(TARGET _CAFieldUtils  PROPERTY FOLDER "CA/CAFieldUtils") 
+
+
+
 

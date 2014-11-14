@@ -85,4 +85,11 @@ set(python_files_path ${CMAKE_BINARY_DIR}/core/CA/modules/${MODULE_NAME})
 
 INSTALL(FILES ${python_files_path}/${MODULE_NAME}.py
 	      DESTINATION lib/python/CA)
+          
+#folder setup for better display iof projects in the IDE's          
+SET_PROPERTY(TARGET ${MODULE_NAME}Shared  PROPERTY FOLDER "CA/${MODULE_NAME}/${MODULE_NAME}")
+SET_PROPERTY(TARGET _${MODULE_NAME}  PROPERTY FOLDER "CA/${MODULE_NAME}/${MODULE_NAME}")
+
+
+          
 

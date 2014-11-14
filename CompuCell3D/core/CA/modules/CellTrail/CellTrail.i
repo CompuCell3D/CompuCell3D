@@ -23,7 +23,7 @@
 
 %include "stl.i"
 
-%import "../../../CAPython/CoreObjects.i"
+%import "../../CAPython/CoreObjects/CoreObjects.i"
 
 
 // ************************************************************

@@ -23,7 +23,8 @@
 //%array_class(int, intArray);
 //%array_class(double, doubleArray);
 
-%import "../../../CAPython/CoreObjects.i"
+//%import "../../../CAPython/CoreObjects.i"
+%import "../../CAPython/CoreObjects/CoreObjects.i"
 //%import "../CoreObjects.i"
 
 
