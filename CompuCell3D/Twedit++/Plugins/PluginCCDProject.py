@@ -2261,7 +2261,7 @@ class CC3DProject(QObject):
             
 # # #             print 'changing resource.path=',resource.path,' to ',newResourcePath
             # resource.path = newResourcePath
-            resource.path = 'Simulation' + resourceBaseName
+            resource.path = 'Simulation/' + resourceBaseName
 
                 
             try:
