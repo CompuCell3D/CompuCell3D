@@ -2244,7 +2244,7 @@ class CC3DProject(QObject):
             if resource.path.strip() == '' :continue
             
             resourceBaseName = os.path.basename(resource.path)
-            newResourcePath = os.path.join(projectDirName,'Simulation',resourceBaseName)     
+            newResourcePath = os.path.join(os.path.abspath(projectDirName),'Simulation',resourceBaseName)     
 #             print 'resource=',resource
             if resource.path in fn2ew.keys():
                 # this means the editor with the resource is open
@@ -2260,8 +2260,8 @@ class CC3DProject(QObject):
             oldResourcePath=resource.path
             
 # # #             print 'changing resource.path=',resource.path,' to ',newResourcePath
-            resource.path = newResourcePath
-
+            # resource.path = newResourcePath
+            resource.path = 'Simulation/' + resourceBaseName
 
                 
             try:
