@@ -65,7 +65,8 @@ namespace CompuCell3D {
 		WatchableField3D<CellG *> *cellFieldG;
 
 		//IMPORTANT to handle exceptions properly all _secrete functinos have secrete counterpart defined int he %extend CompuCell3D::Field secretor in the CompuCellExtraDeclarations.i
-		bool _secreteInsideCell(CellG * _cell, float _amount);
+		bool _secreteInsideCellConstantConcentration(CellG * _cell, float _amount);
+        bool _secreteInsideCell(CellG * _cell, float _amount);
 		bool _secreteInsideCellAtBoundary(CellG * _cell, float _amount);
 		bool _secreteInsideCellAtBoundaryOnContactWith(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec);
 		bool _secreteOutsideCellAtBoundary(CellG * _cell, float _amount);

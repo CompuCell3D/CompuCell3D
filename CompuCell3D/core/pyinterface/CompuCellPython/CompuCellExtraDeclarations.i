@@ -593,6 +593,16 @@ PLUGINACCESSOR(Secretion)
 
 
 %extend  CompuCell3D::FieldSecretor{
+
+  bool secreteInsideCellConstantConcentration(CellG * _cell, float _amount){
+    if (!self->pixelTrackerPlugin){
+        throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function"));        
+    }else{
+        return self->_secreteInsideCellConstantConcentration(_cell,_amount);
+    }               
+  }    
+
+
   bool secreteInsideCell(CellG * _cell, float _amount){
     if (!self->pixelTrackerPlugin){
         throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function"));        

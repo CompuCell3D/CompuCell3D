@@ -34,7 +34,7 @@ bool FieldSecretor::_secreteInsideCell(CellG * _cell, float _amount){
 	
 	
 	if (!pixelTrackerPlugin){		
-		ASSERT_OR_THROW("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function",pixelTrackerPlugin);
+		// ASSERT_OR_THROW("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function",pixelTrackerPlugin);
 		return false;
 	}
 	BasicClassAccessor<PixelTracker> *pixelTrackerAccessorPtr=pixelTrackerPlugin->getPixelTrackerAccessorPtr();
@@ -42,6 +42,22 @@ bool FieldSecretor::_secreteInsideCell(CellG * _cell, float _amount){
 	for (set<PixelTrackerData>::iterator sitr=pixelSetRef.begin() ; sitr!=pixelSetRef.end(); ++sitr){		
 
 		concentrationFieldPtr->set(sitr->pixel,concentrationFieldPtr->get(sitr->pixel)+_amount);
+
+	}
+
+	return true;
+}
+
+bool FieldSecretor::_secreteInsideCellConstantConcentration(CellG * _cell, float _amount){
+	if (!pixelTrackerPlugin){		
+		// ASSERT_OR_THROW("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function",pixelTrackerPlugin);
+		return false;
+	}
+	BasicClassAccessor<PixelTracker> *pixelTrackerAccessorPtr=pixelTrackerPlugin->getPixelTrackerAccessorPtr();
+	set<PixelTrackerData > & pixelSetRef=pixelTrackerAccessorPtr->get(_cell->extraAttribPtr)->pixelSet;
+	for (set<PixelTrackerData>::iterator sitr=pixelSetRef.begin() ; sitr!=pixelSetRef.end(); ++sitr){		
+
+		concentrationFieldPtr->set(sitr->pixel,_amount);
 
 	}
 
