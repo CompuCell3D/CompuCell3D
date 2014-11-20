@@ -11,6 +11,331 @@ class CppTemplates:
     def getCppTemplatesDict(self):
         return self.cppTemplatesDict
 
+    def generateCACMakeFile(self,_features={}):
+        
+        if 'Module' in _features.keys():
+            text=''
+            # if _features['codeLayout']=='developerzone':
+                # text=self.cppTemplatesDict["CMakePluginDeveloperZone"]
+            # else:
+            text=self.cppTemplatesDict["CACMakeModule"]
+            moduleName=_features['Module']
+            text=re.sub("MODULE_CORE_NAME",moduleName,text) 
+            pythonWrap=''
+            try:
+                if not _features['PythonWrap']:
+                    pythonWrap='SWIG OFF'
+            except LookupError,e:
+                pass
+            text=re.sub("PYTHON_WRAP",pythonWrap,text)                 
+            # try:
+                # extraAttribFlag=_features['ExtraAttribute']
+                # text=re.sub("EXTRA_ATTRIBUTE_HEADER",pluginName+'Data.h',text)                     
+            # except LookupError,e:
+                # text=re.sub("EXTRA_ATTRIBUTE_HEADER",'',text)                     
+            return text    
+                
+        else: # steppable
+            return ''
+        
+    def generateModuleDLLSpecifier(self,_features={}):
+    
+        replaceLabelList=[]
+        moduleName=_features['Module']
+                
+        moduleDLLSpecifierText=self.cppTemplatesDict["moduleDLLSpecifier"]
+        
+        MODULE_NAME_CORE=moduleName
+        replaceLabelList.append(['MODULE_NAME_CORE',MODULE_NAME_CORE])
+        
+        MODULE_NAME_CAPITALS=moduleName.upper()
+        replaceLabelList.append(['MODULE_NAME_CAPITALS',MODULE_NAME_CAPITALS])
+        
+        for replaceItems in replaceLabelList:
+            moduleDLLSpecifierText=re.sub(replaceItems[0],replaceItems[1], moduleDLLSpecifierText)
+            
+        return moduleDLLSpecifierText        
+
+    def generateCAModuleHeaderFile(self,_features={}):
+    
+        replaceLabelList=[]
+        moduleName=_features['Module']
+        
+        moduleHeaderText=self.cppTemplatesDict["CAModuleHeader"]
+        
+        lowerFirst = lambda s: s[:1].lower() + s[1:] if s else ''
+        moduleNameVar=lowerFirst(moduleName)
+        
+        MODULE_NAME_CORE=moduleName
+        replaceLabelList.append(['MODULE_NAME_CORE',MODULE_NAME_CORE])
+        
+        MODULE_NAME_VAR=moduleNameVar
+        replaceLabelList.append(['MODULE_NAME_VAR',MODULE_NAME_VAR])
+        
+        
+        
+        # set text for replace labels
+        IFDEFLABEL=('CA'+moduleName+'module').upper()+'_H'
+        replaceLabelList.append(['IFDEFLABEL',IFDEFLABEL])
+               
+        
+        # try:
+            # _features['ExtraAttribute']
+            # EXTRA_ATTRIB_INCLUDES='#include \"'+moduleName+'Data.h\"'
+            # # # # EXTRA_ATTRIB_INCLUDES+="""
+# # # # """
+
+            # EXTRA_ATTRIB_ACCESSOR_DEFINE='BasicClassAccessor<'+moduleName+'Data> '+moduleNameVar+'DataAccessor;'
+        
+            # EXTRA_ATTRIB_ACCESSOR_GET_PTR='BasicClassAccessor<'+moduleName+'Data> * '+'get'+moduleName+'DataAccessorPtr(){return & '+moduleNameVar+'DataAccessor;}'
+		
+
+
+        # except LookupError,e:
+            # EXTRA_ATTRIB_INCLUDES=''
+            # EXTRA_ATTRIB_ACCESSOR_DEFINE=''
+            # EXTRA_ATTRIB_ACCESSOR_GET_PTR=''
+            
+            
+        # replaceLabelList.append(['EXTRA_ATTRIB_INCLUDES',EXTRA_ATTRIB_INCLUDES])
+        # replaceLabelList.append(['EXTRA_ATTRIB_ACCESSOR_DEFINE',EXTRA_ATTRIB_ACCESSOR_DEFINE])
+        # replaceLabelList.append(['EXTRA_ATTRIB_ACCESSOR_GET_PTR',EXTRA_ATTRIB_ACCESSOR_GET_PTR])        
+        
+        
+        try:
+            _features['ProbabilityFunction']
+            
+            PROBABILITY_FUNCTION_INCLUDE='#include <CA/ProbabilityFunction.h>'            
+            PROBABILITY_FUNCTION_INTERFACE='//Probability function interface\n'
+            PROBABILITY_FUNCTION_INTERFACE+='        virtual float calculate(const CACell * _sourceCell,const Point3D & _source, const Point3D & _target);'
+            PROBABILITY_FUNCTION_BASE='public ProbabilityFunction'
+            
+        except LookupError,e:
+            PROBABILITY_FUNCTION_INCLUDE=''
+            PROBABILITY_FUNCTION_INTERFACE=''
+            PROBABILITY_FUNCTION_BASE=''
+            
+            
+        replaceLabelList.append(['PROBABILITY_FUNCTION_INCLUDE',PROBABILITY_FUNCTION_INCLUDE])
+        replaceLabelList.append(['PROBABILITY_FUNCTION_INTERFACE',PROBABILITY_FUNCTION_INTERFACE])
+        replaceLabelList.append(['PROBABILITY_FUNCTION_BASE',PROBABILITY_FUNCTION_BASE])
+        
+        
+        try:
+            _features['LatticeMonitor']            
+            LATTICE_MONITOR_INCLUDE='#include <CA/CACellStackFieldChangeWatcher.h>'
+            LATTICE_MONITOR_INTERFACE='// CACellStackFieldChangeWatcher interface\n'
+            LATTICE_MONITOR_INTERFACE+='        virtual void field3DChange(CACell *_movingCell, CACellStack *_sourceCellStack,CACellStack *_targetCellStack);'
+            LATTICE_MONITOR_BASE='public CACellStackFieldChangeWatcher'
+        
+            
+        except LookupError,e:
+            LATTICE_MONITOR_INCLUDE=''
+            LATTICE_MONITOR_INTERFACE=''
+            LATTICE_MONITOR_BASE=''
+            
+        replaceLabelList.append(['LATTICE_MONITOR_INCLUDE',LATTICE_MONITOR_INCLUDE])            
+        replaceLabelList.append(['LATTICE_MONITOR_INTERFACE',LATTICE_MONITOR_INTERFACE])            
+        replaceLabelList.append(['LATTICE_MONITOR_BASE',LATTICE_MONITOR_BASE])   
+            
+        try:
+            _features['Steppable']
+                        
+            STEPPABLE_INCLUDE='#include <CA/CASteppable.h>'
+            STEPPABLE_INTERFACE='// Steppable interface\n'        
+            STEPPABLE_INTERFACE+='        virtual void start();\n'                    
+            STEPPABLE_INTERFACE+='        virtual void step(const unsigned int currentStep);\n'        
+            STEPPABLE_INTERFACE+='        virtual void finish();\n'                                
+            STEPPABLE_BASE='public CASteppable'
+            
+            
+        except LookupError,e:
+            STEPPABLE_INCLUDE=''
+            STEPPABLE_INTERFACE=''
+            STEPPABLE_BASE=''
+            
+        replaceLabelList.append(['STEPPABLE_INCLUDE',STEPPABLE_INCLUDE])            
+        replaceLabelList.append(['STEPPABLE_INTERFACE',STEPPABLE_INTERFACE])            
+        replaceLabelList.append(['STEPPABLE_BASE',STEPPABLE_BASE])                
+
+        DLL_SPECIFIER_INCLUDE='#include \"'+moduleName+'DLLSpecifier.h\"'
+        replaceLabelList.append(['DLL_SPECIFIER_INCLUDE',DLL_SPECIFIER_INCLUDE])            
+        
+
+        DLL_SPECIFIER_EXPORT=moduleName.upper()+"_EXPORT"
+        replaceLabelList.append(['DLL_SPECIFIER_EXPORT',DLL_SPECIFIER_EXPORT])            
+        
+        # replacing labels with generated text
+        for replaceItems in replaceLabelList:
+            moduleHeaderText=re.sub(replaceItems[0],replaceItems[1], moduleHeaderText)
+            
+            
+        return moduleHeaderText
+        
+    def generateCAModuleImplementationFile(self,_features={}):
+    
+        replaceLabelList=[]
+        moduleName=_features['Module']
+        
+        moduleImplementationText=self.cppTemplatesDict["CAModuleImplementation"]
+        
+        lowerFirst = lambda s: s[:1].lower() + s[1:] if s else ''
+        moduleNameVar=lowerFirst(moduleName)
+        
+        MODULE_NAME_CORE=moduleName
+        replaceLabelList.append(['MODULE_NAME_CORE',MODULE_NAME_CORE])
+        
+        MODULE_NAME_VAR=moduleNameVar
+        replaceLabelList.append(['MODULE_NAME_VAR',MODULE_NAME_VAR])
+                       
+        # try:
+            # _features['ExtraAttribute']
+            # REGISTER_EXTRA_ATTRIBUTE='potts->getCellFactoryGroupPtr()->registerClass(&'+moduleNameVar+'DataAccessor);'
+		
+        # except LookupError,e:
+            # REGISTER_EXTRA_ATTRIBUTE=''
+                        
+        # replaceLabelList.append(['REGISTER_EXTRA_ATTRIBUTE',REGISTER_EXTRA_ATTRIBUTE])
+        
+        try:
+            _features['ProbabilityFunction']
+            
+            
+            PROBABILITY_FUNCTION_IMPLEMENTATION="""
+float MODULE_NAME_CORE::calculate(const CACell * _sourceCell, const Point3D & _source, const Point3D & _target){
+	
+
+	CACellStack * sourceStack = cellFieldS -> get(_source);
+	CACellStack * targetStack = cellFieldS -> get(_target);
+
+
+	float prob = 0.0;
+    //IMPLEMENT DETAILS OF PROBABILITY FUNCTION HERE
+
+    return prob;
+}               
+"""
+            PROBABILITY_FUNCTION_IMPLEMENTATION=re.sub('MODULE_NAME_CORE',MODULE_NAME_CORE, PROBABILITY_FUNCTION_IMPLEMENTATION)
+        except LookupError,e:
+            
+            PROBABILITY_FUNCTION_IMPLEMENTATION=''
+        
+        
+        replaceLabelList.append(['PROBABILITY_FUNCTION_IMPLEMENTATION',PROBABILITY_FUNCTION_IMPLEMENTATION])
+
+        try:
+            _features['LatticeMonitor']            
+            
+            LATTICE_MONITOR_IMPLEMENTATION="""            
+void MODULE_NAME_CORE::field3DChange(CACell *_movingCell, CACellStack *_sourceCellStack,CACellStack *_targetCellStack){
+
+    //IMPLEMENT LATTICE MONITOR HERE
+
+}
+"""            
+            LATTICE_MONITOR_IMPLEMENTATION=re.sub('MODULE_NAME_CORE',MODULE_NAME_CORE, LATTICE_MONITOR_IMPLEMENTATION)
+        except LookupError,e:            
+            LATTICE_MONITOR_IMPLEMENTATION=''
+            
+
+        replaceLabelList.append(['LATTICE_MONITOR_IMPLEMENTATION',LATTICE_MONITOR_IMPLEMENTATION])       
+
+
+        try:
+            _features['Steppable']            
+            
+            STEPPABLE_IMPLEMENTATION="""            
+void MODULE_NAME_CORE::start(){
+
+    //IMPLEMENT start FUNCTION HERE
+
+}
+
+void MODULE_NAME_CORE::step(const unsigned int currentStep){
+
+    //IMPLEMENT step FUNCTION HERE
+
+}
+
+void MODULE_NAME_CORE::finish(){
+
+    //IMPLEMENT finish FUNCTION HERE
+
+}
+
+"""            
+            STEPPABLE_IMPLEMENTATION=re.sub('MODULE_NAME_CORE',MODULE_NAME_CORE, STEPPABLE_IMPLEMENTATION)
+        except LookupError,e:            
+            STEPPABLE_IMPLEMENTATION=''
+            
+
+        replaceLabelList.append(['STEPPABLE_IMPLEMENTATION',STEPPABLE_IMPLEMENTATION])       
+        
+
+        for replaceItems in replaceLabelList:
+            moduleImplementationText=re.sub(replaceItems[0],replaceItems[1], moduleImplementationText)
+            
+        return moduleImplementationText
+        
+    def generateCAModuleSwigFile(self,_features={}):
+        replaceLabelList=[]
+        moduleName=_features['Module']
+        
+        moduleSwigText=self.cppTemplatesDict["CAModuleSwig"]
+        
+        lowerFirst = lambda s: s[:1].lower() + s[1:] if s else ''
+        moduleNameVar=lowerFirst(moduleName)
+        
+        MODULE_NAME_CORE=moduleName
+        replaceLabelList.append(['MODULE_NAME_CORE',MODULE_NAME_CORE])
+        
+        MODULE_NAME_VAR=moduleNameVar
+        replaceLabelList.append(['MODULE_NAME_VAR',MODULE_NAME_VAR])
+        
+        DLL_SPECIFIER_EXPORT=moduleName.upper()+"_EXPORT"
+        
+        replaceLabelList.append(['DLL_SPECIFIER_EXPORT',DLL_SPECIFIER_EXPORT])
+
+        try:
+            _features['ProbabilityFunction']                        
+            PROBABILITY_FUNCTION_SWIG_1="""#include <CA/CAProbabilityFunction.h>"""                        
+            PROBABILITY_FUNCTION_SWIG_2="""%include <CA/CAProbabilityFunction.h>"""
+        except LookupError,e:            
+            PROBABILITY_FUNCTION_SWIG_1=''        
+            PROBABILITY_FUNCTION_SWIG_2=''
+        
+        replaceLabelList.append(['PROBABILITY_FUNCTION_SWIG_1',PROBABILITY_FUNCTION_SWIG_1]) 
+        replaceLabelList.append(['PROBABILITY_FUNCTION_SWIG_2',PROBABILITY_FUNCTION_SWIG_2]) 
+        
+        try:
+            _features['LatticeMonitor']                        
+            LATTICE_MONITOR_SWIG_1="""#include <CA/CACellStackFieldChangeWatcher.h>"""                        
+            LATTICE_MONITOR_SWIG_2="""%include <CA/CACellStackFieldChangeWatcher.h>"""                        
+        except LookupError,e:            
+            LATTICE_MONITOR_SWIG_1=''        
+            LATTICE_MONITOR_SWIG_2=''        
+            
+        replaceLabelList.append(['LATTICE_MONITOR_SWIG_1',LATTICE_MONITOR_SWIG_1]) 
+        replaceLabelList.append(['LATTICE_MONITOR_SWIG_2',LATTICE_MONITOR_SWIG_2])             
+
+        try:
+            _features['Steppable']                        
+            STEPPABLE_SWIG_1="""#include <CA/CASteppable.h>"""                        
+            STEPPABLE_SWIG_2="""%include <CA/CASteppable.h>"""                        
+        except LookupError,e:            
+            STEPPABLE_SWIG_1=''        
+            STEPPABLE_SWIG_2=''        
+            
+        replaceLabelList.append(['STEPPABLE_SWIG_1',STEPPABLE_SWIG_1]) 
+        replaceLabelList.append(['STEPPABLE_SWIG_2',STEPPABLE_SWIG_2])             
+
+        
+        for replaceItems in replaceLabelList:
+            moduleSwigText=re.sub(replaceItems[0],replaceItems[1], moduleSwigText)
+            
+        return moduleSwigText        
+        
+                
     def generateCMakeFile(self,_features={}):
         
         if 'Plugin' in _features.keys():
@@ -31,6 +356,8 @@ class CppTemplates:
         else: # steppable
             return ''
 
+            
+            
     def generatePluginProxyFile(self,_features={}):
     
         replaceLabelList=[]
@@ -949,3 +1276,240 @@ namespace CompuCell3D {
 };
 #endif
 """
+
+        self.cppTemplatesDict["CACMakeModule"]="""
+ADD_CA_MODULE(MODULE_CORE_NAME LINK_LIBRARIES ${MODULE_LIBS} EXTRA_COMPILER_FLAGS ${OpenMP_CXX_FLAGS} PYTHON_WRAP)
+"""    
+
+        self.cppTemplatesDict["moduleDLLSpecifier"]="""
+#ifndef MODULE_NAME_CAPITALS_EXPORT_H
+#define MODULE_NAME_CAPITALS_EXPORT_H
+
+    #if defined(_WIN32)
+      #ifdef MODULE_NAME_COREShared_EXPORTS
+          #define MODULE_NAME_CAPITALS_EXPORT __declspec(dllexport)
+          #define MODULE_NAME_CAPITALS_EXPIMP_TEMPLATE
+      #else
+          #define MODULE_NAME_CAPITALS_EXPORT __declspec(dllimport)
+          #define MODULE_NAME_CAPITALS_EXPIMP_TEMPLATE extern
+      #endif
+    #else
+         #define MODULE_NAME_CAPITALS_EXPORT
+         #define MODULE_NAME_CAPITALS_EXPIMP_TEMPLATE
+    #endif
+
+#endif        
+"""        
+
+        self.cppTemplatesDict["CAModuleHeader"]="""
+        
+#ifndef IFDEFLABEL
+#define IFDEFLABEL
+
+#include <string>
+#include <CompuCell3D/Field3D/Dim3D.h>
+#include <CompuCell3D/Field3D/Point3D.h>
+
+PROBABILITY_FUNCTION_INCLUDE
+LATTICE_MONITOR_INCLUDE
+STEPPABLE_INCLUDE
+DLL_SPECIFIER_INCLUDE
+
+
+namespace CompuCell3D{
+
+    //have to declare here all the classes that will be passed to this class from Python
+    class CAManager;
+    class Point3D;    
+    class Dim3D;
+
+    class DLL_SPECIFIER_EXPORT MODULE_NAME_CORE: PROBABILITY_FUNCTION_BASE LATTICE_MONITOR_BASE STEPPABLE_BASE{
+        int carryingCapacity;
+    public:
+    
+        MODULE_NAME_CORE();
+        virtual ~MODULE_NAME_CORE();
+
+        PROBABILITY_FUNCTION_INTERFACE        
+        LATTICE_MONITOR_INTERFACE        
+        STEPPABLE_INTERFACE
+        
+        //CA SimulationObject interface
+        virtual void init(CAManager *_caManager);
+        virtual void extraInit(){} //implement if necessary
+        virtual void extraInit2(){} //implement if necessary       
+        virtual std::string toString();
+        
+
+
+    
+    };
+};
+
+#endif
+
+"""
+
+        self.cppTemplatesDict["CAModuleImplementation"]="""
+#include <CA/CACell.h>
+#include <CA/CAManager.h>
+#include <CA/CACellStack.h>
+#include <CompuCell3D/Field3D/WatchableField3D.h>
+
+#include "MODULE_NAME_CORE.h"
+
+//#define _DEBUG
+using namespace CompuCell3D;
+using namespace std;
+
+MODULE_NAME_CORE::MODULE_NAME_CORE():
+carryingCapacity(1)
+{
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+MODULE_NAME_CORE::~MODULE_NAME_CORE(){}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+void MODULE_NAME_CORE::init(CAManager *_caManager){
+    RUNTIME_ASSERT_OR_THROW("CellTrail::init _caManager cannot be NULL!",_caManager);
+    caManager = _caManager;
+    cellFieldS = caManager->getCellFieldS();
+    fieldDim = cellFieldS->getDim();
+	carryingCapacity = caManager ->getCellCarryingCapacity();
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+std::string MODULE_NAME_CORE::toString(){return "MODULE_NAME_CORE";}
+
+PROBABILITY_FUNCTION_IMPLEMENTATION
+LATTICE_MONITOR_IMPLEMENTATION
+STEPPABLE_IMPLEMENTATION
+
+"""
+        
+        self.cppTemplatesDict["CAModuleSwig"]="""
+// -*-c++-*-
+
+
+%module ("threads"=1) MODULE_NAME_CORE
+
+%include "typemaps.i"
+
+%include stl.i //to ensure stl functionality 
+
+
+// C++ std::string handling
+%include "std_string.i"
+
+// C++ std::map handling
+%include "std_map.i"
+
+// C++ std::map handling
+%include "std_set.i"
+
+// C++ std::map handling
+%include "std_vector.i"
+
+%include "stl.i"
+
+%import "../../CAPython/CoreObjects/CoreObjects.i"
+
+
+// ************************************************************
+// Module Includes 
+// ************************************************************
+
+// These are copied directly to the .cxx file and are not parsed
+// by SWIG.  Include include files or definitions that are required
+// for the module to build correctly.
+//DOCSTRINGS
+
+
+
+%include <windows.i>
+
+%{
+
+PROBABILITY_FUNCTION_SWIG_1
+LATTICE_MONITOR_SWIG_1
+STEPPABLE_SWIG_1
+#include <CA/modules/MODULE_NAME_CORE/MODULE_NAME_CORE.h>
+
+
+
+// Namespaces
+using namespace std;
+using namespace CompuCell3D;
+
+
+
+%}
+
+
+
+
+%include stl.i //to ensure stl functionality 
+
+// C++ std::string handling
+%include "std_string.i"
+
+// C++ std::map handling
+%include "std_map.i"
+
+// C++ std::map handling
+%include "std_set.i"
+
+// C++ std::map handling
+%include "std_vector.i"
+
+%include "stl.i"
+
+//enables better handling of STL exceptions
+%include "exception.i"
+
+%exception {
+  try {
+    $action
+  } catch (const std::exception& e) {
+    SWIG_exception(SWIG_RuntimeError, e.what());
+  }
+}
+
+// %include "swig_includes/numpy.i"
+// // // %include "pyinterface/swig_includes/numpy.i"
+
+// // // %init %{
+    // // // import_array();
+// // // %}
+
+
+//C arrays
+//%include "carrays.i"
+
+// ******************************
+// Third Party Classes
+// ******************************
+#define DLL_SPECIFIER_EXPORT
+
+PROBABILITY_FUNCTION_SWIG_2
+LATTICE_MONITOR_SWIG_2
+STEPPABLE_SWIG_2
+%include <CA/modules/MODULE_NAME_CORE/MODULE_NAME_CORE.h>
+
+%extend CompuCell3D::MODULE_NAME_CORE{
+      %pythoncode %{
+
+    def moduleExtraPyFunction(self,*args,**kwds):
+        print "HERE YOU IMPLEMENT ALL ADDITIONAL PYTHON FUNCTIONS TO BE USED IN THE MODULE. E.G. FUNCTION THAT CONFIGURES THE MODULE"
+
+	%}
+
+
+};
+"""
+
+

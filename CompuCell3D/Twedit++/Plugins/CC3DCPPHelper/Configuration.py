@@ -13,14 +13,15 @@ class Configuration:
         #default settings
         self.defaultConfigs={}
 
-        self.defaultConfigs["RecentModuleDirectory"]=QString("")
+        self.defaultConfigs['RecentModuleDirectory']=QString("")
+        self.defaultConfigs['CARecentModuleDirectory']=QString("")
                 
         self.modifiedKeyboardShortcuts={} # dictionary actionName->shortcut for modified keyboard shortcuts - only reassinged shortcuts are stored
         
         self.initSyncSettings()
 
     def setting(self,_key):
-        if _key in ["RecentModuleDirectory"]:
+        if _key in ['RecentModuleDirectory','CARecentModuleDirectory']:
             val = self.settings.value(_key)
             if val.isValid():
                 return val.toString()
@@ -32,7 +33,7 @@ class Configuration:
     def setSetting(self,_key,_value):
 
             
-        if _key in ["RecentModuleDirectory"]: # string values
+        if _key in ['RecentModuleDirectory','CARecentModuleDirectory']: # string values
             self.settings.setValue(_key,QVariant(_value))
             
             

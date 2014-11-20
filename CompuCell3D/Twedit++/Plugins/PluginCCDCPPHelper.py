@@ -143,12 +143,19 @@ class CC3DCPPHelper(QObject):
         """
         Private method to initialize the actions.        
         """
-                
+
+        self.actions['Generate New CA Module...'] = QtGui.QAction(QtGui.QIcon(':/icons/document-new.png'), "&Generate New CA Module...",
+                self, 
+                statusTip="Create new CA module")
+
+        
         self.actions['Generate New Module...'] = QtGui.QAction(QtGui.QIcon(':/icons/document-new.png'), "&Generate New Module...",
                 self, 
                 statusTip="Create new C++ CC3D module")
                 
         self.__ui.connect(self.actions['Generate New Module...'] ,SIGNAL("triggered()"),self.generateNewModule)       
+        
+        self.__ui.connect(self.actions['Generate New CA Module...'] ,SIGNAL("triggered()"),self.generateNewCAModule)               
         
         
         self.actions['Deactivate']=QtGui.QAction("Deactivate",
@@ -156,6 +163,7 @@ class CC3DCPPHelper(QObject):
                 statusTip="Deactivate C++ CC3D plugin", triggered=self.deactivate)
                 
         self.cc3dcppMenu.addAction(self.actions['Generate New Module...'])
+        self.cc3dcppMenu.addAction(self.actions['Generate New CA Module...'])
         self.cc3dcppMenu.addAction(self.actions['Deactivate'])
         #----------------------------
         self.cc3dcppMenu.addSeparator()
@@ -184,8 +192,140 @@ class CC3DCPPHelper(QObject):
                 self.__ui.connect(action,SIGNAL("triggered()"),self.snippetMapper,SLOT("map()"))
                 self.snippetMapper.setMapping(action, actionKey)
         
+    def makeDirOrWarn(self,_dirName):
+        if os.path.exists(_dirName):
+            message="Directory %s already exists. <br>Is it OK to overwrite content in this directory with generated files?"%_dirName
+            
+            ret = QtGui.QMessageBox.warning(self.__ui, " Directory already exists",
+                    message,
+                    QtGui.QMessageBox.Yes | QtGui.QMessageBox.No )
+            if ret == QtGui.QMessageBox.No:
+                return             
+        else:
+            try:
+                self.makeDirectory(_dirName)            
+            except IOError,e:
+                message="Could not create directory %s. <br> Please make sure you have necessary permissions"%_dirName
+                QtGui.QMessageBox.information(self.__ui, "Could not create directory",message,QtGui.QMessageBox.Ok)
+                return        
+        
+    def generateNewCAModule(self):
+        print 'INSIDE generateNewCAModule'
+        from CC3DCPPHelper.CPP_CA_ModuleGeneratorDialog import CPP_CA_ModuleGeneratorDialog        
+        cmgd=CPP_CA_ModuleGeneratorDialog(self.__ui)
+        # set recent  directory name
+        cmgd.moduleDirLE.setText(self.configuration.setting('CARecentModuleDirectory'))
+        
+        features={}
+        
+        if not cmgd.exec_():
+            return
+            
+        capitalFirst = lambda s: s[:1].upper() + s[1:] if s else ''                    
+        # first check if directory exists and if it is writeable. If the module directory  already exists ask if user wants to overwrite files there with new, generated ones    
+        dirName=str(cmgd.moduleDirLE.text()).rstrip() 
+        
+        codeLayout='maincode'
+        if cmgd.developerZoneLayoutRB.isChecked():
+            codeLayout='developerzone'
+            
+        dirName=str(cmgd.moduleDirLE.text()).rstrip()     
+        self.configuration.setSetting("CARecentModuleDirectory",dirName)
+        
+        moduleCoreName=str(cmgd.moduleCoreNameLE.text()).rstrip() 
+        moduleCoreName=capitalFirst(moduleCoreName)        
+        fullModuleDir=os.path.join(dirName,moduleCoreName)
+        fullModuleDir=os.path.abspath(fullModuleDir)
         
         
+        try:
+            cmakeModulesFile=os.path.join(dirName,'CMakeLists.txt')
+            
+            f=open(cmakeModulesFile,'r+')
+            f.close()            
+            
+        except IOError,e:
+            print 'COULD NOT FIND Cmake file ',cmakeModulesFile
+            return
+            
+            
+        print 'cmakeModulesFile=',cmakeModulesFile
+        print 'moduleCoreName=',moduleCoreName
+
+        
+        features['codeLayout']=codeLayout
+        features['cmakeModulesFile']=cmakeModulesFile        
+        
+        self.makeDirOrWarn(fullModuleDir)
+    
+        
+        if not self.cppTemplates:
+            from CC3DCPPHelper.CppTemplates import CppTemplates
+            self.cppTemplates=CppTemplates()
+    
+        features["PythonWrap"] = cmgd.pythonWrapCB.isChecked()
+        
+        if cmgd.moduleRB.isChecked():
+            generatedFileList=QStringList()                        
+            features['Module']=moduleCoreName
+                 
+            if cmgd.probFuncRB.isChecked():
+                features['ProbabilityFunction']=True
+            if cmgd.latticeMonitorRB.isChecked():
+                features['LatticeMonitor']=True        
+            if cmgd.steppableRB.isChecked():
+                features['Steppable']=True        
+                
+                
+            #write CMake file   
+            cmakeText=self.cppTemplates.generateCACMakeFile(features)
+            cmakeFileName=os.path.join(fullModuleDir,"CMakeLists.txt")
+            cmakeFileName=os.path.abspath(cmakeFileName)            
+            self.writeTextToFile(cmakeFileName,cmakeText)            
+            generatedFileList.append(cmakeFileName)                
+            
+            
+            #write DLL specifier
+            moduleDLLSpecifierName=moduleCoreName+'DLLSpecifier.h'
+            moduleDLLSpecifierText=self.cppTemplates.generateModuleDLLSpecifier(features)
+            moduleDLLSpecifierName=os.path.join(fullModuleDir,moduleDLLSpecifierName)
+            moduleDLLSpecifierName=os.path.abspath(moduleDLLSpecifierName)
+            # print 'moduleDLLSpecifierText=',moduleDLLSpecifierText    
+            self.writeTextToFile(moduleDLLSpecifierName,moduleDLLSpecifierText)
+            generatedFileList.append(moduleDLLSpecifierName)
+            
+            #write module header file
+            moduleHeaderName=moduleCoreName+'.h'
+            moduleHeaderText=self.cppTemplates.generateCAModuleHeaderFile(features)
+            moduleHeaderName=os.path.join(fullModuleDir,moduleHeaderName)
+            moduleHeaderName=os.path.abspath(moduleHeaderName)
+            # print 'moduleHeaderText=',moduleHeaderText
+            self.writeTextToFile(moduleHeaderName,moduleHeaderText)
+            generatedFileList.append(moduleHeaderName)            
+            
+            #write module implementation
+            moduleImplementationName=moduleCoreName+'.cpp'
+            moduleImplementationText=self.cppTemplates.generateCAModuleImplementationFile(features)
+            moduleImplementationName=os.path.join(fullModuleDir,moduleImplementationName)
+            moduleImplementationName=os.path.abspath(moduleImplementationName)
+            # print 'moduleImplementationText=',moduleImplementationText
+            self.writeTextToFile(moduleImplementationName,moduleImplementationText)
+            generatedFileList.append(moduleImplementationName)            
+            
+            if features["PythonWrap"]:
+                #write module swig
+                moduleSwigName=moduleCoreName+'.i'
+                moduleSwigText=self.cppTemplates.generateCAModuleSwigFile(features)
+                moduleSwigName=os.path.join(fullModuleDir,moduleSwigName)
+                moduleSwigName=os.path.abspath(moduleSwigName)
+                # print 'moduleSwigText=',moduleSwigText
+                self.writeTextToFile(moduleSwigName,moduleSwigText)
+                generatedFileList.append(moduleSwigName)            
+
+            #adding entry in the  modules/CMakeLists.txt     
+            self.addModuleToModuleDirCMakeFile(moduleCoreName,dirName)
+
+            
     def generateNewModule(self):        
     
         from CC3DCPPHelper.CPPModuleGeneratorDialog import CPPModuleGeneratorDialog        
@@ -265,21 +405,7 @@ class CC3DCPPHelper(QObject):
             features['ExtraAttribute']=True
         
         
-        if os.path.exists(fullModuleDir):
-            message="Directory %s already exists. <br>Is it OK to overwrite content in this directory with generated files?"%fullModuleDir
-            
-            ret = QtGui.QMessageBox.warning(self.__ui, " Module directory already exists",
-                    message,
-                    QtGui.QMessageBox.Yes | QtGui.QMessageBox.No )
-            if ret == QtGui.QMessageBox.No:
-                return             
-        else:
-            try:
-                self.makeDirectory(fullModuleDir)            
-            except IOError,e:
-                message="Could not create directory %s. <br> Please make sure you have necessary permissions"%fullModuleDir
-                QtGui.QMessageBox.information(self.__ui, "Could not create directory",message,QtGui.QMessageBox.Ok)
-                return
+        self.makeDirOrWarn(fullModuleDir)
                 
         from CC3DCPPHelper.CppTemplates import CppTemplates
         if not self.cppTemplates:
