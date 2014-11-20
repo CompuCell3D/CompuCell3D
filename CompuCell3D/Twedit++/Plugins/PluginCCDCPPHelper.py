@@ -324,6 +324,9 @@ class CC3DCPPHelper(QObject):
 
             #adding entry in the  modules/CMakeLists.txt     
             self.addModuleToModuleDirCMakeFile(moduleCoreName,dirName)
+            
+            # open all generated files in Twedit
+            self.__ui.loadFiles(generatedFileList)            
 
             
     def generateNewModule(self):        
