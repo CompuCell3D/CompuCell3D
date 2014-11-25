@@ -1,6 +1,7 @@
 // -*-c++-*-
 
 
+
 %module ("threads"=1) CompuCell
 
 %include "typemaps.i"
