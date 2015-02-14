@@ -145,12 +145,16 @@ class CustomTabBar(QTabBar):
     def __init__(self , _parent=None):
         QTabBar.__init__(self , _parent)
         self.tabWidget=_parent
-        self.setStyleSheet("QTabBar::tab { height: 20px;}");
+        self.setStyleSheet("QTabBar::tab { height: 20px;}")
+        self.clickedTabPosition = -1
         
     def mousePressEvent(self,event):        
         self.clickedTabPosition= self.tabWidget.tabBar().tabAt(event.pos())
         self.tabWidget.widget(self.clickedTabPosition).setFocus(Qt.MouseFocusReason)
         super(self.__class__,self).mousePressEvent(event)
+        
+    def contextMenuEvent(self , event):
+        self.tabWidget.contextMenuEvent(event)
         
         
         
@@ -174,8 +178,8 @@ class CustomTabWidget(QTabWidget):
             contextMenuEvent handles right clicks on the editor tabs
         """
         
-        self.clickedTabPosition=self.tabBar().tabAt(event.pos())
-        
+#         self.clickedTabPosition=self.tabBar().tabAt(event.pos())
+        self.clickedTabPosition = self.tabBarLocal.clickedTabPosition        
         self.setCurrentWidget(self.widget(self.clickedTabPosition))
         self.editorWindow.clickedTabWidget=self
         self.editorWindow.activeTabWidget=self
