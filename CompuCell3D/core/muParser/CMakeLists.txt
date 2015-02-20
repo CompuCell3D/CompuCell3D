@@ -40,6 +40,7 @@ muParserTest
 muParserTemplateMagic
 muParserToken
 muParserTokenReader
+CC3D_muParser
 
   )
 

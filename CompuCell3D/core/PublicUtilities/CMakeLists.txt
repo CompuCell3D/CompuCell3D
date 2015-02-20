@@ -30,6 +30,7 @@ INSTALL_FILES(/include/CompuCell3D/PublicUtilities .h
   StringUtils
   Vector3
   ParallelUtilsOpenMP
+  CC3D_PublicUtilities
   # Unit
   # unit_calculator
   )

@@ -18,6 +18,7 @@ INSTALL_FILES(/include/CompuCell3D/XMLUtils .h
    CC3DXMLElementWalker
    XMLParserExpatLibDLLSpecifier
    XMLUtilsDLLSpecifier   
+   CC3D_XMLUtils
 )
 
 #ADD_LIBRARY(XMLUtils SHARED CC3DXMLElement.cpp CC3DXMLElementWalker.cpp)
