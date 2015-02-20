@@ -55,6 +55,7 @@ INSTALL_FILES(/include/CompuCell3D/CompuCell3D/Potts3D .h
   TypeTransition
   FluctuationAmplitudeFunction
   StandardFluctuationAmplitudeFunctions
+  CC3D_Potts3D
   )
 
 #INCLUDE_DIRECTORIES(${XERCESC_INCLUDE_DIR})

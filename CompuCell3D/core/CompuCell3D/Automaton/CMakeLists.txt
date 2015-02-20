@@ -19,4 +19,5 @@ INSTALL_FILES(/include/CompuCell3D/CompuCell3D/Automaton .h
   CellType
   CellTypeNode
   Transition
+  CC3D_Automaton
   )

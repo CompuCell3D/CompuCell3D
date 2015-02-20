@@ -151,6 +151,10 @@ INSTALL_FILES(/include/CompuCell3D/CompuCell3D .h
   Simulator
   SteerableObject
   Steppable
+  CC3D
+  CC3D_Main
+  CC3D_STL
+  CC3DEvents
   
   )
 

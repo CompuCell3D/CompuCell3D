@@ -27,4 +27,6 @@ INSTALL_FILES(/include/CompuCell3D/CompuCell3D/Boundary .h
   ChengbangAlgorithm
   DefaultAlgorithm
   NoFluxBoundary
-  PeriodicBoundary)
+  PeriodicBoundary
+  CC3D_Boundary
+  )

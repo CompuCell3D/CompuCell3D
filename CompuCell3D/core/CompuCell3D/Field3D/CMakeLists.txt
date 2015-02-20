@@ -36,4 +36,5 @@ INSTALL_FILES(/include/CompuCell3D/CompuCell3D/Field3D .h
   Neighbor
   Point3D
   WatchableField3D
+  CC3D_Field3D
 )

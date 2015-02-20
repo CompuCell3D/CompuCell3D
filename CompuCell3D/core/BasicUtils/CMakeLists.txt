@@ -102,6 +102,7 @@ INSTALL_FILES(/include/CompuCell3D/BasicUtils .h
   BasicSmartPointer
   BasicString
   BasicStringTable
+  BasicUtils
   WindowsGlob
   wrapdll
   Zap
