@@ -42,11 +42,11 @@ namespace CompuCell3D{
         
 		virtual bool fillScalarFieldData2D(long _conArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){return false;}
 		virtual bool fillScalarFieldData2DHex(long _conArrayAddr,long _hexCellsArrayAddr ,long _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){return false;}
-        virtual bool fillScalarFieldData2DCartesian(long _conArrayAddr,long _hexCellsArrayAddr ,long _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){return false;}
+        virtual bool fillScalarFieldData2DCartesian(long _conArrayAddr,long _cartesianCellsArrayAddr ,long _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){return false;}
 
 		virtual bool fillScalarFieldCellLevelData2D(long _conArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){return false;}
 		virtual bool fillScalarFieldCellLevelData2DHex(long _conArrayAddr,long _hexCellsArrayAddr ,long _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){return false;}
-        virtual bool fillScalarFieldCellLevelData2DCartesian(long _conArrayAddr,long _hexCellsArrayAddr ,long _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){return false;}
+        virtual bool fillScalarFieldCellLevelData2DCartesian(long _conArrayAddr,long _cartesianCellsArrayAddr ,long _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){return false;}
         
 		virtual bool fillVectorFieldData2D(long _pointsArrayIntAddr,long _vectorArrayIntAddr,std::string _fieldName, std::string _plane ,  int _pos){return false;}
 		virtual bool fillVectorFieldData2DHex(long _pointsArrayIntAddr,long _vectorArrayIntAddr,std::string _fieldName, std::string _plane ,  int _pos){return false;}

@@ -663,7 +663,7 @@ bool FieldExtractorCML::fillScalarFieldCellLevelData2DHex(long _conArrayAddr,lon
 	return fillConFieldData2DHex(_conArrayAddr,_hexCellsArrayAddr ,_pointsArrayAddr,_conFieldName, _plane ,   _pos)	;
 }
 
-bool FieldExtractorCML::fillConFieldData2D(long _conArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){
+bool FieldExtractorCML::fillConFieldData2D(long _conArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){    
 	vtkDoubleArray *conArrayRead=(vtkDoubleArray *)lds->GetPointData()->GetArray(_conFieldName.c_str());
 
 	if (!conArrayRead)
@@ -724,10 +724,94 @@ bool FieldExtractorCML::fillScalarFieldData2D(long _conArrayAddr,std::string _co
 	return fillConFieldData2D( _conArrayAddr, _conFieldName,  _plane ,   _pos);
 }
 
+bool FieldExtractorCML::fillScalarFieldData2DCartesian(long _conArrayAddr,long _cartesianCellsArrayAddr ,long _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
+    return fillConFieldData2DCartesian(_conArrayAddr,_cartesianCellsArrayAddr , _pointsArrayAddr , _conFieldName , _plane ,_pos);
+}
+
+bool FieldExtractorCML::fillConFieldData2DCartesian(long _conArrayAddr,long _cartesianCellsArrayAddr ,long _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
+    vtkDoubleArray *conArrayRead=(vtkDoubleArray *)lds->GetPointData()->GetArray(_conFieldName.c_str());
+
+	if (!conArrayRead)
+		return false;
+
+	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
+
+	vtkCellArray * _cartesianCellsArray=(vtkCellArray*)_cartesianCellsArrayAddr;
+
+	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
+
+	vector<int> fieldDimVec(3,0);
+	fieldDimVec[0]=fieldDim.x;
+	fieldDimVec[1]=fieldDim.y;
+	fieldDimVec[2]=fieldDim.z;
+
+	vector<int> pointOrderVec=pointOrder(_plane);
+	vector<int> dimOrderVec=dimOrder(_plane);
+
+	vector<int> dim(3,0);
+	dim[0]=fieldDimVec[dimOrderVec[0]];
+	dim[1]=fieldDimVec[dimOrderVec[1]];
+	dim[2]=fieldDimVec[dimOrderVec[2]];
+
+    
+	int offset=0;
+
+	Point3D pt;
+	vector<int> ptVec(3,0);
+
+	double con;
+	long pc=0;
+	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+     
+     
+	for(int j =0 ; j<dim[1] ; ++j)
+		for(int i =0 ; i<dim[0] ; ++i){
+			ptVec[0]=i;
+			ptVec[1]=j;
+			ptVec[2]=_pos;
+
+			pt.x=ptVec[pointOrderVec[0]];
+			pt.y=ptVec[pointOrderVec[1]];
+			pt.z=ptVec[pointOrderVec[2]];
+
+			if (i==dim[0] || j==dim[1]){
+				con=0.0;
+			}else{
+				con = conArrayRead->GetValue(indexPoint3D(pt));
+			}
+            
+            Coordinates3D<double> coords(ptVec[0],ptVec[1],0); // notice that we are drawing pixels from other planes on a xy plan so we use ptVec instead of pt. pt is absolute position of the point ptVec is for projection purposes
+            
+			for (int idx=0 ; idx<4 ; ++idx){
+			  Coordinates3D<double> cartesianVertex=cartesianVertices[idx]+coords; 
+ 			 _pointsArray->InsertNextPoint(cartesianVertex.x,cartesianVertex.y,0.0);
+			}               
+            
+			pc+=4;
+			vtkIdType cellId = _cartesianCellsArray->InsertNextCell(4);
+			_cartesianCellsArray->InsertCellPoint(pc-4);
+			_cartesianCellsArray->InsertCellPoint(pc-3);
+			_cartesianCellsArray->InsertCellPoint(pc-2);
+			_cartesianCellsArray->InsertCellPoint(pc-1);
+
+			conArray->InsertNextValue( con);
+			++offset;
+		}
+        
+		return true;
+
+}
+
+
 bool FieldExtractorCML::fillScalarFieldCellLevelData2D(long _conArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){
 
 	return fillConFieldData2D( _conArrayAddr, _conFieldName,  _plane ,   _pos);
 }
+
+bool FieldExtractorCML::fillScalarFieldCellLevelData2DCartesian(long _conArrayAddr,long _cartesianCellsArrayAddr ,long _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
+    return fillConFieldData2DCartesian(_conArrayAddr,_cartesianCellsArrayAddr , _pointsArrayAddr , _conFieldName , _plane ,_pos);
+}
+
 
 bool FieldExtractorCML::fillVectorFieldData2D(long _pointsArrayIntAddr,long _vectorArrayIntAddr,std::string _fieldName, std::string _plane ,  int _pos){
 	vtkFloatArray * vectorArray=(vtkFloatArray *)_vectorArrayIntAddr;
@@ -1067,15 +1151,17 @@ vector<int> FieldExtractorCML::fillCellFieldData3D(long _cellTypeArrayAddr, long
 	set<int> usedCellTypes;
 
 	vtkIntArray *cellTypeArray = (vtkIntArray *)_cellTypeArrayAddr;
-//	vtkIntArray *cellIdArray = (vtkIntArray *)_cellIdArrayAddr;
+	vtkIntArray *cellIdArray = (vtkIntArray *)_cellIdArrayAddr;
 
 	vtkCharArray *typeArrayRead = (vtkCharArray *)lds->GetPointData()->GetArray("CellType");
-//	vtkIntArray *idArrayRead = (vtkIntArray *)lds->GetPointData()->GetArray("CellId");
+	vtkIntArray *idArrayRead = (vtkIntArray *)lds->GetPointData()->GetArray("CellId");
 
 	cellTypeArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
+    cellIdArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
 
 	Point3D pt;
 	int type;
+    int id;
 	int offset=0;
 	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
 	for(int k =0 ; k<fieldDim.z+2 ; ++k)
@@ -1083,16 +1169,22 @@ vector<int> FieldExtractorCML::fillCellFieldData3D(long _cellTypeArrayAddr, long
 			for(int i =0 ; i<fieldDim.x+2 ; ++i){
 				if(i==0 || i==fieldDim.x+1 ||j==0 || j==fieldDim.y+1 || k==0 || k==fieldDim.z+1){
 					cellTypeArray->InsertValue(offset, 0);
+                    cellIdArray->InsertValue(offset, 0);
 					++offset;
 				}else{
 					pt.x=i-1;
 					pt.y=j-1;
 					pt.z=k-1;
 					type=typeArrayRead->GetValue(indexPoint3D(pt));
+                    id=idArrayRead->GetValue(indexPoint3D(pt));
+
 					if(type!=0)
 						usedCellTypes.insert(type);
 
 					cellTypeArray->InsertValue(offset, type);
+                    cellIdArray->InsertValue(offset, id);
+
+
 					++offset;
 				}
 			}
