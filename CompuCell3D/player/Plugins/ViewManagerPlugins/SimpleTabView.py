@@ -258,10 +258,14 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
     def updateActiveWindowVisFlags(self, window=None):
         
-        if window:
-            dictKey = window.winId().__int__()
-        else:
-            dictKey = self.lastActiveWindow.winId().__int__()
+        try:
+            if window:
+                dictKey = window.winId().__int__()
+            else:
+                dictKey = self.lastActiveWindow.winId().__int__()
+        except StandardError:
+            print MODULENAME, 'updateActiveWindowVisFlags():  Could not find any open windows. Ignoring request'    
+            return
 #        print MODULENAME, 'updateActiveWindowVisFlags():  dictKey (of lastActiveWindow)=',dictKey
 #        if self.lastActiveWindow:
 #            print MODULENAME, 'updateActiveWindowVisFlags():  self.lastActiveWindow.windowTitle()=',self.lastActiveWindow.windowTitle()
