@@ -150,7 +150,6 @@ class CMLResultReader(SimulationThread.SimulationThread):
         self.fieldDimPrevious=self.fieldDim 
 
     def readSimulationDataNonBlocking(self,_i):
-        
         self.newFileBeingLoaded=True # this flag is used to prevent calling  draw function when new data is read from hard drive
         # print "LOCKED self.newFileBeingLoaded=",self.newFileBeingLoaded
         # self.drawMutex.lock()
@@ -189,7 +188,7 @@ class CMLResultReader(SimulationThread.SimulationThread):
 
         
     def readSimulationData(self,_i):
-        
+
         # self.counter+=1
         # if self.counter>3:
             # return

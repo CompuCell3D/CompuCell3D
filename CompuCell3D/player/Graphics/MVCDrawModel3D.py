@@ -147,7 +147,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         self.cellTypeIntAddr = self.extractAddressIntFromVtkObject(self.cellType)
         
         # Also get the CellId
-        self.cellId = vtk.vtkIntArray()
+        self.cellId = vtk.vtkLongArray()
         self.cellId.SetName("cellid")
         self.cellIdIntAddr = self.extractAddressIntFromVtkObject(self.cellId)
         

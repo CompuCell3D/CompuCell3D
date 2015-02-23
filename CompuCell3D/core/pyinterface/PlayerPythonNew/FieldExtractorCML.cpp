@@ -29,7 +29,7 @@ using namespace CompuCell3D;
 #include "FieldExtractorCML.h"
 
 
-FieldExtractorCML::FieldExtractorCML():lds(0)
+FieldExtractorCML::FieldExtractorCML():lds(0),zDimFactor(0),yDimFactor(0)
 {
 
 }
@@ -1151,10 +1151,10 @@ vector<int> FieldExtractorCML::fillCellFieldData3D(long _cellTypeArrayAddr, long
 	set<int> usedCellTypes;
 
 	vtkIntArray *cellTypeArray = (vtkIntArray *)_cellTypeArrayAddr;
-	vtkIntArray *cellIdArray = (vtkIntArray *)_cellIdArrayAddr;
+	vtkLongArray *cellIdArray = (vtkLongArray *)_cellIdArrayAddr;
 
 	vtkCharArray *typeArrayRead = (vtkCharArray *)lds->GetPointData()->GetArray("CellType");
-	vtkIntArray *idArrayRead = (vtkIntArray *)lds->GetPointData()->GetArray("CellId");
+	vtkLongArray *idArrayRead = (vtkLongArray *)lds->GetPointData()->GetArray("CellId");
 
 	cellTypeArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
     cellIdArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
@@ -1162,6 +1162,7 @@ vector<int> FieldExtractorCML::fillCellFieldData3D(long _cellTypeArrayAddr, long
 	Point3D pt;
 	int type;
     int id;
+    long idxPt;
 	int offset=0;
 	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
 	for(int k =0 ; k<fieldDim.z+2 ; ++k)
@@ -1175,15 +1176,15 @@ vector<int> FieldExtractorCML::fillCellFieldData3D(long _cellTypeArrayAddr, long
 					pt.x=i-1;
 					pt.y=j-1;
 					pt.z=k-1;
-					type=typeArrayRead->GetValue(indexPoint3D(pt));
-                    id=idArrayRead->GetValue(indexPoint3D(pt));
+					idxPt=indexPoint3D(pt);
+					type=typeArrayRead->GetValue(idxPt);
+                    id=idArrayRead->GetValue(idxPt);
 
 					if(type!=0)
 						usedCellTypes.insert(type);
 
 					cellTypeArray->InsertValue(offset, type);
                     cellIdArray->InsertValue(offset, id);
-
 
 					++offset;
 				}
@@ -1259,5 +1260,6 @@ bool FieldExtractorCML::fillScalarFieldCellLevelData3D(long _conArrayAddr ,long 
 bool FieldExtractorCML::readVtkStructuredPointsData(long _structuredPointsReaderAddr){
     vtkStructuredPointsReader * reader=(vtkStructuredPointsReader *)_structuredPointsReaderAddr;
     reader->Update();
+
     return true;
 }

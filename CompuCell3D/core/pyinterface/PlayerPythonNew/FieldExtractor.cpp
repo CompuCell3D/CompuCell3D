@@ -7,6 +7,7 @@
 #include <CompuCell3D/Field3D/Field3D.h>
 #include <Utils/Coordinates3D.h>
 #include <vtkIntArray.h>
+#include <vtkLongArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkPoints.h>
@@ -2472,7 +2473,7 @@ vector<int> FieldExtractor::fillCellFieldData3D(long _cellTypeArrayAddr, long _c
 	set<int> usedCellTypes;
 
 	vtkIntArray *cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
-	vtkIntArray *cellIdArray=(vtkIntArray *)_cellIdArrayAddr;
+	vtkLongArray *cellIdArray=(vtkLongArray *)_cellIdArrayAddr;
 
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
 	Dim3D fieldDim = cellFieldG->getDim();
@@ -2482,7 +2483,8 @@ vector<int> FieldExtractor::fillCellFieldData3D(long _cellTypeArrayAddr, long _c
 
 	Point3D pt;
 	CellG* cell;
-	int type,id;
+	int type;
+	long id;
 	int offset=0;
 	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
 	for(int k =0 ; k<fieldDim.z+2 ; ++k)
