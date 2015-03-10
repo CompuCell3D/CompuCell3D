@@ -1446,6 +1446,25 @@ class CellNeighborListAuto:
                 area += commonSurfaceArea
         return area
         
+    def commonSurfaceAreaByType(self):        
+        from collections import defaultdict
+        area_dict = defaultdict(int)
+        for neighbor,commonSurfaceArea in self.__iter__():
+            cell_type = 0 if not neighbor else neighbor.type
+            area_dict[cell_type] += commonSurfaceArea            
+        return area_dict
+
+
+    def neighborCountByType(self):        
+        from collections import defaultdict
+        neighbor_counter_dict = defaultdict(int)
+        
+        for neighbor,commonSurfaceArea in self.__iter__():
+            cell_type = 0 if not neighbor else neighbor.type
+            neighbor_counter_dict[cell_type] += 1            
+        return neighbor_counter_dict
+
+        
     def __iter__(self):
         return CellNeighborIteratorAuto(self)
 
