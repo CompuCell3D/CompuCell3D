@@ -1622,6 +1622,16 @@ class FocalPointPlasticityDataList:
         self.focalPointPlasticityPlugin=_focalPointPlasticityPlugin
         self.focalPointPlasticityTrackerAccessor=self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerAccessorPtr()
         self.cell=_cell
+        
+    def __len__(self):    
+        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)         
+        return self.focalPointPlasticityTracker.focalPointPlasticityNeighbors.size()
+        
+    def __getitem__(self, idx):
+        if idx > self.__len__()-1 : raise IndexError ("Out of bounds index: FocalPointPlasticityDataList index = %s is out of bounds"%str(idx))         
+        for counter, data in enumerate(self.__iter__()):
+            if idx==counter : return data
+            
     def __iter__(self):
         return FocalPointPlasticityDataIterator(self)
 
@@ -1655,6 +1665,16 @@ class InternalFocalPointPlasticityDataList:
         self.focalPointPlasticityPlugin=_focalPointPlasticityPlugin
         self.focalPointPlasticityTrackerAccessor=self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerAccessorPtr()
         self.cell=_cell
+        
+    def __getitem__(self, idx):
+        if idx > self.__len__()-1 : raise IndexError ("Out of bounds index: InternalFocalPointPlasticityDataList index = %s is out of bounds"%str(idx))         
+        for counter, data in enumerate(self.__iter__()):
+            if idx==counter : return data        
+            
+    def __len__(self):    
+        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)         
+        return self.focalPointPlasticityTracker.internalFocalPointPlasticityNeighbors.size()
+        
     def __iter__(self):
         return InternalFocalPointPlasticityDataIterator(self)
 
@@ -1688,6 +1708,15 @@ class AnchorFocalPointPlasticityDataList:
         self.focalPointPlasticityPlugin=_focalPointPlasticityPlugin
         self.focalPointPlasticityTrackerAccessor=self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerAccessorPtr()
         self.cell=_cell
+    def __getitem__(self, idx):
+        if idx > self.__len__()-1 : raise IndexError ("Out of bounds index: AnchorFocalPointPlasticityDataList index = %s is out of bounds"%str(idx))         
+        for counter, data in enumerate(self.__iter__()):
+            if idx==counter : return data        
+            
+    def __len__(self):    
+        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)         
+        return self.focalPointPlasticityTracker.anchors.size()        
+        
     def __iter__(self):
         return AnchorFocalPointPlasticityDataIterator(self)
 
