@@ -357,20 +357,13 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             self.clusterSurfaceTrackerPlugin.updateClusterSurface(newClusterId)        
           
     def getCellNeighbors(self,_cell):
-        if self.neighborTrackerPlugin:
-            return CellNeighborListAuto(self.neighborTrackerPlugin,_cell)
+        if not self.neighborTrackerPlugin:
+            raise AttributeError('Could not find NeighborTrackerPlugin')
         
-        return None
+        return CellNeighborListAuto(self.neighborTrackerPlugin,_cell)
 
     def getCellNeighborDataList(self,_cell):
-        try:
-            for neighborSurfaceData  in self.getCellNeighbors(_cell):
-                yield neighborSurfaceData.neighborAddress,neighborSurfaceData.commonSurfaceArea
-        except:
-            raise AttributeError('Could not find NeighborTracker Plugin')
-
-            
-
+        return self.getCellNeighbors(_cell)
 
 
     def getFocalPointPlasticityDataList(self,_cell):
@@ -1400,6 +1393,7 @@ class ClusterCellListIterator:
     def __iter__(self):
             return self 
             
+# legacy code  - do not modify              
 class CellNeighborList:
     def __init__(self,_neighborTrackerAccessor,_cell):
         self.neighborTrackerAccessor = _neighborTrackerAccessor
@@ -1427,13 +1421,31 @@ class CellNeighborIterator:
             raise StopIteration
     def __iter__(self):
             return self
-
+# end of legacy code  - do not modify              
 
 class CellNeighborListAuto:
     def __init__(self,_neighborPlugin,_cell):
         self.neighborPlugin=_neighborPlugin
-        self.neighborTrackerAccessor=self.neighborPlugin.getNeighborTrackerAccessorPtr()
+        self.neighborTrackerAccessor = self.neighborPlugin.getNeighborTrackerAccessorPtr()
         self.cell=_cell
+        
+    def __len__(self):
+        neighborTracker = self.neighborTrackerAccessor.get(self.cell.extraAttribPtr)
+        return neighborTracker.cellNeighbors.size()
+        
+    def __getitem__(self, idx):
+        if idx > self.__len__()-1 : raise IndexError ("Out of bounds index: CellNeighborListAuto index = %s is out of bounds"%str(idx))         
+        for counter, data in enumerate(self.__iter__()):
+            if idx==counter : return data        
+            
+    def commonSurfaceAreaWithCellTypes(self,cell_type_list):
+        area=0
+        for neighbor,commonSurfaceArea in self.__iter__():
+            cell_type = 0 if not neighbor else neighbor.type
+            if cell_type in cell_type_list:
+                area += commonSurfaceArea
+        return area
+        
     def __iter__(self):
         return CellNeighborIteratorAuto(self)
 
@@ -1448,15 +1460,15 @@ class CellNeighborIteratorAuto:
         self.nTracker=self.neighborTrackerAccessor.get(self.cell.extraAttribPtr)
         self.nsdItr.initialize(self.nTracker.cellNeighbors)
         self.nsdItr.setToBegin()
-
-
+    
     def next(self):
         if not self.nsdItr.isEnd():
             self.neighborCell = self.nsdItr.getCurrentRef().neighborAddress
             self.currentNsdItr = self.nsdItr.current
             self.currentNeighborSurfaceData=self.nsdItr.getCurrentRef()
             self.nsdItr.next()
-            return self.currentNeighborSurfaceData
+            # return self.currentNeighborSurfaceData.neighborAddress,self.currentNeighborSurfaceData.commonSurfaceArea
+            return self.currentNeighborSurfaceData.neighborAddress,self.currentNeighborSurfaceData.commonSurfaceArea
         else:
             raise StopIteration
 
@@ -1708,6 +1720,7 @@ class AnchorFocalPointPlasticityDataList:
         self.focalPointPlasticityPlugin=_focalPointPlasticityPlugin
         self.focalPointPlasticityTrackerAccessor=self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerAccessorPtr()
         self.cell=_cell
+        
     def __getitem__(self, idx):
         if idx > self.__len__()-1 : raise IndexError ("Out of bounds index: AnchorFocalPointPlasticityDataList index = %s is out of bounds"%str(idx))         
         for counter, data in enumerate(self.__iter__()):
