@@ -363,7 +363,12 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         return CellNeighborListAuto(self.neighborTrackerPlugin,_cell)
 
     def getCellNeighborDataList(self,_cell):
-        return self.getCellNeighbors(_cell)
+        if not self.neighborTrackerPlugin:
+            raise AttributeError('Could not find NeighborTrackerPlugin')
+        
+        return CellNeighborListFlex(self.neighborTrackerPlugin,_cell)
+    
+        # return self.getCellNeighbors(_cell)
 
 
     def getFocalPointPlasticityDataList(self,_cell):
@@ -385,9 +390,9 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         return None    
 
     
-    def getCellBoundaryPixelList(self,_cell):
+    def getCellBoundaryPixelList(self,_cell,_neighborOrder=-1):
         if self.boundaryPixelTrackerPlugin:
-            return CellBoundaryPixelList(self.boundaryPixelTrackerPlugin,_cell)
+            return CellBoundaryPixelList(self.boundaryPixelTrackerPlugin,_cell,_neighborOrder)
             
         return None    
         
@@ -1421,9 +1426,46 @@ class CellNeighborIterator:
             raise StopIteration
     def __iter__(self):
             return self
+            
+class CellNeighborListAuto:
+    def __init__(self,_neighborPlugin,_cell):
+        self.neighborPlugin=_neighborPlugin
+        self.neighborTrackerAccessor=self.neighborPlugin.getNeighborTrackerAccessorPtr()
+        self.cell=_cell
+    def __iter__(self):
+        return CellNeighborIteratorAuto(self)
+
+
+
+class CellNeighborIteratorAuto:
+    def __init__(self, _cellNeighborList):
+        import CompuCell
+        self.neighborTrackerAccessor = _cellNeighborList.neighborTrackerAccessor
+        self.cell=_cellNeighborList.cell
+        self.nsdItr=CompuCell.nsdSetPyItr()
+        self.nTracker=self.neighborTrackerAccessor.get(self.cell.extraAttribPtr)
+        self.nsdItr.initialize(self.nTracker.cellNeighbors)
+        self.nsdItr.setToBegin()
+
+
+    def next(self):
+        if not self.nsdItr.isEnd():
+            self.neighborCell = self.nsdItr.getCurrentRef().neighborAddress
+            self.currentNsdItr = self.nsdItr.current
+            self.currentNeighborSurfaceData=self.nsdItr.getCurrentRef()
+            self.nsdItr.next()
+            return self.currentNeighborSurfaceData
+        else:
+            raise StopIteration
+
+    def __iter__(self):
+            return self
+
+            
+            
 # end of legacy code  - do not modify              
 
-class CellNeighborListAuto:
+class CellNeighborListFlex:
     def __init__(self,_neighborPlugin,_cell):
         self.neighborPlugin=_neighborPlugin
         self.neighborTrackerAccessor = self.neighborPlugin.getNeighborTrackerAccessorPtr()
@@ -1466,11 +1508,11 @@ class CellNeighborListAuto:
 
         
     def __iter__(self):
-        return CellNeighborIteratorAuto(self)
+        return CellNeighborIteratorFlex(self)
 
 
 
-class CellNeighborIteratorAuto:
+class CellNeighborIteratorFlex:
     def __init__(self, _cellNeighborList):
         import CompuCell
         self.neighborTrackerAccessor = _cellNeighborList.neighborTrackerAccessor
@@ -1497,13 +1539,14 @@ class CellNeighborIteratorAuto:
 
 class CellBoundaryPixelList:
 
-    def __init__(self,_boundaryPixelTrackerPlugin,_cell):
+    def __init__(self,_boundaryPixelTrackerPlugin,_cell,_neighborOrder=-1):
+        self.neighborOrder = _neighborOrder 
         self.boundaryPixelTrackerPlugin=_boundaryPixelTrackerPlugin
         self.boundaryPixelTrackerAccessor=self.boundaryPixelTrackerPlugin.getBoundaryPixelTrackerAccessorPtr()
         self.cell=_cell
-
+        
     def __iter__(self):
-        return CellBoundaryPixelIterator(self)
+        return CellBoundaryPixelIterator(self,self.neighborOrder)
 
     def numberOfPixels(self):
         return self.boundaryPixelTrackerAccessor.get(self.cell.extraAttribPtr).pixelSet.size()
@@ -1511,14 +1554,23 @@ class CellBoundaryPixelList:
 
 
 class CellBoundaryPixelIterator:
-    def __init__(self, _cellPixelList):
+    def __init__(self, _cellPixelList, _neighborOrder=-1):
         import CompuCell
         self.boundaryPixelTrackerAccessor = _cellPixelList.boundaryPixelTrackerAccessor
         self.boundaryPixelTrackerPlugin=_cellPixelList.boundaryPixelTrackerPlugin
         self.cell=_cellPixelList.cell
         self.boundaryPixelItr=CompuCell.boundaryPixelSetPyItr()
         self.boundaryPixelTracker=self.boundaryPixelTrackerAccessor.get(self.cell.extraAttribPtr)
-        self.boundaryPixelItr.initialize(self.boundaryPixelTracker.pixelSet)
+        print '_neighborOrder=',_neighborOrder
+        if _neighborOrder <=0:
+            self.pixelSet = self.boundaryPixelTracker.pixelSet
+        else:
+            self.pixelSet = self.boundaryPixelTrackerPlugin.getPixelSetForNeighborOrderPtr(self.cell , _neighborOrder)    
+            if not self.pixelSet:
+                raise LookupError ('LookupError: CellBoundaryPixelIterator could not locate pixel set for neighbor order = %s. Make sure your BoundaryPixelTracker plugin definition requests tracking of neighbor order =%s boundary'%(_neighborOrder,_neighborOrder))
+        
+        # self.boundaryPixelItr.initialize(self.boundaryPixelTracker.pixelSet)
+        self.boundaryPixelItr.initialize(self.pixelSet)
         self.boundaryPixelItr.setToBegin()
 
 
