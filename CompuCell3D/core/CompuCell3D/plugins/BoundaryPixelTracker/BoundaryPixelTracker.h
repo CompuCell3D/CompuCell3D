@@ -51,6 +51,9 @@ namespace CompuCell3D {
          
          ~BoundaryPixelTracker(){};
          std::set<BoundaryPixelTrackerData > pixelSet; //stores pixels belonging to a given cell
+
+         std::map<int, std::set<BoundaryPixelTrackerData > > pixelSetMap; // {search_depth: boundary pixelSet} - the map is indexed by the NeighborOrder 
+
          
    };
 };

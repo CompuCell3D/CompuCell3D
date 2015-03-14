@@ -38,7 +38,7 @@ using namespace std;
 #include "BoundaryPixelTrackerPlugin.h"
 
 BoundaryPixelTrackerPlugin::BoundaryPixelTrackerPlugin():
-simulator(0),potts(0),boundaryStrategy(0),xmlData(0),maxNeighborIndex(0)
+simulator(0),potts(0),boundaryStrategy(0),xmlData(0),maxNeighborIndex(0),neighborOrder(1)
 {}
 
 BoundaryPixelTrackerPlugin::~BoundaryPixelTrackerPlugin() {}
@@ -119,28 +119,60 @@ void BoundaryPixelTrackerPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 		return;
 	}
 
+    
 
 	if(_xmlData->getFirstElement("Depth")){
 		maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
+
+    
+
+        // when user specifies depth , fetching of boundary for neighbor order might not work properly - not a big deal because almost nobody is using the Depth tag
+        neighborOrder = 0;
+
 		//cerr<<"got here will do depth"<<endl;
 	}else{
 		//cerr<<"got here will do neighbor order"<<endl;
 		if(_xmlData->getFirstElement("NeighborOrder")){
 
-			maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());	
+            neighborOrder =  _xmlData->getFirstElement("NeighborOrder")->getUInt();
+			maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(neighborOrder);	
+            
+
 		}else{
+            neighborOrder = 1;
 			maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
-
 		}
+    
 
+        std::set<int>  extraBoundariesNeighborOrderSet;
+        CC3DXMLElementList extraBoundariesVec=_xmlData->getElements("ExtraBoundary");
+
+	    for (int i = 0 ; i<extraBoundariesVec.size(); ++i){
+            extraBoundariesNeighborOrderSet.insert(extraBoundariesVec[i]->getAttributeAsInt("NeighborOrder"));
+
+	    }
+        
+        extraBoundariesNeighborOrder.assign(extraBoundariesNeighborOrderSet.begin(),extraBoundariesNeighborOrderSet.end());
+        extraBoundariesMaxNeighborIndex.assign(extraBoundariesNeighborOrder.size(),0); //allocating memory in the extraBoundariesMaxNeighborIndex vector
+
+        cerr<<"extraBoundariesNeighborOrder.size()="<<extraBoundariesNeighborOrder.size()<<endl;
+        for (unsigned int i = 0 ; i <  extraBoundariesNeighborOrder.size() ; ++i){
+            extraBoundariesMaxNeighborIndex [i] = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder( extraBoundariesNeighborOrder[i] );
+        }
+
+        for (unsigned int i = 0 ; i <  extraBoundariesMaxNeighborIndex.size() ; ++i){
+            cerr<<"i="<<i<<" extraBoundariesMaxNeighborIndex[i]="<<extraBoundariesMaxNeighborIndex[i]<<endl;
+        }
+                
 	}
-
-
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void BoundaryPixelTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,CellG *oldCell) {
+
+void BoundaryPixelTrackerPlugin::updateBoundaryPixels(const Point3D &pt, CellG *newCell,CellG *oldCell, int indexOfExtraBoundary) 
+{
+
 	if (newCell==oldCell) //this may happen if you are trying to assign same cell to one pixel twice 
 		return;
 	
@@ -151,19 +183,39 @@ void BoundaryPixelTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell
 	CellG * nCell;
 	CellG * nnCell;
 	
+    //for (unsigned int i = 0 ; i <  extraBoundariesMaxNeighborIndex.size() ; ++i){
+    //    cerr<<"i="<<i<<" extraBoundariesMaxNeighborIndex[i]="<<extraBoundariesMaxNeighborIndex[i]<<endl;
+    //}
 	
 	
 
 	if(newCell){
-		std::set<BoundaryPixelTrackerData > & pixelSetRef=boundaryPixelTrackerAccessor.get(newCell->extraAttribPtr)->pixelSet;
+        
+        std::set<BoundaryPixelTrackerData > * pixelSetPtr =  0;
+        int maxNI=-1; //maxNI stands for maxNeighborIndex
+
+        if (indexOfExtraBoundary >= 0 ){
+            //pixelSetMap is indexed by neighbor order
+            pixelSetPtr = & (boundaryPixelTrackerAccessor.get(newCell->extraAttribPtr)->pixelSetMap[extraBoundariesNeighborOrder[indexOfExtraBoundary] ]); 
+            
+            maxNI = extraBoundariesMaxNeighborIndex [indexOfExtraBoundary] ;     
+            
+        }else{        
+            pixelSetPtr = & boundaryPixelTrackerAccessor.get(newCell->extraAttribPtr)->pixelSet;
+            maxNI = maxNeighborIndex;
+        }
+
+        std::set<BoundaryPixelTrackerData > & pixelSetRef = *pixelSetPtr; 
+
+		//std::set<BoundaryPixelTrackerData > & pixelSetRef=boundaryPixelTrackerAccessor.get(newCell->extraAttribPtr)->pixelSet;
+
 		bool ptInsertedAsBoundary=false;
+
 		//new pixel is NOT automatically inserted into set of boundary pixels  - it will be inserted after we determine that indeed it belongs to the boundary
 		//pixelSetRef.insert(BoundaryPixelTrackerData(pt));
 
-
-
 		//we visit all neighbors of the new pixel (pt) and check if the neighboring pixels are still in the boundary
-		for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
+		for(unsigned int nIdx=0 ; nIdx <= maxNI ; ++nIdx ){
 			neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
 			if(!neighbor.distance){
 				//if distance is 0 then the neighbor returned is invalid
@@ -182,7 +234,7 @@ void BoundaryPixelTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell
 			bool keepNeighborInBoundary=false;
 			//to check if neighboring pixel is still in the boundary we visit its neighbors and make sure at least
 			//one of the pixel neighbors belongs to cell different than newCell
-			for(unsigned int nnIdx=0 ; nnIdx <= maxNeighborIndex ; ++nnIdx ){
+			for(unsigned int nnIdx=0 ; nnIdx <= maxNI ; ++nnIdx ){
 				neighborOfNeighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(neighbor.pt),nnIdx);
 				if(!neighborOfNeighbor.distance){
 					continue;
@@ -205,8 +257,26 @@ void BoundaryPixelTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell
 	}
 
 	if(oldCell){
+
+        std::set<BoundaryPixelTrackerData > * pixelSetPtr =  0;
+        int maxNI=-1; //maxNI stands for maxNeighborIndex
+
+        if (indexOfExtraBoundary >= 0 ){
+            //pixelSetMap is indexed by neighbor order
+            pixelSetPtr = & (boundaryPixelTrackerAccessor.get(oldCell->extraAttribPtr)->pixelSetMap[extraBoundariesNeighborOrder[indexOfExtraBoundary] ]); 
+            maxNI = extraBoundariesMaxNeighborIndex [indexOfExtraBoundary] ;
+        }else{
+            pixelSetPtr = & boundaryPixelTrackerAccessor.get(oldCell->extraAttribPtr)->pixelSet;
+            maxNI = maxNeighborIndex;
+        }
+
+
+
+        std::set<BoundaryPixelTrackerData > & pixelSetRef = *pixelSetPtr; 
+
+
 		//first erase pt from set of boundary pixels
-		std::set<BoundaryPixelTrackerData > & pixelSetRef=boundaryPixelTrackerAccessor.get(oldCell->extraAttribPtr)->pixelSet;
+		//std::set<BoundaryPixelTrackerData > & pixelSetRef=boundaryPixelTrackerAccessor.get(oldCell->extraAttribPtr)->pixelSet;
 		std::set<BoundaryPixelTrackerData >::iterator sitr;
 		sitr=pixelSetRef.find(BoundaryPixelTrackerData(pt));
 		//ASSERT_OR_THROW("Could not find point:"+pt+" inside cell of id: "+BasicString(oldCell->id)+" type: "+BasicString((int)oldCell->type),
@@ -236,6 +306,43 @@ void BoundaryPixelTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell
 		}
 	}
 
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void BoundaryPixelTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell,CellG *oldCell) {
+    
+    updateBoundaryPixels(pt, newCell,oldCell); //we always call update function for the default case wchic is for NeighborOrder =1  assuming the user does not overwrite it
+
+    
+    //WHen user requests tracking of other boundaries with additional neighbor orders we update them here
+    for (unsigned int indexOfExtraBoundary  = 0 ; indexOfExtraBoundary < extraBoundariesMaxNeighborIndex.size() ; ++indexOfExtraBoundary){
+
+        updateBoundaryPixels(pt, newCell,oldCell, indexOfExtraBoundary);
+    }
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+std::set<BoundaryPixelTrackerData > * BoundaryPixelTrackerPlugin::getPixelSetForNeighborOrderPtr( CellG * _cell, int _neighborOrder){
+    if (_neighborOrder<=0){
+        return 0;
+    }
+
+    cerr<<"_neighborOrder="<<_neighborOrder<<" this->neighborOrder="<<this->neighborOrder<<endl;
+    if (_neighborOrder == this->neighborOrder){
+        //return coundary calculated by default
+        return & boundaryPixelTrackerAccessor.get(_cell->extraAttribPtr)->pixelSet;
+    }
+
+    //if default pixel set does not match request search pixelSetMap
+
+    std::map<int, std::set<BoundaryPixelTrackerData > > &pixelSetMap = boundaryPixelTrackerAccessor.get(_cell->extraAttribPtr)->pixelSetMap;
+
+
+    std::map<int, std::set<BoundaryPixelTrackerData > >::iterator mitr = pixelSetMap.find(_neighborOrder);
+    if (mitr != pixelSetMap.end() ){
+        return & mitr->second;
+    }
+    return 0;
+    
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
