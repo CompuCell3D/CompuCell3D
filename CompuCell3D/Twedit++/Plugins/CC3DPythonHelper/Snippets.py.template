@@ -759,7 +759,7 @@ self.clearFlag=False
 ---------- #@Submenu@ 1. Setup (start fcn) 
 self.pW=self.addNewPlotWindow(_title='DATA_SERIES_1 and DATA_SERIES_2',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Variables')
 self.pW.addPlot('DATA_SERIES_1',_style='Dots',_color='red',_size=5)
-self.pW.addPlot('DATA_SERIES_1',_style='Steps',_size=1)
+self.pW.addPlot('DATA_SERIES_2',_style='Steps',_size=1)
 self.pW.setYAxisLogScale()   
 
 ---------- #@Submenu@ 2. Add Data Points (step fcn)

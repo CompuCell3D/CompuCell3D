@@ -1724,8 +1724,9 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 #        print MODULENAME,'createOutputDirs:  calling initCMLFieldHandler()'
 #        print MODULENAME,'createOutputDirs():  calling CompuCellSetup.initCMLFieldHandler()'
         if (self.mysim == None):
-            print MODULENAME,'createOutputDirs():  self.mysim is None!!!'   # bad, very bad
-#            sys.exit(0)
+            print MODULENAME,'\n\n\n createOutputDirs():  self.mysim is None!!!'   # bad, very bad            
+            # return
+            # sys.exit(0)
 #        else:
 #            print MODULENAME,'createOutputDirs():   type(self.mysim) = ',type(self.mysim)
 #            print MODULENAME,'createOutputDirs():   self.mysim = ',self.mysim
@@ -2249,14 +2250,18 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         # print  '\n\n ---------------- handleCompletedStepCMLResultReplay'                                        
         # print '--------------BEFORE self.fieldDim=',self.fieldDim        
         
-        # print "THIS IS handleCompletedStepCMLResultReplay"
+        print "THIS IS handleCompletedStepCMLResultReplay"
         # print "Before extracting the address self.simulation.simulationData=",self.simulation.simulationData
         simulationDataIntAddr = self.extractAddressIntFromVtkObject(self.simulation.simulationData)
         # print "simulationDataIntAddr=%X\n"% (simulationDataIntAddr)
         # print "self.simulation.simulationData=",self.simulation.simulationData
         self.fieldExtractor.setSimulationData(simulationDataIntAddr)
         self.__step = self.simulation.currentStep
-        self.latticeDataModelTable.selectRow(self.__step / self.simulation.frequency ) # here elf.step holds the value of the "user step" i.e. not multiplied by frequency. it gets multiplied by frequency next
+        print 'SIMPLE TAB VIEW self.__step=',self.__step
+        print 'SIMPLE TAB VIEW self.simulation.frequency=',self.simulation.frequency
+        # # # self.latticeDataModelTable.selectRow(self.__step / self.simulation.frequency ) # here elf.step holds the value of the "user step" i.e. not multiplied by frequency. it gets multiplied by frequency next
+        self.latticeDataModelTable.selectRow(self.simulation.stepCounter-1) #self.simulation.stepCounter is incremented by one before it reaches this function
+        
         #there is additional locking inside draw to acccount for the fact that users may want to draw lattice on demand
         # self.simulation.newFileBeingLoaded=False
         self.simulation.drawMutex.unlock()  # had to add synchronization here . without it I would get weird behavior in CML replay mode      
