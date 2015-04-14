@@ -113,6 +113,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.newDrawingUserRequest = False
         self.completedFirstMCS = False
         
+        
+        self.customSettingPath = ''
         self.cmlHandlerCreated = False
         
         self.basicSimulationData = None
@@ -1265,7 +1267,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         Configuration.setSetting("RecentFile",os.path.abspath(self.__fileName))
         Configuration.setSetting("RecentSimulations",os.path.abspath(self.__fileName)) #  each loaded simulation has to be passed to a function which updates list of recent files
-        
+        # Configuration.addItemToStrlist(item = os.path.abspath(self.__fileName),strListName = 'RecentSimulations',maxLength = Configuration.getSetting('NumberOfRecentSimulations'))
             
 
 
@@ -1311,7 +1313,22 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                       "Your CompuCell3D version <b>%s</b> might be too old for the project you are trying to run. The least version project requires is <b>%s</b>. You may run project at your own risk"%(currentVersion,projectVersion), \
                       QMessageBox.Ok )
             
-        
+        if self.cc3dSimulationDataHandler.cc3dSimulationData.playerSettingsResource:
+            self.customSettingPath =  self.cc3dSimulationDataHandler.cc3dSimulationData.playerSettingsResource.path   
+            print 'GOT CUSTOM SETTINGS RESOURCE = ', self.customSettingPath
+            
+            Configuration.readCustomFile(self.customSettingPath)
+            self.__paramsChanged()
+            
+            # Configuration.getSetting('PlayerSizes')
+            # sys.exit()
+        else:
+            self.customSettingPath = os.path.abspath( os.path.join(self.cc3dSimulationDataHandler.cc3dSimulationData.basePath, 'Simulation/_settings.xml' ))
+            # Configuration.writeCustomFile(self.customSettingPath)
+            Configuration.writeSettingsForSingleSimulation(self.customSettingPath)
+            
+        # sys.exit()
+            
         if self.cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource:
                                 
             cc3dProjectDir = os.path.dirname(fileName)
@@ -1569,7 +1586,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         if self.saveSettings:                
             
             Configuration.syncPreferences()        
-            
+            Configuration.writeAllSettings()
             
             """
             For some reason have to introduce delay to avoid problems with application becoming unresponsive
@@ -2816,11 +2833,22 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.resetControlVariables()       
         
         self.fieldTypes = {}   # re-init (empty) the fieldTypes dict, otherwise get previous/bogus fields in graphics win field combobox
+        
+        #saving settings witht eh simulation
+        if self.customSettingPath:
+            # Configuration.writeCustomFile(self.customSettingPath)
+            # Configuration.writeSettings()
+            Configuration.writeSettingsForSingleSimulation(self.customSettingPath)
+            Configuration.writeAllSettings()
+            
+            
+            self.customSettingPath = ''
     
         if Configuration.getSetting("ClosePlayerAfterSimulationDone") or self.closePlayerAfterSimulationDone:
             Configuration.setSetting("RecentFile",os.path.abspath(self.__fileName))
             
             Configuration.setSetting("RecentSimulations",os.path.abspath(self.__fileName))
+            # Configuration.addItemToStrlist(item = os.path.abspath(self.__fileName),strListName = 'RecentSimulations',maxLength = Configuration.getSetting('NumberOfRecentSimulations'))
             
             if self.saveSettings:                
                 Configuration.syncPreferences()        
@@ -2830,6 +2858,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         # in case there is pending simulation to be run we will put it a recent simulation so that it can be ready to run without going through open file dialog
         if self.nextSimulation != "":
             Configuration.setSetting("RecentSimulations",self.nextSimulation)
+            # Configuration.addItemToStrlist(item = self.nextSimulation,strListName = 'RecentSimulations',maxLength = Configuration.getSetting('NumberOfRecentSimulations'))
             self.nextSimulation = ""
 
         self.simulation.sim=None
@@ -3319,7 +3348,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         CompuCellSetup.simulationFileName=self.__fileName    
         Configuration.setSetting("RecentFile",self.__fileName)
         Configuration.setSetting("RecentSimulations",self.__fileName) #  each loaded simulation has to be passed to a function which updates list of recent files
-        
+        # Configuration.addItemToStrlist(item = os.path.abspath(self.__fileName),strListName = 'RecentSimulations',maxLength = Configuration.getSetting('NumberOfRecentSimulations'))
         
     def __openSim(self, fileName = None):
         # """
@@ -3363,7 +3392,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         Configuration.setSetting("RecentFile",self.__fileName)
         Configuration.setSetting("RecentSimulations",self.__fileName) #  each loaded simulation has to be passed to a function which updates list of recent files
-       
+        # Configuration.addItemToStrlist(item = os.path.abspath(self.__fileName),strListName = 'RecentSimulations',maxLength = Configuration.getSetting('NumberOfRecentSimulations'))
         
                     
     def __saveSim(self):
@@ -3661,6 +3690,15 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         Private slot to set the configurations.
         @param pageName name of the configuration page to show (string or QString)
         """
+        activeFieldNamesList = []
+        for idx in range(len(self.fieldTypes) ):
+            fieldName = self.fieldTypes.keys()[idx]
+            if fieldName != 'Cell_Field':  # rwh: dangerous to hard code this field name
+                # self.dlg.fieldComboBox.addItem(fieldName)   # this is where we set the combobox of field names in Prefs
+                activeFieldNamesList.append(str(fieldName))
+        
+        Configuration.setUsedFieldNames (activeFieldNamesList)
+        
         dlg = ConfigurationDialog(self, 'Configuration', True)
         self.dlg = dlg   # rwh: to allow enable/disable widgets in Preferences
         
@@ -3672,13 +3710,28 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             self.dlg.tab_field.setEnabled(True)
             
         self.dlg.fieldComboBox.clear()
-        for idx in range(len(self.fieldTypes) ):
-            fieldName = self.fieldTypes.keys()[idx]
-            if fieldName != 'Cell_Field':  # rwh: dangerous to hard code this field name
-                self.dlg.fieldComboBox.addItem(fieldName)   # this is where we set the combobox of field names in Prefs
-                
-
         
+        # print 'activeFieldNamesList=',activeFieldNamesList
+        # print 'self.dlg.fieldComboBox.count()=',self.dlg.fieldComboBox.count()
+        
+        # import time
+        # time.sleep(2)        
+        for fieldName in activeFieldNamesList:
+            # print 'fieldName=',fieldName
+            self.dlg.fieldComboBox.addItem(fieldName)   # this is where we set the combobox of field names in Prefs
+            
+        # print 'self.dlg.fieldComboBox.count()=',self.dlg.fieldComboBox.count()            
+        
+        
+        # # # activeFieldNamesList = []
+        
+        # # # for idx in range(len(self.fieldTypes) ):
+            # # # fieldName = self.fieldTypes.keys()[idx]
+            # # # if fieldName != 'Cell_Field':  # rwh: dangerous to hard code this field name
+                # # # self.dlg.fieldComboBox.addItem(fieldName)   # this is where we set the combobox of field names in Prefs
+                # # # activeFieldNamesList.append(str(fieldName))
+        
+        # # # Configuration.setUsedFieldNames (activeFieldNamesList)
         
         self.connect(dlg, SIGNAL('configsChanged'), self.__configsChanged)
         dlg.show()

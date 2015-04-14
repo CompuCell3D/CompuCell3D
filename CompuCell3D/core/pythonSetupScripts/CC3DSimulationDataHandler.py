@@ -128,6 +128,7 @@ class CC3DSimulationData:
         self.xmlScriptResource = CC3DResource()
         self.pifFileResource = CC3DResource()
         self.windowScriptResource = CC3DResource()
+        self.playerSettingsResource = None
         self.windowDict = {}
         
         self.serializerResource = None
@@ -341,6 +342,16 @@ class CC3DSimulationDataHandler:
         root_element = xml2ObjConverter.Parse(fileFullPath) # this is simulation element
         
         version='0'
+        
+        # checking for custom player settings    
+        customSettingsFlag = os.path.isfile(os.path.join(self.cc3dSimulationData.basePath,'Simulation/_settings.xml'))
+        if customSettingsFlag:
+            self.cc3dSimulationData.playerSettingsResource = CC3DResource()
+            self.cc3dSimulationData.playerSettingsResource.path = os.path.abspath(os.path.join(self.cc3dSimulationData.basePath,'Simulation/_settings.xml'))
+            self.cc3dSimulationData.playerSettingsResource.type = "PlayerSettings"
+            print 'GOT SUSTOM SETTINGS : ',self.cc3dSimulationData.playerSettingsResource.path
+        
+        
         
         if root_element.findAttribute('version'):
             version = root_element.getAttribute('version')

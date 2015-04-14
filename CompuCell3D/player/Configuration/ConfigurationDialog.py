@@ -202,7 +202,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         allFieldsDict = Configuration.getSimFieldsParams()
 
         key1 = allFieldsDict.keys()[0]
-        
+
         if isinstance(key1,str):
             fieldParams = allFieldsDict[str(fname)]
         else:
@@ -241,17 +241,31 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
         val = fieldParamsDict["LegendEnable"]
         self.fieldShowLegendCheckBox.setChecked(val)
-         
+        
+        
+        try : 
+            val = fieldParamsDict["OverlayVectorsOn"]
+            self.vectorsOverlayCheckBox.setChecked(val)            
+            
+        except KeyError:
+            print MODULENAME,'  WARNING fieldParamsDict key "OverlayVectorsOn" not defined'
+            print MODULENAME,'  fieldParamsDict=',fieldParamsDict
+            print '\n'
+            
         try:
             val = fieldParamsDict["ScalarIsoValues"]
             
             if type(val) == QVariant:  self.isovalList.setText(val.toString())
             elif type(val) == QString:  self.isovalList.setText(val)
+            else: self.isovalList.setText(str(val))
+            
+            print 'ScalarIsoValues=',val
         except KeyError:
             print '-----------------\n'
             print MODULENAME,'  WARNING fieldParamsDict key "ScalarIsoValues" not defined'
             print MODULENAME,'  fieldParamsDict=',fieldParamsDict
             print '\n'
+        # sys.exit()    
         val = fieldParamsDict["NumberOfContourLines"]
 
         self.numberOfContoursLinesSpinBox.setValue(val)
@@ -446,7 +460,10 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
             
             
     def updateFieldParams(self,fieldName):
-        
+        # we do not allow fields with empty name
+        if str(fieldName) == '' :
+            return 
+            
         fieldDict = {}
         key = "MinRange"
         val = self.fieldMinRange.text()
@@ -478,6 +495,11 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting(key,val)
         key = "LegendEnable" 
         val = self.fieldShowLegendCheckBox.isChecked()
+        fieldDict[key] = val
+        Configuration.setSetting(key,val)
+        
+        key = "OverlayVectorsOn"         
+        val = self.vectorsOverlayCheckBox.isChecked()
         fieldDict[key] = val
         Configuration.setSetting(key,val)
             
@@ -554,12 +576,18 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 
         fp = Configuration.getSetting("FieldParams")
         
+        
         # get Field name from combobox in the Field tab and save the current settings for that field
         fname = self.fieldComboBox.currentText()
         
-#        Configuration.updateSimFieldsParams(fname)
+        # Configuration.updateSimFieldsParams(fname)
+        # print '\n\n\n updating field fname = ',fname 
+        
         self.updateFieldParams(fname)
 
+        # fpafter = Configuration.getSetting("FieldParams")
+        # print 'CONF POPUP AFTER self.updateFieldParams \n\n\n FIELD PARAMS keys  = ',fpafter.keys()        
+        
         Configuration.setSetting("PixelizedScalarField", self.pixelizedScalarFieldCB.isChecked())
         
         Configuration.setSetting("MinRange", self.fieldMinRange.text())
@@ -693,7 +721,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.vectorsArrowColorCheckBox.setChecked(self.paramCC3D["FixedArrowColorOn"])
         self.vectorsArrowColorClicked()  # enable/disable
         
-#        self.vectorsOverlayCheckBox.setChecked(self.paramCC3D["OverlayVectorsOn"])
+        self.vectorsOverlayCheckBox.setChecked(self.paramCC3D["OverlayVectorsOn"])
         
         color = Configuration.getSetting("ArrowColor")
         pm = QPixmap(size.width(), size.height())
@@ -717,7 +745,12 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         '''
             this fcn stores current settings for all the keys of Configuration.Configuration.defaultConfigs as a self.paramCC3D dictionary
         '''
-        for key in Configuration.Configuration.defaultConfigs.keys():
+        
+        for key in Configuration.getSettingNameList():
             self.paramCC3D[key]=Configuration.getSetting(key)
         return    
+        
+        # for key in Configuration.Configuration.defaultConfigs.keys():
+            # self.paramCC3D[key]=Configuration.getSetting(key)
+        # return    
 

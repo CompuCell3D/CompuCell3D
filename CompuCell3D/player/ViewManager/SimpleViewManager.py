@@ -447,6 +447,9 @@ class SimpleViewManager():
         
     def __initToolsActions(self):
         self.configAct = QAction(QIcon("player/icons/config.png"), "&Configuration...", self)
+        
+        self.configAct.setShortcut(Qt.CTRL + Qt.Key_Comma)
+        
         self.configAct.setWhatsThis(self.trUtf8(
             """<b>Configuration</b>"""
             """<p>Set the configuration items of the simulation"""
