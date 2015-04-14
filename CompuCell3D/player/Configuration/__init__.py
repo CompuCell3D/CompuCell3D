@@ -8,7 +8,8 @@ from os import environ,path
 import os
 
 #(ORGANIZATION, APPLICATION) = ("Biocomplexity", "PyQtPlayerNew")
-(ORGANIZATION, APPLICATION) = ("Biocomplexity", "cc3d_default")
+
+(SETTINGS_FOLDER, SETTINGS_FILE_NAME) = (".compucell3d", "_settings.xml")
 LATTICE_TYPES = {"Square":1,"Hexagonal":2}
 
 maxNumberOfRecentFiles=5
@@ -203,8 +204,12 @@ class Setting(object):
         
         
     def toXML(self,parentElement):
+        # print 'self.type = ',self.type, 'self.name = ',self.name
         # print 'Setting.storedType2XML[self.type]=',Setting.storedType2XML[self.type]
-        eval(Setting.storedType2XML[self.type]+'(parentElement)')
+        try:
+            eval(Setting.storedType2XML[self.type]+'(parentElement)')
+        except KeyError:
+            print 'COULD NOT PROCESS seting name = ',self.name, ' type=', self.type 
         
     def fromXML(self,parentElement):
         # print 'Setting.storedType2XML[self.type]=',Setting.storedType2XML[self.type]
@@ -390,8 +395,10 @@ class CustomSettings(object):
             setting.normalizeSettingFormat()
             
         except LookupError,e:
-                    
-            setting = Setting(_name, _value, _type)
+        
+            setting = Setting(_name, _value, settingType)                   
+            
+            # setting = Setting(_name, _value, _type)
             
             settingType =  setting.type
             
@@ -463,7 +470,7 @@ class CustomSettings(object):
         from XMLUtils import ElementCC3D
         xml2ObjConverter = XMLUtils.Xml2Obj()
         plSetElem = ElementCC3D('PlayerSettings')    
-        
+        print '\n\n\nself.__typeSettingDictDict.keys() = ', self.__typeSettingDictDict.keys()
         for typeName , settingDict in self.__typeSettingDictDict.iteritems():
         
             typeContainerElem = plSetElem.ElementCC3D( 'Settings', {'Type':typeName} )
@@ -503,7 +510,7 @@ def defaultSettings():
     ss('ProjectLocation',os.path.join(environ['PREFIX_CC3D'],'Demos'),'str')
     ss('OutputLocation',os.path.join(os.path.expanduser('~'),'CC3DWorkspace'),'str')
     ss('OutputToProjectOn',False,'bool')
-    # ss('PreferencesFile','_setting.xml','str') #probably do not need this one
+    # ss('PreferencesFile',SETTINGS_FILE_NAME,'str') #probably do not need this one
     ss('NumberOfRecentSimulations',8,'int')
     
    
@@ -593,8 +600,9 @@ def defaultSettings():
     return defaultSettings
 
 def loadGlobalSettings():
-    global_setting_dir = os.path.abspath(os.path.join(os.path.expanduser('~'),'.compucell3d'))
-    global_setting_path = os.path.abspath(os.path.join(global_setting_dir,'_settings.xml')) # abspath normalizes path
+    
+    global_setting_dir = os.path.abspath(os.path.join(os.path.expanduser('~') , SETTINGS_FOLDER))
+    global_setting_path = os.path.abspath(os.path.join(global_setting_dir , SETTINGS_FILE_NAME)) # abspath normalizes path
     # print 'LOOKING FOR global_setting_path=',global_setting_path
     
     #create global settings  directory inside user home directory
@@ -725,17 +733,21 @@ def readCustomFile(fileName):
     # # # FIX HERE
     Configuration.myCustomSettings = cs
     Configuration.myCustomSettingsPath = fileName
-        
+
 def getSimFieldsParams():
+    return getSetting('FieldParams')
 
-    fieldParams = Configuration.simFieldsParams
+    
+# def getSimFieldsParams1():
 
-    if len(Configuration.simFieldsParams) == 0:
+    # fieldParams = Configuration.simFieldsParams
 
-        fieldParams = getSetting('FieldParams')
-        Configuration.simFieldsParams = fieldParams 
+    # if len(Configuration.simFieldsParams) == 0:
 
-    return fieldParams
+        # fieldParams = getSetting('FieldParams')
+        # Configuration.simFieldsParams = fieldParams 
+
+    # return fieldParams
 
 #def setSimFieldsParams(fieldNames):
 def getDefaultFieldParams():
@@ -847,6 +859,16 @@ def getSetting(_key, fieldName=None):  # we append an optional fieldName now to 
         settingStorage = Configuration.myGlobalSettings
     
     val = settingStorage.getSetting(_key)  
+    
+    #handling field params request
+    if fieldName is not None:
+        fieldParams = getSetting('FieldParams')
+        try:
+            singleFieldParams = fieldParams[fieldName]
+            return singleFieldParams[_key] 
+        except LookupError:
+            pass # returning global parameter for the field
+    
     if val:
         return val.toObject()
         
@@ -897,8 +919,3 @@ def addNewSimulation(recentSimulationsList,value):
 
 def syncPreferences():   # this function invoked when we close the Prefs dialog with the "OK" button
     pass
-
-
-            
-        
-

@@ -385,18 +385,18 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.outputLocationLineEdit.setText(dirName)
         Configuration.setSetting('OutputLocation',dirName)
         
-    @pyqtSignature("") # signature of the signal emitted by the button
-    def on_prefsFileButton_clicked(self):
-        currentPrefsFile = Configuration.getSetting('PreferencesFile')
-        fileName = QFileDialog.getOpenFileName(self, "Specify Preferences Filename", currentPrefsFile)
-        fileName=str(fileName)        
-        fileName.rstrip()
-        print "fileName=",fileName
-        if fileName=="":
-            return
-        fileName=os.path.abspath(fileName)
-        self.prefsFileLineEdit.setText(fileName)
-        Configuration.setSetting('PreferencesFile',fileName)
+    # # # @pyqtSignature("") # signature of the signal emitted by the button
+    # # # def on_prefsFileButton_clicked(self):
+        # # # currentPrefsFile = Configuration.getSetting('PreferencesFile')
+        # # # fileName = QFileDialog.getOpenFileName(self, "Specify Preferences Filename", currentPrefsFile)
+        # # # fileName=str(fileName)        
+        # # # fileName.rstrip()
+        # # # print "fileName=",fileName
+        # # # if fileName=="":
+            # # # return
+        # # # fileName=os.path.abspath(fileName)
+        # # # self.prefsFileLineEdit.setText(fileName)
+        # # # Configuration.setSetting('PreferencesFile',fileName)
         
     @pyqtSignature("") # signature of the signal emitted by the button
     def on_addCellTypeButton_clicked(self):   
@@ -553,7 +553,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("ProjectLocation", self.projectLocationLineEdit.text())
         Configuration.setSetting("OutputLocation", self.outputLocationLineEdit.text())
         Configuration.setSetting("OutputToProjectOn", self.outputToProjectCheckBox.isChecked())
-        Configuration.setSetting("PreferencesFile", self.prefsFileLineEdit.text())
+        # # # Configuration.setSetting("PreferencesFile", self.prefsFileLineEdit.text())
         Configuration.setSetting("NumberOfRecentSimulations", self.numberOfRecentSimulationsSB.value())        
         
         Configuration.setSetting("WindowColorSameAsMedium", self.windowColorSameAsMediumCB.isChecked() )
@@ -649,7 +649,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.outputLocationLineEdit.setText( str(Configuration.getSetting("OutputLocation")))
         self.outputToProjectCheckBox.setChecked(Configuration.getSetting("OutputToProjectOn"))
         
-        self.prefsFileLineEdit.setText( str(Configuration.getSetting("PreferencesFile")))
+        # # # self.prefsFileLineEdit.setText( str(Configuration.getSetting("PreferencesFile")))
         self.numberOfRecentSimulationsSB.setValue(Configuration.getSetting("NumberOfRecentSimulations"))
         
         
