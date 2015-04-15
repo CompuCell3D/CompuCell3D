@@ -279,6 +279,12 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.vectorsArrowColorCheckBox.setChecked(val)
         self.vectorsArrowColorClicked()  # enable/disable
         
+        contoursOn = fieldParamsDict["ContoursOn"]
+        self.contoursShowCB.setChecked(contoursOn)
+        # self.isovalList.setEnabled(contoursOn)
+        # self.numberOfContoursLinesSpinBox.setEnabled(contoursOn)
+        
+        
         
         
     def fieldMinRangeClicked(self):
@@ -634,9 +640,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         fieldIndex = Configuration.getSetting("FieldIndex")
         self.lastSelectedField = fieldIndex
         self.fieldComboBox.setCurrentIndex(self.lastSelectedField)
-        self.contoursShowCB.setChecked(bool(Configuration.getSetting("ContoursOn")))
-        
-        
+                
         # Output
         self.updateScreenSpinBox.setValue(Configuration.getSetting("ScreenUpdateFrequency"))
 #        self.updateScreenSpinBox.setMinimum(1)
@@ -720,6 +724,12 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.isovalList.setText(Configuration.getSetting("ScalarIsoValues"))
         self.numberOfContoursLinesSpinBox.setValue(self.paramCC3D["NumberOfContourLines"])
 
+        contoursOn = Configuration.getSetting("ContoursOn")
+        self.contoursShowCB.setChecked(contoursOn)
+        self.isovalList.setEnabled(contoursOn)
+        self.numberOfContoursLinesSpinBox.setEnabled(contoursOn)
+        
+        
         
         
         # Vectors

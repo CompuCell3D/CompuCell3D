@@ -19,7 +19,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>0</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="tab_output">
         <attribute name="title">
@@ -308,16 +308,6 @@
               <widget class="QCheckBox" name="outputToProjectCheckBox">
                <property name="text">
                 <string>=Project</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0" colspan="2">
-              <widget class="QLineEdit" name="prefsFileLineEdit"/>
-             </item>
-             <item row="2" column="2" colspan="2">
-              <widget class="QPushButton" name="prefsFileButton">
-               <property name="text">
-                <string>Preferences File</string>
                </property>
               </widget>
              </item>
@@ -1179,14 +1169,14 @@
                   <string>Scalar Contours</string>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_10">
-                  <item row="1" column="0">
+                  <item row="2" column="0">
                    <widget class="QLabel" name="numIsovalsInRangeLabel">
                     <property name="text">
                      <string>Over range</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="1">
+                  <item row="2" column="1">
                    <widget class="QSpinBox" name="numberOfContoursLinesSpinBox">
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1196,13 +1186,20 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="0" column="1">
+                  <item row="1" column="1">
                    <widget class="QLineEdit" name="isovalList"/>
                   </item>
-                  <item row="0" column="0">
+                  <item row="1" column="0">
                    <widget class="QLabel" name="isovalLabel">
                     <property name="text">
                      <string>Isovalues</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QCheckBox" name="contoursShowCB">
+                    <property name="text">
+                     <string>Show</string>
                     </property>
                    </widget>
                   </item>
@@ -1575,8 +1572,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
+     <x>257</x>
+     <y>444</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -1591,12 +1588,44 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>325</x>
+     <y>444</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>
      <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>contoursShowCB</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>isovalList</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>345</x>
+     <y>324</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>380</x>
+     <y>341</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>contoursShowCB</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>numberOfContoursLinesSpinBox</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>362</x>
+     <y>321</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>376</x>
+     <y>366</y>
     </hint>
    </hints>
   </connection>

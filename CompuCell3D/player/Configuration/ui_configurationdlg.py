@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '.\cc3D_prefs.ui'
 #
-# Created: Tue Jan 28 17:54:24 2014
+# Created: Wed Apr 15 15:55:06 2015
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -161,12 +161,6 @@ class Ui_CC3DPrefs(object):
         self.outputToProjectCheckBox = QtGui.QCheckBox(self.tab_output)
         self.outputToProjectCheckBox.setObjectName(_fromUtf8("outputToProjectCheckBox"))
         self.gridLayout_6.addWidget(self.outputToProjectCheckBox, 1, 3, 1, 1)
-        self.prefsFileLineEdit = QtGui.QLineEdit(self.tab_output)
-        self.prefsFileLineEdit.setObjectName(_fromUtf8("prefsFileLineEdit"))
-        self.gridLayout_6.addWidget(self.prefsFileLineEdit, 2, 0, 1, 2)
-        self.prefsFileButton = QtGui.QPushButton(self.tab_output)
-        self.prefsFileButton.setObjectName(_fromUtf8("prefsFileButton"))
-        self.gridLayout_6.addWidget(self.prefsFileButton, 2, 2, 1, 2)
         self.verticalLayout_10.addLayout(self.gridLayout_6)
         self.verticalLayout_14.addLayout(self.verticalLayout_10)
         self.groupBox_5 = QtGui.QGroupBox(self.tab_output)
@@ -516,18 +510,21 @@ class Ui_CC3DPrefs(object):
         self.gridLayout_10.setObjectName(_fromUtf8("gridLayout_10"))
         self.numIsovalsInRangeLabel = QtGui.QLabel(self.groupBox_12)
         self.numIsovalsInRangeLabel.setObjectName(_fromUtf8("numIsovalsInRangeLabel"))
-        self.gridLayout_10.addWidget(self.numIsovalsInRangeLabel, 1, 0, 1, 1)
+        self.gridLayout_10.addWidget(self.numIsovalsInRangeLabel, 2, 0, 1, 1)
         self.numberOfContoursLinesSpinBox = QtGui.QSpinBox(self.groupBox_12)
         self.numberOfContoursLinesSpinBox.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.numberOfContoursLinesSpinBox.setMaximum(9999)
         self.numberOfContoursLinesSpinBox.setObjectName(_fromUtf8("numberOfContoursLinesSpinBox"))
-        self.gridLayout_10.addWidget(self.numberOfContoursLinesSpinBox, 1, 1, 1, 1)
+        self.gridLayout_10.addWidget(self.numberOfContoursLinesSpinBox, 2, 1, 1, 1)
         self.isovalList = QtGui.QLineEdit(self.groupBox_12)
         self.isovalList.setObjectName(_fromUtf8("isovalList"))
-        self.gridLayout_10.addWidget(self.isovalList, 0, 1, 1, 1)
+        self.gridLayout_10.addWidget(self.isovalList, 1, 1, 1, 1)
         self.isovalLabel = QtGui.QLabel(self.groupBox_12)
         self.isovalLabel.setObjectName(_fromUtf8("isovalLabel"))
-        self.gridLayout_10.addWidget(self.isovalLabel, 0, 0, 1, 1)
+        self.gridLayout_10.addWidget(self.isovalLabel, 1, 0, 1, 1)
+        self.contoursShowCB = QtGui.QCheckBox(self.groupBox_12)
+        self.contoursShowCB.setObjectName(_fromUtf8("contoursShowCB"))
+        self.gridLayout_10.addWidget(self.contoursShowCB, 0, 0, 1, 1)
         self.verticalLayout_3.addWidget(self.groupBox_12)
         self.horizontalLayout_4.addLayout(self.verticalLayout_3)
         spacerItem14 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
@@ -664,9 +661,11 @@ class Ui_CC3DPrefs(object):
         self.verticalLayout_11.addWidget(self.buttonBox)
 
         self.retranslateUi(CC3DPrefs)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(2)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), CC3DPrefs.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), CC3DPrefs.reject)
+        QtCore.QObject.connect(self.contoursShowCB, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.isovalList.setEnabled)
+        QtCore.QObject.connect(self.contoursShowCB, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.numberOfContoursLinesSpinBox.setEnabled)
         QtCore.QMetaObject.connectSlotsByName(CC3DPrefs)
 
     def retranslateUi(self, CC3DPrefs):
@@ -682,7 +681,6 @@ class Ui_CC3DPrefs(object):
         self.projectLocationButton.setText(_translate("CC3DPrefs", "Project Location", None))
         self.outputLocationButton.setText(_translate("CC3DPrefs", "Output", None))
         self.outputToProjectCheckBox.setText(_translate("CC3DPrefs", "=Project", None))
-        self.prefsFileButton.setText(_translate("CC3DPrefs", "Preferences File", None))
         self.groupBox_5.setTitle(_translate("CC3DPrefs", "Miscellaneous", None))
         self.label_23.setText(_translate("CC3DPrefs", "Number of recent simulations", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_output), _translate("CC3DPrefs", "Output", None))
@@ -726,6 +724,7 @@ class Ui_CC3DPrefs(object):
         self.groupBox_12.setTitle(_translate("CC3DPrefs", "Scalar Contours", None))
         self.numIsovalsInRangeLabel.setText(_translate("CC3DPrefs", "Over range", None))
         self.isovalLabel.setText(_translate("CC3DPrefs", "Isovalues", None))
+        self.contoursShowCB.setText(_translate("CC3DPrefs", "Show", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_field), _translate("CC3DPrefs", "Field", None))
         self.groupBox.setTitle(_translate("CC3DPrefs", "Display Size", None))
         self.label.setText(_translate("CC3DPrefs", "X", None))
