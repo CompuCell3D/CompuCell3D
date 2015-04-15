@@ -222,6 +222,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 #        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):
         if True:
             isoContour.SetInputConnection(field.GetOutputPort())
+            
             isoContour.GenerateValues(Configuration.getSetting("NumberOfContourLines",self.currentDrawingParameters.fieldName)+2, _minMax)
             
             tpd1 = vtk.vtkTransformPolyDataFilter()
@@ -469,6 +470,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
     
 
     def initializeContoursCartesian(self,_dim,_conArray,_minMax,_contourActor):
+    
 #        print MODULENAME,'   initializeContoursHex():  _conArray=',_conArray
         data = vtk.vtkImageData()
         data.SetDimensions(_dim[0], _dim[1], 1)        
@@ -495,6 +497,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         isoContour = vtk.vtkContourFilter()
         
 #        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):
+        
         if True:
             isoContour.SetInputConnection(field.GetOutputPort())
             isoContour.GenerateValues(Configuration.getSetting("NumberOfContourLines",self.currentDrawingParameters.fieldName)+2, _minMax)

@@ -522,11 +522,11 @@ class MVCDrawView2D(MVCDrawViewBase):
         else:
             self.showLegend(False)
             
-#        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):            
-#            self.showContours(True)            
-#        else:
-#            self.showContours(False)
-        self.showContours(True)            
+        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):            
+            self.showContours(True)            
+        else:
+            self.showContours(False)
+        # self.showContours(True)            
             
         if self.parentWidget.clusterBorderAct.isChecked():
             self.drawClusterBorders2DHex()    
