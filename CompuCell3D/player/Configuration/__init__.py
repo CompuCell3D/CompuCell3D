@@ -7,71 +7,20 @@ from PyQt4.QtCore import *
 from os import environ,path
 import os
 
-from SettingUtils import Setting, CustomSettings, writeSettings, loadSettings, defaultSettings
 
-#(ORGANIZATION, APPLICATION) = ("Biocomplexity", "PyQtPlayerNew")
+from SettingUtils import *
 
-(SETTINGS_FOLDER, SETTINGS_FILE_NAME) = (".compucell3d", "_settings.xml")
+
+
 LATTICE_TYPES = {"Square":1,"Hexagonal":2}
 
 maxNumberOfRecentFiles=5
 
 MODULENAME = '------- player/Configuration/__init__.py: '
 
-
-def loadGlobalSettings():
-    
-    global_setting_dir = os.path.abspath(os.path.join(os.path.expanduser('~') , SETTINGS_FOLDER))
-    global_setting_path = os.path.abspath(os.path.join(global_setting_dir , SETTINGS_FILE_NAME)) # abspath normalizes path
-    # print 'LOOKING FOR global_setting_path=',global_setting_path
-    
-    #create global settings  directory inside user home directory
-    if not os.path.isdir(global_setting_dir):
-        try:
-            os.makedirs(global_setting_dir)
-    
-        except:
-            print 'Cenfiguration: COuld not make directory: ',global_setting_dir, ' to store global settings. Please make sure that you have appropriate write permissions'
-            import sys
-            sys.exit()
-    
-    globalSettings = loadSettings (global_setting_path)    
-    if not globalSettings:
-        globalSettings, default_setting_path = loadDefaultSettings()
-        globalSettings.saveAsXML(global_setting_path)        
-        
-        return globalSettings , global_setting_path     
-    return  globalSettings , global_setting_path            
-
-def loadDefaultSettings():
-       
-    default_setting_path = os.path.abspath(os.path.join(os.path.dirname(__file__) , SETTINGS_FILE_NAME)) # abspath normalizes path
-
-    defaultSettings = loadSettings (default_setting_path)    
-    if not defaultSettings:
-        return None, None
-        
-    return defaultSettings , default_setting_path
-    
-    
-#this function checks for new settings in the default settings file    
-def synchronizeGlobalAndDefaultSettings(defaultSettings,globalSettings,globalSettingsPath):
-    defaultSettingsNameList = defaultSettings.getSettingNameList()
-    globalSettingsNameList = globalSettings.getSettingNameList()
-    
-    newSettingNames = set(defaultSettingsNameList) - set(globalSettingsNameList)
-    
-    for newSettingName in newSettingNames:
-        print 'newSettingName = ', newSettingName
-        newDefaultSetting = defaultSettings.getSetting(newSettingName)
-        
-        globalSettings.setSetting(newDefaultSetting.name , newDefaultSetting.value , newDefaultSetting.type)
-        writeSettings (globalSettings,globalSettingsPath) 
-    # sys.exit()
-    
-        
 class Configuration():
-    
+
+    # # # defaultSettings = defaultSettings()
     defaultSettings , defaultSettingsPath = loadDefaultSettings()    
     myGlobalSettings , myGlobalSettingsPath = loadGlobalSettings()       
     
@@ -84,9 +33,8 @@ class Configuration():
     
     activeFieldNamesList = []
     
-    # # # defaultSettings = defaultSettings()
     
-    
+        
 def getSettingNameList(): return Configuration.myGlobalSettings.getSettingNameList()
         
         
@@ -135,20 +83,25 @@ def writeSettingsForSingleSimulation(path):
         #in case there is no custom settings object we use global settings and write them as local ones 
         writeSettings(Configuration.myGlobalSettings,path)
         # once we wrote them we have to read them in to initialize objects
-        readCustomFile(path)
+        initializeCustomSettings(path)
+        # readCustomFile(path)
 
-
-def readCustomFile(fileName):
+def initializeCustomSettings(filename):
+    Configuration.myCustomSettings = loadSettings(filename)
+    Configuration.myCustomSettingsPath = os.path.abspath(filename)
         
-    import XMLUtils
-    xml2ObjConverter = XMLUtils.Xml2Obj()
 
-    fileFullPath = os.path.abspath(fileName)
-    cs = CustomSettings()        
-    cs.readFromXML(fileFullPath)
-    # # # FIX HERE
-    Configuration.myCustomSettings = cs
-    Configuration.myCustomSettingsPath = fileName
+# def readCustomFile(fileName):
+        
+    # import XMLUtils
+    # xml2ObjConverter = XMLUtils.Xml2Obj()
+
+    # fileFullPath = os.path.abspath(fileName)
+    # cs = CustomSettings()        
+    # cs.readFromXML(fileFullPath)
+    # # # # FIX HERE
+    # Configuration.myCustomSettings = cs
+    # Configuration.myCustomSettingsPath = fileName
 
     
 #def setSimFieldsParams(fieldNames):

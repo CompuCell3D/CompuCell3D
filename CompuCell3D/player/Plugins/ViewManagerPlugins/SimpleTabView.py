@@ -1317,7 +1317,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             self.customSettingPath =  self.cc3dSimulationDataHandler.cc3dSimulationData.playerSettingsResource.path   
             print 'GOT CUSTOM SETTINGS RESOURCE = ', self.customSettingPath
             
-            Configuration.readCustomFile(self.customSettingPath)
+            # # # Configuration.readCustomFile(self.customSettingPath)
+            Configuration.initializeCustomSettings(self.customSettingPath)
             self.__paramsChanged()
             
             # Configuration.getSetting('PlayerSizes')
