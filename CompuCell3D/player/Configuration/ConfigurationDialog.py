@@ -30,8 +30,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.setupUi(self)   # in ui_configurationdlg.Ui_CC3DPrefs
         
         # for now, let's disable these guys until we want to handle them.  But can still do: compucell3d.sh --prefs=myprefs
-        self.prefsFileLineEdit.setEnabled(False)
-        self.prefsFileButton.setEnabled(False)
+        # self.prefsFileLineEdit.setEnabled(False)
+        # self.prefsFileButton.setEnabled(False)
   
 #        if not MAC:
 #            self.cancelButton.setFocusPolicy(Qt.NoFocus)
@@ -199,7 +199,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("FieldIndex", fieldIndex)
         self.lastSelectedField = fieldIndex
         
-        allFieldsDict = Configuration.getSimFieldsParams()
+        # allFieldsDict = Configuration.getSimFieldsParams()
+        allFieldsDict = Configuration.getSetting('FieldParams')
 
         key1 = allFieldsDict.keys()[0]
 
@@ -502,7 +503,13 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         val = self.vectorsOverlayCheckBox.isChecked()
         fieldDict[key] = val
         Configuration.setSetting(key,val)
-            
+
+        key = "ContoursOn"         
+        val = self.contoursShowCB.isChecked()
+        fieldDict[key] = val
+        Configuration.setSetting(key,val)
+
+        
         key = "ScalarIsoValues" 
         val = self.isovalList.text()
         fieldDict[key] = val
@@ -536,7 +543,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 
         
         # rwh: check if the PreferencesFile is different; if so, update it
-        Configuration.mySettings = QSettings(QSettings.IniFormat, QSettings.UserScope, "Biocomplexity", self.prefsFileLineEdit.text())
+        # # # Configuration.mySettings = QSettings(QSettings.IniFormat, QSettings.UserScope, "Biocomplexity", self.prefsFileLineEdit.text())
 
         # update flags in menus:  CC3DOutputOn, etc. (rf. ViewManager/SimpleViewManager)
         
@@ -627,7 +634,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         fieldIndex = Configuration.getSetting("FieldIndex")
         self.lastSelectedField = fieldIndex
         self.fieldComboBox.setCurrentIndex(self.lastSelectedField)
-
+        self.contoursShowCB.setChecked(bool(Configuration.getSetting("ContoursOn")))
+        
         
         # Output
         self.updateScreenSpinBox.setValue(Configuration.getSetting("ScreenUpdateFrequency"))
