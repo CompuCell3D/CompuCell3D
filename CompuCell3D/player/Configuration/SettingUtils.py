@@ -308,7 +308,7 @@ class Setting(object):
         
     def QPointToString(self, _val):
     
-        return str(_val.y())+','+str(_val.x())
+        return str(_val.x())+','+str(_val.y())
 
     def QSizeToString(self, _val):
     
@@ -358,7 +358,68 @@ class Setting(object):
         # print 'typeColorMap=',typeColorMap    
         
         return typeColorMap
+        
+    def windowsLayout2Setting(self, windowsLayout):
+        try:
+            # print 'windowsLayout=',windowsLayout
+            # print 'type(windowsLayout.items()[0][0]) = ',type(windowsLayout.items()[0][1])
+            # print ' type(Setting) = ',type(Setting)
+            if type(windowsLayout.items()[0][1]) == type(Setting(None,None,None)):
+                return windowsLayout
+        except IndexError:        
+            pass
+    
+        # for key,val in windowsLayout.iteritems():
+            # if type(val) == type (Setting(None,None,None)):
+                # #fieldParams is in the proper format
+                # return windowsLayout
+            # else:
+                # #fieldParams needs to be converted to a proper format
+                # break   
+    
+        windowsLayoutSetting = {}
+        
+        for windowName, singleWindowDict in windowsLayout.iteritems():
+        
+            windowsLayoutSetting [windowName] = Setting(windowName,{},'dict')
+                        
+            
+            singleWindowsLayoutSettingDict = windowsLayoutSetting [windowName].value
+                            
+            for settingName, val in singleWindowDict.iteritems():
+                if str(settingName) in ['planePosition']:
+                    singleWindowsLayoutSettingDict [str(settingName)] = Setting(str(settingName),val,'int')
+                elif str(settingName) in ['is3D']:    
+                    singleWindowsLayoutSettingDict [str(settingName)] = Setting(str(settingName),val,'bool')
+                # elif str(settingName) in ['ArrowLength','MinRange','MaxRange']:    
+                    # singleWindowsLayoutSettingDict [str(settingName)] = Setting(str(settingName),val,'float')                
+                elif str(settingName) in ['winSize']:    
+                    singleWindowsLayoutSettingDict [str(settingName)] = Setting(str(settingName),val,'size')       
+                elif str(settingName) in ['winPosition']:    
+                    singleWindowsLayoutSettingDict [str(settingName)] = Setting(str(settingName),val,'point')       
+                    
+                elif str(settingName) in ['sceneName','sceneType','planeName']:
+                    singleWindowsLayoutSettingDict [str(settingName)] = Setting(str(settingName),str(val),'str')       
+                    
+        return windowsLayoutSetting        
 
+ 
+    def toDictOfDictsParams(self):
+        dictOfDictsParams = {}
+        # print 'self.value=',self.value
+        # sys.exit()
+        
+        for subDictName, subDict in self.value.iteritems():
+            dictOfDictsParams [subDictName] = {}
+            subDictParams = dictOfDictsParams [subDictName]
+            
+            for settingName, setting in subDict.value.iteritems():
+                subDictParams [setting.name] = setting.value
+            
+        # print 'fieldParams=',fieldParams
+        return dictOfDictsParams 
+    
+    
     def fieldParams2Setting(self, fieldParams):
     
         for key,val in fieldParams.iteritems():
@@ -382,7 +443,7 @@ class Setting(object):
             for settingName, val in singleFieldDict.iteritems():
                 if str(settingName) in ['NumberOfLegendBoxes','NumberAccuracy','NumberOfContourLines']:
                     singleFieldParamsSettingDict [str(settingName)] = Setting(str(settingName),val,'int')
-                elif str(settingName) in ['MaxRangeFixed','LegendEnable','MinRangeFixed','ScaleArrowsOn','FixedArrowColorOn','OverlayVectorsOn']:    
+                elif str(settingName) in ['MaxRangeFixed','LegendEnable','MinRangeFixed','ScaleArrowsOn','FixedArrowColorOn','OverlayVectorsOn','ContoursOn']:    
                     singleFieldParamsSettingDict [str(settingName)] = Setting(str(settingName),val,'bool')
                 elif str(settingName) in ['ArrowLength','MinRange','MaxRange']:    
                     singleFieldParamsSettingDict [str(settingName)] = Setting(str(settingName),val,'float')                
@@ -419,6 +480,10 @@ class Setting(object):
             
         elif self.name == 'FieldParams':
             self.value = self.fieldParams2Setting(self.value)
+            
+        elif self.name == 'WindowsLayout':
+            self.value = self.windowsLayout2Setting(self.value)
+            
                 
     def toObject(self):
     
@@ -427,6 +492,9 @@ class Setting(object):
             
         elif self.name == 'FieldParams':
             return self.toFieldParams()
+            
+        elif self.name == 'WindowsLayout':
+            return self.toDictOfDictsParams()        
             
         return self.value
                  

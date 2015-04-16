@@ -4,13 +4,25 @@ from PyQt4.QtCore import *
 #from Messaging import stdMsg, dbgMsg,pd, errMsg, setDebugging
 #setDebugging(1)
 
+###### NOTE
+# DefaultSettings.py defines location of the global setting file
+# SettingUtils.py provides most functionality as far as Setting lookup, loading writing etc...
+
+
+###### NOTE 2
+# To add new setting edit glolbal _settings.xml and create placeholder for the new setting
+# e.g.  
+# add
+# <e Name="WindowsLayout" Type="dict">
+# </e>
+
+# Now this setting is treated as "known setting " and you can manipulat it using Configuration set/get setting fuctions/. For more complex settings you may need to write 
+# some auxiliary functions facilitating translation from Setting format to Python format - this usually applies to e.g. dictionaries of dictionaries
+
 from os import environ,path
 import os
 
-
 from SettingUtils import *
-
-
 
 LATTICE_TYPES = {"Square":1,"Hexagonal":2}
 
@@ -29,7 +41,8 @@ class Configuration():
     myCustomSettings = None # this is an object that stores settings for custom settings i.e. ones which are associated with individual cc3d projects
     myCustomSettingsPath = ''
     
-    globalOnlySettings = ['RecentSimulations','NumberOfRecentSimulations']
+    globalOnlySettings = ['RecentSimulations','NumberOfRecentSimulations']    
+    customOnlySettings = ['WindowsLayout']
     
     activeFieldNamesList = []
     
@@ -90,19 +103,6 @@ def initializeCustomSettings(filename):
     Configuration.myCustomSettings = loadSettings(filename)
     Configuration.myCustomSettingsPath = os.path.abspath(filename)
         
-
-# def readCustomFile(fileName):
-        
-    # import XMLUtils
-    # xml2ObjConverter = XMLUtils.Xml2Obj()
-
-    # fileFullPath = os.path.abspath(fileName)
-    # cs = CustomSettings()        
-    # cs.readFromXML(fileFullPath)
-    # # # # FIX HERE
-    # Configuration.myCustomSettings = cs
-    # Configuration.myCustomSettingsPath = fileName
-
     
 #def setSimFieldsParams(fieldNames):
 def getDefaultFieldParams():
@@ -128,6 +128,7 @@ def getDefaultFieldParams():
     paramsDict["FixedArrowColorOn"] = getSetting("FixedArrowColorOn")
     paramsDict["OverlayVectorsOn"] = getSetting("OverlayVectorsOn")
     paramsDict["ScalarIsoValues"] = getSetting("ScalarIsoValues")
+    paramsDict["ContoursOn"] = getSetting("ContoursOn")
     
     return paramsDict
 
@@ -218,8 +219,10 @@ def getSetting(_key, fieldName=None):  # we append an optional fieldName now to 
     #handling field params request
     if fieldName is not None:
         fieldParams = getSetting('FieldParams')
+        # print 'fieldParams=',fieldParams
         try:
             singleFieldParams = fieldParams[fieldName]
+            
             return singleFieldParams[_key] 
         except LookupError:
             pass # returning global parameter for the field
@@ -255,6 +258,12 @@ def setSetting(_key,_value):  # we append an optional fieldName now to allow for
     
     if _key in Configuration.globalOnlySettings: # some settings are stored in the global settings e.g. number of recent simualtions or recent simulations list
         Configuration.myGlobalSettings.setSetting(_key,val)  
+        
+    elif _key in Configuration.customOnlySettings: # some settings are stored in the custom settings e.g. WindowsLayout
+    
+        if Configuration.myCustomSettings:
+            Configuration.myCustomSettings.setSetting(_key,val)
+    
     else:    
         Configuration.myGlobalSettings.setSetting(_key,val)  # we always save everythign to the global settings
         if Configuration.myCustomSettings:

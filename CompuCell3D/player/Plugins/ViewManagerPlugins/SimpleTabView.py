@@ -380,13 +380,16 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         return None
     
     def addGraphicsWindowToWindowRegistry(self,_window):
+    
         self.graphicsWindowDict[self.windowCounter] = _window
         self.windowDict[self.windowCounter] = _window
         
     def addMDIWindowToRegistry(self,_mdiWindow):
+    
         self.mdiWindowDict[self.windowCounter]=_mdiWindow
         
     def  removeWindowFromRegistry(self,_window):
+    
         _windowWidget=_window.widget()
         self.removeWindowWidgetFromRegistry(_windowWidget=_windowWidget)
         
@@ -432,7 +435,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
 
     def addNewGraphicsWindow(self):   # callback method to create additional ("Aux") graphics windows
-#        print MODULENAME, '--------- addNewGraphicsWindow() '
+        print MODULENAME, '--------- addNewGraphicsWindow() '
         # if self.pauseAct.isEnabled():
             # self.__pauseSim()
                 
@@ -442,6 +445,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
     
         self.windowCounter += 1        
         newWindow = GraphicsFrameWidget(self)   # "newWindow" is actually a QFrame
+        
+        
         self.addGraphicsWindowToWindowRegistry(newWindow)
         
         # self.windowDict[self.windowCounter] = newWindow
@@ -480,6 +485,10 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
        # self.simulation.setGraphicsWidget(self.mainGraphicsWindow)        
         # self.mdiWindowDict[self.windowCounter] = self.addSubWindow(newWindow)
         mdiWindow= self.addSubWindow(newWindow)
+        
+        # # # mdiWindow.setFixedSize(300,300)
+        # # # mdiWindow.move(0,0)
+        
         self.addMDIWindowToRegistry(mdiWindow)
         # self.mdiWindowDict[self.windowCounter] 
         self.updateActiveWindowVisFlags()
@@ -503,7 +512,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.setActiveSubWindow(self.mainMdiSubWindow)
         
     def addVTKWindowToWorkspace(self):   # just called one time, for initial graphics window  (vs. addNewGraphicsWindow())
-#        print MODULENAME,' =================================addVTKWindowToWorkspace ========='
+        # print MODULENAME,' =================================addVTKWindowToWorkspace ========='
 #        dbgMsg(' addVTKWindowToWorkspace =========')
         # self.graphics2D = Graphics2DNew(self)     
         # print 'BEFORE self.mainGraphicsWindow = GraphicsFrameWidget(self)'
@@ -579,8 +588,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         
         self.updateWindowMenu()
-        self.updateActiveWindowVisFlags()
-        
+        self.updateActiveWindowVisFlags()                
 
         
     
@@ -995,6 +1003,10 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         # self.newDrawingUserRequest=False
         # self.completedFirstMCS=False
         
+
+        
+        # sys.exit()
+        
     def __setupArea(self):
         # print '------------------- __setupArea'
         # time.sleep(5)
@@ -1005,6 +1017,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.windowCounter=0
         # print 'before addVTKWindowToWorkspace'
         self.addVTKWindowToWorkspace()
+                
         # print 'after addVTKWindowToWorkspace'
         # print 'AFTER ------------------- __setupArea'
         # time.sleep(5)
@@ -1765,7 +1778,8 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         # print MODULENAME,'  --------- initializeSimulationViewWidgetRegular:'
         
         # self.pifFromVTKAct.setEnabled(False)
-        
+        # import time
+        # time.sleep(2)
         # # # sim=self.simulation.sim()
         sim=self.simulation.sim()
         if sim:
@@ -1867,7 +1881,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.prepareXMLTreeView()
         # after this call I can access self.root_element of the XML File
 #        self.multiWindowPlayerSettings(self.root_element)
-        self.loadCustomPlayerSettings(self.root_element)
+        # # # self.loadCustomPlayerSettings(self.root_element)
         
  
     
@@ -1901,12 +1915,13 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.simulation.sem.tryAcquire()
         self.simulation.sem.release()        
         print MODULENAME, " initializeSimulationViewWidget():  AFTER RELEASE" 
+        
 #        import pdb; pdb.set_trace()
             
     def runSteppablePostStartPlayerPrep(self):
         
         self.setFieldTypes() 
-        self.windowDict[1].setFieldTypesComboBox(self.fieldTypes) #we have only one window at this stage of the simulation run
+        # # # self.windowDict[1].setFieldTypesComboBox(self.fieldTypes) #we have only one window at this stage of the simulation run
         
         self.simulation.sem.tryAcquire()
         self.simulation.sem.release()        
@@ -1983,207 +1998,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
                 self.lastActiveWindow.ren.ResetCameraClippingRange()  # need to do this, else might have clipped actors
                 
-        
-    def loadCustomPlayerSettings(self,_root_element):
-        import XMLUtils
-        import CC3DXML
-        from XMLUtils import dictionaryToMapStrStr as d2mss
-        playerSettingsElement = _root_element.getFirstElement("Plugin",d2mss({"Name":"PlayerSettings"}))
-#        print '--------------------------------\n'
-#        print 'type(playerSettingsElement)=',type(playerSettingsElement)
-#        print 'dir(playerSettingsElement)=',dir(playerSettingsElement)
-#        print 'playerSettingsElement.getNumberOfChildren()=',playerSettingsElement.getNumberOfChildren()
-        if playerSettingsElement:
-            winList = XMLUtils.CC3DXMLListPy(playerSettingsElement.getElements("MainWindow"))
-            for myWin in winList:
-                attrKeys = myWin.getAttributes().keys()  # ['CameraClippingRange', 'CameraDistance', 'CameraFocalPoint', 'CameraPos', 'CameraViewUp', 'WindowNumber']
-#                print '------ MainWindow: attrKeys=',attrKeys
-                self.setWindowView(myWin,attrKeys)
-#            self.mainGraphicsWindow._xyChecked(True)
-            
-            winList = XMLUtils.CC3DXMLListPy(playerSettingsElement.getElements("NewWindow"))
-            for myWin in winList:
-                self.addNewGraphicsWindow()   #rwh
-#                camera3D = self.lastActiveWindow.getCamera3D()
-                
-#                print 'w.getAttributes()=',w.getAttributes()
-#                print 'dir(w.getAttributes())=',dir(w.getAttributes())
-                attrKeys = myWin.getAttributes().keys()  # ['CameraClippingRange', 'CameraDistance', 'CameraFocalPoint', 'CameraPos', 'CameraViewUp', 'WindowNumber']
-                self.setWindowView(myWin,attrKeys)
-                
-                
-            visualControlElement = playerSettingsElement.getFirstElement("VisualControl")
-            if visualControlElement:
-#                print 'type(visualControlElement)=',type(visualControlElement)
-#                print 'visualControlElement=',visualControlElement
-#                print 'dir(visualControlElement)=',dir(visualControlElement)
-#                print 'visualControlElement.getName()=',visualControlElement.getName()
-#                print 'visualControlElement.attributes=',visualControlElement.attributes
-#                print 'visualControlElement.getNumberOfChildren()=',visualControlElement.getNumberOfChildren()
-#                print 'visualControlElement.getElements()=',visualControlElement.getElements()
-#                print 'visualControlElement.getAttributes()=',visualControlElement.getAttributes()
-                validAttrs = ("ScreenUpdateFrequency",  "NoOutput","ImageOutput", "ScreenshotFrequency","ImageFrequency",
-                              "LatticeOutput","LatticeFrequency")
-                              
-                for vcAttr in XMLUtils.XMLAttributeList(visualControlElement):
-                    if str(vcAttr[0]) not in validAttrs:
-                      print "\n-------\nERROR in loadCustomPlayerSettings:  VisualControl attribute '",vcAttr[0],"' is invalid"
-                      print 'Valid attributes are ',validAttrs
-                      print '--------\n'
-                    
-                #  NOTE: do NOT do an if-elif block here! 
-                if visualControlElement.findAttribute("ScreenUpdateFrequency"):
-                    screenUpdateFrequency = visualControlElement.getAttributeAsUInt("ScreenUpdateFrequency")
-                    Configuration.setSetting("ScreenUpdateFrequency",screenUpdateFrequency)
-                    
-                if visualControlElement.findAttribute("NoOutput"):  # trying to deprecate
-                    noOutput = visualControlElement.getAttributeAsBool("NoOutput")
-                    imageOut = not noOutput
-                    Configuration.setSetting("ImageOutputOn",imageOut)
-                if visualControlElement.findAttribute("ImageOutput"):   # replaces previous
-                    imageOut = visualControlElement.getAttributeAsBool("ImageOutput")
-                    Configuration.setSetting("ImageOutputOn",imageOut)
-                    
-                if visualControlElement.findAttribute("ScreenshotFrequency"):  # trying to deprecate
-                    scrFreq = visualControlElement.getAttributeAsUInt("ScreenshotFrequency")
-                    Configuration.setSetting("SaveImageFrequency",scrFreq)
-                if visualControlElement.findAttribute("ImageFrequency"):  # replaces previous
-                    scrFreq = visualControlElement.getAttributeAsUInt("ImageFrequency")
-                    Configuration.setSetting("SaveImageFrequency",scrFreq)
-                    
-                if visualControlElement.findAttribute("LatticeOutput"):
-                    latticeOut = visualControlElement.getAttributeAsBool("LatticeOutput")
-                    Configuration.setSetting("LatticeOutputOn",latticeOut)
-                if visualControlElement.findAttribute("LatticeFrequency"):
-                    latticeFreq = visualControlElement.getAttributeAsUInt("LatticeFrequency")
-                    Configuration.setSetting("SaveLatticeFrequency",latticeFreq)
-
-        # if visualControlElement.findAttribute("ClosePlayerAfterSimulationDone"):
-            # closePlayerAfterSimulationDone=visualControlElement.getAttributeAsBool("ClosePlayerAfterSimulationDone")
-            # Configuration.setSetting("ClosePlayerAfterSimulationDone",closePlayerAfterSimulationDone)
-                self.__paramsChanged()    
-                
-            borderElement=playerSettingsElement.getFirstElement("Border")
-            if borderElement:
-                if borderElement.findAttribute("BorderColor"):
-                    # print "borderElement"
-                    borderColor=borderElement.getAttribute("BorderColor")
-                    Configuration.setSetting("Border", QColor(borderColor))
-                    
-                if borderElement.findAttribute("BorderOn"):
-                    borderOn=borderElement.getAttributeAsBool("BorderOn")
-                    Configuration.setSetting("BordersOn", borderOn)
-                    if borderOn:
-                        self.borderAct.setChecked(True)
-                    else:
-                        self.borderAct.setChecked(False)
-                        
-            cellColorsList = XMLUtils.CC3DXMLListPy(playerSettingsElement.getElements("Cell"))
-#            typeColorMap = {}
-            typeColorMap = Configuration.getSetting("TypeColorMap")  # start out with the given (default) cell type colormap
-#            print MODULENAME,'  loadCustomPlayerSettings, typeColorMap =',typeColorMap
-            cellColorsListLength = 0
-            for cellElement in cellColorsList:
-                cellColorsListLength += 1
-                
-            if cellColorsListLength:
-#                print MODULENAME,'-----  cellColorsListLength=',cellColorsListLength
-#                import pdb; pdb.set_trace()
-                for cellElement in cellColorsList:
-                    cellType = cellElement.getAttributeAsUInt("Type")
-#                    print 'type(cellType), cellType =',type(cellType),cellType
-                    cellColor = cellElement.getAttribute("Color")
-#                    print 'type(cellColor), cellColor =',type(cellColor),cellColor
-                    if cellColor[0] == '#':   # handle a hex specification (Michael Rountree likes to do this)
-                        r,g,b = cellColor[1:3], cellColor[3:5], cellColor[5:7]
-                        r,g,b = [int(n, 16) for n in (r, g, b)]
-#                        print '   type(r)=',type(r)
-#                        print '   r,g,b=',r,g,b
-                        typeColorMap[cellType] = QColor(r,g,b)
-                    else:
-                        cellColor = string.lower(cellColor)
-                        typeColorMap[cellType] = QColor(cellColor)
-                # print "GOT CUSTOM COLORS"    
-                # for cellType in typeColorMap.keys():
-                    # print "typeColorMap=",typeColorMap
-#                Configuration.setSetting("CustomTypeColorMap", typeColorMap)
-                Configuration.setSetting("TypeColorMap", typeColorMap)
-                for windowName,window in self.graphicsWindowDict.items():
-                    window.populateLookupTable()
-                
-                    
-                # self.mainGraphicsWindow.populateLookupTable()
-                # self.graphics3D.populateLookupTable()
-            
-            typesInvisibleIn3DElement = playerSettingsElement.getFirstElement("TypesInvisibleIn3D")
-            if typesInvisibleIn3DElement:
-                print MODULENAME,' type(typesInvisibleIn3DElement.getAttribute("Types")) = ',type(typesInvisibleIn3DElement.getAttribute("Types"))
-                print MODULENAME,' typesInvisibleIn3DElement.getAttribute("Types") = ',typesInvisibleIn3DElement.getAttribute("Types")
-                Configuration.setSetting("Types3DInvisible", typesInvisibleIn3DElement.getAttribute("Types"))
-            
-            self.saveSettings = True # by default we will save settings each time we exit player    
-            
-            settingsElement = playerSettingsElement.getFirstElement("Settings")
-            if settingsElement:
-                self.saveSettings = settingsElement.getAttributeAsBool("SaveSettings")
-                
-            projection2DElement = playerSettingsElement.getFirstElement("Project2D")
-            if projection2DElement:
-                if projection2DElement.findAttribute("XYProj"):
-                    zPos = projection2DElement.getAttributeAsUInt("XYProj")
-                    print MODULENAME,'  loadCustomPlayerSettings(): XYProj, zPos =',zPos  #rwh
-                    if zPos >= self.xySB.minimum() and zPos <= self.xySB.maximum():
-                        self.mainGraphicsWindow._xyChecked(True)
-                        self.mainGraphicsWindow._projSpinBoxChanged(zPos)
-                
-                elif projection2DElement.findAttribute("XZProj"):
-                    yPos = projection2DElement.getAttributeAsUInt("XZProj")
-                    if yPos >= self.xzSB.minimum() and yPos <= self.xzSB.maximum():
-                        self.mainGraphicsWindow._xzChecked(True)
-                        self.mainGraphicsWindow._projSpinBoxChanged(yPos)
-                        
-                elif projection2DElement.findAttribute("YZProj"):
-                    xPos = projection2DElement.getAttributeAsUInt("YZProj")
-                    if xPos >= self.yzSB.minimum() and xPos <= self.yzSB.maximum():
-                        self.mainGraphicsWindow._yzChecked(True)
-                        self.mainGraphicsWindow._projSpinBoxChanged(xPos)
-            else:   # rwh: would like to deprecate this and duplicate the above syntax for 3D windows
-                view3DElement = playerSettingsElement.getFirstElement("View3D")
-                if view3DElement:
-                    cameraCippingRange=None
-                    cameraFocalPoint=None
-                    cameraPosition=None
-                    cameraViewUp=None
-                    
-                    clippingRangeElement=view3DElement.getFirstElement("CameraClippingRange")
-                    if clippingRangeElement:
-                        cameraClippingRange=[float(clippingRangeElement.getAttribute("Min")),float(clippingRangeElement.getAttribute("Max"))]
-                        
-                    focalPointElement=view3DElement.getFirstElement("CameraFocalPoint")
-                    if focalPointElement:
-                        cameraFocalPoint=[float(focalPointElement.getAttribute("x")),float(focalPointElement.getAttribute("y")),float(focalPointElement.getAttribute("z"))]
-                    
-                    positionElement=view3DElement.getFirstElement("CameraPosition")
-                    if positionElement:
-                        cameraPosition=[float(positionElement.getAttribute("x")),float(positionElement.getAttribute("y")),float(positionElement.getAttribute("z"))]
-                        
-                    viewUpElement=view3DElement.getFirstElement("CameraViewUp")
-                    if viewUpElement:
-                        cameraViewUp=[float(viewUpElement.getAttribute("x")),float(viewUpElement.getAttribute("y")),float(viewUpElement.getAttribute("z"))]
-                
-                    camera3D=self.mainGraphicsWindow.getCamera3D()
-                    if cameraCippingRange:
-                        camera3D.SetClippingRange(cameraCippingRange)
-                    if  cameraFocalPoint:
-                        camera3D.SetFocalPoint(cameraFocalPoint)
-                    if  cameraPosition:
-                        camera3D.SetPosition(cameraPosition)   
-                    if  cameraViewUp:
-                        camera3D.SetViewUp(cameraViewUp)   
-                    
-                    self.mainGraphicsWindow._switchDim(True)
-                    
-                    
+                                                
     def __savePlayerParams(self):
         # print "THIS IS __saveScrDesc"
         filter = "Player parameters File (*.txt )" # self._getOpenFileFilter() 
@@ -2326,10 +2141,9 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
     def handleCompletedStepRegular(self,_mcs):    
         
+        # print 'handleCompletedStepRegular = ', handleCompletedStepRegular
         
         self.__drawField()
-
-        
         
         self.simulation.drawMutex.lock()
         # will need to sync screenshots with simulation thread. Be sure before simulation thread writes new results all the screenshots are taken
@@ -2760,7 +2574,9 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
         __drawFieldFcn = getattr(self, "drawField" + self.__viewManagerType)
         # print MODULENAME, '__drawField():  calling ',"drawField"+self.__viewManagerType
-        # time.sleep(5)
+        # # time.sleep(5)
+        # import time
+        # time.sleep(2)
         
         
         # print 'self.__viewManagerType=',self.__viewManagerType        
@@ -2794,10 +2610,43 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.runAct.setEnabled(True)
         self.pauseAct.setEnabled(False)
         
+    def __saveWindowsLayout(self):
+    
+        # print 'SIMULATION STOP BEFORE self.fieldTypes = ',self.fieldTypes
+        # print 'BEFORE self.fieldTypes = ',self.fieldTypes
+        windowsLayout = {}
+        
+        for key, win in self.graphicsWindowDict.items():
+            print 'key, win = ' , (key , win)
+            mdiWidget = self.findMDISubWindowForWidget(win)
+            print 'mdiwidget = ', mdiWidget
+            # print 'Current scene name = ', win.getCurrentSceneNameAndType()
+            gwd = win.getGraphicsWindowData()
+            # fill size and position of graphics windows data using mdiWidget, NOT the internal widget such as GraphicsFrameWidget - sizes and positions are base on MID widet settings
+            gwd.winPosition = mdiWidget.pos()
+            gwd.winSize = mdiWidget.size()
+            
+            print 'getGraphicsWindowData=', gwd
+            print 'toDict=',gwd.toDict()
+            
+            
+            windowsLayout[key] = gwd.toDict()
+            Configuration.setSetting('WindowsLayout',windowsLayout)
+            # adding new widget
+            # self.addNewGraphicsWindow()
+            # # gfw = self.findMDISubWindowForWidget(self.lastActiveWindow)
+            # gfw = self.lastActiveWindow
+            # gfw.applyGraphicsWindowData(gwd)
+            
+            # break
+        # print 'AFTER self.fieldTypes = ',self.fieldTypes        
+    
     def __simulationStop(self):
         # once user requests explicit stop of the simulation we stop regardless whether this is parameter scan or not. To stop parameter scan we reset vaiables used to seer parameter scanto their default (non-param scan) values
 
         self.runAgainFlag=False
+        
+        self.__saveWindowsLayout()
         
         if self.__viewManagerType == "CMLResultReplay":
             self.cmlReplayManager.setStopState()        
@@ -2830,6 +2679,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         
     def __cleanAfterSimulation(self,_exitCode=0):
+        
         self.resetControlButtonsAndActions()
         self.resetControlVariables()       
         
@@ -3031,9 +2881,64 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         self.drawingAreaPrepared = True
 #        self.mainGraphicsWindow.parentWidget.move(400,300)   # temporarily moves, but jumps back
 
-        self.__layoutGraphicsWindows()
-    
+        # self.__layoutGraphicsWindows()
         
+        
+        self.__restoreWindowsLayout()
+        
+    def __restoreWindowsLayout(self):    
+        
+        windowsLayoutDict = Configuration.getSetting('WindowsLayout')
+        print 'from settings windowsLayout = ',windowsLayoutDict
+        
+        # # first we convert window keys to integers 
+        # int windowsLayoutDict.keys()
+
+        for windowId, windowDataDict in windowsLayoutDict.iteritems():
+            
+                # gfw = self.findMDISubWindowForWidget(self.lastActiveWindow)
+            from Graphics.GraphicsWindowData import GraphicsWindowData
+            gwd = GraphicsWindowData()                
+            gwd.fromDict(windowDataDict)
+            if gwd.sceneName not in  self.fieldTypes.keys():
+                continue # we only create window for a scenNames (e.g. fieldNames) that exist in the simulation
+                
+            if windowId != str(1):    # window with id one is created by addVTKWindowToWorkspaceo at this point there is already first window in the simulation
+                self.addNewGraphicsWindow()
+                
+            gfw = self.lastActiveWindow
+            
+            mdiWindow = self.findMDISubWindowForWidget (gfw)
+            mdiWindow.resize(gwd.winSize)
+            mdiWindow.move(gwd.winPosition)                
+
+            
+            gfw.applyGraphicsWindowData(gwd)      
+                
+
+            # mdiWindow.setFixedSize(gwd.winSize)
+        
+        import time
+        time.sleep(0)
+        
+        # for windowId, windowDataDict in windowsLayoutDict.iteritems():
+            # if windowId != str(1):
+                # # gfw = self.findMDISubWindowForWidget(self.lastActiveWindow)
+                # from Graphics.GraphicsWindowData import GraphicsWindowData
+                # gwd = GraphicsWindowData()                
+                # gwd.fromDict(windowDataDict)
+                # if gwd.sceneName not in  self.fieldTypes.keys():
+                    # continue # we only create window for a scenNames (e.g. fieldNames) that exist in the simulation
+                
+                # self.addNewGraphicsWindow()
+                # gfw = self.lastActiveWindow
+                # gfw.applyGraphicsWindowData(gwd)      
+                
+                # mdiWindow = self.findMDISubWindowForWidget (gfw)
+                # # mdiWindow.setFixedSize(gwd.winSize)
+                # mdiWindow.resize(gwd.winSize)
+                # mdiWindow.move(gwd.winPosition)                
+                
     def setFieldTypesCML(self):
         # Add cell field
         self.fieldTypes["Cell_Field"] = FIELD_TYPES[0]   #"CellField" 
@@ -3301,7 +3206,6 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                     
         self.drawingAreaPrepared = True
         self.updateActiveWindowVisFlags()  # needed in case switching from one sim to another (e.g. 1st has FPP, 2nd doesn't)
-    
     
     def __openLDSFile(self,fileName=None):
         filter = "Lattice Description Summary file  (*.dml )" # self._getOpenFileFilter() 
@@ -3826,3 +3730,203 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
         self.__statusBar.addWidget(self.mcSteps)
         self.__statusBar.addWidget(self.conSteps)
+        
+    # def loadCustomPlayerSettings(self,_root_element):
+        # import XMLUtils
+        # import CC3DXML
+        # from XMLUtils import dictionaryToMapStrStr as d2mss
+        # playerSettingsElement = _root_element.getFirstElement("Plugin",d2mss({"Name":"PlayerSettings"}))
+# #        print '--------------------------------\n'
+# #        print 'type(playerSettingsElement)=',type(playerSettingsElement)
+# #        print 'dir(playerSettingsElement)=',dir(playerSettingsElement)
+# #        print 'playerSettingsElement.getNumberOfChildren()=',playerSettingsElement.getNumberOfChildren()
+        # if playerSettingsElement:
+            # winList = XMLUtils.CC3DXMLListPy(playerSettingsElement.getElements("MainWindow"))
+            # for myWin in winList:
+                # attrKeys = myWin.getAttributes().keys()  # ['CameraClippingRange', 'CameraDistance', 'CameraFocalPoint', 'CameraPos', 'CameraViewUp', 'WindowNumber']
+# #                print '------ MainWindow: attrKeys=',attrKeys
+                # self.setWindowView(myWin,attrKeys)
+# #            self.mainGraphicsWindow._xyChecked(True)
+            
+            # winList = XMLUtils.CC3DXMLListPy(playerSettingsElement.getElements("NewWindow"))
+            # for myWin in winList:
+                # self.addNewGraphicsWindow()   #rwh
+# #                camera3D = self.lastActiveWindow.getCamera3D()
+                
+# #                print 'w.getAttributes()=',w.getAttributes()
+# #                print 'dir(w.getAttributes())=',dir(w.getAttributes())
+                # attrKeys = myWin.getAttributes().keys()  # ['CameraClippingRange', 'CameraDistance', 'CameraFocalPoint', 'CameraPos', 'CameraViewUp', 'WindowNumber']
+                # self.setWindowView(myWin,attrKeys)
+                
+                
+            # visualControlElement = playerSettingsElement.getFirstElement("VisualControl")
+            # if visualControlElement:
+# #                print 'type(visualControlElement)=',type(visualControlElement)
+# #                print 'visualControlElement=',visualControlElement
+# #                print 'dir(visualControlElement)=',dir(visualControlElement)
+# #                print 'visualControlElement.getName()=',visualControlElement.getName()
+# #                print 'visualControlElement.attributes=',visualControlElement.attributes
+# #                print 'visualControlElement.getNumberOfChildren()=',visualControlElement.getNumberOfChildren()
+# #                print 'visualControlElement.getElements()=',visualControlElement.getElements()
+# #                print 'visualControlElement.getAttributes()=',visualControlElement.getAttributes()
+                # validAttrs = ("ScreenUpdateFrequency",  "NoOutput","ImageOutput", "ScreenshotFrequency","ImageFrequency",
+                              # "LatticeOutput","LatticeFrequency")
+                              
+                # for vcAttr in XMLUtils.XMLAttributeList(visualControlElement):
+                    # if str(vcAttr[0]) not in validAttrs:
+                      # print "\n-------\nERROR in loadCustomPlayerSettings:  VisualControl attribute '",vcAttr[0],"' is invalid"
+                      # print 'Valid attributes are ',validAttrs
+                      # print '--------\n'
+                    
+                # #  NOTE: do NOT do an if-elif block here! 
+                # if visualControlElement.findAttribute("ScreenUpdateFrequency"):
+                    # screenUpdateFrequency = visualControlElement.getAttributeAsUInt("ScreenUpdateFrequency")
+                    # Configuration.setSetting("ScreenUpdateFrequency",screenUpdateFrequency)
+                    
+                # if visualControlElement.findAttribute("NoOutput"):  # trying to deprecate
+                    # noOutput = visualControlElement.getAttributeAsBool("NoOutput")
+                    # imageOut = not noOutput
+                    # Configuration.setSetting("ImageOutputOn",imageOut)
+                # if visualControlElement.findAttribute("ImageOutput"):   # replaces previous
+                    # imageOut = visualControlElement.getAttributeAsBool("ImageOutput")
+                    # Configuration.setSetting("ImageOutputOn",imageOut)
+                    
+                # if visualControlElement.findAttribute("ScreenshotFrequency"):  # trying to deprecate
+                    # scrFreq = visualControlElement.getAttributeAsUInt("ScreenshotFrequency")
+                    # Configuration.setSetting("SaveImageFrequency",scrFreq)
+                # if visualControlElement.findAttribute("ImageFrequency"):  # replaces previous
+                    # scrFreq = visualControlElement.getAttributeAsUInt("ImageFrequency")
+                    # Configuration.setSetting("SaveImageFrequency",scrFreq)
+                    
+                # if visualControlElement.findAttribute("LatticeOutput"):
+                    # latticeOut = visualControlElement.getAttributeAsBool("LatticeOutput")
+                    # Configuration.setSetting("LatticeOutputOn",latticeOut)
+                # if visualControlElement.findAttribute("LatticeFrequency"):
+                    # latticeFreq = visualControlElement.getAttributeAsUInt("LatticeFrequency")
+                    # Configuration.setSetting("SaveLatticeFrequency",latticeFreq)
+
+        # # if visualControlElement.findAttribute("ClosePlayerAfterSimulationDone"):
+            # # closePlayerAfterSimulationDone=visualControlElement.getAttributeAsBool("ClosePlayerAfterSimulationDone")
+            # # Configuration.setSetting("ClosePlayerAfterSimulationDone",closePlayerAfterSimulationDone)
+                # self.__paramsChanged()    
+                
+            # borderElement=playerSettingsElement.getFirstElement("Border")
+            # if borderElement:
+                # if borderElement.findAttribute("BorderColor"):
+                    # # print "borderElement"
+                    # borderColor=borderElement.getAttribute("BorderColor")
+                    # Configuration.setSetting("Border", QColor(borderColor))
+                    
+                # if borderElement.findAttribute("BorderOn"):
+                    # borderOn=borderElement.getAttributeAsBool("BorderOn")
+                    # Configuration.setSetting("BordersOn", borderOn)
+                    # if borderOn:
+                        # self.borderAct.setChecked(True)
+                    # else:
+                        # self.borderAct.setChecked(False)
+                        
+            # cellColorsList = XMLUtils.CC3DXMLListPy(playerSettingsElement.getElements("Cell"))
+# #            typeColorMap = {}
+            # typeColorMap = Configuration.getSetting("TypeColorMap")  # start out with the given (default) cell type colormap
+# #            print MODULENAME,'  loadCustomPlayerSettings, typeColorMap =',typeColorMap
+            # cellColorsListLength = 0
+            # for cellElement in cellColorsList:
+                # cellColorsListLength += 1
+                
+            # if cellColorsListLength:
+# #                print MODULENAME,'-----  cellColorsListLength=',cellColorsListLength
+# #                import pdb; pdb.set_trace()
+                # for cellElement in cellColorsList:
+                    # cellType = cellElement.getAttributeAsUInt("Type")
+# #                    print 'type(cellType), cellType =',type(cellType),cellType
+                    # cellColor = cellElement.getAttribute("Color")
+# #                    print 'type(cellColor), cellColor =',type(cellColor),cellColor
+                    # if cellColor[0] == '#':   # handle a hex specification (Michael Rountree likes to do this)
+                        # r,g,b = cellColor[1:3], cellColor[3:5], cellColor[5:7]
+                        # r,g,b = [int(n, 16) for n in (r, g, b)]
+# #                        print '   type(r)=',type(r)
+# #                        print '   r,g,b=',r,g,b
+                        # typeColorMap[cellType] = QColor(r,g,b)
+                    # else:
+                        # cellColor = string.lower(cellColor)
+                        # typeColorMap[cellType] = QColor(cellColor)
+                # # print "GOT CUSTOM COLORS"    
+                # # for cellType in typeColorMap.keys():
+                    # # print "typeColorMap=",typeColorMap
+# #                Configuration.setSetting("CustomTypeColorMap", typeColorMap)
+                # Configuration.setSetting("TypeColorMap", typeColorMap)
+                # for windowName,window in self.graphicsWindowDict.items():
+                    # window.populateLookupTable()
+                
+                    
+                # # self.mainGraphicsWindow.populateLookupTable()
+                # # self.graphics3D.populateLookupTable()
+            
+            # typesInvisibleIn3DElement = playerSettingsElement.getFirstElement("TypesInvisibleIn3D")
+            # if typesInvisibleIn3DElement:
+                # print MODULENAME,' type(typesInvisibleIn3DElement.getAttribute("Types")) = ',type(typesInvisibleIn3DElement.getAttribute("Types"))
+                # print MODULENAME,' typesInvisibleIn3DElement.getAttribute("Types") = ',typesInvisibleIn3DElement.getAttribute("Types")
+                # Configuration.setSetting("Types3DInvisible", typesInvisibleIn3DElement.getAttribute("Types"))
+            
+            # self.saveSettings = True # by default we will save settings each time we exit player    
+            
+            # settingsElement = playerSettingsElement.getFirstElement("Settings")
+            # if settingsElement:
+                # self.saveSettings = settingsElement.getAttributeAsBool("SaveSettings")
+                
+            # projection2DElement = playerSettingsElement.getFirstElement("Project2D")
+            # if projection2DElement:
+                # if projection2DElement.findAttribute("XYProj"):
+                    # zPos = projection2DElement.getAttributeAsUInt("XYProj")
+                    # print MODULENAME,'  loadCustomPlayerSettings(): XYProj, zPos =',zPos  #rwh
+                    # if zPos >= self.xySB.minimum() and zPos <= self.xySB.maximum():
+                        # self.mainGraphicsWindow._xyChecked(True)
+                        # self.mainGraphicsWindow._projSpinBoxChanged(zPos)
+                
+                # elif projection2DElement.findAttribute("XZProj"):
+                    # yPos = projection2DElement.getAttributeAsUInt("XZProj")
+                    # if yPos >= self.xzSB.minimum() and yPos <= self.xzSB.maximum():
+                        # self.mainGraphicsWindow._xzChecked(True)
+                        # self.mainGraphicsWindow._projSpinBoxChanged(yPos)
+                        
+                # elif projection2DElement.findAttribute("YZProj"):
+                    # xPos = projection2DElement.getAttributeAsUInt("YZProj")
+                    # if xPos >= self.yzSB.minimum() and xPos <= self.yzSB.maximum():
+                        # self.mainGraphicsWindow._yzChecked(True)
+                        # self.mainGraphicsWindow._projSpinBoxChanged(xPos)
+            # else:   # rwh: would like to deprecate this and duplicate the above syntax for 3D windows
+                # view3DElement = playerSettingsElement.getFirstElement("View3D")
+                # if view3DElement:
+                    # cameraCippingRange=None
+                    # cameraFocalPoint=None
+                    # cameraPosition=None
+                    # cameraViewUp=None
+                    
+                    # clippingRangeElement=view3DElement.getFirstElement("CameraClippingRange")
+                    # if clippingRangeElement:
+                        # cameraClippingRange=[float(clippingRangeElement.getAttribute("Min")),float(clippingRangeElement.getAttribute("Max"))]
+                        
+                    # focalPointElement=view3DElement.getFirstElement("CameraFocalPoint")
+                    # if focalPointElement:
+                        # cameraFocalPoint=[float(focalPointElement.getAttribute("x")),float(focalPointElement.getAttribute("y")),float(focalPointElement.getAttribute("z"))]
+                    
+                    # positionElement=view3DElement.getFirstElement("CameraPosition")
+                    # if positionElement:
+                        # cameraPosition=[float(positionElement.getAttribute("x")),float(positionElement.getAttribute("y")),float(positionElement.getAttribute("z"))]
+                        
+                    # viewUpElement=view3DElement.getFirstElement("CameraViewUp")
+                    # if viewUpElement:
+                        # cameraViewUp=[float(viewUpElement.getAttribute("x")),float(viewUpElement.getAttribute("y")),float(viewUpElement.getAttribute("z"))]
+                
+                    # camera3D=self.mainGraphicsWindow.getCamera3D()
+                    # if cameraCippingRange:
+                        # camera3D.SetClippingRange(cameraCippingRange)
+                    # if  cameraFocalPoint:
+                        # camera3D.SetFocalPoint(cameraFocalPoint)
+                    # if  cameraPosition:
+                        # camera3D.SetPosition(cameraPosition)   
+                    # if  cameraViewUp:
+                        # camera3D.SetViewUp(cameraViewUp)   
+                    
+                    # self.mainGraphicsWindow._switchDim(True)
+        

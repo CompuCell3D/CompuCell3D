@@ -1,0 +1,101 @@
+<PlayerSettings>
+   <Settings Type="bytearray">
+      <e Name="PlayerSizes" Type="bytearray">0,0,0,255,0,0,0,0,253,0,0,0,2,0,0,0,0,0,0,1,0,0,0,1,93,252,2,0,0,0,2,251,0,0,0,30,0,77,0,111,0,100,0,101,0,108,0,69,0,100,0,105,0,116,0,111,0,114,0,68,0,111,0,99,0,107,1,0,0,0,46,0,0,1,93,0,0,0,77,0,255,255,255,251,0,0,0,30,0,76,0,97,0,116,0,116,0,105,0,99,0,101,0,68,0,97,0,116,0,97,0,68,0,111,0,99,0,107,0,0,0,1,23,0,0,0,227,0,0,0,77,0,255,255,255,0,0,0,3,0,0,3,65,0,0,0,120,252,1,0,0,0,1,251,0,0,0,14,0,67,0,111,0,110,0,115,0,111,0,108,0,101,1,0,0,0,0,0,0,3,65,0,0,0,125,0,255,255,255,0,0,2,59,0,0,1,93,0,0,0,1,0,0,0,4,0,0,0,8,0,0,0,8,252,0,0,0,1,0,0,0,2,0,0,0,4,0,0,0,20,0,83,0,105,0,109,0,84,0,111,0,111,0,108,0,98,0,97,0,114,1,0,0,0,0,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,22,0,70,0,105,0,108,0,101,0,84,0,111,0,111,0,108,0,98,0,97,0,114,1,0,0,0,122,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,22,0,86,0,105,0,101,0,119,0,84,0,111,0,111,0,108,0,98,0,97,0,114,1,0,0,0,244,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,26,0,87,0,105,0,110,0,100,0,111,0,119,0,84,0,111,0,111,0,108,0,98,0,97,0,114,1,0,0,1,122,255,255,255,255,0,0,0,0,0,0,0,0</e>
+   </Settings>
+   <Settings Type="point">
+      <e Name="MainWindowPosition" Type="point">208,183</e>
+   </Settings>
+   <Settings Type="int">
+      <e Name="CellGlyphPhiRes" Type="int">2</e>
+      <e Name="CellGlyphThetaRes" Type="int">2</e>
+      <e Name="FieldIndex" Type="int">0</e>
+      <e Name="GraphicsWinHeight" Type="int">400</e>
+      <e Name="GraphicsWinWidth" Type="int">400</e>
+      <e Name="NumberAccuracy" Type="int">2</e>
+      <e Name="NumberOfContourLines" Type="int">3</e>
+      <e Name="NumberOfLegendBoxes" Type="int">6</e>
+      <e Name="NumberOfRecentSimulations" Type="int">3</e>
+      <e Name="Projection" Type="int">0</e>
+      <e Name="SaveImageFrequency" Type="int">100</e>
+      <e Name="SaveLatticeFrequency" Type="int">100</e>
+      <e Name="ScreenUpdateFrequency" Type="int">10</e>
+      <e Name="Screenshot_X" Type="int">600</e>
+      <e Name="Screenshot_Y" Type="int">600</e>
+      <e Name="TabIndex" Type="int">2</e>
+   </Settings>
+   <Settings Type="float">
+      <e Name="ArrowLength" Type="float">1</e>
+      <e Name="CellGlyphScale" Type="float">1.0</e>
+      <e Name="MaxRange" Type="float">1.0</e>
+      <e Name="MinRange" Type="float">0.0</e>
+      <e Name="ZoomFactor" Type="float">1.0</e>
+   </Settings>
+   <Settings Type="color">
+      <e Name="ArrowColor" Type="color">#ffffff</e>
+      <e Name="BorderColor" Type="color">#ffff00</e>
+      <e Name="BoundingBoxColor" Type="color">#ffffff</e>
+      <e Name="BrushColor" Type="color">#ffffff</e>
+      <e Name="ClusterBorderColor" Type="color">#0000ff</e>
+      <e Name="ContourColor" Type="color">#ffffff</e>
+      <e Name="PenColor" Type="color">#000000</e>
+      <e Name="WindowColor" Type="color">#000000</e>
+   </Settings>
+   <Settings Type="dict">
+      <e Name="TypeColorMap" Type="dict">
+         <e Name="0" Type="color">#000000</e>
+         <e Name="1" Type="color">#aa00ff</e>
+         <e Name="10" Type="color">#ffffff</e>
+         <e Name="2" Type="color">#0000ff</e>
+         <e Name="3" Type="color">#ff0000</e>
+         <e Name="4" Type="color">#808000</e>
+         <e Name="5" Type="color">#c0c0c0</e>
+         <e Name="6" Type="color">#ff00ff</e>
+         <e Name="7" Type="color">#000080</e>
+         <e Name="8" Type="color">#00ffff</e>
+         <e Name="9" Type="color">#008000</e>
+      </e>
+   </Settings>
+   <Settings Type="str">
+      <e Name="OutputLocation" Type="str">C:\Users\m\CC3DWorkspace</e>
+      <e Name="ProjectLocation" Type="str">D:\Program Files (x86)\373\Demos</e>
+      <e Name="RecentFile" Type="str">C:\Users\m\CC3DHamner\cellsort\cellsort.cc3d</e>
+      <e Name="ScalarIsoValues" Type="str">1,2,3</e>
+      <e Name="Types3DInvisible" Type="str">0</e>
+   </Settings>
+   <Settings Type="bool">
+      <e Name="BoundingBoxOn" Type="bool">True</e>
+      <e Name="CC3DOutputOn" Type="bool">True</e>
+      <e Name="CellBordersOn" Type="bool">True</e>
+      <e Name="CellGlyphScaleByVolumeOn" Type="bool">False</e>
+      <e Name="CellGlyphsOn" Type="bool">False</e>
+      <e Name="CellsOn" Type="bool">True</e>
+      <e Name="ClosePlayerAfterSimulationDone" Type="bool">False</e>
+      <e Name="ClusterBordersOn" Type="bool">False</e>
+      <e Name="ConcentrationLimitsOn" Type="bool">True</e>
+      <e Name="ContoursOn" Type="bool">False</e>
+      <e Name="FPPLinksColorOn" Type="bool">False</e>
+      <e Name="FPPLinksOn" Type="bool">False</e>
+      <e Name="FixedArrowColorOn" Type="bool">False</e>
+      <e Name="ImageOutputOn" Type="bool">False</e>
+      <e Name="LatticeOutputOn" Type="bool">False</e>
+      <e Name="LegendEnable" Type="bool">True</e>
+      <e Name="MaxRangeFixed" Type="bool">True</e>
+      <e Name="MinRangeFixed" Type="bool">False</e>
+      <e Name="OutputToProjectOn" Type="bool">False</e>
+      <e Name="OverlayVectorsOn" Type="bool">False</e>
+      <e Name="PixelizedScalarField" Type="bool">False</e>
+      <e Name="ScaleArrowsOn" Type="bool">False</e>
+      <e Name="UseInternalConsole" Type="bool">False</e>
+      <e Name="WindowColorSameAsMedium" Type="bool">True</e>
+   </Settings>
+   <Settings Type="strlist">
+      <e Name="RecentSimulations" Type="strlist">
+         <e Name="e" Type="str">C:\Users\m\CC3DHamner\cellsort\cellsort.cc3d</e>
+         <e Name="e" Type="str">C:\Users\m\CC3DHamner\Cellsorting\Cellsorting.cc3d</e>
+         <e Name="e" Type="str">D:\Program Files (x86)\373\Demos\CompuCellPythonTutorial\InfoPrinter\cellsort_2D_info_printer.cc3d</e>
+      </e>
+   </Settings>
+   <Settings Type="size">
+      <e Name="MainWindowSize" Type="size">833,539</e>
+   </Settings>
+</PlayerSettings>

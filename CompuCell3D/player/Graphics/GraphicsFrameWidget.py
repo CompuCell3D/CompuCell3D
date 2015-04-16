@@ -593,14 +593,21 @@ class GraphicsFrameWidget(QtGui.QFrame):
         
         
     def applyGraphicsWindowData(self,gwd):
-    
+        # print 'COMBO BOX CHECK '
+        # for i in xrange(self.fieldComboBox.count()):
+            # print 'self.fieldComboBox.itemText(i)=',self.fieldComboBox.itemText(i)
+        
+        
         for i in xrange(self.fieldComboBox.count()):
         
             if str(self.fieldComboBox.itemText(i)) == gwd.sceneName:
                 
                 self.fieldComboBox.setCurrentIndex(i)
-                
+                # print 'SELECTING ITEM ',gwd.sceneName
                 break
+                
+        # import time
+        # time.sleep(1)
         
         
     def getGraphicsWindowData(self):
@@ -736,7 +743,7 @@ class GraphicsFrameWidget(QtGui.QFrame):
         self.yzPlane = fieldDim.x/2
         
     
-    def setFieldTypesComboBox(self,_fieldTypes):
+    def setFieldTypesComboBox(self,_fieldTypes):    
         self.fieldTypes=_fieldTypes # assign field types to be the same as field types in the workspace
         self.draw2D.setFieldTypes(self.fieldTypes) # make sure that field types are the same in graphics widget and in the drawing object
         self.draw3D.setFieldTypes(self.fieldTypes) # make sure that field types are the same in graphics widget and in the drawing object
