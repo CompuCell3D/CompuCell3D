@@ -583,11 +583,56 @@ class GraphicsFrameWidget(QtGui.QFrame):
             self.parentWidget._drawField()
             # self.getattrFcn=self.__getattrDraw2D
             
+    def getActiveCamera(self):
+        return self.ren.GetActiveCamera()
+        
+    def getCurrentSceneNameAndType(self):
+        # this is usually field name but we can also allow other types of visualizations hence I am calling it getCurrerntSceneName
+        sceneName = str(self.fieldComboBox.currentText())
+        return sceneName , self.parentWidget.fieldTypes[sceneName]        
+        
+        
+    def applyGraphicsWindowData(self,gwd):
     
+        for i in xrange(self.fieldComboBox.count()):
+        
+            if str(self.fieldComboBox.itemText(i)) == gwd.sceneName:
+                
+                self.fieldComboBox.setCurrentIndex(i)
+                
+                break
+        
+        
+    def getGraphicsWindowData(self):
+        from GraphicsWindowData import GraphicsWindowData
+        gwd = GraphicsWindowData()
+        gwd.camera = self.getActiveCamera()
+        gwd.sceneName = str(self.fieldComboBox.currentText())
+        gwd.sceneType = self.parentWidget.fieldTypes[gwd.sceneName]      
+        
+        # winPosition and winPosition will be filled externally by the SimpleTabView , since it has access to mdi windows
+        
+        # gwd.winPosition = self.pos()        
+        # gwd.winSize = self.size()
+        
+        if self.draw3DFlag:            
+            gwd.is3D = True
+        else:
+            planePositionTupple = self.draw2D.getPlane()
+            gwd.planeName = planePositionTupple[0]
+            gwd.planePosition = planePositionTupple[1]
+            
+        return gwd    
+
+        
+
+        
+        
     def _takeShot(self):
 #        print MODULENAME, '  _takeShot():  self.parentWidget.screenshotManager=',self.parentWidget.screenshotManager
         print MODULENAME, '  _takeShot():  self.renWin.GetSize()=',self.renWin.GetSize()
-        camera = self.ren.GetActiveCamera()
+        camera = self.getActiveCamera()
+        # # # camera = self.ren.GetActiveCamera()
 #        print MODULENAME, '  _takeShot():  camera=',camera
 #        clippingRange= camera.GetClippingRange()
 #        focalPoint= camera.GetFocalPoint()
