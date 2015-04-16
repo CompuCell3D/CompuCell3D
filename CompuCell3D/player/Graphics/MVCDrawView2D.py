@@ -521,7 +521,8 @@ class MVCDrawView2D(MVCDrawViewBase):
             self.showLegend(True)
         else:
             self.showLegend(False)
-            
+        
+        # print 'Configuration.getSetting("ContoursOn",%s)'%self.currentDrawingParameters.fieldName, ' = '  ,Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName)  
         if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):            
             self.showContours(True)            
         else:
@@ -556,11 +557,11 @@ class MVCDrawView2D(MVCDrawViewBase):
         else:
             self.showLegend(False)
     
-#        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):            
-#            self.showContours(True)            
-#        else:
-#            self.showContours(False)
-        self.showContours(True)            
+        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):            
+            self.showContours(True)            
+        else:
+            self.showContours(False)
+        # self.showContours(True)            
             
         if self.parentWidget.clusterBorderAct.isChecked():
             self.drawClusterBorders2DHex()
@@ -590,11 +591,11 @@ class MVCDrawView2D(MVCDrawViewBase):
         else:
             self.showLegend(False)
     
-#        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):
-#            self.showContours(True)
-#        else:
-#            self.showContours(False)
-        self.showContours(True)            
+        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):
+            self.showContours(True)
+        else:
+            self.showContours(False)
+        # self.showContours(True)            
             
         if self.parentWidget.clusterBorderAct.isChecked():
             self.drawClusterBorders2DHex()    
@@ -714,11 +715,11 @@ class MVCDrawView2D(MVCDrawViewBase):
         else:
             self.hideBorder()
 
-#        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):                        
-#            self.showContours(True)
-#        else:
-#            self.showContours(False)
-        self.showContours(True)
+        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):                        
+            self.showContours(True)
+        else:
+            self.showContours(False)
+        # self.showContours(True)
             
         self.drawModel.prepareOutlineActors((self.outlineActor,))       
         self.showOutlineActor()    
