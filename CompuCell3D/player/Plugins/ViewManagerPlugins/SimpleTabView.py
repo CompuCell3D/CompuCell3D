@@ -421,17 +421,17 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
                 break
                         
     
-    def addNewPlotWindow(self):
-        # from PlotManager import CustomPlot        
-        # customPlot=CustomPlot(self.plotManager)
-        # customPlot.initPlot()
+    # def addNewPlotWindow(self):
+        # # from PlotManager import CustomPlot        
+        # # customPlot=CustomPlot(self.plotManager)
+        # # customPlot.initPlot()
         
-        # print "ADDING NEW WINDOW"
-        # sys.exit()
-        # import time
-        # time.sleep(2)
+        # # print "ADDING NEW WINDOW"
+        # # sys.exit()
+        # # import time
+        # # time.sleep(2)
         
-        return self.plotManager.addNewPlotWindow()
+        # return self.plotManager.addNewPlotWindow()
 
 
     def addNewGraphicsWindow(self):   # callback method to create additional ("Aux") graphics windows
@@ -2631,7 +2631,11 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             
             
             windowsLayout[key] = gwd.toDict()
-            Configuration.setSetting('WindowsLayout',windowsLayout)
+            
+        # Configuration.setSetting('WindowsLayout',windowsLayout)
+        
+        
+        
             # adding new widget
             # self.addNewGraphicsWindow()
             # # gfw = self.findMDISubWindowForWidget(self.lastActiveWindow)
@@ -2639,8 +2643,31 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
             # gfw.applyGraphicsWindowData(gwd)
             
             # break
-        # print 'AFTER self.fieldTypes = ',self.fieldTypes        
-    
+        print 'AFTER self.fieldTypes = ',self.fieldTypes        
+        print self.plotManager.plotWindowList     
+        
+        plotLayoutDict = self.plotManager.getPlotWindowsLayoutDict()  
+        for key , gwd in plotLayoutDict.iteritems():
+            print 'key=',key
+            print 'gwd=',gwd
+        
+        # combining two layout dicts
+        windowsLayoutCombined = windowsLayout.copy()
+        windowsLayoutCombined.update(plotLayoutDict)        
+        # print 'windowsLayoutCombined=',windowsLayoutCombined
+        Configuration.setSetting('WindowsLayout',windowsLayoutCombined)
+        
+        # for key, win in self.windowDict.iteritems():
+            # if key ==3:
+                # print 'dir(win) =', dir(win)
+            # import Graphics
+            # print 'key, win = ' , (key , win)  
+            # print 'type(win)    ',  type(win)    
+            # print 'type(Graphics.PlotFrameWidget.PlotFrameWidget) = ', type(Graphics.PlotFrameWidget.PlotFrameWidget)
+            # if type(win) == type(Graphics.PlotFrameWidget.PlotFrameWidget):
+                # print 'key, win = ' , (key , win)     
+            # print 'win ' 
+            
     def __simulationStop(self):
         # once user requests explicit stop of the simulation we stop regardless whether this is parameter scan or not. To stop parameter scan we reset vaiables used to seer parameter scanto their default (non-param scan) values
 
@@ -2888,18 +2915,28 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
     def __restoreWindowsLayout(self):    
         
-        windowsLayoutDict = Configuration.getSetting('WindowsLayout')
+        windowsLayoutDict = Configuration.getSetting('WindowsLayout')        
         print 'from settings windowsLayout = ',windowsLayoutDict
         
         # # first we convert window keys to integers 
         # int windowsLayoutDict.keys()
-
+        
+        # restore graphics windows first
+        
         for windowId, windowDataDict in windowsLayoutDict.iteritems():
             
                 # gfw = self.findMDISubWindowForWidget(self.lastActiveWindow)
             from Graphics.GraphicsWindowData import GraphicsWindowData
-            gwd = GraphicsWindowData()                
+            gwd = GraphicsWindowData()      
+                
             gwd.fromDict(windowDataDict)
+            
+            
+            
+            if gwd.winType != 'graphics':
+                continue
+            
+            
             if gwd.sceneName not in  self.fieldTypes.keys():
                 continue # we only create window for a scenNames (e.g. fieldNames) that exist in the simulation
                 
@@ -2918,8 +2955,12 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
 
             # mdiWindow.setFixedSize(gwd.winSize)
         
-        import time
-        time.sleep(0)
+        
+        print ' PLOT WINDOW MANAGER  WINDOW LIST = ', self.plotManager.plotWindowList
+        
+        
+        # import time
+        # time.sleep(2)
         
         # for windowId, windowDataDict in windowsLayoutDict.iteritems():
             # if windowId != str(1):

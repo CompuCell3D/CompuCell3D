@@ -60,15 +60,35 @@ class CartesianPlot(Qwt.QwtPlot):
         # legend.setFrameStyle(QFrame.Box | QFrame.Sunken)
         # legend.setItemMode(Qwt.QwtLegend.ClickableItem)
         # self.insertLegend(legend, Qwt.QwtPlot.BottomLegend)
+        # self.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding))
+        super(CartesianPlot,self).setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding))
         
         self.replot()
-
+        self.sizeHint =  QtCore.QSize(300, 300)
+        
     def sizeHint(self):
-        return QtCore.QSize(400, 400)
+        return self.sizeHint
+        # return QtCore.QSize(300, 300)
         
     def minimumSizeHint(self):
         return QtCore.QSize(100, 100)
 
+    # def resizeEvent(self, ev):
+        # print "resize event"
+        
+        # w = self.width()
+        # h = self.height()
+
+        # print 'w,h = ', (w,h)
+        # # import time
+        # # time.sleep(2)
+        
+        # self.sizeHint =  QtCore.QSize(w+200, h+200)
+        # super(CartesianPlot,self).resizeEvent(ev)
+        # # self.resize(self.sizeHint)
+
+        
+        
 import sys
 import os
 import string
@@ -88,13 +108,25 @@ class PlotFrameWidget(QtGui.QFrame):
         QtGui.QFrame.__init__(self, parent)
 
         self.plotWidget=CartesianPlot()
+        self.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding))
         
         self.parentWidget=parent
         layout=QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom)
         layout.addWidget(self.plotWidget)
         self.setLayout(layout)
-        self.resize(400, 400)
+        # self.resize(600, 600)
         self.setMinimumSize(100, 100) #needs to be defined to resize smaller than 400x400
+        
+        # self.resizePlot(400, 300)
+        # self.resizePlot(600, 600)
+        
+    # def resizeEvent (self,ev):
+        # print 'RESIZE EVENT PLOT FRAM WIDGET=',ev
+        
+    def resizePlot(self,x,y):    
+        self.plotWidget.sizeHint = QtCore.QSize(x, y)
+        self.plotWidget.resize(self.plotWidget.sizeHint)
+        self.resize(self.plotWidget.sizeHint)
         
     # def __getattr__(self, attr):
         # """Makes the object behave like a DrawBase"""

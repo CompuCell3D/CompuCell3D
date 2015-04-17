@@ -812,7 +812,7 @@ class PlotManager(QtCore.QObject):
         # self.connect(self,SIGNAL("newPlotWindow(QtCore.QMutex)"),self.processRequestForNewPlotWindow)
         
     def getNewPlotWindow(self):
-        print "\n\n\n getNewPlotWindow "
+        # print "\n\n\n getNewPlotWindow "
         self.plotWindowMutex.lock()
 
         self.newPlotWindowSignal.emit(self.plotWindowMutex)
@@ -820,6 +820,55 @@ class PlotManager(QtCore.QObject):
         self.plotWindowMutex.lock()
         self.plotWindowMutex.unlock()
         return self.plotWindowList[-1] # returning recently added window
+    
+    def restoreSingleWindow(self,plotWindowInterface):
+        
+        windowsLayoutDict = Configuration.getSetting('WindowsLayout')
+        print 'windowsLayoutDict=',windowsLayoutDict
+        
+        if not windowsLayoutDict: return
+        
+        if str( plotWindowInterface.title ) in windowsLayoutDict.keys():
+            windowDataDict = windowsLayoutDict [ str(plotWindowInterface.title) ]
+            
+            from Graphics.GraphicsWindowData import GraphicsWindowData
+            
+            gwd = GraphicsWindowData()                      
+            gwd.fromDict(windowDataDict)            
+            
+            if gwd.winType != 'plot':
+                return
+            
+            
+            
+            mdiWindow = self.vm.findMDISubWindowForWidget (plotWindowInterface.plotWindow)
+            mdiWindow.resize(gwd.winSize)
+            mdiWindow.move(gwd.winPosition)                
+
+            
+            # gfw.applyGraphicsWindowData(gwd)      
+            
+            
+        
+    def getPlotWindowsLayoutDict(self):
+        windowsLayout = {}
+        from Graphics.GraphicsWindowData import GraphicsWindowData
+
+        
+        for plotInterface in self.plotWindowList:
+            gwd = GraphicsWindowData()
+            gwd.sceneName =  plotInterface.title            
+            gwd.winType =  'plot'            
+            plotWindow = plotInterface.plotWindow
+            mdiPlotWindow = self.vm.findMDISubWindowForWidget(plotWindow)
+            print 'plotWindow=',plotWindow
+            print 'mdiPlotWindow=',mdiPlotWindow
+            gwd.winSize = mdiPlotWindow.size()
+            gwd.winPosition = mdiPlotWindow.pos()            
+            
+            windowsLayout[gwd.sceneName] = gwd.toDict()    
+            
+        return windowsLayout
         
     def processRequestForNewPlotWindow(self,_mutex):
 #        print MODULENAME,"processRequestForNewPlotWindow(): GOT HERE mutex=",_mutex
@@ -833,6 +882,8 @@ class PlotManager(QtCore.QObject):
         
         self.vm.windowCounter += 1        
         newWindow = PlotFrameWidget(self.vm)
+        # newWindow.resizePlot(600,600)
+        
         
         self.vm.windowDict[self.vm.windowCounter]=newWindow
         self.vm.plotWindowDict[self.vm.windowCounter] = self.vm.windowDict[self.vm.windowCounter]
@@ -842,9 +893,48 @@ class PlotManager(QtCore.QObject):
         self.vm.lastActiveWindow = newWindow
         # # self.updateWindowMenu()
         
+        # 
+        
         newWindow.setShown(False)
         
-        self.vm.mdiWindowDict[self.vm.windowCounter]=self.vm.addSubWindow(newWindow)
+        
+        mdiPlotWindow = self.vm.addSubWindow(newWindow)
+        # mdiPlotWindow = self.vm.lastActiveWindow
+        
+        # newWindow.setFixedSize(600,600)
+        # newWindow.resize(600,600)
+        # newWindow.resizePlot(600,600)
+        # # # newWindow.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding))        
+        # # # # newWindow.adjustSize()
+        # # # newWindow.showMinimized()
+        # # # newWindow.showNormal()
+        # newWindow.resize(600,600)
+        
+        # newWindow.resizePlot(600,600)
+
+        
+        # def resizeHandler(ev):            
+            # print 'RESIZE HANDLER'
+            # print 'ev.oldSize() =',ev.oldSize()
+            # print 'ev.size() =',ev.size()
+            
+            # import time
+            # time.sleep(2)
+            
+        # mdiPlotWindow.resizeEvent = resizeHandler
+        print 'mdiPlotWindow=',mdiPlotWindow
+        print 'newWindow=',newWindow
+        # mdiPlotWindow.setFixedSize(600,600)  
+        mdiPlotWindow.resize(300,300)  
+        # mdiPlotWindow.widget().resize(600,600)  
+        
+        # import time
+        # time.sleep(2)    
+        
+        # mdiPlotWindow.resize(400,400)
+        self.vm.mdiWindowDict[self.vm.windowCounter] = mdiPlotWindow
+        
+        # self.vm.mdiWindowDict[self.vm.windowCounter]=self.vm.addSubWindow(newWindow)
         newWindow.show()
         
         plotWindowInterface=PlotWindowInterface(newWindow)

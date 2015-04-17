@@ -591,6 +591,44 @@ class GraphicsFrameWidget(QtGui.QFrame):
         sceneName = str(self.fieldComboBox.currentText())
         return sceneName , self.parentWidget.fieldTypes[sceneName]        
         
+    def apply3DGraphicsWindowData(self,gwd):
+    
+    
+        for p in xrange(self.projComboBox.count()):
+            
+            if str(self.projComboBox.itemText(p)) == '3D':
+            
+                # camera = self.getActiveCamera()
+                # print 'activeCamera=',activeCamera
+            
+                self.projComboBox.setCurrentIndex(p)            
+                
+                # notice: there are two cameras one for 2D and one for 3D  here we set camera for 3D                
+                self.camera3D.SetClippingRange(gwd.cameraClippingRange)
+                self.camera3D.SetFocalPoint(gwd.cameraFocalPoint)
+                self.camera3D.SetPosition(gwd.cameraPosition)
+                self.camera3D.SetViewUp(gwd.cameraViewUp)                
+                
+                
+                break
+        
+        
+    def apply2DGraphicsWindowData(self,gwd):        
+    
+        for p in xrange(self.projComboBox.count()):
+            
+            if str(self.projComboBox.itemText(p)).lower() == str(gwd.planeName).lower():
+                self.projComboBox.setCurrentIndex(p)            
+                # print 'self.projSpinBox.maximum()= ', self.projSpinBox.maximum()    
+                # if gwd.planePosition <= self.projSpinBox.maximum():
+                self.projSpinBox.setValue(gwd.planePosition)  # automatically invokes the callback (--Changed)
+                
+                # notice: there are two cameras one for 2D and one for 3D  here we set camera for 3D                
+                self.camera2D.SetClippingRange(gwd.cameraClippingRange)
+                self.camera2D.SetFocalPoint(gwd.cameraFocalPoint)
+                self.camera2D.SetPosition(gwd.cameraPosition)
+                self.camera2D.SetViewUp(gwd.cameraViewUp)                
+                
         
     def applyGraphicsWindowData(self,gwd):
         # print 'COMBO BOX CHECK '
@@ -601,22 +639,31 @@ class GraphicsFrameWidget(QtGui.QFrame):
         for i in xrange(self.fieldComboBox.count()):
         
             if str(self.fieldComboBox.itemText(i)) == gwd.sceneName:
+            
                 
                 self.fieldComboBox.setCurrentIndex(i)
-                # print 'SELECTING ITEM ',gwd.sceneName
+                # setting 2D projection or 3D
+                if gwd.is3D:
+                    self.apply3DGraphicsWindowData(gwd)
+                else:                
+                    self.apply2DGraphicsWindowData(gwd)
+                    
+
+      
                 break
                 
         # import time
-        # time.sleep(1)
+        # time.sleep(2)
         
         
     def getGraphicsWindowData(self):
         from GraphicsWindowData import GraphicsWindowData
         gwd = GraphicsWindowData()
-        gwd.camera = self.getActiveCamera()
+        activeCamera = self.getActiveCamera()
+        # gwd.camera = self.getActiveCamera()
         gwd.sceneName = str(self.fieldComboBox.currentText())
         gwd.sceneType = self.parentWidget.fieldTypes[gwd.sceneName]      
-        
+        gwd.winType = 'graphics'
         # winPosition and winPosition will be filled externally by the SimpleTabView , since it has access to mdi windows
         
         # gwd.winPosition = self.pos()        
@@ -629,6 +676,15 @@ class GraphicsFrameWidget(QtGui.QFrame):
             gwd.planeName = planePositionTupple[0]
             gwd.planePosition = planePositionTupple[1]
             
+        # print 'GetClippingRange()=',activeCamera.GetClippingRange()
+        gwd.cameraClippingRange = activeCamera.GetClippingRange()
+        gwd.cameraFocalPoint = activeCamera.GetFocalPoint()
+        gwd.cameraPosition = activeCamera.GetPosition()
+        gwd.cameraViewUp = activeCamera.GetViewUp()
+        
+        
+        # import time
+        # time.sleep(2)
         return gwd    
 
         

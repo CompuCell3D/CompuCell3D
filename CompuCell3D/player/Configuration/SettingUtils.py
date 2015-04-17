@@ -87,6 +87,8 @@ class Setting(object):
     # 'typecolormap':'self.typecolormap2XML',
     'size':'self.size2XML',
     'point':'self.point2XML',
+    'floatlist':'self.floatlist2XML',
+    'intlist':'self.intlist2XML',
     'bytearray':'self.bytearray2XML'}
 
 
@@ -101,6 +103,8 @@ class Setting(object):
     # 'typecolormap':'self.typecolormap2XML',
     'size':'self.XML2Size',
     'point':'self.XML2Point',
+    'floatlist':'self.XML2Floatlist',
+    'intlist':'self.XML2Intlist',    
     'bytearray':'self.XML2ByteArray'}
 
     
@@ -197,6 +201,29 @@ class Setting(object):
         self.initNameType(element)              
         self.value = self.StringToQPoint(element.cdata)
 
+    def floatlist2XML(self,parentElement):        
+        parentElement.ElementCC3D('e',{'Name':self.name,'Type':self.type}, ','.join(map(str,self.value)))
+        
+    def XML2Floatlist(self,element):
+        self.initNameType(element)        
+        strlist = element.cdata.split(',')
+        print 'strlist=',strlist
+        if not len (strlist) or  not strlist[0]:        
+            self.value = []            
+        else:
+            self.value = map(float , strlist)
+        
+        
+    def intlist2XML(self,parentElement):
+        parentElement.ElementCC3D('e',{'Name':self.name,'Type':self.type}, map(str,self.value).join(','))
+        
+    def XML2Intlist(self,element):
+        self.initNameType(element)        
+        strlist = element.cdata.split(',')
+        if not len (strlist) or  not strlist[0]:        
+            self.value = []            
+        else:
+            self.value = map(int , strlist)
         
     def bytearray2XML(self,parentElement):
         parentElement.ElementCC3D('e',{'Name':self.name,'Type':self.type},self.QByteArrayToString(self.value))
@@ -389,6 +416,10 @@ class Setting(object):
             for settingName, val in singleWindowDict.iteritems():
                 if str(settingName) in ['planePosition']:
                     singleWindowsLayoutSettingDict [str(settingName)] = Setting(str(settingName),val,'int')
+                    
+                if str(settingName) in ['cameraClippingRange' , 'cameraFocalPoint' , 'cameraPosition' , 'cameraViewUp']:
+                    singleWindowsLayoutSettingDict [str(settingName)] = Setting(str(settingName),val,'floatlist')
+                    
                 elif str(settingName) in ['is3D']:    
                     singleWindowsLayoutSettingDict [str(settingName)] = Setting(str(settingName),val,'bool')
                 # elif str(settingName) in ['ArrowLength','MinRange','MaxRange']:    
@@ -396,9 +427,8 @@ class Setting(object):
                 elif str(settingName) in ['winSize']:    
                     singleWindowsLayoutSettingDict [str(settingName)] = Setting(str(settingName),val,'size')       
                 elif str(settingName) in ['winPosition']:    
-                    singleWindowsLayoutSettingDict [str(settingName)] = Setting(str(settingName),val,'point')       
-                    
-                elif str(settingName) in ['sceneName','sceneType','planeName']:
+                    singleWindowsLayoutSettingDict [str(settingName)] = Setting(str(settingName),val,'point')                           
+                elif str(settingName) in ['sceneName','sceneType','planeName','winType']:
                     singleWindowsLayoutSettingDict [str(settingName)] = Setting(str(settingName),str(val),'str')       
                     
         return windowsLayoutSetting        

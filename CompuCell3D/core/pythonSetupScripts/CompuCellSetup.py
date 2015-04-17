@@ -460,6 +460,8 @@ def addNewPlotWindow(_title='',_xAxisTitle='',_yAxisTitle='',_xScaleType='linear
     # default possition is at the bottom of the plot but here we put it at the top
     pW.addAutoLegend("top")
     
+    viewManager.plotManager.restoreSingleWindow(pW)
+    
     return pW
     
 
