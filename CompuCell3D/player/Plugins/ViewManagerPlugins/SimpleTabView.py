@@ -28,6 +28,7 @@ from  Graphics.GraphicsFrameWidget import GraphicsFrameWidget
 from Utilities.SimModel import SimModel
 from Configuration.ConfigurationDialog import ConfigurationDialog
 import Configuration
+import DefaultData
 
 from Simulation.CMLResultReader import CMLResultReader
 from Simulation.SimulationThread import SimulationThread
@@ -2779,10 +2780,11 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         textStr = QString('<div style="margin: 10px 10px 10px 20px; font-size: 14px"><br />\
         Plugin: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <b>%1</b><br />\
         Description: &nbsp; %2</div>').arg(pluginInfo[0]).arg(pluginInfo[1])
-        
+
+        gip = DefaultData.getIconPath
         if self.pluginTab is None:
             self.pluginTab = QTextEdit(textStr, self)
-            self.addTab(self.pluginTab, QIcon("player/icons/plugin.png"), pluginInfo[0])  
+            self.addTab(self.pluginTab, QIcon(gip("plugin.png")), pluginInfo[0])
             # self.closeTab.show()
         else:
             # The plugin view always has index 1 if simview present 0 otherwhise
@@ -2891,7 +2893,7 @@ class SimpleTabView(QMdiArea,SimpleViewManager):
         
 #        import pdb; pdb.set_trace()
         
-        Configuration.initFieldsParams(self.fieldTypes.keys())
+#         Configuration.initFieldsParams(self.fieldTypes.keys())
         
         # # # self.__setCrossSection()
         

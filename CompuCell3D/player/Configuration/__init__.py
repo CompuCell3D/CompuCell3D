@@ -22,6 +22,16 @@ from PyQt4.QtCore import *
 from os import environ,path
 import os
 
+# determining icon's path
+
+# _path = os.path.abspath(os.path.dirname(__file__))
+#
+# _path = os.path.abspath(os.path.join(_path+'../../../'))
+#
+# icons_dir = os.path.abspath(os.path.join(_path, 'player/icons'))
+
+
+
 from SettingUtils import *
 
 LATTICE_TYPES = {"Square":1,"Hexagonal":2}
@@ -47,8 +57,13 @@ class Configuration():
     activeFieldNamesList = []
     
     
-        
-def getSettingNameList(): return Configuration.myGlobalSettings.getSettingNameList()
+# def getIconsDir():return icons_dir
+#
+# def getIconPath(icon_name):
+#
+#     return os.path.abspath(os.path.join(getIconsDir(),icon_name))
+
+def getSettingNameList():return Configuration.myGlobalSettings.getSettingNameList()
         
         
 def setUsedFieldNames(fieldNamesList):
@@ -238,8 +253,9 @@ def getSetting(_key, fieldName=None):  # we append an optional fieldName now to 
         else:#finally try default settings
             
             val = Configuration.defaultSettings.getSetting(_key)  
-            settingStorage.setSetting(val.name , val.value , val.type) # set missing setting
+#             settingStorage.setSetting(val.name , val.value , val.type) # set missing setting
             if val:  
+                settingStorage.setSetting(val.name , val.value , val.type) # set missing setting    
                 return val.toObject()
                 
         

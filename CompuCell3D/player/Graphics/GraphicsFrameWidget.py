@@ -35,6 +35,7 @@ import sys
 platform=sys.platform
 if platform=='darwin':    
     from Utilities.QVTKRenderWindowInteractor_mac import QVTKRenderWindowInteractor
+#     from Utilities.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 else:    
     from Utilities.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
@@ -78,6 +79,8 @@ class GraphicsFrameWidget(QtGui.QFrame):
         layout.addWidget(self.cstb)
         layout.addWidget(self.qvtkWidget)
         self.setLayout(layout)
+        self.setMinimumSize(100, 100) #needs to be defined to resize smaller than 400x400
+        self.resize(600, 600)
         
         self.qvtkWidget.Initialize()
         self.qvtkWidget.Start()
@@ -192,8 +195,8 @@ class GraphicsFrameWidget(QtGui.QFrame):
                 
             
             
-    # def  resizeEvent(self, ev) :
-        # print 'THIS IS RESIZE EVENT'
+#     def  resizeEvent(self, ev) :
+#         print 'THIS IS RESIZE EVENT'
         # print 'resizing graphics window ',self, 'ev.type()=',ev.type(), ' isMaximized=',self.isMaximized()
         # if self.isMaximized():
             # ev.ignore()
@@ -362,7 +365,9 @@ class GraphicsFrameWidget(QtGui.QFrame):
         self.fieldComboBox.addAction(self.fieldComboBoxAct)
         self.fieldComboBox.addItem("-- Field Type --")
         # self.fieldComboBox.addItem("cAMP")  # huh?
-        self.screenshotAct = QtGui.QAction(QtGui.QIcon("player/icons/screenshot.png"), "&Take Screenshot", self)
+        import DefaultData
+        gip = DefaultData.getIconPath
+        self.screenshotAct = QtGui.QAction(QtGui.QIcon(gip("screenshot.png")), "&Take Screenshot", self)
         
         
 

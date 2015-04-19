@@ -3,8 +3,11 @@ import sys
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+
 #from PyQt4.QtXml import *
 import Configuration
+import DefaultData
+gip = DefaultData.getIconPath
 
 MODULENAME = '------- SimpleViewManager: '
 
@@ -278,21 +281,21 @@ class SimpleViewManager():
         # - Connect signals -- self.connect(act, ...)
         # - Add to the action list - actList.append(act)
         
-        self.openAct = QAction(QIcon("player/icons/fileopen.png"), "&Open Simulation File (.cc3d)", self)
+        self.openAct = QAction(QIcon(gip("fileopen.png")), "&Open Simulation File (.cc3d)", self)
         # self.openAct.setShortcut(QKeySequence(tr("Ctrl+O")))
         self.openAct.setShortcut(Qt.CTRL + Qt.Key_O)
         
-        self.saveAct = QAction(QIcon("player/icons/save.png"), "&Save Simulation XML file", self)
-        self.saveScreenshotDescriptionAct=QAction(QIcon("player/icons/screenshots_save_alt.png"), "&Save Screenshot Description...", self)
-        self.openScreenshotDescriptionAct=QAction(QIcon("player/icons/screenshots_open.png"), "&Open Screenshot Description...", self)
-        self.savePlayerParamsAct=QAction(QIcon("player/icons/screenshots_save_alt.png"), "&Save Player Parameters...", self)
-#        self.openPlayerParamsAct=QAction(QIcon("player/icons/screenshots_open.png"), "&Open Player Parameters...", self)
-        self.openLDSAct=QAction(QIcon("player/icons/screenshots_open.png"), "&Open Lattice Description Summary File...", self)
+        self.saveAct = QAction(QIcon(gip("save.png")), "&Save Simulation XML file", self)
+        self.saveScreenshotDescriptionAct=QAction(QIcon(gip("screenshots_save_alt.png")), "&Save Screenshot Description...", self)
+        self.openScreenshotDescriptionAct=QAction(QIcon(gip("screenshots_open.png")), "&Open Screenshot Description...", self)
+        self.savePlayerParamsAct=QAction(QIcon(gip("screenshots_save_alt.png")), "&Save Player Parameters...", self)
+#        self.openPlayerParamsAct=QAction(QIcon(gip("screenshots_open.png")), "&Open Player Parameters...", self)
+        self.openLDSAct=QAction(QIcon(gip("screenshots_open.png")), "&Open Lattice Description Summary File...", self)
         
         # self.closeAct = QAction(QIcon("player/icons/close.png"), "&Close Simulation", self)
-        self.exitAct = QAction(QIcon("player/icons/exit2.png"), "&Exit", self)
+        self.exitAct = QAction(QIcon(gip("exit2.png")), "&Exit", self)
         
-        self.tweditAct=QAction(QIcon("player/icons/twedit-icon.png"), "Start Twe&dit++", self)
+        self.tweditAct=QAction(QIcon(gip("twedit-icon.png")), "Start Twe&dit++", self)
         
         # Why do I need these appendings?
         self.fileActions.append(self.openAct)
@@ -354,17 +357,21 @@ class SimpleViewManager():
         self.crossSectionActions.append(self.fieldComboBoxAct)
     
     def __initSimActions(self):
-        self.runAct = QAction(QIcon("player/icons/play.png"), "&Run", self)
+
+        gip = DefaultData.getIconPath
+
+        # self.runAct = QAction(QIcon("player/icons/play.png"), "&Run", self)
+        self.runAct = QAction(QIcon(gip("play.png")), "&Run", self)
         self.runAct.setShortcut(Qt.CTRL + Qt.Key_M)
-        self.stepAct = QAction(QIcon("player/icons/step.png"), "&Step", self)
+        self.stepAct = QAction(QIcon(gip("step.png")), "&Step", self)
         self.stepAct.setShortcut(Qt.CTRL + Qt.Key_E)
-        self.pauseAct = QAction(QIcon("player/icons/pause.png"), "&Pause", self)
+        self.pauseAct = QAction(QIcon(gip("pause.png")), "&Pause", self)
         self.pauseAct.setShortcut(Qt.CTRL + Qt.Key_D)
-        self.stopAct = QAction(QIcon("player/icons/stop.png"), "&Stop", self)
+        self.stopAct = QAction(QIcon(gip("stop.png")), "&Stop", self)
         self.stopAct.setShortcut(Qt.CTRL + Qt.Key_X)
         self.serializeAct = QAction( "Serialize", self)
         
-        self.addVTKWindowAct=QAction(QIcon("player/icons/stop.png"),'Add VTK Window',self )        
+        self.addVTKWindowAct=QAction(QIcon(gip("stop.png")),'Add VTK Window',self )
         self.addVTKWindowAct.setShortcut(Qt.CTRL + Qt.Key_I)
         
 
@@ -446,7 +453,7 @@ class SimpleViewManager():
 #        self.FPPLinksAct.setChecked(0)
         
     def __initToolsActions(self):
-        self.configAct = QAction(QIcon("player/icons/config.png"), "&Configuration...", self)
+        self.configAct = QAction(QIcon(gip("config.png")), "&Configuration...", self)
         
         self.configAct.setShortcut(Qt.CTRL + Qt.Key_Comma)
         
@@ -486,7 +493,7 @@ class SimpleViewManager():
         #self.toolsActions.append(self.pifVisAct)
         # # # self.toolsActions.append(self.movieAct)
     def __initWindowActions(self):        
-        self.newGraphicsWindowAct = QAction(QIcon("player/icons/kcmkwm.png"),"&New Graphics Window", self)
+        self.newGraphicsWindowAct = QAction(QIcon(gip("kcmkwm.png")),"&New Graphics Window", self)
         # self.newPlotWindowAct = QAction(QIcon("player/icons/plot.png"),"&New Plot Window", self)        
         self.tileAct=QAction("Tile", self)
         self.cascadeAct=QAction("Cascade", self)
@@ -522,11 +529,11 @@ class SimpleViewManager():
     def __initHelpActions(self):
         self.quickAct = QAction("&Quick Start", self)
         self.tutorAct = QAction("&Tutorials", self)
-        self.refManAct = QAction(QIcon("player/icons/man.png"), "&Reference Manual", self)
-        self.aboutAct = QAction(QIcon("player/icons/cc3d_64x64_logo.png"), "&About CompuCell3D", self)
+        self.refManAct = QAction(QIcon(gip("man.png")), "&Reference Manual", self)
+        self.aboutAct = QAction(QIcon(gip("cc3d_64x64_logo.png")), "&About CompuCell3D", self)
         self.connect(self.aboutAct, SIGNAL('triggered()'), self.__about)
         
-        self.whatsThisAct = QAction(QIcon("player/icons/whatsThis.png"), "&What's This?", self)
+        self.whatsThisAct = QAction(QIcon(gip("whatsThis.png")), "&What's This?", self)
         self.whatsThisAct.setWhatsThis(self.trUtf8(
             """<b>Display context sensitive help</b>"""
             """<p>In What's This? mode, the mouse cursor shows an arrow with a question"""

@@ -358,8 +358,24 @@ class SimulationThread(QtCore.QThread):
         
         CompuCellSetup.simulationThreadObject=self
             
-        execfile("pythonSetupScripts/CompuCellPythonSimulationNewPlayer.py")
-        
+        # execfile("pythonSetupScripts/CompuCellPythonSimulationNewPlayer.py")
+        # determinig the path of the CompuCellPythonSimulationNewPlayer.py based on the location of the current scrit (SimlulationThread.py)
+        import os
+
+        _path = os.path.abspath(os.path.dirname(__file__))
+
+        # print '_path1 = ',_path
+
+        _path = os.path.abspath(os.path.join(_path+'../../../'))
+
+        run_script_name = os.path.abspath(os.path.join(_path, 'pythonSetupScripts/CompuCellPythonSimulationNewPlayer.py'))
+        # print '_path2 = ',_path
+        # print 'run_script_name =', run_script_name
+
+        execfile(run_script_name)
+
+        # execfile("../pythonSetupScripts/CompuCellPythonSimulationNewPlayer.py")
+
         # # # CompuCellSetup.simulationThreadObject.sim=None
         # # # CompuCellSetup.simulationThreadObject=None
         

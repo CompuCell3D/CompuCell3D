@@ -30,11 +30,15 @@ from Utilities.CPluginsModel import CPluginsModel
 from Utilities.LatticeDataModel import LatticeDataModel
 from Utilities.SimDelegate import SimDelegate
 import Configuration
+import DefaultData
 
 #from ViewManager.ViewManager import ViewManager
 #from PluginManager.PluginManager import PluginManager
 
 cc3dApp = QCoreApplication.instance
+
+gip = DefaultData.getIconPath
+
 
 class NullDevice:
     def write(self, s):
@@ -47,8 +51,11 @@ class UserInterface(QMainWindow):
         QMainWindow.__init__(self)
         self.argv=None
         # self.resize(QSize(900, 650))
-        QApplication.setWindowIcon(QIcon("player/icons/cc3d_64x64_logo.png"))
-        self.setWindowIcon(QIcon("player/icons/cc3d_64x64_logo.png"))
+
+
+
+        QApplication.setWindowIcon(QIcon(gip("cc3d_64x64_logo.png")))
+        self.setWindowIcon(QIcon(gip("cc3d_64x64_logo.png")))
         self.setWindowTitle(self.trUtf8("CompuCell3D Player"))
         
         self.origStdout=sys.stdout
@@ -181,7 +188,7 @@ class UserInterface(QMainWindow):
         self.connect(self.__menus["view"], SIGNAL('aboutToShow()'), self.__showViewMenu)
         
         self.__menus["toolbars"] = QMenu("&Toolbars", self.__menus["view"])
-        self.__menus["toolbars"].setIcon(QIcon("player/icons/toolbars.png"))
+        self.__menus["toolbars"].setIcon(QIcon(gip("toolbars.png")))
         self.connect(self.__menus["toolbars"], SIGNAL('aboutToShow()'), self.__showToolbarsMenu)
         self.connect(self.__menus["toolbars"], SIGNAL('triggered(QAction *)'), self.__TBMenuTriggered)
         self.__showViewMenu()
@@ -263,10 +270,10 @@ class UserInterface(QMainWindow):
         Private method to define the user interface actions.
         """
         self.actions = []
-        self.zoomInAct = QAction(QIcon("player/icons/zoomIn.png"), "&Zoom In", self)
+        self.zoomInAct = QAction(QIcon(gip("zoomIn.png")), "&Zoom In", self)
         self.actions.append(self.zoomInAct) # Replaced "viewActions" by "actions":self.viewActions.append(self.zoomInAct)
         
-        self.zoomOutAct = QAction(QIcon("player/icons/zoomOut.png"), "&Zoom Out", self)
+        self.zoomOutAct = QAction(QIcon(gip("zoomOut.png")), "&Zoom Out", self)
         self.actions.append(self.zoomOutAct)
         
         # Why do I need self.zoomFixedAct?
