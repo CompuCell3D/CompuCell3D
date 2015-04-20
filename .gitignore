@@ -13,7 +13,7 @@ RoadRunner/ThirdParty/libsbml/src/sbml/common/libsbml-config-common.h
 .Trashes
 ehthumbs.db
 Thumbs.db
-.pyc
-.pyo
+*.pyc
+*.pyo
 .idea
 *~
