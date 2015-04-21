@@ -883,6 +883,7 @@ class SimpleTabView(QMdiArea, SimpleViewManager):
         self.openAct.setEnabled(True)
         self.openLDSAct.setEnabled(True)
         self.pifFromSimulationAct.setEnabled(False)
+        self.pifFromVTKAct.setEnabled(False)
 
     def resetControlVariables(self):
 
@@ -1575,7 +1576,7 @@ class SimpleTabView(QMdiArea, SimpleViewManager):
         self.connect(self.cc3dOutputOnAct, SIGNAL('triggered(bool)'), self.__checkCC3DOutput)
 
         self.connect(self.pifFromSimulationAct, SIGNAL('triggered()'), self.__generatePIFFromCurrentSnapshot)
-        # self.connect(self.pifFromVTKAct,    SIGNAL('triggered()'),      self.__generatePIFFromVTK)
+        self.connect(self.pifFromVTKAct,    SIGNAL('triggered()'),      self.__generatePIFFromVTK)
 
         #window menu actions
         self.connect(self.newGraphicsWindowAct, SIGNAL('triggered()'), self.addNewGraphicsWindow)
@@ -2363,6 +2364,7 @@ class SimpleTabView(QMdiArea, SimpleViewManager):
             self.stopAct.setEnabled(True)
             self.pauseAct.setEnabled(False)
             self.runAct.setEnabled(True)
+            self.pifFromVTKAct.setEnabled(True)
             return
 
         else:

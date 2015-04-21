@@ -92,12 +92,13 @@ class SimpleViewManager():
         # # # menu.addAction(self.movieAct)
         menu.addSeparator()
         menu.addAction(self.configAct)
-        # menu.addAction(self.pifFromVTKAct)
-        # self.pifFromVTKAct.setEnabled(False)
 
         menu.addAction(self.pifFromSimulationAct)
         self.pifFromSimulationAct.setEnabled(False)
-        
+
+        menu.addAction(self.pifFromVTKAct)
+        self.pifFromVTKAct.setEnabled(False)
+
         return menu
 
     def initWindowMenu(self):
@@ -463,7 +464,7 @@ class SimpleViewManager():
             """ with your prefered values.</p>"""
         ))    
 
-        # self.pifFromVTKAct = QAction("& Generate PIF File from VTK output ...", self)
+        self.pifFromVTKAct = QAction("& Generate PIF File from VTK output ...", self)
         # self.configAct.setWhatsThis(self.trUtf8(
             # """<b>Generate PIF file from VTK output </b>"""
             # """<p>This will only work in the VTK simulation replay mode."""
@@ -477,7 +478,7 @@ class SimpleViewManager():
         
         self.toolsActions.append(self.configAct)
         self.toolsActions.append(self.pifFromSimulationAct)
-        # self.toolsActions.append(self.pifFromVTKAct)
+        self.toolsActions.append(self.pifFromVTKAct)
         # self.pifGenAct = QAction("&Generate PIF", self)
         # self.pifGenAct.setCheckable(True)
         
