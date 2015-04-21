@@ -52,6 +52,7 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         self.cellListByType=CellListByType(self.inventory)
         self.clusterList=ClusterList(self.inventory) 
         self.clusters=Clusters(self.inventory)
+        self.mcs = -1
         
         self.boundaryStrategy=self.simulator.getBoundaryStrategy()
         
@@ -1130,8 +1131,14 @@ class SteppableRegistry(SteppablePy):
             steppable.start()
 
     def step(self,_mcs):
-        for steppable in self.steppableList:
+        for steppable in self.steppableList:            
             if not _mcs % steppable.frequency: #this executes given steppable every "frequency" Monte Carlo Steps                
+            
+                try:
+                    steppable.mcs = _mcs
+                except AttributeError, e:
+                    pass    
+                    
                 steppable.step(_mcs)
 
     def stepRunBeforeMCSSteppables(self,_mcs):
