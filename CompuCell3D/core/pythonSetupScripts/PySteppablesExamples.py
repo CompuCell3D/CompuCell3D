@@ -60,6 +60,9 @@ class MitosisSteppableBase(SteppableBasePy):
     def getParentChildPositionFlag(self,_flag):
         return self.mitosisSteppable.getParentChildPositionFlag()
         
+    def cloneParent2Child(self):
+        self.cloneAttributes(sourceCell = self.parentCell, targetCell = self.childCell, no_clone_key_dict_list = [] )
+        
     def cloneAttributes(self,sourceCell, targetCell, no_clone_key_dict_list = [] ):
         # clone "C++" attributes
         from copy import deepcopy
