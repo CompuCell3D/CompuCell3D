@@ -30,8 +30,7 @@ class MitosisSteppableBase(SteppableBasePy):
         SteppableBasePy.__init__(self,_simulator,_frequency)
         self.clonableAttributeNames = \
         ['lambdaVolume','targetVolume','targetSurface','lambdaSurface','targetClusterSurface','lambdaClusterSurface',\
-        'type','lambdaVecX','lambdaVecY','lambdaVecZ','fluctAmpl']
-        ]
+        'type','lambdaVecX','lambdaVecY','lambdaVecZ','fluctAmpl']        
         # self.simulator=_simulator
         # self.inventory=self.simulator.getPotts().getCellInventory()
         # self.cellList=CellList(self.inventory)
@@ -78,7 +77,7 @@ class MitosisSteppableBase(SteppableBasePy):
             if key == 'SBMLSolver':
                 self.copySBMLs(_fromCell = sourceCell,_toCell = targetCell)
             
-            if key == 'Bionetwork'
+            if key == 'Bionetwork':
                 import bionetAPI
                 bionetAPI.copyBionetworkFromParent( sourceCell, targetCell )
                 
