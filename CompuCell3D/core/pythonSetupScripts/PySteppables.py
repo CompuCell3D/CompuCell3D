@@ -223,10 +223,10 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             self.clusterSurfaceTrackerPlugin=CompuCell.getClusterSurfaceTrackerPlugin()
 
         #polarization23Plugin 
-        self.polarization23Plugin=None
+        self.polarization23Plugin = None
         if self.simulator.pluginManager.isLoaded("Polarization23"):
             import CompuCell            
-            self.polarization23Plugin=CompuCell.getPolarization23Plugin()
+            self.polarization23Plugin = CompuCell.getPolarization23Plugin()
 
         #cellTypeMonitorPlugin 
         self.cellTypeMonitorPlugin=None
