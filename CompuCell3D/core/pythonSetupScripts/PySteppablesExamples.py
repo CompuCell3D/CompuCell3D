@@ -60,6 +60,10 @@ class MitosisSteppableBase(SteppableBasePy):
         return self.mitosisSteppable.getParentChildPositionFlag()
         
     def cloneParent2Child(self):
+        # these calls seem to be necessary to ensure whatever is setin in mitosisSteppable (C++) is reflected in Python
+        self.parentCell=self.mitosisSteppable.parentCell
+        self.childCell=self.mitosisSteppable.childCell  
+        
         self.cloneAttributes(sourceCell = self.parentCell, targetCell = self.childCell, no_clone_key_dict_list = [] )
         
     def cloneAttributes(self,sourceCell, targetCell, no_clone_key_dict_list = [] ):
@@ -69,7 +73,7 @@ class MitosisSteppableBase(SteppableBasePy):
             setattr(targetCell , attrName, getattr(sourceCell,attrName) )
             
         # clone dictionary
-        for key, val in sourceCell.dict.keys():
+        for key, val in sourceCell.dict.iteritems():
             
             if key in no_clone_key_dict_list:
                 continue
@@ -82,7 +86,7 @@ class MitosisSteppableBase(SteppableBasePy):
                 bionetAPI.copyBionetworkFromParent( sourceCell, targetCell )
                 
             # copying the rest of dictionary entries    
-            targetCell.dict [attrName] = deepcopy(sourceCell.dict[attrName])
+            targetCell.dict [key] = deepcopy(sourceCell.dict[key])
             
         # now copy data associated with plugins
         # AdhesionFlex
