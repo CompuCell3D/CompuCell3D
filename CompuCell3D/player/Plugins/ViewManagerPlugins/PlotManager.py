@@ -439,6 +439,11 @@ class PlotWindowInterface(QtCore.QObject):
         self.pW.replot()
         _mutex.unlock()
 
+    def addHistogram(self, plot_name , value_array ,  number_of_bins):
+        import numpy
+        (values, intervals) = numpy.histogram(value_array, bins=number_of_bins)
+        self.addHistPlotData(_plotName=plot_name, _values=values, _intervals=intervals)
+
     def addHistPlotData(self,_plotName,_values,_intervals):
         # print 'addHistPlotData'
         # print '_values=',_values
