@@ -56,10 +56,10 @@
       </e>
    </Settings>
    <Settings Type="str">
-      <e Name="OutputLocation" Type="str">C:\Users\m\CC3DWorkspace</e>
-      <e Name="ProjectLocation" Type="str">D:\Program Files (x86)\373\Demos</e>
-      <e Name="RecentFile" Type="str">C:\Users\m\CC3DHamner\cellsort\cellsort.cc3d</e>
-      <e Name="ScalarIsoValues" Type="str">1,2,3</e>
+      <e Name="OutputLocation" Type="str"></e>
+      <e Name="ProjectLocation" Type="str"></e>
+      <e Name="RecentFile" Type="str"></e>
+      <e Name="ScalarIsoValues" Type="str"></e>
       <e Name="Types3DInvisible" Type="str">0</e>
    </Settings>
    <Settings Type="bool">
@@ -90,9 +90,6 @@
    </Settings>
    <Settings Type="strlist">
       <e Name="RecentSimulations" Type="strlist">
-         <e Name="e" Type="str">C:\Users\m\CC3DHamner\cellsort\cellsort.cc3d</e>
-         <e Name="e" Type="str">C:\Users\m\CC3DHamner\Cellsorting\Cellsorting.cc3d</e>
-         <e Name="e" Type="str">D:\Program Files (x86)\373\Demos\CompuCellPythonTutorial\InfoPrinter\cellsort_2D_info_printer.cc3d</e>
       </e>
    </Settings>
    <Settings Type="size">

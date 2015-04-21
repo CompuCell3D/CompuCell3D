@@ -487,20 +487,20 @@ class Setting(object):
         
         return fieldParamsSetting        
         
-    def toFieldParams(self):
-        fieldParams = {}
-        # print 'self.value=',self.value
-        # sys.exit()
-        
-        for fieldName, singleFieldDict in self.value.iteritems():
-            fieldParams [fieldName] = {}
-            singleFieldParams = fieldParams [fieldName]
-            
-            for settingName, setting in singleFieldDict.value.iteritems():
-                singleFieldParams [setting.name] = setting.value
-            
-        # print 'fieldParams=',fieldParams
-        return fieldParams
+    # def toFieldParams(self):
+    #     fieldParams = {}
+    #     # print 'self.value=',self.value
+    #     # sys.exit()
+    #
+    #     for fieldName, singleFieldDict in self.value.iteritems():
+    #         fieldParams [fieldName] = {}
+    #         singleFieldParams = fieldParams [fieldName]
+    #
+    #         for settingName, setting in singleFieldDict.value.iteritems():
+    #             singleFieldParams [setting.name] = setting.value
+    #
+    #     # print 'fieldParams=',fieldParams
+    #     return fieldParams
 
     def normalizeSettingFormat(self):
         if self.name == 'TypeColorMap':
@@ -521,7 +521,8 @@ class Setting(object):
             return self.toTypeColorMap()
             
         elif self.name == 'FieldParams':
-            return self.toFieldParams()
+            # return self.toFieldParams()
+            return self.toDictOfDictsParams()
             
         elif self.name == 'WindowsLayout':
             return self.toDictOfDictsParams()        
@@ -703,7 +704,7 @@ def defaultSettings():
     ss('GraphicsWinHeight',400,'int')
     ss('UseInternalConsole',False,'bool')
     ss('ClosePlayerAfterSimulationDone',False,'bool')
-    ss('ProjectLocation',os.path.join(environ['PREFIX_CC3D'],'Demos'),'str')
+    ss('ProjectLocation',os.path.expanduser('~'),'str')
     ss('OutputLocation',os.path.join(os.path.expanduser('~'),'CC3DWorkspace'),'str')
     ss('OutputToProjectOn',False,'bool')
     # ss('PreferencesFile',SETTINGS_FILE_NAME,'str') #probably do not need this one
