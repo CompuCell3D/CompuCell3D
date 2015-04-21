@@ -211,14 +211,19 @@ cell=self.attemptFetchingCellById(CELL_ID)
 ---------- #@Submenu@ Delete Cell
 self.deleteCell(cell)  
 
----------- #@Submenu@ Create Cell
+---------- #@Submenu@ Create Cell 
+# size of cell will be 3x3x1
+self.cellField[10:12,10:12,0] = self.newCell(self.TYPENAME) 
+
+---------- #@Submenu@ Create Cell (detailed)
 x=X_POSITION
 y=Y_POSITION
 size=SIZE
 cell=self.newCell(self.TYPENAME)
 self.cellField[x:x+size-1,y:y+size-1,0]=cell # size of cell will be SIZExSIZEx1
 
----------- #@Submenu@ Create Cell (one liner)
+
+---------- #@Submenu@ Create Cell (one-liner  - alt)
 cell=self.createNewCell(self.TYPENAME, [10,10,0] , xSize=5,ySize=5,zSize=1) # args - type, location of seed point, x,y,z dimansions
 
 ---------- #@Submenu@ Create Cell (old style)
@@ -776,17 +781,16 @@ self.pW.showAllPlots()
 self.pW=self.addNewPlotWindow(_title='Histogram',_xAxisTitle='TYPE NAME OF X AXIS',_yAxisTitle='TYPE NAME OF Y AXIS')
 self.pW.addHistogramPlot(_plotName='Hist 1',_color='green',_alpha=100)# _alpha is transparency 0 is transparent, 255 is opaque        
 
----------- #@Submenu@ Add Histogram Plot (start fcn)
-self.pW=self.addNewPlotWindow(_title='Histogram',_xAxisTitle='TYPE NAME OF X AXIS',_yAxisTitle='TYPE NAME OF Y AXIS')
-self.pW.addHistogramPlot(_plotName='Hist 1',_color='green',_alpha=100)# _alpha is transparency 0 is transparent, 255 is opaque        
+---------- #@Submenu@ Add Histogram  (step fcn) 
+self.pW.addHistogram(plot_name='Hist 1' , value_array = ARRAY_WITH_VALUES ,  number_of_bins=20):
 
----------- #@Submenu@ Generate Histogram Data (step fcn) - Example
+---------- #@Submenu@ Generate Histogram Data (step fcn - old style) - Example
 from random import random
 list_of_values=[random() for i in xrange(100)]
 import numpy
 (n1, bins1) = numpy.histogram(list_of_values, bins=20)  # NumPy version (no plot)
 
----------- #@Submenu@ Add Histogram Data To Plot (step fcn) 
+---------- #@Submenu@ Add Histogram Data To Plot (step fcn - old style) 
 self.pW.addHistPlotData('Hist 1',n1,bins1)
 
 ---------- #@Submenu@ Refresh Histogram Plots
