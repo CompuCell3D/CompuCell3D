@@ -220,9 +220,13 @@ INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts" DESTINATION @CMA
     PATTERN "Version.py.in*" EXCLUDE
     PATTERN "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/*")
 
-INSTALL(FILES  "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/CompuCellPythonSimulationCML.py" DESTINATION @CMAKE_INSTALL_PREFIX@/player )    
 
-INSTALL(FILES  "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/ParameterScanRun.py" DESTINATION @CMAKE_INSTALL_PREFIX@/player )    
+if (INSTALL_PLAYER)    
+
+    INSTALL(FILES  "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/CompuCellPythonSimulationCML.py" DESTINATION @CMAKE_INSTALL_PREFIX@/player )    
+    INSTALL(FILES  "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/ParameterScanRun.py" DESTINATION @CMAKE_INSTALL_PREFIX@/player )    
+    
+endif (INSTALL_PLAYER)    
 
 
 INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/core/Demos" DESTINATION @CMAKE_INSTALL_PREFIX@

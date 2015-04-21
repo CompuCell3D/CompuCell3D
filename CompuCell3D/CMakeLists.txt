@@ -101,6 +101,8 @@ INCLUDE(FindZLIB)
 # Should we build wrappings
 OPTION(BUILD_PYINTERFACE "Build Python language wrappings" ON)
 
+OPTION(INSTALL_PLAYER "Move Player files to installation directory" ON)
+
 # C++ only executable - useful for debugging
 OPTION(BUILD_CPP_ONLY_EXECUTABLE "Build C++ only executable(requires Expat library)" OFF)
 
