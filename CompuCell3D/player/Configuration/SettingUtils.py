@@ -663,8 +663,9 @@ class CustomSettings(object):
     def saveAsXML(self, _fileName):
         import XMLUtils
         from XMLUtils import ElementCC3D
+        import Version
         xml2ObjConverter = XMLUtils.Xml2Obj()
-        plSetElem = ElementCC3D('PlayerSettings')    
+        plSetElem = ElementCC3D('PlayerSettings',{'version':Version.getVersionAsString()})
         print '\n\n\nself.__typeSettingDictDict.keys() = ', self.__typeSettingDictDict.keys()
         for typeName , settingDict in self.__typeSettingDictDict.iteritems():
         
