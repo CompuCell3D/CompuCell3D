@@ -456,7 +456,21 @@ using namespace CompuCell3D;
         
     __swig_setmethods__["pyAttrib"] = setpyAttrib     
     if _newclass: pyAttrib = property(_CompuCell.CellG_pyAttrib_get,setpyAttrib)
-    
+
+
+    # simplifying access to cell's Python dictionary
+    def setdict(self,_dict):
+        # raise AttributeError('ASSIGNMENT cell.dict=%s is illegal. dict can only be modified but not replaced'%(_dict))
+        raise AttributeError('ASSIGNMENT cell.dict=%s is illegal. Dictionary "dict" can only be modified but not replaced'%(_dict))
+        
+    def getdict(self):
+        return _CompuCell.getPyAttrib(self)
+        
+    __swig_setmethods__["dict"] = setdict
+    __swig_getmethods__["dict"] = getdict
+
+    if _newclass: dict = property(getdict,setdict)    
+                
       %}
     };
 
