@@ -1918,7 +1918,7 @@ class RestartManager:
         for cell in cellList:            
             cPickle.dump(cell.id,pf)     
             
-            fieldNames=chemotaxisPlugin.getFileNamesWithChemotaxisData(cell)
+            fieldNames=chemotaxisPlugin.getFieldNamesWithChemotaxisData(cell)
             #outputting numbed of chemotaxis data that cell has
             cPickle.dump(len(fieldNames),pf)      
             

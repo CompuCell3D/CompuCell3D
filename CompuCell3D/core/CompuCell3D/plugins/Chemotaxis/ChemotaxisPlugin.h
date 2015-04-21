@@ -109,7 +109,8 @@ namespace CompuCell3D {
 	ChemotaxisData * addChemotaxisData(CellG * _cell,std::string _fieldName);
 	ChemotaxisData * getChemotaxisData(CellG * _cell,std::string _fieldName);
 
-	std::vector<std::string> getFileNamesWithChemotaxisData(CellG * _cell);
+    //misslepped name - should be getFieldNamesWithChemotaxisData
+	std::vector<std::string> getFieldNamesWithChemotaxisData(CellG * _cell);
 
 	 
 

@@ -137,7 +137,7 @@ class MitosisSteppableBase(SteppableBasePy):
             
         #Chemotaxis    
         if self.chemotaxisPlugin:
-            fieldNames  = self.chemotaxisPlugin.getFileNamesWithChemotaxisData( sourceCell )
+            fieldNames  = self.chemotaxisPlugin.getFieldNamesWithChemotaxisData( sourceCell )
             
             for fieldName in fieldNames:                
                 source_chd=chemotaxisPlugin.getChemotaxisData(sourceCell,fieldName)
