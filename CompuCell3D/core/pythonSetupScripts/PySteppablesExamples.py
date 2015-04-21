@@ -135,6 +135,21 @@ class MitosisSteppableBase(SteppableBasePy):
             cs = self.connectivityLocalFlexPlugin.getConnectivityStrength( sourceCell )
             self.connectivityLocalFlexPlugin.setConnectivityStrength( targetCell, cs )
             
+        #Chemotaxis    
+        if self.chemotaxisPlugin:
+            fieldNames  = self.chemotaxisPlugin.getFileNamesWithChemotaxisData( sourceCell )
+            
+            for fieldName in fieldNames:                
+                source_chd=chemotaxisPlugin.getChemotaxisData(sourceCell,fieldName)
+                target_chd=chemotaxisPlugin.addChemotaxisData(targetCell,fieldName)
+                
+                target_chd.setLambda( source_chd.getLambda() )
+                target_chd.saturationCoef = source_chd.saturationCoef
+                target_chd.setChemotaxisFormulaByName(source_chd.formulaName)
+                target_chd.assignChemotactTowardsVectorTypes(source_chd.getChemotactTowardsVectorTypes())
+                
+        #FocalPointPLasticityPlugin - this plugin has to be handled manually - there is no good way to figure out which links shuold be copied from parent to daughter cell    
+            
 
 
     def updateAttributes(self):
