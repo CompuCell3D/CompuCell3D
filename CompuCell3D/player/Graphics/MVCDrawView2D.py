@@ -129,7 +129,7 @@ class MVCDrawView2D(MVCDrawViewBase):
 
     #----------------------------------------------------------------------------
     def showCells(self):
-        Configuration.setSetting("CellsOn",True)
+        # Configuration.setSetting("CellsOn",True)
         # print MODULENAME,' \n\n\n\n\n\n showCells() '
         if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
             if not self.currentActors.has_key("HexCellsActor"):
@@ -149,7 +149,7 @@ class MVCDrawView2D(MVCDrawViewBase):
 #        print MODULENAME,'  hideCells():  type(self.parentWidget)= ',type(self.parentWidget)
 #        print MODULENAME,'  hideCells():  self.parentWidget.lastActiveWindow= ',self.parentWidget.lastActiveWindow
 #        print MODULENAME,'  hideCells():  type(self.lastActiveWindow)= ',type(self.lastActiveWindow)
-        Configuration.setSetting("CellsOn",False)
+#         Configuration.setSetting("CellsOn",False)
         if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
             del self.currentActors["HexCellsActor"] 
             self.graphicsFrameWidget.ren.RemoveActor(self.hexCellsActor)
@@ -451,7 +451,13 @@ class MVCDrawView2D(MVCDrawViewBase):
             else:
                 self.drawClusterBorders2D()
         
-        
+        if not Configuration.getSetting('CellsOn'):
+            print 'HIDING CELLS'
+            self.hideCells()
+        else:
+            print 'SHOWING CELLS'
+            self.showCells()
+
         self.Render()
         
         

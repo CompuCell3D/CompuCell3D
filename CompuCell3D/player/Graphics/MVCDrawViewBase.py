@@ -259,7 +259,7 @@ class MVCDrawViewBase:
         
     def drawField(self, _bsd, fieldType):   
         
-        
+        print 'drawField ', fieldType
         resetCamera = False # we reset camera only for visualizations for which camera settings are not in the dictionary and users have not requested custom cameras
         
         if self.drawingFcnHasChanged:            

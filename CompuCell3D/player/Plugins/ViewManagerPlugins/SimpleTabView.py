@@ -3428,9 +3428,13 @@ class SimpleTabView(QMdiArea, SimpleViewManager):
                 try:
                     if checked:
                         window.showCells()
+                        print 'SHOWING CELLS ACTION'
+                        Configuration.setSetting('CellsOn',True)
                         self.cellsAct.setChecked(True)
                     else:
                         window.hideCells()
+                        Configuration.setSetting('CellsOn',False)
+                        print 'HIDING CELLS ACTION'
                         self.cellsAct.setChecked(False)
                 except AttributeError, e:
                     pass
