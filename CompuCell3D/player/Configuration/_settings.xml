@@ -43,7 +43,7 @@
    <Settings Type="dict">
       <e Name="TypeColorMap" Type="dict">
          <e Name="0" Type="color">#000000</e>
-         <e Name="1" Type="color">#aa00ff</e>
+         <e Name="1" Type="color">#00ff00</e>
          <e Name="10" Type="color">#ffffff</e>
          <e Name="2" Type="color">#0000ff</e>
          <e Name="3" Type="color">#ff0000</e>
