@@ -1194,11 +1194,15 @@ class SimpleTabView(QMdiArea, SimpleViewManager):
             if pythonScriptName != "":
                 CompuCellSetup.simulationPaths.setPythonScriptNameFromXML(pythonScriptName)
 
-            if self.__parent.latticeDataDock.isVisible():
-                self.__parent.latticeDataAct.trigger()
+            self.__parent.toggleLatticeData(False)
+            self.__parent.toggleModelEditor(True)
 
-            if self.__parent.modelEditorDock.isHidden():
-                self.__parent.modelAct.trigger()
+
+            # if self.__parent.latticeDataDock.isVisible():
+            #     self.__parent.latticeDataAct.trigger(False)
+            #
+            # if self.__parent.modelEditorDock.isHidden():
+            #     self.__parent.modelAct.trigger(True)
 
         elif re.match(".*\.py$", fileName):
             globals = {'simTabView': 20}
@@ -1208,20 +1212,26 @@ class SimpleTabView(QMdiArea, SimpleViewManager):
             # NOTE: extracting of xml file name from python script is done during script run time so we cannot use CompuCellSetup.simulationPaths.setXmlFileNameFromPython function here
             CompuCellSetup.simulationPaths.setPlayerSimulationPythonScriptName(self.__fileName)
 
-            if self.__parent.latticeDataDock.isVisible():
-                self.__parent.latticeDataAct.trigger()
+            self.__parent.toggleLatticeData(False)
+            self.__parent.toggleModelEditor(True)
 
-            if self.__parent.modelEditorDock.isHidden():
-                self.__parent.modelAct.trigger()
+            # if self.__parent.latticeDataDock.isVisible():
+            #     self.__parent.latticeDataAct.trigger(True)
+            #
+            # if self.__parent.modelEditorDock.isHidden():
+            #     self.__parent.modelAct.trigger(False)
 
         elif re.match(".*\.cc3d$", fileName):
             self.__loadCC3DFile(fileName)
 
-            if self.__parent.latticeDataDock.isVisible():
-                self.__parent.latticeDataAct.trigger()
+            self.__parent.toggleLatticeData(False)
+            self.__parent.toggleModelEditor(True)
 
-            if self.__parent.modelEditorDock.isHidden():
-                self.__parent.modelAct.trigger()
+            # if self.__parent.latticeDataDock.isVisible():
+            #     self.__parent.latticeDataAct.trigger(False)
+            #
+            # if self.__parent.modelEditorDock.isHidden():
+            #     self.__parent.modelAct.trigger(True)
 
                 #self.prepareForNewSimulation()   # rwh: do this?
 
@@ -1273,24 +1283,14 @@ class SimpleTabView(QMdiArea, SimpleViewManager):
 
             CompuCellSetup.simulationPaths.setSimulationResultDescriptionFile(fileName)
 
-            if self.__parent.latticeDataDock.isHidden():
-                self.__parent.latticeDataAct.trigger()
-
-            if self.__parent.modelEditorDock.isVisible():
-                self.__parent.modelAct.trigger()
-
-                # rwh: if 3D view specified, do here
-                # graphicsFrameWidget threeDRB.trigger()
-            #            self.lastActiveWindow._switchDim(True)
+            self.__parent.toggleLatticeData(True)
+            self.__parent.toggleModelEditor(False)
 
             self.prepareLatticeDataView()
 
         Configuration.setSetting("RecentFile", os.path.abspath(self.__fileName))
-        Configuration.setSetting("RecentSimulations", os.path.abspath(
-            self.__fileName))  #  each loaded simulation has to be passed to a function which updates list of recent files
+        Configuration.setSetting("RecentSimulations", os.path.abspath(self.__fileName))  #  each loaded simulation has to be passed to a function which updates list of recent files
         # Configuration.addItemToStrlist(item = os.path.abspath(self.__fileName),strListName = 'RecentSimulations',maxLength = Configuration.getSetting('NumberOfRecentSimulations'))
-
-
 
 
         # if self.saveSettings:
@@ -2687,7 +2687,9 @@ class SimpleTabView(QMdiArea, SimpleViewManager):
 
         self.runAgainFlag = False
 
-        self.__saveWindowsLayout()
+        #we do not save windows layout for simulation replay
+        if self.__viewManagerType != "CMLResultReplay":
+            self.__saveWindowsLayout()
 
         if self.__viewManagerType == "CMLResultReplay":
             self.cmlReplayManager.setStopState()
@@ -2731,9 +2733,10 @@ class SimpleTabView(QMdiArea, SimpleViewManager):
             # Configuration.writeCustomFile(self.customSettingPath)
             # Configuration.writeSettings()
             Configuration.writeSettingsForSingleSimulation(self.customSettingPath)
-            Configuration.writeAllSettings()
-
             self.customSettingPath = ''
+
+        Configuration.writeAllSettings()
+        Configuration.initConfiguration() # this flushes configuration
 
         if Configuration.getSetting("ClosePlayerAfterSimulationDone") or self.closePlayerAfterSimulationDone:
             Configuration.setSetting("RecentFile", os.path.abspath(self.__fileName))
@@ -2741,8 +2744,8 @@ class SimpleTabView(QMdiArea, SimpleViewManager):
             Configuration.setSetting("RecentSimulations", os.path.abspath(self.__fileName))
             # Configuration.addItemToStrlist(item = os.path.abspath(self.__fileName),strListName = 'RecentSimulations',maxLength = Configuration.getSetting('NumberOfRecentSimulations'))
 
-            if self.saveSettings:
-                Configuration.syncPreferences()
+            # if self.saveSettings:
+            #     Configuration.syncPreferences()
 
             sys.exit(_exitCode)
 
@@ -2765,6 +2768,7 @@ class SimpleTabView(QMdiArea, SimpleViewManager):
 
         CompuCellSetup.resetGlobals()
         # print 'AFTER __cleanupAfterSimulation'
+
 
 
     def __stopSim(self):

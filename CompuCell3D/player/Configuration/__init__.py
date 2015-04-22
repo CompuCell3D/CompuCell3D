@@ -55,7 +55,14 @@ class Configuration():
     customOnlySettings = ['WindowsLayout']
     
     activeFieldNamesList = []
-    
+
+
+def initConfiguration():
+    Configuration.defaultSettings, Configuration.defaultSettingsPath = loadDefaultSettings()
+    Configuration.myGlobalSettings, Configuration.myGlobalSettingsPath = loadGlobalSettings()
+    synchronizeGlobalAndDefaultSettings(Configuration.defaultSettings, Configuration.myGlobalSettings, Configuration.myGlobalSettingsPath)
+    Configuration.myCustomSettings = None
+    Configuration.myCustomSettingsPath = ''
     
 # def getIconsDir():return icons_dir
 #

@@ -46,6 +46,20 @@ class NullDevice:
     def flush(self):
         pass
 
+class DockWidget(QDockWidget):
+    def __init__(self,_parent):
+        super(DockWidget, self).__init__(_parent)
+
+        self.toggleFcn = None
+    def setToggleFcn(self, fcn):self.toggleFcn = fcn
+
+    def closeEvent(self, ev):
+        print 'DOCK WIDGET CLOSE EVENT'
+        print 'self.toggleFcn=',self.toggleFcn
+
+        if self.toggleFcn: self.toggleFcn(False)
+        # Configuration.setSetting(str(self.objectName(), False)
+
 class UserInterface(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
@@ -309,9 +323,11 @@ class UserInterface(QMainWindow):
         
         self.modelAct = QAction("&Model Editor", self)
         self.modelAct.setCheckable(True)
-        self.modelAct.setChecked(True) #not self.projectBrowserDock.isHidden()
-        self.connect(self.modelAct, SIGNAL("triggered()"), self.__toggleModelEditor)
-        #self.connect(self.modelAct, SIGNAL("toggled(bool)"), self.hello)
+        # self.modelAct.setChecked(True) #not self.projectBrowserDock.isHidden()
+        if Configuration.getSetting('DisplayModeleditor'):
+            self.modelAct.setChecked(True)
+        self.connect(self.modelAct, SIGNAL("triggered(bool)"), self.toggleModelEditor)
+
         self.actions.append(self.modelAct)
         
         self.pluginsAct = QAction("&Plugins", self)
@@ -322,8 +338,10 @@ class UserInterface(QMainWindow):
 
         self.latticeDataAct = QAction("&Lattice Data", self)
         self.latticeDataAct.setCheckable(True)
-        self.latticeDataAct.setChecked(False)
-        self.connect(self.latticeDataAct, SIGNAL("triggered()"), self.__toggleLatticeData)
+        if Configuration.getSetting('DisplayLatticeData'):
+            self.latticeDataAct.setChecked(True)
+        # self.latticeDataAct.setChecked(False)
+        self.connect(self.latticeDataAct, SIGNAL("triggered(bool)"), self.toggleLatticeData)
         self.actions.append(self.latticeDataAct)
         
         self.connect(self.zoomInAct, SIGNAL('triggered()'), self.viewmanager.zoomIn)
@@ -344,8 +362,16 @@ class UserInterface(QMainWindow):
         
         self.consoleAct = QAction("&Console", self)
         self.consoleAct.setCheckable(True)
-        self.consoleAct.setChecked(True)
-        self.connect(self.consoleAct, SIGNAL("triggered()"), self.__toggleConsole)
+
+        self.toggleConsole(Configuration.getSetting('DisplayConsole'))
+
+        if Configuration.getSetting('DisplayConsole'):
+            self.consoleAct.setChecked(True)
+
+        self.connect(self.consoleAct, SIGNAL("triggered(bool)"), self.toggleConsole)
+
+
+
         self.actions.append(self.consoleAct)
 
         # I don't need probably to initActions() here. So I moved it to constructor
@@ -405,7 +431,8 @@ class UserInterface(QMainWindow):
         # self.setCentralWidget(self.display3D)
         
         # Set up the model for the Model Editor
-        self.modelEditorDock = self.__createDockWindow("ModelEditorDock")
+        self.modelEditorDock = self.__createDockWindow("ModelEditor")
+        self.modelEditorDock .setToggleFcn(self.toggleModelEditor)
         modelEditor = ModelEditor(self.modelEditorDock)      
         
         # self.model = SimModel(QDomDocument(), self.modelEditorDock) # Do I need parent self.modelEditorDock
@@ -445,7 +472,8 @@ class UserInterface(QMainWindow):
         # # # self.__setupDockWindow(self.cpluginsDock, Qt.LeftDockWidgetArea, self.cplugins, self.trUtf8("Plugins"))
         # # # self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea) 
         
-        self.latticeDataDock = self.__createDockWindow("LatticeDataDock")
+        self.latticeDataDock = self.__createDockWindow("LatticeData")
+        self.latticeDataDock.setToggleFcn(self.toggleLatticeData)
         self.latticeDataModelTable     = LatticeDataModelTable(self.latticeDataDock, self.viewmanager)
         self.latticeDataModel = LatticeDataModel() 
         # self.latticeDataModelTable.setModel(self.latticeDataModel)
@@ -459,6 +487,9 @@ class UserInterface(QMainWindow):
         
         # Set up the console
         self.consoleDock = self.__createDockWindow("Console")
+
+        self.consoleDock.setToggleFcn(self.toggleConsole)
+
         self.console     = Console(self.consoleDock)        
         self.consoleDock.setWidget(self.console)
         # self.consoleDock.setWindowTitle("Console")
@@ -483,7 +514,8 @@ class UserInterface(QMainWindow):
         @param name object name of the new dock window (string or QString)
         @return the generated dock window (QDockWindow)
         """
-        dock = QDockWidget(self)
+        # dock = QDockWidget(self)
+        dock = DockWidget(self)
         dock.setObjectName(name)
         #dock.setFeatures(QDockWidget.DockWidgetFeatures(QDockWidget.AllDockWidgetFeatures))
         return dock
@@ -504,11 +536,16 @@ class UserInterface(QMainWindow):
         dock.setWindowTitle(caption)
         dock.show()
 
-    def __toggleModelEditor(self):
+    def toggleModelEditor(self, flag):
         """
         Private slot to handle the toggle of the Model Editor window.
         """
-        self.__toggleWindow(self.modelEditorDock)
+        self.modelAct.setChecked(flag)
+
+        Configuration.setSetting('DisplayModelEditor',flag)
+        self.__toggleWindowFlag(self.modelEditorDock, flag)
+
+        # self.__toggleWindow(self.modelEditorDock)
 
     def __toggleCPlugins(self):
         """
@@ -516,11 +553,17 @@ class UserInterface(QMainWindow):
         """
         self.__toggleWindow(self.cpluginsDock)
 
-    def __toggleLatticeData(self):
+    def toggleLatticeData(self,flag):
         """
         Private slot to handle the toggle of the Plugins window.
         """
-        self.__toggleWindow(self.latticeDataDock)
+
+        self.latticeDataAct.setChecked(flag)
+
+        Configuration.setSetting('DisplayLatticeData',flag)
+        self.__toggleWindowFlag(self.latticeDataDock, flag)
+
+        # self.__toggleWindow(self.latticeDataDock)
         
 
     def __toggleWindow(self, w):
@@ -534,7 +577,21 @@ class UserInterface(QMainWindow):
         else:
             w.hide()
 
-    def __toggleConsole(self):
+    def __toggleWindowFlag(self, w, flag):
+        """
+        Private method to toggle a workspace editor window.
+
+        @param w reference to the workspace editor window
+        """
+
+        print ' '
+
+        if flag:
+            w.show()
+        else:
+            w.hide()
+
+    def toggleConsole(self, flag):
         """
         Private slot to handle the toggle of the Log Viewer window.
         
@@ -543,7 +600,13 @@ class UserInterface(QMainWindow):
         else:
             self.__toggleWindow(self.logViewer)
         """
-        self.__toggleWindow(self.consoleDock)
+        # self.__toggleWindow(self.consoleDock)
+
+        # print ' TOGGLE CONSOLE FLAG = ', flag
+        self.consoleAct.setChecked(flag)
+
+        Configuration.setSetting('DisplayConsole',flag)
+        self.__toggleWindowFlag(self.consoleDock, flag)
 
     def __showViewMenu(self):
         """
