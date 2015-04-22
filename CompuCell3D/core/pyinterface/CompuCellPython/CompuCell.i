@@ -544,6 +544,11 @@ using namespace CompuCell3D;
 //Concatenates x and y together to form xy.
 //`x`
 //If x is a string surrounded by double quotes, do nothing. Otherwise, turn into a string like #x. This is a non-standard SWIG extension.    
+
+double round(double d)
+{
+  return floor(d + 0.5);
+}
     
 %define FIELD3DEXTENDERBASE(type,returnType)    
 %extend  type{
@@ -600,26 +605,36 @@ using namespace CompuCell3D;
         x=PyInt_AsLong(PyTuple_GetItem(_indexTuple,0));
     }else if (PyLong_Check(xCoord)){
         x=PyLong_AsLong(PyTuple_GetItem(_indexTuple,0));
-    }else{
-        throw std::runtime_error("Wrong Type (X): only integer values are allowed here");
+    }else if (PyFloat_Check(xCoord)){
+        x=(Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple,0)));     
+    }
+    else{
+        throw std::runtime_error("Wrong Type (X): only integer or float values are allowed here - floats are rounded");
     }    
     //y-coord
     if (PyInt_Check(yCoord)){
         y=PyInt_AsLong(PyTuple_GetItem(_indexTuple,1));
     }else if (PyLong_Check(yCoord)){
         y=PyLong_AsLong(PyTuple_GetItem(_indexTuple,1));
-    }else{
-        throw std::runtime_error("Wrong Type (Y): only integer values are allowed here");
+    }else if (PyFloat_Check(yCoord)){
+        y = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple,1)));     
+    }
+    else{
+        throw std::runtime_error("Wrong Type (Y): only integer or float values are allowed here - floats are rounded");
     }    
     //z-coord    
     if (PyInt_Check(zCoord)){
         z=PyInt_AsLong(PyTuple_GetItem(_indexTuple,2));
     }else if (PyLong_Check(zCoord)){
         z=PyLong_AsLong(PyTuple_GetItem(_indexTuple,2));
-    }else{
-        throw std::runtime_error("Wrong Type (Z): only integer values are allowed here");
+    }else if (PyFloat_Check(zCoord)){
+        z = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple,2)));     
+    }
+    else{
+        throw std::runtime_error("Wrong Type (Z): only integer or float values are allowed here - floats are rounded");
     }
     
+    //cerr<<"x,y,z="<<x<<","<<y<<","<<z<<endl;
     return self->get(Point3D(x,y,z));    
   }
 
@@ -628,7 +643,20 @@ using namespace CompuCell3D;
 %define FIELD3DEXTENDER(type,returnType)
 FIELD3DEXTENDERBASE(type,returnType)    
   
-  void __setitem__(PyObject *_indexTuple,returnType _val) {
+%pythoncode %{
+
+    def normalizeSlice(self, s):
+        norm = lambda x : x if x is None else int(round(x))
+        return slice ( norm(s.start),norm(s.stop), norm(s.step) )
+        
+    def __setitem__(self,_indexTyple,_val):
+        newSliceTuple = tuple(map(lambda x : self.normalizeSlice(x) if isinstance(x,slice) else x , _indexTyple))  
+        self.setitem(newSliceTuple,_val)
+
+%}    
+  
+  void setitem(PyObject *_indexTuple,returnType _val) {
+  // void __setitem__(PyObject *_indexTuple,returnType _val) {
     if (!PyTuple_Check( _indexTuple) || PyTuple_GET_SIZE(_indexTuple)!=3){
         throw std::runtime_error("Wrong Syntax: Expected someting like: field[1,2,3]=object");
     }
@@ -666,9 +694,14 @@ FIELD3DEXTENDERBASE(type,returnType)
             start_x=PyLong_AsLong(PyTuple_GetItem(_indexTuple,0));
             stop_x=start_x;
             step_x=1;          
-        }else{
-            throw std::runtime_error("Wrong Type (X): only integer values are allowed here");
+        }else if (PyFloat_Check(xCoord)){
+            start_x = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple,0)));     
+            stop_x=start_x;
+            step_x=1;                      
         }
+        else{
+            throw std::runtime_error("Wrong Type (X): only integer or float values are allowed here - floats are rounded");
+        }            
     }
 
     if (PySlice_Check(yCoord)){
@@ -690,8 +723,13 @@ FIELD3DEXTENDERBASE(type,returnType)
             start_y=PyLong_AsLong(PyTuple_GetItem(_indexTuple,1));
             stop_y=start_y;
             step_y=1;          
-        }else{
-            throw std::runtime_error("Wrong Type (Y): only integer values are allowed here");
+        }else if (PyFloat_Check(yCoord)){
+            start_y = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple,1)));     
+            stop_y=start_y;
+            step_y=1;                      
+        }
+        else{
+            throw std::runtime_error("Wrong Type (Y): only integer or float values are allowed here - floats are rounded");
         }
     }
     
@@ -709,8 +747,13 @@ FIELD3DEXTENDERBASE(type,returnType)
             start_z=PyLong_AsLong(PyTuple_GetItem(_indexTuple,2));
             stop_z=start_z;
             step_z=1;          
-        }else{
-            throw std::runtime_error("Wrong Type (Z): only integer values are allowed here");
+        }else if (PyFloat_Check(zCoord)){
+            start_z = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple,2)));     
+            stop_z=start_z;
+            step_z=1;                      
+        }
+        else{
+            throw std::runtime_error("Wrong Type (Z): only integer or float values are allowed here - floats are rounded");
         }
 
     }
@@ -763,8 +806,15 @@ FIELD3DEXTENDERBASE(type,returnType)
 //We could have also included volumeTrackerPlugin ptr in WatchableField3D<> but decided that it woudl be better not to ploute main code - might reconsider this though
 
 %pythoncode %{
+
+    def normalizeSlice(self, s):
+        norm = lambda x : x if x is None else int(round(x))
+        return slice ( norm(s.start),norm(s.stop), norm(s.step) )
+        
     def __setitem__(self,_indexTyple,_val):
-        self.setitem(_indexTyple,_val,self.volumeTrackerPlugin)
+        newSliceTuple = tuple(map(lambda x : self.normalizeSlice(x) if isinstance(x,slice) else x , _indexTyple))  
+        self.setitem(newSliceTuple,_val,self.volumeTrackerPlugin)
+
 %}  
 
   void setitem(PyObject *_indexTuple,returnType _val,void *_volumeTrackerPlugin=0) {
@@ -797,9 +847,14 @@ FIELD3DEXTENDERBASE(type,returnType)
             start_x=PyLong_AsLong(PyTuple_GetItem(_indexTuple,0));
             stop_x=start_x;
             step_x=1;          
-        }else{
-            throw std::runtime_error("Wrong Type (X): only values are allowed here");
+        }else if (PyFloat_Check(xCoord)){
+            start_x = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple,0)));     
+            stop_x=start_x;
+            step_x=1;                      
         }
+        else{
+            throw std::runtime_error("Wrong Type (X): only integer or float values are allowed here - floats are rounded");
+        }   
         
     }
     
@@ -817,8 +872,13 @@ FIELD3DEXTENDERBASE(type,returnType)
             start_y=PyLong_AsLong(PyTuple_GetItem(_indexTuple,1));
             stop_y=start_y;
             step_y=1;          
-        }else{
-            throw std::runtime_error("Wrong Type (Y): only integer values are allowed here");
+        }else if (PyFloat_Check(yCoord)){
+            start_y = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple,1)));     
+            stop_y=start_y;
+            step_y=1;                      
+        }
+        else{
+            throw std::runtime_error("Wrong Type (Y): only integer or float values are allowed here - floats are rounded");
         }
     }
     
@@ -836,8 +896,13 @@ FIELD3DEXTENDERBASE(type,returnType)
             start_z=PyLong_AsLong(PyTuple_GetItem(_indexTuple,2));
             stop_z=start_z;
             step_z=1;          
-        }else{
-            throw std::runtime_error("Wrong Type (Z): only integer values are allowed here");
+        }else if (PyFloat_Check(zCoord)){
+            start_z = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple,2)));     
+            stop_z=start_z;
+            step_z=1;                      
+        }
+        else{
+            throw std::runtime_error("Wrong Type (Z): only integer or float values are allowed here - floats are rounded");
         }
     }
    
