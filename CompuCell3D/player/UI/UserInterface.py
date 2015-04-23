@@ -419,16 +419,7 @@ class UserInterface(QMainWindow):
     def __createLayout(self):
         # Zoom items. The only place where the zoom items are specified!
         # self.zitems = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0, 8.0]
-        
-        # self.viewmanager = TabView(self) # ViewManager.factory(self, self)
-        # self.viewmanager.setZoomItems(self.zitems)
-        
-        # # self.viewmanager.setOrientation(Qt.Vertical)      
-        # self.setCentralWidget(self.viewmanager)
 
-        # self.display3D = QVTKRenderWidget(self)
-        # self.setupDisplay3D()
-        # self.setCentralWidget(self.display3D)
         
         # Set up the model for the Model Editor
         self.modelEditorDock = self.__createDockWindow("ModelEditor")
@@ -444,34 +435,7 @@ class UserInterface(QMainWindow):
         self.viewmanager.setModelEditor(modelEditor) # Sets the Model Editor in the ViewManager
         self.__setupDockWindow(self.modelEditorDock, Qt.LeftDockWidgetArea, modelEditor, self.trUtf8("Model Editor")) # projectBrowser  
 
-        _simulationFileName="D:\Program Files\COMPUCELL3D_3.4.0\Demos\cellsort_2D\cellsort_2D.xml"
-        # self.viewmanager.prepareXMLTreeView(_simulationFileName)
-        # TEST CODE #############
-        # import XMLUtils
-        # self.cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
-        # _simulationFileName="D:\Program Files\COMPUCELL3D_3.4.0\Demos\cellsort_2D\cellsort_2D_try.xml"
-        # self.root_element=self.cc3dXML2ObjConverter.Parse(_simulationFileName)
-        # self.model = SimModel(self.root_element, modelEditor)
-        
-        
-        # modelEditor.setModel(self.model)
-        # self.model.setPrintFlag(True)
-        # self.model.checkSanity()
 
-        # self.simulation.setSimModel(self.model) # hook in simulation thread class to XML model TreeView panel in the GUI - needed for steering
-        # TEST CODE #############
-        
-        # # set up the model for Plugins
-        # # # self.cpluginsDock = self.__createDockWindow("PluginsDock")
-        # # # self.cplugins     = CPlugins(self.cpluginsDock, self.viewmanager)
-        # # # self.pluginsModel = CPluginsModel("player/plugins.txt") # Populate data from plugins.txt
-        # # # self.cplugins.setModel(self.pluginsModel)
-        # # # self.cplugins.setParams()
-        # # # #self.connect(self.cplugins, SIGNAL("doubleClicked(const QModelIndex &)"), self.__showPluginView)
-        
-        # # # self.__setupDockWindow(self.cpluginsDock, Qt.LeftDockWidgetArea, self.cplugins, self.trUtf8("Plugins"))
-        # # # self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea) 
-        
         self.latticeDataDock = self.__createDockWindow("LatticeData")
         self.latticeDataDock.setToggleFcn(self.toggleLatticeData)
         self.latticeDataModelTable     = LatticeDataModelTable(self.latticeDataDock, self.viewmanager)
@@ -696,88 +660,6 @@ class UserInterface(QMainWindow):
                 tb.show()
             else:
                 tb.hide()
-
-"""
-
-    def __shutdown(self):
-        "" "
-        Private method to perform all neccessary steps to close down the IDE.
-        
-        @return flag indicating success
-        "" "
-        if self.shutdownCalled:
-            return True
-        
-        self.__writeSession()
-        
-        if not self.project.closeProject():
-            return False
-        
-        if not self.multiProject.closeMultiProject():
-            return False
-        
-        if not self.viewmanager.closeViewManager():
-            return False
-        
-        self.shell.closeShell()
-        
-        self.__writeTasks()
-        self.templateViewer.writeTemplates()
-        
-        if not self.debuggerUI.shutdownServer():
-            return False
-        self.debuggerUI.shutdown()
-        
-        self.pluginManager.shutdown()
-        
-        if self.SAServer is not None:
-            self.SAServer.shutdown()
-            self.SAServer = None
-        
-        Preferences.setGeometry("MainMaximized", int(self.isMaximized()))
-        if not self.isMaximized():
-            Preferences.setGeometry("MainGeometry", self.saveGeometry())
-        if self.layout == "FloatingWindows":      # floating windows
-            windows = {
-                "ProjectBrowser": self.projectBrowser,
-                "DebugViewer": self.debugViewer,
-                "LogViewer": self.logViewer,
-                "Shell": self.shell,
-                "FileBrowser" : self.browser,
-                "TaskViewer" : self.taskViewer,
-                "TemplateViewer" : self.templateViewer,
-                "MultiProjectBrowser": self.multiProjectBrowser,
-            }
-            if self.embeddedShell:
-                del windows["Shell"]
-            if self.embeddedFileBrowser:
-                del windows["FileBrowser"]
-            for window, i in zip(self.windows, range(len(self.windows))):
-                if window is not None:
-                    self.profiles[self.currentProfile][2][i] = \
-                        str(window.saveGeometry())
-
-        self.browser.saveToplevelDirs()
-        
-        Preferences.setUI("ToolbarManagerState", self.toolbarManager.saveState())
-        self.__saveCurrentViewProfile(True)
-        Preferences.saveToolGroups(self.toolGroups, self.currentToolGroup)
-        Preferences.syncPreferences()
-        self.shutdownCalled = True
-        return True
-
-"""
-"""
-class CQDockWidget(QDockWidget):
-    def __init__(self, parent):
-        QDockWidget.__init__(self, parent)
-        
-    def setSizeHint(self, size):
-        self.size = size
-        
-    def sizeHint(self):
-        return self.size
-"""
 
 class Redirector(QObject):
     """
