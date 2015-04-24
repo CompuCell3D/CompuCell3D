@@ -13,10 +13,10 @@ MODULENAME = '------- SimpleViewManager: '
 
 # ViewManager inherits from QObject to use its methods (e.g. self.connect)
 
-# class SimpleViewManager(QObject):
-class SimpleViewManager():
+class SimpleViewManager(QObject):
+# class SimpleViewManager():
     def __init__(self, ui):
-        # QObject.__init__(self)
+        QObject.__init__(self)
         self.visual = {}
         self.visual["CellsOn"]    = Configuration.getSetting("CellsOn")
         self.visual["CellBordersOn"]  = Configuration.getSetting("CellBordersOn")

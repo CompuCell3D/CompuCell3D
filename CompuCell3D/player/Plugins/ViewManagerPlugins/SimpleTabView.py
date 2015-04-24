@@ -50,40 +50,66 @@ except:
     print 'STView: sys.path=', sys.path
 
 
-class SimpleTabView(QMdiArea, SimpleViewManager):
+
+
+
+from MainArea import MainArea
+#
+# from MainAreaMdi import MainArea
+
+# class SimpleTabView(QMdiArea, SimpleViewManager):
+class SimpleTabView(MainArea, SimpleViewManager):
     def __init__(self, parent):
         # sys.path.append(os.environ["PYTHON_MODULE_PATH"])
         import CompuCellSetup
 
+        # MainArea.__init__(self, parent=None)
+        # MainArea.__init__(self, parent=self)
+        # QMdiArea.__init__(self, parent=self)
+
+        # self.MDI_ON = False
+
         self.__parent = parent  # QMainWindow -> UI.UserInterface
         self.UI = parent
-        QTabWidget.__init__(self, parent)
+
+
+        # QTabWidget.__init__(self, parent)
+        # MainArea.__init__(self, parent=parent)
         SimpleViewManager.__init__(self, parent)
+        MainArea.__init__(self, stv = self, ui = parent)
+
+
+
         self.__createStatusBar()
         self.__setConnects()
 
-        self.scrollView = QScrollArea(self)
-        self.scrollView.setBackgroundRole(QPalette.Dark)
-        self.scrollView.setVisible(False)
+        # MDIFIX
+        # if self.MDI_ON:
+        #
+        #     self.scrollView = QScrollArea(self)
+        #     self.scrollView.setBackgroundRole(QPalette.Dark)
+        #     self.scrollView.setVisible(False)
+        #
+        #     #had to introduce separate scrollArea for 2D and 3D widgets. for some reason switching graphics widgets in Scroll area  did not work correctly.
+        #     self.scrollView3D = QScrollArea(self)
+        #     self.scrollView3D.setBackgroundRole(QPalette.Dark)
+        #     self.scrollView3D.setVisible(False)
+        #
+        #     # qworkspace
+        #     # self.setScrollBarsEnabled(True)
+        #
+        #     self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        #     self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 
-        # turning off vtk debug output. This requires small modification to the vtk code itself. 
+
+        #holds ptr (stored as long int) to original cerr stream buffer
+        self.cerrStreamBufOrig = None
+
+        # turning off vtk debug output. This requires small modification to the vtk code itself.
         # Files affected vtkOutputWindow.h vtkOutputWindow.cxx vtkWin32OutputWindow.h vtkWin32OutputWindow.cxx
         if hasattr(vtk.vtkOutputWindow, "setOutputToWindowFlag"):
             vtkOutput = vtk.vtkOutputWindow.GetInstance()
             vtkOutput.setOutputToWindowFlag(False)
-
-        #had to introduce separate scrollArea for 2D and 3D widgets. for some reason switching graphics widgets in Scroll area  did not work correctly. 
-        self.scrollView3D = QScrollArea(self)
-        self.scrollView3D.setBackgroundRole(QPalette.Dark)
-        self.scrollView3D.setVisible(False)
-        #holds ptr (stored as long int) to original cerr stream buffer
-        self.cerrStreamBufOrig = None
-
-        #qworkspace        
-        # self.setScrollBarsEnabled(True)    
-
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 
         self.rollbackImporter = None
 
@@ -234,6 +260,8 @@ class SimpleTabView(QMdiArea, SimpleViewManager):
         mdiWindow = self.findMDISubWindowForWidget(window)
         if mdiWindow:
             #            self.setActiveSubWindow(window)
+
+            # MDIFIX
             self.setActiveSubWindow(mdiWindow)
 
             self.lastActiveWindow = window
@@ -439,6 +467,37 @@ class SimpleTabView(QMdiArea, SimpleViewManager):
 
                 # return self.plotManager.addNewPlotWindow()
 
+    # def createDockWindow(self, name):
+    #     """
+    #     Private method to create a dock window with common properties.
+    #
+    #     @param name object name of the new dock window (string or QString)
+    #     @return the generated dock window (QDockWindow)
+    #     """
+    #     # dock = QDockWidget(self)
+    #     dock = QDockWidget(self)
+    #     dock.setObjectName(name)
+    #     #dock.setFeatures(QDockWidget.DockWidgetFeatures(QDockWidget.AllDockWidgetFeatures))
+    #     return dock
+    #
+    # def setupDockWindow(self, dock, where, widget, caption):
+    #     """
+    #     Private method to configure the dock window created with __createDockWindow().
+    #
+    #     @param dock the dock window (QDockWindow)
+    #     @param where dock area to be docked to (Qt.DockWidgetArea)
+    #     @param widget widget to be shown in the dock window (QWidget)
+    #     @param caption caption of the dock window (string or QString)
+    #     """
+    #     if caption is None:
+    #         caption = QString()
+    #
+    #     dock.setFloating(True)
+    #
+    #     self.UI.addDockWidget(where, dock)
+    #     dock.setWidget(widget)
+    #     dock.setWindowTitle(caption)
+    #     dock.show()
 
     def addNewGraphicsWindow(self):  # callback method to create additional ("Aux") graphics windows
         print MODULENAME, '--------- addNewGraphicsWindow() '
@@ -450,7 +509,12 @@ class SimpleTabView(QMdiArea, SimpleViewManager):
         self.simulation.drawMutex.lock()
 
         self.windowCounter += 1
-        newWindow = GraphicsFrameWidget(self)  # "newWindow" is actually a QFrame
+
+        #MDIFIX
+
+        newWindow = GraphicsFrameWidget(parent=None, originatingWidget=self)
+        # newWindow = GraphicsFrameWidget(self)  # "newWindow" is actually a QFrame
+
 
         self.addGraphicsWindowToWindowRegistry(newWindow)
 
@@ -515,8 +579,7 @@ class SimpleTabView(QMdiArea, SimpleViewManager):
     def activateMainGraphicsWindow(self):
         self.setActiveSubWindow(self.mainMdiSubWindow)
 
-    def addVTKWindowToWorkspace(
-            self):  # just called one time, for initial graphics window  (vs. addNewGraphicsWindow())
+    def addVTKWindowToWorkspace(self):  # just called one time, for initial graphics window  (vs. addNewGraphicsWindow())
         # print MODULENAME,' =================================addVTKWindowToWorkspace ========='
         #        dbgMsg(' addVTKWindowToWorkspace =========')
         # self.graphics2D = Graphics2DNew(self)     
@@ -525,8 +588,21 @@ class SimpleTabView(QMdiArea, SimpleViewManager):
 
         # print 'BEFORE ADD VTK WINDOW TO WORKSPACE'
         # time.sleep(5)
-        # print 'addVTKWindowToWorkspace'        
-        self.mainGraphicsWindow = GraphicsFrameWidget(self)
+        # print 'addVTKWindowToWorkspace'
+
+        # MDIFIX
+        self.mainGraphicsWindow = GraphicsFrameWidget(parent=None, originatingWidget=self)
+        # if self.MDI_ON:
+        #     gfw = GraphicsFrameWidget(parent=None, originatingWidget=self)
+        #     self.mainGraphicsWindow = gfw
+        #
+        #     # subWindow = self.createDockWindow(name="Graphincs Window") # graphics dock window
+        #     # self.setupDockWindow(subWindow, Qt.NoDockWidgetArea, gfw, self.trUtf8("Graphincs Window"))
+        #
+        #     # Qt.LeftDockWidgetArea
+        # else:
+        #     self.mainGraphicsWindow = GraphicsFrameWidget(parent=None, originatingWidget=self)
+        #     # self.mainGraphicsWindow = GraphicsFrameWidget(self)
 
         # self.mainGraphicsWindow.deleteLater()
 
@@ -557,7 +633,16 @@ class SimpleTabView(QMdiArea, SimpleViewManager):
 
         # self.addSubWindow(self.mainGraphicsWindow)
 
+        # MDIFIX
         mdiSubWindow = self.addSubWindow(self.mainGraphicsWindow)
+        # mdiSubWindow = subWindow
+
+        # mdiSubWindow = self.mainGraphicsWindow
+
+        # mdiSubWindow = self.addSubWindow(self.mainGraphicsWindow)
+
+
+
         self.mainMdiSubWindow = mdiSubWindow
         #        print MODULENAME,'-------- type(mdiSubWindow)= ',type(mdiSubWindow)  # =  <class 'PyQt4.QtGui.QMdiSubWindow'>
         #        print MODULENAME,'-------- dir(mdiSubWindow)= ',dir(mdiSubWindow)
@@ -591,6 +676,7 @@ class SimpleTabView(QMdiArea, SimpleViewManager):
         self.updateActiveWindowVisFlags()
 
 
+
     def removeAllVTKWindows(self, _leaveFirstWindowFlag=False):
 
         windowNames = self.graphicsWindowDict.keys()
@@ -609,6 +695,7 @@ class SimpleTabView(QMdiArea, SimpleViewManager):
 
         print 'GOT HERE REMOVE ALL VTK'
         print 'self.graphicsWindowDict=', self.graphicsWindowDict
+        #MDIFIX
         print 'len(self.subWindowList())=', len(self.subWindowList())
 
         self.updateWindowMenu()
@@ -1580,9 +1667,11 @@ class SimpleTabView(QMdiArea, SimpleViewManager):
 
         #window menu actions
         self.connect(self.newGraphicsWindowAct, SIGNAL('triggered()'), self.addNewGraphicsWindow)
-        # self.connect(self.newPlotWindowAct,    SIGNAL('triggered()'),      self.addNewPlotWindow)        
+        # self.connect(self.newPlotWindowAct,    SIGNAL('triggered()'),      self.addNewPlotWindow)
+
         self.connect(self.tileAct, SIGNAL('triggered()'), self.tileSubWindows)
         self.connect(self.cascadeAct, SIGNAL('triggered()'), self.cascadeSubWindows)
+
         self.connect(self.saveWindowsGeometryAct, SIGNAL('triggered()'), self.saveWindowsGeometry)
         self.connect(self.minimizeAllGraphicsWindowsAct, SIGNAL('triggered()'), self.minimizeAllGraphicsWindows)
         self.connect(self.restoreAllGraphicsWindowsAct, SIGNAL('triggered()'), self.restoreAllGraphicsWindows)

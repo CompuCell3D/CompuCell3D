@@ -53,7 +53,8 @@ from weakref import ref
 
 class GraphicsFrameWidget(QtGui.QFrame):
     # def __init__(self, parent=None, wflags=QtCore.Qt.WindowFlags(), **kw):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, originatingWidget=None):
+
         QtGui.QFrame.__init__(self, parent)
         
         
@@ -65,8 +66,9 @@ class GraphicsFrameWidget(QtGui.QFrame):
         
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         
-        
-        self.parentWidget = parent
+        # MDIFIX
+        self.parentWidget = originatingWidget
+        # self.parentWidget = parent
         
         
         
@@ -102,12 +104,23 @@ class GraphicsFrameWidget(QtGui.QFrame):
         # # # self.draw3D = MVCDrawView3D(self.drawModel3D,self_weakref,parent)
         
 
-        self.drawModel2D = MVCDrawModel2D(self,parent)
-        self.draw2D = MVCDrawView2D(self.drawModel2D,self,parent)
-        
-        self.drawModel3D = MVCDrawModel3D(self,parent)
-        self.draw3D = MVCDrawView3D(self.drawModel3D,self,parent)
-        
+        # MDIFIX
+        self.drawModel2D = MVCDrawModel2D(self, self.parentWidget)
+        self.draw2D = MVCDrawView2D(self.drawModel2D, self, self.parentWidget)
+
+        self.drawModel3D = MVCDrawModel3D(self, self.parentWidget)
+        self.draw3D = MVCDrawView3D(self.drawModel3D, self, self.parentWidget)
+
+        # self.drawModel2D = MVCDrawModel2D(self,parent)
+        # self.draw2D = MVCDrawView2D(self.drawModel2D,self,parent)
+        #
+        # self.drawModel3D = MVCDrawModel3D(self,parent)
+        # self.draw3D = MVCDrawView3D(self.drawModel3D,self,parent)
+
+
+
+
+
         # self.draw2D=Draw2D(self,parent)
         # self.draw3D=Draw3D(self,parent)
         self.camera3D = self.ren.MakeCamera()        

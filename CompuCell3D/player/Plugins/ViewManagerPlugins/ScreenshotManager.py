@@ -103,7 +103,11 @@ class ScreenshotManager:
         
         # self.screenshotGraphicsWidget = GraphicsFrameWidget(self.tabViewWidget)
         print 'CREATING SCREENSHOT WINDOW'
-        self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw)
+
+        # MDIFIX
+        self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw, tvw)
+        # self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw)
+
         self.screenshotGraphicsWidget.screenshotWindowFlag=True
         
         xSize=Configuration.getSetting("Screenshot_X")
