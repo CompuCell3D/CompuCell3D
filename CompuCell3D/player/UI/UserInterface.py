@@ -428,6 +428,7 @@ class UserInterface(QMainWindow):
         
         # Set up the model for the Model Editor
         self.modelEditorDock = self.__createDockWindow("ModelEditor")
+
         self.modelEditorDock .setToggleFcn(self.toggleModelEditor)
         modelEditor = ModelEditor(self.modelEditorDock)      
         

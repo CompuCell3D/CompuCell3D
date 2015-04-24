@@ -1,6 +1,68 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
+
+class Inventory:
+    def __init__(self):
+        self.inventory_dict = {}
+        self.inventory_counter = 0
+
+    def add_to_inventory(self,  obj):
+
+        self.inventory_dict[self.inventory_counter] = obj
+        self.inventory_counter += 1
+
+    def remove_from_inventory_by_name(self, obj_name):
+        try:
+            del self.inventory_dict[obj_name]
+            self.inventory_counter -= 1
+        except KeyError:
+            pass
+
+    def remove_from_inventory(self, obj):
+        obj_name_to_remove = None
+        for key, val in self.inventory_dict.iteritems():
+
+            if val == obj:
+
+                obj_name_to_remove = key
+                break
+
+        if obj_name_to_remove is not None:
+
+            try:
+                del self.inventory_dict[obj_name_to_remove]
+            except KeyError:
+                pass
+
+
+
+    def values(self):return self.inventory_dict.values()
+
+    def __str__(self):
+        return self.inventory_dict.__str__()
+
+class DockSubWindow(QDockWidget):
+    def __init__(self,_parent):
+        super(DockSubWindow, self).__init__(_parent)
+        self.parent = _parent
+        # self.toggleFcn = None
+    # def setToggleFcn(self, fcn):self.toggleFcn = fcn
+
+    def closeEvent(self, ev):
+        print 'DOCK WIDGET CLOSE EVENT'
+        # print 'self.toggleFcn=', self.toggleFcn
+        print 'self = ', self
+        print 'BEFORE self.parent.win_inventory = ',self.parent.win_inventory
+        self.parent.win_inventory.remove_from_inventory(self)
+
+        print 'AFTER self.parent.win_inventory = ',self.parent.win_inventory
+
+        # self.windowInventoryDict[self.windowInventoryCounter] = dockWidget
+        # if self.toggleFcn: self.toggleFcn(False)
+        # Configuration.setSetting(str(self.objectName(), False)
+
+
 class MainArea(QWidget):
     def __init__(self, stv,  ui ):
 
@@ -8,9 +70,12 @@ class MainArea(QWidget):
 
         self.stv = stv # SimpleTabView
         self.UI = ui # UserInterface
-        self.windowInventoryCounter = 0
 
-        self.windowInventoryDict = {}
+        self.win_inventory = Inventory()
+
+        # self.windowInventoryCounter = 0
+        #
+        # self.windowInventoryDict = {}
 
     def addSubWindow(self, widget):
 
@@ -21,9 +86,10 @@ class MainArea(QWidget):
         self.setupDockWindow(dockWidget, Qt.NoDockWidgetArea, widget, self.trUtf8("Graphincs Window"))
 
         # inserting widget into dictionary
-        self.windowInventoryDict[self.windowInventoryCounter] = dockWidget
-
-        self.windowInventoryCounter += 1
+        self.win_inventory.add_to_inventory( obj = dockWidget)
+        # self.windowInventoryDict[self.windowInventoryCounter] = dockWidget
+        #
+        # self.windowInventoryCounter += 1
 
         return dockWidget
 
@@ -31,11 +97,15 @@ class MainArea(QWidget):
 
     def cascadeSubWindows(self): pass
 
+    def activeSubWindow1(self): pass
+
     def setActiveSubWindow(self, win):
+        win.activateWindow()
         pass
 
     def subWindowList(self):
-        return self.windowInventoryDict.values()
+        return self.win_inventory.values()
+        # return self.windowInventoryDict.values()
 
     def createDockWindow(self, name):
         """
@@ -45,7 +115,8 @@ class MainArea(QWidget):
         @return the generated dock window (QDockWindow)
         """
         # dock = QDockWidget(self)
-        dock = QDockWidget(self)
+        # dock = QDockWidget(self)
+        dock = DockSubWindow(self)
         dock.setObjectName(name)
         #dock.setFeatures(QDockWidget.DockWidgetFeatures(QDockWidget.AllDockWidgetFeatures))
         return dock

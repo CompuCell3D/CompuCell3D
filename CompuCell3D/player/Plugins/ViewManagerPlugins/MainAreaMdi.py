@@ -25,3 +25,17 @@ class MainArea(QMdiArea):
         # self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         # self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 
+        self.windowInventoryCounter = 0
+
+        self.windowInventoryDict = {}
+
+    def addSubWindow(self, widget):
+
+        mdiSubwindow = QMdiArea.addSubWindow(self, widget)
+
+        # inserting widget into dictionary
+        self.windowInventoryDict[self.windowInventoryCounter] = widget
+
+        self.windowInventoryCounter += 1
+
+        return mdiSubwindow

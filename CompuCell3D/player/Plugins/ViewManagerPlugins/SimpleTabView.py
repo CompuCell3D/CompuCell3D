@@ -683,35 +683,61 @@ class SimpleTabView(MainArea, SimpleViewManager):
         print 'windowNames=', windowNames
         print 'self.graphicsWindowDict=', self.graphicsWindowDict
 
-        for windowName in windowNames:
-            if _leaveFirstWindowFlag and windowName == 1:
-                # print "leaving first window"
+        if self.MDI_ON:
+
+            for windowName in windowNames:
+                if _leaveFirstWindowFlag and windowName == 1:
+                    # print "leaving first window"
+                    continue
+
+                self.setActiveSubWindow(self.mdiWindowDict[windowName])
+                self.closeActiveSubWindowSlot()
+
                 continue
+        else:
+            for windowName, window in self.graphicsWindowDict.iteritems():
+                if _leaveFirstWindowFlag and windowName == 1:
+                    # print "leaving first window"
+                    continue
 
-            self.setActiveSubWindow(self.mdiWindowDict[windowName])
-            self.closeActiveSubWindowSlot()
-
-            continue
+                    window.close()
+                    self.removeWindowFromRegistry(window)
 
         print 'GOT HERE REMOVE ALL VTK'
         print 'self.graphicsWindowDict=', self.graphicsWindowDict
         #MDIFIX
         print 'len(self.subWindowList())=', len(self.subWindowList())
 
+
+
         self.updateWindowMenu()
 
 
     def removeAllPlotWindows(self, _leaveFirstWindowFlag=False):
+
         windowNames = self.plotWindowDict.keys()
-        for windowName in windowNames:
-            # print "windowName=",windowName
-            # print "self.graphicsWindowDict=",self.graphicsWindowDict
-            if _leaveFirstWindowFlag and windowName == 1:
-                # print "leaving first window"
-                continue
-            # self.setActiveSubWindow(self.plotWindowDict[windowName])
-            self.setActiveSubWindow(self.mdiWindowDict[windowName])
-            self.closeActiveSubWindowSlot()
+        if self.MDI_ON:
+            for windowName in windowNames:
+                # print "windowName=",windowName
+                # print "self.graphicsWindowDict=",self.graphicsWindowDict
+                if _leaveFirstWindowFlag and windowName == 1:
+                    # print "leaving first window"
+                    continue
+                # self.setActiveSubWindow(self.plotWindowDict[windowName])
+                self.setActiveSubWindow(self.mdiWindowDict[windowName])
+                self.closeActiveSubWindowSlot()
+        else:
+            for windowName, window in self.plotWindowDict.iteritems():
+
+                if _leaveFirstWindowFlag and windowName == 1:
+                    # print "leaving first window"
+                    continue
+                window.close()
+                # MDIFIX - have to see how to handle plots and plots registry...
+
+                # self.removeWindowFromRegistry(window)
+                # self.closeActiveSubWindowSlot()
+
 
         self.updateWindowMenu()
         self.plotWindowDict = {}

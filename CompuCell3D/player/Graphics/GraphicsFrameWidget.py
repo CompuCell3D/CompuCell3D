@@ -882,4 +882,7 @@ class GraphicsFrameWidget(QtGui.QFrame):
         # print 'self.windowDict=',self.parentWidget.windowDict        
         
         self.parentWidget=None
+
+        print 'GRAPHICS CLOSED'
+
         
