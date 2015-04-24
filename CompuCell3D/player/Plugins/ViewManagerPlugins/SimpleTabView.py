@@ -52,10 +52,10 @@ except:
 
 
 
-
-from MainArea import MainArea
-#
-# from MainAreaMdi import MainArea
+if Configuration.getSetting('FloatingWindows'):
+    from MainArea import MainArea
+else:
+    from MainAreaMdi import MainArea
 
 # class SimpleTabView(QMdiArea, SimpleViewManager):
 class SimpleTabView(MainArea, SimpleViewManager):
@@ -753,10 +753,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
         fpout.close()
 
     def minimizeAllGraphicsWindows(self):
+        if not self.MDI_ON: return
+
         for windowName in self.graphicsWindowDict.keys():
             self.windowDict[windowName].showMinimized()
 
     def restoreAllGraphicsWindows(self):
+
+        if not self.MDI_ON: return
+
         for windowName in self.graphicsWindowDict.keys():
             self.windowDict[windowName].showNormal()
 

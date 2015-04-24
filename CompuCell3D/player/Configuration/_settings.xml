@@ -76,6 +76,7 @@
       <e Name="DisplayConsole" Type="bool">True</e>
       <e Name="DisplayLatticeData" Type="bool">False</e>
       <e Name="DisplayModelEditor" Type="bool">True</e>
+      <e Name="FloatingWindows" Type="bool">True</e>
       <e Name="FPPLinksColorOn" Type="bool">False</e>
       <e Name="FPPLinksOn" Type="bool">False</e>
       <e Name="FixedArrowColorOn" Type="bool">False</e>

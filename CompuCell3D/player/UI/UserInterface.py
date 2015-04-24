@@ -130,8 +130,13 @@ class UserInterface(QMainWindow):
         else:
             self.resize(Configuration.getSetting("MainWindowSize"))
             self.move(Configuration.getSetting("MainWindowPosition"))
-        
-            
+
+        # MDIFIX
+        floatingFlag = Configuration.getSetting('FloatingWindows')
+        self.modelEditorDock.setFloating(floatingFlag)
+        self.consoleDock.setFloating(floatingFlag)
+        self.latticeDataDock.setFloating(floatingFlag)
+
     ##########################################################
     ## Below are slots to handle StdOut and StdErr
     ##########################################################

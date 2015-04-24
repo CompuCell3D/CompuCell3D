@@ -3,9 +3,11 @@ from PyQt4.QtGui import *
 
 class MainArea(QMdiArea):
     def __init__(self, stv,  ui ):
+        self.MDI_ON = True
+
         self.stv = stv # SimpleTabView
         self.UI = ui # UserInterface
-        self.MDI_ON = True
+
         QMdiArea.__init__(self, ui)
         # QMdiArea.__init__(self, parent)
 

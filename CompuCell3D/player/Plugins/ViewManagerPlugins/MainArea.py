@@ -3,8 +3,9 @@ from PyQt4.QtGui import *
 
 class MainArea(QWidget):
     def __init__(self, stv,  ui ):
+
         self.MDI_ON = False
-        # self.stv = parent # SimpleTabView
+
         self.stv = stv # SimpleTabView
         self.UI = ui # UserInterface
         self.windowInventoryCounter = 0
