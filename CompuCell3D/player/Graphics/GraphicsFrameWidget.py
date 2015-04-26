@@ -29,7 +29,7 @@ from PyQt4 import QtCore, QtGui,QtOpenGL
 import vtk
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-
+from enums import *
 
 import sys
 platform=sys.platform
@@ -61,7 +61,7 @@ class GraphicsFrameWidget(QtGui.QFrame):
         # print '\n\n\n\n\n CREATING NEW GRAPHICS FRAME WIDGET ',self
         
         
-        
+        self.allowSaveLayout = True
         self.qvtkWidget = QVTKRenderWindowInteractor(self)   # a QWidget
         
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
@@ -681,7 +681,8 @@ class GraphicsFrameWidget(QtGui.QFrame):
         # gwd.camera = self.getActiveCamera()
         gwd.sceneName = str(self.fieldComboBox.currentText())
         gwd.sceneType = self.parentWidget.fieldTypes[gwd.sceneName]      
-        gwd.winType = 'graphics'
+        # gwd.winType = 'graphics'
+        gwd.winType = GRAPHICS_WINDOW_LABEL
         # winPosition and winPosition will be filled externally by the SimpleTabView , since it has access to mdi windows
         
         # gwd.winPosition = self.pos()        

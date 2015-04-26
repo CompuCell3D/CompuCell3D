@@ -82,6 +82,8 @@ class ScreenshotData:
             
 class ScreenshotManager:
     def __init__(self,_tabViewWidget):
+
+
         self.screenshotDataDict={}
         from weakref import ref
         self.tabViewWidget=ref(_tabViewWidget)
@@ -104,8 +106,14 @@ class ScreenshotManager:
         # self.screenshotGraphicsWidget = GraphicsFrameWidget(self.tabViewWidget)
         print 'CREATING SCREENSHOT WINDOW'
 
+        self.screenshotGraphicsWidget = None
+        # MDIFIX - temporary
+        # return
+
+
         # MDIFIX
         self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw, tvw)
+        self.screenshotGraphicsWidget.allowSaveLayout = False # we do not save screenshot widget in the windows layout
         # self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw)
 
         self.screenshotGraphicsWidget.screenshotWindowFlag=True

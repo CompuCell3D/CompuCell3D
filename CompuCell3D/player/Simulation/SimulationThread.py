@@ -369,8 +369,15 @@ class SimulationThread(QtCore.QThread):
         _path = os.path.abspath(os.path.join(_path+'../../../'))
 
         run_script_name = os.path.abspath(os.path.join(_path, 'pythonSetupScripts/CompuCellPythonSimulationNewPlayer.py'))
+        #alternative
+        run_script_name = os.path.abspath(os.path.join(os.environ.get('PREFIX_CC3D'), 'pythonSetupScripts/CompuCellPythonSimulationNewPlayer.py'))
         # print '_path2 = ',_path
         # print 'run_script_name =', run_script_name
+
+        # this is in case player dire is soft-linked from git repository into installation repository
+        # if not os.path.isfile(run_script_name):
+        #
+        #     run_script_name = os.path.abspath(os.path.join(_path, 'core/pythonSetupScripts/CompuCellPythonSimulationNewPlayer.py'))
 
         execfile(run_script_name)
 

@@ -16,4 +16,6 @@ Thumbs.db
 *.pyc
 *.pyo
 .idea
+VTKLibs
+vtk
 *~

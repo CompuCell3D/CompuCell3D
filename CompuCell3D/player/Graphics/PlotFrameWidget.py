@@ -98,7 +98,7 @@ from PyQt4 import QtCore, QtGui,QtOpenGL
 import vtk
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-
+from enums import *
 
 
 

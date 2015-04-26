@@ -12,6 +12,8 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtXml import *
 
+from enums import *
+
 from Messaging import stdMsg, dbgMsg, pd, errMsg, setDebugging
 
 setDebugging(1)
@@ -574,6 +576,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         newWindow.setConnects(self)  # in GraphicsFrameWidget
         newWindow.setInitialCrossSection(self.basicSimulationData)
         newWindow.setFieldTypesComboBox(self.fieldTypes)
+
+        return mdiWindow
 
 
     def activateMainGraphicsWindow(self):
@@ -1676,7 +1680,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.connect(self.saveScreenshotDescriptionAct, SIGNAL('triggered()'), self.__saveScrDesc)
         self.connect(self.openScreenshotDescriptionAct, SIGNAL('triggered()'), self.__openScrDesc)
 
-        self.connect(self.savePlayerParamsAct, SIGNAL('triggered()'), self.__savePlayerParams)
+        # self.connect(self.savePlayerParamsAct, SIGNAL('triggered()'), self.__savePlayerParams)
         self.connect(self.exitAct, SIGNAL('triggered()'),
                      qApp.closeAllWindows)  #qApp is a member of QtGui. closeAllWindows will cause closeEvent and closeEventSimpleTabView will be called
         #        self.connect(self.openPlayerParamsAct,  SIGNAL('triggered()'), self.__openPlayerParams)
@@ -2065,100 +2069,100 @@ class SimpleTabView(MainArea, SimpleViewManager):
     #        print MODULENAME,'multiWindowPlayerSettings(): --------------------------------\n'
     #        import pdb; pdb.set_trace()
 
-    def setWindowView(self, w, attrKeys):
-        camera3D = self.lastActiveWindow.getCamera3D()
+    # def setWindowView(self, w, attrKeys):
+    #     camera3D = self.lastActiveWindow.getCamera3D()
+    #
+    #     #                print 'w.getAttributes()=',w.getAttributes()
+    #     #                print 'dir(w.getAttributes())=',dir(w.getAttributes())
+    #
+    #     if "Projection" in attrKeys:
+    #         winProj = w.getAttribute("Projection")
+    #         print MODULENAME, 'winProj=', winProj
+    #         if winProj == '3D':
+    #             self.lastActiveWindow._switchDim(True)
+    #         else:
+    #             if w.findAttribute("XYProj"):
+    #                 zPos = w.getAttributeAsUInt("XYProj")
+    #                 print MODULENAME, '  loadCustomPlayerSettings(): XYProj, zPos =', zPos  #rwh
+    #                 if zPos >= self.xySB.minimum() and zPos <= self.xySB.maximum():
+    #                     self.lastActiveWindow._xyChecked(True)
+    #                     self.lastActiveWindow._projSpinBoxChanged(zPos)
+    #             elif w.findAttribute("XZProj"):
+    #                 yPos = w.getAttributeAsUInt("XZProj")
+    #                 if yPos >= self.xzSB.minimum() and yPos <= self.xzSB.maximum():
+    #                     self.lastActiveWindow._xzChecked(True)
+    #                     self.lastActiveWindow._projSpinBoxChanged(yPos)
+    #
+    #             elif w.findAttribute("YZProj"):
+    #                 xPos = w.getAttributeAsUInt("YZProj")
+    #                 if xPos >= self.yzSB.minimum() and xPos <= self.yzSB.maximum():
+    #                     self.lastActiveWindow._yzChecked(True)
+    #                     self.lastActiveWindow._projSpinBoxChanged(xPos)
+    #
+    #     if "WindowNumber" in attrKeys:
+    #         winNum = w.getAttributeAsUInt("WindowNumber")
+    #         print MODULENAME, 'winNum=', winNum
+    #
+    #     # set camera params for each window
+    #     if "CameraPos" in attrKeys:
+    #         p = w.getAttribute("CameraPos")
+    #         pStr = p.split()
+    #         cameraPos = [float(pStr[0]), float(pStr[1]), float(pStr[2])]
+    #         print MODULENAME, 'cameraPos=', cameraPos
+    #         camera3D.SetPosition(cameraPos)
+    #     if "CameraFocalPoint" in attrKeys:
+    #         p = w.getAttribute("CameraFocalPoint")
+    #         pStr = p.split()
+    #         cameraFocalPoint = [float(pStr[0]), float(pStr[1]), float(pStr[2])]
+    #         print MODULENAME, 'cameraFocalPoint=', cameraFocalPoint
+    #         camera3D.SetFocalPoint(cameraFocalPoint)
+    #     if "CameraViewUp" in attrKeys:
+    #         p = w.getAttribute("CameraViewUp")
+    #         pStr = p.split()
+    #         cameraViewUp = [float(pStr[0]), float(pStr[1]), float(pStr[2])]
+    #         print MODULENAME, 'cameraViewUp=', cameraViewUp
+    #         camera3D.SetViewUp(cameraViewUp)
+    #     if "CameraClippingRange" in attrKeys:
+    #         p = w.getAttribute("CameraClippingRange")
+    #         pStr = p.split()
+    #         cameraClippingRange = [float(pStr[0]), float(pStr[1])]
+    #         print MODULENAME, 'cameraClippingRange=', cameraClippingRange
+    #         camera3D.SetClippingRange(cameraClippingRange)
+    #     if "CameraDistance" in attrKeys:
+    #         p = w.getAttributeAsDouble("CameraDistance")
+    #         print MODULENAME, 'camera distance=', p
+    #         camera3D.SetDistance(p)
+    #
+    #     self.lastActiveWindow.ren.ResetCameraClippingRange()  # need to do this, else might have clipped actors
 
-        #                print 'w.getAttributes()=',w.getAttributes()
-        #                print 'dir(w.getAttributes())=',dir(w.getAttributes())
 
-        if "Projection" in attrKeys:
-            winProj = w.getAttribute("Projection")
-            print MODULENAME, 'winProj=', winProj
-            if winProj == '3D':
-                self.lastActiveWindow._switchDim(True)
-            else:
-                if w.findAttribute("XYProj"):
-                    zPos = w.getAttributeAsUInt("XYProj")
-                    print MODULENAME, '  loadCustomPlayerSettings(): XYProj, zPos =', zPos  #rwh
-                    if zPos >= self.xySB.minimum() and zPos <= self.xySB.maximum():
-                        self.lastActiveWindow._xyChecked(True)
-                        self.lastActiveWindow._projSpinBoxChanged(zPos)
-                elif w.findAttribute("XZProj"):
-                    yPos = w.getAttributeAsUInt("XZProj")
-                    if yPos >= self.xzSB.minimum() and yPos <= self.xzSB.maximum():
-                        self.lastActiveWindow._xzChecked(True)
-                        self.lastActiveWindow._projSpinBoxChanged(yPos)
-
-                elif w.findAttribute("YZProj"):
-                    xPos = w.getAttributeAsUInt("YZProj")
-                    if xPos >= self.yzSB.minimum() and xPos <= self.yzSB.maximum():
-                        self.lastActiveWindow._yzChecked(True)
-                        self.lastActiveWindow._projSpinBoxChanged(xPos)
-
-        if "WindowNumber" in attrKeys:
-            winNum = w.getAttributeAsUInt("WindowNumber")
-            print MODULENAME, 'winNum=', winNum
-
-        # set camera params for each window
-        if "CameraPos" in attrKeys:
-            p = w.getAttribute("CameraPos")
-            pStr = p.split()
-            cameraPos = [float(pStr[0]), float(pStr[1]), float(pStr[2])]
-            print MODULENAME, 'cameraPos=', cameraPos
-            camera3D.SetPosition(cameraPos)
-        if "CameraFocalPoint" in attrKeys:
-            p = w.getAttribute("CameraFocalPoint")
-            pStr = p.split()
-            cameraFocalPoint = [float(pStr[0]), float(pStr[1]), float(pStr[2])]
-            print MODULENAME, 'cameraFocalPoint=', cameraFocalPoint
-            camera3D.SetFocalPoint(cameraFocalPoint)
-        if "CameraViewUp" in attrKeys:
-            p = w.getAttribute("CameraViewUp")
-            pStr = p.split()
-            cameraViewUp = [float(pStr[0]), float(pStr[1]), float(pStr[2])]
-            print MODULENAME, 'cameraViewUp=', cameraViewUp
-            camera3D.SetViewUp(cameraViewUp)
-        if "CameraClippingRange" in attrKeys:
-            p = w.getAttribute("CameraClippingRange")
-            pStr = p.split()
-            cameraClippingRange = [float(pStr[0]), float(pStr[1])]
-            print MODULENAME, 'cameraClippingRange=', cameraClippingRange
-            camera3D.SetClippingRange(cameraClippingRange)
-        if "CameraDistance" in attrKeys:
-            p = w.getAttributeAsDouble("CameraDistance")
-            print MODULENAME, 'camera distance=', p
-            camera3D.SetDistance(p)
-
-        self.lastActiveWindow.ren.ResetCameraClippingRange()  # need to do this, else might have clipped actors
-
-
-    def __savePlayerParams(self):
-        # print "THIS IS __saveScrDesc"
-        filter = "Player parameters File (*.txt )"  # self._getOpenFileFilter()
-        self.playerParamsFileName = QFileDialog.getSaveFileName( \
-            self.ui,
-            QApplication.translate('ViewManager', "Save Player Parameters File"),
-            os.getcwd(),
-            filter
-            )
-        #        if self.screenshotManager:
-        #            self.screenshotManager.writePlayerParamsFile(self.playerParamsFileName)
-
-        print MODULENAME, "playerParamsFileName=", self.playerParamsFileName
-        #        pFile = open(self.playerParamsFileName,'w')
-        #        pFile.write('size 512\n')
-        #        pFile.close()
-        #        from csv import writer
-        paramsDict = Configuration.getPlayerParams()
-        #        paramWriter = writer(open(self.playerParamsFileName, 'w'), delimiter=' ')
-        #        paramWriter.writerow(params)
-        paramFile = open(self.playerParamsFileName, 'w')
-        paramFile.write(repr(paramsDict))
-
-        #        for idx in paramsDict.keys():
-        #            paramFile.write(idx, repr(paramsDict))
-        paramFile.close()
-        print MODULENAME, 'paramsDict =', paramsDict
+    # def __savePlayerParams(self):
+    #     # print "THIS IS __saveScrDesc"
+    #     filter = "Player parameters File (*.txt )"  # self._getOpenFileFilter()
+    #     self.playerParamsFileName = QFileDialog.getSaveFileName( \
+    #         self.ui,
+    #         QApplication.translate('ViewManager', "Save Player Parameters File"),
+    #         os.getcwd(),
+    #         filter
+    #         )
+    #     #        if self.screenshotManager:
+    #     #            self.screenshotManager.writePlayerParamsFile(self.playerParamsFileName)
+    #
+    #     print MODULENAME, "playerParamsFileName=", self.playerParamsFileName
+    #     #        pFile = open(self.playerParamsFileName,'w')
+    #     #        pFile.write('size 512\n')
+    #     #        pFile.close()
+    #     #        from csv import writer
+    #     paramsDict = Configuration.getPlayerParams()
+    #     #        paramWriter = writer(open(self.playerParamsFileName, 'w'), delimiter=' ')
+    #     #        paramWriter.writerow(params)
+    #     paramFile = open(self.playerParamsFileName, 'w')
+    #     paramFile.write(repr(paramsDict))
+    #
+    #     #        for idx in paramsDict.keys():
+    #     #            paramFile.write(idx, repr(paramsDict))
+    #     paramFile.close()
+    #     print MODULENAME, 'paramsDict =', paramsDict
 
 
     def extractAddressIntFromVtkObject(self, _vtkObj):
@@ -2751,15 +2755,18 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # print 'BEFORE self.fieldTypes = ',self.fieldTypes
         windowsLayout = {}
 
-        for key, win in self.graphicsWindowDict.items():
+        for key, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
             print 'key, win = ', (key, win)
-            mdiWidget = self.findMDISubWindowForWidget(win)
-            print 'mdiwidget = ', mdiWidget
+            # mdiWidget = self.findMDISubWindowForWidget(win)
+            # print 'mdiwidget = ', mdiWidget
             # print 'Current scene name = ', win.getCurrentSceneNameAndType()
-            gwd = win.getGraphicsWindowData()
+            widget = win.widget()
+            if not widget.allowSaveLayout: continue
+
+            gwd = widget.getGraphicsWindowData()
             # fill size and position of graphics windows data using mdiWidget, NOT the internal widget such as GraphicsFrameWidget - sizes and positions are base on MID widet settings
-            gwd.winPosition = mdiWidget.pos()
-            gwd.winSize = mdiWidget.size()
+            gwd.winPosition = win.pos()
+            gwd.winSize = win.size()
 
             print 'getGraphicsWindowData=', gwd
             print 'toDict=', gwd.toDict()
@@ -2775,6 +2782,33 @@ class SimpleTabView(MainArea, SimpleViewManager):
             # # gfw = self.findMDISubWindowForWidget(self.lastActiveWindow)
             # gfw = self.lastActiveWindow
             # gfw.applyGraphicsWindowData(gwd)
+
+
+
+        # for key, win in self.graphicsWindowDict.items():
+        #     print 'key, win = ', (key, win)
+        #     mdiWidget = self.findMDISubWindowForWidget(win)
+        #     print 'mdiwidget = ', mdiWidget
+        #     # print 'Current scene name = ', win.getCurrentSceneNameAndType()
+        #     gwd = win.getGraphicsWindowData()
+        #     # fill size and position of graphics windows data using mdiWidget, NOT the internal widget such as GraphicsFrameWidget - sizes and positions are base on MID widet settings
+        #     gwd.winPosition = mdiWidget.pos()
+        #     gwd.winSize = mdiWidget.size()
+        #
+        #     print 'getGraphicsWindowData=', gwd
+        #     print 'toDict=', gwd.toDict()
+        #
+        #     windowsLayout[key] = gwd.toDict()
+        #
+        #     # Configuration.setSetting('WindowsLayout',windowsLayout)
+        #
+        #
+        #
+        #     # adding new widget
+        #     # self.addNewGraphicsWindow()
+        #     # # gfw = self.findMDISubWindowForWidget(self.lastActiveWindow)
+        #     # gfw = self.lastActiveWindow
+        #     # gfw.applyGraphicsWindowData(gwd)
 
             # break
         print 'AFTER self.fieldTypes = ', self.fieldTypes
@@ -3045,7 +3079,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # self.__layoutGraphicsWindows()
 
-
+        # MDIFIX
         self.__restoreWindowsLayout()
 
     def __restoreWindowsLayout(self):
@@ -3056,9 +3090,49 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # # first we convert window keys to integers 
         # int windowsLayoutDict.keys()
 
-        # restore graphics windows first
+        # import time
+        # time.sleep(2)
 
+        # # first will check if window with id 0 was saved if, not than we are closing main window which should be open at this point
+        # if str(0) not in windowsLayoutDict.keys():
+        #     self.closeActiveSubWindowSlot()
+
+        # first restore main window with id 0 - this window is the only window open at this point and it is open by default when simulation is started
+        # that's why we have to reat it in a special way
+        try:
+            windowDataDict0 = windowsLayoutDict[str(0)]
+
+            from Graphics.GraphicsWindowData import GraphicsWindowData
+
+            gwd = GraphicsWindowData()
+
+            gwd.fromDict(windowDataDict0)
+
+            if gwd.winType == GRAPHICS_WINDOW_LABEL:
+                gfw = self.lastActiveWindow
+
+                graphicsWindow = self.findMDISubWindowForWidget(gfw)
+
+                graphicsWindow.resize(gwd.winSize)
+                graphicsWindow.move(gwd.winPosition)
+
+                gfw.applyGraphicsWindowData(gwd)
+
+
+
+        except KeyError:
+            # in case there is no main window with id 0 in the settings we kill the main window
+            gfw = self.lastActiveWindow
+            graphicsWindow = self.findMDISubWindowForWidget(gfw)
+            graphicsWindow.close()
+            self.removeWindowFromRegistry(graphicsWindow)
+
+            pass
+
+        # restore graphics windows first
         for windowId, windowDataDict in windowsLayoutDict.iteritems():
+            if windowId == str(0):
+                continue
 
             # gfw = self.findMDISubWindowForWidget(self.lastActiveWindow)
             from Graphics.GraphicsWindowData import GraphicsWindowData
@@ -3067,24 +3141,44 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             gwd.fromDict(windowDataDict)
 
-            if gwd.winType != 'graphics':
+            if gwd.winType != GRAPHICS_WINDOW_LABEL:
                 continue
 
             if gwd.sceneName not in self.fieldTypes.keys():
-                continue  # we only create window for a scenNames (e.g. fieldNames) that exist in the simulation
+                continue  # we only create window for a sceneNames (e.g. fieldNames) that exist in the simulation
 
-            if windowId != str(
-                    1):  # window with id one is created by addVTKWindowToWorkspaceo at this point there is already first window in the simulation
-                self.addNewGraphicsWindow()
 
-            gfw = self.lastActiveWindow
+            graphicsWindow = self.addNewGraphicsWindow()
+            gfw = graphicsWindow.widget()
 
-            mdiWindow = self.findMDISubWindowForWidget(gfw)
-            mdiWindow.resize(gwd.winSize)
-            mdiWindow.move(gwd.winPosition)
+            # mdiWindow = self.findMDISubWindowForWidget(gfw)
+            graphicsWindow.resize(gwd.winSize)
+            graphicsWindow.move(gwd.winPosition)
 
             gfw.applyGraphicsWindowData(gwd)
 
+            print 'self.lastActiveWindow=',self.lastActiveWindow
+            print 'gwd.winSize=',gwd.winSize
+            # time.sleep(2)
+
+
+            # # MDIFIX
+            # if windowId != str(0):  # window with id one is created by addVTKWindowToWorkspaceo at this point there is already first window in the simulation
+            #     self.addNewGraphicsWindow()
+
+
+            # gfw = self.lastActiveWindow
+            #
+            # mdiWindow = self.findMDISubWindowForWidget(gfw)
+            # mdiWindow.resize(gwd.winSize)
+            # mdiWindow.move(gwd.winPosition)
+            #
+            # gfw.applyGraphicsWindowData(gwd)
+            #
+            # print 'self.lastActiveWindow=',self.lastActiveWindow
+            # print 'gwd.winSize=',gwd.winSize
+            # time.sleep(2)
+            #
 
             # mdiWindow.setFixedSize(gwd.winSize)
 

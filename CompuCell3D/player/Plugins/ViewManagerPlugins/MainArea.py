@@ -1,43 +1,86 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-
+from collections import defaultdict
+from enums import *
 
 class Inventory:
     def __init__(self):
-        self.inventory_dict = {}
+
+        self.inventory_dict = defaultdict(lambda: defaultdict(int))
+
+        # self.inventory_dict = {}
         self.inventory_counter = 0
 
-    def add_to_inventory(self,  obj):
+    def get_counter(self):
 
-        self.inventory_dict[self.inventory_counter] = obj
+        return self.inventory_counter
+
+    def add_to_inventory(self,  obj, obj_type):
+
+        self.inventory_dict[obj_type][self.inventory_counter] = obj
         self.inventory_counter += 1
+        print 'self.inventory_dict=',self.inventory_dict
 
-    def remove_from_inventory_by_name(self, obj_name):
-        try:
-            del self.inventory_dict[obj_name]
-            self.inventory_counter -= 1
-        except KeyError:
-            pass
+        # self.inventory_dict[self.inventory_counter] = obj
+        # self.inventory_counter += 1
+
+    # def remove_from_inventory_by_name(self, obj_name):
+    #     try:
+    #         del self.inventory_dict[obj_name]
+    #         self.inventory_counter -= 1
+    #     except KeyError:
+    #         pass
+    def getWindowsItems(self, win_type):
+
+        for winId, win in self.inventory_dict[win_type].iteritems():
+            yield winId, win
 
     def remove_from_inventory(self, obj):
-        obj_name_to_remove = None
-        for key, val in self.inventory_dict.iteritems():
 
-            if val == obj:
 
-                obj_name_to_remove = key
-                break
 
-        if obj_name_to_remove is not None:
+        winTypeToRemove = None
+        winIdToRemove = None
+
+        for winType, winDict in self.inventory_dict.iteritems():
+            for winId, win in winDict.iteritems():
+
+                if win == obj:
+                    winIdToRemove = winId
+                    winTypeToRemove = winType
+
+                    break
+
+        if winIdToRemove is not None and winTypeToRemove is not None:
 
             try:
-                del self.inventory_dict[obj_name_to_remove]
+                del self.inventory_dict[winTypeToRemove][winIdToRemove]
             except KeyError:
                 pass
 
+        print 'AFTER REMOVING WINDOW self.inventory_dict = ', self.inventory_dict
+        # import sys
+        # sys.exit()
+        # obj_name_to_remove = None
+        # for key, val in self.inventory_dict.iteritems():
+        #
+        #     if val == obj:
+        #
+        #         obj_name_to_remove = key
+        #         break
+        #
+        # if obj_name_to_remove is not None:
+        #
+        #     try:
+        #         del self.inventory_dict[obj_name_to_remove]
+        #     except KeyError:
+        #         pass
 
 
-    def values(self):return self.inventory_dict.values()
+
+    # def values(self):return self.inventory_dict.values()
+    def values(self):
+        return [val for dict_val in self.inventory_dict.values() for val in dict_val.values()]
 
     def __str__(self):
         return self.inventory_dict.__str__()
@@ -81,12 +124,26 @@ class MainArea(QWidget):
 
         # gfw = GraphicsFrameWidget(parent=None, originatingWidget=self)
         # self.mainGraphicsWindow = gfw
+        import Graphics
+        print 'INSTANCE OF GraphicsFrameWidget =  ', isinstance(widget, Graphics.GraphicsFrameWidget.GraphicsFrameWidget)
+        obj_type = 'other'
+        if isinstance(widget, Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
+            # obj_type = 'graphics'
+            obj_type = GRAPHICS_WINDOW_LABEL
+        elif isinstance(widget, Graphics.PlotFrameWidget.PlotFrameWidget):
+            obj_type = PLOT_WINDOW_LABEL
+            # obj_type = 'plot'
 
-        dockWidget = self.createDockWindow(name="Graphincs Window") # graphics dock window
-        self.setupDockWindow(dockWidget, Qt.NoDockWidgetArea, widget, self.trUtf8("Graphincs Window"))
+        window_name = obj_type + ' ' + str(self.win_inventory.get_counter())
+        dockWidget = self.createDockWindow(name=window_name) # graphics dock window
+        self.setupDockWindow(dockWidget, Qt.NoDockWidgetArea, widget, self.trUtf8(window_name))
+        # dockWidget = self.createDockWindow(name="Graphincs Window") # graphics dock window
+        # self.setupDockWindow(dockWidget, Qt.NoDockWidgetArea, widget, self.trUtf8("Graphincs Window"))
 
         # inserting widget into dictionary
-        self.win_inventory.add_to_inventory( obj = dockWidget)
+        # self.win_inventory.add_to_inventory( obj = dockWidget)
+        self.win_inventory.add_to_inventory(obj=dockWidget, obj_type=obj_type)
+
         # self.windowInventoryDict[self.windowInventoryCounter] = dockWidget
         #
         # self.windowInventoryCounter += 1
