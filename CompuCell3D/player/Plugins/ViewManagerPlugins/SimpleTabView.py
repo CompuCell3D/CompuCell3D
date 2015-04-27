@@ -52,12 +52,22 @@ except:
     print 'STView: sys.path=', sys.path
 
 
+# *********** TO DO
+# 1. UNCOMMENT # if Configuration.getSetting('FloatingWindows'):
+# 2. ADD WEAKREF TO PLOT FRAME WIDGET< PLOT INTERFACE CARTESIAN ETC...
+# 3. CELLS OFF, ON removes borders and outline
+# 4. CHECK IF IT IS NECESSARY TO FIX CLOSE EVENTS AND REMOVE GRAPHICS WIDGET PLOT WIDGET FROM ANY TYPE OF REGISTRIES
+# 5. GET RID OF self.saveWindowsGeometryAct
+# 6. FIX updateWindow menu
+
+from MainArea import MainArea
+# if Configuration.getSetting('FloatingWindows'):
+#     from MainArea import MainArea
+# else:
+#     from MainAreaMdi import MainArea
 
 
-if Configuration.getSetting('FloatingWindows'):
-    from MainArea import MainArea
-else:
-    from MainAreaMdi import MainArea
+
 
 # class SimpleTabView(QMdiArea, SimpleViewManager):
 class SimpleTabView(MainArea, SimpleViewManager):
@@ -163,20 +173,23 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.screenshotNumberOfDigits = 10  #this determines how many digits screenshot number of screenshot file name should have
 
-        self.windowCounter = 0
-        self.windowDict = {}
-        self.plotWindowDict = {}
-        self.graphicsWindowDict = {}
-        self.graphicsWindowVisDict = {}
+        # self.windowCounter = 0
+        # self.windowDict = {}
+        # self.plotWindowDict = {}
+        # self.graphicsWindowDict = {}
+        self.graphicsWindowVisDict = {} # stores visualization seeetings for each open window
 
         # This extra dictionary is needed to map widget number to mdiWidget. When inserting window to  
         # mdiArea it is wrapped as QMdiSubWindow and QMdiSubWindow are used as identifiers 
         # in managing QMdiArea. If we sore only underlying widgets (i.e. those that QMdisubwindow wrap 
         # then we will not have access to QMdiSubWindow when e.g. we want to make it active )
         # We might also use subWindowList to deal with it, but for now we will use the solution with extra dictionary.
-        self.mdiWindowDict = {}
+        # self.mdiWindowDict = {}
 
-        self.graphicsWindowActionsDict = {}
+        # self.graphicsWindowActionsDict = {}
+
+        self.lastActiveRealWindow = None
+
         self.lastActiveWindow = None
         self.lastPositionMainGraphicsWindow = None
         self.newWindowDefaultPlane = None
@@ -191,7 +204,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         #        print MODULENAME,'__init__:   after prepareForNewSimulation(),  self.mysim = ',self.mysim
 
         self.setParams()
-        self.keepOldTabs = False  #this flag sets if tabs should be removed before creating new one or not
+        # self.keepOldTabs = False  #this flag sets if tabs should be removed before creating new one or not
         self.mainGraphicsWindow = None  # vs.  lastActiveWindow
 
         # determine if some relevant plugins are defined in the model
@@ -213,7 +226,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.consecutiveRunCounter = 0
 
         self.maxNumberOfConsecutiveRuns = 50
-        #extracting from the runScript maximum number of consecutive runs
+        # extracting from the runScript maximum number of consecutive runs
         try:
             self.maxNumberOfConsecutiveRuns = int(os.environ["MAX_NUMBER_OF_CONSECUTIVE_RUNS"])
         except:  # if for whatever reason we cannot do it we stay with the default value
@@ -249,6 +262,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         return
 
     def setActiveSubWindowCustomSlot(self, window):
+        #MDIFIX
+        return
+
         # print 'INSIDE setActiveSubWindowCustomSlot'
         #        print MODULENAME,"setActiveSubWindow: window=",window
         #        print MODULENAME,'\n ------------------  setActiveSubWindowCustomSlot():  self.mdiWindowDict =', self.mdiWindowDict
@@ -260,11 +276,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # print 'WINDOW=',window
 
         mdiWindow = self.findMDISubWindowForWidget(window)
+
         if mdiWindow:
             #            self.setActiveSubWindow(window)
 
             # MDIFIX
             self.setActiveSubWindow(mdiWindow)
+
+            self.lastActiveRealWindow = mdiWindow
 
             self.lastActiveWindow = window
 
@@ -335,139 +354,108 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # adding graphics windows
         counter = 0
-        #        print MODULENAME,'------- updateWindowMenu():  -------------------------------------------------'
-        #        print MODULENAME,'------- updateWindowMenu():  self.graphicsWindowDict.keys()=',self.graphicsWindowDict.keys()
-        #        print MODULENAME,'------- updateWindowMenu():  self.graphicsWindowDict=',self.graphicsWindowDict
-        #        print MODULENAME,'------- updateWindowMenu():  self.graphicsWindowVisDict=',self.graphicsWindowVisDict
-        #        print MODULENAME,'------- updateWindowMenu():  self.lastActiveWindow=',self.lastActiveWindow
-        for windowName in self.graphicsWindowDict.keys():
-            graphicsWindow = self.graphicsWindowDict[windowName]
+
+        # for windowName in self.graphicsWindowDict.keys():
+        for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+            graphicsWidget = win.widget()
+            if graphicsWidget.is_screenshot_widget:
+                continue
+
+
             if counter < 9:
-                actionText = self.tr("&%1 %2").arg(counter + 1).arg(graphicsWindow.windowTitle())
+                actionText = self.tr("&%1 %2").arg(counter + 1).arg(win.windowTitle())
             else:
-                actionText = self.tr("%1 %2").arg(counter + 1).arg(graphicsWindow.windowTitle())
+                actionText = self.tr("%1 %2").arg(counter + 1).arg(win.windowTitle())
 
             action = windowMenu.addAction(actionText)
             action.setCheckable(True)
-            myFlag = self.lastActiveWindow == graphicsWindow
-            #            print MODULENAME,'------- updateWindowMenu():  setting winId,flag=',graphicsWindow.winId(),myFlag
-            #            print MODULENAME,'------- updateWindowMenu():  lastActiveWindow=',self.lastActiveWindow.winId()
+            myFlag = self.lastActiveWindow == graphicsWidget
             action.setChecked(myFlag)
-            #            if self.lastActiveWindow==graphicsWindow:
-            #                 print "               (in loop)  CHECKING window title = ",self.lastActiveWindow.windowTitle()
-            # action.triggered.connect(self.windowMapper.map)
 
             self.connect(action, SIGNAL("triggered()"), self.windowMapper, SLOT("map()"))
-            self.windowMapper.setMapping(action, graphicsWindow)
+            self.windowMapper.setMapping(action, win)
             counter += 1
 
-        #        if self.lastActiveWindow is not None:
-        #            print "               (after loop)  CHECKED lastActiveWindow title = ",self.lastActiveWindow.windowTitle()
-
-        #        self.graphicsWindowVisDict[self.lastActiveWindow.winId()] = (self.cellsAct.isChecked(),self.borderAct.isChecked(), \
-        #                                      self.clusterBorderAct.isChecked(),self.cellGlyphsAct.isChecked(),self.FPPLinksAct.isChecked() )
-        #        self.connect(self.cellsAct,    SIGNAL('triggered(bool)'),  self.__checkCells)
-        #        self.connect(self.borderAct,    SIGNAL('triggered(bool)'),  self.__checkBorder)
-        #        self.connect(self.clusterBorderAct,    SIGNAL('triggered(bool)'),  self.__checkClusterBorder)
-        #        self.connect(self.cellGlyphsAct,  SIGNAL('triggered(bool)'),  self.__checkCellGlyphs)
-        #        self.connect(self.FPPLinksAct,  SIGNAL('triggered(bool)'),  self.__checkFPPLinks)
-
-        #        if (self.lastActiveWindow is not None):
-        #            self.setActiveWindowVisFlags()   # rwh: do this?
-
-        #        if self.lastActiveWindow is not None:
-        #            print MODULENAME,'------- updateWindowMenu():   self.lastActiveWindow.winId()=',self.lastActiveWindow.winId()
-        #        if (self.lastActiveWindow is not None) and (self.lastActiveWindow.winId() in self.graphicsWindowVisDict.keys()):
-        ##            self.simulation.drawMutex.lock()
-        #            print MODULENAME,'------- updateWindowMenu():  updating *Act.setChecked: cellsAct=',self.graphicsWindowVisDict[self.lastActiveWindow.winId()][0]
-        #            print MODULENAME,'------- updateWindowMenu():  updating *Act.setChecked: borderAct=',self.graphicsWindowVisDict[self.lastActiveWindow.winId()][1]
-        #            self.cellsAct.setChecked(self.graphicsWindowVisDict[self.lastActiveWindow.winId()][0])
-        #            self.borderAct.setChecked(self.graphicsWindowVisDict[self.lastActiveWindow.winId()][1])
-        #            self.clusterBorderAct.setChecked(self.graphicsWindowVisDict[self.lastActiveWindow.winId()][2])
-        #            self.cellGlyphsAct.setChecked(self.graphicsWindowVisDict[self.lastActiveWindow.winId()][3])
-        #            self.FPPLinksAct.setChecked(self.graphicsWindowVisDict[self.lastActiveWindow.winId()][4])
-        #            self.simulation.drawMutex.unlock()
-
-        # windows = self.mdiArea.subWindowList()
-        # self.separatorAct.setVisible(len(windows) != 0)
-
-        # for i, window in enumerate(windows):
-        # child = window.widget()
-
-        # if i < 9:
-        # text = self.tr("&%1 %2").arg(i + 1).arg(child.userFriendlyCurrentFile())
-        # else:
-        # text = self.tr("%1 %2").arg(i + 1).arg(child.userFriendlyFile())
-
-        # action = self.windowMenu.addAction(text)
-        # action.setCheckable(True)
-        # action.setChecked(child == self.activeMdiChild())
-        # action.triggered.connect(self.windowMapper.map)
-        # self.windowMapper.setMapping(action, child)
-
-    def findMDISubWindowForWidget(self, _widget):
-        # we look here for an mdiWindows that has widget which is same as _widget
-        for windowName, mdiWindow in self.mdiWindowDict.iteritems():
-            try:
-                if self.windowDict[windowName] == _widget:
-                    return mdiWindow  #
-            except LookupError, e:
-                pass
-        return None
-
-    def addGraphicsWindowToWindowRegistry(self, _window):
-
-        self.graphicsWindowDict[self.windowCounter] = _window
-        self.windowDict[self.windowCounter] = _window
-
-    def addMDIWindowToRegistry(self, _mdiWindow):
-
-        self.mdiWindowDict[self.windowCounter] = _mdiWindow
-
-    def removeWindowFromRegistry(self, _window):
-
-        _windowWidget = _window.widget()
-        self.removeWindowWidgetFromRegistry(_windowWidget=_windowWidget)
-
-    def removeWindowWidgetFromRegistry(self, _windowWidget):
-
-        #remove window from general-purpose self.windowDict
+        # for windowName in self.graphicsWindowDict.keys():
+        #     graphicsWindow = self.graphicsWindowDict[windowName]
+        #     if counter < 9:
+        #         actionText = self.tr("&%1 %2").arg(counter + 1).arg(graphicsWindow.windowTitle())
+        #     else:
+        #         actionText = self.tr("%1 %2").arg(counter + 1).arg(graphicsWindow.windowTitle())
+        #
+        #     action = windowMenu.addAction(actionText)
+        #     action.setCheckable(True)
+        #     myFlag = self.lastActiveWindow == graphicsWindow
+        #     action.setChecked(myFlag)
+        #
+        #     self.connect(action, SIGNAL("triggered()"), self.windowMapper, SLOT("map()"))
+        #     self.windowMapper.setMapping(action, graphicsWindow)
+        #     counter += 1
 
 
-        for windowName, windowWidget in self.windowDict.iteritems():
+    # def findMDISubWindowForWidget(self, _widget):
+    #     # we look here for an mdiWindows that has widget which is same as _widget
+    #     for windowName, mdiWindow in self.mdiWindowDict.iteritems():
+    #         try:
+    #             if self.windowDict[windowName] == _widget:
+    #                 return mdiWindow  #
+    #         except LookupError, e:
+    #             pass
+    #     return None
 
-            if windowWidget == _windowWidget:
-                del self.windowDict[windowName]
+    # def addGraphicsWindowToWindowRegistry(self, _window):
+    #
+    #     self.graphicsWindowDict[self.windowCounter] = _window
+    #     self.windowDict[self.windowCounter] = _window
 
-                del self.mdiWindowDict[windowName]
+    # def addMDIWindowToRegistry(self, _mdiWindow):
+    #
+    #     self.mdiWindowDict[self.windowCounter] = _mdiWindow
 
-                if self.mainGraphicsWindow == windowWidget:
-                    self.mainGraphicsWindow = None
+    # def removeWindowFromRegistry(self, _window):
+    #
+    #     _windowWidget = _window.widget()
+    #     self.removeWindowWidgetFromRegistry(_windowWidget=_windowWidget)
 
-                if self.lastActiveWindow == windowWidget:
-                    self.lastActiveWindow = None
-
-                break
-
-        #try removing window from graphics Window dict
-        for windowName, windowWidget in self.graphicsWindowDict.iteritems():
-
-            if windowWidget == _windowWidget:
-                del self.graphicsWindowDict[windowName]
-                break
-
-
-                # def addNewPlotWindow(self):
-                # # from PlotManager import CustomPlot
-                # # customPlot=CustomPlot(self.plotManager)
-                # # customPlot.initPlot()
-
-                # # print "ADDING NEW WINDOW"
-                # # sys.exit()
-                # # import time
-                # # time.sleep(2)
-
-                # return self.plotManager.addNewPlotWindow()
+    # def removeWindowWidgetFromRegistry(self, _windowWidget):
+    #
+    #     #remove window from general-purpose self.windowDict
+    #
+    #
+    #     for windowName, windowWidget in self.windowDict.iteritems():
+    #
+    #         if windowWidget == _windowWidget:
+    #             del self.windowDict[windowName]
+    #
+    #             del self.mdiWindowDict[windowName]
+    #
+    #             if self.mainGraphicsWindow == windowWidget:
+    #                 self.mainGraphicsWindow = None
+    #
+    #             if self.lastActiveWindow == windowWidget:
+    #                 self.lastActiveWindow = None
+    #
+    #             break
+    #     # MDIFIX
+    #     # #try removing window from graphics Window dict
+    #     # for windowName, windowWidget in self.graphicsWindowDict.iteritems():
+    #     #
+    #     #     if windowWidget == _windowWidget:
+    #     #         del self.graphicsWindowDict[windowName]
+    #     #         break
+    #
+    #
+    #             # def addNewPlotWindow(self):
+    #             # # from PlotManager import CustomPlot
+    #             # # customPlot=CustomPlot(self.plotManager)
+    #             # # customPlot.initPlot()
+    #
+    #             # # print "ADDING NEW WINDOW"
+    #             # # sys.exit()
+    #             # # import time
+    #             # # time.sleep(2)
+    #
+    #             # return self.plotManager.addNewPlotWindow()
 
     # def createDockWindow(self, name):
     #     """
@@ -510,20 +498,23 @@ class SimpleTabView(MainArea, SimpleViewManager):
             return
         self.simulation.drawMutex.lock()
 
-        self.windowCounter += 1
+        # MDIFIX
+        # self.windowCounter += 1
 
         #MDIFIX
 
         newWindow = GraphicsFrameWidget(parent=None, originatingWidget=self)
         # newWindow = GraphicsFrameWidget(self)  # "newWindow" is actually a QFrame
 
-
-        self.addGraphicsWindowToWindowRegistry(newWindow)
+        #MDIFIX
+        # self.addGraphicsWindowToWindowRegistry(newWindow)
 
         # self.windowDict[self.windowCounter] = newWindow
-        # self.graphicsWindowDict[self.windowCounter] = newWindow  
+        # self.graphicsWindowDict[self.windowCounter] = newWindow
 
-        newWindow.setWindowTitle("Aux Graphics Window " + str(self.windowCounter))
+        # MDIFIX
+        # newWindow.setWindowTitle("Aux Graphics Window " + str(self.windowCounter))
+
         newWindow.setZoomItems(self.zitems)  # Set zoomFixed parameters
 
         self.lastActiveWindow = newWindow
@@ -557,11 +548,17 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # self.mdiWindowDict[self.windowCounter] = self.addSubWindow(newWindow)
         mdiWindow = self.addSubWindow(newWindow)
 
+        # MDIFIX
+        self.lastActiveRealWindow = mdiWindow
+
         # # # mdiWindow.setFixedSize(300,300)
         # # # mdiWindow.move(0,0)
 
-        self.addMDIWindowToRegistry(mdiWindow)
-        # self.mdiWindowDict[self.windowCounter] 
+        #MDIFIX
+        # self.addMDIWindowToRegistry(mdiWindow)
+
+
+        # self.mdiWindowDict[self.windowCounter]
         self.updateActiveWindowVisFlags()
 
         newWindow.show()
@@ -655,13 +652,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
         #        mdiSubWindow.setGeometry(100,100,400,300)  # rwh: this is how we would specify the position/size of the window
 
 
+        # MDIFIX
+        # self.windowCounter += 1
 
-        self.windowCounter += 1
-        self.addGraphicsWindowToWindowRegistry(self.mainGraphicsWindow)
-        self.addMDIWindowToRegistry(mdiSubWindow)
+        # self.addGraphicsWindowToWindowRegistry(self.mainGraphicsWindow)
+        # self.addMDIWindowToRegistry(mdiSubWindow)
 
-        self.graphicsWindowVisDict = {}  # re-init this dict
-        #        print MODULENAME, '--------- addVTKWindowToWorkspace: graphicsWindowDict= ',self.graphicsWindowDict
+        # self.graphicsWindowVisDict = {}  # re-init this dict
+        # print MODULENAME, '--------- addVTKWindowToWorkspace: graphicsWindowDict= ',self.graphicsWindowDict
 
         # # # self.windowDict[self.windowCounter] = self.mainGraphicsWindow
         # # # self.graphicsWindowDict[self.windowCounter] = self.mainGraphicsWindow        
@@ -671,129 +669,146 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # self.windowDict[self.windowCounter]=mdiSubWindow
         # self.graphicsWindowDict[self.windowCounter]=mdiSubWindow
 
-        self.mainGraphicsWindow.setWindowTitle("Main Graphics Window " + str(self.windowCounter))
+        # MDIFIX
+        # self.mainGraphicsWindow.setWindowTitle("Main Graphics Window " + str(self.windowCounter))
+
         self.lastActiveWindow = self.mainGraphicsWindow
+
+        #MDIFIX
+        self.lastActiveRealWindow = mdiSubWindow
 
         self.setActiveSubWindowCustomSlot(self.mainGraphicsWindow)  # rwh: do this to "check" this in the "Window" menu
 
+
         self.updateWindowMenu()
         self.updateActiveWindowVisFlags()
+        print self.graphicsWindowVisDict
 
 
-
-    def removeAllVTKWindows(self, _leaveFirstWindowFlag=False):
-
-        windowNames = self.graphicsWindowDict.keys()
-        print 'windowNames=', windowNames
-        print 'self.graphicsWindowDict=', self.graphicsWindowDict
-
-        if self.MDI_ON:
-
-            for windowName in windowNames:
-                if _leaveFirstWindowFlag and windowName == 1:
-                    # print "leaving first window"
-                    continue
-
-                self.setActiveSubWindow(self.mdiWindowDict[windowName])
-                self.closeActiveSubWindowSlot()
-
-                continue
-        else:
-            for windowName, window in self.graphicsWindowDict.iteritems():
-                if _leaveFirstWindowFlag and windowName == 1:
-                    # print "leaving first window"
-                    continue
-
-                    window.close()
-                    self.removeWindowFromRegistry(window)
-
-        print 'GOT HERE REMOVE ALL VTK'
-        print 'self.graphicsWindowDict=', self.graphicsWindowDict
-        #MDIFIX
-        print 'len(self.subWindowList())=', len(self.subWindowList())
-
-
-
-        self.updateWindowMenu()
-
-
-    def removeAllPlotWindows(self, _leaveFirstWindowFlag=False):
-
-        windowNames = self.plotWindowDict.keys()
-        if self.MDI_ON:
-            for windowName in windowNames:
-                # print "windowName=",windowName
-                # print "self.graphicsWindowDict=",self.graphicsWindowDict
-                if _leaveFirstWindowFlag and windowName == 1:
-                    # print "leaving first window"
-                    continue
-                # self.setActiveSubWindow(self.plotWindowDict[windowName])
-                self.setActiveSubWindow(self.mdiWindowDict[windowName])
-                self.closeActiveSubWindowSlot()
-        else:
-            for windowName, window in self.plotWindowDict.iteritems():
-
-                if _leaveFirstWindowFlag and windowName == 1:
-                    # print "leaving first window"
-                    continue
-                window.close()
-                # MDIFIX - have to see how to handle plots and plots registry...
-
-                # self.removeWindowFromRegistry(window)
-                # self.closeActiveSubWindowSlot()
+    # def removeAllVTKWindows(self, _leaveFirstWindowFlag=False):
+    #
+    #     windowNames = self.graphicsWindowDict.keys()
+    #     print 'windowNames=', windowNames
+    #     print 'self.graphicsWindowDict=', self.graphicsWindowDict
+    #
+    #     if self.MDI_ON:
+    #
+    #         for windowName in windowNames:
+    #             if _leaveFirstWindowFlag and windowName == 1:
+    #                 # print "leaving first window"
+    #                 continue
+    #
+    #             self.setActiveSubWindow(self.mdiWindowDict[windowName])
+    #             self.closeActiveSubWindowSlot()
+    #
+    #             continue
+    #     else:
+    #         for windowName, window in self.graphicsWindowDict.iteritems():
+    #             if _leaveFirstWindowFlag and windowName == 1:
+    #                 # print "leaving first window"
+    #                 continue
+    #
+    #                 window.close()
+    #                 self.removeWindowFromRegistry(window)
+    #
+    #     print 'GOT HERE REMOVE ALL VTK'
+    #     print 'self.graphicsWindowDict=', self.graphicsWindowDict
+    #     #MDIFIX
+    #     print 'len(self.subWindowList())=', len(self.subWindowList())
+    #
+    #
+    #
+    #     self.updateWindowMenu()
 
 
-        self.updateWindowMenu()
-        self.plotWindowDict = {}
-        self.plotManager.reset()
-        # from PlotManagerSetup import createPlotManager
-        # self.plotManager=createPlotManager(self) # object that is responsible for creating and managing plot windows sdo that they are accessible from steppable level 
+    # def removeAllPlotWindows(self, _leaveFirstWindowFlag=False):
+    #
+    #     windowNames = self.plotWindowDict.keys()
+    #     if self.MDI_ON:
+    #         for windowName in windowNames:
+    #             # print "windowName=",windowName
+    #             # print "self.graphicsWindowDict=",self.graphicsWindowDict
+    #             if _leaveFirstWindowFlag and windowName == 1:
+    #                 # print "leaving first window"
+    #                 continue
+    #             # self.setActiveSubWindow(self.plotWindowDict[windowName])
+    #             self.setActiveSubWindow(self.mdiWindowDict[windowName])
+    #             self.closeActiveSubWindowSlot()
+    #     else:
+    #         for windowName, window in self.plotWindowDict.iteritems():
+    #
+    #             if _leaveFirstWindowFlag and windowName == 1:
+    #                 # print "leaving first window"
+    #                 continue
+    #             window.close()
+    #             # MDIFIX - have to see how to handle plots and plots registry...
+    #
+    #             # self.removeWindowFromRegistry(window)
+    #             # self.closeActiveSubWindowSlot()
+    #
+    #
+    #     self.updateWindowMenu()
+    #     self.plotWindowDict = {}
+    #     self.plotManager.reset()
+    #     # from PlotManagerSetup import createPlotManager
+    #     # self.plotManager=createPlotManager(self) # object that is responsible for creating and managing plot windows sdo that they are accessible from steppable level
 
-    def removeAuxiliaryGraphicsWindows(self):
-        self.removeAllVTKWindows(True)
+    # def removeAuxiliaryGraphicsWindows(self):
+    #     self.removeAllVTKWindows(True)
 
-    def saveWindowsGeometry(
-            self):  # want mdiWindowDict (PyQt4.QtGui.QMdiSubWindow), NOT windowDict (Graphics.GraphicsFrameWidget.GraphicsFrameWidget)
-        print MODULENAME, '--------> windows.xml'
-        #        print MODULENAME,'self.mdiWindowDict=',self.mdiWindowDict
-        fpout = open("windows.xml", "w")
-        fpout.write('<Windows>\n')
-
-        #        print 'dir()=', dir(self.mdiWindowDict[self.mdiWindowDict.keys()[0]])
-        #        for windowName in self.graphicsWindowDict.keys():
-        for windowName in self.mdiWindowDict.keys():
-            #            print 'windowName=', windowName
-            #            print 'windowTitle=', self.mdiWindowDict[windowName].windowTitle()
-            line = '    <Window Name="%s">\n' % self.mdiWindowDict[windowName].windowTitle()
-            fpout.write(line)
-            #            print 'mdi x,y=', self.mdiWindowDict[windowName].pos().x(),self.mdiWindowDict[windowName].pos().y()
-            #            print 'parentWidget pos=', self.windowDict[windowName].parentWidget().pos()
-            #            print 'type(self.windowDict[windowName])=', type(self.windowDict[windowName])
-            #            print 'type(self.mdiWindowDict[windowName])=', type(self.mdiWindowDict[windowName])
-            #            print 'mdi width,height=', self.mdiWindowDict[windowName].geometry().width(), self.mdiWindowDict[windowName].geometry().height()
-            line = '    <Location x="%d" y="%d"/>\n' % (
-                self.mdiWindowDict[windowName].pos().x(), self.mdiWindowDict[windowName].pos().y())
-            fpout.write(line)
-            line = '    <Size width="%d" height="%d"/>\n' % (
-                self.mdiWindowDict[windowName].geometry().width(), self.mdiWindowDict[windowName].geometry().height())
-            fpout.write(line)
-            fpout.write('  </Window>\n')
-
-        fpout.write('</Windows>\n')
-        fpout.close()
+    # def saveWindowsGeometry(
+    #         self):  # want mdiWindowDict (PyQt4.QtGui.QMdiSubWindow), NOT windowDict (Graphics.GraphicsFrameWidget.GraphicsFrameWidget)
+    #     print MODULENAME, '--------> windows.xml'
+    #     #        print MODULENAME,'self.mdiWindowDict=',self.mdiWindowDict
+    #     fpout = open("windows.xml", "w")
+    #     fpout.write('<Windows>\n')
+    #
+    #     #        print 'dir()=', dir(self.mdiWindowDict[self.mdiWindowDict.keys()[0]])
+    #     #        for windowName in self.graphicsWindowDict.keys():
+    #     for windowName in self.mdiWindowDict.keys():
+    #         #            print 'windowName=', windowName
+    #         #            print 'windowTitle=', self.mdiWindowDict[windowName].windowTitle()
+    #         line = '    <Window Name="%s">\n' % self.mdiWindowDict[windowName].windowTitle()
+    #         fpout.write(line)
+    #         #            print 'mdi x,y=', self.mdiWindowDict[windowName].pos().x(),self.mdiWindowDict[windowName].pos().y()
+    #         #            print 'parentWidget pos=', self.windowDict[windowName].parentWidget().pos()
+    #         #            print 'type(self.windowDict[windowName])=', type(self.windowDict[windowName])
+    #         #            print 'type(self.mdiWindowDict[windowName])=', type(self.mdiWindowDict[windowName])
+    #         #            print 'mdi width,height=', self.mdiWindowDict[windowName].geometry().width(), self.mdiWindowDict[windowName].geometry().height()
+    #         line = '    <Location x="%d" y="%d"/>\n' % (
+    #             self.mdiWindowDict[windowName].pos().x(), self.mdiWindowDict[windowName].pos().y())
+    #         fpout.write(line)
+    #         line = '    <Size width="%d" height="%d"/>\n' % (
+    #             self.mdiWindowDict[windowName].geometry().width(), self.mdiWindowDict[windowName].geometry().height())
+    #         fpout.write(line)
+    #         fpout.write('  </Window>\n')
+    #
+    #     fpout.write('</Windows>\n')
+    #     fpout.close()
 
     def minimizeAllGraphicsWindows(self):
         if not self.MDI_ON: return
 
-        for windowName in self.graphicsWindowDict.keys():
-            self.windowDict[windowName].showMinimized()
+        for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+            if win.widget().is_screenshot_widget:
+                continue
+            win.showMinimized()
+
+
+        # for windowName in self.graphicsWindowDict.keys():
+        #     self.windowDict[windowName].showMinimized()
 
     def restoreAllGraphicsWindows(self):
 
         if not self.MDI_ON: return
 
-        for windowName in self.graphicsWindowDict.keys():
-            self.windowDict[windowName].showNormal()
+        for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+            if win.widget().is_screenshot_widget:
+                continue
+            win.showNormal()
+
+        # for windowName in self.graphicsWindowDict.keys():
+        #     self.windowDict[windowName].showNormal()
 
     def closeActiveSubWindowSlot(self):  # this method is called whenever a user closes a graphics window
 
@@ -830,8 +845,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.updateWindowMenu()
 
-        print 'self.windowDict=', self.windowDict
-        print 'AFTER  closeActiveSubWindowSlot self.subWindowList().size()=', len(self.subWindowList())
+        # print 'self.windowDict=', self.windowDict
+        print 'AFTER closeActiveSubWindowSlot self.subWindowList().size()=', len(self.subWindowList())
 
 
     def processCommandLineOptions(self, opts):  # parse the command line (rf. player/compucell3d.pyw now)
@@ -1131,45 +1146,59 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # sys.exit()
 
+    # MDIFIX
     def __setupArea(self):
         # print '------------------- __setupArea'
         # time.sleep(5)
         # print 'before removeAllVTKWindows'
-        self.removeAllVTKWindows()
-        # print 'after removeAllVTKWindows'
-        self.removeAllPlotWindows()
-        self.windowCounter = 0
-        # print 'before addVTKWindowToWorkspace'
+        self.close_all_windows()
+        # self.windowCounter = 0
+
         self.addVTKWindowToWorkspace()
 
         # print 'after addVTKWindowToWorkspace'
         # print 'AFTER ------------------- __setupArea'
         # time.sleep(5)
 
+    # def __setupArea(self):
+    #     # print '------------------- __setupArea'
+    #     # time.sleep(5)
+    #     # print 'before removeAllVTKWindows'
+    #     self.removeAllVTKWindows()
+    #     # print 'after removeAllVTKWindows'
+    #     self.removeAllPlotWindows()
+    #     self.windowCounter = 0
+    #     # print 'before addVTKWindowToWorkspace'
+    #     self.addVTKWindowToWorkspace()
+    #
+    #     # print 'after addVTKWindowToWorkspace'
+    #     # print 'AFTER ------------------- __setupArea'
+    #     # time.sleep(5)
+
 
 
         # print MODULENAME,'    __setupArea():   self.mdiWindowDict=',self.mdiWindowDict
 
-    def __layoutGraphicsWindows(self):
-        # rwh: if user specified a windows layout .xml in the .cc3d, then use it
-        #        print MODULENAME,'    __layoutGraphicsWindows():   self.cc3dSimulationDataHandler.cc3dSimulationData.windowDict=',self.cc3dSimulationDataHandler.cc3dSimulationData.windowDict
-        #--> e.g. = {'Aux Graphics Window 2': [450, 100, 300, 250], 'Main Graphics Window 1': [10, 10, 400, 300]}
-        #        self.mdiWindowDict[self.windowCounter] = self.addSubWindow(newWindow)
-        #        print MODULENAME,'    __layoutGraphicsWindows():   self.mdiWindowDict=',self.mdiWindowDict  # {1: <PyQt4.QtGui.QMdiSubWindow object at 0x11ff415f0>}
-        if self.cc3dSimulationDataHandler is None:
-            return
-        windowIndex = 1
-        for key in self.cc3dSimulationDataHandler.cc3dSimulationData.windowDict.keys():
-            winGeom = self.cc3dSimulationDataHandler.cc3dSimulationData.windowDict[key]
-            if 'Main' in key:
-                #                print MODULENAME,'    __layoutGraphicsWindows():   resizing Main window'
-                self.mdiWindowDict[1].setGeometry(winGeom[0], winGeom[1], winGeom[2], winGeom[3])
-            elif 'Aux' in key:
-                windowIndex += 1
-                #                print MODULENAME,'    __layoutGraphicsWindows():   need to create/resize Aux window'
-                self.addNewGraphicsWindow()  #rwh
-                #                print MODULENAME,'    __layoutGraphicsWindows():   after addNewGraphicsWindow, mdiWindowDict=',self.mdiWindowDict
-                self.mdiWindowDict[windowIndex].setGeometry(winGeom[0], winGeom[1], winGeom[2], winGeom[3])
+    # def __layoutGraphicsWindows(self):
+    #     # rwh: if user specified a windows layout .xml in the .cc3d, then use it
+    #     #        print MODULENAME,'    __layoutGraphicsWindows():   self.cc3dSimulationDataHandler.cc3dSimulationData.windowDict=',self.cc3dSimulationDataHandler.cc3dSimulationData.windowDict
+    #     #--> e.g. = {'Aux Graphics Window 2': [450, 100, 300, 250], 'Main Graphics Window 1': [10, 10, 400, 300]}
+    #     #        self.mdiWindowDict[self.windowCounter] = self.addSubWindow(newWindow)
+    #     #        print MODULENAME,'    __layoutGraphicsWindows():   self.mdiWindowDict=',self.mdiWindowDict  # {1: <PyQt4.QtGui.QMdiSubWindow object at 0x11ff415f0>}
+    #     if self.cc3dSimulationDataHandler is None:
+    #         return
+    #     windowIndex = 1
+    #     for key in self.cc3dSimulationDataHandler.cc3dSimulationData.windowDict.keys():
+    #         winGeom = self.cc3dSimulationDataHandler.cc3dSimulationData.windowDict[key]
+    #         if 'Main' in key:
+    #             #                print MODULENAME,'    __layoutGraphicsWindows():   resizing Main window'
+    #             self.mdiWindowDict[1].setGeometry(winGeom[0], winGeom[1], winGeom[2], winGeom[3])
+    #         elif 'Aux' in key:
+    #             windowIndex += 1
+    #             #                print MODULENAME,'    __layoutGraphicsWindows():   need to create/resize Aux window'
+    #             self.addNewGraphicsWindow()  #rwh
+    #             #                print MODULENAME,'    __layoutGraphicsWindows():   after addNewGraphicsWindow, mdiWindowDict=',self.mdiWindowDict
+    #             self.mdiWindowDict[windowIndex].setGeometry(winGeom[0], winGeom[1], winGeom[2], winGeom[3])
 
 
     def handleErrorMessage(self, _errorType, _traceback_message):
@@ -1707,12 +1736,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.connect(self.tileAct, SIGNAL('triggered()'), self.tileSubWindows)
         self.connect(self.cascadeAct, SIGNAL('triggered()'), self.cascadeSubWindows)
 
-        self.connect(self.saveWindowsGeometryAct, SIGNAL('triggered()'), self.saveWindowsGeometry)
+        # self.connect(self.saveWindowsGeometryAct, SIGNAL('triggered()'), self.saveWindowsGeometry)
         self.connect(self.minimizeAllGraphicsWindowsAct, SIGNAL('triggered()'), self.minimizeAllGraphicsWindows)
         self.connect(self.restoreAllGraphicsWindowsAct, SIGNAL('triggered()'), self.restoreAllGraphicsWindows)
 
         self.connect(self.closeActiveWindowAct, SIGNAL('triggered()'), self.closeActiveSubWindowSlot)
-        self.connect(self.closeAdditionalGraphicsWindowsAct, SIGNAL('triggered()'), self.removeAuxiliaryGraphicsWindows)
+        # self.connect(self.closeAdditionalGraphicsWindowsAct, SIGNAL('triggered()'), self.removeAuxiliaryGraphicsWindows)
 
         self.connect(self, SIGNAL('configsChanged'), self.__paramsChanged)
 
@@ -2027,6 +2056,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         import CompuCellSetup
 
         CompuCellSetup.simulationFileName = self.__fileName
+        # closing all open windows
+        self.close_all_windows()
 
         initializeSimulationViewWidgetFcn = getattr(self, "initializeSimulationViewWidget" + self.__viewManagerType)
         initializeSimulationViewWidgetFcn()
@@ -2580,8 +2611,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.__step = self.simulation.getCurrentStep()
 
         if True:
-            for windowName in self.windowDict.keys():
-                graphicsFrame = self.windowDict[windowName]
+            # MDIFIX
+            for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+                graphicsFrame = win.widget()
+
+            # for windowName in self.windowDict.keys():
+            #     graphicsFrame = self.windowDict[windowName]
                 # print "graphicsFrame=",graphicsFrame
 
                 (currentPlane, currentPlanePos) = graphicsFrame.getPlane()
@@ -2618,27 +2653,49 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
 
         if self.mysim:
-            #            print MODULENAME,'  drawFieldRegular(): in self.mysim block; windowDict.keys=',self.graphicsWindowDict.keys()
-            for windowName in self.graphicsWindowDict.keys():
-                graphicsFrame = self.windowDict[windowName]
-                #                print MODULENAME,"drawFieldRegular():   windowName, graphicsFrame=",windowName, graphicsFrame
+            for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+                graphicsFrame = win.widget()
 
+                if graphicsFrame.is_screenshot_widget:
+                    continue
 
-                #rwh: error if we try to invoke switchdim earlier    
+                #rwh: error if we try to invoke switchdim earlier
                 (currentPlane, currentPlanePos) = graphicsFrame.getPlane()
 
-                # print 'BEFORE graphicsFrame.drawFieldLocal'    
-                # time.sleep(5)
-
                 graphicsFrame.drawFieldLocal(self.basicSimulationData)
-
-                # print 'AFTER graphicsFrame.drawFieldLocal'    
-                # time.sleep(5)
-
 
                 self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())  # show MCS in lower-left GUI
 
         self.simulation.drawMutex.unlock()
+
+
+
+
+
+        # if self.mysim:
+        #     #            print MODULENAME,'  drawFieldRegular(): in self.mysim block; windowDict.keys=',self.graphicsWindowDict.keys()
+        #     for windowName in self.graphicsWindowDict.keys():
+        #         graphicsFrame = self.windowDict[windowName]
+        #
+        #
+        #         #                print MODULENAME,"drawFieldRegular():   windowName, graphicsFrame=",windowName, graphicsFrame
+        #
+        #
+        #         #rwh: error if we try to invoke switchdim earlier
+        #         (currentPlane, currentPlanePos) = graphicsFrame.getPlane()
+        #
+        #         # print 'BEFORE graphicsFrame.drawFieldLocal'
+        #         # time.sleep(5)
+        #
+        #         graphicsFrame.drawFieldLocal(self.basicSimulationData)
+        #
+        #         # print 'AFTER graphicsFrame.drawFieldLocal'
+        #         # time.sleep(5)
+        #
+        #
+        #         self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())  # show MCS in lower-left GUI
+        #
+        # self.simulation.drawMutex.unlock()
 
 
     def updateSimulationProperties(self):
@@ -2686,15 +2743,24 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # print 'INSIDE f'
         self.fieldStorage.allocateCellField(self.fieldDim)
         # this updates cross sections when dimensions change
-        for windowName in self.windowDict.keys():
-            self.windowDict[windowName].updateCrossSection(self.basicSimulationData)
+
+        #MDIFIX
+        for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+            win.widget().updateCrossSection(self.basicSimulationData)
+
+        # for windowName in self.windowDict.keys():
+        #     self.windowDict[windowName].updateCrossSection(self.basicSimulationData)
 
 
-        # # # self.setInitialCrossSection(self.basicSimulationData) 
+        # # # slf.setInitialCrossSection(self.basicSimulationData)
 
+        #MDIFIX
+        for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+            graphicsWidget = win.widget()
+            graphicsWidget.resetAllCameras()
 
-        for windowName, graphicsWindow in self.graphicsWindowDict.iteritems():
-            graphicsWindow.resetAllCameras()
+        # for windowName, graphicsWindow in self.graphicsWindowDict.iteritems():
+        #     graphicsWindow.resetAllCameras()
 
 
         # # # self.prepareSimulationView() # this pauses simulation        
@@ -2761,7 +2827,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
             # print 'mdiwidget = ', mdiWidget
             # print 'Current scene name = ', win.getCurrentSceneNameAndType()
             widget = win.widget()
-            if not widget.allowSaveLayout: continue
+            # if not widget.allowSaveLayout: continue
+            if widget.is_screenshot_widget:
+                continue
 
             gwd = widget.getGraphicsWindowData()
             # fill size and position of graphics windows data using mdiWidget, NOT the internal widget such as GraphicsFrameWidget - sizes and positions are base on MID widet settings
@@ -2921,9 +2989,18 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.screenshotManager = None
 
         CompuCellSetup.resetGlobals()
-        # print 'AFTER __cleanupAfterSimulation'
+        print 'AFTER __cleanupAfterSimulation'
 
+        # self.close_all_windows()
 
+        print self.win_inventory
+
+    def close_all_windows(self):
+        for win in self.win_inventory.values():
+            self.win_inventory.remove_from_inventory(win)
+            win.close()
+
+        self.win_inventory.set_counter(0)
 
     def __stopSim(self):
 
@@ -2985,17 +3062,27 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     def setInitialCrossSection(self, _basicSimulationData):
 
-        for windowName in self.windowDict.keys():
-            print 'windowName=', windowName
-            self.windowDict[windowName].setInitialCrossSection(_basicSimulationData)
-            print 'after windowName=', windowName
+        for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+            graphicsFrame = win.widget()
+            graphicsFrame.setInitialCrossSection(_basicSimulationData)
+
+
+        # for windowName in self.windowDict.keys():
+        #     print 'windowName=', windowName
+        #     self.windowDict[windowName].setInitialCrossSection(_basicSimulationData)
+        #     print 'after windowName=', windowName
 
     def initGraphicsWidgetsFieldTypes(self):
-        for windowName in self.windowDict.keys():
-            # print 'windowName=',windowName
-            # print 'self.windowDict[windowName]=',self.windowDict[windowName]
-            # print 'dir of self.windowDict[windowName]=',dir(self.windowDict[windowName])
-            self.windowDict[windowName].setFieldTypesComboBox(self.fieldTypes)
+
+        for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+            graphicsFrame = win.widget()
+            graphicsFrame.setFieldTypesComboBox(self.fieldTypes)
+
+        # for windowName in self.windowDict.keys():
+        #     # print 'windowName=',windowName
+        #     # print 'self.windowDict[windowName]=',self.windowDict[windowName]
+        #     # print 'dir of self.windowDict[windowName]=',dir(self.windowDict[windowName])
+        #     self.windowDict[windowName].setFieldTypesComboBox(self.fieldTypes)
 
 
     # Shows simulation view tab
@@ -3098,9 +3185,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         #     self.closeActiveSubWindowSlot()
 
         # first restore main window with id 0 - this window is the only window open at this point and it is open by default when simulation is started
-        # that's why we have to reat it in a special way
+        # that's why we have to treat it in a special way
         try:
-            windowDataDict0 = windowsLayoutDict[str(0)]
+            windowDataDict0 = windowsLayoutDict[str(0)] # inside windowsLayoutDict windows are labeled using ints represented as strings
 
             from Graphics.GraphicsWindowData import GraphicsWindowData
 
@@ -3109,9 +3196,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
             gwd.fromDict(windowDataDict0)
 
             if gwd.winType == GRAPHICS_WINDOW_LABEL:
-                gfw = self.lastActiveWindow
 
-                graphicsWindow = self.findMDISubWindowForWidget(gfw)
+                graphicsWindow = self.lastActiveRealWindow
+                gfw = graphicsWindow.widget()
+                # gfw = self.lastActiveWindow
+                #
+                # graphicsWindow = self.findMDISubWindowForWidget(gfw)
 
                 graphicsWindow.resize(gwd.winSize)
                 graphicsWindow.move(gwd.winPosition)
@@ -3122,10 +3212,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         except KeyError:
             # in case there is no main window with id 0 in the settings we kill the main window
-            gfw = self.lastActiveWindow
-            graphicsWindow = self.findMDISubWindowForWidget(gfw)
+
+            graphicsWindow = self.lastActiveRealWindow
             graphicsWindow.close()
-            self.removeWindowFromRegistry(graphicsWindow)
+            self.win_inventory.remove_from_inventory(graphicsWindow)
+
+            # gfw = self.lastActiveWindow
+            # graphicsWindow = self.findMDISubWindowForWidget(gfw)
+            # graphicsWindow.close()
+            # self.removeWindowFromRegistry(graphicsWindow)
 
             pass
 
@@ -3331,8 +3426,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         #        self.mainGraphicsWindow._switchDim(True)   # rwh
 
-        if not self.keepOldTabs:
-            pass
+        # if not self.keepOldTabs:
+        #     pass
         #self.mainGraphicsWindow.setZoomItems(self.zitems)   # Set zoomFixed parameters
         self.mainGraphicsWindow.setZoomItems(self.zitems)  # Set zoomFixed parameters
 
@@ -3642,21 +3737,45 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.updateActiveWindowVisFlags()
         if self.cellsAct.isEnabled():
 
-            for windowName, window in self.graphicsWindowDict.iteritems():
+            # MDIFIX
+            for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+                graphicsWidget = win.widget()
+                # if graphicsWidget.is_screenshot_widget: continue
+
                 try:
                     if checked:
-                        window.showCells()
+                        graphicsWidget.showCells()
                         print 'SHOWING CELLS ACTION'
                         Configuration.setSetting('CellsOn',True)
                         self.cellsAct.setChecked(True)
+                        win.activateWindow()
                     else:
-                        window.hideCells()
+                        graphicsWidget.hideCells()
                         Configuration.setSetting('CellsOn',False)
                         print 'HIDING CELLS ACTION'
                         self.cellsAct.setChecked(False)
+                        win.activateWindow()
+
                 except AttributeError, e:
                     pass
-                self.updateActiveWindowVisFlags(window)
+                self.updateActiveWindowVisFlags(graphicsWidget)
+
+
+            # for windowName, window in self.graphicsWindowDict.iteritems():
+            #     try:
+            #         if checked:
+            #             window.showCells()
+            #             print 'SHOWING CELLS ACTION'
+            #             Configuration.setSetting('CellsOn',True)
+            #             self.cellsAct.setChecked(True)
+            #         else:
+            #             window.hideCells()
+            #             Configuration.setSetting('CellsOn',False)
+            #             print 'HIDING CELLS ACTION'
+            #             self.cellsAct.setChecked(False)
+            #     except AttributeError, e:
+            #         pass
+            #     self.updateActiveWindowVisFlags(window)
 
         self.simulation.drawMutex.unlock()
 
@@ -3670,18 +3789,35 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         if self.borderAct.isEnabled():
 
-            for windowName, window in self.graphicsWindowDict.iteritems():
+            for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+                graphicsWidget = win.widget()
+
                 try:
                     if checked:
-                        window.showBorder()
+                        graphicsWidget.showBorder()
                         self.borderAct.setChecked(True)
+                        win.activateWindow()
                     else:
-                        window.hideBorder()
+                        graphicsWidget.hideBorder()
                         self.borderAct.setChecked(False)
+                        win.activateWindow()
                 except AttributeError, e:
                     pass
 
-                self.updateActiveWindowVisFlags(window)
+                self.updateActiveWindowVisFlags(graphicsWidget)
+
+            # for windowName, window in self.graphicsWindowDict.iteritems():
+            #     try:
+            #         if checked:
+            #             window.showBorder()
+            #             self.borderAct.setChecked(True)
+            #         else:
+            #             window.hideBorder()
+            #             self.borderAct.setChecked(False)
+            #     except AttributeError, e:
+            #         pass
+            #
+            #     self.updateActiveWindowVisFlags(window)
 
         self.simulation.drawMutex.unlock()
 
@@ -3693,21 +3829,39 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.updateActiveWindowVisFlags()
         if self.clusterBorderAct.isEnabled():
-
-            for windowName, window in self.graphicsWindowDict.iteritems():
+            #MDIFIX
+            for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+                graphicsWidget = win.widget()
                 try:
                     if checked:
-                        window.showClusterBorder()
+                        graphicsWidget.showClusterBorder()
                         self.clusterBorderAct.setChecked(True)
+                        win.activateWindow()
 
                     else:
-                        window.hideClusterBorder()
+                        graphicsWidget.hideClusterBorder()
                         self.clusterBorderAct.setChecked(False)
+                        win.activateWindow()
 
                 except AttributeError, e:
                     pass
 
-                self.updateActiveWindowVisFlags(window)
+                self.updateActiveWindowVisFlags(graphicsWidget)
+
+            # for windowName, window in self.graphicsWindowDict.iteritems():
+            #     try:
+            #         if checked:
+            #             window.showClusterBorder()
+            #             self.clusterBorderAct.setChecked(True)
+            #
+            #         else:
+            #             window.hideClusterBorder()
+            #             self.clusterBorderAct.setChecked(False)
+            #
+            #     except AttributeError, e:
+            #         pass
+            #
+            #     self.updateActiveWindowVisFlags(window)
 
         self.simulation.drawMutex.unlock()
 
@@ -3728,20 +3882,37 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.simulation.drawMutex.unlock()
                 return
 
-            for windowName, window in self.graphicsWindowDict.iteritems():
+            #MDIFIX
+            for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+                graphicsWidget = win.widget()
                 try:
                     if checked:
-                        window.showCellGlyphs()
+                        graphicsWidget.showCellGlyphs()
                         self.cellGlyphsAct.setChecked(True)
-
+                        win.activateWindow()
                     else:
-                        window.hideCellGlyphs()
+                        graphicsWidget.hideCellGlyphs()
                         self.cellGlyphsAct.setChecked(False)
-
+                        win.activateWindow()
                 except AttributeError, e:
                     pass
 
-                self.updateActiveWindowVisFlags(window)
+                self.updateActiveWindowVisFlags(graphicsWidget)
+
+            # for windowName, window in self.graphicsWindowDict.iteritems():
+            #     try:
+            #         if checked:
+            #             window.showCellGlyphs()
+            #             self.cellGlyphsAct.setChecked(True)
+            #
+            #         else:
+            #             window.hideCellGlyphs()
+            #             self.cellGlyphsAct.setChecked(False)
+            #
+            #     except AttributeError, e:
+            #         pass
+            #
+            #     self.updateActiveWindowVisFlags(window)
 
         self.simulation.drawMutex.unlock()
 
@@ -3769,20 +3940,39 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.simulation.drawMutex.unlock()
                 return
 
-            for windowName, window in self.graphicsWindowDict.iteritems():
+            #MDIFIX
+            for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+                graphicsWidget = win.widget()
+
                 try:
                     if checked:
-                        window.showFPPLinks()
+                        graphicsWidget.showFPPLinks()
                         self.FPPLinksAct.setChecked(True)
-
+                        win.activateWindow()
                     else:
-                        window.hideFPPLinks()
+                        graphicsWidget.hideFPPLinks()
                         self.FPPLinksAct.setChecked(False)
+                        win.activateWindow()
 
                 except AttributeError, e:
                     pass
 
-                self.updateActiveWindowVisFlags(window)
+                self.updateActiveWindowVisFlags(graphicsWidget)
+
+            # for windowName, window in self.graphicsWindowDict.iteritems():
+            #     try:
+            #         if checked:
+            #             window.showFPPLinks()
+            #             self.FPPLinksAct.setChecked(True)
+            #
+            #         else:
+            #             window.hideFPPLinks()
+            #             self.FPPLinksAct.setChecked(False)
+            #
+            #     except AttributeError, e:
+            #         pass
+            #
+            #     self.updateActiveWindowVisFlags(window)
 
         self.simulation.drawMutex.unlock()
 
@@ -3817,19 +4007,37 @@ class SimpleTabView(MainArea, SimpleViewManager):
                     self.simulation.drawMutex.unlock()
                     return
 
-            for windowName, window in self.graphicsWindowDict.iteritems():
+            #MDIFIX
+            for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+                graphicsWidget = win.widget()
                 try:
                     if checked:
-                        window.showFPPLinksColor()
+                        graphicsWidget.showFPPLinksColor()
                         self.FPPLinksColorAct.setChecked(True)
+                        win.activateWindow()
                     else:
-                        window.hideFPPLinksColor()
+                        graphicsWidget.hideFPPLinksColor()
                         self.FPPLinksColorAct.setChecked(False)
+                        win.activateWindow()
 
                 except AttributeError, e:
                     pass
 
-                self.updateActiveWindowVisFlags(window)
+                self.updateActiveWindowVisFlags(graphicsWidget)
+
+            # for windowName, window in self.graphicsWindowDict.iteritems():
+            #     try:
+            #         if checked:
+            #             window.showFPPLinksColor()
+            #             self.FPPLinksColorAct.setChecked(True)
+            #         else:
+            #             window.hideFPPLinksColor()
+            #             self.FPPLinksColorAct.setChecked(False)
+            #
+            #     except AttributeError, e:
+            #         pass
+            #
+            #     self.updateActiveWindowVisFlags(window)
 
         self.simulation.drawMutex.unlock()
 
@@ -3837,19 +4045,37 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def __checkContour(self, checked):
         if self.contourAct.isEnabled():
 
-            for windowName, window in self.graphicsWindowDict.iteritems():
+            #MDIFIX
+            for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+                graphicsWidget = win.widget()
                 try:
                     if checked:
-                        window.showContours(True)
+                        graphicsWidget.showContours(True)
                         self.contourAct.setChecked(True)
+                        win.activateWindow()
                     else:
-                        windos.showContours(False)
+                        graphicsWidget.showContours(False)
                         self.contourAct.setChecked(False)
+                        win.activateWindow()
 
                 except AttributeError, e:
                     pass
 
-                self.updateActiveWindowVisFlags(window)
+                self.updateActiveWindowVisFlags(graphicsWidget)
+
+            # for windowName, window in self.graphicsWindowDict.iteritems():
+            #     try:
+            #         if checked:
+            #             window.showContours(True)
+            #             self.contourAct.setChecked(True)
+            #         else:
+            #             windos.showContours(False)
+            #             self.contourAct.setChecked(False)
+            #
+            #     except AttributeError, e:
+            #         pass
+            #
+            #     self.updateActiveWindowVisFlags(window)
 
 
     def __checkLimits(self, checked):

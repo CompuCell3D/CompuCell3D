@@ -389,26 +389,26 @@ class MVCDrawView2D(MVCDrawViewBase):
                 return
 
 
-            # # # import time    
-            # print 'INSIDE self.drawCellField BEFORE initCellFieldActors'    
-            
-            
-            # time.sleep(5)                
-            # if self.parentWidget.graphicsWindowVisDict[dictKey][0]:            
-            self.drawModel.initCellFieldActors((self.cellsActor,))            
-            
-            
-            
-            # # # print 'INSIDE self.drawCellField AFTER initCellFieldActors'    
-                        
-            # # # time.sleep(5)                
-            
+            # # # import time
+            # print 'INSIDE self.drawCellField BEFORE initCellFieldActors'
+
+
+            # time.sleep(5)
+            # if self.parentWidget.graphicsWindowVisDict[dictKey][0]:
+            self.drawModel.initCellFieldActors((self.cellsActor,))
+
+
+
+            # # # print 'INSIDE self.drawCellField AFTER initCellFieldActors'
+
+            # # # time.sleep(5)
+
             # print '   drawCellField:  currentActors=',self.currentActors
-            
+
             if not self.currentActors.has_key("CellsActor"):
-                self.currentActors["CellsActor"] = self.cellsActor  
+                self.currentActors["CellsActor"] = self.cellsActor
                 self.graphicsFrameWidget.ren.AddActor(self.cellsActor)
-            
+
 
             
         
@@ -423,9 +423,9 @@ class MVCDrawView2D(MVCDrawViewBase):
 #        if self.parentWidget.borderAct.isChecked():
         if self.parentWidget.graphicsWindowVisDict[dictKey][1]:  # rwh: for multi-window bug fix
             if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
-                self.drawBorders2DHex()    
+                self.drawBorders2DHex()
             else:
-                self.drawBorders2D()       
+                self.drawBorders2D()
         #else:
         #    self.hideBorder()
             

@@ -61,7 +61,8 @@ class GraphicsFrameWidget(QtGui.QFrame):
         # print '\n\n\n\n\n CREATING NEW GRAPHICS FRAME WIDGET ',self
         
         
-        self.allowSaveLayout = True
+        # self.allowSaveLayout = True
+        self.is_screenshot_widget = False
         self.qvtkWidget = QVTKRenderWindowInteractor(self)   # a QWidget
         
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
@@ -71,7 +72,9 @@ class GraphicsFrameWidget(QtGui.QFrame):
         # self.parentWidget = parent
         
         
-        
+        self.plane = None
+        self.planePos = None
+
         self.lineEdit = QtGui.QLineEdit()
         
         self.__initCrossSectionActions()
@@ -876,9 +879,11 @@ class GraphicsFrameWidget(QtGui.QFrame):
         
         
 
-        self.fieldTypes=None            
-        
-        self.parentWidget.removeWindowWidgetFromRegistry(self)
+        self.fieldTypes=None
+
+        #MDIFIX
+        # self.parentWidget.removeWindowWidgetFromRegistry(self)
+
         # print 'AFTER CLOSE GFW self.graphicsWindowDict=',self.parentWidget.graphicsWindowDict 
         # print 'self.windowDict=',self.parentWidget.windowDict        
         

@@ -113,7 +113,8 @@ class ScreenshotManager:
 
         # MDIFIX
         self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw, tvw)
-        self.screenshotGraphicsWidget.allowSaveLayout = False # we do not save screenshot widget in the windows layout
+        # self.screenshotGraphicsWidget.allowSaveLayout = False # we do not save screenshot widget in the windows layout
+        self.screenshotGraphicsWidget.is_screenshot_widget = True # important because e.g. we do not save screenshot widget in the windows layout
         # self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw)
 
         self.screenshotGraphicsWidget.screenshotWindowFlag=True

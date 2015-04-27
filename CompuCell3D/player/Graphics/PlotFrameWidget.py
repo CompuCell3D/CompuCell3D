@@ -98,7 +98,7 @@ from PyQt4 import QtCore, QtGui,QtOpenGL
 import vtk
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from enums import *
+
 
 
 
@@ -109,7 +109,9 @@ class PlotFrameWidget(QtGui.QFrame):
 
         self.plotWidget=CartesianPlot()
         self.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding))
-        
+
+        self.plotInterface = None
+
         self.parentWidget=parent
         layout=QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom)
         layout.addWidget(self.plotWidget)
@@ -152,8 +154,9 @@ class PlotFrameWidget(QtGui.QFrame):
     # # note that if you close widget using X button this slot is not called
     # # we need to reimplement closeEvent
     # # def close(self):           
-    def closeEvent(self,ev):
-        self.parentWidget.closeActiveSubWindowSlot()
+    def closeEvent(self, ev):
+        pass
+        # self.parentWidget.closeActiveSubWindowSlot()
         
         
     
