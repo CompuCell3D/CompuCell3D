@@ -116,9 +116,9 @@ class MVCDrawView2D(MVCDrawViewBase):
     def showClusterBorder(self):
         Configuration.setSetting("ClusterBordersOn",True)
         if not self.currentActors.has_key("ClusterBorderActor"):
-            self.currentActors["ClusterBorderActor"]=self.clusterBorderActor  
-            self.graphicsFrameWidget.ren.AddActor(self.clusterBorderActor)      
-    
+            self.currentActors["ClusterBorderActor"] = self.clusterBorderActor
+            self.graphicsFrameWidget.ren.AddActor(self.clusterBorderActor)
+
     def hideClusterBorder(self):
         Configuration.setSetting("ClusterBordersOn",False)
         if self.currentActors.has_key("ClusterBorderActor"):
@@ -131,6 +131,9 @@ class MVCDrawView2D(MVCDrawViewBase):
     def showCells(self):
         # Configuration.setSetting("CellsOn",True)
         # print MODULENAME,' \n\n\n\n\n\n showCells() '
+
+        if str(self.graphicsFrameWidget.fieldComboBox.currentText()) != 'Cell_Field':return
+
         if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
             if not self.currentActors.has_key("HexCellsActor"):
                 self.currentActors["HexCellsActor"] = self.hexCellsActor  
@@ -139,7 +142,12 @@ class MVCDrawView2D(MVCDrawViewBase):
             if not self.currentActors.has_key("CellsActor"):                
                 self.currentActors["CellsActor"]=self.cellsActor  
                 self.graphicsFrameWidget.ren.AddActor(self.cellsActor)
-        # print "self.currentActors.keys()=",self.currentActors.keys()
+
+        if self.currentActors.has_key("BorderActor"): # ensuring borders are the last actor added
+            self.graphicsFrameWidget.ren.RemoveActor(self.borderActor)
+            self.graphicsFrameWidget.ren.AddActor(self.borderActor)
+        print "self.currentActors.keys()=",self.currentActors.keys()
+        # print
         # Don't re-render until next calc step since it could show previous/incorrect actor
         # self.Render()
         # self.graphicsFrameWidget.repaint()
@@ -150,9 +158,10 @@ class MVCDrawView2D(MVCDrawViewBase):
 #        print MODULENAME,'  hideCells():  self.parentWidget.lastActiveWindow= ',self.parentWidget.lastActiveWindow
 #        print MODULENAME,'  hideCells():  type(self.lastActiveWindow)= ',type(self.lastActiveWindow)
 #         Configuration.setSetting("CellsOn",False)
-        if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
-            del self.currentActors["HexCellsActor"] 
-            self.graphicsFrameWidget.ren.RemoveActor(self.hexCellsActor)
+        if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane == "XY": # drawing in other planes will be done on a rectangular lattice
+            if self.currentActors.has_key("HexCellsActor"):
+                del self.currentActors["HexCellsActor"]
+                self.graphicsFrameWidget.ren.RemoveActor(self.hexCellsActor)
 #            self.parentWidget.lastActiveWindow.ren.RemoveActor(self.hexCellsActor)
         if self.currentActors.has_key("CellsActor"):
             del self.currentActors["CellsActor"] 

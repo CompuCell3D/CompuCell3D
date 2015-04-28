@@ -3185,44 +3185,45 @@ class SimpleTabView(MainArea, SimpleViewManager):
         #     self.closeActiveSubWindowSlot()
 
         # first restore main window with id 0 - this window is the only window open at this point and it is open by default when simulation is started
-        # that's why we have to treat it in a special way
-        try:
-            windowDataDict0 = windowsLayoutDict[str(0)] # inside windowsLayoutDict windows are labeled using ints represented as strings
+        # that's why we have to treat it in a special way but only when we determine that windowsLayoutDict is not empty
+        if len(windowsLayoutDict.keys()):
+            try:
+                windowDataDict0 = windowsLayoutDict[str(0)] # inside windowsLayoutDict windows are labeled using ints represented as strings
 
-            from Graphics.GraphicsWindowData import GraphicsWindowData
+                from Graphics.GraphicsWindowData import GraphicsWindowData
 
-            gwd = GraphicsWindowData()
+                gwd = GraphicsWindowData()
 
-            gwd.fromDict(windowDataDict0)
+                gwd.fromDict(windowDataDict0)
 
-            if gwd.winType == GRAPHICS_WINDOW_LABEL:
+                if gwd.winType == GRAPHICS_WINDOW_LABEL:
+
+                    graphicsWindow = self.lastActiveRealWindow
+                    gfw = graphicsWindow.widget()
+                    # gfw = self.lastActiveWindow
+                    #
+                    # graphicsWindow = self.findMDISubWindowForWidget(gfw)
+
+                    graphicsWindow.resize(gwd.winSize)
+                    graphicsWindow.move(gwd.winPosition)
+
+                    gfw.applyGraphicsWindowData(gwd)
+
+
+
+            except KeyError:
+                # in case there is no main window with id 0 in the settings we kill the main window
 
                 graphicsWindow = self.lastActiveRealWindow
-                gfw = graphicsWindow.widget()
+                graphicsWindow.close()
+                self.win_inventory.remove_from_inventory(graphicsWindow)
+
                 # gfw = self.lastActiveWindow
-                #
                 # graphicsWindow = self.findMDISubWindowForWidget(gfw)
+                # graphicsWindow.close()
+                # self.removeWindowFromRegistry(graphicsWindow)
 
-                graphicsWindow.resize(gwd.winSize)
-                graphicsWindow.move(gwd.winPosition)
-
-                gfw.applyGraphicsWindowData(gwd)
-
-
-
-        except KeyError:
-            # in case there is no main window with id 0 in the settings we kill the main window
-
-            graphicsWindow = self.lastActiveRealWindow
-            graphicsWindow.close()
-            self.win_inventory.remove_from_inventory(graphicsWindow)
-
-            # gfw = self.lastActiveWindow
-            # graphicsWindow = self.findMDISubWindowForWidget(gfw)
-            # graphicsWindow.close()
-            # self.removeWindowFromRegistry(graphicsWindow)
-
-            pass
+                pass
 
         # restore graphics windows first
         for windowId, windowDataDict in windowsLayoutDict.iteritems():
@@ -3742,17 +3743,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 graphicsWidget = win.widget()
                 # if graphicsWidget.is_screenshot_widget: continue
 
+                # self.updateActiveWindowVisFlags(graphicsWidget)
+
                 try:
                     if checked:
-                        graphicsWidget.showCells()
                         print 'SHOWING CELLS ACTION'
+                        graphicsWidget.showCells()
                         Configuration.setSetting('CellsOn',True)
                         self.cellsAct.setChecked(True)
                         win.activateWindow()
                     else:
+                        print 'HIDING CELLS ACTION'
                         graphicsWidget.hideCells()
                         Configuration.setSetting('CellsOn',False)
-                        print 'HIDING CELLS ACTION'
                         self.cellsAct.setChecked(False)
                         win.activateWindow()
 
