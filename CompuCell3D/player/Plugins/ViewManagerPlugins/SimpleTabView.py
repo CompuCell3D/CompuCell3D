@@ -55,10 +55,10 @@ except:
 # *********** TO DO
 # 1. UNCOMMENT # if Configuration.getSetting('FloatingWindows'):
 # 2. ADD WEAKREF TO PLOT FRAME WIDGET< PLOT INTERFACE CARTESIAN ETC...
-# 3. CELLS OFF, ON removes borders and outline
 # 4. CHECK IF IT IS NECESSARY TO FIX CLOSE EVENTS AND REMOVE GRAPHICS WIDGET PLOT WIDGET FROM ANY TYPE OF REGISTRIES -
 # for QDockWindows this is taken care of , for MDI have to implement automatic removal from registries
-# 7 get rid of multiple calls to pde from twedit++
+# 7. get rid of multiple calls to pde from twedit++
+# 8.
 
 from MainArea import MainArea
 # if Configuration.getSetting('FloatingWindows'):
