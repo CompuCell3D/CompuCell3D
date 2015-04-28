@@ -927,8 +927,9 @@ class PlotManager(QtCore.QObject):
         # self.vm.plotWindowDict[self.vm.windowCounter] = self.vm.windowDict[self.vm.windowCounter]
         
         # newWindow.setWindowTitle("Plot Window "+str(self.vm.windowCounter))
-        
-        self.vm.lastActiveWindow = newWindow
+        # MDIFIX
+        # self.vm.lastActiveWindow = newWindow
+
         # # self.updateWindowMenu()
         
         # 

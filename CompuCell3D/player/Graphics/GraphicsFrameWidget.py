@@ -887,7 +887,7 @@ class GraphicsFrameWidget(QtGui.QFrame):
         # print 'AFTER CLOSE GFW self.graphicsWindowDict=',self.parentWidget.graphicsWindowDict 
         # print 'self.windowDict=',self.parentWidget.windowDict        
         
-        self.parentWidget=None
+        self.parentWidget = None
 
         print 'GRAPHICS CLOSED'
 

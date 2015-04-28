@@ -56,9 +56,9 @@ except:
 # 1. UNCOMMENT # if Configuration.getSetting('FloatingWindows'):
 # 2. ADD WEAKREF TO PLOT FRAME WIDGET< PLOT INTERFACE CARTESIAN ETC...
 # 3. CELLS OFF, ON removes borders and outline
-# 4. CHECK IF IT IS NECESSARY TO FIX CLOSE EVENTS AND REMOVE GRAPHICS WIDGET PLOT WIDGET FROM ANY TYPE OF REGISTRIES
-# 5. GET RID OF self.saveWindowsGeometryAct
-# 6. FIX updateWindow menu
+# 4. CHECK IF IT IS NECESSARY TO FIX CLOSE EVENTS AND REMOVE GRAPHICS WIDGET PLOT WIDGET FROM ANY TYPE OF REGISTRIES -
+# for QDockWindows this is taken care of , for MDI have to implement automatic removal from registries
+# 7 get rid of multiple calls to pde from twedit++
 
 from MainArea import MainArea
 # if Configuration.getSetting('FloatingWindows'):
@@ -190,7 +190,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.lastActiveRealWindow = None
 
-        self.lastActiveWindow = None
+        # self.lastActiveWindow = None
         self.lastPositionMainGraphicsWindow = None
         self.newWindowDefaultPlane = None
 
@@ -263,61 +263,79 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     def setActiveSubWindowCustomSlot(self, window):
         #MDIFIX
+        print 'setActiveSubWindowCustomSlot = ', window
+        self.lastActiveRealWindow = window
+        self.lastActiveRealWindow.activateWindow()
+
+        # if (self.lastActiveRealWindow is not None) and (
+        #             self.lastActiveRealWindow.winId().__int__() in self.graphicsWindowVisDict.keys()):
+        #     dictKey = self.lastActiveRealWindow.winId().__int__()
+        #     if dictKey in self.graphicsWindowVisDict.keys():
+        #         #               self.simulation.drawMutex.lock()  # lock/unlock necessary or not?
+        #         #                print MODULENAME,'------- setActiveSubWindowCustomSlot():  updating *Act.setChecked:  cellsAct=',self.graphicsWindowVisDict[self.lastActiveWindow.winId().__int__()][0]
+        #         #                print MODULENAME,'------- setActiveSubWindowCustomSlot():  updating *Act.setChecked: borderAct=',self.graphicsWindowVisDict[self.lastActiveWindow.winId().__int__()][1]
+        #         self.cellsAct.setChecked(self.graphicsWindowVisDict[dictKey][0])
+        #         self.borderAct.setChecked(self.graphicsWindowVisDict[dictKey][1])
+        #         self.clusterBorderAct.setChecked(self.graphicsWindowVisDict[dictKey][2])
+        #         self.cellGlyphsAct.setChecked(self.graphicsWindowVisDict[dictKey][3])
+        #         self.FPPLinksAct.setChecked(self.graphicsWindowVisDict[dictKey][4])
+
+
         return
 
-        # print 'INSIDE setActiveSubWindowCustomSlot'
-        #        print MODULENAME,"setActiveSubWindow: window=",window
-        #        print MODULENAME,'\n ------------------  setActiveSubWindowCustomSlot():  self.mdiWindowDict =', self.mdiWindowDict
-        windowNames = self.plotWindowDict.keys()
-        #        for windowName in windowNames:
-        #          print MODULENAME,'     setActiveSubWindowCustomSlot():  windowName=', windowName
+        # # print 'INSIDE setActiveSubWindowCustomSlot'
+        # #        print MODULENAME,"setActiveSubWindow: window=",window
+        # #        print MODULENAME,'\n ------------------  setActiveSubWindowCustomSlot():  self.mdiWindowDict =', self.mdiWindowDict
+        # windowNames = self.plotWindowDict.keys()
+        # #        for windowName in windowNames:
+        # #          print MODULENAME,'     setActiveSubWindowCustomSlot():  windowName=', windowName
+        #
+        # #        print 'dir(window)=',dir(window)
+        # # print 'WINDOW=',window
+        #
+        # mdiWindow = self.findMDISubWindowForWidget(window)
+        #
+        # if mdiWindow:
+        #     #            self.setActiveSubWindow(window)
+        #
+        #     # MDIFIX
+        #     self.setActiveSubWindow(mdiWindow)
+        #
+        #     self.lastActiveRealWindow = mdiWindow
+        #
+        #     self.lastActiveWindow = window
+        #
+        #     # if window:
+        # # #            self.setActiveSubWindow(window)
+        # # self.setActiveSubWindow(self.mdiWindowDict.values()[0])
+        #
+        # # self.lastActiveWindow = window
+        # #            print "MODULENAME,'         setActiveSubWindowCustomSlot(): self.lastActiveWindow.winId().__int__()=",self.lastActiveWindow.windowId().__int__()
+        # #            print MODULENAME,"         setActiveSubWindowCustomSlot(): self.lastActiveWindow is ",self.lastActiveWindow.windowTitle()
+        #
+        # #            self.updateActiveWindowVisFlags()
+        #
+        # if (self.lastActiveWindow is not None) and (
+        #             self.lastActiveWindow.winId().__int__() in self.graphicsWindowVisDict.keys()):
+        #     dictKey = self.lastActiveWindow.winId().__int__()
+        #     if dictKey in self.graphicsWindowVisDict.keys():
+        #         #               self.simulation.drawMutex.lock()  # lock/unlock necessary or not?
+        #         #                print MODULENAME,'------- setActiveSubWindowCustomSlot():  updating *Act.setChecked:  cellsAct=',self.graphicsWindowVisDict[self.lastActiveWindow.winId().__int__()][0]
+        #         #                print MODULENAME,'------- setActiveSubWindowCustomSlot():  updating *Act.setChecked: borderAct=',self.graphicsWindowVisDict[self.lastActiveWindow.winId().__int__()][1]
+        #         self.cellsAct.setChecked(self.graphicsWindowVisDict[dictKey][0])
+        #         self.borderAct.setChecked(self.graphicsWindowVisDict[dictKey][1])
+        #         self.clusterBorderAct.setChecked(self.graphicsWindowVisDict[dictKey][2])
+        #         self.cellGlyphsAct.setChecked(self.graphicsWindowVisDict[dictKey][3])
+        #         self.FPPLinksAct.setChecked(self.graphicsWindowVisDict[dictKey][4])
 
-        #        print 'dir(window)=',dir(window)
-        # print 'WINDOW=',window
-
-        mdiWindow = self.findMDISubWindowForWidget(window)
-
-        if mdiWindow:
-            #            self.setActiveSubWindow(window)
-
-            # MDIFIX
-            self.setActiveSubWindow(mdiWindow)
-
-            self.lastActiveRealWindow = mdiWindow
-
-            self.lastActiveWindow = window
-
-            # if window:
-        # #            self.setActiveSubWindow(window)
-        # self.setActiveSubWindow(self.mdiWindowDict.values()[0])
-
-        # self.lastActiveWindow = window
-        #            print "MODULENAME,'         setActiveSubWindowCustomSlot(): self.lastActiveWindow.winId().__int__()=",self.lastActiveWindow.windowId().__int__()
-        #            print MODULENAME,"         setActiveSubWindowCustomSlot(): self.lastActiveWindow is ",self.lastActiveWindow.windowTitle()
-
-        #            self.updateActiveWindowVisFlags()
-
-        if (self.lastActiveWindow is not None) and (
-                    self.lastActiveWindow.winId().__int__() in self.graphicsWindowVisDict.keys()):
-            dictKey = self.lastActiveWindow.winId().__int__()
-            if dictKey in self.graphicsWindowVisDict.keys():
-                #               self.simulation.drawMutex.lock()  # lock/unlock necessary or not?
-                #                print MODULENAME,'------- setActiveSubWindowCustomSlot():  updating *Act.setChecked:  cellsAct=',self.graphicsWindowVisDict[self.lastActiveWindow.winId().__int__()][0]
-                #                print MODULENAME,'------- setActiveSubWindowCustomSlot():  updating *Act.setChecked: borderAct=',self.graphicsWindowVisDict[self.lastActiveWindow.winId().__int__()][1]
-                self.cellsAct.setChecked(self.graphicsWindowVisDict[dictKey][0])
-                self.borderAct.setChecked(self.graphicsWindowVisDict[dictKey][1])
-                self.clusterBorderAct.setChecked(self.graphicsWindowVisDict[dictKey][2])
-                self.cellGlyphsAct.setChecked(self.graphicsWindowVisDict[dictKey][3])
-                self.FPPLinksAct.setChecked(self.graphicsWindowVisDict[dictKey][4])
-
-
+    #MDIFIX
     def updateActiveWindowVisFlags(self, window=None):
 
         try:
             if window:
                 dictKey = window.winId().__int__()
             else:
-                dictKey = self.lastActiveWindow.winId().__int__()
+                dictKey = self.lastActiveRealWindow.widget().winId().__int__()
         except StandardError:
             print MODULENAME, 'updateActiveWindowVisFlags():  Could not find any open windows. Ignoring request'
             return
@@ -330,6 +348,27 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     #        print MODULENAME, 'updateActiveWindowVisFlags():  self.graphicsWindowVisDict[self.lastActiveWindow.winId().__int__()]=',self.graphicsWindowVisDict[self.lastActiveWindow.winId().__init__()]
     #        print MODULENAME, 'updateActiveWindowVisFlags():  self.graphicsWindowVisDict=',self.graphicsWindowVisDict
+
+
+    # def updateActiveWindowVisFlags(self, window=None):
+    #
+    #     try:
+    #         if window:
+    #             dictKey = window.winId().__int__()
+    #         else:
+    #             dictKey = self.lastActiveWindow.winId().__int__()
+    #     except StandardError:
+    #         print MODULENAME, 'updateActiveWindowVisFlags():  Could not find any open windows. Ignoring request'
+    #         return
+    #     #        print MODULENAME, 'updateActiveWindowVisFlags():  dictKey (of lastActiveWindow)=',dictKey
+    #     #        if self.lastActiveWindow:
+    #     #            print MODULENAME, 'updateActiveWindowVisFlags():  self.lastActiveWindow.windowTitle()=',self.lastActiveWindow.windowTitle()
+    #     self.graphicsWindowVisDict[dictKey] = (self.cellsAct.isChecked(), self.borderAct.isChecked(), \
+    #                                            self.clusterBorderAct.isChecked(), self.cellGlyphsAct.isChecked(),
+    #                                            self.FPPLinksAct.isChecked() )
+    #
+    # #        print MODULENAME, 'updateActiveWindowVisFlags():  self.graphicsWindowVisDict[self.lastActiveWindow.winId().__int__()]=',self.graphicsWindowVisDict[self.lastActiveWindow.winId().__init__()]
+    # #        print MODULENAME, 'updateActiveWindowVisFlags():  self.graphicsWindowVisDict=',self.graphicsWindowVisDict
 
 
     # Invoked whenever 'Window' menu is clicked. It does NOT modify lastActiveWindow directly (setActiveSubWindowCustomSlot does)
@@ -356,24 +395,41 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # for windowName in self.graphicsWindowDict.keys():
         for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+        # for win in self.win_inventory.values():
             graphicsWidget = win.widget()
+
+            if not graphicsWidget:  # happens with screenshot widget after simulation closes
+                continue
+
             if graphicsWidget.is_screenshot_widget:
                 continue
 
-
-            if counter < 9:
-                actionText = self.tr("&%1 %2").arg(counter + 1).arg(win.windowTitle())
-            else:
-                actionText = self.tr("%1 %2").arg(counter + 1).arg(win.windowTitle())
+            actionText = self.tr("&%1. %2").arg(counter + 1).arg(win.windowTitle())
 
             action = windowMenu.addAction(actionText)
             action.setCheckable(True)
-            myFlag = self.lastActiveWindow == graphicsWidget
+            # myFlag = self.lastActiveRealWindow == graphicsWidget
+            myFlag = self.lastActiveRealWindow == win
             action.setChecked(myFlag)
 
             self.connect(action, SIGNAL("triggered()"), self.windowMapper, SLOT("map()"))
             self.windowMapper.setMapping(action, win)
             counter += 1
+
+        for winId, win in self.win_inventory.getWindowsItems(PLOT_WINDOW_LABEL):
+
+            actionText = self.tr("&%1. %2").arg(counter + 1).arg(win.windowTitle())
+
+            action = windowMenu.addAction(actionText)
+            action.setCheckable(True)
+            # myFlag = self.lastActiveRealWindow == graphicsWidget
+            myFlag = self.lastActiveRealWindow == win
+            action.setChecked(myFlag)
+
+            self.connect(action, SIGNAL("triggered()"), self.windowMapper, SLOT("map()"))
+            self.windowMapper.setMapping(action, win)
+            counter += 1
+
 
         # for windowName in self.graphicsWindowDict.keys():
         #     graphicsWindow = self.graphicsWindowDict[windowName]
@@ -516,7 +572,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         newWindow.setZoomItems(self.zitems)  # Set zoomFixed parameters
 
-        self.lastActiveWindow = newWindow
+        # self.lastActiveWindow = newWindow
         #        print MODULENAME,'  addNewGraphicsWindow():  self.lastActiveWindow=',self.lastActiveWindow
         #        print MODULENAME,'  addNewGraphicsWindow():  self.lastActiveWindow.winId().__int__()=',self.lastActiveWindow.winId().__int__()
         # self.updateWindowMenu()
@@ -671,12 +727,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # MDIFIX
         # self.mainGraphicsWindow.setWindowTitle("Main Graphics Window " + str(self.windowCounter))
 
-        self.lastActiveWindow = self.mainGraphicsWindow
+        # self.lastActiveWindow = self.mainGraphicsWindow
 
         #MDIFIX
         self.lastActiveRealWindow = mdiSubWindow
 
-        self.setActiveSubWindowCustomSlot(self.mainGraphicsWindow)  # rwh: do this to "check" this in the "Window" menu
+        #MDIFIX
+        self.setActiveSubWindowCustomSlot(self.lastActiveRealWindow)  # rwh: do this to "check" this in the "Window" menu
+        # self.setActiveSubWindowCustomSlot(self.mainGraphicsWindow)  # rwh: do this to "check" this in the "Window" menu
 
 
         self.updateWindowMenu()
@@ -1636,62 +1694,63 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # CompuCellSetup.simulationPaths.setPlayerSimulationPythonScriptName(self.__fileName)
 
 
-    def __dumpPlayerParams(self):  # QShortcut
-        fname = 'player.txt'
-        print '     self.lastActiveWindow=', self.lastActiveWindow
-        f = open(fname, 'w')
-        cam = self.lastActiveWindow.camera3D
-
-        print '\n-----------------'
-        v = cam.GetPosition()
-        s = str(v)
-        s = 'CameraPosition= ' + s.replace('(', ' ').replace(')', ' ').replace(',', ' ') + '\n'
-        print s,
-        f.write(s)
-
-        v = cam.GetFocalPoint()
-        s = str(v)
-        s = 'CameraFocalPoint= ' + s.replace('(', ' ').replace(')', ' ').replace(',', ' ') + '\n'
-        print s,
-        f.write(s)
-
-        v = cam.GetViewUp()
-        s = str(v)
-        s = 'CameraViewUp= ' + s.replace('(', ' ').replace(')', ' ').replace(',', ' ') + '\n'
-        print s,
-        f.write(s)
-
-        v = cam.GetClippingRange()
-        s = str(v)
-        s = 'CameraClippingRange= ' + s.replace('(', ' ').replace(')', ' ').replace(',', ' ') + '\n'
-        print s,
-        f.write(s)
-
-        #        v = cam.GetViewPlaneNormal()  # deprecated; computed automatically
-        #        s = str(v)
-        #        s = 'ViewPlaneNormal= '+ s.replace('(',' ').replace(')',' ').replace(',',' ') + '\n'
-        #        print s,
-        #        f.write(s)
-
-        v = cam.GetDistance()
-        s = str(v)
-        s = 'CameraDistance= ' + s + '\n'
-        print s,
-        f.write(s)
-
-        v = cam.GetViewAngle()
-        s = str(v)
-        s = 'ViewAngle= ' + s + '\n'
-        print s,
-        f.write(s)
-
-        f.close()
-        print MODULENAME, '  dumpPlayerParams  --> ', fname
-        print '-----------------'
+    # def __dumpPlayerParams(self):  # QShortcut
+    #     fname = 'player.txt'
+    #     print '     self.lastActiveWindow=', self.lastActiveWindow
+    #     f = open(fname, 'w')
+    #     cam = self.lastActiveWindow.camera3D
+    #
+    #
+    #     print '\n-----------------'
+    #     v = cam.GetPosition()
+    #     s = str(v)
+    #     s = 'CameraPosition= ' + s.replace('(', ' ').replace(')', ' ').replace(',', ' ') + '\n'
+    #     print s,
+    #     f.write(s)
+    #
+    #     v = cam.GetFocalPoint()
+    #     s = str(v)
+    #     s = 'CameraFocalPoint= ' + s.replace('(', ' ').replace(')', ' ').replace(',', ' ') + '\n'
+    #     print s,
+    #     f.write(s)
+    #
+    #     v = cam.GetViewUp()
+    #     s = str(v)
+    #     s = 'CameraViewUp= ' + s.replace('(', ' ').replace(')', ' ').replace(',', ' ') + '\n'
+    #     print s,
+    #     f.write(s)
+    #
+    #     v = cam.GetClippingRange()
+    #     s = str(v)
+    #     s = 'CameraClippingRange= ' + s.replace('(', ' ').replace(')', ' ').replace(',', ' ') + '\n'
+    #     print s,
+    #     f.write(s)
+    #
+    #     #        v = cam.GetViewPlaneNormal()  # deprecated; computed automatically
+    #     #        s = str(v)
+    #     #        s = 'ViewPlaneNormal= '+ s.replace('(',' ').replace(')',' ').replace(',',' ') + '\n'
+    #     #        print s,
+    #     #        f.write(s)
+    #
+    #     v = cam.GetDistance()
+    #     s = str(v)
+    #     s = 'CameraDistance= ' + s + '\n'
+    #     print s,
+    #     f.write(s)
+    #
+    #     v = cam.GetViewAngle()
+    #     s = str(v)
+    #     s = 'ViewAngle= ' + s + '\n'
+    #     print s,
+    #     f.write(s)
+    #
+    #     f.close()
+    #     print MODULENAME, '  dumpPlayerParams  --> ', fname
+    #     print '-----------------'
 
 
     def __setConnects(self):
-        QShortcut(QKeySequence("Ctrl+p"), self, self.__dumpPlayerParams)  # Cmd-3 on Mac
+        # QShortcut(QKeySequence("Ctrl+p"), self, self.__dumpPlayerParams)  # Cmd-3 on Mac
         self.connect(self.runAct, SIGNAL('triggered()'), self.__runSim)
         self.connect(self.stepAct, SIGNAL('triggered()'), self.__stepSim)
         self.connect(self.pauseAct, SIGNAL('triggered()'), self.__pauseSim)
@@ -3252,7 +3311,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             gfw.applyGraphicsWindowData(gwd)
 
-            print 'self.lastActiveWindow=',self.lastActiveWindow
+            # print 'self.lastActiveWindow=',self.lastActiveWindow
             print 'gwd.winSize=',gwd.winSize
             # time.sleep(2)
 
@@ -3994,7 +4053,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         if self.FPPLinksColorAct.isEnabled():
 
-            if self.lastActiveWindow is not None:
+            # if self.lastActiveWindow is not None:
+            #MDIFIX
+            if self.lastActiveRealWindow is not None:
                 #                    Check for FPP plugin - improve to not even allow glyphs if no CoM
                 #                    print '---- dir(self.simulation) =', dir(self.simulation)
                 #                    print MODULENAME,'---- CoM = ',self.mainGraphicsWindow.drawModel2D.currentDrawingParameters.bsd.sim.getCC3DModuleData("Plugin","CenterOfMass")
