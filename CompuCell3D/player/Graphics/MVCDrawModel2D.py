@@ -1224,31 +1224,31 @@ class MVCDrawModel2D(MVCDrawModelBase):
             self.Render()
         
 
-    def zoomIn(self):
-        delta = 2*120
-        self.__zoomStep(delta)
-
-    def zoomOut(self):
-        delta = -2*120
-        self.__zoomStep(delta)
-
-    def zoomFixed(self, val):
-        if self.ren:
-            # renderer = self._CurrentRenderer
-            camera = self.ren.GetActiveCamera()
-            self.__curDist = camera.GetDistance()
-            
-            # To zoom fixed, dolly should be set to initial position
-            # and then moved to a new specified position!
-            if (self.__initDist != 0):
-                # You might need to rewrite the fixed zoom in case if there
-                # will be flickering
-                camera.Dolly(self.__curDist/self.__initDist)
-
-            camera.Dolly(self.zitems[val])
-            self.ren.ResetCameraClippingRange()
-
-            self.Render()
+    # def zoomIn(self):
+    #     delta = 2*120
+    #     self.__zoomStep(delta)
+    #
+    # def zoomOut(self):
+    #     delta = -2*120
+    #     self.__zoomStep(delta)
+    #
+    # def zoomFixed(self, val):
+    #     if self.ren:
+    #         # renderer = self._CurrentRenderer
+    #         camera = self.ren.GetActiveCamera()
+    #         self.__curDist = camera.GetDistance()
+    #
+    #         # To zoom fixed, dolly should be set to initial position
+    #         # and then moved to a new specified position!
+    #         if (self.__initDist != 0):
+    #             # You might need to rewrite the fixed zoom in case if there
+    #             # will be flickering
+    #             camera.Dolly(self.__curDist/self.__initDist)
+    #
+    #         camera.Dolly(self.zitems[val])
+    #         self.ren.ResetCameraClippingRange()
+    #
+    #         self.Render()
             
      # Never used?!  Rf. same fns in MVCDrawView2D.py
 #    def takeShot_rwh(self):

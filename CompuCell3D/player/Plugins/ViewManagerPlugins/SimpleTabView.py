@@ -344,7 +344,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # windowMenu.addAction(self.newPlotWindowAct)
         windowMenu.addAction(self.tileAct)
         windowMenu.addAction(self.cascadeAct)
-        windowMenu.addAction(self.saveWindowsGeometryAct)
         windowMenu.addAction(self.minimizeAllGraphicsWindowsAct)
         windowMenu.addAction(self.restoreAllGraphicsWindowsAct)
         windowMenu.addSeparator()
@@ -1698,14 +1697,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.connect(self.pauseAct, SIGNAL('triggered()'), self.__pauseSim)
         self.connect(self.stopAct, SIGNAL('triggered()'), self.__simulationStop)
 
-        self.connect(self.addVTKWindowAct, SIGNAL('triggered()'), self.__addVTKWindow)
+        # self.connect(self.addVTKWindowAct, SIGNAL('triggered()'), self.__addVTKWindow)
 
         self.connect(self.serializeAct, SIGNAL('triggered()'), self.__simulationSerialize)
 
         self.connect(self.openAct, SIGNAL('triggered()'), self.__openSim)
         self.connect(self.openLDSAct, SIGNAL('triggered()'), self.__openLDSFile)
 
-        self.connect(self.saveAct, SIGNAL('triggered()'), self.__saveSim)
+        # self.connect(self.saveAct, SIGNAL('triggered()'), self.__saveSim)
         self.connect(self.saveScreenshotDescriptionAct, SIGNAL('triggered()'), self.__saveScrDesc)
         self.connect(self.openScreenshotDescriptionAct, SIGNAL('triggered()'), self.__openScrDesc)
 
@@ -1753,9 +1752,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if self.mainGraphicsWindow is not None and isinstance(self.mainGraphicsWindow, (Graphics2D)):
             self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWindow.configsChanged)
 
-    def __addVTKWindow(self):
-
-        self.closeActiveSubWindowSlot()
+    # def __addVTKWindow(self):
+    #
+    #     self.closeActiveSubWindowSlot()
 
 
     def setFieldType(self, _fieldTypeTuple):
@@ -3520,21 +3519,21 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def setZoomItems(self, zitems):
         self.zitems = zitems
 
-    def zoomIn(self):
-        if self.mainGraphicsWindow is not None:
-            self.activeWindow().zoomIn()
-            # self.mainGraphicsWindow.zoomIn()
-            # print "Zoom in from TabView"
-
-    def zoomOut(self):
-        if self.mainGraphicsWindow is not None:
-            self.activeWindow().zoomOut()
-            # self.mainGraphicsWindow.zoomOut()
-
-    def zoomFixed(self, val):
-        if self.mainGraphicsWindow is not None:
-            self.activeWindow().zoomFixed(val)
-            # self.mainGraphicsWindow.zoomFixed(val)
+    # def zoomIn(self):
+    #     if self.mainGraphicsWindow is not None:
+    #         self.activeWindow().zoomIn()
+    #         # self.mainGraphicsWindow.zoomIn()
+    #         # print "Zoom in from TabView"
+    #
+    # def zoomOut(self):
+    #     if self.mainGraphicsWindow is not None:
+    #         self.activeWindow().zoomOut()
+    #         # self.mainGraphicsWindow.zoomOut()
+    #
+    # def zoomFixed(self, val):
+    #     if self.mainGraphicsWindow is not None:
+    #         self.activeWindow().zoomFixed(val)
+    #         # self.mainGraphicsWindow.zoomFixed(val)
 
     # # File name should be passed    
     def takeShot(self):
@@ -3666,20 +3665,20 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # Configuration.addItemToStrlist(item = os.path.abspath(self.__fileName),strListName = 'RecentSimulations',maxLength = Configuration.getSetting('NumberOfRecentSimulations'))
 
 
-    def __saveSim(self):
-        fullSimFileName = os.path.abspath(self.__fileName)
-        simFilePath = os.path.dirname(fullSimFileName)
-
-        filter = "CompuCell3D Simulation File (CC3DML) (*.xml )"  # self._getOpenFileFilter()
-        cc3dmlFileName = QFileDialog.getSaveFileName( \
-            self.ui,
-            QApplication.translate('ViewManager', "CompuCell3D Simulation File (CC3DML)"),
-            simFilePath,
-            filter
-            )
-
-        #        import CompuCellSetup
-        CompuCellSetup.cc3dXML2ObjConverter.root.saveXML(str(cc3dmlFileName))
+    # def __saveSim(self):
+    #     fullSimFileName = os.path.abspath(self.__fileName)
+    #     simFilePath = os.path.dirname(fullSimFileName)
+    #
+    #     filter = "CompuCell3D Simulation File (CC3DML) (*.xml )"  # self._getOpenFileFilter()
+    #     cc3dmlFileName = QFileDialog.getSaveFileName( \
+    #         self.ui,
+    #         QApplication.translate('ViewManager', "CompuCell3D Simulation File (CC3DML)"),
+    #         simFilePath,
+    #         filter
+    #         )
+    #
+    #     #        import CompuCellSetup
+    #     CompuCellSetup.cc3dXML2ObjConverter.root.saveXML(str(cc3dmlFileName))
 
     def __openScrDesc(self):
         filter = "Screenshot description file (*.sdfml)"  # self._getOpenFileFilter()

@@ -36,11 +36,9 @@ class SimpleViewManager(QObject):
     def initFileMenu(self):
         menu = QMenu(QApplication.translate('ViewManager', '&File'), self.ui)
         menu.addAction(self.openAct)
-        menu.addAction(self.saveAct)
+        # menu.addAction(self.saveAct)
         menu.addAction(self.openScreenshotDescriptionAct)
         menu.addAction(self.saveScreenshotDescriptionAct)
-#        menu.addAction(self.openPlayerParamsAct)
-        menu.addAction(self.savePlayerParamsAct)
         menu.addAction(self.openLDSAct) # LDS lattice description summary  - xml file that specifies what simulation data has been written to the disk
         menu.addSeparator()
         menu.addAction(self.tweditAct)
@@ -59,7 +57,7 @@ class SimpleViewManager(QObject):
         menu.addAction(self.pauseAct)
         menu.addAction(self.stopAct)
         
-        menu.addAction(self.addVTKWindowAct)        
+        # menu.addAction(self.addVTKWindowAct)
         
         menu.addSeparator()
         #--------------------
@@ -142,7 +140,7 @@ class SimpleViewManager(QObject):
         tb.setToolTip(QApplication.translate('ViewManager', 'File'))
         
         tb.addAction(self.openAct)        
-        tb.addAction(self.saveAct)
+        # tb.addAction(self.saveAct)
         # tb.addAction(self.closeAct)
         tb.addAction(self.configAct)
         tb.addAction(self.tweditAct)
@@ -286,10 +284,10 @@ class SimpleViewManager(QObject):
         # self.openAct.setShortcut(QKeySequence(tr("Ctrl+O")))
         self.openAct.setShortcut(Qt.CTRL + Qt.Key_O)
         
-        self.saveAct = QAction(QIcon(gip("save.png")), "&Save Simulation XML file", self)
+        # self.saveAct = QAction(QIcon(gip("save.png")), "&Save Simulation XML file", self)
         self.saveScreenshotDescriptionAct=QAction(QIcon(gip("screenshots_save_alt.png")), "&Save Screenshot Description...", self)
         self.openScreenshotDescriptionAct=QAction(QIcon(gip("screenshots_open.png")), "&Open Screenshot Description...", self)
-        self.savePlayerParamsAct=QAction(QIcon(gip("screenshots_save_alt.png")), "&Save Player Parameters...", self)
+        # self.savePlayerParamsAct=QAction(QIcon(gip("screenshots_save_alt.png")), "&Save Player Parameters...", self)
 #        self.openPlayerParamsAct=QAction(QIcon(gip("screenshots_open.png")), "&Open Player Parameters...", self)
         self.openLDSAct=QAction(QIcon(gip("screenshots_open.png")), "&Open Lattice Description Summary File...", self)
         
@@ -300,11 +298,9 @@ class SimpleViewManager(QObject):
         
         # Why do I need these appendings?
         self.fileActions.append(self.openAct)
-        self.fileActions.append(self.saveAct)
+        # self.fileActions.append(self.saveAct)
         self.fileActions.append(self.openScreenshotDescriptionAct)
         self.fileActions.append(self.saveScreenshotDescriptionAct)
-#        self.fileActions.append(self.openPlayerParamsAct)
-        self.fileActions.append(self.savePlayerParamsAct)
         self.fileActions.append(self.openLDSAct)
         self.fileActions.append(self.tweditAct)
         
@@ -372,8 +368,8 @@ class SimpleViewManager(QObject):
         self.stopAct.setShortcut(Qt.CTRL + Qt.Key_X)
         self.serializeAct = QAction( "Serialize", self)
         
-        self.addVTKWindowAct=QAction(QIcon(gip("stop.png")),'Add VTK Window',self )
-        self.addVTKWindowAct.setShortcut(Qt.CTRL + Qt.Key_I)
+        # self.addVTKWindowAct=QAction(QIcon(gip("kcmkwm.png")), 'Add VTK Window', self)
+        # self.addVTKWindowAct.setShortcut(Qt.CTRL + Qt.Key_I)
         
 
         # Why append?
@@ -382,7 +378,7 @@ class SimpleViewManager(QObject):
         self.simActions.append(self.pauseAct)
         self.simActions.append(self.stopAct)
         self.simActions.append(self.serializeAct)
-        self.simActions.append(self.addVTKWindowAct)
+        # self.simActions.append(self.addVTKWindowAct)
         
 
     def __initVisualActions(self):
@@ -495,12 +491,12 @@ class SimpleViewManager(QObject):
         # # # self.toolsActions.append(self.movieAct)
     def __initWindowActions(self):        
         self.newGraphicsWindowAct = QAction(QIcon(gip("kcmkwm.png")),"&New Graphics Window", self)
-        # self.newPlotWindowAct = QAction(QIcon("player/icons/plot.png"),"&New Plot Window", self)        
+        # self.newPlotWindowAct = QAction(QIcon("player/icons/plot.png"),"&New Plot Window", self)
+        self.newGraphicsWindowAct .setShortcut(self.tr("Ctrl+I"))
+
         self.tileAct=QAction("Tile", self)
         self.cascadeAct=QAction("Cascade", self)
-        
-        self.saveWindowsGeometryAct = QAction("Save Window(s) Geometry", self)
-        
+
         self.minimizeAllGraphicsWindowsAct=QAction("Minimize All Graphics Windows",self)
         
         self.minimizeAllGraphicsWindowsAct.setShortcut(self.tr("Ctrl+Alt+M"))
@@ -518,7 +514,6 @@ class SimpleViewManager(QObject):
         # self.windowActions.append(self.newPlotWindowAct)
         self.windowActions.append(self.tileAct)
         self.windowActions.append(self.cascadeAct)
-        self.windowActions.append(self.saveWindowsGeometryAct)
         
         self.windowActions.append(self.minimizeAllGraphicsWindowsAct)
         self.windowActions.append(self.restoreAllGraphicsWindowsAct)

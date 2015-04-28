@@ -235,15 +235,15 @@ class UserInterface(QMainWindow):
         # filetb = self.viewmanager.initFileToolbar(self.toolbarManager)
         filetb = self.viewmanager.initFileToolbar()
         
-        viewtb = QToolBar("View", self)
-        viewtb.setIconSize(QSize(20, 18))
-        viewtb.setObjectName("ViewToolbar")
-        viewtb.setToolTip("View")
-        viewtb.addAction(self.zoomInAct)        
-        viewtb.addAction(self.zoomOutAct)
-        #viewtb.addAction(self.zoomFixedAct)
-        viewtb.addWidget(self.zoomFixed)
-        viewtb.addWidget(QLabel("  "))
+        # viewtb = QToolBar("View", self)
+        # viewtb.setIconSize(QSize(20, 18))
+        # viewtb.setObjectName("ViewToolbar")
+        # viewtb.setToolTip("View")
+        # viewtb.addAction(self.zoomInAct)
+        # viewtb.addAction(self.zoomOutAct)
+        # #viewtb.addAction(self.zoomFixedAct)
+        # viewtb.addWidget(self.zoomFixed)
+        # viewtb.addWidget(QLabel("  "))
         # viewtb.addAction(self.screenshotAct)
         windowtb=self.viewmanager.initWindowToolbar()
         
@@ -256,15 +256,15 @@ class UserInterface(QMainWindow):
         #viewtb = self.viewmanager.initViewToolbar()
             
         self.addToolBar(simtb)              
-        self.addToolBar(filetb)     
-        self.addToolBar(viewtb)
+        self.addToolBar(filetb)
+        # self.addToolBar(viewtb)
         self.addToolBar(windowtb)
         # self.addToolBar(cstb)
         
         # just add new toolbars to the end of the list
         self.__toolbars = {}
         self.__toolbars["file"] = [filetb.windowTitle(), filetb]
-        self.__toolbars["view"] = [viewtb.windowTitle(), viewtb]
+        # self.__toolbars["view"] = [viewtb.windowTitle(), viewtb]
         self.__toolbars["simulation"] = [simtb.windowTitle(), simtb]
         # self.__toolbars["crossSection"] = [cstb.windowTitle(), cstb]      
         
@@ -289,18 +289,18 @@ class UserInterface(QMainWindow):
         Private method to define the user interface actions.
         """
         self.actions = []
-        self.zoomInAct = QAction(QIcon(gip("zoomIn.png")), "&Zoom In", self)
-        self.actions.append(self.zoomInAct) # Replaced "viewActions" by "actions":self.viewActions.append(self.zoomInAct)
-        
-        self.zoomOutAct = QAction(QIcon(gip("zoomOut.png")), "&Zoom Out", self)
-        self.actions.append(self.zoomOutAct)
-        
-        # Why do I need self.zoomFixedAct?
-        #self.zoomFixedAct = QAction(self)
-        self.zoomFixed  = QComboBox()
-        self.zoomFixed.setToolTip("Zoom Fixed")
-        self.zoomFixed.addItems(self.__zoomItems())
-        self.zoomFixed.setCurrentIndex(3)
+        # self.zoomInAct = QAction(QIcon(gip("zoomIn.png")), "&Zoom In", self)
+        # self.actions.append(self.zoomInAct) # Replaced "viewActions" by "actions":self.viewActions.append(self.zoomInAct)
+        #
+        # self.zoomOutAct = QAction(QIcon(gip("zoomOut.png")), "&Zoom Out", self)
+        # self.actions.append(self.zoomOutAct)
+        #
+        # # Why do I need self.zoomFixedAct?
+        # #self.zoomFixedAct = QAction(self)
+        # self.zoomFixed  = QComboBox()
+        # self.zoomFixed.setToolTip("Zoom Fixed")
+        # self.zoomFixed.addItems(self.__zoomItems())
+        # self.zoomFixed.setCurrentIndex(3)
         #self.zoomFixed.addAction(self.zoomFixedAct)
         #self.actions.append(self.zoomFixedAct)
         
@@ -349,9 +349,9 @@ class UserInterface(QMainWindow):
         self.connect(self.latticeDataAct, SIGNAL("triggered(bool)"), self.toggleLatticeData)
         self.actions.append(self.latticeDataAct)
         
-        self.connect(self.zoomInAct, SIGNAL('triggered()'), self.viewmanager.zoomIn)
-        self.connect(self.zoomOutAct, SIGNAL('triggered()'), self.viewmanager.zoomOut)
-        self.connect(self.zoomFixed, SIGNAL('activated(int)'), self.viewmanager.zoomFixed)
+        # self.connect(self.zoomInAct, SIGNAL('triggered()'), self.viewmanager.zoomIn)
+        # self.connect(self.zoomOutAct, SIGNAL('triggered()'), self.viewmanager.zoomOut)
+        # self.connect(self.zoomFixed, SIGNAL('activated(int)'), self.viewmanager.zoomFixed)
         # self.connect(self.screenshotAct, SIGNAL('triggered()'), self.viewmanager.takeShot)
         
         # self.connect(self.newGraphicsWindowAct, SIGNAL('triggered()'), self.viewmanager.addVTKWindowToWorkspace)
@@ -585,16 +585,16 @@ class UserInterface(QMainWindow):
         self.__menus["view"].clear()
         
         # Populate actions
-        self.__menus["view"].addAction(self.zoomInAct)
-        self.__menus["view"].addAction(self.zoomOutAct)
-        self.__menus["view"].addSeparator()      
+        # self.__menus["view"].addAction(self.zoomInAct)
+        # self.__menus["view"].addAction(self.zoomOutAct)
+        # self.__menus["view"].addSeparator()
         # self.__menus["view"].addAction(self.screenshotAct)    
         
-        self.__menus["view"].addSeparator()
+        # self.__menus["view"].addSeparator()
         
         self.__menus["view"].addMenu(self.__menus["toolbars"])         
 
-        self.__menus["view"].addSeparator()
+        # self.__menus["view"].addSeparator()
         self.__menus["view"].addAction(self.modelAct)
         self.modelAct.setChecked(not self.modelEditorDock.isHidden())
         
