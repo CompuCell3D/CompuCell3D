@@ -524,8 +524,11 @@ class SimpleViewManager(QObject):
         
     def __initHelpActions(self):
         self.quickAct = QAction("&Quick Start", self)
+        self.connect(self.quickAct, SIGNAL('triggered()'), self.__open_manuals_webpage)
         self.tutorAct = QAction("&Tutorials", self)
+        self.connect(self.tutorAct, SIGNAL('triggered()'), self.__open_manuals_webpage)
         self.refManAct = QAction(QIcon(gip("man.png")), "&Reference Manual", self)
+        self.connect(self.refManAct, SIGNAL('triggered()'), self.__open_manuals_webpage)
         self.aboutAct = QAction(QIcon(gip("cc3d_64x64_logo.png")), "&About CompuCell3D", self)
         self.connect(self.aboutAct, SIGNAL('triggered()'), self.__about)
         
@@ -539,6 +542,8 @@ class SimpleViewManager(QObject):
             """ titlebar.</p>"""
         ))
         self.connect(self.whatsThisAct, SIGNAL('triggered()'), self.__whatsThis)
+
+
         
         # Why append?
         self.helpActions.append(self.quickAct)
@@ -552,7 +557,10 @@ class SimpleViewManager(QObject):
         # self.closeTab.setIcon(QIcon("player/icons/close.png"))
         # self.closeTab.setToolTip("Close the tab")
         # self.closeTab.hide()
-    
+    def __open_manuals_webpage(self):
+        print 'THIS IS QUICK START GUIDE'
+        QDesktopServices.openUrl(QUrl('http://www.compucell3d.org/Manuals'))
+
     def __about(self):
         versionStr='3.6.0'    
         revisionStr='0'
