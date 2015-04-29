@@ -815,7 +815,39 @@ class PlotManager(QtCore.QObject):
             self.newPlotWindowSignal.connect(self.processRequestForNewPlotWindow)
             self.signalsInitialized=True
         # self.connect(self,SIGNAL("newPlotWindow(QtCore.QMutex)"),self.processRequestForNewPlotWindow)
-        
+
+    def restore_plots_layout(self):
+        ''' This function restores plot layout - it is called from CompuCellSetup.py inside mainLoopNewPlayer function
+        :return: None
+        '''
+
+        windows_layout_dict = Configuration.getSetting('WindowsLayout')
+
+        if not windows_layout_dict:
+            return
+
+        for winId, win in self.vm.win_inventory.getWindowsItems(PLOT_WINDOW_LABEL):
+            plot_frame_widget = win.widget()
+
+            plot_interface = plot_frame_widget.plotInterface()  # plot_frame_widget.plotInterface is a weakref
+
+            if not plot_interface:  # if weakref to plot_interface is None we ignore such window
+                continue
+
+            if str(plot_interface.title ) in windows_layout_dict.keys():
+                window_data_dict = windows_layout_dict[str(plot_interface.title)]
+
+                from Graphics.GraphicsWindowData import GraphicsWindowData
+
+                gwd = GraphicsWindowData()
+                gwd.fromDict(window_data_dict)
+
+                if gwd.winType != 'plot':
+                    return
+                win.resize(gwd.winSize)
+                win.move(gwd.winPosition)
+                win.setWindowTitle(plot_interface.title)
+
     def getNewPlotWindow(self):
         # print "\n\n\n getNewPlotWindow "
         self.plotWindowMutex.lock()
@@ -827,36 +859,32 @@ class PlotManager(QtCore.QObject):
         return self.plotWindowList[-1] # returning recently added window
     
     def restoreSingleWindow(self,plotWindowInterface):
+        '''
+        Restores size and position of a single, just-added plot window
+        :param plotWindowInterface: an insance of PlotWindowInterface - can be fetchet from PlotFrameWidget using PlotFrameWidgetInstance.plotInterface
+        :return: None
+        '''
         
-        windowsLayoutDict = Configuration.getSetting('WindowsLayout')
-        print 'windowsLayoutDict=',windowsLayoutDict
+        windows_layout_dict = Configuration.getSetting('WindowsLayout')
+        # print 'windowsLayoutDict=', windowsLayoutDict
         
-        if not windowsLayoutDict: return
+        if not windows_layout_dict: return
         
-        if str( plotWindowInterface.title ) in windowsLayoutDict.keys():
-            windowDataDict = windowsLayoutDict [ str(plotWindowInterface.title) ]
-            
+        if str(plotWindowInterface.title) in windows_layout_dict.keys():
+            window_data_dict = windows_layout_dict[str(plotWindowInterface.title)]
+
             from Graphics.GraphicsWindowData import GraphicsWindowData
             
             gwd = GraphicsWindowData()                      
-            gwd.fromDict(windowDataDict)            
+            gwd.fromDict(window_data_dict)
             
             if gwd.winType != 'plot':
                 return
-            
-            
-            plotWindow = self.vm.lastActiveRealWindow
 
-            # mdiWindow = self.vm.findMDISubWindowForWidget (plotWindowInterface.plotWindow)
-
-
-            plotWindow.resize(gwd.winSize)
-            plotWindow.move(gwd.winPosition)
-
-            
-            # gfw.applyGraphicsWindowData(gwd)      
-            
-            
+            plot_window = self.vm.lastActiveRealWindow
+            plot_window.resize(gwd.winSize)
+            plot_window.move(gwd.winPosition)
+            plot_window.setWindowTitle(plotWindowInterface.title)
 
     def getPlotWindowsLayoutDict(self):
         windowsLayout = {}
@@ -982,7 +1010,9 @@ class PlotManager(QtCore.QObject):
         
         plotWindowInterface=PlotWindowInterface(newWindow)
         self.plotWindowList.append(plotWindowInterface) # store plot window interface in the window list
-                
+
+        # self.restoreSingleWindow(plotWindowInterface)
+
         self.plotWindowMutex.unlock()
         
         # return  plotWindowInterface# here I will need to call either PlotWindowInterface or PlotWindowInterfaceBase depending if dependencies are installed or not
