@@ -26,13 +26,13 @@ class DockSubWindow(QDockWidget):
 
 
     def closeEvent(self, ev):
-        print 'DOCK WIDGET CLOSE EVENT'
-        # print 'self.toggleFcn=', self.toggleFcn
-        print 'self = ', self
-        print 'BEFORE self.parent.win_inventory = ',self.parent.win_inventory
+        # print 'DOCK WIDGET CLOSE EVENT'
+        # # print 'self.toggleFcn=', self.toggleFcn
+        # print 'self = ', self
+        # print 'BEFORE self.parent.win_inventory = ',self.parent.win_inventory
         self.parent.win_inventory.remove_from_inventory(self)
 
-        print 'AFTER self.parent.win_inventory = ',self.parent.win_inventory
+        # print 'AFTER self.parent.win_inventory = ',self.parent.win_inventory
 
         # self.windowInventoryDict[self.windowInventoryCounter] = dockWidget
         # if self.toggleFcn: self.toggleFcn(False)
@@ -51,14 +51,10 @@ class MainArea(QWidget):
 
         self.lastActiveRealWindow = None # keeps track of the last active real window
 
-        # self.windowInventoryCounter = 0
-        #
-        # self.windowInventoryDict = {}
 
     def addSubWindow(self, widget):
 
-        # gfw = GraphicsFrameWidget(parent=None, originatingWidget=self)
-        # self.mainGraphicsWindow = gfw
+
         import Graphics
         print 'INSTANCE OF GraphicsFrameWidget =  ', isinstance(widget, Graphics.GraphicsFrameWidget.GraphicsFrameWidget)
         obj_type = 'other'
@@ -127,7 +123,7 @@ class MainArea(QWidget):
             caption = QString()
 
         dock.setFloating(True)
-        print 'self.parent = ', self.parent
+        # print 'self.parent = ', self.parent
         self.UI.addDockWidget(where, dock)
         dock.setWidget(widget)
         dock.setWindowTitle(caption)

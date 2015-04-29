@@ -60,7 +60,7 @@ except:
 # 7. get rid of multiple calls to pde from twedit++
 # 8.
 
-from MainArea import MainArea
+from MainAreaMdi import MainArea
 # if Configuration.getSetting('FloatingWindows'):
 #     from MainArea import MainArea
 # else:
@@ -2157,6 +2157,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.simulation.sem.tryAcquire()
         self.simulation.sem.release()
+
+        # restoring plots
+
+        self.plotManager.restore_plots_layout()
 
 
     #    def multiWindowPlayerSettings(self, _root_element):

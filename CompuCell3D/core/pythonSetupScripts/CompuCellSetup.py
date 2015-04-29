@@ -461,7 +461,7 @@ def addNewPlotWindow(_title='',_xAxisTitle='',_yAxisTitle='',_xScaleType='linear
     pW.addAutoLegend("top")
     
     # restoring plot window - have to decide whether to keep it or rely on viewManager.plotManager restore_plots_layout function
-    viewManager.plotManager.restoreSingleWindow(pW)
+#     viewManager.plotManager.restoreSingleWindow(pW)
     
     return pW
     
@@ -1400,9 +1400,9 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
         
         if not restartEnabled: # start function does not get called during restart
             steppableRegistry.start()
-            # restoring plots
-            global viewManager
-            viewManager.plotManager.restore_plots_layout()
+#             # restoring plots
+#             global viewManager
+#             viewManager.plotManager.restore_plots_layout()
             
         global customVisStorage
         
