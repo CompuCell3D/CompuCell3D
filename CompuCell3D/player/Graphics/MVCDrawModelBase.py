@@ -329,10 +329,12 @@ class MVCDrawModelBase:
 
         # You don't actually need to make contrast for the text as
         # it has shadow!
-        text = legendActor.GetLabelTextProperty()        
-        #text.SetFontSize(12) # For some reason it doesn't make effect
-        text.BoldOff()
-        text.SetColor(1.0, 1.0, 1.0)
+        text_property = legendActor.GetLabelTextProperty()
+        text_property.SetFontSize(12) # For some reason it doesn't make effect
+        # text.BoldOff()
+        text_property.SetColor(1.0, 1.0, 1.0)
+
+        legendActor.SetLabelTextProperty(text_property)
 
 
     # Break the settings read into groups?

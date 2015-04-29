@@ -121,15 +121,36 @@ class UserInterface(QMainWindow):
             #silencing output from Python
             self.enablePythonOutput(False)
             
+        if self.viewmanager.MDI_ON: # configuration of MDI
+            playerSizes=Configuration.getSetting("PlayerSizes")
+            if playerSizes and playerSizes.size()>0:
+                self.resize(Configuration.getSetting("MainWindowSize"))
+                self.move(Configuration.getSetting("MainWindowPosition"))
+                self.restoreState(playerSizes)
+            else:
+                self.resize(Configuration.getSetting("MainWindowSize"))
+                self.move(Configuration.getSetting("MainWindowPosition"))
+        else:  # configuration of floating windows
+            playerSizes=Configuration.getSetting("PlayerSizesFloating")
 
-        playerSizes=Configuration.getSetting("PlayerSizes")
-        if playerSizes and playerSizes.size()>0:
-            self.resize(Configuration.getSetting("MainWindowSize"))
-            self.move(Configuration.getSetting("MainWindowPosition"))
-            self.restoreState(playerSizes)
-        else:
-            self.resize(Configuration.getSetting("MainWindowSize"))
-            self.move(Configuration.getSetting("MainWindowPosition"))
+            if playerSizes and playerSizes.size()>0:
+                self.resize(Configuration.getSetting("MainWindowSizeFloating"))
+                self.resize(self.size().width(), 0) # resizing vertical dimension to be minimal
+                self.move(Configuration.getSetting("MainWindowPositionFloating"))
+                self.restoreState(playerSizes)
+            else:
+                self.resize(Configuration.getSetting("MainWindowSizeFloating"))
+                self.resize(self.size().width(), 0) # resizing vertical dimension to be minimal
+                self.move(Configuration.getSetting("MainWindowPositionFloating"))
+
+
+        # if playerSizes and playerSizes.size()>0:
+        #     self.resize(Configuration.getSetting("MainWindowSize"))
+        #     self.move(Configuration.getSetting("MainWindowPosition"))
+        #     self.restoreState(playerSizes)
+        # else:
+        #     self.resize(Configuration.getSetting("MainWindowSize"))
+        #     self.move(Configuration.getSetting("MainWindowPosition"))
 
         # MDIFIX
         floatingFlag = Configuration.getSetting('FloatingWindows')
@@ -272,10 +293,17 @@ class UserInterface(QMainWindow):
     
     def closeEvent(self, event=None):
         print "CALLING CLOSE EVENT FROM  SIMTAB"
-        Configuration.setSetting("PlayerSizes",self.saveState())
-        Configuration.setSetting("MainWindowSize",self.size())
-        Configuration.setSetting("MainWindowPosition",self.pos())
-        
+        if self.viewmanager.MDI_ON:
+            Configuration.setSetting("PlayerSizes", self.saveState())
+            Configuration.setSetting("MainWindowSize",self.size())
+            Configuration.setSetting("MainWindowPosition",self.pos())
+
+        else:
+            Configuration.setSetting("PlayerSizesFloating", self.saveState())
+            Configuration.setSetting("MainWindowSizeFloating",self.size())
+            Configuration.setSetting("MainWindowPositionFloating",self.pos())
+
+
         self.viewmanager.closeEventSimpleTabView(event)
       
     def __initStatusbar(self):
@@ -441,10 +469,9 @@ class UserInterface(QMainWindow):
         self.viewmanager.setModelEditor(modelEditor) # Sets the Model Editor in the ViewManager
         self.__setupDockWindow(self.modelEditorDock, Qt.LeftDockWidgetArea, modelEditor, self.trUtf8("Model Editor")) # projectBrowser  
 
-
         self.latticeDataDock = self.__createDockWindow("LatticeData")
         self.latticeDataDock.setToggleFcn(self.toggleLatticeData)
-        self.latticeDataModelTable     = LatticeDataModelTable(self.latticeDataDock, self.viewmanager)
+        self.latticeDataModelTable = LatticeDataModelTable(self.latticeDataDock, self.viewmanager)
         self.latticeDataModel = LatticeDataModel() 
         # self.latticeDataModelTable.setModel(self.latticeDataModel)
         

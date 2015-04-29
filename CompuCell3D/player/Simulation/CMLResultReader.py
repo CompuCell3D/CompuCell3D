@@ -80,8 +80,10 @@ class CMLResultReader(SimulationThread.SimulationThread):
         self.reading=False
         self.state=STOP_STATE
         
-        
-    
+        self.stay_in_current_step = False
+
+        self.recently_read_file_number = -1
+
 	# Python 2.6 requires importing of Example, CompuCell and Player Python modules from an instance  of QThread class (here Simulation Thread inherits from QThread)
 	# Simulation Thread communicates with SimpleTabView using SignalSlot method. If we dont import the three modules then when SimulationThread emits siglan and SimpleTabView
 	# processes this signal in a slot (e.g. initializeSimulationViewWidget) than calling a member function of an object from e.g. Player Python (self.fieldStorage.allocateCellField(self.fieldDim))
@@ -90,13 +92,22 @@ class CMLResultReader(SimulationThread.SimulationThread):
 	import Example
 	import CompuCell
 	import PlayerPython
-    
-    
+
+    def set_stay_in_current_step(self,flag):
+        self.stay_in_current_step = flag
+
+    def get_stay_in_current_step(self):
+        return self.stay_in_current_step
+
+
     def gotData(self,_i):
         # print '\n\n\n       GOT DATA FOR STEP ',_i
         # print '\n\n'
+        self.recently_read_file_number = _i
+
         self.dataReader.data_read.disconnect(self.gotData)
-        self.reading=False
+        self.reading = False
+
         if _i==0 and not self.__initialized:
             self.initial_data_read.emit(True)
             self.__initialized = True
@@ -119,14 +130,28 @@ class CMLResultReader(SimulationThread.SimulationThread):
         self.state=STOP_STATE
         
     def keepGoing(self):
-        if self.state==RUN_STATE:
+
+        if self.state == RUN_STATE:
             self.step()
     
     def step(self):
         # ignoring step requests while reading operation is pending
+        # print 'INSIDE STEP self.reading=',self.reading
         if self.reading: 
             return
-            
+
+        # this section repeats the current step - pretends that the file was read again
+        # used to give users a chance to change initial view in the graphics widget to ensure that all screenshots
+        # are saved including screenshot for the first file
+
+        if self.stay_in_current_step:
+            self.stay_in_current_step =  False
+            self.reading = False
+            if self.recently_read_file_number >= 0:
+                self.subsequent_data_read.emit(self.recently_read_file_number)
+
+            return
+
         print 'self.stepCounter=',self.stepCounter
         print 'DIRECT ACCESS =', self.getCurrentStepDirectAccess()
         

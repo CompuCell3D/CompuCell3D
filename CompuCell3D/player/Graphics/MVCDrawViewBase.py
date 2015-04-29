@@ -53,7 +53,10 @@ class MVCDrawViewBase:
         (self.minCon, self.maxCon) = (0, 0)
 #        print MODULENAME,"graphicsFrameWidget=",graphicsFrameWidget
 #        print MODULENAME,"parent=",parent
-        
+
+        self.plane = 'XY'
+        self.planePos = 0
+
         # # # self.drawModel = _drawModel
         self.parentWidget = parent
 #        print MODULENAME,'  __init__: parentWidget=',self.parentWidget

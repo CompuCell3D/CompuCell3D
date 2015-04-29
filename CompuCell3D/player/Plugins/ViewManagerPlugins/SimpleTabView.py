@@ -60,11 +60,11 @@ except:
 # 7. get rid of multiple calls to pde from twedit++
 # 8.
 
-from MainAreaMdi import MainArea
-# if Configuration.getSetting('FloatingWindows'):
-#     from MainArea import MainArea
-# else:
-#     from MainAreaMdi import MainArea
+# from MainAreaMdi import MainArea
+if Configuration.getSetting('FloatingWindows'):
+    from MainArea import MainArea
+else:
+    from MainAreaMdi import MainArea
 
 
 
@@ -339,15 +339,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
         except StandardError:
             print MODULENAME, 'updateActiveWindowVisFlags():  Could not find any open windows. Ignoring request'
             return
-        #        print MODULENAME, 'updateActiveWindowVisFlags():  dictKey (of lastActiveWindow)=',dictKey
-        #        if self.lastActiveWindow:
-        #            print MODULENAME, 'updateActiveWindowVisFlags():  self.lastActiveWindow.windowTitle()=',self.lastActiveWindow.windowTitle()
+
         self.graphicsWindowVisDict[dictKey] = (self.cellsAct.isChecked(), self.borderAct.isChecked(), \
                                                self.clusterBorderAct.isChecked(), self.cellGlyphsAct.isChecked(),
                                                self.FPPLinksAct.isChecked() )
-
-    #        print MODULENAME, 'updateActiveWindowVisFlags():  self.graphicsWindowVisDict[self.lastActiveWindow.winId().__int__()]=',self.graphicsWindowVisDict[self.lastActiveWindow.winId().__init__()]
-    #        print MODULENAME, 'updateActiveWindowVisFlags():  self.graphicsWindowVisDict=',self.graphicsWindowVisDict
 
 
     # def updateActiveWindowVisFlags(self, window=None):
@@ -1926,6 +1921,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 #                print MODULENAME, 'initializeSimulationViewWidgetCMLResultReplay(): self.screenshotDirectoryName= ',self.screenshotDirectoryName
 
         self.cmlReplayManager.keepGoing()
+        self.cmlReplayManager.set_stay_in_current_step(True)
 
     def createOutputDirs(self):
 
@@ -2330,8 +2326,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         print 'SIMPLE TAB VIEW self.__step=', self.__step
         print 'SIMPLE TAB VIEW self.simulation.frequency=', self.simulation.frequency
         # # # self.latticeDataModelTable.selectRow(self.__step / self.simulation.frequency ) # here elf.step holds the value of the "user step" i.e. not multiplied by frequency. it gets multiplied by frequency next
-        self.latticeDataModelTable.selectRow(
-            self.simulation.stepCounter - 1)  #self.simulation.stepCounter is incremented by one before it reaches this function
+        self.latticeDataModelTable.selectRow(self.simulation.stepCounter - 1)  #self.simulation.stepCounter is incremented by one before it reaches this function
 
         #there is additional locking inside draw to acccount for the fact that users may want to draw lattice on demand
         # self.simulation.newFileBeingLoaded=False
@@ -2347,17 +2342,21 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.drawMutex.lock()
         # will need to synchorinize screenshots with simulation thread . make sure that before simuklation thread writes new results all the screenshots are taken
 
+
         if self.__imageOutput and not (self.__step % self.__shotFrequency):  # dumping images? Check modulo MCS #
             mcsFormattedNumber = string.zfill(str(self.__step),
                                               self.screenshotNumberOfDigits)  # fills string wtih 0's up to self.screenshotNumberOfDigits width
             screenshotFileName = os.path.join(self.screenshotDirectoryName,
                                               self.baseScreenshotName + "_" + mcsFormattedNumber + ".png")
-            #            print MODULENAME," handleCompletedStepCMLResultReplay():  calling takeSimShot w/ screenshotFileName=",screenshotFileName
+
+            # print MODULENAME," handleCompletedStepCMLResultReplay():  calling takeSimShot w/ screenshotFileName=",screenshotFileName
+
             self.mainGraphicsWindow.takeSimShot(screenshotFileName)
             self.screenshotManager.outputScreenshots(self.screenshotDirectoryName, self.__step)
 
         self.simulation.drawMutex.unlock()
 
+        # print '\n\n self.simulationIsStepping=',self.simulationIsStepping
         if self.simulationIsStepping:
             self.__pauseSim()
             self.stepAct.setEnabled(True)
@@ -2387,7 +2386,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.drawMutex.lock()
         # will need to sync screenshots with simulation thread. Be sure before simulation thread writes new results all the screenshots are taken
 
-        # print MODULENAME, 'handleCompletedStepRegular():  __shotFrequency, __imageOutput = ',self.__shotFrequency,self.__imageOutput
+        print MODULENAME, 'handleCompletedStepRegular():  __shotFrequency, __imageOutput = ',self.__shotFrequency,self.__imageOutput
 
         if self.__imageOutput and not (self.__step % self.__shotFrequency):  # dumping images? Check modulo MCS #
             mcsFormattedNumber = string.zfill(str(self.__step),
@@ -2401,10 +2400,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 if self.mainGraphicsWindow:  # self.mainGraphicsWindow can be closed by the user
                     self.mainGraphicsWindow.takeSimShot(screenshotFileName)
 
+            print 'self.screenshotManager=', self.screenshotManager
             if self.screenshotManager:
                 self.screenshotManager.outputScreenshots(self.screenshotDirectoryName, self.__step)
 
-                # print 'self.screenshotDirectoryName=',self.screenshotDirectoryName
+                print 'self.screenshotDirectoryName=',self.screenshotDirectoryName
                 # sys.exit()
 
             #        if (CompuCellSetup.cmlFieldHandler is not None) and self.__latticeOutputFlag and (not self.__step % self.__latticeOutputFrequency):  #rwh
@@ -2498,10 +2498,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
             #            self.simulation.screenshotFrequency = self.__shotFrequency
             #            self.simulation.latticeOutputFlag = self.__latticeOutputFlag
             #            self.simulation.latticeOutputFrequency = self.__latticeOutputFrequency
-            print '__runSim self.screenshotDirectoryName=', self.screenshotDirectoryName
+            # print '__runSim self.screenshotDirectoryName=', self.screenshotDirectoryName
 
             self.screenshotDirectoryName = ""
-            print '__runSim self.screenshotDirectoryName=', self.screenshotDirectoryName
+            # print '__runSim self.screenshotDirectoryName=', self.screenshotDirectoryName
 
             # sys.exit()
 
@@ -2512,21 +2512,27 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     def __runSim(self):
 
+
+
         self.simulation.screenUpdateFrequency = self.__updateScreen  # when we run simulation we ensure that self.simulation.screenUpdateFrequency is whatever is written in the settings
 
         if not self.drawingAreaPrepared:
             self.prepareSimulation()
 
-        # print 'SIMULATION PREPARED self.__viewManagerType=',self.__viewManagerType    
+        # print 'SIMULATION PREPARED self.__viewManagerType=',self.__viewManagerType
         if self.__viewManagerType == "CMLResultReplay":
             # print 'starting CMLREPLAY'
             import CompuCellSetup
 
             self.simulation.semPause.release()  # just in case
-            self.cmlReplayManager.setRunState()
-            self.cmlReplayManager.keepGoing()
+
+            # these flagg settings calls have to be executed before self.cmlReplayManager.keepGoing()
             self.simulationIsRunning = True
             self.simulationIsStepping = False
+
+            self.cmlReplayManager.setRunState()
+            self.cmlReplayManager.keepGoing()
+
 
             self.runAct.setEnabled(False)
             self.stepAct.setEnabled(True)
@@ -2578,10 +2584,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
             import CompuCellSetup
 
             self.simulation.semPause.release()
-            self.cmlReplayManager.setStepState()
-            self.cmlReplayManager.step()
             self.simulationIsRunning = True
             self.simulationIsStepping = True
+            self.cmlReplayManager.setStepState()
+            self.cmlReplayManager.step()
 
             self.stopAct.setEnabled(True)
             self.pauseAct.setEnabled(False)
@@ -2681,6 +2687,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
             # MDIFIX
             for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
                 graphicsFrame = win.widget()
+
+                if graphicsFrame.is_screenshot_widget:
+                    continue
 
             # for windowName in self.windowDict.keys():
             #     graphicsFrame = self.windowDict[windowName]

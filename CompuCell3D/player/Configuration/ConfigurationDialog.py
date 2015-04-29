@@ -568,9 +568,11 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("OutputToProjectOn", self.outputToProjectCheckBox.isChecked())
         # # # Configuration.setSetting("PreferencesFile", self.prefsFileLineEdit.text())
         Configuration.setSetting("NumberOfRecentSimulations", self.numberOfRecentSimulationsSB.value())        
-        
+        Configuration.setSetting("FloatingWindows", self.floatingWindowsCB.isChecked())
+
+
         Configuration.setSetting("WindowColorSameAsMedium", self.windowColorSameAsMediumCB.isChecked() )
-        
+
         
         # Cell Type/Colors
         Configuration.setSetting("TypeColorMap",self.paramCC3D["TypeColorMap"])  # rwh
@@ -663,7 +665,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
         # # # self.prefsFileLineEdit.setText( str(Configuration.getSetting("PreferencesFile")))
         self.numberOfRecentSimulationsSB.setValue(Configuration.getSetting("NumberOfRecentSimulations"))
-        
+        self.floatingWindowsCB.setChecked(Configuration.getSetting("FloatingWindows"))
         
         # Cell Type/Colors
 

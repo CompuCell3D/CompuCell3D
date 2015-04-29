@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '.\cc3D_prefs.ui'
 #
-# Created: Tue Apr 21 11:47:20 2015
+# Created: Wed Apr 29 15:41:19 2015
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -163,24 +163,30 @@ class Ui_CC3DPrefs(object):
         self.verticalLayout_14.addLayout(self.verticalLayout_10)
         self.groupBox_5 = QtGui.QGroupBox(self.tab_output)
         self.groupBox_5.setObjectName(_fromUtf8("groupBox_5"))
-        self.horizontalLayout_29 = QtGui.QHBoxLayout(self.groupBox_5)
-        self.horizontalLayout_29.setObjectName(_fromUtf8("horizontalLayout_29"))
-        self.horizontalLayout_30 = QtGui.QHBoxLayout()
-        self.horizontalLayout_30.setObjectName(_fromUtf8("horizontalLayout_30"))
-        self.horizontalLayout_31 = QtGui.QHBoxLayout()
-        self.horizontalLayout_31.setObjectName(_fromUtf8("horizontalLayout_31"))
+        self.verticalLayout_21 = QtGui.QVBoxLayout(self.groupBox_5)
+        self.verticalLayout_21.setObjectName(_fromUtf8("verticalLayout_21"))
+        self.horizontalLayout_26 = QtGui.QHBoxLayout()
+        self.horizontalLayout_26.setObjectName(_fromUtf8("horizontalLayout_26"))
+        self.verticalLayout_20 = QtGui.QVBoxLayout()
+        self.verticalLayout_20.setObjectName(_fromUtf8("verticalLayout_20"))
+        self.horizontalLayout_25 = QtGui.QHBoxLayout()
+        self.horizontalLayout_25.setObjectName(_fromUtf8("horizontalLayout_25"))
         self.label_23 = QtGui.QLabel(self.groupBox_5)
         self.label_23.setObjectName(_fromUtf8("label_23"))
-        self.horizontalLayout_31.addWidget(self.label_23)
+        self.horizontalLayout_25.addWidget(self.label_23)
         self.numberOfRecentSimulationsSB = QtGui.QSpinBox(self.groupBox_5)
         self.numberOfRecentSimulationsSB.setMaximum(20)
         self.numberOfRecentSimulationsSB.setProperty("value", 8)
         self.numberOfRecentSimulationsSB.setObjectName(_fromUtf8("numberOfRecentSimulationsSB"))
-        self.horizontalLayout_31.addWidget(self.numberOfRecentSimulationsSB)
-        self.horizontalLayout_30.addLayout(self.horizontalLayout_31)
+        self.horizontalLayout_25.addWidget(self.numberOfRecentSimulationsSB)
+        self.verticalLayout_20.addLayout(self.horizontalLayout_25)
+        self.floatingWindowsCB = QtGui.QCheckBox(self.groupBox_5)
+        self.floatingWindowsCB.setObjectName(_fromUtf8("floatingWindowsCB"))
+        self.verticalLayout_20.addWidget(self.floatingWindowsCB)
+        self.horizontalLayout_26.addLayout(self.verticalLayout_20)
         spacerItem4 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_30.addItem(spacerItem4)
-        self.horizontalLayout_29.addLayout(self.horizontalLayout_30)
+        self.horizontalLayout_26.addItem(spacerItem4)
+        self.verticalLayout_21.addLayout(self.horizontalLayout_26)
         self.verticalLayout_14.addWidget(self.groupBox_5)
         spacerItem5 = QtGui.QSpacerItem(20, 119, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout_14.addItem(spacerItem5)
@@ -655,7 +661,7 @@ class Ui_CC3DPrefs(object):
         self.verticalLayout_18.addWidget(self.buttonBox)
 
         self.retranslateUi(CC3DPrefs)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), CC3DPrefs.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), CC3DPrefs.reject)
         QtCore.QObject.connect(self.contoursShowCB, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.isovalList.setEnabled)
@@ -664,6 +670,7 @@ class Ui_CC3DPrefs(object):
 
     def retranslateUi(self, CC3DPrefs):
         CC3DPrefs.setWindowTitle(_translate("CC3DPrefs", "CC3D Preferences", None))
+        self.tabWidget.setToolTip(_translate("CC3DPrefs", "When checked uses floating window layout instead of Multi Document Interface", None))
         self.label_5.setText(_translate("CC3DPrefs", "Update screen every Nth MCS", None))
         self.outputImagesCheckBox.setText(_translate("CC3DPrefs", "Save image every Nth MCS", None))
         self.label_13.setText(_translate("CC3DPrefs", "Screenshot Resolution     ", None))
@@ -677,6 +684,8 @@ class Ui_CC3DPrefs(object):
         self.outputToProjectCheckBox.setText(_translate("CC3DPrefs", "=Project", None))
         self.groupBox_5.setTitle(_translate("CC3DPrefs", "Miscellaneous", None))
         self.label_23.setText(_translate("CC3DPrefs", "Number of recent simulations", None))
+        self.floatingWindowsCB.setToolTip(_translate("CC3DPrefs", "Checking it switches from Multi Document interface to flowting windows one. The change will take place after Player restart", None))
+        self.floatingWindowsCB.setText(_translate("CC3DPrefs", "Use Floating Windows", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_output), _translate("CC3DPrefs", "Output", None))
         self.groupBox_14.setTitle(_translate("CC3DPrefs", "Cell Types and Colors", None))
         self.selectCellColorLabel.setText(_translate("CC3DPrefs", "Select a row in the table to change that cell type color.   Type        Name           Color", None))

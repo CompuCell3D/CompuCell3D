@@ -810,7 +810,8 @@ class PlotManager(QtCore.QObject):
         
     def initSignalAndSlots(self):
         # since initSignalAndSlots can be called in SimTabView multiple times (after each simulation restart) we have to ensure that signals are connected only once 
-        # otherwise there will be an avalanche of signals - each signal for each additional simulation run this will cause lots of extra windows to pop up 
+        # otherwise there will be an avalanche of signals - each signal for each additional simulation run this will cause lots of extra windows to pop up
+
         if not self.signalsInitialized: 
             self.newPlotWindowSignal.connect(self.processRequestForNewPlotWindow)
             self.signalsInitialized=True
