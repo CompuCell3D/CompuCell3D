@@ -508,7 +508,7 @@ class SimpleViewManager(QObject):
         self.closeActiveWindowAct.setShortcut(self.tr("Ctrl+F4"))
         
         
-        self.closeAdditionalGraphicsWindowsAct=QAction("Close Additional Graphics Windows", self)
+        # self.closeAdditionalGraphicsWindowsAct=QAction("Close Additional Graphics Windows", self)
                 
         self.windowActions.append(self.newGraphicsWindowAct)
         # self.windowActions.append(self.newPlotWindowAct)
@@ -519,7 +519,7 @@ class SimpleViewManager(QObject):
         self.windowActions.append(self.restoreAllGraphicsWindowsAct)
         
         self.windowActions.append(self.closeActiveWindowAct)
-        self.windowActions.append(self.closeAdditionalGraphicsWindowsAct)
+        # self.windowActions.append(self.closeAdditionalGraphicsWindowsAct)
         
         
     def __initHelpActions(self):

@@ -188,7 +188,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # self.graphicsWindowActionsDict = {}
 
-        self.lastActiveRealWindow = None
+        # self.lastActiveRealWindow = None
 
         # self.lastActiveWindow = None
         self.lastPositionMainGraphicsWindow = None
@@ -381,13 +381,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
         windowMenu.clear()
         windowMenu.addAction(self.newGraphicsWindowAct)
         # windowMenu.addAction(self.newPlotWindowAct)
-        windowMenu.addAction(self.tileAct)
-        windowMenu.addAction(self.cascadeAct)
-        windowMenu.addAction(self.minimizeAllGraphicsWindowsAct)
-        windowMenu.addAction(self.restoreAllGraphicsWindowsAct)
+        if self.MDI_ON:
+            windowMenu.addAction(self.tileAct)
+            windowMenu.addAction(self.cascadeAct)
+            windowMenu.addAction(self.minimizeAllGraphicsWindowsAct)
+            windowMenu.addAction(self.restoreAllGraphicsWindowsAct)
         windowMenu.addSeparator()
+
         windowMenu.addAction(self.closeActiveWindowAct)
-        windowMenu.addAction(self.closeAdditionalGraphicsWindowsAct)
+        # windowMenu.addAction(self.closeAdditionalGraphicsWindowsAct)
         windowMenu.addSeparator()
 
         # adding graphics windows
@@ -872,11 +874,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
         print '\n\n\n BEFORE  closeActiveSubWindowSlot self.subWindowList().size()=', len(self.subWindowList())
 
         # print MODULENAME,"   ----- closeActiveSubWindowSlot()"
+
         activeWindow = self.activeSubWindow()
+
         if not activeWindow: return
 
         activeWindow.close()
-        self.removeWindowFromRegistry(activeWindow)
+
+        # self.removeWindowFromRegistry(activeWindow)
 
         # print "activeWindow=",activeWindow.widget()
         # print "self.windowDict[1]=",self.windowDict[1]

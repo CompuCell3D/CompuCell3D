@@ -12,6 +12,19 @@ class DockSubWindow(QDockWidget):
         # self.toggleFcn = None
     # def setToggleFcn(self, fcn):self.toggleFcn = fcn
 
+    def changeEvent(self, ev):
+        '''
+        sets MainArea's lastActiveRealWindow
+        :param ev: QEvent
+        :return:None
+        '''
+        if ev.type() == QEvent.ActivationChange:
+            if self.isActiveWindow():
+                self.parent.lastActiveRealWindow = self
+
+        super(DockSubWindow,self).changeEvent(ev)
+
+
     def closeEvent(self, ev):
         print 'DOCK WIDGET CLOSE EVENT'
         # print 'self.toggleFcn=', self.toggleFcn
@@ -35,6 +48,8 @@ class MainArea(QWidget):
         self.UI = ui # UserInterface
 
         self.win_inventory = WindowInventory()
+
+        self.lastActiveRealWindow = None # keeps track of the last active real window
 
         # self.windowInventoryCounter = 0
         #
@@ -74,7 +89,8 @@ class MainArea(QWidget):
 
     def cascadeSubWindows(self): pass
 
-    def activeSubWindow1(self): pass
+    def activeSubWindow(self):
+        return self.lastActiveRealWindow
 
     def setActiveSubWindow(self, win):
         win.activateWindow()
