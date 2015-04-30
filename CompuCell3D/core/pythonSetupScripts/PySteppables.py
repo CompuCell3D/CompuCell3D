@@ -270,7 +270,18 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             field_vis_data = FieldVisData( field = self.createScalarFieldCellLevelPy(field_name) , field_type = FieldVisData.CELL_LEVEL_SCALAR_FIELD ,  attribute_name = attribute_name, function=function )
             
             self.tracking_field_vis_dict[field_name] = field_vis_data
+
+    def track_cell_level_vector_attribute(self, field_name , attribute_name, function=None):
+        try:
             
+            self.tracking_field_vis_dict[attribute_name].function = function
+            
+        except KeyError,e:                
+            field_vis_data = FieldVisData( field = self.createVectorFieldCellLevelPy(field_name) , field_type = FieldVisData.CELL_LEVEL_VECTOR_FIELD ,  attribute_name = attribute_name, function=function )
+            
+            self.tracking_field_vis_dict[field_name] = field_vis_data
+
+
     def update_tracking_fields(self):
         #tracking visualization part
         for field_name , field_vis_data in self.tracking_field_vis_dict.iteritems():
@@ -278,10 +289,13 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             field_vis_data.field.clear()
             try:
                 for cell in self.cellList:
-                    field_vis_data.field[cell] = field_vis_data.function(cell.dict[field_vis_data.attribute_name])
-                
+                    try:
+                        attrib = cell.dict[field_vis_data.attribute_name]
+                    except KeyError:
+                        continue
+                    field_vis_data.field[cell] = field_vis_data.function(attrib)                
             except:
-                raise RuntimeError('wrong type of cell attribute or tracking function used by track_cell_level functions')            
+                raise RuntimeError('Automatic Attribute Tracking :wrong type of cell attribute, missing attribute or wrong tracking function is used by track_cell_level functions')            
                 
     def perform_automatic_tasks(self):
         self.update_tracking_fields()
