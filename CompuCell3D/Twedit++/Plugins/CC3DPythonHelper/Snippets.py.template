@@ -835,6 +835,12 @@ self.changeNumberOfWorkNodes(8)
 
 =============== #@Menu@ Mitosis
 
+---------- #@Submenu@ Clone Attributes Parent -> Child
+self.cloneParent2Child()
+
+---------- #@Submenu@ Clone Attributes (Flexible)
+self.cloneAttributes(sourceCell=self.parentCell, targetCell=self.childCell, no_clone_key_dict_list = [ATTRIB_1, ATTRIB_2] )
+
 ---------- #@Submenu@ Child/Parent Random Relative Position
 self.setParentChildPositionFlag(0)       
 
