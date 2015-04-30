@@ -33,7 +33,19 @@ class SteppablePy(SimObjectPy):
     def finish(self):pass
 
 
-
+class FieldVisData(object):
+    
+    (CELL_LEVEL_SCALAR_FIELD, CELL_LEVEL_VECTOR_FIELD) = range (0,2)
+    
+    def __init__(self, field, field_type, attribute_name,  function=None):
+        self.field = field
+        self.function = function
+        self.attribute_name = attribute_name        
+        if function is None:
+            self.function = lambda x:x
+        
+        self.field_type = field_type
+        
 
 # class SteppableBasePy(SteppablePy): 
 from SBMLSolverHelper import SBMLSolverHelper
@@ -53,6 +65,8 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         self.clusterList=ClusterList(self.inventory) 
         self.clusters=Clusters(self.inventory)
         self.mcs = -1
+        
+        self.tracking_field_vis_dict = {} # this dicttionary stores fields and visualzation data for automatic tracking of attribute visualization
         
         self.boundaryStrategy=self.simulator.getBoundaryStrategy()
         
@@ -247,6 +261,31 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             import CompuCell            
             self.cleaverMeshDumper=CompuCell.getCleaverMeshDumper()  
             
+    def track_cell_level_scalar_attribute(self, field_name , attribute_name, function=None):
+        try:
+            
+            self.tracking_field_vis_dict[attribute_name].function = function
+            
+        except KeyError,e:                
+            field_vis_data = FieldVisData( field = self.createScalarFieldCellLevelPy(field_name) , field_type = FieldVisData.CELL_LEVEL_SCALAR_FIELD ,  attribute_name = attribute_name, function=function )
+            
+            self.tracking_field_vis_dict[field_name] = field_vis_data
+            
+    def update_tracking_fields(self):
+        #tracking visualization part
+        for field_name , field_vis_data in self.tracking_field_vis_dict.iteritems():
+            
+            field_vis_data.field.clear()
+            try:
+                for cell in self.cellList:
+                    field_vis_data.field[cell] = field_vis_data.function(cell.dict[field_vis_data.attribute_name])
+                
+            except:
+                raise RuntimeError('wrong type of cell attribute or tracking function used by track_cell_level functions')            
+                
+    def perform_automatic_tasks(self):
+        self.update_tracking_fields()
+    
     def areCellsDifferent(self,_cell1,_cell2):
         import CompuCell
         return areCellsDifferent(_cell1,_cell2)
@@ -1126,9 +1165,14 @@ class SteppableRegistry(SteppablePy):
     def start(self):
         for steppable in self.runBeforeMCSSteppableList:
             steppable.start()
+            if hasattr(steppable, 'perform_automatic_tasks'):
+                steppable.perform_automatic_tasks()
 
         for steppable in self.steppableList:
             steppable.start()
+            if hasattr(steppable, 'perform_automatic_tasks'):
+                steppable.perform_automatic_tasks()
+
 
     def step(self,_mcs):
         for steppable in self.steppableList:            
@@ -1140,6 +1184,9 @@ class SteppableRegistry(SteppablePy):
                     pass    
                     
                 steppable.step(_mcs)
+                if hasattr(steppable, 'perform_automatic_tasks'):
+                    steppable.perform_automatic_tasks()
+                
 
     def stepRunBeforeMCSSteppables(self,_mcs):
         for steppable in self.runBeforeMCSSteppableList:
