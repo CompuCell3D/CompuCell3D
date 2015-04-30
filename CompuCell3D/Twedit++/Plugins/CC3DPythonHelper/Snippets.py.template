@@ -371,17 +371,13 @@ if field:
 ---------- #@Submenu@ Check If Two Cells Are Different
 self.areCellsDifferent(cell1,cell2)
 
----------- #@Submenu@ Add Dictionary To Cells (deprecated)
-# It is not longer necessary to add list attribute to cells. The dictionary is added by default provided your steppables inherit from SteppableBasePy
-pyAttrDictAdder,dictAdder=CompuCellSetup.attachDictionaryToCells(sim)
+
+---------- #@Submenu@ Access/Modify Dictionary Attribute 
+# access/modification of a dictionary attached to cell - make sure to decalare in main script that you will use such attribute
+cell.dict['ATTR_NAME'] = VALUE_OR_OBJECT
 
 
----------- #@Submenu@ Add List To Cells (deprecated)
-# CompuCell3D no longer supports lists as cell attributes. Please consider using dictionary attributes instead. You can always insert Python list as an element of the dictionary.
-# e.g. cellDict['myList']=[]
-
-
----------- #@Submenu@ Access/Modify Dictionary Attribute
+---------- #@Submenu@ Access/Modify Dictionary Attribute (old style)
 # access/modification of a dictionary attached to cell - make sure to decalare in main script that you will use such attribute
 cellDict=self.getDictionaryAttribute(cell)
 cellDict["Double_MCS_ID"]=mcs*2*cell.id
@@ -394,9 +390,6 @@ dict_attrib=CompuCell.getPyAttrib(cell)
 dict_attrib["Double_MCS_ID"]=mcs*2*cell.id
 print "dict attrib for cell.id=",cell.id, "is ",dict_attrib
 
----------- #@Submenu@ Access/Modify List Attribute (deprecated)
-# CompuCell3D no longer supports lists as cell attributes. Please consider using dictionary attributes instead. You can always insert Python list as an element of the dictionary.
-# e.g. cellDict['myList']=[]
 
 ---------- #@Submenu@ Center Of Mass
 # Make sure CenterOfMass plugin is loaded
@@ -647,6 +640,21 @@ secretor.secreteOutsideCellAtBoundary(cell,300)
 # make sure this field is defined in one of the PDE solvers
 secretor=self.getFieldSecretor("FIELDNAME") # you may reuse secretor for many cells. Simply define it outside the loop
 secretor.secreteInsideCellAtCOM(cell,300)
+
+=============== #@Menu@ Extra Fields Automatic Tracking
+
+---------- #@Submenu@  Track Scalar Cell Attribute (__init__)
+self.track_cell_level_scalar_attribute (field_name = 'FIELD_NAME', attribute_name = 'ATTR_NAME')
+
+---------- #@Submenu@  Track Scalar Cell Attribute Custom Function (__init__)
+self.track_cell_level_scalar_attribute (field_name = 'FIELD_NAME', attribute_name = 'ATTR_NAME', function = lambda attr_val: attr_val**3)
+
+---------- #@Submenu@  Track Vector Cell Attribute (__init__)
+self.track_cell_level_vector_attribute (field_name = 'mcs_vec', attribute_name = 'mcs_vec')
+
+---------- #@Submenu@  Track Vector Cell Attribute Custom Function (__init__)
+self.track_cell_level_vector_attribute (field_name = 'FIELD_NAME', attribute_name = 'VEC_NAME', function = lambda vec: [ vec[0]*random() , vec[1]*random() , vec[2]*random() ] )
+
 
 =============== #@Menu@ Extra Fields
 
