@@ -67,6 +67,7 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         self.mcs = -1
         
         self.tracking_field_vis_dict = {} # this dicttionary stores fields and visualzation data for automatic tracking of attribute visualization
+        self.plot_dict = {} # {plot_name:plotWindow  - pW object}
         
         self.boundaryStrategy=self.simulator.getBoundaryStrategy()
         
@@ -261,6 +262,25 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             import CompuCell            
             self.cleaverMeshDumper=CompuCell.getCleaverMeshDumper()  
             
+    def addNewPlotWindow(self, _title,_xAxisTitle ,_yAxisTitle, _xScaleType='linear',_yScaleType='linear'):
+    
+        import CompuCellSetup
+        if _title in self.plot_dict.keys():
+            raise RuntimeError( 'PLOT WINDOW: '+_title+' already exists. Please choose a different name')
+            
+        pW = CompuCellSetup.addNewPlotWindow(_title, _xAxisTitle, _yAxisTitle, _xScaleType,_yScaleType)
+        self.plot_dict [_title] = pW
+                
+        return pW
+    
+    def update_all_plots_windows(self):
+        #tracking visualization part
+        
+        for plot_window_name , plot_window in self.plot_dict.iteritems():            
+            plot_window.showAllPlots()          
+            plot_window.showAllHistPlots()            
+            plot_window.showAllBarCurvePlots()
+    
     def track_cell_level_scalar_attribute(self, field_name , attribute_name, function=None):
         try:
             
@@ -299,6 +319,7 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
                 
     def perform_automatic_tasks(self):
         self.update_tracking_fields()
+        self.update_all_plots_windows()
     
     def areCellsDifferent(self,_cell1,_cell2):
         import CompuCell
@@ -872,11 +893,10 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         import CompuCell
         return CompuCell.getConcentrationField(self.simulator,_fieldName)
         
-    def addNewPlotWindow(self, _title='',_xAxisTitle='',_yAxisTitle='',_xScaleType='linear',_yScaleType='linear'):
-        import CompuCellSetup
-        return CompuCellSetup.addNewPlotWindow(_title,_xAxisTitle,_yAxisTitle,_xScaleType,_yScaleType)
-    
-    
+    # def addNewPlotWindow(self, _title='',_xAxisTitle='',_yAxisTitle='',_xScaleType='linear',_yScaleType='linear'):
+        # import CompuCellSetup
+        # return CompuCellSetup.addNewPlotWindow(_title,_xAxisTitle,_yAxisTitle,_xScaleType,_yScaleType)
+          
 
     def getXMLElement(self,*args):
         element=None

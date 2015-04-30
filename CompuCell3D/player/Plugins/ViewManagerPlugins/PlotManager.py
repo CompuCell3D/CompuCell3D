@@ -57,7 +57,9 @@ class PlotWindowInterface(QtCore.QObject):
         self.autoLegendFlag = False
         self.legendSetFlag = False
         self.legendPosition = Qwt.QwtPlot.BottomLegend
-        
+
+        self.barplot = None
+
         self.eraseAllFlag = False
         self.logScaleFlag = False
         self.title = ''
@@ -532,7 +534,8 @@ class PlotWindowInterface(QtCore.QObject):
         self.plotWindowInterfaceMutex.unlock()
       
     def __showAllBarCurvePlots(self,_mutex=None):
-        self.barplot.attach(self.pW)
+        if self.barplot is not None:
+            self.barplot.attach(self.pW)
         self.pW.replot()
         _mutex.unlock()
    

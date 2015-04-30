@@ -770,10 +770,10 @@ self.pW.addAutoLegend("top")
 self.clearFlag=False
 
 ---------- #@Submenu@ 1. Setup (start fcn) 
-self.pW=self.addNewPlotWindow(_title='DATA_SERIES_1 and DATA_SERIES_2',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Variables')
+self.pW=self.addNewPlotWindow(_title='DATA_SERIES_1 and DATA_SERIES_2',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Variables', _xScaleType='linear',_yScaleType='linear')
 self.pW.addPlot('DATA_SERIES_1',_style='Dots',_color='red',_size=5)
 self.pW.addPlot('DATA_SERIES_2',_style='Steps',_size=1)
-self.pW.setYAxisLogScale()   
+
 
 ---------- #@Submenu@ 2. Add Data Points (step fcn)
 self.pW.addDataPoint("DATA_SERIES_1",mcs,mcs*mcs) # arguments are (name of the data series, x, y)
@@ -782,33 +782,38 @@ self.pW.addDataPoint("DATA_SERIES_2",mcs,mcs) # arguments are (name of the data 
 ---------- #@Submenu@ Erase Plot (step fcn)
 self.pW.eraseAllData()
 
----------- #@Submenu@ 3. Refresh Plots (step fcn)
+---------- #@Submenu@ 3. Refresh Plots (unnecessary, deprecated - step fcn )
 self.pW.showAllPlots() 
-
----------- #@Submenu@ Add Histogram Plot (start fcn)
-self.pW=self.addNewPlotWindow(_title='Histogram',_xAxisTitle='TYPE NAME OF X AXIS',_yAxisTitle='TYPE NAME OF Y AXIS')
-self.pW.addHistogramPlot(_plotName='Hist 1',_color='green',_alpha=100)# _alpha is transparency 0 is transparent, 255 is opaque        
-
----------- #@Submenu@ Add Histogram  (step fcn) 
-self.pW.addHistogram(plot_name='Hist 1' , value_array = ARRAY_WITH_VALUES ,  number_of_bins=20):
-
----------- #@Submenu@ Generate Histogram Data (step fcn - old style) - Example
-from random import random
-list_of_values=[random() for i in xrange(100)]
-import numpy
-(n1, bins1) = numpy.histogram(list_of_values, bins=20)  # NumPy version (no plot)
-
----------- #@Submenu@ Add Histogram Data To Plot (step fcn - old style) 
-self.pW.addHistPlotData('Hist 1',n1,bins1)
-
----------- #@Submenu@ Refresh Histogram Plots
-self.pW.showAllHistPlots()
 
 ---------- #@Submenu@ Save Plot As A PNG File
 self.pW.savePlotAsPNG(fileName,1000,1000) # here we specify size of the image saved (1000x1000) - default is 400 x 400
 
 ---------- #@Submenu@ Save Plot As Data (text file)
 self.pW.savePlotAsData(fileName) 
+
+=============== #@Menu@ Scientific Plots Histograms
+
+---------- #@Submenu@ Add Histogram Plot (start fcn)
+self.pW=self.addNewPlotWindow(_title='Histogram',_xAxisTitle='TYPE NAME OF X AXIS',_yAxisTitle='TYPE NAME OF Y AXIS', _xScaleType='linear',_yScaleType='linear')
+self.pW.addHistogramPlot(_plotName='Hist 1',_color='green',_alpha=100)# _alpha is transparency 0 is transparent, 255 is opaque        
+
+---------- #@Submenu@ Add Histogram  (step fcn) 
+self.pW.addHistogram(plot_name='Hist 1' , value_array = ARRAY_WITH_VALUES ,  number_of_bins=20)
+
+---------- #@Submenu@ Add Histogram  (step fcn - alternative) 
+# n and bins are generated using the follofing numpy 
+# (n, bins) = numpy.histogram(list_of_values, bins=10)  
+self.pW.addHistPlotData('Hist 1',n,bins)
+
+---------- #@Submenu@ Refresh Histogram Plots (deprecated)
+self.pW.showAllHistPlots()
+
+---------- #@Submenu@ Save  Plot As A PNG File
+self.pW.savePlotAsPNG(fileName,1000,1000) # here we specify size of the image saved (1000x1000) - default is 400 x 400
+
+---------- #@Submenu@ Save Plot As Data (text file)
+self.pW.savePlotAsData(fileName) 
+
 
 =============== #@Menu@ Simulation
 
