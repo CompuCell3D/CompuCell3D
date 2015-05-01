@@ -142,6 +142,23 @@ class MitosisSteppableClustersBase(SteppableBasePy):
         '''    
         self.parentCell=self.mitosisSteppable.parentCell
         self.childCell=self.mitosisSteppable.childCell          
+
+        
+    def cloneClusterAttributes(self,sourceCellCluster, targetCellCluster, no_clone_key_dict_list = [] ):
+        for i in xrange(sourceCellCluster.size()):            
+            self.cloneAttributes(sourceCell=sourceCellCluster[i], targetCell=targetCellCluster[i], no_clone_key_dict_list= no_clone_key_dict_list)
+    
+        
+    def cloneParentCluster2ChildCluster(self):
+        # these calls seem to be necessary to ensure whatever is setin in mitosisSteppable (C++) is reflected in Python        
+        # self.parentCell=self.mitosisSteppable.parentCell
+        # self.childCell=self.mitosisSteppable.childCell  
+        
+        compartmentListParent=self.inventory.getClusterCells(self.parentCell.clusterId)
+        compartmentListChild=self.inventory.getClusterCells(self.childCell.clusterId)
+        
+        self.cloneClusterAttributes(sourceCellCluster=compartmentListParent, targetCellCluster=compartmentListChild, no_clone_key_dict_list = [] )
+
         
     def updateAttributes(self):
         parentCell=self.mitosisSteppable.parentCell
