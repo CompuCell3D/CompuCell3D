@@ -329,7 +329,7 @@ for compartments in self.clusters:
 =============== #@Menu@ Chemical Field Manipulation    
 
 ---------- #@Submenu@ Get Field Reference
-field=self.getConcentrationField("NAME OF THE FIELD TO OUTPUT")
+field=self.getConcentrationField('FIELD_NAME')
 
 ---------- #@Submenu@ Get Field Min Value
 minValue=field.min()
