@@ -60,101 +60,12 @@ class MitosisSteppableBase(SteppableBasePy):
         return self.mitosisSteppable.getParentChildPositionFlag()
         
     def cloneParent2Child(self):
-        # these calls seem to be necessary to ensure whatever is setin in mitosisSteppable (C++) is reflected in Python
-        self.parentCell=self.mitosisSteppable.parentCell
-        self.childCell=self.mitosisSteppable.childCell  
+        # these calls seem to be necessary to ensure whatever is setin in mitosisSteppable (C++) is reflected in Python        
+        # self.parentCell=self.mitosisSteppable.parentCell
+        # self.childCell=self.mitosisSteppable.childCell  
         
         self.cloneAttributes(sourceCell = self.parentCell, targetCell = self.childCell, no_clone_key_dict_list = [] )
         
-    def cloneAttributes(self,sourceCell, targetCell, no_clone_key_dict_list = [] ):
-        # clone "C++" attributes
-        from copy import deepcopy
-        for attrName in self.clonableAttributeNames:
-            setattr(targetCell , attrName, getattr(sourceCell,attrName) )
-            
-        # clone dictionary
-        for key, val in sourceCell.dict.iteritems():
-            
-            if key in no_clone_key_dict_list:
-                continue
-                
-            if key == 'SBMLSolver':
-                self.copySBMLs(_fromCell = sourceCell,_toCell = targetCell)
-            
-            if key == 'Bionetwork':
-                import bionetAPI
-                bionetAPI.copyBionetworkFromParent( sourceCell, targetCell )
-                
-            # copying the rest of dictionary entries    
-            targetCell.dict [key] = deepcopy(sourceCell.dict[key])
-            
-        # now copy data associated with plugins
-        # AdhesionFlex
-        if self.adhesionFlexPlugin:
-            sourceAdhesionVector = self.adhesionFlexPlugin.getAdhesionMoleculeDensityVector( sourceCell )
-            self.adhesionFlexPlugin.assignNewAdhesionMoleculeDensityVector( targetCell , sourceAdhesionVector )
-            
-        # PolarizationVector
-        if self.polarizationVectorPlugin:
-            sourcePolarizationVector = self.polarizationVectorPlugin.getPolarizationVector(sourceCell)
-            self.polarizationVectorPlugin.setPolarizationVector(targetCell, sourcePolarizationVector[0] , sourcePolarizationVector[1], sourcePolarizationVector[2] )
-            
-        #polarization23Plugin     
-        if self.polarization23Plugin:
-            polVec = self.polarization23Plugin.getPolarizationVector(sourceCell)
-            self.polarization23Plugin.setPolarizationVector(targetCell,polVec)
-            polMark = self.polarization23Plugin.getPolarizationMarkers(sourceCell)
-            self.polarization23Plugin.setPolarizationMarkers(targetCell , polMark[0], polMark[1] )
-            l = self.polarization23Plugin.getLambdaPolarization(sourceCell)
-            self.polarization23Plugin.setLambdaPolarization(targetCell,l)
-            
-        #CellOrientationPlugin 
-        if self.cellOrientationPlugin:
-            l = self.cellOrientationPlugin.getLambdaCellOrientation(sourceCell)
-            self.cellOrientationPlugin.setLambdaCellOrientation(targetCell,l)
-            
-        #ContactOrientationPlugin 
-        if self.contactOrientationPlugin:            
-            oVec = self.contactOrientationPlugin.getOriantationVector(sourceCell)
-            self.contactOrientationPlugin.setOriantationVector(targetCell, oVec.x, oVec.y, oVec.z)
-            self.contactOrientationPlugin.setAlpha(targetCell, self.contactOrientationPlugin.getAlpha(sourceCell) )
-            
-        #ContactLocalProductPlugin 
-        if self.contactLocalProductPlugin:
-            cVec = self.contactLocalProductPlugin.getCadherinConcentrationVec(sourceCell)
-            self.contactLocalProductPlugin.setCadherinConcentrationVec(targetCell , cVec)
-
-        #LengthConstraintPlugin    
-        if self.lengthConstraintPlugin:
-            l = self.lengthConstraintPlugin.getLambdaLength(sourceCell)        
-            tl = self.lengthConstraintPlugin.getTargetLength(sourceCell)        
-            mtl = self.lengthConstraintPlugin.getMinorTargetLength(sourceCell)    
-            self.lengthConstraintPlugin.setLengthConstraintData(targetCell, l, tl, mtl)
-            
-        #ConnectivityGlobalPlugin    
-        if self.connectivityGlobalPlugin:            
-            cs = self.connectivityGlobalPlugin.getConnectivityStrength(sourceCell)
-            self.connectivityGlobalPlugin.setConnectivityStrength(targetCell , cs)
-
-        #ConnectivityLocalFlexPlugin    
-        if self.connectivityLocalFlexPlugin:
-            cs = self.connectivityLocalFlexPlugin.getConnectivityStrength( sourceCell )
-            self.connectivityLocalFlexPlugin.setConnectivityStrength( targetCell, cs )
-            
-        #Chemotaxis    
-        if self.chemotaxisPlugin:
-            fieldNames  = self.chemotaxisPlugin.getFieldNamesWithChemotaxisData( sourceCell )
-            
-            for fieldName in fieldNames:                
-                source_chd=chemotaxisPlugin.getChemotaxisData(sourceCell,fieldName)
-                target_chd=chemotaxisPlugin.addChemotaxisData(targetCell,fieldName)
-                
-                target_chd.setLambda( source_chd.getLambda() )
-                target_chd.saturationCoef = source_chd.saturationCoef
-                target_chd.setChemotaxisFormulaByName(source_chd.formulaName)
-                target_chd.assignChemotactTowardsVectorTypes(source_chd.getChemotactTowardsVectorTypes())
-                
-        #FocalPointPLasticityPlugin - this plugin has to be handled manually - there is no good way to figure out which links shuold be copied from parent to daughter cell    
             
 
 
@@ -166,16 +77,24 @@ class MitosisSteppableBase(SteppableBasePy):
     def step(self,mcs):
         print "MITOSIS STEPPABLE BASE"
 
-        
+    def initParentAndChildCells(self):
+        '''
+        Initializes self.parentCell and self.childCell to point to respective cell objects after mitosis is completed succesfully
+        '''
+        self.parentCell=self.mitosisSteppable.parentCell
+        self.childCell=self.mitosisSteppable.childCell  
+    
     def divideCellRandomOrientation(self, _cell):
         self.mitosisDone=self.mitosisSteppable.doDirectionalMitosisRandomOrientation(_cell)       
         if self.mitosisDone:
+            self.initParentAndChildCells()
             self.updateAttributes()
         return self.mitosisDone
         
     def divideCellOrientationVectorBased(self, _cell, _nx, _ny, _nz):        
         self.mitosisDone=self.mitosisSteppable.doDirectionalMitosisOrientationVectorBased(_cell, _nx, _ny, _nz)
         if self.mitosisDone:
+            self.initParentAndChildCells()
             self.updateAttributes()            
         return self.mitosisDone
 
@@ -184,6 +103,7 @@ class MitosisSteppableBase(SteppableBasePy):
         # print "orientationVectors.semiminorVec=",(orientationVectors.semiminorVec.fX,orientationVectors.semiminorVec.fY,orientationVectors.semiminorVec.fZ)
         self.mitosisDone=self.mitosisSteppable.doDirectionalMitosisAlongMajorAxis(_cell)
         if self.mitosisDone:
+            self.initParentAndChildCells()
             self.updateAttributes()            
         return self.mitosisDone
         
@@ -191,6 +111,7 @@ class MitosisSteppableBase(SteppableBasePy):
     def divideCellAlongMinorAxis(self, _cell):        
         self.mitosisDone=self.mitosisSteppable.doDirectionalMitosisAlongMinorAxis(_cell)
         if self.mitosisDone:
+            self.initParentAndChildCells()
             self.updateAttributes()            
         return self.mitosisDone
     
@@ -215,6 +136,13 @@ class MitosisSteppableClustersBase(SteppableBasePy):
         # #works too
         # # return ClusterCellList(self.inventory.getClusterInventory().getClusterCells(_clusterId))         
         
+    def initParentAndChildCells(self):
+        '''
+        Initializes self.parentCell and self.childCell to point to respective cell objects after mitosis is completed succesfully
+        '''    
+        self.parentCell=self.mitosisSteppable.parentCell
+        self.childCell=self.mitosisSteppable.childCell          
+        
     def updateAttributes(self):
         parentCell=self.mitosisSteppable.parentCell
         childCell=self.mitosisSteppable.childCell
@@ -232,12 +160,14 @@ class MitosisSteppableClustersBase(SteppableBasePy):
     def divideClusterRandomOrientation(self, _clusterId):
         self.mitosisDone=self.mitosisSteppable.doDirectionalMitosisRandomOrientationCompartments(_clusterId)       
         if self.mitosisDone:
+            self.initParentAndChildCells()
             self.updateAttributes()
         return self.mitosisDone            
         
     def divideClusterOrientationVectorBased(self, _clusterId, _nx, _ny, _nz):        
         self.mitosisDone=self.mitosisSteppable.doDirectionalMitosisOrientationVectorBasedCompartments(_clusterId, _nx, _ny, _nz)
         if self.mitosisDone:
+            self.initParentAndChildCells()
             self.updateAttributes()
         return self.mitosisDone    
         
@@ -246,6 +176,7 @@ class MitosisSteppableClustersBase(SteppableBasePy):
         # print "orientationVectors.semiminorVec=",(orientationVectors.semiminorVec.fX,orientationVectors.semiminorVec.fY,orientationVectors.semiminorVec.fZ)
         self.mitosisDone=self.mitosisSteppable.doDirectionalMitosisAlongMajorAxisCompartments(_clusterId)
         if self.mitosisDone:
+            self.initParentAndChildCells()
             self.updateAttributes()            
         return self.mitosisDone
         
@@ -253,6 +184,7 @@ class MitosisSteppableClustersBase(SteppableBasePy):
     def divideClusterAlongMinorAxis(self, _clusterId):        
         self.mitosisDone=self.mitosisSteppable.doDirectionalMitosisAlongMinorAxisCompartments(_clusterId)
         if self.mitosisDone:
+            self.initParentAndChildCells()        
             self.updateAttributes()            
         return self.mitosisDone
         
