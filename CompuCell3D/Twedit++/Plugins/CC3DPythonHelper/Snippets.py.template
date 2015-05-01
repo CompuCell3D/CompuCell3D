@@ -315,7 +315,7 @@ for pixelTrackerData in pixelList:
         
 ---------- #@Submenu@ All Lattice Pixels
 for x,y,z in self.everyPixel():
-   print "x,y,z=",(x,y,z)
+    print "x,y,z=",(x,y,z)
 
 ---------- #@Submenu@ All Clusters
 for compartments in self.clusters:
