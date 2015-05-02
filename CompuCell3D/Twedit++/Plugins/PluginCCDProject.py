@@ -602,6 +602,7 @@ class CC3DProject(QObject):
         self.cc3dProjectMenu.addAction(self.actions["Open CC3D Project..."])
         self.cc3dProjectMenu.addAction(self.actions["Save CC3D Project"])
         self.cc3dProjectMenu.addAction(self.actions["Save CC3D Project As..."])
+        self.cc3dProjectMenu.addAction(self.actions["Zip It!"])
         self.cc3dProjectMenu.addSeparator()
         #---------------------------------------
         
@@ -2309,6 +2310,8 @@ class CC3DProject(QObject):
 
 
     def __zipProject(self):
+
+        print 'inside __zipProject'
 
         tw=self.treeWidget
         curItem=self.treeWidget.currentItem()
