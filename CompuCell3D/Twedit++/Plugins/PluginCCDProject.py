@@ -297,7 +297,10 @@ class CC3DProjectTreeWidget(QTreeWidget):
             # menu.addAction(self.plugin.actions["Reset Parameter Scan"])    
         
         self.addActionToContextMenu(menu,self.plugin.actions["Save CC3D Project"])
-        self.addActionToContextMenu(menu,self.plugin.actions["Zip Project"])
+        self.addActionToContextMenu(menu,self.plugin.actions["Zip It!"])
+        # self.addActionToContextMenu(menu,self.plugin.actions["Zip'n'Mail"])
+        #--------------------------------------------------------------------
+        menu.addSeparator()
         self.addActionToContextMenu(menu,self.plugin.actions["Add Resource..."])
         
         
@@ -740,7 +743,8 @@ class CC3DProject(QObject):
         self.actions["Open in Player"]=QtGui.QAction(QIcon(':/icons/player-icon.png'),"Open In Player", self, shortcut="", statusTip="Open simulation in Player ", triggered=self.__runInPlayer) 
         self.actions["Save CC3D Project"]=QtGui.QAction(QIcon(':/icons/save-project.png'),"Save CC3D Project", self, shortcut="", statusTip="Save CC3D Project ", triggered=self.__saveCC3DProject)
         self.actions["Save CC3D Project As..."]=QtGui.QAction("Save CC3D Project As...", self, shortcut="Ctrl+Shift+A", statusTip="Save CC3D Project As ", triggered=self.__saveCC3DProjectAs)
-        self.actions["Zip Project"]=QtGui.QAction("Zip Project", self, shortcut="Ctrl+Shift+Z", statusTip="Zips Project Directory", triggered=self.__zipProject)
+        self.actions["Zip It!"]=QtGui.QAction("Zip It!", self, shortcut="Ctrl+Shift+Z", statusTip="Zips project directory", triggered=self.__zipProject)
+        # self.actions["Zip'n'Mail"]=QtGui.QAction("Zip'n'Mail", self, statusTip="Zips project directory and opens email clinet with attachement", triggered=self.__zipAndMailProject)
         
         self.actions["Add Resource..."]=QtGui.QAction(QIcon(':/icons/add.png'),"Add Resource...", self, shortcut="", statusTip="Add Resource File ", triggered=self.__addResource)
         self.actions["Add Serializer..."]=QtGui.QAction(QIcon(':/icons/add-serializer.png'),"Add Serializer ...", self, shortcut="", statusTip="Add Serializer ", triggered=self.__addSerializerResource)        
@@ -2296,6 +2300,14 @@ class CC3DProject(QObject):
         
         return
 
+    # def __zipAndMailProject(self):
+    #
+    #     zipped_project_path = self.__zipProject()
+    #     # QDesktopServices.openUrl(QUrl("mailto:?subject="+os.path.basename(zipped_project_path)+"&body=Attaching: "+os.path.basename(zipped_project_path)+"&attach=" + zipped_project_path))
+    #
+    #     QDesktopServices.openUrl(QUrl("mailto:?subject="+os.path.basename(zipped_project_path)+"&body=Attaching: "+os.path.basename(zipped_project_path)+"&attach=" + "/Users/m/install_projects/master/CompuCell3D_playerconfig_demo/icons/cc3d_128x128_logo.png"))
+
+
     def __zipProject(self):
 
         tw=self.treeWidget
@@ -2320,20 +2332,19 @@ class CC3DProject(QObject):
 
             return
 
-
         csd = pdh.cc3dSimulationData
 
         zip_archive_base_core_name = os.path.basename(csd.basePath)
         zip_archive_core_name = os.path.join(os.path.dirname(csd.basePath), zip_archive_base_core_name)
 
-        ret = QMessageBox.information(tw,' Zip File Path', 'The zipped file will be saved as '+ zip_archive_core_name+'.zip', QMessageBox.Ok)
-
-
+        ret = QMessageBox.information(tw, 'Zip File Path', 'The zipped file will be saved as '+ zip_archive_core_name+'.zip', QMessageBox.Ok|QMessageBox.Cancel)
+        if ret == QMessageBox.Cancel:
+            return None
 
         import shutil
         shutil.make_archive(zip_archive_core_name, 'zip', csd.basePath)
 
-
+        return zip_archive_core_name+'.zip'
 
     def openCC3Dproject(self,fileName):        
         projExist=True
