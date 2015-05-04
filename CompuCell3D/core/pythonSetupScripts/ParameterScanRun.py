@@ -80,6 +80,8 @@ except getopt.GetoptError, err:
 
     sys.exit(0)
 
+invalid_command = True
+
 for o, a in opts:
     print "o=",o
     print "a=",a
@@ -88,8 +90,13 @@ for o, a in opts:
     if o in ("--help"):    
         printHelp()
         sys.exit(0)
-
-
+        
+    if o not in ('--currentDir'): # this argument is passed from paramScan shell script
+        invalid_command = False
+    
+if invalid_command:
+    printHelp()
+    sys.exit(0)
 
 import subprocess
 from subprocess import Popen
