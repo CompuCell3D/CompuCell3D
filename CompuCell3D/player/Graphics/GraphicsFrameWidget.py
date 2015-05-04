@@ -836,10 +836,31 @@ class GraphicsFrameWidget(QtGui.QFrame):
         self.fieldComboBox.setCurrentIndex(1) # setting value of the Combo box to be cellField - default action 
         
         
-        self.qvtkWidget.resetCamera() # last call triggers fisrt call to draw function so we here reset camera so that all the actors are initially visible
-    
-    
-    
+        # self.qvtkWidget.resetCamera() # last call triggers fisrt call to draw function so we here reset camera so that all the actors are initially visible
+        self.resetCamera() # last call triggers fisrt call to draw function so we here reset camera so that all the actors are initially visible
+
+    def zoomIn(self):
+        '''
+        Zooms in view
+        :return:None
+        '''
+        self.qvtkWidget.zoomIn()
+
+    def zoomOut(self):
+        '''
+        Zooms in view
+        :return:None
+        '''
+        self.qvtkWidget.zoomOut()
+
+    def resetCamera(self):
+        '''
+        Resets camera to default settings
+        :return:None
+        '''
+        self.qvtkWidget.resetCamera()
+
+
     # note that if you close widget using X button this slot is not called
     # we need to reimplement closeEvent
     # def close(self):           

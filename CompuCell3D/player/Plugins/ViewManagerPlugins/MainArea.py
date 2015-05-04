@@ -5,12 +5,23 @@ from enums import *
 from WindowInventory import WindowInventory
 
 
+
 class DockSubWindow(QDockWidget):
     def __init__(self, _parent):
         super(DockSubWindow, self).__init__(_parent)
         self.parent = _parent
+        self.setAllowedAreas(Qt.NoDockWidgetArea)
         # self.toggleFcn = None
     # def setToggleFcn(self, fcn):self.toggleFcn = fcn
+
+    def mousePressEvent(self, ev):
+        self.parent.lastActiveRealWindow = self
+        # self.parent.lastClickedRealWindow = self
+
+    def mouseDoubleClickEvent(self, ev):
+        self.parent.lastActiveRealWindow = self
+        # self.parent.lastClickedRealWindow = self
+
 
     def changeEvent(self, ev):
         '''
@@ -18,8 +29,11 @@ class DockSubWindow(QDockWidget):
         :param ev: QEvent
         :return:None
         '''
+
+        return
         if ev.type() == QEvent.ActivationChange:
             if self.isActiveWindow():
+                print 'will activate ', self
                 self.parent.lastActiveRealWindow = self
 
         super(DockSubWindow,self).changeEvent(ev)
@@ -50,6 +64,8 @@ class MainArea(QWidget):
         self.win_inventory = WindowInventory()
 
         self.lastActiveRealWindow = None # keeps track of the last active real window
+
+        # self.lastClickedRealWindow = None # keeps track of the last clicked real window
 
 
     def addSubWindow(self, widget):
@@ -85,11 +101,18 @@ class MainArea(QWidget):
 
     def cascadeSubWindows(self): pass
 
+    # def clickedSubWindow(self):
+    #     return self.lastClickedRealWindow
+
     def activeSubWindow(self):
+        print 'returning lastActiveRealWindow=', self.lastActiveRealWindow
         return self.lastActiveRealWindow
 
     def setActiveSubWindow(self, win):
         win.activateWindow()
+
+        self.lastActiveRealWindow = win
+
         pass
 
     def subWindowList(self):

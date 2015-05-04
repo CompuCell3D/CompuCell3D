@@ -449,6 +449,14 @@ class QVTKRenderWindowInteractor(QtGui.QWidget):        # Mac
                                             ctrl, shift, key, 0, None)
         self._Iren.KeyReleaseEvent()
 
+    def zoomIn(self):
+
+        self._Iren.MouseWheelForwardEvent()
+
+    def zoomOut(self):
+
+        self._Iren.MouseWheelBackwardEvent()
+
     def wheelEvent(self, ev):
         if ev.delta() >= 0:
             self._Iren.MouseWheelForwardEvent()

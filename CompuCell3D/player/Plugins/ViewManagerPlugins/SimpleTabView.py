@@ -58,7 +58,14 @@ except:
 # 4. CHECK IF IT IS NECESSARY TO FIX CLOSE EVENTS AND REMOVE GRAPHICS WIDGET PLOT WIDGET FROM ANY TYPE OF REGISTRIES -
 # for QDockWindows this is taken care of , for MDI have to implement automatic removal from registries
 # 7. get rid of multiple calls to pde from twedit++
-# 8.
+# 8. Add paramScan command to Twedit++ - add anotation that this is to be run from the shel not from the player
+# 9. Add parameter annatation self.lengthConstraintPlugin.setLengthConstraintData(cell,20,20)
+# 10. figure out how to use named attributes for swig generated functions- quick way is to extend plugin object
+# with python call which in turn calls swig annotated fcn
+# 11. Add option to remove settings from the project
+# 12. add option to reset camera
+# 13. add warning that connectivity local flex works only up to 2nd order nearest neighbor for pixel copies
+
 
 # from MainAreaMdi import MainArea
 if Configuration.getSetting('FloatingWindows'):
@@ -83,6 +90,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.__parent = parent  # QMainWindow -> UI.UserInterface
         self.UI = parent
+
 
 
         # QTabWidget.__init__(self, parent)
@@ -188,7 +196,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # self.graphicsWindowActionsDict = {}
 
-        # self.lastActiveRealWindow = None
 
         # self.lastActiveWindow = None
         self.lastPositionMainGraphicsWindow = None
@@ -265,6 +272,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         #MDIFIX
         print 'setActiveSubWindowCustomSlot = ', window
         self.lastActiveRealWindow = window
+        # self.lastClickedRealWindow = window
         self.lastActiveRealWindow.activateWindow()
 
         # if (self.lastActiveRealWindow is not None) and (
@@ -1783,6 +1791,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.connect(self.limitsAct, SIGNAL('triggered(bool)'), self.__checkLimits)
         self.connect(self.configAct, SIGNAL('triggered()'), self.__showConfigDialog)
         self.connect(self.cc3dOutputOnAct, SIGNAL('triggered(bool)'), self.__checkCC3DOutput)
+        self.connect(self.resetCameraAct, SIGNAL('triggered()'), self.__resetCamera)
+        self.connect(self.zoomInAct, SIGNAL('triggered()'), self.zoomIn)
+        self.connect(self.zoomOutAct, SIGNAL('triggered()'), self.zoomOut)
 
         self.connect(self.pifFromSimulationAct, SIGNAL('triggered()'), self.__generatePIFFromCurrentSnapshot)
         self.connect(self.pifFromVTKAct,    SIGNAL('triggered()'),      self.__generatePIFFromVTK)
@@ -3601,6 +3612,35 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def setZoomItems(self, zitems):
         self.zitems = zitems
 
+    def zoomIn(self):
+
+        activeSubWindow = self.activeSubWindow()
+        # activeSubWindow = self.clickedSubWindow()
+        # print 'activeSubWindow=', activeSubWindow
+
+        if not activeSubWindow:
+            return
+
+        import Graphics
+        if isinstance(activeSubWindow.widget(), Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
+            activeSubWindow.widget().zoomIn()
+
+
+    def zoomOut(self):
+
+        activeSubWindow = self.activeSubWindow()
+        # activeSubWindow = self.clickedSubWindow()
+        # print 'activeSubWindow=', activeSubWindow
+
+        if not activeSubWindow:
+            return
+
+        import Graphics
+        if isinstance(activeSubWindow.widget(), Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
+            activeSubWindow.widget().zoomOut()
+
+
+
     # def zoomIn(self):
     #     if self.mainGraphicsWindow is not None:
     #         self.activeWindow().zoomIn()
@@ -4166,6 +4206,18 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     def __checkLimits(self, checked):
         pass
+
+    def __resetCamera(self):
+
+        print 'INSIDE RESET CAMERA'
+        activeSubWindow = self.activeSubWindow()
+        print 'activeSubWindow=', activeSubWindow
+        if not activeSubWindow:
+            return
+
+        import Graphics
+        if isinstance(activeSubWindow.widget(), Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
+            activeSubWindow.widget().resetCamera()
 
     def __checkCC3DOutput(self, checked):
         Configuration.setSetting("CC3DOutputOn", checked)

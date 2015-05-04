@@ -78,6 +78,12 @@ class SimpleViewManager(QObject):
         menu.addAction(self.limitsAct)
         menu.addSeparator()
         menu.addAction(self.cc3dOutputOnAct)
+        menu.addSeparator()
+        menu.addAction(self.resetCameraAct)
+        menu.addAction(self.zoomInAct)
+        menu.addAction(self.zoomOutAct)
+
+
         # menu.addAction(self.configAct)
         
         return menu
@@ -145,7 +151,17 @@ class SimpleViewManager(QObject):
         tb.addAction(self.configAct)
         tb.addAction(self.tweditAct)
         return tb
-       
+
+    def initVisualizationToolbar(self):
+        tb = QToolBar(QApplication.translate('Visualization', 'Visualization'), self.ui)
+        tb.setIconSize(QSize(20, 18)) # UI.Config.ToolBarIconSize
+        tb.setObjectName("VisualizationToolbar")
+        tb.setToolTip(QApplication.translate('ViewManager', 'Visualization'))
+
+        tb.addAction(self.zoomInAct)
+        tb.addAction(self.zoomOutAct)
+        return tb
+
        
     def initSimToolbar(self):
         tb = QToolBar(QApplication.translate('ViewManager', 'Simulation'), self.ui)
@@ -424,7 +440,14 @@ class SimpleViewManager(QObject):
         self.cc3dOutputOnAct.setCheckable(True)
         self.cc3dOutputOnAct.setChecked(self.visual["CC3DOutputOn"])
         
-        
+        self.resetCameraAct = QAction("Reset Camera for Graphics Window ('r')", self)
+
+        self.zoomInAct = QAction(QIcon(gip("zoomIn.png")), "&Zoom In", self)
+        self.zoomOutAct = QAction(QIcon(gip("zoomOut.png")), "&Zoom Out", self)
+
+
+
+
 
         # Why append?
         self.visualActions.append(self.cellsAct)
@@ -437,6 +460,9 @@ class SimpleViewManager(QObject):
         # self.visualActions.append(self.contourAct)
         self.visualActions.append(self.limitsAct)
         self.visualActions.append(self.cc3dOutputOnAct)
+        self.visualActions.append(self.resetCameraAct)
+        self.visualActions.append(self.zoomInAct)
+        self.visualActions.append(self.zoomOutAct)
         # self.visualActions.append(self.configAct)
 
 #    def __fppLinksTrigger(self):

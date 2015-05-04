@@ -266,7 +266,9 @@ class UserInterface(QMainWindow):
         # viewtb.addWidget(self.zoomFixed)
         # viewtb.addWidget(QLabel("  "))
         # viewtb.addAction(self.screenshotAct)
-        windowtb=self.viewmanager.initWindowToolbar()
+
+        visualizationtb = self.viewmanager.initVisualizationToolbar()
+        windowtb = self.viewmanager.initWindowToolbar()
         
         
         # cstb = self.viewmanager.initCrossSectionToolbar() #QToolBar("Cross Section", self) #
@@ -279,6 +281,7 @@ class UserInterface(QMainWindow):
         self.addToolBar(simtb)              
         self.addToolBar(filetb)
         # self.addToolBar(viewtb)
+        self.addToolBar(visualizationtb)
         self.addToolBar(windowtb)
         # self.addToolBar(cstb)
         
@@ -319,10 +322,10 @@ class UserInterface(QMainWindow):
         self.actions = []
         # self.zoomInAct = QAction(QIcon(gip("zoomIn.png")), "&Zoom In", self)
         # self.actions.append(self.zoomInAct) # Replaced "viewActions" by "actions":self.viewActions.append(self.zoomInAct)
-        #
+        # #
         # self.zoomOutAct = QAction(QIcon(gip("zoomOut.png")), "&Zoom Out", self)
         # self.actions.append(self.zoomOutAct)
-        #
+
         # # Why do I need self.zoomFixedAct?
         # #self.zoomFixedAct = QAction(self)
         # self.zoomFixed  = QComboBox()
