@@ -526,8 +526,9 @@ class CC3DProject(QObject):
         # self.parameterScanXMLHandler=None
         # self.parameterScanFile=''
         
-        self.openCC3Dproject("/Users/m/CC3DProjects/ExtraFields/ExtraFields.cc3d")
-        self.openCC3Dproject("/Users/m/CC3DProjects/scientificPlotsSimple/scientificPlots.cc3d")
+        # self.openCC3Dproject("/Users/m/CC3DProjects/ExtraFields/ExtraFields.cc3d")
+        # self.openCC3Dproject("/Users/m/CC3DProjects/scientificPlotsSimple/scientificPlots.cc3d")
+        # self.openCC3Dproject("/Users/m/CC3DProjects/ParamScanDemo/ParamScanDemo.cc3d")
 
 
         # # # self.openCC3Dproject('/home/m/CC3DProjects/CellSorting/CellSorting.cc3d')
@@ -795,7 +796,8 @@ class CC3DProject(QObject):
         except LookupError,e:
             print "could not find simulation data handler for this item"
             return              
-        
+
+
         if pdh.cc3dSimulationData.parameterScanResource:
             from ParameterScanUtils import ParameterScanUtils as PSU
             psu=PSU()

@@ -63,7 +63,7 @@ except:
 # 10. figure out how to use named attributes for swig generated functions- quick way is to extend plugin object
 # with python call which in turn calls swig annotated fcn
 # 11. Add option to remove settings from the project
-# 12. add option to reset camera
+# 12. Remove add dict/list from wizard
 # 13. add warning that connectivity local flex works only up to 2nd order nearest neighbor for pixel copies
 
 
