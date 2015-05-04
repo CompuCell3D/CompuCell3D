@@ -368,9 +368,18 @@ class SimulationThread(QtCore.QThread):
 
         _path = os.path.abspath(os.path.join(_path+'../../../'))
 
-        run_script_name = os.path.abspath(os.path.join(_path, 'pythonSetupScripts/CompuCellPythonSimulationNewPlayer.py'))
+        # run_script_name = os.path.abspath(os.path.join(_path, 'pythonSetupScripts/CompuCellPythonSimulationNewPlayer.py'))
+
         #alternative
+        # assume PREFIX_CC3D points to the CC3D installation directory
         run_script_name = os.path.abspath(os.path.join(os.environ.get('PREFIX_CC3D'), 'pythonSetupScripts/CompuCellPythonSimulationNewPlayer.py'))
+
+        if not os.path.isfile(run_script_name):
+            # assume PREFIX_CC3D points to the top of git repository
+            run_script_name = os.path.abspath(os.path.join(os.environ.get('PREFIX_CC3D'), 'core/pythonSetupScripts/CompuCellPythonSimulationNewPlayer.py'))
+
+        if not os.path.isfile(run_script_name):
+            raise RuntimeError('Could not locate: CompuCellPythonSimulationNewPlayer.py run script')
         # print '_path2 = ',_path
         # print 'run_script_name =', run_script_name
 
