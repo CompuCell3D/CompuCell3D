@@ -161,6 +161,7 @@ if(INSTALL_PLAYER)
 
     INSTALL(FILES  
         ${CMAKE_SOURCE_DIR}/player/compucell3d.pyw
+        ${CMAKE_SOURCE_DIR}/player/DefaultData.py
         ${CMAKE_SOURCE_DIR}/player/plugins.txt
         DESTINATION ${CMAKE_INSTALL_PREFIX}/player
         )

@@ -469,7 +469,8 @@ class ParameterScanUtils:
     def resetParameterScan(self,_pScanFileName):
         '''This function resets state of the parameter scan to the beginning
         '''
-        
+
+
         self.readParameterScanSpecs(_pScanFileName)
         for filePath,parameterScanDataMap in self.parameterScanFileToDataMap.items():
             for hash,psd in parameterScanDataMap.items():
