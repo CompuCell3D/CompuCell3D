@@ -2370,6 +2370,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         #this ensures that all the tasks in the GUI thread that need simulator to be alive are completed before proceeding further with finalizing the simulation 
         #e.g. SimpleTabViewpy. function handleCompletedStepRegular may need a lot of time to output simulations fields and those fields need to have alive simulator otherwise accessing to destroyed field will lead to segmentation fault
 
+        #we do not save windows layout for simulation replay
+        if self.__viewManagerType != "CMLResultReplay":
+            self.__saveWindowsLayout()
+
+
         self.simulation.drawMutex.lock()
         self.simulation.drawMutex.unlock()
 
