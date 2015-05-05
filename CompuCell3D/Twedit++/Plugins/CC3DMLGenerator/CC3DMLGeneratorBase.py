@@ -495,7 +495,7 @@ class CC3DMLGeneratorBase:
         gpd=self.gpd      
                     
         mElement.addComment("Connectivity constraint applied to each cell. Energy penalty specifies how strong the constraint is. Penalty is specified globally for each cell ")        
-        mElement.addComment("This constraint works in 2D and on square lattice only!")
+        mElement.addComment("This constraint works in 2D and on square lattice only! It also requires that the <NeighborOrder> in the Potts section is 1 or 2!")
         mElement.addComment("For more flexible version of this plugin use ConnectivityLocalFlex where constraint penalty is specified for each cell individually using Python scripting using the following syntax")
         mElement.addComment("self.connectivityLocalFlexPlugin.setConnectivityStrength(cell,10000000)" )
         
