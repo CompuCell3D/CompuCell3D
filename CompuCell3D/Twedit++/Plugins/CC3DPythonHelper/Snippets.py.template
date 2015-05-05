@@ -194,7 +194,7 @@ cell.lambdaVecY=0.0 # force component pointing along Z axis
 
 ---------- #@Submenu@ Length Constraint By Cell Id
 # Make sure LengthConstraintLocalFlex plugin is loaded
-self.lengthConstraintFlexPlugin.setLengthConstraintData(cell,20,20) # cell , lambdaLength, targetLength
+self.lengthConstraintLocalFlexPlugin.setLengthConstraintData(cell,20,20) # cell , lambdaLength, targetLength
 
 ---------- #@Submenu@ Connectivity Constraint By Cell Id
 # Make sure ConnectivityLocalFlex plugin is loaded
