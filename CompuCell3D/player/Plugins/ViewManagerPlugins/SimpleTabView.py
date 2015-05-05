@@ -58,7 +58,6 @@ except:
 # 4. CHECK IF IT IS NECESSARY TO FIX CLOSE EVENTS AND REMOVE GRAPHICS WIDGET PLOT WIDGET FROM ANY TYPE OF REGISTRIES -
 # for QDockWindows this is taken care of , for MDI have to implement automatic removal from registries
 # 7. get rid of multiple calls to pde from twedit++
-# 8. Add paramScan command to Twedit++ - add anotation that this is to be run from the shel not from the player
 # 9. Add parameter annatation self.lengthConstraintPlugin.setLengthConstraintData(cell,20,20)
 # 10. figure out how to use named attributes for swig generated functions- quick way is to extend plugin object
 # with python call which in turn calls swig annotated fcn

@@ -27,10 +27,7 @@ from PySteppables import *
 
 class MitosisSteppableBase(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
-        self.clonableAttributeNames = \
-        ['lambdaVolume','targetVolume','targetSurface','lambdaSurface','targetClusterSurface','lambdaClusterSurface',\
-        'type','lambdaVecX','lambdaVecY','lambdaVecZ','fluctAmpl']        
+        SteppableBasePy.__init__(self,_simulator,_frequency)        
         # self.simulator=_simulator
         # self.inventory=self.simulator.getPotts().getCellInventory()
         # self.cellList=CellList(self.inventory)

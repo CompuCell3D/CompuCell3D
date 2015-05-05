@@ -72,6 +72,10 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         self.boundaryStrategy=self.simulator.getBoundaryStrategy()
         
         self.__modulesToUpdateDict={} #keeps modules to update   
+        # used by clone attributes functions 
+        self.clonableAttributeNames = \
+        ['lambdaVolume','targetVolume','targetSurface','lambdaSurface','targetClusterSurface','lambdaClusterSurface',\
+        'type','lambdaVecX','lambdaVecY','lambdaVecZ','fluctAmpl']        
         
         import CompuCellSetup
         global pyAttributeAdder
@@ -1145,8 +1149,8 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             fieldNames  = self.chemotaxisPlugin.getFieldNamesWithChemotaxisData( sourceCell )
             
             for fieldName in fieldNames:                
-                source_chd=self.chemotaxisPlugin.getChemotaxisData(sourceCell,fieldName)
-                target_chd=self.chemotaxisPlugin.addChemotaxisData(targetCell,fieldName)
+                source_chd=chemotaxisPlugin.getChemotaxisData(sourceCell,fieldName)
+                target_chd=chemotaxisPlugin.addChemotaxisData(targetCell,fieldName)
                 
                 target_chd.setLambda( source_chd.getLambda() )
                 target_chd.saturationCoef = source_chd.saturationCoef
