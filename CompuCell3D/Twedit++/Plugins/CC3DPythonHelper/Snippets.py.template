@@ -960,5 +960,29 @@ for compartmentList in self.clusterList:
 for clusterId in mitosisClusterIdList:
     self.divideClusterOrientationVectorBased(clusterId,1,0,0)             
             
-    
-    
+=============== #@Menu@ Parameter Scan Command Line
+
+---------- #@Submenu@ 1. Run Parameter Scan Using Player (Windows)
+# NOTE: THIS COMMAND IS SUPPOSED TO BE EXECUTED IN COMMAND LINE SHELL, NOT IN PYTHON!
+paramScan.bat -i <cc3d project-file> --guiScan --maxNumberOfRuns=20 [remaining command line options used in compucell3d.bat or runScript.bat]
+
+---------- #@Submenu@ 1. Run Parameter Scan With No GUI (Windows)
+# NOTE: THIS COMMAND IS SUPPOSED TO BE EXECUTED IN COMMAND LINE SHELL, NOT IN PYTHON!
+paramScan.bat -i <cc3d project-file> --maxNumberOfRuns=20 [remaining command line options used in compucell3d.bat or runScript.bat]
+
+---------- #@Submenu@ 2. Run Parameter Scan Using Player (Linux)
+# NOTE: THIS COMMAND IS SUPPOSED TO BE EXECUTED IN COMMAND LINE SHELL, NOT IN PYTHON!
+paramScan.sh -i <cc3d project-file> --guiScan --maxNumberOfRuns=20 [remaining command line options used in compucell3d.sh or runScript.sh]
+
+---------- #@Submenu@ 2. Run Parameter Scan With No GUI (Linux)
+# NOTE: THIS COMMAND IS SUPPOSED TO BE EXECUTED IN COMMAND LINE SHELL, NOT IN PYTHON!
+paramScan.sh -i <cc3d project-file> --maxNumberOfRuns=20 [remaining command line options used in compucell3d.sh or runScript.sh]
+
+---------- #@Submenu@ 3. Run Parameter Scan Using Player (OSX)
+# NOTE: THIS COMMAND IS SUPPOSED TO BE EXECUTED IN COMMAND LINE SHELL, NOT IN PYTHON!
+paramScan.command -i <cc3d project-file> --guiScan --maxNumberOfRuns=20 [remaining command line options used in compucell3d.command or runScript.command]
+
+---------- #@Submenu@ 3. Run Parameter Scan With No GUI (OSX)
+# NOTE: THIS COMMAND IS SUPPOSED TO BE EXECUTED IN COMMAND LINE SHELL, NOT IN PYTHON!
+paramScan.command -i <cc3d project-file> --maxNumberOfRuns=20 [remaining command line options used in compucell3d.command or runScript.command]
+
