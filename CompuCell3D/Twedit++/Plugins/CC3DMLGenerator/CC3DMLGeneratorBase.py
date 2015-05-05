@@ -317,7 +317,7 @@ class CC3DMLGeneratorBase:
         mElement.addComment('newline')
         mElement.addComment('Applies elongation constraint to each cell. Users specify target length of major axis -TargetLength (in 3D additionally, target length of minor axis - MinorTargetLength) and a strength of the constraint -LambdaLength. Parameters are specified for each cell type')
         mElement.addComment('IMPORTANT: To prevent cell fragmentation for large elongations you need to also use connectivity constraint')
-        mElement.addComment('LengthConstraint plugin with no body: <Plugin Name="LengthConstraint"/> permits constraint specification for individual cells but currently works only in 2D')
+        mElement.addComment('LengthConstraint plugin with no body: <Plugin Name="LengthConstraint"/> permits constraint specification for individual cells')
         mElement.addComment("Comment out the constrains for cell types which don't need them")
         
 
