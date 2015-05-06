@@ -63,7 +63,13 @@ def initConfiguration():
     synchronizeGlobalAndDefaultSettings(Configuration.defaultSettings, Configuration.myGlobalSettings, Configuration.myGlobalSettingsPath)
     Configuration.myCustomSettings = None
     Configuration.myCustomSettingsPath = ''
-    
+
+def replaceCustomSettingsWithDefaults():
+    defaultSettings, path = loadDefaultSettings()
+
+    Configuration.myCustomSettings = defaultSettings
+    writeSettings(Configuration.myCustomSettings , Configuration.myCustomSettingsPath)
+
 # def getIconsDir():return icons_dir
 #
 # def getIconPath(icon_name):

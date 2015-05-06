@@ -62,7 +62,11 @@ class SimpleViewManager(QObject):
         menu.addSeparator()
         #--------------------
         menu.addAction(self.serializeAct)
-        
+        menu.addSeparator()
+        #--------------------
+        menu.addAction(self.restoreDefaultSettingsAct)
+
+
         return menu
 
     def initVisualMenu(self):
@@ -383,7 +387,8 @@ class SimpleViewManager(QObject):
         self.stopAct = QAction(QIcon(gip("stop.png")), "&Stop", self)
         self.stopAct.setShortcut(Qt.CTRL + Qt.Key_X)
         self.serializeAct = QAction( "Serialize", self)
-        
+
+        self.restoreDefaultSettingsAct = QAction( "Restore Default Settings", self)
         # self.addVTKWindowAct=QAction(QIcon(gip("kcmkwm.png")), 'Add VTK Window', self)
         # self.addVTKWindowAct.setShortcut(Qt.CTRL + Qt.Key_I)
         
@@ -394,6 +399,8 @@ class SimpleViewManager(QObject):
         self.simActions.append(self.pauseAct)
         self.simActions.append(self.stopAct)
         self.simActions.append(self.serializeAct)
+        self.simActions.append(self.restoreDefaultSettingsAct)
+
         # self.simActions.append(self.addVTKWindowAct)
         
 

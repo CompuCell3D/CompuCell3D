@@ -58,10 +58,10 @@ except:
 # 4. CHECK IF IT IS NECESSARY TO FIX CLOSE EVENTS AND REMOVE GRAPHICS WIDGET PLOT WIDGET FROM ANY TYPE OF REGISTRIES -
 # for QDockWindows this is taken care of , for MDI have to implement automatic removal from registries
 # 7. get rid of multiple calls to pde from twedit++
-# 9. Add parameter annatation self.lengthConstraintPlugin.setLengthConstraintData(cell,20,20)
+# 9. Add parameter annotation self.lengthConstraintPlugin.setLengthConstraintData(cell,20,20)
 # 10. figure out how to use named attributes for swig generated functions- quick way is to extend plugin object
 # with python call which in turn calls swig annotated fcn
-# 11. Add option to remove settings from the project
+
 
 
 
@@ -1765,6 +1765,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # self.connect(self.addVTKWindowAct, SIGNAL('triggered()'), self.__addVTKWindow)
 
         self.connect(self.serializeAct, SIGNAL('triggered()'), self.__simulationSerialize)
+        self.connect(self.restoreDefaultSettingsAct, SIGNAL('triggered()'), self.__restoreDefaultSettings)
+
+
 
         self.connect(self.openAct, SIGNAL('triggered()'), self.__openSim)
         self.connect(self.openLDSAct, SIGNAL('triggered()'), self.__openLDSFile)
@@ -3032,6 +3035,16 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.__pauseSim()
         self.simulation.restartManager.outputRestartFiles(currentStep, True)
 
+    def __restoreDefaultSettings(self):
+        '''
+        Replaces existing simulation's settings with the default ones
+        :return: None
+        '''
+        if not self.simulationIsRunning:  # works only for running simulation
+            return
+
+        print 'Replacing settings'
+        Configuration.replaceCustomSettingsWithDefaults()
 
     def __cleanAfterSimulation(self, _exitCode=0):
 
