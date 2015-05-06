@@ -6,7 +6,8 @@ import random,numpy
                     
 class HistPlotSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=10):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
+        SteppableBasePy.__init__(self,_simulator,_frequency)        
+        
 
     def start(self):        
         
@@ -25,17 +26,9 @@ class HistPlotSteppable(SteppableBasePy):
         for i in  range(100):
             gauss.append(random.gauss(0,1))
         
-        (n2, bins2) = numpy.histogram(gauss, bins=10)  # NumPy version (no plot)
- 
-       
-        (n3, bins3) = numpy.histogram(volList, bins=50)  # Use NumPy to generate Histogram of volumes
-        
-        (n, bins) = numpy.histogram(volList, bins=10)  # Use NumPy to generate Histogram of volumes
-        
-        self.pW.addHistPlotData('Hist 2',n2,bins2)
-        self.pW.addHistPlotData('Hist 3',n3,bins3)
-        self.pW.addHistPlotData('Hist 1',n,bins)
-        self.pW.showAllHistPlots()
+        self.pW.addHistogram(plot_name='Hist 1' , value_array = gauss ,  number_of_bins=10)        
+        self.pW.addHistogram(plot_name='Hist 2' , value_array = volList ,  number_of_bins=10)
+        self.pW.addHistogram(plot_name='Hist 3' , value_array = volList ,  number_of_bins=50)                
 
         fileName="HistPlots_"+str(mcs)+".txt"
         self.pW.savePlotAsData(fileName,CSV_FORMAT)
@@ -59,7 +52,6 @@ class BarPlotSteppable(SteppableBasePy):
                 locations.append(random.uniform(1, 20))
             self.pW.addBarPlotData(gdpList,locations,1)
         
-        self.pW.showAllBarCurvePlots()
     
         fileName="BarPlots_"+str(mcs)+".png"
         self.pW.savePlotAsPNG(fileName,1000,1000) # here we specify size of the image saved - default is 400 x 400
