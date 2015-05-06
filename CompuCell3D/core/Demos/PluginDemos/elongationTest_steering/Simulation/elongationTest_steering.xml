@@ -1,6 +1,4 @@
-
- <CompuCell3D>
- <PythonScript>Simulation/elongationTest_steering.py</PythonScript>
+<CompuCell3D>
  <Potts>
    <Dimensions x="50" y="50" z="1"/>
    <Anneal>10</Anneal>

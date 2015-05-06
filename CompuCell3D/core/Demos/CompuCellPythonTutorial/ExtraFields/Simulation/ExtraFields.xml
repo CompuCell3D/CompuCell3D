@@ -1,5 +1,5 @@
  <CompuCell3D>
-<!--  <PythonScript>examples_PythonTutorial/ExtraFields/ExtraFields.py</PythonScript> -->
+
  <Potts>
    <Dimensions x="55" y="55" z="10"/>
    <Anneal>0</Anneal>

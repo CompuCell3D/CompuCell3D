@@ -1,8 +1,6 @@
 
  <CompuCell3D>
 
- <PythonScript>Simulation/ConnectivityTest.py</PythonScript>
-
 <Potts>
    <Dimensions x="50" y="50" z="1"/>
    <Anneal>10</Anneal>
