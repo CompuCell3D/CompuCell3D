@@ -61,7 +61,7 @@ except:
 # 9. Add parameter annotation self.lengthConstraintPlugin.setLengthConstraintData(cell,20,20)
 # 10. figure out how to use named attributes for swig generated functions- quick way is to extend plugin object
 # with python call which in turn calls swig annotated fcn
-
+# 11. update mitosis generation add clone attributes to twedit
 
 
 

@@ -840,8 +840,24 @@ self.changeNumberOfWorkNodes(8)
 
 =============== #@Menu@ Mitosis
 
----------- #@Submenu@ Clone Attributes Parent -> Child
+---------- #@Submenu@ 1. Clone Attributes Parent -> Child
 self.cloneParent2Child()
+
+---------- #@Submenu@ 1. Clone Cluster Attributes Parent -> Child
+self.cloneParentCluster2ChildCluster()
+
+---------- #@Submenu@ 2. Compact updateAttributes
+self.parentCell.targetVolume /= 2.0 # reducing parent target volume
+self.cloneParent2Child()
+
+---------- #@Submenu@ 2. Compact updateAttributes for clusters
+# we first redice target volum of the cluster of parent cell
+compartmentListParent=self.getClusterCells(self.parentCell.clusterId)
+for i in xrange(compartmentListParent.size()):
+    compartmentListParent[i].targetVolume/=2.0
+
+# later we clone attributes from parent cluster to child cluster
+self.cloneParentCluster2ChildCluster()
 
 ---------- #@Submenu@ Clone Attributes (Flexible)
 self.cloneAttributes(sourceCell=self.parentCell, targetCell=self.childCell, no_clone_key_dict_list = [ATTRIB_1, ATTRIB_2] )
