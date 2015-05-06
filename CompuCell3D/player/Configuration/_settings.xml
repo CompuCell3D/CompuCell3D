@@ -56,6 +56,8 @@
          <e Name="8" Type="color">#00ffff</e>
          <e Name="9" Type="color">#008000</e>
       </e>
+      <e Name="FieldParams" Type="dict"/>
+      <e Name="WindowsLayout" Type="dict"/>
    </Settings>
    <Settings Type="str">
       <e Name="OutputLocation" Type="str"></e>
