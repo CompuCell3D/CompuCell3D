@@ -63,20 +63,18 @@ class MitosisSteppable(MitosisSteppableBase):
             childCell.type=3
 
         #get a reference to lists storing Mitosis data
-        parentCellDict=CompuCell.getPyAttrib(parentCell)
-        childCellDict=CompuCell.getPyAttrib(childCell)
         
         try:
-            parentCellList=parentCellDict['lineage_list']
+            parentCellList=parentCell.dict['lineage_list']
         except LookupError,e:
-            parentCellDict['lineage_list']=[]
-            parentCellList=parentCellDict['lineage_list']
+            parentCell.dict['lineage_list']=[]
+            parentCellList=parentCell.dict['lineage_list']
 
         try:
-            childCellList=childCellDict['lineage_list']
+            childCellList=childCell.dict['lineage_list']
         except LookupError,e:
-            childCellDict['lineage_list']=[]
-            childCellList=childCellDict['lineage_list']
+            childCell.dict['lineage_list']=[]
+            childCellList=childCell.dict['lineage_list']
             
             
         ##will record mitosis data in parent and offspring cells
@@ -91,7 +89,7 @@ class MitosisDataPrinterSteppable(SteppableBasePy):
         
     def step(self,mcs):
         for cell in self.cellList:
-            mitDataList=CompuCell.getPyAttrib(cell)
+            mitDataList=cell.dict
             if len(mitDataList) > 0:
                 print "MITOSIS DATA FOR CELL ID",cell.id
                 for mitData in mitDataList:

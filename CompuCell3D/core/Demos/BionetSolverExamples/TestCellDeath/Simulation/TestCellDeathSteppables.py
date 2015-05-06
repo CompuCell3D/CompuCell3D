@@ -48,9 +48,9 @@ class TestCellDeathSteppable( SteppableBasePy ):
         
         # ######## Set cell initial conditions by individual cell ##########
         for cell in self.cellList:
-            dictionaryAttrib = CompuCell.getPyAttrib( cell )
-            dictionaryAttrib["InitialVolume"] = cell.volume
-            dictionaryAttrib["DivideVolume"] = 2.*cell.volume
+            
+            cell.dict["InitialVolume"] = cell.volume
+            cell.dict["DivideVolume"] = 2.*cell.volume
         
         self.initialNumberOfCells = len(self.cellList)
         print "\n\nNumber of cells: %s\n\n" % self.initialNumberOfCells
@@ -72,9 +72,8 @@ class TestCellDeathSteppable( SteppableBasePy ):
                 cell.lambdaVolume = 2.
                 cell.targetSurface = 0.
                 cell.lambdaSurface = 2.
-            else:
-                dictionaryAttrib = CompuCell.getPyAttrib( cell )
-                cell.targetVolume = cell.volume + 0.15*dictionaryAttrib["InitialVolume"]
+            else:                
+                cell.targetVolume = cell.volume + 0.15*cell.dict["InitialVolume"]
                 
         # ###### Retrieve delta values and set cell type according to delta concentration ########
         for cell in self.cellList:
@@ -106,9 +105,8 @@ class MitosisSteppable(MitosisSteppableBase):
     
     def step(self,mcs):
         cells_to_divide=[]
-        for cell in self.cellList:
-            dictionaryAttrib = CompuCell.getPyAttrib( cell )
-            if cell.volume > dictionaryAttrib["DivideVolume"]:
+        for cell in self.cellList:            
+            if cell.volume > cell.dict["DivideVolume"]:
                 cells_to_divide.append(cell)
                 
         for cell in cells_to_divide:
@@ -117,10 +115,9 @@ class MitosisSteppable(MitosisSteppableBase):
     def updateAttributes(self):
         childCell = self.mitosisSteppable.childCell
         parentCell = self.mitosisSteppable.parentCell
-        
-        dictionaryAttrib = CompuCell.getPyAttrib( childCell )
-        dictionaryAttrib["InitialVolume"] = childCell.volume
-        dictionaryAttrib["DivideVolume"] = 2.*childCell.volume
+                
+        childCell.dict["InitialVolume"] = childCell.volume
+        childCell.dict["DivideVolume"] = 2.*childCell.volume
         
         print "Child cell ID: %s" % childCell.id
         print "Parent cell ID: %s" % parentCell.id

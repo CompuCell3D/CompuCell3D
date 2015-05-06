@@ -49,7 +49,6 @@ configureSimulation(sim)
 
 import CompuCell
 CompuCellSetup.initializeSimulationObjects(sim,simthread)
-pyAttributeAdder,dictAdder=CompuCellSetup.attachDictionaryToCells(sim)
 
 #Add Python steppables here
 steppableRegistry=CompuCellSetup.getSteppableRegistry()

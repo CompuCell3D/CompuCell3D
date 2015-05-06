@@ -5,6 +5,7 @@ import CompuCell
 from PySteppables import *
 from PlayerPython import *
 from math import *
+import random 
 
 # import bionetAPI
 class DeltaNotchClass(SteppableBasePy):
@@ -18,10 +19,7 @@ class DeltaNotchClass(SteppableBasePy):
         
         modelFile='Simulation/DN_Collier.sbml'  
         self.addSBMLToCellTypes(_modelFile=modelFile,_modelName='DN',_types=[self.TYPEA],_stepSize=0.2)  
-    
-        #Initial conditions
-        import random 
-    
+        
         state={} #dictionary to store state veriables of the SBML model
     
         for cell in self.cellList:
@@ -29,14 +27,10 @@ class DeltaNotchClass(SteppableBasePy):
             state['D'] = random.uniform(0.9,1.0)
             state['N'] = random.uniform(0.9,1.0)        
             self.setSBMLState(_modelName='DN',_cell=cell,_state=state)
-            
-            cellDict=self.getDictionaryAttribute(cell)
-            cellDict['D']=state['D']
-            cellDict['N']=state['N']
+                        
+            cell.dict['D']=state['D']
+            cell.dict['N']=state['N']
         
-
-        
-
     def step(self,mcs):
         for cell in self.cellList:
 
@@ -54,10 +48,9 @@ class DeltaNotchClass(SteppableBasePy):
             state['Davg']=D        
             self.setSBMLState(_modelName='DN',_cell=cell,_state=state)
             
-            state=self.getSBMLState(_modelName='DN',_cell=cell)
-            cellDict=self.getDictionaryAttribute(cell)
-            cellDict['D']=D
-            cellDict['N']=state['N']   
+            state=self.getSBMLState(_modelName='DN',_cell=cell)    
+            cell.dict['D']=D
+            cell.dict['N']=state['N']   
         self.timestepSBML()    
 
 
@@ -76,7 +69,6 @@ class ExtraFields(SteppableBasePy):
     self.scalarFieldNotch.clear()
     
     for cell in self.cellList:
-      if cell:
-        cellDict=CompuCell.getPyAttrib(cell)
-        self.scalarFieldDelta[cell]=cellDict['D']
-        self.scalarFieldNotch[cell]=cellDict['N']
+      if cell:        
+        self.scalarFieldDelta[cell]=cell.dict['D']
+        self.scalarFieldNotch[cell]=cell.dict['N']
