@@ -9,6 +9,7 @@ class VolumeConstraintSteppable(SteppableBasePy):
         for cell in self.cellList:
             cell.targetVolume=25
             cell.lambdaVolume=2.0
+            cell.dict['lineage_list'] = []
             
     def step(self,mcs):
         field=CompuCell.getConcentrationField(self.simulator,"FGF")
@@ -50,38 +51,18 @@ class MitosisSteppable(MitosisSteppableBase):
             self.divideCellRandomOrientation(cell)                  
 
     def updateAttributes(self):
-        parentCell=self.mitosisSteppable.parentCell
-        childCell=self.mitosisSteppable.childCell
-    
-        parentCell.targetVolume/=2.0
-        childCell.targetVolume=parentCell.targetVolume
-        childCell.lambdaVolume=parentCell.lambdaVolume
+        self.parentCell.targetVolume /= 2.0 # reducing parent target volume                 
+        self.cloneParent2Child()            
 
-        if (random()<0.5):
-            childCell.type=parentCell.type
-        else:
-            childCell.type=3
-
-        #get a reference to lists storing Mitosis data
-        
-        try:
-            parentCellList=parentCell.dict['lineage_list']
-        except LookupError,e:
-            parentCell.dict['lineage_list']=[]
-            parentCellList=parentCell.dict['lineage_list']
-
-        try:
-            childCellList=childCell.dict['lineage_list']
-        except LookupError,e:
-            childCell.dict['lineage_list']=[]
-            childCellList=childCell.dict['lineage_list']
-            
-            
-        ##will record mitosis data in parent and offspring cells
+        if (random()<0.5):                    
+            self.childCell.type = self.CONDENSINGDIFFERENTIATED
+                        
+        #will record mitosis data in parent and offspring cells
         mcs=self.simulator.getStep()
-        mitData=MitosisData(mcs,parentCell.id,parentCell.type,childCell.id,childCell.type)
-        parentCellList.append(mitData)
-        childCellList.append(mitData)
+        mitData=MitosisData(mcs, self.parentCell.id, self.parentCell.type, self.childCell.id, self.childCell.type)
+        self.parentCell.dict['lineage_list'].append(mitData)
+        self.childCell.dict['lineage_list'].append(mitData)
+        
 
 class MitosisDataPrinterSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=100):
