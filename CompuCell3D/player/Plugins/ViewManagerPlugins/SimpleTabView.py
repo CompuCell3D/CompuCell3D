@@ -2179,6 +2179,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
         for win in self.win_inventory.values():
             self.win_inventory.remove_from_inventory(win)
+            try:
+                if not sys.platform.startswith('win'):
+                    win.showNormal()
+            except:
+                pass
             win.close()
 
         self.win_inventory.set_counter(0)

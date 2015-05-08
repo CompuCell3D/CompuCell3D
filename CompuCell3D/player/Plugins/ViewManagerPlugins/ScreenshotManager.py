@@ -156,6 +156,7 @@ class ScreenshotManager:
         # have to do cleanup to ensure some of the memory intensive resources e.g. self.screenshotGraphicsWidget get deallocated
         if self.screenshotGraphicsWidget:
             print 'JUST BEFORE CLOSING self.screenshotGraphicsWidget'
+            # this close and assignment do not do much for the non-mdi layout
             self.screenshotGraphicsWidget.close()
             self.screenshotGraphicsWidget=None
         self.tabViewWidget=None
