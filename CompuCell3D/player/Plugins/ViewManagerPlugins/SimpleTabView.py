@@ -816,7 +816,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Initializes model editor tree view of the CC3DML - Model editor is used for steering
         :return:None
         '''
-        
+
         self.root_element = CompuCellSetup.cc3dXML2ObjConverter.root
         self.model = SimModel(self.root_element, self.__modelEditor)
         self.simulation.setSimModel(
@@ -830,6 +830,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.model.setPrintFlag(True)
 
     def prepareLatticeDataView(self):
+        '''
+        Initializes widget that displays vtk file names during vtk file replay mode in the Player
+        :return:None
+        '''
         self.__parent.latticeDataModel.setLatticeDataFileList(self.simulation.ldsFileList)
         self.latticeDataModel = self.__parent.latticeDataModel
         self.__parent.latticeDataModelTable.setModel(
@@ -839,6 +843,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
 
     def __loadSim(self, file):
+        '''
+        Loads simulation
+        :param file: str - full path to the CC3D simulation (usually .cc3d file or .dml vtk replay file path) .
+        XML and python files are also acceptable options for the simulation but they are deprecated in favor of .cc3d
+        :return:
+        '''
         # resetting reference to SimulationDataHandler
 
         self.prepareForNewSimulation(_forceGenericInitialization=True)
@@ -866,29 +876,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
             CompuCellSetup.simulationPaths.setPlayerSimulationXMLFileName(fileName)
             pythonScriptName = CompuCellSetup.ExtractPythonScriptNameFromXML(fileName)
 
-            # import xml
-            # try:
-            # pythonScriptName=CompuCellSetup.ExtractPythonScriptNameFromXML(fileName)
-            # except xml.parsers.expat.ExpatError,e:
-            # import CompuCellSetup
-            # xmlFileName=CompuCellSetup.simulationPaths.simulationXMLFileName
-            # print "Error in XML File","File:\n "+xmlFileName+"\nhas the following problem\n"+e.message
-            # import sys
-            # return
-            # sys.exit()
-
             if pythonScriptName != "":
                 CompuCellSetup.simulationPaths.setPythonScriptNameFromXML(pythonScriptName)
 
             self.__parent.toggleLatticeData(False)
             self.__parent.toggleModelEditor(True)
-
-
-            # if self.__parent.latticeDataDock.isVisible():
-            #     self.__parent.latticeDataAct.trigger(False)
-            #
-            # if self.__parent.modelEditorDock.isHidden():
-            #     self.__parent.modelAct.trigger(True)
 
         elif re.match(".*\.py$", fileName):
             globals = {'simTabView': 20}
@@ -901,25 +893,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.__parent.toggleLatticeData(False)
             self.__parent.toggleModelEditor(True)
 
-            # if self.__parent.latticeDataDock.isVisible():
-            #     self.__parent.latticeDataAct.trigger(True)
-            #
-            # if self.__parent.modelEditorDock.isHidden():
-            #     self.__parent.modelAct.trigger(False)
-
         elif re.match(".*\.cc3d$", fileName):
             self.__loadCC3DFile(fileName)
 
             self.__parent.toggleLatticeData(False)
             self.__parent.toggleModelEditor(True)
-
-            # if self.__parent.latticeDataDock.isVisible():
-            #     self.__parent.latticeDataAct.trigger(False)
-            #
-            # if self.__parent.modelEditorDock.isHidden():
-            #     self.__parent.modelAct.trigger(True)
-
-                #self.prepareForNewSimulation()   # rwh: do this?
 
         elif re.match(".*\.dml$", fileName):
             # Let's toggle these off (and not tell the user for now)
@@ -932,14 +910,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 print '  WARNING:  Turning OFF "Save lattice" in Preferences|Output'
                 print '-----------------------'
                 Configuration.setSetting("LatticeOutputOn", False)
-            #            self.dlg.enableLatticeOutput(False)   # disable the Lattice Output toggle (doesn't seem to work)
-
-            #        if (self.lastActiveWindow is not None) and (self.lastActiveWindow.winId() in self.graphicsWindowVisDict.keys()):
-            #            self.cellsAct.setChecked(self.graphicsWindowVisDict[self.lastActiveWindow.winId()][0])
-            #            self.borderAct.setChecked(self.graphicsWindowVisDict[self.lastActiveWindow.winId()][1])
-            #            self.clusterBorderAct.setChecked(self.graphicsWindowVisDict[self.lastActiveWindow.winId()][2])
-            #            self.cellGlyphsAct.setChecked(self.graphicsWindowVisDict[self.lastActiveWindow.winId()][3])
-            #            self.FPPLinksAct.setChecked(self.graphicsWindowVisDict[self.lastActiveWindow.winId()][4])
 
             if Configuration.getSetting("CellGlyphsOn"):
                 QMessageBox.warning(self, "Message",
@@ -976,24 +946,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         Configuration.setSetting("RecentFile", os.path.abspath(self.__fileName))
         Configuration.setSetting("RecentSimulations", os.path.abspath(self.__fileName))  #  each loaded simulation has to be passed to a function which updates list of recent files
-        # Configuration.addItemToStrlist(item = os.path.abspath(self.__fileName),strListName = 'RecentSimulations',maxLength = Configuration.getSetting('NumberOfRecentSimulations'))
-
-
-        # if self.saveSettings:
-        # Configuration.syncPreferences()
-
-        # recentSim=Configuration.getSetting("RecentSimulations")     
-        # print 'recent sim=',recentSim
-        # sys.exit()
-
-
-    #        print MODULENAME,'__loadSim():  on exit,  self.graphicsWindowVisDict=',self.graphicsWindowVisDict
-
-
 
     def __loadCC3DFile(self, fileName):
-        #        import CompuCellSetup
-
+        '''
+        Loads .cc3d file . loads project-specific settings for the project if such exist or creates them based on the
+        global settings stored in ~/.compucell3d
+        :param fileName: str - .cc3d file name
+        :return:None
+        '''
         import CC3DSimulationDataHandler
 
         self.cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler(self)
@@ -1014,8 +974,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         currentVersionInt = currentVersion.replace('.', '')
         projectVersion = self.cc3dSimulationDataHandler.cc3dSimulationData.version
         projectVersionInt = projectVersion.replace('.', '')
-        print 'projectVersion=', projectVersion
-        print 'currentVersion=', currentVersion
+        # print 'projectVersion=', projectVersion
+        # print 'currentVersion=', currentVersion
 
         if int(projectVersionInt) > int(currentVersionInt):
             msg = QMessageBox.warning(self, "CompuCell3D Version Mismatch", \
@@ -1025,21 +985,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         if self.cc3dSimulationDataHandler.cc3dSimulationData.playerSettingsResource:
             self.customSettingPath = self.cc3dSimulationDataHandler.cc3dSimulationData.playerSettingsResource.path
-            print 'GOT CUSTOM SETTINGS RESOURCE = ', self.customSettingPath
-
-            # # # Configuration.readCustomFile(self.customSettingPath)
+            # print 'GOT CUSTOM SETTINGS RESOURCE = ', self.customSettingPath
             Configuration.initializeCustomSettings(self.customSettingPath)
             self.__paramsChanged()
 
-            # Configuration.getSetting('PlayerSizes')
-            # sys.exit()
         else:
             self.customSettingPath = os.path.abspath(
                 os.path.join(self.cc3dSimulationDataHandler.cc3dSimulationData.basePath, 'Simulation/_settings.xml'))
             # Configuration.writeCustomFile(self.customSettingPath)
             Configuration.writeSettingsForSingleSimulation(self.customSettingPath)
-
-        # sys.exit()
 
         if self.cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource:
 
@@ -1076,32 +1030,16 @@ class SimpleTabView(MainArea, SimpleViewManager):
                     outputDir = str(Configuration.getSetting('OutputLocation'))
 
                     customOutputPath = psu.prepareParameterScanOutputDirs(_outputDirRoot=outputDir)
-                    # # # print 'customOutputPath=',customOutputPath
-                    #FIX ERROR MESSAGE TO INDICATE THE FILE WHICH COULD NOT BE CREATED
-                    # # # if not customOutputPath:                    
-                    # # # raise AssertionError('Parameter Scan Error: Could not create simulation output directory: '+outputDir)
-                    # # # return False,False
 
                     self.cc3dSimulationDataHandler.copySimulationDataFiles(customOutputPath)
-
 
                     #construct path to the just-copied .cc3d file
                     cc3dFileBaseName = os.path.basename(self.cc3dSimulationDataHandler.cc3dSimulationData.path)
                     cc3dFileFullName = os.path.join(customOutputPath, cc3dFileBaseName)
 
-                    # # # print 'cc3dFileFullName=',cc3dFileFullName
-
-
                     psu.replaceValuesInSimulationFiles(_pScanFileName=pScanFilePath, _simulationDir=customOutputPath)
                     # save parameter Scan spec file with incremented ityeration
                     psu.saveParameterScanState(_pScanFileName=pScanFilePath)
-
-
-                    # # # if not customOutputPath:
-                    # # # return False,False
-
-
-
 
                     from os.path import basename
 
@@ -1125,10 +1063,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         else:
             self.singleSimulation = True
 
-        #        print MODULENAME,'   __loadCC3DFile:  sim data:'
-        print self.cc3dSimulationDataHandler.cc3dSimulationData
-        #        print MODULENAME,'   end sim data'
-
         CompuCellSetup.simulationPaths.setSimulationBasePath(self.cc3dSimulationDataHandler.cc3dSimulationData.basePath)
 
         if self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript != "":
@@ -1143,124 +1077,45 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.simulation.setRunUserPythonScriptFlag(True)
             CompuCellSetup.simulationPaths.setPlayerSimulationXMLFileName(
                 self.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript)
-            # import xml
-            # try:
-            # pythonScriptName=CompuCellSetup.ExtractPythonScriptNameFromXML(fileName)
-            # except xml.parsers.expat.ExpatError,e:
-            # import CompuCellSetup
-            # xmlFileName=CompuCellSetup.simulationPaths.simulationXMLFileName
-            # print "Error in XML File","File:\n "+xmlFileName+"\nhas the following problem\n"+e.message
-            # import sys
-            # return
-            # sys.exit()
 
             if self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript != "":
                 CompuCellSetup.simulationPaths.setPythonScriptNameFromXML(
                     self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
 
         if self.cc3dSimulationDataHandler.cc3dSimulationData.windowScript != "":
-            #            print MODULENAME,'   __loadCC3DFile:  windowScript=',self.cc3dSimulationDataHandler.cc3dSimulationData.windowScript
             CompuCellSetup.simulationPaths.setPlayerSimulationWindowsFileName(
                 self.cc3dSimulationDataHandler.cc3dSimulationData.windowScript)
             self.__windowsXMLFileName = self.cc3dSimulationDataHandler.cc3dSimulationData.windowScript
-        #            print MODULENAME,'   __loadCC3DFile:  self.cc3dSimulationDataHandler.cc3dSimulationData.windowDict=',self.cc3dSimulationDataHandler.cc3dSimulationData.windowDict
-
-        # Configuration.setSetting("RecentSimulations",fileName)   # updating recent files
-
-        # self.simulation.setRunUserPythonScriptFlag(True)
-        # # NOTE: extracting of xml file name from python script is done during script run time so we cannot use CompuCellSetup.simulationPaths.setXmlFileNameFromPython function here
-        # CompuCellSetup.simulationPaths.setPlayerSimulationPythonScriptName(self.__fileName)
-
-
-    # def __dumpPlayerParams(self):  # QShortcut
-    #     fname = 'player.txt'
-    #     print '     self.lastActiveWindow=', self.lastActiveWindow
-    #     f = open(fname, 'w')
-    #     cam = self.lastActiveWindow.camera3D
-    #
-    #
-    #     print '\n-----------------'
-    #     v = cam.GetPosition()
-    #     s = str(v)
-    #     s = 'CameraPosition= ' + s.replace('(', ' ').replace(')', ' ').replace(',', ' ') + '\n'
-    #     print s,
-    #     f.write(s)
-    #
-    #     v = cam.GetFocalPoint()
-    #     s = str(v)
-    #     s = 'CameraFocalPoint= ' + s.replace('(', ' ').replace(')', ' ').replace(',', ' ') + '\n'
-    #     print s,
-    #     f.write(s)
-    #
-    #     v = cam.GetViewUp()
-    #     s = str(v)
-    #     s = 'CameraViewUp= ' + s.replace('(', ' ').replace(')', ' ').replace(',', ' ') + '\n'
-    #     print s,
-    #     f.write(s)
-    #
-    #     v = cam.GetClippingRange()
-    #     s = str(v)
-    #     s = 'CameraClippingRange= ' + s.replace('(', ' ').replace(')', ' ').replace(',', ' ') + '\n'
-    #     print s,
-    #     f.write(s)
-    #
-    #     #        v = cam.GetViewPlaneNormal()  # deprecated; computed automatically
-    #     #        s = str(v)
-    #     #        s = 'ViewPlaneNormal= '+ s.replace('(',' ').replace(')',' ').replace(',',' ') + '\n'
-    #     #        print s,
-    #     #        f.write(s)
-    #
-    #     v = cam.GetDistance()
-    #     s = str(v)
-    #     s = 'CameraDistance= ' + s + '\n'
-    #     print s,
-    #     f.write(s)
-    #
-    #     v = cam.GetViewAngle()
-    #     s = str(v)
-    #     s = 'ViewAngle= ' + s + '\n'
-    #     print s,
-    #     f.write(s)
-    #
-    #     f.close()
-    #     print MODULENAME, '  dumpPlayerParams  --> ', fname
-    #     print '-----------------'
-
 
     def __setConnects(self):
+        '''
+        Sets up signal slot connections for actions
+        :return:None
+        '''
         # QShortcut(QKeySequence("Ctrl+p"), self, self.__dumpPlayerParams)  # Cmd-3 on Mac
         self.connect(self.runAct, SIGNAL('triggered()'), self.__runSim)
         self.connect(self.stepAct, SIGNAL('triggered()'), self.__stepSim)
         self.connect(self.pauseAct, SIGNAL('triggered()'), self.__pauseSim)
         self.connect(self.stopAct, SIGNAL('triggered()'), self.__simulationStop)
 
-        # self.connect(self.addVTKWindowAct, SIGNAL('triggered()'), self.__addVTKWindow)
-
         self.connect(self.serializeAct, SIGNAL('triggered()'), self.__simulationSerialize)
         self.connect(self.restoreDefaultSettingsAct, SIGNAL('triggered()'), self.__restoreDefaultSettings)
-
-
 
         self.connect(self.openAct, SIGNAL('triggered()'), self.__openSim)
         self.connect(self.openLDSAct, SIGNAL('triggered()'), self.__openLDSFile)
 
-        # self.connect(self.saveAct, SIGNAL('triggered()'), self.__saveSim)
         self.connect(self.saveScreenshotDescriptionAct, SIGNAL('triggered()'), self.__saveScrDesc)
         self.connect(self.openScreenshotDescriptionAct, SIGNAL('triggered()'), self.__openScrDesc)
 
-        # self.connect(self.savePlayerParamsAct, SIGNAL('triggered()'), self.__savePlayerParams)
-        self.connect(self.exitAct, SIGNAL('triggered()'),
-                     qApp.closeAllWindows)  #qApp is a member of QtGui. closeAllWindows will cause closeEvent and closeEventSimpleTabView will be called
-        #        self.connect(self.openPlayerParamsAct,  SIGNAL('triggered()'), self.__openPlayerParams)
+        #qApp is a member of QtGui. closeAllWindows will cause closeEvent and closeEventSimpleTabView will be called
+        self.connect(self.exitAct, SIGNAL('triggered()'),qApp.closeAllWindows)
 
         self.connect(self.cellsAct, SIGNAL('triggered(bool)'), self.__checkCells)
         self.connect(self.borderAct, SIGNAL('triggered(bool)'), self.__checkBorder)
         self.connect(self.clusterBorderAct, SIGNAL('triggered(bool)'), self.__checkClusterBorder)
         self.connect(self.cellGlyphsAct, SIGNAL('triggered(bool)'), self.__checkCellGlyphs)
         self.connect(self.FPPLinksAct, SIGNAL('triggered(bool)'), self.__checkFPPLinks)
-        #        self.connect(self.FPPLinksColorAct,  SIGNAL('triggered(bool)'),  self.__checkFPPLinksColor)
 
-        # self.connect(self.contourAct,   SIGNAL('triggered(bool)'),  self.__checkContour)
         self.connect(self.limitsAct, SIGNAL('triggered(bool)'), self.__checkLimits)
         self.connect(self.configAct, SIGNAL('triggered()'), self.__showConfigDialog)
         self.connect(self.cc3dOutputOnAct, SIGNAL('triggered(bool)'), self.__checkCC3DOutput)
@@ -1273,12 +1128,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         #window menu actions
         self.connect(self.newGraphicsWindowAct, SIGNAL('triggered()'), self.addNewGraphicsWindow)
-        # self.connect(self.newPlotWindowAct,    SIGNAL('triggered()'),      self.addNewPlotWindow)
 
         self.connect(self.tileAct, SIGNAL('triggered()'), self.tileSubWindows)
         self.connect(self.cascadeAct, SIGNAL('triggered()'), self.cascadeSubWindows)
 
-        # self.connect(self.saveWindowsGeometryAct, SIGNAL('triggered()'), self.saveWindowsGeometry)
         self.connect(self.minimizeAllGraphicsWindowsAct, SIGNAL('triggered()'), self.minimizeAllGraphicsWindows)
         self.connect(self.restoreAllGraphicsWindowsAct, SIGNAL('triggered()'), self.restoreAllGraphicsWindows)
 
@@ -1288,23 +1141,20 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.connect(self, SIGNAL('configsChanged'), self.__paramsChanged)
 
 
-    # Connections that are related to the simulation view
-    # Change to Graphics2D or Graphics3D
-    def __setSimConnects(self):
-        # Set connections is the self.mainGraphicsWindow is instance of Graphics2D 
-        if self.mainGraphicsWindow is not None and isinstance(self.mainGraphicsWindow, (Graphics2D)):
-            self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWindow.configsChanged)
-
-    # def __addVTKWindow(self):
-    #
-    #     self.closeActiveSubWindowSlot()
-
-
     def setFieldType(self, _fieldTypeTuple):
+        '''
+        Called from GraphicsFrameWidget
+        :param _fieldTypeTuple: tuple with field types
+        :return:None
+        '''
         self.__fieldType = _fieldTypeTuple
 
-
     def closeEventSimpleTabView(self, event=None):
+        '''
+        Handles player CloseEvent - called from closeEvent in UserInterface.py
+        :param event: Qt CloseEvent
+        :return:None
+        '''
 
 
         if self.saveSettings:
@@ -1321,31 +1171,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             # self.__simulationStop()
 
-
-
             return
-
-            """
-            For some reason have to introduce delay to avoid problems with application becoming unresponsive
-            """
-            import time
-
-            time.sleep(0.5)
-            self.simulation.stop()
-            self.simulation.wait()
-
-            # # # self.removeAllVTKWindows()
-            # # # self.removeAllPlotWindows()
-
-
-    # # Core method for running simulation
-    def printInfo(self):
-        # print "INFO"
-        self.simulation.sem.acquire()
-        self.simulation.sem.release()
 
 
     def initializeSimulationViewWidgetCMLResultReplay(self):
+        '''
+        Initializes PLayer during VTK replay run mode
+        :return:None
+        '''
         # self.pifFromVTKAct.setEnabled(True)
         self.fieldDim = self.simulation.fieldDim
         self.mysim = self.simulation.sim
@@ -1408,39 +1241,34 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.cmlReplayManager.set_stay_in_current_step(True)
 
     def createOutputDirs(self):
+        '''
+        Creates Simulation output directory
+        :return:None
+        '''
 
         import CompuCellSetup
         #        import pdb; pdb.set_trace()
         if self.customScreenshotDirectoryName == "":
-            #            import CompuCellSetup
-            #            outputDir = self.__outputDirectory
-            #            print MODULENAME,'createOutputDirs():  self.__outputDirectory, self.__outputDirectory= ',self.__outputDirectory, self.__outputDirectory
-            (self.screenshotDirectoryName, self.baseScreenshotName) = CompuCellSetup.makeSimDir(self.__fileName,
-                                                                                                self.__outputDirectory)
-            #                (self.screenshotSubdirName, self.baseScreenshotName) = CompuCellSetup.makeSimDir(self.__fileName,outputDir)
-            #            print MODULENAME, 'createOutputDirs(): (not custom dir) screenshotDirectoryName,baseScreenshotName=',self.screenshotDirectoryName,', ',self.baseScreenshotName
+            (self.screenshotDirectoryName, self.baseScreenshotName) = \
+                CompuCellSetup.makeSimDir(self.__fileName,self.__outputDirectory)
+
             CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
             self.prevOutputDir = self.__outputDirectory
-        #            print MODULENAME,'createOutputDirs:  self.prevOutputDir=',self.__outputDirectory
+
         else:
             # for parameter scan the directories are created in __loadCC3DFile
             if self.singleSimulation:
 
-                (self.screenshotDirectoryName, self.baseScreenshotName) = self.makeCustomSimDir(
-                    self.customScreenshotDirectoryName, self.__fileName)
-                #            print MODULENAME, 'createOutputDirs(): (custom dir: screenshotDirectoryName,baseScreenshotName=',self.screenshotDirectoryName,', ',self.baseScreenshotName
+                (self.screenshotDirectoryName, self.baseScreenshotName) =\
+                    self.makeCustomSimDir(self.customScreenshotDirectoryName, self.__fileName)
+
                 CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
 
             else:
                 self.screenshotDirectoryName = self.parameterScanOutputDir
 
-                # fullFileName = os.path.abspath(_simulationFileName)
-                # (filePath,baseFileName) = os.path.split(fullFileName)
-                # baseFileNameForDirectory = baseFileName.replace('.','_')    
-
                 pScanBaseFileName = os.path.basename(self.__fileName)
                 pScanBaseFileName, extension = os.path.splitext(pScanBaseFileName)
-                # .replace('.','_')                
                 screenshotSuffix = os.path.basename(self.screenshotDirectoryName)
 
                 self.baseScreenshotName = pScanBaseFileName + '_' + screenshotSuffix
@@ -1458,38 +1286,18 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.resultStorageDirectory = os.path.join(self.screenshotDirectoryName, "LatticeData")
 
-        #        print MODULENAME, 'createOutputDirs(), lattice: resultStorageDirectory=',self.resultStorageDirectory
-
-        #        import CompuCellSetup
-        #        print MODULENAME,'createOutputDirs:  calling initCMLFieldHandler()'
-        #        print MODULENAME,'createOutputDirs():  calling CompuCellSetup.initCMLFieldHandler()'
         if (self.mysim == None):
             print MODULENAME, '\n\n\n createOutputDirs():  self.mysim is None!!!'  # bad, very bad
-            # return
-            # sys.exit(0)
-        #        else:
-        #            print MODULENAME,'createOutputDirs():   type(self.mysim) = ',type(self.mysim)
-        #            print MODULENAME,'createOutputDirs():   self.mysim = ',self.mysim
-
-        # simObj=self.mysim() # extracting object from weakref object wrapper
-        # if not simObj:return
 
         CompuCellSetup.initCMLFieldHandler(self.mysim(), self.resultStorageDirectory,
             self.fieldStorage)  # also creates the /LatticeData dir
-        # # # CompuCellSetup.initCMLFieldHandler(self.mysim,self.resultStorageDirectory,self.fieldStorage)  # also creates the /LatticeData dir
-
-
-    #        else:
-    #            print MODULENAME,'createOutputDirs:  LatticeOutputOn is False'
-
 
     def initializeSimulationViewWidgetRegular(self):
-        # print MODULENAME,'  --------- initializeSimulationViewWidgetRegular:'
+        '''
+        Initializes Player during simualtion run mode
+        :return:None
+        '''
 
-        # self.pifFromVTKAct.setEnabled(False)
-        # import time
-        # time.sleep(2)
-        # # # sim=self.simulation.sim()
         sim = self.simulation.sim()
         if sim:
             self.fieldDim = sim.getPotts().getCellFieldG().getDim()
@@ -1532,50 +1340,26 @@ class SimpleTabView(MainArea, SimpleViewManager):
             #silencing output from Python
             self.UI.enablePythonOutput(False)
 
-
-            # check if we will be outputting fields in vtk format
-        #        import CompuCellSetup
-        # print "THIS IS Configuration.getSetting(LatticeOutputOn)",Configuration.getSetting("LatticeOutputOn")
-        # print simObj
-
         self.basicSimulationData.fieldDim = self.fieldDim
         self.basicSimulationData.sim = simObj
         self.basicSimulationData.numberOfSteps = simObj.getNumSteps()
 
-        # # # print 'BEFORE self.fieldStorage.allocateCellField'
-        # # # time.sleep(5)
         self.fieldStorage.allocateCellField(self.fieldDim)
 
         self.fieldExtractor.init(simObj)
-        # # # print 'AFTER self.fieldStorage.allocateCellField'
-        # # # time.sleep(5)
-
-
-
-
 
         self.screenshotNumberOfDigits = len(str(self.basicSimulationData.numberOfSteps))
 
-        #        import CompuCellSetup
         latticeTypeStr = CompuCellSetup.ExtractLatticeType()
-        #        print MODULENAME,' initializeSimulationViewWidgetRegular():  latticeTypeStr=',latticeTypeStr
+
         if latticeTypeStr in Configuration.LATTICE_TYPES.keys():
             self.latticeType = Configuration.LATTICE_TYPES[latticeTypeStr]
         else:
             self.latticeType = Configuration.LATTICE_TYPES["Square"]  # default choice
 
-        # print 'BEFORE prepareSimulationView'
-        # time.sleep(5)
-
         self.prepareSimulationView()
 
-        # print 'AFTER prepareSimulationView'
-        # time.sleep(5)
-
-
         self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
-
-        # print "self.screenshotManager",self.screenshotManager
 
         if self.__screenshotDescriptionFileName != "":
             self.screenshotManager.readScreenshotDescriptionFile(self.__screenshotDescriptionFileName)
@@ -1584,30 +1368,21 @@ class SimpleTabView(MainArea, SimpleViewManager):
             # print "BEFORE STEPPING PAUSE REGULAR SIMULATION"
             self.__pauseSim()
 
-
-        #        self.prepareXMLTreeView(self.__fileName)
         self.prepareXMLTreeView()
-        # after this call I can access self.root_element of the XML File
-
-    #        self.multiWindowPlayerSettings(self.root_element)
-    # # # self.loadCustomPlayerSettings(self.root_element)
-
-
-
 
     def initializeSimulationViewWidget(self):
+        '''
+        Dispatch function - calls player initialization functions (initializeSimulationViewWidgetRegular or initializeSimulationViewWidgetCML) depending on the run mode
+        :return:None
+        '''
         import CompuCellSetup
 
         CompuCellSetup.simulationFileName = self.__fileName
-        # closing all open windows
         self.close_all_windows()
 
         initializeSimulationViewWidgetFcn = getattr(self, "initializeSimulationViewWidget" + self.__viewManagerType)
         initializeSimulationViewWidgetFcn()
 
-        #        import CompuCellSetup
-        # print "self.cc3dSimulationDataHandler=",self.cc3dSimulationDataHandler
-        # print 'CompuCellSetup.screenshotDirectoryName=',CompuCellSetup.screenshotDirectoryName
 
         #        print MODULENAME, 'initializeSimulationViewWidget(),  __imageOutput,__latticeOutputFlag,screenshotDirectoryName=', self.__imageOutput,self.__latticeOutputFlag,self.screenshotDirectoryName
         if (self.__imageOutput or self.__latticeOutputFlag) and self.screenshotDirectoryName == "":
@@ -1620,134 +1395,41 @@ class SimpleTabView(MainArea, SimpleViewManager):
             if self.cc3dSimulationDataHandler and CompuCellSetup.screenshotDirectoryName != "":
                 self.cc3dSimulationDataHandler.copySimulationDataFiles(CompuCellSetup.screenshotDirectoryName)
 
-
-                # print MODULENAME, " initializeSimulationViewWidget():  before set_trace"
-            #        import pdb; pdb.set_trace()
-        print MODULENAME, " initializeSimulationViewWidget():  before TRY ACQUIRE"
+        # print MODULENAME, " initializeSimulationViewWidget():  before TRY ACQUIRE"
         self.simulation.sem.tryAcquire()
         self.simulation.sem.release()
-        print MODULENAME, " initializeSimulationViewWidget():  AFTER RELEASE"
+        # print MODULENAME, " initializeSimulationViewWidget():  AFTER RELEASE"
 
     #        import pdb; pdb.set_trace()
 
     def runSteppablePostStartPlayerPrep(self):
-
+        '''
+        Handler function runs after steppables executed start functions. Restores window layout for plot windows
+        :return:None
+        '''
         self.setFieldTypes()
-        # # # self.windowDict[1].setFieldTypesComboBox(self.fieldTypes) #we have only one window at this stage of the simulation run
 
         self.simulation.sem.tryAcquire()
         self.simulation.sem.release()
 
         # restoring plots
-
         self.plotManager.restore_plots_layout()
 
 
-    #    def multiWindowPlayerSettings(self, _root_element):
-    #        print MODULENAME,'multiWindowPlayerSettings(): --------------------------------\n'
-    #        import pdb; pdb.set_trace()
-
-    # def setWindowView(self, w, attrKeys):
-    #     camera3D = self.lastActiveWindow.getCamera3D()
-    #
-    #     #                print 'w.getAttributes()=',w.getAttributes()
-    #     #                print 'dir(w.getAttributes())=',dir(w.getAttributes())
-    #
-    #     if "Projection" in attrKeys:
-    #         winProj = w.getAttribute("Projection")
-    #         print MODULENAME, 'winProj=', winProj
-    #         if winProj == '3D':
-    #             self.lastActiveWindow._switchDim(True)
-    #         else:
-    #             if w.findAttribute("XYProj"):
-    #                 zPos = w.getAttributeAsUInt("XYProj")
-    #                 print MODULENAME, '  loadCustomPlayerSettings(): XYProj, zPos =', zPos  #rwh
-    #                 if zPos >= self.xySB.minimum() and zPos <= self.xySB.maximum():
-    #                     self.lastActiveWindow._xyChecked(True)
-    #                     self.lastActiveWindow._projSpinBoxChanged(zPos)
-    #             elif w.findAttribute("XZProj"):
-    #                 yPos = w.getAttributeAsUInt("XZProj")
-    #                 if yPos >= self.xzSB.minimum() and yPos <= self.xzSB.maximum():
-    #                     self.lastActiveWindow._xzChecked(True)
-    #                     self.lastActiveWindow._projSpinBoxChanged(yPos)
-    #
-    #             elif w.findAttribute("YZProj"):
-    #                 xPos = w.getAttributeAsUInt("YZProj")
-    #                 if xPos >= self.yzSB.minimum() and xPos <= self.yzSB.maximum():
-    #                     self.lastActiveWindow._yzChecked(True)
-    #                     self.lastActiveWindow._projSpinBoxChanged(xPos)
-    #
-    #     if "WindowNumber" in attrKeys:
-    #         winNum = w.getAttributeAsUInt("WindowNumber")
-    #         print MODULENAME, 'winNum=', winNum
-    #
-    #     # set camera params for each window
-    #     if "CameraPos" in attrKeys:
-    #         p = w.getAttribute("CameraPos")
-    #         pStr = p.split()
-    #         cameraPos = [float(pStr[0]), float(pStr[1]), float(pStr[2])]
-    #         print MODULENAME, 'cameraPos=', cameraPos
-    #         camera3D.SetPosition(cameraPos)
-    #     if "CameraFocalPoint" in attrKeys:
-    #         p = w.getAttribute("CameraFocalPoint")
-    #         pStr = p.split()
-    #         cameraFocalPoint = [float(pStr[0]), float(pStr[1]), float(pStr[2])]
-    #         print MODULENAME, 'cameraFocalPoint=', cameraFocalPoint
-    #         camera3D.SetFocalPoint(cameraFocalPoint)
-    #     if "CameraViewUp" in attrKeys:
-    #         p = w.getAttribute("CameraViewUp")
-    #         pStr = p.split()
-    #         cameraViewUp = [float(pStr[0]), float(pStr[1]), float(pStr[2])]
-    #         print MODULENAME, 'cameraViewUp=', cameraViewUp
-    #         camera3D.SetViewUp(cameraViewUp)
-    #     if "CameraClippingRange" in attrKeys:
-    #         p = w.getAttribute("CameraClippingRange")
-    #         pStr = p.split()
-    #         cameraClippingRange = [float(pStr[0]), float(pStr[1])]
-    #         print MODULENAME, 'cameraClippingRange=', cameraClippingRange
-    #         camera3D.SetClippingRange(cameraClippingRange)
-    #     if "CameraDistance" in attrKeys:
-    #         p = w.getAttributeAsDouble("CameraDistance")
-    #         print MODULENAME, 'camera distance=', p
-    #         camera3D.SetDistance(p)
-    #
-    #     self.lastActiveWindow.ren.ResetCameraClippingRange()  # need to do this, else might have clipped actors
-
-
-    # def __savePlayerParams(self):
-    #     # print "THIS IS __saveScrDesc"
-    #     filter = "Player parameters File (*.txt )"  # self._getOpenFileFilter()
-    #     self.playerParamsFileName = QFileDialog.getSaveFileName( \
-    #         self.ui,
-    #         QApplication.translate('ViewManager', "Save Player Parameters File"),
-    #         os.getcwd(),
-    #         filter
-    #         )
-    #     #        if self.screenshotManager:
-    #     #            self.screenshotManager.writePlayerParamsFile(self.playerParamsFileName)
-    #
-    #     print MODULENAME, "playerParamsFileName=", self.playerParamsFileName
-    #     #        pFile = open(self.playerParamsFileName,'w')
-    #     #        pFile.write('size 512\n')
-    #     #        pFile.close()
-    #     #        from csv import writer
-    #     paramsDict = Configuration.getPlayerParams()
-    #     #        paramWriter = writer(open(self.playerParamsFileName, 'w'), delimiter=' ')
-    #     #        paramWriter.writerow(params)
-    #     paramFile = open(self.playerParamsFileName, 'w')
-    #     paramFile.write(repr(paramsDict))
-    #
-    #     #        for idx in paramsDict.keys():
-    #     #            paramFile.write(idx, repr(paramsDict))
-    #     paramFile.close()
-    #     print MODULENAME, 'paramsDict =', paramsDict
-
-
     def extractAddressIntFromVtkObject(self, _vtkObj):
+        '''
+        Extracts memory address of vtk object
+        :param _vtkObj: vtk object - e.g. vtk array
+        :return: int (possible long int) representing the address of the vtk object
+        '''
         return self.fieldExtractor.unmangleSWIGVktPtrAsLong(_vtkObj.__this__)
 
     def handleSimulationFinishedCMLResultReplay(self, _flag):
-        #        import CompuCellSetup
+        '''
+        callback - runs after CML replay mode finished. Cleans after vtk replay
+        :param _flag: bool - not used at tyhe moment
+        :return:None
+        '''
         if CompuCellSetup.playerType == "CMLResultReplay":
             self.latticeDataModelTable.prepareToClose()
 
@@ -1755,8 +1437,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.__cleanAfterSimulation()
 
     def launchNextParameterScanRun(self):
+        '''
+        launches next aprameter scan. Deprecated - parameter scans shuld be run from command line
+        :return:None
+        '''
         fileName = self.__fileName
-        # when runnign parameter scan after simulatino finish we run again the same simulation file. When cc3d project with parameter scan gets opened 'next iteration' simulation is generatet and this 
+        # when running parameter scan after simulatino finish we run again the same simulation file. When cc3d project with parameter scan gets opened 'next iteration' simulation is generatet and this
         # newly generated cc3d file is substituted instead of the "master" cc3d with parameter scan 
         # From user stand point whan matters is that the only thing that user needs to worry abuot is the "master" .cc3d project and this is what is opened in the player
         self.consecutiveRunCounter += 1
@@ -1781,35 +1467,40 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
 
     def handleSimulationFinishedRegular(self, _flag):
+        '''
+        Callback - called after "regular" simulation finishes
+        :param _flag:bool - unused
+        :return:None
+        '''
         print 'INSIDE handleSimulationFinishedRegular'
         self.__cleanAfterSimulation()
 
         if not self.singleSimulation:
             self.launchNextParameterScanRun()
 
-            # self.__stopSim()
-
     def handleSimulationFinished(self, _flag):
+        '''
+        dispatch function for simulation finished event
+        :param _flag: bool - unused
+        :return:
+        '''
         handleSimulationFinishedFcn = getattr(self, "handleSimulationFinished" + self.__viewManagerType)
         handleSimulationFinishedFcn(_flag)
 
 
     def handleCompletedStepCMLResultReplay(self, _mcs):
+        '''
+        callback - runs after vtk replay step completed.
+        :param _mcs: int - current Monte Carlo step
+        :return:None
+        '''
         self.simulation.drawMutex.lock()  # had to add synchronization here . without it I would get weird behavior in CML replay mode
 
-        # print  '\n\n ---------------- handleCompletedStepCMLResultReplay'                                        
-        # print '--------------BEFORE self.fieldDim=',self.fieldDim        
-
-        print "THIS IS handleCompletedStepCMLResultReplay"
-        # print "Before extracting the address self.simulation.simulationData=",self.simulation.simulationData
         simulationDataIntAddr = self.extractAddressIntFromVtkObject(self.simulation.simulationData)
-        # print "simulationDataIntAddr=%X\n"% (simulationDataIntAddr)
-        # print "self.simulation.simulationData=",self.simulation.simulationData
+
         self.fieldExtractor.setSimulationData(simulationDataIntAddr)
         self.__step = self.simulation.currentStep
-        print 'SIMPLE TAB VIEW self.__step=', self.__step
-        print 'SIMPLE TAB VIEW self.simulation.frequency=', self.simulation.frequency
-        # # # self.latticeDataModelTable.selectRow(self.__step / self.simulation.frequency ) # here elf.step holds the value of the "user step" i.e. not multiplied by frequency. it gets multiplied by frequency next
+
         self.latticeDataModelTable.selectRow(self.simulation.stepCounter - 1)  #self.simulation.stepCounter is incremented by one before it reaches this function
 
         #there is additional locking inside draw to acccount for the fact that users may want to draw lattice on demand
@@ -1818,11 +1509,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.simulation.newFileBeingLoaded = False  # this flag is used to prevent calling  draw function when new data is read from hard drive
         # at this moment new data has been read and is ready to be used
-
-
         self.__drawField()
-        # print '----------------AFTER self.fieldDim=',self.fieldDim                                                 
-
+        # print '----------------AFTER self.fieldDim=',self.fieldDim
         self.simulation.drawMutex.lock()
         # will need to synchorinize screenshots with simulation thread . make sure that before simuklation thread writes new results all the screenshots are taken
 
@@ -1832,8 +1520,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
                                               self.screenshotNumberOfDigits)  # fills string wtih 0's up to self.screenshotNumberOfDigits width
             screenshotFileName = os.path.join(self.screenshotDirectoryName,
                                               self.baseScreenshotName + "_" + mcsFormattedNumber + ".png")
-
-            # print MODULENAME," handleCompletedStepCMLResultReplay():  calling takeSimShot w/ screenshotFileName=",screenshotFileName
 
             self.mainGraphicsWindow.takeSimShot(screenshotFileName)
             self.screenshotManager.outputScreenshots(self.screenshotDirectoryName, self.__step)
@@ -1850,41 +1536,25 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.cmlReplayManager.keepGoing()
 
-    def handleFinishRequest(self, _flag):
-        #this ensures that all the tasks in the GUI thread that need simulator to be alive are completed before proceeding further with finalizing the simulation 
-        #e.g. SimpleTabViewpy. function handleCompletedStepRegular may need a lot of time to output simulations fields and those fields need to have alive simulator otherwise accessing to destroyed field will lead to segmentation fault
-
-        #we do not save windows layout for simulation replay
-        if self.__viewManagerType != "CMLResultReplay":
-            self.__saveWindowsLayout()
-
-
-        self.simulation.drawMutex.lock()
-        self.simulation.drawMutex.unlock()
-
-        # this releases finish mutex which is a signal to simulation thread that is is OK to finish
-        self.simulation.finishMutex.unlock()
-
-
     def handleCompletedStepRegular(self, _mcs):
-
-        # print 'handleCompletedStepRegular = ', handleCompletedStepRegular
+        '''
+        callback - runs after simulation step completed.
+        :param _mcs: int - current Monte Carlo step
+        :return:
+        '''
 
         self.__drawField()
 
         self.simulation.drawMutex.lock()
         # will need to sync screenshots with simulation thread. Be sure before simulation thread writes new results all the screenshots are taken
 
-        print MODULENAME, 'handleCompletedStepRegular():  __shotFrequency, __imageOutput = ',self.__shotFrequency,self.__imageOutput
+
 
         if self.__imageOutput and not (self.__step % self.__shotFrequency):  # dumping images? Check modulo MCS #
             mcsFormattedNumber = string.zfill(str(self.__step),
                                               self.screenshotNumberOfDigits)  # fills string wtih 0's up to self.screenshotNumberOfDigits width
             screenshotFileName = os.path.join(self.screenshotDirectoryName,
                                               self.baseScreenshotName + "_" + mcsFormattedNumber + ".png")
-            #            print '       handleCompletedStepRegular():  screenshotDirectoryName=',self.screenshotDirectoryName
-            #            print '       handleCompletedStepRegular():  baseScreenshotName=',self.baseScreenshotName
-            #            print MODULENAME,'  handleCompletedStepRegular():  calling takeSimShot w/ screenshotFileName=',screenshotFileName
             if _mcs != 0:
                 if self.mainGraphicsWindow:  # self.mainGraphicsWindow can be closed by the user
                     self.mainGraphicsWindow.takeSimShot(screenshotFileName)
@@ -1899,8 +1569,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
             #        if (CompuCellSetup.cmlFieldHandler is not None) and self.__latticeOutputFlag and (not self.__step % self.__latticeOutputFrequency):  #rwh
         if self.cmlHandlerCreated and self.__latticeOutputFlag and (
                 not self.__step % self.__latticeOutputFrequency):  #rwh
-            #            print MODULENAME,' handleCompletedStepRegular(): cmlFieldHandler.writeFields'
-            #            import CompuCellSetup
             CompuCellSetup.cmlFieldHandler.writeFields(self.__step)
 
         self.simulation.drawMutex.unlock()
@@ -1914,26 +1582,47 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
 
     def handleCompletedStep(self, _mcs):
-
-
-        #        print MODULENAME, 'handleCompletedStep:  _mcs =',_mcs
+        '''
+        Dispatch function for handleCompletedStep functions
+        :param _mcs: int - current Monte Carlo step
+        :return:None
+        '''
         if not self.completedFirstMCS:
             self.completedFirstMCS = True
-        #            self.updateActiveWindowVisFlags()
 
         self.__step = _mcs
 
-        #        print MODULENAME, 'handleCompletedStep:  self.__viewManagerType =',self.__viewManagerType
-        #        fcnName = "handleCompletedStep" + self.__viewManagerType
-        #        print MODULENAME, 'handleCompletedStep:  fcnName=',fcnName
         handleCompletedStepFcn = getattr(self, "handleCompletedStep" + self.__viewManagerType)
-        #        handleCompletedStepFcn = getattr(self, fcnName)
+
         handleCompletedStepFcn(_mcs)
-        return
+
+    def handleFinishRequest(self, _flag):
+        '''
+        Ensures that all the tasks in the GUI thread that need simulator to be alive are completed before proceeding
+        further with finalizing the simulation. For example SimpleTabView.py. function handleCompletedStepRegular
+        may need a lot of time to output simulations fields and those fields need to have alive simulator otherwise
+        accessing to destroyed field will lead to segmentation fault
+        Saves Window layout into project settings
+        :param _flag: bool - unused
+        :return:None
+        '''
+
+        #we do not save windows layout for simulation replay
+        if self.__viewManagerType != "CMLResultReplay":
+            self.__saveWindowsLayout()
 
 
-    def updateSimPrefs(self):
+        self.simulation.drawMutex.lock()
+        self.simulation.drawMutex.unlock()
 
+        # this releases finish mutex which is a signal to simulation thread that is is OK to finish
+        self.simulation.finishMutex.unlock()
+
+    def init_simulation_control_vars(self):
+        '''
+        Sets several output-related variables in simulation thread
+        :return:None
+        '''
         self.simulation.screenUpdateFrequency = self.__updateScreen
         self.simulation.imageOutputFlag = self.__imageOutput
         self.simulation.screenshotFrequency = self.__shotFrequency
@@ -1942,7 +1631,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
 
     def prepareSimulation(self):
-
+        '''
+        Prepares simulation - loads simulation, installs rollback importer - to unimport previously used modules
+        :return:None
+        '''
         if not self.drawingAreaPrepared:
             # checking if the simulation file is not an empty string 
             if self.__fileName == "":
@@ -1970,10 +1662,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 return
             except xml.parsers.expat.ExpatError, e:
-                # if CompuCellSetup.simulationObjectsCreated:
-                # sim.finish()
-                # import PlayerPython
-                # simthread=PlayerPython.getSimthreadBasePtr()
+
                 xmlFileName = CompuCellSetup.simulationPaths.simulationXMLFileName
                 print "Error in XML File", "File:\n " + xmlFileName + "\nhas the following problem\n" + e.message
                 self.handleErrorMessage("Error in XML File",
@@ -1981,18 +1670,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
             except IOError, e:
                 return
 
-            self.updateSimPrefs()
-            #            self.simulation.screenUpdateFrequency = self.__updateScreen
-            #            self.simulation.imageOutputFlag = self.__imageOutput
-            #            self.simulation.screenshotFrequency = self.__shotFrequency
-            #            self.simulation.latticeOutputFlag = self.__latticeOutputFlag
-            #            self.simulation.latticeOutputFrequency = self.__latticeOutputFrequency
-            # print '__runSim self.screenshotDirectoryName=', self.screenshotDirectoryName
+            self.init_simulation_control_vars()
 
             self.screenshotDirectoryName = ""
-            # print '__runSim self.screenshotDirectoryName=', self.screenshotDirectoryName
-
-            # sys.exit()
 
             if self.rollbackImporter:
                 self.rollbackImporter.uninstall()
@@ -2000,8 +1680,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.rollbackImporter = RollbackImporter()
 
     def __runSim(self):
-
-
+        '''
+        Slot that actuallt runs the simulation
+        :return:None
+        '''
 
         self.simulation.screenUpdateFrequency = self.__updateScreen  # when we run simulation we ensure that self.simulation.screenUpdateFrequency is whatever is written in the settings
 
@@ -2051,7 +1733,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             if self.simulationIsStepping:
                 self.simulationIsStepping = False
-                self.updateSimPrefs()
+                self.init_simulation_control_vars()
 
             if not self.pauseAct.isEnabled() and self.simulationIsRunning:
                 self.runAct.setEnabled(False)
@@ -2061,6 +1743,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
 
     def __stepSim(self):
+        '''
+        Slot that steps through simulation
+        :return:None
+        '''
 
         self.simulation.screenUpdateFrequency = 1  # when we step we need to ensure screenUpdateFrequency is 1
 
@@ -2142,11 +1828,18 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
 
     def requestRedraw(self):
+        '''
+        Responds to request to redraw simulatin snapshots if the simulation is running
+        :return:
+        '''
         if self.simulationIsRunning or self.simulationIsStepping:
             self.__drawField()
 
     def drawFieldCMLResultReplay(self):
-
+        '''
+        Draws fields during vtk replay mode
+        :return:None
+        '''
         self.simulation.drawMutex.lock()
         self.simulation.readFileSem.acquire()
 
@@ -2173,20 +1866,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.__step = self.simulation.getCurrentStep()
 
         if True:
-            # MDIFIX
             for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
                 graphicsFrame = win.widget()
 
                 if graphicsFrame.is_screenshot_widget:
                     continue
 
-            # for windowName in self.windowDict.keys():
-            #     graphicsFrame = self.windowDict[windowName]
-                # print "graphicsFrame=",graphicsFrame
 
                 (currentPlane, currentPlanePos) = graphicsFrame.getPlane()
 
-                # print "NEW FILE IS LOADED =",self.simulation.newFileBeingLoaded
 
                 if not self.simulation.newFileBeingLoaded:  # this flag is used to prevent calling  draw function when new data is read from hard drive
                     graphicsFrame.drawFieldLocal(self.basicSimulationData)
@@ -2197,9 +1885,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.readFileSem.release()
 
     def drawFieldRegular(self):
-        #        print MODULENAME,'  drawFieldRegular(): simulationIsRunning=',self.simulationIsRunning
-        #        import pdb; pdb.set_trace()
-
+        '''
+        Draws field during "regular" simulation
+        :return:None
+        '''
         if not self.simulationIsRunning:
             return
 
@@ -2210,12 +1899,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.drawMutex.lock()
 
         self.__step = self.simulation.getCurrentStep()
-        #        print MODULENAME,'  drawFieldRegular(): __step=',self.__step
-
-
-        # self.simulation.drawMutex.unlock()
-        # return
-
 
         if self.mysim:
             for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
@@ -2233,47 +1916,18 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.simulation.drawMutex.unlock()
 
-
-
-
-
-        # if self.mysim:
-        #     #            print MODULENAME,'  drawFieldRegular(): in self.mysim block; windowDict.keys=',self.graphicsWindowDict.keys()
-        #     for windowName in self.graphicsWindowDict.keys():
-        #         graphicsFrame = self.windowDict[windowName]
-        #
-        #
-        #         #                print MODULENAME,"drawFieldRegular():   windowName, graphicsFrame=",windowName, graphicsFrame
-        #
-        #
-        #         #rwh: error if we try to invoke switchdim earlier
-        #         (currentPlane, currentPlanePos) = graphicsFrame.getPlane()
-        #
-        #         # print 'BEFORE graphicsFrame.drawFieldLocal'
-        #         # time.sleep(5)
-        #
-        #         graphicsFrame.drawFieldLocal(self.basicSimulationData)
-        #
-        #         # print 'AFTER graphicsFrame.drawFieldLocal'
-        #         # time.sleep(5)
-        #
-        #
-        #         self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())  # show MCS in lower-left GUI
-        #
-        # self.simulation.drawMutex.unlock()
-
-
     def updateSimulationProperties(self):
-        # print 'INSIDE updateSimulationProperties ',self.fieldDim
-
+        '''
+        INitializes basic simulation data - fieldDim, number of steps etc.
+        :return:bool - flag indicating if initialization of basic simulation data was successful
+        '''
         fieldDim = None
         if self.__viewManagerType == "Regular":
 
             simObj = self.mysim()
-            if not simObj: return
+            if not simObj: return False
 
             fieldDim = simObj.getPotts().getCellFieldG().getDim()
-            # # # fieldDim = self.simulation.sim.getPotts().getCellFieldG().getDim()
 
             if fieldDim.x == self.fieldDim.x and fieldDim.y == self.fieldDim.y and fieldDim.z == self.fieldDim.z:
                 return False
@@ -2282,11 +1936,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.basicSimulationData.fieldDim = self.fieldDim
             self.basicSimulationData.sim = simObj
             self.basicSimulationData.numberOfSteps = simObj.getNumSteps()
-
-            # # # self.fieldDim= fieldDim   
-            # # # self.basicSimulationData.fieldDim = self.fieldDim
-            # # # self.basicSimulationData.sim = self.mysim
-            # # # self.basicSimulationData.numberOfSteps = self.mysim.getNumSteps()
 
             return True
 
@@ -2297,62 +1946,52 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.fieldDim = self.simulation.fieldDim
                 self.basicSimulationData.fieldDim = self.fieldDim
                 self.fieldExtractor.setFieldDim(self.basicSimulationData.fieldDim)
-                # self.basicSimulationData.sim = self.mysim
-                # self.basicSimulationData.numberOfSteps = self.mysim.getNumSteps()
                 return True
 
             return False
 
 
     def updateVisualization(self):
-        # print 'INSIDE f'
+        '''
+        Updates visualization properties - called e.g. after resizing of the lattice
+        :return:None
+        '''
+
         self.fieldStorage.allocateCellField(self.fieldDim)
         # this updates cross sections when dimensions change
 
-        #MDIFIX
         for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
             win.widget().updateCrossSection(self.basicSimulationData)
 
-        # for windowName in self.windowDict.keys():
-        #     self.windowDict[windowName].updateCrossSection(self.basicSimulationData)
 
-
-        # # # slf.setInitialCrossSection(self.basicSimulationData)
-
-        #MDIFIX
         for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
             graphicsWidget = win.widget()
             graphicsWidget.resetAllCameras()
 
-        # for windowName, graphicsWindow in self.graphicsWindowDict.iteritems():
-        #     graphicsWindow.resetAllCameras()
-
-
-        # # # self.prepareSimulationView() # this pauses simulation        
         # self.__drawField()
 
         if self.simulationIsRunning and not self.simulationIsStepping:
             self.__runSim()  # we are immediately restarting it after e.g. lattice resizing took place
 
     def _drawField(self):  # called from GraphicsFrameWidget.py
+        '''
+        Calls __drawField
+        :return:None
+        '''
         #        print MODULENAME,'   _drawField called'
         self.__drawField()
 
     def __drawField(self):
+        '''
+        Dispatch function to draw simulation snapshots
+        :return:None
+        '''
 
         self.displayWarning('') # here we are resetting previous warnings because draw functions may write their own warning
 
         __drawFieldFcn = getattr(self, "drawField" + self.__viewManagerType)
-        # print MODULENAME, '__drawField():  calling ',"drawField"+self.__viewManagerType
-        # # time.sleep(5)
-        # import time
-        # time.sleep(2)
 
-
-        # print 'self.__viewManagerType=',self.__viewManagerType        
         propertiesUpdated = self.updateSimulationProperties()
-        # print 'propertiesUpdated=',propertiesUpdated
-
 
         if propertiesUpdated:
             # __drawFieldFcn() # this call is actually unnecessary
@@ -2360,19 +1999,29 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         __drawFieldFcn()
 
-        # if propertiesUpdated:
-        # __drawFieldFcn()
-
     def displayWarning(self, warning_text):
+        '''
+        Displays Warnings in the status bar
+        :param warning_text: str - warning text
+        :return:None
+        '''
         self.warnings.setText(warning_text)
 
     def __updateStatusBar(self, step, conMinMax):
-
+        '''
+        Updates status bar
+        :param step: int - current MCS
+        :param conMinMax: two element list with min max valuaes for the concentration field
+        :return:
+        '''
         self.mcSteps.setText("MC Step: %s" % step)
         self.conSteps.setText("Min: %s Max: %s" % conMinMax)
 
     def __pauseSim(self):
-        # print "Pause Sim"
+        '''
+        slot that pauses simulation
+        :return:None
+        '''
         if self.__viewManagerType == "CMLResultReplay":
             self.cmlReplayManager.setPauseState()
 
@@ -2381,16 +2030,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.pauseAct.setEnabled(False)
 
     def __saveWindowsLayout(self):
+        '''
+        Saves windows layout in the _settings.xml
+        :return:None
+        '''
 
-        # print 'SIMULATION STOP BEFORE self.fieldTypes = ',self.fieldTypes
-        # print 'BEFORE self.fieldTypes = ',self.fieldTypes
         windowsLayout = {}
 
         for key, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
             print 'key, win = ', (key, win)
-            # mdiWidget = self.findMDISubWindowForWidget(win)
-            # print 'mdiwidget = ', mdiWidget
-            # print 'Current scene name = ', win.getCurrentSceneNameAndType()
             widget = win.widget()
             # if not widget.allowSaveLayout: continue
             if widget.is_screenshot_widget:
@@ -2401,56 +2049,18 @@ class SimpleTabView(MainArea, SimpleViewManager):
             gwd.winPosition = win.pos()
             gwd.winSize = win.size()
 
-            print 'getGraphicsWindowData=', gwd
-            print 'toDict=', gwd.toDict()
+            # print 'getGraphicsWindowData=', gwd
+            # print 'toDict=', gwd.toDict()
 
             windowsLayout[key] = gwd.toDict()
 
-            # Configuration.setSetting('WindowsLayout',windowsLayout)
-
-
-
-            # adding new widget
-            # self.addNewGraphicsWindow()
-            # # gfw = self.findMDISubWindowForWidget(self.lastActiveWindow)
-            # gfw = self.lastActiveWindow
-            # gfw.applyGraphicsWindowData(gwd)
-
-
-
-        # for key, win in self.graphicsWindowDict.items():
-        #     print 'key, win = ', (key, win)
-        #     mdiWidget = self.findMDISubWindowForWidget(win)
-        #     print 'mdiwidget = ', mdiWidget
-        #     # print 'Current scene name = ', win.getCurrentSceneNameAndType()
-        #     gwd = win.getGraphicsWindowData()
-        #     # fill size and position of graphics windows data using mdiWidget, NOT the internal widget such as GraphicsFrameWidget - sizes and positions are base on MID widet settings
-        #     gwd.winPosition = mdiWidget.pos()
-        #     gwd.winSize = mdiWidget.size()
-        #
-        #     print 'getGraphicsWindowData=', gwd
-        #     print 'toDict=', gwd.toDict()
-        #
-        #     windowsLayout[key] = gwd.toDict()
-        #
-        #     # Configuration.setSetting('WindowsLayout',windowsLayout)
-        #
-        #
-        #
-        #     # adding new widget
-        #     # self.addNewGraphicsWindow()
-        #     # # gfw = self.findMDISubWindowForWidget(self.lastActiveWindow)
-        #     # gfw = self.lastActiveWindow
-        #     # gfw.applyGraphicsWindowData(gwd)
-
-            # break
-        print 'AFTER self.fieldTypes = ', self.fieldTypes
+        # print 'AFTER self.fieldTypes = ', self.fieldTypes
         print self.plotManager.plotWindowList
 
         plotLayoutDict = self.plotManager.getPlotWindowsLayoutDict()
-        for key, gwd in plotLayoutDict.iteritems():
-            print 'key=', key
-            print 'gwd=', gwd
+        # for key, gwd in plotLayoutDict.iteritems():
+        #     print 'key=', key
+        #     print 'gwd=', gwd
 
         # combining two layout dicts
         windowsLayoutCombined = windowsLayout.copy()
@@ -2458,19 +2068,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # print 'windowsLayoutCombined=',windowsLayoutCombined
         Configuration.setSetting('WindowsLayout', windowsLayoutCombined)
 
-        # for key, win in self.windowDict.iteritems():
-        # if key ==3:
-        # print 'dir(win) =', dir(win)
-        # import Graphics
-        # print 'key, win = ' , (key , win)
-        # print 'type(win)    ',  type(win)
-        # print 'type(Graphics.PlotFrameWidget.PlotFrameWidget) = ', type(Graphics.PlotFrameWidget.PlotFrameWidget)
-        # if type(win) == type(Graphics.PlotFrameWidget.PlotFrameWidget):
-        # print 'key, win = ' , (key , win)
-        # print 'win '
-
     def __simulationStop(self):
-        # once user requests explicit stop of the simulation we stop regardless whether this is parameter scan or not. To stop parameter scan we reset vaiables used to seer parameter scanto their default (non-param scan) values
+        '''
+        Slot that handles simulation stop
+        :return:None
+        '''
+        # Once user requests explicit stop of the simulation we stop regardless whether this is parameter scan or not.
+        # To stop parameter scan we reset variables used to seer parameter scan to their default (non-param scan) values
 
         self.runAgainFlag = False
 
@@ -2501,7 +2105,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
 
     def __simulationSerialize(self):
-        print self.simulation.restartManager
+        '''
+        Slot that handles request to serialize simulation
+        :return:None
+        '''
+        # print self.simulation.restartManager
         currentStep = self.simulation.sim.getStep()
         if self.pauseAct.isEnabled():
             self.__pauseSim()
@@ -2515,10 +2123,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if not self.simulationIsRunning:  # works only for running simulation
             return
 
-        print 'Replacing settings'
+        # print 'Replacing settings'
         Configuration.replaceCustomSettingsWithDefaults()
 
     def __cleanAfterSimulation(self, _exitCode=0):
+        '''
+        Cleans after simulation is done
+        :param _exitCode: exit code from the simulation
+        :return:None
+        '''
 
         self.resetControlButtonsAndActions()
         self.resetControlVariables()
@@ -2527,8 +2140,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         #saving settings witht eh simulation
         if self.customSettingPath:
-            # Configuration.writeCustomFile(self.customSettingPath)
-            # Configuration.writeSettings()
             Configuration.writeSettingsForSingleSimulation(self.customSettingPath)
             self.customSettingPath = ''
 
@@ -2539,38 +2150,33 @@ class SimpleTabView(MainArea, SimpleViewManager):
             Configuration.setSetting("RecentFile", os.path.abspath(self.__fileName))
 
             Configuration.setSetting("RecentSimulations", os.path.abspath(self.__fileName))
-            # Configuration.addItemToStrlist(item = os.path.abspath(self.__fileName),strListName = 'RecentSimulations',maxLength = Configuration.getSetting('NumberOfRecentSimulations'))
-
-            # if self.saveSettings:
-            #     Configuration.syncPreferences()
 
             sys.exit(_exitCode)
 
         # in case there is pending simulation to be run we will put it a recent simulation so that it can be ready to run without going through open file dialog
         if self.nextSimulation != "":
             Configuration.setSetting("RecentSimulations", self.nextSimulation)
-            # Configuration.addItemToStrlist(item = self.nextSimulation,strListName = 'RecentSimulations',maxLength = Configuration.getSetting('NumberOfRecentSimulations'))
             self.nextSimulation = ""
 
         self.simulation.sim = None
         self.basicSimulationData.sim = None
         self.mysim = None
 
-
-        # print 'self.screenshotManager=',self.screenshotManager
         if self.screenshotManager:
             self.screenshotManager.cleanup()
 
         self.screenshotManager = None
 
         CompuCellSetup.resetGlobals()
-        print 'AFTER __cleanupAfterSimulation'
+        # print 'AFTER __cleanupAfterSimulation'
 
         # self.close_all_windows()
 
-        print self.win_inventory
-
     def close_all_windows(self):
+        '''
+        Closes all windows
+        :return:None
+        '''
         for win in self.win_inventory.values():
             self.win_inventory.remove_from_inventory(win)
             win.close()
@@ -2578,12 +2184,21 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.win_inventory.set_counter(0)
 
     def __stopSim(self):
-
+        '''
+        stops simulation thread
+        :return:None
+        '''
         self.simulation.stop()
         self.simulation.wait()
 
 
     def makeCustomSimDir(self, _dirName, _simulationFileName):
+        '''
+        Creates custom simulation output directory
+        :param _dirName: str - custom directory name
+        :param _simulationFileName: current simulation file name
+        :return: tupple (custom directory name, base file name for directory)
+        '''
         fullFileName = os.path.abspath(_simulationFileName)
         (filePath, baseFileName) = os.path.split(fullFileName)
         baseFileNameForDirectory = baseFileName.replace('.', '_')
@@ -2593,11 +2208,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         else:
             return ("", "")
 
-    def mapCellTypeToColor(self, cellType):
-        return self.colors[cellType]
-
     # Shows the plugin view tab
     def showPluginView(self, pluginInfo):
+        '''
+        Shows PLugin information - deprecated
+        :param pluginInfo:plugin information
+        :return:None
+        '''
         textStr = QString('<div style="margin: 10px 10px 10px 20px; font-size: 14px"><br />\
         Plugin: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <b>%1</b><br />\
         Description: &nbsp; %2</div>').arg(pluginInfo[0]).arg(pluginInfo[1])
@@ -2618,67 +2235,36 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.setCurrentIndex(1)
 
-    def prepareDrawingArea(self):  # NEVER called?!  (instead, rf. showSimView())
-        #        print MODULENAME, '----------  prepareDrawingArea'
-        foo = 1 / 0
-        self.__setupArea()
-        # # # self.mainGraphicsWindow = self.mainGraphicsWindow # Graphics2D by default
-        self.__step = 0
-        self.__loadSim(file)
-        self.setSimParams()
-        self.mainGraphicsWindow.initSimArea(self.sim)
-        # self.graphics3D.initSimArea(self.sim)
-        self.drawingAreaPrepared = True
-
-    #        self.mainGraphicsWindow.parentWidget.move(400,300)   # temporarily moves, but jumps back
-
-    #        if True:
-    #self.mainGraphicsWindow._switchDim(True)   #rwh
-
     def setInitialCrossSection(self, _basicSimulationData):
-
+        '''
+        Initializes cross section bar for vtk graphics window
+        :param _basicSimulationData: BasicSimulationData
+        :return:None
+        '''
         for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
             graphicsFrame = win.widget()
             graphicsFrame.setInitialCrossSection(_basicSimulationData)
 
-
-        # for windowName in self.windowDict.keys():
-        #     print 'windowName=', windowName
-        #     self.windowDict[windowName].setInitialCrossSection(_basicSimulationData)
-        #     print 'after windowName=', windowName
-
     def initGraphicsWidgetsFieldTypes(self):
-
+        '''
+        Initializes graphics field types for vtk graphics window
+        :return:None
+        '''
         for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
             graphicsFrame = win.widget()
             graphicsFrame.setFieldTypesComboBox(self.fieldTypes)
 
-        # for windowName in self.windowDict.keys():
-        #     # print 'windowName=',windowName
-        #     # print 'self.windowDict[windowName]=',self.windowDict[windowName]
-        #     # print 'dir of self.windowDict[windowName]=',dir(self.windowDict[windowName])
-        #     self.windowDict[windowName].setFieldTypesComboBox(self.fieldTypes)
-
-
     # Shows simulation view tab
     def showSimView(self, file):
-
+        '''
+        Shows Initial simulation view. calls function to restore windows layout
+        :param file: str - file path - unused
+        :return:None
+        '''
 
         self.__setupArea()
 
-        isTest = False
-
-        """      
-        # For testing. Leave for a while
-        if isTest:
-            self.mainGraphicsWindow = QVTKRenderWidget(self)
-            self.insertTab(0, self.mainGraphicsWindow, QIcon("player/icons/sim.png"), os.path.basename(str(self.__fileName)))
-            self.setupArea()
-        else:
-        """
-
-        # Create self.mainGraphicsWindow  
-        # # # self.mainGraphicsWindow = self.mainGraphicsWindow # Graphics2D by default
+        # Create self.mainGraphicsWindow
         self.__step = 0
 
         self.showDisplayWidgets()
@@ -2690,74 +2276,35 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.__fieldType = ("Cell_Field", FIELD_TYPES[0])
 
-        # self.__fieldType = ("FGF", FIELD_TYPES[1])
-
-        # print MODULENAME,'  ------- showSimView \n\n'
-
         if self.basicSimulationData.sim:
             cellField = simObj.getPotts().getCellFieldG()
-            # self.simulation.graphicsWidget.fillCellFieldData(cellField,"xy",0)
-
-            # print "        BEFORE DRAW FIELD(1) FROM showSimView()"
-            # time.sleep(5)
 
             self.__drawField()
-
-            # print "        AFTER DRAW FIELD(1) FROM showSimView()"
-            # time.sleep(5)
-
-
 
             # # Fields are available only after simulation is loaded
             self.setFieldTypes()
         else:
-            # print "        BEFORE DRAW FIELD(2) FROM showSimView()"
-            # if not self.simulation.dimensionChange():
-
-
 
             self.__drawField()
 
             self.setFieldTypesCML()
-            # print "        AFTER DRAW FIELD(2) FROM showSimView()"
-
-        #        import pdb; pdb.set_trace()
-
-        #         Configuration.initFieldsParams(self.fieldTypes.keys())
-
-        # # # self.__setCrossSection()
-
-        print 'self.basicSimulationData=', dir(self.basicSimulationData)
-        print 'self.basicSimulationData.fieldDim=', self.basicSimulationData.fieldDim
-        print 'self.basicSimulationData.numberOfSteps=', self.basicSimulationData.numberOfSteps
-        print 'self.basicSimulationData.sim=', self.basicSimulationData.sim
 
         self.setInitialCrossSection(self.basicSimulationData)
-        print '   AFTER setInitialCrossSection'
+
         self.initGraphicsWidgetsFieldTypes()
-        # self.closeTab.show()
+
         self.drawingAreaPrepared = True
-        #        self.mainGraphicsWindow.parentWidget.move(400,300)   # temporarily moves, but jumps back
 
-        # self.__layoutGraphicsWindows()
-
-        # MDIFIX
         self.__restoreWindowsLayout()
 
     def __restoreWindowsLayout(self):
+        '''
+        Restores Windows layout
+        :return:None
+        '''
 
         windowsLayoutDict = Configuration.getSetting('WindowsLayout')
         print 'from settings windowsLayout = ', windowsLayoutDict
-
-        # # first we convert window keys to integers 
-        # int windowsLayoutDict.keys()
-
-        # import time
-        # time.sleep(2)
-
-        # # first will check if window with id 0 was saved if, not than we are closing main window which should be open at this point
-        # if str(0) not in windowsLayoutDict.keys():
-        #     self.closeActiveSubWindowSlot()
 
         # first restore main window with id 0 - this window is the only window open at this point and it is open by default when simulation is started
         # that's why we have to treat it in a special way but only when we determine that windowsLayoutDict is not empty
@@ -2775,16 +2322,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                     graphicsWindow = self.lastActiveRealWindow
                     gfw = graphicsWindow.widget()
-                    # gfw = self.lastActiveWindow
-                    #
-                    # graphicsWindow = self.findMDISubWindowForWidget(gfw)
 
                     graphicsWindow.resize(gwd.winSize)
                     graphicsWindow.move(gwd.winPosition)
 
                     gfw.applyGraphicsWindowData(gwd)
-
-
 
             except KeyError:
                 # in case there is no main window with id 0 in the settings we kill the main window
@@ -2792,11 +2334,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 graphicsWindow = self.lastActiveRealWindow
                 graphicsWindow.close()
                 self.win_inventory.remove_from_inventory(graphicsWindow)
-
-                # gfw = self.lastActiveWindow
-                # graphicsWindow = self.findMDISubWindowForWidget(gfw)
-                # graphicsWindow.close()
-                # self.removeWindowFromRegistry(graphicsWindow)
 
                 pass
 
@@ -2818,66 +2355,22 @@ class SimpleTabView(MainArea, SimpleViewManager):
             if gwd.sceneName not in self.fieldTypes.keys():
                 continue  # we only create window for a sceneNames (e.g. fieldNames) that exist in the simulation
 
-
             graphicsWindow = self.addNewGraphicsWindow()
             gfw = graphicsWindow.widget()
 
-            # mdiWindow = self.findMDISubWindowForWidget(gfw)
             graphicsWindow.resize(gwd.winSize)
             graphicsWindow.move(gwd.winPosition)
 
             gfw.applyGraphicsWindowData(gwd)
 
-            # print 'self.lastActiveWindow=',self.lastActiveWindow
-            print 'gwd.winSize=',gwd.winSize
-            # time.sleep(2)
+        # print ' PLOT WINDOW MANAGER  WINDOW LIST = ', self.plotManager.plotWindowList
 
-
-            # # MDIFIX
-            # if windowId != str(0):  # window with id one is created by addVTKWindowToWorkspaceo at this point there is already first window in the simulation
-            #     self.addNewGraphicsWindow()
-
-
-            # gfw = self.lastActiveWindow
-            #
-            # mdiWindow = self.findMDISubWindowForWidget(gfw)
-            # mdiWindow.resize(gwd.winSize)
-            # mdiWindow.move(gwd.winPosition)
-            #
-            # gfw.applyGraphicsWindowData(gwd)
-            #
-            # print 'self.lastActiveWindow=',self.lastActiveWindow
-            # print 'gwd.winSize=',gwd.winSize
-            # time.sleep(2)
-            #
-
-            # mdiWindow.setFixedSize(gwd.winSize)
-
-        print ' PLOT WINDOW MANAGER  WINDOW LIST = ', self.plotManager.plotWindowList
-
-
-        # import time
-        # time.sleep(2)
-
-        # for windowId, windowDataDict in windowsLayoutDict.iteritems():
-        # if windowId != str(1):
-        # # gfw = self.findMDISubWindowForWidget(self.lastActiveWindow)
-        # from Graphics.GraphicsWindowData import GraphicsWindowData
-        # gwd = GraphicsWindowData()
-        # gwd.fromDict(windowDataDict)
-        # if gwd.sceneName not in  self.fieldTypes.keys():
-        # continue # we only create window for a scenNames (e.g. fieldNames) that exist in the simulation
-
-        # self.addNewGraphicsWindow()
-        # gfw = self.lastActiveWindow
-        # gfw.applyGraphicsWindowData(gwd)
-
-        # mdiWindow = self.findMDISubWindowForWidget (gfw)
-        # # mdiWindow.setFixedSize(gwd.winSize)
-        # mdiWindow.resize(gwd.winSize)
-        # mdiWindow.move(gwd.winPosition)
 
     def setFieldTypesCML(self):
+        '''
+        initializes field types for VTK vidgets during vtk replay mode
+        :return:None
+        '''
         # Add cell field
         self.fieldTypes["Cell_Field"] = FIELD_TYPES[0]  #"CellField"
 
@@ -2892,6 +2385,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
 
     def setFieldTypes(self):
+        '''
+        initializes field types for VTK vidgets during regular simulation
+        :return:None
+        '''
         # Add cell field
         #        self.fieldTypes = {}
         simObj = self.mysim()
@@ -2900,15 +2397,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.fieldTypes["Cell_Field"] = FIELD_TYPES[0]  #"CellField" 
 
         # Add concentration fields How? I don't care how I got it at this time
-        # print self.mysim.getPotts()
+
         concFieldNameVec = simObj.getConcentrationFieldNameVector()
-        # # # concFieldNameVec = self.mysim.getConcentrationFieldNameVector()
 
         #putting concentration fields from simulator
         for fieldName in concFieldNameVec:
             #            print MODULENAME,"setFieldTypes():  Got this conc field: ",fieldName
             self.fieldTypes[fieldName] = FIELD_TYPES[1]
-
 
         #inserting extra scalar fields managed from Python script
         scalarFieldNameVec = self.fieldStorage.getScalarFieldNameVector()
@@ -2916,20 +2411,17 @@ class SimpleTabView(MainArea, SimpleViewManager):
             #            print MODULENAME,"setFieldTypes():  Got this scalar field: ",fieldName
             self.fieldTypes[fieldName] = FIELD_TYPES[2]
 
-
         #inserting extra scalar fields cell levee managed from Python script
         scalarFieldCellLevelNameVec = self.fieldStorage.getScalarFieldCellLevelNameVector()
         for fieldName in scalarFieldCellLevelNameVec:
             #            print MODULENAME,"setFieldTypes():  Got this scalar field (cell leve): ",fieldName
             self.fieldTypes[fieldName] = FIELD_TYPES[3]
 
-
         #inserting extra vector fields  managed from Python script
         vectorFieldNameVec = self.fieldStorage.getVectorFieldNameVector()
         for fieldName in vectorFieldNameVec:
             #            print MODULENAME,"setFieldTypes():  Got this vector field: ",fieldName
             self.fieldTypes[fieldName] = FIELD_TYPES[4]
-
 
         #inserting extra vector fields  cell level managed from Python script
         vectorFieldCellLevelNameVec = self.fieldStorage.getVectorFieldCellLevelNameVector()
@@ -2945,48 +2437,38 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
 
     def showDisplayWidgets(self):
-        #        print MODULENAME,' showDisplayWidgets'
+        '''
+        Displays initial snapthos widgets - called from showSimView
+        :return:None
+        '''
 
         # This block of code simply checks to see if some plugins assoc'd with Vis are defined
-        #        import CompuCellSetup, XMLUtils
         import XMLUtils
-        #        print MODULENAME,' dir(XMLUtils)= ',dir(XMLUtils)
         if CompuCellSetup.cc3dXML2ObjConverter != None:
             self.pluginCOMDefined = False
             self.pluginFPPDefined = False
 
-            #            print MODULENAME, 'CompuCellSetup.cc3dXML2ObjConverter != None; check FPP and COM plugins'
             self.root_element = CompuCellSetup.cc3dXML2ObjConverter.root
             elms = self.root_element.getElements("Plugin")
             elmList = XMLUtils.CC3DXMLListPy(elms)
             for elm in elmList:
-                #                print 'dir(elm) = ',dir(elm)
-                #                print "Element = ",elm.name  # -> Plugin
                 pluginName = elm.getAttribute("Name")
                 print "   pluginName = ", pluginName  # e.g. CellType, Contact, etc
                 if pluginName == "FocalPointPlasticity":
-                    #                    print '    yes, FPP is definded, enabling Vis menu item'
+
                     self.pluginFPPDefined = True
                     self.pluginCOMDefined = True  # if FPP is defined, COM will (implicitly) be defined
 
                 if pluginName == "CenterOfMass":
                     self.pluginCOMDefined = True
 
-                #            print MODULENAME,'showDisplayWidgets(): FPP= ',self.pluginFPPDefined, ', COM=',self.pluginCOMDefined
-
             # If appropriate, disable/enable Vis menu options
             if not self.pluginFPPDefined:
                 self.FPPLinksAct.setEnabled(False)
                 self.FPPLinksAct.setChecked(False)
                 Configuration.setSetting("FPPLinksOn", False)
-
-            #                self.FPPLinksColorAct.setEnabled(False)
-            #                self.FPPLinksColorAct.setChecked(False)
-            #                Configuration.setSetting("FPPLinksColorOn",False)
             else:
-                #                print '    yes, FPP is definded, enabling Vis menu item'
                 self.FPPLinksAct.setEnabled(True)
-            #                self.FPPLinksColorAct.setEnabled(True)
 
             if not self.pluginCOMDefined:
                 self.cellGlyphsAct.setEnabled(False)
@@ -3000,15 +2482,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.mainGraphicsWindow.setStatusBar(self.__statusBar)
 
-        #        self.mainGraphicsWindow._switchDim(True)   # rwh
-
-        # if not self.keepOldTabs:
-        #     pass
-        #self.mainGraphicsWindow.setZoomItems(self.zitems)   # Set zoomFixed parameters
         self.mainGraphicsWindow.setZoomItems(self.zitems)  # Set zoomFixed parameters
-
-        #if self.cellsAct.isChecked():          # Set "Cells" check box
-        #    self.mainGraphicsWindow.showCells()
 
         if self.borderAct.isChecked():  # Vis menu "Cell Borders" check box
             self.mainGraphicsWindow.showBorder()
@@ -3021,40 +2495,27 @@ class SimpleTabView(MainArea, SimpleViewManager):
         #---------------------
         if self.cellGlyphsAct.isChecked():  # Vis menu "Cell Glyphs"
             self.mainGraphicsWindow.showCellGlyphs()
-        #            if not self.pluginCOMDefined:
-        #                print "CenterOfMass plugin was NOT defined - toggling off Vis Cell Glyphs menu item"
-        #                self.cellGlyphsAct.setChecked(False)
-        #                self.cellGlyphsAct.setEnabled(False)
-        #                Configuration.setSetting("CellGlyphsOn",False)
-        #            else:
-        #                self.cellGlyphsAct.setEnabled(True)
-        #                self.mainGraphicsWindow.showCellGlyphs()
 
         #---------------------
         if self.FPPLinksAct.isChecked():  # Vis menu "FPP (Focal Point Plasticity) Links"
             self.mainGraphicsWindow.showFPPLinks()
-        #            if not self.pluginFPPDefined:
-        #                print "showDisplayWidgets(): FocalPointPlasticity plugin was NOT defined - toggling off Vis FPP Links menu item"
-        #                self.FPPLinksAct.setChecked(False)
-        #                self.FPPLinksAct.setEnabled(False)
-        #                Configuration.setSetting("FPPLinksOn",False)
-        #            else:
-        #                self.FPPLinksAct.setEnabled(True)
-        #                self.mainGraphicsWindow.showFPPLinks()
-
-        #---------------------
-        # if self.contourAct.isChecked():         
-        # self.mainGraphicsWindow.showContours(True)
-        # else:
-        # self.mainGraphicsWindow.showContours(False)
 
         self.mainGraphicsWindow.setPlane(PLANES[0], 0)
         self.mainGraphicsWindow.currentDrawingObject.setPlane(PLANES[0], 0)
 
     def setParams(self):
+        '''
+        Calls __paramsChanged. Used from outside SimpleTabView
+        :return:None
+        '''
         self.__paramsChanged()
 
     def __paramsChanged(self):
+        '''
+        Slot linked to configsChanged signal - called after we hit 'OK' button on configuration dialog
+        Also called during run initialization
+        :return:None
+        '''
         #        print MODULENAME,'  __paramsChanged():  do a bunch of Config--.getSetting'
         self.__updateScreen = Configuration.getSetting("ScreenUpdateFrequency")
         self.__imageOutput = Configuration.getSetting("ImageOutputOn")
@@ -3064,8 +2525,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.__projectLocation = str(Configuration.getSetting("ProjectLocation"))
         self.__outputLocation = str(Configuration.getSetting("OutputLocation"))
 
-        # test if the sneaky user changed the output location
-        #        prevOutputDir = self.__outputDirectory
 
         self.__outputDirectory = str(Configuration.getSetting("OutputLocation"))
         if Configuration.getSetting("OutputToProjectOn"):
@@ -3084,22 +2543,24 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 # NOTE: if self.mysim == None (i.e. sim hasn't begun yet), then createOutputDirs() should be called in __loadSim
 
-            #        print MODULENAME, '__paramsChanged(), screenshotDirName= ',self.screenshotDirectoryName # e.g. screenshotDirName= .../CC3DWorkspace2/cellsort_2D_xml_08_04_2011
-            #        print MODULENAME, ' __paramsChanged(),  self.__outputDirectory, type()=',self.__outputDirectory,type(self.__outputDirectory)
-
         if self.simulation:
-            self.updateSimPrefs()
-        #            self.simulation.screenUpdateFrequency = self.__updateScreen
-        #            self.simulation.screenshotFrequency = self.__shotFrequency
+            self.init_simulation_control_vars()
 
     def setZoomItems(self, zitems):
+        '''
+        Deprecated - was used to set zoom items in the combo box. We do not use it any longer
+        :param zitems: list of zoom items e.g. 25,50,100, 125 etc...
+        :return:
+        '''
         self.zitems = zitems
 
     def zoomIn(self):
+        '''
+        Slot called after user presses Zoom In button
+        :return:None
+        '''
 
         activeSubWindow = self.activeSubWindow()
-        # activeSubWindow = self.clickedSubWindow()
-        # print 'activeSubWindow=', activeSubWindow
 
         if not activeSubWindow:
             return
@@ -3108,12 +2569,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if isinstance(activeSubWindow.widget(), Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
             activeSubWindow.widget().zoomIn()
 
-
     def zoomOut(self):
+        '''
+        Slot called after user presses Zoom Out button
+        :return:None
+        '''
 
         activeSubWindow = self.activeSubWindow()
-        # activeSubWindow = self.clickedSubWindow()
-        # print 'activeSubWindow=', activeSubWindow
 
         if not activeSubWindow:
             return
@@ -3122,26 +2584,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if isinstance(activeSubWindow.widget(), Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
             activeSubWindow.widget().zoomOut()
 
-
-
-    # def zoomIn(self):
-    #     if self.mainGraphicsWindow is not None:
-    #         self.activeWindow().zoomIn()
-    #         # self.mainGraphicsWindow.zoomIn()
-    #         # print "Zoom in from TabView"
-    #
-    # def zoomOut(self):
-    #     if self.mainGraphicsWindow is not None:
-    #         self.activeWindow().zoomOut()
-    #         # self.mainGraphicsWindow.zoomOut()
-    #
-    # def zoomFixed(self, val):
-    #     if self.mainGraphicsWindow is not None:
-    #         self.activeWindow().zoomFixed(val)
-    #         # self.mainGraphicsWindow.zoomFixed(val)
-
     # # File name should be passed    
     def takeShot(self):
+        '''
+        slot that adds screenshot configuration
+        :return:None
+        '''
         if self.screenshotManager is not None:
             if self.threeDRB.isChecked():
                 camera = self.mainGraphicsWindow.ren.GetActiveCamera()
@@ -3154,28 +2602,33 @@ class SimpleTabView(MainArea, SimpleViewManager):
                                                        planePositionTupple[1])
 
     def prepareSimulationView(self):
+        '''
+        One of the initialization functions - prepares initial simulation view
+        :return:
+        '''
         if self.__fileName != "":
             file = QFile(self.__fileName)
             if file is not None:
                 if self.mainGraphicsWindow is None:
-                    # print "NO SIM TAB HERE"
-                    self.showSimView(file)
-                    # print 'ADDED SIM TAB'
-                else:
-                    # print "SIM TAB IITIALIZED"
-                    # print 'file=',self.__fileName
-                    # if self.simulation.dimensionChange():
-                    # sys.exit()
 
-                    self.__closeSim()
-                    print 'BEFORE showSimView'
                     self.showSimView(file)
-                    print 'AFTER showSimView'
+
+                else:
+
+                    # self.__closeSim()
+                    # print 'BEFORE showSimView'
+                    self.showSimView(file)
+                    # print 'AFTER showSimView'
 
         self.drawingAreaPrepared = True
         self.updateActiveWindowVisFlags()  # needed in case switching from one sim to another (e.g. 1st has FPP, 2nd doesn't)
 
     def __openLDSFile(self, fileName=None):
+        '''
+        Opens Lattice Description File - for vtk replay mode
+        :param fileName: str - .dml file name
+        :return:none
+        '''
         filter = "Lattice Description Summary file  (*.dml )"  # self._getOpenFileFilter()
 
         #        defaultDir = str(Configuration.getSetting('OutputLocation'))
@@ -3196,7 +2649,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # setting text for main window (self.__parent) title bar 
         self.__parent.setWindowTitle(self.trUtf8(basename(self.__fileName) + " - CompuCell3D Player"))
 
-        # Shall we inform the user?  Nah, screw 'em.
+        # Shall we inform the user?
         #        msg = QMessageBox.warning(self, "Message","Toggling off image & lattice output in Preferences",
         #                          QMessageBox.Ok ,
         #                          QMessageBox.Ok)
@@ -3205,6 +2658,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
 
     def __openRecentSim(self):
+        '''
+        Slot - opens recent simulation
+        :return:None
+        '''
         if self.simulationIsRunning:
             return
 
@@ -3220,16 +2677,16 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.__fileName = os.path.abspath(self.__fileName)
         CompuCellSetup.simulationFileName = self.__fileName
         Configuration.setSetting("RecentFile", self.__fileName)
-        Configuration.setSetting("RecentSimulations",
-                                 self.__fileName)  #  each loaded simulation has to be passed to a function which updates list of recent files
-        # Configuration.addItemToStrlist(item = os.path.abspath(self.__fileName),strListName = 'RecentSimulations',maxLength = Configuration.getSetting('NumberOfRecentSimulations'))
+        #  each loaded simulation has to be passed to a function which updates list of recent files
+        Configuration.setSetting("RecentSimulations",self.__fileName)
+
 
     def __openSim(self, fileName=None):
-        # """
-        # Public slot to open some files.
-
-        # @param prog name of file to be opened (string or QString)
-        # """
+        '''
+        Displays File open dialog to open new simulation
+        :param fileName: str - unused
+        :return:None
+        '''
 
         # set the cwd of the dialog based on the following search criteria:
         #     1: Directory of currently active editor
@@ -3267,25 +2724,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Configuration.setSetting("RecentFile", self.__fileName)
         Configuration.setSetting("RecentSimulations",
                                  self.__fileName)  #  each loaded simulation has to be passed to a function which updates list of recent files
-        # Configuration.addItemToStrlist(item = os.path.abspath(self.__fileName),strListName = 'RecentSimulations',maxLength = Configuration.getSetting('NumberOfRecentSimulations'))
-
-
-    # def __saveSim(self):
-    #     fullSimFileName = os.path.abspath(self.__fileName)
-    #     simFilePath = os.path.dirname(fullSimFileName)
-    #
-    #     filter = "CompuCell3D Simulation File (CC3DML) (*.xml )"  # self._getOpenFileFilter()
-    #     cc3dmlFileName = QFileDialog.getSaveFileName( \
-    #         self.ui,
-    #         QApplication.translate('ViewManager', "CompuCell3D Simulation File (CC3DML)"),
-    #         simFilePath,
-    #         filter
-    #         )
-    #
-    #     #        import CompuCellSetup
-    #     CompuCellSetup.cc3dXML2ObjConverter.root.saveXML(str(cc3dmlFileName))
 
     def __openScrDesc(self):
+        '''
+        Slot that opens screenshot description file
+        :return:None
+        '''
         filter = "Screenshot description file (*.sdfml)"  # self._getOpenFileFilter()
         self.__screenshotDescriptionFileName = QFileDialog.getOpenFileName( \
             self.ui,
@@ -3295,6 +2739,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
             )
 
     def __saveScrDesc(self):
+        '''
+        Slot that opens fiel dialog to save screenshot description file
+        :return:None
+        '''
         # print "THIS IS __saveScrDesc"
         filter = "Screenshot Description File (*.sdfml )"  # self._getOpenFileFilter()
         self.screenshotDescriptionFileName = QFileDialog.getSaveFileName( \
@@ -3308,11 +2756,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         print "self.screenshotDescriptionFileName=", self.screenshotDescriptionFileName
 
-    def __closeSim(self):
-        print "INSIDE closeSim"
-
     # Sets the attribute self.movieSupport
     def __setMovieSupport(self):
+        '''
+        Experimental
+        :return:
+        '''
         self.movieSupport = False  # Is there vtkMPEG2Writer class in vtk module?
         vtkmod = inspect.getmembers(vtk, inspect.isclass)
         for i in range(len(vtkmod)):
@@ -3324,6 +2773,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.movieAct.setEnabled(False)
 
     def __checkMovieSupport(self, checked):
+        '''
+        Experimental
+        :param checked:
+        :return:
+        '''
         if self.movieAct.isEnabled():
             if checked and self.movieSupport:
                 # The ONLY place where the self.movieAct is checked!
@@ -3336,6 +2790,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
 
     def __checkCells(self, checked):
+        '''
+        Slot that triggers display of cells
+        :param checked: bool - flag determines if action is on or off
+        :return:None
+        '''
 
         # Should be disabled when the simulation is not loaded!
         self.simulation.drawMutex.lock()
@@ -3351,13 +2810,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 try:
                     if checked:
-                        print 'SHOWING CELLS ACTION'
+                        # print 'SHOWING CELLS ACTION'
                         graphicsWidget.showCells()
                         Configuration.setSetting('CellsOn',True)
                         self.cellsAct.setChecked(True)
                         win.activateWindow()
                     else:
-                        print 'HIDING CELLS ACTION'
+                        # print 'HIDING CELLS ACTION'
                         graphicsWidget.hideCells()
                         Configuration.setSetting('CellsOn',False)
                         self.cellsAct.setChecked(False)
@@ -3367,27 +2826,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
                     pass
                 self.updateActiveWindowVisFlags(graphicsWidget)
 
-
-            # for windowName, window in self.graphicsWindowDict.iteritems():
-            #     try:
-            #         if checked:
-            #             window.showCells()
-            #             print 'SHOWING CELLS ACTION'
-            #             Configuration.setSetting('CellsOn',True)
-            #             self.cellsAct.setChecked(True)
-            #         else:
-            #             window.hideCells()
-            #             Configuration.setSetting('CellsOn',False)
-            #             print 'HIDING CELLS ACTION'
-            #             self.cellsAct.setChecked(False)
-            #     except AttributeError, e:
-            #         pass
-            #     self.updateActiveWindowVisFlags(window)
-
         self.simulation.drawMutex.unlock()
 
 
     def __checkBorder(self, checked):
+        '''
+        Slot that triggers display of borders
+        :param checked: bool - flag determines if action is on or off
+        :return:None
+        '''
         # Should be disabled when the simulation is not loaded!
         self.simulation.drawMutex.lock()
         #        print '======== SimpleTabView.py:  __checkBorder(): checked =',checked
@@ -3413,26 +2860,17 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 self.updateActiveWindowVisFlags(graphicsWidget)
 
-            # for windowName, window in self.graphicsWindowDict.iteritems():
-            #     try:
-            #         if checked:
-            #             window.showBorder()
-            #             self.borderAct.setChecked(True)
-            #         else:
-            #             window.hideBorder()
-            #             self.borderAct.setChecked(False)
-            #     except AttributeError, e:
-            #         pass
-            #
-            #     self.updateActiveWindowVisFlags(window)
-
         self.simulation.drawMutex.unlock()
 
 
     def __checkClusterBorder(self, checked):
+        '''
+        Slot that triggers display of cluster borders
+        :param checked: bool - flag determines if action is on or off
+        :return:None
+        '''
         # Should be disabled when the simulation is not loaded!
         self.simulation.drawMutex.lock()
-        #        print '======== SimpleTabView.py:  __checkClusterBorder: checked =',checked
 
         self.updateActiveWindowVisFlags()
         if self.clusterBorderAct.isEnabled():
@@ -3455,25 +2893,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 self.updateActiveWindowVisFlags(graphicsWidget)
 
-            # for windowName, window in self.graphicsWindowDict.iteritems():
-            #     try:
-            #         if checked:
-            #             window.showClusterBorder()
-            #             self.clusterBorderAct.setChecked(True)
-            #
-            #         else:
-            #             window.hideClusterBorder()
-            #             self.clusterBorderAct.setChecked(False)
-            #
-            #     except AttributeError, e:
-            #         pass
-            #
-            #     self.updateActiveWindowVisFlags(window)
-
         self.simulation.drawMutex.unlock()
 
 
     def __checkCellGlyphs(self, checked):
+        '''
+        Slot that triggers display of cell glyphs
+        :param checked: bool - flag determines if action is on or off
+        :return:None
+        '''
         # Should be disabled when the simulation is not loaded!
         self.simulation.drawMutex.lock()
         self.updateActiveWindowVisFlags()
@@ -3506,29 +2934,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 self.updateActiveWindowVisFlags(graphicsWidget)
 
-            # for windowName, window in self.graphicsWindowDict.iteritems():
-            #     try:
-            #         if checked:
-            #             window.showCellGlyphs()
-            #             self.cellGlyphsAct.setChecked(True)
-            #
-            #         else:
-            #             window.hideCellGlyphs()
-            #             self.cellGlyphsAct.setChecked(False)
-            #
-            #     except AttributeError, e:
-            #         pass
-            #
-            #     self.updateActiveWindowVisFlags(window)
-
         self.simulation.drawMutex.unlock()
 
 
     def __checkFPPLinks(self, checked):
-        #        print MODULENAME,'  __checkFPPLinks, checked=',checked
-        #        if checked and self.FPPLinksColorAct.isChecked():
-        #            self.FPPLinksColorAct.setChecked(False)
-        #            self.__checkFPPLinksColor(False)
+        '''
+        Slot that triggers display of FPP links
+        :param checked: bool - flag determines if action is on or off
+        :return:None
+        '''
 
         Configuration.setSetting("FPPLinksOn", checked)
         # Should be disabled when the simulation is not loaded!
@@ -3566,26 +2980,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 self.updateActiveWindowVisFlags(graphicsWidget)
 
-            # for windowName, window in self.graphicsWindowDict.iteritems():
-            #     try:
-            #         if checked:
-            #             window.showFPPLinks()
-            #             self.FPPLinksAct.setChecked(True)
-            #
-            #         else:
-            #             window.hideFPPLinks()
-            #             self.FPPLinksAct.setChecked(False)
-            #
-            #     except AttributeError, e:
-            #         pass
-            #
-            #     self.updateActiveWindowVisFlags(window)
-
         self.simulation.drawMutex.unlock()
 
 
     def __checkFPPLinksColor(self, checked):
-        #        print MODULENAME,'  __checkFPPLinksColor, checked=',checked
+        '''
+        Slot that triggers display of colored FPP links
+        :param checked: bool - flag determines if action is on or off
+        :return:None
+        '''
         if checked and self.FPPLinksAct.isChecked():
             self.FPPLinksAct.setChecked(False)
             self.__checkFPPLinks(False)
@@ -3616,7 +3019,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
                     self.simulation.drawMutex.unlock()
                     return
 
-            #MDIFIX
             for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
                 graphicsWidget = win.widget()
                 try:
@@ -3634,24 +3036,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 self.updateActiveWindowVisFlags(graphicsWidget)
 
-            # for windowName, window in self.graphicsWindowDict.iteritems():
-            #     try:
-            #         if checked:
-            #             window.showFPPLinksColor()
-            #             self.FPPLinksColorAct.setChecked(True)
-            #         else:
-            #             window.hideFPPLinksColor()
-            #             self.FPPLinksColorAct.setChecked(False)
-            #
-            #     except AttributeError, e:
-            #         pass
-            #
-            #     self.updateActiveWindowVisFlags(window)
-
         self.simulation.drawMutex.unlock()
 
 
     def __checkContour(self, checked):
+        '''
+        Slot that triggers display of contours - may be deprecated
+        :param checked: bool - flag determines if action is on or off
+        :return:None
+        '''
         if self.contourAct.isEnabled():
 
             #MDIFIX
@@ -3672,29 +3065,22 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 self.updateActiveWindowVisFlags(graphicsWidget)
 
-            # for windowName, window in self.graphicsWindowDict.iteritems():
-            #     try:
-            #         if checked:
-            #             window.showContours(True)
-            #             self.contourAct.setChecked(True)
-            #         else:
-            #             windos.showContours(False)
-            #             self.contourAct.setChecked(False)
-            #
-            #     except AttributeError, e:
-            #         pass
-            #
-            #     self.updateActiveWindowVisFlags(window)
-
-
     def __checkLimits(self, checked):
+        '''
+        Placeholder function for concentration limits on/off - to be implemented
+        :param checked:bool - flag determines if action is on or off
+        :return:None
+        '''
         pass
 
     def __resetCamera(self):
-
-        print 'INSIDE RESET CAMERA'
+        '''
+        Resets Camera for the current window
+        :return:None
+        '''
+        # print 'INSIDE RESET CAMERA'
         activeSubWindow = self.activeSubWindow()
-        print 'activeSubWindow=', activeSubWindow
+        # print 'activeSubWindow=', activeSubWindow
         if not activeSubWindow:
             return
 
@@ -3703,12 +3089,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
             activeSubWindow.widget().resetCamera()
 
     def __checkCC3DOutput(self, checked):
+        '''
+        Slot that triggers display output information in the console -may not work properly without QT
+        linked to the core cc3d code
+        :param checked: bool - flag determines if action is on or off
+        :return:None
+        '''
         Configuration.setSetting("CC3DOutputOn", checked)
 
     def __showConfigDialog(self, pageName=None):
         """
         Private slot to set the configurations.
         @param pageName name of the configuration page to show (string or QString)
+        :return:None
         """
         activeFieldNamesList = []
         for idx in range(len(self.fieldTypes)):
@@ -3722,8 +3115,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         dlg = ConfigurationDialog(self, 'Configuration', True)
         self.dlg = dlg  # rwh: to allow enable/disable widgets in Preferences
 
-
-        #        print '   dir(self.dlg)=',dir(self.dlg)
         if len(self.fieldTypes) < 2:
             self.dlg.tab_field.setEnabled(False)
         else:
@@ -3731,31 +3122,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.dlg.fieldComboBox.clear()
 
-        # print 'activeFieldNamesList=',activeFieldNamesList
-        # print 'self.dlg.fieldComboBox.count()=',self.dlg.fieldComboBox.count()
-
-        # import time
-        # time.sleep(2)        
         for fieldName in activeFieldNamesList:
-            # print 'fieldName=',fieldName
             self.dlg.fieldComboBox.addItem(fieldName)  # this is where we set the combobox of field names in Prefs
-
-            # print 'self.dlg.fieldComboBox.count()=',self.dlg.fieldComboBox.count()
-
-
-            # # # activeFieldNamesList = []
-
-            # # # for idx in range(len(self.fieldTypes) ):
-            # # # fieldName = self.fieldTypes.keys()[idx]
-            # # # if fieldName != 'Cell_Field':  # rwh: dangerous to hard code this field name
-            # # # self.dlg.fieldComboBox.addItem(fieldName)   # this is where we set the combobox of field names in Prefs
-            # # # activeFieldNamesList.append(str(fieldName))
-
-        # # # Configuration.setUsedFieldNames (activeFieldNamesList)
 
         self.connect(dlg, SIGNAL('configsChanged'), self.__configsChanged)
         dlg.show()
-        #        dlg.showConfigurationPageByName("default") #showConfigurationDefaultPage()#
 
         dlg.exec_()
         QApplication.processEvents()
@@ -3767,6 +3138,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.__configsChanged()  # Explicitly calling signal 'configsChanged'
 
     def __generatePIFFromCurrentSnapshot(self):
+        '''
+        Slot that generates PIFF file from current snapshot - calls either __generatePIFFromVTK or
+        __generatePIFFromRunningSimulation depending on th4e running mode
+        :return:None
+        '''
         if self.__viewManagerType == "CMLResultReplay":
             self.__generatePIFFromVTK()
         else:
@@ -3789,6 +3165,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.generatePIFFromRunningSimulation(str(pifFileName))
 
     def __generatePIFFromVTK(self):
+        '''
+        Slot that generates PIFF file from current vtk replay snapshot - calls __generatePIFFromVTK
+        :return:None
+        '''
+
         if self.pauseAct.isEnabled():
             self.__pauseSim()
 
@@ -3805,28 +3186,27 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.simulation.generatePIFFromVTK(self.simulation.currentFileName, str(pifFileName))
 
-
     def __configsChanged(self):
         """
-        Private slot to handle a change of the preferences.
+        Private slot to handle a change of the preferences. Called after we hit Ok buttin on configuration dialog
+        :return:None
         """
         self.emit(SIGNAL('configsChanged'))
 
     def setModelEditor(self, modelEditor):
+        '''
+        assigns model editor to a local variable - called from UserInterface.py
+        :param modelEditor: model editor
+        :return:
+        '''
         self.__modelEditor = modelEditor
 
-    # Class that checks if it is safe to close the simulation view
-    def isSafeToCloseSim(self):
-        msg = QMessageBox.warning(self, "Close Simulation", \
-                                  "Are you sure you want to close the Simulation?", \
-                                  QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Cancel)
-
-        if msg == QMessageBox.Ok:
-            return True
-        else:
-            return False
 
     def __createStatusBar(self):
+        '''
+        Creates Status bar layout
+        :return:None
+        '''
         self.__statusBar = self.__parent.statusBar()
         self.mcSteps = QLabel()
         self.mcSteps.setAutoFillBackground(True)
@@ -3849,208 +3229,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         cp.setColor(QPalette.WindowText, QColor("red"))
         self.warnings.setPalette(cp)
 
-
         self.__statusBar.addWidget(self.mcSteps)
         self.__statusBar.addWidget(self.conSteps)
         self.__statusBar.addWidget(self.warnings)
-
-        # def loadCustomPlayerSettings(self,_root_element):
-        # import XMLUtils
-        # import CC3DXML
-        # from XMLUtils import dictionaryToMapStrStr as d2mss
-        # playerSettingsElement = _root_element.getFirstElement("Plugin",d2mss({"Name":"PlayerSettings"}))
-
-    # #        print '--------------------------------\n'
-    # #        print 'type(playerSettingsElement)=',type(playerSettingsElement)
-    # #        print 'dir(playerSettingsElement)=',dir(playerSettingsElement)
-    # #        print 'playerSettingsElement.getNumberOfChildren()=',playerSettingsElement.getNumberOfChildren()
-    # if playerSettingsElement:
-    # winList = XMLUtils.CC3DXMLListPy(playerSettingsElement.getElements("MainWindow"))
-    # for myWin in winList:
-    # attrKeys = myWin.getAttributes().keys()  # ['CameraClippingRange', 'CameraDistance', 'CameraFocalPoint', 'CameraPos', 'CameraViewUp', 'WindowNumber']
-    # #                print '------ MainWindow: attrKeys=',attrKeys
-    # self.setWindowView(myWin,attrKeys)
-    # #            self.mainGraphicsWindow._xyChecked(True)
-
-    # winList = XMLUtils.CC3DXMLListPy(playerSettingsElement.getElements("NewWindow"))
-    # for myWin in winList:
-    # self.addNewGraphicsWindow()   #rwh
-    # #                camera3D = self.lastActiveWindow.getCamera3D()
-
-    # #                print 'w.getAttributes()=',w.getAttributes()
-    # #                print 'dir(w.getAttributes())=',dir(w.getAttributes())
-    # attrKeys = myWin.getAttributes().keys()  # ['CameraClippingRange', 'CameraDistance', 'CameraFocalPoint', 'CameraPos', 'CameraViewUp', 'WindowNumber']
-    # self.setWindowView(myWin,attrKeys)
-
-
-    # visualControlElement = playerSettingsElement.getFirstElement("VisualControl")
-    # if visualControlElement:
-    # #                print 'type(visualControlElement)=',type(visualControlElement)
-    # #                print 'visualControlElement=',visualControlElement
-    # #                print 'dir(visualControlElement)=',dir(visualControlElement)
-    # #                print 'visualControlElement.getName()=',visualControlElement.getName()
-    # #                print 'visualControlElement.attributes=',visualControlElement.attributes
-    # #                print 'visualControlElement.getNumberOfChildren()=',visualControlElement.getNumberOfChildren()
-    # #                print 'visualControlElement.getElements()=',visualControlElement.getElements()
-    # #                print 'visualControlElement.getAttributes()=',visualControlElement.getAttributes()
-    # validAttrs = ("ScreenUpdateFrequency",  "NoOutput","ImageOutput", "ScreenshotFrequency","ImageFrequency",
-    # "LatticeOutput","LatticeFrequency")
-
-    # for vcAttr in XMLUtils.XMLAttributeList(visualControlElement):
-    # if str(vcAttr[0]) not in validAttrs:
-    # print "\n-------\nERROR in loadCustomPlayerSettings:  VisualControl attribute '",vcAttr[0],"' is invalid"
-    # print 'Valid attributes are ',validAttrs
-    # print '--------\n'
-
-    # #  NOTE: do NOT do an if-elif block here!
-    # if visualControlElement.findAttribute("ScreenUpdateFrequency"):
-    # screenUpdateFrequency = visualControlElement.getAttributeAsUInt("ScreenUpdateFrequency")
-    # Configuration.setSetting("ScreenUpdateFrequency",screenUpdateFrequency)
-
-    # if visualControlElement.findAttribute("NoOutput"):  # trying to deprecate
-    # noOutput = visualControlElement.getAttributeAsBool("NoOutput")
-    # imageOut = not noOutput
-    # Configuration.setSetting("ImageOutputOn",imageOut)
-    # if visualControlElement.findAttribute("ImageOutput"):   # replaces previous
-    # imageOut = visualControlElement.getAttributeAsBool("ImageOutput")
-    # Configuration.setSetting("ImageOutputOn",imageOut)
-
-    # if visualControlElement.findAttribute("ScreenshotFrequency"):  # trying to deprecate
-    # scrFreq = visualControlElement.getAttributeAsUInt("ScreenshotFrequency")
-    # Configuration.setSetting("SaveImageFrequency",scrFreq)
-    # if visualControlElement.findAttribute("ImageFrequency"):  # replaces previous
-    # scrFreq = visualControlElement.getAttributeAsUInt("ImageFrequency")
-    # Configuration.setSetting("SaveImageFrequency",scrFreq)
-
-    # if visualControlElement.findAttribute("LatticeOutput"):
-    # latticeOut = visualControlElement.getAttributeAsBool("LatticeOutput")
-    # Configuration.setSetting("LatticeOutputOn",latticeOut)
-    # if visualControlElement.findAttribute("LatticeFrequency"):
-    # latticeFreq = visualControlElement.getAttributeAsUInt("LatticeFrequency")
-    # Configuration.setSetting("SaveLatticeFrequency",latticeFreq)
-
-    # # if visualControlElement.findAttribute("ClosePlayerAfterSimulationDone"):
-    # # closePlayerAfterSimulationDone=visualControlElement.getAttributeAsBool("ClosePlayerAfterSimulationDone")
-    # # Configuration.setSetting("ClosePlayerAfterSimulationDone",closePlayerAfterSimulationDone)
-    # self.__paramsChanged()
-
-    # borderElement=playerSettingsElement.getFirstElement("Border")
-    # if borderElement:
-    # if borderElement.findAttribute("BorderColor"):
-    # # print "borderElement"
-    # borderColor=borderElement.getAttribute("BorderColor")
-    # Configuration.setSetting("Border", QColor(borderColor))
-
-    # if borderElement.findAttribute("BorderOn"):
-    # borderOn=borderElement.getAttributeAsBool("BorderOn")
-    # Configuration.setSetting("BordersOn", borderOn)
-    # if borderOn:
-    # self.borderAct.setChecked(True)
-    # else:
-    # self.borderAct.setChecked(False)
-
-    # cellColorsList = XMLUtils.CC3DXMLListPy(playerSettingsElement.getElements("Cell"))
-    # #            typeColorMap = {}
-    # typeColorMap = Configuration.getSetting("TypeColorMap")  # start out with the given (default) cell type colormap
-    # #            print MODULENAME,'  loadCustomPlayerSettings, typeColorMap =',typeColorMap
-    # cellColorsListLength = 0
-    # for cellElement in cellColorsList:
-    # cellColorsListLength += 1
-
-    # if cellColorsListLength:
-    # #                print MODULENAME,'-----  cellColorsListLength=',cellColorsListLength
-    # #                import pdb; pdb.set_trace()
-    # for cellElement in cellColorsList:
-    # cellType = cellElement.getAttributeAsUInt("Type")
-    # #                    print 'type(cellType), cellType =',type(cellType),cellType
-    # cellColor = cellElement.getAttribute("Color")
-    # #                    print 'type(cellColor), cellColor =',type(cellColor),cellColor
-    # if cellColor[0] == '#':   # handle a hex specification (Michael Rountree likes to do this)
-    # r,g,b = cellColor[1:3], cellColor[3:5], cellColor[5:7]
-    # r,g,b = [int(n, 16) for n in (r, g, b)]
-    # #                        print '   type(r)=',type(r)
-    # #                        print '   r,g,b=',r,g,b
-    # typeColorMap[cellType] = QColor(r,g,b)
-    # else:
-    # cellColor = string.lower(cellColor)
-    # typeColorMap[cellType] = QColor(cellColor)
-    # # print "GOT CUSTOM COLORS"
-    # # for cellType in typeColorMap.keys():
-    # # print "typeColorMap=",typeColorMap
-    # #                Configuration.setSetting("CustomTypeColorMap", typeColorMap)
-    # Configuration.setSetting("TypeColorMap", typeColorMap)
-    # for windowName,window in self.graphicsWindowDict.items():
-    # window.populateLookupTable()
-
-
-    # # self.mainGraphicsWindow.populateLookupTable()
-    # # self.graphics3D.populateLookupTable()
-
-    # typesInvisibleIn3DElement = playerSettingsElement.getFirstElement("TypesInvisibleIn3D")
-    # if typesInvisibleIn3DElement:
-    # print MODULENAME,' type(typesInvisibleIn3DElement.getAttribute("Types")) = ',type(typesInvisibleIn3DElement.getAttribute("Types"))
-    # print MODULENAME,' typesInvisibleIn3DElement.getAttribute("Types") = ',typesInvisibleIn3DElement.getAttribute("Types")
-    # Configuration.setSetting("Types3DInvisible", typesInvisibleIn3DElement.getAttribute("Types"))
-
-    # self.saveSettings = True # by default we will save settings each time we exit player
-
-    # settingsElement = playerSettingsElement.getFirstElement("Settings")
-    # if settingsElement:
-    # self.saveSettings = settingsElement.getAttributeAsBool("SaveSettings")
-
-    # projection2DElement = playerSettingsElement.getFirstElement("Project2D")
-    # if projection2DElement:
-    # if projection2DElement.findAttribute("XYProj"):
-    # zPos = projection2DElement.getAttributeAsUInt("XYProj")
-    # print MODULENAME,'  loadCustomPlayerSettings(): XYProj, zPos =',zPos  #rwh
-    # if zPos >= self.xySB.minimum() and zPos <= self.xySB.maximum():
-    # self.mainGraphicsWindow._xyChecked(True)
-    # self.mainGraphicsWindow._projSpinBoxChanged(zPos)
-
-    # elif projection2DElement.findAttribute("XZProj"):
-    # yPos = projection2DElement.getAttributeAsUInt("XZProj")
-    # if yPos >= self.xzSB.minimum() and yPos <= self.xzSB.maximum():
-    # self.mainGraphicsWindow._xzChecked(True)
-    # self.mainGraphicsWindow._projSpinBoxChanged(yPos)
-
-    # elif projection2DElement.findAttribute("YZProj"):
-    # xPos = projection2DElement.getAttributeAsUInt("YZProj")
-    # if xPos >= self.yzSB.minimum() and xPos <= self.yzSB.maximum():
-    # self.mainGraphicsWindow._yzChecked(True)
-    # self.mainGraphicsWindow._projSpinBoxChanged(xPos)
-    # else:   # rwh: would like to deprecate this and duplicate the above syntax for 3D windows
-    # view3DElement = playerSettingsElement.getFirstElement("View3D")
-    # if view3DElement:
-    # cameraCippingRange=None
-    # cameraFocalPoint=None
-    # cameraPosition=None
-    # cameraViewUp=None
-
-    # clippingRangeElement=view3DElement.getFirstElement("CameraClippingRange")
-    # if clippingRangeElement:
-    # cameraClippingRange=[float(clippingRangeElement.getAttribute("Min")),float(clippingRangeElement.getAttribute("Max"))]
-
-    # focalPointElement=view3DElement.getFirstElement("CameraFocalPoint")
-    # if focalPointElement:
-    # cameraFocalPoint=[float(focalPointElement.getAttribute("x")),float(focalPointElement.getAttribute("y")),float(focalPointElement.getAttribute("z"))]
-
-    # positionElement=view3DElement.getFirstElement("CameraPosition")
-    # if positionElement:
-    # cameraPosition=[float(positionElement.getAttribute("x")),float(positionElement.getAttribute("y")),float(positionElement.getAttribute("z"))]
-
-    # viewUpElement=view3DElement.getFirstElement("CameraViewUp")
-    # if viewUpElement:
-    # cameraViewUp=[float(viewUpElement.getAttribute("x")),float(viewUpElement.getAttribute("y")),float(viewUpElement.getAttribute("z"))]
-
-    # camera3D=self.mainGraphicsWindow.getCamera3D()
-    # if cameraCippingRange:
-    # camera3D.SetClippingRange(cameraCippingRange)
-    # if  cameraFocalPoint:
-    # camera3D.SetFocalPoint(cameraFocalPoint)
-    # if  cameraPosition:
-    # camera3D.SetPosition(cameraPosition)
-    # if  cameraViewUp:
-    # camera3D.SetViewUp(cameraViewUp)
-
-    # self.mainGraphicsWindow._switchDim(True)
-        
