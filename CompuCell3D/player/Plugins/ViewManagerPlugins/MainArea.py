@@ -17,11 +17,12 @@ class DockSubWindow(QDockWidget):
     def mousePressEvent(self, ev):
         self.parent.lastActiveRealWindow = self
         # self.parent.lastClickedRealWindow = self
+        super(DockSubWindow,self).mousePressEvent(ev)
 
     def mouseDoubleClickEvent(self, ev):
         self.parent.lastActiveRealWindow = self
         # self.parent.lastClickedRealWindow = self
-
+        super(DockSubWindow,self).mouseDoubleClickEvent(ev)
 
     def changeEvent(self, ev):
         '''
