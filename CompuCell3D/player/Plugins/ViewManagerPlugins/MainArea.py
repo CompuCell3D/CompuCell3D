@@ -4,67 +4,80 @@ from enums import *
 
 from WindowInventory import WindowInventory
 
-class DockSubWindow(QFrame):
+class SubWindow(QFrame):
     def __init__(self, _parent):
-        super(DockSubWindow, self).__init__(_parent)
+        super(SubWindow, self).__init__(_parent)
         self.parent = _parent
-        # self.parent = None
-        self.mainwidget = None
-        self.setWindowFlags(Qt.Drawer|Qt.WindowMaximizeButtonHint)
-        # self.setAllowedAreas(Qt.NoDockWidgetArea)
-        # self.toggleFcn = None
-    # def setToggleFcn(self, fcn):self.toggleFcn = fcn
-    def setWidget(self,widget):
+        self.main_widget = None
+        self.setWindowFlags(Qt.Drawer)
+
+    def setWidget(self, widget):
+        '''
+        Places widget  in the frame's layout
+        :param widget:widget to be added to Qframe
+        :return:None
+        '''
         self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
         layout = QBoxLayout(QBoxLayout.TopToBottom)
         layout.addWidget(widget)
-        self.mainwidget = widget
+        self.main_widget = widget
         self.setLayout(layout)
 
     def sizeHint(self):
+        '''
+        returns suggested size for qframe
+        :return:QSize
+        '''
         return QSize(400, 400)
 
     def widget(self):
-        return self.mainwidget
+        '''
+        main widget displayed in Qframe
+        :return: main widget displayed in Qframe
+        '''
+        return self.main_widget
 
     def mousePressEvent(self, ev):
-        self.parent.lastActiveRealWindow = self
-        # self.parent.lastClickedRealWindow = self
-        super(DockSubWindow,self).mousePressEvent(ev)
-
-    def mouseDoubleClickEvent(self, ev):
-        self.parent.lastActiveRealWindow = self
-        # self.parent.lastClickedRealWindow = self
-        super(DockSubWindow,self).mouseDoubleClickEvent(ev)
-
-    def changeEvent(self, ev):
         '''
-        sets MainArea's lastActiveRealWindow
-        :param ev: QEvent
+        handler for mouse click event - updates self.parent.lastActiveRealWindow member variable
+        :param ev: mousePressEvent
         :return:None
         '''
+        self.parent.lastActiveRealWindow = self
+        super(SubWindow,self).mousePressEvent(ev)
 
-        return
-        if ev.type() == QEvent.ActivationChange:
-            if self.isActiveWindow():
-                print 'will activate ', self
-                self.parent.lastActiveRealWindow = self
+    def mouseDoubleClickEvent(self, ev):
+        '''
+        handler for mouse double-click event - updates self.parent.lastActiveRealWindow member variable
+        :param ev:  mouseDoubleClickEvent
+        :return:None
+        '''
+        self.parent.lastActiveRealWindow = self
+        super(SubWindow, self).mouseDoubleClickEvent(ev)
 
-        super(DockSubWindow,self).changeEvent(ev)
-
+    # def changeEvent(self, ev):
+    #     '''
+    #     sets MainArea's lastActiveRealWindow - currently inactive
+    #     :param ev: QEvent
+    #     :return:None
+    #     '''
+    #
+    #     return
+        # if ev.type() == QEvent.ActivationChange:
+        #     if self.isActiveWindow():
+        #         print 'will activate ', self
+        #         self.parent.lastActiveRealWindow = self
+        #
+        # super(DockSubWindow,self).changeEvent(ev)
 
     def closeEvent(self, ev):
-        # print 'DOCK WIDGET CLOSE EVENT'
-        # # print 'self.toggleFcn=', self.toggleFcn
-        # print 'self = ', self
-        # print 'BEFORE self.parent.win_inventory = ',self.parent.win_inventory
+        '''
+        handler for close event event - removes sub window from inventory
+        :param ev:  closeEvent
+        :return:None
+        '''
         self.parent.win_inventory.remove_from_inventory(self)
 
-        # print 'AFTER self.parent.win_inventory = ',self.parent.win_inventory
-
-        # self.windowInventoryDict[self.windowInventoryCounter] = dockWidget
-        # if self.toggleFcn: self.toggleFcn(False)
-        # Configuration.setSetting(str(self.objectName(), False)
 
 
 class MainArea(QWidget):
@@ -79,94 +92,97 @@ class MainArea(QWidget):
 
         self.lastActiveRealWindow = None # keeps track of the last active real window
 
-        # self.lastClickedRealWindow = None # keeps track of the last clicked real window
-
-
     def addSubWindow(self, widget):
-
+        '''
+        adds subwindow containing widget to the player
+        :param widget: widget to be added to sub windows
+        :return:None
+        '''
 
         import Graphics
         print 'INSTANCE OF GraphicsFrameWidget =  ', isinstance(widget, Graphics.GraphicsFrameWidget.GraphicsFrameWidget)
         obj_type = 'other'
         if isinstance(widget, Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
-            # obj_type = 'graphics'
             obj_type = GRAPHICS_WINDOW_LABEL
+
         elif isinstance(widget, Graphics.PlotFrameWidget.PlotFrameWidget):
             obj_type = PLOT_WINDOW_LABEL
-            # obj_type = 'plot'
 
         window_name = obj_type + ' ' + str(self.win_inventory.get_counter())
 
-
-
-        dockWidget = self.createDockWindow(name=window_name) # graphics dock window
-        self.setupDockWindow(dockWidget, Qt.NoDockWidgetArea, widget, self.trUtf8(window_name))
+        subWindow = self.createSubWindow(name=window_name) # sub window
+        self.setupSubWindow(subWindow, widget, self.trUtf8(window_name))
 
         # inserting widget into dictionary
-        # self.win_inventory.add_to_inventory( obj = dockWidget)
-        self.win_inventory.add_to_inventory(obj=dockWidget, obj_type=obj_type)
+        self.win_inventory.add_to_inventory(obj = subWindow, obj_type=obj_type)
 
-        # self.windowInventoryDict[self.windowInventoryCounter] = dockWidget
-        #
-        # self.windowInventoryCounter += 1
+        return subWindow
 
-        return dockWidget
+    def tileSubWindows(self):
+        '''
+        dummy function to make conform to QMdiArea API
+        :return: None
+        '''
+        pass
 
-    def tileSubWindows(self): pass
-
-    def cascadeSubWindows(self): pass
-
-    # def clickedSubWindow(self):
-    #     return self.lastClickedRealWindow
+    def cascadeSubWindows(self):
+        '''
+        dummy function to make conform to QMdiArea API
+        :return: None
+        '''
+        pass
 
     def activeSubWindow(self):
+        '''
+        returns last active subwindow
+        :return: SubWindow object
+        '''
         print 'returning lastActiveRealWindow=', self.lastActiveRealWindow
         return self.lastActiveRealWindow
 
     def setActiveSubWindow(self, win):
+        '''
+        Activates subwindow win
+        :param: win - SubWindow object
+        :return: None
+        '''
         win.activateWindow()
-
         self.lastActiveRealWindow = win
 
-        pass
-
     def subWindowList(self):
+        '''
+        returns list of all open subwindows
+        :return: python list of SubWindow objects
+        '''
         return self.win_inventory.values()
-        # return self.windowInventoryDict.values()
 
-    def createDockWindow(self, name):
-        """
-        Private method to create a dock window with common properties.
+    def createSubWindow(self, name):
+        '''
+        Creates SubWindow with title specified using name parameter
+        :param: name -  subwindow title
+        :return: SubWindow object
+        '''
 
-        @param name object name of the new dock window (string or QString)
-        @return the generated dock window (QDockWindow)
-        """
-        # dock = QDockWidget(self)
-        # dock = QDockWidget(self)
-        dock = DockSubWindow(self)
-        dock.setObjectName(name)
-        #dock.setFeatures(QDockWidget.DockWidgetFeatures(QDockWidget.AllDockWidgetFeatures))
-        return dock
+        sub_window = SubWindow(self)
+        sub_window .setObjectName(name)
+        return sub_window
 
-    def setupDockWindow(self, dock, where, widget, caption):
-        """
-        Private method to configure the dock window created with __createDockWindow().
+    def setupSubWindow(self, sub_window, widget, caption):
+        '''
+        Configures subwindow by placing widget in to qframe layout, setting window title (caption)
+        and showing subwindow
+        :param: sub_window - SubWindow object
+        :param: widget - widget to be placed into sub_window
+        :param: caption - subwindow title
+        :return: None
+        '''
 
-        @param dock the dock window (QDockWindow)
-        @param where dock area to be docked to (Qt.DockWidgetArea)
-        @param widget widget to be shown in the dock window (QWidget)
-        @param caption caption of the dock window (string or QString)
-        """
         if caption is None:
             caption = QString()
 
-        # dock.setFloating(True)
-        # print 'self.parent = ', self.parent
-
-        # self.UI.addDockWidget(where, dock)
-        dock.setWindowTitle(caption)
-        dock.setWidget(widget)
-        dock.show()
+        sub_window.setWindowTitle(caption)
+        sub_window.setWidget(widget)
+        sub_window.show()
 
 
 # class DockSubWindow(QDockWidget):
