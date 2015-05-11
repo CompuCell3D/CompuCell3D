@@ -9,7 +9,11 @@ class SubWindow(QFrame):
         super(SubWindow, self).__init__(_parent)
         self.parent = _parent
         self.main_widget = None
-        self.setWindowFlags(Qt.Drawer)
+        # note Qt.Drawer looks completely different on OSX than on Windows, thus the settings below
+        # are actually the ones that work on all platforms
+        self.setWindowFlags(Qt.Window|Qt.CustomizeWindowHint|Qt.WindowMaximizeButtonHint|Qt.WindowMinimizeButtonHint\
+        |Qt.WindowCloseButtonHint|Qt.FramelessWindowHint)
+
 
     def setWidget(self, widget):
         '''
@@ -20,6 +24,7 @@ class SubWindow(QFrame):
         self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
         layout = QBoxLayout(QBoxLayout.TopToBottom)
         layout.addWidget(widget)
+        layout.setMargin(0)
         self.main_widget = widget
         self.setLayout(layout)
 

@@ -1924,6 +1924,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         fieldDim = None
         if self.__viewManagerType == "Regular":
 
+            if not self.mysim:
+                return
+
             simObj = self.mysim()
             if not simObj: return False
 
