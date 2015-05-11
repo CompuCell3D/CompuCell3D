@@ -55,9 +55,11 @@ class BOUNDARYPIXELTRACKER_EXPORT BoundaryPixelTrackerPlugin : public Plugin, pu
       Simulator *simulator;
 		Potts3D* potts;
 		unsigned int maxNeighborIndex;
+        unsigned int neighborOrder;
 		BoundaryStrategy * boundaryStrategy;
 		CC3DXMLElement *xmlData;
-
+        std::vector<int> extraBoundariesNeighborOrder;
+        std::vector<int> extraBoundariesMaxNeighborIndex;
 		
    public:
       BoundaryPixelTrackerPlugin();
@@ -65,10 +67,12 @@ class BOUNDARYPIXELTRACKER_EXPORT BoundaryPixelTrackerPlugin : public Plugin, pu
       
       
       // Field3DChangeWatcher interface
-      virtual void field3DChange(const Point3D &pt, CellG *newCell,
-                                 CellG *oldCell);
+      virtual void field3DChange(const Point3D &pt, CellG *newCell,CellG *oldCell);
 
-      
+
+      void updateBoundaryPixels(const Point3D &pt, CellG *newCell,CellG *oldCell,  int  indexOfExtraBoundary=-1); 
+
+
 		//Plugin interface 
 		virtual void init(Simulator *_simulator, CC3DXMLElement *_xmlData=0);
 		virtual void extraInit(Simulator *_simulators);
@@ -79,6 +83,7 @@ class BOUNDARYPIXELTRACKER_EXPORT BoundaryPixelTrackerPlugin : public Plugin, pu
 		virtual std::string steerableName();
 		virtual std::string toString();
 
+        std::set<BoundaryPixelTrackerData > * getPixelSetForNeighborOrderPtr( CellG *_cell, int _neighborOrder);
 
 		BasicClassAccessor<BoundaryPixelTracker> * getBoundaryPixelTrackerAccessorPtr(){return & boundaryPixelTrackerAccessor;}
 		//had to include this function to get set inereation working properly with Python , and Player that has restart capabilities

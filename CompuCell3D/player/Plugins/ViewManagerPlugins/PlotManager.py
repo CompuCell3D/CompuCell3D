@@ -39,25 +39,30 @@ class PlotWindowInterface(QtCore.QObject):
     
     savePlotAsPNGSignal=QtCore.pyqtSignal( (QtCore.QString,'int','int',QtCore.QMutex, )) #savePlotAsPNG has to emit signal with locking mutex to work correctly
     
-    def __init__(self,_plotWindow=None):
+    def __init__(self, _plotWindow=None):
         # PlotManagerSetup.PlotWindowInterfaceBase.__init__(self,_plotWindow)
         QtCore.QObject.__init__(self, None)
         if _plotWindow:
-            self.plotWindow=_plotWindow
-            self.pW=self.plotWindow.plotWidget        
-        self.plotData={}
-        self.plotHistData={}
-        self.plotDrawingObjects={}
+            self.plotWindow = _plotWindow
+            import weakref
+            self.plotWindow.plotInterface = weakref.ref(self)
+
+            self.pW = self.plotWindow.plotWidget
+        self.plotData = {}
+        self.plotHistData = {}
+        self.plotDrawingObjects = {}
         self.initSignalsAndSlots()
-        self.plotWindowInterfaceMutex=QtCore.QMutex()
-        self.dirtyFlagIndex=2 # this is the index of the flag tha is used to signal wheather the data has been modified or not
-        self.autoLegendFlag=False
-        self.legendSetFlag=False
-        self.legendPosition=Qwt.QwtPlot.BottomLegend
-        
-        self.eraseAllFlag=False
-        self.logScaleFlag=False
-        self.title=''
+        self.plotWindowInterfaceMutex = QtCore.QMutex()
+        self.dirtyFlagIndex = 2 # this is the index of the flag tha is used to signal wheather the data has been modified or not
+        self.autoLegendFlag = False
+        self.legendSetFlag = False
+        self.legendPosition = Qwt.QwtPlot.BottomLegend
+
+        self.barplot = None
+
+        self.eraseAllFlag = False
+        self.logScaleFlag = False
+        self.title = ''
         
     def getQWTPLotWidget(self): # returns native QWT widget to be manipulated by expert users
         return self.plotWindow        
@@ -98,22 +103,22 @@ class PlotWindowInterface(QtCore.QObject):
         self.pW.setCanvasBackground(QColor(_colorName))
 
     def addAutoLegend(self,_position="bottom"): 
-        self.autoLegendFlag=True
+        self.autoLegendFlag = True
         
         # print "_position=",_position
         # sys.exit()
         
-        if _position.lower()=="top":
+        if _position.lower() == "top":
             self.legendPosition=Qwt.QwtPlot.TopLegend
             # print "_position=",_position
             # sys.exit()
             
-        elif _position.lower()=="bottom":
-            self.legendPosition=Qwt.QwtPlot.BottomLegend
-        elif _position.lower()=="left":
-            self.legendPosition=Qwt.QwtPlot.LeftLegend            
-        elif _position.lower()=="right":
-            self.legendPosition=Qwt.QwtPlot.RightLegend
+        elif _position.lower() == "bottom":
+            self.legendPosition = Qwt.QwtPlot.BottomLegend
+        elif _position.lower() == "left":
+            self.legendPosition = Qwt.QwtPlot.LeftLegend
+        elif _position.lower() == "right":
+            self.legendPosition = Qwt.QwtPlot.RightLegend
             
             
         # self.legend = Qwt.QwtLegend()
@@ -122,17 +127,15 @@ class PlotWindowInterface(QtCore.QObject):
         
         # self.pW.insertLegend(legend, Qwt.QwtPlot.TopLegend)
         
-    def addPlot(self,_plotName,_style="Lines",_color='black',_size=1):
+    def addPlot(self, _plotName, _style="Lines", _color='black', _size=1):
         # self.plotData[_plotName]=[arange(0),arange(0),False]
         
         self.plotData[_plotName]=[array([],dtype=double),array([],dtype=double),False,XYPLOT]
         
-        self.plotDrawingObjects[_plotName]={"curve":Qwt.QwtPlotCurve(_plotName),"LineWidth":_size,"LineColor":_color}
+        self.plotDrawingObjects[_plotName] = {"curve":Qwt.QwtPlotCurve(_plotName),"LineWidth":_size,"LineColor":_color}
         plotStyle=getattr(Qwt.QwtPlotCurve,_style)
         # self.plotDrawingObjects[_plotName]["curve"].setStyle(Qwt.QwtPlotCurve.Dots)
         self.plotDrawingObjects[_plotName]["curve"].setStyle(plotStyle)
-
-        
         
     def addGrid(self):
         grid = Qwt.QwtPlotGrid()
@@ -144,7 +147,6 @@ class PlotWindowInterface(QtCore.QObject):
         self.cleanAllContainers()
         
         for name, data in self.plotData.iteritems():
-            
                 
             data[self.dirtyFlagIndex]=True
             
@@ -439,6 +441,11 @@ class PlotWindowInterface(QtCore.QObject):
         self.pW.replot()
         _mutex.unlock()
 
+    def addHistogram(self, plot_name , value_array ,  number_of_bins):
+        import numpy
+        (values, intervals) = numpy.histogram(value_array, bins=number_of_bins)
+        self.addHistPlotData(_plotName=plot_name, _values=values, _intervals=intervals)
+
     def addHistPlotData(self,_plotName,_values,_intervals):
         # print 'addHistPlotData'
         # print '_values=',_values
@@ -527,7 +534,8 @@ class PlotWindowInterface(QtCore.QObject):
         self.plotWindowInterfaceMutex.unlock()
       
     def __showAllBarCurvePlots(self,_mutex=None):
-        self.barplot.attach(self.pW)
+        if self.barplot is not None:
+            self.barplot.attach(self.pW)
         self.pW.replot()
         _mutex.unlock()
    
@@ -805,14 +813,47 @@ class PlotManager(QtCore.QObject):
         
     def initSignalAndSlots(self):
         # since initSignalAndSlots can be called in SimTabView multiple times (after each simulation restart) we have to ensure that signals are connected only once 
-        # otherwise there will be an avalanche of signals - each signal for each additional simulation run this will cause lots of extra windows to pop up 
+        # otherwise there will be an avalanche of signals - each signal for each additional simulation run this will cause lots of extra windows to pop up
+
         if not self.signalsInitialized: 
             self.newPlotWindowSignal.connect(self.processRequestForNewPlotWindow)
             self.signalsInitialized=True
         # self.connect(self,SIGNAL("newPlotWindow(QtCore.QMutex)"),self.processRequestForNewPlotWindow)
-        
+
+    def restore_plots_layout(self):
+        ''' This function restores plot layout - it is called from CompuCellSetup.py inside mainLoopNewPlayer function
+        :return: None
+        '''
+
+        windows_layout_dict = Configuration.getSetting('WindowsLayout')
+
+        if not windows_layout_dict:
+            return
+
+        for winId, win in self.vm.win_inventory.getWindowsItems(PLOT_WINDOW_LABEL):
+            plot_frame_widget = win.widget()
+
+            plot_interface = plot_frame_widget.plotInterface()  # plot_frame_widget.plotInterface is a weakref
+
+            if not plot_interface:  # if weakref to plot_interface is None we ignore such window
+                continue
+
+            if str(plot_interface.title ) in windows_layout_dict.keys():
+                window_data_dict = windows_layout_dict[str(plot_interface.title)]
+
+                from Graphics.GraphicsWindowData import GraphicsWindowData
+
+                gwd = GraphicsWindowData()
+                gwd.fromDict(window_data_dict)
+
+                if gwd.winType != 'plot':
+                    return
+                win.resize(gwd.winSize)
+                win.move(gwd.winPosition)
+                win.setWindowTitle(plot_interface.title)
+
     def getNewPlotWindow(self):
-        print "\n\n\n getNewPlotWindow "
+        # print "\n\n\n getNewPlotWindow "
         self.plotWindowMutex.lock()
 
         self.newPlotWindowSignal.emit(self.plotWindowMutex)
@@ -820,6 +861,82 @@ class PlotManager(QtCore.QObject):
         self.plotWindowMutex.lock()
         self.plotWindowMutex.unlock()
         return self.plotWindowList[-1] # returning recently added window
+    
+    def restoreSingleWindow(self,plotWindowInterface):
+        '''
+        Restores size and position of a single, just-added plot window
+        :param plotWindowInterface: an insance of PlotWindowInterface - can be fetchet from PlotFrameWidget using PlotFrameWidgetInstance.plotInterface
+        :return: None
+        '''
+        
+        windows_layout_dict = Configuration.getSetting('WindowsLayout')
+        # print 'windowsLayoutDict=', windowsLayoutDict
+        
+        if not windows_layout_dict: return
+        
+        if str(plotWindowInterface.title) in windows_layout_dict.keys():
+            window_data_dict = windows_layout_dict[str(plotWindowInterface.title)]
+
+            from Graphics.GraphicsWindowData import GraphicsWindowData
+            
+            gwd = GraphicsWindowData()                      
+            gwd.fromDict(window_data_dict)
+            
+            if gwd.winType != 'plot':
+                return
+
+            plot_window = self.vm.lastActiveRealWindow
+            plot_window.resize(gwd.winSize)
+            plot_window.move(gwd.winPosition)
+            plot_window.setWindowTitle(plotWindowInterface.title)
+
+    def getPlotWindowsLayoutDict(self):
+        windowsLayout = {}
+        from Graphics.GraphicsWindowData import GraphicsWindowData
+
+
+
+        for winId, win in self.vm.win_inventory.getWindowsItems(PLOT_WINDOW_LABEL):
+            plotFrameWidget = win.widget()
+            plotInterface = plotFrameWidget.plotInterface() # getting weakref
+            if not plotInterface:
+                continue
+
+            gwd = GraphicsWindowData()
+            gwd.sceneName = plotInterface.title
+            gwd.winType = 'plot'
+            plotWindow = plotInterface.plotWindow
+            mdiPlotWindow = win
+            # mdiPlotWindow = self.vm.findMDISubWindowForWidget(plotWindow)
+            print 'plotWindow=',plotWindow
+            print 'mdiPlotWindow=',mdiPlotWindow
+            gwd.winSize = mdiPlotWindow.size()
+            gwd.winPosition = mdiPlotWindow.pos()
+
+            windowsLayout[gwd.sceneName] = gwd.toDict()
+
+        return windowsLayout
+
+    #
+    # def getPlotWindowsLayoutDict(self):
+    #     windowsLayout = {}
+    #     from Graphics.GraphicsWindowData import GraphicsWindowData
+    #
+    #
+    #     for plotInterface in self.plotWindowList:
+    #         gwd = GraphicsWindowData()
+    #         gwd.sceneName =  plotInterface.title
+    #         gwd.winType =  'plot'
+    #         plotWindow = plotInterface.plotWindow
+    #         mdiPlotWindow = self.vm.findMDISubWindowForWidget(plotWindow)
+    #         print 'plotWindow=',plotWindow
+    #         print 'mdiPlotWindow=',mdiPlotWindow
+    #         gwd.winSize = mdiPlotWindow.size()
+    #         gwd.winPosition = mdiPlotWindow.pos()
+    #
+    #         windowsLayout[gwd.sceneName] = gwd.toDict()
+    #
+    #     return windowsLayout
         
     def processRequestForNewPlotWindow(self,_mutex):
 #        print MODULENAME,"processRequestForNewPlotWindow(): GOT HERE mutex=",_mutex
@@ -830,26 +947,76 @@ class PlotManager(QtCore.QObject):
         if not self.vm.simulationIsRunning:
             return
         # self.vm.simulation.drawMutex.lock()
-        
-        self.vm.windowCounter += 1        
+
+        #MDIFIX
+        # self.vm.windowCounter += 1
+
         newWindow = PlotFrameWidget(self.vm)
+        # newWindow.resizePlot(600,600)
         
-        self.vm.windowDict[self.vm.windowCounter]=newWindow
-        self.vm.plotWindowDict[self.vm.windowCounter] = self.vm.windowDict[self.vm.windowCounter]
+        #MDIFIX
+        # self.vm.windowDict[self.vm.windowCounter]=newWindow
+        # self.vm.plotWindowDict[self.vm.windowCounter] = self.vm.windowDict[self.vm.windowCounter]
         
-        newWindow.setWindowTitle("Plot Window "+str(self.vm.windowCounter))
-        
-        self.vm.lastActiveWindow = newWindow
+        # newWindow.setWindowTitle("Plot Window "+str(self.vm.windowCounter))
+        # MDIFIX
+        # self.vm.lastActiveWindow = newWindow
+
         # # self.updateWindowMenu()
+        
+        # 
         
         newWindow.setShown(False)
         
-        self.vm.mdiWindowDict[self.vm.windowCounter]=self.vm.addSubWindow(newWindow)
+        
+        mdiPlotWindow = self.vm.addSubWindow(newWindow)
+
+        self.vm.lastActiveRealWindow = mdiPlotWindow
+
+        # mdiPlotWindow = self.vm.lastActiveWindow
+        
+        # newWindow.setFixedSize(600,600)
+        # newWindow.resize(600,600)
+        # newWindow.resizePlot(600,600)
+        # # # newWindow.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding))        
+        # # # # newWindow.adjustSize()
+        # # # newWindow.showMinimized()
+        # # # newWindow.showNormal()
+        # newWindow.resize(600,600)
+        
+        # newWindow.resizePlot(600,600)
+
+        
+        # def resizeHandler(ev):            
+            # print 'RESIZE HANDLER'
+            # print 'ev.oldSize() =',ev.oldSize()
+            # print 'ev.size() =',ev.size()
+            
+            # import time
+            # time.sleep(2)
+            
+        # mdiPlotWindow.resizeEvent = resizeHandler
+        print 'mdiPlotWindow=',mdiPlotWindow
+        print 'newWindow=',newWindow
+        # mdiPlotWindow.setFixedSize(600,600)  
+        mdiPlotWindow.resize(300, 300)
+        # mdiPlotWindow.widget().resize(600,600)  
+        
+        # import time
+        # time.sleep(2)    
+        
+        # mdiPlotWindow.resize(400,400)
+        # MDIFIX
+        # self.vm.mdiWindowDict[self.vm.windowCounter] = mdiPlotWindow
+
+        # self.vm.mdiWindowDict[self.vm.windowCounter]=self.vm.addSubWindow(newWindow)
         newWindow.show()
         
         plotWindowInterface=PlotWindowInterface(newWindow)
         self.plotWindowList.append(plotWindowInterface) # store plot window interface in the window list
-                
+
+        # self.restoreSingleWindow(plotWindowInterface)
+
         self.plotWindowMutex.unlock()
         
         # return  plotWindowInterface# here I will need to call either PlotWindowInterface or PlotWindowInterfaceBase depending if dependencies are installed or not

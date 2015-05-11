@@ -39,7 +39,7 @@ class Console(CTabWidget):
         self.setTabContextMenuPolicy(Qt.CustomContextMenu)
         self.connect(self,SIGNAL('customTabContextMenuRequested(const QPoint &, int)'),
                      self.__handleShowContextMenu)
-    
+
     def getStdErrConsole(self):
         return self.__stdout
         

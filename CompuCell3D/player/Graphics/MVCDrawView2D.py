@@ -116,9 +116,9 @@ class MVCDrawView2D(MVCDrawViewBase):
     def showClusterBorder(self):
         Configuration.setSetting("ClusterBordersOn",True)
         if not self.currentActors.has_key("ClusterBorderActor"):
-            self.currentActors["ClusterBorderActor"]=self.clusterBorderActor  
-            self.graphicsFrameWidget.ren.AddActor(self.clusterBorderActor)      
-    
+            self.currentActors["ClusterBorderActor"] = self.clusterBorderActor
+            self.graphicsFrameWidget.ren.AddActor(self.clusterBorderActor)
+
     def hideClusterBorder(self):
         Configuration.setSetting("ClusterBordersOn",False)
         if self.currentActors.has_key("ClusterBorderActor"):
@@ -129,8 +129,11 @@ class MVCDrawView2D(MVCDrawViewBase):
 
     #----------------------------------------------------------------------------
     def showCells(self):
-        Configuration.setSetting("CellsOn",True)
+        # Configuration.setSetting("CellsOn",True)
         # print MODULENAME,' \n\n\n\n\n\n showCells() '
+
+        if str(self.graphicsFrameWidget.fieldComboBox.currentText()) != 'Cell_Field':return
+
         if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
             if not self.currentActors.has_key("HexCellsActor"):
                 self.currentActors["HexCellsActor"] = self.hexCellsActor  
@@ -139,7 +142,12 @@ class MVCDrawView2D(MVCDrawViewBase):
             if not self.currentActors.has_key("CellsActor"):                
                 self.currentActors["CellsActor"]=self.cellsActor  
                 self.graphicsFrameWidget.ren.AddActor(self.cellsActor)
-        # print "self.currentActors.keys()=",self.currentActors.keys()
+
+        if self.currentActors.has_key("BorderActor"): # ensuring borders are the last actor added
+            self.graphicsFrameWidget.ren.RemoveActor(self.borderActor)
+            self.graphicsFrameWidget.ren.AddActor(self.borderActor)
+        print "self.currentActors.keys()=",self.currentActors.keys()
+        # print
         # Don't re-render until next calc step since it could show previous/incorrect actor
         # self.Render()
         # self.graphicsFrameWidget.repaint()
@@ -149,10 +157,11 @@ class MVCDrawView2D(MVCDrawViewBase):
 #        print MODULENAME,'  hideCells():  type(self.parentWidget)= ',type(self.parentWidget)
 #        print MODULENAME,'  hideCells():  self.parentWidget.lastActiveWindow= ',self.parentWidget.lastActiveWindow
 #        print MODULENAME,'  hideCells():  type(self.lastActiveWindow)= ',type(self.lastActiveWindow)
-        Configuration.setSetting("CellsOn",False)
-        if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
-            del self.currentActors["HexCellsActor"] 
-            self.graphicsFrameWidget.ren.RemoveActor(self.hexCellsActor)
+#         Configuration.setSetting("CellsOn",False)
+        if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane == "XY": # drawing in other planes will be done on a rectangular lattice
+            if self.currentActors.has_key("HexCellsActor"):
+                del self.currentActors["HexCellsActor"]
+                self.graphicsFrameWidget.ren.RemoveActor(self.hexCellsActor)
 #            self.parentWidget.lastActiveWindow.ren.RemoveActor(self.hexCellsActor)
         if self.currentActors.has_key("CellsActor"):
             del self.currentActors["CellsActor"] 
@@ -371,12 +380,9 @@ class MVCDrawView2D(MVCDrawViewBase):
 #        if self.parentWidget.cellsAct.isChecked():
 #        if self.parentWidget.cellsAct.isChecked() or self.getSim3DFlag():  # rwh: hack for FPP
         dictKey = self.graphicsFrameWidget.winId().__int__()  # get key (addr) for this window
-        
-        
-#        print MODULENAME,' drawCellField(): self.parentWidget.graphicsWindowVisDict=',self.parentWidget.graphicsWindowVisDict
-#        print MODULENAME,' drawCellField(): dictKey=',dictKey
 
-            
+
+
         if self.parentWidget.graphicsWindowVisDict[dictKey][0] or self.getSim3DFlag():  # rwh: for multi-window bug fix;  rwh: hack for FPP
 #        if self.parentWidget.graphicsWindowVisDict[self.parentWidget.lastActiveWindow.winId()][0] or self.getSim3DFlag():  # rwh: for multi-window bug fix;  rwh: hack for FPP
 #        print MODULENAME,'  hideCells():  self.parentWidget.lastActiveWindow= ',self.parentWidget.lastActiveWindow
@@ -389,26 +395,26 @@ class MVCDrawView2D(MVCDrawViewBase):
                 return
 
 
-            # # # import time    
-            # print 'INSIDE self.drawCellField BEFORE initCellFieldActors'    
-            
-            
-            # time.sleep(5)                
-            # if self.parentWidget.graphicsWindowVisDict[dictKey][0]:            
-            self.drawModel.initCellFieldActors((self.cellsActor,))            
-            
-            
-            
-            # # # print 'INSIDE self.drawCellField AFTER initCellFieldActors'    
-                        
-            # # # time.sleep(5)                
-            
+            # # # import time
+            # print 'INSIDE self.drawCellField BEFORE initCellFieldActors'
+
+
+            # time.sleep(5)
+            # if self.parentWidget.graphicsWindowVisDict[dictKey][0]:
+            self.drawModel.initCellFieldActors((self.cellsActor,))
+
+
+
+            # # # print 'INSIDE self.drawCellField AFTER initCellFieldActors'
+
+            # # # time.sleep(5)
+
             # print '   drawCellField:  currentActors=',self.currentActors
-            
+
             if not self.currentActors.has_key("CellsActor"):
-                self.currentActors["CellsActor"] = self.cellsActor  
+                self.currentActors["CellsActor"] = self.cellsActor
                 self.graphicsFrameWidget.ren.AddActor(self.cellsActor)
-            
+
 
             
         
@@ -423,9 +429,9 @@ class MVCDrawView2D(MVCDrawViewBase):
 #        if self.parentWidget.borderAct.isChecked():
         if self.parentWidget.graphicsWindowVisDict[dictKey][1]:  # rwh: for multi-window bug fix
             if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
-                self.drawBorders2DHex()    
+                self.drawBorders2DHex()
             else:
-                self.drawBorders2D()       
+                self.drawBorders2D()
         #else:
         #    self.hideBorder()
             
@@ -451,7 +457,13 @@ class MVCDrawView2D(MVCDrawViewBase):
             else:
                 self.drawClusterBorders2D()
         
-        
+        if not Configuration.getSetting('CellsOn'):
+            print 'HIDING CELLS'
+            self.hideCells()
+        else:
+            print 'SHOWING CELLS'
+            self.showCells()
+
         self.Render()
         
         
@@ -521,12 +533,13 @@ class MVCDrawView2D(MVCDrawViewBase):
             self.showLegend(True)
         else:
             self.showLegend(False)
-            
-#        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):            
-#            self.showContours(True)            
-#        else:
-#            self.showContours(False)
-        self.showContours(True)            
+        
+        # print 'Configuration.getSetting("ContoursOn",%s)'%self.currentDrawingParameters.fieldName, ' = '  ,Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName)  
+        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):            
+            self.showContours(True)            
+        else:
+            self.showContours(False)
+        # self.showContours(True)            
             
         if self.parentWidget.clusterBorderAct.isChecked():
             self.drawClusterBorders2DHex()    
@@ -556,11 +569,11 @@ class MVCDrawView2D(MVCDrawViewBase):
         else:
             self.showLegend(False)
     
-#        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):            
-#            self.showContours(True)            
-#        else:
-#            self.showContours(False)
-        self.showContours(True)            
+        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):            
+            self.showContours(True)            
+        else:
+            self.showContours(False)
+        # self.showContours(True)            
             
         if self.parentWidget.clusterBorderAct.isChecked():
             self.drawClusterBorders2DHex()
@@ -590,11 +603,11 @@ class MVCDrawView2D(MVCDrawViewBase):
         else:
             self.showLegend(False)
     
-#        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):
-#            self.showContours(True)
-#        else:
-#            self.showContours(False)
-        self.showContours(True)            
+        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):
+            self.showContours(True)
+        else:
+            self.showContours(False)
+        # self.showContours(True)            
             
         if self.parentWidget.clusterBorderAct.isChecked():
             self.drawClusterBorders2DHex()    
@@ -714,11 +727,11 @@ class MVCDrawView2D(MVCDrawViewBase):
         else:
             self.hideBorder()
 
-#        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):                        
-#            self.showContours(True)
-#        else:
-#            self.showContours(False)
-        self.showContours(True)
+        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):                        
+            self.showContours(True)
+        else:
+            self.showContours(False)
+        # self.showContours(True)
             
         self.drawModel.prepareOutlineActors((self.outlineActor,))       
         self.showOutlineActor()    

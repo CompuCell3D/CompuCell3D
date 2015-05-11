@@ -297,6 +297,10 @@ class CC3DProjectTreeWidget(QTreeWidget):
             # menu.addAction(self.plugin.actions["Reset Parameter Scan"])    
         
         self.addActionToContextMenu(menu,self.plugin.actions["Save CC3D Project"])
+        self.addActionToContextMenu(menu,self.plugin.actions["Zip It!"])
+        # self.addActionToContextMenu(menu,self.plugin.actions["Zip'n'Mail"])
+        #--------------------------------------------------------------------
+        menu.addSeparator()
         self.addActionToContextMenu(menu,self.plugin.actions["Add Resource..."])
         
         
@@ -522,8 +526,10 @@ class CC3DProject(QObject):
         # self.parameterScanXMLHandler=None
         # self.parameterScanFile=''
         
-        # self.openCC3Dproject("/Users/m/install_projects/CC3D_3.7.1/Demos/SBMLSolverExamples/SBMLSolver/SBMLSolver.cc3d")
-        
+        # self.openCC3Dproject("/Users/m/CC3DProjects/ExtraFields/ExtraFields.cc3d")
+        # self.openCC3Dproject("/Users/m/CC3DProjects/scientificPlotsSimple/scientificPlots.cc3d")
+        # self.openCC3Dproject("/Users/m/CC3DProjects/ParamScanDemo/ParamScanDemo.cc3d")
+
 
         # # # self.openCC3Dproject('/home/m/CC3DProjects/CellSorting/CellSorting.cc3d')
 
@@ -597,6 +603,7 @@ class CC3DProject(QObject):
         self.cc3dProjectMenu.addAction(self.actions["Open CC3D Project..."])
         self.cc3dProjectMenu.addAction(self.actions["Save CC3D Project"])
         self.cc3dProjectMenu.addAction(self.actions["Save CC3D Project As..."])
+        self.cc3dProjectMenu.addAction(self.actions["Zip It!"])
         self.cc3dProjectMenu.addSeparator()
         #---------------------------------------
         
@@ -738,7 +745,8 @@ class CC3DProject(QObject):
         self.actions["Open in Player"]=QtGui.QAction(QIcon(':/icons/player-icon.png'),"Open In Player", self, shortcut="", statusTip="Open simulation in Player ", triggered=self.__runInPlayer) 
         self.actions["Save CC3D Project"]=QtGui.QAction(QIcon(':/icons/save-project.png'),"Save CC3D Project", self, shortcut="", statusTip="Save CC3D Project ", triggered=self.__saveCC3DProject)
         self.actions["Save CC3D Project As..."]=QtGui.QAction("Save CC3D Project As...", self, shortcut="Ctrl+Shift+A", statusTip="Save CC3D Project As ", triggered=self.__saveCC3DProjectAs)
-        
+        self.actions["Zip It!"]=QtGui.QAction("Zip It!", self, shortcut="Ctrl+Shift+Z", statusTip="Zips project directory", triggered=self.__zipProject)
+        # self.actions["Zip'n'Mail"]=QtGui.QAction("Zip'n'Mail", self, statusTip="Zips project directory and opens email clinet with attachement", triggered=self.__zipAndMailProject)
         
         self.actions["Add Resource..."]=QtGui.QAction(QIcon(':/icons/add.png'),"Add Resource...", self, shortcut="", statusTip="Add Resource File ", triggered=self.__addResource)
         self.actions["Add Serializer..."]=QtGui.QAction(QIcon(':/icons/add-serializer.png'),"Add Serializer ...", self, shortcut="", statusTip="Add Serializer ", triggered=self.__addSerializerResource)        
@@ -788,7 +796,8 @@ class CC3DProject(QObject):
         except LookupError,e:
             print "could not find simulation data handler for this item"
             return              
-        
+
+
         if pdh.cc3dSimulationData.parameterScanResource:
             from ParameterScanUtils import ParameterScanUtils as PSU
             psu=PSU()
@@ -2165,7 +2174,7 @@ class CC3DProject(QObject):
             
    
         return
-        
+
     def __saveCC3DProjectAs(self):
     
         tw=self.treeWidget
@@ -2213,7 +2222,7 @@ class CC3DProject(QObject):
             return     
 
         # note, a lot of the code here was written assuming we will not need to reopen the project
-        # however it turns out that proper handling of such situation woudl require more fefactoring so I decided to 
+        # however it turns out that proper handling of such situation would require more refactoring so I decided to
         # close new project and reopen it (users will need to open their files) 
         # Once we refactor this plugin we can always add proper handling without requiring project to be reopened
         csd=pdh.cc3dSimulationData
@@ -2294,13 +2303,58 @@ class CC3DProject(QObject):
         
         return
 
-    
-        
-    
+    # def __zipAndMailProject(self):
+    #
+    #     zipped_project_path = self.__zipProject()
+    #     # QDesktopServices.openUrl(QUrl("mailto:?subject="+os.path.basename(zipped_project_path)+"&body=Attaching: "+os.path.basename(zipped_project_path)+"&attach=" + zipped_project_path))
+    #
+    #     QDesktopServices.openUrl(QUrl("mailto:?subject="+os.path.basename(zipped_project_path)+"&body=Attaching: "+os.path.basename(zipped_project_path)+"&attach=" + "/Users/m/install_projects/master/CompuCell3D_playerconfig_demo/icons/cc3d_128x128_logo.png"))
+
+
+    def __zipProject(self):
+
+        print 'inside __zipProject'
+
+        tw=self.treeWidget
+        curItem=self.treeWidget.currentItem()
+        projItem=self.treeWidget.getProjectParent(curItem)
+
+
+        if not projItem:
+            numberOfprojects=self.treeWidget.topLevelItemCount()
+            if numberOfprojects==1:
+                projItem=self.treeWidget.topLevelItem(0)
+            elif numberOfprojects>1:
+                QMessageBox.warning(self.treewidget,"Please Select Project","Please first click inside project that you wish to save and try again")
+            else:
+                return
+
+        pdh=None
+
+        try:
+           pdh = self.projectDataHandlers[projItem]
+        except LookupError,e:
+
+            return
+
+        csd = pdh.cc3dSimulationData
+
+        zip_archive_base_core_name = os.path.basename(csd.basePath)
+        zip_archive_core_name = os.path.join(os.path.dirname(csd.basePath), zip_archive_base_core_name)
+
+        ret = QMessageBox.information(tw, 'Zip File Path', 'The zipped file will be saved as '+ zip_archive_core_name+'.zip', QMessageBox.Ok|QMessageBox.Cancel)
+        if ret == QMessageBox.Cancel:
+            return None
+
+        import shutil
+        shutil.make_archive(zip_archive_core_name, 'zip', csd.basePath)
+
+        return zip_archive_core_name+'.zip'
+
     def openCC3Dproject(self,fileName):        
         projExist=True
         
-        self.__ui.addItemtoConfigurationStringList(self.configuration,"RecentProjects",fileName)  
+        self.__ui.addItemtoConfigurationStringList(self.configuration, "RecentProjects",fileName)
         
         #extract file directory name and add it to settings                    
         dirName=os.path.abspath(os.path.dirname(str(fileName)))

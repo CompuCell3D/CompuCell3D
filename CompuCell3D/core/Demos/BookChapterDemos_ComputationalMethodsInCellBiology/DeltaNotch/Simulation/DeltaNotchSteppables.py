@@ -38,9 +38,9 @@ class DeltaNotchClass(SteppableBasePy):
         state['N'] = random.uniform(0.9,1.0)        
         bionetAPI.setBionetworkState(cell.id,'DeltaNotch',state) 
         
-        cellDict=CompuCell.getPyAttrib(cell)
-        cellDict['D']=state['D']
-        cellDict['N']=state['N']
+        
+        cell.dict['D']=state['D']
+        cell.dict['N']=state['N']
 
   def step(self,mcs):
     for cell in self.cellList:
@@ -60,9 +60,9 @@ class DeltaNotchClass(SteppableBasePy):
         bionetAPI.setBionetworkState(cell.id,'DeltaNotch',state) 
         
         state=bionetAPI.getBionetworkState(cell.id,'DeltaNotch')
-        cellDict=CompuCell.getPyAttrib(cell)
-        cellDict['D']=D
-        cellDict['N']=state['N']        
+        
+        cell.dict['D']=D
+        cell.dict['N']=state['N']        
     bionetAPI.timestepBionetworks() 
 
     
@@ -80,6 +80,6 @@ class ExtraFields(SteppableBasePy):
     
     for cell in self.cellList:
       if cell:
-        cellDict=CompuCell.getPyAttrib(cell)
-        self.scalarFieldDelta[cell]=cellDict['D']
-        self.scalarFieldNotch[cell]=cellDict['N']
+        
+        self.scalarFieldDelta[cell]=cell.dict['D']
+        self.scalarFieldNotch[cell]=cell.dict['N']

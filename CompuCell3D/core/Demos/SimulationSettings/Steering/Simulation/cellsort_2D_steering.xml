@@ -1,5 +1,4 @@
 <CompuCell3D>
- <PythonScript>Simulation/cellsort_2D_steering.py</PythonScript>
  <Potts>
    <Dimensions x="100" y="100" z="1"/>
    <Anneal>10</Anneal>

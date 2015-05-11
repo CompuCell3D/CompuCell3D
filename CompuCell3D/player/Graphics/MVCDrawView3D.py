@@ -302,14 +302,17 @@ class MVCDrawView3D(MVCDrawViewBase):
             self.drawModel.initCellFieldActors(self.currentActors)
             
         if self.parentWidget.graphicsWindowVisDict[dictKey][1]:    # cell borders (= individual cells)
-            if self.warnUserCellBorders:
-                reply = QMessageBox.warning(self.parentWidget, "Message",
-                                        "Warning:  About to draw individual cells (Vis->Borders is on). If you cancel and 3D:BBox is off, you may need to press 'r' in window to re-center.",
-                                        QMessageBox.Ok,QMessageBox.Cancel)
-#                print '\n------------ reply,  QMessageBox.Cancel=',reply,QMessageBox.Cancel
-                if reply == QMessageBox.Cancel:     # != 1024
-                    return
-                self.warnUserCellBorders = False
+
+            self.parentWidget.displayWarning ('3D Cell rendering with Vis->Borders "ON"  may be slow')
+            # displayWarning
+#             if self.warnUserCellBorders:
+#                 reply = QMessageBox.warning(self.parentWidget, "Message",
+#                                         "Warning:  About to draw individual cells (Vis->Borders is on). If you cancel and 3D:BBox is off, you may need to press 'r' in window to re-center.",
+#                                         QMessageBox.Ok,QMessageBox.Cancel)
+# #                print '\n------------ reply,  QMessageBox.Cancel=',reply,QMessageBox.Cancel
+#                 if reply == QMessageBox.Cancel:     # != 1024
+#                     return
+#                 self.warnUserCellBorders = False
             self.prepareCellTypeActors()
             self.showCellTypeActors()
             self.drawModel.initCellFieldBordersActors(self.currentActors)

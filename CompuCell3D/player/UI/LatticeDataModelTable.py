@@ -43,14 +43,18 @@ class LatticeDataModelTable(QTableView):
         self.setAlternatingRowColors (True)
         self.horizontalHeader().setStretchLastSection(True)
         
-        self.connect(self, SIGNAL("clicked(const QModelIndex &)"), self.__pickMCSDirect)
+        self.connect(self, SIGNAL("clicked(const QModelIndex &)"), self.__pickAndAdvanceMCSDirect)        
+        # self.connect(self, SIGNAL("clicked(const QModelIndex &)"), self.__pickMCSDirect)        
+        # self.connect(self, SIGNAL("doubleClicked(const QModelIndex &)"), self.__pickAndAdvanceMCSDirect)
         
-        self.connect(self, SIGNAL("doubleClicked(const QModelIndex &)"), self.__pickAndAdvanceMCSDirect)
     def prepareToClose(self):
-        self.disconnect(self, SIGNAL("clicked(const QModelIndex &)"), self.__pickMCSDirect)
-        self.disconnect(self, SIGNAL("doubleClicked(const QModelIndex &)"), self.__pickAndAdvanceMCSDirect)
+        self.disconnect(self, SIGNAL("clicked(const QModelIndex &)"), self.__pickAndAdvanceMCSDirect)
+        # self.disconnect(self, SIGNAL("clicked(const QModelIndex &)"), self.__pickMCSDirect)
+        # self.disconnect(self, SIGNAL("doubleClicked(const QModelIndex &)"), self.__pickAndAdvanceMCSDirect)
         
     def __pickAndAdvanceMCSDirect(self,idx):
+        # print '__pickAndAdvanceMCSDirect idx=',idx
+        # print 'self.vm.simulation=',self.vm.simulation
         self.vm.simulation.setCurrentStepDirectAccess(idx.row())
         self.vm.stepAct.trigger()
     
@@ -58,8 +62,9 @@ class LatticeDataModelTable(QTableView):
         # First, get the row number based on the idx (instance of QModelIndex)
         
         # idx0 = idx.sibling(idx.row(), 0)
-        print MODULENAME,"__pickMCSDirect():  calling self.vm.simulation.setCurrentStepDirectAccess(idx.row())= ",idx.row()
+        # print MODULENAME,"__pickMCSDirect():  calling self.vm.simulation.setCurrentStepDirectAccess(idx.row())= ",idx.row()
         self.vm.simulation.setCurrentStepDirectAccess(idx.row())
+        # self.vm.stepAct.trigger()
         # idx1 = idx.sibling(idx.row(), 1)
         # pluginInfo = [self.model().data(idx0, Qt.DisplayRole).toString(), self.model().data(idx1, Qt.DisplayRole).toString()]
         # self.vm.showLatticeDataModelView(pluginInfo)

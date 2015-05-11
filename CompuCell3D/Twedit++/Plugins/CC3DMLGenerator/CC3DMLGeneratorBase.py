@@ -314,11 +314,11 @@ class CC3DMLGeneratorBase:
             constraintDataDict={}
             
     
-        mElement.addComment("newline")
-        mElement.addComment("Applies elongation constraint to each cell. Users specify target length of major axis -TargetLength (in 3D additionally, target length of minor axis - MinorTargetLength) and a strength of the constraint -LambdaLength. Parameters are specified for each cell type")        
-        mElement.addComment("IMPORTANT: To prevent cell fragmentation for large elongations you need to also use connectivity constraint")
-        mElement.addComment("LengthConstrainLocalFlex allows constrain specification for each cell individually but currently works only in 2D")                                
-        mElement.addComment("Comment out the constrains for cell types which dont need them")                
+        mElement.addComment('newline')
+        mElement.addComment('Applies elongation constraint to each cell. Users specify target length of major axis -TargetLength (in 3D additionally, target length of minor axis - MinorTargetLength) and a strength of the constraint -LambdaLength. Parameters are specified for each cell type')
+        mElement.addComment('IMPORTANT: To prevent cell fragmentation for large elongations you need to also use connectivity constraint')
+        mElement.addComment('LengthConstraint plugin with no body: <Plugin Name="LengthConstraint"/> permits constraint specification for individual cells')
+        mElement.addComment("Comment out the constrains for cell types which don't need them")
         
 
                 
@@ -341,24 +341,21 @@ class CC3DMLGeneratorBase:
                 dataList=constraintDataDict[cellTypeData[id1][0]]
             except LookupError,e:                    
                 dataList=[25,5.0,2.0]
-                # continue               
+                # continue
 
-            targetLength=dataList[0]
-            minorTargetLength=dataList[1]
-            lambdaVal=dataList[2]    
-                
+            try:
+                targetLength=dataList[0]
+                minorTargetLength=dataList[1]
+                lambdaVal=dataList[2]
+            except LookupError:
+                pass
                 
             attr={"CellType":cellTypeData[id1][0],"TargetLength":targetLength,"LambdaLength":lambdaVal} 
             if sim3DFlag:
                 attr["MinorTargetLength"]=minorTargetLength
             mElement.ElementCC3D("LengthEnergyParameters",attr)
             
-        
-        
-        
-        
 
-        
     @GenerateDecorator('Plugin',['Name','LengthConstraintLocalFlex'])        
     def generateLengthConstraintLocalFlexPlugin(self,*args,**kwds):
         cellTypeData=self.cellTypeData
@@ -495,7 +492,7 @@ class CC3DMLGeneratorBase:
         gpd=self.gpd      
                     
         mElement.addComment("Connectivity constraint applied to each cell. Energy penalty specifies how strong the constraint is. Penalty is specified globally for each cell ")        
-        mElement.addComment("This constraint works in 2D and on square lattice only!")
+        mElement.addComment("This constraint works in 2D and on square lattice only! It also requires that the <NeighborOrder> in the Potts section is 1 or 2!")
         mElement.addComment("For more flexible version of this plugin use ConnectivityLocalFlex where constraint penalty is specified for each cell individually using Python scripting using the following syntax")
         mElement.addComment("self.connectivityLocalFlexPlugin.setConnectivityStrength(cell,10000000)" )
         

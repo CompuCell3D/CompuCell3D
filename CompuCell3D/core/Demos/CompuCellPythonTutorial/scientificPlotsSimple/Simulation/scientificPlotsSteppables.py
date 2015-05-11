@@ -10,12 +10,16 @@ class ExtraPlotSteppable(SteppableBasePy):
 
     def start(self):
     
-        self.pW=CompuCellSetup.addNewPlotWindow(_title='Average Volume And Surface',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Variables')
+        self.pW=self.addNewPlotWindow(_title='Average Volume And Surface',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Variables', _xScaleType='linear',_yScaleType='linear')        
         self.pW.addPlot('MVol',_style='Dots',_color='red',_size=5)
         self.pW.addPlot('MSur',_style='Steps',_size=1)
-        self.pW.setYAxisLogScale()        
         
     def step(self,mcs):
+                
+        secretor=self.getFieldSecretor("FIELD_NAME_1") 
+        for cell in self.cellList:
+            if cell.type==2:
+                secretor.secreteInsideCell(cell,300)
                 
         meanSurface=0.0
         meanVolume=0.0
@@ -35,8 +39,6 @@ class ExtraPlotSteppable(SteppableBasePy):
             if mcs>=200:
                 print 'Adding meanVolume=',meanVolume
                 print 'plotData=',self.pW.plotData['MVol']
-            
-        self.pW.showAllPlots()
                 
         #Saving plots as PNG's
         if mcs<50:            
@@ -50,9 +52,9 @@ class ExtraMultiPlotSteppable(SteppableBasePy):
 
     def start(self):
         
-        self.pWVol=CompuCellSetup.addNewPlotWindow(_title='Average Volume',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Average Volume')        
+        self.pWVol=self.addNewPlotWindow(_title='Average Volume',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Average Volume')        
         self.pWVol.addPlot(_plotName='MVol',_style='Dots',_color='red',_size=5)        
-        self.pWSur=CompuCellSetup.addNewPlotWindow(_title='Average Surface',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Average Surface')                
+        self.pWSur=self.addNewPlotWindow(_title='Average Surface',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Average Surface')                
         self.pWSur.addPlot(_plotName='MSur')
         
     def step(self,mcs):
@@ -71,5 +73,4 @@ class ExtraMultiPlotSteppable(SteppableBasePy):
         self.pWSur.addDataPoint("MSur",mcs,meanSurface)
         print "meanVolume=",meanVolume,"meanSurface=",meanSurface
                 
-        self.pWVol.showAllPlots()
-        self.pWSur.showAllPlots()
+

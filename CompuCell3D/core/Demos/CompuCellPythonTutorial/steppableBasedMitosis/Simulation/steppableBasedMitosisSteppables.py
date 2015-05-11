@@ -41,13 +41,11 @@ class MitosisSteppable(MitosisSteppableBase):
             # self.divideCellAlongMinorAxis(cell)                               # this is a valid option
 
     def updateAttributes(self):
-        parentCell=self.mitosisSteppable.parentCell
-        childCell=self.mitosisSteppable.childCell
-        
-        childCell.targetVolume=parentCell.targetVolume
-        childCell.lambdaVolume=parentCell.lambdaVolume
-        if parentCell.type==self.CONDENSING:
-            childCell.type=self.NONCONDENSING
+        self.parentCell.targetVolume /= 2.0 # reducing parent target volume                 
+        self.cloneParent2Child()            
+
+        if self.parentCell.type==self.CONDENSING:
+            self.childCell.type=self.NONCONDENSING
         else:
-            childCell.type=self.CONDENSING
+            self.childCell.type=self.CONDENSING
         

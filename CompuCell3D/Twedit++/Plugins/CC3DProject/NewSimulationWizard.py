@@ -38,13 +38,13 @@ class NewSimulationWizard(QWizard,ui_newsimulationwizard.Ui_NewSimulationWizard)
         self.chemotaxisData={}
         
         #we are not really using plot table for Python visualization fields 
-        self.plotTable.setHidden(True)
-        self.clearPlotTablePB.setHidden(True)
-        self.label_14.setHidden(True)
-        self.plotLE.setHidden(True)
-        self.label_15.setHidden(True)
-        self.plotTypeCB.setHidden(True)
-        self.plotAddPB.setHidden(True)
+        # self.plotTable.setHidden(True)
+        # self.clearPlotTablePB.setHidden(True)
+        # self.label_14.setHidden(True)
+        # self.plotLE.setHidden(True)
+        # self.label_15.setHidden(True)
+        # self.plotTypeCB.setHidden(True)
+        # self.plotAddPB.setHidden(True)
         
         if sys.platform.startswith('win'):
             self.setWizardStyle(QWizard.ClassicStyle)
@@ -584,53 +584,53 @@ class NewSimulationWizard(QWizard,ui_newsimulationwizard.Ui_NewSimulationWizard)
         for i in range (rows-1,-1,-1):
             self.cmcTable.removeRow(i)
 
-    @pyqtSignature("") # signature of the signal emited by the button
-    def on_plotAddPB_clicked(self):
+    # @pyqtSignature("") # signature of the signal emited by the button
+    # def on_plotAddPB_clicked(self):
         
-        plotName=str(self.plotLE.text())
-        plotName=string.rstrip(plotName)
+        # plotName=str(self.plotLE.text())
+        # plotName=string.rstrip(plotName)
         
-        plotType=str(self.plotTypeCB.currentText())
-        plotType=string.rstrip(plotType)
+        # plotType=str(self.plotTypeCB.currentText())
+        # plotType=string.rstrip(plotType)
 
-        if plotName =="":
-            return
+        # if plotName =="":
+            # return
         
-        # check if plot with this name already exist               
-        rows=self.plotTable.rowCount()
+        # # check if plot with this name already exist               
+        # rows=self.plotTable.rowCount()
         
-        plotAlreadyExists=False
-        for rowId in range(rows):
-            name=str(self.plotTable.item(rowId,0).text())
-            name=string.rstrip(name)
-            if name==plotName:
-                plotAlreadyExists=True
-                break
+        # plotAlreadyExists=False
+        # for rowId in range(rows):
+            # name=str(self.plotTable.item(rowId,0).text())
+            # name=string.rstrip(name)
+            # if name==plotName:
+                # plotAlreadyExists=True
+                # break
         
-        if plotAlreadyExists:
-            QMessageBox.warning(self,"Plot name already exists","Plot name already exist. Please choose different name",QMessageBox.Ok)
-            return
+        # if plotAlreadyExists:
+            # QMessageBox.warning(self,"Plot name already exists","Plot name already exist. Please choose different name",QMessageBox.Ok)
+            # return
         
         
             
-        self.plotTable.insertRow(rows)        
-        plotNameItem=QTableWidgetItem(plotName)
-        self.plotTable.setItem (rows,0,  plotNameItem)
+        # self.plotTable.insertRow(rows)        
+        # plotNameItem=QTableWidgetItem(plotName)
+        # self.plotTable.setItem (rows,0,  plotNameItem)
         
-        plotTypeItem=QTableWidgetItem(plotType)
-        self.plotTable.setItem (rows,1,  plotTypeItem)
+        # plotTypeItem=QTableWidgetItem(plotType)
+        # self.plotTable.setItem (rows,1,  plotTypeItem)
         
             
         
-        # reset cell type entry line
-        self.plotLE.setText("")
-        return 
+        # # reset cell type entry line
+        # self.plotLE.setText("")
+        # return 
 
-    @pyqtSignature("") # signature of the signal emited by the button
-    def on_clearPlotTablePB_clicked(self):
-        rows=self.plotTable.rowCount()
-        for i in range (rows-1,-1,-1):
-            self.plotTable.removeRow(i)
+    # @pyqtSignature("") # signature of the signal emited by the button
+    # def on_clearPlotTablePB_clicked(self):
+        # rows=self.plotTable.rowCount()
+        # for i in range (rows-1,-1,-1):
+            # self.plotTable.removeRow(i)
 
             
     @pyqtSignature("") # signature of the signal emited by the button        
@@ -749,10 +749,10 @@ class NewSimulationWizard(QWizard,ui_newsimulationwizard.Ui_NewSimulationWizard)
         self.cmcTable.horizontalHeader().setStretchLastSection(True)
         
         # plotTypeTable
-        baseSize=self.plotTable.baseSize()
-        self.plotTable.setColumnWidth (0,baseSize.width()/2)
-        self.plotTable.setColumnWidth (1,baseSize.width()/2)
-        self.plotTable.horizontalHeader().setStretchLastSection(True)
+        # baseSize=self.plotTable.baseSize()
+        # self.plotTable.setColumnWidth (0,baseSize.width()/2)
+        # self.plotTable.setColumnWidth (1,baseSize.width()/2)
+        # self.plotTable.horizontalHeader().setStretchLastSection(True)
 
         
         # self.cellTypeTable.insertRow(0)
@@ -1048,13 +1048,13 @@ class NewSimulationWizard(QWizard,ui_newsimulationwizard.Ui_NewSimulationWizard)
             cmcTable.append(cadherin)
         
         plotTypeTable=[]
-        for row in range(self.plotTable.rowCount()):
-            plotName=str(self.plotTable.item(row,0).text())
-            plotName=string.rstrip(plotName)
+        # for row in range(self.plotTable.rowCount()):
+            # plotName=str(self.plotTable.item(row,0).text())
+            # plotName=string.rstrip(plotName)
             
-            plotType=str(self.plotTable.item(row,1).text())
-            plotType=string.rstrip(plotType)
-            plotTypeTable.append([plotName,plotType])
+            # plotType=str(self.plotTable.item(row,1).text())
+            # plotType=string.rstrip(plotType)
+            # plotTypeTable.append([plotName,plotType])
             
         self.pdeFieldData={}
         for row in range(self.fieldTable.rowCount()):
@@ -1155,10 +1155,10 @@ class NewSimulationWizard(QWizard,ui_newsimulationwizard.Ui_NewSimulationWizard)
 
             pythonGenerator.setPlotTypeTable(plotTypeTable)
             
-            if self.dictCB.isChecked():
-                pythonGenerator.attachDictionary=True
-            if self.listCB.isChecked():
-                pythonGenerator.attachList=True
+            # if self.dictCB.isChecked():
+                # pythonGenerator.attachDictionary=True
+            # if self.listCB.isChecked():
+                # pythonGenerator.attachList=True
                 
             # self.generatePythonConfigureSim(pythonGenerator)    
             

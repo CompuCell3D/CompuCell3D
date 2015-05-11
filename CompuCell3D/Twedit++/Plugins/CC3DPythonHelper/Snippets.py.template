@@ -194,7 +194,7 @@ cell.lambdaVecY=0.0 # force component pointing along Z axis
 
 ---------- #@Submenu@ Length Constraint By Cell Id
 # Make sure LengthConstraintLocalFlex plugin is loaded
-self.lengthConstraintFlexPlugin.setLengthConstraintData(cell,20,20) # cell , lambdaLength, targetLength
+self.lengthConstraintLocalFlexPlugin.setLengthConstraintData(cell,20,20) # cell , lambdaLength, targetLength
 
 ---------- #@Submenu@ Connectivity Constraint By Cell Id
 # Make sure ConnectivityLocalFlex plugin is loaded
@@ -211,14 +211,19 @@ cell=self.attemptFetchingCellById(CELL_ID)
 ---------- #@Submenu@ Delete Cell
 self.deleteCell(cell)  
 
----------- #@Submenu@ Create Cell
+---------- #@Submenu@ Create Cell 
+# size of cell will be 3x3x1
+self.cellField[10:12,10:12,0] = self.newCell(self.TYPENAME) 
+
+---------- #@Submenu@ Create Cell (detailed)
 x=X_POSITION
 y=Y_POSITION
 size=SIZE
 cell=self.newCell(self.TYPENAME)
 self.cellField[x:x+size-1,y:y+size-1,0]=cell # size of cell will be SIZExSIZEx1
 
----------- #@Submenu@ Create Cell (one liner)
+
+---------- #@Submenu@ Create Cell (one-liner  - alt)
 cell=self.createNewCell(self.TYPENAME, [10,10,0] , xSize=5,ySize=5,zSize=1) # args - type, location of seed point, x,y,z dimansions
 
 ---------- #@Submenu@ Create Cell (old style)
@@ -310,7 +315,7 @@ for pixelTrackerData in pixelList:
         
 ---------- #@Submenu@ All Lattice Pixels
 for x,y,z in self.everyPixel():
-   print "x,y,z=",(x,y,z)
+    print "x,y,z=",(x,y,z)
 
 ---------- #@Submenu@ All Clusters
 for compartments in self.clusters:
@@ -324,7 +329,7 @@ for compartments in self.clusters:
 =============== #@Menu@ Chemical Field Manipulation    
 
 ---------- #@Submenu@ Get Field Reference
-field=self.getConcentrationField("NAME OF THE FIELD TO OUTPUT")
+field=self.getConcentrationField('FIELD_NAME')
 
 ---------- #@Submenu@ Get Field Min Value
 minValue=field.min()
@@ -366,17 +371,13 @@ if field:
 ---------- #@Submenu@ Check If Two Cells Are Different
 self.areCellsDifferent(cell1,cell2)
 
----------- #@Submenu@ Add Dictionary To Cells (deprecated)
-# It is not longer necessary to add list attribute to cells. The dictionary is added by default provided your steppables inherit from SteppableBasePy
-pyAttrDictAdder,dictAdder=CompuCellSetup.attachDictionaryToCells(sim)
+
+---------- #@Submenu@ Access/Modify Dictionary Attribute 
+# access/modification of a dictionary attached to cell - make sure to decalare in main script that you will use such attribute
+cell.dict['ATTR_NAME'] = VALUE_OR_OBJECT
 
 
----------- #@Submenu@ Add List To Cells (deprecated)
-# CompuCell3D no longer supports lists as cell attributes. Please consider using dictionary attributes instead. You can always insert Python list as an element of the dictionary.
-# e.g. cellDict['myList']=[]
-
-
----------- #@Submenu@ Access/Modify Dictionary Attribute
+---------- #@Submenu@ Access/Modify Dictionary Attribute (old style)
 # access/modification of a dictionary attached to cell - make sure to decalare in main script that you will use such attribute
 cellDict=self.getDictionaryAttribute(cell)
 cellDict["Double_MCS_ID"]=mcs*2*cell.id
@@ -389,9 +390,6 @@ dict_attrib=CompuCell.getPyAttrib(cell)
 dict_attrib["Double_MCS_ID"]=mcs*2*cell.id
 print "dict attrib for cell.id=",cell.id, "is ",dict_attrib
 
----------- #@Submenu@ Access/Modify List Attribute (deprecated)
-# CompuCell3D no longer supports lists as cell attributes. Please consider using dictionary attributes instead. You can always insert Python list as an element of the dictionary.
-# e.g. cellDict['myList']=[]
 
 ---------- #@Submenu@ Center Of Mass
 # Make sure CenterOfMass plugin is loaded
@@ -643,6 +641,21 @@ secretor.secreteOutsideCellAtBoundary(cell,300)
 secretor=self.getFieldSecretor("FIELDNAME") # you may reuse secretor for many cells. Simply define it outside the loop
 secretor.secreteInsideCellAtCOM(cell,300)
 
+=============== #@Menu@ Extra Fields Automatic Tracking
+
+---------- #@Submenu@  Track Scalar Cell Attribute (__init__)
+self.track_cell_level_scalar_attribute (field_name = 'FIELD_NAME', attribute_name = 'ATTR_NAME')
+
+---------- #@Submenu@  Track Scalar Cell Attribute Custom Function (__init__)
+self.track_cell_level_scalar_attribute (field_name = 'FIELD_NAME', attribute_name = 'ATTR_NAME', function = lambda attr_val: attr_val**3)
+
+---------- #@Submenu@  Track Vector Cell Attribute (__init__)
+self.track_cell_level_vector_attribute (field_name = 'mcs_vec', attribute_name = 'mcs_vec')
+
+---------- #@Submenu@  Track Vector Cell Attribute Custom Function (__init__)
+self.track_cell_level_vector_attribute (field_name = 'FIELD_NAME', attribute_name = 'VEC_NAME', function = lambda vec: [ vec[0]*random() , vec[1]*random() , vec[2]*random() ] )
+
+
 =============== #@Menu@ Extra Fields
 
 ---------- #@Submenu@  Scalar Field Cell Level - Example
@@ -757,10 +770,10 @@ self.pW.addAutoLegend("top")
 self.clearFlag=False
 
 ---------- #@Submenu@ 1. Setup (start fcn) 
-self.pW=self.addNewPlotWindow(_title='DATA_SERIES_1 and DATA_SERIES_2',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Variables')
+self.pW=self.addNewPlotWindow(_title='DATA_SERIES_1 and DATA_SERIES_2',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Variables', _xScaleType='linear',_yScaleType='linear')
 self.pW.addPlot('DATA_SERIES_1',_style='Dots',_color='red',_size=5)
-self.pW.addPlot('DATA_SERIES_1',_style='Steps',_size=1)
-self.pW.setYAxisLogScale()   
+self.pW.addPlot('DATA_SERIES_2',_style='Steps',_size=1)
+
 
 ---------- #@Submenu@ 2. Add Data Points (step fcn)
 self.pW.addDataPoint("DATA_SERIES_1",mcs,mcs*mcs) # arguments are (name of the data series, x, y)
@@ -769,34 +782,38 @@ self.pW.addDataPoint("DATA_SERIES_2",mcs,mcs) # arguments are (name of the data 
 ---------- #@Submenu@ Erase Plot (step fcn)
 self.pW.eraseAllData()
 
----------- #@Submenu@ 3. Refresh Plots (step fcn)
+---------- #@Submenu@ 3. Refresh Plots (unnecessary, deprecated - step fcn )
 self.pW.showAllPlots() 
-
----------- #@Submenu@ Add Histogram Plot (start fcn)
-self.pW=self.addNewPlotWindow(_title='Histogram',_xAxisTitle='TYPE NAME OF X AXIS',_yAxisTitle='TYPE NAME OF Y AXIS')
-self.pW.addHistogramPlot(_plotName='Hist 1',_color='green',_alpha=100)# _alpha is transparency 0 is transparent, 255 is opaque        
-
----------- #@Submenu@ Add Histogram Plot (start fcn)
-self.pW=self.addNewPlotWindow(_title='Histogram',_xAxisTitle='TYPE NAME OF X AXIS',_yAxisTitle='TYPE NAME OF Y AXIS')
-self.pW.addHistogramPlot(_plotName='Hist 1',_color='green',_alpha=100)# _alpha is transparency 0 is transparent, 255 is opaque        
-
----------- #@Submenu@ Generate Histogram Data (step fcn) - Example
-from random import random
-list_of_values=[random() for i in xrange(100)]
-import numpy
-(n1, bins1) = numpy.histogram(list_of_values, bins=20)  # NumPy version (no plot)
-
----------- #@Submenu@ Add Histogram Data To Plot (step fcn) 
-self.pW.addHistPlotData('Hist 1',n1,bins1)
-
----------- #@Submenu@ Refresh Histogram Plots
-self.pW.showAllHistPlots()
 
 ---------- #@Submenu@ Save Plot As A PNG File
 self.pW.savePlotAsPNG(fileName,1000,1000) # here we specify size of the image saved (1000x1000) - default is 400 x 400
 
 ---------- #@Submenu@ Save Plot As Data (text file)
 self.pW.savePlotAsData(fileName) 
+
+=============== #@Menu@ Scientific Plots Histograms
+
+---------- #@Submenu@ Add Histogram Plot (start fcn)
+self.pW=self.addNewPlotWindow(_title='Histogram',_xAxisTitle='TYPE NAME OF X AXIS',_yAxisTitle='TYPE NAME OF Y AXIS', _xScaleType='linear',_yScaleType='linear')
+self.pW.addHistogramPlot(_plotName='Hist 1',_color='green',_alpha=100)# _alpha is transparency 0 is transparent, 255 is opaque        
+
+---------- #@Submenu@ Add Histogram  (step fcn) 
+self.pW.addHistogram(plot_name='Hist 1' , value_array = ARRAY_WITH_VALUES ,  number_of_bins=20)
+
+---------- #@Submenu@ Add Histogram  (step fcn - alternative) 
+# n and bins are generated using the follofing numpy 
+# (n, bins) = numpy.histogram(list_of_values, bins=10)  
+self.pW.addHistPlotData('Hist 1',n,bins)
+
+---------- #@Submenu@ Refresh Histogram Plots (deprecated)
+self.pW.showAllHistPlots()
+
+---------- #@Submenu@ Save  Plot As A PNG File
+self.pW.savePlotAsPNG(fileName,1000,1000) # here we specify size of the image saved (1000x1000) - default is 400 x 400
+
+---------- #@Submenu@ Save Plot As Data (text file)
+self.pW.savePlotAsData(fileName) 
+
 
 =============== #@Menu@ Simulation
 
@@ -822,6 +839,28 @@ self.resizeAndShiftLattice(_newSize=(X,Y,Z), _shiftVec=(VX,VY,VZ))
 self.changeNumberOfWorkNodes(8)
 
 =============== #@Menu@ Mitosis
+
+---------- #@Submenu@ 1. Clone Attributes Parent -> Child
+self.cloneParent2Child()
+
+---------- #@Submenu@ 1. Clone Cluster Attributes Parent -> Child
+self.cloneParentCluster2ChildCluster()
+
+---------- #@Submenu@ 2. Compact updateAttributes
+self.parentCell.targetVolume /= 2.0 # reducing parent target volume
+self.cloneParent2Child()
+
+---------- #@Submenu@ 2. Compact updateAttributes for clusters
+# we first redice target volum of the cluster of parent cell
+compartmentListParent=self.getClusterCells(self.parentCell.clusterId)
+for i in xrange(compartmentListParent.size()):
+    compartmentListParent[i].targetVolume/=2.0
+
+# later we clone attributes from parent cluster to child cluster
+self.cloneParentCluster2ChildCluster()
+
+---------- #@Submenu@ Clone Attributes (Flexible)
+self.cloneAttributes(sourceCell=self.parentCell, targetCell=self.childCell, no_clone_key_dict_list = [ATTRIB_1, ATTRIB_2] )
 
 ---------- #@Submenu@ Child/Parent Random Relative Position
 self.setParentChildPositionFlag(0)       
@@ -937,5 +976,29 @@ for compartmentList in self.clusterList:
 for clusterId in mitosisClusterIdList:
     self.divideClusterOrientationVectorBased(clusterId,1,0,0)             
             
-    
-    
+=============== #@Menu@ Parameter Scan Command Line
+
+---------- #@Submenu@ 1. Run Parameter Scan Using Player (Windows)
+# NOTE: THIS COMMAND IS SUPPOSED TO BE EXECUTED IN COMMAND LINE SHELL, NOT IN PYTHON!
+paramScan.bat -i <cc3d project-file> --guiScan --maxNumberOfRuns=20 [remaining command line options used in compucell3d.bat or runScript.bat]
+
+---------- #@Submenu@ 1. Run Parameter Scan With No GUI (Windows)
+# NOTE: THIS COMMAND IS SUPPOSED TO BE EXECUTED IN COMMAND LINE SHELL, NOT IN PYTHON!
+paramScan.bat -i <cc3d project-file> --maxNumberOfRuns=20 [remaining command line options used in compucell3d.bat or runScript.bat]
+
+---------- #@Submenu@ 2. Run Parameter Scan Using Player (Linux)
+# NOTE: THIS COMMAND IS SUPPOSED TO BE EXECUTED IN COMMAND LINE SHELL, NOT IN PYTHON!
+paramScan.sh -i <cc3d project-file> --guiScan --maxNumberOfRuns=20 [remaining command line options used in compucell3d.sh or runScript.sh]
+
+---------- #@Submenu@ 2. Run Parameter Scan With No GUI (Linux)
+# NOTE: THIS COMMAND IS SUPPOSED TO BE EXECUTED IN COMMAND LINE SHELL, NOT IN PYTHON!
+paramScan.sh -i <cc3d project-file> --maxNumberOfRuns=20 [remaining command line options used in compucell3d.sh or runScript.sh]
+
+---------- #@Submenu@ 3. Run Parameter Scan Using Player (OSX)
+# NOTE: THIS COMMAND IS SUPPOSED TO BE EXECUTED IN COMMAND LINE SHELL, NOT IN PYTHON!
+paramScan.command -i <cc3d project-file> --guiScan --maxNumberOfRuns=20 [remaining command line options used in compucell3d.command or runScript.command]
+
+---------- #@Submenu@ 3. Run Parameter Scan With No GUI (OSX)
+# NOTE: THIS COMMAND IS SUPPOSED TO BE EXECUTED IN COMMAND LINE SHELL, NOT IN PYTHON!
+paramScan.command -i <cc3d project-file> --maxNumberOfRuns=20 [remaining command line options used in compucell3d.command or runScript.command]
+

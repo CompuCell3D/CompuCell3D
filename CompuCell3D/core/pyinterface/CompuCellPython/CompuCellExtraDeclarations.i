@@ -346,6 +346,7 @@ PLUGINACCESSOR(PixelTracker)
 %include <CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTracker.h>
 %template (BoundaryPixelTrackerAccessor) BasicClassAccessor<BoundaryPixelTracker>; //necessary to get BoundaryPixelTracker accessor working
 %template (BoundaryPixelTrackerDataset) std::set<CompuCell3D::BoundaryPixelTrackerData>; //necessary to get basis set functionality working
+%template (IntBoundaryPixelTrackerDataSetMap) std::map<int, std::set<CompuCell3D::BoundaryPixelTrackerData> >; //necessary to get basis set functionality working
 %template (boundaryPixelSetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::BoundaryPixelTrackerData> , CompuCell3D::BoundaryPixelTrackerData >;
 // %template (boundaryPixelSetPyItr) STLPyIterator<std::set<CompuCell3D::BoundaryPixelTrackerData> >;
 PLUGINACCESSOR(BoundaryPixelTracker)

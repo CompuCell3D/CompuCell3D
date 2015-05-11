@@ -11,11 +11,7 @@ import CompuCellSetup
 
 
 sim,simthread = CompuCellSetup.getCoreSimulationObjects()
-            
-# add extra attributes here
-        
-pyAttributeDictionaryAdder,dictAdder=CompuCellSetup.attachDictionaryToCells(sim)
-            
+                        
 CompuCellSetup.initializeSimulationObjects(sim,simthread)
 # Definitions of additional Python-managed fields go here
         

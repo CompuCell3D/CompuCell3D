@@ -1,5 +1,5 @@
- <CompuCell3D>
- <PythonScript>Simulation/PolarizationOrientationExample.py</PythonScript> 
+<CompuCell3D>
+
  <Potts>
    <Dimensions x="100" y="100" z="1"/>
    <Anneal>0</Anneal>

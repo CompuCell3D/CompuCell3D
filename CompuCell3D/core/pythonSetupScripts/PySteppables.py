@@ -33,7 +33,19 @@ class SteppablePy(SimObjectPy):
     def finish(self):pass
 
 
-
+class FieldVisData(object):
+    
+    (CELL_LEVEL_SCALAR_FIELD, CELL_LEVEL_VECTOR_FIELD) = range (0,2)
+    
+    def __init__(self, field, field_type, attribute_name,  function=None):
+        self.field = field
+        self.function = function
+        self.attribute_name = attribute_name        
+        if function is None:
+            self.function = lambda x:x
+        
+        self.field_type = field_type
+        
 
 # class SteppableBasePy(SteppablePy): 
 from SBMLSolverHelper import SBMLSolverHelper
@@ -52,10 +64,18 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         self.cellListByType=CellListByType(self.inventory)
         self.clusterList=ClusterList(self.inventory) 
         self.clusters=Clusters(self.inventory)
+        self.mcs = -1
+        
+        self.tracking_field_vis_dict = {} # this dicttionary stores fields and visualzation data for automatic tracking of attribute visualization
+        self.plot_dict = {} # {plot_name:plotWindow  - pW object}
         
         self.boundaryStrategy=self.simulator.getBoundaryStrategy()
         
         self.__modulesToUpdateDict={} #keeps modules to update   
+        # used by clone attributes functions 
+        self.clonableAttributeNames = \
+        ['lambdaVolume','targetVolume','targetSurface','lambdaSurface','targetClusterSurface','lambdaClusterSurface',\
+        'type','lambdaVecX','lambdaVecY','lambdaVecZ','fluctAmpl']        
         
         import CompuCellSetup
         global pyAttributeAdder
@@ -223,10 +243,10 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             self.clusterSurfaceTrackerPlugin=CompuCell.getClusterSurfaceTrackerPlugin()
 
         #polarization23Plugin 
-        self.polarization23Plugin=None
+        self.polarization23Plugin = None
         if self.simulator.pluginManager.isLoaded("Polarization23"):
             import CompuCell            
-            self.polarization23Plugin=CompuCell.getPolarization23Plugin()
+            self.polarization23Plugin = CompuCell.getPolarization23Plugin()
 
         #cellTypeMonitorPlugin 
         self.cellTypeMonitorPlugin=None
@@ -246,6 +266,65 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             import CompuCell            
             self.cleaverMeshDumper=CompuCell.getCleaverMeshDumper()  
             
+    def addNewPlotWindow(self, _title,_xAxisTitle ,_yAxisTitle, _xScaleType='linear',_yScaleType='linear'):
+    
+        import CompuCellSetup
+        if _title in self.plot_dict.keys():
+            raise RuntimeError( 'PLOT WINDOW: '+_title+' already exists. Please choose a different name')
+            
+        pW = CompuCellSetup.addNewPlotWindow(_title, _xAxisTitle, _yAxisTitle, _xScaleType,_yScaleType)
+        self.plot_dict [_title] = pW
+                
+        return pW
+    
+    def update_all_plots_windows(self):
+        #tracking visualization part
+        
+        for plot_window_name , plot_window in self.plot_dict.iteritems():            
+            plot_window.showAllPlots()          
+            plot_window.showAllHistPlots()            
+            plot_window.showAllBarCurvePlots()
+    
+    def track_cell_level_scalar_attribute(self, field_name , attribute_name, function=None):
+        try:
+            
+            self.tracking_field_vis_dict[attribute_name].function = function
+            
+        except KeyError,e:                
+            field_vis_data = FieldVisData( field = self.createScalarFieldCellLevelPy(field_name) , field_type = FieldVisData.CELL_LEVEL_SCALAR_FIELD ,  attribute_name = attribute_name, function=function )
+            
+            self.tracking_field_vis_dict[field_name] = field_vis_data
+
+    def track_cell_level_vector_attribute(self, field_name , attribute_name, function=None):
+        try:
+            
+            self.tracking_field_vis_dict[attribute_name].function = function
+            
+        except KeyError,e:                
+            field_vis_data = FieldVisData( field = self.createVectorFieldCellLevelPy(field_name) , field_type = FieldVisData.CELL_LEVEL_VECTOR_FIELD ,  attribute_name = attribute_name, function=function )
+            
+            self.tracking_field_vis_dict[field_name] = field_vis_data
+
+
+    def update_tracking_fields(self):
+        #tracking visualization part
+        for field_name , field_vis_data in self.tracking_field_vis_dict.iteritems():
+            
+            field_vis_data.field.clear()
+            try:
+                for cell in self.cellList:
+                    try:
+                        attrib = cell.dict[field_vis_data.attribute_name]
+                    except KeyError:
+                        continue
+                    field_vis_data.field[cell] = field_vis_data.function(attrib)                
+            except:
+                raise RuntimeError('Automatic Attribute Tracking :wrong type of cell attribute, missing attribute or wrong tracking function is used by track_cell_level functions')            
+                
+    def perform_automatic_tasks(self):
+        self.update_tracking_fields()
+        self.update_all_plots_windows()
+    
     def areCellsDifferent(self,_cell1,_cell2):
         import CompuCell
         return areCellsDifferent(_cell1,_cell2)
@@ -357,20 +436,18 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             self.clusterSurfaceTrackerPlugin.updateClusterSurface(newClusterId)        
           
     def getCellNeighbors(self,_cell):
-        if self.neighborTrackerPlugin:
-            return CellNeighborListAuto(self.neighborTrackerPlugin,_cell)
+        if not self.neighborTrackerPlugin:
+            raise AttributeError('Could not find NeighborTrackerPlugin')
         
-        return None
+        return CellNeighborListAuto(self.neighborTrackerPlugin,_cell)
 
     def getCellNeighborDataList(self,_cell):
-        try:
-            for neighborSurfaceData  in self.getCellNeighbors(_cell):
-                yield neighborSurfaceData.neighborAddress,neighborSurfaceData.commonSurfaceArea
-        except:
-            raise AttributeError('Could not find NeighborTracker Plugin')
-
-            
-
+        if not self.neighborTrackerPlugin:
+            raise AttributeError('Could not find NeighborTrackerPlugin')
+        
+        return CellNeighborListFlex(self.neighborTrackerPlugin,_cell)
+    
+        # return self.getCellNeighbors(_cell)
 
 
     def getFocalPointPlasticityDataList(self,_cell):
@@ -392,9 +469,9 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         return None    
 
     
-    def getCellBoundaryPixelList(self,_cell):
+    def getCellBoundaryPixelList(self,_cell,_neighborOrder=-1):
         if self.boundaryPixelTrackerPlugin:
-            return CellBoundaryPixelList(self.boundaryPixelTrackerPlugin,_cell)
+            return CellBoundaryPixelList(self.boundaryPixelTrackerPlugin,_cell,_neighborOrder)
             
         return None    
         
@@ -820,11 +897,10 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         import CompuCell
         return CompuCell.getConcentrationField(self.simulator,_fieldName)
         
-    def addNewPlotWindow(self, _title='',_xAxisTitle='',_yAxisTitle='',_xScaleType='linear',_yScaleType='linear'):
-        import CompuCellSetup
-        return CompuCellSetup.addNewPlotWindow(_title,_xAxisTitle,_yAxisTitle,_xScaleType,_yScaleType)
-    
-    
+    # def addNewPlotWindow(self, _title='',_xAxisTitle='',_yAxisTitle='',_xScaleType='linear',_yScaleType='linear'):
+        # import CompuCellSetup
+        # return CompuCellSetup.addNewPlotWindow(_title,_xAxisTitle,_yAxisTitle,_xScaleType,_yScaleType)
+          
 
     def getXMLElement(self,*args):
         element=None
@@ -993,6 +1069,97 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             
         return tmpElement,None                
             
+    def cloneAttributes(self,sourceCell, targetCell, no_clone_key_dict_list = [] ):
+        # clone "C++" attributes
+        from copy import deepcopy
+        for attrName in self.clonableAttributeNames:
+            setattr(targetCell , attrName, getattr(sourceCell,attrName) )
+            
+        # clone dictionary
+        for key, val in sourceCell.dict.iteritems():
+            
+            if key in no_clone_key_dict_list:
+                continue
+                
+            if key == 'SBMLSolver':
+                self.copySBMLs(_fromCell = sourceCell,_toCell = targetCell)
+            
+            if key == 'Bionetwork':
+                import bionetAPI
+                bionetAPI.copyBionetworkFromParent( sourceCell, targetCell )
+                
+            # copying the rest of dictionary entries    
+            targetCell.dict [key] = deepcopy(sourceCell.dict[key])
+            
+        # now copy data associated with plugins
+        # AdhesionFlex
+        if self.adhesionFlexPlugin:
+            sourceAdhesionVector = self.adhesionFlexPlugin.getAdhesionMoleculeDensityVector( sourceCell )
+            self.adhesionFlexPlugin.assignNewAdhesionMoleculeDensityVector( targetCell , sourceAdhesionVector )
+            
+        # PolarizationVector
+        if self.polarizationVectorPlugin:
+            sourcePolarizationVector = self.polarizationVectorPlugin.getPolarizationVector(sourceCell)
+            self.polarizationVectorPlugin.setPolarizationVector(targetCell, sourcePolarizationVector[0] , sourcePolarizationVector[1], sourcePolarizationVector[2] )
+            
+        #polarization23Plugin     
+        if self.polarization23Plugin:
+            polVec = self.polarization23Plugin.getPolarizationVector(sourceCell)
+            self.polarization23Plugin.setPolarizationVector(targetCell,polVec)
+            polMark = self.polarization23Plugin.getPolarizationMarkers(sourceCell)
+            self.polarization23Plugin.setPolarizationMarkers(targetCell , polMark[0], polMark[1] )
+            l = self.polarization23Plugin.getLambdaPolarization(sourceCell)
+            self.polarization23Plugin.setLambdaPolarization(targetCell,l)
+            
+        #CellOrientationPlugin 
+        if self.cellOrientationPlugin:
+            l = self.cellOrientationPlugin.getLambdaCellOrientation(sourceCell)
+            self.cellOrientationPlugin.setLambdaCellOrientation(targetCell,l)
+            
+        #ContactOrientationPlugin 
+        if self.contactOrientationPlugin:            
+            oVec = self.contactOrientationPlugin.getOriantationVector(sourceCell)
+            self.contactOrientationPlugin.setOriantationVector(targetCell, oVec.x, oVec.y, oVec.z)
+            self.contactOrientationPlugin.setAlpha(targetCell, self.contactOrientationPlugin.getAlpha(sourceCell) )
+            
+        #ContactLocalProductPlugin 
+        if self.contactLocalProductPlugin:
+            cVec = self.contactLocalProductPlugin.getCadherinConcentrationVec(sourceCell)
+            self.contactLocalProductPlugin.setCadherinConcentrationVec(targetCell , cVec)
+
+        #LengthConstraintPlugin    
+        if self.lengthConstraintPlugin:
+            l = self.lengthConstraintPlugin.getLambdaLength(sourceCell)        
+            tl = self.lengthConstraintPlugin.getTargetLength(sourceCell)        
+            mtl = self.lengthConstraintPlugin.getMinorTargetLength(sourceCell)    
+            self.lengthConstraintPlugin.setLengthConstraintData(targetCell, l, tl, mtl)
+            
+        #ConnectivityGlobalPlugin    
+        if self.connectivityGlobalPlugin:            
+            cs = self.connectivityGlobalPlugin.getConnectivityStrength(sourceCell)
+            self.connectivityGlobalPlugin.setConnectivityStrength(targetCell , cs)
+
+        #ConnectivityLocalFlexPlugin    
+        if self.connectivityLocalFlexPlugin:
+            cs = self.connectivityLocalFlexPlugin.getConnectivityStrength( sourceCell )
+            self.connectivityLocalFlexPlugin.setConnectivityStrength( targetCell, cs )
+            
+        #Chemotaxis    
+        if self.chemotaxisPlugin:
+            fieldNames  = self.chemotaxisPlugin.getFieldNamesWithChemotaxisData( sourceCell )
+            
+            for fieldName in fieldNames:                
+                source_chd=chemotaxisPlugin.getChemotaxisData(sourceCell,fieldName)
+                target_chd=chemotaxisPlugin.addChemotaxisData(targetCell,fieldName)
+                
+                target_chd.setLambda( source_chd.getLambda() )
+                target_chd.saturationCoef = source_chd.saturationCoef
+                target_chd.setChemotaxisFormulaByName(source_chd.formulaName)
+                target_chd.assignChemotactTowardsVectorTypes(source_chd.getChemotactTowardsVectorTypes())
+                
+        #FocalPointPLasticityPlugin - this plugin has to be handled manually - there is no good way to figure out which links shuold be copied from parent to daughter cell    
+                
+            
 
 class RunBeforeMCSSteppableBasePy(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
@@ -1127,14 +1294,28 @@ class SteppableRegistry(SteppablePy):
     def start(self):
         for steppable in self.runBeforeMCSSteppableList:
             steppable.start()
+            if hasattr(steppable, 'perform_automatic_tasks'):
+                steppable.perform_automatic_tasks()
 
         for steppable in self.steppableList:
             steppable.start()
+            if hasattr(steppable, 'perform_automatic_tasks'):
+                steppable.perform_automatic_tasks()
+
 
     def step(self,_mcs):
-        for steppable in self.steppableList:
+        for steppable in self.steppableList:            
             if not _mcs % steppable.frequency: #this executes given steppable every "frequency" Monte Carlo Steps                
+            
+                try:
+                    steppable.mcs = _mcs
+                except AttributeError, e:
+                    pass    
+                    
                 steppable.step(_mcs)
+                if hasattr(steppable, 'perform_automatic_tasks'):
+                    steppable.perform_automatic_tasks()
+                
 
     def stepRunBeforeMCSSteppables(self,_mcs):
         for steppable in self.runBeforeMCSSteppableList:
@@ -1400,6 +1581,7 @@ class ClusterCellListIterator:
     def __iter__(self):
             return self 
             
+# legacy code  - do not modify              
 class CellNeighborList:
     def __init__(self,_neighborTrackerAccessor,_cell):
         self.neighborTrackerAccessor = _neighborTrackerAccessor
@@ -1427,8 +1609,7 @@ class CellNeighborIterator:
             raise StopIteration
     def __iter__(self):
             return self
-
-
+            
 class CellNeighborListAuto:
     def __init__(self,_neighborPlugin,_cell):
         self.neighborPlugin=_neighborPlugin
@@ -1463,16 +1644,92 @@ class CellNeighborIteratorAuto:
     def __iter__(self):
             return self
 
+            
+            
+# end of legacy code  - do not modify              
+
+class CellNeighborListFlex:
+    def __init__(self,_neighborPlugin,_cell):
+        self.neighborPlugin=_neighborPlugin
+        self.neighborTrackerAccessor = self.neighborPlugin.getNeighborTrackerAccessorPtr()
+        self.cell=_cell
+        
+    def __len__(self):
+        neighborTracker = self.neighborTrackerAccessor.get(self.cell.extraAttribPtr)
+        return neighborTracker.cellNeighbors.size()
+        
+    def __getitem__(self, idx):
+        if idx > self.__len__()-1 : raise IndexError ("Out of bounds index: CellNeighborListAuto index = %s is out of bounds"%str(idx))         
+        for counter, data in enumerate(self.__iter__()):
+            if idx==counter : return data        
+            
+    def commonSurfaceAreaWithCellTypes(self,cell_type_list):
+        area=0
+        for neighbor,commonSurfaceArea in self.__iter__():
+            cell_type = 0 if not neighbor else neighbor.type
+            if cell_type in cell_type_list:
+                area += commonSurfaceArea
+        return area
+        
+    def commonSurfaceAreaByType(self):        
+        from collections import defaultdict
+        area_dict = defaultdict(int)
+        for neighbor,commonSurfaceArea in self.__iter__():
+            cell_type = 0 if not neighbor else neighbor.type
+            area_dict[cell_type] += commonSurfaceArea            
+        return area_dict
+
+
+    def neighborCountByType(self):        
+        from collections import defaultdict
+        neighbor_counter_dict = defaultdict(int)
+        
+        for neighbor,commonSurfaceArea in self.__iter__():
+            cell_type = 0 if not neighbor else neighbor.type
+            neighbor_counter_dict[cell_type] += 1            
+        return neighbor_counter_dict
+
+        
+    def __iter__(self):
+        return CellNeighborIteratorFlex(self)
+
+
+
+class CellNeighborIteratorFlex:
+    def __init__(self, _cellNeighborList):
+        import CompuCell
+        self.neighborTrackerAccessor = _cellNeighborList.neighborTrackerAccessor
+        self.cell=_cellNeighborList.cell
+        self.nsdItr=CompuCell.nsdSetPyItr()
+        self.nTracker=self.neighborTrackerAccessor.get(self.cell.extraAttribPtr)
+        self.nsdItr.initialize(self.nTracker.cellNeighbors)
+        self.nsdItr.setToBegin()
+    
+    def next(self):
+        if not self.nsdItr.isEnd():
+            self.neighborCell = self.nsdItr.getCurrentRef().neighborAddress
+            self.currentNsdItr = self.nsdItr.current
+            self.currentNeighborSurfaceData=self.nsdItr.getCurrentRef()
+            self.nsdItr.next()
+            # return self.currentNeighborSurfaceData.neighborAddress,self.currentNeighborSurfaceData.commonSurfaceArea
+            return self.currentNeighborSurfaceData.neighborAddress,self.currentNeighborSurfaceData.commonSurfaceArea
+        else:
+            raise StopIteration
+
+    def __iter__(self):
+            return self
+
 
 class CellBoundaryPixelList:
 
-    def __init__(self,_boundaryPixelTrackerPlugin,_cell):
+    def __init__(self,_boundaryPixelTrackerPlugin,_cell,_neighborOrder=-1):
+        self.neighborOrder = _neighborOrder 
         self.boundaryPixelTrackerPlugin=_boundaryPixelTrackerPlugin
         self.boundaryPixelTrackerAccessor=self.boundaryPixelTrackerPlugin.getBoundaryPixelTrackerAccessorPtr()
         self.cell=_cell
-
+        
     def __iter__(self):
-        return CellBoundaryPixelIterator(self)
+        return CellBoundaryPixelIterator(self,self.neighborOrder)
 
     def numberOfPixels(self):
         return self.boundaryPixelTrackerAccessor.get(self.cell.extraAttribPtr).pixelSet.size()
@@ -1480,14 +1737,23 @@ class CellBoundaryPixelList:
 
 
 class CellBoundaryPixelIterator:
-    def __init__(self, _cellPixelList):
+    def __init__(self, _cellPixelList, _neighborOrder=-1):
         import CompuCell
         self.boundaryPixelTrackerAccessor = _cellPixelList.boundaryPixelTrackerAccessor
         self.boundaryPixelTrackerPlugin=_cellPixelList.boundaryPixelTrackerPlugin
         self.cell=_cellPixelList.cell
         self.boundaryPixelItr=CompuCell.boundaryPixelSetPyItr()
         self.boundaryPixelTracker=self.boundaryPixelTrackerAccessor.get(self.cell.extraAttribPtr)
-        self.boundaryPixelItr.initialize(self.boundaryPixelTracker.pixelSet)
+        print '_neighborOrder=',_neighborOrder
+        if _neighborOrder <=0:
+            self.pixelSet = self.boundaryPixelTracker.pixelSet
+        else:
+            self.pixelSet = self.boundaryPixelTrackerPlugin.getPixelSetForNeighborOrderPtr(self.cell , _neighborOrder)    
+            if not self.pixelSet:
+                raise LookupError ('LookupError: CellBoundaryPixelIterator could not locate pixel set for neighbor order = %s. Make sure your BoundaryPixelTracker plugin definition requests tracking of neighbor order =%s boundary'%(_neighborOrder,_neighborOrder))
+        
+        # self.boundaryPixelItr.initialize(self.boundaryPixelTracker.pixelSet)
+        self.boundaryPixelItr.initialize(self.pixelSet)
         self.boundaryPixelItr.setToBegin()
 
 
@@ -1622,6 +1888,16 @@ class FocalPointPlasticityDataList:
         self.focalPointPlasticityPlugin=_focalPointPlasticityPlugin
         self.focalPointPlasticityTrackerAccessor=self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerAccessorPtr()
         self.cell=_cell
+        
+    def __len__(self):    
+        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)         
+        return self.focalPointPlasticityTracker.focalPointPlasticityNeighbors.size()
+        
+    def __getitem__(self, idx):
+        if idx > self.__len__()-1 : raise IndexError ("Out of bounds index: FocalPointPlasticityDataList index = %s is out of bounds"%str(idx))         
+        for counter, data in enumerate(self.__iter__()):
+            if idx==counter : return data
+            
     def __iter__(self):
         return FocalPointPlasticityDataIterator(self)
 
@@ -1655,6 +1931,16 @@ class InternalFocalPointPlasticityDataList:
         self.focalPointPlasticityPlugin=_focalPointPlasticityPlugin
         self.focalPointPlasticityTrackerAccessor=self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerAccessorPtr()
         self.cell=_cell
+        
+    def __getitem__(self, idx):
+        if idx > self.__len__()-1 : raise IndexError ("Out of bounds index: InternalFocalPointPlasticityDataList index = %s is out of bounds"%str(idx))         
+        for counter, data in enumerate(self.__iter__()):
+            if idx==counter : return data        
+            
+    def __len__(self):    
+        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)         
+        return self.focalPointPlasticityTracker.internalFocalPointPlasticityNeighbors.size()
+        
     def __iter__(self):
         return InternalFocalPointPlasticityDataIterator(self)
 
@@ -1688,6 +1974,16 @@ class AnchorFocalPointPlasticityDataList:
         self.focalPointPlasticityPlugin=_focalPointPlasticityPlugin
         self.focalPointPlasticityTrackerAccessor=self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerAccessorPtr()
         self.cell=_cell
+        
+    def __getitem__(self, idx):
+        if idx > self.__len__()-1 : raise IndexError ("Out of bounds index: AnchorFocalPointPlasticityDataList index = %s is out of bounds"%str(idx))         
+        for counter, data in enumerate(self.__iter__()):
+            if idx==counter : return data        
+            
+    def __len__(self):    
+        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)         
+        return self.focalPointPlasticityTracker.anchors.size()        
+        
     def __iter__(self):
         return AnchorFocalPointPlasticityDataIterator(self)
 

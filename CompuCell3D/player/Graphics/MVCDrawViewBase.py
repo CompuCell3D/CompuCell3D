@@ -53,7 +53,10 @@ class MVCDrawViewBase:
         (self.minCon, self.maxCon) = (0, 0)
 #        print MODULENAME,"graphicsFrameWidget=",graphicsFrameWidget
 #        print MODULENAME,"parent=",parent
-        
+
+        self.plane = 'XY'
+        self.planePos = 0
+
         # # # self.drawModel = _drawModel
         self.parentWidget = parent
 #        print MODULENAME,'  __init__: parentWidget=',self.parentWidget
@@ -259,7 +262,7 @@ class MVCDrawViewBase:
         
     def drawField(self, _bsd, fieldType):   
         
-        
+        print 'drawField ', fieldType
         resetCamera = False # we reset camera only for visualizations for which camera settings are not in the dictionary and users have not requested custom cameras
         
         if self.drawingFcnHasChanged:            
@@ -605,41 +608,41 @@ class MVCDrawViewBase:
 
             self.Render()
     
-    def zoomIn(self):
-        delta = 2*120
-        self.__zoomStep(delta)
-
-    def zoomOut(self):
-        delta = -2*120
-        self.__zoomStep(delta)
-
-    def zoomFixed(self, val):
-#        print MODULENAME,"zitems=",self.zitems
-        if self.graphicsFrameWidget.ren:
-            # renderer = self._CurrentRenderer
-            camera = self.graphicsFrameWidget.ren.GetActiveCamera()
-            self.__curDist = camera.GetDistance()
-            
-            # To zoom fixed, dolly should be set to initial position
-            # and then moved to a new specified position!
-            
-            if not self.__initDist:
-                # fieldDim=self.currentDrawingParameters.bsd.fieldDim
-                fieldDim=self.currentDrawingParameters.bsd.fieldDim
-                
-                self.dim=[fieldDim.x,fieldDim.y,fieldDim.z]
-                
-                self.__initDist=self.largestDim(self.dim)*2
-                
-            if (self.__initDist != 0):
-                # You might need to rewrite the fixed zoom in case if there
-                # will be flickering
-                camera.Dolly(self.__curDist/self.__initDist)
-
-            camera.Dolly(self.zitems[val])
-            self.graphicsFrameWidget.ren.ResetCameraClippingRange()
-
-            self.Render()
+#     def zoomIn(self):
+#         delta = 2*120
+#         self.__zoomStep(delta)
+#
+#     def zoomOut(self):
+#         delta = -2*120
+#         self.__zoomStep(delta)
+#
+#     def zoomFixed(self, val):
+# #        print MODULENAME,"zitems=",self.zitems
+#         if self.graphicsFrameWidget.ren:
+#             # renderer = self._CurrentRenderer
+#             camera = self.graphicsFrameWidget.ren.GetActiveCamera()
+#             self.__curDist = camera.GetDistance()
+#
+#             # To zoom fixed, dolly should be set to initial position
+#             # and then moved to a new specified position!
+#
+#             if not self.__initDist:
+#                 # fieldDim=self.currentDrawingParameters.bsd.fieldDim
+#                 fieldDim=self.currentDrawingParameters.bsd.fieldDim
+#
+#                 self.dim=[fieldDim.x,fieldDim.y,fieldDim.z]
+#
+#                 self.__initDist=self.largestDim(self.dim)*2
+#
+#             if (self.__initDist != 0):
+#                 # You might need to rewrite the fixed zoom in case if there
+#                 # will be flickering
+#                 camera.Dolly(self.__curDist/self.__initDist)
+#
+#             camera.Dolly(self.zitems[val])
+#             self.graphicsFrameWidget.ren.ResetCameraClippingRange()
+#
+#             self.Render()
     
     def takeShot(self): pass
     

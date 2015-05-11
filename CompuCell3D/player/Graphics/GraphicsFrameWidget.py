@@ -29,12 +29,13 @@ from PyQt4 import QtCore, QtGui,QtOpenGL
 import vtk
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-
+from enums import *
 
 import sys
 platform=sys.platform
 if platform=='darwin':    
     from Utilities.QVTKRenderWindowInteractor_mac import QVTKRenderWindowInteractor
+#     from Utilities.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 else:    
     from Utilities.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
@@ -52,23 +53,28 @@ from weakref import ref
 
 class GraphicsFrameWidget(QtGui.QFrame):
     # def __init__(self, parent=None, wflags=QtCore.Qt.WindowFlags(), **kw):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, originatingWidget=None):
+
         QtGui.QFrame.__init__(self, parent)
         
         
         # print '\n\n\n\n\n CREATING NEW GRAPHICS FRAME WIDGET ',self
         
         
-        
+        # self.allowSaveLayout = True
+        self.is_screenshot_widget = False
         self.qvtkWidget = QVTKRenderWindowInteractor(self)   # a QWidget
         
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         
+        # MDIFIX
+        self.parentWidget = originatingWidget
+        # self.parentWidget = parent
         
-        self.parentWidget = parent
         
-        
-        
+        self.plane = None
+        self.planePos = None
+
         self.lineEdit = QtGui.QLineEdit()
         
         self.__initCrossSectionActions()
@@ -78,6 +84,8 @@ class GraphicsFrameWidget(QtGui.QFrame):
         layout.addWidget(self.cstb)
         layout.addWidget(self.qvtkWidget)
         self.setLayout(layout)
+        self.setMinimumSize(100, 100) #needs to be defined to resize smaller than 400x400
+        self.resize(600, 600)
         
         self.qvtkWidget.Initialize()
         self.qvtkWidget.Start()
@@ -99,12 +107,23 @@ class GraphicsFrameWidget(QtGui.QFrame):
         # # # self.draw3D = MVCDrawView3D(self.drawModel3D,self_weakref,parent)
         
 
-        self.drawModel2D = MVCDrawModel2D(self,parent)
-        self.draw2D = MVCDrawView2D(self.drawModel2D,self,parent)
-        
-        self.drawModel3D = MVCDrawModel3D(self,parent)
-        self.draw3D = MVCDrawView3D(self.drawModel3D,self,parent)
-        
+        # MDIFIX
+        self.drawModel2D = MVCDrawModel2D(self, self.parentWidget)
+        self.draw2D = MVCDrawView2D(self.drawModel2D, self, self.parentWidget)
+
+        self.drawModel3D = MVCDrawModel3D(self, self.parentWidget)
+        self.draw3D = MVCDrawView3D(self.drawModel3D, self, self.parentWidget)
+
+        # self.drawModel2D = MVCDrawModel2D(self,parent)
+        # self.draw2D = MVCDrawView2D(self.drawModel2D,self,parent)
+        #
+        # self.drawModel3D = MVCDrawModel3D(self,parent)
+        # self.draw3D = MVCDrawView3D(self.drawModel3D,self,parent)
+
+
+
+
+
         # self.draw2D=Draw2D(self,parent)
         # self.draw3D=Draw3D(self,parent)
         self.camera3D = self.ren.MakeCamera()        
@@ -192,8 +211,8 @@ class GraphicsFrameWidget(QtGui.QFrame):
                 
             
             
-    # def  resizeEvent(self, ev) :
-        # print 'THIS IS RESIZE EVENT'
+#     def  resizeEvent(self, ev) :
+#         print 'THIS IS RESIZE EVENT'
         # print 'resizing graphics window ',self, 'ev.type()=',ev.type(), ' isMaximized=',self.isMaximized()
         # if self.isMaximized():
             # ev.ignore()
@@ -362,7 +381,9 @@ class GraphicsFrameWidget(QtGui.QFrame):
         self.fieldComboBox.addAction(self.fieldComboBoxAct)
         self.fieldComboBox.addItem("-- Field Type --")
         # self.fieldComboBox.addItem("cAMP")  # huh?
-        self.screenshotAct = QtGui.QAction(QtGui.QIcon("player/icons/screenshot.png"), "&Take Screenshot", self)
+        import DefaultData
+        gip = DefaultData.getIconPath
+        self.screenshotAct = QtGui.QAction(QtGui.QIcon(gip("screenshot.png")), "&Take Screenshot", self)
         
         
 
@@ -583,11 +604,120 @@ class GraphicsFrameWidget(QtGui.QFrame):
             self.parentWidget._drawField()
             # self.getattrFcn=self.__getattrDraw2D
             
+    def getActiveCamera(self):
+        return self.ren.GetActiveCamera()
+        
+    def getCurrentSceneNameAndType(self):
+        # this is usually field name but we can also allow other types of visualizations hence I am calling it getCurrerntSceneName
+        sceneName = str(self.fieldComboBox.currentText())
+        return sceneName , self.parentWidget.fieldTypes[sceneName]        
+        
+    def apply3DGraphicsWindowData(self,gwd):
     
+    
+        for p in xrange(self.projComboBox.count()):
+            
+            if str(self.projComboBox.itemText(p)) == '3D':
+            
+                # camera = self.getActiveCamera()
+                # print 'activeCamera=',activeCamera
+            
+                self.projComboBox.setCurrentIndex(p)            
+                
+                # notice: there are two cameras one for 2D and one for 3D  here we set camera for 3D                
+                self.camera3D.SetClippingRange(gwd.cameraClippingRange)
+                self.camera3D.SetFocalPoint(gwd.cameraFocalPoint)
+                self.camera3D.SetPosition(gwd.cameraPosition)
+                self.camera3D.SetViewUp(gwd.cameraViewUp)                
+                
+                
+                break
+        
+        
+    def apply2DGraphicsWindowData(self,gwd):        
+    
+        for p in xrange(self.projComboBox.count()):
+            
+            if str(self.projComboBox.itemText(p)).lower() == str(gwd.planeName).lower():
+                self.projComboBox.setCurrentIndex(p)            
+                # print 'self.projSpinBox.maximum()= ', self.projSpinBox.maximum()    
+                # if gwd.planePosition <= self.projSpinBox.maximum():
+                self.projSpinBox.setValue(gwd.planePosition)  # automatically invokes the callback (--Changed)
+                
+                # notice: there are two cameras one for 2D and one for 3D  here we set camera for 3D                
+                self.camera2D.SetClippingRange(gwd.cameraClippingRange)
+                self.camera2D.SetFocalPoint(gwd.cameraFocalPoint)
+                self.camera2D.SetPosition(gwd.cameraPosition)
+                self.camera2D.SetViewUp(gwd.cameraViewUp)                
+                
+        
+    def applyGraphicsWindowData(self,gwd):
+        # print 'COMBO BOX CHECK '
+        # for i in xrange(self.fieldComboBox.count()):
+            # print 'self.fieldComboBox.itemText(i)=',self.fieldComboBox.itemText(i)
+        
+        
+        for i in xrange(self.fieldComboBox.count()):
+        
+            if str(self.fieldComboBox.itemText(i)) == gwd.sceneName:
+            
+                
+                self.fieldComboBox.setCurrentIndex(i)
+                # setting 2D projection or 3D
+                if gwd.is3D:
+                    self.apply3DGraphicsWindowData(gwd)
+                else:                
+                    self.apply2DGraphicsWindowData(gwd)
+                    
+
+      
+                break
+                
+        # import time
+        # time.sleep(2)
+        
+        
+    def getGraphicsWindowData(self):
+        from GraphicsWindowData import GraphicsWindowData
+        gwd = GraphicsWindowData()
+        activeCamera = self.getActiveCamera()
+        # gwd.camera = self.getActiveCamera()
+        gwd.sceneName = str(self.fieldComboBox.currentText())
+        gwd.sceneType = self.parentWidget.fieldTypes[gwd.sceneName]      
+        # gwd.winType = 'graphics'
+        gwd.winType = GRAPHICS_WINDOW_LABEL
+        # winPosition and winPosition will be filled externally by the SimpleTabView , since it has access to mdi windows
+        
+        # gwd.winPosition = self.pos()        
+        # gwd.winSize = self.size()
+        
+        if self.draw3DFlag:            
+            gwd.is3D = True
+        else:
+            planePositionTupple = self.draw2D.getPlane()
+            gwd.planeName = planePositionTupple[0]
+            gwd.planePosition = planePositionTupple[1]
+            
+        # print 'GetClippingRange()=',activeCamera.GetClippingRange()
+        gwd.cameraClippingRange = activeCamera.GetClippingRange()
+        gwd.cameraFocalPoint = activeCamera.GetFocalPoint()
+        gwd.cameraPosition = activeCamera.GetPosition()
+        gwd.cameraViewUp = activeCamera.GetViewUp()
+        
+        
+        # import time
+        # time.sleep(2)
+        return gwd    
+
+        
+
+        
+        
     def _takeShot(self):
 #        print MODULENAME, '  _takeShot():  self.parentWidget.screenshotManager=',self.parentWidget.screenshotManager
         print MODULENAME, '  _takeShot():  self.renWin.GetSize()=',self.renWin.GetSize()
-        camera = self.ren.GetActiveCamera()
+        camera = self.getActiveCamera()
+        # # # camera = self.ren.GetActiveCamera()
 #        print MODULENAME, '  _takeShot():  camera=',camera
 #        clippingRange= camera.GetClippingRange()
 #        focalPoint= camera.GetFocalPoint()
@@ -691,7 +821,7 @@ class GraphicsFrameWidget(QtGui.QFrame):
         self.yzPlane = fieldDim.x/2
         
     
-    def setFieldTypesComboBox(self,_fieldTypes):
+    def setFieldTypesComboBox(self,_fieldTypes):    
         self.fieldTypes=_fieldTypes # assign field types to be the same as field types in the workspace
         self.draw2D.setFieldTypes(self.fieldTypes) # make sure that field types are the same in graphics widget and in the drawing object
         self.draw3D.setFieldTypes(self.fieldTypes) # make sure that field types are the same in graphics widget and in the drawing object
@@ -706,10 +836,31 @@ class GraphicsFrameWidget(QtGui.QFrame):
         self.fieldComboBox.setCurrentIndex(1) # setting value of the Combo box to be cellField - default action 
         
         
-        self.qvtkWidget.resetCamera() # last call triggers fisrt call to draw function so we here reset camera so that all the actors are initially visible
-    
-    
-    
+        # self.qvtkWidget.resetCamera() # last call triggers fisrt call to draw function so we here reset camera so that all the actors are initially visible
+        self.resetCamera() # last call triggers fisrt call to draw function so we here reset camera so that all the actors are initially visible
+
+    def zoomIn(self):
+        '''
+        Zooms in view
+        :return:None
+        '''
+        self.qvtkWidget.zoomIn()
+
+    def zoomOut(self):
+        '''
+        Zooms in view
+        :return:None
+        '''
+        self.qvtkWidget.zoomOut()
+
+    def resetCamera(self):
+        '''
+        Resets camera to default settings
+        :return:None
+        '''
+        self.qvtkWidget.resetCamera()
+
+
     # note that if you close widget using X button this slot is not called
     # we need to reimplement closeEvent
     # def close(self):           
@@ -749,11 +900,16 @@ class GraphicsFrameWidget(QtGui.QFrame):
         
         
 
-        self.fieldTypes=None            
-        
-        self.parentWidget.removeWindowWidgetFromRegistry(self)
+        self.fieldTypes=None
+
+        #MDIFIX
+        # self.parentWidget.removeWindowWidgetFromRegistry(self)
+
         # print 'AFTER CLOSE GFW self.graphicsWindowDict=',self.parentWidget.graphicsWindowDict 
         # print 'self.windowDict=',self.parentWidget.windowDict        
         
-        self.parentWidget=None
+        self.parentWidget = None
+
+        print 'GRAPHICS CLOSED'
+
         

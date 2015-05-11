@@ -49,17 +49,11 @@ class MitosisSteppableClusters(MitosisSteppableClustersBase):
 
     def updateAttributes(self):
         # compartments in the parent and child clusters arel listed in the same order so attribute changes require simple iteration through compartment list  
-        parentCell=self.mitosisSteppable.parentCell
-        childCell=self.mitosisSteppable.childCell
-                
-        compartmentListChild=self.inventory.getClusterCells(childCell.clusterId)
-        compartmentListParent=self.inventory.getClusterCells(parentCell.clusterId)
-        print "compartmentListChild=",compartmentListChild 
-        for i in xrange(compartmentListChild.size()):
+        compartmentListParent=self.getClusterCells(self.parentCell.clusterId)
+
+        for i in xrange(compartmentListParent.size()):
             compartmentListParent[i].targetVolume/=2.0
-            # compartmentListParent[i].targetVolume=25
-            compartmentListChild[i].targetVolume=compartmentListParent[i].targetVolume
-            compartmentListChild[i].lambdaVolume=compartmentListParent[i].lambdaVolume
+        self.cloneParentCluster2ChildCluster()
 
 
     def changeFlips(self):

@@ -540,7 +540,7 @@ ChemotaxisData * ChemotaxisPlugin::addChemotaxisData(CellG * _cell,std::string _
 
 }
 
-std::vector<std::string> ChemotaxisPlugin::getFileNamesWithChemotaxisData(CellG * _cell){
+std::vector<std::string> ChemotaxisPlugin::getFieldNamesWithChemotaxisData(CellG * _cell){
 
 	std::vector<std::string> fieldNamesVec;
 	std::map<std::string,ChemotaxisData> & chemotaxisDataDictRef = *chemotaxisDataAccessor.get(_cell->extraAttribPtr);

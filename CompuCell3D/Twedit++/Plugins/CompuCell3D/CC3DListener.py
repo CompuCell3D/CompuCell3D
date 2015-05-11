@@ -326,10 +326,10 @@ class CC3DListener(QTcpServer):
         
     def maybeCloseEditor(self):
     
-        ret=QtGui.QMessageBox.information(self.editorWindow, "CompuCell3D has been closed","Close editor as well? ",QMessageBox.Yes|QMessageBox.No)
+        # ret=QtGui.QMessageBox.information(self.editorWindow, "CompuCell3D has been closed","Close editor as well? ",QMessageBox.Yes|QMessageBox.No)
         
-        if ret==QMessageBox.Yes:
-            self.editorWindow.close()
+        # if ret==QMessageBox.Yes:
+            # self.editorWindow.close()
         
             
         if self.socket:

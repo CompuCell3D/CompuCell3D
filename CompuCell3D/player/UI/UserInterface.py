@@ -30,11 +30,15 @@ from Utilities.CPluginsModel import CPluginsModel
 from Utilities.LatticeDataModel import LatticeDataModel
 from Utilities.SimDelegate import SimDelegate
 import Configuration
+import DefaultData
 
 #from ViewManager.ViewManager import ViewManager
 #from PluginManager.PluginManager import PluginManager
 
 cc3dApp = QCoreApplication.instance
+
+gip = DefaultData.getIconPath
+
 
 class NullDevice:
     def write(self, s):
@@ -42,13 +46,30 @@ class NullDevice:
     def flush(self):
         pass
 
+class DockWidget(QDockWidget):
+    def __init__(self,_parent):
+        super(DockWidget, self).__init__(_parent)
+
+        self.toggleFcn = None
+    def setToggleFcn(self, fcn):self.toggleFcn = fcn
+
+    def closeEvent(self, ev):
+        print 'DOCK WIDGET CLOSE EVENT'
+        print 'self.toggleFcn=',self.toggleFcn
+
+        if self.toggleFcn: self.toggleFcn(False)
+        # Configuration.setSetting(str(self.objectName(), False)
+
 class UserInterface(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
         self.argv=None
         # self.resize(QSize(900, 650))
-        QApplication.setWindowIcon(QIcon("player/icons/cc3d_64x64_logo.png"))
-        self.setWindowIcon(QIcon("player/icons/cc3d_64x64_logo.png"))
+
+
+
+        QApplication.setWindowIcon(QIcon(gip("cc3d_64x64_logo.png")))
+        self.setWindowIcon(QIcon(gip("cc3d_64x64_logo.png")))
         self.setWindowTitle(self.trUtf8("CompuCell3D Player"))
         
         self.origStdout=sys.stdout
@@ -100,17 +121,43 @@ class UserInterface(QMainWindow):
             #silencing output from Python
             self.enablePythonOutput(False)
             
+        if self.viewmanager.MDI_ON: # configuration of MDI
+            playerSizes=Configuration.getSetting("PlayerSizes")
+            if playerSizes and playerSizes.size()>0:
+                self.resize(Configuration.getSetting("MainWindowSize"))
+                self.move(Configuration.getSetting("MainWindowPosition"))
+                self.restoreState(playerSizes)
+            else:
+                self.resize(Configuration.getSetting("MainWindowSize"))
+                self.move(Configuration.getSetting("MainWindowPosition"))
+        else:  # configuration of floating windows
+            playerSizes=Configuration.getSetting("PlayerSizesFloating")
 
-        playerSizes=Configuration.getSetting("PlayerSizes")
-        if playerSizes and playerSizes.size()>0:
-            self.resize(Configuration.getSetting("MainWindowSize"))
-            self.move(Configuration.getSetting("MainWindowPosition"))
-            self.restoreState(playerSizes)
-        else:
-            self.resize(Configuration.getSetting("MainWindowSize"))
-            self.move(Configuration.getSetting("MainWindowPosition"))
-        
-            
+            if playerSizes and playerSizes.size()>0:
+                self.resize(Configuration.getSetting("MainWindowSizeFloating"))
+                self.resize(self.size().width(), 0) # resizing vertical dimension to be minimal
+                self.move(Configuration.getSetting("MainWindowPositionFloating"))
+                self.restoreState(playerSizes)
+            else:
+                self.resize(Configuration.getSetting("MainWindowSizeFloating"))
+                self.resize(self.size().width(), 0) # resizing vertical dimension to be minimal
+                self.move(Configuration.getSetting("MainWindowPositionFloating"))
+
+
+        # if playerSizes and playerSizes.size()>0:
+        #     self.resize(Configuration.getSetting("MainWindowSize"))
+        #     self.move(Configuration.getSetting("MainWindowPosition"))
+        #     self.restoreState(playerSizes)
+        # else:
+        #     self.resize(Configuration.getSetting("MainWindowSize"))
+        #     self.move(Configuration.getSetting("MainWindowPosition"))
+
+        # MDIFIX
+        floatingFlag = Configuration.getSetting('FloatingWindows')
+        self.modelEditorDock.setFloating(floatingFlag)
+        self.consoleDock.setFloating(floatingFlag)
+        self.latticeDataDock.setFloating(floatingFlag)
+
     ##########################################################
     ## Below are slots to handle StdOut and StdErr
     ##########################################################
@@ -181,7 +228,7 @@ class UserInterface(QMainWindow):
         self.connect(self.__menus["view"], SIGNAL('aboutToShow()'), self.__showViewMenu)
         
         self.__menus["toolbars"] = QMenu("&Toolbars", self.__menus["view"])
-        self.__menus["toolbars"].setIcon(QIcon("player/icons/toolbars.png"))
+        self.__menus["toolbars"].setIcon(QIcon(gip("toolbars.png")))
         self.connect(self.__menus["toolbars"], SIGNAL('aboutToShow()'), self.__showToolbarsMenu)
         self.connect(self.__menus["toolbars"], SIGNAL('triggered(QAction *)'), self.__TBMenuTriggered)
         self.__showViewMenu()
@@ -209,17 +256,19 @@ class UserInterface(QMainWindow):
         # filetb = self.viewmanager.initFileToolbar(self.toolbarManager)
         filetb = self.viewmanager.initFileToolbar()
         
-        viewtb = QToolBar("View", self)
-        viewtb.setIconSize(QSize(20, 18))
-        viewtb.setObjectName("ViewToolbar")
-        viewtb.setToolTip("View")
-        viewtb.addAction(self.zoomInAct)        
-        viewtb.addAction(self.zoomOutAct)
-        #viewtb.addAction(self.zoomFixedAct)
-        viewtb.addWidget(self.zoomFixed)
-        viewtb.addWidget(QLabel("  "))
+        # viewtb = QToolBar("View", self)
+        # viewtb.setIconSize(QSize(20, 18))
+        # viewtb.setObjectName("ViewToolbar")
+        # viewtb.setToolTip("View")
+        # viewtb.addAction(self.zoomInAct)
+        # viewtb.addAction(self.zoomOutAct)
+        # #viewtb.addAction(self.zoomFixedAct)
+        # viewtb.addWidget(self.zoomFixed)
+        # viewtb.addWidget(QLabel("  "))
         # viewtb.addAction(self.screenshotAct)
-        windowtb=self.viewmanager.initWindowToolbar()
+
+        visualizationtb = self.viewmanager.initVisualizationToolbar()
+        windowtb = self.viewmanager.initWindowToolbar()
         
         
         # cstb = self.viewmanager.initCrossSectionToolbar() #QToolBar("Cross Section", self) #
@@ -230,15 +279,16 @@ class UserInterface(QMainWindow):
         #viewtb = self.viewmanager.initViewToolbar()
             
         self.addToolBar(simtb)              
-        self.addToolBar(filetb)     
-        self.addToolBar(viewtb)
+        self.addToolBar(filetb)
+        # self.addToolBar(viewtb)
+        self.addToolBar(visualizationtb)
         self.addToolBar(windowtb)
         # self.addToolBar(cstb)
         
         # just add new toolbars to the end of the list
         self.__toolbars = {}
         self.__toolbars["file"] = [filetb.windowTitle(), filetb]
-        self.__toolbars["view"] = [viewtb.windowTitle(), viewtb]
+        # self.__toolbars["view"] = [viewtb.windowTitle(), viewtb]
         self.__toolbars["simulation"] = [simtb.windowTitle(), simtb]
         # self.__toolbars["crossSection"] = [cstb.windowTitle(), cstb]      
         
@@ -246,10 +296,17 @@ class UserInterface(QMainWindow):
     
     def closeEvent(self, event=None):
         print "CALLING CLOSE EVENT FROM  SIMTAB"
-        Configuration.setSetting("PlayerSizes",self.saveState())
-        Configuration.setSetting("MainWindowSize",self.size())
-        Configuration.setSetting("MainWindowPosition",self.pos())
-        
+        if self.viewmanager.MDI_ON:
+            Configuration.setSetting("PlayerSizes", self.saveState())
+            Configuration.setSetting("MainWindowSize",self.size())
+            Configuration.setSetting("MainWindowPosition",self.pos())
+
+        else:
+            Configuration.setSetting("PlayerSizesFloating", self.saveState())
+            Configuration.setSetting("MainWindowSizeFloating",self.size())
+            Configuration.setSetting("MainWindowPositionFloating",self.pos())
+
+
         self.viewmanager.closeEventSimpleTabView(event)
       
     def __initStatusbar(self):
@@ -263,18 +320,18 @@ class UserInterface(QMainWindow):
         Private method to define the user interface actions.
         """
         self.actions = []
-        self.zoomInAct = QAction(QIcon("player/icons/zoomIn.png"), "&Zoom In", self)
-        self.actions.append(self.zoomInAct) # Replaced "viewActions" by "actions":self.viewActions.append(self.zoomInAct)
-        
-        self.zoomOutAct = QAction(QIcon("player/icons/zoomOut.png"), "&Zoom Out", self)
-        self.actions.append(self.zoomOutAct)
-        
-        # Why do I need self.zoomFixedAct?
-        #self.zoomFixedAct = QAction(self)
-        self.zoomFixed  = QComboBox()
-        self.zoomFixed.setToolTip("Zoom Fixed")
-        self.zoomFixed.addItems(self.__zoomItems())
-        self.zoomFixed.setCurrentIndex(3)
+        # self.zoomInAct = QAction(QIcon(gip("zoomIn.png")), "&Zoom In", self)
+        # self.actions.append(self.zoomInAct) # Replaced "viewActions" by "actions":self.viewActions.append(self.zoomInAct)
+        # #
+        # self.zoomOutAct = QAction(QIcon(gip("zoomOut.png")), "&Zoom Out", self)
+        # self.actions.append(self.zoomOutAct)
+
+        # # Why do I need self.zoomFixedAct?
+        # #self.zoomFixedAct = QAction(self)
+        # self.zoomFixed  = QComboBox()
+        # self.zoomFixed.setToolTip("Zoom Fixed")
+        # self.zoomFixed.addItems(self.__zoomItems())
+        # self.zoomFixed.setCurrentIndex(3)
         #self.zoomFixed.addAction(self.zoomFixedAct)
         #self.actions.append(self.zoomFixedAct)
         
@@ -302,9 +359,11 @@ class UserInterface(QMainWindow):
         
         self.modelAct = QAction("&Model Editor", self)
         self.modelAct.setCheckable(True)
-        self.modelAct.setChecked(True) #not self.projectBrowserDock.isHidden()
-        self.connect(self.modelAct, SIGNAL("triggered()"), self.__toggleModelEditor)
-        #self.connect(self.modelAct, SIGNAL("toggled(bool)"), self.hello)
+        # self.modelAct.setChecked(True) #not self.projectBrowserDock.isHidden()
+        if Configuration.getSetting('DisplayModeleditor'):
+            self.modelAct.setChecked(True)
+        self.connect(self.modelAct, SIGNAL("triggered(bool)"), self.toggleModelEditor)
+
         self.actions.append(self.modelAct)
         
         self.pluginsAct = QAction("&Plugins", self)
@@ -315,13 +374,15 @@ class UserInterface(QMainWindow):
 
         self.latticeDataAct = QAction("&Lattice Data", self)
         self.latticeDataAct.setCheckable(True)
-        self.latticeDataAct.setChecked(False)
-        self.connect(self.latticeDataAct, SIGNAL("triggered()"), self.__toggleLatticeData)
+        if Configuration.getSetting('DisplayLatticeData'):
+            self.latticeDataAct.setChecked(True)
+        # self.latticeDataAct.setChecked(False)
+        self.connect(self.latticeDataAct, SIGNAL("triggered(bool)"), self.toggleLatticeData)
         self.actions.append(self.latticeDataAct)
         
-        self.connect(self.zoomInAct, SIGNAL('triggered()'), self.viewmanager.zoomIn)
-        self.connect(self.zoomOutAct, SIGNAL('triggered()'), self.viewmanager.zoomOut)
-        self.connect(self.zoomFixed, SIGNAL('activated(int)'), self.viewmanager.zoomFixed)
+        # self.connect(self.zoomInAct, SIGNAL('triggered()'), self.viewmanager.zoomIn)
+        # self.connect(self.zoomOutAct, SIGNAL('triggered()'), self.viewmanager.zoomOut)
+        # self.connect(self.zoomFixed, SIGNAL('activated(int)'), self.viewmanager.zoomFixed)
         # self.connect(self.screenshotAct, SIGNAL('triggered()'), self.viewmanager.takeShot)
         
         # self.connect(self.newGraphicsWindowAct, SIGNAL('triggered()'), self.viewmanager.addVTKWindowToWorkspace)
@@ -337,8 +398,16 @@ class UserInterface(QMainWindow):
         
         self.consoleAct = QAction("&Console", self)
         self.consoleAct.setCheckable(True)
-        self.consoleAct.setChecked(True)
-        self.connect(self.consoleAct, SIGNAL("triggered()"), self.__toggleConsole)
+
+        self.toggleConsole(Configuration.getSetting('DisplayConsole'))
+
+        if Configuration.getSetting('DisplayConsole'):
+            self.consoleAct.setChecked(True)
+
+        self.connect(self.consoleAct, SIGNAL("triggered(bool)"), self.toggleConsole)
+
+
+
         self.actions.append(self.consoleAct)
 
         # I don't need probably to initActions() here. So I moved it to constructor
@@ -386,19 +455,12 @@ class UserInterface(QMainWindow):
     def __createLayout(self):
         # Zoom items. The only place where the zoom items are specified!
         # self.zitems = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0, 8.0]
-        
-        # self.viewmanager = TabView(self) # ViewManager.factory(self, self)
-        # self.viewmanager.setZoomItems(self.zitems)
-        
-        # # self.viewmanager.setOrientation(Qt.Vertical)      
-        # self.setCentralWidget(self.viewmanager)
 
-        # self.display3D = QVTKRenderWidget(self)
-        # self.setupDisplay3D()
-        # self.setCentralWidget(self.display3D)
         
         # Set up the model for the Model Editor
-        self.modelEditorDock = self.__createDockWindow("ModelEditorDock")
+        self.modelEditorDock = self.__createDockWindow("ModelEditor")
+
+        self.modelEditorDock .setToggleFcn(self.toggleModelEditor)
         modelEditor = ModelEditor(self.modelEditorDock)      
         
         # self.model = SimModel(QDomDocument(), self.modelEditorDock) # Do I need parent self.modelEditorDock
@@ -410,36 +472,9 @@ class UserInterface(QMainWindow):
         self.viewmanager.setModelEditor(modelEditor) # Sets the Model Editor in the ViewManager
         self.__setupDockWindow(self.modelEditorDock, Qt.LeftDockWidgetArea, modelEditor, self.trUtf8("Model Editor")) # projectBrowser  
 
-        _simulationFileName="D:\Program Files\COMPUCELL3D_3.4.0\Demos\cellsort_2D\cellsort_2D.xml"
-        # self.viewmanager.prepareXMLTreeView(_simulationFileName)
-        # TEST CODE #############
-        # import XMLUtils
-        # self.cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
-        # _simulationFileName="D:\Program Files\COMPUCELL3D_3.4.0\Demos\cellsort_2D\cellsort_2D_try.xml"
-        # self.root_element=self.cc3dXML2ObjConverter.Parse(_simulationFileName)
-        # self.model = SimModel(self.root_element, modelEditor)
-        
-        
-        # modelEditor.setModel(self.model)
-        # self.model.setPrintFlag(True)
-        # self.model.checkSanity()
-
-        # self.simulation.setSimModel(self.model) # hook in simulation thread class to XML model TreeView panel in the GUI - needed for steering
-        # TEST CODE #############
-        
-        # # set up the model for Plugins
-        # # # self.cpluginsDock = self.__createDockWindow("PluginsDock")
-        # # # self.cplugins     = CPlugins(self.cpluginsDock, self.viewmanager)
-        # # # self.pluginsModel = CPluginsModel("player/plugins.txt") # Populate data from plugins.txt
-        # # # self.cplugins.setModel(self.pluginsModel)
-        # # # self.cplugins.setParams()
-        # # # #self.connect(self.cplugins, SIGNAL("doubleClicked(const QModelIndex &)"), self.__showPluginView)
-        
-        # # # self.__setupDockWindow(self.cpluginsDock, Qt.LeftDockWidgetArea, self.cplugins, self.trUtf8("Plugins"))
-        # # # self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea) 
-        
-        self.latticeDataDock = self.__createDockWindow("LatticeDataDock")
-        self.latticeDataModelTable     = LatticeDataModelTable(self.latticeDataDock, self.viewmanager)
+        self.latticeDataDock = self.__createDockWindow("LatticeData")
+        self.latticeDataDock.setToggleFcn(self.toggleLatticeData)
+        self.latticeDataModelTable = LatticeDataModelTable(self.latticeDataDock, self.viewmanager)
         self.latticeDataModel = LatticeDataModel() 
         # self.latticeDataModelTable.setModel(self.latticeDataModel)
         
@@ -452,6 +487,9 @@ class UserInterface(QMainWindow):
         
         # Set up the console
         self.consoleDock = self.__createDockWindow("Console")
+
+        self.consoleDock.setToggleFcn(self.toggleConsole)
+
         self.console     = Console(self.consoleDock)        
         self.consoleDock.setWidget(self.console)
         # self.consoleDock.setWindowTitle("Console")
@@ -476,7 +514,8 @@ class UserInterface(QMainWindow):
         @param name object name of the new dock window (string or QString)
         @return the generated dock window (QDockWindow)
         """
-        dock = QDockWidget(self)
+        # dock = QDockWidget(self)
+        dock = DockWidget(self)
         dock.setObjectName(name)
         #dock.setFeatures(QDockWidget.DockWidgetFeatures(QDockWidget.AllDockWidgetFeatures))
         return dock
@@ -497,11 +536,16 @@ class UserInterface(QMainWindow):
         dock.setWindowTitle(caption)
         dock.show()
 
-    def __toggleModelEditor(self):
+    def toggleModelEditor(self, flag):
         """
         Private slot to handle the toggle of the Model Editor window.
         """
-        self.__toggleWindow(self.modelEditorDock)
+        self.modelAct.setChecked(flag)
+
+        Configuration.setSetting('DisplayModelEditor',flag)
+        self.__toggleWindowFlag(self.modelEditorDock, flag)
+
+        # self.__toggleWindow(self.modelEditorDock)
 
     def __toggleCPlugins(self):
         """
@@ -509,11 +553,17 @@ class UserInterface(QMainWindow):
         """
         self.__toggleWindow(self.cpluginsDock)
 
-    def __toggleLatticeData(self):
+    def toggleLatticeData(self,flag):
         """
         Private slot to handle the toggle of the Plugins window.
         """
-        self.__toggleWindow(self.latticeDataDock)
+
+        self.latticeDataAct.setChecked(flag)
+
+        Configuration.setSetting('DisplayLatticeData',flag)
+        self.__toggleWindowFlag(self.latticeDataDock, flag)
+
+        # self.__toggleWindow(self.latticeDataDock)
         
 
     def __toggleWindow(self, w):
@@ -527,7 +577,21 @@ class UserInterface(QMainWindow):
         else:
             w.hide()
 
-    def __toggleConsole(self):
+    def __toggleWindowFlag(self, w, flag):
+        """
+        Private method to toggle a workspace editor window.
+
+        @param w reference to the workspace editor window
+        """
+
+        print ' '
+
+        if flag:
+            w.show()
+        else:
+            w.hide()
+
+    def toggleConsole(self, flag):
         """
         Private slot to handle the toggle of the Log Viewer window.
         
@@ -536,7 +600,13 @@ class UserInterface(QMainWindow):
         else:
             self.__toggleWindow(self.logViewer)
         """
-        self.__toggleWindow(self.consoleDock)
+        # self.__toggleWindow(self.consoleDock)
+
+        # print ' TOGGLE CONSOLE FLAG = ', flag
+        self.consoleAct.setChecked(flag)
+
+        Configuration.setSetting('DisplayConsole',flag)
+        self.__toggleWindowFlag(self.consoleDock, flag)
 
     def __showViewMenu(self):
         """
@@ -545,16 +615,16 @@ class UserInterface(QMainWindow):
         self.__menus["view"].clear()
         
         # Populate actions
-        self.__menus["view"].addAction(self.zoomInAct)
-        self.__menus["view"].addAction(self.zoomOutAct)
-        self.__menus["view"].addSeparator()      
+        # self.__menus["view"].addAction(self.zoomInAct)
+        # self.__menus["view"].addAction(self.zoomOutAct)
+        # self.__menus["view"].addSeparator()
         # self.__menus["view"].addAction(self.screenshotAct)    
         
-        self.__menus["view"].addSeparator()
+        # self.__menus["view"].addSeparator()
         
         self.__menus["view"].addMenu(self.__menus["toolbars"])         
 
-        self.__menus["view"].addSeparator()
+        # self.__menus["view"].addSeparator()
         self.__menus["view"].addAction(self.modelAct)
         self.modelAct.setChecked(not self.modelEditorDock.isHidden())
         
@@ -626,88 +696,6 @@ class UserInterface(QMainWindow):
                 tb.show()
             else:
                 tb.hide()
-
-"""
-
-    def __shutdown(self):
-        "" "
-        Private method to perform all neccessary steps to close down the IDE.
-        
-        @return flag indicating success
-        "" "
-        if self.shutdownCalled:
-            return True
-        
-        self.__writeSession()
-        
-        if not self.project.closeProject():
-            return False
-        
-        if not self.multiProject.closeMultiProject():
-            return False
-        
-        if not self.viewmanager.closeViewManager():
-            return False
-        
-        self.shell.closeShell()
-        
-        self.__writeTasks()
-        self.templateViewer.writeTemplates()
-        
-        if not self.debuggerUI.shutdownServer():
-            return False
-        self.debuggerUI.shutdown()
-        
-        self.pluginManager.shutdown()
-        
-        if self.SAServer is not None:
-            self.SAServer.shutdown()
-            self.SAServer = None
-        
-        Preferences.setGeometry("MainMaximized", int(self.isMaximized()))
-        if not self.isMaximized():
-            Preferences.setGeometry("MainGeometry", self.saveGeometry())
-        if self.layout == "FloatingWindows":      # floating windows
-            windows = {
-                "ProjectBrowser": self.projectBrowser,
-                "DebugViewer": self.debugViewer,
-                "LogViewer": self.logViewer,
-                "Shell": self.shell,
-                "FileBrowser" : self.browser,
-                "TaskViewer" : self.taskViewer,
-                "TemplateViewer" : self.templateViewer,
-                "MultiProjectBrowser": self.multiProjectBrowser,
-            }
-            if self.embeddedShell:
-                del windows["Shell"]
-            if self.embeddedFileBrowser:
-                del windows["FileBrowser"]
-            for window, i in zip(self.windows, range(len(self.windows))):
-                if window is not None:
-                    self.profiles[self.currentProfile][2][i] = \
-                        str(window.saveGeometry())
-
-        self.browser.saveToplevelDirs()
-        
-        Preferences.setUI("ToolbarManagerState", self.toolbarManager.saveState())
-        self.__saveCurrentViewProfile(True)
-        Preferences.saveToolGroups(self.toolGroups, self.currentToolGroup)
-        Preferences.syncPreferences()
-        self.shutdownCalled = True
-        return True
-
-"""
-"""
-class CQDockWidget(QDockWidget):
-    def __init__(self, parent):
-        QDockWidget.__init__(self, parent)
-        
-    def setSizeHint(self, size):
-        self.size = size
-        
-    def sizeHint(self):
-        return self.size
-"""
 
 class Redirector(QObject):
     """

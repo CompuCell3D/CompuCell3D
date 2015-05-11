@@ -28,7 +28,7 @@ class DataReader(QThread):
         
         readState=self.cmlReader.readSimulationDataNonBlocking(self.i)
         if readState:
-            self.data_read.emit(self.i)
+            self.data_read.emit(self.i)            
         else:
             self.data_read.emit(-1)
 
@@ -66,7 +66,7 @@ class CMLResultReader(SimulationThread.SimulationThread):
         self.numberOfSteps=0;
         self.__directAccessFlag=False
         self.__mcsDirectAccess=0;
-        # self.counter=0
+        self.__fileNumber = -1        # self.counter=0
         self.newFileBeingLoaded=False
         self.readFileSem=QSemaphore(1)
         self.typeIdTypeNameDict={}
@@ -74,13 +74,16 @@ class CMLResultReader(SimulationThread.SimulationThread):
         self.typeIdTypeNameCppMap=None # C++ map<int,string> providing mapping from type id to type name
         self.customVis = None
         self.__ui=parent
+        self.__initialized=False
         
         self.stepCounter=0
         self.reading=False
         self.state=STOP_STATE
         
-        
-    
+        self.stay_in_current_step = False
+
+        self.recently_read_file_number = -1
+
 	# Python 2.6 requires importing of Example, CompuCell and Player Python modules from an instance  of QThread class (here Simulation Thread inherits from QThread)
 	# Simulation Thread communicates with SimpleTabView using SignalSlot method. If we dont import the three modules then when SimulationThread emits siglan and SimpleTabView
 	# processes this signal in a slot (e.g. initializeSimulationViewWidget) than calling a member function of an object from e.g. Player Python (self.fieldStorage.allocateCellField(self.fieldDim))
@@ -89,15 +92,25 @@ class CMLResultReader(SimulationThread.SimulationThread):
 	import Example
 	import CompuCell
 	import PlayerPython
-    
-    
+
+    def set_stay_in_current_step(self,flag):
+        self.stay_in_current_step = flag
+
+    def get_stay_in_current_step(self):
+        return self.stay_in_current_step
+
+
     def gotData(self,_i):
         # print '\n\n\n       GOT DATA FOR STEP ',_i
         # print '\n\n'
+        self.recently_read_file_number = _i
+
         self.dataReader.data_read.disconnect(self.gotData)
-        self.reading=False
-        if _i==0:
+        self.reading = False
+
+        if _i==0 and not self.__initialized:
             self.initial_data_read.emit(True)
+            self.__initialized = True
         if _i<0: # meaning read did not succeed
             self.setStopState()
             self.final_data_read.emit(True)
@@ -117,14 +130,36 @@ class CMLResultReader(SimulationThread.SimulationThread):
         self.state=STOP_STATE
         
     def keepGoing(self):
-        if self.state==RUN_STATE:
+
+        if self.state == RUN_STATE:
             self.step()
     
     def step(self):
         # ignoring step requests while reading operation is pending
+        # print 'INSIDE STEP self.reading=',self.reading
         if self.reading: 
             return
-            
+
+        # this section repeats the current step - pretends that the file was read again
+        # used to give users a chance to change initial view in the graphics widget to ensure that all screenshots
+        # are saved including screenshot for the first file
+
+        if self.stay_in_current_step:
+            self.stay_in_current_step =  False
+            self.reading = False
+            if self.recently_read_file_number >= 0:
+                self.subsequent_data_read.emit(self.recently_read_file_number)
+
+            return
+
+        print 'self.stepCounter=',self.stepCounter
+        print 'DIRECT ACCESS =', self.getCurrentStepDirectAccess()
+        
+        
+        if self.__directAccessFlag:
+            self.stepCounter = self.__mcsDirectAccess            
+            self.__directAccessFlag = False            
+        
         self.dataReader=DataReader(parent=self)
         self.dataReader.setStep(self.stepCounter)        
         self.dataReader.data_read.connect(self.gotData)        
@@ -163,6 +198,11 @@ class CMLResultReader(SimulationThread.SimulationThread):
         
         self.currentFileName = os.path.join(self.ldsDir,fileName)
         print 'self.currentFileName=',self.currentFileName
+        
+        extractedMCS = self.extractMCSNumberFromFileName(self.currentFileName)
+        if extractedMCS < 0:
+            extractedMCS = _i
+            
         self.simulationDataReader.SetFileName(self.currentFileName)
         # print "path= ", os.path.join(self.ldsDir,fileName)
         
@@ -181,11 +221,29 @@ class CMLResultReader(SimulationThread.SimulationThread):
         
         self.fieldDim=CompuCell.Dim3D(dimFromVTK[0],dimFromVTK[1],dimFromVTK[2])
 
-        
-        self.currentStep = self.frequency * _i
+        self.currentStep = extractedMCS
+        # # # self.currentStep = self.frequency * _i # this is how we set CMS for CML reading before
         self.setCurrentStep(self.currentStep)
+        
         return True
 
+    def extractMCSNumberFromFileName(self,_fileName):
+        import os
+        coreName,ext=os.path.splitext(os.path.basename(_fileName))        
+        
+        import re
+        mcs_extractor_regex = re.compile('([\D]*)([0-9]*)')
+        match=re.match(mcs_extractor_regex,coreName)
+        
+        if match:
+            matchGroups=match.groups()
+            
+            if matchGroups[1]!='':
+                mcs_str=matchGroups[1]
+                
+                return int(mcs_str)
+               
+        return -1
         
     def readSimulationData(self,_i):
 

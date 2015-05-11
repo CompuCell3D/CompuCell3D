@@ -99,13 +99,8 @@ class MitosisSteppable(MitosisSteppableBase):
 
             self.divideCellRandomOrientation(cell)
             
-    def updateAttributes(self):
-        parentCell=self.mitosisSteppable.parentCell
-        childCell=self.mitosisSteppable.childCell
-        parentCell.targetVolume=parentCell.targetVolume/2
-        parentCell.lambdaVolume=parentCell.lambdaVolume
-        childCell.type=parentCell.type
-        childCell.targetVolume=parentCell.targetVolume
-        childCell.lambdaVolume=parentCell.lambdaVolume
-          
+    def updateAttributes(self):    
+        self.parentCell.targetVolume /= 2.0 # reducing parent target volume                 
+        self.cloneParent2Child()            
+              
                 

@@ -46,8 +46,6 @@ class CC3DPythonGenerator:
         
         self.configureSimLines=''
         
-        self.attachDictionary=False
-        self.attachList=False
         self.plotTypeTable=[]
         self.pythonPlotsLines=''
         
@@ -195,12 +193,6 @@ configureSimulation(sim)
         header+='''    
 # add extra attributes here
         '''
-        attachListLine='''
-pyAttributeListAdder,listAdder=CompuCellSetup.attachListToCells(sim)
-        '''
-        attachDicttionaryLine='''
-pyAttributeDictionaryAdder,dictAdder=CompuCellSetup.attachDictionaryToCells(sim)
-        '''
         
         initSimObjectLine='''    
 CompuCellSetup.initializeSimulationObjects(sim,simthread)
@@ -221,10 +213,6 @@ CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
         
         '''
         script=header
-        if self.attachDictionary:
-            script+=attachDicttionaryLine
-        if self.attachList:
-            script+=attachListLine
             
         script+=initSimObjectLine
         
@@ -425,15 +413,17 @@ class MitosisSteppable(MitosisSteppableBase):
             # self.divideCellAlongMinorAxis(cell)                               # this is a valid option
 
     def updateAttributes(self):
-        parentCell=self.mitosisSteppable.parentCell
-        childCell=self.mitosisSteppable.childCell
+        self.parentCell.targetVolume /= 2.0 # reducing parent target volume                 
+        self.cloneParent2Child()            
         
-        childCell.targetVolume=parentCell.targetVolume
-        childCell.lambdaVolume=parentCell.lambdaVolume
-        if parentCell.type==1:
-            childCell.type=2
+        # for more control of what gets copied from parent to child use cloneAttributes function
+        # self.cloneAttributes(sourceCell=self.parentCell, targetCell=self.childCell, no_clone_key_dict_list = [attrib1, attrib2] )
+        
+        
+        if self.parentCell.type==1:
+            self.childCell.type=2
         else:
-            childCell.type=1
+            self.childCell.type=1
         
         '''%(self.steppableFrequency)        
     def generateDeathSteppable(self):

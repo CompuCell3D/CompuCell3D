@@ -88,9 +88,9 @@ class MultiscaleSimulationSteppable( SteppableBasePy ):
         
         
         for cell in self.cellList:
-            dictionaryAttrib = CompuCell.getPyAttrib( cell )
-            dictionaryAttrib["InitialVolume"] = cell.volume
-            dictionaryAttrib["DivideVolume"] = 280.
+            
+            cell.dict["InitialVolume"] = cell.volume
+            cell.dict["DivideVolume"] = 280.
             cell.targetVolume = 100.0
             cell.lambdaVolume = 2.0
         
@@ -142,8 +142,8 @@ class MitosisSteppable(MitosisSteppableBase):
     def step(self,mcs):
         cells_to_divide=[]
         for cell in self.cellList:
-            dictionaryAttrib = CompuCell.getPyAttrib( cell )
-            if cell.volume > dictionaryAttrib["DivideVolume"]:
+            
+            if cell.volume > cell.dict["DivideVolume"]:
                 cells_to_divide.append(cell)
                 
         for cell in cells_to_divide:
@@ -153,9 +153,9 @@ class MitosisSteppable(MitosisSteppableBase):
         childCell = self.mitosisSteppable.childCell
         parentCell = self.mitosisSteppable.parentCell
         
-        dictionaryAttrib = CompuCell.getPyAttrib( childCell )
-        dictionaryAttrib["InitialVolume"] = childCell.volume
-        dictionaryAttrib["DivideVolume"] = 280.
+        
+        childCell.dict["InitialVolume"] = childCell.volume
+        childCell.dict["DivideVolume"] = 280.
         
         print "Child cell ID: %s" % childCell.id
         print "Parent cell ID: %s" % parentCell.id

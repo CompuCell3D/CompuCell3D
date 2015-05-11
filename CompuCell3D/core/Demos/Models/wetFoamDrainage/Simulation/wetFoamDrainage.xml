@@ -1,7 +1,6 @@
 <CompuCell3D>
     <!-- The Potts section defines paramters that are used in the Metropolis algorithm-->
     <!-- It also defines lattice parameters, flip neighbors and boundary conditions-->
-   <PythonScript>Simulation/wetFoamDrainage.py</PythonScript>
    <Potts>
       <Dimensions x="300" y="300" z="1"/>
       <Anneal>0</Anneal>

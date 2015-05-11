@@ -27,7 +27,7 @@ from PySteppables import *
 
 class MitosisSteppableBase(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
+        SteppableBasePy.__init__(self,_simulator,_frequency)        
         # self.simulator=_simulator
         # self.inventory=self.simulator.getPotts().getCellInventory()
         # self.cellList=CellList(self.inventory)
@@ -56,6 +56,16 @@ class MitosisSteppableBase(SteppableBasePy):
     def getParentChildPositionFlag(self,_flag):
         return self.mitosisSteppable.getParentChildPositionFlag()
         
+    def cloneParent2Child(self):
+        # these calls seem to be necessary to ensure whatever is setin in mitosisSteppable (C++) is reflected in Python        
+        # self.parentCell=self.mitosisSteppable.parentCell
+        # self.childCell=self.mitosisSteppable.childCell  
+        
+        self.cloneAttributes(sourceCell = self.parentCell, targetCell = self.childCell, no_clone_key_dict_list = [] )
+        
+            
+
+
     def updateAttributes(self):
         self.childCell.targetVolume=self.parentCell.targetVolume
         self.childCell.lambdaVolume=self.parentCell.lambdaVolume
@@ -64,16 +74,24 @@ class MitosisSteppableBase(SteppableBasePy):
     def step(self,mcs):
         print "MITOSIS STEPPABLE BASE"
 
-        
+    def initParentAndChildCells(self):
+        '''
+        Initializes self.parentCell and self.childCell to point to respective cell objects after mitosis is completed succesfully
+        '''
+        self.parentCell=self.mitosisSteppable.parentCell
+        self.childCell=self.mitosisSteppable.childCell  
+    
     def divideCellRandomOrientation(self, _cell):
         self.mitosisDone=self.mitosisSteppable.doDirectionalMitosisRandomOrientation(_cell)       
         if self.mitosisDone:
+            self.initParentAndChildCells()
             self.updateAttributes()
         return self.mitosisDone
         
     def divideCellOrientationVectorBased(self, _cell, _nx, _ny, _nz):        
         self.mitosisDone=self.mitosisSteppable.doDirectionalMitosisOrientationVectorBased(_cell, _nx, _ny, _nz)
         if self.mitosisDone:
+            self.initParentAndChildCells()
             self.updateAttributes()            
         return self.mitosisDone
 
@@ -82,6 +100,7 @@ class MitosisSteppableBase(SteppableBasePy):
         # print "orientationVectors.semiminorVec=",(orientationVectors.semiminorVec.fX,orientationVectors.semiminorVec.fY,orientationVectors.semiminorVec.fZ)
         self.mitosisDone=self.mitosisSteppable.doDirectionalMitosisAlongMajorAxis(_cell)
         if self.mitosisDone:
+            self.initParentAndChildCells()
             self.updateAttributes()            
         return self.mitosisDone
         
@@ -89,6 +108,7 @@ class MitosisSteppableBase(SteppableBasePy):
     def divideCellAlongMinorAxis(self, _cell):        
         self.mitosisDone=self.mitosisSteppable.doDirectionalMitosisAlongMinorAxis(_cell)
         if self.mitosisDone:
+            self.initParentAndChildCells()
             self.updateAttributes()            
         return self.mitosisDone
     
@@ -113,6 +133,30 @@ class MitosisSteppableClustersBase(SteppableBasePy):
         # #works too
         # # return ClusterCellList(self.inventory.getClusterInventory().getClusterCells(_clusterId))         
         
+    def initParentAndChildCells(self):
+        '''
+        Initializes self.parentCell and self.childCell to point to respective cell objects after mitosis is completed succesfully
+        '''    
+        self.parentCell=self.mitosisSteppable.parentCell
+        self.childCell=self.mitosisSteppable.childCell          
+
+        
+    def cloneClusterAttributes(self,sourceCellCluster, targetCellCluster, no_clone_key_dict_list = [] ):
+        for i in xrange(sourceCellCluster.size()):            
+            self.cloneAttributes(sourceCell=sourceCellCluster[i], targetCell=targetCellCluster[i], no_clone_key_dict_list= no_clone_key_dict_list)
+    
+        
+    def cloneParentCluster2ChildCluster(self):
+        # these calls seem to be necessary to ensure whatever is setin in mitosisSteppable (C++) is reflected in Python        
+        # self.parentCell=self.mitosisSteppable.parentCell
+        # self.childCell=self.mitosisSteppable.childCell  
+        
+        compartmentListParent=self.inventory.getClusterCells(self.parentCell.clusterId)
+        compartmentListChild=self.inventory.getClusterCells(self.childCell.clusterId)
+        
+        self.cloneClusterAttributes(sourceCellCluster=compartmentListParent, targetCellCluster=compartmentListChild, no_clone_key_dict_list = [] )
+
+        
     def updateAttributes(self):
         parentCell=self.mitosisSteppable.parentCell
         childCell=self.mitosisSteppable.childCell
@@ -130,12 +174,14 @@ class MitosisSteppableClustersBase(SteppableBasePy):
     def divideClusterRandomOrientation(self, _clusterId):
         self.mitosisDone=self.mitosisSteppable.doDirectionalMitosisRandomOrientationCompartments(_clusterId)       
         if self.mitosisDone:
+            self.initParentAndChildCells()
             self.updateAttributes()
         return self.mitosisDone            
         
     def divideClusterOrientationVectorBased(self, _clusterId, _nx, _ny, _nz):        
         self.mitosisDone=self.mitosisSteppable.doDirectionalMitosisOrientationVectorBasedCompartments(_clusterId, _nx, _ny, _nz)
         if self.mitosisDone:
+            self.initParentAndChildCells()
             self.updateAttributes()
         return self.mitosisDone    
         
@@ -144,6 +190,7 @@ class MitosisSteppableClustersBase(SteppableBasePy):
         # print "orientationVectors.semiminorVec=",(orientationVectors.semiminorVec.fX,orientationVectors.semiminorVec.fY,orientationVectors.semiminorVec.fZ)
         self.mitosisDone=self.mitosisSteppable.doDirectionalMitosisAlongMajorAxisCompartments(_clusterId)
         if self.mitosisDone:
+            self.initParentAndChildCells()
             self.updateAttributes()            
         return self.mitosisDone
         
@@ -151,6 +198,7 @@ class MitosisSteppableClustersBase(SteppableBasePy):
     def divideClusterAlongMinorAxis(self, _clusterId):        
         self.mitosisDone=self.mitosisSteppable.doDirectionalMitosisAlongMinorAxisCompartments(_clusterId)
         if self.mitosisDone:
+            self.initParentAndChildCells()        
             self.updateAttributes()            
         return self.mitosisDone
         

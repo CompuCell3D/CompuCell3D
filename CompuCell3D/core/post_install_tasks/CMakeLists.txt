@@ -72,7 +72,7 @@ elseif (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
         # EXEC_PROGRAM(uname ARGS -v  OUTPUT_VARIABLE DARWIN_VERSION)
         # STRING(REGEX MATCH "[0-9]+" DARWIN_VERSION ${DARWIN_VERSION})
         # MESSAGE(STATUS "DARWIN_VERSION=${DARWIN_VERSION}")
-        SET (PYTHON_MINOR_VERSION 6 CACHE STRING "Minor version of Python on OSX")
+        SET (PYTHON_MINOR_VERSION 7 CACHE STRING "Minor version of Python on OSX")
 
         # IF (${MINOR_OS_VERSION} GREATER 5)
         #   SET(PYTHON_MINOR_VERSION 6)
@@ -220,9 +220,13 @@ INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts" DESTINATION @CMA
     PATTERN "Version.py.in*" EXCLUDE
     PATTERN "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/*")
 
-INSTALL(FILES  "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/CompuCellPythonSimulationCML.py" DESTINATION @CMAKE_INSTALL_PREFIX@/player )    
 
-INSTALL(FILES  "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/ParameterScanRun.py" DESTINATION @CMAKE_INSTALL_PREFIX@/player )    
+if (INSTALL_PLAYER)    
+
+    INSTALL(FILES  "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/CompuCellPythonSimulationCML.py" DESTINATION @CMAKE_INSTALL_PREFIX@/player )    
+    INSTALL(FILES  "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/ParameterScanRun.py" DESTINATION @CMAKE_INSTALL_PREFIX@/player )    
+    
+endif (INSTALL_PLAYER)    
 
 
 INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/core/Demos" DESTINATION @CMAKE_INSTALL_PREFIX@

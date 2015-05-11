@@ -1,5 +1,5 @@
- <CompuCell3D>
- <PythonScript>Simulation/MomentOfInertia3D.py</PythonScript>
+<CompuCell3D>
+
  <Potts>
    <Dimensions x="100" y="100" z="100"/>
    <Steps>10000</Steps>

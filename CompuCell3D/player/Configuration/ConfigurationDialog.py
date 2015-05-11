@@ -30,8 +30,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.setupUi(self)   # in ui_configurationdlg.Ui_CC3DPrefs
         
         # for now, let's disable these guys until we want to handle them.  But can still do: compucell3d.sh --prefs=myprefs
-        self.prefsFileLineEdit.setEnabled(False)
-        self.prefsFileButton.setEnabled(False)
+        # self.prefsFileLineEdit.setEnabled(False)
+        # self.prefsFileButton.setEnabled(False)
   
 #        if not MAC:
 #            self.cancelButton.setFocusPolicy(Qt.NoFocus)
@@ -199,10 +199,11 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("FieldIndex", fieldIndex)
         self.lastSelectedField = fieldIndex
         
-        allFieldsDict = Configuration.getSimFieldsParams()
+        # allFieldsDict = Configuration.getSimFieldsParams()
+        allFieldsDict = Configuration.getSetting('FieldParams')
 
         key1 = allFieldsDict.keys()[0]
-        
+
         if isinstance(key1,str):
             fieldParams = allFieldsDict[str(fname)]
         else:
@@ -241,17 +242,31 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
         val = fieldParamsDict["LegendEnable"]
         self.fieldShowLegendCheckBox.setChecked(val)
-         
+        
+        
+        try : 
+            val = fieldParamsDict["OverlayVectorsOn"]
+            self.vectorsOverlayCheckBox.setChecked(val)            
+            
+        except KeyError:
+            print MODULENAME,'  WARNING fieldParamsDict key "OverlayVectorsOn" not defined'
+            print MODULENAME,'  fieldParamsDict=',fieldParamsDict
+            print '\n'
+            
         try:
             val = fieldParamsDict["ScalarIsoValues"]
             
             if type(val) == QVariant:  self.isovalList.setText(val.toString())
             elif type(val) == QString:  self.isovalList.setText(val)
+            else: self.isovalList.setText(str(val))
+            
+            print 'ScalarIsoValues=',val
         except KeyError:
             print '-----------------\n'
             print MODULENAME,'  WARNING fieldParamsDict key "ScalarIsoValues" not defined'
             print MODULENAME,'  fieldParamsDict=',fieldParamsDict
             print '\n'
+        # sys.exit()    
         val = fieldParamsDict["NumberOfContourLines"]
 
         self.numberOfContoursLinesSpinBox.setValue(val)
@@ -263,6 +278,12 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         val = fieldParamsDict["FixedArrowColorOn"]
         self.vectorsArrowColorCheckBox.setChecked(val)
         self.vectorsArrowColorClicked()  # enable/disable
+        
+        contoursOn = fieldParamsDict["ContoursOn"]
+        self.contoursShowCB.setChecked(contoursOn)
+        # self.isovalList.setEnabled(contoursOn)
+        # self.numberOfContoursLinesSpinBox.setEnabled(contoursOn)
+        
         
         
         
@@ -371,18 +392,18 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.outputLocationLineEdit.setText(dirName)
         Configuration.setSetting('OutputLocation',dirName)
         
-    @pyqtSignature("") # signature of the signal emitted by the button
-    def on_prefsFileButton_clicked(self):
-        currentPrefsFile = Configuration.getSetting('PreferencesFile')
-        fileName = QFileDialog.getOpenFileName(self, "Specify Preferences Filename", currentPrefsFile)
-        fileName=str(fileName)        
-        fileName.rstrip()
-        print "fileName=",fileName
-        if fileName=="":
-            return
-        fileName=os.path.abspath(fileName)
-        self.prefsFileLineEdit.setText(fileName)
-        Configuration.setSetting('PreferencesFile',fileName)
+    # # # @pyqtSignature("") # signature of the signal emitted by the button
+    # # # def on_prefsFileButton_clicked(self):
+        # # # currentPrefsFile = Configuration.getSetting('PreferencesFile')
+        # # # fileName = QFileDialog.getOpenFileName(self, "Specify Preferences Filename", currentPrefsFile)
+        # # # fileName=str(fileName)        
+        # # # fileName.rstrip()
+        # # # print "fileName=",fileName
+        # # # if fileName=="":
+            # # # return
+        # # # fileName=os.path.abspath(fileName)
+        # # # self.prefsFileLineEdit.setText(fileName)
+        # # # Configuration.setSetting('PreferencesFile',fileName)
         
     @pyqtSignature("") # signature of the signal emitted by the button
     def on_addCellTypeButton_clicked(self):   
@@ -446,7 +467,10 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
             
             
     def updateFieldParams(self,fieldName):
-        
+        # we do not allow fields with empty name
+        if str(fieldName) == '' :
+            return 
+            
         fieldDict = {}
         key = "MinRange"
         val = self.fieldMinRange.text()
@@ -480,7 +504,18 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         val = self.fieldShowLegendCheckBox.isChecked()
         fieldDict[key] = val
         Configuration.setSetting(key,val)
-            
+        
+        key = "OverlayVectorsOn"         
+        val = self.vectorsOverlayCheckBox.isChecked()
+        fieldDict[key] = val
+        Configuration.setSetting(key,val)
+
+        key = "ContoursOn"         
+        val = self.contoursShowCB.isChecked()
+        fieldDict[key] = val
+        Configuration.setSetting(key,val)
+
+        
         key = "ScalarIsoValues" 
         val = self.isovalList.text()
         fieldDict[key] = val
@@ -514,7 +549,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 
         
         # rwh: check if the PreferencesFile is different; if so, update it
-        Configuration.mySettings = QSettings(QSettings.IniFormat, QSettings.UserScope, "Biocomplexity", self.prefsFileLineEdit.text())
+        # # # Configuration.mySettings = QSettings(QSettings.IniFormat, QSettings.UserScope, "Biocomplexity", self.prefsFileLineEdit.text())
 
         # update flags in menus:  CC3DOutputOn, etc. (rf. ViewManager/SimpleViewManager)
         
@@ -531,11 +566,13 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("ProjectLocation", self.projectLocationLineEdit.text())
         Configuration.setSetting("OutputLocation", self.outputLocationLineEdit.text())
         Configuration.setSetting("OutputToProjectOn", self.outputToProjectCheckBox.isChecked())
-        Configuration.setSetting("PreferencesFile", self.prefsFileLineEdit.text())
+        # # # Configuration.setSetting("PreferencesFile", self.prefsFileLineEdit.text())
         Configuration.setSetting("NumberOfRecentSimulations", self.numberOfRecentSimulationsSB.value())        
-        
+        Configuration.setSetting("FloatingWindows", self.floatingWindowsCB.isChecked())
+
+
         Configuration.setSetting("WindowColorSameAsMedium", self.windowColorSameAsMediumCB.isChecked() )
-        
+
         
         # Cell Type/Colors
         Configuration.setSetting("TypeColorMap",self.paramCC3D["TypeColorMap"])  # rwh
@@ -554,12 +591,18 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 
         fp = Configuration.getSetting("FieldParams")
         
+        
         # get Field name from combobox in the Field tab and save the current settings for that field
         fname = self.fieldComboBox.currentText()
         
-#        Configuration.updateSimFieldsParams(fname)
+        # Configuration.updateSimFieldsParams(fname)
+        # print '\n\n\n updating field fname = ',fname 
+        
         self.updateFieldParams(fname)
 
+        # fpafter = Configuration.getSetting("FieldParams")
+        # print 'CONF POPUP AFTER self.updateFieldParams \n\n\n FIELD PARAMS keys  = ',fpafter.keys()        
+        
         Configuration.setSetting("PixelizedScalarField", self.pixelizedScalarFieldCB.isChecked())
         
         Configuration.setSetting("MinRange", self.fieldMinRange.text())
@@ -599,8 +642,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         fieldIndex = Configuration.getSetting("FieldIndex")
         self.lastSelectedField = fieldIndex
         self.fieldComboBox.setCurrentIndex(self.lastSelectedField)
-
-        
+                
         # Output
         self.updateScreenSpinBox.setValue(Configuration.getSetting("ScreenUpdateFrequency"))
 #        self.updateScreenSpinBox.setMinimum(1)
@@ -621,9 +663,9 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.outputLocationLineEdit.setText( str(Configuration.getSetting("OutputLocation")))
         self.outputToProjectCheckBox.setChecked(Configuration.getSetting("OutputToProjectOn"))
         
-        self.prefsFileLineEdit.setText( str(Configuration.getSetting("PreferencesFile")))
+        # # # self.prefsFileLineEdit.setText( str(Configuration.getSetting("PreferencesFile")))
         self.numberOfRecentSimulationsSB.setValue(Configuration.getSetting("NumberOfRecentSimulations"))
-        
+        self.floatingWindowsCB.setChecked(Configuration.getSetting("FloatingWindows"))
         
         # Cell Type/Colors
 
@@ -684,6 +726,12 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.isovalList.setText(Configuration.getSetting("ScalarIsoValues"))
         self.numberOfContoursLinesSpinBox.setValue(self.paramCC3D["NumberOfContourLines"])
 
+        contoursOn = Configuration.getSetting("ContoursOn")
+        self.contoursShowCB.setChecked(contoursOn)
+        self.isovalList.setEnabled(contoursOn)
+        self.numberOfContoursLinesSpinBox.setEnabled(contoursOn)
+        
+        
         
         
         # Vectors
@@ -693,7 +741,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.vectorsArrowColorCheckBox.setChecked(self.paramCC3D["FixedArrowColorOn"])
         self.vectorsArrowColorClicked()  # enable/disable
         
-#        self.vectorsOverlayCheckBox.setChecked(self.paramCC3D["OverlayVectorsOn"])
+        self.vectorsOverlayCheckBox.setChecked(self.paramCC3D["OverlayVectorsOn"])
         
         color = Configuration.getSetting("ArrowColor")
         pm = QPixmap(size.width(), size.height())
@@ -717,7 +765,12 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         '''
             this fcn stores current settings for all the keys of Configuration.Configuration.defaultConfigs as a self.paramCC3D dictionary
         '''
-        for key in Configuration.Configuration.defaultConfigs.keys():
+        
+        for key in Configuration.getSettingNameList():
             self.paramCC3D[key]=Configuration.getSetting(key)
         return    
+        
+        # for key in Configuration.Configuration.defaultConfigs.keys():
+            # self.paramCC3D[key]=Configuration.getSetting(key)
+        # return    
 

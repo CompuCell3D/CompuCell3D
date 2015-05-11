@@ -82,6 +82,8 @@ class ScreenshotData:
             
 class ScreenshotManager:
     def __init__(self,_tabViewWidget):
+
+
         self.screenshotDataDict={}
         from weakref import ref
         self.tabViewWidget=ref(_tabViewWidget)
@@ -103,7 +105,18 @@ class ScreenshotManager:
         
         # self.screenshotGraphicsWidget = GraphicsFrameWidget(self.tabViewWidget)
         print 'CREATING SCREENSHOT WINDOW'
-        self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw)
+
+        self.screenshotGraphicsWidget = None
+        # MDIFIX - temporary
+        # return
+
+
+        # MDIFIX
+        self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw, tvw)
+        # self.screenshotGraphicsWidget.allowSaveLayout = False # we do not save screenshot widget in the windows layout
+        self.screenshotGraphicsWidget.is_screenshot_widget = True # important because e.g. we do not save screenshot widget in the windows layout
+        # self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw)
+
         self.screenshotGraphicsWidget.screenshotWindowFlag=True
         
         xSize=Configuration.getSetting("Screenshot_X")
@@ -143,6 +156,7 @@ class ScreenshotManager:
         # have to do cleanup to ensure some of the memory intensive resources e.g. self.screenshotGraphicsWidget get deallocated
         if self.screenshotGraphicsWidget:
             print 'JUST BEFORE CLOSING self.screenshotGraphicsWidget'
+            # this close and assignment do not do much for the non-mdi layout
             self.screenshotGraphicsWidget.close()
             self.screenshotGraphicsWidget=None
         self.tabViewWidget=None

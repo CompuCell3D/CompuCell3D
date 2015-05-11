@@ -13,4 +13,9 @@ RoadRunner/ThirdParty/libsbml/src/sbml/common/libsbml-config-common.h
 .Trashes
 ehthumbs.db
 Thumbs.db
+*.pyc
+*.pyo
+.idea
+VTKLibs
+vtk
 *~

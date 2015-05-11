@@ -1,7 +1,5 @@
  <CompuCell3D>
 
-  <!-- <PythonScript>Demos/AdhesionFlex/AdhesionFlex.py</PythonScript> -->
-
  <Potts>
    <Dimensions x="200" y="200" z="1"/> <!-- Z >1 become 3D -->
    <Anneal>10</Anneal>
