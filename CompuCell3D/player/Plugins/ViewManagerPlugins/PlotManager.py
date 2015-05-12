@@ -965,11 +965,19 @@ class PlotManager(QtCore.QObject):
         # # self.updateWindowMenu()
         
         # 
-        
+
+
+
         newWindow.setShown(False)
         
         
         mdiPlotWindow = self.vm.addSubWindow(newWindow)
+
+
+        rec = QApplication.desktop().screenGeometry()
+        height = rec.height()
+        width = rec.width()
+        mdiPlotWindow.move(QPoint(width/4, height/4))
 
         self.vm.lastActiveRealWindow = mdiPlotWindow
 

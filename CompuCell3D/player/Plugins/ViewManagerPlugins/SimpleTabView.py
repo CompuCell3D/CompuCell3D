@@ -361,6 +361,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         newWindow.currentDrawingObject.setPlane(self.newWindowDefaultPlane[0], self.newWindowDefaultPlane[1])
 
+
+
+
+
         # self.simulation.setGraphicsWidget(self.mainGraphicsWindow)
         # self.mdiWindowDict[self.windowCounter] = self.addSubWindow(newWindow)
         mdiWindow = self.addSubWindow(newWindow)
@@ -377,6 +381,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         newWindow.setConnects(self)  # in GraphicsFrameWidget
         newWindow.setInitialCrossSection(self.basicSimulationData)
         newWindow.setFieldTypesComboBox(self.fieldTypes)
+
+        rec = QApplication.desktop().screenGeometry()
+        height = rec.height()
+        width = rec.width()
+        mdiWindow.move(QPoint(width/3, height/3))
 
         return mdiWindow
 
@@ -417,6 +426,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.updateWindowMenu()
         self.updateActiveWindowVisFlags()
         # print self.graphicsWindowVisDict
+
+
+        rec = QApplication.desktop().screenGeometry()
+        height = rec.height()
+        width = rec.width()
+        mdiSubWindow.move(QPoint(width/3, height/3))
+
 
     def minimizeAllGraphicsWindows(self):
         '''
