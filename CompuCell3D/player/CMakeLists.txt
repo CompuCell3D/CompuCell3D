@@ -91,6 +91,17 @@ if(INSTALL_PLAYER)
             ${CMAKE_SOURCE_DIR}/player/Utilities/QVTKRenderWindowInteractor_mac.py 
             DESTINATION ${CMAKE_INSTALL_PREFIX}/player/Utilities RENAME QVTKRenderWindowInteractor.py
             )
+        INSTALL(FILES  
+            ${CMAKE_SOURCE_DIR}/player/Configuration_settings/_settings_mac.xml 
+            DESTINATION ${CMAKE_INSTALL_PREFIX}/player/Configuration RENAME _settings.xml
+            )
+            
+    else(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+        INSTALL(FILES  
+            ${CMAKE_SOURCE_DIR}/player/Configuration_settings/_settings.xml 
+            DESTINATION ${CMAKE_INSTALL_PREFIX}/player/Configuration
+            )
+        
     endif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin) 
 
     INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/player/ViewManager" DESTINATION @CMAKE_INSTALL_PREFIX@/player
