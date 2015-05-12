@@ -92,7 +92,7 @@ if(INSTALL_PLAYER)
             DESTINATION ${CMAKE_INSTALL_PREFIX}/player/Utilities RENAME QVTKRenderWindowInteractor.py
             )
         INSTALL(FILES  
-            ${CMAKE_SOURCE_DIR}/player/Configuration_settings/_settings_mac.xml 
+            ${CMAKE_SOURCE_DIR}/player/Configuration_settings/_settings_osx.xml 
             DESTINATION ${CMAKE_INSTALL_PREFIX}/player/Configuration RENAME _settings.xml
             )
             
