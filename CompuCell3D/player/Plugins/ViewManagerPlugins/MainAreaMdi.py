@@ -32,6 +32,14 @@ class MainArea(QMdiArea):
         self.win_inventory = WindowInventory()
         self.lastActiveRealWindow = None # keeps track of the last active real window
 
+    def suggested_window_position(self):
+        '''
+        returns suggested position of the next window. For MainAreaMdi it returns QPoint(-1,-1)
+        indicating that client code shuld use QMdiArea functionality to place windows
+        :return:QPoint - position of the next window
+        '''
+
+        return QPoint(-1, -1)
 
     def addSubWindow(self, widget):
 

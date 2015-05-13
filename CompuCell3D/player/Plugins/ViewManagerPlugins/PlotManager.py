@@ -800,7 +800,7 @@ class PlotManager(QtCore.QObject):
         self.plotWindowList=[]
         self.plotWindowMutex=QtCore.QMutex()
         self.signalsInitialized=False
-                     
+
     def getPlotWindow(self):
         if self.plotsSupported:
            return PlotWindow()
@@ -973,11 +973,11 @@ class PlotManager(QtCore.QObject):
         
         mdiPlotWindow = self.vm.addSubWindow(newWindow)
 
-        if self.vm.MDI_ON:
-            rec = QApplication.desktop().screenGeometry()
-            height = rec.height()
-            width = rec.width()
-            mdiPlotWindow.move(QPoint(width/4, height/4))
+        suggested_win_pos = self.vm.suggested_window_position()
+
+        if suggested_win_pos.x() != -1 and suggested_win_pos.y() != -1:
+
+            mdiPlotWindow.move(suggested_win_pos)
 
         self.vm.lastActiveRealWindow = mdiPlotWindow
 

@@ -382,11 +382,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         newWindow.setInitialCrossSection(self.basicSimulationData)
         newWindow.setFieldTypesComboBox(self.fieldTypes)
 
-        if self.MDI_ON:
-            rec = QApplication.desktop().screenGeometry()
-            height = rec.height()
-            width = rec.width()
-            mdiWindow.move(QPoint(width/3, height/3))
+        suggested_win_pos = self.suggested_window_position()
+
+        if suggested_win_pos.x() != -1 and suggested_win_pos.y() != -1:
+
+            mdiWindow.move(suggested_win_pos)
+
 
         return mdiWindow
 
@@ -428,11 +429,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.updateActiveWindowVisFlags()
         # print self.graphicsWindowVisDict
 
-        if self.MDI_ON:
-            rec = QApplication.desktop().screenGeometry()
-            height = rec.height()
-            width = rec.width()
-            mdiSubWindow.move(QPoint(width/3, height/3))
+
+        suggested_win_pos = self.suggested_window_position()
+
+        if suggested_win_pos.x() != -1 and suggested_win_pos.y() != -1:
+
+            mdiSubWindow.move(suggested_win_pos)
+
 
 
     def minimizeAllGraphicsWindows(self):
