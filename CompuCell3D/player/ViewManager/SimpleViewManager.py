@@ -137,8 +137,10 @@ class SimpleViewManager(QObject):
         menu.addAction(self.quickAct)
         menu.addAction(self.tutorAct)
         menu.addAction(self.refManAct)
+        menu.addSeparator()
         menu.addAction(self.mail_subscribe_act)
         menu.addAction(self.mail_unsubscribe_act)
+        menu.addAction(self.mail_subscribe_unsubscribe_web_act)
         menu.addSeparator()
         menu.addAction(self.aboutAct)
         menu.addSeparator()
@@ -578,6 +580,10 @@ class SimpleViewManager(QObject):
                                             "Unsubscribe from Mailing List", self)
         self.connect(self.mail_unsubscribe_act, SIGNAL('triggered()'), self.__mail_unsubscribe)
 
+        self.mail_subscribe_unsubscribe_web_act = QAction("Subscribe/Unsubscribe Mailing List - Web browser", self)
+        self.connect(self.mail_subscribe_unsubscribe_web_act, SIGNAL('triggered()'), self.__mail_subscribe_unsubscribe_web)
+
+
         self.whatsThisAct = QAction(QIcon(gip("whatsThis.png")), "&What's This?", self)
         self.whatsThisAct.setWhatsThis(self.trUtf8(
             """<b>Display context sensitive help</b>"""
@@ -598,6 +604,7 @@ class SimpleViewManager(QObject):
         self.helpActions.append(self.aboutAct)
         self.helpActions.append(self.mail_subscribe_act)
         self.helpActions.append(self.mail_unsubscribe_act)
+        self.helpActions.append(self.mail_subscribe_unsubscribe_web_act)
         self.helpActions.append(self.whatsThisAct)
 
         # def __initTabActions(self):
@@ -616,6 +623,8 @@ class SimpleViewManager(QObject):
     def __mail_unsubscribe(self):
         QDesktopServices.openUrl(QUrl('mailto:list@iu.edu?body=UNSUBSCRIBE compucell3d-l'))
 
+    def __mail_subscribe_unsubscribe_web(self):
+        QDesktopServices.openUrl(QUrl('http://www.compucell3d.org/mailinglist'))
 
     def __about(self):
         versionStr = '3.6.0'
