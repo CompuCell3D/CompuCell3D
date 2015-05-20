@@ -440,8 +440,8 @@ class DeathSteppable(SteppableBasePy):
         if mcs==1000:
             for cell in self.cellList:
                 if cell.type==1:
-                    cell.targetVolume==0
-                    cell.lambdaVolume==100
+                    cell.targetVolume=0
+                    cell.lambdaVolume=100
         
         '''%(self.steppableFrequency)        
     def generateSteppablePythonScript(self):
