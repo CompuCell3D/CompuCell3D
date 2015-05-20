@@ -142,6 +142,8 @@ class SimpleViewManager(QObject):
         menu.addAction(self.mail_unsubscribe_act)
         menu.addAction(self.mail_subscribe_unsubscribe_web_act)
         menu.addSeparator()
+        menu.addAction(self.check_update_act)
+        menu.addSeparator()
         menu.addAction(self.aboutAct)
         menu.addSeparator()
         menu.addAction(self.whatsThisAct)
@@ -583,6 +585,8 @@ class SimpleViewManager(QObject):
         self.mail_subscribe_unsubscribe_web_act = QAction("Subscribe/Unsubscribe Mailing List - Web browser", self)
         self.connect(self.mail_subscribe_unsubscribe_web_act, SIGNAL('triggered()'), self.__mail_subscribe_unsubscribe_web)
 
+        self.check_update_act = QAction("Check for CC3D Updates", self)
+        self.connect(self.check_update_act, SIGNAL('triggered()'), self.__check_update)
 
         self.whatsThisAct = QAction(QIcon(gip("whatsThis.png")), "&What's This?", self)
         self.whatsThisAct.setWhatsThis(self.trUtf8(
@@ -595,8 +599,6 @@ class SimpleViewManager(QObject):
         ))
         self.connect(self.whatsThisAct, SIGNAL('triggered()'), self.__whatsThis)
 
-
-
         # Why append?
         self.helpActions.append(self.quickAct)
         self.helpActions.append(self.tutorAct)
@@ -605,6 +607,7 @@ class SimpleViewManager(QObject):
         self.helpActions.append(self.mail_subscribe_act)
         self.helpActions.append(self.mail_unsubscribe_act)
         self.helpActions.append(self.mail_subscribe_unsubscribe_web_act)
+        self.helpActions.append(self.check_update_act)
         self.helpActions.append(self.whatsThisAct)
 
         # def __initTabActions(self):
@@ -612,6 +615,114 @@ class SimpleViewManager(QObject):
         # self.closeTab.setIcon(QIcon("player/icons/close.png"))
         # self.closeTab.setToolTip("Close the tab")
         # self.closeTab.hide()
+
+    def check_version(self, check_interval = -1):
+        '''
+        This function checks if new CC3D version is available
+        :return:None
+        '''
+
+        # determine if check is necessary - for now we check every week in order not to bother users with too many checks
+        last_version_check_date = Configuration.getSetting('LastVersionCheckDate')
+
+        import datetime
+        today = datetime.date.today()
+        today_date_str = today.strftime('%Y%m%d')
+
+        old_date = datetime.date(int(last_version_check_date[:4]), int(last_version_check_date[4:6]), int(last_version_check_date[6:]))
+        t_delta = today - old_date
+
+        if t_delta.days < check_interval:
+            return # check for CC3D recently
+        else:
+            print 'WILL DO THE CHECK'
+
+        from Utilities.WebFetcher import WebFetcher
+
+        self.version_fetcher = WebFetcher(_parent=self)
+        self.version_fetcher.gotWebContentSignal.connect(self.process_version_check)
+
+        self.version_fetcher.fetch("http://www.compucell3d.org/current_version")
+
+
+    def process_version_check(self, version_str, url_str):
+        '''
+        This function extracts current version and revision numbers from the http://www.compucell3d.org/current_version
+        It informs users that new version is available and allows easy redirection to the download site
+        :param version_str: content of the web page with the current version information
+        :param url_str: url of the webpage with the current version information
+        :return: None
+        '''
+        if str(version_str) == '':
+            print 'Could not fetch "http://www.compucell3d.org/current_version webpage'
+            return
+
+        current_version = ''
+        current_revision = ''
+
+        import re
+
+        current_version_regex = re.compile("(current version)([0-9\. ]*)")
+
+        for line in str(version_str).split("\n"):
+
+            search_obj = re.search(current_version_regex, line)
+
+            if search_obj:
+                # print 'search_obj=', search_obj
+                # print search_obj.groups()
+                try:
+                    version_info = search_obj.groups()[1]
+                    version_info = version_info.strip()
+                    current_version, current_revision = version_info.split(' ')
+                except:
+                    pass
+
+        # print 'current_version=', current_version
+        # print 'current_revision=', current_revision
+        import Version
+
+        instance_version = Version.getVersionAsString()
+        instance_revision = Version.getSVNRevision()
+
+        current_version_number = int(current_version.replace('.',''))
+        current_revision_number = int(current_revision)
+        instance_version_number = int(instance_version.replace('.',''))
+        instance_revision_number = int(instance_revision)
+
+        display_new_version_info = False
+
+        if current_version_number > instance_version_number:
+            display_new_version_info = True
+
+        elif current_revision_number == instance_version_number and current_revision_number > instance_revision_number:
+            display_new_version_info = True
+
+
+
+        import datetime
+        today = datetime.date.today()
+        today_date_str = today.strftime('%Y%m%d')
+
+        last_version_check_date = Configuration.setSetting('LastVersionCheckDate', today_date_str)
+
+
+
+        if display_new_version_info:
+
+            ret = QMessageBox.information(self,'New Version Available','New version of CompuCell3D is available - %s rev. %s. Would you like to upgrade?'%(current_version,current_revision),QMessageBox.Yes|QMessageBox.No)
+            if ret == QMessageBox.Yes:
+                QDesktopServices.openUrl(QUrl('http://sourceforge.net/projects/cc3d/files/'+current_version))
+
+
+
+    def __check_update(self):
+        '''
+        This slot checks for CC3D updates
+        :return:None
+        '''
+        print 'CHECKING FOR UPDATES'
+        self.check_version()
 
     def __open_manuals_webpage(self):
         # print 'THIS IS QUICK START GUIDE'

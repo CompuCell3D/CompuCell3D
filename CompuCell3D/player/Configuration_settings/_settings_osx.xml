@@ -65,6 +65,7 @@
       <e Name="RecentFile" Type="str"></e>
       <e Name="ScalarIsoValues" Type="str"></e>
       <e Name="Types3DInvisible" Type="str">0</e>
+      <e Name="LastVersionCheckDate" Type="str">20010101</e>
    </Settings>
    <Settings Type="bool">
       <e Name="BoundingBoxOn" Type="bool">True</e>

@@ -192,6 +192,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # this means that further refactoring is needed but I leave it for now    
         self.cmlReplayManager = None
 
+        # Here we are checking for new version - notice we use check interval in order not to perform version checks
+        # too often. Default check interval is 7 days
+        self.check_version(check_interval=7)
+
 
     def getSimFileName(self):
         '''
@@ -2581,6 +2585,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:
         '''
         self.zitems = zitems
+
+
+
 
     def zoomIn(self):
         '''
