@@ -659,14 +659,18 @@ class SimpleViewManager(QObject):
 
         current_version = ''
         current_revision = ''
-
+        whats_new_list = []
         import re
 
         current_version_regex = re.compile("(current version)([0-9\. ]*)")
 
+        # (.*?)(<) ensures non-greedy match i.e. all the characters will be matched until first occurence of '<'
+        whats_new_regex = re.compile("(>[\S]*what is new:)(.*?)(<)")
+
         for line in str(version_str).split("\n"):
 
             search_obj = re.search(current_version_regex, line)
+            search_obj_whats_new = re.search(whats_new_regex, line)
 
             if search_obj:
                 # print 'search_obj=', search_obj
@@ -677,6 +681,16 @@ class SimpleViewManager(QObject):
                     current_version, current_revision = version_info.split(' ')
                 except:
                     pass
+
+            if search_obj_whats_new:
+                print search_obj_whats_new.groups()
+                try:
+                    whats_new = search_obj_whats_new.groups()[1]
+                    whats_new = whats_new.strip()
+                    whats_new_list = whats_new.split(', ')
+                except:
+                    pass
+
 
         # print 'current_version=', current_version
         # print 'current_revision=', current_revision
@@ -707,10 +721,14 @@ class SimpleViewManager(QObject):
         last_version_check_date = Configuration.setSetting('LastVersionCheckDate', today_date_str)
 
 
+        message = 'New version of CompuCell3D is available - %s rev. %s. Would you like to upgrade?'%(current_version,current_revision)
+        message += '<p><b>New Features:</b></p>'
+        for whats_new_item in whats_new_list:
+            message += '<p> * '+whats_new_item+'</p>'
 
         if display_new_version_info:
 
-            ret = QMessageBox.information(self,'New Version Available','New version of CompuCell3D is available - %s rev. %s. Would you like to upgrade?'%(current_version,current_revision),QMessageBox.Yes|QMessageBox.No)
+            ret = QMessageBox.information(self, 'New Version Available', message, QMessageBox.Yes | QMessageBox.No)
             if ret == QMessageBox.Yes:
                 QDesktopServices.openUrl(QUrl('http://sourceforge.net/projects/cc3d/files/'+current_version))
 

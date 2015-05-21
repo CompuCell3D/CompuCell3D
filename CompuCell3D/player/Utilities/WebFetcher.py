@@ -51,7 +51,7 @@ class WebFetcher(QObject):
         data = reply.readAll()
         data_qstring = QString(data)
         data_str = str(data_qstring)
-
+        print data_str
         self.gotWebContentSignal.emit(data_qstring, QString(self.url_str))
 
 
@@ -66,4 +66,11 @@ if __name__ == "__main__":
     # current_version_regex = re.compile(r'span')
     match_obj = re.search(current_version_regex, str_http)
     print match_obj.groups()
+
+
+    str_http = 'line874">what is new: Improved Player, Simplified Python Scripting, Easier Specification Of Plots <span cla><this is '
+    whats_new_regex = re.compile("(>[\S]*what is new:)(.*?)(<)")
+
+    search_obj = re.search(whats_new_regex, str_http)
+    print search_obj.groups()
 
