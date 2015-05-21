@@ -35,21 +35,46 @@ class SteppablePy(SimObjectPy):
 
 class FieldVisData(object):
     
-    (CELL_LEVEL_SCALAR_FIELD, CELL_LEVEL_VECTOR_FIELD) = range (0,2)
+    (CELL_LEVEL_SCALAR_FIELD, CELL_LEVEL_VECTOR_FIELD, HISTOGRAM) = range (0,3)
     
     def __init__(self, field, field_type, attribute_name,  function=None):
         self.field = field
         self.function = function
-        self.attribute_name = attribute_name        
+        self.attribute_name = attribute_name
+        self.number_of_bins = 0
+        self.cell_type_list = []
         if function is None:
             self.function = lambda x:x
         
         self.field_type = field_type
         
+class PlotData(object):
+
+    (HISTOGRAM) = range (0,1)
+
+    def __init__(self, plot_name,  plot_type, attribute_name, function=None):
+        self.plot_name = plot_name
+        self.plot_window = None
+        self.function = function
+        self.attribute_name = attribute_name
+        self.x_axis_title = ''
+        self.y_axis_title = ''
+        self.x_scale_type = 'linear'
+        self.y_scale_type = 'linear'
+        self.number_of_bins = 0
+        self.color = 'green'
+        self.cell_type_list = []
+
+        if function is None:
+            self.function = lambda x:x
+
+        self.plot_type = plot_type
+
+
 
 # class SteppableBasePy(SteppablePy): 
 from SBMLSolverHelper import SBMLSolverHelper
-class SteppableBasePy(SteppablePy,SBMLSolverHelper):         
+class SteppableBasePy(SteppablePy,SBMLSolverHelper):
     (CC3D_FORMAT,TUPLE_FORMAT)=range(0,2)    
     def __init__(self,_simulator,_frequency=1):
         SteppablePy.__init__(self,_frequency)
@@ -65,10 +90,13 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         self.clusterList=ClusterList(self.inventory) 
         self.clusters=Clusters(self.inventory)
         self.mcs = -1
-        
-        self.tracking_field_vis_dict = {} # this dicttionary stores fields and visualzation data for automatic tracking of attribute visualization
+
+        # this dictionary stores fields and visualization data for automatic tracking of attribute visualization
+        self.tracking_field_vis_dict = {}
         self.plot_dict = {} # {plot_name:plotWindow  - pW object}
-        
+        # this dictionary stores plots for automatic tracking of attribute visualization
+        self.tracking_plot_dict = {}
+
         self.boundaryStrategy=self.simulator.getBoundaryStrategy()
         
         self.__modulesToUpdateDict={} #keeps modules to update   
@@ -285,25 +313,93 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             plot_window.showAllHistPlots()            
             plot_window.showAllBarCurvePlots()
     
-    def track_cell_level_scalar_attribute(self, field_name , attribute_name, function=None):
-        try:
-            
-            self.tracking_field_vis_dict[attribute_name].function = function
-            
-        except KeyError,e:                
-            field_vis_data = FieldVisData( field = self.createScalarFieldCellLevelPy(field_name) , field_type = FieldVisData.CELL_LEVEL_SCALAR_FIELD ,  attribute_name = attribute_name, function=function )
-            
-            self.tracking_field_vis_dict[field_name] = field_vis_data
+    def track_cell_level_scalar_attribute(self, field_name, attribute_name, function=None, cell_type_list=[]):
 
-    def track_cell_level_vector_attribute(self, field_name , attribute_name, function=None):
+        field_vis_data = FieldVisData( field = self.createScalarFieldCellLevelPy(field_name) , field_type = FieldVisData.CELL_LEVEL_SCALAR_FIELD ,  attribute_name = attribute_name, function=function )
+        field_vis_data.cell_type_list = cell_type_list
+
+        self.tracking_field_vis_dict[field_name] = field_vis_data
+
+    def track_cell_level_vector_attribute(self, field_name , attribute_name, function=None, cell_type_list=[]):
+
+        field_vis_data = FieldVisData( field = self.createVectorFieldCellLevelPy(field_name) , field_type = FieldVisData.CELL_LEVEL_VECTOR_FIELD ,  attribute_name = attribute_name, function=function )
+        field_vis_data.cell_type_list = cell_type_list
+
+        self.tracking_field_vis_dict[field_name] = field_vis_data
+
+    def histogram_scalar_attribute(self, histogram_name, attribute_name, number_of_bins, function=None, cell_type_list=[], x_axis_title='', y_axis_title='', color='green', x_scale_type='linear', y_scale_type='linear'):
+
+
+        tpd = PlotData(plot_name= histogram_name,  plot_type=PlotData.HISTOGRAM, attribute_name=attribute_name, function=function)
+        tpd.number_of_bins = number_of_bins
+
+        tpd.x_scale_type = x_scale_type
+        tpd.y_scale_type = y_scale_type
+
+        tpd.x_axis_title = x_axis_title
+        tpd.y_axis_title = y_axis_title
+        if x_axis_title == '':
+            tpd.x_axis_title = histogram_name
+        if y_axis_title == '':
+            tpd.y_axis_title = 'Value'
+
+        tpd.color = color
+
+        tpd.cell_type_list = cell_type_list
+
+        self.tracking_plot_dict[histogram_name] = tpd
+        # print 'self.tracking_plot_dict=', self.tracking_plot_dict
+
+    def initialize_tracking_plots(self):
+
+        for plot_name, tracking_plot_data in self.tracking_plot_dict.iteritems():
+            tpd = tracking_plot_data
+            pW = self.addNewPlotWindow(_title=tpd.plot_name, _xAxisTitle=tpd.x_axis_title,_yAxisTitle=tpd.y_axis_title, _xScaleType=tpd.x_scale_type,_yScaleType=tpd.y_scale_type)
+            pW.addHistogramPlot(_plotName=tpd.plot_name, _color=tpd.color)
+            tpd.plot_window=pW
+
+    def fetch_attribute(self, cell, attrib_name):
         try:
-            
-            self.tracking_field_vis_dict[attribute_name].function = function
-            
-        except KeyError,e:                
-            field_vis_data = FieldVisData( field = self.createVectorFieldCellLevelPy(field_name) , field_type = FieldVisData.CELL_LEVEL_VECTOR_FIELD ,  attribute_name = attribute_name, function=function )
-            
-            self.tracking_field_vis_dict[field_name] = field_vis_data
+            return cell.dict[attrib_name]
+        except KeyError:
+            try:
+                return getattr(cell, attrib_name)
+            except AttributeError:
+                raise KeyError('Could not locate attribute: '+attrib_name+' in a cell object')
+
+    def update_tracking_histogram(self, tracking_plot_data):
+
+            tpd = tracking_plot_data
+
+            val_list = []
+            plot_window = tpd.plot_window
+
+            if tpd.cell_type_list == []:
+                selective_cell_list = self.cellList
+            else:
+                # unpacking lsit to positional arguments - using * operator
+                selective_cell_list = self.cellListByType(*tpd.cell_type_list)
+            try:
+                for cell in selective_cell_list:
+
+                    try:
+                        attrib = self.fetch_attribute(cell, tpd.attribute_name)
+                    except KeyError:
+                        continue
+                    val_list.append(tpd.function(attrib))
+
+            except:
+                raise RuntimeError('Automatic Attribute Tracking :wrong type of cell attribute, missing attribute or wrong tracking function is used by track_cell_level functions')
+
+            if len(val_list):
+                plot_window.addHistogram(plot_name=tpd.plot_name, value_array=val_list,  number_of_bins=tpd.number_of_bins)
+
+
+    def update_tracking_plot(self):
+
+        for plot_name, tracking_plot_data in self.tracking_plot_dict.iteritems():
+            if tracking_plot_data.plot_type == PlotData.HISTOGRAM:
+                self.update_tracking_histogram(tracking_plot_data)
 
 
     def update_tracking_fields(self):
@@ -311,18 +407,31 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         for field_name , field_vis_data in self.tracking_field_vis_dict.iteritems():
             
             field_vis_data.field.clear()
+
+            if field_vis_data.cell_type_list == []:
+                selective_cell_list = self.cellList
+            else:
+                # unpacking lsit to positional arguments - using * operator
+                selective_cell_list = self.cellListByType(*tpd.cell_type_list)
+
             try:
-                for cell in self.cellList:
+                for cell in selective_cell_list:
                     try:
-                        attrib = cell.dict[field_vis_data.attribute_name]
+                        # attrib = cell.dict[field_vis_data.attribute_name]
+                        attrib = self.fetch_attribute(cell,field_vis_data.attribute_name)
+
                     except KeyError:
                         continue
                     field_vis_data.field[cell] = field_vis_data.function(attrib)                
             except:
-                raise RuntimeError('Automatic Attribute Tracking :wrong type of cell attribute, missing attribute or wrong tracking function is used by track_cell_level functions')            
-                
+                raise RuntimeError('Automatic Attribute Tracking :wrong type of cell attribute, missing attribute or wrong tracking function is used by track_cell_level functions')
+
+    def initialize_automatic_tasks(self):
+        self.initialize_tracking_plots()
+
     def perform_automatic_tasks(self):
         self.update_tracking_fields()
+        self.update_tracking_plot()
         self.update_all_plots_windows()
     
     def areCellsDifferent(self,_cell1,_cell2):
@@ -1294,11 +1403,16 @@ class SteppableRegistry(SteppablePy):
     def start(self):
         for steppable in self.runBeforeMCSSteppableList:
             steppable.start()
+            if hasattr(steppable, 'initialize_automatic_tasks'):
+                steppable.initialize_automatic_tasks()
+
             if hasattr(steppable, 'perform_automatic_tasks'):
                 steppable.perform_automatic_tasks()
 
         for steppable in self.steppableList:
             steppable.start()
+            if hasattr(steppable, 'initialize_automatic_tasks'):
+                steppable.initialize_automatic_tasks()
             if hasattr(steppable, 'perform_automatic_tasks'):
                 steppable.perform_automatic_tasks()
 
