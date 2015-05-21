@@ -722,9 +722,11 @@ class SimpleViewManager(QObject):
 
 
         message = 'New version of CompuCell3D is available - %s rev. %s. Would you like to upgrade?'%(current_version,current_revision)
-        message += '<p><b>New Features:</b></p>'
-        for whats_new_item in whats_new_list:
-            message += '<p> * '+whats_new_item+'</p>'
+
+        if len(whats_new_list):
+            message += '<p><b>New Features:</b></p>'
+            for whats_new_item in whats_new_list:
+                message += '<p> * '+whats_new_item+'</p>'
 
         if display_new_version_info:
 
