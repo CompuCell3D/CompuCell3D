@@ -708,7 +708,9 @@ class MVCDrawModel3D(MVCDrawModelBase):
             glyphs.SetScaleFactor(arrowScalingFactor/dataScalingFactor)
             #coloring arrows
             
-            r,g,b = Configuration.getSetting("ArrowColor",conFieldName)
+            
+            color = Configuration.getSetting("ArrowColor",conFieldName)
+            r,g,b = color.red(), color.green(), color.blue()
 #            print MODULENAME,"   initVectorFieldDataActors():  arrowColor=",arrowColor
 #            r = arrowColor.red()
 #            g = arrowColor.green()

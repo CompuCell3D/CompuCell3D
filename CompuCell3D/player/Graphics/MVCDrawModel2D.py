@@ -1087,7 +1087,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
             #coloring arrows
             
 #            arrowColor = Configuration.getSetting("ArrowColor",fieldName)
-            r,g,b = Configuration.getSetting("ArrowColor",fieldName)
+            color = Configuration.getSetting("ArrowColor",fieldName)
+            r,g,b = color.red(), color.green(), color.blue()
 #            print MODULENAME,"initVectorFieldCellLevelActors():  arrowColor=",arrowColor   # QColor or #ffffff  (hex format)?
 #            print MODULENAME,"initVectorFieldCellLevelActors():  arrowColor r,g,b=",r,g,b
 #            r, g, b = arrowColor[1:3], arrowColor[3:5], arrowColor[5:]
