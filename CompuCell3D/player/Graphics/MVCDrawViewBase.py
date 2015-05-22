@@ -344,53 +344,55 @@ class MVCDrawViewBase:
             self.cameraSettingsDict[fieldName] = self.getCurrentCameraSettings()
         
         # # # # here we handle actors for custom visualization when the name of the function does not change (it is drawCustomVis) but the name of the plot changes (hence actors have to be replaced with new actors)
-        # # # drawFieldCustomVis = getattr(self, "drawCustomVis")
-        # # # if self.currentDrawingFunction==drawFieldCustomVis:
-            # # # #check if actors the name of the custom vis has changed            
-            # # # if self.currentCustomVisName != self.currentDrawingParameters.fieldName:
-                # # # self.currentCustomVisName = self.currentDrawingParameters.fieldName
-
-                # # # for actorName in self.currentActors.keys():
-                    # # # self.graphicsFrameWidget.ren.RemoveActor(self.currentActors[actorName])
-                    # # # del self.currentActors[actorName]
-                
-        # # # try:
-        
-            # # # fieldName = self.currentDrawingParameters.fieldName                                   
-            # # # cs = self.cameraSettingsDict[fieldName]
-            
-            # # # if self.checkIfCameraSettingsHaveChanged(cs):
-                # # # if self.currentVisName==self.currentDrawingParameters.fieldName: # this section is called when camera setings have changed between calls to this fcn (e.g. when screen refreshes with new MCS data) and the visualzation field was not change by the user                    
-                    # # # cs = self.getCurrentCameraSettings()
-                    # # # self.cameraSettingsDict[fieldName] = cs
-                    
-                    
-                    # # # self.setCurrentCameraSettings(cs)
-                # # # else:                    # this section is called when camera settings have changed between calls to this function and visualization field changes. Before initializing camera with cs for new vis field setting we store cs for  previous vis field
-                    # # # self.cameraSettingsDict[self.currentVisName] = self.getCurrentCameraSettings()         
-                    
-                    # # # self.setCurrentCameraSettings(cs)
-        # # # except LookupError,e:
-            # # # resetCamera=True
-            
-            # # # if self.currentVisName!=self.currentDrawingParameters.fieldName and self.currentVisName!='': # this is called when user modifies camera in one vis and then changes vis to another  for which camera has not been set up                 
-                # # # self.cameraSettingsDict[self.currentVisName] = self.getCurrentCameraSettings()
-
-        # # # self.currentVisName = self.currentDrawingParameters.fieldName    # updating current vis name        
-        
-        
-
-        
-        
-        # # # drawField(_bsd, fieldType)        
-        
-
-
-
-        
-        # # # if resetCamera:
-            # # # self.qvtkWidget.resetCamera() 
-            # # # self.cameraSettingsDict[fieldName] = self.getCurrentCameraSettings()
+        # drawFieldCustomVis = getattr(self, "drawCustomVis")
+        # if self.currentDrawingFunction==drawFieldCustomVis:
+        #     #check if actors the name of the custom vis has changed
+        #     if self.currentCustomVisName != self.currentDrawingParameters.fieldName:
+        #         self.currentCustomVisName = self.currentDrawingParameters.fieldName
+        #
+        #         for actorName in self.currentActors.keys():
+        #             self.graphicsFrameWidget.ren.RemoveActor(self.currentActors[actorName])
+        #             del self.currentActors[actorName]
+        #
+        # try:
+        #
+        #     fieldName = self.currentDrawingParameters.fieldName
+        #     cs = self.cameraSettingsDict[fieldName]
+        #
+        #     if self.checkIfCameraSettingsHaveChanged(cs):
+        #         if self.currentVisName==self.currentDrawingParameters.fieldName: # this section is called when camera setings have changed between calls to this fcn (e.g. when screen refreshes with new MCS data) and the visualzation field was not change by the user
+        #             cs = self.getCurrentCameraSettings()
+        #             self.cameraSettingsDict[fieldName] = cs
+        #
+        #
+        #             self.setCurrentCameraSettings(cs)
+        #         else:                    # this section is called when camera settings have changed between calls to this function and visualization field changes. Before initializing camera with cs for new vis field setting we store cs for  previous vis field
+        #             self.cameraSettingsDict[self.currentVisName] = self.getCurrentCameraSettings()
+        #
+        #             self.setCurrentCameraSettings(cs)
+        # except LookupError,e:
+        #     resetCamera=True
+        #
+        #     if self.currentVisName!=self.currentDrawingParameters.fieldName and self.currentVisName!='': # this is called when user modifies camera in one vis and then changes vis to another  for which camera has not been set up
+        #         self.cameraSettingsDict[self.currentVisName] = self.getCurrentCameraSettings()
+        #
+        # self.currentVisName = self.currentDrawingParameters.fieldName    # updating current vis name
+        #
+        #
+        #
+        #
+        #
+        # drawField(_bsd, fieldType)
+        #
+        #
+        #
+        #
+        #
+        # if resetCamera:
+        #     qvtkWidget_obj = self.qvtkWidget()
+        #     if qvtkWidget_obj:
+        #         qvtkWidget_obj.resetCamera()
+        #         self.cameraSettingsDict[fieldName] = self.getCurrentCameraSettings()
         
        
     def resetAllCameras(self) :             
