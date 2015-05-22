@@ -1314,28 +1314,43 @@ def makeSimDir(_simulationFileName,_preferedWorkspaceDir=""):
     else:
         return ("","")
     
-    
-def printSimulationRuntime(_timeInterval):
+def convert_time_interval_to_hmsm(_timeInterval):
     timeInterval=int(_timeInterval)
     hours = timeInterval/(3600*1000)
-    minutesInterval = timeInterval % (3600*1000)    
-    minutes = minutesInterval / (60*1000)    
-    secondsInterval = minutesInterval % (60*1000) 
-    seconds = secondsInterval / (1000)     
+    minutesInterval = timeInterval % (3600*1000)
+    minutes = minutesInterval / (60*1000)
+    secondsInterval = minutesInterval % (60*1000)
+    seconds = secondsInterval / (1000)
     miliseconds = secondsInterval % (1000)
-    
-    print "SIMULATION RUNTIME ",
-    if hours:
-        print hours," h : ",minutes," m : ",seconds," s : ",miliseconds," ms"
-    elif minutes: 
-        print minutes," m : ",seconds," s : ",miliseconds," ms"
-    elif seconds:
-        print seconds," s : ",miliseconds," ms"
-    else:
-        miliseconds," ms"
-    print "EQUIVALENT OF      %0.3f seconds" % (_timeInterval/1000)
 
-    
+    out_str = ''
+    if hours:
+        out_str =  str(hours) + " h : " + str(minutes) + " m : " + str(seconds) + " s : " + str(miliseconds) + " ms"
+
+    elif minutes:
+        out_str =  str(minutes) + " m : " + str(seconds) + " s : " + str(miliseconds) + " ms"
+
+    elif seconds:
+        out_str = str(seconds) + " s : " + str(miliseconds) + " ms"
+
+    else:
+        out_str = str(miliseconds) + " ms"
+
+    return out_str + ' = ' + str(_timeInterval/1000.0)+' s'
+
+def print_profiling_report(py_steppable_profiler_report, compiled_code_run_time, total_run_time):
+
+    print '\n\n\n'
+    print '------------------PERFORMANCE REPORT:----------------------'
+    print '-----------------------------------------------------------'
+    print "TOTAL SIMULATION RUNTIME ", convert_time_interval_to_hmsm(total_run_time)
+    print 'COMPILED CODE RUN TIME (C++):', convert_time_interval_to_hmsm(compiled_code_run_time)
+    print '-----------------------------------------------------------'
+    print 'PYTHON STEPPABLE RUNTIME:'
+    print '-----------------------------------------------------------'
+    print py_steppable_profiler_report
+    print '-----------------------------------------------------------'
+
 def stopSimulation():   
     global userStopSimulationFlag    
     userStopSimulationFlag=True
@@ -1372,26 +1387,12 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
         print 'WILL RUN SIMULATION FROM BEGINNING'
     
     
-#    print MYMODULENAME,"mainLoopNewPlayer: _screenUpdateFrequency = ",_screenUpdateFrequency
-    # print '\n\n\n INSIDE mainLoopNewPlayer='
-    # import time
-    # time.sleep(5)
 
     extraInitSimulationObjects(sim,simthread,restartEnabled)
     
-    
-    # # # return
-    # print '\n\n\n  AFTER EXTRA INIT INSIDE mainLoopNewPlayer='
-    # import time
-    # time.sleep(5)
-    
-    
-    
+
     # simthread.waitForInitCompletion()
     simthread.waitForPlayerTaskToFinish()
-    
-
-    
     
     runFinishFlag = True;
     
@@ -1418,31 +1419,13 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
     beginingStep=restartManager.getRestartStep()    
     
     # restartManager.setupRestartOutputDirectory()
-    
-    
-    screenUpdateFrequency=1
-    # global cmlFieldHandler 
-    # print "this is cmlFieldHandler  ",cmlFieldHandler
-    # # sys.exit()
-    # if cmlFieldHandler:
-        # cmlFieldHandler.fieldWriter.init(sim)
-        # cmlFieldHandler.getInfoAboutFields()
-        # cmlFieldHandler.outputFrequency=cmlParser.outputFrequency
-        # cmlFieldHandler.outputFileCoreName=cmlParser.outputFileCoreName
-        # cmlFieldHandler.prepareSimulationStorageDir(simulationPaths.simulationResultStorageDirectory)
-        # cmlFieldHandler.setMaxNumberOfSteps(sim.getNumSteps()) # will determine the length text field  of the step number suffix 
-        # cmlFieldHandler.writeXMLDescriptionFile() # initialization of the cmlFieldHandler is done - we can write XML description file
-        # sys.exit()
+
+    screenUpdateFrequency = 1
+
 
     xmlDescriptionFileWritten = False    
-    # if simthread is not None and cmlFieldHandler is not None:
-        # simthread.beforeStep(0) 
-        # cmlFieldHandler.getInfoAboutFields()
-        # cmlFieldHandler.writeXMLDescriptionFile()
-        
-#    dumpImageFlag = Configuration.getSetting("ImageOutputOn")
-#    dumpLatticeFlag = Configuration.getSetting("LatticeOutputOn")
-#    print MYMODULENAME,"mainLoopNewPlayer: dumpImageFlag, dumpLatticeFlag = ",dumpImageFlag,dumpLatticeFlag
+
+    compiled_code_run_time = 0.0
 
     i=beginingStep
     # for i in range(beginingStep,sim.getNumSteps()):
@@ -1469,8 +1452,15 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
             
         # if i and not i%100:
         restartManager.outputRestartFiles(i)
-        
-        sim.step(i)      #  steering using steppables             
+
+        compiled_code_begin = time.time()
+
+        sim.step(i)      #  steering using steppables
+
+        compiled_code_end = time.time()
+
+        compiled_code_run_time += (compiled_code_end- compiled_code_begin)*1000
+
         if sim.getRecentErrorMessage()!="":        
             raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
         
@@ -1497,11 +1487,7 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
                 simthread.loopWork(i)
                 simthread.loopWorkPostEvent(i)
                 screenUpdateFrequency = simthread.getScreenUpdateFrequency()
-#                print MYMODULENAME,'    >screenUpdateFrequency = ',screenUpdateFrequency
-            
-            # if (cmlFieldHandler is not None) and latticeFlag and (i % latticeFrequency == 0):
-# #                print MYMODULENAME,' mainLoopNewPlayer: cmlFieldHandler.writeFields(i), i=',i
-                # cmlFieldHandler.writeFields(i)
+
         i+=1        
         if i>=sim.getNumSteps():
             break
@@ -1533,9 +1519,10 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
             simthread.simulationFinishedPostEvent(True)
             
     t2 = time.time()
-    printSimulationRuntime((t2-t1)*1000.0)
-    # print "RUNTIME %0.3f ms" % ( (t2-t1)*1000.0)
-    
+
+    print_profiling_report(py_steppable_profiler_report=steppableRegistry.get_profiler_report(),
+                           compiled_code_run_time=compiled_code_run_time, total_run_time=(t2-t1)*1000.0)
+
     #In exception handlers you have to call sim.finish to unload the plugins .
     #We may need to introduce new funuction name (e.g. unload) because finish does more than unloading
 
@@ -1591,8 +1578,10 @@ def mainLoopCML(sim, simthread, steppableRegistry= None, _screenUpdateFrequency 
         print "simulationPaths PYTHON=",simulationPaths.simulationPythonScriptName
         
     restartManager.prepareRestarter()
-    beginingStep=restartManager.getRestartStep()    
-        
+    beginingStep=restartManager.getRestartStep()
+
+    compiled_code_run_time = 0.0
+
     for i in range(sim.getNumSteps()):
     
         #calling Python steppables which are suppose to run before MCS - e.g. secretion steppable     
@@ -1605,7 +1594,14 @@ def mainLoopCML(sim, simthread, steppableRegistry= None, _screenUpdateFrequency 
             
         restartManager.outputRestartFiles(i)                
         
-        sim.step(i)#  steering using steppables     
+        compiled_code_begin = time.time()
+
+        sim.step(i)      #  steering using steppables
+
+        compiled_code_end = time.time()
+
+        compiled_code_run_time += (compiled_code_end- compiled_code_begin)*1000
+
         if sim.getRecentErrorMessage()!="":        
             raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
         
@@ -1635,102 +1631,13 @@ def mainLoopCML(sim, simthread, steppableRegistry= None, _screenUpdateFrequency 
             
     t2 = time.time()
 
-    printSimulationRuntime((t2-t1)*1000.0)    
+    print_profiling_report(py_steppable_profiler_report=steppableRegistry.get_profiler_report(),
+                           compiled_code_run_time=compiled_code_run_time, total_run_time=(t2-t1)*1000.0)
+
     #In exception handlers you have to call sim.finish to unload the plugins .
     #We may need to introduce new funuction name (e.g. unload) because finish does more than unloading
 
-# # # def mainLoopCMLReplay(sim, simthread, steppableRegistry= None, _screenUpdateFrequency = None):
-    # # # # have to read fsimulation data (vtk file) before proceeding to extrainit.
-    # # # # this is because extra init will send a signal to initialize simulation view but simulation view refers to simulation data. therefore this data better be ready
-    # # # global globalSteppableRegistry  #rwh2
-    # # # globalSteppableRegistry=steppableRegistry
-    
-    # # # if simthread:
-        # # # simthread.readSimulationData(0)
-        # # # if not simthread.simulationData:
-            # # # simthread.simulationFinishedPostEvent(True)
-            # # # return
-    # # # else:
-        # # # return
-        
-    # # # extraInitSimulationObjects(sim,simthread)
-    # # # # simthread.waitForInitCompletion()
-    # # # simthread.waitForPlayerTaskToFinish()
-    
-    # # # runFinishFlag = True;
-    
-    # # # if not steppableRegistry is None:
-        # # # steppableRegistry.init(sim)
-        # # # steppableRegistry.start()
-    
-    # # # # simthread.waitForInitCompletion()
-    
-    # # # screenUpdateFrequency=1
-    # # # numberOfSteps = len(simthread.ldsFileList)
-    
-    # # # # for i in range(numberOfSteps):
-    # # # i=0
-    # # # mcsDirectAccess=0
-    # # # directAccessFlag=False
-    # # # while i<numberOfSteps :
-        # # # # print 'i=',i
-        # # # # print 'COMPUCELLSETUP field dim before=',simthread.fieldDim
-        
-        # # # if simthread is not None:
-            # # # mcsDirectAccess,directAccessFlag = simthread.getCurrentStepDirectAccess()
-        # # # if directAccessFlag:
-# # # #            print MYMODULENAME," mainLoopCMLReplay():  GOT DIRECT FLAG AND mcsDirectAccess=",mcsDirectAccess
-            # # # simthread.resetDirectAccessFlag()
-            # # # i = mcsDirectAccess
-            
-        # # # # print "working on MCS " , i
-        # # # if simthread is not None:
-            # # # if i!=0: # new data for step 0 is already read
-                
-                # # # simthread.readSimulationData(i)    
-                # # # # print 'field dim after=',simthread.fieldDim
-                
-            # # # simthread.beforeStep(i)                
-            # # # # print "simthread=",simthread
-            # # # if simthread.getStopSimulation():
-                # # # runFinishFlag=False
-                # # # break
-        # # # if i>=numberOfSteps:
-            # # # break                 
 
-
-        # # # screenUpdateFrequency = simthread.getScreenUpdateFrequency()
-        # # # screenshotFrequency=simthread.getScreenshotFrequency()
-        
-# # # #        print MYMODULENAME,"screenUpdateFrequency=",screenUpdateFrequency," screenshotFrequency=",screenshotFrequency
-        # # # simthread.loopWork(i)
-        # # # simthread.loopWorkPostEvent(i)
-        # # # screenUpdateFrequency = simthread.getScreenUpdateFrequency()
-        # # # i+=1
-        # # # # if ((not i % screenUpdateFrequency) or (not i % screenshotFrequency)) and simthread is not None:
-            # # # # simthread.loopWork(i)
-            # # # # simthread.loopWorkPostEvent(i)
-            # # # # screenUpdateFrequency = simthread.getScreenUpdateFrequency()
-
-    # # # print "END OF SIMULATION  "
-    # # # if runFinishFlag:
-        # # # # sim.finish()
-        # # # # if sim.getRecentErrorMessage()!="":        
-            # # # # raise CC3DCPlusPlusError(sim.getRecentErrorMessage())        
-        # # # # steppableRegistry.finish()
-        # # # simthread.simulationFinishedPostEvent(True)
-        # # # print "CALLING FINISH"
-    # # # else:
-        # # # # sim.cleanAfterSimulation()
-        # # # print "CALLING UNLOAD MODULES"
-        # # # if simthread is not None:
-            # # # simthread.sendStopSimulationRequest()
-            # # # simthread.simulationFinishedPostEvent(True)
-    
-    # # # #In exception handlers you have to call sim.finish to unload the plugins .
-    # # # #We may need to introduce new funuction name (e.g. unload) because finish does more than unloading
-
-    
 def mainLoop(sim, simthread, steppableRegistry= None, _screenUpdateFrequency = None):
     global playerType
 #    print MYMODULENAME,"playerType=",playerType

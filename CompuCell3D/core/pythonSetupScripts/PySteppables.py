@@ -1350,13 +1350,30 @@ class DolfinSolverSteppable(RunBeforeMCSSteppableBasePy):
         
         
         
-        
+import time
+
 class SteppableRegistry(SteppablePy):
     def __init__(self):
-        self.steppableList=[]
-        self.runBeforeMCSSteppableList=[]
-        self.steppableDict={} # {steppableClassName:[steppable inst0,steppable inst1,...]}
-        
+        self.steppableList = []
+        self.runBeforeMCSSteppableList = []
+        self.steppableDict = {}  # {steppableClassName:[steppable inst0,steppable inst1,...]}
+        from collections import defaultdict
+        self.profiler_dict = defaultdict(lambda : defaultdict(float))  # {steppable_class_name:{object_hash:runtime}}
+
+    def get_profiler_report(self):
+        profiler_report = ''
+
+        from CompuCellSetup import convert_time_interval_to_hmsm
+
+        for steppable_name, steppable_obj_dict in self.profiler_dict.iteritems():
+            for steppable_obj_hash, run_time in steppable_obj_dict.iteritems():
+                profiler_report += steppable_name + '    ' +str(steppable_obj_hash) + ':    '\
+                                   + convert_time_interval_to_hmsm(run_time)
+
+
+        return profiler_report
+
+
     def allSteppables(self):
         for steppable in self.steppableList:
             yield steppable
@@ -1424,18 +1441,32 @@ class SteppableRegistry(SteppablePy):
                 try:
                     steppable.mcs = _mcs
                 except AttributeError, e:
-                    pass    
-                    
+                    pass
+
+                begin = time.time()
+
                 steppable.step(_mcs)
                 if hasattr(steppable, 'perform_automatic_tasks'):
                     steppable.perform_automatic_tasks()
-                
+
+                end = time.time()
+
+                self.profiler_dict[steppable.__class__.__name__][hex(id(steppable))] += (end-begin)*1000
+
+
 
     def stepRunBeforeMCSSteppables(self,_mcs):
+
         for steppable in self.runBeforeMCSSteppableList:
             if not _mcs % steppable.frequency: #this executes given steppable every "frequency" Monte Carlo Steps
+                begin = time.time()
+
                 steppable.step(_mcs)
-        
+
+                end = time.time()
+
+                self.profiler_dict[steppable.__class__.__name__][hex(id(steppable))] += (end-begin)*1000
+
     def finish(self):
         for steppable in self.runBeforeMCSSteppableList:
             steppable.finish()
