@@ -51,7 +51,7 @@ class WebFetcher(QObject):
         data = reply.readAll()
         data_qstring = QString(data)
         data_str = str(data_qstring)
-        print data_str
+        # print data_str
         self.gotWebContentSignal.emit(data_qstring, QString(self.url_str))
 
 

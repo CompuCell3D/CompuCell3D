@@ -587,6 +587,7 @@ class SimpleViewManager(QObject):
 
         self.check_update_act = QAction("Check for CC3D Updates", self)
         self.connect(self.check_update_act, SIGNAL('triggered()'), self.__check_update)
+        self.display_no_update_info = False
 
         self.whatsThisAct = QAction(QIcon(gip("whatsThis.png")), "&What's This?", self)
         self.whatsThisAct.setWhatsThis(self.trUtf8(
@@ -616,11 +617,17 @@ class SimpleViewManager(QObject):
         # self.closeTab.setToolTip("Close the tab")
         # self.closeTab.hide()
 
-    def check_version(self, check_interval = -1):
+    def check_version(self, check_interval = -1, display_no_update_info=False):
         '''
         This function checks if new CC3D version is available
         :return:None
         '''
+
+        # here we decide whether the information about no new updates is displayed or not. For automatic update checks
+        # this information should not be displayed. For manual update checks we need to inform the user
+        # that there are no updates
+
+        self.display_no_update_info = display_no_update_info
 
         # determine if check is necessary - for now we check every week in order not to bother users with too many checks
         last_version_check_date = Configuration.getSetting('LastVersionCheckDate')
@@ -683,7 +690,7 @@ class SimpleViewManager(QObject):
                     pass
 
             if search_obj_whats_new:
-                print search_obj_whats_new.groups()
+                # print search_obj_whats_new.groups()
                 try:
                     whats_new = search_obj_whats_new.groups()[1]
                     whats_new = whats_new.strip()
@@ -734,15 +741,16 @@ class SimpleViewManager(QObject):
             if ret == QMessageBox.Yes:
                 QDesktopServices.openUrl(QUrl('http://sourceforge.net/projects/cc3d/files/'+current_version))
 
-
+        elif self.display_no_update_info == True:
+            ret = QMessageBox.information(self, 'Software update check', 'You are running latest version of CC3D.', QMessageBox.Ok)
 
     def __check_update(self):
         '''
         This slot checks for CC3D updates
         :return:None
         '''
-        print 'CHECKING FOR UPDATES'
-        self.check_version()
+        # print 'CHECKING FOR UPDATES'
+        self.check_version(check_interval = -1, display_no_update_info=True)
 
     def __open_manuals_webpage(self):
         # print 'THIS IS QUICK START GUIDE'
