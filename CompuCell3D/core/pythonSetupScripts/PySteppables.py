@@ -1889,7 +1889,7 @@ class CellBoundaryPixelIterator:
         self.cell=_cellPixelList.cell
         self.boundaryPixelItr=CompuCell.boundaryPixelSetPyItr()
         self.boundaryPixelTracker=self.boundaryPixelTrackerAccessor.get(self.cell.extraAttribPtr)
-        print '_neighborOrder=',_neighborOrder
+        # print '_neighborOrder=',_neighborOrder
         if _neighborOrder <=0:
             self.pixelSet = self.boundaryPixelTracker.pixelSet
         else:
