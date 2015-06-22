@@ -565,6 +565,10 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("ClosePlayerAfterSimulationDone", self.closePlayerCheckBox.isChecked())
         Configuration.setSetting("ProjectLocation", self.projectLocationLineEdit.text())
         Configuration.setSetting("OutputLocation", self.outputLocationLineEdit.text())
+
+        if str(self.outputLocationLineEdit.text()).rstrip() == '':
+            Configuration.setSetting("OutputLocation", os.path.join(os.path.expanduser('~'), 'CC3DWorkspace'))
+
         Configuration.setSetting("OutputToProjectOn", self.outputToProjectCheckBox.isChecked())
         # # # Configuration.setSetting("PreferencesFile", self.prefsFileLineEdit.text())
         Configuration.setSetting("NumberOfRecentSimulations", self.numberOfRecentSimulationsSB.value())        

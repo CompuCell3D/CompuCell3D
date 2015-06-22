@@ -207,7 +207,7 @@ class Setting(object):
     def XML2Floatlist(self,element):
         self.initNameType(element)        
         strlist = element.cdata.split(',')
-        print 'strlist=',strlist
+        # print 'strlist=',strlist
         if not len (strlist) or  not strlist[0]:        
             self.value = []            
         else:
@@ -638,7 +638,7 @@ class CustomSettings(object):
             
         for elem in settingsElemList:
             type = elem.getAttribute("Type")
-            print type            
+            # print type
                 
             if type in readType2executeType.keys():
             # ['int','float','str','color','size','point']:
@@ -666,7 +666,7 @@ class CustomSettings(object):
         import Version
         xml2ObjConverter = XMLUtils.Xml2Obj()
         plSetElem = ElementCC3D('PlayerSettings',{'version':Version.getVersionAsString()})
-        print '\n\n\nself.__typeSettingDictDict.keys() = ', self.__typeSettingDictDict.keys()
+        # print '\n\n\nself.__typeSettingDictDict.keys() = ', self.__typeSettingDictDict.keys()
         for typeName , settingDict in self.__typeSettingDictDict.iteritems():
         
             typeContainerElem = plSetElem.ElementCC3D( 'Settings', {'Type':typeName} )

@@ -11,7 +11,7 @@ class SubWindow(QFrame):
         self.main_widget = None
         # self.setWindowFlags(Qt.Window|Qt.CustomizeWindowHint|Qt.WindowMaximizeButtonHint|Qt.WindowMinimizeButtonHint\
         # |Qt.WindowCloseButtonHint|Qt.FramelessWindowHint)
-        
+
         # note Qt.Drawer looks completely different on OSX than on Windows.
         # QWindow on the other hand on linux displays all windows in dock widget and behaves stranegely
         # thus the settings below
@@ -101,6 +101,25 @@ class MainArea(QWidget):
         self.win_inventory = WindowInventory()
 
         self.lastActiveRealWindow = None # keeps track of the last active real window
+        self.last_suggested_window_position = QPoint(0,0)
+
+
+    def suggested_window_position(self):
+        '''
+        returns suggested position of the next window
+        :return:QPoint - position of the next window
+        '''
+
+        rec = QApplication.desktop().screenGeometry()
+
+        if self.last_suggested_window_position.x() == 0 and self.last_suggested_window_position.y() == 0:
+
+            self.last_suggested_window_position = QPoint(rec.width()/5, rec.height()/5)
+            return self.last_suggested_window_position
+        else:
+            from random import randint
+            self.last_suggested_window_position = QPoint(randint(rec.width()/5, rec.width()/2), randint(rec.height()/5, rec.height()/2))
+            return self.last_suggested_window_position
 
     def addSubWindow(self, widget):
         '''

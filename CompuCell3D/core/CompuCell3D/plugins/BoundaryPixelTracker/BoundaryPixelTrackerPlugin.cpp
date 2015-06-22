@@ -326,7 +326,7 @@ std::set<BoundaryPixelTrackerData > * BoundaryPixelTrackerPlugin::getPixelSetFor
         return 0;
     }
 
-    cerr<<"_neighborOrder="<<_neighborOrder<<" this->neighborOrder="<<this->neighborOrder<<endl;
+    // cerr<<"_neighborOrder="<<_neighborOrder<<" this->neighborOrder="<<this->neighborOrder<<endl;
     if (_neighborOrder == this->neighborOrder){
         //return coundary calculated by default
         return & boundaryPixelTrackerAccessor.get(_cell->extraAttribPtr)->pixelSet;

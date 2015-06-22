@@ -707,8 +707,10 @@ class MVCDrawModel3D(MVCDrawModelBase):
                 dataScalingFactor = 1.0 # in this case we are plotting 0 vectors and in this case data scaling factor will be set to 1
             glyphs.SetScaleFactor(arrowScalingFactor/dataScalingFactor)
             #coloring arrows
-            
-            r,g,b = Configuration.getSetting("ArrowColor",conFieldName)
+
+
+            color = Configuration.getSetting("ArrowColor",conFieldName)
+            r,g,b = color.red(), color.green(), color.blue()
 #            print MODULENAME,"   initVectorFieldDataActors():  arrowColor=",arrowColor
 #            r = arrowColor.red()
 #            g = arrowColor.green()

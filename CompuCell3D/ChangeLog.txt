@@ -146,3 +146,16 @@ Version 3.7.3 Sept 2014
         Fixed visualization scaling for 2D projectsion on hex lattice
         Fixed generation of higher neighbor order on demand. Current implementation was good up to 8th nearest neighbor. Now we can use 20 or 30 or even higher 
         Fixed how secretion plugin is handled in openMP - now when user does all secretion in Python there is no thread blocking in open mp to execute fixed stepper - see manual for more details
+        
+        
+Version 3.7.4 May 2015        
+
+    This version includes improved player and many convenience features in Python scrip ting which make model development much easier. 
+    Additions:
+        Player has been improved and has new layout with floating windows. This is the default and recommended setting for Mac users
+        Player settings are stored individually with each simulation. Thus several simulations running in parallel may have different set of settings. Previously there was one global setting file which made it inconvenient to run multiple simultaneous simulations with different settings
+        Window layout is saved in the settings each time user stops the simulation. This feature allows simulation to open in exactly the same state it was before user stopped simulation run.
+        Automatic cell labeling using scalar or vector cell attribute
+        Simplified access to cell python dictionary - not you type cell.dict
+        Simplified histograms and scientific plots setup
+        Added ability to subscribe/unsubscribe to CompuCell3D mailing list from the Player 

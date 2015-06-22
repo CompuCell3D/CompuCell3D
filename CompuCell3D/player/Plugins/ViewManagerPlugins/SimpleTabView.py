@@ -161,7 +161,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.setParams()
         # self.keepOldTabs = False  #this flag sets if tabs should be removed before creating new one or not
-        self.mainGraphicsWindow = None  # vs.  lastActiveWindow
+        self.mainGraphicsWidget = None  # vs.  lastActiveWindow
 
         # determine if some relevant plugins are defined in the model
         self.pluginFPPDefined = False  # FocalPointPlasticity
@@ -191,6 +191,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
             # note that this variable will be the same as self.simulation when doing CMLReplay mode. I keep it under diffferent name to keep track of the places in the code where I am using SimulationThread API and where I use CMLResultReade replay part of the API
         # this means that further refactoring is needed but I leave it for now    
         self.cmlReplayManager = None
+
+        # Here we are checking for new version - notice we use check interval in order not to perform version checks
+        # too often. Default check interval is 7 days
+        self.check_version(check_interval=7)
 
 
     def getSimFileName(self):
@@ -361,12 +365,20 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         newWindow.currentDrawingObject.setPlane(self.newWindowDefaultPlane[0], self.newWindowDefaultPlane[1])
 
+
+
+
+
         # self.simulation.setGraphicsWidget(self.mainGraphicsWindow)
         # self.mdiWindowDict[self.windowCounter] = self.addSubWindow(newWindow)
         mdiWindow = self.addSubWindow(newWindow)
 
         # MDIFIX
         self.lastActiveRealWindow = mdiWindow
+
+        # this happens when during restoration graphics window with id 0 had to be closed
+        if self.mainGraphicsWidget is None:
+            self.mainGraphicsWidget = mdiWindow.widget()
 
         self.updateActiveWindowVisFlags()
 
@@ -378,6 +390,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         newWindow.setInitialCrossSection(self.basicSimulationData)
         newWindow.setFieldTypesComboBox(self.fieldTypes)
 
+        suggested_win_pos = self.suggested_window_position()
+
+        if suggested_win_pos.x() != -1 and suggested_win_pos.y() != -1:
+
+            mdiWindow.move(suggested_win_pos)
+
+
         return mdiWindow
 
 
@@ -387,27 +406,27 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return: None
         '''
 
-        self.mainGraphicsWindow = GraphicsFrameWidget(parent=None, originatingWidget=self)
+        self.mainGraphicsWidget = GraphicsFrameWidget(parent=None, originatingWidget=self)
 
         # we make sure that first graphics window is positioned in the left upper corner
         # NOTE: we have to perform move prior to calling addSubWindow. or else we will get distorted window
         if self.lastPositionMainGraphicsWindow is not None:
-            self.mainGraphicsWindow.move(self.lastPositionMainGraphicsWindow)
+            self.mainGraphicsWidget.move(self.lastPositionMainGraphicsWindow)
         else:
-            self.lastPositionMainGraphicsWindow = self.mainGraphicsWindow.pos()
+            self.lastPositionMainGraphicsWindow = self.mainGraphicsWidget.pos()
 
-        self.mainGraphicsWindow.setShown(False)
+        self.mainGraphicsWidget.setShown(False)
 
-        self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWindow.draw2D.configsChanged)
-        self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWindow.draw3D.configsChanged)
-        self.mainGraphicsWindow.readSettings()
-        self.simulation.setGraphicsWidget(self.mainGraphicsWindow)
+        self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWidget.draw2D.configsChanged)
+        self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWidget.draw3D.configsChanged)
+        self.mainGraphicsWidget.readSettings()
+        self.simulation.setGraphicsWidget(self.mainGraphicsWidget)
 
-        mdiSubWindow = self.addSubWindow(self.mainGraphicsWindow)
+        mdiSubWindow = self.addSubWindow(self.mainGraphicsWidget)
 
         self.mainMdiSubWindow = mdiSubWindow
-        self.mainGraphicsWindow.show()
-        self.mainGraphicsWindow.setConnects(self)
+        self.mainGraphicsWidget.show()
+        self.mainGraphicsWidget.setConnects(self)
 
         self.lastActiveRealWindow = mdiSubWindow
 
@@ -417,6 +436,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.updateWindowMenu()
         self.updateActiveWindowVisFlags()
         # print self.graphicsWindowVisDict
+
+
+        suggested_win_pos = self.suggested_window_position()
+
+        if suggested_win_pos.x() != -1 and suggested_win_pos.y() != -1:
+
+            mdiSubWindow.move(suggested_win_pos)
+
+
 
     def minimizeAllGraphicsWindows(self):
         '''
@@ -1521,7 +1549,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             screenshotFileName = os.path.join(self.screenshotDirectoryName,
                                               self.baseScreenshotName + "_" + mcsFormattedNumber + ".png")
 
-            self.mainGraphicsWindow.takeSimShot(screenshotFileName)
+            self.mainGraphicsWidget.takeSimShot(screenshotFileName)
             self.screenshotManager.outputScreenshots(self.screenshotDirectoryName, self.__step)
 
         self.simulation.drawMutex.unlock()
@@ -1556,8 +1584,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
             screenshotFileName = os.path.join(self.screenshotDirectoryName,
                                               self.baseScreenshotName + "_" + mcsFormattedNumber + ".png")
             if _mcs != 0:
-                if self.mainGraphicsWindow:  # self.mainGraphicsWindow can be closed by the user
-                    self.mainGraphicsWindow.takeSimShot(screenshotFileName)
+                if self.mainGraphicsWidget:  # self.mainGraphicsWindow can be closed by the user
+                    self.mainGraphicsWidget.takeSimShot(screenshotFileName)
 
             print 'self.screenshotManager=', self.screenshotManager
             if self.screenshotManager:
@@ -2341,12 +2369,37 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 graphicsWindow = self.lastActiveRealWindow
                 graphicsWindow.close()
+                self.mainGraphicsWidget = None
                 self.win_inventory.remove_from_inventory(graphicsWindow)
 
                 pass
 
-        # restore graphics windows first
+
+        # we make a sorted list of graphics windows. Graphics Window with lowest id assumes role of
+        # mainGraphicsWindow (actually this should be called maingraphicsWidget)
+        win_id_list = []
         for windowId, windowDataDict in windowsLayoutDict.iteritems():
+            from Graphics.GraphicsWindowData import GraphicsWindowData
+
+            gwd = GraphicsWindowData()
+
+            gwd.fromDict(windowDataDict)
+
+            if gwd.winType != GRAPHICS_WINDOW_LABEL:
+                continue
+            try:
+                win_id_list.append(int(windowId))
+            except:
+                pass
+
+            win_id_list = sorted(win_id_list)
+
+        # restore graphics windows first
+        # for windowId, windowDataDict in windowsLayoutDict.iteritems():
+        for win_id  in win_id_list:
+            windowId = str(win_id)
+            windowDataDict = windowsLayoutDict[windowId]
+
             if windowId == str(0):
                 continue
 
@@ -2370,6 +2423,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             graphicsWindow.move(gwd.winPosition)
 
             gfw.applyGraphicsWindowData(gwd)
+
 
         # print ' PLOT WINDOW MANAGER  WINDOW LIST = ', self.plotManager.plotWindowList
 
@@ -2486,30 +2540,30 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.cellGlyphsAct.setEnabled(True)
 
         #------------------
-        if not self.mainGraphicsWindow: return
+        if not self.mainGraphicsWidget: return
 
-        self.mainGraphicsWindow.setStatusBar(self.__statusBar)
+        self.mainGraphicsWidget.setStatusBar(self.__statusBar)
 
-        self.mainGraphicsWindow.setZoomItems(self.zitems)  # Set zoomFixed parameters
+        self.mainGraphicsWidget.setZoomItems(self.zitems)  # Set zoomFixed parameters
 
         if self.borderAct.isChecked():  # Vis menu "Cell Borders" check box
-            self.mainGraphicsWindow.showBorder()
+            self.mainGraphicsWidget.showBorder()
         else:
-            self.mainGraphicsWindow.hideBorder()
+            self.mainGraphicsWidget.hideBorder()
 
         if self.clusterBorderAct.isChecked():  # Vis menu "Cluster Borders" check box
-            self.mainGraphicsWindow.showClusterBorder()
+            self.mainGraphicsWidget.showClusterBorder()
 
         #---------------------
         if self.cellGlyphsAct.isChecked():  # Vis menu "Cell Glyphs"
-            self.mainGraphicsWindow.showCellGlyphs()
+            self.mainGraphicsWidget.showCellGlyphs()
 
         #---------------------
         if self.FPPLinksAct.isChecked():  # Vis menu "FPP (Focal Point Plasticity) Links"
-            self.mainGraphicsWindow.showFPPLinks()
+            self.mainGraphicsWidget.showFPPLinks()
 
-        self.mainGraphicsWindow.setPlane(PLANES[0], 0)
-        self.mainGraphicsWindow.currentDrawingObject.setPlane(PLANES[0], 0)
+        self.mainGraphicsWidget.setPlane(PLANES[0], 0)
+        self.mainGraphicsWidget.currentDrawingObject.setPlane(PLANES[0], 0)
 
     def setParams(self):
         '''
@@ -2562,6 +2616,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
         self.zitems = zitems
 
+
+
+
     def zoomIn(self):
         '''
         Slot called after user presses Zoom In button
@@ -2600,11 +2657,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
         if self.screenshotManager is not None:
             if self.threeDRB.isChecked():
-                camera = self.mainGraphicsWindow.ren.GetActiveCamera()
+                camera = self.mainGraphicsWidget.ren.GetActiveCamera()
                 # print "CAMERA SETTINGS =",camera
                 self.screenshotManager.add3DScreenshot(self.__fieldType[0], self.__fieldType[1], camera)
             else:
-                planePositionTupple = self.mainGraphicsWindow.getPlane()
+                planePositionTupple = self.mainGraphicsWidget.getPlane()
                 # print "planePositionTupple=",planePositionTupple
                 self.screenshotManager.add2DScreenshot(self.__fieldType[0], self.__fieldType[1], planePositionTupple[0],
                                                        planePositionTupple[1])
@@ -2617,7 +2674,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if self.__fileName != "":
             file = QFile(self.__fileName)
             if file is not None:
-                if self.mainGraphicsWindow is None:
+                if self.mainGraphicsWidget is None:
 
                     self.showSimView(file)
 
