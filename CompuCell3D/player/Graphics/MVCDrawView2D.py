@@ -15,6 +15,12 @@ CONTOUR_ALLOWED_FIELD_TYPES=[FIELD_TYPES[1],FIELD_TYPES[2],FIELD_TYPES[3]]
 
 MODULENAME='----MVCDrawView2D.py: '
 
+
+from Messaging import dbgMsg, setDebugging
+# setDebugging(1)
+
+
+
 class MVCDrawView2D(MVCDrawViewBase):
     def __init__(self, _drawModel, qvtkWidget, parent=None):
         MVCDrawViewBase.__init__(self,_drawModel,qvtkWidget, parent)        
@@ -146,7 +152,9 @@ class MVCDrawView2D(MVCDrawViewBase):
         if self.currentActors.has_key("BorderActor"): # ensuring borders are the last actor added
             self.graphicsFrameWidget.ren.RemoveActor(self.borderActor)
             self.graphicsFrameWidget.ren.AddActor(self.borderActor)
-        print "self.currentActors.keys()=",self.currentActors.keys()
+        # print "self.currentActors.keys()=",self.currentActors.keys()
+        dbgMsg("self.currentActors.keys()=",self.currentActors.keys())
+
         # print
         # Don't re-render until next calc step since it could show previous/incorrect actor
         # self.Render()
@@ -458,10 +466,12 @@ class MVCDrawView2D(MVCDrawViewBase):
                 self.drawClusterBorders2D()
         
         if not Configuration.getSetting('CellsOn'):
-            print 'HIDING CELLS'
+            # print 'HIDING CELLS'
+            dbgMsg('HIDING CELLS')
             self.hideCells()
         else:
-            print 'SHOWING CELLS'
+            # print 'SHOWING CELLS'
+            dbgMsg('SHOWING CELLS')
             self.showCells()
 
         self.Render()
@@ -704,7 +714,8 @@ class MVCDrawView2D(MVCDrawViewBase):
         # Perhaps there is switch in vtkImageDataGeometryFilter or related vtk object that will draw nice pixels but for now we are sticking with this somewhat repetitive code             
             self.drawModel.initScalarFieldCartesianActors(_fillScalarField,(self.conActor,self.contourActor,))
         else:   
-            print 'DRAWING SCALAR FIELD DATA'
+            # print 'DRAWING SCALAR FIELD DATA'
+            dbgMsg('DRAWING SCALAR FIELD DATA')
             self.drawModel.initScalarFieldActors(_fillScalarField,(self.conActor,self.contourActor,))
         
         if not self.currentActors.has_key("ConActor"):

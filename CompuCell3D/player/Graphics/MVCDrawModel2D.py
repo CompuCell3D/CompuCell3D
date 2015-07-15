@@ -14,7 +14,7 @@ VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
 
 
 MODULENAME='----- MVCDrawModel2D.py:  '
-
+from Messaging import dbgMsg
 
 class MVCDrawModel2D(MVCDrawModelBase):
     def __init__(self, qvtkWidget, parent=None):
@@ -643,8 +643,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         dim_0 = self.dim[0]+1
         dim_1 = self.dim[1]+1
 
-        print 'dim_0,dim_1=',(dim_0,dim_1)
-        
+        # print 'dim_0,dim_1=',(dim_0,dim_1)
+        dbgMsg('dim_0,dim_1=',(dim_0,dim_1))
+
         data = vtk.vtkImageData()
         data.SetDimensions(dim_0, dim_1, 1)
         # print "dim_0,dim_1",(dim_0,dim_1)

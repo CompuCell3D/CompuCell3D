@@ -19,7 +19,7 @@ import os
 import sys
 
 
-setDebugging(0)
+# setDebugging(0)
 
 class ErrorConsole(QsciScintilla):
     """

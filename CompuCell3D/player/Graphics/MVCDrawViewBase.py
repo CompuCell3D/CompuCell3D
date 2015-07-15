@@ -46,6 +46,9 @@ YZ_Y_SCALE=math.sqrt(3.0)/2.0
 YZ_Z_SCALE=math.sqrt(6.0)/3.0
 
 
+from  Messaging import dbgMsg
+
+
 class MVCDrawViewBase:
     def __init__(self, _drawModel , graphicsFrameWidget, parent=None):
         self.legendActor    = vtk.vtkScalarBarActor()
@@ -261,8 +264,9 @@ class MVCDrawViewBase:
         
         
     def drawField(self, _bsd, fieldType):   
-        
-        print 'drawField ', fieldType
+
+        # print 'drawField ', fieldType
+        dbgMsg('drawField ', fieldType)
         resetCamera = False # we reset camera only for visualizations for which camera settings are not in the dictionary and users have not requested custom cameras
         
         if self.drawingFcnHasChanged:            

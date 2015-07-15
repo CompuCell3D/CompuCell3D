@@ -107,9 +107,10 @@ def errMsg(*args):
 
 #send this message to all handlers of debug messages
 def dbgMsg(*args):
+
     if not debug:
         return
-    errStr = getCallString(1)+" : "+string.join(map(str, args), " ")
+    errStr = getCallString(1)+" : "+string.join(map(str, args), " ")    
     for handler in _messageHandlers:
         handler.handleDbgMsg(errStr)
 

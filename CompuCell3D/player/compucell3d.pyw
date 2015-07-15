@@ -47,6 +47,9 @@ sip.setapi('QVariant', 1)
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
+# setting debug information output
+from Messaging import setDebugging
+setDebugging(0)
 
 def main(argv):
     argc=len(argv)

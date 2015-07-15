@@ -16,7 +16,7 @@ from enums import *
 
 from Messaging import stdMsg, dbgMsg, pd, errMsg, setDebugging
 
-setDebugging(1)
+# setDebugging(1)
 
 FIELD_TYPES = (
     "CellField", "ConField", "ScalarField", "ScalarFieldCellLevel", "VectorField", "VectorFieldCellLevel", "CustomVis")
