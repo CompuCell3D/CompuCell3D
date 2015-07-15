@@ -1340,16 +1340,48 @@ def convert_time_interval_to_hmsm(_timeInterval):
 
 def print_profiling_report(py_steppable_profiler_report, compiled_code_run_time, total_run_time):
 
-    print '\n\n\n'
+    myFormat='{:>32.32}: {:11.2f} ({:5.1%})'
+
+    print '\n\n'
     print '------------------PERFORMANCE REPORT:----------------------'
     print '-----------------------------------------------------------'
-    print "TOTAL SIMULATION RUNTIME ", convert_time_interval_to_hmsm(total_run_time)
-    print 'COMPILED CODE RUN TIME (C++):', convert_time_interval_to_hmsm(compiled_code_run_time)
+    print "TOTAL RUNTIME ", convert_time_interval_to_hmsm(total_run_time)
     print '-----------------------------------------------------------'
-    print 'PYTHON STEPPABLE RUNTIME:'
     print '-----------------------------------------------------------'
-    print py_steppable_profiler_report
+    print 'PYTHON STEPPABLE RUNTIMES'
+    #print py_steppable_profiler_report
+
+    totStepTime = 0
+
+    for steppableName, steppableObjectHash, run_time_ms in py_steppable_profiler_report:
+
+        print(myFormat.format(steppableName, int(run_time_ms)/1000.,int(run_time_ms)/total_run_time))
+
+        totStepTime += run_time_ms
+
     print '-----------------------------------------------------------'
+
+    print(myFormat.format('Total Steppable Time', int(totStepTime)/1000.,int(totStepTime)/total_run_time))
+
+    print(myFormat.format('Compiled Code (C++) Run Time', int(compiled_code_run_time)/1000., int(compiled_code_run_time)/total_run_time))
+
+    print(myFormat.format('Other Time',int(total_run_time-compiled_code_run_time-totStepTime)/1000.,\
+            int(total_run_time-compiled_code_run_time-totStepTime)/total_run_time))
+
+    print '-----------------------------------------------------------'
+    print
+
+
+    # print '\n\n\n'
+    # print '------------------PERFORMANCE REPORT:----------------------'
+    # print '-----------------------------------------------------------'
+    # print "TOTAL SIMULATION RUNTIME ", convert_time_interval_to_hmsm(total_run_time)
+    # print 'COMPILED CODE RUN TIME (C++):', convert_time_interval_to_hmsm(compiled_code_run_time)
+    # print '-----------------------------------------------------------'
+    # print 'PYTHON STEPPABLE RUNTIME:'
+    # print '-----------------------------------------------------------'
+    # print py_steppable_profiler_report
+    # print '-----------------------------------------------------------'
 
 def stopSimulation():   
     global userStopSimulationFlag    

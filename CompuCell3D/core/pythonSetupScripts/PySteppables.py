@@ -1361,17 +1361,28 @@ class SteppableRegistry(SteppablePy):
         self.profiler_dict = defaultdict(lambda : defaultdict(float))  # {steppable_class_name:{object_hash:runtime}}
 
     def get_profiler_report(self):
-        profiler_report = ''
 
-        from CompuCellSetup import convert_time_interval_to_hmsm
+        profiler_report = []
 
         for steppable_name, steppable_obj_dict in self.profiler_dict.iteritems():
             for steppable_obj_hash, run_time in steppable_obj_dict.iteritems():
-                profiler_report += steppable_name + '    ' +str(steppable_obj_hash) + ':    '\
-                                   + convert_time_interval_to_hmsm(run_time)
 
+                profiler_report.append([steppable_name,str(steppable_obj_hash),run_time])
 
         return profiler_report
+
+    # def get_profiler_report(self):
+    #     profiler_report = ''
+    #
+    #     from CompuCellSetup import convert_time_interval_to_hmsm
+    #
+    #     for steppable_name, steppable_obj_dict in self.profiler_dict.iteritems():
+    #         for steppable_obj_hash, run_time in steppable_obj_dict.iteritems():
+    #             profiler_report += steppable_name + '    ' +str(steppable_obj_hash) + ':    '\
+    #                                + convert_time_interval_to_hmsm(run_time)
+    #
+    #
+    #     return profiler_report
 
 
     def allSteppables(self):
@@ -1889,7 +1900,7 @@ class CellBoundaryPixelIterator:
         self.cell=_cellPixelList.cell
         self.boundaryPixelItr=CompuCell.boundaryPixelSetPyItr()
         self.boundaryPixelTracker=self.boundaryPixelTrackerAccessor.get(self.cell.extraAttribPtr)
-        # print '_neighborOrder=',_neighborOrder
+        print '_neighborOrder=',_neighborOrder
         if _neighborOrder <=0:
             self.pixelSet = self.boundaryPixelTracker.pixelSet
         else:

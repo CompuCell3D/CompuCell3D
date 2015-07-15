@@ -808,7 +808,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
             yloc += 2
         if z == 1:
             zloc += 2
-            
+
         dataSet.SetDimensions(xloc, yloc, zloc)
 
     # this function is used during prototyping. in production code it is replaced by C++ counterpart    
