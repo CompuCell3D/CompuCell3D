@@ -1444,7 +1444,7 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
 #                print MYMODULENAME,"cmlFieldHandler.doNotOutputFieldList=",cmlFieldHandler.doNotOutputFieldList
                 
             if simthread.getStopSimulation() or userStopSimulationFlag:
-                runFinishFlag=False;
+                runFinishFlag=True;
                 break        
         #calling Python steppables which are suppose to run before MCS - e.g. secretion steppable                
         if not steppableRegistry is None:     
@@ -1586,7 +1586,7 @@ def mainLoopCML(sim, simthread, steppableRegistry= None, _screenUpdateFrequency 
     
         #calling Python steppables which are suppose to run before MCS - e.g. secretion steppable     
         if userStopSimulationFlag:
-            runFinishFlag=False;
+            runFinishFlag=True;
             break
         
         if not steppableRegistry is None:
@@ -1627,6 +1627,7 @@ def mainLoopCML(sim, simthread, steppableRegistry= None, _screenUpdateFrequency 
         sim.cleanAfterSimulation()
     else:
         sim.cleanAfterSimulation()
+        steppableRegistry.finish()
         print "CALLING UNLOAD MODULES"
             
     t2 = time.time()
