@@ -117,13 +117,17 @@ class ScreenshotManager:
         self.screenshotGraphicsWidget.is_screenshot_widget = True # important because e.g. we do not save screenshot widget in the windows layout
         # self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw)
 
-        self.screenshotGraphicsWidget.screenshotWindowFlag=True
+        self.screenshotGraphicsWidget.screenshotWindowFlag = True
         
-        xSize=Configuration.getSetting("Screenshot_X")
-        ySize=Configuration.getSetting("Screenshot_Y")
-        
-        print 'xSize=',xSize,' ySize=',ySize
-        
+        xSize = Configuration.getSetting("Screenshot_X")
+        ySize = Configuration.getSetting("Screenshot_Y")
+
+        # xSize = 1000
+        # ySize = 1000
+
+        # print 'xSize=',xSize,' ySize=',ySize
+        # self.screenshotGraphicsWidget.resize(xSize,ySize)
+
         self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().SetSize(xSize,ySize) # default size
         self.screenshotGraphicsWidget.qvtkWidget.resize(xSize,ySize)
         
@@ -142,7 +146,10 @@ class ScreenshotManager:
         
         self.screenshotGraphicsWidget.readSettings()
         # # # self.tabViewWidget.addSubWindow(self.screenshotGraphicsWidget)
-        self.screenshotSubWindow=tvw.addSubWindow(self.screenshotGraphicsWidget)
+        self.screenshotSubWindow = tvw.addSubWindow(self.screenshotGraphicsWidget)
+
+        self.screenshotSubWindow.resize(xSize, ySize)
+
         
         #necessary to avoid spurious maximization of screenshot window. possible bug either in Player or in QMDIArea
         self.screenshotSubWindow.showMinimized()
@@ -413,12 +420,18 @@ class ScreenshotManager:
                 self.screenshotGraphicsWidget.setFieldTypesComboBox(tvw.fieldTypes)
         
         # apparently on linux and most likely OSX we need to resize screenshot window before each screenshot
-        xSize=Configuration.getSetting("Screenshot_X")
-        ySize=Configuration.getSetting("Screenshot_Y")
+        xSize = Configuration.getSetting("Screenshot_X")
+        ySize = Configuration.getSetting("Screenshot_Y")
+
+        # xSize = 1000
+        # ySize = 1000
+        #
+        # self.screenshotGraphicsWidget.resize(xSize,ySize)
+
         self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().SetSize(xSize,ySize) # default size
         self.screenshotGraphicsWidget.qvtkWidget.resize(xSize,ySize)
         
-        if  not sys.platform.startswith('win'):   # we hide and restore screenshot window on linux and OSX only on windows it is not necessary                 
+        if not sys.platform.startswith('win'):   # we hide and restore screenshot window on linux and OSX only on windows it is not necessary
             self.screenshotSubWindow.showNormal()
             self.screenshotSubWindow.show()
         
@@ -489,7 +502,7 @@ class ScreenshotManager:
             # on linux there is a problem with X-server/Qt/QVTK implementation and calling resize right after additional QVTK 
             # is created causes segfault so possible "solution" is to do resize right before taking screenshot. It causes flicker but does not cause segfault
 #            print MODULENAME,' sys.platform = ',sys.platform
-            if sys.platform=='darwin' or sys.platform=='Linux' or sys.platform=='linux' or sys.platform=='linux2':
+            if sys.platform == 'darwin' or sys.platform == 'Linux' or sys.platform == 'linux' or sys.platform == 'linux2':
                 scrData.screenshotGraphicsWidget.setShown(True)
 #                scrData.screenshotGraphicsWidget.resize(self.tabViewWidget.mainGraphicsWindow.size())
 
@@ -498,10 +511,10 @@ class ScreenshotManager:
             self.screenshotGraphicsWidget.takeSimShot(scrFullName)
                 # scrData.screenshotGraphicsWidget.setShown(False)
         
-            if sys.platform=='darwin' or sys.platform=='Linux' or sys.platform=='linux' or sys.platform=='linux2':
+            if sys.platform == 'darwin' or sys.platform == 'Linux' or sys.platform == 'linux' or sys.platform == 'linux2':
                 scrData.screenshotGraphicsWidget.setShown(False)
                 
-        if  not sys.platform.startswith('win'):      # we hide and restore screenshot window on linux and OSX only on windows it is not necessary      
+        if not sys.platform.startswith('win'):      # we hide and restore screenshot window on linux and OSX only on windows it is not necessary
             self.screenshotSubWindow.showNormal()
             self.screenshotSubWindow.hide()
                 
