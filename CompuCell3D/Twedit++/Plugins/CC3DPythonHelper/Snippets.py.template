@@ -190,7 +190,7 @@ cell.lambdaSurface=2.0
 # Make sure ExternalPotential plugin is loaded
 cell.lambdaVecX=-0.5 # force component pointing along X axis - towards positive X's
 cell.lambdaVecY=0.5 # force component pointing along Y axis - towards negative Y's
-cell.lambdaVecY=0.0 # force component pointing along Z axis 
+cell.lambdaVecZ=0.0 # force component pointing along Z axis 
 
 ---------- #@Submenu@ Length Constraint By Cell Id
 # Make sure LengthConstraintLocalFlex plugin is loaded

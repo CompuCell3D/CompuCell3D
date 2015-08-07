@@ -93,7 +93,7 @@ class GenerateDecorator(object):
 class CC3DMLGeneratorBase:
     def __init__(self,simulationDir='',simulationName=''):
         self.element=None
-        version='3.6.2'
+        version='3.7.4'
         revision=''
         try:
             
@@ -225,6 +225,9 @@ class CC3DMLGeneratorBase:
         kwds['KeyType']='LocalFlex'
         return  self.volSurHelper(*args,**kwds)
         
+    
+    
+    
     def volSurHelper(self,*args,**kwds):
     
         try:
@@ -392,16 +395,81 @@ class CC3DMLGeneratorBase:
 
     @GenerateDecorator('Plugin',['Name','ExternalPotentialLocalFlex'])                        
     def generateExternalPotentialLocalFlexPlugin(self,*args,**kwds):
-        cellTypeData=self.cellTypeData
-        mElement=self.mElement
-        gpd=self.gpd 
+        kwds['KeyString']='ExternalPotential'
+        kwds['KeyType']='LocalFlex'
+        self.externalPotentialHelper(*args,**kwds)
+    
+        # cellTypeData=self.cellTypeData
+        # mElement=self.mElement
+        # gpd=self.gpd 
         
-        mElement.addComment("newline")
-        mElement.addComment("External force applied to cell. Each cell has different force and force components have to be managed in Python.")
-        mElement.addComment("e.g. cell.lambdaVecX=0.5; cell.lambdaVecY=0.1 ; cell.lambdaVecZ=0.3;")
+        # mElement.addComment("newline")
+        # mElement.addComment("External force applied to cell. Each cell has different force and force components have to be managed in Python.")
+        # mElement.addComment("e.g. cell.lambdaVecX=0.5; cell.lambdaVecY=0.1 ; cell.lambdaVecZ=0.3;")
                 
-        mElement.addComment("Algorithm options are: PixelBased, CenterOfMassBased")
-        mElement.ElementCC3D("Algorithm",{},"PixelBased")    
+        # mElement.addComment("Algorithm options are: PixelBased, CenterOfMassBased")
+        # mElement.ElementCC3D("Algorithm",{},"PixelBased")    
+
+        
+    def externalPotentialHelper(self,*args,**kwds):   
+        try:
+            irElement=kwds['insert_root_element'] 
+        except LookupError,e:
+            irElement=None
+                
+        # existing root element 
+        try:
+            rElement=kwds['root_element'] 
+        except LookupError,e:
+            rElement=None
+
+        try:
+            cellTypeData=kwds['data']
+        except LookupError,e:
+            cellTypeData=None
+
+        try:
+            keyString=str(kwds['KeyString'])
+        except LookupError,e:
+            keyString='ExternalPOtential'
+
+        try:
+            keyType=str(kwds['KeyType'])
+        except LookupError,e:
+            keyType='LocalFlex'
+
+        try:
+            constraintDataDict=kwds['constraintDataDict']
+        except LookupError,e:
+            constraintDataDict={}
+            
+        # mElement is module element - either steppable of plugin element 
+        if irElement is None:    
+        
+            mElement=ElementCC3D("Plugin",{"Name":keyString})    
+            mElement.addComment("newline")
+            mElement.addComment("External force applied to cell. Each cell has different force and force components have to be managed in Python.")
+            mElement.addComment("e.g. cell.lambdaVecX=0.5; cell.lambdaVecY=0.1 ; cell.lambdaVecZ=0.3;")
+                    
+            mElement.addComment("Algorithm options are: PixelBased, CenterOfMassBased")
+            mElement.ElementCC3D("Algorithm",{},"PixelBased")    
+
+            
+            # print '\n\n\n\n THIS IS INITIALIZED ROOT ELEMENT ROOT  irElement=',irElement
+        else:
+            irElement.addComment("newline")
+            mElement=irElement.ElementCC3D("Plugin",{"Name":keyString})                        
+            mElement.addComment("newline")
+            mElement.addComment("External force applied to cell. Each cell has different force and force components have to be managed in Python.")
+            mElement.addComment("e.g. cell.lambdaVecX=0.5; cell.lambdaVecY=0.1 ; cell.lambdaVecZ=0.3;")
+                    
+            mElement.addComment("Algorithm options are: PixelBased, CenterOfMassBased")
+            mElement.ElementCC3D("Algorithm",{},"PixelBased")    
+            
+       
+        if keyType=='LocalFlex':
+            return mElement
+        
         
     @GenerateDecorator('Plugin',['Name','CenterOfMass'])    
     def generateCenterOfMassPlugin(self,*args,**kwds):
