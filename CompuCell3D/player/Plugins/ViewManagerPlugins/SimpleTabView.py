@@ -1738,6 +1738,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.stopAct.setEnabled(True)
             self.pauseAct.setEnabled(True)
 
+            self.openAct.setEnabled(False)
+            self.openLDSAct.setEnabled(False)
+
             return
         else:
             if not self.simulationIsRunning:
@@ -1749,6 +1752,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.stepAct.setEnabled(True)
                 self.stopAct.setEnabled(True)
                 self.pauseAct.setEnabled(True)
+
+                self.openAct.setEnabled(False)
+                self.openLDSAct.setEnabled(False)
 
             if Configuration.getSetting("LatticeOutputOn") and not self.cmlHandlerCreated:
                 import CompuCellSetup
@@ -1796,6 +1802,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.pauseAct.setEnabled(False)
             self.runAct.setEnabled(True)
             self.pifFromVTKAct.setEnabled(True)
+
+            self.openAct.setEnabled(False)
+            self.openLDSAct.setEnabled(False)
             return
 
         else:
