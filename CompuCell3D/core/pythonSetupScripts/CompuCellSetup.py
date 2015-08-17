@@ -51,6 +51,9 @@ freeFloatingSBMLSimulator={} # {name:RoadRunnerPy}
 global globalSBMLSimulatorOptions
 globalSBMLSimulatorOptions=None # {optionName:Value}
 
+global viewManager
+viewManager = None  # stores viewmanager object - initialized when simulation is run using Player
+
 
 MYMODULENAME = '------- CompuCellSetup.py: '
 
@@ -419,16 +422,39 @@ def resetGlobals():
     
     global globalSBMLSimulatorOptions
     globalSBMLSimulatorOptions=None
-    
+
 def setSimulationXMLFileName(_simulationFileName):
     global simulationPaths
     simulationPaths.setXmlFileNameFromPython(_simulationFileName)
 #     print "\n\n\n got here ",simulationPaths.simulationXMLFileName
 
-def addNewPlotWindow(_title='',_xAxisTitle='',_yAxisTitle='',_xScaleType='linear',_yScaleType='linear'):
+def addNewPlotWindow(_title='', _xAxisTitle='', _yAxisTitle='', _xScaleType='linear', _yScaleType='linear'):
+    class PlotWindowDummy(object):
+        '''
+        This class serves as a dummy object that is used when viewManager is None
+        It "emulates" plotWindow API but does nothing except ensures that
+        in the simulation that does not use CC3D Player (ciew manager in such simulation is set to None)
+        any call to plotWindow object gets captured/intercepted by __getattr__ function which returns a dummy method that accepts any
+        type of arguments and has ampty body. This way any calls to plots defined in the simulation that runs in the console are gently
+        ignored and simulation runs just fine. Most importantly it does not require plots to be commented out int he command line applications
+        '''
+        def __init__(self):
+            pass
+
+        def __getattr__(self,attr):
+            return self.dummyFcn
+
+        def dummyFcn(self,*args,**kwds):
+            pass
+
     global viewManager
-    pW=viewManager.plotManager.getNewPlotWindow()
-    
+
+    if not viewManager:
+        pwd = PlotWindowDummy()
+        return pwd
+
+    pW = viewManager.plotManager.getNewPlotWindow()
+
     if not pW:
         raise AttributeError('Missing plot modules. Windows/OSX Users: Make sure you have numpy installed. For instructions please visit www.compucell3d.org/Downloads. Linux Users: Make sure you have numpy and PyQwt installed. Please consult your linux distributioun manual pages on how to best install those packages')
         
@@ -482,7 +508,6 @@ def makeDefaultSimulationOutputDirectory():
     outputDir=os.path.abspath(outputDir)# normalizing path
     
     screenshotDirectoryName=outputDir # after this call screenshot directory  - screenshotDirectoryName is set to outputDir
-    
     
     try:
         mkpath(outputDir)        
