@@ -5,8 +5,82 @@ from WindowInventory import WindowInventory
 from enums import *
 
 
+class SubWindow(QMdiSubWindow):
+    def __init__(self, _parent=None):
+        '''
+        parent points to QMdiArea
+        '''
+        super(SubWindow, self).__init__(_parent)
+        self.parent = _parent
+        self.main_widget = None
+
+    def sizeHint(self):
+        '''
+        returns suggested size for qframe
+        :return:QSize
+        '''
+        return QSize(400, 400)
+
+    # set widget and widget fcns are not overloaded here. the default implementation of QMdiSubwindow is OK
+    # def setWidget(self, widget):
+    #     '''
+    #     Places widget  in the frame's layout
+    #     :param widget:widget to be added to Qframe
+    #     :return:None
+    #     '''
+
+    # def widget(self):
+    #     '''
+    #     main widget displayed in Qframe
+    #     :return: main widget displayed in Qframe
+    #     '''
+    #     return self.main_widget
+
+    def mousePressEvent(self, ev):
+        '''
+        handler for mouse click event - updates self.parent.lastActiveRealWindow member variable
+        :param ev: mousePressEvent
+        :return:None
+        '''
+        self.parent.lastActiveRealWindow = self
+        super(SubWindow,self).mousePressEvent(ev)
+
+    def mouseDoubleClickEvent(self, ev):
+        '''
+        handler for mouse double-click event - updates self.parent.lastActiveRealWindow member variable
+        :param ev:  mouseDoubleClickEvent
+        :return:None
+        '''
+        self.parent.lastActiveRealWindow = self
+        super(SubWindow, self).mouseDoubleClickEvent(ev)
+
+    # def changeEvent(self, ev):
+    #     '''
+    #     sets MainArea's lastActiveRealWindow - currently inactive
+    #     :param ev: QEvent
+    #     :return:None
+    #     '''
+    #
+    #     return
+        # if ev.type() == QEvent.ActivationChange:
+        #     if self.isActiveWindow():
+        #         print 'will activate ', self
+        #         self.parent.lastActiveRealWindow = self
+        #
+        # super(DockSubWindow,self).changeEvent(ev)
+
+    def closeEvent(self, ev):
+        '''
+        handler for close event event - removes sub window from inventory
+        :param ev:  closeEvent
+        :return:None
+        '''
+        self.parent.win_inventory.remove_from_inventory(self)
+
+
 class MainArea(QMdiArea):
     def __init__(self, stv,  ui ):
+        # self.mdiarea = self
         self.MDI_ON = True
 
         self.stv = stv # SimpleTabView
@@ -42,6 +116,11 @@ class MainArea(QMdiArea):
         return QPoint(-1, -1)
 
     def addSubWindow(self, widget):
+        '''Creates QMdiSubwindow containing widget and adds it to QMdiArea
+
+        :param widget: widget that will be placed in the qmdisubwindow
+        :return: None
+        '''
 
         import Graphics
         obj_type = 'other'
@@ -54,9 +133,17 @@ class MainArea(QMdiArea):
 
         window_name = obj_type + ' ' + str(self.win_inventory.get_counter())
 
-        mdi_sub_window = QMdiArea.addSubWindow(self, widget)
-
+        # mdi_sub_window = QMdiSubWindow()
+        mdi_sub_window = SubWindow(self)
+        mdi_sub_window.setWidget(widget)
+        mdi_sub_window.setAttribute(Qt.WA_DeleteOnClose)
         mdi_sub_window.setWindowTitle(window_name)
+
+        QMdiArea.addSubWindow(self, mdi_sub_window)
+
+        # old code that did not use SubWindow subclass
+        # mdi_sub_window = QMdiArea.addSubWindow(self, widget)
+        # mdi_sub_window.setWindowTitle(window_name)
 
         self.win_inventory.add_to_inventory(obj=mdi_sub_window, obj_type=obj_type)
 
