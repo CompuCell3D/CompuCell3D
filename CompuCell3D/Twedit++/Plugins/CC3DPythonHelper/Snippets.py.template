@@ -720,13 +720,13 @@ for cell in self.cellList:
     self.scalarCLField[cell]=cell,cell.id*random()
 
     
----------- #@Submenu@ Scalar Field Cell Level - Create
+---------- #@Submenu@ Scalar Field Cell Level - Create (start fcn.)
 self.scalarCLField=self.createScalarFieldCellLevelPy("FIELD_NAME_SCL")
 
----------- #@Submenu@ Scalar Field Cell Level - Clear
+---------- #@Submenu@ Scalar Field Cell Level - Clear (step fcn.)
 self.scalarCLField.clear()
 
----------- #@Submenu@ Scalar Field Cell Level - Write
+---------- #@Submenu@ Scalar Field Cell Level - Write (step fcn.)
 self.scalarCLField[cell]=FLOAT_VALUE
 
 ---------- #@Submenu@ Scalar Field Pixel Level - Example
@@ -738,13 +738,13 @@ for x,y,z in self.everyPixel():
     else:
         self.scalarField[x,y,z]=sin(x*y)
         
----------- #@Submenu@ Scalar Field Pixel Level - Create
+---------- #@Submenu@ Scalar Field Pixel Level - Create (start fcn.)
 self.scalarField=self.createScalarFieldPy("FIELD_NAME_S")
 
----------- #@Submenu@ Scalar Field Pixel Level - Clear
+---------- #@Submenu@ Scalar Field Pixel Level - Clear (step fcn.)
 self.scalarField[:, :, :]=0.0
 
----------- #@Submenu@ Scalar Field Pixel Level - Write
+---------- #@Submenu@ Scalar Field Pixel Level - Write (step fcn.)
 self.scalarField[10,11,0]=FLOAT_VALUE
 
 ---------- #@Submenu@ Vector Field Cell Level - Example
@@ -757,13 +757,13 @@ for cell in self.cellList:
         vec*=2.0
         self.vectorCLField[cell]=vec
 
----------- #@Submenu@ Vector Field Cell Level - Create
+---------- #@Submenu@ Vector Field Cell Level - Create (start fcn.)
 self.vectorCLField=self.createVectorFieldCellLevelPy("FIELD_NAME_VCL")        
 
----------- #@Submenu@ Vector Field Cell Level - Clear
+---------- #@Submenu@ Vector Field Cell Level - Clear (step fcn.)
 self.vectorCLField.clear()
 
----------- #@Submenu@ Vector Field Cell Level - Write
+---------- #@Submenu@ Vector Field Cell Level - Write (step fcn.)
 self.vectorCLField[cell]=[ VEC_X, VEC_Y, VEC_Z]
 
 ---------- #@Submenu@ Vector Field Pixel Level - Example
@@ -773,13 +773,13 @@ for x in xrange(0,self.dim.x,5):
         for z in xrange(self.dim.z):       
             self.vectorField[x,y,z]=[x*random(), y*random(), z*random()]        
 
----------- #@Submenu@ Vector Field Pixel Level - Create
+---------- #@Submenu@ Vector Field Pixel Level - Create (start fcn.)
 self.vectorField=self.createVectorFieldPy("FIELD_NAME_V")
 
----------- #@Submenu@ Vector Field Pixel Level - Clear
+---------- #@Submenu@ Vector Field Pixel Level - Clear (step fcn.)
 self.vectorField[:, :, :,:]=0.0 # clear vector field        
 
----------- #@Submenu@ Vector Field Pixel Level - Write
+---------- #@Submenu@ Vector Field Pixel Level - Write (step fcn.)
 self.vectorField[x,y,z]=[ VEC_X, VEC_Y, VEC_Z]
 
 =============== #@Menu@ Scientific Plots
@@ -848,14 +848,14 @@ self.pW.savePlotAsData(fileName)
 
 =============== #@Menu@ Scientific Plots Histograms
 
----------- #@Submenu@ Add Histogram Plot (start fcn)
+---------- #@Submenu@ 1. Add Histogram Plot (start fcn)
 self.pW=self.addNewPlotWindow(_title='Histogram',_xAxisTitle='TYPE NAME OF X AXIS',_yAxisTitle='TYPE NAME OF Y AXIS', _xScaleType='linear',_yScaleType='linear')
 self.pW.addHistogramPlot(_plotName='Hist 1',_color='green',_alpha=100)# _alpha is transparency 0 is transparent, 255 is opaque        
 
----------- #@Submenu@ Add Histogram  (step fcn) 
+---------- #@Submenu@ 2. Add Histogram  (step fcn)
 self.pW.addHistogram(plot_name='Hist 1' , value_array = ARRAY_WITH_VALUES ,  number_of_bins=20)
 
----------- #@Submenu@ Add Histogram  (step fcn - alternative) 
+---------- #@Submenu@ Add Histogram  (step fcn - alternative)
 # n and bins are generated using the follofing numpy 
 # (n, bins) = numpy.histogram(list_of_values, bins=10)  
 self.pW.addHistPlotData('Hist 1',n,bins)
