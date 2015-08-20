@@ -508,6 +508,9 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 		double newIxy=newCell->iXY-(newCell->volume )*xcm*ycm+(newCell->volume+1)*newXCM*newYCM-ptTrans.x*ptTrans.y;
 		double newIxz=newCell->iXZ-(newCell->volume )*xcm*zcm+(newCell->volume+1)*newXCM*newZCM-ptTrans.x*ptTrans.z;
 		double newIyz=newCell->iYZ-(newCell->volume )*ycm*zcm+(newCell->volume+1)*newYCM*newZCM-ptTrans.y*ptTrans.z;
+        cerr<<"-------------------------NEW CELL---------------"<<endl;
+        cerr<<" newIxx="<<newIxx<<" newIyy="<<newIyy<<" newIzz="<<newIzz<<" newIxy="<<newIxy<<" newIxz="<<newIxz<<" newIyz="<<newIyz<<endl;
+
 
 		vector<double> aCoeff(4,0.0);
 		vector<double> aCoeffNew(4,0.0);
@@ -526,6 +529,11 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 			-newCell->iXX*newCell->iYZ*newCell->iYZ
 			-newCell->iYY*newCell->iXZ*newCell->iXZ
 			-newCell->iZZ*newCell->iXY*newCell->iXY;
+
+
+        for (unsigned int i = 0 ; i < 4 ; ++i){
+            cerr<<"acoef["<<i<<"]="<<aCoeff[i]<<endl;
+        }
 
 		roots=solveCubicEquationRealCoeeficients(aCoeff);
 
@@ -560,7 +568,9 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 		//sorting semiaxes according the their lengths (shortest first)
 		sort(axes.begin(),axes.end());
 
-
+        for (unsigned int i = 0 ; i < 4 ; ++i){
+            cerr<<"axes["<<i<<"]="<<axes[i]<<endl;
+        }
 
 		vector<double> axesNew(3,0.0);
 
@@ -568,6 +578,14 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 		axesNew[1]=sqrt((2.5/(newCell->volume+1))*(rootsNew[0].real()+rootsNew[2].real()-rootsNew[1].real()));
 		axesNew[2]=sqrt((2.5/(newCell->volume+1))*(rootsNew[0].real()+rootsNew[1].real()-rootsNew[2].real()));
 
+
+        for (unsigned int i = 0 ; i < 4 ; ++i){
+            cerr<<"acoefNew["<<i<<"]="<<aCoeffNew[i]<<endl;
+        }
+
+        for (unsigned int i = 0 ; i < 4 ; ++i){
+            cerr<<"axesNew["<<i<<"]="<<axesNew[i]<<endl;
+        }
 		//sorting semiaxes according the their lengths (shortest first)
 		sort(axesNew.begin(),axesNew.end());
 
@@ -591,7 +609,7 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 		double newEnergy = lambdaLength * ((newLength - targetLength)*(newLength - targetLength)+(newMinorLength - minorTargetLength)*(newMinorLength - minorTargetLength));
 		energy += newEnergy - currEnergy;
 
-		 //cerr<<"NEW energy="<<energy<<endl;
+		 cerr<<"NEW energy="<<energy<<endl;
 	}
 	if (oldCell) {
 		//cerr<<"****************OLD CELL PART***********************"<<endl;
@@ -621,6 +639,9 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 		double newIxz =oldCell->iXZ-(oldCell->volume )*(xcm*zcm)+(oldCell->volume-1)*newXCM*newZCM+ptTrans.x*ptTrans.z;
 		double newIyz =oldCell->iYZ-(oldCell->volume )*(ycm*zcm)+(oldCell->volume-1)*newYCM*newZCM+ptTrans.y*ptTrans.z;
 
+        cerr<<"-------------------------OLD CELL---------------"<<endl;
+        cerr<<" newIxx="<<newIxx<<" newIyy="<<newIyy<<" newIzz="<<newIzz<<" newIxy="<<newIxy<<" newIxz="<<newIxz<<" newIyz="<<newIyz<<endl;
+
 
 		vector<double> aCoeff(4,0.0);
 		vector<double> aCoeffNew(4,0.0);
@@ -640,6 +661,10 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 			-oldCell->iYY*oldCell->iXZ*oldCell->iXZ
 			-oldCell->iZZ*oldCell->iXY*oldCell->iXY;
 
+        for (unsigned int i = 0 ; i < 4 ; ++i){
+            cerr<<"acoef["<<i<<"]="<<aCoeff[i]<<endl;
+        }
+
 		roots=solveCubicEquationRealCoeeficients(aCoeff);
 
 
@@ -657,6 +682,9 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 			-newIyy*newIxz*newIxz
 			-newIzz*newIxy*newIxy;
 
+        for (unsigned int i = 0 ; i < 4 ; ++i){
+            cerr<<"acoefNew["<<i<<"]="<<aCoeffNew[i]<<endl;
+        }
 		rootsNew=solveCubicEquationRealCoeeficients(aCoeffNew);
 
 		//finding semiaxes of the ellipsoid
@@ -669,8 +697,14 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 		axes[1]=sqrt((2.5/oldCell->volume)*(roots[0].real()+roots[2].real()-roots[1].real()));
 		axes[2]=sqrt((2.5/oldCell->volume)*(roots[0].real()+roots[1].real()-roots[2].real()));
 
+
+
 		//sorting semiaxes according the their lengths (shortest first)
 		sort(axes.begin(),axes.end());
+
+        for (unsigned int i = 0 ; i < 4 ; ++i){
+            cerr<<"axes["<<i<<"]="<<axes[i]<<endl;
+        }
 
 		vector<double> axesNew(3,0.0);
 		if (oldCell->volume<=1){
@@ -684,6 +718,10 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 		}
 		//sorting semiaxes according the their lengths (shortest first)
 		sort(axesNew.begin(),axesNew.end());	
+
+        for (unsigned int i = 0 ; i < 4 ; ++i){
+            cerr<<"axesNew["<<i<<"]="<<axesNew[i]<<endl;
+        }
 
 		double currLength = 2.0*axes[2];
 		double currMinorLength=2.0*axes[0];
@@ -710,7 +748,7 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 
 		energy += newEnergy - currEnergy;
 		//cerr<<"lambdaLength="<<lambdaLength <<" targetLength="<<targetLength<<" minorTargetLength="<<minorTargetLength<<endl;
-		
+	    cerr<<"OLD energy="<<energy	<<endl;
 	}
 
 	//cerr<<"energy="<<energy<<endl;

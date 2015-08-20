@@ -64,6 +64,14 @@
 #include <CompuCell3D/plugins/ConnectivityGlobal/ConnectivityGlobalPlugin.h>
 
 
+//-----------------------------------NEW-------------------------------- 
+//Contact 
+#include <CompuCell3D/plugins/Contact/ContactPlugin.h>
+//Contact 
+#include <CompuCell3D/plugins/Volume/VolumePlugin.h>
+
+
+
 // #include <CompuCell3D/plugins/LengthConstraintLocalFlex/LengthConstraintLocalFlexData.h>
 // #include <CompuCell3D/plugins/LengthConstraintLocalFlex/LengthConstraintLocalFlexPlugin.h>
 

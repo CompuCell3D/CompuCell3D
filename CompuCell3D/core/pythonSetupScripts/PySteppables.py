@@ -127,7 +127,22 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             import CompuCell
             self.volumeTrackerPlugin=CompuCell.getVolumeTrackerPlugin()
             self.cellField.volumeTrackerPlugin=self.volumeTrackerPlugin # used in setitem function in swigg CELLFIELDEXTEDER macro CompuCell.i
-
+            
+        #------------------------------------NEW------------------------------
+        
+        #VolumePlugin
+        self.volumePlugin=None
+        if self.simulator.pluginManager.isLoaded("Volume"):
+            import CompuCell
+            self.volumePlugin=CompuCell.getVolumePlugin()
+            
+        #ContactPlugin
+        self.contactPlugin=None
+        if self.simulator.pluginManager.isLoaded("Contact"):
+            import CompuCell
+            self.contactPlugin=CompuCell.getContactPlugin()
+            
+            
         #CenterOfMassPlugin
         self.centerOfMassPlugin=None
         if self.simulator.pluginManager.isLoaded("CenterOfMass"):

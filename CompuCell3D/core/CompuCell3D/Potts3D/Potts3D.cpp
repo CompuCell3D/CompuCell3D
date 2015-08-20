@@ -680,6 +680,9 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 	ASSERT_OR_THROW("Potts3D: cell field G not initialized", cellFieldG);
 	// // // ParallelUtilsOpenMP * pUtils=sim->getParallelUtils();
 
+    //----------------------------NEW---------------------------------------
+    ofstream out("pixels.txt");
+
 	if (customAcceptanceExpressionDefined){
 		customAcceptanceFunction.initialize(this->sim); //actual initialization will happen only once at MCS=0 all other calls will return without doing anything
 	}
@@ -875,8 +878,11 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 				flipNeighborVec[currentWorkNodeNumber]=pt;/// change takes place at change pixel  and pt is a neighbor of changePixel
 				// Calculate change in energy
 				//cerr<<"steps="<<steps<<" temp="<<temp<<" acceptanceFunction="<<acceptanceFunction<<endl;
+                cerr<<"----------------------CALCULATION ------------------------------------------"<<endl;
+                cerr<<"changePixel="<<changePixel<<" old="<<cellFieldG->get(changePixel)<<" new="<<cell<<endl;
 
 				double change = energyCalculator->changeEnergy(changePixel, cell, cellFieldG->get(changePixel),i); 
+                cerr<<" energy="<<change<<endl;
 
 				//cerr<<"This is change: "<<change<<endl;	
 
@@ -886,6 +892,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 				double motility = fluctAmplFcn->fluctuationAmplitude(cell, cellFieldG->get(changePixel));
 
 				double prob = acceptanceFunction->accept(motility, change);
+                cerr<<"prob="<<prob<<endl;
 				//#pragma omp critical
 				//				{
 				//				cerr<<" thread="<<currentWorkNodeNumber<<" section="<<s<<" prob="<<prob<<" energy="<<energy<<endl;
@@ -893,27 +900,38 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
 
 
-
+                out<<changePixel<<" "<<(int)cellFieldG->get(changePixel)<<" "<<(int)cell<<" "<<change; 
 				//     cerr<<"change E="<<change<<" prob="<<prob<<endl;
 				if (prob >= 1.0 || rand->getRatio() < prob) {
 					// Accept the change
 					
-					energyVec[currentWorkNodeNumber] += change;
+					//energyVec[currentWorkNodeNumber] += change;
 					
 					if (connectivityConstraint && connectivityConstraint->changeEnergy(changePixel, cell, cellFieldG->get(changePixel) ) ){
 						if (numberOfThreads==1)
 							energyCalculator->setLastFlipAccepted(false);
+
+                        out<<" "<<2<<endl;
 					}else{
 						cellFieldG->set(changePixel, cell);
+                        energyVec[currentWorkNodeNumber] += change;
+                        out<<" "<<1<<endl;
+                        cerr<<" CHANGE ACCEPTED"<<" new cell written is"<<cell<<endl;
+                        if (cell){
+                            cerr<<" cell Volume="<<cell->volume<<endl;                            
+                        }
+                            
 						flipsVec[currentWorkNodeNumber]++;
 						if (numberOfThreads==1)
 							energyCalculator->setLastFlipAccepted(true);
 					}
 				}else{
+                    out<<" "<<0<<endl;
 					if (numberOfThreads==1)
 						energyCalculator->setLastFlipAccepted(false);
 				}
 
+                cerr<<"----------------------END OF CALCULATION ------------------------------------------\n\n"<<endl;
 
 				// Run steppers
 //#pragma omp single 
