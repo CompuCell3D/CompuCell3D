@@ -362,13 +362,23 @@ class QVTKRenderWindowInteractor(QtOpenGL.QGLWidget):
         
         self._ActiveButton = ev.button()
 
+        # if self._ActiveButton == QtCore.Qt.LeftButton:
+            # self._Iren.LeftButtonPressEvent()
+        # elif self._ActiveButton == QtCore.Qt.RightButton:
+            # self._Iren.RightButtonPressEvent()            
+        # elif self._ActiveButton == QtCore.Qt.MidButton:
+            # self._Iren.MiddleButtonPressEvent()
+            
         if self._ActiveButton == QtCore.Qt.LeftButton:
             self._Iren.LeftButtonPressEvent()
         elif self._ActiveButton == QtCore.Qt.RightButton:
-            self._Iren.RightButtonPressEvent()
+            self._Iren.MiddleButtonPressEvent()            
         elif self._ActiveButton == QtCore.Qt.MidButton:
-            self._Iren.MiddleButtonPressEvent()
-    
+            self._Iren.RightButtonPressEvent()            
+            
+
+
+            
     def mousePressEvent(self, ev):
         self.mousePressEventFcn(ev)
         return
@@ -397,14 +407,21 @@ class QVTKRenderWindowInteractor(QtOpenGL.QGLWidget):
         ctrl, shift = self._GetCtrlShift(ev)
         self._Iren.SetEventInformationFlipY(ev.x(), ev.y(),
                                             ctrl, shift, chr(0), 0, None)
+                                                                                                                                    
+        # if self._ActiveButton == QtCore.Qt.LeftButton:
+            # self._Iren.LeftButtonReleaseEvent()
+        # elif self._ActiveButton == QtCore.Qt.RightButton:
+            # self._Iren.RightButtonReleaseEvent()
+        # elif self._ActiveButton == QtCore.Qt.MidButton:
+            # self._Iren.MiddleButtonReleaseEvent()
 
         if self._ActiveButton == QtCore.Qt.LeftButton:
             self._Iren.LeftButtonReleaseEvent()
-        elif self._ActiveButton == QtCore.Qt.RightButton:
-            self._Iren.RightButtonReleaseEvent()
-        elif self._ActiveButton == QtCore.Qt.MidButton:
+        elif self._ActiveButton == QtCore.Qt.RightButton:            
             self._Iren.MiddleButtonReleaseEvent()
-
+        elif self._ActiveButton == QtCore.Qt.MidButton:
+            self._Iren.RightButtonReleaseEvent()
+            
     def mouseMoveEvent(self, ev):
         self.__saveModifiers = ev.modifiers()
         self.__saveButtons = ev.buttons()
