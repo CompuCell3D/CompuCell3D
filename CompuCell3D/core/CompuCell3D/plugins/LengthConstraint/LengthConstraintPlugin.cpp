@@ -613,9 +613,9 @@ double LengthConstraintPlugin::changeEnergy_3D(const Point3D &pt, const CellG *n
 		double newYCM = (oldCell->yCM - ptTrans.y)/((float)oldCell->volume - 1);
 		double newZCM = (oldCell->zCM - ptTrans.z)/((float)oldCell->volume - 1);
 
-		double newIxx =oldCell->iXX+(oldCell->volume )*(ycm*ycm+zcm*zcm)-(oldCell->volume-1)*(newYCM*newYCM+newZCM*newZCM)-ptTrans.y*ptTrans.y+ptTrans.z*ptTrans.z;
-		double newIyy =oldCell->iYY+(oldCell->volume )*(xcm*xcm+zcm*zcm)-(oldCell->volume-1)*(newXCM*newXCM+newZCM*newZCM)-ptTrans.x*ptTrans.x+ptTrans.z*ptTrans.z;
-		double newIzz =oldCell->iZZ+(oldCell->volume )*(xcm*xcm+ycm*ycm)-(oldCell->volume-1)*(newXCM*newXCM+newYCM*newYCM)-ptTrans.x*ptTrans.x+ptTrans.y*ptTrans.y;
+		double newIxx =oldCell->iXX+(oldCell->volume )*(ycm*ycm+zcm*zcm)-(oldCell->volume-1)*(newYCM*newYCM+newZCM*newZCM) - (ptTrans.y*ptTrans.y+ptTrans.z*ptTrans.z);
+		double newIyy =oldCell->iYY+(oldCell->volume )*(xcm*xcm+zcm*zcm)-(oldCell->volume-1)*(newXCM*newXCM+newZCM*newZCM) - (ptTrans.x*ptTrans.x+ptTrans.z*ptTrans.z);
+		double newIzz =oldCell->iZZ+(oldCell->volume )*(xcm*xcm+ycm*ycm)-(oldCell->volume-1)*(newXCM*newXCM+newYCM*newYCM) - (ptTrans.x*ptTrans.x+ptTrans.y*ptTrans.y);
 
 		double newIxy =oldCell->iXY-(oldCell->volume )*(xcm*ycm)+(oldCell->volume-1)*newXCM*newYCM+ptTrans.x*ptTrans.y;
 		double newIxz =oldCell->iXZ-(oldCell->volume )*(xcm*zcm)+(oldCell->volume-1)*newXCM*newZCM+ptTrans.x*ptTrans.z;
