@@ -36,6 +36,7 @@
       <e Name="ArrowColor" Type="color">#ffffff</e>
       <e Name="BorderColor" Type="color">#ffff00</e>
       <e Name="BoundingBoxColor" Type="color">#ffffff</e>
+      <e Name="Axes3DColor" Type="color">#ffffff</e>
       <e Name="BrushColor" Type="color">#ffffff</e>
       <e Name="ClusterBorderColor" Type="color">#0000ff</e>
       <e Name="ContourColor" Type="color">#ffffff</e>
@@ -94,6 +95,7 @@
       <e Name="OverlayVectorsOn" Type="bool">False</e>
       <e Name="PixelizedScalarField" Type="bool">False</e>
       <e Name="ScaleArrowsOn" Type="bool">False</e>
+      <e Name="Show3DAxes" Type="bool">True</e>
       <e Name="UseInternalConsole" Type="bool">False</e>
       <e Name="WindowColorSameAsMedium" Type="bool">True</e>
    </Settings>

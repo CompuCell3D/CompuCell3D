@@ -80,7 +80,9 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
         # 3D tab
         self.boundingBoxColorButton.clicked.connect(self.boundingBoxColorClicked)
-        
+
+        self.axes3DBoxColorButton.clicked.connect(self.axes3DBoxColorClicked)
+
         self.buttonBox.clicked.connect(self.buttonBoxClicked)
 
 
@@ -190,6 +192,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
     def boundingBoxColorClicked(self):
         self.updateColorButton(self.boundingBoxColorButton, "BoundingBoxColor")
 
+    def axes3DBoxColorClicked(self):
+        self.updateColorButton(self.axes3DBoxColorButton, "Axes3DColor")
 
     # -------- Field widgets CBs  (was both Colormap and Vector tabs, now combined in Field tab)
     def fieldComboBoxClicked(self):
@@ -632,6 +636,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 
         Configuration.setSetting("Types3DInvisible", self.cellTypesInvisibleList.text())
         Configuration.setSetting("BoundingBoxOn", self.boundingBoxCheckBox.isChecked())
+        Configuration.setSetting("Show3DAxes", self.show3DAxesCB.isChecked())
+
     
     def updateUI(self):  # 
         '''called whenever Prefs dialog is open'''
@@ -756,12 +762,24 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         # 3D
         self.cellTypesInvisibleList.setText(Configuration.getSetting("Types3DInvisible"))
         self.boundingBoxCheckBox.setChecked(self.paramCC3D["BoundingBoxOn"])
-        
+
+        self.show3DAxesCB.setChecked(Configuration.getSetting("Show3DAxes"))
+
+
         color = Configuration.getSetting("BoundingBoxColor")
         pm = QPixmap(size.width(), size.height())
         pm.fill(color)
         self.boundingBoxColorButton.setIconSize(pm.size())
         self.boundingBoxColorButton.setIcon(QIcon(pm))
+
+        color_axes = Configuration.getSetting("Axes3DColor")
+        pm_axes = QPixmap(size.width(), size.height())
+        pm_axes.fill(color_axes)
+
+        self.axes3DBoxColorButton.setIconSize(pm_axes.size())
+        self.axes3DBoxColorButton.setIcon(QIcon(pm_axes))
+
+
 
 
     

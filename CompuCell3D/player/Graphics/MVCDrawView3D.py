@@ -25,6 +25,7 @@ class MVCDrawView3D(MVCDrawViewBase):
         self.usedCellTypesList=None
         self.usedDraw3DFlag=False
         self.boundingBox = Configuration.getSetting("BoundingBoxOn")
+        self.show3DAxes = Configuration.getSetting("Show3DAxes")
 #        self.legendEnable = Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName)  # what fieldName??
         self.warnUserCellBorders = True
     
@@ -41,8 +42,8 @@ class MVCDrawView3D(MVCDrawViewBase):
         self.typesInvisibleStr=""
         self.set3DInvisibleTypes()
         
-        axesActor = vtk.vtkActor()
-        axisTextActor = vtk.vtkFollower()
+        self.axesActor = vtk.vtkCubeAxesActor2D()
+
         
         self.clut = vtk.vtkLookupTable()
         self.clut.SetHueRange(0.67, 0.0)
@@ -244,40 +245,134 @@ class MVCDrawView3D(MVCDrawViewBase):
             self.outlineDim = _imageData.GetDimensions()
 
     def showOutlineActor(self):
-#        print MODULENAME, '------------  showOutlineActor()'
+
+        # self.showAxes()
+
+        print MODULENAME, '------------  showOutlineActor()'
         self.currentActors["Outline"]=self.outlineActor
+        # need to edit configsChanged to set self.boundingBox based on configuartion options
+        # this determines whether bounding box is shown or not
         if self.boundingBox:
             color = Configuration.getSetting("BoundingBoxColor")   # eventually do this smarter (only get/update when it changes)
             self.outlineActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
             self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
     
-    def hideOutlineActor(self):
-        self.graphicsFrameWidget.ren.RemoveActor(self.outlineActor)
-        del self.currentActors["Outline"]
-        
+    # def hideOutlineActor(self):
+    #     self.graphicsFrameWidget.ren.RemoveActor(self.outlineActor)
+    #     del self.currentActors["Outline"]
+
+
+
     def showAxes(self):
-        axes = vtk.vtkAxes()
-        axes.SetOrigin(-1, -1, -1)
-        axes.SetScaleFactor(20)
-        axesMapper = vtk.vtkPolyDataMapper()
-        axesMapper.SetInputConnection(axes.GetOutputPort())
-        
-        axesActor.SetMapper(axesMapper)
-        self.ren.AddActor(axesActor)
-        
-        atext = vtk.vtkVectorText()
-        atext.SetText("X-Axis")
-        textMapper = vtk.vtkPolyDataMapper()
-        textMapper.SetInputConnection(atext.GetOutputPort())
-        
-        axisTextActor.SetMapper(textMapper)
-        #axisTextActor.SetScale(0.2, 0.2, 0.2)
-        axisTextActor.SetScale(3, 3, 3)
-        #axisTextActor.RotateY(90)
-        axisTextActor.AddPosition(0, 0, 0)        
-        
-        self.graphicsFrameWidget.ren.AddActor(axisTextActor)    
-        
+
+        # need to edit configsChanged to set self.show3DAxes based on configuartion options
+        # this determines whether 3D axes are shown or not
+
+        if not self.show3DAxes:
+            return
+
+        self.currentActors["Axes3D"] = self.axesActor
+        color = Configuration.getSetting("Axes3DColor")   # eventually do this smarter (only get/update when it changes)
+        color = (float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+
+        tprop = vtk.vtkTextProperty()
+        tprop.SetColor(color)
+        tprop.ShadowOn()
+        dim = self.currentDrawingParameters.bsd.fieldDim
+
+        # self.axesActor = vtk.vtkCubeAxesActor2D()
+        # self.axesActor.SetScale(30,30,30)
+        self.axesActor.SetNumberOfLabels(4) # number of labels
+        self.axesActor.SetBounds(0, dim.x, 0, dim .y, 0, dim .z)
+        self.axesActor.SetLabelFormat("%6.4g")
+        self.axesActor.SetFlyModeToOuterEdges()
+        self.axesActor.SetFontFactor(1.5)
+
+        # self.axesActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+        self.axesActor.GetProperty().SetColor(color)
+
+        xAxisActor = self.axesActor.GetXAxisActor2D()
+        # xAxisActor.RulerModeOn()
+        # xAxisActor.SetRulerDistance(40)
+        # xAxisActor.SetRulerMode(20)
+        # xAxisActor.RulerModeOn()
+        xAxisActor.SetNumberOfMinorTicks(3)
+
+
+        # self.axesActor.GetXAxisActor2D().SetNumberOfMinorTicks(3)
+        self.axesActor.GetYAxisActor2D().SetNumberOfMinorTicks(3)
+        self.axesActor.GetZAxisActor2D().SetNumberOfMinorTicks(3)
+
+        self.axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
+
+
+
+        # self.axesActor.DrawXGridlinesOn()
+        # self.axesActor.DrawYGridlinesOn()
+        # self.axesActor.DrawZGridlinesOn()
+        # self.axesActor.SetOrigin(25, 25, 25)
+        # transform = vtk.vtkTransform()
+        # transform.Translate(0.0, 0.0, 0.0)
+        # self.axesActor.SetUserTransform(transform)
+        self.graphicsFrameWidget.ren.AddActor(self.axesActor)
+
+        # self.currentActors["Axes"]=self.axesActor
+        #
+        # axes = vtk.vtkAxes()
+        # # axes.SetOrigin(-1, -1, -1)
+        # axes.SetOrigin(25, 25, 25)
+        # axes.SetScaleFactor(30)
+        # # axesMapper = vtk.vtkPolyDataMapper()
+        # # axesMapper.SetInputConnection(axes.GetOutputPort())
+        #
+        # axesTubes = vtk.vtkTubeFilter()
+        # axesTubes.SetInputConnection(axes.GetOutputPort())
+        # axesTubes.SetRadius(axes.GetScaleFactor()/25.0)
+        # axesTubes.SetNumberOfSides(2)
+        #
+        # axesMapper = vtk.vtkPolyDataMapper()
+        # axesMapper.SetInputConnection(axesTubes.GetOutputPort())
+        #
+        # self.axesActor.SetMapper(axesMapper)
+        # self.graphicsFrameWidget.ren.AddActor(self.axesActor)
+        #
+        #
+        # # Label the axes.
+        # XText = vtk.vtkVectorText()
+        # XText.SetText('X')
+        #
+        # XTextMapper = vtk.vtkPolyDataMapper()
+        # XTextMapper.SetInputConnection(XText.GetOutputPort())
+        #
+        # self.XActor = vtk.vtkFollower()
+        # self.XActor.SetMapper(XTextMapper)
+        # # self.XActor.SetScale(0.02, .02, .02)
+        # self.XActor.SetScale(3, 3, 3)
+        # # self.XActor.SetPosition(0.35, -0.05, -0.05)
+        # self.XActor.SetPosition(55,25, 25)
+        # self.XActor.GetProperty().SetColor(255, 255, 255)
+        #
+        # self.currentActors["XLabel"] = self.XActor
+        # self.graphicsFrameWidget.ren.AddActor(self.XActor)
+        #
+        # # atext = vtk.vtkVectorText()
+        # # atext.SetText("X-Axis")
+        # # textMapper = vtk.vtkPolyDataMapper()
+        # # textMapper.SetInputConnection(atext.GetOutputPort())
+        # #
+        # # axisTextActor.SetMapper(textMapper)
+        # # #axisTextActor.SetScale(0.2, 0.2, 0.2)
+        # # axisTextActor.SetScale(3, 3, 3)
+        # # #axisTextActor.RotateY(90)
+        # # axisTextActor.AddPosition(0, 0, 0)
+        # #
+        # # self.graphicsFrameWidget.ren.AddActor(axisTextActor)
+
+    # def hideAxes(self):
+    #     self.graphicsFrameWidget.ren.RemoveActor(self.axesActor)
+    #     del self.currentActors["Axes3D"]
+
+
     def drawCellField(self, bsd, fieldType):
 #        print MODULENAME, '  drawCellField():    calling drawModel.extractCellFieldData()'
         self.usedCellTypesList = self.drawModel.extractCellFieldData()
@@ -287,7 +382,9 @@ class MVCDrawView3D(MVCDrawViewBase):
         self.set3DInvisibleTypes()
         
         self.drawModel.prepareOutlineActors((self.outlineActor,))
+        # remember to edit configs changed for actors to be visible or not. control variable are being changed there
         self.showOutlineActor()
+        self.showAxes()
 
         dictKey = self.graphicsFrameWidget.winId().__int__()
         
@@ -304,15 +401,7 @@ class MVCDrawView3D(MVCDrawViewBase):
         if self.parentWidget.graphicsWindowVisDict[dictKey][1]:    # cell borders (= individual cells)
 
             self.parentWidget.displayWarning ('3D Cell rendering with Vis->Borders "ON"  may be slow')
-            # displayWarning
-#             if self.warnUserCellBorders:
-#                 reply = QMessageBox.warning(self.parentWidget, "Message",
-#                                         "Warning:  About to draw individual cells (Vis->Borders is on). If you cancel and 3D:BBox is off, you may need to press 'r' in window to re-center.",
-#                                         QMessageBox.Ok,QMessageBox.Cancel)
-# #                print '\n------------ reply,  QMessageBox.Cancel=',reply,QMessageBox.Cancel
-#                 if reply == QMessageBox.Cancel:     # != 1024
-#                     return
-#                 self.warnUserCellBorders = False
+
             self.prepareCellTypeActors()
             self.showCellTypeActors()
             self.drawModel.initCellFieldBordersActors(self.currentActors)
@@ -370,7 +459,7 @@ class MVCDrawView3D(MVCDrawViewBase):
         
         self.drawModel.prepareOutlineActors((self.outlineActor,))
         self.showOutlineActor()
-        
+        self.showAxes()
         self.showConActors()
             
         if Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName):   # rwh: need to speed this up w/ local flag
@@ -405,7 +494,7 @@ class MVCDrawView3D(MVCDrawViewBase):
 
         self.drawModel.prepareOutlineActors((self.outlineActor,))
         self.showOutlineActor()
-        
+        self.showAxes()
         self.Render()
 
     #-------------------------------------------------------------------------
@@ -526,6 +615,7 @@ class MVCDrawView3D(MVCDrawViewBase):
         #reassign which types are invisible        
         self.set3DInvisibleTypes()
         self.boundingBox = Configuration.getSetting("BoundingBoxOn")
+        self.show3DAxes = Configuration.getSetting("Show3DAxes")
 #        print MODULENAME, '  configsChanged():  boundingBox=',self.boundingBox
 #        self.legendEnable = Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName)  # what fieldName??
         self.parentWidget.requestRedraw()
