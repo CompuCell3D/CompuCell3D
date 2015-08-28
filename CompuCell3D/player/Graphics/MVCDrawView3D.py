@@ -280,8 +280,6 @@ class MVCDrawView3D(MVCDrawViewBase):
         tprop.ShadowOn()
         dim = self.currentDrawingParameters.bsd.fieldDim
 
-        # self.axesActor = vtk.vtkCubeAxesActor2D()
-        # self.axesActor.SetScale(30,30,30)
         self.axesActor.SetNumberOfLabels(4) # number of labels
         self.axesActor.SetBounds(0, dim.x, 0, dim .y, 0, dim .z)
         self.axesActor.SetLabelFormat("%6.4g")
@@ -299,78 +297,11 @@ class MVCDrawView3D(MVCDrawViewBase):
         xAxisActor.SetNumberOfMinorTicks(3)
 
 
-        # self.axesActor.GetXAxisActor2D().SetNumberOfMinorTicks(3)
-        self.axesActor.GetYAxisActor2D().SetNumberOfMinorTicks(3)
-        self.axesActor.GetZAxisActor2D().SetNumberOfMinorTicks(3)
-
+        # setting camera fot he actor is vey important to get axes working properly
         self.axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
-
-
-
-        # self.axesActor.DrawXGridlinesOn()
-        # self.axesActor.DrawYGridlinesOn()
-        # self.axesActor.DrawZGridlinesOn()
-        # self.axesActor.SetOrigin(25, 25, 25)
-        # transform = vtk.vtkTransform()
-        # transform.Translate(0.0, 0.0, 0.0)
-        # self.axesActor.SetUserTransform(transform)
         self.graphicsFrameWidget.ren.AddActor(self.axesActor)
 
-        # self.currentActors["Axes"]=self.axesActor
-        #
-        # axes = vtk.vtkAxes()
-        # # axes.SetOrigin(-1, -1, -1)
-        # axes.SetOrigin(25, 25, 25)
-        # axes.SetScaleFactor(30)
-        # # axesMapper = vtk.vtkPolyDataMapper()
-        # # axesMapper.SetInputConnection(axes.GetOutputPort())
-        #
-        # axesTubes = vtk.vtkTubeFilter()
-        # axesTubes.SetInputConnection(axes.GetOutputPort())
-        # axesTubes.SetRadius(axes.GetScaleFactor()/25.0)
-        # axesTubes.SetNumberOfSides(2)
-        #
-        # axesMapper = vtk.vtkPolyDataMapper()
-        # axesMapper.SetInputConnection(axesTubes.GetOutputPort())
-        #
-        # self.axesActor.SetMapper(axesMapper)
-        # self.graphicsFrameWidget.ren.AddActor(self.axesActor)
-        #
-        #
-        # # Label the axes.
-        # XText = vtk.vtkVectorText()
-        # XText.SetText('X')
-        #
-        # XTextMapper = vtk.vtkPolyDataMapper()
-        # XTextMapper.SetInputConnection(XText.GetOutputPort())
-        #
-        # self.XActor = vtk.vtkFollower()
-        # self.XActor.SetMapper(XTextMapper)
-        # # self.XActor.SetScale(0.02, .02, .02)
-        # self.XActor.SetScale(3, 3, 3)
-        # # self.XActor.SetPosition(0.35, -0.05, -0.05)
-        # self.XActor.SetPosition(55,25, 25)
-        # self.XActor.GetProperty().SetColor(255, 255, 255)
-        #
-        # self.currentActors["XLabel"] = self.XActor
-        # self.graphicsFrameWidget.ren.AddActor(self.XActor)
-        #
-        # # atext = vtk.vtkVectorText()
-        # # atext.SetText("X-Axis")
-        # # textMapper = vtk.vtkPolyDataMapper()
-        # # textMapper.SetInputConnection(atext.GetOutputPort())
-        # #
-        # # axisTextActor.SetMapper(textMapper)
-        # # #axisTextActor.SetScale(0.2, 0.2, 0.2)
-        # # axisTextActor.SetScale(3, 3, 3)
-        # # #axisTextActor.RotateY(90)
-        # # axisTextActor.AddPosition(0, 0, 0)
-        # #
-        # # self.graphicsFrameWidget.ren.AddActor(axisTextActor)
 
-    # def hideAxes(self):
-    #     self.graphicsFrameWidget.ren.RemoveActor(self.axesActor)
-    #     del self.currentActors["Axes3D"]
 
 
     def drawCellField(self, bsd, fieldType):
