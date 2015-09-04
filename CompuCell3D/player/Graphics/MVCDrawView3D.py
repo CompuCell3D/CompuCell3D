@@ -246,8 +246,6 @@ class MVCDrawView3D(MVCDrawViewBase):
 
     def showOutlineActor(self):
 
-        # self.showAxes()
-
         print MODULENAME, '------------  showOutlineActor()'
         self.currentActors["Outline"]=self.outlineActor
         # need to edit configsChanged to set self.boundingBox based on configuartion options
@@ -256,12 +254,6 @@ class MVCDrawView3D(MVCDrawViewBase):
             color = Configuration.getSetting("BoundingBoxColor")   # eventually do this smarter (only get/update when it changes)
             self.outlineActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
             self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
-    
-    # def hideOutlineActor(self):
-    #     self.graphicsFrameWidget.ren.RemoveActor(self.outlineActor)
-    #     del self.currentActors["Outline"]
-
-
 
     def showAxes(self):
 
