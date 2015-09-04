@@ -42,6 +42,10 @@ class MVCDrawView2D(MVCDrawViewBase):
         self.cellGlyphsActor  = vtk.vtkActor()
         self.FPPLinksActor  = vtk.vtkActor()  # used for both white and colored links
         self.outlineActor = vtk.vtkActor()
+        # self.axesActor = vtk.vtkCubeAxesActor2D()
+        self.axesActor = vtk.vtkCubeAxesActor()
+
+
         self.outlineDim=[0,0,0]
         
         self.cellsActor     = vtk.vtkActor()
@@ -347,11 +351,101 @@ class MVCDrawView2D(MVCDrawViewBase):
         outlineMapper.SetInputConnection(outline.GetOutputPort())
     
         self.outlineActor.SetMapper(outlineMapper)
-        self.outlineActor.GetProperty().SetColor(1, 1, 1)        
+        self.outlineActor.GetProperty().SetColor(1, 1, 1)
 
     def showOutlineActor(self):
         self.currentActors["Outline"]=self.outlineActor
         self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
+
+
+    def showAxes(self):
+        self.currentActors["Axes2D"] = self.axesActor
+        color = Configuration.getSetting("Axes3DColor")   # eventually do this smarter (only get/update when it changes)
+        color = (float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+
+        tprop = vtk.vtkTextProperty()
+        tprop.SetColor(color)
+        # tprop.ShadowOn()
+        dim = self.currentDrawingParameters.bsd.fieldDim
+
+        # self.axesActor.SetNumberOfLabels(4) # number of labels
+        self.axesActor.SetUse2DMode(1)
+        # self.axesActor.SetScreenSize(50.0) # for labels and axes titles
+        self.axesActor.SetLabelScaling(True,20,20,20)
+        self.axesActor.SetXLabelFormat("%6.4g")
+        self.axesActor.SetYLabelFormat("%6.4g")
+
+        self.axesActor.SetBounds(0, dim.x, 0, dim .y, 0, 0)
+        self.axesActor.SetXTitle('X')
+        self.axesActor.SetYTitle('Y')
+        # self.axesActor.SetFlyModeToOuterEdges()
+
+        label_prop = self.axesActor.GetLabelTextProperty(0)
+        print 'label_prop=',label_prop
+
+
+        print 'self.axesActor.GetXTitle()=',self.axesActor.GetXTitle()
+        title_prop_x = self.axesActor.GetTitleTextProperty(0)
+        # title_prop_x.SetLineOffset()
+        print 'self.axesActor.GetTitleTextProperty(0)=',self.axesActor.GetTitleTextProperty(0)
+
+        self.axesActor.GetTitleTextProperty(0).SetFontSize(50)
+
+        # self.axesActor.GetTitleTextProperty(0).SetColor(1.0, 0.0, 0.0)
+        # self.axesActor.GetTitleTextProperty(0).SetFontSize(6.0)
+        # self.axesActor.GetTitleTextProperty(0).SetLineSpacing(0.5)
+        print 'self.axesActor.GetTitleTextProperty(0)=',self.axesActor.GetTitleTextProperty(0)
+
+        self.axesActor.XAxisMinorTickVisibilityOff()
+        self.axesActor.YAxisMinorTickVisibilityOff()
+
+        self.axesActor.SetTickLocationToOutside()
+
+
+        # self.axesActor.DrawXGridlinesOn()
+        # self.axesActor.DrawYGridlinesOn()
+        # self.axesActor.XAxisVisibilityOn()
+        # self.axesActor.YAxisVisibilityOn()
+
+        print 'self.axesActor.GetViewAngleLODThreshold()=',self.axesActor.GetViewAngleLODThreshold()
+        # self.axesActor.SetViewAngleLODThreshold(1.0)
+
+        # print 'self.axesActor.GetEnableViewAngleLOD()=',self.axesActor.GetEnableViewAngleLOD()
+        # self.axesActor.SetEnableViewAngleLOD(0)
+        #
+        # print 'self.axesActor.GetEnableDistanceLOD()=',self.axesActor.GetEnableDistanceLOD()
+        # self.axesActor.SetEnableDistanceLOD(0)
+
+
+        # self.axesActor.SetLabelFormat("%6.4g")
+        # self.axesActor.SetFlyModeToOuterEdges()
+        # self.axesActor.SetFlyModeToNone()
+        # self.axesActor.SetFontFactor(1.5)
+
+        # self.axesActor.SetXAxisVisibility(1)
+        # self.axesActor.SetYAxisVisibility(1)
+        # self.axesActor.SetZAxisVisibility(0)
+
+        # self.axesActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+        # self.axesActor.GetProperty().SetColor(color)
+
+        # xAxisActor = self.axesActor.GetXAxisActor2D()
+        # xAxisActor.RulerModeOn()
+        # xAxisActor.SetRulerDistance(40)
+        # xAxisActor.SetRulerMode(20)
+        # xAxisActor.RulerModeOn()
+        # xAxisActor.SetNumberOfMinorTicks(3)
+
+
+        # setting camera fot he actor is vey important to get axes working properly
+        self.axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
+        print 'self.graphicsFrameWidget.ren.GetActiveCamera()=',self.graphicsFrameWidget.ren.GetActiveCamera()
+        self.graphicsFrameWidget.ren.AddActor(self.axesActor)
+
+
+
+
+
 
 
     def hideOutlineActor(self):
@@ -473,6 +567,8 @@ class MVCDrawView2D(MVCDrawViewBase):
             # print 'SHOWING CELLS'
             dbgMsg('SHOWING CELLS')
             self.showCells()
+
+        self.showAxes()
 
         self.Render()
         
