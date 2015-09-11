@@ -20,7 +20,7 @@
       <string>When checked uses floating window layout instead of Multi Document Interface</string>
      </property>
      <property name="currentIndex">
-      <number>3</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab_output">
       <attribute name="title">
@@ -797,7 +797,7 @@
       <attribute name="title">
        <string>Field</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout">
+      <layout class="QHBoxLayout" name="horizontalLayout_28">
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_15">
          <item>
@@ -834,6 +834,13 @@
               <widget class="QComboBox" name="fieldComboBox"/>
              </item>
             </layout>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="showPlotAxesCB">
+             <property name="text">
+              <string>Show Axes</string>
+             </property>
+            </widget>
            </item>
            <item>
             <spacer name="horizontalSpacer_15">

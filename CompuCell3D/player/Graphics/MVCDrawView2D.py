@@ -357,90 +357,111 @@ class MVCDrawView2D(MVCDrawViewBase):
         self.currentActors["Outline"]=self.outlineActor
         self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
 
+    def showAxes(self, flag=True):
+        if flag:
+            if not self.currentActors.has_key("Axes2D"):
+                # setting camera for the actor is vrey important to get axes working properly
+                self.axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
+                self.currentActors["Axes2D"] = self.axesActor
+                # print 'self.graphicsFrameWidget.ren.GetActiveCamera()=',self.graphicsFrameWidget.ren.GetActiveCamera()
+                self.graphicsFrameWidget.ren.AddActor(self.axesActor)
+            else:
+                self.graphicsFrameWidget.ren.RemoveActor(self.axesActor)
+                self.axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
+                self.graphicsFrameWidget.ren.AddActor(self.axesActor)
+        else:
+            if self.currentActors.has_key("Axes2D"):
+                del self.currentActors["Axes2D"]
+                self.graphicsFrameWidget.ren.RemoveActor(self.axesActor)
 
-    def showAxes(self):
-        self.currentActors["Axes2D"] = self.axesActor
-        color = Configuration.getSetting("Axes3DColor")   # eventually do this smarter (only get/update when it changes)
-        color = (float(color.red())/255,float(color.green())/255,float(color.blue())/255)
-
-        tprop = vtk.vtkTextProperty()
-        tprop.SetColor(color)
-        # tprop.ShadowOn()
-        dim = self.currentDrawingParameters.bsd.fieldDim
-
-        # self.axesActor.SetNumberOfLabels(4) # number of labels
-        self.axesActor.SetUse2DMode(1)
-        # self.axesActor.SetScreenSize(50.0) # for labels and axes titles
-        self.axesActor.SetLabelScaling(True,20,20,20)
-        self.axesActor.SetXLabelFormat("%6.4g")
-        self.axesActor.SetYLabelFormat("%6.4g")
-
-        self.axesActor.SetBounds(0, dim.x, 0, dim .y, 0, 0)
-        self.axesActor.SetXTitle('X')
-        self.axesActor.SetYTitle('Y')
-        # self.axesActor.SetFlyModeToOuterEdges()
-
-        label_prop = self.axesActor.GetLabelTextProperty(0)
-        print 'label_prop=',label_prop
+        self.Render()
+        self.graphicsFrameWidget.repaint()
 
 
-        print 'self.axesActor.GetXTitle()=',self.axesActor.GetXTitle()
-        title_prop_x = self.axesActor.GetTitleTextProperty(0)
-        # title_prop_x.SetLineOffset()
-        print 'self.axesActor.GetTitleTextProperty(0)=',self.axesActor.GetTitleTextProperty(0)
 
-        self.axesActor.GetTitleTextProperty(0).SetFontSize(50)
-
-        # self.axesActor.GetTitleTextProperty(0).SetColor(1.0, 0.0, 0.0)
-        # self.axesActor.GetTitleTextProperty(0).SetFontSize(6.0)
-        # self.axesActor.GetTitleTextProperty(0).SetLineSpacing(0.5)
-        print 'self.axesActor.GetTitleTextProperty(0)=',self.axesActor.GetTitleTextProperty(0)
-
-        self.axesActor.XAxisMinorTickVisibilityOff()
-        self.axesActor.YAxisMinorTickVisibilityOff()
-
-        self.axesActor.SetTickLocationToOutside()
-
-
-        # self.axesActor.DrawXGridlinesOn()
-        # self.axesActor.DrawYGridlinesOn()
-        # self.axesActor.XAxisVisibilityOn()
-        # self.axesActor.YAxisVisibilityOn()
-
-        print 'self.axesActor.GetViewAngleLODThreshold()=',self.axesActor.GetViewAngleLODThreshold()
-        # self.axesActor.SetViewAngleLODThreshold(1.0)
-
-        # print 'self.axesActor.GetEnableViewAngleLOD()=',self.axesActor.GetEnableViewAngleLOD()
-        # self.axesActor.SetEnableViewAngleLOD(0)
-        #
-        # print 'self.axesActor.GetEnableDistanceLOD()=',self.axesActor.GetEnableDistanceLOD()
-        # self.axesActor.SetEnableDistanceLOD(0)
-
-
-        # self.axesActor.SetLabelFormat("%6.4g")
-        # self.axesActor.SetFlyModeToOuterEdges()
-        # self.axesActor.SetFlyModeToNone()
-        # self.axesActor.SetFontFactor(1.5)
-
-        # self.axesActor.SetXAxisVisibility(1)
-        # self.axesActor.SetYAxisVisibility(1)
-        # self.axesActor.SetZAxisVisibility(0)
-
-        # self.axesActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
-        # self.axesActor.GetProperty().SetColor(color)
-
-        # xAxisActor = self.axesActor.GetXAxisActor2D()
-        # xAxisActor.RulerModeOn()
-        # xAxisActor.SetRulerDistance(40)
-        # xAxisActor.SetRulerMode(20)
-        # xAxisActor.RulerModeOn()
-        # xAxisActor.SetNumberOfMinorTicks(3)
-
-
-        # setting camera fot he actor is vey important to get axes working properly
-        self.axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
-        print 'self.graphicsFrameWidget.ren.GetActiveCamera()=',self.graphicsFrameWidget.ren.GetActiveCamera()
-        self.graphicsFrameWidget.ren.AddActor(self.axesActor)
+    # def showAxes(self):
+    #     self.currentActors["Axes2D"] = self.axesActor
+    #     color = Configuration.getSetting("Axes3DColor")   # eventually do this smarter (only get/update when it changes)
+    #     color = (float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+    #
+    #     tprop = vtk.vtkTextProperty()
+    #     tprop.SetColor(color)
+    #     # tprop.ShadowOn()
+    #     dim = self.currentDrawingParameters.bsd.fieldDim
+    #
+    #     # self.axesActor.SetNumberOfLabels(4) # number of labels
+    #     self.axesActor.SetUse2DMode(1)
+    #     # self.axesActor.SetScreenSize(50.0) # for labels and axes titles
+    #     self.axesActor.SetLabelScaling(True,20,20,20)
+    #     self.axesActor.SetXLabelFormat("%6.4g")
+    #     self.axesActor.SetYLabelFormat("%6.4g")
+    #
+    #     self.axesActor.SetBounds(0, dim.x, 0, dim .y, 0, 0)
+    #     self.axesActor.SetXTitle('X')
+    #     self.axesActor.SetYTitle('Y')
+    #     # self.axesActor.SetFlyModeToOuterEdges()
+    #
+    #     label_prop = self.axesActor.GetLabelTextProperty(0)
+    #     print 'label_prop=',label_prop
+    #
+    #
+    #     print 'self.axesActor.GetXTitle()=',self.axesActor.GetXTitle()
+    #     title_prop_x = self.axesActor.GetTitleTextProperty(0)
+    #     # title_prop_x.SetLineOffset()
+    #     print 'self.axesActor.GetTitleTextProperty(0)=',self.axesActor.GetTitleTextProperty(0)
+    #
+    #     self.axesActor.GetTitleTextProperty(0).SetFontSize(50)
+    #
+    #     # self.axesActor.GetTitleTextProperty(0).SetColor(1.0, 0.0, 0.0)
+    #     # self.axesActor.GetTitleTextProperty(0).SetFontSize(6.0)
+    #     # self.axesActor.GetTitleTextProperty(0).SetLineSpacing(0.5)
+    #     print 'self.axesActor.GetTitleTextProperty(0)=',self.axesActor.GetTitleTextProperty(0)
+    #
+    #     self.axesActor.XAxisMinorTickVisibilityOff()
+    #     self.axesActor.YAxisMinorTickVisibilityOff()
+    #
+    #     self.axesActor.SetTickLocationToOutside()
+    #
+    #
+    #     # self.axesActor.DrawXGridlinesOn()
+    #     # self.axesActor.DrawYGridlinesOn()
+    #     # self.axesActor.XAxisVisibilityOn()
+    #     # self.axesActor.YAxisVisibilityOn()
+    #
+    #     print 'self.axesActor.GetViewAngleLODThreshold()=',self.axesActor.GetViewAngleLODThreshold()
+    #     # self.axesActor.SetViewAngleLODThreshold(1.0)
+    #
+    #     # print 'self.axesActor.GetEnableViewAngleLOD()=',self.axesActor.GetEnableViewAngleLOD()
+    #     # self.axesActor.SetEnableViewAngleLOD(0)
+    #     #
+    #     # print 'self.axesActor.GetEnableDistanceLOD()=',self.axesActor.GetEnableDistanceLOD()
+    #     # self.axesActor.SetEnableDistanceLOD(0)
+    #
+    #
+    #     # self.axesActor.SetLabelFormat("%6.4g")
+    #     # self.axesActor.SetFlyModeToOuterEdges()
+    #     # self.axesActor.SetFlyModeToNone()
+    #     # self.axesActor.SetFontFactor(1.5)
+    #
+    #     # self.axesActor.SetXAxisVisibility(1)
+    #     # self.axesActor.SetYAxisVisibility(1)
+    #     # self.axesActor.SetZAxisVisibility(0)
+    #
+    #     # self.axesActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+    #     # self.axesActor.GetProperty().SetColor(color)
+    #
+    #     # xAxisActor = self.axesActor.GetXAxisActor2D()
+    #     # xAxisActor.RulerModeOn()
+    #     # xAxisActor.SetRulerDistance(40)
+    #     # xAxisActor.SetRulerMode(20)
+    #     # xAxisActor.RulerModeOn()
+    #     # xAxisActor.SetNumberOfMinorTicks(3)
+    #
+    #
+    #     # setting camera fot he actor is vey important to get axes working properly
+    #     self.axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
+    #     print 'self.graphicsFrameWidget.ren.GetActiveCamera()=',self.graphicsFrameWidget.ren.GetActiveCamera()
+    #     self.graphicsFrameWidget.ren.AddActor(self.axesActor)
 
 
 
@@ -524,8 +545,6 @@ class MVCDrawView2D(MVCDrawViewBase):
         
 
 
-        self.drawModel.prepareOutlineActors((self.outlineActor,))
-        self.showOutlineActor()
 
         
 #        if self.parentWidget.borderAct.isChecked():
@@ -568,11 +587,38 @@ class MVCDrawView2D(MVCDrawViewBase):
             dbgMsg('SHOWING CELLS')
             self.showCells()
 
-        self.showAxes()
+        self.drawCellVisDecorations()
+
+        # self.drawModel.prepareOutlineActors((self.outlineActor,))
+        # self.showOutlineActor()
+        #
+        #
+        # if Configuration.getSetting("Show3DAxes"):
+        #     self.drawModel.prepareAxesActors((None,),(self.axesActor,))
+        #     self.showAxes(True)
+        # else:
+        #     self.showAxes(False)
+
+
+        # self.showAxes()
+
+
 
         self.Render()
         
-        
+
+    def drawCellVisDecorations(self):
+
+        self.drawModel.prepareOutlineActors((self.outlineActor,))
+        self.showOutlineActor()
+
+        if Configuration.getSetting("Show3DAxes"):
+            self.drawModel.prepareAxesActors((None,),(self.axesActor,))
+            self.showAxes(True)
+        else:
+            self.showAxes(False)
+
+
     # FIXME: Draw contour lines: drawContourLines()
     def drawCellFieldHex(self, bsd, fieldType):
 #        print MODULENAME,'  drawCellFieldHex'
@@ -652,9 +698,17 @@ class MVCDrawView2D(MVCDrawViewBase):
         else:
             self.hideClusterBorder()
             
-        self.drawModel.prepareOutlineActors((self.outlineActor,))        
-        self.showOutlineActor()
-        
+        # self.drawModel.prepareOutlineActors((self.outlineActor,))
+        # self.showOutlineActor()
+        #
+        # if Configuration.getSetting("ShowPlotAxes", self.currentDrawingParameters.fieldName):
+        #     self.drawModel.prepareAxesActors((None,),(self.axesActor,))
+        #     self.showAxes(True)
+        # else:
+        #     self.showAxes(False)
+
+        self.drawPlotVisDecorations()
+
         self.Render()
         
     def drawScalarFieldCellLevelHex(self,bsd,fieldType):
@@ -686,9 +740,11 @@ class MVCDrawView2D(MVCDrawViewBase):
         else:
             self.hideClusterBorder()
     
-        self.drawModel.prepareOutlineActors((self.outlineActor,))        
-        self.showOutlineActor()
-        
+        # self.drawModel.prepareOutlineActors((self.outlineActor,))
+        # self.showOutlineActor()
+
+        self.drawPlotVisDecorations()
+
         self.Render()
 
     def drawScalarFieldHex(self,bsd,fieldType):
@@ -720,9 +776,11 @@ class MVCDrawView2D(MVCDrawViewBase):
         else:
             self.hideClusterBorder()
 
-        self.drawModel.prepareOutlineActors((self.outlineActor,))        
-        self.showOutlineActor()      
-        
+        # self.drawModel.prepareOutlineActors((self.outlineActor,))
+        # self.showOutlineActor()
+
+        self.drawPlotVisDecorations()
+
         self.Render()
         
     def drawConField(self, sim, fieldType):
@@ -805,7 +863,7 @@ class MVCDrawView2D(MVCDrawViewBase):
     def drawScalarFieldData(self, _bsd, fieldType,_fillScalarField):
         # print MODULENAME, '------ drawScalarFieldData'
         # self.drawModel.initScalarFieldCartesianActors(_fillScalarField) 
-        
+
         if self.pixelizedScalarField:  # when user requests we draw cartesian scalar field using exact pixels  not smopothed out regions as given by sinple vtkImageData scalar visualization. 
         # Perhaps there is switch in vtkImageDataGeometryFilter or related vtk object that will draw nice pixels but for now we are sticking with this somewhat repetitive code             
             self.drawModel.initScalarFieldCartesianActors(_fillScalarField,(self.conActor,self.contourActor,))
@@ -823,8 +881,8 @@ class MVCDrawView2D(MVCDrawViewBase):
             
             self.conActor.SetProperty(actorProperties)
             
-        if Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName):            
-            self.drawModel.prepareLegendActors((self.drawModel.conMapper,),(self.legendActor,))            
+        if Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName):
+            self.drawModel.prepareLegendActors((self.drawModel.conMapper,),(self.legendActor,))
             self.showLegend(True)
         else:
             self.showLegend(False)
@@ -839,17 +897,50 @@ class MVCDrawView2D(MVCDrawViewBase):
         else:
             self.showContours(False)
         # self.showContours(True)
-            
-        self.drawModel.prepareOutlineActors((self.outlineActor,))       
-        self.showOutlineActor()    
-        
+
+        self.drawPlotVisDecorations()
+
+        # self.drawModel.prepareOutlineActors((self.outlineActor,))
+        # self.showOutlineActor()
+        #
+        # if Configuration.getSetting("Show3DAxes"):
+        #     self.drawModel.prepareAxesActors((None,),(self.axesActor,))
+        #     self.showAxes(True)
+        # else:
+        #     self.showAxes(False)
+
+        # print 'Configuration.getSetting("ShowPlotAxes", self.currentDrawingParameters.fieldName)=',Configuration.getSetting("ShowPlotAxes", self.currentDrawingParameters.fieldName)
+        # if Configuration.getSetting("ShowPlotAxes", self.currentDrawingParameters.fieldName):
+        #     self.drawModel.prepareAxesActors((None,),(self.axesActor,))
+        #     self.showAxes(True)
+        # else:
+        #     self.showAxes(False)
+
+
         # FIXME: 
         # self.drawContourLines()
         # # # print "DRAW CON FIELD NUMBER OF ACTORS = ",self.ren.GetActors().GetNumberOfItems()
         # self.repaint()
         self.Render()
 
-        
+    def drawPlotVisDecorations(self):
+
+        # if Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName):
+        #     self.drawModel.prepareLegendActors((self.drawModel.conMapper,),(self.legendActor,))
+        #     self.showLegend(True)
+        # else:
+        #     self.showLegend(False)
+
+        self.drawModel.prepareOutlineActors((self.outlineActor,))
+        self.showOutlineActor()
+
+        if Configuration.getSetting("ShowPlotAxes", self.currentDrawingParameters.fieldName):
+            self.drawModel.prepareAxesActors((None,),(self.axesActor,))
+            self.showAxes(True)
+        else:
+            self.showAxes(False)
+
+
     def drawVectorField(self, bsd, fieldType):
         self.removeContourActors()
         
@@ -888,9 +979,11 @@ class MVCDrawView2D(MVCDrawViewBase):
         else:
             self.hideBorder()
 
-        self.drawModel.prepareOutlineActors((self.outlineActor,))        
-        self.showOutlineActor()           
-        
+        # self.drawModel.prepareOutlineActors((self.outlineActor,))
+        # self.showOutlineActor()
+
+        self.drawPlotVisDecorations()
+
         self.Render()
         
         
@@ -914,8 +1007,9 @@ class MVCDrawView2D(MVCDrawViewBase):
         else:
             self.hideBorder()
 
-        self.drawModel.prepareOutlineActors((self.outlineActor,))        
-        self.showOutlineActor()           
+        # self.drawModel.prepareOutlineActors((self.outlineActor,))
+        # self.showOutlineActor()
+        self.drawPlotVisDecorations()
            
         self.Render()
 
@@ -949,9 +1043,11 @@ class MVCDrawView2D(MVCDrawViewBase):
         else:
             self.hideBorder()
 
-        self.drawModel.prepareOutlineActors((self.outlineActor,))        
-        self.showOutlineActor()
-            
+        # self.drawModel.prepareOutlineActors((self.outlineActor,))
+        # self.showOutlineActor()
+
+        self.drawPlotVisDecorations()
+
         self.Render()
         
     # Optimize code?

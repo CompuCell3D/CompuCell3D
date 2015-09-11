@@ -308,6 +308,9 @@ class MVCDrawModelBase:
 
         return frac
 
+    def prepareAxesActors(self, _mappers, _actors):
+        pass
+
     def prepareLegendActors(self, _mappers, _actors):
         legendActor=_actors[0]
         mapper=_mappers[0]

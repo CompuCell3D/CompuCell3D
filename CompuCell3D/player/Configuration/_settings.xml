@@ -96,6 +96,7 @@
       <e Name="PixelizedScalarField" Type="bool">False</e>
       <e Name="ScaleArrowsOn" Type="bool">False</e>
       <e Name="Show3DAxes" Type="bool">True</e>
+      <e Name="ShowPlotAxes" Type="bool">True</e>
       <e Name="UseInternalConsole" Type="bool">False</e>
       <e Name="WindowColorSameAsMedium" Type="bool">True</e>
    </Settings>

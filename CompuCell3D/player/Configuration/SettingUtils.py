@@ -139,7 +139,7 @@ class Setting(object):
         self.__value = _value
         
     def __str__(self):
-        return self.__name+':['+str(self.__value)+','+str(self.__type)+']'
+        return str(self.__name)+':['+str(self.__value)+','+str(self.__type)+']'
         
     def __repr__(self):
         return self.__str__()
@@ -261,6 +261,12 @@ class Setting(object):
         
         dictContainerElem = parentElement.ElementCC3D('e',{'Name':self.name,'Type':self.type})
         for key , setting in sorted(self.value.iteritems()): # sorting dict by keys
+            # if key=='FGF':
+            #     try:
+            #         print 'dict elem=', key, ' setting =',setting
+            #     except:
+            #         pass
+
             setting.toXML(dictContainerElem)
             
             # strlistContainerElem.ElementCC3D('e',{'Type':'str'},string)
@@ -451,29 +457,29 @@ class Setting(object):
     
     
     def fieldParams2Setting(self, fieldParams):
-    
+
         for key,val in fieldParams.iteritems():
             if type(val) == type (Setting(None,None,None)):
                 #fieldParams is in the proper format
                 return fieldParams
             else:
-                #fieldParams needs to be converted to a proper format
-                break    
-                
-        
+                # fieldParams needs to be converted to a proper format
+                break
+
         fieldParamsSetting = {}
-        
+        # print 'fieldParams2Setting: fieldParams=',fieldParams
         for fieldName, singleFieldDict in fieldParams.iteritems():
         
             fieldParamsSetting [fieldName] = Setting(fieldName,{},'dict')
-                        
-            
+
             singleFieldParamsSettingDict = fieldParamsSetting [fieldName].value
                             
             for settingName, val in singleFieldDict.iteritems():
+                # print 'CONFIGURATION settingName=',settingName
                 if str(settingName) in ['NumberOfLegendBoxes','NumberAccuracy','NumberOfContourLines']:
                     singleFieldParamsSettingDict [str(settingName)] = Setting(str(settingName),val,'int')
-                elif str(settingName) in ['MaxRangeFixed','LegendEnable','MinRangeFixed','ScaleArrowsOn','FixedArrowColorOn','OverlayVectorsOn','ContoursOn']:    
+                elif str(settingName) in ['MaxRangeFixed','LegendEnable','MinRangeFixed','ScaleArrowsOn',
+                                          'FixedArrowColorOn','OverlayVectorsOn','ContoursOn','ShowPlotAxes']:
                     singleFieldParamsSettingDict [str(settingName)] = Setting(str(settingName),val,'bool')
                 elif str(settingName) in ['ArrowLength','MinRange','MaxRange']:    
                     singleFieldParamsSettingDict [str(settingName)] = Setting(str(settingName),val,'float')                
@@ -483,7 +489,7 @@ class Setting(object):
                     singleFieldParamsSettingDict [str(settingName)] = Setting(str(settingName),str(val),'str')       
                     
 
-        # print 'fieldParamsSetting=',fieldParamsSetting
+
         
         return fieldParamsSetting        
         
@@ -509,6 +515,7 @@ class Setting(object):
             
             
         elif self.name == 'FieldParams':
+            # print 'normalizeSettingFormat self.value=',self.value
             self.value = self.fieldParams2Setting(self.value)
             
         elif self.name == 'WindowsLayout':
@@ -661,21 +668,34 @@ class CustomSettings(object):
         # sys.exit()
             
     def saveAsXML(self, _fileName):
+        print '_fileName=',_fileName
         import XMLUtils
         from XMLUtils import ElementCC3D
         import Version
         xml2ObjConverter = XMLUtils.Xml2Obj()
         plSetElem = ElementCC3D('PlayerSettings',{'version':Version.getVersionAsString()})
         # print '\n\n\nself.__typeSettingDictDict.keys() = ', self.__typeSettingDictDict.keys()
+        print '__typeSettingDictDict=',self.__typeSettingDictDict
         for typeName , settingDict in self.__typeSettingDictDict.iteritems():
-        
+
             typeContainerElem = plSetElem.ElementCC3D( 'Settings', {'Type':typeName} )
-            
-            for settingName, setting in sorted(settingDict.iteritems()): # keys are sorted before outputting to XML
+            print 'typeName=',typeName
+            # if typeName =='FieldParams':
+            #     print 'typeName=',typeName, ' settingDict=',settingDict
+
+            for settingName, setting in sorted(settingDict.iteritems()):  # keys are sorted before outputting to XML
+                # if settingName=='ShowPlotAxes':
+                #
+                #     try:
+                #         print 'settingName=', settingName, ' setting=', setting, 'typeContainerElem=',typeName
+                #     except:
+                #         pass
+
                 setting.toXML(typeContainerElem)
 
         fileFullPath = os.path.abspath(_fileName)
-        plSetElem.CC3DXMLElement.saveXML(fileFullPath)        
+        plSetElem.CC3DXMLElement.saveXML(fileFullPath)
+        plSetElem.CC3DXMLElement.saveXML(fileFullPath+'.xml')
 
         
 #the defaultSettings fcn will only be used intenally during development - it shold not be used int heproduction ode - the default settings shuld be read from the _settings.xml located in the COnfiguration directory of the player

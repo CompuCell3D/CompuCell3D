@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'cc3D_prefs.ui'
 #
-# Created: Fri Aug 28 15:17:30 2015
+# Created: Fri Sep 11 13:53:22 2015
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -354,8 +354,8 @@ class Ui_CC3DPrefs(object):
         self.tabWidget.addTab(self.tab_cell_type, _fromUtf8(""))
         self.tab_field = QtGui.QWidget()
         self.tab_field.setObjectName(_fromUtf8("tab_field"))
-        self.verticalLayout = QtGui.QVBoxLayout(self.tab_field)
-        self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
+        self.horizontalLayout_28 = QtGui.QHBoxLayout(self.tab_field)
+        self.horizontalLayout_28.setObjectName(_fromUtf8("horizontalLayout_28"))
         self.verticalLayout_15 = QtGui.QVBoxLayout()
         self.verticalLayout_15.setObjectName(_fromUtf8("verticalLayout_15"))
         self.groupBox_6 = QtGui.QGroupBox(self.tab_field)
@@ -377,6 +377,9 @@ class Ui_CC3DPrefs(object):
         self.fieldComboBox.setObjectName(_fromUtf8("fieldComboBox"))
         self.horizontalLayout_5.addWidget(self.fieldComboBox)
         self.horizontalLayout_6.addLayout(self.horizontalLayout_5)
+        self.showPlotAxesCB = QtGui.QCheckBox(self.tab_field)
+        self.showPlotAxesCB.setObjectName(_fromUtf8("showPlotAxesCB"))
+        self.horizontalLayout_6.addWidget(self.showPlotAxesCB)
         spacerItem7 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_6.addItem(spacerItem7)
         self.verticalLayout_15.addLayout(self.horizontalLayout_6)
@@ -531,7 +534,7 @@ class Ui_CC3DPrefs(object):
         spacerItem13 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_4.addItem(spacerItem13)
         self.verticalLayout_15.addLayout(self.horizontalLayout_4)
-        self.verticalLayout.addLayout(self.verticalLayout_15)
+        self.horizontalLayout_28.addLayout(self.verticalLayout_15)
         self.tabWidget.addTab(self.tab_field, _fromUtf8(""))
         self.tab_3D = QtGui.QWidget()
         self.tab_3D.setObjectName(_fromUtf8("tab_3D"))
@@ -682,7 +685,7 @@ class Ui_CC3DPrefs(object):
         self.verticalLayout_18.addWidget(self.buttonBox)
 
         self.retranslateUi(CC3DPrefs)
-        self.tabWidget.setCurrentIndex(3)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), CC3DPrefs.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), CC3DPrefs.reject)
         QtCore.QObject.connect(self.contoursShowCB, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.isovalList.setEnabled)
@@ -731,6 +734,7 @@ class Ui_CC3DPrefs(object):
         self.pixelizedScalarFieldCB.setToolTip(_translate("CC3DPrefs", "Checking this box will cause cartesian concentration field in 2D be drawn using explicit pixels providing \"exact\" representation of the field. Unchecked box will mean that field will be smoothed. ", None))
         self.pixelizedScalarFieldCB.setText(_translate("CC3DPrefs", "Pixelized scalar plot (\"exact\")", None))
         self.label_6.setText(_translate("CC3DPrefs", "Field name:", None))
+        self.showPlotAxesCB.setText(_translate("CC3DPrefs", "Show Axes", None))
         self.groupBox_8.setTitle(_translate("CC3DPrefs", "Range (of magnitude for vectors)", None))
         self.fieldMinLabel.setText(_translate("CC3DPrefs", "Min", None))
         self.fieldMinRangeFixedCheckBox.setText(_translate("CC3DPrefs", "Fixed", None))

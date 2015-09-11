@@ -586,7 +586,10 @@ class MVCDrawViewBase:
         self.graphicsFrameWidget.repaint()
                 
         # self.repaint()
-    
+
+    def showAxes(self,flag=True):
+        pass
+
     def setZoomItems(self, zitems):
         self.zitems = zitems
 

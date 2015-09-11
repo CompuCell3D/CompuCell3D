@@ -220,7 +220,15 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 
             fieldParamsDict = fieldParams
             
-        
+        try:  # in case ShowPlotAxes is not defined in a dictinary for this plot
+            val = fieldParamsDict["ShowPlotAxes"]
+        except:
+            val = Configuration.getSetting('ShowPlotAxes')
+
+        self.showPlotAxesCB.setChecked(val)
+
+
+
         val = fieldParamsDict["MinRange"]
         
         self.fieldMinRange.setText( str(val) )
@@ -476,6 +484,12 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
             return 
             
         fieldDict = {}
+
+        key = "ShowPlotAxes"
+        val = self.showPlotAxesCB.isChecked()
+        fieldDict[key] = val
+        Configuration.setSetting(key,val)
+
         key = "MinRange"
         val = self.fieldMinRange.text()
 
@@ -545,13 +559,14 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         color = Configuration.getSetting("ArrowColor")
 
         fieldDict["ArrowColor"] = color
-        
+
+
+
         Configuration.updateFieldsParams(fieldName,fieldDict)
         
     def updatePreferences(self):    
         '''called when user presses Apply or OK button on the Prefs dialog'''
 
-        
         # rwh: check if the PreferencesFile is different; if so, update it
         # # # Configuration.mySettings = QSettings(QSettings.IniFormat, QSettings.UserScope, "Biocomplexity", self.prefsFileLineEdit.text())
 
@@ -584,9 +599,6 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
         # Cell Type/Colors
         Configuration.setSetting("TypeColorMap",self.paramCC3D["TypeColorMap"])  # rwh
-        
-        
-
 
         Configuration.setSetting("CellGlyphScaleByVolumeOn", self.cellGlyphScaleByVolumeCheckBox.isChecked())
         Configuration.setSetting("CellGlyphScale", self.cellGlyphScale.text())
@@ -595,16 +607,15 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 
 
 
-
-
         fp = Configuration.getSetting("FieldParams")
-        
+
+
         
         # get Field name from combobox in the Field tab and save the current settings for that field
         fname = self.fieldComboBox.currentText()
         
         # Configuration.updateSimFieldsParams(fname)
-        # print '\n\n\n updating field fname = ',fname 
+        # print '\n\n\n updating field fname = ',fname
         
         self.updateFieldParams(fname)
 
@@ -624,6 +635,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
         Configuration.setSetting("ScalarIsoValues", self.isovalList.text())
         Configuration.setSetting("NumberOfContourLines", self.numberOfContoursLinesSpinBox.value())
+        Configuration.setSetting("ShowPlotAxes", self.showPlotAxesCB.isChecked())
 
         
         # Vectors
@@ -719,7 +731,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
         
         fp = Configuration.getSetting("FieldParams")
-        
+
+        self.showPlotAxesCB.setChecked(Configuration.getSetting("ShowPlotAxes"))
         self.pixelizedScalarFieldCB.setChecked(Configuration.getSetting("PixelizedScalarField"))
         
         self.fieldMinRange.setText( str(Configuration.getSetting("MinRange")))
@@ -735,6 +748,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
         self.isovalList.setText(Configuration.getSetting("ScalarIsoValues"))
         self.numberOfContoursLinesSpinBox.setValue(self.paramCC3D["NumberOfContourLines"])
+
+
 
         contoursOn = Configuration.getSetting("ContoursOn")
         self.contoursShowCB.setChecked(contoursOn)

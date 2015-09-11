@@ -140,10 +140,14 @@ def getDefaultFieldParams():
     paramsDict["MinRangeFixed"] = getSetting("MinRangeFixed")
     paramsDict["MaxRange"] = getSetting("MaxRange")
     paramsDict["MaxRangeFixed"] = getSetting("MaxRangeFixed")
+
+    paramsDict["ShowPlotAxes"] = getSetting("ShowPlotAxes")
+
     
     paramsDict["NumberOfLegendBoxes"] = getSetting("NumberOfLegendBoxes")
     paramsDict["NumberAccuracy"] = getSetting("NumberAccuracy")
     paramsDict["LegendEnable"] = getSetting("LegendEnable")
+
 
     paramsDict["NumberOfContourLines"] = getSetting("NumberOfContourLines")
 
@@ -183,14 +187,17 @@ def updateFieldsParams(fieldName,fieldDict):
     Configuration.simFieldsParams = fieldParamsDict
 
     fieldName = str(fieldName)
-    
+
+    print 'CONFIGURATION: fieldName =', fieldName
+    print 'CONFIGURATION: fieldDict =', fieldDict
+
     Configuration.simFieldsParams[fieldName] = fieldDict  # do regardless of in there or not
 
     
     
     setSetting('FieldParams',Configuration.simFieldsParams)
     
-    
+
         
     Configuration.simFieldsParams[fieldName] = fieldDict  # do regardless of in there or not
 
