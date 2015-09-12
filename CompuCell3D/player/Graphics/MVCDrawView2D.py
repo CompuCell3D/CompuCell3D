@@ -476,29 +476,6 @@ class MVCDrawView2D(MVCDrawViewBase):
 
     def drawCellField(self, _bsd, fieldType):
     
-        
-        
-        import CompuCellSetup
-#        print
-#        print MODULENAME,'  drawCellField():   type(_bsd)=',type(_bsd)
-#        print MODULENAME,'  drawCellField():   self.graphicsFrameWidget=',self.graphicsFrameWidget
-#        print MODULENAME,'  drawCellField():   self.graphicsFrameWidget.winId()=',self.graphicsFrameWidget.winId()
-#        print MODULENAME,'  drawCellField():   type(CompuCellSetup.viewManager)=',type(CompuCellSetup.viewManager)
-        
-#        print MODULENAME,'  drawCellField():   CompuCellSetup.viewManager=',CompuCellSetup.viewManager
-##        print MODULENAME,'  drawCellField():   dir(CompuCellSetup.viewManager)=',dir(CompuCellSetup.viewManager)
-#        print MODULENAME,'  drawCellField():      .graphicsWindowVisDict=',CompuCellSetup.viewManager.graphicsWindowVisDict
-#        print MODULENAME,'  drawCellField():   self.parentWidget=',self.parentWidget
-##        print MODULENAME,'  drawCellField():   dir(self.parentWidget)=',dir(self.parentWidget)
-#        print MODULENAME,'  drawCellField():   type(self.parentWidget)=',type(self.parentWidget)
-#        print MODULENAME,'  drawCellField():   self.parentWidget.graphicsWindowDict=',self.parentWidget.graphicsWindowDict
-#        print MODULENAME,'  drawCellField():   self.parentWidget.graphicsWindowVisDict=',self.parentWidget.graphicsWindowVisDict
-#        self.removeContourActors()
-        # self.hideAllActors()   # Q: how expensive is this?
-        
-#        self.graphicsWindowVisDict[self.lastActiveWindow.winId()] = (self.cellsAct.isChecked(),self.borderAct.isChecked(), \
-#                                      self.clusterBorderAct.isChecked(),self.cellGlyphsAct.isChecked(),self.FPPLinksAct.isChecked() )
-
 
 #        if self.parentWidget.cellsAct.isChecked():
 #        if self.parentWidget.cellsAct.isChecked() or self.getSim3DFlag():  # rwh: hack for FPP
@@ -662,7 +639,8 @@ class MVCDrawView2D(MVCDrawViewBase):
             self.drawClusterBorders2DHex()    
 #            else:
 #                self.drawClusterBorders2D()
-        
+        self.drawCellVisDecorations()
+
         self.Render()
         
         

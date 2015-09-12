@@ -214,7 +214,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # axesActor.SetNumberOfLabels(4) # number of labels
         axesActor.SetUse2DMode(1)
         # axesActor.SetScreenSize(50.0) # for labels and axes titles
-        axesActor.SetLabelScaling(True,20,20,20)
+        # axesActor.SetLabelScaling(True,0,0,0)
+        axesActor.SetYAxisLabelVisibility(0)
+        # axesActor.SetAxisLabels(1,[0,10])
+
+
+
 
         # this was causing problems when x and y dimensions were different
         # axesActor.SetXLabelFormat("%6.4g")
