@@ -25,7 +25,8 @@ class MVCDrawView3D(MVCDrawViewBase):
         self.usedCellTypesList=None
         self.usedDraw3DFlag=False
         self.boundingBox = Configuration.getSetting("BoundingBoxOn")
-        self.show3DAxes = Configuration.getSetting("Show3DAxes")
+        # self.show3DAxes = Configuration.getSetting("Show3DAxes")
+        self.show3DAxes = Configuration.getSetting("ShowAxes")
 #        self.legendEnable = Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName)  # what fieldName??
         self.warnUserCellBorders = True
     
@@ -264,7 +265,7 @@ class MVCDrawView3D(MVCDrawViewBase):
             return
 
         self.currentActors["Axes3D"] = self.axesActor
-        color = Configuration.getSetting("Axes3DColor")   # eventually do this smarter (only get/update when it changes)
+        color = Configuration.getSetting("AxesColor")   # eventually do this smarter (only get/update when it changes)
         color = (float(color.red())/255,float(color.green())/255,float(color.blue())/255)
 
         tprop = vtk.vtkTextProperty()
@@ -538,7 +539,8 @@ class MVCDrawView3D(MVCDrawViewBase):
         #reassign which types are invisible        
         self.set3DInvisibleTypes()
         self.boundingBox = Configuration.getSetting("BoundingBoxOn")
-        self.show3DAxes = Configuration.getSetting("Show3DAxes")
+        # self.show3DAxes = Configuration.getSetting("Show3DAxes")
+        self.show3DAxes = Configuration.getSetting("ShowAxes")
 #        print MODULENAME, '  configsChanged():  boundingBox=',self.boundingBox
 #        self.legendEnable = Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName)  # what fieldName??
         self.parentWidget.requestRedraw()

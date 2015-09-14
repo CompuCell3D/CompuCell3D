@@ -203,8 +203,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         horizontal_label = axes_labels [dim_order[0]] # x-axis - equivalent
         vertical_label = axes_labels [dim_order[1]] # y-axis - equivalent
 
-        color = Configuration.getSetting("Axes3DColor")   # eventually do this smarter (only get/update when it changes)
+        color = Configuration.getSetting("AxesColor")   # eventually do this smarter (only get/update when it changes)
+
         color = (float(color.red())/255, float(color.green())/255, float(color.blue())/255)
+
+        print 'color=',color
+        axesActor.GetProperty().SetColor(color)
 
         tprop = vtk.vtkTextProperty()
         tprop.SetColor(color)
@@ -215,7 +219,18 @@ class MVCDrawModel2D(MVCDrawModelBase):
         axesActor.SetUse2DMode(1)
         # axesActor.SetScreenSize(50.0) # for labels and axes titles
         # axesActor.SetLabelScaling(True,0,0,0)
-        axesActor.SetYAxisLabelVisibility(0)
+
+        if Configuration.getSetting('ShowHorizontalAxesLabels'):
+            axesActor.SetXAxisLabelVisibility(1)
+        else:
+            axesActor.SetXAxisLabelVisibility(0)
+
+        if Configuration.getSetting('ShowVerticalAxesLabels'):
+            axesActor.SetYAxisLabelVisibility(1)
+        else:
+            axesActor.SetYAxisLabelVisibility(0)
+
+
         # axesActor.SetAxisLabels(1,[0,10])
 
 
@@ -251,6 +266,20 @@ class MVCDrawModel2D(MVCDrawModelBase):
         axesActor.YAxisMinorTickVisibilityOff()
 
         axesActor.SetTickLocationToOutside()
+
+        axesActor.GetTitleTextProperty(0).SetColor(color)
+        axesActor.GetLabelTextProperty(0).SetColor(color)
+
+        axesActor.GetXAxesLinesProperty().SetColor(color)
+        axesActor.GetYAxesLinesProperty().SetColor(color)
+        # axesActor.GetLabelTextProperty(0).SetColor(color)
+
+
+        axesActor.GetTitleTextProperty(1).SetColor(color)
+        axesActor.GetLabelTextProperty(1).SetColor(color)
+
+
+
 
 
         # axesActor.DrawXGridlinesOn()

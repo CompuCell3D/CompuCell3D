@@ -586,11 +586,14 @@ class MVCDrawView2D(MVCDrawViewBase):
 
     def drawCellVisDecorations(self):
 
-        self.drawModel.prepareOutlineActors((self.outlineActor,))
-        self.showOutlineActor()
+        if Configuration.getSetting("BoundingBox"):
 
-        if Configuration.getSetting("Show3DAxes"):
-            self.drawModel.prepareAxesActors((None,),(self.axesActor,))
+            self.drawModel.prepareOutlineActors((self.outlineActor,))
+            self.showOutlineActor()
+
+        # if Configuration.getSetting("Show3DAxes"):
+        if Configuration.getSetting("ShowAxes"):
+            self.drawModel.prepareAxesActors((None,), (self.axesActor,))
             self.showAxes(True)
         else:
             self.showAxes(False)
@@ -621,8 +624,8 @@ class MVCDrawView2D(MVCDrawViewBase):
 #        else:
 #            self.hideBorder()
 
-        self.drawModel.prepareOutlineActors((self.outlineActor,))        
-        self.showOutlineActor()
+        # self.drawModel.prepareOutlineActors((self.outlineActor,))
+        # self.showOutlineActor()
         
         if self.parentWidget.cellGlyphsAct.isChecked() and not self.getSim3DFlag():
             self.drawCellGlyphs2D()       
@@ -909,8 +912,9 @@ class MVCDrawView2D(MVCDrawViewBase):
         # else:
         #     self.showLegend(False)
 
-        self.drawModel.prepareOutlineActors((self.outlineActor,))
-        self.showOutlineActor()
+        if Configuration.getSetting("BoundingBox"):
+            self.drawModel.prepareOutlineActors((self.outlineActor,))
+            self.showOutlineActor()
 
         if Configuration.getSetting("ShowPlotAxes", self.currentDrawingParameters.fieldName):
             self.drawModel.prepareAxesActors((None,),(self.axesActor,))
