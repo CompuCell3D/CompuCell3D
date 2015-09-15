@@ -257,7 +257,6 @@ class MVCDrawView3D(MVCDrawViewBase):
                 del self.currentActors["Outline"]
                 self.graphicsFrameWidget.ren.RemoveActor(self.outlineActor)
 
-
     def drawPlotVisDecorations(self):
         '''
         Draws plot window decorations - outline and axes
@@ -308,7 +307,6 @@ class MVCDrawView3D(MVCDrawViewBase):
         :param flag:show On/Off flag
         :return:None
         '''
-
         if flag:
             if not self.currentActors.has_key("Axes3D"):
                 # setting camera for the actor is vrey important to get axes working properly
@@ -584,12 +582,10 @@ class MVCDrawView3D(MVCDrawViewBase):
         self.Render()
         self.graphicsFrameWidget.repaint()
 
-
     def showClusterBorder(self):
         pass
     def hideClusterBorder(self):
         pass
-    
     #-------------------------------------------------------------------------
     def takeSimShot(self, fileName):
         renderLarge = vtk.vtkRenderLargeImage()

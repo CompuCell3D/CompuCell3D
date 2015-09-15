@@ -675,11 +675,11 @@ class CustomSettings(object):
         xml2ObjConverter = XMLUtils.Xml2Obj()
         plSetElem = ElementCC3D('PlayerSettings',{'version':Version.getVersionAsString()})
         # print '\n\n\nself.__typeSettingDictDict.keys() = ', self.__typeSettingDictDict.keys()
-        print '__typeSettingDictDict=',self.__typeSettingDictDict
+        # print '__typeSettingDictDict=',self.__typeSettingDictDict
         for typeName , settingDict in self.__typeSettingDictDict.iteritems():
 
             typeContainerElem = plSetElem.ElementCC3D( 'Settings', {'Type':typeName} )
-            print 'typeName=',typeName
+            # print 'typeName=',typeName
             # if typeName =='FieldParams':
             #     print 'typeName=',typeName, ' settingDict=',settingDict
 
