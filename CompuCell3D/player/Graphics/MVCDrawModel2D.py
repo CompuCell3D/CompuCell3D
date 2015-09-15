@@ -201,7 +201,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         axes_labels = ['X','Y','Z']
 
-
         horizontal_length = dim_array [dim_order[0]] # x-axis - equivalent
         vertical_length = dim_array [dim_order[1]] # y-axis - equivalent
         horizontal_label = axes_labels [dim_order[0]] # x-axis - equivalent
@@ -211,7 +210,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         color = (float(color.red())/255, float(color.green())/255, float(color.blue())/255)
 
-        print 'color=',color
         axesActor.GetProperty().SetColor(color)
 
         tprop = vtk.vtkTextProperty()
@@ -291,7 +289,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # axesActor.XAxisVisibilityOn()
         # axesActor.YAxisVisibilityOn()
 
-        print 'axesActor.GetViewAngleLODThreshold()=',axesActor.GetViewAngleLODThreshold()
+        # print 'axesActor.GetViewAngleLODThreshold()=',axesActor.GetViewAngleLODThreshold()
         # axesActor.SetViewAngleLODThreshold(1.0)
 
         # print 'axesActor.GetEnableViewAngleLOD()=',axesActor.GetEnableViewAngleLOD()

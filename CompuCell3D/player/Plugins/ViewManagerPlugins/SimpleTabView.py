@@ -1938,7 +1938,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.__step = self.simulation.getCurrentStep()
 
         if self.mysim:
-            print 'self.win_inventor.inventory_dicty = ', self.win_inventory.inventory_dict
 
             for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
                 graphicsFrame = win.widget()
