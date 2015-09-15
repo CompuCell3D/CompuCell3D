@@ -133,6 +133,10 @@ class MVCDrawView3D(MVCDrawViewBase):
             # # # self.qvtkWidget.resetCamera()
             
     def set3DInvisibleTypes(self):
+        '''
+        Initializes a dictionary self.invisibleCellTypes of invisible cell types - reads settings "Types3DInvisible"
+        :return:None
+        '''
         self.colorMap = Configuration.getSetting("TypeColorMap")
         
         typesInvisibleStrTmp = str(Configuration.getSetting("Types3DInvisible"))
@@ -151,7 +155,12 @@ class MVCDrawView3D(MVCDrawViewBase):
                 self.invisibleCellTypes[int(type)]=0        
             # print "\t\t\t self.invisibleCellTypes=",self.invisibleCellTypes
     
-    def setCamera(self, fieldDim = None):        
+    def setCamera(self, fieldDim = None):
+        '''
+        Initializes default camera view for 3D scene
+        :param fieldDim:field dimension (Dim3D C++ object)
+        :return:
+        '''
         camera = self.graphicsFrameWidget.ren.GetActiveCamera()
 
         self.setDim(fieldDim)
@@ -228,17 +237,6 @@ class MVCDrawView3D(MVCDrawViewBase):
         #cannot remove dictionary elements in  above loop
         for actorName in removedActors:
             del self.currentActors[actorName]
-
-    def prepareCellTypeActors(self):
-        '''
-        Scans list of invisible cell types and used cell types and creates those actors that user selected to be visible
-        :return:None
-        '''
-        for actorNumber in self.usedCellTypesList:
-            actorName="CellType_"+str(actorNumber)
-            # print "Actor name=",actorName
-            if not actorNumber in self.cellTypeActors and not actorNumber in self.invisibleCellTypes:
-                self.cellTypeActors[actorNumber]=vtk.vtkActor()
 
     def showOutlineActor(self, flag=True):
         '''
@@ -353,7 +351,8 @@ class MVCDrawView3D(MVCDrawViewBase):
         if (self.parentWidget.graphicsWindowVisDict[dictKey][0])  \
           and not (self.parentWidget.graphicsWindowVisDict[dictKey][1]):    # cells (= cell types)
 #            print MODULENAME, '  drawCellField():    drawing Cells for this window'
-            self.prepareCellTypeActors()
+#             self.prepareCellTypeActors()
+            self.drawModel.prepareCellTypeActors(self.cellTypeActors, self.invisibleCellTypes)
             self.showCellTypeActors()
             self.drawModel.initCellFieldActors(self.currentActors)
             
@@ -361,7 +360,8 @@ class MVCDrawView3D(MVCDrawViewBase):
 
             self.parentWidget.displayWarning ('3D Cell rendering with Vis->Borders "ON"  may be slow')
 
-            self.prepareCellTypeActors()
+            # self.prepareCellTypeActors()
+            self.drawModel.prepareCellTypeActors(self.cellTypeActors, self.invisibleCellTypes)
             self.showCellTypeActors()
             self.drawModel.initCellFieldBordersActors(self.currentActors)
         

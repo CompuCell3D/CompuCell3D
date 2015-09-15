@@ -74,8 +74,18 @@ class MVCDrawModel3D(MVCDrawModelBase):
     def setDim(self, fieldDim):
         # self.dim = [fieldDim.x+1 , fieldDim.y+1 , fieldDim.z]
         self.dim = [fieldDim.x , fieldDim.y , fieldDim.z]
-        
-    def prepareOutlineActors(self,_actors):
+
+    def prepareCellTypeActors(self, _cellTypeActorsDict, _invisibleCellTypes):
+        '''
+        Scans list of invisible cell types and used cell types and creates those actors that user selected to be visible
+        :return:None
+        '''
+        for actorNumber in self.usedCellTypesList:
+            actorName="CellType_"+str(actorNumber)
+            if not actorNumber in _cellTypeActorsDict and not actorNumber in _invisibleCellTypes:
+                _cellTypeActorsDict[actorNumber] = vtk.vtkActor()
+
+    def prepareOutlineActors(self, _actors):
 
         outlineData = vtk.vtkImageData()
         
@@ -127,7 +137,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         dim = self.currentDrawingParameters.bsd.fieldDim
 
         axesActor.SetNumberOfLabels(4) # number of labels
-        
+
         if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"]:
             axesActor.SetBounds(0, dim.x, 0, dim.y*math.sqrt(3.0)/2.0, 0, dim.z*math.sqrt(6.0)/3.0)
         else:
@@ -150,30 +160,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
         # setting camera fot he actor is vey important to get axes working properly
         axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
         self.graphicsFrameWidget.ren.AddActor(axesActor)
-
-    #
-    # def showAxes(self):
-    #     axes = vtk.vtkAxes()
-    #     axes.SetOrigin(-1, -1, -1)
-    #     axes.SetScaleFactor(20)
-    #     axesMapper = vtk.vtkPolyDataMapper()
-    #     axesMapper.SetInputConnection(axes.GetOutputPort())
-    #
-    #     axesActor.SetMapper(axesMapper)
-    #     self.ren.AddActor(axesActor)
-    #
-    #     atext = vtk.vtkVectorText()
-    #     atext.SetText("X-Axis")
-    #     textMapper = vtk.vtkPolyDataMapper()
-    #     textMapper.SetInputConnection(atext.GetOutputPort())
-    #
-    #     axisTextActor.SetMapper(textMapper)
-    #     #axisTextActor.SetScale(0.2, 0.2, 0.2)
-    #     axisTextActor.SetScale(3, 3, 3)
-    #     #axisTextActor.RotateY(90)
-    #     axisTextActor.AddPosition(0, 0, 0)
-    #
-    #     self.graphicsFrameWidget.ren.AddActor(axisTextActor)
 
     def extractCellFieldData(self):   # called from MVCDrawView3D.py:drawCellField()
         import CompuCell
