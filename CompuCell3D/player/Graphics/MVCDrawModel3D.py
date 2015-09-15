@@ -127,7 +127,12 @@ class MVCDrawModel3D(MVCDrawModelBase):
         dim = self.currentDrawingParameters.bsd.fieldDim
 
         axesActor.SetNumberOfLabels(4) # number of labels
-        axesActor.SetBounds(0, dim.x, 0, dim.y*math.sqrt(3.0)/2.0, 0, dim.z*math.sqrt(6.0)/3.0)
+        
+        if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"]:
+            axesActor.SetBounds(0, dim.x, 0, dim.y*math.sqrt(3.0)/2.0, 0, dim.z*math.sqrt(6.0)/3.0)
+        else:
+            axesActor.SetBounds(0, dim.x, 0, dim.y, 0, dim.z)
+
         axesActor.SetLabelFormat("%6.4g")
         axesActor.SetFlyModeToOuterEdges()
         axesActor.SetFontFactor(1.5)
