@@ -115,30 +115,60 @@ class MVCDrawModel3D(MVCDrawModelBase):
         color = Configuration.getSetting("BoundingBoxColor")   # eventually do this smarter (only get/update when it changes)
         _actors[0].GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
 
+    def prepareAxesActors(self, _mappers, _actors):
 
+        axesActor=_actors[0]
+        color = Configuration.getSetting("AxesColor")   # eventually do this smarter (only get/update when it changes)
+        color = (float(color.red())/255,float(color.green())/255,float(color.blue())/255)
 
-    def showAxes(self):
-        axes = vtk.vtkAxes()
-        axes.SetOrigin(-1, -1, -1)
-        axes.SetScaleFactor(20)
-        axesMapper = vtk.vtkPolyDataMapper()
-        axesMapper.SetInputConnection(axes.GetOutputPort())
-        
-        axesActor.SetMapper(axesMapper)
-        self.ren.AddActor(axesActor)
-        
-        atext = vtk.vtkVectorText()
-        atext.SetText("X-Axis")
-        textMapper = vtk.vtkPolyDataMapper()
-        textMapper.SetInputConnection(atext.GetOutputPort())
-        
-        axisTextActor.SetMapper(textMapper)
-        #axisTextActor.SetScale(0.2, 0.2, 0.2)
-        axisTextActor.SetScale(3, 3, 3)
-        #axisTextActor.RotateY(90)
-        axisTextActor.AddPosition(0, 0, 0)        
-        
-        self.graphicsFrameWidget.ren.AddActor(axisTextActor)    
+        tprop = vtk.vtkTextProperty()
+        tprop.SetColor(color)
+        tprop.ShadowOn()
+        dim = self.currentDrawingParameters.bsd.fieldDim
+
+        axesActor.SetNumberOfLabels(4) # number of labels
+        axesActor.SetBounds(0, dim.x, 0, dim.y*math.sqrt(3.0)/2.0, 0, dim.z*math.sqrt(6.0)/3.0)
+        axesActor.SetLabelFormat("%6.4g")
+        axesActor.SetFlyModeToOuterEdges()
+        axesActor.SetFontFactor(1.5)
+
+        # axesActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+        axesActor.GetProperty().SetColor(color)
+
+        xAxisActor = axesActor.GetXAxisActor2D()
+        # xAxisActor.RulerModeOn()
+        # xAxisActor.SetRulerDistance(40)
+        # xAxisActor.SetRulerMode(20)
+        # xAxisActor.RulerModeOn()
+        xAxisActor.SetNumberOfMinorTicks(3)
+
+        # setting camera fot he actor is vey important to get axes working properly
+        axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
+        self.graphicsFrameWidget.ren.AddActor(axesActor)
+
+    #
+    # def showAxes(self):
+    #     axes = vtk.vtkAxes()
+    #     axes.SetOrigin(-1, -1, -1)
+    #     axes.SetScaleFactor(20)
+    #     axesMapper = vtk.vtkPolyDataMapper()
+    #     axesMapper.SetInputConnection(axes.GetOutputPort())
+    #
+    #     axesActor.SetMapper(axesMapper)
+    #     self.ren.AddActor(axesActor)
+    #
+    #     atext = vtk.vtkVectorText()
+    #     atext.SetText("X-Axis")
+    #     textMapper = vtk.vtkPolyDataMapper()
+    #     textMapper.SetInputConnection(atext.GetOutputPort())
+    #
+    #     axisTextActor.SetMapper(textMapper)
+    #     #axisTextActor.SetScale(0.2, 0.2, 0.2)
+    #     axisTextActor.SetScale(3, 3, 3)
+    #     #axisTextActor.RotateY(90)
+    #     axisTextActor.AddPosition(0, 0, 0)
+    #
+    #     self.graphicsFrameWidget.ren.AddActor(axisTextActor)
 
     def extractCellFieldData(self):   # called from MVCDrawView3D.py:drawCellField()
         import CompuCell
