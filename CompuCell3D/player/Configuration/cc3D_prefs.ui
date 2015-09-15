@@ -228,6 +228,13 @@
           </widget>
          </item>
          <item>
+          <widget class="QCheckBox" name="debugOutpuPlayertCB">
+           <property name="text">
+            <string>Turn On Player Debug Output</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QCheckBox" name="useInternalConsoleCheckBox">
            <property name="text">
             <string>Use internal console for text output</string>

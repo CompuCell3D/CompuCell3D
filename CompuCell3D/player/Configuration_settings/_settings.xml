@@ -6,7 +6,7 @@
    <Settings Type="point">
       <e Name="MainWindowPosition" Type="point">208,183</e>
       <e Name="MainWindowPositionFloating" Type="point">351,34</e>
-   </Settings>
+   <!--</Settings>-->
    <Settings Type="int">
       <e Name="CellGlyphPhiRes" Type="int">2</e>
       <e Name="CellGlyphThetaRes" Type="int">2</e>
@@ -80,6 +80,7 @@
       <e Name="ClusterBordersOn" Type="bool">False</e>
       <e Name="ConcentrationLimitsOn" Type="bool">True</e>
       <e Name="ContoursOn" Type="bool">False</e>
+      <e Name="DebugOutputPlayer" Type="bool">False</e>
       <e Name="DisplayConsole" Type="bool">True</e>
       <e Name="DisplayLatticeData" Type="bool">False</e>
       <e Name="DisplayModelEditor" Type="bool">True</e>
