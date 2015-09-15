@@ -105,6 +105,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
         _actors[0].GetProperty().SetColor(1, 1, 1)        
         # self.outlineDim=_imageData.GetDimensions()
 
+        color = Configuration.getSetting("BoundingBoxColor")   # eventually do this smarter (only get/update when it changes)
+        _actors[0].GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+
+
     def initCellFieldActors(self, _actors):
 #        print MODULENAME,'  initCellFieldActors()'
 

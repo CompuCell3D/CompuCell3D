@@ -353,9 +353,28 @@ class MVCDrawView2D(MVCDrawViewBase):
         self.outlineActor.SetMapper(outlineMapper)
         self.outlineActor.GetProperty().SetColor(1, 1, 1)
 
-    def showOutlineActor(self):
-        self.currentActors["Outline"]=self.outlineActor
-        self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
+    # def showOutlineActor(self, flag=True):
+    #
+    #     self.currentActors["Outline"]=self.outlineActor
+    #     self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
+
+    def showOutlineActor(self, flag=True):
+        if flag:
+            if not self.currentActors.has_key("Outline"):
+                self.currentActors["Outline"]=self.outlineActor
+                self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
+            else:
+                self.graphicsFrameWidget.ren.RemoveActor(self.outlineActor)
+                # self.axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
+                self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
+        else:
+            if self.currentActors.has_key("Outline"):
+                del self.currentActors["Outline"]
+                self.graphicsFrameWidget.ren.RemoveActor(self.outlineActor)
+
+        # self.Render()
+        # self.graphicsFrameWidget.repaint()
+
 
     def showAxes(self, flag=True):
         if flag:
@@ -585,11 +604,13 @@ class MVCDrawView2D(MVCDrawViewBase):
         
 
     def drawCellVisDecorations(self):
-
-        if Configuration.getSetting("BoundingBox"):
+        print '\n\n\n\n\n Configuration.getSetting("BoundingBoxOn")=',Configuration.getSetting("BoundingBoxOn")
+        if Configuration.getSetting("BoundingBoxOn"):
 
             self.drawModel.prepareOutlineActors((self.outlineActor,))
-            self.showOutlineActor()
+            self.showOutlineActor(True)
+        else:
+            self.showOutlineActor(False)
 
         # if Configuration.getSetting("Show3DAxes"):
         if Configuration.getSetting("ShowAxes"):
@@ -912,7 +933,7 @@ class MVCDrawView2D(MVCDrawViewBase):
         # else:
         #     self.showLegend(False)
 
-        if Configuration.getSetting("BoundingBox"):
+        if Configuration.getSetting("BoundingBoxOn"):
             self.drawModel.prepareOutlineActors((self.outlineActor,))
             self.showOutlineActor()
 

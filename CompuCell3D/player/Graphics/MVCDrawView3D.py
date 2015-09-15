@@ -220,51 +220,97 @@ class MVCDrawView3D(MVCDrawViewBase):
             if not actorNumber in self.cellTypeActors and not actorNumber in self.invisibleCellTypes:
                 self.cellTypeActors[actorNumber]=vtk.vtkActor()
                 
-    def prepareOutlineActor(self,_imageData):
-#        print MODULENAME, '------------  prepareOutlineActor()'
-        outlineDimTmp=_imageData.GetDimensions()
-        # print "\n\n\n this is outlineDimTmp=",outlineDimTmp," self.outlineDim=",self.outlineDim
-        if self.outlineDim[0] != outlineDimTmp[0] or self.outlineDim[1] != outlineDimTmp[1] or self.outlineDim[2] != outlineDimTmp[2]:
-            self.outlineDim=outlineDimTmp
-        
-            outline = vtk.vtkOutlineFilter()
-            
-            if VTK_MAJOR_VERSION>=6:
-                outline.SetInputData(_imageData)
-            else:    
-                outline.SetInput(_imageData)
-            
-            
-            outlineMapper = vtk.vtkPolyDataMapper()
-            outlineMapper.SetInputConnection(outline.GetOutputPort())
-        
-            self.outlineActor.SetMapper(outlineMapper)
-            
-            color = Configuration.getSetting("WindowColor")   # eventually do this smarter (only get/update when it changes)
-            self.outlineActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
-#            self.outlineActor.GetProperty().SetColor(1, 1, 1)        
-            self.outlineDim = _imageData.GetDimensions()
+#     def prepareOutlineActor(self,_imageData):
+# #        print MODULENAME, '------------  prepareOutlineActor()'
+#         outlineDimTmp=_imageData.GetDimensions()
+#         # print "\n\n\n this is outlineDimTmp=",outlineDimTmp," self.outlineDim=",self.outlineDim
+#         if self.outlineDim[0] != outlineDimTmp[0] or self.outlineDim[1] != outlineDimTmp[1] or self.outlineDim[2] != outlineDimTmp[2]:
+#             self.outlineDim=outlineDimTmp
+#
+#             outline = vtk.vtkOutlineFilter()
+#
+#             if VTK_MAJOR_VERSION>=6:
+#                 outline.SetInputData(_imageData)
+#             else:
+#                 outline.SetInput(_imageData)
+#
+#
+#             outlineMapper = vtk.vtkPolyDataMapper()
+#             outlineMapper.SetInputConnection(outline.GetOutputPort())
+#
+#             self.outlineActor.SetMapper(outlineMapper)
+#
+#             color = Configuration.getSetting("WindowColor")   # eventually do this smarter (only get/update when it changes)
+#             self.outlineActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+# #            self.outlineActor.GetProperty().SetColor(1, 1, 1)
+#             self.outlineDim = _imageData.GetDimensions()
 
-    def showOutlineActor(self):
+    # def showOutlineActor(self):
+    #
+    #     print MODULENAME, '------------  showOutlineActor()'
+    #     self.currentActors["Outline"]=self.outlineActor
+    #     # need to edit configsChanged to set self.boundingBox based on configuartion options
+    #     # this determines whether bounding box is shown or not
+    #     if self.boundingBox:
+    #         color = Configuration.getSetting("BoundingBoxColor")   # eventually do this smarter (only get/update when it changes)
+    #         self.outlineActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+    #         self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
 
-        print MODULENAME, '------------  showOutlineActor()'
-        self.currentActors["Outline"]=self.outlineActor
-        # need to edit configsChanged to set self.boundingBox based on configuartion options
-        # this determines whether bounding box is shown or not
-        if self.boundingBox:
-            color = Configuration.getSetting("BoundingBoxColor")   # eventually do this smarter (only get/update when it changes)
-            self.outlineActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
-            self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
 
-    def showAxes(self):
+    def showOutlineActor(self, flag=True):
+        if flag:
+            if not self.currentActors.has_key("Outline"):
+                self.currentActors["Outline"]=self.outlineActor
+                self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
+            else:
+                self.graphicsFrameWidget.ren.RemoveActor(self.outlineActor)
+                # self.axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
+                self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
+        else:
+            if self.currentActors.has_key("Outline"):
+                del self.currentActors["Outline"]
+                self.graphicsFrameWidget.ren.RemoveActor(self.outlineActor)
 
-        # need to edit configsChanged to set self.show3DAxes based on configuartion options
-        # this determines whether 3D axes are shown or not
 
-        if not self.show3DAxes:
-            return
+    def drawPlotVisDecorations(self):
 
-        self.currentActors["Axes3D"] = self.axesActor
+        # if Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName):
+        #     self.drawModel.prepareLegendActors((self.drawModel.conMapper,),(self.legendActor,))
+        #     self.showLegend(True)
+        # else:
+        #     self.showLegend(False)
+
+        if Configuration.getSetting("BoundingBoxOn"):
+            self.drawModel.prepareOutlineActors((self.outlineActor,))
+            self.showOutlineActor(True)
+        else:
+            self.showOutlineActor(False)
+
+        if Configuration.getSetting("ShowPlotAxes", self.currentDrawingParameters.fieldName):
+            self.prepareAxesActors((None,),(self.axesActor,))
+            self.showAxes(True)
+        else:
+            self.showAxes(False)
+
+
+    def drawCellVisDecorations(self):
+
+        if Configuration.getSetting("BoundingBoxOn"):
+            self.drawModel.prepareOutlineActors((self.outlineActor,))
+            self.showOutlineActor(True)
+        else:
+            self.showOutlineActor(False)
+
+        # if Configuration.getSetting("Show3DAxes"):
+        if Configuration.getSetting("ShowAxes"):
+            self.prepareAxesActors((None,), (self.axesActor,))
+            self.showAxes(True)
+        else:
+            self.showAxes(False)
+
+    def prepareAxesActors(self, _mappers, _actors):
+
+        axesActor=_actors[0]
         color = Configuration.getSetting("AxesColor")   # eventually do this smarter (only get/update when it changes)
         color = (float(color.red())/255,float(color.green())/255,float(color.blue())/255)
 
@@ -273,26 +319,85 @@ class MVCDrawView3D(MVCDrawViewBase):
         tprop.ShadowOn()
         dim = self.currentDrawingParameters.bsd.fieldDim
 
-        self.axesActor.SetNumberOfLabels(4) # number of labels
-        self.axesActor.SetBounds(0, dim.x, 0, dim .y, 0, dim .z)
-        self.axesActor.SetLabelFormat("%6.4g")
-        self.axesActor.SetFlyModeToOuterEdges()
-        self.axesActor.SetFontFactor(1.5)
+        axesActor.SetNumberOfLabels(4) # number of labels
+        axesActor.SetBounds(0, dim.x, 0, dim.y*math.sqrt(3.0)/2.0, 0, dim.z*math.sqrt(6.0)/3.0)
+        axesActor.SetLabelFormat("%6.4g")
+        axesActor.SetFlyModeToOuterEdges()
+        axesActor.SetFontFactor(1.5)
 
-        # self.axesActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
-        self.axesActor.GetProperty().SetColor(color)
+        # axesActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+        axesActor.GetProperty().SetColor(color)
 
-        xAxisActor = self.axesActor.GetXAxisActor2D()
+        xAxisActor = axesActor.GetXAxisActor2D()
         # xAxisActor.RulerModeOn()
         # xAxisActor.SetRulerDistance(40)
         # xAxisActor.SetRulerMode(20)
         # xAxisActor.RulerModeOn()
         xAxisActor.SetNumberOfMinorTicks(3)
 
-
         # setting camera fot he actor is vey important to get axes working properly
-        self.axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
-        self.graphicsFrameWidget.ren.AddActor(self.axesActor)
+        axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
+        self.graphicsFrameWidget.ren.AddActor(axesActor)
+
+
+
+    def showAxes(self, flag=True):
+        if flag:
+            if not self.currentActors.has_key("Axes3D"):
+                # setting camera for the actor is vrey important to get axes working properly
+                self.axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
+                self.currentActors["Axes3D"] = self.axesActor
+                # print 'self.graphicsFrameWidget.ren.GetActiveCamera()=',self.graphicsFrameWidget.ren.GetActiveCamera()
+                self.graphicsFrameWidget.ren.AddActor(self.axesActor)
+            else:
+                self.graphicsFrameWidget.ren.RemoveActor(self.axesActor)
+                self.axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
+                self.graphicsFrameWidget.ren.AddActor(self.axesActor)
+        else:
+            if self.currentActors.has_key("Axes3D"):
+                del self.currentActors["Axes3D"]
+                self.graphicsFrameWidget.ren.RemoveActor(self.axesActor)
+
+        self.Render()
+        self.graphicsFrameWidget.repaint()
+
+    # def showAxes(self):
+    #
+    #     # need to edit configsChanged to set self.show3DAxes based on configuartion options
+    #     # this determines whether 3D axes are shown or not
+    #
+    #     if not self.show3DAxes:
+    #         return
+    #
+    #     self.currentActors["Axes3D"] = self.axesActor
+    #     color = Configuration.getSetting("AxesColor")   # eventually do this smarter (only get/update when it changes)
+    #     color = (float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+    #
+    #     tprop = vtk.vtkTextProperty()
+    #     tprop.SetColor(color)
+    #     tprop.ShadowOn()
+    #     dim = self.currentDrawingParameters.bsd.fieldDim
+    #
+    #     self.axesActor.SetNumberOfLabels(4) # number of labels
+    #     self.axesActor.SetBounds(0, dim.x, 0, dim .y, 0, dim .z)
+    #     self.axesActor.SetLabelFormat("%6.4g")
+    #     self.axesActor.SetFlyModeToOuterEdges()
+    #     self.axesActor.SetFontFactor(1.5)
+    #
+    #     # self.axesActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+    #     self.axesActor.GetProperty().SetColor(color)
+    #
+    #     xAxisActor = self.axesActor.GetXAxisActor2D()
+    #     # xAxisActor.RulerModeOn()
+    #     # xAxisActor.SetRulerDistance(40)
+    #     # xAxisActor.SetRulerMode(20)
+    #     # xAxisActor.RulerModeOn()
+    #     xAxisActor.SetNumberOfMinorTicks(3)
+    #
+    #
+    #     # setting camera fot he actor is vey important to get axes working properly
+    #     self.axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
+    #     self.graphicsFrameWidget.ren.AddActor(self.axesActor)
 
 
 
@@ -307,8 +412,12 @@ class MVCDrawView3D(MVCDrawViewBase):
         
         self.drawModel.prepareOutlineActors((self.outlineActor,))
         # remember to edit configs changed for actors to be visible or not. control variable are being changed there
-        self.showOutlineActor()
-        self.showAxes()
+
+        # self.showOutlineActor()
+        # self.showAxes()
+
+
+        self.drawCellVisDecorations()
 
         dictKey = self.graphicsFrameWidget.winId().__int__()
         

@@ -76,6 +76,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         self.dim = [fieldDim.x , fieldDim.y , fieldDim.z]
         
     def prepareOutlineActors(self,_actors):
+
         outlineData = vtk.vtkImageData()
         
         fieldDim = self.currentDrawingParameters.bsd.fieldDim
@@ -110,6 +111,11 @@ class MVCDrawModel3D(MVCDrawModelBase):
             _actors[0].SetScale(self.xScaleHex,self.yScaleHex,self.zScaleHex)
         _actors[0].GetProperty().SetColor(1, 1, 1)        
         # self.outlineDim=_imageData.GetDimensions()
+
+        color = Configuration.getSetting("BoundingBoxColor")   # eventually do this smarter (only get/update when it changes)
+        _actors[0].GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+
+
 
     def showAxes(self):
         axes = vtk.vtkAxes()
