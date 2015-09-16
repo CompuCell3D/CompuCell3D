@@ -267,11 +267,10 @@ void ScalableFlexibleDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLEleme
 	bool pluginAlreadyRegisteredFlag;
 	cellTypeMonitorPlugin=(CellTypeMonitorPlugin*)Simulator::pluginManager.get("CellTypeMonitor",&pluginAlreadyRegisteredFlag);
 	if(!pluginAlreadyRegisteredFlag){
-		cellTypeMonitorPlugin->init(simulator);	
-		h_celltype_field=cellTypeMonitorPlugin->getCellTypeArray();
-
+		cellTypeMonitorPlugin->init(simulator);			
 	}
 
+    h_celltype_field=cellTypeMonitorPlugin->getCellTypeArray();
 
 	simulator->registerSteerableObject(this);
 }
