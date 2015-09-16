@@ -6,7 +6,7 @@
    <Settings Type="point">
       <e Name="MainWindowPosition" Type="point">208,183</e>
       <e Name="MainWindowPositionFloating" Type="point">351,34</e>
-   <!--</Settings>-->
+   </Settings>
    <Settings Type="int">
       <e Name="CellGlyphPhiRes" Type="int">2</e>
       <e Name="CellGlyphThetaRes" Type="int">2</e>
