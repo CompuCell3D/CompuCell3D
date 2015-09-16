@@ -361,10 +361,10 @@ void ReactionDiffusionSolverFE::init(Simulator *_simulator, CC3DXMLElement *_xml
 	cellTypeMonitorPlugin=(CellTypeMonitorPlugin*)Simulator::pluginManager.get("CellTypeMonitor",&pluginAlreadyRegisteredFlag);
 	if(!pluginAlreadyRegisteredFlag){
 		cellTypeMonitorPlugin->init(simulator);	
-		h_celltype_field=cellTypeMonitorPlugin->getCellTypeArray();
-        h_cellid_field=cellTypeMonitorPlugin->getCellIdArray();
-
 	}
+
+	h_celltype_field=cellTypeMonitorPlugin->getCellTypeArray();
+    h_cellid_field=cellTypeMonitorPlugin->getCellIdArray();
 
 
 	simulator->registerSteerableObject(this);
@@ -650,7 +650,7 @@ Dim3D ReactionDiffusionSolverFE::getInternalDim(){
 void ReactionDiffusionSolverFE::prepCellTypeField(int idx){
 
     // here we set up cellTypeArray boundaries
-    Array3DCUDA<unsigned char> & cellTypeArray= *h_celltype_field;   
+    Array3DCUDA<unsigned char> & cellTypeArray= *h_celltype_field;       
     BoundaryConditionSpecifier & bcSpec=bcSpecVec[idx];
     int numberOfIters=1;
     
@@ -666,8 +666,8 @@ void ReactionDiffusionSolverFE::prepCellTypeField(int idx){
         numberOfIters=2;
     }    
     
-    Dim3D workFieldDimInternal=getInternalDim();
-    
+    Dim3D workFieldDimInternal=getInternalDim();    
+
     for (int iter = 0 ; iter < numberOfIters ; ++iter){
         if(periodicBoundaryCheckVector[0] || bcSpec.planePositions[0]==BoundaryConditionSpecifier::PERIODIC || bcSpec.planePositions[1]==BoundaryConditionSpecifier::PERIODIC){
             //x - periodic
