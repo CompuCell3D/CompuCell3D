@@ -297,6 +297,7 @@ class CC3DProjectTreeWidget(QTreeWidget):
             # menu.addAction(self.plugin.actions["Reset Parameter Scan"])    
         
         self.addActionToContextMenu(menu,self.plugin.actions["Save CC3D Project"])
+        self.addActionToContextMenu(menu,self.plugin.actions["Go To Project Directory"])
         self.addActionToContextMenu(menu,self.plugin.actions["Zip It!"])
         # self.addActionToContextMenu(menu,self.plugin.actions["Zip'n'Mail"])
         #--------------------------------------------------------------------
@@ -746,6 +747,9 @@ class CC3DProject(QObject):
         self.actions["Save CC3D Project"]=QtGui.QAction(QIcon(':/icons/save-project.png'),"Save CC3D Project", self, shortcut="", statusTip="Save CC3D Project ", triggered=self.__saveCC3DProject)
         self.actions["Save CC3D Project As..."]=QtGui.QAction("Save CC3D Project As...", self, shortcut="Ctrl+Shift+A", statusTip="Save CC3D Project As ", triggered=self.__saveCC3DProjectAs)
         self.actions["Zip It!"]=QtGui.QAction("Zip It!", self, shortcut="Ctrl+Shift+Z", statusTip="Zips project directory", triggered=self.__zipProject)
+        self.actions["Go To Project Directory"] = QtGui.QAction("Go To Project Directory", self, shortcut="", statusTip="Opens directory of the project in default file manager", triggered=self.__goToProjectDirectory)
+
+
         # self.actions["Zip'n'Mail"]=QtGui.QAction("Zip'n'Mail", self, statusTip="Zips project directory and opens email clinet with attachement", triggered=self.__zipAndMailProject)
         
         self.actions["Add Resource..."]=QtGui.QAction(QIcon(':/icons/add.png'),"Add Resource...", self, shortcut="", statusTip="Add Resource File ", triggered=self.__addResource)
@@ -2310,10 +2314,37 @@ class CC3DProject(QObject):
     #
     #     QDesktopServices.openUrl(QUrl("mailto:?subject="+os.path.basename(zipped_project_path)+"&body=Attaching: "+os.path.basename(zipped_project_path)+"&attach=" + "/Users/m/install_projects/master/CompuCell3D_playerconfig_demo/icons/cc3d_128x128_logo.png"))
 
+    def __goToProjectDirectory(self):
+        tw=self.treeWidget
+        curItem=self.treeWidget.currentItem()
+        projItem=self.treeWidget.getProjectParent(curItem)
+
+        if not projItem:
+            numberOfprojects=self.treeWidget.topLevelItemCount()
+            if numberOfprojects==1:
+                projItem=self.treeWidget.topLevelItem(0)
+            elif numberOfprojects>1:
+                QMessageBox.warning(self.treewidget,
+                "Please Select Project",
+                "Please first click inside project that you would like to open in file manager try again")
+            else:
+                return
+
+        pdh=None
+
+        try:
+           pdh = self.projectDataHandlers[projItem]
+        except LookupError, e:
+
+            return
+
+        csd = pdh.cc3dSimulationData
+        QDesktopServices.openUrl(QUrl.fromLocalFile(csd.basePath))
+
 
     def __zipProject(self):
 
-        print 'inside __zipProject'
+        # print 'inside __zipProject'
 
         tw=self.treeWidget
         curItem=self.treeWidget.currentItem()
