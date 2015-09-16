@@ -586,6 +586,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("Screenshot_Y", self.screenshot_Y_SB.value())
         Configuration.setSetting("LatticeOutputOn", self.outputLatticeDataCheckBox.isChecked())
         Configuration.setSetting("SaveLatticeFrequency", self.saveLatticeSpinBox.value())
+        Configuration.setSetting("DebugOutputPlayer", self.debugOutputPlayerCB.isChecked())
         Configuration.setSetting("UseInternalConsole", self.useInternalConsoleCheckBox.isChecked())
         Configuration.setSetting("ClosePlayerAfterSimulationDone", self.closePlayerCheckBox.isChecked())
         Configuration.setSetting("ProjectLocation", self.projectLocationLineEdit.text())
@@ -686,7 +687,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.outputLatticeDataCheckBox.setChecked(Configuration.getSetting("LatticeOutputOn"))
         self.saveLatticeSpinBox.setValue(Configuration.getSetting("SaveLatticeFrequency"))
         self.outputLatticeDataClicked()   # enable/disable
-        
+
+        self.debugOutputPlayerCB.setChecked(Configuration.getSetting("DebugOutputPlayer"))
         self.useInternalConsoleCheckBox.setChecked(Configuration.getSetting("UseInternalConsole"))
         self.closePlayerCheckBox.setChecked(Configuration.getSetting("ClosePlayerAfterSimulationDone"))
         

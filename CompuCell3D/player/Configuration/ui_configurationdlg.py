@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'cc3D_prefs.ui'
 #
-# Created: Tue Sep 15 15:08:17 2015
+# Created: Wed Sep 16 14:08:23 2015
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_CC3DPrefs(object):
     def setupUi(self, CC3DPrefs):
         CC3DPrefs.setObjectName(_fromUtf8("CC3DPrefs"))
-        CC3DPrefs.resize(498, 445)
+        CC3DPrefs.resize(498, 461)
         self.verticalLayout_18 = QtGui.QVBoxLayout(CC3DPrefs)
         self.verticalLayout_18.setObjectName(_fromUtf8("verticalLayout_18"))
         self.tabWidget = QtGui.QTabWidget(CC3DPrefs)
@@ -124,9 +124,9 @@ class Ui_CC3DPrefs(object):
         self.line.setFrameShadow(QtGui.QFrame.Sunken)
         self.line.setObjectName(_fromUtf8("line"))
         self.verticalLayout_10.addWidget(self.line)
-        self.debugOutpuPlayertCB = QtGui.QCheckBox(self.tab_output)
-        self.debugOutpuPlayertCB.setObjectName(_fromUtf8("debugOutpuPlayertCB"))
-        self.verticalLayout_10.addWidget(self.debugOutpuPlayertCB)
+        self.debugOutputPlayerCB = QtGui.QCheckBox(self.tab_output)
+        self.debugOutputPlayerCB.setObjectName(_fromUtf8("debugOutputPlayerCB"))
+        self.verticalLayout_10.addWidget(self.debugOutputPlayerCB)
         self.useInternalConsoleCheckBox = QtGui.QCheckBox(self.tab_output)
         self.useInternalConsoleCheckBox.setObjectName(_fromUtf8("useInternalConsoleCheckBox"))
         self.verticalLayout_10.addWidget(self.useInternalConsoleCheckBox)
@@ -738,7 +738,7 @@ class Ui_CC3DPrefs(object):
         self.label_16.setText(_translate("CC3DPrefs", "X", None))
         self.label_17.setText(_translate("CC3DPrefs", "Y", None))
         self.outputLatticeDataCheckBox.setText(_translate("CC3DPrefs", "Save lattice every Nth MCS", None))
-        self.debugOutpuPlayertCB.setText(_translate("CC3DPrefs", "Turn On Player Debug Output", None))
+        self.debugOutputPlayerCB.setText(_translate("CC3DPrefs", "Turn On Player Debug Output", None))
         self.useInternalConsoleCheckBox.setText(_translate("CC3DPrefs", "Use internal console for text output", None))
         self.closePlayerCheckBox.setText(_translate("CC3DPrefs", "Close Player after simulation ends", None))
         self.projectLocationButton.setText(_translate("CC3DPrefs", "Project Location", None))

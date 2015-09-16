@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>498</width>
-    <height>445</height>
+    <height>461</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -228,7 +228,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="debugOutpuPlayertCB">
+          <widget class="QCheckBox" name="debugOutputPlayerCB">
            <property name="text">
             <string>Turn On Player Debug Output</string>
            </property>

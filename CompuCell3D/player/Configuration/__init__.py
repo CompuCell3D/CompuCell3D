@@ -51,7 +51,7 @@ class Configuration():
     myCustomSettings = None # this is an object that stores settings for custom settings i.e. ones which are associated with individual cc3d projects
     myCustomSettingsPath = ''
     
-    globalOnlySettings = ['RecentSimulations','NumberOfRecentSimulations']    
+    globalOnlySettings = ['RecentSimulations','NumberOfRecentSimulations','OutputLocation','ProjectLocation']
     customOnlySettings = ['WindowsLayout']
     
     activeFieldNamesList = []
@@ -235,8 +235,8 @@ def getRecentSimulationsIncludingNewItem(simName):
     
     return currentStrlist
     
-    
-def getSetting(_key, fieldName=None):  # we append an optional fieldName now to allow for field-dependent parameters from Prefs
+# we append an optional fieldName now to allow for field-dependent parameters from Prefs
+def getSetting(_key, fieldName=None):
         
     # print '_key=',_key
     settingStorage = None    
@@ -245,13 +245,14 @@ def getSetting(_key, fieldName=None):  # we append an optional fieldName now to 
         settingStorage = Configuration.myCustomSettings
     else:
         settingStorage = Configuration.myGlobalSettings
-        
-    if _key in Configuration.globalOnlySettings: # some settings are stored in the global settings e.g. number of recent simualtions or recent simulations list
+
+    # some settings are stored in the global settings e.g. number of recent simualtions or recent simulations list
+    if _key in Configuration.globalOnlySettings:
         settingStorage = Configuration.myGlobalSettings
     
     val = settingStorage.getSetting(_key)  
     
-    #handling field params request
+    # handling field params request
     if fieldName is not None:
         fieldParams = getSetting('FieldParams')
         # print 'fieldParams=',fieldParams

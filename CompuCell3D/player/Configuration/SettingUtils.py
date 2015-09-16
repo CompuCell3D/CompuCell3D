@@ -695,7 +695,7 @@ class CustomSettings(object):
 
         fileFullPath = os.path.abspath(_fileName)
         plSetElem.CC3DXMLElement.saveXML(fileFullPath)
-        plSetElem.CC3DXMLElement.saveXML(fileFullPath+'.xml')
+        # plSetElem.CC3DXMLElement.saveXML(fileFullPath+'.xml')
 
         
 #the defaultSettings fcn will only be used intenally during development - it shold not be used int heproduction ode - the default settings shuld be read from the _settings.xml located in the COnfiguration directory of the player

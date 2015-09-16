@@ -1587,11 +1587,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 if self.mainGraphicsWidget:  # self.mainGraphicsWindow can be closed by the user
                     self.mainGraphicsWidget.takeSimShot(screenshotFileName)
 
-            print 'self.screenshotManager=', self.screenshotManager
+            if Configuration.getSetting('DebugOutputPlayer'):
+                print 'self.screenshotManager=', self.screenshotManager
+
             if self.screenshotManager:
                 self.screenshotManager.outputScreenshots(self.screenshotDirectoryName, self.__step)
-
-                print 'self.screenshotDirectoryName=',self.screenshotDirectoryName
+                if Configuration.getSetting('DebugOutputPlayer'):
+                    print 'self.screenshotDirectoryName=',self.screenshotDirectoryName
                 # sys.exit()
 
             #        if (CompuCellSetup.cmlFieldHandler is not None) and self.__latticeOutputFlag and (not self.__step % self.__latticeOutputFrequency):  #rwh
