@@ -149,7 +149,7 @@ if(INSTALL_PLAYER)
     # endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)    
 
     # copying PyQt, Sip and VTK libraries used by the player on Windows
-    if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)   
+    if(${CMAKE_SYSTEM_NAME} STREQUAL Windows AND WINDOWS_DEPENDENCIES_INSTALL_ENABLE)   
         INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/player/PyQt4" DESTINATION @CMAKE_INSTALL_PREFIX@/lib/PythonDeps
             PATTERN "*.svn" EXCLUDE
             PATTERN "*.pyc" EXCLUDE

@@ -1,5 +1,14 @@
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+
+    if(${MSVC})
+        # have to add /bigobj to visual studion compilation of hte CompuCell python module
+        message ("THIS IS FLAGS ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+        SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /bigobj")
+        message ("AFTER THIS IS FLAGS ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+                
+    endif()
+
 SET(LIBS
   CompuCellLibShared
   #AutomatonStatic

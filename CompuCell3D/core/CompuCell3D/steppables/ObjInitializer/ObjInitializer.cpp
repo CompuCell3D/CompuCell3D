@@ -179,7 +179,7 @@ void ObjInitializer::start() {
     //    the first two elements in a generic line of a PIF file are: 
     //    n = an integer, specifying the cell ID
     //    s = a text string (no spaces), specifying the cell Type
-    cerr << lObjIStringStream << endl;
+    //cerr << lObjIStringStream << endl;
     lObjIStringStream >> lFirstParsedString >> lSecondParsedString;
     cerr << "ObjInitializer::start() ----- First: " << lFirstParsedString << " Second: " << lSecondParsedString << "\n";
 
