@@ -1399,11 +1399,12 @@ class MVCDrawModel3D(MVCDrawModelBase):
         FPPLinksPD.SetPoints(points)
         FPPLinksPD.SetLines(lines)
 
-        FPPLinksPD.Update()
+        
         
         if VTK_MAJOR_VERSION>=6:
             self.FPPLinksMapper.SetInputData(FPPLinksPD)
         else:    
+            FPPLinksPD.Update()
             self.FPPLinksMapper.SetInput(FPPLinksPD)
         
         
@@ -1699,7 +1700,13 @@ class MVCDrawModel3D(MVCDrawModelBase):
         FPPLinksPD.SetPoints(points)
         FPPLinksPD.SetLines(lines)
 
-        FPPLinksPD.Update()
+        
+        
+        if VTK_MAJOR_VERSION>=6:
+            pass
+        else:    
+            FPPLinksPD.Update()
+        
         FPPLinksPD.GetCellData().SetScalars(colorScalars)
         
         if VTK_MAJOR_VERSION>=6:
