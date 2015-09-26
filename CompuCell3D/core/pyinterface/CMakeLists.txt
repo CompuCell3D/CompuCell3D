@@ -1,5 +1,5 @@
 # I don't really know why these two lines are needed!
-CMAKE_MINIMUM_REQUIRED(VERSION 2.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(PYINTERFACE)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/FindSWIG.cmake) # this is slightly modified FindSWIG.cmake file -  had to tune it to work with OSX

@@ -160,17 +160,19 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
         # PATTERN "@CMAKE_SOURCE_DIR@/windows_libs/bin/*")
 # endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)   
 # copying vtk, Qt, python25,OPENGL libraries used by the player on Windows
-if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)   
-    INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/bin/" DESTINATION @CMAKE_INSTALL_PREFIX@/bin
-        PATTERN "*.svn" EXCLUDE
-        PATTERN "@WINDOWS_DEPENDENCIES@/bin/*")
-        
-  file(GLOB prerequisites "@WINDOWS_DEPENDENCIES@/Prerequisites/*")
-  list(REMOVE_ITEM prerequisites "@WINDOWS_DEPENDENCIES@/Prerequisites/.svn")
-  INSTALL(FILES ${prerequisites} DESTINATION "@CMAKE_INSTALL_PREFIX@/Prerequisites" )  
-        
-endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows) 
-
+if(WINDOWS_DEPENDENCIES_INSTALL_ENABLE)
+    if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)   
+        INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/bin/" DESTINATION @CMAKE_INSTALL_PREFIX@/bin
+            PATTERN "*.svn" EXCLUDE
+            PATTERN "@WINDOWS_DEPENDENCIES@/bin/*")
+            
+      file(GLOB prerequisites "@WINDOWS_DEPENDENCIES@/Prerequisites/*")
+      list(REMOVE_ITEM prerequisites "@WINDOWS_DEPENDENCIES@/Prerequisites/.svn")
+      INSTALL(FILES ${prerequisites} DESTINATION "@CMAKE_INSTALL_PREFIX@/Prerequisites" )  
+            
+    endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+    
+endif(WINDOWS_DEPENDENCIES_INSTALL_ENABLE)
 
 
 # configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Configuration/Version.py.in @CMAKE_SOURCE_DIR@/core/pythonSetupScripts/Version.py)   
