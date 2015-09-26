@@ -40,6 +40,9 @@ from Simulation.SimulationThread import SimulationThread
 
 import ScreenshotManager
 import vtk
+#turning off vtkWindows console output
+vtk.vtkObject.GlobalWarningDisplayOff()
+
 from RollbackImporter import RollbackImporter
 
 try:
