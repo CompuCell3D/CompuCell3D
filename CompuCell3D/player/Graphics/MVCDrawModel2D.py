@@ -257,7 +257,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # title_prop_x.SetLineOffset()
         # print 'axesActor.GetTitleTextProperty(0)=',axesActor.GetTitleTextProperty(0)
 
-        axesActor.GetTitleTextProperty(0).SetFontSize(50)
+        # axesActor.GetTitleTextProperty(0).SetFontSize(50)
 
         # axesActor.GetTitleTextProperty(0).SetColor(1.0, 0.0, 0.0)
         # axesActor.GetTitleTextProperty(0).SetFontSize(6.0)
