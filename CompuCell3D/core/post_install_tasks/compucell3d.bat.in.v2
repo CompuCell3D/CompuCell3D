@@ -32,7 +32,7 @@ REM removing duplicates from PATH environment variable - this variable can get r
 REM a bit ugly but works...
 "%PYTHON_INSTALL_PATH%\python" "%PREFIX_CC3D%\pythonSetupScripts\envVarSanitizer.py" "PATH" > "%TMP%\path_modifier.bat"
 CALL  "%TMP%\path_modifier.bat"
-@del "%TMP%\path_modifier.ba
+@del "%TMP%\path_modifier.bat"
 
 cd %PREFIX_CC3D%
 
