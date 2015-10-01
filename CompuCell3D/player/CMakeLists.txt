@@ -182,7 +182,7 @@ if(INSTALL_PLAYER)
             # PATTERN "*.svn" EXCLUDE
             # PATTERN "@WINDOWS_DEPENDENCIES@/player/VTKLibs/*")
             
-    endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)    
+    endif()    
 
 
     INSTALL(FILES  
