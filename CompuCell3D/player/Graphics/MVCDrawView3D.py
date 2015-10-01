@@ -11,7 +11,6 @@ import Configuration
 import vtk, math
 import sys, os
 
-VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
 
 MODULENAME='==== MVCDrawView3D.py:  '
 
@@ -307,6 +306,10 @@ class MVCDrawView3D(MVCDrawViewBase):
         :param flag:show On/Off flag
         :return:None
         '''
+        # we do not support axes for vtk less than 5.10.0
+        if self.vtk_version_identifier() < self.version_identifier(5,10,0):
+            return
+            
         if flag:
             if not self.currentActors.has_key("Axes3D"):
                 # setting camera for the actor is vrey important to get axes working properly

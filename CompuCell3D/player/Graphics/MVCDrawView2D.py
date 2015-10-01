@@ -15,6 +15,9 @@ CONTOUR_ALLOWED_FIELD_TYPES=[FIELD_TYPES[1],FIELD_TYPES[2],FIELD_TYPES[3]]
 
 MODULENAME='----MVCDrawView2D.py: '
 
+VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
+VTK_MINOR_VERSION=vtk.vtkVersion.GetVTKMinorVersion()
+
 
 from Messaging import dbgMsg, setDebugging
 # setDebugging(1)
@@ -392,6 +395,11 @@ class MVCDrawView2D(MVCDrawViewBase):
 
 
     def showAxes(self, flag=True):
+    
+        # we do not support axes for vtk less than 5.10.0
+        if self.vtk_version_identifier() < self.version_identifier(5,10,0):
+            return
+        
         if flag:
             if not self.currentActors.has_key("Axes2D"):
                 # setting camera for the actor is vrey important to get axes working properly

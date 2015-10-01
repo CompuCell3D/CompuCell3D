@@ -48,6 +48,10 @@ YZ_Z_SCALE=math.sqrt(6.0)/3.0
 
 from  Messaging import dbgMsg
 
+VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
+VTK_MINOR_VERSION=vtk.vtkVersion.GetVTKMinorVersion()
+VTK_BUILD_VERSION=vtk.vtkVersion.GetVTKBuildVersion()
+
 
 class MVCDrawViewBase:
     def __init__(self, _drawModel , graphicsFrameWidget, parent=None):
@@ -113,6 +117,11 @@ class MVCDrawViewBase:
     # def __del__(self):
         # print '\n\n\n\n CLEANING UP ',MODULENAME
         
+    def  version_identifier(self, major, minor, build):
+        return major*10**6+minor*10**3+build
+
+    def vtk_version_identifier(self):
+        return self.version_identifier(VTK_MAJOR_VERSION,VTK_MINOR_VERSION,VTK_BUILD_VERSION)
         
     def setDrawingFunctionName(self,_fcnName):
         # print "\n\n\n THIS IS _fcnName=",_fcnName," self.drawingFcnName=",self.drawingFcnName
