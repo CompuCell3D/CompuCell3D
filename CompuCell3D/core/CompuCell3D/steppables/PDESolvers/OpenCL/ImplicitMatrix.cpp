@@ -14,6 +14,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 using namespace CompuCell3D;
 static const char *programPath="ImplicitMatrix.cl";

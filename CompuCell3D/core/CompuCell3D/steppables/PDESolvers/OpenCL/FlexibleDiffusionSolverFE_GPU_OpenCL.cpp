@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdexcept>
 #include <cstring>
+#include <algorithm>
 #include "OpenCLHelper.h"
 //#include <algorithm>//TODO: remove
 //#include <functional>//TODO: remove
