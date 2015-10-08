@@ -150,37 +150,43 @@ if(INSTALL_PLAYER)
 
     # copying PyQt, Sip and VTK libraries used by the player on Windows
     if(${CMAKE_SYSTEM_NAME} STREQUAL Windows AND WINDOWS_DEPENDENCIES_INSTALL_ENABLE)   
-        INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/player/PyQt4" DESTINATION @CMAKE_INSTALL_PREFIX@/lib/PythonDeps
+        INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/Python27" DESTINATION @CMAKE_INSTALL_PREFIX@
             PATTERN "*.svn" EXCLUDE
             PATTERN "*.pyc" EXCLUDE
-            PATTERN "@WINDOWS_DEPENDENCIES@/player/PyQt4/*")
+            PATTERN "@WINDOWS_DEPENDENCIES@/Python27/*")
+    
+    # if(${CMAKE_SYSTEM_NAME} STREQUAL Windows AND WINDOWS_DEPENDENCIES_INSTALL_ENABLE)   
+        # INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/player/PyQt4" DESTINATION @CMAKE_INSTALL_PREFIX@/lib/PythonDeps
+            # PATTERN "*.svn" EXCLUDE
+            # PATTERN "*.pyc" EXCLUDE
+            # PATTERN "@WINDOWS_DEPENDENCIES@/player/PyQt4/*")
 
-        # INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/player/numpy" DESTINATION @CMAKE_INSTALL_PREFIX@/player
+        # # INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/player/numpy" DESTINATION @CMAKE_INSTALL_PREFIX@/player
+            # # PATTERN "*.svn" EXCLUDE
+            # # PATTERN "@WINDOWS_DEPENDENCIES@/player/numpy/*")
+            
+        # INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/player/sip" DESTINATION @CMAKE_INSTALL_PREFIX@/lib/PythonDeps
             # PATTERN "*.svn" EXCLUDE
-            # PATTERN "@WINDOWS_DEPENDENCIES@/player/numpy/*")
+            # PATTERN "*.pyc" EXCLUDE
+            # PATTERN "@WINDOWS_DEPENDENCIES@/player/sip/*")
             
-        INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/player/sip" DESTINATION @CMAKE_INSTALL_PREFIX@/lib/PythonDeps
-            PATTERN "*.svn" EXCLUDE
-            PATTERN "*.pyc" EXCLUDE
-            PATTERN "@WINDOWS_DEPENDENCIES@/player/sip/*")
-            
-          file(GLOB siputils "@WINDOWS_DEPENDENCIES@/player/sip_utils/*")
-          list(REMOVE_ITEM siputils "@WINDOWS_DEPENDENCIES@/player/sip_utils/.svn")
-          INSTALL(FILES ${siputils} DESTINATION "@CMAKE_INSTALL_PREFIX@/lib/PythonDeps" )  
+          # file(GLOB siputils "@WINDOWS_DEPENDENCIES@/player/sip_utils/*")
+          # list(REMOVE_ITEM siputils "@WINDOWS_DEPENDENCIES@/player/sip_utils/.svn")
+          # INSTALL(FILES ${siputils} DESTINATION "@CMAKE_INSTALL_PREFIX@/lib/PythonDeps" )  
             
             
-        # INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/player/sip_utils" DESTINATION @CMAKE_INSTALL_PREFIX@/lib/PythonDeps
+        # # INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/player/sip_utils" DESTINATION @CMAKE_INSTALL_PREFIX@/lib/PythonDeps
+            # # PATTERN "*.svn" EXCLUDE
+            # # PATTERN "@WINDOWS_DEPENDENCIES@/player/sip_utils/*")
+            
+        # INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/player/vtk" DESTINATION @CMAKE_INSTALL_PREFIX@/lib/PythonDeps
             # PATTERN "*.svn" EXCLUDE
-            # PATTERN "@WINDOWS_DEPENDENCIES@/player/sip_utils/*")
+            # PATTERN "*.pyc" EXCLUDE
+            # PATTERN "@WINDOWS_DEPENDENCIES@/player/vtk/*")
             
-        INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/player/vtk" DESTINATION @CMAKE_INSTALL_PREFIX@/lib/PythonDeps
-            PATTERN "*.svn" EXCLUDE
-            PATTERN "*.pyc" EXCLUDE
-            PATTERN "@WINDOWS_DEPENDENCIES@/player/vtk/*")
-            
-        # INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/player/VTKLibs" DESTINATION @CMAKE_INSTALL_PREFIX@/bin
-            # PATTERN "*.svn" EXCLUDE
-            # PATTERN "@WINDOWS_DEPENDENCIES@/player/VTKLibs/*")
+        # # INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/player/VTKLibs" DESTINATION @CMAKE_INSTALL_PREFIX@/bin
+            # # PATTERN "*.svn" EXCLUDE
+            # # PATTERN "@WINDOWS_DEPENDENCIES@/player/VTKLibs/*")
             
     endif()    
 
