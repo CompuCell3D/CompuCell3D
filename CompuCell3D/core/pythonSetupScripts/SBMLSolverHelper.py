@@ -95,12 +95,30 @@ class SBMLSolverHelper(object):
         # in case user passes simulate options we set the here 
         if _options:    
             for name , value in _options.iteritems():
-                setattr(rr.simulateOptions,name,value)
+                if name == "relative":
+                    rr.getIntegrator().setValue('relative_tolerance',value)
+                elif name == "absolute":
+                    rr.getIntegrator().setValue('absolute_tolerance',value)   
+                elif name == "stiff":
+                    rr.getIntegrator().setValue('stiff',value)   
+                else:
+                    setattr(rr.simulateOptions,name,value)                    
+                    
+                    
+                    
         else: # check for global options
             globalOptions=self.getSBMLGlobalOptions()
             if globalOptions:
                 for name , value in globalOptions.iteritems():
-                    setattr(rr.simulateOptions,name,value)
+                    if name == "relative":
+                        rr.getIntegrator().setValue('relative_tolerance',value)
+                    elif name == "absolute":
+                        rr.getIntegrator().setValue('absolute_tolerance',value)   
+                    elif name == "stiff":
+                        rr.getIntegrator().setValue('stiff',value)   
+                    else:
+                        setattr(rr.simulateOptions,name,value)                    
+
                 
         
         
@@ -177,12 +195,27 @@ class SBMLSolverHelper(object):
         # in case user passes simulate options we set the here        
         if _options:    
             for name , value in _options.iteritems():
-                setattr(rr.simulateOptions,name,value)
+                if name == "relative":
+                    rr.getIntegrator().setValue('relative_tolerance',value)
+                elif name == "absolute":
+                    rr.getIntegrator().setValue('absolute_tolerance',value)   
+                elif name == "stiff":
+                    rr.getIntegrator().setValue('stiff',value)   
+                else:
+                    setattr(rr.simulateOptions,name,value)                    
+
         else: # check for global options
             globalOptions=self.getSBMLGlobalOptions()
             if globalOptions:
                 for name , value in globalOptions.iteritems():
-                    setattr(rr.simulateOptions,name,value)           
+                    if name == "relative":
+                        rr.getIntegrator().setValue('relative_tolerance',value)
+                    elif name == "absolute":
+                        rr.getIntegrator().setValue('absolute_tolerance',value)   
+                    elif name == "stiff":
+                        rr.getIntegrator().setValue('stiff',value)   
+                    else:
+                        setattr(rr.simulateOptions,name,value)                    
 
     def deleteSBMLFromCellIds(self,_modelName,_ids=[]):
         import CompuCell
