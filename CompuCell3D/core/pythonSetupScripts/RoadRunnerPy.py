@@ -72,8 +72,8 @@ class RoadRunnerPy(RoadRunner):
         for name in m.getFloatingSpeciesIds()+m.getBoundarySpeciesIds() + m.getGlobalParameterIds():
             modelState[name]=m[name]
         
-        print 'self.__state=',self.__state
-        sys.exit()
+        # print 'self.__state=',self.__state
+        # sys.exit()
         
     def __reduce__(self):    
         self.prepareState()
