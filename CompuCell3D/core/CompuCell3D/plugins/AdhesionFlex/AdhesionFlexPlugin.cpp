@@ -280,10 +280,11 @@ double AdhesionFlexPlugin::adhesionFlexEnergyCustom(const CellG *cell1, const Ce
 
 
 
-void AdhesionFlexPlugin::setBindingParameter(const std::string moleculeName1, const std::string moleculeName2, const double parameter) {
+void AdhesionFlexPlugin::setBindingParameter(const std::string moleculeName1, const std::string moleculeName2, const double parameter, bool parsing_flag) {
 
-
+	
 	if (moleculeNameIndexMap.find(moleculeName1)==moleculeNameIndexMap.end()){
+		cerr<<"CANNOT FIND MOLECULE 1 in the map"<<endl;
 		ASSERT_OR_THROW(string("Molecule Name=")+moleculeName1+" was not declared in the AdhesionMolecule section",false);
 	}
 
@@ -292,21 +293,54 @@ void AdhesionFlexPlugin::setBindingParameter(const std::string moleculeName1, co
 	}
 
 
+	
 	char molecule1 = moleculeNameIndexMap[moleculeName1];
 	char molecule2 = moleculeNameIndexMap[moleculeName2];
 
 	int index = getIndex(molecule1, molecule2);
+	
 
 	bindingParameters_t::iterator it = bindingParameters.find(index);
-
-	ASSERT_OR_THROW(string("BindingParameter for ") + moleculeName1 + " " + moleculeName2 +
-		" already set!", it == bindingParameters.end());
+	
+	if (parsing_flag){
+		ASSERT_OR_THROW(string("BindingParameter for ") + moleculeName1 + " " + moleculeName2 +
+			" already set!", it == bindingParameters.end());
+	}
+	
 
 	bindingParameters[index] = parameter;
 }
 
 
+void AdhesionFlexPlugin::setBindingParameterDirect(const std::string moleculeName1, const std::string moleculeName2, const double parameter) {
+	
+	map<std::string, int>::iterator mitr_1=moleculeNameIndexMap.find(moleculeName1);
+	map<std::string, int>::iterator mitr_2=moleculeNameIndexMap.find(moleculeName2);
+	
+	//if molecule name does not exist ignore it
+	ASSERT_OR_THROW(string("setBindingParameterDirect: molecule name:") + moleculeName1 +string(" not found!"), mitr_1 !=moleculeNameIndexMap.end());
+	ASSERT_OR_THROW(string("setBindingParameterDirect: molecule name:") + moleculeName2 +" not found!", mitr_2 !=moleculeNameIndexMap.end());
+	
+	
+	bindingParameterArray[mitr_1->second][mitr_2->second] = parameter;
+	bindingParameterArray[mitr_2->second][mitr_1->second] = parameter;	
+}
 
+void AdhesionFlexPlugin::setBindingParameterByIndexDirect(int _idx1, int _idx2, const double parameter) {
+	bindingParameterArray[_idx1][_idx2] = parameter;
+	bindingParameterArray[_idx2][_idx1] = parameter;
+		
+	
+}
+
+
+std::vector<std::vector<double> > AdhesionFlexPlugin::AdhesionFlexPlugin::getBindingParameterArray(){
+	return bindingParameterArray;
+}
+
+std::vector<std::string> AdhesionFlexPlugin::getAdhesionMoleculeNameVec(){
+	return 	adhesionMoleculeNameVec;
+}
 
 
 int AdhesionFlexPlugin::getIndex(const int type1, const int type2) const {
@@ -325,8 +359,9 @@ void AdhesionFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	//scanning Adhesion Molecule names
 
 	CC3DXMLElementList adhesionMoleculeNameXMLVec=_xmlData->getElements("AdhesionMolecule");
-	vector<string> adhesionMoleculeNameVec;
+	
 	set<string> adhesionMoleculeNameSet;
+	adhesionMoleculeNameVec.clear();
 	moleculeNameIndexMap.clear();
 
 	for (int i = 0 ; i<adhesionMoleculeNameXMLVec.size(); ++i){
@@ -391,7 +426,7 @@ void AdhesionFlexPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	CC3DXMLElement * adhesionInteractionMatrixXMLElem = variablesSectionXMLElem->getFirstElement("AdhesionInteractionMatrix");
 	CC3DXMLElementList bindingParameterXMLVec = adhesionInteractionMatrixXMLElem->getElements("BindingParameter");
 	for (int i = 0 ; i<bindingParameterXMLVec.size(); ++i){		
-		setBindingParameter(bindingParameterXMLVec[i]->getAttribute("Molecule1") , bindingParameterXMLVec[i]->getAttribute("Molecule2"), bindingParameterXMLVec[i]->getDouble());
+		setBindingParameter(bindingParameterXMLVec[i]->getAttribute("Molecule1") , bindingParameterXMLVec[i]->getAttribute("Molecule2"), bindingParameterXMLVec[i]->getDouble(),true);
 	}
 
 

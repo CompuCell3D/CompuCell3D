@@ -972,6 +972,7 @@ FIELD3DEXTENDER(Field3D<int>,int)
 
 %template(vectorstdstring) std::vector<std::string>;
 %template(vectordouble) std::vector<double>;
+%template(vectorvectordouble) std::vector<std::vector<double> >;
 
 %template(vectorint) std::vector<int>;
 %template(vectorunsignedchar) std::vector<unsigned char>;
