@@ -37,6 +37,7 @@ namespace CompuCell3D {
   class CellTypePlugin;
   class PIFDUMPER_EXPORT PIFDumper : public Steppable {
     Potts3D *potts;
+    Simulator *sim;
 
     std::string pifname;
     int numDigits;

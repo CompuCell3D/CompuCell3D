@@ -56,6 +56,8 @@ PIFDumper::PIFDumper(string filename) :
 void PIFDumper::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 	
    potts = simulator->getPotts();
+
+   sim = simulator;
    
    ostringstream numStream;
    string numString;
@@ -118,6 +120,11 @@ void PIFDumper::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
    // Frequency is handled at a higher level, no need to handle it here.
 	pifname=_xmlData->getFirstElement("PIFName")->getText();
+   string basePath = sim->getBasePath();
+   if (basePath != "") {
+      pifname = basePath + "/" + pifname;
+   }
+
 	if(_xmlData->findElement("PIFFileExtension"))
 		pifFileExtension=_xmlData->getFirstElement("PIFFileExtension")->getText();
 
