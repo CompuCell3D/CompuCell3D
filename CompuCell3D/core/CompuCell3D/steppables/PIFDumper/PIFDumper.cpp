@@ -55,10 +55,6 @@ PIFDumper::PIFDumper(string filename) :
 
 void PIFDumper::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
 	
-	//frequency=1;//CHECK HOW THIS IS HANDLED
-
-   //frequency=frequency;
-
    potts = simulator->getPotts();
    
    ostringstream numStream;
@@ -119,14 +115,12 @@ void PIFDumper::start() {
 
 
 void PIFDumper::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
-   
-   //Check how this is handled 
-	//frequency=frequency;
+
+   // Frequency is handled at a higher level, no need to handle it here.
 	pifname=_xmlData->getFirstElement("PIFName")->getText();
 	if(_xmlData->findElement("PIFFileExtension"))
 		pifFileExtension=_xmlData->getFirstElement("PIFFileExtension")->getText();
 
-	//frequency=1;
 }
 
 std::string PIFDumper::toString(){
