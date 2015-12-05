@@ -45,19 +45,36 @@ class RoadRunnerPy(RoadRunner):
 
         self.simulate()
         self.timeStart=self.timeEnd
+    
         
+    def raise_api_exception(self, attribute_name):
+        raise RuntimeError("RoadRunner API Mismatch - could not handle properly integrator setting: "+attribute_name)
+            
     def prepareState(self):
         self.__state={}
         #first line covers RRPython variables, second addresses rr.simulateOptions entries 
-        self.__state['SimulateOptions'] ={'stepSize':self.stepSize,'timeStart':self.timeStart,'timeEnd':self.timeEnd,\
-        'relative':self.simulateOptions.relative,'absolute':self.simulateOptions.absolute,'stiff':self.simulateOptions.stiff,'steps':self.simulateOptions.steps}# integratorSettings
+        # integrator settings        
+        self.__state['SimulateOptions'] = {}        
         
+        self.__state['SimulateOptions']['start'] = self.simulateOptions.start
+        self.__state['SimulateOptions']['end'] = self.simulateOptions.end
+        self.__state['SimulateOptions']['steps'] = self.simulateOptions.steps
+        self.__state['SimulateOptions']['duration'] = self.simulateOptions.duration
+        self.__state['SimulateOptions']['IntegratorSettings'] = {}
+        
+        integrator_setting_list = self.getIntegrator().getSettings() 
+        for integrator_setting in integrator_setting_list:
+            self.__state['SimulateOptions']['IntegratorSettings'][integrator_setting] = self.getIntegrator().getValue(integrator_setting)
+                
         self.__state['ModelState']={}
         modelState=self.__state['ModelState']
         m=self.model
         for name in m.getFloatingSpeciesIds()+m.getBoundarySpeciesIds() + m.getGlobalParameterIds():
             modelState[name]=m[name]
-            
+        
+        # print 'self.__state=',self.__state
+        # sys.exit()
+        
     def __reduce__(self):    
         self.prepareState()
         return RoadRunnerPy,(self.path,) , self.__state
@@ -94,19 +111,20 @@ class RoadRunnerPy(RoadRunner):
             for name,value in modelState.iteritems():      
                 self.model[name]=value            
                 
-            simulateOptions=self.__state['SimulateOptions']            
-            self.stepSize=simulateOptions['stepSize']
-            self.timeStart=simulateOptions['timeStart']
-            self.timeEnd=simulateOptions['timeEnd']
+            simulateOptions = self.__state['SimulateOptions']            
+            self.simulateOptions['steps'] = simulateOptions['steps']
+            self.stepSize = simulateOptions['duration']
+            self.simulateOptions['start'] = simulateOptions['start']
+            self.simulateOptions['end'] = simulateOptions['end']
             
-            #setting rr.simulateOPtions object entries
-            try: # older restart files might not have these options so will try to import what I can
-                self.simulateOptions.relative = simulateOptions['relative']
-                self.simulateOptions.absolute = simulateOptions['absolute']
-                self.simulateOptions.stiff = simulateOptions['stiff']            
-                self.simulateOptions.steps = simulateOptions['steps']            
-            except :
-                pass
+            integrator_setting_list = self.getIntegrator().getSettings()
+            
+            for integrator_setting in integrator_setting_list:                
+                try:
+                    setting = self.__state['SimulateOptions']['IntegratorSettings'][integrator_setting] 
+                    self.getIntegrator().setValue(integrator_setting,setting) 
+                except:
+                    pass    
             
         except LookupError,e:
             pass
