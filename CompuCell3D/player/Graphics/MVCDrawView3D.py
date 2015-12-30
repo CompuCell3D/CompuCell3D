@@ -11,7 +11,6 @@ import Configuration
 import vtk, math
 import sys, os
 
-VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
 
 MODULENAME='==== MVCDrawView3D.py:  '
 
@@ -21,16 +20,17 @@ class MVCDrawView3D(MVCDrawViewBase):
         
         self.initArea()
         self.setParams()
-        
         self.usedCellTypesList=None
         self.usedDraw3DFlag=False
         self.boundingBox = Configuration.getSetting("BoundingBoxOn")
-        self.show3DAxes = Configuration.getSetting("Show3DAxes")
-#        self.legendEnable = Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName)  # what fieldName??
+        self.show3DAxes = Configuration.getSetting("ShowAxes")
         self.warnUserCellBorders = True
-    
-    # Sets up the VTK simulation area 
+
     def initArea(self):
+        '''
+        Sets up the VTK simulation area
+        :return:None
+        '''
         # Zoom items
         self.zitems = []
         
@@ -44,7 +44,6 @@ class MVCDrawView3D(MVCDrawViewBase):
         
         self.axesActor = vtk.vtkCubeAxesActor2D()
 
-        
         self.clut = vtk.vtkLookupTable()
         self.clut.SetHueRange(0.67, 0.0)
         self.clut.SetSaturationRange(1.0,1.0)
@@ -133,6 +132,10 @@ class MVCDrawView3D(MVCDrawViewBase):
             # # # self.qvtkWidget.resetCamera()
             
     def set3DInvisibleTypes(self):
+        '''
+        Initializes a dictionary self.invisibleCellTypes of invisible cell types - reads settings "Types3DInvisible"
+        :return:None
+        '''
         self.colorMap = Configuration.getSetting("TypeColorMap")
         
         typesInvisibleStrTmp = str(Configuration.getSetting("Types3DInvisible"))
@@ -151,7 +154,12 @@ class MVCDrawView3D(MVCDrawViewBase):
                 self.invisibleCellTypes[int(type)]=0        
             # print "\t\t\t self.invisibleCellTypes=",self.invisibleCellTypes
     
-    def setCamera(self, fieldDim = None):        
+    def setCamera(self, fieldDim = None):
+        '''
+        Initializes default camera view for 3D scene
+        :param fieldDim:field dimension (Dim3D C++ object)
+        :return:
+        '''
         camera = self.graphicsFrameWidget.ren.GetActiveCamera()
 
         self.setDim(fieldDim)
@@ -173,10 +181,19 @@ class MVCDrawView3D(MVCDrawViewBase):
         self.qvtkWidget().repaint()
 
     def setDim(self, fieldDim):
+        '''
+        assigns field dimensions (x,y,z) to a vector self.dim
+        :param fieldDim: field dimension - instance of Dim3D (CC3D ++ object)
+        :return: None
+        '''
         #self.dim = [fieldDim.x+1 , fieldDim.y+1 , fieldDim.z]
         self.dim = [fieldDim.x , fieldDim.y , fieldDim.z]
 
     def hideAllActors(self):
+        '''
+        Hides all actors
+        :return:None
+        '''
         removedActors=[]
         for actorName in self.currentActors:
             self.graphicsFrameWidget.ren.RemoveActor(self.currentActors[actorName])
@@ -185,7 +202,11 @@ class MVCDrawView3D(MVCDrawViewBase):
         for actorName in removedActors:
             del self.currentActors[actorName]
 
-    def showCellTypeActors(self):    
+    def showCellTypeActors(self):
+        '''
+        Shows Actors representing cell types
+        :return:None
+        '''
         for actorNumber in self.usedCellTypesList:
             actorName="CellType_"+str(actorNumber)
             # print "Actor name=",actorName
@@ -201,6 +222,10 @@ class MVCDrawView3D(MVCDrawViewBase):
                 self.graphicsFrameWidget.ren.AddActor(self.currentActors[actorName])
 
     def hideCellTypeActors(self):
+        '''
+        Hides actors representing cell types
+        :return:None
+        '''
         removedActors=[]
         for actorNumber in self.usedCellTypesList:
             actorName="CellType_"+str(actorNumber)
@@ -212,91 +237,104 @@ class MVCDrawView3D(MVCDrawViewBase):
         for actorName in removedActors:
             del self.currentActors[actorName]
 
-    def prepareCellTypeActors(self):
-        for actorNumber in self.usedCellTypesList:
-            actorName="CellType_"+str(actorNumber)
-            # print "Actor name=",actorName
-            if not actorNumber in self.cellTypeActors and not actorNumber in self.invisibleCellTypes:
-                self.cellTypeActors[actorNumber]=vtk.vtkActor()
-                
-    def prepareOutlineActor(self,_imageData):
-#        print MODULENAME, '------------  prepareOutlineActor()'
-        outlineDimTmp=_imageData.GetDimensions()
-        # print "\n\n\n this is outlineDimTmp=",outlineDimTmp," self.outlineDim=",self.outlineDim
-        if self.outlineDim[0] != outlineDimTmp[0] or self.outlineDim[1] != outlineDimTmp[1] or self.outlineDim[2] != outlineDimTmp[2]:
-            self.outlineDim=outlineDimTmp
-        
-            outline = vtk.vtkOutlineFilter()
-            
-            if VTK_MAJOR_VERSION>=6:
-                outline.SetInputData(_imageData)
-            else:    
-                outline.SetInput(_imageData)
-            
-            
-            outlineMapper = vtk.vtkPolyDataMapper()
-            outlineMapper.SetInputConnection(outline.GetOutputPort())
-        
-            self.outlineActor.SetMapper(outlineMapper)
-            
-            color = Configuration.getSetting("WindowColor")   # eventually do this smarter (only get/update when it changes)
-            self.outlineActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
-#            self.outlineActor.GetProperty().SetColor(1, 1, 1)        
-            self.outlineDim = _imageData.GetDimensions()
+    def showOutlineActor(self, flag=True):
+        '''
+        Shoulws bounding box around the lattice
+        :param flag: show On/Off flag
+        :return:None
+        '''
+        if flag:
+            if not self.currentActors.has_key("Outline"):
+                self.currentActors["Outline"]=self.outlineActor
+                self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
+            else:
+                self.graphicsFrameWidget.ren.RemoveActor(self.outlineActor)
+                # self.axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
+                self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
+        else:
+            if self.currentActors.has_key("Outline"):
+                del self.currentActors["Outline"]
+                self.graphicsFrameWidget.ren.RemoveActor(self.outlineActor)
 
-    def showOutlineActor(self):
+    def drawPlotVisDecorations(self):
+        '''
+        Draws plot window decorations - outline and axes
+        :return:None
+        '''
 
-        print MODULENAME, '------------  showOutlineActor()'
-        self.currentActors["Outline"]=self.outlineActor
-        # need to edit configsChanged to set self.boundingBox based on configuartion options
-        # this determines whether bounding box is shown or not
-        if self.boundingBox:
-            color = Configuration.getSetting("BoundingBoxColor")   # eventually do this smarter (only get/update when it changes)
-            self.outlineActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
-            self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
+        # if Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName):
+        #     self.drawModel.prepareLegendActors((self.drawModel.conMapper,),(self.legendActor,))
+        #     self.showLegend(True)
+        # else:
+        #     self.showLegend(False)
 
-    def showAxes(self):
+        if Configuration.getSetting("BoundingBoxOn"):
+            self.drawModel.prepareOutlineActors((self.outlineActor,))
+            self.showOutlineActor(True)
+        else:
+            self.showOutlineActor(False)
 
-        # need to edit configsChanged to set self.show3DAxes based on configuartion options
-        # this determines whether 3D axes are shown or not
+        if Configuration.getSetting("ShowPlotAxes", self.currentDrawingParameters.fieldName):
+            self.drawModel.prepareAxesActors((None,),(self.axesActor,))
+            self.showAxes(True)
+        else:
+            self.showAxes(False)
 
-        if not self.show3DAxes:
+
+    def drawCellVisDecorations(self):
+        '''
+        Draws cell view window decorations - outline and axes
+        :return:None
+        '''
+        if Configuration.getSetting("BoundingBoxOn"):
+            self.drawModel.prepareOutlineActors((self.outlineActor,))
+            self.showOutlineActor(True)
+        else:
+            self.showOutlineActor(False)
+
+        # if Configuration.getSetting("Show3DAxes"):
+        if Configuration.getSetting("ShowAxes"):
+            self.drawModel.prepareAxesActors((None,), (self.axesActor,))
+            self.showAxes(True)
+        else:
+            self.showAxes(False)
+
+
+    def showAxes(self, flag=True):
+        '''
+        Shows 3D axes
+        :param flag:show On/Off flag
+        :return:None
+        '''
+        # we do not support axes for vtk less than 5.10.0
+        if self.vtk_version_identifier() < self.version_identifier(5,10,0):
             return
-
-        self.currentActors["Axes3D"] = self.axesActor
-        color = Configuration.getSetting("Axes3DColor")   # eventually do this smarter (only get/update when it changes)
-        color = (float(color.red())/255,float(color.green())/255,float(color.blue())/255)
-
-        tprop = vtk.vtkTextProperty()
-        tprop.SetColor(color)
-        tprop.ShadowOn()
-        dim = self.currentDrawingParameters.bsd.fieldDim
-
-        self.axesActor.SetNumberOfLabels(4) # number of labels
-        self.axesActor.SetBounds(0, dim.x, 0, dim .y, 0, dim .z)
-        self.axesActor.SetLabelFormat("%6.4g")
-        self.axesActor.SetFlyModeToOuterEdges()
-        self.axesActor.SetFontFactor(1.5)
-
-        # self.axesActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
-        self.axesActor.GetProperty().SetColor(color)
-
-        xAxisActor = self.axesActor.GetXAxisActor2D()
-        # xAxisActor.RulerModeOn()
-        # xAxisActor.SetRulerDistance(40)
-        # xAxisActor.SetRulerMode(20)
-        # xAxisActor.RulerModeOn()
-        xAxisActor.SetNumberOfMinorTicks(3)
-
-
-        # setting camera fot he actor is vey important to get axes working properly
-        self.axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
-        self.graphicsFrameWidget.ren.AddActor(self.axesActor)
-
+            
+        if flag:
+            if not self.currentActors.has_key("Axes3D"):
+                # setting camera for the actor is vrey important to get axes working properly
+                self.axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
+                self.currentActors["Axes3D"] = self.axesActor
+                # print 'self.graphicsFrameWidget.ren.GetActiveCamera()=',self.graphicsFrameWidget.ren.GetActiveCamera()
+                self.graphicsFrameWidget.ren.AddActor(self.axesActor)
+            else:
+                self.graphicsFrameWidget.ren.RemoveActor(self.axesActor)
+                self.axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
+                self.graphicsFrameWidget.ren.AddActor(self.axesActor)
+        else:
+            if self.currentActors.has_key("Axes3D"):
+                del self.currentActors["Axes3D"]
+                self.graphicsFrameWidget.ren.RemoveActor(self.axesActor)
 
 
 
     def drawCellField(self, bsd, fieldType):
+        '''
+        Draws Cell Field
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
 #        print MODULENAME, '  drawCellField():    calling drawModel.extractCellFieldData()'
         self.usedCellTypesList = self.drawModel.extractCellFieldData()
         numberOfActors = len(self.usedCellTypesList)
@@ -306,18 +344,16 @@ class MVCDrawView3D(MVCDrawViewBase):
         
         self.drawModel.prepareOutlineActors((self.outlineActor,))
         # remember to edit configs changed for actors to be visible or not. control variable are being changed there
-        self.showOutlineActor()
-        self.showAxes()
+
+        self.drawCellVisDecorations()
 
         dictKey = self.graphicsFrameWidget.winId().__int__()
         
-#        print MODULENAME, '  drawCellField():  graphicsWindowVisDict[dictKey]=',self.parentWidget.graphicsWindowVisDict[dictKey]
-
-#        if self.parentWidget.cellsAct.isChecked():
         if (self.parentWidget.graphicsWindowVisDict[dictKey][0])  \
           and not (self.parentWidget.graphicsWindowVisDict[dictKey][1]):    # cells (= cell types)
 #            print MODULENAME, '  drawCellField():    drawing Cells for this window'
-            self.prepareCellTypeActors()
+#             self.prepareCellTypeActors()
+            self.drawModel.prepareCellTypeActors(self.cellTypeActors, self.invisibleCellTypes)
             self.showCellTypeActors()
             self.drawModel.initCellFieldActors(self.currentActors)
             
@@ -325,7 +361,8 @@ class MVCDrawView3D(MVCDrawViewBase):
 
             self.parentWidget.displayWarning ('3D Cell rendering with Vis->Borders "ON"  may be slow')
 
-            self.prepareCellTypeActors()
+            # self.prepareCellTypeActors()
+            self.drawModel.prepareCellTypeActors(self.cellTypeActors, self.invisibleCellTypes)
             self.showCellTypeActors()
             self.drawModel.initCellFieldBordersActors(self.currentActors)
         
@@ -342,32 +379,63 @@ class MVCDrawView3D(MVCDrawViewBase):
         self.Render()
 
     def showConActors(self):
+        '''
+        Shows Contour Actors for Concentration field
+        :return:None
+        '''
         if not self.currentActors.has_key("ConActor"):
             self.currentActors["ConActor"]=self.conActor  
             self.graphicsFrameWidget.ren.AddActor(self.conActor) 
             # print "\n\n\n\n added CON ACTOR"        
 
     def hideConActors(self):
+        '''
+        hides Contour Actors for Concentration field
+        :return:None
+        '''
         if self.currentActors.has_key("ConActor"):
             self.graphicsFrameWidget.ren.RemoveActor(self.conActor) 
             del self.currentActors["ConActor"]  
 
     def drawConField(self, bsd, fieldType):
+        '''
+        Draws Concentration Field. Calls universal function drawScalarFieldData
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
+
 #        print MODULENAME,'  -----  drawConField()'
         fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillConFieldData3D") # this is simply a "pointer" to function self.parentWidget.fieldExtractor.fillVectorFieldData3D        
         self.drawScalarFieldData(bsd,fieldType,fillScalarField)
 
     def drawScalarField(self, bsd, fieldType):
-#        print MODULENAME,'  -----  drawScalarField()'
+        '''
+        Draws Scalar Field. Calls universal function drawScalarFieldData
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
         fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillScalarFieldData3D") # this is simply a "pointer" to function        
         self.drawScalarFieldData(bsd,fieldType,fillScalarField)
     
     def drawScalarFieldCellLevel(self, bsd, fieldType):
-#        print MODULENAME,'  -----  drawScalarFieldCellLevel()'
+        '''
+        Draws Scalar Field -  Cell Level Coloring. Calls universal function drawScalarFieldData
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
         fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillScalarFieldCellLevelData3D") # this is simply a "pointer" to function         
         self.drawScalarFieldData(bsd,fieldType,fillScalarField)
     
     def drawScalarFieldData(self, bsd, fieldType,_fillScalarField):  # rf. draw*  functions preceding this
+        '''
+        Draws Scalar Field - this function actually performs drawing requested by other functions
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
         import PlayerPython
         
         self.invisibleCellTypesVector=PlayerPython.vectorint()
@@ -381,12 +449,12 @@ class MVCDrawView3D(MVCDrawViewBase):
         self.set3DInvisibleTypes()
         
         self.drawModel.prepareOutlineActors((self.outlineActor,))
-        self.showOutlineActor()
-        self.showAxes()
+
+        self.drawPlotVisDecorations()
+
         self.showConActors()
             
         if Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName):   # rwh: need to speed this up w/ local flag
-#        if self.legendEnable:
             self.drawModel.prepareLegendActors((self.drawModel.conMapper,),(self.legendActor,))
             self.showLegend(True)
         else:
@@ -395,14 +463,32 @@ class MVCDrawView3D(MVCDrawViewBase):
         self.Render()    
 
     def drawVectorField(self, bsd, fieldType):
+        '''
+        Draws Vector Field -  Vectors Are attached to arbitrary point in space. Calls universal function drawVectorFieldData
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
         fillVectorField = getattr(self.parentWidget.fieldExtractor, "fillVectorFieldData3D") # this is simply a "pointer" to function self.parentWidget.fieldExtractor.fillVectorFieldData3D        
         self.drawVectorFieldData(bsd,fieldType,fillVectorField)
         
-    def drawVectorFieldCellLevel(self, bsd, fieldType):        
+    def drawVectorFieldCellLevel(self, bsd, fieldType):
+        '''
+        Draws Vector Field -  Vectors Are attached to cell. Calls universal function drawVectorFieldData
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
         fillVectorField = getattr(self.parentWidget.fieldExtractor, "fillVectorFieldCellLevelData3D") # this is simply a "pointer" to function self.parentWidget.fieldExtractor.fillVectorFieldData3D        
         self.drawVectorFieldData(bsd,fieldType,fillVectorField)
         
     def drawVectorFieldData(self,bsd,fieldType,_fillVectorFieldFcn):
+        '''
+        Draws Vector Field - this function actually performs drawing requested by other functions
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
         self.drawModel.initVectorFieldDataActors((self.glyphsActor,),_fillVectorFieldFcn)
                 
         if not self.currentActors.has_key("Glyphs2DActor"):
@@ -416,8 +502,9 @@ class MVCDrawView3D(MVCDrawViewBase):
             self.showLegend(False)
 
         self.drawModel.prepareOutlineActors((self.outlineActor,))
-        self.showOutlineActor()
-        self.showAxes()
+        # self.showOutlineActor()
+        # self.showAxes()
+        self.drawPlotVisDecorations()
         self.Render()
 
     #-------------------------------------------------------------------------
@@ -498,12 +585,10 @@ class MVCDrawView3D(MVCDrawViewBase):
         self.Render()
         self.graphicsFrameWidget.repaint()
 
-
     def showClusterBorder(self):
         pass
     def hideClusterBorder(self):
         pass
-    
     #-------------------------------------------------------------------------
     def takeSimShot(self, fileName):
         renderLarge = vtk.vtkRenderLargeImage()
@@ -538,7 +623,8 @@ class MVCDrawView3D(MVCDrawViewBase):
         #reassign which types are invisible        
         self.set3DInvisibleTypes()
         self.boundingBox = Configuration.getSetting("BoundingBoxOn")
-        self.show3DAxes = Configuration.getSetting("Show3DAxes")
+        # self.show3DAxes = Configuration.getSetting("Show3DAxes")
+        self.show3DAxes = Configuration.getSetting("ShowAxes")
 #        print MODULENAME, '  configsChanged():  boundingBox=',self.boundingBox
 #        self.legendEnable = Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName)  # what fieldName??
         self.parentWidget.requestRedraw()

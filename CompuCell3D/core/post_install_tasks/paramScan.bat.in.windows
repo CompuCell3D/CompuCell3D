@@ -1,5 +1,6 @@
 @ECHO OFF
 @SET PREFIX_CC3D=@COMPUCELL_INSTALL_DIR_WINDOWS_STYLE@
+@SET PYTHON_INSTALL_PATH=%PREFIX_CC3D%\Python27
 
 @SET MAX_NUMBER_OF_CONSECUTIVE_RUNS=50
 
@@ -32,14 +33,14 @@
 
 REM removing duplicates from PATH environment variable - this variable can get recusrive addodn with each subsequent run resulting in windows shell error - also a good idea to keep PATH short anyway
 REM a bit ugly but works...
-python "%PREFIX_CC3D%\pythonSetupScripts\envVarSanitizer.py" "PATH" >%TMP%\cc3dtmppathfile
-@set /p PATH= < %TMP%\cc3dtmppathfile
-@del %TMP%\cc3dtmppathfile
+"%PYTHON_INSTALL_PATH%\python" "%PREFIX_CC3D%\pythonSetupScripts\envVarSanitizer.py" "PATH" > "%TMP%\path_modifier.bat"
+CALL  "%TMP%\path_modifier.bat"
+@del "%TMP%\path_modifier.bat"
 
 cd %PREFIX_CC3D%
 
 @SET exit_code=0
-python "%PREFIX_CC3D%\player\ParameterScanRun.py" %* --currentDir="%CURRENT_DIRECTORY%"
+"%PYTHON_INSTALL_PATH%\python" "%PREFIX_CC3D%\player\ParameterScanRun.py" %* --currentDir="%CURRENT_DIRECTORY%"
 @SET exit_code= %errorlevel%
 
 goto simulationend

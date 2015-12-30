@@ -105,6 +105,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
         _actors[0].GetProperty().SetColor(1, 1, 1)        
         # self.outlineDim=_imageData.GetDimensions()
 
+        color = Configuration.getSetting("BoundingBoxColor")   # eventually do this smarter (only get/update when it changes)
+        _actors[0].GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+
+
     def initCellFieldActors(self, _actors):
 #        print MODULENAME,'  initCellFieldActors()'
 
@@ -185,6 +189,136 @@ class MVCDrawModel2D(MVCDrawModelBase):
         
         _actors[0].SetMapper(self.hexCellsMapper)
     
+
+    def prepareAxesActors(self, _mappers, _actors):
+        axesActor = _actors[0]
+
+        dim = self.currentDrawingParameters.bsd.fieldDim
+        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        dim_array=[dim.x, dim.y, dim.z]
+        if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"]:
+            dim_array=[dim.x, dim.y*math.sqrt(3.0)/2.0, dim.z*math.sqrt(6.0)/3.0]
+
+        axes_labels = ['X','Y','Z']
+
+        horizontal_length = dim_array [dim_order[0]] # x-axis - equivalent
+        vertical_length = dim_array [dim_order[1]] # y-axis - equivalent
+        horizontal_label = axes_labels [dim_order[0]] # x-axis - equivalent
+        vertical_label = axes_labels [dim_order[1]] # y-axis - equivalent
+
+        color = Configuration.getSetting("AxesColor")   # eventually do this smarter (only get/update when it changes)
+
+        color = (float(color.red())/255, float(color.green())/255, float(color.blue())/255)
+
+        axesActor.GetProperty().SetColor(color)
+
+        tprop = vtk.vtkTextProperty()
+        tprop.SetColor(color)
+        # tprop.ShadowOn()
+
+
+        # axesActor.SetNumberOfLabels(4) # number of labels
+        axesActor.SetUse2DMode(1)
+        # axesActor.SetScreenSize(50.0) # for labels and axes titles
+        # axesActor.SetLabelScaling(True,0,0,0)
+
+        if Configuration.getSetting('ShowHorizontalAxesLabels'):
+            axesActor.SetXAxisLabelVisibility(1)
+        else:
+            axesActor.SetXAxisLabelVisibility(0)
+
+        if Configuration.getSetting('ShowVerticalAxesLabels'):
+            axesActor.SetYAxisLabelVisibility(1)
+        else:
+            axesActor.SetYAxisLabelVisibility(0)
+
+
+        # axesActor.SetAxisLabels(1,[0,10])
+
+
+
+
+        # this was causing problems when x and y dimensions were different
+        # axesActor.SetXLabelFormat("%6.4g")
+        # axesActor.SetYLabelFormat("%6.4g")
+
+        axesActor.SetBounds(0, horizontal_length, 0, vertical_length, 0, 0)
+
+        axesActor.SetXTitle(horizontal_label)
+        axesActor.SetYTitle(vertical_label)
+        # axesActor.SetFlyModeToOuterEdges()
+
+        label_prop = axesActor.GetLabelTextProperty(0)
+        # print 'label_prop=',label_prop
+
+
+        # print 'axesActor.GetXTitle()=',axesActor.GetXTitle()
+        title_prop_x = axesActor.GetTitleTextProperty(0)
+        # title_prop_x.SetLineOffset()
+        # print 'axesActor.GetTitleTextProperty(0)=',axesActor.GetTitleTextProperty(0)
+
+        # axesActor.GetTitleTextProperty(0).SetFontSize(50)
+
+        # axesActor.GetTitleTextProperty(0).SetColor(1.0, 0.0, 0.0)
+        # axesActor.GetTitleTextProperty(0).SetFontSize(6.0)
+        # axesActor.GetTitleTextProperty(0).SetLineSpacing(0.5)
+        # print 'axesActor.GetTitleTextProperty(0)=',axesActor.GetTitleTextProperty(0)
+
+        axesActor.XAxisMinorTickVisibilityOff()
+        axesActor.YAxisMinorTickVisibilityOff()
+
+        axesActor.SetTickLocationToOutside()
+
+        axesActor.GetTitleTextProperty(0).SetColor(color)
+        axesActor.GetLabelTextProperty(0).SetColor(color)
+
+        axesActor.GetXAxesLinesProperty().SetColor(color)
+        axesActor.GetYAxesLinesProperty().SetColor(color)
+        # axesActor.GetLabelTextProperty(0).SetColor(color)
+
+
+        axesActor.GetTitleTextProperty(1).SetColor(color)
+        axesActor.GetLabelTextProperty(1).SetColor(color)
+
+
+
+
+
+        # axesActor.DrawXGridlinesOn()
+        # axesActor.DrawYGridlinesOn()
+        # axesActor.XAxisVisibilityOn()
+        # axesActor.YAxisVisibilityOn()
+
+        # print 'axesActor.GetViewAngleLODThreshold()=',axesActor.GetViewAngleLODThreshold()
+        # axesActor.SetViewAngleLODThreshold(1.0)
+
+        # print 'axesActor.GetEnableViewAngleLOD()=',axesActor.GetEnableViewAngleLOD()
+        # axesActor.SetEnableViewAngleLOD(0)
+        #
+        # print 'axesActor.GetEnableDistanceLOD()=',axesActor.GetEnableDistanceLOD()
+        # axesActor.SetEnableDistanceLOD(0)
+
+
+        # axesActor.SetLabelFormat("%6.4g")
+        # axesActor.SetFlyModeToOuterEdges()
+        # axesActor.SetFlyModeToNone()
+        # axesActor.SetFontFactor(1.5)
+
+        # axesActor.SetXAxisVisibility(1)
+        # axesActor.SetYAxisVisibility(1)
+        # axesActor.SetZAxisVisibility(0)
+
+        # axesActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+        # axesActor.GetProperty().SetColor(color)
+
+        # xAxisActor = axesActor.GetXAxisActor2D()
+        # xAxisActor.RulerModeOn()
+        # xAxisActor.SetRulerDistance(40)
+        # xAxisActor.SetRulerMode(20)
+        # xAxisActor.RulerModeOn()
+        # xAxisActor.SetNumberOfMinorTicks(3)
+
+
     
     def initializeContoursHex(self,_dim,_conArray,_minMax,_contourActor):
 #        print MODULENAME,'   initializeContoursHex():  _conArray=',_conArray
@@ -2044,11 +2178,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         FPPLinksPD.SetPoints(points)
         FPPLinksPD.SetLines(lines)
 
-        FPPLinksPD.Update()
+        
         
         if VTK_MAJOR_VERSION>=6:
             self.FPPLinksMapper.SetInputData(FPPLinksPD)
         else:    
+            FPPLinksPD.Update()
             self.FPPLinksMapper.SetInput(FPPLinksPD)        
         
 
@@ -2302,10 +2437,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
         FPPLinksPD.SetPoints(points)
         FPPLinksPD.SetLines(lines)
 
-        FPPLinksPD.Update()
+        
         if VTK_MAJOR_VERSION>=6:
             self.FPPLinksMapper.SetInputData(FPPLinksPD)
-        else:    
+        else:
+            FPPLinksPD.Update()        
             self.FPPLinksMapper.SetInput(FPPLinksPD)        
                 
         
@@ -2580,7 +2716,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
         FPPLinksPD.SetPoints(points)
         FPPLinksPD.SetLines(lines)
 
-        FPPLinksPD.Update()
+        
+
+        if VTK_MAJOR_VERSION>=6:
+            pass
+        else:    
+            FPPLinksPD.Update()
+
         
         FPPLinksPD.GetCellData().SetScalars(colorScalars)
         

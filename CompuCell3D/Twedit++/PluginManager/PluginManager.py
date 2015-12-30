@@ -93,16 +93,48 @@ class PluginManager(QObject):
 
         # self.__checkPluginsDownloadDirectory()
         pluginModules=self.getPluginModules(self.pluginPath)
-        print "pluginModules=",pluginModules
+        
+
         
         self.__insertPluginsPaths()
         
+        print 'pluginModules=',pluginModules
+        
+               
+        
         for pluginName in pluginModules:
             self.queryPlugin(pluginName, self.pluginPath)            
+            
+        # checking out which plugins were succesfully querried
+        # discovered plugin names are storred in pluginModules list
+        defined_plugin_module_name_set = set(pluginModules)    
+        # print 'defined_plugin_module_name_set=',defined_plugin_module_name_set
+        
+        # all plugins from discovered list are querried to check if they load correctly. If the do not 
+        # self.__pluginQueries will not contain those plugins for which query failed
+        queried_plugin_module_name_set = set(self.__pluginQueries.keys())
 
+        # print 'queried_plugin_module_name_set=',queried_plugin_module_name_set
+        
+        problematic_module_set = defined_plugin_module_name_set - queried_plugin_module_name_set
+        # print 'problematic_module_set=',problematic_module_set
+        
+        warning_string = 'The following plugins have errors and will not be loaded: '
+        for problematic_plugin_name in problematic_module_set:
+            warning_string += problematic_plugin_name+", "
+            
+        # removing trailing ", "    
+        warning_string = warning_string[:-2]
+        
+        if len(problematic_module_set):
+            self.__ui.display_popup_message(message_title='Module Error', message_text=warning_string)
+            # print 'WARNING  '+warning_string
+        # print '\n\n\n\n self.__pluginQueries=',self.__pluginQueries
+        
         # load and activate plugins    
-        for pluginName in pluginModules:
-            bpd=self.__pluginQueries[pluginName]
+        # for pluginName in pluginModules:        
+        for pluginName, bpd in self.__pluginQueries.items():
+            # bpd=self.__pluginQueries[pluginName]
             print '************PLUGIN NAME=',pluginName
             print bpd
             self.loadPlugin(pluginName)

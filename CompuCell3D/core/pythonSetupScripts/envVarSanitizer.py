@@ -1,4 +1,5 @@
 import sys
+import os
 from os import environ
 
 sys.path.append(environ["PYTHON_MODULE_PATH"]) # needed on Mac with Python 2.5
@@ -22,9 +23,20 @@ envVarStr1=';'.join(envVarList)
 
 # print 'envVarStr1=',envVarStr1
 
-# environ[envVarName]=envVarStr1
+# environ[envVarName]=envVarStr1 ############
+
+# os.putenv(envVarName,envVarStr1)
 
 # print 'PATH IN PYTHON=',environ[envVarName]
 
-print envVarStr1
+# # command_str = 'SET PATH='+'"'+envVarStr1+'"'+'\n'
+
+command_str = 'SET PATH='+envVarStr1+'\n'
+
+# command_str = envVarStr1
+
+# command_str = 'echo %PATH%'
+print command_str
+
+# # # # # # print envVarStr1
 

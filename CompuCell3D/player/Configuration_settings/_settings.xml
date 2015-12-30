@@ -37,6 +37,7 @@
       <e Name="BorderColor" Type="color">#ffff00</e>
       <e Name="BoundingBoxColor" Type="color">#ffffff</e>
       <e Name="Axes3DColor" Type="color">#ffffff</e>
+      <e Name="AxesColor" Type="color">#ffffff</e>
       <e Name="BrushColor" Type="color">#ffffff</e>
       <e Name="ClusterBorderColor" Type="color">#0000ff</e>
       <e Name="ContourColor" Type="color">#ffffff</e>
@@ -79,6 +80,7 @@
       <e Name="ClusterBordersOn" Type="bool">False</e>
       <e Name="ConcentrationLimitsOn" Type="bool">True</e>
       <e Name="ContoursOn" Type="bool">False</e>
+      <e Name="DebugOutputPlayer" Type="bool">False</e>
       <e Name="DisplayConsole" Type="bool">True</e>
       <e Name="DisplayLatticeData" Type="bool">False</e>
       <e Name="DisplayModelEditor" Type="bool">True</e>
@@ -96,6 +98,10 @@
       <e Name="PixelizedScalarField" Type="bool">False</e>
       <e Name="ScaleArrowsOn" Type="bool">False</e>
       <e Name="Show3DAxes" Type="bool">True</e>
+      <e Name="ShowAxes" Type="bool">True</e>
+      <e Name="ShowHorizontalAxesLabels" Type="bool">True</e>
+      <e Name="ShowPlotAxes" Type="bool">True</e>
+      <e Name="ShowVerticalAxesLabels" Type="bool">True</e>
       <e Name="UseInternalConsole" Type="bool">False</e>
       <e Name="WindowColorSameAsMedium" Type="bool">True</e>
    </Settings>

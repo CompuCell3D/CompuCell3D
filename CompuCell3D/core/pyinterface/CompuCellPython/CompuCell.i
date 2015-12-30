@@ -3,6 +3,16 @@
 
 %module ("threads"=1) CompuCell
 
+// Have to replace ptrdiff_t with long long on windows. long on windows is 4 bytes
+%apply long long {ptrdiff_t}
+
+//#ifdef SWIG
+//%abababa (
+// Have to replace ptrdiff_t with long long on windows. long on windows is 4 bytes
+//%apply long long {ptrdiff_t}
+//#endif
+
+
 %include "typemaps.i"
 
 // ************************************************************
@@ -45,6 +55,8 @@
 %include <windows.i>
 
 %{
+
+
 // CompuCell3D Include Files
 // #include <Potts3D/Cell.h>
 #include <CompuCell3D/Plugin.h>
@@ -960,6 +972,7 @@ FIELD3DEXTENDER(Field3D<int>,int)
 
 %template(vectorstdstring) std::vector<std::string>;
 %template(vectordouble) std::vector<double>;
+%template(vectorvectordouble) std::vector<std::vector<double> >;
 
 %template(vectorint) std::vector<int>;
 %template(vectorunsignedchar) std::vector<unsigned char>;

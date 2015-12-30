@@ -93,9 +93,10 @@ namespace CompuCell3D {
         
 		double simValue;
 		
-		void setOutputRedirectionTarget(long  _ptr);
-		long getCerrStreamBufOrig();
-		void restoreCerrStreamBufOrig(long _ptr);
+		void setOutputRedirectionTarget(ptrdiff_t  _ptr);
+		ptrdiff_t getCerrStreamBufOrig();
+		void restoreCerrStreamBufOrig(ptrdiff_t _ptr);
+
 
 		void setRestartEnabled(bool _restartEnabled){restartEnabled=_restartEnabled;}
 		bool getRestartEnabled(){return restartEnabled;}

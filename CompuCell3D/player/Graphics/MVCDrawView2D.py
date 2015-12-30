@@ -15,11 +15,12 @@ CONTOUR_ALLOWED_FIELD_TYPES=[FIELD_TYPES[1],FIELD_TYPES[2],FIELD_TYPES[3]]
 
 MODULENAME='----MVCDrawView2D.py: '
 
+VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
+VTK_MINOR_VERSION=vtk.vtkVersion.GetVTKMinorVersion()
+
 
 from Messaging import dbgMsg, setDebugging
 # setDebugging(1)
-
-
 
 class MVCDrawView2D(MVCDrawViewBase):
     def __init__(self, _drawModel, qvtkWidget, parent=None):
@@ -29,11 +30,12 @@ class MVCDrawView2D(MVCDrawViewBase):
         self.setParams()
         
         self.pixelizedScalarField=Configuration.getSetting("PixelizedScalarField")
-        # self.scalarFieldDrawExact=False
-#        self.simIs3D = self.getSim3DFlag()
-        
-    # Sets up the VTK simulation area 
+
     def initArea(self):
+        '''
+        Sets up the VTK simulation area
+        :return:None
+        '''
         self.actorCollection=vtk.vtkActorCollection()
         self.borderActor    = vtk.vtkActor()
         self.borderActorHex = vtk.vtkActor()
@@ -42,6 +44,10 @@ class MVCDrawView2D(MVCDrawViewBase):
         self.cellGlyphsActor  = vtk.vtkActor()
         self.FPPLinksActor  = vtk.vtkActor()  # used for both white and colored links
         self.outlineActor = vtk.vtkActor()
+        # self.axesActor = vtk.vtkCubeAxesActor2D()
+        self.axesActor = vtk.vtkCubeAxesActor()
+
+
         self.outlineDim=[0,0,0]
         
         self.cellsActor     = vtk.vtkActor()
@@ -92,6 +98,10 @@ class MVCDrawView2D(MVCDrawViewBase):
 
     #----------------------------------------------------------------------------
     def showBorder(self):
+        '''
+        Shows cell border actor
+        :return:None
+        '''
         # print " SHOW BORDERS self.parentWidget.borderAct.isEnabled()=",self.parentWidget.borderAct.isEnabled()
         Configuration.setSetting("CellBordersOn",True)
 #        print MODULENAME,' showBorder ============'
@@ -104,12 +114,13 @@ class MVCDrawView2D(MVCDrawViewBase):
         #self.graphicsFrameWidget.repaint()        
     
     def hideBorder(self):
-        # print MODULENAME,'\n\n\n\n\n\n  ==================== hideBorder() ============'
-#        print MODULENAME,' hideBorder():  graphicsFrameWidget.winId(), lastActiveWindow.winId(), ',self.graphicsFrameWidget.winId(),self.parentWidget.lastActiveWindow.winId()
+        '''
+        Hides cell border actor
+        :return:None
+        '''
+
         Configuration.setSetting("CellBordersOn",False)
-#        print MODULENAME,' hideBorder():  self.currentActors.keys()=',self.currentActors.keys()
         if self.currentActors.has_key("BorderActor"):
-#            print MODULENAME,' hideBorder():  removing self.borderActor !!'
             del self.currentActors["BorderActor"] 
             self.graphicsFrameWidget.ren.RemoveActor(self.borderActor)
 #            self.parentWidget.lastActiveWindow.ren.RemoveActor(self.borderActor)
@@ -117,15 +128,22 @@ class MVCDrawView2D(MVCDrawViewBase):
         self.Render()
         self.graphicsFrameWidget.repaint()
         # self.parentWidget.lastActiveWindow.repaint()
-        
-    #----------------------------------------------------------------------------
+
     def showClusterBorder(self):
+        '''
+        Shows Cluster Border Actor
+        :return:None
+        '''
         Configuration.setSetting("ClusterBordersOn",True)
         if not self.currentActors.has_key("ClusterBorderActor"):
             self.currentActors["ClusterBorderActor"] = self.clusterBorderActor
             self.graphicsFrameWidget.ren.AddActor(self.clusterBorderActor)
 
     def hideClusterBorder(self):
+        '''
+        Hides Cluster Border Actor
+        :return:None
+        '''
         Configuration.setSetting("ClusterBordersOn",False)
         if self.currentActors.has_key("ClusterBorderActor"):
             del self.currentActors["ClusterBorderActor"] 
@@ -135,9 +153,10 @@ class MVCDrawView2D(MVCDrawViewBase):
 
     #----------------------------------------------------------------------------
     def showCells(self):
-        # Configuration.setSetting("CellsOn",True)
-        # print MODULENAME,' \n\n\n\n\n\n showCells() '
-
+        '''
+        Shows Cell Type Actor
+        :return:None
+        '''
         if str(self.graphicsFrameWidget.fieldComboBox.currentText()) != 'Cell_Field':return
 
         if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
@@ -161,11 +180,11 @@ class MVCDrawView2D(MVCDrawViewBase):
         # self.graphicsFrameWidget.repaint()
         
     def hideCells(self):
-        # print MODULENAME,'  hideCells():  type(self.graphicsFrameWidget)= ',type(self.graphicsFrameWidget)
-#        print MODULENAME,'  hideCells():  type(self.parentWidget)= ',type(self.parentWidget)
-#        print MODULENAME,'  hideCells():  self.parentWidget.lastActiveWindow= ',self.parentWidget.lastActiveWindow
-#        print MODULENAME,'  hideCells():  type(self.lastActiveWindow)= ',type(self.lastActiveWindow)
-#         Configuration.setSetting("CellsOn",False)
+        '''
+        Hides Cell Type Actor
+        :return:None
+        '''
+
         if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane == "XY": # drawing in other planes will be done on a rectangular lattice
             if self.currentActors.has_key("HexCellsActor"):
                 del self.currentActors["HexCellsActor"]
@@ -180,8 +199,11 @@ class MVCDrawView2D(MVCDrawViewBase):
         # self.parentWidget.lastActiveWindow.repaint()
 
     def hideAllActors(self):   # never used?
+        '''
+        Hides all actors
+        :return:None
+        '''
         removedActors=[]
-#        print '   hideAllActors: currentActors=',self.currentActors
         for actorName in self.currentActors:
 #            print '   hideAllActors:  removing actorName=',actorName
             self.graphicsFrameWidget.ren.RemoveActor(self.currentActors[actorName])
@@ -347,141 +369,136 @@ class MVCDrawView2D(MVCDrawViewBase):
         outlineMapper.SetInputConnection(outline.GetOutputPort())
     
         self.outlineActor.SetMapper(outlineMapper)
-        self.outlineActor.GetProperty().SetColor(1, 1, 1)        
+        self.outlineActor.GetProperty().SetColor(1, 1, 1)
 
-    def showOutlineActor(self):
-        self.currentActors["Outline"]=self.outlineActor
-        self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
+    # def showOutlineActor(self, flag=True):
+    #
+    #     self.currentActors["Outline"]=self.outlineActor
+    #     self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
 
+    def showOutlineActor(self, flag=True):
+        if flag:
+            if not self.currentActors.has_key("Outline"):
+                self.currentActors["Outline"]=self.outlineActor
+                self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
+            else:
+                self.graphicsFrameWidget.ren.RemoveActor(self.outlineActor)
+                # self.axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
+                self.graphicsFrameWidget.ren.AddActor(self.outlineActor)
+        else:
+            if self.currentActors.has_key("Outline"):
+                del self.currentActors["Outline"]
+                self.graphicsFrameWidget.ren.RemoveActor(self.outlineActor)
+
+        # self.Render()
+        # self.graphicsFrameWidget.repaint()
+
+
+    def showAxes(self, flag=True):
+    
+        # we do not support axes for vtk less than 5.10.0
+        if self.vtk_version_identifier() < self.version_identifier(5,10,0):
+            return
+        
+        if flag:
+            if not self.currentActors.has_key("Axes2D"):
+                # setting camera for the actor is vrey important to get axes working properly
+                self.axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
+                self.currentActors["Axes2D"] = self.axesActor
+                # print 'self.graphicsFrameWidget.ren.GetActiveCamera()=',self.graphicsFrameWidget.ren.GetActiveCamera()
+                self.graphicsFrameWidget.ren.AddActor(self.axesActor)
+            else:
+                self.graphicsFrameWidget.ren.RemoveActor(self.axesActor)
+                self.axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
+                self.graphicsFrameWidget.ren.AddActor(self.axesActor)
+        else:
+            if self.currentActors.has_key("Axes2D"):
+                del self.currentActors["Axes2D"]
+                self.graphicsFrameWidget.ren.RemoveActor(self.axesActor)
+
+        self.Render()
+        self.graphicsFrameWidget.repaint()
 
     def hideOutlineActor(self):
         self.graphicsFrameWidget.ren.RemoveActor(self.outlineActor)
         del self.currentActors["Outline"]
 
-
     def drawCellField(self, _bsd, fieldType):
-    
-        
-        
-        import CompuCellSetup
-#        print
-#        print MODULENAME,'  drawCellField():   type(_bsd)=',type(_bsd)
-#        print MODULENAME,'  drawCellField():   self.graphicsFrameWidget=',self.graphicsFrameWidget
-#        print MODULENAME,'  drawCellField():   self.graphicsFrameWidget.winId()=',self.graphicsFrameWidget.winId()
-#        print MODULENAME,'  drawCellField():   type(CompuCellSetup.viewManager)=',type(CompuCellSetup.viewManager)
-        
-#        print MODULENAME,'  drawCellField():   CompuCellSetup.viewManager=',CompuCellSetup.viewManager
-##        print MODULENAME,'  drawCellField():   dir(CompuCellSetup.viewManager)=',dir(CompuCellSetup.viewManager)
-#        print MODULENAME,'  drawCellField():      .graphicsWindowVisDict=',CompuCellSetup.viewManager.graphicsWindowVisDict
-#        print MODULENAME,'  drawCellField():   self.parentWidget=',self.parentWidget
-##        print MODULENAME,'  drawCellField():   dir(self.parentWidget)=',dir(self.parentWidget)
-#        print MODULENAME,'  drawCellField():   type(self.parentWidget)=',type(self.parentWidget)
-#        print MODULENAME,'  drawCellField():   self.parentWidget.graphicsWindowDict=',self.parentWidget.graphicsWindowDict
-#        print MODULENAME,'  drawCellField():   self.parentWidget.graphicsWindowVisDict=',self.parentWidget.graphicsWindowVisDict
-#        self.removeContourActors()
-        # self.hideAllActors()   # Q: how expensive is this?
-        
-#        self.graphicsWindowVisDict[self.lastActiveWindow.winId()] = (self.cellsAct.isChecked(),self.borderAct.isChecked(), \
-#                                      self.clusterBorderAct.isChecked(),self.cellGlyphsAct.isChecked(),self.FPPLinksAct.isChecked() )
-
-
-#        if self.parentWidget.cellsAct.isChecked():
-#        if self.parentWidget.cellsAct.isChecked() or self.getSim3DFlag():  # rwh: hack for FPP
+        '''
+        Draws Cell Field
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
         dictKey = self.graphicsFrameWidget.winId().__int__()  # get key (addr) for this window
 
-
-
         if self.parentWidget.graphicsWindowVisDict[dictKey][0] or self.getSim3DFlag():  # rwh: for multi-window bug fix;  rwh: hack for FPP
-#        if self.parentWidget.graphicsWindowVisDict[self.parentWidget.lastActiveWindow.winId()][0] or self.getSim3DFlag():  # rwh: for multi-window bug fix;  rwh: hack for FPP
-#        print MODULENAME,'  hideCells():  self.parentWidget.lastActiveWindow= ',self.parentWidget.lastActiveWindow
-
-
-
-#            print '    drawCellField: yes, cellsAct isChecked'
             if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
                 self.drawCellFieldHex(_bsd,fieldType)
                 return
 
-
-            # # # import time
-            # print 'INSIDE self.drawCellField BEFORE initCellFieldActors'
-
-
-            # time.sleep(5)
-            # if self.parentWidget.graphicsWindowVisDict[dictKey][0]:
             self.drawModel.initCellFieldActors((self.cellsActor,))
-
-
-
-            # # # print 'INSIDE self.drawCellField AFTER initCellFieldActors'
-
-            # # # time.sleep(5)
-
-            # print '   drawCellField:  currentActors=',self.currentActors
 
             if not self.currentActors.has_key("CellsActor"):
                 self.currentActors["CellsActor"] = self.cellsActor
                 self.graphicsFrameWidget.ren.AddActor(self.cellsActor)
 
-
-            
-        
-        # Always draw outline of lattice
-        
-
-
-        self.drawModel.prepareOutlineActors((self.outlineActor,))
-        self.showOutlineActor()
-
-        
-#        if self.parentWidget.borderAct.isChecked():
         if self.parentWidget.graphicsWindowVisDict[dictKey][1]:  # rwh: for multi-window bug fix
             if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
                 self.drawBorders2DHex()
             else:
                 self.drawBorders2D()
-        #else:
-        #    self.hideBorder()
-            
-#        if self.parentWidget.cellGlyphsAct.isChecked() and not self.getSim3DFlag():
+
         if self.parentWidget.graphicsWindowVisDict[dictKey][3] and not self.getSim3DFlag():  # rwh: for multi-window bug fix
             self.drawCellGlyphs2D()       
-        #else:
-        #    self.hideCellGlyphs()
-        
-#        print MODULENAME, ' drawCellField(), zdim=', self.getZDim()
-#        if self.parentWidget.FPPLinksAct.isChecked() and not self.getSim3DFlag():
+
         if self.parentWidget.graphicsWindowVisDict[dictKey][4] and not self.getSim3DFlag():  # rwh: for multi-window bug fix
             self.drawFPPLinks2D()
-#        elif self.parentWidget.FPPLinksColorAct.isChecked() and not self.getSim3DFlag():
-#            self.drawFPPLinksColor2D()
-            
-#        if self.parentWidget.clusterBorderAct.isChecked() and not self.getSim3DFlag():
-#        if self.parentWidget.clusterBorderAct.isChecked():
+
         if self.parentWidget.graphicsWindowVisDict[dictKey][2]:  # rwh: for multi-window bug fix
-#            print MODULENAME, ' drawCellField(), drawing cluster borders'
             if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
                 self.drawClusterBorders2DHex()    
             else:
                 self.drawClusterBorders2D()
         
         if not Configuration.getSetting('CellsOn'):
-            # print 'HIDING CELLS'
             dbgMsg('HIDING CELLS')
             self.hideCells()
         else:
-            # print 'SHOWING CELLS'
             dbgMsg('SHOWING CELLS')
             self.showCells()
 
+        self.drawCellVisDecorations()
+
         self.Render()
-        
-        
+
+    def drawCellVisDecorations(self):
+        '''
+        Draws Cell visualuzation window decorations - outline ana axes
+        :return:None
+        '''
+        if Configuration.getSetting("BoundingBoxOn"):
+
+            self.drawModel.prepareOutlineActors((self.outlineActor,))
+            self.showOutlineActor(True)
+        else:
+            self.showOutlineActor(False)
+
+        if Configuration.getSetting("ShowAxes"):
+            self.drawModel.prepareAxesActors((None,), (self.axesActor,))
+            self.showAxes(True)
+        else:
+            self.showAxes(False)
+
+
     # FIXME: Draw contour lines: drawContourLines()
     def drawCellFieldHex(self, bsd, fieldType):
-#        print MODULENAME,'  drawCellFieldHex'
-        #self.removeContourActors()    # not needed, assuming this method never called directly (rather, via drawCellField)
-        
+        '''
+        Draws Cell Field For Hex Lattice
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
         self.drawModel.initCellFieldHexActors((self.hexCellsActor,))
         
         if self.currentActors.has_key("CellsActor"):
@@ -489,42 +506,32 @@ class MVCDrawView2D(MVCDrawViewBase):
                 self.ren.RemoveActor(self.currentActors["CellsActor"])
             del self.currentActors["CellsActor"]        
 
-        # if self.currentActors.has_key("BorderActor"):
-            # self.ren.RemoveActor(self.currentActors["BorderActor"])
-            # del self.currentActors["BorderActor"]        
-        
         if not self.currentActors.has_key("HexCellsActor"):
             self.currentActors["HexCellsActor"]=self.hexCellsActor  
             self.graphicsFrameWidget.ren.AddActor(self.hexCellsActor)         
         
         if self.parentWidget.borderAct.isChecked():
             self.drawBorders2DHex()    
-#        else:
-#            self.hideBorder()
 
-        self.drawModel.prepareOutlineActors((self.outlineActor,))        
-        self.showOutlineActor()
-        
         if self.parentWidget.cellGlyphsAct.isChecked() and not self.getSim3DFlag():
             self.drawCellGlyphs2D()       
-        #else:
-        #    self.hideCellGlyphs()
-        
-#        print MODULENAME, ' drawCellField(), zdim=', self.getZDim()
+
         if self.parentWidget.FPPLinksAct.isChecked() and not self.getSim3DFlag():
             self.drawFPPLinks2D()
             
         if self.parentWidget.clusterBorderAct.isChecked():
-#            print MODULENAME, ' drawCellFieldHex(), drawing cluster borders'
-#            if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
-            self.drawClusterBorders2DHex()    
-#            else:
-#                self.drawClusterBorders2D()
-        
+            self.drawClusterBorders2DHex()
+        self.drawCellVisDecorations()
+
         self.Render()
-        
-        
+
     def drawConFieldHex(self,bsd,fieldType):
+        '''
+        Draws Concentration Field For Hex Lattice
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
         self.drawModel.initConFieldHexActors((self.hexConActor,self.contourActor))    
 
         if not self.currentActors.has_key("HexConActor"):
@@ -535,8 +542,7 @@ class MVCDrawView2D(MVCDrawViewBase):
             self.drawBorders2DHex()    
         else:
             self.hideBorder()
-            
-            
+
         # Draw legend!
         if Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName):            
             self.drawModel.prepareLegendActors((self.drawModel.hexConMapper,),(self.legendActor,))
@@ -549,19 +555,23 @@ class MVCDrawView2D(MVCDrawViewBase):
             self.showContours(True)            
         else:
             self.showContours(False)
-        # self.showContours(True)            
-            
+
         if self.parentWidget.clusterBorderAct.isChecked():
             self.drawClusterBorders2DHex()    
         else:
             self.hideClusterBorder()
-            
-        self.drawModel.prepareOutlineActors((self.outlineActor,))        
-        self.showOutlineActor()
-        
+
+        self.drawPlotVisDecorations()
+
         self.Render()
         
     def drawScalarFieldCellLevelHex(self,bsd,fieldType):
+        '''
+        Draws Scalar Field at the Cell level - coloring entire cells -  for hex lattice
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
         self.drawModel.initScalarFieldCellLevelHexActors((self.hexConActor,self.contourActor))
             
         if not self.currentActors.has_key("HexConActor"):
@@ -589,13 +599,18 @@ class MVCDrawView2D(MVCDrawViewBase):
             self.drawClusterBorders2DHex()
         else:
             self.hideClusterBorder()
-    
-        self.drawModel.prepareOutlineActors((self.outlineActor,))        
-        self.showOutlineActor()
-        
+
+        self.drawPlotVisDecorations()
+
         self.Render()
 
     def drawScalarFieldHex(self,bsd,fieldType):
+        '''
+        Draws Scalar Field  - coloring individual pixels -  for hex lattice
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
         self.drawModel.initScalarFieldHexActors((self.hexConActor,self.contourActor))
         
         if not self.currentActors.has_key("HexConActor"):
@@ -617,33 +632,52 @@ class MVCDrawView2D(MVCDrawViewBase):
             self.showContours(True)
         else:
             self.showContours(False)
-        # self.showContours(True)            
             
         if self.parentWidget.clusterBorderAct.isChecked():
             self.drawClusterBorders2DHex()    
         else:
             self.hideClusterBorder()
 
-        self.drawModel.prepareOutlineActors((self.outlineActor,))        
-        self.showOutlineActor()      
-        
+        self.drawPlotVisDecorations()
+
         self.Render()
         
     def drawConField(self, sim, fieldType):
-        if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
+        '''
+        Draws Concentration Field For Cartesian Lattice. Calls universal drawScalarFieldData
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
+
+        # drawing in other planes will be done on a rectangular lattice
+        if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY":
             self.drawConFieldHex(sim,fieldType)
             return
-            
-        fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillConFieldData2D") # this is simply a "pointer" to function 
-        
-        if self.pixelizedScalarField:  # when user requests we draw cartesian scalar field using exact pixels  not smopothed out regions as given by sinple vtkImageData scalar visualization. 
-        # Perhaps there is switch in vtkImageDataGeometryFilter or related vtk object that will draw nice pixels but for now we are sticking with this somewhat repetitive code     
-            fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillConFieldData2DCartesian") # this is simply a "pointer" to function       
+
+        # this is simply a "pointer" to function
+        fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillConFieldData2D")
+
+        # when user requests we draw cartesian scalar field using exact pixels  not smoothed out regions as given
+        # by simple vtkImageData scalar visualization.
+        if self.pixelizedScalarField:
+            # Perhaps there is switch in vtkImageDataGeometryFilter or related vtk object that will draw nice pixels
+            # but for now we are sticking with this somewhat repetitive code
+            # this is simply a "pointer" to function
+            fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillConFieldData2DCartesian")
             
         self.drawScalarFieldData(sim,fieldType,fillScalarField)
         
     def drawScalarFieldCellLevel(self, sim, fieldType):
-        if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
+        '''
+        Draws Scalar Field at the Cell level - coloring entire cells -  for Cartesian lattice.
+        Calls universal drawScalarFieldData
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
+        # drawing in other planes will be done on a rectangular lattice
+        if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY":
             self.drawScalarFieldCellLevelHex(sim,fieldType)
             return    
             
@@ -655,66 +689,44 @@ class MVCDrawView2D(MVCDrawViewBase):
         self.drawScalarFieldData(sim,fieldType,fillScalarField)
         
     def drawScalarField(self, sim, fieldType):
-        if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
+        '''
+        Draws Scalar Field  - coloring individual pixels -  for Cartesian lattice. Calls universal drawScalarFieldData
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
+        # drawing in other planes will be done on a rectangular lattice
+        if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane == "XY":
             self.drawScalarFieldHex(sim,fieldType)
-            return        
-            
-        fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillScalarFieldData2D") # this is simply a "pointer" to function 
-        
-        if self.pixelizedScalarField:  # when user requests we draw cartesian scalar field using exact pixels  not smopothed out regions as given by sinple vtkImageData scalar visualization. 
-        # Perhaps there is switch in vtkImageDataGeometryFilter or related vtk object that will draw nice pixels but for now we are sticking with this somewhat repetitive code             
-            fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillScalarFieldData2DCartesian") # this is simply a "pointer" to function               
+            return
+
+        # this is simply a "pointer" to function
+        fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillScalarFieldData2D")
+
+        # when user requests we draw cartesian scalar field using exact pixels  not smopothed out regions as given
+        # by sinple vtkImageData scalar visualization.
+        if self.pixelizedScalarField:
+            # Perhaps there is switch in vtkImageDataGeometryFilter or related vtk object that will draw nice pixels
+            #  but for now we are sticking with this somewhat repetitive code
+            # this is simply a "pointer" to function
+            fillScalarField = getattr(self.parentWidget.fieldExtractor, "fillScalarFieldData2DCartesian")
             
         self.drawScalarFieldData(sim,fieldType,fillScalarField)
-    
-    # # # def drawScalarFieldData(self, _bsd, fieldType,_fillScalarField):
-# # # #        print MODULENAME, '------ drawScalarFieldData'
-        # # # self.drawModel.initScalarFieldActors(_fillScalarField,(self.conActor,self.contourActor,))
-        
-        # # # if not self.currentActors.has_key("ConActor"):
-            # # # self.currentActors["ConActor"]=self.conActor  
-            # # # self.graphicsFrameWidget.ren.AddActor(self.conActor) 
-            
-            # # # actorProperties=vtk.vtkProperty()
-            # # # actorProperties.SetOpacity(1.0)
-            
-            # # # self.conActor.SetProperty(actorProperties)
-            
-        # # # if Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName):            
-            # # # self.drawModel.prepareLegendActors((self.drawModel.conMapper,),(self.legendActor,))
-            # # # self.showLegend(True)
-        # # # else:
-            # # # self.showLegend(False)
-
-        # # # if self.parentWidget.borderAct.isChecked():
-            # # # self.drawBorders2D() 
-        # # # else:
-            # # # self.hideBorder()
-
-# # # #        if Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName):                        
-# # # #            self.showContours(True)
-# # # #        else:
-# # # #            self.showContours(False)
-        # # # self.showContours(True)
-            
-        # # # self.drawModel.prepareOutlineActors((self.outlineActor,))       
-        # # # self.showOutlineActor()    
-        
-        # # # # FIXME: 
-        # # # # self.drawContourLines()
-        # # # # # # print "DRAW CON FIELD NUMBER OF ACTORS = ",self.ren.GetActors().GetNumberOfItems()
-        # # # # self.repaint()
-        # # # self.Render()
 
     def drawScalarFieldData(self, _bsd, fieldType,_fillScalarField):
-        # print MODULENAME, '------ drawScalarFieldData'
-        # self.drawModel.initScalarFieldCartesianActors(_fillScalarField) 
-        
-        if self.pixelizedScalarField:  # when user requests we draw cartesian scalar field using exact pixels  not smopothed out regions as given by sinple vtkImageData scalar visualization. 
-        # Perhaps there is switch in vtkImageDataGeometryFilter or related vtk object that will draw nice pixels but for now we are sticking with this somewhat repetitive code             
+        '''
+        Draws Scalar Field  - universal function called by otther "drawScalar..." functions
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
+        # when user requests we draw cartesian scalar field using exact pixels  not smooothed out regions as given
+        # by sinple vtkImageData scalar visualization.
+        if self.pixelizedScalarField:
+            # Perhaps there is switch in vtkImageDataGeometryFilter or related vtk object that will draw nice pixels
+            # but for now we are sticking with this somewhat repetitive code
             self.drawModel.initScalarFieldCartesianActors(_fillScalarField,(self.conActor,self.contourActor,))
-        else:   
-            # print 'DRAWING SCALAR FIELD DATA'
+        else:
             dbgMsg('DRAWING SCALAR FIELD DATA')
             self.drawModel.initScalarFieldActors(_fillScalarField,(self.conActor,self.contourActor,))
         
@@ -727,8 +739,8 @@ class MVCDrawView2D(MVCDrawViewBase):
             
             self.conActor.SetProperty(actorProperties)
             
-        if Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName):            
-            self.drawModel.prepareLegendActors((self.drawModel.conMapper,),(self.legendActor,))            
+        if Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName):
+            self.drawModel.prepareLegendActors((self.drawModel.conMapper,),(self.legendActor,))
             self.showLegend(True)
         else:
             self.showLegend(False)
@@ -742,28 +754,59 @@ class MVCDrawView2D(MVCDrawViewBase):
             self.showContours(True)
         else:
             self.showContours(False)
-        # self.showContours(True)
-            
-        self.drawModel.prepareOutlineActors((self.outlineActor,))       
-        self.showOutlineActor()    
-        
-        # FIXME: 
-        # self.drawContourLines()
-        # # # print "DRAW CON FIELD NUMBER OF ACTORS = ",self.ren.GetActors().GetNumberOfItems()
-        # self.repaint()
+
+        self.drawPlotVisDecorations()
+
         self.Render()
 
-        
+    def drawPlotVisDecorations(self):
+        '''
+        Draws Plot Window Decorations such as outline or axes
+        :return:None
+        '''
+        # if Configuration.getSetting("LegendEnable",self.currentDrawingParameters.fieldName):
+        #     self.drawModel.prepareLegendActors((self.drawModel.conMapper,),(self.legendActor,))
+        #     self.showLegend(True)
+        # else:
+        #     self.showLegend(False)
+
+        if Configuration.getSetting("BoundingBoxOn"):
+            self.drawModel.prepareOutlineActors((self.outlineActor,))
+            self.showOutlineActor()
+
+        if Configuration.getSetting("ShowPlotAxes", self.currentDrawingParameters.fieldName):
+            self.drawModel.prepareAxesActors((None,),(self.axesActor,))
+            self.showAxes(True)
+        else:
+            self.showAxes(False)
+
     def drawVectorField(self, bsd, fieldType):
+        '''
+        Draws Vector Field (vectors are at arbitrary positions) for cartesian lattice
+        - calls universal function drawVectorFieldData
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
         self.removeContourActors()
-        
-        if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
+        # drawing in other planes will be done on a rectangular lattice
+        if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane == "XY":
             self.drawVectorFieldDataHex(bsd,fieldType)
-            return            
-        fillVectorField = getattr(self.parentWidget.fieldExtractor, "fillVectorFieldData2D") # this is simply a "pointer" to function self.parentWidget.fieldExtractor.fillVectorFieldData2D        
+            return
+
+        # this is simply a "pointer" to function self.parentWidget.fieldExtractor.fillVectorFieldData2D
+        fillVectorField = getattr(self.parentWidget.fieldExtractor, "fillVectorFieldData2D")
         self.drawVectorFieldData(bsd,fieldType,fillVectorField)
         
-    def drawVectorFieldCellLevel(self, bsd, fieldType):        
+    def drawVectorFieldCellLevel(self, bsd, fieldType):
+        '''
+        Draws Vector Field (vectors are associated with cells) for cartesian lattice
+        - calls universal function drawVectorFieldData
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
+
         self.removeContourActors()
         
         if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
@@ -772,7 +815,14 @@ class MVCDrawView2D(MVCDrawViewBase):
         fillVectorField = getattr(self.parentWidget.fieldExtractor, "fillVectorFieldCellLevelData2D") # this is simply a "pointer" to function self.parentWidget.fieldExtractor.fillVectorFieldData2D        
         self.drawVectorFieldData(bsd,fieldType,fillVectorField)
 
-    def drawVectorFieldDataHex(self,bsd,fieldType):        
+    def drawVectorFieldDataHex(self,bsd,fieldType):
+        '''
+        Draws Vector Field (vectors are at arbitrary) for hex lattice
+        - calls universal function drawVectorFieldData
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
         self.removeContourActors()
         
         self.drawModel.initVectorFieldDataHexActors((self.glyphsActor,))
@@ -792,13 +842,20 @@ class MVCDrawView2D(MVCDrawViewBase):
         else:
             self.hideBorder()
 
-        self.drawModel.prepareOutlineActors((self.outlineActor,))        
-        self.showOutlineActor()           
-        
+
+        self.drawPlotVisDecorations()
+
         self.Render()
         
         
-    def drawVectorFieldCellLevelDataHex(self,bsd,fieldType):        
+    def drawVectorFieldCellLevelDataHex(self,bsd,fieldType):
+        '''
+        Draws Vector Field (vectors are associated with cells) for hex lattice
+        - calls universal function drawVectorFieldData
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
         self.removeContourActors()
         
         self.drawModel.initVectorFieldCellLevelDataHexActors((self.glyphsActor,))
@@ -818,14 +875,20 @@ class MVCDrawView2D(MVCDrawViewBase):
         else:
             self.hideBorder()
 
-        self.drawModel.prepareOutlineActors((self.outlineActor,))        
-        self.showOutlineActor()           
+        self.drawPlotVisDecorations()
            
         self.Render()
 
 
         
-    def drawVectorFieldData(self,bsd,fieldType,_fillVectorFieldFcn):        
+    def drawVectorFieldData(self,bsd,fieldType,_fillVectorFieldFcn):
+        '''
+        Draws Vector Field for cartesian lattice - universal function called by other "drawVector..." functions
+        - calls universal function drawVectorFieldData
+        :param bsd: BasicSimulationData - contains field dim etc
+        :param fieldType: field type - e.g. cellfield, concentration field etc...
+        :return:None
+        '''
         self.drawModel.initVectorFieldCellLevelActors(_fillVectorFieldFcn, (self.glyphsActor,))
         
         if Configuration.getSetting("OverlayVectorsOn",self.currentDrawingParameters.fieldName):
@@ -853,9 +916,8 @@ class MVCDrawView2D(MVCDrawViewBase):
         else:
             self.hideBorder()
 
-        self.drawModel.prepareOutlineActors((self.outlineActor,))        
-        self.showOutlineActor()
-            
+        self.drawPlotVisDecorations()
+
         self.Render()
         
     # Optimize code?

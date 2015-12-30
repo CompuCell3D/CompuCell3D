@@ -5,40 +5,6 @@ import sys
 import os
 
 
-
-
-def setVTKPaths():
-   import sys
-   from os import environ
-   import string
-   import sys
-   platform=sys.platform
-   if platform=='win32':
-      sys.path.insert(0,environ["PYTHON_DEPS_PATH"])
-      sys.path.append(environ["VTKPATH"])
-      # sys.path.append(environ["VTKPATH1"])
-      
-      # # sys.path.append(environ["PYQT_PATH"])
-      # # sys.path.append(environ["SIP_PATH"])
-      # # sys.path.append(environ["SIP_UTILS_PATH"])
-      
-      # sys.path.insert(0,environ["PYQT_PATH"])
-      # sys.path.insert(0,environ["SIP_PATH"])
-      # sys.path.insert(0,environ["SIP_UTILS_PATH"])
-      
-#   else:
-#      swig_path_list=string.split(environ["VTKPATH"])
-#      for swig_path in swig_path_list:
-#         sys.path.append(swig_path)
-
-# print "PATH=",sys.path
-setVTKPaths()
-# print "PATH=",sys.path  
-
-
-
-#mainWindow = None
-
 # setting api for QVariant is necessary to get player workign with MinGW-compiled PyQt4
 import sip
 sip.setapi('QVariant', 1)

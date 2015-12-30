@@ -111,18 +111,17 @@ Simulator::~Simulator() {
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-long Simulator::getCerrStreamBufOrig(){
-	return (long)cerrStreamBufOrig;
+ptrdiff_t Simulator::getCerrStreamBufOrig(){
+	return (ptrdiff_t)(void *)cerrStreamBufOrig;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Simulator::restoreCerrStreamBufOrig(long _ptr){
-	cerr.rdbuf((streambuf *)_ptr);
+void Simulator::restoreCerrStreamBufOrig(ptrdiff_t _ptr){
+	cerr.rdbuf((streambuf *)(void *)_ptr);
+	//////cerr.rdbuf((streambuf *)_ptr);
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-void Simulator::setOutputRedirectionTarget(long  _ptr){
+void Simulator::setOutputRedirectionTarget(ptrdiff_t  _ptr){
 
 	//CustomStreamBufferFactory bufferFactory;
 	//qStreambufPtr=bufferFactory.getQTextEditBuffer();

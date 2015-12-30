@@ -34,7 +34,7 @@ class WindowInventory(object):
 
         self.inventory_dict[obj_type][self.inventory_counter] = obj
         self.inventory_counter += 1
-        print 'self.inventory_dict=',self.inventory_dict
+        # print 'self.inventory_dict=',self.inventory_dict
 
         # self.inventory_dict[self.inventory_counter] = obj
         # self.inventory_counter += 1

@@ -1,6 +1,6 @@
 @ECHO OFF
 @SET PREFIX_CC3D=@COMPUCELL_INSTALL_DIR_WINDOWS_STYLE@
-@SET PYTHON_INSTALL_PATH=c:\Python27
+@SET PYTHON_INSTALL_PATH=%PREFIX_CC3D%\Python27
 
 @SET PYTHON_MODULE_PATH=%PREFIX_CC3D%\pythonSetupScripts
 @SET SWIG_LIB_INSTALL_DIR=%PREFIX_CC3D%\lib\python
@@ -14,5 +14,5 @@
 @SET PYTHON_DEPS_PATH=%PREFIX_CC3D%\lib\PythonDeps
 
 
-python "%PREFIX_CC3D%\Twedit++\twedit_plus_plus_cc3d.py" %*
+"%PYTHON_INSTALL_PATH%\python" "%PREFIX_CC3D%\Twedit++\twedit_plus_plus_cc3d.py" %*
 

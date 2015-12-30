@@ -81,7 +81,9 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         # 3D tab
         self.boundingBoxColorButton.clicked.connect(self.boundingBoxColorClicked)
 
-        self.axes3DBoxColorButton.clicked.connect(self.axes3DBoxColorClicked)
+        # self.axes3DBoxColorButton.clicked.connect(self.axes3DBoxColorClicked)
+
+        self.axesColorButton.clicked.connect(self.axesColorClicked)
 
         self.buttonBox.clicked.connect(self.buttonBoxClicked)
 
@@ -192,8 +194,12 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
     def boundingBoxColorClicked(self):
         self.updateColorButton(self.boundingBoxColorButton, "BoundingBoxColor")
 
-    def axes3DBoxColorClicked(self):
-        self.updateColorButton(self.axes3DBoxColorButton, "Axes3DColor")
+    # def axes3DBoxColorClicked(self):
+    #     self.updateColorButton(self.axes3DBoxColorButton, "Axes3DColor")
+
+    def axesColorClicked(self):
+        self.updateColorButton(self.axesColorButton, "AxesColor")
+
 
     # -------- Field widgets CBs  (was both Colormap and Vector tabs, now combined in Field tab)
     def fieldComboBoxClicked(self):
@@ -220,7 +226,15 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 
             fieldParamsDict = fieldParams
             
-        
+        try:  # in case ShowPlotAxes is not defined in a dictinary for this plot
+            val = fieldParamsDict["ShowPlotAxes"]
+        except:
+            val = Configuration.getSetting('ShowPlotAxes')
+
+        self.showPlotAxesCB.setChecked(val)
+
+
+
         val = fieldParamsDict["MinRange"]
         
         self.fieldMinRange.setText( str(val) )
@@ -476,6 +490,12 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
             return 
             
         fieldDict = {}
+
+        key = "ShowPlotAxes"
+        val = self.showPlotAxesCB.isChecked()
+        fieldDict[key] = val
+        Configuration.setSetting(key,val)
+
         key = "MinRange"
         val = self.fieldMinRange.text()
 
@@ -545,13 +565,14 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         color = Configuration.getSetting("ArrowColor")
 
         fieldDict["ArrowColor"] = color
-        
+
+
+
         Configuration.updateFieldsParams(fieldName,fieldDict)
         
     def updatePreferences(self):    
         '''called when user presses Apply or OK button on the Prefs dialog'''
 
-        
         # rwh: check if the PreferencesFile is different; if so, update it
         # # # Configuration.mySettings = QSettings(QSettings.IniFormat, QSettings.UserScope, "Biocomplexity", self.prefsFileLineEdit.text())
 
@@ -565,6 +586,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("Screenshot_Y", self.screenshot_Y_SB.value())
         Configuration.setSetting("LatticeOutputOn", self.outputLatticeDataCheckBox.isChecked())
         Configuration.setSetting("SaveLatticeFrequency", self.saveLatticeSpinBox.value())
+        Configuration.setSetting("DebugOutputPlayer", self.debugOutputPlayerCB.isChecked())
         Configuration.setSetting("UseInternalConsole", self.useInternalConsoleCheckBox.isChecked())
         Configuration.setSetting("ClosePlayerAfterSimulationDone", self.closePlayerCheckBox.isChecked())
         Configuration.setSetting("ProjectLocation", self.projectLocationLineEdit.text())
@@ -584,9 +606,6 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
         # Cell Type/Colors
         Configuration.setSetting("TypeColorMap",self.paramCC3D["TypeColorMap"])  # rwh
-        
-        
-
 
         Configuration.setSetting("CellGlyphScaleByVolumeOn", self.cellGlyphScaleByVolumeCheckBox.isChecked())
         Configuration.setSetting("CellGlyphScale", self.cellGlyphScale.text())
@@ -595,16 +614,15 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 
 
 
-
-
         fp = Configuration.getSetting("FieldParams")
-        
+
+
         
         # get Field name from combobox in the Field tab and save the current settings for that field
         fname = self.fieldComboBox.currentText()
         
         # Configuration.updateSimFieldsParams(fname)
-        # print '\n\n\n updating field fname = ',fname 
+        # print '\n\n\n updating field fname = ',fname
         
         self.updateFieldParams(fname)
 
@@ -624,6 +642,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
         Configuration.setSetting("ScalarIsoValues", self.isovalList.text())
         Configuration.setSetting("NumberOfContourLines", self.numberOfContoursLinesSpinBox.value())
+        Configuration.setSetting("ShowPlotAxes", self.showPlotAxesCB.isChecked())
 
         
         # Vectors
@@ -636,7 +655,10 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 
         Configuration.setSetting("Types3DInvisible", self.cellTypesInvisibleList.text())
         Configuration.setSetting("BoundingBoxOn", self.boundingBoxCheckBox.isChecked())
-        Configuration.setSetting("Show3DAxes", self.show3DAxesCB.isChecked())
+        Configuration.setSetting("ShowAxes", self.showAxesCB.isChecked())
+        Configuration.setSetting("ShowHorizontalAxesLabels", self.showHorizontalAxesLabelsCB.isChecked())
+        Configuration.setSetting("ShowVerticalAxesLabels", self.showVerticalAxesLabelsCB.isChecked())
+        # Configuration.setSetting("Show3DAxes", self.show3DAxesCB.isChecked())
 
     
     def updateUI(self):  # 
@@ -665,7 +687,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.outputLatticeDataCheckBox.setChecked(Configuration.getSetting("LatticeOutputOn"))
         self.saveLatticeSpinBox.setValue(Configuration.getSetting("SaveLatticeFrequency"))
         self.outputLatticeDataClicked()   # enable/disable
-        
+
+        self.debugOutputPlayerCB.setChecked(Configuration.getSetting("DebugOutputPlayer"))
         self.useInternalConsoleCheckBox.setChecked(Configuration.getSetting("UseInternalConsole"))
         self.closePlayerCheckBox.setChecked(Configuration.getSetting("ClosePlayerAfterSimulationDone"))
         
@@ -719,7 +742,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
         
         fp = Configuration.getSetting("FieldParams")
-        
+
+        self.showPlotAxesCB.setChecked(Configuration.getSetting("ShowPlotAxes"))
         self.pixelizedScalarFieldCB.setChecked(Configuration.getSetting("PixelizedScalarField"))
         
         self.fieldMinRange.setText( str(Configuration.getSetting("MinRange")))
@@ -735,6 +759,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
         self.isovalList.setText(Configuration.getSetting("ScalarIsoValues"))
         self.numberOfContoursLinesSpinBox.setValue(self.paramCC3D["NumberOfContourLines"])
+
+
 
         contoursOn = Configuration.getSetting("ContoursOn")
         self.contoursShowCB.setChecked(contoursOn)
@@ -763,8 +789,11 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.cellTypesInvisibleList.setText(Configuration.getSetting("Types3DInvisible"))
         self.boundingBoxCheckBox.setChecked(self.paramCC3D["BoundingBoxOn"])
 
-        self.show3DAxesCB.setChecked(Configuration.getSetting("Show3DAxes"))
+        self.showAxesCB.setChecked(Configuration.getSetting("ShowAxes"))
+        self.showHorizontalAxesLabelsCB.setChecked(Configuration.getSetting("ShowHorizontalAxesLabels"))
+        self.showVerticalAxesLabelsCB.setChecked(Configuration.getSetting("ShowVerticalAxesLabels"))
 
+        # self.show3DAxesCB.setChecked(Configuration.getSetting("Show3DAxes"))
 
         color = Configuration.getSetting("BoundingBoxColor")
         pm = QPixmap(size.width(), size.height())
@@ -776,9 +805,16 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         pm_axes = QPixmap(size.width(), size.height())
         pm_axes.fill(color_axes)
 
-        self.axes3DBoxColorButton.setIconSize(pm_axes.size())
-        self.axes3DBoxColorButton.setIcon(QIcon(pm_axes))
+        # self.axes3DBoxColorButton.setIconSize(pm_axes.size())
+        # self.axes3DBoxColorButton.setIcon(QIcon(pm_axes))
 
+
+        color_axes = Configuration.getSetting("AxesColor")
+        pm_axes = QPixmap(size.width(), size.height())
+        pm_axes.fill(color_axes)
+
+        self.axesColorButton.setIconSize(pm_axes.size())
+        self.axesColorButton.setIcon(QIcon(pm_axes))
 
 
 
@@ -789,7 +825,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         '''
         
         for key in Configuration.getSettingNameList():
-            self.paramCC3D[key]=Configuration.getSetting(key)
+            self.paramCC3D[key] = Configuration.getSetting(key)
         return    
         
         # for key in Configuration.Configuration.defaultConfigs.keys():

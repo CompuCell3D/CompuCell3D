@@ -5,6 +5,11 @@ if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
+if (${CMAKE_VERSION} VERSION_GREATER 3.1.0)
+    cmake_policy(SET CMP0053 OLD)
+endif()
+
+
 #APPLE CHECK                                                                                                                                               
 IF (APPLE)
 #	SET (CMAKE_OSX_ARCHITECTURES "i386")            #x86_64 ppc ppc64                                                                  
@@ -23,7 +28,7 @@ OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
 # letters A, B, C are added to ensure nice display of sersion in cmake gui
 SET (COMPUCELL3D_A_MAJOR_VERSION "3" CACHE STRING "Major Version")
 SET (COMPUCELL3D_B_MINOR_VERSION "7" CACHE STRING "Minor Version")
-SET (COMPUCELL3D_C_BUILD_VERSION "4" CACHE STRING "Build Version")
+SET (COMPUCELL3D_C_BUILD_VERSION "5" CACHE STRING "Build Version")
 
 # and here we assign them back to what they shuld be
 SET (COMPUCELL3D_MAJOR_VERSION ${COMPUCELL3D_A_MAJOR_VERSION})
@@ -112,12 +117,16 @@ OPTION(BUILD_QT_WRAPPERS "Convenience CC3D/Player modules - e.g. redirecting tex
 OPTION(NO_OPENCL "Disable automatic OpenCL detection and building corresponding modules" OFF )
 #OPTION(NO_CUDA "Disable automatic CUDA detection and building corresponding modules" OFF )
 
-# set a path to VTK , PyQT and Qt libraries and to VS redeistributable package on windows  
-if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-    SET(WINDOWS_DEPENDENCIES CACHE PATH  "Location of windows dependencies")
-    LINK_DIRECTORIES(  ${WINDOWS_DEPENDENCIES}/lib)
-endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+OPTION(WINDOWS_DEPENDENCIES_INSTALL_ENABLE "Install Windows Dependencies - directory must be specified" ON)
 
+if(WINDOWS_DEPENDENCIES_INSTALL_ENABLE)
+
+    # set a path to VTK , PyQT and Qt libraries and to VS redeistributable package on windows  
+    if(${CMAKE_SYSTEM_NAME} STREQUAL Windows )
+        SET(WINDOWS_DEPENDENCIES CACHE PATH  "Location of windows dependencies")
+        LINK_DIRECTORIES(  ${WINDOWS_DEPENDENCIES}/lib)
+    endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+endif(WINDOWS_DEPENDENCIES_INSTALL_ENABLE)
 
 SET(COMPUCELL3D_PLUGIN_PATH
     /lib/CompuCell3DPlugins)
@@ -464,9 +473,9 @@ if(BUILD_CPP_ONLY_EXECUTABLE)
 
       
     INCLUDE(findEXPAT)  
-    MESSAGE("EXPAT_INCLUDE_DIRS=",${EXPAT_INCLUDE_DIRS})  
-    MESSAGE("EXPAT_LIBRARIES=",${EXPAT_LIBRARIES})  
-    MESSAGE("EXPAT_FOUND=",${EXPAT_FOUND})  
+    MESSAGE("EXPAT_INCLUDE_DIRS=" ${EXPAT_INCLUDE_DIRS})  
+    MESSAGE("EXPAT_LIBRARIES=" ${EXPAT_LIBRARIES})  
+    MESSAGE("EXPAT_FOUND=" ${EXPAT_FOUND})  
 
       
     INCLUDE_DIRECTORIES ( 

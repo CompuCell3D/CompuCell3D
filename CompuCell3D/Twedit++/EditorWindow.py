@@ -451,7 +451,10 @@ class EditorWindow(QMainWindow):
         # print "index changed=",_idx
     
         
-        
+    def display_popup_message(self,message_title, message_text, message_type='WARNING',buttons=QtGui.QMessageBox.Ok):
+        if message_type == 'WARNING':
+            ret = QtGui.QMessageBox.warning(self, message_title,message_text,buttons)        
+    
     def setDefaultStyling(self):
         for toolBarName, toolBar in self.toolBar.iteritems():
             toolBar.setIconSize (self.toolbarIconSize)        

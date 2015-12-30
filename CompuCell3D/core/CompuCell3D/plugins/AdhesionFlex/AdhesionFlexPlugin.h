@@ -98,6 +98,7 @@ namespace CompuCell3D {
 		bindingParameterArray_t bindingParameterArray;
 		int numberOfAdhesionMolecules;
 		bool adhesionDensityInitialized;
+		std::vector<std::string> adhesionMoleculeNameVec;
 		std::map<std::string, int> moleculeNameIndexMap;
 		std::map<int,std::vector<float> > typeToAdhesionMoleculeDensityMap; 
 		std::vector<float>  adhesionMoleculeDensityVecMedium;
@@ -149,8 +150,13 @@ namespace CompuCell3D {
 		*/
 		double adhesionFlexEnergyCustom(const CellG *cell1, const CellG *cell2);
 
-		void setBindingParameter(const std::string moleculeName1, const std::string moleculeName2, const double parameter) ;     
-
+		void setBindingParameter(const std::string moleculeName1, const std::string moleculeName2, const double parameter, bool parsing_flag=false) ;     
+		void setBindingParameterDirect(const std::string moleculeName1, const std::string moleculeName2, const double parameter) ;
+		void setBindingParameterByIndexDirect(int _idx1, int _idx2, const double parameter) ;
+		
+		std::vector<std::vector<double> > getBindingParameterArray();
+		std::vector<std::string> getAdhesionMoleculeNameVec();
+		
 		//functions used to manipulate densities of adhesion molecules
 		void setAdhesionMoleculeDensity(CellG * _cell, std::string _moleculeName, float _density);
 		void setAdhesionMoleculeDensityByIndex(CellG * _cell, int _idx, float _density);

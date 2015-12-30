@@ -13,4 +13,4 @@
 
 
 
-python "%PREFIX_CC3D%\Twedit++\twedit_plus_plus_cc3d.py" %*
+"%PYTHON_INSTALL_PATH%\python" "%PREFIX_CC3D%\Twedit++\twedit_plus_plus_cc3d.py" %*
