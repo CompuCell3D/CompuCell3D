@@ -483,12 +483,14 @@ class MVCDrawView2D(MVCDrawViewBase):
             self.showOutlineActor(True)
         else:
             self.showOutlineActor(False)
-
-        if Configuration.getSetting("ShowAxes"):
-            self.drawModel.prepareAxesActors((None,), (self.axesActor,))
-            self.showAxes(True)
-        else:
-            self.showAxes(False)
+            
+        if self.vtk_version_identifier() >= self.version_identifier(5,10,0):
+            
+            if Configuration.getSetting("ShowAxes"):
+                self.drawModel.prepareAxesActors((None,), (self.axesActor,))
+                self.showAxes(True)
+            else:
+                self.showAxes(False)
 
 
     # FIXME: Draw contour lines: drawContourLines()
@@ -773,12 +775,13 @@ class MVCDrawView2D(MVCDrawViewBase):
         if Configuration.getSetting("BoundingBoxOn"):
             self.drawModel.prepareOutlineActors((self.outlineActor,))
             self.showOutlineActor()
+        if self.vtk_version_identifier() >= self.version_identifier(5,10,0):
 
-        if Configuration.getSetting("ShowPlotAxes", self.currentDrawingParameters.fieldName):
-            self.drawModel.prepareAxesActors((None,),(self.axesActor,))
-            self.showAxes(True)
-        else:
-            self.showAxes(False)
+            if Configuration.getSetting("ShowPlotAxes", self.currentDrawingParameters.fieldName):
+                self.drawModel.prepareAxesActors((None,),(self.axesActor,))
+                self.showAxes(True)
+            else:
+                self.showAxes(False)
 
     def drawVectorField(self, bsd, fieldType):
         '''

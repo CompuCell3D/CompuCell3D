@@ -158,8 +158,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
         xAxisActor.SetNumberOfMinorTicks(3)
 
         # setting camera fot he actor is vey important to get axes working properly
-        axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
-        self.graphicsFrameWidget.ren.AddActor(axesActor)
+#         axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
+#         self.graphicsFrameWidget.ren.AddActor(axesActor)
 
     def extractCellFieldData(self):   # called from MVCDrawView3D.py:drawCellField()
         import CompuCell
