@@ -4,22 +4,27 @@
 # EXEC_PROGRAM(${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/core/pyinterface/PlayerPythonNew ARGS NumpyHeader.py
       # OUTPUT_VARIABLE NUMPY_INCLUDE_DIR)
 
-#   
+#
 MESSAGE(NUMPY_INCLUDE_DIR ${NUMPY_INCLUDE_DIR})
 
 SET(SRCS
    FieldStorage.cpp
-   FieldExtractorBase.cpp   
+   FieldExtractorBase.cpp
    FieldExtractor.cpp
    FieldExtractorCML.cpp
    FieldWriter.cpp
 )
 FIND_PACKAGE(VTK REQUIRED)
-if (${VTK_MAJOR_VERSION} EQUAL "6")    
+if (${VTK_MAJOR_VERSION} EQUAL "6")
     SET(VTK_LIBS vtkRenderingOpenGL vtkInteractionStyle vtkRenderingVolumeOpenGL vtkIOLegacy)
 endif()
 
-if (${VTK_MAJOR_VERSION} EQUAL "5")    
+if (${VTK_MAJOR_VERSION} EQUAL "7")
+    SET(VTK_LIBS vtkRenderingVolume vtkInteractionStyle  vtkIOLegacy)
+endif()
+
+
+if (${VTK_MAJOR_VERSION} EQUAL "5")
     SET(VTK_LIBS vtkVolumeRendering vtkHybrid vtkFiltering vtkCommon)
 endif()
 
@@ -39,13 +44,13 @@ INCLUDE_DIRECTORIES(
     )
 
 LINK_DIRECTORIES(${VTK_LIBRARY_DIRS})
-    
+
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     SET(LIBS
        CompuCellLibShared
        BasicUtilsStatic
        ${PYTHON_LIBRARIES}
-       ${VTK_LIBS}	
+       ${VTK_LIBS}
        # simthreadShared
 
     )
@@ -55,7 +60,7 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
        BasicUtilsShared
        ${PYTHON_LIBRARIES}
        ${VTK_LIBS}
-       
+
        # simthreadShared
     )
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
@@ -64,7 +69,7 @@ MESSAGE("VTK_LIB_DIRS " ${VTK_LIBRARY_DIRS})
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     ADD_LIBRARY(FieldExtractor SHARED ${SRCS})
-    
+
     target_link_libraries(FieldExtractor  ${LIBS})
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     ADD_LIBRARY(FieldExtractor ${SRCS})
@@ -110,8 +115,8 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   SET_TARGET_PROPERTIES(_PlayerPythonNew PROPERTIES SUFFIX ".pyd") # changes dll name to pyd sop that it is compatible with new Python standard
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
-SET_TARGET_PROPERTIES(_PlayerPythonNew PROPERTIES OUTPUT_NAME  "_PlayerPython")   
-    
+SET_TARGET_PROPERTIES(_PlayerPythonNew PROPERTIES OUTPUT_NAME  "_PlayerPython")
+
 SWIG_LINK_LIBRARIES(PlayerPythonNew ${LIBS_SWIG})
 
 install_targets(/lib/python _PlayerPythonNew)

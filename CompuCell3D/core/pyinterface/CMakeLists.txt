@@ -31,31 +31,36 @@ SET(CMAKE_SWIG_FLAGS "")
 IF(SWIG_FOUND)
     add_subdirectory(CC3DXML)
     add_subdirectory(CompuCellPython)
-    
-# if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)        
-    
-# else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)        
+
+# if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+
+# else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     # add_subdirectory(FiPyInterface)
-# endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)            
+# endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 #    add_subdirectory(PlayerPythonOld)
 
     FIND_PACKAGE(VTK REQUIRED)
     message("VTK_MAJOR_VERSION=" ${VTK_MAJOR_VERSION})
-    if (${VTK_MAJOR_VERSION} EQUAL "6")    
+    if (${VTK_MAJOR_VERSION} EQUAL "6")
         add_definitions(-DVTK6)
-    endif()    
-    
+    endif()
+
+    if (${VTK_MAJOR_VERSION} EQUAL "7")    
+        add_definitions(-DVTK6)
+    endif()
+
+
 
     add_subdirectory(PlayerPythonNew)
     add_subdirectory(SerializerDE)
     add_subdirectory(PyPlugin)
     add_subdirectory(Example)
     add_subdirectory(Fields)
-if(USE_DOLFIN)    
+if(USE_DOLFIN)
     add_subdirectory(dolfinCC3D)
-endif(USE_DOLFIN)        
-    
+endif(USE_DOLFIN)
+
 ELSE(SWIG_FOUND)
     message("could not find SWIG in your system")
 ENDIF(SWIG_FOUND)
