@@ -40,6 +40,34 @@ export PYTHONLIB_SYSTEM=/System/Library/Frameworks/Python.framework/Versions/2.$
 ln -s /System/Library/Frameworks/Python.framework/Versions/2.${PYTHON_MINOR_VERSION}/Resources/Python.app/Contents/MacOS/Python ${PREFIX_CC3D}/Twedit++CC3D
 export PYTHON_EXEC=${PREFIX_CC3D}/Twedit++CC3D
 
+
+osx_version=$(sw_vers -productVersion)
+osx_major=$(echo $osx_version | cut -d. -f1)
+osx_minor=$(echo $osx_version | cut -d. -f2)
+
+osx_minor=$((osx_minor+0))
+osx_major=$((osx_major+0))
+
+if [ $osx_minor -ge 11 ]
+then
+    echo 'GOT >11'
+
+fi
+echo ${osx_major}-${osx_minor}
+
+
+if [ $osx_minor -ge 11 ]
+then
+
+    if [ ! -f "${PREFIX_CC3D}/cc3d_python" ]
+    then
+<------>#cp /usr/bin/python2.${PYTHON_MINOR_VERSION} ${PREFIX_CC3D}/cc3d_python
+<------>cp /System/Library/Frameworks/Python.framework/Versions/2.${PYTHON_MINOR_VERSION}/Resources/Python.app/Contents/MacOS/Python ${PREFIX_CC3D}/cc3d_python
+    fi
+....
+    export PYTHON_EXEC=${PREFIX_CC3D}/cc3d_python
+fi
+
 # export PYTHON_EXEC=python2.${PYTHON_MINOR_VERSION}
 echo " ====> PYTHONLIB_SYSTEM: $PYTHONLIB_SYSTEM"
 
