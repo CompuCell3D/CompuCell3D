@@ -7,7 +7,8 @@ class SBMLSolverOscilatorDemoSteppable(SteppableBasePy):
 
     def __init__(self,_simulator,_frequency=10):
         SteppableBasePy.__init__(self,_simulator,_frequency)
-
+        self.pW = None
+        
     def start(self):
         self.pW=self.addNewPlotWindow(_title='S1 concentration',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Variables')
         self.pW.addPlot('S1',_style='Dots',_color='red',_size=5)
@@ -21,7 +22,8 @@ class SBMLSolverOscilatorDemoSteppable(SteppableBasePy):
         #SBML SOLVER          
         
         # adding options that setup SBML solver integrator - these are optional but useful when encounteting integration instabilities       
-        options={'relative':1e-10,'absolute':1e-12,'steps':10}
+        options={'relative':1e-10,'absolute':1e-12,'steps':100}
+        # options={'relative':1e-10,'absolute':1e-12}
         self.setSBMLGlobalOptions(options)
         
         modelFile='Simulation/oscli.sbml' # this can be e.g. partial path 'Simulation/osci.sbml'
@@ -33,6 +35,9 @@ class SBMLSolverOscilatorDemoSteppable(SteppableBasePy):
         self.addSBMLToCellTypes(_modelFile=modelFile,_modelName='OSCIL',_types=[self.NONCONDENSING],_stepSize=stepSize,_initialConditions=initialConditions) 
         
     def step(self,mcs):        
+        if not self.pW:
+            self.pW=self.addNewPlotWindow(_title='S1 concentration',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Variables')
+            self.pW.addPlot('S1',_style='Dots',_color='red',_size=5)
         
         added=False
         for cell in self.cellList:

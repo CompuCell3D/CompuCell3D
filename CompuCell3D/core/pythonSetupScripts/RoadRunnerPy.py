@@ -21,60 +21,63 @@ class RoadRunnerPy(RoadRunner):
     # add properties    
     def setStepSize(self,_stepSize):
         self.stepSize=_stepSize
-        
+
     def timestep(self,_numSteps=1,_stepSize=-1.0):
-        
+
         if _stepSize>0.0:
             self.timeEnd=self.timeStart+_numSteps*_stepSize # we integrate with custom step size
-        else:    
-            self.timeEnd=self.timeStart+_numSteps*self.stepSize #we integrate with predefined step size
-            
-        
-#         print 'absolute=',self.simulateOptions.absolute
-#         print 'relative=',self.simulateOptions.relative
-#         print 'stiff=',self.simulateOptions.stiff        
-#         print 'steps=',self.simulateOptions.steps        
+        else:
+            self.timeEnd=self.timeStart+_numSteps*self.stepSize # we integrate with predefined step size
 
         # note that in general wnumber of steps should be higher - CVODE will use bigger steps when it can but setting steps to low number might actually caus instabilities.
-        # note that using higher numbers does not really increase simulation time, actuallt it may shorten it - CVODE is better in going from short to long step than the other way around    
+        # note that using higher numbers does not really increase simulation time, actuallt it may shorten it - CVODE is better in going from short to long step than the other way around
 
-#         steps is 1 by default    
-#         self.simulateOptions.steps=1
-        self.simulateOptions.start=self.timeStart
-        self.simulateOptions.end=self.timeEnd        
-
-        self.simulate()
+        self.simulate(self.timeStart, self.timeEnd, steps=_numSteps)
+        # print '_numSteps=',_numSteps
+        # self.simulate(self.timeStart, self.timeEnd, steps=2)
         self.timeStart=self.timeEnd
-    
+
         
-    def raise_api_exception(self, attribute_name):
-        raise RuntimeError("RoadRunner API Mismatch - could not handle properly integrator setting: "+attribute_name)
+    # def timestep(self,_numSteps=1,_stepSize=-1.0):
+        
+        # if _stepSize>0.0:
+            # self.timeEnd=self.timeStart+_numSteps*_stepSize # we integrate with custom step size
+        # else:    
+            # self.timeEnd=self.timeStart+_numSteps*self.stepSize #we integrate with predefined step size
             
+        
+# #         print 'absolute=',self.simulateOptions.absolute
+# #         print 'relative=',self.simulateOptions.relative
+# #         print 'stiff=',self.simulateOptions.stiff        
+# #         print 'steps=',self.simulateOptions.steps        
+
+        # # note that in general wnumber of steps should be higher - CVODE will use bigger steps when it can but setting steps to low number might actually caus instabilities.
+        # # note that using higher numbers does not really increase simulation time, actuallt it may shorten it - CVODE is better in going from short to long step than the other way around    
+
+# #         steps is 1 by default    
+# #         self.simulateOptions.steps=1
+        # self.simulateOptions.start=self.timeStart
+        # self.simulateOptions.end=self.timeEnd        
+
+        # self.simulate()
+        # self.timeStart=self.timeEnd
+        
     def prepareState(self):
         self.__state={}
         #first line covers RRPython variables, second addresses rr.simulateOptions entries 
-        # integrator settings        
-        self.__state['SimulateOptions'] = {}        
+        # self.__state['SimulateOptions'] ={'stepSize':self.stepSize,'timeStart':self.timeStart,'timeEnd':self.timeEnd,\
+        # 'relative':self.simulateOptions.relative,'absolute':self.simulateOptions.absolute,'stiff':self.simulateOptions.stiff,'steps':self.simulateOptions.steps}# integratorSettings
+        self.__state['SimulateOptions'] ={'stepSize':self.stepSize,'timeStart':self.timeStart,'timeEnd':self.timeEnd,\
+        'relative':self.getIntegrator().relative_tolerance,'absolute':self.getIntegrator().absolute_tolerance,'stiff':self.getIntegrator().stiff,\
+        'steps':self.getIntegrator().maximum_num_steps}# integratorSettings
+
         
-        self.__state['SimulateOptions']['start'] = self.simulateOptions.start
-        self.__state['SimulateOptions']['end'] = self.simulateOptions.end
-        self.__state['SimulateOptions']['steps'] = self.simulateOptions.steps
-        self.__state['SimulateOptions']['duration'] = self.simulateOptions.duration
-        self.__state['SimulateOptions']['IntegratorSettings'] = {}
-        
-        integrator_setting_list = self.getIntegrator().getSettings() 
-        for integrator_setting in integrator_setting_list:
-            self.__state['SimulateOptions']['IntegratorSettings'][integrator_setting] = self.getIntegrator().getValue(integrator_setting)
-                
         self.__state['ModelState']={}
         modelState=self.__state['ModelState']
         m=self.model
         for name in m.getFloatingSpeciesIds()+m.getBoundarySpeciesIds() + m.getGlobalParameterIds():
             modelState[name]=m[name]
-        
-        # print 'self.__state=',self.__state
-        # sys.exit()
-        
+            
     def __reduce__(self):    
         self.prepareState()
         return RoadRunnerPy,(self.path,) , self.__state
@@ -111,21 +114,29 @@ class RoadRunnerPy(RoadRunner):
             for name,value in modelState.iteritems():      
                 self.model[name]=value            
                 
-            simulateOptions = self.__state['SimulateOptions']            
-            self.simulateOptions['steps'] = simulateOptions['steps']
-            self.stepSize = simulateOptions['duration']
-            self.simulateOptions['start'] = simulateOptions['start']
-            self.simulateOptions['end'] = simulateOptions['end']
+            simulateOptions=self.__state['SimulateOptions']            
+            self.stepSize=simulateOptions['stepSize']
+            self.timeStart=simulateOptions['timeStart']
+            self.timeEnd=simulateOptions['timeEnd']
             
-            integrator_setting_list = self.getIntegrator().getSettings()
-            
-            for integrator_setting in integrator_setting_list:                
-                try:
-                    setting = self.__state['SimulateOptions']['IntegratorSettings'][integrator_setting] 
-                    self.getIntegrator().setValue(integrator_setting,setting) 
-                except:
-                    pass    
-            
+            #setting rr.simulateOPtions object entries
+            # try: # older restart files might not have these options so will try to import what I can
+                # self.simulateOptions.relative = simulateOptions['relative']
+                # self.simulateOptions.absolute = simulateOptions['absolute']
+                # self.simulateOptions.stiff = simulateOptions['stiff']            
+                # self.simulateOptions.steps = simulateOptions['steps']            
+            # except :
+                # pass
+
+            try: # older restart files might not have these options so will try to import what I can
+                self.getIntegrator().relative_tolarance = simulateOptions['relative']
+                self.getIntegrator().absolute_tolarance = simulateOptions['absolute']
+                self.getIntegrator().stiff = simulateOptions['stiff']            
+                self.getIntegrator().maximum_num_steps = simulateOptions['steps']            
+            except :
+                pass
+
+                
         except LookupError,e:
             pass
         # after using self.__state to initialize state of the model we set state dictionary to empty dicctionary
