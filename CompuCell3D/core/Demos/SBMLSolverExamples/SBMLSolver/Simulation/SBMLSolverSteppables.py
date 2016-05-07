@@ -10,7 +10,7 @@ class SBMLSolverSteppable(SteppableBasePy):
     def start(self):
 
         # adding options that setup SBML solver integrator - these are optional but useful when encounteting integration instabilities              
-        options={'relative':1e-10,'absolute':1e-12,'steps':10}
+        options={'relative':1e-10,'absolute':1e-12}
         self.setSBMLGlobalOptions(options)
 
        
