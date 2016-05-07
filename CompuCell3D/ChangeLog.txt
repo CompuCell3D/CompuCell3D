@@ -159,3 +159,14 @@ Version 3.7.4 May 2015
         Simplified access to cell python dictionary - not you type cell.dict
         Simplified histograms and scientific plots setup
         Added ability to subscribe/unsubscribe to CompuCell3D mailing list from the Player 
+        
+        
+Version 3.7.5 May 2016        
+
+    This version includes improved player and many convenience features in Python scrip ting which make model development much easier. 
+    Additions:
+        Windows versions ship with bundled Python distributions
+        Player has been improved and users can add axes
+        RoadRunner was upgraded to the latest version. 
+        IMPORTANT: The RR upgrade eliinates the need to set steps options in in the Steppable file. If you have
+        step options set remove it from your script
