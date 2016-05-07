@@ -103,8 +103,8 @@ then
 
     if [ ! -f "${PREFIX_CC3D}/cc3d_python" ]
     then
-<------>#cp /usr/bin/python2.${PYTHON_MINOR_VERSION} ${PREFIX_CC3D}/cc3d_python
-<------>cp /System/Library/Frameworks/Python.framework/Versions/2.${PYTHON_MINOR_VERSION}/Resources/Python.app/Contents/MacOS/Python ${PREFIX_CC3D}/cc3d_python
+        #cp /usr/bin/python2.${PYTHON_MINOR_VERSION} ${PREFIX_CC3D}/cc3d_python
+        cp /System/Library/Frameworks/Python.framework/Versions/2.${PYTHON_MINOR_VERSION}/Resources/Python.app/Contents/MacOS/Python ${PREFIX_CC3D}/cc3d_python
     fi
 ....
     export PYTHON_EXEC=${PREFIX_CC3D}/cc3d_python
