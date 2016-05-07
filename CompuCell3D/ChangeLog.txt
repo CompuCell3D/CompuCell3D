@@ -166,6 +166,7 @@ Version 3.7.5 May 2016
     This version includes improved player and many convenience features in Python scrip ting which make model development much easier. 
     Additions:
         Windows versions ship with bundled Python distributions
+        We added support for OSX 10.11 - ElCapitan 
         Player has been improved and users can add axes
         RoadRunner was upgraded to the latest version. 
         IMPORTANT: The RR upgrade eliinates the need to set steps options in in the Steppable file. If you have
