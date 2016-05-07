@@ -13,7 +13,16 @@ class SBMLSolverHelper(object):
         print 'cls=',cls
         return delattr(cls, name)    
     
-    def __init__(self):        
+    def __init__(self):       
+
+        # in case user passes simulate options we set the here 
+        # this dictionary translates old options valid for earlier rr versions to new ones
+        self.option_name_dict ={
+        'relative':'relative_tolerance',
+        'absolute':'absolute_tolerance',
+        'steps':'maximum_num_steps'
+        }
+
 
         try:
         
@@ -83,42 +92,40 @@ class SBMLSolverHelper(object):
             except :                    
                 pass
         # we are turning off dynamic python properties because rr is not used in the interactive mode.         
-        try:
-            rr.options.disablePythonDynamicProperties = True
-        except:
-            pass    
+        # try:
+            # rr.options.disablePythonDynamicProperties = True
+        # except:
+            # pass    
         
         
         # setting output results array size 
         rr.selections=[] # by default we do not request any output array at each intergration step
         
-        # in case user passes simulate options we set the here 
         if _options:    
             for name , value in _options.iteritems():
-                if name == "relative":
-                    rr.getIntegrator().setValue('relative_tolerance',value)
-                elif name == "absolute":
-                    rr.getIntegrator().setValue('absolute_tolerance',value)   
-                elif name == "stiff":
-                    rr.getIntegrator().setValue('stiff',value)   
-                else:
-                    setattr(rr.simulateOptions,name,value)                    
-                    
-                    
-                    
+                # setattr(rr.simulateOptions,name,value)
+                # print ' 1 name , value=',(name , value)
+                # if name=='steps':
+                    # print ' 1 name , value=',(name , value)
+                    # continue
+                
+                try:
+                    setattr(rr.getIntegrator(),name,value)
+                except AttributeError:
+                    setattr(rr.getIntegrator(),self.option_name_dict[name],value)
         else: # check for global options
             globalOptions=self.getSBMLGlobalOptions()
             if globalOptions:
                 for name , value in globalOptions.iteritems():
-                    if name == "relative":
-                        rr.getIntegrator().setValue('relative_tolerance',value)
-                    elif name == "absolute":
-                        rr.getIntegrator().setValue('absolute_tolerance',value)   
-                    elif name == "stiff":
-                        rr.getIntegrator().setValue('stiff',value)   
-                    else:
-                        setattr(rr.simulateOptions,name,value)                    
-
+                    # print ' 2 name , value=',(name , value)
+                    # print 'name=',name,' value=',value
+                    # if name=='steps':
+                        # continue
+                    try:
+                        setattr(rr.getIntegrator(),name,value)
+                    except AttributeError:
+                        setattr(rr.getIntegrator(),self.option_name_dict[name],value)
+                    # setattr(rr.simulateOptions,name,value)
                 
         
         
@@ -135,10 +142,11 @@ class SBMLSolverHelper(object):
         if coreModelName=='':
             coreModelName,ext=os.path.splitext(os.path.basename(_modelFile))
         
-        modelPathNormalized=self.normalizePath(_modelFile)   
-        for cell in self.cellListByType(*_types):
+        modelPathNormalized=self.normalizePath(_modelFile) 
+        
+        for cell in self.cellListByType(*_types):            
             self.addSBMLToCell(_modelFile=_modelFile,_modelName=_modelName,_cell=cell,_stepSize=_stepSize,_initialConditions=_initialConditions,_coreModelName=coreModelName,_modelPathNormalized=modelPathNormalized, _options=_options)
-
+        
     def addSBMLToCellIds(self,_modelFile,_modelName='',_ids=[],_stepSize=1.0,_initialConditions={},_options={}):
         
         coreModelName=_modelName
@@ -184,10 +192,10 @@ class SBMLSolverHelper(object):
         for name,value in _initialConditions.iteritems():
             rr.model[name]=value
             
-        try:
-            rr.options.disablePythonDynamicProperties = True
-        except:
-            pass    
+        # try:
+            # rr.options.disablePythonDynamicProperties = True
+        # except:
+            # pass    
             
         # setting output results array size 
         rr.selections=[] # by default we do not request any output array at each intergration step
@@ -195,27 +203,38 @@ class SBMLSolverHelper(object):
         # in case user passes simulate options we set the here        
         if _options:    
             for name , value in _options.iteritems():
-                if name == "relative":
-                    rr.getIntegrator().setValue('relative_tolerance',value)
-                elif name == "absolute":
-                    rr.getIntegrator().setValue('absolute_tolerance',value)   
-                elif name == "stiff":
-                    rr.getIntegrator().setValue('stiff',value)   
-                else:
-                    setattr(rr.simulateOptions,name,value)                    
-
+                # setattr(rr.simulateOptions,name,value)
+                # print ' 1 name , value=',(name , value)
+                # if name=='steps':
+                    # print ' 1 name , value=',(name , value)
+                    # continue
+                
+                try:
+                    setattr(rr.getIntegrator(),name,value)
+                except AttributeError:
+                    setattr(rr.getIntegrator(),self.option_name_dict[name],value)
         else: # check for global options
             globalOptions=self.getSBMLGlobalOptions()
             if globalOptions:
                 for name , value in globalOptions.iteritems():
-                    if name == "relative":
-                        rr.getIntegrator().setValue('relative_tolerance',value)
-                    elif name == "absolute":
-                        rr.getIntegrator().setValue('absolute_tolerance',value)   
-                    elif name == "stiff":
-                        rr.getIntegrator().setValue('stiff',value)   
-                    else:
-                        setattr(rr.simulateOptions,name,value)                    
+                    # print ' 2 name , value=',(name , value)
+                    # print 'name=',name,' value=',value
+                    # if name=='steps':
+                        # continue
+                    try:
+                        setattr(rr.getIntegrator(),name,value)
+                    except AttributeError:
+                        setattr(rr.getIntegrator(),self.option_name_dict[name],value)
+                    # setattr(rr.simulateOptions,name,value)
+        
+        # if _options:    
+            # for name , value in _options.iteritems():
+                # setattr(rr.simulateOptions,name,value)
+        # else: # check for global options
+            # globalOptions=self.getSBMLGlobalOptions()
+            # if globalOptions:
+                # for name , value in globalOptions.iteritems():
+                    # setattr(rr.simulateOptions,name,value)           
 
     def deleteSBMLFromCellIds(self,_modelName,_ids=[]):
         import CompuCell
