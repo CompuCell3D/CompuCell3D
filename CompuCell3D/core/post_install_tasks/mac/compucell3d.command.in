@@ -79,6 +79,8 @@ export DYLD_LIBRARY_PATH=${PREFIX_CC3D}/player/vtk:$DYLD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=${PREFIX_CC3D}/player/VTKLibs:$DYLD_LIBRARY_PATH
 echo " ====> DYLD_LIBRARY_PATH: $DYLD_LIBRARY_PATH"
 
+# in case rr ships with dylibs 
+export DYLD_LIBRARY_PATH=${PREFIX_CC3D}/lib/python/roadrunner:$DYLD_LIBRARY_PATH
 
 # we don't need to set any PYTHONPATH values:
 # export PYTHONPATH=${PYTHONLIB_26_SYSTEM}/lib/python2.5/:${PYTHONLIB_26_SYSTEM}/python2.5/lib-dynload/:${PYTHONLIB_26_SYSTEM}/bin/

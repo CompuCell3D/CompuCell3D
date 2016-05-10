@@ -123,7 +123,7 @@ class SBMLSolverHelper(object):
                         # continue
                     try:
                         setattr(rr.getIntegrator(),name,value)
-                    except AttributeError:
+                    except (AttributeError,ValueError) as e:
                         setattr(rr.getIntegrator(),self.option_name_dict[name],value)
                     # setattr(rr.simulateOptions,name,value)
                 
@@ -211,7 +211,7 @@ class SBMLSolverHelper(object):
                 
                 try:
                     setattr(rr.getIntegrator(),name,value)
-                except AttributeError:
+                except (AttributeError,ValueError) as e:
                     setattr(rr.getIntegrator(),self.option_name_dict[name],value)
         else: # check for global options
             globalOptions=self.getSBMLGlobalOptions()
@@ -223,7 +223,7 @@ class SBMLSolverHelper(object):
                         # continue
                     try:
                         setattr(rr.getIntegrator(),name,value)
-                    except AttributeError:
+                    except (AttributeError,ValueError) as e:
                         setattr(rr.getIntegrator(),self.option_name_dict[name],value)
                     # setattr(rr.simulateOptions,name,value)
         
