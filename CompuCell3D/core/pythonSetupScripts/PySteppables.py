@@ -1598,7 +1598,7 @@ class ClusterList:
     def __iter__(self):
         return ClusterListIterator(self)
     def __len__(self):
-        return self.inventory.size()        
+        return int(self.inventory.size())        
 
 class ClusterListIterator:
     def __init__(self, _cellList):
@@ -1631,7 +1631,7 @@ class Clusters:
     def __iter__(self):
         return ClustersIterator(self)
     def __len__(self):
-        return self.inventory.size()        
+        return int(self.inventory.size())        
 
 class ClustersIterator:
     def __init__(self, _cellList):
@@ -1669,7 +1669,7 @@ class CompartmentList:
         return CompartmentListIterator(self)
                 
     def __len__(self):
-        return self.inventory.size()
+        return int(self.inventory.size())
         
     def clusterId(self):
         return self.__iter__().next().clusterId
@@ -1708,7 +1708,7 @@ class ClusterCellList:
         return ClusterCellListIterator(self)
         
     def __len__(self):
-        return self.inventory.size()        
+        return int(self.inventory.size())        
 
 class ClusterCellListIterator:
     def __init__(self, _cellList):
@@ -1812,7 +1812,7 @@ class CellNeighborListFlex:
         
     def __len__(self):
         neighborTracker = self.neighborTrackerAccessor.get(self.cell.extraAttribPtr)
-        return neighborTracker.cellNeighbors.size()
+        return int(neighborTracker.cellNeighbors.size())
         
     def __getitem__(self, idx):
         if idx > self.__len__()-1 : raise IndexError ("Out of bounds index: CellNeighborListAuto index = %s is out of bounds"%str(idx))         
@@ -2047,7 +2047,7 @@ class FocalPointPlasticityDataList:
         
     def __len__(self):    
         self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)         
-        return self.focalPointPlasticityTracker.focalPointPlasticityNeighbors.size()
+        return int(self.focalPointPlasticityTracker.focalPointPlasticityNeighbors.size())
         
     def __getitem__(self, idx):
         if idx > self.__len__()-1 : raise IndexError ("Out of bounds index: FocalPointPlasticityDataList index = %s is out of bounds"%str(idx))         
@@ -2095,7 +2095,7 @@ class InternalFocalPointPlasticityDataList:
             
     def __len__(self):    
         self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)         
-        return self.focalPointPlasticityTracker.internalFocalPointPlasticityNeighbors.size()
+        return int(self.focalPointPlasticityTracker.internalFocalPointPlasticityNeighbors.size())
         
     def __iter__(self):
         return InternalFocalPointPlasticityDataIterator(self)
@@ -2138,7 +2138,7 @@ class AnchorFocalPointPlasticityDataList:
             
     def __len__(self):    
         self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)         
-        return self.focalPointPlasticityTracker.anchors.size()        
+        return int(self.focalPointPlasticityTracker.anchors.size())
         
     def __iter__(self):
         return AnchorFocalPointPlasticityDataIterator(self)
