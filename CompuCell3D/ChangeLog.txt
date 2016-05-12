@@ -165,8 +165,9 @@ Version 3.7.5 May 2016
 
     This version includes improved player and many convenience features in Python scrip ting which make model development much easier. 
     Additions:
-        Windows versions ship with bundled Python distributions
-        We added support for OSX 10.11 - ElCapitan 
+        Windows versions ship with bundled Python distribution - no need to install any dependencies. CC3D installer is self-contained package
+        Added suport for 64bit binaries on Windows
+        Support for OSX 10.11 - ElCapitan         
         Starting from this version we will be only supporting Long Term Support Ubuntu releases (12.04, 14.0 16.04 etc)
         Player has been improved and users can add axes
         RoadRunner was upgraded to the latest version. 
