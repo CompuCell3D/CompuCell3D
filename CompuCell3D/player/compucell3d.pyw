@@ -22,9 +22,19 @@ if sys.platform=='darwin':
     mac_ver = platform.mac_ver()
     mac_ver_float = float('.'.join(mac_ver[0].split('.')[:2]))
     if mac_ver_float == 10.11:
-        
+
         def handler(msg_type, msg_log_context, msg_string=None):
             if msg_log_context.startswith('QCocoaView handleTabletEvent'):
+                return
+            print msg_log_context
+
+        PyQt4.QtCore.qInstallMsgHandler(handler)
+
+    elif mac_ver_float == 10.10:
+
+        def handler(msg_type, msg_log_context, msg_string=None):
+            # pass
+            if msg_log_context.startswith('Qt: qfontForThemeFont:'):
                 return
             print msg_log_context
 

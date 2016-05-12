@@ -50,7 +50,15 @@ if sys.platform=='darwin':
 
         PyQt4.QtCore.qInstallMsgHandler(handler)
 
+    elif mac_ver_float == 10.10:
 
+        def handler(msg_type, msg_log_context, msg_string=None):
+            # pass
+            if msg_log_context.startswith('Qt: qfontForThemeFont:'):
+                return
+            print msg_log_context
+
+        PyQt4.QtCore.qInstallMsgHandler(handler)
 
 
 
