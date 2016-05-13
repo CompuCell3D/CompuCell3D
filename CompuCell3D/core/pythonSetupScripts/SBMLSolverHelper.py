@@ -138,6 +138,9 @@ class SBMLSolverHelper(object):
         CompuCellSetup.globalSBMLSimulatorOptions=_options
         
     def addSBMLToCellTypes(self,_modelFile='',_modelName='',_types=[],_stepSize=1.0,_initialConditions={},_options={}):        
+        if 'steps'in _options.keys():
+            print '-----------WARNING-----------------\n\n steps option for SBML solver is deprecated.'
+
         coreModelName=_modelName
         if coreModelName=='':
             coreModelName,ext=os.path.splitext(os.path.basename(_modelFile))
@@ -149,6 +152,9 @@ class SBMLSolverHelper(object):
         
     def addSBMLToCellIds(self,_modelFile,_modelName='',_ids=[],_stepSize=1.0,_initialConditions={},_options={}):
         
+        if 'steps'in _options.keys():
+            print '-----------WARNING-----------------\n\n steps option for SBML solver is deprecated.'
+            
         coreModelName=_modelName
         if coreModelName=='':
             coreModelName,ext=os.path.splitext(os.path.basename(_modelFile))
