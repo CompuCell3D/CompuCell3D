@@ -57,11 +57,8 @@ from DeltaNotchSteppables import DeltaNotchClass
 deltaNotchClass=DeltaNotchClass(_simulator=sim,_frequency=1)
 steppableRegistry.registerSteppable(deltaNotchClass)
 
-#Create extra player fields here or add attributes
-
 from DeltaNotchSteppables import ExtraFields
 extraFields=ExtraFields(_simulator=sim,_frequency=5)
 steppableRegistry.registerSteppable(extraFields)
 
 CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
-##sys.exit()

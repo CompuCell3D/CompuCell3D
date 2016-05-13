@@ -1,6 +1,0 @@
-<Simulation version="3.5.1">
-   <XMLScript Type="XMLScript">Simulation/OscillatingContactEnergiesFlex.xml</XMLScript>
-   <PythonScript Type="PythonScript">Simulation/OscillatingContactEnergiesFlex.py</PythonScript>
-   <Resource Type="Python">Simulation/OscillatingContactEnergiesFlexSteppables.py</Resource>
-   <Resource Type="SBML">Simulation/SimpleExample.sbml</Resource>   
-</Simulation>
