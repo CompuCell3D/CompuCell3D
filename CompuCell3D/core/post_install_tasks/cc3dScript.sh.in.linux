@@ -5,7 +5,8 @@ current_directory=$(pwd)
 # necessary to enforce standard convention for numeric values specification on non-English OS
 export LC_NUMERIC="C.UTF-8" 
 
-export PREFIX_CC3D=@COMPUCELL_INSTALL_DIR@
+#export PREFIX_CC3D=@COMPUCELL_INSTALL_DIR@
+export PREFIX_CC3D="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 cd $PREFIX_CC3D
 #export @LIBRARY_PATH_SYNTAX@=@xercesc_ld_path@:$@LIBRARY_PATH_SYNTAX@

@@ -6,7 +6,8 @@ current_directory=$(pwd)
 export LC_NUMERIC="C.UTF-8" 
 
 
-export PREFIX_CC3D=@COMPUCELL_INSTALL_DIR@
+# export PREFIX_CC3D=@COMPUCELL_INSTALL_DIR@
+export PREFIX_CC3D="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 export MAX_NUMBER_OF_CONSECUTIVE_RUNS=50
 
