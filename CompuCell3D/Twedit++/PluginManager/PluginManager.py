@@ -10,6 +10,7 @@ Module implementing the Plugin Manager.
 import os
 import sys
 import imp
+import traceback
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import QPixmap
@@ -215,6 +216,9 @@ class PluginManager(QObject):
                 self.trUtf8("\n\n\n\n\n Module failed to load. Error: %1").arg(unicode(err))
             print "Error loading plugin module:",  name
             print unicode(err)
+            
+            traceback.print_exc(file=sys.stdout)
+            
             # sys.exit()
             
             
@@ -270,6 +274,8 @@ class PluginManager(QObject):
             self.__failedModules[name] = module
             print "Error loading plugin module:",  name
             print "\n\n\n",unicode(err),'\n\n\n '
+            
+            traceback.print_exc(file=sys.stdout)
             
             # sys.exit()
             
