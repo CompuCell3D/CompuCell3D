@@ -436,7 +436,7 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
     
     def areCellsDifferent(self,_cell1,_cell2):
         import CompuCell
-        return areCellsDifferent(_cell1,_cell2)
+        return CompuCell.areCellsDifferent(_cell1,_cell2)
             
     def getDictionaryAttribute(self,_cell):
         # access/modification of a dictionary attached to cell - make sure to decalare in main script that you will use such attribute
