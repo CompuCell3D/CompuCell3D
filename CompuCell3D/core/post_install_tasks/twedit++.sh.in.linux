@@ -4,7 +4,8 @@
 export LC_NUMERIC="C.UTF-8" 
 
 
-export PREFIX_CC3D=@COMPUCELL_INSTALL_DIR@
+# export PREFIX_CC3D=@COMPUCELL_INSTALL_DIR@
+export PREFIX_CC3D="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 export PYTHON_MODULE_PATH=${PREFIX_CC3D}/pythonSetupScripts
 export SWIG_LIB_INSTALL_DIR=${PREFIX_CC3D}/lib/python
