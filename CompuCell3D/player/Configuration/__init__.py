@@ -1,5 +1,5 @@
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+# from PyQt4.QtGui import *
+# from PyQt4.QtCore import *
 
 #from Messaging import stdMsg, dbgMsg,pd, errMsg, setDebugging
 #setDebugging(1)

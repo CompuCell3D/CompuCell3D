@@ -1,8 +1,8 @@
 
 import os
 import sys
-from PyQt4.QtCore import QEvent, Qt
-from PyQt4.QtGui import QApplication
+# from PyQt5.QtCore import QEvent, Qt
+from PyQt5.QtWidgets import QApplication
 
 class CQApplication(QApplication):
     def __init__(self, argv):

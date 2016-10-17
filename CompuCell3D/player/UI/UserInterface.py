@@ -7,33 +7,35 @@
 import os
 import sys
 
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from PyQt4.QtXml import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtXml import *
 
 import ViewManager
 from ModelEditor import ModelEditor
 
+# TODO
+#from Plugins.ViewManagerPlugins.SimpleTabView import SimpleTabView
 
-from Plugins.ViewManagerPlugins.SimpleTabView import SimpleTabView
+#TODO
+# from CPlugins import CPlugins
+# from LatticeDataModelTable import LatticeDataModelTable
 
-from CPlugins import CPlugins
-from LatticeDataModelTable import LatticeDataModelTable
+# TODO
+#from Console import Console
 
-from Console import Console
+# TODO
+# from Utilities.QVTKRenderWidget import QVTKRenderWidget
+# import vtk
 
-from Utilities.QVTKRenderWidget import QVTKRenderWidget
-import vtk
-
-from Utilities.SimModel import SimModel
-from Utilities.CPluginsModel import CPluginsModel
-from Utilities.LatticeDataModel import LatticeDataModel
-from Utilities.SimDelegate import SimDelegate
+# from Utilities.SimModel import SimModel
+# from Utilities.CPluginsModel import CPluginsModel
+# from Utilities.LatticeDataModel import LatticeDataModel
+# from Utilities.SimDelegate import SimDelegate
 import Configuration
 import DefaultData
 
-#from ViewManager.ViewManager import ViewManager
-#from PluginManager.PluginManager import PluginManager
 
 cc3dApp = QCoreApplication.instance
 
@@ -70,18 +72,20 @@ class UserInterface(QMainWindow):
 
         QApplication.setWindowIcon(QIcon(gip("cc3d_64x64_logo.png")))
         self.setWindowIcon(QIcon(gip("cc3d_64x64_logo.png")))
-        self.setWindowTitle(self.trUtf8("CompuCell3D Player"))
+        self.setWindowTitle("CompuCell3D Player")
         
         self.origStdout=sys.stdout
         self.origStderr=sys.stderr
         # Setting self.viewmanager and dock windows
-        self.__createViewManager()        
+        #TODO
+        # self.__createViewManager()
         self.__createLayout()
 
         # # Generate the redirection helpers
         self.stdout = Redirector(False)
         self.stderr = Redirector(True)
-        self.stderr.setStdErrConsole(self.console.getStdErrConsole())
+        # #TODO
+        # self.stderr.setStdErrConsole(self.console.getStdErrConsole())
         
         # Now setup the connections
         if Configuration.getSetting("UseInternalConsole"):
@@ -120,43 +124,43 @@ class UserInterface(QMainWindow):
         else:
             #silencing output from Python
             self.enablePythonOutput(False)
-            
-        if self.viewmanager.MDI_ON: # configuration of MDI
-            playerSizes=Configuration.getSetting("PlayerSizes")
-            if playerSizes and playerSizes.size()>0:
-                self.resize(Configuration.getSetting("MainWindowSize"))
-                self.move(Configuration.getSetting("MainWindowPosition"))
-                self.restoreState(playerSizes)
-            else:
-                self.resize(Configuration.getSetting("MainWindowSize"))
-                self.move(Configuration.getSetting("MainWindowPosition"))
-        else:  # configuration of floating windows
-            playerSizes=Configuration.getSetting("PlayerSizesFloating")
-
-            if playerSizes and playerSizes.size()>0:
-                self.resize(Configuration.getSetting("MainWindowSizeFloating"))
-                self.resize(self.size().width(), 0) # resizing vertical dimension to be minimal
-                self.move(Configuration.getSetting("MainWindowPositionFloating"))
-                self.restoreState(playerSizes)
-            else:
-                self.resize(Configuration.getSetting("MainWindowSizeFloating"))
-                self.resize(self.size().width(), 0) # resizing vertical dimension to be minimal
-                self.move(Configuration.getSetting("MainWindowPositionFloating"))
-
-
-        # if playerSizes and playerSizes.size()>0:
-        #     self.resize(Configuration.getSetting("MainWindowSize"))
-        #     self.move(Configuration.getSetting("MainWindowPosition"))
-        #     self.restoreState(playerSizes)
-        # else:
-        #     self.resize(Configuration.getSetting("MainWindowSize"))
-        #     self.move(Configuration.getSetting("MainWindowPosition"))
-
-        # MDIFIX
-        floatingFlag = Configuration.getSetting('FloatingWindows')
-        self.modelEditorDock.setFloating(floatingFlag)
-        self.consoleDock.setFloating(floatingFlag)
-        self.latticeDataDock.setFloating(floatingFlag)
+        #TODO
+        # if self.viewmanager.MDI_ON: # configuration of MDI
+        #     playerSizes=Configuration.getSetting("PlayerSizes")
+        #     if playerSizes and playerSizes.size()>0:
+        #         self.resize(Configuration.getSetting("MainWindowSize"))
+        #         self.move(Configuration.getSetting("MainWindowPosition"))
+        #         self.restoreState(playerSizes)
+        #     else:
+        #         self.resize(Configuration.getSetting("MainWindowSize"))
+        #         self.move(Configuration.getSetting("MainWindowPosition"))
+        # else:  # configuration of floating windows
+        #     playerSizes=Configuration.getSetting("PlayerSizesFloating")
+        #
+        #     if playerSizes and playerSizes.size()>0:
+        #         self.resize(Configuration.getSetting("MainWindowSizeFloating"))
+        #         self.resize(self.size().width(), 0) # resizing vertical dimension to be minimal
+        #         self.move(Configuration.getSetting("MainWindowPositionFloating"))
+        #         self.restoreState(playerSizes)
+        #     else:
+        #         self.resize(Configuration.getSetting("MainWindowSizeFloating"))
+        #         self.resize(self.size().width(), 0) # resizing vertical dimension to be minimal
+        #         self.move(Configuration.getSetting("MainWindowPositionFloating"))
+        #
+        #
+        # # if playerSizes and playerSizes.size()>0:
+        # #     self.resize(Configuration.getSetting("MainWindowSize"))
+        # #     self.move(Configuration.getSetting("MainWindowPosition"))
+        # #     self.restoreState(playerSizes)
+        # # else:
+        # #     self.resize(Configuration.getSetting("MainWindowSize"))
+        # #     self.move(Configuration.getSetting("MainWindowPosition"))
+        #
+        # # MDIFIX
+        # floatingFlag = Configuration.getSetting('FloatingWindows')
+        # self.modelEditorDock.setFloating(floatingFlag)
+        # self.consoleDock.setFloating(floatingFlag)
+        # self.latticeDataDock.setFloating(floatingFlag)
 
     ##########################################################
     ## Below are slots to handle StdOut and StdErr
@@ -213,84 +217,87 @@ class UserInterface(QMainWindow):
         
         self.__menus = {}
         mb = self.menuBar()
-        
-        (fileMenu,recentSimulationsMenu)=self.viewmanager.initFileMenu()
-        
-        self.__menus["file"] = fileMenu
-        self.__menus["recentSimulations"] = recentSimulationsMenu
-        
-        self.connect(self.__menus["recentSimulations"] , SIGNAL("aboutToShow()"), self.viewmanager.updateRecentFileMenu )
-        
-        mb.addMenu(self.__menus["file"])
-        
-        self.__menus["view"] = QMenu(self.trUtf8("&View"), self)
-        mb.addMenu(self.__menus["view"])
-        self.connect(self.__menus["view"], SIGNAL('aboutToShow()'), self.__showViewMenu)
-        
-        self.__menus["toolbars"] = QMenu("&Toolbars", self.__menus["view"])
-        self.__menus["toolbars"].setIcon(QIcon(gip("toolbars.png")))
-        self.connect(self.__menus["toolbars"], SIGNAL('aboutToShow()'), self.__showToolbarsMenu)
-        self.connect(self.__menus["toolbars"], SIGNAL('triggered(QAction *)'), self.__TBMenuTriggered)
-        self.__showViewMenu()
-                
-        self.__menus["simulation"] = self.viewmanager.initSimMenu()
-        mb.addMenu(self.__menus["simulation"])
-        self.__menus["visualization"] = self.viewmanager.initVisualMenu()
-        mb.addMenu(self.__menus["visualization"])
-        self.__menus["tools"] = self.viewmanager.initToolsMenu()
-        mb.addMenu(self.__menus["tools"])
-        
 
-        
-        self.__menus["window"] = self.viewmanager.initWindowMenu()
-        mb.addMenu(self.__menus["window"])        
-
-        self.connect(self.__menus["window"] , SIGNAL("aboutToShow()"), self.viewmanager.updateWindowMenu )     
-
-        self.__menus["help"] = self.viewmanager.initHelpMenu()
-        mb.addMenu(self.__menus["help"])
+        #TODO
+        # (fileMenu,recentSimulationsMenu)=self.viewmanager.initFileMenu()
+        #
+        # self.__menus["file"] = fileMenu
+        # self.__menus["recentSimulations"] = recentSimulationsMenu
+        #
+        # self.connect(self.__menus["recentSimulations"] , SIGNAL("aboutToShow()"), self.viewmanager.updateRecentFileMenu )
+        #
+        # mb.addMenu(self.__menus["file"])
+        #
+        # self.__menus["view"] = QMenu(self.trUtf8("&View"), self)
+        # mb.addMenu(self.__menus["view"])
+        # self.connect(self.__menus["view"], SIGNAL('aboutToShow()'), self.__showViewMenu)
+        #
+        # self.__menus["toolbars"] = QMenu("&Toolbars", self.__menus["view"])
+        # self.__menus["toolbars"].setIcon(QIcon(gip("toolbars.png")))
+        # self.connect(self.__menus["toolbars"], SIGNAL('aboutToShow()'), self.__showToolbarsMenu)
+        # self.connect(self.__menus["toolbars"], SIGNAL('triggered(QAction *)'), self.__TBMenuTriggered)
+        # self.__showViewMenu()
+        #
+        # self.__menus["simulation"] = self.viewmanager.initSimMenu()
+        # mb.addMenu(self.__menus["simulation"])
+        # self.__menus["visualization"] = self.viewmanager.initVisualMenu()
+        # mb.addMenu(self.__menus["visualization"])
+        # self.__menus["tools"] = self.viewmanager.initToolsMenu()
+        # mb.addMenu(self.__menus["tools"])
+        #
+        #
+        #
+        # self.__menus["window"] = self.viewmanager.initWindowMenu()
+        # mb.addMenu(self.__menus["window"])
+        #
+        # self.connect(self.__menus["window"] , SIGNAL("aboutToShow()"), self.viewmanager.updateWindowMenu )
+        #
+        # self.__menus["help"] = self.viewmanager.initHelpMenu()
+        # mb.addMenu(self.__menus["help"])
         
 
     def __initToolbars(self):
-        simtb = self.viewmanager.initSimToolbar()
-        # filetb = self.viewmanager.initFileToolbar(self.toolbarManager)
-        filetb = self.viewmanager.initFileToolbar()
-        
-        # viewtb = QToolBar("View", self)
-        # viewtb.setIconSize(QSize(20, 18))
-        # viewtb.setObjectName("ViewToolbar")
-        # viewtb.setToolTip("View")
-        # viewtb.addAction(self.zoomInAct)
-        # viewtb.addAction(self.zoomOutAct)
-        # #viewtb.addAction(self.zoomFixedAct)
-        # viewtb.addWidget(self.zoomFixed)
-        # viewtb.addWidget(QLabel("  "))
-        # viewtb.addAction(self.screenshotAct)
-
-        visualizationtb = self.viewmanager.initVisualizationToolbar()
-        windowtb = self.viewmanager.initWindowToolbar()
-        
-        
-        # cstb = self.viewmanager.initCrossSectionToolbar() #QToolBar("Cross Section", self) #
-        #threeDAct = QAction(self)
-        #threeDRB  = QRadioButton("3D")
-        
-        #cstb.insertWidget(threeDAct, threeDRB)
-        #viewtb = self.viewmanager.initViewToolbar()
-            
-        self.addToolBar(simtb)              
-        self.addToolBar(filetb)
-        # self.addToolBar(viewtb)
-        self.addToolBar(visualizationtb)
-        self.addToolBar(windowtb)
-        # self.addToolBar(cstb)
-        
-        # just add new toolbars to the end of the list
-        self.__toolbars = {}
-        self.__toolbars["file"] = [filetb.windowTitle(), filetb]
-        # self.__toolbars["view"] = [viewtb.windowTitle(), viewtb]
-        self.__toolbars["simulation"] = [simtb.windowTitle(), simtb]
-        # self.__toolbars["crossSection"] = [cstb.windowTitle(), cstb]      
+        #TODO
+        pass
+        # simtb = self.viewmanager.initSimToolbar()
+        # # filetb = self.viewmanager.initFileToolbar(self.toolbarManager)
+        # filetb = self.viewmanager.initFileToolbar()
+        #
+        # # viewtb = QToolBar("View", self)
+        # # viewtb.setIconSize(QSize(20, 18))
+        # # viewtb.setObjectName("ViewToolbar")
+        # # viewtb.setToolTip("View")
+        # # viewtb.addAction(self.zoomInAct)
+        # # viewtb.addAction(self.zoomOutAct)
+        # # #viewtb.addAction(self.zoomFixedAct)
+        # # viewtb.addWidget(self.zoomFixed)
+        # # viewtb.addWidget(QLabel("  "))
+        # # viewtb.addAction(self.screenshotAct)
+        #
+        # visualizationtb = self.viewmanager.initVisualizationToolbar()
+        # windowtb = self.viewmanager.initWindowToolbar()
+        #
+        #
+        # # cstb = self.viewmanager.initCrossSectionToolbar() #QToolBar("Cross Section", self) #
+        # #threeDAct = QAction(self)
+        # #threeDRB  = QRadioButton("3D")
+        #
+        # #cstb.insertWidget(threeDAct, threeDRB)
+        # #viewtb = self.viewmanager.initViewToolbar()
+        #
+        # self.addToolBar(simtb)
+        # self.addToolBar(filetb)
+        # # self.addToolBar(viewtb)
+        # self.addToolBar(visualizationtb)
+        # self.addToolBar(windowtb)
+        # # self.addToolBar(cstb)
+        #
+        # # just add new toolbars to the end of the list
+        # self.__toolbars = {}
+        # self.__toolbars["file"] = [filetb.windowTitle(), filetb]
+        # # self.__toolbars["view"] = [viewtb.windowTitle(), viewtb]
+        # self.__toolbars["simulation"] = [simtb.windowTitle(), simtb]
+        # # self.__toolbars["crossSection"] = [cstb.windowTitle(), cstb]
         
     
     
@@ -362,14 +369,19 @@ class UserInterface(QMainWindow):
         # self.modelAct.setChecked(True) #not self.projectBrowserDock.isHidden()
         if Configuration.getSetting('DisplayModeleditor'):
             self.modelAct.setChecked(True)
-        self.connect(self.modelAct, SIGNAL("triggered(bool)"), self.toggleModelEditor)
+        # self.connect(self.modelAct, SIGNAL("triggered(bool)"), self.toggleModelEditor)
+        self.modelAct.triggered.connect(self.toggleModelEditor)
+        # self.connect(self.modelAct, SIGNAL("triggered(bool)"), self.toggleModelEditor)
 
         self.actions.append(self.modelAct)
         
         self.pluginsAct = QAction("&Plugins", self)
         self.pluginsAct.setCheckable(True)
         self.pluginsAct.setChecked(True)
-        self.connect(self.pluginsAct, SIGNAL("triggered()"), self.__toggleCPlugins)
+        # self.connect(self.pluginsAct, SIGNAL("triggered()"), self.__toggleCPlugins)
+        self.pluginsAct.triggered.connect(self.__toggleCPlugins)
+
+
         self.actions.append(self.pluginsAct)
 
         self.latticeDataAct = QAction("&Lattice Data", self)
@@ -377,7 +389,9 @@ class UserInterface(QMainWindow):
         if Configuration.getSetting('DisplayLatticeData'):
             self.latticeDataAct.setChecked(True)
         # self.latticeDataAct.setChecked(False)
-        self.connect(self.latticeDataAct, SIGNAL("triggered(bool)"), self.toggleLatticeData)
+        # self.connect(self.latticeDataAct, SIGNAL("triggered(bool)"), self.toggleLatticeData)
+        self.latticeDataAct.triggered.connect(self.toggleLatticeData)
+
         self.actions.append(self.latticeDataAct)
         
         # self.connect(self.zoomInAct, SIGNAL('triggered()'), self.viewmanager.zoomIn)
@@ -404,7 +418,9 @@ class UserInterface(QMainWindow):
         if Configuration.getSetting('DisplayConsole'):
             self.consoleAct.setChecked(True)
 
-        self.connect(self.consoleAct, SIGNAL("triggered(bool)"), self.toggleConsole)
+        # self.connect(self.consoleAct, SIGNAL("triggered(bool)"), self.toggleConsole)
+        self.consoleAct.triggered.connect(self.toggleConsole)
+
 
 
 
@@ -462,41 +478,42 @@ class UserInterface(QMainWindow):
 
         self.modelEditorDock .setToggleFcn(self.toggleModelEditor)
         modelEditor = ModelEditor(self.modelEditorDock)      
-        
-        # self.model = SimModel(QDomDocument(), self.modelEditorDock) # Do I need parent self.modelEditorDock
-        self.model = SimModel(None, self.modelEditorDock) # Do I need parent self.modelEditorDock
-        modelEditor.setModel(self.model) # Set the default model
-        modelEditor.setItemDelegate(SimDelegate(self))
-        modelEditor.setParams()
-        modelEditor.setSelectionBehavior(QAbstractItemView.SelectItems)
-        self.viewmanager.setModelEditor(modelEditor) # Sets the Model Editor in the ViewManager
-        self.__setupDockWindow(self.modelEditorDock, Qt.LeftDockWidgetArea, modelEditor, self.trUtf8("Model Editor")) # projectBrowser  
 
-        self.latticeDataDock = self.__createDockWindow("LatticeData")
-        self.latticeDataDock.setToggleFcn(self.toggleLatticeData)
-        self.latticeDataModelTable = LatticeDataModelTable(self.latticeDataDock, self.viewmanager)
-        self.latticeDataModel = LatticeDataModel() 
-        # self.latticeDataModelTable.setModel(self.latticeDataModel)
+        #TODO
+        # # self.model = SimModel(QDomDocument(), self.modelEditorDock) # Do I need parent self.modelEditorDock
+        # self.model = SimModel(None, self.modelEditorDock) # Do I need parent self.modelEditorDock
+        # modelEditor.setModel(self.model) # Set the default model
+        # modelEditor.setItemDelegate(SimDelegate(self))
+        # modelEditor.setParams()
+        # modelEditor.setSelectionBehavior(QAbstractItemView.SelectItems)
+        # self.viewmanager.setModelEditor(modelEditor) # Sets the Model Editor in the ViewManager
+        # self.__setupDockWindow(self.modelEditorDock, Qt.LeftDockWidgetArea, modelEditor, self.trUtf8("Model Editor")) # projectBrowser
+        #
+        # self.latticeDataDock = self.__createDockWindow("LatticeData")
+        # self.latticeDataDock.setToggleFcn(self.toggleLatticeData)
+        # self.latticeDataModelTable = LatticeDataModelTable(self.latticeDataDock, self.viewmanager)
+        # self.latticeDataModel = LatticeDataModel()
+        # # self.latticeDataModelTable.setModel(self.latticeDataModel)
         
         
-        # self.cplugins.latticeDataModelTable()
-        #self.connect(self.cplugins, SIGNAL("doubleClicked(const QModelIndex &)"), self.__showPluginView)
+        # # self.cplugins.latticeDataModelTable()
+        # #self.connect(self.cplugins, SIGNAL("doubleClicked(const QModelIndex &)"), self.__showPluginView)
+        #
+        # self.__setupDockWindow(self.latticeDataDock, Qt.LeftDockWidgetArea, self.latticeDataModelTable, self.trUtf8("LatticeDataFiles"))
+        # self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
         
-        self.__setupDockWindow(self.latticeDataDock, Qt.LeftDockWidgetArea, self.latticeDataModelTable, self.trUtf8("LatticeDataFiles"))
-        self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)         
-        
-        # Set up the console
-        self.consoleDock = self.__createDockWindow("Console")
-
-        self.consoleDock.setToggleFcn(self.toggleConsole)
-
-        self.console     = Console(self.consoleDock)        
-        self.consoleDock.setWidget(self.console)
-        # self.consoleDock.setWindowTitle("Console")
-        self.__setupDockWindow(self.consoleDock, Qt.BottomDockWidgetArea, self.console, self.trUtf8("Console")) 
-        #self.viewmanager.addWidget(self.consoleDock)
-        #self.viewmanager.setSizes([400, 50])
-        #self.consoleDock.show()
+        # # Set up the console
+        # self.consoleDock = self.__createDockWindow("Console")
+        #
+        # self.consoleDock.setToggleFcn(self.toggleConsole)
+        #
+        # self.console     = Console(self.consoleDock)
+        # self.consoleDock.setWidget(self.console)
+        # # self.consoleDock.setWindowTitle("Console")
+        # self.__setupDockWindow(self.consoleDock, Qt.BottomDockWidgetArea, self.console, self.trUtf8("Console"))
+        # #self.viewmanager.addWidget(self.consoleDock)
+        # #self.viewmanager.setSizes([400, 50])
+        # #self.consoleDock.show()
         
         #rec = self.console.geometry()
         #rec.setHeight(300)
@@ -606,7 +623,8 @@ class UserInterface(QMainWindow):
         self.consoleAct.setChecked(flag)
 
         Configuration.setSetting('DisplayConsole',flag)
-        self.__toggleWindowFlag(self.consoleDock, flag)
+        #TODO
+        # self.__toggleWindowFlag(self.consoleDock, flag)
 
     def __showViewMenu(self):
         """

@@ -2,8 +2,9 @@
 Module implementing a TabWidget class substituting QTabWidget.
 """
 
-from PyQt4.QtGui import QTabWidget
-from PyQt4.QtCore import Qt, SIGNAL
+from PyQt5.QtWidgets import QTabWidget
+
+from PyQt5.QtCore import Qt, SIGNAL
 
 class CTabWidget(QTabWidget):
     """
