@@ -497,11 +497,11 @@ class SimpleViewManager(QObject):
 
         self.configAct.setShortcut(Qt.CTRL + Qt.Key_Comma)
 
-        self.configAct.setWhatsThis(self.trUtf8(
+        self.configAct.setWhatsThis(
             """<b>Configuration</b>"""
             """<p>Set the configuration items of the simulation"""
             """ with your prefered values.</p>"""
-        ))
+        )
 
         self.pifFromVTKAct = QAction("& Generate PIF File from VTK output ...", self)
         # self.configAct.setWhatsThis(self.trUtf8(
@@ -511,9 +511,9 @@ class SimpleViewManager(QObject):
         # ))    
 
         self.pifFromSimulationAct = QAction("& Generate PIF File from current snapshot ...", self)
-        self.configAct.setWhatsThis(self.trUtf8(
+        self.configAct.setWhatsThis(
             """<b>Generate PIF file from current simulation snapshot </b>"""
-        ))
+        )
 
         self.toolsActions.append(self.configAct)
         self.toolsActions.append(self.pifFromSimulationAct)
@@ -568,38 +568,49 @@ class SimpleViewManager(QObject):
 
     def __initHelpActions(self):
         self.quickAct = QAction("&Quick Start", self)
-        self.connect(self.quickAct, SIGNAL('triggered()'), self.__open_manuals_webpage)
+        self.quickAct.triggered.connect(self.__open_manuals_webpage)
+        # self.connect(self.quickAct, SIGNAL('triggered()'), self.__open_manuals_webpage)
         self.tutorAct = QAction("&Tutorials", self)
-        self.connect(self.tutorAct, SIGNAL('triggered()'), self.__open_manuals_webpage)
+        self.tutorAct.triggered.connect(self.__open_manuals_webpage)
+
+        # self.connect(self.tutorAct, SIGNAL('triggered()'), self.__open_manuals_webpage)
         self.refManAct = QAction(QIcon(gip("man.png")), "&Reference Manual", self)
-        self.connect(self.refManAct, SIGNAL('triggered()'), self.__open_manuals_webpage)
+        self.refManAct.triggered.connect(self.__open_manuals_webpage)
+        # self.connect(self.refManAct, SIGNAL('triggered()'), self.__open_manuals_webpage)
         self.aboutAct = QAction(QIcon(gip("cc3d_64x64_logo.png")), "&About CompuCell3D", self)
-        self.connect(self.aboutAct, SIGNAL('triggered()'), self.__about)
+        self.aboutAct.triggered.connect(self.__about)
+        # self.connect(self.aboutAct, SIGNAL('triggered()'), self.__about)
 
         self.mail_subscribe_act = QAction(QIcon(gip("email-at-sign-icon.png")), "Subscribe to Mailing List", self)
-        self.connect(self.mail_subscribe_act, SIGNAL('triggered()'), self.__mail_subscribe)
+        self.mail_subscribe_act.triggered.connect(self.__mail_subscribe)
+        # self.connect(self.mail_subscribe_act, SIGNAL('triggered()'), self.__mail_subscribe)
 
         self.mail_unsubscribe_act = QAction(QIcon(gip("email-at-sign-icon-unsubscribe.png")),
                                             "Unsubscribe from Mailing List", self)
-        self.connect(self.mail_unsubscribe_act, SIGNAL('triggered()'), self.__mail_unsubscribe)
+        self.mail_unsubscribe_act.triggered.connect(self.__mail_unsubscribe)
+        # self.connect(self.mail_unsubscribe_act, SIGNAL('triggered()'), self.__mail_unsubscribe)
 
         self.mail_subscribe_unsubscribe_web_act = QAction("Subscribe/Unsubscribe Mailing List - Web browser", self)
-        self.connect(self.mail_subscribe_unsubscribe_web_act, SIGNAL('triggered()'), self.__mail_subscribe_unsubscribe_web)
+        self.mail_subscribe_unsubscribe_web_act.triggered.connect(
+                     self.__mail_subscribe_unsubscribe_web)
+        # self.connect(self.mail_subscribe_unsubscribe_web_act, SIGNAL('triggered()'), self.__mail_subscribe_unsubscribe_web)
 
         self.check_update_act = QAction("Check for CC3D Updates", self)
-        self.connect(self.check_update_act, SIGNAL('triggered()'), self.__check_update)
+        self.check_update_act.triggered.connect(self.__check_update)
+        # self.connect(self.check_update_act, SIGNAL('triggered()'), self.__check_update)
         self.display_no_update_info = False
 
         self.whatsThisAct = QAction(QIcon(gip("whatsThis.png")), "&What's This?", self)
-        self.whatsThisAct.setWhatsThis(self.trUtf8(
+        self.whatsThisAct.setWhatsThis(
             """<b>Display context sensitive help</b>"""
             """<p>In What's This? mode, the mouse cursor shows an arrow with a question"""
             """ mark, and you can click on the interface elements to get a short"""
             """ description of what they do and how to use them. In dialogs, this"""
             """ feature can be accessed using the context help button in the"""
             """ titlebar.</p>"""
-        ))
-        self.connect(self.whatsThisAct, SIGNAL('triggered()'), self.__whatsThis)
+        )
+        self.whatsThisAct.triggered.connect(self.__whatsThis)
+        # self.connect(self.whatsThisAct, SIGNAL('triggered()'), self.__whatsThis)
 
         # Why append?
         self.helpActions.append(self.quickAct)

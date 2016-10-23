@@ -1,9 +1,10 @@
 __author__ = 'm'
 
-from PyQt4 import QtCore
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtNetwork import *
+from PyQt5 import QtCore
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtNetwork import *
 
 class WebFetcher(QObject):
     '''
@@ -11,7 +12,9 @@ class WebFetcher(QObject):
     '''
     # signal emited once the web page content is fetched - first argument is a full content fo the web page,
     # second is url from which the content is fetched
-    gotWebContentSignal = QtCore.pyqtSignal((QtCore.QString, QtCore.QString))
+    # gotWebContentSignal = QtCore.pyqtSignal((QtCore.QString, QtCore.QString))
+    # gotWebContentSignal = QtCore.pyqtSignal('QString', 'QString')
+    gotWebContentSignal = QtCore.pyqtSignal(str, str)
 
     def __init__(self, _parent=None):
         super(WebFetcher, self).__init__()
@@ -49,10 +52,10 @@ class WebFetcher(QObject):
         :return:
         '''
         data = reply.readAll()
-        data_qstring = QString(data)
+        data_qstring = str(data)
         data_str = str(data_qstring)
         # print data_str
-        self.gotWebContentSignal.emit(data_qstring, QString(self.url_str))
+        self.gotWebContentSignal.emit(data_qstring, str(self.url_str))
 
 
 

@@ -106,6 +106,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.useVTKPlots = False
         # object responsible for creating/managing plot windows so they're accessible from steppable level
+        #TODO FIX IT
+        # self.plotManager = None
         self.plotManager = createPlotManager(self,self.useVTKPlots)
 
         self.fieldTypes = {}
@@ -158,7 +160,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # for more information on QSignalMapper see Mark Summerfield book "Rapid GUI Development with PyQt"
         self.windowMapper = QSignalMapper(self)
-        self.connect(self.windowMapper, SIGNAL("mapped(QWidget*)"), self.setActiveSubWindowCustomSlot)
+        self.windowMapper.mapped.connect(self.setActiveSubWindowCustomSlot)
+        # self.connect(self.windowMapper, SIGNAL("mapped(QWidget*)"), self.setActiveSubWindowCustomSlot)
+
 
         self.prepareForNewSimulation(_forceGenericInitialization=True)
         #        print MODULENAME,'__init__:   after prepareForNewSimulation(),  self.mysim = ',self.mysim
@@ -647,7 +651,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.__fileName = _fileName
         from os.path import basename
 
-        self.__parent.setWindowTitle(self.trUtf8(basename(self.__fileName) + " - CompuCell3D Player"))
+        self.__parent.setWindowTitle(basename(self.__fileName) + " - CompuCell3D Player")
         import CompuCellSetup
 
         CompuCellSetup.simulationFileName = self.__fileName
@@ -739,11 +743,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             self.simulation = SimulationThread(self)
 
-            self.connect(self.simulation, SIGNAL("simulationInitialized(bool)"), self.initializeSimulationViewWidget)
-            self.connect(self.simulation, SIGNAL("steppablesStarted(bool)"), self.runSteppablePostStartPlayerPrep)
-            self.connect(self.simulation, SIGNAL("simulationFinished(bool)"), self.handleSimulationFinished)
-            self.connect(self.simulation, SIGNAL("completedStep(int)"), self.handleCompletedStep)
-            self.connect(self.simulation, SIGNAL("finishRequest(bool)"), self.handleFinishRequest)
+            self.simulation.simulationInitializedSignal.connect( self.initializeSimulationViewWidget)
+            self.simulation.steppablesStarted. connect(self.runSteppablePostStartPlayerPrep)
+            self.simulation.simulationFinished.connect( self.handleSimulationFinished)
+            self.simulation.completedStep.connect(self.handleCompletedStep)
+            self.simulation.finishRequest.connect( self.handleFinishRequest)
 
 
             self.plotManager.initSignalAndSlots()
@@ -1125,52 +1129,53 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
         # QShortcut(QKeySequence("Ctrl+p"), self, self.__dumpPlayerParams)  # Cmd-3 on Mac
-        self.connect(self.runAct, SIGNAL('triggered()'), self.__runSim)
-        self.connect(self.stepAct, SIGNAL('triggered()'), self.__stepSim)
-        self.connect(self.pauseAct, SIGNAL('triggered()'), self.__pauseSim)
-        self.connect(self.stopAct, SIGNAL('triggered()'), self.__simulationStop)
+        self.runAct.triggered.connect(self.__runSim)
+        self.stepAct.triggered.connect( self.__stepSim)
+        self.pauseAct.triggered.connect(self.__pauseSim)
+        self.stopAct.triggered.connect(self.__simulationStop)
 
-        self.connect(self.serializeAct, SIGNAL('triggered()'), self.__simulationSerialize)
-        self.connect(self.restoreDefaultSettingsAct, SIGNAL('triggered()'), self.__restoreDefaultSettings)
+        self.serializeAct.triggered.connect(self.__simulationSerialize)
+        self.restoreDefaultSettingsAct.triggered.connect(self.__restoreDefaultSettings)
 
-        self.connect(self.openAct, SIGNAL('triggered()'), self.__openSim)
-        self.connect(self.openLDSAct, SIGNAL('triggered()'), self.__openLDSFile)
+        self.openAct.triggered.connect( self.__openSim)
+        self.openLDSAct.triggered.connect(self.__openLDSFile)
 
-        self.connect(self.saveScreenshotDescriptionAct, SIGNAL('triggered()'), self.__saveScrDesc)
-        self.connect(self.openScreenshotDescriptionAct, SIGNAL('triggered()'), self.__openScrDesc)
+        self.saveScreenshotDescriptionAct.triggered.connect( self.__saveScrDesc)
+        self.openScreenshotDescriptionAct.triggered.connect( self.__openScrDesc)
 
         #qApp is a member of QtGui. closeAllWindows will cause closeEvent and closeEventSimpleTabView will be called
-        self.connect(self.exitAct, SIGNAL('triggered()'),qApp.closeAllWindows)
+        self.exitAct.triggered.connect(qApp.closeAllWindows)
 
-        self.connect(self.cellsAct, SIGNAL('triggered(bool)'), self.__checkCells)
-        self.connect(self.borderAct, SIGNAL('triggered(bool)'), self.__checkBorder)
-        self.connect(self.clusterBorderAct, SIGNAL('triggered(bool)'), self.__checkClusterBorder)
-        self.connect(self.cellGlyphsAct, SIGNAL('triggered(bool)'), self.__checkCellGlyphs)
-        self.connect(self.FPPLinksAct, SIGNAL('triggered(bool)'), self.__checkFPPLinks)
+        self.cellsAct.triggered.connect(self.__checkCells)
+        self.borderAct.triggered.connect(self.__checkBorder)
+        self.clusterBorderAct.triggered.connect(self.__checkClusterBorder)
+        self.cellGlyphsAct.triggered.connect(self.__checkCellGlyphs)
+        self.FPPLinksAct.triggered.connect(self.__checkFPPLinks)
 
-        self.connect(self.limitsAct, SIGNAL('triggered(bool)'), self.__checkLimits)
-        self.connect(self.configAct, SIGNAL('triggered()'), self.__showConfigDialog)
-        self.connect(self.cc3dOutputOnAct, SIGNAL('triggered(bool)'), self.__checkCC3DOutput)
-        self.connect(self.resetCameraAct, SIGNAL('triggered()'), self.__resetCamera)
-        self.connect(self.zoomInAct, SIGNAL('triggered()'), self.zoomIn)
-        self.connect(self.zoomOutAct, SIGNAL('triggered()'), self.zoomOut)
+        self.limitsAct.triggered.connect(self.__checkLimits)
+        self.configAct.triggered.connect( self.__showConfigDialog)
+        self.cc3dOutputOnAct.triggered.connect(self.__checkCC3DOutput)
+        self.resetCameraAct.triggered.connect( self.__resetCamera)
+        self.zoomInAct.triggered.connect( self.zoomIn)
+        self.zoomOutAct.triggered.connect( self.zoomOut)
 
-        self.connect(self.pifFromSimulationAct, SIGNAL('triggered()'), self.__generatePIFFromCurrentSnapshot)
-        self.connect(self.pifFromVTKAct,    SIGNAL('triggered()'),      self.__generatePIFFromVTK)
+        self.pifFromSimulationAct.triggered.connect(self.__generatePIFFromCurrentSnapshot)
+        self.pifFromVTKAct.triggered.connect(self.__generatePIFFromVTK)
 
         #window menu actions
-        self.connect(self.newGraphicsWindowAct, SIGNAL('triggered()'), self.addNewGraphicsWindow)
+        self.newGraphicsWindowAct.triggered.connect(self.addNewGraphicsWindow)
 
-        self.connect(self.tileAct, SIGNAL('triggered()'), self.tileSubWindows)
-        self.connect(self.cascadeAct, SIGNAL('triggered()'), self.cascadeSubWindows)
+        self.tileAct.triggered.connect(self.tileSubWindows)
+        self.cascadeAct.triggered.connect(self.cascadeSubWindows)
 
-        self.connect(self.minimizeAllGraphicsWindowsAct, SIGNAL('triggered()'), self.minimizeAllGraphicsWindows)
-        self.connect(self.restoreAllGraphicsWindowsAct, SIGNAL('triggered()'), self.restoreAllGraphicsWindows)
+        self.minimizeAllGraphicsWindowsAct.triggered.connect( self.minimizeAllGraphicsWindows)
+        self.restoreAllGraphicsWindowsAct.triggered.connect( self.restoreAllGraphicsWindows)
 
-        self.connect(self.closeActiveWindowAct, SIGNAL('triggered()'), self.closeActiveSubWindowSlot)
-        # self.connect(self.closeAdditionalGraphicsWindowsAct, SIGNAL('triggered()'), self.removeAuxiliaryGraphicsWindows)
+        self.closeActiveWindowAct.triggered.connect( self.closeActiveSubWindowSlot)
+        # self.closeAdditionalGraphicsWindowsAct, triggered self.removeAuxiliaryGraphicsWindows)
 
-        self.connect(self, SIGNAL('configsChanged'), self.__paramsChanged)
+        #TO DO IX IT
+        # self.configsChanged.connect(self.__paramsChanged)
 
 
     def setFieldType(self, _fieldTypeTuple):
