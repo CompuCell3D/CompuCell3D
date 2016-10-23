@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import os,sys
-from PyQt4 import QtCore, QtGui
-from PyQt4.QtCore import *
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import *
+
 import vtk
 import os
 import os.path

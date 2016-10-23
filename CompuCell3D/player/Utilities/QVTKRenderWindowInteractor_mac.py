@@ -57,11 +57,12 @@ setVTKPaths()
 # print "PATH=",sys.path  
 
 
-from PyQt4 import QtCore, QtGui,QtOpenGL
+from PyQt5 import QtCore, QtGui,QtOpenGL,QtWidgets
 import vtk
 
 #class QVTKRenderWindowInteractor(QtOpenGL.QGLWidget):  # Windows & Linux (I think)
-class QVTKRenderWindowInteractor(QtGui.QWidget):        # Mac
+# class QVTKRenderWindowInteractor(QtGui.QWidget):        # Mac
+class QVTKRenderWindowInteractor(QtWidgets.QWidget):        # Mac
 
     """ A QVTKRenderWindowInteractor for Python and Qt.  Uses a
     vtkGenericRenderWindowInteractor to handle the interactions.  Use

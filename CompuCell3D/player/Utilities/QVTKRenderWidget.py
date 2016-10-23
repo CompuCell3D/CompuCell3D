@@ -67,7 +67,7 @@ import vtk
 import math, os, sys
 #import PyQt4.Qt as qt
 #from qt import *
-from PyQt4 import QtCore, QtGui,QtOpenGL
+from PyQt5 import QtCore, QtGui,QtOpenGL,QtWidgets
 import time
 
 class QVTKRenderWidget(QtOpenGL.QGLWidget):

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 from Utilities.QVTKRenderWidget import QVTKRenderWidget
 # from GraphicsNew import GraphicsNew

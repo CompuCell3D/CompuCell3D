@@ -2,8 +2,9 @@
 import os
 import types
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 #from Messaging import stdMsg, dbgMsg,pd, errMsg, setDebugging
 
 import Configuration
@@ -384,7 +385,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
 
     # The following "on_blah_clicked" methods magically happen when a UI button (whose name *matches* "blah") is clicked
-    @pyqtSignature("") # signature of the signal emitted by the button
+    # @pyqtSignature("") # signature of the signal emitted by the button
+    @pyqtSlot()  # signature of the signal emitted by the button
     def on_projectLocationButton_clicked(self):
         currentProjectDir=Configuration.getSetting('ProjectLocation')
         dirName = QFileDialog.getExistingDirectory ( self, "Specify CC3D Project Directory", currentProjectDir, QFileDialog.ShowDirsOnly)
@@ -397,7 +399,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.projectLocationLineEdit.setText(dirName)
         Configuration.setSetting('ProjectLocation',dirName)
         
-    @pyqtSignature("") # signature of the signal emitted by the button
+    # @pyqtSignature("") # signature of the signal emitted by the button
+    @pyqtSlot()  # signature of the signal emitted by the button
     def on_outputLocationButton_clicked(self):
         currentOutputDir=Configuration.getSetting('OutputLocation')
         dirName = QFileDialog.getExistingDirectory ( self, "Specify CC3D Output Directory", currentOutputDir, QFileDialog.ShowDirsOnly)
@@ -423,7 +426,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         # # # self.prefsFileLineEdit.setText(fileName)
         # # # Configuration.setSetting('PreferencesFile',fileName)
         
-    @pyqtSignature("") # signature of the signal emitted by the button
+    @pyqtSlot() # signature of the signal emitted by the button
     def on_addCellTypeButton_clicked(self):   
         lastRowIdx = self.typeColorTable.rowCount()-1
 

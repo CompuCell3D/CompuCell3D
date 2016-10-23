@@ -23,12 +23,13 @@ def setVTKPaths():
 
 # setVTKPaths()
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 import Graphics
 
-from PyQt4 import QtCore, QtGui,QtOpenGL
+from PyQt5 import QtCore, QtGui,QtOpenGL,QtWidgets
 #import vtk
 import Configuration
 import vtk, math

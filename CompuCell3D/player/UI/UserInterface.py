@@ -16,7 +16,7 @@ import ViewManager
 from ModelEditor import ModelEditor
 
 # TODO
-#from Plugins.ViewManagerPlugins.SimpleTabView import SimpleTabView
+from Plugins.ViewManagerPlugins.SimpleTabView import SimpleTabView
 
 #TODO
 # from CPlugins import CPlugins
@@ -303,6 +303,9 @@ class UserInterface(QMainWindow):
     
     def closeEvent(self, event=None):
         print "CALLING CLOSE EVENT FROM  SIMTAB"
+        #TODO check the rest of the function
+        return
+
         if self.viewmanager.MDI_ON:
             Configuration.setSetting("PlayerSizes", self.saveState())
             Configuration.setSetting("MainWindowSize",self.size())

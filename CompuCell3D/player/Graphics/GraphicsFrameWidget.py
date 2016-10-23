@@ -26,7 +26,7 @@ import Configuration
 
 
 # from PyQt4 import QtCore, QtGui,QtOpenGL
-from PyQt5 import QtCore, QtGui,QtOpenGL
+from PyQt5 import QtCore, QtGui,QtOpenGL, QtWidgets
 import vtk
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -52,7 +52,8 @@ MODULENAME = '---- GraphicsFrameWidget.py: '
 
 from weakref import ref
 
-class GraphicsFrameWidget(QtGui.QFrame):
+# class GraphicsFrameWidget(QtGui.QFrame):
+class GraphicsFrameWidget(QtWidgets.QFrame):
     # def __init__(self, parent=None, wflags=QtCore.Qt.WindowFlags(), **kw):
     def __init__(self, parent=None, originatingWidget=None):
 

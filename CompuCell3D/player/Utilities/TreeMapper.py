@@ -1,6 +1,6 @@
 
-from PyQt4.QtCore import *
-from PyQt4.QtXml import *
+from PyQt5.QtCore import *
+from PyQt5.QtXml import *
 
 MODULENAME='TreeMapper.py:--'
 
