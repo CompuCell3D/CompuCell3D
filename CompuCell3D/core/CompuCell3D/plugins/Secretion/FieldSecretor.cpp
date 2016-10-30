@@ -607,7 +607,7 @@ FieldSecretorResult FieldSecretor::_uptakeOutsideCellAtBoundaryTotalCount(CellG 
 
 				}
 
-				concentrationFieldPtr->set(sitr->pixel, currentConcentration + uptake_amount);
+				concentrationFieldPtr->set(nPt, currentConcentration + uptake_amount);
 				total_amount += uptake_amount;
 
 
@@ -693,7 +693,7 @@ FieldSecretorResult FieldSecretor::_uptakeOutsideCellAtBoundaryOnContactWithTota
 
 					}
 
-					concentrationFieldPtr->set(sitr->pixel, currentConcentration + uptake_amount);
+					concentrationFieldPtr->set(nPt, currentConcentration + uptake_amount);
 					total_amount += uptake_amount;
 				}
 
@@ -708,7 +708,7 @@ FieldSecretorResult FieldSecretor::_uptakeOutsideCellAtBoundaryOnContactWithTota
 
 					}
 
-					concentrationFieldPtr->set(sitr->pixel, currentConcentration + uptake_amount);
+					concentrationFieldPtr->set(nPt, currentConcentration + uptake_amount);
 					total_amount += uptake_amount;
 				}
 				visitedPixels.insert(FieldSecretorPixelData(nPt));
