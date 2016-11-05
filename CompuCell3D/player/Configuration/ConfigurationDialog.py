@@ -382,6 +382,17 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.outputLatticeDataCheckBox.setEnabled(boolFlag)
     
         
+    @pyqtSignature("") # signature of the signal emitted by the button
+    def on_default_settings_PB_clicked(self):
+        ret = QMessageBox.question(self,'Restore Default Settings',
+                                   'Are you sure you want to revert settings to their default values',
+                                   QMessageBox.Ok|QMessageBox.Cancel,
+                                   QMessageBox.Cancel)
+        if ret == QMessageBox.Cancel:
+            return
+        Configuration.reset_settings()
+
+
 
     # The following "on_blah_clicked" methods magically happen when a UI button (whose name *matches* "blah") is clicked
     @pyqtSignature("") # signature of the signal emitted by the button

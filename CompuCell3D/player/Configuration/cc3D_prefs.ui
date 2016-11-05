@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>498</width>
-    <height>461</height>
+    <width>480</width>
+    <height>486</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,7 +26,7 @@
       <attribute name="title">
        <string>Output</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_14">
+      <layout class="QVBoxLayout" name="verticalLayout_21">
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_10">
          <item>
@@ -328,11 +328,11 @@
          <property name="title">
           <string>Miscellaneous</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_21">
+         <layout class="QVBoxLayout" name="verticalLayout_20">
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_26">
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_20">
+             <layout class="QVBoxLayout" name="verticalLayout_14">
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_25">
                 <item>
@@ -364,6 +364,27 @@
                 </property>
                </widget>
               </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_31">
+                <item>
+                 <widget class="QLabel" name="label_19">
+                  <property name="text">
+                   <string>Restore Default Settings</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="default_settings_PB">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Restores default Player setting. This is useful when you determine that settings file is causeing PLayer to crash&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="text">
+                   <string>Default Settings</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
              </layout>
             </item>
             <item>
@@ -382,6 +403,8 @@
            </layout>
           </item>
          </layout>
+         <zorder>label_19</zorder>
+         <zorder></zorder>
         </widget>
        </item>
        <item>
@@ -396,6 +419,19 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <widget class="QDialogButtonBox" name="buttonBox">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="standardButtons">
+          <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -1684,19 +1720,6 @@
        </item>
       </layout>
      </widget>
-    </widget>
-   </item>
-   <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
     </widget>
    </item>
   </layout>

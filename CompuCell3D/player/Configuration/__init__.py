@@ -31,7 +31,7 @@ import os
 # icons_dir = os.path.abspath(os.path.join(_path, 'player/icons'))
 
 
-
+import os
 from SettingUtils import *
 
 LATTICE_TYPES = {"Square":1,"Hexagonal":2}
@@ -63,6 +63,26 @@ def initConfiguration():
     synchronizeGlobalAndDefaultSettings(Configuration.defaultSettings, Configuration.myGlobalSettings, Configuration.myGlobalSettingsPath)
     Configuration.myCustomSettings = None
     Configuration.myCustomSettingsPath = ''
+
+def reset_settings():
+    """
+    Resets settings to their default values
+    :return: None
+    """
+    global_setting_path = get_global_setting_path()
+
+    try:
+        os.remove(global_setting_path)
+    except :
+        print 'Could not remove global settings file: ', global_setting_path
+
+    if Configuration.myCustomSettingsPath !='':
+        try:
+            os.remove(Configuration.myCustomSettingsPath)
+        except:
+            print 'Could not remove simulation-specific settings file: ', Configuration.myCustomSettingsPath
+
+    pass
 
 def replaceCustomSettingsWithDefaults():
     defaultSettings, path = loadDefaultSettings()

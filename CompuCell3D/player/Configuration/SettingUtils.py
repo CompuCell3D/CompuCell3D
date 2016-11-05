@@ -22,7 +22,16 @@ def loadSettings(filename):
         return settings
         
     return None 
-   
+
+def get_global_setting_path():
+    """
+    returns global settings path
+    :return: None
+    """
+    global_setting_dir = os.path.abspath(os.path.join(os.path.expanduser('~'), SETTINGS_FOLDER))
+    global_setting_path = os.path.abspath(os.path.join(global_setting_dir, SETTINGS_FILE_NAME))
+    return global_setting_path
+
 def loadGlobalSettings():
     
     global_setting_dir = os.path.abspath(os.path.join(os.path.expanduser('~') , SETTINGS_FOLDER))
