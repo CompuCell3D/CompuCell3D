@@ -696,90 +696,91 @@ secretor.uptakeInsideCellAtBoundaryOnContactWith(cell, 2.0, 0.2, [self.TYPE1, TY
 secretor=self.getFieldSecretor("FIELDNAME") # you may reuse secretor for many cells. Simply define it outside the loop
 secretor.uptakeOutsideCellAtBoundaryOnContactWith(cell, 2.0, 0.2, [self.TYPE1, TYPE2]) # arguments are: cell, max uptake, relative uptake, a list of cell types
 
+=============== #@Menu@ Secretion / Uptake Track Amount
 
 ---------- #@Submenu@ Secrete Inside Cell Track Amount
 secretor=self.getFieldSecretor("FIELDNAME") 
 res = secretor.secreteInsideCellTotalCount(cell, 300)
 print 'total amount=',res.tot_amount
 
----------- #@Submenu@ Secrete Inside Cell At Boundary
+---------- #@Submenu@ Secrete Inside Cell At Boundary Track Amount
 # Make sure Secretion plugin is loaded
 # make sure this field is defined in one of the PDE solvers
 secretor=self.getFieldSecretor("FIELDNAME")  # you may reuse secretor for many cells. Simply define it outside the loop
 res = secretor.secreteInsideCellAtBoundaryTotalCountcell, 300)
 print 'total amount=',res.tot_amount
 
----------- #@Submenu@ Secrete Outside Cell At Boundary
+---------- #@Submenu@ Secrete Outside Cell At Boundary Track Amount
 # Make sure Secretion plugin is loaded
 # make sure this field is defined in one of the PDE solvers
 secretor=self.getFieldSecretor("FIELDNAME") # you may reuse secretor for many cells. Simply define it outside the loop
 res = secretor.secreteOutsideCellAtBoundaryTotalCount(cell, 300)
 print 'total amount=',res.tot_amount
 
----------- #@Submenu@ Secrete Inside Cell At COM
+---------- #@Submenu@ Secrete Inside Cell At COM Track Amount
 # Make sure Secretion plugin is loaded
 # make sure this field is defined in one of the PDE solvers
 secretor=self.getFieldSecretor("FIELDNAME") # you may reuse secretor for many cells. Simply define it outside the loop
 res = secretor.secreteInsideCellAtCOMTotalCount(cell, 300)
 print 'total amount=',res.tot_amount
 
----------- #@Submenu@ Secrete Inside Cell Constant Concentration
+---------- #@Submenu@ Secrete Inside Cell Constant Concentration Track Amount
 # Make sure Secretion plugin is loaded
 # make sure this field is defined in one of the PDE solvers
 secretor=self.getFieldSecretor("FIELDNAME") # you may reuse secretor for many cells. Simply define it outside the loop
 res = secretor.secreteInsideCellConstantConcentrationTotalCount(cell, 300)
 print 'total amount=',res.tot_amount
 
----------- #@Submenu@ Secrete Inside Cell At Boundary On Contact With
+---------- #@Submenu@ Secrete Inside Cell At Boundary On Contact With Track Amount
 # Make sure Secretion plugin is loaded
 # make sure this field is defined in one of the PDE solvers
 secretor=self.getFieldSecretor("FIELDNAME") # you may reuse secretor for many cells. Simply define it outside the loop
 res = secretor.secreteInsideCellConstantConcentrationTotalCount(cell, 300, [self.TYPE1,self.TYPE2])# arguments are: cell, secretion rate, a list of cell types
 print 'total amount=',res.tot_amount
 
----------- #@Submenu@ Secrete Outside Cell At Boundary On Contact With
+---------- #@Submenu@ Secrete Outside Cell At Boundary On Contact With Track Amount
 # Make sure Secretion plugin is loaded
 # make sure this field is defined in one of the PDE solvers
 secretor=self.getFieldSecretor("FIELDNAME") # you may reuse secretor for many cells. Simply define it outside the loop
 res = secretor.secreteOutsideCellConstantConcentrationTotalCount(cell, 300, [self.TYPE1,self.TYPE2])# arguments are: cell, secretion rate, a list of cell types
 print 'total amount=',res.tot_amount
 
----------- #@Submenu@ Uptake Inside Cell
+---------- #@Submenu@ Uptake Inside Cell Track Amount
 # Make sure Secretion plugin is loaded
 # make sure this field is defined in one of the PDE solvers
 secretor=self.getFieldSecretor("FIELDNAME") # you may reuse secretor for many cells. Simply define it outside the loop
 res = secretor.uptakeInsideCellTotalCount(cell, 2.0, 0.2) # arguments are: cell, max uptake, relative uptake
 print 'total amount=',res.tot_amount
 
----------- #@Submenu@ Uptake Inside Cell At Boundary
+---------- #@Submenu@ Uptake Inside Cell At Boundary Track Amount
 # Make sure Secretion plugin is loaded
 # make sure this field is defined in one of the PDE solvers
 secretor=self.getFieldSecretor("FIELDNAME")  # you may reuse secretor for many cells. Simply define it outside the loop
 res = secretor.uptakeInsideCellAtBoundaryTotalCount(cell, 2.0, 0.2) # arguments are: cell, max uptake, relative uptake
 print 'total amount=',res.tot_amount
 
----------- #@Submenu@ Uptake Outside Cell At Boundary
+---------- #@Submenu@ Uptake Outside Cell At Boundary Track Amount
 # Make sure Secretion plugin is loaded
 # make sure this field is defined in one of the PDE solvers
 secretor=self.getFieldSecretor("FIELDNAME")  # you may reuse secretor for many cells. Simply define it outside the loop
 res = secretor.uptakeInsideCellAtBoundaryTotalCount(cell, 2.0, 0.2) # arguments are: cell, max uptake, relative uptake
 print 'total amount=',res.tot_amount
 
----------- #@Submenu@ Uptake Inside Cell At COM
+---------- #@Submenu@ Uptake Inside Cell At COM Track Amount
 # Make sure Secretion plugin is loaded
 # make sure this field is defined in one of the PDE solvers
 secretor=self.getFieldSecretor("FIELDNAME") # you may reuse secretor for many cells. Simply define it outside the loop
 res = secretor.uptakeInsideCellAtCOMTotalCount(cell, 2.0, 0.2) # arguments are: cell, max uptake, relative uptake
 print 'total amount=',res.tot_amount
 
----------- #@Submenu@ Uptake Inside Cell At Boundary and On Contact With
+---------- #@Submenu@ Uptake Inside Cell At Boundary and On Contact With Track Amount
 # Make sure Secretion plugin is loaded
 # make sure this field is defined in one of the PDE solvers
 secretor=self.getFieldSecretor("FIELDNAME") # you may reuse secretor for many cells. Simply define it outside the loop
 res = secretor.uptakeInsideCellAtBoundaryOnContactWithTotalCount(cell, 2.0, 0.2, [self.TYPE1, TYPE2]) # arguments are: cell, max uptake, relative uptake, a list of cell types
 print 'total amount=',res.tot_amount
 
----------- #@Submenu@ Uptake Outside Cell At Boundary and On Contact With
+---------- #@Submenu@ Uptake Outside Cell At Boundary and On Contact With Track Amount
 # Make sure Secretion plugin is loaded
 # make sure this field is defined in one of the PDE solvers
 secretor=self.getFieldSecretor("FIELDNAME") # you may reuse secretor for many cells. Simply define it outside the loop
