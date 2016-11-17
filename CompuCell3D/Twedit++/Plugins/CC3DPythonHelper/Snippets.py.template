@@ -326,6 +326,36 @@ for compartments in self.clusters:
     for cell in compartments:
         print cell.id
     
+    
+=============== #@Menu@ Neighbors
+
+---------- #@Submenu@ Visit Cell Neighbors
+for neighbor , commonSurfaceArea in self.getCellNeighborDataList(cell):                
+    if neighbor:
+        print "neighbor.id",neighbor.id," commonSurfaceArea=",commonSurfaceArea
+    else:
+        print "Medium commonSurfaceArea=",commonSurfaceArea
+        
+---------- #@Submenu@ Get LIst of Cell Neighbors        
+cell_neighbors = self.getCellNeighborDataList(cell)
+
+---------- #@Submenu@ Get Number of Cell Neighbors        
+number_of_neighbors = len(self.getCellNeighborDataList(cell))
+
+---------- #@Submenu@ Get Dictionary of Neighbor Count By Type       
+cell_neighbors = self.getCellNeighborDataList(cell)
+neighbor_count_by_type = cell_neighbors.neighborCountByType()
+
+---------- #@Submenu@ Get Dictionary of Common Surface Area By Type       
+cell_neighbors = self.getCellNeighborDataList(cell)
+neighbor_count_by_type = cell_neighbors.commonSurfaceAreaByType()
+
+
+---------- #@Submenu@ Get Common Surface Area With Cells of Given Types       
+cell_neighbors = self.getCellNeighborDataList(cell)
+common_surface_area = cell_neighbors.commonSurfaceAreaWithCellTypes([self.TYPENAME1,self.TYPENAME2,...])
+    
+    
 =============== #@Menu@ Chemical Field Manipulation    
 
 ---------- #@Submenu@ Get Field Reference
