@@ -19,15 +19,15 @@ from ModelEditor import ModelEditor
 from Plugins.ViewManagerPlugins.SimpleTabView import SimpleTabView
 
 #TODO
-# from CPlugins import CPlugins
+from CPlugins import CPlugins
 from LatticeDataModelTable import LatticeDataModelTable
 
 # TODO
 from Console import Console
 
 # TODO
-# from Utilities.QVTKRenderWidget import QVTKRenderWidget
-# import vtk
+from Utilities.QVTKRenderWidget import QVTKRenderWidget
+import vtk
 
 from Utilities.SimModel import SimModel
 from Utilities.CPluginsModel import CPluginsModel
@@ -103,7 +103,7 @@ class UserInterface(QMainWindow):
         
         # I don't know why I need this
         cc3dApp().registerObject("UserInterface", self)
-        # cc3dApp().registerObject("ViewManager", self.viewmanager)
+        cc3dApp().registerObject("ViewManager", self.viewmanager)
         
         self.__initActions()    # Setup actions
         self.__initMenus()      # Setup menus 

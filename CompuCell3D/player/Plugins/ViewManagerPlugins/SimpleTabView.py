@@ -80,6 +80,9 @@ else:
 
 # class SimpleTabView(QMdiArea, SimpleViewManager):
 class SimpleTabView(MainArea, SimpleViewManager):
+
+    configsChanged = pyqtSignal()
+
     def __init__(self, parent):
 
         self.__parent = parent  # QMainWindow -> UI.UserInterface
@@ -3211,7 +3214,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         for fieldName in activeFieldNamesList:
             self.dlg.fieldComboBox.addItem(fieldName)  # this is where we set the combobox of field names in Prefs
 
-        self.connect(dlg, SIGNAL('configsChanged'), self.__configsChanged)
+        # TODO - fix this - figure out if config dialog has configsChanged signal
+        # self.connect(dlg, SIGNAL('configsChanged'), self.__configsChanged)
+        dlg.configsChanged.connect(self.__configsChanged)
+
+
         dlg.show()
 
         dlg.exec_()
@@ -3277,7 +3284,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Private slot to handle a change of the preferences. Called after we hit Ok buttin on configuration dialog
         :return:None
         """
-        self.emit(SIGNAL('configsChanged'))
+        self.configsChanged.emit()
+        # self.emit(SIGNAL('configsChanged'))
 
     def setModelEditor(self, modelEditor):
         '''

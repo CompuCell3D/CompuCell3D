@@ -470,7 +470,9 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 #            if i==0:
 #                item = QTableWidgetItem(QString("ECM"))
 #            else:
-            item = QTableWidgetItem(QString("%1").arg(keys[i]))
+#             item = QTableWidgetItem(QString("%1").arg(keys[i]))
+#             item = QTableWidgetItem('%1'.arg(keys[i]))
+            item = QTableWidgetItem(str(keys[i]))
             self.typeColorTable.setItem(i, 0, item)
             
             item = QTableWidgetItem()
@@ -483,7 +485,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 #        print '  names_ids = ',names_ids   # e.g. names_ids =  {0: 'Medium', 1: 'Foam'}
         vals = names_ids.values()
         for i in range(len(vals)):
-            item = QTableWidgetItem(QString("%1").arg(vals[i]))
+            # item = QTableWidgetItem('%1'.arg(vals[i]))
+            item = QTableWidgetItem(str(vals[i]))
             self.typeColorTable.setItem(i, 1, item)
             
             
