@@ -194,7 +194,9 @@ class UserInterface(QMainWindow):
         @param s output to be appended (string or QString)
         """
         self.showLogTab("stdout")
-        self.emit(SIGNAL('appendStdout'), s)
+        self.appendToStdout.emit(s)
+        # self.emit(SIGNAL('appendStdout'), s)
+
     
     def appendToStderr(self, s):
         """
@@ -203,7 +205,8 @@ class UserInterface(QMainWindow):
         @param s output to be appended (string or QString)
         """
         self.showLogTab("stderr")
-        self.emit(SIGNAL('appendStderr'), s)
+        self.appendToStderr.emit(s)
+        # self.emit(SIGNAL('appendStderr'), s)
 
     def showLogTab(self, tabname):
         """
@@ -276,45 +279,45 @@ class UserInterface(QMainWindow):
     def __initToolbars(self):
         #TODO
         pass
-        # simtb = self.viewmanager.initSimToolbar()
-        # # filetb = self.viewmanager.initFileToolbar(self.toolbarManager)
-        # filetb = self.viewmanager.initFileToolbar()
-        #
-        # # viewtb = QToolBar("View", self)
-        # # viewtb.setIconSize(QSize(20, 18))
-        # # viewtb.setObjectName("ViewToolbar")
-        # # viewtb.setToolTip("View")
-        # # viewtb.addAction(self.zoomInAct)
-        # # viewtb.addAction(self.zoomOutAct)
-        # # #viewtb.addAction(self.zoomFixedAct)
-        # # viewtb.addWidget(self.zoomFixed)
-        # # viewtb.addWidget(QLabel("  "))
-        # # viewtb.addAction(self.screenshotAct)
-        #
-        # visualizationtb = self.viewmanager.initVisualizationToolbar()
-        # windowtb = self.viewmanager.initWindowToolbar()
-        #
-        #
-        # # cstb = self.viewmanager.initCrossSectionToolbar() #QToolBar("Cross Section", self) #
-        # #threeDAct = QAction(self)
-        # #threeDRB  = QRadioButton("3D")
-        #
-        # #cstb.insertWidget(threeDAct, threeDRB)
-        # #viewtb = self.viewmanager.initViewToolbar()
-        #
-        # self.addToolBar(simtb)
-        # self.addToolBar(filetb)
-        # # self.addToolBar(viewtb)
-        # self.addToolBar(visualizationtb)
-        # self.addToolBar(windowtb)
-        # # self.addToolBar(cstb)
-        #
-        # # just add new toolbars to the end of the list
-        # self.__toolbars = {}
-        # self.__toolbars["file"] = [filetb.windowTitle(), filetb]
-        # # self.__toolbars["view"] = [viewtb.windowTitle(), viewtb]
-        # self.__toolbars["simulation"] = [simtb.windowTitle(), simtb]
-        # # self.__toolbars["crossSection"] = [cstb.windowTitle(), cstb]
+        simtb = self.viewmanager.initSimToolbar()
+        # filetb = self.viewmanager.initFileToolbar(self.toolbarManager)
+        filetb = self.viewmanager.initFileToolbar()
+
+        # viewtb = QToolBar("View", self)
+        # viewtb.setIconSize(QSize(20, 18))
+        # viewtb.setObjectName("ViewToolbar")
+        # viewtb.setToolTip("View")
+        # viewtb.addAction(self.zoomInAct)
+        # viewtb.addAction(self.zoomOutAct)
+        # #viewtb.addAction(self.zoomFixedAct)
+        # viewtb.addWidget(self.zoomFixed)
+        # viewtb.addWidget(QLabel("  "))
+        # viewtb.addAction(self.screenshotAct)
+
+        visualizationtb = self.viewmanager.initVisualizationToolbar()
+        windowtb = self.viewmanager.initWindowToolbar()
+
+
+        # cstb = self.viewmanager.initCrossSectionToolbar() #QToolBar("Cross Section", self) #
+        #threeDAct = QAction(self)
+        #threeDRB  = QRadioButton("3D")
+
+        #cstb.insertWidget(threeDAct, threeDRB)
+        #viewtb = self.viewmanager.initViewToolbar()
+
+        self.addToolBar(simtb)
+        self.addToolBar(filetb)
+        # self.addToolBar(viewtb)
+        self.addToolBar(visualizationtb)
+        self.addToolBar(windowtb)
+        # self.addToolBar(cstb)
+
+        # just add new toolbars to the end of the list
+        self.__toolbars = {}
+        self.__toolbars["file"] = [filetb.windowTitle(), filetb]
+        # self.__toolbars["view"] = [viewtb.windowTitle(), viewtb]
+        self.__toolbars["simulation"] = [simtb.windowTitle(), simtb]
+        # self.__toolbars["crossSection"] = [cstb.windowTitle(), cstb]
         
     
     
