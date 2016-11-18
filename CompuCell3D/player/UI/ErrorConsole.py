@@ -1,14 +1,15 @@
 # class FindDock
 import sys
-from PyQt4.Qsci import *
-from PyQt4.QtCore import *
+from PyQt5.Qsci import *
+from PyQt5.QtCore import *
 
-from PyQt4 import QtCore
+from PyQt5 import QtCore
 
-from PyQt4.QtGui import *
+from PyQt5.QtGui import *
 import re
-from PyQt4 import Qsci
-from PyQt4 import QtGui
+from PyQt5 import Qsci
+from PyQt5 import QtGui
+
 from Messaging import stdMsg, dbgMsg,pd, errMsg, setDebugging
 # from QsciScintillaCustom import QsciScintillaCustom
 # from PyQt4.Qsci.QsciScintilla import *
@@ -25,11 +26,14 @@ class ErrorConsole(QsciScintilla):
     """
     Class providing a specialized text edit for displaying logging information.
     """
-    __pyqtSignals__ = ("closeCC3D()",)
+    # __pyqtSignals__ = ("closeCC3D()",)
+    closeCC3D = pyqtSignal()
     
-    @QtCore.pyqtSignature("closeCC3D()")
+    # @QtCore.pyqtSignature("closeCC3D()")
+    # @QtCore.pyqtSlot("closeCC3D()")
     def emitCloseCC3D(self):
-        self.emit(SIGNAL("closeCC3D()") )    
+        self.closeCC3D.emit()
+        # self.emit(SIGNAL("closeCC3D()") )
         
     def __init__(self, parent = None):
         """

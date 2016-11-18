@@ -16,7 +16,7 @@ class Console(CTabWidget):
         
         self.__stdout = ConsoleWidget()
         self.__stdout.ensureCursorVisible()
-        self.__stdoutIndex = self.addTab(self.__stdout, self.trUtf8("Output"))
+        self.__stdoutIndex = self.addTab(self.__stdout, "Output")
         
         self.stdOutTextColor=QColor("black")
         self.stdErrTextColor=QColor("red")
@@ -26,20 +26,22 @@ class Console(CTabWidget):
         # self.__stderrIndex = self.addTab(self.__stderr, self.trUtf8("Errors"))
         
         self.__errorConsole=ErrorConsole(self)        
-        self.__errorIndex = self.addTab(self.__errorConsole , self.trUtf8("Errors"))        
+        self.__errorIndex = self.addTab(self.__errorConsole , "Errors")
         
 
 
         
         self.__menu = QMenu(self)
-        self.__menu.addAction(self.trUtf8('Clear'), self.__handleClear)
-        self.__menu.addAction(self.trUtf8('Copy'), self.__handleCopy)
+        self.__menu.addAction('Clear', self.__handleClear)
+        self.__menu.addAction('Copy', self.__handleCopy)
         self.__menu.addSeparator()
-        self.__menu.addAction(self.trUtf8('Select All'), self.__handleSelectAll)
+        self.__menu.addAction('Select All', self.__handleSelectAll)
 
         self.setTabContextMenuPolicy(Qt.CustomContextMenu)
-        self.connect(self,SIGNAL('customTabContextMenuRequested(const QPoint &, int)'),
-                     self.__handleShowContextMenu)
+        self.customContextMenuRequested.connect(self.__handleShowContextMenu)
+
+        # self.connect(self,SIGNAL('customTabContextMenuRequested(const QPoint &, int)'),
+        #              self.__handleShowContextMenu)
 
     def getStdErrConsole(self):
         return self.__stdout
@@ -142,14 +144,15 @@ class ConsoleWidget(QTextEdit):
         
         # Why do I need this? create the context menu
         self.__menu = QMenu(self)
-        self.__menu.addAction(self.trUtf8('Clear'), self.clear)
-        self.__menu.addAction(self.trUtf8('Copy'), self.copy)
+        self.__menu.addAction('Clear', self.clear)
+        self.__menu.addAction('Copy', self.copy)
         self.__menu.addSeparator()
-        self.__menu.addAction(self.trUtf8('Select All'), self.selectAll)
+        self.__menu.addAction('Select All', self.selectAll)
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.connect(self, SIGNAL("customContextMenuRequested(const QPoint &)"),
-            self.__handleShowContextMenu)
+        self.customContextMenuRequested.connect(self.__handleShowContextMenu)
+        # self.connect(self, SIGNAL("customContextMenuRequested(const QPoint &)"),
+        #     self.__handleShowContextMenu)
         
 
     def __handleShowContextMenu(self, coord):

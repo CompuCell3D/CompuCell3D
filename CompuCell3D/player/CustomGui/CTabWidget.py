@@ -4,7 +4,7 @@ Module implementing a TabWidget class substituting QTabWidget.
 
 from PyQt5.QtWidgets import QTabWidget
 
-from PyQt5.QtCore import Qt, SIGNAL
+from PyQt5.QtCore import Qt
 
 class CTabWidget(QTabWidget):
     """
@@ -45,14 +45,25 @@ class CTabWidget(QTabWidget):
         @param policy context menu policy to set (Qt.ContextMenuPolicy)
         """
         self.tabBar().setContextMenuPolicy(policy)
+        # if policy == Qt.CustomContextMenu:
+        #     self.connect(self.tabBar(),
+        #         SIGNAL("customContextMenuRequested(const QPoint &)"),
+        #         self.__handleTabCustomContextMenuRequested)
+        # else:
+        #     self.disconnect(self.tabBar(),
+        #         SIGNAL("customContextMenuRequested(const QPoint &)"),
+        #         self.__handleTabCustomContextMenuRequested)
+
         if policy == Qt.CustomContextMenu:
-            self.connect(self.tabBar(), 
-                SIGNAL("customContextMenuRequested(const QPoint &)"),
-                self.__handleTabCustomContextMenuRequested)
+            self.tabBar().customContextMenuRequested.connect(self.__handleTabCustomContextMenuRequested)
+            # self.connect(self.tabBar(),
+            #              SIGNAL("customContextMenuRequested(const QPoint &)"),
+            #              self.__handleTabCustomContextMenuRequested)
         else:
-            self.disconnect(self.tabBar(), 
-                SIGNAL("customContextMenuRequested(const QPoint &)"),
-                self.__handleTabCustomContextMenuRequested)
+            self.tabBar().customContextMenuRequested.dicconnect(self.__handleTabCustomContextMenuRequested)
+            # self.disconnect(self.tabBar(),
+            #                 SIGNAL("customContextMenuRequested(const QPoint &)"),
+            #                 self.__handleTabCustomContextMenuRequested)
 
     def __handleTabCustomContextMenuRequested(self, point):
         """
@@ -64,8 +75,9 @@ class CTabWidget(QTabWidget):
         for index in range(_tabbar.count()):
             rect = _tabbar.tabRect(index)
             if rect.contains(point):
-                self.emit(SIGNAL("customTabContextMenuRequested(const QPoint &, int)"), 
-                          _tabbar.mapToParent(point), index)
+                self.customTabContextMenuRequested.emit(_tabbar.mapToParent(point), index)
+                # self.emit(SIGNAL("customTabContextMenuRequested(const QPoint &, int)"),
+                #           _tabbar.mapToParent(point), index)
                 break
     
     def selectTab(self, pos):

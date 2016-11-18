@@ -20,19 +20,19 @@ from Plugins.ViewManagerPlugins.SimpleTabView import SimpleTabView
 
 #TODO
 # from CPlugins import CPlugins
-# from LatticeDataModelTable import LatticeDataModelTable
+from LatticeDataModelTable import LatticeDataModelTable
 
 # TODO
-#from Console import Console
+from Console import Console
 
 # TODO
 # from Utilities.QVTKRenderWidget import QVTKRenderWidget
 # import vtk
 
-# from Utilities.SimModel import SimModel
-# from Utilities.CPluginsModel import CPluginsModel
-# from Utilities.LatticeDataModel import LatticeDataModel
-# from Utilities.SimDelegate import SimDelegate
+from Utilities.SimModel import SimModel
+from Utilities.CPluginsModel import CPluginsModel
+from Utilities.LatticeDataModel import LatticeDataModel
+from Utilities.SimDelegate import SimDelegate
 import Configuration
 import DefaultData
 
@@ -78,7 +78,7 @@ class UserInterface(QMainWindow):
         self.origStderr=sys.stderr
         # Setting self.viewmanager and dock windows
         #TODO
-        # self.__createViewManager()
+        self.__createViewManager()
         self.__createLayout()
 
         # # Generate the redirection helpers
@@ -89,11 +89,17 @@ class UserInterface(QMainWindow):
         
         # Now setup the connections
         if Configuration.getSetting("UseInternalConsole"):
-            self.connect(self.stdout, SIGNAL('appendStdout'), self.appendToStdout)
-            self.connect(self.stderr, SIGNAL('appendStderr'), self.appendToStderr)
-            
-            self.connect(self, SIGNAL('appendStdout'), self.console.appendToStdout)
-            self.connect(self, SIGNAL('appendStderr'), self.console.appendToStderr)
+            self.stdout.appendStdout.connect(self.appendToStdout)
+            self.stderr.appendStderr.connect(self.appendToStderr)
+            self.appendStdout.connect(self.console.appendToStdout)
+            self.appendStderr.connect(self.console.appendToStderr)
+
+
+            # self.connect(self.stdout, SIGNAL('appendStdout'), self.appendToStdout)
+            # self.connect(self.stderr, SIGNAL('appendStderr'), self.appendToStderr)
+            #
+            # self.connect(self, SIGNAL('appendStdout'), self.console.appendToStdout)
+            # self.connect(self, SIGNAL('appendStderr'), self.console.appendToStderr)
         
         # I don't know why I need this
         cc3dApp().registerObject("UserInterface", self)
@@ -219,41 +225,52 @@ class UserInterface(QMainWindow):
         mb = self.menuBar()
 
         #TODO
-        # (fileMenu,recentSimulationsMenu)=self.viewmanager.initFileMenu()
-        #
-        # self.__menus["file"] = fileMenu
-        # self.__menus["recentSimulations"] = recentSimulationsMenu
-        #
+        (fileMenu,recentSimulationsMenu)=self.viewmanager.initFileMenu()
+
+        self.__menus["file"] = fileMenu
+        self.__menus["recentSimulations"] = recentSimulationsMenu
+
+        self.__menus["recentSimulations"].aboutToShow.connect(self.viewmanager.updateRecentFileMenu)
         # self.connect(self.__menus["recentSimulations"] , SIGNAL("aboutToShow()"), self.viewmanager.updateRecentFileMenu )
-        #
-        # mb.addMenu(self.__menus["file"])
-        #
-        # self.__menus["view"] = QMenu(self.trUtf8("&View"), self)
-        # mb.addMenu(self.__menus["view"])
+
+        mb.addMenu(self.__menus["file"])
+
+        self.__menus["view"] = QMenu("&View", self)
+        mb.addMenu(self.__menus["view"])
+
+        self.__menus["view"].aboutToShow.connect(self.__showViewMenu)
         # self.connect(self.__menus["view"], SIGNAL('aboutToShow()'), self.__showViewMenu)
-        #
-        # self.__menus["toolbars"] = QMenu("&Toolbars", self.__menus["view"])
-        # self.__menus["toolbars"].setIcon(QIcon(gip("toolbars.png")))
+
+        self.__menus["toolbars"] = QMenu("&Toolbars", self.__menus["view"])
+        self.__menus["toolbars"].setIcon(QIcon(gip("toolbars.png")))
+
+        self.__menus["toolbars"].aboutToShow.connect(self.__showToolbarsMenu)
+        self.__menus["toolbars"].triggered.connect(self.__TBMenuTriggered)
+
+
+
         # self.connect(self.__menus["toolbars"], SIGNAL('aboutToShow()'), self.__showToolbarsMenu)
         # self.connect(self.__menus["toolbars"], SIGNAL('triggered(QAction *)'), self.__TBMenuTriggered)
-        # self.__showViewMenu()
-        #
-        # self.__menus["simulation"] = self.viewmanager.initSimMenu()
-        # mb.addMenu(self.__menus["simulation"])
-        # self.__menus["visualization"] = self.viewmanager.initVisualMenu()
-        # mb.addMenu(self.__menus["visualization"])
-        # self.__menus["tools"] = self.viewmanager.initToolsMenu()
-        # mb.addMenu(self.__menus["tools"])
-        #
-        #
-        #
-        # self.__menus["window"] = self.viewmanager.initWindowMenu()
-        # mb.addMenu(self.__menus["window"])
-        #
+
+        self.__showViewMenu()
+
+        self.__menus["simulation"] = self.viewmanager.initSimMenu()
+        mb.addMenu(self.__menus["simulation"])
+        self.__menus["visualization"] = self.viewmanager.initVisualMenu()
+        mb.addMenu(self.__menus["visualization"])
+        self.__menus["tools"] = self.viewmanager.initToolsMenu()
+        mb.addMenu(self.__menus["tools"])
+
+
+
+        self.__menus["window"] = self.viewmanager.initWindowMenu()
+        mb.addMenu(self.__menus["window"])
+
+        self.__menus["window"].aboutToShow.connect(self.viewmanager.updateWindowMenu)
         # self.connect(self.__menus["window"] , SIGNAL("aboutToShow()"), self.viewmanager.updateWindowMenu )
-        #
-        # self.__menus["help"] = self.viewmanager.initHelpMenu()
-        # mb.addMenu(self.__menus["help"])
+
+        self.__menus["help"] = self.viewmanager.initHelpMenu()
+        mb.addMenu(self.__menus["help"])
         
 
     def __initToolbars(self):
@@ -483,40 +500,40 @@ class UserInterface(QMainWindow):
         modelEditor = ModelEditor(self.modelEditorDock)      
 
         #TODO
-        # # self.model = SimModel(QDomDocument(), self.modelEditorDock) # Do I need parent self.modelEditorDock
-        # self.model = SimModel(None, self.modelEditorDock) # Do I need parent self.modelEditorDock
-        # modelEditor.setModel(self.model) # Set the default model
-        # modelEditor.setItemDelegate(SimDelegate(self))
-        # modelEditor.setParams()
-        # modelEditor.setSelectionBehavior(QAbstractItemView.SelectItems)
-        # self.viewmanager.setModelEditor(modelEditor) # Sets the Model Editor in the ViewManager
-        # self.__setupDockWindow(self.modelEditorDock, Qt.LeftDockWidgetArea, modelEditor, self.trUtf8("Model Editor")) # projectBrowser
-        #
-        # self.latticeDataDock = self.__createDockWindow("LatticeData")
-        # self.latticeDataDock.setToggleFcn(self.toggleLatticeData)
-        # self.latticeDataModelTable = LatticeDataModelTable(self.latticeDataDock, self.viewmanager)
-        # self.latticeDataModel = LatticeDataModel()
-        # # self.latticeDataModelTable.setModel(self.latticeDataModel)
+        # self.model = SimModel(QDomDocument(), self.modelEditorDock) # Do I need parent self.modelEditorDock
+        self.model = SimModel(None, self.modelEditorDock) # Do I need parent self.modelEditorDock
+        modelEditor.setModel(self.model) # Set the default model
+        modelEditor.setItemDelegate(SimDelegate(self))
+        modelEditor.setParams()
+        modelEditor.setSelectionBehavior(QAbstractItemView.SelectItems)
+        self.viewmanager.setModelEditor(modelEditor) # Sets the Model Editor in the ViewManager
+        self.__setupDockWindow(self.modelEditorDock, Qt.LeftDockWidgetArea, modelEditor, "Model Editor") # projectBrowser
+
+        self.latticeDataDock = self.__createDockWindow("LatticeData")
+        self.latticeDataDock.setToggleFcn(self.toggleLatticeData)
+        self.latticeDataModelTable = LatticeDataModelTable(self.latticeDataDock, self.viewmanager)
+        self.latticeDataModel = LatticeDataModel()
+        self.latticeDataModelTable.setModel(self.latticeDataModel)
         
         
         # # self.cplugins.latticeDataModelTable()
         # #self.connect(self.cplugins, SIGNAL("doubleClicked(const QModelIndex &)"), self.__showPluginView)
         #
-        # self.__setupDockWindow(self.latticeDataDock, Qt.LeftDockWidgetArea, self.latticeDataModelTable, self.trUtf8("LatticeDataFiles"))
-        # self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
+        self.__setupDockWindow(self.latticeDataDock, Qt.LeftDockWidgetArea, self.latticeDataModelTable, "LatticeDataFiles")
+        self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
         
-        # # Set up the console
-        # self.consoleDock = self.__createDockWindow("Console")
-        #
-        # self.consoleDock.setToggleFcn(self.toggleConsole)
-        #
-        # self.console     = Console(self.consoleDock)
-        # self.consoleDock.setWidget(self.console)
-        # # self.consoleDock.setWindowTitle("Console")
-        # self.__setupDockWindow(self.consoleDock, Qt.BottomDockWidgetArea, self.console, self.trUtf8("Console"))
-        # #self.viewmanager.addWidget(self.consoleDock)
-        # #self.viewmanager.setSizes([400, 50])
-        # #self.consoleDock.show()
+        # Set up the console
+        self.consoleDock = self.__createDockWindow("Console")
+
+        self.consoleDock.setToggleFcn(self.toggleConsole)
+
+        self.console     = Console(self.consoleDock)
+        self.consoleDock.setWidget(self.console)
+        # self.consoleDock.setWindowTitle("Console")
+        self.__setupDockWindow(self.consoleDock, Qt.BottomDockWidgetArea, self.console, "Console")
+        # self.viewmanager.addWidget(self.consoleDock)
+        # self.viewmanager.setSizes([400, 50])
+        # self.consoleDock.show()
         
         #rec = self.console.geometry()
         #rec.setHeight(300)

@@ -1,7 +1,14 @@
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtNetwork import *
-from  PyQt4 import *
+# from PyQt4.QtCore import *
+# from PyQt4.QtGui import *
+# from PyQt4.QtNetwork import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtNetwork import *
+from PyQt5 import *
+
+
+
 import sys
 import os
 from os import environ
@@ -18,18 +25,22 @@ class CC3DSender(QObject):
         
         self.socket = QtNetwork.QTcpSocket()
         print "TWEDIT socket.socketDescriptor()=",self.socket.socketDescriptor()
-        
-        
-        
-        self.connect(self.socket, SIGNAL("connected()"),
-                     self.sendRequest)
-        self.connect(self.socket, SIGNAL("readyRead()"),
-                     self.readResponse)
-        self.connect(self.socket, SIGNAL("disconnected()"),
-                     self.serverHasStopped)
-        self.connect(self.socket,
-                     SIGNAL("error(QAbstractSocket::SocketError)"),
-                     self.serverHasError)      
+
+        self.socket.connected.connect(self.sendRequest)
+        self.socket.readyRead.connect(self.readResponse)
+        self.socket.disconnected.connect(self.serverHasStopped)
+        self.socket.error.connect(self.serverHasError)
+
+
+        # self.connect(self.socket, SIGNAL("connected()"),
+        #              self.sendRequest)
+        # self.connect(self.socket, SIGNAL("readyRead()"),
+        #              self.readResponse)
+        # self.connect(self.socket, SIGNAL("disconnected()"),
+        #              self.serverHasStopped)
+        # self.connect(self.socket,
+        #              SIGNAL("error(QAbstractSocket::SocketError)"),
+        #              self.serverHasError)
                      
         self.request="ABC"
 
