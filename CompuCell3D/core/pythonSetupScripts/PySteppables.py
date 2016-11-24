@@ -1190,15 +1190,15 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             if key in no_clone_key_dict_list:
                 continue
                 
-            if key == 'SBMLSolver':
+            elif key == 'SBMLSolver':
                 self.copySBMLs(_fromCell = sourceCell,_toCell = targetCell)
             
-            if key == 'Bionetwork':
+            elif key == 'Bionetwork':
                 import bionetAPI
                 bionetAPI.copyBionetworkFromParent( sourceCell, targetCell )
-                
-            # copying the rest of dictionary entries    
-            targetCell.dict [key] = deepcopy(sourceCell.dict[key])
+            else:   
+                # copying the rest of dictionary entries    
+                targetCell.dict [key] = deepcopy(sourceCell.dict[key])
             
         # now copy data associated with plugins
         # AdhesionFlex
