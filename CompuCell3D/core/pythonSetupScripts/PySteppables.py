@@ -621,13 +621,15 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
             return PlasticityDataList(self.plasticityTrackerPlugin,_cell)
             
         return None    
-        
+
     def getFieldSecretor(self,_fieldName):
     
         if self.secretionPlugin:
             return self.secretionPlugin.getFieldSecretor(_fieldName)
-            
-        return None    
+        
+        raise RuntimeError("Please define Secreion Plugin in the XML before requesting secretor object from Python script."
+        'Secreion Plugin can be defined by including <Plugin Name="Secretion"/> in the XML') 
+        
     '''    
         We have to call volumeTracker. setp function manually when tryuign to delete cell. This function is called only from potts loop whil Python steppables are run outside this loop.
     '''     
