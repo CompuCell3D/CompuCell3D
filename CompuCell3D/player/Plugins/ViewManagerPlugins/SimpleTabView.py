@@ -2797,6 +2797,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
             defaultDir,
             filter
             )
+        # getOpenFilename may return tuple
+        if isinstance(self.__fileName,tuple):
+            self.__fileName = self.__fileName[0]
+
         # converting Qstring to python string and normalizing path   
         self.__fileName = os.path.abspath(str(self.__fileName))
 
