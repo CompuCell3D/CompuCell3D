@@ -141,7 +141,7 @@ class MainArea(QWidget):
         window_name = obj_type + ' ' + str(self.win_inventory.get_counter())
 
         subWindow = self.createSubWindow(name=window_name) # sub window
-        self.setupSubWindow(subWindow, widget, self.trUtf8(window_name))
+        self.setupSubWindow(subWindow, widget, window_name)
 
         # inserting widget into dictionary
         self.win_inventory.add_to_inventory(obj = subWindow, obj_type=obj_type)

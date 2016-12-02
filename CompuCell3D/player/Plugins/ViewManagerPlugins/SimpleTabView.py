@@ -614,7 +614,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 assert False, "Could not find simulation file: " + self.__fileName
             from os.path import basename
 
-            self.__parent.setWindowTitle(self.trUtf8(basename(self.__fileName) + " - CompuCell3D Player"))
+            self.__parent.setWindowTitle(basename(self.__fileName) + " - CompuCell3D Player")
 
         if self.__screenshotDescriptionFileName != "":
             screenshotDescriptionFullFileName = os.path.abspath(self.__screenshotDescriptionFileName)
@@ -847,7 +847,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         from os.path import basename
 
-        self.__parent.setWindowTitle(self.trUtf8(basename(str(_fileName)) + " - CompuCell3D Player"))
+        self.__parent.setWindowTitle(basename(str(_fileName)) + " - CompuCell3D Player")
 
 
     def prepareXMLTreeView(self):
@@ -1082,9 +1082,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                     from os.path import basename
 
-                    self.__parent.setWindowTitle(self.trUtf8('ParameterScan: ') + self.trUtf8(
-                        basename(self.__fileName) + self.trUtf8(' Iteration: ') + basename(
-                            customOutputPath) + " - CompuCell3D Player"))
+                    self.__parent.setWindowTitle('ParameterScan: ' +
+                        basename(self.__fileName) + ' Iteration: ' + basename(
+                            customOutputPath) + " - CompuCell3D Player")
 
                     # read newly created .cc3d file     
                     self.cc3dSimulationDataHandler.readCC3DFileFormat(cc3dFileFullName)
@@ -2736,7 +2736,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.__fileName = os.path.abspath(str(self.__fileName))
         from os.path import basename
         # setting text for main window (self.__parent) title bar 
-        self.__parent.setWindowTitle(self.trUtf8(basename(self.__fileName) + " - CompuCell3D Player"))
+        self.__parent.setWindowTitle(basename(self.__fileName) + " - CompuCell3D Player")
 
         # Shall we inform the user?
         #        msg = QMessageBox.warning(self, "Message","Toggling off image & lattice output in Preferences",
@@ -2759,7 +2759,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.__fileName = str(action.data().toString())
         from os.path import basename
         # setting text for main window (self.__parent) title bar 
-        self.__parent.setWindowTitle(self.trUtf8(basename(self.__fileName) + " - CompuCell3D Player"))
+        self.__parent.setWindowTitle(basename(self.__fileName) + " - CompuCell3D Player")
 
         import CompuCellSetup
 
@@ -2804,7 +2804,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         from os.path import basename
         # setting text for main window (self.__parent) title bar 
-        self.__parent.setWindowTitle(self.trUtf8(basename(self.__fileName) + " - CompuCell3D Player"))
+        self.__parent.setWindowTitle(basename(self.__fileName) + " - CompuCell3D Player")
 
         import CompuCellSetup
 
@@ -3216,7 +3216,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # TODO - fix this - figure out if config dialog has configsChanged signal
         # self.connect(dlg, SIGNAL('configsChanged'), self.__configsChanged)
-        dlg.configsChanged.connect(self.__configsChanged)
+        # dlg.configsChanged.connect(self.__configsChanged)
 
 
         dlg.show()

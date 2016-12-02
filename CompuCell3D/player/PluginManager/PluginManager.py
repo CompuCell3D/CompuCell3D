@@ -47,7 +47,7 @@ class PluginManager(QObject):
             try:
                 obj, ok = pluginObject.activate()
             except TypeError:
-                module.error = self.trUtf8("Incompatible plugin activation method.")
+                module.error = "Incompatible plugin activation method."
                 obj = None
                 ok = True
             except StandardError, err:
