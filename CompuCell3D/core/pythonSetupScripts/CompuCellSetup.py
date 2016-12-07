@@ -19,8 +19,14 @@ simulationObjectsCreated=False
 simulationPythonScriptName=""
 simulationFileName=""
 screenshotDirectoryName=""
+customScreenshotDirectoryName=""
+
+global cc3dSimulationDataHandler
+cc3dSimulationDataHandler = None
 # global extraFieldsDict
 # extraFieldsDict={}
+
+
 global simulationThreadObject
 simulationThreadObject=None
 global cmlParser
@@ -403,6 +409,13 @@ def resetGlobals():
     simulationFileName=""
     global screenshotDirectoryName
     screenshotDirectoryName=""
+
+    global customScreenshotDirectoryName
+    customScreenshotDirectoryName = ''
+
+    global cc3dSimulationDataHandler
+    cc3dSimulationDataHandler = None
+
     global fieldRegistry
     fieldRegistry=FieldRegistry()
     
@@ -1329,8 +1342,34 @@ def getNameForSimDir(_simulationFileName, _preferedWorkspaceDir=""):
     
     screenshotDirectoryName = os.path.join(filePath,baseFileNameForDirectory+timeNameExtension)
     return (screenshotDirectoryName,baseFileNameForDirectory)
-    
-    
+
+def set_custom_output_directory(_dir):
+
+    global screenshotDirectoryName
+    screenshotDirectoryName = _dir
+
+
+    global customScreenshotDirectoryName
+    customScreenshotDirectoryName = _dir
+
+
+def makeCustomSimDir(_simDir,_simulationFileName=''):
+    if _simulationFileName != '':
+        screenshotDirectoryName, baseFileNameForDirectory = getNameForSimDir(_simulationFileName, '')
+    else:
+        baseFileNameForDirectory = os.path.basename(_simDir)
+
+    if not os.path.isdir(_simDir):
+
+        os.mkdir(_simDir)
+
+        return (_simDir,baseFileNameForDirectory)
+    else:
+        return('','')
+        # raise OSError("Requested output directory %s already exists. Please edit python script where you set the location of the output dir"%_simDir)
+
+
+
 def makeSimDir(_simulationFileName,_preferedWorkspaceDir=""):    
     screenshotDirectoryName,baseFileNameForDirectory = getNameForSimDir(_simulationFileName,_preferedWorkspaceDir)
     if not os.path.isdir(screenshotDirectoryName):
@@ -1431,8 +1470,7 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
     restartManager=RestartManager.RestartManager(sim)
     
     simthread.restartManager=weakref.ref(restartManager)
-    
-        
+
     # restartEnabled=restartManager.restartEnabled()
     restartEnabled=restartManager.restartEnabled()
     sim.setRestartEnabled(restartEnabled)
@@ -1610,7 +1648,17 @@ def mainLoopCML(sim, simthread, steppableRegistry= None, _screenUpdateFrequency 
         print 'WILL RUN SIMULATION FROM BEGINNING'
     
     extraInitSimulationObjects(sim,simthread)
-    
+
+    global customScreenshotDirectoryName
+    global cc3dSimulationDataHandler
+    global simulationPaths
+    if customScreenshotDirectoryName:
+        makeCustomSimDir(customScreenshotDirectoryName)
+        if cc3dSimulationDataHandler is not None:
+            cc3dSimulationDataHandler.copySimulationDataFiles(customScreenshotDirectoryName)
+            simulationPaths.setSimulationResultStorageDirectoryDirect(customScreenshotDirectoryName)
+
+
     runFinishFlag = True;
     
     if not steppableRegistry is None:

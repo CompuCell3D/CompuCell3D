@@ -1278,8 +1278,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
 
         import CompuCellSetup
+
+        if CompuCellSetup.customScreenshotDirectoryName != '':
+            (self.screenshotDirectoryName, self.baseScreenshotName) = CompuCellSetup.makeCustomSimDir(CompuCellSetup.customScreenshotDirectoryName, self.__fileName)
+
+            CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
+            self.prevOutputDir = self.__outputDirectory
+
         #        import pdb; pdb.set_trace()
-        if self.customScreenshotDirectoryName == "":
+        elif self.customScreenshotDirectoryName == "":
             (self.screenshotDirectoryName, self.baseScreenshotName) = \
                 CompuCellSetup.makeSimDir(self.__fileName,self.__outputDirectory)
 
@@ -1410,6 +1417,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         CompuCellSetup.simulationFileName = self.__fileName
         self.close_all_windows()
+
+
 
         initializeSimulationViewWidgetFcn = getattr(self, "initializeSimulationViewWidget" + self.__viewManagerType)
         initializeSimulationViewWidgetFcn()

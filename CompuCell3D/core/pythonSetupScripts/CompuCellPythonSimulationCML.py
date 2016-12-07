@@ -149,6 +149,7 @@ def prepareSingleRun(_cc3dSimulationDataHandler):
         
     
 def setSimulationResultStorageDirectory(_dir=''):
+
     if _dir != '':    
         CompuCellSetup.simulationPaths.setSimulationResultStorageDirectory(_dir,False)
     else:
@@ -283,10 +284,15 @@ try:
             
             
             sim,simthread = CompuCellSetup.getCoreSimulationObjects(True)
-            
-            CompuCellSetup.simulationFileName=fileName            
-                
+
+
             setSimulationResultStorageDirectory(cmlParser.customScreenshotDirectoryName) # set Simulation output dir - it can be reset later - at this point only directory name is set. directory gets created later
+
+
+
+            CompuCellSetup.simulationFileName=fileName
+
+
             # print 'GOT HERE'
             if re.match(".*\.xml$", fileName): # If filename ends with .xml
                 print "GOT FILE ",fileName
@@ -330,17 +336,19 @@ try:
                     prepareSingleRun(cc3dSimulationDataHandler)
                     
             else:
+
                 prepareSingleRun(cc3dSimulationDataHandler)
-                
-                
-            # # # fLock.release()
+
+
+                # # # fLock.release()
             
         
         # for single run simulation we copy simulation files to the output directory
-        if  singleSimulation:            
-            cc3dSimulationDataHandler.copySimulationDataFiles(CompuCellSetup.screenshotDirectoryName) 
-            
-     
+        if  singleSimulation:
+            CompuCellSetup.cc3dSimulationDataHandler = cc3dSimulationDataHandler
+            cc3dSimulationDataHandler.copySimulationDataFiles(CompuCellSetup.screenshotDirectoryName)
+
+
         if CompuCellSetup.simulationPaths.simulationPythonScriptName != "":
             execfile(CompuCellSetup.simulationPaths.simulationPythonScriptName)
         else:
