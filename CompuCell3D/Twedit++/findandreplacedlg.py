@@ -79,7 +79,7 @@ class FindInFilesResults:
         if self.unsavedFile:
             rep="  File: "+self.fileName# "normalizing" file name to make sure \ and / are used in a consistent manner
         else:
-            rep="  File: "+os.path.abspath(str(self.fileName)) # "normalizing" file name to make sure \ and / are used in a consistent manner
+            rep="  File: "+os.path.abspath(unicode(self.fileName)) # "normalizing" file name to make sure \ and / are used in a consistent manner
             
         if self.totalHits==1:
             rep+=" (1 hit)"
@@ -333,14 +333,14 @@ class QLineEditCustom(QLineEdit):
         
 class FindAndReplaceDlg(QDialog,ui_findinfilesdlg.Ui_FindInFiles):
     #signals
-    searchingSignal = QtCore.pyqtSignal( ('char*',))
-    searchingAllInAllOpenDocsSignal = QtCore.pyqtSignal( ('char*','char*','char*','int',)) # text, filters,directory, search mode
-    replacingSignal = QtCore.pyqtSignal( ('char*','char*',))
-    replacingAllSignal = QtCore.pyqtSignal( ('char*','char*',bool))    
-    replacingAllInOpenDocsSignal = QtCore.pyqtSignal( ('char*','char*','char*','char*','int',))  #text,replaceText, filters,directory. replace mode  
+    searchingSignal = QtCore.pyqtSignal( QString)
+    searchingAllInAllOpenDocsSignal = QtCore.pyqtSignal( QString,QString,QString,int) # text, filters,directory, search mode
+    replacingSignal = QtCore.pyqtSignal( QString,QString)
+    replacingAllSignal = QtCore.pyqtSignal( QString,QString,bool)
+    replacingAllInOpenDocsSignal = QtCore.pyqtSignal( QString,QString,QString,QString,int)  #text,replaceText, filters,directory. replace mode
     # searchingSignalIF = QtCore.pyqtSignal( ('char*','char*','char*',)) # text, filters,directory
     searchingSignalIF = QtCore.pyqtSignal(QString,QString,QString)  # text, filters,directory
-    replacingSignalIF = QtCore.pyqtSignal( ('char*','char*','char*','char*')) # text,replaceText, filters,directory
+    replacingSignalIF = QtCore.pyqtSignal( QString,QString,QString,QString) # text,replaceText, filters,directory
     
     def __init__(self, text="", parent=None):
         super(FindAndReplaceDlg, self).__init__(parent)
@@ -849,7 +849,7 @@ class FindDisplayWidget(QsciScintilla):
         
         if lineNumberWithFileName>=0:
             dbgMsg("THIS IS LINE WITH FILE NAME:")
-            lineWithFileName= str(self.text(lineNumberWithFileName))
+            lineWithFileName= unicode(self.text(lineNumberWithFileName))
             
             dbgMsg(lineWithFileName)
             fileNameGroups=self.fileNameWithSearchTextExtractRegex.search(lineWithFileName)
