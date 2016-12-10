@@ -1,5 +1,6 @@
 from XMLUtils import ElementCC3D
 import os.path
+import sys
 '''
 ideally instead hard-coding snippets we should use XML Schema or RelaxNG formats to describe and help generate CC3DML
 
@@ -114,7 +115,7 @@ class CC3DMLGeneratorBase:
         
         
         if self.simulationDir!='' and self.simulationName!='':
-            self.fileName=os.path.join(str(self.simulationDir),str(self.simulationName)+".xml")
+            self.fileName=os.path.join(unicode(self.simulationDir),unicode(self.simulationName)+".xml")
             
             
     def checkIfSim3D(self,_gpd):
@@ -1485,8 +1486,27 @@ class CC3DMLGeneratorBase:
         
         
     def saveCC3DXML(self,_fileName):
-        
-        self.cc3d.CC3DXMLElement.saveXML(_fileName) 
-        # self.cc3d.CC3DXMLElement.saveXMLInPython(str(self.fileName+".py")) 
-        print "SAVING XML = ",_fileName
-        # print "SAVING XML in Python= ",self.fileName+".py"
+        print "SAVING XML = ", _fileName
+
+        xml_file =  open(_fileName,'w')
+        xml_file.write('%s'%self.cc3d.CC3DXMLElement.getCC3DXMLElementString())
+        xml_file.close()
+
+        # if sys.platform.startswith('win'):
+        #     # encoded_file_name = str(_fileName.encode('utf-16-le'))
+        #     encoded_file_name = str(_fileName.encode('utf-8'))
+        # else:
+        #     encoded_file_name = str(_fileName.encode('utf-8'))
+        # return
+        # print self.cc3d.CC3DXMLElement.getCC3DXMLElementString()
+        # import codecs
+        # encoded_file =  codecs.open(encoded_file_name,'w')
+        # encoded_file.write('%s'%self.cc3d.CC3DXMLElement.getCC3DXMLElementString())
+        # encoded_file.close()
+        #
+        # # self.cc3d.CC3DXMLElement.saveXML(encoded_file_name)
+        #
+        # # self.cc3d.CC3DXMLElement.saveXML(_fileName)
+        # # self.cc3d.CC3DXMLElement.saveXMLInPython(str(self.fileName+".py"))
+        #
+        # # print "SAVING XML in Python= ",self.fileName+".py"

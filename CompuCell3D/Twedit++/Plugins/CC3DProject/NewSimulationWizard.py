@@ -118,7 +118,7 @@ class NewSimulationWizard(QWizard,ui_newsimulationwizard.Ui_NewSimulationWizard)
     @pyqtSignature("") # signature of the signal emited by the button
     def on_piffPB_clicked(self):
         fileName=QFileDialog.getOpenFileName ( self, "Choose PIFF file...")
-        fileName=str(fileName)        
+        fileName=unicode(fileName)
         fileName=os.path.abspath(fileName) # normalizing path
         self.piffLE.setText(fileName)
         
@@ -635,7 +635,7 @@ class NewSimulationWizard(QWizard,ui_newsimulationwizard.Ui_NewSimulationWizard)
             
     @pyqtSignature("") # signature of the signal emited by the button        
     def on_dirPB_clicked(self):
-        name=str(self.nameLE.text())
+        name=unicode(self.nameLE.text())
         name=string.rstrip(name)
         
         projDir=self.plugin.configuration.setting("RecentNewProjectDir")
@@ -695,8 +695,8 @@ class NewSimulationWizard(QWizard,ui_newsimulationwizard.Ui_NewSimulationWizard)
         
         self.nameLE.selectAll()
         projDir=self.plugin.configuration.setting("RecentNewProjectDir")
-        print "projDir=",projDir
-        if str(projDir)=="":
+        print "projDir=",unicode(projDir)
+        if unicode(projDir)=="":
             projDir=os.environ["PREFIX_CC3D"]
         self.dirLE.setText(projDir)    
         
@@ -800,9 +800,9 @@ class NewSimulationWizard(QWizard,ui_newsimulationwizard.Ui_NewSimulationWizard)
         
         print "THIS IS VALIDATE FOR PAGE ",self.currentId
         if self.currentId()==0:
-            dir=str(self.dirLE.text())
+            dir=unicode(self.dirLE.text())
             dir=string.rstrip(dir)
-            name=str(self.nameLE.text())
+            name=unicode(self.nameLE.text())
             name=string.rstrip(name)
             if self.xmlRB.isChecked():
                 self.removePage(self.pageDict["PythonScript"][1])
@@ -827,7 +827,7 @@ class NewSimulationWizard(QWizard,ui_newsimulationwizard.Ui_NewSimulationWizard)
                 return True
         # general properties        
         if self.currentId()==1:
-            if self.piffRB.isChecked() and string.rstrip(str(self.piffLE.text()))=='':
+            if self.piffRB.isChecked() and string.rstrip(unicode(self.piffLE.text()))=='':
                 QMessageBox.warning(self,"Missing information","Please specify name of the PIFF file",QMessageBox.Ok)                
                 return False
         
@@ -976,10 +976,10 @@ class NewSimulationWizard(QWizard,ui_newsimulationwizard.Ui_NewSimulationWizard)
         return
         
     def generateNewProject(self):    
-        dir=str(self.dirLE.text())
+        dir=unicode(self.dirLE.text())
         dir=os.path.abspath(dir)
         dir=string.rstrip(dir)
-        name=str(self.nameLE.text())        
+        name=unicode(self.nameLE.text())
         name=string.rstrip(name)
         
         print "name=",name," dir=",dir
@@ -997,7 +997,7 @@ class NewSimulationWizard(QWizard,ui_newsimulationwizard.Ui_NewSimulationWizard)
         if self.blobRB.isChecked():
             self.generalPropertiesDict["Initializer"]=["blob",None]
         elif self.piffRB.isChecked():
-            piffPath=str(self.piffLE.text())
+            piffPath=unicode(self.piffLE.text())
             piffPath=string.rstrip(piffPath)
             self.generalPropertiesDict["Initializer"]=["piff",piffPath]
             # trying to copy piff file into simulation dir of the project directory
@@ -1176,7 +1176,27 @@ class NewSimulationWizard(QWizard,ui_newsimulationwizard.Ui_NewSimulationWizard)
         
         # save Project file
         projFileName=os.path.join(self.mainProjDir,name+".cc3d")
-        simulationElement.CC3DXMLElement.saveXML(projFileName)
+
+        proj_file =  open(projFileName,'w')
+        proj_file.write('%s'%simulationElement.CC3DXMLElement.getCC3DXMLElementString())
+        proj_file.close()
+
+
+        # if sys.platform.startswith('win'):
+        #     # encoded_proj_file_name = str(projFileName.encode('utf-16-le'))
+        #     encoded_proj_file_name = str(projFileName.encode('utf-8'))
+        # else:
+        #     encoded_proj_file_name = str(projFileName.encode('utf-8'))
+        #
+        # print simulationElement.CC3DXMLElement.getCC3DXMLElementString()
+        # import codecs
+        # proj_file =  codecs.open(encoded_proj_file_name,'w','utf-8')
+        # proj_file.write('%s'%simulationElement.CC3DXMLElement.getCC3DXMLElementString())
+        # proj_file.close()
+        #
+        # # simulationElement.CC3DXMLElement.saveXML(encoded_proj_file_name)
+        #
+        #
         #open newly created project in the ProjectEditor
         self.plugin.openCC3Dproject(projFileName)
         

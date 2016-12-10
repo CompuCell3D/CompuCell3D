@@ -13,7 +13,7 @@ def configureSimulation(sim):
 
 def generateConfigureSimFcnBody(_rootElement,_outputFileName):
     # note the XML root element generated using C++ xml-to-python converter is called RootElementNameElmnt - here it will be CompuCell3DElmnt
-    configureSimFileName=str(_outputFileName)
+    configureSimFileName=unicode(_outputFileName)
     
     _rootElement.saveXMLInPython(configureSimFileName)         
     
@@ -41,8 +41,8 @@ class CC3DPythonGenerator:
         self.simulationName=self.xmlGenerator.simulationName
         self.xmlFileName=self.xmlGenerator.fileName
         
-        self.mainPythonFileName=os.path.join(str(self.simulationDir),str(self.simulationName)+".py")
-        self.steppablesPythonFileName=os.path.join(str(self.simulationDir),str(self.simulationName)+"Steppables.py")        
+        self.mainPythonFileName=os.path.join(unicode(self.simulationDir),unicode(self.simulationName)+".py")
+        self.steppablesPythonFileName=os.path.join(unicode(self.simulationDir),unicode(self.simulationName)+"Steppables.py")
         
         self.configureSimLines=''
         
@@ -138,7 +138,7 @@ dim=sim.getPotts().getCellFieldG().getDim()
         
     def generateConfigureSimFcn(self):
         # note the XML root element generated using C++ xml-to-python converter is called RootElementNameElmnt - here it will be CompuCell3DElmnt
-        configureSimFileName=str(self.xmlFileName+".py")
+        configureSimFileName=unicode(self.xmlFileName+".py")
         
         self.configureSimLines=generateConfigureSimFcnBody(self.xmlGenerator.cc3d.CC3DXMLElement,configureSimFileName)
         self.configureSimLines+='\n'

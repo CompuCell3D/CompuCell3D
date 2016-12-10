@@ -1,6 +1,6 @@
 '''
-TO DO:
-* In the FindInFileResults display widget fi more than two occurences are found in the same line only the first one is highlighted 
+TODO:
+* In the FindInFileResults display widget fi more than two occurences are found in the same line only the first one is highlighted
 '''
 import re
 from PyQt4.QtCore import *
@@ -19,6 +19,7 @@ from Messaging import stdMsg, dbgMsg,pd, errMsg, setDebugging
 # import ui_findandreplacedlg
 import ui_findinfilesdlg
 
+# todo - replace str with unicode in the replace in files part of the find fdialod. Use QString instead of char* in signals
 ALL_IN_FILES=0
 ALL_IN_ALL_OPEN_DOCS=1
 ALL_IN_CURRENT_DOC=2
@@ -187,7 +188,7 @@ class FindAndReplaceHistory:
             # dbgMsg(self.findHistory)
         if self.directoryIF!=_directory:
             self.directoryIF = _directory    
-            if str(self.directoryIF).strip()!='':    
+            if unicode(self.directoryIF).strip()!='':
                 self.directoryHistoryIF.prepend(self.directoryIF)
             self.directoryHistoryIF.removeDuplicates()
             if self.directoryHistoryIF.count()>=self.historyLength:
@@ -337,7 +338,8 @@ class FindAndReplaceDlg(QDialog,ui_findinfilesdlg.Ui_FindInFiles):
     replacingSignal = QtCore.pyqtSignal( ('char*','char*',))
     replacingAllSignal = QtCore.pyqtSignal( ('char*','char*',bool))    
     replacingAllInOpenDocsSignal = QtCore.pyqtSignal( ('char*','char*','char*','char*','int',))  #text,replaceText, filters,directory. replace mode  
-    searchingSignalIF = QtCore.pyqtSignal( ('char*','char*','char*',)) # text, filters,directory
+    # searchingSignalIF = QtCore.pyqtSignal( ('char*','char*','char*',)) # text, filters,directory
+    searchingSignalIF = QtCore.pyqtSignal(QString,QString,QString)  # text, filters,directory
     replacingSignalIF = QtCore.pyqtSignal( ('char*','char*','char*','char*')) # text,replaceText, filters,directory
     
     def __init__(self, text="", parent=None):
@@ -424,7 +426,19 @@ class FindAndReplaceDlg(QDialog,ui_findinfilesdlg.Ui_FindInFiles):
         if MAC:           
             self.setWindowFlags(Qt.Tool|self.windowFlags())
         
-    def setButtonsEnabled(self,_flag):        # setEnabled on top widget blocks Qline edit keyboard focus on OSX . So instead we will enable each button individually        # notice we do not touch close or clear history buttons        self.findNextButton.setEnabled(_flag)        self.findAllInOpenDocsButton.setEnabled(_flag)        self.findAllInCurrentDocButton.setEnabled(_flag)        self.replaceButton.setEnabled(_flag)        self.replaceAllButton.setEnabled(_flag)        self.replaceAllInOpenDocsButton.setEnabled(_flag)        self.findAllButtonIF.setEnabled(_flag)        self.replaceButtonIF.setEnabled(_flag)            def tabChanged(self,idx):
+    def setButtonsEnabled(self,_flag):
+        # setEnabled on top widget blocks Qline edit keyboard focus on OSX . So instead we will enable each button individually
+        # notice we do not touch close or clear history buttons
+        self.findNextButton.setEnabled(_flag)
+        self.findAllInOpenDocsButton.setEnabled(_flag)
+        self.findAllInCurrentDocButton.setEnabled(_flag)
+        self.replaceButton.setEnabled(_flag)
+        self.replaceAllButton.setEnabled(_flag)
+        self.replaceAllInOpenDocsButton.setEnabled(_flag)
+        self.findAllButtonIF.setEnabled(_flag)
+        self.replaceButtonIF.setEnabled(_flag)
+        
+    def tabChanged(self,idx):
         title=self.tabWidget.tabText(idx)
         dbgMsg("TITLE=",title)
         self.setWindowTitle(title)
@@ -683,11 +697,11 @@ class FindAndReplaceDlg(QDialog,ui_findinfilesdlg.Ui_FindInFiles):
         
     @pyqtSignature("")
     def on_findAllButtonIF_clicked(self):       
-        self.searchingSignalIF.emit(str(self.findComboBoxIF.lineEdit().text()),str(self.filtersComboBoxIF.lineEdit().text()).strip(),str(self.directoryComboBoxIF.lineEdit().text()).strip())
+        self.searchingSignalIF.emit(str(self.findComboBoxIF.lineEdit().text()),str(self.filtersComboBoxIF.lineEdit().text()).strip(),unicode(self.directoryComboBoxIF.lineEdit().text()).strip())
         
     @pyqtSignature("")
     def on_replaceButtonIF_clicked(self):        
-        self.replacingSignalIF.emit(str(self.findComboBoxIF.lineEdit().text()),str(self.replaceComboBoxIF.lineEdit().text()),str(self.filtersComboBoxIF.lineEdit().text()).strip(),str(self.directoryComboBoxIF.lineEdit().text()).strip())
+        self.replacingSignalIF.emit(str(self.findComboBoxIF.lineEdit().text()),str(self.replaceComboBoxIF.lineEdit().text()),str(self.filtersComboBoxIF.lineEdit().text()).strip(),unicode(self.directoryComboBoxIF.lineEdit().text()).strip())
         
         
 # class FindDock
