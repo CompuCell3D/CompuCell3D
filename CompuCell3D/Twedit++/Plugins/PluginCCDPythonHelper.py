@@ -192,7 +192,7 @@ class CC3DPythonHelper(QObject):
         text=self.snippetDictionary[str(_snippetName)]   
         
         editor=self.__ui.getCurrentEditor()
-        curFileName=str(self.__ui.getCurrentDocumentName())
+        curFileName = unicode(self.__ui.getCurrentDocumentName())
         
         basename,ext=os.path.splitext(curFileName)
         if ext!=".py" and ext!=".pyw":
