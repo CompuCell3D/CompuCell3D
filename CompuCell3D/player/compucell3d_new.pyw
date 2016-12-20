@@ -6,6 +6,8 @@ import os
 
 import vtk
 
+# TODO
+# * restore xml widget prepareXMLTreeView in simpleTabView.py
 
 # # setting api for QVariant is necessary to get player workign with MinGW-compiled PyQt4
 # import sip
