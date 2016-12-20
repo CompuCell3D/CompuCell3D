@@ -85,6 +85,7 @@ if PyQtImpl == "PyQt5":
     from PyQt5.QtCore import QObject
     from PyQt5.QtCore import QSize
     from PyQt5.QtCore import QEvent
+    from PyQt5 import QtCore, QtGui, QtOpenGL, QtWidgets
 elif PyQtImpl == "PyQt4":
     if QVTKRWIBase == "QGLWidget":
         from PyQt4.QtOpenGL import QGLWidget
@@ -321,6 +322,8 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         self._hidden.hide()
         self._hidden.destroyed.connect(self.Finalize)
 
+        self.mousePressEventFcn = self.mousePressEvent2DStyle
+
     def __getattr__(self, attr):
         """Makes the object behave like a vtkGenericRenderWindowInteractor"""
         if attr == '__vtk__':
@@ -469,22 +472,26 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
             self._Iren.RightButtonPressEvent()
 
     def mousePressEvent(self, ev):
-        # return
-        ctrl, shift = self._GetCtrlShift(ev)
-        repeat = 0
-        if ev.type() == QEvent.MouseButtonDblClick:
-            repeat = 1
-        self._Iren.SetEventInformationFlipY(ev.x(), ev.y(),
-                                            ctrl, shift, chr(0), repeat, None)
 
-        self._ActiveButton = ev.button()
+        self.mousePressEventFcn(ev)
+        return
 
-        if self._ActiveButton == Qt.LeftButton:
-            self._Iren.LeftButtonPressEvent()
-        elif self._ActiveButton == Qt.RightButton:
-            self._Iren.RightButtonPressEvent()
-        elif self._ActiveButton == Qt.MidButton:
-            self._Iren.MiddleButtonPressEvent()
+        # # return
+        # ctrl, shift = self._GetCtrlShift(ev)
+        # repeat = 0
+        # if ev.type() == QEvent.MouseButtonDblClick:
+        #     repeat = 1
+        # self._Iren.SetEventInformationFlipY(ev.x(), ev.y(),
+        #                                     ctrl, shift, chr(0), repeat, None)
+        #
+        # self._ActiveButton = ev.button()
+        #
+        # if self._ActiveButton == Qt.LeftButton:
+        #     self._Iren.LeftButtonPressEvent()
+        # elif self._ActiveButton == Qt.RightButton:
+        #     self._Iren.RightButtonPressEvent()
+        # elif self._ActiveButton == Qt.MidButton:
+        #     self._Iren.MiddleButtonPressEvent()
 
     def mouseReleaseEvent(self, ev):
         # return
