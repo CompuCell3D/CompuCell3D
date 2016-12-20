@@ -38,6 +38,10 @@ class SimulationThread(QtCore.QThread):
         self.steppablesStarted.emit(_flag)
 
 
+    def emitSimulationFinished(self,_flag=True):
+        self.simulationFinished.emit(_flag)
+
+
 
 
 
