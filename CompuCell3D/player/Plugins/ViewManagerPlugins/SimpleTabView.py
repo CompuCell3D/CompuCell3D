@@ -235,7 +235,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         simCounter = 1
         for simulationFileName in recentSimulations:
-            actionText = self.tr("&%1 %2").arg(simCounter).arg(simulationFileName)
+            actionText = self.tr("&%1 %2").format(simCounter,simulationFileName)
             # action=rencentSimulationsMenu.addAction(actionText)
             action = QAction("&%d %s " % (simCounter, simulationFileName), self)
             rencentSimulationsMenu.addAction(action)
@@ -315,7 +315,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             if graphicsWidget.is_screenshot_widget:
                 continue
 
-            actionText = self.tr("&%1. %2").arg(counter + 1).arg(win.windowTitle())
+            actionText = self.tr("&%1. %2").format(counter + 1, win.windowTitle())
 
             action = windowMenu.addAction(actionText)
             action.setCheckable(True)
@@ -323,7 +323,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
             myFlag = self.lastActiveRealWindow == win
             action.setChecked(myFlag)
 
-            self.connect(action, SIGNAL("triggered()"), self.windowMapper, SLOT("map()"))
+            # todo
+            # self.connect(action, SIGNAL("triggered()"), self.windowMapper, SLOT("map()"))
+            action.triggered.connect(self.windowMapper.map)
+
             self.windowMapper.setMapping(action, win)
             counter += 1
 
@@ -859,18 +862,20 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Initializes model editor tree view of the CC3DML - Model editor is used for steering
         :return:None
         '''
+        # todo
+        pass
 
-        self.root_element = CompuCellSetup.cc3dXML2ObjConverter.root
-        self.model = SimModel(self.root_element, self.__modelEditor)
-        self.simulation.setSimModel(
-            self.model)  # hook in simulation thread class to XML model TreeView panel in the GUI - needed for steering
-
-        # self.model.checkSanity()
-
-        self.__modelEditor.setModel(self.model)
-        #        print MODULENAME,' --------- prepareXMLTreeView(self):'
-        #        import pdb; pdb.set_trace()
-        self.model.setPrintFlag(True)
+        # self.root_element = CompuCellSetup.cc3dXML2ObjConverter.root
+        # self.model = SimModel(self.root_element, self.__modelEditor)
+        # self.simulation.setSimModel(
+        #     self.model)  # hook in simulation thread class to XML model TreeView panel in the GUI - needed for steering
+        #
+        # # self.model.checkSanity()
+        #
+        # self.__modelEditor.setModel(self.model)
+        # #        print MODULENAME,' --------- prepareXMLTreeView(self):'
+        # #        import pdb; pdb.set_trace()
+        # self.model.setPrintFlag(True)
 
     def prepareLatticeDataView(self):
         '''
@@ -1423,6 +1428,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Dispatch function - calls player initialization functions (initializeSimulationViewWidgetRegular or initializeSimulationViewWidgetCML) depending on the run mode
         :return:None
         '''
+        # todo
+        pass
         import CompuCellSetup
 
         CompuCellSetup.simulationFileName = self.__fileName
@@ -1438,7 +1445,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.createOutputDirs()
 
 
-        #copy simulation files to output directory  for simgle simulation- copying of the simulations files for parameter scan is doen in the __loadCC3DFile       
+        #copy simulation files to output directory  for simgle simulation- copying of the simulations files for parameter scan is doen in the __loadCC3DFile
         if self.singleSimulation:
             if self.cc3dSimulationDataHandler and CompuCellSetup.screenshotDirectoryName != "":
                 self.cc3dSimulationDataHandler.copySimulationDataFiles(CompuCellSetup.screenshotDirectoryName)

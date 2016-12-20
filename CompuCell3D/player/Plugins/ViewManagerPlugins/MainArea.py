@@ -30,7 +30,7 @@ class SubWindow(QFrame):
         self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
         layout = QBoxLayout(QBoxLayout.TopToBottom)
         layout.addWidget(widget)
-        layout.setMargin(0)
+        # layout.setMargin(0)
         self.main_widget = widget
         self.setLayout(layout)
 

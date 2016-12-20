@@ -34,6 +34,11 @@ class SimulationThread(QtCore.QThread):
         self.simulationInitializedSignal.emit(_flag)
 
 
+    def emitSteppablesStarted(self,_flag=True):
+        self.steppablesStarted.emit(_flag)
+
+
+
 
 
     pass

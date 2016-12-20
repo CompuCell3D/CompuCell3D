@@ -745,23 +745,21 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
     
     def setConnects(self,_workspace):   # rf. Plugins/ViewManagerPlugins/SimpleTabView.py
-#        self.connect(self.threeDRB, SIGNAL('toggled(bool)'), self._switchDim)
-#        
-#        self.connect(self.xyRB,     SIGNAL('clicked(bool)'), self._xyChecked)
-#        self.connect(self.xzRB,     SIGNAL('clicked(bool)'), self._xzChecked)
-#        self.connect(self.yzRB,     SIGNAL('clicked(bool)'), self._yzChecked)
-#        
-#        self.connect(self.xySB,     SIGNAL('valueChanged(int)'), self._xyChanged)
-#        self.connect(self.xzSB,     SIGNAL('valueChanged(int)'), self._xzChanged)
-#        self.connect(self.yzSB,     SIGNAL('valueChanged(int)'), self._yzChanged)
-        
-        self.connect(self.projComboBox,  SIGNAL('currentIndexChanged (int)'), self._projComboBoxChanged)
-        self.connect(self.projSpinBox,   SIGNAL('valueChanged(int)'), self._projSpinBoxChanged)
-        
-        self.connect(self.fieldComboBox, SIGNAL('currentIndexChanged (int)'), self._fieldTypeChanged)
-        
-        self.connect(self.screenshotAct, SIGNAL('triggered()'), self._takeShot)
-    
+
+        # TODO
+        # self.connect(self.projComboBox,  SIGNAL('currentIndexChanged (int)'), self._projComboBoxChanged)
+        # self.connect(self.projSpinBox,   SIGNAL('valueChanged(int)'), self._projSpinBoxChanged)
+        #
+        # self.connect(self.fieldComboBox, SIGNAL('currentIndexChanged (int)'), self._fieldTypeChanged)
+        #
+        # self.connect(self.screenshotAct, SIGNAL('triggered()'), self._takeShot)
+
+        self.projComboBox.currentIndexChanged.connect(self._projComboBoxChanged)
+        self.projSpinBox.valueChanged.connect(self._projSpinBoxChanged)
+
+        self.fieldComboBox.currentIndexChanged.connect(self._fieldTypeChanged)
+
+        self.screenshotAct.triggered.connect(self._takeShot)
 
     def setInitialCrossSection(self,_basicSimulationData):
 #        print MODULENAME, '  setInitialCrossSection'

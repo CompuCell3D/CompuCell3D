@@ -419,6 +419,55 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
                                             ctrl, shift, chr(0), 0, None)
         self._Iren.LeaveEvent()
 
+    def setMouseInteractionSchemeTo2D(self):
+        self.mousePressEventFcn = self.mousePressEvent2DStyle
+
+    def setMouseInteractionSchemeTo3D(self):
+        self.mousePressEventFcn = self.mousePressEvent3DStyle
+
+    def mousePressEvent2DStyle(self, ev):
+
+        ctrl, shift = self._GetCtrlShift(ev)
+        repeat = 0
+        if ev.type() == QtCore.QEvent.MouseButtonDblClick:
+            repeat = 1
+        shift = True
+        self._Iren.SetEventInformationFlipY(ev.x(), ev.y(),
+                                            ctrl, shift, chr(0), repeat, None)
+        shift = False
+
+        self._ActiveButton = ev.button()
+        if self._ActiveButton == QtCore.Qt.LeftButton:
+            self._Iren.LeftButtonPressEvent()
+        elif self._ActiveButton == QtCore.Qt.RightButton:
+            self._Iren.RightButtonPressEvent()
+        elif self._ActiveButton == QtCore.Qt.MidButton:
+            self._Iren.MiddleButtonPressEvent()
+
+    def mousePressEvent3DStyle(self, ev):
+        ctrl, shift = self._GetCtrlShift(ev)
+        repeat = 0
+        if ev.type() == QtCore.QEvent.MouseButtonDblClick:
+            repeat = 1
+
+        self._Iren.SetEventInformationFlipY(ev.x(), ev.y(),
+                                            ctrl, shift, chr(0), repeat, None)
+        self._ActiveButton = ev.button()
+
+        # if self._ActiveButton == QtCore.Qt.LeftButton:
+        # self._Iren.LeftButtonPressEvent()
+        # elif self._ActiveButton == QtCore.Qt.RightButton:
+        # self._Iren.RightButtonPressEvent()
+        # elif self._ActiveButton == QtCore.Qt.MidButton:
+        # self._Iren.MiddleButtonPressEvent()
+
+        if self._ActiveButton == QtCore.Qt.LeftButton:
+            self._Iren.LeftButtonPressEvent()
+        elif self._ActiveButton == QtCore.Qt.RightButton:
+            self._Iren.MiddleButtonPressEvent()
+        elif self._ActiveButton == QtCore.Qt.MidButton:
+            self._Iren.RightButtonPressEvent()
+
     def mousePressEvent(self, ev):
         # return
         ctrl, shift = self._GetCtrlShift(ev)
@@ -461,6 +510,19 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         self._Iren.SetEventInformationFlipY(ev.x(), ev.y(),
                                             ctrl, shift, chr(0), 0, None)
         self._Iren.MouseMoveEvent()
+
+    def resetCamera(self):
+        # ctrl, shift = self._GetCtrlShift(ev)
+        # if ev.key() < 256:
+            # key = str(ev.text())
+        # else:
+            # key = chr(0)
+        ctrl,shift=0,0
+        key=str('r')
+        self._Iren.SetEventInformationFlipY(self.__saveX, self.__saveY,
+                                            ctrl, shift, key, 0, None)
+        self._Iren.KeyPressEvent()
+        self._Iren.CharEvent()
 
     def keyPressEvent(self, ev):
         # return
