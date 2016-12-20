@@ -30,6 +30,7 @@ from PyQt5 import QtCore, QtGui,QtOpenGL, QtWidgets
 import vtk
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 from enums import *
 
 import sys
@@ -57,7 +58,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     # def __init__(self, parent=None, wflags=QtCore.Qt.WindowFlags(), **kw):
     def __init__(self, parent=None, originatingWidget=None):
 
-        QtGui.QFrame.__init__(self, parent)
+        QtWidgets.QFrame.__init__(self, parent)
         
         
         # print '\n\n\n\n\n CREATING NEW GRAPHICS FRAME WIDGET ',self
@@ -77,12 +78,12 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.plane = None
         self.planePos = None
 
-        self.lineEdit = QtGui.QLineEdit()
+        self.lineEdit = QtWidgets.QLineEdit()
         
         self.__initCrossSectionActions()
         self.cstb = self.initCrossSectionToolbar()        
         
-        layout = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom)
+        layout = QtWidgets.QBoxLayout(QtWidgets.QBoxLayout.TopToBottom)
         layout.addWidget(self.cstb)
         layout.addWidget(self.qvtkWidget)
         self.setLayout(layout)
@@ -303,7 +304,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         return (self.plane, self.planePos)
         
     def initCrossSectionToolbar(self):
-        cstb = QtGui.QToolBar("CrossSection", self)
+        cstb = QtWidgets.QToolBar("CrossSection", self)
         #viewtb.setIconSize(QSize(20, 18))
         cstb.setObjectName("CrossSection")
         cstb.setToolTip("Projection")
@@ -364,8 +365,8 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 #        self.yzSB.addAction(self.yzSBAct)
         
         # new (rwh, May 2011)
-        self.projComboBoxAct = QtGui.QAction(self)
-        self.projComboBox  = QtGui.QComboBox()
+        self.projComboBoxAct = QtWidgets.QAction(self)
+        self.projComboBox  = QtWidgets.QComboBox()
         self.projComboBox.addAction(self.projComboBoxAct)
         
         # NB: the order of these is important; rf. setInitialCrossSection where we set 'xy' to be default projection
@@ -374,18 +375,18 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.projComboBox.addItem("xz")
         self.projComboBox.addItem("yz")
         
-        self.projSBAct = QtGui.QAction(self)
-        self.projSpinBox  = QtGui.QSpinBox()
+        self.projSBAct = QtWidgets.QAction(self)
+        self.projSpinBox  = QtWidgets.QSpinBox()
         self.projSpinBox.addAction(self.projSBAct)
 
-        self.fieldComboBoxAct = QtGui.QAction(self)
-        self.fieldComboBox  = QtGui.QComboBox()   # Note that this is different than the fieldComboBox in the Prefs panel (rf. SimpleTabView.py)
+        self.fieldComboBoxAct = QtWidgets.QAction(self)
+        self.fieldComboBox  = QtWidgets.QComboBox()   # Note that this is different than the fieldComboBox in the Prefs panel (rf. SimpleTabView.py)
         self.fieldComboBox.addAction(self.fieldComboBoxAct)
         self.fieldComboBox.addItem("-- Field Type --")
         # self.fieldComboBox.addItem("cAMP")  # huh?
         import DefaultData
         gip = DefaultData.getIconPath
-        self.screenshotAct = QtGui.QAction(QtGui.QIcon(gip("screenshot.png")), "&Take Screenshot", self)
+        self.screenshotAct = QtWidgets.QAction(QtGui.QIcon(gip("screenshot.png")), "&Take Screenshot", self)
         
         
 

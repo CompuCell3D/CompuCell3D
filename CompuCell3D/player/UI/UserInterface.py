@@ -85,7 +85,7 @@ class UserInterface(QMainWindow):
         self.stdout = Redirector(False)
         self.stderr = Redirector(True)
         # #TODO
-        # self.stderr.setStdErrConsole(self.console.getStdErrConsole())
+        self.stderr.setStdErrConsole(self.console.getStdErrConsole())
         
         # Now setup the connections
         if Configuration.getSetting("UseInternalConsole"):
@@ -131,42 +131,42 @@ class UserInterface(QMainWindow):
             #silencing output from Python
             self.enablePythonOutput(False)
         #TODO
-        # if self.viewmanager.MDI_ON: # configuration of MDI
-        #     playerSizes=Configuration.getSetting("PlayerSizes")
-        #     if playerSizes and playerSizes.size()>0:
-        #         self.resize(Configuration.getSetting("MainWindowSize"))
-        #         self.move(Configuration.getSetting("MainWindowPosition"))
-        #         self.restoreState(playerSizes)
-        #     else:
-        #         self.resize(Configuration.getSetting("MainWindowSize"))
-        #         self.move(Configuration.getSetting("MainWindowPosition"))
-        # else:  # configuration of floating windows
-        #     playerSizes=Configuration.getSetting("PlayerSizesFloating")
-        #
-        #     if playerSizes and playerSizes.size()>0:
-        #         self.resize(Configuration.getSetting("MainWindowSizeFloating"))
-        #         self.resize(self.size().width(), 0) # resizing vertical dimension to be minimal
-        #         self.move(Configuration.getSetting("MainWindowPositionFloating"))
-        #         self.restoreState(playerSizes)
-        #     else:
-        #         self.resize(Configuration.getSetting("MainWindowSizeFloating"))
-        #         self.resize(self.size().width(), 0) # resizing vertical dimension to be minimal
-        #         self.move(Configuration.getSetting("MainWindowPositionFloating"))
-        #
-        #
-        # # if playerSizes and playerSizes.size()>0:
-        # #     self.resize(Configuration.getSetting("MainWindowSize"))
-        # #     self.move(Configuration.getSetting("MainWindowPosition"))
-        # #     self.restoreState(playerSizes)
-        # # else:
-        # #     self.resize(Configuration.getSetting("MainWindowSize"))
-        # #     self.move(Configuration.getSetting("MainWindowPosition"))
-        #
-        # # MDIFIX
-        # floatingFlag = Configuration.getSetting('FloatingWindows')
-        # self.modelEditorDock.setFloating(floatingFlag)
-        # self.consoleDock.setFloating(floatingFlag)
-        # self.latticeDataDock.setFloating(floatingFlag)
+        if self.viewmanager.MDI_ON: # configuration of MDI
+            playerSizes=Configuration.getSetting("PlayerSizes")
+            if playerSizes and playerSizes.size()>0:
+                self.resize(Configuration.getSetting("MainWindowSize"))
+                self.move(Configuration.getSetting("MainWindowPosition"))
+                self.restoreState(playerSizes)
+            else:
+                self.resize(Configuration.getSetting("MainWindowSize"))
+                self.move(Configuration.getSetting("MainWindowPosition"))
+        else:  # configuration of floating windows
+            playerSizes=Configuration.getSetting("PlayerSizesFloating")
+
+            if playerSizes and playerSizes.size()>0:
+                self.resize(Configuration.getSetting("MainWindowSizeFloating"))
+                self.resize(self.size().width(), 20) # resizing vertical dimension to be minimal - for PyQt5 we cannot use 0
+                self.move(Configuration.getSetting("MainWindowPositionFloating"))
+                self.restoreState(playerSizes)
+            else:
+                self.resize(Configuration.getSetting("MainWindowSizeFloating"))
+                self.resize(self.size().width(), 20) # resizing vertical dimension to be minimal - for PyQt5 we cannot use 0
+                self.move(Configuration.getSetting("MainWindowPositionFloating"))
+
+
+        # if playerSizes and playerSizes.size()>0:
+        #     self.resize(Configuration.getSetting("MainWindowSize"))
+        #     self.move(Configuration.getSetting("MainWindowPosition"))
+        #     self.restoreState(playerSizes)
+        # else:
+        #     self.resize(Configuration.getSetting("MainWindowSize"))
+        #     self.move(Configuration.getSetting("MainWindowPosition"))
+
+        # MDIFIX
+        floatingFlag = Configuration.getSetting('FloatingWindows')
+        self.modelEditorDock.setFloating(floatingFlag)
+        self.consoleDock.setFloating(floatingFlag)
+        self.latticeDataDock.setFloating(floatingFlag)
 
     ##########################################################
     ## Below are slots to handle StdOut and StdErr

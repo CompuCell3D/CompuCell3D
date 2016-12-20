@@ -426,10 +426,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
         else:
             self.lastPositionMainGraphicsWindow = self.mainGraphicsWidget.pos()
 
-        self.mainGraphicsWidget.setShown(False)
+        # todo ok
+        # self.mainGraphicsWidget.setShown(False)
+        self.mainGraphicsWidget.hide()
 
-        self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWidget.draw2D.configsChanged)
-        self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWidget.draw3D.configsChanged)
+        self.configsChanged.connect(self.mainGraphicsWidget.draw2D.configsChanged)
+        self.configsChanged.connect(self.mainGraphicsWidget.draw3D.configsChanged)
+        # self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWidget.draw2D.configsChanged)
+        # self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWidget.draw3D.configsChanged)
         self.mainGraphicsWidget.readSettings()
         self.simulation.setGraphicsWidget(self.mainGraphicsWidget)
 
@@ -900,9 +904,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.UI.console.bringUpOutputConsole()
 
         # have to connect error handler to the signal emited from self.simulation object
-        self.connect(self.simulation, SIGNAL("errorOccured(QString,QString)"), self.handleErrorMessage)
-        # self.connect(self.simulation,SIGNAL("errorOccuredDetailed(QString,QString,int,int,QString)"),self.handleErrorMessageDetailed)
-        self.connect(self.simulation, SIGNAL("errorFormatted(QString)"), self.handleErrorFormatted)
+        # TODO changing signals
+        self.simulation.errorOccured.connect(self.handleErrorMessage)
+        self.simulation.errorFormatted.connect(self.handleErrorFormatted)
+
+        # self.connect(self.simulation, SIGNAL("errorOccured(QString,QString)"), self.handleErrorMessage)
+        # # self.connect(self.simulation,SIGNAL("errorOccuredDetailed(QString,QString,int,int,QString)"),self.handleErrorMessageDetailed)
+        # self.connect(self.simulation, SIGNAL("errorFormatted(QString)"), self.handleErrorFormatted)
 
         # We need to create new SimulationPaths object for each new simulation.    
         #        import CompuCellSetup
