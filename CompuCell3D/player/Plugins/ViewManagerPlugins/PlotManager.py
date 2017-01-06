@@ -17,7 +17,7 @@ MODULENAME = '---- PlotManager.py: '
 PLOT_TYPE_POSITION=3
 (XYPLOT,HISTOGRAM,BARPLOT)=range(0,3)
 MAX_FIELD_LEGTH=25
-
+import platform
 # Notice histogram and Bar Plot implementations need more work. They are functional but have a bit strange syntax and for Bar Plot we can only plot one series per plot
     
 # class PlotWindowInterface(PlotManagerSetup.PlotWindowInterfaceBase,QtCore.QObject):
@@ -589,6 +589,11 @@ class HistogramItem(Qwt.QwtPlotItem): #courtesy of pyqwt examples
         self.setItemAttribute(Qwt.QwtPlotItem.Legend, True)
         self.setZ(20.0)
 
+        self.to_long = lambda x:x
+        architecture = platform.architecture()
+        if architecture[0].startswith('64') and architecture[1].lower().startswith('windows'):
+            self.to_long = lambda x: long(x)
+
     # __init__()
 
     def setData(self, data):
@@ -656,8 +661,9 @@ class HistogramItem(Qwt.QwtPlotItem): #courtesy of pyqwt examples
         # # # print 'self.baseline()=',self.baseline()
         # # # print 'x0=',x0
         # # # print 'y0=',y0
-        
+
         for i in range(iData.size()):
+            i = self.to_long(i)
             if self.testHistogramAttribute(HistogramItem.Xfy):
                 x2 = xMap.transform(iData.value(i))
                 if x2 == x0:
