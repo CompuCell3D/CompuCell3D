@@ -35,6 +35,7 @@ class EnergyFunctionCalculator{
 
 
       virtual void setLastFlipAccepted(bool _accept){lastFlipAccepted=_accept;}
+	  virtual void set_aceptance_probability(double _prob) { }
    protected:
       std::vector<EnergyFunction *> energyFunctions;
       std::vector<std::string> energyFunctionsNameVec;

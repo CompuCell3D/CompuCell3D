@@ -123,6 +123,7 @@ double EnergyFunctionCalculatorStatistics::changeEnergy(Point3D &pt, const CellG
 			change+=lastEnergyVec[i];
 
 		}
+		pixel_copy_attempt_points_list.push_back(pt);
 		totEnergyDataList.push_back(lastEnergyVec); //inserting lastEnergyVec into  totEnergyVecVec - for later stdDev calculations
 
 	}else{
@@ -134,6 +135,10 @@ double EnergyFunctionCalculatorStatistics::changeEnergy(Point3D &pt, const CellG
 	}
 	return change;
 
+}
+
+void EnergyFunctionCalculatorStatistics::set_aceptance_probability(double _prob) {
+	acceptance_probability_list.push_back(_prob);
 }
 
 //this function will inccrement appropriate energy vectors based on whether flip was accepted or not
@@ -212,6 +217,8 @@ void EnergyFunctionCalculatorStatistics::initialize(){
 
 	totEnergyDataList.clear();
 	accNotAccList.clear();
+	acceptance_probability_list.clear();
+	pixel_copy_attempt_points_list.clear();
 
 
 }
@@ -348,6 +355,9 @@ void EnergyFunctionCalculatorStatistics::prepareGatherResultsFiles(){
 		outSingleSpinFlipStreamNameAccepted<<outFileCoreNameSpinFlips<<"."<<"accepted"<<"."<<"txt";
 		outAccSpinFlip =new ofstream(outSingleSpinFlipStreamNameAccepted.str().c_str());
 
+		*outAccSpinFlip << setw(fieldWidth) << "pt";
+		*outAccSpinFlip << setw(fieldWidth) << "prob";
+
 		writeHeaderFlex(*outAccSpinFlip);
 	}
 
@@ -356,6 +366,9 @@ void EnergyFunctionCalculatorStatistics::prepareGatherResultsFiles(){
 		outSingleSpinFlipStreamNameRejected<<outFileCoreNameSpinFlips<<"."<<"rejected"<<"."<<"txt";
 		outRejSpinFlip =new ofstream(outSingleSpinFlipStreamNameRejected.str().c_str());
 
+		*outRejSpinFlip << setw(fieldWidth) << "pt";
+		*outRejSpinFlip << setw(fieldWidth) << "prob";
+
 		writeHeaderFlex(*outRejSpinFlip);
 	}
 
@@ -363,6 +376,9 @@ void EnergyFunctionCalculatorStatistics::prepareGatherResultsFiles(){
 		ostringstream outSingleSpinFlipStreamNameTotal;
 		outSingleSpinFlipStreamNameTotal<<outFileCoreNameSpinFlips<<"."<<"total"<<"."<<"txt";
 		outTotSpinFlip =new ofstream(outSingleSpinFlipStreamNameTotal.str().c_str());
+
+		*outTotSpinFlip << setw(fieldWidth) << "pt";
+		*outTotSpinFlip << setw(fieldWidth) << "prob";
 
 		writeHeaderFlex(*outTotSpinFlip);
 	}
@@ -376,22 +392,39 @@ void EnergyFunctionCalculatorStatistics::outputResultsSingleSpinFlipGatherResult
 
 	std::list<std::vector<double> >::iterator lVecItr;
 	std::list<bool>::iterator lItr;
+	std::list<Point3D>::iterator flip_pt_litr;
+	std::list<double>::iterator prob_list_litr;
+
 
 	lItr=accNotAccList.begin();
+	flip_pt_litr = pixel_copy_attempt_points_list.begin();
+	prob_list_litr = acceptance_probability_list.begin();
+
 	for(lVecItr=totEnergyDataList.begin() ; lVecItr != totEnergyDataList.end() ; ++lVecItr){
 
 		vector<double> & energyData=*lVecItr;
 		if(outputTotalSpinFlip)
+
+			*outTotSpinFlip << setw(fieldWidth) << *flip_pt_litr;
+			*outTotSpinFlip << setw(fieldWidth) << *prob_list_litr;
+
 			writeDataLineFlex(*outTotSpinFlip,*lVecItr);
 
 		if(*lItr){//accepted flip
 			if(outputAcceptedSpinFlip)
+				*outAccSpinFlip << setw(fieldWidth) << *flip_pt_litr;
+				*outAccSpinFlip << setw(fieldWidth) << *prob_list_litr;
+
 				writeDataLineFlex(*outAccSpinFlip,*lVecItr);
 		}else{//rejected flip
 			if(outputRejectedSpinFlip)
+				*outRejSpinFlip << setw(fieldWidth) << *flip_pt_litr;
+				*outRejSpinFlip << setw(fieldWidth) << *prob_list_litr;
 				writeDataLineFlex(*outRejSpinFlip,*lVecItr);
 		}
 		++lItr;
+		++flip_pt_litr;
+		++prob_list_litr;
 	}
 
 
@@ -421,18 +454,29 @@ void EnergyFunctionCalculatorStatistics::outputResultsSingleSpinFlip(){
 
 	std::list<std::vector<double> >::iterator lVecItr;
 	std::list<bool>::iterator lItr;
+	std::list<Point3D>::iterator flip_pt_litr;
+	std::list<double>::iterator prob_list_litr;
 
-	lItr=accNotAccList.begin();
+	flip_pt_litr = pixel_copy_attempt_points_list.begin();
+	prob_list_litr = acceptance_probability_list.begin();
+	lItr = accNotAccList.begin();
+
 	for(lVecItr=totEnergyDataList.begin() ; lVecItr != totEnergyDataList.end() ; ++lVecItr){
 
 		vector<double> & energyData=*lVecItr;
 		writeDataLineFlex(outSingleSpinFlipTotal,*lVecItr);
 		if(*lItr){//accepted flip
+			outSingleSpinFlipAccepted << setw(fieldWidth) << *flip_pt_litr;
+			outSingleSpinFlipAccepted << setw(fieldWidth) << *prob_list_litr;
 			writeDataLineFlex(outSingleSpinFlipAccepted,*lVecItr);
 		}else{//rejected flip
+			outSingleSpinFlipRejected << setw(fieldWidth) << *flip_pt_litr;
+			outSingleSpinFlipRejected << setw(fieldWidth) << *prob_list_litr;
 			writeDataLineFlex(outSingleSpinFlipRejected,*lVecItr);
 		}
 		++lItr;
+		++flip_pt_litr;
+		++prob_list_litr;
 	}
 
 

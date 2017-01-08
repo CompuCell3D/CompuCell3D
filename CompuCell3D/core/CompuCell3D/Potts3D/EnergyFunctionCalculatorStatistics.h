@@ -14,17 +14,10 @@ class EnergyFunctionCalculatorStatistics:public EnergyFunctionCalculator{
       EnergyFunctionCalculatorStatistics();
 		virtual void init(CC3DXMLElement *_xmlData);
       virtual ~EnergyFunctionCalculatorStatistics();
-//       virtual void registerEnergyFunction(EnergyFunction *_function);
-//       virtual void registerEnergyFunctionWithName(EnergyFunction *_function,std::string _functionName);
-//       virtual void unregisterEnergyFunction(std::string _functionName);
-//       virtual void configureEnergyCalculator(std::vector<std::string> &_configVector){}
       virtual double changeEnergy(Point3D &pt, const CellG *newCell,const CellG *oldCell,const unsigned int _flipAttempt);
 
       virtual void setLastFlipAccepted(bool _accept);
-      // Begin XMLSerializable interface
-      //virtual void readXML(XMLPullParser &in);
-      //virtual void writeXML(XMLSerializer &out);
-      // End XMLSerializable interface
+	  virtual void set_aceptance_probability(double _prob);
 
    private:
       
@@ -38,6 +31,8 @@ class EnergyFunctionCalculatorStatistics:public EnergyFunctionCalculator{
 //       std::vector<double> accEnergyVector;
 //       std::vector<double> rejEnergyVector;
 
+	  std::list<Point3D> pixel_copy_attempt_points_list;
+	  std::list<double> acceptance_probability_list;
       std::list<std::vector<double> > totEnergyDataList; // sotres energies for each spin flip attempt
       std::list<bool> accNotAccList; //tells whether entry in totEnergyVecVec is accepted or not
 

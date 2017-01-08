@@ -722,11 +722,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 	unsigned int numberOfSections=pUtils->getNumberOfSubgridSectionsPotts();
 
 	currentAttempt=0; //reset current attepmt counter
-	// for (int i = 0 ; i < numberOfThreads ; ++i)
-		// for (int s = 0 ; s < numberOfSections; ++s){
-			// pair<Dim3D,Dim3D> sectionDims=pUtils->getPottsSection(i,s);
-			// cerr<<" thread="<<i<<" section="<<s<<" minDim="<<sectionDims.first<<" maxDim="<<sectionDims.second<<endl;
-		// }
+
 	//THESE VARIABLES ARE SHARED
 	flips = 0;
 	attemptedEC=0;
@@ -763,13 +759,11 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 		Point3D flipNeighborLocal;
 
 		unsigned int currentWorkNodeNumber = pUtils->getCurrentWorkNodeNumber();
-		
-		//cerr<<"currentWorkNodeNumber ="<<currentWorkNodeNumber <<endl;
+				
 		
 		BasicRandomNumberGeneratorNonStatic * rand = randNSVec[currentWorkNodeNumber].getInstance();
 		BoundaryStrategy * boundaryStrategy = BoundaryStrategy::getInstance();
 
-		// cerr<<"subgridSectionOrderVec.size()="<<subgridSectionOrderVec.size()<<endl;
 		//iterating over subgridSections
 		for (int s = 0 ; s<subgridSectionOrderVec.size() ; ++s){
 
@@ -779,17 +773,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 			pair<Dim3D,Dim3D> sectionDims=pUtils->getPottsSection(currentWorkNodeNumber,s);
 			numberOfAttemptsLocal=(int)(sectionDims.second.x-sectionDims.first.x)*(sectionDims.second.y-sectionDims.first.y)*(sectionDims.second.z-sectionDims.first.z)*sim->getFlip2DimRatio();
 // #pragma omp critical
-// {           
-            // cerr<<"currentWorkNodeNumber ="<<currentWorkNodeNumber <<endl ;
-			// cerr<<"sectionDims.first="<<sectionDims.first<<endl;
-			// cerr<<"sectionDims.second="<<sectionDims.second<<endl;
-// }
-			//#pragma omp critical
-			//				{
-			//				cerr<<" thread="<<currentWorkNodeNumber<<" section="<<s<<" minDim="<<sectionDims.first<<" maxDim="<<sectionDims.second<<" numberOfAttemptsLocal="<<numberOfAttemptsLocal<<endl;
-			//				}
 
-			//numberOfAttemptsLocal=5;
 
 			for (unsigned int i = 0; i < numberOfAttemptsLocal; ++i) {
 
@@ -892,7 +876,9 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 				//				}
 
 
-
+				if (numberOfThreads == 1) {
+					energyCalculator->set_aceptance_probability(prob);
+				}
 
 				//     cerr<<"change E="<<change<<" prob="<<prob<<endl;
 				if (prob >= 1.0 || rand->getRatio() < prob) {
@@ -901,17 +887,20 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 					energyVec[currentWorkNodeNumber] += change;
 					
 					if (connectivityConstraint && connectivityConstraint->changeEnergy(changePixel, cell, cellFieldG->get(changePixel) ) ){
-						if (numberOfThreads==1)
+						if (numberOfThreads == 1) {
 							energyCalculator->setLastFlipAccepted(false);
+						}
 					}else{
 						cellFieldG->set(changePixel, cell);
 						flipsVec[currentWorkNodeNumber]++;
-						if (numberOfThreads==1)
+						if (numberOfThreads == 1) {
 							energyCalculator->setLastFlipAccepted(true);
+						}
 					}
 				}else{
-					if (numberOfThreads==1)
+					if (numberOfThreads == 1) {
 						energyCalculator->setLastFlipAccepted(false);
+					}
 				}
 
 
