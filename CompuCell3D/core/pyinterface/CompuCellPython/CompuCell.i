@@ -51,11 +51,10 @@
 
 
 
-
 %include <windows.i>
 
 %{
-
+#define SWIG_FILE_WITH_INIT	
 
 // CompuCell3D Include Files
 // #include <Potts3D/Cell.h>
@@ -77,7 +76,7 @@
 #include <CompuCell3D/Potts3D/TypeChangeWatcher.h>
 #include <CompuCell3D/Potts3D/TypeTransition.h>
 #include <CompuCell3D/Potts3D/CellGChangeWatcher.h>
-
+#include <CompuCell3D/Potts3D/EnergyFunctionCalculator.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>
 //NeighborFinderParams
 #include <NeighborFinderParams.h>
@@ -157,6 +156,15 @@ using namespace CompuCell3D;
     import_array();
 %}
 
+
+// numpy array output from EnergyCalculator
+%apply(bool* INPLACE_ARRAY1, int DIM1) { (bool * mask_array, size_t len) }
+%apply(double* INPLACE_ARRAY1, int DIM1) { (double * double_array, size_t len) }
+%apply(int* ARGOUT_ARRAY1, int DIM1) { (int* rangevec, int n) }
+//%apply(bool* ARGOUT_ARRAY1, int DIM1) { (int* boolvec, int n) } // does not work
+%apply(int* ARGOUT_ARRAY1, int DIM1) { (int* intvec, int n) }
+%apply(double* ARGOUT_ARRAY1, int DIM1) { (double* doublevec, int n) }
+%apply(short* ARGOUT_ARRAY1, int DIM1) { (short* shortvec, int n) }
 
 //C arrays
 //%include "carrays.i"
@@ -994,7 +1002,7 @@ FIELD3DEXTENDER(Field3D<int>,int)
 %include "Automaton/Automaton.h"
 %include <CompuCell3D/Potts3D/CellInventory.h>
 
-
+%include <CompuCell3D/Potts3D/EnergyFunctionCalculator.h>
 %include <CompuCell3D/Potts3D/Potts3D.h>
 
 %include "Steppable.h"

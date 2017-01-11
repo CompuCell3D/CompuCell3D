@@ -6,6 +6,7 @@
 global pyAttributeAdder
 global dictAdder
 from enums import *
+import numpy as np
 
 pyAttributeAdder=None
 dictAdder=None
@@ -98,6 +99,8 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         self.tracking_plot_dict = {}
 
         self.boundaryStrategy=self.simulator.getBoundaryStrategy()
+        
+        self.en_calculator = self.potts.getEnergyFunctionCalculator()
         
         self.__modulesToUpdateDict={} #keeps modules to update   
         # used by clone attributes functions 
@@ -400,8 +403,7 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         for plot_name, tracking_plot_data in self.tracking_plot_dict.iteritems():
             if tracking_plot_data.plot_type == PlotData.HISTOGRAM:
                 self.update_tracking_histogram(tracking_plot_data)
-
-
+                
     def update_tracking_fields(self):
         #tracking visualization part
         for field_name , field_vis_data in self.tracking_field_vis_dict.iteritems():
@@ -428,7 +430,7 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
 
     def initialize_automatic_tasks(self):
         self.initialize_tracking_plots()
-
+               
     def perform_automatic_tasks(self):
         self.update_tracking_fields()
         self.update_tracking_plot()
@@ -1270,7 +1272,22 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
                 
         #FocalPointPLasticityPlugin - this plugin has to be handled manually - there is no good way to figure out which links shuold be copied from parent to daughter cell    
                 
-            
+
+    def get_accepted_pixel_copy_mask(self):
+        num_en_calcs = int(self.en_calculator.get_number_energy_fcn_calculations())
+        return self.en_calculator.get_current_mcs_accepted_mask_npy_array(num_en_calcs)
+
+    def get_attempted_pixel_copy_prob_array(self):
+        num_en_calcs = int(self.en_calculator.get_number_energy_fcn_calculations())
+        return self.en_calculator.get_current_mcs_prob_npy_array(num_en_calcs)        
+        
+    def get_attempted_pixel_copy_points(self):
+        num_en_calcs = int(self.en_calculator.get_number_energy_fcn_calculations())
+        return np.reshape(self.en_calculator.get_current_mcs_flip_attempt_points_npy_array(3*num_en_calcs), (-1,3))
+
+        
+
+        
 
 class RunBeforeMCSSteppableBasePy(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):

@@ -16,8 +16,22 @@ class EnergyFunctionCalculatorStatistics:public EnergyFunctionCalculator{
       virtual ~EnergyFunctionCalculatorStatistics();
       virtual double changeEnergy(Point3D &pt, const CellG *newCell,const CellG *oldCell,const unsigned int _flipAttempt);
 
+	  
+
       virtual void setLastFlipAccepted(bool _accept);
 	  virtual void set_aceptance_probability(double _prob);
+	  
+	  //virtual void request_current_mcs_accepted_mask_array(bool * mask_array, size_t len);
+	  //virtual void  request_current_mcs_prob_array(double * double_array, size_t len);
+	  //virtual void  request_current_mcs_accepted_mask_array(bool * boolvec, int n);
+	  virtual void  get_current_mcs_accepted_mask_npy_array(int * intvec, int n);
+	  virtual void  get_current_mcs_prob_npy_array(double * doublevec, int n);
+	  virtual void  get_current_mcs_flip_attempt_points_npy_array(short * shortvec, int n);
+
+
+	  virtual long get_number_energy_fcn_calculations();
+	  virtual void range(int *rangevec, int n);
+
 
    private:
       
@@ -25,6 +39,7 @@ class EnergyFunctionCalculatorStatistics:public EnergyFunctionCalculator{
       int NAcc;
       int NRej;
       int lastFlipAttempt;
+	  long current_mcs_pos; // holds index of the totEnergyDataList's first item for the current mcs	  
 //       unsigned int numberOfAttempts;
       std::vector<double> lastEnergyVec;
 //       std::vector<double> totEnergyVector;
@@ -33,6 +48,8 @@ class EnergyFunctionCalculatorStatistics:public EnergyFunctionCalculator{
 
 	  std::list<Point3D> pixel_copy_attempt_points_list;
 	  std::list<double> acceptance_probability_list;
+	  std::list<int> mcs_list;
+
       std::list<std::vector<double> > totEnergyDataList; // sotres energies for each spin flip attempt
       std::list<bool> accNotAccList; //tells whether entry in totEnergyVecVec is accepted or not
 

@@ -1,5 +1,6 @@
 #include "EnergyFunctionCalculatorStatistics.h"
 #include "EnergyFunction.h"
+#include <iterator>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -93,6 +94,7 @@ double EnergyFunctionCalculatorStatistics::changeEnergy(Point3D &pt, const CellG
 
 
 		if(_flipAttempt<lastFlipAttempt){
+			current_mcs_pos = totEnergyDataList.size();				
 			++mcs;
 			if(! (mcs % analysisFrequency)){
 				outputResults();
@@ -123,6 +125,7 @@ double EnergyFunctionCalculatorStatistics::changeEnergy(Point3D &pt, const CellG
 			change+=lastEnergyVec[i];
 
 		}
+		mcs_list.push_back(mcs);
 		pixel_copy_attempt_points_list.push_back(pt);
 		totEnergyDataList.push_back(lastEnergyVec); //inserting lastEnergyVec into  totEnergyVecVec - for later stdDev calculations
 
@@ -136,6 +139,61 @@ double EnergyFunctionCalculatorStatistics::changeEnergy(Point3D &pt, const CellG
 	return change;
 
 }
+
+void EnergyFunctionCalculatorStatistics::range(int *rangevec, int n)
+{
+	int i;
+
+	for (i = 0; i< n; i++)
+		rangevec[i] = i;
+}
+
+long EnergyFunctionCalculatorStatistics::get_number_energy_fcn_calculations() {
+	return accNotAccList.size();
+}
+
+void  EnergyFunctionCalculatorStatistics::get_current_mcs_accepted_mask_npy_array(int * intvec, int n) {
+	
+	std::list<bool>::iterator accepted_flip_mask_list_litr = accNotAccList.begin();
+
+	//advance(accepted_flip_mask_list_litr, current_mcs_pos); //advancing itr to current position
+	for (long i = 0; i < n; ++i) {
+		intvec[i] = *accepted_flip_mask_list_litr;
+		++accepted_flip_mask_list_litr;
+	}
+
+}
+
+void  EnergyFunctionCalculatorStatistics::get_current_mcs_prob_npy_array(double * doublevec, int n) {
+
+	std::list<double>::iterator acceptance_probability_list_litr = acceptance_probability_list.begin();
+
+	//advance(acceptance_probability_list_litr, current_mcs_pos); //advancing itr to current position
+	for (long i = 0; i < n; ++i) {
+		doublevec[i] = *acceptance_probability_list_litr;
+		++acceptance_probability_list_litr;
+	}
+
+
+}
+
+void  EnergyFunctionCalculatorStatistics::get_current_mcs_flip_attempt_points_npy_array(short * shortvec, int n) {
+	//cerr << "get_current_mcs_flip_attempt_points_npy_array n=" << n << endl;
+
+	std::list<Point3D>::iterator pixel_copy_litr = pixel_copy_attempt_points_list.begin();
+	for (long i = 0; i < n;  i+=3) {
+		Point3D & pt = *pixel_copy_litr;
+		shortvec[i] = pt.x;
+		shortvec[i+1] = pt.y;
+		shortvec[i + 2] = pt.z;
+		++pixel_copy_litr;
+		
+	}
+
+
+
+}
+
 
 void EnergyFunctionCalculatorStatistics::set_aceptance_probability(double _prob) {
 	acceptance_probability_list.push_back(_prob);
@@ -219,6 +277,7 @@ void EnergyFunctionCalculatorStatistics::initialize(){
 	accNotAccList.clear();
 	acceptance_probability_list.clear();
 	pixel_copy_attempt_points_list.clear();
+	mcs_list.clear();
 
 
 }
@@ -355,6 +414,7 @@ void EnergyFunctionCalculatorStatistics::prepareGatherResultsFiles(){
 		outSingleSpinFlipStreamNameAccepted<<outFileCoreNameSpinFlips<<"."<<"accepted"<<"."<<"txt";
 		outAccSpinFlip =new ofstream(outSingleSpinFlipStreamNameAccepted.str().c_str());
 
+		*outAccSpinFlip << setw(fieldWidth) << "mcs";
 		*outAccSpinFlip << setw(fieldWidth) << "pt";
 		*outAccSpinFlip << setw(fieldWidth) << "prob";
 
@@ -366,6 +426,7 @@ void EnergyFunctionCalculatorStatistics::prepareGatherResultsFiles(){
 		outSingleSpinFlipStreamNameRejected<<outFileCoreNameSpinFlips<<"."<<"rejected"<<"."<<"txt";
 		outRejSpinFlip =new ofstream(outSingleSpinFlipStreamNameRejected.str().c_str());
 
+		*outRejSpinFlip << setw(fieldWidth) << "mcs";
 		*outRejSpinFlip << setw(fieldWidth) << "pt";
 		*outRejSpinFlip << setw(fieldWidth) << "prob";
 
@@ -377,6 +438,7 @@ void EnergyFunctionCalculatorStatistics::prepareGatherResultsFiles(){
 		outSingleSpinFlipStreamNameTotal<<outFileCoreNameSpinFlips<<"."<<"total"<<"."<<"txt";
 		outTotSpinFlip =new ofstream(outSingleSpinFlipStreamNameTotal.str().c_str());
 
+		*outTotSpinFlip << setw(fieldWidth) << "mcs";
 		*outTotSpinFlip << setw(fieldWidth) << "pt";
 		*outTotSpinFlip << setw(fieldWidth) << "prob";
 
@@ -394,17 +456,20 @@ void EnergyFunctionCalculatorStatistics::outputResultsSingleSpinFlipGatherResult
 	std::list<bool>::iterator lItr;
 	std::list<Point3D>::iterator flip_pt_litr;
 	std::list<double>::iterator prob_list_litr;
+	std::list<int>::iterator mcs_list_litr;
 
 
 	lItr=accNotAccList.begin();
 	flip_pt_litr = pixel_copy_attempt_points_list.begin();
 	prob_list_litr = acceptance_probability_list.begin();
+	mcs_list_litr = mcs_list.begin();
 
 	for(lVecItr=totEnergyDataList.begin() ; lVecItr != totEnergyDataList.end() ; ++lVecItr){
 
 		vector<double> & energyData=*lVecItr;
 		if(outputTotalSpinFlip)
 
+			*outTotSpinFlip << setw(fieldWidth) << *mcs_list_litr;
 			*outTotSpinFlip << setw(fieldWidth) << *flip_pt_litr;
 			*outTotSpinFlip << setw(fieldWidth) << *prob_list_litr;
 
@@ -412,12 +477,14 @@ void EnergyFunctionCalculatorStatistics::outputResultsSingleSpinFlipGatherResult
 
 		if(*lItr){//accepted flip
 			if(outputAcceptedSpinFlip)
+				*outAccSpinFlip << setw(fieldWidth) << *mcs_list_litr;
 				*outAccSpinFlip << setw(fieldWidth) << *flip_pt_litr;
 				*outAccSpinFlip << setw(fieldWidth) << *prob_list_litr;
 
 				writeDataLineFlex(*outAccSpinFlip,*lVecItr);
 		}else{//rejected flip
 			if(outputRejectedSpinFlip)
+				*outRejSpinFlip << setw(fieldWidth) << *mcs_list_litr;
 				*outRejSpinFlip << setw(fieldWidth) << *flip_pt_litr;
 				*outRejSpinFlip << setw(fieldWidth) << *prob_list_litr;
 				writeDataLineFlex(*outRejSpinFlip,*lVecItr);
@@ -425,6 +492,7 @@ void EnergyFunctionCalculatorStatistics::outputResultsSingleSpinFlipGatherResult
 		++lItr;
 		++flip_pt_litr;
 		++prob_list_litr;
+		++mcs_list_litr;
 	}
 
 
@@ -456,20 +524,26 @@ void EnergyFunctionCalculatorStatistics::outputResultsSingleSpinFlip(){
 	std::list<bool>::iterator lItr;
 	std::list<Point3D>::iterator flip_pt_litr;
 	std::list<double>::iterator prob_list_litr;
+	std::list<int>::iterator mcs_list_litr;
 
+	mcs_list_litr = mcs_list.begin();
 	flip_pt_litr = pixel_copy_attempt_points_list.begin();
 	prob_list_litr = acceptance_probability_list.begin();
 	lItr = accNotAccList.begin();
+	
 
 	for(lVecItr=totEnergyDataList.begin() ; lVecItr != totEnergyDataList.end() ; ++lVecItr){
 
 		vector<double> & energyData=*lVecItr;
 		writeDataLineFlex(outSingleSpinFlipTotal,*lVecItr);
 		if(*lItr){//accepted flip
+			
+			outSingleSpinFlipAccepted << setw(fieldWidth) << *mcs_list_litr;
 			outSingleSpinFlipAccepted << setw(fieldWidth) << *flip_pt_litr;
 			outSingleSpinFlipAccepted << setw(fieldWidth) << *prob_list_litr;
 			writeDataLineFlex(outSingleSpinFlipAccepted,*lVecItr);
 		}else{//rejected flip
+			outSingleSpinFlipRejected << setw(fieldWidth) << *mcs_list_litr;
 			outSingleSpinFlipRejected << setw(fieldWidth) << *flip_pt_litr;
 			outSingleSpinFlipRejected << setw(fieldWidth) << *prob_list_litr;
 			writeDataLineFlex(outSingleSpinFlipRejected,*lVecItr);
@@ -477,6 +551,7 @@ void EnergyFunctionCalculatorStatistics::outputResultsSingleSpinFlip(){
 		++lItr;
 		++flip_pt_litr;
 		++prob_list_litr;
+		++mcs_list_litr;
 	}
 
 

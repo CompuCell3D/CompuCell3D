@@ -27,10 +27,20 @@ class EnergyFunctionCalculator{
       virtual void registerEnergyFunctionWithName(EnergyFunction *_function,std::string _functionName);
       virtual void unregisterEnergyFunction(std::string _functionName);
       virtual void configureEnergyCalculator(std::vector<std::string> &_configVector){}
+	  virtual long get_number_energy_fcn_calculations() { return 0; }
+	  virtual void range(int *rangevec, int n) {}
+
       virtual double changeEnergy(Point3D &pt, const CellG *newCell,
 				const CellG *oldCell,const unsigned int _flipAttempt);
       void setPotts(Potts3D * _potts){potts=_potts;}
       void setSimulator(Simulator * _sim){sim=_sim ;}
+	  
+	  //virtual void  request_current_mcs_accepted_mask_array(bool * mask_array, size_t len) {}
+	  //virtual void  request_current_mcs_prob_array(double * double_array, size_t len) {}
+	  //virtual void  request_current_mcs_accepted_mask_array(bool * boolvec, int n) {}
+	  virtual void  get_current_mcs_accepted_mask_npy_array(int * intvec, int n) {}
+	  virtual void  get_current_mcs_prob_npy_array(double * doublevec, int n) {}
+	  virtual void  get_current_mcs_flip_attempt_points_npy_array(short * shortvec, int n) {}
 
 
 
