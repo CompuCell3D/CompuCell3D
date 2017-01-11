@@ -1275,7 +1275,7 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
 
     def get_accepted_pixel_copy_mask(self):
         num_en_calcs = int(self.en_calculator.get_number_energy_fcn_calculations())
-        return self.en_calculator.get_current_mcs_accepted_mask_npy_array(num_en_calcs)
+        return self.en_calculator.get_current_mcs_accepted_mask_npy_array(num_en_calcs).astype(np.bool)
 
     def get_attempted_pixel_copy_prob_array(self):
         num_en_calcs = int(self.en_calculator.get_number_energy_fcn_calculations())
