@@ -363,9 +363,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         newWindow.setZoomItems(self.zitems)  # Set zoomFixed parameters
 
 
-        newWindow.setShown(False)
-        self.connect(self, SIGNAL('configsChanged'), newWindow.draw2D.configsChanged)
-        self.connect(self, SIGNAL('configsChanged'), newWindow.draw3D.configsChanged)
+        newWindow.hide()
+
+        self.configsChanged.connect( newWindow.draw2D.configsChanged)
+        self.configsChanged.connect(newWindow.draw3D.configsChanged)
+
+        # self.connect(self, SIGNAL('configsChanged'), newWindow.draw2D.configsChanged)
+        # self.connect(self, SIGNAL('configsChanged'), newWindow.draw3D.configsChanged)
 
         newWindow.readSettings()  # Graphics/MVCDrawViewBase.py
         # setting up plane tuple based on window number 1

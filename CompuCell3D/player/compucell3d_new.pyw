@@ -14,6 +14,9 @@ import vtk
 # sip.setapi('QVariant', 1)
 
 print sys.path
+import numpy
+import vtk
+
 
 import CC3DXML
 
@@ -21,8 +24,6 @@ import CC3DXML
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-
-
 import PyQt5
 
 #instaling message handler to suppres spurious qt messages
