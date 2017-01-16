@@ -5,6 +5,7 @@ from PyQt5.Qt import *
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import *
 import numpy as np
+import webcolors as wc
 
 # import PyQt4.Qwt5 as Qwt
 # from PyQt4.Qwt5.anynumpy import *
@@ -175,11 +176,19 @@ class PlotWindowInterface(QtCore.QObject):
         a = np.random.rand(10)
         # yd, xd = np.random.rand(10),np.random.rand(10)
 
-        # yd, xd = np.random.rand(10), np.random.rand(10)
-        yd, xd = np.array([], dtype=np.float), np.array([], dtype=np.float)
+        yd, xd = np.random.rand(10), np.random.rand(10)
+        # yd, xd = np.array([], dtype=np.float), np.array([], dtype=np.float)
         self.plotData[_plotName] = [xd,yd,False, XYPLOT]
-        plotObj = self.pW.plot(y=yd, x=xd)
-        self.plotDrawingObjects[_plotName] = plotObj
+        # plotObj = self.pW.plot(y=yd, x=xd)
+        color = wc.name_to_rgb(_color)
+        plotObj = self.pW.plot(y=yd, x=xd, pen = (0, 0, 0), symbolBrush = color, symbolSize = _size)
+
+        # plotObj.setPen((255, 0, 0))
+        # plotObj.setSymbolBrush((255, 0, 0))
+        # plotObj.setSymbolSize(_size)
+        self.plotDrawingObjects[_plotName] = {'curve':plotObj,'LineWidth':_size,"LineColor": _color,'Style':_style}
+
+
 
 
         # p1.setData()
@@ -486,8 +495,9 @@ class PlotWindowInterface(QtCore.QObject):
                     x_vec = self.plotData[plotName][0]
                     y_vec = self.plotData[plotName][1]
 
-                    drawingObjects = self.plotDrawingObjects[plotName]
-                    drawingObjects.setData(x_vec,y_vec)
+                    plotObj = self.plotDrawingObjects[plotName]['curve']
+
+                    plotObj.setData(x_vec,y_vec)
                     # drawingObjects["curve"].attach(self.pW)
                     # drawingObjects["curve"].setPen(
                     #     QPen(QColor(drawingObjects["LineColor"]), drawingObjects["LineWidth"]))
