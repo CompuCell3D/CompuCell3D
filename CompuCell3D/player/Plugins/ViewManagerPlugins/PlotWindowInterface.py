@@ -269,8 +269,10 @@ class PlotWindowInterface(QtCore.QObject):
     def cleanAllContainers(self):
 
         for name, data in self.plotData.iteritems():
-            data[0].resize(0)
-            data[1].resize(0)
+            # todo implement special handling for "steps" or switch to bars instead of steps
+            data[0], data[1] = np.array([], dtype=np.float), np.array([], dtype=np.float)
+            # data[0].resize(0)
+            # data[1].resize(0)
             data[self.dirtyFlagIndex] = True
 
     def eraseData(self, _plotName):
