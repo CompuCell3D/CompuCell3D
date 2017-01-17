@@ -6,6 +6,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import *
 import numpy as np
 import webcolors as wc
+import pyqtgraph as pg
 
 # import PyQt4.Qwt5 as Qwt
 # from PyQt4.Qwt5.anynumpy import *
@@ -170,23 +171,69 @@ class PlotWindowInterface(QtCore.QObject):
             # self.legend.setItemMode(Qwt.QwtLegend.ClickableItem)
 
             # self.pW.insertLegend(legend, Qwt.QwtPlot.TopLegend)
+    def setDataDefault(self,plot_obj,x,y):
+        plot_obj.setData(x,y)
 
-    def addPlot(self, _plotName, _style="Lines", _color='black', _size=1):
+    def setDataBarGraphItem(self,plot_obj,x,y):
+        plot_obj.setOpts(x=x,height=y)
+
+    def addPlot(self, _plotName, _style="Lines", _color='white', _size=3, _alpha=255):
+
+        alpha = abs(int(_alpha)) % 256
+
 
         a = np.random.rand(10)
         # yd, xd = np.random.rand(10),np.random.rand(10)
 
-        yd, xd = np.random.rand(10), np.random.rand(10)
-        # yd, xd = np.array([], dtype=np.float), np.array([], dtype=np.float)
-        self.plotData[_plotName] = [xd,yd,False, XYPLOT]
+        # yd, xd = np.random.rand(10), np.random.rand(10)
+        yd, xd = np.array([], dtype=np.float), np.array([], dtype=np.float)
+
+        setData_fcn = self.setDataDefault
+
         # plotObj = self.pW.plot(y=yd, x=xd)
-        color = wc.name_to_rgb(_color)
-        plotObj = self.pW.plot(y=yd, x=xd, pen = (0, 0, 0), symbolBrush = color, symbolSize = _size)
+        color = wc.name_to_rgb(_color)+(alpha,)
+        if _style.lower() == 'dots':
+            plotObj = self.pW.plot(y=yd, x=xd, pen = (0, 0, 0), symbolBrush = color, symbolSize = _size)
+
+
+        elif _style.lower() == 'lines':
+            pen = pg.mkPen(color=color, width=_size)
+            plotObj = self.pW.plot(y=yd, x=xd, pen=pen)
+
+
+        elif _style.lower() == 'steps':
+            xd, yd = np.array([0,1], dtype=np.float), np.array([1], dtype=np.float)
+            # pen = pg.mkPen(color=color, width=_size)
+            # plotObj = self.pW.plot(y=yd, x=xd, pen=pen,stepMode=True)
+
+            plotObj = pg.PlotCurveItem(xd, yd, stepMode=True, fillLevel=0, brush=color)
+
+            self.pW.addItem(plotObj)
+            # plt1.addItem(curve)
+
+        elif _style.lower() == 'bars':
+            # xd, yd = np.array([0,1], dtype=np.float), np.array([1], dtype=np.float)
+            # pen = pg.mkPen(color=color, width=_size)
+            # plotObj = self.pW.plot(y=yd, x=xd, pen=pen,stepMode=True)
+
+            plotObj = pg.BarGraphItem(x=xd, height=yd, width=_size, brush=color)
+            setData_fcn = self.setDataBarGraphItem
+            self.pW.addItem(plotObj)
+            # plt1.addItem(curve)
+
+
+        else: # dots is the default
+            plotObj = self.pW.plot(y=yd, x=xd, pen=(0, 0, 0), symbolBrush=color, symbolSize=_size)
 
         # plotObj.setPen((255, 0, 0))
         # plotObj.setSymbolBrush((255, 0, 0))
         # plotObj.setSymbolSize(_size)
-        self.plotDrawingObjects[_plotName] = {'curve':plotObj,'LineWidth':_size,"LineColor": _color,'Style':_style}
+        self.plotData[_plotName] = [xd, yd, False, XYPLOT,False]
+        self.plotDrawingObjects[_plotName] = {'curve':plotObj,
+                                              'LineWidth':_size,
+                                              'LineColor': _color,
+                                              'Style':_style,
+                                              'SetData':setData_fcn}
 
 
 
@@ -241,8 +288,30 @@ class PlotWindowInterface(QtCore.QObject):
 
         currentLength = len(self.plotData[_plotName][0])
 
-        self.plotData[_plotName][0] = np.append(self.plotData[_plotName][0],[_x])
-        self.plotData[_plotName][1] = np.append(self.plotData[_plotName][1], [_y])
+        x_vec = self.plotData[_plotName][0]
+        y_vec = self.plotData[_plotName][1]
+
+        plot_obj = self.plotDrawingObjects[_plotName]
+        style = plot_obj['Style']
+        if style.lower() == 'steps':
+            # processing first first point of the histogram
+            if not self.plotData[_plotName][4]:
+
+                x_vec = np.array([_x, _x + 1], dtype=np.float)
+                y_vec = np.array([_y],dtype=np.float)
+
+                self.plotData[_plotName][0] = x_vec
+                self.plotData[_plotName][1] = y_vec
+                self.plotData[_plotName][4] = True
+            else:
+                self.plotData[_plotName][0] = np.append(self.plotData[_plotName][0], [_x])
+                self.plotData[_plotName][1] = np.append(self.plotData[_plotName][1], [_y])
+                self.plotData[_plotName][0][-2] = _x
+                self.plotData[_plotName][0][-1] = _x+1
+
+        else:
+            self.plotData[_plotName][0] = np.append(self.plotData[_plotName][0],[_x])
+            self.plotData[_plotName][1] = np.append(self.plotData[_plotName][1], [_y])
 
         # self.plotData[_plotName][0].resize(currentLength + 1)
         # self.plotData[_plotName][1].resize(currentLength + 1)
@@ -496,8 +565,16 @@ class PlotWindowInterface(QtCore.QObject):
                     y_vec = self.plotData[plotName][1]
 
                     plotObj = self.plotDrawingObjects[plotName]['curve']
+                    print 'plotName=',plotName
 
-                    plotObj.setData(x_vec,y_vec)
+                    print 'x_vec=',x_vec
+                    print 'y_vec=', y_vec
+                    setData_fcn = self.plotDrawingObjects[plotName]['SetData']
+                    setData_fcn(plotObj,x_vec,y_vec)
+
+                    #todo OK
+                    # plotObj.setData(x_vec,y_vec)
+
                     # drawingObjects["curve"].attach(self.pW)
                     # drawingObjects["curve"].setPen(
                     #     QPen(QColor(drawingObjects["LineColor"]), drawingObjects["LineWidth"]))
