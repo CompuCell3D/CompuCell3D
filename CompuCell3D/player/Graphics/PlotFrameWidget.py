@@ -20,9 +20,10 @@ import pyqtgraph as pg
 
 
 class PlotFrameWidget(QtGui.QFrame):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None,**kwds):
         QtGui.QFrame.__init__(self, parent)
 
+        print 'kwds=',kwds
         # self.plotWidget=CartesianPlot()
         self.plotWidget = pg.PlotWidget()
         # self.plotWidget = pg.GraphicsView()
@@ -33,6 +34,46 @@ class PlotFrameWidget(QtGui.QFrame):
         self.parentWidget = parent
         layout = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom)
         layout.addWidget(self.plotWidget)
+
+        self.plotWidget.setTitle(kwds['title'])
+        self.plotWidget.setLabel(axis='bottom', text=kwds['xAxisTitle'])
+        self.plotWidget.setLabel(axis='left', text=kwds['yAxisTitle'])
+        x_log_flag, y_log_flag = False, False
+        if kwds['xScaleType'].strip().lower() == 'log':
+            x_log_flag = True
+
+        if kwds['yScaleType'].strip().lower() == 'log':
+            y_log_flag = True
+
+        self.plotWidget.setLogMode(x=x_log_flag,y=y_log_flag)
+        if kwds['grid']:
+            self.plotWidget.showGrid(x=True,y=True,alpha=1.0)
+
+        # self.plotWidget.setLabel(axis='bottom',text='DUPA')
+
+        # todo OK
+        # view = pg.GraphicsView()
+        # l = pg.GraphicsLayout(border=(100, 100, 100))
+        # view.setCentralItem(l)
+        # l.addLabel('DUPA')
+        # l.nextRow()
+        # self.plotWidget = l.addPlot(title='Generic Plot')
+        # l.nextRow()
+        # self.legend = pg.LegendItem()
+        # l.addItem(self.legend)
+        #
+        #
+        #
+        # view.show()
+        # view.setWindowTitle('pyqtgraph example: GraphicsLayout')
+        #
+        # layout.addWidget(view)
+
+        # legend_item = pg.LegendItem()
+        # vb = self.plotWidget.addViewBox()
+
+
+
         self.setLayout(layout)
         # self.resize(600, 600)
         self.setMinimumSize(100, 100)  # needs to be defined to resize smaller than 400x400

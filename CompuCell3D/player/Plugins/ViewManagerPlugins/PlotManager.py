@@ -22,7 +22,7 @@ class PlotManager(QtCore.QObject):
     # def emitNewPlotWindow(self,_mutex):
         # self.emit(SIGNAL("newPlotWindow(QtCore.QMutex)") , _mutex)
     
-    newPlotWindowSignal = QtCore.pyqtSignal( (QtCore.QMutex, ))
+    newPlotWindowSignal = QtCore.pyqtSignal( QtCore.QMutex, object)
 
     
     def __init__(self,_viewManager=None,_plotSupportFlag=False):
@@ -84,11 +84,11 @@ class PlotManager(QtCore.QObject):
                 win.move(gwd.winPosition)
                 win.setWindowTitle(plot_interface.title)
 
-    def getNewPlotWindow(self):
+    def getNewPlotWindow(self, obj):
         # print "\n\n\n getNewPlotWindow "
         self.plotWindowMutex.lock()
 
-        self.newPlotWindowSignal.emit(self.plotWindowMutex)
+        self.newPlotWindowSignal.emit(self.plotWindowMutex,obj)
         # processRequestForNewPlotWindow will be called and it will unlock drawMutex but before it will finish runnning (i.e. before the new window is actually added)we must make sure that getNewPlotwindow does not return 
         self.plotWindowMutex.lock()
         self.plotWindowMutex.unlock()
@@ -170,7 +170,8 @@ class PlotManager(QtCore.QObject):
     #
     #     return windowsLayout
         
-    def processRequestForNewPlotWindow(self,_mutex):
+    def processRequestForNewPlotWindow(self,_mutex,obj):
+        print 'obj=',obj
 #        print MODULENAME,"processRequestForNewPlotWindow(): GOT HERE mutex=",_mutex
         if not self.plotsSupported:
             return PlotWindowInterfaceBase(None) # dummy PlotwindowInterface
@@ -183,7 +184,7 @@ class PlotManager(QtCore.QObject):
         #MDIFIX
         # self.vm.windowCounter += 1
 
-        newWindow = PlotFrameWidget(self.vm)
+        newWindow = PlotFrameWidget(self.vm,**obj)
         # newWindow.resizePlot(600,600)
         
         #MDIFIX
