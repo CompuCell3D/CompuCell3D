@@ -7,6 +7,7 @@ from PyQt5.QtCore import *
 import numpy as np
 import webcolors as wc
 import pyqtgraph as pg
+import pyqtgraph.exporters
 
 # import PyQt4.Qwt5 as Qwt
 # from PyQt4.Qwt5.anynumpy import *
@@ -426,50 +427,118 @@ class PlotWindowInterface(QtCore.QObject):
         self.plotWindowInterfaceMutex.lock()
         self.savePlotAsPNGSignal.emit(_fileName, _sizeX, _sizeY, self.plotWindowInterfaceMutex)
 
+
+    # def savePlotAsPNG(self, _fileName, _sizeX=400, _sizeY=400):
+    #     self.plotWindowInterfaceMutex.lock()
+    #     self.savePlotAsPNGSignal.emit(_fileName, _sizeX, _sizeY, self.plotWindowInterfaceMutex)
+
     def __savePlotAsPNG(self, _fileName, _sizeX, _sizeY, _mutex):
         fileName = str(_fileName)
         #        pixmap=QPixmap(_sizeX,_sizeY)  # worked on Windows, but not Linux/OSX
         #        pixmap.fill(QColor("white"))
 
-        imgmap = QImage(_sizeX, _sizeY, QImage.Format_ARGB32)
-        # imgmap.fill(Qt.white)
-        imgmap.fill(
-            qRgba(255, 255, 255, 255))  # solid white background (should probably depend on user-chosen colors though)
+        # # WORKS OK todo
+        # exporter = pg.exporters.ImageExporter(self.pW)
+        # exporter.parameters()['width'] = 1000
+        # exporter.parameters()['height'] = 1000
+        #
+        # exporter.export(_fileName)
+        #
 
-        self.pW.print_(imgmap)
-        # following seems pretty crude, but keep in mind user can change Prefs anytime during sim
-        # # #         if Configuration.getSetting("OutputToProjectOn"):
-        # # #             outDir = str(Configuration.getSetting("ProjectLocation"))
-        # # #         else:
-        # # #             outDir = str(Configuration.getSetting("OutputLocation"))
-
-        import CompuCellSetup
-        outDir = CompuCellSetup.getSimulationOutputDir()
-
-        outfile = os.path.join(outDir, fileName)
-        #        print '--------- savePlotAsPNG: outfile=',outfile
-        imgmap.save(outfile, "PNG")
+        # for plot_name, plot_obj_dict in self.plotDrawingObjects.iteritems():
+        #     plot_obj = plot_obj_dict['curve']
+        #     exporter = pg.exporters.ImageExporter(plot_obj)
+        #     exporter.parameters()['width'] = 1000
+        #     exporter.parameters()['height'] = 1000
+        #     exporter.export(_fileName)
+        # self.plotDrawingObjects[_plotName] = {'curve':plotObj,
+        #                                       'LineWidth':_size,
+        #                                       'LineColor': _color,
+        #                                       'Style':_style,
+        #                                       'SetData':setData_fcn}
+        #
+        #
+        #
+        #
+        # import pyqtgraph.exporters
+        # exporter = pg.exporters.ImageExporter(self.pW)
+        # exporter.parameters()['width'] = 1000
+        #
+        # pixmap_array = self.pW.renderToArray((_sizeX,_sizeY))
+        #
+        pixmap = QPixmap(self.pW.size())
+        painter = QPainter()
+        painter.begin(pixmap)
+        self.pW.render(painter,self.pW.sceneRect())
+        pixmap.save(_fileName)
+        painter.end()
+        #
+        # imgmap = QImage(_sizeX, _sizeY, QImage.Format_ARGB32)
+        # # imgmap.fill(Qt.white)
+        # imgmap.fill(
+        #     qRgba(255, 255, 255, 255))  # solid white background (should probably depend on user-chosen colors though)
+        #
+        # self.pW.print_(imgmap)
+        # # following seems pretty crude, but keep in mind user can change Prefs anytime during sim
+        # # # #         if Configuration.getSetting("OutputToProjectOn"):
+        # # # #             outDir = str(Configuration.getSetting("ProjectLocation"))
+        # # # #         else:
+        # # # #             outDir = str(Configuration.getSetting("OutputLocation"))
+        #
+        # import CompuCellSetup
+        # outDir = CompuCellSetup.getSimulationOutputDir()
+        #
+        # outfile = os.path.join(outDir, fileName)
+        # #        print '--------- savePlotAsPNG: outfile=',outfile
+        # imgmap.save(outfile, "PNG")
         _mutex.unlock()
 
-        # original implementation - does not really work unless we use signal slot mechanism
-        # def savePlotAsPNG(self,_fileName,_sizeX=400,_sizeY=400):
 
-    # #        pixmap=QPixmap(_sizeX,_sizeY)  # worked on Windows, but not Linux/OSX
-    # #        pixmap.fill(QColor("white"))
 
-    # imgmap = QImage(_sizeX, _sizeY, QImage.Format_ARGB32)
-    # #imgmap.fill(Qt.white)
-    # imgmap.fill(qRgba(255, 255, 255, 255)) # solid white background (should probably depend on user-chosen colors though)
-
-    # self.pW.print_(imgmap)
-    # # following seems pretty crude, but keep in mind user can change Prefs anytime during sim
-    # if Configuration.getSetting("OutputToProjectOn"):
-    # outDir = str(Configuration.getSetting("ProjectLocation"))
-    # else:
-    # outDir = str(Configuration.getSetting("OutputLocation"))
-    # outfile = os.path.join(outDir,_fileName)
-    # #        print '--------- savePlotAsPNG: outfile=',outfile
-    # imgmap.save(outfile,"PNG")
+    # def __savePlotAsPNG(self, _fileName, _sizeX, _sizeY, _mutex):
+    #     fileName = str(_fileName)
+    #     #        pixmap=QPixmap(_sizeX,_sizeY)  # worked on Windows, but not Linux/OSX
+    #     #        pixmap.fill(QColor("white"))
+    #
+    #     imgmap = QImage(_sizeX, _sizeY, QImage.Format_ARGB32)
+    #     # imgmap.fill(Qt.white)
+    #     imgmap.fill(
+    #         qRgba(255, 255, 255, 255))  # solid white background (should probably depend on user-chosen colors though)
+    #
+    #     self.pW.print_(imgmap)
+    #     # following seems pretty crude, but keep in mind user can change Prefs anytime during sim
+    #     # # #         if Configuration.getSetting("OutputToProjectOn"):
+    #     # # #             outDir = str(Configuration.getSetting("ProjectLocation"))
+    #     # # #         else:
+    #     # # #             outDir = str(Configuration.getSetting("OutputLocation"))
+    #
+    #     import CompuCellSetup
+    #     outDir = CompuCellSetup.getSimulationOutputDir()
+    #
+    #     outfile = os.path.join(outDir, fileName)
+    #     #        print '--------- savePlotAsPNG: outfile=',outfile
+    #     imgmap.save(outfile, "PNG")
+    #     _mutex.unlock()
+    #
+    #     # original implementation - does not really work unless we use signal slot mechanism
+    #     # def savePlotAsPNG(self,_fileName,_sizeX=400,_sizeY=400):
+    #
+    # # #        pixmap=QPixmap(_sizeX,_sizeY)  # worked on Windows, but not Linux/OSX
+    # # #        pixmap.fill(QColor("white"))
+    #
+    # # imgmap = QImage(_sizeX, _sizeY, QImage.Format_ARGB32)
+    # # #imgmap.fill(Qt.white)
+    # # imgmap.fill(qRgba(255, 255, 255, 255)) # solid white background (should probably depend on user-chosen colors though)
+    #
+    # # self.pW.print_(imgmap)
+    # # # following seems pretty crude, but keep in mind user can change Prefs anytime during sim
+    # # if Configuration.getSetting("OutputToProjectOn"):
+    # # outDir = str(Configuration.getSetting("ProjectLocation"))
+    # # else:
+    # # outDir = str(Configuration.getSetting("OutputLocation"))
+    # # outfile = os.path.join(outDir,_fileName)
+    # # #        print '--------- savePlotAsPNG: outfile=',outfile
+    # # imgmap.save(outfile,"PNG")
 
     def writeOutHeader(self, _file, _plotName, _outputFormat=LEGACY_FORMAT):
 
