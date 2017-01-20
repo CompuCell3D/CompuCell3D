@@ -3324,6 +3324,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Creates Status bar layout
         :return:None
         '''
+
         self.__statusBar = self.__parent.statusBar()
         self.mcSteps = QLabel()
         self.mcSteps.setAutoFillBackground(True)

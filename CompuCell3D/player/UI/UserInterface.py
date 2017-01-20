@@ -108,7 +108,7 @@ class UserInterface(QMainWindow):
         self.__initActions()    # Setup actions
         self.__initMenus()      # Setup menus 
         
-        self.__createViewManager()
+        # self.__createViewManager()
         self.__initToolbars()   # Setup toolbars    
         self.__initStatusbar()  # Setup status bar
         
