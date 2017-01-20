@@ -3328,27 +3328,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.__statusBar = self.__parent.statusBar()
         self.mcSteps = QLabel()
         self.mcSteps.setStyleSheet("QLabel { background-color : white; color : red; }")
-        # self.mcSteps.setAutoFillBackground(True)
-        # mcp = QPalette()
-        # mcp.setColor(QPalette.Window, QColor("white"))  # WindowText
-        # mcp.setColor(QPalette.WindowText, QColor("blue"))
-        # self.mcSteps.setPalette(mcp)
 
         self.conSteps = QLabel()
         self.conSteps.setAutoFillBackground(True)
         self.conSteps.setStyleSheet("QLabel { background-color : white; color : blue; }")
-        # cp = QPalette()
-        # cp.setColor(QPalette.Window, QColor("white"))  # WindowText
-        # cp.setColor(QPalette.WindowText, QColor("blue"))
-        # self.conSteps.setPalette(cp)
 
         self.warnings = QLabel()
         self.warnings.setAutoFillBackground(True)
         self.warnings.setStyleSheet("QLabel { background-color : white; color : red; }")
-        # cp = QPalette()
-        # cp.setColor(QPalette.Window, QColor("white"))  # WindowText
-        # cp.setColor(QPalette.WindowText, QColor("red"))
-        # self.warnings.setPalette(cp)
 
         self.__statusBar.addWidget(self.mcSteps)
         self.__statusBar.addWidget(self.conSteps)
