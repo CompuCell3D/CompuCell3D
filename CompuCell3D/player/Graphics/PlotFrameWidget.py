@@ -23,9 +23,13 @@ class PlotFrameWidget(QtGui.QFrame):
     def __init__(self, parent=None,**kwds):
         QtGui.QFrame.__init__(self, parent)
 
+        self.plot_params = kwds
         print 'kwds=',kwds
+
         # self.plotWidget=CartesianPlot()
         self.plotWidget = pg.PlotWidget()
+
+
         # self.plotWidget = pg.GraphicsView()
         self.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding))
 
@@ -35,6 +39,7 @@ class PlotFrameWidget(QtGui.QFrame):
         layout = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom)
         layout.addWidget(self.plotWidget)
 
+        # self.setWindowTitle(kwds['title']) # setting title bar on the window
         self.plotWidget.setTitle(kwds['title'])
         self.plotWidget.setLabel(axis='bottom', text=kwds['xAxisTitle'])
         self.plotWidget.setLabel(axis='left', text=kwds['yAxisTitle'])
@@ -109,7 +114,15 @@ class PlotFrameWidget(QtGui.QFrame):
 
     # # note that if you close widget using X button this slot is not called
     # # we need to reimplement closeEvent
-    # # def close(self):           
+    # # def close(self):
+
+    def getPlotParams(self):
+        """
+        Fetches a dictionary of parameters describing plot
+        @return: {dict}
+        """
+        return self.plot_params
+
     def closeEvent(self, ev):
         pass
         # self.parentWidget.closeActiveSubWindowSlot()

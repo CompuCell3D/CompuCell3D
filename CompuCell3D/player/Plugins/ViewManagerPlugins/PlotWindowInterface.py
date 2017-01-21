@@ -9,9 +9,6 @@ import webcolors as wc
 import pyqtgraph as pg
 import pyqtgraph.exporters
 
-# import PyQt4.Qwt5 as Qwt
-# from PyQt4.Qwt5.anynumpy import *
-
 import PlotManagerSetup
 import os, Configuration
 from enums import *
@@ -23,27 +20,15 @@ PLOT_TYPE_POSITION = 3
 MAX_FIELD_LEGTH = 25
 
 
-# Notice histogram and Bar Plot implementations need more work. They are functional but have a bit strange syntax and for Bar Plot we can only plot one series per plot
+# todo
+# Notice histogram and Bar Plot implementations need more work.
+# They are functional but have a bit strange syntax and for Bar Plot we can only plot one series per plot
 
 # class PlotWindowInterface(PlotManagerSetup.PlotWindowInterfaceBase,QtCore.QObject):
 class PlotWindowInterface(QtCore.QObject):
-    # showPlotSignal = QtCore.pyqtSignal( (QtCore.QString,QtCore.QMutex, ))
-    # showBarCurvePlotSignal = QtCore.pyqtSignal( ('char*',QtCore.QMutex, ))
-    # savePlotAsPNGSignal=QtCore.pyqtSignal( ('char*','int','int',QtCore.QMutex, )) #savePlotAsPNG has to emit signal with locking mutex to work correctly
-    # showPlotSignal = QtCore.pyqtSignal( ('char*',QtCore.QMutex, ))
-    # showHistPlotSignal = QtCore.pyqtSignal( ('char*',QtCore.QMutex, ))
-    # showPlotSignal = QtCore.pyqtSignal( (QtCore.QString,QtCore.QMutex, ))
-    # showAllPlotsSignal=QtCore.pyqtSignal( (QtCore.QMutex, ))
-    # showHistPlotSignal = QtCore.pyqtSignal( (QtCore.QString,QtCore.QMutex, ))
-    # showAllHistPlotsSignal=QtCore.pyqtSignal( (QtCore.QMutex, ))
-    #
-    # showBarCurvePlotSignal = QtCore.pyqtSignal( (QtCore.QString,QtCore.QMutex, ))
-    # showAllBarCurvePlotsSignal=QtCore.pyqtSignal( (QtCore.QMutex, ))
-    #
-    # savePlotAsPNGSignal=QtCore.pyqtSignal( (QtCore.QString,'int','int',QtCore.QMutex, )) #savePlotAsPNG has to emit signal with locking mutex to work correctly
-
-
-    # IMPORTANT: turns out that using QString in signals is essential to get correct behavior. for some reason using char * in signal may malfunction e.g. wrong string is sent to slot.
+    # IMPORTANT: in QT4 it turns out that using QString in signals is essential
+    # to get correct behavior.
+    # for some reason using char * in signal may malfunction e.g. wrong string is sent to slot.
 
     showPlotSignal = QtCore.pyqtSignal(str, QtCore.QMutex)
     showAllPlotsSignal = QtCore.pyqtSignal(QtCore.QMutex)
@@ -60,6 +45,8 @@ class PlotWindowInterface(QtCore.QObject):
     setTitleSizeSignal = QtCore.pyqtSignal(int)
     setPlotBackgroundColorSignal = QtCore.pyqtSignal(str)
 
+    addPlotSignal = QtCore.pyqtSignal(object)
+
     def __init__(self, _plotWindow=None):
         # PlotManagerSetup.PlotWindowInterfaceBase.__init__(self,_plotWindow)
         QtCore.QObject.__init__(self, None)
@@ -68,6 +55,8 @@ class PlotWindowInterface(QtCore.QObject):
             import weakref
             self.plotWindow.plotInterface = weakref.ref(self)
             self.pW = self.plotWindow.plotWidget
+
+        self.plot_params = self.plotWindow.getPlotParams()
 
         self.plotData = {}
         self.plotHistData = {}
@@ -83,12 +72,14 @@ class PlotWindowInterface(QtCore.QObject):
 
         self.legend_added = False
 
-
         self.barplot = None
 
         self.eraseAllFlag = False
         self.logScaleFlag = False
-        self.title = ''
+        try:
+            self.title = self.plot_params['title']
+        except:
+            self.title = 'GENERIC PLOT'
 
     def getQWTPLotWidget(self):  # returns native QWT widget to be manipulated by expert users
         return self.plotWindow
@@ -105,6 +96,7 @@ class PlotWindowInterface(QtCore.QObject):
         self.setTitleSignal.connect(self.setTitleHandler)
         self.setTitleSizeSignal.connect(self.setTitleSizeHandler)
         self.setPlotBackgroundColorSignal.connect(self.setPlotBackgroundColorHandler)
+        self.addPlotSignal.connect(self.addPlotHandler)
 
     def clear(self):
         # self.pW.clear()
@@ -134,16 +126,14 @@ class PlotWindowInterface(QtCore.QObject):
     def setTitleSize(self, _size):
         self.setTitleSizeSignal.emit(_size)
 
-
     def setTitleColor(self, _colorName):
         title = self.pW.title()
         title.setColor(QColor(_colorName))
         self.pW.setTitle(title)
 
     def setPlotBackgroundColorHandler(self, _colorName):
-        print '_colorName=',_colorName
+        print '_colorName=', _colorName
         # self.pW.setCanvasBackground(QColor(_colorName))
-
 
     def setPlotBackgroundColor(self, _colorName):
         self.setPlotBackgroundColorSignal.emit(_colorName)
@@ -153,122 +143,82 @@ class PlotWindowInterface(QtCore.QObject):
 
     def addAutoLegend(self, _position="bottom"):
         pass
-    # todo OK
-    #     self.autoLegendFlag = True
-    #
-    #     # print "_position=",_position
-    #     # sys.exit()
-    #
-    #     if _position.lower() == "top":
-    #         self.legendPosition = Qwt.QwtPlot.TopLegend
-    #         # print "_position=",_position
-    #         # sys.exit()
-    #
-    #     elif _position.lower() == "bottom":
-    #         self.legendPosition = Qwt.QwtPlot.BottomLegend
-    #     elif _position.lower() == "left":
-    #         self.legendPosition = Qwt.QwtPlot.LeftLegend
-    #     elif _position.lower() == "right":
-    #         self.legendPosition = Qwt.QwtPlot.RightLegend
-    #
-    #
-    #         # self.legend = Qwt.QwtLegend()
-    #         # self.legend.setFrameStyle(QFrame.Box | QFrame.Sunken)
-    #         # self.legend.setItemMode(Qwt.QwtLegend.ClickableItem)
-    #
-    #         # self.pW.insertLegend(legend, Qwt.QwtPlot.TopLegend)
 
-    def setDataDefault(self,plot_obj,x,y):
-        plot_obj.setData(x,y)
+    def setDataDefault(self, plot_obj, x, y):
+        plot_obj.setData(x, y)
 
-    def setDataBarGraphItem(self,plot_obj,x,y):
-        plot_obj.setOpts(x=x,height=y)
+    def setDataBarGraphItem(self, plot_obj, x, y):
+        plot_obj.setOpts(x=x, height=y)
 
     def addPlot(self, _plotName, _style="Lines", _color='white', _size=3, _alpha=255):
+        plot_param_dict = {
+            '_plotName': _plotName,
+            '_style': _style,
+            '_color': _color,
+            '_size': _size,
+            '_alpha': _alpha
+        }
+
+        self.addPlotSignal.emit(plot_param_dict)
+
+    # def addPlotHandler(self, _plotName, _style="Lines", _color='white', _size=3, _alpha=255):
+    def addPlotHandler(self, plot_param_dict):
+
+
+        _plotName = plot_param_dict['_plotName']
+        _style = plot_param_dict['_style']
+        _color = plot_param_dict['_color']
+        _size = plot_param_dict['_size']
+        _alpha = plot_param_dict['_alpha']
+
         if not self.legend_added:
             self.pW.addLegend()
             self.legend_added = True
 
-
         alpha = abs(int(_alpha)) % 256
 
-
-        a = np.random.rand(10)
-        # yd, xd = np.random.rand(10),np.random.rand(10)
-
-        # yd, xd = np.random.rand(10), np.random.rand(10)
         yd, xd = np.array([], dtype=np.float), np.array([], dtype=np.float)
 
         setData_fcn = self.setDataDefault
 
-        # plotObj = self.pW.plot(y=yd, x=xd)
-        color = wc.name_to_rgb(_color)+(alpha,)
+        color = wc.name_to_rgb(_color) + (alpha,)
         if _style.lower() == 'dots':
-            plotObj = self.pW.plot(y=yd, x=xd, pen = (0, 0, 0), symbolBrush = color, symbolSize = _size, name=_plotName)
+            plotObj = self.pW.plot(y=yd, x=xd, pen=(0, 0, 0), symbolBrush=color, symbolSize=_size, name=_plotName)
 
 
         elif _style.lower() == 'lines':
             pen = pg.mkPen(color=color, width=_size)
-            plotObj = self.pW.plot(y=yd, x=xd, pen=pen,name=_plotName)
+            plotObj = self.pW.plot(y=yd, x=xd, pen=pen, name=_plotName)
 
 
         elif _style.lower() == 'steps':
-            xd, yd = np.array([0,.00001], dtype=np.float), np.array([1], dtype=np.float)
+            xd, yd = np.array([0, .00001], dtype=np.float), np.array([1], dtype=np.float)
             # pen = pg.mkPen(color=color, width=_size)
             # plotObj = self.pW.plot(y=yd, x=xd, pen=pen,stepMode=True)
 
-            plotObj = pg.PlotCurveItem(xd, yd, stepMode=True, fillLevel=0, brush=color,name=_plotName)
+            plotObj = pg.PlotCurveItem(xd, yd, stepMode=True, fillLevel=0, brush=color, name=_plotName)
 
             self.pW.addItem(plotObj)
             # plt1.addItem(curve)
 
         elif _style.lower() == 'bars':
-            # xd, yd = np.array([0,1], dtype=np.float), np.array([1], dtype=np.float)
-            # pen = pg.mkPen(color=color, width=_size)
-            # plotObj = self.pW.plot(y=yd, x=xd, pen=pen,stepMode=True)
 
-            plotObj = pg.BarGraphItem(x=xd, height=yd, width=_size, brush=color,name=_plotName)
+            plotObj = pg.BarGraphItem(x=xd, height=yd, width=_size, brush=color, name=_plotName)
             setData_fcn = self.setDataBarGraphItem
             self.pW.addItem(plotObj)
-            # plt1.addItem(curve)
 
+        else:  # dots is the default
+            plotObj = self.pW.plot(y=yd, x=xd, pen=(0, 0, 0), symbolBrush=color, symbolSize=_size, name=_plotName)
 
-        else: # dots is the default
-            plotObj = self.pW.plot(y=yd, x=xd, pen=(0, 0, 0), symbolBrush=color, symbolSize=_size,name=_plotName)
-
-        # plotObj.setPen((255, 0, 0))
-        # plotObj.setSymbolBrush((255, 0, 0))
-        # plotObj.setSymbolSize(_size)
-        self.plotData[_plotName] = [xd, yd, False, XYPLOT,False]
-        self.plotDrawingObjects[_plotName] = {'curve':plotObj,
-                                              'LineWidth':_size,
+        self.plotData[_plotName] = [xd, yd, False, XYPLOT, False]
+        self.plotDrawingObjects[_plotName] = {'curve': plotObj,
+                                              'LineWidth': _size,
                                               'LineColor': _color,
-                                              'Style':_style,
-                                              'SetData':setData_fcn}
-
-        # todo - OK
-        # self.plotWindow.legend.addItem(plotObj,name=_plotName)
-
-
-
-        # p1.setData()
-
-        # self.pW.addPlot('plot_name')
-
-        # # self.plotData[_plotName]=[arange(0),arange(0),False]
-        #
-        # self.plotData[_plotName] = [array([], dtype=double), array([], dtype=double), False, XYPLOT]
-        #
-        # self.plotDrawingObjects[_plotName] = {"curve": Qwt.QwtPlotCurve(_plotName), "LineWidth": _size,
-        #                                       "LineColor": _color}
-        # plotStyle = getattr(Qwt.QwtPlotCurve, _style)
-        # # self.plotDrawingObjects[_plotName]["curve"].setStyle(Qwt.QwtPlotCurve.Dots)
-        # self.plotDrawingObjects[_plotName]["curve"].setStyle(plotStyle)
+                                              'Style': _style,
+                                              'SetData': setData_fcn}
 
     def addGrid(self):
-        grid = Qwt.QwtPlotGrid()
-        grid.attach(self.pW)
-        grid.setPen(QPen(Qt.black, 0, Qt.DotLine))
+        pass
 
     def eraseAllData(self):
 
@@ -283,13 +233,11 @@ class PlotWindowInterface(QtCore.QObject):
 
         for name, data in self.plotData.iteritems():
             # todo implement special handling for "steps" or switch to bars instead of steps
-            if data[0].shape[0] == data[1].shape[0] +1: # steps
-                data[0], data[1] = np.array([0,.00001], dtype=np.float), np.array([0], dtype=np.float)
+            if data[0].shape[0] == data[1].shape[0] + 1:  # steps
+                data[0], data[1] = np.array([0, .00001], dtype=np.float), np.array([0], dtype=np.float)
                 data[4] = False
             else:
                 data[0], data[1] = np.array([], dtype=np.float), np.array([], dtype=np.float)
-            # data[0].resize(0)
-            # data[1].resize(0)
             data[self.dirtyFlagIndex] = True
 
     def eraseData(self, _plotName):
@@ -317,7 +265,7 @@ class PlotWindowInterface(QtCore.QObject):
             if not self.plotData[_plotName][4]:
 
                 x_vec = np.array([_x, _x + 1], dtype=np.float)
-                y_vec = np.array([_y],dtype=np.float)
+                y_vec = np.array([_y], dtype=np.float)
 
                 self.plotData[_plotName][0] = x_vec
                 self.plotData[_plotName][1] = y_vec
@@ -326,38 +274,13 @@ class PlotWindowInterface(QtCore.QObject):
                 self.plotData[_plotName][0] = np.append(self.plotData[_plotName][0], [_x])
                 self.plotData[_plotName][1] = np.append(self.plotData[_plotName][1], [_y])
                 self.plotData[_plotName][0][-2] = _x
-                self.plotData[_plotName][0][-1] = _x+1
+                self.plotData[_plotName][0][-1] = _x + 1
 
         else:
-            self.plotData[_plotName][0] = np.append(self.plotData[_plotName][0],[_x])
+            self.plotData[_plotName][0] = np.append(self.plotData[_plotName][0], [_x])
             self.plotData[_plotName][1] = np.append(self.plotData[_plotName][1], [_y])
 
-        # self.plotData[_plotName][0].resize(currentLength + 1)
-        # self.plotData[_plotName][1].resize(currentLength + 1)
-        #
-        # self.plotData[_plotName][0][currentLength] = _x
-        # self.plotData[_plotName][1][currentLength] = _y
         self.plotData[_plotName][self.dirtyFlagIndex] = True
-        # print "self.plotData[_plotName][0]=",self.plotData[_plotName][0]
-        # print "self.plotData[_plotName][1]=",self.plotData[_plotName][1]
-
-
-        # if not _plotName in self.plotData.keys():
-        #     return
-        #
-        # if self.eraseAllFlag:
-        #     self.cleanAllContainers()
-        #     self.eraseAllFlag = False
-        #
-        # currentLength = len(self.plotData[_plotName][0])
-        # self.plotData[_plotName][0].resize(currentLength + 1)
-        # self.plotData[_plotName][1].resize(currentLength + 1)
-        #
-        # self.plotData[_plotName][0][currentLength] = _x
-        # self.plotData[_plotName][1][currentLength] = _y
-        # self.plotData[_plotName][self.dirtyFlagIndex] = True
-        # # print "self.plotData[_plotName][0]=",self.plotData[_plotName][0]
-        # # print "self.plotData[_plotName][1]=",self.plotData[_plotName][1]
 
     def getDrawingObjectsSettings(self, _plotName):
         if _plotName in self.plotDrawingObjects.keys():
@@ -369,68 +292,43 @@ class PlotWindowInterface(QtCore.QObject):
         self.plotDrawingObjects[_plotName][_property] = _value
 
     def setXAxisTitle(self, _title):
-        self.pW.setLabel(axis='bottom', text='DUPA')
-        # self.pW.setAxisTitle(Qwt.QwtPlot.xBottom, _title)
+        pass
 
     def setYAxisTitle(self, _title):
-        self.pW.setAxisTitle(Qwt.QwtPlot.yLeft, _title)
+        pass
 
     def setXAxisTitleSize(self, _size):
-
-        title = self.pW.axisTitle(Qwt.QwtPlot.xBottom)
-        font = title.font()
-        font.setPointSize(_size)
-        title.setFont(font)
-        self.pW.setAxisTitle(Qwt.QwtPlot.xBottom, title)
+        pass
 
     def setXAxisTitleColor(self, _colorName):
         pass
 
-
-        # title = self.pW.axisTitle(Qwt.QwtPlot.xBottom)
-        # title.setColor(QColor(_colorName))
-        # self.pW.setAxisTitle(Qwt.QwtPlot.xBottom, title)
-
     def setYAxisTitleSize(self, _size):
 
-        title = self.pW.axisTitle(Qwt.QwtPlot.yLeft)
-        font = title.font()
-        font.setPointSize(_size)
-        title.setFont(font)
-        self.pW.setAxisTitle(Qwt.QwtPlot.yLeft, title)
+        pass
 
     def setYAxisTitleColor(self, _colorName):
 
-        title = self.pW.axisTitle(Qwt.QwtPlot.yLeft)
-        title.setColor(QColor(_colorName))
-        self.pW.setAxisTitle(Qwt.QwtPlot.yLeft, title)
+        pass
 
     def setXAxisLogScale(self):
-        self.pW.setAxisScaleEngine(Qwt.QwtPlot.xBottom, Qwt.QwtLog10ScaleEngine())
-        self.logScaleFlag = True
+        pass
 
     def setYAxisLogScale(self):
-        self.pW.setAxisScaleEngine(Qwt.QwtPlot.yLeft, Qwt.QwtLog10ScaleEngine())
-        self.logScaleFlag = True
+        pass
 
     def setYAxisScale(self, _lower=0.0, _upper=100.0):
-        self.pW.setAxisScale(Qwt.QwtPlot.yLeft, _lower, _upper)
+        pass
 
     def setXAxisScale(self, _lower=0.0, _upper=100.0):
-        self.pW.setAxisScale(Qwt.QwtPlot.xBottom, _lower, _upper)
+        pass
 
     def showPlot(self, _plotName):
-        self.plotWindowInterfaceMutex.lock()
-        self.showPlotSignal.emit(QString(_plotName), self.plotWindowInterfaceMutex)
+        pass
 
     def savePlotAsPNG(self, _fileName, _sizeX=400, _sizeY=400):
         self.plotWindowInterfaceMutex.lock()
         self.savePlotAsPNGSignal.emit(_fileName, _sizeX, _sizeY, self.plotWindowInterfaceMutex)
-
-
-    # def savePlotAsPNG(self, _fileName, _sizeX=400, _sizeY=400):
-    #     self.plotWindowInterfaceMutex.lock()
-    #     self.savePlotAsPNGSignal.emit(_fileName, _sizeX, _sizeY, self.plotWindowInterfaceMutex)
 
     def __savePlotAsPNG(self, _fileName, _sizeX, _sizeY, _mutex):
         fileName = str(_fileName)
@@ -469,7 +367,7 @@ class PlotWindowInterface(QtCore.QObject):
         pixmap = QPixmap(self.pW.size())
         painter = QPainter()
         painter.begin(pixmap)
-        self.pW.render(painter,self.pW.sceneRect())
+        self.pW.render(painter, self.pW.sceneRect())
         pixmap.save(_fileName)
         painter.end()
         #
@@ -492,53 +390,6 @@ class PlotWindowInterface(QtCore.QObject):
         # #        print '--------- savePlotAsPNG: outfile=',outfile
         # imgmap.save(outfile, "PNG")
         _mutex.unlock()
-
-
-
-    # def __savePlotAsPNG(self, _fileName, _sizeX, _sizeY, _mutex):
-    #     fileName = str(_fileName)
-    #     #        pixmap=QPixmap(_sizeX,_sizeY)  # worked on Windows, but not Linux/OSX
-    #     #        pixmap.fill(QColor("white"))
-    #
-    #     imgmap = QImage(_sizeX, _sizeY, QImage.Format_ARGB32)
-    #     # imgmap.fill(Qt.white)
-    #     imgmap.fill(
-    #         qRgba(255, 255, 255, 255))  # solid white background (should probably depend on user-chosen colors though)
-    #
-    #     self.pW.print_(imgmap)
-    #     # following seems pretty crude, but keep in mind user can change Prefs anytime during sim
-    #     # # #         if Configuration.getSetting("OutputToProjectOn"):
-    #     # # #             outDir = str(Configuration.getSetting("ProjectLocation"))
-    #     # # #         else:
-    #     # # #             outDir = str(Configuration.getSetting("OutputLocation"))
-    #
-    #     import CompuCellSetup
-    #     outDir = CompuCellSetup.getSimulationOutputDir()
-    #
-    #     outfile = os.path.join(outDir, fileName)
-    #     #        print '--------- savePlotAsPNG: outfile=',outfile
-    #     imgmap.save(outfile, "PNG")
-    #     _mutex.unlock()
-    #
-    #     # original implementation - does not really work unless we use signal slot mechanism
-    #     # def savePlotAsPNG(self,_fileName,_sizeX=400,_sizeY=400):
-    #
-    # # #        pixmap=QPixmap(_sizeX,_sizeY)  # worked on Windows, but not Linux/OSX
-    # # #        pixmap.fill(QColor("white"))
-    #
-    # # imgmap = QImage(_sizeX, _sizeY, QImage.Format_ARGB32)
-    # # #imgmap.fill(Qt.white)
-    # # imgmap.fill(qRgba(255, 255, 255, 255)) # solid white background (should probably depend on user-chosen colors though)
-    #
-    # # self.pW.print_(imgmap)
-    # # # following seems pretty crude, but keep in mind user can change Prefs anytime during sim
-    # # if Configuration.getSetting("OutputToProjectOn"):
-    # # outDir = str(Configuration.getSetting("ProjectLocation"))
-    # # else:
-    # # outDir = str(Configuration.getSetting("OutputLocation"))
-    # # outfile = os.path.join(outDir,_fileName)
-    # # #        print '--------- savePlotAsPNG: outfile=',outfile
-    # # imgmap.save(outfile,"PNG")
 
     def writeOutHeader(self, _file, _plotName, _outputFormat=LEGACY_FORMAT):
 
@@ -647,7 +498,6 @@ class PlotWindowInterface(QtCore.QObject):
 
     def __showAllPlots(self, _mutex=None):
 
-
         for plotName in self.plotData.keys():
             if self.plotData[plotName][self.dirtyFlagIndex]:
                 if plotName in self.plotDrawingObjects.keys():
@@ -655,53 +505,16 @@ class PlotWindowInterface(QtCore.QObject):
                     y_vec = self.plotData[plotName][1]
 
                     plotObj = self.plotDrawingObjects[plotName]['curve']
-                    print 'plotName=',plotName
-
-                    print 'x_vec=',x_vec
-                    print 'y_vec=', y_vec
+                    # print 'plotName=',plotName
+                    # print 'x_vec=',x_vec
+                    # print 'y_vec=', y_vec
                     setData_fcn = self.plotDrawingObjects[plotName]['SetData']
-                    setData_fcn(plotObj,x_vec,y_vec)
+                    setData_fcn(plotObj, x_vec, y_vec)
 
-
-                    #todo OK
+                    # todo OK
                     # plotObj.setData(x_vec,y_vec)
-
-                    # drawingObjects["curve"].attach(self.pW)
-                    # drawingObjects["curve"].setPen(
-                    #     QPen(QColor(drawingObjects["LineColor"]), drawingObjects["LineWidth"]))
-                    # drawingObjects["curve"].setData(self.plotData[plotName][0], self.plotData[plotName][1])
-                    #
-                    # #                    print "self.legendPosition=",self.legendPosition
-                    # if self.autoLegendFlag and not self.legendSetFlag:
-                    #     self.legend = Qwt.QwtLegend()
-                    #     self.legend.setFrameStyle(QFrame.Box | QFrame.Sunken)
-                    #     self.legend.setItemMode(Qwt.QwtLegend.ClickableItem)
-                    #     self.pW.insertLegend(self.legend, self.legendPosition)
-                    #     self.legendSetFlag = True
-
-                    # self.pW.replot()
                     self.plotData[plotName][self.dirtyFlagIndex] = False
 
-
-        # for plotName in self.plotData.keys():
-        #     if self.plotData[plotName][self.dirtyFlagIndex]:
-        #         if plotName in self.plotDrawingObjects.keys():
-        #             drawingObjects = self.plotDrawingObjects[plotName]
-        #             drawingObjects["curve"].attach(self.pW)
-        #             drawingObjects["curve"].setPen(
-        #                 QPen(QColor(drawingObjects["LineColor"]), drawingObjects["LineWidth"]))
-        #             drawingObjects["curve"].setData(self.plotData[plotName][0], self.plotData[plotName][1])
-        #
-        #             #                    print "self.legendPosition=",self.legendPosition
-        #             if self.autoLegendFlag and not self.legendSetFlag:
-        #                 self.legend = Qwt.QwtLegend()
-        #                 self.legend.setFrameStyle(QFrame.Box | QFrame.Sunken)
-        #                 self.legend.setItemMode(Qwt.QwtLegend.ClickableItem)
-        #                 self.pW.insertLegend(self.legend, self.legendPosition)
-        #                 self.legendSetFlag = True
-        #
-        #             self.pW.replot()
-        #             self.plotData[plotName][self.dirtyFlagIndex] = False
         _mutex.unlock()
 
     def showAllHistPlots(self):
@@ -819,4 +632,3 @@ class PlotWindowInterface(QtCore.QObject):
             self.barplot.attach(self.pW)
         self.pW.replot()
         _mutex.unlock()
-
