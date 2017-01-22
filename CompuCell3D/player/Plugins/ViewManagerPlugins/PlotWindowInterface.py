@@ -535,9 +535,16 @@ class PlotWindowInterface(QtCore.QObject):
         _mutex.unlock()
 
     def addHistogram(self, plot_name, value_array, number_of_bins):
-        import numpy
-        (values, intervals) = numpy.histogram(value_array, bins=number_of_bins)
-        self.addHistPlotData(_plotName=plot_name, _values=values, _intervals=intervals)
+
+        (values, intervals) = np.histogram(value_array, bins=number_of_bins)
+
+        self.plotData[plot_name][0] = intervals
+        self.plotData[plot_name][1] = values
+
+        self.plotData[plot_name][self.dirtyFlagIndex] = True
+
+        # self.addHistPlotData(_plotName=plot_name, _values=values, _intervals=intervals)
+
 
     def addHistPlotData(self, _plotName, _values, _intervals):
         # print 'addHistPlotData'
@@ -558,18 +565,50 @@ class PlotWindowInterface(QtCore.QObject):
 
         self.plotHistData[_plotName].setData(Qwt.QwtIntervalData(intervals, values))
 
+    # todo OK
+    # def addHistPlotData(self, _plotName, _values, _intervals):
+    #     # print 'addHistPlotData'
+    #     # print '_values=',_values
+    #     # print '_intervals=',_intervals
+    #     # self.plotData[_plotName]=[array([],dtype=double),array([],dtype=double),False]
+    #
+    #     self.plotData[str(_plotName)] = [_intervals, _values, False, HISTOGRAM]
+    #
+    #     intervals = []
+    #     valLength = len(_values)
+    #     values = Qwt.QwtArrayDouble(valLength)
+    #     for i in range(valLength):
+    #         # width = _intervals[i+1]-_intervals[i]+2
+    #         intervals.append(Qwt.QwtDoubleInterval(_intervals[i], _intervals[
+    #             i + 1]));  # numpy automcatically adds extra element for edge
+    #         values[i] = _values[i]
+    #
+    #     self.plotHistData[_plotName].setData(Qwt.QwtIntervalData(intervals, values))
+
     def addHistPlot(self, _plotName, _r=100, _g=100, _b=0, _alpha=255):
+        return
         self.plotHistData[_plotName] = HistogramItem()
         self.plotHistData[_plotName].setColor(QColor(_r, _g, _b, _alpha))
 
-    def addHistogramPlot(self, _plotName, _color='black', _alpha=255):
-        self.plotHistData[_plotName] = HistogramItem()
-        color = QColor(_color)
-        color.setAlpha(_alpha)
-        self.plotHistData[_plotName].setColor(color)
 
-        # def setHistogramColor(self,):
-        # self.histogram.setColor(QColor(_colorName))
+    def addHistogramPlot(self, _plotName, _color='blue', _alpha=255):
+        self.addPlot(_plotName=_plotName,_style='Steps',_color=_color,_size=1.0,_alpha=_alpha)
+        # self.plotHistData[_plotName] = HistogramItem()
+        # color = QColor(_color)
+        # color.setAlpha(_alpha)
+        # self.plotHistData[_plotName].setColor(color)
+        #
+        # # def setHistogramColor(self,):
+        # # self.histogram.setColor(QColor(_colorName))
+
+    # def addHistogramPlot(self, _plotName, _color='blue', _alpha=255):
+    #     self.plotHistData[_plotName] = HistogramItem()
+    #     color = QColor(_color)
+    #     color.setAlpha(_alpha)
+    #     self.plotHistData[_plotName].setColor(color)
+    #
+    #     # def setHistogramColor(self,):
+    #     # self.histogram.setColor(QColor(_colorName))
 
     def setHistogramColor(self, _colorName=None, _r=100, _g=100, _b=0, _alpha=255):
         if _colorName != None:
