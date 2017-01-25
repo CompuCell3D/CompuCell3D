@@ -37,6 +37,7 @@ public:
 	std::string comment;
 	void saveXML(std::string _fileName);
 	void saveXMLInPython(std::string _fileName);
+	std::string getXMLAsPython();
 	
     void writeCC3DXMLElement(std::ostream &_out, int _indent=0);
     void writeCC3DXMLElementInPython(std::ostream &_out, std::string _parentElement, int _indent=4,bool _commentElemFlag=false);

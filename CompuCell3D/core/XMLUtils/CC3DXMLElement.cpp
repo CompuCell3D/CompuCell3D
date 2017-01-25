@@ -135,6 +135,17 @@ void CC3DXMLElement::writeCC3DXMLElement(ostream &_out, int _indent){
 
 }
 
+std::string CC3DXMLElement::getXMLAsPython() {
+	ostringstream out;
+	string parentElement;
+	std::map<std::string, int> elemNameCounterDict;
+	elemNameCounterDictPtr = &elemNameCounterDict;
+	writeCC3DXMLElementInPython(out, parentElement);
+	return out.str();
+
+
+}
+
 void CC3DXMLElement::saveXMLInPython(std::string _fileName){
 
 	ofstream out(_fileName.c_str());
