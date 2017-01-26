@@ -1,0 +1,5 @@
+<Simulation version="3.6.2">
+   <XMLScript Type="XMLScript">Simulation/SteeringVolumeFlex.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/SteeringVolumeFlex.py</PythonScript>
+   <Resource Type="Python">Simulation/SteeringVolumeFlexSteppables.py</Resource>
+</Simulation>
