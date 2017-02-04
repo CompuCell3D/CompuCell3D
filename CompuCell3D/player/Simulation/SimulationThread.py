@@ -16,6 +16,9 @@ class SimulationThread(QtCore.QThread):
     finishRequest = pyqtSignal(bool)
     errorOccured = pyqtSignal(str, str)
     errorFormatted = pyqtSignal(str)
+    errorOccuredDetailed = pyqtSignal(str, str,int,int,str)
+
+
 
 
     def emitErrorOccured(self,_errorType,_traceback_message):
@@ -41,7 +44,12 @@ class SimulationThread(QtCore.QThread):
     def emitSimulationFinished(self,_flag=True):
         self.simulationFinished.emit(_flag)
 
+    def emitFinishRequest(self,_flag=True):
+        self.finishRequest.emit(_flag)
 
+
+    def emitErrorOccuredDetailed(self,_errorType,_file,_line,_col,_traceback_message):
+        self.errorOccuredDetailed.emit(_errorType,_file,_line,_col,_traceback_message)
 
 
 

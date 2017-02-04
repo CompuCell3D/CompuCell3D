@@ -2780,7 +2780,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         action = self.sender()
         if isinstance(action, QAction):
-            self.__fileName = str(action.data().toString())
+            # self.__fileName = str(action.data().toString())
+            self.__fileName = str(action.data())
         from os.path import basename
         # setting text for main window (self.__parent) title bar 
         self.__parent.setWindowTitle(basename(self.__fileName) + " - CompuCell3D Player")
