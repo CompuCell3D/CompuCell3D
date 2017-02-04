@@ -52,6 +52,7 @@ except ImportError:
 # Check whether a specific QVTKRenderWindowInteractor base
 # class was chosen, can be set to "QGLWidget"
 QVTKRWIBase = "QWidget"
+# QVTKRWIBase = "QGLWidget"
 try:
     import vtk.qt
     QVTKRWIBase = vtk.qt.QVTKRWIBase

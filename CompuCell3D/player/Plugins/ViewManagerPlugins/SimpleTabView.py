@@ -197,7 +197,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             pass
 
             # note that this variable will be the same as self.simulation when doing CMLReplay mode. I keep it under diffferent name to keep track of the places in the code where I am using SimulationThread API and where I use CMLResultReade replay part of the API
-        # this means that further refactoring is needed but I leave it for now    
+        # this means that further refactoring is needed but I leave it for now
         self.cmlReplayManager = None
 
         # Here we are checking for new version - notice we use check interval in order not to perform version checks
@@ -570,7 +570,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
 
                 # elif o in ("--connectTwedit"):
-                # connectTwedit=True 
+                # connectTwedit=True
             else:
                 assert False, "unhandled option"
 
@@ -698,7 +698,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.basicSimulationData = BasicSimulationData()
 
         # this import has to be here not inside is statement to ensure that during switching from playing one type of files to another there is no "missing module" issue due to imoprer imports
-        # import CMLResultReader 
+        # import CMLResultReader
         from Simulation.CMLResultReader import CMLResultReader
 
         self.cmlHandlerCreated = False
@@ -711,7 +711,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if CompuCellSetup.playerType == "CMLResultReplay":
             self.__viewManagerType = "CMLResultReplay"
 
-            # note that this variable will be the same as self.simulation when doing CMLReplay mode. I keep it under diffferent name to keep track of the places in the code where I am using SimulationThread API and where I use CMLResultReade replay part of the API                
+            # note that this variable will be the same as self.simulation when doing CMLReplay mode. I keep it under diffferent name to keep track of the places in the code where I am using SimulationThread API and where I use CMLResultReade replay part of the API
             # this means that further refactoring is needed but I leave it for now
             self.cmlReplayManager = self.simulation = CMLResultReader(self)
 
@@ -861,12 +861,17 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Initializes widget that displays vtk file names during vtk file replay mode in the Player
         :return:None
         '''
-        self.__parent.latticeDataModel.setLatticeDataFileList(self.simulation.ldsFileList)
-        self.latticeDataModel = self.__parent.latticeDataModel
-        self.__parent.latticeDataModelTable.setModel(
-            self.__parent.latticeDataModel)  # this sets up the model and actually displays model data- so use this function when model is ready to be used
-        self.__parent.latticeDataModelTable.setParams()
-        self.latticeDataModelTable = self.__parent.latticeDataModelTable
+        ui = self.__parent
+
+        ui.latticeDataModel.setLatticeDataFileList(self.simulation.ldsFileList)
+        self.latticeDataModel = ui.latticeDataModel
+
+        # this sets up the model and actually displays model data- so use this function when model is ready to be used
+
+        ui.latticeDataModelTable.setModel(ui.latticeDataModel)
+
+        ui.latticeDataModelTable.setParams()
+        self.latticeDataModelTable = ui.latticeDataModelTable
 
     def __loadSim(self, file):
         '''
@@ -895,7 +900,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # # self.connect(self.simulation,SIGNAL("errorOccuredDetailed(QString,QString,int,int,QString)"),self.handleErrorMessageDetailed)
         # self.connect(self.simulation, SIGNAL("errorFormatted(QString)"), self.handleErrorFormatted)
 
-        # We need to create new SimulationPaths object for each new simulation.    
+        # We need to create new SimulationPaths object for each new simulation.
         #        import CompuCellSetup
         CompuCellSetup.simulationPaths = CompuCellSetup.SimulationPaths()
 
@@ -1078,7 +1083,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                                                  basename(self.__fileName) + ' Iteration: ' + basename(
                         customOutputPath) + " - CompuCell3D Player")
 
-                    # read newly created .cc3d file     
+                    # read newly created .cc3d file
                     self.cc3dSimulationDataHandler.readCC3DFileFormat(cc3dFileFullName)
 
                     # # setting simultaion output dir names
@@ -1302,7 +1307,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 self.baseScreenshotName = pScanBaseFileName + '_' + screenshotSuffix
 
-                # print 'self.baseScreenshotName=',self.baseScreenshotName 
+                # print 'self.baseScreenshotName=',self.baseScreenshotName
 
             if self.screenshotDirectoryName == "":
                 self.__imageOutput = False  # do not output screenshots when custom directory was not created or already exists
@@ -1471,7 +1476,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
         fileName = self.__fileName
         # when running parameter scan after simulatino finish we run again the same simulation file. When cc3d project with parameter scan gets opened 'next iteration' simulation is generatet and this
-        # newly generated cc3d file is substituted instead of the "master" cc3d with parameter scan 
+        # newly generated cc3d file is substituted instead of the "master" cc3d with parameter scan
         # From user stand point whan matters is that the only thing that user needs to worry abuot is the "master" .cc3d project and this is what is opened in the player
         self.consecutiveRunCounter += 1
         if self.consecutiveRunCounter >= self.maxNumberOfConsecutiveRuns:
@@ -1532,7 +1537,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # there is additional locking inside draw to acccount for the fact that users may want to draw lattice on demand
         # self.simulation.newFileBeingLoaded=False
-        self.simulation.drawMutex.unlock()  # had to add synchronization here . without it I would get weird behavior in CML replay mode      
+        self.simulation.drawMutex.unlock()  # had to add synchronization here . without it I would get weird behavior in CML replay mode
 
         self.simulation.newFileBeingLoaded = False  # this flag is used to prevent calling  draw function when new data is read from hard drive
         # at this moment new data has been read and is ready to be used
@@ -1662,7 +1667,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
         if not self.drawingAreaPrepared:
-            # checking if the simulation file is not an empty string 
+            # checking if the simulation file is not an empty string
             if self.__fileName == "":
                 msg = QMessageBox.warning(self, "Not A Valid Simulation File", \
                                           "Please pick simulation file <b>File->OpenSimulation File ...</b>", \
@@ -1783,7 +1788,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if not self.drawingAreaPrepared:
             self.prepareSimulation()
 
-        # print 'SIMULATION PREPARED self.__viewManagerType=',self.__viewManagerType    
+        # print 'SIMULATION PREPARED self.__viewManagerType=',self.__viewManagerType
         if self.__viewManagerType == "CMLResultReplay":
             # print 'starting CMLREPLAY'
             import CompuCellSetup
@@ -2640,7 +2645,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if isinstance(activeSubWindow.widget(), Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
             activeSubWindow.widget().zoomOut()
 
-    # # File name should be passed    
+    # # File name should be passed
     def takeShot(self):
         '''
         slot that adds screenshot configuration
@@ -2693,16 +2698,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if not os.path.exists(defaultDir):
             defaultDir = os.getcwd()
 
-        self.__fileName = QFileDialog.getOpenFileName( \
+        self.fileName_tuple = QFileDialog.getOpenFileName(
             self.ui,
             QApplication.translate('ViewManager', "Open Lattice Description Summary file"),
             defaultDir,
             filter
         )
-        # converting Qstring to python string    and normalizing path        
+
+        self.__fileName = self.fileName_tuple[0]
+
+        # converting Qstring to python string    and normalizing path
         self.__fileName = os.path.abspath(str(self.__fileName))
         from os.path import basename
-        # setting text for main window (self.__parent) title bar 
+        # setting text for main window (self.__parent) title bar
         self.__parent.setWindowTitle(basename(self.__fileName) + " - CompuCell3D Player")
 
         # Shall we inform the user?
@@ -2725,7 +2733,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             # self.__fileName = str(action.data().toString())
             self.__fileName = str(action.data())
         from os.path import basename
-        # setting text for main window (self.__parent) title bar 
+        # setting text for main window (self.__parent) title bar
         self.__parent.setWindowTitle(basename(self.__fileName) + " - CompuCell3D Player")
 
         import CompuCellSetup
@@ -2746,7 +2754,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # set the cwd of the dialog based on the following search criteria:
         #     1: Directory of currently active editor
         #     2: Directory of currently active project
-        #     3: CWD  
+        #     3: CWD
 
         filter = "CompuCell3D simulation (*.cc3d *.xml *.py)"  # self._getOpenFileFilter()
 
@@ -2767,13 +2775,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if isinstance(self.__fileName, tuple):
             self.__fileName = self.__fileName[0]
 
-        # converting Qstring to python string and normalizing path   
+        # converting Qstring to python string and normalizing path
         self.__fileName = os.path.abspath(str(self.__fileName))
 
         print '__openSim: self.__fileName=', self.__fileName
 
         from os.path import basename
-        # setting text for main window (self.__parent) title bar 
+        # setting text for main window (self.__parent) title bar
         self.__parent.setWindowTitle(basename(self.__fileName) + " - CompuCell3D Player")
 
         import CompuCellSetup
@@ -3242,7 +3250,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
             simFilePath,
             filter
         )
-
 
         # todo - have to recode C++ code to take unicode as filename...
         pifFileName = str(pifFileName_selection[0])

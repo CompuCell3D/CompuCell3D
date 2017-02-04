@@ -17,9 +17,10 @@ class LatticeDataModelTable(QTableView):
         
         import sys
         if not sys.platform.startswith('darwin'): # on OSX we do not resize row height, we do it only on windows and linux
-            verticalHeader = self.verticalHeader()
-            verticalHeader.setResizeMode(QHeaderView.Fixed)
-            verticalHeader.setDefaultSectionSize(20)     
+            pass
+            # verticalHeader = self.verticalHeader()
+            # verticalHeader.setResizeMode(QHeaderView.Fixed)
+            # verticalHeader.setDefaultSectionSize(20)
             
         # vm - viewmanager, instance of class TabView
         self.vm = vm
@@ -43,13 +44,18 @@ class LatticeDataModelTable(QTableView):
         #self.cplugins.setColumnWidth(1, 200)
         self.setAlternatingRowColors (True)
         self.horizontalHeader().setStretchLastSection(True)
-        
-        self.connect(self, SIGNAL("clicked(const QModelIndex &)"), self.__pickAndAdvanceMCSDirect)        
+
+        self.clicked.connect(self.__pickAndAdvanceMCSDirect)
+
+        # self.connect(self, SIGNAL("clicked(const QModelIndex &)"), self.__pickAndAdvanceMCSDirect)
+
         # self.connect(self, SIGNAL("clicked(const QModelIndex &)"), self.__pickMCSDirect)        
         # self.connect(self, SIGNAL("doubleClicked(const QModelIndex &)"), self.__pickAndAdvanceMCSDirect)
         
     def prepareToClose(self):
-        self.disconnect(self, SIGNAL("clicked(const QModelIndex &)"), self.__pickAndAdvanceMCSDirect)
+        self.clicked.disconnect(self.__pickAndAdvanceMCSDirect)
+        # self.disconnect(self, SIGNAL("clicked(const QModelIndex &)"), self.__pickAndAdvanceMCSDirect)
+
         # self.disconnect(self, SIGNAL("clicked(const QModelIndex &)"), self.__pickMCSDirect)
         # self.disconnect(self, SIGNAL("doubleClicked(const QModelIndex &)"), self.__pickAndAdvanceMCSDirect)
         
