@@ -240,7 +240,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
             action = QAction("&%d %s " % (simCounter, simulationFileName), self)
             rencentSimulationsMenu.addAction(action)
             action.setData(QVariant(simulationFileName))
-            self.connect(action, SIGNAL("triggered()"), self.__openRecentSim)
+            # self.connect(action, SIGNAL("triggered()"), self.__openRecentSim)
+            action.triggered.connect(self.__openRecentSim)
+
 
             simCounter += 1
         return
