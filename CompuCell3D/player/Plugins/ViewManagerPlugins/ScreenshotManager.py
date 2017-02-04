@@ -503,7 +503,9 @@ class ScreenshotManager:
             # is created causes segfault so possible "solution" is to do resize right before taking screenshot. It causes flicker but does not cause segfault
 #            print MODULENAME,' sys.platform = ',sys.platform
             if sys.platform == 'darwin' or sys.platform == 'Linux' or sys.platform == 'linux' or sys.platform == 'linux2':
-                scrData.screenshotGraphicsWidget.setShown(True)
+                # scrData.screenshotGraphicsWidget.setShown(True)
+
+                scrData.screenshotGraphicsWidget.show()
 #                scrData.screenshotGraphicsWidget.resize(self.tabViewWidget.mainGraphicsWindow.size())
 
             # scrData.screenshotGraphicsWidget.takeSimShot(scrFullName)
@@ -512,7 +514,9 @@ class ScreenshotManager:
                 # scrData.screenshotGraphicsWidget.setShown(False)
         
             if sys.platform == 'darwin' or sys.platform == 'Linux' or sys.platform == 'linux' or sys.platform == 'linux2':
-                scrData.screenshotGraphicsWidget.setShown(False)
+                # scrData.screenshotGraphicsWidget.setShown(False)
+
+                scrData.screenshotGraphicsWidget.hide()
                 
         if not sys.platform.startswith('win'):      # we hide and restore screenshot window on linux and OSX only on windows it is not necessary
             self.screenshotSubWindow.showNormal()
