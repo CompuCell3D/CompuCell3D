@@ -315,7 +315,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
             if graphicsWidget.is_screenshot_widget:
                 continue
 
-            actionText = self.tr("&%1. %2").format(counter + 1, win.windowTitle())
+            # actionText = self.tr("&%1. %2").format(counter + 1, win.windowTitle())
+            actionText = str("&{0}. {1}").format(counter + 1, win.windowTitle())
 
             action = windowMenu.addAction(actionText)
             action.setCheckable(True)
@@ -332,7 +333,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         for winId, win in self.win_inventory.getWindowsItems(PLOT_WINDOW_LABEL):
 
-            actionText = self.tr("&%1. %2").arg(counter + 1).arg(win.windowTitle())
+            # actionText = self.tr("&%1. %2").arg(counter + 1).arg(win.windowTitle())
+            actionText = self.tr("&{0}. {1}").format(counter + 1, win.windowTitle())
 
             action = windowMenu.addAction(actionText)
             action.setCheckable(True)
@@ -340,7 +342,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
             myFlag = self.lastActiveRealWindow == win
             action.setChecked(myFlag)
 
-            self.connect(action, SIGNAL("triggered()"), self.windowMapper, SLOT("map()"))
+            # self.connect(action, SIGNAL("triggered()"), self.windowMapper, SLOT("map()"))
+            action.triggered.connect(self.windowMapper.map)
             self.windowMapper.setMapping(action, win)
             counter += 1
 
