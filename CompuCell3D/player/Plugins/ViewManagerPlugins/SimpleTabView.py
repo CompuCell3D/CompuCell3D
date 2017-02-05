@@ -841,6 +841,21 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Initializes model editor tree view of the CC3DML - Model editor is used for steering
         :return:None
         '''
+
+        self.root_element = CompuCellSetup.cc3dXML2ObjConverter.root
+        self.model = SimModel(self.root_element, self.__modelEditor)
+
+        # hook in simulation thread class to XML model TreeView panel in the GUI - needed for steering
+        self.simulation.setSimModel(self.model)
+
+        # self.model.checkSanity()
+
+        self.__modelEditor.setModel(self.model)
+        #        print MODULENAME,' --------- prepareXMLTreeView(self):'
+        #        import pdb; pdb.set_trace()
+        self.model.setPrintFlag(True)
+
+
         # todo
         pass
 

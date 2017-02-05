@@ -145,29 +145,70 @@ class TreeItem:
         return self.__itemValue
         
     # Sets type of the values. The type can be set only when the XML simulation
-    # is loaded and cannot be changed!   
-    def setType(self, value): 
-        # Doesn't hurt to create a new QString object even if self.__itemValue
-        # is of type QString
+    # is loaded and cannot be changed!
+
+    def setType(self, value):
+        # Doesn't hurt to create a new str object even if self.__itemValue
+        # is of type str
         if value != "":
-            str = QString(value)
-            
+            # str = QString(value)
+            str_obj = str(value)
+
+
             # Try to convert to Int
-            val, ok = str.toInt()
-            if ok:
+            try:
+                val = int(str_obj)
                 self.__type = "int"
-                #print "%s: int" % value
                 return
-    
+            except ValueError:
+                pass
+
+            # val, ok = str_obj.toInt()
+            # if ok:
+            #     self.__type = "int"
+            #     # print "%s: int" % value
+            #     return
+
             # Try to convert to Float
-            val, ok = str.toFloat()
-            if ok:
+            try:
+                val = float(str_obj)
                 self.__type = "float"
-                #print "%s: float" % value
                 return
-    
+            except ValueError:
+                pass
+
+            # val, ok = str_obj.toFloat()
+            # if ok:
+            #     self.__type = "float"
+            #     # print "%s: float" % value
+            #     return
+
             self.__type = "string"
-            #print "%s: string" % value
+            # print "%s: string" % value
+
+    # def setType(self, value):
+    #     # Doesn't hurt to create a new QString object even if self.__itemValue
+    #     # is of type QString
+    #     if value != "":
+    #         # str = QString(value)
+    #         str = QString(value)
+    #
+    #         # Try to convert to Int
+    #         val, ok = str.toInt()
+    #         if ok:
+    #             self.__type = "int"
+    #             #print "%s: int" % value
+    #             return
+    #
+    #         # Try to convert to Float
+    #         val, ok = str.toFloat()
+    #         if ok:
+    #             self.__type = "float"
+    #             #print "%s: float" % value
+    #             return
+    #
+    #         self.__type = "string"
+    #         #print "%s: string" % value
     
     def type(self):
         return self.__type
