@@ -5,6 +5,8 @@ from PyQt5.QtGui import *
 # Can be used for advanced editing in the Model Editor.
 class SimDelegate(QItemDelegate):
 
+
+
     def __init__(self, parent=None):
         QItemDelegate.__init__(self, parent)
         
@@ -12,7 +14,8 @@ class SimDelegate(QItemDelegate):
         # Create editor object of QLineEdit
         if index.column() == 1:
             editor = QLineEdit(parent)
-            self.connect(editor, SIGNAL("returnPressed()"), self.commitAndCloseEditor)
+            editor.returnPressed.connect(self.commitAndCloseEditor)
+            # self.connect(editor, SIGNAL("returnPressed()"), self.commitAndCloseEditor)
             return editor
         else:
             return QItemDelegate.createEditor(self, parent, option, index)
@@ -20,12 +23,14 @@ class SimDelegate(QItemDelegate):
     def commitAndCloseEditor(self):
         editor = self.sender()
         if isinstance(editor, (QLineEdit)):
-            
-            # self.emit(SIGNAL("commitData(QWidget*)"), editor)
-            self.emit(SIGNAL("closeEditor(QWidget*)"), editor)
+
+            # call to commitData is essential in Qt5
+            self.commitData.emit(editor)
+            self.closeEditor.emit(editor)
+
 
     def setEditorData(self, editor, index):
-        text = index.model().data(index, Qt.DisplayRole).toString()
+        text = index.model().data(index, Qt.DisplayRole).value()
         if index.column() == 1:
             editor.setText(text)
         else:
