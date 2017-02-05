@@ -114,7 +114,9 @@ class ScreenshotManager:
         # MDIFIX
         self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw, tvw)
         # self.screenshotGraphicsWidget.allowSaveLayout = False # we do not save screenshot widget in the windows layout
-        self.screenshotGraphicsWidget.is_screenshot_widget = True # important because e.g. we do not save screenshot widget in the windows layout
+
+        # important because e.g. we do not save screenshot widget in the windows layout
+        self.screenshotGraphicsWidget.is_screenshot_widget = True
         # self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw)
 
         self.screenshotGraphicsWidget.screenshotWindowFlag = True
@@ -492,6 +494,10 @@ class ScreenshotManager:
             # self.screenshotGraphicsWidget.drawField(self.basicSimulationData,scrData.plotData)
             # self.screenshotGraphicsWidget.setFieldTypes(scrData.plotData)
 #            print MODULENAME,"   before drawFieldLocal, scrData.plotData=",scrData.plotData
+
+            print 'screenshot_widget=', self.screenshotGraphicsWidget.winId().__int__()
+
+
             self.screenshotGraphicsWidget.setPlotData(scrData.plotData)
             self.screenshotGraphicsWidget.drawFieldLocal(self.basicSimulationData,False) # second argument tells drawFieldLocal fcn not to use combo box to get field name
 #            print MODULENAME,"AFTER drawFieldLocal"

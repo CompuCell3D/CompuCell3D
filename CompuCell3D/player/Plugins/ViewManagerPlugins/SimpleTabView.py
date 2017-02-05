@@ -7,7 +7,7 @@ import re
 import inspect
 import string
 import time
-
+from collections import OrderedDict
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -150,7 +150,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.screenshotNumberOfDigits = 10  # this determines how many digits screenshot number of screenshot file name should have
 
-        self.graphicsWindowVisDict = {}  # stores visualization settings for each open window
+        self.graphicsWindowVisDict = OrderedDict()  # stores visualization settings for each open window
 
         # self.lastActiveWindow = None
         self.lastPositionMainGraphicsWindow = None
@@ -256,10 +256,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     def updateActiveWindowVisFlags(self, window=None):
         '''
-        Updates graphics visualization dictionary - checks if border, cells fpp links etc shuld be drawn
-        :param window: QDockWidget or QMdiWindow instance - but only for raphics windows
+        Updates graphics visualization dictionary - checks if border, cells fpp links etc should be drawn
+        :param window: QDockWidget or QMdiWindow instance - but only for graphics windows
         :return: None
         '''
+
+
 
         try:
             if window:
@@ -2812,27 +2814,45 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Slot that opens screenshot description file
         :return:None
         '''
+
+        preferred_dir = os.getcwd()
+
+        if self.__fileName:
+            preferred_dir = os.path.dirname(self.__fileName)
+
         filter = "Screenshot description file (*.sdfml)"  # self._getOpenFileFilter()
-        self.__screenshotDescriptionFileName = QFileDialog.getOpenFileName( \
+        screenshotDescriptionFileName_tuple = QFileDialog.getOpenFileName(
             self.ui,
             QApplication.translate('ViewManager', "Open Screenshot Description File"),
-            os.getcwd(),
+            preferred_dir,
+            # os.getcwd(),
             filter
         )
 
+        self.__screenshotDescriptionFileName = screenshotDescriptionFileName_tuple[0]
+
     def __saveScrDesc(self):
         '''
-        Slot that opens fiel dialog to save screenshot description file
+        Slot that opens file dialog to save screenshot description file
         :return:None
         '''
         # print "THIS IS __saveScrDesc"
+        preferred_dir = os.getcwd()
+
+        if self.__fileName:
+            preferred_dir = os.path.dirname(self.__fileName)
+
         filter = "Screenshot Description File (*.sdfml )"  # self._getOpenFileFilter()
-        self.screenshotDescriptionFileName = QFileDialog.getSaveFileName( \
+        screenshotDescriptionFileName_tuple = QFileDialog.getSaveFileName(
             self.ui,
             QApplication.translate('ViewManager', "Save Screenshot Description File"),
-            os.getcwd(),
+            preferred_dir,
+            # os.getcwd(),
             filter
         )
+
+        self.screenshotDescriptionFileName = screenshotDescriptionFileName_tuple[0]
+
         if self.screenshotManager:
             self.screenshotManager.writeScreenshotDescriptionFile(self.screenshotDescriptionFileName)
 

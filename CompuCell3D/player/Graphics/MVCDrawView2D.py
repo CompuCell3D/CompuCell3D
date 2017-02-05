@@ -433,6 +433,24 @@ class MVCDrawView2D(MVCDrawViewBase):
         '''
         dictKey = self.graphicsFrameWidget.winId().__int__()  # get key (addr) for this window
 
+        print 'cell field on dictKey ', dictKey
+        print 'self.graphicsWindowVisDict.keys()=', self.parentWidget.graphicsWindowVisDict.keys()
+
+        if dictKey not in self.parentWidget.graphicsWindowVisDict.keys():
+            print 'could not find key ',dictKey
+            first_window_vis_flag_key = self.parentWidget.graphicsWindowVisDict.keys()[0]
+            first_window_vis_flag = self.parentWidget.graphicsWindowVisDict[first_window_vis_flag_key]
+
+            self.parentWidget.graphicsWindowVisDict[dictKey] = first_window_vis_flag
+
+
+        try:
+            graphicsWindowVis = self.parentWidget.graphicsWindowVisDict[dictKey]
+        except KeyError:
+            print 'missing key=',dictKey
+            graphicsWindowVis = None
+            return
+
         if self.parentWidget.graphicsWindowVisDict[dictKey][0] or self.getSim3DFlag():  # rwh: for multi-window bug fix;  rwh: hack for FPP
             if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.plane=="XY": # drawing in other planes will be done on a rectangular lattice
                 self.drawCellFieldHex(_bsd,fieldType)
