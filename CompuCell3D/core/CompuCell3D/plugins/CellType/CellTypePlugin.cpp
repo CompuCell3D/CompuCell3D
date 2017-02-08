@@ -96,14 +96,14 @@ void CellTypePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		}
 
       potts->setFrozenTypeVector(frozenTypeVec);
-      
+	
       //enforcing the Medium has id =0
 	  std::map<std::string, unsigned char>::iterator mitr = nameTypeMap.find("Medium");
 	  if (mitr == nameTypeMap.end()) {
-		  ASSERT_OR_THROW(false,"Medium cell type is not defined. Please define Medium cell type and make sure its type id is set to 0 ")
+		  ASSERT_OR_THROW("Medium cell type is not defined. Please define Medium cell type and make sure its type id is set to 0 ",false)
 	  }
 	  else if (mitr->second!=0) {
-		  ASSERT_OR_THROW(false, "Medium type id can only be set to 0. Please define Medium cell type and make sure its type id is set to 0.") 
+		  ASSERT_OR_THROW("Medium type id can only be set to 0. Please define Medium cell type and make sure its type id is set to 0.",false)
 	  }
 
 	  
