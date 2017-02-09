@@ -437,7 +437,7 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         self.mousePressEventFcn = self.mousePressEvent3DStyle
 
     def mousePressEvent2DStyle(self, ev):
-        print 'mouse press event 2d style'
+
         ctrl, shift = self._GetCtrlShift(ev)
         repeat = 0
         if ev.type() == QtCore.QEvent.MouseButtonDblClick:
