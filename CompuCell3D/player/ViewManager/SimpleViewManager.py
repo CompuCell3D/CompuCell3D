@@ -38,9 +38,10 @@ class SimpleViewManager(QObject):
     def initFileMenu(self):
         menu = QMenu(QApplication.translate('ViewManager', '&File'), self.ui)
         menu.addAction(self.openAct)
-        # menu.addAction(self.saveAct)
-        menu.addAction(self.openScreenshotDescriptionAct)
-        menu.addAction(self.saveScreenshotDescriptionAct)
+
+        # turning off screenshot description action
+        # menu.addAction(self.openScreenshotDescriptionAct)
+        # menu.addAction(self.saveScreenshotDescriptionAct)
         menu.addAction(
             self.openLDSAct)  # LDS lattice description summary  - xml file that specifies what simulation data has been written to the disk
         menu.addSeparator()

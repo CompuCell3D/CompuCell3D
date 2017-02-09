@@ -1072,10 +1072,13 @@ class MVCDrawModel3D(MVCDrawModelBase):
         if VTK_MAJOR_VERSION>=6:
             centroidGlyph.SetInputData(centroidsPD)
         else:    
-            centroidGlyph.SetInput(centroidsPD)        
-        
-        centroidGlyph.SetSource(centroidGS.GetOutput())
-        
+            centroidGlyph.SetInput(centroidsPD)
+
+        try:
+            centroidGlyph.SetSource(centroidGS.GetOutput())
+        except AttributeError:
+            centroidGlyph.SetSourceData(centroidGS.GetOutput())
+
         glyphScale = Configuration.getSetting("CellGlyphScale")            
         centroidGlyph.SetScaleFactor( glyphScale )
         centroidGlyph.SetIndexModeToScalar()

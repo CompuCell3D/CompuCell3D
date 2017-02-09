@@ -1823,8 +1823,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
             centroidGlyph.SetInputData(centroidsPD)
         else:    
             centroidGlyph.SetInput(centroidsPD)
-        
-        centroidGlyph.SetSource(centroidGS.GetOutput())
+
+        try:
+            centroidGlyph.SetSource(centroidGS.GetOutput())
+        except AttributeError:
+            centroidGlyph.SetSourceData(centroidGS.GetOutput())
+
+
 #        centroidGlyph.SetScaleFactor( 0.2 )  # rwh: should this lattice size dependent or cell vol or ?
         glyphScale = Configuration.getSetting("CellGlyphScale")
         centroidGlyph.SetScaleFactor( glyphScale )
