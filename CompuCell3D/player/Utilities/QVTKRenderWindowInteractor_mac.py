@@ -301,6 +301,13 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
             self._Iren = vtk.vtkGenericRenderWindowInteractor()
             self._Iren.SetRenderWindow(self._RenderWindow)
 
+            # this is needed to get nice'n'smooth mouse interaction
+            self.interactorStyle=vtk.vtkInteractorStyleSwitch()
+            # self.interactorStyle.SetCurrentStyleToTrackballActor()
+            self.interactorStyle.SetCurrentStyleToTrackballCamera()
+            self._Iren.SetInteractorStyle(self.interactorStyle)
+
+
         # do all the necessary qt setup
         self.setAttribute(Qt.WA_OpaquePaintEvent)
         self.setAttribute(Qt.WA_PaintOnScreen)
@@ -430,7 +437,7 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         self.mousePressEventFcn = self.mousePressEvent3DStyle
 
     def mousePressEvent2DStyle(self, ev):
-
+        print 'mouse press event 2d style'
         ctrl, shift = self._GetCtrlShift(ev)
         repeat = 0
         if ev.type() == QtCore.QEvent.MouseButtonDblClick:
