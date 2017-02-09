@@ -276,7 +276,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
             val = fieldParamsDict["ScalarIsoValues"]
             
             if type(val) == QVariant:  self.isovalList.setText(val.toString())
-            elif type(val) == QString:  self.isovalList.setText(val)
+            elif type(val) == str:  self.isovalList.setText(val)
             else: self.isovalList.setText(str(val))
             
             print 'ScalarIsoValues=',val
