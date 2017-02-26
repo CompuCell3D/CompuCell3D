@@ -1011,6 +1011,10 @@ self.frequency=NEW_FREQUENCY
 ---------- #@Submenu@ Build Wall
 self.buildWall(self.YOUR_WALL_CELL_TYPE)
 
+---------- #@Submenu@ Clean Cell Field
+self.clean_cell_field(reset_inventory=True)
+
+
 ---------- #@Submenu@ Destroy Wall
 self.destroyWall()
 

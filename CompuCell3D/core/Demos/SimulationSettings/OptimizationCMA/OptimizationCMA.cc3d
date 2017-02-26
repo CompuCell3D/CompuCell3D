@@ -1,0 +1,5 @@
+<Simulation version="3.6.2">
+   <XMLScript Type="XMLScript">Simulation/OptimizationCMA.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/OptimizationCMA.py</PythonScript>
+   <Resource Type="Python">Simulation/OptimizationCMASteppables.py</Resource>
+</Simulation>
