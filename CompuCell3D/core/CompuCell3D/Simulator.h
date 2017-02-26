@@ -128,6 +128,7 @@ namespace CompuCell3D {
 		void setNumSteps(unsigned int _numSteps){ppdCC3DPtr->numSteps=_numSteps;}
 		unsigned int getNumSteps() {return ppdCC3DPtr->numSteps;}
 		int getStep() {return currstep;}
+		void setStep(int currstep) { this->currstep = currstep; }
 		bool isStepping(){return simulatorIsStepping;}
 		double getFlip2DimRatio(){return ppdCC3DPtr->flip2DimRatio;}
 		Potts3D *getPotts() {return &potts;}

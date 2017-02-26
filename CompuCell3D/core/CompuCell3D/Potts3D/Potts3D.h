@@ -261,6 +261,8 @@ namespace CompuCell3D {
     EnergyFunctionCalculator * getEnergyFunctionCalculator(){return energyCalculator;}
 
     CellInventory &getCellInventory(){return cellInventory;}
+
+	void clean_cell_field(bool reset_cell_inventory=true);
     
     virtual void registerAttributeAdder(AttributeAdder * _attrAdder);
 //     virtual void registerTypeChangeWatcher(TypeChangeWatcher * _typeChangeWatcher);
@@ -272,6 +274,7 @@ namespace CompuCell3D {
     double getNewNumber(){return energy;}
     /// Add the automaton.
     virtual void registerAutomaton(Automaton* autom);
+
 
     /// Return the automaton for this simulation.
     virtual Automaton* getAutomaton();
