@@ -26,6 +26,9 @@ cc3dSimulationDataHandler = None
 # global extraFieldsDict
 # extraFieldsDict={}
 
+global simulation_return_value
+simulation_return_value = None
+
 global current_step
 current_step = 0
 
@@ -1815,6 +1818,20 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
     # In exception handlers you have to call sim.finish to unload the plugins .
     # We may need to introduce new funuction name (e.g. unload) because finish does more than unloading
 
+def set_simulation_return_value(val):
+    global simulation_return_value
+    simulation_return_value = val
+
+def get_simulation_return_value():
+    global simulation_return_value
+    return simulation_return_value
+
+
+def broadcast_simulation_return_value(_simulation_return_value):
+
+
+    global simulation_return_value
+    return simulation_return_value
 
 def mainLoop(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=None):
     global playerType
