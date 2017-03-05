@@ -15,12 +15,13 @@ class CMLParser:
         self.outputFileCoreName="Step"
         self.exitWhenDone=False
         self.maxNumberOfRuns=-1
+        self.pushAddress = None
         startSimulation=False
         
         opts=None
         args=None
         try:
-            opts, args = getopt.getopt(sys.argv[1:], "i:s:o:f:c:h", ["help","noOutput","exitWhenDone","currentDir=","outputFrequency=","maxNumberOfRuns="])
+            opts, args = getopt.getopt(sys.argv[1:], "i:s:o:f:p:c:h", ["help","noOutput","exitWhenDone","currentDir=","outputFrequency=","pushAddress=","maxNumberOfRuns="])
             print "opts=",opts
             print "args=",args
         except getopt.GetoptError, err:
@@ -52,7 +53,11 @@ class CMLParser:
                 self.__noOutput=True
                 self.outputFrequency=0                
             elif o in ("-f","--outputFrequency"):             
-                self.outputFrequency=int(a) 
+                self.outputFrequency=int(a)
+
+            elif o in ("-p","--pushAddress"):
+                self.pushAddress = str(a)
+                # print 'GOT pushAddress = ',self.pushAddress
             elif o in ("--currentDir"):
                 currentDir=a
                 print "currentDirectory=",currentDir

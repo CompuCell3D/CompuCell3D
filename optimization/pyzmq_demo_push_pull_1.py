@@ -24,7 +24,7 @@ class Optimizer(object):
 
         self.zmq_socket = self.context.socket(zmq.PUSH)
         self.zmq_socket.bind(self.push_address_str)
-        self.num_workers = 4
+        self.num_workers = 1
 
 
     def acknowledge_presence(self, num_workers):
@@ -124,6 +124,37 @@ class Optimizer(object):
 
 
 if __name__ == '__main__':
+    # from subprocess import call
+    # popen_args = [r'C:\CompuCell3D-64bit\runScript.bat']
+    #
+    # # popen_args.append("--pushAddress=%s"%self.pull_address_str)
+    # simulation_name = r'D:\CC3DProjects\short_demo\short_demo.cc3d'
+    # output_frequency = 10
+    # if simulation_name != "":
+    #     popen_args.append("-i")
+    #     popen_args.append(simulation_name)
+    #
+    # if output_frequency > 0:
+    #
+    #     popen_args.append("-f")
+    #     popen_args.append(str(output_frequency))
+    # else:
+    #     popen_args.append("--noOutput")
+    #
+    # # popen_args.append("-p" )
+    # # popen_args.append(str(self.pull_address_str))
+    #
+    # # popen_args.append("--pushAddress=%s" % str("dupa"))
+    # popen_args.append("-p" )
+    # popen_args.append("dupa")
+    #
+    # # popen_args.append(str(self.pull_address_str))
+    #
+    #
+    # print 'popen_args=', popen_args
+    # # sys.exit()
+    # # this call will block until simulattion is done
+    # call(popen_args)
 
     optimizer = Optimizer()
     optimizer.run()
