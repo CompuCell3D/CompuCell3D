@@ -1,4 +1,5 @@
 from multiprocessing import Process
+from subprocess import call
 from MonitorBase import *
 import zmq
 import random
@@ -21,6 +22,36 @@ class OptimizerWorkerProcessZMQ(MonitorBase,Process):
     def initialize(self):
         pass
 
+    # def event_loop(self):
+    #
+    #
+    #     print 'I am consumer #%s' % self.id_number
+    #     context = zmq.Context()
+    #
+    #     # recieve work
+    #     consumer_receiver = context.socket(zmq.PULL)
+    #     consumer_receiver.connect(self.pull_address_str)
+    #
+    #     # send work
+    #     consumer_sender = context.socket(zmq.PUSH)
+    #     consumer_sender.connect(self.push_address_str)
+    #
+    #     # result = {'consumer': consumer_id,'OK':True}
+    #     # consumer_sender.send_json(result)
+    #
+    #
+    #
+    #     # time.sleep(2.0)
+    #     work = consumer_receiver.recv_json()
+    #     data = work['num']
+    #
+    #     print 'got data ', data, ' id =', self.id_number
+    #     result = {'consumer': self.id_number, 'num': data}
+    #     consumer_sender.send_json(result)
+    #
+    #
+    #
+
     def event_loop(self):
 
 
@@ -38,15 +69,35 @@ class OptimizerWorkerProcessZMQ(MonitorBase,Process):
         # result = {'consumer': consumer_id,'OK':True}
         # consumer_sender.send_json(result)
 
-
-
-        time.sleep(2.0)
+        # time.sleep(2.0)
         work = consumer_receiver.recv_json()
         data = work['num']
+
+
+        popen_args=[r'C:\CompuCell3D-64bit\runScript.bat']
+        simulation_name = r'D:\CC3DProjects\short_demo\short_demo.cc3d'
+        output_frequency = 0
+        if simulation_name!="":
+            popen_args.append("-i")
+            popen_args.append(simulation_name)
+
+        if output_frequency > 0 :
+
+            popen_args.append("-f")
+            popen_args.append(output_frequency)
+        else:
+            popen_args.append("--noOutput")
+
+        print 'popen_args=',popen_args
+        # sys.exit()
+        # this call will block until simulattion is done
+        call(popen_args)
+
 
         print 'got data ', data, ' id =', self.id_number
         result = {'consumer': self.id_number, 'num': data}
         consumer_sender.send_json(result)
+
 
 
 

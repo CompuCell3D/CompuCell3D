@@ -125,8 +125,6 @@ class Optimizer(object):
 
 if __name__ == '__main__':
 
-
-
     optimizer = Optimizer()
     optimizer.run()
 
