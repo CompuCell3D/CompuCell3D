@@ -16,7 +16,8 @@ import zmq
 
 class Optimizer(object):
     def __init__(self):
-        self.param_set_list = [1,2,3,4,5,6,7,8,9,10,11,12]
+        # self.param_set_list = [1,2,3,4,5,6,7,8,9,10,11,12,13]
+        self.param_set_list = [1, 2, 3, 4, 5]
         self.context = zmq.Context()
         self.push_address_str = "tcp://127.0.0.1:5557"
         self.pull_address_str = "tcp://127.0.0.1:5558"
@@ -46,6 +47,7 @@ class Optimizer(object):
         results_receiver.bind(self.pull_address_str)
         collecter_data = {}
         sum = 0
+        print 'reducing=', num_workers,' workers'
         for x in xrange(num_workers):
             print 'waiting for worker x=',x
             result = results_receiver.recv_json()
@@ -65,12 +67,19 @@ class Optimizer(object):
                 current_set = []
                 counter = 0
 
+        # sending reminder of the params
+        if len(current_set):
+            yield current_set
+
 
     def run_task(self, param_set):
 
         self.worker_pool = []
 
-        for w in xrange(self.num_workers):
+        num_params = len(param_set)
+
+        # for w in xrange(self.num_workers):
+        for w in xrange(num_params):
             worker = OptimizerWorkerProcessZMQ(id_number=w, name='worker_%s'%w)
             worker.set_pull_address_str(self.push_address_str)
             worker.set_push_address_str(self.pull_address_str)
@@ -86,7 +95,7 @@ class Optimizer(object):
 
         # for i in xrange(self.num_workers):
         #     num = self.param_set_list[i]
-        for param in param_set:
+        for param_idx, param in enumerate(param_set):
             num = param
 
             work_message = {'num': num}
@@ -94,18 +103,28 @@ class Optimizer(object):
             self.zmq_socket.send_json(work_message)
             print 'sent = ',work_message
 
-        self.reduce(self.num_workers)
+        print 'WILL REDUCE ', param_idx+1, ' workers'
+        self.reduce(param_idx+1)
+        print 'FINISHED REDUCING'
 
 
     def run(self):
         for param_set in self.param_generator(self.num_workers):
+            print 'CURRENT PARAM SET=', param_set
             self.run_task(param_set)
+            print 'FINISHED PARAM_SET=', param_set
 
 
+    # def run(self):
+    #     for param_set in self.param_generator(self.num_workers):
+    #         print 'CURRENT PARAM SET=', param_set
+    #
+    #         print 'FINISHED PARAM_SET=', param_set
 
 
 
 if __name__ == '__main__':
+
 
 
     optimizer = Optimizer()
