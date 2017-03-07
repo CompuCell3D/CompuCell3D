@@ -29,6 +29,12 @@ cc3dSimulationDataHandler = None
 global simulation_return_value
 simulation_return_value = None
 
+global simulation_return_value_tag
+simulation_return_value_tag = 'generic_tag'
+
+global push_address
+push_address = None
+
 global current_step
 current_step = 0
 
@@ -246,7 +252,7 @@ class SimulationPaths:
             self.simulationResultStorageDirectory = os.path.join(mainDirName, baseName + timeNameExtension)
             global screenshotDirectoryName
             screenshotDirectoryName = self.simulationResultStorageDirectory
-        #            print MYMODULENAME,' -----------    appending timestamp suffix:  screenshotDirectoryName=',screenshotDirectoryName
+            #            print MYMODULENAME,' -----------    appending timestamp suffix:  screenshotDirectoryName=',screenshotDirectoryName
 
     def setSimulationResultStorageDirectoryDirect(self, _path, ):
         self.simulationResultStorageDirectory = _path
@@ -422,7 +428,7 @@ class SimulationPaths:
 
         print "simulationPythonScriptName=", simulationPythonScriptName, " simulationFileName=", simulationFileName
         assert not (
-        simulationFileName == "" and simulationPythonScriptName == ""), "You have not specified any simulation file"
+            simulationFileName == "" and simulationPythonScriptName == ""), "You have not specified any simulation file"
 
 
 simulationPaths = SimulationPaths()  # will store simulation file names and paths and check if paths are correct
@@ -696,7 +702,7 @@ def setSimulationXMLDescription(_xmlTree):
     else:
         if simulationThreadObject is None:
             print MYMODULENAME, '  setSimulationXMLDescription():  error, simThreadObject is None'
-        #            setSimulationXMLDescriptionOldPlayer(_xmlTree)
+        # setSimulationXMLDescriptionOldPlayer(_xmlTree)
         else:
             setSimulationXMLDescriptionNewPlayer(_xmlTree)
             # global cc3dXML2ObjConverterAdapter
@@ -1374,8 +1380,8 @@ def doNotOutputField(_fieldName):
     #    print MYMODULENAME,"doNotOutputField():  cmlFieldHandler = ",cmlFieldHandler
     if cmlFieldHandler:
         cmlFieldHandler.doNotOutputField(_fieldName)
-    #        print "\n\n\n\n"+ MYMODULENAME +"  cmlFieldHandler.doNotOutputFieldList=",cmlFieldHandler.doNotOutputFieldList,"\n\n\n"
-    # sys.exit()   
+        #        print "\n\n\n\n"+ MYMODULENAME +"  cmlFieldHandler.doNotOutputFieldList=",cmlFieldHandler.doNotOutputFieldList,"\n\n\n"
+        # sys.exit()
 
 
 def getNameForSimDir(_simulationFileName, _preferedWorkspaceDir=""):
@@ -1394,7 +1400,7 @@ def getNameForSimDir(_simulationFileName, _preferedWorkspaceDir=""):
     if not os.path.exists(filePath):
         os.mkdir(filePath)
 
-    #    import string
+    # import string
 
     baseFileNameForDirectory = baseFileName.replace('.', '_')
     print "baseFileName=", baseFileNameForDirectory
@@ -1567,7 +1573,7 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry=None, _screenUpdateFrequ
 
         if not restartEnabled:  # start function does not get called during restart
             steppableRegistry.start()
-        #             # restoring plots
+        # # restoring plots
         #             global viewManager
         #             viewManager.plotManager.restore_plots_layout()
 
@@ -1605,7 +1611,7 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry=None, _screenUpdateFrequ
                 cmlFieldHandler.getInfoAboutFields()
                 cmlFieldHandler.writeXMLDescriptionFile()
                 xmlDescriptionFileWritten = True
-            #                print MYMODULENAME,"cmlFieldHandler.doNotOutputFieldList=",cmlFieldHandler.doNotOutputFieldList
+            # print MYMODULENAME,"cmlFieldHandler.doNotOutputFieldList=",cmlFieldHandler.doNotOutputFieldList
 
             if simthread.getStopSimulation() or userStopSimulationFlag:
                 runFinishFlag = False;
@@ -1613,7 +1619,6 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry=None, _screenUpdateFrequ
                 # calling Python steppables which are suppose to run before MCS - e.g. secretion steppable
         if not steppableRegistry is None:
             steppableRegistry.stepRunBeforeMCSSteppables(current_step)
-
 
         restartManager.outputRestartFiles(current_step)
 
@@ -1646,7 +1651,7 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry=None, _screenUpdateFrequ
 
         if simthread is not None:
             if (current_step % screenUpdateFrequency == 0) or (
-                imgOutFlag and (current_step % screenshotFrequency == 0)):
+                        imgOutFlag and (current_step % screenshotFrequency == 0)):
                 simthread.loopWork(current_step)
                 simthread.loopWorkPostEvent(current_step)
                 screenUpdateFrequency = simthread.getScreenUpdateFrequency()
@@ -1812,26 +1817,123 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
 
     t2 = time.time()
 
+    broadcast_simulation_return_value()
     print_profiling_report(py_steppable_profiler_report=steppableRegistry.get_profiler_report(),
                            compiled_code_run_time=compiled_code_run_time, total_run_time=(t2 - t1) * 1000.0)
 
     # In exception handlers you have to call sim.finish to unload the plugins .
     # We may need to introduce new funuction name (e.g. unload) because finish does more than unloading
 
-def set_simulation_return_value(val):
+
+def set_simulation_return_value(val, tag='generic_label'):
+    """
+    records simulation return value - typically to be sent back to the server running some type of optimization algorithm
+    :param val : simulation return value
+    :param tag:  arbitrary string allowing easier identification of the results
+    :return: None
+    """
     global simulation_return_value
+    global simulation_return_value_tag
+
     simulation_return_value = val
+    simulation_return_value_tag = tag
+
 
 def get_simulation_return_value():
+    """
+    Returns simulation return value and siulation return value tag
+    :return: tuple ( simulation_return_value, simulation_return_value_tag)
+    """
     global simulation_return_value
-    return simulation_return_value
+    global simulation_return_value_tag
+
+    return simulation_return_value, simulation_return_value_tag
 
 
-def broadcast_simulation_return_value(_simulation_return_value):
+def set_push_address(addr):
+    """
+    sets push address to be used with ZMQ PUSH/PUL protocol
+    :param addr {str}: push address
+    :return:  None
+    """
+    global push_address
+    push_address = addr
 
 
-    global simulation_return_value
-    return simulation_return_value
+def broadcast_simulation_return_value():
+    """
+    Sends simulation return value over zmq channel with address given by
+    global push_address. In case push_address is None or simulation return value has not been set
+    this function returns early
+    :return: None
+    """
+
+    global push_address
+
+    print 'push_address=', push_address
+
+    simulation_return_value, simulation_return_value_tag = get_simulation_return_value()
+
+    print 'simulation_return_value=', simulation_return_value
+    if simulation_return_value is None:
+        return
+
+    if push_address is None:
+        return
+
+    try:
+        import zmq
+    except ImportError:
+        print 'PLEASE INSTALL PYZMQ BEFORE ATTAMPTING TO USE broadcast_simulation_return_value function'
+        return
+
+    context = zmq.Context()
+
+    # send work
+    consumer_sender = context.socket(zmq.PUSH)
+    consumer_sender.connect(push_address)
+
+    # result = {'tag': tag, 'return_value': simulation_return_value}
+    result = {'consumer': simulation_return_value_tag, 'num': simulation_return_value}
+    print 'will send the result ', result
+    consumer_sender.send_json(result)
+    print 'result sent'
+
+
+# def broadcast_simulation_return_value(_simulation_return_value, tag='generic_label'):
+#
+#     global push_address
+#     # global simulation_return_value
+#
+#     print 'push_address=', push_address
+#
+#     print 'simulation_return_value=',_simulation_return_value
+#     # if simulation_return_value is None:
+#     #     return
+#
+#     if push_address is None:
+#         return
+#
+#
+#     try:
+#         import zmq
+#     except ImportError:
+#         print 'PLEASE INSTALL PYZMQ BEFORE ATTAMPTING TO USE broadcast_simulation_return_value function'
+#         return
+#
+#     context = zmq.Context()
+#
+#     # send work
+#     consumer_sender = context.socket(zmq.PUSH)
+#     consumer_sender.connect(push_address)
+#
+#     # result = {'tag': tag, 'return_value': simulation_return_value}
+#     result = {'consumer': tag, 'num': _simulation_return_value}
+#     print 'will send the result ', result
+#     consumer_sender.send_json(result)
+#     print 'result sent'
+
+
 
 def mainLoop(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=None):
     global playerType
@@ -1843,9 +1945,10 @@ def mainLoop(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=None
     if playerType == "CMLResultReplay":
         return mainLoopCMLReplay(sim, simthread, steppableRegistry, _screenUpdateFrequency)
 
-    #    print MYMODULENAME,' mainLoop:  simulationFileName =',simulationFileName
+    # print MYMODULENAME,' mainLoop:  simulationFileName =',simulationFileName
     if simulationThreadObject is None:
         print MYMODULENAME, ' mainLoop:  error, simulationThreadObject is None (no longer an OldPlayer)'
-    #        return mainLoopOldPlayer(sim, simthread, steppableRegistry, _screenUpdateFrequency )
+    # return mainLoopOldPlayer(sim, simthread, steppableRegistry, _screenUpdateFrequency )
     else:
         return mainLoopNewPlayer(sim, simthread, steppableRegistry, _screenUpdateFrequency)
+

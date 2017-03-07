@@ -62,9 +62,9 @@ class OptimizerWorkerProcessZMQ(MonitorBase,Process):
         consumer_receiver = context.socket(zmq.PULL)
         consumer_receiver.connect(self.pull_address_str)
 
-        # send work
-        consumer_sender = context.socket(zmq.PUSH)
-        consumer_sender.connect(self.push_address_str)
+        # # send work
+        # consumer_sender = context.socket(zmq.PUSH)
+        # consumer_sender.connect(self.push_address_str)
 
         # result = {'consumer': consumer_id,'OK':True}
         # consumer_sender.send_json(result)
@@ -93,7 +93,7 @@ class OptimizerWorkerProcessZMQ(MonitorBase,Process):
 
 
         popen_args.append("-p" )
-        popen_args.append(self.pull_address_str)
+        popen_args.append(self.push_address_str)
 
 
 
@@ -103,9 +103,9 @@ class OptimizerWorkerProcessZMQ(MonitorBase,Process):
         call(popen_args)
 
 
-        print 'got data ', data, ' id =', self.id_number
-        result = {'consumer': self.id_number, 'num': data}
-        consumer_sender.send_json(result)
+        # print 'got data ', data, ' id =', self.id_number
+        # result = {'consumer': self.id_number, 'num': data}
+        # consumer_sender.send_json(result)
 
 
 

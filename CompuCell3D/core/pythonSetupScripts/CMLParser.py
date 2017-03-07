@@ -15,7 +15,7 @@ class CMLParser:
         self.outputFileCoreName="Step"
         self.exitWhenDone=False
         self.maxNumberOfRuns=-1
-        self.pushAddress = None
+        self.push_address = None
         startSimulation=False
         
         opts=None
@@ -56,7 +56,7 @@ class CMLParser:
                 self.outputFrequency=int(a)
 
             elif o in ("-p","--pushAddress"):
-                self.pushAddress = str(a)
+                self.push_address = str(a)
                 # print 'GOT pushAddress = ',self.pushAddress
             elif o in ("--currentDir"):
                 currentDir=a

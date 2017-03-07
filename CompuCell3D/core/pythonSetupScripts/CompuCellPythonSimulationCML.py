@@ -250,6 +250,10 @@ try:
     
     if helpOnly: 
         raise NameError('HelpOnly')
+
+    # setting up push address
+    CompuCellSetup.set_push_address(cmlParser.push_address)
+
     fileName=cmlParser.getSimulationFileName()
 
     consecutiveRunCounter=0    
