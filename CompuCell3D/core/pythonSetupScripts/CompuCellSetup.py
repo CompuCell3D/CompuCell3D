@@ -1900,41 +1900,6 @@ def broadcast_simulation_return_value():
     print 'result sent'
 
 
-# def broadcast_simulation_return_value(_simulation_return_value, tag='generic_label'):
-#
-#     global push_address
-#     # global simulation_return_value
-#
-#     print 'push_address=', push_address
-#
-#     print 'simulation_return_value=',_simulation_return_value
-#     # if simulation_return_value is None:
-#     #     return
-#
-#     if push_address is None:
-#         return
-#
-#
-#     try:
-#         import zmq
-#     except ImportError:
-#         print 'PLEASE INSTALL PYZMQ BEFORE ATTAMPTING TO USE broadcast_simulation_return_value function'
-#         return
-#
-#     context = zmq.Context()
-#
-#     # send work
-#     consumer_sender = context.socket(zmq.PUSH)
-#     consumer_sender.connect(push_address)
-#
-#     # result = {'tag': tag, 'return_value': simulation_return_value}
-#     result = {'consumer': tag, 'num': _simulation_return_value}
-#     print 'will send the result ', result
-#     consumer_sender.send_json(result)
-#     print 'result sent'
-
-
-
 def mainLoop(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=None):
     global playerType
     #    print MYMODULENAME,"playerType=",playerType
