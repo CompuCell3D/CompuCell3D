@@ -23,43 +23,30 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
         self.pull_address_str = None
 
     def set_pull_address_str(self, address_str):
+        """
+        Sets address for the listening socket (zmq.PULL)
+        :param address_str: {str} listening socket address
+        :return: None
+        """
         self.pull_address_str = address_str
 
     def set_push_address_str(self, address_str):
+        """
+        Sets address for the sending socket (zmq.PUSH)
+        :param address_str: {str} sending socket address
+        :return: None
+        """
+
+
         self.push_address_str = address_str
 
     def initialize(self):
+        """
+        Not implemented
+        :return:
+        """
         pass
 
-    # def event_loop(self):
-    #
-    #
-    #     print 'I am consumer #%s' % self.id_number
-    #     context = zmq.Context()
-    #
-    #     # recieve work
-    #     consumer_receiver = context.socket(zmq.PULL)
-    #     consumer_receiver.connect(self.pull_address_str)
-    #
-    #     # send work
-    #     consumer_sender = context.socket(zmq.PUSH)
-    #     consumer_sender.connect(self.push_address_str)
-    #
-    #     # result = {'consumer': consumer_id,'OK':True}
-    #     # consumer_sender.send_json(result)
-    #
-    #
-    #
-    #     # time.sleep(2.0)
-    #     work = consumer_receiver.recv_json()
-    #     data = work['num']
-    #
-    #     print 'got data ', data, ' id =', self.id_number
-    #     result = {'consumer': self.id_number, 'num': data}
-    #     consumer_sender.send_json(result)
-    #
-    #
-    #
 
     def create_dir_hash(self, simulation_name, param_dict):
         """
@@ -76,20 +63,29 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
         return self.get_formatted_timestamp() + '_' + hasher.hexdigest()
 
     def get_formatted_timestamp(self):
+        """
+        Returns a string with formatted current timestamp
+        :return: formatted current timestamp
+        """
         return datetime.datetime.fromtimestamp(time.time()).strftime('%d_%m_%Y_%H_%M_%S')
 
-    def get_output_dir_name(self, simulation_template_name, workspace_dir):
-
-        simulation_corename, ext = splitext(basename(simulation_template_name))
-
-        if len(ext):
-            ext = ext[1:]
-
-        output_dir_name = join(workspace_dir, simulation_corename + '_' + ext + '_' + self.get_formatted_timestamp())
-
-        return output_dir_name
+    # def get_output_dir_name(self, simulation_template_name, workspace_dir):
+    #
+    #     simulation_corename, ext = splitext(basename(simulation_template_name))
+    #
+    #     if len(ext):
+    #         ext = ext[1:]
+    #
+    #     output_dir_name = join(workspace_dir, simulation_corename + '_' + ext + '_' + self.get_formatted_timestamp())
+    #
+    #     return output_dir_name
 
     def create_dir(self, dirname):
+        """
+        Creates directory
+        :param dirname:
+        :return: None
+        """
         if isdir(dirname):
             raise IOError('Could not create directory %s. It already exist' % dirname)
 
@@ -143,6 +139,11 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
         return generated_simulation_fname, hashed_workspace_dir
 
     def event_loop(self):
+        """
+        Main function of the worker - listens to incoming connection to retrieve workload json file, executes simulation
+        and returns the result
+        :return: None
+        """
 
         print 'I am consumer #%s' % self.id_number
         context = zmq.Context()
@@ -151,14 +152,6 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
         consumer_receiver = context.socket(zmq.PULL)
         consumer_receiver.connect(self.pull_address_str)
 
-        # # send work
-        # consumer_sender = context.socket(zmq.PUSH)
-        # consumer_sender.connect(self.push_address_str)
-
-        # result = {'consumer': consumer_id,'OK':True}
-        # consumer_sender.send_json(result)
-
-        # time.sleep(2.0)
         workload_json = consumer_receiver.recv_json()
 
         param_dict = workload_json['param_dict']
@@ -168,22 +161,13 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
 
         print 'received param_dict = ', param_dict
 
-        # simulation_output_dir = self.get_output_dir_name(simulation_template_name=simulation_template_name,
-        #                                                  workspace_dir=workspace_dir)
-        # simulation_output_dir = workspace_dir
-
         simulation_fname, hashed_workspace_dir = self.generate_simulation_files_from_template(
             workspace_dir=workspace_dir,
             simulation_template_name=simulation_template_name,
             param_dict=param_dict)
 
-        # data = work['num']
-
         popen_args = [cc3d_command]
-        # popen_args=[r'C:\CompuCell3D-64bit\runScript.bat']
 
-        # popen_args.append("--pushAddress=%s"%self.pull_address_str)
-        # simulation_fname = r'D:\CC3DProjects\short_demo\short_demo.cc3d'
         output_frequency = 10
         if simulation_fname != "":
             popen_args.append("-i")
@@ -205,14 +189,9 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
 
         print 'popen_args=', popen_args
 
-        # this call will block until simulattion is done
+        # this call will block until simulation is done
         call(popen_args)
 
         # removing temporary directory where we generated simulation from the simulation templates
-
         shutil.rmtree(dirname(simulation_fname))
 
-
-        # print 'got data ', data, ' id =', self.id_number
-        # result = {'consumer': self.id_number, 'num': data}
-        # consumer_sender.send_json(result)

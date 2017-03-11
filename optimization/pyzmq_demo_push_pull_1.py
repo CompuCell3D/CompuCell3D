@@ -32,6 +32,11 @@ class Optimizer(object):
         self.num_workers = 1
 
     def acknowledge_presence(self, num_workers):
+        """
+        Receives handshamke message from workers
+        :param num_workers: {int} number of workers
+        :return:None
+        """
 
         context = zmq.Context()
         results_receiver = context.socket(zmq.PULL)
@@ -42,6 +47,11 @@ class Optimizer(object):
             print 'worker x=', x, ' ready'
 
     def reduce(self, num_workers):
+        """
+        receives output from workers
+        :param num_workers: {int} number of workers
+        :return: None
+        """
 
         context = zmq.Context()
         results_receiver = context.socket(zmq.PULL)
@@ -76,6 +86,12 @@ class Optimizer(object):
         return datetime.datetime.fromtimestamp(time.time()).strftime('%d_%m_%Y_%H_%M_%S')
 
     def create_workspace_dir(self, simulation_corename, workspace_root_dir):
+        """
+        Creates workspace directory for the optimization job
+        :param simulation_corename: {str} simulation file name (basename)
+        :param workspace_root_dir: {str} CC3D workspace root dir (typically ~/CC3DWorkspace)
+        :return: None
+        """
 
         formatted_timestamp = self.get_formatted_timestamp()
         workspace_dir = join(workspace_root_dir, simulation_corename+ '_opt_' + formatted_timestamp)
@@ -91,6 +107,14 @@ class Optimizer(object):
 
 
     def run_task(self, workload_dict, param_set):
+        """
+        Dispatches simulation jobs to workers based on the parameter set (param_set)
+        :param workload_dict: {dictionary-like} workload information to be sent to worker - does not include param_dict.
+        param_dict will be set by this function
+        :param param_set: parameter_set
+        :return: None
+        """
+
 
         self.worker_pool = []
 
@@ -110,32 +134,8 @@ class Optimizer(object):
 
         # self.acknowledge_presence(self.num_workers)
 
-        param_labels = ['TEMPERATURE', 'CONTACT_A_B']
-        param_vals = [12.2, 13.0]
-        param_dict = OrderedDict(zip(param_labels, param_vals))
-
-
-        # # path to cc3d project
-        # simulation_name = r'D:\CC3DProjects\short_demo\short_demo.cc3d'
-        #
-        # # constructing workspace dir for all jobs that are part of current optimization run
-        # workspace_root_dir = join(expanduser('~'), 'CC3DWorkspace')
-        #
-        # simulation_corename, ext = splitext(basename(simulation_name))
-        #
-        # workspace_dir = self.create_workspace_dir(simulation_corename, workspace_root_dir)
-        #
-        # workload_dict = OrderedDict()
-        # workload_dict['cc3d_command'] = r'C:\CompuCell3D-64bit\runScript.bat'
-        # workload_dict['workspace_dir'] = workspace_dir
-        # workload_dict['simulation_filename'] = simulation_name
-        # workload_dict['param_dict'] = param_dict
-
-        # for i in xrange(self.num_workers):
-        #     num = self.param_set_list[i]
         for param_idx, param in enumerate(param_set):
             param_labels = ['TEMPERATURE', 'CONTACT_A_B']
-            # param_vals = [12.2, 13.0]
             param_vals = [12.2, float(param)]
             param_dict = OrderedDict(zip(param_labels, param_vals))
 
@@ -148,17 +148,18 @@ class Optimizer(object):
             print 'sent = ', workload_dict
 
 
-            # num = param
-            # work_message = {'num': num}
-
-            # self.zmq_socket.send_json(work_message)
-            # print 'sent = ',work_message
 
         print 'WILL REDUCE ', param_idx + 1, ' workers'
         self.reduce(param_idx + 1)
         print 'FINISHED REDUCING'
 
     def prepare_optimization_run(self,simulation_name):
+        """
+        Prepares optimization run which includes: creating workspace directory for the optimization job
+        and creating workload_dictionary (will be sent as json to worker)
+        :param simulation_name: {str} simulation name
+        :return: {dictionary-like} workload dictionary -  does not include param_dict
+        """
         # path to cc3d project
 
 
@@ -179,6 +180,10 @@ class Optimizer(object):
 
     def run(self):
 
+        """
+        Runs optimization job
+        :return:
+        """
         simulation_name = r'D:\CC3DProjects\short_demo\short_demo.cc3d'
         workload_dict = self.prepare_optimization_run(simulation_name=simulation_name)
 
