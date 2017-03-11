@@ -1,5 +1,7 @@
 from multiprocessing import Process
 from subprocess import call
+from jinja2 import Environment, FileSystemLoader
+from glob import glob
 from MonitorBase import *
 import zmq
 import hashlib
@@ -70,9 +72,9 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
     def get_formatted_timestamp(self):
         return datetime.datetime.fromtimestamp(time.time()).strftime('%d_%m_%Y_%H_%M_%S')
 
-    def get_output_dir_name(self, simulation_name, workspace_dir):
+    def get_output_dir_name(self, simulation_template_name, workspace_dir):
 
-        simulation_corename, ext = splitext(basename(simulation_name))
+        simulation_corename, ext = splitext(basename(simulation_template_name))
 
         if len(ext):
             ext = ext[1:]
@@ -87,19 +89,56 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
 
         os.makedirs(dirname)
 
-    def generate_simulation_files_from_template(self, workspace_dir, simulation_name, param_dict):
+    def generate_simulation_files_from_template(self, workspace_dir, simulation_template_name, param_dict):
+        """
+        Used using jijja2 templating engine to generates actual simulation files from simulation templates
+        (that use jinja2 templating syntax)
+        :param workspace_dir: output directory for the current simulation
+        :param simulation_template_name: full path to curtrent cc3d simulatotion template - a regular cc3d simulaiton with
+        numbers replaced by template labels
+        :param param_dict: {dict} - dictionary of template parameters used to replace template labels with actual parameters
+        :return : {str} path to cc3d simulation generated using param_dict. The simulation is placed
+        in the "hashed" directory
+        """
+
 
         # dir core path
-        tmp_simulation_template_dir = self.create_dir_hash(simulation_name=simulation_name, param_dict=param_dict)
+        tmp_simulation_template_dir = self.create_dir_hash(simulation_name=simulation_template_name,
+                                                           param_dict=param_dict)
 
         # absolute path
         tmp_simulation_template_dir = join(workspace_dir, tmp_simulation_template_dir)
 
         # self.create_dir(tmp_simulation_template_dir)
 
-        simulation_dir_path = dirname(simulation_name)
+        simulation_dir_path = dirname(simulation_template_name)
+        simulation_corename = basename(simulation_template_name)
 
+        # copying simulation dir to "hashed" directory
         shutil.copytree(src=simulation_dir_path, dst=tmp_simulation_template_dir)
+
+        replacement_candidate_globs = ['*.py','*xml']
+        simulation_templates_path = join(tmp_simulation_template_dir, 'Simulation')
+        generated_simulation_fname = join(tmp_simulation_template_dir,simulation_corename)
+
+        replacement_candidates = []
+        for glob_pattern in replacement_candidate_globs:
+            replacement_candidates.extend(glob(simulation_templates_path+'/'+glob_pattern))
+
+        j2_env = Environment(loader=FileSystemLoader(simulation_templates_path),
+                             trim_blocks=True)
+
+        for replacement_candidate_fname in replacement_candidates:
+
+            filled_out_template_str = j2_env.get_template(basename(replacement_candidate_fname)).render(**param_dict)
+            with open(replacement_candidate_fname,'w') as fout:
+                 fout.write(filled_out_template_str)
+
+        return generated_simulation_fname
+
+
+
+
 
     def event_loop(self):
 
@@ -121,16 +160,19 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
         workload_json = consumer_receiver.recv_json()
 
         param_dict = workload_json['param_dict']
-        simulation_name = workload_json['simulation_filename']
+        simulation_template_name = workload_json['simulation_filename']
         cc3d_command = workload_json['cc3d_command']
         workspace_dir = workload_json['workspace_dir']
 
         print 'received param_dict = ', param_dict
 
-        simulation_output_dir = self.get_output_dir_name(simulation_name=simulation_name, workspace_dir=workspace_dir)
+        simulation_output_dir = self.get_output_dir_name(simulation_template_name=simulation_template_name,
+                                                         workspace_dir=workspace_dir)
 
-        self.generate_simulation_files_from_template(workspace_dir=workspace_dir, simulation_name=simulation_name,
+        simulation_fname = self.generate_simulation_files_from_template(workspace_dir=simulation_output_dir,
+                                                     simulation_template_name=simulation_template_name,
                                                      param_dict=param_dict)
+
 
         # data = work['num']
 
@@ -138,11 +180,11 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
         # popen_args=[r'C:\CompuCell3D-64bit\runScript.bat']
 
         # popen_args.append("--pushAddress=%s"%self.pull_address_str)
-        # simulation_name = r'D:\CC3DProjects\short_demo\short_demo.cc3d'
+        # simulation_fname = r'D:\CC3DProjects\short_demo\short_demo.cc3d'
         output_frequency = 10
-        if simulation_name != "":
+        if simulation_fname != "":
             popen_args.append("-i")
-            popen_args.append(simulation_name)
+            popen_args.append(simulation_fname)
 
         # forcing run script to use custom output directory
         popen_args.append("-o")

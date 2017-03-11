@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-"""
-Pass data between processes started through the multiprocessing module
-using pyzmq and process them with PyCUDA
-"""
+# TODO add discovery of free port - zmw have a fcn that facilitates it (port range is given )
+# port_selected = socket.bind_to_random_port('tcp://*', min_port=6001, max_port=6004, max_tries=100)
+#
+
 
 import numpy as np
 from OptimizerWorkerProcessZMQ import OptimizerWorkerProcessZMQ
