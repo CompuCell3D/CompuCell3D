@@ -81,7 +81,6 @@ class Optimizer(object):
         workspace_dir = join(workspace_root_dir, simulation_corename+ '_opt_' + formatted_timestamp)
 
         # creating workspace directory
-
         if isdir(workspace_dir):
             raise IOError('Cannot create output directory %s. This directory already exist' % workspace_dir)
 
@@ -89,7 +88,9 @@ class Optimizer(object):
 
         return workspace_dir
 
-    def run_task(self, param_set):
+
+
+    def run_task(self, workload_dict, param_set):
 
         self.worker_pool = []
 
@@ -113,21 +114,22 @@ class Optimizer(object):
         param_vals = [12.2, 13.0]
         param_dict = OrderedDict(zip(param_labels, param_vals))
 
-        # path to cc3d project
-        simulation_name = r'D:\CC3DProjects\short_demo\short_demo.cc3d'
 
-        # constructing workspace dir for all jobs that are part of current optimization run
-        workspace_root_dir = join(expanduser('~'), 'CC3DWorkspace')
-
-        simulation_corename, ext = splitext(basename(simulation_name))
-
-        workspace_dir = self.create_workspace_dir(simulation_corename, workspace_root_dir)
-
-        workload_dict = OrderedDict()
-        workload_dict['cc3d_command'] = r'C:\CompuCell3D-64bit\runScript.bat'
-        workload_dict['workspace_dir'] = workspace_dir
-        workload_dict['simulation_filename'] = simulation_name
-        workload_dict['param_dict'] = param_dict
+        # # path to cc3d project
+        # simulation_name = r'D:\CC3DProjects\short_demo\short_demo.cc3d'
+        #
+        # # constructing workspace dir for all jobs that are part of current optimization run
+        # workspace_root_dir = join(expanduser('~'), 'CC3DWorkspace')
+        #
+        # simulation_corename, ext = splitext(basename(simulation_name))
+        #
+        # workspace_dir = self.create_workspace_dir(simulation_corename, workspace_root_dir)
+        #
+        # workload_dict = OrderedDict()
+        # workload_dict['cc3d_command'] = r'C:\CompuCell3D-64bit\runScript.bat'
+        # workload_dict['workspace_dir'] = workspace_dir
+        # workload_dict['simulation_filename'] = simulation_name
+        # workload_dict['param_dict'] = param_dict
 
         # for i in xrange(self.num_workers):
         #     num = self.param_set_list[i]
@@ -136,6 +138,9 @@ class Optimizer(object):
             # param_vals = [12.2, 13.0]
             param_vals = [12.2, float(param)]
             param_dict = OrderedDict(zip(param_labels, param_vals))
+
+            # appending param_dict to  workload dict
+            workload_dict['param_dict'] = param_dict
 
             # self.zmq_socket.send_json(param_dict)
             self.zmq_socket.send_json(workload_dict)
@@ -153,10 +158,33 @@ class Optimizer(object):
         self.reduce(param_idx + 1)
         print 'FINISHED REDUCING'
 
+    def prepare_optimization_run(self,simulation_name):
+        # path to cc3d project
+
+
+        # constructing workspace dir for all jobs that are part of current optimization run
+        workspace_root_dir = join(expanduser('~'), 'CC3DWorkspace')
+
+        simulation_corename, ext = splitext(basename(simulation_name))
+
+        workspace_dir = self.create_workspace_dir(simulation_corename, workspace_root_dir)
+
+        workload_dict = OrderedDict()
+        workload_dict['cc3d_command'] = r'C:\CompuCell3D-64bit\runScript.bat'
+        workload_dict['workspace_dir'] = workspace_dir
+        workload_dict['simulation_filename'] = simulation_name
+        workload_dict['param_dict'] = None
+
+        return workload_dict
+
     def run(self):
+
+        simulation_name = r'D:\CC3DProjects\short_demo\short_demo.cc3d'
+        workload_dict = self.prepare_optimization_run(simulation_name=simulation_name)
+
         for param_set in self.param_generator(self.num_workers):
             print 'CURRENT PARAM SET=', param_set
-            self.run_task(param_set)
+            self.run_task(workload_dict, param_set)
             print 'FINISHED PARAM_SET=', param_set
 
 
