@@ -98,6 +98,14 @@ class Optimizer(object):
         param_vals = [12.2, 13.0]
         param_dict = OrderedDict(zip(param_labels, param_vals))
 
+
+        workload_dict = OrderedDict()
+        workload_dict ['cc3d_command'] = r'C:\CompuCell3D-64bit\runScript.bat'
+        workload_dict['simulation_filename'] = r'D:\CC3DProjects\short_demo\short_demo.cc3d'
+        workload_dict['param_dict'] = param_dict
+
+
+
         # for i in xrange(self.num_workers):
         #     num = self.param_set_list[i]
         for param_idx, param in enumerate(param_set):
@@ -107,8 +115,10 @@ class Optimizer(object):
             param_vals = [12.2, float(param)]
             param_dict = OrderedDict(zip(param_labels, param_vals))
 
-            self.zmq_socket.send_json(param_dict)
-            print 'sent = ',param_dict
+            # self.zmq_socket.send_json(param_dict)
+            self.zmq_socket.send_json(workload_dict)
+
+            print 'sent = ',workload_dict
 
 
             # num = param

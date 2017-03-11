@@ -2,6 +2,8 @@ from multiprocessing import Process
 from subprocess import call
 from MonitorBase import *
 import zmq
+import hashlib
+
 import random
 import time
 
@@ -51,6 +53,10 @@ class OptimizerWorkerProcessZMQ(MonitorBase,Process):
     #
     #
     #
+    def create_project_directory(self, param_dict, template_project_path):
+        hasher = hashlib.sha1()
+
+
 
     def event_loop(self):
 
@@ -70,15 +76,21 @@ class OptimizerWorkerProcessZMQ(MonitorBase,Process):
         # consumer_sender.send_json(result)
 
         # time.sleep(2.0)
-        param_dict = consumer_receiver.recv_json()
-        print 'received param_dict = ',param_dict
+        workload_json = consumer_receiver.recv_json()
+
+        param_dict = workload_json['param_dict']
+        simulation_name = workload_json['simulation_filename']
+        cc3d_command = workload_json['cc3d_command']
+
+        print 'received param_dict = ', param_dict
+
         # data = work['num']
 
-
-        popen_args=[r'C:\CompuCell3D-64bit\runScript.bat']
+        popen_args = [cc3d_command]
+        # popen_args=[r'C:\CompuCell3D-64bit\runScript.bat']
 
         # popen_args.append("--pushAddress=%s"%self.pull_address_str)
-        simulation_name = r'D:\CC3DProjects\short_demo\short_demo.cc3d'
+        # simulation_name = r'D:\CC3DProjects\short_demo\short_demo.cc3d'
         output_frequency = 10
         if simulation_name!="":
             popen_args.append("-i")
