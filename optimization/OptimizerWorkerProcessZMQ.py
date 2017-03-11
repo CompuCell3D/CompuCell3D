@@ -6,6 +6,7 @@ import hashlib
 import datetime
 import os
 from os.path import *
+import shutil
 
 import random
 import time
@@ -60,6 +61,12 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
     def create_project_directory(self, param_dict, template_project_path, workspace_dir):
         hasher = hashlib.sha1()
 
+    def create_dir_hash(self, simulation_name, param_dict):
+
+        hasher = hashlib.sha1()
+        hasher.update(str(param_dict) + simulation_name)
+        return hasher.hexdigest()
+
     def get_formatted_timestamp(self):
         return datetime.datetime.fromtimestamp(time.time()).strftime('%d_%m_%Y_%H_%M_%S')
 
@@ -74,11 +81,25 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
 
         return output_dir_name
 
-    # def create_output_dir(self, dirname):
-    #     if isdir(dirname):
-    #         raise IOError('Could not create output directory %s. It already exist' %dirname)
-    #
-    #     os.makedirs(dirname)
+    def create_dir(self, dirname):
+        if isdir(dirname):
+            raise IOError('Could not create directory %s. It already exist' % dirname)
+
+        os.makedirs(dirname)
+
+    def generate_simulation_files_from_template(self, workspace_dir, simulation_name, param_dict):
+
+        # dir core path
+        tmp_simulation_template_dir = self.create_dir_hash(simulation_name=simulation_name, param_dict=param_dict)
+
+        # absolute path
+        tmp_simulation_template_dir = join(workspace_dir, tmp_simulation_template_dir)
+
+        # self.create_dir(tmp_simulation_template_dir)
+
+        simulation_dir_path = dirname(simulation_name)
+
+        shutil.copytree(src=simulation_dir_path, dst=tmp_simulation_template_dir)
 
     def event_loop(self):
 
@@ -107,6 +128,9 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
         print 'received param_dict = ', param_dict
 
         simulation_output_dir = self.get_output_dir_name(simulation_name=simulation_name, workspace_dir=workspace_dir)
+
+        self.generate_simulation_files_from_template(workspace_dir=workspace_dir, simulation_name=simulation_name,
+                                                     param_dict=param_dict)
 
         # data = work['num']
 

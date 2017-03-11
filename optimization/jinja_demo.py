@@ -14,8 +14,8 @@ def print_rendered_xml():
     j2_env = Environment(loader=FileSystemLoader(THIS_DIR),
                          trim_blocks=True)
 
-    param_labels = ['TEMPERATURE', 'CONTACT_A_B']
-    param_vals = [12.2,13.0]
+    param_labels = ['TEMPERATURE', 'CONTACT_A_B', 'CONTACT_B_B']
+    param_vals = [12.2,13.0, 20]
 
     param_dict = OrderedDict( zip(param_labels,param_vals ))
     print  'param_dict=',param_dict
