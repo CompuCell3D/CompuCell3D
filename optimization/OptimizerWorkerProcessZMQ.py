@@ -53,8 +53,10 @@ class OptimizerWorkerProcessZMQ(MonitorBase,Process):
     #
     #
     #
-    def create_project_directory(self, param_dict, template_project_path):
+    def create_project_directory(self, param_dict, template_project_path, workspace_dir):
         hasher = hashlib.sha1()
+
+        optimizer
 
 
 
