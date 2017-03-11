@@ -70,8 +70,9 @@ class OptimizerWorkerProcessZMQ(MonitorBase,Process):
         # consumer_sender.send_json(result)
 
         # time.sleep(2.0)
-        work = consumer_receiver.recv_json()
-        data = work['num']
+        param_dict = consumer_receiver.recv_json()
+        print 'received param_dict = ',param_dict
+        # data = work['num']
 
 
         popen_args=[r'C:\CompuCell3D-64bit\runScript.bat']

@@ -7,6 +7,8 @@ using pyzmq and process them with PyCUDA
 
 import numpy as np
 from OptimizerWorkerProcessZMQ import OptimizerWorkerProcessZMQ
+from collections import OrderedDict
+import json
 import random
 
 
@@ -92,16 +94,28 @@ class Optimizer(object):
 
         # self.acknowledge_presence(self.num_workers)
 
+        param_labels = ['TEMPERATURE', 'CONTACT_A_B']
+        param_vals = [12.2, 13.0]
+        param_dict = OrderedDict(zip(param_labels, param_vals))
 
         # for i in xrange(self.num_workers):
         #     num = self.param_set_list[i]
         for param_idx, param in enumerate(param_set):
-            num = param
 
-            work_message = {'num': num}
+            param_labels = ['TEMPERATURE', 'CONTACT_A_B']
+            # param_vals = [12.2, 13.0]
+            param_vals = [12.2, float(param)]
+            param_dict = OrderedDict(zip(param_labels, param_vals))
 
-            self.zmq_socket.send_json(work_message)
-            print 'sent = ',work_message
+            self.zmq_socket.send_json(param_dict)
+            print 'sent = ',param_dict
+
+
+            # num = param
+            # work_message = {'num': num}
+
+            # self.zmq_socket.send_json(work_message)
+            # print 'sent = ',work_message
 
         print 'WILL REDUCE ', param_idx+1, ' workers'
         self.reduce(param_idx+1)
