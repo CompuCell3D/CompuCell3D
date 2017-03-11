@@ -60,14 +60,20 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
     #
     #
     #
-    def create_project_directory(self, param_dict, template_project_path, workspace_dir):
-        hasher = hashlib.sha1()
 
     def create_dir_hash(self, simulation_name, param_dict):
+        """
+        creates hashed name for the workspace directory based on  simulation_name, current_timestamp and
+        string representation of parameter dictionary
+        :param simulation_name:{str} full path to the simulation template
+        :param param_dict: {dict} dictionary of parameters
+        :return: {str} hashed corename of workspace directory
+        """
 
         hasher = hashlib.sha1()
         hasher.update(str(param_dict) + simulation_name)
-        return hasher.hexdigest()
+
+        return self.get_formatted_timestamp() + '_' + hasher.hexdigest()
 
     def get_formatted_timestamp(self):
         return datetime.datetime.fromtimestamp(time.time()).strftime('%d_%m_%Y_%H_%M_%S')
@@ -97,17 +103,18 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
         :param simulation_template_name: full path to curtrent cc3d simulatotion template - a regular cc3d simulaiton with
         numbers replaced by template labels
         :param param_dict: {dict} - dictionary of template parameters used to replace template labels with actual parameters
-        :return : {str} path to cc3d simulation generated using param_dict. The simulation is placed
-        in the "hashed" directory
+        :return : ({str},{str}) - tuple  where first element is a path to cc3d simulation generated using param_dict. The simulation is placed
+        in the "hashed" directory and the second element is the "hashed" workspace dir
         """
 
-
         # dir core path
-        tmp_simulation_template_dir = self.create_dir_hash(simulation_name=simulation_template_name,
-                                                           param_dict=param_dict)
+        hashed_workspace_dir_corename = self.create_dir_hash(simulation_name=simulation_template_name,
+                                                             param_dict=param_dict)
 
+        # hashed workspace dir
+        hashed_workspace_dir = join(workspace_dir, hashed_workspace_dir_corename)
         # absolute path
-        tmp_simulation_template_dir = join(workspace_dir, tmp_simulation_template_dir)
+        tmp_simulation_template_dir = join(hashed_workspace_dir, 'simulation_template')
 
         # self.create_dir(tmp_simulation_template_dir)
 
@@ -117,28 +124,23 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
         # copying simulation dir to "hashed" directory
         shutil.copytree(src=simulation_dir_path, dst=tmp_simulation_template_dir)
 
-        replacement_candidate_globs = ['*.py','*xml']
+        replacement_candidate_globs = ['*.py', '*xml']
         simulation_templates_path = join(tmp_simulation_template_dir, 'Simulation')
-        generated_simulation_fname = join(tmp_simulation_template_dir,simulation_corename)
+        generated_simulation_fname = join(tmp_simulation_template_dir, simulation_corename)
 
         replacement_candidates = []
         for glob_pattern in replacement_candidate_globs:
-            replacement_candidates.extend(glob(simulation_templates_path+'/'+glob_pattern))
+            replacement_candidates.extend(glob(simulation_templates_path + '/' + glob_pattern))
 
         j2_env = Environment(loader=FileSystemLoader(simulation_templates_path),
                              trim_blocks=True)
 
         for replacement_candidate_fname in replacement_candidates:
-
             filled_out_template_str = j2_env.get_template(basename(replacement_candidate_fname)).render(**param_dict)
-            with open(replacement_candidate_fname,'w') as fout:
-                 fout.write(filled_out_template_str)
+            with open(replacement_candidate_fname, 'w') as fout:
+                fout.write(filled_out_template_str)
 
-        return generated_simulation_fname
-
-
-
-
+        return generated_simulation_fname, hashed_workspace_dir
 
     def event_loop(self):
 
@@ -166,13 +168,14 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
 
         print 'received param_dict = ', param_dict
 
-        simulation_output_dir = self.get_output_dir_name(simulation_template_name=simulation_template_name,
-                                                         workspace_dir=workspace_dir)
+        # simulation_output_dir = self.get_output_dir_name(simulation_template_name=simulation_template_name,
+        #                                                  workspace_dir=workspace_dir)
+        # simulation_output_dir = workspace_dir
 
-        simulation_fname = self.generate_simulation_files_from_template(workspace_dir=simulation_output_dir,
-                                                     simulation_template_name=simulation_template_name,
-                                                     param_dict=param_dict)
-
+        simulation_fname, hashed_workspace_dir = self.generate_simulation_files_from_template(
+            workspace_dir=workspace_dir,
+            simulation_template_name=simulation_template_name,
+            param_dict=param_dict)
 
         # data = work['num']
 
@@ -188,7 +191,7 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
 
         # forcing run script to use custom output directory
         popen_args.append("-o")
-        popen_args.append(simulation_output_dir)
+        popen_args.append(hashed_workspace_dir)
 
         if output_frequency > 0:
 
@@ -204,6 +207,10 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
 
         # this call will block until simulattion is done
         call(popen_args)
+
+        # removing temporary directory where we generated simulation from the simulation templates
+
+        shutil.rmtree(dirname(simulation_fname))
 
 
         # print 'got data ', data, ' id =', self.id_number
