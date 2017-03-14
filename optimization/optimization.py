@@ -22,14 +22,14 @@ import sys
 import json
 import numpy as np
 
+
 class OptimizationCMLParser(object):
     def __init__(self, arg_count_threshold=1):
         self.parser = argparse.ArgumentParser(description='CMA Optimization')
         self.parser.add_argument('-i', '--input', required=True, action='store')
-        self.parser.add_argument('-p','--params-file', required=True, action='store',default='')
+        self.parser.add_argument('-p', '--params-file', required=True, action='store', default='')
 
-
-        self.arg_list=[]
+        self.arg_list = []
         self.arg_count_threshold = arg_count_threshold
 
     def arg(self, name, *vals):
@@ -37,18 +37,19 @@ class OptimizationCMLParser(object):
         for val in vals:
             self.arg_list.append(val)
 
-    def configure_python_paths(self,paths):
+    def configure_python_paths(self, paths):
         for path in paths:
             sys.path.append(path)
 
     def parse(self):
         print sys.argv
-        if len(sys.argv)<=self.arg_count_threshold and len(self.arg_list):
+        if len(sys.argv) <= self.arg_count_threshold and len(self.arg_list):
             args = self.parser.parse_args(self.arg_list)
         else:
             args = self.parser.parse_args()
 
         return args
+
 
 class OptimizationParameterManager(object):
     def __init__(self):
@@ -58,34 +59,32 @@ class OptimizationParameterManager(object):
         self.params_names = []
         self.std_dev = None
 
-    def read_paramters(self,fname):
-
-        self.params_jn = json.load(open(fname,'r'))
+    def read_paramters(self, fname):
+        self.params_jn = json.load(open(fname, 'r'))
         self.parameters = self.params_jn['parameters']
         self.params_names = self.parameters.keys()
 
-        self.params_bounds = np.zeros((len(self.params_names),2),dtype=np.float)
+        self.params_bounds = np.zeros((len(self.params_names), 2), dtype=np.float)
 
         for i, name in enumerate(self.params_names):
-            self.params_bounds[i,:] = self.parameters[name]
-
+            self.params_bounds[i, :] = self.parameters[name]
 
         vec = np.array([0.5,0.5])
-
         true_params = self.params_from_0_1(vec)
 
+        true_params_dict = self.param_from_0_1_dict(vec)
+        print true_params_dict
 
         print
 
     def get_starting_points(self):
+        return 0.5 * np.ones(len(self.params_names), dtype=np.float)
 
-        return 0.5 * np.ones(len(self.params_names),dtype=np.float)
-
-    def params_from_0_1(self,param_vec_0_1):
-
+    def params_from_0_1(self, param_vec_0_1):
         return self.params_bounds[:, 0] + param_vec_0_1 * (self.params_bounds[:, 1] - self.params_bounds[:, 0])
 
-
+    def param_from_0_1_dict(self, param_vec_0_1):
+        return dict(zip(self.params_names, self.params_from_0_1(param_vec_0_1)))
 
 
 class Optimizer(object):
@@ -163,7 +162,7 @@ class Optimizer(object):
         """
 
         formatted_timestamp = self.get_formatted_timestamp()
-        workspace_dir = join(workspace_root_dir, simulation_corename+ '_opt_' + formatted_timestamp)
+        workspace_dir = join(workspace_root_dir, simulation_corename + '_opt_' + formatted_timestamp)
 
         # creating workspace directory
         if isdir(workspace_dir):
@@ -173,8 +172,6 @@ class Optimizer(object):
 
         return workspace_dir
 
-
-
     def run_task(self, workload_dict, param_set):
         """
         Dispatches simulation jobs to workers based on the parameter set (param_set)
@@ -183,7 +180,6 @@ class Optimizer(object):
         :param param_set: parameter_set
         :return: None
         """
-
 
         self.worker_pool = []
 
@@ -216,13 +212,11 @@ class Optimizer(object):
 
             print 'sent = ', workload_dict
 
-
-
         print 'WILL REDUCE ', param_idx + 1, ' workers'
         self.reduce(param_idx + 1)
         print 'FINISHED REDUCING'
 
-    def prepare_optimization_run(self,simulation_name):
+    def prepare_optimization_run(self, simulation_name):
         """
         Prepares optimization run which includes: creating workspace directory for the optimization job
         and creating workload_dictionary (will be sent as json to worker)
@@ -304,16 +298,12 @@ if __name__ == '__main__':
 
     cml_parser = OptimizationCMLParser()
 
-
     cml_parser.arg('--input', r'D:\CC3DProjects\short_demo\short_demo.cc3d')
     cml_parser.arg('--params-file', r'D:\CC3D_GIT\optimization\params.json')
     args = cml_parser.parse()
 
-
     optim_param_mgr = OptimizationParameterManager()
     optim_param_mgr.read_paramters(args.params_file)
-
-
 
     print args.input
     print args.params_file
