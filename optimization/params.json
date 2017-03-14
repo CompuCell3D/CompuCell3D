@@ -1,0 +1,14 @@
+{
+  "parameters": {
+    "TEMPERATURE": [
+      5.0,
+      15.0
+    ],
+    "CONTACT_A_B": [
+      1.0,
+      16.0
+    ]
+  },
+  "std_dev":0.5
+
+}
