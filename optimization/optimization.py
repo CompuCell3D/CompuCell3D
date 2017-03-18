@@ -7,6 +7,7 @@
 
 import numpy as np
 from OptimizerWorkerProcessZMQ import OptimizerWorkerProcessZMQ
+from template_utils import generate_simulation_files_from_template
 from collections import OrderedDict
 import os
 from os.path import *
@@ -58,7 +59,6 @@ class OptimizationParameterManager(object):
     def __init__(self):
         self.params_jn = None
         self.parameters = None
-
         self._params_names = []
         self._std_dev = 0.5
         self._default_bounds = np.array([0., 1.], dtype=np.float)
@@ -136,6 +136,15 @@ class Optimizer(object):
         self.context = zmq.Context()
         self.push_address_str = "tcp://127.0.0.1:5557"
         self.pull_address_str = "tcp://127.0.0.1:5558"
+
+        #
+        # dictionary that specifies all the information that worker neeeds to run simulation
+        # with a given set of parameters (accessible using 'param_dict' of the workload_dict)
+        self.workload_dict = None
+
+        #
+        # INstance of OptimizationParameterManager
+        self.optim_param_mgr = None
 
         self.zmq_socket = self.context.socket(zmq.PUSH)
         self.zmq_socket.bind(self.push_address_str)
@@ -313,6 +322,33 @@ class Optimizer(object):
 
         return workload_dict
 
+    def save_optimal_parameters(self, optimal_parameters):
+        workspace_dir = self.workload_dict['workspace_dir']
+        optimal_param_fname = join(workspace_dir,'optimal_parameters.json')
+
+        optimal_param_dict = self.optim_param_mgr.param_from_0_1_dict(optimal_parameters)
+
+        json.dump(optimal_param_dict, open(optimal_param_fname,'w'))
+
+
+
+    def save_optimal_simulation(self, optimal_parameters):
+
+        workspace_dir = self.workload_dict['workspace_dir']
+        simulation_template_name = self.workload_dict['simulation_filename']
+        optimal_param_dict = self.optim_param_mgr.param_from_0_1_dict(optimal_parameters)
+
+        optimal_simulation_dir = join(workspace_dir,'optimal_simulation')
+
+        generated_simulation_fname, workspace_dir = generate_simulation_files_from_template(
+            simulation_dirname=optimal_simulation_dir,
+            simulation_template_name=simulation_template_name,
+            param_dict=optimal_param_dict
+        )
+
+        print
+
+
     def run_debug(self):
 
         """
@@ -367,7 +403,6 @@ class Optimizer(object):
     #         self.run_task(workload_dict, param_set)
     #         print 'FINISHED PARAM_SET=', param_set
 
-
     def run_optimization(self):
 
         """
@@ -377,7 +412,10 @@ class Optimizer(object):
         # simulation_name = r'D:\CC3DProjects\short_demo\short_demo.cc3d'
 
         simulation_name = self.parse_args.input
-        optim_param_mgr = OptimizationParameterManager()
+
+        self.optim_param_mgr = OptimizationParameterManager()
+        optim_param_mgr = self.optim_param_mgr
+
         optim_param_mgr.parse(args.params_file)
 
         starting_params = optim_param_mgr.get_starting_points()
@@ -387,51 +425,104 @@ class Optimizer(object):
             starting_params)
 
         print 'simulation_name=', simulation_name
-        workload_dict = self.prepare_optimization_run(simulation_name=simulation_name)
+        self.workload_dict = self.prepare_optimization_run(simulation_name=simulation_name)
+        workload_dict = self.workload_dict
+
         print workload_dict
 
         std_dev = optim_param_mgr.std_dev
         default_bounds = optim_param_mgr.default_bounds
 
         optim = CMAEvolutionStrategy(starting_params, std_dev, {'bounds': list(default_bounds)})
-        param_set_list = optim.ask()
-        print 'param_set_list=',param_set_list
-        self.set_param_set_list(param_set_list=param_set_list)
 
-        return_result_vec = np.array([], dtype=float)
+        while not optim.stop():  # iterate
+            # get candidate solutions
+            param_set_list = optim.ask(number=self.num_workers)
 
-        for param_set in self.param_generator(self.num_workers):
-            print 'CURRENT PARAM SET=', param_set
-            # distribution param_set to workers - run tasks spawns appripriate number of workers
-            # given self.num_workers and the size of the param_set
-            partial_return_result_vec = self.run_task(workload_dict, param_set)
+            # set param_set_list for run_task to iterate over
+            self.set_param_set_list(param_set_list=param_set_list)
 
-            return_result_vec = np.append(return_result_vec, partial_return_result_vec)
+            # #debug
+            # return_result_vec = [self.fcn(optim_param_mgr.params_from_0_1(X)) for X in param_set_list]
 
-            print 'FINISHED PARAM_SET=', param_set
+            # evaluate  targert function values at the candidate solutions
+            return_result_vec = np.array([], dtype=float)
+            for param_set in self.param_generator(self.num_workers):
 
-        print 'return_result_vec=', return_result_vec
+                print 'CURRENT PARAM SET=', param_set
+                # distribution param_set to workers - run tasks spawns appropriate number of workers
+                # given self.num_workers and the size of the param_set
+                partial_return_result_vec = self.run_task(workload_dict, param_set)
 
-        # checking - Note we have to order parameters in the same way they are ordered in the simulation code
-        check_vec = []
+                return_result_vec = np.append(return_result_vec, partial_return_result_vec)
 
-        params_names = optim_param_mgr.params_names
-
-        for params in param_set_list:
-            print 'params=',params
-            params_remapped = optim_param_mgr.params_from_0_1(params)
-
-            params_remapped_ordered = [params_remapped[params_names.index('TEMPERATURE')],
-                                       params_remapped[params_names.index('CONTACT_A_B')]]
-
-            # ordering it to in the same order as in the simulation i.e. [temp, contact]
-            print 'params_remapped=',params_remapped
-            check_vec.append(self.fcn(params_remapped_ordered))
-
-        check_vec = np.array(check_vec,dtype=np.float)
+                print 'FINISHED PARAM_SET=', param_set
+            #  in case do something else that needs to be done
+            #
 
 
-        print " difference between worker results and manual comutation = ", check_vec -  return_result_vec
+            optim.tell(param_set_list, return_result_vec)  # do all the real "update" work
+            optim.disp(20)  # display info every 20th iteration
+            optim.logger.add()  # log another "data line"
+
+        optimal_parameters = optim.result()[0]
+
+
+        print('termination by', optim.stop())
+        print('best f-value =', optim.result()[1])
+        optimal_parameters_remapped = optim_param_mgr.params_from_0_1(optim.result()[0])
+        print('best solution =', optimal_parameters_remapped)
+
+        # print('best solution =', optim_param_mgr.params_from_0_1(optim.result()[0]))
+
+        print optim_param_mgr.params_names
+
+        self.save_optimal_parameters(optimal_parameters)
+        self.save_optimal_simulation(optimal_parameters)
+
+
+
+
+        # print('best solution =', optim.result()[0])
+
+        # param_set_list = optim.ask(number=self.num_workers)
+        # print 'param_set_list=',param_set_list
+        # self.set_param_set_list(param_set_list=param_set_list)
+        #
+        # return_result_vec = np.array([], dtype=float)
+        #
+        # for param_set in self.param_generator(self.num_workers):
+        #     print 'CURRENT PARAM SET=', param_set
+        #     # distribution param_set to workers - run tasks spawns appripriate number of workers
+        #     # given self.num_workers and the size of the param_set
+        #     partial_return_result_vec = self.run_task(workload_dict, param_set)
+        #
+        #     return_result_vec = np.append(return_result_vec, partial_return_result_vec)
+        #
+        #     print 'FINISHED PARAM_SET=', param_set
+        #
+        # print 'return_result_vec=', return_result_vec
+        #
+        # # checking - Note we have to order parameters in the same way they are ordered in the simulation code
+        # check_vec = []
+        #
+        # params_names = optim_param_mgr.params_names
+        #
+        # for params in param_set_list:
+        #     print 'params=',params
+        #     params_remapped = optim_param_mgr.params_from_0_1(params)
+        #
+        #     params_remapped_ordered = [params_remapped[params_names.index('TEMPERATURE')],
+        #                                params_remapped[params_names.index('CONTACT_A_B')]]
+        #
+        #     # ordering it to in the same order as in the simulation i.e. [temp, contact]
+        #     print 'params_remapped=',params_remapped
+        #     check_vec.append(self.fcn(params_remapped_ordered))
+        #
+        # check_vec = np.array(check_vec,dtype=np.float)
+        #
+        #
+        # print " difference between worker results and manual comutation = ", check_vec -  return_result_vec
 
     def fcn(self, x):
         return (x[0] - 2) ** 2 + (x[1] - 3) ** 2
