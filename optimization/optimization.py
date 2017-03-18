@@ -35,6 +35,7 @@ class OptimizationCMLParser(object):
         self.parser.add_argument('-n', '--num-workers', required=False, action='store', default=1, type=int,
                                  help="number of workers")
 
+        #adding cc3d run script will make it easier to write .sh, .bat or .command optimization scripts
         self.parser.add_argument('-r', '--cc3d-run-script', required=True, action='store',help="CC3D run script")
 
 
@@ -579,6 +580,7 @@ if __name__ == '__main__':
     # call(popen_args)
 
     cml_parser = OptimizationCMLParser()
+
 
     # cml_parser.arg('--help')
     cml_parser.arg('--input', r'D:\CC3DProjects\short_demo\short_demo.cc3d')
