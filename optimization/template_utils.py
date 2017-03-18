@@ -7,34 +7,19 @@ from glob import glob
 
 def generate_simulation_files_from_template(simulation_dirname, simulation_template_name, param_dict):
     """
-    Used using jijja2 templating engine to generates actual simulation files from simulation templates
-    (that use jinja2 templating syntax)
-    :param simulation_dirname: output directory for the current simulation
-    :param simulation_template_name: full path to curtrent cc3d simulatotion template - a regular cc3d simulaiton with
+    Uses jinja2 templating engine to generate actual simulation files from simulation templates
+    ( we use jinja2 templating syntax)
+    :param simulation_dirname: output directory into which simulation files will be generated
+    :param simulation_template_name: full path to current cc3d simulation template - a regular cc3d simulation with
     numbers replaced by template labels
     :param param_dict: {dict} - dictionary of template parameters used to replace template labels with actual parameters
-    :return : ({str},{str}) - tuple  where first element is a path to cc3d simulation generated using param_dict. The simulation is placed
-    in the "hashed" directory and the second element is the "hashed" workspace dir
+    :return : ({str},{str}) - tuple  where first element is a path to cc3d simulation generated using param_dict.
+    The generated simulation is placed in  simulation_dirname
     """
-
-    # # dir core path
-    # hashed_workspace_dir_corename = self.create_dir_hash(simulation_name=simulation_template_name,
-    #                                                      param_dict=param_dict)
-    #
-    # # hashed workspace dir
-    # hashed_workspace_dir = join(workspace_dir, hashed_workspace_dir_corename)
-
-
-
     # absolute path
 
-    # tmp_simulation_template_dir = join(simulation_dirname, 'simulation_template')
     tmp_simulation_template_dir = simulation_dirname
 
-    # tmp_simulation_template_dir = join(workspace_dir, 'simulation_template')
-    # tmp_simulation_template_dir = simulation_dirname
-
-    # self.create_dir(tmp_simulation_template_dir)
 
     simulation_dir_path = dirname(simulation_template_name)
     simulation_corename = basename(simulation_template_name)
