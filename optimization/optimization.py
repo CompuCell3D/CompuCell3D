@@ -51,6 +51,7 @@ class OptimizationCMLParser(object):
         self.arg_count_threshold = arg_count_threshold
 
     def arg(self, name, *vals):
+
         self.arg_list.append(name)
         for val in vals:
             self.arg_list.append(val)
