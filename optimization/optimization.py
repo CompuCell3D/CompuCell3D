@@ -33,6 +33,12 @@ class OptimizationCMLParser(object):
         self.parser.add_argument('-p', '--params-file', required=True, action='store', default='')
         self.parser.add_argument('-n', '--num-workers', required=False, action='store', default=1, type=int)
 
+        self.parser.add_argument('--clean-workdirs', dest='clean_workdirs', action='store_true')
+        self.parser.add_argument('--no-clean-workdirs', dest='clean_workdirs', action='store_false')
+        self.parser.set_defaults(clean_workdirs=True)
+
+        # self.parser.add_argument('-c', '--clean-workdirs', required=False, action='store', default=1, type=bool)
+
         self.arg_list = []
         self.arg_count_threshold = arg_count_threshold
 
@@ -145,6 +151,10 @@ class Optimizer(object):
         #
         # INstance of OptimizationParameterManager
         self.optim_param_mgr = None
+
+        #
+        # parsed command line arguments
+        self.parse_args = None
 
         self.zmq_socket = self.context.socket(zmq.PUSH)
         self.zmq_socket.bind(self.push_address_str)
@@ -317,8 +327,12 @@ class Optimizer(object):
         workload_dict['cc3d_command'] = r'C:\CompuCell3D-64bit\runScript.bat'
         workload_dict['workspace_dir'] = workspace_dir
         workload_dict['simulation_filename'] = simulation_name
+        workload_dict['clean_workdirs'] = self.parse_args.clean_workdirs
         workload_dict['param_dict'] = None  # set externally
         workload_dict['worker_tag'] = None  # set externally
+
+
+
 
         return workload_dict
 
@@ -569,7 +583,9 @@ if __name__ == '__main__':
 
     cml_parser.arg('--input', r'D:\CC3DProjects\short_demo\short_demo.cc3d')
     cml_parser.arg('--params-file', r'D:\CC3D_GIT\optimization\params.json')
+    cml_parser.arg('--clean-workdirs')
     cml_parser.arg('--num-workers', '5')  # here it needs to be specified as str but parser converts it to int
+
     args = cml_parser.parse()
 
     optim_param_mgr = OptimizationParameterManager()

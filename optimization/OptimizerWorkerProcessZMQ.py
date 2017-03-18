@@ -180,6 +180,7 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
         cc3d_command = workload_json['cc3d_command']
         workspace_dir = workload_json['workspace_dir']
         worker_tag = workload_json['worker_tag']
+        clean_workdirs = workload_json['clean_workdirs']
 
         print 'received param_dict = ', param_dict
 
@@ -221,4 +222,11 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
 
         # removing temporary directory where we generated simulation from the simulation templates
         shutil.rmtree(dirname(simulation_fname))
+
+        # removing workspace of the current simulation
+        current_simulation_workspace_dir = dirname(dirname(simulation_fname))
+        if clean_workdirs:
+            shutil.rmtree(current_simulation_workspace_dir)
+
+
 
