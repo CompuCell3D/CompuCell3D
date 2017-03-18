@@ -59,10 +59,11 @@ class OptimizationParameterManager(object):
         self.params_jn = None
         self.parameters = None
 
-        self.params_names = []
-        self.std_dev = None
+        self._params_names = []
+        self._std_dev = 0.5
+        self._default_bounds = np.array([0., 1.], dtype=np.float)
 
-    def read_paramters(self, fname):
+    def parse(self, fname):
         """
         Parses optimization parameters json file
         :param fname: name of the file with definition of optimization parameters
@@ -70,11 +71,15 @@ class OptimizationParameterManager(object):
         """
         self.params_jn = json.load(open(fname, 'r'))
         self.parameters = self.params_jn['parameters']
-        self.params_names = self.parameters.keys()
+        self._params_names = self.parameters.keys()
+        try:
+            self._std_dev = self.params_jn['std_dev']
+        except:
+            print 'Could not find "std_dev" in %s. Will use default value of %f ' % (fname, self.std_dev)
 
-        self.params_bounds = np.zeros((len(self.params_names), 2), dtype=np.float)
+        self.params_bounds = np.zeros((len(self._params_names), 2), dtype=np.float)
 
-        for i, name in enumerate(self.params_names):
+        for i, name in enumerate(self._params_names):
             self.params_bounds[i, :] = self.parameters[name]
 
             # vec = np.array([0.5,0.5])
@@ -83,14 +88,26 @@ class OptimizationParameterManager(object):
             # true_params_dict = self.param_from_0_1_dict(vec)
             # print 'true_params_dict=',true_params_dict
             #
-            # print
+            print
+
+    @property
+    def params_names(self):
+        return self._params_names
+
+    @property
+    def default_bounds(self):
+        return self._default_bounds
+
+    @property
+    def std_dev(self):
+        return self._std_dev
 
     def get_starting_points(self):
         """
         Returns starting point for the optimization run by picking "center" fo the parameter hyperspace
         :return: {ndarray} vector describing the "center" of the parameter hyperspace
         """
-        return 0.5 * np.ones(len(self.params_names), dtype=np.float)
+        return 0.5 * np.ones(len(self._params_names), dtype=np.float)
 
     def params_from_0_1(self, param_vec_0_1):
         """
@@ -109,7 +126,7 @@ class OptimizationParameterManager(object):
         :param param_vec_0_1: {ndarray } - vector of parameters mapped to [0,1]
         :return: {dict} - the format is {parameter_name:value}
         """
-        return dict(zip(self.params_names, self.params_from_0_1(param_vec_0_1)))
+        return dict(zip(self._params_names, self.params_from_0_1(param_vec_0_1)))
 
 
 class Optimizer(object):
@@ -149,16 +166,21 @@ class Optimizer(object):
         context = zmq.Context()
         results_receiver = context.socket(zmq.PULL)
         results_receiver.bind(self.pull_address_str)
-        collecter_data = {}
+        return_data_dict = {}  # {worker_tag:return_value}
+
         sum = 0
         print 'reducing=', num_workers, ' workers'
         for x in xrange(num_workers):
-            print 'waiting for worker x=', x
+            # print 'waiting for worker x=', x
             result = results_receiver.recv_json()
-            print 'got result from worker x=', x, ' res=', result
-            sum += result['num']
 
-        print 'sum = ', sum
+            return_data_dict[result['return_value_tag']] = result['return_value']
+
+            print 'got result from worker x=', x, ' res=', result
+            # sum += result['num']
+
+        # print 'sum = ', sum
+        return return_data_dict
 
     def param_generator(self, num_workers):
         counter = 0
@@ -225,8 +247,11 @@ class Optimizer(object):
 
         # self.acknowledge_presence(self.num_workers)
 
+        # {worker_tag:param} - ordered dict needed for correct identification of positional index of return value
+        param_set_dict = OrderedDict()
+
         for param_idx, param in enumerate(param_set):
-            #mapping parameters from [0,1] to true range and producing dictionary that will be sent to workers
+            # mapping parameters from [0,1] to true range and producing dictionary that will be sent to workers
             param_dict = self.optimization_params_mgr.param_from_0_1_dict(param)
 
             # param_labels = ['TEMPERATURE', 'CONTACT_A_B']
@@ -236,14 +261,31 @@ class Optimizer(object):
             # appending param_dict to  workload dict
             workload_dict['param_dict'] = param_dict
 
+            # tagging worker to identify return result
+            worker_tag = 'worker_' + str(param_idx)
+            workload_dict['worker_tag'] = worker_tag
+
+            param_set_dict[worker_tag] = param
+
             # self.zmq_socket.send_json(param_dict)
             self.zmq_socket.send_json(workload_dict)
 
             print 'sent = ', workload_dict
 
         print 'WILL REDUCE ', param_idx + 1, ' workers'
-        self.reduce(param_idx + 1)
+        return_data_dict = self.reduce(param_idx + 1)
+
+        # producing vector of return values - have to ensure that the order of values in the vector
+        # is the same as the order of parameter vectors in the param_set
+
+        return_value_vec = np.zeros((num_params,), dtype=np.float)
+
+        for idx, worker_tag in enumerate(param_set_dict.keys()):
+            return_value_vec[idx] = return_data_dict[worker_tag]
+
         print 'FINISHED REDUCING'
+
+        return return_value_vec
 
     def prepare_optimization_run(self, simulation_name):
         """
@@ -266,7 +308,8 @@ class Optimizer(object):
         workload_dict['cc3d_command'] = r'C:\CompuCell3D-64bit\runScript.bat'
         workload_dict['workspace_dir'] = workspace_dir
         workload_dict['simulation_filename'] = simulation_name
-        workload_dict['param_dict'] = None
+        workload_dict['param_dict'] = None  # set externally
+        workload_dict['worker_tag'] = None  # set externally
 
         return workload_dict
 
@@ -297,6 +340,34 @@ class Optimizer(object):
     def set_param_set_list(self, param_set_list):
         self.param_set_list = param_set_list
 
+    # def run_optimization(self):
+    #
+    #     """
+    #     Runs optimization job
+    #     :return:
+    #     """
+    #     # simulation_name = r'D:\CC3DProjects\short_demo\short_demo.cc3d'
+    #
+    #     simulation_name = self.parse_args.input
+    #     optim_param_mgr = OptimizationParameterManager()
+    #     optim_param_mgr.read_paramters(args.params_file)
+    #
+    #     starting_params = optim_param_mgr.get_starting_points()
+    #     print 'starting_params (mapped to [0,1])=', starting_params
+    #     print 'remapped (true) starting params=', optim_param_mgr.params_from_0_1(starting_params)
+    #     print 'dictionary of remapped parameters labeled by parameter name=', optim_param_mgr.param_from_0_1_dict(
+    #         starting_params)
+    #
+    #     print 'simulation_name=', simulation_name
+    #     workload_dict = self.prepare_optimization_run(simulation_name=simulation_name)
+    #     print workload_dict
+    #     #
+    #     for param_set in self.param_generator(self.num_workers):
+    #         print 'CURRENT PARAM SET=', param_set
+    #         self.run_task(workload_dict, param_set)
+    #         print 'FINISHED PARAM_SET=', param_set
+
+
     def run_optimization(self):
 
         """
@@ -307,7 +378,7 @@ class Optimizer(object):
 
         simulation_name = self.parse_args.input
         optim_param_mgr = OptimizationParameterManager()
-        optim_param_mgr.read_paramters(args.params_file)
+        optim_param_mgr.parse(args.params_file)
 
         starting_params = optim_param_mgr.get_starting_points()
         print 'starting_params (mapped to [0,1])=', starting_params
@@ -318,11 +389,53 @@ class Optimizer(object):
         print 'simulation_name=', simulation_name
         workload_dict = self.prepare_optimization_run(simulation_name=simulation_name)
         print workload_dict
-        #
+
+        std_dev = optim_param_mgr.std_dev
+        default_bounds = optim_param_mgr.default_bounds
+
+        optim = CMAEvolutionStrategy(starting_params, std_dev, {'bounds': list(default_bounds)})
+        param_set_list = optim.ask()
+        print 'param_set_list=',param_set_list
+        self.set_param_set_list(param_set_list=param_set_list)
+
+        return_result_vec = np.array([], dtype=float)
+
         for param_set in self.param_generator(self.num_workers):
             print 'CURRENT PARAM SET=', param_set
-            self.run_task(workload_dict, param_set)
+            # distribution param_set to workers - run tasks spawns appripriate number of workers
+            # given self.num_workers and the size of the param_set
+            partial_return_result_vec = self.run_task(workload_dict, param_set)
+
+            return_result_vec = np.append(return_result_vec, partial_return_result_vec)
+
             print 'FINISHED PARAM_SET=', param_set
+
+        print 'return_result_vec=', return_result_vec
+
+        # checking - Note we have to order parameters in the same way they are ordered in the simulation code
+        check_vec = []
+
+        params_names = optim_param_mgr.params_names
+
+        for params in param_set_list:
+            print 'params=',params
+            params_remapped = optim_param_mgr.params_from_0_1(params)
+
+            params_remapped_ordered = [params_remapped[params_names.index('TEMPERATURE')],
+                                       params_remapped[params_names.index('CONTACT_A_B')]]
+
+            # ordering it to in the same order as in the simulation i.e. [temp, contact]
+            print 'params_remapped=',params_remapped
+            check_vec.append(self.fcn(params_remapped_ordered))
+
+        check_vec = np.array(check_vec,dtype=np.float)
+
+
+        print " difference between worker results and manual comutation = ", check_vec -  return_result_vec
+
+    def fcn(self, x):
+        return (x[0] - 2) ** 2 + (x[1] - 3) ** 2
+
 
     def run(self):
         self.run_optimization()
@@ -365,11 +478,11 @@ if __name__ == '__main__':
 
     cml_parser.arg('--input', r'D:\CC3DProjects\short_demo\short_demo.cc3d')
     cml_parser.arg('--params-file', r'D:\CC3D_GIT\optimization\params.json')
-    cml_parser.arg('--num-workers', '3') # here it needs to be specified as str but parser converts it to int
+    cml_parser.arg('--num-workers', '5')  # here it needs to be specified as str but parser converts it to int
     args = cml_parser.parse()
 
     optim_param_mgr = OptimizationParameterManager()
-    optim_param_mgr.read_paramters(args.params_file)
+    optim_param_mgr.parse(args.params_file)
 
     starting_params = optim_param_mgr.get_starting_points()
     print 'starting_params (mapped to [0,1])=', starting_params
@@ -380,16 +493,16 @@ if __name__ == '__main__':
     print args.input
     print args.params_file
 
-    # param_set_list = [1.1, 2.1, 3.2, 4.2, 5.1]
-    param_set_list = [starting_params]
-    param_set_list = 5 * param_set_list
-    param_set_list = map(lambda x: random.random()*x, param_set_list)
+    # # param_set_list = [1.1, 2.1, 3.2, 4.2, 5.1]
+    # param_set_list = [starting_params]
+    # param_set_list = 5 * param_set_list
+    # param_set_list = map(lambda x: random.random() * x, param_set_list)
 
     optimizer = Optimizer()
 
     optimizer.set_optimization_parameters_manager(optim_param_mgr)
     optimizer.set_parse_args(args)
     optimizer.set_num_workers(args.num_workers)
-    optimizer.set_param_set_list(param_set_list=param_set_list)
+    # optimizer.set_param_set_list(param_set_list=param_set_list)
 
     optimizer.run()

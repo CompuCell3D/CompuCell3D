@@ -158,6 +158,7 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
         simulation_template_name = workload_json['simulation_filename']
         cc3d_command = workload_json['cc3d_command']
         workspace_dir = workload_json['workspace_dir']
+        worker_tag = workload_json['worker_tag']
 
         print 'received param_dict = ', param_dict
 
@@ -186,6 +187,10 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
 
         popen_args.append("-p")
         popen_args.append(self.push_address_str)
+
+        # sets return value tag
+        popen_args.append("-l")
+        popen_args.append(str(worker_tag))
 
         print 'popen_args=', popen_args
 

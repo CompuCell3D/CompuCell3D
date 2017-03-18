@@ -1825,7 +1825,18 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
     # We may need to introduce new funuction name (e.g. unload) because finish does more than unloading
 
 
-def set_simulation_return_value(val, tag='generic_label'):
+def set_return_value_tag(tag='generic_label'):
+    """
+    Sets return value tag
+    :param tag:  arbitrary string allowing easier identification of the results
+    :return: None
+    """
+    print 'setting return_value_tag=',tag
+
+    global simulation_return_value_tag
+    simulation_return_value_tag = tag
+
+def set_simulation_return_value(val, tag=None):
     """
     records simulation return value - typically to be sent back to the server running some type of optimization algorithm
     :param val : simulation return value
@@ -1836,7 +1847,9 @@ def set_simulation_return_value(val, tag='generic_label'):
     global simulation_return_value_tag
 
     simulation_return_value = val
-    simulation_return_value_tag = tag
+
+    if tag is not None:
+        simulation_return_value_tag = tag
 
 
 def get_simulation_return_value():
@@ -1894,7 +1907,7 @@ def broadcast_simulation_return_value():
     consumer_sender.connect(push_address)
 
     # result = {'tag': tag, 'return_value': simulation_return_value}
-    result = {'consumer': simulation_return_value_tag, 'num': simulation_return_value}
+    result = {'return_value_tag': simulation_return_value_tag, 'return_value': simulation_return_value}
     print 'will send the result ', result
     consumer_sender.send_json(result)
     print 'result sent'

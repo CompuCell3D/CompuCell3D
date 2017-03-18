@@ -16,12 +16,13 @@ class CMLParser:
         self.exitWhenDone=False
         self.maxNumberOfRuns=-1
         self.push_address = None
+        self.return_value_tag = 'generic_label'
         startSimulation=False
         
         opts=None
         args=None
         try:
-            opts, args = getopt.getopt(sys.argv[1:], "i:s:o:f:p:c:h", ["help","noOutput","exitWhenDone","currentDir=","outputFrequency=","pushAddress=","maxNumberOfRuns="])
+            opts, args = getopt.getopt(sys.argv[1:], "i:s:o:f:p:l:c:h", ["help","noOutput","exitWhenDone","currentDir=","outputFrequency=","pushAddress=","returnValueTag","maxNumberOfRuns="])
             print "opts=",opts
             print "args=",args
         except getopt.GetoptError, err:
@@ -57,7 +58,12 @@ class CMLParser:
 
             elif o in ("-p","--pushAddress"):
                 self.push_address = str(a)
-                # print 'GOT pushAddress = ',self.pushAddress
+                # print 'GOT pushAddress = ',self.push_address
+
+            elif o in ("-l","--returnValueTag"):
+                self.return_value_tag = str(a)
+                print 'GOT return_value_tag = ',self.return_value_tag
+
             elif o in ("--currentDir"):
                 currentDir=a
                 print "currentDirectory=",currentDir
