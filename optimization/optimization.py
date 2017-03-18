@@ -29,12 +29,19 @@ from cma import CMAEvolutionStrategy
 class OptimizationCMLParser(object):
     def __init__(self, arg_count_threshold=1):
         self.parser = argparse.ArgumentParser(description='CMA Optimization')
-        self.parser.add_argument('-i', '--input', required=True, action='store')
-        self.parser.add_argument('-p', '--params-file', required=True, action='store', default='')
-        self.parser.add_argument('-n', '--num-workers', required=False, action='store', default=1, type=int)
+        self.parser.add_argument('-i', '--input', required=True, action='store', help="cc3d simulation project")
+        self.parser.add_argument('-p', '--params-file', required=True, action='store', default='',
+                                 help="json parameter file")
+        self.parser.add_argument('-n', '--num-workers', required=False, action='store', default=1, type=int,
+                                 help="number of workers")
 
-        self.parser.add_argument('--clean-workdirs', dest='clean_workdirs', action='store_true')
-        self.parser.add_argument('--no-clean-workdirs', dest='clean_workdirs', action='store_false')
+        self.parser.add_argument('-r', '--cc3d-run-script', required=True, action='store',help="CC3D run script")
+
+
+        self.parser.add_argument('--clean-workdirs', dest='clean_workdirs', action='store_true',
+                                 help='clean temporary simulation output')
+        self.parser.add_argument('--no-clean-workdirs', dest='clean_workdirs', action='store_false',
+                                 help='do not clean temporary simulation output')
         self.parser.set_defaults(clean_workdirs=True)
 
         # self.parser.add_argument('-c', '--clean-workdirs', required=False, action='store', default=1, type=bool)
@@ -324,27 +331,23 @@ class Optimizer(object):
         workspace_dir = self.create_workspace_dir(simulation_corename, workspace_root_dir)
 
         workload_dict = OrderedDict()
-        workload_dict['cc3d_command'] = r'C:\CompuCell3D-64bit\runScript.bat'
+        # workload_dict['cc3d_command'] = r'C:\CompuCell3D-64bit\runScript.bat'
+        workload_dict['cc3d_command'] = self.parse_args.cc3d_run_script
         workload_dict['workspace_dir'] = workspace_dir
         workload_dict['simulation_filename'] = simulation_name
         workload_dict['clean_workdirs'] = self.parse_args.clean_workdirs
         workload_dict['param_dict'] = None  # set externally
         workload_dict['worker_tag'] = None  # set externally
 
-
-
-
         return workload_dict
 
     def save_optimal_parameters(self, optimal_parameters):
         workspace_dir = self.workload_dict['workspace_dir']
-        optimal_param_fname = join(workspace_dir,'optimal_parameters.json')
+        optimal_param_fname = join(workspace_dir, 'optimal_parameters.json')
 
         optimal_param_dict = self.optim_param_mgr.param_from_0_1_dict(optimal_parameters)
 
-        json.dump(optimal_param_dict, open(optimal_param_fname,'w'))
-
-
+        json.dump(optimal_param_dict, open(optimal_param_fname, 'w'))
 
     def save_optimal_simulation(self, optimal_parameters):
 
@@ -352,7 +355,7 @@ class Optimizer(object):
         simulation_template_name = self.workload_dict['simulation_filename']
         optimal_param_dict = self.optim_param_mgr.param_from_0_1_dict(optimal_parameters)
 
-        optimal_simulation_dir = join(workspace_dir,'optimal_simulation')
+        optimal_simulation_dir = join(workspace_dir, 'optimal_simulation')
 
         generated_simulation_fname, workspace_dir = generate_simulation_files_from_template(
             simulation_dirname=optimal_simulation_dir,
@@ -361,7 +364,6 @@ class Optimizer(object):
         )
 
         print
-
 
     def run_debug(self):
 
@@ -462,7 +464,6 @@ class Optimizer(object):
             # evaluate  targert function values at the candidate solutions
             return_result_vec = np.array([], dtype=float)
             for param_set in self.param_generator(self.num_workers):
-
                 print 'CURRENT PARAM SET=', param_set
                 # distribution param_set to workers - run tasks spawns appropriate number of workers
                 # given self.num_workers and the size of the param_set
@@ -471,7 +472,7 @@ class Optimizer(object):
                 return_result_vec = np.append(return_result_vec, partial_return_result_vec)
 
                 print 'FINISHED PARAM_SET=', param_set
-            #  in case do something else that needs to be done
+            # in case do something else that needs to be done
             #
 
 
@@ -480,7 +481,6 @@ class Optimizer(object):
             optim.logger.add()  # log another "data line"
 
         optimal_parameters = optim.result()[0]
-
 
         print('termination by', optim.stop())
         print('best f-value =', optim.result()[1])
@@ -541,7 +541,6 @@ class Optimizer(object):
     def fcn(self, x):
         return (x[0] - 2) ** 2 + (x[1] - 3) ** 2
 
-
     def run(self):
         self.run_optimization()
 
@@ -581,8 +580,10 @@ if __name__ == '__main__':
 
     cml_parser = OptimizationCMLParser()
 
+    # cml_parser.arg('--help')
     cml_parser.arg('--input', r'D:\CC3DProjects\short_demo\short_demo.cc3d')
     cml_parser.arg('--params-file', r'D:\CC3D_GIT\optimization\params.json')
+    cml_parser.arg('--cc3d-run-script', r'C:\CompuCell3D-64bit\runScript.bat')
     cml_parser.arg('--clean-workdirs')
     cml_parser.arg('--num-workers', '5')  # here it needs to be specified as str but parser converts it to int
 
@@ -591,19 +592,19 @@ if __name__ == '__main__':
     optim_param_mgr = OptimizationParameterManager()
     optim_param_mgr.parse(args.params_file)
 
-    starting_params = optim_param_mgr.get_starting_points()
-    print 'starting_params (mapped to [0,1])=', starting_params
-    print 'remapped (true) starting params=', optim_param_mgr.params_from_0_1(starting_params)
-    print 'dictionary of remapped parameters labeled by parameter name=', optim_param_mgr.param_from_0_1_dict(
-        starting_params)
-
-    print args.input
-    print args.params_file
-
-    # # param_set_list = [1.1, 2.1, 3.2, 4.2, 5.1]
-    # param_set_list = [starting_params]
-    # param_set_list = 5 * param_set_list
-    # param_set_list = map(lambda x: random.random() * x, param_set_list)
+    # starting_params = optim_param_mgr.get_starting_points()
+    # print 'starting_params (mapped to [0,1])=', starting_params
+    # print 'remapped (true) starting params=', optim_param_mgr.params_from_0_1(starting_params)
+    # print 'dictionary of remapped parameters labeled by parameter name=', optim_param_mgr.param_from_0_1_dict(
+    #     starting_params)
+    #
+    # print args.input
+    # print args.params_file
+    #
+    # # # param_set_list = [1.1, 2.1, 3.2, 4.2, 5.1]
+    # # param_set_list = [starting_params]
+    # # param_set_list = 5 * param_set_list
+    # # param_set_list = map(lambda x: random.random() * x, param_set_list)
 
     optimizer = Optimizer()
 
