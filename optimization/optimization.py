@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 # TODO add discovery of free port - zmw have a fcn that facilitates it (port range is given )
+# TODO add run script
+# TODO catch exceptions in the worker simulation and display exception on the screen - stop optimization run
 # port_selected = socket.bind_to_random_port('tcp://*', min_port=6001, max_port=6004, max_tries=100)
 #
 
