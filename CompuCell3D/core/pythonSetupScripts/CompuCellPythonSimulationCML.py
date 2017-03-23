@@ -59,8 +59,6 @@ import time
 cc3dSimulationDataHandler = None
 
 
-
-
 def getRootOutputDir():
     '''returns output location stored in the Configuration's 'OutputLocation' entry.
       if it cannot import Configuration it returns os.path.join(os.path.expanduser('~'),'CC3DWorkspace')
@@ -93,7 +91,7 @@ def prepareParameterScan(_cc3dSimulationDataHandler):
     if not os.access(pScanFilePath, os.W_OK):
         raise AssertionError('Parameter Scan ERRORCODE=' + str(
             ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE) + ': Parameter Scan xml file :' + pScanFilePath + ' has to be writeable. Please change permission on this file')
-    #         raise AssertionError('parameter Scan Error: Parameter Scan xml file :'+pScanFilePath+ ' has to be writeable. Please change permission on this file')
+    # raise AssertionError('parameter Scan Error: Parameter Scan xml file :'+pScanFilePath+ ' has to be writeable. Please change permission on this file')
 
     # We use separate ParameterScanUtils object to handle parameter scan 
     from ParameterScanUtils import ParameterScanUtils
@@ -318,7 +316,7 @@ try:
                 if int(projectVersionInt) > int(currentVersionInt):
                     print '\n\n\n--------------- COMPUCELL3D VERSION MISMATCH\n\n'
                     print 'Your CompuCell3D version %s might be too old for the project you are trying to run.\n The least version project requires is %s. \n You may run project at your own risk' % (
-                    currentVersion, projectVersion)
+                        currentVersion, projectVersion)
                     import time
 
                     time.sleep(5)
@@ -378,7 +376,7 @@ try:
                 relaunch = True
                 break
 
-            #     print 'allowRelaunch=',allowRelaunch,' relaunch=',relaunch
+                #     print 'allowRelaunch=',allowRelaunch,' relaunch=',relaunch
 
     if allowRelaunch and relaunch:
         from ParameterScanUtils import getParameterScanCommandLineArgList
@@ -407,61 +405,29 @@ except (IndentationError, SyntaxError, IOError, ImportError, NameError) as e:
     traceback_message = traceback.format_exc()
     print traceback_message
 
-    # CompuCellSetup.broadcast_abort_message()
-
-
     sys.exit(ErrorCodes.EXCEPTION_IN_CC3D)
-# except SyntaxError, e:
-#     if CompuCellSetup.simulationObjectsCreated:
-#         sim.finish()
-#     traceback_message = traceback.format_exc()
-#     print traceback_message
-#     print "Syntax Error" + e.message
 
-
-# except IndentationError as e:
-#     if CompuCellSetup.simulationObjectsCreated:
-#         sim.finish()
-#     traceback_message = traceback.format_exc()
-#     print traceback_message
-#     print 'e.__class__.__name__=',e.__class__.__name__
-#     print "Indentation Error"+e.message
-# except SyntaxError,e:
-#     if CompuCellSetup.simulationObjectsCreated:
-#         sim.finish()
-#     traceback_message = traceback.format_exc()
-#     print traceback_message
-#     print "Syntax Error"+e.message
-# except IOError,e:
-#     if CompuCellSetup.simulationObjectsCreated:
-#         sim.finish()
-#     traceback_message = traceback.format_exc()
-#     print traceback_message
-#     print "IOerror Error"+e.message
-# except ImportError,e:
-#     if CompuCellSetup.simulationObjectsCreated:
-#         sim.finish()
-#     traceback_message = traceback.format_exc()
-#     print traceback_message
-#     print "import Error"+e.message
 except ExpatError, e:
     if CompuCellSetup.simulationObjectsCreated:
         sim.finish()
     xmlFileName = CompuCellSetup.simulationPaths.simulationXMLFileName
     print "Error in XML File", "File:\n " + xmlFileName + "\nhas the following problem\n" + e.message
+    sys.exit(ErrorCodes.EXCEPTION_IN_CC3D)
 
 except AssertionError, e:
     if CompuCellSetup.simulationObjectsCreated:
         sim.finish()
     print "Assertion Error: ", e.message
 
-
     if e.message.startswith('Parameter Scan ERRORCODE=' + str(ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE)):
         sys.exit(ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE)
+
+    sys.exit(ErrorCodes.EXCEPTION_IN_CC3D)
 
 
 except CompuCellSetup.CC3DCPlusPlusError, e:
     print "RUNTIME ERROR IN C++ CODE: ", e.message
+    sys.exit(ErrorCodes.EXCEPTION_IN_CC3D)
 # except NameError,e:
 #     pass
 except:
@@ -473,3 +439,4 @@ except:
     else:
         traceback_message = traceback.format_exc()
         print "Unexpected Error:", traceback_message
+    sys.exit(ErrorCodes.EXCEPTION_IN_CC3D)
