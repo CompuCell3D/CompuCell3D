@@ -1872,7 +1872,6 @@ def set_push_address(addr):
     global push_address
     push_address = addr
 
-
 def broadcast_simulation_return_value():
     """
     Sends simulation return value over zmq channel with address given by
@@ -1880,6 +1879,7 @@ def broadcast_simulation_return_value():
     this function returns early
     :return: None
     """
+    print 'INSIDE broadcast_simulation_return_value'
 
     global push_address
 
@@ -1907,7 +1907,7 @@ def broadcast_simulation_return_value():
     consumer_sender.connect(push_address)
 
     # result = {'tag': tag, 'return_value': simulation_return_value}
-    result = {'return_value_tag': simulation_return_value_tag, 'return_value': simulation_return_value}
+    result = {'return_value_tag': simulation_return_value_tag, 'return_value': simulation_return_value,'abort':False}
     print 'will send the result ', result
     consumer_sender.send_json(result)
     print 'result sent'

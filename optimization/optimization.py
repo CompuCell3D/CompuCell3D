@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-
-# TODO add discovery of free port - zmw have a fcn that facilitates it (port range is given )
+#
 # TODO add run script
 # TODO catch exceptions in the worker simulation and display exception on the screen - stop optimization run
 # port_selected = socket.bind_to_random_port('tcp://*', min_port=6001, max_port=6004, max_tries=100)
@@ -203,16 +202,35 @@ class Optimizer(object):
 
         sum = 0
         print 'reducing=', num_workers, ' workers'
+        abort_flag = False
+        abort_worker_tag = None
         for x in xrange(num_workers):
             # print 'waiting for worker x=', x
             result = results_receiver.recv_json()
+            # print 'reduce result=',result
 
             return_data_dict[result['return_value_tag']] = result['return_value']
 
-            print 'got result from worker x=', x, ' res=', result
-            # sum += result['num']
+
+            try:
+                if result['abort']:
+                    # print 'GOT ABORT MESSAGE'
+                    abort_flag = True
+                    abort_worker_tag = result['return_value_tag']
+                    break
+
+            except KeyError:
+                pass
+
+            # print 'got result from worker x=', x, ' res=', result
+
+
+        if abort_flag:
+            print 'GOT ABORT FLAG'
+            raise AssertionError("Abort command received from worker %s "%abort_worker_tag)
 
         # print 'sum = ', sum
+        # print 'return_data_dict=',return_data_dict
         return return_data_dict
 
     def param_generator(self, num_workers):
@@ -303,6 +321,7 @@ class Optimizer(object):
 
         print 'WILL REDUCE ', param_idx + 1, ' workers'
         return_data_dict = self.reduce(param_idx + 1)
+
 
         # producing vector of return values - have to ensure that the order of values in the vector
         # is the same as the order of parameter vectors in the param_set

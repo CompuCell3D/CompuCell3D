@@ -1,5 +1,6 @@
 from multiprocessing import Process
-from subprocess import call
+# from subprocess import call
+import subprocess
 from template_utils import generate_simulation_files_from_template
 from jinja2 import Environment, FileSystemLoader
 from glob import glob
@@ -111,6 +112,32 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
 
         return generated_simulation_fname, hashed_workspace_dir
 
+    def cleanup_actions(self,clean_workdirs,simulation_fname):
+
+        # removing temporary directory where we generated simulation from the simulation templates
+        shutil.rmtree(dirname(simulation_fname))
+
+        # removing workspace of the current simulation
+        current_simulation_workspace_dir = dirname(dirname(simulation_fname))
+        if clean_workdirs:
+            shutil.rmtree(current_simulation_workspace_dir)
+
+    def send_abort_message(self,push_address, worker_tag):
+        """
+        Used in case simulation throws an exception . IN this case we are sending abort message to
+        optimization runner (Optimizer)
+        :return: None
+        """
+        context = zmq.Context()
+
+
+        consumer_sender = context.socket(zmq.PUSH)
+        consumer_sender.connect(push_address)
+
+        result = {'return_value_tag': worker_tag, 'return_value': -1,'abort':True}
+
+
+        consumer_sender.send_json(result)
 
 
     def event_loop(self):
@@ -171,16 +198,16 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
 
         print 'popen_args=', popen_args
 
-        # this call will block until simulation is done
-        call(popen_args)
+        # # this call will block until simulation is done
+        try:
+            # this runs single cc3d job and catches exceptions
+            subprocess.check_output(popen_args)
+        except subprocess.CalledProcessError as e:
+            print 'GOT subprocess.CalledProcessError '
+            print e.output
 
-        # removing temporary directory where we generated simulation from the simulation templates
-        shutil.rmtree(dirname(simulation_fname))
-
-        # removing workspace of the current simulation
-        current_simulation_workspace_dir = dirname(dirname(simulation_fname))
-        if clean_workdirs:
-            shutil.rmtree(current_simulation_workspace_dir)
-
+            self.send_abort_message(push_address=self.push_address_str, worker_tag=worker_tag )
 
 
+
+        self.cleanup_actions(clean_workdirs=clean_workdirs,simulation_fname=simulation_fname)
