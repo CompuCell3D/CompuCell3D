@@ -512,5 +512,8 @@ if __name__ == '__main__':
     optimizer.set_optimization_parameters_manager(optim_param_mgr)
     optimizer.set_parse_args(args)
     optimizer.set_num_workers(args.num_workers)
-
-    optimizer.run()
+    try:
+        optimizer.run()
+    except AssertionError as e:
+        print 'ABNORMAL EXIT ',e.message
+        print 'Make sure your simulation scripts run correctly. Run them using Player or runScript and watch for errors'
