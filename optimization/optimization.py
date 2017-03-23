@@ -142,6 +142,9 @@ class Optimizer(object):
         self.push_port = None
         self.pull_port = None
         self.core_ip_address = "tcp://127.0.0.1"
+        self.push_address_str = None
+        self.pull_address_str = None
+
         # self.push_address_str = "tcp://127.0.0.1:5557"
         # self.pull_address_str = "tcp://127.0.0.1:5558"
 
@@ -158,7 +161,7 @@ class Optimizer(object):
         # parsed command line arguments
         self.parse_args = None
 
-
+        # setting up push and pull sockets
         self.push_socket = self.push_context.socket(zmq.PUSH)
         self.push_port = self.push_socket.bind_to_random_port(self.core_ip_address, min_port=5557, max_port=6557, max_tries=100)
         self.push_address_str = self.core_ip_address+":%s"%str(self.push_port)
@@ -167,15 +170,9 @@ class Optimizer(object):
         self.pull_socket = self.pull_context.socket(zmq.PULL)
         self.pull_port = self.pull_socket.bind_to_random_port(self.core_ip_address, min_port=5557, max_port=6557, max_tries=100)
         self.pull_address_str = self.core_ip_address + ":%s" % str(self.pull_port)
-        # self.results_receiver.bind(self.pull_address_str)
-
-
-        # self.zmq_socket.bind(self.push_address_str)
 
 
 
-        # self.zmq_socket = self.context.socket(zmq.PUSH)
-        # self.zmq_socket.bind(self.push_address_str)
         self.num_workers = 1
 
     def acknowledge_presence(self, num_workers):
@@ -200,9 +197,6 @@ class Optimizer(object):
         :return: None
         """
 
-        # context = zmq.Context()
-        # results_receiver = context.socket(zmq.PULL)
-        # results_receiver.bind(self.pull_address_str)
         results_receiver = self.pull_socket
 
         return_data_dict = {}  # {worker_tag:return_value}
