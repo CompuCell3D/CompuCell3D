@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #
 # TODO add run script
-# TODO catch exceptions in the worker simulation and display exception on the screen - stop optimization run
+# todo add process tracker to easily kill all child processes
+# todo add ability to estimate multiple loss function values on a single processor
 # port_selected = socket.bind_to_random_port('tcp://*', min_port=6001, max_port=6004, max_tries=100)
 #
 
@@ -425,7 +426,8 @@ class Optimizer(object):
         self.optim_param_mgr = OptimizationParameterManager()
         optim_param_mgr = self.optim_param_mgr
 
-        optim_param_mgr.parse(args.params_file)
+        # optim_param_mgr.parse(args.params_file)
+        optim_param_mgr.parse(self.parse_args.params_file)
 
         starting_params = optim_param_mgr.get_starting_points()
         print 'starting_params (mapped to [0,1])=', starting_params
@@ -491,16 +493,46 @@ class Optimizer(object):
     def run(self):
         self.run_optimization()
 
+#
+# def main_debug():
+#     cml_parser = OptimizationCMLParser()
+#
+#     # cml_parser.arg('--help')
+#     cml_parser.arg('--input', r'D:\CC3DProjects\short_demo\short_demo.cc3d')
+#     cml_parser.arg('--params-file', r'D:\CC3D_GIT\optimization\params.json')
+#     cml_parser.arg('--cc3d-run-script', r'C:\CompuCell3D-64bit\runScript.bat')
+#     cml_parser.arg('--clean-workdirs')
+#     cml_parser.arg('--num-workers', '5')  # here it needs to be specified as str but parser converts it to int
+#
+#     args = cml_parser.parse()
+#
+#     optim_param_mgr = OptimizationParameterManager()
+#     optim_param_mgr.parse(args.params_file)
+#
+#     optimizer = Optimizer()
+#
+#     optimizer.set_optimization_parameters_manager(optim_param_mgr)
+#     optimizer.set_parse_args(args)
+#     optimizer.set_num_workers(args.num_workers)
+#     try:
+#         optimizer.run()
+#     except AssertionError as e:
+#         print 'ABNORMAL EXIT ',e.message
+#         print 'Make sure your simulation scripts run correctly. Run them using Player or runScript and watch for errors'
 
-if __name__ == '__main__':
+
+#
+# optimization.bat --input=D:\CC3DProjects\short_demo\short_demo.cc3d --params-file=D:\CC3D_GIT\optimization\params.json --num-workers=1
+
+def main():
     cml_parser = OptimizationCMLParser()
 
-    # cml_parser.arg('--help')
-    cml_parser.arg('--input', r'D:\CC3DProjects\short_demo\short_demo.cc3d')
-    cml_parser.arg('--params-file', r'D:\CC3D_GIT\optimization\params.json')
-    cml_parser.arg('--cc3d-run-script', r'C:\CompuCell3D-64bit\runScript.bat')
-    cml_parser.arg('--clean-workdirs')
-    cml_parser.arg('--num-workers', '5')  # here it needs to be specified as str but parser converts it to int
+    # # cml_parser.arg('--help')
+    # cml_parser.arg('--input', r'D:\CC3DProjects\short_demo\short_demo.cc3d')
+    # cml_parser.arg('--params-file', r'D:\CC3D_GIT\optimization\params.json')
+    # cml_parser.arg('--cc3d-run-script', r'C:\CompuCell3D-64bit\runScript.bat')
+    # cml_parser.arg('--clean-workdirs')
+    # cml_parser.arg('--num-workers', '5')  # here it needs to be specified as str but parser converts it to int
 
     args = cml_parser.parse()
 
@@ -517,3 +549,33 @@ if __name__ == '__main__':
     except AssertionError as e:
         print 'ABNORMAL EXIT ',e.message
         print 'Make sure your simulation scripts run correctly. Run them using Player or runScript and watch for errors'
+
+if __name__ == '__main__':
+    main()
+
+# if __name__ == '__main__':
+#
+#     cml_parser = OptimizationCMLParser()
+#
+#     # # cml_parser.arg('--help')
+#     # cml_parser.arg('--input', r'D:\CC3DProjects\short_demo\short_demo.cc3d')
+#     # cml_parser.arg('--params-file', r'D:\CC3D_GIT\optimization\params.json')
+#     # cml_parser.arg('--cc3d-run-script', r'C:\CompuCell3D-64bit\runScript.bat')
+#     # cml_parser.arg('--clean-workdirs')
+#     # cml_parser.arg('--num-workers', '5')  # here it needs to be specified as str but parser converts it to int
+#
+#     args = cml_parser.parse()
+#
+#     optim_param_mgr = OptimizationParameterManager()
+#     optim_param_mgr.parse(args.params_file)
+#
+#     optimizer = Optimizer()
+#
+#     optimizer.set_optimization_parameters_manager(optim_param_mgr)
+#     optimizer.set_parse_args(args)
+#     optimizer.set_num_workers(args.num_workers)
+#     try:
+#         optimizer.run()
+#     except AssertionError as e:
+#         print 'ABNORMAL EXIT ',e.message
+#         print 'Make sure your simulation scripts run correctly. Run them using Player or runScript and watch for errors'
