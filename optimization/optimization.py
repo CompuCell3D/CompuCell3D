@@ -493,32 +493,32 @@ class Optimizer(object):
     def run(self):
         self.run_optimization()
 
-#
-# def main_debug():
-#     cml_parser = OptimizationCMLParser()
-#
-#     # cml_parser.arg('--help')
-#     cml_parser.arg('--input', r'D:\CC3DProjects\short_demo\short_demo.cc3d')
-#     cml_parser.arg('--params-file', r'D:\CC3D_GIT\optimization\params.json')
-#     cml_parser.arg('--cc3d-run-script', r'C:\CompuCell3D-64bit\runScript.bat')
-#     cml_parser.arg('--clean-workdirs')
-#     cml_parser.arg('--num-workers', '5')  # here it needs to be specified as str but parser converts it to int
-#
-#     args = cml_parser.parse()
-#
-#     optim_param_mgr = OptimizationParameterManager()
-#     optim_param_mgr.parse(args.params_file)
-#
-#     optimizer = Optimizer()
-#
-#     optimizer.set_optimization_parameters_manager(optim_param_mgr)
-#     optimizer.set_parse_args(args)
-#     optimizer.set_num_workers(args.num_workers)
-#     try:
-#         optimizer.run()
-#     except AssertionError as e:
-#         print 'ABNORMAL EXIT ',e.message
-#         print 'Make sure your simulation scripts run correctly. Run them using Player or runScript and watch for errors'
+
+def main_debug():
+    cml_parser = OptimizationCMLParser()
+
+    # cml_parser.arg('--help')
+    cml_parser.arg('--input', r'D:\CC3DProjects\short_demo\short_demo.cc3d')
+    cml_parser.arg('--params-file', r'D:\CC3D_GIT\optimization\params.json')
+    cml_parser.arg('--cc3d-run-script', r'C:\CompuCell3D-64bit\runScript.bat')
+    cml_parser.arg('--clean-workdirs')
+    cml_parser.arg('--num-workers', '5')  # here it needs to be specified as str but parser converts it to int
+
+    args = cml_parser.parse()
+
+    optim_param_mgr = OptimizationParameterManager()
+    optim_param_mgr.parse(args.params_file)
+
+    optimizer = Optimizer()
+
+    optimizer.set_optimization_parameters_manager(optim_param_mgr)
+    optimizer.set_parse_args(args)
+    optimizer.set_num_workers(args.num_workers)
+    try:
+        optimizer.run()
+    except AssertionError as e:
+        print 'ABNORMAL EXIT ',e.message
+        print 'Make sure your simulation scripts run correctly. Run them using Player or runScript and watch for errors'
 
 
 #
@@ -527,12 +527,6 @@ class Optimizer(object):
 def main():
     cml_parser = OptimizationCMLParser()
 
-    # # cml_parser.arg('--help')
-    # cml_parser.arg('--input', r'D:\CC3DProjects\short_demo\short_demo.cc3d')
-    # cml_parser.arg('--params-file', r'D:\CC3D_GIT\optimization\params.json')
-    # cml_parser.arg('--cc3d-run-script', r'C:\CompuCell3D-64bit\runScript.bat')
-    # cml_parser.arg('--clean-workdirs')
-    # cml_parser.arg('--num-workers', '5')  # here it needs to be specified as str but parser converts it to int
 
     args = cml_parser.parse()
 
@@ -553,29 +547,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-# if __name__ == '__main__':
-#
-#     cml_parser = OptimizationCMLParser()
-#
-#     # # cml_parser.arg('--help')
-#     # cml_parser.arg('--input', r'D:\CC3DProjects\short_demo\short_demo.cc3d')
-#     # cml_parser.arg('--params-file', r'D:\CC3D_GIT\optimization\params.json')
-#     # cml_parser.arg('--cc3d-run-script', r'C:\CompuCell3D-64bit\runScript.bat')
-#     # cml_parser.arg('--clean-workdirs')
-#     # cml_parser.arg('--num-workers', '5')  # here it needs to be specified as str but parser converts it to int
-#
-#     args = cml_parser.parse()
-#
-#     optim_param_mgr = OptimizationParameterManager()
-#     optim_param_mgr.parse(args.params_file)
-#
-#     optimizer = Optimizer()
-#
-#     optimizer.set_optimization_parameters_manager(optim_param_mgr)
-#     optimizer.set_parse_args(args)
-#     optimizer.set_num_workers(args.num_workers)
-#     try:
-#         optimizer.run()
-#     except AssertionError as e:
-#         print 'ABNORMAL EXIT ',e.message
-#         print 'Make sure your simulation scripts run correctly. Run them using Player or runScript and watch for errors'
