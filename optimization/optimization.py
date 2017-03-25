@@ -34,6 +34,14 @@ class OptimizationCMLParser(object):
         self.parser.add_argument('-n', '--num-workers', required=False, action='store', default=1, type=int,
                                  help="number of workers")
 
+        self.parser.add_argument('-s', '--population-size', required=False, action='store', default=6, type=int,
+                                 help="candidate solution population size. "
+                                      "Specifies number of loss function values needed at each optimization step. "
+                                      "For best performance population size should be equal number of workers but "
+                                      "if this is not possible it is best to have population size being "
+                                      "a multiple of number of workers")
+
+
         # adding cc3d run script will make it easier to write .sh, .bat or .command optimization scripts
         self.parser.add_argument('-r', '--cc3d-run-script', required=True, action='store', help="CC3D run script")
 
@@ -422,6 +430,7 @@ class Optimizer(object):
         :return:
         """
         simulation_name = self.parse_args.input
+        population_size = self.parse_args.population_size
 
         self.optim_param_mgr = OptimizationParameterManager()
         optim_param_mgr = self.optim_param_mgr
@@ -448,7 +457,9 @@ class Optimizer(object):
 
         while not optim.stop():  # iterate
             # get candidate solutions
-            param_set_list = optim.ask(number=self.num_workers)
+            # param_set_list = optim.ask(number=self.num_workers)
+            # param_set_list = optim.ask(number=1)
+            param_set_list = optim.ask(number=population_size)
 
             # set param_set_list for run_task to iterate over
             self.set_param_set_list(param_set_list=param_set_list)
@@ -502,7 +513,8 @@ def main_debug():
     cml_parser.arg('--params-file', r'D:\CC3D_GIT\optimization\params.json')
     cml_parser.arg('--cc3d-run-script', r'C:\CompuCell3D-64bit\runScript.bat')
     cml_parser.arg('--clean-workdirs')
-    cml_parser.arg('--num-workers', '5')  # here it needs to be specified as str but parser converts it to int
+    cml_parser.arg('--num-workers', '3')  # here it needs to be specified as str but parser converts it to int
+    cml_parser.arg('--population-size', '6')  # here it needs to be specified as str but parser converts it to int
 
     args = cml_parser.parse()
 
@@ -522,7 +534,7 @@ def main_debug():
 
 
 #
-# optimization.bat --input=D:\CC3DProjects\short_demo\short_demo.cc3d --params-file=D:\CC3D_GIT\optimization\params.json --num-workers=1
+# optimization.bat --input=D:\CC3DProjects\short_demo\short_demo.cc3d --params-file=D:\CC3D_GIT\optimization\params.json --num-workers=1 --population-size=6
 
 def main():
     cml_parser = OptimizationCMLParser()
@@ -545,5 +557,5 @@ def main():
         print 'Make sure your simulation scripts run correctly. Run them using Player or runScript and watch for errors'
 
 if __name__ == '__main__':
-    main()
+    main_debug()
 
