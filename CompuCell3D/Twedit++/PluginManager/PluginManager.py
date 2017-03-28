@@ -12,8 +12,10 @@ import sys
 import imp
 import traceback
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import QPixmap
+# from PyQt4.QtCore import *
+# from PyQt4.QtGui import QPixmap
+
+from utils.global_imports import *
 
 import Configuration
 
@@ -212,8 +214,12 @@ class PluginManager(QObject):
                 
         except StandardError, err:
             module = imp.new_module(name)
+
             module.error = \
-                self.trUtf8("\n\n\n\n\n Module failed to load. Error: %1").arg(unicode(err))
+                "\n\n\n\n\n Module failed to load. Error: %s"%unicode(err)
+
+            # module.error = \
+            #     self.trUtf8("\n\n\n\n\n Module failed to load. Error: %1").arg(unicode(err))
             print "Error loading plugin module:",  name
             print unicode(err)
             

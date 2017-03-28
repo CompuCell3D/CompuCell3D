@@ -1,7 +1,8 @@
 import re
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-import PyQt4.QtCore as QtCore
+# from PyQt4.QtCore import *
+# from PyQt4.QtGui import *
+# import PyQt4.QtCore as QtCore
+from utils.global_imports import *
 import ui_gotolinedlg
 import sys
 from Messaging import stdMsg, dbgMsg, errMsg, dbgMsg
@@ -55,7 +56,7 @@ class GoToLineDlg(QDialog,ui_gotolinedlg.Ui_GoToLineDlg):
         ##self.activateWindow()
         #QDialog.showEvent(self,event) # necesary to move dialog to the correct position - we do it only if we override show event
 
-    @pyqtSignature("") # signature of the signal emited by the button
+    @pyqtSlot() # signature of the signal emited by the button
     def on_goButton_clicked(self):
         # print "this is on go button clicked=",self.goToLineEdit.text()
         lineTuple=self.goToLineEdit.text().toInt()

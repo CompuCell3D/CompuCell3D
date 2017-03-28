@@ -44,10 +44,7 @@ class Theme(object):
         
 import Configuration        
 import sys,os
-from PyQt4.Qsci import *
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-
+from utils.global_imports import *
 
 
 class ThemeManager(object):

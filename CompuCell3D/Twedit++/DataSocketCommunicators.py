@@ -1,8 +1,10 @@
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtNetwork import *
-from  PyQt4 import *
+# from PyQt4.QtCore import *
+# from PyQt4.QtGui import *
+# from PyQt4.QtNetwork import *
+# from  PyQt4 import *
+from utils.global_imports import *
 from Messaging import stdMsg, dbgMsg, errMsg, setDebugging
+
 
 #This clazs does not use Qt event loop so we have to use blocking statements waitForConnected and waitForDisconnected to make sure 
 # data was delivered succesfully within given time frame - we give it 3 sec waiting time

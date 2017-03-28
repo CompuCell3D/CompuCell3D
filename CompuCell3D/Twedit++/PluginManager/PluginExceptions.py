@@ -7,8 +7,9 @@
 Module implementing the exceptions raised by the plugin system.
 """
 
-from PyQt4.QtGui import QApplication
+# from PyQt4.QtGui import QApplication
 
+from utils.global_imports import *
 class PluginError(Exception):
     """
     Class defining a special error for the plugin classes.

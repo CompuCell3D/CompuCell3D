@@ -43,10 +43,15 @@ warnings.showwarning = __showwarning
 
 from codecs import BOM_UTF8, BOM_UTF16, BOM_UTF32,BOM_BE, BOM_LE,BOM_UTF16_BE,BOM_UTF16_LE,BOM_UTF32_BE,BOM_UTF32_LE
 
-from PyQt4.QtCore import QRegExp, QString, QStringList, QDir, QProcess, Qt, QByteArray, \
-    qVersion, PYQT_VERSION_STR, QCryptographicHash
-from PyQt4.QtGui import QApplication
-from PyQt4.Qsci import QSCINTILLA_VERSION_STR, QsciScintilla
+# from PyQt4.QtCore import QRegExp, QString, QStringList, QDir, QProcess, Qt, QByteArray, \
+#     qVersion, PYQT_VERSION_STR, QCryptographicHash
+# from PyQt4.QtGui import QApplication
+# from PyQt4.Qsci import QSCINTILLA_VERSION_STR, QsciScintilla
+
+from PyQt5.QtCore import QRegExp, QDir, QProcess, Qt, QByteArray, \
+    qVersion, PYQT_VERSION_STR, QCoreApplication, QCryptographicHash
+from PyQt5.Qsci import QSCINTILLA_VERSION_STR, QsciScintilla
+
 
 # from Globals import isWindowsPlatform   # import this method into the Utilities namespace
 

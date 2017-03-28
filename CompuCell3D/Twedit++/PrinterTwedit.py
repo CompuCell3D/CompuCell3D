@@ -1,9 +1,13 @@
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtNetwork import *
-from PyQt4.Qsci import *
+# from PyQt4.QtCore import *
+# from PyQt4.QtGui import *
+# from PyQt4.QtNetwork import *
+# from PyQt4.Qsci import *
+#
+# from PyQt4 import QtCore, QtGui
 
-from PyQt4 import QtCore, QtGui
+from utils.global_imports import *
+from PyQt5.QtPrintSupport import QPrinter
+
 
 # this code is basedon Eric 4 code
 class PrinterTwedit(QsciPrinter):

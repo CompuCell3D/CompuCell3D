@@ -1,14 +1,17 @@
 import re
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-import PyQt4.QtCore as QtCore
+# # from PyQt4.QtCore import *
+# # from PyQt4.QtGui import *
+# # import PyQt4.QtCore as QtCore
+# #
+#
+# import os
+# import sys
+# from PyQt4.QtCore import *
+# from PyQt4.QtGui import *
+# import sys
 
+from utils.global_imports import *
 
-import os
-import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-import sys
 from Messaging import stdMsg, dbgMsg, errMsg, setDebugging
 
 MAC = "qt_mac_set_native_menubar" in dir()

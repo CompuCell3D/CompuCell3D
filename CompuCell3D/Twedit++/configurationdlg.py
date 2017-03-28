@@ -1,7 +1,8 @@
 import re
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-import PyQt4.QtCore as QtCore
+# from PyQt4.QtCore import *
+# from PyQt4.QtGui import *
+# import PyQt4.QtCore as QtCore
+from utils.global_imports import *
 import ui_configurationdlg
 import sys
 
@@ -78,7 +79,7 @@ class ConfigurationDlg(QDialog,ui_configurationdlg.Ui_ConfigurationDlg):
             print 'COULD NOT FIND moduleName=',moduleName,' in ', pluginAutoloadData
         self.loadOnStartupCHB.setChecked(loadOnStartup)
         
-    @pyqtSignature("") # signature of the signal emited by the button        
+    @pyqtSlot() # signature of the signal emited by the button
     def on_loadPB_clicked(self):
     
         pm=self.editorWindow.pm
@@ -93,7 +94,7 @@ class ConfigurationDlg(QDialog,ui_configurationdlg.Ui_ConfigurationDlg):
             self.loadPB.setEnabled(False)
             self.unloadPB.setEnabled(bpd.deactivateable)
             
-    @pyqtSignature("") # signature of the signal emited by the button        
+    @pyqtSlot() # signature of the signal emited by the button
     def on_unloadPB_clicked(self):
     
         pm=self.editorWindow.pm
@@ -124,7 +125,7 @@ class ConfigurationDlg(QDialog,ui_configurationdlg.Ui_ConfigurationDlg):
         if self.pluginsLW.count():
             self.pluginsLW.setCurrentRow(0)
     
-    @pyqtSignature("") # signature of the signal emited by the button
+    @pyqtSlot() # signature of the signal emited by the button
     def on_okButton_clicked(self):
         self.findChangedConfigs()        
         self.close()

@@ -2,47 +2,47 @@
 
 # Form implementation generated from reading ui file 'KeyShortcut.ui'
 #
-# Created: Sun Jan 23 12:30:07 2011
-#      by: PyQt4 UI code generator 4.7.3
+# Created by: PyQt5 UI code generator 5.6
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_KeyShortcutDlg(object):
     def setupUi(self, KeyShortcutDlg):
         KeyShortcutDlg.setObjectName("KeyShortcutDlg")
-        KeyShortcutDlg.resize(180, 78)
-        self.verticalLayout = QtGui.QVBoxLayout(KeyShortcutDlg)
+        KeyShortcutDlg.resize(188, 98)
+        self.verticalLayout = QtWidgets.QVBoxLayout(KeyShortcutDlg)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.grabButton = QtGui.QPushButton(KeyShortcutDlg)
+        self.grabButton = QtWidgets.QPushButton(KeyShortcutDlg)
         self.grabButton.setObjectName("grabButton")
         self.horizontalLayout.addWidget(self.grabButton)
-        self.keyLabel = QtGui.QLabel(KeyShortcutDlg)
+        self.keyLabel = QtWidgets.QLabel(KeyShortcutDlg)
         self.keyLabel.setText("")
         self.keyLabel.setObjectName("keyLabel")
         self.horizontalLayout.addWidget(self.keyLabel)
         self.verticalLayout.addLayout(self.horizontalLayout)
-        self.horizontalLayout_2 = QtGui.QHBoxLayout()
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.okButton = QtGui.QPushButton(KeyShortcutDlg)
+        self.okButton = QtWidgets.QPushButton(KeyShortcutDlg)
         self.okButton.setObjectName("okButton")
         self.horizontalLayout_2.addWidget(self.okButton)
-        self.cancelButton = QtGui.QPushButton(KeyShortcutDlg)
+        self.cancelButton = QtWidgets.QPushButton(KeyShortcutDlg)
         self.cancelButton.setObjectName("cancelButton")
         self.horizontalLayout_2.addWidget(self.cancelButton)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
 
         self.retranslateUi(KeyShortcutDlg)
-        QtCore.QObject.connect(self.cancelButton, QtCore.SIGNAL("clicked()"), KeyShortcutDlg.reject)
-        QtCore.QObject.connect(self.okButton, QtCore.SIGNAL("clicked()"), KeyShortcutDlg.accept)
+        self.cancelButton.clicked.connect(KeyShortcutDlg.reject)
+        self.okButton.clicked.connect(KeyShortcutDlg.accept)
         QtCore.QMetaObject.connectSlotsByName(KeyShortcutDlg)
 
     def retranslateUi(self, KeyShortcutDlg):
-        KeyShortcutDlg.setWindowTitle(QtGui.QApplication.translate("KeyShortcutDlg", "Grab Keyboard Shortcut", None, QtGui.QApplication.UnicodeUTF8))
-        self.grabButton.setText(QtGui.QApplication.translate("KeyShortcutDlg", "Grab Shortcut...", None, QtGui.QApplication.UnicodeUTF8))
-        self.okButton.setText(QtGui.QApplication.translate("KeyShortcutDlg", "OK", None, QtGui.QApplication.UnicodeUTF8))
-        self.cancelButton.setText(QtGui.QApplication.translate("KeyShortcutDlg", "Cancel", None, QtGui.QApplication.UnicodeUTF8))
+        _translate = QtCore.QCoreApplication.translate
+        KeyShortcutDlg.setWindowTitle(_translate("KeyShortcutDlg", "Grab Keyboard Shortcut"))
+        self.grabButton.setText(_translate("KeyShortcutDlg", "Grab Shortcut..."))
+        self.okButton.setText(_translate("KeyShortcutDlg", "OK"))
+        self.cancelButton.setText(_translate("KeyShortcutDlg", "Cancel"))
 

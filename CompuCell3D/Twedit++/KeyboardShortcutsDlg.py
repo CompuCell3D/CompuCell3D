@@ -1,7 +1,9 @@
 import re
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-import PyQt4.QtCore as QtCore
+# from PyQt4.QtCore import *
+# from PyQt4.QtGui import *
+# import PyQt4.QtCore as QtCore
+from utils.global_imports import *
+
 import ui_KeyboardShortcuts
 import sys
 import ActionManager as am

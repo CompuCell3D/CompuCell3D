@@ -1,10 +1,12 @@
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+# from PyQt4.QtCore import *
+# from PyQt4.QtGui import *
+#
+# from PyQt4.Qsci import *
+#
+# from PyQt4 import QtCore, QtGui
+# import sys
+from utils.global_imports import *
 
-from PyQt4.Qsci import *
-
-from PyQt4 import QtCore, QtGui
-import sys
 
 # have to implement custom class for QSciScintilla to handle properly wheel even with and without ctrl pressed 
 class QsciScintillaCustom(QsciScintilla):

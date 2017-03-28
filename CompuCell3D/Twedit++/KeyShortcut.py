@@ -9,11 +9,11 @@
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
 # the GNU General Public License for more details.
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+
+from utils.global_imports import *
 
 import ui_KeyShortcut
-import sys
+# import sys
 from Messaging import stdMsg, dbgMsg, errMsg, dbgMsg
 MAC = "qt_mac_set_native_menubar" in dir()
 

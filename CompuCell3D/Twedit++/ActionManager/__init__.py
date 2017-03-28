@@ -1,8 +1,10 @@
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.Qsci import *
+# from PyQt4.QtCore import *
+# from PyQt4.QtGui import *
+# from PyQt4.Qsci import *
+#
+# from PyQt4 import QtCore, QtGui
 
-from PyQt4 import QtCore, QtGui
+from utils.global_imports import *
 import os
 import sys
 from Messaging import stdMsg, dbgMsg, errMsg, setDebugging
@@ -14,7 +16,7 @@ actionToShortcutDict={}
 
 def addAction(_action):
     name=_action.text()
-    name.remove('&')
+    name = name.replace('&','')
     # adding only actions with text property set
     if name !='': 
         actionDict[str(name)]=_action

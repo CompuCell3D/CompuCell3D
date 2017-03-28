@@ -2,9 +2,7 @@
 
 
 def setPaths():
-    import sys
     from os import environ
-    import string
     import sys
     platform=sys.platform
     if platform.startswith('win'):
@@ -24,18 +22,11 @@ def setPaths():
 
 setPaths()
 
-
-import sip
-sip.setapi('QVariant', 1)
-
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtNetwork import *
-from PyQt4.Qsci import *
-
-
 import sys
-import PyQt4
+
+import PyQt5
+from utils.global_imports import *
+
 #instaling message handler to suppres spurious qt messages
 if sys.platform=='darwin':
     import platform
@@ -48,7 +39,7 @@ if sys.platform=='darwin':
                 return
             print msg_log_context
 
-        PyQt4.QtCore.qInstallMsgHandler(handler)
+        PyQt5.QtCore.qInstallMsgHandler(handler)
 
     elif mac_ver_float == 10.10:
 
@@ -58,7 +49,7 @@ if sys.platform=='darwin':
                 return
             print msg_log_context
 
-        PyQt4.QtCore.qInstallMsgHandler(handler)
+        PyQt5.QtCore.qInstallMsgHandler(handler)
 
 
 
@@ -67,10 +58,10 @@ from EditorWindow import EditorWindow
 
 from DataSocketCommunicators import FileNameSender
 
-import sys, os, errno, tempfile
+import sys
 from windowsUtils import *
 
-from Messaging import stdMsg, dbgMsg, errMsg, setDebugging
+from Messaging import dbgMsg, setDebugging
 
 
 # this globally enables/disables debug statements
