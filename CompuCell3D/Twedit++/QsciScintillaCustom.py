@@ -119,7 +119,7 @@ class QsciScintillaCustom(QsciScintilla):
             from math import log        
             
             numberOfDigits= int(log(numberOfLines,10))+2 if numberOfLines>0 else 2
-            self.setMarginWidth(0,QString('0'*numberOfDigits))     
+            self.setMarginWidth(0,'0'*numberOfDigits)
                     
     
         

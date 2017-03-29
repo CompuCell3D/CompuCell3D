@@ -203,8 +203,10 @@ class CustomTabWidget(QTabWidget):
         # ---------------------------
         menu.addAction(am.actionDict["Move To Other View"])
 
-        self.connect(fnToClipAct, SIGNAL("triggered()"), self.editorWindow.fileNameToClipboard)
-        self.connect(fdToClipAct, SIGNAL("triggered()"), self.editorWindow.fileDirToClipboard)
+        fnToClipAct.triggered.connect(self.editorWindow.fileNameToClipboard)
+        fdToClipAct.triggered.connect(self.editorWindow.fileDirToClipboard)
+        # self.connect(fnToClipAct, SIGNAL("triggered()"), self.editorWindow.fileNameToClipboard)
+        # self.connect(fdToClipAct, SIGNAL("triggered()"), self.editorWindow.fileDirToClipboard)
 
         menu.exec_(event.globalPos())
 
@@ -422,7 +424,8 @@ class EditorWindow(QMainWindow):
         self.cycleTabsPopup = None
         self.cycleTabFilesList = CycleTabFileList(self)
 
-        self.pm = PluginManager(self)
+        # self.pm = PluginManager(self)
+
         self.setDefaultStyling()
 
         # # # lexer=textEditLocal.lexer()
@@ -647,45 +650,45 @@ class EditorWindow(QMainWindow):
             self.encodingLabel.setText("Unknown encoding")
 
     def prepareFileDialogFilters(self, _extensionLanguageMap):
-            """
-                Helper function used to initialze pull-down list of file types for file dialogs (open, sae, save as etc)
-            """
-            filterList = ''
-            filterDict = {}
-            for extension, language in _extensionLanguageMap.iteritems():
-                dbgMsg("extension=", extension, " language=", language)
-                try:
-                    filterDict[language] = filterDict[language] + " *" + extension
-                except KeyError:
-                    filterDict[language] = "*" + extension
+        """
+            Helper function used to initialze pull-down list of file types for file dialogs (open, sae, save as etc)
+        """
+        filterList = ''
+        filterDict = {}
+        for extension, language in _extensionLanguageMap.iteritems():
+            dbgMsg("extension=", extension, " language=", language)
+            try:
+                filterDict[language] = filterDict[language] + " *" + extension
+            except KeyError:
+                filterDict[language] = "*" + extension
 
-            keysSorted = filterDict.keys()
-            keysSorted.sort()
+        keysSorted = filterDict.keys()
+        keysSorted.sort()
 
-            # filterDict={} # reassign filter dict
+        # filterDict={} # reassign filter dict
 
-            for language in keysSorted:
-                if language == "C":
-                    # filterList.append("C/C++"+" file ("+filterDict[language]+");;")
-                    filterList += "C/C++" + " file (" + filterDict[language] + ");;"
+        for language in keysSorted:
+            if language == "C":
+                # filterList.append("C/C++"+" file ("+filterDict[language]+");;")
+                filterList += "C/C++" + " file (" + filterDict[language] + ");;"
 
-                    continue
-                if language == "CMake":
-                    # filterList.append(language+" file ("+filterDict[language]+" CMakeLists.*);;")
-                    filterList += language + " file (" + filterDict[language] + " CMakeLists.*);;"
+                continue
+            if language == "CMake":
+                # filterList.append(language+" file ("+filterDict[language]+" CMakeLists.*);;")
+                filterList += language + " file (" + filterDict[language] + " CMakeLists.*);;"
 
-                    continue
+                continue
 
-                # filterList.append(language+" file ("+filterDict[language]+");;")
-                filterList += language + " file (" + filterDict[language] + ");;"
+            # filterList.append(language+" file ("+filterDict[language]+");;")
+            filterList += language + " file (" + filterDict[language] + ");;"
 
 
-                # filterList.insert(0,"Text file (*.txt);;")
-            # filterList.insert(0,"All files (*);;")
-            filterList = "Text file (*.txt);;" + filterList
-            filterList = "All files (*);;" + filterList
+            # filterList.insert(0,"Text file (*.txt);;")
+        # filterList.insert(0,"All files (*);;")
+        filterList = "Text file (*.txt);;" + filterList
+        filterList = "All files (*);;" + filterList
 
-            return filterList, filterDict
+        return filterList, filterDict
 
     # def prepareFileDialogFilters(self, _extensionLanguageMap):
     #     """
@@ -895,7 +898,7 @@ class EditorWindow(QMainWindow):
         dbgMsg("WHEEL EVENT")
         if qApp.keyboardModifiers() == Qt.ControlModifier:
 
-            if event.delta() > 0:
+            if event.angleDelta() > 0:
                 self.zoomIn()
             else:
                 self.zoomOut()
@@ -938,7 +941,7 @@ class EditorWindow(QMainWindow):
             called when user closes Main window. This fcn records current state of editor . It also unloads plugins
         """
 
-        self.pm.unloadPlugins()
+        # self.pm.unloadPlugins()
 
         # openFilesToRestore={}
         openFilesToRestore = [{}, {}]
@@ -1138,7 +1141,7 @@ class EditorWindow(QMainWindow):
                 if not editor.isModified():
                     message = "File <b>\"%s\"</b>  <br> has been deleted <br> Keep it in Editor?" % fileName
                     ret = QtWidgets.QMessageBox.warning(self, "Missing File", message,
-                                                    QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+                                                        QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
                     if ret == QtWidgets.QMessageBox.Yes:
                         lastModTime = self.getEditorFileModificationTime(editor)
 
@@ -1571,7 +1574,7 @@ class EditorWindow(QMainWindow):
         if _directory.rstrip() != '':
             if not os.path.exists(_directory) or not os.path.isdir(_directory):
                 ret = QtWidgets.QMessageBox.warning(self, "Directory Error",
-                                                'Cannot search files in directory ' + _directory + ' because it does not exist')
+                                                    'Cannot search files in directory ' + _directory + ' because it does not exist')
                 return
 
         self.findDialogForm.setButtonsEnabled(False)
@@ -1746,10 +1749,10 @@ class EditorWindow(QMainWindow):
         """
         # dbgMsg("search parameters",_text," ", _filters," ",_directory)
         message = "About to replace all occurences of <b>\"%s\"</b>  <br> in ALL <b>\"%s\"</b> files inside directory:<br> %s  <br> Proceed?" % (
-        _text, _filters, _directory)
+            _text, _filters, _directory)
         ret = QtWidgets.QMessageBox.warning(self, "Replace in Files",
-                                        message,
-                                        QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+                                            message,
+                                            QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
         if ret == QtWidgets.QMessageBox.Cancel:
             return
 
@@ -1796,10 +1799,10 @@ class EditorWindow(QMainWindow):
 
         try:
             message = "Replaced %s occurences of \"<b>%s</b>\" in %s files" % (
-            str(replaceInFilesData[0]), _text, str(replaceInFilesData[1]))
+                str(replaceInFilesData[0]), _text, str(replaceInFilesData[1]))
             ret = QtWidgets.QMessageBox.information(self, "Replace in Files",
-                                                message,
-                                                QtWidgets.QMessageBox.Ok)
+                                                    message,
+                                                    QtWidgets.QMessageBox.Ok)
 
         except IndexError:
             pass
@@ -2027,8 +2030,8 @@ class EditorWindow(QMainWindow):
             if not foundFlag:
                 message = "Cannot find \"<b>%s</b>\"" % self.findAndReplaceHistory.textToFind
                 ret = QtWidgets.QMessageBox.information(self, "Find",
-                                                    message,
-                                                    QtWidgets.QMessageBox.Ok)
+                                                        message,
+                                                        QtWidgets.QMessageBox.Ok)
         else:
 
             # for some reason findNext does not work after undo action...
@@ -2038,8 +2041,8 @@ class EditorWindow(QMainWindow):
             if not foundFlag:
                 message = "Cannot find \"<b>%s</b>\"" % self.findAndReplaceHistory.textToFind
                 ret = QtWidgets.QMessageBox.information(self, "Find",
-                                                    message,
-                                                    QtWidgets.QMessageBox.Ok)
+                                                        message,
+                                                        QtWidgets.QMessageBox.Ok)
 
         self.findDialogForm.setButtonsEnabled(True)
 
@@ -2096,8 +2099,8 @@ class EditorWindow(QMainWindow):
             if not foundFlag:
                 message = "Cannot find \"<b>%s</b>\"" % self.findAndReplaceHistory.textToFind
                 ret = QtWidgets.QMessageBox.information(self, "Replace",
-                                                    message,
-                                                    QtWidgets.QMessageBox.Ok)
+                                                        message,
+                                                        QtWidgets.QMessageBox.Ok)
                 self.findDialogForm.setButtonsEnabled(True)
                 return
 
@@ -2111,8 +2114,8 @@ class EditorWindow(QMainWindow):
             if not foundFlag:
                 message = "Cannot find \"<b>%s</b>\"" % self.findAndReplaceHistory.textToFind
                 ret = QtWidgets.QMessageBox.information(self, "Replace",
-                                                    message,
-                                                    QtWidgets.QMessageBox.Ok)
+                                                        message,
+                                                        QtWidgets.QMessageBox.Ok)
                 self.findDialogForm.setButtonsEnabled(True)
                 return
 
@@ -2163,8 +2166,8 @@ class EditorWindow(QMainWindow):
             if not foundFlag:
                 message = "Cannot find \"<b>%s</b>\"" % findText
                 ret = QtWidgets.QMessageBox.information(self, "Replace All",
-                                                    message,
-                                                    QtWidgets.QMessageBox.Ok)
+                                                        message,
+                                                        QtWidgets.QMessageBox.Ok)
 
                 # message="Cannot find \"<b>%s</b>\""%self.findAndReplaceHistory.textToFind
                 # ret = QtWidgets.QMessageBox.information(self, "Replace All",
@@ -2230,8 +2233,8 @@ class EditorWindow(QMainWindow):
             if not foundFlag:
                 message = "Cannot find \"<b>%s</b>\"" % self.findAndReplaceHistory.textToFind
                 ret = QtWidgets.QMessageBox.information(self, "Replace All",
-                                                    message,
-                                                    QtWidgets.QMessageBox.Ok)
+                                                        message,
+                                                        QtWidgets.QMessageBox.Ok)
                 self.findDialogForm.setButtonsEnabled(True)
                 return
                 # previousLine,previousPos=editor.getCursorPosition()
@@ -2252,8 +2255,8 @@ class EditorWindow(QMainWindow):
 
         message = "Replaced %s occurences of \"<b>%s</b>\"" % (str(substitutionCounter), _text)
         ret = QtWidgets.QMessageBox.information(self, "Replace in Files",
-                                            message,
-                                            QtWidgets.QMessageBox.Ok)
+                                                message,
+                                                QtWidgets.QMessageBox.Ok)
 
         self.findDialogForm.setButtonsEnabled(True)
 
@@ -2683,10 +2686,12 @@ class EditorWindow(QMainWindow):
             currentFilePath = self.lastFileOpenPath
 
         dbgMsg("THIS IS CURRENT PATH=", currentFilePath)
-        fileNames = QtGui.QFileDialog.getOpenFileNames(self, "Open new file...", currentFilePath,
-                                                       self.fileDialogFilters)
+        fileNames, _  = QtWidgets.QFileDialog.getOpenFileNames(self, "Open new file...", currentFilePath,
+                                                           self.fileDialogFilters)
+        # fileNames = QtGui.QFileDialog.getOpenFileNames(self, "Open new file...", currentFilePath,
+        #                                                self.fileDialogFilters)
 
-        if fileNames.count():
+        if len(fileNames):
             # extract path name and add it to settings
             sampleFileName = fileNames[0]
             dirName = os.path.abspath(os.path.dirname(str(sampleFileName)))
@@ -3099,16 +3104,17 @@ class EditorWindow(QMainWindow):
         """
             slot - displays about Twedit text
         """
-        QtWidgets.QMessageBox.about(self, "About Twedit++ - ver. %s.%s.%s" % (VERSION_MAJOR, VERSION_MINOR, VERSION_BUILD),
-                                "The <b>Twedit++</b>  editor is a free Open-Source programmers editor\n"
-                                "Originally it was meant to be editor for Twitter and we limitted number of characters to 144\n"
-                                "However, after feedback from our users we were surprised to learn that people need more 144 characters to\n"
-                                "write software. We have since removed the limitation on number of characters... \n"
-                                "As a courtesy to our users no code written in this editor is catalogued by Google or any other data-mining company.\n"
-                                "<br><br>"
-                                "Copyright: Maciej Swat, <b>Swat International Productions, Inc.</b><br><br>"
-                                "Version %s.%s.%s" % (VERSION_MAJOR, VERSION_MINOR, VERSION_BUILD)
-                                )
+        QtWidgets.QMessageBox.about(self,
+                                    "About Twedit++ - ver. %s.%s.%s" % (VERSION_MAJOR, VERSION_MINOR, VERSION_BUILD),
+                                    "The <b>Twedit++</b>  editor is a free Open-Source programmers editor\n"
+                                    "Originally it was meant to be editor for Twitter and we limitted number of characters to 144\n"
+                                    "However, after feedback from our users we were surprised to learn that people need more 144 characters to\n"
+                                    "write software. We have since removed the limitation on number of characters... \n"
+                                    "As a courtesy to our users no code written in this editor is catalogued by Google or any other data-mining company.\n"
+                                    "<br><br>"
+                                    "Copyright: Maciej Swat, <b>Swat International Productions, Inc.</b><br><br>"
+                                    "Version %s.%s.%s" % (VERSION_MAJOR, VERSION_MINOR, VERSION_BUILD)
+                                    )
 
     def documentWasModified(self):
         self.setWindowModified(self.textEdit.document().isModified())
@@ -3134,12 +3140,13 @@ class EditorWindow(QMainWindow):
 
         itemCounter = 1
         for itemName in recentItems:
-            actionText = self.tr("&%1 %2").arg(itemCounter).arg(itemName)
+            actionText = '&%s %s'%(str(itemCounter),str(itemName))
 
             action = QAction("&%d %s " % (itemCounter, itemName), menuOwnerObj)
             _recentMenu.addAction(action)
             action.setData(QVariant(itemName))
-            menuOwnerObj.connect(action, SIGNAL("triggered()"), _recentItemSlot)
+            action.triggered.connect(_recentItemSlot)
+            # menuOwnerObj.connect(action, SIGNAL("triggered()"), _recentItemSlot)
             # action.setData(QVariant(simulationFileName))
             itemCounter += 1
 
@@ -3157,83 +3164,86 @@ class EditorWindow(QMainWindow):
         """
 
         self.newAct = QtWidgets.QAction(QtGui.QIcon(':/icons/document-new.png'), "&New",
-                                    self, shortcut=self.keySequenceStyleSpecifier(QtGui.QKeySequence.New, 'Ctrl+N'),
-                                    statusTip="Create a new file", triggered=self.newFile)
+                                        self, shortcut=self.keySequenceStyleSpecifier(QtGui.QKeySequence.New, 'Ctrl+N'),
+                                        statusTip="Create a new file", triggered=self.newFile)
 
         am.addAction(self.newAct)
 
         self.openAct = QtWidgets.QAction(QtGui.QIcon(':/icons/document-open.png'),
-                                     "&Open...", self,
-                                     shortcut=self.keySequenceStyleSpecifier(QtGui.QKeySequence.Open, 'Ctrl+O'),
-                                     statusTip="Open an existing file", triggered=self.open)
+                                         "&Open...", self,
+                                         shortcut=self.keySequenceStyleSpecifier(QtGui.QKeySequence.Open, 'Ctrl+O'),
+                                         statusTip="Open an existing file", triggered=self.open)
 
         am.addAction(self.openAct)
 
         self.saveAct = QtWidgets.QAction(QtGui.QIcon(':/icons/document-save.png'),
-                                     "&Save", self,
-                                     shortcut=self.keySequenceStyleSpecifier(QtGui.QKeySequence.Save, 'Ctrl+S'),
-                                     statusTip="Save the document to disk", triggered=self.save)
+                                         "&Save", self,
+                                         shortcut=self.keySequenceStyleSpecifier(QtGui.QKeySequence.Save, 'Ctrl+S'),
+                                         statusTip="Save the document to disk", triggered=self.save)
 
         am.addAction(self.saveAct)
 
         self.saveAsAct = QtWidgets.QAction(QtGui.QIcon(':/icons/document-save-as.png'), "Save &As...", self,
-                                       shortcut=self.keySequenceStyleSpecifier(QtGui.QKeySequence.SaveAs, ''),
-                                       statusTip="Save the document under a new name",
-                                       triggered=self.saveAs)
+                                           shortcut=self.keySequenceStyleSpecifier(QtGui.QKeySequence.SaveAs, ''),
+                                           statusTip="Save the document under a new name",
+                                           triggered=self.saveAs)
 
         am.addAction(self.saveAsAct)
 
         self.saveAllAct = QtWidgets.QAction(QtGui.QIcon(':/icons/document-save-all.png'), "Save All", self,
-                                        shortcut="Ctrl+Shift+S",
-                                        statusTip="Save all documents",
-                                        triggered=self.saveAll)
+                                            shortcut="Ctrl+Shift+S",
+                                            statusTip="Save all documents",
+                                            triggered=self.saveAll)
 
         am.addAction(self.saveAllAct)
 
-        self.printAct = QtWidgets.QAction(QtGui.QIcon(':/icons/document-print.png'), "Print...", self, shortcut="Ctrl+P",
-                                      statusTip="Print current document", triggered=self.printCurrentDocument)
+        self.printAct = QtWidgets.QAction(QtGui.QIcon(':/icons/document-print.png'), "Print...", self,
+                                          shortcut="Ctrl+P",
+                                          statusTip="Print current document", triggered=self.printCurrentDocument)
         am.addAction(self.printAct)
 
-        self.closeAllAct = QtWidgets.QAction("Close All Tabs", self, statusTip="Close all tabs", triggered=self.__closeAll)
+        self.closeAllAct = QtWidgets.QAction("Close All Tabs", self, statusTip="Close all tabs",
+                                             triggered=self.__closeAll)
         am.addAction(self.closeAllAct)
 
         self.closeAllButCurrentAct = QtWidgets.QAction("Close All But Current Tab", self,
-                                                   statusTip="Close all tabs except current one",
-                                                   triggered=self.__closeAllButCurrent)
+                                                       statusTip="Close all tabs except current one",
+                                                       triggered=self.__closeAllButCurrent)
         am.addAction(self.closeAllButCurrentAct)
 
-        self.renameAct = QtWidgets.QAction("Rename...", self, statusTip="Rename current document", triggered=self.__rename)
+        self.renameAct = QtWidgets.QAction("Rename...", self, statusTip="Rename current document",
+                                           triggered=self.__rename)
         am.addAction(self.renameAct)
 
         self.deleteDocAct = QtWidgets.QAction("Delete from disk", self, statusTip="Delete current document from disk",
-                                          triggered=self.__deleteCurrentDocument)
+                                              triggered=self.__deleteCurrentDocument)
         am.addAction(self.deleteDocAct)
 
         self.movetoOtherView = QtWidgets.QAction("Move To Other View", self, statusTip="Move document to new panel",
-                                             triggered=self.__moveToOtherView)
+                                                 triggered=self.__moveToOtherView)
         am.addAction(self.movetoOtherView)
 
         self.exitAct = QtWidgets.QAction(QtGui.QIcon(':/icons/application-exit.png'), "E&xit", self, shortcut="Ctrl+Q",
-                                     statusTip="Exit the application", triggered=self.close)
+                                         statusTip="Exit the application", triggered=self.close)
 
         am.addAction(self.exitAct)
 
         self.closeTabAct = QtWidgets.QAction(QtGui.QIcon(':/icons/tab-close.png'), "Close Tab", self, shortcut="Ctrl+W",
-                                         statusTip="Close Current Tab", triggered=self.closeTab)
+                                             statusTip="Close Current Tab", triggered=self.closeTab)
 
         am.addAction(self.closeTabAct)
 
         self.zoomInAct = QtWidgets.QAction(QtGui.QIcon(':/icons/zoom-in.png'), "Zoom In", self, shortcut="Ctrl+Shift+=",
-                                       statusTip="Zoom In", triggered=self.zoomIn)
+                                           statusTip="Zoom In", triggered=self.zoomIn)
 
         am.addAction(self.zoomInAct)
 
         self.zoomOutAct = QtWidgets.QAction(QtGui.QIcon(':/icons/zoom-out.png'), "Zoom Out", self, shortcut="Ctrl+-",
-                                        statusTip="Zoom Out", triggered=self.zoomOut)
+                                            statusTip="Zoom Out", triggered=self.zoomOut)
         am.addAction(self.zoomOutAct)
 
         self.foldAllAct = QtWidgets.QAction("Toggle Fold All", self, statusTip="Fold document at all folding points",
-                                        triggered=self.foldAll)
+                                            triggered=self.foldAll)
         am.addAction(self.foldAllAct)
 
         self.wrapLinesAct = QtWidgets.QAction("Wrap Lines", self, statusTip="Wrap Lines in a current document")
@@ -3243,7 +3253,7 @@ class EditorWindow(QMainWindow):
         self.wrapLinesAct.triggered.connect(self.wrapLines)
 
         self.showWhitespacesAct = QtWidgets.QAction("Show Whitespaces", self,
-                                                statusTip="Show whitespaces in a current document")
+                                                    statusTip="Show whitespaces in a current document")
         self.showWhitespacesAct.setCheckable(True)
         am.addAction(self.showWhitespacesAct)
 
@@ -3256,176 +3266,180 @@ class EditorWindow(QMainWindow):
         self.showEOLAct.triggered.connect(self.showEOL)
 
         self.showTabGuidelinesAct = QtWidgets.QAction("Show Tab Guidelines", self,
-                                                  statusTip="Show Tab guidelines in a current document")
+                                                      statusTip="Show Tab guidelines in a current document")
         self.showTabGuidelinesAct.setCheckable(True)
         am.addAction(self.showTabGuidelinesAct)
 
         self.showTabGuidelinesAct.triggered.connect(self.showTabGuidelines)
 
         self.showLineNumbersAct = QtWidgets.QAction("Show Line Numbers", self,
-                                                statusTip="Show line numbers in a current document")
+                                                    statusTip="Show line numbers in a current document")
         self.showLineNumbersAct.setCheckable(True)
         am.addAction(self.showLineNumbersAct)
 
         self.showLineNumbersAct.triggered.connect(self.showLineNumbers)
 
         self.showFindInFilesDockAct = QtWidgets.QAction("Show Find in Files Results", self,
-                                                    statusTip="Show Find in Files Results",
-                                                    triggered=self.toggleFindInFilesDock)
+                                                        statusTip="Show Find in Files Results",
+                                                        triggered=self.toggleFindInFilesDock)
 
         self.showFindInFilesDockAct.setCheckable(True)
         am.addAction(self.showFindInFilesDockAct)
 
         self.blockCommentAct = QtWidgets.QAction("Block Comment", self, shortcut="Ctrl+D",
-                                             statusTip="Block Comment", triggered=self.blockComment)
+                                                 statusTip="Block Comment", triggered=self.blockComment)
 
         am.addAction(self.blockCommentAct)
 
         self.blockUncommentAct = QtWidgets.QAction("Block Uncomment", self, shortcut="Ctrl+Shift+D",
-                                               statusTip="Block Uncomment", triggered=self.blockUncomment)
+                                                   statusTip="Block Uncomment", triggered=self.blockUncomment)
 
         am.addAction(self.blockUncommentAct)
 
         self.findAct = QtWidgets.QAction(QtGui.QIcon(':/icons/edit-find.png'), "Find...", self, shortcut="Ctrl+F",
-                                     statusTip="Find...", triggered=self.find)
+                                         statusTip="Find...", triggered=self.find)
 
         am.addAction(self.findAct)
 
         self.findNextAct = QtWidgets.QAction("Find Next", self, shortcut="F3",
-                                         statusTip="Find Next", triggered=self.findNextSimple)
+                                             statusTip="Find Next", triggered=self.findNextSimple)
 
         am.addAction(self.findNextAct)
 
         self.toggleBookmarkAct = QtWidgets.QAction(QtGui.QIcon(':/icons/flag.png'), "Toggle Bookmark", self,
-                                               shortcut="Ctrl+F2",
-                                               statusTip="Toggle Text Bookmark", triggered=self.toggleBookmark)
+                                                   shortcut="Ctrl+F2",
+                                                   statusTip="Toggle Text Bookmark", triggered=self.toggleBookmark)
 
         am.addAction(self.toggleBookmarkAct)
 
         self.goToNextBookmarkAct = QtWidgets.QAction("Go To Next Bookmark", self, shortcut="F2",
-                                                 statusTip="Go To Next Bookmark", triggered=self.goToNextBookmark)
+                                                     statusTip="Go To Next Bookmark", triggered=self.goToNextBookmark)
 
         am.addAction(self.goToNextBookmarkAct)
 
         self.goToPreviousBookmarkAct = QtWidgets.QAction("Go To Previous Bookmark", self, shortcut="Shift+F2",
-                                                     statusTip="Go To Previous Bookmark",
-                                                     triggered=self.goToPreviousBookmark)
+                                                         statusTip="Go To Previous Bookmark",
+                                                         triggered=self.goToPreviousBookmark)
 
         am.addAction(self.goToPreviousBookmarkAct)
 
         self.deleteAllBookmarksAct = QtWidgets.QAction("Delete All Bookmarks", self, shortcut="",
-                                                   statusTip="Delete All Bookmarks", triggered=self.deleteAllBookmarks)
+                                                       statusTip="Delete All Bookmarks",
+                                                       triggered=self.deleteAllBookmarks)
 
         am.addAction(self.deleteAllBookmarksAct)
 
         self.goToLineAct = QtWidgets.QAction("Go To Line...", self, shortcut="Ctrl+G",
-                                         statusTip="Go To Line", triggered=self.goToLineShow)
+                                             statusTip="Go To Line", triggered=self.goToLineShow)
 
         am.addAction(self.goToLineAct)
 
         self.goToMatchingBraceAct = QtWidgets.QAction("Go To Matching Brace", self, shortcut="Ctrl+]",
-                                                  statusTip="Go To Matching Brace", triggered=self.goToMatchingBrace)
+                                                      statusTip="Go To Matching Brace",
+                                                      triggered=self.goToMatchingBrace)
 
         am.addAction(self.goToMatchingBraceAct)
 
         self.selectToMatchingBraceAct = QtWidgets.QAction("Select To Matching Brace", self, shortcut="Ctrl+Shift+]",
-                                                      statusTip="Select To Matching Brace",
-                                                      triggered=self.selectToMatchingBrace)
+                                                          statusTip="Select To Matching Brace",
+                                                          triggered=self.selectToMatchingBrace)
 
         am.addAction(self.selectToMatchingBraceAct)
 
         self.cutAct = QtWidgets.QAction(QtGui.QIcon(':/icons/edit-cut.png'), "Cu&t",
-                                    self, shortcut=self.keySequenceStyleSpecifier(QtGui.QKeySequence.Cut, 'Ctrl+X'),
-                                    statusTip="Cut the current selection's contents to the clipboard",
-                                    triggered=self.cut)
+                                        self, shortcut=self.keySequenceStyleSpecifier(QtGui.QKeySequence.Cut, 'Ctrl+X'),
+                                        statusTip="Cut the current selection's contents to the clipboard",
+                                        triggered=self.cut)
 
         am.addAction(self.cutAct)
 
         self.copyAct = QtWidgets.QAction(QtGui.QIcon(':/icons/edit-copy.png'),
-                                     "&Copy", self,
-                                     shortcut=self.keySequenceStyleSpecifier(QtGui.QKeySequence.Copy, 'Ctrl+C'),
-                                     statusTip="Copy the current selection's contents to the clipboard",
-                                     triggered=self.copy)
+                                         "&Copy", self,
+                                         shortcut=self.keySequenceStyleSpecifier(QtGui.QKeySequence.Copy, 'Ctrl+C'),
+                                         statusTip="Copy the current selection's contents to the clipboard",
+                                         triggered=self.copy)
 
         am.addAction(self.copyAct)
 
         self.pasteAct = QtWidgets.QAction(QtGui.QIcon(':/icons/edit-paste.png'),
-                                      "&Paste", self,
-                                      shortcut=self.keySequenceStyleSpecifier(QtGui.QKeySequence.Paste, 'Ctrl+V'),
-                                      statusTip="Paste the clipboard's contents into the current selection",
-                                      triggered=self.paste)
+                                          "&Paste", self,
+                                          shortcut=self.keySequenceStyleSpecifier(QtGui.QKeySequence.Paste, 'Ctrl+V'),
+                                          statusTip="Paste the clipboard's contents into the current selection",
+                                          triggered=self.paste)
 
         am.addAction(self.pasteAct)
 
-        self.increaseIndentAct = QtWidgets.QAction(QtGui.QIcon(':/icons/format-indent-more.png'), "Increase Indent", self,
-                                               shortcut="Tab",
-                                               statusTip="Increase Indent", triggered=self.increaseIndent)
+        self.increaseIndentAct = QtWidgets.QAction(QtGui.QIcon(':/icons/format-indent-more.png'), "Increase Indent",
+                                                   self,
+                                                   shortcut="Tab",
+                                                   statusTip="Increase Indent", triggered=self.increaseIndent)
         am.addAction(self.increaseIndentAct)
 
-        self.decreaseIndentAct = QtWidgets.QAction(QtGui.QIcon(':/icons/format-indent-less.png'), "Decrease Indent", self,
-                                               shortcut="Shift+Tab",
-                                               statusTip="Decrease Indent", triggered=self.decreaseIndent)
+        self.decreaseIndentAct = QtWidgets.QAction(QtGui.QIcon(':/icons/format-indent-less.png'), "Decrease Indent",
+                                                   self,
+                                                   shortcut="Shift+Tab",
+                                                   statusTip="Decrease Indent", triggered=self.decreaseIndent)
 
         am.addAction(self.decreaseIndentAct)
 
         self.upperCaseAct = QtWidgets.QAction("Convert to UPPER case", self, shortcut="Ctrl+Shift+U",
-                                          statusTip="Convert To Upper Case", triggered=self.convertToUpperCase)
+                                              statusTip="Convert To Upper Case", triggered=self.convertToUpperCase)
         am.addAction(self.upperCaseAct)
 
         self.lowerCaseAct = QtWidgets.QAction("Convert to lower case", self, shortcut="Ctrl+U",
-                                          statusTip="Convert To Lower Case", triggered=self.convertToLowerCase)
+                                              statusTip="Convert To Lower Case", triggered=self.convertToLowerCase)
         am.addAction(self.lowerCaseAct)
 
         self.convertEOLAct = QtWidgets.QAction("Convert EOL", self, statusTip="Convert End of Line Character")
         self.convertEOLWinAct = QtWidgets.QAction("Windows EOL", self,
-                                              statusTip="Convert End of Line Character to Windows Style",
-                                              triggered=self.convertEolWindows)
+                                                  statusTip="Convert End of Line Character to Windows Style",
+                                                  triggered=self.convertEolWindows)
         am.addAction(self.convertEOLWinAct)
         self.convertEOLUnixAct = QtWidgets.QAction("Unix EOL", self,
-                                               statusTip="Convert End of Line Character to Unix Style",
-                                               triggered=self.convertEolUnix)
+                                                   statusTip="Convert End of Line Character to Unix Style",
+                                                   triggered=self.convertEolUnix)
         am.addAction(self.convertEOLUnixAct)
         self.convertEOLMacAct = QtWidgets.QAction("Mac OS 9 EOL", self,
-                                              statusTip="Convert End of Line Character to Mac Style",
-                                              triggered=self.convertEolMac)
+                                                  statusTip="Convert End of Line Character to Mac Style",
+                                                  triggered=self.convertEolMac)
         am.addAction(self.convertEOLMacAct)
 
         self.undoAct = QtWidgets.QAction(QtGui.QIcon(':/icons/edit-undo.png'), "Undo", self, shortcut="Ctrl+Z",
-                                     statusTip="Undo", triggered=self.__undo)
+                                         statusTip="Undo", triggered=self.__undo)
 
         am.addAction(self.undoAct)
 
         self.redoAct = QtWidgets.QAction(QtGui.QIcon(':/icons/edit-redo.png'), "Redo", self, shortcut="Ctrl+Y",
-                                     statusTip="Redo", triggered=self.__redo)
+                                         statusTip="Redo", triggered=self.__redo)
         am.addAction(self.redoAct)
 
         self.configurationAct = QtWidgets.QAction(QtGui.QIcon(':/icons/gear.png'), "Configure...", self, shortcut="",
-                                              statusTip="Configuration...", triggered=self.configurationUpdate)
+                                                  statusTip="Configuration...", triggered=self.configurationUpdate)
         am.addAction(self.configurationAct)
 
         self.keyboardShortcutsAct = QtWidgets.QAction("Keyboard Shortcuts...", self, shortcut="",
-                                                  statusTip="Reassign keyboard shortcuts",
-                                                  triggered=self.keyboardShortcuts)
+                                                      statusTip="Reassign keyboard shortcuts",
+                                                      triggered=self.keyboardShortcuts)
         am.addAction(self.keyboardShortcutsAct)
 
         self.switchToTabOnTheLeftAct = QtWidgets.QAction("Switch To Tab On The Left", self, shortcut="Ctrl+1",
-                                                     statusTip="Switch To Tab On The Left",
-                                                     triggered=self.switchToTabOnTheLeft)
+                                                         statusTip="Switch To Tab On The Left",
+                                                         triggered=self.switchToTabOnTheLeft)
         am.addAction(self.switchToTabOnTheLeftAct)
 
         self.switchToTabOnTheRightAct = QtWidgets.QAction("Switch To Tab On The Right", self, shortcut="Ctrl+2",
-                                                      statusTip="Switch To Tab On The Right",
-                                                      triggered=self.switchToTabOnTheRight)
+                                                          statusTip="Switch To Tab On The Right",
+                                                          triggered=self.switchToTabOnTheRight)
         am.addAction(self.switchToTabOnTheRightAct)
 
         self.aboutAct = QtWidgets.QAction("&About", self,
-                                      statusTip="Show the application's About box",
-                                      triggered=self.about)
+                                          statusTip="Show the application's About box",
+                                          triggered=self.about)
         am.addAction(self.aboutAct)
 
         self.aboutQtAct = QtWidgets.QAction("About &Qt", self,
-                statusTip="Show the Qt library's About box",
-                triggered = QApplication.instance().aboutQt)
+                                            statusTip="Show the Qt library's About box",
+                                            triggered=QApplication.instance().aboutQt)
 
         am.addAction(self.aboutQtAct)
 
@@ -3656,9 +3670,9 @@ class EditorWindow(QMainWindow):
             message = "The document " + fileName + " has been modified.\nDo you want to save changes?"
 
             ret = QtWidgets.QMessageBox.warning(self, "Save Modification",
-                                            message,
-                                            QtWidgets.QMessageBox.Save | QtWidgets.QMessageBox.Discard |
-                                            QtWidgets.QMessageBox.Cancel)
+                                                message,
+                                                QtWidgets.QMessageBox.Save | QtWidgets.QMessageBox.Discard |
+                                                QtWidgets.QMessageBox.Cancel)
             if ret == QtWidgets.QMessageBox.Save:
                 return self.save()
             elif ret == QtWidgets.QMessageBox.Cancel:
@@ -3735,8 +3749,8 @@ class EditorWindow(QMainWindow):
         if warningFlag:
             message = "You are about to completely delete " + fileName + " from disk.<br> " + "Proceed?"
             ret = QtWidgets.QMessageBox.information(self, "Delete from disk",
-                                                message,
-                                                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+                                                    message,
+                                                    QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
 
             if ret == QtWidgets.QMessageBox.No:
                 return
@@ -3747,8 +3761,8 @@ class EditorWindow(QMainWindow):
         except:
             message = "The document " + fileName + " cannot be deleted. Check if you have the right permissions."
             ret = QtWidgets.QMessageBox.information(self, "Delete from disk",
-                                                message,
-                                                QtWidgets.QMessageBox.Ok)
+                                                    message,
+                                                    QtWidgets.QMessageBox.Ok)
 
     def __deleteCurrentDocument(self):
         """
@@ -3927,8 +3941,8 @@ class EditorWindow(QMainWindow):
         message = "The document " + self.getEditorFileName(
             tab) + " has been modified by external program.\nDo you want to reload?"
         ret = QtWidgets.QMessageBox.warning(self, "Reload",
-                                        message,
-                                        QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+                                            message,
+                                            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
 
         if ret == QtWidgets.QMessageBox.Yes:
 
@@ -3948,9 +3962,9 @@ class EditorWindow(QMainWindow):
             file = open(fileName, 'rb')
         except:
             QtWidgets.QMessageBox.warning(self, "Twedit++",
-                                      "Cannot read file %s:\n%s." % (fileName, "Check if the file is accessible"))
+                                          "Cannot read file %s:\n%s." % (fileName, "Check if the file is accessible"))
             return
-        QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         # have to disconnect signal which looks for text changes
         # editor.textChanged.disconnect(self.textChangedHandlers[editor].handleChangedText)
         editor.modificationChanged.disconnect(self.textChangedHandlers[editor].handleModificationChanged)
@@ -4003,7 +4017,7 @@ class EditorWindow(QMainWindow):
         self.updateTextSizeLabel()
         self.updateEncodingLabel()
 
-        QtGui.QApplication.restoreOverrideCursor()
+        QtWidgets.QApplication.restoreOverrideCursor()
         return True
 
     def __loadRecentDocument(self):
@@ -4011,7 +4025,8 @@ class EditorWindow(QMainWindow):
         action = self.sender()
         fileName = ''
         if isinstance(action, QAction):
-            fileName = str(action.data().toString())
+            # fileName = str(action.data().toString())
+            fileName = action.data()
             self.loadFile(fileName)
 
     def loadFiles(self, fileNames):
@@ -4020,7 +4035,7 @@ class EditorWindow(QMainWindow):
         """
         self.deactivateChangeSensing = True
 
-        for i in range(fileNames.count()):
+        for i in range(len(fileNames)):
             self.loadFile(os.path.abspath(str(fileNames[
                                                   i])))  # "normalizing" file name to make sure \ and / are used in a consistent manner
 
@@ -4068,12 +4083,13 @@ class EditorWindow(QMainWindow):
         except:
             if not _restoreFlag:
                 QtWidgets.QMessageBox.warning(self, "Twedit++",
-                                          "Cannot read file %s:\n%s." % (fileName, "Check if the file is accessible"))
+                                              "Cannot read file %s:\n%s." % (
+                                              fileName, "Check if the file is accessible"))
             return
 
 
             # inf = QtCore.QTextStream(file)
-        QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
 
         activeTab = self.panels[0]
 
@@ -4241,7 +4257,7 @@ class EditorWindow(QMainWindow):
 
         self.commentStyleDict[editor] = [lexer[1], lexer[2]]  # associating comment style with the lexer
 
-        QtGui.QApplication.restoreOverrideCursor()
+        QtWidgets.QApplication.restoreOverrideCursor()
 
         self.setCurrentFile(fileName)
 
@@ -4269,49 +4285,23 @@ class EditorWindow(QMainWindow):
     def addItemtoConfigurationStringList(self, _settingObj, _settingName, _itemName, _maxItems=8):
 
         stringList = _settingObj.setting(_settingName)
-        numberOfItemsToRemove = max(0, stringList.count() - _maxItems + 1)  # ideally this should be 1 or 0
+        numberOfItemsToRemove = max(0, len(stringList) - _maxItems + 1)  # ideally this should be 1 or 0
 
-        removalSuccesful = stringList.removeAll(_itemName)
+        len_before = len(stringList)
+        stringList = filter(lambda item: item != _itemName, stringList)
+        len_after = len(stringList)
+
+        removalSuccesful = len_after < len_before
+
         if not removalSuccesful:
             for i in range(numberOfItemsToRemove):
-                stringList.takeLast()
+                stringList = stringList[:-1]
 
-        stringList.prepend(_itemName)
-        stringList.removeDuplicates()
+        stringList.insert(0,_itemName)
+
+        # stringList.removeDuplicates()
 
         _settingObj.setSetting(_settingName, stringList)
-        # lexer=editor.lexer()
-        # if lexer:
-        # lexer.setFont(self.baseFont)
-
-
-        # editor.convertEols(QsciScintilla.EolMac)
-
-
-        # def tabIndexChanged_0(self,_index):
-        # """
-        # slot handling change of tab index in the panel for panel 0
-        # """
-        # editorTab=self.panels[0].widget(_index)
-        # # dbgMsg("self.fileDict=",self.fileDict)
-        # self.checkActions()
-        # self.updateTextSizeLabel()
-        # self.updateEncodingLabel()
-        # if editorTab in self.getEditorList(): # have to do this check becaue adding tab triggers this slot but fileDict dictionary has not been initialized yet
-        # self.setCurrentFile(self.getEditorFileName(editorTab))
-
-        # def tabIndexChanged_1(self,_index):
-        # """
-        # slot handling change of tab index in the panel for panel 1
-        # """
-
-        # editorTab=self.panels[1].widget(_index)
-        # # dbgMsg("self.fileDict=",self.fileDict)
-        # self.checkActions()
-        # self.updateTextSizeLabel()
-        # self.updateEncodingLabel()
-        # if editorTab in self.getEditorList(): # have to do this check becaue adding tab triggers this slot but fileDict dictionary has not been initialized yet
-        # self.setCurrentFile(self.getEditorFileName(editorTab))
 
     def handleNewFocusEditor(self, _editor):
         """
@@ -4367,7 +4357,7 @@ class EditorWindow(QMainWindow):
 
         self.deactivateChangeSensing = True
 
-        QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         textEditLocal = None
 
         if _editor:
@@ -4411,7 +4401,7 @@ class EditorWindow(QMainWindow):
             txt, encoding = Encoding.encode(txt, encoding)
         except Encoding.CodingError, e:
             QtWidgets.QMessageBox.warning(self, "Twedit++",
-                                      "Cannot write file %s:\n%s." % (_fileName, repr(e)))
+                                          "Cannot write file %s:\n%s." % (_fileName, repr(e)))
             self.deactivateChangeSensing = False
             return False
 
@@ -4449,11 +4439,11 @@ class EditorWindow(QMainWindow):
             # return True
         except IOError, why:
             QtWidgets.QMessageBox.warning(self, "Twedit++",
-                                      "Cannot write file %s:\n%s." % (_fileName, why))
+                                          "Cannot write file %s:\n%s." % (_fileName, why))
             self.deactivateChangeSensing = False
             return False
 
-        QtGui.QApplication.restoreOverrideCursor()
+        QtWidgets.QApplication.restoreOverrideCursor()
 
         dbgMsg("SAVE FILE EDITOR=", _editor, "\n\n\n\n")
         if _editor:
