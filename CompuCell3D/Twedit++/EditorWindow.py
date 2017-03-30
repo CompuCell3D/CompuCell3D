@@ -1013,7 +1013,7 @@ class EditorWindow(QMainWindow):
         keys.sort()  # sorting by the tab number
         fileNamesSorted = [openFilesToRestore[0][key] for key in keys]
 
-        fileList = QStringList()
+        fileList = []
         dbgMsg(dir(fileList))
         for fileName in fileNamesSorted:
             fileList.append(fileName)
@@ -1029,7 +1029,7 @@ class EditorWindow(QMainWindow):
             fileList.append(fileName)
             fileList.append(str(1))
 
-        dbgMsg("saving fileList.count()=", fileList.count())
+        dbgMsg("saving len(fileList)=", len(fileList))
         # print "saving fileList.count()=",fileList.count()
         self.configuration.setSetting("ListOfOpenFilesAndPanels", fileList)
         # print "fileList=",fileList
@@ -1073,22 +1073,22 @@ class EditorWindow(QMainWindow):
             called from closeEvent to save find and replace history
         """
 
-        findHistoryList = QStringList()
+        findHistoryList = []
         for findText in _frh.findHistory:
             findHistoryList.append(findText)
         self.configuration.setSetting("FRFindHistory", findHistoryList)
 
-        replaceHistoryList = QStringList()
+        replaceHistoryList = []
         for replaceText in _frh.replaceHistory:
             replaceHistoryList.append(replaceText)
         self.configuration.setSetting("FRReplaceHistory", replaceHistoryList)
 
-        filtersHistoryList = QStringList()
+        filtersHistoryList = []
         for filtersText in _frh.filtersHistoryIF:
             filtersHistoryList.append(filtersText)
         self.configuration.setSetting("FRFiltersHistory", filtersHistoryList)
 
-        directoryHistoryList = QStringList()
+        directoryHistoryList = []
         for directoryText in _frh.directoryHistoryIF:
             directoryHistoryList.append(directoryText)
         self.configuration.setSetting("FRDirectoryHistory", directoryHistoryList)
@@ -2411,8 +2411,10 @@ class EditorWindow(QMainWindow):
 
         # applying 'Global override' style to all plugins
         # applying 'Default Style' style to all plugins
-        self.pm.runForAllPlugins(_functionName='applyStyleFromTheme',
-                                 _argumentDict={'styleName': 'Default Style', 'themeName': self.currentThemeName})
+
+        # TODO enable it
+        # self.pm.runForAllPlugins(_functionName='applyStyleFromTheme',
+        #                          _argumentDict={'styleName': 'Default Style', 'themeName': self.currentThemeName})
 
     def configureBaseFontName(self, _name):
         """

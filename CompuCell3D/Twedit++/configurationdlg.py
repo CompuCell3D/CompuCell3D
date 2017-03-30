@@ -29,10 +29,12 @@ class ConfigurationDlg(QDialog,ui_configurationdlg.Ui_ConfigurationDlg):
             self.setWindowFlags(Qt.Drawer) # dialogs without context help - only close button exists
         # self.gotolineSignal.connect(self.editorWindow.goToLine)
         self.setupUi(self)
-        self.connect(self.pluginsLW,SIGNAL('currentItemChanged(QListWidgetItem *,QListWidgetItem *)'),self.updatePluginInfoOptions)
-        
-        
-        self.connect(self.loadOnStartupCHB,SIGNAL('clicked(bool)'),self.processLoadOnStartupChange)
+
+        # self.connect(self.pluginsLW,SIGNAL('currentItemChanged(QListWidgetItem *,QListWidgetItem *)'),self.updatePluginInfoOptions)
+        self.pluginsLW.currentItemChanged.connect(self.updatePluginInfoOptions)
+
+        self.loadOnStartupCHB.clicked.connect(self.processLoadOnStartupChange)
+        # self.connect(self.loadOnStartupCHB,SIGNAL('clicked(bool)'),self.processLoadOnStartupChange)
         
         self.populatePluginsLW()
         self.populateThemeCB()
@@ -118,6 +120,8 @@ class ConfigurationDlg(QDialog,ui_configurationdlg.Ui_ConfigurationDlg):
         self.editorWindowConfiguration.setPluginAutoloadData(pluginName,_flag)        
         
     def populatePluginsLW(self):
+        # TODO enable it
+        return
         pm=self.editorWindow.pm
         
         moduleList=pm.getAvailableModules() # this is alist of python modules (not python objects!) whci are in the PLugins directory and appear to be vaild plugins

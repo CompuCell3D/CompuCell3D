@@ -256,7 +256,7 @@ class Configuration:
             self.modifiedPluginsDataStringList.append(
                 str(self.modifiedPluginsAutoloadData[pluginName]))  # converting bool to string
         print 'STORING ', self.modifiedPluginsAutoloadData
-        for i in range(0, self.modifiedPluginsDataStringList.count(), 2):
+        for i in range(0, len(self.modifiedPluginsDataStringList), 2):
             print (str(self.modifiedPluginsDataStringList[i]), str(self.modifiedPluginsDataStringList[i + 1]))
         self.setSetting("PluginAutoloadData", self.modifiedPluginsDataStringList)
 
