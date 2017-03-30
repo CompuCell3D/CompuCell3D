@@ -130,7 +130,8 @@ class LanguageManager:
 
         for lexerName in lexerNames:
             try:
-                exec ("from PyQt4.Qsci import " + lexerName + "\n")
+                # exec ("from PyQt4.Qsci import " + lexerName + "\n")
+                exec ("from PyQt5.Qsci import " + lexerName + "\n")
                 self.lexerObjectDict[lexerName] = eval(lexerName + "()")
             except ImportError:
                 pass
@@ -190,7 +191,8 @@ class LanguageManager:
             action = self.editorWindow.languageMenu.addAction(key)
             self.actionDict[key] = action
             action.setCheckable(True)
-            self.editorWindow.connect(action, SIGNAL("triggered()"), self.languageMapper, SLOT("map()"))
+            # self.editorWindow.connect(action, SIGNAL("triggered()"), self.languageMapper, SLOT("map()"))
+            action.triggered.connect(self.languageMapper.map)
             self.languageMapper.setMapping(action, key)
             # self.actionDict[key]=QtGui.QAction(key, self, shortcut="",
             # statusTip=key, triggered=self.increaseIndent)
