@@ -3313,8 +3313,9 @@ class EditorWindow(QMainWindow):
 
         am.addAction(self.findNextAct)
 
+
         self.toggleBookmarkAct = QtWidgets.QAction(QtGui.QIcon(':/icons/flag.png'), "Toggle Bookmark", self,
-                                                   shortcut="Ctrl+F2",
+                                                   shortcut="Alt+F2",
                                                    statusTip="Toggle Text Bookmark", triggered=self.toggleBookmark)
 
         am.addAction(self.toggleBookmarkAct)
