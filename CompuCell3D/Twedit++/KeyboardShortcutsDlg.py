@@ -29,7 +29,8 @@ class KeyboardShortcutsDlg(QDialog,ui_KeyboardShortcuts.Ui_KeyboardShortcutsDlg)
         if sys.platform.startswith('win'): 
             self.setWindowFlags(Qt.Drawer) # dialogs without context help - only close button exists        
         self.setupUi(self)
-        self.connect(self.shortcutTable,SIGNAL("cellClicked (int,int)"),self.shortcutCellClicked)
+        # self.connect(self.shortcutTable,SIGNAL("cellClicked (int,int)"),self.shortcutCellClicked)
+        self.shortcutTable.cellClicked.connect(self.shortcutCellClicked)
         self.lastClickPosition=None
         self.changesInActionShortcutList=[] # action name -> shortcut sequence for newly defined shortcuts
                 

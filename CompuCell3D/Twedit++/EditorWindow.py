@@ -301,6 +301,7 @@ class EditorWindow(QMainWindow):
 
         self.zoomRange = self.configuration.setting("ZoomRange")
 
+
         self.resize(self.configuration.setting("InitialSize"))
         self.move(self.configuration.setting("InitialPosition"))
 
@@ -3240,8 +3241,12 @@ class EditorWindow(QMainWindow):
 
         am.addAction(self.zoomInAct)
 
+        # self.zoomOutAct = QtWidgets.QAction(QtGui.QIcon(':/icons/zoom-out.png'), "Zoom Out", self, shortcut="Ctrl+-",
+        #                                     statusTip="Zoom Out", triggered=self.zoomOut)
+
         self.zoomOutAct = QtWidgets.QAction(QtGui.QIcon(':/icons/zoom-out.png'), "Zoom Out", self, shortcut="Ctrl+-",
                                             statusTip="Zoom Out", triggered=self.zoomOut)
+
         am.addAction(self.zoomOutAct)
 
         self.foldAllAct = QtWidgets.QAction("Toggle Fold All", self, statusTip="Fold document at all folding points",
@@ -3455,6 +3460,8 @@ class EditorWindow(QMainWindow):
 
         for actionName, keyboardShortcutText in keyboardShortcutsDict.iteritems():
             am.setActionKeyboardShortcut(actionName, QKeySequence(keyboardShortcutText))
+
+
 
     def createMenus(self):
         """
@@ -4047,7 +4054,6 @@ class EditorWindow(QMainWindow):
         """
             loads single file (fielName) - accepts additional arguments like _restoreFlag or reference to panel into which load file
         """
-
         fileName = str(fileName)
         fileName = os.path.abspath(
             fileName)  # "normalizing" file name to make sure \ and / are used in a consistent manner
