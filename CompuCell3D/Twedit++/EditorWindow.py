@@ -1648,7 +1648,7 @@ class EditorWindow(QMainWindow):
         else:
             editorList = self.getEditorList()
         # print "editorList=",editorList
-        findText = QString(_text)  # a new copy of a textTo Find
+        findText = _text  # a new copy of a textTo Find
         if _reFlag:
             # here I will replace ( with \( and vice versa - to be consistent with  regex convention
             findText = self.swapEscaping(findText, "(")
@@ -2019,7 +2019,7 @@ class EditorWindow(QMainWindow):
                                                                        True,
                                                                        self.findDialogForm.inSelectionBox.isChecked())
 
-        findText = QString(self.findAndReplaceHistory.textToFind)  # a new copy of a textTo Find
+        findText = self.findAndReplaceHistory.textToFind  # a new copy of a textTo Find
         if self.findAndReplaceHistory.re:
             # here I will replace ( with \( and vice versa - to be consistent with  regex convention
             findText = self.swapEscaping(findText, "(")

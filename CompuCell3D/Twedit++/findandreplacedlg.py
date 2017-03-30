@@ -41,7 +41,7 @@ class FindInFilesResults:
     def addLineWithText(self, _lineNumber, _text):
 
         if self.lastLineAdded != _lineNumber:
-            if not _text.endsWith('\n'):
+            if not _text.endswith('\n'):
                 _text.append('\n')
             # internally lines numbers start from 0    but we have to display them as starting from 1 - it is de-factor a convention for text editors            
             self.lineOccurences.append([_lineNumber + 1,
@@ -134,13 +134,11 @@ class FindAndReplaceHistory:
         if self.textToFind != _text:
             self.textToFind = _text
             # # # if str(self.textToFind).strip()!='':            
-            self.findHistory.prepend(self.textToFind)
+            self.findHistory.insert(0, self.textToFind)
 
-            self.findHistory.removeDuplicates()
-            if self.findHistory.count() >= self.historyLength:
-                self.findHistory.removeAt(self.findHistory.count() - 1)
-                # looks like this does not work in PyQt4
-                # self.findHistory.removeLast() 
+            self.findHistory = list(set(self.findHistory))  # removing dupicates
+            if len(self.findHistory) >= self.historyLength:
+                self.findHistory.pop()  # removing last element that is over the limit
 
             # dbgMsg(self.findHistory)
             flag = True
@@ -167,12 +165,13 @@ class FindAndReplaceHistory:
         if self.textToFindIF != _text:
             self.textToFindIF = _text
             # # # if str(self.textToFindIF).strip()!='':
-            self.findHistory.prepend(self.textToFindIF)
-            self.findHistory.removeDuplicates()
-            if self.findHistory.count() >= self.historyLength:
-                self.findHistory.removeAt(self.findHistory.count() - 1)
+            self.findHistory.insert(0, self.textToFindIF)
+            self.findHistory = list(set(self.findHistory))  # removing dupicates
+            if len(self.findHistory) >= self.historyLength:
+                #                 self.findHistory.removeAt(self.findHistory.count() - 1)
+                self.findHistory.pop()  # removing last element that is over the limit
                 # looks like this does not work in PyQt4
-                # self.findHistory.removeLast()                 
+                # self.findHistory.removeLast()
             flag = True
 
         if self.filtersIF != _filters:
@@ -399,29 +398,51 @@ class FindAndReplaceDlg(QDialog, ui_findinfilesdlg.Ui_FindInFiles):
 
         # self.findComboBox.setCompleter(0) # disallow word completion
         # synchronizing find and replace boxes on two tabs
-        self.connect(self.findLineEdit, SIGNAL("textChanged(const QString &)"), self.findLineEditIF,
-                     SLOT("setText(const QString &)"))
-        self.connect(self.findLineEditIF, SIGNAL("textChanged(const QString &)"), self.findLineEdit,
-                     SLOT("setText(const QString &)"))
-        self.connect(self.replaceLineEdit, SIGNAL("textChanged(const QString &)"), self.replaceLineEditIF,
-                     SLOT("setText(const QString &)"))
-        self.connect(self.replaceLineEditIF, SIGNAL("textChanged(const QString &)"), self.replaceLineEdit,
-                     SLOT("setText(const QString &)"))
+        self.findLineEdit.textChanged.connect(self.findLineEditIF.setText)
+        self.findLineEditIF.textChanged.connect(self.findLineEdit.setText)
+        self.replaceLineEdit.textChanged.connect(self.replaceLineEditIF.setText)
+        self.replaceLineEditIF.textChanged.connect(self.replaceLineEdit.setText)
         # synchronizing check boxes
-        self.connect(self.wholeCheckBox, SIGNAL("toggled(bool)"), self.wholeCheckBoxIF, SLOT("setChecked(bool)"))
-        self.connect(self.wholeCheckBoxIF, SIGNAL("toggled(bool)"), self.wholeCheckBox, SLOT("setChecked(bool)"))
-        self.connect(self.caseCheckBox, SIGNAL("toggled(bool)"), self.caseCheckBoxIF, SLOT("setChecked(bool)"))
-        self.connect(self.caseCheckBoxIF, SIGNAL("toggled(bool)"), self.caseCheckBox, SLOT("setChecked(bool)"))
+        self.wholeCheckBox.toggled.connect(self.wholeCheckBoxIF.setChecked)
+        self.wholeCheckBoxIF.toggled.connect(self.wholeCheckBox.setChecked)
+        self.caseCheckBox.toggled.connect(self.caseCheckBoxIF.setChecked)
+        self.caseCheckBoxIF.toggled.connect(self.caseCheckBox.setChecked)
 
-        self.connect(self.tabWidget, SIGNAL("currentChanged(int)"), self.tabChanged)
-        self.connect(self.alwaysRButton, SIGNAL("toggled(bool)"), self.alwaysRButtonToggled)
-        self.connect(self.onLosingFocusRButton, SIGNAL("toggled(bool)"), self.onLosingFocusRButtonToggled)
+        self.tabWidget.currentChanged.connect(self.tabChanged)
+        self.alwaysRButton.toggled.connect(self.alwaysRButtonToggled)
+        self.onLosingFocusRButton.toggled.connect(self.onLosingFocusRButtonToggled)
 
-        self.connect(self.transparencyGroupBox, SIGNAL("toggled(bool)"), self.transparencyGroupBoxToggled)
+        self.transparencyGroupBox.toggled.connect(self.transparencyGroupBoxToggled)
 
         # synchronizing syntax boxes
-        self.connect(self.syntaxComboBox, SIGNAL("activated(int)"), self.syntaxComboBoxIF, SLOT("setCurrentIndex(int)"))
-        self.connect(self.syntaxComboBoxIF, SIGNAL("activated(int)"), self.syntaxComboBox, SLOT("setCurrentIndex(int)"))
+        self.syntaxComboBox.activated.connect(self.syntaxComboBoxIF.setCurrentIndex)
+        self.syntaxComboBoxIF.activated.connect(self.syntaxComboBox.setCurrentIndex)
+
+        # # self.findComboBox.setCompleter(0) # disallow word completion
+        # # synchronizing find and replace boxes on two tabs
+        # self.connect(self.findLineEdit, SIGNAL("textChanged(const QString &)"), self.findLineEditIF,
+        #              SLOT("setText(const QString &)"))
+        # self.connect(self.findLineEditIF, SIGNAL("textChanged(const QString &)"), self.findLineEdit,
+        #              SLOT("setText(const QString &)"))
+        # self.connect(self.replaceLineEdit, SIGNAL("textChanged(const QString &)"), self.replaceLineEditIF,
+        #              SLOT("setText(const QString &)"))
+        # self.connect(self.replaceLineEditIF, SIGNAL("textChanged(const QString &)"), self.replaceLineEdit,
+        #              SLOT("setText(const QString &)"))
+        # # synchronizing check boxes
+        # self.connect(self.wholeCheckBox, SIGNAL("toggled(bool)"), self.wholeCheckBoxIF, SLOT("setChecked(bool)"))
+        # self.connect(self.wholeCheckBoxIF, SIGNAL("toggled(bool)"), self.wholeCheckBox, SLOT("setChecked(bool)"))
+        # self.connect(self.caseCheckBox, SIGNAL("toggled(bool)"), self.caseCheckBoxIF, SLOT("setChecked(bool)"))
+        # self.connect(self.caseCheckBoxIF, SIGNAL("toggled(bool)"), self.caseCheckBox, SLOT("setChecked(bool)"))
+        #
+        # self.connect(self.tabWidget, SIGNAL("currentChanged(int)"), self.tabChanged)
+        # self.connect(self.alwaysRButton, SIGNAL("toggled(bool)"), self.alwaysRButtonToggled)
+        # self.connect(self.onLosingFocusRButton, SIGNAL("toggled(bool)"), self.onLosingFocusRButtonToggled)
+        #
+        # self.connect(self.transparencyGroupBox, SIGNAL("toggled(bool)"), self.transparencyGroupBoxToggled)
+        #
+        # # synchronizing syntax boxes
+        # self.connect(self.syntaxComboBox, SIGNAL("activated(int)"), self.syntaxComboBoxIF, SLOT("setCurrentIndex(int)"))
+        # self.connect(self.syntaxComboBoxIF, SIGNAL("activated(int)"), self.syntaxComboBox, SLOT("setCurrentIndex(int)"))
 
         if not MAC:
             # # self.findButton.setFocusPolicy(Qt.NoFocus)
@@ -562,8 +583,8 @@ class FindAndReplaceDlg(QDialog, ui_findinfilesdlg.Ui_FindInFiles):
         # _frh.replaceHistory.prepend(self.replaceLineEdit.text())
         replaceTextToDisplayFirst = self.replaceLineEdit.text()
         replaceHistoryFirstItem = ''
-        if _frh.replaceHistory.count():
-            replaceHistoryFirstItem = _frh.replaceHistory.first()
+        if len(_frh.replaceHistory):
+            replaceHistoryFirstItem = _frh.replaceHistory[0]
         # pd("self.replaceLineEdit.text()=",self.replaceLineEdit.text()," _frh.replaceHistory.first()=",_frh.replaceHistory.first())
         if self.replaceLineEdit.text() != replaceHistoryFirstItem:
             if self.replaceLineEdit.text() != '':
@@ -791,9 +812,9 @@ class FindDisplayWidget(QsciScintilla):
         copyAct = menu.addAction("Copy")
         selectAllAct = menu.addAction("Select All")
         clearAllAct = menu.addAction("Clear All")
-        self.connect(copyAct, SIGNAL("triggered()"), self.copy)
-        self.connect(selectAllAct, SIGNAL("triggered()"), self.selectAll)
-        self.connect(clearAllAct, SIGNAL("triggered()"), self.clearAll)
+        copyAct.triggered.connect(self.copy)
+        selectAllAct.triggered.connect(self.selectAll)
+        clearAllAct.triggered.connect(self.clearAll)
 
         menu.exec_(event.globalPos())
 
