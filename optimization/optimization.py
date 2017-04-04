@@ -2,13 +2,12 @@
 #
 # TODO add run script
 # todo add process tracker to easily kill all child processes
-# todo add ability to estimate multiple loss function values on a single processor
 # port_selected = socket.bind_to_random_port('tcp://*', min_port=6001, max_port=6004, max_tries=100)
 #
 
 import numpy as np
 from OptimizerWorkerProcessZMQ import OptimizerWorkerProcessZMQ
-from template_utils import generate_simulation_files_from_template
+from template_utils import generate_simulation_files_from_template  
 from collections import OrderedDict
 import os
 from os.path import *

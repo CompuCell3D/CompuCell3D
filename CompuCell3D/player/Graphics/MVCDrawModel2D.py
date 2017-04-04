@@ -323,8 +323,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
     def initializeContoursHex(self,_dim,_conArray,_minMax,_contourActor):
 #        print MODULENAME,'   initializeContoursHex():  _conArray=',_conArray
         data = vtk.vtkImageData()
-        data.SetDimensions(_dim[0], _dim[1], 1)        
-        data.SetScalarTypeToUnsignedChar()      
+        data.SetDimensions(_dim[0], _dim[1], 1)
+        if VTK_MAJOR_VERSION>=6:
+            data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 3)
+        else:
+            data.SetScalarTypeToUnsignedChar()
+
         data.GetPointData().SetScalars(_conArray)
         field       = vtk.vtkImageDataGeometryFilter()        
         # field.SetExtent(0, _dim[0], 0, int((_dim[1])*math.sqrt(3.0)), 0, 0)
