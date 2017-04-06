@@ -12,7 +12,7 @@ MAC = "qt_mac_set_native_menubar" in dir()
 
 class GoToLineDlg(QDialog,ui_gotolinedlg.Ui_GoToLineDlg):
     #signals
-    gotolineSignal = QtCore.pyqtSignal( ('int',))
+    gotolineSignal = pyqtSignal(int)
     
     def __init__(self,_currentEditor=None,parent=None):
         super(GoToLineDlg, self).__init__(parent)
@@ -59,9 +59,9 @@ class GoToLineDlg(QDialog,ui_gotolinedlg.Ui_GoToLineDlg):
     @pyqtSlot() # signature of the signal emited by the button
     def on_goButton_clicked(self):
         # print "this is on go button clicked=",self.goToLineEdit.text()
-        lineTuple=self.goToLineEdit.text().toInt()
-        if lineTuple[1]:
-            self.gotolineSignal.emit(lineTuple[0])
+        line_num = int(self.goToLineEdit.text())
+        if line_num:
+            self.gotolineSignal.emit(line_num)
         # we close the dialog right after user hits Go button  . If the entry is invalid no action is trigerred  
         self.close()    
         return
