@@ -3,19 +3,9 @@ TO DO:
 * In the FindInFileResults display widget fi more than two occurences are found in the same line only the first one is highlighted 
 '''
 import re
-# from PyQt4.QtCore import *
-# from PyQt4.QtGui import *
-# import PyQt4.QtCore as QtCore
-# import ui_findandreplacedlg
-
-
-import sys
-
-import os
-# from PyQt4.QtCore import *
-# from PyQt4.QtGui import *
 
 from utils.global_imports import *
+from utils.collection_utils import remove_duplicates
 
 from Messaging import stdMsg, dbgMsg, pd, errMsg, setDebugging
 
@@ -42,7 +32,8 @@ class FindInFilesResults:
 
         if self.lastLineAdded != _lineNumber:
             if not _text.endswith('\n'):
-                _text.append('\n')
+                # _text.append('\n')
+                _text += '\n'
             # internally lines numbers start from 0    but we have to display them as starting from 1 - it is de-factor a convention for text editors            
             self.lineOccurences.append([_lineNumber + 1,
                                         _text])  # for display purposes we add 1 to _lineNumber i.e. we display line numbers as if they were counted from 1
@@ -164,44 +155,42 @@ class FindAndReplaceHistory:
         flag = False
         if self.textToFindIF != _text:
             self.textToFindIF = _text
-            # # # if str(self.textToFindIF).strip()!='':
             self.findHistory.insert(0, self.textToFindIF)
-            self.findHistory = list(set(self.findHistory))  # removing dupicates
+            self.findHistory = remove_duplicates(self.findHistory)  # removing dupicates
             if len(self.findHistory) >= self.historyLength:
-                #                 self.findHistory.removeAt(self.findHistory.count() - 1)
+
                 self.findHistory.pop()  # removing last element that is over the limit
-                # looks like this does not work in PyQt4
-                # self.findHistory.removeLast()
+
             flag = True
 
         if self.filtersIF != _filters:
             self.filtersIF = _filters
             if str(self.filtersIF).strip() != '':
-                self.filtersHistoryIF.prepend(self.filtersIF)
+                self.filtersHistoryIF.insert(0, self.filtersIF)
             print 'self.filtersHistoryIF=', len(self.filtersHistoryIF)
 
-            self.filtersHistoryIF.removeDuplicates()
+            self.filtersHistoryIF = remove_duplicates(self.filtersHistoryIF)
             print 'REMOVING DUPLICATES'
             print 'self.filtersHistoryIF=', len(self.filtersHistoryIF)
             for obj in self.filtersHistoryIF:
                 print 'filter=', obj
-            if self.filtersHistoryIF.count() >= self.historyLength:
-                self.filtersHistoryIF.removeAt(self.filtersHistoryIF.count() - 1)
-                # self.filtersHistoryIF.removeLast()
+            if len(self.filtersHistoryIF) >= self.historyLength:
+                self.filtersHistoryIF.pop()
+
 
             flag = True
 
-            # dbgMsg(self.findHistory)
+
         if self.directoryIF != _directory:
             self.directoryIF = _directory
             if str(self.directoryIF).strip() != '':
-                self.directoryHistoryIF.prepend(self.directoryIF)
-            self.directoryHistoryIF.removeDuplicates()
-            if self.directoryHistoryIF.count() >= self.historyLength:
-                self.directoryHistoryIF.removeAt(self.directoryHistoryIF.count() - 1)
-                # self.directoryHistoryIF.removeLast()
+                self.directoryHistoryIF.insert(0,self.directoryIF)
+            self.directoryHistoryIF = remove_duplicates(self.directoryHistoryIF)
+            if len(self.directoryHistoryIF) >= self.historyLength:
+                self.directoryHistoryIF.pop()
+
             flag = True
-            # dbgMsg(self.findHistory)
+
         # for in files operations we always do search regardless if parameters change or not
         flag = True
         return flag
@@ -213,13 +202,11 @@ class FindAndReplaceHistory:
         if self.replaceText != _replaceText:
             self.replaceText = _replaceText
             # # # if str(self.replaceText).strip()!='':
-            self.replaceHistory.prepend(self.replaceText)
-            self.replaceHistory.removeDuplicates()
-            if self.replaceHistory.count() >= self.historyLength:
-                self.replaceHistory.removeAt(self.replaceHistory.count() - 1)
-                # self.replaceHistory.removeLast()
+            self.replaceHistory.insert(0,self.replaceText)
+            self.replaceHistory = remove_duplicates(self.replaceHistory)
+            if len(self.replaceHistory) >= self.historyLength:
+                self.replaceHistory.pop()
 
-            # dbgMsg(self.findHistory)
             flag = True
 
         return flag
@@ -230,13 +217,12 @@ class FindAndReplaceHistory:
         if self.replaceTextIF != _replaceText:
             self.replaceTextIF = _replaceText
             # # # if str(self.replaceTextIF).strip()!='':
-            self.replaceHistory.prepend(self.replaceTextIF)
-            self.replaceHistory.removeDuplicates()
-            if self.replaceHistory.count() >= self.historyLength:
-                self.replaceHistory.removeAt(self.replaceHistory.count() - 1)
-                # self.replaceHistory.removeLast()
+            self.replaceHistory.insert(0, self.replaceTextIF)
+            self.replaceHistory = remove_duplicates(self.replaceHistory)
+            if len(self.replaceHistory) >= self.historyLength:
+                self.replaceHistory.pop()
 
-            # dbgMsg(self.findHistory)
+
             flag = True
 
         return flag

@@ -89,8 +89,9 @@ from DataSocketCommunicators import FileNameReceiver
 import Encoding
 import string
 import sys
-
 import re
+
+from utils.collection_utils import remove_duplicates
 from codecs import BOM_UTF8, BOM_UTF16, BOM_UTF32
 
 from PluginManager.PluginManager import PluginManager
@@ -1584,6 +1585,15 @@ class EditorWindow(QMainWindow):
         # ALL_IN_ALL_OPEN_DOCS=1
         # ALL_IN_CURRENT_DOC=2
 
+        if not os.path.isdir(_directory):
+
+            ret = QtWidgets.QMessageBox.warning(self, "Directory Not Found",
+                                                'Could nto locate directory %s'%_directory,
+                                                QtWidgets.QMessageBox.Ok )
+            if ret == QtWidgets.QMessageBox.Ok:
+                self.findDialogForm.setButtonsEnabled(True)
+                return
+
         dbgMsg("search parameters", _text, " ", _filters, " ", _directory)
 
         reFlag = False
@@ -1688,17 +1698,20 @@ class EditorWindow(QMainWindow):
         """
             performs actual search for _text(possibly regex depending on _reFlag) in _files
         """
-        progressDialog = QtGui.QProgressDialog(self)
+        progressDialog = QtWidgets.QProgressDialog(self)
 
         progressDialog.setCancelButtonText("&Cancel")
         numberOfFiles = len(_files)
         progressDialog.setRange(0, numberOfFiles)
         progressDialog.setWindowTitle("Find Text in Files")
 
+        # progressDialog.raise_()
+
         foundFiles = []
         i = 1
 
-        findText = QString(_text)  # a new copy of a textTo Find
+        # findText = QString(_text)  # a new copy of a textTo Find
+        findText = _text  # a new copy of a textTo Find
         if _reFlag:
             # here I will replace ( with \( and vice versa - to be consistent with  regex convention
             findText = self.swapEscaping(findText, "(")
@@ -1708,7 +1721,9 @@ class EditorWindow(QMainWindow):
             # dbgMsg("SEARCHING ", filename)
             progressDialog.setValue(i)
             progressDialog.setLabelText("Searching file number %d of %d..." % (i, numberOfFiles))
-            QtGui.qApp.processEvents()
+            QtWidgets.qApp.processEvents()
+
+
 
             if progressDialog.wasCanceled():
                 break
@@ -4308,7 +4323,8 @@ class EditorWindow(QMainWindow):
 
         stringList.insert(0,_itemName)
 
-        # stringList.removeDuplicates()
+        stringList = remove_duplicates(stringList)
+
 
         _settingObj.setSetting(_settingName, stringList)
 
