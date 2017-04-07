@@ -1419,15 +1419,15 @@ class EditorWindow(QMainWindow):
         if not self.commentStyleDict[editor][0]:  # this language does not allow comments
             return
 
-        commentStringBegin = QString(self.commentStyleDict[editor][0])
+        commentStringBegin = self.commentStyleDict[editor][0]
         commentStringBeginTrunc = commentStringBegin.trimmed()  # comments without white spaces
 
         if commentStringBeginTrunc == "REM":
             commentStringBeginTrunc = commentStringBegin  # comments which begin with a word  - e.g. REM should not be truncated
 
-        commentStringEnd = QString()
+        commentStringEnd = ''
         if self.commentStyleDict[editor][1]:
-            commentStringEnd = QString(self.commentStyleDict[editor][1])
+            commentStringEnd = self.commentStyleDict[editor][1]
         commentStringEndTrunc = commentStringEnd.trimmed()
 
         if editor.hasSelectedText():
@@ -1661,6 +1661,7 @@ class EditorWindow(QMainWindow):
         findText = _text  # a new copy of a textTo Find
         if _reFlag:
             # here I will replace ( with \( and vice versa - to be consistent with  regex convention
+            # findText = re.escape(findText)
             findText = self.swapEscaping(findText, "(")
             findText = self.swapEscaping(findText, ")")
 
@@ -1714,6 +1715,7 @@ class EditorWindow(QMainWindow):
         findText = _text  # a new copy of a textTo Find
         if _reFlag:
             # here I will replace ( with \( and vice versa - to be consistent with  regex convention
+            # findText = re.escape(findText)
             findText = self.swapEscaping(findText, "(")
             findText = self.swapEscaping(findText, ")")
 
@@ -1837,9 +1839,10 @@ class EditorWindow(QMainWindow):
 
         editorList = self.getEditorList()
 
-        findText = QString(_text)  # a new copy of a textTo Find
+        findText = _text  # a new copy of a textTo Find
         if _reFlag:
             # here I will replace ( with \( and vice versa - to be consistent with  regex convention
+            # findText = re.escape(findText)
             findText = self.swapEscaping(findText, "(")
             findText = self.swapEscaping(findText, ")")
 
@@ -1894,9 +1897,10 @@ class EditorWindow(QMainWindow):
         progressDialog.setRange(0, numberOfFiles)
         progressDialog.setWindowTitle("Replacing Text in Files")
 
-        findText = QString(_text)  # a new copy of a textTo Find
+        findText = _text  # a new copy of a textTo Find
         if _reFlag:
             # here I will replace ( with \( and vice versa - to be consistent with  regex convention
+            # findText = re.escape(findText)
             findText = self.swapEscaping(findText, "(")
             findText = self.swapEscaping(findText, ")")
 
@@ -1994,25 +1998,37 @@ class EditorWindow(QMainWindow):
     def swapEscaping(self, _str, _char):
         """
             This fcn escapes character _str and if it is escaped it unescapes it
+            It does not look like it is equivalent to re.excape(_str)
         """
+
+
         dbgMsg("string=", _str)
         idx = 0
 
         while idx >= 0:
-            idx = _str.indexOf(_char, idx)
+            try:
+                idx = _str[idx:].index(_char)+idx
+            except ValueError:
+                break
+            # idx = _str.indexOf(_char, idx)
             # pd("Found index in position ",idx)
             if idx == 0:
-                _str.insert(idx, "\\")
+
+                # _str.insert(idx, "\\")
+                _str = _str[:idx]+'\\'+_str[idx+1:]
                 idx += 2
             elif idx >= 1:
 
-                if QString(_str.at(idx - 1)) == "\\":
+                if _str[idx - 1] == '\\':
+                # if QString(_str.at(idx - 1)) == "\\":
+                    _str = _str[:idx - 1] + _str[idx:]
 
-                    _str.remove(idx - 1, 1)
                 else:
-                    _str.insert(idx, "\\")
+                    _str = _str[:idx] + '\\' + _str[idx + 1:]
+                    # _str.insert(idx, "\\")
                     idx += 2
         return _str
+
 
     def findNext(self, _text):
         """
@@ -2037,9 +2053,10 @@ class EditorWindow(QMainWindow):
         findText = self.findAndReplaceHistory.textToFind  # a new copy of a textTo Find
         if self.findAndReplaceHistory.re:
             # here I will replace ( with \( and vice versa - to be consistent with  regex convention
+            # findText = re.escape(findText)
             findText = self.swapEscaping(findText, "(")
             findText = self.swapEscaping(findText, ")")
-
+            pass
         if newSearchFlag:
             foundFlag = editor.findFirst(findText, self.findAndReplaceHistory.re, self.findAndReplaceHistory.cs,
                                          self.findAndReplaceHistory.wo, self.findAndReplaceHistory.wrap)
@@ -2070,6 +2087,7 @@ class EditorWindow(QMainWindow):
         findText = QString(self.findAndReplaceHistory.textToFind)  # a new copy of a textTo Find
         if self.findAndReplaceHistory.re:
             # here I will replace ( with \( and vice versa - to be consistent with  regex convention
+            # findText = re.escape(findText)
             findText = self.swapEscaping(findText, "(")
             findText = self.swapEscaping(findText, ")")
 
@@ -2103,6 +2121,7 @@ class EditorWindow(QMainWindow):
         findText = QString(_text)
         if self.findAndReplaceHistory.re:
             # here I will replace ( with \( and vice versa - to be consistent with  regex convention
+            # findText = re.escape(findText)
             findText = self.swapEscaping(findText, "(")
             findText = self.swapEscaping(findText, ")")
 
@@ -2160,9 +2179,10 @@ class EditorWindow(QMainWindow):
 
         substitutionCounter = 0
 
-        findText = QString(self.findAndReplaceHistory.textToFind)  # a new copy of a textTo Find
+        findText = self.findAndReplaceHistory.textToFind  # a new copy of a textTo Find
         if self.findAndReplaceHistory.re:
             # here I will replace ( with \( and vice versa - to be consistent with  regex convention
+            # findText = re.escape(findText)
             findText = self.swapEscaping(findText, "(")
             findText = self.swapEscaping(findText, ")")
 

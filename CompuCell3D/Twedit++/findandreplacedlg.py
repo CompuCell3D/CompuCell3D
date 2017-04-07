@@ -646,27 +646,27 @@ class FindAndReplaceDlg(QDialog, ui_findinfilesdlg.Ui_FindInFiles):
     def on_findCPB_clicked(self):
         # dbgMsg("this is on findNext button clicked"  )
 
-        self.findAndReaplceHistory.findHistory.clear()
+        self.findAndReaplceHistory.findHistory = []
         self.findComboBox.clear()
         self.findComboBoxIF.clear()
 
     @pyqtSlot()
     def on_replaceCPB_clicked(self):
         dbgMsg("CLEAR REAPLCE HISTORY button clicked")
-        self.findAndReaplceHistory.replaceHistory.clear()
+        self.findAndReaplceHistory.replaceHistory = []
         self.replaceComboBox.clear()
         self.replaceComboBoxIF.clear()
 
     @pyqtSlot()
     def on_filtersCPB_clicked(self):
-        # dbgMsg("this is on findNext button clicked"        )
-        self.findAndReaplceHistory.filtersHistoryIF.clear()
+
+        self.findAndReaplceHistory.filtersHistoryIF = []
         self.filtersComboBoxIF.clear()
 
     @pyqtSlot()
     def on_directoryCPB_clicked(self):
-        # dbgMsg("this is on findNext button clicked"        )
-        self.findAndReaplceHistory.directoryHistoryIF.clear()
+
+        self.findAndReaplceHistory.directoryHistoryIF = []
         self.directoryComboBoxIF.clear()
 
     @pyqtSlot()
