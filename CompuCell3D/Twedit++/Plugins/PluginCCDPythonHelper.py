@@ -159,7 +159,8 @@ class CC3DPythonHelper(QObject):
                 self.snippetDictionary[actionKey] = snippetText
 
                 self.actions[actionKey] = action
-                self.__ui.connect(action, SIGNAL("triggered()"), self.snippetMapper, SLOT("map()"))
+                # self.__ui.connect(action, SIGNAL("triggered()"), self.snippetMapper, SLOT("map()"))
+                action.triggered.connect(self.snippetMapper.map)
                 self.snippetMapper.setMapping(action, actionKey)
 
         self.actions["Skip Comments In Python Snippets"] = QtGui.QAction("Skip Comments In Python Snippets", self,
@@ -169,8 +170,12 @@ class CC3DPythonHelper(QObject):
         flag = self.configuration.setting("SkipCommentsInPythonSnippets")
         self.skipCommentsInPythonSnippets(flag)
         self.actions["Skip Comments In Python Snippets"].setChecked(flag)
-        self.connect(self.actions["Skip Comments In Python Snippets"], SIGNAL('triggered(bool)'),
-                     self.skipCommentsInPythonSnippets)
+
+        # self.connect(self.actions["Skip Comments In Python Snippets"], SIGNAL('triggered(bool)'),
+        #              self.skipCommentsInPythonSnippets)
+
+        self.actions["Skip Comments In Python Snippets"].triggered.connect(self.skipCommentsInPythonSnippets)
+
 
         self.cc3dPythonMenu.addSeparator()
         # ---------------------------------------
