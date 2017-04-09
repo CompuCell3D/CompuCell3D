@@ -60,7 +60,8 @@ class CycleTabsPopup(QLabel):
             self.ctrlTabShortcut=QShortcut(QKeySequence("Alt+Tab") ,self)
             self.CtrlKeyEquivalent=Qt.Key_Alt
             
-        self.connect( self.ctrlTabShortcut, SIGNAL("activated()"), self.cycleTabs )
+        # self.connect( self.ctrlTabShortcut, SIGNAL("activated()"), self.cycleTabs )
+        self.ctrlTabShortcut.activated.connect(self.cycleTabs)
         self.highlightedItem=''
         self.openFileNames=None
         self.cycleTabFilesList=None
