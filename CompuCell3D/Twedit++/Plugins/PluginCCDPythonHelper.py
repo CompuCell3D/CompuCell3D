@@ -163,7 +163,7 @@ class CC3DPythonHelper(QObject):
                 action.triggered.connect(self.snippetMapper.map)
                 self.snippetMapper.setMapping(action, actionKey)
 
-        self.actions["Skip Comments In Python Snippets"] = QtGui.QAction("Skip Comments In Python Snippets", self,
+        self.actions["Skip Comments In Python Snippets"] = QAction("Skip Comments In Python Snippets", self,
                                                                          shortcut="",
                                                                          statusTip="Skip Comments In Python Snippets")
         self.actions["Skip Comments In Python Snippets"].setCheckable(True)

@@ -31,6 +31,5 @@ class Configuration:
         for key in self.defaultConfigs.keys():
 
             val = self.settings.value(key)
-
             if not val:
                 self.setSetting(key, self.defaultConfigs[key])

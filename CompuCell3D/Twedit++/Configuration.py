@@ -97,7 +97,6 @@ class Configuration:
                       "FRSyntaxIndex", "FROpacity", "CurrentTabIndex", "CurrentPanelIndex"]:  # integer values
             val = self.settings.value(_key)
 
-            # if val.isValid():
             if val:
                 return val  # toInt returns tuple and first element of if is the integer the second one is flag
             else:
