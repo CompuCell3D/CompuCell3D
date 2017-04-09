@@ -123,11 +123,12 @@ class CC3DMLHelper(QObject):
         Public method to deactivate this plugin.
         """
 
-        self.__ui.disconnect(self.snippetMapper,SIGNAL("mapped(const QString&)"),  self.__insertSnippet)
+        self.snippetMapper.mapped[str].disconnect(self.__insertSnippet)
         
         for actionName, action in self.actions.iteritems():
             
-            self.__ui.disconnect(action,SIGNAL("triggered()"),self.snippetMapper,SLOT("map()"))
+            # self.__ui.disconnect(action,SIGNAL("triggered()"),self.snippetMapper,SLOT("map()"))
+            action.triggered.disconnect(self.snippetMapper.map)
 
         self.cc3dmlMenu.clear()
         

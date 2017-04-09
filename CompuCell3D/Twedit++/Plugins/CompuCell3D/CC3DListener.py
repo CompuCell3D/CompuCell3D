@@ -1,12 +1,10 @@
+"""
+todo fix Socket - rewrite signals to use qt5 style
+"""
+
+from utils.global_imports import *
 
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtNetwork import *
-from  PyQt4 import *
-from PyQt4.Qsci import *
-from Messaging import stdMsg, dbgMsg, errMsg, setDebugging
-import sys
 SIZEOF_UINT16 = 2
 
 from windowsUtils import *

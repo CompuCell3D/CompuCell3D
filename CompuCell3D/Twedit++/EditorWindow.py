@@ -1,6 +1,8 @@
 """
 TO DO:
-* fix tab cycle popup
+* fix configuration dialog to display loaded plugins
+
+
 * cannot find  new line character 
 * window menu
 * help menu
