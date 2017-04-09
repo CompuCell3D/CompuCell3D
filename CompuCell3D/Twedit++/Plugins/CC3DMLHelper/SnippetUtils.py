@@ -1,12 +1,14 @@
-from PyQt4.QtCore import QObject, SIGNAL, QString
-from PyQt4.QtGui import QMessageBox
-
-from PyQt4 import QtCore, QtGui
-
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from utils.global_imports import *
+# from PyQt4.QtCore import QObject, SIGNAL, QString
+# from PyQt4.QtGui import QMessageBox
+#
+# from PyQt4 import QtCore, QtGui
+#
+# from PyQt4.QtCore import *
+# from PyQt4.QtGui import *
 
 import xml
+print sys.path
 import XMLUtils
 from XMLUtils import ElementCC3D
 

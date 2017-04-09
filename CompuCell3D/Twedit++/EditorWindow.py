@@ -426,7 +426,7 @@ class EditorWindow(QMainWindow):
         self.cycleTabsPopup = None
         self.cycleTabFilesList = CycleTabFileList(self)
 
-        # self.pm = PluginManager(self)
+        self.pm = PluginManager(self)
 
         self.setDefaultStyling()
 

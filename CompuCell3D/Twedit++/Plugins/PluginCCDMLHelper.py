@@ -9,15 +9,16 @@
 """
 Module used to link Twedit++ with CompuCell3D.
 """
+from utils.global_imports import *
 
-from PyQt4.QtCore import QObject, SIGNAL, QString
-from PyQt4.QtGui import QMessageBox
-
-from PyQt4 import QtCore, QtGui
-
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-import os.path
+# from PyQt4.QtCore import QObject, SIGNAL, QString
+# from PyQt4.QtGui import QMessageBox
+#
+# from PyQt4 import QtCore, QtGui
+#
+# from PyQt4.QtCore import *
+# from PyQt4.QtGui import *
+# import os.path
 import string
 import re
 
@@ -33,7 +34,7 @@ shortDescription = "Plugin which assists with CC3D Python scripting"
 longDescription = """This plugin provides provides users with CC3D Python code snippets - making Python scripting in CC3D more convenient."""
 # End-Of-Header
 
-error = QString("")
+error = ''
 
         
     
@@ -106,7 +107,8 @@ class CC3DMLHelper(QObject):
         """
         
         self.snippetMapper = QSignalMapper(self.__ui)
-        self.__ui.connect(self.snippetMapper,SIGNAL("mapped(const QString&)"),  self.__insertSnippet)
+        # self.__ui.connect(self.snippetMapper,SIGNAL("mapped(const QString&)"),  self.__insertSnippet)
+        self.snippetMapper.mapped[str].connect(self.__insertSnippet)
         
         # self.snippetDictionary=self.snippetUtils.getCodeSnippetsDict()
         self.snippetDictionary=self.snippetUtils.getHandlersDict()
@@ -182,7 +184,8 @@ class CC3DMLHelper(QObject):
                     
                     action=actionGroupMenu.addAction(actionName)
                     self.actions[key]=action
-                    self.__ui.connect(action,SIGNAL("triggered()"),self.snippetMapper,SLOT("map()"))
+                    # self.__ui.connect(action,SIGNAL("triggered()"),self.snippetMapper,SLOT("map()"))
+                    action.triggered.connect(self.snippetMapper.map)
                     self.snippetMapper.setMapping(action, key)
                     
                 except KeyError,e:
@@ -202,7 +205,8 @@ class CC3DMLHelper(QObject):
                     action=self.actionGroupMenuDict[actionGroupName].addAction(actionName)
                     self.actions[key]=action
                     # action.setCheckable(True)
-                    self.__ui.connect(action,SIGNAL("triggered()"),self.snippetMapper,SLOT("map()"))
+                    # self.__ui.connect(action,SIGNAL("triggered()"),self.snippetMapper,SLOT("map()"))
+                    action.triggered.connect(self.snippetMapper.map)
                     self.snippetMapper.setMapping(action, key)
                     
                 
@@ -217,7 +221,8 @@ class CC3DMLHelper(QObject):
                 action=self.cc3dmlMenu.addAction(key)
                 self.actions[key]=action
                 # action.setCheckable(True)
-                self.__ui.connect(action,SIGNAL("triggered()"),self.snippetMapper,SLOT("map()"))
+                # self.__ui.connect(action,SIGNAL("triggered()"),self.snippetMapper,SLOT("map()"))
+                action.triggered.connect(self.snippetMapper.map)
                 self.snippetMapper.setMapping(action, key)
         
     def removeLines(self,_editor,_beginLine,_endLine):

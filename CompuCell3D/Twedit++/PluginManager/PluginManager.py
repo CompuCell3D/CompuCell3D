@@ -276,7 +276,7 @@ class PluginManager(QObject):
         except StandardError, err:
             module = imp.new_module(name)
             module.error = \
-                self.trUtf8("Module failed to load. Error: %1").arg(unicode(err))
+                "Module failed to load. Error: %s"%unicode(err)
             self.__failedModules[name] = module
             print "Error loading plugin module:",  name
             print "\n\n\n",unicode(err),'\n\n\n '
@@ -432,11 +432,12 @@ class PluginManager(QObject):
                 obj, ok = pluginObject.activate()
                 print "ACTIVATED"
             except TypeError:
-                module.error = self.trUtf8("Incompatible plugin activation method.")
+                module.error = "Incompatible plugin activation method."
                 obj = None
                 ok = True
             except StandardError, err:
-                module.error = QString(unicode(err))
+                module.error = unicode(err)
+                traceback.print_exc(file=sys.stdout)
                 obj = None
                 ok = False
             if not ok:

@@ -15,8 +15,8 @@ def setPaths():
             pass
     else:
         try:
-            sys.path.append(environ["SWIG_LIB_INSTALL_DIR"])
             sys.path.append(environ["PYTHON_MODULE_PATH"])
+            sys.path.append(environ["SWIG_LIB_INSTALL_DIR"])
         except:
             pass
 
