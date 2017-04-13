@@ -741,8 +741,11 @@ class Ui_NewSimulationWizard(object):
         NewSimulationWizard.addPage(self.wizardPage_3)
 
         self.retranslateUi(NewSimulationWizard)
-        self.piffRB.toggled['bool'].connect(self.piffPB.setShown)
-        self.piffRB.toggled['bool'].connect(self.piffLE.setShown)
+        # self.piffRB.toggled['bool'].connect(self.piffPB.setShown)
+        # self.piffRB.toggled['bool'].connect(self.piffLE.setShown)
+        self.piffRB.toggled['bool'].connect(self.piffPB.setVisible)
+        self.piffRB.toggled['bool'].connect(self.piffLE.setVisible)
+
         QtCore.QMetaObject.connectSlotsByName(NewSimulationWizard)
 
     def retranslateUi(self, NewSimulationWizard):

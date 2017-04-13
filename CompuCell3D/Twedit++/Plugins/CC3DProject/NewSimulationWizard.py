@@ -107,12 +107,12 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
 
             # event.ignore()
 
-            # @pyqtSignature("") # signature of the signal emited by the button
+            # @pyqtSlot() # signature of the signal emited by the button
             # def on_okButton_clicked(self):
             # self.findChangedConfigs()
             # self.close()
 
-    @pyqtSignature("")  # signature of the signal emited by the button
+    @pyqtSlot()  # signature of the signal emited by the button
     def on_piffPB_clicked(self):
         fileName = QFileDialog.getOpenFileName(self, "Choose PIFF file...")
         fileName = str(fileName)
@@ -130,86 +130,86 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
             self.volumeFlexCHB.setHidden(False)
             self.surfaceFlexCHB.setHidden(False)
 
-    @pyqtSignature("bool")  # signature of the signal emited by the button
+    @pyqtSlot(bool)  # signature of the signal emited by the button
     def on_extPotCHB_toggled(self, _flag):
         if _flag:
             self.extPotLocalFlexCHB.setChecked(not _flag)
 
-    @pyqtSignature("bool")  # signature of the signal emited by the button
+    @pyqtSlot(bool)  # signature of the signal emited by the button
     def on_extPotLocalFlexCHB_toggled(self, _flag):
         if _flag:
             self.extPotCHB.setChecked(not _flag)
 
-    @pyqtSignature("bool")  # signature of the signal emited by the button
+    @pyqtSlot(bool)  # signature of the signal emited by the button
     def on_volumeFlexCHB_toggled(self, _flag):
         if _flag:
             self.volumeLocalFlexCHB.setChecked(not _flag)
 
-    @pyqtSignature("bool")  # signature of the signal emited by the button
+    @pyqtSlot(bool)  # signature of the signal emited by the button
     def on_volumeLocalFlexCHB_toggled(self, _flag):
         if _flag:
             self.volumeFlexCHB.setChecked(not _flag)
 
-    @pyqtSignature("bool")  # signature of the signal emited by the button
+    @pyqtSlot(bool)  # signature of the signal emited by the button
     def on_surfaceFlexCHB_toggled(self, _flag):
         if _flag:
             self.surfaceLocalFlexCHB.setChecked(not _flag)
 
-    @pyqtSignature("bool")  # signature of the signal emited by the button
+    @pyqtSlot(bool)  # signature of the signal emited by the button
     def on_surfaceLocalFlexCHB_toggled(self, _flag):
         if _flag:
             self.surfaceFlexCHB.setChecked(not _flag)
 
-    @pyqtSignature("bool")  # signature of the signal emited by the button
+    @pyqtSlot(bool)  # signature of the signal emited by the button
     def on_connectGlobalCHB_toggled(self, _flag):
         if _flag:
             self.connect2DCHB.setChecked(not _flag)
             self.connectGlobalByIdCHB.setChecked(not _flag)
 
-    @pyqtSignature("bool")  # signature of the signal emited by the button
+    @pyqtSlot(bool)  # signature of the signal emited by the button
     def on_connect2DCHB_toggled(self, _flag):
         if _flag:
             self.connectGlobalCHB.setChecked(not _flag)
             self.connectGlobalByIdCHB.setChecked(not _flag)
 
-    @pyqtSignature("bool")  # signature of the signal emited by the button
+    @pyqtSlot(bool)  # signature of the signal emited by the button
     def on_connectGlobalByIdCHB_toggled(self, _flag):
         if _flag:
             self.connect2DCHB.setChecked(not _flag)
             self.connectGlobalCHB.setChecked(not _flag)
 
-    @pyqtSignature("bool")  # signature of the signal emited by the button
+    @pyqtSlot(bool)  # signature of the signal emited by the button
     def on_lengthConstraintCHB_toggled(self, _flag):
         if _flag:
             self.lengthConstraintLocalFlexCHB.setChecked(not _flag)
 
-    @pyqtSignature("bool")  # signature of the signal emited by the button
+    @pyqtSlot(bool)  # signature of the signal emited by the button
     def on_lengthConstraintLocalFlexCHB_toggled(self, _flag):
         if _flag:
             self.lengthConstraintCHB.setChecked(not _flag)
 
-    @pyqtSignature("bool")  # signature of the signal emited by the button
+    @pyqtSlot(bool)  # signature of the signal emited by the button
     def on_growthCHB_toggled(self, _flag):
         if _flag:
             self.hideConstraintFlexOption()
         else:
             self.showConstraintFlexOption()
 
-    @pyqtSignature("bool")  # signature of the signal emited by the button
+    @pyqtSlot(bool)  # signature of the signal emited by the button
     def on_mitosisCHB_toggled(self, _flag):
         if _flag:
             self.hideConstraintFlexOption()
         else:
             self.showConstraintFlexOption()
 
-    @pyqtSignature("bool")  # signature of the signal emited by the button
+    @pyqtSlot(bool)  # signature of the signal emited by the button
     def on_deathCHB_toggled(self, _flag):
         if _flag:
             self.hideConstraintFlexOption()
         else:
             self.showConstraintFlexOption()
 
-    @pyqtSignature("")  # signature of the signal emited by the button
+    @pyqtSlot()  # signature of the signal emited by the button
     def on_cellTypeAddPB_clicked(self):
 
         cellType = str(self.cellTypeLE.text())
@@ -253,7 +253,7 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
         self.cellTypeLE.setText("")
         return
 
-    @pyqtSignature("")  # signature of the signal emited by the button
+    @pyqtSlot()  # signature of the signal emited by the button
     def on_clearCellTypeTablePB_clicked(self):
 
         rows = self.cellTypeTable.rowCount()
@@ -269,7 +269,7 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
         mediumFreezeItem.setCheckState(Qt.Unchecked)
         self.cellTypeTable.setItem(0, 1, mediumFreezeItem)
 
-    @pyqtSignature("")  # signature of the signal emited by the button
+    @pyqtSlot()  # signature of the signal emited by the button
     def on_fieldAddPB_clicked(self):
 
         fieldName = str(self.fieldNameLE.text())
@@ -311,7 +311,7 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
         print "CLEAN FIELD NAME"
         return
 
-    @pyqtSignature("")  # signature of the signal emited by the button
+    @pyqtSlot()  # signature of the signal emited by the button
     def on_clearFieldTablePB_clicked(self):
 
         rows = self.fieldTable.rowCount()
@@ -319,14 +319,14 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
             self.fieldTable.removeRow(i)
 
     # SECRETION
-    @pyqtSignature("bool")  # signature of the signal emited by the button
+    @pyqtSlot(bool)  # signature of the signal emited by the button
     def on_secrConstConcRB_toggled(self, _flag):
         if _flag:
             self.secrRateLB.setText("Const. Concentration")
         else:
             self.secrRateLB.setText("Secretion Rate")
 
-    @pyqtSignature("bool")  # signature of the signal emited by the button
+    @pyqtSlot(bool)  # signature of the signal emited by the button
     def on_secrOnContactRB_toggled(self, _flag):
         if _flag:
             self.secrAddOnContactPB.setHidden(False)
@@ -337,7 +337,7 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
             self.secrOnContactCellTypeCB.setHidden(True)
             self.secrOnContactLE.setHidden(True)
 
-    @pyqtSignature("")  # signature of the signal emited by the button
+    @pyqtSlot()  # signature of the signal emited by the button
     def on_secrAddOnContactPB_clicked(self):
         type = str(self.secrOnContactCellTypeCB.currentText())
         currentText = str(self.secrOnContactLE.text())
@@ -348,7 +348,7 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
         else:
             self.secrOnContactLE.setText(type)
 
-    @pyqtSignature("")  # signature of the signal emited by the button
+    @pyqtSlot()  # signature of the signal emited by the button
     def on_secrAddRowPB_clicked(self):
         field = string.rstrip(str(self.secrFieldCB.currentText()))
         cellType = string.rstrip(str(self.secrCellTypeCB.currentText()))
@@ -379,7 +379,7 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
         # reset entry lines
         self.secrOnContactLE.setText('')
 
-    @pyqtSignature("")  # signature of the signal emited by the button
+    @pyqtSlot()  # signature of the signal emited by the button
     def on_secrRemoveRowsPB_clicked(self):
 
         selectedItems = self.secretionTable.selectedItems()
@@ -394,7 +394,7 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
             row = rows[idx]
             self.secretionTable.removeRow(row)
 
-    @pyqtSignature("")  # signature of the signal emited by the button
+    @pyqtSlot()  # signature of the signal emited by the button
     def on_secrClearTablePB_clicked(self):
         # self.secretionTable.clear()
         rows = self.secretionTable.rowCount()
@@ -402,7 +402,7 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
             self.secretionTable.removeRow(idx)
 
     # CHEMOTAXIS
-    @pyqtSignature("bool")  # signature of the signal emited by the button
+    @pyqtSlot(bool)  # signature of the signal emited by the button
     def on_chemSatRB_toggled(self, _flag):
         if _flag:
             self.satCoefLB.setText("Saturation Coef.")
@@ -413,7 +413,7 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
             self.satChemLE.setHidden(True)
             self.satChemLE.setText('')
 
-    @pyqtSignature("bool")  # signature of the signal emited by the radio button
+    @pyqtSlot(bool)  # signature of the signal emited by the radio button
     def on_chemSatLinRB_toggled(self, _flag):
         if _flag:
             self.satCoefLB.setText("Saturation Coef. Linear")
@@ -424,7 +424,7 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
             self.satChemLE.setHidden(True)
             self.satChemLE.setText('')
 
-    @pyqtSignature("")  # signature of the signal emited by the button
+    @pyqtSlot()  # signature of the signal emited by the button
     def on_chemotaxTowardsPB_clicked(self):
         type = str(self.chemTowardsCellTypeCB.currentText())
         currentText = str(self.chemotaxTowardsLE.text())
@@ -435,7 +435,7 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
         else:
             self.chemotaxTowardsLE.setText(type)
 
-    @pyqtSignature("")  # signature of the signal emited by the button
+    @pyqtSlot()  # signature of the signal emited by the button
     def on_chemotaxisAddRowPB_clicked(self):
         field = string.rstrip(str(self.chemFieldCB.currentText()))
         cellType = string.rstrip(str(self.chemCellTypeCB.currentText()))
@@ -474,7 +474,7 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
         # reset entry lines
         self.chemotaxTowardsLE.setText('')
 
-    @pyqtSignature("")  # signature of the signal emited by the button
+    @pyqtSlot()  # signature of the signal emited by the button
     def on_chemotaxisRemoveRowsPB_clicked(self):
 
         selectedItems = self.chamotaxisTable.selectedItems()
@@ -490,14 +490,14 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
             row = rows[idx]
             self.chamotaxisTable.removeRow(row)
 
-    @pyqtSignature("")  # signature of the signal emited by the button
+    @pyqtSlot()  # signature of the signal emited by the button
     def on_chemotaxisClearTablePB_clicked(self):
         # self.chamotaxisTable.clear()
         rows = self.chamotaxisTable.rowCount()
         for idx in range(rows - 1, -1, -1):
             self.chamotaxisTable.removeRow(idx)
 
-    @pyqtSignature("")  # signature of the signal emited by the button
+    @pyqtSlot()  # signature of the signal emited by the button
     def on_afMoleculeAddPB_clicked(self):
 
         molecule = str(self.afMoleculeLE.text())
@@ -528,13 +528,13 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
         self.afMoleculeLE.setText("")
         return
 
-    @pyqtSignature("")  # signature of the signal emited by the button
+    @pyqtSlot()  # signature of the signal emited by the button
     def on_clearAFTablePB_clicked(self):
         rows = self.afTable.rowCount()
         for i in range(rows - 1, -1, -1):
             self.afTable.removeRow(i)
 
-    @pyqtSignature("")  # signature of the signal emited by the button
+    @pyqtSlot()  # signature of the signal emited by the button
     def on_cmcMoleculeAddPB_clicked(self):
         cadherin = str(self.cmcMoleculeLE.text())
         cadherin = string.rstrip(cadherin)
@@ -565,13 +565,13 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
 
         return
 
-    @pyqtSignature("")  # signature of the signal emited by the button
+    @pyqtSlot()  # signature of the signal emited by the button
     def on_clearCMCTablePB_clicked(self):
         rows = self.cmcTable.rowCount()
         for i in range(rows - 1, -1, -1):
             self.cmcTable.removeRow(i)
 
-            # @pyqtSignature("") # signature of the signal emited by the button
+            # @pyqtSlot() # signature of the signal emited by the button
             # def on_plotAddPB_clicked(self):
 
             # plotName=str(self.plotLE.text())
@@ -613,13 +613,13 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
             # self.plotLE.setText("")
             # return
 
-            # @pyqtSignature("") # signature of the signal emited by the button
+            # @pyqtSlot() # signature of the signal emited by the button
             # def on_clearPlotTablePB_clicked(self):
             # rows=self.plotTable.rowCount()
             # for i in range (rows-1,-1,-1):
             # self.plotTable.removeRow(i)
 
-    @pyqtSignature("")  # signature of the signal emited by the button
+    @pyqtSlot()  # signature of the signal emited by the button
     def on_dirPB_clicked(self):
         name = str(self.nameLE.text())
         name = string.rstrip(name)
@@ -642,7 +642,7 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
             # self.connect2DCHB.setChecked(False)
 
 
-            # @pyqtSignature("") # signature of the signal emited by the button
+            # @pyqtSlot() # signature of the signal emited by the button
             # def on_cellTypeLE_returnPressed(self):
             # print "GOT ENTER EVENT"
             # self.on_cellTypeAddPB_clicked()
@@ -822,17 +822,21 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
 
             if sim3DFlag:
                 self.lengthConstraintLocalFlexCHB.setChecked(False)
-                self.lengthConstraintLocalFlexCHB.setShown(False)
+                # self.lengthConstraintLocalFlexCHB.setShown(False)
+                self.lengthConstraintLocalFlexCHB.hide()
                 # self.connect2DCHB.setChecked(False)
                 # self.connect2DCHB.setShown(False)
             else:
-                self.lengthConstraintLocalFlexCHB.setShown(True)
+                # self.lengthConstraintLocalFlexCHB.setShown(True)
+                self.lengthConstraintLocalFlexCHB.show()
                 # self.connect2DCHB.setShown(True)    
 
             if str(self.latticeTypeCB.currentText()) == "Square" and not sim3DFlag:
-                self.connect2DCHB.setShown(True)
+                # self.connect2DCHB.setShown(True)
+                self.connect2DCHB.show()
             else:
-                self.connect2DCHB.setShown(False)
+                # self.connect2DCHB.setShown(False)
+                self.connect2DCHB.hide()
                 self.connect2DCHB.setChecked(False)
 
             return True
