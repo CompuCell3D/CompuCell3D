@@ -252,17 +252,17 @@ class CC3DCPPHelper(QObject):
         if os.path.exists(fullModuleDir):
             message = "Directory %s already exists. <br>Is it OK to overwrite content in this directory with generated files?" % fullModuleDir
 
-            ret = QtGui.QMessageBox.warning(self.__ui, " Module directory already exists",
+            ret = QtWidgets.QMessageBox.warning(self.__ui, " Module directory already exists",
                                             message,
-                                            QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-            if ret == QtGui.QMessageBox.No:
+                                            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+            if ret == QtWidgets.QMessageBox.No:
                 return
         else:
             try:
                 self.makeDirectory(fullModuleDir)
             except IOError, e:
                 message = "Could not create directory %s. <br> Please make sure you have necessary permissions" % fullModuleDir
-                QtGui.QMessageBox.information(self.__ui, "Could not create directory", message, QtGui.QMessageBox.Ok)
+                QtGui.QMessageBox.information(self.__ui, "Could not create directory", message, QtWidgets.QMessageBox.Ok)
                 return
 
         from CC3DCPPHelper.CppTemplates import CppTemplates
@@ -270,7 +270,7 @@ class CC3DCPPHelper(QObject):
             self.cppTemplates = CppTemplates()
 
         if cmgd.pluginRB.isChecked():
-            generatedFileList = QStringList()
+            generatedFileList = []
 
             features['Plugin'] = moduleCoreName
             features['Module'] = moduleCoreName
@@ -352,7 +352,7 @@ class CC3DCPPHelper(QObject):
         elif cmgd.steppableRB.isChecked():
             features['Steppable'] = moduleCoreName
             features['Module'] = moduleCoreName
-            generatedFileList = QStringList()
+            generatedFileList = []
 
             # write CMake file
             cmakeText = self.cppTemplates.generateCMakeFileSteppable(features)
@@ -433,7 +433,7 @@ class CC3DCPPHelper(QObject):
             QtGui.QMessageBox.information(self.__ui, "Could not write to file", message, QtGui.QMessageBox.Ok)
             return
 
-        fileList = QStringList()
+        fileList = []
         fileList.append(cmakePath)
 
         self.__ui.loadFiles(fileList)
@@ -734,7 +734,7 @@ class CC3DCPPHelper(QObject):
     def addCodeToSwigFile(self, _swigFileName, _insertedCode, _insertedCodeRegex, _insertionLocationLabel, startRow=0,
                           startColumn=0):
 
-        fileList = QStringList()
+        fileList = []
         if str(_swigFileName) == '':
             return
         else:

@@ -1,10 +1,13 @@
+
+# from PyQt4.QtCore import *
+# from PyQt4.QtGui import *
+# import PyQt4.QtCore as QtCore
 import re
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-import PyQt4.QtCore as QtCore
+from utils.global_imports import *
+
 import ui_c_plus_plus_module_dialog
-import sys
-import os.path
+# import sys
+# import os.path
 
 MAC = "qt_mac_set_native_menubar" in dir()
 
@@ -30,7 +33,7 @@ class CPPModuleGeneratorDialog(QDialog,ui_c_plus_plus_module_dialog.Ui_C_Plus_Pl
         self.steppableDirRegex=re.compile('steppables')
         self.pluginDirRegex=re.compile('plugins')
   
-    @pyqtSignature("") # signature of the signal emited by the button
+    @pyqtSlot() # signature of the signal emited by the button
     def on_okPB_clicked(self):        
         errorFlag=False
         moduleDir=str(self.moduleDirLE.text())
@@ -61,7 +64,7 @@ class CPPModuleGeneratorDialog(QDialog,ui_c_plus_plus_module_dialog.Ui_C_Plus_Pl
         if not errorFlag:
             self.accept()
         
-    @pyqtSignature("") # signature of the signal emited by the button
+    @pyqtSlot() # signature of the signal emited by the button
     def on_moduleDirPB_clicked(self):        
         recentDir=self.moduleDirLE.text()
         dirName = QFileDialog.getExistingDirectory(self,"Module root directory - subdirectory named after module core name will be created",recentDir)
