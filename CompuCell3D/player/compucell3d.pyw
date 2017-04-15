@@ -4,17 +4,27 @@
 import sys
 import os
 
+import vtk
 
-# setting api for QVariant is necessary to get player workign with MinGW-compiled PyQt4
-import sip
-sip.setapi('QVariant', 1)
+# TODO
+# * restore xml widget prepareXMLTreeView in simpleTabView.py
+
+# # setting api for QVariant is necessary to get player workign with MinGW-compiled PyQt4
+# import sip
+# sip.setapi('QVariant', 1)
+
+print sys.path
+import numpy
+import vtk
 
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+import CC3DXML
 
 
-import PyQt4
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+import PyQt5
 
 #instaling message handler to suppres spurious qt messages
 if sys.platform=='darwin':
@@ -28,7 +38,7 @@ if sys.platform=='darwin':
                 return
             print msg_log_context
 
-        PyQt4.QtCore.qInstallMsgHandler(handler)
+        PyQt5.QtCore.qInstallMsgHandler(handler)
 
     elif mac_ver_float == 10.10:
 
@@ -38,7 +48,7 @@ if sys.platform=='darwin':
                 return
             print msg_log_context
 
-        PyQt4.QtCore.qInstallMsgHandler(handler)
+        PyQt5.QtCore.qInstallMsgHandler(handler)
 
 
 # setting debug information output
@@ -64,9 +74,12 @@ def main(argv):
     #splash.showMessage("Loading VTK modules...",Qt.AlignLeft,  Qt.white)
     # import vtk
 
+    # TODO Fix this - set paths and uncomment
     sys.path.append(os.environ["PYTHON_MODULE_PATH"])
     sys.path.append(os.environ["SWIG_LIB_INSTALL_DIR"])
 
+    import XMLUtils
+    # sys.exit()
 
     versionStr='3.6.0'
     revisionStr='0'
@@ -137,8 +150,9 @@ def main(argv):
     mainWindow.setArgv(argv) # passing command line to the code
 
     # process reminder of the command line options
-    if argv != "":
-        mainWindow.viewmanager.processCommandLineOptions(opts)
+    #TODO
+    # if argv != "":
+    #     mainWindow.viewmanager.processCommandLineOptions(opts)
 
 
     mainWindow.show()
