@@ -104,10 +104,11 @@ class CC3DSender(QObject):
             return
         self.request = QByteArray()
         stream = QDataStream(self.request, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_4_2)
+        stream.setVersion(QDataStream.Qt_5_6)
         stream.writeUInt16(0)
 
-        stream << QString("NEWCONNECTION")
+        # stream << "NEWCONNECTION"
+        stream.writeQString("NEWCONNECTION")
 
         stream.device().seek(0)
         stream.writeUInt16(self.request.size() - SIZEOF_UINT16)
@@ -160,7 +161,7 @@ class CC3DSender(QObject):
 
         self.request = QByteArray()
         stream = QDataStream(self.request, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_4_2)
+        stream.setVersion(QDataStream.Qt_5_6)
         stream.writeUInt16(0)
 
         stream << QString("FILEOPEN") << QString(fileName)
@@ -214,7 +215,7 @@ class CC3DSender(QObject):
     def readResponse(self):
         print "READING RESPONSE CC3D SENDER"
         stream = QDataStream(self.socket)
-        stream.setVersion(QDataStream.Qt_4_2)
+        stream.setVersion(QDataStream.Qt_5_6)
 
         # print "BEFORE INTERCEPTING self.socket.bytesAvailable()=",self.socket.bytesAvailable()
         # msgStr=QString()
@@ -260,15 +261,17 @@ class CC3DSender(QObject):
         self.nextBlockSize = stream.readUInt16()
         print "self.nextBlockSize=", self.nextBlockSize
         if self.socket.bytesAvailable() < self.nextBlockSize:
-            msg = QString()
-            stream >> msg
+            msg = ''
+            # stream >> msg
+            msg = stream.readQString()
             print "message=", msg
             return
 
         print "self.socket.bytesAvailable()=", self.socket.bytesAvailable()
-        messageType = QString()
+        messageType = ''
 
-        stream >> messageType
+        # stream >> messageType
+        messageType = stream.readQString()
         print "\n\n\n\n messageType=", messageType
 
         if messageType == "EDITORCLOSED":
@@ -293,10 +296,10 @@ class CC3DSender(QObject):
             # self.socket=None
             # return
 
-            QtGui.QMessageBox.information(None, "EDITOR WAS CLOSED", "EDITOR CLOSED: ")
+            QMessageBox.information(None, "EDITOR WAS CLOSED", "EDITOR CLOSED: ")
             reply = QByteArray()
             stream1 = QDataStream(reply, QIODevice.WriteOnly)
-            stream1.setVersion(QDataStream.Qt_4_2)
+            stream1.setVersion(QDataStream.Qt_5_6)
             stream1.writeUInt16(0)
             # self.socket.close()
             self.socket.write(reply)
@@ -317,9 +320,10 @@ class CC3DSender(QObject):
 
             reply = QByteArray()
             stream1 = QDataStream(reply, QIODevice.WriteOnly)
-            stream1.setVersion(QDataStream.Qt_4_2)
+            stream1.setVersion(QDataStream.Qt_5_6)
             stream1.writeUInt16(0)
-            stream1 << QString("CONNECTIONESTABLISHED")
+            # stream1 << QString("CONNECTIONESTABLISHED")
+            stream1.writeQString('CONNECTIONESTABLISHED')
             stream1.device().seek(0)
             stream1.writeUInt16(reply.size() - SIZEOF_UINT16)
 
@@ -335,13 +339,15 @@ class CC3DSender(QObject):
                 self.editorStarted = True
 
         elif messageType == "NEWSIMULATION":
-            newSimulation = QString()
-            stream >> newSimulation
+            newSimulation = ''
+            # stream >> newSimulation
+            newSimulation = stream.readQString()
             reply = QByteArray()
             stream1 = QDataStream(reply, QIODevice.WriteOnly)
-            stream1.setVersion(QDataStream.Qt_4_2)
+            stream1.setVersion(QDataStream.Qt_5_6)
             stream1.writeUInt16(0)
-            stream1 << QString("NEWSIMULATIONRECEIVED")
+            # stream1 << QString("NEWSIMULATIONRECEIVED")
+            stream1.writeQString('NEWSIMULATIONRECEIVED')
             stream1.device().seek(0)
             stream1.writeUInt16(reply.size() - SIZEOF_UINT16)
             print "self.errorConsole.playerMainWidget=", self.errorConsole.playerMainWidget
@@ -406,9 +412,18 @@ class CC3DSender(QObject):
 
         print "\t\t\t\t self.editorStarted=", self.editorStarted, "\n\n\n"
         if not self.editorStarted:
-            self.disconnect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
+
+            self.socket.error.disconnect(self.serverHasError)
             self.startEditor()
             self.socket.connectToHost(QHostAddress("127.0.0.1"), self.port)
-            self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
+            self.socket.error.conect(self.serverHasError)
         else:
             self.socket.close()
+
+        # if not self.editorStarted:
+        #     self.disconnect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
+        #     self.startEditor()
+        #     self.socket.connectToHost(QHostAddress("127.0.0.1"), self.port)
+        #     self.connect(self.socket, SIGNAL("error(QAbstractSocket::SocketError)"), self.serverHasError)
+        # else:
+        #     self.socket.close()

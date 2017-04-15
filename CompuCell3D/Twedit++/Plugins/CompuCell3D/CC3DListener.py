@@ -25,9 +25,14 @@ class Socket(QTcpSocket):
         self.editorWindow = parent.editorWindow
         self.listener = parent
 
-        self.connect(self, SIGNAL("readyRead()"), self.readRequest)
-        self.connect(self, SIGNAL("disconnected()"), self.listener.maybeCloseEditor)
-        self.connect(self, SIGNAL("disconnected()"), self.deleteLater)
+        self.readyRead.connect(self.readRequest)
+        self.disconnected.connect(self.listener.maybeCloseEditor)
+        self.disconnected.connect(self.deleteLater)
+
+
+        # self.connect(self, SIGNAL("readyRead()"), self.readRequest)
+        # self.connect(self, SIGNAL("disconnected()"), self.listener.maybeCloseEditor)
+        # self.connect(self, SIGNAL("disconnected()"), self.deleteLater)
         self.nextBlockSize = 0
 
         self.line = 0
@@ -41,19 +46,19 @@ class Socket(QTcpSocket):
 
     def disconnectDisconnectedSignal(self):
 
-        self.disconnect(self, SIGNAL("disconnected()"), self.listener.maybeCloseEditor)
+        self.disconnected.disconnect(self.listener.maybeCloseEditor)
 
     def connectDisconnectedSignal(self):
 
-        self.connect(self, SIGNAL("disconnected()"), self.listener.maybeCloseEditor)
+        self.disconnected.connect(self.listener.maybeCloseEditor)
 
     def disconnectReadyReadSignal(self):
-        self.disconnect(self, SIGNAL("readyRead()"), self.readRequest)
+        self.readyRead.disconnect(self.readRequest)
 
     def readRequest(self):
         dbgMsg("INSIDE READ REQUEST")
         stream = QDataStream(self)
-        stream.setVersion(QDataStream.Qt_4_2)
+        stream.setVersion(QDataStream.Qt_5_6)
 
         dbgMsg("BYTES AVAILABLE:", self.bytesAvailable())
 
@@ -65,15 +70,17 @@ class Socket(QTcpSocket):
         if self.bytesAvailable() < self.nextBlockSize:
             return
 
-        action = QString()
-        fileName = QString()
+        action = ""
+        fileName = ""
         line = 0
         column = 0
         # date = QDate()
-        stream >> action
+        # stream >> action
+        action = stream.readQString()
+
         dbgMsg("ACTION=", action)
         if str(action) in ("FILEOPEN"):
-            stream >> fileName
+            fileName = stream.readQString()
             line = stream.readUInt16()
             col = stream.readUInt16()
 
@@ -112,7 +119,7 @@ class Socket(QTcpSocket):
                 self.editorWindow.raise_()
                 self.editorWindow.setFocus(True)
 
-        elif str(action) in ("NEWCONNECTION"):
+        elif str(action) in ('NEWCONNECTION'):
             print "\n\n\n \t\t\t NEW CONNECTION"
             self.sendEditorOpen()
             # self.sendEditorClosed()
@@ -164,7 +171,7 @@ class Socket(QTcpSocket):
 
 
         # currentEditor.setSelection(line,0,line,0)
-        currentEditor.setCaretLineBackgroundColor(QtGui.QColor('#FE2E2E'))  # current line has this color
+        currentEditor.setCaretLineBackgroundColor(QColor('#FE2E2E'))  # current line has this color
         currentEditor.setCaretLineVisible(True)
         currentEditor.hide()
         currentEditor.show()
@@ -208,9 +215,11 @@ class Socket(QTcpSocket):
     def sendError(self, msg):
         reply = QByteArray()
         stream = QDataStream(reply, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_4_2)
+        stream.setVersion(QDataStream.Qt_5_6)
         stream.writeUInt16(0)
-        stream << QString("ERROR") << QString(msg)
+        # stream << QString("ERROR") << QString(msg)
+        stream.writeQString("ERROR")
+        stream.writeQString(msg)
         stream.device().seek(0)
         stream.writeUInt16(reply.size() - SIZEOF_UINT16)
         self.write(reply)
@@ -219,9 +228,10 @@ class Socket(QTcpSocket):
 
         reply = QByteArray()
         stream = QDataStream(reply, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_4_2)
+        stream.setVersion(QDataStream.Qt_5_6)
         stream.writeUInt16(0)
-        stream << QString("EDITORCLOSED")
+        # stream << QString("EDITORCLOSED")
+        stream.writeQString("EDITORCLOSED")
         stream.device().seek(0)
         print "EDITOR CLOSED SIGNAL SIZE=", reply.size() - SIZEOF_UINT16
         stream.writeUInt16(reply.size() - SIZEOF_UINT16)
@@ -231,9 +241,10 @@ class Socket(QTcpSocket):
     def sendEditorOpen(self):
         reply = QByteArray()
         stream = QDataStream(reply, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_4_2)
+        stream.setVersion(QDataStream.Qt_5_6)
         stream.writeUInt16(0)
-        stream << QString("EDITOROPEN")
+        # stream << QString("EDITOROPEN")
+        stream.writeQString("EDITOROPEN")
         stream.writeUInt16(self.editorWindow.getProcessId())
         stream.device().seek(0)
         stream.writeUInt16(reply.size() - SIZEOF_UINT16)
@@ -242,10 +253,12 @@ class Socket(QTcpSocket):
     def sendNewSimulation(self, _simulationName=""):
         reply = QByteArray()
         stream = QDataStream(reply, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_4_2)
+        stream.setVersion(QDataStream.Qt_5_6)
         stream.writeUInt16(0)
         # stream << QString("NEWSIMULATION") <<QString(_simulationName)
-        stream << QString("NEWSIMULATION") << QString(_simulationName)
+        # stream << QString("NEWSIMULATION") << QString(_simulationName)
+        stream.writeQString("NEWSIMULATION")
+        stream.writeQString(_simulationName)
 
         stream.device().seek(0)
         print "NEW SIMULATION reply=", reply
@@ -255,7 +268,7 @@ class Socket(QTcpSocket):
     def sendReply(self, action, room, date):
         reply = QByteArray()
         stream = QDataStream(reply, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_4_2)
+        stream.setVersion(QDataStream.Qt_5_6)
         stream.writeUInt16(0)
         stream << action << room << date
         stream.device().seek(0)
