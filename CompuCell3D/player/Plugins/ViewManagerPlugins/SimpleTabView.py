@@ -580,10 +580,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # self.UI.console.getSyntaxErrorConsole().closeCC3D.connect(qApp.closeAllWindows)
 
         self.UI.console.getSyntaxErrorConsole().setPlayerMainWidget(self)
-        self.connect(self.UI.console.getSyntaxErrorConsole(), SIGNAL("closeCC3D()"), qApp.closeAllWindows)
+        # self.connect(self.UI.console.getSyntaxErrorConsole(), SIGNAL("closeCC3D()"), qApp.closeAllWindows)
+        self.UI.console.getSyntaxErrorConsole().closeCC3D.connect(qApp.closeAllWindows)
+
         # establishConnection starts twedit and hooks it up via sockets to player
-        self.connect(self.tweditAct, SIGNAL("triggered()"),
-                     self.UI.console.getSyntaxErrorConsole().cc3dSender.establishConnection)
+        # self.connect(self.tweditAct, SIGNAL("triggered()"),
+        #              self.UI.console.getSyntaxErrorConsole().cc3dSender.establishConnection)
+        self.tweditAct.triggered.connect(self.UI.console.getSyntaxErrorConsole().cc3dSender.establishConnection)
+
         #        print MODULENAME,"    self.UI.console=",self.UI.console
         if port != -1:
             self.UI.console.getSyntaxErrorConsole().cc3dSender.setServerPort(port)

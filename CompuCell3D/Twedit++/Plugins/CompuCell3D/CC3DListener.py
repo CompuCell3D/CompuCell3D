@@ -4,7 +4,6 @@ todo fix Socket - rewrite signals to use qt5 style
 
 from utils.global_imports import *
 
-
 SIZEOF_UINT16 = 2
 
 from windowsUtils import *
@@ -14,44 +13,42 @@ from os import environ
 
 # this class runs inside Qt event loop we can use slots and signals to handle communication
 
-from Messaging import stdMsg, dbgMsg,pd, errMsg, setDebugging
+from Messaging import stdMsg, dbgMsg, pd, errMsg, setDebugging
 
+# def dupa():
+#     print 'dupa'
 
 class Socket(QTcpSocket):
-
     def __init__(self, parent=None):
         super(Socket, self).__init__(parent)
 
-        self.editorWindow=parent.editorWindow
-        self.listener=parent
+        self.editorWindow = parent.editorWindow
+        self.listener = parent
 
         self.connect(self, SIGNAL("readyRead()"), self.readRequest)
-        self.connect(self, SIGNAL("disconnected()"),  self.listener.maybeCloseEditor)
+        self.connect(self, SIGNAL("disconnected()"), self.listener.maybeCloseEditor)
         self.connect(self, SIGNAL("disconnected()"), self.deleteLater)
         self.nextBlockSize = 0
 
-        self.line=0
-        self.col=0
-        self.errorLine=-1
+        self.line = 0
+        self.col = 0
+        self.errorLine = -1
 
-        self.bringupTweditPath=None
+        self.bringupTweditPath = None
         if sys.platform.startswith('win'):
-            self.bringupTweditPath=os.path.join(environ['PREFIX_CC3D'],'Twedit++/bringupTwedit.py')
-            self.bringupTweditPath=os.path.abspath(self.bringupTweditPath)
-
+            self.bringupTweditPath = os.path.join(environ['PREFIX_CC3D'], 'Twedit++/bringupTwedit.py')
+            self.bringupTweditPath = os.path.abspath(self.bringupTweditPath)
 
     def disconnectDisconnectedSignal(self):
 
-        self.disconnect(self, SIGNAL("disconnected()"),  self.listener.maybeCloseEditor)
+        self.disconnect(self, SIGNAL("disconnected()"), self.listener.maybeCloseEditor)
 
     def connectDisconnectedSignal(self):
 
-        self.connect(self, SIGNAL("disconnected()"),  self.listener.maybeCloseEditor)
-
+        self.connect(self, SIGNAL("disconnected()"), self.listener.maybeCloseEditor)
 
     def disconnectReadyReadSignal(self):
         self.disconnect(self, SIGNAL("readyRead()"), self.readRequest)
-
 
     def readRequest(self):
         dbgMsg("INSIDE READ REQUEST")
@@ -70,37 +67,36 @@ class Socket(QTcpSocket):
 
         action = QString()
         fileName = QString()
-        line=0
-        column=0
+        line = 0
+        column = 0
         # date = QDate()
         stream >> action
-        dbgMsg("ACTION=",action)
+        dbgMsg("ACTION=", action)
         if str(action) in ("FILEOPEN"):
             stream >> fileName
-            line=stream.readUInt16()
-            col=stream.readUInt16()
+            line = stream.readUInt16()
+            col = stream.readUInt16()
 
             self.editorWindow.loadFile(str(fileName))
-            currentEditor=self.editorWindow.getCurrentEditor()
+            currentEditor = self.editorWindow.getCurrentEditor()
 
             # currentEditor.setCursorPosition(line-1,col)
-            currentEditor.setCursorPosition(line-1,0)
+            currentEditor.setCursorPosition(line - 1, 0)
 
-
-            dbgMsg("THIS IS FILENAME READ FROM CLIENT=",str(fileName) ," line=",line," col=",col       )
-            dbgMsg("currentEditor="," line=",line," col=",col)
+            dbgMsg("THIS IS FILENAME READ FROM CLIENT=", str(fileName), " line=", line, " col=", col)
+            dbgMsg("currentEditor=", " line=", line, " col=", col)
 
             self.setCurrentLineBackgroundColor(currentEditor)
 
-            self.line=line-1
-            self.col=0
+            self.line = line - 1
+            self.col = 0
 
             # bring up the window
             if sys.platform.startswith('win'):
                 # self.editorWindow.activateWindow()
 
                 # aparently
-                #showTweditWindowInForeground() will not work because we are trying to set current window in the foreground using win32Api
+                # showTweditWindowInForeground() will not work because we are trying to set current window in the foreground using win32Api
                 # doing the same from separate process works fine
 
                 # have to construct full path from env vars
@@ -142,22 +138,18 @@ class Socket(QTcpSocket):
 
 
 
-        # dbgMsg("\n\n\n SENDING EDITOR OPEN"    )
-        # self.sendEditorOpen()
+            # dbgMsg("\n\n\n SENDING EDITOR OPEN"    )
+            # self.sendEditorOpen()
 
-
-    def setCurrentLineBackgroundColor(self,currentEditor):
+    def setCurrentLineBackgroundColor(self, currentEditor):
 
         print "SETTING CARET LINE BACKGROUND"
-        print "position=",currentEditor.getCursorPosition()
-        line, col=currentEditor.getCursorPosition()
+        print "position=", currentEditor.getCursorPosition()
+        line, col = currentEditor.getCursorPosition()
 
-
-        lineLen=currentEditor.lineLength(line)
-
+        lineLen = currentEditor.lineLength(line)
 
         currentEditor.setCaretLineVisible(True)
-
 
         # color=currentEditor.SendScintilla(QsciScintilla.SCI_GETCARETLINEBACK)
         # print "COLOR=",color
@@ -172,43 +164,42 @@ class Socket(QTcpSocket):
 
 
         # currentEditor.setSelection(line,0,line,0)
-        currentEditor.setCaretLineBackgroundColor(QtGui.QColor('#FE2E2E')) #current line has this color
+        currentEditor.setCaretLineBackgroundColor(QtGui.QColor('#FE2E2E'))  # current line has this color
         currentEditor.setCaretLineVisible(True)
         currentEditor.hide()
         currentEditor.show()
         # for i in range(1000):
-            # currentEditor.setCaretLineBackgroundColor(QtGui.QColor('#FE2E2E')) #current line has this color
-            # currentEditor.setCaretLineVisible(True)
+        # currentEditor.setCaretLineBackgroundColor(QtGui.QColor('#FE2E2E')) #current line has this color
+        # currentEditor.setCaretLineVisible(True)
 
 
-            # currentEditor.show()
+        # currentEditor.show()
         # errorBookmark = currentEditor.markerDefine(QsciScintilla.SC_MARK_ARROWS) #All editors tab share same markers
         # errorBookmark = currentEditor.markerDefine(QsciScintilla.SC_MARK_BACKGROUND) #All editors tab share same markers
 
         # errorBookmark = currentEditor.markerDefine(QsciScintilla.SC_MARK_SHORTARROW) #All editors tab share same markers
-        errorBookmark = self.editorWindow.lineBookmark #All editors tab share same markers
+        errorBookmark = self.editorWindow.lineBookmark  # All editors tab share same markers
         currentEditor.setMarkerBackgroundColor(QColor("red"), errorBookmark)
-        self.errorLine=line
+        self.errorLine = line
 
-        marker=currentEditor.markerAdd(self.errorLine,errorBookmark)
-        print "currentEditor.markersAtLine(self.errorLine)=",currentEditor.markersAtLine(self.errorLine)
+        marker = currentEditor.markerAdd(self.errorLine, errorBookmark)
+        print "currentEditor.markersAtLine(self.errorLine)=", currentEditor.markersAtLine(self.errorLine)
 
         # print self.errorLine
         currentEditor.cursorPositionChanged.connect(self.cursorPositionChangedHandler)
 
-
-    def cursorPositionChangedHandler(self,line,col):
-        print "\n\n\n\n\n\n\n ERROR LINE: ",self.errorLine
+    def cursorPositionChangedHandler(self, line, col):
+        print "\n\n\n\n\n\n\n ERROR LINE: ", self.errorLine
         # dbgMsg("self.line=",self.line, " self.col=",self.col," line=",line," col=",col)
-        if line!=self.line or col!=self.col:
+        if line != self.line or col != self.col:
             # dbgMsg("GOING OVER LIST OF EDITORS")
             for editor in self.editorWindow.getEditorList():
-                try: # in case signal is not connected exception is thrown - we simply ignore it
-                    self.editorWindow .setEditorProperties(editor)   # restoring original styling for the editor
+                try:  # in case signal is not connected exception is thrown - we simply ignore it
+                    self.editorWindow.setEditorProperties(editor)  # restoring original styling for the editor
                     editor.markerDelete(self.errorLine)
                     # # # editor.setCaretLineBackgroundColor(QColor('#E0ECF8'))
                     editor.cursorPositionChanged.disconnect(self.cursorPositionChangedHandler)
-                    self.errorLine=-1
+                    self.errorLine = -1
 
                 except:
                     pass
@@ -232,9 +223,9 @@ class Socket(QTcpSocket):
         stream.writeUInt16(0)
         stream << QString("EDITORCLOSED")
         stream.device().seek(0)
-        print "EDITOR CLOSED SIGNAL SIZE=",reply.size() - SIZEOF_UINT16
+        print "EDITOR CLOSED SIGNAL SIZE=", reply.size() - SIZEOF_UINT16
         stream.writeUInt16(reply.size() - SIZEOF_UINT16)
-        print "EDITOR CLOSED reply=",reply
+        print "EDITOR CLOSED reply=", reply
         self.write(reply)
 
     def sendEditorOpen(self):
@@ -248,16 +239,16 @@ class Socket(QTcpSocket):
         stream.writeUInt16(reply.size() - SIZEOF_UINT16)
         self.write(reply)
 
-    def sendNewSimulation(self,_simulationName=""):
+    def sendNewSimulation(self, _simulationName=""):
         reply = QByteArray()
         stream = QDataStream(reply, QIODevice.WriteOnly)
         stream.setVersion(QDataStream.Qt_4_2)
         stream.writeUInt16(0)
         # stream << QString("NEWSIMULATION") <<QString(_simulationName)
-        stream << QString("NEWSIMULATION") <<QString(_simulationName)
+        stream << QString("NEWSIMULATION") << QString(_simulationName)
 
         stream.device().seek(0)
-        print "NEW SIMULATION reply=",reply
+        print "NEW SIMULATION reply=", reply
         stream.writeUInt16(reply.size() - SIZEOF_UINT16)
         self.write(reply)
 
@@ -271,72 +262,70 @@ class Socket(QTcpSocket):
         stream.writeUInt16(reply.size() - SIZEOF_UINT16)
         self.write(reply)
 
-class CC3DListener(QTcpServer):
 
-    newlyReadFileName = QtCore.pyqtSignal( ('char*',))
+class CC3DListener(QTcpServer):
+    newlyReadFileName = QtCore.pyqtSignal(('char*',))
 
     def __init__(self, parent=None):
         super(CC3DListener, self).__init__(parent)
-        self.editorWindow=parent
+        self.editorWindow = parent
         # self.port=47406 # initial port - might be reassigned by calling program - vial --port=... command line option
-        self.port=-1 # initial port - might be reassigned by calling program - vial --port=... command line option
-        self.socketId=-1
-        self.port,self.socketId=self.getPortFromCommandLine()
-        dbgMsg("PORT=",self.port)
-        print "PORT=",self.port
+        self.port = -1  # initial port - might be reassigned by calling program - vial --port=... command line option
+        self.socketId = -1
+        self.port, self.socketId = self.getPortFromCommandLine()
+        dbgMsg("PORT=", self.port)
+        print "PORT=", self.port
 
-        self.clientSocket=None
+        self.clientSocket = None
         # on some linux distros QHostAddress.LocalHost does not work
-        #if not self.tcpServer.listen(QHostAddress.LocalHost,47405):
+        # if not self.tcpServer.listen(QHostAddress.LocalHost,47405):
 
 
-        dbgMsg("\n\n\n LISTENING ON PORT ",self.port    )
+        dbgMsg("\n\n\n LISTENING ON PORT ", self.port)
 
         self.nextBlockSize = 0
-        self.socket=None
-        self.socketSender=None
-        self.nextBlockSize=0
+        self.socket = None
+        self.socketSender = None
+        self.nextBlockSize = 0
 
         from SystemUtils import getCC3DPlayerRunScriptPath
-        self.cc3dPath=getCC3DPlayerRunScriptPath()
-
+        self.cc3dPath = getCC3DPlayerRunScriptPath()
 
         # # # if sys.platform.startswith('win'):
-            # # # self.cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.bat')
+        # # # self.cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.bat')
         # # # elif sys.platform.startswith('darwin'):
-            # # # self.cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.command')
+        # # # self.cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.command')
         # # # else : # linux/unix
-            # # # self.cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.sh')
+        # # # self.cc3dPath=os.path.join(environ['PREFIX_CC3D'],'compucell3d.sh')
 
         # # # self.cc3dPath=os.path.abspath(self.cc3dPath)
 
-        self.pluginObj=None
-        self.cc3dProcess=None
+        self.pluginObj = None
+        self.cc3dProcess = None
 
-        if self.port >0 and not self.listen(QHostAddress("127.0.0.1"),self.port):
-
-            QtGui.QMessageBox.critical(None, "FileNameReceiver",
-                    "CONSTRUCTOR Unable to start the server: %s." % str(self.errorString()))
+        if self.port > 0 and not self.listen(QHostAddress("127.0.0.1"), self.port):
+            QMessageBox.critical(None, "FileNameReceiver",
+                                       "CONSTRUCTOR Unable to start the server: %s." % str(self.errorString()))
 
             # self.getOpenPort()
             return
 
-    def setPluginObject(self,plugin):
-        self.pluginObj=plugin
+    def setPluginObject(self, plugin):
+        self.pluginObj = plugin
 
     def maybeCloseEditor(self):
 
         # ret=QtGui.QMessageBox.information(self.editorWindow, "CompuCell3D has been closed","Close editor as well? ",QMessageBox.Yes|QMessageBox.No)
 
         # if ret==QMessageBox.Yes:
-            # self.editorWindow.close()
+        # self.editorWindow.close()
 
 
         if self.socket:
             self.socket.disconnectDisconnectedSignal()
             print "CLOSING LOCAL SOCKET"
             self.socket.disconnectFromHost()
-            self.socket=None
+            self.socket = None
 
             # self.socket=None
             # self.getOpenPort()
@@ -344,57 +333,56 @@ class CC3DListener(QTcpServer):
         if self.pluginObj:
             self.pluginObj.enableStartCC3DAction(True)
 
-        # self.close()
-        # self.startServer()
+            # self.close()
+            # self.startServer()
 
-        # if self.cc3dProcess:
+            # if self.cc3dProcess:
             # print "self.cc3dProcess=",self.cc3dProcess
             # print "dir(self.cc3dProcess)=",dir(self.cc3dProcess)
             # self.cc3dProcess.wait()
-        # if self.cc3dProcess:
+            # if self.cc3dProcess:
             # # print "self.cc3dProcess=",self.cc3dProcess
             # print "dir(self.cc3dProcess)=",dir(self.cc3dProcess)
             # self.cc3dProcess.send_signal(SIGTERM)
             # print "self.cc3dProcess.poll()=",self.cc3dProcess.poll()
 
-
     def startServer(self):
 
-        port=self.getOpenPort()
-        if self.port >0 and not self.listen(QHostAddress("127.0.0.1"),self.port):
+        port = self.getOpenPort()
+        if self.port > 0 and not self.listen(QHostAddress("127.0.0.1"), self.port):
 
-            ret=QtGui.QMessageBox.critical(None, "FileNameReceiver",
-                    "STARTSERVER Unable to start the server: %s." % str(self.errorString()))
-            if ret==QMessageBox.Ok:
+            ret = QMessageBox.critical(None, "FileNameReceiver",
+                                             "STARTSERVER Unable to start the server: %s." % str(self.errorString()))
+            if ret == QMessageBox.Ok:
                 print "\n\n\n START SERVER: SERVER STARTED"
         return port
 
     def getOpenPort(self):
         print "TRY TO FIGURE OUT PORT\n\n\n\n\n\n"
-        port=-1
-        for port in range(47406,47506):
-            print "CHECKING PORT=",port
+        port = -1
+        for port in range(47406, 47506):
+            print "CHECKING PORT=", port
             tcpServer = QTcpServer(self)
-            if tcpServer.listen(QHostAddress("127.0.0.1"),port):
-                self.port=port
+            if tcpServer.listen(QHostAddress("127.0.0.1"), port):
+                self.port = port
                 tcpServer.close()
-                print "established empty port=",self.port
+                print "established empty port=", self.port
                 break
 
         return self.port
 
-    def startCC3D(self,_simulationName=""):
+    def startCC3D(self, _simulationName=""):
         from subprocess import Popen
 
-        print "self.cc3dPath=",self.cc3dPath
-        popenArgs=[self.cc3dPath,"--port=%s"%self.port]
-        if _simulationName!="":
+        print "self.cc3dPath=", self.cc3dPath
+        popenArgs = [self.cc3dPath, "--port=%s" % self.port]
+        if _simulationName != "":
             popenArgs.append("-i")
             popenArgs.append(_simulationName)
         # popenArgs.append("-i")
         # popenArgs.append("D:\\Program Files\\COMPUCELL3D_3.5.1_install2\\examples_PythonTutorial\\infoPrinterDemo\\infoPrinterDemo.cc3d" )
 
-        print 'Executing Popen command with following arguments=',popenArgs
+        print 'Executing Popen command with following arguments=', popenArgs
         self.cc3dProcess = Popen(popenArgs)
 
         # self.cc3dProcess = Popen([self.cc3dPath,"--port=%s"%self.port])
@@ -405,46 +393,45 @@ class CC3DListener(QTcpServer):
         import getopt
         import sys
 
-        opts=None
-        args=None
+        opts = None
+        args = None
         try:
-            opts, args = getopt.getopt(sys.argv[1:], "p", ["file=","port=","socket="])
-            dbgMsg("opts=",opts)
-            dbgMsg("args=",args)
+            opts, args = getopt.getopt(sys.argv[1:], "p", ["file=", "port=", "socket="])
+            dbgMsg("opts=", opts)
+            dbgMsg("args=", args)
         except getopt.GetoptError, err:
             # dbgMsg(help information and exit:)
-            dbgMsg(str(err)) # will print something like "option -a not recognized")
+            dbgMsg(str(err))  # will print something like "option -a not recognized")
             sys.exit(2)
-        port=-1
-        socketId=1
+        port = -1
+        socketId = 1
         for o, a in opts:
-            dbgMsg("o=",o)
-            dbgMsg("a=",a)
+            dbgMsg("o=", o)
+            dbgMsg("a=", a)
             if o in ("--port"):
-                port=a
-                dbgMsg("THIS IS PORT=",port)
+                port = a
+                dbgMsg("THIS IS PORT=", port)
 
             if o in ("--socket"):
-                socketId=a
-                dbgMsg("THIS IS SOCKET=",socketId)
+                socketId = a
+                dbgMsg("THIS IS SOCKET=", socketId)
 
             if o in ("--file"):
-                file=a
-                dbgMsg("THIS IS file=",file        )
+                file = a
+                dbgMsg("THIS IS file=", file)
 
-
-        return int(port),int(socketId)
+        return int(port), int(socketId)
 
     def incomingConnection(self, socketId):
-        dbgMsg("GOT INCOMMING CONNECTION self.socket=",self.socket)
-        sendEditorOpenFlag=False
+        dbgMsg("GOT INCOMMING CONNECTION self.socket=", self.socket)
+        sendEditorOpenFlag = False
 
         if not self.socket:
-            sendEditorOpenFlag=True
+            sendEditorOpenFlag = True
 
         self.socket = Socket(self)
         self.socket.setSocketDescriptor(socketId)
-        #once we get connection we disable start CC3D action on the tool bar to prevent additional copies of CC3D being open
+        # once we get connection we disable start CC3D action on the tool bar to prevent additional copies of CC3D being open
         if self.pluginObj:
             self.pluginObj.enableStartCC3DAction(False)
 
@@ -481,16 +468,15 @@ class CC3DListener(QTcpServer):
         # print "AFTER CLOSE listening=",self.isListening()
 
         # # if self.socket:
-            # # self.socket.disconnectDisconnectedSignal()
-            # # self.socket.disconnectReadyReadSignal()
-            # # self.socket.flush()
-            # # self.socket.close()
-            # # self.socket=None
+        # # self.socket.disconnectDisconnectedSignal()
+        # # self.socket.disconnectReadyReadSignal()
+        # # self.socket.flush()
+        # # self.socket.close()
+        # # self.socket=None
 
         # self.getOpenPort()
         # return
 
         # if self.socket:
-            # self.sendEditorClosed(self.socket)
-            # dbgMsg("\n\n\n\n CLOSING TWEDIT INSIDE LISTENER\n\n\n\n")
-
+        # self.sendEditorClosed(self.socket)
+        # dbgMsg("\n\n\n\n CLOSING TWEDIT INSIDE LISTENER\n\n\n\n")

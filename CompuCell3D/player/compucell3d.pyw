@@ -151,8 +151,8 @@ def main(argv):
 
     # process reminder of the command line options
     #TODO
-    # if argv != "":
-    #     mainWindow.viewmanager.processCommandLineOptions(opts)
+    if argv != "":
+        mainWindow.viewmanager.processCommandLineOptions(opts)
 
 
     mainWindow.show()
