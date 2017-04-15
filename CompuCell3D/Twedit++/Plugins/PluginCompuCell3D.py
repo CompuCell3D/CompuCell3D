@@ -15,11 +15,8 @@ longDescription = """This plugin provides functionality to link Twedit with Comp
 
 
 from utils.global_imports import *
-
 from Plugins.CompuCell3D.CC3DListener import CC3DListener
-
-
-# import CompuCell3D.CC3DListener
+import Plugins.CompuCell3D.PluginCompuCell3D_rc
 
 
 error = ''
@@ -86,8 +83,8 @@ class CC3DApp(QObject):
         Private method to initialize the actions.
         """
         # print "BEFORE IMPORTS"
-        import CompuCell3D
-        # import CompuCell3D.PluginCompuCell3D_rc
+        # import CompuCell3D
+
         # from CompuCell3D import CompuCell3D.PluginCompuCell3D_rc
 
         acts = []
