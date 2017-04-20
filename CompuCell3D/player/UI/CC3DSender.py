@@ -164,7 +164,9 @@ class CC3DSender(QObject):
         stream.setVersion(QDataStream.Qt_5_6)
         stream.writeUInt16(0)
 
-        stream << QString("FILEOPEN") << QString(fileName)
+        # stream << QString("FILEOPEN") << QString(fileName)
+        stream.writeQString("FILEOPEN")
+        stream.writeQString(fileName)
         stream.writeUInt16(line)
         stream.writeUInt16(column)
 
@@ -395,7 +397,13 @@ class CC3DSender(QObject):
         self.socket.abort()
         from subprocess import Popen
         print "self.socket.socketDescriptor()=", self.socket.socketDescriptor()
-        p = Popen([self.tweditCC3DPath, "--port=%s " % self.port, "--socket=%s" % self.socket.socketDescriptor()])
+        # p = Popen([self.tweditCC3DPath, "--port=%s " % self.port, "--socket=%s" % self.socket.socketDescriptor()])
+
+        # turns out socket descriptor is not used anywhere
+        # sending -1 for now but should eliminate this extra argument altogether
+
+        p = Popen([self.tweditCC3DPath, "--port=%s " % self.port, "--socket=%s" % str(-1)])
+
         # p = Popen(["python", self.tweditCC3DPath,"--port=%s "%self.port,"--socket=%s"%self.socket.socketDescriptor()])
         # p = Popen(["python", "D:\\Project_SVN_CC3D\\branch\\twedit++\\twedit_plus_plus_cc3d.py","--port=%s "%self.port,"--socket=%s"%self.socket.socketDescriptor()])
         print "\n\n\n\n\STARTED TWEDIT++\n\n\n\n\n"
