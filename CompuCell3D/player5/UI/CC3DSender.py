@@ -133,7 +133,7 @@ class CC3DSender(QObject):
                         time.sleep(0.5)
                 if not connectionEstablished:
                     QMessageBox.warning(None, "Connection Problems",
-                                        "Could not connect to Twedit++. You may try starting CC3D from Twedit++. <br> twedit++.bat (Windows) or twedit++.sh linux/OSX")
+                                        "Could not connect to Twedit++5. You may try starting CC3D from Twedit++5. <br> twedit++.bat (Windows) or twedit++.sh linux/OSX")
             else:
 
                 self.socket.connectToHost(QHostAddress("127.0.0.1"), self.port)
@@ -178,7 +178,7 @@ class CC3DSender(QObject):
         if self.socket.state() != QAbstractSocket.ConnectedState:
             self.socket.connectToHost(QHostAddress("127.0.0.1"), self.port)
             print "\n\n\n SOCKET IN THE NON-CONNECTED STATE -  showing splash screen"
-            self.editorMessageBox = QtGui.QMessageBox(QMessageBox.Information, "Connecting to Twedit++.Please wait...",
+            self.editorMessageBox = QtGui.QMessageBox(QMessageBox.Information, "Connecting to Twedit++5.Please wait...",
                                                       "", QMessageBox.Ok)
             pixmap = QPixmap("icons/lizard-at-a-computer-small.png")
             self.editorMessageBox.setIconPixmap(pixmap)
@@ -193,7 +193,7 @@ class CC3DSender(QObject):
         import sys
         self.bringupTweditPath = None
         if sys.platform.startswith('win'):
-            self.bringupTweditPath = os.path.join(environ['PREFIX_CC3D'], 'Twedit++/bringupTwedit.py')
+            self.bringupTweditPath = os.path.join(environ['PREFIX_CC3D'], 'Twedit++5/bringupTwedit.py')
             self.bringupTweditPath = os.path.abspath(self.bringupTweditPath)
             from subprocess import Popen
 
