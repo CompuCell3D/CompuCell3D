@@ -116,7 +116,7 @@ namespace CompuCell3D {
 		double computeAverageCellRadius();
 
 
-		void update();
+		void updateCellInventories();
 		void updateLocalCellInventory(unsigned int idx);
 		BasicClassAccessor<NeighborTracker> * neighborTrackerAccessorPtr;
 

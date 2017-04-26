@@ -58,8 +58,17 @@ void AdvectionDiffusionSolverFE::init(Simulator *simulator, CC3DXMLElement *_xml
 
   update(_xmlData,true);
   
-  NeighborTrackerPlugin * neighborTrackerPlugin=(NeighborTrackerPlugin*)(Simulator::pluginManager.get("NeighborTracker"));
+  bool pluginAlreadyRegisteredFlag;
+  Plugin *plugin = Simulator::pluginManager.get("NeighborTracker", &pluginAlreadyRegisteredFlag); //this will load VolumeTracker plugin if it is not already loaded
+  if (!pluginAlreadyRegisteredFlag)
+	  plugin->init(simulator);
+
+  NeighborTrackerPlugin * neighborTrackerPlugin = (NeighborTrackerPlugin*)plugin;
+
   neighborTrackerAccessorPtr= neighborTrackerPlugin->getNeighborTrackerAccessorPtr();
+
+  //NeighborTrackerPlugin * neighborTrackerPlugin=(NeighborTrackerPlugin*)(Simulator::pluginManager.get("NeighborTracker"));
+  //neighborTrackerAccessorPtr= neighborTrackerPlugin->getNeighborTrackerAccessorPtr();
   
   ///setting member function pointers
   diffusePtr=&AdvectionDiffusionSolverFE::diffuse;
@@ -141,7 +150,7 @@ double AdvectionDiffusionSolverFE::computeAverageCellRadius(){
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void AdvectionDiffusionSolverFE::update(){
+void AdvectionDiffusionSolverFE::updateCellInventories(){
 
    for(unsigned int i = 0 ; i <= diffDataVec.size() ; ++i ){
       updateLocalCellInventory(i);
@@ -188,7 +197,7 @@ void AdvectionDiffusionSolverFE::updateLocalCellInventory(unsigned int idx){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void AdvectionDiffusionSolverFE::start() {
    
-   update();   
+   updateCellInventories();
    cerr<<"GOT HERE BEFORE INITIALIZE FIELD"<<endl;
    initializeConcentration();
    
@@ -307,7 +316,7 @@ Array3D_t & concentrationArray = concentrationField->getContainer();
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void AdvectionDiffusionSolverFE::step(const unsigned int _currentStep) {
    currentStep=_currentStep;
-   update(); //updates cell inventories of particular fields
+   updateCellInventories(); //updates cell inventories of particular fields
    cellMap2Field(concentrationFieldMapVector[0] ,concentrationFieldVector[0] );
    (this->*secretePtr)();
    (this->*diffusePtr)();
@@ -328,10 +337,11 @@ void AdvectionDiffusionSolverFE::secreteSingleField(unsigned int idx){
    std::map<unsigned char,float>::iterator mitr;
    std::map<unsigned char,float>::iterator end_mitr=secrData.typeIdSecrConstMap.end();
 
+   cerr << "secrData.typeIdSecrConstMap.size()=" << secrData.typeIdSecrConstMap.size() << endl;
    float currentConcentration;
    float secrConst;
 
-   
+   cerr << "secretion single field" << endl;
 
    //the assumption is that medium has type ID 0
    mitr=secrData.typeIdSecrConstMap.find(automaton->getTypeId("Medium"));
@@ -343,7 +353,7 @@ void AdvectionDiffusionSolverFE::secreteSingleField(unsigned int idx){
    for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr ){
       cell=cellInventoryPtr->getCell(cInvItr);   
       //cell=*cInvItr;
-      
+	  cerr << "cell=" << cell->id << " type=" <<(int) cell->type << endl;
       concentrationItr = concentrationField->find(cell);
       
 
@@ -352,6 +362,7 @@ void AdvectionDiffusionSolverFE::secreteSingleField(unsigned int idx){
          if(mitr!=end_mitr){
             
             secrConst=mitr->second;
+			cerr << "secrConst=" << secrConst << endl;
             currentConcentration=concentrationItr->second;
             concentrationItr->second=currentConcentration+secrConst;
             
@@ -433,6 +444,7 @@ void AdvectionDiffusionSolverFE::secreteOnContactSingleField(unsigned int idx){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void AdvectionDiffusionSolverFE::diffuseSingleField(unsigned int idx){
 
+   DiffusionData & diffData = diffSecrFieldTuppleVec[idx].diffData;
    map<CellG*,float> * concentrationField=concentrationFieldMapVector[idx];
    map<CellG*,float>::iterator concentrationItr;
    map<CellG*,float>::iterator nConcentrationItr;
@@ -441,13 +453,12 @@ void AdvectionDiffusionSolverFE::diffuseSingleField(unsigned int idx){
    map<CellG*,float> * scratchField=concentrationFieldMapVector[diffDataVec.size()];
 
    set<unsigned char>::iterator sitr;
-   set<unsigned char>::iterator end_sitr=diffDataVec[idx].avoidTypeIdSet.end();
-
+   set<unsigned char>::iterator end_sitr = diffData.avoidTypeIdSet.end();
    
    NeighborTracker * neighborTracker;
    set<NeighborSurfaceData>::iterator neighborItr;
    
-   DiffusionData & diffData = diffSecrFieldTuppleVec[idx].diffData;
+   
    CellG * currentCellPtr;
    CellG * nCellPtr;
 
@@ -468,6 +479,7 @@ void AdvectionDiffusionSolverFE::diffuseSingleField(unsigned int idx){
    for(concentrationItr = concentrationField->begin() ; concentrationItr != concentrationField->end() ; ++ concentrationItr ){
    
       currentCellPtr = concentrationItr->first;
+	  
       currentConcentration = concentrationItr->second;
       
       scratchConcentrationItr = scratchField->find(currentCellPtr);
@@ -488,7 +500,7 @@ void AdvectionDiffusionSolverFE::diffuseSingleField(unsigned int idx){
             
       for(neighborItr = neighborTracker->cellNeighbors.begin() ; neighborItr != neighborTracker->cellNeighbors.end() ; ++neighborItr){
 
-         nCellPtr=neighborItr->neighborAddress;
+         nCellPtr=neighborItr->neighborAddress;		
          //check if it is still in neighbor boundary
          
          if(nCellPtr && diffData.avoidTypeIdSet.find(nCellPtr->type) != end_sitr){
@@ -504,6 +516,8 @@ void AdvectionDiffusionSolverFE::diffuseSingleField(unsigned int idx){
       updatedConcentration =  dt_dx2*diffConst*(concentrationSum - neighborCounter*currentConcentration)
                            -deltaT*(decayConst*currentConcentration)
                            +currentConcentration;
+
+	  cerr << "updatedConcentration=" << updatedConcentration << endl;
 
       scratchConcentrationItr->second = updatedConcentration;
       
