@@ -10,7 +10,7 @@ sim,simthread = CompuCellSetup.getCoreSimulationObjects()
 CompuCellSetup.initializeSimulationObjects(sim,simthread)
 import CompuCell
 
-#Create extra player fields here or add attributes
+#Create extra player5 fields here or add attributes
 
 
 from PySteppables import SteppableRegistry

@@ -81,7 +81,7 @@ class CDPreferences(QtGui.QDialog):
         
         # the class global keeping track of where to write output files,
         #    its default is defined here in the same way as in the
-        #    "cc3d/branch/3.6.0/player/Configuration/__init__.py" code :
+        #    "cc3d/branch/3.6.0/player5/Configuration/__init__.py" code :
         self.outputLocationPathCC3D = QString(os.path.join(os.path.expanduser('~'),'CC3DWorkspace'));
 
         # the class global dict to store ANY parameters we extract from the CC3D Preferences file
@@ -369,7 +369,7 @@ class CDPreferences(QtGui.QDialog):
 
     # ---------------------------------------------------------
     # ===> readCC3DPreferencesFromDisk() ===> access CC3D preferences files,
-    #      as defined in "cc3d/branch/3.6.0/player/Configuration/__init__.py" code.
+    #      as defined in "cc3d/branch/3.6.0/player5/Configuration/__init__.py" code.
     # We *** don't *** call CC3D code directly,
     #      but we use CC3D's pref file in the same way as it's used in
     #      CC3D's Configuration code.

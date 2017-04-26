@@ -343,7 +343,7 @@ class CC3DSimulationDataHandler:
         
         version='0'
         
-        # checking for custom player settings    
+        # checking for custom player5 settings
         customSettingsFlag = os.path.isfile(os.path.join(self.cc3dSimulationData.basePath,'Simulation/_settings.xml'))
         if customSettingsFlag:
             self.cc3dSimulationData.playerSettingsResource = CC3DResource()
@@ -495,7 +495,8 @@ class CC3DSimulationDataHandler:
 
             self.cc3dSimulationData.resources[cc3dResource.path] = cc3dResource
 #        print MODULENAME,'  readCC3DFileFormat():  self.cc3dSimulationData.resources=',self.cc3dSimulationData.resources
-#        print MODULENAME,'  readCC3DFileFormat():  --> .resources.keys()=',self.cc3dSimulationData.resources.keys()            
+#        print MODULENAME,'  readCC3DFileFormat():  --> .resources.keys()=',self.cc3dSimulationData.resources.keys()
+            
     def formatResourceElement(self,_resource,_elementName=""):
         elName=""
         if _elementName!="":

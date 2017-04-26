@@ -9,7 +9,7 @@ sim,simthread = CompuCellSetup.getCoreSimulationObjects()
 
 CompuCellSetup.initializeSimulationObjects(sim,simthread)
 
-#Create extra player fields here or add attributes
+#Create extra player5 fields here or add attributes
 vectorField=simthread.createVectorFieldCellLevelPy("vector_field");# initializing vector Field - 
                                                                            #this location in the code is important this must be called before
                                                                            #preStartInit or otherwise field list will not be initialized properly

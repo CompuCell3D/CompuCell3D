@@ -124,7 +124,7 @@ import numpy   # to have arrays!
 # or:
 #   B1. PyQt4 is in form of package within the directory where this script is run
 #      (as it happens with CC3D, where the PyQt4 distribution is a directory
-#       within the "player/" directory, where the main CC3D Python player script
+#       within the "player5/" directory, where the main CC3D Python player5 script
 #       gets started) *and*
 #   B2. sip is also within the directory where this script is run
 #       Both these requirements (B1. and B2.) are OK also if we place symlinks

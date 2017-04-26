@@ -12,7 +12,7 @@ Usage (on osx use parameScan.command and on Windows use paramScan.bat):
 
 paramScan.sh -i <Simulation File> [--guiScan] [--maxNumberOfRuns=XXX] [other options allowed by runScript or compucell3d scripts]
 
---guiScan - this option will use player to run simulations. Afer each simulation new instance of player will be opened to run the next simulation
+--guiScan - this option will use player5 to run simulations. Afer each simulation new instance of player5 will be opened to run the next simulation
 
 --maxNumberOfRuns - this option speicifies maximuma number of runs allowed. 
 

@@ -183,7 +183,7 @@ class SimulationPaths:
         self.xmlFileNameFromPython=""
         self.pathToxmlFileNameFromPython=""
         
-        self.playerSimulationWindowsFileName=""   # xml file describing layout of graphics windows in player (not plotting windows)
+        self.playerSimulationWindowsFileName=""   # xml file describing layout of graphics windows in player5 (not plotting windows)
         self.playerSimulationWindowsFilePath=""
 
         # self.mainSimulationFile="" # this is the name of the main simulation file. It may contain references to other files. This is the file that is input from CML or from Player 
@@ -365,7 +365,7 @@ class SimulationPaths:
         if self.playerSimulationXMLFileName=="" and self.xmlFileNameFromPython !="":
             self.simulationXMLFileName = self.xmlFileNameFromPython
         if self.playerSimulationXMLFileName!="" and self.xmlFileNameFromPython !="":
-            assert self.playerSimulationXMLFileName == self.xmlFileNameFromPython,"XML file specified in the player: \n"+self.playerSimulationXMLFileName\
+            assert self.playerSimulationXMLFileName == self.xmlFileNameFromPython,"XML file specified in the player5: \n"+self.playerSimulationXMLFileName\
             +"\nis different from XML file set in the Python script: \n"+self.xmlFileNameFromPython\
             +"\nPlease make sure the two XML files are the same\n"\
             +"You may also try removing line in the Python script where you set XML file name or unselect XML file in the Player"
@@ -1503,7 +1503,7 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry= None, _screenUpdateFreq
         if simthread is not None:
     
             simthread.beforeStep(i)                
-            # will wait until initialization of the player is finished before proceeding further
+            # will wait until initialization of the player5 is finished before proceeding further
             if cmlFieldHandler and not xmlDescriptionFileWritten:   #rwh - global defn of cmlFieldHandler ??
 #                print MYMODULENAME,"mainLoopNewPlayer(),  BEFORE getInfoAboutFields"
 #                print MYMODULENAME,"mainLoopNewPlayer(), cmlFieldHandler.sim=",cmlFieldHandler.sim

@@ -9,7 +9,7 @@ import CompuCellSetup
 
 sim,simthread = CompuCellSetup.getCoreSimulationObjects()
 
-#Create extra player fields here or add attributes
+#Create extra player5 fields here or add attributes
 
 CompuCellSetup.initializeSimulationObjects(sim,simthread)
 

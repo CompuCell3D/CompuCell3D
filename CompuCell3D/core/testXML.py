@@ -67,7 +67,7 @@ def main():
 #    subprocess.call(cmd)
     os.system(cmd)
 
-    # assuming you've redirected cerr and cout (from the player's main.cpp), concat to a master output file
+    # assuming you've redirected cerr and cout (from the player5's main.cpp), concat to a master output file
 #    os.system("cat cc3d-out.txt >> cc3d-all.txt")
 #    os.system("echo '-------------------------------' >> cc3d-all.txt")
     time.sleep(1)

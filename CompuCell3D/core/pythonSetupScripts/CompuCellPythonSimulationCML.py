@@ -12,7 +12,7 @@ SWIG LIBRARY LOADING ORDER: Before attempting to load swig libray it is necessar
    
    After we moved getCoreSimulationObjects to be executed as early as possible most of the segfault erros disappeared - those errors were all associated with SwigPyIterator 
    when we tried to iterate over CC3D C++ STL based containers - e.g. sets, maps etc. using iterators provided byt swig wrappers like iter() , itervalues(), iterators()
-   Hand-written iterators were OK tohugh. The segfaults appearedonly in the command line runs i.e. without the player
+   Hand-written iterators were OK tohugh. The segfaults appearedonly in the command line runs i.e. without the player5
 '''
 
 def setVTKPaths():

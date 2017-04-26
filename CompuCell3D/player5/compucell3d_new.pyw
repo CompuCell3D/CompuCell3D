@@ -9,7 +9,7 @@ import vtk
 # TODO
 # * restore xml widget prepareXMLTreeView in simpleTabView.py
 
-# # setting api for QVariant is necessary to get player workign with MinGW-compiled PyQt4
+# # setting api for QVariant is necessary to get player5 workign with MinGW-compiled PyQt4
 # import sip
 # sip.setapi('QVariant', 1)
 
@@ -38,7 +38,7 @@ if sys.platform=='darwin':
                 return
             print msg_log_context
 
-        PyQt5.QtCore.qInstallMsgHandler(handler)
+        PyQt4.QtCore.qInstallMsgHandler(handler)
 
     elif mac_ver_float == 10.10:
 
@@ -106,7 +106,7 @@ def main(argv):
     # splash.showMessage("Loading CompuCell3D Python Modules...",Qt.AlignLeft,  Qt.white)
     import CompuCellSetup
 
-    CompuCellSetup.playerType="new" # the value of CompuCellSetup.playerType (can be "new" or "old") determines which PlayerPython module will be loaded. For the new player we want PlayerPythonNew
+    CompuCellSetup.playerType="new" # the value of CompuCellSetup.playerType (can be "new" or "old") determines which PlayerPython module will be loaded. For the new player5 we want PlayerPythonNew
     import PlayerPython # from now on import PlayerPython will import PlayerPythonNew
 
     app.processEvents()
@@ -151,15 +151,15 @@ def main(argv):
 
     # process reminder of the command line options
     #TODO
-    if argv != "":
-        mainWindow.viewmanager.processCommandLineOptions(opts)
+    # if argv != "":
+    #     mainWindow.viewmanager.processCommandLineOptions(opts)
 
 
     mainWindow.show()
     splash.finish(mainWindow)
 
     # 2010: mainWindow.raise_() must be called after mainWindow.show()
-    #       otherwise the CC3D player GUI won't receive foreground focus. It's a
+    #       otherwise the CC3D player5 GUI won't receive foreground focus. It's a
     #       workaround for a well-known bug caused by PyQt4/Qt on Mac OS X, as shown here:
     #       http://www.riverbankcomputing.com/pipermail/pyqt/2009-September/024509.html
     mainWindow.raise_()

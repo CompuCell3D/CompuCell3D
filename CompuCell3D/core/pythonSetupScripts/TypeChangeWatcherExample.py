@@ -11,7 +11,7 @@ import CompuCellSetup
 sim,simthread = CompuCellSetup.getCoreSimulationObjects()
 import CompuCell #notice importing CompuCell to main script has to be done after call to getCoreSimulationObjects()
 
-#Create extra player fields here or add attributes
+#Create extra player5 fields here or add attributes
 
 #typeChangeWatcher=CompuCell.TypeChangeWatcherPyWrapper()
 #from PyPluginsExamples import TypeChangeWatcherExample

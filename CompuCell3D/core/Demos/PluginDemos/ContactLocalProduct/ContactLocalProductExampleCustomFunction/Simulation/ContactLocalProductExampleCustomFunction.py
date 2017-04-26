@@ -6,7 +6,7 @@ sys.path.append(environ["PYTHON_MODULE_PATH"])
 import CompuCellSetup
 sim,simthread = CompuCellSetup.getCoreSimulationObjects()
 
-#Create extra player fields here or add attributes or Python plugins
+#Create extra player5 fields here or add attributes or Python plugins
 
 CompuCellSetup.initializeSimulationObjects(sim,simthread)
 

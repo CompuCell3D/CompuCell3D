@@ -365,7 +365,7 @@ class UserInterface(QMainWindow):
         #self.zoomFixed.addAction(self.zoomFixedAct)
         #self.actions.append(self.zoomFixedAct)
         
-        # self.screenshotAct = QAction(QIcon("player/icons/screenshot.png"), "&Take Screenshot", self)
+        # self.screenshotAct = QAction(QIcon("player5/icons/screenshot.png"), "&Take Screenshot", self)
         # self.actions.append(self.screenshotAct)
         
         

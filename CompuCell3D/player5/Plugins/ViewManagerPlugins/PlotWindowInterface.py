@@ -441,12 +441,23 @@ class PlotWindowInterface(QtCore.QObject):
             if _outputFormat == LEGACY_FORMAT:
                 if plotData[PLOT_TYPE_POSITION] == XYPLOT or plotData[PLOT_TYPE_POSITION] == BARPLOT:
                     for jdx in range(len(xvals)):
-                        xyStr = "%f  %f\n" % (xvals[jdx], yvals[jdx])
-                        fpout.write(xyStr)
+
+                        # we need to intercept Index Error because steps data appends extra data point in x array
+                        try:
+                            xyStr = "%f  %f\n" % (xvals[jdx], yvals[jdx])
+                            fpout.write(xyStr)
+                        except IndexError:
+                            pass
+
                 elif plotData[PLOT_TYPE_POSITION] == HISTOGRAM:
                     for jdx in range(len(xvals) - 1):
-                        xyStr = "%f  %f\n" % (xvals[jdx], yvals[jdx])
-                        fpout.write(xyStr)
+
+                        # we need to intercept Index Error because steps data appends extra data point in x array
+                        try:
+                            xyStr = "%f  %f\n" % (xvals[jdx], yvals[jdx])
+                            fpout.write(xyStr)
+                        except IndexError:
+                            pass
 
             elif _outputFormat == CSV_FORMAT:
                 fmt = ''
@@ -455,14 +466,26 @@ class PlotWindowInterface(QtCore.QObject):
 
                 if plotData[PLOT_TYPE_POSITION] == XYPLOT or plotData[PLOT_TYPE_POSITION] == BARPLOT:
                     for jdx in range(len(xvals)):
-                        xyStr = fmt.format(xvals[jdx], yvals[jdx])
-                        # "%f  %f\n" % (xvals[jdx],yvals[jdx])
-                        fpout.write(xyStr)
+
+                        # we need to intercept Index Error because steps data appends extra data point in x array
+                        try:
+                            xyStr = fmt.format(xvals[jdx], yvals[jdx])
+                            # "%f  %f\n" % (xvals[jdx],yvals[jdx])
+                            fpout.write(xyStr)
+                        except IndexError:
+                            pass
                 elif plotData[PLOT_TYPE_POSITION] == HISTOGRAM:
                     for jdx in range(len(xvals) - 1):
-                        xyStr = fmt.format(xvals[jdx], yvals[jdx])
-                        # xyStr = "%f  %f\n" % (xvals[jdx],yvals[jdx])
-                        fpout.write(xyStr)
+
+                        # we need to intercept Index Error because steps data appends extra data point in x array
+
+                        try:
+                            xyStr = fmt.format(xvals[jdx], yvals[jdx])
+                            # xyStr = "%f  %f\n" % (xvals[jdx],yvals[jdx])
+                            fpout.write(xyStr)
+                        except IndexError:
+                            pass
+
 
 
             else:

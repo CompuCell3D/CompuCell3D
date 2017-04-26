@@ -139,7 +139,7 @@ print "=====>=====> QT_DEPS_DEP_DIR = " + QT_DEPS_DEP_DIR
 FOR_PLAYER_DEP_DIR=os.path.join(DEP_DIR,'ForPlayerDir')
 print "=====>=====> FOR_PLAYER_DEP_DIR = " + FOR_PLAYER_DEP_DIR
 #
-# Subdirectories have to be created (inside what will become "player/" in the final distribution) into which various libraries will be copied:
+# Subdirectories have to be created (inside what will become "player5/" in the final distribution) into which various libraries will be copied:
 #    VTKLibs/      <--- all .dylib library files from the VTK distribution's "lib/vtk-5.4/" directory
 #    vtk/     <--- all files from the VTK distribution's "Wrapping/Python/vtk/" for Python AND ALSO all files ending in .so from VTK's build/bin directory
 #    PyQt4/   <--- the "PyQt4" directory from the system-wide "site-packages/" PyQt distribution
@@ -353,13 +353,13 @@ call('pwd')
 
 
 print "=====>=====> copy all the 3rd party supporting libraries into one directory for distribution"
-# now copy all the supporting libraries that are necessary for the cc3d player into the directory for distribution:
+# now copy all the supporting libraries that are necessary for the cc3d player5 into the directory for distribution:
 
 call('rsync -rlPp '+OPENMP_LIBS_DEP_DIR+'/  '+BIN_DIR+'/lib',shell=True)
 
 call('rsync -rlPpa '+QSCINTILLA_LIBS_DEP_DIR+'/  '+BIN_DIR+'/lib',shell=True)
 
-call('rsync -rlPp '+FOR_PLAYER_DEP_DIR+'/  '+BIN_DIR+'/player',shell=True)
+call('rsync -rlPp '+FOR_PLAYER_DEP_DIR+'/  '+BIN_DIR+'/player5',shell=True)
 
 call('rsync -rlPp '+QT_DEPS_DEP_DIR+' ' + BIN_DIR,shell=True)
 

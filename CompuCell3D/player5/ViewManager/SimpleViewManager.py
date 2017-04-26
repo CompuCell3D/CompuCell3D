@@ -322,7 +322,7 @@ class SimpleViewManager(QObject):
         #        self.openPlayerParamsAct=QAction(QIcon(gip("screenshots_open.png")), "&Open Player Parameters...", self)
         self.openLDSAct = QAction(QIcon(gip("screenshots_open.png")), "&Open Lattice Description Summary File...", self)
 
-        # self.closeAct = QAction(QIcon("player/icons/close.png"), "&Close Simulation", self)
+        # self.closeAct = QAction(QIcon("player5/icons/close.png"), "&Close Simulation", self)
         self.exitAct = QAction(QIcon(gip("exit2.png")), "&Exit", self)
 
         self.tweditAct = QAction(QIcon(gip("twedit-icon.png")), "Start Twe&dit++", self)
@@ -388,7 +388,7 @@ class SimpleViewManager(QObject):
 
         gip = DefaultData.getIconPath
 
-        # self.runAct = QAction(QIcon("player/icons/play.png"), "&Run", self)
+        # self.runAct = QAction(QIcon("player5/icons/play.png"), "&Run", self)
         self.runAct = QAction(QIcon(gip("play.png")), "&Run", self)
         self.runAct.setShortcut(Qt.CTRL + Qt.Key_M)
         self.stepAct = QAction(QIcon(gip("step.png")), "&Step", self)
@@ -461,6 +461,7 @@ class SimpleViewManager(QObject):
         self.resetCameraAct = QAction("Reset Camera for Graphics Window ('r')", self)
 
         self.zoomInAct = QAction(QIcon(gip("zoomIn.png")), "&Zoom In", self)
+        self.zoomInAct.setShortcut(Qt.CTRL + Qt.Key_Y)
         self.zoomOutAct = QAction(QIcon(gip("zoomOut.png")), "&Zoom Out", self)
 
 
@@ -536,7 +537,7 @@ class SimpleViewManager(QObject):
 
     def __initWindowActions(self):
         self.newGraphicsWindowAct = QAction(QIcon(gip("kcmkwm.png")), "&New Graphics Window", self)
-        # self.newPlotWindowAct = QAction(QIcon("player/icons/plot.png"),"&New Plot Window", self)
+        # self.newPlotWindowAct = QAction(QIcon("player5/icons/plot.png"),"&New Plot Window", self)
         self.newGraphicsWindowAct.setShortcut(self.tr("Ctrl+I"))
 
         self.tileAct = QAction("Tile", self)
@@ -626,7 +627,7 @@ class SimpleViewManager(QObject):
 
         # def __initTabActions(self):
         # self.closeTab = QToolButton(self)
-        # self.closeTab.setIcon(QIcon("player/icons/close.png"))
+        # self.closeTab.setIcon(QIcon("player5/icons/close.png"))
         # self.closeTab.setToolTip("Close the tab")
         # self.closeTab.hide()
 

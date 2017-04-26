@@ -28,7 +28,7 @@ import os
 #
 # _path = os.path.abspath(os.path.join(_path+'../../../'))
 #
-# icons_dir = os.path.abspath(os.path.join(_path, 'player/icons'))
+# icons_dir = os.path.abspath(os.path.join(_path, 'player5/icons'))
 
 
 
@@ -38,7 +38,7 @@ LATTICE_TYPES = {"Square":1,"Hexagonal":2}
 
 maxNumberOfRecentFiles=5
 
-MODULENAME = '------- player/Configuration/__init__.py: '
+MODULENAME = '------- player5/Configuration/__init__.py: '
 
 class Configuration():
 

@@ -13,7 +13,7 @@ sim,simthread = CompuCellSetup.getCoreSimulationObjects()
 
 import CompuCell #notice importing CompuCell to main script has to be done after call to getCoreSimulationObjects()
 
-#Create extra player fields here or add attributes or plugins
+#Create extra player5 fields here or add attributes or plugins
 energyFunctionRegistry=CompuCellSetup.getEnergyFunctionRegistry(sim)
 
 from cellsort_2D_plugins_with_py_plugin import VolumeEnergyFunctionPlugin

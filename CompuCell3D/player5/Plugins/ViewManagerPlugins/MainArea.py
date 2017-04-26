@@ -126,7 +126,7 @@ class MainArea(QWidget):
 
     def addSubWindow(self, widget):
         '''
-        adds subwindow containing widget to the player
+        adds subwindow containing widget to the player5
         :param widget: widget to be added to sub windows
         :return:None
         '''

@@ -713,7 +713,7 @@ class CC3DProject(QObject):
                                                                  self, shortcut="Ctrl+Shift+O",
                                                                  statusTip="Open CC3D Project ",
                                                                  triggered=self.__openCC3DProject)
-        self.actions["Open in Player"] = QtWidgets.QAction(QIcon(':/icons/player-icon.png'), "Open In Player", self,
+        self.actions["Open in Player"] = QtWidgets.QAction(QIcon(':/icons/player5-icon.png'), "Open In Player", self,
                                                            shortcut="", statusTip="Open simulation in Player ",
                                                            triggered=self.__runInPlayer)
         self.actions["Save CC3D Project"] = QtWidgets.QAction(QIcon(':/icons/save-project.png'), "Save CC3D Project",

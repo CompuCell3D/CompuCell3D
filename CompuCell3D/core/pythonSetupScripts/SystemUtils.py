@@ -36,7 +36,7 @@ def setSwigPaths():
         # sys.path.append(environ["SOSLIB_PATH"])
                 
 def getCC3DPlayerRunScriptPath():        
-    '''returns full path name to player run script
+    '''returns full path name to player5 run script
     '''
     import sys,os
     from os import environ

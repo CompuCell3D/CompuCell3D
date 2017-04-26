@@ -496,7 +496,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def processCommandLineOptions(self, opts):  #
         # command line parsing needs to be fixed - it takes place in two places now...
         '''
-        Called from compucell3d.pyw  - parses the command line (rf. player/compucell3d.pyw now). initializes SimpleTabView member variables
+        Called from compucell3d.pyw  - parses the command line (rf. player5/compucell3d.pyw now). initializes SimpleTabView member variables
         :param opts: object returned by: opts, args = getopt.getopt
         :return:
         '''
@@ -563,7 +563,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                     "--guiScan"):  # when user uses gui to do parameter scan all we have to do is to set self.closePlayerAfterSimulationDone to True
                 self.closePlayerAfterSimulationDone = True
                 # we reset max number of consecutive runs to 1 because we want each simulation in parameter scan
-                # initiated by the psrun.py script to be an independent run after which player gets closed and reopened again for the next run
+                # initiated by the psrun.py script to be an independent run after which player5 gets closed and reopened again for the next run
                 self.maxNumberOfConsecutiveRuns = 1
 
                 pass
@@ -583,7 +583,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # self.connect(self.UI.console.getSyntaxErrorConsole(), SIGNAL("closeCC3D()"), qApp.closeAllWindows)
         self.UI.console.getSyntaxErrorConsole().closeCC3D.connect(qApp.closeAllWindows)
 
-        # establishConnection starts twedit and hooks it up via sockets to player
+        # establishConnection starts twedit and hooks it up via sockets to player5
         # self.connect(self.tweditAct, SIGNAL("triggered()"),
         #              self.UI.console.getSyntaxErrorConsole().cc3dSender.establishConnection)
         self.tweditAct.triggered.connect(self.UI.console.getSyntaxErrorConsole().cc3dSender.establishConnection)
@@ -635,13 +635,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     def usage(self):
         '''
-        Prints player command line usage guide
+        Prints player5 command line usage guide
         :return:None
         '''
         print "\n--------------------------------------------------------"
         print "USAGE: ./compucell3d.sh -i <sim file (.cc3d or .xml or .py)> -s <ScreenshotDescriptionFile> -o <custom outputDirectory>"
         print "-w <widthxheight of graphics window>"
-        print "--exitWhenDone   close the player after simulation is done"
+        print "--exitWhenDone   close the player5 after simulation is done"
         print "--noOutput   ensure that no screenshots are stored regardless of Player settings"
         print "--prefs    name of preferences file to use/save"
         print "-p    playerSettingsFileName (e.g. 3D camera settings)"
@@ -1208,7 +1208,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     def closeEventSimpleTabView(self, event=None):
         '''
-        Handles player CloseEvent - called from closeEvent in UserInterface.py
+        Handles player5 CloseEvent - called from closeEvent in UserInterface.py
         :param event: Qt CloseEvent
         :return:None
         '''
@@ -1427,7 +1427,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     def initializeSimulationViewWidget(self):
         '''
-        Dispatch function - calls player initialization functions (initializeSimulationViewWidgetRegular or initializeSimulationViewWidgetCML) depending on the run mode
+        Dispatch function - calls player5 initialization functions (initializeSimulationViewWidgetRegular or initializeSimulationViewWidgetCML) depending on the run mode
         :return:None
         '''
         # todo
@@ -1498,7 +1498,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         fileName = self.__fileName
         # when running parameter scan after simulatino finish we run again the same simulation file. When cc3d project with parameter scan gets opened 'next iteration' simulation is generatet and this
         # newly generated cc3d file is substituted instead of the "master" cc3d with parameter scan
-        # From user stand point whan matters is that the only thing that user needs to worry abuot is the "master" .cc3d project and this is what is opened in the player
+        # From user stand point whan matters is that the only thing that user needs to worry abuot is the "master" .cc3d project and this is what is opened in the player5
         self.consecutiveRunCounter += 1
         if self.consecutiveRunCounter >= self.maxNumberOfConsecutiveRuns:
 
