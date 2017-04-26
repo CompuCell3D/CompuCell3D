@@ -1,0 +1,23 @@
+<RCC>
+  <qresource>
+    <file>icons/reset_32x32.png</file>
+    <file>icons/reset_64x64.png</file>
+    <file>icons/editor.png</file>
+    <file>icons/scan_32x32.png</file>
+    <file>icons/scan_64x64.png</file>
+    <file>icons/addSteppable.png</file>
+    <file>icons/pifgen_64x64.png</file>
+    <file>icons/xml-icon.png</file>
+    <file>icons/python-icon.png</file>
+    <file>icons/cc3d_64x64_logo.png</file>
+    <file>icons/add.png</file>
+    <file>icons/remove.png</file>
+    <file>icons/save-project.png</file>
+    <file>icons/open-project.png</file>
+    <file>icons/open-in-editor.png</file>
+    <file>icons/new-project.png</file>
+    <file>icons/player-icon.png</file>
+    <file>icons/save-simulation.png</file>
+    <file>icons/add-serializer.png</file>
+  </qresource>
+</RCC>

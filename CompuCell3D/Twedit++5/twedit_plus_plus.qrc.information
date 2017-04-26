@@ -1,0 +1,1 @@
+pyrcc4 -o twedit_plus_plus_rc.py twedit_plus_plus.qrc
