@@ -475,7 +475,7 @@ def setSimulationXMLFileName(_simulationFileName):
 
 #     print "\n\n\n got here ",simulationPaths.simulationXMLFileName
 
-def addNewPlotWindow(_title='', _xAxisTitle='', _yAxisTitle='', _xScaleType='linear', _yScaleType='linear'):
+def addNewPlotWindow(_title='', _xAxisTitle='', _yAxisTitle='', _xScaleType='linear', _yScaleType='linear', _grid=True):
     class PlotWindowDummy(object):
         '''
         This class serves as a dummy object that is used when viewManager is None
@@ -501,42 +501,56 @@ def addNewPlotWindow(_title='', _xAxisTitle='', _yAxisTitle='', _xScaleType='lin
         pwd = PlotWindowDummy()
         return pwd
 
-    pW = viewManager.plotManager.getNewPlotWindow()
+    qt_version = 4
+    try:
+        pW = viewManager.plotManager.getNewPlotWindow()
+    except:
+
+        pW = viewManager.plotManager.getNewPlotWindow({
+            'title':_title,
+            'xAxisTitle':_xAxisTitle,
+            'yAxisTitle':_yAxisTitle,
+            'xScaleType':_xScaleType,
+            'yScaleType':_yScaleType,
+            'grid':_grid
+        }
+        )
+        qt_version = 5
 
     if not pW:
         raise AttributeError(
             'Missing plot modules. Windows/OSX Users: Make sure you have numpy installed. For instructions please visit www.compucell3d.org/Downloads. Linux Users: Make sure you have numpy and PyQwt installed. Please consult your linux distributioun manual pages on how to best install those packages')
 
     # setting up default plot window parameters/look
+    if qt_version==4:
+        # Plot Title - properties
+        pW.setTitle(_title)
+        pW.setTitleSize(12)
+        pW.setTitleColor("Green")
 
-    # Plot Title - properties
-    pW.setTitle(_title)
-    pW.setTitleSize(12)
-    pW.setTitleColor("Green")
+        # plot background
+        pW.setPlotBackgroundColor("white")
+        # properties of x axis
+        pW.setXAxisTitle(_xAxisTitle)
+        if _xScaleType == 'log':
+            pW.setXAxisLogScale()
+        pW.setXAxisTitleSize(10)
+        pW.setXAxisTitleColor("blue")
 
-    # plot background
-    pW.setPlotBackgroundColor("white")
-    # properties of x axis
-    pW.setXAxisTitle(_xAxisTitle)
-    if _xScaleType == 'log':
-        pW.setXAxisLogScale()
-    pW.setXAxisTitleSize(10)
-    pW.setXAxisTitleColor("blue")
+        # properties of y axis
+        pW.setYAxisTitle(_yAxisTitle)
+        if _xScaleType == 'log':
+            pW.setYAxisLogScale()
+        pW.setYAxisTitleSize(10)
+        pW.setYAxisTitleColor("red")
 
-    # properties of y axis
-    pW.setYAxisTitle(_yAxisTitle)
-    if _xScaleType == 'log':
-        pW.setYAxisLogScale()
-    pW.setYAxisTitleSize(10)
-    pW.setYAxisTitleColor("red")
+        pW.addGrid()
+        # adding automatically generated legend
+        # default possition is at the bottom of the plot but here we put it at the top
+        pW.addAutoLegend("top")
 
-    pW.addGrid()
-    # adding automatically generated legend
-    # default possition is at the bottom of the plot but here we put it at the top
-    pW.addAutoLegend("top")
-
-    # restoring plot window - have to decide whether to keep it or rely on viewManager.plotManager restore_plots_layout function
-    #     viewManager.plotManager.restoreSingleWindow(pW)
+        # restoring plot window - have to decide whether to keep it or rely on viewManager.plotManager restore_plots_layout function
+        #     viewManager.plotManager.restoreSingleWindow(pW)
 
     return pW
 

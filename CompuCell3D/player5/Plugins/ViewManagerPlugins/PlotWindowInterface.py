@@ -5,7 +5,13 @@ from PyQt5.Qt import *
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import *
 import numpy as np
-import webcolors as wc
+
+import warnings
+try:
+    import webcolors as wc
+except ImportError:
+    warnings.warn('Could not find websolors. Run "pip install webcolors" to fix this', RuntimeWarning)
+
 import pyqtgraph as pg
 import pyqtgraph.exporters
 
