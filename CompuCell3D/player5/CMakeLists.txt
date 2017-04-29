@@ -5,11 +5,16 @@ SET(PYQTPLAYER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 FIND_PACKAGE(VTK REQUIRED)
 
-INCLUDE_DIRECTORIES ( 
+INCLUDE_DIRECTORIES (
     ${VTK_INCLUDE_DIRS}
     ${COMPUCELL3D_SOURCE_DIR}/core
     ${COMPUCELL3D_SOURCE_DIR}/core/CompuCell3D
     )
+
+SET(player_dir "player")
+if(${PYQT_VERSION} STREQUAL 5)
+    SET(player_dir "player5")
+endif()
 
 
 #Copying player files
@@ -17,145 +22,145 @@ INCLUDE_DIRECTORIES (
 
 if(INSTALL_PLAYER)
 
-    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/player/Configuration" DESTINATION @CMAKE_INSTALL_PREFIX@/player
+    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/${player_dir}/Configuration" DESTINATION @CMAKE_INSTALL_PREFIX@/${player_dir}
         PATTERN "*.svn" EXCLUDE
         PATTERN "*.ui" EXCLUDE
         PATTERN "*.in" EXCLUDE
-        PATTERN "*.pyc" EXCLUDE        
-        PATTERN "@CMAKE_SOURCE_DIR@/player/Configuration/*")
-        
-    # configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Configuration/Version.py.in @CMAKE_INSTALL_PREFIX@/player/Configuration/Version.py)    
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN "@CMAKE_SOURCE_DIR@/${player_dir}/Configuration/*")
+
+    # configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Configuration/Version.py.in @CMAKE_INSTALL_PREFIX@/player/Configuration/Version.py)
 
 
 
 
-    # configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Configuration/Version.py.in @CMAKE_BINARY_DIR@/player/Configuration/Version.py)   
-    # INSTALL(FILES @CMAKE_BINARY_DIR@/player/Configuration/Version.py DESTINATION @CMAKE_INSTALL_PREFIX@/player/Configuration/)     
+    # configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Configuration/Version.py.in @CMAKE_BINARY_DIR@/player/Configuration/Version.py)
+    # INSTALL(FILES @CMAKE_BINARY_DIR@/player/Configuration/Version.py DESTINATION @CMAKE_INSTALL_PREFIX@/player/Configuration/)
 
 
-    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/player/CQt" DESTINATION @CMAKE_INSTALL_PREFIX@/player
+    INSTALL(DIRECTORY  @CMAKE_SOURCE_DIR@/${player_dir}/CQt DESTINATION @CMAKE_INSTALL_PREFIX@/${player_dir}
         PATTERN "*.svn" EXCLUDE
         PATTERN "*.pyc" EXCLUDE
-        PATTERN "@CMAKE_SOURCE_DIR@/player/CQt/*")
+        PATTERN "@CMAKE_SOURCE_DIR@/${player_dir}/CQt/*")
 
-    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/player/CustomGui" DESTINATION @CMAKE_INSTALL_PREFIX@/player
+    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/${player_dir}/CustomGui" DESTINATION @CMAKE_INSTALL_PREFIX@/${player_dir}
         PATTERN "*.svn" EXCLUDE
         PATTERN "*.pyc" EXCLUDE
-        PATTERN "@CMAKE_SOURCE_DIR@/player/CustomGui/*")
+        PATTERN "@CMAKE_SOURCE_DIR@/${player_dir}/CustomGui/*")
 
-    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/player/icons" DESTINATION @CMAKE_INSTALL_PREFIX@/player
+    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/${player_dir}/icons" DESTINATION @CMAKE_INSTALL_PREFIX@/${player_dir}
         PATTERN "*.svn" EXCLUDE
         PATTERN "*.pyc" EXCLUDE
-        PATTERN "@CMAKE_SOURCE_DIR@/player/icons/*")
-        
-    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/player/Messaging" DESTINATION @CMAKE_INSTALL_PREFIX@/player
-        PATTERN "*.svn" EXCLUDE
-        PATTERN "*.pyc" EXCLUDE
-        PATTERN "@CMAKE_SOURCE_DIR@/player/Messaging/*")
+        PATTERN "@CMAKE_SOURCE_DIR@/${player_dir}/icons/*")
 
-    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/player/PluginManager" DESTINATION @CMAKE_INSTALL_PREFIX@/player
+    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/${player_dir}/Messaging" DESTINATION @CMAKE_INSTALL_PREFIX@/${player_dir}
         PATTERN "*.svn" EXCLUDE
         PATTERN "*.pyc" EXCLUDE
-        PATTERN "@CMAKE_SOURCE_DIR@/player/PluginManager/*")
+        PATTERN "@CMAKE_SOURCE_DIR@/${player_dir}/Messaging/*")
 
-    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/player/Plugins" DESTINATION @CMAKE_INSTALL_PREFIX@/player
+    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/${player_dir}/PluginManager" DESTINATION @CMAKE_INSTALL_PREFIX@/${player_dir}
         PATTERN "*.svn" EXCLUDE
         PATTERN "*.pyc" EXCLUDE
-        PATTERN "@CMAKE_SOURCE_DIR@/player/Plugins/*")
-        
-    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/player/Simulation" DESTINATION @CMAKE_INSTALL_PREFIX@/player
-        PATTERN "*.svn" EXCLUDE
-        PATTERN "*.pyc" EXCLUDE
-        PATTERN "@CMAKE_SOURCE_DIR@/player/Simulation/*")    
+        PATTERN "@CMAKE_SOURCE_DIR@/${player_dir}/PluginManager/*")
 
-    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/player/UI" DESTINATION @CMAKE_INSTALL_PREFIX@/player
+    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/${player_dir}/Plugins" DESTINATION @CMAKE_INSTALL_PREFIX@/${player_dir}
         PATTERN "*.svn" EXCLUDE
         PATTERN "*.pyc" EXCLUDE
-        PATTERN "@CMAKE_SOURCE_DIR@/player/UI/*")
+        PATTERN "@CMAKE_SOURCE_DIR@/${player_dir}/Plugins/*")
 
-    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/player/Utilities" DESTINATION @CMAKE_INSTALL_PREFIX@/player
+    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/${player_dir}/Simulation" DESTINATION @CMAKE_INSTALL_PREFIX@/${player_dir}
         PATTERN "*.svn" EXCLUDE
         PATTERN "*.pyc" EXCLUDE
-        PATTERN "@CMAKE_SOURCE_DIR@/player/Utilities/*")
+        PATTERN "@CMAKE_SOURCE_DIR@/${player_dir}/Simulation/*")
 
-        
-        
-        
-        
-        
+    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/${player_dir}/UI" DESTINATION @CMAKE_INSTALL_PREFIX@/${player_dir}
+        PATTERN "*.svn" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN "@CMAKE_SOURCE_DIR@/${player_dir}/UI/*")
+
+    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/${player_dir}/Utilities" DESTINATION @CMAKE_INSTALL_PREFIX@/${player_dir}
+        PATTERN "*.svn" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN "@CMAKE_SOURCE_DIR@/${player_dir}/Utilities/*")
+
+
+
+
+
+
     # # #Copying Twedit++ plugin files that connect player with Twedit++
     # # file(GLOB pluginsScripts "@CMAKE_SOURCE_DIR@/player/PluginsTwedit++/*.py")
     # # list(REMOVE_ITEM pluginsScripts "@CMAKE_SOURCE_DIR@/player/PluginsTwedit++/.svn")
-    # # INSTALL(FILES ${pluginsScripts} DESTINATION "@CMAKE_INSTALL_PREFIX@/Twedit++/Plugins" )     
+    # # INSTALL(FILES ${pluginsScripts} DESTINATION "@CMAKE_INSTALL_PREFIX@/Twedit++/Plugins" )
 
     # # INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/player/PluginsTwedit++/CompuCell3D" DESTINATION @CMAKE_INSTALL_PREFIX@/Twedit++/Plugins
         # # PATTERN "*.svn" EXCLUDE
         # # PATTERN "*.ui" EXCLUDE
         # # PATTERN "*.in" EXCLUDE
         # # PATTERN "@CMAKE_SOURCE_DIR@/player/PluginsTwedit++/CompuCell3D*")
-        
-        
-        
-    if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)   
-        INSTALL(FILES  
-            ${CMAKE_SOURCE_DIR}/player/Utilities/QVTKRenderWindowInteractor_mac.py 
-            DESTINATION ${CMAKE_INSTALL_PREFIX}/player/Utilities RENAME QVTKRenderWindowInteractor.py
+
+
+
+    if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+        INSTALL(FILES
+            ${CMAKE_SOURCE_DIR}/${player_dir}/Utilities/QVTKRenderWindowInteractor_mac.py
+            DESTINATION ${CMAKE_INSTALL_PREFIX}/${player_dir}/Utilities RENAME QVTKRenderWindowInteractor.py
             )
-        INSTALL(FILES  
-            ${CMAKE_SOURCE_DIR}/player/Configuration_settings/_settings_osx.xml 
-            DESTINATION ${CMAKE_INSTALL_PREFIX}/player/Configuration RENAME _settings.xml
+        INSTALL(FILES
+            ${CMAKE_SOURCE_DIR}/${player_dir}/Configuration_settings/_settings_osx.xml
+            DESTINATION ${CMAKE_INSTALL_PREFIX}/${player_dir}/Configuration RENAME _settings.xml
             )
-            
+
     else(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
-        INSTALL(FILES  
-            ${CMAKE_SOURCE_DIR}/player/Configuration_settings/_settings.xml 
-            DESTINATION ${CMAKE_INSTALL_PREFIX}/player/Configuration
+        INSTALL(FILES
+            ${CMAKE_SOURCE_DIR}/${player_dir}/Configuration_settings/_settings.xml
+            DESTINATION ${CMAKE_INSTALL_PREFIX}/${player_dir}/Configuration
             )
-        
-    endif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin) 
 
-    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/player/ViewManager" DESTINATION @CMAKE_INSTALL_PREFIX@/player
+    endif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+
+    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/${player_dir}/ViewManager" DESTINATION @CMAKE_INSTALL_PREFIX@/${player_dir}
         PATTERN "*.svn" EXCLUDE
         PATTERN "*.pyc" EXCLUDE
-        PATTERN "@CMAKE_SOURCE_DIR@/player/ViewManager/*")
+        PATTERN "@CMAKE_SOURCE_DIR@/${player_dir}/ViewManager/*")
 
-    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/player/Graphics" DESTINATION @CMAKE_INSTALL_PREFIX@/player
+    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/${player_dir}/Graphics" DESTINATION @CMAKE_INSTALL_PREFIX@/${player_dir}
         PATTERN "*.svn" EXCLUDE
         PATTERN "*.pyc" EXCLUDE
-        PATTERN "@CMAKE_SOURCE_DIR@/player/Graphics/*")
-        
+        PATTERN "@CMAKE_SOURCE_DIR@/${player_dir}/Graphics/*")
+
     # # copying PyQt, Sip and VTK libraries used by the player on Windows
-    # if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)   
+    # if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
         # INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/windows_libs/player/PyQt4" DESTINATION @CMAKE_INSTALL_PREFIX@/player
             # PATTERN "*.svn" EXCLUDE
             # PATTERN "@CMAKE_SOURCE_DIR@/windows_libs/player/PyQt4/*")
-            
+
         # INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/windows_libs/player/sip" DESTINATION @CMAKE_INSTALL_PREFIX@/player
             # PATTERN "*.svn" EXCLUDE
             # PATTERN "@CMAKE_SOURCE_DIR@/windows_libs/player/sip/*")
-            
+
         # INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/windows_libs/player/sip_utils" DESTINATION @CMAKE_INSTALL_PREFIX@/player
             # PATTERN "*.svn" EXCLUDE
             # PATTERN "@CMAKE_SOURCE_DIR@/windows_libs/player/sip_utils/*")
-            
+
         # INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/windows_libs/player/vtk" DESTINATION @CMAKE_INSTALL_PREFIX@/player
             # PATTERN "*.svn" EXCLUDE
             # PATTERN "@CMAKE_SOURCE_DIR@/windows_libs/player/vtk/*")
-            
+
         # INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/windows_libs/player/VTKLibs" DESTINATION @CMAKE_INSTALL_PREFIX@/player
             # PATTERN "*.svn" EXCLUDE
             # PATTERN "@CMAKE_SOURCE_DIR@/windows_libs/player/VTKLibs/*")
-            
-    # endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)    
+
+    # endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
     # copying PyQt, Sip and VTK libraries used by the player on Windows
-    if(${CMAKE_SYSTEM_NAME} STREQUAL Windows AND WINDOWS_DEPENDENCIES_INSTALL_ENABLE)   
+    if(${CMAKE_SYSTEM_NAME} STREQUAL Windows AND WINDOWS_DEPENDENCIES_INSTALL_ENABLE)
         INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/Python27" DESTINATION @CMAKE_INSTALL_PREFIX@
             PATTERN "*.svn" EXCLUDE
             PATTERN "*.pyc" EXCLUDE
             PATTERN "@WINDOWS_DEPENDENCIES@/Python27/*")
-    
-    # if(${CMAKE_SYSTEM_NAME} STREQUAL Windows AND WINDOWS_DEPENDENCIES_INSTALL_ENABLE)   
+
+    # if(${CMAKE_SYSTEM_NAME} STREQUAL Windows AND WINDOWS_DEPENDENCIES_INSTALL_ENABLE)
         # INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/player/PyQt4" DESTINATION @CMAKE_INSTALL_PREFIX@/lib/PythonDeps
             # PATTERN "*.svn" EXCLUDE
             # PATTERN "*.pyc" EXCLUDE
@@ -164,37 +169,37 @@ if(INSTALL_PLAYER)
         # # INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/player/numpy" DESTINATION @CMAKE_INSTALL_PREFIX@/player
             # # PATTERN "*.svn" EXCLUDE
             # # PATTERN "@WINDOWS_DEPENDENCIES@/player/numpy/*")
-            
+
         # INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/player/sip" DESTINATION @CMAKE_INSTALL_PREFIX@/lib/PythonDeps
             # PATTERN "*.svn" EXCLUDE
             # PATTERN "*.pyc" EXCLUDE
             # PATTERN "@WINDOWS_DEPENDENCIES@/player/sip/*")
-            
+
           # file(GLOB siputils "@WINDOWS_DEPENDENCIES@/player/sip_utils/*")
           # list(REMOVE_ITEM siputils "@WINDOWS_DEPENDENCIES@/player/sip_utils/.svn")
-          # INSTALL(FILES ${siputils} DESTINATION "@CMAKE_INSTALL_PREFIX@/lib/PythonDeps" )  
-            
-            
+          # INSTALL(FILES ${siputils} DESTINATION "@CMAKE_INSTALL_PREFIX@/lib/PythonDeps" )
+
+
         # # INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/player/sip_utils" DESTINATION @CMAKE_INSTALL_PREFIX@/lib/PythonDeps
             # # PATTERN "*.svn" EXCLUDE
             # # PATTERN "@WINDOWS_DEPENDENCIES@/player/sip_utils/*")
-            
+
         # INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/player/vtk" DESTINATION @CMAKE_INSTALL_PREFIX@/lib/PythonDeps
             # PATTERN "*.svn" EXCLUDE
             # PATTERN "*.pyc" EXCLUDE
             # PATTERN "@WINDOWS_DEPENDENCIES@/player/vtk/*")
-            
+
         # # INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/player/VTKLibs" DESTINATION @CMAKE_INSTALL_PREFIX@/bin
             # # PATTERN "*.svn" EXCLUDE
             # # PATTERN "@WINDOWS_DEPENDENCIES@/player/VTKLibs/*")
-            
-    endif()    
+
+    endif()
 
 
-    INSTALL(FILES  
-        ${CMAKE_SOURCE_DIR}/player/compucell3d.pyw
-        ${CMAKE_SOURCE_DIR}/player/DefaultData.py
-        ${CMAKE_SOURCE_DIR}/player/plugins.txt
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/player
+    INSTALL(FILES
+        ${CMAKE_SOURCE_DIR}/${player_dir}/compucell3d.pyw
+        ${CMAKE_SOURCE_DIR}/${player_dir}/DefaultData.py
+        ${CMAKE_SOURCE_DIR}/${player_dir}/plugins.txt
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${player_dir}
         )
 endif(INSTALL_PLAYER)
