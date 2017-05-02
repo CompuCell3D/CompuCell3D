@@ -87,7 +87,7 @@ from CycleTabsPopup import CycleTabFileList
 from QsciScintillaCustom import QsciScintillaCustom
 from PrinterTwedit import PrinterTwedit
 from KeyboardShortcutsDlg import KeyboardShortcutsDlg
-
+import shutil
 from DataSocketCommunicators import FileNameReceiver
 import Encoding
 import string
@@ -4486,39 +4486,84 @@ class EditorWindow(QMainWindow):
         try:
             dbgMsg("SAVE - ENCODING = ", encoding, "\n\n\n\n\n")
 
-            if encoding == '':
-                encoding = 'utf-8'
+            write_success = False
+            if encoding=='':
+                encoding='utf-8'
 
             import codecs
-            fh = codecs.open(_fileName, 'wb', Encoding.normalizeEncodingName(encoding))
+            try:
+                fh=codecs.open(_fileName+'~', 'wb',Encoding.normalizeEncodingName(encoding))
 
-            # fh=open(_fileName, 'wb')
-            Encoding.writeBOM(fh, encoding)
-            fh.write(txt)
-            fh.close()
-            # f = open(_fileName, 'wb')
-            # f.write(txt)
-            # f.close()
-            # file = QtCore.QFile(_fileName)
+                # fh=open(_fileName, 'wb')
+                Encoding.writeBOM(fh,encoding)
+                fh.write(txt)
+                write_success = True
+            except:
+                fh.close()
+                # resorting to utf8 encoding
+                encoding = 'utf-8'
+                txt = unicode(textEditLocal.text())
+                txt, encoding = Encoding.encode(txt, encoding)
+                fh = codecs.open(_fileName + '~', 'wb', Encoding.normalizeEncodingName(encoding))
+                try:
+                    Encoding.writeBOM(fh, encoding)
+                    fh.write(txt)
+                except:
+                    raise IOError('Could not save file using encoding %s'%encoding)
+                write_success = True
+            finally:
+                fh.close()
 
-            # if not file.open(QtCore.QFile.WriteOnly ):
-            # QtWidgets.QMessageBox.warning(self, "Twedit++5",
-            # "Cannot write file %s:\n%s." % (_fileName, file.errorString()))
-            # self.deactivateChangeSensing=False
-            # return False
+                if write_success:
+                    try:
+                        shutil.move(_fileName + '~',_fileName )
+                    except shutil.Error:
 
-            # # txt=textEditLocal.text()
-            # byteArray=QByteArray(txt)
-            # file.write(byteArray)
-            # file.close()
-            # if createBackup and perms_valid:
-            # os.chmod(fn, permissions)
-            # return True
+                        QtWidgets.QMessageBox.warning(self, "Twedit++",
+                                                  "Cannot rename %s -> %s." % (_fileName + '~', _fileName ))
+
         except IOError, why:
-            QtWidgets.QMessageBox.warning(self, "Twedit++5",
-                                          "Cannot write file %s:\n%s." % (_fileName, why))
-            self.deactivateChangeSensing = False
+            QtWidgets.QApplication.restoreOverrideCursor()
+            QtWidgets.QMessageBox.warning(self, "Twedit++",
+                    "Cannot write file %s:\n%s." % (_fileName, why))
+            self.deactivateChangeSensing=False
+
             return False
+
+
+        #     if encoding == '':
+        #         encoding = 'utf-8'
+        #
+        #     import codecs
+        #     fh = codecs.open(_fileName, 'wb', Encoding.normalizeEncodingName(encoding))
+        #
+        #     # fh=open(_fileName, 'wb')
+        #     Encoding.writeBOM(fh, encoding)
+        #     fh.write(txt)
+        #     fh.close()
+        #     # f = open(_fileName, 'wb')
+        #     # f.write(txt)
+        #     # f.close()
+        #     # file = QtCore.QFile(_fileName)
+        #
+        #     # if not file.open(QtCore.QFile.WriteOnly ):
+        #     # QtWidgets.QMessageBox.warning(self, "Twedit++5",
+        #     # "Cannot write file %s:\n%s." % (_fileName, file.errorString()))
+        #     # self.deactivateChangeSensing=False
+        #     # return False
+        #
+        #     # # txt=textEditLocal.text()
+        #     # byteArray=QByteArray(txt)
+        #     # file.write(byteArray)
+        #     # file.close()
+        #     # if createBackup and perms_valid:
+        #     # os.chmod(fn, permissions)
+        #     # return True
+        # except IOError, why:
+        #     QtWidgets.QMessageBox.warning(self, "Twedit++5",
+        #                                   "Cannot write file %s:\n%s." % (_fileName, why))
+        #     self.deactivateChangeSensing = False
+        #     return False
 
         QtWidgets.QApplication.restoreOverrideCursor()
 

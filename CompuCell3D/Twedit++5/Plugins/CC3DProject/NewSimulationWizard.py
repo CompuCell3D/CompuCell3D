@@ -804,7 +804,9 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
                     if not os.access(os.path.abspath(dir), os.W_OK):
                         print "CHECKING DIRECTORY "
                         QMessageBox.warning(self, "Write permission Error",
-                                            "You do not have write permissions to %s directory" % (
+                                            "You do not have write permissions to %s directory. "
+                                            "This error also appears when creating project that has non-ascii characters "
+                                            "(either in project name or in project directory). " % (
                                             os.path.abspath(dir)), QMessageBox.Ok)
                         return False
 
