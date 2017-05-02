@@ -322,15 +322,13 @@ class QLineEditCustom(QLineEdit):
 
 class FindAndReplaceDlg(QDialog, ui_findinfilesdlg.Ui_FindInFiles):
     # signals
-    searchingSignal = QtCore.pyqtSignal(('char*',))
-    searchingAllInAllOpenDocsSignal = QtCore.pyqtSignal(
-        ('char*', 'char*', 'char*', 'int',))  # text, filters,directory, search mode
-    replacingSignal = QtCore.pyqtSignal(('char*', 'char*',))
-    replacingAllSignal = QtCore.pyqtSignal(('char*', 'char*', bool))
-    replacingAllInOpenDocsSignal = QtCore.pyqtSignal(
-        ('char*', 'char*', 'char*', 'char*', 'int',))  # text,replaceText, filters,directory. replace mode
-    searchingSignalIF = QtCore.pyqtSignal(('char*', 'char*', 'char*',))  # text, filters,directory
-    replacingSignalIF = QtCore.pyqtSignal(('char*', 'char*', 'char*', 'char*'))  # text,replaceText, filters,directory
+    searchingSignal = pyqtSignal(str)
+    searchingAllInAllOpenDocsSignal = pyqtSignal(str, str, str, int)  # text, filters,directory, search mode
+    replacingSignal = pyqtSignal(str, str)
+    replacingAllSignal = pyqtSignal(str, str, bool)
+    replacingAllInOpenDocsSignal = pyqtSignal(str, str, str, str, int)  # text,replaceText, filters,directory. replace mode
+    searchingSignalIF = pyqtSignal(str, str, str)  # text, filters,directory
+    replacingSignalIF = pyqtSignal(str, str, str, str)  # text,replaceText, filters,directory
 
     def __init__(self, text="", parent=None):
         super(FindAndReplaceDlg, self).__init__(parent)

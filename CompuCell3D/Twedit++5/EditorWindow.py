@@ -1617,14 +1617,14 @@ class EditorWindow(QMainWindow):
         # ALL_IN_ALL_OPEN_DOCS=1
         # ALL_IN_CURRENT_DOC=2
 
-        if not os.path.isdir(_directory):
-
-            ret = QtWidgets.QMessageBox.warning(self, "Directory Not Found",
-                                                'Could not locate directory %s'%_directory,
-                                                QtWidgets.QMessageBox.Ok )
-            if ret == QtWidgets.QMessageBox.Ok:
-                self.findDialogForm.setButtonsEnabled(True)
-                return
+        # if not os.path.isdir(_directory):
+        #
+        #     ret = QtWidgets.QMessageBox.warning(self, "Directory Not Found",
+        #                                         'Could not locate directory %s'%_directory,
+        #                                         QtWidgets.QMessageBox.Ok )
+        #     if ret == QtWidgets.QMessageBox.Ok:
+        #         self.findDialogForm.setButtonsEnabled(True)
+        #         return
 
         dbgMsg("search parameters", _text, " ", _filters, " ", _directory)
 
