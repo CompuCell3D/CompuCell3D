@@ -863,8 +863,8 @@ class EditorWindow(QMainWindow):
         """
         import os
         for fileName in _fileList:
-            dbgMsg("THIS IS THE FILE TO BE OPEN:", os.path.abspath(str(fileName)))
-            self.loadFile(os.path.abspath(str(fileName)))
+            dbgMsg("THIS IS THE FILE TO BE OPEN:", os.path.abspath(unicode(fileName)))
+            self.loadFile(os.path.abspath(unicode(fileName)))
         self.activateWindow()
 
     def processCommandLine(self):
@@ -874,8 +874,8 @@ class EditorWindow(QMainWindow):
         dbgMsg("\n\n\n\n\n PROCESSING CMD LINE")
         import os
         for fileName in self.argv:
-            dbgMsg("THIS IS THE FILE TO BE OPEN:", os.path.abspath(str(fileName)))
-            self.loadFile(os.path.abspath(str(fileName)))
+            dbgMsg("THIS IS THE FILE TO BE OPEN:", os.path.abspath(unicode(fileName)))
+            self.loadFile(os.path.abspath(unicode(fileName)))
         self.activateWindow()
 
     def processNewlyReadFileName(self, _fileName):
@@ -883,7 +883,7 @@ class EditorWindow(QMainWindow):
             loads new file
         """
         dbgMsg("processNewlyReadFileName fileName=", _fileName)
-        self.loadFile(os.path.abspath(str(_fileName)))
+        self.loadFile(os.path.abspath(unicode(_fileName)))
         if not sys.platform.startswith('win'):
             self.showNormal()
             self.activateWindow()
@@ -1047,22 +1047,22 @@ class EditorWindow(QMainWindow):
 
         findHistoryList = self.configuration.setting("FRFindHistory")
         for i in range(len(findHistoryList)):
-            if str(findHistoryList[i]).strip() != '':  # we do not wantany empyty strings here
+            if unicode(findHistoryList[i]).strip() != '':  # we do not wantany empyty strings here
                 _frh.findHistory.append(findHistoryList[i])
 
         replaceHistoryList = self.configuration.setting("FRReplaceHistory")
         for i in range(len(replaceHistoryList)):
-            if str(replaceHistoryList[i]).strip() != '':  # we do not wantany empyty strings here
+            if unicode(replaceHistoryList[i]).strip() != '':  # we do not wantany empyty strings here
                 _frh.replaceHistory.append(replaceHistoryList[i])
 
         filtersHistoryList = self.configuration.setting("FRFiltersHistory")
         for i in range(len(filtersHistoryList)):
-            if str(filtersHistoryList[i]).strip() != '':  # we do not wantany empyty strings here
+            if unicode(filtersHistoryList[i]).strip() != '':  # we do not wantany empyty strings here
                 _frh.filtersHistoryIF.append(filtersHistoryList[i])
 
         directoryHistoryList = self.configuration.setting("FRDirectoryHistory")
         for i in range(len(directoryHistoryList)):
-            if str(directoryHistoryList[i]).strip() != '':  # we do not wantany empyty strings here
+            if unicode(directoryHistoryList[i]).strip() != '':  # we do not wantany empyty strings here
                 _frh.directoryHistoryIF.append(directoryHistoryList[i])
 
         _frh.syntaxIndex = self.configuration.setting("FRSyntaxIndex")
@@ -1135,11 +1135,11 @@ class EditorWindow(QMainWindow):
         for editor in self.getEditorList():
             fileName = self.getEditorFileName(editor)
             try:
-                if fileName != '' and os.path.getmtime(str(fileName)) != self.getEditorFileModificationTime(editor):
+                if fileName != '' and os.path.getmtime(unicode(fileName)) != self.getEditorFileModificationTime(editor):
                     dbgMsg("DOCUMENT ", fileName, " was modified")
                     reloadFlag = self.maybeReload(editor)
                     if not reloadFlag:
-                        self.setEditorFileModificationTime(editor, os.path.getmtime(str(fileName)))
+                        self.setEditorFileModificationTime(editor, os.path.getmtime(unicode(fileName)))
                     dbgMsg("reloadFlag=", reloadFlag)
                     # check if the document exists at all
             except os.error:
@@ -1601,6 +1601,10 @@ class EditorWindow(QMainWindow):
 
         import os
 
+        _text = str(_text)
+        _filters = str(_filters)
+        _directory = unicode(_directory)
+
         if _directory.rstrip() != '':
             if not os.path.exists(_directory) or not os.path.isdir(_directory):
                 ret = QtWidgets.QMessageBox.warning(self, "Directory Error",
@@ -1643,11 +1647,11 @@ class EditorWindow(QMainWindow):
         if _mode == ALL_IN_FILES:
             for filter in filters:
                 if self.findDialogForm.inAllSubFoldersCheckBoxIF.isChecked():
-                    for root, dirnames, filenames in os.walk(str(_directory)):
+                    for root, dirnames, filenames in os.walk(unicode(_directory)):
                         for filename in fnmatch.filter(filenames, filter):
                             matches.append(os.path.join(root, filename))
                 else:
-                    root = str(_directory)
+                    root = unicode(_directory)
                     for filename in os.listdir(root):
                         if fnmatch.fnmatch(filename, filter):
                             matches.append(os.path.join(root, filename))
@@ -1822,11 +1826,11 @@ class EditorWindow(QMainWindow):
         if _mode == ALL_IN_FILES:
             for filter in filters:
                 if self.findDialogForm.inAllSubFoldersCheckBoxIF.isChecked():
-                    for root, dirnames, filenames in os.walk(str(_directory)):
+                    for root, dirnames, filenames in os.walk(unicode(_directory)):
                         for filename in fnmatch.filter(filenames, filter):
                             matches.append(os.path.join(root, filename))
                 else:
-                    root = str(_directory)
+                    root = unicode(_directory)
                     for filename in os.listdir(root):
                         if fnmatch.fnmatch(filename, filter):
                             matches.append(os.path.join(root, filename))
@@ -1954,7 +1958,7 @@ class EditorWindow(QMainWindow):
             usingOpenEditor = False
             openFileForReplaceFlag = False
 
-            fileNameNormalized = os.path.abspath(str(filename))
+            fileNameNormalized = os.path.abspath(unicode(filename))
 
             if fileNameNormalized in openFileDict.keys():
                 textEditLocal = openFileDict[fileNameNormalized]
@@ -2003,7 +2007,7 @@ class EditorWindow(QMainWindow):
                     textEditLocal.modificationChanged.disconnect(
                         self.textChangedHandlers[textEditLocal].handleModificationChanged)
 
-                    self.setEditorFileModificationTime(textEditLocal, os.path.getmtime(str(filename)))
+                    self.setEditorFileModificationTime(textEditLocal, os.path.getmtime(unicode(filename)))
 
                     # heve to reactivate modification time sensing
                     textEditLocal.modificationChanged.connect(
@@ -2709,7 +2713,7 @@ class EditorWindow(QMainWindow):
         action = self.sender()
         dirName = ''
         if isinstance(action, QAction):
-            dirName = str(action.data().toString())
+            dirName = unicode(action.data().toString())
 
         fileNames = QtGui.QFileDialog.getOpenFileNames(self, "Open new file...", dirName, self.fileDialogFilters)
         self.addItemtoConfigurationStringList(self.configuration, "RecentDirectories", dirName)
@@ -2717,7 +2721,7 @@ class EditorWindow(QMainWindow):
         if fileNames.count():
             # extract path name and add it to settings
             sampleFileName = fileNames[0]
-            dirName = os.path.abspath(os.path.dirname(str(sampleFileName)))
+            dirName = os.path.abspath(os.path.dirname(unicode(sampleFileName)))
             self.addItemtoConfigurationStringList(self.configuration, "RecentDirectories", dirName)
 
             self.loadFiles(fileNames)
@@ -2746,7 +2750,7 @@ class EditorWindow(QMainWindow):
             pass
 
         if currentFilePath:
-            currentFilePath = os.path.dirname(str(currentFilePath))
+            currentFilePath = os.path.dirname(unicode(currentFilePath))
             self.lastFileOpenPath = currentFilePath
         else:
             currentFilePath = self.lastFileOpenPath
@@ -2760,7 +2764,7 @@ class EditorWindow(QMainWindow):
         if len(fileNames):
             # extract path name and add it to settings
             sampleFileName = fileNames[0]
-            dirName = os.path.abspath(os.path.dirname(str(sampleFileName)))
+            dirName = os.path.abspath(os.path.dirname(unicode(sampleFileName)))
             self.addItemtoConfigurationStringList(self.configuration, "RecentDirectories", dirName)
 
             self.loadFiles(fileNames)
@@ -3062,7 +3066,7 @@ class EditorWindow(QMainWindow):
             # self.adjustLineNumbers(editor,True)
 
         if currentFilePath:
-            fileSplit = os.path.splitext(str(currentFilePath))
+            fileSplit = os.path.splitext(unicode(currentFilePath))
             currentExtension = fileSplit[1]
             # currentFilePath=os.path.dirname(str(currentFilePath))
 
@@ -3071,7 +3075,7 @@ class EditorWindow(QMainWindow):
             currentFilePath = self.lastFileOpenPath
         else:
             index = editor.panel.indexOf(editor)
-            currentFilePath = str(editor.panel.tabText(index))
+            currentFilePath = unicode(editor.panel.tabText(index))
 
             # else:
             # currentFilePath=self.lastFileOpenPath
@@ -3122,7 +3126,7 @@ class EditorWindow(QMainWindow):
                 self.commentStyleDict[activePanel.currentWidget()] = [lexer[1], lexer[
                     2]]  # associating comment style with the lexer
                 currentEncoding = self.getEditorFileEncoding(activePanel.currentWidget())
-                self.setPropertiesInEditorList(activePanel.currentWidget(), fileName, os.path.getmtime(str(fileName)),
+                self.setPropertiesInEditorList(activePanel.currentWidget(), fileName, os.path.getmtime(unicode(fileName)),
                                                currentEncoding)
 
                 self.setEditorProperties(activePanel.currentWidget())
@@ -4082,7 +4086,7 @@ class EditorWindow(QMainWindow):
         editor.cursorPositionChanged.connect(self.handleCursorPositionChanged)
 
         # self.fileDict[editor]=[os.path.abspath(fileName),os.path.getmtime(fileName),encoding] # "normalizing" file name to make sure \ and / are used in a consistent manner
-        self.setPropertiesInEditorList(editor, os.path.abspath(str(fileName)), os.path.getmtime(str(fileName)),
+        self.setPropertiesInEditorList(editor, os.path.abspath(unicode(fileName)), os.path.getmtime(unicode(fileName)),
                                        encoding)  # "normalizing" file name to make sure \ and / are used in a consistent manner
 
         editor.setModified(False)
@@ -4109,7 +4113,7 @@ class EditorWindow(QMainWindow):
         self.deactivateChangeSensing = True
 
         for i in range(len(fileNames)):
-            self.loadFile(os.path.abspath(str(fileNames[
+            self.loadFile(os.path.abspath(unicode(fileNames[
                                                   i])))  # "normalizing" file name to make sure \ and / are used in a consistent manner
 
         self.deactivateChangeSensing = False
@@ -4118,7 +4122,7 @@ class EditorWindow(QMainWindow):
         """
             loads single file (fielName) - accepts additional arguments like _restoreFlag or reference to panel into which load file
         """
-        fileName = str(fileName)
+        fileName = unicode(fileName)
         fileName = os.path.abspath(
             fileName)  # "normalizing" file name to make sure \ and / are used in a consistent manner
 
@@ -4136,7 +4140,7 @@ class EditorWindow(QMainWindow):
 
                 editor.setFocus(Qt.MouseFocusReason)
                 modificationTimeEditor = self.getEditorFileModificationTime(editor)
-                modificationTimeFile = os.path.getmtime(str(fileName))
+                modificationTimeFile = os.path.getmtime(unicode(fileName))
 
                 if modificationTimeEditor != modificationTimeFile:
                     self.maybeReload(editor)
@@ -4333,7 +4337,7 @@ class EditorWindow(QMainWindow):
 
         self.setCurrentFile(fileName)
 
-        self.setPropertiesInEditorList(editor, os.path.abspath(str(fileName)), os.path.getmtime(str(fileName)),
+        self.setPropertiesInEditorList(editor, os.path.abspath(unicode(fileName)), os.path.getmtime(unicode(fileName)),
                                        encoding)  # file is associated with the tab,  "normalizing" file name to make sure \ and / are used in a consistent manner
 
         # adding text Changed Handler
@@ -4348,7 +4352,7 @@ class EditorWindow(QMainWindow):
 
         self.updateTextSizeLabel()
         self.updateEncodingLabel()
-        dbgMsg(" SETTING fileName=", fileName, " os.path.getmtime(fileName)=", os.path.getmtime(str(fileName)))
+        dbgMsg(" SETTING fileName=", fileName, " os.path.getmtime(fileName)=", os.path.getmtime(unicode(fileName)))
         self.statusBar().showMessage("File loaded", 2000)
 
 
@@ -4393,7 +4397,7 @@ class EditorWindow(QMainWindow):
             guesses best lexer based on the file name . If canot guess the lexer returns default one
         """
         extension = ''
-        fileSplit = os.path.splitext(str(_fileName))
+        fileSplit = os.path.splitext(unicode(_fileName))
         try:
             extension = fileSplit[1]
         except IndexError:
@@ -4409,13 +4413,13 @@ class EditorWindow(QMainWindow):
         # return format [lexer,begin comment, end comment, brace matching (0- nor matching, 1 matching), codeFolding]
 
 
-        if os.path.basename(str(_fileName)).lower() == "cmakelists.txt":
+        if os.path.basename(unicode(_fileName)).lower() == "cmakelists.txt":
             try:
                 return self.languageManager.languageLexerDictionary["CMake"]
             except KeyError:
                 pass
 
-        if os.path.basename(str(_fileName)).lower() == "makefile":
+        if os.path.basename(unicode(_fileName)).lower() == "makefile":
             try:
                 return self.languageManager.languageLexerDictionary["Makefile"]
             except KeyError:
@@ -4521,11 +4525,11 @@ class EditorWindow(QMainWindow):
         dbgMsg("SAVE FILE EDITOR=", _editor, "\n\n\n\n")
         if _editor:
             # self.fileDict[_editor]=[_fileName,os.path.getmtime(_fileName),encoding] # saving new name and new modification time
-            self.setPropertiesInEditorList(_editor, _fileName, os.path.getmtime(str(_fileName)),
+            self.setPropertiesInEditorList(_editor, _fileName, os.path.getmtime(unicode(_fileName)),
                                            encoding)  # saving new name and new modification time
         else:
             self.setCurrentFile(_fileName)
-            self.setPropertiesInEditorList(activeTab.currentWidget(), _fileName, os.path.getmtime(str(_fileName)),
+            self.setPropertiesInEditorList(activeTab.currentWidget(), _fileName, os.path.getmtime(unicode(_fileName)),
                                            encoding)  # saving new name and new modification time
         self.statusBar().showMessage("File saved", 2000)
         if _editor:
