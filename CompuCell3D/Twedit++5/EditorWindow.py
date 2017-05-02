@@ -1620,7 +1620,7 @@ class EditorWindow(QMainWindow):
         if not os.path.isdir(_directory):
 
             ret = QtWidgets.QMessageBox.warning(self, "Directory Not Found",
-                                                'Could nto locate directory %s'%_directory,
+                                                'Could not locate directory %s'%_directory,
                                                 QtWidgets.QMessageBox.Ok )
             if ret == QtWidgets.QMessageBox.Ok:
                 self.findDialogForm.setButtonsEnabled(True)
@@ -2116,7 +2116,7 @@ class EditorWindow(QMainWindow):
             this slot does not work as advertised in QScintilla documentation - not used
         """
         editor = self.getActiveEditor()
-        findText = QString(self.findAndReplaceHistory.textToFind)  # a new copy of a textTo Find
+        findText = str(self.findAndReplaceHistory.textToFind)  # a new copy of a textTo Find
         if self.findAndReplaceHistory.re:
             # here I will replace ( with \( and vice versa - to be consistent with  regex convention
             # findText = re.escape(findText)
@@ -3090,9 +3090,9 @@ class EditorWindow(QMainWindow):
             # currentFilterString="Text file (*.txt)"
             # behavior of file dialog is different on OSX appending preferred filter at the top does not really work , so we do not and the behavior is OK
             if sys.platform == 'darwin':
-                fileName = QtGui.QFileDialog.getSaveFileName(self, "Save File", currentFilePath, self.fileDialogFilters)
+                fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", currentFilePath, self.fileDialogFilters)
             else:
-                fileName = QtGui.QFileDialog.getSaveFileName(self, "Save File", currentFilePath,
+                fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", currentFilePath,
                                                              currentFilterString + ";;" + self.fileDialogFilters)
             dbgMsg("SAVE FILE NAME is:", fileName)
             if fileName == "":
@@ -3106,7 +3106,7 @@ class EditorWindow(QMainWindow):
                 return False
 
         fileName = os.path.abspath(
-            str(fileName))  # "normalizing" file name to make sure \ and / are used in a consistent manner
+            unicode(fileName))  # "normalizing" file name to make sure \ and / are used in a consistent manner
 
         activePanel = self.getActivePanel()
 
@@ -4492,7 +4492,7 @@ class EditorWindow(QMainWindow):
 
             import codecs
             try:
-                fh=codecs.open(_fileName+'~', 'wb',Encoding.normalizeEncodingName(encoding))
+                fh = codecs.open(_fileName+'~', 'wb',Encoding.normalizeEncodingName(encoding))
 
                 # fh=open(_fileName, 'wb')
                 Encoding.writeBOM(fh,encoding)
