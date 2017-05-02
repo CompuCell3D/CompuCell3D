@@ -183,7 +183,7 @@ class FindAndReplaceHistory:
 
         if self.directoryIF != _directory:
             self.directoryIF = _directory
-            if str(self.directoryIF).strip() != '':
+            if unicode(self.directoryIF).strip() != '':
                 self.directoryHistoryIF.insert(0,self.directoryIF)
             self.directoryHistoryIF = remove_duplicates(self.directoryHistoryIF)
             if len(self.directoryHistoryIF) >= self.historyLength:
@@ -709,14 +709,14 @@ class FindAndReplaceDlg(QDialog, ui_findinfilesdlg.Ui_FindInFiles):
     def on_findAllButtonIF_clicked(self):
         self.searchingSignalIF.emit(str(self.findComboBoxIF.lineEdit().text()),
                                     str(self.filtersComboBoxIF.lineEdit().text()).strip(),
-                                    str(self.directoryComboBoxIF.lineEdit().text()).strip())
+                                    unicode(self.directoryComboBoxIF.lineEdit().text()).strip())
 
     @pyqtSlot()
     def on_replaceButtonIF_clicked(self):
         self.replacingSignalIF.emit(str(self.findComboBoxIF.lineEdit().text()),
                                     str(self.replaceComboBoxIF.lineEdit().text()),
                                     str(self.filtersComboBoxIF.lineEdit().text()).strip(),
-                                    str(self.directoryComboBoxIF.lineEdit().text()).strip())
+                                    unicode(self.directoryComboBoxIF.lineEdit().text()).strip())
 
 
 # class FindDock

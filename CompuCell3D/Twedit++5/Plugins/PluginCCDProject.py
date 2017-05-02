@@ -618,13 +618,13 @@ class CC3DProject(QObject):
         fileName = ''
         if isinstance(action, QAction):
             # fileName = str(action.data().toString())
-            fileName = str(action.data())
+            fileName = unicode(action.data())
             self.openCC3Dproject(fileName)
 
     def __openRecentProjectDirectory(self):
         action = self.sender()
         if isinstance(action, QAction):
-            fileName = str(action.data())
+            fileName = unicode(action.data())
             self.openCC3Dproject(fileName)
 
     def __openRecentProjectDirectory(self):
@@ -2350,7 +2350,7 @@ class CC3DProject(QObject):
         self.__ui.addItemtoConfigurationStringList(self.configuration, "RecentProjects", fileName)
 
         # extract file directory name and add it to settings                    
-        dirName = os.path.abspath(os.path.dirname(str(fileName)))
+        dirName = os.path.abspath(os.path.dirname(unicode(fileName)))
         self.__ui.addItemtoConfigurationStringList(self.configuration, "RecentProjectDirectories", dirName)
 
         try:
@@ -2397,7 +2397,7 @@ class CC3DProject(QObject):
 
     def __openCC3DProject(self):
 
-        currentFilePath = os.path.dirname(str(self.configuration.setting("RecentProject")))
+        currentFilePath = os.path.dirname(unicode(self.configuration.setting("RecentProject")))
         self.showOpenProjectDialogAndLoad(currentFilePath)
 
     def findTypeItemByName(self, _typeName):

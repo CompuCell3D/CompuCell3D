@@ -2,8 +2,9 @@ import os.path
 import sys
 import string
 
+
 def generateConfigureSimulationHeader():
-    configureSimLines='''
+    configureSimLines = '''
 def configureSimulation(sim):
     import CompuCellSetup
     from XMLUtils import ElementCC3D
@@ -11,168 +12,167 @@ def configureSimulation(sim):
 '''
     return configureSimLines
 
-def generateConfigureSimFcnBody(_rootElement,_outputFileName):
+
+def generateConfigureSimFcnBody(_rootElement, _outputFileName):
     # note the XML root element generated using C++ xml-to-python converter is called RootElementNameElmnt - here it will be CompuCell3DElmnt
-    configureSimFileName=str(_outputFileName)
-    
-    _rootElement.saveXMLInPython(configureSimFileName)         
-    
-    configureSimLines=generateConfigureSimulationHeader()        
-    
-    configureSimFile=open(configureSimFileName,"r")
-    configureSimBody=configureSimFile.read()
-    configureSimFile.close()    
-    configureSimLines+=configureSimBody
-    configureSimLines+='''
+    configureSimFileName = unicode(_outputFileName)
+
+    _rootElement.saveXMLInPython(configureSimFileName)
+
+    configureSimLines = generateConfigureSimulationHeader()
+
+    configureSimFile = open(configureSimFileName, "r")
+    configureSimBody = configureSimFile.read()
+    configureSimFile.close()
+    configureSimLines += configureSimBody
+    configureSimLines += '''
     CompuCellSetup.setSimulationXMLDescription(CompuCell3DElmnt)    
     '''
-    configureSimLines+='\n'
-    
-    
+    configureSimLines += '\n'
+
     os.remove(configureSimFileName)
-    
+
     return configureSimLines
 
 
 class CC3DPythonGenerator:
-    def __init__(self,_xmlGenerator):
-        self.xmlGenerator=_xmlGenerator
-        self.simulationDir=self.xmlGenerator.simulationDir
-        self.simulationName=self.xmlGenerator.simulationName
-        self.xmlFileName=self.xmlGenerator.fileName
-        
-        self.mainPythonFileName=os.path.join(str(self.simulationDir),str(self.simulationName)+".py")
-        self.steppablesPythonFileName=os.path.join(str(self.simulationDir),str(self.simulationName)+"Steppables.py")        
-        
-        self.configureSimLines=''
-        
-        self.plotTypeTable=[]
-        self.pythonPlotsLines=''
-        
-        self.pythonPlotsNames=[]        
-        
-        self.steppableCodeLines=''
-        self.steppableRegistrationLines=''
-        
-        self.generatedSteppableNames=[]
-        self.generatedVisPlotSteppableNames=[]
-        
-        self.cellTypeTable=[["Medium",False]]
-        self.afMolecules=[]
-        self.afFormula='min(Molecule1,Molecule2)'
-        self.cmcCadherins=[]                
-        
-        self.pythonOnlyFlag=False
-        
-        self.steppableFrequency=1
-        
-    def setPythonOnlyFlag(self,_flag):
-        self.pythonOnlyFlag=_flag
-    
-    # def setCMCTable(self,_table):
+    def __init__(self, _xmlGenerator):
+        self.xmlGenerator = _xmlGenerator
+        self.simulationDir = self.xmlGenerator.simulationDir
+        self.simulationName = self.xmlGenerator.simulationName
+        self.xmlFileName = self.xmlGenerator.fileName
+
+        self.mainPythonFileName = os.path.join(unicode(self.simulationDir), unicode(self.simulationName) + ".py")
+        self.steppablesPythonFileName = os.path.join(unicode(self.simulationDir),
+                                                     unicode(self.simulationName) + "Steppables.py")
+
+        self.configureSimLines = ''
+
+        self.plotTypeTable = []
+        self.pythonPlotsLines = ''
+
+        self.pythonPlotsNames = []
+
+        self.steppableCodeLines = ''
+        self.steppableRegistrationLines = ''
+
+        self.generatedSteppableNames = []
+        self.generatedVisPlotSteppableNames = []
+
+        self.cellTypeTable = [["Medium", False]]
+        self.afMolecules = []
+        self.afFormula = 'min(Molecule1,Molecule2)'
+        self.cmcCadherins = []
+
+        self.pythonOnlyFlag = False
+
+        self.steppableFrequency = 1
+
+    def setPythonOnlyFlag(self, _flag):
+        self.pythonOnlyFlag = _flag
+
+        # def setCMCTable(self,_table):
         # self.cmcCadherins=_table
 
-    # def setAFFormula(self,_formula):        
+        # def setAFFormula(self,_formula):
         # self.afFormula=_formula
-        
-    # def setAFTable(self,_table):
+
+        # def setAFTable(self,_table):
         # self.afMolecules=_table
-        
-    # def setCellTypeTable(self,_table):
+
+        # def setCellTypeTable(self,_table):
         # self.cellTypeTable=_table
         # #generate typeId to typeTuple lookup dictionary
-        
+
         # self.idToTypeTupleDict={}
         # typeCounter=0
-        
+
         # for typeTupple in self.cellTypeTable:
-            # self.idToTypeTupleDict[typeCounter]=typeTupple            
-            # typeCounter+=1
-            
-    def setPlotTypeTable(self,_table):
-        self.plotTypeTable=_table
-        
+        # self.idToTypeTupleDict[typeCounter]=typeTupple
+        # typeCounter+=1
+
+    def setPlotTypeTable(self, _table):
+        self.plotTypeTable = _table
+
         if not len(self.plotTypeTable):
             return
-        
-        self.pythonPlotsLines='''
+
+        self.pythonPlotsLines = '''
 # -------------- extra fields  -------------------      
 dim=sim.getPotts().getCellFieldG().getDim()        
         '''
         for plotTupple in self.plotTypeTable:
-            plotName=plotTupple[0]
-                
-            plotType=plotTupple[1]
-            if plotType=="ScalarField":
-                fieldLines='''
+            plotName = plotTupple[0]
+
+            plotType = plotTupple[1]
+            if plotType == "ScalarField":
+                fieldLines = '''
 %sVisField=simthread.createFloatFieldPy(dim,"%s")                
-                ''' %(plotName,plotName)
-                self.pythonPlotsLines+=fieldLines
-                self.pythonPlotsNames.append((('%sVisField')%plotName,'ScalarField'))                
-                
-            elif plotType=="CellLevelScalarField":
-                fieldLines='''
+                ''' % (plotName, plotName)
+                self.pythonPlotsLines += fieldLines
+                self.pythonPlotsNames.append((('%sVisField') % plotName, 'ScalarField'))
+
+            elif plotType == "CellLevelScalarField":
+                fieldLines = '''
 %sVisField=simthread.createScalarFieldCellLevelPy("%s")                
-                ''' %(plotName,plotName)
-                self.pythonPlotsLines+=fieldLines
-                self.pythonPlotsNames.append((('%sVisField')%plotName,'CellLevelScalarField'))                
-                
-            elif plotType=="VectorField":
-                fieldLines='''
+                ''' % (plotName, plotName)
+                self.pythonPlotsLines += fieldLines
+                self.pythonPlotsNames.append((('%sVisField') % plotName, 'CellLevelScalarField'))
+
+            elif plotType == "VectorField":
+                fieldLines = '''
 %sVisField=simthread.createVectorFieldPy(dim,"%s") 
-                ''' %(plotName,plotName)
-                self.pythonPlotsLines+=fieldLines
-                self.pythonPlotsNames.append((('%sVisField')%plotName,'VectorField'))                
-                
-            elif plotType=="CellLevelVectorField":
-                fieldLines='''
+                ''' % (plotName, plotName)
+                self.pythonPlotsLines += fieldLines
+                self.pythonPlotsNames.append((('%sVisField') % plotName, 'VectorField'))
+
+            elif plotType == "CellLevelVectorField":
+                fieldLines = '''
 %sVisField=simthread.createVectorFieldCellLevelPy("%s") 
-                ''' %(plotName,plotName)
-                self.pythonPlotsLines+=fieldLines
-                self.pythonPlotsNames.append((('%sVisField')%plotName,'CellLevelVectorField'))                
-                
-        self.pythonPlotsLines+='''
+                ''' % (plotName, plotName)
+                self.pythonPlotsLines += fieldLines
+                self.pythonPlotsNames.append((('%sVisField') % plotName, 'CellLevelVectorField'))
+
+        self.pythonPlotsLines += '''
 # --------------end of extra fields  -------------------      
 
         '''
-        
+
     def generateConfigureSimFcn(self):
         # note the XML root element generated using C++ xml-to-python converter is called RootElementNameElmnt - here it will be CompuCell3DElmnt
-        configureSimFileName=str(self.xmlFileName+".py")
-        
-        self.configureSimLines=generateConfigureSimFcnBody(self.xmlGenerator.cc3d.CC3DXMLElement,configureSimFileName)
-        self.configureSimLines+='\n'
-        
+        configureSimFileName = str(self.xmlFileName + ".py")
+
+        self.configureSimLines = generateConfigureSimFcnBody(self.xmlGenerator.cc3d.CC3DXMLElement,
+                                                             configureSimFileName)
+        self.configureSimLines += '\n'
+
         # self.xmlGenerator.cc3d.CC3DXMLElement.saveXMLInPython(configureSimFileName)         
-        
+
         # self.generateConfigureSimulationHeader()        
-        
+
         # configureSimFile=open(configureSimFileName,"r")
         # configureSimBody=configureSimFile.read()
         # configureSimFile.close()
         # self.configureSimLines+=configureSimBody
         # os.remove(configureSimFileName)
 
-        
     def generateMainPythonScript(self):
-        file=open(self.mainPythonFileName,"w")
-        print "self.pythonPlotsLines=",self.pythonPlotsLines
-        header=''
-        
-        if  self.pythonOnlyFlag:
+        file = open(self.mainPythonFileName, "w")
+        print "self.pythonPlotsLines=", self.pythonPlotsLines
+        header = ''
+
+        if self.pythonOnlyFlag:
             self.generateConfigureSimFcn()
-            
+
         # note the XML root element generated using C++ xml-to-python converter is called RootElementNameElmnt - here it will be CompuCell3DElmnt        
-        if self.configureSimLines!='':
-            header+=self.configureSimLines
-            header+='''
+        if self.configureSimLines != '':
+            header += self.configureSimLines
+            header += '''
             
     CompuCellSetup.setSimulationXMLDescription(CompuCell3DElmnt)
             '''
-            
-            
-            
-        header+='''
+
+        header += '''
 import sys
 from os import environ
 from os import getcwd
@@ -186,100 +186,102 @@ import CompuCellSetup
 
 sim,simthread = CompuCellSetup.getCoreSimulationObjects()
         '''
-        if self.configureSimLines!='':
-            header+='''
+        if self.configureSimLines != '':
+            header += '''
 configureSimulation(sim)            
             '''
-        header+='''    
+        header += '''
 # add extra attributes here
         '''
-        
-        initSimObjectLine='''    
+
+        initSimObjectLine = '''
 CompuCellSetup.initializeSimulationObjects(sim,simthread)
 # Definitions of additional Python-managed fields go here
         '''
-        steppableRegistryLine='''
+        steppableRegistryLine = '''
 #Add Python steppables here
 steppableRegistry=CompuCellSetup.getSteppableRegistry()
         '''
         # steppableRegistrationLine='''
-# from %s import %s
-# steppableInstance=%s(sim,_frequency=100)
-# steppableRegistry.registerSteppable(steppableInstance)
+        # from %s import %s
+        # steppableInstance=%s(sim,_frequency=100)
+        # steppableRegistry.registerSteppable(steppableInstance)
         # '''%(self.simulationName+"Steppables",self.simulationName+"Steppable",self.simulationName+"Steppable" )
-        
-        mainLoopLine='''
+
+        mainLoopLine = '''
 CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
         
         '''
-        script=header
-            
-        script+=initSimObjectLine
-        
-        if self.pythonPlotsLines!='':
-            script+=self.pythonPlotsLines
-            
-        script+=steppableRegistryLine
-        script+=self.steppableRegistrationLines
-        script+=mainLoopLine
-        
+        script = header
+
+        script += initSimObjectLine
+
+        if self.pythonPlotsLines != '':
+            script += self.pythonPlotsLines
+
+        script += steppableRegistryLine
+        script += self.steppableRegistrationLines
+        script += mainLoopLine
+
         file.write(script)
         file.close()
-        
+
     def generateSteppableRegistrationLines(self):
-        if not len(self.generatedSteppableNames) and not len(self.generatedVisPlotSteppableNames): #using only demo steppable
-        
-            self.steppableRegistrationLines+='''
+        if not len(self.generatedSteppableNames) and not len(
+                self.generatedVisPlotSteppableNames):  # using only demo steppable
+
+            self.steppableRegistrationLines += '''
 from %s import %s
 steppableInstance=%s(sim,_frequency=%s)
 steppableRegistry.registerSteppable(steppableInstance)
-        '''%(self.simulationName+"Steppables",self.simulationName+"Steppable",self.simulationName+"Steppable", self.steppableFrequency )
-        else:# generating registration lines for user stppables
+        ''' % (self.simulationName + "Steppables", self.simulationName + "Steppable", self.simulationName + "Steppable",
+               self.steppableFrequency)
+        else:  # generating registration lines for user stppables
             for steppableName in self.generatedSteppableNames:
-                self.steppableRegistrationLines+='''
+                self.steppableRegistrationLines += '''
 
 from %s import %s
 %s=%s(sim,_frequency=%s)
 steppableRegistry.registerSteppable(%s)
-        '''%(self.simulationName+"Steppables",steppableName,steppableName+"Instance",steppableName, self.steppableFrequency, steppableName+"Instance")
-                
+        ''' % (self.simulationName + "Steppables", steppableName, steppableName + "Instance", steppableName,
+               self.steppableFrequency, steppableName + "Instance")
 
     def generatePlotSteppableRegistrationLines(self):
-            for plotNameTuple in self.pythonPlotsNames:
-                steppableName=plotNameTuple[0]+'Steppable'
-                steppableInstanceName=steppableName+"Instance"
-                self.steppableRegistrationLines+='''
+        for plotNameTuple in self.pythonPlotsNames:
+            steppableName = plotNameTuple[0] + 'Steppable'
+            steppableInstanceName = steppableName + "Instance"
+            self.steppableRegistrationLines += '''
 
 from %s import %s
 %s=%s(sim,_frequency=%s)
 %s.visField=%s
 steppableRegistry.registerSteppable(%s)
 
-        '''%(self.simulationName+"Steppables",steppableName,steppableInstanceName,steppableName, self.steppableFrequency, steppableInstanceName,plotNameTuple[0],steppableInstanceName)
-        
-        
+        ''' % (self.simulationName + "Steppables", steppableName, steppableInstanceName, steppableName,
+               self.steppableFrequency, steppableInstanceName, plotNameTuple[0], steppableInstanceName)
+
     def generateVisPlotSteppables(self):
-            if not len(self.pythonPlotsNames):
-                return
-                
-            self.steppableCodeLines+='''
+        if not len(self.pythonPlotsNames):
+            return
+
+        self.steppableCodeLines += '''
             
 from PlayerPython import *
 from math import *            
-'''            
-            for plotNameTuple in self.pythonPlotsNames:
-                steppableName=plotNameTuple[0]+'Steppable'
-                if steppableName not in self.generatedVisPlotSteppableNames:
-                    self.generatedVisPlotSteppableNames.append(steppableName)
-                
-                plotType=plotNameTuple[1]                
-                
-                if plotType=='ScalarField':
-                    self.steppableCodeLines+='''
+'''
+        for plotNameTuple in self.pythonPlotsNames:
+            steppableName = plotNameTuple[0] + 'Steppable'
+            if steppableName not in self.generatedVisPlotSteppableNames:
+                self.generatedVisPlotSteppableNames.append(steppableName)
+
+            plotType = plotNameTuple[1]
+
+            if plotType == 'ScalarField':
+                self.steppableCodeLines += '''
 
 class %s(SteppableBasePy):
-'''%(steppableName)
-                    self.steppableCodeLines+='''
+''' % (steppableName)
+                self.steppableCodeLines += '''
     def __init__(self,_simulator,_frequency=%s):
         SteppableBasePy.__init__(self,_simulator,_frequency)
         self.visField=None
@@ -296,10 +298,10 @@ class %s(SteppableBasePy):
                     else:
                         value=sin(x*y)
                         fillScalarValue(self.visField,x,y,z,value) # value assigned to individual pixel                    
-'''%(self.steppableFrequency)
-                
-                elif plotType=='CellLevelScalarField':
-                    self.steppableCodeLines+='''                
+''' % (self.steppableFrequency)
+
+            elif plotType == 'CellLevelScalarField':
+                self.steppableCodeLines += '''
                     
 class %s(SteppableBasePy):
     def __init__(self,_simulator,_frequency=%s):
@@ -311,10 +313,10 @@ class %s(SteppableBasePy):
         from random import random
         for cell in self.cellList:
             fillScalarValueCellLevel(self.visField,cell,cell.id*random())   # value assigned to every cell , all cell pixels are painted based on this value             
-'''%(steppableName,self.steppableFrequency)
+''' % (steppableName, self.steppableFrequency)
 
-                elif plotType=='VectorField':
-                    self.steppableCodeLines+='''            
+            elif plotType == 'VectorField':
+                self.steppableCodeLines += '''
                     
 class %s(SteppableBasePy):
     def __init__(self,_simulator,_frequency=%s):
@@ -329,10 +331,10 @@ class %s(SteppableBasePy):
                 for z in xrange(self.dim.z):                     
                     pt=CompuCell.Point3D(x,y,z)                    
                     insertVectorIntoVectorField(self.visField,pt.x, pt.y,pt.z, pt.x, pt.y, pt.z) # vector assigned to individual pixel
-'''%(steppableName,self.steppableFrequency)
+''' % (steppableName, self.steppableFrequency)
 
-                elif plotType=='CellLevelVectorField':
-                    self.steppableCodeLines+='''                
+            elif plotType == 'CellLevelVectorField':
+                self.steppableCodeLines += '''
                     
 class %s(SteppableBasePy):
     def __init__(self,_simulator,_frequency=%s):
@@ -344,13 +346,12 @@ class %s(SteppableBasePy):
         for cell in self.cellList:
             if cell.type==1:
                 insertVectorIntoVectorCellLevelField(self.visField,cell, cell.id, cell.id, 0.0)
-'''%(steppableName,self.steppableFrequency)
+''' % (steppableName, self.steppableFrequency)
 
-    
     def generateConstraintInitializer(self):
         if "ConstraintInitializerSteppable" not in self.generatedSteppableNames:
             self.generatedSteppableNames.append("ConstraintInitializerSteppable")
-            self.steppableCodeLines+='''
+            self.steppableCodeLines += '''
 
 class ConstraintInitializerSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=%s):
@@ -360,14 +361,14 @@ class ConstraintInitializerSteppable(SteppableBasePy):
             cell.targetVolume=25
             cell.lambdaVolume=2.0
         
-        '''%(self.steppableFrequency)
-            
+        ''' % (self.steppableFrequency)
+
     def generateGrowthSteppable(self):
         self.generateConstraintInitializer()
         if "GrowthSteppable" not in self.generatedSteppableNames:
             self.generatedSteppableNames.append("GrowthSteppable")
-            
-            self.steppableCodeLines+='''
+
+            self.steppableCodeLines += '''
 
 class GrowthSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=%s):
@@ -385,13 +386,14 @@ class GrowthSteppable(SteppableBasePy):
             # concentrationAtCOM=field.get(pt)
             # cell.targetVolume+=0.01*concentrationAtCOM  # you can use here any fcn of concentrationAtCOM     
         
-        '''%(self.steppableFrequency)
+        ''' % (self.steppableFrequency)
+
     def generateMitosisSteppable(self):
         self.generateGrowthSteppable()
         if "MitosisSteppable" not in self.generatedSteppableNames:
             self.generatedSteppableNames.append("MitosisSteppable")
-            
-            self.steppableCodeLines+='''
+
+            self.steppableCodeLines += '''
 
 class MitosisSteppable(MitosisSteppableBase):
     def __init__(self,_simulator,_frequency=%s):
@@ -425,13 +427,14 @@ class MitosisSteppable(MitosisSteppableBase):
         else:
             self.childCell.type=1
         
-        '''%(self.steppableFrequency)        
+        ''' % (self.steppableFrequency)
+
     def generateDeathSteppable(self):
         self.generateConstraintInitializer()
         if "DeathSteppable" not in self.generatedSteppableNames:
             self.generatedSteppableNames.append("DeathSteppable")
-            
-            self.steppableCodeLines+='''
+
+            self.steppableCodeLines += '''
 
 class DeathSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=%s):
@@ -443,25 +446,26 @@ class DeathSteppable(SteppableBasePy):
                     cell.targetVolume=0
                     cell.lambdaVolume=100
         
-        '''%(self.steppableFrequency)        
+        ''' % (self.steppableFrequency)
+
     def generateSteppablePythonScript(self):
-        file=open(self.steppablesPythonFileName,"w")
-        
-        header='''
+        file = open(self.steppablesPythonFileName, "w")
+
+        header = '''
 from PySteppables import *
 import CompuCell
 import sys
 '''
         if "MitosisSteppable" in self.generatedSteppableNames:
-            header+='''
+            header += '''
 from PySteppablesExamples import MitosisSteppableBase
             '''
-            
+
         file.write(header)
-        
-        if self.steppableCodeLines=='': # writing simple demo steppable
-            classDefinitionLine='''class %s(SteppableBasePy):'''%(self.simulationName+"Steppable")
-            steppableBody='''    
+
+        if self.steppableCodeLines == '':  # writing simple demo steppable
+            classDefinitionLine = '''class %s(SteppableBasePy):''' % (self.simulationName + "Steppable")
+            steppableBody = '''
 
     def __init__(self,_simulator,_frequency=%s):
         SteppableBasePy.__init__(self,_simulator,_frequency)
@@ -475,16 +479,11 @@ from PySteppablesExamples import MitosisSteppableBase
     def finish(self):
         # Finish Function gets called after the last MCS
         pass
-        '''%(self.steppableFrequency)
-        
+        ''' % (self.steppableFrequency)
+
             file.write(classDefinitionLine)
             file.write(steppableBody)
-            
-        else: # writing steppab;les according to user requests
+
+        else:  # writing steppab;les according to user requests
             file.write(self.steppableCodeLines)
-        file.close()    
-        
-            
-        
-        
-  
+        file.close()
