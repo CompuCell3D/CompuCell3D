@@ -19,6 +19,11 @@ filePath=os.path.abspath( __file__ )
 ---------- #@Submenu@ Import os
 import os
 
+---------- #@Submenu@ Set Simulation Output Directory (main Python script)
+# this function has to be called from the main Python script right after
+# import CompuCellSetup
+CompuCellSetup.set_custom_output_directory("FULL PATH TO THE DIRECTORY - DO NOT OVERWRITE EXISTING DIRECTORY . Call only once from main Python script")
+
 
 =============== #@Menu@ Bionet Solver 
 

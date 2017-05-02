@@ -17,7 +17,13 @@ def generateConfigureSimFcnBody(_rootElement, _outputFileName):
     # note the XML root element generated using C++ xml-to-python converter is called RootElementNameElmnt - here it will be CompuCell3DElmnt
     configureSimFileName = unicode(_outputFileName)
 
-    _rootElement.saveXMLInPython(configureSimFileName)
+    # _rootElement.saveXMLInPython(configureSimFileName)
+
+
+    python_xml_file = open(configureSimFileName, 'w')
+    python_xml_file.write('%s' % _rootElement.getXMLAsPython())
+    python_xml_file.close()
+
 
     configureSimLines = generateConfigureSimulationHeader()
 
