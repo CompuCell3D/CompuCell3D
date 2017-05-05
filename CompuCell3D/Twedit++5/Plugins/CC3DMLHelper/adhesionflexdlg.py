@@ -1,9 +1,5 @@
-import re
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-import PyQt4.QtCore as QtCore
+from utils.global_imports import *
 import ui_adhesionflexdlg
-import sys
 import string
 
 MAC = "qt_mac_set_native_menubar" in dir()
@@ -33,7 +29,7 @@ class AdhesionFlexDlg(QDialog,ui_adhesionflexdlg.Ui_AdhesionFlexDlg):
                 self.on_afMoleculeAddPB_clicked()
                 event.accept()
 
-    @pyqtSignature("") # signature of the signal emited by the button    
+    @pyqtSlot()
     def on_afMoleculeAddPB_clicked(self):
         
         molecule=str(self.afMoleculeLE.text())
@@ -61,9 +57,9 @@ class AdhesionFlexDlg(QDialog,ui_adhesionflexdlg.Ui_AdhesionFlexDlg):
         
         # reset molecule entry line
         self.afMoleculeLE.setText("")
-        return 
-        
-    @pyqtSignature("") # signature of the signal emited by the button
+        return
+
+    @pyqtSlot()
     def on_clearAFTablePB_clicked(self):
         rows=self.afTable.rowCount()
         for i in range (rows-1,-1,-1):

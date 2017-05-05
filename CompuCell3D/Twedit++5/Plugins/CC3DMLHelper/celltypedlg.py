@@ -1,9 +1,7 @@
-import re
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-import PyQt4.QtCore as QtCore
+from utils.global_imports import *
+
 import ui_celltypedlg
-import sys
+
 import string
 
 MAC = "qt_mac_set_native_menubar" in dir()
@@ -35,7 +33,7 @@ class CellTypeDlg(QDialog,ui_celltypedlg.Ui_CellTypeDlg):
                 self.on_cellTypeAddPB_clicked()
                 event.accept()
         
-    @pyqtSignature("") # signature of the signal emited by the button
+    @pyqtSlot()
     def on_cellTypeAddPB_clicked(self):
         
         cellType=str(self.cellTypeLE.text())
@@ -76,9 +74,9 @@ class CellTypeDlg(QDialog,ui_celltypedlg.Ui_CellTypeDlg):
         self.cellTypeTable.setItem (rows,1,  cellTypeFreezeItem)
         # reset cell type entry line
         self.cellTypeLE.setText("")
-        return 
+        return
 
-    @pyqtSignature("") # signature of the signal emited by the button
+    @pyqtSlot()
     def on_clearCellTypeTablePB_clicked(self):
     
         rows=self.cellTypeTable.rowCount()
