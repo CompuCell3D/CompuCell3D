@@ -80,7 +80,7 @@ class FindInFilesResults:
             rep = "  File: " + self.fileName  # "normalizing" file name to make sure \ and / are used in a consistent manner
         else:
             rep = "  File: " + os.path.abspath(
-                str(self.fileName))  # "normalizing" file name to make sure \ and / are used in a consistent manner
+                unicode(self.fileName))  # "normalizing" file name to make sure \ and / are used in a consistent manner
 
         if self.totalHits == 1:
             rep += " (1 hit)"
@@ -402,31 +402,6 @@ class FindAndReplaceDlg(QDialog, ui_findinfilesdlg.Ui_FindInFiles):
         self.syntaxComboBox.activated.connect(self.syntaxComboBoxIF.setCurrentIndex)
         self.syntaxComboBoxIF.activated.connect(self.syntaxComboBox.setCurrentIndex)
 
-        # # self.findComboBox.setCompleter(0) # disallow word completion
-        # # synchronizing find and replace boxes on two tabs
-        # self.connect(self.findLineEdit, SIGNAL("textChanged(const QString &)"), self.findLineEditIF,
-        #              SLOT("setText(const QString &)"))
-        # self.connect(self.findLineEditIF, SIGNAL("textChanged(const QString &)"), self.findLineEdit,
-        #              SLOT("setText(const QString &)"))
-        # self.connect(self.replaceLineEdit, SIGNAL("textChanged(const QString &)"), self.replaceLineEditIF,
-        #              SLOT("setText(const QString &)"))
-        # self.connect(self.replaceLineEditIF, SIGNAL("textChanged(const QString &)"), self.replaceLineEdit,
-        #              SLOT("setText(const QString &)"))
-        # # synchronizing check boxes
-        # self.connect(self.wholeCheckBox, SIGNAL("toggled(bool)"), self.wholeCheckBoxIF, SLOT("setChecked(bool)"))
-        # self.connect(self.wholeCheckBoxIF, SIGNAL("toggled(bool)"), self.wholeCheckBox, SLOT("setChecked(bool)"))
-        # self.connect(self.caseCheckBox, SIGNAL("toggled(bool)"), self.caseCheckBoxIF, SLOT("setChecked(bool)"))
-        # self.connect(self.caseCheckBoxIF, SIGNAL("toggled(bool)"), self.caseCheckBox, SLOT("setChecked(bool)"))
-        #
-        # self.connect(self.tabWidget, SIGNAL("currentChanged(int)"), self.tabChanged)
-        # self.connect(self.alwaysRButton, SIGNAL("toggled(bool)"), self.alwaysRButtonToggled)
-        # self.connect(self.onLosingFocusRButton, SIGNAL("toggled(bool)"), self.onLosingFocusRButtonToggled)
-        #
-        # self.connect(self.transparencyGroupBox, SIGNAL("toggled(bool)"), self.transparencyGroupBoxToggled)
-        #
-        # # synchronizing syntax boxes
-        # self.connect(self.syntaxComboBox, SIGNAL("activated(int)"), self.syntaxComboBoxIF, SLOT("setCurrentIndex(int)"))
-        # self.connect(self.syntaxComboBoxIF, SIGNAL("activated(int)"), self.syntaxComboBox, SLOT("setCurrentIndex(int)"))
 
         if not MAC:
             # # self.findButton.setFocusPolicy(Qt.NoFocus)
@@ -707,7 +682,18 @@ class FindAndReplaceDlg(QDialog, ui_findinfilesdlg.Ui_FindInFiles):
     def on_findAllButtonIF_clicked(self):
         self.searchingSignalIF.emit(str(self.findComboBoxIF.lineEdit().text()),
                                     str(self.filtersComboBoxIF.lineEdit().text()).strip(),
-                                    unicode(self.directoryComboBoxIF.lineEdit().text()).strip())
+                                    unicode(self.directoryComboBoxIF.lineEdit().text()).encode('UTF-8').strip())
+
+        # w = QtWidgets.QPlainTextEdit()
+        # w.setPlainText(self.directoryComboBoxIF.lineEdit().text())
+        # dir_str = w.toPlainText().encode('utf-8').strip()
+        # # unicode(self.directoryComboBoxIF.lineEdit().text()).encode('UTF-8').strip()
+        #
+        # self.searchingSignalIF.emit(str(self.findComboBoxIF.lineEdit().text()),
+        #                             str(self.filtersComboBoxIF.lineEdit().text()).strip(),
+        #                             dir_str)
+
+
 
     @pyqtSlot()
     def on_replaceButtonIF_clicked(self):
@@ -863,7 +849,7 @@ class FindDisplayWidget(QsciScintilla):
 
         if lineNumberWithFileName >= 0:
             dbgMsg("THIS IS LINE WITH FILE NAME:")
-            lineWithFileName = str(self.text(lineNumberWithFileName))
+            lineWithFileName = unicode(self.text(lineNumberWithFileName))
 
             dbgMsg(lineWithFileName)
             fileNameGroups = self.fileNameWithSearchTextExtractRegex.search(lineWithFileName)

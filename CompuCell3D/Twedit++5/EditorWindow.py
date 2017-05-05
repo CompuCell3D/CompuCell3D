@@ -1,6 +1,7 @@
 """
 TO DO:
 * fix configuration dialog to display loaded plugins
+* fix searching in unicode paths - as of now those dirs are reported as non-existent
 
 
 * cannot find  new line character 
@@ -1922,7 +1923,7 @@ class EditorWindow(QMainWindow):
 
         # have to deal with files which are currently open - enable undo action and use open editor for them
         # dbgMsg(warning before execution replace in files)
-        progressDialog = QtGui.QProgressDialog(self)
+        progressDialog = QtWidgets.QProgressDialog(self)
 
         progressDialog.setCancelButtonText("&Cancel")
         numberOfFiles = len(_files)
@@ -1948,7 +1949,7 @@ class EditorWindow(QMainWindow):
             # dbgMsg("SEARCHING ", filename)
             progressDialog.setValue(i)
             progressDialog.setLabelText("Searching file number %d of %d..." % (i, numberOfFiles))
-            QtGui.qApp.processEvents()
+            QtWidgets.qApp.processEvents()
 
             if progressDialog.wasCanceled():
                 break
