@@ -11,15 +11,6 @@ Module used to link Twedit++5 with CompuCell3D.
 """
 from utils.global_imports import *
 
-# from PyQt4.QtCore import QObject, SIGNAL, QString
-# from PyQt4.QtGui import QMessageBox
-#
-# from PyQt4 import QtCore, QtGui
-#
-# from PyQt4.QtCore import *
-# from PyQt4.QtGui import *
-# import os.path
-import string
 import re
 
 # Start-Of-Header
