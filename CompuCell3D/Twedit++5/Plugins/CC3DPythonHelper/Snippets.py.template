@@ -725,7 +725,7 @@ for cell in self.cellList:
     self.scalarCLField[cell]=cell,cell.id*random()
 
     
----------- #@Submenu@ Scalar Field Cell Level - Create (start fcn.)
+---------- #@Submenu@ Scalar Field Cell Level - Create (__init__ fcn.)
 self.scalarCLField=self.createScalarFieldCellLevelPy("FIELD_NAME_SCL")
 
 ---------- #@Submenu@ Scalar Field Cell Level - Clear (step fcn.)
@@ -743,7 +743,7 @@ for x,y,z in self.everyPixel():
     else:
         self.scalarField[x,y,z]=sin(x*y)
         
----------- #@Submenu@ Scalar Field Pixel Level - Create (start fcn.)
+---------- #@Submenu@ Scalar Field Pixel Level - Create (__init__ fcn.)
 self.scalarField=self.createScalarFieldPy("FIELD_NAME_S")
 
 ---------- #@Submenu@ Scalar Field Pixel Level - Clear (step fcn.)
@@ -755,15 +755,15 @@ self.scalarField[10,11,0]=FLOAT_VALUE
 ---------- #@Submenu@ Vector Field Cell Level - Example
 from random import random
 self.vectorCLField.clear()
-for cell in self.cellList:    
-    if cell.type==1:                        
+for cell in self.cellList:
+    if cell.type==1:
         self.vectorCLField[cell]=[cell.id*random(),cell.id*random(),0]
         vec=self.vectorCLField[cell]
         vec*=2.0
         self.vectorCLField[cell]=vec
 
----------- #@Submenu@ Vector Field Cell Level - Create (start fcn.)
-self.vectorCLField=self.createVectorFieldCellLevelPy("FIELD_NAME_VCL")        
+---------- #@Submenu@ Vector Field Cell Level - Create (__init__ fcn.)
+self.vectorCLField=self.createVectorFieldCellLevelPy("FIELD_NAME_VCL")
 
 ---------- #@Submenu@ Vector Field Cell Level - Clear (step fcn.)
 self.vectorCLField.clear()
@@ -772,13 +772,13 @@ self.vectorCLField.clear()
 self.vectorCLField[cell]=[ VEC_X, VEC_Y, VEC_Z]
 
 ---------- #@Submenu@ Vector Field Pixel Level - Example
-self.vectorField[:, :, :,:]=0.0 # clear vector field        
+self.vectorField[:, :, :,:]=0.0 # clear vector field
 for x in xrange(0,self.dim.x,5):
     for y in xrange(0,self.dim.y,5):
-        for z in xrange(self.dim.z):       
-            self.vectorField[x,y,z]=[x*random(), y*random(), z*random()]        
+        for z in xrange(self.dim.z):
+            self.vectorField[x,y,z]=[x*random(), y*random(), z*random()]
 
----------- #@Submenu@ Vector Field Pixel Level - Create (start fcn.)
+---------- #@Submenu@ Vector Field Pixel Level - Create (__init__ fcn.)
 self.vectorField=self.createVectorFieldPy("FIELD_NAME_V")
 
 ---------- #@Submenu@ Vector Field Pixel Level - Clear (step fcn.)
