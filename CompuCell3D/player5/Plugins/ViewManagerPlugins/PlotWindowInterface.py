@@ -358,6 +358,11 @@ class PlotWindowInterface(QtCore.QObject):
         self.savePlotAsPNGSignal.emit(_fileName, _sizeX, _sizeY, self.plotWindowInterfaceMutex)
 
     def __savePlotAsPNG(self, _fileName, _sizeX, _sizeY, _mutex):
+
+        warnings.warn('Player 5 does not allow scaling of plot screenshots. If this feature is required,'
+                      'it is best to save plot data and render it separately in a full-featured plotting package such as Matpotlib or pyqtgraph. '
+                      'CompuCell3D provides only basic plotting capabilities', RuntimeWarning)
+
         fileName = str(_fileName)
         #        pixmap=QPixmap(_sizeX,_sizeY)  # worked on Windows, but not Linux/OSX
         #        pixmap.fill(QColor("white"))
