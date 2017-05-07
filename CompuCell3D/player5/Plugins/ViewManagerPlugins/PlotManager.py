@@ -1,18 +1,29 @@
-from PlotWindowInterface import PlotWindowInterface
+# from PlotWindowInterface import PlotWindowInterface
 # -*- coding: utf-8 -*-
-from PyQt5 import Qt
-from PyQt5.Qt import *
-
+# from PyQt5 import Qt
+# from PyQt5.Qt import *
+#
+from PlotWindowInterface import PlotWindowInterface
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import *
-
-# import PyQt4.Qwt5 as Qwt
-# from PyQt4.Qwt5.anynumpy import *
+# # from PyQt5.QtCore import *
 
 import PlotManagerSetup
 import os, Configuration
 from enums import *
 
+
+# class PlotManager(object):
+#     # __pyqtSignals__ = ("newPlotWindow(QtCore.QMutex)",)
+#     # @QtCore.pyqtSignature("newPlotWindow(QtCore.QMutex)")
+#
+#     # def emitNewPlotWindow(self,_mutex):
+#     # self.emit(SIGNAL("newPlotWindow(QtCore.QMutex)") , _mutex)
+#
+#     # newPlotWindowSignal = QtCore.pyqtSignal(QtCore.QMutex, object)
+#
+#     def __init__(self, _viewManager=None, _plotSupportFlag=False):
+#         # QtCore.QObject.__init__(self, None)
+#         pass
 
 class PlotManager(QtCore.QObject):
     # __pyqtSignals__ = ("newPlotWindow(QtCore.QMutex)",)
@@ -41,7 +52,7 @@ class PlotManager(QtCore.QObject):
         self.plotWindowList = []
 
     def initSignalAndSlots(self):
-        # since initSignalAndSlots can be called in SimTabView multiple times (after each simulation restart) we have to ensure that signals are connected only once 
+        # since initSignalAndSlots can be called in SimTabView multiple times (after each simulation restart) we have to ensure that signals are connected only once
         # otherwise there will be an avalanche of signals - each signal for each additional simulation run this will cause lots of extra windows to pop up
 
         if not self.signalsInitialized:
@@ -81,12 +92,22 @@ class PlotManager(QtCore.QObject):
                 win.move(gwd.winPosition)
                 win.setWindowTitle(plot_interface.title)
 
-    def getNewPlotWindow(self, obj):
-        # print "\n\n\n getNewPlotWindow "
+    def getNewPlotWindow(self, obj=None):
+
+
+        if obj is None:
+            message = "You are most likely using old syntax for scientific plots. When adding new plot window please use " \
+                      "the following updated syntax:" \
+                      "self.pW = self.addNewPlotWindow" \
+                      "(_title='Average Volume And Surface',_xAxisTitle='MonteCarlo Step (MCS)'," \
+                      "_yAxisTitle='Variables', _xScaleType='linear',_yScaleType='linear')"
+
+            raise RuntimeError(message)
+
         self.plotWindowMutex.lock()
 
         self.newPlotWindowSignal.emit(self.plotWindowMutex, obj)
-        # processRequestForNewPlotWindow will be called and it will unlock drawMutex but before it will finish runnning (i.e. before the new window is actually added)we must make sure that getNewPlotwindow does not return 
+        # processRequestForNewPlotWindow will be called and it will unlock drawMutex but before it will finish runnning (i.e. before the new window is actually added)we must make sure that getNewPlotwindow does not return
         self.plotWindowMutex.lock()
         self.plotWindowMutex.unlock()
         return self.plotWindowList[-1]  # returning recently added window
@@ -193,7 +214,7 @@ class PlotManager(QtCore.QObject):
 
         # # self.updateWindowMenu()
 
-        # 
+        #
 
 
         # newWindow.setWindowTitle('DUPA')
@@ -216,7 +237,7 @@ class PlotManager(QtCore.QObject):
         # newWindow.setFixedSize(600,600)
         # newWindow.resize(600,600)
         # newWindow.resizePlot(600,600)
-        # # # newWindow.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding))        
+        # # # newWindow.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding))
         # # # # newWindow.adjustSize()
         # # # newWindow.showMinimized()
         # # # newWindow.showNormal()
@@ -225,7 +246,7 @@ class PlotManager(QtCore.QObject):
         # newWindow.resizePlot(600,600)
 
 
-        # def resizeHandler(ev):            
+        # def resizeHandler(ev):
         # print 'RESIZE HANDLER'
         # print 'ev.oldSize() =',ev.oldSize()
         # print 'ev.size() =',ev.size()
@@ -236,12 +257,12 @@ class PlotManager(QtCore.QObject):
         # mdiPlotWindow.resizeEvent = resizeHandler
         print 'mdiPlotWindow=', mdiPlotWindow
         print 'newWindow=', newWindow
-        # mdiPlotWindow.setFixedSize(600,600)  
+        # mdiPlotWindow.setFixedSize(600,600)
         # mdiPlotWindow.resize(300, 300)
-        # mdiPlotWindow.widget().resize(600,600)  
+        # mdiPlotWindow.widget().resize(600,600)
 
         # import time
-        # time.sleep(2)    
+        # time.sleep(2)
 
         # mdiPlotWindow.resize(400,400)
         # MDIFIX
@@ -272,7 +293,7 @@ class PlotManager(QtCore.QObject):
         # return
         # self.vm.simulation.drawMutex.lock()
 
-        # self.vm.windowCounter+=1        
+        # self.vm.windowCounter+=1
         # newWindow=PlotFrameWidget(self.vm)
 
         # self.vm.windowDict[self.vm.windowCounter]=newWindow
@@ -301,7 +322,7 @@ class PlotManager(QtCore.QObject):
         # //////////////////////////////////////////////////////////////////////
 
     # class CustomPlot:
-    # def __init__(self,_plotManager):    
+    # def __init__(self,_plotManager):
     # self.pM=_plotManager
     # print "self.pM=",self.pM," function list=",dir(self.pM)
 

@@ -15,6 +15,10 @@ class PlotManagerBase:
         pass
     def processRequestForNewPlotWindow(self,_mutex):
         pass
+    def restore_plots_layout(self):
+        pass
+    def getPlotWindowsLayoutDict(self):
+        return {}
 
 def checkSupportForPlotting(_useVTKFlag=False):
     if _useVTKFlag:   # do we *only* want to use VTK for plotting?

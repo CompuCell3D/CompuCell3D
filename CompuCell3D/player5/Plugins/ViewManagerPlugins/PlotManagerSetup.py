@@ -1,3 +1,4 @@
+
 class PlotManagerBase:
     def __init__(self,_viewManager=None,_plotSupportFlag=False):
         self.vm = _viewManager
@@ -15,6 +16,11 @@ class PlotManagerBase:
         pass
     def processRequestForNewPlotWindow(self,_mutex):
         pass
+    def restore_plots_layout(self):
+        pass
+
+    def getPlotWindowsLayoutDict(self):
+        return {}
 
 def checkSupportForPlotting():
     try:
@@ -90,12 +96,22 @@ def createPlotManager(_viewManager=None, preferred_manager_type=None):  # called
     @return: instance of PlotManagerBase (inherited)
     """
     # plotSupportFlag = checkSupportForPlotting(_useVTKFlag)
+
+
+    # import pyqtgraph
+    # import PlotManager
+    # from PlotManager import PlotManager
+    # return PlotManager(_viewManager, True)
+    # return None
+
     try:
         import pyqtgraph
         from PlotManager import PlotManager
         return PlotManager(_viewManager, True)
     except ImportError:
         return PlotManagerBase(_viewManager, False)
+
+
 
     # print '------ PlotManagerSetup.py:    plotSupportFlag=', plotSupportFlag
     # if plotSupportFlag < 0:  # via Qwt

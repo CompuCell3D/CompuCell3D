@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-from PyQt5 import Qt
-from PyQt5.Qt import *
+# from PyQt5 import Qt
+# from PyQt5.Qt import *
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 import numpy as np
 
 import warnings
@@ -133,9 +135,12 @@ class PlotWindowInterface(QtCore.QObject):
         self.setTitleSizeSignal.emit(_size)
 
     def setTitleColor(self, _colorName):
-        title = self.pW.title()
-        title.setColor(QColor(_colorName))
-        self.pW.setTitle(title)
+        try:
+            title = self.pW.title()
+            title.setColor(QColor(_colorName))
+            self.pW.setTitle(title)
+        except:
+            raise RuntimeError('setTitleColor function is not supported in Player 5')
 
     def setPlotBackgroundColorHandler(self, _colorName):
         print '_colorName=', _colorName
@@ -295,7 +300,8 @@ class PlotWindowInterface(QtCore.QObject):
             return None
 
     def changePlotProperty(self, _plotName, _property, _value):
-        self.plotDrawingObjects[_plotName][_property] = _value
+        raise RuntimeError('"changePlotProperty" is not supported in Player 5. It appears thst you are using old-style syntax that is no longer supported.')
+        # self.plotDrawingObjects[_plotName][_property] = _value
 
     def setXAxisTitle(self, _title):
         pass

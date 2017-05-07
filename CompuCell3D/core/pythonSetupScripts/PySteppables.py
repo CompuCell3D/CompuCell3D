@@ -641,7 +641,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             return self.secretionPlugin.getFieldSecretor(_fieldName)
 
         raise RuntimeError(
-            "Please define Secreion Plugin in the XML before requesting secretor object from Python script."
+            "Please define Secretion Plugin in the XML before requesting secretor object from Python script."
             'Secreion Plugin can be defined by including <Plugin Name="Secretion"/> in the XML')
 
     '''    

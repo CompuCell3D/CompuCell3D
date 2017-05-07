@@ -24,6 +24,8 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import PyQt5
 
+
+
 # instaling message handler to suppres spurious qt messages
 if sys.platform == 'darwin':
     import platform

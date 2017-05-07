@@ -1468,6 +1468,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.sem.release()
 
         # restoring plots
+
         self.plotManager.restore_plots_layout()
 
     def extractAddressIntFromVtkObject(self, _vtkObj):
@@ -2114,7 +2115,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
             windowsLayout[key] = gwd.toDict()
 
         # print 'AFTER self.fieldTypes = ', self.fieldTypes
-        print self.plotManager.plotWindowList
+        try:
+            print self.plotManager.plotWindowList
+        except AttributeError:
+            print "plot manager does not have plotWindowList member"
 
         plotLayoutDict = self.plotManager.getPlotWindowsLayoutDict()
         # for key, gwd in plotLayoutDict.iteritems():

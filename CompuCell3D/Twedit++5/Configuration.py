@@ -63,7 +63,12 @@ class Configuration:
         self.modifiedKeyboardShortcuts = {}  # dictionary actionName->shortcut for modified keyboard shortcuts - only reassinged shortcuts are stored
         self.modifiedPluginsAutoloadData = {}  # dictionary pluginName->autoLoad for modified plugin autoload data - only reassinged data are stored
 
-        self.settings = QSettings(QSettings.NativeFormat, QSettings.UserScope, ORGANIZATION, APPLICATION)
+        # self.settings = QSettings(QSettings.NativeFormat, QSettings.UserScope, ORGANIZATION, APPLICATION)
+        # self.settings = QSettings(QSettings.IniFormat, QSettings.UserScope, ORGANIZATION, APPLICATION)
+        if sys.platform.startswith('win'):
+            self.settings = QSettings(QSettings.IniFormat, QSettings.UserScope, ORGANIZATION, APPLICATION)
+        else:
+            self.settings = QSettings(QSettings.NativeFormat, QSettings.UserScope, ORGANIZATION, APPLICATION)
         self.initSyncSettings()
         self.updatedConfigs = {}
 
@@ -73,13 +78,28 @@ class Configuration:
 
         # def configuration(self,_key):
         # return self.configs[_key]
+    def to_bool(self, val):
+        """
+        Deals with a possible bug in Qt (occurs surprisingly often) and converts value read by QSettings
+        object to boolean. The value read could be unicode or boolean
+        
+        :param val: value returned by QSettings.value() fcn
+        :return: {Boolean}
+        
+        
+        """
+        val_dict = {'true':True,'false':False}
+        if isinstance(val,unicode):
+            return val_dict[val.strip().lower()]
+        else:
+            return val
 
     def setting(self, _key):
         if _key in ["UseTabSpaces", "DisplayLineNumbers", "FoldText", "TabGuidelines", "DisplayWhitespace",
-                    "DisplayEOL", "WrapLines", "ShowWrapSymbol", "DontShowWrapLinesWarning", \
+                    "DisplayEOL", "WrapLines", "ShowWrapSymbol", "DontShowWrapLinesWarning",
                     "RestoreTabsOnStartup", "EnableAutocompletion", "EnableQuickTextDecoding", "FRInSelection",
                     "FRInAllSubfolders", "FRTransparencyEnable", "FROnLosingFocus", "FRAlways"]:  # Boolean values
-            val = self.settings.value(_key)
+            val = self.to_bool(self.settings.value(_key))
             if val:
                 return val
             else:
@@ -95,7 +115,7 @@ class Configuration:
 
         elif _key in ["TabSpaces", "ZoomRange", "ZoomRangeFindDisplayWidget", "AutocompletionThreshold",
                       "FRSyntaxIndex", "FROpacity", "CurrentTabIndex", "CurrentPanelIndex"]:  # integer values
-            val = self.settings.value(_key)
+            val = int(self.settings.value(_key))
 
             if val:
                 return val  # toInt returns tuple and first element of if is the integer the second one is flag
