@@ -9,6 +9,7 @@ from PyQt5.QtGui import *
 import numpy as np
 
 import warnings
+
 try:
     import webcolors as wc
 except ImportError:
@@ -175,7 +176,6 @@ class PlotWindowInterface(QtCore.QObject):
     # def addPlotHandler(self, _plotName, _style="Lines", _color='white', _size=3, _alpha=255):
     def addPlotHandler(self, plot_param_dict):
 
-
         _plotName = plot_param_dict['_plotName']
         _style = plot_param_dict['_style']
         _color = plot_param_dict['_color']
@@ -255,6 +255,20 @@ class PlotWindowInterface(QtCore.QObject):
         plotType = self.plotData[_plotName][PLOT_TYPE_POSITION]
         self.plotData[_plotName] = [array([], dtype=double), array([], dtype=double), False, plotType]
 
+    def addDataSeries(self, _plotName, _x_vec, _y_vec):
+
+        if not isinstance(_x_vec, (list, tuple, np.ndarray)):
+            raise RuntimeError('addDataSeries: _x_vec has to be a list, tuple or 1D numpe array')
+
+        if not isinstance(_y_vec, (list, tuple, np.ndarray)):
+            raise RuntimeError('addDataSeries: _y_vec has to be a list, tuple or 1D numpe array')
+
+        if len(_x_vec) != len(_y_vec):
+            raise RuntimeError('addDataSeries: _x_vec and _y_vec have to be of the same length')
+
+        for x, y in zip(_x_vec, _y_vec):
+            self.addDataPoint(_plotName=_plotName, _x=x, _y=y)
+
     def addDataPoint(self, _plotName, _x, _y):
 
         if not _plotName in self.plotData.keys():
@@ -300,7 +314,8 @@ class PlotWindowInterface(QtCore.QObject):
             return None
 
     def changePlotProperty(self, _plotName, _property, _value):
-        raise RuntimeError('"changePlotProperty" is not supported in Player 5. It appears thst you are using old-style syntax that is no longer supported.')
+        raise RuntimeError(
+            '"changePlotProperty" is not supported in Player 5. It appears thst you are using old-style syntax that is no longer supported.')
         # self.plotDrawingObjects[_plotName][_property] = _value
 
     def setXAxisTitle(self, _title):
@@ -580,7 +595,6 @@ class PlotWindowInterface(QtCore.QObject):
 
         # self.addHistPlotData(_plotName=plot_name, _values=values, _intervals=intervals)
 
-
     def addHistPlotData(self, _plotName, _values, _intervals):
         # print 'addHistPlotData'
         # print '_values=',_values
@@ -625,9 +639,8 @@ class PlotWindowInterface(QtCore.QObject):
         self.plotHistData[_plotName] = HistogramItem()
         self.plotHistData[_plotName].setColor(QColor(_r, _g, _b, _alpha))
 
-
     def addHistogramPlot(self, _plotName, _color='blue', _alpha=255):
-        self.addPlot(_plotName=_plotName,_style='Steps',_color=_color,_size=1.0,_alpha=_alpha)
+        self.addPlot(_plotName=_plotName, _style='Steps', _color=_color, _size=1.0, _alpha=_alpha)
         # self.plotHistData[_plotName] = HistogramItem()
         # color = QColor(_color)
         # color.setAlpha(_alpha)
@@ -676,6 +689,8 @@ class PlotWindowInterface(QtCore.QObject):
         self.showAllHistPlotsSignal.emit(self.plotWindowInterfaceMutex)
 
     def addBarPlotData(self, _values, _positions, _width=1):
+
+        raise RuntimeError('addBarPlotData is not supported in Player 5')
 
         self.plotData[self.title] = [_positions, _values, False, BARPLOT]
 
