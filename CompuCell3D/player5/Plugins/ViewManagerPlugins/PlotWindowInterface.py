@@ -690,7 +690,10 @@ class PlotWindowInterface(QtCore.QObject):
 
     def addBarPlotData(self, _values, _positions, _width=1):
 
-        raise RuntimeError('addBarPlotData is not supported in Player 5')
+        raise RuntimeError('addBarPlotData is not supported in Player 5. Instead Please use regular plots and '
+                           'specify plotting style as "bars" - '
+                           'self.pW.addPlot(_plotName="GDP",_color="red",_style="bars", _size=0.5). it is a good idea to '
+                           'clean plot before plotting new series by calling e.g. self.pW.eraseAllData()')
 
         self.plotData[self.title] = [_positions, _values, False, BARPLOT]
 
