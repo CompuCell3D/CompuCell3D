@@ -13,6 +13,7 @@
 @SET PYTHON_MODULE_PATH=%PREFIX_CC3D%\pythonSetupScripts
 @SET PYTHON_MODULE_EXTRA_PATH=%CD%
 @SET PYTHON_DEPS_PATH=%PREFIX_CC3D%\lib\PythonDeps
+@SET PYTHONPATH=%PREFIX_CC3D%\pythonSetupScripts
 
 
 @SET VTKPATH=%PREFIX_CC3D%\bin
@@ -40,7 +41,7 @@ CALL  "%TMP%\path_modifier.bat"
 cd %PREFIX_CC3D%
 
 @SET exit_code=0
-"%PYTHON_INSTALL_PATH%\python" "%PREFIX_CC3D%\player\CompuCellPythonSimulationCML.py" %* --currentDir="%CURRENT_DIRECTORY%"
+"%PYTHON_INSTALL_PATH%\python" "%PREFIX_CC3D%\@player_dir@\CompuCellPythonSimulationCML.py" %* --currentDir="%CURRENT_DIRECTORY%"
 @SET exit_code= %errorlevel%
 
 goto simulationend

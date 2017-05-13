@@ -34,7 +34,9 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   
   configure_file(${RUN_SCRIPT_DIR}/compucell3d.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat.in.v2 @ONLY)
   configure_file(${RUN_SCRIPT_DIR}/twedit++.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat.in.v2 @ONLY)
-
+  configure_file(${RUN_SCRIPT_DIR}/paramScan.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat.in.v2 @ONLY)
+  configure_file(${RUN_SCRIPT_DIR}/runScript.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat.in.v2 @ONLY)
+  
   INSTALL(FILES
   ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat
   ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat
@@ -54,13 +56,16 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 
   
-  INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})  
-  INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/windows/runScript.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})
-  INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/windows/paramScan.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})
+  INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})    
+  INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})
   INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})
+  INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})  
+  
+  # INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/windows/runScript.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})  
   # INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/windows/twedit++.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})
   # INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/windows/compucell3d.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})
-
+  # INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/windows/paramScan.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})
+  
 elseif (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
 
         message ("CMAKE_SYSTEM_VERSION " ${CMAKE_SYSTEM_VERSION})
@@ -188,14 +193,20 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 # copying vtk, Qt, python25,OPENGL libraries used by the player on Windows
 if(WINDOWS_DEPENDENCIES_INSTALL_ENABLE)
     if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-        INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/bin/" DESTINATION @CMAKE_INSTALL_PREFIX@/bin
-            PATTERN "*.svn" EXCLUDE
-            PATTERN "@WINDOWS_DEPENDENCIES@/bin/*")
-
-      file(GLOB prerequisites "@WINDOWS_DEPENDENCIES@/Prerequisites/*")
-      list(REMOVE_ITEM prerequisites "@WINDOWS_DEPENDENCIES@/Prerequisites/.svn")
-      INSTALL(FILES ${prerequisites} DESTINATION "@CMAKE_INSTALL_PREFIX@/Prerequisites" )
-
+        if(${PYQT_VERSION} STREQUAL 4)    
+            INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/bin/" DESTINATION @CMAKE_INSTALL_PREFIX@/bin
+                PATTERN "*.svn" EXCLUDE
+                PATTERN "@WINDOWS_DEPENDENCIES@/bin/*")
+        
+            file(GLOB prerequisites "@WINDOWS_DEPENDENCIES@/Prerequisites/*")
+            list(REMOVE_ITEM prerequisites "@WINDOWS_DEPENDENCIES@/Prerequisites/.svn")
+            INSTALL(FILES ${prerequisites} DESTINATION "@CMAKE_INSTALL_PREFIX@/Prerequisites" )
+        elseif(${PYQT_VERSION} STREQUAL 5)
+            INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/" DESTINATION @CMAKE_INSTALL_PREFIX@
+                PATTERN "*.svn" EXCLUDE
+                PATTERN "@WINDOWS_DEPENDENCIES@/*")
+        
+        endif()
     endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 endif(WINDOWS_DEPENDENCIES_INSTALL_ENABLE)

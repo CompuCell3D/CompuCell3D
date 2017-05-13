@@ -38,7 +38,7 @@ CALL  "%TMP%\path_modifier.bat"
 cd %PREFIX_CC3D%
 
 @SET exit_code=0
-"%PYTHON_INSTALL_PATH%\python" "%PREFIX_CC3D%\player\ParameterScanRun.py" %* --currentDir="%CURRENT_DIRECTORY%"
+"%PYTHON_INSTALL_PATH%\python" "%PREFIX_CC3D%\@player_dir@\ParameterScanRun.py" %* --currentDir="%CURRENT_DIRECTORY%"
 @SET exit_code= %errorlevel%
 
 goto simulationend
