@@ -10,11 +10,11 @@ from PySteppables import *
 class BoundaryPixelTrackerSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=10):
         SteppableBasePy.__init__(self,_simulator,_frequency)
-
-    def start(self):
         self.scalarField=self.createScalarFieldPy("BOUNDARY")
+        
+    def start(self):
+        pass
     
-
     def step(self,mcs):
         for cell in self.cellList:
             

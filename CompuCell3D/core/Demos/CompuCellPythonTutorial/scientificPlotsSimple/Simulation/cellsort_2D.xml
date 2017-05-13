@@ -16,6 +16,7 @@
 
  <Plugin Name="SurfaceTracker"/>
  
+ <Plugin Name="Secretion"/>
 
 <Plugin Name="CellType">
     <CellType TypeName="Medium" TypeId="0"/>

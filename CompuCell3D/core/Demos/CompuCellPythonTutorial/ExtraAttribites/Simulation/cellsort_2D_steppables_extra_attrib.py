@@ -9,9 +9,9 @@ class ExtraAttributeCellsort(SteppableBasePy):
 
     def step(self,mcs):
         for cell in self.cellList:
-            cellDict=self.getDictionaryAttribute(cell)
-            cellDict['my_list']=[cell.id*mcs,cell.id*(mcs-1)]
-            print "CELL ID modified=",cellDict['my_list'][0],"    ", cellDict['my_list'][1]
+            
+            cell.dict['my_list']=[cell.id*mcs,cell.id*(mcs-1)]
+            print "CELL ID modified=",cell.dict['my_list'][0],"    ", cell.dict['my_list'][1]
 
 
 class TypeSwitcherSteppable(SteppableBasePy):

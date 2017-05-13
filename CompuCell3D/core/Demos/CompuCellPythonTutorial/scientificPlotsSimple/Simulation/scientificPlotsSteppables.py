@@ -12,15 +12,10 @@ class ExtraPlotSteppable(SteppableBasePy):
     
         self.pW=self.addNewPlotWindow(_title='Average Volume And Surface',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Variables', _xScaleType='linear',_yScaleType='linear')        
         self.pW.addPlot('MVol',_style='Dots',_color='red',_size=5)
-        self.pW.addPlot('MSur',_style='Steps',_size=1)
+        self.pW.addPlot('MSur',_style='Bars',_size=0.2)
         
     def step(self,mcs):
-                
-        secretor=self.getFieldSecretor("FIELD_NAME_1") 
-        for cell in self.cellList:
-            if cell.type==2:
-                secretor.secreteInsideCell(cell,300)
-                
+                                
         meanSurface=0.0
         meanVolume=0.0
         numberOfCells=0

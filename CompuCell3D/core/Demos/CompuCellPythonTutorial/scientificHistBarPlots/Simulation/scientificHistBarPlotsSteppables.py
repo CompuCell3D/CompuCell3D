@@ -41,16 +41,30 @@ class BarPlotSteppable(SteppableBasePy):
         SteppableBasePy.__init__(self,_simulator,_frequency)
 
     def start(self):        
-        self.pW=self.addNewPlotWindow(_title='Bar Plot',_xAxisTitle='Growth of US GDP',_yAxisTitle='Number of Suits')        
+    
+        self.pW = self.addNewPlotWindow(_title='Bar Plot',_xAxisTitle='Growth of US GDP',_yAxisTitle='Number of Suits')        
+        self.pW.addPlot(_plotName='GDP',_color='red',_style='bars', _size=0.5)
+        
     def step(self,mcs):
     
         if (mcs%20 == 0):
+        
+            self.pW.eraseAllData()
+            
             gdpList = []
             locations = []
             for i in range(6):
                 gdpList.append(random.uniform(1, 100))
                 locations.append(random.uniform(1, 20))
-            self.pW.addBarPlotData(gdpList,locations,1)
+            
+            self.pW.addDataSeries('GDP',locations,gdpList)    
+            
+            
+            # for gdp, loc in zip(gdpList,locations):        
+            
+                # self.pW.addDataPoint('GDP',loc,gdp)
+                
+            # self.pW.addBarPlotData(gdpList,locations,1)
         
     
         fileName="BarPlots_"+str(mcs)+".png"
