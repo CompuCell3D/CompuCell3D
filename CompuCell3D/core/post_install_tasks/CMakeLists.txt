@@ -10,19 +10,30 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
 
 SET(COMPUCELL_INSTALL_DIR @CMAKE_INSTALL_PREFIX@)
 
+SET(player_dir "player")
+SET(twedit_dir "Twedit++")
+if(${PYQT_VERSION} STREQUAL 5)
+    SET(player_dir "player5")
+	SET(twedit_dir "Twedit++5")
+endif()
+
+
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   #here I need to change "/" to "\" to comply with windows style paths
   set(COMPUCELL_INSTALL_DIR_WINDOWS_STYLE ${COMPUCELL_INSTALL_DIR})
+  set(RUN_SCRIPT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/windows)
+  
   #note to replace "/" with "\" you need in fact use "escaped baskslash as a string literal". this is property of regex
   #for more info please see http://www.amk.ca/python/howto/regex/
   STRING(REGEX REPLACE "/" "\\\\" COMPUCELL_INSTALL_DIR_WINDOWS_STYLE ${COMPUCELL_INSTALL_DIR_WINDOWS_STYLE})
 
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/compucell3d.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat @ONLY)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/runScript.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat @ONLY)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/paramScan.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat @ONLY)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/twedit++.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat @ONLY)
-
-
+  configure_file(${RUN_SCRIPT_DIR}/compucell3d.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat @ONLY)
+  configure_file(${RUN_SCRIPT_DIR}/runScript.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat @ONLY)
+  configure_file(${RUN_SCRIPT_DIR}/paramScan.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat @ONLY)
+  configure_file(${RUN_SCRIPT_DIR}/twedit++.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat @ONLY)
+  
+  configure_file(${RUN_SCRIPT_DIR}/compucell3d.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat.in.v2 @ONLY)
+  configure_file(${RUN_SCRIPT_DIR}/twedit++.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat.in.v2 @ONLY)
 
   INSTALL(FILES
   ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat
@@ -33,19 +44,22 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 
   if(BUILD_CPP_ONLY_EXECUTABLE)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cc3dScript.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/cc3dScript.bat @ONLY)
+    configure_file(${RUN_SCRIPT_DIR}/cc3dScript.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/cc3dScript.bat @ONLY)
     INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/cc3dScript.bat DESTINATION ${CMAKE_INSTALL_PREFIX})
 
   endif(BUILD_CPP_ONLY_EXECUTABLE)
 
   #copying SetupScript file
-  INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/scriptSetup.py" DESTINATION ${CMAKE_INSTALL_PREFIX})
+  INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/windows/scriptSetup.py" DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 
-  INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/compucell3d.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})
-  INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/runScript.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})
-  INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/paramScan.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})
-  INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/twedit++.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})
+  
+  INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})  
+  INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/windows/runScript.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})
+  INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/windows/paramScan.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})
+  INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})
+  # INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/windows/twedit++.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})
+  # INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/windows/compucell3d.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 elseif (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
 
@@ -122,12 +136,13 @@ elseif (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
     endif(BUILD_CPP_ONLY_EXECUTABLE)
 
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-    # configure_file(${CMAKE_CURRENT_SOURCE_DIR}/compucell3d_old.sh.in.linux ${CMAKE_BINARY_DIR}/compucell3d_old.sh @ONLY)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/compucell3d.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.sh @ONLY)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/runScript.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh @ONLY)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/paramScan.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.sh @ONLY)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/twedit++.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.sh @ONLY)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/celldraw.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/celldraw.sh @ONLY)
+	set(RUN_SCRIPT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/linux)
+    # configure_file(${RUN_SCRIPT_DIR}/compucell3d_old.sh.in.linux ${CMAKE_BINARY_DIR}/compucell3d_old.sh @ONLY)
+    configure_file(${RUN_SCRIPT_DIR}/compucell3d.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.sh @ONLY)
+    configure_file(${RUN_SCRIPT_DIR}/runScript.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh @ONLY)
+    configure_file(${RUN_SCRIPT_DIR}/paramScan.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.sh @ONLY)
+    configure_file(${RUN_SCRIPT_DIR}/twedit++.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.sh @ONLY)
+    configure_file(${RUN_SCRIPT_DIR}/celldraw.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/celldraw.sh @ONLY)
 
         INSTALL(FILES
             ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.sh ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.sh
@@ -138,7 +153,7 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
             )
 
     if(BUILD_CPP_ONLY_EXECUTABLE)
-      configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cc3dScript.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/cc3dScript.sh @ONLY)
+      configure_file(${RUN_SCRIPT_DIR}/cc3dScript.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/cc3dScript.sh @ONLY)
         INSTALL(FILES
             ${CMAKE_BINARY_DIR}/post_install_tasks/cc3dScript.sh
             DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
@@ -233,10 +248,7 @@ INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts" DESTINATION @CMA
     PATTERN "Version.py.in*" EXCLUDE
     PATTERN "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/*")
 
-SET(player_dir "player")
-if(${PYQT_VERSION} STREQUAL 5)
-    SET(player_dir "player5")
-endif()
+
 
 if (INSTALL_PLAYER)
 
