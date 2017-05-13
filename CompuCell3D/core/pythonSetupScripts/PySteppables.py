@@ -306,13 +306,13 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             import CompuCell
             self.cleaverMeshDumper = CompuCell.getCleaverMeshDumper()
 
-    def addNewPlotWindow(self, _title, _xAxisTitle, _yAxisTitle, _xScaleType='linear', _yScaleType='linear'):
+    def addNewPlotWindow(self, _title, _xAxisTitle, _yAxisTitle, _xScaleType='linear', _yScaleType='linear',_grid=True):
 
         import CompuCellSetup
         if _title in self.plot_dict.keys():
             raise RuntimeError('PLOT WINDOW: ' + _title + ' already exists. Please choose a different name')
 
-        pW = CompuCellSetup.addNewPlotWindow(_title, _xAxisTitle, _yAxisTitle, _xScaleType, _yScaleType)
+        pW = CompuCellSetup.addNewPlotWindow(_title, _xAxisTitle, _yAxisTitle, _xScaleType, _yScaleType,_grid)
         self.plot_dict[_title] = pW
 
         return pW
