@@ -157,7 +157,8 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
         INSTALL(FILES
             ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.sh ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.sh
-            ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.sh ${CMAKE_BINARY_DIR}/post_install_tasks/celldraw.sh
+            ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.sh 
+			# ${CMAKE_BINARY_DIR}/post_install_tasks/celldraw.sh
             DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                                                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                                             WORLD_READ WORLD_WRITE WORLD_EXECUTE
