@@ -22,7 +22,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   #here I need to change "/" to "\" to comply with windows style paths
   set(COMPUCELL_INSTALL_DIR_WINDOWS_STYLE ${COMPUCELL_INSTALL_DIR})
   set(RUN_SCRIPT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/windows)
-  
+
   #note to replace "/" with "\" you need in fact use "escaped baskslash as a string literal". this is property of regex
   #for more info please see http://www.amk.ca/python/howto/regex/
   STRING(REGEX REPLACE "/" "\\\\" COMPUCELL_INSTALL_DIR_WINDOWS_STYLE ${COMPUCELL_INSTALL_DIR_WINDOWS_STYLE})
@@ -32,13 +32,13 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   configure_file(${RUN_SCRIPT_DIR}/paramScan.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat @ONLY)
   configure_file(${RUN_SCRIPT_DIR}/twedit++.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat @ONLY)
   configure_file(${RUN_SCRIPT_DIR}/optimization.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.bat @ONLY)
-  
+
   configure_file(${RUN_SCRIPT_DIR}/compucell3d.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat.in.v2 @ONLY)
   configure_file(${RUN_SCRIPT_DIR}/twedit++.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat.in.v2 @ONLY)
   configure_file(${RUN_SCRIPT_DIR}/paramScan.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat.in.v2 @ONLY)
   configure_file(${RUN_SCRIPT_DIR}/runScript.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat.in.v2 @ONLY)
   configure_file(${RUN_SCRIPT_DIR}/optimization.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.bat.in.v2 @ONLY)
-  
+
   INSTALL(FILES
   ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat
   ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat
@@ -58,18 +58,18 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/windows/scriptSetup.py" DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 
-  
-  INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})    
+
+  INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})
   INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})
   INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})
-  INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})  
-  INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})  
-  
-  # INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/windows/runScript.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})  
+  INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})
+  INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})
+
+  # INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/windows/runScript.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})
   # INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/windows/twedit++.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})
   # INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/windows/compucell3d.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})
   # INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/windows/paramScan.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})
-  
+
 elseif (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
 
         message ("CMAKE_SYSTEM_VERSION " ${CMAKE_SYSTEM_VERSION})
@@ -119,6 +119,7 @@ elseif (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
             configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/pyqt5/twedit++.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/twedit++.command @ONLY)
             configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/pyqt5/runScript.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/runScript.command @ONLY)
             configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/pyqt5/paramScan.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/paramScan.command @ONLY)
+            configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/pyqt5/optimization.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/optimization.command @ONLY)
 
         endif()
 
@@ -151,7 +152,8 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     configure_file(${RUN_SCRIPT_DIR}/runScript.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh @ONLY)
     configure_file(${RUN_SCRIPT_DIR}/paramScan.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.sh @ONLY)
     configure_file(${RUN_SCRIPT_DIR}/twedit++.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.sh @ONLY)
-    configure_file(${RUN_SCRIPT_DIR}/celldraw.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/celldraw.sh @ONLY)
+    # configure_file(${RUN_SCRIPT_DIR}/celldraw.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/celldraw.sh @ONLY)
+    configure_file(${RUN_SCRIPT_DIR}/optimization.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.sh @ONLY)
 
         INSTALL(FILES
             ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.sh ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.sh
@@ -197,11 +199,11 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 # copying vtk, Qt, python25,OPENGL libraries used by the player on Windows
 if(WINDOWS_DEPENDENCIES_INSTALL_ENABLE)
     if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-        if(${PYQT_VERSION} STREQUAL 4)    
+        if(${PYQT_VERSION} STREQUAL 4)
             INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/bin/" DESTINATION @CMAKE_INSTALL_PREFIX@/bin
                 PATTERN "*.svn" EXCLUDE
                 PATTERN "@WINDOWS_DEPENDENCIES@/bin/*")
-        
+
             file(GLOB prerequisites "@WINDOWS_DEPENDENCIES@/Prerequisites/*")
             list(REMOVE_ITEM prerequisites "@WINDOWS_DEPENDENCIES@/Prerequisites/.svn")
             INSTALL(FILES ${prerequisites} DESTINATION "@CMAKE_INSTALL_PREFIX@/Prerequisites" )
@@ -209,7 +211,7 @@ if(WINDOWS_DEPENDENCIES_INSTALL_ENABLE)
             INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/" DESTINATION @CMAKE_INSTALL_PREFIX@
                 PATTERN "*.svn" EXCLUDE
                 PATTERN "@WINDOWS_DEPENDENCIES@/*")
-        
+
         endif()
     endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 

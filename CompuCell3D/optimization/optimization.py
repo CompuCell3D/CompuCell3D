@@ -533,32 +533,32 @@ class Optimizer(object):
 #         print 'Make sure your simulation scripts run correctly. Run them using Player or runScript and watch for errors'
 
 
-# def main_debug():
-#     cml_parser = OptimizationCMLParser()
-#
-#     # cml_parser.arg('--help')
-#     cml_parser.arg('--input', r'D:\CC3DProjects\optimization_demo\optimization_demo.cc3d')
-#     cml_parser.arg('--params-file', r'D:\CC3DProjects\optimization_demo\Simulation\params.json')
-#     cml_parser.arg('--cc3d-run-script', r'd:\Program Files\376\runScript.bat')
-#     cml_parser.arg('--clean-workdirs')
-#     cml_parser.arg('--num-workers', '1')  # here it needs to be specified as str but parser converts it to int
-#     cml_parser.arg('--population-size', '6')  # here it needs to be specified as str but parser converts it to int
-#
-#     args = cml_parser.parse()
-#
-#     optim_param_mgr = OptimizationParameterManager()
-#     optim_param_mgr.parse(args.params_file)
-#
-#     optimizer = Optimizer()
-#
-#     optimizer.set_optimization_parameters_manager(optim_param_mgr)
-#     optimizer.set_parse_args(args)
-#     optimizer.set_num_workers(args.num_workers)
-#     try:
-#         optimizer.run()
-#     except AssertionError as e:
-#         print 'ABNORMAL EXIT ', e.message
-#         print 'Make sure your simulation scripts run correctly. Run them using Player or runScript and watch for errors'
+def main_debug_win():
+    cml_parser = OptimizationCMLParser()
+
+    # cml_parser.arg('--help')
+    cml_parser.arg('--input', r'D:\CC3DProjects\optimization_demo\optimization_demo.cc3d')
+    cml_parser.arg('--params-file', r'D:\CC3DProjects\optimization_demo\Simulation\params.json')
+    cml_parser.arg('--cc3d-run-script', r'd:\Program Files\376\runScript.bat')
+    cml_parser.arg('--clean-workdirs')
+    cml_parser.arg('--num-workers', '1')  # here it needs to be specified as str but parser converts it to int
+    cml_parser.arg('--population-size', '6')  # here it needs to be specified as str but parser converts it to int
+
+    args = cml_parser.parse()
+
+    optim_param_mgr = OptimizationParameterManager()
+    optim_param_mgr.parse(args.params_file)
+
+    optimizer = Optimizer()
+
+    optimizer.set_optimization_parameters_manager(optim_param_mgr)
+    optimizer.set_parse_args(args)
+    optimizer.set_num_workers(args.num_workers)
+    try:
+        optimizer.run()
+    except AssertionError as e:
+        print 'ABNORMAL EXIT ', e.message
+        print 'Make sure your simulation scripts run correctly. Run them using Player or runScript and watch for errors'
 
 
 def main_debug_osx():
@@ -597,6 +597,8 @@ def main_debug_osx():
 
 # optimization.bat --input="D:\Program Files\376\Demos\optimization\optimization_demo\optimization_demo.cc3d" --params-file="D:\Program Files\376\Demos\optimization\optimization_demo\Simulation\params.json" --num-workers=1 --population-size=6
 
+# optimization.command --input=/Users/m/Demo/CC3D_3.7.6/Demos/optimization/optimization_demo/optimization_demo.cc3d --params-file=/Users/m/Demo/CC3D_3.7.6/Demos/optimization/optimization_demo/Simulation/params.json --num-workers=1 --population-size=6
+
 
 def main():
     cml_parser = OptimizationCMLParser()
@@ -619,6 +621,9 @@ def main():
         print 'Make sure your simulation scripts run correctly. Run them using Player or runScript and watch for errors'
 
 if __name__ == '__main__':
-    # main_debug()
-    main_debug_osx()
-
+    if sys.platform.startswith('win'):
+        main_debug_win()
+    elif sys.platform.startswith('darwin'):
+        main_debug_osx()
+    elif sys.platform.startswith('linux'):
+        main_debug_linux()

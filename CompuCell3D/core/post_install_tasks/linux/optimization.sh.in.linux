@@ -14,4 +14,5 @@ export @LIBRARY_PATH_SYNTAX@=${PREFIX_CC3D}/lib/:$@LIBRARY_PATH_SYNTAX@
 export @LIBRARY_PATH_SYNTAX@=${PREFIX_CC3D}/lib/python:$@LIBRARY_PATH_SYNTAX@
 
 
-python ${PREFIX_CC3D}/@twedit_dir@/twedit_plus_plus_cc3d.py $*
+python ${OPTIMIZATIION_PYTHON_SCRIPT} $* --cc3d-run-script=${CC3D_RUN_SCRIPT} --clean-workdirs
+# python ${PREFIX_CC3D}/@twedit_dir@/twedit_plus_plus_cc3d.py $*
