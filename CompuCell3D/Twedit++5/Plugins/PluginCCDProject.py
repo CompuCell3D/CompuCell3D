@@ -242,7 +242,7 @@ class CC3DProjectTreeWidget(QTreeWidget):
 
             self.addActionToContextMenu(menu, self.plugin.actions["Open XML/Python In Editor"])
             self.addActionToContextMenu(menu, self.plugin.actions["Open in Player"])
-            self.addActionToContextMenu(menu, self.plugin.actions["Add Parameter Scan"])
+
 
             # --------------------------------------------------------------------
             menu.addSeparator()
@@ -261,8 +261,6 @@ class CC3DProjectTreeWidget(QTreeWidget):
 
             menu.addSeparator()
 
-        # parameter scan menus        
-        self.addParameterScanMenus(menu, projItem)
 
         resourceName = self.getResourceName(self.currentItem())
         print '\n\n\n RESOURCENAME', resourceName
@@ -276,6 +274,14 @@ class CC3DProjectTreeWidget(QTreeWidget):
         self.addActionToContextMenu(menu, self.plugin.actions["Go To Project Directory"])
         self.addActionToContextMenu(menu, self.plugin.actions["Zip It!"])
         # self.addActionToContextMenu(menu,self.plugin.actions["Zip'n'Mail"])
+
+        # --------------------------------------------------------------------
+        menu.addSeparator()
+        # parameter scan menus
+        self.addActionToContextMenu(menu, self.plugin.actions["Add Parameter Scan"])
+        self.addParameterScanMenus(menu, projItem)
+
+
         # --------------------------------------------------------------------
         menu.addSeparator()
         self.addActionToContextMenu(menu, self.plugin.actions["Add Resource..."])
