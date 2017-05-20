@@ -36,7 +36,7 @@ def setVTKPaths():
 
 
 setVTKPaths()
-# print "PATH=",sys.path  
+# print "PATH=",sys.path
 
 import os, sys
 from os import environ
@@ -57,6 +57,7 @@ import time
 """ Have to import vtk from command line script to make sure vtk output works"""
 
 cc3dSimulationDataHandler = None
+
 
 
 def getRootOutputDir():
@@ -250,7 +251,11 @@ try:
         raise NameError('HelpOnly')
 
     # setting up push address
+
+
+
     CompuCellSetup.set_push_address(cmlParser.push_address)
+
 
     # setting up return tag
     CompuCellSetup.set_return_value_tag(cmlParser.return_value_tag)

@@ -31,17 +31,20 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   configure_file(${RUN_SCRIPT_DIR}/runScript.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat @ONLY)
   configure_file(${RUN_SCRIPT_DIR}/paramScan.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat @ONLY)
   configure_file(${RUN_SCRIPT_DIR}/twedit++.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat @ONLY)
+  configure_file(${RUN_SCRIPT_DIR}/optimization.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.bat @ONLY)
   
   configure_file(${RUN_SCRIPT_DIR}/compucell3d.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat.in.v2 @ONLY)
   configure_file(${RUN_SCRIPT_DIR}/twedit++.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat.in.v2 @ONLY)
   configure_file(${RUN_SCRIPT_DIR}/paramScan.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat.in.v2 @ONLY)
   configure_file(${RUN_SCRIPT_DIR}/runScript.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat.in.v2 @ONLY)
+  configure_file(${RUN_SCRIPT_DIR}/optimization.bat.in.v2 ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.bat.in.v2 @ONLY)
   
   INSTALL(FILES
   ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat
   ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat
   ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat
   ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat
+  ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.bat
   DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 
@@ -60,6 +63,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})
   INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})
   INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})  
+  INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})  
   
   # INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/windows/runScript.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})  
   # INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/windows/twedit++.bat.in.v2" DESTINATION ${CMAKE_INSTALL_PREFIX})

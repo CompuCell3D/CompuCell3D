@@ -1832,6 +1832,7 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
     t2 = time.time()
 
     broadcast_simulation_return_value()
+    # raise RuntimeError('after broadcasting return value')
     print_profiling_report(py_steppable_profiler_report=steppableRegistry.get_profiler_report(),
                            compiled_code_run_time=compiled_code_run_time, total_run_time=(t2 - t1) * 1000.0)
 

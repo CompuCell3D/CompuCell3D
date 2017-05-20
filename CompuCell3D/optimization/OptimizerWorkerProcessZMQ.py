@@ -199,6 +199,10 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
         print 'popen_args=', popen_args
 
         # # this call will block until simulation is done
+        # subprocess.popen(popen_args)
+        # subprocess.call(popen_args) # this allows debugging because all the output goes to stdout
+
+        # # this call will block until simulation is done
         try:
             # this runs single cc3d job and catches exceptions
             subprocess.check_output(popen_args)
@@ -206,8 +210,7 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
             print 'GOT subprocess.CalledProcessError '
             print e.output
 
-            self.send_abort_message(push_address=self.push_address_str, worker_tag=worker_tag )
-
+            self.send_abort_message(push_address=self.push_address_str, worker_tag=worker)
 
 
         self.cleanup_actions(clean_workdirs=clean_workdirs,simulation_fname=simulation_fname)
