@@ -444,9 +444,6 @@ class UserInterface(QMainWindow):
         # self.connect(self.consoleAct, SIGNAL("triggered(bool)"), self.toggleConsole)
         self.consoleAct.triggered.connect(self.toggleConsole)
 
-
-
-
         self.actions.append(self.consoleAct)
 
         # I don't need probably to initActions() here. So I moved it to constructor
@@ -647,7 +644,7 @@ class UserInterface(QMainWindow):
 
         Configuration.setSetting('DisplayConsole',flag)
         #TODO
-        # self.__toggleWindowFlag(self.consoleDock, flag)
+        self.__toggleWindowFlag(self.consoleDock, flag)
 
     def __showViewMenu(self):
         """
