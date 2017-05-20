@@ -210,7 +210,7 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
             print 'GOT subprocess.CalledProcessError '
             print e.output
 
-            self.send_abort_message(push_address=self.push_address_str, worker_tag=worker)
+            self.send_abort_message(push_address=self.push_address_str, worker_tag=worker_tag)
 
 
         self.cleanup_actions(clean_workdirs=clean_workdirs,simulation_fname=simulation_fname)
