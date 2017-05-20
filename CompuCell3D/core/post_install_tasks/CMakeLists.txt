@@ -152,7 +152,8 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     configure_file(${RUN_SCRIPT_DIR}/runScript.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh @ONLY)
     configure_file(${RUN_SCRIPT_DIR}/paramScan.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.sh @ONLY)
     configure_file(${RUN_SCRIPT_DIR}/twedit++.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.sh @ONLY)
-    configure_file(${RUN_SCRIPT_DIR}/celldraw.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/celldraw.sh @ONLY)
+    # configure_file(${RUN_SCRIPT_DIR}/celldraw.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/celldraw.sh @ONLY)
+    configure_file(${RUN_SCRIPT_DIR}/optimization.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.sh @ONLY)
 
         INSTALL(FILES
             ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.sh ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.sh
