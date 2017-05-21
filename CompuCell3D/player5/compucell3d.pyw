@@ -17,7 +17,7 @@ print sys.path
 import numpy
 import vtk
 
-import CC3DXML
+# import CC3DXML
 
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
