@@ -39,7 +39,8 @@ if sys.platform=='darwin':
                 return
             print msg_log_context
 
-        PyQt5.QtCore.qInstallMsgHandler(handler)
+        # looks like we do not need those in PyQt5 version
+        # PyQt5.QtCore.qInstallMsgHandler(handler)
 
     elif mac_ver_float == 10.10:
 
@@ -49,7 +50,9 @@ if sys.platform=='darwin':
                 return
             print msg_log_context
 
-        PyQt5.QtCore.qInstallMsgHandler(handler)
+
+        # looks like we do not need those in PyQt5 version
+        # PyQt5.QtCore.qInstallMsgHandler(handler)
 
 
 
