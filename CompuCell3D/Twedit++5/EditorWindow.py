@@ -3211,7 +3211,7 @@ class EditorWindow(QMainWindow):
 
         itemCounter = 1
         for itemName in recentItems:
-            actionText = '&%s %s'%(str(itemCounter),str(itemName))
+            actionText = '&%s %s'%(str(itemCounter),unicode(itemName))
 
             action = QAction("&%d %s " % (itemCounter, itemName), menuOwnerObj)
             _recentMenu.addAction(action)

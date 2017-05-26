@@ -18,6 +18,7 @@ from CC3DProject import CC3DProject_rc
 from CC3DProject.Configuration import Configuration
 import re
 import os
+import shutil
 
 # Start-Of-Header
 name = "CC3D Project Plugin"
@@ -2308,9 +2309,13 @@ class CC3DProject(QObject):
         csd = pdh.cc3dSimulationData
         QDesktopServices.openUrl(QUrl.fromLocalFile(csd.basePath))
 
-    def __zipProject(self):
 
-        # print 'inside __zipProject'
+    def __zipProject(self):
+        """
+        Zips project directory
+        :return:
+        """
+
 
         tw = self.treeWidget
         curItem = self.treeWidget.currentItem()
@@ -2339,16 +2344,91 @@ class CC3DProject(QObject):
         zip_archive_base_core_name = os.path.basename(csd.basePath)
         zip_archive_core_name = os.path.join(os.path.dirname(csd.basePath), zip_archive_base_core_name)
 
-        ret = QMessageBox.information(tw, 'Zip File Path',
-                                      'The zipped file will be saved as ' + zip_archive_core_name + '.zip',
-                                      QMessageBox.Ok | QMessageBox.Cancel)
-        if ret == QMessageBox.Cancel:
-            return None
+        _dir = os.path.dirname(zip_archive_core_name)
 
-        import shutil
-        shutil.make_archive(zip_archive_core_name, 'zip', csd.basePath)
+        while True:
+            zipped_filename_tmp, _ = QFileDialog.getSaveFileName(self.__ui,
+                                                                 "Save Zipped CC3D Project As...",
+                                                                 # os.path.basename(zip_archive_core_name),
+                                                                 _dir,
+                                                                 "*.zip")
+            if zipped_filename_tmp :
+                if not os.path.isfile(zipped_filename_tmp):
+                    zipped_filename = zipped_filename_tmp
+                    break
+            else:
+                return None
 
-        return zip_archive_core_name + '.zip'
+        zip_archive_core_name, ext = os.path.splitext(zipped_filename)
+
+        shutil.make_archive(zip_archive_core_name, ext[1:], csd.basePath)
+
+        return zipped_filename
+
+    # def __zipProject(self):
+    #     """
+    #     Zips project directory
+    #     :return:
+    #     """
+    #
+    #
+    #     tw = self.treeWidget
+    #     curItem = self.treeWidget.currentItem()
+    #     projItem = self.treeWidget.getProjectParent(curItem)
+    #
+    #     if not projItem:
+    #         numberOfprojects = self.treeWidget.topLevelItemCount()
+    #         if numberOfprojects == 1:
+    #             projItem = self.treeWidget.topLevelItem(0)
+    #         elif numberOfprojects > 1:
+    #             QMessageBox.warning(self.treewidget, "Please Select Project",
+    #                                 "Please first click inside project that you wish to save and try again")
+    #         else:
+    #             return
+    #
+    #     pdh = None
+    #
+    #     try:
+    #         pdh = self.projectDataHandlers[projItem]
+    #     except LookupError, e:
+    #
+    #         return
+    #
+    #     csd = pdh.cc3dSimulationData
+    #
+    #     zip_archive_base_core_name = os.path.basename(csd.basePath)
+    #     zip_archive_core_name = os.path.join(os.path.dirname(csd.basePath), zip_archive_base_core_name)
+    #
+    #     zipped_filename = zip_archive_core_name + '.zip'
+    #
+    #     ret = QMessageBox.information(tw, 'Zip File Path',
+    #                                   'The zipped file will be saved as ' + zipped_filename,
+    #                                   QMessageBox.Ok | QMessageBox.Cancel)
+    #     if ret == QMessageBox.Cancel:
+    #         return None
+    #
+    #     if os.path.isfile(zipped_filename):
+    #         ret = QMessageBox.information(tw, 'Zip File Path Already Exist',
+    #                                       'Cannot save %s . File already exists' % zipped_filename,
+    #                                       QMessageBox.Ok )
+    #
+    #         _dir = os.path.dirname(zipped_filename)
+    #
+    #         while True:
+    #             zipped_filename_tmp, _ = QFileDialog.getSaveFileName(self.__ui, "Save Zipped CC3D Project As...", _dir, "*.zip")
+    #             if zipped_filename_tmp != zipped_filename:
+    #                 break
+    #         if zipped_filename_tmp:
+    #             zipped_filename = zipped_filename_tmp
+    #         else:
+    #             return None
+    #
+    #
+    #     zip_archive_core_name, ext = os.path.splitext(zipped_filename)
+    #
+    #     shutil.make_archive(zip_archive_core_name, ext[1:], csd.basePath)
+    #
+    #     return zipped_filename
 
     def openCC3Dproject(self, fileName):
         projExist = True
