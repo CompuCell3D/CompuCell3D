@@ -27,6 +27,12 @@ import sys
 import PyQt5
 from utils.global_imports import *
 
+if sys.platform.startswith('win'):
+	# this takes care of the need to distribute qwindows.dll with the qt5 application
+	# it needs to be locarted in the directory <library_path>/platforms
+	QCoreApplication.addLibraryPath("./bin/")
+
+
 #instaling message handler to suppres spurious qt messages
 if sys.platform=='darwin':
     import platform
