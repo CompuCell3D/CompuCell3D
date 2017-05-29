@@ -112,6 +112,28 @@ OPTION(BUILD_PYINTERFACE "Build Python language wrappings" ON)
 
 OPTION(INSTALL_PLAYER "Move Player files to installation directory" ON)
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+    OPTION(BUNDLE_PYTHON "Builds CC3D assuming Python will be bundled with CC3D - default on Windows and OSX" ON)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+    OPTION(BUNDLE_PYTHON "Builds CC3D assuming Python will be bundled with CC3D - default on Windows and OSX" ON)
+else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+    OPTION(BUNDLE_PYTHON "Builds CC3D assuming Python will be bundled with CC3D - default on Windows and OSX" OFF)
+    SET(DEPENDENCIES_DIR CACHE PATH  "Location of dependencies folder. This folder will be copied to installation directory")
+    OPTION(DEPENDENCIES_COPY_FLAG "Enables copying of the dependencies into installaiton dir" OFF)
+endif()
+
+# if (EXISTS ${DEPENDENCIES_DIR})
+#     message("depandencies exist")
+# else()
+#     message("depandencies missing")
+# endif()
+
+
+
+
+
+
+
 # C++ only executable - useful for debugging
 OPTION(BUILD_CPP_ONLY_EXECUTABLE "Build C++ only executable(requires Expat library)" OFF)
 

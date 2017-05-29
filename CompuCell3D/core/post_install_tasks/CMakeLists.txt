@@ -147,6 +147,34 @@ elseif (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
 
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 	set(RUN_SCRIPT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/linux)
+    if (BUNDLE_PYTHON)
+        SET(PYTHON_EXEC "\${PREFIX_CC3D}/Python27/bin/python")
+        message ("USING BUNDLE")
+        if (EXISTS ${DEPENDENCIES_DIR})
+
+            # note for boolean options we do not use ${}
+            if (DEPENDENCIES_COPY_FLAG)
+                message("WILL COPY DEPENDENCIES")
+                INSTALL(
+                    DIRECTORY  "@DEPENDENCIES_DIR@/"
+                    DESTINATION @CMAKE_INSTALL_PREFIX@
+                    USE_SOURCE_PERMISSIONS
+                    PATTERN "@DEPENDENCIES_DIR@/*"
+                )
+
+            endif()
+
+            message("DEPENDENCIES DIR ${DEPENDENCIES_DIR}")
+
+        endif()
+
+
+    else(BUNDLE_PYTHON)
+        message ("USING SYSTEM")
+        SET(PYTHON_EXEC "python")
+    endif()
+
+
     # configure_file(${RUN_SCRIPT_DIR}/compucell3d_old.sh.in.linux ${CMAKE_BINARY_DIR}/compucell3d_old.sh @ONLY)
     configure_file(${RUN_SCRIPT_DIR}/compucell3d.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.sh @ONLY)
     configure_file(${RUN_SCRIPT_DIR}/runScript.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh @ONLY)
@@ -155,9 +183,13 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     # configure_file(${RUN_SCRIPT_DIR}/celldraw.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/celldraw.sh @ONLY)
     configure_file(${RUN_SCRIPT_DIR}/optimization.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.sh @ONLY)
 
+
         INSTALL(FILES
-            ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.sh ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.sh
-            ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.sh 
+            ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.sh
+            ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh
+            ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.sh
+            ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.sh
+            ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.sh
 			# ${CMAKE_BINARY_DIR}/post_install_tasks/celldraw.sh
             DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                                                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
