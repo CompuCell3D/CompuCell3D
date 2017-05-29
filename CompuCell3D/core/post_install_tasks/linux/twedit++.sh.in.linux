@@ -6,6 +6,7 @@ export LC_NUMERIC="C.UTF-8"
 
 # export PREFIX_CC3D=@COMPUCELL_INSTALL_DIR@
 export PREFIX_CC3D="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+export PYTHON_EXEC=@PYTHON_EXEC@
 
 export PYTHON_MODULE_PATH=${PREFIX_CC3D}/pythonSetupScripts
 export SWIG_LIB_INSTALL_DIR=${PREFIX_CC3D}/lib/python
@@ -14,4 +15,4 @@ export @LIBRARY_PATH_SYNTAX@=${PREFIX_CC3D}/lib/:$@LIBRARY_PATH_SYNTAX@
 export @LIBRARY_PATH_SYNTAX@=${PREFIX_CC3D}/lib/python:$@LIBRARY_PATH_SYNTAX@
 
 
-python ${PREFIX_CC3D}/@twedit_dir@/twedit_plus_plus_cc3d.py $*
+${PYTHON_EXEC} ${PREFIX_CC3D}/@twedit_dir@/twedit_plus_plus_cc3d.py $*

@@ -8,6 +8,7 @@ export LC_NUMERIC="C.UTF-8"
 
 # export PREFIX_CC3D=@COMPUCELL_INSTALL_DIR@
 export PREFIX_CC3D="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+export PYTHON_EXEC=@PYTHON_EXEC@
 
 export MAX_NUMBER_OF_CONSECUTIVE_RUNS=50
 
@@ -24,6 +25,7 @@ export @LIBRARY_PATH_SYNTAX@=@VTK_LIBRARY_DIRECTORIES@:$@LIBRARY_PATH_SYNTAX@
 export @LIBRARY_PATH_SYNTAX@=@QT_LIBRARY_DIR@:$@LIBRARY_PATH_SYNTAX@
 export SWIG_LIB_INSTALL_DIR=${PREFIX_CC3D}/lib/python
 export PYTHON_MODULE_PATH=${PREFIX_CC3D}/pythonSetupScripts
+export PYTHONPATH=${PREFIX_CC3D}/pythonSetupScripts
 
 
 export COMPUCELL3D_MAJOR_VERSION=@COMPUCELL3D_MAJOR_VERSION@
@@ -34,7 +36,7 @@ export SOSLIB_PATH=${PREFIX_CC3D}/examplesSoslib
 
 echo "CompuCell3D - version $COMPUCELL3D_MAJOR_VERSION.$COMPUCELL3D_MINOR_VERSION.$COMPUCELL3D_BUILD_VERSION"
 export exit_code=0
-python ${PREFIX_CC3D}/@player_dir@/CompuCellPythonSimulationCML.py $* --currentDir=${current_directory}
+${PYTHON_EXEC} ${PREFIX_CC3D}/@player_dir@/CompuCellPythonSimulationCML.py $* --currentDir=${current_directory}
 exit_code=$?
 
 cd ${current_directory}

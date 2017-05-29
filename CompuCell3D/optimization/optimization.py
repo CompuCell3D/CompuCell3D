@@ -7,7 +7,7 @@
 
 import numpy as np
 from OptimizerWorkerProcessZMQ import OptimizerWorkerProcessZMQ
-from template_utils import generate_simulation_files_from_template  
+from template_utils import generate_simulation_files_from_template
 from collections import OrderedDict
 import os
 from os.path import *
@@ -587,6 +587,35 @@ def main_debug_osx():
     except AssertionError as e:
         print 'ABNORMAL EXIT ', e.message
         print 'Make sure your simulation scripts run correctly. Run them using Player or runScript and watch for errors'
+
+
+def main_debug_linux():
+    cml_parser = OptimizationCMLParser()
+
+    # cml_parser.arg('--help')
+    cml_parser.arg('--input', r'/home/m/CC3DProjects/optimization_demo/optimization_demo.cc3d')
+    cml_parser.arg('--params-file', r'/home/m/CC3DProjects/optimization_demo/Simulation/params.json')
+    cml_parser.arg('--cc3d-run-script', r'/home/m/376/runScript.sh')
+    cml_parser.arg('--clean-workdirs')
+    cml_parser.arg('--num-workers', '1')  # here it needs to be specified as str but parser converts it to int
+    cml_parser.arg('--population-size', '6')  # here it needs to be specified as str but parser converts it to int
+
+    args = cml_parser.parse()
+
+    optim_param_mgr = OptimizationParameterManager()
+    optim_param_mgr.parse(args.params_file)
+
+    optimizer = Optimizer()
+
+    optimizer.set_optimization_parameters_manager(optim_param_mgr)
+    optimizer.set_parse_args(args)
+    optimizer.set_num_workers(args.num_workers)
+    try:
+        optimizer.run()
+    except AssertionError as e:
+        print 'ABNORMAL EXIT ', e.message
+        print 'Make sure your simulation scripts run correctly. Run them using Player or runScript and watch for errors'
+
 
 
 #
