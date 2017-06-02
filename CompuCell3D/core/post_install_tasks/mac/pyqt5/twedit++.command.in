@@ -19,8 +19,6 @@ echo "====> twedit++ working directory: $PREFIX_CC3D"
 
 export PYTHONPATH=
 
-# /Users/m/CC3D_QT5_GIT_install/CompuCell3D-new/lib/CompuCell3DPlugins:/Users/m/CC3D_QT5_GIT_install/CompuCell3D-new/lib/CompuCell3DSteppables:/Users/m/CC3D_GIT_MERGE/CompuCell3D/player/Utilities
-
 export DYLD_LIBRARY_PATH=${PREFIX_CC3D}/lib
 export DYLD_LIBRARY_PATH=${PREFIX_CC3D}/lib/python:$DYLD_LIBRARY_PATH
 
@@ -38,9 +36,6 @@ echo "====> PYTHONPATH directory: $PYTHONPATH"
 
 echo "---- ---- ---- ---- ---- ---- ---- ---- "
 echo " setting the PYTHONLIB_SYSTEM shell variable as used by CompuCell3D: "
-# export PYTHONLIB_SYSTEM=/System/Library/Frameworks/Python.framework/Versions/2.${PYTHON_MINOR_VERSION}
-# ln -s /System/Library/Frameworks/Python.framework/Versions/2.${PYTHON_MINOR_VERSION}/Resources/Python.app/Contents/MacOS/Python ${PREFIX_CC3D}/Twedit++CC3D
-# export PYTHON_EXEC=${PREFIX_CC3D}/Twedit++CC3D
 
 
 osx_version=$(sw_vers -productVersion)
@@ -57,20 +52,6 @@ then
 fi
 echo ${osx_major}-${osx_minor}
 
-
-# if [ $osx_minor -ge 11 ]
-# then
-#
-#     if [ ! -f "${PREFIX_CC3D}/cc3d_python" ]
-#     then
-#         #cp /usr/bin/python2.${PYTHON_MINOR_VERSION} ${PREFIX_CC3D}/cc3d_python
-#         cp /System/Library/Frameworks/Python.framework/Versions/2.${PYTHON_MINOR_VERSION}/Resources/Python.app/Contents/MacOS/Python ${PREFIX_CC3D}/cc3d_python
-#     fi
-#
-#     export PYTHON_EXEC=${PREFIX_CC3D}/cc3d_python
-# fi
-
-# export PYTHON_EXEC=python2.${PYTHON_MINOR_VERSION}
 echo " ====> PYTHONLIB_SYSTEM: $PYTHONLIB_SYSTEM"
 
 
@@ -78,7 +59,10 @@ echo "---- ---- ---- ---- ---- ---- ---- ---- "
 echo " setting the PATH shell variable as used by CompuCell3D: "
 export PATH=${PYTHONLIB_SYSTEM}/bin:$PATH
 
-export PYTHON_EXEC=${PREFIX_CC3D}/python27/bin/python2.7
+ln -s ${PREFIX_CC3D}/python27/bin/python2.7 ${PREFIX_CC3D}/Twedit++
+export PYTHON_EXEC=${PREFIX_CC3D}/Twedit++
+
+
 
 
 
