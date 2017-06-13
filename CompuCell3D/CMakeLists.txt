@@ -24,7 +24,7 @@ FIND_PACKAGE (OpenMP)
 # Should we build shared libraries
 OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
-SET (PYQT_VERSION "4" CACHE STRING "PyQt major version")
+SET (PYQT_VERSION "5" CACHE STRING "PyQt major version")
 
 # Specify a version for all libs to use
 # letters A, B, C are added to ensure nice display of sersion in cmake gui
