@@ -17,6 +17,16 @@ print sys.path
 import numpy
 import vtk
 
+if sys.platform.lower().startswith('linux'):
+	# On linux have to import rr early on to avoid
+	# PyQt-related crash - appears to only affect VirtualBox Installs
+	# of linux
+	try:
+		import roadrunner
+	except ImportError:
+		print 'Could nto import roadrunner'
+		pass
+
 # import CC3DXML
 
 from PyQt5.QtCore import *

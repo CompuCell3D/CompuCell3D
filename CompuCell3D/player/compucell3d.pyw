@@ -16,6 +16,17 @@ from PyQt4.QtGui import *
 
 import PyQt4
 
+if sys.platform.lower().startswith('linux'):
+	# On linux have to import rr early on to avoid
+	# PyQt-related crash - appears to only affect VirtualBox Installs
+	# of linux
+	try:
+		import roadrunner
+	except ImportError:
+		print 'Could nto import roadrunner'
+		pass
+
+
 #instaling message handler to suppres spurious qt messages
 if sys.platform=='darwin':
     import platform
