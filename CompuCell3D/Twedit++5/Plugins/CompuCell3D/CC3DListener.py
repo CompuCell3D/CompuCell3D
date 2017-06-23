@@ -58,7 +58,7 @@ class Socket(QTcpSocket):
     def readRequest(self):
         dbgMsg("INSIDE READ REQUEST")
         stream = QDataStream(self)
-        stream.setVersion(QDataStream.Qt_5_6)
+        stream.setVersion(QDataStream.Qt_5_2)
 
         dbgMsg("BYTES AVAILABLE:", self.bytesAvailable())
 
@@ -215,7 +215,7 @@ class Socket(QTcpSocket):
     def sendError(self, msg):
         reply = QByteArray()
         stream = QDataStream(reply, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_5_6)
+        stream.setVersion(QDataStream.Qt_5_2)
         stream.writeUInt16(0)
         # stream << QString("ERROR") << QString(msg)
         stream.writeQString("ERROR")
@@ -228,7 +228,7 @@ class Socket(QTcpSocket):
 
         reply = QByteArray()
         stream = QDataStream(reply, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_5_6)
+        stream.setVersion(QDataStream.Qt_5_2)
         stream.writeUInt16(0)
         # stream << QString("EDITORCLOSED")
         stream.writeQString("EDITORCLOSED")
@@ -241,7 +241,7 @@ class Socket(QTcpSocket):
     def sendEditorOpen(self):
         reply = QByteArray()
         stream = QDataStream(reply, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_5_6)
+        stream.setVersion(QDataStream.Qt_5_2)
         stream.writeUInt16(0)
         # stream << QString("EDITOROPEN")
         stream.writeQString("EDITOROPEN")
@@ -253,7 +253,7 @@ class Socket(QTcpSocket):
     def sendNewSimulation(self, _simulationName=""):
         reply = QByteArray()
         stream = QDataStream(reply, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_5_6)
+        stream.setVersion(QDataStream.Qt_5_2)
         stream.writeUInt16(0)
         # stream << QString("NEWSIMULATION") <<QString(_simulationName)
         # stream << QString("NEWSIMULATION") << QString(_simulationName)
@@ -268,7 +268,7 @@ class Socket(QTcpSocket):
     def sendReply(self, action, room, date):
         reply = QByteArray()
         stream = QDataStream(reply, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_5_6)
+        stream.setVersion(QDataStream.Qt_5_2)
         stream.writeUInt16(0)
         stream << action << room << date
         stream.device().seek(0)

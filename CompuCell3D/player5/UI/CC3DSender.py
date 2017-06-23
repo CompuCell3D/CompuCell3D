@@ -104,7 +104,7 @@ class CC3DSender(QObject):
             return
         self.request = QByteArray()
         stream = QDataStream(self.request, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_5_6)
+        stream.setVersion(QDataStream.Qt_5_2)
         stream.writeUInt16(0)
 
         # stream << "NEWCONNECTION"
@@ -161,7 +161,7 @@ class CC3DSender(QObject):
 
         self.request = QByteArray()
         stream = QDataStream(self.request, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_5_6)
+        stream.setVersion(QDataStream.Qt_5_2)
         stream.writeUInt16(0)
 
         # stream << QString("FILEOPEN") << QString(fileName)
@@ -217,7 +217,7 @@ class CC3DSender(QObject):
     def readResponse(self):
         print "READING RESPONSE CC3D SENDER"
         stream = QDataStream(self.socket)
-        stream.setVersion(QDataStream.Qt_5_6)
+        stream.setVersion(QDataStream.Qt_5_2)
 
         # print "BEFORE INTERCEPTING self.socket.bytesAvailable()=",self.socket.bytesAvailable()
         # msgStr=QString()
@@ -301,7 +301,7 @@ class CC3DSender(QObject):
             QMessageBox.information(None, "EDITOR WAS CLOSED", "EDITOR CLOSED: ")
             reply = QByteArray()
             stream1 = QDataStream(reply, QIODevice.WriteOnly)
-            stream1.setVersion(QDataStream.Qt_5_6)
+            stream1.setVersion(QDataStream.Qt_5_2)
             stream1.writeUInt16(0)
             # self.socket.close()
             self.socket.write(reply)
@@ -322,7 +322,7 @@ class CC3DSender(QObject):
 
             reply = QByteArray()
             stream1 = QDataStream(reply, QIODevice.WriteOnly)
-            stream1.setVersion(QDataStream.Qt_5_6)
+            stream1.setVersion(QDataStream.Qt_5_2)
             stream1.writeUInt16(0)
             # stream1 << QString("CONNECTIONESTABLISHED")
             stream1.writeQString('CONNECTIONESTABLISHED')
@@ -346,7 +346,7 @@ class CC3DSender(QObject):
             newSimulation = stream.readQString()
             reply = QByteArray()
             stream1 = QDataStream(reply, QIODevice.WriteOnly)
-            stream1.setVersion(QDataStream.Qt_5_6)
+            stream1.setVersion(QDataStream.Qt_5_2)
             stream1.writeUInt16(0)
             # stream1 << QString("NEWSIMULATIONRECEIVED")
             stream1.writeQString('NEWSIMULATIONRECEIVED')
