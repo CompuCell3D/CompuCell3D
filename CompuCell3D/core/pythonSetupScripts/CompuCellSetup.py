@@ -1745,7 +1745,7 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
             cc3dSimulationDataHandler.copySimulationDataFiles(customScreenshotDirectoryName)
             simulationPaths.setSimulationResultStorageDirectoryDirect(customScreenshotDirectoryName)
 
-    runFinishFlag = True;
+    runFinishFlag = True
 
     if not steppableRegistry is None:
         steppableRegistry.init(sim)

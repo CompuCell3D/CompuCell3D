@@ -513,6 +513,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         if cml_args.input:
             self.__fileName = cml_args.input
+            startSimulation = True
+
         if cml_args.screenshotDescription:
             self.__screenshotDescriptionFileName = cml_args.screenshotDescription
 
@@ -622,24 +624,16 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # self.UI.console.getSyntaxErrorConsole().closeCC3D.connect(qApp.closeAllWindows)
 
         self.UI.console.getSyntaxErrorConsole().setPlayerMainWidget(self)
-        # self.connect(self.UI.console.getSyntaxErrorConsole(), SIGNAL("closeCC3D()"), qApp.closeAllWindows)
+
         self.UI.console.getSyntaxErrorConsole().closeCC3D.connect(qApp.closeAllWindows)
 
         # establishConnection starts twedit and hooks it up via sockets to player5
-        # self.connect(self.tweditAct, SIGNAL("triggered()"),
-        #              self.UI.console.getSyntaxErrorConsole().cc3dSender.establishConnection)
         self.tweditAct.triggered.connect(self.UI.console.getSyntaxErrorConsole().cc3dSender.establishConnection)
 
         #        print MODULENAME,"    self.UI.console=",self.UI.console
         if port != -1:
             self.UI.console.getSyntaxErrorConsole().cc3dSender.setServerPort(port)
 
-            # if tweditPID != -1:
-            # self.UI.console.getSyntaxErrorConsole().cc3dSender.setTweditPID(tweditPID)
-
-            # if connectTwedit:
-            # self.UI.console.getSyntaxErrorConsole().cc3dSender.connectTwedit
-        # ...
         # checking if file path needs to be remapped to point to files in the directories from which run script was called
         simFileFullName = os.path.join(currentDir, self.__fileName)
         if startSimulation:
@@ -671,7 +665,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
             else:
                 assert False, "Could not find playerSettings file: " + self.playerSettingsFileName
 
-        # print "This is startSimulation=",startSimulation
         if startSimulation:
             self.__runSim()
 
