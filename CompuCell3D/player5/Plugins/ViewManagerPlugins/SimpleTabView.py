@@ -511,16 +511,21 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.__prefsFile = "cc3d_default"  # default name of QSettings .ini file (in ~/.config/Biocomplexity on *nix)
 
-        self.__fileName = cml_args.input
-        self.__screenshotDescriptionFileName = cml_args.screenshotDescription
+        if cml_args.input:
+            self.__fileName = cml_args.input
+        if cml_args.screenshotDescription:
+            self.__screenshotDescriptionFileName = cml_args.screenshotDescription
+
         self.__imageOutput = not cml_args.noOutput
 
         if cml_args.screenshotOutputDir:
             self.customScreenshotDirectoryName = cml_args.screenshotOutputDir
             self.__imageOutput = True
 
-        self.playerSettingsFileName = cml_args.playerSettings
-        currentDir = cml_args.currentDir
+        if cml_args.playerSettings:
+            self.playerSettingsFileName = cml_args.playerSettings
+
+        currentDir = cml_args.currentDir if cml_args.currentDir else ''
         if cml_args.windowSize:
             winSizes = cml_args.windowSize.split('x')
             # print MODULENAME, "  winSizes=", winSizes
@@ -529,7 +534,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             Configuration.setSetting("GraphicsWinWidth", width)
             Configuration.setSetting("GraphicsWinHeight", height)
 
-        port = cml_args.port
+        port = cml_args.port if cml_args.port else -1
         if cml_args.prefs:
             self.__prefsFile = cml_args.prefs
             # print MODULENAME, '---------  doing QSettings ---------  prefsFile=', self.__prefsFile
@@ -546,7 +551,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
             # initiated by the psrun.py script to be an independent run after which player5 gets closed and reopened again for the next run
             self.maxNumberOfConsecutiveRuns = 1
 
-        self.maxNumberOfConsecutiveRuns = cml_args.maxNumberOfConsecutiveRuns
+        if cml_args.maxNumberOfConsecutiveRuns:
+            self.maxNumberOfConsecutiveRuns = cml_args.maxNumberOfConsecutiveRuns
 
         # for o, a in cml_args:
             # print "o=", o
