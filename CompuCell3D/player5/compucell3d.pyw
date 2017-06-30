@@ -3,7 +3,7 @@
 #
 import sys
 import os
-
+import argparse
 import vtk
 
 # TODO
@@ -134,6 +134,12 @@ def main(argv):
 
     print 'compucell3d.pyw:   type(argv)=', type(argv)
     print 'compucell3d.pyw:   argv=', argv
+
+    cml_parser = argparse.ArgumentParser(description='CompuCell3D Player 5')
+    cml_parser.add_argument('-i','--input',required=False,action='store', help='path to the CC3D project file (*.cc3d)')
+    cml_parser.add_argument('--noOutput',required=False,action='store_true', default=False, help='flag supprssing output of simulation snapshots')
+    cml_parser.add_argument('-f', '--outputFrequency',required=False,action='store', default=1, type=int, help='simulation snapshot utput frequency')
+    
 
     import getopt
     opts = None
