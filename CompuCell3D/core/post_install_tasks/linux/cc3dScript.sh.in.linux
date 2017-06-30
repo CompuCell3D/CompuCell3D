@@ -31,7 +31,7 @@ export SOSLIB_PATH=${PREFIX_CC3D}/examplesSoslib
 
 echo "CompuCell3D - version $COMPUCELL3D_MAJOR_VERSION.$COMPUCELL3D_MINOR_VERSION.$COMPUCELL3D_BUILD_VERSION"
 
-${PREFIX_CC3D}/bin/CompuCell3DCML" $* 
+${PREFIX_CC3D}/bin/CompuCell3DCML $* 
 
 
 cd ${current_directory}
