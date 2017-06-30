@@ -493,88 +493,124 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.updateWindowMenu()
 
-    def processCommandLineOptions(self, opts):  #
+    def processCommandLineOptions(self, cml_args):  #
         # command line parsing needs to be fixed - it takes place in two places now...
         '''
         Called from compucell3d.pyw  - parses the command line (rf. player5/compucell3d.pyw now). initializes SimpleTabView member variables
-        :param opts: object returned by: opts, args = getopt.getopt
+        :param cml_args: object returned by: opts, args = getopt.getopt
         :return:
         '''
-        #        import getopt
+
         self.__screenshotDescriptionFileName = ""
         self.customScreenshotDirectoryName = ""
         startSimulation = False
 
-        output = None
-        verbose = False
         currentDir = ""
         port = -1
-        tweditPID = -1
-        # connectTwedit=False
+        # TODO IMPLEMENT CML PARSING HERE
+
         self.__prefsFile = "cc3d_default"  # default name of QSettings .ini file (in ~/.config/Biocomplexity on *nix)
-        for o, a in opts:
-            print "o=", o
-            print "a=", a
-            if o in ("-i"):  # input file (e.g.  .dml for pre-dumped vtk files)
-                self.__fileName = a
-                startSimulation = True
-            elif o in ("-h", "--help"):
-                self.usage()
-                sys.exit()
-            elif o in ("-s"):
-                self.__screenshotDescriptionFileName = a
-            elif o in ("-o"):
-                self.customScreenshotDirectoryName = a
-                self.__imageOutput = True
-            elif o in ("-p"):
-                print ' handling - (playerSettings, e.g. camera)... a = ', a
-                self.playerSettingsFileName = a
-                print MODULENAME, 'self.playerSettingsFileName= ', self.playerSettingsFileName
-            elif o in ("--noOutput"):
-                self.__imageOutput = False
-            elif o in ("--currentDir"):
-                currentDir = a
-                print "currentDirectory=", currentDir
-            elif o in ("-w"):  # assume parameter is widthxheight smashed together, e.g. -w 500x300
-                winSizes = a.split('x')
-                print MODULENAME, "  winSizes=", winSizes
-                width = int(winSizes[0])
-                height = int(winSizes[1])
-                Configuration.setSetting("GraphicsWinWidth", width)
-                Configuration.setSetting("GraphicsWinHeight", height)
 
-            elif o in ("--port"):
-                port = int(a)
-                print "port=", port
-            elif o in ("--prefs"):
-                self.__prefsFile = a
-                print MODULENAME, '---------  doing QSettings ---------  prefsFile=', self.__prefsFile
-                Configuration.mySettings = QSettings(QSettings.IniFormat, QSettings.UserScope, "Biocomplexity",
-                                                     self.__prefsFile)
-                Configuration.setSetting("PreferencesFile", self.__prefsFile)
+        self.__fileName = cml_args.input
+        self.__screenshotDescriptionFileName = cml_args.screenshotDescription
+        self.__imageOutput = not cml_args.noOutput
 
-                # elif o in ("--tweditPID"):
-                # tweditPID=int(a)
-                # print "tweditPID=",tweditPID
+        if cml_args.screenshotOutputDir:
+            self.customScreenshotDirectoryName = cml_args.screenshotOutputDir
+            self.__imageOutput = True
 
-            elif o in ("--exitWhenDone"):
-                self.closePlayerAfterSimulationDone = True
-            elif o in (
-                    "--guiScan"):  # when user uses gui to do parameter scan all we have to do is to set self.closePlayerAfterSimulationDone to True
-                self.closePlayerAfterSimulationDone = True
-                # we reset max number of consecutive runs to 1 because we want each simulation in parameter scan
-                # initiated by the psrun.py script to be an independent run after which player5 gets closed and reopened again for the next run
-                self.maxNumberOfConsecutiveRuns = 1
+        self.playerSettingsFileName = cml_args.playerSettings
+        currentDir = cml_args.currentDir
+        if cml_args.windowSize:
+            winSizes = cml_args.windowSize.split('x')
+            # print MODULENAME, "  winSizes=", winSizes
+            width = int(winSizes[0])
+            height = int(winSizes[1])
+            Configuration.setSetting("GraphicsWinWidth", width)
+            Configuration.setSetting("GraphicsWinHeight", height)
 
-                pass
-            elif o in ("--maxNumberOfRuns"):
-                self.maxNumberOfConsecutiveRuns = int(a)
+        port = cml_args.port
+        if cml_args.prefs:
+            self.__prefsFile = cml_args.prefs
+            # print MODULENAME, '---------  doing QSettings ---------  prefsFile=', self.__prefsFile
+            Configuration.mySettings = QSettings(QSettings.IniFormat, QSettings.UserScope, "Biocomplexity",
+                                                 self.__prefsFile)
+            Configuration.setSetting("PreferencesFile", self.__prefsFile)
 
+        self.closePlayerAfterSimulationDone = cml_args.exitWhenDone
 
-                # elif o in ("--connectTwedit"):
-                # connectTwedit=True
-            else:
-                assert False, "unhandled option"
+        if cml_args.guiScan:
+            # when user uses gui to do parameter scan all we have to do is to set self.closePlayerAfterSimulationDone to True
+            self.closePlayerAfterSimulationDone = True
+            # we reset max number of consecutive runs to 1 because we want each simulation in parameter scan
+            # initiated by the psrun.py script to be an independent run after which player5 gets closed and reopened again for the next run
+            self.maxNumberOfConsecutiveRuns = 1
+
+        self.maxNumberOfConsecutiveRuns = cml_args.maxNumberOfConsecutiveRuns
+
+        # for o, a in cml_args:
+            # print "o=", o
+            # print "a=", a
+            # if o in ("-i"):  # input file (e.g.  .dml for pre-dumped vtk files)
+            #     self.__fileName = a
+            #     startSimulation = True
+            # elif o in ("-h", "--help"):
+            #     self.usage()
+            #     sys.exit()
+            # elif o in ("-s"):
+            #     self.__screenshotDescriptionFileName = a
+            # elif o in ("-o"):
+            #     self.customScreenshotDirectoryName = a
+            #     self.__imageOutput = True
+            # elif o in ("-p"):
+            #     print ' handling - (playerSettings, e.g. camera)... a = ', a
+            #     self.playerSettingsFileName = a
+            #     print MODULENAME, 'self.playerSettingsFileName= ', self.playerSettingsFileName
+            # elif o in ("--noOutput"):
+            #     self.__imageOutput = False
+            # elif o in ("--currentDir"):
+            #     currentDir = a
+            #     print "currentDirectory=", currentDir
+            # elif o in ("-w"):  # assume parameter is widthxheight smashed together, e.g. -w 500x300
+            #     winSizes = a.split('x')
+            #     print MODULENAME, "  winSizes=", winSizes
+            #     width = int(winSizes[0])
+            #     height = int(winSizes[1])
+            #     Configuration.setSetting("GraphicsWinWidth", width)
+            #     Configuration.setSetting("GraphicsWinHeight", height)
+
+            # elif o in ("--port"):
+            #     port = int(a)
+            #     print "port=", port
+            # elif o in ("--prefs"):
+            #     self.__prefsFile = a
+            #     print MODULENAME, '---------  doing QSettings ---------  prefsFile=', self.__prefsFile
+            #     Configuration.mySettings = QSettings(QSettings.IniFormat, QSettings.UserScope, "Biocomplexity",
+            #                                          self.__prefsFile)
+            #     Configuration.setSetting("PreferencesFile", self.__prefsFile)
+            #
+            #     # elif o in ("--tweditPID"):
+            #     # tweditPID=int(a)
+            #     # print "tweditPID=",tweditPID
+
+            # elif o in ("--exitWhenDone"):
+            #     self.closePlayerAfterSimulationDone = True
+            # elif o in (
+            #         "--guiScan"):  # when user uses gui to do parameter scan all we have to do is to set self.closePlayerAfterSimulationDone to True
+            #     self.closePlayerAfterSimulationDone = True
+            #     # we reset max number of consecutive runs to 1 because we want each simulation in parameter scan
+            #     # initiated by the psrun.py script to be an independent run after which player5 gets closed and reopened again for the next run
+            #     self.maxNumberOfConsecutiveRuns = 1
+            #
+            #     pass
+            # elif o in ("--maxNumberOfRuns"):
+            #     self.maxNumberOfConsecutiveRuns = int(a)
+            #
+            #
+            #     # elif o in ("--connectTwedit"):
+            #     # connectTwedit=True
+            # else:
+            #     assert False, "unhandled option"
 
         # import UI.ErrorConsole
         # self.UI.console.getSyntaxErrorConsole().closeCC3D.connect(qApp.closeAllWindows)
