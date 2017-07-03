@@ -45,6 +45,9 @@ class CMLParser(object):
         cml_parser.add_argument('--numSteps', required=False, action='store', default=False, type=int,
                                 help='overwrites number of Monte Carlo Steps that simulation will run for')
 
+        cml_parser.add_argument('--testOutputDir', required=False, action='store',
+                                help='test output directory (used during unit testing only)')
+
         cml_parser.add_argument('-o', '--screenshotOutputDir', required=False, action='store',
                                 help='directory where screenshots should be written to')
 

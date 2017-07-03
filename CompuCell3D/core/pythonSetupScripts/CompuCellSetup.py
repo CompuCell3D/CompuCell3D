@@ -21,6 +21,15 @@ simulationFileName = ""
 screenshotDirectoryName = ""
 customScreenshotDirectoryName = ""
 
+global error_code
+error_code = 0
+
+global error_message
+error_message = ''
+
+global cml_args
+cml_args = None
+
 global cc3dSimulationDataHandler
 cc3dSimulationDataHandler = None
 # global extraFieldsDict
@@ -1580,7 +1589,7 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry=None, _screenUpdateFrequ
     # simthread.waitForInitCompletion()
     simthread.waitForPlayerTaskToFinish()
 
-    runFinishFlag = True;
+    runFinishFlag = True
 
     if not steppableRegistry is None:
         steppableRegistry.init(sim)
@@ -1612,6 +1621,13 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry=None, _screenUpdateFrequ
 
     global current_step
     current_step = beginingStep
+
+    # when num steps are declared at the CML
+    # they have higher precedence than the number of MCS than declared in the simulation file
+    global cml_args
+    if cml_args and cml_args.numSteps:
+        sim.setNumSteps(cml_args.numSteps)
+
     # for i in range(beginingStep,sim.getNumSteps()):
     while True:
 
@@ -1776,6 +1792,12 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
 
     global current_step
     current_step = beginingStep
+
+    # when num steps are declared at the CML
+    # they have higher precedence than the number of MCS than declared in the simulation file
+    global cml_args
+    if cml_args and cml_args.numSteps:
+        sim.setNumSteps(cml_args.numSteps)
 
     # for current_step in range(sim.getNumSteps()):
     while True:

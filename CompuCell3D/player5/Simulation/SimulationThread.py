@@ -403,6 +403,7 @@ class SimulationThread(QtCore.QThread):
         self.emitErrorOccuredDetailed(_errorType, _file, _line, _col, _traceback_message)
 
     def handleErrorFormatted(self, _errorMessage):
+        print 'DUPA handleErrorFormatted'
         self.emitErrorFormatted(_errorMessage)
 
     def runUserPythonScript(self, _scriptFileName, _globals, _locals):
@@ -443,6 +444,7 @@ class SimulationThread(QtCore.QThread):
         #     run_script_name = os.path.abspath(os.path.join(_path, 'core/pythonSetupScripts/CompuCellPythonSimulationNewPlayer.py'))
 
         execfile(run_script_name)
+
 
         # execfile("../pythonSetupScripts/CompuCellPythonSimulationNewPlayer.py")
 

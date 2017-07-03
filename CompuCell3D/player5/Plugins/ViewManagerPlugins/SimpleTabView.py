@@ -25,6 +25,8 @@ PLANES = ("xy", "xz", "yz")
 
 MODULENAME = '---- SimpleTabView.py: '
 
+from PyQt5.QtCore import QCoreApplication
+
 # from ViewManager.ViewManager import ViewManager
 from ViewManager.SimpleViewManager import SimpleViewManager
 from  Graphics.GraphicsFrameWidget import GraphicsFrameWidget
@@ -103,6 +105,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.rollbackImporter = None
 
         from PlotManagerSetup import createPlotManager
+
+        # stores parsed command line arguments
+        self.cml_args = None
 
         self.useVTKPlots = False
         # object responsible for creating/managing plot windows so they're accessible from steppable level
@@ -500,6 +505,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :param cml_args: object returned by: opts, args = getopt.getopt
         :return:
         '''
+        import CompuCellSetup
+        CompuCellSetup.cml_args = cml_args
+
+        self.cml_args = cml_args
 
         self.__screenshotDescriptionFileName = ""
         self.customScreenshotDirectoryName = ""
@@ -837,11 +846,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :param _errorMessage: str with error message
         :return:None
         '''
+        CompuCellSetup.error_code = 1
+
         self.__cleanAfterSimulation()
         syntaxErrorConsole = self.UI.console.getSyntaxErrorConsole()
 
         syntaxErrorConsole.setText(_errorMessage)
         self.UI.console.bringUpSyntaxErrorConsole()
+
+        if self.cml_args.testOutputDir:
+            with open(os.path.join(self.cml_args.testOutputDir, 'error_output.txt'), 'w') as fout:
+                fout.write('%s' % _errorMessage)
+
+        print 'DUPA GOT FORMATTED ERROR'
         return
 
     def processIncommingSimulation(self, _fileName, _stopCurrentSim=False):
@@ -2223,6 +2240,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # print 'Replacing settings'
         Configuration.replaceCustomSettingsWithDefaults()
 
+    def quit(self, error_code=0):
+        """Quit the application."""
+        # self.closeEvent(None)
+        # QtCore.QCoreApplication.instance().quit()
+        print 'error_code = ', error_code
+        QCoreApplication.instance().exit(error_code)
+        print 'AFTER QtCore.QCoreApplication.instance()'
+
+
     def __cleanAfterSimulation(self, _exitCode=0):
         '''
         Cleans after simulation is done
@@ -2248,7 +2274,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             Configuration.setSetting("RecentSimulations", os.path.abspath(self.__fileName))
 
-            sys.exit(_exitCode)
+            # sys.exit(_exitCode)
+            self.quit(CompuCellSetup.error_code)
 
         # in case there is pending simulation to be run we will put it a recent simulation so that it can be ready to run without going through open file dialog
         if self.nextSimulation != "":

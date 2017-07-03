@@ -241,8 +241,10 @@ def main(argv):
     # mainWindow.showMinimized()
     # mainWindow.showNormal()
 
-    app.exec_()
+    error_code = app.exec_()
+    return error_code
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    error_code = main(sys.argv[1:])
+    sys.exit(error_code)
