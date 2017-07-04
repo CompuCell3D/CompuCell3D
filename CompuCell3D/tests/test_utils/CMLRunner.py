@@ -20,21 +20,31 @@ class CMLRunner(Thread):
         self.output_dir = output_dir
         self.lock = Lock()
 
+    def get_run_status(self):
+        if int(self.process_error_code) != 0:
+            return 'ERROR'
+        else:
+            return None
+
     def add_dependent_runner(self, dependent_runner):
         self.dependents.append(dependent_runner)
 
     def write_report(self):
 
-        if self.output_dir:
-            fname = abs_join(self.output_dir, basename(self.args[0]) + '.output')
-            with open(fname, 'w') as f:
-                f.write('%s' % self.process_error_code)
+        if int(self.process_error_code) != 0:
+            if self.output_dir:
+                # fname = abs_join(self.output_dir, basename(self.args[0]) + '.output')
+                mkdir_p(self.output_dir)
+                fname = abs_join(self.output_dir, 'status.output')
+                with open(fname, 'w') as f:
+                    f.write('%s' % self.process_error_code)
 
     def cleanup(self):
         with self.lock:
             self.process_handle = None
             self.process_pid = None
-            self.process_error_code = None
+            # self.process_error_code = None
+
 
     def run(self):
 
