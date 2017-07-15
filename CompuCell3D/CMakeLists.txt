@@ -119,7 +119,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     OPTION(BUNDLE_PYTHON "Builds CC3D assuming Python will be bundled with CC3D - default on Windows and OSX" OFF)
     SET(DEPENDENCIES_DIR CACHE PATH  "Location of dependencies folder. This folder will be copied to installation directory")
-    OPTION(DEPENDENCIES_COPY_FLAG "Enables copying of the dependencies into installaiton dir" OFF)
+    OPTION(DEPENDENCIES_COPY_FLAG "Enables copying of the dependencies into installation dir" OFF)
 endif()
 
 # if (EXISTS ${DEPENDENCIES_DIR})
