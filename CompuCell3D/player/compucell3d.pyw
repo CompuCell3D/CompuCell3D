@@ -23,7 +23,7 @@ if sys.platform.lower().startswith('linux'):
 	try:
 		import roadrunner
 	except ImportError:
-		print 'Could nto import roadrunner'
+		print 'Could not import roadrunner'
 		pass
 
 

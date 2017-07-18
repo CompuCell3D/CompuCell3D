@@ -166,12 +166,17 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
             message("DEPENDENCIES DIR ${DEPENDENCIES_DIR}")
 
+        else()
+            message( SEND_ERROR "\nIf BUNDLE_PYTHON option is checked you must specify DEPENDENCIES_DIR.\nYou also must make sure that DEPENDENCIES_DIR contains Python27 subfolder with full python distribution. You may use symbolic links ( call it Python27) to the full python distribution.
+Keep In mind that you also need to check DEPENDENCIES_COPY flag to enable copying of the dependencies into installation directory
+            " )
         endif()
 
 
     else(BUNDLE_PYTHON)
         message ("USING SYSTEM")
-        SET(PYTHON_EXEC "python")
+        #SET(PYTHON_EXEC "python")
+        SET(PYTHON_EXEC ${PYTHON_EXECUTABLE}) # provided by build-in cmake macro that locates python
     endif()
 
 
