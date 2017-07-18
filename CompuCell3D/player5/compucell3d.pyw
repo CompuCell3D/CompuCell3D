@@ -1,3 +1,10 @@
+"""
+CC3D main script that lunches CC#D in the GUI mode
+When running automated testing f Demo suite use the following cml options:
+
+
+ --exitWhenDone - -testOutputDir = / Users / m / cc3d_tests - -numSteps = 100
+"""
 #
 # compucell3d.pyw - main Python script for the CompuCell3D interactive (GUI) application
 #
@@ -192,4 +199,5 @@ def main(argv):
 
 
 if __name__ == '__main__':
+
     main(sys.argv[1:])
