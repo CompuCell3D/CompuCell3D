@@ -484,7 +484,7 @@ def setSimulationXMLFileName(_simulationFileName):
 
 #     print "\n\n\n got here ",simulationPaths.simulationXMLFileName
 
-def addNewPlotWindow(_title='', _xAxisTitle='', _yAxisTitle='', _xScaleType='linear', _yScaleType='linear', _grid=True):
+def addNewPlotWindow(_title='', _xAxisTitle='', _yAxisTitle='', _xScaleType='linear', _yScaleType='linear', _grid=True,_config_options=None):
     class PlotWindowDummy(object):
         '''
         This class serves as a dummy object that is used when viewManager is None
@@ -514,8 +514,7 @@ def addNewPlotWindow(_title='', _xAxisTitle='', _yAxisTitle='', _xScaleType='lin
     try:
         pW = viewManager.plotManager.getNewPlotWindow()
     except:
-
-        pW = viewManager.plotManager.getNewPlotWindow({
+        full_options_dict = {
             'title':_title,
             'xAxisTitle':_xAxisTitle,
             'yAxisTitle':_yAxisTitle,
@@ -523,7 +522,20 @@ def addNewPlotWindow(_title='', _xAxisTitle='', _yAxisTitle='', _xScaleType='lin
             'yScaleType':_yScaleType,
             'grid':_grid
         }
-        )
+        if _config_options:
+            full_options_dict.update(_config_options)
+
+        pW = viewManager.plotManager.getNewPlotWindow(full_options_dict)
+
+        # pW = viewManager.plotManager.getNewPlotWindow({
+        #     'title':_title,
+        #     'xAxisTitle':_xAxisTitle,
+        #     'yAxisTitle':_yAxisTitle,
+        #     'xScaleType':_xScaleType,
+        #     'yScaleType':_yScaleType,
+        #     'grid':_grid
+        # }
+        # )
         qt_version = 5
 
     if not pW:

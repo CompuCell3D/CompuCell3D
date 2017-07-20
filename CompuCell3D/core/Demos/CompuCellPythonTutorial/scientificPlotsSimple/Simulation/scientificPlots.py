@@ -17,9 +17,9 @@ CompuCellSetup.initializeSimulationObjects(sim,simthread)
 steppableRegistry=CompuCellSetup.getSteppableRegistry()
 
 
-from scientificPlotsSteppables import ExtraPlotSteppable
-extraPlotSteppable=ExtraPlotSteppable(_simulator=sim,_frequency=1)
-steppableRegistry.registerSteppable(extraPlotSteppable)
+# from scientificPlotsSteppables import ExtraPlotSteppable
+# extraPlotSteppable=ExtraPlotSteppable(_simulator=sim,_frequency=1)
+# steppableRegistry.registerSteppable(extraPlotSteppable)
 
 
 from scientificPlotsSteppables import ExtraMultiPlotSteppable

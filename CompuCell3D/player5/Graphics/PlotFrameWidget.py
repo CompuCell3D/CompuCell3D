@@ -1,11 +1,15 @@
 import sys
 from PyQt5 import Qt
+
 # import PyQt.Qwt5 as Qwt
 # from PyQt4.Qwt5.anynumpy import *
 
 
 
-
+try:
+    import webcolors as wc
+except ImportError:
+    warnings.warn('Could not find webcolors. Run "pip install webcolors" to fix this', RuntimeWarning)
 
 import sys
 import os
@@ -20,14 +24,27 @@ import pyqtgraph as pg
 
 
 class PlotFrameWidget(QtGui.QFrame):
-    def __init__(self, parent=None,**kwds):
+    def __init__(self, parent=None, **kwds):
         QtGui.QFrame.__init__(self, parent)
 
         self.plot_params = kwds
-        print 'kwds=',kwds
+        print 'kwds=', kwds
 
         # self.plotWidget=CartesianPlot()
+        # self.plotWidget = pg.PlotWidget(background='w')
         self.plotWidget = pg.PlotWidget()
+
+        try:
+            bg_color = kwds['background']
+        except LookupError:
+            bg_color = None
+
+        if bg_color:
+            try:
+                bg_color_rgb = wc.name_to_rgb(bg_color)
+                self.plotWidget.setBackground(background=bg_color_rgb)
+            except ValueError as e:
+                print >>sys.stderr, 'Could not decode the color %s : Exception : %s'%(bg_color, str(e))
 
 
         # self.plotWidget = pg.GraphicsView()
@@ -50,9 +67,9 @@ class PlotFrameWidget(QtGui.QFrame):
         if kwds['yScaleType'].strip().lower() == 'log':
             y_log_flag = True
 
-        self.plotWidget.setLogMode(x=x_log_flag,y=y_log_flag)
+        self.plotWidget.setLogMode(x=x_log_flag, y=y_log_flag)
         if kwds['grid']:
-            self.plotWidget.showGrid(x=True,y=True,alpha=1.0)
+            self.plotWidget.showGrid(x=True, y=True, alpha=1.0)
 
         # self.plotWidget.setLabel(axis='bottom',text='DUPA')
 

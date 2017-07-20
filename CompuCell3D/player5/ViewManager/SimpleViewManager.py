@@ -719,8 +719,12 @@ class SimpleViewManager(QObject):
 
         instance_version = Version.getVersionAsString()
         instance_revision = Version.getSVNRevision()
-
-        current_version_number = int(current_version.replace('.',''))
+        try:
+            current_version_number = int(current_version.replace('.',''))
+        except:
+            # this can happen when the page gets "decorated" by e.g. your hotel network
+            # will have to come up with a better way of dealing with it
+            return
         current_revision_number = int(current_revision)
         instance_version_number = int(instance_version.replace('.',''))
         instance_revision_number = int(instance_revision)
@@ -730,7 +734,7 @@ class SimpleViewManager(QObject):
         if current_version_number > instance_version_number:
             display_new_version_info = True
 
-        elif current_revision_number == instance_version_number and current_revision_number > instance_revision_number:
+        elif current_version_number == instance_version_number and current_revision_number > instance_revision_number:
             display_new_version_info = True
 
 

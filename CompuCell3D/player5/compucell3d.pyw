@@ -3,7 +3,10 @@ CC3D main script that lunches CC#D in the GUI mode
 When running automated testing f Demo suite use the following cml options:
 
 
- --exitWhenDone - -testOutputDir = / Users / m / cc3d_tests - -numSteps = 100
+ --exitWhenDone --testOutputDir=/Users/m/cc3d_tests --numSteps=100
+
+ or for automatic starting of a particular simulation you use :
+ --input=/home/m/376_dz/Demos/Models/cellsort/cellsort_2D/cellsort_2D.cc3d
 """
 #
 # compucell3d.pyw - main Python script for the CompuCell3D interactive (GUI) application
@@ -145,7 +148,6 @@ def main(argv):
     cml_parser = CMLParser()
     cml_parser.processCommandLineOptions()
     cml_args = cml_parser.cml_args
-
 
     # cml_parser = argparse.ArgumentParser(description='CompuCell3D Player 5')
     # cml_parser.add_argument('-i', '--input', required=False, action='store',

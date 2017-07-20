@@ -13,9 +13,10 @@ import warnings
 try:
     import webcolors as wc
 except ImportError:
-    warnings.warn('Could not find websolors. Run "pip install webcolors" to fix this', RuntimeWarning)
+    warnings.warn('Could not find webcolors. Run "pip install webcolors" to fix this', RuntimeWarning)
 
 import pyqtgraph as pg
+# pg.setConfigOption('background', 'w')
 import pyqtgraph.exporters
 
 import PlotManagerSetup
@@ -182,7 +183,13 @@ class PlotWindowInterface(QtCore.QObject):
         _size = plot_param_dict['_size']
         _alpha = plot_param_dict['_alpha']
 
-        if not self.legend_added:
+        add_legend = False
+        try:
+            add_legend = self.plot_params['legend']
+        except KeyError:
+            pass
+
+        if add_legend and not self.legend_added:
             self.pW.addLegend()
             self.legend_added = True
 

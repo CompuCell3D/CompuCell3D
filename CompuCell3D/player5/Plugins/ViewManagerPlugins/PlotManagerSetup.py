@@ -1,26 +1,32 @@
-
 class PlotManagerBase:
-    def __init__(self,_viewManager=None,_plotSupportFlag=False):
+    def __init__(self, _viewManager=None, _plotSupportFlag=False):
         self.vm = _viewManager
-        self.plotsSupported = checkSupportForPlotting()         
-                    
-    # def addNewPlotWindow(self):
+        self.plotsSupported = checkSupportForPlotting()
+
+        # def addNewPlotWindow(self):
         # return PlotWindowInterfaceBase(self.vm)
+
     def initSignalAndSlots(self):
         pass
+
     def getPlotWindow(self):
         pass
+
     def reset(self):
         pass
+
     def getNewPlotWindow(self):
         pass
-    def processRequestForNewPlotWindow(self,_mutex):
+
+    def processRequestForNewPlotWindow(self, _mutex):
         pass
+
     def restore_plots_layout(self):
         pass
 
     def getPlotWindowsLayoutDict(self):
         return {}
+
 
 def checkSupportForPlotting():
     try:
@@ -72,8 +78,8 @@ def checkSupportForPlotting():
 #             return 1
 #     else:
 #         return 0
-        
-#factory method        
+
+# factory method
 # def createPlotManager(_viewManager=None, _useVTKFlag=False):   # called from SimpleTabView
 #     plotSupportFlag = checkSupportForPlotting(_useVTKFlag)
 #     print '------ PlotManagerSetup.py:    plotSupportFlag=',plotSupportFlag
@@ -108,105 +114,105 @@ def createPlotManager(_viewManager=None, preferred_manager_type=None):  # called
         import pyqtgraph
         from PlotManager import PlotManager
         return PlotManager(_viewManager, True)
-    except ImportError:
+    except ImportError as e:
+        print 'Could not create PLotManager. resorting to PLotManagerBase - plots will not work properly. Here is the exception:'
+        print e
         return PlotManagerBase(_viewManager, False)
 
 
 
-    # print '------ PlotManagerSetup.py:    plotSupportFlag=', plotSupportFlag
-    # if plotSupportFlag < 0:  # via Qwt
-    #     from PlotManager import PlotManager
-    #     print '------ PlotManagerSetup.py:    importing PyQwt PlotManager'
-    #     return PlotManager(_viewManager, plotSupportFlag)
-    # elif plotSupportFlag > 0:  # via VTK
-    #     from PlotManagerVTK import PlotManager
-    #     return PlotManager(_viewManager, plotSupportFlag)
-    # else:  # plotting not possible
-    #     return PlotManagerBase(_viewManager, plotSupportFlag)
+        # print '------ PlotManagerSetup.py:    plotSupportFlag=', plotSupportFlag
+        # if plotSupportFlag < 0:  # via Qwt
+        #     from PlotManager import PlotManager
+        #     print '------ PlotManagerSetup.py:    importing PyQwt PlotManager'
+        #     return PlotManager(_viewManager, plotSupportFlag)
+        # elif plotSupportFlag > 0:  # via VTK
+        #     from PlotManagerVTK import PlotManager
+        #     return PlotManager(_viewManager, plotSupportFlag)
+        # else:  # plotting not possible
+        #     return PlotManagerBase(_viewManager, plotSupportFlag)
+        #
+
+
+
+        # def createPlotManager(_viewManager=None, _useVTKFlag=False):  # called from SimpleTabView
+    #     plotSupportFlag = checkSupportForPlotting(_useVTKFlag)
+    #     print '------ PlotManagerSetup.py:    plotSupportFlag=', plotSupportFlag
+    #     if plotSupportFlag < 0:  # via Qwt
+    #         from PlotManager import PlotManager
+    #         print '------ PlotManagerSetup.py:    importing PyQwt PlotManager'
+    #         return PlotManager(_viewManager, plotSupportFlag)
+    #     elif plotSupportFlag > 0:  # via VTK
+    #         from PlotManagerVTK import PlotManager
+    #         return PlotManager(_viewManager, plotSupportFlag)
+    #     else:  # plotting not possible
+    #         return PlotManagerBase(_viewManager, plotSupportFlag)
     #
 
-
-
-            # def createPlotManager(_viewManager=None, _useVTKFlag=False):  # called from SimpleTabView
-#     plotSupportFlag = checkSupportForPlotting(_useVTKFlag)
-#     print '------ PlotManagerSetup.py:    plotSupportFlag=', plotSupportFlag
-#     if plotSupportFlag < 0:  # via Qwt
-#         from PlotManager import PlotManager
-#         print '------ PlotManagerSetup.py:    importing PyQwt PlotManager'
-#         return PlotManager(_viewManager, plotSupportFlag)
-#     elif plotSupportFlag > 0:  # via VTK
-#         from PlotManagerVTK import PlotManager
-#         return PlotManager(_viewManager, plotSupportFlag)
-#     else:  # plotting not possible
-#         return PlotManagerBase(_viewManager, plotSupportFlag)
-#
-
-        # this class most likel;y is not needed but I keep it for now
-# class PlotWindowInterfaceBase:
+    # this class most likel;y is not needed but I keep it for now
+    # class PlotWindowInterfaceBase:
     # def __init__(self,_plotWindow=None):
-        # if _plotWindow:
-            # self.plotWindow=_plotWindow
-            # self.pW=self.plotWindow.plotWidget
-            
+    # if _plotWindow:
+    # self.plotWindow=_plotWindow
+    # self.pW=self.plotWindow.plotWidget
+
     # def getQWTPLotWidget(self): # returns native QWT widget to be manipulated byt expert users
-        # return self.plotWindow
-        
+    # return self.plotWindow
+
     # def setPlotTitle(self,_title):
-        # pass
-        
+    # pass
+
     # def setTitleSize(self,_size):
-        # pass        
-        
+    # pass
+
     # def setTitleColor(self,_colorName):
-        # pass        
-        
+    # pass
+
     # def setPlotBackgroundColor(self,_colorName):
-        # pass
-        
+    # pass
+
     # def addGrid(self):    
-        # pass
-        
+    # pass
+
     # def addPlot(self,_plotName):
-        # pass
-        
+    # pass
+
     # def addDataPoint(self,_plotName, _x,_y):        
-        # pass
+    # pass
 
     # def showPlot(self,_plotName):
-        # pass
+    # pass
     # def showAllPlots(self):
-        # pass
+    # pass
     # def __showAllPlots(self,_mutex=None):
-        # pass    
+    # pass
     # def changePlotProperty(self,_plotName,_property,_value):
-        # pass
-    
+    # pass
+
     # def getDrawingObjectsSettings(self,_plotName):
-        # return None
-        
+    # return None
+
     # def setXAxisTitle(self,_title):
-        # pass
-        
+    # pass
+
     # def setXAxisTitleSize(self,_size):
-        # pass
-        
+    # pass
+
     # def setXAxisTitleColor(self,_colorName):
-        # pass        
-        
+    # pass
+
     # def setYAxisTitle(self,_title):
-        # pass        
+    # pass
 
     # def setYAxisTitleSize(self,_size):
-        # pass
-        
+    # pass
+
     # def setYAxisTitleColor(self,_colorName):
-        # pass        
-        
-        
+    # pass
+
+
     # def setXAxisLogScale(self):
-        # pass
-        
+    # pass
+
     # def setYAxisLogScale(self):
-        # pass
-        
-    
+    # pass
