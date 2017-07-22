@@ -68,9 +68,11 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
         self.fieldMinRangeFixedCheckBox.clicked.connect(self.fieldMinRangeClicked)
         self.fieldMaxRangeFixedCheckBox.clicked.connect(self.fieldMaxRangeClicked)
-        
 
-        
+        comma_separated_list_validator = QRegExpValidator(QRegExp('(\d+)(,\d+)*'))
+
+        self.cellTypesInvisibleList.setValidator(comma_separated_list_validator)
+
         self.vectorsArrowColorCheckBox.clicked.connect(self.vectorsArrowColorClicked)
         self.vectorsArrowColorButton.clicked.connect(self.vectorsArrowColorButtonClicked)
         
@@ -658,6 +660,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("FixedArrowColorOn", self.vectorsArrowColorCheckBox.isChecked())
         
         # 3D
+
+        # cellTypesInvisibleList = self.cellTypesInvisibleList.text()
 
         Configuration.setSetting("Types3DInvisible", self.cellTypesInvisibleList.text())
         Configuration.setSetting("BoundingBoxOn", self.boundingBoxCheckBox.isChecked())

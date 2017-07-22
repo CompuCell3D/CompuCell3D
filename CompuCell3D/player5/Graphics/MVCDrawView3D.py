@@ -148,6 +148,18 @@ class MVCDrawView3D(MVCDrawViewBase):
             typesInvisible = string.replace(self.typesInvisibleStr," ","")
             
             typesInvisible = string.split(typesInvisible,",")
+            def cell_type_check(cell_type):
+                try:
+                    cell_type_int = int(cell_type)
+                    if cell_type_int>=0:
+
+                        return True
+                    else:
+                        return False
+                except:
+                    False
+
+            typesInvisible = [int(cell_type) for cell_type in typesInvisible if cell_type_check(cell_type)]
             # print "typesInvisibleVec=",typesInvisibleVec
             #turning list into a dictionary
             self.invisibleCellTypes.clear()
