@@ -67,17 +67,21 @@ IF (WIN32)
       ${CMAKE_INSTALL_PREFIX}/include
       ${KDE4_INCLUDE_DIR}
       ${CMAKE_SOURCE_DIR}/core
-      PATH_SUFFIXES eigen3 eigen
+      PATH_SUFFIXES Eigen3 Eigen
     )
 else (WIN32)
+    message("OSX LOOKING FOR PATH", ${CMAKE_SOURCE_DIR}/core/Eigen )
 	find_path(EIGEN3_INCLUDE_DIR NAMES Eigen
       PATHS
       ${CMAKE_INSTALL_PREFIX}/include
       ${KDE4_INCLUDE_DIR}
-      ${CMAKE_SOURCE_DIR}/core/Eigen
-      PATH_SUFFIXES eigen3 eigen
+      #${CMAKE_SOURCE_DIR}/core/Eigen
+      ${CMAKE_SOURCE_DIR}/core
+      PATH_SUFFIXES Eigen3 Eigen
     )
 endif(WIN32)
+
+    message ('LOCATED EIGEN AT',${EIGEN3_INCLUDE_DIR} )
 
   if(EIGEN3_INCLUDE_DIR)
   _eigen3_check_version()
