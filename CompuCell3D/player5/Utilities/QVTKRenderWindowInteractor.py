@@ -526,6 +526,14 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
                                             ctrl, shift, key, 0, None)
         self._Iren.KeyReleaseEvent()
 
+    def zoomIn(self):
+
+        self._Iren.MouseWheelForwardEvent()
+
+    def zoomOut(self):
+
+        self._Iren.MouseWheelBackwardEvent()
+
     def wheelEvent(self, ev):
         if hasattr(ev, 'delta'):
             self.__wheelDelta += ev.delta()
