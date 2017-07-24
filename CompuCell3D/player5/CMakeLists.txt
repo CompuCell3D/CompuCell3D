@@ -14,6 +14,9 @@ INCLUDE_DIRECTORIES (
 SET(player_dir "player")
 if(${PYQT_VERSION} STREQUAL 5)
     SET(player_dir "player5")
+    if(APPLE)
+        add_subdirectory(qt5_osxhelper)
+    endif(APPLE)
 endif()
 
 

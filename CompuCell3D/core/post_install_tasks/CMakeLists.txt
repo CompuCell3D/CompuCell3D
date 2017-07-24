@@ -115,6 +115,15 @@ elseif (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
             configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/celldraw.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/celldraw.command @ONLY)
 
         elseif(${PYQT_VERSION} STREQUAL 5)
+
+            if (BUNDLE_PYTHON)
+                SET(PYTHON_EXEC_FILE "\${PREFIX_CC3D}/python27/bin/python2.7")
+                message ("USING BUNDLE")
+            else(BUNDLE_PYTHON)
+                SET(PYTHON_EXEC_FILE ${PYTHON_EXECUTABLE})
+                message ("USING EXTERNAL PYTHON")
+            endif(BUNDLE_PYTHON)
+
             configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/pyqt5/compucell3d.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/compucell3d.command @ONLY)
             configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/pyqt5/twedit++.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/twedit++.command @ONLY)
             configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/pyqt5/runScript.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/runScript.command @ONLY)
