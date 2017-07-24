@@ -21,6 +21,7 @@ echo "---- ---- ---- ---- ---- ---- ---- ---- "
 
 # the "PREFIX_CC3D" shell variable is used by CompuCell3D code, its name can NOT be modified:
 export PREFIX_CC3D=$(pwd)
+export PYTHON_EXEC=@PYTHON_EXEC_FILE@
 
 export MAX_NUMBER_OF_CONSECUTIVE_RUNS=50
 
@@ -104,7 +105,7 @@ echo " setting the PATH shell variable as used by CompuCell3D: "
 export PATH=${PYTHONLIB_SYSTEM}/bin:$PATH
 
 
-export PYTHON_EXEC=${PREFIX_CC3D}/python27/bin/python2.7
+# export PYTHON_EXEC=${PREFIX_CC3D}/python27/bin/python2.7
 ${PYTHON_EXEC} --version
 
 

@@ -53,7 +53,8 @@ echo " ====> PYTHONLIB_SYSTEM: $PYTHONLIB_SYSTEM"
 
 export PATH=${PYTHONLIB_SYSTEM}/bin:$PATH
 
-export PYTHON_EXEC=${PREFIX_CC3D}/python27/bin/python2.7
+export PYTHON_EXEC=@PYTHON_EXEC_FILE@
+# export PYTHON_EXEC=${PREFIX_CC3D}/python27/bin/python2.7
 ${PYTHON_EXEC} --version
 
 
