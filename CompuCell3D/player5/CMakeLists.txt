@@ -14,9 +14,17 @@ INCLUDE_DIRECTORIES (
 SET(player_dir "player")
 if(${PYQT_VERSION} STREQUAL 5)
     SET(player_dir "player5")
+    # safer options that copies precompiled binary...
     if(APPLE)
-        add_subdirectory(qt5_osxhelper)
+        add_subdirectory(qt5_osxhelper_binary)
     endif(APPLE)
+
+
+    # this is for compiling qt_osxhelper - may not work in case gcc/g++ does not support objective-c
+    # this happens with some 3rd aprty compilers
+    # if(APPLE)
+    #     add_subdirectory(qt5_osxhelper)
+    # endif(APPLE)
 endif()
 
 
