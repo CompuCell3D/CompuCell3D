@@ -3,8 +3,14 @@
 #
 import sys
 import os
-
+import numpy
 import vtk
+import CC3DXML
+
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+import PyQt5
 
 # TODO
 # * restore xml widget prepareXMLTreeView in simpleTabView.py
@@ -13,18 +19,8 @@ import vtk
 # import sip
 # sip.setapi('QVariant', 1)
 
-print sys.path
-import numpy
-import vtk
+#print sys.path
 
-
-import CC3DXML
-
-
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-import PyQt5
 
 #instaling message handler to suppres spurious qt messages
 if sys.platform=='darwin':
