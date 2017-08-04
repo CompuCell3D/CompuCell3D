@@ -57,7 +57,8 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
                     event.accept()
                 else:
                     nextButton = self.button(QWizard.NextButton)
-                    nextButton.emit(SIGNAL("clicked(bool)"), True)
+                    # nextButton.emit(SIGNAL("clicked(bool)"), True)
+                    nextButton.clicked.emit(True)
         elif self.currentPage() == self.pageDict["Diffusants"][0]:
             fieldName = str(self.fieldNameLE.text())
             fieldName = string.rstrip(fieldName)
@@ -68,7 +69,8 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
                     event.accept()
                 else:
                     nextButton = self.button(QWizard.NextButton)
-                    nextButton.emit(SIGNAL("clicked(bool)"), True)
+                    # nextButton.emit(SIGNAL("clicked(bool)"), True)
+                    nextButton.clicked.emit(True)
 
         elif self.currentPage() == self.pageDict["ContactMultiCad"][0]:
             cadherin = str(self.cmcMoleculeLE.text())
@@ -79,7 +81,8 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
                     event.accept()
                 else:
                     nextButton = self.button(QWizard.NextButton)
-                    nextButton.emit(SIGNAL("clicked(bool)"), True)
+                    # nextButton.emit(SIGNAL("clicked(bool)"), True)
+                    nextButton.clicked.emit(True)
         elif self.currentPage() == self.pageDict["AdhesionFlex"][0]:
             molecule = str(self.afMoleculeLE.text())
             molecule = string.rstrip(molecule)
@@ -89,18 +92,21 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
                     event.accept()
                 else:
                     nextButton = self.button(QWizard.NextButton)
-                    nextButton.emit(SIGNAL("clicked(bool)"), True)
+                    # nextButton.emit(SIGNAL("clicked(bool)"), True)
+                    nextButton.clicked.emit(True)
 
         elif self.currentPage() == self.pageDict["FinalPage"][0]:  # last page
             if event.key() == Qt.Key_Return:
                 finishButton = self.button(QWizard.FinishButton)
-                finishButton.emit(SIGNAL("clicked(bool)"), True)
+                # finishButton.emit(SIGNAL("clicked(bool)"), True)
+                finishButton.clicked.emit(True)
         else:
             if event.key() == Qt.Key_Return:
                 # move to the next page
                 nextButton = self.button(QWizard.NextButton)
                 print "nextButton=", nextButton
-                nextButton.emit(SIGNAL("clicked(bool)"), True)
+                nextButton.clicked.emit(True)
+                # nextButton.emit(SIGNAL("clicked(bool)"), True)
             # nextButton.emit(clicked,True)
 
             pass
