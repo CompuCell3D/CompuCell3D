@@ -2,6 +2,7 @@ import re
 from utils.global_imports import *
 import ui_newsimulationwizard
 import string
+from collections import OrderedDict
 
 MAC = "qt_mac_set_native_menubar" in dir()
 
@@ -987,6 +988,13 @@ class NewSimulationWizard(QWizard, ui_newsimulationwizard.Ui_NewSimulationWizard
         self.generalPropertiesDict["MCS"] = self.mcsSB.value()
         self.generalPropertiesDict["LatticeType"] = str(self.latticeTypeCB.currentText())
         self.generalPropertiesDict["SimulationName"] = name
+        self.generalPropertiesDict["BoundaryConditions"] = OrderedDict()
+
+
+        self.generalPropertiesDict["BoundaryConditions"]['x'] = self.xbcCB.currentText()
+        self.generalPropertiesDict["BoundaryConditions"]['y'] = self.ybcCB.currentText()
+        self.generalPropertiesDict["BoundaryConditions"]['z'] = self.zbcCB.currentText()
+
 
         self.generalPropertiesDict["Initializer"] = ["uniform", None]
         if self.blobRB.isChecked():

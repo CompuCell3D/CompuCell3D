@@ -140,6 +140,11 @@ class CC3DMLGeneratorBase:
         if gpd["LatticeType"] != "Square":
             mElement.ElementCC3D("LatticeType", {}, gpd["LatticeType"])
 
+        for dim_name in ['x','y','z']:
+           if gpd['BoundaryConditions'][dim_name] == 'Periodic':
+               mElement.ElementCC3D('Boundary_'+dim_name, {}, 'Periodic')
+
+
     @GenerateDecorator('Metadata', ['', ''])
     def generateMetadataSimulationProperties(self, *args, **kwds):
         cellTypeData = self.cellTypeData
