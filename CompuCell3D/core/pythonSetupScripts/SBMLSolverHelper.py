@@ -618,7 +618,6 @@ class SBMLSolverHelper(object):
             dict_attrib_from = CompuCell.getPyAttrib(_fromCell)
             sbmlDictFrom = dict_attrib_from['SBMLSolver']
         except LookupError, e:
-            # if  _fromCell does not have SBML networks there is nothing to copy
             return
 
         try:
@@ -630,66 +629,11 @@ class SBMLSolverHelper(object):
             sbmlDictTo = dict_attrib_to['SBMLSolver']
 
         for sbmlName in sbmlNamesToCopy:
-            # stateFrom = self.getSBMLStateAsPythonDict(_modelName=sbmlName, _cell=_fromCell)
-            #
-            # rrFrom = sbmlDictFrom[sbmlName]
-            # pathFrom = rrFrom.path
-            # pathFromNormalized = self.normalizePath(pathFrom)
-            # self.addSBMLToCell(_modelFile=pathFrom, _modelName=sbmlName, _cell=_toCell, _stepSize=rrFrom.stepSize,
-            #                    _initialConditions=stateFrom, _coreModelName=sbmlName,
-            #                    _modelPathNormalized=pathFromNormalized, _options=_options)
 
             rrFrom = sbmlDictFrom[sbmlName]
             currentStateSBML = sbmlDictFrom[sbmlName].getCurrentSBML()
             self.addSBMLToCell(_modelName=sbmlName, _cell=_toCell, _stepSize=rrFrom.stepSize, _options=_options,
                                _currentStateSBML=currentStateSBML)
-
-    # def copySBMLs(self, _fromCell,_toCell,_sbmlNames=[],_options=None):
-    #
-    #     sbmlNamesToCopy = []
-    #     import CompuCell
-    #     if not (len(_sbmlNames)):
-    #         # if user does not specify _sbmlNames we copy all SBML networks
-    #         try:
-    #             dict_attrib = CompuCell.getPyAttrib(_fromCell)
-    #             sbmlDict = dict_attrib['SBMLSolver']
-    #             sbmlNamesToCopy = sbmlDict.keys()
-    #         except LookupError, e:
-    #             pass
-    #     else:
-    #         sbmlNamesToCopy = _sbmlNames
-    #
-    #     try:
-    #         dict_attrib_from = CompuCell.getPyAttrib(_fromCell)
-    #         sbmlDictFrom = dict_attrib_from['SBMLSolver']
-    #     except LookupError, e:
-    #         # if  _fromCell does not have SBML networks there is nothing to copy
-    #         return
-    #
-    #     try:
-    #         dict_attrib_to = CompuCell.getPyAttrib(_toCell)
-    #         sbmlDictTo = dict_attrib_to['SBMLSolver']
-    #     except LookupError, e:
-    #         # if _toCell does not have SBMLSolver dictionary entry we simply add it
-    #         dict_attrib_to['SBMLSolver'] = {}
-    #         sbmlDictTo = dict_attrib_to['SBMLSolver']
-    #
-    #     for sbmlName in sbmlNamesToCopy:
-    #         # stateAsASBMLFrom = self.getSBMLStateAsPythonDict(_modelName=sbmlName, _cell=_fromCell)
-    #
-    #         rr_from =sbmlDictFrom[sbmlName]
-    #         from RoadRunnerPy import RoadRunnerPy
-    #         rr_to = RoadRunnerPy(sbml=rr_from.getCurrentSBML())
-    #
-    #         # setting stepSize
-    #         rr_to.stepSize = rr_from.stepSize
-    #
-    #         # # loading SBML and LLVM-ing it
-    #         # rr.loadSBML(_externalPath=modelPathNormalized)
-    #
-    #         # storing rr instance in the cell dictionary
-    #         sbmlDictTo[coreModelName] = rr_to
-
 
 
     def normalizePath(self, _path):
