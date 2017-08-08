@@ -150,6 +150,7 @@ def main(argv):
             Configuration.setPrefsFile(a)
 
     # Import modules related UI developed in CC3D
+    # UserInterface creates the MainWindow in CC3D
     from UI.UserInterface import UserInterface
     from CQt.CQApplication import CQApplication
 
