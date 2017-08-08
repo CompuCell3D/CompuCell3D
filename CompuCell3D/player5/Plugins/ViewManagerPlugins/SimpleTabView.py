@@ -2875,6 +2875,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         """
         What is CompuCellSetup?
+        It is located in ./core/pythonSetupScripts/CompuCellSetup.py
         
         """
         import CompuCellSetup
