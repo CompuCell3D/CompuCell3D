@@ -734,7 +734,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     def prepareForNewSimulation(self, _forceGenericInitialization=False, _inStopFcn=False):
         """
-        This function creates new instance of computational thread and sets various flags to initial values i.e. to a state before the beginnig of the simulations
+        This function creates new instance of computational thread and sets various flags
+        to initial values i.e. to a state before the beginnig of the simulations
         """
         self.resetControlButtonsAndActions()
 
@@ -2833,6 +2834,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     def __openSim(self, fileName=None):
         '''
+        This function is called when open file is triggered.
         Displays File open dialog to open new simulation
         :param fileName: str - unused
         :return:None
@@ -2871,10 +2873,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # setting text for main window (self.__parent) title bar
         self.__parent.setWindowTitle(basename(self.__fileName) + " - CompuCell3D Player")
 
+        """
+        What is CompuCellSetup?
+        It is located in ./core/pythonSetupScripts/CompuCellSetup.py
+        
+        """
         import CompuCellSetup
-
         CompuCellSetup.simulationFileName = self.__fileName
 
+        # Add the current opening file to recent files and recent simulation
         Configuration.setSetting("RecentFile", self.__fileName)
         Configuration.setSetting("RecentSimulations",
                                  self.__fileName)  # each loaded simulation has to be passed to a function which updates list of recent files
