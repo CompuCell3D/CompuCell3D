@@ -3142,16 +3142,26 @@ class EditorWindow(QMainWindow):
         """
             slot - saves all open documents  - if they need saving (e.g. were modified and changes were not saved)
         """
+
+        """
+        Resolving Issue #54:  Clicking 'Save All' jumps to main python script
+        Link: https://github.com/CompuCell3D/CompuCell3D/issues/54
+        Quick-Fix: Setting back the focus to current Index once all files are saved.
+        TO-DO: Change the Save-All functionality
+        """
+
+        currentEditor = self.getCurrentEditor()
+        currentIndex = currentEditor.panel.indexOf(currentEditor)
+
         unnamedFiles = {}
 
         for editor in self.getEditorList():
 
             if not self.getEditorFileName(editor) == '':
                 index = editor.panel.indexOf(editor)
-                editor.panel.setCurrentIndex(index)
 
-                editor.setFocus(
-                    Qt.MouseFocusReason)  # we have to set focus to editor so that it get's picked as active editor - this is the condition used by save functions
+                editor.panel.setCurrentIndex(index)
+                editor.setFocus(Qt.MouseFocusReason)  # we have to set focus to editor so that it get's picked as active editor - this is the condition used by save functions
                 if editor.isModified():
                     self.save()
                 else:
@@ -3170,6 +3180,10 @@ class EditorWindow(QMainWindow):
             editor.setFocus(Qt.MouseFocusReason)
 
             self.saveAs(unnamedFiles[editor])
+
+        currentEditor.panel.setCurrentIndex(currentIndex)
+        currentEditor.setFocus(Qt.MouseFocusReason)
+
 
     def about(self):
         """
