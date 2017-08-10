@@ -282,7 +282,7 @@ field = self.getConcentrationField('FIELD_NAME')
 minValue = field.min()
 
 ----------  # @Submenu@ Get Field Max Value
-minValue = field.max()
+maxValue = field.max()
 
 ----------  # @Submenu@ Get Field Value
 value = field[10, 10, 0]
