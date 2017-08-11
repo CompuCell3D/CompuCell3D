@@ -4505,6 +4505,18 @@ class EditorWindow(QMainWindow):
             if encoding=='':
                 encoding='utf-8'
 
+            """
+             ISSUE #64: Save function saving a blank file in case of exception.
+             FIX: Creating a .backup folder and creating backup of the file inside it before save operation
+            """
+            fileDirectory = os.path.dirname(_fileName)
+            backupDirectory = os.path.join(fileDirectory, ".backup")
+            backupFilePath = os.path.join(backupDirectory, os.path.basename(_fileName))
+            if not os.path.exists(backupDirectory):
+                os.makedirs(backupDirectory)
+
+            shutil.copyfile(_fileName, backupFilePath)
+
             import codecs
             try:
                 fh = codecs.open(_fileName+'~', 'wb',Encoding.normalizeEncodingName(encoding))
@@ -4513,6 +4525,7 @@ class EditorWindow(QMainWindow):
                 Encoding.writeBOM(fh,encoding)
                 fh.write(txt)
                 write_success = True
+
             except:
                 fh.close()
                 # resorting to utf8 encoding
@@ -4523,9 +4536,10 @@ class EditorWindow(QMainWindow):
                 try:
                     Encoding.writeBOM(fh, encoding)
                     fh.write(txt)
+                    write_success = True
                 except:
                     raise IOError('Could not save file using encoding %s'%encoding)
-                write_success = True
+
             finally:
                 fh.close()
 
@@ -4533,9 +4547,15 @@ class EditorWindow(QMainWindow):
                     try:
                         shutil.move(_fileName + '~',_fileName )
                     except shutil.Error:
-
+                        # If there is error while renaming the newly saved file it will treated as write false
+                        write_success = False
                         QtWidgets.QMessageBox.warning(self, "Twedit++",
                                                   "Cannot rename %s -> %s." % (_fileName + '~', _fileName ))
+                """
+                In Finally block if the write_success is false then copy the backup file as a original file
+                """
+                if write_success == False:
+                    shutil.copyfile(backupFilePath, _fileName)
 
         except IOError, why:
             QtWidgets.QApplication.restoreOverrideCursor()
