@@ -915,6 +915,7 @@ class EditorWindow(QMainWindow):
         """
             restores tabs based on the last saved session
         """
+ 
         fileList = self.configuration.setting("ListOfOpenFilesAndPanels")
         for i in range(0, len(fileList), 2):
             panel = int(fileList[i + 1])
