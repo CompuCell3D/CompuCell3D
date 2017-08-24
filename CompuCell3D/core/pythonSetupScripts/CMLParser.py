@@ -1,4 +1,5 @@
 import sys
+import os.path
 import argparse
 
 class CMLParser(object):
@@ -7,6 +8,9 @@ class CMLParser(object):
         self.customScreenshotDirectoryName = ''
         self.__fileName = ''
         self.__cml_args = None
+        self.outputFrequency = 1
+        self.outputFileCoreName = ''
+
 
 
     @property 
@@ -72,7 +76,7 @@ class CMLParser(object):
         cml_parser.add_argument('--guiScan', required=False, action='store_true', default=False,
                                 help='enables running parameter scan in the Player')
 
-        cml_parser.add_argument('--maxNumberOfConsecutiveRuns', required=False, action='store', default=False, type=int,
+        cml_parser.add_argument('--maxNumberOfConsecutiveRuns', required=False, action='store', default=0, type=int,
                                 help='maximum number of consecutive runs in the Player before Player restarts')
 
         cml_parser.add_argument('--pushAddress', required=False, action='store',
@@ -83,6 +87,13 @@ class CMLParser(object):
 
 
         self.__cml_args = cml_parser.parse_args()
+
+        #filling out legacy variables
+        self.__fileName = self.__cml_args.input
+        self.__screenshotDescriptionFileName = self.__cml_args.screenshotDescription
+        self.customScreenshotDirectoryName = self.__cml_args.screenshotOutputDir
+        self.outputFrequency = self.__cml_args.outputFrequency
+        self.outputFileCoreName = os.path.basename(self.__fileName.replace('.','_'))
         #
         #
         #
