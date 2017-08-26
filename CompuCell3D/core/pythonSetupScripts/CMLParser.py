@@ -90,10 +90,12 @@ class CMLParser(object):
 
         #filling out legacy variables
         self.__fileName = self.__cml_args.input
+        if self.__fileName:
+            self.outputFileCoreName = os.path.basename(self.__fileName.replace('.', '_'))
+
         self.__screenshotDescriptionFileName = self.__cml_args.screenshotDescription
         self.customScreenshotDirectoryName = self.__cml_args.screenshotOutputDir
         self.outputFrequency = self.__cml_args.outputFrequency
-        self.outputFileCoreName = os.path.basename(self.__fileName.replace('.','_'))
         #
         #
         #
