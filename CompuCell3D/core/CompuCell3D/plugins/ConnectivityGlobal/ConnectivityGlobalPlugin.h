@@ -54,6 +54,7 @@ namespace CompuCell3D {
     BasicClassAccessor<ConnectivityGlobalData> connectivityGlobalDataAccessor;
   
     unsigned int maxNeighborIndex;
+	unsigned int max_neighbor_index_local_search;
     BoundaryStrategy * boundaryStrategy;
     
 	 Potts3D *potts;
@@ -80,7 +81,11 @@ namespace CompuCell3D {
 	     virtual double changeEnergy(const Point3D &pt, const CellG *newCell,
                                 const CellG *oldCell);
 
+		 double ConnectivityGlobalPlugin::changeEnergy_old(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
+
 	bool checkIfCellIsFragmented(const CellG * cell,Point3D cellPixel);
+	bool check_local_connectivity(const Point3D &pt, const CellG *cell, unsigned int max_neighbor_index_local_search, bool add_pt_to_bfs);
+
     //SteerableObject interface
     virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
     virtual std::string steerableName();
