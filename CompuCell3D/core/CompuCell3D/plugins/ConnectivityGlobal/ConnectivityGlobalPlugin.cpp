@@ -305,9 +305,9 @@ bool ConnectivityGlobalPlugin::check_local_connectivity(const Point3D &pt, const
 
 		cell_pixels_set_reference.insert(neighbor.pt);
 	}
-	cerr << "pt=" << pt<<endl;
-	cerr << "cell_pixels_set.size()=" << cell_pixels_set_reference.size() << endl;
-	cerr << "add_pt_to_bfs=" << add_pt_to_bfs << endl;
+	//cerr << "pt=" << pt<<endl;
+	//cerr << "cell_pixels_set.size()=" << cell_pixels_set_reference.size() << endl;
+	//cerr << "add_pt_to_bfs=" << add_pt_to_bfs << endl;
 	if (add_pt_to_bfs) {
 		//we can only add change point (for newCell only) if it has at least one nearest neighbor
 
@@ -326,7 +326,7 @@ bool ConnectivityGlobalPlugin::check_local_connectivity(const Point3D &pt, const
 			add_pt_to_bfs_ok = true;
 			break;
 		}
-		cerr << "add_pt_to_bfs_ok=" << add_pt_to_bfs << endl;
+		//cerr << "add_pt_to_bfs_ok=" << add_pt_to_bfs << endl;
 		//if we found nearest neighbor for the pt (when considering newCell only)
 		//we add it to the set of newCell pixels
 		if (add_pt_to_bfs_ok) {
@@ -342,7 +342,7 @@ bool ConnectivityGlobalPlugin::check_local_connectivity(const Point3D &pt, const
 		//if pt has no nearest neighbors then it means that the newCell will be fragmented and we do not allow this
 
 	}
-	cerr << " after adding cell_pixels_set=" << cell_pixels_set_reference.size() << endl;
+	//cerr << " after adding cell_pixels_set=" << cell_pixels_set_reference.size() << endl;
 	set<Point3D> visited_pixels;
 	deque<Point3D> neighbors_deque;
 	set<Point3D>::iterator sitr;
