@@ -30,6 +30,20 @@ export PREFIX_CC3D=$(pwd)
 
 export PYTHON_EXEC_FILE=@PYTHON_EXEC_FILE@
 
+export CC3D_PYTHON_APP=${PREFIX_CC3D}/python27/compucell3d.app/Contents/MacOS/python
+
+if [ -e ${CC3D_PYTHON_APP} ]
+then
+    echo "Using app"
+    export PYTHON_EXEC_FILE=${CC3D_PYTHON_APP}
+    export PYTHON_EXEC=${CC3D_PYTHON_APP}
+else
+    echo "Using script"
+    ln -s ${PYTHON_EXEC_FILE} ${PREFIX_CC3D}/Twedit++
+    export PYTHON_EXEC=${PREFIX_CC3D}/Twedit++
+fi
+
+
 
 export MAX_NUMBER_OF_CONSECUTIVE_RUNS=50
 
@@ -104,8 +118,9 @@ export PATH=${PYTHONLIB_SYSTEM}/bin:$PATH
 echo " ====> PATH: $PATH"
 
 # ln -s ${PREFIX_CC3D}/python27/bin/python2.7 ${PREFIX_CC3D}/CompuCell3D
-ln -s ${PYTHON_EXEC_FILE} ${PREFIX_CC3D}/CompuCell3D
-export PYTHON_EXEC=${PREFIX_CC3D}/CompuCell3D
+
+# ln -s ${PYTHON_EXEC_FILE} ${PREFIX_CC3D}/CompuCell3D
+# export PYTHON_EXEC=${PREFIX_CC3D}/CompuCell3D
 
 ${PYTHON_EXEC} --version
 
