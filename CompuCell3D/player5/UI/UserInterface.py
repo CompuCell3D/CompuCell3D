@@ -1,5 +1,8 @@
-# DONE: Fix bug with View->Plugins when the Plugins dock window is closed.
-# DONE: Set the proper sizes for "Model Editor" and "Plugins"
+'''
+This file holds the UI elements for CompuCell3D Player. Class UserInterface is the MainWindow of the
+CompuCell3D player invoked from compucell3d_new.py file.
+'''
+
 # FIXME: Make the Console as a Dock window
 # FIXME: When you open the XML file the second time, it doesn't expand the tree
 # TODO: Make the tooltip for the description column in Plugins.
@@ -64,7 +67,9 @@ class DockWidget(QDockWidget):
         if self.toggleFcn: self.toggleFcn(False)
         # Configuration.setSetting(str(self.objectName(), False)
 
-
+"""
+This class represents the MainWindow of CompuCell3D.
+"""
 class UserInterface(QMainWindow):
 
     appendStdoutSignal = pyqtSignal(str)

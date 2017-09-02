@@ -915,6 +915,7 @@ class EditorWindow(QMainWindow):
         """
             restores tabs based on the last saved session
         """
+ 
         fileList = self.configuration.setting("ListOfOpenFilesAndPanels")
         for i in range(0, len(fileList), 2):
             panel = int(fileList[i + 1])
@@ -3142,16 +3143,26 @@ class EditorWindow(QMainWindow):
         """
             slot - saves all open documents  - if they need saving (e.g. were modified and changes were not saved)
         """
+
+        """
+        Resolving Issue #54:  Clicking 'Save All' jumps to main python script
+        Link: https://github.com/CompuCell3D/CompuCell3D/issues/54
+        Quick-Fix: Setting back the focus to current Index once all files are saved.
+        TO-DO: Change the Save-All functionality
+        """
+
+        currentEditor = self.getCurrentEditor()
+        currentIndex = currentEditor.panel.indexOf(currentEditor)
+
         unnamedFiles = {}
 
         for editor in self.getEditorList():
 
             if not self.getEditorFileName(editor) == '':
                 index = editor.panel.indexOf(editor)
-                editor.panel.setCurrentIndex(index)
 
-                editor.setFocus(
-                    Qt.MouseFocusReason)  # we have to set focus to editor so that it get's picked as active editor - this is the condition used by save functions
+                editor.panel.setCurrentIndex(index)
+                editor.setFocus(Qt.MouseFocusReason)  # we have to set focus to editor so that it get's picked as active editor - this is the condition used by save functions
                 if editor.isModified():
                     self.save()
                 else:
@@ -3170,6 +3181,10 @@ class EditorWindow(QMainWindow):
             editor.setFocus(Qt.MouseFocusReason)
 
             self.saveAs(unnamedFiles[editor])
+
+        currentEditor.panel.setCurrentIndex(currentIndex)
+        currentEditor.setFocus(Qt.MouseFocusReason)
+
 
     def about(self):
         """
@@ -4491,6 +4506,18 @@ class EditorWindow(QMainWindow):
             if encoding=='':
                 encoding='utf-8'
 
+            """
+             ISSUE #64: Save function saving a blank file in case of exception.
+             FIX: Creating a .backup folder and creating backup of the file inside it before save operation
+            """
+            fileDirectory = os.path.dirname(_fileName)
+            backupDirectory = os.path.join(fileDirectory, ".backup")
+            backupFilePath = os.path.join(backupDirectory, os.path.basename(_fileName))
+            if not os.path.exists(backupDirectory):
+                os.makedirs(backupDirectory)
+
+            shutil.copyfile(_fileName, backupFilePath)
+
             import codecs
             try:
                 fh = codecs.open(_fileName+'~', 'wb',Encoding.normalizeEncodingName(encoding))
@@ -4499,6 +4526,7 @@ class EditorWindow(QMainWindow):
                 Encoding.writeBOM(fh,encoding)
                 fh.write(txt)
                 write_success = True
+
             except:
                 fh.close()
                 # resorting to utf8 encoding
@@ -4509,9 +4537,10 @@ class EditorWindow(QMainWindow):
                 try:
                     Encoding.writeBOM(fh, encoding)
                     fh.write(txt)
+                    write_success = True
                 except:
                     raise IOError('Could not save file using encoding %s'%encoding)
-                write_success = True
+
             finally:
                 fh.close()
 
@@ -4519,9 +4548,15 @@ class EditorWindow(QMainWindow):
                     try:
                         shutil.move(_fileName + '~',_fileName )
                     except shutil.Error:
-
+                        # If there is error while renaming the newly saved file it will treated as write false
+                        write_success = False
                         QtWidgets.QMessageBox.warning(self, "Twedit++",
                                                   "Cannot rename %s -> %s." % (_fileName + '~', _fileName ))
+                """
+                In Finally block if the write_success is false then copy the backup file as a original file
+                """
+                if write_success == False:
+                    shutil.copyfile(backupFilePath, _fileName)
 
         except IOError, why:
             QtWidgets.QApplication.restoreOverrideCursor()

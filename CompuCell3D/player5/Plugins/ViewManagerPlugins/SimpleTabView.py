@@ -751,7 +751,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     def prepareForNewSimulation(self, _forceGenericInitialization=False, _inStopFcn=False):
         """
-        This function creates new instance of computational thread and sets various flags to initial values i.e. to a state before the beginnig of the simulations
+        This function creates new instance of computational thread and sets various flags
+        to initial values i.e. to a state before the beginnig of the simulations
         """
         self.resetControlButtonsAndActions()
 
@@ -1076,13 +1077,20 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def __loadCC3DFile(self, fileName):
         '''
         Loads .cc3d file . loads project-specific settings for the project if such exist or creates them based on the
-        global settings stored in ~/.compucell3d
+        global settings stored in ~/.compucell3d. It internally invokes the data reader modules which reads the file
+        and populate resources and file paths in CC3DSimulationDataHandler class object.
         :param fileName: str - .cc3d file name
         :return:None
         '''
-        import CC3DSimulationDataHandler
 
+        """
+         CC3DSimulationDataHandler class holds the file paths of all the resources and has methods to read the 
+        .cc3d file contents
+        """
+        import CC3DSimulationDataHandler
         self.cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler(self)
+
+        # Checking if the file is readable otherwise raising an error
         try:
             f = open(fileName, 'r')
             f.close()
@@ -1093,9 +1101,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
             raise IOError("%s does not exist" % fileName)
 
         self.cc3dSimulationDataHandler.readCC3DFileFormat(fileName)
+
         # check if current CC3D version is greater or equal to the version (minimal required version) specified in the project
         import Version
-
         currentVersion = Version.getVersionAsString()
         currentVersionInt = currentVersion.replace('.', '')
         projectVersion = self.cc3dSimulationDataHandler.cc3dSimulationData.version
@@ -1109,18 +1117,20 @@ class SimpleTabView(MainArea, SimpleViewManager):
                                           currentVersion, projectVersion), \
                                       QMessageBox.Ok)
 
+        # If project settings exists using the project settings
         if self.cc3dSimulationDataHandler.cc3dSimulationData.playerSettingsResource:
             self.customSettingPath = self.cc3dSimulationDataHandler.cc3dSimulationData.playerSettingsResource.path
             # print 'GOT CUSTOM SETTINGS RESOURCE = ', self.customSettingPath
             Configuration.initializeCustomSettings(self.customSettingPath)
             self.__paramsChanged()
-
+        # Else creating a project settings file
         else:
             self.customSettingPath = os.path.abspath(
                 os.path.join(self.cc3dSimulationDataHandler.cc3dSimulationData.basePath, 'Simulation/_settings.xml'))
             # Configuration.writeCustomFile(self.customSettingPath)
             Configuration.writeSettingsForSingleSimulation(self.customSettingPath)
 
+        # Checking for parameter scan resource
         if self.cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource:
 
             cc3dProjectDir = os.path.dirname(fileName)
@@ -1136,9 +1146,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                     'parameter Scan Error: Parameter Scan xml file :' + paramScanXMLFileName + ' has to be writeable. Please change permission on this file')
 
             try:
-
                 from FileLock import FileLock
-
                 with FileLock(file_name=fileName, timeout=10, delay=0.05)  as flock:
 
                     self.singleSimulation = False
@@ -2858,6 +2866,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     def __openSim(self, fileName=None):
         '''
+        This function is called when open file is triggered.
         Displays File open dialog to open new simulation
         :param fileName: str - unused
         :return:None
@@ -2896,10 +2905,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # setting text for main window (self.__parent) title bar
         self.__parent.setWindowTitle(basename(self.__fileName) + " - CompuCell3D Player")
 
+        """
+        What is CompuCellSetup?
+        It is located in ./core/pythonSetupScripts/CompuCellSetup.py
+        
+        """
         import CompuCellSetup
-
         CompuCellSetup.simulationFileName = self.__fileName
 
+        # Add the current opening file to recent files and recent simulation
         Configuration.setSetting("RecentFile", self.__fileName)
         Configuration.setSetting("RecentSimulations",
                                  self.__fileName)  # each loaded simulation has to be passed to a function which updates list of recent files

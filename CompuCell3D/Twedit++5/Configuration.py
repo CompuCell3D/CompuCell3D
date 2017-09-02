@@ -26,7 +26,7 @@ class Configuration:
         self.defaultConfigs["WrapLines"] = False
         self.defaultConfigs["ShowWrapSymbol"] = False
         self.defaultConfigs["DontShowWrapLinesWarning"] = False
-        self.defaultConfigs["RestoreTabsOnStartup"] = True
+        self.defaultConfigs["RestoreTabsOnStartup"] = False
         self.defaultConfigs["EnableAutocompletion"] = False
         self.defaultConfigs["EnableQuickTextDecoding"] = True
         self.defaultConfigs["AutocompletionThreshold"] = 2
