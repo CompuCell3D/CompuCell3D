@@ -107,24 +107,6 @@ class SettingsSQL(object):
 
         self.su = SerializerUtil()
 
-
-        # self.key_type = {
-        #     'RecentFile': 'str',
-        #     'ScreenUpdatefrequency': 'str'
-        # }
-
-        # self.type_2_serializer_dict = {
-        #     'QColor': self.qcolor_2_sql,
-        #     'str': lambda val: ('str', val),
-        #     'int': lambda val: ('int', str(val)),
-        #     'float': lambda val: ('float', str(val)),
-        #     'complex': lambda val: ('complex', str(val)),
-        #     'QSize': self.qsize_2_sql,
-        #     'QPoint': self.qpoint_2_sql,
-        #     'QByteArray': self.qbytearray_2_sql,
-        #
-        # }
-
     def __enter__(self):
         return self
 
@@ -139,61 +121,9 @@ class SettingsSQL(object):
             self.conn.execute(
                 "CREATE INDEX IF NOT EXISTS ix_name ON settings (name)")
 
-    # def qcolor_2_sql(self, val):
-    #
-    #     return 'color', val.name()
-    #
-    # def qsize_2_sql(self, val):
-    #
-    #     return 'size', str(val.width()) + ',' + str(val.height())
-    #
-    # def qpoint_2_sql(self, val):
-    #
-    #     return 'point', str(val.x()) + ',' + str(val.y())
-    #
-    # def qbytearray_2_sql(self, val):
-    #
-    #     out_str = ''
-    #     for i in range(val.count()):
-    #         out_str += str(ord(val[i]))
-    #         if i < val.count() - 1:
-    #             out_str += ','
-    #     return 'bytearray', out_str
-    #
-    # def generic_2_sql(self, val):
-    #
-    #     return 'pickle', pickle.dumps(val)
-    #
-    # def getstate_dict(self):
-    #     print 'self.keys = ', self.keys()
-    #
-    # def dict_2_sql(self, val):
-    #
-    #     dw = DictWrapper(val)
-    #     print pickle.dumps(dw)
-    #
-    # def guess_serializer_fcn(self, val):
-    #
-    #     try:
-    #         return self.type_2_serializer_dict[val.__class__.__name__]
-    #     except KeyError:
-    #         return self.generic_2_sql
-    #
-    #         # if isinstance(val,QColor):
-    #         #     return self.color_2_sql
-    #         # else:
-    #         #     return self.generic_2_sql
-
     def setSetting(self, key, val):
 
         with self.conn:
-            # try:
-            #     _type = self.key_type[_key]
-            # except KeyError:
-            #     _type = 'pickle'
-            # serializer_fcn = self.guess_serializer_fcn(val)
-            #
-            # val_type, val_repr = serializer_fcn(val)
 
             val_type, val_repr = self.su.val_2_sql(val)
 
@@ -201,15 +131,6 @@ class SettingsSQL(object):
                 "INSERT OR REPLACE INTO settings VALUES (?,?,?)",
                 (key, val_type, val_repr))
 
-            # if _type == 'pickle':
-            #     self.conn.execute(
-            #         "INSERT OR REPLACE INTO settings VALUES (?,?,?)",
-            #         (_key, _type, pickle.dumps(_value)))
-            # else:
-            #     self.conn.execute(
-            #         "INSERT OR REPLACE INTO settings VALUES (?,?,?)",
-            #         (_key, _type, pickle.dumps(_value)))
-            #
 
     def close(self):
         self.conn.close()
