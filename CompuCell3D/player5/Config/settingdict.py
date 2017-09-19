@@ -68,6 +68,36 @@ class SerializerUtil(object):
         return val_type, val_repr
 
 
+class DictWrapper1(dict):
+    def __init__(self,*args,**kwds):
+        super(DictWrapper1,self).__init__(*args,**kwds)
+        self.su = SerializerUtil()
+
+    def __getstate__(self):
+        # print 'self.keys = ', self.local_dict.keys()
+
+        # state = {}
+        state = self.__dict__.copy()
+        su_state = {}
+        for key,val in self.items():
+            if key in ['su']: continue
+            su_state[key] = self.su.val_2_sql(val)
+        del state['su']
+        # state['su'] = su_state
+
+        return state
+
+    def __setstate__(self, newstate):
+        # print 'self.keys = ', self.local_dict.keys()
+        su = {}
+        for key, val in  newstate['su'].items():
+
+            newstate[key] = val[1]
+        # newstate['su'] = None
+        self.__dict__.update(newstate)
+
+
+
 class DictWrapper(object):
     def __init__(self, _dict):
         self.local_dict = _dict
@@ -265,13 +295,24 @@ if __name__ == "__main__":  # pragma: no cover
     s = SettingsSQL('_settings_demo.sqlite')
     #
     d = {'a': 2, 'b': 3}
-    dw = DictWrapper(d)
+
+    dw = DictWrapper1()
+    dw.update(d)
     p_out = pickle.dumps(dw)
     # s.dict_2_sql(d)
     #
 
     p_load = pickle.loads(p_out)
     print
+
+
+    # dw = DictWrapper(d)
+    # p_out = pickle.dumps(dw)
+    # # s.dict_2_sql(d)
+    # #
+    #
+    # p_load = pickle.loads(p_out)
+    # print
     sys.exit()
 
 
