@@ -1,10 +1,99 @@
 import sqlite3
+
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
 
 from PyQt5.QtGui import *
+
+class SerializerUtil(object):
+    def __init__(self):
+        self.type_2_serializer_dict = {
+            'QColor': self.qcolor_2_sql,
+            'str': lambda val: ('str', val),
+            'int': lambda val: ('int', str(val)),
+            'float': lambda val: ('float', str(val)),
+            'complex': lambda val: ('complex', str(val)),
+            'QSize': self.qsize_2_sql,
+            'QPoint': self.qpoint_2_sql,
+            'QByteArray': self.qbytearray_2_sql,
+
+        }
+
+    def qcolor_2_sql(self, val):
+
+        return 'color', val.name()
+
+    def qsize_2_sql(self, val):
+
+        return 'size', str(val.width()) + ',' + str(val.height())
+
+    def qpoint_2_sql(self, val):
+
+        return 'point', str(val.x()) + ',' + str(val.y())
+
+    def qbytearray_2_sql(self, val):
+
+        out_str = ''
+        for i in range(val.count()):
+            out_str += str(ord(val[i]))
+            if i < val.count() - 1:
+                out_str += ','
+        return 'bytearray', out_str
+
+    def generic_2_sql(self, val):
+
+        return 'pickle', pickle.dumps(val)
+
+    def getstate_dict(self):
+        print 'self.keys = ', self.keys()
+
+    def dict_2_sql(self, val):
+
+        dw = DictWrapper(val)
+        print pickle.dumps(dw)
+
+    def guess_serializer_fcn(self, val):
+
+        try:
+            return self.type_2_serializer_dict[val.__class__.__name__]
+        except KeyError:
+            return self.generic_2_sql
+
+    def val_2_sql(self, val):
+        serializer_fcn = self.guess_serializer_fcn(val)
+        val_type, val_repr = serializer_fcn(val)
+
+        return val_type, val_repr
+
+
+class DictWrapper(object):
+    def __init__(self, _dict):
+        self.local_dict = _dict
+        self.su = SerializerUtil()
+
+    def __getstate__(self):
+        print 'self.keys = ', self.local_dict.keys()
+
+        # state = {}
+        state = self.__dict__.copy()
+        su_state = {}
+        for key,val in self.local_dict.items():
+            su_state[key] = self.su.val_2_sql(val)
+        state['su'] = su_state
+
+        return state
+
+    def __setstate__(self, newstate):
+        # print 'self.keys = ', self.local_dict.keys()
+        su = {}
+        for key, val in  newstate['su'].items():
+
+            newstate['local_dict'][key] = val[1]
+        newstate['su'] = None
+        self.__dict__.update(newstate)
+
 
 class SettingsSQL(object):
     def __init__(self, filename=".shared.db", **kwargs):
@@ -16,10 +105,25 @@ class SettingsSQL(object):
             for key, value in kwargs.items():
                 self[key] = value
 
-        self.key_type = {
-            'RecentFile':'str',
-            'ScreenUpdatefrequency':'str'
-        }
+        self.su = SerializerUtil()
+
+
+        # self.key_type = {
+        #     'RecentFile': 'str',
+        #     'ScreenUpdatefrequency': 'str'
+        # }
+
+        # self.type_2_serializer_dict = {
+        #     'QColor': self.qcolor_2_sql,
+        #     'str': lambda val: ('str', val),
+        #     'int': lambda val: ('int', str(val)),
+        #     'float': lambda val: ('float', str(val)),
+        #     'complex': lambda val: ('complex', str(val)),
+        #     'QSize': self.qsize_2_sql,
+        #     'QPoint': self.qpoint_2_sql,
+        #     'QByteArray': self.qbytearray_2_sql,
+        #
+        # }
 
     def __enter__(self):
         return self
@@ -35,39 +139,77 @@ class SettingsSQL(object):
             self.conn.execute(
                 "CREATE INDEX IF NOT EXISTS ix_name ON settings (name)")
 
+    # def qcolor_2_sql(self, val):
+    #
+    #     return 'color', val.name()
+    #
+    # def qsize_2_sql(self, val):
+    #
+    #     return 'size', str(val.width()) + ',' + str(val.height())
+    #
+    # def qpoint_2_sql(self, val):
+    #
+    #     return 'point', str(val.x()) + ',' + str(val.y())
+    #
+    # def qbytearray_2_sql(self, val):
+    #
+    #     out_str = ''
+    #     for i in range(val.count()):
+    #         out_str += str(ord(val[i]))
+    #         if i < val.count() - 1:
+    #             out_str += ','
+    #     return 'bytearray', out_str
+    #
+    # def generic_2_sql(self, val):
+    #
+    #     return 'pickle', pickle.dumps(val)
+    #
+    # def getstate_dict(self):
+    #     print 'self.keys = ', self.keys()
+    #
+    # def dict_2_sql(self, val):
+    #
+    #     dw = DictWrapper(val)
+    #     print pickle.dumps(dw)
+    #
+    # def guess_serializer_fcn(self, val):
+    #
+    #     try:
+    #         return self.type_2_serializer_dict[val.__class__.__name__]
+    #     except KeyError:
+    #         return self.generic_2_sql
+    #
+    #         # if isinstance(val,QColor):
+    #         #     return self.color_2_sql
+    #         # else:
+    #         #     return self.generic_2_sql
 
-    def color_2_sql(self,val):
+    def setSetting(self, key, val):
 
-        return 'color', val.name()
-
-
-    def generic_2_sql(self,val):
-
-        return 'pickle', pickle.dumps(val)
-
-    def guess_type_conversion_fcn(self, val):
-
-        if isinstance(val,QColor):
-            return self.color_2_sql
-        else:
-            return self.generic_2_sql
-
-    def setSetting(self, _key, _value):
         with self.conn:
-            try:
-                _type = self.key_type[_key]
-            except KeyError:
-                _type = 'pickle'
+            # try:
+            #     _type = self.key_type[_key]
+            # except KeyError:
+            #     _type = 'pickle'
+            # serializer_fcn = self.guess_serializer_fcn(val)
+            #
+            # val_type, val_repr = serializer_fcn(val)
 
-            if _type == 'pickle':
-                self.conn.execute(
-                    "INSERT OR REPLACE INTO settings VALUES (?,?,?)",
-                    (_key, _type, pickle.dumps(_value)))
-            else:
-                self.conn.execute(
-                    "INSERT OR REPLACE INTO settings VALUES (?,?,?)",
-                    (_key, _type, pickle.dumps(_value)))
+            val_type, val_repr = self.su.val_2_sql(val)
 
+            self.conn.execute(
+                "INSERT OR REPLACE INTO settings VALUES (?,?,?)",
+                (key, val_type, val_repr))
+
+            # if _type == 'pickle':
+            #     self.conn.execute(
+            #         "INSERT OR REPLACE INTO settings VALUES (?,?,?)",
+            #         (_key, _type, pickle.dumps(_value)))
+            # else:
+            #     self.conn.execute(
+            #         "INSERT OR REPLACE INTO settings VALUES (?,?,?)",
+            #         (_key, _type, pickle.dumps(_value)))
+            #
 
     def close(self):
         self.conn.close()
@@ -196,13 +338,38 @@ class SettingDict(object):
 
 if __name__ == "__main__":  # pragma: no cover
     from PyQt5.QtGui import *
+    from PyQt5.QtCore import *
+    import sys
+
+    s = SettingsSQL('_settings_demo.sqlite')
+    #
+    d = {'a': 2, 'b': 3}
+    dw = DictWrapper(d)
+    p_out = pickle.dumps(dw)
+    # s.dict_2_sql(d)
+    #
+
+    p_load = pickle.loads(p_out)
+    print
+    sys.exit()
+
+
     s = SettingsSQL('_settings.sqlite')
-
     col = QColor('red')
+    size = QSize(20, 30)
 
-    s.setSetting('dupa','blada2')
-    s.setSetting('window_data', {'size':20,'color':'#ffff00'})
+    ba = QByteArray();
+    ba.resize(5)
+
+    s.setSetting('bytearray', ba)
+    s.setSetting('WindowSize', size)
+    s.setSetting('ScreenshotFrequency', 8)
+    s.setSetting('MinConcentration', 8.2)
+    s.setSetting('ComplexNum', 8.2 + 3j)
+    s.setSetting('dupa', 'blada2')
+    s.setSetting('window_data', {'size': 20, 'color': '#ffff00'})
     s.setSetting('window_color', col)
+
 
     # d = SettingDict("_settings.sqlite")
     # d['RecentFile'] = '/dupa'
