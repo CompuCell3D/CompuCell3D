@@ -4,7 +4,7 @@ import string
 sys.path.append(environ["PYTHON_MODULE_PATH"])
 
 import CompuCellSetup
-CompuCellSetup.setSimulationXMLFileName("Simulation/ConnectivityTest.xml")
+
 sim,simthread = CompuCellSetup.getCoreSimulationObjects()
 
 CompuCellSetup.initializeSimulationObjects(sim,simthread)

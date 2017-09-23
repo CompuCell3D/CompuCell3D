@@ -1,8 +1,8 @@
 <Simulation version="3.6.1">
 
-    <XMLScript Type="XMLScript">Simulation/ConnectivityTest.xml</XMLScript>
+    <XMLScript Type="XMLScript">Simulation/ConnectivityElongation.xml</XMLScript>
 
-    <PythonScript>Simulation/ConnectivityTest.py</PythonScript> 
+    <PythonScript>Simulation/ConnectivityElongation.py</PythonScript> 
 
     <Resource Type="Python">Simulation/ConnectivityElongationSteppable.py</Resource>    
 

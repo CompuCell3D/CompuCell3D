@@ -26,8 +26,12 @@ using namespace CompuCell3D;
 
 
 
-ConnectivityGlobalPlugin::ConnectivityGlobalPlugin() : potts(0), doNotPrecheckConnectivity(false)
+ConnectivityGlobalPlugin::ConnectivityGlobalPlugin() : 
+	potts(0), 
+	doNotPrecheckConnectivity(false), 
+	fast_algorithm(false)
 {
+	changeEnergyFcnPtr = &ConnectivityGlobalPlugin::changeEnergyLegacy;
 }
 
 ConnectivityGlobalPlugin::~ConnectivityGlobalPlugin() {
@@ -92,9 +96,19 @@ void ConnectivityGlobalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFl
 		doNotPrecheckConnectivity = true;
 	}
 
+	if (_xmlData->getFirstElement("FastAlgorithm")) {
+		fast_algorithm = true;
+		changeEnergyFcnPtr = &ConnectivityGlobalPlugin::changeEnergyFast;
+	}
+
+
 	CC3DXMLElementList penaltyVecXML = _xmlData->getElements("Penalty");
 
+	CC3DXMLElementList connectivityOnVecXML = _xmlData->getElements("ConnectivityOn");
 
+	ASSERT_OR_THROW("You cannot use Penalty and ConnectivityOn tags together. Stick to one convention", !(connectivityOnVecXML.size() && penaltyVecXML.size()));
+
+	// previous ASSERT_OR_THROW will encure that only one of the subsequent for loops be executed 
 
 	for (int i = 0; i < penaltyVecXML.size(); ++i) {
 		typeIdConnectivityPenaltyMap.insert(make_pair(automaton->getTypeId(penaltyVecXML[i]->getAttribute("Type")), penaltyVecXML[i]->getDouble()));
@@ -103,6 +117,14 @@ void ConnectivityGlobalPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFl
 		//inserting all the types to the set (duplicate are automatically eleminated) to figure out max value of type Id
 		cellTypesSet.insert(automaton->getTypeId(penaltyVecXML[i]->getAttribute("Type")));
 
+	}
+
+
+
+	for (int i = 0; i < connectivityOnVecXML.size(); ++i) {
+		typeIdConnectivityPenaltyMap.insert(make_pair(automaton->getTypeId(connectivityOnVecXML[i]->getAttribute("Type")), 1.0));
+		//inserting all the types to the set (duplicate are automatically eleminated) to figure out max value of type Id
+		cellTypesSet.insert(automaton->getTypeId(connectivityOnVecXML[i]->getAttribute("Type")));
 
 	}
 
@@ -305,9 +327,7 @@ bool ConnectivityGlobalPlugin::check_local_connectivity(const Point3D &pt, const
 
 		cell_pixels_set_reference.insert(neighbor.pt);
 	}
-	//cerr << "pt=" << pt<<endl;
-	//cerr << "cell_pixels_set.size()=" << cell_pixels_set_reference.size() << endl;
-	//cerr << "add_pt_to_bfs=" << add_pt_to_bfs << endl;
+
 	if (add_pt_to_bfs) {
 		//we can only add change point (for newCell only) if it has at least one nearest neighbor
 
@@ -325,8 +345,7 @@ bool ConnectivityGlobalPlugin::check_local_connectivity(const Point3D &pt, const
 
 			add_pt_to_bfs_ok = true;
 			break;
-		}
-		//cerr << "add_pt_to_bfs_ok=" << add_pt_to_bfs << endl;
+		}		
 		//if we found nearest neighbor for the pt (when considering newCell only)
 		//we add it to the set of newCell pixels
 		if (add_pt_to_bfs_ok) {
@@ -341,8 +360,7 @@ bool ConnectivityGlobalPlugin::check_local_connectivity(const Point3D &pt, const
 		
 		//if pt has no nearest neighbors then it means that the newCell will be fragmented and we do not allow this
 
-	}
-	//cerr << " after adding cell_pixels_set=" << cell_pixels_set_reference.size() << endl;
+	}	
 	set<Point3D> visited_pixels;
 	deque<Point3D> neighbors_deque;
 	set<Point3D>::iterator sitr;
@@ -396,7 +414,12 @@ bool ConnectivityGlobalPlugin::check_local_connectivity(const Point3D &pt, const
 }
 
 double ConnectivityGlobalPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
+	return (this->*changeEnergyFcnPtr)(pt, newCell, oldCell);
+}
 
+
+double ConnectivityGlobalPlugin::changeEnergyFast(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
+	
 	//extract local definitions of connectivity strangth and determine which parameters to use - local or by type
 	double newCellConnectivityPenalty = 0.0;
 	bool newCellByTypeCalculations = false;
@@ -405,18 +428,28 @@ double ConnectivityGlobalPlugin::changeEnergy(const Point3D &pt, const CellG *ne
 
 
 	if (oldCell) {
-		oldCellConnectivityPenalty = connectivityGlobalDataAccessor.get(oldCell->extraAttribPtr)->connectivityStrength;
+		//oldCellConnectivityPenalty = connectivityGlobalDataAccessor.get(oldCell->extraAttribPtr)->connectivityStrength;
 
-		if (oldCell->type <= maxTypeId && penaltyVec[oldCell->type] != 0.0) {
+		if (oldCell->connectivityOn) {
 			oldCellByTypeCalculations = true;
+			oldCellConnectivityPenalty = 1.0;
+		}
+		else if (oldCell->type <= maxTypeId && penaltyVec[oldCell->type] != 0.0) {
+			oldCellByTypeCalculations = true;
+			oldCellConnectivityPenalty = 1.0;
 
 		}
 	}
 	if (newCell) {
-		newCellConnectivityPenalty = connectivityGlobalDataAccessor.get(newCell->extraAttribPtr)->connectivityStrength;
+		//newCellConnectivityPenalty = connectivityGlobalDataAccessor.get(newCell->extraAttribPtr)->connectivityStrength;
 
-		if (newCell->type <= maxTypeId && penaltyVec[newCell->type] != 0.0) {
+		if (newCell->connectivityOn) {
 			newCellByTypeCalculations = true;
+			newCellConnectivityPenalty = 1.0;
+		}
+		else if (newCell->type <= maxTypeId && penaltyVec[newCell->type] != 0.0) {
+			newCellByTypeCalculations = true;
+			newCellConnectivityPenalty = 1.0;
 
 		}
 	}
@@ -426,14 +459,14 @@ double ConnectivityGlobalPlugin::changeEnergy(const Point3D &pt, const CellG *ne
 	if (newCell) {
 		connected = check_local_connectivity(pt, newCell, max_neighbor_index_local_search, true);
 		if (!connected) {
-			penalty += 1000000000.0;
+			penalty += newCellConnectivityPenalty;
 		}
 	}
 
 	if (oldCell) {
 		connected = check_local_connectivity(pt, oldCell, max_neighbor_index_local_search, false);
 		if (!connected) {
-			penalty += 1000000000.0;
+			penalty += oldCellConnectivityPenalty;
 		}
 	}
 
@@ -444,7 +477,7 @@ double ConnectivityGlobalPlugin::changeEnergy(const Point3D &pt, const CellG *ne
 
 
 //Connectivity constraint based on breadth first traversal of cell pixels
-double ConnectivityGlobalPlugin::changeEnergy_old(const Point3D &pt, const CellG *newCell, const CellG *oldCell)
+double ConnectivityGlobalPlugin::changeEnergyLegacy(const Point3D &pt, const CellG *newCell, const CellG *oldCell)
 {
 	//extract local definitions of connectivity strangth and determine which parameters to use - local or by type
 	double newCellConnectivityPenalty = 0.0;
@@ -456,18 +489,42 @@ double ConnectivityGlobalPlugin::changeEnergy_old(const Point3D &pt, const CellG
 	if (oldCell) {
 		oldCellConnectivityPenalty = connectivityGlobalDataAccessor.get(oldCell->extraAttribPtr)->connectivityStrength;
 
-		if (oldCell->type <= maxTypeId && penaltyVec[oldCell->type] != 0.0) {
+		if (oldCell->connectivityOn) {
 			oldCellByTypeCalculations = true;
+			oldCellConnectivityPenalty = 1.0;
+		}
+		else if (oldCellConnectivityPenalty) { // keeping it for legacy reasons in case people still use setConnectivityStrength API
+			oldCellByTypeCalculations = true;
+		}
+
+		else if (oldCell->type <= maxTypeId && penaltyVec[oldCell->type] != 0.0) {
+			oldCellByTypeCalculations = true;
+			oldCellConnectivityPenalty = 1.0;
 
 		}
 	}
 	if (newCell) {
-		newCellConnectivityPenalty = connectivityGlobalDataAccessor.get(newCell->extraAttribPtr)->connectivityStrength;
 
-		if (newCell->type <= maxTypeId && penaltyVec[newCell->type] != 0.0) {
+		if (newCell->connectivityOn) {
 			newCellByTypeCalculations = true;
+			newCellConnectivityPenalty = 1.0;
+		}
+		else if (newCellConnectivityPenalty) { // keeping it for legacy reasons in case people still use setConnectivityStrength API
+			newCellByTypeCalculations = true;
+		}
+
+		else if (newCell->type <= maxTypeId && penaltyVec[newCell->type] != 0.0) {
+			newCellByTypeCalculations = true;
+			newCellConnectivityPenalty = 1.0;
 
 		}
+
+		//newCellConnectivityPenalty = connectivityGlobalDataAccessor.get(newCell->extraAttribPtr)->connectivityStrength;
+
+		//if (newCell->type <= maxTypeId && penaltyVec[newCell->type] != 0.0) {
+		//	newCellByTypeCalculations = true;
+
+		//}
 
 	}
 
@@ -531,13 +588,14 @@ double ConnectivityGlobalPlugin::changeEnergy_old(const Point3D &pt, const CellG
 
 	if (!newCellFragmented && newCell && (newCellByTypeCalculations || newCellConnectivityPenalty)) {
 
-		double newPenalty = 0.0;
-		if (newCellConnectivityPenalty) {
-			newPenalty = newCellConnectivityPenalty; //locally defined connectivity strength has priority over by-type definition
-		}
-		else {
-			newPenalty = penaltyVec[newCell->type];
-		}
+		double newPenalty = newCellConnectivityPenalty;
+		//double newPenalty = 0.0;
+		//if (newCellConnectivityPenalty) {
+		//	newPenalty = newCellConnectivityPenalty; //locally defined connectivity strength has priority over by-type definition
+		//}
+		//else {
+		//	newPenalty = penaltyVec[newCell->type];
+		//}
 
 		//pt becomes newCell's pixel after pixel copy 
 
@@ -650,14 +708,16 @@ double ConnectivityGlobalPlugin::changeEnergy_old(const Point3D &pt, const CellG
 
 	//this reduces chances of holes in the cell but does not eliminate them completely
 	if (!oldCellFragmented && !newCell && (oldCellByTypeCalculations || oldCellConnectivityPenalty)) {
+
+		double oldPenalty = oldCellConnectivityPenalty;
 		//if(!newCell && oldCell->type<=maxTypeId && penaltyVec[oldCell->type]!=0.0){
-		double oldPenalty = 0.0;
-		if (oldCellConnectivityPenalty) {
-			oldPenalty = oldCellConnectivityPenalty;
-		}
-		else {
-			oldPenalty = penaltyVec[oldCell->type];
-		}
+		//double oldPenalty = 0.0;
+		//if (oldCellConnectivityPenalty) {
+		//	oldPenalty = oldCellConnectivityPenalty;
+		//}
+		//else {
+		//	oldPenalty = penaltyVec[oldCell->type];
+		//}
 
 
 		CellG *nCell = 0;
@@ -700,13 +760,16 @@ double ConnectivityGlobalPlugin::changeEnergy_old(const Point3D &pt, const CellG
 
 	if (!oldCellFragmented && oldCell && (oldCellByTypeCalculations || oldCellConnectivityPenalty)) {
 		//pick pixel belonging to oldCell - simply pick one of the first nearest neighbors of the pt
-		double oldPenalty = 0.0;
-		if (oldCellConnectivityPenalty) {
-			oldPenalty = oldCellConnectivityPenalty;
-		}
-		else {
-			oldPenalty = penaltyVec[oldCell->type];
-		}
+
+		double oldPenalty = oldCellConnectivityPenalty;
+
+		//double oldPenalty = 0.0;
+		//if (oldCellConnectivityPenalty) {
+		//	oldPenalty = oldCellConnectivityPenalty;
+		//}
+		//else {
+		//	oldPenalty = penaltyVec[oldCell->type];
+		//}
 
 
 		CellG *nCell = 0;
@@ -714,7 +777,6 @@ double ConnectivityGlobalPlugin::changeEnergy_old(const Point3D &pt, const CellG
 		Neighbor neighbor;
 
 		int visitedPixCounter = 0;
-
 
 		for (unsigned int nIdx = 0; nIdx <= maxNeighborIndex; ++nIdx) {
 			neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
