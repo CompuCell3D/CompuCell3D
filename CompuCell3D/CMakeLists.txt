@@ -30,7 +30,7 @@ SET (PYQT_VERSION "5" CACHE STRING "PyQt major version")
 # letters A, B, C are added to ensure nice display of sersion in cmake gui
 SET (COMPUCELL3D_A_MAJOR_VERSION "3" CACHE STRING "Major Version")
 SET (COMPUCELL3D_B_MINOR_VERSION "7" CACHE STRING "Minor Version")
-SET (COMPUCELL3D_C_BUILD_VERSION "6" CACHE STRING "Build Version")
+SET (COMPUCELL3D_C_BUILD_VERSION "7" CACHE STRING "Build Version")
 
 
 # and here we assign them back to what they shuld be
