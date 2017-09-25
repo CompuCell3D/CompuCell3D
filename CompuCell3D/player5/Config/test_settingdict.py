@@ -97,6 +97,42 @@ class TestSettingdict(unittest.TestCase):
         self.assertIsInstance(dict_s['flag_false'], bool)
         self.assertEqual(dict_s['flag_false'], False)
 
+        print dict_s
+
+    def test_super_composite_types(self):
+
+        s = SettingsSQL('_TestSettingdict.sqlite')
+
+        d = {'size': 20,
+             'color_data':{
+                 'color_str': '#ffff00',
+                 'color': QColor('red'),
+             },
+             'flag_true':True,
+             'flag_false': False
+             }
+
+        s.setSetting('window_data', d)
+
+        dict_s = s.setting('window_data')
+
+        self.assertIsInstance(dict_s['size'], int)
+        self.assertEqual(dict_s['size'], 20)
+
+        color_data_s = dict_s['color_data']
+        self.assertIsInstance(color_data_s, dict)
+
+        self.assertIsInstance(color_data_s['color_str'], str)
+        self.assertEqual(color_data_s['color_str'], '#ffff00')
+
+        self.assertIsInstance(color_data_s['color'], QColor)
+        self.assertEqual(color_data_s['color'].name(), '#ff0000')
+
+        self.assertIsInstance(dict_s['flag_true'], bool)
+        self.assertEqual(dict_s['flag_true'], True)
+
+        self.assertIsInstance(dict_s['flag_false'], bool)
+        self.assertEqual(dict_s['flag_false'], False)
 
 
 
