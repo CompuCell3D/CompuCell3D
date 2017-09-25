@@ -8,6 +8,7 @@ except ImportError:
 # import pickle
 
 from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 
 
 class SerializerUtil(object):
@@ -21,6 +22,7 @@ class SerializerUtil(object):
             'QSize': self.qsize_2_sql,
             'QPoint': self.qpoint_2_sql,
             'QByteArray': self.qbytearray_2_sql,
+            'dict': self.dict_2_sql
 
         }
 
@@ -33,9 +35,9 @@ class SerializerUtil(object):
             'size': self.sql_2_size,
             'point': self.sql_2_point,
             'bytearray': self.sql_2_bytearray,
+            'dict' : self.sql_2_dict
 
         }
-
 
     def qcolor_2_sql(self, val):
 
@@ -49,13 +51,13 @@ class SerializerUtil(object):
 
         return 'size', str(val.width()) + ',' + str(val.height())
 
-    def sql_2_size(self,val):
+    def sql_2_size(self, val):
         sizeList = val.split(',')
         sizeListInt = map(int, sizeList)
 
         return QSize(sizeListInt[0], sizeListInt[1])
 
-    def sql_2_point(self,val):
+    def sql_2_point(self, val):
         sizeList = val.split(',')
         sizeListInt = map(int, sizeList)
 
@@ -96,7 +98,6 @@ class SerializerUtil(object):
 
         return pickle.loads(val)
 
-
     def getstate_dict(self):
         print 'self.keys = ', self.keys()
 
@@ -107,6 +108,22 @@ class SerializerUtil(object):
 
         # print pickle.dumps(dw)
         # return 'dict', pickle.dumps(dw)
+
+    def sql_2_dict(self, val):
+
+        p_load = pickle.loads(str(val))
+        out_dict = {}
+        for k, v in p_load.items(): # v is a tuple (type, value_repr)
+            value_type = v[0]
+            val_repr = v[1]
+            deserializer_fcn = self.guess_deserializer_fcn(value_type)
+            value = deserializer_fcn(val_repr)
+
+            out_dict[k] = value
+
+        return out_dict
+
+
 
     def guess_serializer_fcn(self, val):
 
@@ -122,7 +139,6 @@ class SerializerUtil(object):
         except KeyError:
             return self.sql_2_generic
 
-
     def val_2_sql(self, val):
         serializer_fcn = self.guess_serializer_fcn(val)
         val_type, val_repr = serializer_fcn(val)
@@ -135,11 +151,10 @@ class SerializerUtil(object):
         :param obj: {tuple} (type, string representation - serialization string)
         :return: actual value represented by obj serialization tuple
         """
-        deserializer_fcn = self.guess_deserializer_fcn(obj[0]) # obj[0] stores type
-        val = deserializer_fcn(obj[1]) # obj[1] stores serialization string
+        deserializer_fcn = self.guess_deserializer_fcn(obj[0])  # obj[0] stores type
+        val = deserializer_fcn(obj[1])  # obj[1] stores serialization string
 
         return val
-
 
 
 class DictWrapper(dict):
@@ -183,7 +198,7 @@ class DictWrapper(dict):
 
         return pickle.dumps(state)
 
-    def deserialize(self,s):
+    def deserialize(self, s):
         return pickle.loads(s)
 
     def __getstate__(self):
@@ -273,7 +288,7 @@ class SettingsSQL(object):
                 "INSERT OR REPLACE INTO settings VALUES (?,?,?)",
                 (key, val_type, val_repr))
 
-    def setting(self,key):
+    def setting(self, key):
         with self.conn:
             cur = self.conn.execute(
                 "SELECT type, value FROM settings WHERE name = (?)", (key,))
@@ -282,7 +297,6 @@ class SettingsSQL(object):
                 raise KeyError("No such key: " + key)
             return self.su.sql_2_val(obj)
             # return pickle.loads(obj[0].encode())
-
 
     def close(self):
         self.conn.close()
@@ -414,34 +428,41 @@ if __name__ == "__main__":  # pragma: no cover
     from PyQt5.QtCore import *
     import sys
 
-    # s = SettingsSQL('_settings_demo.sqlite')
-    # #
-    # d = {'a': 2, 'b': 3, 'c': QColor('red')}
+    s = SettingsSQL('_settings_demo.sqlite')
     #
-    # dw = DictWrapper()
-    # dw.update(d)
+    d = {'a': 2, 'b': 3, 'c': QColor('red')}
+
+    s.setSetting('dictionary', d)
+
+    dict_s = s.setting('dictionary')
+
+    dw = DictWrapper()
+    dw.update(d)
+
+    p_serialized = dw.serialize()
+
+    p_out = pickle.dumps(dw)
+    # s.dict_2_sql(d)
     #
-    # p_serialized = dw.serialize()
-    #
-    # p_out = pickle.dumps(dw)
-    # # s.dict_2_sql(d)
-    # #
-    #
-    # p_load = pickle.loads(p_out)
-    #
+
+    p_load = pickle.loads(p_out)
+
+    print p_load
+
     # # trying out serialization
     # val_type, val_repr = s.su.val_2_sql(dw)
     #
-    # print
-    #
-    # # dw = DictWrapper(d)
-    # # p_out = pickle.dumps(dw)
-    # # # s.dict_2_sql(d)
-    # # #
+    # print val_type
+    # print val_repr
     # #
-    # # p_load = pickle.loads(p_out)
-    # # print
-    # sys.exit()
+    # # # dw = DictWrapper(d)
+    # # # p_out = pickle.dumps(dw)
+    # # # # s.dict_2_sql(d)
+    # # # #
+    # # #
+    # # # p_load = pickle.loads(p_out)
+    # # # print
+    sys.exit()
 
     s = SettingsSQL('_settings.sqlite')
     col = QColor('red')
@@ -458,7 +479,6 @@ if __name__ == "__main__":  # pragma: no cover
     s.setSetting('dupa', 'blada2')
     # s.setSetting('window_data', {'size': 20, 'color': '#ffff00'})
     s.setSetting('window_color', col)
-
 
     print s.setting('bytearray')
     print s.setting('WindowSize')
