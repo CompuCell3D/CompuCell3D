@@ -18,30 +18,27 @@ class TestSettingdict(unittest.TestCase):
         ba = QByteArray()
         ba.resize(5)
 
-        s.setSetting('bytearray', ba)
-        s.setSetting('WindowSize', size)
-        s.setSetting('ScreenshotFrequency', 8)
-        s.setSetting('MinConcentration', 8.2)
-        s.setSetting('ComplexNum', 8.2 + 3j)
-        s.setSetting('dupa', 'blada2')
-        s.setSetting('window_data', {'size': 20, 'color_str': '#ffff00', 'color':QColor('red')})
-        s.setSetting('window_color', col)
+        s.setSetting('flag_false', False)
+        s.setSetting('flag_true', True)
 
-        # testing serialization/deserialization of dictionary
-        dict_s = s.setting('window_data')
-        self.assertIsInstance(dict_s,dict)
-
-        self.assertIsInstance(dict_s['size'], int)
-        self.assertEqual(dict_s['size'], 20)
-
-        self.assertIsInstance(dict_s['color_str'], str)
-        self.assertEqual(dict_s['color_str'], '#ffff00')
-
-        self.assertIsInstance(dict_s['color'], QColor)
-        self.assertEqual(dict_s['color'].name(), '#ff0000')
+        # s.setSetting('bytearray', ba)
+        # s.setSetting('WindowSize', size)
+        # s.setSetting('ScreenshotFrequency', 8)
+        # s.setSetting('MinConcentration', 8.2)
+        # s.setSetting('ComplexNum', 8.2 + 3j)
+        # s.setSetting('dupa', 'blada2')
+        #
+        # s.setSetting('window_color', col)
 
 
-        print dict_s
+        flag_true_s = s.setting('flag_true')
+        self.assertIsInstance(flag_true_s,bool)
+        self.assertEqual(flag_true_s,True)
+
+        flag_false_s = s.setting('flag_false')
+        self.assertIsInstance(flag_false_s,bool)
+        self.assertEqual(flag_false_s,False)
+
 
         size_s = s.setting('WindowSize')
         self.assertIsInstance(size_s, QSize)
@@ -68,3 +65,39 @@ class TestSettingdict(unittest.TestCase):
         color_s = s.setting('window_color')
         self.assertIsInstance(color_s, QColor)
         self.assertEqual(color_s.name(), '#ff0000')
+
+    def test_composite_types(self):
+
+        s = SettingsSQL('_TestSettingdict.sqlite')
+
+        d = {'size': 20,
+             'color_str': '#ffff00',
+             'color': QColor('red'),
+             'flag_true':True,
+             'flag_false': False
+             }
+
+        s.setSetting('window_data', d)
+        # testing serialization/deserialization of dictionary
+        dict_s = s.setting('window_data')
+        self.assertIsInstance(dict_s,dict)
+
+        self.assertIsInstance(dict_s['size'], int)
+        self.assertEqual(dict_s['size'], 20)
+
+        self.assertIsInstance(dict_s['color_str'], str)
+        self.assertEqual(dict_s['color_str'], '#ffff00')
+
+        self.assertIsInstance(dict_s['color'], QColor)
+        self.assertEqual(dict_s['color'].name(), '#ff0000')
+
+        self.assertIsInstance(dict_s['flag_true'], bool)
+        self.assertEqual(dict_s['flag_true'], True)
+
+        self.assertIsInstance(dict_s['flag_false'], bool)
+        self.assertEqual(dict_s['flag_false'], False)
+
+
+
+
+        print dict_s

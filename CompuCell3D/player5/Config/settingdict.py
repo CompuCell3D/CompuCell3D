@@ -19,6 +19,7 @@ class SerializerUtil(object):
             'int': lambda val: ('int', str(val)),
             'float': lambda val: ('float', str(val)),
             'complex': lambda val: ('complex', str(val)),
+            'bool': lambda val: ('bool',int(val)),
             'QSize': self.qsize_2_sql,
             'QPoint': self.qpoint_2_sql,
             'QByteArray': self.qbytearray_2_sql,
@@ -32,6 +33,7 @@ class SerializerUtil(object):
             'int': lambda val: int(val),
             'float': lambda val: float(val),
             'complex': lambda val: complex(val),
+            'bool' : lambda val: False if int(val) == 0 else True,
             'size': self.sql_2_size,
             'point': self.sql_2_point,
             'bytearray': self.sql_2_bytearray,
@@ -123,8 +125,6 @@ class SerializerUtil(object):
 
         return out_dict
 
-
-
     def guess_serializer_fcn(self, val):
 
         try:
@@ -155,7 +155,6 @@ class SerializerUtil(object):
         val = deserializer_fcn(obj[1])  # obj[1] stores serialization string
 
         return val
-
 
 class DictWrapper(dict):
     def __init__(self, *args, **kwds):
