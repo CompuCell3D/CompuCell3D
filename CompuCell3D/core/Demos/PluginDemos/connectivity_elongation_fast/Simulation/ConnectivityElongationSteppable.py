@@ -9,22 +9,23 @@ class ConnectivityElongationSteppable(SteppableBasePy):
     def start(self):
         for cell in self.cellList:
             if cell.type==1:                
-                self.connectivityGlobalPlugin.setConnectivityStrength(cell,20000000) #cell, strength
+				cell.connectivityOn = True    
                 
             elif cell.type==2:                
-                self.connectivityGlobalPlugin.setConnectivityStrength(cell,10000000) #cell, strength
+				cell.connectivityOn = True    
+                
                 
                 
 
     def step(self,mcs):
         for cell in self.cellList:
             if cell.type==1:
-                self.lengthConstraintLocalFlexPlugin.setLengthConstraintData(cell,20,20) # cell , lambdaLength, targetLength
-                # self.connectivityGlobalPlugin.setConnectivityStrength(cell,20000000) #cell, strength
+                self.lengthConstraintPlugin.setLengthConstraintData(cell,20,20) # cell , lambdaLength, targetLength
+
                 
             elif cell.type==2:
-                self.lengthConstraintLocalFlexPlugin.setLengthConstraintData(cell,20,30)  # cell , lambdaLength, targetLength
-                # self.connectivityGlobalPlugin.setConnectivityStrength(cell,20000000) #cell, strength
+                self.lengthConstraintPlugin.setLengthConstraintData(cell,20,30)  # cell , lambdaLength, targetLength
+
                 
                 print "targetLength=",self.lengthConstraintLocalFlexPlugin.getTargetLength(cell)," lambdaLength=",self.lengthConstraintLocalFlexPlugin.getLambdaLength(cell)
                 

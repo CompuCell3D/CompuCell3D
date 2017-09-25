@@ -41,9 +41,11 @@
  <Plugin Name="CenterOfMass"/>
 
 
-  <Plugin Name="LengthConstraintLocalFlex"/>
+  <Plugin Name="LengthConstraint"/>
 
-  <Plugin Name="ConnectivityGlobal"/>
+  <Plugin Name="ConnectivityGlobal">
+	<FastAlgorithm/>
+  </Plugin>
 
   
 <!--   <Plugin Name="ConnectivityGlobal">

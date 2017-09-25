@@ -61,7 +61,12 @@ namespace CompuCell3D {
 	 std::vector<double> penaltyVec;
 	 unsigned char maxTypeId;
 	 bool doNotPrecheckConnectivity;
+	 bool fast_algorithm;
     
+	 typedef double (ConnectivityGlobalPlugin::*changeEnergyFcnPtr_t)(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
+	 changeEnergyFcnPtr_t changeEnergyFcnPtr;
+
+
 
   public:
     ConnectivityGlobalPlugin();
@@ -81,8 +86,13 @@ namespace CompuCell3D {
 	     virtual double changeEnergy(const Point3D &pt, const CellG *newCell,
                                 const CellG *oldCell);
 
-		 double ConnectivityGlobalPlugin::changeEnergy_old(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
+		 double changeEnergyLegacy(const Point3D &pt, const CellG *newCell,
+			 const CellG *oldCell);
 
+		 double changeEnergyFast(const Point3D &pt, const CellG *newCell,
+			 const CellG *oldCell);
+
+		 
 	bool checkIfCellIsFragmented(const CellG * cell,Point3D cellPixel);
 	bool check_local_connectivity(const Point3D &pt, const CellG *cell, unsigned int max_neighbor_index_local_search, bool add_pt_to_bfs);
 

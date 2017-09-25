@@ -58,6 +58,7 @@
  </Plugin> 
 
   <Plugin Name="ConnectivityGlobal">
+   <FastAlgorithm/>
    <Penalty Type="Body1">1000000000</Penalty>
    <Penalty Type="Body2">1000000000</Penalty>    
    <Penalty Type="Body3">1000000000</Penalty>    

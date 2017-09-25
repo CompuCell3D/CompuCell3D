@@ -65,6 +65,7 @@ namespace CompuCell3D {
         id(0),
         clusterId(0),
 		fluctAmpl(-1.0),
+		connectivityOn(false),
         extraAttribPtr(0),
         pyAttrib(0)
       {}
@@ -92,6 +93,7 @@ namespace CompuCell3D {
       long id;
       long clusterId;
 	  double fluctAmpl;
+	  bool connectivityOn;
       BasicClassGroup *extraAttribPtr;
 
       PyObject *pyAttrib;
