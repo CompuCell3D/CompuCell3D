@@ -67,11 +67,28 @@ class TestSettingdict(unittest.TestCase):
     def test_list_types(self):
         s = SettingsSQL('_TestSettingdict.sqlite')
 
-        l = [1, 2, QColor('red'), 'dupa']
+        l = [1, 2.0, QColor('red'), 'dupa']
 
         s.setSetting('window_data_list', l)
 
         l_s = s.setting('window_data_list')
+
+        self.assertIsInstance(l_s, list)
+
+        self.assertIsInstance(l_s[0], int)
+        self.assertEqual(l_s[0], 1)
+
+        self.assertIsInstance(l_s[1], float)
+        self.assertEqual(l_s[1], 2.0)
+
+        self.assertIsInstance(l_s[2], QColor)
+        self.assertEqual(l_s[2].name(), "#ff0000")
+        self.assertIsInstance(l_s[2], QColor)
+        self.assertEqual(l_s[2].name(), "#ff0000")
+
+        self.assertIsInstance(l_s[3], str)
+        self.assertEqual(l_s[3], 'dupa')
+
 
         print l_s
 
@@ -118,6 +135,7 @@ class TestSettingdict(unittest.TestCase):
              'flag_true': True,
              'flag_false': False,
              'window_data_list': [1, 2, QColor('red'), 'dupa']
+
              }
 
         s.setSetting('window_data', d)
@@ -141,5 +159,24 @@ class TestSettingdict(unittest.TestCase):
 
         self.assertIsInstance(dict_s['flag_false'], bool)
         self.assertEqual(dict_s['flag_false'], False)
+
+        l_s = s.setting('window_data_list')
+
+        self.assertIsInstance(l_s, list)
+
+        self.assertIsInstance(l_s[0], int)
+        self.assertEqual(l_s[0], 1)
+
+        self.assertIsInstance(l_s[1], float)
+        self.assertEqual(l_s[1], 2.0)
+
+        self.assertIsInstance(l_s[2], QColor)
+        self.assertEqual(l_s[2].name(), "#ff0000")
+        self.assertIsInstance(l_s[2], QColor)
+        self.assertEqual(l_s[2].name(), "#ff0000")
+
+        self.assertIsInstance(l_s[3], str)
+        self.assertEqual(l_s[3], 'dupa')
+
 
         print dict_s
