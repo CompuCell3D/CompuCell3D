@@ -21,14 +21,14 @@ class TestSettingdict(unittest.TestCase):
         s.setSetting('flag_false', False)
         s.setSetting('flag_true', True)
 
-        # s.setSetting('bytearray', ba)
-        # s.setSetting('WindowSize', size)
-        # s.setSetting('ScreenshotFrequency', 8)
-        # s.setSetting('MinConcentration', 8.2)
-        # s.setSetting('ComplexNum', 8.2 + 3j)
-        # s.setSetting('dupa', 'blada2')
-        #
-        # s.setSetting('window_color', col)
+        s.setSetting('bytearray', ba)
+        s.setSetting('WindowSize', size)
+        s.setSetting('ScreenshotFrequency', 8)
+        s.setSetting('MinConcentration', 8.2)
+        s.setSetting('ComplexNum', 8.2 + 3j)
+        s.setSetting('dupa', 'blada2')
+
+        s.setSetting('window_color', col)
 
 
         flag_true_s = s.setting('flag_true')

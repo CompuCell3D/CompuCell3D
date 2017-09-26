@@ -1,17 +1,17 @@
 import sqlite3
-
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
-
-# import pickle
-
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
 
 class SerializerUtil(object):
+    """
+    SerializerUtil facilitates serialization/deserialization to/from SQLite database of various settings
+    """
+
     def __init__(self):
         self.type_2_serializer_dict = {
             'QColor': self.qcolor_2_sql,
@@ -44,35 +44,67 @@ class SerializerUtil(object):
         }
 
     def qcolor_2_sql(self, val):
-
+        """
+        QColor to sql string representation
+        :param val: {QColor}
+        :return: {tuple} ('color',QColor representation string)
+        """
         return 'color', val.name()
 
     def sql_2_color(self, val):
-
+        """
+        sql string representation to QColor
+        :param val: {str} sql string representation
+        :return: {QColor}
+        """
         return QColor(val)
 
     def qsize_2_sql(self, val):
+        """
+        QSize to sql string representation
+        :param val: {QSize}
+        :return: {tuple} ('size',QSize representation string)
+        """
 
         return 'size', str(val.width()) + ',' + str(val.height())
 
     def sql_2_size(self, val):
+        """
+        sql string representation to QSize
+        :param val: {str} sql string representation
+        :return: {QSize}
+        """
         sizeList = val.split(',')
         sizeListInt = map(int, sizeList)
 
         return QSize(sizeListInt[0], sizeListInt[1])
 
+
+    def qpoint_2_sql(self, val):
+        """
+        QPoint to sql string representation
+        :param val: {QPoint}
+        :return: {tuple} ('point',QPoint representation string)
+        """
+        return 'point', str(val.x()) + ',' + str(val.y())
+
     def sql_2_point(self, val):
+        """
+        sql string representation to QPoint
+        :param val: {str} sql string representation
+        :return: {QPoint}
+        """
         sizeList = val.split(',')
         sizeListInt = map(int, sizeList)
 
         return QPoint(sizeListInt[0], sizeListInt[1])
 
-    def qpoint_2_sql(self, val):
-
-        return 'point', str(val.x()) + ',' + str(val.y())
-
     def qbytearray_2_sql(self, val):
-
+        """
+        QByteArray to sql string representation
+        :param val: {QByteArray}
+        :return: {tuple} ('bytearray',QByteArray representation string)
+        """
         out_str = ''
         for i in range(val.count()):
             out_str += str(ord(val[i]))
@@ -81,11 +113,15 @@ class SerializerUtil(object):
         return 'bytearray', out_str
 
     def sql_2_bytearray(self, val):
-
+        """
+        sql string representation to QByteArray
+        :param val: {str} sql string representation
+        :return: {QByteArray}
+        """
         try:
             elemsList = map(chr, map(int, val.split(',')))
         except:
-            print 'CONFIGURATIN: COULD NOT CONVERT STEING TO BYTEARRAY'
+            print 'CONFIGURATIN: COULD NOT CONVERT SETTING TO QBYTEARRAY'
             elemsList = []
 
         ba = QByteArray()
@@ -95,26 +131,42 @@ class SerializerUtil(object):
         return ba
 
     def generic_2_sql(self, val):
+        """
+        Generic type (i.e. the one for whic there are not explicit handlers) to sql string representation
+        :param val: {any type not handled by explicit handlers}
+        :return: {tuple} ('pickle',pickle representation string of the generic object)
+        """
 
         return 'pickle', pickle.dumps(val)
 
     def sql_2_generic(self, val):
+        """
+        sql string representation to generic type
+        :param val: {str} sql string representation
+        :return: {generic type i.e. one defined int he pickle representation string}
+        """
 
         return pickle.loads(val)
 
-    def getstate_dict(self):
-        print 'self.keys = ', self.keys()
+    # def getstate_dict(self):
+    #     print 'self.keys = ', self.keys()
 
     def dict_2_sql(self, val):
-
+        """
+        Python dict to sql string representation. Dictionary may include any element for which
+        explicit handlers exist
+        :param val: {dict}
+        :return: {tuple} ('dict',dict representation string)
+        """
         dw = DictWrapper(val)
         return 'dict', dw.serialize()
 
-        # print pickle.dumps(dw)
-        # return 'dict', pickle.dumps(dw)
-
     def sql_2_dict(self, val):
-
+        """
+        sql string representation to python dict
+        :param val: {str} sql string representation
+        :return: {dict}
+        """
         p_load = pickle.loads(str(val))
         out_dict = {}
         for k, v in p_load.items(): # v is a tuple (type, value_repr)
@@ -128,12 +180,21 @@ class SerializerUtil(object):
         return out_dict
 
     def list_2_sql(self, val):
-
+        """
+        Python list to sql string representation. List may include any element for which
+        explicit handlers exist
+        :param val: {list}
+        :return: {tuple} ('list',list representation string)
+        """
         lw = ListWrapper(val)
         return 'list', lw.serialize()
 
     def sql_2_list(self, val):
-
+        """
+        sql string representation to python list
+        :param val: {str} sql string representation
+        :return: {list}
+        """
         l_load = pickle.loads(str(val))
 
         out_list = []
@@ -149,26 +210,40 @@ class SerializerUtil(object):
         return out_list
 
 
-        # lw = ListWrapper(val)
-        # return 'list', lw.serialize()
-
-
-
     def guess_serializer_fcn(self, val):
-
+        """
+        Given the object 'val' this function guesses the function that one has to use to convert it
+        to a representation that can be pickled
+        :param val: {arbitrary object}
+        :return: {fcn} function that facilitates conversion from object to picklable representation
+        """
         try:
             return self.type_2_serializer_dict[val.__class__.__name__]
         except KeyError:
             return self.generic_2_sql
 
     def guess_deserializer_fcn(self, stored_type):
-
+        """
+        Given type name - string value this function guesses the correct deserializer function
+        that one uses to convert corresponding pickled string into actual object.
+        Not: guess_deserializer_fcn is used in the contexts where one knows stored_type and its
+        pickled string representation
+        to a representation that can be pickled
+        :param stored_type: {str} name of the stored type
+        :return: {fcn} function that facilitates conversion from pickled representation to actual object
+        """
         try:
             return self.type_2_deserializer_dict[stored_type]
         except KeyError:
             return self.sql_2_generic
 
     def val_2_sql(self, val):
+        """
+        Wrapper function that converts arbitrary type 'val' to
+        sql pickl representation
+        :param val: {object}
+        :return: {tuple} (type_name, pickled sql string representation)
+        """
         serializer_fcn = self.guess_serializer_fcn(val)
         val_type, val_repr = serializer_fcn(val)
 
@@ -186,35 +261,20 @@ class SerializerUtil(object):
         return val
 
 class DictWrapper(dict):
+    """
+    Wrapper class that facilitates conversion of the dictionaries into sql picklable string
+    """
     def __init__(self, *args, **kwds):
         super(DictWrapper, self).__init__(*args, **kwds)
-        # self.su = SerializerUtil()
-
-    # def __getstate__(self):
-    #     # print 'self.keys = ', self.local_dict.keys()
-    #
-    #     # state = {}
-    #     state = self.__dict__.copy()
-    #     su_state = {}
-    #     for key,val in self.items():
-    #         if key in ['su']: continue
-    #         su_state[key] = self.su.val_2_sql(val)
-    #     del state['su']
-    #     state['su'] = su_state
-    #
-    #     return state
-
-    # def __setstate__(self, newstate):
-    #     # print 'self.keys = ', self.local_dict.keys()
-    #     su = {}
-    #     for key, val in  newstate['su'].items():
-    #
-    #         newstate[key] = val[1]
-    #     # newstate['su'] = None
-    #     self.__dict__.update(newstate)
-
 
     def serialize(self):
+        """
+        Generates pickled string representation of the dictionary
+        Note: this is not the same representation that one gets by calling pickle.dumps on a python dictionary
+        Here we are avoiding direct pickling of PyQt objects, instead we are generating
+        representations that are independent on the particular details of the Qt python wrapper implementations
+        :return: {str} pickle serialization string of the dictionary
+        """
         su = SerializerUtil()
 
         # state = {}
@@ -227,12 +287,20 @@ class DictWrapper(dict):
         return pickle.dumps(state)
 
     def deserialize(self, s):
+        """
+        returns unpickled dictionary based on pickled str s. Currently not in use
+        :param s: {str} string representation of the pickled dict object
+        :return: {dict}
+        """
         return pickle.loads(s)
 
     def __getstate__(self):
+        """
+        Overide of pickle-used method. Currently not in use
+        :return: {dict} representation of the dict
+        """
         # print 'self.keys = ', self.local_dict.keys()
         su = SerializerUtil()
-
         # state = {}
         state = self.copy()
         # su_state = {}
@@ -245,27 +313,37 @@ class DictWrapper(dict):
 
         return state
 
-    # def __setstate__(self, newstate):
-    #     # print 'self.keys = ', self.local_dict.keys()
-    #     su = {}
-    #     for key, val in newstate.items():
-    #         # newstate[key] = val[1]
-    #         self[key] = val[1]
-    #         # newstate['su'] = None
-    #         # self.__dict__.update(newstate)
+    def __setstate__(self, newstate):
+        """
+        Overide of pickle-used method. Currently not in use
+        :return: None
+        """
+        su = {}
+        for key, val in newstate.items():
+            # newstate[key] = val[1]
+            self[key] = val[1]
+            # newstate['su'] = None
+            # self.__dict__.update(newstate)
 
 class ListWrapper(list):
+    """
+    Wrapper class that facilitates conversion of the dictionaries into sql picklable string
+    """
+
     def __init__(self, *args, **kwds):
         super(ListWrapper, self).__init__(*args, **kwds)
 
     def serialize(self):
+        """
+        Generates pickled string representation of the list
+        Note: this is not the same representation that one gets by calling pickle.dumps on a python list
+        Here we are avoiding direct pickling of PyQt objects, instead we are generating
+        representations that are independent on the particular details of the Qt python wrapper implementations
+        :return: {str} pickle serialization string of the list
+        """
         su = SerializerUtil()
-
-        # state = {}
-        # state = self.copy()
-
         out_state = []
-        # su_state = {}
+
         for val in self:
 
             out_state.append(su.val_2_sql(val))
@@ -273,61 +351,12 @@ class ListWrapper(list):
         return pickle.dumps(out_state)
 
     def deserialize(self, s):
-
+        """
+        returns unpickled list based on pickled str s. Currently not in use
+        :param s: {str} string representation of the pickled list object
+        :return: {dict}
+        """
         return pickle.loads(str(s))
-
-    # def __getstate__(self):
-    #
-    #     # print 'self.keys = ', self.local_dict.keys()
-    #
-    #     # state = self.copy()
-    #
-    #     su = SerializerUtil()
-    #
-    #     out_state = []
-    #     # su_state = {}
-    #     for i, val in enumerate(self):
-    #         out_state.append(su.val_2_sql(val))
-    #
-    #     return out_state
-    #
-    #     # return self.serialize()
-    #
-    #
-    # def __setstate__(self, newstate):
-    #     # print 'self.keys = ', self.local_dict.keys()
-    #     su = {}
-    #     for key, val in newstate.items():
-    #         # newstate[key] = val[1]
-    #         self[key] = val[1]
-    #         # newstate['su'] = None
-    #         # self.__dict__.update(newstate)
-
-
-class DictWrapperOld(object):
-    def __init__(self, _dict):
-        self.local_dict = _dict
-        self.su = SerializerUtil()
-
-    def __getstate__(self):
-        print 'self.keys = ', self.local_dict.keys()
-
-        # state = {}
-        state = self.__dict__.copy()
-        su_state = {}
-        for key, val in self.local_dict.items():
-            su_state[key] = self.su.val_2_sql(val)
-        state['su'] = su_state
-
-        return state
-
-    def __setstate__(self, newstate):
-        # print 'self.keys = ', self.local_dict.keys()
-        su = {}
-        for key, val in newstate['su'].items():
-            newstate['local_dict'][key] = val[1]
-        newstate['su'] = None
-        self.__dict__.update(newstate)
 
 
 class SettingsSQL(object):
@@ -379,233 +408,233 @@ class SettingsSQL(object):
         self.conn.close()
 
 
-class SettingDict(object):
-    def __init__(self, filename=".shared.db", **kwargs):
-        self.filename = filename
-        self.conn = sqlite3.connect(self.filename)
-        self._create_table()
-
-        if len(kwargs) > 0:
-            for key, value in kwargs.items():
-                self[key] = value
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, etype, evalue, etb):
-        self.close()
-
-    def _create_table(self):
-        with self.conn:
-            self.conn.execute(
-                "CREATE TABLE IF NOT EXISTS dict "
-                "(name TEXT PRIMARY KEY, object BLOB)")
-            self.conn.execute(
-                "CREATE INDEX IF NOT EXISTS ix_name ON dict (name)")
-
-    def __len__(self):
-        with self.conn:
-            cur = self.conn.execute("SELECT COUNT(*) FROM dict")
-            return cur.fetchone()[0]
-
-    def __getitem__(self, key):
-        with self.conn:
-            cur = self.conn.execute(
-                "SELECT object FROM dict WHERE name = (?)", (key,))
-            obj = cur.fetchone()
-            if obj is None:
-                raise KeyError("No such key: " + key)
-            return pickle.loads(obj[0].encode())
-
-    def __setitem__(self, key, value):
-        with self.conn:
-            self.conn.execute(
-                "INSERT OR REPLACE INTO dict VALUES (?,?)",
-                (key, pickle.dumps(value)))
-
-    def __delitem__(self, key):
-        if key not in self:
-            raise KeyError
-        with self.conn:
-            self.conn.execute("DELETE FROM dict WHERE name = (?)", (key,))
-
-    def __contains__(self, key):
-        try:
-            self[key]
-            return True
-        except KeyError:
-            return False
-
-    def __iter__(self):
-        for key in self.keys():
-            yield key
-
-    def keys(self):
-        with self.conn:
-            cur = self.conn.execute("SELECT name FROM dict")
-            return [key[0] for key in cur.fetchall()]
-
-    def items(self):
-        for key in self:
-            yield (key, self[key])
-
-    def values(self):
-        """Return an iterator of the :class:`Permadict`'s values."""
-        for key in self:
-            yield self[key]
-
-    def clear(self):
-        """Remove all items from the Peramdict."""
-        with self.conn:
-            self.conn.execute("DELETE FROM dict")
-
-    def get(self, key, default=None):
-        """Return the value for ``key`` if it exists, otherwise return the
-        ``default``.
-
-        """
-        try:
-            return self[key]
-        except KeyError:
-            return default
-
-    def pop(self, key):
-        """If ``key`` is present, remove it and return its value, else raise a
-        :class:`KeyError`.
-
-        """
-        try:
-            value = self[key]
-            del self[key]
-            return value
-        except KeyError:
-            raise
-
-    def update(self, iterable):
-        """Update the :class:`Permadict` with the key/value pairs of
-        ``iterable``.
-
-        Returns ``None``.
-
-        """
-        if isinstance(iterable, dict):
-            iter_ = iterable.items()
-        else:
-            iter_ = iterable
-        for key, value in iter_:
-            self[key] = value
-        return None
-
-    def close(self):
-        self.conn.close()
-
-
-if __name__ == "__main__":  # pragma: no cover
-    from PyQt5.QtGui import *
-    from PyQt5.QtCore import *
-    import sys
-
-    s = SettingsSQL('_settings_demo.sqlite')
-
-    l = [1,2,QColor('red'),'dupa']
-    lw = ListWrapper(l)
-
-    l_serialized = lw.serialize()
+# class SettingDict(object):
+#     def __init__(self, filename=".shared.db", **kwargs):
+#         self.filename = filename
+#         self.conn = sqlite3.connect(self.filename)
+#         self._create_table()
+#
+#         if len(kwargs) > 0:
+#             for key, value in kwargs.items():
+#                 self[key] = value
+#
+#     def __enter__(self):
+#         return self
+#
+#     def __exit__(self, etype, evalue, etb):
+#         self.close()
+#
+#     def _create_table(self):
+#         with self.conn:
+#             self.conn.execute(
+#                 "CREATE TABLE IF NOT EXISTS dict "
+#                 "(name TEXT PRIMARY KEY, object BLOB)")
+#             self.conn.execute(
+#                 "CREATE INDEX IF NOT EXISTS ix_name ON dict (name)")
+#
+#     def __len__(self):
+#         with self.conn:
+#             cur = self.conn.execute("SELECT COUNT(*) FROM dict")
+#             return cur.fetchone()[0]
+#
+#     def __getitem__(self, key):
+#         with self.conn:
+#             cur = self.conn.execute(
+#                 "SELECT object FROM dict WHERE name = (?)", (key,))
+#             obj = cur.fetchone()
+#             if obj is None:
+#                 raise KeyError("No such key: " + key)
+#             return pickle.loads(obj[0].encode())
+#
+#     def __setitem__(self, key, value):
+#         with self.conn:
+#             self.conn.execute(
+#                 "INSERT OR REPLACE INTO dict VALUES (?,?)",
+#                 (key, pickle.dumps(value)))
+#
+#     def __delitem__(self, key):
+#         if key not in self:
+#             raise KeyError
+#         with self.conn:
+#             self.conn.execute("DELETE FROM dict WHERE name = (?)", (key,))
+#
+#     def __contains__(self, key):
+#         try:
+#             self[key]
+#             return True
+#         except KeyError:
+#             return False
+#
+#     def __iter__(self):
+#         for key in self.keys():
+#             yield key
+#
+#     def keys(self):
+#         with self.conn:
+#             cur = self.conn.execute("SELECT name FROM dict")
+#             return [key[0] for key in cur.fetchall()]
+#
+#     def items(self):
+#         for key in self:
+#             yield (key, self[key])
+#
+#     def values(self):
+#         """Return an iterator of the :class:`Permadict`'s values."""
+#         for key in self:
+#             yield self[key]
+#
+#     def clear(self):
+#         """Remove all items from the Peramdict."""
+#         with self.conn:
+#             self.conn.execute("DELETE FROM dict")
+#
+#     def get(self, key, default=None):
+#         """Return the value for ``key`` if it exists, otherwise return the
+#         ``default``.
+#
+#         """
+#         try:
+#             return self[key]
+#         except KeyError:
+#             return default
+#
+#     def pop(self, key):
+#         """If ``key`` is present, remove it and return its value, else raise a
+#         :class:`KeyError`.
+#
+#         """
+#         try:
+#             value = self[key]
+#             del self[key]
+#             return value
+#         except KeyError:
+#             raise
+#
+#     def update(self, iterable):
+#         """Update the :class:`Permadict` with the key/value pairs of
+#         ``iterable``.
+#
+#         Returns ``None``.
+#
+#         """
+#         if isinstance(iterable, dict):
+#             iter_ = iterable.items()
+#         else:
+#             iter_ = iterable
+#         for key, value in iter_:
+#             self[key] = value
+#         return None
+#
+#     def close(self):
+#         self.conn.close()
 
 
-    # l_out = pickle.dumps(lw)
-
-    print l_out
-    print lw
-
-    l_load = pickle.loads(l_out)
-
-
-    print
-    sys.exit()
-    #
-    d = {'a': 2, 'b': 3, 'c': QColor('red')}
-
-    s.setSetting('dictionary', d)
-
-    dict_s = s.setting('dictionary')
-
-    dw = DictWrapper()
-    dw.update(d)
-
-    p_serialized = dw.serialize()
-
-    p_out = pickle.dumps(dw)
-    # s.dict_2_sql(d)
-    #
-
-    p_load = pickle.loads(p_out)
-
-    print p_load
-
-    # # trying out serialization
-    # val_type, val_repr = s.su.val_2_sql(dw)
-    #
-    # print val_type
-    # print val_repr
-    # #
-    # # # dw = DictWrapper(d)
-    # # # p_out = pickle.dumps(dw)
-    # # # # s.dict_2_sql(d)
-    # # # #
-    # # #
-    # # # p_load = pickle.loads(p_out)
-    # # # print
-    sys.exit()
-
-    s = SettingsSQL('_settings.sqlite')
-
-
-    col = QColor('red')
-    size = QSize(20, 30)
-
-    ba = QByteArray();
-    ba.resize(5)
-
-    s.setSetting('bytearray', ba)
-    s.setSetting('WindowSize', size)
-    s.setSetting('ScreenshotFrequency', 8)
-    s.setSetting('MinConcentration', 8.2)
-    s.setSetting('ComplexNum', 8.2 + 3j)
-    s.setSetting('dupa', 'blada2')
-    # s.setSetting('window_data', {'size': 20, 'color': '#ffff00'})
-    s.setSetting('window_color', col)
-
-    print s.setting('bytearray')
-    print s.setting('WindowSize')
-    print s.setting('ScreenshotFrequency')
-    print s.setting('MinConcentration')
-    print s.setting('ComplexNum')
-    print s.setting('dupa')
-    print s.setting('window_color')
-
-
-    # d = SettingDict("_settings.sqlite")
-    # d['RecentFile'] = '/dupa'
-
-    # import numpy as np
-    #
-    # d = SettingDict("test.sqlite")
-    # d["thing"] = "whatever"
-    # print(d["thing"])
-    #
-    # d["wat"] = np.random.random((100,200))
-    # print(d["wat"])
-    #
-    # with SettingDict("test.sqlite") as pd:
-    #     print(pd["wat"])
-    #
-    # print(d.keys())
-    #
-    # print(SettingDict().keys())
-    #
-    # pd2 = SettingDict(a=1, b=2, c=3)
-    # for key in pd2.keys():
-    #     print(pd2[key])
-    #
-    # print(len(pd2))
+# if __name__ == "__main__":  # pragma: no cover
+#     from PyQt5.QtGui import *
+#     from PyQt5.QtCore import *
+#     import sys
+#
+#     s = SettingsSQL('_settings_demo.sqlite')
+#
+#     l = [1,2,QColor('red'),'dupa']
+#     lw = ListWrapper(l)
+#
+#     l_serialized = lw.serialize()
+#
+#
+#     # l_out = pickle.dumps(lw)
+#
+#     print l_out
+#     print lw
+#
+#     l_load = pickle.loads(l_out)
+#
+#
+#     print
+#     sys.exit()
+#     #
+#     d = {'a': 2, 'b': 3, 'c': QColor('red')}
+#
+#     s.setSetting('dictionary', d)
+#
+#     dict_s = s.setting('dictionary')
+#
+#     dw = DictWrapper()
+#     dw.update(d)
+#
+#     p_serialized = dw.serialize()
+#
+#     p_out = pickle.dumps(dw)
+#     # s.dict_2_sql(d)
+#     #
+#
+#     p_load = pickle.loads(p_out)
+#
+#     print p_load
+#
+#     # # trying out serialization
+#     # val_type, val_repr = s.su.val_2_sql(dw)
+#     #
+#     # print val_type
+#     # print val_repr
+#     # #
+#     # # # dw = DictWrapper(d)
+#     # # # p_out = pickle.dumps(dw)
+#     # # # # s.dict_2_sql(d)
+#     # # # #
+#     # # #
+#     # # # p_load = pickle.loads(p_out)
+#     # # # print
+#     sys.exit()
+#
+#     s = SettingsSQL('_settings.sqlite')
+#
+#
+#     col = QColor('red')
+#     size = QSize(20, 30)
+#
+#     ba = QByteArray();
+#     ba.resize(5)
+#
+#     s.setSetting('bytearray', ba)
+#     s.setSetting('WindowSize', size)
+#     s.setSetting('ScreenshotFrequency', 8)
+#     s.setSetting('MinConcentration', 8.2)
+#     s.setSetting('ComplexNum', 8.2 + 3j)
+#     s.setSetting('dupa', 'blada2')
+#     # s.setSetting('window_data', {'size': 20, 'color': '#ffff00'})
+#     s.setSetting('window_color', col)
+#
+#     print s.setting('bytearray')
+#     print s.setting('WindowSize')
+#     print s.setting('ScreenshotFrequency')
+#     print s.setting('MinConcentration')
+#     print s.setting('ComplexNum')
+#     print s.setting('dupa')
+#     print s.setting('window_color')
+#
+#
+#     # d = SettingDict("_settings.sqlite")
+#     # d['RecentFile'] = '/dupa'
+#
+#     # import numpy as np
+#     #
+#     # d = SettingDict("test.sqlite")
+#     # d["thing"] = "whatever"
+#     # print(d["thing"])
+#     #
+#     # d["wat"] = np.random.random((100,200))
+#     # print(d["wat"])
+#     #
+#     # with SettingDict("test.sqlite") as pd:
+#     #     print(pd["wat"])
+#     #
+#     # print(d.keys())
+#     #
+#     # print(SettingDict().keys())
+#     #
+#     # pd2 = SettingDict(a=1, b=2, c=3)
+#     # for key in pd2.keys():
+#     #     print(pd2[key])
+#     #
+#     # print(len(pd2))
