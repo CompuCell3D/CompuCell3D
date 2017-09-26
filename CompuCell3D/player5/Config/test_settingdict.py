@@ -30,7 +30,6 @@ class TestSettingdict(unittest.TestCase):
 
         s.setSetting('window_color', col)
 
-
         flag_true_s = s.setting('flag_true')
         self.assertIsInstance(flag_true_s, bool)
         self.assertEqual(flag_true_s, True)

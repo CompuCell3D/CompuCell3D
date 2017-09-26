@@ -1,4 +1,5 @@
 import sqlite3
+
 try:
     import cPickle as pickle
 except ImportError:
@@ -19,7 +20,7 @@ class SerializerUtil(object):
             'int': lambda val: ('int', str(val)),
             'float': lambda val: ('float', str(val)),
             'complex': lambda val: ('complex', str(val)),
-            'bool': lambda val: ('bool',int(val)),
+            'bool': lambda val: ('bool', int(val)),
             'QSize': self.qsize_2_sql,
             'QPoint': self.qpoint_2_sql,
             'QByteArray': self.qbytearray_2_sql,
@@ -34,12 +35,12 @@ class SerializerUtil(object):
             'int': lambda val: int(val),
             'float': lambda val: float(val),
             'complex': lambda val: complex(val),
-            'bool' : lambda val: False if int(val) == 0 else True,
+            'bool': lambda val: False if int(val) == 0 else True,
             'size': self.sql_2_size,
             'point': self.sql_2_point,
             'bytearray': self.sql_2_bytearray,
-            'dict' : self.sql_2_dict,
-            'list' : self.sql_2_list,
+            'dict': self.sql_2_dict,
+            'list': self.sql_2_list,
 
         }
 
@@ -78,7 +79,6 @@ class SerializerUtil(object):
         sizeListInt = map(int, sizeList)
 
         return QSize(sizeListInt[0], sizeListInt[1])
-
 
     def qpoint_2_sql(self, val):
         """
@@ -169,7 +169,7 @@ class SerializerUtil(object):
         """
         p_load = pickle.loads(str(val))
         out_dict = {}
-        for k, v in p_load.items(): # v is a tuple (type, value_repr)
+        for k, v in p_load.items():  # v is a tuple (type, value_repr)
             value_type = v[0]
             val_repr = v[1]
             deserializer_fcn = self.guess_deserializer_fcn(value_type)
@@ -199,7 +199,7 @@ class SerializerUtil(object):
 
         out_list = []
 
-        for list_tuple in l_load: # l_load is a list of tuples (type, value_repr)
+        for list_tuple in l_load:  # l_load is a list of tuples (type, value_repr)
             value_type = list_tuple[0]
             val_repr = list_tuple[1]
 
@@ -208,7 +208,6 @@ class SerializerUtil(object):
             out_list.append(value)
 
         return out_list
-
 
     def guess_serializer_fcn(self, val):
         """
@@ -260,10 +259,12 @@ class SerializerUtil(object):
 
         return val
 
+
 class DictWrapper(dict):
     """
     Wrapper class that facilitates conversion of the dictionaries into sql picklable string
     """
+
     def __init__(self, *args, **kwds):
         super(DictWrapper, self).__init__(*args, **kwds)
 
@@ -325,6 +326,7 @@ class DictWrapper(dict):
             # newstate['su'] = None
             # self.__dict__.update(newstate)
 
+
 class ListWrapper(list):
     """
     Wrapper class that facilitates conversion of the dictionaries into sql picklable string
@@ -345,7 +347,6 @@ class ListWrapper(list):
         out_state = []
 
         for val in self:
-
             out_state.append(su.val_2_sql(val))
 
         return pickle.dumps(out_state)
@@ -406,7 +407,6 @@ class SettingsSQL(object):
 
     def close(self):
         self.conn.close()
-
 
 # class SettingDict(object):
 #     def __init__(self, filename=".shared.db", **kwargs):
