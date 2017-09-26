@@ -32,13 +32,12 @@ class TestSettingdict(unittest.TestCase):
 
 
         flag_true_s = s.setting('flag_true')
-        self.assertIsInstance(flag_true_s,bool)
-        self.assertEqual(flag_true_s,True)
+        self.assertIsInstance(flag_true_s, bool)
+        self.assertEqual(flag_true_s, True)
 
         flag_false_s = s.setting('flag_false')
-        self.assertIsInstance(flag_false_s,bool)
-        self.assertEqual(flag_false_s,False)
-
+        self.assertIsInstance(flag_false_s, bool)
+        self.assertEqual(flag_false_s, False)
 
         size_s = s.setting('WindowSize')
         self.assertIsInstance(size_s, QSize)
@@ -66,21 +65,31 @@ class TestSettingdict(unittest.TestCase):
         self.assertIsInstance(color_s, QColor)
         self.assertEqual(color_s.name(), '#ff0000')
 
-    def test_composite_types(self):
+    def test_list_types(self):
+        s = SettingsSQL('_TestSettingdict.sqlite')
 
+        l = [1, 2, QColor('red'), 'dupa']
+
+        s.setSetting('window_data_list', l)
+
+        l_s = s.setting('window_data_list')
+
+        print l_s
+
+    def test_dict_types(self):
         s = SettingsSQL('_TestSettingdict.sqlite')
 
         d = {'size': 20,
              'color_str': '#ffff00',
              'color': QColor('red'),
-             'flag_true':True,
+             'flag_true': True,
              'flag_false': False
              }
 
         s.setSetting('window_data', d)
         # testing serialization/deserialization of dictionary
         dict_s = s.setting('window_data')
-        self.assertIsInstance(dict_s,dict)
+        self.assertIsInstance(dict_s, dict)
 
         self.assertIsInstance(dict_s['size'], int)
         self.assertEqual(dict_s['size'], 20)
@@ -100,16 +109,16 @@ class TestSettingdict(unittest.TestCase):
         print dict_s
 
     def test_super_composite_types(self):
-
         s = SettingsSQL('_TestSettingdict.sqlite')
 
         d = {'size': 20,
-             'color_data':{
+             'color_data': {
                  'color_str': '#ffff00',
                  'color': QColor('red'),
              },
-             'flag_true':True,
-             'flag_false': False
+             'flag_true': True,
+             'flag_false': False,
+             'window_data_list': [1, 2, QColor('red'), 'dupa']
              }
 
         s.setSetting('window_data', d)
@@ -133,7 +142,5 @@ class TestSettingdict(unittest.TestCase):
 
         self.assertIsInstance(dict_s['flag_false'], bool)
         self.assertEqual(dict_s['flag_false'], False)
-
-
 
         print dict_s

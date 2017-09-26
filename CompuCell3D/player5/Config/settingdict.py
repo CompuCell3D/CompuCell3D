@@ -23,7 +23,8 @@ class SerializerUtil(object):
             'QSize': self.qsize_2_sql,
             'QPoint': self.qpoint_2_sql,
             'QByteArray': self.qbytearray_2_sql,
-            'dict': self.dict_2_sql
+            'dict': self.dict_2_sql,
+            'list': self.list_2_sql
 
         }
 
@@ -37,7 +38,8 @@ class SerializerUtil(object):
             'size': self.sql_2_size,
             'point': self.sql_2_point,
             'bytearray': self.sql_2_bytearray,
-            'dict' : self.sql_2_dict
+            'dict' : self.sql_2_dict,
+            'list' : self.sql_2_list,
 
         }
 
@@ -124,6 +126,33 @@ class SerializerUtil(object):
             out_dict[k] = value
 
         return out_dict
+
+    def list_2_sql(self, val):
+
+        lw = ListWrapper(val)
+        return 'list', lw.serialize()
+
+    def sql_2_list(self, val):
+
+        l_load = pickle.loads(str(val))
+
+        out_list = []
+
+        for list_tuple in l_load: # l_load is a list of tuples (type, value_repr)
+            value_type = list_tuple[0]
+            val_repr = list_tuple[1]
+
+            deserializer_fcn = self.guess_deserializer_fcn(value_type)
+            value = deserializer_fcn(val_repr)
+            out_list.append(value)
+
+        return out_list
+
+
+        # lw = ListWrapper(val)
+        # return 'list', lw.serialize()
+
+
 
     def guess_serializer_fcn(self, val):
 
@@ -216,14 +245,63 @@ class DictWrapper(dict):
 
         return state
 
-    def __setstate__(self, newstate):
-        # print 'self.keys = ', self.local_dict.keys()
-        su = {}
-        for key, val in newstate.items():
-            # newstate[key] = val[1]
-            self[key] = val[1]
-            # newstate['su'] = None
-            # self.__dict__.update(newstate)
+    # def __setstate__(self, newstate):
+    #     # print 'self.keys = ', self.local_dict.keys()
+    #     su = {}
+    #     for key, val in newstate.items():
+    #         # newstate[key] = val[1]
+    #         self[key] = val[1]
+    #         # newstate['su'] = None
+    #         # self.__dict__.update(newstate)
+
+class ListWrapper(list):
+    def __init__(self, *args, **kwds):
+        super(ListWrapper, self).__init__(*args, **kwds)
+
+    def serialize(self):
+        su = SerializerUtil()
+
+        # state = {}
+        # state = self.copy()
+
+        out_state = []
+        # su_state = {}
+        for val in self:
+
+            out_state.append(su.val_2_sql(val))
+
+        return pickle.dumps(out_state)
+
+    def deserialize(self, s):
+
+        return pickle.loads(str(s))
+
+    # def __getstate__(self):
+    #
+    #     # print 'self.keys = ', self.local_dict.keys()
+    #
+    #     # state = self.copy()
+    #
+    #     su = SerializerUtil()
+    #
+    #     out_state = []
+    #     # su_state = {}
+    #     for i, val in enumerate(self):
+    #         out_state.append(su.val_2_sql(val))
+    #
+    #     return out_state
+    #
+    #     # return self.serialize()
+    #
+    #
+    # def __setstate__(self, newstate):
+    #     # print 'self.keys = ', self.local_dict.keys()
+    #     su = {}
+    #     for key, val in newstate.items():
+    #         # newstate[key] = val[1]
+    #         self[key] = val[1]
+    #         # newstate['su'] = None
+    #         # self.__dict__.update(newstate)
 
 
 class DictWrapperOld(object):
@@ -428,6 +506,23 @@ if __name__ == "__main__":  # pragma: no cover
     import sys
 
     s = SettingsSQL('_settings_demo.sqlite')
+
+    l = [1,2,QColor('red'),'dupa']
+    lw = ListWrapper(l)
+
+    l_serialized = lw.serialize()
+
+
+    # l_out = pickle.dumps(lw)
+
+    print l_out
+    print lw
+
+    l_load = pickle.loads(l_out)
+
+
+    print
+    sys.exit()
     #
     d = {'a': 2, 'b': 3, 'c': QColor('red')}
 
@@ -464,6 +559,8 @@ if __name__ == "__main__":  # pragma: no cover
     sys.exit()
 
     s = SettingsSQL('_settings.sqlite')
+
+
     col = QColor('red')
     size = QSize(20, 30)
 
