@@ -394,7 +394,7 @@ class UserInterface(QMainWindow):
         self.modelAct = QAction("&Model Editor", self)
         self.modelAct.setCheckable(True)
         # self.modelAct.setChecked(True) #not self.projectBrowserDock.isHidden()
-        if Configuration.getSetting('DisplayModeleditor'):
+        if Configuration.getSetting('DisplayModelEditor'):
             self.modelAct.setChecked(True)
         # self.connect(self.modelAct, SIGNAL("triggered(bool)"), self.toggleModelEditor)
         self.modelAct.triggered.connect(self.toggleModelEditor)
