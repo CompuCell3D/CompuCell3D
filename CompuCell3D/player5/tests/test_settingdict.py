@@ -2,8 +2,9 @@ import unittest
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
-
-from settingdict import SettingsSQL
+from os.path import *
+import sys
+from CompuCell3D.player5.Config.settingdict import SettingsSQL
 
 
 class TestSettingdict(unittest.TestCase):
@@ -89,7 +90,6 @@ class TestSettingdict(unittest.TestCase):
         self.assertIsInstance(l_s[3], str)
         self.assertEqual(l_s[3], 'dupa')
 
-
         print l_s
 
     def test_dict_types(self):
@@ -123,6 +123,40 @@ class TestSettingdict(unittest.TestCase):
         self.assertEqual(dict_s['flag_false'], False)
 
         print dict_s
+
+    def test_custom_settings(self):
+        setting_path = join(dirname(dirname(__file__)), 'CustomSetting.sqlite')
+        s = SettingsSQL(setting_path)
+
+        d = s.setting('WindowsLayout')
+        print
+
+    def test_convert_xml_to_sql_setting(self):
+        """
+        This test case checks if we can copy existing xml-based settings into sql-based format
+        It can be reused as a one-time utility to carry out this conversion
+        :return:
+        """
+        if sys.platform.startswith('darwin'):
+            xml_setting_path = join(dirname(dirname(__file__)), 'Configuration_settings', '_settings_osx.xml')
+            sql_setting_path = join(dirname(dirname(__file__)), 'Configuration_settings', '_settings_osx.sqlite')
+        else:
+            xml_setting_path = join(dirname(dirname(__file__)), 'Configuration_settings', '_settings.xml')
+            sql_setting_path = join(dirname(dirname(__file__)), 'Configuration_settings', '_settings.sqlite')
+
+        from CompuCell3D.player5.Configuration.SettingUtils import CustomSettings
+        settings = CustomSettings()
+        settings.readFromXML(xml_setting_path)
+
+        sd = settings.getNameSettingDict()
+
+        sql_settings = SettingsSQL(sql_setting_path)
+
+        for key in sd.keys():
+            setting_value = sd[key].toObject()
+            # print 'key=', key
+            # print 'value=', setting_value
+            sql_settings.setSetting(key, setting_value)
 
     def test_super_composite_types(self):
         s = SettingsSQL('_TestSettingdict.sqlite')
@@ -177,6 +211,5 @@ class TestSettingdict(unittest.TestCase):
 
         self.assertIsInstance(l_s[3], str)
         self.assertEqual(l_s[3], 'dupa')
-
 
         print dict_s

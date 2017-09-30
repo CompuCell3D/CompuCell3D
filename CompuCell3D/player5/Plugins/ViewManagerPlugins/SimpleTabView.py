@@ -58,7 +58,7 @@ try:
 except:
     print 'STView: sys.path=', sys.path
 
-# *********** TO DO
+# *********** TODO
 # 1. add example with simplified plots
 # 2. ADD WEAKREF TO PLOT FRAME WIDGET< PLOT INTERFACE CARTESIAN ETC...
 # 4. CHECK IF IT IS NECESSARY TO FIX CLOSE EVENTS AND REMOVE GRAPHICS WIDGET PLOT WIDGET FROM ANY TYPE OF REGISTRIES -
@@ -2496,11 +2496,17 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # restore graphics windows first
         # for windowId, windowDataDict in windowsLayoutDict.iteritems():
         for win_id in win_id_list:
-            windowId = str(win_id)
-            windowDataDict = windowsLayoutDict[windowId]
+            windowId = None
+            try:
+                windowDataDict = windowsLayoutDict[win_id]
+            except:
 
-            if windowId == str(0):
-                continue
+                windowId = str(win_id)
+                windowDataDict = windowsLayoutDict[win_id]
+
+
+            # if windowId == str(0) or win_id==0:
+            #     continue
 
             # gfw = self.findMDISubWindowForWidget(self.lastActiveWindow)
             from Graphics.GraphicsWindowData import GraphicsWindowData

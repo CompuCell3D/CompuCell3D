@@ -585,7 +585,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         # # # Configuration.mySettings = QSettings(QSettings.IniFormat, QSettings.UserScope, "Biocomplexity", self.prefsFileLineEdit.text())
 
         # update flags in menus:  CC3DOutputOn, etc. (rf. ViewManager/SimpleViewManager)
-        
+
         # Output
         Configuration.setSetting("ScreenUpdateFrequency", self.updateScreenSpinBox.value())
         Configuration.setSetting("ImageOutputOn", self.outputImagesCheckBox.isChecked())
@@ -608,10 +608,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("NumberOfRecentSimulations", self.numberOfRecentSimulationsSB.value())        
         Configuration.setSetting("FloatingWindows", self.floatingWindowsCB.isChecked())
 
-
         Configuration.setSetting("WindowColorSameAsMedium", self.windowColorSameAsMediumCB.isChecked() )
 
-        
         # Cell Type/Colors
         Configuration.setSetting("TypeColorMap",self.paramCC3D["TypeColorMap"])  # rwh
 
@@ -620,18 +618,15 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("CellGlyphThetaRes", self.cellGlyphThetaRes.value())  # spinbox
         Configuration.setSetting("CellGlyphPhiRes", self.cellGlyphPhiRes.value())  # spinbox
 
-
-
         fp = Configuration.getSetting("FieldParams")
 
-
-        
         # get Field name from combobox in the Field tab and save the current settings for that field
         fname = self.fieldComboBox.currentText()
         
         # Configuration.updateSimFieldsParams(fname)
         # print '\n\n\n updating field fname = ',fname
-        
+
+        #TODO change
         self.updateFieldParams(fname)
 
         # fpafter = Configuration.getSetting("FieldParams")
@@ -835,6 +830,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         '''
         
         for key in Configuration.getSettingNameList():
+            print 'key=',key
             self.paramCC3D[key] = Configuration.getSetting(key)
         return    
         

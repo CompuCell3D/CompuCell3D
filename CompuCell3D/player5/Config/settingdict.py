@@ -17,6 +17,7 @@ class SerializerUtil(object):
         self.type_2_serializer_dict = {
             'QColor': self.qcolor_2_sql,
             'str': lambda val: ('str', val),
+            'unicode': lambda val: ('unicode', val),
             'int': lambda val: ('int', str(val)),
             'float': lambda val: ('float', str(val)),
             'complex': lambda val: ('complex', str(val)),
@@ -32,6 +33,7 @@ class SerializerUtil(object):
         self.type_2_deserializer_dict = {
             'color': self.sql_2_color,
             'str': lambda val: str(val),
+            'unicode': lambda val: unicode(val),
             'int': lambda val: int(val),
             'float': lambda val: float(val),
             'complex': lambda val: complex(val),
@@ -386,6 +388,16 @@ class SettingsSQL(object):
             self.conn.execute(
                 "CREATE INDEX IF NOT EXISTS ix_name ON settings (name)")
 
+    def names(self):
+        """
+        returns a list of all setting names stored in the object
+        :return: {list} list of strings
+        """
+        with self.conn:
+            cur = self.conn.execute("SELECT name FROM settings")
+            return [key[0] for key in cur.fetchall()]
+
+
     def setSetting(self, key, val):
 
         with self.conn:
@@ -404,6 +416,17 @@ class SettingsSQL(object):
                 raise KeyError("No such key: " + key)
             return self.su.sql_2_val(obj)
             # return pickle.loads(obj[0].encode())
+
+    def getSetting(self, key):
+        # type: (object) -> object
+        # type: (object) -> object
+        """
+        Added for backward compatibility
+        :param key:
+        :return:
+        """
+        print 'getting key = ', key
+        return self.setting(key)
 
     def close(self):
         self.conn.close()

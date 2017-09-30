@@ -4,6 +4,8 @@ from PyQt5.QtWidgets import *
 from os import environ,path
 import os
 
+import shutil
+
 from DefaultSettingsData import *
 
 def writeSettings (settingsObj,path):
@@ -13,8 +15,8 @@ def writeSettings (settingsObj,path):
 def loadSettings(filename):
 
     if os.path.isfile(filename):
-        import XMLUtils
-        xml2ObjConverter = XMLUtils.Xml2Obj()
+        # import XMLUtils
+        # xml2ObjConverter = XMLUtils.Xml2Obj()
 
         fileFullPath = os.path.abspath(filename)
         settings = CustomSettings()        
@@ -22,60 +24,182 @@ def loadSettings(filename):
         
         return settings
         
-    return None 
-   
+    return None
+
+#TODO change
+# def loadGlobalSettings():
+#
+#     global_setting_dir = os.path.abspath(os.path.join(os.path.expanduser('~') , SETTINGS_FOLDER))
+#     global_setting_path = os.path.abspath(os.path.join(global_setting_dir , SETTINGS_FILE_NAME)) # abspath normalizes path
+#     # print 'LOOKING FOR global_setting_path=',global_setting_path
+#
+#     #create global settings  directory inside user home directory
+#     if not os.path.isdir(global_setting_dir):
+#         try:
+#             os.makedirs(global_setting_dir)
+#
+#         except:
+#             print 'Cenfiguration: COuld not make directory: ',global_setting_dir, ' to store global settings. Please make sure that you have appropriate write permissions'
+#             import sys
+#             sys.exit()
+#
+#     globalSettings = loadSettings (global_setting_path)
+#
+#     if not globalSettings:
+#         globalSettings, default_setting_path = loadDefaultSettings()
+#
+#         globalSettings.saveAsXML(global_setting_path)
+#
+#         return globalSettings , global_setting_path
+#     return  globalSettings , global_setting_path
+
+#TODO change
+# def loadDefaultSettings():
+#
+#     default_setting_path = os.path.abspath(os.path.join(os.path.dirname(__file__) , SETTINGS_FILE_NAME)) # abspath normalizes path
+#
+#     defaultSettings = loadSettings (default_setting_path)
+#
+#     if not defaultSettings:
+#         return None, None
+#
+#     return defaultSettings , default_setting_path
+
+def _load_sql_settings(setting_path):
+    """
+    reads sql setting file from the disk
+    :param path: {str} path to SQL settings
+    :return: {tuple} (SettingsSQL object, path to SQL settings)
+    """
+    from CompuCell3D.player5.Config.settingdict import SettingsSQL
+
+    settings = SettingsSQL(setting_path)
+    if not settings:
+        return None, None
+
+    return settings, setting_path
+
+
+def _default_setting_path():
+    """
+    Returns path to default settings
+    :return: {str} path
+    """
+
+    return os.path.abspath(
+        os.path.join(os.path.dirname(__file__), SETTINGS_FILE_NAME))
+
 def loadGlobalSettings():
-    
-    global_setting_dir = os.path.abspath(os.path.join(os.path.expanduser('~') , SETTINGS_FOLDER))
-    global_setting_path = os.path.abspath(os.path.join(global_setting_dir , SETTINGS_FILE_NAME)) # abspath normalizes path
-    # print 'LOOKING FOR global_setting_path=',global_setting_path
-    
-    #create global settings  directory inside user home directory
+    """
+    loads global settings
+    :return: {tuple} (settings object - SettingsSQL, abs path to settings file)
+    """
+
+    global_setting_dir = os.path.abspath(os.path.join(os.path.expanduser('~'), SETTINGS_FOLDER))
+    global_setting_path = os.path.abspath(
+        os.path.join(global_setting_dir, SETTINGS_FILE_NAME))  # abspath normalizes path
+
+    # create global settings  directory inside user home directory
     if not os.path.isdir(global_setting_dir):
         try:
             os.makedirs(global_setting_dir)
-    
+
         except:
-            print 'Cenfiguration: COuld not make directory: ',global_setting_dir, ' to store global settings. Please make sure that you have appropriate write permissions'
-            import sys
-            sys.exit()
-    
-    globalSettings = loadSettings (global_setting_path)  
-    
-    if not globalSettings:
-        globalSettings, default_setting_path = loadDefaultSettings()
-        globalSettings.saveAsXML(global_setting_path)        
-        
-        return globalSettings , global_setting_path     
-    return  globalSettings , global_setting_path            
+            exception_str = 'Configuration: ' \
+                            'Could not make directory: {} ' \
+                            'to store global settings. ' \
+                            'Please make sure that you have ' \
+                            'appropriate write permissions'.format(global_setting_dir)
+            raise RuntimeError(exception_str)
+
+    if not os.path.isfile(global_setting_path):
+        default_setting_path = _default_setting_path()
+
+        try:
+            shutil.copy(default_setting_path, global_setting_dir)
+        except:
+            exception_str = 'Configuration: ' \
+                            'Could not copy setting file: {} ' \
+                            'to {} directory. ' \
+                            'Please make sure that you have ' \
+                            'appropriate write permissions'.format(default_setting_path, global_setting_dir)
+            raise RuntimeError(exception_str)
+
+
+    global_settings, global_settings_path = _load_sql_settings(global_setting_path)
+    return global_settings, global_settings_path
+
+    # if not globalSettings:
+    #
+    #     # globalSettings, default_setting_path = loadDefaultSettings()
+    #     #
+    #     # globalSettings.saveAsXML(global_setting_path)
+    #     #
+    #     # return globalSettings, global_setting_path
+    # return globalSettings, global_setting_path
 
 def loadDefaultSettings():
-       
-    default_setting_path = os.path.abspath(os.path.join(os.path.dirname(__file__) , SETTINGS_FILE_NAME)) # abspath normalizes path
+    return _load_sql_settings(_default_setting_path())
 
-    defaultSettings = loadSettings (default_setting_path)  
-    
-    if not defaultSettings:
-        return None, None
-        
-    return defaultSettings , default_setting_path
-    
-    
-#this function checks for new settings in the default settings file    
-def synchronizeGlobalAndDefaultSettings(defaultSettings,globalSettings,globalSettingsPath):
-    defaultSettingsNameList = defaultSettings.getSettingNameList()
-    globalSettingsNameList = globalSettings.getSettingNameList()
-    
-    newSettingNames = set(defaultSettingsNameList) - set(globalSettingsNameList)
-    
-    for newSettingName in newSettingNames:
-        print 'newSettingName = ', newSettingName
-        newDefaultSetting = defaultSettings.getSetting(newSettingName)
-        
-        globalSettings.setSetting(newDefaultSetting.name , newDefaultSetting.value , newDefaultSetting.type)
-        writeSettings (globalSettings,globalSettingsPath) 
+    # from CompuCell3D.player5.Config.settingdict import SettingsSQL
+    #
+    # default_setting_path = _default_setting_path()
+    #
+    # default_settings = SettingsSQL(default_setting_path)
+    # if not default_settings:
+    #     return None, None
+    # return default_settings, default_setting_path
+
+
+    # defaultSettings = loadSettings(default_setting_path)
+    #
+    # if not defaultSettings:
+    #     return None, None
+    #
+    # return defaultSettings, default_setting_path
+    #
+
+#this function checks for new settings in the default settings file
+
+
+# TODO change
+# def synchronizeGlobalAndDefaultSettings(defaultSettings,globalSettings,globalSettingsPath):
+#     defaultSettingsNameList = defaultSettings.getSettingNameList()
+#     globalSettingsNameList = globalSettings.getSettingNameList()
+#
+#     newSettingNames = set(defaultSettingsNameList) - set(globalSettingsNameList)
+#
+#     for newSettingName in newSettingNames:
+#         print 'newSettingName = ', newSettingName
+#         newDefaultSetting = defaultSettings.getSetting(newSettingName)
+#
+#         globalSettings.setSetting(newDefaultSetting.name , newDefaultSetting.value , newDefaultSetting.type)
+#         writeSettings (globalSettings,globalSettingsPath)
     # sys.exit()        
-        
+
+
+def synchronizeGlobalAndDefaultSettings(default_settings, global_settings, global_settings_path):
+    """
+    Synchronizes global settings and default settings
+    :param default_settings: {SettingsSQL} settings object with default settings
+    :param global_settings: {SettingsSQL} settings object with global settings
+    :param global_settings_path: {str} path to global settings file
+    :return: None
+    """
+
+    default_settings_names = default_settings.names()
+    global_settings_names = global_settings.names()
+
+    new_setting_names = set(default_settings_names) - set(global_settings_names)
+
+    for new_setting_name in new_setting_names:
+        print 'new_setting_name = ', new_setting_name
+        new_default_setting_val = default_settings.setting(new_setting_name)
+
+        global_settings.setSetting(new_setting_name, new_default_setting_val)
+        # writeSettings(global_settings, global_settings_path)
+
+
 class Setting(object):
     storedType2XML = {
     'int':'self.int2XML',
@@ -619,6 +743,7 @@ class CustomSettings(object):
             self.__typeSettingDictDict[settingType] = {_name:setting}
         
     def getSetting(self,_name):
+        # type: (object) -> object
         
         try:
             setting = self.__nameSettingDict[_name]

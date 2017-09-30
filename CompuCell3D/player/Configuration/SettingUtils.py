@@ -627,6 +627,8 @@ class CustomSettings(object):
             self.__typeSettingDictDict[settingType] = {_name:setting}
         
     def getSetting(self,_name):
+        # type: (object) -> object
+        # type: (object) -> object
         
         try:
             setting = self.__nameSettingDict[_name]
