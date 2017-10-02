@@ -28,6 +28,6 @@ class CC3DReader:
         '''
         '''
         xmlScriptElementList = simulationRoot.findall('XMLScript')
-        if xmlScriptElementList is not None or len(xmlScriptElementList) != 0:
+        if xmlScriptElementList is not None and len(xmlScriptElementList) != 0:
             print "This project contents XML Script. Please use another CompuCell3D invocation method."
             # raise error
