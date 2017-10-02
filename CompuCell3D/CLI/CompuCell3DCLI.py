@@ -44,9 +44,6 @@ class CompuCell3DCLI:
         os.environ['DYLD_LIBRARY_PATH'] += os.pathsep + os.environ['COMPUCELL3D_PLUGIN_PATH']
         os.environ['DYLD_LIBRARY_PATH'] += os.pathsep + os.environ['COMPUCELL3D_STEPPABLE_PATH']
 
-        print os.environ['DYLD_LIBRARY_PATH']
-
-        #os.environ['PATH'] += os.pathsep + os.environ['PYTHONLIB_SYSTEM'] + "/bin"
 
     def parseCommandLineArgument(self):
         commandLineArgumentParser = CommandLineArgumentParser.CommandLineArgumentParser()
