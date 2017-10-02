@@ -54,6 +54,11 @@ class CompuCell3DCLI:
         cc3dReader = CC3DProjectFileReader.CC3DReader()
         cc3dReader.readCC3DFile(ProjectFileStore.projectFilePath)
 
+    def configureCompuCellSetup(self):
+        # Configuration of CompuCellSetup
+        # (1) Set the output directory for the Simulation
+        pass
+
     def executeCompuCell3DSimulation(self):
         pythonScriptPath = ProjectFileStore.pythonScriptPath
         subprocess.call([os.environ['PYTHON_EXEC'], pythonScriptPath])
@@ -63,6 +68,7 @@ def main():
     compuCell3DCLI.setupEnvironment()
     compuCell3DCLI.parseCommandLineArgument()
     compuCell3DCLI.loadCC3DProjectFile()
+    compuCell3DCLI.configureCompuCellSetup()
     compuCell3DCLI.executeCompuCell3DSimulation()
 
 
