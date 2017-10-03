@@ -6,6 +6,17 @@ import os
 
 class CC3DLauncher:
 
+    def __init__(self):
+        '''
+           Add directories to sys.path
+               (1) PYTHON_MODULE_PATH - ../PythonSetupScripts which contains CompuCellSetup.py
+               (2) Python Script Directory - It contains steppables used in the python script file
+        '''
+        import sys
+        sys.path.append(os.environ['PYTHON_MODULE_PATH'])
+        sys.path.append(os.path.dirname(ProjectFileStore.pythonScriptPath))
+
+
     def parseCommandLineArgument(self):
         commandLineArgumentParser = CommandLineArgumentParser.CommandLineArgumentParser()
         commandLineArgumentParser.initialize()
@@ -20,20 +31,13 @@ class CC3DLauncher:
 
         :return:
         '''
-        '''
-        Add directories to sys.path
-            (1) PYTHON_MODULE_PATH - ../PythonSetupScripts which contains CompuCellSetup.py
-            (2) Python Script Directory - It contains steppables used in the python script file 
-        '''
-        import sys
-        sys.path.append(os.environ['PYTHON_MODULE_PATH'])
-        sys.path.append(os.path.dirname(ProjectFileStore.pythonScriptPath))
-
-        screenShotOutputDirectory = os.path.join(ProjectFileStore.outputDirectoryPath, "screenshots")
-        # Configuration of CompuCellSetup
-        # (1) Set the output directory for the Simulation
+        # (1) - Set player type for CompuCellSetup as CML(Command-Line)
         import CompuCellSetup
         CompuCellSetup.playerType = "CML"
+
+        # (2) - Set the output directory for the Simulation
+        screenShotOutputDirectory = os.path.join(ProjectFileStore.outputDirectoryPath, "screenshots")
+
         print "Screenshot Storage Directory: ", screenShotOutputDirectory
         CompuCellSetup.simulationPaths.setSimulationResultStorageDirectory(screenShotOutputDirectory)
 
