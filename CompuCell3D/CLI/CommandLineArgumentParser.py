@@ -35,11 +35,15 @@ class CommandLineArgumentParser:
 
         :return: None
         """
-        if not self.__isInitialized:
-            self.initialize()
+        try:
+            if not self.__isInitialized:
+                self.initialize()
 
-        arguments = self.__argumentParser.parse_args()
+            arguments = self.__argumentParser.parse_args()
 
-        ProjectFileStore.projectFilePath = arguments.input
-        ProjectFileStore.outputDirectoryPath = arguments.outputDir
-        ProjectFileStore.outputFrequency = arguments.outputFrequency
+            ProjectFileStore.projectFilePath = arguments.input
+            ProjectFileStore.outputDirectoryPath = arguments.outputDir
+            ProjectFileStore.outputFrequency = arguments.outputFrequency
+        except SystemExit:
+            print '\nError: Invalid command-line arguments. Please refer usage for available options.'
+            exit(1)
