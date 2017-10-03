@@ -1,8 +1,6 @@
 import os
-import CommandLineArgumentParser
-import ProjectFileStore
 import subprocess
-import CC3DProjectFileReader
+import sys
 
 class CompuCell3DCLI:
 
@@ -13,8 +11,12 @@ class CompuCell3DCLI:
          <CompuCell3D_Installation>/CLI/<this_Script.py>
         '''
         scriptPath = os.path.realpath(__file__)
-        compuCell3DInstallationPath = os.path.dirname(os.path.dirname(scriptPath))
+        CLIDirectory = os.path.dirname(scriptPath)
+        compuCell3DInstallationPath = os.path.dirname(CLIDirectory)
         self.__compuCell3DPath = compuCell3DInstallationPath
+
+        CC3DLauncherFileName = "CC3DLauncher.py"
+        self.__CC3DLauncherFilePath = os.path.join(CLIDirectory, CC3DLauncherFileName)
 
     def setupEnvironment(self):
         os.environ['COMPUCELL3D_MAJOR_VERSION'] = '3'
@@ -45,32 +47,19 @@ class CompuCell3DCLI:
         os.environ['DYLD_LIBRARY_PATH'] += os.pathsep + os.environ['COMPUCELL3D_STEPPABLE_PATH']
 
 
-    def parseCommandLineArgument(self):
-        commandLineArgumentParser = CommandLineArgumentParser.CommandLineArgumentParser()
-        commandLineArgumentParser.initialize()
-        commandLineArgumentParser.parseArguments()
+    def invokeCC3DLauncher(self):
+        currentArguments = sys.argv
+        currentArguments.remove(currentArguments[0])
+        newArguments = [os.environ['PYTHON_EXEC'], self.__CC3DLauncherFilePath]
+        newArguments = newArguments + currentArguments
 
-    def loadCC3DProjectFile(self):
-        cc3dReader = CC3DProjectFileReader.CC3DReader()
-        cc3dReader.readCC3DFile(ProjectFileStore.projectFilePath)
-
-    def configureCompuCellSetup(self):
-        # Configuration of CompuCellSetup
-        # (1) Set the output directory for the Simulation
-        pass
-
-    def executeCompuCell3DSimulation(self):
-        pythonScriptPath = ProjectFileStore.pythonScriptPath
-        subprocess.call([os.environ['PYTHON_EXEC'], pythonScriptPath])
+        subprocess.call(newArguments)
 
 def main():
     compuCell3DCLI = CompuCell3DCLI()
     compuCell3DCLI.setupEnvironment()
-    compuCell3DCLI.parseCommandLineArgument()
-    compuCell3DCLI.loadCC3DProjectFile()
-    compuCell3DCLI.configureCompuCellSetup()
-    compuCell3DCLI.executeCompuCell3DSimulation()
-
+    compuCell3DCLI.invokeCC3DLauncher()
+    #print "Arguments", sys.argv
 
 if __name__ == '__main__':
     main()
