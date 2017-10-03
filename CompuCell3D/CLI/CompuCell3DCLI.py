@@ -5,7 +5,6 @@ import sys
 class CompuCell3DCLI:
 
     def __init__(self):
-
         '''
          Set the CompuCell3D installation directory path. Structure-
          <CompuCell3D_Installation>/CLI/<this_Script.py>
@@ -19,6 +18,10 @@ class CompuCell3DCLI:
         self.__CC3DLauncherFilePath = os.path.join(CLIDirectory, CC3DLauncherFileName)
 
     def setupEnvironment(self):
+        """
+
+        :return:
+        """
         os.environ['COMPUCELL3D_MAJOR_VERSION'] = '3'
         os.environ['COMPUCELL3D_MINOR_VERSION'] = '7'
         os.environ['COMPUCELL3D_BUILD_VERSION'] = '6'
