@@ -17,6 +17,12 @@ class CompuCell3DCLI:
         CC3DLauncherFileName = "CC3DLauncher.py"
         self.__CC3DLauncherFilePath = os.path.join(CLIDirectory, CC3DLauncherFileName)
 
+        self.__LIBRARY_PATH_LABEL = ""
+        if sys.platform.startswith('linux'):
+            self.__LIBRARY_PATH_LABEL = "LD_LIBRARY_PATH"
+        elif sys.platform.startswith('darwin'):
+            self.__LIBRARY_PATH_LABEL = "DYLD_LIBRARY_PATH"
+
     def setupEnvironment(self):
         """
 
@@ -27,8 +33,7 @@ class CompuCell3DCLI:
         os.environ['COMPUCELL3D_BUILD_VERSION'] = '6'
 
         os.environ['PREFIX_CC3D'] = self.__compuCell3DPath
-        os.environ['PYTHON_EXEC'] = self.__compuCell3DPath + "/python27/bin/python2.7"
-
+        os.environ['PYTHON_EXEC'] = self.__compuCell3DPath + "/Python27/bin/python2.7"
 
         os.environ['PYTHON_MODULE_PATH'] = self.__compuCell3DPath + "/pythonSetupScripts"
 
@@ -42,13 +47,12 @@ class CompuCell3DCLI:
         os.environ['PYTHONPATH'] += os.pathsep + self.__compuCell3DPath + "/lib/python"
         os.environ['PYTHONPATH'] += os.pathsep + self.__compuCell3DPath + "/vtk/lib/python2.7/site-packages/"
 
-        os.environ['DYLD_LIBRARY_PATH'] = self.__compuCell3DPath + "/lib"
-        os.environ['DYLD_LIBRARY_PATH'] += os.pathsep + self.__compuCell3DPath + "/lib/python"
-        os.environ['DYLD_LIBRARY_PATH'] += os.pathsep + self.__compuCell3DPath + "/vtk/lib"
-        os.environ['DYLD_LIBRARY_PATH'] += os.pathsep + self.__compuCell3DPath + "/player5/Utilities"
-        os.environ['DYLD_LIBRARY_PATH'] += os.pathsep + os.environ['COMPUCELL3D_PLUGIN_PATH']
-        os.environ['DYLD_LIBRARY_PATH'] += os.pathsep + os.environ['COMPUCELL3D_STEPPABLE_PATH']
-
+        os.environ[self.__LIBRARY_PATH_LABEL] = self.__compuCell3DPath + "/lib"
+        os.environ[self.__LIBRARY_PATH_LABEL] += os.pathsep + self.__compuCell3DPath + "/lib/python"
+        os.environ[self.__LIBRARY_PATH_LABEL] += os.pathsep + self.__compuCell3DPath + "/vtk/lib"
+        os.environ[self.__LIBRARY_PATH_LABEL] += os.pathsep + self.__compuCell3DPath + "/player5/Utilities"
+        os.environ[self.__LIBRARY_PATH_LABEL] += os.pathsep + os.environ['COMPUCELL3D_PLUGIN_PATH']
+        os.environ[self.__LIBRARY_PATH_LABEL] += os.pathsep + os.environ['COMPUCELL3D_STEPPABLE_PATH']
 
     def invokeCC3DLauncher(self):
         currentArguments = sys.argv
