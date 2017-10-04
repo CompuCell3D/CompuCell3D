@@ -62,7 +62,6 @@ def main():
     compuCell3DCLI = CompuCell3DCLI()
     compuCell3DCLI.setupEnvironment()
     compuCell3DCLI.invokeCC3DLauncher()
-    #print "Arguments", sys.argv
 
 if __name__ == '__main__':
     main()
