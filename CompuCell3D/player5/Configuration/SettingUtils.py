@@ -8,23 +8,23 @@ import shutil
 
 from DefaultSettingsData import *
 
-def writeSettings (settingsObj,path):
-    if settingsObj:
-        settingsObj.saveAsXML(path)   
+# def writeSettings (settingsObj,path):
+#     if settingsObj:
+#         settingsObj.saveAsXML(path)
 
-def loadSettings(filename):
-
-    if os.path.isfile(filename):
-        # import XMLUtils
-        # xml2ObjConverter = XMLUtils.Xml2Obj()
-
-        fileFullPath = os.path.abspath(filename)
-        settings = CustomSettings()        
-        settings.readFromXML(filename)
-        
-        return settings
-        
-    return None
+# def loadSettings(filename):
+#
+#     if os.path.isfile(filename):
+#         # import XMLUtils
+#         # xml2ObjConverter = XMLUtils.Xml2Obj()
+#
+#         fileFullPath = os.path.abspath(filename)
+#         settings = CustomSettings()
+#         settings.readFromXML(filename)
+#
+#         return settings
+#
+#     return None
 
 #TODO change
 # def loadGlobalSettings():
@@ -65,6 +65,14 @@ def loadSettings(filename):
 #
 #     return defaultSettings , default_setting_path
 
+def load_settings(setting_path):
+    """
+    loads settings - calls _load_sql_settings
+    :param setting_path: {str}
+    :return: {tuple} (SettingsSQL object, path to SQL settings)
+    """
+    return _load_sql_settings(setting_path=setting_path)
+
 def _load_sql_settings(setting_path):
     """
     reads sql setting file from the disk
@@ -89,15 +97,64 @@ def _default_setting_path():
     return os.path.abspath(
         os.path.join(os.path.dirname(__file__), SETTINGS_FILE_NAME))
 
+def _global_settings_dir():
+    """
+    returns path to the directory wit global settings
+    :return: {str}
+    """
+    global_setting_dir = os.path.abspath(os.path.join(os.path.expanduser('~'), SETTINGS_FOLDER))
+
+    return global_setting_dir
+
+def _global_setting_path():
+    """
+    Returns global settings path
+    :return: {str}
+    """
+    global_setting_dir = _global_settings_dir()
+    global_setting_path = os.path.abspath(
+        os.path.join(global_setting_dir, SETTINGS_FILE_NAME))  # abspath normalizes path
+
+    return global_setting_path
+
+def copy_settings(src_setting_path,dst_setting_dir):
+    """
+    Copies settings file specified by src_setting_path to directory specified by dst_setting_dir
+    :param src_setting_path: {str} full path to settins file
+    :param dst_setting_dir: {str} full path to targe directory for settings
+    :return: None
+    """
+
+    try:
+        shutil.copy(src_setting_path, dst_setting_dir)
+    except:
+        exception_str = 'Configuration: ' \
+                        'Could not copy setting file: {} ' \
+                        'to {} directory. ' \
+                        'Please make sure that you have ' \
+                        'appropriate write permissions'.format(default_setting_path, global_setting_dir)
+        raise RuntimeError(exception_str)
+
+def loadSettings(path):
+    """
+    Loads settings file
+    :param path: {str} absolute path to settings file
+    :return: {tuple} (settings object - SettingsSQL, abs path to settings file)
+    """
+    return _load_sql_settings(path)
+
 def loadGlobalSettings():
     """
     loads global settings
     :return: {tuple} (settings object - SettingsSQL, abs path to settings file)
     """
 
-    global_setting_dir = os.path.abspath(os.path.join(os.path.expanduser('~'), SETTINGS_FOLDER))
-    global_setting_path = os.path.abspath(
-        os.path.join(global_setting_dir, SETTINGS_FILE_NAME))  # abspath normalizes path
+    # global_setting_dir = os.path.abspath(os.path.join(os.path.expanduser('~'), SETTINGS_FOLDER))
+    # global_setting_path = os.path.abspath(
+    #     os.path.join(global_setting_dir, SETTINGS_FILE_NAME))  # abspath normalizes path
+
+    global_setting_dir = _global_settings_dir()
+    global_setting_path = _global_setting_path()
 
     # create global settings  directory inside user home directory
     if not os.path.isdir(global_setting_dir):
@@ -115,15 +172,16 @@ def loadGlobalSettings():
     if not os.path.isfile(global_setting_path):
         default_setting_path = _default_setting_path()
 
-        try:
-            shutil.copy(default_setting_path, global_setting_dir)
-        except:
-            exception_str = 'Configuration: ' \
-                            'Could not copy setting file: {} ' \
-                            'to {} directory. ' \
-                            'Please make sure that you have ' \
-                            'appropriate write permissions'.format(default_setting_path, global_setting_dir)
-            raise RuntimeError(exception_str)
+        copy_settings(default_setting_path,global_setting_dir)
+        # try:
+        #     shutil.copy(default_setting_path, global_setting_dir)
+        # except:
+        #     exception_str = 'Configuration: ' \
+        #                     'Could not copy setting file: {} ' \
+        #                     'to {} directory. ' \
+        #                     'Please make sure that you have ' \
+        #                     'appropriate write permissions'.format(default_setting_path, global_setting_dir)
+        #     raise RuntimeError(exception_str)
 
 
     global_settings, global_settings_path = _load_sql_settings(global_setting_path)

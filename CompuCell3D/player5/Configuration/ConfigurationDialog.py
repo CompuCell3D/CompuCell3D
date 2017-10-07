@@ -614,7 +614,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("TypeColorMap",self.paramCC3D["TypeColorMap"])  # rwh
 
         Configuration.setSetting("CellGlyphScaleByVolumeOn", self.cellGlyphScaleByVolumeCheckBox.isChecked())
-        Configuration.setSetting("CellGlyphScale", self.cellGlyphScale.text())
+        Configuration.setSetting("CellGlyphScale", float(self.cellGlyphScale.text()))
         Configuration.setSetting("CellGlyphThetaRes", self.cellGlyphThetaRes.value())  # spinbox
         Configuration.setSetting("CellGlyphPhiRes", self.cellGlyphPhiRes.value())  # spinbox
 
@@ -634,9 +634,9 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         
         Configuration.setSetting("PixelizedScalarField", self.pixelizedScalarFieldCB.isChecked())
         
-        Configuration.setSetting("MinRange", self.fieldMinRange.text())
+        Configuration.setSetting("MinRange", float(self.fieldMinRange.text()))
         Configuration.setSetting("MinRangeFixed", self.fieldMinRangeFixedCheckBox.isChecked())
-        Configuration.setSetting("MaxRange", self.fieldMaxRange.text())
+        Configuration.setSetting("MaxRange", float(self.fieldMaxRange.text()))
         Configuration.setSetting("MaxRangeFixed", self.fieldMaxRangeFixedCheckBox.isChecked())
         
         Configuration.setSetting("NumberOfLegendBoxes", self.fieldLegendNumLabels.value())  # spinbox
@@ -647,7 +647,6 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("NumberOfContourLines", self.numberOfContoursLinesSpinBox.value())
         Configuration.setSetting("ShowPlotAxes", self.showPlotAxesCB.isChecked())
 
-        
         # Vectors
         
         Configuration.setSetting("ArrowLength", self.vectorsArrowLength.value())

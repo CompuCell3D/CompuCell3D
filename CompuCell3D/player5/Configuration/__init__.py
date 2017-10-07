@@ -30,9 +30,12 @@ import os
 #
 # icons_dir = os.path.abspath(os.path.join(_path, 'player5/icons'))
 
-
+# todo - handle bad file format for settings
+# todo - at the beginning read all settings and manke sure there are not issues in the stored settings
+# todo  - fix replaceCustomSettingsWithDefaults -  see how and where it is used
 
 from SettingUtils import *
+from SettingUtils import _global_setting_path
 
 # the imports have to be fixed in the entire CC3D!!!!
 try:
@@ -136,22 +139,41 @@ def setUsedFieldNames(fieldNamesList):
 def writeAllSettings():
     pass
 
-
-
 def writeSettingsForSingleSimulation(path):
-    if Configuration.myCustomSettings:
-        writeSettings(Configuration.myCustomSettings, path)
+    """
+    Here we are creating settings for a single simulation or loading them if they already exist
+    :param path: {src} abs path to local settings
+    :return: None
+    """
+    if not os.path.isfile(path):
+        copy_settings(src_setting_path=_global_setting_path(),dst_setting_dir=os.path.dirname(path))
+        Configuration.myCustomSettings, Configuration.myCustomSettingsPath =  load_settings(path)
+
+    # if not Configuration.myCustomSettings:
+    #
+    #     copy_settings(src_setting_path=_global_setting_path(),dst_setting_dir=os.path.dirname(path))
     else:
-        # in case there is no custom settings object we use global settings and write them as local ones
-        writeSettings(Configuration.myGlobalSettings, path)
-        # once we wrote them we have to read them in to initialize objects
-        initializeCustomSettings(path)
-        # readCustomFile(path)
+        Configuration.myCustomSettings, Configuration.myCustomSettingsPath =  load_settings(path)
+
+
+
+
+
+#todo - original file
+# def writeSettingsForSingleSimulation(path):
+#     if Configuration.myCustomSettings:
+#         writeSettings(Configuration.myCustomSettings, path)
+#     else:
+#         # in case there is no custom settings object we use global settings and write them as local ones
+#         writeSettings(Configuration.myGlobalSettings, path)
+#         # once we wrote them we have to read them in to initialize objects
+#         initializeCustomSettings(path)
+#         # readCustomFile(path)
 
 
 def initializeCustomSettings(filename):
-    Configuration.myCustomSettings = loadSettings(filename)
-    Configuration.myCustomSettingsPath = os.path.abspath(filename)
+    Configuration.myCustomSettings,  Configuration.myCustomSettingsPath = loadSettings(filename)
+    # Configuration.myCustomSettingsPath = os.path.abspath(filename)
 
 
 # def setSimFieldsParams(fieldNames):
@@ -264,6 +286,15 @@ def getSetting(_key, fieldName=None):
     # some settings are stored in the global settings e.g. number of recent simualtions or recent simulations list
     if _key in Configuration.globalOnlySettings:
         settingStorage = Configuration.myGlobalSettings
+
+    if fieldName is not None:
+        fieldParams = getSetting('FieldParams')
+        try:
+            singleFieldParams = fieldParams[fieldName]
+
+            return singleFieldParams[_key]
+        except LookupError:
+            pass  # returning global parameter for the field
 
     val = settingStorage.getSetting(_key)
     return val
