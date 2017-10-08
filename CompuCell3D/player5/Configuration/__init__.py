@@ -1,9 +1,3 @@
-# from PyQt4.QtGui import *
-# from PyQt4.QtCore import *
-
-# from Messaging import stdMsg, dbgMsg,pd, errMsg, setDebugging
-# setDebugging(1)
-
 ###### NOTE
 # DefaultSettings.py defines location of the global setting file
 # SettingUtils.py provides most functionality as far as Setting lookup, loading writing etc...
@@ -22,14 +16,6 @@
 from os import environ, path
 import os
 
-# determining icon's path
-
-# _path = os.path.abspath(os.path.dirname(__file__))
-#
-# _path = os.path.abspath(os.path.join(_path+'../../../'))
-#
-# icons_dir = os.path.abspath(os.path.join(_path, 'player5/icons'))
-
 # todo - handle bad file format for settings
 # todo - at the beginning read all settings and manke sure there are not issues in the stored settings
 # todo  - fix replaceCustomSettingsWithDefaults -  see how and where it is used
@@ -43,8 +29,6 @@ try:
 except ImportError:
     from Config.settingdict import SettingsSQL
 
-
-
 LATTICE_TYPES = {"Square": 1, "Hexagonal": 2}
 
 maxNumberOfRecentFiles = 5
@@ -53,12 +37,8 @@ MODULENAME = '------- player5/Configuration/__init__.py: '
 
 
 class Configuration():
-    # # # defaultSettings = defaultSettings()
     defaultSettings, defaultSettingsPath = loadDefaultSettings()
     myGlobalSettings, myGlobalSettingsPath = loadGlobalSettings()
-
-    # globalSettingsSQL = SettingsSQL('GlobalSetting.sqlite')
-    # customSettingsSQL = SettingsSQL('CustomSetting.sqlite')
 
     synchronizeGlobalAndDefaultSettings(defaultSettings, myGlobalSettings, myGlobalSettingsPath)
 
@@ -79,23 +59,26 @@ def initConfiguration():
     Configuration.myCustomSettings = None
     Configuration.myCustomSettingsPath = ''
 
+# copy_settings(src_setting_path,dst_setting_dir)
+
+# def replaceCustomSettingsWithDefaults():
+#     defaultSettings, path = loadDefaultSettings()
+#
+#     Configuration.myCustomSettings = defaultSettings
+#     writeSettings(Configuration.myCustomSettings, Configuration.myCustomSettingsPath)
 
 def replaceCustomSettingsWithDefaults():
-    defaultSettings, path = loadDefaultSettings()
+    defaultSettings, default_settings_path = loadDefaultSettings()
 
-    Configuration.myCustomSettings = defaultSettings
-    writeSettings(Configuration.myCustomSettings, Configuration.myCustomSettingsPath)
+    copy_settings(src_setting_path=default_settings_path,
+                  dst_setting_dir=os.path.dirname(Configuration.myCustomSettingsPath))
 
+    Configuration.myCustomSettings, Configuration.myCustomSettingsPath = loadSettings(Configuration.myCustomSettingsPath)
 
-# def getIconsDir():return icons_dir
-#
-# def getIconPath(icon_name):
-#
-#     return os.path.abspath(os.path.join(getIconsDir(),icon_name))
-
-# TODO change
-# def getSettingNameList():
-#     return Configuration.myGlobalSettings.getSettingNameList()
+    # print Configuration.myCustomSettingsPath
+    #
+    # Configuration.myCustomSettings = defaultSettings
+    # writeSettings(Configuration.myCustomSettings, Configuration.myCustomSettingsPath)
 
 
 def getSettingNameList():
@@ -119,25 +102,12 @@ def setUsedFieldNames(fieldNamesList):
 
             pass
 
-    # print 'cleanedFieldParams.keys() = ', cleanedFieldParams.keys()   
-    # import time
-    # time.sleep(2)
-
-    # print 'cleanedFieldParams =', cleanedFieldParams
-
     setSetting('FieldParams', cleanedFieldParams)
-    # sys.exit()
 
-#TODO change
-# def writeAllSettings():
-#     # print 'Configuration.myGlobalSettings.typeNames = ', Configuration.myGlobalSettings.getTypeSettingDictDict().keys()
-#     # print 'Configuration.myGlobalSettings. = ', Configuration.myGlobalSettings.getTypeSettingDictDict()
-#
-#     writeSettings(Configuration.myGlobalSettings, Configuration.myGlobalSettingsPath)
-#     writeSettings(Configuration.myCustomSettings, Configuration.myCustomSettingsPath)
 
 def writeAllSettings():
     pass
+
 
 def writeSettingsForSingleSimulation(path):
     """
@@ -146,37 +116,17 @@ def writeSettingsForSingleSimulation(path):
     :return: None
     """
     if not os.path.isfile(path):
-        copy_settings(src_setting_path=_global_setting_path(),dst_setting_dir=os.path.dirname(path))
-        Configuration.myCustomSettings, Configuration.myCustomSettingsPath =  load_settings(path)
+        copy_settings(src_setting_path=_global_setting_path(), dst_setting_dir=os.path.dirname(path))
+        Configuration.myCustomSettings, Configuration.myCustomSettingsPath = load_settings(path)
 
-    # if not Configuration.myCustomSettings:
-    #
-    #     copy_settings(src_setting_path=_global_setting_path(),dst_setting_dir=os.path.dirname(path))
     else:
-        Configuration.myCustomSettings, Configuration.myCustomSettingsPath =  load_settings(path)
-
-
-
-
-
-#todo - original file
-# def writeSettingsForSingleSimulation(path):
-#     if Configuration.myCustomSettings:
-#         writeSettings(Configuration.myCustomSettings, path)
-#     else:
-#         # in case there is no custom settings object we use global settings and write them as local ones
-#         writeSettings(Configuration.myGlobalSettings, path)
-#         # once we wrote them we have to read them in to initialize objects
-#         initializeCustomSettings(path)
-#         # readCustomFile(path)
+        Configuration.myCustomSettings, Configuration.myCustomSettingsPath = load_settings(path)
 
 
 def initializeCustomSettings(filename):
-    Configuration.myCustomSettings,  Configuration.myCustomSettingsPath = loadSettings(filename)
-    # Configuration.myCustomSettingsPath = os.path.abspath(filename)
+    Configuration.myCustomSettings, Configuration.myCustomSettingsPath = loadSettings(filename)
 
 
-# def setSimFieldsParams(fieldNames):
 def getDefaultFieldParams():
     paramsDict = {}
 
@@ -208,12 +158,10 @@ def getDefaultFieldParams():
 
 
 def initFieldsParams(fieldNames):  # called from SimpleTabView once we know the fields
-    # print 
+
 
     fieldParams = getSetting('FieldParams')
-    # print 'fieldParams.keys()=',fieldParams.keys()
-    # print '\n\n\nfieldParams=',fieldParams
-    # sys.exit()
+
     for field in fieldNames:
 
         if field not in fieldParams.keys() and field != 'Cell_Field':
@@ -254,27 +202,15 @@ def getRecentSimulationsIncludingNewItem(simName):
     seen_add = seen.add
     currentStrlist = [x for x in currentStrlist if not (x in seen or seen_add(x))]
 
-    # print  'len(currentStrlist)=',len(currentStrlist),' maxLength=',maxLength   
-
     # ensuring that we keep only NumberOfRecentSimulations elements
     if len(currentStrlist) > maxLength:
         currentStrlist = currentStrlist[: - (len(currentStrlist) - maxLength)]
-        # print 'maxLength=',maxLength
-    # print 'currentStrlist=',currentStrlist
-
-
-    # setSetting('RecentSimulations',currentStrlist)
-    # val = currentStrlist
-    # print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n currentStrlist=',currentStrlist       
-    # import time
-    # time.sleep(2)
 
     return currentStrlist
 
 
 # we append an optional fieldName now to allow for field-dependent parameters from Prefs
 def getSetting(_key, fieldName=None):
-    # print '_key=',_key
     settingStorage = None
 
     if Configuration.myCustomSettings:
@@ -299,45 +235,6 @@ def getSetting(_key, fieldName=None):
     val = settingStorage.getSetting(_key)
     return val
 
-    # TODO changes
-    if _key == 'WindowsLayout':
-
-        # val = settingStorage.getSetting(_key)
-        val = Configuration.customSettingsSQL.getSetting(_key)
-        return val
-
-    else:
-        val = settingStorage.getSetting(_key)
-
-    # handling field params request
-    if fieldName is not None:
-        fieldParams = getSetting('FieldParams')
-        # print 'fieldParams=',fieldParams
-        try:
-            singleFieldParams = fieldParams[fieldName]
-
-            return singleFieldParams[_key]
-        except LookupError:
-            pass  # returning global parameter for the field
-
-    if val:
-        return val.toObject()
-    else:  # try getting this setting value from global settings
-
-        val = Configuration.myGlobalSettings.getSetting(_key)
-        if val:
-            settingStorage.setSetting(val.name, val.value, val.type)  # set missing setting
-            return val.toObject()
-        else:  # finally try default settings
-
-            val = Configuration.defaultSettings.getSetting(_key)
-            #             settingStorage.setSetting(val.name , val.value , val.type) # set missing setting
-            if val:
-                settingStorage.setSetting(val.name, val.value, val.type)  # set missing setting
-                return val.toObject()
-
-    return None  # if no setting is found return None
-
 
 def setSetting(_key, _value):  # we append an optional fieldName now to allow for field-dependent parameters from Prefs
 
@@ -350,32 +247,19 @@ def setSetting(_key, _value):  # we append an optional fieldName now to allow fo
         val = getRecentSimulationsIncludingNewItem(simName)  # val is the value that is stored int hte settings
 
     if _key in Configuration.globalOnlySettings:  # some settings are stored in the global settings e.g. number of recent simualtions or recent simulations list
-        # Configuration.myGlobalSettings.setSetting(_key, val) # TODO changes
-
-        # Configuration.globalSettingsSQL.setSetting(_key, val)
         Configuration.myGlobalSettings.setSetting(_key, val)
 
     elif _key in Configuration.customOnlySettings:  # some settings are stored in the custom settings e.g. WindowsLayout
 
         if Configuration.myCustomSettings:
-            # Configuration.myCustomSettings.setSetting(_key, val) # TODO changes
-
-            # Configuration.customSettingsSQL.setSetting(_key, val)
             Configuration.myCustomSettings.setSetting(_key, val)
 
     else:
-        #TODO change
-        # Configuration.myGlobalSettings.setSetting(_key, val)  # we always save everythign to the global settings
-
-        # Configuration.globalSettingsSQL.setSetting(_key, val)
-
         Configuration.myGlobalSettings.setSetting(_key, val)
 
         if Configuration.myCustomSettings:
-            # TODO change
-            # Configuration.myCustomSettings.setSetting(_key, val)
-            # Configuration.customSettingsSQL.setSetting(_key, val)
             Configuration.myCustomSettings.setSetting(_key, val)
+
 
 def syncPreferences():  # this function invoked when we close the Prefs dialog with the "OK" button
     pass
