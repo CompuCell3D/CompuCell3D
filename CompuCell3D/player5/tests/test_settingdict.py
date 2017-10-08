@@ -139,7 +139,7 @@ class TestSettingdict(unittest.TestCase):
         """
         if sys.platform.startswith('darwin'):
             xml_setting_path = join(dirname(dirname(__file__)), 'Configuration_settings', '_settings_osx.xml')
-            sql_setting_path = join(dirname(dirname(__file__)), 'Configuration_settings', '_settings_osx.sqlite')
+            sql_setting_path = join(dirname(dirname(__file__)), 'Configuration_settings', '_settings.sqlite')
         else:
             xml_setting_path = join(dirname(dirname(__file__)), 'Configuration_settings', '_settings.xml')
             sql_setting_path = join(dirname(dirname(__file__)), 'Configuration_settings', '_settings.sqlite')

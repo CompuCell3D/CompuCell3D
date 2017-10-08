@@ -59,14 +59,6 @@ def initConfiguration():
     Configuration.myCustomSettings = None
     Configuration.myCustomSettingsPath = ''
 
-# copy_settings(src_setting_path,dst_setting_dir)
-
-# def replaceCustomSettingsWithDefaults():
-#     defaultSettings, path = loadDefaultSettings()
-#
-#     Configuration.myCustomSettings = defaultSettings
-#     writeSettings(Configuration.myCustomSettings, Configuration.myCustomSettingsPath)
-
 def replaceCustomSettingsWithDefaults():
     defaultSettings, default_settings_path = loadDefaultSettings()
 
@@ -74,11 +66,6 @@ def replaceCustomSettingsWithDefaults():
                   dst_setting_dir=os.path.dirname(Configuration.myCustomSettingsPath))
 
     Configuration.myCustomSettings, Configuration.myCustomSettingsPath = loadSettings(Configuration.myCustomSettingsPath)
-
-    # print Configuration.myCustomSettingsPath
-    #
-    # Configuration.myCustomSettings = defaultSettings
-    # writeSettings(Configuration.myCustomSettings, Configuration.myCustomSettingsPath)
 
 
 def getSettingNameList():
