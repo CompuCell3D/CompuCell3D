@@ -1,11 +1,8 @@
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
-from os import environ, path
 import os, sys
-
 import shutil
-
 from DefaultSettingsData import *
 
 
@@ -130,13 +127,17 @@ def loadGlobalSettings():
 
 
 def loadDefaultSettings():
+    """
+    loads default settings
+    :return: {tuple} (settings object - SettingsSQL, abs path to settings file)
+    """
     return _load_sql_settings(_default_setting_path())
 
 
-# this function checks for new settings in the default settings file
 def synchronizeGlobalAndDefaultSettings(default_settings, global_settings, global_settings_path):
     """
-    Synchronizes global settings and default settings
+    Synchronizes global settings and default settings. This function checks for
+    new settings in the default settings file
     :param default_settings: {SettingsSQL} settings object with default settings
     :param global_settings: {SettingsSQL} settings object with global settings
     :param global_settings_path: {str} path to global settings file
@@ -153,4 +154,3 @@ def synchronizeGlobalAndDefaultSettings(default_settings, global_settings, globa
         new_default_setting_val = default_settings.setting(new_setting_name)
 
         global_settings.setSetting(new_setting_name, new_default_setting_val)
-        # writeSettings(global_settings, global_settings_path)

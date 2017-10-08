@@ -17,8 +17,10 @@ from os import environ, path
 import os
 
 # todo - handle bad file format for settings
-# todo - at the beginning read all settings and manke sure there are not issues in the stored settings
-# todo  - fix replaceCustomSettingsWithDefaults -  see how and where it is used
+# todo - at the beginning read all settings and make sure there are no issues in the stored settings
+#todo - see if updateFieldsParams() function is needed
+# todo - see if we need syncPreferences
+
 
 from SettingUtils import *
 from SettingUtils import _global_setting_path
@@ -37,12 +39,17 @@ MODULENAME = '------- player5/Configuration/__init__.py: '
 
 
 class Configuration():
+    """
+    "Global" class that serves as a container for global, default and simulation specific settings and their
+    respective paths
+    """
     defaultSettings, defaultSettingsPath = loadDefaultSettings()
     myGlobalSettings, myGlobalSettingsPath = loadGlobalSettings()
 
     synchronizeGlobalAndDefaultSettings(defaultSettings, myGlobalSettings, myGlobalSettingsPath)
 
-    myCustomSettings = None  # this is an object that stores settings for custom settings i.e. ones which are associated with individual cc3d projects
+    # stores simulation-specific settings for  i.e. ones which are associated with individual cc3d project
+    myCustomSettings = None
     myCustomSettingsPath = ''
 
     globalOnlySettings = ['RecentSimulations', 'NumberOfRecentSimulations', 'OutputLocation', 'ProjectLocation']
@@ -50,8 +57,15 @@ class Configuration():
 
     activeFieldNamesList = []
 
+    # dictionary of FieldParams Setings
+    simFieldsParams = None
+
 
 def initConfiguration():
+    """
+    Function that "flushes" al configuration settings . Called when user hits "Stop" in the player
+    :return:
+    """
     Configuration.defaultSettings, Configuration.defaultSettingsPath = loadDefaultSettings()
     Configuration.myGlobalSettings, Configuration.myGlobalSettingsPath = loadGlobalSettings()
     synchronizeGlobalAndDefaultSettings(Configuration.defaultSettings, Configuration.myGlobalSettings,
@@ -60,6 +74,10 @@ def initConfiguration():
     Configuration.myCustomSettingsPath = ''
 
 def replaceCustomSettingsWithDefaults():
+    """
+    Replaces simulation-specific settings with the default settings
+    :return: None
+    """
     defaultSettings, default_settings_path = loadDefaultSettings()
 
     copy_settings(src_setting_path=default_settings_path,
@@ -69,14 +87,25 @@ def replaceCustomSettingsWithDefaults():
 
 
 def getSettingNameList():
+    """
+    Returns a list of setting names (those stored in the global setting file).
+    :return: {list os str}
+    """
     return Configuration.myGlobalSettings.names()
 
 
 def setUsedFieldNames(fieldNamesList):
+    """
+    Function that examines 'FieldParams' settings and keeps only those that are
+    associated with field names listed in the 'fieldNamesList'. Settings for fields
+    not listed in 'fieldNamesList' are discarded
+    :param fieldNamesList: {list of str} list of fields whose settings will be remain in the settings file
+    :return: None
+    """
     Configuration.activeFieldNamesList = fieldNamesList
     fieldParams = getSetting('FieldParams')
 
-    # purging unneded fields
+    # purging uneeded fields
     cleanedFieldParams = {}
     for fieldName in Configuration.activeFieldNamesList:
         try:
@@ -93,6 +122,10 @@ def setUsedFieldNames(fieldNamesList):
 
 
 def writeAllSettings():
+    """
+    Kept to satisfy legacy API - not needed with sql-based settings
+    :return: None
+    """
     pass
 
 
@@ -111,10 +144,21 @@ def writeSettingsForSingleSimulation(path):
 
 
 def initializeCustomSettings(filename):
+    """
+    Loads simulation-specific settings
+    :param filename: {str} absolute path to the simulation-specific setting file
+    :return: None
+    """
     Configuration.myCustomSettings, Configuration.myCustomSettingsPath = loadSettings(filename)
 
 
 def getDefaultFieldParams():
+    """
+    Creates dictionary for FieldParams setting (specifying how to diplay given field).
+    All field params have default values
+    :return: {dict} Dictionary of field parameters (field visualzation parameters)
+    """
+
     paramsDict = {}
 
     paramsDict["MinRange"] = getSetting("MinRange")
@@ -144,22 +188,38 @@ def getDefaultFieldParams():
     return paramsDict
 
 
-def initFieldsParams(fieldNames):  # called from SimpleTabView once we know the fields
-
-
-    fieldParams = getSetting('FieldParams')
-
-    for field in fieldNames:
-
-        if field not in fieldParams.keys() and field != 'Cell_Field':
-            fieldParams[field] = getDefaultFieldParams()
-
-    Configuration.simFieldsParams = fieldParams
-    # print 'initFieldsParams fieldParams = ',fieldParams
-    setSetting('FieldParams', fieldParams)
+# def initFieldsParams(fieldNames):
+#     """
+#     called from SimpleTabView once we know the fields
+#     :param fieldNames:
+#     :return:
+#     """
+#
+#
+#
+#     fieldParams = getSetting('FieldParams')
+#
+#     for field in fieldNames:
+#
+#         if field not in fieldParams.keys() and field != 'Cell_Field':
+#             fieldParams[field] = getDefaultFieldParams()
+#
+#     Configuration.simFieldsParams = fieldParams
+#     # print 'initFieldsParams fieldParams = ',fieldParams
+#     setSetting('FieldParams', fieldParams)
 
 
 def updateFieldsParams(fieldName, fieldDict):
+    #todo - see if this function is needed
+    """
+    Called by ConfigurationDialog - stores field params dictionary (fieldDict) associated with field (fieldName)
+    in the Configuration.simFieldsParams. Also stores this information in the settings file on the hard drive
+
+    NOT SURE IF THIS FUNCTION IS ACTUALLY NEEDED
+    :param fieldName: {str} name of the field
+    :param fieldDict: {dict} dictionary of field-related visualization settings
+    :return: None
+    """
     fieldParamsDict = getSetting("FieldParams")
     Configuration.simFieldsParams = fieldParamsDict
 
@@ -176,6 +236,13 @@ def updateFieldsParams(fieldName, fieldDict):
 
 
 def getRecentSimulationsIncludingNewItem(simName):
+    """
+    Returns a list of recent simulations. Makes sure that the list does not exceed
+    number of items specified in the 'NumberOfRecentSimulations' setting
+    :param simName: {str}
+    :return: {list of str} list of recent simulations
+    """
+
     tmpList = getSetting('RecentSimulations')
     maxLength = getSetting('NumberOfRecentSimulations')
 
@@ -198,7 +265,13 @@ def getRecentSimulationsIncludingNewItem(simName):
 
 # we append an optional fieldName now to allow for field-dependent parameters from Prefs
 def getSetting(_key, fieldName=None):
-    settingStorage = None
+    """
+    Retrieves setting name from the setting file(s)/database(s)
+    :param _key: {str} name of the setting
+    :param fieldName:{str} name of the field - optional and used only in conjunction with dictionary of
+    settings associated with field visualization parameters
+    :return: {object} object corresponding to a given setting
+    """
 
     if Configuration.myCustomSettings:
         settingStorage = Configuration.myCustomSettings
@@ -223,9 +296,13 @@ def getSetting(_key, fieldName=None):
     return val
 
 
-def setSetting(_key, _value):  # we append an optional fieldName now to allow for field-dependent parameters from Prefs
-
-    # print 'SETTING _key=',_key
+def setSetting(_key, _value):
+    """
+    stores object (_value) under name (_key) in the relevant setting file(s)/databases(s)
+    :param _key: {str} name of the setting
+    :param _value: {object} object associated with the setting
+    :return: None
+    """
 
     val = _value
 
@@ -248,5 +325,11 @@ def setSetting(_key, _value):  # we append an optional fieldName now to allow fo
             Configuration.myCustomSettings.setSetting(_key, val)
 
 
-def syncPreferences():  # this function invoked when we close the Prefs dialog with the "OK" button
+def syncPreferences():
+    """
+    this function invoked when we close the Prefs dialog with the "OK" button.
+    Not used with sql-based settings. Kept to satisfy legacy API
+    :return:
+    """
+
     pass
