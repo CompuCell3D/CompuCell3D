@@ -19,6 +19,7 @@ class SerializerUtil(object):
             'str': lambda val: ('str', val),
             'unicode': lambda val: ('unicode', val),
             'int': lambda val: ('int', str(val)),
+            'long':lambda val: ('long', str(val)),
             'float': lambda val: ('float', str(val)),
             'complex': lambda val: ('complex', str(val)),
             'bool': lambda val: ('bool', int(val)),
@@ -26,7 +27,8 @@ class SerializerUtil(object):
             'QPoint': self.qpoint_2_sql,
             'QByteArray': self.qbytearray_2_sql,
             'dict': self.dict_2_sql,
-            'list': self.list_2_sql
+            'list': self.list_2_sql,
+            'tuple': self.tuple_2_sql
 
         }
 
@@ -35,6 +37,7 @@ class SerializerUtil(object):
             'str': lambda val: str(val),
             'unicode': lambda val: unicode(val),
             'int': lambda val: int(val),
+            'long': lambda val: long(val),
             'float': lambda val: float(val),
             'complex': lambda val: complex(val),
             'bool': lambda val: False if int(val) == 0 else True,
@@ -43,6 +46,7 @@ class SerializerUtil(object):
             'bytearray': self.sql_2_bytearray,
             'dict': self.sql_2_dict,
             'list': self.sql_2_list,
+            'tuple': self.sql_2_tuple,
 
         }
 
@@ -144,11 +148,10 @@ class SerializerUtil(object):
     def sql_2_generic(self, val):
         """
         sql string representation to generic type
-        :param val: {str} sql string representation
+        :param val: {str or unicode} sql string representation
         :return: {generic type i.e. one defined int he pickle representation string}
         """
-
-        return pickle.loads(val)
+        return pickle.loads(str(val))
 
     # def getstate_dict(self):
     #     print 'self.keys = ', self.keys()
@@ -191,6 +194,7 @@ class SerializerUtil(object):
         lw = ListWrapper(val)
         return 'list', lw.serialize()
 
+
     def sql_2_list(self, val):
         """
         sql string representation to python list
@@ -211,6 +215,25 @@ class SerializerUtil(object):
 
         return out_list
 
+    def tuple_2_sql(self, val):
+        """
+        Python tuple to sql string representation. List may include any element for which
+        explicit handlers exist
+        :param val: {tuple}
+        :return: {tuple} ('tuple',tuple representation string)
+        """
+
+        type_name, serialization = self.list_2_sql(val)
+        return 'tuple', serialization
+
+    def sql_2_tuple(self, val):
+        """
+        sql string representation to python tuple
+        :param val: {str} sql string representation
+        :return: {tuple}
+        """
+        return tuple(self.sql_2_list(val))
+
     def guess_serializer_fcn(self, val):
         """
         Given the object 'val' this function guesses the function that one has to use to convert it
@@ -221,7 +244,12 @@ class SerializerUtil(object):
         try:
             return self.type_2_serializer_dict[val.__class__.__name__]
         except KeyError:
-            return self.generic_2_sql
+            # prevent pickle conversion - try to enforce explicit type converters
+            warning_msg = 'guess_serializer_fcn: could not find converter for {}'.format(val.__class__.__name__)
+            print (warning_msg)
+            raise RuntimeError(warning_msg)
+
+            # return self.generic_2_sql
 
     def guess_deserializer_fcn(self, stored_type):
         """
@@ -236,7 +264,11 @@ class SerializerUtil(object):
         try:
             return self.type_2_deserializer_dict[stored_type]
         except KeyError:
+            # prevent pickle conversion- try to enforce explicit type converters
+            # raise RuntimeError('guess_deserializer_fcn: could not find converter for {}'.format(stored_type))
+
             return self.sql_2_generic
+
 
     def val_2_sql(self, val):
         """
@@ -245,7 +277,10 @@ class SerializerUtil(object):
         :param val: {object}
         :return: {tuple} (type_name, pickled sql string representation)
         """
-        serializer_fcn = self.guess_serializer_fcn(val)
+        try:
+            serializer_fcn = self.guess_serializer_fcn(val)
+        except RuntimeError:
+            return None, None
         val_type, val_repr = serializer_fcn(val)
 
         return val_type, val_repr
@@ -256,7 +291,11 @@ class SerializerUtil(object):
         :param obj: {tuple} (type, string representation - serialization string)
         :return: actual value represented by obj serialization tuple
         """
-        deserializer_fcn = self.guess_deserializer_fcn(obj[0])  # obj[0] stores type
+        try:
+            deserializer_fcn = self.guess_deserializer_fcn(obj[0])  # obj[0] stores type
+        except RuntimeError:
+            return None
+
         val = deserializer_fcn(obj[1])  # obj[1] stores serialization string
 
         return val
@@ -295,7 +334,7 @@ class DictWrapper(dict):
         :param s: {str} string representation of the pickled dict object
         :return: {dict}
         """
-        return pickle.loads(s)
+        return pickle.loads(str(s))
 
     def __getstate__(self):
         """
@@ -403,9 +442,12 @@ class SettingsSQL(object):
         with self.conn:
             val_type, val_repr = self.su.val_2_sql(val)
 
-            self.conn.execute(
-                "INSERT OR REPLACE INTO settings VALUES (?,?,?)",
-                (key, val_type, val_repr))
+            if val_type is not None and val_type is not None:
+                self.conn.execute(
+                    "INSERT OR REPLACE INTO settings VALUES (?,?,?)",
+                    (key, val_type, val_repr))
+            else:
+                print ('NOT STORING SETTING: "{}". LIKELY DUE TO MISSING TYPE CONVERTER'.format(key))
 
     def setting(self, key):
         with self.conn:
@@ -414,6 +456,7 @@ class SettingsSQL(object):
             obj = cur.fetchone()
             if obj is None:
                 raise KeyError("No such key: " + key)
+
             return self.su.sql_2_val(obj)
             # return pickle.loads(obj[0].encode())
 
@@ -425,7 +468,7 @@ class SettingsSQL(object):
         :param key:
         :return:
         """
-        print 'getting key = ', key
+        # print 'getting key = ', key
         return self.setting(key)
 
     def close(self):

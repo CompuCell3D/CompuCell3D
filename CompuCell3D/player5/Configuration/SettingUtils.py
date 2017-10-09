@@ -1,8 +1,11 @@
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
-import os, sys
+import os
 import shutil
+import sys
+
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+
 from DefaultSettingsData import *
 
 
@@ -14,6 +17,19 @@ def load_settings(setting_path):
     """
     return _load_sql_settings(setting_path=setting_path)
 
+def _check_settings_sanity(settings_object):
+    """
+    Checks whether all settings listed in settings_object are accessible.
+    :param settings_object: {instance of SettingsSQL} settings object
+    :return: {list of str} list of settings that are problematic
+    """
+    problematic_settings = []
+    for setting_name in settings_object.names():
+        try:
+            settings_object.getSetting(setting_name)
+        except:
+            problematic_settings.append(setting_name)
+    return problematic_settings
 
 def _load_sql_settings(setting_path):
     """
@@ -21,11 +37,15 @@ def _load_sql_settings(setting_path):
     :param path: {str} path to SQL settings
     :return: {tuple} (SettingsSQL object, path to SQL settings)
     """
-    from CompuCell3D.player5.Config.settingdict import SettingsSQL
+    from CompuCell3D.player5.Configuration.settingdict import SettingsSQL
 
     settings = SettingsSQL(setting_path)
     if not settings:
         return None, None
+
+    problematic_settings = _check_settings_sanity(settings_object=settings)
+    if len(problematic_settings):
+        print 'FOUND THE FOLLOWING PROBLEMATIC SETTINGS: ', problematic_settings
 
     return settings, setting_path
 

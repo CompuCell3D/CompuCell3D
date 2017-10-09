@@ -1,10 +1,12 @@
-import unittest
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
-from os.path import *
 import sys
-from CompuCell3D.player5.Config.settingdict import SettingsSQL
+import unittest
+from os.path import *
+
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+
+from CompuCell3D.player5.Configuration.settingdict import SettingsSQL
 
 
 class TestSettingdict(unittest.TestCase):
@@ -30,6 +32,9 @@ class TestSettingdict(unittest.TestCase):
         s.setSetting('dupa', 'blada2')
 
         s.setSetting('window_color', col)
+
+        s.setSetting('qdate', QDate(1999,1,1))
+
 
         flag_true_s = s.setting('flag_true')
         self.assertIsInstance(flag_true_s, bool)
@@ -64,6 +69,10 @@ class TestSettingdict(unittest.TestCase):
         color_s = s.setting('window_color')
         self.assertIsInstance(color_s, QColor)
         self.assertEqual(color_s.name(), '#ff0000')
+
+        with self.assertRaises(KeyError):
+            qdate = s.setting('qdate')
+
 
     def test_list_types(self):
         s = SettingsSQL('_TestSettingdict.sqlite')

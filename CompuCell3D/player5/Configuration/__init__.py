@@ -13,9 +13,6 @@
 # Now this setting is treated as "known setting " and you can manipulat it using Configuration set/get setting fuctions/. For more complex settings you may need to write 
 # some auxiliary functions facilitating translation from Setting format to Python format - this usually applies to e.g. dictionaries of dictionaries
 
-from os import environ, path
-import os
-
 # todo - handle bad file format for settings
 # todo - at the beginning read all settings and make sure there are no issues in the stored settings
 #todo - see if updateFieldsParams() function is needed
@@ -27,7 +24,7 @@ from SettingUtils import _global_setting_path
 
 # the imports have to be fixed in the entire CC3D!!!!
 try:
-    from CompuCell3D.player5.Config.settingdict import SettingsSQL
+    from CompuCell3D.player5.Configuration.settingdict import SettingsSQL
 except ImportError:
     from Config.settingdict import SettingsSQL
 
