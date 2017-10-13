@@ -35,7 +35,7 @@ from  Graphics.GraphicsFrameWidget import GraphicsFrameWidget
 from Utilities.SimModel import SimModel
 from Configuration.ConfigurationDialog import ConfigurationDialog
 import Configuration
-import Configuration.DefaultSettingsData as settings_data
+import DefaultSettingsData as settings_data
 
 
 import DefaultData
@@ -1908,6 +1908,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.stepAct.setEnabled(True)
                 self.stopAct.setEnabled(True)
                 self.pauseAct.setEnabled(True)
+                self.pifFromSimulationAct.setEnabled(True)
 
                 self.openAct.setEnabled(False)
                 self.openLDSAct.setEnabled(False)
@@ -3404,6 +3405,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         __generatePIFFromRunningSimulation depending on th4e running mode
         :return:None
         '''
+        self.__pauseSim()
         if self.__viewManagerType == "CMLResultReplay":
             self.__generatePIFFromVTK()
         else:

@@ -78,9 +78,6 @@ setDebugging(0)
 
 
 
-
-
-
 class Twedit(object):
     def __init__(self):
         self.fileList=[]

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import os, sys
 import string
-import Configuration.DefaultSettingsData as settings_data
+import Configuration
+import DefaultSettingsData as settings_data
 
 MODULENAME = '------- pythonSetupScripts/CC3DSimulationDataHandler.py: '
 
