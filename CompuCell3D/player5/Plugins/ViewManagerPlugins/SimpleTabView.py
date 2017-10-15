@@ -413,7 +413,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         return mdiWindow
 
-
     def addVTKWindowToWorkspace(self):  #
         '''
         just called one time, for initial graphics window  (vs. addNewGraphicsWindow())
@@ -421,8 +420,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
 
         self.mainGraphicsWidget = GraphicsFrameWidget(parent=None, originatingWidget=self)
-
-
 
         # we make sure that first graphics window is positioned in the left upper corner
         # NOTE: we have to perform move prior to calling addSubWindow. or else we will get distorted window
@@ -447,15 +444,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.mainGraphicsWidget.readSettings()
         self.simulation.setGraphicsWidget(self.mainGraphicsWidget)
 
-
         mdiSubWindow = self.addSubWindow(self.mainGraphicsWidget)
-
-
 
         self.mainMdiSubWindow = mdiSubWindow
         self.mainGraphicsWidget.show()
         self.mainGraphicsWidget.setConnects(self)
-
 
         self.lastActiveRealWindow = mdiSubWindow
         # return OK drawing
@@ -464,11 +457,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.setActiveSubWindowCustomSlot(
             self.lastActiveRealWindow)  # rwh: do this to "check" this in the "Window" menu
 
-
-
         self.updateWindowMenu()
         self.updateActiveWindowVisFlags()
-
         # print self.graphicsWindowVisDict
 
 
@@ -476,55 +466,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         if suggested_win_pos.x() != -1 and suggested_win_pos.y() != -1:
             mdiSubWindow.move(suggested_win_pos)
-
-
-    # def addVTKWindowToWorkspace(self):  #
-    #     '''
-    #     just called one time, for initial graphics window  (vs. addNewGraphicsWindow())
-    #     :return: None
-    #     '''
-    #
-    #     self.mainGraphicsWidget = GraphicsFrameWidget(parent=None, originatingWidget=self)
-    #
-    #     # we make sure that first graphics window is positioned in the left upper corner
-    #     # NOTE: we have to perform move prior to calling addSubWindow. or else we will get distorted window
-    #     if self.lastPositionMainGraphicsWindow is not None:
-    #         self.mainGraphicsWidget.move(self.lastPositionMainGraphicsWindow)
-    #     else:
-    #         self.lastPositionMainGraphicsWindow = self.mainGraphicsWidget.pos()
-    #
-    #     # todo ok
-    #     # self.mainGraphicsWidget.setShown(False)
-    #     self.mainGraphicsWidget.hide()
-    #
-    #     self.configsChanged.connect(self.mainGraphicsWidget.draw2D.configsChanged)
-    #     self.configsChanged.connect(self.mainGraphicsWidget.draw3D.configsChanged)
-    #     # self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWidget.draw2D.configsChanged)
-    #     # self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWidget.draw3D.configsChanged)
-    #     self.mainGraphicsWidget.readSettings()
-    #     self.simulation.setGraphicsWidget(self.mainGraphicsWidget)
-    #
-    #     mdiSubWindow = self.addSubWindow(self.mainGraphicsWidget)
-    #
-    #     self.mainMdiSubWindow = mdiSubWindow
-    #     self.mainGraphicsWidget.show()
-    #     self.mainGraphicsWidget.setConnects(self)
-    #
-    #     self.lastActiveRealWindow = mdiSubWindow
-    #
-    #     # MDIFIX
-    #     self.setActiveSubWindowCustomSlot(
-    #         self.lastActiveRealWindow)  # rwh: do this to "check" this in the "Window" menu
-    #
-    #     self.updateWindowMenu()
-    #     self.updateActiveWindowVisFlags()
-    #     # print self.graphicsWindowVisDict
-    #
-    #
-    #     suggested_win_pos = self.suggested_window_position()
-    #
-    #     if suggested_win_pos.x() != -1 and suggested_win_pos.y() != -1:
-    #         mdiSubWindow.move(suggested_win_pos)
 
     def minimizeAllGraphicsWindows(self):
         '''
@@ -1176,7 +1117,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.__paramsChanged()
         # Else creating a project settings file
         else:
-
             self.customSettingPath = os.path.abspath(
                 os.path.join(self.cc3dSimulationDataHandler.cc3dSimulationData.basePath, 'Simulation',settings_data.SETTINGS_FILE_NAME))
 
