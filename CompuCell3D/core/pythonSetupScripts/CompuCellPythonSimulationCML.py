@@ -151,7 +151,7 @@ def prepareSingleRun(_cc3dSimulationDataHandler):
 
 
 def setSimulationResultStorageDirectory(_dir=''):
-    if _dir != '':
+    if _dir != '' and _dir != None:
         CompuCellSetup.simulationPaths.setSimulationResultStorageDirectory(_dir, False)
     else:
         outputDir = getRootOutputDir()
@@ -243,12 +243,15 @@ try:
     allowRelaunch = True
 
     sim, simthread = None, None
-    print 'BEFORE cmlParser.processCommandLineOptions() \n\n\n\n'
     helpOnly = cmlParser.processCommandLineOptions()
-    print 'GOT PAST cmlParser.processCommandLineOptions() \n\n\n\n'
+    cml_args = cmlParser.cml_args
 
-    if helpOnly:
-        raise NameError('HelpOnly')
+    # print 'BEFORE cmlParser.processCommandLineOptions() \n\n\n\n'
+    # helpOnly = cmlParser.processCommandLineOptions()
+    # print 'GOT PAST cmlParser.processCommandLineOptions() \n\n\n\n'
+    #
+    # if helpOnly:
+    #     raise NameError('HelpOnly')
 
     # setting up push address
 
@@ -268,12 +271,14 @@ try:
     # extracting from the runScript maximum number of consecutive runs
     try:
         maxNumberOfConsecutiveRuns = int(os.environ["MAX_NUMBER_OF_CONSECUTIVE_RUNS"])
-        if cmlParser.maxNumberOfRuns > 0:
+        if cml_args.maxNumberOfConsecutiveRuns >0:
             maxNumberOfConsecutiveRuns = cmlParser.maxNumberOfRuns
+        # if cmlParser.maxNumberOfRuns > 0:
+        #     maxNumberOfConsecutiveRuns = cmlParser.maxNumberOfRuns
 
         # we reset max number of consecutive runs to 1 because we want each simulation in parameter scan
         # initiated by the psrun.py script to be an independent run after which runScript terminatesrestarts again for the next run
-        if cmlParser.exitWhenDone:
+        if cml_args.exitWhenDone:
             maxNumberOfConsecutiveRuns = 1
             allowRelaunch = False
     except:  # if for whatever reason we cannot do it we stay with the default value
@@ -326,7 +331,8 @@ try:
                     import time
 
                     time.sleep(5)
-
+            else:
+                raise RuntimeError("Invalid simulation file: %s "%fileName)
             if cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource:
                 singleSimulation = False
 

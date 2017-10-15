@@ -418,6 +418,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.mainGraphicsWidget = GraphicsFrameWidget(parent=None, originatingWidget=self)
 
+
+
         # we make sure that first graphics window is positioned in the left upper corner
         # NOTE: we have to perform move prior to calling addSubWindow. or else we will get distorted window
         if self.lastPositionMainGraphicsWindow is not None:
@@ -425,9 +427,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
         else:
             self.lastPositionMainGraphicsWindow = self.mainGraphicsWidget.pos()
 
+        self.mainGraphicsWidget.show()
+
+
         # todo ok
         # self.mainGraphicsWidget.setShown(False)
-        self.mainGraphicsWidget.hide()
+
+        # self.mainGraphicsWidget.hide()
+        # return
 
         self.configsChanged.connect(self.mainGraphicsWidget.draw2D.configsChanged)
         self.configsChanged.connect(self.mainGraphicsWidget.draw3D.configsChanged)
@@ -436,20 +443,28 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.mainGraphicsWidget.readSettings()
         self.simulation.setGraphicsWidget(self.mainGraphicsWidget)
 
+
         mdiSubWindow = self.addSubWindow(self.mainGraphicsWidget)
+
+
 
         self.mainMdiSubWindow = mdiSubWindow
         self.mainGraphicsWidget.show()
         self.mainGraphicsWidget.setConnects(self)
 
+
         self.lastActiveRealWindow = mdiSubWindow
+        # return OK drawing
 
         # MDIFIX
         self.setActiveSubWindowCustomSlot(
             self.lastActiveRealWindow)  # rwh: do this to "check" this in the "Window" menu
 
+
+
         self.updateWindowMenu()
         self.updateActiveWindowVisFlags()
+
         # print self.graphicsWindowVisDict
 
 
@@ -457,6 +472,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         if suggested_win_pos.x() != -1 and suggested_win_pos.y() != -1:
             mdiSubWindow.move(suggested_win_pos)
+
+
 
     def minimizeAllGraphicsWindows(self):
         '''
@@ -2398,12 +2415,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
 
+
         self.__setupArea()
 
         # Create self.mainGraphicsWindow
         self.__step = 0
 
         self.showDisplayWidgets()
+
+
 
         simObj = None
         if self.mysim:
@@ -2769,15 +2789,20 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                     self.showSimView(file)
 
+
                 else:
 
                     # self.__closeSim()
                     # print 'BEFORE showSimView'
+
+
                     self.showSimView(file)
+
                     # print 'AFTER showSimView'
 
         self.drawingAreaPrepared = True
         self.updateActiveWindowVisFlags()  # needed in case switching from one sim to another (e.g. 1st has FPP, 2nd doesn't)
+
 
     def __openLDSFile(self, fileName=None):
         '''
