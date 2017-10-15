@@ -20,6 +20,7 @@ simulationPythonScriptName = ""
 simulationFileName = ""
 screenshotDirectoryName = ""
 customScreenshotDirectoryName = ""
+invokeMethod = ""
 
 global error_code
 error_code = 0
@@ -826,7 +827,7 @@ def getCoreSimulationObjectsNewPlayer(_parseOnlyFlag=False, _cmlOnly=False):
                 simulationPaths.setPythonScriptNameFromXML(
                     cc3dXML2ObjConverter.root.getFirstElement("PythonScript").getText())
 
-        simulationPaths.ensurePathsConsistency()
+        #simulationPaths.ensurePathsConsistency()
 
         # #here I will append path to search paths based on the paths to XML file and Python script paths
         # if simulationPaths.playerSimulationPythonScriptPath != "":
@@ -1736,6 +1737,104 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry=None, _screenUpdateFrequ
     # In exception handlers you have to call sim.finish to unload the plugins .
     # We may need to introduce new funuction name (e.g. unload) because finish does more than unloading
 
+def mainLoopCLI(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=None):
+    print '\n### Staring main Loop CLI'
+    global cmlFieldHandler  # rwh2
+    global globalSteppableRegistry  # rwh2
+    globalSteppableRegistry = steppableRegistry
+    import ProjectFileStore
+
+    extraInitSimulationObjects(sim, simthread)
+
+    global customScreenshotDirectoryName
+    global cc3dSimulationDataHandler
+    global simulationPaths
+    if customScreenshotDirectoryName:
+        makeCustomSimDir(customScreenshotDirectoryName)
+        if cc3dSimulationDataHandler is not None:
+            cc3dSimulationDataHandler.copySimulationDataFiles(customScreenshotDirectoryName)
+            simulationPaths.setSimulationResultStorageDirectoryDirect(customScreenshotDirectoryName)
+
+    runFinishFlag = True
+
+    if not steppableRegistry is None:
+        steppableRegistry.init(sim)
+        steppableRegistry.start()
+    # init fieldWriter
+    if cmlFieldHandler:
+        cmlFieldHandler.fieldWriter.init(sim)
+        cmlFieldHandler.getInfoAboutFields()
+        cmlFieldHandler.outputFrequency = ProjectFileStore.outputFrequency
+        cmlFieldHandler.outputFileCoreName = "output"
+
+        cmlFieldHandler.prepareSimulationStorageDir(
+            os.path.join(ProjectFileStore.outputDirectoryPath, "LatticeData"))
+        cmlFieldHandler.setMaxNumberOfSteps(
+            sim.getNumSteps())  # will determine the length text field  of the step number suffix
+        cmlFieldHandler.writeXMLDescriptionFile()  # initialization of the cmlFieldHandler is done - we can write XML description file
+
+        # self.simulationXMLFileName=""
+        # self.simulationPythonScriptName=""
+
+        print "simulationPaths XML=", simulationPaths.simulationXMLFileName
+        print "simulationPaths PYTHON=", simulationPaths.simulationPythonScriptName
+
+
+    global current_step
+    current_step = 0
+
+    # when num steps are declared at the CML
+    # they have higher precedence than the number of MCS than declared in the simulation file
+
+    # for current_step in range(sim.getNumSteps()):
+    while True:
+        # calling Python steppables which are suppose to run before MCS - e.g. secretion steppable
+        if userStopSimulationFlag:
+            runFinishFlag = False;
+            break
+
+        if not steppableRegistry is None:
+            steppableRegistry.stepRunBeforeMCSSteppables(current_step)
+
+
+        sim.step(current_step)  # steering using steppables
+
+
+        if sim.getRecentErrorMessage() != "":
+            raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
+
+        if not steppableRegistry is None:
+            steppableRegistry.step(current_step)
+
+        if cmlFieldHandler.outputFrequency and not (current_step % cmlFieldHandler.outputFrequency):
+            #            print MYMODULENAME,' mainLoopCML: cmlFieldHandler.writeFields(i), i=',i
+            cmlFieldHandler.writeFields(current_step)
+            # cmlFieldHandler.fieldWriter.addCellFieldForOutput()
+            # cmlFieldHandler.fieldWriter.writeFields(cmlFieldHandler.outputFileCoreName+str(i)+".vtk")
+            # cmlFieldHandler.fieldWriter.clear()
+
+        # steer application will only update modules that uses requested using updateCC3DModule function from simulator
+        sim.steer()
+        if sim.getRecentErrorMessage() != "":
+            raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
+
+        current_step += 1
+        # print 'sim.getNumSteps()=',sim.getNumSteps()
+        if current_step >= sim.getNumSteps():
+            break
+
+    print "END OF SIMULATION  "
+    if runFinishFlag:
+        sim.finish()
+        steppableRegistry.finish()
+        sim.cleanAfterSimulation()
+    else:
+        sim.cleanAfterSimulation()
+        print "CALLING UNLOAD MODULES"
+
+
+    # In exception handlers you have to call sim.finish to unload the plugins .
+    # We may need to introduce new funuction name (e.g. unload) because finish does more than unloading
 
 def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=None):
     global cmlFieldHandler  # rwh2
@@ -1967,6 +2066,8 @@ def mainLoop(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=None
     #    print MYMODULENAME,"playerType=",playerType
     #    import pdb; pdb.set_trace()
 
+    if invokeMethod == "CLI":
+        return mainLoopCLI(sim, simthread, steppableRegistry, _screenUpdateFrequency)
     if playerType == "CML":
         return mainLoopCML(sim, simthread, steppableRegistry, _screenUpdateFrequency)
     if playerType == "CMLResultReplay":
