@@ -38,7 +38,8 @@ def _load_sql_settings(setting_path):
     :param path: {str} path to SQL settings
     :return: {tuple} (SettingsSQL object, path to SQL settings)
     """
-    from CompuCell3D.player5.Configuration.settingdict import SettingsSQL
+    # from CompuCell3D.player5.Configuration.settingdict import SettingsSQL
+    from settingdict import SettingsSQL
 
     settings = SettingsSQL(setting_path)
     if not settings:
