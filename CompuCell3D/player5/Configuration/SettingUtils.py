@@ -6,7 +6,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from CompuCell3D.core.pythonSetupScripts.DefaultSettingsData import *
+# from CompuCell3D.core.pythonSetupScripts.DefaultSettingsData import *
+from DefaultSettingsData import *
 
 
 def load_settings(setting_path):
