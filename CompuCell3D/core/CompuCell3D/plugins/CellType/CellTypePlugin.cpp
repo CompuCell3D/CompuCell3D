@@ -20,34 +20,19 @@
  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
  *************************************************************************/
 
+#include <sstream>
 
-// #include <map>
-// #include <vector>
-// #include <CompuCell3D/Automaton/CellType.h>
+#define SSTR( x ) static_cast< std::ostringstream & >( \
+        ( std::ostringstream() << std::dec << x ) ).str()
+
 #include <CompuCell3D/CC3D.h>
 
 using namespace CompuCell3D;
-
-
-
-
-// #include <CompuCell3D/Simulator.h>
-//  #include <CompuCell3D/Potts3D/Potts3D.h>
-
-//#include <XMLCereal/XMLPullParser.h>
-//#include <XMLCereal/XMLSerializer.h>
-
-// #include <BasicUtils/BasicString.h>
-// #include <BasicUtils/BasicException.h>
-
-// #include <XMLUtils/CC3DXMLElement.h>
-
 #include <iostream>
 using namespace std;
 
 
 #include "CellTypePlugin.h"
-//#include "CellTypeParseData.h"
 
 
 
@@ -79,30 +64,44 @@ void CellTypePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData){
 }
 
 
-
 void CellTypePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
   
-      typeNameMap.clear();
-      nameTypeMap.clear();
-      vector<unsigned char> frozenTypeVec;
-		CC3DXMLElementList cellTypeVec=_xmlData->getElements("CellType");
+    typeNameMap.clear();
+    nameTypeMap.clear();
+    
+    std::map<unsigned char,std::string>::iterator type_name_mitr;
+    std::map<std::string,unsigned char>::iterator name_type_mitr;
+    
+    vector<unsigned char> frozenTypeVec;
+    CC3DXMLElementList cellTypeVec=_xmlData->getElements("CellType");
 
-		for (int i = 0 ; i<cellTypeVec.size(); ++i){
-			typeNameMap[cellTypeVec[i]->getAttributeAsByte("TypeId")]=cellTypeVec[i]->getAttribute("TypeName");
-			nameTypeMap[cellTypeVec[i]->getAttribute("TypeName")]=cellTypeVec[i]->getAttributeAsByte("TypeId");
+    for (int i = 0 ; i<cellTypeVec.size(); ++i){
+	unsigned char type_id = cellTypeVec[i]->getAttributeAsByte("TypeId");
+	std::string type_name = cellTypeVec[i]->getAttribute("TypeName");
 
-			if(cellTypeVec[i]->findAttribute("Freeze"))
-				frozenTypeVec.push_back(cellTypeVec[i]->getAttributeAsByte("TypeId"));
-		}
+	type_name_mitr = typeNameMap.find(type_id);
+
+	ASSERT_OR_THROW("Type id: "+SSTR((int)type_id)+" has already been defined", (type_name_mitr == typeNameMap.end()));
+	typeNameMap[type_id] = type_name;
+
+	name_type_mitr = nameTypeMap.find(type_name);
+
+	ASSERT_OR_THROW("Type name "+type_name+" has already been defined",(name_type_mitr == nameTypeMap.end()));
+	nameTypeMap[type_name] = type_id;
+
+	if(cellTypeVec[i]->findAttribute("Freeze")){
+	    frozenTypeVec.push_back(cellTypeVec[i]->getAttributeAsByte("TypeId"));
+	}
+    }
 
       potts->setFrozenTypeVector(frozenTypeVec);
 	
       //enforcing the Medium has id =0
-	  std::map<std::string, unsigned char>::iterator mitr = nameTypeMap.find("Medium");
-	  if (mitr == nameTypeMap.end()) {
+	  name_type_mitr = nameTypeMap.find("Medium");
+	  if (name_type_mitr == nameTypeMap.end()) {
 		  ASSERT_OR_THROW("Medium cell type is not defined. Please define Medium cell type and make sure its type id is set to 0 ",false)
 	  }
-	  else if (mitr->second!=0) {
+	  else if (name_type_mitr->second!=0) {
 		  ASSERT_OR_THROW("Medium type id can only be set to 0. Please define Medium cell type and make sure its type id is set to 0.",false)
 	  }
 
@@ -111,32 +110,10 @@ void CellTypePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 }
 
 void CellTypePlugin::init(Simulator *simulator, ParseData * _pd) {
-	//cerr<<"CELL TYPE THIS IS _pd="<<_pd<<endl;
- //  potts = simulator->getPotts();
- //  potts->registerCellGChangeWatcher(this);
- //  potts->registerAutomaton(this);
- //  update(_pd);
- //  simulator->registerSteerableObject((SteerableObject*)this);
 
 }
 
 void CellTypePlugin::update(ParseData *_pd, bool _fullInitFlag){
-
-//   if(_pd){
-//      typeNameMap.clear();
-//      nameTypeMap.clear();
-//      CellTypeParseData * cpdPtr=(CellTypeParseData *)_pd;
-//      vector<unsigned char> frozenTypeVec;
-////       cerr<<" cpdPtr->cellTypeTuppleVec.size()="<<cpdPtr->cellTypeTuppleVec.size()<<endl;
-//      for(int i = 0 ; i < cpdPtr->cellTypeTuppleVec.size() ; ++i){
-//         typeNameMap[cpdPtr->cellTypeTuppleVec[i].typeId]=cpdPtr->cellTypeTuppleVec[i].typeName;
-//         nameTypeMap[cpdPtr->cellTypeTuppleVec[i].typeName]=cpdPtr->cellTypeTuppleVec[i].typeId;
-//         if(cpdPtr->cellTypeTuppleVec[i].freeze){
-//            frozenTypeVec.push_back(cpdPtr->cellTypeTuppleVec[i].typeId);
-//         }
-//      }
-//      potts->setFrozenTypeVector(frozenTypeVec);
-//   }
 
 }
 
@@ -190,38 +167,4 @@ unsigned char CellTypePlugin::getMaxTypeId() const {
 	}
 }
 
-//void CellTypePlugin::readXML(XMLPullParser &in) {
-//   
-//  pd=&cpd;
-//  in.skip(TEXT);
-//
-//  while (in.check(START_ELEMENT)) {
-//    if (in.getName() == "CellType") {
-//      CellTypeTupple cellTypeTupple;
-//      cellTypeTupple.typeName = in.getAttribute("TypeName").value;
-//      cellTypeTupple.typeId = BasicString::parseUByte(in.getAttribute("TypeId").value);
-//      cerr<<"typeName="<<cellTypeTupple.typeName<<endl;
-//      cerr<<"typeId="<<(short)cellTypeTupple.typeId<<endl;
-//  
-//      ///deciding whether to freeze or not
-//      int attrNum=in.findAttribute("Freeze");
-//      if(attrNum != -1){
-//         cellTypeTupple.freeze=true;
-//      }
-//      in.matchSimple();
-//      cpd.cellTypeTuppleVec.push_back(cellTypeTupple);
-//    }
-//    else {
-//      throw BasicException(string("Unexpected element '") + in.getName() +
-//                           "'!", in.getLocation());
-//    }
-//
-//    in.skip(TEXT);
-//  }
-//
-//  
-//}
-//
-//void CellTypePlugin::writeXML(XMLSerializer &out) {
-//}
-//
+
