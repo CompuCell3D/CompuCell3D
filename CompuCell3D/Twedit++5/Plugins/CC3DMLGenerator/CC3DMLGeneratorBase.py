@@ -141,9 +141,11 @@ class CC3DMLGeneratorBase:
             mElement.ElementCC3D("LatticeType", {}, gpd["LatticeType"])
 
         for dim_name in ['x','y','z']:
-           if gpd['BoundaryConditions'][dim_name] == 'Periodic':
-               mElement.ElementCC3D('Boundary_'+dim_name, {}, 'Periodic')
-
+           try:
+               if gpd['BoundaryConditions'][dim_name] == 'Periodic':
+                   mElement.ElementCC3D('Boundary_'+dim_name, {}, 'Periodic')
+           except KeyError:
+               mElement.ElementCC3D('Boundary_' + dim_name, {}, 'NoFlux')
 
     @GenerateDecorator('Metadata', ['', ''])
     def generateMetadataSimulationProperties(self, *args, **kwds):
