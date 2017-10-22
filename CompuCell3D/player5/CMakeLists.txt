@@ -40,6 +40,14 @@ if(INSTALL_PLAYER)
         PATTERN "*.pyc" EXCLUDE
         PATTERN "@CMAKE_SOURCE_DIR@/${player_dir}/Configuration/*")
 
+    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/${player_dir}/Configuration_settings" DESTINATION @CMAKE_INSTALL_PREFIX@/${player_dir}
+        PATTERN "*.svn" EXCLUDE
+        PATTERN "*.ui" EXCLUDE
+        PATTERN "*.in" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN "@CMAKE_SOURCE_DIR@/${player_dir}/Configuration_settings/*")
+
+
     # configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Configuration/Version.py.in @CMAKE_INSTALL_PREFIX@/player/Configuration/Version.py)
 
 

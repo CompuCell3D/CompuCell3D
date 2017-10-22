@@ -1,0 +1,5 @@
+<Simulation version="3.6.2">
+   <XMLScript Type="XMLScript">Simulation/OrientedGrowthDemo.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/OrientedGrowthDemo.py</PythonScript>
+   <Resource Type="Python">Simulation/OrientedGrowthDemoSteppables.py</Resource>
+</Simulation>
