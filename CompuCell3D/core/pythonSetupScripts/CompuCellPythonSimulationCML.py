@@ -256,12 +256,13 @@ try:
     # setting up push address
 
 
-
-    CompuCellSetup.set_push_address(cml_args.pushAddress)
+    if hasattr(cmlParser, 'push_address'):
+        CompuCellSetup.set_push_address(cmlParser.push_address)
 
 
     # setting up return tag
-    CompuCellSetup.set_return_value_tag(cml_args.returnValueTag)
+    if hasattr(cmlParser, 'return_value_tag'):
+        CompuCellSetup.set_return_value_tag(cmlParser.return_value_tag)
 
     fileName = cmlParser.getSimulationFileName()
 
