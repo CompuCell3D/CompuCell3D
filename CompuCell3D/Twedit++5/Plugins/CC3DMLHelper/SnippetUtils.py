@@ -890,14 +890,30 @@ class SnippetUtils(object):
             
     @SnippetDecorator('Potts',['',[]],'Potts','CPM Configuration')
     # def handlePotts(self,*args,**kwds):
-    def handlePottsCPMConfiguration(self,*args,**kwds):    
-        cellTypeData=kwds['data']
-        editor=kwds['editor']
-        newSnippet=''
+    def handlePottsCPMConfiguration(self,*args,**kwds):
 
-        newXMLElement=self.generator.generatePottsSection(*args,**kwds)
+        cellTypeData = kwds['data']
+        editor = kwds['editor']
+        newSnippet = ''
+
+        gpd = self.generator.getCurrentPottsSection(*args, **kwds)
+
+        from pottsdlg import PottsDlg
+        dlg = PottsDlg(editor, self.__ui)
+        dlg.initialize(gpd=gpd)
+        ret = dlg.exec_()
+
+        newSnippet = ''
+
+
+        if not ret:
+            return
+
+        newXMLElement = dlg.generateXML()
+
+        # newXMLElement = self.generator.generatePottsSection(*args,**kwds)
         
-        newSnippet=newXMLElement.getCC3DXMLElementString()
+        newSnippet = newXMLElement.getCC3DXMLElementString()
         return newSnippet                
 
     @SnippetDecorator('Metadata',['',[]],'Metadata','Simulation Properties')

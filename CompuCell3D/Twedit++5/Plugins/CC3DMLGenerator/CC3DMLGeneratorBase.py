@@ -123,6 +123,17 @@ class CC3DMLGeneratorBase:
 
         return sim3DFlag
 
+    # @GenerateDecorator('Potts', ['', ''])
+    def getCurrentPottsSection(self, *args, **kwds):
+        """
+        Returns current Potts section as CC3DXMLElement
+        :param args:
+        :param kwds:
+        :return: {instance of CC3DXMLElement} CC3DXMLElement representing current POtts section
+        """
+        return kwds['generalPropertiesData']
+
+
     @GenerateDecorator('Potts', ['', ''])
     def generatePottsSection(self, *args, **kwds):
         cellTypeData = self.cellTypeData
