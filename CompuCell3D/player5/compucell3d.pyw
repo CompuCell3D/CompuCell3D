@@ -49,7 +49,7 @@ if sys.platform.startswith('win'):
     # it needs to be locarted in the directory <library_path>/platforms
     QCoreApplication.addLibraryPath("./bin/")
 
-# instaling message handler to suppres spurious qt messages
+# instaling message handler to suppress spurious qt messages
 if sys.platform == 'darwin':
     import platform
 
@@ -76,13 +76,32 @@ if sys.platform == 'darwin':
             # looks like we do not need those in PyQt5 version
             # PyQt5.QtCore.qInstallMsgHandler(handler)
 
-# setting debug information output
-from Messaging import setDebugging
-
-setDebugging(0)
+# # setting debug information output
+# from Messaging import setDebugging
+#
+# setDebugging(0)
 
 
 def main(argv):
+    import log
+    import logging
+    log.setup_logging(level=logging.DEBUG)
+    logger = log.get_logger()
+
+    # import logging
+    # logger = logging.getLogger('player5')
+    # logger.setLevel(logging.DEBUG)
+    # # create console handler and set level to debug
+    # ch = logging.StreamHandler()
+    # ch.setLevel(logging.DEBUG)
+    # # create formatter
+    # formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    # # add formatter to ch
+    # ch.setFormatter(formatter)
+    # # add ch to logger
+    # logger.addHandler(ch)
+
+
     argc = len(argv)
 
     # if sys.platform.startswith('darwin'):
@@ -140,8 +159,10 @@ def main(argv):
 
     app.processEvents()
 
-    print 'compucell3d.pyw:   type(argv)=', type(argv)
-    print 'compucell3d.pyw:   argv=', argv
+    logger.debug('compucell3d.pyw:   type(argv)={%s}'%type(argv))
+    logger.debug('compucell3d.pyw:   argv={%s}'%argv)
+    # print 'compucell3d.pyw:   type(argv)=', type(argv)
+    # print 'compucell3d.pyw:   argv=', argv
 
     from  CMLParser import CMLParser
 
@@ -149,83 +170,6 @@ def main(argv):
     cml_parser.processCommandLineOptions()
     cml_args = cml_parser.cml_args
 
-    # cml_parser = argparse.ArgumentParser(description='CompuCell3D Player 5')
-    # cml_parser.add_argument('-i', '--input', required=False, action='store',
-    #                         help='path to the CC3D project file (*.cc3d)')
-    # cml_parser.add_argument('--noOutput', required=False, action='store_true', default=False,
-    #                         help='flag suppressing output of simulation snapshots')
-    # cml_parser.add_argument('-f', '--outputFrequency', required=False, action='store', default=1, type=int,
-    #                         help='simulation snapshot output frequency')
-    #
-    # cml_parser.add_argument('-s', '--screenshotDescription', required=False, action='store',
-    #                         help='screenshot description file name (deprecated)')
-    #
-    # cml_parser.add_argument('--currentDir', required=False, action='store',
-    #                         help='current working directory')
-    #
-    # cml_parser.add_argument('--numSteps', required=False, action='store', default=False, type=int,
-    #                         help='overwrites number of Monte Carlo Steps that simulation will run for')
-    #
-    # cml_parser.add_argument('-o', '--screenshotOutputDir', required=False, action='store',
-    #                         help='directory where screenshots should be written to')
-    #
-    # cml_parser.add_argument('-p', '--playerSettings', required=False, action='store',
-    #                         help='file with player settings (deprecated)')
-    #
-    # cml_parser.add_argument('-w', '--windowSize', required=False, action='store',
-    #                         help='specifies window size Format is  WIDTHxHEIGHT e.g. -w 500x300 (deprecated)')
-    #
-    # cml_parser.add_argument('--port', required=False, action='store', type=int,
-    #                         help='specifies listening port for communication with Twedit')
-    #
-    # cml_parser.add_argument('--tweditPID', required=False, action='store', type=int,
-    #                         help='process id for Twedit')
-    #
-    # cml_parser.add_argument('--prefs', required=False, action='store',
-    #                         help='specifies path tot he Qt settings file for Player (debug mode only)')
-    #
-    # cml_parser.add_argument('--exitWhenDone', required=False, action='store_true', default=False,
-    #                         help='exits Player at the end of the simulation')
-    #
-    # cml_parser.add_argument('--guiScan', required=False, action='store_true', default=False,
-    #                         help='enables running parameter scan in the Player')
-    #
-    # cml_parser.add_argument('--maxNumberOfConsecutiveRuns', required=False, action='store',  type=int,
-    #                         help='maximum number of consecutive runs in the Player before Player restarts')
-    #
-    #
-    # cml_args = cml_parser.parse_args()
-
-    # import getopt
-    # opts = None
-    # args = None
-    # try:
-    #     #        opts, args = getopt.getopt(sys.argv[1:], "i:s:o:f:c:h", ["help","noOutput","exitWhenDone","currentDir=","outputFrequency=","port=","tweditPID=","prefs=" ])
-    #     print '   argv[0:] =', argv[0:]
-    #     #        opts, args = getopt.getopt(argv[1:],  ["prefs="])
-    #     opts, args = getopt.getopt(argv[0:], "i:s:o:f:c:h:p:w:",
-    #                                ["help", "noOutput", "exitWhenDone", "guiScan", "currentDir=", "outputFrequency=",
-    #                                 "port=", "tweditPID=", "prefs=", "maxNumberOfRuns="])
-    #     print "type(opts), opts=", type(opts), opts
-    #     print "type(args), args=", type(args), args
-    # except getopt.GetoptError, err:
-    #     # print help information and exit:
-    #     print str(err)  # will print something like "option -a not recognized"
-    #     # self.usage()
-    #     sys.exit(2)
-    # output = None
-    # verbose = False
-    # currentDir = ""
-    # for o, a in opts:
-    #     print "o=", o
-    #     print "a=", a
-    #     if o in ("--prefs"):
-    #         print 'compucell3d.pyw:  prefsFile=', a
-    #
-    #         import Configuration
-    #         Configuration.setPrefsFile(a)
-    #         # Configuration.mySettings = QSettings(QSettings.IniFormat, QSettings.UserScope, "Biocomplexity", a)
-    #         # Configuration.setSetting("PreferencesFile", a)
 
     from UI.UserInterface import UserInterface
     from CQt.CQApplication import CQApplication

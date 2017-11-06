@@ -1,5 +1,20 @@
 from __future__ import with_statement
 # enabling with statement in python 2.5
+import log
+logger = log.get_logger()
+
+# import logging
+# logger = logging.getLogger(__name__)
+# logger.setLevel(logging.DEBUG)
+# # create console handler and set level to debug
+# ch = logging.StreamHandler()
+# ch.setLevel(logging.DEBUG)
+# # create formatter
+# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# # add formatter to ch
+# ch.setFormatter(formatter)
+# # add ch to logger
+# logger.addHandler(ch)
 
 # -*- coding: utf-8 -*-
 import os, sys
@@ -16,6 +31,7 @@ from PyQt5.QtXml import *
 from enums import *
 
 from Messaging import stdMsg, dbgMsg, pd, errMsg, setDebugging
+
 
 # setDebugging(1)
 
@@ -87,6 +103,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     def __init__(self, parent):
 
+        logger.debug('SimpleTabView constructor')
         self.__parent = parent  # QMainWindow -> UI.UserInterface
         self.UI = parent
 
