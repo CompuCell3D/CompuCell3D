@@ -4516,7 +4516,8 @@ class EditorWindow(QMainWindow):
             if not os.path.exists(backupDirectory):
                 os.makedirs(backupDirectory)
 
-            shutil.copyfile(_fileName, backupFilePath)
+            if os.path.isfile(_fileName):
+                shutil.copyfile(_fileName, backupFilePath)
 
             import codecs
             try:
@@ -4557,6 +4558,12 @@ class EditorWindow(QMainWindow):
                 """
                 if write_success == False:
                     shutil.copyfile(backupFilePath, _fileName)
+                else:
+                    try:
+                        shutil.rmtree(backupDirectory)
+                    except shutil.Error as e:
+                        print 'Could not remove backup directory {}'.format(backupDirectory)
+
 
         except IOError, why:
             QtWidgets.QApplication.restoreOverrideCursor()

@@ -51,7 +51,7 @@ class Configuration():
     myCustomSettings = None
     myCustomSettingsPath = ''
 
-    globalOnlySettings = ['RecentSimulations', 'NumberOfRecentSimulations', 'OutputLocation', 'ProjectLocation']
+    globalOnlySettings = ['RecentSimulations', 'NumberOfRecentSimulations', 'OutputLocation', 'ProjectLocation','FloatingWindows']
     customOnlySettings = ['WindowsLayout']
 
     activeFieldNamesList = []
