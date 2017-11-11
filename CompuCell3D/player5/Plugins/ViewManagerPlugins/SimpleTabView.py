@@ -2459,8 +2459,17 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # that's why we have to treat it in a special way but only when we determine that windowsLayoutDict is not empty
         if len(windowsLayoutDict.keys()):
             try:
-                windowDataDict0 = windowsLayoutDict[
-                    str(0)]  # inside windowsLayoutDict windows are labeled using ints represented as strings
+                # windowDataDict0 = windowsLayoutDict[
+                #     str(0)]  # inside windowsLayoutDict windows are labeled using ints represented as strings
+                try:
+                    # inside windowsLayoutDict windows are labeled using ints represented as strings
+                    windowDataDict0 = windowsLayoutDict[str(0)]
+                except KeyError:
+                    try:
+                        windowDataDict0 = windowsLayoutDict[0]
+                    except KeyError:
+                        raise KeyError('Could not find 0 in the keys of windowsLayoutDict')
+
 
                 from Graphics.GraphicsWindowData import GraphicsWindowData
 
@@ -2491,6 +2500,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # mainGraphicsWindow (actually this should be called maingraphicsWidget)
         win_id_list = []
         for windowId, windowDataDict in windowsLayoutDict.iteritems():
+            if windowId==0 or windowId=='0':
+                continue
+
             from Graphics.GraphicsWindowData import GraphicsWindowData
 
             gwd = GraphicsWindowData()

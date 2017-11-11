@@ -1,3 +1,6 @@
+import os
+import sys
+
 # this function will replace all API functions which refer to SBMLSolver in the event that no SBMLSolver event is installed
 def SBMLSolverError(self, *args, **kwrds):
     import inspect
@@ -26,8 +29,6 @@ class SBMLSolverHelper(object):
         try:
 
             import roadrunner
-            import os
-            import sys
 
         except ImportError, e:
             # replacing SBMLSolver API with wrror messages
@@ -76,8 +77,6 @@ class SBMLSolverHelper(object):
         :return: None 
         """
 
-        import os
-        import sys
         import CompuCell
 
         coreModelName = _modelName
@@ -642,8 +641,6 @@ class SBMLSolverHelper(object):
         :param _path {str}: relative path to CC3D resource
         :return {str}: absolute path to CC3D resource
         """
-        import os
-        import sys
 
         pathNormalized = _path
         try:
