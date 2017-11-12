@@ -156,7 +156,7 @@ def main(argv):
 
     mainWindow = UserInterface()
     mainWindow.setArgv(argv)
-    ß
+
     '''
     passing command line to the code
     process reminder of the command line options

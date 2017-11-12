@@ -4,22 +4,42 @@ from test_utils.RunExecutor import RunExecutor
 from test_utils.common import find_file_in_dir
 from os.path import *
 import shutil
+import sys
 
-l = ['/Users/m/Demo/CC3D_3.7.6/cc3d_test.command','/Users/m/Demo/CC3D_3.7.6/Demos/Models/cellsort/cellsort_2D/cellsort_2D.cc3d']
-common_pref =  commonprefix(l)
+# windows settings:
+if sys.platform.startswith('win'):
+    cc3d_run_script = r'C:\CompuCell3D\compucell3d.bat'
+    cc3d_demo_dir = r'C:\CompuCell3D\Demos'
+    demo_script = r'C:\CompuCell3D\Demos/Models/cellsort/cellsort_2D/cellsort_2D.cc3d'
+    test_output_root = 'rC:\CompuCell3D\CompuCell3D_test_output'
+
+if sys.platform.startswith('darwin'):
+    #osx settings
+    cc3d_run_script = r'/Users/m/Demo/CC3D_3.7.6/cc3d_test.command'
+    cc3d_demo_dir = r'/Users/m/Demo/CC3D_3.7.6/Demos'
+    demo_script = r'/Users/m/Demo/CC3D_3.7.6/Demos/Models/cellsort/cellsort_2D/cellsort_2D.cc3d'
+    test_output_root = 'r/Users/m/cc3d_tests'
+
+
+# l = ['/Users/m/Demo/CC3D_3.7.6/cc3d_test.command','/Users/m/Demo/CC3D_3.7.6/Demos/Models/cellsort/cellsort_2D/cellsort_2D.cc3d']
+l = [cc3d_run_script, demo_script]
+common_pref = commonprefix(l)
 
 for p in l:
-    print relpath(p,common_pref)
+    print relpath(p, common_pref)
 
-cc3d_projects = find_file_in_dir('/Users/m/Demo/CC3D_3.7.6/Demos','*.cc3d')
+# cc3d_projects = find_file_in_dir('/Users/m/Demo/CC3D_3.7.6/Demos', '*.cc3d')
+cc3d_projects = find_file_in_dir(cc3d_demo_dir, '*.cc3d')
 cc3d_projects_common_prefix = commonprefix(cc3d_projects)
 
 rs = RunSpecs()
 
-rs.run_command = '/Users/m/Demo/CC3D_3.7.6/cc3d_test.command'
+# rs.run_command = '/Users/m/Demo/CC3D_3.7.6/cc3d_test.command'
+rs.run_command = cc3d_run_script
 rs.cc3d_project = ''
 rs.num_steps = 100
-rs.test_output_root = '/Users/m/cc3d_tests'
+# rs.test_output_root = '/Users/m/cc3d_tests'
+rs.test_output_root = test_output_root
 rs.test_output_dir = ''
 
 # clean test_output_dir
@@ -38,12 +58,12 @@ for i, cc3d_project in enumerate(cc3d_projects):
     run_executor.run()
     run_status = run_executor.get_run_status()
     if run_status:
-        error_runs.append((rs.cc3d_project,run_status))
+        error_runs.append((rs.cc3d_project, run_status))
 
-    if i > 10:
-        break
+    # if i > 10:
+    #     break
 
-    # break
+        # break
 
 if not len(error_runs):
     print()
