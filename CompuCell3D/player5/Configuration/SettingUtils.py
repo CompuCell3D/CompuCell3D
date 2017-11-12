@@ -41,6 +41,12 @@ def _load_sql_settings(setting_path):
     # from CompuCell3D.player5.Configuration.settingdict import SettingsSQL
     from settingdict import SettingsSQL
 
+    # workaround for Windows leftover DefaultSettingPath.pyc
+    from os.path import splitext
+    setting_path_no_ext, ext = splitext(setting_path)
+    if ext.lower() in ['.xml']:
+        setting_path = setting_path_no_ext+'.sqlite'
+
     settings = SettingsSQL(setting_path)
     if not settings:
         return None, None
