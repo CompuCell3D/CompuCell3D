@@ -172,3 +172,18 @@ Version 3.7.5 May 2016
         RoadRunner was upgraded to the latest version. 
         IMPORTANT: The RR upgrade eliinates the need to set steps options in in the Steppable file. If you have
         step options set remove it from your script
+
+Version 3.7.6 May 2017
+
+    New features:
+        New Player that is a based on Pyqt
+        New plotting backend
+
+    Multiple bug-fixes
+
+Version 3.7.7 May 2017
+
+    New features:
+        Improved handling of settings using sqlite database
+        Significantly faster connectivity plugin that works in 2D , 3D and on any type of lattice
+    Multiple bug-fixes
