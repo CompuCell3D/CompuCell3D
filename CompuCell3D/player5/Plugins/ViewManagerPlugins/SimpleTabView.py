@@ -1267,8 +1267,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.closeActiveWindowAct.triggered.connect(self.closeActiveSubWindowSlot)
         # self.closeAdditionalGraphicsWindowsAct, triggered self.removeAuxiliaryGraphicsWindows)
 
-        # TO DO IX IT
-        # self.configsChanged.connect(self.__paramsChanged)
+        self.configsChanged.connect(self.__paramsChanged)
 
     def setFieldType(self, _fieldTypeTuple):
         '''
@@ -3412,7 +3411,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         """
         self.configsChanged.emit()
-        # self.emit(SIGNAL('configsChanged'))
+
 
     def setModelEditor(self, modelEditor):
         '''

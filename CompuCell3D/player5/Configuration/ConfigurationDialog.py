@@ -829,7 +829,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         '''
         
         for key in Configuration.getSettingNameList():
-            print 'key=',key
+            # print 'key=',key
             self.paramCC3D[key] = Configuration.getSetting(key)
         return    
         
