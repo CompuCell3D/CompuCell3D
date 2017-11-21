@@ -948,7 +948,7 @@ class EditorWindow(QMainWindow):
             called when user closes Main window. This fcn records current state of editor . It also unloads plugins
         """
 
-        # self.pm.unloadPlugins()
+        self.pm.unloadPlugins()
 
         # openFilesToRestore={}
         openFilesToRestore = [{}, {}]

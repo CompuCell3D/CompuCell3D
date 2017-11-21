@@ -108,7 +108,12 @@ class CC3DCPPHelper(QObject):
 
         for actionName, action in self.actions.iteritems():
             # self.__ui.disconnect(action, SIGNAL("triggered()"), self.snippetMapper, SLOT("map()"))
-            action.triggered.disconnect(self.snippetMapper.map)
+            try:
+                action.triggered.disconnect(self.snippetMapper.map)
+            except TypeError:
+                print 'Skipping disconnecting from map of action {}'.format(actionName)
+                pass
+
 
         self.cc3dcppMenu.clear()
 
