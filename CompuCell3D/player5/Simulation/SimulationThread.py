@@ -442,20 +442,11 @@ class SimulationThread(QtCore.QThread):
         # if not os.path.isfile(run_script_name):
         #
         #     run_script_name = os.path.abspath(os.path.join(_path, 'core/pythonSetupScripts/CompuCellPythonSimulationNewPlayer.py'))
-
+        #
+        # import py_compile
+        # py_compile.compile(file=run_script_name)
         execfile(run_script_name)
 
-
-        # execfile("../pythonSetupScripts/CompuCellPythonSimulationNewPlayer.py")
-
-        # # # CompuCellSetup.simulationThreadObject.sim=None
-        # # # CompuCellSetup.simulationThreadObject=None
-
-
-        # # # print 'AFTER EXECFILE'
-        # # # import time
-        # # # time.sleep(3)
-        # # # sys.exit()
 
     def run(self):
 

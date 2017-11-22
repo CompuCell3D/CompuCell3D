@@ -1798,10 +1798,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             self.screenshotDirectoryName = ""
 
-            # if self.rollbackImporter:
-            #     self.rollbackImporter.uninstall()
-            #
-            # self.rollbackImporter = RollbackImporter()
+            if self.rollbackImporter:
+                self.rollbackImporter.uninstall()
+
+            self.rollbackImporter = RollbackImporter()
 
     def __runSim(self):
         '''
