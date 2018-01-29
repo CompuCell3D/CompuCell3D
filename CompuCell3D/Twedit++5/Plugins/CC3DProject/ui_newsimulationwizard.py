@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'NewSimulationWizard.ui'
 #
-# Created by: PyQt5 UI code generator 5.6
+# Created by: PyQt5 UI code generator 5.7
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_NewSimulationWizard(object):
     def setupUi(self, NewSimulationWizard):
         NewSimulationWizard.setObjectName("NewSimulationWizard")
-        NewSimulationWizard.resize(680, 610)
+        NewSimulationWizard.resize(681, 569)
         self.wizardPage1 = QtWidgets.QWizardPage()
         self.wizardPage1.setObjectName("wizardPage1")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.wizardPage1)
@@ -762,19 +762,24 @@ class Ui_NewSimulationWizard(object):
         NewSimulationWizard.addPage(self.wizardPage_4)
         self.wizardPage_3 = QtWidgets.QWizardPage()
         self.wizardPage_3.setObjectName("wizardPage_3")
+        self.verticalLayout_21 = QtWidgets.QVBoxLayout(self.wizardPage_3)
+        self.verticalLayout_21.setObjectName("verticalLayout_21")
+        self.verticalLayout_20 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_20.setObjectName("verticalLayout_20")
         self.label_7 = QtWidgets.QLabel(self.wizardPage_3)
-        self.label_7.setGeometry(QtCore.QRect(9, 9, 228, 25))
         self.label_7.setObjectName("label_7")
+        self.verticalLayout_20.addWidget(self.label_7)
         self.textBrowser = QtWidgets.QTextBrowser(self.wizardPage_3)
-        self.textBrowser.setGeometry(QtCore.QRect(20, 40, 391, 192))
         self.textBrowser.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.textBrowser.setFrameShadow(QtWidgets.QFrame.Plain)
         self.textBrowser.setObjectName("textBrowser")
+        self.verticalLayout_20.addWidget(self.textBrowser)
+        self.verticalLayout_21.addLayout(self.verticalLayout_20)
         NewSimulationWizard.addPage(self.wizardPage_3)
 
         self.retranslateUi(NewSimulationWizard)
-        self.piffRB.toggled['bool'].connect(self.piffPB.show)
-        self.piffRB.toggled['bool'].connect(self.piffLE.show)
+        self.piffRB.toggled['bool'].connect(self.piffPB.setShown)
+        self.piffRB.toggled['bool'].connect(self.piffLE.setShown)
         QtCore.QMetaObject.connectSlotsByName(NewSimulationWizard)
 
     def retranslateUi(self, NewSimulationWizard):
@@ -1212,8 +1217,8 @@ class Ui_NewSimulationWizard(object):
         self.textBrowser.setHtml(_translate("NewSimulationWizard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'.Lucida Grande UI\'; font-size:13pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'MS Shell Dlg 2\'; font-size:12pt;\">CC3D project will be generated now</span></p>\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'MS Shell Dlg 2\'; font-size:12pt;\"><br /></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'MS Shell Dlg 2\'; font-size:12pt; font-weight:600; color:#0000ff;\">NOTE:</span><span style=\" font-family:\'MS Shell Dlg 2\'; font-size:12pt;\"> The parameters in the XML and Python scripts will have to be changed to be realistic. Please see CC3D manual on how to choose simulation parameters</span></p></body></html>"))
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt;\">CC3D project will be generated now</span></p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#0000ff;\">NOTE:</span><span style=\" font-size:12pt;\"> The parameters in the XML and Python scripts will have to be changed to be realistic. Please see CC3D manual on how to choose simulation parameters</span></p></body></html>"))
 
