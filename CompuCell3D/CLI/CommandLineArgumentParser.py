@@ -25,6 +25,9 @@ class CommandLineArgumentParser:
         argumentParser.add_argument('-f', '--outputFrequency', required=False, action='store', default=1, type=int,
                                     help='simulation snapshot output frequency')
 
+        argumentParser.add_argument('-p', '--parameterFile', required=False, action='store',
+                                    help='parameter specification file for parameter scan')
+
         self.__argumentParser = argumentParser
         self.__isInitialized = True
 
@@ -39,11 +42,13 @@ class CommandLineArgumentParser:
             if not self.__isInitialized:
                 self.initialize()
 
-            arguments = self.__argumentParser.parse_args()
+            arguments, unknown = self.__argumentParser.parse_known_args()
 
             ProjectFileStore.projectFilePath = arguments.input
             ProjectFileStore.outputDirectoryPath = arguments.outputDir
             ProjectFileStore.outputFrequency = arguments.outputFrequency
+            ProjectFileStore.parameterScanFile = arguments.parameterFile
+
         except SystemExit:
             print '\nError: Invalid command-line arguments. Please refer usage for available options.'
             exit(1)
