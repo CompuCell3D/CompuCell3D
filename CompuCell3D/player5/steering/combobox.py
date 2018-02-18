@@ -16,12 +16,20 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
-class SpinBoxDelegate(QStyledItemDelegate):
+class EditorDelegate(QStyledItemDelegate):
     def createEditor(self, parent, option, index):
-        if index.column()==0:
+        if not index.isValid():
+            return
+
+
+        column_name = self.get_col_name_from_index(index)
+        print 'column_name=',column_name
+        if column_name == 'Value':
             editor = QLineEdit(parent)
             # editor.setText()
             return editor
+        else:
+            return None
         editor = QSpinBox(parent)
         editor.setFrame(False)
         editor.setMinimum(0)
@@ -34,14 +42,67 @@ class SpinBoxDelegate(QStyledItemDelegate):
     #     # QVariant().Int
     #     spinBox.setValue(value.Int)
 
+    def get_col_name_from_index(self,index):
+        """
+        returns column name from index
+        :param index:
+        :return:{str or NNne}
+        """
+        if not index.isValid():
+            return
+
+        model = index.model()
+        datatable = model.datatable
+
+        column_name = datatable.columns[index.column()]
+
+        return column_name
+
     def setEditorData(self, editor, index):
-        value = index.model().data(index, Qt.EditRole)
-        if index.column() == 0:
-            editor.setText(str(value.Int))
+
+        column_name = self.get_col_name_from_index(index)
+        if not column_name:
+            return
+        if column_name == 'Value':
+            value = index.model().data(index, Qt.DisplayRole)
+            print 'i,j=',index.column(), index.row()
+            print'val=',value
+            # editor.setText(str(value.toInt()))
+            editor.setText(str(value))
         else:
-            editor.setValue(value.Int)
-        # value = index.model().data(index, Qt.EditRole)
-        # QVariant().Int
+            return
+            # editor.setValue(value.Int)
+
+        # #  value = index.model().data(index, Qt.EditRole)
+        # value = index.model().data(index, Qt.DisplayRole)
+        # val_new = index.model().datatable.iloc[0,0]
+        # print 'val_new=',val_new
+        # print 'value=',value
+        # if index.isValid() and index.column() == 0:
+        #     print 'i,j=',index.column(), index.row()
+        #     print'val=',value
+        #     # editor.setText(str(value.toInt()))
+        #     editor.setText(str(value))
+        # else:
+        #     editor.setValue(value.Int)
+        # # value = index.model().data(index, Qt.EditRole)
+        # # QVariant().Int
+
+        #
+        # #  value = index.model().data(index, Qt.EditRole)
+        # value = index.model().data(index, Qt.DisplayRole)
+        # val_new = index.model().datatable.iloc[0,0]
+        # print 'val_new=',val_new
+        # print 'value=',value
+        # if index.isValid() and index.column() == 0:
+        #     print 'i,j=',index.column(), index.row()
+        #     print'val=',value
+        #     # editor.setText(str(value.toInt()))
+        #     editor.setText(str(value))
+        # else:
+        #     editor.setValue(value.Int)
+        # # value = index.model().data(index, Qt.EditRole)
+        # # QVariant().Int
 
 
 
@@ -52,14 +113,32 @@ class SpinBoxDelegate(QStyledItemDelegate):
     #     model.setData(index, value, Qt.EditRole)
 
     def setModelData(self, editor, model, index):
-        if index.column() == 0:
-            value = int(editor.text())
-        else:
 
-            editor.interpretText()
-            value = editor.value()
+        column_name = self.get_col_name_from_index(index)
+        if not column_name:
+            return
+
+        if column_name == 'Value':
+            type_conv_fcn = index.model().data_type_conv_fcn(index)
+            value = type_conv_fcn(editor.text())
+        else:
+            return
+            # editor.interpretText()
+            # value = editor.value()
 
         model.setData(index, value, Qt.EditRole)
+
+
+        #
+        # if index.column() == 0:
+        #     type_conv_fcn = index.model().data_type_conv_fcn(index)
+        #     value = type_conv_fcn(editor.text())
+        # else:
+        #
+        #     editor.interpretText()
+        #     value = editor.value()
+        #
+        # model.setData(index, value, Qt.EditRole)
 
 
     def updateEditorGeometry(self, editor, option, index):
@@ -109,12 +188,17 @@ class TableModel(QtCore.QAbstractTableModel):
     def __init__(self, parent=None, *args): 
         super(TableModel, self).__init__()
         self.datatable = None
+        self.type_conv_fcn_data = None
 
         
     def update(self, dataIn):
         print 'Updating Model'
         self.datatable = dataIn
         print 'Datatable : {0}'.format(self.datatable)
+
+    def update_type_conv_fcn(self,type_conv_fcn_data):
+        self.type_conv_fcn_data = type_conv_fcn_data
+
         
     def headerData(self, p_int, orientation, role=None):
 
@@ -127,18 +211,31 @@ class TableModel(QtCore.QAbstractTableModel):
         
     def columnCount(self, parent=QtCore.QModelIndex()):
         return len(self.datatable.columns.values) 
-        
+
+    def data_type_conv_fcn(self,index):
+
+        return self.type_conv_fcn_data[index.row()]
+
     def data(self, index, role=QtCore.Qt.DisplayRole):
         #print 'Data Call'
-        #print index.column(), index.row()
+        # print index.column(), index.row()
+        # if role in [QtCore.Qt.DisplayRole,QtCore.Qt.EditRole] :
         if role == QtCore.Qt.DisplayRole:
             i = index.row()
             j = index.column()
+            if i==0 and j ==0:
+                print 'i={} j={} val={}'.format(i,j,self.datatable.iloc[i, j])
+                print 'data_ret no format ',self.datatable.iloc[i, j]
+                print 'self.datatable=',self.datatable
+                print 'data_returned=','{0}'.format(self.datatable.iloc[i, j])
             #return QtCore.QVariant(str(self.datatable.iget_value(i, j)))
             # return '{0}'.format(self.datatable.iget_value(i, j))
-            return '{0}'.format(self.datatable.iloc[i, j])
+            # return '{0}'.format(self.datatable.iloc[i, j])
             # return '{0}'
+            return '{}'.format(self.datatable[self.datatable.columns[j]][i])
+
         else:
+
             return QtCore.QVariant()
 
     def setData(self, index, value, role=None):
@@ -163,8 +260,9 @@ class TableModel(QtCore.QAbstractTableModel):
         # node = item.node()
         # attributes = []
         # attributeMap = node.attributes()
-
-        self.datatable.iloc[index.row(),index.column()] = value
+        i,j = index.row(), index.column()
+        print 'i,j, val = ', i,j,value
+        self.datatable.iloc[i,j] = value
         # if index.column() == PROPERTY_VALUE:
         #     # print 'BEFORE SET DATA PROPERTIES'
         #
@@ -213,10 +311,20 @@ class TableView(QtWidgets.QTableView):
         QtWidgets.QTableView.__init__(self, *args, **kwargs)
 
 def get_data_frame():
-    df = pd.DataFrame({'Name':['a','b','c','d'],
-    'First':[2.3,5.4,3.1,7.7], 'Last':[23.4,11.2,65.3,88.8], 'Class':[1,1,2,1], 'Valid':[True, True, True, False]})
+    # df = pd.DataFrame({'Name':['a','b','c','d'],
+    # 'First':[0.1,0.2,0.3,0.4], 'Last':[0,0,0,0], 'Value':[5.1,6.2,7.3,8.4], 'Valid':[True, True, True, False]})
+    # return df
+
+    df = pd.DataFrame.from_items([('Name',['a','b','c','d']),
+                                  ('Value',[5.1,6.2,7.3,8.4]),
+                                  ('Min', [0.0, 0.,0.,0.,]),
+                                  ('Max', [100.0, 100., 100., 100., ])
+                                  ])
     return df
 
+
+def get_types():
+    return [float]*4
 
 if __name__=='__main__':
 
@@ -236,11 +344,12 @@ if __name__=='__main__':
     cdf = get_data_frame()
     model=TableModel()
     model.update(cdf)
+    model.update_type_conv_fcn(get_types())
 
     tableView = QTableView()
     tableView.setModel(model)
 
-    delegate = SpinBoxDelegate()
+    delegate = EditorDelegate()
     tableView.setItemDelegate(delegate)
 
     for row in range(4):
