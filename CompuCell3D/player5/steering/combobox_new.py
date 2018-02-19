@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Jul 17 10:50:56 2013
-
-@author: cmarshall
-"""
 
 import sip
 
@@ -15,6 +9,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+from fancy_slider import SliderWithValue
+
+
 
 
 class EditorDelegate(QStyledItemDelegate):
@@ -24,13 +21,68 @@ class EditorDelegate(QStyledItemDelegate):
 
         # column_name = self.get_col_name_from_index(index)
         col_name = self.get_col_name(index)
+
         if col_name == 'Value':
-            editor = QLineEdit(parent)
+
+            # # editor = QLineEdit(parent)
+            # # slider = QSlider(parent)
+            # # slider.setRange(0,100)
+            # # slider.setTickInterval(10)
+            # # slider.setOrientation(Qt.Horizontal)
+            # # slider.setAutoFillBackground(True)
+            # slider = SliderWithValue(parent)
+            # slider.setOrientation(Qt.Horizontal)
+            # slider.setMinimum(0)
+            # slider.setMaximum(100)
+            # slider.setValue(5)
+            # # slider.setRange(0,100)
+            # # slider.setTickInterval(10)
+            #
+            # editor = slider
+            # # editor = QSlider(parent)
+            item = index.model().get_item(index)
+
+            if item.widget_name=='slider':
+                editor = self.init_slider(parent, index)
+            else:
+                editor = QLineEdit(parent)
 
         else:
             return None
 
         return editor
+
+    def init_slider(self,parent, index):
+        """
+        initializes slider based on the current value of the index
+        :param index: {index}
+        :return:{QSlider instance}
+        """
+
+
+        item = index.model().get_item(index)
+
+        slider = SliderWithValue(parent)
+        slider.setOrientation(Qt.Horizontal)
+        if item.min is None:
+            slider.setMinimum(0)
+        else:
+            slider.setMinimum(item.min)
+        if item.max is None:
+            slider.setMaximum(10*item.val)
+        else:
+            slider.setMaximum(item.max)
+
+        # slider.setMaximum(1000)
+        slider.setValue(item.val)
+        # slider.setRange(0,100)
+        # slider.setTickInterval(10)
+
+
+        return slider
+
+
+
 
     def get_col_name(self, index):
         """
@@ -66,7 +118,10 @@ class EditorDelegate(QStyledItemDelegate):
             print 'i,j=', index.column(), index.row()
             print'val=', value
             # editor.setText(str(value.toInt()))
-            editor.setText(str(value))
+            try:
+                editor.setText(str(value))
+            except:
+                editor.setTickPosition(50)
         else:
             return
 
@@ -78,13 +133,32 @@ class EditorDelegate(QStyledItemDelegate):
 
         if column_name == 'Value':
 
+            item = index.model().get_item(index)
             type_conv_fcn = self.get_item_type(index)
-            print 'type_conv_fcn=', type_conv_fcn
-            try:
-                value = type_conv_fcn(editor.text())
-            except ValueError as exc:
-                QMessageBox.warning(None,'Type Conversion Error',str(exc))
-                return
+            if item.widget_name=='slider':
+
+                try:
+                    value = type_conv_fcn(editor.value())
+                except ValueError as exc:
+                    QMessageBox.warning(None, 'Type Conversion Error', str(exc))
+                    return
+
+            else:
+                try:
+                    value = type_conv_fcn(editor.text())
+                except ValueError as exc:
+                    QMessageBox.warning(None, 'Type Conversion Error', str(exc))
+                    return
+
+
+            #
+            # type_conv_fcn = self.get_item_type(index)
+            # print 'type_conv_fcn=', type_conv_fcn
+            # try:
+            #     value = type_conv_fcn(editor.text())
+            # except ValueError as exc:
+            #     QMessageBox.warning(None,'Type Conversion Error',str(exc))
+            #     return
         else:
             return
             # editor.interpretText()
@@ -98,16 +172,20 @@ class EditorDelegate(QStyledItemDelegate):
 
 
 class ItemData(object):
-    def __init__(self, name=None, val=None):
+    def __init__(self, name=None, val=None, min=None, max=None, widget_name=None):
         self._name = name
         self._val = None
         if val is not None:
             self.val = val
 
         self._type = None
-        self._min = None
-        self._max = None
+        self._min = min
+        self._max = max
         self._enum = None
+        if widget_name is None:
+            self._widget_name = 'lineedit'
+        else:
+            self._widget_name = widget_name
 
     @property
     def val(self):
@@ -122,17 +200,30 @@ class ItemData(object):
     def name(self):
         return self._name
 
+    @property
+    def widget_name(self):
+        return self._widget_name
+
+    @property
+    def min(self):
+        return self._min
+
+    @property
+    def max(self):
+        return self._max
+
+
 
 class TableModel(QtCore.QAbstractTableModel):
     def __init__(self, parent=None, *args):
         super(TableModel, self).__init__()
 
         self.item_data = None
-        self.header_data = ['Name', 'Value', 'Type']
+        self.header_data = [ 'Value', 'Type']
         self.item_data_attr_name = {
-            0: 'name',
-            1: 'val',
-            2: 'type',
+
+            0: 'val',
+            1: 'type',
 
         }
 
@@ -140,18 +231,21 @@ class TableModel(QtCore.QAbstractTableModel):
 
         self.item_data = item_data
 
-    # def update_type_conv_fcn(self, type_conv_fcn_data):
-    #     self.type_conv_fcn_data = type_conv_fcn_data
 
     def headerData(self, p_int, orientation, role=None):
 
-        # if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-        #     return self.datatable.columns[p_int]
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             try:
                 return self.header_data[p_int]
             except IndexError:
                 return QVariant()
+
+        if orientation == Qt.Vertical and role == Qt.DisplayRole:
+            try:
+                return self.item_data[p_int].name
+            except IndexError:
+                return QVariant()
+
 
         return QVariant()
 
@@ -161,6 +255,12 @@ class TableModel(QtCore.QAbstractTableModel):
     def columnCount(self, parent=QtCore.QModelIndex()):
         return len(self.header_data)
 
+    def get_item(self,index):
+        if not index.isValid():
+            return
+
+        i = index.row()
+        return self.item_data[i]
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
         # print 'Data Call'
@@ -170,6 +270,16 @@ class TableModel(QtCore.QAbstractTableModel):
             item = self.item_data[i]
             item_data_to_display = getattr(item, self.item_data_attr_name[j])
             return '{}'.format(item_data_to_display)
+
+        elif role == Qt.BackgroundRole:
+            batch = (index.row()) % 2
+            if batch == 0:
+                return QtGui.QColor('white')
+                # return QApplication.palette().base()
+            else:
+                return QtGui.QColor('gray')
+            # return QApplication.palette().alternateBase()
+
 
         else:
 
@@ -188,7 +298,6 @@ class TableModel(QtCore.QAbstractTableModel):
             return False
 
         if not index.isValid():
-            # return self.rootItem
             return False
 
         item = self.item_data[index.row()]
@@ -224,9 +333,25 @@ class TableView(QtWidgets.QTableView):
     def __init__(self, *args, **kwargs):
         QtWidgets.QTableView.__init__(self, *args, **kwargs)
 
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+
+            index = self.indexAt(event.pos())
+            col_name = self.get_col_name(index)
+            if  col_name == 'Value':
+                self.edit(index)
+        else:
+            super(TableView,self).mousePressEvent(event)
+        # QTableView.mousePressEvent(event)
+
+    def get_col_name(self,index):
+
+        model = index.model()
+        return model.header_data[index.column()]
+
 if __name__ == '__main__':
     item_data = []
-    item_data.append(ItemData(name='vol', val=25))
+    item_data.append(ItemData(name='vol', val=25, min=0, max=100, widget_name='slider'))
     item_data.append(ItemData(name='lam_vol', val=2.0))
     item_data.append(ItemData(name='sur', val=20.2))
     item_data.append(ItemData(name='lam_sur', val=20.2))
@@ -245,7 +370,7 @@ if __name__ == '__main__':
     model.update(item_data)
     # model.update_type_conv_fcn(get_types())
 
-    tableView = QTableView()
+    tableView = TableView()
     tableView.setModel(model)
 
     delegate = EditorDelegate()
