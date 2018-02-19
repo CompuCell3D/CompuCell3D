@@ -120,6 +120,7 @@ class EditorDelegate(QStyledItemDelegate):
 
         if column_name == 'Value':
             type_conv_fcn = index.model().data_type_conv_fcn(index)
+            print 'type_conv_fcn=',type_conv_fcn
             value = type_conv_fcn(editor.text())
         else:
             return
@@ -184,11 +185,43 @@ class SimDelegate(QItemDelegate):
             QItemDelegate.setModelData(self, editor, model, index)
 
 
+class ItemData(object):
+    def __init__(self,name=None,val=None):
+        self._name = name
+        self._val = None
+        if val is not None:
+            self.val = val
+
+
+        self._type = None
+        self._min = None
+        self._max = None
+        self._enum = None
+
+    @property
+    def val(self):
+        return self._val
+
+    @val.setter
+    def val(self,val):
+        self._val = val
+        self.type = type(self.val)
+
+    # @property
+    # def type(self):
+    #     return self._type
+    #
+    # @type.setter
+    # def type(self,type):
+    #     self._type = type
+
+
 class TableModel(QtCore.QAbstractTableModel): 
     def __init__(self, parent=None, *args): 
         super(TableModel, self).__init__()
         self.datatable = None
         self.type_conv_fcn_data = None
+
 
         
     def update(self, dataIn):
@@ -223,11 +256,11 @@ class TableModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.DisplayRole:
             i = index.row()
             j = index.column()
-            if i==0 and j ==0:
-                print 'i={} j={} val={}'.format(i,j,self.datatable.iloc[i, j])
-                print 'data_ret no format ',self.datatable.iloc[i, j]
-                print 'self.datatable=',self.datatable
-                print 'data_returned=','{0}'.format(self.datatable.iloc[i, j])
+            # if i==0 and j ==0:
+            #     print 'i={} j={} val={}'.format(i,j,self.datatable.iloc[i, j])
+            #     print 'data_ret no format ',self.datatable.iloc[i, j]
+            #     print 'self.datatable=',self.datatable
+            #     print 'data_returned=','{0}'.format(self.datatable.iloc[i, j])
             #return QtCore.QVariant(str(self.datatable.iget_value(i, j)))
             # return '{0}'.format(self.datatable.iget_value(i, j))
             # return '{0}'.format(self.datatable.iloc[i, j])
@@ -315,18 +348,21 @@ def get_data_frame():
     # 'First':[0.1,0.2,0.3,0.4], 'Last':[0,0,0,0], 'Value':[5.1,6.2,7.3,8.4], 'Valid':[True, True, True, False]})
     # return df
 
-    df = pd.DataFrame.from_items([('Name',['a','b','c','d']),
-                                  ('Value',[5.1,6.2,7.3,8.4]),
-                                  ('Min', [0.0, 0.,0.,0.,]),
-                                  ('Max', [100.0, 100., 100., 100., ])
+    df = pd.DataFrame.from_items([('Name',['a','b','c','d','e']),
+                                  ('Value',[5.1,6.2,7.3,8.4, 'dupa']),
+                                  ('Min', [0.0, 0.,0.,0.,0.0]),
+                                  ('Max', [100.0, 100., 100., 100.,100 ])
                                   ])
     return df
 
 
 def get_types():
-    return [float]*4
+    type_list = [float]*4
+    type_list.append(str)
+    return type_list
 
 if __name__=='__main__':
+
 
 
 
