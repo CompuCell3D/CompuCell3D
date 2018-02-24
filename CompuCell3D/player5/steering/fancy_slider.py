@@ -83,45 +83,30 @@ class SliderWithValue(QtWidgets.QSlider):
     def value(self):
         return super(SliderWithValue, self).value() / self.precision_factor
 
-    # sliderWithValue.setTickPosition(QtWidgets.QSlider.TicksBelow)
+    def minimum(self):
+        return super(SliderWithValue, self).minimum() / self.precision_factor
+
+    def maximum(self):
+        return super(SliderWithValue, self).maximum() / self.precision_factor
+
+
+    def set_default_behavior(self):
+        """
+        After setting min, max it sets "common sense" behavior of the slider
+        :return: None
+        """
+        min_, max_ = self.minimum(), self.maximum()
+
+        sliderWithValue.setTickInterval((max_ - min_)/50.)
+        sliderWithValue.setSingleStep((max_ - min_)/100.)
+        sliderWithValue.setPageStep((max_ - min_)/50.)
+
 
     def paintEvent(self, event):
         QtWidgets.QSlider.paintEvent(self, event)
 
-        # orig
-        # curr_value = str(self.value() / 100.0)
-
-        # curr_value = str(self.value() / self.precision_factor)
-        print 'self.value()=', self.value()
-        curr_value = str(self.value())
         curr_value = self.value()
-
-
-        print 'precision_factor=', self.precision_factor
-        # round_value = round(float(curr_value), self.decimal_precision)
         round_value = round(curr_value, self.decimal_precision)
-        # curr_value_str = str(round_value)
-
-        print ('round_value=', round_value)
-
-        # # orig
-        # curr_value = str(self.value() / 100.00)
-        # # curr_value = str(self.value() / self.precision_factor)
-        # print 'precision_factor=', self.precision_factor
-        # round_value = round(float(curr_value), 2)
-        # print ('round_value=',round_value)
-
-        # # orig
-        # # curr_value = str(self.value() / 100.0)
-        # curr_value = str(self.value() / self.precision_factor)
-        # print 'precision_factor=', self.precision_factor
-        # round_value = round(float(curr_value), self.decimal_precision)
-        # print ('round_value=',round_value)
-
-        # curr_value = str(self.value())
-        # print 'self.value=',self.value()
-        # round_value = round(float(curr_value))
-        # print 'round_value=',round_value
 
         painter = QtGui.QPainter(self)
         painter.setPen(QtGui.QPen(QtCore.Qt.white))
@@ -147,43 +132,6 @@ class SliderWithValue(QtWidgets.QSlider):
 
         painter.drawRect(rect)
 
-
-# if __name__ == '__main__':
-#     app = QtWidgets.QApplication([])
-#
-#     win = QtWidgets.QWidget()
-#     win.setWindowTitle('Test Slider with Text')
-#     win.setMinimumSize(600, 400)
-#     layout = QtWidgets.QVBoxLayout()
-#     win.setLayout(layout)
-#
-#     decimal_precision = 2
-#     precision_factor = 10**decimal_precision
-#     current_value = 2.0
-#
-#     sliderWithValue = SliderWithValue(QtCore.Qt.Horizontal)
-#     sliderWithValue.set_decimal_precision(decimal_precision)
-#
-#     sliderWithValue.setMinimum(0.0)
-#     sliderWithValue.setMaximum(10 * current_value)
-#
-#     sliderWithValue.setTickInterval(precision_factor)
-#     sliderWithValue.setSingleStep(int(0.5*precision_factor))
-#     sliderWithValue.setPageStep(precision_factor)
-#
-#
-#     # sliderWithValue.setTickInterval(1)
-#     # sliderWithValue.setSingleStep(0.5)
-#     # sliderWithValue.setPageStep(1)
-#     sliderWithValue.setTickPosition(QtWidgets.QSlider.TicksBelow)
-#     sliderWithValue.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed)
-#     sliderWithValue.setValue(current_value)
-#
-#     layout.addWidget(sliderWithValue)
-#
-#     win.show()
-#     app.exec_()
-
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
 
@@ -199,22 +147,17 @@ if __name__ == '__main__':
 
     sliderWithValue = SliderWithValue(QtCore.Qt.Horizontal)
     sliderWithValue.set_decimal_precision(decimal_precision)
-    sliderWithValue.setTickInterval(1)
-    sliderWithValue.setSingleStep(0.5)
-    sliderWithValue.setPageStep(1)
+    # sliderWithValue.setTickInterval(1)
+    # sliderWithValue.setSingleStep(0.5)
+    # sliderWithValue.setPageStep(1)
 
     sliderWithValue.setMinimum(-5.0)
     sliderWithValue.setMaximum(10 * current_value)
     sliderWithValue.setValue(current_value)
+    sliderWithValue.set_default_behavior()
 
-    # sliderWithValue.setMinimum(0.0)
-    # sliderWithValue.setMaximum(10*current_value*precision_factor)
-    # sliderWithValue.setTickInterval(precision_factor)
-    # sliderWithValue.setSingleStep(int(0.5*precision_factor))
-    # sliderWithValue.setPageStep(precision_factor)
     sliderWithValue.setTickPosition(QtWidgets.QSlider.TicksBelow)
     sliderWithValue.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed)
-    # sliderWithValue.setValue(current_value * precision_factor)
 
     layout.addWidget(sliderWithValue)
 
