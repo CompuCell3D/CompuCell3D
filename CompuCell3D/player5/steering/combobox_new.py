@@ -73,6 +73,8 @@ class EditorDelegate(QStyledItemDelegate):
         else:
             slider.setMaximum(item.max)
 
+        slider.setTickInterval(2)
+
         # slider.setMaximum(1000)
         slider.setValue(item.val)
         # slider.setRange(0,100)
@@ -352,7 +354,7 @@ class TableView(QtWidgets.QTableView):
 if __name__ == '__main__':
     item_data = []
     item_data.append(ItemData(name='vol', val=25, min=0, max=100, widget_name='slider'))
-    item_data.append(ItemData(name='lam_vol', val=2.0))
+    item_data.append(ItemData(name='lam_vol', val=2.0, min=0, max=10.0, widget_name='slider' ))
     item_data.append(ItemData(name='sur', val=20.2))
     item_data.append(ItemData(name='lam_sur', val=20.2))
 
