@@ -1,10 +1,10 @@
 from PyQt5 import QtCore, QtGui, QtOpenGL, QtWidgets
 
 
-class SliderWithValue(QtWidgets.QSlider):
+class FancySlider(QtWidgets.QSlider):
 
     def __init__(self, parent=None):
-        super(SliderWithValue, self).__init__(parent)
+        super(FancySlider, self).__init__(parent)
         self.decimal_precision = 3
 
         self.stylesheet = """
@@ -63,31 +63,31 @@ class SliderWithValue(QtWidgets.QSlider):
         self.decimal_precision = int(round(decimal_precision))
 
     def setMinimum(self, min_val):
-        super(SliderWithValue, self).setMinimum(min_val * self.precision_factor)
+        super(FancySlider, self).setMinimum(min_val * self.precision_factor)
 
     def setMaximum(self, max_val):
-        super(SliderWithValue, self).setMaximum(max_val * self.precision_factor)
+        super(FancySlider, self).setMaximum(max_val * self.precision_factor)
 
     def setValue(self, val):
-        super(SliderWithValue, self).setValue(val * self.precision_factor)
+        super(FancySlider, self).setValue(val * self.precision_factor)
 
     def setTickInterval(self, tick_interval):
-        super(SliderWithValue, self).setTickInterval(tick_interval * self.precision_factor)
+        super(FancySlider, self).setTickInterval(tick_interval * self.precision_factor)
 
     def setSingleStep(self, step):
-        super(SliderWithValue, self).setSingleStep(int(step * self.precision_factor))
+        super(FancySlider, self).setSingleStep(int(step * self.precision_factor))
 
     def setPageStep(self, step):
-        super(SliderWithValue, self).setPageStep(int(step * self.precision_factor))
+        super(FancySlider, self).setPageStep(int(step * self.precision_factor))
 
     def value(self):
-        return super(SliderWithValue, self).value() / self.precision_factor
+        return super(FancySlider, self).value() / self.precision_factor
 
     def minimum(self):
-        return super(SliderWithValue, self).minimum() / self.precision_factor
+        return super(FancySlider, self).minimum() / self.precision_factor
 
     def maximum(self):
-        return super(SliderWithValue, self).maximum() / self.precision_factor
+        return super(FancySlider, self).maximum() / self.precision_factor
 
 
     def set_default_behavior(self):
@@ -97,9 +97,9 @@ class SliderWithValue(QtWidgets.QSlider):
         """
         min_, max_ = self.minimum(), self.maximum()
 
-        sliderWithValue.setTickInterval((max_ - min_)/50.)
-        sliderWithValue.setSingleStep((max_ - min_)/100.)
-        sliderWithValue.setPageStep((max_ - min_)/50.)
+        self.setTickInterval((max_ - min_)/50.)
+        self.setSingleStep((max_ - min_)/100.)
+        self.setPageStep((max_ - min_)/50.)
 
 
     def paintEvent(self, event):
@@ -145,7 +145,7 @@ if __name__ == '__main__':
     precision_factor = 10 ** decimal_precision
     current_value = 2.0
 
-    sliderWithValue = SliderWithValue(QtCore.Qt.Horizontal)
+    sliderWithValue = FancySlider(QtCore.Qt.Horizontal)
     sliderWithValue.set_decimal_precision(decimal_precision)
     # sliderWithValue.setTickInterval(1)
     # sliderWithValue.setSingleStep(0.5)

@@ -1,4 +1,3 @@
-
 import sip
 
 sip.setapi('QString', 1)
@@ -9,9 +8,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from fancy_slider import SliderWithValue
-
-
+from fancy_slider import FancySlider
 
 
 class EditorDelegate(QStyledItemDelegate):
@@ -23,26 +20,9 @@ class EditorDelegate(QStyledItemDelegate):
         col_name = self.get_col_name(index)
 
         if col_name == 'Value':
-
-            # # editor = QLineEdit(parent)
-            # # slider = QSlider(parent)
-            # # slider.setRange(0,100)
-            # # slider.setTickInterval(10)
-            # # slider.setOrientation(Qt.Horizontal)
-            # # slider.setAutoFillBackground(True)
-            # slider = SliderWithValue(parent)
-            # slider.setOrientation(Qt.Horizontal)
-            # slider.setMinimum(0)
-            # slider.setMaximum(100)
-            # slider.setValue(5)
-            # # slider.setRange(0,100)
-            # # slider.setTickInterval(10)
-            #
-            # editor = slider
-            # # editor = QSlider(parent)
             item = index.model().get_item(index)
 
-            if item.widget_name=='slider':
+            if item.widget_name == 'slider':
                 editor = self.init_slider(parent, index)
             else:
                 editor = QLineEdit(parent)
@@ -52,39 +32,42 @@ class EditorDelegate(QStyledItemDelegate):
 
         return editor
 
-    def init_slider(self,parent, index):
+    def init_slider(self, parent, index):
         """
         initializes slider based on the current value of the index
         :param index: {index}
         :return:{QSlider instance}
         """
 
-
         item = index.model().get_item(index)
 
-        slider = SliderWithValue(parent)
+        slider = FancySlider(parent)
         slider.setOrientation(Qt.Horizontal)
+
+        item_type = item.item_type
+
+        if item_type == type(1):  # checking for integer type
+            item.decimal_precision = 0
+
+        slider.set_decimal_precision(item.decimal_precision)
+
         if item.min is None:
             slider.setMinimum(0)
         else:
             slider.setMinimum(item.min)
         if item.max is None:
-            slider.setMaximum(10*item.val)
+            slider.setMaximum(10 * item.val)
         else:
             slider.setMaximum(item.max)
 
-        slider.setTickInterval(2)
-
-        # slider.setMaximum(1000)
+        slider.set_default_behavior()
         slider.setValue(item.val)
         # slider.setRange(0,100)
         # slider.setTickInterval(10)
-
+        # slider.setTickInterval(2)
+        # slider.setMaximum(1000)
 
         return slider
-
-
-
 
     def get_col_name(self, index):
         """
@@ -108,7 +91,7 @@ class EditorDelegate(QStyledItemDelegate):
             return None
 
         model = index.model()
-        return model.item_data[index.row()].type
+        return model.item_data[index.row()].item_type
 
     def setEditorData(self, editor, index):
 
@@ -137,7 +120,7 @@ class EditorDelegate(QStyledItemDelegate):
 
             item = index.model().get_item(index)
             type_conv_fcn = self.get_item_type(index)
-            if item.widget_name=='slider':
+            if item.widget_name == 'slider':
 
                 try:
                     value = type_conv_fcn(editor.value())
@@ -151,7 +134,6 @@ class EditorDelegate(QStyledItemDelegate):
                 except ValueError as exc:
                     QMessageBox.warning(None, 'Type Conversion Error', str(exc))
                     return
-
 
             #
             # type_conv_fcn = self.get_item_type(index)
@@ -168,26 +150,33 @@ class EditorDelegate(QStyledItemDelegate):
 
         model.setData(index, value, Qt.EditRole)
 
-
     def updateEditorGeometry(self, editor, option, index):
         editor.setGeometry(option.rect)
 
 
 class ItemData(object):
-    def __init__(self, name=None, val=None, min=None, max=None, widget_name=None):
+    def __init__(self, name=None, val=None, min_val=None, max_val=None, decimal_precision=3, widget_name=None):
         self._name = name
         self._val = None
+        self._type = None
+
         if val is not None:
             self.val = val
 
-        self._type = None
-        self._min = min
-        self._max = max
+        self._min = min_val
+        self._min = min_val
+        self._max = max_val
+        self._decimal_precision = decimal_precision
         self._enum = None
+        self._allowed_widget_names = ['lineedit', 'slider']
         if widget_name is None:
             self._widget_name = 'lineedit'
         else:
-            self._widget_name = widget_name
+            assert isinstance(widget_name, (str, None)), 'widget_name has to be a Python string or None object'
+            assert widget_name.lower() in self._allowed_widget_names, \
+                '{} is not supported. We support the following  widgets {}'.format(widget_name,
+                                                                                   ','.join(self._allowed_widget_names))
+            self._widget_name = widget_name.lower()
 
     @property
     def val(self):
@@ -195,8 +184,11 @@ class ItemData(object):
 
     @val.setter
     def val(self, val):
+
         self._val = val
-        self.type = type(self.val)
+        self._type = type(self.val)
+
+        print 'val.type=', self._type
 
     @property
     def name(self):
@@ -214,6 +206,17 @@ class ItemData(object):
     def max(self):
         return self._max
 
+    @property
+    def decimal_precision(self):
+        return self._decimal_precision
+
+    @decimal_precision.setter
+    def decimal_precision(self, decimal_precision):
+        self._decimal_precision = decimal_precision
+
+    @property
+    def item_type(self):
+        return self._type
 
 
 class TableModel(QtCore.QAbstractTableModel):
@@ -221,18 +224,15 @@ class TableModel(QtCore.QAbstractTableModel):
         super(TableModel, self).__init__()
 
         self.item_data = None
-        self.header_data = [ 'Value', 'Type']
+        self.header_data = ['Value', 'Type']
         self.item_data_attr_name = {
-
             0: 'val',
-            1: 'type',
-
+            1: 'item_type'
         }
 
     def update(self, item_data):
 
         self.item_data = item_data
-
 
     def headerData(self, p_int, orientation, role=None):
 
@@ -248,7 +248,6 @@ class TableModel(QtCore.QAbstractTableModel):
             except IndexError:
                 return QVariant()
 
-
         return QVariant()
 
     def rowCount(self, parent=QtCore.QModelIndex()):
@@ -257,7 +256,7 @@ class TableModel(QtCore.QAbstractTableModel):
     def columnCount(self, parent=QtCore.QModelIndex()):
         return len(self.header_data)
 
-    def get_item(self,index):
+    def get_item(self, index):
         if not index.isValid():
             return
 
@@ -270,6 +269,7 @@ class TableModel(QtCore.QAbstractTableModel):
             i = index.row()
             j = index.column()
             item = self.item_data[i]
+
             item_data_to_display = getattr(item, self.item_data_attr_name[j])
             return '{}'.format(item_data_to_display)
 
@@ -282,6 +282,11 @@ class TableModel(QtCore.QAbstractTableModel):
                 return QtGui.QColor('gray')
             # return QApplication.palette().alternateBase()
 
+        elif role == Qt.ToolTipRole:
+            i = index.row()
+            j = index.column()
+            item = self.item_data[i]
+            return str(item.item_type)
 
         else:
 
@@ -305,7 +310,6 @@ class TableModel(QtCore.QAbstractTableModel):
         item = self.item_data[index.row()]
         item.val = value
         return True
-
 
     def flags(self, index):
         if not index.isValid():
@@ -340,21 +344,23 @@ class TableView(QtWidgets.QTableView):
 
             index = self.indexAt(event.pos())
             col_name = self.get_col_name(index)
-            if  col_name == 'Value':
+            if col_name == 'Value':
                 self.edit(index)
         else:
-            super(TableView,self).mousePressEvent(event)
+            super(TableView, self).mousePressEvent(event)
         # QTableView.mousePressEvent(event)
 
-    def get_col_name(self,index):
+    def get_col_name(self, index):
 
         model = index.model()
         return model.header_data[index.column()]
 
+
 if __name__ == '__main__':
     item_data = []
-    item_data.append(ItemData(name='vol', val=25, min=0, max=100, widget_name='slider'))
-    item_data.append(ItemData(name='lam_vol', val=2.0, min=0, max=10.0, widget_name='slider' ))
+    item_data.append(ItemData(name='vol', val=25, min_val=0, max_val=100, widget_name='slider'))
+    item_data.append(
+        ItemData(name='lam_vol', val=2.0, min_val=0, max_val=10.0, decimal_precision=2, widget_name='slider'))
     item_data.append(ItemData(name='sur', val=20.2))
     item_data.append(ItemData(name='lam_sur', val=20.2))
 
