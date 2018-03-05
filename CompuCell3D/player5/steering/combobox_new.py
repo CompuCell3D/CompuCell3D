@@ -198,7 +198,7 @@ class EditorDelegate(QStyledItemDelegate):
 
 
 class ItemData(object):
-    def __init__(self, name=None, val=None, min_val=None, max_val=None, decimal_precision=3, enum=None,
+    def __init__(self, name, val, min_val=None, max_val=None, decimal_precision=3, enum=None,
                  widget_name=None):
         self._name = name
         self._val = None
@@ -221,17 +221,19 @@ class ItemData(object):
             test_list = [self.val] + enum
 
             type_set = set((map(lambda x: type(x), test_list)))
-            assert len(type_set) == 1, 'enum list elelements (together with initial value) must me of the same type. ' \
+            assert len(type_set) == 1, 'enum list elements (together with initial value) must me of the same type. ' \
                                        'Instead I got the following types: {}'.format(','.join(map(lambda x: str(x),(type_set))))
 
             self._enum = enum
             if val is not None:
                 try:
-                    val_pos = map(lambda x: str(x), self.enum).index(str(self.val))
+                    map(lambda x: str(x), self.enum).index(str(self.val))
                 except ValueError:
                     self._enum = [str(self.val)] + self._enum  # prepending current value
         else:
             self._enum = None
+
+
 
         if widget_name is None:
             self._widget_name = 'lineedit'
@@ -428,6 +430,10 @@ if __name__ == '__main__':
     item_data.append(ItemData(name='vol', val=25, min_val=0, max_val=100, widget_name='slider'))
     item_data.append(
         ItemData(name='lam_vol', val=2.0, min_val=0, max_val=10.0, decimal_precision=2, widget_name='slider'))
+
+    item_data.append(
+        ItemData(name='lam_vol_enum', val=2.0, min_val=0, max_val=10.0, decimal_precision=2, widget_name='slider'))
+
     item_data.append(
         ItemData(name='lam_vol_combo_float', val=2.0, enum=[1., 2., 3., 4.], widget_name='combobox'))
 
@@ -436,6 +442,10 @@ if __name__ == '__main__':
 
     item_data.append(
         ItemData(name='lam_vol_combo', val='dupa2', enum=['dupa', 'dupa1', 'dupa2', 'dupa3'], widget_name='combobox'))
+
+    item_data.append(
+        ItemData(name='Empty', val=2.0, widget_name='slider'))
+
 
     item_data.append(ItemData(name='sur', val=20.2))
     item_data.append(ItemData(name='lam_sur', val=20.2))

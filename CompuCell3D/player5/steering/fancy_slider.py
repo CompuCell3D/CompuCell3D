@@ -108,6 +108,10 @@ class FancySlider(QtWidgets.QSlider):
         curr_value = self.value()
         round_value = round(curr_value, self.decimal_precision)
 
+        # handling integers
+        if not self.decimal_precision:
+            round_value = int(round_value)
+
         painter = QtGui.QPainter(self)
         painter.setPen(QtGui.QPen(QtCore.Qt.white))
 
