@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from fancy_slider import FancySlider
+from fancy_combo import FancyCombo
 
 
 class EditorDelegate(QStyledItemDelegate):
@@ -24,6 +25,8 @@ class EditorDelegate(QStyledItemDelegate):
 
             if item.widget_name == 'slider':
                 editor = self.init_slider(parent, index)
+            elif item.widget_name in ['pulldown', 'pull-down', 'combobox']:
+                editor = self.init_combobox(parent,index)
             else:
                 editor = QLineEdit(parent)
 
@@ -69,6 +72,27 @@ class EditorDelegate(QStyledItemDelegate):
 
         return slider
 
+    def init_combobox(self, parent, index):
+        """
+        initializes qcombobox based on the current value of the index and the user-provided provided enum options
+        :param index: {index}
+        :return:{QSlider instance}
+        """
+
+        item = index.model().get_item(index)
+
+        c_box = FancyCombo(parent)
+        c_box.addItems(map(lambda x: str(x), item.enum))
+
+
+        item_type = item.item_type
+
+        # item
+
+
+        return c_box
+
+
     def get_col_name(self, index):
         """
         returns column name
@@ -103,10 +127,21 @@ class EditorDelegate(QStyledItemDelegate):
             print 'i,j=', index.column(), index.row()
             print'val=', value
             # editor.setText(str(value.toInt()))
-            try:
+            if isinstance(editor, QLineEdit):
                 editor.setText(str(value))
-            except:
-                editor.setTickPosition(50)
+            elif isinstance(editor, QSlider):
+                pass # this is placeholder the real value is set elsewhere in init_slider
+                # editor.setTickPosition(50) n
+            elif isinstance(editor, QComboBox):
+                pass # this is placeholder the real value is set elsewhere in init_combobox
+                # editor.setValue(str(value))
+
+            else:
+                raise ValueError('Editor has usupported type of {}'.format(type(editor)))
+            # try:
+            #     editor.setText(str(value))
+            # except:
+            #     editor.setTickPosition(50)
         else:
             return
 
@@ -127,6 +162,14 @@ class EditorDelegate(QStyledItemDelegate):
                 except ValueError as exc:
                     QMessageBox.warning(None, 'Type Conversion Error', str(exc))
                     return
+            elif item.widget_name in ['combobox','pull-down']:
+
+                try:
+                    value = type_conv_fcn(editor.value())
+                except ValueError as exc:
+                    QMessageBox.warning(None, 'Type Conversion Error', str(exc))
+                    return
+
 
             else:
                 try:
@@ -155,7 +198,8 @@ class EditorDelegate(QStyledItemDelegate):
 
 
 class ItemData(object):
-    def __init__(self, name=None, val=None, min_val=None, max_val=None, decimal_precision=3, widget_name=None):
+    def __init__(self, name=None, val=None, min_val=None, max_val=None, decimal_precision=3, enum=None,
+                 widget_name=None):
         self._name = name
         self._val = None
         self._type = None
@@ -167,8 +211,14 @@ class ItemData(object):
         self._min = min_val
         self._max = max_val
         self._decimal_precision = decimal_precision
-        self._enum = None
-        self._allowed_widget_names = ['lineedit', 'slider']
+        self.enum_allowed_widgets = ['combobox', 'pull-down']
+        self._allowed_widget_names = ['lineedit', 'slider', 'combobox', 'pull-down']
+        if widget_name in self.enum_allowed_widgets:
+            assert isinstance(enum,list) or (enum is None),'enum argument must be a list of None'
+            self._enum = enum
+        else:
+            self._enum = None
+
         if widget_name is None:
             self._widget_name = 'lineedit'
         else:
@@ -184,11 +234,18 @@ class ItemData(object):
 
     @val.setter
     def val(self, val):
+        # if self._widget_name in ['combobox', 'pull-down']:
+        #
+        #     return
 
         self._val = val
         self._type = type(self.val)
 
         print 'val.type=', self._type
+
+    @property
+    def enum(self):
+        return self._enum
 
     @property
     def name(self):
@@ -361,6 +418,13 @@ if __name__ == '__main__':
     item_data.append(ItemData(name='vol', val=25, min_val=0, max_val=100, widget_name='slider'))
     item_data.append(
         ItemData(name='lam_vol', val=2.0, min_val=0, max_val=10.0, decimal_precision=2, widget_name='slider'))
+    # item_data.append(
+    #     ItemData(name='lam_vol_combo', val=2.0, enum=[1., 2., 3., 4.], widget_name='combobox'))
+
+    item_data.append(
+        ItemData(name='lam_vol_combo', val='dupa', enum=['dupa','dupa1','dupa2','dupa3'], widget_name='combobox'))
+
+
     item_data.append(ItemData(name='sur', val=20.2))
     item_data.append(ItemData(name='lam_sur', val=20.2))
 
