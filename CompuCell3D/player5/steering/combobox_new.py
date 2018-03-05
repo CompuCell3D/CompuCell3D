@@ -26,7 +26,7 @@ class EditorDelegate(QStyledItemDelegate):
             if item.widget_name == 'slider':
                 editor = self.init_slider(parent, index)
             elif item.widget_name in ['pulldown', 'pull-down', 'combobox']:
-                editor = self.init_combobox(parent,index)
+                editor = self.init_combobox(parent, index)
             else:
                 editor = QLineEdit(parent)
 
@@ -82,16 +82,16 @@ class EditorDelegate(QStyledItemDelegate):
         item = index.model().get_item(index)
 
         c_box = FancyCombo(parent)
-        c_box.addItems(map(lambda x: str(x), item.enum))
-
+        enum_list = map(lambda x: str(x), item.enum)
+        item_pos = enum_list.index(str(item.val))
+        c_box.addItems(enum_list)
+        c_box.setCurrentIndex(item_pos)
 
         item_type = item.item_type
 
         # item
 
-
         return c_box
-
 
     def get_col_name(self, index):
         """
@@ -130,10 +130,10 @@ class EditorDelegate(QStyledItemDelegate):
             if isinstance(editor, QLineEdit):
                 editor.setText(str(value))
             elif isinstance(editor, QSlider):
-                pass # this is placeholder the real value is set elsewhere in init_slider
+                pass  # this is placeholder the real value is set elsewhere in init_slider
                 # editor.setTickPosition(50) n
             elif isinstance(editor, QComboBox):
-                pass # this is placeholder the real value is set elsewhere in init_combobox
+                pass  # this is placeholder the real value is set elsewhere in init_combobox
                 # editor.setValue(str(value))
 
             else:
@@ -162,7 +162,7 @@ class EditorDelegate(QStyledItemDelegate):
                 except ValueError as exc:
                     QMessageBox.warning(None, 'Type Conversion Error', str(exc))
                     return
-            elif item.widget_name in ['combobox','pull-down']:
+            elif item.widget_name in ['combobox', 'pull-down']:
 
                 try:
                     value = type_conv_fcn(editor.value())
@@ -214,8 +214,22 @@ class ItemData(object):
         self.enum_allowed_widgets = ['combobox', 'pull-down']
         self._allowed_widget_names = ['lineedit', 'slider', 'combobox', 'pull-down']
         if widget_name in self.enum_allowed_widgets:
-            assert isinstance(enum,list) or (enum is None),'enum argument must be a list of None'
+            assert isinstance(enum, list) or (enum is None), 'enum argument must be a list of None'
+            if enum is None:
+                enum = []
+            # ensure all types in the enum list are the same
+            test_list = [self.val] + enum
+
+            type_set = set((map(lambda x: type(x), test_list)))
+            assert len(type_set) == 1, 'enum list elelements (together with initial value) must me of the same type. ' \
+                                       'Instead I got the following types: {}'.format(','.join(map(lambda x: str(x),(type_set))))
+
             self._enum = enum
+            if val is not None:
+                try:
+                    val_pos = map(lambda x: str(x), self.enum).index(str(self.val))
+                except ValueError:
+                    self._enum = [str(self.val)] + self._enum  # prepending current value
         else:
             self._enum = None
 
@@ -234,10 +248,6 @@ class ItemData(object):
 
     @val.setter
     def val(self, val):
-        # if self._widget_name in ['combobox', 'pull-down']:
-        #
-        #     return
-
         self._val = val
         self._type = type(self.val)
 
@@ -418,12 +428,14 @@ if __name__ == '__main__':
     item_data.append(ItemData(name='vol', val=25, min_val=0, max_val=100, widget_name='slider'))
     item_data.append(
         ItemData(name='lam_vol', val=2.0, min_val=0, max_val=10.0, decimal_precision=2, widget_name='slider'))
-    # item_data.append(
-    #     ItemData(name='lam_vol_combo', val=2.0, enum=[1., 2., 3., 4.], widget_name='combobox'))
+    item_data.append(
+        ItemData(name='lam_vol_combo_float', val=2.0, enum=[1., 2., 3., 4.], widget_name='combobox'))
 
     item_data.append(
-        ItemData(name='lam_vol_combo', val='dupa', enum=['dupa','dupa1','dupa2','dupa3'], widget_name='combobox'))
+        ItemData(name='lam_vol_combo_int', val=2, enum=[1, 2, 3, 4], widget_name='combobox'))
 
+    item_data.append(
+        ItemData(name='lam_vol_combo', val='dupa2', enum=['dupa', 'dupa1', 'dupa2', 'dupa3'], widget_name='combobox'))
 
     item_data.append(ItemData(name='sur', val=20.2))
     item_data.append(ItemData(name='lam_sur', val=20.2))
