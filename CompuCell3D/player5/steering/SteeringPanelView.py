@@ -7,11 +7,6 @@ class SteeringPanelView(QtWidgets.QTableView):
 
     def __init__(self, *args, **kwargs):
         QtWidgets.QTableView.__init__(self, *args, **kwargs)
-        # self._model = None
-    # def setModel(self, model):
-    #     self._model = model
-    #     super(SteeringPanelView, self).setModel(model)
-
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             index = self.indexAt(event.pos())
