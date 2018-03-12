@@ -11,6 +11,8 @@ from PyQt5.QtGui import *
 from fancy_slider import FancySlider
 from fancy_combo import FancyCombo
 
+from SteeringPanelView import SteeringPanelView
+
 
 class EditorDelegate(QStyledItemDelegate):
     def createEditor(self, parent, option, index):
@@ -400,30 +402,30 @@ class TableModel(QtCore.QAbstractTableModel):
         # return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
 
 
-class TableView(QtWidgets.QTableView):
-    """
-    A simple table to demonstrate the QComboBox delegate.
-    """
-
-    def __init__(self, *args, **kwargs):
-        QtWidgets.QTableView.__init__(self, *args, **kwargs)
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-
-            index = self.indexAt(event.pos())
-            col_name = self.get_col_name(index)
-            if col_name == 'Value':
-                self.edit(index)
-        else:
-            super(TableView, self).mousePressEvent(event)
-        # QTableView.mousePressEvent(event)
-
-    def get_col_name(self, index):
-
-        model = index.model()
-        return model.header_data[index.column()]
-
+# class SteeringPanelView(QtWidgets.QTableView):
+#     """
+#     A simple table to demonstrate the QComboBox delegate.
+#     """
+#
+#     def __init__(self, *args, **kwargs):
+#         QtWidgets.QTableView.__init__(self, *args, **kwargs)
+#
+#     def mousePressEvent(self, event):
+#         if event.button() == Qt.LeftButton:
+#
+#             index = self.indexAt(event.pos())
+#             col_name = self.get_col_name(index)
+#             if col_name == 'Value':
+#                 self.edit(index)
+#         else:
+#             super(SteeringPanelView, self).mousePressEvent(event)
+#         # QTableView.mousePressEvent(event)
+#
+#     def get_col_name(self, index):
+#
+#         model = index.model()
+#         return model.header_data[index.column()]
+#
 
 if __name__ == '__main__':
     item_data = []
@@ -464,7 +466,7 @@ if __name__ == '__main__':
     model.update(item_data)
     # model.update_type_conv_fcn(get_types())
 
-    tableView = TableView()
+    tableView = SteeringPanelView()
     tableView.setModel(model)
 
     delegate = EditorDelegate()
@@ -473,9 +475,13 @@ if __name__ == '__main__':
     layout.addWidget(tableView)
     window.setLayout(layout)
     tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+    # tableView.setVisible(False)
+    # tableView.resizeColumnsToContents()
+    # tableView.setVisible(True)
+
     # window.setWindowTitle("Spin Box Delegate")
     # tableView.setWindowTitle("Spin Box Delegate")
-    window.resize(QSize(800, 300))
+    # window.resize(QSize(800, 300))
     window.show()
     # tableView.show()
     sys.exit(app.exec_())
