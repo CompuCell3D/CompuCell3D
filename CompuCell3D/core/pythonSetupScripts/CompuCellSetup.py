@@ -3,6 +3,7 @@ import os
 import os.path
 import cStringIO, traceback
 import CMLParser
+from collections import OrderedDict
 
 from distutils.dir_util import mkpath
 
@@ -79,6 +80,12 @@ globalSBMLSimulatorOptions = None  # {optionName:Value}
 
 global viewManager
 viewManager = None  # stores viewmanager object - initialized when simulation is run using Player
+
+global steering_param_dict
+steering_param_dict = OrderedDict()
+
+global steering_panel
+steering_panel = None
 
 MYMODULENAME = '------- CompuCellSetup.py: '
 
@@ -477,6 +484,12 @@ def resetGlobals():
     global globalSBMLSimulatorOptions
     globalSBMLSimulatorOptions = None
 
+    global steering_param_dict
+    steering_param_dict = OrderedDict()
+
+    global steering_panel
+    steering_panel = None
+
 
 def setSimulationXMLFileName(_simulationFileName):
     global simulationPaths
@@ -484,6 +497,18 @@ def setSimulationXMLFileName(_simulationFileName):
 
 
 #     print "\n\n\n got here ",simulationPaths.simulationXMLFileName
+
+
+def addSteeringPanel(panel_data):
+    """
+    Adds steering panel with sliders to the Player5 Window
+    :return:
+    """
+    global viewManager
+
+    steering_panel = viewManager.widgetManager.getNewWidget('Steering Panel', panel_data)
+    return steering_panel
+
 
 def addNewPlotWindow(_title='', _xAxisTitle='', _yAxisTitle='', _xScaleType='linear', _yScaleType='linear', _grid=True,_config_options=None):
     class PlotWindowDummy(object):

@@ -7,6 +7,8 @@ global pyAttributeAdder
 global dictAdder
 from enums import *
 import numpy as np
+from SteeringParam import SteeringParam
+from collections import OrderedDict
 
 pyAttributeAdder = None
 dictAdder = None
@@ -132,6 +134,16 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         for typeId in self.typeIdTypeNameDict:
             setattr(self, self.typeIdTypeNameDict[typeId].upper(), typeId)
 
+        # self.steering_param_dict = OrderedDict()
+
+        # initialize plugins so that they are accessible from python
+        self.init_plugins()
+
+    def init_plugins(self):
+        """
+        prepares plugins exposed to Python to be accessible from Steppable
+        :return:
+        """
         import CompuCell
         pluginManager = CompuCell.getPluginManagerAsBPM()
         stepManager = CompuCell.getSteppableManagerAsBPM()  # have to use explicit cast to BasicPluginManager to get steppable manager to work
@@ -305,6 +317,27 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         if stepManager.isLoaded("CleaverMeshDumper"):
             import CompuCell
             self.cleaverMeshDumper = CompuCell.getCleaverMeshDumper()
+
+    def add_steering_param(self,name, val, min_val=None, max_val=None, decimal_precision=3, enum=None,widget_name=None):
+        if self.mcs >=0:
+            raise RuntimeError ('Steering Parameters Can only be added in "__init__" or "start" function of the steppable')
+
+        import CompuCellSetup
+        if name in CompuCellSetup.steering_param_dict.keys():
+            raise RuntimeError('Steering parameter named {} has already been defined. Please use different parameter name'.format(name))
+
+        CompuCellSetup.steering_param_dict[name]=SteeringParam(name=name, val=val, min_val=min_val, max_val=max_val,
+                                                       decimal_precision=decimal_precision,
+                                                       enum=enum,widget_name=widget_name)
+
+
+    def get_steering_param(self,name):
+        import CompuCellSetup
+        try:
+            return CompuCellSetup.steering_param_dict[name].val
+        except KeyError:
+            raise RuntimeError('Could not find steering_parameter named {}'.format(name))
+
 
     def addNewPlotWindow(self, _title, _xAxisTitle, _yAxisTitle, _xScaleType='linear', _yScaleType='linear',_grid=True,_config_options=None):
 
@@ -1474,6 +1507,12 @@ class SteppableRegistry(SteppablePy):
                 steppable.initialize_automatic_tasks()
             if hasattr(steppable, 'perform_automatic_tasks'):
                 steppable.perform_automatic_tasks()
+
+        # handling steering panel
+        import CompuCellSetup
+        if len(CompuCellSetup.steering_param_dict.keys()):
+            CompuCellSetup.addSteeringPanel(CompuCellSetup.steering_param_dict.values())
+
 
     def step(self, _mcs):
         for steppable in self.steppableList:

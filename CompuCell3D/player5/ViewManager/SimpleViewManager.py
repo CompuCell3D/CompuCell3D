@@ -536,6 +536,10 @@ class SimpleViewManager(QObject):
         # # # self.toolsActions.append(self.movieAct)
 
     def __initWindowActions(self):
+
+        self.pythonSteeringPanelAct =  QAction("Steering Panel", self)
+        self.pythonSteeringPanelAct.setShortcut(self.tr("Ctrl+U"))
+
         self.newGraphicsWindowAct = QAction(QIcon(gip("kcmkwm.png")), "&New Graphics Window", self)
         # self.newPlotWindowAct = QAction(QIcon("player5/icons/plot.png"),"&New Plot Window", self)
         self.newGraphicsWindowAct.setShortcut(self.tr("Ctrl+I"))
@@ -556,10 +560,14 @@ class SimpleViewManager(QObject):
 
         # self.closeAdditionalGraphicsWindowsAct=QAction("Close Additional Graphics Windows", self)
 
+
+
         self.windowActions.append(self.newGraphicsWindowAct)
         # self.windowActions.append(self.newPlotWindowAct)
         self.windowActions.append(self.tileAct)
         self.windowActions.append(self.cascadeAct)
+
+        self.windowActions.append(self.pythonSteeringPanelAct)
 
         self.windowActions.append(self.minimizeAllGraphicsWindowsAct)
         self.windowActions.append(self.restoreAllGraphicsWindowsAct)

@@ -11,6 +11,9 @@ from collections import OrderedDict
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 from PyQt5.QtXml import *
 
 from enums import *
@@ -117,6 +120,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # TODO FIX IT
         # self.plotManager = None
         self.plotManager = createPlotManager(self, self.useVTKPlots)
+
+        from WidgetManager import WidgetManager
+        self.widgetManager = WidgetManager(self)
 
         self.fieldTypes = {}
 
@@ -294,6 +300,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         windowMenu = menusDict["window"]
         windowMenu.clear()
         windowMenu.addAction(self.newGraphicsWindowAct)
+        windowMenu.addAction(self.pythonSteeringPanelAct)
         # windowMenu.addAction(self.newPlotWindowAct)
         if self.MDI_ON:
             windowMenu.addAction(self.tileAct)
@@ -350,6 +357,63 @@ class SimpleTabView(MainArea, SimpleViewManager):
             action.triggered.connect(self.windowMapper.map)
             self.windowMapper.setMapping(action, win)
             counter += 1
+
+    def addPythonSteeringPanel(self):
+        '''
+        callback method to create Steering Panel window with sliders
+        :return: {None or mdiWindow}
+        '''
+        if not self.simulationIsRunning:
+            return
+
+
+
+        print ('THIS IS ADD STEERING PANEL')
+        from steering.SteeringParam import SteeringParam
+        from steering.SteeringPanelView import SteeringPanelView
+        from steering.SteeringPanelModel import SteeringPanelModel
+        from steering.SteeringEditorDelegate import SteeringEditorDelegate
+
+        self.item_data = []
+        self.item_data.append(SteeringParam(name='vol', val=25, min_val=0, max_val=100, widget_name='slider'))
+        self.item_data.append(
+            SteeringParam(name='lam_vol', val=2.0, min_val=0, max_val=10.0, decimal_precision=2, widget_name='slider'))
+
+        self.item_data.append(
+            SteeringParam(name='lam_vol_enum', val=2.0, min_val=0, max_val=10.0, decimal_precision=2,
+                          widget_name='slider'))
+
+        self.steering_window = QWidget()
+        layout = QHBoxLayout()
+
+        # model = QStandardItemModel(4, 2)
+
+        # cdf = get_data_frame()
+        self.steering_model = SteeringPanelModel()
+        self.steering_model.update(self.item_data)
+        # model.update_type_conv_fcn(get_types())
+
+        self.steering_table_view = SteeringPanelView()
+        self.steering_table_view.setModel(self.steering_model)
+
+        delegate = SteeringEditorDelegate()
+        self.steering_table_view.setItemDelegate(delegate)
+
+        layout.addWidget(self.steering_table_view)
+        self.steering_window.setLayout(layout)
+        self.steering_table_view.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+
+
+        mdiWindow = self.addSteeringSubWindow(self.steering_window)
+
+        # IMPORTANT show() method needs to be called AFTER creating MDI subwindow
+        self.steering_window.show()
+
+        return mdiWindow
+
+
+
 
     def addNewGraphicsWindow(self):
         '''
@@ -805,6 +869,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.simulation.finishRequest.connect(self.handleFinishRequest)
 
             self.plotManager.initSignalAndSlots()
+            self.widgetManager.initSignalAndSlots()
 
             import PlayerPython
             self.fieldStorage = PlayerPython.FieldStorage()
@@ -1256,7 +1321,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.pifFromVTKAct.triggered.connect(self.__generatePIFFromVTK)
 
         # window menu actions
+        self.pythonSteeringPanelAct.triggered.connect(self.addPythonSteeringPanel)
         self.newGraphicsWindowAct.triggered.connect(self.addNewGraphicsWindow)
+
 
         self.tileAct.triggered.connect(self.tileSubWindows)
         self.cascadeAct.triggered.connect(self.cascadeSubWindows)
@@ -1667,9 +1734,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :param _mcs: int - current Monte Carlo step
         :return:
         '''
-
+        print 'GOT HERE BEFORE DRAW'
         self.__drawField()
-
+        print 'GOT HERE AAFTER DRAW'
         self.simulation.drawMutex.lock()
         # will need to sync screenshots with simulation thread. Be sure before simulation thread writes new results all the screenshots are taken
 
@@ -1719,7 +1786,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.__step = _mcs
 
         handleCompletedStepFcn = getattr(self, "handleCompletedStep" + self.__viewManagerType)
-
         handleCompletedStepFcn(_mcs)
 
     def handleFinishRequest(self, _flag):
