@@ -4,6 +4,9 @@ import CC3DProjectFileReader
 import ProjectFileStore
 import os
 
+from ParameterScanner import ParameterScanner
+
+
 class CC3DLauncher:
 
     def __init__(self):
@@ -42,9 +45,24 @@ class CC3DLauncher:
         CompuCellSetup.simulationPaths.setSimulationResultStorageDirectory(screenShotOutputDirectory)
 
     def executeCompuCell3DSimulation(self):
-        pythonScriptPath = ProjectFileStore.pythonScriptPath
-        execfile(pythonScriptPath)
 
+        if self.isParameterScanSpecified():
+            '''
+            setup parameter scan execute it in parallel
+            '''
+            parameterScanner = ParameterScanner()
+            parameterScanner.scan()
+
+        else:
+            pythonScriptPath = ProjectFileStore.pythonScriptPath
+            execfile(pythonScriptPath)
+
+    def isParameterScanSpecified(self):
+        print ProjectFileStore.parameterScanFile
+        if ProjectFileStore.parameterScanFile is not None:
+            return True
+
+        return False
 
 def main():
     cc3dLauncher = CC3DLauncher()
