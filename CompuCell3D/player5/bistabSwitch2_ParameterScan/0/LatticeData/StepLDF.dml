@@ -1,0 +1,13 @@
+<CompuCell3DLatticeData Version="1.0">
+   <Dimensions x="100" y="150" z="1"/>
+   <Lattice Type="Square"/>
+   <Output CoreFileName="Step" Directory="bistabSwitch2_ParameterScan/0/LatticeData" Frequency="1" NumberOfSteps="10000"/>
+   <CellType TypeId="0" TypeName="Medium"/>
+   <CellType TypeId="1" TypeName="Epith"/>
+   <CellType TypeId="2" TypeName="Fib"/>
+   <CellType TypeId="3" TypeName="Mes"/>
+   <Fields>
+      <Field Name="Cell_Field" Type="CellField"/>
+      <Field Name="Wnt" Type="ConField"/>
+   </Fields>
+</CompuCell3DLatticeData>
