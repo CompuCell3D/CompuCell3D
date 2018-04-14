@@ -25,7 +25,7 @@ class SteeringEditorDelegate(QStyledItemDelegate):
 
         else:
             return None
-
+        self.current_editor = editor
         return editor
 
     def init_slider(self, parent, index):
@@ -63,7 +63,15 @@ class SteeringEditorDelegate(QStyledItemDelegate):
         # slider.setTickInterval(2)
         # slider.setMaximum(1000)
 
+        slider.sliderReleased.connect(self.slider_closing)
         return slider
+
+    def slider_closing(self,*args,**kwds):
+        print 'THIS IS SLIDER CLOSING'
+        print 'args=',args
+        self.commitData.emit(self.current_editor)
+        self.closeEditor.emit(self.current_editor)
+        # self.emit(self.closeEditor)
 
     def init_combobox(self, parent, index):
         """

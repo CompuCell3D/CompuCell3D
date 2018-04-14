@@ -101,7 +101,6 @@ class FancySlider(QtWidgets.QSlider):
         self.setSingleStep((max_ - min_)/100.)
         self.setPageStep((max_ - min_)/50.)
 
-
     def paintEvent(self, event):
         QtWidgets.QSlider.paintEvent(self, event)
 

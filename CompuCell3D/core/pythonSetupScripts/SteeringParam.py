@@ -8,6 +8,9 @@ class SteeringParam(object):
         self._val = None
         self._type = None
 
+        # might be used later for selecting which parameters user have changed
+        self._dirty_flag = False
+
         self.lock = Lock()
 
         if val is not None:
@@ -49,6 +52,15 @@ class SteeringParam(object):
                 '{} is not supported. We support the following  widgets {}'.format(widget_name,
                                                                                    ','.join(self._allowed_widget_names))
             self._widget_name = widget_name.lower()
+
+    @property
+    def dirty_flag(self):
+        return self._dirty_flag
+
+    @dirty_flag.setter
+    def dirty_flag(self,flag):
+        self._dirty_flag = flag
+
 
     @property
     def val(self):

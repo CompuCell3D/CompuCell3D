@@ -8,11 +8,18 @@ class SteeringPanelModel(QtCore.QAbstractTableModel):
         super(SteeringPanelModel, self).__init__()
 
         self.item_data = None
+        self.dirty_flag = False
         self.header_data = ['Value', 'Type']
         self.item_data_attr_name = {
             0: 'val',
             1: 'item_type'
         }
+
+    def set_dirty(self, flag):
+        self.dirty_flag = flag
+
+    def is_dirty(self):
+        return self.dirty_flag
 
     def update(self, item_data):
 
@@ -93,6 +100,8 @@ class SteeringPanelModel(QtCore.QAbstractTableModel):
 
         item = self.item_data[index.row()]
         item.val = value
+        item.dirty_flag = True
+        self.dirty_flag = True
         return True
 
     def flags(self, index):

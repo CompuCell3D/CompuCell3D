@@ -87,6 +87,10 @@ steering_param_dict = OrderedDict()
 global steering_panel
 steering_panel = None
 
+global steering_panel_model
+steering_panel_model = None
+
+
 MYMODULENAME = '------- CompuCellSetup.py: '
 
 from enums import *
@@ -489,6 +493,10 @@ def resetGlobals():
 
     global steering_panel
     steering_panel = None
+
+    global steering_panel_model
+    steering_panel_model = None
+
 
 
 def setSimulationXMLFileName(_simulationFileName):

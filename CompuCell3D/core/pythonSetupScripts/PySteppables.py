@@ -318,6 +318,26 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             import CompuCell
             self.cleaverMeshDumper = CompuCell.getCleaverMeshDumper()
 
+
+    def add_steering_panel(self):
+        pass
+
+    def process_steering_panel_data(self):
+        pass
+
+    def process_steering_panel_data_wrapper(self):
+        """
+        Calls process_steering_panel_data if and only if there are dirty
+        parameters in the steering panel model
+        :return: None
+        """
+        if self.steering_param_dirty():
+            self.process_steering_panel_data()
+
+        # NOTE: resetting of the dirty flag for the steering
+        # panel model is done in the SteppableRegistry's "step" function
+
+
     def add_steering_param(self,name, val, min_val=None, max_val=None, decimal_precision=3, enum=None,widget_name=None):
         if self.mcs >=0:
             raise RuntimeError ('Steering Parameters Can only be added in "__init__" or "start" function of the steppable')
@@ -338,6 +358,38 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         except KeyError:
             raise RuntimeError('Could not find steering_parameter named {}'.format(name))
 
+    def steering_param_dirty(self, name=None):
+        """
+        Checks if a given steering parameter is dirty or if name is None if any of the parameters are dirty
+
+        :param name:{str} name of the parameter
+        True gets returned (False otherwise)
+        :return:{bool} dirty flag
+        """
+        import CompuCellSetup
+        if name is not None:
+            return self.get_steering_param(name=name).dirty_flag
+        else:
+            for p_name, steering_param in CompuCellSetup.steering_param_dict.items():
+                if steering_param.dirty_flag:
+                    return True
+            return False
+
+    def set_steering_param_dirty(self, name=None, flag=True):
+        """
+        Sets dirty flag for given steering parameter or if name is None all parameters
+        have their dirty flag set to a given boolean value
+
+        :param name:{str} name of the parameter
+        :param flag:{bool} dirty_flag
+        :return:None
+        """
+        import CompuCellSetup
+        if name is not None:
+            self.get_steering_param(name=name).dirty_flag = flag
+        else:
+            for p_name, steering_param in CompuCellSetup.steering_param_dict.items():
+                steering_param.dirty_flag = flag
 
     def addNewPlotWindow(self, _title, _xAxisTitle, _yAxisTitle, _xScaleType='linear', _yScaleType='linear',_grid=True,_config_options=None):
 
@@ -1492,9 +1544,13 @@ class SteppableRegistry(SteppablePy):
         for steppable in self.steppableList:
             steppable.extraInit(_simulator)
 
+
+
     def start(self):
         for steppable in self.runBeforeMCSSteppableList:
             steppable.start()
+            # handling steering panel
+            steppable.add_steering_panel()
             if hasattr(steppable, 'initialize_automatic_tasks'):
                 steppable.initialize_automatic_tasks()
 
@@ -1503,19 +1559,25 @@ class SteppableRegistry(SteppablePy):
 
         for steppable in self.steppableList:
             steppable.start()
+            # handling steering panel
+            steppable.add_steering_panel()
             if hasattr(steppable, 'initialize_automatic_tasks'):
                 steppable.initialize_automatic_tasks()
             if hasattr(steppable, 'perform_automatic_tasks'):
                 steppable.perform_automatic_tasks()
 
+
         # handling steering panel
+
         import CompuCellSetup
         if len(CompuCellSetup.steering_param_dict.keys()):
             CompuCellSetup.addSteeringPanel(CompuCellSetup.steering_param_dict.values())
 
 
     def step(self, _mcs):
+
         for steppable in self.steppableList:
+
             if not _mcs % steppable.frequency:  # this executes given steppable every "frequency" Monte Carlo Steps
 
                 try:
@@ -1533,6 +1595,20 @@ class SteppableRegistry(SteppablePy):
 
                 self.profiler_dict[steppable.__class__.__name__][hex(id(steppable))] += (end - begin) * 1000
 
+                steppable.process_steering_panel_data_wrapper()
+
+
+        # we reset dirty flag (indicates that a parameter was changed)
+        # of the steering parameters via the call to the SteppableBasePy "set_steering_param_dirty"
+        # function. At the moment we do not implement fine control over which parameters are dirty. For now if
+        # any of the parameters is dirty we will rerun all the code that handles steering. this means
+        # that we will process every single steering parameters as if it was dirty (i.e. changed recently)
+
+        steppable_list_aggregate = self.steppableList + self.runBeforeMCSSteppableList
+        # setting steering parameter dirty flag to False - this code runs at the end of the steppables call
+        if len(steppable_list_aggregate):
+            steppable_list_aggregate[0].set_steering_param_dirty(flag=False)
+
     def stepRunBeforeMCSSteppables(self, _mcs):
 
         for steppable in self.runBeforeMCSSteppableList:
@@ -1544,6 +1620,7 @@ class SteppableRegistry(SteppablePy):
                 end = time.time()
 
                 self.profiler_dict[steppable.__class__.__name__][hex(id(steppable))] += (end - begin) * 1000
+                steppable.process_steering_panel_data_wrapper()
 
     def finish(self):
         for steppable in self.runBeforeMCSSteppableList:
