@@ -564,6 +564,7 @@ class CC3DProject(QObject):
             self.__ui.insertToolBar(self.__ui.toolBar["File"], self.__ui.toolBar["CompuCell3D"])
 
         self.__ui.toolBar["CompuCell3D"].addAction(self.actions["Open CC3D Project..."])
+        self.__ui.toolBar["CompuCell3D"].addAction(self.actions["Save CC3D Project"])
 
     def __initMenus(self):
 
@@ -725,7 +726,7 @@ class CC3DProject(QObject):
                                                            triggered=self.__runInPlayer)
         self.actions["Save CC3D Project"] = QtWidgets.QAction(QIcon(':/icons/save-project.png'), "Save CC3D Project",
                                                               self,
-                                                              shortcut="", statusTip="Save CC3D Project ",
+                                                              shortcut="Ctrl+Shift+D", statusTip="Save CC3D Project ",
                                                               triggered=self.__saveCC3DProject)
         self.actions["Save CC3D Project As..."] = QtWidgets.QAction("Save CC3D Project As...", self,
                                                                     shortcut="Ctrl+Shift+A",
