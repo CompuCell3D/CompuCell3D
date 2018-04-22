@@ -1213,7 +1213,7 @@ def extraInitSimulationObjects(sim, simthread, _restartEnabled=False):
         if simthread is not None and playerType != "CML":
             simthread.preStartInit()
 
-        if not _restartEnabled:  # start fcuntion does not get called during restart
+        if not _restartEnabled:  # start function does not get called during restart
             sim.start()
         # 71 mb
 
@@ -1642,6 +1642,9 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry=None, _screenUpdateFrequ
 
         if not restartEnabled:  # start function does not get called during restart
             steppableRegistry.start()
+        else:
+            print 'RESTARTING STEERING PANEL'
+            steppableRegistry.restart_steering_panel()
         # # restoring plots
         #             global viewManager
         #             viewManager.plotManager.restore_plots_layout()
