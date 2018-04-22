@@ -67,8 +67,15 @@ class SteeringEditorDelegate(QStyledItemDelegate):
         return slider
 
     def slider_closing(self,*args,**kwds):
-        print 'THIS IS SLIDER CLOSING'
-        print 'args=',args
+        """
+        slot handling sliderReleased signal from FancySlider (QSlider). It closes editor and commits data to the
+        the model
+        :param args:
+        :param kwds:
+        :return: None
+        """
+        # print 'THIS IS SLIDER CLOSING'
+        # print 'args=',args
         self.commitData.emit(self.current_editor)
         self.closeEditor.emit(self.current_editor)
         # self.emit(self.closeEditor)
@@ -89,10 +96,23 @@ class SteeringEditorDelegate(QStyledItemDelegate):
         c_box.setCurrentIndex(item_pos)
 
         item_type = item.item_type
-
+        c_box.currentIndexChanged.connect(self.combobox_closing)
         # item
 
         return c_box
+    def combobox_closing(self,*args,**kwds):
+        """
+        slot handling currentIndexChanged signal from FancyCombo (QComboBox). It closes editor and commits data to the
+        the model
+        :param args:
+        :param kwds:
+        :return: None
+        """
+
+        # print 'THIS IS COMBOBOX CLOSING'
+        # print 'args=',args
+        self.commitData.emit(self.current_editor)
+        self.closeEditor.emit(self.current_editor)
 
     def get_col_name(self, index):
         """
@@ -138,7 +158,7 @@ class SteeringEditorDelegate(QStyledItemDelegate):
                 # editor.setValue(str(value))
 
             else:
-                raise ValueError('Editor has usupported type of {}'.format(type(editor)))
+                raise ValueError('Editor has unsupported type of {}'.format(type(editor)))
             # try:
             #     editor.setText(str(value))
             # except:
