@@ -157,11 +157,13 @@ class CC3DPythonHelper(QObject):
 
             groupMenu = self.cc3dPythonMenu.addMenu(menuName)
 
-            for subMenuName, snippetText in iter(sorted(submenuDict.iteritems())):
+            # for subMenuName, snippetText in iter(sorted(submenuDict.iteritems())):
+            for subMenuName, snippet_tuple in iter(sorted(submenuDict.iteritems())):
                 action = groupMenu.addAction(subMenuName)
 
                 actionKey = menuName.strip() + ' ' + subMenuName.strip()  # for lookup int he self.snippetDictionary
-                self.snippetDictionary[actionKey] = snippetText
+                # self.snippetDictionary[actionKey] = snippetText
+                self.snippetDictionary[actionKey] = snippet_tuple
 
                 self.actions[actionKey] = action
                 # self.__ui.connect(action, SIGNAL("triggered()"), self.snippetMapper, SLOT("map()"))
@@ -193,7 +195,10 @@ class CC3DPythonHelper(QObject):
         # print "GOT REQUEST FOR SNIPPET ",_snippetName
         snippetNameStr = str(_snippetName)
 
-        text = self.snippetDictionary[str(_snippetName)]
+        # text = self.snippetDictionary[str(_snippetName)]
+
+        text = self.snippetDictionary[str(_snippetName)].snippet_text
+        suggested_indent = self.snippetDictionary[str(_snippetName)].suggested_indent
 
         editor = self.__ui.getCurrentEditor()
         curFileName = unicode(self.__ui.getCurrentDocumentName())
@@ -255,6 +260,9 @@ bionetAPI.loadSBMLModel(modelName, modelPath,modelNickname,  integrationStep)
 
         indentationLevels, indentConsistency = self.findIndentationForSnippet(editor, curLine)
         print "indentationLevels=", indentationLevels, " consistency=", indentConsistency
+
+        if suggested_indent>=0:
+            indentationLevels = suggested_indent
 
         textLines = text.splitlines(True)
         for i in range(len(textLines)):
