@@ -43,9 +43,13 @@ class SurfaceSteeringSteppable(SteppableBasePy):
         SteppableBasePy.__init__(self, _simulator, _frequency)
 
     def add_steering_panel(self):
-        self.add_steering_param(name='target_surface', val=20, min_val=0, max_val=100, widget_name='slider')
+        #adding slider
         self.add_steering_param(name='lambda_surface', val=0.2, min_val=0, max_val=10.0, decimal_precision=2,
                                 widget_name='slider')
+
+        # adding combobox
+        self.add_steering_param(name='target_surface', val=20, enum=[10,20,30,40,50,60,70,80,90,100],
+                                widget_name='combobox')
 
     def process_steering_panel_data(self):
         print "SurfaceSteeringSteppable: WILL ADJUST PARAMETERS BECAUSE AT LEAST ONE STEERING PARAMETER HAS BEEN CHANGED"
