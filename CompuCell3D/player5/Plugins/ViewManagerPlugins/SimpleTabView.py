@@ -2970,6 +2970,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # converting Qstring to python string and normalizing path
         self.__fileName = os.path.abspath(str(self.__fileName))
 
+        if os.path.splitext(self.__fileName)[1].lower() not in ['.cc3d','.dml']:
+            print('Not a .cc3d of .dml file. Ignoring ')
+            self.__fileName = ''
+            return
+
         print '__openSim: self.__fileName=', self.__fileName
 
         from os.path import basename
