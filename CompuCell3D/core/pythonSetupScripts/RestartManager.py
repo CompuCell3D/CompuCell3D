@@ -359,7 +359,11 @@ class RestartManager:
         # load PolarizationVector plugin        
         self.loadPolarizationVector()
         # load loadPolarization23 plugin        
-        self.loadPolarization23()        
+        self.loadPolarization23()
+
+        #load steering panel
+        self.loadSteeringPanel()
+
         #---------------------- END OF LOADING RESTART FILES    --------------------        
             
 #        
@@ -1264,7 +1268,42 @@ class RestartManager:
                 pf.close()         
 
                 
-                
+    def outputSteeringPanel(self,_restartOutputPath,_rstXMLElem):
+        """
+        Outputs steering panel for python parameters
+        :param restartOutputPath:{str} path to restart dir
+        :param _rstXMLElem: {xml elem obj}
+        :return: None
+        """
+        import SerializerDEPy
+
+        sd = SerializerDEPy.SerializeData()
+        sd.moduleName = 'SteeringPanel'
+        sd.moduleType = 'SteeringPanel'
+        sd.objectName = 'SteeringPanel'
+        sd.objectType = 'JSON'
+        sd.fileName = os.path.join(_restartOutputPath, 'SteeringPanel' + '.json')
+
+        import CompuCellSetup
+        CompuCellSetup.serialize_steering_panel(sd.fileName)
+
+        self.appendXMLStub(_rstXMLElem,sd)
+
+
+    def loadSteeringPanel(self):
+        """
+        Deserializes steering panel
+        :return:None
+        """
+        for resourceName, sd in self.__restartResourceDict.iteritems():
+            if sd.objectName == 'SteeringPanel' and sd.objectType.lower() == 'json':
+                fullPath = os.path.join(self.__restartDirectory,sd.fileName)
+                fullPath = os.path.abspath(fullPath) # normalizing path format
+
+                import CompuCellSetup
+                CompuCellSetup.deserialize_steering_panel(fname=fullPath)
+
+
     def outputRestartFiles(self,_step=0,_onDemand=False):
         
         if not _onDemand and self.__outputFrequency<=0:
@@ -1340,6 +1379,8 @@ class RestartManager:
         # outputting Polarization23Plugin
         self.outputPolarization23Plugin(restartOutputPath,rstXMLElem)
 
+        # outputting steering panel params
+        self.outputSteeringPanel(restartOutputPath, rstXMLElem)
         
         #---------------------- END OF  OUTPUTTING RESTART FILES    --------------------               
         

@@ -11,10 +11,10 @@ from PyQt5.QtWidgets import *
 # from fancy_slider import FancySlider
 # from fancy_combo import FancyCombo
 
-from SteeringParam import SteeringParam
-from SteeringPanelView import SteeringPanelView
-from SteeringPanelModel import SteeringPanelModel
-from SteeringEditorDelegate import SteeringEditorDelegate
+from CompuCell3D.player5.steering.demo.SteeringParam import SteeringParam
+from CompuCell3D.player5.steering.SteeringPanelView import SteeringPanelView
+from CompuCell3D.player5.steering.SteeringPanelModel import SteeringPanelModel
+from CompuCell3D.player5.steering.SteeringEditorDelegate import SteeringEditorDelegate
 
 
 

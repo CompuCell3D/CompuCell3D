@@ -1,9 +1,17 @@
+from threading import Lock
+from copy import deepcopy
+
 class SteeringParam(object):
     def __init__(self, name, val, min_val=None, max_val=None, decimal_precision=3, enum=None,
                  widget_name=None):
         self._name = name
         self._val = None
         self._type = None
+
+        # might be used later for selecting which parameters user have changed
+        self._dirty_flag = False
+
+        self.lock = Lock()
 
         if val is not None:
             self.val = val
@@ -39,23 +47,38 @@ class SteeringParam(object):
         if widget_name is None:
             self._widget_name = 'lineedit'
         else:
-            assert isinstance(widget_name, (str, None)), 'widget_name has to be a Python string or None object'
+            assert isinstance(widget_name, (str, unicode)), 'widget_name has to be a Python string or None object'
             assert widget_name.lower() in self._allowed_widget_names, \
                 '{} is not supported. We support the following  widgets {}'.format(widget_name,
                                                                                    ','.join(self._allowed_widget_names))
-            self._widget_name = widget_name.lower()
+            self._widget_name = str(widget_name.lower())
+
+    @property
+    def dirty_flag(self):
+        return self._dirty_flag
+
+    @dirty_flag.setter
+    def dirty_flag(self,flag):
+        self._dirty_flag = flag
+
 
     @property
     def val(self):
-        return self._val
+
+        with self.lock:
+            tmp_val = deepcopy(self._val)
+        # self.lock.release()
+        return tmp_val
 
     @val.setter
     def val(self, val):
-        self._val = val
-        self._type = type(self.val)
 
-        print 'val.type=', self._type
+        with self.lock:
+            self._val = val
+            self._type = type(self._val)
+            # print 'val.type=', self._type
 
+        # self.lock.release()
     @property
     def enum(self):
         return self._enum
@@ -87,3 +110,13 @@ class SteeringParam(object):
     @property
     def item_type(self):
         return self._type
+
+    def __str__(self):
+        s = ''
+        s += ' name: {}'.format(self.name)
+        s += ' val: {}'.format(self.val)
+        s += ' widget: {}'.format(self.widget_name)
+        return s
+
+    def __repr__(self):
+        return self.__str__()

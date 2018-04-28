@@ -122,3 +122,4 @@ class SteeringPanelModel(QtCore.QAbstractTableModel):
 
         return existingFlags
         # return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+

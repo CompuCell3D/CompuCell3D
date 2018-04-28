@@ -47,11 +47,11 @@ class SteeringParam(object):
         if widget_name is None:
             self._widget_name = 'lineedit'
         else:
-            assert isinstance(widget_name, (str, None)), 'widget_name has to be a Python string or None object'
+            assert isinstance(widget_name, (str, unicode)), 'widget_name has to be a Python string or None object'
             assert widget_name.lower() in self._allowed_widget_names, \
                 '{} is not supported. We support the following  widgets {}'.format(widget_name,
                                                                                    ','.join(self._allowed_widget_names))
-            self._widget_name = widget_name.lower()
+            self._widget_name = str(widget_name.lower())
 
     @property
     def dirty_flag(self):
@@ -110,3 +110,13 @@ class SteeringParam(object):
     @property
     def item_type(self):
         return self._type
+
+    def __str__(self):
+        s = ''
+        s += ' name: {}'.format(self.name)
+        s += ' val: {}'.format(self.val)
+        s += ' widget: {}'.format(self.widget_name)
+        return s
+
+    def __repr__(self):
+        return self.__str__()

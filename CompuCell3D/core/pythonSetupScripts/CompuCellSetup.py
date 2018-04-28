@@ -6,6 +6,7 @@ import CMLParser
 from collections import OrderedDict
 
 from distutils.dir_util import mkpath
+import json
 
 # import Configuration
 
@@ -513,9 +514,62 @@ def addSteeringPanel(panel_data):
     :return:
     """
     global viewManager
+    # global steering_panel
+    # global steering_panel_model
 
     steering_panel = viewManager.widgetManager.getNewWidget('Steering Panel', panel_data)
     return steering_panel
+
+def serialize_steering_panel(fname):
+    """
+    Serializes steering panel
+    :param fname: {str} filename - to serialize steering panel to
+    :return: None
+    """
+    global steering_param_dict
+    json_dict = OrderedDict()
+
+    for param_name, steering_param_obj in steering_param_dict.items():
+        json_dict[param_name] = OrderedDict()
+        json_dict[param_name]['val'] = steering_param_obj.val
+        json_dict[param_name]['min'] = steering_param_obj.min
+        json_dict[param_name]['max'] = steering_param_obj.max
+        json_dict[param_name]['decimal_precision'] = steering_param_obj.decimal_precision
+        json_dict[param_name]['enum'] = steering_param_obj.enum
+        json_dict[param_name]['widget_name'] = steering_param_obj.widget_name
+
+
+    with open(fname, 'w') as outfile:
+        json.dump(json_dict, outfile, indent=4, sort_keys=True)
+
+
+def deserialize_steering_panel(fname):
+    """
+    Deserializes steering panel
+    :param fname: {str} serialized steering panel filename
+    :return: None
+    """
+
+    global steering_param_dict
+    import SteeringParam
+
+    with open(fname) as infile:
+
+        json_dict = json.load(infile)
+        steering_param_dict = OrderedDict()
+        for param_name, steering_param_obj_data in json_dict.items():
+            try:
+                steering_param_dict[param_name] = SteeringParam.SteeringParam(
+                    name=param_name,
+                    val=steering_param_obj_data['val'],
+                    min_val=steering_param_obj_data['min'],
+                    max_val=steering_param_obj_data['max'],
+                    decimal_precision=steering_param_obj_data['decimal_precision'],
+                    enum=steering_param_obj_data['enum'],
+                    widget_name=steering_param_obj_data['widget_name']
+                )
+            except:
+                print 'Could not update steering parameter {} value'.format(param_name)
 
 
 def addNewPlotWindow(_title='', _xAxisTitle='', _yAxisTitle='', _xScaleType='linear', _yScaleType='linear', _grid=True,_config_options=None):
@@ -1642,9 +1696,10 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry=None, _screenUpdateFrequ
 
         if not restartEnabled:  # start function does not get called during restart
             steppableRegistry.start()
-        else:
-            print 'RESTARTING STEERING PANEL'
-            steppableRegistry.restart_steering_panel()
+        # else:
+        #     print 'RESTARTING STEERING PANEL'
+        #     steppableRegistry.restart_steering_panel()
+
         # # restoring plots
         #             global viewManager
         #             viewManager.plotManager.restore_plots_layout()
@@ -1659,6 +1714,10 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry=None, _screenUpdateFrequ
     # restartManager=RestartManager.RestartManager(sim)
     restartManager.prepareRestarter()
     beginingStep = restartManager.getRestartStep()
+
+    if restartEnabled:
+        print 'RESTARTING STEERING PANEL'
+        steppableRegistry.restart_steering_panel()
 
     # restartManager.setupRestartOutputDirectory()
 

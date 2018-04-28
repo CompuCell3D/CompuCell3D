@@ -1550,13 +1550,13 @@ class SteppableRegistry(SteppablePy):
         Function used during restart only to bring up the steering panel
         :return: None
         """
-        for steppable in self.runBeforeMCSSteppableList:
-            # handling steering panel
-            steppable.add_steering_panel()
-
-        for steppable in self.steppableList:
-            # handling steering panel
-            steppable.add_steering_panel()
+        # for steppable in self.runBeforeMCSSteppableList:
+        #     # handling steering panel
+        #     steppable.add_steering_panel()
+        #
+        # for steppable in self.steppableList:
+        #     # handling steering panel
+        #     steppable.add_steering_panel()
         try:
             import CompuCellSetup
             if len(CompuCellSetup.steering_param_dict.keys()):
