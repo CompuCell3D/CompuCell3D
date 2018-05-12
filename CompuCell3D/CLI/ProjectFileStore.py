@@ -2,6 +2,7 @@ projectFilePath = ""
 pythonScriptPath = ""
 outputDirectoryPath = ""
 outputFrequency = ""
+parameterScanFile = ""
 filePathToResourceTypeMap = {}
 
 

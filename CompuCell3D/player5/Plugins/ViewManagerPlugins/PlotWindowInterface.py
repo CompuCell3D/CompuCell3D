@@ -180,6 +180,11 @@ class PlotWindowInterface(QtCore.QObject):
         _plotName = plot_param_dict['_plotName']
         _style = plot_param_dict['_style']
         _color = plot_param_dict['_color']
+
+        background_color = self.pW.backgroundBrush().color()
+
+        # print 'dir(self.pW)=',dir(self.pW)
+
         _size = plot_param_dict['_size']
         _alpha = plot_param_dict['_alpha']
 
@@ -201,7 +206,7 @@ class PlotWindowInterface(QtCore.QObject):
 
         color = wc.name_to_rgb(_color) + (alpha,)
         if _style.lower() == 'dots':
-            plotObj = self.pW.plot(y=yd, x=xd, pen=(0, 0, 0), symbolBrush=color, symbolSize=_size, name=_plotName)
+            plotObj = self.pW.plot(y=yd, x=xd, pen=background_color, symbolBrush=color, symbolSize=_size, name=_plotName)
 
 
         elif _style.lower() == 'lines':
@@ -226,7 +231,7 @@ class PlotWindowInterface(QtCore.QObject):
             self.pW.addItem(plotObj)
 
         else:  # dots is the default
-            plotObj = self.pW.plot(y=yd, x=xd, pen=(0, 0, 0), symbolBrush=color, symbolSize=_size, name=_plotName)
+            plotObj = self.pW.plot(y=yd, x=xd, pen=background_color, symbolBrush=color, symbolSize=_size, name=_plotName)
 
         self.plotData[_plotName] = [xd, yd, False, XYPLOT, False]
         self.plotDrawingObjects[_plotName] = {'curve': plotObj,
