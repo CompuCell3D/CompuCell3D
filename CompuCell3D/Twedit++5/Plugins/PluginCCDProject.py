@@ -317,7 +317,7 @@ class CC3DProjectTreeWidget(QTreeWidget):
         except LookupError, e:
 
             return
-            # check if thei file to which we are trying to add Steppable is Python resource        
+            # check if the file to which we are trying to add Steppable is Python resource
         itemFullPath = str(self.getFullPath(self.currentItem()))
         basename, extension = os.path.splitext(itemFullPath)
 
@@ -362,6 +362,7 @@ class CC3DProjectTreeWidget(QTreeWidget):
 
         if pdh.cc3dSimulationData.xmlScript == itemFullPath or pdh.cc3dSimulationData.pythonScript == itemFullPath:
             self.addActionToContextMenu(_menu, self.plugin.actions["Open Scan Editor"])
+            _menu.addSeparator()
             self.addActionToContextMenu(_menu, self.plugin.actions["Open XML Access Path Editor"])
 
         _menu.addSeparator()
@@ -1016,23 +1017,6 @@ class CC3DProject(QObject):
 
         projItem = tw.getProjectParent(tw.currentItem())
 
-        # pdh = None
-        # try:
-        #     pdh = self.projectDataHandlers[projItem]
-        # except LookupError, e:
-        #
-        #     return
-        #
-        # if not pdh.cc3dSimulationData.parameterScanResource:
-        #     QMessageBox.warning(tw, "Please Add Parameter Scan",
-        #                         "Parameter scan editor can only be open when project includes Parameter Scan. Please add parameter scan first ")
-        #     return
-        #
-        #     print ''
-        #     return
-        #
-        # pScanResource = pdh.cc3dSimulationData.parameterScanResource
-
         itemFullPath = str(tw.getFullPath(tw.currentItem()))
         basename, extension = os.path.splitext(itemFullPath)
 
@@ -1099,6 +1083,10 @@ class CC3DProject(QObject):
         tabBar.setTabTextColor(currentindex, QColor('blue'))
 
     def get_access_path(self):
+        """
+        Opens XML Access Path Read-only editor and extracts access path  (full access path to the XML element)
+        :return: {None} access path gets copied to the clipboard
+        """
 
         tw = self.treeWidget
 
@@ -1150,28 +1138,7 @@ class CC3DProject(QObject):
             clipboard = QApplication.clipboard()
             clipboard.setText(str(self.access_path_obj))
             return
-            # print 'self.scannedFileName=', self.scannedFileName, '\n\n\n\n\n'
-            # from CC3DProject.ParameterDialog import ParameterDialog
-            # pdlg = ParameterDialog(self.parameterScanEditor)
-            # print 'DICT BEFORE=', csd.parameterScanResource.parameterScanFileToDataMap
-            # try:
-            #     pdlg.displayXMLScannableParameters(xmlElem, access_path_xml_handler.lineToAccessPath[line], pScanResource.path)
-            #     ret = pdlg.exec_()
-            #     if ret:
-            #         haveNewItems = False
-            #         csd.parameterScanResource.psu.refreshParamSpecsContent(
-            #             pScanResource.path)  # before adding new parameter scan we need to read file again om case user made any change
-            #         for key, val in pdlg.parameterScanDataMap.iteritems():
-            #             print 'Adding key,val=', (key, val)
-            #             csd.parameterScanResource.addParameterScanData(self.scannedFileName, val)
-            #             haveNewItems = True
-            #
-            #             # csd.parameterScanResource.parameterScanDataMap[key]=val ###
-            #         if haveNewItems:
-            #             pScanResource.writeParameterScanSpecs()
-            #
-            # except LookupError, e:  # to protect against elements that are not in psXMLHandler.lineToAccessPath
-            #     return
+
 
     def get_xml_value_callback(self, orig_access_path, attribute_name=None):
         """
@@ -1196,46 +1163,9 @@ class CC3DProject(QObject):
             last_access_path_segment.pop(i)
 
             attr_access_path = local_access_path[:-1] + [last_access_path_segment]
-            # self.get_access_path()
-            print 'attr_access_path=', attr_access_path
 
-        print self.access_path_obj
         return local_access_path
-        # access_path = QApplication.clipboard().text()
-        # s = 'access_path={}\n'.format(access_path)
-        # s += 'val=float(self.getXMLElementValue(*access_path))\n'
-        # QApplication.clipboard().setText(s)
 
-    # def __get_xml_element_value_snippet(self):
-    #     self.get_access_path()
-    #     access_path = QApplication.clipboard().text()
-    #     s = 'access_path={}\n'.format(access_path)
-    #     s += 'val=float(self.getXMLElementValue(*access_path))\n'
-    #     QApplication.clipboard().setText(s)
-    #
-    #     print 'self.scannedFileName=', self.scannedFileName, '\n\n\n\n\n'
-    #     from CC3DProject.ParameterDialog import ParameterDialog
-    #     pdlg = ParameterDialog(self.parameterScanEditor)
-    #     pdlg.setWindowTitle('XML Access Path Selection')
-    #
-    #     try:
-    #         pdlg.display_xml_attributes(self.xml_elem_access_path, access_path,handle_xml_access_callback=self.access_path_callback)
-    #         ret = pdlg.exec_()
-    #         # if ret:
-    #         #     haveNewItems = False
-    #         #     csd.parameterScanResource.psu.refreshParamSpecsContent(
-    #         #         pScanResource.path)  # before adding new parameter scan we need to read file again om case user made any change
-    #         #     for key, val in pdlg.parameterScanDataMap.iteritems():
-    #         #         print 'Adding key,val=', (key, val)
-    #         #         csd.parameterScanResource.addParameterScanData(self.scannedFileName, val)
-    #         #         haveNewItems = True
-    #         #
-    #         #         # csd.parameterScanResource.parameterScanDataMap[key]=val ###
-    #         #     if haveNewItems:
-    #         #         pScanResource.writeParameterScanSpecs()
-    #
-    #     except LookupError, e:  # to protect against elements that are not in psXMLHandler.lineToAccessPath
-    #         return
 
     def process_xml_access_path_dialog(self):
         """
@@ -1249,54 +1179,27 @@ class CC3DProject(QObject):
         QApplication.clipboard().setText(s)
 
         print 'self.scannedFileName=', self.scannedFileName, '\n\n\n\n\n'
-        from CC3DProject.ParameterDialog import ParameterDialog
-        pdlg = ParameterDialog(self.parameterScanEditor)
-        pdlg.setWindowTitle('XML Access Path Selection')
+        # from CC3DProject.ParameterDialog import ParameterDialog
+        from CC3DProject.XmlAccessPathDialog import XmlAccessPathDialog
+        xml_access_path = XmlAccessPathDialog(self.parameterScanEditor)
+        xml_access_path.setWindowTitle('XML Access Path Selection')
 
         try:
-            pdlg.display_xml_attributes(self.xml_elem_access_path, access_path,
+            xml_access_path.display_xml_attributes(self.xml_elem_access_path, access_path,
                                         handle_xml_access_callback=self.get_xml_value_callback)
-            ret = pdlg.exec_()
+            ret = xml_access_path.exec_()
         except LookupError, e:  # to protect against elements that are not in psXMLHandler.lineToAccessPath
             return
 
-        precise_xml_access_path_tuple = pdlg.get_precise_xml_access_path_tuple()
+        precise_xml_access_path_tuple = xml_access_path.get_precise_xml_access_path_tuple()
         return precise_xml_access_path_tuple
 
     def __get_xml_element_value_snippet(self):
-        # self.get_access_path()
-        # access_path = QApplication.clipboard().text()
-        # s = 'access_path={}\n'.format(access_path)
-        # s += 'val=float(self.getXMLElementValue(*access_path))\n'
-        # QApplication.clipboard().setText(s)
-        #
-        # print 'self.scannedFileName=', self.scannedFileName, '\n\n\n\n\n'
-        # from CC3DProject.ParameterDialog import ParameterDialog
-        # pdlg = ParameterDialog(self.parameterScanEditor)
-        # pdlg.setWindowTitle('XML Access Path Selection')
-        #
-        # try:
-        #     pdlg.display_xml_attributes(self.xml_elem_access_path, access_path,handle_xml_access_callback=self.get_xml_value_callback)
-        #     ret = pdlg.exec_()
-        #     # if ret:
-        #     #     haveNewItems = False
-        #     #     csd.parameterScanResource.psu.refreshParamSpecsContent(
-        #     #         pScanResource.path)  # before adding new parameter scan we need to read file again om case user made any change
-        #     #     for key, val in pdlg.parameterScanDataMap.iteritems():
-        #     #         print 'Adding key,val=', (key, val)
-        #     #         csd.parameterScanResource.addParameterScanData(self.scannedFileName, val)
-        #     #         haveNewItems = True
-        #     #
-        #     #         # csd.parameterScanResource.parameterScanDataMap[key]=val ###
-        #     #     if haveNewItems:
-        #     #         pScanResource.writeParameterScanSpecs()
-        #
-        # except LookupError, e:  # to protect against elements that are not in psXMLHandler.lineToAccessPath
-        #     return
-        #
-        # precise_xml_access_path_tuple = pdlg.get_precise_xml_access_path_tuple()
-        # xml_component_type = precise_xml_access_path_tuple[0]
-        # precise_xml_access_path = precise_xml_access_path_tuple[1]
+        """
+        Callback to get xml element value/attribute using xml access path. Copies
+        a snippet to the clipboard
+        :return:{None} - code gets copied into clipboard
+        """
 
         precise_xml_access_path_tuple = self.process_xml_access_path_dialog()
 
@@ -1317,6 +1220,11 @@ class CC3DProject(QObject):
         QApplication.clipboard().setText(s)
 
     def __set_xml_element_value_snippet(self):
+        """
+        Callback to get xml element value/attribute using xml access path. Copies
+        a snippet to the clipboard
+        :return:{None} - code gets copied into clipboard
+        """
 
         precise_xml_access_path_tuple = self.process_xml_access_path_dialog()
 
@@ -1336,18 +1244,6 @@ class CC3DProject(QObject):
 
         QApplication.clipboard().setText(s)
 
-        # self.get_access_path()
-        # access_path = QApplication.clipboard().text()
-        # s = 'access_path={}\n'.format(access_path)
-        # s += 'self.setXMLElementValue(VALUE, *access_path))\n'
-        # QApplication.clipboard().setText(s)
-
-    # def __get_xml_value_snippet(self):
-    #     self.get_access_path()
-    #     access_path = QApplication.clipboard().text()
-    #     s = 'access_path={}\n'.format(access_path)
-    #     s += 'val=float(self.getXMLElementValue(*access_path))\n'
-    #     QApplication.clipboard().setText(s)
 
     def __addToScan(self):
 
@@ -1419,7 +1315,6 @@ class CC3DProject(QObject):
             except LookupError, e:  # to protect against elements that are not in psXMLHandler.lineToAccessPath
                 return
 
-
         elif scannedFileExt == '.py':
             from ParameterScanUtils import ParameterScanUtils as PSU
             psu = PSU()
@@ -1463,17 +1358,6 @@ class CC3DProject(QObject):
                     return
 
         self.__ui.checkIfDocumentsWereModified()
-        # # # print 'DICT AFTER=',csd.parameterScanResource.parameterScanFileToDataMap
-        # # # # get path to ParameterScan XML file
-        # # # parScanResources=csd.getResourcesByType ('ParameterScan') 
-        # # # print 'parScanResources=',parScanResources     
-
-        # # # if not csd.parameterScanResource:return
-
-        # # # resource=csd.parameterScanResource
-        # # # # paramScanXMLFilePath=resource.path
-
-        # resource.writeParameterScanSpecs()
 
     def restoreIcons(self):
         print 'restore icons for scan menu'
@@ -1482,9 +1366,6 @@ class CC3DProject(QObject):
 
     def addActionToContextMenu(self, _menu, _action):
 
-        #         if self.hideContextMenuIcons:            
-        #             self.__iconDict[_action]=_action.icon()                
-        #             _action.setIcon(QIcon())
 
         _menu.addAction(_action)
 
@@ -1512,6 +1393,7 @@ class CC3DProject(QObject):
 
         self.addActionToContextMenu(menu, self.actions["Get XML Element Value (Clipboard)"])
         self.addActionToContextMenu(menu, self.actions["Set XML Element Value (Clipboard)"])
+        menu.addSeparator()
         self.addActionToContextMenu(menu, self.actions["XML Access Path to Clipboard"])
 
         #         menu.addAction(self.actions["Add To Scan..."])
