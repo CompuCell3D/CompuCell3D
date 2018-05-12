@@ -1179,10 +1179,9 @@ class CC3DProject(QObject):
         QApplication.clipboard().setText(s)
 
         print 'self.scannedFileName=', self.scannedFileName, '\n\n\n\n\n'
-        # from CC3DProject.ParameterDialog import ParameterDialog
         from CC3DProject.XmlAccessPathDialog import XmlAccessPathDialog
         xml_access_path = XmlAccessPathDialog(self.parameterScanEditor)
-        xml_access_path.setWindowTitle('XML Access Path Selection')
+        # xml_access_path.setWindowTitle('XML Access Path Selection')
 
         try:
             xml_access_path.display_xml_attributes(self.xml_elem_access_path, access_path,

@@ -232,44 +232,44 @@ class ParameterDialog(QDialog, ui_parameterdlg.Ui_ParameterDlg):
             btn.setPosition(currentRow, ACTION)
             btn.clicked.connect(self.handle_xml_access_path)
 
-    def handle_xml_access_path(self):
-        senderBtn = self.sender()
-        row, col = senderBtn.getPosition()
-        print 'clicked row,column=', (row, col)
+    # def handle_xml_access_path(self):
+    #     senderBtn = self.sender()
+    #     row, col = senderBtn.getPosition()
+    #     print 'clicked row,column=', (row, col)
+    #
+    #
+    #     nameItem = self.paramTW.item(row, PARAMETER)
+    #
+    #     valueItem = self.paramTW.item(row, VALUE)
+    #
+    #     # value=float(valueItem.text())
+    #     value = str(valueItem.text())
+    #
+    #     print 'TYPE=', TYPE
+    #     typeItem = self.paramTW.item(row, TYPE)
+    #     type = TYPE_DICT_REVERSE[str(typeItem.text())]
+    #     print 'type=', type, '\n\n\n\n'
+    #
+    #     self.close()
+    #
+    #     precise_xml_access_path = None
+    #     if self.handle_xml_access_callback:
+    #         if type==XML_ATTR:
+    #             self.precise_xml_access_path_tuple = XmlAccessPathTuple(XML_ATTR,str(nameItem.text()),self.handle_xml_access_callback(self.accessPath,str(nameItem.text())))
+    #             # self.precise_xml_access_path_tuple = (XML_ATTR, precise_xml_access_path)
+    #         else:
+    #             self.precise_xml_access_path_tuple = XmlAccessPathTuple(XML_CDATA,'CDATA', self.handle_xml_access_callback(self.accessPath))
 
 
-        nameItem = self.paramTW.item(row, PARAMETER)
-
-        valueItem = self.paramTW.item(row, VALUE)
-
-        # value=float(valueItem.text())
-        value = str(valueItem.text())
-
-        print 'TYPE=', TYPE
-        typeItem = self.paramTW.item(row, TYPE)
-        type = TYPE_DICT_REVERSE[str(typeItem.text())]
-        print 'type=', type, '\n\n\n\n'
-
-        self.close()
-
-        precise_xml_access_path = None
-        if self.handle_xml_access_callback:
-            if type==XML_ATTR:
-                self.precise_xml_access_path_tuple = XmlAccessPathTuple(XML_ATTR,str(nameItem.text()),self.handle_xml_access_callback(self.accessPath,str(nameItem.text())))
-                # self.precise_xml_access_path_tuple = (XML_ATTR, precise_xml_access_path)
-            else:
-                self.precise_xml_access_path_tuple = XmlAccessPathTuple(XML_CDATA,'CDATA', self.handle_xml_access_callback(self.accessPath))
 
 
-
-
-    def get_precise_xml_access_path_tuple(self):
-        # todo - move to separate dialog
-        """
-        Returns tuple with xml component type and precise access path to the component of the XML element
-        :return:{tuple (XMLCOMPONENT TYPE, list} precise access path to the component of the XML element
-        """
-        return self.precise_xml_access_path_tuple
+    # def get_precise_xml_access_path_tuple(self):
+    #     # todo - move to separate dialog
+    #     """
+    #     Returns tuple with xml component type and precise access path to the component of the XML element
+    #     :return:{tuple (XMLCOMPONENT TYPE, list} precise access path to the component of the XML element
+    #     """
+    #     return self.precise_xml_access_path_tuple
 
     def displayPythonScannableParameters(self, _pythonLine, _parameterScanFile):
         print '_pythonLine=', _pythonLine
