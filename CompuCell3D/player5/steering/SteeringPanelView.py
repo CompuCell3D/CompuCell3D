@@ -19,9 +19,10 @@ class SteeringPanelView(QtWidgets.QTableView):
     def get_col_name(self, index):
 
         model = index.model()
-        print 'model=',model
+
         if not model:
             return None
+
         return model.header_data[index.column()]
 
     def sizeHint(self):
