@@ -167,22 +167,7 @@ class MainArea(QWidget):
         subWindow = self.createSubWindow(name='Steering Panel') # sub window
         self.setupSubWindow(subWindow, widget, 'Steering Panel')
 
-
-
-        #
-        # # mdi_sub_window = QMdiSubWindow()
-        # mdi_sub_window = PythonSteeringSubWindow(self)
-        # mdi_sub_window.setWidget(widget)
-        # mdi_sub_window.setAttribute(Qt.WA_DeleteOnClose)
-        # mdi_sub_window.setWindowTitle('Steering Panel')
-        #
-        # # QMdiArea.addSubWindow(self, mdi_sub_window)
-        #
-        # # old code that did not use SubWindow subclass
-        # # mdi_sub_window = QMdiArea.addSubWindow(self, widget)
-        # # mdi_sub_window.setWindowTitle(window_name)
-
-        # self.win_inventory.add_to_inventory(obj=mdi_sub_window, obj_type=obj_type)
+        subWindow.resize(widget.sizeHint())
 
         self.win_inventory.add_to_inventory(obj=mdi_sub_window, obj_type=STEERING_PANEL_LABEL)
         return mdi_sub_window
