@@ -92,6 +92,12 @@ class SubWindow(QFrame):
         self.parent.win_inventory.remove_from_inventory(self)
 
 
+class PythonSteeringSubWindow(QFrame):
+    def __init__(self, _parent=None):
+        super(PythonSteeringSubWindow, self).__init__(_parent)
+        self.parent = _parent
+        self.main_widget = None
+
 
 class MainArea(QWidget):
     def __init__(self, stv,  ui ):
@@ -149,6 +155,37 @@ class MainArea(QWidget):
         self.win_inventory.add_to_inventory(obj = subWindow, obj_type=obj_type)
 
         return subWindow
+
+    def addSteeringSubWindow(self, widget):
+        '''Creates QMdiSubwindow containing widget and adds it to QMdiArea
+
+        :param widget: widget that will be placed in the qmdisubwindow
+        :return: None
+        '''
+
+        mdi_sub_window = PythonSteeringSubWindow(self)
+        subWindow = self.createSubWindow(name='Steering Panel') # sub window
+        self.setupSubWindow(subWindow, widget, 'Steering Panel')
+
+
+
+        #
+        # # mdi_sub_window = QMdiSubWindow()
+        # mdi_sub_window = PythonSteeringSubWindow(self)
+        # mdi_sub_window.setWidget(widget)
+        # mdi_sub_window.setAttribute(Qt.WA_DeleteOnClose)
+        # mdi_sub_window.setWindowTitle('Steering Panel')
+        #
+        # # QMdiArea.addSubWindow(self, mdi_sub_window)
+        #
+        # # old code that did not use SubWindow subclass
+        # # mdi_sub_window = QMdiArea.addSubWindow(self, widget)
+        # # mdi_sub_window.setWindowTitle(window_name)
+
+        # self.win_inventory.add_to_inventory(obj=mdi_sub_window, obj_type=obj_type)
+
+        self.win_inventory.add_to_inventory(obj=mdi_sub_window, obj_type=STEERING_PANEL_LABEL)
+        return mdi_sub_window
 
     def tileSubWindows(self):
         '''
