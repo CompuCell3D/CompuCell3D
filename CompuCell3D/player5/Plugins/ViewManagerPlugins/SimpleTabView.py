@@ -1734,9 +1734,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :param _mcs: int - current Monte Carlo step
         :return:
         '''
-        print 'GOT HERE BEFORE DRAW'
+        # print 'GOT HERE BEFORE DRAW'
         self.__drawField()
-        print 'GOT HERE AAFTER DRAW'
+        # print 'GOT HERE AAFTER DRAW'
         self.simulation.drawMutex.lock()
         # will need to sync screenshots with simulation thread. Be sure before simulation thread writes new results all the screenshots are taken
 
