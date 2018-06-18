@@ -24,7 +24,7 @@ namespace CompuCell3D {
     class NEIGHBORSURFACECONSTRAINT_EXPORT  NeighborSurfaceConstraintPlugin : public Plugin ,public EnergyFunction  {
         
     private:    
-                        
+
         CC3DXMLElement *xmlData;        
         
         Potts3D *potts;
@@ -38,8 +38,41 @@ namespace CompuCell3D {
         Automaton *automaton;
 
         BoundaryStrategy *boundaryStrategy;
+
         WatchableField3D<CellG *> *cellFieldG;
-        
+        //
+        bool energyExpressionDefined;
+
+        unsigned int maxNeighborIndex;
+
+		LatticeMultiplicativeFactors lmf;
+
+		//Energy function data:
+		double neighborTargetSurface;
+
+		double neighborLambdaSurface;
+
+		/* The above are place holders, they will be changed once it becomes a pair energy
+		 * something like this (found in the contact local flex):
+		 * typedef std::map<int, double> contactEnergies_t;
+		 * typedef std::vector<std::vector<double> > contactEnergyArray_t;
+		 */
+		double scaleSurface;
+
+		// for the user defined energy
+		std::vector<NeighborSurfaceEnergyParam> neighborSurfaceEnergyParamVector;
+
+		typedef double (NeighborSurfaceConstraintPlugin::*changeEnergy_t)(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
+
+		NeighborSurfaceConstraintPlugin::changeEnergy_t changeEnergyFcnPtr;
+
+		double changeEnergyGlobal(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
+		double changeEnergyByCellType(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
+		double changeEnergyByCellId(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
+
+		std::pair<double,double> getNewOldSurfaceDiffs(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
+		double energyChange(double lambda, double targetSurface,double surface,  double diff);
+
     public:
 
         NeighborSurfaceConstraintPlugin();
@@ -49,8 +82,8 @@ namespace CompuCell3D {
 
         
         //Energy function interface
-        virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);        
-        
+        virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
+
                 
         
         virtual void init(Simulator *simulator, CC3DXMLElement *_xmlData=0);

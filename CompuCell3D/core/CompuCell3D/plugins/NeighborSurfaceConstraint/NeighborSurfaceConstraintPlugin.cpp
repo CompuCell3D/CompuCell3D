@@ -4,6 +4,7 @@ using namespace CompuCell3D;
 
 #include "NeighborSurfaceConstraintPlugin.h"
 
+#include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
 
 NeighborSurfaceConstraintPlugin::NeighborSurfaceConstraintPlugin():
 pUtils(0),
@@ -30,8 +31,6 @@ void NeighborSurfaceConstraintPlugin::init(Simulator *simulator, CC3DXMLElement 
     pUtils->initLock(lockPtr); 
    
    update(xmlData,true);
-   
-    
     potts->registerEnergyFunctionWithName(this,"NeighborSurfaceConstraint");
         
     
@@ -42,25 +41,75 @@ void NeighborSurfaceConstraintPlugin::init(Simulator *simulator, CC3DXMLElement 
 void NeighborSurfaceConstraintPlugin::extraInit(Simulator *simulator){
     
 }
+// energy will be defined on the types of cells. So something like the contact energy will be needed -> this will be more complicated, done later
+// need to get neighbor data (Area)
+// on neighbor stick there is some code that may be relevant
+/*
+ * Neighbor neighbor;   //Used by NeighborFinder to hold the offset to a neighbor Point3D and it's distance.
+ * std::set<NeighborSurfaceData> * neighborData;
+ * std::set<NeighborSurfaceData >::iterator sitr;
+ *
+ * neighborData = &(neighborTrackerAccessorPtr->get(oldCell->extraAttribPtr)->cellNeighbors); // actually gets the data
+ */
 
+
+// need something that will calculate the surface difference only with this one
+// neighbor.
+// I believe this will do it
+std::pair<double,double> NeighborSurfaceConstraintPlugin::getNewOldSurfaceDiffs(const Point3D &pt, const CellG *newCell,const CellG *oldCell){
+
+
+	CellG *nCell;
+   double oldDiff = 0.;
+   double newDiff = 0.;
+   Neighbor neighbor;
+   for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
+      neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
+      if(!neighbor.distance){
+      //if distance is 0 then the neighbor returned is invalid
+      continue;
+      }
+      nCell = cellFieldG->get(neighbor.pt);
+      if (newCell == nCell) newDiff-=lmf.surfaceMF;
+
+      if (oldCell == nCell) oldDiff+=lmf.surfaceMF;
+
+   }
+	return make_pair(newDiff,oldDiff);
+}
+
+
+
+//energy difference function
+double NeighborSurfaceConstraintPlugin::energyChange(double lambda, double targetSurface,double surface,  double diff) {
+	if (!energyExpressionDefined){
+		return lambda *(diff*diff + 2 * diff * (surface - fabs(targetSurface)));
+	}
+	else{
+		return 0;//place holder
+	}
+}
 
 
 
 double NeighborSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {	
-
+	// This plugin does not make sense if the user is not using it by at least cell type.
+	std::set<NeighborSurfaceData> * neighborData;
+	std::set<NeighborSurfaceData >::iterator sitr;
     double energy = 0;
-    if (oldCell){
-        //PUT YOUR CODE HERE
-    }else{
-        //PUT YOUR CODE HERE
+    if (oldCell == newCell) return 0;
+    neighborData = &(neighborTrackerAccessorPtr->get(oldCell->extraAttribPtr)->cellNeighbors);
+    for(sitr=neighborData->begin() ; sitr !=neighborData ->end() ; ++sitr ){
+
+
+    	if (oldCell){
+
+    		energy = 0; //place holder
+    	}
+    	if(newCell){
+    		energy = 0; //place holder
+    	}
     }
-    
-    if(newCell){
-        //PUT YOUR CODE HERE
-    }else{
-        //PUT YOUR CODE HERE
-    }
-    
     return energy;    
 }            
 
