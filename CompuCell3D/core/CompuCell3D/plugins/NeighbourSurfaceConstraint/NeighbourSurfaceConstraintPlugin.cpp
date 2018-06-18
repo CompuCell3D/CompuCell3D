@@ -28,10 +28,11 @@ void NeighbourSurfaceConstraintPlugin::init(Simulator *simulator, CC3DXMLElement
     pUtils=sim->getParallelUtils();
     lockPtr=new ParallelUtilsOpenMP::OpenMPLock_t;
     pUtils->initLock(lockPtr); 
-   
-   update(xmlData,true);
-   
     
+    update(xmlData,true);
+    //loads neigbor tracker if it is not loaded already
+    Plugin *plugin=Simulator::pluginManager.get("NeighborTracker",&pluginAlreadyRegisteredFlag);
+
     potts->registerEnergyFunctionWithName(this,"NeighbourSurfaceConstraint");
         
     

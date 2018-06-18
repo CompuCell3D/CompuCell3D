@@ -4,7 +4,6 @@
 
 #include <CompuCell3D/CC3D.h>
 
-
 #include "NeighbourSurfaceConstraintDLLSpecifier.h"
 
 class CC3DXMLElement;
