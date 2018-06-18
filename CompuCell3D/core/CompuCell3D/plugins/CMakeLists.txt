@@ -77,6 +77,7 @@ ADD_SUBDIRECTORY(BoundaryPixelTracker)
 ADD_SUBDIRECTORY(GlobalBoundaryPixelTracker)
 ADD_SUBDIRECTORY(Viscosity)
 ADD_SUBDIRECTORY(Secretion)
+ADD_SUBDIRECTORY(NeighbourSurfaceConstraint)
 
 # #ADD_SUBDIRECTORY(ChickType)
 # #ADD_SUBDIRECTORY(Growth)
