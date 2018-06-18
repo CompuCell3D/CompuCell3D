@@ -1,10 +1,11 @@
 
-#ifndef NEIGHBOURSURFACECONSTRAINTPLUGIN_H
-#define NEIGHBOURSURFACECONSTRAINTPLUGIN_H
+#ifndef NEIGHBORSURFACECONSTRAINTPLUGIN_H
+#define NEIGHBORSURFACECONSTRAINTPLUGIN_H
 
 #include <CompuCell3D/CC3D.h>
 
-#include "NeighbourSurfaceConstraintDLLSpecifier.h"
+
+#include "NeighborSurfaceConstraintDLLSpecifier.h"
 
 class CC3DXMLElement;
 
@@ -20,7 +21,7 @@ namespace CompuCell3D {
     template <class T> class Field3D;
     template <class T> class WatchableField3D;
 
-    class NEIGHBOURSURFACECONSTRAINT_EXPORT  NeighbourSurfaceConstraintPlugin : public Plugin ,public EnergyFunction  {
+    class NEIGHBORSURFACECONSTRAINT_EXPORT  NeighborSurfaceConstraintPlugin : public Plugin ,public EnergyFunction  {
         
     private:    
                         
@@ -41,8 +42,8 @@ namespace CompuCell3D {
         
     public:
 
-        NeighbourSurfaceConstraintPlugin();
-        virtual ~NeighbourSurfaceConstraintPlugin();
+        NeighborSurfaceConstraintPlugin();
+        virtual ~NeighborSurfaceConstraintPlugin();
         
                         
 

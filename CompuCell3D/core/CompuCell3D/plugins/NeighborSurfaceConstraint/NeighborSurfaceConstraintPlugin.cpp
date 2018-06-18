@@ -2,10 +2,10 @@
 #include <CompuCell3D/CC3D.h>        
 using namespace CompuCell3D;
 
-#include "NeighbourSurfaceConstraintPlugin.h"
+#include "NeighborSurfaceConstraintPlugin.h"
 
 
-NeighbourSurfaceConstraintPlugin::NeighbourSurfaceConstraintPlugin():
+NeighborSurfaceConstraintPlugin::NeighborSurfaceConstraintPlugin():
 pUtils(0),
 lockPtr(0),
 xmlData(0) ,
@@ -13,13 +13,13 @@ cellFieldG(0),
 boundaryStrategy(0)
 {}
 
-NeighbourSurfaceConstraintPlugin::~NeighbourSurfaceConstraintPlugin() {
+NeighborSurfaceConstraintPlugin::~NeighborSurfaceConstraintPlugin() {
     pUtils->destroyLock(lockPtr);
     delete lockPtr;
     lockPtr=0;
 }
 
-void NeighbourSurfaceConstraintPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
+void NeighborSurfaceConstraintPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
     xmlData=_xmlData;
     sim=simulator;
     potts=simulator->getPotts();
@@ -28,26 +28,25 @@ void NeighbourSurfaceConstraintPlugin::init(Simulator *simulator, CC3DXMLElement
     pUtils=sim->getParallelUtils();
     lockPtr=new ParallelUtilsOpenMP::OpenMPLock_t;
     pUtils->initLock(lockPtr); 
+   
+   update(xmlData,true);
+   
     
-    update(xmlData,true);
-    //loads neigbor tracker if it is not loaded already
-    Plugin *plugin=Simulator::pluginManager.get("NeighborTracker",&pluginAlreadyRegisteredFlag);
-
-    potts->registerEnergyFunctionWithName(this,"NeighbourSurfaceConstraint");
+    potts->registerEnergyFunctionWithName(this,"NeighborSurfaceConstraint");
         
     
     
     simulator->registerSteerableObject(this);
 }
 
-void NeighbourSurfaceConstraintPlugin::extraInit(Simulator *simulator){
+void NeighborSurfaceConstraintPlugin::extraInit(Simulator *simulator){
     
 }
 
 
 
 
-double NeighbourSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {	
+double NeighborSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {	
 
     double energy = 0;
     if (oldCell){
@@ -66,7 +65,7 @@ double NeighbourSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,const Ce
 }            
 
 
-void NeighbourSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
+void NeighborSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
     //PARSE XML IN THIS FUNCTION
     //For more information on XML parser function please see CC3D code or lookup XML utils API
     automaton = potts->getAutomaton();
@@ -90,11 +89,11 @@ void NeighbourSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _fu
 }
 
 
-std::string NeighbourSurfaceConstraintPlugin::toString(){
-    return "NeighbourSurfaceConstraint";
+std::string NeighborSurfaceConstraintPlugin::toString(){
+    return "NeighborSurfaceConstraint";
 }
 
 
-std::string NeighbourSurfaceConstraintPlugin::steerableName(){
+std::string NeighborSurfaceConstraintPlugin::steerableName(){
     return toString();
 }
