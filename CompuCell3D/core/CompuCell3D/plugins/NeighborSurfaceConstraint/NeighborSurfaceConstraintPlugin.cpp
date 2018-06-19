@@ -236,7 +236,7 @@ void NeighborSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _ful
 		scaleSurface=_xmlData->getFirstElement("ScaleSurface")->getDouble();
 	}
     //boundaryStrategy has information aobut pixel neighbors 
-    boundaryStrategy=BoundaryStrategy::getInstance();
+    //boundaryStrategy=BoundaryStrategy::getInstance();
 
 }
 
