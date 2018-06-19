@@ -48,12 +48,18 @@ namespace CompuCell3D {
 		LatticeMultiplicativeFactors lmf;
 
 		//Energy function data:
-		double neighborTargetSurface;
 
-		double neighborLambdaSurface;
+		typedef std::map<int, double> lambdaFaces_t;
+		typedef std::vector<std::vector<double> > lambdaFacesArray_t;
+		typedef std::map<int, double> targetFaces_t;
+		typedef std::vector<std::vector<double> > targetFacesArray_t;
 
-		/* The above are place holders, they will be changed once it becomes a pair energy
-		 * something like this (found in the contact local flex):
+		lambdaFaces_t lambdaFaces;
+		lambdaFacesArray_t lambdaFacesArray;
+		targetFaces_t targetFaces;
+		targetFacesArray_t targetFacesArray;
+
+		/*
 		 * typedef std::map<int, double> contactEnergies_t;
 		 * typedef std::vector<std::vector<double> > contactEnergyArray_t;
 		 */
