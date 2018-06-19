@@ -184,7 +184,28 @@ void NeighborSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _ful
     				cerr<<"targetFaces["<<i<<"]["<<j<<"]="<<targetFacesArray[i][j]<<endl;
 
 	}
+    //Here I initialize max neighbor index for direct acces to the list of neighbors
+	boundaryStrategy=BoundaryStrategy::getInstance();
+	maxNeighborIndex=0;
 
+	if(_xmlData->getFirstElement("Depth")){
+		maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(
+				_xmlData->getFirstElement("AreaDepth")->getDouble());
+		//cerr<<"got here will do depth"<<endl;
+		}else{
+		//cerr<<"got here will do neighbor order"<<endl;
+			if(_xmlData->getFirstElement("AreaNeighborOrder")){
+				maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(
+						_xmlData->getFirstElement("AreaNeighborOrder")->getUInt());
+			}else{
+				maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(
+						1);
+
+			}
+
+	}
+
+    			cerr<<"Contact maxNeighborIndex="<<maxNeighborIndex<<endl;
 
 
 
