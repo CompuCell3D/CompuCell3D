@@ -56,7 +56,8 @@ void NeighborSurfaceConstraintPlugin::extraInit(Simulator *simulator){
 // need something that will calculate the surface difference only with this one
 // neighbor.
 // I believe this will do it
-std::pair<double,double> NeighborSurfaceConstraintPlugin::getNewOldSurfaceDiffs(const Point3D &pt, const CellG *newCell,const CellG *oldCell){
+std::pair<double,double> NeighborSurfaceConstraintPlugin::getNewOldSurfaceDiffs(
+		const Point3D &pt, const CellG *newCell,const CellG *oldCell){
 
 
 	CellG *nCell;
@@ -81,12 +82,28 @@ std::pair<double,double> NeighborSurfaceConstraintPlugin::getNewOldSurfaceDiffs(
 
 
 //energy difference function
-double NeighborSurfaceConstraintPlugin::energyChange(double lambda, double targetSurface,double surface,  double diff) {
+double NeighborSurfaceConstraintPlugin::energyChange(double lambda, double targetSurface,
+		double surface,  double diff) {
 	if (!energyExpressionDefined){
 		return lambda *(diff*diff + 2 * diff * (surface - fabs(targetSurface)));
 	}
 	else{
-		return 0;//place holder
+		int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();
+		ExpressionEvaluator & ev=eed[currentWorkNodeNumber];
+		double energyBefore=0.0,energyAfter=0.0;
+
+		//before
+		ev[0]=lambda;
+		ev[1]=surface;
+		ev[2]=targetSurface;
+		energyBefore=ev.eval();
+
+		//after
+		ev[1]=surface+diff;
+
+		energyAfter=ev.eval();
+
+		return energyAfter-energyBefore;
 	}
 }
 
@@ -103,6 +120,9 @@ double NeighborSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,const Cel
     Neighbor neighbor;
 
     if (oldCell == newCell) return 0;
+
+    pair<double,double> newOldDiffs=getNewOldSurfaceDiffs(pt,newCell,oldCell);
+
     for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
     	neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
     	if(!neighbor.distance){
@@ -112,13 +132,22 @@ double NeighborSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,const Cel
     	nCell = fieldG->get(neighbor.pt);
     	if (nCell!=oldCell){
     		energy = 0; //place holder
+    		// += energyChange( lambda(nCell,oldCell), targetSurface(nCell,oldCell),
+    		//                  surface(nCell,oldCell)*scaleSurface,
+    		//                  newOldDiffs.second*scaleSurface)
     	}
     	if(nCell!=newCell){
     		energy = 0; //place holder
+    		// += energyChange( lambda(nCell,oldCell), targetSurface(nCell,oldCell),
+			//                  surface(nCell,oldCell)*scaleSurface,
+			//                  newOldDiffs.first*scaleSurface)
     	}
     }
     return energy;    
 }            
+
+
+
 
 
 void NeighborSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
@@ -137,13 +166,13 @@ void NeighborSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _ful
     //doing it in python
     //This works for a symmetric things
     for (int i = 0 ; i<faceLambdaVec.size(); ++i){
-
+    	/*
     	setFaceLambda(faceLambdaVec[i]->getAtribute("Type1"),
     			faceLambdaVec[i]->getAtribute("Type2"), faceLambdaVec[i]->getDouble());
 
     	setFaceTarget(faceTargetVec[i]->getAtribute("Type1"),
     			faceTargetVec[i]->getAtribute("Type1"), faceTargetVec[i]->getDouble());
-
+		*/
     	//inserting all the types to the set (duplicate are automatically eliminated)
     	// if it is the case this should be removed
     	//to figure out max value of type Id
