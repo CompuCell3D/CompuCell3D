@@ -2,9 +2,12 @@
 #include <CompuCell3D/CC3D.h>        
 using namespace CompuCell3D;
 
+#include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
+
+using namespace std;
 #include "NeighborSurfaceConstraintPlugin.h"
 
-#include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
+
 
 NeighborSurfaceConstraintPlugin::NeighborSurfaceConstraintPlugin():
 pUtils(0),
@@ -20,7 +23,8 @@ NeighborSurfaceConstraintPlugin::~NeighborSurfaceConstraintPlugin() {
     lockPtr=0;
 }
 
-void NeighborSurfaceConstraintPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
+void NeighborSurfaceConstraintPlugin::init(Simulator *simulator,
+		CC3DXMLElement *_xmlData) {
     xmlData=_xmlData;
     sim=simulator;
     potts=simulator->getPotts();
@@ -56,8 +60,7 @@ void NeighborSurfaceConstraintPlugin::extraInit(Simulator *simulator){
 // need something that will calculate the surface difference only with this one
 // neighbor.
 // I believe this will do it
-std::pair<double,double> NeighborSurfaceConstraintPlugin::getNewOldSurfaceDiffs(
-		const Point3D &pt, const CellG *newCell,const CellG *oldCell){
+std::pair<double,double> NeighborSurfaceConstraintPlugin::getNewOldSurfaceDiffs(const Point3D &pt, const CellG *newCell,const CellG *oldCell){
 
 
 	CellG *nCell;
@@ -147,7 +150,26 @@ double NeighborSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,const Cel
 }            
 
 
+void NeighborSurfaceConstraintPlugin::setFaceLambda(const string typeName1,
+				     const string typeName2,
+				     const double lambda) {
 
+  char type1 = automaton->getTypeId(typeName1);
+  char type2 = automaton->getTypeId(typeName2);
+
+  int index = getIndex(type1, type2);
+
+  lambdaFaces_t::iterator it = lambdaFaces.find(index);
+  ASSERT_OR_THROW(string("Contact energy for ") + typeName1 + " " + typeName2 +
+		  " already set!", it == lambdaFaces.end());
+
+  lambdaFaces[index] = lambda;
+}
+
+int NeighborSurfaceConstraintPlugin::getIndex(const int type1, const int type2) const {
+  if (type1 < type2) return ((type1 + 1) | ((type2 + 1) << 16));
+  else return ((type2 + 1) | ((type1 + 1) << 16));
+}
 
 
 void NeighborSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
@@ -166,13 +188,14 @@ void NeighborSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _ful
     //doing it in python
     //This works for a symmetric things
     for (int i = 0 ; i<faceLambdaVec.size(); ++i){
-    	/*
+
     	setFaceLambda(faceLambdaVec[i]->getAtribute("Type1"),
     			faceLambdaVec[i]->getAtribute("Type2"), faceLambdaVec[i]->getDouble());
 
     	setFaceTarget(faceTargetVec[i]->getAtribute("Type1"),
     			faceTargetVec[i]->getAtribute("Type1"), faceTargetVec[i]->getDouble());
-		*/
+
+
     	//inserting all the types to the set (duplicate are automatically eliminated)
     	// if it is the case this should be removed
     	//to figure out max value of type Id

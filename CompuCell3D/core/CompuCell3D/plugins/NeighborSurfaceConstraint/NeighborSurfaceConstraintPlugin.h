@@ -15,6 +15,7 @@ namespace CompuCell3D {
     class Potts3D;
     class Automaton;
     //class AdhesionFlexData;
+    class CellG;
     class BoundaryStrategy;
     class ParallelUtilsOpenMP;
     
@@ -23,7 +24,7 @@ namespace CompuCell3D {
 
     class NEIGHBORSURFACECONSTRAINT_EXPORT  NeighborSurfaceConstraintPlugin : public Plugin ,public EnergyFunction  {
         
-    private:    
+    //private:
 
         CC3DXMLElement *xmlData;        
         
@@ -78,8 +79,7 @@ namespace CompuCell3D {
 		double changeEnergyByCellId(const Point3D &pt,
 									const CellG *newCell,const CellG *oldCell);
 
-		std::pair<double,double> getNewOldSurfaceDiffs(
-								 const Point3D &pt, const CellG *newCell,const CellG *oldCell);
+		std::pair<double,double> getNewOldSurfaceDiffs(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
 		double energyChange(double lambda, double targetSurface,double surface,  double diff);
 
     public:
@@ -105,6 +105,15 @@ namespace CompuCell3D {
         virtual std::string steerableName();
         virtual std::string toString();
 
+        //setFaceLambda
+        void setFaceLambda(const std::string typeName1,
+        			  const std::string typeName2, const double lambda);
+    protected:
+        /**
+         * @return The index used for ordering lambdas / target faces in the map.
+         */
+        int getIndex(const int type1, const int type2) const;
+      };
     };
 };
 #endif

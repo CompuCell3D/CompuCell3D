@@ -20,3 +20,5 @@ VTKLibs
 vtk
 *~
 CompuCell3D/Twedit++5/EditorWindow_old.py
+CompuCell3D/core/CompuCell3D/plugins/ContactLocalFlex/ContactLocalFlexPlugin.cpp
+CompuCell3D/core/CompuCell3D/plugins/Surface/SurfacePlugin.cpp
