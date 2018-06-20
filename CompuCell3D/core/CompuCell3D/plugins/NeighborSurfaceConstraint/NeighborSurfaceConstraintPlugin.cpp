@@ -143,7 +143,7 @@ double NeighborSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,const Cel
     	}
     	if(nCell!=newCell){
     		energy = 0; //place holder
-    		// += energyChange( lambda(nCell,oldCell), targetSurface(nCell,oldCell),
+    		// += energyChange( lambdaRetriever(nCell,oldCell), targetSurface(nCell,oldCell),
 			//                  surface(nCell,oldCell)*scaleSurface,
 			//                  newOldDiffs.first*scaleSurface)
     	}
