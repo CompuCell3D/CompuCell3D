@@ -73,14 +73,17 @@ namespace CompuCell3D {
 
 		NeighborSurfaceConstraintPlugin::changeEnergy_t changeEnergyFcnPtr;
 
-		double changeEnergyGlobal(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
+		/*double changeEnergyGlobal(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
 		double changeEnergyByCellType(const Point3D &pt,
 									  const CellG *newCell,const CellG *oldCell);
 		double changeEnergyByCellId(const Point3D &pt,
 									const CellG *newCell,const CellG *oldCell);
-
+*/
 		std::pair<double,double> getNewOldSurfaceDiffs(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
+
 		double energyChange(double lambda, double targetSurface,double surface,  double diff);
+
+		double lambdaRetriever(const CellG *cell1, const CellG *cell2);
 
     public:
 

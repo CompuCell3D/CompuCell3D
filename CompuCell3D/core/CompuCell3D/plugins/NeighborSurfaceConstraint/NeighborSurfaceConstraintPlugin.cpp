@@ -90,7 +90,7 @@ double NeighborSurfaceConstraintPlugin::energyChange(double lambda, double targe
 	if (!energyExpressionDefined){
 		return lambda *(diff*diff + 2 * diff * (surface - fabs(targetSurface)));
 	}
-	else{
+	else{/*
 		int currentWorkNodeNumber=pUtils->getCurrentWorkNodeNumber();
 		ExpressionEvaluator & ev=eed[currentWorkNodeNumber];
 		double energyBefore=0.0,energyAfter=0.0;
@@ -107,6 +107,8 @@ double NeighborSurfaceConstraintPlugin::energyChange(double lambda, double targe
 		energyAfter=ev.eval();
 
 		return energyAfter-energyBefore;
+		*/
+		return 0;
 	}
 }
 
@@ -150,6 +152,14 @@ double NeighborSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,const Cel
 }            
 
 
+double NeighborSurfaceConstraintPlugin::lambdaRetriever(const CellG *cell1, const CellG *cell2) {
+
+	return lambdaFacesArray[cell1 ? cell1->type : 0][cell2? cell2->type : 0];
+
+
+}
+
+
 void NeighborSurfaceConstraintPlugin::setFaceLambda(const string typeName1,
 				     const string typeName2,
 				     const double lambda) {
@@ -170,6 +180,10 @@ int NeighborSurfaceConstraintPlugin::getIndex(const int type1, const int type2) 
   if (type1 < type2) return ((type1 + 1) | ((type2 + 1) << 16));
   else return ((type2 + 1) | ((type1 + 1) << 16));
 }
+
+
+
+
 
 
 void NeighborSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
