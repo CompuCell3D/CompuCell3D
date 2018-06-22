@@ -85,6 +85,8 @@ namespace CompuCell3D {
 
 		double lambdaRetriever(const CellG *cell1, const CellG *cell2);
 
+		double targetFaceRetriever(const CellG *cell1, const CellG *cell2);
+
     public:
 
         NeighborSurfaceConstraintPlugin();

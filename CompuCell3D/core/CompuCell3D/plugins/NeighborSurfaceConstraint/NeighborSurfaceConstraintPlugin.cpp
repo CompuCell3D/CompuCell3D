@@ -60,7 +60,8 @@ void NeighborSurfaceConstraintPlugin::extraInit(Simulator *simulator){
 // need something that will calculate the surface difference only with this one
 // neighbor.
 // I believe this will do it
-std::pair<double,double> NeighborSurfaceConstraintPlugin::getNewOldSurfaceDiffs(const Point3D &pt, const CellG *newCell,const CellG *oldCell){
+std::pair<double,double> NeighborSurfaceConstraintPlugin::getNewOldSurfaceDiffs(
+							const Point3D &pt, const CellG *newCell,const CellG *oldCell){
 
 
 	CellG *nCell;
@@ -86,7 +87,7 @@ std::pair<double,double> NeighborSurfaceConstraintPlugin::getNewOldSurfaceDiffs(
 
 //energy difference function
 double NeighborSurfaceConstraintPlugin::energyChange(double lambda, double targetSurface,
-		double surface,  double diff) {
+													double surface,  double diff) {
 	if (!energyExpressionDefined){
 		return lambda *(diff*diff + 2 * diff * (surface - fabs(targetSurface)));
 	}
@@ -114,7 +115,8 @@ double NeighborSurfaceConstraintPlugin::energyChange(double lambda, double targe
 
 
 
-double NeighborSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {	
+double NeighborSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,
+													const CellG *newCell,const CellG *oldCell) {
 	// This plugin does not make sense if the user is not using it by at least cell type.
     double energy = 0;
 
@@ -137,13 +139,15 @@ double NeighborSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,const Cel
     	nCell = fieldG->get(neighbor.pt);
     	if (nCell!=oldCell){
     		energy = 0; //place holder
-    		// += energyChange( lambda(nCell,oldCell), targetSurface(nCell,oldCell),
+    		// energy += energyChange( lambdaRetriever(nCell,oldCell),
+    		//					targetFaceRetriever(nCell,oldCell),
     		//                  surface(nCell,oldCell)*scaleSurface,
     		//                  newOldDiffs.second*scaleSurface)
     	}
     	if(nCell!=newCell){
     		energy = 0; //place holder
-    		// += energyChange( lambdaRetriever(nCell,oldCell), targetSurface(nCell,oldCell),
+    		// energy += energyChange( lambdaRetriever(nCell,oldCell),
+    		//					targetFaceRetriever(nCell,oldCell),
 			//                  surface(nCell,oldCell)*scaleSurface,
 			//                  newOldDiffs.first*scaleSurface)
     	}
@@ -151,6 +155,12 @@ double NeighborSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,const Cel
     return energy;    
 }            
 
+double NeighborSurfaceConstraintPlugin::targetFaceRetriever(const CellG *cell1, const CellG *cell2) {
+
+	return targetFacesArray[cell1 ? cell1->type : 0][cell2? cell2->type : 0];
+
+
+}
 
 double NeighborSurfaceConstraintPlugin::lambdaRetriever(const CellG *cell1, const CellG *cell2) {
 
