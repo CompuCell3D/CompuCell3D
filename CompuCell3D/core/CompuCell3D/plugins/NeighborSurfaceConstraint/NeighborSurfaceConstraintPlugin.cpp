@@ -1,5 +1,7 @@
 
-#include <CompuCell3D/CC3D.h>        
+#include <CompuCell3D/CC3D.h>
+#include <iostream>
+#include <vector>
 using namespace CompuCell3D;
 
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
@@ -61,7 +63,8 @@ void NeighborSurfaceConstraintPlugin::extraInit(Simulator *simulator){
 // neighbor.
 // I believe this will do it
 std::pair<double,double> NeighborSurfaceConstraintPlugin::getNewOldSurfaceDiffs(
-							const Point3D &pt, const CellG *newCell,const CellG *oldCell){
+							const Point3D &pt, const CellG *newCell,
+							const CellG *oldCell){
 
 
 	CellG *nCell;
@@ -75,14 +78,61 @@ std::pair<double,double> NeighborSurfaceConstraintPlugin::getNewOldSurfaceDiffs(
       continue;
       }
       nCell = cellFieldG->get(neighbor.pt);
-      if (newCell == nCell) newDiff-=lmf.surfaceMF;
-
-      if (oldCell == nCell) oldDiff+=lmf.surfaceMF;
+      if (newCell == nCell){
+    	  newDiff-=lmf.surfaceMF;
+    	  oldDiff-=lmf.surfaceMF;
+      }
+      //else if (oldCell == nCell) newDiff+=lmf.surfaceMF;
+      if (oldCell == nCell){
+    	  oldDiff+=lmf.surfaceMF;
+    	  newDiff+=lmf.surfaceMF;
+      }
+      //else if (newCell == nCell) oldDiff-=lmf.surfaceMF;
 
    }
 	return make_pair(newDiff,oldDiff);
 }
 
+
+
+
+
+std::vector<double> NeighborSurfaceConstraintPlugin::getNewOldOtherSurfaceDiffs(
+									const Point3D &pt,
+									const CellG *newCell,
+									const CellG *oldCell,
+									const CellG *otherCell){
+	CellG *nCell;
+	double oldDiff = 0.;
+	double newDiff = 0.;
+	double otherDiff = 0.;
+	Neighbor neighbor;
+	for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
+	      neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
+	      if(!neighbor.distance){
+	      //if distance is 0 then the neighbor returned is invalid
+	      continue;
+	      }
+	      nCell = cellFieldG->get(neighbor.pt);
+	      if (newCell == nCell){
+	          	  newDiff-=lmf.surfaceMF;
+	          	  oldDiff-=lmf.surfaceMF;
+	            }
+
+		  if (oldCell == nCell){
+	          	  oldDiff+=lmf.surfaceMF;
+	          	  newDiff+=lmf.surfaceMF;
+		  }
+	      if (otherCell == nCell) otherDiff = +lmf.surfaceMF;
+	}
+
+	std::vector<double> newOldOtherDiffs;
+	newOldOtherDiffs.push_back(newDiff);
+	newOldOtherDiffs.push_back(oldDiff);
+	newOldOtherDiffs.push_back(otherDiff);
+
+	return newOldOtherDiffs;
+}
 
 
 //energy difference function
@@ -123,34 +173,76 @@ double NeighborSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,
     Point3D n;
 
     CellG *nCell=0;
-    WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *)potts->getCellFieldG();
+    WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *)potts->
+    																getCellFieldG();
     Neighbor neighbor;
+    NeighborTrackerPlugin *neighborTrackerPlugin=
+    		(NeighborTrackerPlugin *)Simulator::pluginManager.get("NeighborTracker");
+    BasicClassAccessor<NeighborTracker> *neighborTrackerAccessorPtr =
+    							neighborTrackerPlugin->getNeighborTrackerAccessorPtr();
+
+
+
+
+
+// i believe that in other to get the common surface it needs to iterate over
+    // neighbors just like in python. so the if for the energy will have to check
+    //if nCell is the current neighbor of iteration
 
     if (oldCell == newCell) return 0;
 
     pair<double,double> newOldDiffs=getNewOldSurfaceDiffs(pt,newCell,oldCell);
 
-    for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
+    for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){//loop on pixels
+    	// the loop on cell neighbors will go here. Maybe?
+    	//no need for cell neighbor loop? oh, yeah, it's needed for the area...
+    	//make the loop before the ifs, call a function that returns a vector of common surface
+    	//area. I think this will make it easier to read and be faster.
+    	//maybe even have the loop in the function.
     	neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
     	if(!neighbor.distance){
     		//if distance is 0 then the neighbor returned is invalid
     		continue;
     	}
     	nCell = fieldG->get(neighbor.pt);
-    	if (nCell!=oldCell){
-    		energy = 0; //place holder
-    		// energy += energyChange( lambdaRetriever(nCell,oldCell),
-    		//					targetFaceRetriever(nCell,oldCell),
-    		//                  surface(nCell,oldCell)*scaleSurface,
-    		//                  newOldDiffs.second*scaleSurface)
+    	if (nCell!=oldCell && nCell!=newCell){
+    		std::vector<double> newOldOtherDiffs = getNewOldOtherSurfaceDiffs(
+    														pt,
+    														newCell,
+															oldCell,
+															nCell);
+    		double newCellDiff = newOldOtherDiffs[0];
+    		double oldCellDiff = newOldOtherDiffs[1];
+    		double otherCellDiff = newOldOtherDiffs[2];
+    		energy += 0;//place holder
+    		// there will be two additions to energy here. one for nCell and old and
+    		//another for nCell and new
     	}
-    	if(nCell!=newCell){
-    		energy = 0; //place holder
-    		// energy += energyChange( lambdaRetriever(nCell,oldCell),
-    		//					targetFaceRetriever(nCell,oldCell),
-			//                  surface(nCell,oldCell)*scaleSurface,
-			//                  newOldDiffs.first*scaleSurface)
+    	//for the cases were the pixel being changed will change the area with a cell
+    	// that is neither new nor old cell I believe that there needs to an if above
+    	//the following
+    	else{
+    		//the if here may be redundant, but it is future proof for when/if
+    		//we decide to make the energies asymmetrical
+    		if (nCell!=oldCell){
+
+
+    		    		// of passing cells
+    		    		energy += 0; //place holder
+    		    		// energy += energyChange( lambdaRetriever(nCell,oldCell),
+    		    		//					targetFaceRetriever(nCell,oldCell),
+    		    		//                  surface(nCell,oldCell)*scaleSurface,
+    		    		//                  newOldDiffs.second*scaleSurface) ;
+			}
+			if(nCell!=newCell){
+    		    		energy += 0; //place holder
+    		    		// energy += energyChange( lambdaRetriever(nCell,newCell),
+    		    		//					targetFaceRetriever(nCell,newCell),
+    					//                  surface(nCell,newCell)*scaleSurface,
+    					//                  newOldDiffs.first*scaleSurface) ;
+			}
     	}
+
     }
     return energy;    
 }            

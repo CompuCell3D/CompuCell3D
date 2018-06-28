@@ -3,9 +3,12 @@
 #define NEIGHBORSURFACECONSTRAINTPLUGIN_H
 
 #include <CompuCell3D/CC3D.h>
-
+#include <iostream>
+#include <vector>
 
 #include "NeighborSurfaceConstraintDLLSpecifier.h"
+
+
 
 class CC3DXMLElement;
 
@@ -79,7 +82,14 @@ namespace CompuCell3D {
 		double changeEnergyByCellId(const Point3D &pt,
 									const CellG *newCell,const CellG *oldCell);
 */
-		std::pair<double,double> getNewOldSurfaceDiffs(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
+		std::pair<double,double> getNewOldSurfaceDiffs(const Point3D &pt,
+														const CellG *newCell,
+														const CellG *oldCell);
+
+		triplet<double,double,double> getNewOldOtherSurfaceDiffs(const Point3D &pt,
+																const CellG *newCell,
+																const CellG *oldCell,
+																const CellG *otherCell);
 
 		double energyChange(double lambda, double targetSurface,double surface,  double diff);
 
