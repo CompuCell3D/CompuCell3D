@@ -2,6 +2,7 @@
 #include <CompuCell3D/CC3D.h>
 #include <iostream>
 #include <vector>
+#include <string>
 using namespace CompuCell3D;
 
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
@@ -47,15 +48,19 @@ void NeighborSurfaceConstraintPlugin::init(Simulator *simulator,
 void NeighborSurfaceConstraintPlugin::extraInit(Simulator *simulator){
     
 }
-// energy will be defined on the types of cells. So something like the contact energy will be needed -> this will be more complicated, done later
+// energy will be defined on the types of cells.
+//So something like the contact energy will be needed -> this will be more complicated,
+//done later
 // need to get neighbor data (Area)
 // on neighbor stick there is some code that may be relevant
 /*
- * Neighbor neighbor;   //Used by NeighborFinder to hold the offset to a neighbor Point3D and it's distance.
+ * Neighbor neighbor;   //Used by NeighborFinder to hold the offset to a neighbor
+ * 						//Point3D and it's distance.
  * std::set<NeighborSurfaceData> * neighborData;
  * std::set<NeighborSurfaceData >::iterator sitr;
  *
- * neighborData = &(neighborTrackerAccessorPtr->get(oldCell->extraAttribPtr)->cellNeighbors); // actually gets the data
+ * neighborData = &(neighborTrackerAccessorPtr->get(oldCell->extraAttribPtr)->cellNeighbors);
+ * // actually gets the data
  */
 
 
@@ -134,6 +139,63 @@ std::vector<double> NeighborSurfaceConstraintPlugin::getNewOldOtherSurfaceDiffs(
 	return newOldOtherDiffs;
 }
 
+std::vector<double> NeighborSurfaceConstraintPlugin::getCommonSurfaceArea(
+														const CellG *newCell,
+														const CellG *oldCell,
+														const CellG *otherCell){
+	CellG *nCell;
+	double newOldCommon = 0.;
+	double newOtherCommon = 0.;
+	double oldOtherCommon = 0.;
+
+	NeighborTrackerPlugin *neighborTrackerPlugin=
+	    		(NeighborTrackerPlugin *)Simulator::pluginManager.get("NeighborTracker");
+
+    BasicClassAccessor<NeighborTracker> *neighborTrackerAccessorPtr =
+	    							neighborTrackerPlugin->getNeighborTrackerAccessorPtr();
+
+    //this part will get the new-old area and the new-other, but not old-other. Second loop
+    //for that
+    set<NeighborSurfaceData> & nsdSet = neighborTrackerAccessorPtr->get(
+    												newCell->extraAttribPtr)->cellNeighbors;
+    set<NeighborSurfaceData>::iterator neighborData;
+
+    for( neighborData = nsdSet.begin() ; neighborData != nsdSet.end() ; ++neighborData){
+    	//get the neighbor cell, see if it is new cell or other cell
+    	//if it is either take the value.
+    	// is neighborData actually a CellG obj? if so the if to check old or other is easy enough
+    	//the neighborAddress is a CellG
+    	nCell = neighborData->neighborAddress;
+    	if (nCell == oldCell){
+    		newOldCommon = neighborData->commonSurfaceArea; //should already be laticce proportional
+    	}
+    	else if(nCell == otherCell){
+    		newOtherCommon = neighborData->commonSurfaceArea;
+    	}
+    }
+
+    //this part will get the  old-other.
+	set<NeighborSurfaceData> & osdSet = neighborTrackerAccessorPtr->get(
+        												oldCell->extraAttribPtr)->cellNeighbors;
+	set<NeighborSurfaceData>::iterator neighborData;
+
+	for( neighborData = nsdSet.begin() ; neighborData != nsdSet.end() ; ++neighborData){
+		nCell = neighborData->neighborAddress;
+		if(nCell == otherCell){
+			oldOtherCommon = neighborData->commonSurfaceArea;
+		}
+	}
+	std::vector<double> newOldOtherCommonS;
+	newOldOtherCommonS.push_back(newOldCommon);
+	newOldOtherCommonS.push_back(newOtherCommon);
+	newOldOtherCommonS.push_back(oldOtherCommon);
+
+	return newOldOtherCommonS;
+
+
+
+}
+
 
 //energy difference function
 double NeighborSurfaceConstraintPlugin::energyChange(double lambda, double targetSurface,
@@ -176,10 +238,7 @@ double NeighborSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,
     WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *)potts->
     																getCellFieldG();
     Neighbor neighbor;
-    NeighborTrackerPlugin *neighborTrackerPlugin=
-    		(NeighborTrackerPlugin *)Simulator::pluginManager.get("NeighborTracker");
-    BasicClassAccessor<NeighborTracker> *neighborTrackerAccessorPtr =
-    							neighborTrackerPlugin->getNeighborTrackerAccessorPtr();
+
 
 
 
@@ -194,17 +253,23 @@ double NeighborSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,
     pair<double,double> newOldDiffs=getNewOldSurfaceDiffs(pt,newCell,oldCell);
 
     for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){//loop on pixels
-    	// the loop on cell neighbors will go here. Maybe?
-    	//no need for cell neighbor loop? oh, yeah, it's needed for the area...
-    	//make the loop before the ifs, call a function that returns a vector of common surface
-    	//area. I think this will make it easier to read and be faster.
-    	//maybe even have the loop in the function.
+
     	neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
     	if(!neighbor.distance){
     		//if distance is 0 then the neighbor returned is invalid
     		continue;
     	}
     	nCell = fieldG->get(neighbor.pt);
+    	// the loop on cell neighbors will go here. Maybe?
+		//no need for cell neighbor loop? oh, yeah, it's needed for the area...
+		//make the loop before the ifs, call a function that returns a vector of common surface
+		//area. I think this will make it easier to read and be faster.
+		//maybe even have the loop in the function. Went with this
+
+    	std::vector<double> commonSANewOldOther = getCommonSurfaceArea(newCell, oldCell, nCell)
+
+
+
     	if (nCell!=oldCell && nCell!=newCell){
     		std::vector<double> newOldOtherDiffs = getNewOldOtherSurfaceDiffs(
     														pt,
@@ -292,7 +357,8 @@ void NeighborSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _ful
     //PARSE XML IN THIS FUNCTION
     //For more information on XML parser function please see CC3D code or lookup XML utils API
     automaton = potts->getAutomaton();
-    ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
+    ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST "
+    				"PLUGIN THAT YOU SET", automaton)
    set<unsigned char> cellTypesSet;
     lambdaFaces.clear();
     targetFaces.clear();
@@ -394,7 +460,8 @@ void NeighborSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _ful
         cerr<<"param="<<param<<endl;
         if(exampleXMLElem->findAttribute("Type")){
             std::string attrib=exampleXMLElem->getAttribute("Type");
-            // double attrib=exampleXMLElem->getAttributeAsDouble("Type"); //in case attribute is of type double
+            // double attrib=exampleXMLElem->getAttributeAsDouble("Type");
+             * //in case attribute is of type double
             cerr<<"attrib="<<attrib<<endl;
         }
     }

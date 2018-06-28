@@ -86,10 +86,14 @@ namespace CompuCell3D {
 														const CellG *newCell,
 														const CellG *oldCell);
 
-		triplet<double,double,double> getNewOldOtherSurfaceDiffs(const Point3D &pt,
-																const CellG *newCell,
-																const CellG *oldCell,
-																const CellG *otherCell);
+		std::vector<double> getNewOldOtherSurfaceDiffs(const Point3D &pt,
+														const CellG *newCell,
+														const CellG *oldCell,
+														const CellG *otherCell);
+
+		std::vector<double> getCommonSurfaceArea(const CellG *newCell,
+												 const CellG *oldCell,
+												 const CellG *otherCell);
 
 		double energyChange(double lambda, double targetSurface,double surface,  double diff);
 
