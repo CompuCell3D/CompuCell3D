@@ -108,9 +108,9 @@ std::vector<double> NeighborSurfaceConstraintPlugin::getNewOldOtherSurfaceDiffs(
 									const CellG *oldCell,
 									const CellG *otherCell){
 	CellG *nCell;
-	double oldDiff = 0.;
-	double newDiff = 0.;
-	double otherDiff = 0.;
+	double newOldDiff = 0.;
+	double newOtherDiff = 0.;
+	double oldOtherDiff = 0.;
 	Neighbor neighbor;
 	for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
 	      neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
@@ -119,22 +119,25 @@ std::vector<double> NeighborSurfaceConstraintPlugin::getNewOldOtherSurfaceDiffs(
 	      continue;
 	      }
 	      nCell = cellFieldG->get(neighbor.pt);
-	      if (newCell == nCell){
-	          	  newDiff-=lmf.surfaceMF;
-	          	  oldDiff-=lmf.surfaceMF;
-	            }
 
-		  if (oldCell == nCell){
-	          	  oldDiff+=lmf.surfaceMF;
-	          	  newDiff+=lmf.surfaceMF;
+	      if (nCell == newCell){
+	    	  newOldDiff -= lmf.surfaceMF;
+	      }
+
+	      if (nCell == oldCell){
+			  newOldDiff += lmf.surfaceMF;
 		  }
-	      if (otherCell == nCell) otherDiff = +lmf.surfaceMF;
+	      if (nCell == otherCell){
+	    	  newOtherDiff += lmf.surfaceMF;
+	    	  oldOtherDiff -= lmf.surfaceMF;
+	      }
+
 	}
 
 	std::vector<double> newOldOtherDiffs;
-	newOldOtherDiffs.push_back(newDiff);
-	newOldOtherDiffs.push_back(oldDiff);
-	newOldOtherDiffs.push_back(otherDiff);
+	newOldOtherDiffs.push_back(newOldDiff);
+	newOldOtherDiffs.push_back(newOtherDiff);
+	newOldOtherDiffs.push_back(oldOtherDiff);
 
 	return newOldOtherDiffs;
 }
@@ -279,57 +282,42 @@ double NeighborSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,
     														newCell,
 															oldCell,
 															nCell);
-    		double newCellDiff = newOldOtherDiffs[0];
-    		double oldCellDiff = newOldOtherDiffs[1];
-    		double otherCellDiff = newOldOtherDiffs[2];
-    		energy += 0;//place holder
+    		double newOldCellDiff = newOldOtherDiffs[0];
+    		double newOtherDiff = newOldOtherDiffs[1];
+    		double oldOtherDiff = newOldOtherDiffs[2];
+
+    		//new and old
+    		energy += energyChange( lambdaRetriever(oldCell,newCell),
+									targetFaceRetriever(oldCell,newCell),
+									newOldCommon,
+									newOldCellDiff*scaleSurface);
     		// new and nCell
-    			// new cell surface difference
-    			energy += energyChange( lambdaRetriever(nCell,newCell),
-    								targetFaceRetriever(nCell,newCell),
-									newOtherCommon,
-									newCellDiff*scaleSurface);
-    			// other cell surface difference
-    			energy += energyChange( lambdaRetriever(nCell,newCell),
-									targetFaceRetriever(nCell,newCell),
-									newOtherCommon,
-									otherCellDiff*scaleSurface);
+			energy += energyChange( lambdaRetriever(nCell,newCell),
+								targetFaceRetriever(nCell,newCell),
+								newOtherCommon,
+								newOtherDiff*scaleSurface);
 			// old and nCell
-				// old cell surface difference
-				energy += energyChange( lambdaRetriever(nCell,oldCell),
-										targetFaceRetriever(nCell,oldCell),
-										oldOtherCommon,
-										oldCellDiff*scaleSurface);
-				// other cell surface difference
-				energy += energyChange( lambdaRetriever(nCell,oldCell),
-										targetFaceRetriever(nCell,oldCell),
-										oldOtherCommon,
-										otherCellDiff*scaleSurface);
-    		// there will be two additions to energy here. one for nCell and old and
-    		//another for nCell and new
+			energy += energyChange( lambdaRetriever(nCell,oldCell),
+									targetFaceRetriever(nCell,oldCell),
+									oldOtherCommon,
+									oldOtherDiff*scaleSurface);
     	}
-    	//for the cases were the pixel being changed will change the area with a cell
-    	// that is neither new nor old cell I believe that there needs to an if above
-    	//the following
     	else{
     		//the if here may be redundant, but it is future proof for when/if
     		//we decide to make the energies asymmetrical
+    		//I'm not sure if this calculation is correct
     		if (nCell!=oldCell){
-
-
-    		    		// of passing cells
     		    		energy += 0; //place holder
-    		    		// energy += energyChange( lambdaRetriever(nCell,oldCell),
-    		    		//					targetFaceRetriever(nCell,oldCell),
-    		    		//                  surface(nCell,oldCell)*scaleSurface,
-    		    		//                  newOldDiffs.second*scaleSurface) ;
+    		    		energy += energyChange( lambdaRetriever(nCell,oldCell),
+    		    							targetFaceRetriever(nCell,oldCell),
+											newOldCommon,
+											newOldDiffs.second*scaleSurface) ;
 			}
 			if(nCell!=newCell){
-    		    		energy += 0; //place holder
-    		    		// energy += energyChange( lambdaRetriever(nCell,newCell),
-    		    		//					targetFaceRetriever(nCell,newCell),
-    					//                  surface(nCell,newCell)*scaleSurface,
-    					//                  newOldDiffs.first*scaleSurface) ;
+    		    		energy += energyChange( lambdaRetriever(nCell,newCell),
+    		    							targetFaceRetriever(nCell,newCell),
+											newOldCommon,
+											newOldDiffs.first*scaleSurface) ;
 			}
     	}
 
