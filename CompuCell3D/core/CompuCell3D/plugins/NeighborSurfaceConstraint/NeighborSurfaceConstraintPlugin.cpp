@@ -167,7 +167,8 @@ std::vector<double> NeighborSurfaceConstraintPlugin::getCommonSurfaceArea(
     	//the neighborAddress is a CellG
     	nCell = neighborData->neighborAddress;
     	if (nCell == oldCell){
-    		newOldCommon = neighborData->commonSurfaceArea; //should already be laticce proportional
+    		newOldCommon = neighborData->commonSurfaceArea; //not sure if lattice proportional or not
+    		// i believe it is
     	}
     	else if(nCell == otherCell){
     		newOtherCommon = neighborData->commonSurfaceArea;
@@ -267,7 +268,9 @@ double NeighborSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,
 		//maybe even have the loop in the function. Went with this
 
     	std::vector<double> commonSANewOldOther = getCommonSurfaceArea(newCell, oldCell, nCell)
-
+		double newOldCommon = commonSANewOldOther[0];
+    	double newOtherCommon = commonSANewOldOther[1];
+    	double oldOtherCommon = commonSANewOldOther[2];
 
 
     	if (nCell!=oldCell && nCell!=newCell){
@@ -280,6 +283,28 @@ double NeighborSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,
     		double oldCellDiff = newOldOtherDiffs[1];
     		double otherCellDiff = newOldOtherDiffs[2];
     		energy += 0;//place holder
+    		// new and nCell
+    			// new cell surface difference
+    			energy += energyChange( lambdaRetriever(nCell,newCell),
+    								targetFaceRetriever(nCell,newCell),
+									newOtherCommon,
+									newCellDiff*scaleSurface);
+    			// other cell surface difference
+    			energy += energyChange( lambdaRetriever(nCell,newCell),
+									targetFaceRetriever(nCell,newCell),
+									newOtherCommon,
+									otherCellDiff*scaleSurface);
+			// old and nCell
+				// old cell surface difference
+				energy += energyChange( lambdaRetriever(nCell,oldCell),
+										targetFaceRetriever(nCell,oldCell),
+										oldOtherCommon,
+										oldCellDiff*scaleSurface);
+				// other cell surface difference
+				energy += energyChange( lambdaRetriever(nCell,oldCell),
+										targetFaceRetriever(nCell,oldCell),
+										oldOtherCommon,
+										otherCellDiff*scaleSurface);
     		// there will be two additions to energy here. one for nCell and old and
     		//another for nCell and new
     	}
