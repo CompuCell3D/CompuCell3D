@@ -4,7 +4,7 @@
 
 #include <CompuCell3D/CC3D.h>
 #include <iostream>
-#include <vector>
+
 
 #include "NeighborSurfaceConstraintDLLSpecifier.h"
 
@@ -91,7 +91,7 @@ namespace CompuCell3D {
 														const CellG *oldCell,
 														const CellG *otherCell);
 
-		std::vector<double> getCommonSurfaceArea(const CellG *newCell,
+		vector<double> getCommonSurfaceArea(const CellG *newCell,
 												 const CellG *oldCell,
 												 const CellG *otherCell);
 

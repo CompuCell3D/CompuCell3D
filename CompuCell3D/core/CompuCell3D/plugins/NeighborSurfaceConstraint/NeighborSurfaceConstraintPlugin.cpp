@@ -1,8 +1,8 @@
 
 #include <CompuCell3D/CC3D.h>
 #include <iostream>
-#include <vector>
-#include <string>
+
+
 using namespace CompuCell3D;
 
 #include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
@@ -102,7 +102,7 @@ std::pair<double,double> NeighborSurfaceConstraintPlugin::getNewOldSurfaceDiffs(
 
 
 
-std::vector<double> NeighborSurfaceConstraintPlugin::getNewOldOtherSurfaceDiffs(
+vector<double> NeighborSurfaceConstraintPlugin::getNewOldOtherSurfaceDiffs(
 									const Point3D &pt,
 									const CellG *newCell,
 									const CellG *oldCell,
@@ -134,7 +134,7 @@ std::vector<double> NeighborSurfaceConstraintPlugin::getNewOldOtherSurfaceDiffs(
 
 	}
 
-	std::vector<double> newOldOtherDiffs;
+	vector<double> newOldOtherDiffs;
 	newOldOtherDiffs.push_back(newOldDiff);
 	newOldOtherDiffs.push_back(newOtherDiff);
 	newOldOtherDiffs.push_back(oldOtherDiff);
@@ -142,7 +142,7 @@ std::vector<double> NeighborSurfaceConstraintPlugin::getNewOldOtherSurfaceDiffs(
 	return newOldOtherDiffs;
 }
 
-std::vector<double> NeighborSurfaceConstraintPlugin::getCommonSurfaceArea(
+vector<double> NeighborSurfaceConstraintPlugin::getCommonSurfaceArea(
 														const CellG *newCell,
 														const CellG *oldCell,
 														const CellG *otherCell){
@@ -189,7 +189,7 @@ std::vector<double> NeighborSurfaceConstraintPlugin::getCommonSurfaceArea(
 			oldOtherCommon = neighborData->commonSurfaceArea;
 		}
 	}
-	std::vector<double> newOldOtherCommonS;
+	vector<double> newOldOtherCommonS;
 	newOldOtherCommonS.push_back(newOldCommon);
 	newOldOtherCommonS.push_back(newOtherCommon);
 	newOldOtherCommonS.push_back(oldOtherCommon);
@@ -277,7 +277,7 @@ double NeighborSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,
 
 
     	if (nCell!=oldCell && nCell!=newCell){
-    		std::vector<double> newOldOtherDiffs = getNewOldOtherSurfaceDiffs(
+    		vector<double> newOldOtherDiffs = getNewOldOtherSurfaceDiffs(
     														pt,
     														newCell,
 															oldCell,
