@@ -68,8 +68,9 @@ void NeighborSurfaceConstraintPlugin::extraInit(Simulator *simulator){
 // neighbor.
 // I believe this will do it
 std::pair<double,double> NeighborSurfaceConstraintPlugin::getNewOldSurfaceDiffs(
-							const Point3D &pt, const CellG *newCell,
-							const CellG *oldCell){
+							 							const Point3D &pt,
+														const CellG *newCell,
+														const CellG *oldCell){
 
 
 	CellG *nCell;
@@ -131,9 +132,7 @@ vector<double> NeighborSurfaceConstraintPlugin::getNewOldOtherSurfaceDiffs(
 	    	  newOtherDiff += lmf.surfaceMF;
 	    	  oldOtherDiff -= lmf.surfaceMF;
 	      }
-
 	}
-
 	vector<double> newOldOtherDiffs;
 	newOldOtherDiffs.push_back(newOldDiff);
 	newOldOtherDiffs.push_back(newOtherDiff);
@@ -179,9 +178,6 @@ vector<double> NeighborSurfaceConstraintPlugin::getCommonSurfaceArea(
     }
 
     //this part will get the  old-other.
-	set<NeighborSurfaceData> & osdSet = neighborTrackerAccessorPtr->get(
-        												oldCell->extraAttribPtr)->cellNeighbors;
-	set<NeighborSurfaceData>::iterator neighborData;
 
 	for( neighborData = nsdSet.begin() ; neighborData != nsdSet.end() ; ++neighborData){
 		nCell = neighborData->neighborAddress;
@@ -270,7 +266,7 @@ double NeighborSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,
 		//area. I think this will make it easier to read and be faster.
 		//maybe even have the loop in the function. Went with this
 
-    	std::vector<double> commonSANewOldOther = getCommonSurfaceArea(newCell, oldCell, nCell)
+    	std::vector<double> commonSANewOldOther = getCommonSurfaceArea(newCell, oldCell, nCell);
 		double newOldCommon = commonSANewOldOther[0];
     	double newOtherCommon = commonSANewOldOther[1];
     	double oldOtherCommon = commonSANewOldOther[2];
@@ -340,9 +336,10 @@ double NeighborSurfaceConstraintPlugin::lambdaRetriever(const CellG *cell1, cons
 }
 
 
-void NeighborSurfaceConstraintPlugin::setFaceLambda(const string typeName1,
-				     const string typeName2,
-				     const double lambda) {
+void NeighborSurfaceConstraintPlugin::setFaceLambda(
+						const std::string typeName1,
+						const std::string typeName2,
+						const double lambda){
 
   char type1 = automaton->getTypeId(typeName1);
   char type2 = automaton->getTypeId(typeName2);
@@ -350,7 +347,7 @@ void NeighborSurfaceConstraintPlugin::setFaceLambda(const string typeName1,
   int index = getIndex(type1, type2);
 
   lambdaFaces_t::iterator it = lambdaFaces.find(index);
-  ASSERT_OR_THROW(string("Contact energy for ") + typeName1 + " " + typeName2 +
+  ASSERT_OR_THROW(string("Face constraint for ") + typeName1 + " " + typeName2 +
 		  " already set!", it == lambdaFaces.end());
 
   lambdaFaces[index] = lambda;
@@ -365,13 +362,16 @@ int NeighborSurfaceConstraintPlugin::getIndex(const int type1, const int type2) 
 
 
 
-
+/*
+ *
+ *
+ */
+/*
 void NeighborSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
     //PARSE XML IN THIS FUNCTION
     //For more information on XML parser function please see CC3D code or lookup XML utils API
     automaton = potts->getAutomaton();
-    ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST "
-    				"PLUGIN THAT YOU SET", automaton)
+
    set<unsigned char> cellTypesSet;
     lambdaFaces.clear();
     targetFaces.clear();
@@ -467,26 +467,142 @@ void NeighborSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _ful
 
 
 
-    /*
-    if (exampleXMLElem){
-        double param=exampleXMLElem->getDouble();
-        cerr<<"param="<<param<<endl;
-        if(exampleXMLElem->findAttribute("Type")){
-            std::string attrib=exampleXMLElem->getAttribute("Type");
-            // double attrib=exampleXMLElem->getAttributeAsDouble("Type");
-             * //in case attribute is of type double
-            cerr<<"attrib="<<attrib<<endl;
-        }
-    }
-    */
+
     //check if there is a ScaleSurface parameter  in XML
 	if(_xmlData->findElement("ScaleSurface")){
 		scaleSurface=_xmlData->getFirstElement("ScaleSurface")->getDouble();
 	}
-    //boundaryStrategy has information aobut pixel neighbors 
+    //boundaryStrategy has information aobut pixel neighbors
     //boundaryStrategy=BoundaryStrategy::getInstance();
 
 }
+*/
+
+
+
+
+void NeighborSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
+
+	if(potts->getDisplayUnitsFlag()){
+		Unit targetFaceUnit=powerUnit(potts->getLengthUnit(),2);
+		Unit lambdaFaceUnit=potts->getEnergyUnit()/(targetFaceUnit*targetFaceUnit);
+
+		CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units");
+		if (!unitsElem){ //add Units element
+			unitsElem=_xmlData->attachElement("Units");
+		}
+
+		if(unitsElem->getFirstElement("TargetFaceSurfaceUnit")){
+			unitsElem->getFirstElement("TargetFaceSurfaceUnit")->updateElementValue(
+					targetFaceUnit.toString());
+		}else{
+			CC3DXMLElement * faceUnitElem = unitsElem->attachElement(
+					"TargetFaceSurfaceUnit",targetSurfaceUnit.toString());
+		}
+
+		if(unitsElem->getFirstElement("LambdaSurfaceFaceUnit")){
+			unitsElem->getFirstElement("LambdaSurfaceFaceUnit")->updateElementValue(
+					lambdaFaceUnit.toString());
+		}else{
+			CC3DXMLElement * lambdaFaceUnitElem = unitsElem->attachElement(
+					"LambdaFaceSurfaceUnit",lambdaFaceUnit.toString());
+		}
+
+
+	}
+
+
+	if (_xmlData->findElement("FaceEnergyExpression")){
+		unsigned int maxNumberOfWorkNodes=pUtils->getMaxNumberOfWorkNodesPotts();
+		eed.allocateSize(maxNumberOfWorkNodes);
+		vector<string> variableNames;
+		variableNames.push_back("FaceSurface");
+		variableNames.push_back("Face");
+		variableNames.push_back("Ftarget");
+
+		eed.addVariables(variableNames.begin(),variableNames.end());
+		eed.update(_xmlData->getFirstElement("FaceEnergyExpression"));
+		energyExpressionDefined=true;
+	}else{
+		energyExpressionDefined=false;
+	}
+
+	//if there are no child elements for this plugin it means will use changeEnergyByCellId
+	if(!_xmlData->findElement("FaceEnergyParameters") && !_xmlData->findElement(
+			"TargetFace")){
+		functionType=BYCELLID; //by id not yet implemented. place holder
+	}else{
+		if(_xmlData->findElement("FaceEnergyParameters"))
+			functionType=BYCELLTYPE;
+		else if (_xmlData->findElement("TargetFace"))
+			functionType=BYCELLTYPE;
+		else //in case users put garbage xml use changeEnergyByCellId
+			functionType=BYCELLID;
+	}
+	Automaton *automaton=potts->getAutomaton();
+	cerr<<"automaton="<<automaton<<endl;
+
+	switch(functionType){
+		case BYCELLID:
+			//set fcn ptr
+			changeEnergyFcnPtr=&SurfacePlugin::changeEnergyByCellId;
+			break;
+
+		case BYCELLTYPE:
+			{
+				faceEnergyParamVector.clear();
+				vector<int> typeIdVec;
+				vector<FaceEnergyParam> faceEnergyParamVectorTmp;
+
+				CC3DXMLElementList energyVec=_xmlData->getElements("FaceEnergyParameters");
+
+				for (int i = 0 ; i<energyVec.size(); ++i){
+					FaceEnergyParam facParam;
+
+					facParam.targetSurface=energyVec[i]->getAttributeAsDouble("TargetSurface");
+					facParam.lambdaSurface=energyVec[i]->getAttributeAsDouble("LambdaSurface");
+					facParam.typeName=energyVec[i]->getAttribute("CellType");
+					typeIdVec.push_back(automaton->getTypeId(surParam.typeName));
+
+					surfaceEnergyParamVectorTmp.push_back(surParam);
+				}
+				vector<int>::iterator pos=max_element(typeIdVec.begin(),typeIdVec.end());
+				int maxTypeId=*pos;
+				surfaceEnergyParamVector.assign(maxTypeId+1,SurfaceEnergyParam());
+				for (int i = 0 ; i < surfaceEnergyParamVectorTmp.size() ; ++i){
+					surfaceEnergyParamVector[typeIdVec[i]]=surfaceEnergyParamVectorTmp[i];
+				}
+
+				//set fcn ptr
+				changeEnergyFcnPtr=&SurfacePlugin::changeEnergyByCellType;
+			}
+			break;
+
+		case GLOBAL:
+			//using Global Surface Energy Parameters
+			targetSurface=_xmlData->getFirstElement("TargetSurface")->getDouble();
+			lambdaSurface=_xmlData->getFirstElement("LambdaSurface")->getDouble();
+
+			//set fcn ptr
+			changeEnergyFcnPtr=&SurfacePlugin::changeEnergyGlobal;
+			break;
+
+		default:
+			//set fcn ptr
+			changeEnergyFcnPtr=&SurfacePlugin::changeEnergyByCellId;
+	}
+	//check if there is a ScaleSurface parameter  in XML
+	if(_xmlData->findElement("ScaleSurface")){
+		scaleSurface=_xmlData->getFirstElement("ScaleSurface")->getDouble();
+	}
+
+	boundaryStrategy=BoundaryStrategy::getInstance();
+}
+
+
+
+
+
 
 
 std::string NeighborSurfaceConstraintPlugin::toString(){

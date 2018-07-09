@@ -70,7 +70,7 @@ namespace CompuCell3D {
 		double scaleSurface;
 
 		// for the user defined energy
-		std::vector<NeighborSurfaceEnergyParam> neighborSurfaceEnergyParamVector;
+		//std::vector<NeighborSurfaceEnergyParam> neighborSurfaceEnergyParamVector;
 
 		typedef double (NeighborSurfaceConstraintPlugin::*changeEnergy_t)(const Point3D &pt, const CellG *newCell,const CellG *oldCell);
 
@@ -134,6 +134,5 @@ namespace CompuCell3D {
         int getIndex(const int type1, const int type2) const;
       };
     };
-};
 #endif
         
