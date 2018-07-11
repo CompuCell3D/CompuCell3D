@@ -125,8 +125,14 @@ namespace CompuCell3D {
         virtual std::string toString();
 
         //setFaceLambda
-        void setFaceLambda(const std::string typeName1,
-        			  const std::string typeName2, const double lambda);
+        void setFaceLambda(
+        						const std::string typeName1,
+        						const std::string typeName2,
+        						const double lambda);
+        void setFaceTarget(
+        						const std::string typeName1,
+        						const std::string typeName2,
+        						const double target);
     protected:
         /**
          * @return The index used for ordering lambdas / target faces in the map.

@@ -347,10 +347,27 @@ void NeighborSurfaceConstraintPlugin::setFaceLambda(
   int index = getIndex(type1, type2);
 
   lambdaFaces_t::iterator it = lambdaFaces.find(index);
-  ASSERT_OR_THROW(string("Face constraint for ") + typeName1 + " " + typeName2 +
+  ASSERT_OR_THROW(string("Lambda face constraint for ") + typeName1 + " " + typeName2 +
 		  " already set!", it == lambdaFaces.end());
 
   lambdaFaces[index] = lambda;
+}
+
+void NeighborSurfaceConstraintPlugin::setFaceTarget(
+						const std::string typeName1,
+						const std::string typeName2,
+						const double target){
+
+  char type1 = automaton->getTypeId(typeName1);
+  char type2 = automaton->getTypeId(typeName2);
+
+  int index = getIndex(type1, type2);
+
+  targetFaces_t::iterator it = targetFaces.find(index);
+  ASSERT_OR_THROW(string("Target face constraint for ") + typeName1 + " " + typeName2 +
+		  " already set!", it == targetFaces.end());
+
+  targetFaces[index] = target;
 }
 
 int NeighborSurfaceConstraintPlugin::getIndex(const int type1, const int type2) const {
@@ -362,11 +379,7 @@ int NeighborSurfaceConstraintPlugin::getIndex(const int type1, const int type2) 
 
 
 
-/*
- *
- *
- */
-/*
+
 void NeighborSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
     //PARSE XML IN THIS FUNCTION
     //For more information on XML parser function please see CC3D code or lookup XML utils API
@@ -377,18 +390,16 @@ void NeighborSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _ful
     targetFaces.clear();
 
 
-    CC3DXMLElementList * faceLambdaVec = _xmlData->getElements("LambdaFace");
-    CC3DXMLElementList * faceTargetVec = _xmlData->getElements("TargetFace");
+    CC3DXMLElementList  faceLambdaVec = _xmlData->getElements("LambdaFace");
+    CC3DXMLElementList  faceTargetVec = _xmlData->getElements("TargetFace");
     //I know this will work for stuff defined on the xml. I need to ask maciek about
     //doing it in python
     //This works for a symmetric things
     for (int i = 0 ; i<faceLambdaVec.size(); ++i){
 
-    	setFaceLambda(faceLambdaVec[i]->getAtribute("Type1"),
-    			faceLambdaVec[i]->getAtribute("Type2"), faceLambdaVec[i]->getDouble());
+    	setFaceLambda(faceLambdaVec[i]->getAttribute("Type1"), faceLambdaVec[i]->getAttribute("Type2"),faceLambdaVec[i]->getDouble());
 
-    	setFaceTarget(faceTargetVec[i]->getAtribute("Type1"),
-    			faceTargetVec[i]->getAtribute("Type1"), faceTargetVec[i]->getDouble());
+    	setFaceTarget(faceTargetVec[i]->getAttribute("Type1"),faceTargetVec[i]->getAttribute("Type1"),faceTargetVec[i]->getDouble());
 
 
     	//inserting all the types to the set (duplicate are automatically eliminated)
@@ -476,128 +487,8 @@ void NeighborSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _ful
     //boundaryStrategy=BoundaryStrategy::getInstance();
 
 }
-*/
 
 
-
-
-void NeighborSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
-
-	if(potts->getDisplayUnitsFlag()){
-		Unit targetFaceUnit=powerUnit(potts->getLengthUnit(),2);
-		Unit lambdaFaceUnit=potts->getEnergyUnit()/(targetFaceUnit*targetFaceUnit);
-
-		CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units");
-		if (!unitsElem){ //add Units element
-			unitsElem=_xmlData->attachElement("Units");
-		}
-
-		if(unitsElem->getFirstElement("TargetFaceSurfaceUnit")){
-			unitsElem->getFirstElement("TargetFaceSurfaceUnit")->updateElementValue(
-					targetFaceUnit.toString());
-		}else{
-			CC3DXMLElement * faceUnitElem = unitsElem->attachElement(
-					"TargetFaceSurfaceUnit",targetSurfaceUnit.toString());
-		}
-
-		if(unitsElem->getFirstElement("LambdaSurfaceFaceUnit")){
-			unitsElem->getFirstElement("LambdaSurfaceFaceUnit")->updateElementValue(
-					lambdaFaceUnit.toString());
-		}else{
-			CC3DXMLElement * lambdaFaceUnitElem = unitsElem->attachElement(
-					"LambdaFaceSurfaceUnit",lambdaFaceUnit.toString());
-		}
-
-
-	}
-
-
-	if (_xmlData->findElement("FaceEnergyExpression")){
-		unsigned int maxNumberOfWorkNodes=pUtils->getMaxNumberOfWorkNodesPotts();
-		eed.allocateSize(maxNumberOfWorkNodes);
-		vector<string> variableNames;
-		variableNames.push_back("FaceSurface");
-		variableNames.push_back("Face");
-		variableNames.push_back("Ftarget");
-
-		eed.addVariables(variableNames.begin(),variableNames.end());
-		eed.update(_xmlData->getFirstElement("FaceEnergyExpression"));
-		energyExpressionDefined=true;
-	}else{
-		energyExpressionDefined=false;
-	}
-
-	//if there are no child elements for this plugin it means will use changeEnergyByCellId
-	if(!_xmlData->findElement("FaceEnergyParameters") && !_xmlData->findElement(
-			"TargetFace")){
-		functionType=BYCELLID; //by id not yet implemented. place holder
-	}else{
-		if(_xmlData->findElement("FaceEnergyParameters"))
-			functionType=BYCELLTYPE;
-		else if (_xmlData->findElement("TargetFace"))
-			functionType=BYCELLTYPE;
-		else //in case users put garbage xml use changeEnergyByCellId
-			functionType=BYCELLID;
-	}
-	Automaton *automaton=potts->getAutomaton();
-	cerr<<"automaton="<<automaton<<endl;
-
-	switch(functionType){
-		case BYCELLID:
-			//set fcn ptr
-			changeEnergyFcnPtr=&SurfacePlugin::changeEnergyByCellId;
-			break;
-
-		case BYCELLTYPE:
-			{
-				faceEnergyParamVector.clear();
-				vector<int> typeIdVec;
-				vector<FaceEnergyParam> faceEnergyParamVectorTmp;
-
-				CC3DXMLElementList energyVec=_xmlData->getElements("FaceEnergyParameters");
-
-				for (int i = 0 ; i<energyVec.size(); ++i){
-					FaceEnergyParam facParam;
-
-					facParam.targetSurface=energyVec[i]->getAttributeAsDouble("TargetSurface");
-					facParam.lambdaSurface=energyVec[i]->getAttributeAsDouble("LambdaSurface");
-					facParam.typeName=energyVec[i]->getAttribute("CellType");
-					typeIdVec.push_back(automaton->getTypeId(surParam.typeName));
-
-					surfaceEnergyParamVectorTmp.push_back(surParam);
-				}
-				vector<int>::iterator pos=max_element(typeIdVec.begin(),typeIdVec.end());
-				int maxTypeId=*pos;
-				surfaceEnergyParamVector.assign(maxTypeId+1,SurfaceEnergyParam());
-				for (int i = 0 ; i < surfaceEnergyParamVectorTmp.size() ; ++i){
-					surfaceEnergyParamVector[typeIdVec[i]]=surfaceEnergyParamVectorTmp[i];
-				}
-
-				//set fcn ptr
-				changeEnergyFcnPtr=&SurfacePlugin::changeEnergyByCellType;
-			}
-			break;
-
-		case GLOBAL:
-			//using Global Surface Energy Parameters
-			targetSurface=_xmlData->getFirstElement("TargetSurface")->getDouble();
-			lambdaSurface=_xmlData->getFirstElement("LambdaSurface")->getDouble();
-
-			//set fcn ptr
-			changeEnergyFcnPtr=&SurfacePlugin::changeEnergyGlobal;
-			break;
-
-		default:
-			//set fcn ptr
-			changeEnergyFcnPtr=&SurfacePlugin::changeEnergyByCellId;
-	}
-	//check if there is a ScaleSurface parameter  in XML
-	if(_xmlData->findElement("ScaleSurface")){
-		scaleSurface=_xmlData->getFirstElement("ScaleSurface")->getDouble();
-	}
-
-	boundaryStrategy=BoundaryStrategy::getInstance();
-}
 
 
 
