@@ -626,7 +626,8 @@ class ParameterScanUtils:
             elemName=arg[0]        
             # print 'elemName=',elemName
             # print 'attrDict=',attrDict
-            tmpElement=tmpElement.getFirstElement(arg[0],attrDict) if attrDict is not None else tmpElement.getFirstElement(arg[0])            
+            tmpElement=tmpElement.getFirstElement(arg[0],attrDict) if attrDict is not None else tmpElement.getFirstElement(arg[0])
+            attrDict = None
             # tmpElement=tmpElement.getFirstElement(arg[0],attrDict)
         
         return tmpElement        
