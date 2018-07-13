@@ -31,7 +31,7 @@ class SnippetMenuParser(object):
         line = _line.rstrip()
         for m in _regex.finditer(line):
             tokenGroup = m.groups()
-            print 'menu token Group=',tokenGroup
+            # print 'menu token Group=',tokenGroup
             return tokenGroup[group_idx]
 
         return None
@@ -62,7 +62,7 @@ class SnippetMenuParser(object):
 
             submenuName = self.findToken(line, self.submenuRegex, group_idx=1)
             suggested_indent = self.findToken(line, self.submenuRegex, group_idx=0)
-            print 'suggested_indent=',suggested_indent
+            # print 'suggested_indent=',suggested_indent
             if submenuName is not None:
                 submenuName = submenuName.strip()
 
@@ -70,7 +70,7 @@ class SnippetMenuParser(object):
                     self.currentSuggestedIndent = int(suggested_indent[1:])
 
 
-            print 'submenuName=',submenuName
+            # print 'submenuName=',submenuName
             if submenuName:
                 # writing previous snippet ()
                 self.writeSnippet()
