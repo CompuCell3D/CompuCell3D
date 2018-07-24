@@ -303,7 +303,7 @@ double NeighborSurfaceConstraintPlugin::changeEnergy(const Point3D &pt,
     		//we decide to make the energies asymmetrical
     		//I'm not sure if this calculation is correct
     		if (nCell!=oldCell){
-    		    		energy += 0; //place holder
+
     		    		energy += energyChange( lambdaRetriever(nCell,oldCell),
     		    							targetFaceRetriever(nCell,oldCell),
 											newOldCommon,
@@ -399,7 +399,7 @@ void NeighborSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _ful
 
     	setFaceLambda(faceLambdaVec[i]->getAttribute("Type1"), faceLambdaVec[i]->getAttribute("Type2"),faceLambdaVec[i]->getDouble());
 
-    	setFaceTarget(faceTargetVec[i]->getAttribute("Type1"),faceTargetVec[i]->getAttribute("Type1"),faceTargetVec[i]->getDouble());
+    	setFaceTarget(faceTargetVec[i]->getAttribute("Type1"),faceTargetVec[i]->getAttribute("Type2"),faceTargetVec[i]->getDouble());
 
 
     	//inserting all the types to the set (duplicate are automatically eliminated)
@@ -412,7 +412,7 @@ void NeighborSurfaceConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _ful
     //Now that we know all the types used in the simulation we will find size of
     //the lambdaFaceArray
     vector<unsigned char> cellTypesVector(cellTypesSet.begin(),
-    		cellTypesSet.end());//coping set to the vector
+    									  cellTypesSet.end());//coping set to the vector
 
     int size= * max_element(cellTypesVector.begin(),cellTypesVector.end());
     size+=1;//if max element is e.g. 5 then size has to be 6 for an
