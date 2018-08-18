@@ -403,7 +403,7 @@ class SimulationThread(QtCore.QThread):
         self.emitErrorOccuredDetailed(_errorType, _file, _line, _col, _traceback_message)
 
     def handleErrorFormatted(self, _errorMessage):
-        print 'DUPA handleErrorFormatted'
+        print 'FormattingError: fcn: handleErrorFormatted'
         self.emitErrorFormatted(_errorMessage)
 
     def runUserPythonScript(self, _scriptFileName, _globals, _locals):

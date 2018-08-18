@@ -933,7 +933,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             with open(os.path.join(self.cml_args.testOutputDir, 'error_output.txt'), 'w') as fout:
                 fout.write('%s' % _errorMessage)
 
-        print 'DUPA GOT FORMATTED ERROR'
+        print 'GOT FORMATTING ERROR'
         return
 
     def processIncommingSimulation(self, _fileName, _stopCurrentSim=False):

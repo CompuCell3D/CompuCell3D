@@ -9,7 +9,7 @@ sys.path.append(environ["PYTHON_MODULE_PATH"])
 import CompuCellSetup
 # this function has to be called from the main Python script right after 
 # import CompuCellSetup
-CompuCellSetup.set_custom_output_directory('dupa')
+CompuCellSetup.set_custom_output_directory('custom_output')
 
 
 
