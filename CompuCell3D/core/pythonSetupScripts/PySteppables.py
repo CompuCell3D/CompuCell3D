@@ -312,6 +312,13 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             import CompuCell
             self.boundaryMonitorPlugin = CompuCell.getBoundaryMonitorPlugin()
 
+        self.curvatureCalculatorPlugin = None
+        if self.simulator.pluginManager.isLoaded("CurvatureCalculator"):
+            import CompuCell
+            self.curvatureCalculatorPlugin = CompuCell.getCurvatureCalculatorPlugin()
+
+
+
         # CleaverMeshDumper
         self.cleaverMeshDumper = None
         if stepManager.isLoaded("CleaverMeshDumper"):
