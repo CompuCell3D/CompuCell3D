@@ -44,7 +44,8 @@ namespace CompuCell3D {
          ChemotaxisData(float _lambda=0.0 , float _saturationCoef=0.0 , std::string _typeName=""):
          lambda(_lambda),saturationCoef(_saturationCoef),typeName(_typeName),formulaPtr(0),formulaName("SimpleChemotaxisFormula"),
 	     chemotaxisFormulaDictPtr(0),
-		 automaton(0)
+		 automaton(0),
+		 allowChemotaxisBetweenCompartmentsGlobal(true)
          {}
 	
          float lambda;
@@ -54,6 +55,7 @@ namespace CompuCell3D {
          chemotaxisEnergyFormulaFcnPtr_t  formulaPtr;
 		 std::map<std::string,chemotaxisEnergyFormulaFcnPtr_t> *chemotaxisFormulaDictPtr;
 		 
+		 bool allowChemotaxisBetweenCompartmentsGlobal;
 
          std::string typeName;
          std::vector<unsigned char> chemotactTowardsTypesVec;
@@ -149,7 +151,15 @@ namespace CompuCell3D {
             cerr<<"**************ChemotaxisData END**************"<<endl;
          }
 
-         bool okToChemotact( const CellG * _oldCell){
+         bool okToChemotact( const CellG * _oldCell, const CellG * _newCell){
+
+			 if (!this->allowChemotaxisBetweenCompartmentsGlobal) {
+				 if (_oldCell && _newCell && (_newCell->clusterId == _oldCell->clusterId)) {
+					 return false;
+				 }	
+				  
+			 }
+
             if(chemotactTowardsTypesVec.size()==0){ //chemotaxis always enabled for this cell
                return true;
             }

@@ -92,6 +92,11 @@ if(INSTALL_PLAYER)
         PATTERN "*.pyc" EXCLUDE
         PATTERN "@CMAKE_SOURCE_DIR@/${player_dir}/Simulation/*")
 
+    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/${player_dir}/steering" DESTINATION @CMAKE_INSTALL_PREFIX@/${player_dir}
+        PATTERN "*.svn" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN "@CMAKE_SOURCE_DIR@/${player_dir}/steering/*")
+
     INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/${player_dir}/UI" DESTINATION @CMAKE_INSTALL_PREFIX@/${player_dir}
         PATTERN "*.svn" EXCLUDE
         PATTERN "*.pyc" EXCLUDE

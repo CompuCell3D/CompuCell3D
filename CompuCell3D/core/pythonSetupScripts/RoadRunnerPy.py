@@ -91,8 +91,16 @@ class RoadRunnerPy(RoadRunner):
         self.__state = _state
 
     def loadSBML(self, _externalPath=''):
-        '''external path can be either absolute path to SBML or a directory relative to which self.path is specified or empty string (in which case self.path is assumed to store absolute path to SBML file)
-        '''
+        """
+        loads SBML model into RoadRunner instance
+        external path can be either absolute path to SBML or a directory relative to which self.path is specified or empty string (in
+        which case self.path is assumed to store absolute path to SBML file)
+
+        TO BE REVISED - SOMEWHAT  STRANGE PATH MANIPULATIONS
+
+        :param _externalPath:{str}
+        :return: None
+        """
 
         if _externalPath == '':  # if external
 
