@@ -974,7 +974,37 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 	return flips;
 
 }
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Point3D Potts3D::randomPickBoundaryPixel(BasicRandomNumberGeneratorNonStatic * rand) {
+	
+	size_t vec_size = boundaryPixelVector.size();
+	Point3D pt;
+	int counter = 0;
+	while (true) {
+		++counter;
+		long boundaryPointIndex = rand->getInteger(0, boundaryPixelSet.size() - 1);
+		if (boundaryPointIndex < vec_size) {
+			pt = boundaryPixelVector[boundaryPointIndex];
+		}
+		else {
+			set<Point3D>::iterator sitr= justInsertedBoundaryPixelSet.begin();
+			advance(sitr, boundaryPointIndex-vec_size);
+			pt = *sitr;
+			
+		}
+		if (justDeletedBoundaryPixelSet.find(pt) != justDeletedBoundaryPixelSet.end()) {
 
+		}
+		else {
+			break;
+		}
+	}
+	if (counter > 5) {
+		cerr << "had to try more than 5 times" << endl;
+	}
+	return pt;
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const double temp) {
 
 	
@@ -1111,11 +1141,15 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 				//boundaryPointVector.assign(boundaryPixelSet.begin(), boundaryPixelSet.end());
 
 				// Pick a random integer and pick a random point from a boundary
-				boundaryPointIndex = rand->getInteger(0, boundaryPixelSet.size() - 1);
-				sitr = boundaryPixelSet.begin();
-				advance(sitr, boundaryPointIndex);
-				
-				pt = *sitr;
+				pt = randomPickBoundaryPixel(rand);
+
+				//////boundaryPointIndex = rand->getInteger(0, boundaryPixelSet.size() - 1);
+				//////sitr = boundaryPixelSet.begin();
+				//////
+				//////advance(sitr, boundaryPointIndex);
+				////////continue;
+				//////pt = *sitr;
+
 				//pt = boundaryPointVector[boundaryPointIndex];
 
 
