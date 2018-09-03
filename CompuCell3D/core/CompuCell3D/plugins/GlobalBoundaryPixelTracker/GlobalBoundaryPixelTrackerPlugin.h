@@ -36,27 +36,27 @@ namespace CompuCell3D {
 	template <class T> class WatchableField3D;
 	class BoundaryStrategy;
 
-	struct Point3DHasher {
-	public:
-		size_t operator()(const Point3D & pt) const {
+	//struct Point3DHasher {
+	//public:
+	//	size_t operator()(const Point3D & pt) const {
 
-			long long int hash_val = 1e12*pt.x+1e6*pt.y+pt.z;
-			return std::hash<long long int>()(hash_val);
-		}
-	};
+	//		long long int hash_val = 1e12*pt.x+1e6*pt.y+pt.z;
+	//		return std::hash<long long int>()(hash_val);
+	//	}
+	//};
 
-	// Custom comparator that compares the string objects by length
-	struct Point3DComparator {
-	public:
-		bool operator()(const Point3D & pt1 , const Point3D & pt2) const {
-			long long int hash_val_1 = 1e12*pt1.x + 1e6*pt1.y + pt1.z;
-			long long int hash_val_2 = 1e12*pt2.x + 1e6*pt2.y + pt2.z;
-			if (hash_val_1 == hash_val_2)
-				return true;
-			else
-				return false;
-		}
-	};
+	//// Custom comparator that compares the string objects by length
+	//struct Point3DComparator {
+	//public:
+	//	bool operator()(const Point3D & pt1 , const Point3D & pt2) const {
+	//		long long int hash_val_1 = 1e12*pt1.x + 1e6*pt1.y + pt1.z;
+	//		long long int hash_val_2 = 1e12*pt2.x + 1e6*pt2.y + pt2.z;
+	//		if (hash_val_1 == hash_val_2)
+	//			return true;
+	//		else
+	//			return false;
+	//	}
+	//};
 
 
 	class GLOBALBOUNDARYPIXELTRACKER_EXPORT GlobalBoundaryPixelTrackerPlugin : public Plugin, public CellGChangeWatcher {
@@ -72,12 +72,15 @@ namespace CompuCell3D {
 		float container_refresh_fraction;
 		BoundaryStrategy * boundaryStrategy;
 		CC3DXMLElement *xmlData;
-		std::set<Point3D> * boundaryPixelSetPtr;
-		std::set<Point3D>  * justInsertedBoundaryPixelSetPtr;
-		std::set<Point3D>  * justDeletedBoundaryPixelSetPtr;
+		//std::set<Point3D> * boundaryPixelSetPtr;
+		//std::set<Point3D>  * justInsertedBoundaryPixelSetPtr;
+		//std::set<Point3D>  * justDeletedBoundaryPixelSetPtr;
+		std::unordered_set<Point3D, Point3DHasher, Point3DComparator> *  boundaryPixelSetPtr;
+		std::unordered_set<Point3D, Point3DHasher, Point3DComparator> *justInsertedBoundaryPixelSetPtr;
+		std::unordered_set<Point3D, Point3DHasher, Point3DComparator> *justDeletedBoundaryPixelSetPtr;
 		std::vector<Point3D> * boundaryPixelVectorPtr;
 
-		std::unordered_set<Point3D, Point3DHasher, Point3DComparator> justInsertedBoundaryPixelSet;
+		//std::unordered_set<Point3D, Point3DHasher, Point3DComparator> justInsertedBoundaryPixelSet;
 
 		void insertPixel(Point3D & pt);
 		void removePixel(Point3D & pt);

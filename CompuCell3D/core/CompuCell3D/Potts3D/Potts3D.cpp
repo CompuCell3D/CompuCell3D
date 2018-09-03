@@ -987,7 +987,7 @@ Point3D Potts3D::randomPickBoundaryPixel(BasicRandomNumberGeneratorNonStatic * r
 			pt = boundaryPixelVector[boundaryPointIndex];
 		}
 		else {
-			set<Point3D>::iterator sitr= justInsertedBoundaryPixelSet.begin();
+			std::unordered_set<Point3D, Point3DHasher, Point3DComparator>::iterator sitr= justInsertedBoundaryPixelSet.begin();
 			advance(sitr, boundaryPointIndex-vec_size);
 			pt = *sitr;
 			
@@ -1082,7 +1082,8 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 
 	long boundaryPointIndex;
 	long counter = 0;
-	set<Point3D>::iterator sitr;
+	//set<Point3D>::iterator sitr;
+	std::unordered_set<Point3D, Point3DHasher, Point3DComparator>::iterator sitr;
 	vector<Point3D> boundaryPointVector;
 	//boundaryPointVector.assign(boundaryPixelSet.begin(), boundaryPixelSet.end());
 	numberOfAttempts = boundaryPixelSet.size();
@@ -1147,7 +1148,7 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 				//////sitr = boundaryPixelSet.begin();
 				//////
 				//////advance(sitr, boundaryPointIndex);
-				////////continue;
+				//////continue;
 				//////pt = *sitr;
 
 				//pt = boundaryPointVector[boundaryPointIndex];

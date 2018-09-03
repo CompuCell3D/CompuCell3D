@@ -33,9 +33,12 @@ GlobalBoundaryPixelTrackerPlugin::GlobalBoundaryPixelTrackerPlugin() :
 	simulator(0),
 	potts(0),
 	boundaryStrategy(0),
-	container_refresh_fraction(5000),
+	container_refresh_fraction(0.20),
 	xmlData(0),
-	boundaryPixelSetPtr(0)
+	boundaryPixelSetPtr(0),
+	justInsertedBoundaryPixelSetPtr(0),
+	justDeletedBoundaryPixelSetPtr(0), 
+	boundaryPixelVectorPtr(0)
 {}
 
 GlobalBoundaryPixelTrackerPlugin::~GlobalBoundaryPixelTrackerPlugin() {
@@ -91,6 +94,8 @@ void GlobalBoundaryPixelTrackerPlugin::update(CC3DXMLElement *_xmlData, bool _fu
 		}
 
 	}
+
+	//assigning containers defined in Potts3D
 	boundaryPixelSetPtr = potts->getBoundaryPixelSetPtr();
 	justInsertedBoundaryPixelSetPtr = potts->getJustInsertedBoundaryPixelSetPtr();
 	justDeletedBoundaryPixelSetPtr = potts->getJustDeletedBoundaryPixelSetPtr();
@@ -110,7 +115,8 @@ void GlobalBoundaryPixelTrackerPlugin::handleEvent(CC3DEvent & _event) {
 	Dim3D shiftVec = ev.shiftVec;
 
 
-	for (std::set<Point3D>::iterator sitr = boundaryPixelSetPtr->begin(); sitr != boundaryPixelSetPtr->end(); ++sitr) {
+	/*for (std::set<Point3D>::iterator sitr = boundaryPixelSetPtr->begin(); sitr != boundaryPixelSetPtr->end(); ++sitr) {*/
+	for (std::unordered_set<Point3D, Point3DHasher, Point3DComparator>::iterator sitr = boundaryPixelSetPtr->begin(); sitr != boundaryPixelSetPtr->end(); ++sitr) {
 
 		Point3D & pixel = const_cast<Point3D&>(*sitr);
 		pixel.x += shiftVec.x;
@@ -134,10 +140,13 @@ void GlobalBoundaryPixelTrackerPlugin::insertPixel(Point3D & pt) {
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void GlobalBoundaryPixelTrackerPlugin::removePixel(Point3D & pt) {
-	std::set<Point3D>::iterator sitr_pt = boundaryPixelSetPtr->find(pt);
+	//std::set<Point3D>::iterator sitr_pt = boundaryPixelSetPtr->find(pt);
+
+	std::unordered_set<Point3D, Point3DHasher, Point3DComparator>::iterator sitr_pt = boundaryPixelSetPtr->find(pt);
 	ASSERT_OR_THROW("Could not find point:" + pt + " in the set of all boundary pixels stored in Potts3D.cpp", sitr_pt != boundaryPixelSetPtr->end());
 
 	boundaryPixelSetPtr->erase(sitr_pt);
+	//boundaryPixelSetPtr->erase(pt);
 
 	justDeletedBoundaryPixelSetPtr->insert(pt);
 	justInsertedBoundaryPixelSetPtr->erase(pt);
@@ -148,8 +157,8 @@ void GlobalBoundaryPixelTrackerPlugin::removePixel(Point3D & pt) {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void GlobalBoundaryPixelTrackerPlugin::refreshContainers() {
 
-	//double size_thresh = this->container_refresh_fraction*boundaryPixelSetPtr->size();
-	double size_thresh = this->container_refresh_fraction;
+	double size_thresh = this->container_refresh_fraction*boundaryPixelSetPtr->size();
+	//double size_thresh = this->container_refresh_fraction;
 	if (justInsertedBoundaryPixelSetPtr->size() > size_thresh || justDeletedBoundaryPixelSetPtr->size() > size_thresh) {
 		//cerr << "refreshing containers" << endl;
 		boundaryPixelVectorPtr->assign(boundaryPixelSetPtr->begin(), boundaryPixelSetPtr->end());
@@ -159,6 +168,7 @@ void GlobalBoundaryPixelTrackerPlugin::refreshContainers() {
 }
 
 void GlobalBoundaryPixelTrackerPlugin::field3DChange(const Point3D &pt, CellG *newCell, CellG *oldCell) {
+	
 	if (newCell == oldCell) //this may happen if you are trying to assign same cell to one pixel twice 
 		return;
 
@@ -174,7 +184,8 @@ void GlobalBoundaryPixelTrackerPlugin::field3DChange(const Point3D &pt, CellG *n
 	//newCell section
 
 
-	boundaryPixelSetPtr->insert(pt);//always insert pt to the global set of boundary pixels
+	//boundaryPixelSetPtr->insert(pt);//always insert pt to the global set of boundary pixels
+	this->insertPixel(const_cast<Point3D&>(pt));//always insert pt to the global set of boundary pixels
 
 	for (unsigned int nIdx = 0; nIdx <= maxNeighborIndex; ++nIdx) {
 		neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
