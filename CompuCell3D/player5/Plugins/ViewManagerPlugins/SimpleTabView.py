@@ -19,6 +19,7 @@ from PyQt5.QtXml import *
 from enums import *
 
 from Messaging import stdMsg, dbgMsg, pd, errMsg, setDebugging
+from os.path import basename, dirname, join
 
 # setDebugging(1)
 
@@ -730,7 +731,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 assert False, "Could not find simulation file: " + self.__fileName
             from os.path import basename
 
-            self.__parent.setWindowTitle(basename(self.__fileName) + " - CompuCell3D Player")
+            self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=self.__fileName)
+            # self.__parent.setWindowTitle(basename(self.__fileName) + " - CompuCell3D Player")
 
         if self.__screenshotDescriptionFileName != "":
             screenshotDescriptionFullFileName = os.path.abspath(self.__screenshotDescriptionFileName)
@@ -767,9 +769,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     def setRecentSimulationFile(self, _fileName):
         self.__fileName = _fileName
-        from os.path import basename
-
-        self.__parent.setWindowTitle(basename(self.__fileName) + " - CompuCell3D Player")
+        # from os.path import basename
+        self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=self.__fileName)
+        # self.__parent.setWindowTitle(basename(self.__fileName) + " - CompuCell3D Player")
         import CompuCellSetup
 
         CompuCellSetup.simulationFileName = self.__fileName
@@ -2875,6 +2877,16 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.drawingAreaPrepared = True
         self.updateActiveWindowVisFlags()  # needed in case switching from one sim to another (e.g. 1st has FPP, 2nd doesn't)
 
+    def set_title_window_from_sim_fname(self, widget, abs_sim_fname):
+        """
+        Sets window title based on current simulation full name
+        :param widget: {QWidget}
+        :param abs_sim_fname: {str} absolute simulation fname
+        :return: None
+        """
+        title_to_display = join(basename(dirname(self.__fileName)), basename(self.__fileName))
+        widget.setWindowTitle(title_to_display + " - CompuCell3D Player")
+
     def __openLDSFile(self, fileName=None):
         '''
         Opens Lattice Description File - for vtk replay mode
@@ -2900,9 +2912,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # converting Qstring to python string    and normalizing path
         self.__fileName = os.path.abspath(str(self.__fileName))
-        from os.path import basename
+
         # setting text for main window (self.__parent) title bar
-        self.__parent.setWindowTitle(basename(self.__fileName) + " - CompuCell3D Player")
+        self.set_title_window_from_sim_fname(widget = self.__parent,abs_sim_fname=self.__fileName)
+        # title_to_display = join(basename(dirname(self.__fileName)),basename(self.__fileName))
+        # self.__parent.setWindowTitle(title_to_display + " - CompuCell3D Player")
 
         # Shall we inform the user?
         #        msg = QMessageBox.warning(self, "Message","Toggling off image & lattice output in Preferences",
@@ -2923,9 +2937,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if isinstance(action, QAction):
             # self.__fileName = str(action.data().toString())
             self.__fileName = str(action.data())
-        from os.path import basename
+
         # setting text for main window (self.__parent) title bar
-        self.__parent.setWindowTitle(basename(self.__fileName) + " - CompuCell3D Player")
+        self.set_title_window_from_sim_fname(widget = self.__parent,abs_sim_fname=self.__fileName)
+        # title_to_display = join(basename(dirname(self.__fileName)), basename(self.__fileName))
+        # self.__parent.setWindowTitle(title_to_display + " - CompuCell3D Player")
 
         import CompuCellSetup
 
@@ -2977,9 +2993,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         print '__openSim: self.__fileName=', self.__fileName
 
-        from os.path import basename
+
         # setting text for main window (self.__parent) title bar
-        self.__parent.setWindowTitle(basename(self.__fileName) + " - CompuCell3D Player")
+        self.set_title_window_from_sim_fname(widget = self.__parent,abs_sim_fname=self.__fileName)
+        # title_to_display = join(basename(dirname(self.__fileName)), basename(self.__fileName))
+        # self.__parent.setWindowTitle(title_to_display + " - CompuCell3D Player")
 
         """
         What is CompuCellSetup?
