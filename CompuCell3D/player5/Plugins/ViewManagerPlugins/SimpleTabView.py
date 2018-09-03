@@ -19,7 +19,7 @@ from PyQt5.QtXml import *
 from enums import *
 
 from Messaging import stdMsg, dbgMsg, pd, errMsg, setDebugging
-from os.path import basename, dirname, join
+from os.path import basename, dirname,join
 
 # setDebugging(1)
 
@@ -729,10 +729,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             elif not os.access(self.__fileName, os.F_OK):
                 assert False, "Could not find simulation file: " + self.__fileName
-            from os.path import basename
-
             self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=self.__fileName)
-            # self.__parent.setWindowTitle(basename(self.__fileName) + " - CompuCell3D Player")
+
 
         if self.__screenshotDescriptionFileName != "":
             screenshotDescriptionFullFileName = os.path.abspath(self.__screenshotDescriptionFileName)
@@ -769,9 +767,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     def setRecentSimulationFile(self, _fileName):
         self.__fileName = _fileName
-        # from os.path import basename
         self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=self.__fileName)
-        # self.__parent.setWindowTitle(basename(self.__fileName) + " - CompuCell3D Player")
         import CompuCellSetup
 
         CompuCellSetup.simulationFileName = self.__fileName
@@ -967,9 +963,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.__fileName = _fileName
             self.nextSimulation = _fileName
 
-        from os.path import basename
 
-        self.__parent.setWindowTitle(basename(str(_fileName)) + " - CompuCell3D Player")
+        self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=str(_fileName))
+        # self.__parent.setWindowTitle(basename(str(_fileName)) + " - CompuCell3D Player")
 
     def prepareXMLTreeView(self):
         '''
@@ -1237,7 +1233,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                     # save parameter Scan spec file with incremented ityeration
                     psu.saveParameterScanState(_pScanFileName=pScanFilePath)
 
-                    from os.path import basename
+
 
                     self.__parent.setWindowTitle('ParameterScan: ' +
                                                  basename(self.__fileName) + ' Iteration: ' + basename(
@@ -2996,8 +2992,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # setting text for main window (self.__parent) title bar
         self.set_title_window_from_sim_fname(widget = self.__parent,abs_sim_fname=self.__fileName)
-        # title_to_display = join(basename(dirname(self.__fileName)), basename(self.__fileName))
-        # self.__parent.setWindowTitle(title_to_display + " - CompuCell3D Player")
+
 
         """
         What is CompuCellSetup?
