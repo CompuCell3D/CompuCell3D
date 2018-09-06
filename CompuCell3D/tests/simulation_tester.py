@@ -8,10 +8,10 @@ import sys
 
 # windows settings:
 if sys.platform.startswith('win'):
-    cc3d_run_script = r'C:\CompuCell3D\compucell3d.bat'
-    cc3d_demo_dir = r'C:\CompuCell3D\Demos'
-    demo_script = r'C:\CompuCell3D\Demos/Models/cellsort/cellsort_2D/cellsort_2D.cc3d'
-    test_output_root = 'rC:\CompuCell3D\CompuCell3D_test_output'
+    cc3d_run_script = r'C:\CompuCell3D-64bit\compucell3d.bat'
+    cc3d_demo_dir = r'C:\CompuCell3D-64bit\Demos'
+    demo_script = r'C:\CompuCell3D-64bit\Demos\Models\cellsort\cellsort_2D\cellsort_2D.cc3d'
+    test_output_root = 'rC:\CompuCell3D-64bit\CompuCell3D_test_output'
 
 if sys.platform.startswith('darwin'):
     #osx settings
