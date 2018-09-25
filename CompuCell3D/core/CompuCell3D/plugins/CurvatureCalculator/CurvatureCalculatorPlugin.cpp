@@ -96,7 +96,7 @@ std::map<long, float> CurvatureCalculatorPlugin::getProbabilityByNeighbor(CellG 
 
 	map<long, float> id_to_prob_map;
 
-	cerr << "GOT INSIDE getProbabilityByNeighbor" << endl;
+	//cerr << "GOT INSIDE getProbabilityByNeighbor" << endl;
 
 	if (!cell) {
 		return id_to_prob_map;

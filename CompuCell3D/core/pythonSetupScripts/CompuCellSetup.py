@@ -1931,6 +1931,15 @@ def mainLoopCLI(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
     # In exception handlers you have to call sim.finish to unload the plugins .
     # We may need to introduce new funuction name (e.g. unload) because finish does more than unloading
 
+
+def extractAddressIntFromVtkObject(field_extractor, _vtkObj):
+    '''
+    Extracts memory address of vtk object
+    :param _vtkObj: vtk object - e.g. vtk array
+    :return: int (possible long int) representing the address of the vtk object
+    '''
+    return field_extractor.unmangleSWIGVktPtrAsLong(_vtkObj.__this__)
+
 def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=None):
     global cmlFieldHandler  # rwh2
     global globalSteppableRegistry  # rwh2
@@ -1985,6 +1994,14 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
             sim.getNumSteps())  # will determine the length text field  of the step number suffix
         cmlFieldHandler.writeXMLDescriptionFile()  # initialization of the cmlFieldHandler is done - we can write XML description file
 
+        import PlayerPython
+
+        field_handler = simthread
+
+        field_extractor_local = PlayerPython.FieldExtractor()
+        field_extractor_local.setFieldStorage(field_handler.fieldStorage)
+        field_extractor_local.init(sim)
+
         # self.simulationXMLFileName=""
         # self.simulationPythonScriptName=""
 
@@ -2030,6 +2047,77 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
 
         if not steppableRegistry is None:
             steppableRegistry.step(current_step)
+
+        # ------------- custom drawing code
+        import vtk
+        cellType = vtk.vtkIntArray()
+        cellType.SetName("celltype")
+
+        cellTypeIntAddr = extractAddressIntFromVtkObject(field_extractor_local, cellType)
+        field_extractor_local.fillCellFieldData2D(cellTypeIntAddr, 'xy', 0)
+
+        # import GraphicsOffScreen
+        # gd = GraphicsOffScreen.GenericDrawer.GenericDrawer()
+        from GraphicsOffScreen import GenericDrawer
+        from GraphicsOffScreen import DrawingParameters
+        from GraphicsOffScreen import ScreenshotManager
+        from BasicSimulationData import BasicSimulationData
+        from os.path import join, dirname, exists
+        # from Plugins.ViewManagerPlugins.ScreenshotManager import ScreenshotManager
+
+        global simulationFileName
+
+        sim_fname = simulationFileName
+        screenshot_data_fname = join(dirname(sim_fname), 'screenshot_data/screenshots.xml')
+        screenshot_mgr = ScreenshotManager()
+        if exists(screenshot_data_fname):
+            screenshot_mgr.readScreenshotDescriptionFile(screenshot_data_fname)
+
+        gd = GenericDrawer()
+        gd.set_field_extractor(field_extractor=field_extractor_local)
+
+
+        for screenshot_name, screenshot_data in screenshot_mgr.screenshotDataDict.items():
+            drawing_params = DrawingParameters()
+            bsd = BasicSimulationData()
+            bsd.fieldDim = sim.getPotts().getCellFieldG().getDim()
+            bsd.numberOfSteps = sim.getNumSteps()
+            drawing_params.bsd = bsd
+
+            drawing_params.plane = screenshot_data.projection
+
+            drawing_params.planePosition = screenshot_data.projectionPosition
+            drawing_params.planePos = screenshot_data.projectionPosition
+            drawing_params.fieldName = screenshot_data.plotData[0]  # e.g. plotData = ('Cell_Field','CellField')
+            drawing_params.fieldType = screenshot_data.plotData[0]
+            screenshot_name = screenshot_data.screenshotName+'_{current_step}.png'.format(current_step=current_step)
+
+            gd.draw(drawing_params=drawing_params,screenshot_name=screenshot_name)
+
+        # OK
+        # drawing_params = DrawingParameters()
+        # bsd = BasicSimulationData()
+        # bsd.fieldDim = sim.getPotts().getCellFieldG().getDim()
+        # bsd.numberOfSteps = sim.getNumSteps()
+        # drawing_params.bsd = bsd
+        #
+        # drawing_params.plane = 'XY'
+        # drawing_params.planePos = 0
+        # drawing_params.planePosition = 0
+        # drawing_params.fieldName = 'Cell_Field'
+        # drawing_params.fieldType = 'CellField'
+
+        # gd = GenericDrawer()
+        # gd.set_field_extractor(field_extractor=field_extractor_local)
+        #
+        # gd.draw(drawing_params=drawing_params)
+        #
+        # OK
+
+
+        print
+        # ------------- custom drawing code
+
 
         if cmlFieldHandler.outputFrequency and not (current_step % cmlFieldHandler.outputFrequency):
             #            print MYMODULENAME,' mainLoopCML: cmlFieldHandler.writeFields(i), i=',i

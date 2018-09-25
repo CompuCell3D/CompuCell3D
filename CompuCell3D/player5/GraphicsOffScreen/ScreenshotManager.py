@@ -3,11 +3,11 @@ import warnings
 import os, sys
 from os.path import join, exists, dirname
 import string
-from utils import mkdir_p
+# from utils import mkdir_p
 import Configuration
-import SimpleTabView
+# import SimpleTabView
 
-from Graphics.GraphicsFrameWidget import GraphicsFrameWidget
+# from Graphics.GraphicsFrameWidget import GraphicsFrameWidget
 
 MODULENAME = '---- ScreenshotManager.py: '
 
@@ -32,11 +32,6 @@ class ScreenshotData:
         self.focalPoint = None
         self.position = None
         self.viewUp = None
-        self.cell_borders_on = None
-        self.cells_on = None
-        self.cluster_borders_on = None
-        self.cell_glyphs_on = None
-        self.fpp_links_on = None
 
     #        self.winWidth=299   # some unique default
     #        self.winHeight=299
@@ -87,77 +82,76 @@ class ScreenshotData:
                 _cameraSettings[10]:
             return False
 
-
 class ScreenshotManager:
-    def __init__(self, _tabViewWidget):
+    def __init__(self,):
 
         self.screenshotDataDict = {}
-        from weakref import ref
-        self.tabViewWidget = ref(_tabViewWidget)
-        tvw = self.tabViewWidget()
-
-        self.basicSimulationData = tvw.basicSimulationData
-        self.basicSimulationData = tvw.basicSimulationData
-        self.screenshotNumberOfDigits = len(str(self.basicSimulationData.numberOfSteps))
-
-        # self.screenshotNumberOfDigits=len(str(self.sim.getNumSteps()))
-        self.maxNumberOfScreenshots = 20  # we limit max number of screenshots to discourage users from using screenshots as their main analysis tool
-        # a better solution is to store latice to a pif file and then do postprocessing
-        self.screenshotCounter3D = 0
-
-        # self.screenshotGraphicsWidget = GraphicsFrameWidget(self.tabViewWidget)
-        print 'CREATING SCREENSHOT WINDOW'
-
-        self.screenshotGraphicsWidget = None
-        # MDIFIX - temporary
-        # return
-
-        # MDIFIX
-        self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw, tvw)
-        # self.screenshotGraphicsWidget.allowSaveLayout = False # we do not save screenshot widget in the windows layout
-
-        # important because e.g. we do not save screenshot widget in the windows layout
-        self.screenshotGraphicsWidget.is_screenshot_widget = True
-        # self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw)
-
-        self.screenshotGraphicsWidget.screenshotWindowFlag = True
-
-        xSize = Configuration.getSetting("Screenshot_X")
-        ySize = Configuration.getSetting("Screenshot_Y")
-
-        # xSize = 1000
-        # ySize = 1000
-
-        # print 'xSize=',xSize,' ySize=',ySize
-        # self.screenshotGraphicsWidget.resize(xSize,ySize)
-
-        self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().SetSize(xSize, ySize)  # default size
-        self.screenshotGraphicsWidget.qvtkWidget.resize(xSize, ySize)
-
-        winsize = self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().GetSize()
-        print 'ADDITIONAL SCREENSHOT WINDOW SIZE=', winsize
-
-        #        print MODULENAME,'  ScreenshotManager: __init__(),   self.screenshotGraphicsWidget=',self.screenshotGraphicsWidget
-        #        print MODULENAME,'  ScreenshotManager: __init__(),   self.screenshotGraphicsWidget.winId().__int__()=',self.screenshotGraphicsWidget.winId().__int__()
-        #        print
-        #        import pdb; pdb.set_trace()
-        #        bad = 1/0
-        #        SimpleTabView.   # rwh: add this to the graphics windows dict
-
-        #        self.tabViewWidget.lastActiveWindow = self.screenshotGraphicsWidget
-        #        self.tabViewWidget.updateActiveWindowVisFlags()
-
-        self.screenshotGraphicsWidget.readSettings()
-        # # # self.tabViewWidget.addSubWindow(self.screenshotGraphicsWidget)
-        self.screenshotSubWindow = tvw.addSubWindow(self.screenshotGraphicsWidget)
-
-        self.screenshotSubWindow.resize(xSize, ySize)
-
-        # necessary to avoid spurious maximization of screenshot window. possible bug either in Player or in QMDIArea
-        self.screenshotSubWindow.showMinimized()
-        self.screenshotSubWindow.hide()
-
-        self.screenshotGraphicsWidgetFieldTypesInitialized = False
+        # from weakref import ref
+        # self.tabViewWidget = ref(_tabViewWidget)
+        # tvw = self.tabViewWidget()
+        #
+        # self.basicSimulationData = tvw.basicSimulationData
+        # self.basicSimulationData = tvw.basicSimulationData
+        # self.screenshotNumberOfDigits = len(str(self.basicSimulationData.numberOfSteps))
+        #
+        # # self.screenshotNumberOfDigits=len(str(self.sim.getNumSteps()))
+        # self.maxNumberOfScreenshots = 20  # we limit max number of screenshots to discourage users from using screenshots as their main analysis tool
+        # # a better solution is to store latice to a pif file and then do postprocessing
+        # self.screenshotCounter3D = 0
+        #
+        # # self.screenshotGraphicsWidget = GraphicsFrameWidget(self.tabViewWidget)
+        # print 'CREATING SCREENSHOT WINDOW'
+        #
+        # self.screenshotGraphicsWidget = None
+        # # MDIFIX - temporary
+        # # return
+        #
+        # # MDIFIX
+        # self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw, tvw)
+        # # self.screenshotGraphicsWidget.allowSaveLayout = False # we do not save screenshot widget in the windows layout
+        #
+        # # important because e.g. we do not save screenshot widget in the windows layout
+        # self.screenshotGraphicsWidget.is_screenshot_widget = True
+        # # self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw)
+        #
+        # self.screenshotGraphicsWidget.screenshotWindowFlag = True
+        #
+        # xSize = Configuration.getSetting("Screenshot_X")
+        # ySize = Configuration.getSetting("Screenshot_Y")
+        #
+        # # xSize = 1000
+        # # ySize = 1000
+        #
+        # # print 'xSize=',xSize,' ySize=',ySize
+        # # self.screenshotGraphicsWidget.resize(xSize,ySize)
+        #
+        # self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().SetSize(xSize, ySize)  # default size
+        # self.screenshotGraphicsWidget.qvtkWidget.resize(xSize, ySize)
+        #
+        # winsize = self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().GetSize()
+        # print 'ADDITIONAL SCREENSHOT WINDOW SIZE=', winsize
+        #
+        # #        print MODULENAME,'  ScreenshotManager: __init__(),   self.screenshotGraphicsWidget=',self.screenshotGraphicsWidget
+        # #        print MODULENAME,'  ScreenshotManager: __init__(),   self.screenshotGraphicsWidget.winId().__int__()=',self.screenshotGraphicsWidget.winId().__int__()
+        # #        print
+        # #        import pdb; pdb.set_trace()
+        # #        bad = 1/0
+        # #        SimpleTabView.   # rwh: add this to the graphics windows dict
+        #
+        # #        self.tabViewWidget.lastActiveWindow = self.screenshotGraphicsWidget
+        # #        self.tabViewWidget.updateActiveWindowVisFlags()
+        #
+        # self.screenshotGraphicsWidget.readSettings()
+        # # # # self.tabViewWidget.addSubWindow(self.screenshotGraphicsWidget)
+        # self.screenshotSubWindow = tvw.addSubWindow(self.screenshotGraphicsWidget)
+        #
+        # self.screenshotSubWindow.resize(xSize, ySize)
+        #
+        # # necessary to avoid spurious maximization of screenshot window. possible bug either in Player or in QMDIArea
+        # self.screenshotSubWindow.showMinimized()
+        # self.screenshotSubWindow.hide()
+        #
+        # self.screenshotGraphicsWidgetFieldTypesInitialized = False
 
     def cleanup(self):
         # have to do cleanup to ensure some of the memory intensive resources e.g. self.screenshotGraphicsWidget get deallocated
@@ -185,37 +179,6 @@ class ScreenshotManager:
             screenshotName = screenshotCoreName + "_" + _scrData.spaceDimension + "_" + str(self.screenshotCounter3D)
         return (screenshotName, screenshotCoreName)
 
-    def appendBoolChildElement(self, elem, elem_label, elem_value):
-        """
-        creates child xml element for boolean value
-
-        :param elem: {inst. of XMLUtils.ElementCC3D} parent element
-        :param elem_label: {str} name of the child elemenbt
-        :param elem_value: {bool} flag
-        :return: None
-        """
-
-        elem.ElementCC3D(elem_label, {"On": 1 if elem_value else 0})
-
-    def parseAndAssignBoolChildElement(self, parent_elem, elem_label,obj, attr):
-        """
-        creates child xml element for boolean value
-
-        :param parent_elem: {inst. of XMLUtils.ElementCC3D} parent element
-        :param elem_label: {str} name of the child element
-        :param obj: {object} object whose attribute will be set to elem value
-        :param attr: {str} attribute name
-        :return: None
-        """
-        elem = parent_elem.getFirstElement(elem_label)
-        if elem:
-            on_flag = int(elem.getAttribute("On"))
-            setattr(obj,attr,bool(on_flag))
-            # scrData.cell_borders_on = bool(on_flag)
-
-        # elem.ElementCC3D(elem_label, {"On": 1 if elem_value else 0})
-
-
     def writeScreenshotDescriptionFile(self, fileName):
         from XMLUtils import ElementCC3D
 
@@ -223,8 +186,8 @@ class ScreenshotManager:
 
         for name in self.screenshotDataDict:
             scrData = self.screenshotDataDict[name]
-            scrDescElement = screenshotFileElement.ElementCC3D("ScreenshotDescription")
             if scrData.spaceDimension == "2D":
+                scrDescElement = screenshotFileElement.ElementCC3D("ScreenshotDescription")
                 scrDescElement.ElementCC3D("Dimension", {}, str(scrData.spaceDimension))
                 scrDescElement.ElementCC3D("Plot",
                                            {"PlotType": str(scrData.plotData[1]), "PlotName": str(scrData.plotData[0])})
@@ -234,6 +197,7 @@ class ScreenshotManager:
                                                     "Height": str(scrData.screenshotGraphicsWidget.size().height())})
 
             if scrData.spaceDimension == "3D":
+                scrDescElement = screenshotFileElement.ElementCC3D("ScreenshotDescription")
                 scrDescElement.ElementCC3D("Dimension", {}, str(scrData.spaceDimension))
                 scrDescElement.ElementCC3D("Plot",
                                            {"PlotType": str(scrData.plotData[1]), "PlotName": str(scrData.plotData[0])})
@@ -250,22 +214,6 @@ class ScreenshotManager:
                 scrDescElement.ElementCC3D("Size", {"Width": str(scrData.screenshotGraphicsWidget.size().width()),
                                                     "Height": str(scrData.screenshotGraphicsWidget.size().height())})
 
-            # saving complete visulaization gui settings
-            self.appendBoolChildElement(elem=scrDescElement, elem_label='CellBorders',
-                                        elem_value=scrData.cell_borders_on)
-            self.appendBoolChildElement(elem=scrDescElement, elem_label='Cells',
-                                        elem_value=scrData.cells_on)
-            self.appendBoolChildElement(elem=scrDescElement, elem_label='ClusterBorders',
-                                        elem_value=scrData.cluster_borders_on)
-            self.appendBoolChildElement(elem=scrDescElement, elem_label='CellGlyphs',
-                                        elem_value=scrData.cell_glyphs_on)
-            self.appendBoolChildElement(elem=scrDescElement, elem_label='FPPLinks',
-                                        elem_value=scrData.fpp_links_on)
-
-
-
-            # scrDescElement.ElementCC3D("CellBorders", {"On": 1 if scrData.cell_borders_on else 0})
-
         screenshotFileElement.CC3DXMLElement.saveXML(str(fileName))
 
     def readScreenshotDescriptionFile(self, _fileName):
@@ -275,29 +223,9 @@ class ScreenshotManager:
         root_element = xml2ObjConverter.Parse(_fileName)
         scrList = XMLUtils.CC3DXMLListPy(root_element.getElements("ScreenshotDescription"))
         for scr in scrList:
-            scrData = ScreenshotData()
-
-            self.parseAndAssignBoolChildElement(parent_elem=scr, elem_label='CellBorders', obj=scrData,
-                                                attr='cell_borders_on')
-            self.parseAndAssignBoolChildElement(parent_elem=scr, elem_label='Cells', obj=scrData,
-                                                attr='cells_on')
-            self.parseAndAssignBoolChildElement(parent_elem=scr, elem_label='ClusterBorders', obj=scrData,
-                                                attr='cluster_borders_on')
-            self.parseAndAssignBoolChildElement(parent_elem=scr, elem_label='CellGlyphs', obj=scrData,
-                                                attr='cell_glyphs_on')
-            self.parseAndAssignBoolChildElement(parent_elem=scr, elem_label='FPPLinks', obj=scrData,
-                                                attr='fpp_links_on')
-
-
-            # borders_elem = scr.getFirstElement("CellBorders1")
-            # if borders_elem:
-            #     on_flag = int(borders_elem.getAttribute("On"))
-            #
-            #     scrData.cell_borders_on = bool(on_flag)
-
             if scr.getFirstElement("Dimension").getText() == "2D":
                 print MODULENAME, "GOT 2D SCREENSHOT"
-
+                scrData = ScreenshotData()
                 scrData.spaceDimension = "2D"
 
                 plotElement = scr.getFirstElement("Plot")
@@ -315,13 +243,13 @@ class ScreenshotManager:
                 if not scrName in self.screenshotDataDict:
                     scrData.screenshotName = scrName
                     scrData.screenshotCoreName = scrCoreName
-                    scrData.screenshotGraphicsWidget = self.screenshotGraphicsWidget
+                    # scrData.screenshotGraphicsWidget = self.screenshotGraphicsWidget
                     self.screenshotDataDict[scrData.screenshotName] = scrData
                 else:
                     print MODULENAME, "Screenshot ", scrName, " already exists"
 
             elif scr.getFirstElement("Dimension").getText() == "3D":
-
+                scrData = ScreenshotData()
                 scrData.spaceDimension = "3D"
                 plotElement = scr.getFirstElement("Plot")
                 scrData.plotData = (plotElement.getAttribute("PlotName"), plotElement.getAttribute("PlotType"))
@@ -379,7 +307,7 @@ class ScreenshotManager:
             else:
                 print MODULENAME, "GOT UNKNOWN SCREENSHOT"
 
-    def safe_writeScreenshotDescriptionFile(self, out_fname):
+    def safe_writeScreenshotDescriptionFile(self,out_fname):
         """
         writes screenshot descr file in a safe mode. any problems are reported via warning
         :param out_fname: {str}
@@ -390,12 +318,14 @@ class ScreenshotManager:
         mkdir_p(dirname(out_fname))
         try:
             self.writeScreenshotDescriptionFile(out_fname)
-        except:  # catching al lwrite related exceptions amd emiting a warning
+        except: # catching al lwrite related exceptions amd emiting a warning
             msg = 'Could not write screenshot description file: {out_fname}. Check permissions'.format(
                 out_fname=out_fname
             )
             warnings.warn(msg, RuntimeWarning)
             tvw.popup_message('File writing warning', msg)
+
+
 
     def serialize_screenshot_data(self):
         """
@@ -407,7 +337,7 @@ class ScreenshotManager:
         tvw = self.tabViewWidget()
 
         out_dir_name = tvw.getOutputDirName()
-        sim_fname = tvw.getSimFileName()
+        sim_fname = tvw. getSimFileName()
 
         out_fname = join(out_dir_name, 'screenshot_data', 'screenshots.xml')
         out_fname_in_sim_dir = join(dirname(sim_fname), 'screenshot_data', 'screenshots.xml')
@@ -418,23 +348,8 @@ class ScreenshotManager:
         # writing in the original simulation location
         self.safe_writeScreenshotDescriptionFile(out_fname_in_sim_dir)
 
-    def store_gui_vis_config(self, scrData):
-        """
-        Stores visualization settings such as cell borders, on/or cell on/off etc...
 
-        :param scrData: {instance of ScreenshotDescriptionData}
-        :return: None
-        """
 
-        tvw = self.tabViewWidget()
-        if tvw:
-            tvw.updateActiveWindowVisFlags(self.screenshotGraphicsWidget)
-
-        scrData.cell_borders_on = tvw.borderAct.isChecked()
-        scrData.cells_on = tvw.cellsAct.isChecked()
-        scrData.cluster_borders_on = tvw.clusterBorderAct.isChecked()
-        scrData.cell_glyphs_on = tvw.cellGlyphsAct.isChecked()
-        scrData.fpp_links_on = tvw.FPPLinksAct.isChecked()
 
     def add2DScreenshot(self, _plotName, _plotType, _projection, _projectionPosition,
                         _camera):  # called from GraphicsFrameWidget
@@ -481,7 +396,6 @@ class ScreenshotManager:
             if tvw:
                 tvw.updateActiveWindowVisFlags(self.screenshotGraphicsWidget)
 
-            self.store_gui_vis_config(scrData=scrData)
             scrData.extractCameraInfo(_camera)  # so "camera" icon (save images) remembers camera view
 
             # on linux there is a problem with X-server/Qt/QVTK implementation and calling resize right after additional QVTK 
@@ -530,8 +444,6 @@ class ScreenshotManager:
             tvw = self.tabViewWidget()
             if tvw:
                 tvw.updateActiveWindowVisFlags(self.screenshotGraphicsWidget)
-
-            self.store_gui_vis_config(scrData=scrData)
 
             scrData.extractCameraInfo(_camera)
 

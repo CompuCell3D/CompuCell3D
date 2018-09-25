@@ -221,7 +221,7 @@ void Potts3D::setDepth(double _depth) {
 	//    neighbors.assign(numNeighbors+1,Point3D());
 
 	maxNeighborIndex = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromDepth(depth);
-	cerr << "\t\t\t\t\t setDepth  maxNeighborIndex=" << maxNeighborIndex << endl;
+//	cerr << "\t\t\t\t\t setDepth  maxNeighborIndex=" << maxNeighborIndex << endl;
 	neighbors.clear();
 	neighbors.assign(maxNeighborIndex + 1, Point3D());
 
@@ -230,7 +230,7 @@ void Potts3D::setDepth(double _depth) {
 void Potts3D::setNeighborOrder(unsigned int _neighborOrder) {
 	BoundaryStrategy::getInstance()->prepareNeighborListsBasedOnNeighborOrder(_neighborOrder);
 	maxNeighborIndex = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromNeighborOrder(_neighborOrder);
-	cerr << "\t\t\t\t\t setNeighborOrder  maxNeighborIndex=" << maxNeighborIndex << endl;
+//	cerr << "\t\t\t\t\t setNeighborOrder  maxNeighborIndex=" << maxNeighborIndex << endl;
 	Dim3D dim = cellFieldG->getDim();
 	minCoordinates = Point3D(0, 0, 0);
 	maxCoordinates = Point3D(dim.x, dim.y, dim.z);
