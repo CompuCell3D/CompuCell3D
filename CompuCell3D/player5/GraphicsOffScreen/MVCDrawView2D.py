@@ -456,8 +456,29 @@ class MVCDrawView2D(MVCDrawViewBase):
         #
         # self.Render()
 
+    def show_cells_actor(self):
+        if not self.currentActors.has_key("CellsActor"):
+            self.currentActors["CellsActor"] = self.cellsActor
+            self.ren.AddActor(self.cellsActor)
 
-    def drawCellFieldLocalNew(self, _bsd, fieldType):
+    def show_cell_borders(self, show_flag=True):
+        '''
+        Shows or hides cell border actor
+
+        :param show_flag {bool}
+        :return:None
+        '''
+        if show_flag:
+            if not self.currentActors.has_key("BorderActor"):
+                self.currentActors["BorderActor"] = self.borderActor
+                self.ren.AddActor(self.borderActor)
+        else:
+            if self.currentActors.has_key("BorderActor"):
+                del self.currentActors["BorderActor"]
+                self.ren.RemoveActor(self.borderActor)
+
+
+    def drawCellFieldLocalNew(self, drawing_params, fieldType):
         '''
         Draws Cell Field
         :param bsd: BasicSimulationData - contains field dim etc
@@ -471,6 +492,14 @@ class MVCDrawView2D(MVCDrawViewBase):
         if not self.currentActors.has_key("CellsActor"):
             self.currentActors["CellsActor"] = self.cellsActor
             self.ren.AddActor(self.cellsActor)
+
+        scr_data = drawing_params.screenshot_data
+        if scr_data.cell_borders_on:
+            self.drawModel.initBordersActors2D((self.borderActor,))
+
+            if not self.currentActors.has_key("BordersActor"):
+                self.currentActors["BordersActor"] = self.borderActor
+                self.ren.AddActor(self.borderActor)
 
         # OK
         # coneSource = vtk.vtkConeSource()

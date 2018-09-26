@@ -12,6 +12,7 @@ import Configuration
 MODULENAME = '---- ScreenshotManager.py: '
 
 
+
 class ScreenshotData:
     def __init__(self):
         self.screenshotName = ""
@@ -32,6 +33,11 @@ class ScreenshotData:
         self.focalPoint = None
         self.position = None
         self.viewUp = None
+        self.cell_borders_on = None
+        self.cells_on = None
+        self.cluster_borders_on = None
+        self.cell_glyphs_on = None
+        self.fpp_links_on = None
 
     #        self.winWidth=299   # some unique default
     #        self.winHeight=299
@@ -82,76 +88,11 @@ class ScreenshotData:
                 _cameraSettings[10]:
             return False
 
+
 class ScreenshotManager:
     def __init__(self,):
 
         self.screenshotDataDict = {}
-        # from weakref import ref
-        # self.tabViewWidget = ref(_tabViewWidget)
-        # tvw = self.tabViewWidget()
-        #
-        # self.basicSimulationData = tvw.basicSimulationData
-        # self.basicSimulationData = tvw.basicSimulationData
-        # self.screenshotNumberOfDigits = len(str(self.basicSimulationData.numberOfSteps))
-        #
-        # # self.screenshotNumberOfDigits=len(str(self.sim.getNumSteps()))
-        # self.maxNumberOfScreenshots = 20  # we limit max number of screenshots to discourage users from using screenshots as their main analysis tool
-        # # a better solution is to store latice to a pif file and then do postprocessing
-        # self.screenshotCounter3D = 0
-        #
-        # # self.screenshotGraphicsWidget = GraphicsFrameWidget(self.tabViewWidget)
-        # print 'CREATING SCREENSHOT WINDOW'
-        #
-        # self.screenshotGraphicsWidget = None
-        # # MDIFIX - temporary
-        # # return
-        #
-        # # MDIFIX
-        # self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw, tvw)
-        # # self.screenshotGraphicsWidget.allowSaveLayout = False # we do not save screenshot widget in the windows layout
-        #
-        # # important because e.g. we do not save screenshot widget in the windows layout
-        # self.screenshotGraphicsWidget.is_screenshot_widget = True
-        # # self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw)
-        #
-        # self.screenshotGraphicsWidget.screenshotWindowFlag = True
-        #
-        # xSize = Configuration.getSetting("Screenshot_X")
-        # ySize = Configuration.getSetting("Screenshot_Y")
-        #
-        # # xSize = 1000
-        # # ySize = 1000
-        #
-        # # print 'xSize=',xSize,' ySize=',ySize
-        # # self.screenshotGraphicsWidget.resize(xSize,ySize)
-        #
-        # self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().SetSize(xSize, ySize)  # default size
-        # self.screenshotGraphicsWidget.qvtkWidget.resize(xSize, ySize)
-        #
-        # winsize = self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().GetSize()
-        # print 'ADDITIONAL SCREENSHOT WINDOW SIZE=', winsize
-        #
-        # #        print MODULENAME,'  ScreenshotManager: __init__(),   self.screenshotGraphicsWidget=',self.screenshotGraphicsWidget
-        # #        print MODULENAME,'  ScreenshotManager: __init__(),   self.screenshotGraphicsWidget.winId().__int__()=',self.screenshotGraphicsWidget.winId().__int__()
-        # #        print
-        # #        import pdb; pdb.set_trace()
-        # #        bad = 1/0
-        # #        SimpleTabView.   # rwh: add this to the graphics windows dict
-        #
-        # #        self.tabViewWidget.lastActiveWindow = self.screenshotGraphicsWidget
-        # #        self.tabViewWidget.updateActiveWindowVisFlags()
-        #
-        # self.screenshotGraphicsWidget.readSettings()
-        # # # # self.tabViewWidget.addSubWindow(self.screenshotGraphicsWidget)
-        # self.screenshotSubWindow = tvw.addSubWindow(self.screenshotGraphicsWidget)
-        #
-        # self.screenshotSubWindow.resize(xSize, ySize)
-        #
-        # # necessary to avoid spurious maximization of screenshot window. possible bug either in Player or in QMDIArea
-        # self.screenshotSubWindow.showMinimized()
-        # self.screenshotSubWindow.hide()
-        #
-        # self.screenshotGraphicsWidgetFieldTypesInitialized = False
 
     def cleanup(self):
         # have to do cleanup to ensure some of the memory intensive resources e.g. self.screenshotGraphicsWidget get deallocated
@@ -179,6 +120,37 @@ class ScreenshotManager:
             screenshotName = screenshotCoreName + "_" + _scrData.spaceDimension + "_" + str(self.screenshotCounter3D)
         return (screenshotName, screenshotCoreName)
 
+    def appendBoolChildElement(self, elem, elem_label, elem_value):
+        """
+        creates child xml element for boolean value
+
+        :param elem: {inst. of XMLUtils.ElementCC3D} parent element
+        :param elem_label: {str} name of the child elemenbt
+        :param elem_value: {bool} flag
+        :return: None
+        """
+
+        elem.ElementCC3D(elem_label, {"On": 1 if elem_value else 0})
+
+    def parseAndAssignBoolChildElement(self, parent_elem, elem_label,obj, attr):
+        """
+        creates child xml element for boolean value
+
+        :param parent_elem: {inst. of XMLUtils.ElementCC3D} parent element
+        :param elem_label: {str} name of the child element
+        :param obj: {object} object whose attribute will be set to elem value
+        :param attr: {str} attribute name
+        :return: None
+        """
+        elem = parent_elem.getFirstElement(elem_label)
+        if elem:
+            on_flag = int(elem.getAttribute("On"))
+            setattr(obj,attr,bool(on_flag))
+            # scrData.cell_borders_on = bool(on_flag)
+
+        # elem.ElementCC3D(elem_label, {"On": 1 if elem_value else 0})
+
+
     def writeScreenshotDescriptionFile(self, fileName):
         from XMLUtils import ElementCC3D
 
@@ -186,8 +158,8 @@ class ScreenshotManager:
 
         for name in self.screenshotDataDict:
             scrData = self.screenshotDataDict[name]
+            scrDescElement = screenshotFileElement.ElementCC3D("ScreenshotDescription")
             if scrData.spaceDimension == "2D":
-                scrDescElement = screenshotFileElement.ElementCC3D("ScreenshotDescription")
                 scrDescElement.ElementCC3D("Dimension", {}, str(scrData.spaceDimension))
                 scrDescElement.ElementCC3D("Plot",
                                            {"PlotType": str(scrData.plotData[1]), "PlotName": str(scrData.plotData[0])})
@@ -197,7 +169,6 @@ class ScreenshotManager:
                                                     "Height": str(scrData.screenshotGraphicsWidget.size().height())})
 
             if scrData.spaceDimension == "3D":
-                scrDescElement = screenshotFileElement.ElementCC3D("ScreenshotDescription")
                 scrDescElement.ElementCC3D("Dimension", {}, str(scrData.spaceDimension))
                 scrDescElement.ElementCC3D("Plot",
                                            {"PlotType": str(scrData.plotData[1]), "PlotName": str(scrData.plotData[0])})
@@ -214,6 +185,22 @@ class ScreenshotManager:
                 scrDescElement.ElementCC3D("Size", {"Width": str(scrData.screenshotGraphicsWidget.size().width()),
                                                     "Height": str(scrData.screenshotGraphicsWidget.size().height())})
 
+            # saving complete visulaization gui settings
+            self.appendBoolChildElement(elem=scrDescElement, elem_label='CellBorders',
+                                        elem_value=scrData.cell_borders_on)
+            self.appendBoolChildElement(elem=scrDescElement, elem_label='Cells',
+                                        elem_value=scrData.cells_on)
+            self.appendBoolChildElement(elem=scrDescElement, elem_label='ClusterBorders',
+                                        elem_value=scrData.cluster_borders_on)
+            self.appendBoolChildElement(elem=scrDescElement, elem_label='CellGlyphs',
+                                        elem_value=scrData.cell_glyphs_on)
+            self.appendBoolChildElement(elem=scrDescElement, elem_label='FPPLinks',
+                                        elem_value=scrData.fpp_links_on)
+
+
+
+            # scrDescElement.ElementCC3D("CellBorders", {"On": 1 if scrData.cell_borders_on else 0})
+
         screenshotFileElement.CC3DXMLElement.saveXML(str(fileName))
 
     def readScreenshotDescriptionFile(self, _fileName):
@@ -223,9 +210,29 @@ class ScreenshotManager:
         root_element = xml2ObjConverter.Parse(_fileName)
         scrList = XMLUtils.CC3DXMLListPy(root_element.getElements("ScreenshotDescription"))
         for scr in scrList:
+            scrData = ScreenshotData()
+
+            self.parseAndAssignBoolChildElement(parent_elem=scr, elem_label='CellBorders', obj=scrData,
+                                                attr='cell_borders_on')
+            self.parseAndAssignBoolChildElement(parent_elem=scr, elem_label='Cells', obj=scrData,
+                                                attr='cells_on')
+            self.parseAndAssignBoolChildElement(parent_elem=scr, elem_label='ClusterBorders', obj=scrData,
+                                                attr='cluster_borders_on')
+            self.parseAndAssignBoolChildElement(parent_elem=scr, elem_label='CellGlyphs', obj=scrData,
+                                                attr='cell_glyphs_on')
+            self.parseAndAssignBoolChildElement(parent_elem=scr, elem_label='FPPLinks', obj=scrData,
+                                                attr='fpp_links_on')
+
+
+            # borders_elem = scr.getFirstElement("CellBorders1")
+            # if borders_elem:
+            #     on_flag = int(borders_elem.getAttribute("On"))
+            #
+            #     scrData.cell_borders_on = bool(on_flag)
+
             if scr.getFirstElement("Dimension").getText() == "2D":
                 print MODULENAME, "GOT 2D SCREENSHOT"
-                scrData = ScreenshotData()
+
                 scrData.spaceDimension = "2D"
 
                 plotElement = scr.getFirstElement("Plot")
@@ -249,7 +256,7 @@ class ScreenshotManager:
                     print MODULENAME, "Screenshot ", scrName, " already exists"
 
             elif scr.getFirstElement("Dimension").getText() == "3D":
-                scrData = ScreenshotData()
+
                 scrData.spaceDimension = "3D"
                 plotElement = scr.getFirstElement("Plot")
                 scrData.plotData = (plotElement.getAttribute("PlotName"), plotElement.getAttribute("PlotType"))
@@ -306,6 +313,134 @@ class ScreenshotManager:
 
             else:
                 print MODULENAME, "GOT UNKNOWN SCREENSHOT"
+
+    # def writeScreenshotDescriptionFile(self, fileName):
+    #     from XMLUtils import ElementCC3D
+    #
+    #     screenshotFileElement = ElementCC3D("CompuCell3DScreenshots")
+    #
+    #     for name in self.screenshotDataDict:
+    #         scrData = self.screenshotDataDict[name]
+    #         if scrData.spaceDimension == "2D":
+    #             scrDescElement = screenshotFileElement.ElementCC3D("ScreenshotDescription")
+    #             scrDescElement.ElementCC3D("Dimension", {}, str(scrData.spaceDimension))
+    #             scrDescElement.ElementCC3D("Plot",
+    #                                        {"PlotType": str(scrData.plotData[1]), "PlotName": str(scrData.plotData[0])})
+    #             scrDescElement.ElementCC3D("Projection", {"ProjectionPlane": scrData.projection,
+    #                                                       "ProjectionPosition": str(scrData.projectionPosition)})
+    #             scrDescElement.ElementCC3D("Size", {"Width": str(scrData.screenshotGraphicsWidget.size().width()),
+    #                                                 "Height": str(scrData.screenshotGraphicsWidget.size().height())})
+    #
+    #         if scrData.spaceDimension == "3D":
+    #             scrDescElement = screenshotFileElement.ElementCC3D("ScreenshotDescription")
+    #             scrDescElement.ElementCC3D("Dimension", {}, str(scrData.spaceDimension))
+    #             scrDescElement.ElementCC3D("Plot",
+    #                                        {"PlotType": str(scrData.plotData[1]), "PlotName": str(scrData.plotData[0])})
+    #             scrDescElement.ElementCC3D("CameraClippingRange",
+    #                                        {"Min": str(scrData.clippingRange[0]), "Max": str(scrData.clippingRange[1])})
+    #             scrDescElement.ElementCC3D("CameraFocalPoint",
+    #                                        {"x": str(scrData.focalPoint[0]), "y": str(scrData.focalPoint[1]),
+    #                                         "z": str(scrData.focalPoint[2])})
+    #             scrDescElement.ElementCC3D("CameraPosition",
+    #                                        {"x": str(scrData.position[0]), "y": str(scrData.position[1]),
+    #                                         "z": str(scrData.position[2])})
+    #             scrDescElement.ElementCC3D("CameraViewUp", {"x": str(scrData.viewUp[0]), "y": str(scrData.viewUp[1]),
+    #                                                         "z": str(scrData.viewUp[2])})
+    #             scrDescElement.ElementCC3D("Size", {"Width": str(scrData.screenshotGraphicsWidget.size().width()),
+    #                                                 "Height": str(scrData.screenshotGraphicsWidget.size().height())})
+    #
+    #     screenshotFileElement.CC3DXMLElement.saveXML(str(fileName))
+    #
+    # def readScreenshotDescriptionFile(self, _fileName):
+    #     import XMLUtils
+    #
+    #     xml2ObjConverter = XMLUtils.Xml2Obj()
+    #     root_element = xml2ObjConverter.Parse(_fileName)
+    #     scrList = XMLUtils.CC3DXMLListPy(root_element.getElements("ScreenshotDescription"))
+    #     for scr in scrList:
+    #         if scr.getFirstElement("Dimension").getText() == "2D":
+    #             print MODULENAME, "GOT 2D SCREENSHOT"
+    #             scrData = ScreenshotData()
+    #             scrData.spaceDimension = "2D"
+    #
+    #             plotElement = scr.getFirstElement("Plot")
+    #             scrData.plotData = (plotElement.getAttribute("PlotName"), plotElement.getAttribute("PlotType"))
+    #
+    #             projElement = scr.getFirstElement("Projection")
+    #             scrData.projection = projElement.getAttribute("ProjectionPlane")
+    #             scrData.projectionPosition = int(projElement.getAttribute("ProjectionPosition"))
+    #
+    #             sizeElement = scr.getFirstElement("Size")
+    #             scrSize = [int(sizeElement.getAttribute("Width")), int(sizeElement.getAttribute("Height"))]
+    #
+    #             # scrData initialized now will initialize graphics widget
+    #             (scrName, scrCoreName) = self.produceScreenshotName(scrData)
+    #             if not scrName in self.screenshotDataDict:
+    #                 scrData.screenshotName = scrName
+    #                 scrData.screenshotCoreName = scrCoreName
+    #                 # scrData.screenshotGraphicsWidget = self.screenshotGraphicsWidget
+    #                 self.screenshotDataDict[scrData.screenshotName] = scrData
+    #             else:
+    #                 print MODULENAME, "Screenshot ", scrName, " already exists"
+    #
+    #         elif scr.getFirstElement("Dimension").getText() == "3D":
+    #             scrData = ScreenshotData()
+    #             scrData.spaceDimension = "3D"
+    #             plotElement = scr.getFirstElement("Plot")
+    #             scrData.plotData = (plotElement.getAttribute("PlotName"), plotElement.getAttribute("PlotType"))
+    #             sizeElement = scr.getFirstElement("Size")
+    #             scrSize = [int(sizeElement.getAttribute("Width")), int(sizeElement.getAttribute("Height"))]
+    #
+    #             (scrName, scrCoreName) = self.produceScreenshotName(scrData)
+    #             print MODULENAME, "(scrName,scrCoreName)=", (scrName, scrCoreName)
+    #             okToAddScreenshot = True
+    #
+    #             # extracting Camera Settings
+    #             camSettings = []
+    #
+    #             clippingRangeElement = scr.getFirstElement("CameraClippingRange")
+    #             camSettings.append(float(clippingRangeElement.getAttribute("Min")))
+    #             camSettings.append(float(clippingRangeElement.getAttribute("Max")))
+    #
+    #             focalPointElement = scr.getFirstElement("CameraFocalPoint")
+    #             camSettings.append(float(focalPointElement.getAttribute("x")))
+    #             camSettings.append(float(focalPointElement.getAttribute("y")))
+    #             camSettings.append(float(focalPointElement.getAttribute("z")))
+    #
+    #             positionElement = scr.getFirstElement("CameraPosition")
+    #             camSettings.append(float(positionElement.getAttribute("x")))
+    #             camSettings.append(float(positionElement.getAttribute("y")))
+    #             camSettings.append(float(positionElement.getAttribute("z")))
+    #
+    #             viewUpElement = scr.getFirstElement("CameraViewUp")
+    #             camSettings.append(float(viewUpElement.getAttribute("x")))
+    #             camSettings.append(float(viewUpElement.getAttribute("y")))
+    #             camSettings.append(float(viewUpElement.getAttribute("z")))
+    #
+    #             for name in self.screenshotDataDict:
+    #                 scrDataFromDict = self.screenshotDataDict[name]
+    #                 if scrDataFromDict.screenshotCoreName == scrCoreName and scrDataFromDict.spaceDimension == "3D":
+    #                     print MODULENAME, "scrDataFromDict.screenshotCoreName=", scrDataFromDict.screenshotCoreName, " scrCoreName=", scrCoreName
+    #
+    #                     if scrDataFromDict.compareExistingCameraToNewCameraSettings(camSettings):
+    #                         print MODULENAME, "CAMERAS ARE THE SAME"
+    #                         okToAddScreenshot = False
+    #                         break
+    #                     else:
+    #                         print MODULENAME, "CAMERAS ARE DIFFERENT"
+    #             print MODULENAME, "okToAddScreenshot=", okToAddScreenshot
+    #
+    #             if (not scrName in self.screenshotDataDict) and okToAddScreenshot:
+    #                 scrData.screenshotName = scrName
+    #                 scrData.screenshotCoreName = scrCoreName
+    #
+    #                 scrData.screenshotGraphicsWidget = self.screenshotGraphicsWidget
+    #
+    #                 scrData.extractCameraInfoFromList(camSettings)
+    #                 self.screenshotDataDict[scrData.screenshotName] = scrData
+    #
+    #         else:
+    #             print MODULENAME, "GOT UNKNOWN SCREENSHOT"
 
     def safe_writeScreenshotDescriptionFile(self,out_fname):
         """

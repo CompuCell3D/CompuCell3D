@@ -2082,17 +2082,18 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
             bsd = BasicSimulationData()
             bsd.fieldDim = sim.getPotts().getCellFieldG().getDim()
             bsd.numberOfSteps = sim.getNumSteps()
-            drawing_params.bsd = bsd
-
-            drawing_params.plane = screenshot_data.projection
-
-            drawing_params.planePosition = screenshot_data.projectionPosition
-            drawing_params.planePos = screenshot_data.projectionPosition
-            drawing_params.fieldName = screenshot_data.plotData[0]  # e.g. plotData = ('Cell_Field','CellField')
-            drawing_params.fieldType = screenshot_data.plotData[0]
+            # drawing_params.bsd = bsd
+            #
+            # drawing_params.plane = screenshot_data.projection
+            #
+            # drawing_params.planePosition = screenshot_data.projectionPosition
+            # drawing_params.planePos = screenshot_data.projectionPosition
+            # drawing_params.fieldName = screenshot_data.plotData[0]  # e.g. plotData = ('Cell_Field','CellField')
+            # drawing_params.fieldType = screenshot_data.plotData[0]
             screenshot_name = screenshot_data.screenshotName+'_{current_step}.png'.format(current_step=current_step)
 
-            gd.draw(drawing_params=drawing_params,screenshot_name=screenshot_name)
+            # gd.draw(drawing_params=drawing_params,screenshot_name=screenshot_name)
+            gd.draw(screenshot_data=screenshot_data, bsd=bsd,screenshot_name=screenshot_name)
 
         # OK
         # drawing_params = DrawingParameters()

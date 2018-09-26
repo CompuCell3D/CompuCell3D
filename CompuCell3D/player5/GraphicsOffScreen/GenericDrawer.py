@@ -33,10 +33,16 @@ class GenericDrawer():
         # self.renWin.AddRenderer(self.ren)
 
         # MDIFIX
-        self.drawModel2D = MVCDrawModel2D(self)
-        self.draw2D = MVCDrawView2D(self.drawModel2D)
+        self.draw_model_2D = MVCDrawModel2D(self)
+        self.draw_view_2D = MVCDrawView2D(self.draw_model_2D)
 
-        self.draw2D.ren = self.ren
+        self.draw_view_2D.ren = self.ren
+
+        #
+        # dict {field_type: drawing fcn}
+        self.drawing_fcn_dict = {
+            ('CellField','Cart'):self.draw_cell_field
+        }
         #
         # self.drawModel3D = MVCDrawModel3D(self, self.parentWidget)
         # self.draw3D = MVCDrawView3D(self.drawModel3D, self, self.parentWidget)
@@ -55,13 +61,78 @@ class GenericDrawer():
     def set_field_extractor(self, field_extractor):
 
         self.field_extractor = field_extractor
-        self.drawModel2D.field_extractor = field_extractor
+        self.draw_model_2D.field_extractor = field_extractor
 
 
-    def draw_cell_field(self):
-        self.drawModel2D.initCellFieldActors()
+    def draw_cell_field(self, drawing_params):
+        """
+        Draws cell field
+        :param drawing_params:
+        :return:
+        """
+        self.draw_model_2D.initCellFieldActors((self.draw_view_2D.cellsActor,))
+        self.draw_view_2D.show_cells_actor()
 
-    def draw(self, drawing_params, screenshot_name):
+        # self.drawModel.initCellFieldActors((self.cellsActor,))
+        # self.drawModel2D.initCellFieldActors((self.drawVcellsActor,))
+
+    def draw_cell_borders(self,drawing_params):
+        """
+        Draws cell borders
+        :param drawing_params:
+        :return:
+        """
+        self.draw_model_2D.initBordersActors2D((self.draw_view_2D.borderActor,))
+        show_flag = drawing_params.screenshot_data.cell_borders_on
+        self.draw_view_2D.show_cell_borders(show_flag=show_flag)
+
+
+    # def draw(self, drawing_params, screenshot_name):
+
+    def draw(self, screenshot_data, bsd, screenshot_name):
+
+        drawing_params = DrawingParameters()
+        drawing_params.screenshot_data = screenshot_data
+        drawing_params.bsd = bsd
+        drawing_params.plane = screenshot_data.projection
+        drawing_params.planePosition = screenshot_data.projectionPosition
+        drawing_params.planePos = screenshot_data.projectionPosition
+        drawing_params.fieldName = screenshot_data.plotData[0]  # e.g. plotData = ('Cell_Field','CellField')
+        drawing_params.fieldType = screenshot_data.plotData[1]
+
+        self.draw_model_2D.setDrawingParametersObject(drawing_params)
+        try:
+            key = (drawing_params.fieldType,'Cart')
+            draw_fcn = self.drawing_fcn_dict[key]
+
+        except KeyError:
+            print 'Could not find function for {}'.format(key)
+            draw_fcn = None
+
+        if draw_fcn is not None:
+            draw_fcn(drawing_params=drawing_params)
+            # decorations
+            if drawing_params.screenshot_data.cell_borders_on:
+                self.draw_cell_borders(drawing_params=drawing_params)
+
+
+
+            renWin = vtk.vtkRenderWindow()
+            renWin.SetOffScreenRendering(1)
+            renWin.AddRenderer(self.ren)
+            renWin.Render()
+
+            windowToImageFilter = vtk.vtkWindowToImageFilter()
+            windowToImageFilter.SetInput(renWin)
+            windowToImageFilter.Update()
+
+            writer = vtk.vtkPNGWriter()
+            writer.SetFileName('D:/CC3D_GIT/CompuCell3D/player5/GraphicsOffScreen/{screenshot_name}.png'.format(screenshot_name=screenshot_name))
+            writer.SetInputConnection(windowToImageFilter.GetOutputPort())
+            writer.Write()
+
+
+    def draw_old(self, screenshot_data, bsd, screenshot_name):
         # drawing_params = DrawingParameters()
         # bsd = BasicSimulationData()
         # drawing_params.bsd = bsd
@@ -79,11 +150,19 @@ class GenericDrawer():
         # renderWindowInteractor = vtk.vtkRenderWindowInteractor()
         # renderWindowInteractor.SetRenderWindow(renderWindow)
 
+        drawing_params = DrawingParameters()
+        drawing_params.screenshot_data = screenshot_data
+        drawing_params.bsd = bsd
+        drawing_params.plane = screenshot_data.projection
+        drawing_params.planePosition = screenshot_data.projectionPosition
+        drawing_params.planePos = screenshot_data.projectionPosition
+        drawing_params.fieldName = screenshot_data.plotData[0]  # e.g. plotData = ('Cell_Field','CellField')
+        drawing_params.fieldType = screenshot_data.plotData[0]
 
-        self.drawModel2D.setDrawingParametersObject(drawing_params)
+        self.draw_model_2D.setDrawingParametersObject(drawing_params)
 
 
-        self.draw2D.drawCellFieldLocalNew(drawing_params.bsd, None)
+        self.draw_view_2D.drawCellFieldLocalNew(drawing_params, None)
         # self.draw2D.drawCellFieldLocalNew_1(self.ren)
 
         # coneSource = vtk.vtkConeSource()
@@ -171,7 +250,7 @@ class GenericDrawer():
     def resetAllCameras(self):
         print 'resetAllCameras in GraphicsFrame =', self
 
-        self.draw2D.resetAllCameras()
+        self.draw_view_2D.resetAllCameras()
         self.draw3D.resetAllCameras()
 
     # def __getattr__(self, attr):
@@ -191,7 +270,7 @@ class GenericDrawer():
 
 
     def populateLookupTable(self):
-        self.drawModel2D.populateLookupTable()
+        self.draw_model_2D.populateLookupTable()
         self.drawModel3D.populateLookupTable()
 
     def Render(self):
@@ -212,7 +291,7 @@ class GenericDrawer():
         return self.camera2D
 
     def setZoomItems(self, _zitems):
-        self.draw2D.setZoomItems(_zitems)
+        self.draw_view_2D.setZoomItems(_zitems)
         self.draw3D.setZoomItems(_zitems)
 
     def setPlane(self, plane, pos):
@@ -226,7 +305,7 @@ class GenericDrawer():
         style = string.upper(_style)
         if style == "2D":
             self.draw3DFlag = False
-            self.currentDrawingObject = self.draw2D
+            self.currentDrawingObject = self.draw_view_2D
             self.ren.SetActiveCamera(self.camera2D)
             self.qvtkWidget.setMouseInteractionSchemeTo2D()
             self.draw3D.clearDisplay()
@@ -235,7 +314,7 @@ class GenericDrawer():
             self.currentDrawingObject = self.draw3D
             self.ren.SetActiveCamera(self.camera3D)
             self.qvtkWidget.setMouseInteractionSchemeTo3D()
-            self.draw2D.clearDisplay()
+            self.draw_view_2D.clearDisplay()
 
     def getCamera3D(self):
         return self.camera3D
@@ -329,7 +408,7 @@ class GenericDrawer():
             if self.draw3DFlag:
                 self.parentWidget.screenshotManager.add3DScreenshot(fieldType[0], fieldType[1], camera)
             else:
-                planePositionTupple = self.draw2D.getPlane()
+                planePositionTupple = self.draw_view_2D.getPlane()
                 # print "planePositionTupple=",planePositionTupple
                 self.parentWidget.screenshotManager.add2DScreenshot(fieldType[0], fieldType[1], planePositionTupple[0],
                                                                     planePositionTupple[1], camera)
@@ -369,7 +448,7 @@ class GenericDrawer():
 
     def setFieldTypesComboBox(self, _fieldTypes):
         self.fieldTypes = _fieldTypes  # assign field types to be the same as field types in the workspace
-        self.draw2D.setFieldTypes(
+        self.draw_view_2D.setFieldTypes(
             self.fieldTypes)  # make sure that field types are the same in graphics widget and in the drawing object
         self.draw3D.setFieldTypes(
             self.fieldTypes)  # make sure that field types are the same in graphics widget and in the drawing object

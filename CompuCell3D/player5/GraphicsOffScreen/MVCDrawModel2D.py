@@ -1611,10 +1611,19 @@ class MVCDrawModel2D(MVCDrawModelBase):
     def initBordersActors2D(self,_actors):
         points = vtk.vtkPoints()
         lines = vtk.vtkCellArray()
-        pointsIntAddr=self.extractAddressIntFromVtkObject(points)
-        linesIntAddr=self.extractAddressIntFromVtkObject(lines)
+        pointsIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor,
+                                                              vtkObj=points)
 
-        self.parentWidget.fieldExtractor.fillBorderData2D(pointsIntAddr , linesIntAddr, self.currentDrawingParameters.plane, self.currentDrawingParameters.planePos)
+        linesIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor,
+                                                              vtkObj=lines)
+
+        # pointsIntAddr=self.extractAddressIntFromVtkObject(points)
+        # linesIntAddr=self.extractAddressIntFromVtkObject(lines)
+
+        # self.parentWidget.fieldExtractor.fillBorderData2D(pointsIntAddr , linesIntAddr, self.currentDrawingParameters.plane, self.currentDrawingParameters.planePos)
+
+        self.field_extractor.fillBorderData2D(pointsIntAddr , linesIntAddr, self.currentDrawingParameters.plane, self.currentDrawingParameters.planePos)
+
 
         borders = vtk.vtkPolyData()
 
