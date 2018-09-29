@@ -11,7 +11,8 @@ from MVCDrawViewBase import MVCDrawViewBase
 import Configuration
 import vtk, math
 import sys, os
-
+from collections import OrderedDict
+from copy import deepcopy
 
 MODULENAME='==== MVCDrawView3D.py:  '
 
@@ -34,6 +35,8 @@ class MVCDrawView3D(MVCDrawViewBase):
         '''
         # Zoom items
         self.zitems = []
+
+        self.actors_dict = {}
         
         self.cellTypeActors={}
         self.outlineActor = vtk.vtkActor()
@@ -69,7 +72,45 @@ class MVCDrawView3D(MVCDrawViewBase):
         # self.polyDataNormals        = {} # vtkPolyDataNormals
         # self.typeExtractors         = {} # vtkDiscreteMarchingCubes
         # self.typeExtractorMappers   = {} # vtkPolyDataMapper
-        
+
+        self.actors_dict['cellsActor'] = {}
+
+    def getActors(self, actor_label_list=None):
+        """
+        returns container with actors
+        :param actor_label_list:{list of str} list of actors
+        :return: {OrderedDict}
+        """
+
+        od = OrderedDict()
+        if actor_label_list is None:
+            return od
+        for actor_label in actor_label_list:
+            od[actor_label] = self.actors_dict[actor_label]
+
+        return od
+
+    def prepare_cell_field_actors(self, actor_specs):
+        """
+        Prepares cell_field_actors  based on actor_specs specifications
+        Scans list of invisible cell types and used cell types and creates those actors that user selected to be visible
+        :param actor_specs: {ActorSpecs} specification of actors to create
+        :return: {ActorSpecs}
+        """
+        actor_specs_copy = deepcopy(actor_specs)
+        actor_specs_copy.actors_dict = OrderedDict()
+        metadata = actor_specs_copy.metadata
+
+        invisible_types = metadata['invisible_types']
+        all_types = metadata['all_types']
+
+        for actorNumber in all_types:
+            actorName="CellType_"+str(actorNumber)
+            if  not actorNumber in invisible_types:
+                actor_specs_copy.actors_dict[actorNumber] = vtk.vtkActor()
+
+        return actor_specs_copy
+
     def getPlane(self):
         return ("3D", 0)
     
@@ -166,32 +207,58 @@ class MVCDrawView3D(MVCDrawViewBase):
             for type in typesInvisible:
                 self.invisibleCellTypes[int(type)]=0        
             # print "\t\t\t self.invisibleCellTypes=",self.invisibleCellTypes
-    
-    def setCamera(self, fieldDim = None):
+
+    def setCamera(self, fieldDim=None):
         '''
         Initializes default camera view for 3D scene
         :param fieldDim:field dimension (Dim3D C++ object)
         :return:
         '''
-        camera = self.graphicsFrameWidget.ren.GetActiveCamera()
+        camera = self.ren.GetActiveCamera()
 
         self.setDim(fieldDim)
-        # Should I specify these parameters explicitly? 
-        # What if I change dimensions in XML file? 
+        # Should I specify these parameters explicitly?
+        # What if I change dimensions in XML file?
         # The parameters should be set based on the configuration parameters!
         # Should it set depending on projection? (e.g. xy, xz, yz)
-        
-        distance = self.largestDim(self.dim)*2 # 200 #273.205 #
-        
+
+        distance = self.largestDim(self.dim) * 2  # 200 #273.205 #
+
         # FIXME: Hardcoded numbers
-        
-        camera.SetPosition(self.dim[0]/2, self.dim[1]/2, distance)
-        camera.SetFocalPoint(self.dim[0]/2, self.dim[1]/2, 0)
+
+        camera.SetPosition(self.dim[0] / 2, self.dim[1] / 2, distance)
+        camera.SetFocalPoint(self.dim[0] / 2, self.dim[1] / 2, 0)
         camera.SetClippingRange(distance - 1, distance + 1)
         # self.GetCurrentRenderer().ResetCameraClippingRange()
-        
-        self.__initDist = distance #camera.GetDistance()
-        self.qvtkWidget().repaint()
+
+        self.__initDist = distance  # camera.GetDistance()
+        # self.qvtkWidget().repaint()
+
+    # def setCamera(self, fieldDim = None):
+    #     '''
+    #     Initializes default camera view for 3D scene
+    #     :param fieldDim:field dimension (Dim3D C++ object)
+    #     :return:
+    #     '''
+    #     camera = self.graphicsFrameWidget.ren.GetActiveCamera()
+    #
+    #     self.setDim(fieldDim)
+    #     # Should I specify these parameters explicitly?
+    #     # What if I change dimensions in XML file?
+    #     # The parameters should be set based on the configuration parameters!
+    #     # Should it set depending on projection? (e.g. xy, xz, yz)
+    #
+    #     distance = self.largestDim(self.dim)*2 # 200 #273.205 #
+    #
+    #     # FIXME: Hardcoded numbers
+    #
+    #     camera.SetPosition(self.dim[0]/2, self.dim[1]/2, distance)
+    #     camera.SetFocalPoint(self.dim[0]/2, self.dim[1]/2, 0)
+    #     camera.SetClippingRange(distance - 1, distance + 1)
+    #     # self.GetCurrentRenderer().ResetCameraClippingRange()
+    #
+    #     self.__initDist = distance #camera.GetDistance()
+    #     self.qvtkWidget().repaint()
 
     def setDim(self, fieldDim):
         '''
@@ -215,24 +282,78 @@ class MVCDrawView3D(MVCDrawViewBase):
         for actorName in removedActors:
             del self.currentActors[actorName]
 
-    def showCellTypeActors(self):
+    def show_cell_actors(self,actor_specs,show_flag=True):
+        """
+        shows/hides cells
+        :param show_flag:
+        :return:
+        """
+        invisible_types = actor_specs.metadata['invisible_types']
+        all_types = actor_specs.metadata['all_types']
+
+        if show_flag:
+
+            for actor_number in all_types:
+                actor_name = "CellType_" + str(actor_number)
+                if actor_number not in invisible_types:
+                    self.currentActors[actor_name] = actor_specs.actors_dict[actor_number]
+                    self.ren.AddActor(self.currentActors[actor_name])
+
+            # if not self.currentActors.has_key("CellsActor"):
+            #     self.currentActors["CellsActor"] = self.cellsActor
+            #     self.ren.AddActor(self.cellsActor)
+        else:
+            for actor_number in all_types:
+                actor_name = "CellType_" + str(actor_number)
+                if self.currentActors.has_key(actor_name):
+                    actor_to_remove = self.currentActors[actor_name]
+                    del self.currentActors[actor_name]
+                    self.ren.RemoveActor(actor_to_remove)
+                # if actor_number not in invisible_types:
+                #     self.currentActors[actor_name] = actor_specs.actors_dict[actor_name]
+                #     self.ren.AddActor(self.currentActors[actor_name])
+
+            # if self.currentActors.has_key("CellsActor"):
+            #     del self.currentActors["CellsActor"]
+            #     self.ren.RemoveActor(self.cellsActor)
+
+    def show_cells_actors(self):
         '''
         Shows Actors representing cell types
         :return:None
         '''
         for actorNumber in self.usedCellTypesList:
-            actorName="CellType_"+str(actorNumber)
+            actorName = "CellType_" + str(actorNumber)
             # print "Actor name=",actorName
             # print "self.invisibleCellTypes=",self.invisibleCellTypes
-            
+
             if actorNumber in self.invisibleCellTypes:
-#                print MODULENAME,"showCellTypeActors: cannot display ",actorName
+                #                print MODULENAME,"showCellTypeActors: cannot display ",actorName
                 pass
             elif not actorName in self.currentActors:
-#            if not actorName in self.currentActors:
-#            if not actorName in self.currentActors and not actorNumber in self.invisibleCellTypes:
-                self.currentActors[actorName]=self.cellTypeActors[actorNumber]
+                #            if not actorName in self.currentActors:
+                #            if not actorName in self.currentActors and not actorNumber in self.invisibleCellTypes:
+                self.currentActors[actorName] = self.cellTypeActors[actorNumber]
                 self.graphicsFrameWidget.ren.AddActor(self.currentActors[actorName])
+
+    #     def showCellTypeActors(self):
+#         '''
+#         Shows Actors representing cell types
+#         :return:None
+#         '''
+#         for actorNumber in self.usedCellTypesList:
+#             actorName="CellType_"+str(actorNumber)
+#             # print "Actor name=",actorName
+#             # print "self.invisibleCellTypes=",self.invisibleCellTypes
+#
+#             if actorNumber in self.invisibleCellTypes:
+# #                print MODULENAME,"showCellTypeActors: cannot display ",actorName
+#                 pass
+#             elif not actorName in self.currentActors:
+# #            if not actorName in self.currentActors:
+# #            if not actorName in self.currentActors and not actorNumber in self.invisibleCellTypes:
+#                 self.currentActors[actorName]=self.cellTypeActors[actorNumber]
+#                 self.graphicsFrameWidget.ren.AddActor(self.currentActors[actorName])
 
     def hideCellTypeActors(self):
         '''
@@ -368,7 +489,7 @@ class MVCDrawView3D(MVCDrawViewBase):
 #             self.prepareCellTypeActors()
             self.drawModel.prepareCellTypeActors(self.cellTypeActors, self.invisibleCellTypes)
             self.showCellTypeActors()
-            self.drawModel.initCellFieldActors(self.currentActors)
+            self.drawModel.init_cell_field_actors(self.currentActors)
             
         if self.parentWidget.graphicsWindowVisDict[dictKey][1]:    # cell borders (= individual cells)
 

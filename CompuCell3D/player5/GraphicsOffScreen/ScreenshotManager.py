@@ -41,6 +41,7 @@ class ScreenshotData:
         self.bounding_box_on = None
         self.lattice_axes_on = None
         self.lattice_axes_labels_on = None
+        self.invisible_types = None
 
     #        self.winWidth=299   # some unique default
     #        self.winHeight=299
@@ -209,6 +210,8 @@ class ScreenshotManager:
             self.appendBoolChildElement(elem=scrDescElement, elem_label='LatticeAxesLabels',
                                         elem_value=scrData.lattice_axes_labels_on)
 
+            scrDescElement.ElementCC3D("TypesInvisible", {},
+                                       scrData.invisible_types if scrData.invisible_types is not None else '')
 
             # scrDescElement.ElementCC3D("CellBorders", {"On": 1 if scrData.cell_borders_on else 0})
 
@@ -240,6 +243,16 @@ class ScreenshotManager:
                                                 attr='lattice_axes_on')
             self.parseAndAssignBoolChildElement(parent_elem=scr, elem_label='LatticeAxesLabels', obj=scrData,
                                                 attr='lattice_axes_labels_on')
+
+            try:
+                types_invisible_elem_str= scr.getFirstElement("TypesInvisible").getText()
+                if types_invisible_elem_str:
+                    scrData.invisible_types = map(lambda x:int(x), types_invisible_elem_str.split(','))
+                else:
+                    scrData.invisible_types = []
+            except:
+                pass
+
             # borders_elem = scr.getFirstElement("CellBorders1")
             # if borders_elem:
             #     on_flag = int(borders_elem.getAttribute("On"))

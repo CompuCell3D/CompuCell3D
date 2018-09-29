@@ -12,6 +12,7 @@ import vtk, math
 import sys, os
 
 VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
+from utils import extractAddressIntFromVtkObject
 
 MODULENAME='------  MVCDrawModel3D.py'
 
@@ -172,17 +173,22 @@ class MVCDrawModel3D(MVCDrawModelBase):
         
         self.cellType = vtk.vtkIntArray()
         self.cellType.SetName("celltype")
-        self.cellTypeIntAddr = self.extractAddressIntFromVtkObject(self.cellType)
+        self.cellTypeIntAddr = extractAddressIntFromVtkObject(self.field_extractor,self.cellType)
+        # self.cellTypeIntAddr = self.extractAddressIntFromVtkObject(self.cellType)
         
         # Also get the CellId
         self.cellId = vtk.vtkLongArray()
         self.cellId.SetName("cellid")
-        self.cellIdIntAddr = self.extractAddressIntFromVtkObject(self.cellId)
+        self.cellIdIntAddr = extractAddressIntFromVtkObject(self.field_extractor,self.cellId)
+        # self.cellIdIntAddr = self.extractAddressIntFromVtkObject(self.cellId)
         
 #        print '\n\n'
 #        print MODULENAME,'   extractCellFieldData():  calling fieldExtractor.fillCellFieldData3D...'
 #        self.usedCellTypesList = self.parentWidget.fieldExtractor.fillCellFieldData3D(self.cellTypeIntAddr)
-        self.usedCellTypesList = self.parentWidget.fieldExtractor.fillCellFieldData3D(self.cellTypeIntAddr, self.cellIdIntAddr)
+#         self.usedCellTypesList = self.parentWidget.fieldExtractor.fillCellFieldData3D(self.cellTypeIntAddr, self.cellIdIntAddr)
+
+        self.usedCellTypesList = self.field_extractor.fillCellFieldData3D(self.cellTypeIntAddr, self.cellIdIntAddr)
+
 #        print MODULENAME,'   extractCellFieldData():  self.cellType.GetSize()=',self.cellType.GetSize()
 #        print MODULENAME,'   extractCellFieldData():  self.cellType.GetNumberOfTuples()=',self.cellType.GetNumberOfTuples()
         
@@ -193,84 +199,182 @@ class MVCDrawModel3D(MVCDrawModelBase):
         return self.usedCellTypesList
     
 
-    def initCellFieldActors(self,_actors):  # original rendering technique (and still used if Vis->Cell Borders not checked) - vkDiscreteMarchingCubes on celltype
-        import CompuCell
-        fieldDim = self.currentDrawingParameters.bsd.fieldDim    
-#        print MODULENAME,'  initCellFieldActors():  fieldDim.x,y,z=',fieldDim.x,fieldDim.y,fieldDim.z
-#        numberOfActors = len(self.usedCellTypesList)
-        cellTypeImageData = vtk.vtkImageData()
-        
-        # if hex lattice
-#        allowedAreaMin.x=0.0;
-#        allowedAreaMin.y=(fieldDim.z>=3? -sqrt(3.0)/6.0 : 0.0);
-#        allowedAreaMin.z=0.0;
+    def init_cell_field_actors(self, actor_specs):  # original rendering technique (and still used if Vis->Cell Borders not checked) - vkDiscreteMarchingCubes on celltype
+
+        # self.init_cell_typeCellFieldBordersActors(list(actor_specs.actors_dict.values()))
+        self.init_cell_field_borders_actors(actor_specs=actor_specs)
+        # print
+        # coneSource = vtk.vtkConeSource()
+        # coneSource.SetResolution(60)
+        # coneSource.SetCenter(-2, 0, 0)
+        # # Create a mapper and actor
+        # mapper = vtk.vtkPolyDataMapper()
+        # mapper.SetInputConnection(coneSource.GetOutputPort())
+        # actor = vtk.vtkActor()
+        # actor.SetMapper(mapper)
+        #
+        # actor_specs.actors_dict[2] = actor
+        # # ren.AddActor(actor)
+
+
+#         import CompuCell
+#         fieldDim = self.currentDrawingParameters.bsd.fieldDim
+#         cellTypeImageData = vtk.vtkImageData()
 #
-#        allowedAreaMax.x=fieldDim.x+0.5;
-#        allowedAreaMax.y=fieldDim.y*sqrt(3.0)/2.0+(fieldDim.z>=3? sqrt(3.0)/6.0 : 0.0);
-#        allowedAreaMax.z=fieldDim.z*sqrt(6.0)/3.0;
-        
-        cellTypeImageData.SetDimensions(fieldDim.x+2,fieldDim.y+2,fieldDim.z+2) # adding 1 pixel border around the lattice to make rendering smooth at lattice borders
-        cellTypeImageData.GetPointData().SetScalars(self.cellType)
-#        print MODULENAME,'  initCellFieldActors():  self.cellType.GetSize()=',self.cellType.GetSize()
-#        print MODULENAME,'  initCellFieldActors(): self.cellType.GetNumberOfTuples()=',self.cellType.GetNumberOfTuples()
+#
+#
+#         cellTypeImageData.SetDimensions(fieldDim.x+2,fieldDim.y+2,fieldDim.z+2) # adding 1 pixel border around the lattice to make rendering smooth at lattice borders
+#         cellTypeImageData.GetPointData().SetScalars(self.cellType)
+#         voi = vtk.vtkExtractVOI()
+#
+#         if VTK_MAJOR_VERSION>=6:
+#             voi.SetInputData(cellTypeImageData)
+#         else:
+#             voi.SetInput(cellTypeImageData)
+#
+#
+#
+# #        voi.SetVOI(1,self.dim[0]-1, 1,self.dim[1]-1, 1,self.dim[2]-1 )  # crop out the artificial boundary layer that we created
+#         voi.SetVOI(0,249, 0,189, 0,170)
+#
+#         numberOfActors = len(self.usedCellTypesList)
+#
+#         # creating and initializing filters, smoothers and mappers - one for each cell type
+#
+#         filterList = [vtk.vtkDiscreteMarchingCubes() for i in xrange(numberOfActors)]
+#         smootherList = [vtk.vtkSmoothPolyDataFilter() for i in xrange(numberOfActors)]
+#         normalsList = [vtk.vtkPolyDataNormals() for i in xrange(numberOfActors)]
+#         mapperList = [vtk.vtkPolyDataMapper() for i in xrange(numberOfActors)]
+#
+#         # actorCounter=0
+#         # for i in usedCellTypesList:
+#         for actorCounter in xrange(len(self.usedCellTypesList)):
+#
+#             if VTK_MAJOR_VERSION>=6:
+#                 filterList[actorCounter].SetInputData(cellTypeImageData)
+#             else:
+#                 filterList[actorCounter].SetInput(cellTypeImageData)
+#
+#
+#
+# #            filterList[actorCounter].SetInputConnection(voi.GetOutputPort())
+#
+#             # filterList[actorCounter].SetValue(0, usedCellTypesList[actorCounter])
+#             filterList[actorCounter].SetValue(0, self.usedCellTypesList[actorCounter])
+#             smootherList[actorCounter].SetInputConnection(filterList[actorCounter].GetOutputPort())
+# #            print MODULENAME,' smooth iters=',smootherList[actorCounter].GetNumberOfIterations()
+# #            smootherList[actorCounter].SetNumberOfIterations(200)
+#             normalsList[actorCounter].SetInputConnection(smootherList[actorCounter].GetOutputPort())
+#             normalsList[actorCounter].SetFeatureAngle(45.0)
+#             mapperList[actorCounter].SetInputConnection(normalsList[actorCounter].GetOutputPort())
+#             mapperList[actorCounter].ScalarVisibilityOff()
+#
+#             actorName = "CellType_" + str(self.usedCellTypesList[actorCounter])
+# #            print MODULENAME,' initCellFieldActors():  actorName=',actorName
+#             if actorName in actors:
+#                 actors[actorName].SetMapper(mapperList[actorCounter])
+#                 actors[actorName].GetProperty().SetDiffuseColor(self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3])
+#                 if self.hexFlag:
+#                     actors[actorName].SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
+# #                _actors[actorName].GetProperty().SetOpacity(0.5)
 
-        voi = vtk.vtkExtractVOI()
-##        voi.SetInputConnection(uGrid.GetOutputPort())
-#        voi.SetInput(uGrid.GetOutput())
+    def init_cell_field_borders_actors(self, actor_specs):  # rf. MVCDrawView3D:drawCellField()
+        #        print MODULENAME,'  initCellFieldBordersActors():  self.usedCellTypesList=',self.usedCellTypesList
 
-        if VTK_MAJOR_VERSION>=6:
-            voi.SetInputData(cellTypeImageData)
-        else:    
-            voi.SetInput(cellTypeImageData)
+        from vtk.util.numpy_support import vtk_to_numpy
+        import CompuCell
+        fieldDim = self.currentDrawingParameters.bsd.fieldDim
 
-
-        
-#        voi.SetVOI(1,self.dim[0]-1, 1,self.dim[1]-1, 1,self.dim[2]-1 )  # crop out the artificial boundary layer that we created
-        voi.SetVOI(0,249, 0,189, 0,170)
-        
+        self.usedCellTypesList = self.extractCellFieldData()
         numberOfActors = len(self.usedCellTypesList)
-        
+        cellTypeImageData = vtk.vtkImageData()
+        cellTypeImageData.SetDimensions(fieldDim.x + 2, fieldDim.y + 2,
+                                        fieldDim.z + 2)  # adding 1 pixel border around the lattice to make rendereing smooth at lattice borders
+        #        cellTypeImageData.GetPointData().SetScalars(self.cellType)
+        cellTypeImageData.GetPointData().SetScalars(self.cellId)
+
+        # create a different actor for each cell type
+        numberOfActors = len(self.usedCellTypesList)
+
         # creating and initializing filters, smoothers and mappers - one for each cell type
 
         filterList = [vtk.vtkDiscreteMarchingCubes() for i in xrange(numberOfActors)]
         smootherList = [vtk.vtkSmoothPolyDataFilter() for i in xrange(numberOfActors)]
         normalsList = [vtk.vtkPolyDataNormals() for i in xrange(numberOfActors)]
         mapperList = [vtk.vtkPolyDataMapper() for i in xrange(numberOfActors)]
-        
+
         # actorCounter=0
         # for i in usedCellTypesList:
-        for actorCounter in xrange(len(self.usedCellTypesList)):
-            
-            if VTK_MAJOR_VERSION>=6:
+        #        print '-------------- NOTE:  drawing 3D Cell Borders is in beta ----------------'
+        # for actorCounter in range(len(self.usedCellTypesList)):
+        for actorCounter, actor_number in enumerate(self.usedCellTypesList):
+            #            print MODULENAME,' initCellFieldBordersActors(): actorCounter=',actorCounter,
+
+            if VTK_MAJOR_VERSION >= 6:
                 filterList[actorCounter].SetInputData(cellTypeImageData)
-            else:    
+            else:
                 filterList[actorCounter].SetInput(cellTypeImageData)
-            
-            
-            
-#            filterList[actorCounter].SetInputConnection(voi.GetOutputPort())
 
             # filterList[actorCounter].SetValue(0, usedCellTypesList[actorCounter])
-            filterList[actorCounter].SetValue(0, self.usedCellTypesList[actorCounter])
+
+            #            print MODULENAME,' initCellFieldBordersActors():  type(self.cellType)=',type(self.cellType)   # duh, 'vtkObject'
+            #            print MODULENAME,' initCellFieldBordersActors():  dir(self.cellType)=',dir(self.cellType)
+
+            if self.usedCellTypesList[actorCounter] >= 1:
+                ctAll = vtk_to_numpy(self.cellType)
+                #                print ', len(ctAll)=',len(ctAll),
+                cidAll = vtk_to_numpy(self.cellId)
+                #                print ', len(cidAll)=',len(cidAll),
+
+                cidUnique = []
+                for idx in range(len(ctAll)):
+                    #                    if ctAll[idx] == 1:
+                    if ctAll[idx] == self.usedCellTypesList[actorCounter]:
+                        cid = cidAll[idx]
+                        if cid not in cidUnique:
+                            cidUnique.append(cidAll[idx])
+
+                #                print ', len(cidUnique)=',len(cidUnique),
+                #                print ', len(ctAll, cidAll, cidUnique)=',len(ctAll),len(cidAll),len(cidUnique),
+
+                for idx in range(len(cidUnique)):
+                    filterList[actorCounter].SetValue(idx, cidUnique[idx])
+
+            else:
+                #                cellTypeImageData.GetPointData().SetScalars(self.cellType)
+                #                filterList[actorCounter].SetValue(0, self.usedCellTypesList[actorCounter])
+                filterList[actorCounter].SetValue(0, 13)  # rwh: what the??
+
+            #            filterList[actorCounter].SetValue(0, self.usedCellTypesList[actorCounter])
             smootherList[actorCounter].SetInputConnection(filterList[actorCounter].GetOutputPort())
-#            print MODULENAME,' smooth iters=',smootherList[actorCounter].GetNumberOfIterations()
-#            smootherList[actorCounter].SetNumberOfIterations(200)
             normalsList[actorCounter].SetInputConnection(smootherList[actorCounter].GetOutputPort())
             normalsList[actorCounter].SetFeatureAngle(45.0)
             mapperList[actorCounter].SetInputConnection(normalsList[actorCounter].GetOutputPort())
             mapperList[actorCounter].ScalarVisibilityOff()
-            
-            actorName = "CellType_" + str(self.usedCellTypesList[actorCounter])
-#            print MODULENAME,' initCellFieldActors():  actorName=',actorName
-            if actorName in _actors:
-                _actors[actorName].SetMapper(mapperList[actorCounter])
-                _actors[actorName].GetProperty().SetDiffuseColor(self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3])
-                if self.hexFlag:
-                    _actors[actorName].SetScale(self.xScaleHex,self.yScaleHex,self.zScaleHex)
-#                _actors[actorName].GetProperty().SetOpacity(0.5)
 
-                
-                
+            # actorName = "CellType_" + str(self.usedCellTypesList[actorCounter])
+            actorName = "CellType_" + str(actor_number)
+            #            print ', actorName=',actorName
+
+            actors_dict = actor_specs.actors_dict
+            # if actorName in actors_dict.keys():
+            if actor_number in actors_dict.keys():
+                actor = actors_dict[actor_number]
+                actor.SetMapper(mapperList[actorCounter])
+                actor.GetProperty().SetDiffuseColor(
+                    # self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3])
+                    self.celltypeLUT.GetTableValue(actor_number)[0:3])
+                print('TURN ON HEX FLAG')
+                # if self.hexFlag:
+                #     actors_dict[actorName].SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
+
+            # if actorName in _actors:
+            #     _actors[actorName].SetMapper(mapperList[actorCounter])
+            #     _actors[actorName].GetProperty().SetDiffuseColor(
+            #         self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3])
+            #     if self.hexFlag:
+            #         _actors[actorName].SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
+
     # new rendering technique - vkDiscreteMarchingCubes on cellId
     def initCellFieldBordersActors(self,_actors):   # rf. MVCDrawView3D:drawCellField()
 #        print MODULENAME,'  initCellFieldBordersActors():  self.usedCellTypesList=',self.usedCellTypesList

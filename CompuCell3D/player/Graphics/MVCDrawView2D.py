@@ -437,7 +437,7 @@ class MVCDrawView2D(MVCDrawViewBase):
                 self.drawCellFieldHex(_bsd,fieldType)
                 return
 
-            self.drawModel.initCellFieldActors((self.cellsActor,))
+            self.drawModel.init_cell_field_actors((self.cellsActor,))
 
             if not self.currentActors.has_key("CellsActor"):
                 self.currentActors["CellsActor"] = self.cellsActor

@@ -25,7 +25,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         
         self.initArea()
         self.setParams()
-        self.field_extractor = None
+
         
     # Sets up the VTK simulation area 
     def initArea(self):
@@ -149,8 +149,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
 
 
-
-    def initCellFieldActors(self, actors):
+    def init_cell_field_actors(self, actor_specs):
 
         fieldDim = self.currentDrawingParameters.bsd.fieldDim
         dimOrder = self.dimOrder(self.currentDrawingParameters.plane)
@@ -162,7 +161,22 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.cellTypeIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=self.cellType)
         self.field_extractor.fillCellFieldData2D(self.cellTypeIntAddr,self.currentDrawingParameters.plane, self.currentDrawingParameters.planePos)
 
-        self.initCellFieldActorsData(actors)
+        # self.initCellFieldActorsData(actors)
+        self.initCellFieldActorsData(list(actor_specs.actors_dict.values()))
+
+    # def init_cell_field_actors(self, actors):
+    #
+    #     fieldDim = self.currentDrawingParameters.bsd.fieldDim
+    #     dimOrder = self.dimOrder(self.currentDrawingParameters.plane)
+    #     self.dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]
+    #
+    #     self.cellType = vtk.vtkIntArray()
+    #     self.cellType.SetName("celltype")
+    #
+    #     self.cellTypeIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=self.cellType)
+    #     self.field_extractor.fillCellFieldData2D(self.cellTypeIntAddr,self.currentDrawingParameters.plane, self.currentDrawingParameters.planePos)
+    #
+    #     self.initCellFieldActorsData(actors)
 
     def initCellFieldHexActors(self, _actors):
         # cellField  = sim.getPotts().getCellFieldG()

@@ -11,6 +11,8 @@ import Configuration
 import vtk, math
 import sys, os
 import string
+from collections import OrderedDict
+from copy import deepcopy
 
 CONTOUR_ALLOWED_FIELD_TYPES=[FIELD_TYPES[1],FIELD_TYPES[2],FIELD_TYPES[3]]
 
@@ -37,6 +39,9 @@ class MVCDrawView2D(MVCDrawViewBase):
         Sets up the VTK simulation area
         :return:None
         '''
+
+        self.actors_dict = {}
+
         self.actorCollection=vtk.vtkActorCollection()
         self.borderActor    = vtk.vtkActor()
         self.borderActorHex = vtk.vtkActor()
@@ -87,7 +92,36 @@ class MVCDrawView2D(MVCDrawViewBase):
         self.ctlut.SetAlphaRange(1.0,1.0)
         self.ctlut.SetNumberOfColors(1024)
         self.ctlut.Build()
-        
+
+
+
+    def getActors(self, actor_label_list=None):
+        """
+        returns container with actors
+        :param actor_label_list:{list of str} list of actors
+        :return: {OrderedDict}
+        """
+
+        od = OrderedDict()
+        if actor_label_list is None:
+            return od
+        for actor_label in actor_label_list:
+            od[actor_label] = getattr(self,actor_label)
+
+        return od
+
+    def prepare_cell_field_actors(self,actor_specs):
+        """
+        Prepares cell_field_actors  based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :return: {ActorSpecs}
+        """
+        actor_specs_copy = deepcopy(actor_specs)
+        actor_specs_copy.actors_dict = OrderedDict()
+        actor_specs_copy.actors_dict['cellsActor'] = self.cellsActor
+
+        return actor_specs_copy
+
     def setPlane(self, plane, pos):
         (self.plane, self.planePos) = (str(plane).upper(), pos)
 #        print MODULENAME,"  got this plane ",(self.plane, self.planePos)
@@ -456,7 +490,7 @@ class MVCDrawView2D(MVCDrawViewBase):
         #
         # self.Render()
 
-    def show_cells_actor(self,show_flag=True):
+    def show_cell_actors(self,actor_specs,show_flag=True):
         """
         shows/hides cells
         :param show_flag:
@@ -518,7 +552,7 @@ class MVCDrawView2D(MVCDrawViewBase):
         '''
 
 
-        self.drawModel.initCellFieldActors((self.cellsActor,))
+        self.drawModel.init_cell_field_actors((self.cellsActor,))
 
         if not self.currentActors.has_key("CellsActor"):
             self.currentActors["CellsActor"] = self.cellsActor
@@ -588,7 +622,7 @@ class MVCDrawView2D(MVCDrawViewBase):
                 self.drawCellFieldHex(_bsd,fieldType)
                 return
 
-            self.drawModel.initCellFieldActors((self.cellsActor,))
+            self.drawModel.init_cell_field_actors((self.cellsActor,))
 
             if not self.currentActors.has_key("CellsActor"):
                 self.currentActors["CellsActor"] = self.cellsActor

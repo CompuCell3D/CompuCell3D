@@ -12,6 +12,7 @@ from MVCDrawModel2D import MVCDrawModel2D
 
 from MVCDrawView3D import MVCDrawView3D
 from MVCDrawModel3D import MVCDrawModel3D
+from Specs import ActorSpecs
 
 MODULENAME = '---- GraphicsFrameWidget.py: '
 
@@ -29,6 +30,7 @@ class GenericDrawer():
         self.field_extractor = None
 
         self.ren = vtk.vtkRenderer()
+
         # self.renWin = self.qvtkWidget.GetRenderWindow()
         # self.renWin.AddRenderer(self.ren)
 
@@ -66,6 +68,7 @@ class GenericDrawer():
 
         self.field_extractor = field_extractor
         self.draw_model_2D.field_extractor = field_extractor
+        self.draw_model_3D.field_extractor = field_extractor
 
     def draw_cell_field(self, drawing_params):
         """
@@ -75,8 +78,25 @@ class GenericDrawer():
         """
         model, view = self.get_model_view(drawing_params=drawing_params)
 
-        model.initCellFieldActors((view.cellsActor,))
-        view.show_cells_actor()
+        actors_specs = ActorSpecs()
+        actors_specs.actor_label_list = ['cellsActor']
+        actors_specs.metadata = {
+            'invisible_types':drawing_params.screenshot_data.invisible_types,
+            'all_types':list(range(2+1))
+        }
+
+        # actors_dict = view.getActors(actor_label_list=['cellsActor'])
+        actor_specs_final = view.prepare_cell_field_actors(actors_specs)
+
+        # model.prepare_cells_actors(actors_specs)
+
+        # cell_actors_metadata = model.get_cell_actors_metadata()
+
+        # model.initCellFieldActors((view.cellsActor,))
+        # model.init_cell_field_actors(actors=actors_dict.values())
+        model.init_cell_field_actors(actor_specs=actor_specs_final)
+        view.show_cell_actors(actor_specs=actor_specs_final)
+        view.setCamera(drawing_params.bsd.fieldDim)
 
         # self.draw_model_2D.initCellFieldActors((self.draw_view_2D.cellsActor,))
         # self.draw_view_2D.show_cells_actor()
@@ -125,6 +145,7 @@ class GenericDrawer():
     #         return self.draw_model_3D, self.draw_view_3D
 
     def get_model_view(self, drawing_params):
+        # type: (DrawingParameters) -> (MVCDrawModelBase,MVCDrawViewBase)
         """
         returns pair of model view objects depending on the dimension label
         :param drawing_params: {Graphics.DrawingParameters instance}

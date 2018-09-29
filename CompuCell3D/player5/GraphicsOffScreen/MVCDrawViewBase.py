@@ -402,7 +402,26 @@ class MVCDrawViewBase:
             # print 'self.graphicsFrameWidget=',self.graphicsFrameWidget
             # self.graphicsFrameWidget.clearDisplayOnDemand()
             
-    
+    def getActors(self, actor_label_list=None):
+        """
+        returns container with actors
+        :param actor_label_list:{list of str} list of actors
+        :return: {OrderedDict} 
+        """
+        raise NotImplementedError(self.__class__.getActors.__qualname__)
+
+    def prepare_cell_field_actors(self,actor_specs):
+        """
+        Prepares cell_field_actors  based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :return: {dict}
+        """
+
+        raise NotImplementedError(self.__class__.prepare_cell_field_actors.__qualname__)
+
+
+    def show_cell_actors(self, actor_specs, show_flag):raise NotImplementedError()
+
     def drawCellField(self, _bsd, fieldType): pass
     
     def drawConField(self, _bsd, fieldType): pass

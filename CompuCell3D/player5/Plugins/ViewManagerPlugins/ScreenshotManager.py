@@ -40,6 +40,7 @@ class ScreenshotData:
         self.bounding_box_on = None
         self.lattice_axes_on = None
         self.lattice_axes_labels_on = None
+        self.invisible_types = None
 
     #        self.winWidth=299   # some unique default
     #        self.winHeight=299
@@ -200,7 +201,7 @@ class ScreenshotManager:
 
         elem.ElementCC3D(elem_label, {"On": 1 if elem_value else 0})
 
-    def parseAndAssignBoolChildElement(self, parent_elem, elem_label,obj, attr):
+    def parseAndAssignBoolChildElement(self, parent_elem, elem_label, obj, attr):
         """
         creates child xml element for boolean value
 
@@ -213,11 +214,10 @@ class ScreenshotManager:
         elem = parent_elem.getFirstElement(elem_label)
         if elem:
             on_flag = int(elem.getAttribute("On"))
-            setattr(obj,attr,bool(on_flag))
+            setattr(obj, attr, bool(on_flag))
             # scrData.cell_borders_on = bool(on_flag)
 
         # elem.ElementCC3D(elem_label, {"On": 1 if elem_value else 0})
-
 
     def writeScreenshotDescriptionFile(self, fileName):
         from XMLUtils import ElementCC3D
@@ -264,16 +264,15 @@ class ScreenshotManager:
                                         elem_value=scrData.cell_glyphs_on)
             self.appendBoolChildElement(elem=scrDescElement, elem_label='FPPLinks',
                                         elem_value=scrData.fpp_links_on)
-
             self.appendBoolChildElement(elem=scrDescElement, elem_label='BoundingBox',
                                         elem_value=scrData.bounding_box_on)
-
             self.appendBoolChildElement(elem=scrDescElement, elem_label='LatticeAxes',
                                         elem_value=scrData.lattice_axes_on)
-
             self.appendBoolChildElement(elem=scrDescElement, elem_label='LatticeAxesLabels',
                                         elem_value=scrData.lattice_axes_labels_on)
 
+            scrDescElement.ElementCC3D("TypesInvisible", {},
+                                       scrData.invisible_types if scrData.invisible_types is not None else '')
 
             # scrDescElement.ElementCC3D("CellBorders", {"On": 1 if scrData.cell_borders_on else 0})
 
@@ -304,6 +303,15 @@ class ScreenshotManager:
                                                 attr='lattice_axes_on')
             self.parseAndAssignBoolChildElement(parent_elem=scr, elem_label='LatticeAxesLabels', obj=scrData,
                                                 attr='lattice_axes_labels_on')
+
+            try:
+                types_invisible_elem_str= scr.getFirstElement("TypesInvisible").getText()
+                if types_invisible_elem_str:
+                    scrData.invisible_types = map(lambda x:int(x), types_invisible_elem_str.split(','))
+                else:
+                    scrData.invisible_types = []
+            except:
+                pass
 
             # borders_elem = scr.getFirstElement("CellBorders1")
             # if borders_elem:
@@ -451,9 +459,11 @@ class ScreenshotManager:
         scrData.cluster_borders_on = tvw.clusterBorderAct.isChecked()
         scrData.cell_glyphs_on = tvw.cellGlyphsAct.isChecked()
         scrData.fpp_links_on = tvw.FPPLinksAct.isChecked()
-        scrData.lattice_axes_on = Configuration.getSetting('ShowHorizontalAxesLabels') or Configuration.getSetting('ShowVerticalAxesLabels')
+        scrData.lattice_axes_on = Configuration.getSetting('ShowHorizontalAxesLabels') or Configuration.getSetting(
+            'ShowVerticalAxesLabels')
         scrData.lattice_axes_labels_on = Configuration.getSetting("ShowAxes")
         scrData.bounding_box_on = Configuration.getSetting("BoundingBoxOn")
+        scrData.invisible_types = Configuration.getSetting("Types3DInvisible")
 
     def add2DScreenshot(self, _plotName, _plotType, _projection, _projectionPosition,
                         _camera):  # called from GraphicsFrameWidget

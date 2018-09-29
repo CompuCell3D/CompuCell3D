@@ -48,7 +48,10 @@ import vtk, math
 import string
 
 from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES,PLANES
-        
+
+
+
+
 class MVCDrawModelBase:
     def __init__(self):
         
@@ -61,6 +64,7 @@ class MVCDrawModelBase:
         self.currentDrawingFunction=None       
         self.fieldTypes=None 
         self.currentDrawingParameters=None
+        self.field_extractor = None
 #        self.scaleGlyphsByVolume = False
         
         # self.hexFlag = self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"]
@@ -106,8 +110,11 @@ class MVCDrawModelBase:
         return self.parentWidget.fieldExtractor.unmangleSWIGVktPtrAsLong(_vtkObj.__this__)
         # return int(_vtkObj.__this__[1:9],16)
                 
-        
-    def initCellFieldActors(self, _actors): pass
+    def get_cell_actors_metadata(self): pass
+
+
+    def init_cell_field_actors(self, actor_specs):raise NotImplementedError()
+
     
     def initConFieldActors(self, _actors): pass
     
