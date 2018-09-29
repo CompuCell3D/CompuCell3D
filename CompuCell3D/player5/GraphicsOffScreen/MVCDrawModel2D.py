@@ -20,8 +20,8 @@ from Messaging import dbgMsg
 
 
 class MVCDrawModel2D(MVCDrawModelBase):
-    def __init__(self, parent=None):
-        # MVCDrawModelBase.__init__(self,parent)
+    def __init__(self):
+        MVCDrawModelBase.__init__(self)
         
         self.initArea()
         self.setParams()
@@ -113,46 +113,56 @@ class MVCDrawModel2D(MVCDrawModelBase):
         _actors[0].GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
 
 
-    def initCellFieldActors(self, _actors):
-#        print MODULENAME,'  initCellFieldActors()'
+    def init_outline_actors(self,actors):
 
-#         if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.currentDrawingParameters.plane=="XY": # drawing in other planes will be done on a rectangular lattice
-# #            self.initCellFieldHexActors(_bsd,fieldType,_actors)
-#             self.initCellFieldHexActors(_actors)
-#             return
+        outlineData = vtk.vtkImageData()
 
-        # cellField  = _bsd.sim.getPotts().getCellFieldG()
+        fieldDim = self.currentDrawingParameters.bsd.fieldDim
+        dimOrder    = self.dimOrder(self.currentDrawingParameters.plane)
+        self.dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))
 
-        # # # print "drawing plane ",self.plane," planePos=",self.planePos
-        # fieldDim = cellField.getDim()
+        if self.currentDrawingParameters.lattice_type.startswith('hex') and self.currentDrawingParameters.plane=="XY":
+            import math
+            outlineData.SetDimensions(self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1)
+            # print "self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1= ",(self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1)
+        else:
+            outlineData.SetDimensions(self.dim[0]+1, self.dim[1]+1, 1)
+
+
+        outline = vtk.vtkOutlineFilter()
+
+        if VTK_MAJOR_VERSION>=6:
+            outline.SetInputData(outlineData)
+        else:
+            outline.SetInput(outlineData)
+
+
+        outlineMapper = vtk.vtkPolyDataMapper()
+        outlineMapper.SetInputConnection(outline.GetOutputPort())
+
+        actors[0].SetMapper(outlineMapper)
+        actors[0].GetProperty().SetColor(1, 1, 1)
+
+
+        # color = Configuration.getSetting("BoundingBoxColor")   # eventually do this smarter (only get/update when it changes)
+        # actors[0].GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+
+
+
+
+    def initCellFieldActors(self, actors):
+
         fieldDim = self.currentDrawingParameters.bsd.fieldDim
         dimOrder = self.dimOrder(self.currentDrawingParameters.plane)
         self.dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]
 
         self.cellType = vtk.vtkIntArray()
         self.cellType.SetName("celltype")
-        # self.cellTypeIntAddr=self.parentWidget.fieldExtractor.unmangleSWIGVktPtr(self.cellType.__this_)
-
-        # self.cellTypeIntAddr=self.extractAddressIntFromVtkObject(self.cellType)
-
 
         self.cellTypeIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=self.cellType)
-        # print "self.cellTypeIntAddr=",self.cellTypeIntAddr
-
-
-
-
-        # self.parentWidget.fieldExtractor.fillCellFieldData2D(self.cellTypeIntAddr,self.currentDrawingParameters.plane, self.currentDrawingParameters.planePos)
         self.field_extractor.fillCellFieldData2D(self.cellTypeIntAddr,self.currentDrawingParameters.plane, self.currentDrawingParameters.planePos)
 
-        # Python function used during prototyping
-        # self.fillCellFieldData(cellField,self.plane, self.planePos)
-
-
-        self.initCellFieldActorsData(_actors)
-
-
-
+        self.initCellFieldActorsData(actors)
 
     def initCellFieldHexActors(self, _actors):
         # cellField  = sim.getPotts().getCellFieldG()

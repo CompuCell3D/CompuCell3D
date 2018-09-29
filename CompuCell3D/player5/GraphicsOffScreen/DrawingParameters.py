@@ -7,5 +7,6 @@ class DrawingParameters:
         self.screenshot_data = None
         self.fieldName="Cell_Field"
         self.fieldType="CellField"
+        self.lattice_type = 'cartesian'
         
         

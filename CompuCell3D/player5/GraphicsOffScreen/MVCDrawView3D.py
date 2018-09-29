@@ -16,15 +16,15 @@ import sys, os
 MODULENAME='==== MVCDrawView3D.py:  '
 
 class MVCDrawView3D(MVCDrawViewBase):
-    def __init__(self, _drawModel, qvtkWidget, parent=None):
-        MVCDrawViewBase.__init__(self,_drawModel,qvtkWidget, parent)
+    def __init__(self, _drawModel):
+        MVCDrawViewBase.__init__(self,_drawModel)
         
         self.initArea()
         self.setParams()
-        self.usedCellTypesList=None
-        self.usedDraw3DFlag=False
-        self.boundingBox = Configuration.getSetting("BoundingBoxOn")
-        self.show3DAxes = Configuration.getSetting("ShowAxes")
+        # self.usedCellTypesList=None
+        # self.usedDraw3DFlag=False
+        # self.boundingBox = Configuration.getSetting("BoundingBoxOn")
+        # self.show3DAxes = Configuration.getSetting("ShowAxes")
         self.warnUserCellBorders = True
 
     def initArea(self):

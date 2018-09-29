@@ -63,7 +63,7 @@ class MVCDrawModelBase:
         self.currentDrawingParameters=None
 #        self.scaleGlyphsByVolume = False
         
-        self.hexFlag = self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"]
+        # self.hexFlag = self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"]
 #        print MODULENAME,' __init__:   self.hexFlag=', self.hexFlag
         
         # should also set "periodic" boundary condition flag(s) (e.g. for drawing FPP links that wraparound)

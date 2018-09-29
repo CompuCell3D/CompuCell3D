@@ -30,7 +30,7 @@ class MVCDrawView2D(MVCDrawViewBase):
         self.initArea()
         self.setParams()
         
-        self.pixelizedScalarField = Configuration.getSetting("PixelizedScalarField")
+        # self.pixelizedScalarField = Configuration.getSetting("PixelizedScalarField")
 
     def initArea(self):
         '''
@@ -456,10 +456,41 @@ class MVCDrawView2D(MVCDrawViewBase):
         #
         # self.Render()
 
-    def show_cells_actor(self):
-        if not self.currentActors.has_key("CellsActor"):
-            self.currentActors["CellsActor"] = self.cellsActor
-            self.ren.AddActor(self.cellsActor)
+    def show_cells_actor(self,show_flag=True):
+        """
+        shows/hides cells
+        :param show_flag:
+        :return:
+        """
+        if show_flag:
+            if not self.currentActors.has_key("CellsActor"):
+                self.currentActors["CellsActor"] = self.cellsActor
+                self.ren.AddActor(self.cellsActor)
+        else:
+            if self.currentActors.has_key("CellsActor"):
+                del self.currentActors["CellsActor"]
+                self.ren.RemoveActor(self.cellsActor)
+
+
+    def show_bounding_box(self, show_flag):
+        """
+        shows/hides bounding box
+        :param show_flag:
+        :return:
+        """
+        if show_flag:
+            if not self.currentActors.has_key("Outline"):
+                self.currentActors["Outline"]=self.outlineActor
+                self.ren.AddActor(self.outlineActor)
+            else:
+                self.ren.RemoveActor(self.outlineActor)
+
+                self.ren.AddActor(self.outlineActor)
+        else:
+            if self.currentActors.has_key("Outline"):
+                del self.currentActors["Outline"]
+                self.ren.RemoveActor(self.outlineActor)
+
 
     def show_cell_borders(self, show_flag=True):
         '''

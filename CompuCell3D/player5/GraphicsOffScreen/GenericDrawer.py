@@ -20,6 +20,7 @@ from weakref import ref
 from DrawingParameters import DrawingParameters
 from BasicSimulationData import BasicSimulationData
 
+
 class GenericDrawer():
     def __init__(self, parent=None, originatingWidget=None):
 
@@ -27,21 +28,24 @@ class GenericDrawer():
         self.planePos = None
         self.field_extractor = None
 
-
         self.ren = vtk.vtkRenderer()
         # self.renWin = self.qvtkWidget.GetRenderWindow()
         # self.renWin.AddRenderer(self.ren)
 
         # MDIFIX
-        self.draw_model_2D = MVCDrawModel2D(self)
+        self.draw_model_2D = MVCDrawModel2D()
         self.draw_view_2D = MVCDrawView2D(self.draw_model_2D)
 
+        self.draw_model_3D = MVCDrawModel3D()
+        self.draw_view_3D = MVCDrawView3D(self.draw_model_3D)
+
         self.draw_view_2D.ren = self.ren
+        self.draw_view_3D.ren = self.ren
 
         #
         # dict {field_type: drawing fcn}
         self.drawing_fcn_dict = {
-            ('CellField','Cart'):self.draw_cell_field
+            ('CellField', 'Cart'): self.draw_cell_field
         }
         #
         # self.drawModel3D = MVCDrawModel3D(self, self.parentWidget)
@@ -63,31 +67,75 @@ class GenericDrawer():
         self.field_extractor = field_extractor
         self.draw_model_2D.field_extractor = field_extractor
 
-
     def draw_cell_field(self, drawing_params):
         """
         Draws cell field
         :param drawing_params:
         :return:
         """
-        self.draw_model_2D.initCellFieldActors((self.draw_view_2D.cellsActor,))
-        self.draw_view_2D.show_cells_actor()
+        model, view = self.get_model_view(drawing_params=drawing_params)
+
+        model.initCellFieldActors((view.cellsActor,))
+        view.show_cells_actor()
+
+        # self.draw_model_2D.initCellFieldActors((self.draw_view_2D.cellsActor,))
+        # self.draw_view_2D.show_cells_actor()
 
         # self.drawModel.initCellFieldActors((self.cellsActor,))
         # self.drawModel2D.initCellFieldActors((self.drawVcellsActor,))
 
-    def draw_cell_borders(self,drawing_params):
+    def draw_cell_borders(self, drawing_params):
         """
         Draws cell borders
         :param drawing_params:
         :return:
         """
-        self.draw_model_2D.initBordersActors2D((self.draw_view_2D.borderActor,))
+        model, view = self.get_model_view(drawing_params=drawing_params)
+        model.initBordersActors2D((view.borderActor,))
         show_flag = drawing_params.screenshot_data.cell_borders_on
-        self.draw_view_2D.show_cell_borders(show_flag=show_flag)
+        view.show_cell_borders(show_flag=show_flag)
 
+        # self.draw_model_2D.initBordersActors2D((self.draw_view_2D.borderActor,))
+        # show_flag = drawing_params.screenshot_data.cell_borders_on
+        # self.draw_view_2D.show_cell_borders(show_flag=show_flag)
+
+    def draw_bounding_box(self, drawing_params):
+        model, view = self.get_model_view(drawing_params=drawing_params)
+
+        model.init_outline_actors((view.outlineActor,))
+        show_flag = drawing_params.screenshot_data.bounding_box_on
+        view.show_bounding_box(show_flag=show_flag)
+
+        # self.draw_model_2D.init_outline_actors((self.draw_view_2D.outlineActor,))
+        # show_flag = drawing_params.screenshot_data.bounding_box_on
+        # self.draw_view_2D.show_bounding_box(show_flag=show_flag)
 
     # def draw(self, drawing_params, screenshot_name):
+
+    # def get_model_view(self, dimension_label):
+    #     """
+    #     returns pair of model view objects depending on the dimension label
+    #     :param dimension_label: {str}
+    #     :return: {tuple} mode, view object tuple
+    #     """
+    #
+    #     if dimension_label == '2D':
+    #         return self.draw_model_2D, self.draw_view_2D
+    #     else:
+    #         return self.draw_model_3D, self.draw_view_3D
+
+    def get_model_view(self, drawing_params):
+        """
+        returns pair of model view objects depending on the dimension label
+        :param drawing_params: {Graphics.DrawingParameters instance}
+        :return: {tuple} mode, view object tuple
+        """
+        dimension_label = drawing_params.screenshot_data.spaceDimension
+
+        if dimension_label == '2D':
+            return self.draw_model_2D, self.draw_view_2D
+        else:
+            return self.draw_model_3D, self.draw_view_3D
 
     def draw(self, screenshot_data, bsd, screenshot_name):
 
@@ -100,9 +148,14 @@ class GenericDrawer():
         drawing_params.fieldName = screenshot_data.plotData[0]  # e.g. plotData = ('Cell_Field','CellField')
         drawing_params.fieldType = screenshot_data.plotData[1]
 
-        self.draw_model_2D.setDrawingParametersObject(drawing_params)
+        # model, view = self.get_model_view(dimension_label=screenshot_data.spaceDimension)
+        model, view = self.get_model_view(drawing_params=drawing_params)
+        # self.draw_model_2D.setDrawingParametersObject(drawing_params)
+        model.setDrawingParametersObject(drawing_params)
+
+
         try:
-            key = (drawing_params.fieldType,'Cart')
+            key = (drawing_params.fieldType, 'Cart')
             draw_fcn = self.drawing_fcn_dict[key]
 
         except KeyError:
@@ -114,8 +167,8 @@ class GenericDrawer():
             # decorations
             if drawing_params.screenshot_data.cell_borders_on:
                 self.draw_cell_borders(drawing_params=drawing_params)
-
-
+            if drawing_params.screenshot_data.bounding_box_on:
+                self.draw_bounding_box(drawing_params=drawing_params)
 
             renWin = vtk.vtkRenderWindow()
             renWin.SetOffScreenRendering(1)
@@ -127,9 +180,11 @@ class GenericDrawer():
             windowToImageFilter.Update()
 
             writer = vtk.vtkPNGWriter()
-            writer.SetFileName('D:/CC3D_GIT/CompuCell3D/player5/GraphicsOffScreen/{screenshot_name}.png'.format(screenshot_name=screenshot_name))
+            writer.SetFileName('D:/CC3D_GIT/CompuCell3D/player5/GraphicsOffScreen/{screenshot_name}.png'.format(
+                screenshot_name=screenshot_name))
             writer.SetInputConnection(windowToImageFilter.GetOutputPort())
             writer.Write()
+
 
 
     def draw_old(self, screenshot_data, bsd, screenshot_name):
@@ -159,11 +214,15 @@ class GenericDrawer():
         drawing_params.fieldName = screenshot_data.plotData[0]  # e.g. plotData = ('Cell_Field','CellField')
         drawing_params.fieldType = screenshot_data.plotData[0]
 
-        self.draw_model_2D.setDrawingParametersObject(drawing_params)
+        model, view = self.get_model_view(screenshot_data.spaceDimension)
 
+        model.setDrawingParametersObject(drawing_params)
+        view.drawCellFieldLocalNew(drawing_params, None)
 
-        self.draw_view_2D.drawCellFieldLocalNew(drawing_params, None)
-        # self.draw2D.drawCellFieldLocalNew_1(self.ren)
+        # self.draw_model_2D.setDrawingParametersObject(drawing_params)
+        #
+        # self.draw_view_2D.drawCellFieldLocalNew(drawing_params, None)
+        # # self.draw2D.drawCellFieldLocalNew_1(self.ren)
 
         # coneSource = vtk.vtkConeSource()
         # coneSource.SetResolution(60)
@@ -181,7 +240,6 @@ class GenericDrawer():
         # renWin.AddRenderer(renderer)
         # renderWindowInteractor = vtk.vtkRenderWindowInteractor()
         # renderWindowInteractor.SetRenderWindow(renderWindow)
-
 
         # # OK
         # coneSource = vtk.vtkConeSource()
@@ -242,10 +300,10 @@ class GenericDrawer():
         windowToImageFilter.Update()
 
         writer = vtk.vtkPNGWriter()
-        writer.SetFileName('D:/CC3D_GIT/CompuCell3D/player5/GraphicsOffScreen/{screenshot_name}.png'.format(screenshot_name=screenshot_name))
+        writer.SetFileName('D:/CC3D_GIT/CompuCell3D/player5/GraphicsOffScreen/{screenshot_name}.png'.format(
+            screenshot_name=screenshot_name))
         writer.SetInputConnection(windowToImageFilter.GetOutputPort())
         writer.Write()
-
 
     def resetAllCameras(self):
         print 'resetAllCameras in GraphicsFrame =', self
@@ -267,7 +325,6 @@ class GenericDrawer():
     #         else:
     #             raise AttributeError, self.__class__.__name__ + \
     #                                   " has no attribute named " + attr
-
 
     def populateLookupTable(self):
         self.draw_model_2D.populateLookupTable()
@@ -318,7 +375,6 @@ class GenericDrawer():
 
     def getCamera3D(self):
         return self.camera3D
-
 
     def getActiveCamera(self):
         return self.ren.GetActiveCamera()
@@ -383,8 +439,6 @@ class GenericDrawer():
         # import time
         # time.sleep(2)
 
-
-
     def _takeShot(self):
         #        print MODULENAME, '  _takeShot():  self.parentWidget.screenshotManager=',self.parentWidget.screenshotManager
         print MODULENAME, '  _takeShot():  self.renWin.GetSize()=', self.renWin.GetSize()
@@ -412,16 +466,15 @@ class GenericDrawer():
                 # print "planePositionTupple=",planePositionTupple
                 self.parentWidget.screenshotManager.add2DScreenshot(fieldType[0], fieldType[1], planePositionTupple[0],
                                                                     planePositionTupple[1], camera)
+
     def setInitialCrossSection(self, _basicSimulationData):
         #        print MODULENAME, '  setInitialCrossSection'
         fieldDim = _basicSimulationData.fieldDim
-
 
         self.updateCrossSection(_basicSimulationData)
 
         # new (rwh, May 2011)
         self.currentProjection = 'xy'  # rwh
-
 
         self.projComboBox.setCurrentIndex(1)  # set to be 'xy' projection by default, regardless of 2D or 3D sim?
 
@@ -465,12 +518,9 @@ class GenericDrawer():
         # self.qvtkWidget.resetCamera() # last call triggers fisrt call to draw function so we here reset camera so that all the actors are initially visible
         self.resetCamera()  # last call triggers fisrt call to draw function so we here reset camera so that all the actors are initially visible
 
-
     def resetCamera(self):
         '''
         Resets camera to default settings
         :return:None
         '''
         self.qvtkWidget.resetCamera()
-
-

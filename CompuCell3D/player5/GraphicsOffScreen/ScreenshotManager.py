@@ -38,6 +38,9 @@ class ScreenshotData:
         self.cluster_borders_on = None
         self.cell_glyphs_on = None
         self.fpp_links_on = None
+        self.bounding_box_on = None
+        self.lattice_axes_on = None
+        self.lattice_axes_labels_on = None
 
     #        self.winWidth=299   # some unique default
     #        self.winHeight=299
@@ -93,6 +96,7 @@ class ScreenshotManager:
     def __init__(self,):
 
         self.screenshotDataDict = {}
+        self.screenshotCounter3D = 0
 
     def cleanup(self):
         # have to do cleanup to ensure some of the memory intensive resources e.g. self.screenshotGraphicsWidget get deallocated
@@ -196,7 +200,14 @@ class ScreenshotManager:
                                         elem_value=scrData.cell_glyphs_on)
             self.appendBoolChildElement(elem=scrDescElement, elem_label='FPPLinks',
                                         elem_value=scrData.fpp_links_on)
+            self.appendBoolChildElement(elem=scrDescElement, elem_label='BoundingBox',
+                                        elem_value=scrData.bounding_box_on)
 
+            self.appendBoolChildElement(elem=scrDescElement, elem_label='LatticeAxes',
+                                        elem_value=scrData.lattice_axes_on)
+
+            self.appendBoolChildElement(elem=scrDescElement, elem_label='LatticeAxesLabels',
+                                        elem_value=scrData.lattice_axes_labels_on)
 
 
             # scrDescElement.ElementCC3D("CellBorders", {"On": 1 if scrData.cell_borders_on else 0})
@@ -223,27 +234,33 @@ class ScreenshotManager:
             self.parseAndAssignBoolChildElement(parent_elem=scr, elem_label='FPPLinks', obj=scrData,
                                                 attr='fpp_links_on')
 
-
+            self.parseAndAssignBoolChildElement(parent_elem=scr, elem_label='BoundingBox', obj=scrData,
+                                                attr='bounding_box_on')
+            self.parseAndAssignBoolChildElement(parent_elem=scr, elem_label='LatticeAxes', obj=scrData,
+                                                attr='lattice_axes_on')
+            self.parseAndAssignBoolChildElement(parent_elem=scr, elem_label='LatticeAxesLabels', obj=scrData,
+                                                attr='lattice_axes_labels_on')
             # borders_elem = scr.getFirstElement("CellBorders1")
             # if borders_elem:
             #     on_flag = int(borders_elem.getAttribute("On"))
             #
             #     scrData.cell_borders_on = bool(on_flag)
+            plotElement = scr.getFirstElement("Plot")
+            scrData.plotData = (plotElement.getAttribute("PlotName"), plotElement.getAttribute("PlotType"))
+
+            sizeElement = scr.getFirstElement("Size")
+            scrSize = [int(sizeElement.getAttribute("Width")), int(sizeElement.getAttribute("Height"))]
 
             if scr.getFirstElement("Dimension").getText() == "2D":
                 print MODULENAME, "GOT 2D SCREENSHOT"
 
                 scrData.spaceDimension = "2D"
-
-                plotElement = scr.getFirstElement("Plot")
-                scrData.plotData = (plotElement.getAttribute("PlotName"), plotElement.getAttribute("PlotType"))
-
                 projElement = scr.getFirstElement("Projection")
                 scrData.projection = projElement.getAttribute("ProjectionPlane")
                 scrData.projectionPosition = int(projElement.getAttribute("ProjectionPosition"))
 
-                sizeElement = scr.getFirstElement("Size")
-                scrSize = [int(sizeElement.getAttribute("Width")), int(sizeElement.getAttribute("Height"))]
+                # sizeElement = scr.getFirstElement("Size")
+                # scrSize = [int(sizeElement.getAttribute("Width")), int(sizeElement.getAttribute("Height"))]
 
                 # scrData initialized now will initialize graphics widget
                 (scrName, scrCoreName) = self.produceScreenshotName(scrData)
@@ -258,10 +275,10 @@ class ScreenshotManager:
             elif scr.getFirstElement("Dimension").getText() == "3D":
 
                 scrData.spaceDimension = "3D"
-                plotElement = scr.getFirstElement("Plot")
-                scrData.plotData = (plotElement.getAttribute("PlotName"), plotElement.getAttribute("PlotType"))
-                sizeElement = scr.getFirstElement("Size")
-                scrSize = [int(sizeElement.getAttribute("Width")), int(sizeElement.getAttribute("Height"))]
+                # plotElement = scr.getFirstElement("Plot")
+                # scrData.plotData = (plotElement.getAttribute("PlotName"), plotElement.getAttribute("PlotType"))
+                # sizeElement = scr.getFirstElement("Size")
+                # scrSize = [int(sizeElement.getAttribute("Width")), int(sizeElement.getAttribute("Height"))]
 
                 (scrName, scrCoreName) = self.produceScreenshotName(scrData)
                 print MODULENAME, "(scrName,scrCoreName)=", (scrName, scrCoreName)
@@ -306,7 +323,7 @@ class ScreenshotManager:
                     scrData.screenshotName = scrName
                     scrData.screenshotCoreName = scrCoreName
 
-                    scrData.screenshotGraphicsWidget = self.screenshotGraphicsWidget
+                    # scrData.screenshotGraphicsWidget = self.screenshotGraphicsWidget
 
                     scrData.extractCameraInfoFromList(camSettings)
                     self.screenshotDataDict[scrData.screenshotName] = scrData

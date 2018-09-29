@@ -17,8 +17,8 @@ MODULENAME='------  MVCDrawModel3D.py'
 
 
 class MVCDrawModel3D(MVCDrawModelBase):
-    def __init__(self, qvtkWidget, parent=None):
-        MVCDrawModelBase.__init__(self,qvtkWidget, parent)
+    def __init__(self):
+        MVCDrawModelBase.__init__(self)
         
         self.initArea()
         self.setParams()

@@ -37,6 +37,9 @@ class ScreenshotData:
         self.cluster_borders_on = None
         self.cell_glyphs_on = None
         self.fpp_links_on = None
+        self.bounding_box_on = None
+        self.lattice_axes_on = None
+        self.lattice_axes_labels_on = None
 
     #        self.winWidth=299   # some unique default
     #        self.winHeight=299
@@ -262,6 +265,14 @@ class ScreenshotManager:
             self.appendBoolChildElement(elem=scrDescElement, elem_label='FPPLinks',
                                         elem_value=scrData.fpp_links_on)
 
+            self.appendBoolChildElement(elem=scrDescElement, elem_label='BoundingBox',
+                                        elem_value=scrData.bounding_box_on)
+
+            self.appendBoolChildElement(elem=scrDescElement, elem_label='LatticeAxes',
+                                        elem_value=scrData.lattice_axes_on)
+
+            self.appendBoolChildElement(elem=scrDescElement, elem_label='LatticeAxesLabels',
+                                        elem_value=scrData.lattice_axes_labels_on)
 
 
             # scrDescElement.ElementCC3D("CellBorders", {"On": 1 if scrData.cell_borders_on else 0})
@@ -287,7 +298,12 @@ class ScreenshotManager:
                                                 attr='cell_glyphs_on')
             self.parseAndAssignBoolChildElement(parent_elem=scr, elem_label='FPPLinks', obj=scrData,
                                                 attr='fpp_links_on')
-
+            self.parseAndAssignBoolChildElement(parent_elem=scr, elem_label='BoundingBox', obj=scrData,
+                                                attr='bounding_box_on')
+            self.parseAndAssignBoolChildElement(parent_elem=scr, elem_label='LatticeAxes', obj=scrData,
+                                                attr='lattice_axes_on')
+            self.parseAndAssignBoolChildElement(parent_elem=scr, elem_label='LatticeAxesLabels', obj=scrData,
+                                                attr='lattice_axes_labels_on')
 
             # borders_elem = scr.getFirstElement("CellBorders1")
             # if borders_elem:
@@ -435,6 +451,9 @@ class ScreenshotManager:
         scrData.cluster_borders_on = tvw.clusterBorderAct.isChecked()
         scrData.cell_glyphs_on = tvw.cellGlyphsAct.isChecked()
         scrData.fpp_links_on = tvw.FPPLinksAct.isChecked()
+        scrData.lattice_axes_on = Configuration.getSetting('ShowHorizontalAxesLabels') or Configuration.getSetting('ShowVerticalAxesLabels')
+        scrData.lattice_axes_labels_on = Configuration.getSetting("ShowAxes")
+        scrData.bounding_box_on = Configuration.getSetting("BoundingBoxOn")
 
     def add2DScreenshot(self, _plotName, _plotType, _projection, _projectionPosition,
                         _camera):  # called from GraphicsFrameWidget
