@@ -361,6 +361,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
             if actor_number in actors_dict.keys():
                 actor = actors_dict[actor_number]
                 actor.SetMapper(mapperList[actorCounter])
+
                 actor.GetProperty().SetDiffuseColor(
                     # self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3])
                     self.celltypeLUT.GetTableValue(actor_number)[0:3])

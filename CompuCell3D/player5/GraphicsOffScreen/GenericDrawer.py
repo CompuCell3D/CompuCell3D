@@ -29,7 +29,8 @@ class GenericDrawer():
         self.planePos = None
         self.field_extractor = None
 
-        self.ren = vtk.vtkRenderer()
+        self.ren_2D = vtk.vtkRenderer()
+        self.ren_3D = vtk.vtkRenderer()
 
         # self.renWin = self.qvtkWidget.GetRenderWindow()
         # self.renWin.AddRenderer(self.ren)
@@ -41,8 +42,8 @@ class GenericDrawer():
         self.draw_model_3D = MVCDrawModel3D()
         self.draw_view_3D = MVCDrawView3D(self.draw_model_3D)
 
-        self.draw_view_2D.ren = self.ren
-        self.draw_view_3D.ren = self.ren
+        self.draw_view_2D.ren = self.ren_2D
+        self.draw_view_3D.ren = self.ren_3D
 
         #
         # dict {field_type: drawing fcn}
@@ -171,6 +172,7 @@ class GenericDrawer():
 
         # model, view = self.get_model_view(dimension_label=screenshot_data.spaceDimension)
         model, view = self.get_model_view(drawing_params=drawing_params)
+        ren = view.ren
         # self.draw_model_2D.setDrawingParametersObject(drawing_params)
         model.setDrawingParametersObject(drawing_params)
 
@@ -193,7 +195,7 @@ class GenericDrawer():
 
             renWin = vtk.vtkRenderWindow()
             renWin.SetOffScreenRendering(1)
-            renWin.AddRenderer(self.ren)
+            renWin.AddRenderer(ren)
             renWin.Render()
 
             windowToImageFilter = vtk.vtkWindowToImageFilter()

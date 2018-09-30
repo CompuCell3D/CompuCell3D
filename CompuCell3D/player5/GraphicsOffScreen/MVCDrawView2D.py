@@ -362,7 +362,7 @@ class MVCDrawView2D(MVCDrawViewBase):
         # self.qvtkWidget.repaint()
             
     def setCamera(self, fieldDim = None):
-        camera = self.graphicsFrameWidget.ren.GetActiveCamera()
+        camera = self.ren.GetActiveCamera()
         
         self.setDim(fieldDim)
         # Should I specify these parameters explicitly? 
@@ -378,10 +378,10 @@ class MVCDrawView2D(MVCDrawViewBase):
         camera.SetFocalPoint(self.dim[0]/2, self.dim[1]/2, 0)
         camera.SetClippingRange(distance - 1, distance + 1)
         # self.qvtkWidget.ren.ResetCameraClippingRange()
-        self.graphicsFrameWidget.ren.ResetCameraClippingRange()
+        self.ren.ResetCameraClippingRange()
         self.__initDist = distance #camera.GetDistance()
-        self.Render() 
-        self.qvtkWidget().repaint()
+        # self.Render()
+        # self.qvtkWidget().repaint()
 
     def setDim(self, fieldDim):       
         self.dim = [fieldDim.x , fieldDim.y , fieldDim.z]
