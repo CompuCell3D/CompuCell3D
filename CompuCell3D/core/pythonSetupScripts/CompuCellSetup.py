@@ -2060,7 +2060,7 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
         # gd = GraphicsOffScreen.GenericDrawer.GenericDrawer()
         from GraphicsOffScreen import GenericDrawer
         from GraphicsOffScreen import DrawingParameters
-        from GraphicsOffScreen import ScreenshotManager
+        from Utilities import ScreenshotManagerCore
         from BasicSimulationData import BasicSimulationData
         from os.path import join, dirname, exists
         # from Plugins.ViewManagerPlugins.ScreenshotManager import ScreenshotManager
@@ -2069,7 +2069,7 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
 
         sim_fname = simulationFileName
         screenshot_data_fname = join(dirname(sim_fname), 'screenshot_data/screenshots.xml')
-        screenshot_mgr = ScreenshotManager()
+        screenshot_mgr = ScreenshotManagerCore()
         if exists(screenshot_data_fname):
             screenshot_mgr.readScreenshotDescriptionFile(screenshot_data_fname)
 

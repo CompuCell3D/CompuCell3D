@@ -261,7 +261,7 @@ def except_hook(cls, exception, traceback):
 
 if __name__ == '__main__':
     # enable it during debugging in pycharm
-    # sys.excepthook = except_hook
+    sys.excepthook = except_hook
 
     error_code = main(sys.argv[1:])
 
