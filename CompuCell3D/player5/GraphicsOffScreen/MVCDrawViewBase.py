@@ -726,7 +726,33 @@ class MVCDrawViewBase:
         # cam.SetDistance(_camera.GetDistance())
         
         # cam.SetViewAngle(_camera.GetViewAngle())
-        
+
+    def set_custom_camera(self,camera_settings):
+        """
+        adjusts camera based on camera_settings.
+        camera settings can be any structure that has the following members:
+        clippingRange,focalPoint, viewUp, position
+
+        :param camera_settings: {object} object conforming to above requirements
+        :return: None
+        """
+        camera = self.ren.GetActiveCamera()
+        cs = camera_settings
+        if cs.clippingRange and cs.focalPoint and cs.position and cs.viewUp:
+
+            camera.SetClippingRange(cs.clippingRange)
+            camera.SetFocalPoint(cs.focalPoint)
+            camera.SetPosition(cs.position)
+            camera.SetViewUp(cs.viewUp)
+
+    def set_default_camera(self, fieldDim=None):
+        '''
+        Initializes default camera view
+        :param fieldDim:field dimension (Dim3D C++ object)
+        :return: None
+        '''
+        raise NotImplementedError()
+
     def setCamera(self, fieldDim): 
         camera = self.GetCurrentRenderer().GetActiveCamera()
         

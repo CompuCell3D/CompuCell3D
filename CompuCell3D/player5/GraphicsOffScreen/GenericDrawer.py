@@ -176,7 +176,6 @@ class GenericDrawer():
         # self.draw_model_2D.setDrawingParametersObject(drawing_params)
         model.setDrawingParametersObject(drawing_params)
 
-
         try:
             key = (drawing_params.fieldType, 'Cart')
             draw_fcn = self.drawing_fcn_dict[key]
@@ -193,7 +192,11 @@ class GenericDrawer():
             if drawing_params.screenshot_data.bounding_box_on:
                 self.draw_bounding_box(drawing_params=drawing_params)
 
-            view.set_default_camera(drawing_params.bsd.fieldDim)
+            # setting camera
+            if screenshot_data.clippingRange is not None:
+                view.set_custom_camera(camera_settings=screenshot_data)
+            else:
+                view.set_default_camera(drawing_params.bsd.fieldDim)
 
             renWin = vtk.vtkRenderWindow()
             renWin.SetOffScreenRendering(1)

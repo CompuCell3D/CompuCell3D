@@ -229,31 +229,31 @@ class MVCDrawView3D(MVCDrawViewBase):
         self.__initDist = distance  # camera.GetDistance()
 
 
-    def setCamera(self, fieldDim=None):
-        '''
-        Initializes default camera view for 3D scene
-        :param fieldDim:field dimension (Dim3D C++ object)
-        :return:
-        '''
-        camera = self.ren.GetActiveCamera()
-
-        self.setDim(fieldDim)
-        # Should I specify these parameters explicitly?
-        # What if I change dimensions in XML file?
-        # The parameters should be set based on the configuration parameters!
-        # Should it set depending on projection? (e.g. xy, xz, yz)
-
-        distance = self.largestDim(self.dim) * 2  # 200 #273.205 #
-
-        # FIXME: Hardcoded numbers
-
-        camera.SetPosition(self.dim[0] / 2, self.dim[1] / 2, distance)
-        camera.SetFocalPoint(self.dim[0] / 2, self.dim[1] / 2, 0)
-        camera.SetClippingRange(distance - 1, distance + 1)
-        # self.GetCurrentRenderer().ResetCameraClippingRange()
-
-        self.__initDist = distance  # camera.GetDistance()
-        # self.qvtkWidget().repaint()
+    # def setCamera(self, fieldDim=None):
+    #     '''
+    #     Initializes default camera view for 3D scene
+    #     :param fieldDim:field dimension (Dim3D C++ object)
+    #     :return:
+    #     '''
+    #     camera = self.ren.GetActiveCamera()
+    #
+    #     self.setDim(fieldDim)
+    #     # Should I specify these parameters explicitly?
+    #     # What if I change dimensions in XML file?
+    #     # The parameters should be set based on the configuration parameters!
+    #     # Should it set depending on projection? (e.g. xy, xz, yz)
+    #
+    #     distance = self.largestDim(self.dim) * 2  # 200 #273.205 #
+    #
+    #     # FIXME: Hardcoded numbers
+    #
+    #     camera.SetPosition(self.dim[0] / 2, self.dim[1] / 2, distance)
+    #     camera.SetFocalPoint(self.dim[0] / 2, self.dim[1] / 2, 0)
+    #     camera.SetClippingRange(distance - 1, distance + 1)
+    #     # self.GetCurrentRenderer().ResetCameraClippingRange()
+    #
+    #     self.__initDist = distance  # camera.GetDistance()
+    #     # self.qvtkWidget().repaint()
 
     # def setCamera(self, fieldDim = None):
     #     '''
