@@ -97,7 +97,7 @@ class GenericDrawer():
         # model.init_cell_field_actors(actors=actors_dict.values())
         model.init_cell_field_actors(actor_specs=actor_specs_final)
         view.show_cell_actors(actor_specs=actor_specs_final)
-        view.setCamera(drawing_params.bsd.fieldDim)
+        # view.setCamera(drawing_params.bsd.fieldDim)
 
         # self.draw_model_2D.initCellFieldActors((self.draw_view_2D.cellsActor,))
         # self.draw_view_2D.show_cells_actor()
@@ -193,6 +193,8 @@ class GenericDrawer():
             if drawing_params.screenshot_data.bounding_box_on:
                 self.draw_bounding_box(drawing_params=drawing_params)
 
+            view.set_default_camera(drawing_params.bsd.fieldDim)
+
             renWin = vtk.vtkRenderWindow()
             renWin.SetOffScreenRendering(1)
             renWin.AddRenderer(ren)
@@ -207,8 +209,6 @@ class GenericDrawer():
                 screenshot_name=screenshot_name))
             writer.SetInputConnection(windowToImageFilter.GetOutputPort())
             writer.Write()
-
-
 
     def draw_old(self, screenshot_data, bsd, screenshot_name):
         # drawing_params = DrawingParameters()
