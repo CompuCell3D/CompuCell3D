@@ -200,20 +200,23 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
     def init_cell_field_actors_borderless(self,actor_specs, drawing_params=None):
 
-        print
-        coneSource = vtk.vtkConeSource()
-        coneSource.SetResolution(60)
-        coneSource.SetCenter(-2, 0, 0)
-        # Create a mapper and actor
-        mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputConnection(coneSource.GetOutputPort())
-        actor = vtk.vtkActor()
-        actor.SetMapper(mapper)
-
-        actor_specs.actors_dict[1] = actor
-        # ren.AddActor(actor)
-        return
+        # print
+        # coneSource = vtk.vtkConeSource()
+        # coneSource.SetResolution(60)
+        # coneSource.SetCenter(-2, 0, 0)
+        # # Create a mapper and actor
+        # mapper = vtk.vtkPolyDataMapper()
+        # mapper.SetInputConnection(coneSource.GetOutputPort())
+        # actor = vtk.vtkActor()
+        # actor.SetMapper(mapper)
+        #
+        # actor_specs.actors_dict[1] = actor
+        # # ren.AddActor(actor)
+        # return
         import CompuCell
+        # todo 5 - check if this should be called earlier
+        self.extractCellFieldData() # initializes self.usedCellTypesList
+
         fieldDim = self.currentDrawingParameters.bsd.fieldDim
         cellTypeImageData = vtk.vtkImageData()
 
@@ -233,6 +236,9 @@ class MVCDrawModel3D(MVCDrawModelBase):
 #        voi.SetVOI(1,self.dim[0]-1, 1,self.dim[1]-1, 1,self.dim[2]-1 )  # crop out the artificial boundary layer that we created
         voi.SetVOI(0,249, 0,189, 0,170)
 
+        # # todo 5- check if it is possible to call it once
+        # self.usedCellTypesList = self.extractCellFieldData()
+
         numberOfActors = len(self.usedCellTypesList)
 
         # creating and initializing filters, smoothers and mappers - one for each cell type
@@ -244,9 +250,10 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         # actorCounter=0
         # for i in usedCellTypesList:
-        for actorCounter in xrange(len(self.usedCellTypesList)):
+        for actorCounter, actor_number in enumerate(self.usedCellTypesList):
+        # for actorCounter in xrange(len(self.usedCellTypesList)):
 
-            if VTK_MAJOR_VERSION>=6:
+            if VTK_MAJOR_VERSION >= 6:
                 filterList[actorCounter].SetInputData(cellTypeImageData)
             else:
                 filterList[actorCounter].SetInput(cellTypeImageData)
@@ -267,11 +274,28 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
             actorName = "CellType_" + str(self.usedCellTypesList[actorCounter])
 #            print MODULENAME,' initCellFieldActors():  actorName=',actorName
-            if actorName in actors:
-                actors[actorName].SetMapper(mapperList[actorCounter])
-                actors[actorName].GetProperty().SetDiffuseColor(self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3])
-                if self.hexFlag:
-                    actors[actorName].SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
+
+            actors_dict = actor_specs.actors_dict
+            # if actorName in actors_dict.keys():
+            if actor_number in actors_dict.keys():
+                actor = actors_dict[actor_number]
+                actor.SetMapper(mapperList[actorCounter])
+
+                actor.GetProperty().SetDiffuseColor(self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3])
+
+                # actor.GetProperty().SetDiffuseColor(
+                #     # self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3])
+                #     self.celltypeLUT.GetTableValue(actor_number)[0:3])
+                print('TURN ON HEX FLAG')
+                # if self.hexFlag:
+                #     actors[actorName].SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
+        #                _actors[actorName].GetProperty().SetOpacity(0.5)
+
+            # if actorName in actors:
+            #     actors[actorName].SetMapper(mapperList[actorCounter])
+            #     actors[actorName].GetProperty().SetDiffuseColor(self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3])
+            #     if self.hexFlag:
+            #         actors[actorName].SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
 #                _actors[actorName].GetProperty().SetOpacity(0.5)
 
     def init_cell_field_actors(self, actor_specs, drawing_params=None):  # original rendering technique (and still used if Vis->Cell Borders not checked) - vkDiscreteMarchingCubes on celltype
@@ -363,6 +387,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         import CompuCell
         fieldDim = self.currentDrawingParameters.bsd.fieldDim
 
+        # todo 5- check if it is possible to call it once
         self.usedCellTypesList = self.extractCellFieldData()
         numberOfActors = len(self.usedCellTypesList)
         cellTypeImageData = vtk.vtkImageData()

@@ -368,7 +368,7 @@ class MVCDrawView3D(MVCDrawViewBase):
 #             self.prepareCellTypeActors()
             self.drawModel.prepareCellTypeActors(self.cellTypeActors, self.invisibleCellTypes)
             self.showCellTypeActors()
-            self.drawModel.init_cell_field_actors(self.currentActors)
+            self.drawModel.initCellFieldActors(self.currentActors)
             
         if self.parentWidget.graphicsWindowVisDict[dictKey][1]:    # cell borders (= individual cells)
 

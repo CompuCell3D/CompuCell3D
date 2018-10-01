@@ -1,3 +1,7 @@
+# todo list:
+# todo - move self.extractCellFieldData() up - to avoid costly lattice traversal for each visualization
+# todo - make once call per 2D/3D or even try global call if possible
+# todo - get max cell typ from the simulation
 import sys
 import os
 import string
@@ -159,7 +163,10 @@ class GenericDrawer():
                     pass
 
             if drawing_params.screenshot_data.bounding_box_on:
-                self.draw_bounding_box(drawing_params=drawing_params)
+                try:
+                    self.draw_bounding_box(drawing_params=drawing_params)
+                except NotImplementedError:
+                    pass
 
             # setting camera
             if screenshot_data.spaceDimension == '3D':
@@ -168,6 +175,7 @@ class GenericDrawer():
             else:
                 view.set_default_camera(drawing_params.bsd.fieldDim)
 
+            # todo 5 - move this part to a function
             renWin = vtk.vtkRenderWindow()
             renWin.SetOffScreenRendering(1)
             renWin.AddRenderer(ren)
