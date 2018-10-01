@@ -197,12 +197,90 @@ class MVCDrawModel3D(MVCDrawModelBase):
         
         # numberOfActors=len(self.usedCellTypesList)
         return self.usedCellTypesList
-    
 
-    def init_cell_field_actors(self, actor_specs):  # original rendering technique (and still used if Vis->Cell Borders not checked) - vkDiscreteMarchingCubes on celltype
+    def init_cell_field_actors_borderless(self,actor_specs, drawing_params=None):
+
+        print
+        coneSource = vtk.vtkConeSource()
+        coneSource.SetResolution(60)
+        coneSource.SetCenter(-2, 0, 0)
+        # Create a mapper and actor
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputConnection(coneSource.GetOutputPort())
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
+
+        actor_specs.actors_dict[1] = actor
+        # ren.AddActor(actor)
+        return
+        import CompuCell
+        fieldDim = self.currentDrawingParameters.bsd.fieldDim
+        cellTypeImageData = vtk.vtkImageData()
+
+
+
+        cellTypeImageData.SetDimensions(fieldDim.x+2,fieldDim.y+2,fieldDim.z+2) # adding 1 pixel border around the lattice to make rendering smooth at lattice borders
+        cellTypeImageData.GetPointData().SetScalars(self.cellType)
+        voi = vtk.vtkExtractVOI()
+
+        if VTK_MAJOR_VERSION>=6:
+            voi.SetInputData(cellTypeImageData)
+        else:
+            voi.SetInput(cellTypeImageData)
+
+
+
+#        voi.SetVOI(1,self.dim[0]-1, 1,self.dim[1]-1, 1,self.dim[2]-1 )  # crop out the artificial boundary layer that we created
+        voi.SetVOI(0,249, 0,189, 0,170)
+
+        numberOfActors = len(self.usedCellTypesList)
+
+        # creating and initializing filters, smoothers and mappers - one for each cell type
+
+        filterList = [vtk.vtkDiscreteMarchingCubes() for i in xrange(numberOfActors)]
+        smootherList = [vtk.vtkSmoothPolyDataFilter() for i in xrange(numberOfActors)]
+        normalsList = [vtk.vtkPolyDataNormals() for i in xrange(numberOfActors)]
+        mapperList = [vtk.vtkPolyDataMapper() for i in xrange(numberOfActors)]
+
+        # actorCounter=0
+        # for i in usedCellTypesList:
+        for actorCounter in xrange(len(self.usedCellTypesList)):
+
+            if VTK_MAJOR_VERSION>=6:
+                filterList[actorCounter].SetInputData(cellTypeImageData)
+            else:
+                filterList[actorCounter].SetInput(cellTypeImageData)
+
+
+
+#            filterList[actorCounter].SetInputConnection(voi.GetOutputPort())
+
+            # filterList[actorCounter].SetValue(0, usedCellTypesList[actorCounter])
+            filterList[actorCounter].SetValue(0, self.usedCellTypesList[actorCounter])
+            smootherList[actorCounter].SetInputConnection(filterList[actorCounter].GetOutputPort())
+#            print MODULENAME,' smooth iters=',smootherList[actorCounter].GetNumberOfIterations()
+#            smootherList[actorCounter].SetNumberOfIterations(200)
+            normalsList[actorCounter].SetInputConnection(smootherList[actorCounter].GetOutputPort())
+            normalsList[actorCounter].SetFeatureAngle(45.0)
+            mapperList[actorCounter].SetInputConnection(normalsList[actorCounter].GetOutputPort())
+            mapperList[actorCounter].ScalarVisibilityOff()
+
+            actorName = "CellType_" + str(self.usedCellTypesList[actorCounter])
+#            print MODULENAME,' initCellFieldActors():  actorName=',actorName
+            if actorName in actors:
+                actors[actorName].SetMapper(mapperList[actorCounter])
+                actors[actorName].GetProperty().SetDiffuseColor(self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3])
+                if self.hexFlag:
+                    actors[actorName].SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
+#                _actors[actorName].GetProperty().SetOpacity(0.5)
+
+    def init_cell_field_actors(self, actor_specs, drawing_params=None):  # original rendering technique (and still used if Vis->Cell Borders not checked) - vkDiscreteMarchingCubes on celltype
 
         # self.init_cell_typeCellFieldBordersActors(list(actor_specs.actors_dict.values()))
-        self.init_cell_field_borders_actors(actor_specs=actor_specs)
+        if drawing_params.screenshot_data.cell_borders_on:
+            self.init_cell_field_borders_actors(actor_specs=actor_specs)
+        else:
+            self.init_cell_field_actors_borderless(actor_specs=actor_specs)
         # print
         # coneSource = vtk.vtkConeSource()
         # coneSource.SetResolution(60)

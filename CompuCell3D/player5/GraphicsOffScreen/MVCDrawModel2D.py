@@ -113,7 +113,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         _actors[0].GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
 
 
-    def init_outline_actors(self,actors):
+    def init_outline_actors(self, actor_specs, drawing_params=None):
 
         outlineData = vtk.vtkImageData()
 
@@ -140,6 +140,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         outlineMapper = vtk.vtkPolyDataMapper()
         outlineMapper.SetInputConnection(outline.GetOutputPort())
 
+        actors = list(actor_specs.actors_dict.values())
         actors[0].SetMapper(outlineMapper)
         actors[0].GetProperty().SetColor(1, 1, 1)
 
@@ -149,7 +150,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
 
 
-    def init_cell_field_actors(self, actor_specs):
+    def init_cell_field_actors(self, actor_specs, drawing_params=None):
 
         fieldDim = self.currentDrawingParameters.bsd.fieldDim
         dimOrder = self.dimOrder(self.currentDrawingParameters.plane)
@@ -1631,8 +1632,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 #
 #        return (minCon, maxCon, self.dim[0]+1,self.dim[1]+1)
 
-
-    def initBordersActors2D(self,_actors):
+    def init_borders_actors(self,actor_specs, drawing_params=None):
         points = vtk.vtkPoints()
         lines = vtk.vtkCellArray()
         pointsIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor,
@@ -1659,8 +1659,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
         else:
             self.borderMapper.SetInput(borders)
 
-
-        _actors[0].SetMapper(self.borderMapper)
+        actors = list(actor_specs.actors_dict.values())
+        actors[0].SetMapper(self.borderMapper)
         # self.setBorderColor()
 
         # print "self.currentActors.keys()=",self.currentActors.keys()
@@ -1678,6 +1678,53 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 # self.graphicsFrameWidget.ren.RemoveActor(self.borderActor)
                 # self.graphicsFrameWidget.ren.AddActor(self.borderActor)
         # print "self.currentActors.keys()=",self.currentActors.keys()
+
+    # def initBordersActors2D(self,_actors):
+    #     points = vtk.vtkPoints()
+    #     lines = vtk.vtkCellArray()
+    #     pointsIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor,
+    #                                                           vtkObj=points)
+    #
+    #     linesIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor,
+    #                                                           vtkObj=lines)
+    #
+    #     # pointsIntAddr=self.extractAddressIntFromVtkObject(points)
+    #     # linesIntAddr=self.extractAddressIntFromVtkObject(lines)
+    #
+    #     # self.parentWidget.fieldExtractor.fillBorderData2D(pointsIntAddr , linesIntAddr, self.currentDrawingParameters.plane, self.currentDrawingParameters.planePos)
+    #
+    #     self.field_extractor.fillBorderData2D(pointsIntAddr , linesIntAddr, self.currentDrawingParameters.plane, self.currentDrawingParameters.planePos)
+    #
+    #
+    #     borders = vtk.vtkPolyData()
+    #
+    #     borders.SetPoints(points)
+    #     borders.SetLines(lines)
+    #
+    #     if VTK_MAJOR_VERSION>=6:
+    #         self.borderMapper.SetInputData(borders)
+    #     else:
+    #         self.borderMapper.SetInput(borders)
+    #
+    #
+    #     _actors[0].SetMapper(self.borderMapper)
+    #     # self.setBorderColor()
+    #
+    #     # print "self.currentActors.keys()=",self.currentActors.keys()
+    #
+    #     # # print "self.currentActors[BorderActor]=",self.currentActors["BorderActor"].GetClassName()
+    #     # if not self.currentActors.has_key("BorderActor"):
+    #         # self.currentActors["BorderActor"]=self.borderActor
+    #         # self.graphicsFrameWidget.ren.AddActor(self.borderActor)
+    #         # print "ADDING BORDER ACTOR"
+    #
+    #     # else:
+    #         # # will ensure that borders is the last item to draw
+    #         # actorsCollection=self.graphicsFrameWidget.ren.GetActors()
+    #         # if actorsCollection.GetLastItem()!=self.borderActor:
+    #             # self.graphicsFrameWidget.ren.RemoveActor(self.borderActor)
+    #             # self.graphicsFrameWidget.ren.AddActor(self.borderActor)
+    #     # print "self.currentActors.keys()=",self.currentActors.keys()
 
     def initBordersActors2DHex(self,_actors):
 

@@ -95,7 +95,17 @@ class GenericDrawer():
 
         # model.initCellFieldActors((view.cellsActor,))
         # model.init_cell_field_actors(actors=actors_dict.values())
-        model.init_cell_field_actors(actor_specs=actor_specs_final)
+
+        model.init_cell_field_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
+
+        # if drawing_params.screenshot_data.spaceDimension == '2D':
+        #     model.init_cell_field_actors(actor_specs=actor_specs_final)
+        # else:
+        #     if drawing_params.screenshot_data.cell_borders_on:
+        #         model.init_cell_field_actors(actor_specs=actor_specs_final)
+        #     else:
+        #         model.init_cell_field_actors_borderless(actor_specs=actor_specs_final)
+
         view.show_cell_actors(actor_specs=actor_specs_final)
         # view.setCamera(drawing_params.bsd.fieldDim)
 
@@ -111,8 +121,20 @@ class GenericDrawer():
         :param drawing_params:
         :return:
         """
+        if drawing_params.screenshot_data.spaceDimension == '3D':
+            return
+
+
         model, view = self.get_model_view(drawing_params=drawing_params)
-        model.initBordersActors2D((view.borderActor,))
+
+        actor_specs = ActorSpecs()
+        actor_specs.actor_label_list = ['borderActor']
+        actor_specs.actors_dict ={
+            'borderActor':view.borderActor
+        }
+
+
+        model.init_borders_actors(actor_specs=actor_specs, drawing_params=drawing_params)
         show_flag = drawing_params.screenshot_data.cell_borders_on
         view.show_cell_borders(show_flag=show_flag)
 
@@ -123,7 +145,13 @@ class GenericDrawer():
     def draw_bounding_box(self, drawing_params):
         model, view = self.get_model_view(drawing_params=drawing_params)
 
-        model.init_outline_actors((view.outlineActor,))
+        actor_specs = ActorSpecs()
+        actor_specs.actor_label_list = ['outlineActor']
+        actor_specs.actors_dict ={
+            'outlineActor':view.outlineActor
+        }
+
+        model.init_outline_actors(actor_specs=actor_specs,drawing_params=drawing_params)
         show_flag = drawing_params.screenshot_data.bounding_box_on
         view.show_bounding_box(show_flag=show_flag)
 
@@ -193,8 +221,9 @@ class GenericDrawer():
                 self.draw_bounding_box(drawing_params=drawing_params)
 
             # setting camera
-            if screenshot_data.clippingRange is not None:
-                view.set_custom_camera(camera_settings=screenshot_data)
+            if screenshot_data.spaceDimension == '3D':
+                if screenshot_data.clippingRange is not None:
+                    view.set_custom_camera(camera_settings=screenshot_data)
             else:
                 view.set_default_camera(drawing_params.bsd.fieldDim)
 

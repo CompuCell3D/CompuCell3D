@@ -113,7 +113,11 @@ class MVCDrawModelBase:
     def get_cell_actors_metadata(self): pass
 
 
-    def init_cell_field_actors(self, actor_specs):raise NotImplementedError()
+    def init_cell_field_actors(self, actor_specs, drawing_params=None):
+        raise NotImplementedError()
+
+    def init_outline_actors(self, actor_specs, drawing_params=None):
+        raise NotImplementedError()
 
     
     def initConFieldActors(self, _actors): pass
