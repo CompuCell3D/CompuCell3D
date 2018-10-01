@@ -50,19 +50,6 @@ class GenericDrawer():
         self.drawing_fcn_dict = {
             ('CellField', 'Cart'): self.draw_cell_field
         }
-        #
-        # self.drawModel3D = MVCDrawModel3D(self, self.parentWidget)
-        # self.draw3D = MVCDrawView3D(self.drawModel3D, self, self.parentWidget)
-
-        # self.camera3D = self.ren.MakeCamera()
-        # self.camera2D = self.ren.GetActiveCamera()
-        # self.ren.SetActiveCamera(self.camera2D)
-
-        # self.currentDrawingObject = self.draw2D
-
-        # self.draw3DFlag = False
-        # self.usedDraw3DFlag = False
-        # # self.getattrFcn=self.getattrDraw2D
         self.screenshotWindowFlag = False
 
     def set_field_extractor(self, field_extractor):
@@ -79,41 +66,18 @@ class GenericDrawer():
         """
         model, view = self.get_model_view(drawing_params=drawing_params)
 
-        actors_specs = ActorSpecs()
-        actors_specs.actor_label_list = ['cellsActor']
-        actors_specs.metadata = {
+        actor_specs = ActorSpecs()
+        actor_specs.actor_label_list = ['cellsActor']
+        # todo 5 - get max cell type here
+        actor_specs.metadata = {
             'invisible_types':drawing_params.screenshot_data.invisible_types,
             'all_types':list(range(2+1))
         }
 
         # actors_dict = view.getActors(actor_label_list=['cellsActor'])
-        actor_specs_final = view.prepare_cell_field_actors(actors_specs)
-
-        # model.prepare_cells_actors(actors_specs)
-
-        # cell_actors_metadata = model.get_cell_actors_metadata()
-
-        # model.initCellFieldActors((view.cellsActor,))
-        # model.init_cell_field_actors(actors=actors_dict.values())
-
+        actor_specs_final = view.prepare_cell_field_actors(actor_specs)
         model.init_cell_field_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
-
-        # if drawing_params.screenshot_data.spaceDimension == '2D':
-        #     model.init_cell_field_actors(actor_specs=actor_specs_final)
-        # else:
-        #     if drawing_params.screenshot_data.cell_borders_on:
-        #         model.init_cell_field_actors(actor_specs=actor_specs_final)
-        #     else:
-        #         model.init_cell_field_actors_borderless(actor_specs=actor_specs_final)
-
         view.show_cell_actors(actor_specs=actor_specs_final)
-        # view.setCamera(drawing_params.bsd.fieldDim)
-
-        # self.draw_model_2D.initCellFieldActors((self.draw_view_2D.cellsActor,))
-        # self.draw_view_2D.show_cells_actor()
-
-        # self.drawModel.initCellFieldActors((self.cellsActor,))
-        # self.drawModel2D.initCellFieldActors((self.drawVcellsActor,))
 
     def draw_cell_borders(self, drawing_params):
         """
@@ -121,26 +85,16 @@ class GenericDrawer():
         :param drawing_params:
         :return:
         """
-        if drawing_params.screenshot_data.spaceDimension == '3D':
-            return
-
 
         model, view = self.get_model_view(drawing_params=drawing_params)
 
         actor_specs = ActorSpecs()
         actor_specs.actor_label_list = ['borderActor']
-        actor_specs.actors_dict ={
-            'borderActor':view.borderActor
-        }
-
+        actor_specs = view.prepare_border_actors(actor_specs=actor_specs)
 
         model.init_borders_actors(actor_specs=actor_specs, drawing_params=drawing_params)
         show_flag = drawing_params.screenshot_data.cell_borders_on
         view.show_cell_borders(show_flag=show_flag)
-
-        # self.draw_model_2D.initBordersActors2D((self.draw_view_2D.borderActor,))
-        # show_flag = drawing_params.screenshot_data.cell_borders_on
-        # self.draw_view_2D.show_cell_borders(show_flag=show_flag)
 
     def draw_bounding_box(self, drawing_params):
         model, view = self.get_model_view(drawing_params=drawing_params)
@@ -154,24 +108,6 @@ class GenericDrawer():
         model.init_outline_actors(actor_specs=actor_specs,drawing_params=drawing_params)
         show_flag = drawing_params.screenshot_data.bounding_box_on
         view.show_bounding_box(show_flag=show_flag)
-
-        # self.draw_model_2D.init_outline_actors((self.draw_view_2D.outlineActor,))
-        # show_flag = drawing_params.screenshot_data.bounding_box_on
-        # self.draw_view_2D.show_bounding_box(show_flag=show_flag)
-
-    # def draw(self, drawing_params, screenshot_name):
-
-    # def get_model_view(self, dimension_label):
-    #     """
-    #     returns pair of model view objects depending on the dimension label
-    #     :param dimension_label: {str}
-    #     :return: {tuple} mode, view object tuple
-    #     """
-    #
-    #     if dimension_label == '2D':
-    #         return self.draw_model_2D, self.draw_view_2D
-    #     else:
-    #         return self.draw_model_3D, self.draw_view_3D
 
     def get_model_view(self, drawing_params):
         # type: (DrawingParameters) -> (MVCDrawModelBase,MVCDrawViewBase)
@@ -216,7 +152,12 @@ class GenericDrawer():
             draw_fcn(drawing_params=drawing_params)
             # decorations
             if drawing_params.screenshot_data.cell_borders_on:
-                self.draw_cell_borders(drawing_params=drawing_params)
+
+                try:
+                    self.draw_cell_borders(drawing_params=drawing_params)
+                except NotImplementedError:
+                    pass
+
             if drawing_params.screenshot_data.bounding_box_on:
                 self.draw_bounding_box(drawing_params=drawing_params)
 
@@ -365,21 +306,6 @@ class GenericDrawer():
 
         self.draw_view_2D.resetAllCameras()
         self.draw3D.resetAllCameras()
-
-    # def __getattr__(self, attr):
-    #     """Makes the object behave like a DrawBase"""
-    #     if not self.draw3DFlag:
-    #         if hasattr(self.draw2D, attr):
-    #             return getattr(self.draw2D, attr)
-    #         else:
-    #             raise AttributeError, self.__class__.__name__ + \
-    #                                   " has no attribute named " + attr
-    #     else:
-    #         if hasattr(self.draw3D, attr):
-    #             return getattr(self.draw3D, attr)
-    #         else:
-    #             raise AttributeError, self.__class__.__name__ + \
-    #                                   " has no attribute named " + attr
 
     def populateLookupTable(self):
         self.draw_model_2D.populateLookupTable()

@@ -122,6 +122,21 @@ class MVCDrawView2D(MVCDrawViewBase):
 
         return actor_specs_copy
 
+    def prepare_border_actors(self,actor_specs):
+        """
+        Prepares border actors  based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :return: {dict}
+        """
+
+        actor_specs_copy = deepcopy(actor_specs)
+        actor_specs_copy.actors_dict = OrderedDict()
+        actor_specs_copy.actors_dict['borderActor'] = self.borderActor
+        return actor_specs_copy
+
+
+
+
     def setPlane(self, plane, pos):
         (self.plane, self.planePos) = (str(plane).upper(), pos)
 #        print MODULENAME,"  got this plane ",(self.plane, self.planePos)

@@ -408,7 +408,7 @@ class MVCDrawViewBase:
         :param actor_label_list:{list of str} list of actors
         :return: {OrderedDict} 
         """
-        raise NotImplementedError(self.__class__.getActors.__qualname__)
+        raise NotImplementedError(self.__class__.getActors.__name__)
 
     def prepare_cell_field_actors(self,actor_specs):
         """
@@ -417,7 +417,17 @@ class MVCDrawViewBase:
         :return: {dict}
         """
 
-        raise NotImplementedError(self.__class__.prepare_cell_field_actors.__qualname__)
+        raise NotImplementedError(self.__class__.prepare_cell_field_actors.__name__)
+
+
+    def prepare_border_actors(self,actor_specs):
+        """
+        Prepares border actors  based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :return: {dict}
+        """
+
+        raise NotImplementedError(self.__class__.prepare_border_actors.__name__)
 
 
     def show_cell_actors(self, actor_specs, show_flag):raise NotImplementedError()

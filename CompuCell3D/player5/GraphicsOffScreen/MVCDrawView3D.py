@@ -111,6 +111,16 @@ class MVCDrawView3D(MVCDrawViewBase):
 
         return actor_specs_copy
 
+    def prepare_border_actors(self,actor_specs):
+        """
+        Prepares border actors  based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :return: {dict}
+        """
+
+        raise NotImplementedError(self.__class__.prepare_border_actors.__name__)
+
+
     def getPlane(self):
         return ("3D", 0)
     
