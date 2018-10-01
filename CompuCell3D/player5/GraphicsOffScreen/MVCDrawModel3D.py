@@ -215,12 +215,10 @@ class MVCDrawModel3D(MVCDrawModelBase):
         # return
         import CompuCell
         # todo 5 - check if this should be called earlier
-        self.extractCellFieldData() # initializes self.usedCellTypesList
+        # self.extractCellFieldData() # initializes self.usedCellTypesList
 
         fieldDim = self.currentDrawingParameters.bsd.fieldDim
         cellTypeImageData = vtk.vtkImageData()
-
-
 
         cellTypeImageData.SetDimensions(fieldDim.x+2,fieldDim.y+2,fieldDim.z+2) # adding 1 pixel border around the lattice to make rendering smooth at lattice borders
         cellTypeImageData.GetPointData().SetScalars(self.cellType)
@@ -230,8 +228,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
             voi.SetInputData(cellTypeImageData)
         else:
             voi.SetInput(cellTypeImageData)
-
-
 
 #        voi.SetVOI(1,self.dim[0]-1, 1,self.dim[1]-1, 1,self.dim[2]-1 )  # crop out the artificial boundary layer that we created
         voi.SetVOI(0,249, 0,189, 0,170)
@@ -257,8 +253,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
                 filterList[actorCounter].SetInputData(cellTypeImageData)
             else:
                 filterList[actorCounter].SetInput(cellTypeImageData)
-
-
 
 #            filterList[actorCounter].SetInputConnection(voi.GetOutputPort())
 

@@ -2,13 +2,18 @@
 # todo - move self.extractCellFieldData() up - to avoid costly lattice traversal for each visualization
 # todo - make once call per 2D/3D or even try global call if possible
 # todo - get max cell typ from the simulation
+# todo  - fix this so that it is called only once per drawing series
+# todo cell_field_data_dict = self.extract_cell_field_data()
+# todo - check what happens when we used non consecutive cell types
+
+
 import sys
 import os
 import string
 import Configuration
 import vtk
 from enums import *
-
+from copy import deepcopy
 import sys
 
 from MVCDrawView2D import MVCDrawView2D
@@ -22,6 +27,7 @@ MODULENAME = '---- GraphicsFrameWidget.py: '
 
 from weakref import ref
 
+from utils import extractAddressIntFromVtkObject
 from DrawingParameters import DrawingParameters
 from BasicSimulationData import BasicSimulationData
 
@@ -56,6 +62,32 @@ class GenericDrawer():
         }
         self.screenshotWindowFlag = False
 
+
+    def extract_cell_field_data(self):
+        """
+        Extracts basic information about cell field
+        :return:
+        """
+
+        cellType = vtk.vtkIntArray()
+        cellType.SetName("celltype")
+        cellTypeIntAddr = extractAddressIntFromVtkObject(self.field_extractor, cellType)
+
+        # Also get the CellId
+        cellId = vtk.vtkLongArray()
+        cellId.SetName("cellid")
+        cellIdIntAddr = extractAddressIntFromVtkObject(self.field_extractor, cellId)
+
+        usedCellTypesList = self.field_extractor.fillCellFieldData3D(cellTypeIntAddr, cellIdIntAddr)
+
+        ret_val = {
+            'cell_type_array':cellType,
+            'cell_id_array':cellId,
+            'used_cell_types':usedCellTypesList
+        }
+        return ret_val
+
+
     def set_field_extractor(self, field_extractor):
 
         self.field_extractor = field_extractor
@@ -70,12 +102,14 @@ class GenericDrawer():
         """
         model, view = self.get_model_view(drawing_params=drawing_params)
 
+        max_cell_type_used = max(drawing_params.bsd.cell_types_used)
+
         actor_specs = ActorSpecs()
         actor_specs.actor_label_list = ['cellsActor']
         # todo 5 - get max cell type here
         actor_specs.metadata = {
             'invisible_types':drawing_params.screenshot_data.invisible_types,
-            'all_types':list(range(2+1))
+            'all_types':list(range(max_cell_type_used+1))
         }
 
         # actors_dict = view.getActors(actor_label_list=['cellsActor'])
@@ -128,6 +162,9 @@ class GenericDrawer():
             return self.draw_model_3D, self.draw_view_3D
 
     def draw(self, screenshot_data, bsd, screenshot_name):
+        # todo 5 - fix this so that it is called only once per drawing series
+        cell_field_data_dict = self.extract_cell_field_data()
+        bsd.cell_types_used = deepcopy(cell_field_data_dict['used_cell_types'])
 
         drawing_params = DrawingParameters()
         drawing_params.screenshot_data = screenshot_data
@@ -140,6 +177,9 @@ class GenericDrawer():
 
         # model, view = self.get_model_view(dimension_label=screenshot_data.spaceDimension)
         model, view = self.get_model_view(drawing_params=drawing_params)
+        # passes information about cell lattice
+        model.set_cell_field_data(cell_field_data_dict=cell_field_data_dict)
+
         ren = view.ren
         # self.draw_model_2D.setDrawingParametersObject(drawing_params)
         model.setDrawingParametersObject(drawing_params)
@@ -147,7 +187,6 @@ class GenericDrawer():
         try:
             key = (drawing_params.fieldType, 'Cart')
             draw_fcn = self.drawing_fcn_dict[key]
-
         except KeyError:
             print 'Could not find function for {}'.format(key)
             draw_fcn = None

@@ -65,13 +65,30 @@ class MVCDrawModelBase:
         self.fieldTypes=None 
         self.currentDrawingParameters=None
         self.field_extractor = None
+
+        self.cellType = None
+        self.cellId = None
+        self.usedCellTypesList = None
 #        self.scaleGlyphsByVolume = False
         
         # self.hexFlag = self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"]
 #        print MODULENAME,' __init__:   self.hexFlag=', self.hexFlag
         
         # should also set "periodic" boundary condition flag(s) (e.g. for drawing FPP links that wraparound)
-        
+
+    def set_cell_field_data(self, cell_field_data_dict):
+
+        """
+        Stores information about cell field as class variables
+        :param cell_field_data_dict: {dict}
+        :return:
+        """
+
+        self.cellType = cell_field_data_dict['cell_type_array']
+        self.cellId = cell_field_data_dict['cell_id_array']
+        self.usedCellTypesList = cell_field_data_dict['used_cell_types']
+
+
     def setDrawingParametersObject(self,_drawingParams):
         self.currentDrawingParameters=_drawingParams
         
