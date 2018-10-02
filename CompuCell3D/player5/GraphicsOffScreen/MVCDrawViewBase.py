@@ -141,7 +141,17 @@ class MVCDrawViewBase:
             self.graphicsFrameWidget.ren.RemoveActor(self.currentActors[actor])
             
         self.currentActors.clear()
-    
+
+
+    def clear_scene(self):
+        """
+        removes all actors from the renderer
+        :return: None
+        """
+        for actor in self.currentActors:
+            self.ren.RemoveActor(self.currentActors[actor])
+        self.currentActors.clear()
+
     def Render(self):
 #        print MODULENAME,"   ---------  Render()"
         self.graphicsFrameWidget.Render()

@@ -134,11 +134,15 @@ class MVCDrawView2D(MVCDrawViewBase):
         if show_flag:
             if not self.currentActors.has_key("concentration_actor"):
                 self.currentActors["concentration_actor"] = self.conActor
+                self.currentActors["contour_actor"] = self.contourActor
                 self.ren.AddActor(self.conActor)
         else:
             if self.currentActors.has_key("concentration_actor"):
                 del self.currentActors["concentration_actor"]
                 self.ren.RemoveActor(self.conActor)
+            if self.currentActors.has_key("contour_actor"):
+                del self.currentActors["contour_actor"]
+                self.ren.RemoveActor(self.contourActor)
 
     def prepare_cell_field_actors(self,actor_specs):
         """

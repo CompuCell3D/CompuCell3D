@@ -211,6 +211,10 @@ class GenericDrawer():
             draw_fcn = None
 
         if draw_fcn is not None:
+            # removing all current actors
+            view.clear_scene()
+
+
             draw_fcn(drawing_params=drawing_params)
             # decorations
             if drawing_params.screenshot_data.cell_borders_on:
