@@ -5,8 +5,10 @@ from os.path import join, exists, dirname
 import string
 # from utils import mkdir_p
 import Configuration
+from collections import OrderedDict
 # import SimpleTabView
 from Utilities import ScreenshotData
+import json
 
 # from Graphics.GraphicsFrameWidget import GraphicsFrameWidget
 
@@ -67,6 +69,135 @@ class ScreenshotManagerCore(object):
         if elem:
             on_flag = int(elem.getAttribute("On"))
             setattr(obj, attr, bool(on_flag))
+
+    def writeScreenshotDescriptionFile_JSON(self, fileName):
+        root_elem = OrderedDict()
+        root_elem['ScreenshotData'] = OrderedDict()
+
+        scr_container_elem = root_elem['ScreenshotData']
+
+        for name in self.screenshotDataDict:
+            scrData = self.screenshotDataDict[name]
+            # scr_elem[]
+            # scrDescElement = screenshotFileElement.ElementCC3D("ScreenshotDescription")
+            scr_container_elem[name] = OrderedDict()
+            scr_elem = scr_container_elem[name]
+            scr_elem['plot'] = {"PlotType": str(scrData.plotData[1]), "PlotName": str(scrData.plotData[0])}
+
+            if scrData.spaceDimension == "2D":
+                scr_elem['Dimension'] = '2D'
+
+                scr_elem['Projection'] = {"ProjectionPlane": scrData.projection,
+                                                          "ProjectionPosition": str(scrData.projectionPosition)}
+
+                # scrDescElement.ElementCC3D("Dimension", {}, str(scrData.spaceDimension))
+                # scrDescElement.ElementCC3D("Plot",
+                #                            {"PlotType": str(scrData.plotData[1]), "PlotName": str(scrData.plotData[0])})
+                # scrDescElement.ElementCC3D("Projection", {"ProjectionPlane": scrData.projection,
+                #                                           "ProjectionPosition": str(scrData.projectionPosition)})
+
+            if scrData.spaceDimension == "3D":
+                scr_elem['Dimension'] = '2D'
+                scr_elem['CameraClippingRange'] = {
+                    "Min": str(scrData.clippingRange[0]),
+                    "Max": str(scrData.clippingRange[1])
+                }
+
+                scr_elem['CameraFocalPoint'] = {
+                    "x": str(scrData.focalPoint[0]),
+                    "y": str(scrData.focalPoint[1]),
+                    "z": str(scrData.focalPoint[2])
+                }
+
+                scr_elem['CameraPosition'] = {
+                    "x": str(scrData.position[0]),
+                    "y": str(scrData.position[1]),
+                    "z": str(scrData.position[2])
+                }
+
+                scr_elem['"CameraViewUp'] = {
+                    "x": str(scrData.viewUp[0]),
+                    "y": str(scrData.viewUp[1]),
+                    "z": str(scrData.viewUp[2])
+                }
+
+                # scrDescElement.ElementCC3D("Dimension", {}, str(scrData.spaceDimension))
+
+                # scrDescElement.ElementCC3D("Plot",
+                #                            {"PlotType": str(scrData.plotData[1]), "PlotName": str(scrData.plotData[0])})
+                # scrDescElement.ElementCC3D("CameraClippingRange",
+                #                            {"Min": str(scrData.clippingRange[0]), "Max": str(scrData.clippingRange[1])})
+                # scrDescElement.ElementCC3D("CameraFocalPoint",
+                #                            {"x": str(scrData.focalPoint[0]), "y": str(scrData.focalPoint[1]),
+                #                             "z": str(scrData.focalPoint[2])})
+                # scrDescElement.ElementCC3D("CameraPosition",
+                #                            {"x": str(scrData.position[0]), "y": str(scrData.position[1]),
+                #                             "z": str(scrData.position[2])})
+                # scrDescElement.ElementCC3D("CameraViewUp", {"x": str(scrData.viewUp[0]), "y": str(scrData.viewUp[1]),
+                #                                             "z": str(scrData.viewUp[2])})
+
+            scr_elem['Size'] = {
+                    "Width": str(scrData.win_width),
+                    "Height": str(scrData.win_height)
+            }
+
+            scr_elem['CellBorders'] = bool(scrData.cell_borders_on)
+            scr_elem['Cells'] = bool(scrData.cells_on)
+            scr_elem['ClusterBorders'] = bool(scrData.cluster_borders_on)
+            scr_elem['CellGlyphs'] = bool(scrData.cell_glyphs_on)
+            scr_elem['FPPLinks'] = bool(scrData.fpp_links_on)
+            scr_elem['BoundingBox'] = bool(scrData.bounding_box_on)
+            scr_elem['LatticeAxes'] = bool(scrData.lattice_axes_on)
+            scr_elem['LatticeAxesLabels'] = bool(scrData.lattice_axes_labels_on)
+
+            if scrData.invisible_types is None:
+                scrData.invisible_types = []
+            scr_elem['TypesInvisible'] = scrData.invisible_types
+            # invisible_types_str = ''
+            # if scrData.invisible_types is not None:
+            #     invisible_types_str = ','.join(list(map(lambda x:str(x), scrData.invisible_types)))
+            #
+            # scrDescElement.ElementCC3D("TypesInvisible", {},invisible_types_str)
+
+
+            # scrDescElement.ElementCC3D("Size", {"Width": str(scrData.win_width),
+            #                                     "Height": str(scrData.win_height)})
+
+            # saving complete visulaization gui settings
+            # self.appendBoolChildElement(elem=scrDescElement, elem_label='CellBorders',
+            #                             elem_value=scrData.cell_borders_on)
+            # self.appendBoolChildElement(elem=scrDescElement, elem_label='Cells',
+            #                             elem_value=scrData.cells_on)
+            # self.appendBoolChildElement(elem=scrDescElement, elem_label='ClusterBorders',
+            #                             elem_value=scrData.cluster_borders_on)
+            # self.appendBoolChildElement(elem=scrDescElement, elem_label='CellGlyphs',
+            #                             elem_value=scrData.cell_glyphs_on)
+            # self.appendBoolChildElement(elem=scrDescElement, elem_label='FPPLinks',
+            #                             elem_value=scrData.fpp_links_on)
+            # self.appendBoolChildElement(elem=scrDescElement, elem_label='BoundingBox',
+            #                             elem_value=scrData.bounding_box_on)
+            #
+            # self.appendBoolChildElement(elem=scrDescElement, elem_label='LatticeAxes',
+            #                             elem_value=scrData.lattice_axes_on)
+            #
+            # self.appendBoolChildElement(elem=scrDescElement, elem_label='LatticeAxesLabels',
+            #                             elem_value=scrData.lattice_axes_labels_on)
+
+            # invisible_types_str = ''
+            # if scrData.invisible_types is not None:
+            #     invisible_types_str = ','.join(list(map(lambda x:str(x), scrData.invisible_types)))
+            #
+            # scrDescElement.ElementCC3D("TypesInvisible", {},invisible_types_str)
+
+            # scrDescElement.ElementCC3D("TypesInvisible", {},
+            #                            scrData.invisible_types if scrData.invisible_types is not None and len(scrData.invisible_types) else '')
+
+            # scrDescElement.ElementCC3D("CellBorders", {"On": 1 if scrData.cell_borders_on else 0})
+
+        # screenshotFileElement.CC3DXMLElement.saveXML(str(fileName))
+
+        with open(str(fileName), 'w') as f_out:
+            f_out.write(json.dumps(root_elem, indent=4))
 
     def writeScreenshotDescriptionFile(self, fileName):
         from XMLUtils import ElementCC3D

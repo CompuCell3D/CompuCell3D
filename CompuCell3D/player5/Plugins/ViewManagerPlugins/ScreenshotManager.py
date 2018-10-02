@@ -363,6 +363,11 @@ class ScreenshotManager(ScreenshotManagerCore):
         mkdir_p(dirname(out_fname))
         # try:
         self.writeScreenshotDescriptionFile(out_fname)
+
+        # outputting JSON
+
+        self.writeScreenshotDescriptionFile_JSON(out_fname+'.json')
+
         # except:  # catching al lwrite related exceptions amd emiting a warning
         #     msg = 'Could not write screenshot description file: {out_fname}. Check permissions'.format(
         #         out_fname=out_fname
