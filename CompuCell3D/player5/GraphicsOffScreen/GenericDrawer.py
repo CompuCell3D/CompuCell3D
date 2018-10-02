@@ -4,7 +4,7 @@
 # todo - get max cell typ from the simulation
 # todo  - fix this so that it is called only once per drawing series
 # todo cell_field_data_dict = self.extract_cell_field_data()
-# todo - check what happens when we used non consecutive cell types
+# todo - check what happens when we used non consecutive cell types -  seems to be OK
 
 
 import sys
@@ -58,7 +58,8 @@ class GenericDrawer():
         #
         # dict {field_type: drawing fcn}
         self.drawing_fcn_dict = {
-            ('CellField', 'Cart'): self.draw_cell_field
+            ('CellField', 'Cart'): self.draw_cell_field,
+            ('ConField', 'Cart'): self.draw_concentration_field
         }
         self.screenshotWindowFlag = False
 
@@ -94,11 +95,29 @@ class GenericDrawer():
         self.draw_model_2D.field_extractor = field_extractor
         self.draw_model_3D.field_extractor = field_extractor
 
+    def draw_concentration_field(self,drawing_params):
+        """
+        Draws concentration field
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+
+        model, view = self.get_model_view(drawing_params=drawing_params)
+
+        actor_specs = ActorSpecs()
+
+        actor_specs_final = view.prepare_concentration_field_actors(actor_specs=actor_specs)
+
+        model.init_concentration_field_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
+
+        view.show_concentration_field_actors(actor_specs=actor_specs_final)
+
+
     def draw_cell_field(self, drawing_params):
         """
         Draws cell field
-        :param drawing_params:
-        :return:
+        :param drawing_params:{DrawingParameters}
+        :return:None
         """
         model, view = self.get_model_view(drawing_params=drawing_params)
 

@@ -5,6 +5,7 @@
 # import
 from Utilities.QVTKRenderWidget import QVTKRenderWidget
 # from GraphicsNew import GraphicsNew
+import Configuration
 from MVCDrawModelBase import MVCDrawModelBase
 # import Configuration
 import vtk, math
@@ -148,9 +149,173 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # color = Configuration.getSetting("BoundingBoxColor")   # eventually do this smarter (only get/update when it changes)
         # actors[0].GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
 
+    def init_concentration_field_actors(self, actor_specs, drawing_params=None):
+        """
+        initializes concentration field actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
 
+        actors_dict = actor_specs.actors_dict
+
+        fieldDim = self.currentDrawingParameters.bsd.fieldDim
+        dimOrder = self.dimOrder(self.currentDrawingParameters.plane)
+        dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]
+        field_name = drawing_params.fieldName
+        #
+        # fieldDim = self.currentDrawingParameters.bsd.fieldDim
+        # conFieldName = self.currentDrawingParameters.fieldName
+        #
+        # self.dim = [fieldDim.x, fieldDim.y, fieldDim.z]
+        # # Leave it for testing
+        # assert self.currentDrawingParameters.plane in ("XY", "XZ", "YZ"), "Plane is not XY, XZ or YZ"
+        #
+        # # fieldDim = cellField.getDim()
+        # dimOrder = self.dimOrder(self.plane)
+        # self.dim = self.planeMapper(dimOrder,
+        #                             (fieldDim.x, fieldDim.y, fieldDim.z))  # [fieldDim.x, fieldDim.y, fieldDim.z]
+
+        conArray = vtk.vtkDoubleArray()
+        conArray.SetName("concentration")
+        conArrayIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=conArray)
+        # todo - make it flexible
+
+        fillSuccessful = self.field_extractor.fillConFieldData2D(conArrayIntAddr, field_name, self.currentDrawingParameters.plane,
+                                          self.currentDrawingParameters.planePos)
+
+        # fillSuccessful = self.field_extractor.fillScalarFieldData2D(conArrayIntAddr, field_name, self.currentDrawingParameters.plane,
+        #                                   self.currentDrawingParameters.planePos)
+
+        # field_storage = self.field_extractor.getFieldStorage(self)
+
+        if not fillSuccessful:
+            return
+
+        # todo 5 - revisit later
+        numIsos = Configuration.getSetting("NumberOfContourLines", field_name)
+        #        self.isovalStr = Configuration.getSetting("ScalarIsoValues",conFieldName)
+
+        range =conArray.GetRange()
+        minCon = range[0]
+        maxCon = range[1]
+
+        # Note! should really avoid doing a getSetting with each step to speed up the rendering; only update when changed in Prefs
+        if Configuration.getSetting("MinRangeFixed", field_name):
+            minCon = Configuration.getSetting("MinRange", field_name)
+        #            self.clut.SetTableValue(0,[0,0,0,1])   # this will cause values < minCon to be black
+        #        else:
+        #            self.clut.SetTableValue(0,self.lowTableValue)
+
+        if Configuration.getSetting("MaxRangeFixed", field_name):
+            maxCon = Configuration.getSetting("MaxRange", field_name)
+
+        dim_0 = dim[0] + 1
+        dim_1 = dim[1] + 1
+
+        # print 'dim_0,dim_1=',(dim_0,dim_1)
+        dbgMsg('dim_0,dim_1=', (dim_0, dim_1))
+
+        data = vtk.vtkImageData()
+        data.SetDimensions(dim_0, dim_1, 1)
+        # print "dim_0,dim_1",(dim_0,dim_1)
+
+        #
+        if VTK_MAJOR_VERSION >= 6:
+            data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 3)
+        else:
+            data.SetScalarTypeToUnsignedChar()
+
+        data.GetPointData().SetScalars(conArray)
+
+        field = vtk.vtkImageDataGeometryFilter()
+
+        if VTK_MAJOR_VERSION >= 6:
+            field.SetInputData(data)
+        else:
+            field.SetInput(data)
+
+        field.SetExtent(0, dim_0, 0, dim_1, 0, 0)
+
+        #        spoints = vtk.vtkStructuredPoints()
+        #        spoints.SetDimensions(self.dim[0]+2, self.dim[1]+2, self.dim[2]+2)  #  only add 2 if we're filling in an extra boundary (rf. FieldExtractor.cpp)
+        #        spoints.GetPointData().SetScalars(self.conArray)
+
+        #        voi = vtk.vtkExtractVOI()
+        #        voi.SetInput(spoints)
+        #        voi.SetVOI(1,self.dim[0]-1, 1,self.dim[1]-1, 1,self.dim[2]-1 )
+
+        isoContour = vtk.vtkContourFilter()
+        #        isoContour.SetInputConnection(voi.GetOutputPort())
+        isoContour.SetInputConnection(field.GetOutputPort())
+
+        isoValList = self.getIsoValues(field_name)
+        #        print MODULENAME, 'initScalarFieldActors():  getIsoValues=',isoValList
+
+        printIsoValues = False
+        #        if printIsoValues:  print MODULENAME, ' isovalues= ',
+        isoNum = 0
+        for isoVal in isoValList:
+            try:
+                if printIsoValues:  print MODULENAME, '  initScalarFieldActors(): setting (specific) isoval= ', isoVal
+                isoContour.SetValue(isoNum, isoVal)
+                isoNum += 1
+            except:
+                print MODULENAME, '  initScalarFieldDataActors(): cannot convert to float: ', self.isovalStr[idx]
+        if isoNum > 0:  isoNum += 1
+        #        print MODULENAME, '  after specific isovalues, isoNum=',isoNum
+        #        numIsos = Configuration.getSetting("NumberOfContourLines")
+        #        print MODULENAME, '  Next, do range of isovalues: min,max, # isos=',self.minCon,self.maxCon,numIsos
+        delIso = (self.maxCon - self.minCon) / (numIsos + 1)  # exclude the min,max for isovalues
+        #        print MODULENAME, '  initScalarFieldActors(): delIso= ',delIso
+        isoVal = self.minCon + delIso
+        for idx in xrange(numIsos):
+            if printIsoValues:  print MODULENAME, '  initScalarFieldDataActors(): isoNum, isoval= ', isoNum, isoVal
+            isoContour.SetValue(isoNum, isoVal)
+            isoNum += 1
+            isoVal += delIso
+        if printIsoValues:  print
+
+        isoContour.SetInputConnection(field.GetOutputPort())  # rwh?
+        #        isoContour.GenerateValues(Configuration.getSetting("NumberOfContourLines",self.currentDrawingParameters.fieldName)+2, [self.minCon, self.maxCon])
+
+        self.contourMapper.SetInputConnection(isoContour.GetOutputPort())
+        self.contourMapper.SetLookupTable(self.ctlut)
+        self.contourMapper.SetScalarRange(self.minCon, self.maxCon)
+        self.contourMapper.ScalarVisibilityOff()  # this is required to do a SetColor on the actor's property
+        #            print MODULENAME,' initScalarFieldActors:  setColor=1,0,0'
+        #            contourActor.GetProperty().SetColor(1.,0.,0.)
+        #        if Configuration.getSetting("ContoursOn",conFieldName):
+
+        contourActor = actors_dict['contour_actor']
+
+        contourActor.SetMapper(self.contourMapper)
+
+        color = Configuration.getSetting("ContourColor")  # want to avoid this; only update when Prefs changes
+        contourActor.GetProperty().SetColor(float(color.red()) / 255, float(color.green()) / 255,
+                                            float(color.blue()) / 255)
+
+        self.conMapper.SetInputConnection(field.GetOutputPort())  # port index = 0
+
+        self.conMapper.ScalarVisibilityOn()
+        self.conMapper.SetLookupTable(self.clut)
+        self.conMapper.SetScalarRange(self.minCon,
+                                      self.maxCon)  # 0, self.clut.GetNumberOfColors()) # may manually set range so that type reassignment will not be scalled dynamically when one type is missing
+
+        self.conMapper.SetScalarModeToUsePointData()
+
+        concentration_actor = actors_dict['concentration_actor']
+        concentration_actor.SetMapper(self.conMapper)  # concentration actor
+
+        print
 
     def init_cell_field_actors(self, actor_specs, drawing_params=None):
+        """
+        Initializes cell field actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
 
         fieldDim = self.currentDrawingParameters.bsd.fieldDim
         dimOrder = self.dimOrder(self.currentDrawingParameters.plane)

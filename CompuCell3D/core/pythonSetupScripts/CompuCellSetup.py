@@ -1998,6 +1998,15 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
 
         field_handler = simthread
 
+        field_storage_local = PlayerPython.FieldStorage()
+
+        # OK
+        # field_extractor_local = PlayerPython.FieldExtractor()
+        # field_storage_local.allocateCellField(sim.getPotts().getCellFieldG().getDim())
+        # field_extractor_local.setFieldStorage(field_storage_local)
+        # field_extractor_local.init(sim)
+
+
         field_extractor_local = PlayerPython.FieldExtractor()
         field_extractor_local.setFieldStorage(field_handler.fieldStorage)
         field_extractor_local.init(sim)
@@ -2076,7 +2085,7 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
         gd = GenericDrawer()
         gd.set_field_extractor(field_extractor=field_extractor_local)
 
-
+        fs = field_handler.fieldStorage
         for screenshot_name, screenshot_data in screenshot_mgr.screenshotDataDict.items():
             drawing_params = DrawingParameters()
             bsd = BasicSimulationData()

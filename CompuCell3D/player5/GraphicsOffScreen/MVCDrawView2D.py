@@ -110,6 +110,36 @@ class MVCDrawView2D(MVCDrawViewBase):
 
         return od
 
+    def prepare_concentration_field_actors(self,actor_specs):
+        """
+        Prepares concentration field actors
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :return: {ActorSpecs}
+        """
+
+        actor_specs_copy = deepcopy(actor_specs)
+        actor_specs_copy.actors_dict = OrderedDict()
+        actor_specs_copy.actors_dict['concentration_actor'] = self.conActor
+        actor_specs_copy.actors_dict['contour_actor'] = self.contourActor
+
+        return actor_specs_copy
+
+    def show_concentration_field_actors(self,actor_specs, show_flag=True):
+        """
+        Shows concentration actors
+        :param actor_specs: {ActorSpecs}
+        :param show_flag: {bool}
+        :return: None
+        """
+        if show_flag:
+            if not self.currentActors.has_key("concentration_actor"):
+                self.currentActors["concentration_actor"] = self.conActor
+                self.ren.AddActor(self.conActor)
+        else:
+            if self.currentActors.has_key("concentration_actor"):
+                del self.currentActors["concentration_actor"]
+                self.ren.RemoveActor(self.conActor)
+
     def prepare_cell_field_actors(self,actor_specs):
         """
         Prepares cell_field_actors  based on actor_specs specifications

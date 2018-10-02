@@ -129,8 +129,24 @@ class MVCDrawModelBase:
                 
     def get_cell_actors_metadata(self): pass
 
+    def init_concentration_field_actors(self, actor_specs, drawing_params=None):
+        """
+        initializes concentration field actors
+        :param actor_specs:
+        :param drawing_params:
+        :return: None
+        """
+        raise NotImplementedError()
+
 
     def init_cell_field_actors(self, actor_specs, drawing_params=None):
+        """
+        Initializes cell field actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+
         raise NotImplementedError()
 
     def init_outline_actors(self, actor_specs, drawing_params=None):

@@ -410,6 +410,24 @@ class MVCDrawViewBase:
         """
         raise NotImplementedError(self.__class__.getActors.__name__)
 
+    def prepare_concentration_field_actors(self,actor_specs):
+        """
+        Prepares concentration field actors
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :return: {ActorSpecs}
+        """
+
+        raise NotImplementedError(self.__class__.prepare_concentration_field_actors.__name__)
+
+    def show_concentration_field_actors(self,actor_specs, show_flag=True):
+        """
+        Shows concentration actors
+        :param actor_specs: {ActorSpecs}
+        :param show_flag: {bool}
+        :return: None
+        """
+        raise NotImplementedError()
+
     def prepare_cell_field_actors(self,actor_specs):
         """
         Prepares cell_field_actors  based on actor_specs specifications
@@ -418,7 +436,6 @@ class MVCDrawViewBase:
         """
 
         raise NotImplementedError(self.__class__.prepare_cell_field_actors.__name__)
-
 
     def prepare_border_actors(self,actor_specs):
         """
@@ -429,8 +446,16 @@ class MVCDrawViewBase:
 
         raise NotImplementedError(self.__class__.prepare_border_actors.__name__)
 
+    def show_cell_actors(self, actor_specs, show_flag=True):
+        """
+        Shows cell_field actors
+        :param actor_specs: {ActorSpecs}
+        :param show_flag: {bool}
+        :return: None
+        """
+        raise NotImplementedError()
 
-    def show_cell_actors(self, actor_specs, show_flag):raise NotImplementedError()
+
 
     def drawCellField(self, _bsd, fieldType): pass
     
