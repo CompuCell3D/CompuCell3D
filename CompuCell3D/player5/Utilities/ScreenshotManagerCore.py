@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 import warnings
 import os, sys
@@ -70,7 +71,7 @@ class ScreenshotManagerCore(object):
             on_flag = int(elem.getAttribute("On"))
             setattr(obj, attr, bool(on_flag))
 
-    def writeScreenshotDescriptionFile_JSON(self, fileName):
+    def writeScreenshotDescriptionFile_JSON(self, filename):
         root_elem = OrderedDict()
         root_elem['ScreenshotData'] = OrderedDict()
 
@@ -82,7 +83,7 @@ class ScreenshotManagerCore(object):
             # scrDescElement = screenshotFileElement.ElementCC3D("ScreenshotDescription")
             scr_container_elem[name] = OrderedDict()
             scr_elem = scr_container_elem[name]
-            scr_elem['plot'] = {"PlotType": str(scrData.plotData[1]), "PlotName": str(scrData.plotData[0])}
+            scr_elem['Plot'] = {"PlotType": str(scrData.plotData[1]), "PlotName": str(scrData.plotData[0])}
 
             if scrData.spaceDimension == "2D":
                 scr_elem['Dimension'] = '2D'
@@ -196,10 +197,19 @@ class ScreenshotManagerCore(object):
 
         # screenshotFileElement.CC3DXMLElement.saveXML(str(fileName))
 
-        with open(str(fileName), 'w') as f_out:
+        with open(str(filename), 'w') as f_out:
             f_out.write(json.dumps(root_elem, indent=4))
 
-    def writeScreenshotDescriptionFile(self, fileName):
+    def writeScreenshotDescriptionFile(self, filename):
+        """
+        Writes screenshot description file
+        :param filename: {str} file name
+        :return: None
+        """
+
+        self.writeScreenshotDescriptionFile_JSON(filename=filename)
+
+    def writeScreenshotDescriptionFile_XML(self, fileName):
         from XMLUtils import ElementCC3D
 
         screenshotFileElement = ElementCC3D("CompuCell3DScreenshots")
@@ -265,7 +275,46 @@ class ScreenshotManagerCore(object):
 
         screenshotFileElement.CC3DXMLElement.saveXML(str(fileName))
 
-    def readScreenshotDescriptionFile(self, _fileName):
+    def readScreenshotDescriptionFile_JSON(self,filename):
+        root_elem = None
+        with open(filename,'r') as f_in:
+            root_elem = json.load(f_in)
+
+        if root_elem is None:
+            print('Could not read screenshot description file {}'.format(filename))
+            return
+
+        for scr_name, scr_data_elem in root_elem.items():
+            scr_data = ScreenshotData()
+
+            scr_data.plotData = (scr_data_elem['Plot']['PlotName'], scr_data_elem['plot']['PlotType'])
+            scr_data.spaceDimension = scr_data_elem['Dimension']
+            scr_data.projection = scr_data_elem['Projection']['ProjectionPlane']
+            scr_data.projectionPosition = scr_data_elem['Projection']['ProjectionPosition']
+            scr_data.win_width = scr_data_elem['Size']['Width']
+            scr_data.win_height = scr_data_elem['Size']['Height']
+
+            scr_data.cell_borders_on = scr_data_elem['CellBorders']
+            scr_data.cells_on = scr_data_elem['Cells']
+            scr_data.cluster_borders_on = scr_data_elem['ClusterBorders']
+            scr_data.cell_glyphs_on = scr_data_elem['CellGlyphs']
+            scr_data.fpp_links_on = scr_data_elem['FPPLinks']
+            scr_data.bounding_box_on = scr_data_elem['BoundingBox']
+            scr_data.lattice_axes_on = scr_data_elem['LatticeAxes']
+            scr_data.lattice_axes_labels_on = scr_data_elem['LatticeAxesLabels']
+            scr_data.invisible_types = scr_data_elem['TypesInvisible']
+
+
+    def readScreenshotDescriptionFile(self, filename):
+        """
+        Reads screenshot description file
+        :param filename:{str} scr descr file name
+        :return: None
+        """
+
+        self.readScreenshotDescriptionFile_JSON(filename=filename)
+
+    def readScreenshotDescriptionFile_XML(self, _fileName):
         import XMLUtils
 
         xml2ObjConverter = XMLUtils.Xml2Obj()

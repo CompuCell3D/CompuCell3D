@@ -9,6 +9,7 @@ import SimpleTabView
 
 from Graphics.GraphicsFrameWidget import GraphicsFrameWidget
 from Utilities import ScreenshotData, ScreenshotManagerCore
+from Utilities import SceneData, ActorProperties
 
 MODULENAME = '---- ScreenshotManager.py: '
 
@@ -364,9 +365,9 @@ class ScreenshotManager(ScreenshotManagerCore):
         # try:
         self.writeScreenshotDescriptionFile(out_fname)
 
-        # outputting JSON
-
-        self.writeScreenshotDescriptionFile_JSON(out_fname+'.json')
+        # # outputting JSON
+        #
+        # self.writeScreenshotDescriptionFile_JSON(out_fname+'.json')
 
         # except:  # catching al lwrite related exceptions amd emiting a warning
         #     msg = 'Could not write screenshot description file: {out_fname}. Check permissions'.format(
@@ -387,8 +388,8 @@ class ScreenshotManager(ScreenshotManagerCore):
         out_dir_name = tvw.getOutputDirName()
         sim_fname = tvw.getSimFileName()
 
-        out_fname = join(out_dir_name, 'screenshot_data', 'screenshots.xml')
-        out_fname_in_sim_dir = join(dirname(sim_fname), 'screenshot_data', 'screenshots.xml')
+        out_fname = join(out_dir_name, 'screenshot_data', 'screenshots.json')
+        out_fname_in_sim_dir = join(dirname(sim_fname), 'screenshot_data', 'screenshots.json')
 
         # writing in the simulation output dir
         self.safe_writeScreenshotDescriptionFile(out_fname)
@@ -427,7 +428,7 @@ class ScreenshotManager(ScreenshotManagerCore):
             scrData.invisible_types = []
 
     def add2DScreenshot(self, _plotName, _plotType, _projection, _projectionPosition,
-                        _camera):  # called from GraphicsFrameWidget
+                        _camera,current_actors=None):  # called from GraphicsFrameWidget
         if len(self.screenshotDataDict) > self.maxNumberOfScreenshots:
             print MODULENAME, "MAX NUMBER OF SCREENSHOTS HAS BEEN REACHED"
 
@@ -454,6 +455,9 @@ class ScreenshotManager(ScreenshotManagerCore):
 
             scrData.win_width = scrData.screenshotGraphicsWidget.size().width()
             scrData.win_height = scrData.screenshotGraphicsWidget.size().height()
+
+            if current_actors is not None:
+                print
 
             #            cam = self.screenshotGraphicsWidget.getCamera()
             #            print MODULENAME,"  add2DScreenshot():  cam: Range,FP,Pos,Up,Distance", \
@@ -492,7 +496,7 @@ class ScreenshotManager(ScreenshotManagerCore):
         # serializing all screenshots
         self.serialize_screenshot_data()
 
-    def add3DScreenshot(self, _plotName, _plotType, _camera):  # called from GraphicsFrameWidget
+    def add3DScreenshot(self, _plotName, _plotType, _camera,current_actors=None):  # called from GraphicsFrameWidget
         if len(self.screenshotDataDict) > self.maxNumberOfScreenshots:
             print MODULENAME, "MAX NUMBER OF SCREENSHOTS HAS BEEN REACHED"
         scrData = ScreenshotData()
@@ -521,6 +525,9 @@ class ScreenshotManager(ScreenshotManagerCore):
 
             scrData.win_width = scrData.screenshotGraphicsWidget.size().width()
             scrData.win_height = scrData.screenshotGraphicsWidget.size().height()
+
+            if current_actors is not None:
+                print
 
             #            self.tabViewWidget.lastActiveWindow = self.screenshotGraphicsWidget
             #            print MODULENAME," add3DScreenshot(): win id=", self.tabViewWidget.lastActiveWindow.winId().__int__()
