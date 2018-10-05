@@ -2077,7 +2077,7 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
         global simulationFileName
 
         sim_fname = simulationFileName
-        screenshot_data_fname = join(dirname(sim_fname), 'screenshot_data/screenshots.xml')
+        screenshot_data_fname = join(dirname(sim_fname), 'screenshot_data/screenshots.json')
         screenshot_mgr = ScreenshotManagerCore()
         if exists(screenshot_data_fname):
             screenshot_mgr.readScreenshotDescriptionFile(screenshot_data_fname)

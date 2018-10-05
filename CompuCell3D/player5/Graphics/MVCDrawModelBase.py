@@ -109,6 +109,7 @@ class MVCDrawModelBase:
         metadata_dict['MinRange'] = Configuration.getSetting("MinRange", con_field_name)
         metadata_dict['MaxRange'] = Configuration.getSetting("MaxRange", con_field_name)
         metadata_dict['ContoursOn'] = Configuration.getSetting("ContoursOn", con_field_name)
+        metadata_dict['NumberOfContourLines'] = Configuration.getSetting("NumberOfContourLines", field_name)
 
         return metadata_dict
 

@@ -92,7 +92,7 @@ class ScreenshotManagerCore(object):
                 scr_elem['Dimension'] = '2D'
 
                 scr_elem['Projection'] = {"ProjectionPlane": scr_data.projection,
-                                                          "ProjectionPosition": str(scr_data.projectionPosition)}
+                                                          "ProjectionPosition": int(scr_data.projectionPosition)}
 
             if scr_data.spaceDimension == "3D":
                 scr_elem['Dimension'] = '2D'
@@ -120,8 +120,8 @@ class ScreenshotManagerCore(object):
                 }
 
             scr_elem['Size'] = {
-                    "Width": str(scr_data.win_width),
-                    "Height": str(scr_data.win_height)
+                    "Width": int(scr_data.win_width),
+                    "Height": int(scr_data.win_height)
             }
 
             scr_elem['CellBorders'] = bool(scr_data.cell_borders_on)
@@ -232,9 +232,9 @@ class ScreenshotManagerCore(object):
         for scr_name, scr_data_elem in scr_data_container.items():
             scr_data = ScreenshotData()
 
-            scr_data.plotData = (scr_data_elem['Plot']['PlotName'], scr_data_elem['Plot']['PlotType'])
-            scr_data.spaceDimension = scr_data_elem['Dimension']
-            scr_data.projection = scr_data_elem['Projection']['ProjectionPlane']
+            scr_data.plotData = tuple(map(lambda x:str(x),(scr_data_elem['Plot']['PlotName'], scr_data_elem['Plot']['PlotType'])))
+            scr_data.spaceDimension = str(scr_data_elem['Dimension'])
+            scr_data.projection = str(scr_data_elem['Projection']['ProjectionPlane'])
             scr_data.projectionPosition = scr_data_elem['Projection']['ProjectionPosition']
             scr_data.win_width = scr_data_elem['Size']['Width']
             scr_data.win_height = scr_data_elem['Size']['Height']
@@ -248,8 +248,17 @@ class ScreenshotManagerCore(object):
             scr_data.lattice_axes_on = scr_data_elem['LatticeAxes']
             scr_data.lattice_axes_labels_on = scr_data_elem['LatticeAxesLabels']
             scr_data.invisible_types = scr_data_elem['TypesInvisible']
-            scr_data.metadata = scr_data_elem['metadata']
 
+            # getting rid of unicode in the keys
+            metadata_dict = {}
+            for k, v in scr_data_elem['metadata'].items():
+                metadata_dict[str(k)] = v
+
+            scr_data.metadata = metadata_dict
+
+
+
+            self.screenshotDataDict[scr_data.screenshotName] = scr_data
 
     def readScreenshotDescriptionFile(self, filename):
         """

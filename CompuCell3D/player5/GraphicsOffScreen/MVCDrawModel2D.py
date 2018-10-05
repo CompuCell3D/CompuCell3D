@@ -163,6 +163,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
         dimOrder = self.dimOrder(self.currentDrawingParameters.plane)
         dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]
         field_name = drawing_params.fieldName
+        scene_metadata = drawing_params.screenshot_data.metadata
+
         #
         # fieldDim = self.currentDrawingParameters.bsd.fieldDim
         # conFieldName = self.currentDrawingParameters.fieldName
@@ -196,19 +198,43 @@ class MVCDrawModel2D(MVCDrawModelBase):
         numIsos = Configuration.getSetting("NumberOfContourLines", field_name)
         #        self.isovalStr = Configuration.getSetting("ScalarIsoValues",conFieldName)
 
+        min_range_fixed = None
+        max_range_fixed = None
+        min_range = None
+        max_range = None
+
+
+        if set(['MinRangeFixed',"MaxRangeFixed",'MinRange','MaxRange']).issubset( set(scene_metadata.keys())):
+            min_range_fixed = scene_metadata['MinRangeFixed']
+            max_range_fixed = scene_metadata['MaxRangeFixed']
+            min_range = scene_metadata['MinRange']
+            max_range = scene_metadata['MaxRange']
+        else:
+            min_range_fixed = Configuration.getSetting("MinRangeFixed", field_name)
+            max_range_fixed = Configuration.getSetting("MaxRangeFixed", field_name)
+            min_range = Configuration.getSetting("MinRange", field_name)
+            max_range = Configuration.getSetting("MaxRange", field_name)
+
+
         range =conArray.GetRange()
         minCon = range[0]
         maxCon = range[1]
 
         # Note! should really avoid doing a getSetting with each step to speed up the rendering; only update when changed in Prefs
-        if Configuration.getSetting("MinRangeFixed", field_name):
-            minCon = Configuration.getSetting("MinRange", field_name)
-        #            self.clut.SetTableValue(0,[0,0,0,1])   # this will cause values < minCon to be black
-        #        else:
-        #            self.clut.SetTableValue(0,self.lowTableValue)
+        if min_range_fixed:
+            minCon = min_range
 
-        if Configuration.getSetting("MaxRangeFixed", field_name):
-            maxCon = Configuration.getSetting("MaxRange", field_name)
+        if max_range_fixed:
+            maxCon = max_range
+
+        # if Configuration.getSetting("MinRangeFixed", field_name):
+        #     minCon = Configuration.getSetting("MinRange", field_name)
+        # #            self.clut.SetTableValue(0,[0,0,0,1])   # this will cause values < minCon to be black
+        # #        else:
+        # #            self.clut.SetTableValue(0,self.lowTableValue)
+        #
+        # if Configuration.getSetting("MaxRangeFixed", field_name):
+        #     maxCon = Configuration.getSetting("MaxRange", field_name)
 
         dim_0 = dim[0] + 1
         dim_1 = dim[1] + 1
@@ -266,9 +292,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         #        print MODULENAME, '  after specific isovalues, isoNum=',isoNum
         #        numIsos = Configuration.getSetting("NumberOfContourLines")
         #        print MODULENAME, '  Next, do range of isovalues: min,max, # isos=',self.minCon,self.maxCon,numIsos
-        delIso = (self.maxCon - self.minCon) / (numIsos + 1)  # exclude the min,max for isovalues
+        delIso = (maxCon - minCon) / (numIsos + 1)  # exclude the min,max for isovalues
         #        print MODULENAME, '  initScalarFieldActors(): delIso= ',delIso
-        isoVal = self.minCon + delIso
+        isoVal = minCon + delIso
         for idx in xrange(numIsos):
             if printIsoValues:  print MODULENAME, '  initScalarFieldDataActors(): isoNum, isoval= ', isoNum, isoVal
             isoContour.SetValue(isoNum, isoVal)
@@ -281,7 +307,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         self.contourMapper.SetInputConnection(isoContour.GetOutputPort())
         self.contourMapper.SetLookupTable(self.ctlut)
-        self.contourMapper.SetScalarRange(self.minCon, self.maxCon)
+        self.contourMapper.SetScalarRange(minCon, maxCon)
         self.contourMapper.ScalarVisibilityOff()  # this is required to do a SetColor on the actor's property
         #            print MODULENAME,' initScalarFieldActors:  setColor=1,0,0'
         #            contourActor.GetProperty().SetColor(1.,0.,0.)
@@ -299,8 +325,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         self.conMapper.ScalarVisibilityOn()
         self.conMapper.SetLookupTable(self.clut)
-        self.conMapper.SetScalarRange(self.minCon,
-                                      self.maxCon)  # 0, self.clut.GetNumberOfColors()) # may manually set range so that type reassignment will not be scalled dynamically when one type is missing
+        # 0, self.clut.GetNumberOfColors()) # may manually set range so that type reassignment will not be scalled dynamically when one type is missing
+        self.conMapper.SetScalarRange(minCon,maxCon)
 
         self.conMapper.SetScalarModeToUsePointData()
 
