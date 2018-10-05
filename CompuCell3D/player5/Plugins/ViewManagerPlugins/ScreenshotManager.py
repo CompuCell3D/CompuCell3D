@@ -427,18 +427,16 @@ class ScreenshotManager(ScreenshotManagerCore):
         else:
             scrData.invisible_types = []
 
+    # called from GraphicsFrameWidget
     def add2DScreenshot(self, _plotName, _plotType, _projection, _projectionPosition,
-                        _camera,current_actors=None):  # called from GraphicsFrameWidget
+                        _camera, metadata=None):
         if len(self.screenshotDataDict) > self.maxNumberOfScreenshots:
             print MODULENAME, "MAX NUMBER OF SCREENSHOTS HAS BEEN REACHED"
 
         scrData = ScreenshotData()
         scrData.spaceDimension = "2D"
         scrData.plotData = (_plotName, _plotType)
-        print MODULENAME, " add2DScreenshot(): scrData.plotData=", scrData.plotData  # e.g. =('Cell_Field', 'CellField')
-        #        print MODULENAME," add2DScreenshot(): _camera=",_camera
-        #        print MODULENAME,"  add2DScreenshot():  incoming _camera: Range,FP,Pos,Up,Distance", \
-        #                _camera.GetClippingRange(),_camera.GetFocalPoint(),_camera.GetPosition(),_camera.GetViewUp(),_camera.GetDistance()
+
         scrData.projection = _projection
         scrData.projectionPosition = int(_projectionPosition)
 
@@ -456,8 +454,9 @@ class ScreenshotManager(ScreenshotManagerCore):
             scrData.win_width = scrData.screenshotGraphicsWidget.size().width()
             scrData.win_height = scrData.screenshotGraphicsWidget.size().height()
 
-            if current_actors is not None:
-                print
+            if metadata is not None:
+                scrData.metadata = metadata
+
 
             #            cam = self.screenshotGraphicsWidget.getCamera()
             #            print MODULENAME,"  add2DScreenshot():  cam: Range,FP,Pos,Up,Distance", \
@@ -496,7 +495,7 @@ class ScreenshotManager(ScreenshotManagerCore):
         # serializing all screenshots
         self.serialize_screenshot_data()
 
-    def add3DScreenshot(self, _plotName, _plotType, _camera,current_actors=None):  # called from GraphicsFrameWidget
+    def add3DScreenshot(self, _plotName, _plotType, _camera,metadata=None):  # called from GraphicsFrameWidget
         if len(self.screenshotDataDict) > self.maxNumberOfScreenshots:
             print MODULENAME, "MAX NUMBER OF SCREENSHOTS HAS BEEN REACHED"
         scrData = ScreenshotData()
@@ -526,8 +525,9 @@ class ScreenshotManager(ScreenshotManagerCore):
             scrData.win_width = scrData.screenshotGraphicsWidget.size().width()
             scrData.win_height = scrData.screenshotGraphicsWidget.size().height()
 
-            if current_actors is not None:
-                print
+            if metadata is not None:
+                scrData.metadata = metadata
+
 
             #            self.tabViewWidget.lastActiveWindow = self.screenshotGraphicsWidget
             #            print MODULENAME," add3DScreenshot(): win id=", self.tabViewWidget.lastActiveWindow.winId().__int__()

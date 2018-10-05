@@ -2960,7 +2960,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return: None
         """
 
-        scr_desc_fname = join(dirname(self.__sim_file_name), 'screenshot_data', 'screenshots.xml')
+        scr_desc_fname = join(dirname(self.__sim_file_name), 'screenshot_data', 'screenshots.json')
         if exists(scr_desc_fname):
             self.__screenshotDescriptionFileName = scr_desc_fname
         else:

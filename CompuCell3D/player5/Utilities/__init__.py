@@ -5,3 +5,4 @@ __all__ = ['QVTKRenderWidget']
 
 from .ScreenshotData import ScreenshotData
 from . ScreenshotManagerCore import ScreenshotManagerCore
+from . SceneData import ActorProperties,SceneData

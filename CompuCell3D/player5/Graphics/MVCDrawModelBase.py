@@ -80,7 +80,39 @@ class MVCDrawModelBase:
 #        print MODULENAME,' __init__:   self.hexFlag=', self.hexFlag
         
         # should also set "periodic" boundary condition flag(s) (e.g. for drawing FPP links that wraparound)
-        
+
+        self.metadata_fetcher_dict = {
+            'ConField':self.get_con_field_metadata
+        }
+
+    def get_metadata(self, field_name, field_type):
+        try:
+            metadata_fetcher_fcn = self.metadata_fetcher_dict[field_type]
+        except KeyError:
+            return {}
+
+        metadata = metadata_fetcher_fcn(field_name=field_name, field_type=field_type)
+
+        return metadata
+
+    def get_con_field_metadata(self, field_name, field_type):
+        """
+        Returns dictionary of auxiliary information needed to render a give scene
+        :param field_name:{str} field_name
+        :return: {dict}
+        """
+
+        metadata_dict = {}
+        con_field_name = field_name
+        metadata_dict['MinRangeFixed'] = Configuration.getSetting("MinRangeFixed", con_field_name)
+        metadata_dict['MaxRangeFixed'] = Configuration.getSetting("MaxRangeFixed", con_field_name)
+        metadata_dict['MinRange'] = Configuration.getSetting("MinRange", con_field_name)
+        metadata_dict['MaxRange'] = Configuration.getSetting("MaxRange", con_field_name)
+        metadata_dict['ContoursOn'] = Configuration.getSetting("ContoursOn", con_field_name)
+
+        return metadata_dict
+
+
     def setDrawingParametersObject(self,_drawingParams):
         self.currentDrawingParameters=_drawingParams
         

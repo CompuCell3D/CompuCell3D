@@ -710,40 +710,34 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         
         # import time
         # time.sleep(2)
-        return gwd    
+        return gwd
 
-        
-
-        
-        
     def _takeShot(self):
-#        print MODULENAME, '  _takeShot():  self.parentWidget.screenshotManager=',self.parentWidget.screenshotManager
-        print MODULENAME, '  _takeShot():  self.renWin.GetSize()=',self.renWin.GetSize()
+        """
+        Adds screenshot data for a current scene
+        :return: None
+        """
+
+        print MODULENAME, '  _takeShot():  self.renWin.GetSize()=', self.renWin.GetSize()
         camera = self.getActiveCamera()
-        # # # camera = self.ren.GetActiveCamera()
-#        print MODULENAME, '  _takeShot():  camera=',camera
-#        clippingRange= camera.GetClippingRange()
-#        focalPoint= camera.GetFocalPoint()
-#        position= camera.GetPosition()
-#        viewUp= camera.GetViewUp()
-#        viewAngle= camera.GetViewAngle()
-#        print MODULENAME,"_takeShot():  Range,FP,Pos,Up,Angle=",clippingRange,focalPoint,position,viewUp,viewAngle
 
         if self.parentWidget.screenshotManager is not None:
-            name = str(self.fieldComboBox.currentText())
-            self.parentWidget.fieldTypes[name]
-            fieldType = (name,self.parentWidget.fieldTypes[name])
-            print MODULENAME, '  _takeShot():  fieldType=',fieldType
-        
-#            if self.threeDRB.isChecked():
+            field_name = str(self.fieldComboBox.currentText())
+
+            field_type = self.parentWidget.fieldTypes[field_name]
+            field_name_type_tuple = (field_name, field_type)
+            print MODULENAME, '  _takeShot():  fieldType=', field_name_type_tuple
+
             if self.draw3DFlag:
-                self.parentWidget.screenshotManager.add3DScreenshot(fieldType[0],fieldType[1],camera)
+                metadata = self.drawModel3D.get_metadata(field_name=field_name, field_type=field_type)
+                self.parentWidget.screenshotManager.add3DScreenshot(field_name, field_type, camera, metadata)
             else:
                 planePositionTupple = self.draw2D.getPlane()
-                # print "planePositionTupple=",planePositionTupple
-                self.parentWidget.screenshotManager.add2DScreenshot(fieldType[0],fieldType[1],planePositionTupple[0],planePositionTupple[1],camera)
+                metadata = self.drawModel3D.get_metadata(field_name=field_name, field_type=field_type)
+                self.parentWidget.screenshotManager.add2DScreenshot(field_name, field_type, planePositionTupple[0],
+                                                                    planePositionTupple[1], camera, metadata)
 
-    
+
     def setConnects(self,_workspace):   # rf. Plugins/ViewManagerPlugins/SimpleTabView.py
 
         # TODO

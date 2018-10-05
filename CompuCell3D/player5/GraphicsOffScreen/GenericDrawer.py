@@ -6,6 +6,7 @@
 # todo cell_field_data_dict = self.extract_cell_field_data()
 # todo - check what happens when we used non consecutive cell types -  seems to be OK
 
+#todo - redesign screenshot_data to be more flexible and allow complete specification of rendered scene
 
 import sys
 import os

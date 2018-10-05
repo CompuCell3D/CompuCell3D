@@ -379,7 +379,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
             self.contourMapper.ScalarVisibilityOff()
             _contourActor.SetMapper(self.contourMapper)
             
-            
+
     def initConFieldHexActors(self,_actors):
         # cellField  = sim.getPotts().getCellFieldG()
         # conField   = CompuCell.getConcentrationField(sim, fieldType[0]) 
