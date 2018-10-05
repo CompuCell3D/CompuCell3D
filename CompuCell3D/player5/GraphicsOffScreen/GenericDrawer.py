@@ -107,11 +107,11 @@ class GenericDrawer():
 
         actor_specs = ActorSpecs()
 
-        actor_specs_final = view.prepare_concentration_field_actors(actor_specs=actor_specs)
+        actor_specs_final = view.prepare_concentration_field_actors(actor_specs=actor_specs,drawing_params=drawing_params)
 
         model.init_concentration_field_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
 
-        view.show_concentration_field_actors(actor_specs=actor_specs_final)
+        view.show_concentration_field_actors(actor_specs=actor_specs_final,drawing_params=drawing_params)
 
 
     def draw_cell_field(self, drawing_params):

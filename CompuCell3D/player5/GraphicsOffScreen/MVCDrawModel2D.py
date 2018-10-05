@@ -217,15 +217,15 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
 
         range =conArray.GetRange()
-        minCon = range[0]
-        maxCon = range[1]
+        min_con = range[0]
+        max_con = range[1]
 
         # Note! should really avoid doing a getSetting with each step to speed up the rendering; only update when changed in Prefs
         if min_range_fixed:
-            minCon = min_range
+            min_con = min_range
 
         if max_range_fixed:
-            maxCon = max_range
+            max_con = max_range
 
         # if Configuration.getSetting("MinRangeFixed", field_name):
         #     minCon = Configuration.getSetting("MinRange", field_name)
@@ -292,9 +292,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         #        print MODULENAME, '  after specific isovalues, isoNum=',isoNum
         #        numIsos = Configuration.getSetting("NumberOfContourLines")
         #        print MODULENAME, '  Next, do range of isovalues: min,max, # isos=',self.minCon,self.maxCon,numIsos
-        delIso = (maxCon - minCon) / (numIsos + 1)  # exclude the min,max for isovalues
+        delIso = (max_con - min_con) / (numIsos + 1)  # exclude the min,max for isovalues
         #        print MODULENAME, '  initScalarFieldActors(): delIso= ',delIso
-        isoVal = minCon + delIso
+        isoVal = min_con + delIso
         for idx in xrange(numIsos):
             if printIsoValues:  print MODULENAME, '  initScalarFieldDataActors(): isoNum, isoval= ', isoNum, isoVal
             isoContour.SetValue(isoNum, isoVal)
@@ -307,7 +307,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         self.contourMapper.SetInputConnection(isoContour.GetOutputPort())
         self.contourMapper.SetLookupTable(self.ctlut)
-        self.contourMapper.SetScalarRange(minCon, maxCon)
+        self.contourMapper.SetScalarRange(min_con, max_con)
         self.contourMapper.ScalarVisibilityOff()  # this is required to do a SetColor on the actor's property
         #            print MODULENAME,' initScalarFieldActors:  setColor=1,0,0'
         #            contourActor.GetProperty().SetColor(1.,0.,0.)
@@ -326,7 +326,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.conMapper.ScalarVisibilityOn()
         self.conMapper.SetLookupTable(self.clut)
         # 0, self.clut.GetNumberOfColors()) # may manually set range so that type reassignment will not be scalled dynamically when one type is missing
-        self.conMapper.SetScalarRange(minCon,maxCon)
+        self.conMapper.SetScalarRange(min_con,max_con)
 
         self.conMapper.SetScalarModeToUsePointData()
 

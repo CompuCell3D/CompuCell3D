@@ -110,10 +110,11 @@ class MVCDrawView2D(MVCDrawViewBase):
 
         return od
 
-    def prepare_concentration_field_actors(self,actor_specs):
+    def prepare_concentration_field_actors(self,actor_specs, drawing_params=None):
         """
         Prepares concentration field actors
         :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
         :return: {ActorSpecs}
         """
 
@@ -124,18 +125,31 @@ class MVCDrawView2D(MVCDrawViewBase):
 
         return actor_specs_copy
 
-    def show_concentration_field_actors(self,actor_specs, show_flag=True):
+    def show_concentration_field_actors(self,actor_specs,drawing_params=None, show_flag=True):
         """
         Shows concentration actors
         :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
         :param show_flag: {bool}
         :return: None
         """
+        scene_metadata = drawing_params.screenshot_data.metadata
         if show_flag:
             if not self.currentActors.has_key("concentration_actor"):
                 self.currentActors["concentration_actor"] = self.conActor
-                self.currentActors["contour_actor"] = self.contourActor
+
                 self.ren.AddActor(self.conActor)
+
+                add_contour = False
+                try:
+                    add_contour = scene_metadata['ContoursOn']
+                except KeyError:
+                    pass
+
+                if add_contour:
+                    self.currentActors["contour_actor"] = self.contourActor
+                    self.ren.AddActor(self.contourActor)
+
         else:
             if self.currentActors.has_key("concentration_actor"):
                 del self.currentActors["concentration_actor"]

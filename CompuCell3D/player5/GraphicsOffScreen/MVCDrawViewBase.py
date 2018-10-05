@@ -420,19 +420,21 @@ class MVCDrawViewBase:
         """
         raise NotImplementedError(self.__class__.getActors.__name__)
 
-    def prepare_concentration_field_actors(self,actor_specs):
+    def prepare_concentration_field_actors(self,actor_specs,  drawing_params=None):
         """
         Prepares concentration field actors
         :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
         :return: {ActorSpecs}
         """
 
         raise NotImplementedError(self.__class__.prepare_concentration_field_actors.__name__)
 
-    def show_concentration_field_actors(self,actor_specs, show_flag=True):
+    def show_concentration_field_actors(self,actor_specs, drawing_params=None,  show_flag=True):
         """
         Shows concentration actors
         :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
         :param show_flag: {bool}
         :return: None
         """
