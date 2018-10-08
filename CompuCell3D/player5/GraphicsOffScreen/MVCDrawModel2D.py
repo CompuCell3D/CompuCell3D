@@ -478,51 +478,54 @@ class MVCDrawModel2D(MVCDrawModelBase):
         :return: None
         """
 
+        actors_dict = actor_specs.actors_dict
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        scene_metadata = drawing_params.screenshot_data.metadata
 
-        # cellField  = sim.getPotts().getCellFieldG()
-        # # # # print "INSIDE drawCellFieldHex"
-        # # # # print "drawing plane ",self.plane," planePos=",self.planePos
-        # fieldDim = cellField.getDim()
-        fieldDim = self.currentDrawingParameters.bsd.fieldDim
-        dimOrder = self.dimOrder(self.currentDrawingParameters.plane)
-        self.dim = self.planeMapper(dimOrder,
-                                    (fieldDim.x, fieldDim.y, fieldDim.z))  # [fieldDim.x, fieldDim.y, fieldDim.z]
+        # dim = self.planeMapper(dim_order,
+        #                             (field_dim.x, field_dim.y, field_dim.z))  # [fieldDim.x, fieldDim.y, fieldDim.z]
 
-        self.cellType = vtk.vtkIntArray()
-        self.cellType.SetName("celltype")
-        self.cellTypeIntAddr = self.extractAddressIntFromVtkObject(self.cellType)
-        # a=21
-        self.hexCells = vtk.vtkCellArray()
+        cell_type_array = vtk.vtkIntArray()
+        cell_type_array.SetName("celltype")
+        cell_type_int_addr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor,
+                                                            vtkObj=cell_type_array)
 
-        self.hexCellsIntAddr = self.extractAddressIntFromVtkObject(self.hexCells)
+        hex_cells_array = vtk.vtkCellArray()
 
-        self.hexCellsPolyData = vtk.vtkPolyData()
+        hex_cells_int_addr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor,
+                                                            vtkObj=hex_cells_array)
+
+        hex_cells_poly_data = vtk.vtkPolyData()
         # **********************************************
 
-        self.hexPoints = vtk.vtkPoints()
+        hex_points = vtk.vtkPoints()
         # self.hexPoints.SetName("hexpoints")
-        self.hexPointsIntAddr = self.extractAddressIntFromVtkObject(self.hexPoints)
+        hex_points_int_addr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=hex_points)
 
-        self.parentWidget.fieldExtractor.fillCellFieldData2DHex(self.cellTypeIntAddr, self.hexCellsIntAddr,
-                                                                self.hexPointsIntAddr,
-                                                                self.currentDrawingParameters.plane,
-                                                                self.currentDrawingParameters.planePos)
-        # self.parentWidget.fieldExtractor.fillCellFieldData2DHex(self.cellTypeIntAddr,self.hexPointsIntAddr,self.plane, self.planePos)
+        self.field_extractor.fillCellFieldData2DHex(
+            cell_type_int_addr,
+            hex_cells_int_addr,
+            hex_points_int_addr,
+            self.currentDrawingParameters.plane,
+            self.currentDrawingParameters.planePos
+        )
 
-        self.hexCellsPolyData.GetCellData().SetScalars(self.cellType)
-        self.hexCellsPolyData.SetPoints(self.hexPoints)
-        self.hexCellsPolyData.SetPolys(self.hexCells)
+        hex_cells_poly_data.GetCellData().SetScalars(cell_type_array)
+        hex_cells_poly_data.SetPoints(hex_points)
+        hex_cells_poly_data.SetPolys(hex_cells_array)
 
         if VTK_MAJOR_VERSION >= 6:
-            self.hex_cells_mapper.SetInputData(self.hexCellsPolyData)
+            self.hex_cells_mapper.SetInputData(hex_cells_poly_data)
         else:
-            self.hex_cells_mapper.SetInput(self.hexCellsPolyData)
+            self.hex_cells_mapper.SetInput(hex_cells_poly_data)
 
         self.hex_cells_mapper.ScalarVisibilityOn()
         self.hex_cells_mapper.SetLookupTable(self.celltypeLUT)
         self.hex_cells_mapper.SetScalarRange(0, self.celltypeLUTMax)
 
-        _actors[0].SetMapper(self.hex_cells_mapper)
+        cells_actor = actors_dict['cellsActor']
+        cells_actor.SetMapper(self.hex_cells_mapper)
 
     def init_cell_field_actors_cartesian(self, actor_specs, drawing_params=None):
         """
@@ -535,16 +538,16 @@ class MVCDrawModel2D(MVCDrawModelBase):
         actors_dict = actor_specs.actors_dict
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        scene_metadata = drawing_params.screenshot_data.metadata
 
         # [fieldDim.x, fieldDim.y, fieldDim.z]
         dim = self.planeMapper(dim_order, (field_dim.x, field_dim.y, field_dim.z))
 
-        scene_metadata = drawing_params.screenshot_data.metadata
-
         cell_type_array = vtk.vtkIntArray()
         cell_type_array.SetName("celltype")
 
-        cell_type_int_addr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=cell_type_array)
+        cell_type_int_addr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor,
+                                                            vtkObj=cell_type_array)
 
         self.field_extractor.fillCellFieldData2D(
             cell_type_int_addr,

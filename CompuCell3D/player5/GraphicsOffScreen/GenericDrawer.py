@@ -7,6 +7,8 @@
 # todo - check what happens when we used non consecutive cell types -  seems to be OK
 
 # todo - process contour isovalues in the concentration plot
+# todo - implement outline actor for hex lattice
+
 
 import sys
 import os
