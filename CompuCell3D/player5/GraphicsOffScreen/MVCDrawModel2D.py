@@ -32,7 +32,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
     def initArea(self):
         ## Set up the mappers (2D) for cell vis.
         self.cellsMapper    = vtk.vtkPolyDataMapper()
-        self.hexCellsMapper = vtk.vtkPolyDataMapper()
+        self.hex_cells_mapper = vtk.vtkPolyDataMapper()
         self.cartesianCellsMapper = vtk.vtkPolyDataMapper()
         self.borderMapper   = vtk.vtkPolyDataMapper()
         self.borderMapperHex   = vtk.vtkPolyDataMapper()
@@ -45,7 +45,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         ## Set up the mappers (2D) for concentration field.
         self.conMapper      = vtk.vtkPolyDataMapper()
-        self.hexConMapper   = vtk.vtkPolyDataMapper()
+        self.hex_con_mapper   = vtk.vtkPolyDataMapper()
         self.cartesianConMapper   = vtk.vtkPolyDataMapper()
         self.contourMapper  = vtk.vtkPolyDataMapper()
         self.glyphsMapper   = vtk.vtkPolyDataMapper()
@@ -171,34 +171,34 @@ class MVCDrawModel2D(MVCDrawModelBase):
         print "init_concentration_field_actors_hex"
         actors_dict = actor_specs.actors_dict
 
-        fieldDim = self.currentDrawingParameters.bsd.fieldDim
-        dimOrder = self.dimOrder(self.currentDrawingParameters.plane)
-        dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        dim = self.planeMapper(dim_order, (field_dim.x, field_dim.y, field_dim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]
         field_name = drawing_params.fieldName
         scene_metadata = drawing_params.screenshot_data.metadata
 
-        conArray = vtk.vtkDoubleArray()
-        conArray.SetName("concentration")
-        conArrayIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=conArray)
-        hexPointsCon = vtk.vtkPoints()
-        hexPointsConIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=hexPointsCon)
+        con_array = vtk.vtkDoubleArray()
+        con_array.SetName("concentration")
+        con_array_int_addr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=con_array)
+        hex_points_con = vtk.vtkPoints()
+        hex_points_con_int_addr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=hex_points_con)
 
 
-        hexCellsCon = vtk.vtkCellArray()
-        hexCellsConIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=hexCellsCon)
-        hexCellsConPolyData = vtk.vtkPolyData()
+        hex_cells_con = vtk.vtkCellArray()
+        hex_cells_con_int_addr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=hex_cells_con)
+        hex_cells_con_poly_data = vtk.vtkPolyData()
 
         # ***************************************************************************
-        fillSuccessful = self.field_extractor.fillConFieldData2DHex(
-            conArrayIntAddr,
-            hexCellsConIntAddr,
-            hexPointsConIntAddr,
+        fill_successful = self.field_extractor.fillConFieldData2DHex(
+            con_array_int_addr,
+            hex_cells_con_int_addr,
+            hex_points_con_int_addr,
             field_name,
             self.currentDrawingParameters.plane,
             self.currentDrawingParameters.planePos
         )
 
-        if not fillSuccessful:
+        if not fill_successful:
             return
 
         if set(['MinRangeFixed',"MaxRangeFixed",'MinRange','MaxRange']).issubset( set(scene_metadata.keys())):
@@ -213,7 +213,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
             max_range = Configuration.getSetting("MaxRange", field_name)
 
 
-        range =conArray.GetRange()
+        range =con_array.GetRange()
         min_con = range[0]
         max_con = range[1]
 
@@ -224,46 +224,77 @@ class MVCDrawModel2D(MVCDrawModelBase):
         if max_range_fixed:
             max_con = max_range
 
-
-
-
-        # range = self.conArray.GetRange()
-        # self.minCon = range[0]
-        # self.maxCon = range[1]
-        # dim_0 = self.dim[0] + 1
-        # dim_1 = self.dim[1] + 1
-        #
-        # if Configuration.getSetting("MinRangeFixed", conFieldName):
-        #     self.minCon = Configuration.getSetting("MinRange", conFieldName)
-        #
-        # if Configuration.getSetting("MaxRangeFixed", conFieldName):
-        #     self.maxCon = Configuration.getSetting("MaxRange", conFieldName)
-        #
-        # #        if Configuration.getSetting("ContoursOn",conFieldName):
-
-
         # if True:
-        if False:
-            contourActor = _actors[1]
-            self.initializeContoursHex([self.dim[0], self.dim[1]], self.conArray, [self.minCon, self.maxCon],
-                                       contourActor)
+        if True:
+            contour_actor = actors_dict['contour_actor']
+            num_contour_lines = scene_metadata['NumberOfContourLines']
+            self.initialize_contours_hex([dim[0], dim[1]], con_array, [min_con, max_con],
+                                       contour_actor,num_contour_lines=num_contour_lines)
 
-        hexCellsConPolyData.GetCellData().SetScalars(conArray)
-        hexCellsConPolyData.SetPoints(hexPointsCon)
-        hexCellsConPolyData.SetPolys(hexCellsCon)
+        hex_cells_con_poly_data.GetCellData().SetScalars(con_array)
+        hex_cells_con_poly_data.SetPoints(hex_points_con)
+        hex_cells_con_poly_data.SetPolys(hex_cells_con)
 
         if VTK_MAJOR_VERSION >= 6:
-            self.hexConMapper.SetInputData(hexCellsConPolyData)
+            self.hex_con_mapper.SetInputData(hex_cells_con_poly_data)
         else:
-            self.hexConMapper.SetInput(hexCellsConPolyData)
+            self.hex_con_mapper.SetInput(hex_cells_con_poly_data)
 
-        self.hexConMapper.ScalarVisibilityOn()
-        self.hexConMapper.SetLookupTable(self.clut)
-        self.hexConMapper.SetScalarRange(min_con, max_con)
+        self.hex_con_mapper.ScalarVisibilityOn()
+        self.hex_con_mapper.SetLookupTable(self.clut)
+        self.hex_con_mapper.SetScalarRange(min_con, max_con)
 
         concentration_actor = actors_dict['concentration_actor']
 
-        concentration_actor.SetMapper(self.hexConMapper)
+        concentration_actor.SetMapper(self.hex_con_mapper)
+
+    def initialize_contours_hex(self,  _dim, _conArray, _minMax, _contourActor, num_contour_lines=2):
+
+        data = vtk.vtkImageData()
+        data.SetDimensions(_dim[0], _dim[1], 1)
+
+        if VTK_MAJOR_VERSION >= 6:
+            data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 3)
+        else:
+            data.SetScalarTypeToUnsignedChar()
+
+        data.GetPointData().SetScalars(_conArray)
+        field = vtk.vtkImageDataGeometryFilter()
+
+        if VTK_MAJOR_VERSION >= 6:
+            field.SetInputData(data)
+        else:
+            field.SetInput(data)
+
+        transform = vtk.vtkTransform()
+
+        transform.Scale(1, math.sqrt(3.0) / 2.0, 1)
+        if self.currentDrawingParameters.planePos % 3 == 0:
+            transform.Translate(0.5, 0, 0)  # z%3==0
+        elif self.currentDrawingParameters.planePos % 3 == 1:
+            transform.Translate(0, math.sqrt(3.0) / 4.0, 0)  # z%3==1
+        else:
+            transform.Translate(0.0, -math.sqrt(3.0) / 4.0, 0)  # z%3==2
+
+        isoContour = vtk.vtkContourFilter()
+
+
+        isoContour.SetInputConnection(field.GetOutputPort())
+
+        isoContour.GenerateValues(
+            num_contour_lines+2,
+            _minMax)
+
+        tpd1 = vtk.vtkTransformPolyDataFilter()
+        tpd1.SetInputConnection(isoContour.GetOutputPort())
+        tpd1.SetTransform(transform)
+
+        # self.contourMapper.SetInputConnection(contour.GetOutputPort())
+        self.contourMapper.SetInputConnection(tpd1.GetOutputPort())
+        self.contourMapper.SetLookupTable(self.ctlut)
+        self.contourMapper.SetScalarRange(_minMax)
+        self.contourMapper.ScalarVisibilityOff()
+        _contourActor.SetMapper(self.contourMapper)
 
     def init_concentration_field_actors_cartesian(self, actor_specs, drawing_params=None):
         """
@@ -323,15 +354,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         if max_range_fixed:
             max_con = max_range
 
-        # if Configuration.getSetting("MinRangeFixed", field_name):
-        #     minCon = Configuration.getSetting("MinRange", field_name)
-        # #            self.clut.SetTableValue(0,[0,0,0,1])   # this will cause values < minCon to be black
-        # #        else:
-        # #            self.clut.SetTableValue(0,self.lowTableValue)
-        #
-        # if Configuration.getSetting("MaxRangeFixed", field_name):
-        #     maxCon = Configuration.getSetting("MaxRange", field_name)
-
         dim_0 = dim[0] + 1
         dim_1 = dim[1] + 1
 
@@ -340,9 +362,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         data = vtk.vtkImageData()
         data.SetDimensions(dim_0, dim_1, 1)
-        # print "dim_0,dim_1",(dim_0,dim_1)
 
-        #
         if VTK_MAJOR_VERSION >= 6:
             data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 3)
         else:
@@ -359,23 +379,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         field.SetExtent(0, dim_0, 0, dim_1, 0, 0)
 
-        #        spoints = vtk.vtkStructuredPoints()
-        #        spoints.SetDimensions(self.dim[0]+2, self.dim[1]+2, self.dim[2]+2)  #  only add 2 if we're filling in an extra boundary (rf. FieldExtractor.cpp)
-        #        spoints.GetPointData().SetScalars(self.conArray)
-
-        #        voi = vtk.vtkExtractVOI()
-        #        voi.SetInput(spoints)
-        #        voi.SetVOI(1,self.dim[0]-1, 1,self.dim[1]-1, 1,self.dim[2]-1 )
-
         isoContour = vtk.vtkContourFilter()
-        #        isoContour.SetInputConnection(voi.GetOutputPort())
         isoContour.SetInputConnection(field.GetOutputPort())
 
         isoValList = self.getIsoValues(field_name)
-        #        print MODULENAME, 'initScalarFieldActors():  getIsoValues=',isoValList
-
         printIsoValues = False
-        #        if printIsoValues:  print MODULENAME, ' isovalues= ',
         isoNum = 0
         for isoVal in isoValList:
             try:
@@ -498,16 +506,16 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.hexCellsPolyData.SetPolys(self.hexCells)
 
         if VTK_MAJOR_VERSION>=6:
-            self.hexCellsMapper.SetInputData(self.hexCellsPolyData)
+            self.hex_cells_mapper.SetInputData(self.hexCellsPolyData)
         else:
-            self.hexCellsMapper.SetInput(self.hexCellsPolyData)
+            self.hex_cells_mapper.SetInput(self.hexCellsPolyData)
 
 
-        self.hexCellsMapper.ScalarVisibilityOn()
-        self.hexCellsMapper.SetLookupTable(self.celltypeLUT)
-        self.hexCellsMapper.SetScalarRange(0,self.celltypeLUTMax)
+        self.hex_cells_mapper.ScalarVisibilityOn()
+        self.hex_cells_mapper.SetLookupTable(self.celltypeLUT)
+        self.hex_cells_mapper.SetScalarRange(0, self.celltypeLUTMax)
 
-        _actors[0].SetMapper(self.hexCellsMapper)
+        _actors[0].SetMapper(self.hex_cells_mapper)
 
 
     def prepareAxesActors(self, _mappers, _actors):
@@ -756,18 +764,18 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.hexCellsConPolyData.SetPolys(self.hexCellsCon)
 
         if VTK_MAJOR_VERSION>=6:
-            self.hexConMapper.SetInputData(self.hexCellsConPolyData)
+            self.hex_con_mapper.SetInputData(self.hexCellsConPolyData)
         else:
-            self.hexConMapper.SetInput(self.hexCellsConPolyData)
+            self.hex_con_mapper.SetInput(self.hexCellsConPolyData)
 
 
 
 
-        self.hexConMapper.ScalarVisibilityOn()
-        self.hexConMapper.SetLookupTable(self.clut)
-        self.hexConMapper.SetScalarRange(self.minCon, self.maxCon)
+        self.hex_con_mapper.ScalarVisibilityOn()
+        self.hex_con_mapper.SetLookupTable(self.clut)
+        self.hex_con_mapper.SetScalarRange(self.minCon, self.maxCon)
 
-        _actors[0].SetMapper(self.hexConMapper)
+        _actors[0].SetMapper(self.hex_con_mapper)
 
 
     def initScalarFieldCellLevelHexActors(self,_actors):
@@ -821,15 +829,15 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.hexCellsConPolyData.SetPolys(self.hexCellsCon)
 
         if VTK_MAJOR_VERSION>=6:
-            self.hexConMapper.SetInputData(self.hexCellsConPolyData)
+            self.hex_con_mapper.SetInputData(self.hexCellsConPolyData)
         else:
-            self.hexConMapper.SetInput(self.hexCellsConPolyData)
+            self.hex_con_mapper.SetInput(self.hexCellsConPolyData)
 
-        self.hexConMapper.ScalarVisibilityOn()
-        self.hexConMapper.SetLookupTable(self.clut)
-        self.hexConMapper.SetScalarRange(self.minCon, self.maxCon)
+        self.hex_con_mapper.ScalarVisibilityOn()
+        self.hex_con_mapper.SetLookupTable(self.clut)
+        self.hex_con_mapper.SetScalarRange(self.minCon, self.maxCon)
 
-        _actors[0].SetMapper(self.hexConMapper)
+        _actors[0].SetMapper(self.hex_con_mapper)
 
 
     def initScalarFieldHexActors(self,_actors):
@@ -885,16 +893,16 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.hexCellsConPolyData.SetPoints(self.hexPointsCon)
         self.hexCellsConPolyData.SetPolys(self.hexCellsCon)
         if VTK_MAJOR_VERSION>=6:
-            self.hexConMapper.SetInputData(self.hexCellsConPolyData)
+            self.hex_con_mapper.SetInputData(self.hexCellsConPolyData)
         else:
-            self.hexConMapper.SetInput(self.hexCellsConPolyData)
+            self.hex_con_mapper.SetInput(self.hexCellsConPolyData)
 
 
-        self.hexConMapper.ScalarVisibilityOn()
-        self.hexConMapper.SetLookupTable(self.clut)
-        self.hexConMapper.SetScalarRange(self.minCon, self.maxCon)
+        self.hex_con_mapper.ScalarVisibilityOn()
+        self.hex_con_mapper.SetLookupTable(self.clut)
+        self.hex_con_mapper.SetScalarRange(self.minCon, self.maxCon)
 
-        _actors[0].SetMapper(self.hexConMapper)
+        _actors[0].SetMapper(self.hex_con_mapper)
 
     def drawConField(self, sim, fieldType):
         print MODULENAME,'  drawConField()'
