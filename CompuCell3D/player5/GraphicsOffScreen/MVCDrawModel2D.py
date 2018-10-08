@@ -47,7 +47,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.conMapper      = vtk.vtkPolyDataMapper()
         self.hex_con_mapper   = vtk.vtkPolyDataMapper()
         self.cartesianConMapper   = vtk.vtkPolyDataMapper()
-        self.contourMapper  = vtk.vtkPolyDataMapper()
+        self.contour_mapper  = vtk.vtkPolyDataMapper()
         self.glyphsMapper   = vtk.vtkPolyDataMapper()
 
         # # Concentration lookup table
@@ -224,8 +224,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         if max_range_fixed:
             max_con = max_range
 
-        # if True:
-        if True:
+        if scene_metadata['ContoursOn']:
             contour_actor = actors_dict['contour_actor']
             num_contour_lines = scene_metadata['NumberOfContourLines']
             self.initialize_contours_hex([dim[0], dim[1]], con_array, [min_con, max_con],
@@ -248,17 +247,26 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         concentration_actor.SetMapper(self.hex_con_mapper)
 
-    def initialize_contours_hex(self,  _dim, _conArray, _minMax, _contourActor, num_contour_lines=2):
+    def initialize_contours_hex(self, dim, con_array, min_max, contour_actor, num_contour_lines=2):
+        """
+        INitializes contour actor
+        :param dim: {tuple}
+        :param con_array: {vtkDoubleArray}
+        :param min_max: {tuple (float, float)} concentration min, max
+        :param contour_actor: {vtkActor} conrour actor
+        :param num_contour_lines: {int} number of contour lines
+        :return: None
+        """
 
         data = vtk.vtkImageData()
-        data.SetDimensions(_dim[0], _dim[1], 1)
+        data.SetDimensions(dim[0], dim[1], 1)
 
         if VTK_MAJOR_VERSION >= 6:
             data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 3)
         else:
             data.SetScalarTypeToUnsignedChar()
 
-        data.GetPointData().SetScalars(_conArray)
+        data.GetPointData().SetScalars(con_array)
         field = vtk.vtkImageDataGeometryFilter()
 
         if VTK_MAJOR_VERSION >= 6:
@@ -283,18 +291,18 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         isoContour.GenerateValues(
             num_contour_lines+2,
-            _minMax)
+            min_max)
 
         tpd1 = vtk.vtkTransformPolyDataFilter()
         tpd1.SetInputConnection(isoContour.GetOutputPort())
         tpd1.SetTransform(transform)
 
         # self.contourMapper.SetInputConnection(contour.GetOutputPort())
-        self.contourMapper.SetInputConnection(tpd1.GetOutputPort())
-        self.contourMapper.SetLookupTable(self.ctlut)
-        self.contourMapper.SetScalarRange(_minMax)
-        self.contourMapper.ScalarVisibilityOff()
-        _contourActor.SetMapper(self.contourMapper)
+        self.contour_mapper.SetInputConnection(tpd1.GetOutputPort())
+        self.contour_mapper.SetLookupTable(self.ctlut)
+        self.contour_mapper.SetScalarRange(min_max)
+        self.contour_mapper.ScalarVisibilityOff()
+        contour_actor.SetMapper(self.contour_mapper)
 
     def init_concentration_field_actors_cartesian(self, actor_specs, drawing_params=None):
         """
@@ -306,25 +314,25 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         actors_dict = actor_specs.actors_dict
 
-        fieldDim = self.currentDrawingParameters.bsd.fieldDim
-        dimOrder = self.dimOrder(self.currentDrawingParameters.plane)
-        dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        dim = self.planeMapper(dim_order, (field_dim.x, field_dim.y, field_dim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]
         field_name = drawing_params.fieldName
         scene_metadata = drawing_params.screenshot_data.metadata
 
-        conArray = vtk.vtkDoubleArray()
-        conArray.SetName("concentration")
-        conArrayIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=conArray)
+        con_array = vtk.vtkDoubleArray()
+        con_array.SetName("concentration")
+        con_array_int_addr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=con_array)
         # todo - make it flexible
 
-        fillSuccessful = self.field_extractor.fillConFieldData2D(
-            conArrayIntAddr,
+        fill_successful = self.field_extractor.fillConFieldData2D(
+            con_array_int_addr,
             field_name,
             self.currentDrawingParameters.plane,
             self.currentDrawingParameters.planePos
         )
 
-        if not fillSuccessful:
+        if not fill_successful:
             return
 
         # todo 5 - revisit later
@@ -343,7 +351,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
             max_range = Configuration.getSetting("MaxRange", field_name)
 
 
-        range =conArray.GetRange()
+        range =con_array.GetRange()
         min_con = range[0]
         max_con = range[1]
 
@@ -368,64 +376,75 @@ class MVCDrawModel2D(MVCDrawModelBase):
         else:
             data.SetScalarTypeToUnsignedChar()
 
-        data.GetPointData().SetScalars(conArray)
+        data.GetPointData().SetScalars(con_array)
 
-        field = vtk.vtkImageDataGeometryFilter()
+        field_image_data = vtk.vtkImageDataGeometryFilter()
 
         if VTK_MAJOR_VERSION >= 6:
-            field.SetInputData(data)
+            field_image_data.SetInputData(data)
         else:
-            field.SetInput(data)
+            field_image_data.SetInput(data)
 
-        field.SetExtent(0, dim_0, 0, dim_1, 0, 0)
+        field_image_data.SetExtent(0, dim_0, 0, dim_1, 0, 0)
 
-        isoContour = vtk.vtkContourFilter()
-        isoContour.SetInputConnection(field.GetOutputPort())
+        if scene_metadata['ContoursOn']:
 
-        isoValList = self.getIsoValues(field_name)
-        printIsoValues = False
-        isoNum = 0
-        for isoVal in isoValList:
-            try:
-                if printIsoValues:  print MODULENAME, '  initScalarFieldActors(): setting (specific) isoval= ', isoVal
-                isoContour.SetValue(isoNum, isoVal)
-                isoNum += 1
-            except:
-                print MODULENAME, '  initScalarFieldDataActors(): cannot convert to float: ', self.isovalStr[idx]
-        if isoNum > 0:  isoNum += 1
-        #        print MODULENAME, '  after specific isovalues, isoNum=',isoNum
-        #        numIsos = Configuration.getSetting("NumberOfContourLines")
-        #        print MODULENAME, '  Next, do range of isovalues: min,max, # isos=',self.minCon,self.maxCon,numIsos
-        delIso = (max_con - min_con) / (numIsos + 1)  # exclude the min,max for isovalues
-        #        print MODULENAME, '  initScalarFieldActors(): delIso= ',delIso
-        isoVal = min_con + delIso
-        for idx in xrange(numIsos):
-            if printIsoValues:  print MODULENAME, '  initScalarFieldDataActors(): isoNum, isoval= ', isoNum, isoVal
-            isoContour.SetValue(isoNum, isoVal)
-            isoNum += 1
-            isoVal += delIso
-        if printIsoValues:  print
+            contour_actor = actors_dict['contour_actor']
+            num_contour_lines = scene_metadata['NumberOfContourLines']
+            self.initialize_contours_cartesian(
+                field_image_data,
+                [min_con, max_con],
+                contour_actor,
+                num_contour_lines=num_contour_lines
+            )
 
-        isoContour.SetInputConnection(field.GetOutputPort())  # rwh?
-        #        isoContour.GenerateValues(Configuration.getSetting("NumberOfContourLines",self.currentDrawingParameters.fieldName)+2, [self.minCon, self.maxCon])
+            # isoContour = vtk.vtkContourFilter()
+            # isoContour.SetInputConnection(field.GetOutputPort())
+            #
+            # isoValList = self.getIsoValues(field_name)
+            # printIsoValues = False
+            # isoNum = 0
+            # for isoVal in isoValList:
+            #     try:
+            #         if printIsoValues:  print MODULENAME, '  initScalarFieldActors(): setting (specific) isoval= ', isoVal
+            #         isoContour.SetValue(isoNum, isoVal)
+            #         isoNum += 1
+            #     except:
+            #         print MODULENAME, '  initScalarFieldDataActors(): cannot convert to float: ', self.isovalStr[idx]
+            # if isoNum > 0:  isoNum += 1
+            # #        print MODULENAME, '  after specific isovalues, isoNum=',isoNum
+            # #        numIsos = Configuration.getSetting("NumberOfContourLines")
+            # #        print MODULENAME, '  Next, do range of isovalues: min,max, # isos=',self.minCon,self.maxCon,numIsos
+            # delIso = (max_con - min_con) / (numIsos + 1)  # exclude the min,max for isovalues
+            # #        print MODULENAME, '  initScalarFieldActors(): delIso= ',delIso
+            # isoVal = min_con + delIso
+            # for idx in xrange(numIsos):
+            #     if printIsoValues:  print MODULENAME, '  initScalarFieldDataActors(): isoNum, isoval= ', isoNum, isoVal
+            #     isoContour.SetValue(isoNum, isoVal)
+            #     isoNum += 1
+            #     isoVal += delIso
+            # if printIsoValues:  print
+            #
+            # isoContour.SetInputConnection(field.GetOutputPort())  # rwh?
+            # #        isoContour.GenerateValues(Configuration.getSetting("NumberOfContourLines",self.currentDrawingParameters.fieldName)+2, [self.minCon, self.maxCon])
+            #
+            # self.contourMapper.SetInputConnection(isoContour.GetOutputPort())
+            # self.contourMapper.SetLookupTable(self.ctlut)
+            # self.contourMapper.SetScalarRange(min_con, max_con)
+            # self.contourMapper.ScalarVisibilityOff()  # this is required to do a SetColor on the actor's property
+            # #            print MODULENAME,' initScalarFieldActors:  setColor=1,0,0'
+            # #            contourActor.GetProperty().SetColor(1.,0.,0.)
+            # #        if Configuration.getSetting("ContoursOn",conFieldName):
+            #
+            # contourActor = actors_dict['contour_actor']
+            #
+            # contourActor.SetMapper(self.contourMapper)
+            #
+            # color = Configuration.getSetting("ContourColor")  # want to avoid this; only update when Prefs changes
+            # contourActor.GetProperty().SetColor(float(color.red()) / 255, float(color.green()) / 255,
+            #                                     float(color.blue()) / 255)
 
-        self.contourMapper.SetInputConnection(isoContour.GetOutputPort())
-        self.contourMapper.SetLookupTable(self.ctlut)
-        self.contourMapper.SetScalarRange(min_con, max_con)
-        self.contourMapper.ScalarVisibilityOff()  # this is required to do a SetColor on the actor's property
-        #            print MODULENAME,' initScalarFieldActors:  setColor=1,0,0'
-        #            contourActor.GetProperty().SetColor(1.,0.,0.)
-        #        if Configuration.getSetting("ContoursOn",conFieldName):
-
-        contourActor = actors_dict['contour_actor']
-
-        contourActor.SetMapper(self.contourMapper)
-
-        color = Configuration.getSetting("ContourColor")  # want to avoid this; only update when Prefs changes
-        contourActor.GetProperty().SetColor(float(color.red()) / 255, float(color.green()) / 255,
-                                            float(color.blue()) / 255)
-
-        self.conMapper.SetInputConnection(field.GetOutputPort())  # port index = 0
+        self.conMapper.SetInputConnection(field_image_data.GetOutputPort())  # port index = 0
 
         self.conMapper.ScalarVisibilityOn()
         self.conMapper.SetLookupTable(self.clut)
@@ -438,6 +457,52 @@ class MVCDrawModel2D(MVCDrawModelBase):
         concentration_actor.SetMapper(self.conMapper)  # concentration actor
 
         print
+
+    def initialize_contours_cartesian(self,field_image_data, min_max, contour_actor, num_contour_lines=2):
+
+        min_con, max_con = min_max[0], min_max[1]
+        iso_contour = vtk.vtkContourFilter()
+        iso_contour.SetInputConnection(field_image_data.GetOutputPort())
+
+
+        # TODO - FIX IT
+        # isoValList = self.getIsoValues(field_name)
+        isoValList = []
+
+        # todo 5 - fix handling of specific iso contours
+        # num_contour_lines = 0
+        # for isoVal in isoValList:
+        #     try:
+        #         if printIsoValues:  print MODULENAME, '  initScalarFieldActors(): setting (specific) isoval= ', isoVal
+        #         isoContour.SetValue(num_contour_lines, isoVal)
+        #         num_contour_lines += 1
+        #     except:
+        #         print MODULENAME, '  initScalarFieldDataActors(): cannot convert to float: ', self.isovalStr[idx]
+        # if num_contour_lines > 0:  num_contour_lines += 1
+        del_iso = (max_con - min_con) / (num_contour_lines + 1)  # exclude the min,max for isovalues
+
+        iso_val = min_con + del_iso
+        for idx in xrange(num_contour_lines):
+            iso_contour.SetValue(num_contour_lines, iso_val)
+            num_contour_lines += 1
+            iso_val += del_iso
+
+
+        iso_contour.SetInputConnection(field_image_data.GetOutputPort())
+        #        isoContour.GenerateValues(Configuration.getSetting("NumberOfContourLines",self.currentDrawingParameters.fieldName)+2, [self.minCon, self.maxCon])
+
+        self.contour_mapper.SetInputConnection(iso_contour.GetOutputPort())
+        self.contour_mapper.SetLookupTable(self.ctlut)
+        self.contour_mapper.SetScalarRange(min_con, max_con)
+        # this is required to do a SetColor on the actor's property
+        self.contour_mapper.ScalarVisibilityOff()
+
+
+        contour_actor.SetMapper(self.contour_mapper)
+
+        color = Configuration.getSetting("ContourColor")  # want to avoid this; only update when Prefs changes
+        contour_actor.GetProperty().SetColor(float(color.red()) / 255, float(color.green()) / 255,
+                                            float(color.blue()) / 255)
 
     def init_cell_field_actors(self, actor_specs, drawing_params=None):
         """
@@ -700,11 +765,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
             tpd1.SetTransform(transform)
 
             # self.contourMapper.SetInputConnection(contour.GetOutputPort())
-            self.contourMapper.SetInputConnection(tpd1.GetOutputPort())
-            self.contourMapper.SetLookupTable(self.ctlut)
-            self.contourMapper.SetScalarRange(_minMax)
-            self.contourMapper.ScalarVisibilityOff()
-            _contourActor.SetMapper(self.contourMapper)
+            self.contour_mapper.SetInputConnection(tpd1.GetOutputPort())
+            self.contour_mapper.SetLookupTable(self.ctlut)
+            self.contour_mapper.SetScalarRange(_minMax)
+            self.contour_mapper.ScalarVisibilityOff()
+            _contourActor.SetMapper(self.contour_mapper)
 
 
     def initConFieldHexActors(self,_actors):
@@ -977,11 +1042,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
             tpd1.SetTransform(transform)
 
             # self.contourMapper.SetInputConnection(contour.GetOutputPort())
-            self.contourMapper.SetInputConnection(tpd1.GetOutputPort())
-            self.contourMapper.SetLookupTable(self.ctlut)
-            self.contourMapper.SetScalarRange(_minMax)
-            self.contourMapper.ScalarVisibilityOff()
-            _contourActor.SetMapper(self.contourMapper)
+            self.contour_mapper.SetInputConnection(tpd1.GetOutputPort())
+            self.contour_mapper.SetLookupTable(self.ctlut)
+            self.contour_mapper.SetScalarRange(_minMax)
+            self.contour_mapper.ScalarVisibilityOff()
+            _contourActor.SetMapper(self.contour_mapper)
 
 
     # def initScalarFieldCartesianActors(self,_actors):
@@ -1182,15 +1247,15 @@ class MVCDrawModel2D(MVCDrawModelBase):
         isoContour.SetInputConnection(field.GetOutputPort())  # rwh?
 #        isoContour.GenerateValues(Configuration.getSetting("NumberOfContourLines",self.currentDrawingParameters.fieldName)+2, [self.minCon, self.maxCon])
 
-        self.contourMapper.SetInputConnection(isoContour.GetOutputPort())
-        self.contourMapper.SetLookupTable(self.ctlut)
-        self.contourMapper.SetScalarRange(self.minCon, self.maxCon)
-        self.contourMapper.ScalarVisibilityOff()  # this is required to do a SetColor on the actor's property
+        self.contour_mapper.SetInputConnection(isoContour.GetOutputPort())
+        self.contour_mapper.SetLookupTable(self.ctlut)
+        self.contour_mapper.SetScalarRange(self.minCon, self.maxCon)
+        self.contour_mapper.ScalarVisibilityOff()  # this is required to do a SetColor on the actor's property
 #            print MODULENAME,' initScalarFieldActors:  setColor=1,0,0'
 #            contourActor.GetProperty().SetColor(1.,0.,0.)
 #        if Configuration.getSetting("ContoursOn",conFieldName):
         contourActor = _actors[1]
-        contourActor.SetMapper(self.contourMapper)
+        contourActor.SetMapper(self.contour_mapper)
 
         color = Configuration.getSetting("ContourColor")  # want to avoid this; only update when Prefs changes
         contourActor.GetProperty().SetColor(float(color.red())/255, float(color.green())/255, float(color.blue())/255)
