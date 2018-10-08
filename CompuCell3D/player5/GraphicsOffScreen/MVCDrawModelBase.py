@@ -46,7 +46,7 @@ import Configuration
 import vtk, math
 #import sys, os
 import string
-
+import CompuCellSetup
 from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES,PLANES
 
 
@@ -69,6 +69,8 @@ class MVCDrawModelBase:
         self.cellType = None
         self.cellId = None
         self.usedCellTypesList = None
+        self.lattice_type = None
+        self.lattice_type_str = None
 #        self.scaleGlyphsByVolume = False
         
         # self.hexFlag = self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"]
@@ -76,8 +78,38 @@ class MVCDrawModelBase:
         
         # should also set "periodic" boundary condition flag(s) (e.g. for drawing FPP links that wraparound)
 
-    def set_cell_field_data(self, cell_field_data_dict):
+    def init_lattice_type(self):
+        """
+        Initializes lattice type and lattice type enum
+        :return: None
+        """
+        self.lattice_type_str = CompuCellSetup.ExtractLatticeType()
 
+        if self.lattice_type_str in Configuration.LATTICE_TYPES.keys():
+            self.lattice_type = Configuration.LATTICE_TYPES[self.lattice_type_str]
+        else:
+            # default choice
+            self.lattice_type = Configuration.LATTICE_TYPES["Square"]
+
+    def get_lattice_type(self):
+        """
+        Returns lattice type as str
+        :return: {str} lattice type str
+        """
+        if self.lattice_type is None:
+            self.init_lattice_type()
+        return self.lattice_type
+
+    def get_lattice_type_str(self):
+        """
+        Returns lattice type as integer
+        :return: {int} enum corresponding to lattice type
+        """
+        if self.lattice_type_str is None:
+            self.init_lattice_type()
+        return self.lattice_type_str
+
+    def set_cell_field_data(self, cell_field_data_dict):
         """
         Stores information about cell field as class variables
         :param cell_field_data_dict: {dict}

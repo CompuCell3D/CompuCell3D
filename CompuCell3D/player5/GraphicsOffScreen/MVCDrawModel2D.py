@@ -129,14 +129,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         else:
             outlineData.SetDimensions(self.dim[0]+1, self.dim[1]+1, 1)
 
-
         outline = vtk.vtkOutlineFilter()
 
         if VTK_MAJOR_VERSION>=6:
             outline.SetInputData(outlineData)
         else:
             outline.SetInput(outlineData)
-
 
         outlineMapper = vtk.vtkPolyDataMapper()
         outlineMapper.SetInputConnection(outline.GetOutputPort())
@@ -157,6 +155,20 @@ class MVCDrawModel2D(MVCDrawModelBase):
         :return: None
         """
 
+        lattice_type_str = self.get_lattice_type_str()
+        if lattice_type_str.lower() =='hexagonal' and drawing_params.plane.lower()=="xy":
+            self.init_concentration_field_actors_hex(actor_specs=actor_specs, drawing_params=drawing_params)
+        else:
+            self.init_concentration_field_actors_cartesian(actor_specs=actor_specs, drawing_params=drawing_params)
+
+    def init_concentration_field_actors_hex(self, actor_specs, drawing_params=None):
+        """
+        initializes concentration field actors for hex lattice
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+        print "init_concentration_field_actors_hex"
         actors_dict = actor_specs.actors_dict
 
         fieldDim = self.currentDrawingParameters.bsd.fieldDim
@@ -165,31 +177,121 @@ class MVCDrawModel2D(MVCDrawModelBase):
         field_name = drawing_params.fieldName
         scene_metadata = drawing_params.screenshot_data.metadata
 
+        conArray = vtk.vtkDoubleArray()
+        conArray.SetName("concentration")
+        conArrayIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=conArray)
+        hexPointsCon = vtk.vtkPoints()
+        hexPointsConIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=hexPointsCon)
+
+
+        hexCellsCon = vtk.vtkCellArray()
+        hexCellsConIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=hexCellsCon)
+        hexCellsConPolyData = vtk.vtkPolyData()
+
+        # ***************************************************************************
+        fillSuccessful = self.field_extractor.fillConFieldData2DHex(
+            conArrayIntAddr,
+            hexCellsConIntAddr,
+            hexPointsConIntAddr,
+            field_name,
+            self.currentDrawingParameters.plane,
+            self.currentDrawingParameters.planePos
+        )
+
+        if not fillSuccessful:
+            return
+
+        if set(['MinRangeFixed',"MaxRangeFixed",'MinRange','MaxRange']).issubset( set(scene_metadata.keys())):
+            min_range_fixed = scene_metadata['MinRangeFixed']
+            max_range_fixed = scene_metadata['MaxRangeFixed']
+            min_range = scene_metadata['MinRange']
+            max_range = scene_metadata['MaxRange']
+        else:
+            min_range_fixed = Configuration.getSetting("MinRangeFixed", field_name)
+            max_range_fixed = Configuration.getSetting("MaxRangeFixed", field_name)
+            min_range = Configuration.getSetting("MinRange", field_name)
+            max_range = Configuration.getSetting("MaxRange", field_name)
+
+
+        range =conArray.GetRange()
+        min_con = range[0]
+        max_con = range[1]
+
+        # Note! should really avoid doing a getSetting with each step to speed up the rendering; only update when changed in Prefs
+        if min_range_fixed:
+            min_con = min_range
+
+        if max_range_fixed:
+            max_con = max_range
+
+
+
+
+        # range = self.conArray.GetRange()
+        # self.minCon = range[0]
+        # self.maxCon = range[1]
+        # dim_0 = self.dim[0] + 1
+        # dim_1 = self.dim[1] + 1
         #
-        # fieldDim = self.currentDrawingParameters.bsd.fieldDim
-        # conFieldName = self.currentDrawingParameters.fieldName
+        # if Configuration.getSetting("MinRangeFixed", conFieldName):
+        #     self.minCon = Configuration.getSetting("MinRange", conFieldName)
         #
-        # self.dim = [fieldDim.x, fieldDim.y, fieldDim.z]
-        # # Leave it for testing
-        # assert self.currentDrawingParameters.plane in ("XY", "XZ", "YZ"), "Plane is not XY, XZ or YZ"
+        # if Configuration.getSetting("MaxRangeFixed", conFieldName):
+        #     self.maxCon = Configuration.getSetting("MaxRange", conFieldName)
         #
-        # # fieldDim = cellField.getDim()
-        # dimOrder = self.dimOrder(self.plane)
-        # self.dim = self.planeMapper(dimOrder,
-        #                             (fieldDim.x, fieldDim.y, fieldDim.z))  # [fieldDim.x, fieldDim.y, fieldDim.z]
+        # #        if Configuration.getSetting("ContoursOn",conFieldName):
+
+
+        # if True:
+        if False:
+            contourActor = _actors[1]
+            self.initializeContoursHex([self.dim[0], self.dim[1]], self.conArray, [self.minCon, self.maxCon],
+                                       contourActor)
+
+        hexCellsConPolyData.GetCellData().SetScalars(conArray)
+        hexCellsConPolyData.SetPoints(hexPointsCon)
+        hexCellsConPolyData.SetPolys(hexCellsCon)
+
+        if VTK_MAJOR_VERSION >= 6:
+            self.hexConMapper.SetInputData(hexCellsConPolyData)
+        else:
+            self.hexConMapper.SetInput(hexCellsConPolyData)
+
+        self.hexConMapper.ScalarVisibilityOn()
+        self.hexConMapper.SetLookupTable(self.clut)
+        self.hexConMapper.SetScalarRange(min_con, max_con)
+
+        concentration_actor = actors_dict['concentration_actor']
+
+        concentration_actor.SetMapper(self.hexConMapper)
+
+    def init_concentration_field_actors_cartesian(self, actor_specs, drawing_params=None):
+        """
+        initializes concentration field actors for cartesian lattice
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+
+        actors_dict = actor_specs.actors_dict
+
+        fieldDim = self.currentDrawingParameters.bsd.fieldDim
+        dimOrder = self.dimOrder(self.currentDrawingParameters.plane)
+        dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]
+        field_name = drawing_params.fieldName
+        scene_metadata = drawing_params.screenshot_data.metadata
 
         conArray = vtk.vtkDoubleArray()
         conArray.SetName("concentration")
         conArrayIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=conArray)
         # todo - make it flexible
 
-        fillSuccessful = self.field_extractor.fillConFieldData2D(conArrayIntAddr, field_name, self.currentDrawingParameters.plane,
-                                          self.currentDrawingParameters.planePos)
-
-        # fillSuccessful = self.field_extractor.fillScalarFieldData2D(conArrayIntAddr, field_name, self.currentDrawingParameters.plane,
-        #                                   self.currentDrawingParameters.planePos)
-
-        # field_storage = self.field_extractor.getFieldStorage(self)
+        fillSuccessful = self.field_extractor.fillConFieldData2D(
+            conArrayIntAddr,
+            field_name,
+            self.currentDrawingParameters.plane,
+            self.currentDrawingParameters.planePos
+        )
 
         if not fillSuccessful:
             return
@@ -197,12 +299,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # todo 5 - revisit later
         numIsos = Configuration.getSetting("NumberOfContourLines", field_name)
         #        self.isovalStr = Configuration.getSetting("ScalarIsoValues",conFieldName)
-
-        min_range_fixed = None
-        max_range_fixed = None
-        min_range = None
-        max_range = None
-
 
         if set(['MinRangeFixed',"MaxRangeFixed",'MinRange','MaxRange']).issubset( set(scene_metadata.keys())):
             min_range_fixed = scene_metadata['MinRangeFixed']

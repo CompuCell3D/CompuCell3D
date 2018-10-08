@@ -6,7 +6,7 @@
 # todo cell_field_data_dict = self.extract_cell_field_data()
 # todo - check what happens when we used non consecutive cell types -  seems to be OK
 
-#todo - redesign screenshot_data to be more flexible and allow complete specification of rendered scene
+# todo - process contour isovalues in the concentration plot
 
 import sys
 import os
@@ -63,6 +63,7 @@ class GenericDrawer():
             ('ConField', 'Cart'): self.draw_concentration_field
         }
         self.screenshotWindowFlag = False
+        self.lattice_type = Configuration.LATTICE_TYPES['Square']
 
 
     def extract_cell_field_data(self):
