@@ -267,12 +267,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
             data.SetScalarTypeToUnsignedChar()
 
         data.GetPointData().SetScalars(con_array)
-        field = vtk.vtkImageDataGeometryFilter()
+        field_image_data = vtk.vtkImageDataGeometryFilter()
 
         if VTK_MAJOR_VERSION >= 6:
-            field.SetInputData(data)
+            field_image_data.SetInputData(data)
         else:
-            field.SetInput(data)
+            field_image_data.SetInput(data)
 
         transform = vtk.vtkTransform()
 
@@ -286,8 +286,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         isoContour = vtk.vtkContourFilter()
 
-
-        isoContour.SetInputConnection(field.GetOutputPort())
+        isoContour.SetInputConnection(field_image_data.GetOutputPort())
 
         isoContour.GenerateValues(
             num_contour_lines+2,
@@ -335,9 +334,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         if not fill_successful:
             return
 
-        # todo 5 - revisit later
-        numIsos = Configuration.getSetting("NumberOfContourLines", field_name)
-        #        self.isovalStr = Configuration.getSetting("ScalarIsoValues",conFieldName)
+        # # todo 5 - revisit later
+        # numIsos = Configuration.getSetting("NumberOfContourLines", field_name)
+        # #        self.isovalStr = Configuration.getSetting("ScalarIsoValues",conFieldName)
 
         if set(['MinRangeFixed',"MaxRangeFixed",'MinRange','MaxRange']).issubset( set(scene_metadata.keys())):
             min_range_fixed = scene_metadata['MinRangeFixed']
@@ -355,7 +354,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
         min_con = range[0]
         max_con = range[1]
 
-        # Note! should really avoid doing a getSetting with each step to speed up the rendering; only update when changed in Prefs
+        # Note! should really avoid doing a getSetting with each step to speed up the rendering;
+        # only update when changed in Prefs
         if min_range_fixed:
             min_con = min_range
 
@@ -398,52 +398,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 num_contour_lines=num_contour_lines
             )
 
-            # isoContour = vtk.vtkContourFilter()
-            # isoContour.SetInputConnection(field.GetOutputPort())
-            #
-            # isoValList = self.getIsoValues(field_name)
-            # printIsoValues = False
-            # isoNum = 0
-            # for isoVal in isoValList:
-            #     try:
-            #         if printIsoValues:  print MODULENAME, '  initScalarFieldActors(): setting (specific) isoval= ', isoVal
-            #         isoContour.SetValue(isoNum, isoVal)
-            #         isoNum += 1
-            #     except:
-            #         print MODULENAME, '  initScalarFieldDataActors(): cannot convert to float: ', self.isovalStr[idx]
-            # if isoNum > 0:  isoNum += 1
-            # #        print MODULENAME, '  after specific isovalues, isoNum=',isoNum
-            # #        numIsos = Configuration.getSetting("NumberOfContourLines")
-            # #        print MODULENAME, '  Next, do range of isovalues: min,max, # isos=',self.minCon,self.maxCon,numIsos
-            # delIso = (max_con - min_con) / (numIsos + 1)  # exclude the min,max for isovalues
-            # #        print MODULENAME, '  initScalarFieldActors(): delIso= ',delIso
-            # isoVal = min_con + delIso
-            # for idx in xrange(numIsos):
-            #     if printIsoValues:  print MODULENAME, '  initScalarFieldDataActors(): isoNum, isoval= ', isoNum, isoVal
-            #     isoContour.SetValue(isoNum, isoVal)
-            #     isoNum += 1
-            #     isoVal += delIso
-            # if printIsoValues:  print
-            #
-            # isoContour.SetInputConnection(field.GetOutputPort())  # rwh?
-            # #        isoContour.GenerateValues(Configuration.getSetting("NumberOfContourLines",self.currentDrawingParameters.fieldName)+2, [self.minCon, self.maxCon])
-            #
-            # self.contourMapper.SetInputConnection(isoContour.GetOutputPort())
-            # self.contourMapper.SetLookupTable(self.ctlut)
-            # self.contourMapper.SetScalarRange(min_con, max_con)
-            # self.contourMapper.ScalarVisibilityOff()  # this is required to do a SetColor on the actor's property
-            # #            print MODULENAME,' initScalarFieldActors:  setColor=1,0,0'
-            # #            contourActor.GetProperty().SetColor(1.,0.,0.)
-            # #        if Configuration.getSetting("ContoursOn",conFieldName):
-            #
-            # contourActor = actors_dict['contour_actor']
-            #
-            # contourActor.SetMapper(self.contourMapper)
-            #
-            # color = Configuration.getSetting("ContourColor")  # want to avoid this; only update when Prefs changes
-            # contourActor.GetProperty().SetColor(float(color.red()) / 255, float(color.green()) / 255,
-            #                                     float(color.blue()) / 255)
-
         self.conMapper.SetInputConnection(field_image_data.GetOutputPort())  # port index = 0
 
         self.conMapper.ScalarVisibilityOn()
@@ -455,8 +409,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         concentration_actor = actors_dict['concentration_actor']
         concentration_actor.SetMapper(self.conMapper)  # concentration actor
-
-        print
 
     def initialize_contours_cartesian(self,field_image_data, min_max, contour_actor, num_contour_lines=2):
 
@@ -512,18 +464,121 @@ class MVCDrawModel2D(MVCDrawModelBase):
         :return: None
         """
 
+        lattice_type_str = self.get_lattice_type_str()
+        if lattice_type_str.lower() == 'hexagonal' and drawing_params.plane.lower() == "xy":
+            self.init_cell_field_actors_hex(actor_specs=actor_specs, drawing_params=drawing_params)
+        else:
+            self.init_cell_field_actors_cartesian(actor_specs=actor_specs, drawing_params=drawing_params)
+
+    def init_cell_field_actors_hex(self, actor_specs, drawing_params=None):
+        """
+        Initializes cell field actors for hex lattice
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+
+
+        # cellField  = sim.getPotts().getCellFieldG()
+        # # # # print "INSIDE drawCellFieldHex"
+        # # # # print "drawing plane ",self.plane," planePos=",self.planePos
+        # fieldDim = cellField.getDim()
         fieldDim = self.currentDrawingParameters.bsd.fieldDim
         dimOrder = self.dimOrder(self.currentDrawingParameters.plane)
-        self.dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]
+        self.dim = self.planeMapper(dimOrder,
+                                    (fieldDim.x, fieldDim.y, fieldDim.z))  # [fieldDim.x, fieldDim.y, fieldDim.z]
 
         self.cellType = vtk.vtkIntArray()
         self.cellType.SetName("celltype")
+        self.cellTypeIntAddr = self.extractAddressIntFromVtkObject(self.cellType)
+        # a=21
+        self.hexCells = vtk.vtkCellArray()
 
-        self.cellTypeIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=self.cellType)
-        self.field_extractor.fillCellFieldData2D(self.cellTypeIntAddr,self.currentDrawingParameters.plane, self.currentDrawingParameters.planePos)
+        self.hexCellsIntAddr = self.extractAddressIntFromVtkObject(self.hexCells)
 
-        # self.initCellFieldActorsData(actors)
-        self.initCellFieldActorsData(list(actor_specs.actors_dict.values()))
+        self.hexCellsPolyData = vtk.vtkPolyData()
+        # **********************************************
+
+        self.hexPoints = vtk.vtkPoints()
+        # self.hexPoints.SetName("hexpoints")
+        self.hexPointsIntAddr = self.extractAddressIntFromVtkObject(self.hexPoints)
+
+        self.parentWidget.fieldExtractor.fillCellFieldData2DHex(self.cellTypeIntAddr, self.hexCellsIntAddr,
+                                                                self.hexPointsIntAddr,
+                                                                self.currentDrawingParameters.plane,
+                                                                self.currentDrawingParameters.planePos)
+        # self.parentWidget.fieldExtractor.fillCellFieldData2DHex(self.cellTypeIntAddr,self.hexPointsIntAddr,self.plane, self.planePos)
+
+        self.hexCellsPolyData.GetCellData().SetScalars(self.cellType)
+        self.hexCellsPolyData.SetPoints(self.hexPoints)
+        self.hexCellsPolyData.SetPolys(self.hexCells)
+
+        if VTK_MAJOR_VERSION >= 6:
+            self.hex_cells_mapper.SetInputData(self.hexCellsPolyData)
+        else:
+            self.hex_cells_mapper.SetInput(self.hexCellsPolyData)
+
+        self.hex_cells_mapper.ScalarVisibilityOn()
+        self.hex_cells_mapper.SetLookupTable(self.celltypeLUT)
+        self.hex_cells_mapper.SetScalarRange(0, self.celltypeLUTMax)
+
+        _actors[0].SetMapper(self.hex_cells_mapper)
+
+    def init_cell_field_actors_cartesian(self, actor_specs, drawing_params=None):
+        """
+        Initializes cell field actors for cartesian lattice
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+
+        actors_dict = actor_specs.actors_dict
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+
+        # [fieldDim.x, fieldDim.y, fieldDim.z]
+        dim = self.planeMapper(dim_order, (field_dim.x, field_dim.y, field_dim.z))
+
+        scene_metadata = drawing_params.screenshot_data.metadata
+
+        cell_type_array = vtk.vtkIntArray()
+        cell_type_array.SetName("celltype")
+
+        cell_type_int_addr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=cell_type_array)
+
+        self.field_extractor.fillCellFieldData2D(
+            cell_type_int_addr,
+            self.currentDrawingParameters.plane,
+            self.currentDrawingParameters.planePos
+        )
+
+        dim_new = [dim[0] + 1, dim[1] + 1, dim[2] + 1]
+
+        u_grid_conc = vtk.vtkStructuredPoints()
+        u_grid_conc.SetDimensions(dim_new[0], dim_new[1], dim_new[2])
+
+        u_grid_conc.GetPointData().SetScalars(cell_type_array)
+
+        cells_plane = vtk.vtkImageDataGeometryFilter()
+        cells_plane.SetExtent(0, dim_new[0], 0, dim_new[1], 0, 0)
+        if VTK_MAJOR_VERSION >= 6:
+            cells_plane.SetInputData(u_grid_conc)
+        else:
+            cells_plane.SetInput(u_grid_conc)
+
+        # concMapper=self.cellsMapper
+
+        self.cellsMapper.SetInputConnection(cells_plane.GetOutputPort())
+        self.cellsMapper.ScalarVisibilityOn()
+
+        self.cellsMapper.SetLookupTable(self.celltypeLUT)  # def'd in parent class
+        self.cellsMapper.SetScalarRange(0, self.celltypeLUTMax)
+
+        cells_actor = actors_dict['cellsActor']
+        cells_actor.SetMapper(self.cellsMapper)
+
+
+    # self.initCellFieldActorsData(list(actor_specs.actors_dict.values()))
 
     # def init_cell_field_actors(self, actors):
     #
