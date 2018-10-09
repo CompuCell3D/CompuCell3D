@@ -83,7 +83,8 @@ class MVCDrawModelBase:
 
         self.metadata_fetcher_dict = {
             'ConField':self.get_con_field_metadata,
-            'ScalarField':self.get_con_field_metadata
+            'ScalarField':self.get_con_field_metadata,
+            'ScalarFieldCellLevel': self.get_con_field_metadata,
         }
 
     def get_metadata(self, field_name, field_type):

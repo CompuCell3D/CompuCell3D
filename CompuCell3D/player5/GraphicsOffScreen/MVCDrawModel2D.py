@@ -362,6 +362,14 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 self.currentDrawingParameters.plane,
                 self.currentDrawingParameters.planePos
             )
+        elif field_type =='scalarfieldcelllevel':
+            fill_successful = self.field_extractor.fillScalarFieldCellLevelData2D(
+                con_array_int_addr,
+                field_name,
+                self.currentDrawingParameters.plane,
+                self.currentDrawingParameters.planePos
+            )
+
         else:
             print ("unsuported field type {}".format(field_type))
             return

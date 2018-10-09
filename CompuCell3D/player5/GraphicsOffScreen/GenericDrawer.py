@@ -64,6 +64,7 @@ class GenericDrawer():
             'CellField': self.draw_cell_field,
             'ConField': self.draw_concentration_field,
             'ScalarField': self.draw_concentration_field,
+            'ScalarFieldCellLevel': self.draw_concentration_field,
         }
         self.screenshotWindowFlag = False
         self.lattice_type = Configuration.LATTICE_TYPES['Square']
