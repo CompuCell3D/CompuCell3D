@@ -189,15 +189,48 @@ class MVCDrawModel2D(MVCDrawModelBase):
         hex_cells_con_int_addr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=hex_cells_con)
         hex_cells_con_poly_data = vtk.vtkPolyData()
 
-        # ***************************************************************************
-        fill_successful = self.field_extractor.fillConFieldData2DHex(
-            con_array_int_addr,
-            hex_cells_con_int_addr,
-            hex_points_con_int_addr,
-            field_name,
-            self.currentDrawingParameters.plane,
-            self.currentDrawingParameters.planePos
-        )
+
+        field_type = drawing_params.fieldType.lower()
+        if field_type =='confield':
+            fill_successful = self.field_extractor.fillConFieldData2DHex(
+                con_array_int_addr,
+                hex_cells_con_int_addr,
+                hex_points_con_int_addr,
+                field_name,
+                self.currentDrawingParameters.plane,
+                self.currentDrawingParameters.planePos
+            )
+        elif field_type =='scalarfield':
+            fill_successful = self.field_extractor.fillScalarFieldData2DHex(
+                con_array_int_addr,
+                hex_cells_con_int_addr,
+                hex_points_con_int_addr,
+                field_name,
+                self.currentDrawingParameters.plane,
+                self.currentDrawingParameters.planePos
+            )
+        elif field_type =='scalarfieldcelllevel':
+            fill_successful = self.field_extractor.fillScalarFieldCellLevelData2DHex(
+                con_array_int_addr,
+                hex_cells_con_int_addr,
+                hex_points_con_int_addr,
+                field_name,
+                self.currentDrawingParameters.plane,
+                self.currentDrawingParameters.planePos
+            )
+        else:
+            print ("unsuported field type {}".format(field_type))
+            return
+
+
+        # fill_successful = self.field_extractor.fillConFieldData2DHex(
+        #     con_array_int_addr,
+        #     hex_cells_con_int_addr,
+        #     hex_points_con_int_addr,
+        #     field_name,
+        #     self.currentDrawingParameters.plane,
+        #     self.currentDrawingParameters.planePos
+        # )
 
         if not fill_successful:
             return
@@ -325,38 +358,16 @@ class MVCDrawModel2D(MVCDrawModelBase):
         con_array_int_addr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=con_array)
         # todo - make it flexible
 
-        cartesianPointsCon = vtk.vtkPoints()
-        # self.hexPoints.SetName("hexpoints")
-        cartesianPointsConIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=cartesianPointsCon)
-
-        cartesianCellsCon = vtk.vtkCellArray()
-        cartesianCellsConIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=cartesianCellsCon)
-
-        # fill_successful = self.field_extractor.fillConFieldData2DCartesian(
-        #     con_array_int_addr,
-        #     cartesianCellsConIntAddr,
-        #     cartesianPointsConIntAddr,
-        #     field_name,
-        #     self.currentDrawingParameters.plane,
-        #     self.currentDrawingParameters.planePos
-        # )
-
-        # fill_successful = self.field_extractor.fillConFieldData2D(
-        #     con_array_int_addr,
-        #     field_name,
-        #     self.currentDrawingParameters.plane,
-        #     self.currentDrawingParameters.planePos
-        # )
         field_type = drawing_params.fieldType.lower()
-        if  field_type =='scalarfield':
-            fill_successful = self.field_extractor.fillScalarFieldData2D(
+        if field_type =='confield':
+            fill_successful = self.field_extractor.fillConFieldData2D(
                 con_array_int_addr,
                 field_name,
                 self.currentDrawingParameters.plane,
                 self.currentDrawingParameters.planePos
             )
-        elif field_type =='confield':
-            fill_successful = self.field_extractor.fillConFieldData2D(
+        elif field_type =='scalarfield':
+            fill_successful = self.field_extractor.fillScalarFieldData2D(
                 con_array_int_addr,
                 field_name,
                 self.currentDrawingParameters.plane,
