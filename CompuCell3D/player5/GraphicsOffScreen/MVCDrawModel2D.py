@@ -7,6 +7,7 @@ from Utilities.QVTKRenderWidget import QVTKRenderWidget
 # from GraphicsNew import GraphicsNew
 import Configuration
 from MVCDrawModelBase import MVCDrawModelBase
+import math
 # import Configuration
 import vtk, math
 import sys, os
@@ -122,8 +123,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         dimOrder    = self.dimOrder(self.currentDrawingParameters.plane)
         self.dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))
 
-        if self.currentDrawingParameters.lattice_type.startswith('hex') and self.currentDrawingParameters.plane=="XY":
-            import math
+        lattice_type_str = self.get_lattice_type_str()
+        if lattice_type_str.lower() == 'hexagonal' and drawing_params.plane.lower() == "xy":
+
             outlineData.SetDimensions(self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1)
             # print "self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1= ",(self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1)
         else:
