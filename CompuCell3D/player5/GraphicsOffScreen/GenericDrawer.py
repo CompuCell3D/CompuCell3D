@@ -61,8 +61,9 @@ class GenericDrawer():
         #
         # dict {field_type: drawing fcn}
         self.drawing_fcn_dict = {
-            ('CellField', 'Cart'): self.draw_cell_field,
-            ('ConField', 'Cart'): self.draw_concentration_field
+            'CellField': self.draw_cell_field,
+            'ConField': self.draw_concentration_field,
+            'ScalarField': self.draw_concentration_field,
         }
         self.screenshotWindowFlag = False
         self.lattice_type = Configuration.LATTICE_TYPES['Square']
@@ -208,7 +209,7 @@ class GenericDrawer():
         model.setDrawingParametersObject(drawing_params)
 
         try:
-            key = (drawing_params.fieldType, 'Cart')
+            key = drawing_params.fieldType
             draw_fcn = self.drawing_fcn_dict[key]
         except KeyError:
             print 'Could not find function for {}'.format(key)

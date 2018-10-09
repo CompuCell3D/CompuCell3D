@@ -7,9 +7,8 @@ from Utilities.QVTKRenderWidget import QVTKRenderWidget
 # from GraphicsNew import GraphicsNew
 import Configuration
 from MVCDrawModelBase import MVCDrawModelBase
+import vtk
 import math
-# import Configuration
-import vtk, math
 import sys, os
 import string
 from utils import extractAddressIntFromVtkObject
@@ -326,12 +325,46 @@ class MVCDrawModel2D(MVCDrawModelBase):
         con_array_int_addr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=con_array)
         # todo - make it flexible
 
-        fill_successful = self.field_extractor.fillConFieldData2D(
-            con_array_int_addr,
-            field_name,
-            self.currentDrawingParameters.plane,
-            self.currentDrawingParameters.planePos
-        )
+        cartesianPointsCon = vtk.vtkPoints()
+        # self.hexPoints.SetName("hexpoints")
+        cartesianPointsConIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=cartesianPointsCon)
+
+        cartesianCellsCon = vtk.vtkCellArray()
+        cartesianCellsConIntAddr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=cartesianCellsCon)
+
+        # fill_successful = self.field_extractor.fillConFieldData2DCartesian(
+        #     con_array_int_addr,
+        #     cartesianCellsConIntAddr,
+        #     cartesianPointsConIntAddr,
+        #     field_name,
+        #     self.currentDrawingParameters.plane,
+        #     self.currentDrawingParameters.planePos
+        # )
+
+        # fill_successful = self.field_extractor.fillConFieldData2D(
+        #     con_array_int_addr,
+        #     field_name,
+        #     self.currentDrawingParameters.plane,
+        #     self.currentDrawingParameters.planePos
+        # )
+        field_type = drawing_params.fieldType.lower()
+        if  field_type =='scalarfield':
+            fill_successful = self.field_extractor.fillScalarFieldData2D(
+                con_array_int_addr,
+                field_name,
+                self.currentDrawingParameters.plane,
+                self.currentDrawingParameters.planePos
+            )
+        elif field_type =='confield':
+            fill_successful = self.field_extractor.fillConFieldData2D(
+                con_array_int_addr,
+                field_name,
+                self.currentDrawingParameters.plane,
+                self.currentDrawingParameters.planePos
+            )
+        else:
+            print ("unsuported field type {}".format(field_type))
+            return
 
         if not fill_successful:
             return

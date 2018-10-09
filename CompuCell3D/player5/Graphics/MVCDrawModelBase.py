@@ -82,7 +82,8 @@ class MVCDrawModelBase:
         # should also set "periodic" boundary condition flag(s) (e.g. for drawing FPP links that wraparound)
 
         self.metadata_fetcher_dict = {
-            'ConField':self.get_con_field_metadata
+            'ConField':self.get_con_field_metadata,
+            'ScalarField':self.get_con_field_metadata
         }
 
     def get_metadata(self, field_name, field_type):
@@ -110,6 +111,8 @@ class MVCDrawModelBase:
         metadata_dict['MaxRange'] = Configuration.getSetting("MaxRange", con_field_name)
         metadata_dict['ContoursOn'] = Configuration.getSetting("ContoursOn", con_field_name)
         metadata_dict['NumberOfContourLines'] = Configuration.getSetting("NumberOfContourLines", field_name)
+        metadata_dict['LegendEnable'] = Configuration.getSetting("LegendEnable", field_name)
+
 
         return metadata_dict
 
