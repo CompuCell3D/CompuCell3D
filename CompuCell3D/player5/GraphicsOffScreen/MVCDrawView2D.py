@@ -134,14 +134,9 @@ class MVCDrawView2D(MVCDrawViewBase):
         """
         scene_metadata = drawing_params.screenshot_data.metadata
         if show_flag:
-            if not self.currentActors.has_key("vector_field_actor"):
-                self.currentActors["vector_field_actor"] = self.glyphsActor
-
-                self.ren.AddActor(self.glyphsActor)
+            self.add_actor_to_renderer(actor_label='vector_field_actor', actor_obj=self.glyphsActor)
         else:
-            if self.currentActors.has_key("vector_field_actor"):
-                del self.currentActors["vector_field_actor"]
-                self.ren.RemoveActor(self.glyphsActor)
+            self.remove_actor_from_renderer(actor_label='vector_field_actor', actor_obj=self.glyphsActor)
 
     def prepare_concentration_field_actors(self,actor_specs, drawing_params=None):
         """
@@ -169,10 +164,6 @@ class MVCDrawView2D(MVCDrawViewBase):
         """
         scene_metadata = drawing_params.screenshot_data.metadata
         if show_flag:
-            # if not self.currentActors.has_key("concentration_actor"):
-            #     self.currentActors["concentration_actor"] = self.conActor
-            #
-            #     self.ren.AddActor(self.conActor)
             self.add_actor_to_renderer(actor_label='concentration_actor', actor_obj=self.conActor)
 
             add_contour = False
@@ -183,8 +174,6 @@ class MVCDrawView2D(MVCDrawViewBase):
 
             if add_contour:
                 self.add_actor_to_renderer(actor_label='contour_actor', actor_obj=self.contourActor)
-                # self.currentActors["contour_actor"] = self.contourActor
-                # self.ren.AddActor(self.contourActor)
 
             add_legend = False
             try:
@@ -194,25 +183,11 @@ class MVCDrawView2D(MVCDrawViewBase):
 
             if add_legend:
                 self.add_actor_to_renderer(actor_label='legend_actor', actor_obj=self.legendActor)
-                # self.currentActors["legend_actor"] = self.legendActor
-                # self.ren.AddActor(self.legendActor)
-
 
         else:
             self.remove_actor_from_renderer(actor_label='concentration_actor', actor_obj=self.conActor)
             self.remove_actor_from_renderer(actor_label='contour_actor', actor_obj=self.contourActor)
             self.remove_actor_from_renderer(actor_label='legend_actor', actor_obj=self.legendActor)
-            # if self.currentActors.has_key("concentration_actor"):
-            #     del self.currentActors["concentration_actor"]
-            #     self.ren.RemoveActor(self.conActor)
-            # if self.currentActors.has_key("contour_actor"):
-            #     del self.currentActors["contour_actor"]
-            #     self.ren.RemoveActor(self.contourActor)
-            # if self.currentActors.has_key("legend_actor"):
-            #     del self.currentActors["legend_actor"]
-            #     self.ren.RemoveActor(self.legendActor)
-
-
 
     def prepare_cell_field_actors(self,actor_specs, drawing_params=None):
         """
@@ -277,14 +252,9 @@ class MVCDrawView2D(MVCDrawViewBase):
         """
         scene_metadata = drawing_params.screenshot_data.metadata
         if show_flag:
-            if not self.currentActors.has_key('cluster_border_actor'):
-                self.currentActors['cluster_border_actor'] = self.clusterBorderActor
-
-                self.ren.AddActor(self.clusterBorderActor)
+            self.add_actor_to_renderer(actor_label='cluster_border_actor', actor_obj=self.clusterBorderActor)
         else:
-            if self.currentActors.has_key('cluster_border_actor'):
-                del self.currentActors['cluster_border_actor']
-                self.ren.RemoveActor(self.clusterBorderActor)
+            self.remove_actor_from_renderer(actor_label='cluster_border_actor', actor_obj=self.clusterBorderActor)
 
 
     def prepare_fpp_links_actors(self, actor_specs, drawing_params=None):
@@ -309,13 +279,9 @@ class MVCDrawView2D(MVCDrawViewBase):
         """
         scene_metadata = drawing_params.screenshot_data.metadata
         if show_flag:
-            if not self.currentActors.has_key('fpp_links_actor'):
-                self.currentActors['fpp_links_actor'] = self.FPPLinksActor
-                self.ren.AddActor(self.FPPLinksActor)
+            self.add_actor_to_renderer(actor_label='fpp_links_actor', actor_obj=self.FPPLinksActor)
         else:
-            if self.currentActors.has_key('fpp_links_actor'):
-                del self.currentActors['fpp_links_actor']
-                self.ren.RemoveActor(self.FPPLinksActor)
+            self.remove_actor_from_renderer(actor_label='fpp_links_actor', actor_obj=self.FPPLinksActor)
 
     def setPlane(self, plane, pos):
         (self.plane, self.planePos) = (str(plane).upper(), pos)
