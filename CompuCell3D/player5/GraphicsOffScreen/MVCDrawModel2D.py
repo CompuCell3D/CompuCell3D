@@ -1070,23 +1070,15 @@ class MVCDrawModel2D(MVCDrawModelBase):
             vol = cell.volume
             if vol < self.eps: continue
 
-            if hex_flag:
-                xmid0 = cell.xCOM / 1.07457
-                ymid0 = cell.yCOM / 1.07457
-            else:
-                xmid0 = cell.xCOM  # + self.offset
-                ymid0 = cell.yCOM  # + self.offset
-            points.InsertNextPoint(xmid0, ymid0, 0)
+            xmid0 = cell.xCOM
+            ymid0 = cell.yCOM
 
+            points.InsertNextPoint(xmid0, ymid0, 0)
             endPt = beginPt + 1
-            # 2345678901234
+
             for fppd in InternalFocalPointPlasticityDataList(fppPlugin, cell):
-                if hex_flag:
-                    xmid = fppd.neighborAddress.xCOM / 1.07457
-                    ymid = fppd.neighborAddress.yCOM / 1.07457
-                else:
-                    xmid = fppd.neighborAddress.xCOM  # + self.offset
-                    ymid = fppd.neighborAddress.yCOM  # + self.offset
+                xmid = fppd.neighborAddress.xCOM
+                ymid = fppd.neighborAddress.yCOM
 
                 xdiff = xmid - xmid0
                 ydiff = ymid - ymid0
@@ -1142,12 +1134,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
                     lineNum += 1
                     endPt += 1
             for fppd in FocalPointPlasticityDataList(fppPlugin, cell):
-                if hex_flag:
-                    xmid = fppd.neighborAddress.xCOM / 1.07457
-                    ymid = fppd.neighborAddress.yCOM / 1.07457
-                else:
-                    xmid = fppd.neighborAddress.xCOM  # + self.offset
-                    ymid = fppd.neighborAddress.yCOM  # + self.offset
+
+                xmid = fppd.neighborAddress.xCOM
+                ymid = fppd.neighborAddress.yCOM
+
                 xdiff = xmid - xmid0
                 ydiff = ymid - ymid0
                 actualDist = math.sqrt((xdiff * xdiff) + (ydiff * ydiff))

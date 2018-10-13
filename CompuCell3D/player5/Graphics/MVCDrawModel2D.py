@@ -1989,8 +1989,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
           if vol < self.eps: continue
 
           if self.hexFlag:
-            xmid0 = cell.xCOM/1.07457
-            ymid0 = cell.yCOM/1.07457
+
+            xmid0 = cell.xCOM
+            ymid0 = cell.yCOM
+
+            # xmid0 = cell.xCOM/1.07457
+            # ymid0 = cell.yCOM/1.07457
           else:
             xmid0 = cell.xCOM # + self.offset
             ymid0 = cell.yCOM # + self.offset
@@ -2010,8 +2014,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
 #            vol = fppd.neighborAddress.volume
 #            if vol < self.eps: continue
             if self.hexFlag:
-              xmid = fppd.neighborAddress.xCOM/1.07457
-              ymid = fppd.neighborAddress.yCOM/1.07457
+
+                xmid = fppd.neighborAddress.xCOM
+                ymid = fppd.neighborAddress.yCOM
+
+                # xmid = fppd.neighborAddress.xCOM/1.07457
+              # ymid = fppd.neighborAddress.yCOM/1.07457
             else:
               xmid = fppd.neighborAddress.xCOM # + self.offset
               ymid = fppd.neighborAddress.yCOM # + self.offset
@@ -2098,8 +2106,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
 #            vol = fppd.neighborAddress.volume
 #            if vol < self.eps: continue
             if self.hexFlag:
-              xmid = fppd.neighborAddress.xCOM/1.07457
-              ymid = fppd.neighborAddress.yCOM/1.07457
+
+                xmid = fppd.neighborAddress.xCOM
+                ymid = fppd.neighborAddress.yCOM
+
+              # xmid = fppd.neighborAddress.xCOM/1.07457
+              # ymid = fppd.neighborAddress.yCOM/1.07457
             else:
               xmid=fppd.neighborAddress.xCOM # + self.offset
               ymid=fppd.neighborAddress.yCOM # + self.offset
