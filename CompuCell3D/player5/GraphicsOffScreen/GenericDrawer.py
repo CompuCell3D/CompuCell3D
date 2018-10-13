@@ -10,6 +10,7 @@
 # todo - add legend actor
 # todo -  fix border color
 # todo - store metadata for vector field
+# todo - check api for show, prepar,e init functions
 
 
 import string
@@ -168,11 +169,26 @@ class GenericDrawer():
 
         actor_specs = ActorSpecs()
         actor_specs.actor_label_list = ['borderActor']
-        actor_specs = view.prepare_border_actors(actor_specs=actor_specs)
+        actor_specs_final = view.prepare_border_actors(actor_specs=actor_specs)
 
-        model.init_borders_actors(actor_specs=actor_specs, drawing_params=drawing_params)
-        show_flag = drawing_params.screenshot_data.cell_borders_on
-        view.show_cell_borders(show_flag=show_flag)
+        model.init_borders_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
+        # show_flag = drawing_params.screenshot_data.cell_borders_on
+        view.show_cell_borders(actor_specs=actor_specs_final)
+        # view.show_cell_borders(show_flag=show_flag)
+
+    def draw_cluster_borders(self, drawing_params):
+        """
+        Draws cluster borders
+        :param drawing_params:
+        :return: None
+        """
+
+        model, view = self.get_model_view(drawing_params=drawing_params)
+
+        actor_specs = ActorSpecs()
+        actor_specs_final = view.prepare_cluster_border_actors(actor_specs=actor_specs)
+        model.init_cluster_border_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
+        view.show_cluster_border_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
 
     def draw_bounding_box(self, drawing_params):
         model, view = self.get_model_view(drawing_params=drawing_params)
@@ -244,6 +260,15 @@ class GenericDrawer():
                     self.draw_cell_borders(drawing_params=drawing_params)
                 except NotImplementedError:
                     pass
+
+            # decorations
+            if drawing_params.screenshot_data.cluster_borders_on:
+
+                try:
+                    self.draw_cluster_borders(drawing_params=drawing_params)
+                except NotImplementedError:
+                    pass
+
 
             if drawing_params.screenshot_data.bounding_box_on:
                 try:

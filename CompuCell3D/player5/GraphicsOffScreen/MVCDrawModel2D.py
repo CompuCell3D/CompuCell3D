@@ -808,28 +808,30 @@ class MVCDrawModel2D(MVCDrawModelBase):
         :param drawing_params: {DrawingParameters}
         :return: None
         """
+
         actors_dict = actor_specs.actors_dict
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         dim_order = self.dimOrder(self.currentDrawingParameters.plane)
         scene_metadata = drawing_params.screenshot_data.metadata
 
-        # points = vtk.vtkPoints()
-        # lines = vtk.vtkCellArray()
-        # points_int_addr = self.extractAddressIntFromVtkObject(points)
-        # lines_int_addr = self.extractAddressIntFromVtkObject(lines)
-
         points = vtk.vtkPoints()
         lines = vtk.vtkCellArray()
-        points_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor,
-                                                              vtkObj=points)
+        points_int_addr = extract_address_int_from_vtk_object(
+            field_extractor=self.field_extractor,
+            vtkObj=points
+        )
 
-        lines_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor,
-                                                             vtkObj=lines)
+        lines_int_addr = extract_address_int_from_vtk_object(
+            field_extractor=self.field_extractor,
+            vtkObj=lines
+        )
 
-
-        self.field_extractor.fillBorderData2DHex(points_int_addr, lines_int_addr,
-                                                             self.currentDrawingParameters.plane,
-                                                             self.currentDrawingParameters.planePos)
+        self.field_extractor.fillBorderData2DHex(
+            points_int_addr,
+            lines_int_addr,
+            self.currentDrawingParameters.plane,
+            self.currentDrawingParameters.planePos
+        )
 
         borders = vtk.vtkPolyData()
 
@@ -848,8 +850,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         border_color = to_vtk_rgb(scene_metadata['BorderColor'])
         # coloring borders
         border_actor.GetProperty().SetColor(*border_color)
-
-
 
     def init_borders_actors_cartesian(self, actor_specs, drawing_params=None):
         """
@@ -912,6 +912,68 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # self.graphicsFrameWidget.ren.RemoveActor(self.borderActor)
         # self.graphicsFrameWidget.ren.AddActor(self.borderActor)
         # print "self.currentActors.keys()=",self.currentActors.keys()
+
+    def init_cluster_border_actors(self, actor_specs, drawing_params=None):
+        """
+        Initializes cell borders actors for cartesian actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+
+        lattice_type_str = self.get_lattice_type_str()
+        if lattice_type_str.lower() =='hexagonal' and drawing_params.plane.lower()=="xy":
+            self.init_cluster_border_actors_hex(actor_specs=actor_specs, drawing_params=drawing_params)
+        else:
+            self.init_cluster_border_actors_cartesian(actor_specs=actor_specs, drawing_params=drawing_params)
+
+
+    def init_cluster_border_actors_cartesian(self, actor_specs, drawing_params=None):
+        """
+        Initializes cell borders actors for cartesian actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+
+        actors_dict = actor_specs.actors_dict
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        scene_metadata = drawing_params.screenshot_data.metadata
+
+
+        points = vtk.vtkPoints()
+        lines = vtk.vtkCellArray()
+        points_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor,
+                                                             vtkObj=points)
+        lines_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor,
+                                                             vtkObj=lines)
+        self.field_extractor.fillClusterBorderData2D(
+            points_int_addr,
+            lines_int_addr,
+            self.currentDrawingParameters.plane,
+            self.currentDrawingParameters.planePos
+        )
+
+
+        borders = vtk.vtkPolyData()
+
+        borders.SetPoints(points)
+        borders.SetLines(lines)
+
+        if VTK_MAJOR_VERSION>=6:
+            self.clusterBorderMapper.SetInputData(borders)
+        else:
+            self.clusterBorderMapper.SetInput(borders)
+
+        cluster_border_actor = actor_specs.actors_dict['cluster_border_actor']
+
+        cluster_border_actor.SetMapper(self.clusterBorderMapper)
+
+        cluster_border_color = to_vtk_rgb(scene_metadata['ClusterBorderColor'])
+        # coloring borders
+        cluster_border_actor.GetProperty().SetColor(*cluster_border_color)
+
 
     # def initBordersActors2D(self,_actors):
     #     points = vtk.vtkPoints()

@@ -191,7 +191,7 @@ class MVCDrawView2D(MVCDrawViewBase):
                 del self.currentActors["contour_actor"]
                 self.ren.RemoveActor(self.contourActor)
 
-    def prepare_cell_field_actors(self,actor_specs):
+    def prepare_cell_field_actors(self,actor_specs, drawing_params=None):
         """
         Prepares cell_field_actors  based on actor_specs specifications
         :param actor_specs {ActorSpecs}: specification of actors to create
@@ -203,7 +203,27 @@ class MVCDrawView2D(MVCDrawViewBase):
 
         return actor_specs_copy
 
-    def prepare_border_actors(self,actor_specs):
+    def show_cell_borders(self, actor_specs,drawing_params=None, show_flag=True):
+        '''
+        Shows or hides cell border actor
+
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :param show_flag: {bool}
+        :return: None
+        """
+        '''
+        if show_flag:
+            if not self.currentActors.has_key("BorderActor"):
+                self.currentActors["BorderActor"] = self.borderActor
+                self.ren.AddActor(self.borderActor)
+        else:
+            if self.currentActors.has_key("BorderActor"):
+                del self.currentActors["BorderActor"]
+                self.ren.RemoveActor(self.borderActor)
+
+
+    def prepare_border_actors(self,actor_specs,drawing_params=None, show_flag=True):
         """
         Prepares border actors  based on actor_specs specifications
         :param actor_specs {ActorSpecs}: specification of actors to create
@@ -214,6 +234,38 @@ class MVCDrawView2D(MVCDrawViewBase):
         actor_specs_copy.actors_dict = OrderedDict()
         actor_specs_copy.actors_dict['borderActor'] = self.borderActor
         return actor_specs_copy
+
+
+    def prepare_cluster_border_actors(self,actor_specs):
+        """
+        Prepares cluster border actors  based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :return: {dict}
+        """
+
+        actor_specs_copy = deepcopy(actor_specs)
+        actor_specs_copy.actors_dict = OrderedDict()
+        actor_specs_copy.actors_dict['cluster_border_actor'] = self.clusterBorderActor
+        return actor_specs_copy
+
+    def show_cluster_border_actors(self,actor_specs,drawing_params=None, show_flag=True):
+        """
+        Shows concentration actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :param show_flag: {bool}
+        :return: None
+        """
+        scene_metadata = drawing_params.screenshot_data.metadata
+        if show_flag:
+            if not self.currentActors.has_key('cluster_border_actor'):
+                self.currentActors['cluster_border_actor'] = self.clusterBorderActor
+
+                self.ren.AddActor(self.clusterBorderActor)
+        else:
+            if self.currentActors.has_key('cluster_border_actor'):
+                del self.currentActors['cluster_border_actor']
+                self.ren.RemoveActor(self.clusterBorderActor)
 
 
 
@@ -646,21 +698,6 @@ class MVCDrawView2D(MVCDrawViewBase):
                 self.ren.RemoveActor(self.outlineActor)
 
 
-    def show_cell_borders(self, show_flag=True):
-        '''
-        Shows or hides cell border actor
-
-        :param show_flag {bool}
-        :return:None
-        '''
-        if show_flag:
-            if not self.currentActors.has_key("BorderActor"):
-                self.currentActors["BorderActor"] = self.borderActor
-                self.ren.AddActor(self.borderActor)
-        else:
-            if self.currentActors.has_key("BorderActor"):
-                del self.currentActors["BorderActor"]
-                self.ren.RemoveActor(self.borderActor)
 
 
     def drawCellFieldLocalNew(self, drawing_params, fieldType):

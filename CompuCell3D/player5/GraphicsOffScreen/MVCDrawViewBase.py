@@ -462,23 +462,15 @@ class MVCDrawViewBase:
 
         raise NotImplementedError(self.__class__.show_concentration_field_actors.__name__)
 
-    def prepare_cell_field_actors(self,actor_specs):
+    def prepare_cell_field_actors(self, actor_specs, drawing_params=None):
         """
         Prepares cell_field_actors  based on actor_specs specifications
         :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
         :return: {dict}
         """
 
         raise NotImplementedError(self.__class__.prepare_cell_field_actors.__name__)
-
-    def prepare_border_actors(self,actor_specs):
-        """
-        Prepares border actors  based on actor_specs specifications
-        :param actor_specs {ActorSpecs}: specification of actors to create
-        :return: {dict}
-        """
-
-        raise NotImplementedError(self.__class__.prepare_border_actors.__name__)
 
     def show_cell_actors(self, actor_specs, show_flag=True):
         """
@@ -487,7 +479,48 @@ class MVCDrawViewBase:
         :param show_flag: {bool}
         :return: None
         """
-        raise NotImplementedError()
+        raise NotImplementedError(self.__class__.show_cell_actors.__name__)
+
+
+    def prepare_cluster_border_actors(self, actor_specs, drawing_params=None):
+        """
+        Prepares border actors  based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
+        :return: {dict}
+        """
+
+        raise NotImplementedError(self.__class__.prepare_cluster_border_actors.__name__)
+
+    def cluster_borders_actors(self, actor_specs, show_flag=True):
+        """
+        Shows cluster borders actors
+        :param actor_specs: {ActorSpecs}
+        :param show_flag: {bool}
+        :return: None
+        """
+        raise NotImplementedError(self.__class__.show_cell_actors.__name__)
+
+    def show_cluster_border_actors(self, actor_specs, drawing_params=None,  show_flag=True):
+        """
+        Shows concentration actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :param show_flag: {bool}
+        :return: None
+        """
+        raise NotImplementedError(self.__class__.show_cluster_border_actors.__name__)
+
+    def prepare_border_actors(self, actor_specs ,drawing_params=None):
+        """
+        Prepares border actors  based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
+        :return: {dict}
+        """
+
+        raise NotImplementedError(self.__class__.prepare_border_actors.__name__)
+
 
 
 
