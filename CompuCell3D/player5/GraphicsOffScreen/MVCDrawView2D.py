@@ -256,7 +256,6 @@ class MVCDrawView2D(MVCDrawViewBase):
         else:
             self.remove_actor_from_renderer(actor_label='cluster_border_actor', actor_obj=self.clusterBorderActor)
 
-
     def prepare_fpp_links_actors(self, actor_specs, drawing_params=None):
         """
         Prepares fpp links actors  based on actor_specs specifications

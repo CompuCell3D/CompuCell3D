@@ -556,7 +556,6 @@ class MVCDrawViewBase:
             del self.currentActors[actor_label]
             self.ren.RemoveActor(actor_obj)
 
-
     def drawCellField(self, _bsd, fieldType): pass
     
     def drawConField(self, _bsd, fieldType): pass

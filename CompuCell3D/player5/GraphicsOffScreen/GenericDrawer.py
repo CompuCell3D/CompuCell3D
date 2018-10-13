@@ -301,11 +301,16 @@ class GenericDrawer():
                     pass
 
             # setting camera
-            if screenshot_data.spaceDimension == '3D':
-                if screenshot_data.clippingRange is not None:
-                    view.set_custom_camera(camera_settings=screenshot_data)
-            else:
-                view.set_default_camera(drawing_params.bsd.fieldDim)
+            # if screenshot_data.spaceDimension == '3D':
+            #     if screenshot_data.clippingRange is not None:
+            #         view.set_custom_camera(camera_settings=screenshot_data)
+            # else:
+            #     view.set_default_camera(drawing_params.bsd.fieldDim)
+
+
+            if screenshot_data.clippingRange is not None:
+                view.set_custom_camera(camera_settings=screenshot_data)
+
 
             # todo 5 - move this part to a function
             renWin = vtk.vtkRenderWindow()

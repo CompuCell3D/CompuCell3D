@@ -20,6 +20,7 @@ class ScreenshotManagerCore(object):
     def __init__(self):
         self.screenshotDataDict = {}
         self.screenshotCounter3D = 0
+        self.screenshotGraphicsWidget = None
 
     def cleanup(self):
         """
@@ -86,42 +87,44 @@ class ScreenshotManagerCore(object):
             scr_data = self.screenshotDataDict[name]
             scr_container_elem[name] = OrderedDict()
             scr_elem = scr_container_elem[name]
-            scr_elem['Plot'] = {"PlotType": str(scr_data.plotData[1]), "PlotName": str(scr_data.plotData[0])}
+            scr_elem['Plot'] = {'PlotType': str(scr_data.plotData[1]), 'PlotName': str(scr_data.plotData[0])}
 
-            if scr_data.spaceDimension == "2D":
+            if scr_data.spaceDimension == '2D':
                 scr_elem['Dimension'] = '2D'
 
-                scr_elem['Projection'] = {"ProjectionPlane": scr_data.projection,
-                                                          "ProjectionPosition": int(scr_data.projectionPosition)}
+                scr_elem['Projection'] = {'ProjectionPlane': scr_data.projection,
+                                                          'ProjectionPosition': int(scr_data.projectionPosition)}
 
-            if scr_data.spaceDimension == "3D":
-                scr_elem['Dimension'] = '2D'
-                scr_elem['CameraClippingRange'] = {
-                    "Min": str(scr_data.clippingRange[0]),
-                    "Max": str(scr_data.clippingRange[1])
-                }
+            if scr_data.spaceDimension == '3D':
+                scr_elem['Dimension'] = '3D'
+                scr_elem['Projection'] = {'ProjectionPlane': None, 'ProjectionPosition': None}
 
-                scr_elem['CameraFocalPoint'] = {
-                    "x": str(scr_data.focalPoint[0]),
-                    "y": str(scr_data.focalPoint[1]),
-                    "z": str(scr_data.focalPoint[2])
-                }
+            scr_elem['CameraClippingRange'] = {
+                'Min': str(scr_data.clippingRange[0]),
+                'Max': str(scr_data.clippingRange[1])
+            }
 
-                scr_elem['CameraPosition'] = {
-                    "x": str(scr_data.position[0]),
-                    "y": str(scr_data.position[1]),
-                    "z": str(scr_data.position[2])
-                }
+            scr_elem['CameraFocalPoint'] = {
+                'x': str(scr_data.focalPoint[0]),
+                'y': str(scr_data.focalPoint[1]),
+                'z': str(scr_data.focalPoint[2])
+            }
 
-                scr_elem['"CameraViewUp'] = {
-                    "x": str(scr_data.viewUp[0]),
-                    "y": str(scr_data.viewUp[1]),
-                    "z": str(scr_data.viewUp[2])
-                }
+            scr_elem['CameraPosition'] = {
+                'x': str(scr_data.position[0]),
+                'y': str(scr_data.position[1]),
+                'z': str(scr_data.position[2])
+            }
+
+            scr_elem['CameraViewUp'] = {
+                'x': str(scr_data.viewUp[0]),
+                'y': str(scr_data.viewUp[1]),
+                'z': str(scr_data.viewUp[2])
+            }
 
             scr_elem['Size'] = {
-                    "Width": int(scr_data.win_width),
-                    "Height": int(scr_data.win_height)
+                    'Width': int(scr_data.win_width),
+                    'Height': int(scr_data.win_height)
             }
 
             scr_elem['CellBorders'] = bool(scr_data.cell_borders_on)
@@ -219,7 +222,13 @@ class ScreenshotManagerCore(object):
         screenshotFileElement.CC3DXMLElement.saveXML(str(fileName))
 
     def readScreenshotDescriptionFile_JSON(self,filename):
-        root_elem = None
+        """
+        parses screenshot description JSON file and stores instances ScreenshotData in appropriate
+        container
+        :param filename: {str} json file name
+        :return: None
+        """
+
         with open(filename,'r') as f_in:
             root_elem = json.load(f_in)
 
@@ -227,15 +236,18 @@ class ScreenshotManagerCore(object):
             print('Could not read screenshot description file {}'.format(filename))
             return
 
-        scr_data_container =  root_elem['ScreenshotData']
+        scr_data_container = root_elem['ScreenshotData']
 
         for scr_name, scr_data_elem in scr_data_container.items():
             scr_data = ScreenshotData()
 
             scr_data.plotData = tuple(map(lambda x:str(x),(scr_data_elem['Plot']['PlotName'], scr_data_elem['Plot']['PlotType'])))
             scr_data.spaceDimension = str(scr_data_elem['Dimension'])
-            scr_data.projection = str(scr_data_elem['Projection']['ProjectionPlane'])
-            scr_data.projectionPosition = scr_data_elem['Projection']['ProjectionPosition']
+            try:
+                scr_data.projection = str(scr_data_elem['Projection']['ProjectionPlane'])
+                scr_data.projectionPosition = scr_data_elem['Projection']['ProjectionPosition']
+            except KeyError:
+                pass
             scr_data.win_width = scr_data_elem['Size']['Width']
             scr_data.win_height = scr_data_elem['Size']['Height']
 
@@ -249,6 +261,29 @@ class ScreenshotManagerCore(object):
             scr_data.lattice_axes_labels_on = scr_data_elem['LatticeAxesLabels']
             scr_data.invisible_types = scr_data_elem['TypesInvisible']
 
+            cam_settings = []
+
+            clipping_range_element = scr_data_elem['CameraClippingRange']
+            cam_settings.append(float(clipping_range_element['Min']))
+            cam_settings.append(float(clipping_range_element['Max']))
+
+            focal_point_element = scr_data_elem['CameraFocalPoint']
+            cam_settings.append(float(focal_point_element['x']))
+            cam_settings.append(float(focal_point_element['y']))
+            cam_settings.append(float(focal_point_element['z']))
+
+            position_element = scr_data_elem['CameraPosition']
+            cam_settings.append(float(position_element['x']))
+            cam_settings.append(float(position_element['y']))
+            cam_settings.append(float(position_element['z']))
+
+            view_up_element = scr_data_elem['CameraViewUp']
+            cam_settings.append(float(view_up_element['x']))
+            cam_settings.append(float(view_up_element['y']))
+            cam_settings.append(float(view_up_element['z']))
+
+            scr_data.extractCameraInfoFromList(cam_settings)
+
             # getting rid of unicode in the keys
             metadata_dict = {}
             for k, v in scr_data_elem['metadata'].items():
@@ -256,9 +291,10 @@ class ScreenshotManagerCore(object):
 
             scr_data.metadata = metadata_dict
 
-
+            # scr_data.screenshotGraphicsWidget = self.screenshotGraphicsWidget
 
             self.screenshotDataDict[scr_data.screenshotName] = scr_data
+
 
     def readScreenshotDescriptionFile(self, filename):
         """
