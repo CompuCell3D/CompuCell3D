@@ -48,7 +48,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.hex_con_mapper   = vtk.vtkPolyDataMapper()
         self.cartesianConMapper   = vtk.vtkPolyDataMapper()
         self.contour_mapper  = vtk.vtkPolyDataMapper()
-        self.glyphsMapper   = vtk.vtkPolyDataMapper()
+        self.glyphs_mapper   = vtk.vtkPolyDataMapper()
 
         # # Concentration lookup table
         self.numberOfTableColors=1024
@@ -147,6 +147,150 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         # color = Configuration.getSetting("BoundingBoxColor")   # eventually do this smarter (only get/update when it changes)
         # actors[0].GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+
+
+    def init_vector_field_actors(self, actor_specs, drawing_params=None):
+        """
+        initializes vector field actors for cartesian lattice
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+
+        actors_dict = actor_specs.actors_dict
+
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        dim = self.planeMapper(dim_order, (field_dim.x, field_dim.y, field_dim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]
+        field_name = drawing_params.fieldName
+        field_type = drawing_params.fieldType.lower()
+        scene_metadata = drawing_params.screenshot_data.metadata
+
+        vector_grid = vtk.vtkUnstructuredGrid()
+
+        points = vtk.vtkPoints()
+        vectors = vtk.vtkFloatArray()
+        vectors.SetNumberOfComponents(3)
+        vectors.SetName("visVectors")
+
+        points_int_addr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=points)
+        vectors_int_addr = extractAddressIntFromVtkObject(field_extractor=self.field_extractor, vtkObj=vectors)
+
+        fill_successful = False
+        lattice_type_str = self.get_lattice_type_str()
+
+        if lattice_type_str.lower() == 'hexagonal' and drawing_params.plane.lower() == "xy":
+            if field_type == 'vectorfield':
+                fill_successful = self.field_extractor.fillVectorFieldData2DHex(
+                    points_int_addr,
+                    vectors_int_addr,
+                    field_name,
+                    self.currentDrawingParameters.plane,
+                    self.currentDrawingParameters.planePos
+                )
+            elif field_type == 'vectorfieldcelllevel':
+                fill_successful = self.field_extractor.fillVectorFieldCellLevelData2DHex(
+                    points_int_addr,
+                    vectors_int_addr,
+                    field_name,
+                    self.currentDrawingParameters.plane,
+                    self.currentDrawingParameters.planePos
+                )
+
+
+        else:
+            if field_type == 'vectorfield':
+                fill_successful = self.field_extractor.fillVectorFieldData2D(
+                    points_int_addr,
+                    vectors_int_addr,
+                    field_name,
+                    self.currentDrawingParameters.plane,
+                    self.currentDrawingParameters.planePos
+                )
+            elif field_type == 'vectorfieldcelllevel':
+                fill_successful = self.field_extractor.fillVectorFieldCellLevelData2D(
+                    points_int_addr,
+                    vectors_int_addr,
+                    field_name,
+                    self.currentDrawingParameters.plane,
+                    self.currentDrawingParameters.planePos
+                )
+
+        if not fill_successful:
+            return
+
+        vector_grid.SetPoints(points)
+        vector_grid.GetPointData().SetVectors(vectors)
+
+        cone = vtk.vtkConeSource()
+        cone.SetResolution(5)
+        cone.SetHeight(2)
+        cone.SetRadius(0.5)
+        # cone.SetRadius(4)
+
+        range = vectors.GetRange(-1)
+
+        minMagnitude = range[0]
+        maxMagnitude = range[1]
+
+        if Configuration.getSetting("MinRangeFixed", field_name):
+            minMagnitude = Configuration.getSetting("MinRange", field_name)
+
+        if Configuration.getSetting("MaxRangeFixed", field_name):
+            maxMagnitude = Configuration.getSetting("MaxRange", field_name)
+
+        glyphs = vtk.vtkGlyph3D()
+
+        if VTK_MAJOR_VERSION >= 6:
+            glyphs.SetInputData(vector_grid)
+        else:
+            glyphs.SetInput(vector_grid)
+
+        glyphs.SetSourceConnection(cone.GetOutputPort())
+        # glyphs.SetScaleModeToScaleByVector()
+        # glyphs.SetColorModeToColorByVector()
+
+        # rwh: should use of this factor depend on the state of the "Scale arrow length" checkbox?
+        arrowScalingFactor = Configuration.getSetting("ArrowLength",
+                                                      field_name)  # scaling factor for an arrow (ArrowLength indicates scaling factor not actual length)
+
+        vector_field_actor = actors_dict['vector_field_actor']
+        if Configuration.getSetting("FixedArrowColorOn", field_name):
+            glyphs.SetScaleModeToScaleByVector()
+            # rangeSpan = maxMagnitude - minMagnitude
+            dataScalingFactor = max(abs(minMagnitude), abs(maxMagnitude))
+            #            print MODULENAME,"initVectorFieldCellLevelActors():  self.minMagnitude=",self.minMagnitude," self.maxMagnitude=",self.maxMagnitude
+
+            if dataScalingFactor == 0.0:
+                dataScalingFactor = 1.0  # in this case we are plotting 0 vectors and in this case data scaling factor will be set to 1
+            glyphs.SetScaleFactor(arrowScalingFactor / dataScalingFactor)
+            # coloring arrows
+            color = Configuration.getSetting("ArrowColor", field_name)
+            r, g, b = color.red(), color.green(), color.blue()
+            vector_field_actor.GetProperty().SetColor(r, g, b)
+        else:
+            if Configuration.getSetting("ScaleArrowsOn", field_name):
+                glyphs.SetColorModeToColorByVector()
+                glyphs.SetScaleModeToScaleByVector()
+
+                rangeSpan = maxMagnitude - minMagnitude
+                dataScalingFactor = max(abs(minMagnitude), abs(maxMagnitude))
+                #                print "self.minMagnitude=",self.minMagnitude," self.maxMagnitude=",self.maxMagnitude
+
+                if dataScalingFactor == 0.0:
+                    dataScalingFactor = 1.0  # in this case we are plotting 0 vectors and in this case data scaling factor will be set to 1
+                glyphs.SetScaleFactor(arrowScalingFactor / dataScalingFactor)
+
+            else:
+                glyphs.SetColorModeToColorByVector()
+                glyphs.SetScaleFactor(arrowScalingFactor)
+
+        self.glyphs_mapper.SetInputConnection(glyphs.GetOutputPort())
+        self.glyphs_mapper.SetLookupTable(self.clut)
+
+        self.glyphs_mapper.SetScalarRange([minMagnitude, maxMagnitude])
+
+        vector_field_actor.SetMapper(self.glyphs_mapper)
 
     def init_concentration_field_actors(self, actor_specs, drawing_params=None):
         """
@@ -1514,16 +1658,16 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 glyphs.SetColorModeToColorByVector()
                 glyphs.SetScaleFactor(arrowScalingFactor)
 
-        self.glyphsMapper.SetInputConnection(glyphs.GetOutputPort())
-        self.glyphsMapper.SetLookupTable(self.clut)
+        self.glyphs_mapper.SetInputConnection(glyphs.GetOutputPort())
+        self.glyphs_mapper.SetLookupTable(self.clut)
 
         # # # print "range=",range
         # # # print "vectors.GetNumberOfTuples()=",vectors.GetNumberOfTuples()
         # self.glyphsMapper.SetScalarRange(vectors.GetRange(-1)) # this will return the range of magnitudes of all the vectors store int vtkFloatArray
         # self.glyphsMapper.SetScalarRange(range)
-        self.glyphsMapper.SetScalarRange([self.minMagnitude,self.maxMagnitude])
+        self.glyphs_mapper.SetScalarRange([self.minMagnitude, self.maxMagnitude])
 
-        _actors[0].SetMapper(self.glyphsMapper)
+        _actors[0].SetMapper(self.glyphs_mapper)
 
 
     def initVectorFieldCellLevelDataHexActors(self,_actors):
@@ -1638,16 +1782,16 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 glyphs.SetScaleFactor(arrowScalingFactor)
 
 
-        self.glyphsMapper.SetInputConnection(glyphs.GetOutputPort())
-        self.glyphsMapper.SetLookupTable(self.clut)
+        self.glyphs_mapper.SetInputConnection(glyphs.GetOutputPort())
+        self.glyphs_mapper.SetLookupTable(self.clut)
 
         # # # print "range=",range
         # # # print "vectors.GetNumberOfTuples()=",vectors.GetNumberOfTuples()
         # self.glyphsMapper.SetScalarRange(vectors.GetRange(-1)) # this will return the range of magnitudes of all the vectors store int vtkFloatArray
         # self.glyphsMapper.SetScalarRange(range)
-        self.glyphsMapper.SetScalarRange([self.minMagnitude,self.maxMagnitude])
+        self.glyphs_mapper.SetScalarRange([self.minMagnitude, self.maxMagnitude])
 
-        _actors[0].SetMapper(self.glyphsMapper)
+        _actors[0].SetMapper(self.glyphs_mapper)
 
     def initVectorFieldCellLevelActors(self, _fillVectorFieldFcn, _actors):
         # potts      = sim.getPotts()
@@ -1769,17 +1913,17 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 glyphs.SetColorModeToColorByVector()
                 glyphs.SetScaleFactor(arrowScalingFactor)
 
-        self.glyphsMapper.SetInputConnection(glyphs.GetOutputPort())
-        self.glyphsMapper.SetLookupTable(self.clut)
+        self.glyphs_mapper.SetInputConnection(glyphs.GetOutputPort())
+        self.glyphs_mapper.SetLookupTable(self.clut)
 
 
         # # # print "range=",range
         # # # print "vectors.GetNumberOfTuples()=",vectors.GetNumberOfTuples()
         # self.glyphsMapper.SetScalarRange(vectors.GetRange(-1)) # this will return the range of magnitudes of all the vectors store int vtkFloatArray
         # self.glyphsMapper.SetScalarRange(range)
-        self.glyphsMapper.SetScalarRange([self.minMagnitude,self.maxMagnitude])
+        self.glyphs_mapper.SetScalarRange([self.minMagnitude, self.maxMagnitude])
 
-        _actors[0].SetMapper(self.glyphsMapper)
+        _actors[0].SetMapper(self.glyphs_mapper)
 
     # Optimize code?
     def dimOrder(self, plane):

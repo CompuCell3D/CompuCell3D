@@ -161,6 +161,16 @@ class MVCDrawModelBase:
                 
     def get_cell_actors_metadata(self): pass
 
+    def init_vector_field_actors(self, actor_specs, drawing_params=None):
+        """
+        initializes vector field actors
+        :param actor_specs:
+        :param drawing_params:
+        :return: None
+        """
+        raise NotImplementedError()
+
+
     def init_concentration_field_actors(self, actor_specs, drawing_params=None):
         """
         initializes concentration field actors

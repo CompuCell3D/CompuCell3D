@@ -110,6 +110,39 @@ class MVCDrawView2D(MVCDrawViewBase):
 
         return od
 
+    def prepare_vector_field_actors(self,actor_specs,  drawing_params=None):
+        """
+        Prepares vector field actors
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
+        :return: {ActorSpecs}
+        """
+
+        actor_specs_copy = deepcopy(actor_specs)
+        actor_specs_copy.actors_dict = OrderedDict()
+        actor_specs_copy.actors_dict['vector_field_actor'] = self.glyphsActor
+
+        return actor_specs_copy
+
+    def show_vector_field_actors(self,actor_specs,drawing_params=None, show_flag=True):
+        """
+        Shows vector field actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :param show_flag: {bool}
+        :return: None
+        """
+        scene_metadata = drawing_params.screenshot_data.metadata
+        if show_flag:
+            if not self.currentActors.has_key("vector_field_actor"):
+                self.currentActors["vector_field_actor"] = self.glyphsActor
+
+                self.ren.AddActor(self.glyphsActor)
+        else:
+            if self.currentActors.has_key("vector_field_actor"):
+                del self.currentActors["vector_field_actor"]
+                self.ren.RemoveActor(self.glyphsActor)
+
     def prepare_concentration_field_actors(self,actor_specs, drawing_params=None):
         """
         Prepares concentration field actors

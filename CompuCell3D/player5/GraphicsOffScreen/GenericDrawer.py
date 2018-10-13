@@ -7,7 +7,8 @@
 # todo - check what happens when we used non consecutive cell types -  seems to be OK
 
 # todo - process contour isovalues in the concentration plot
-# todo - implement outline actor for hex lattice
+# todo - add legend actor
+# todo - cell borders for hex lattice
 
 
 import sys
@@ -65,6 +66,9 @@ class GenericDrawer():
             'ConField': self.draw_concentration_field,
             'ScalarField': self.draw_concentration_field,
             'ScalarFieldCellLevel': self.draw_concentration_field,
+            'VectorField': self.draw_vector_field,
+            'VectorFieldCellLevel': self.draw_vector_field,
+
         }
         self.screenshotWindowFlag = False
         self.lattice_type = Configuration.LATTICE_TYPES['Square']
@@ -100,6 +104,24 @@ class GenericDrawer():
         self.field_extractor = field_extractor
         self.draw_model_2D.field_extractor = field_extractor
         self.draw_model_3D.field_extractor = field_extractor
+
+    def draw_vector_field(self, drawing_params):
+        """
+        Draws  vector field
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+
+        model, view = self.get_model_view(drawing_params=drawing_params)
+
+        actor_specs = ActorSpecs()
+
+        actor_specs_final = view.prepare_vector_field_actors(actor_specs=actor_specs,drawing_params=drawing_params)
+
+        model.init_vector_field_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
+
+        view.show_vector_field_actors(actor_specs=actor_specs_final,drawing_params=drawing_params)
+
 
     def draw_concentration_field(self,drawing_params):
         """

@@ -420,6 +420,27 @@ class MVCDrawViewBase:
         """
         raise NotImplementedError(self.__class__.getActors.__name__)
 
+    def prepare_vector_field_actors(self,actor_specs,  drawing_params=None):
+        """
+        Prepares vector field actors
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
+        :return: {ActorSpecs}
+        """
+
+        raise NotImplementedError(self.__class__.prepare_vector_field_actors.__name__)
+
+    def show_vector_field_actors(self, actor_specs, drawing_params=None, show_flag=True):
+        """
+        Shows vector field actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :param show_flag: {bool}
+        :return: None
+        """
+        raise NotImplementedError(self.__class__.show_vector_field_actors.__name__)
+
+
     def prepare_concentration_field_actors(self,actor_specs,  drawing_params=None):
         """
         Prepares concentration field actors
@@ -438,7 +459,8 @@ class MVCDrawViewBase:
         :param show_flag: {bool}
         :return: None
         """
-        raise NotImplementedError()
+
+        raise NotImplementedError(self.__class__.show_concentration_field_actors.__name__)
 
     def prepare_cell_field_actors(self,actor_specs):
         """
