@@ -8,17 +8,15 @@
 
 # todo - process contour isovalues in the concentration plot
 # todo - add legend actor
-# todo - cell borders for hex lattice
+# todo -  fix border color
+# todo - store metadata for vector field
 
 
-import sys
-import os
 import string
 import Configuration
 import vtk
 from enums import *
 from copy import deepcopy
-import sys
 
 from MVCDrawView2D import MVCDrawView2D
 from MVCDrawModel2D import MVCDrawModel2D
@@ -29,11 +27,8 @@ from Specs import ActorSpecs
 
 MODULENAME = '---- GraphicsFrameWidget.py: '
 
-from weakref import ref
-
-from utils import extractAddressIntFromVtkObject
+from CompuCell3D.player5.Utilities.utils import extract_address_int_from_vtk_object
 from DrawingParameters import DrawingParameters
-from BasicSimulationData import BasicSimulationData
 
 
 class GenericDrawer():
@@ -73,7 +68,6 @@ class GenericDrawer():
         self.screenshotWindowFlag = False
         self.lattice_type = Configuration.LATTICE_TYPES['Square']
 
-
     def extract_cell_field_data(self):
         """
         Extracts basic information about cell field
@@ -82,12 +76,12 @@ class GenericDrawer():
 
         cellType = vtk.vtkIntArray()
         cellType.SetName("celltype")
-        cellTypeIntAddr = extractAddressIntFromVtkObject(self.field_extractor, cellType)
+        cellTypeIntAddr = extract_address_int_from_vtk_object(self.field_extractor, cellType)
 
         # Also get the CellId
         cellId = vtk.vtkLongArray()
         cellId.SetName("cellid")
-        cellIdIntAddr = extractAddressIntFromVtkObject(self.field_extractor, cellId)
+        cellIdIntAddr = extract_address_int_from_vtk_object(self.field_extractor, cellId)
 
         usedCellTypesList = self.field_extractor.fillCellFieldData3D(cellTypeIntAddr, cellIdIntAddr)
 
@@ -97,7 +91,6 @@ class GenericDrawer():
             'used_cell_types':usedCellTypesList
         }
         return ret_val
-
 
     def set_field_extractor(self, field_extractor):
 

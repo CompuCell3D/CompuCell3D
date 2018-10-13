@@ -47,6 +47,8 @@ import vtk, math
 #import sys, os
 import string
 
+from Utilities import qcolor_to_rgba
+
 from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES,PLANES
         
 class MVCDrawModelBase:
@@ -82,9 +84,12 @@ class MVCDrawModelBase:
         # should also set "periodic" boundary condition flag(s) (e.g. for drawing FPP links that wraparound)
 
         self.metadata_fetcher_dict = {
+            'CellField': self.get_cell_field_metadata,
             'ConField':self.get_con_field_metadata,
             'ScalarField':self.get_con_field_metadata,
             'ScalarFieldCellLevel': self.get_con_field_metadata,
+            'VectorField': self.get_con_field_metadata,
+            'VectorFieldCellLevel': self.get_vector_field_metadata,
         }
 
     def get_metadata(self, field_name, field_type):
@@ -97,6 +102,25 @@ class MVCDrawModelBase:
 
         return metadata
 
+    def get_cell_field_metadata(self, field_name, field_type):
+        metadata_dict = self.get_color_metadata(field_name=field_name, field_type=field_type)
+        return metadata_dict
+
+    def get_color_metadata(self, field_name, field_type):
+        """
+        Returns dictionary of auxiliary information needed to render borders
+        :param field_name:{str} field_name
+        :return: {dict}
+        """
+        metadata_dict = {}
+        metadata_dict['BorderColor'] = qcolor_to_rgba(Configuration.getSetting('BorderColor'))
+        metadata_dict['ClusterBorderColor'] = qcolor_to_rgba(Configuration.getSetting('ClusterBorderColor'))
+        metadata_dict['BoundingBoxColor'] = qcolor_to_rgba(Configuration.getSetting('BoundingBoxColor'))
+        metadata_dict['AxesColor'] = qcolor_to_rgba(Configuration.getSetting('AxesColor'))
+        metadata_dict['ContourColor'] = qcolor_to_rgba(Configuration.getSetting('ContourColor'))
+        metadata_dict['WindowColor'] = qcolor_to_rgba(Configuration.getSetting('ContourColor'))
+        return metadata_dict
+
     def get_con_field_metadata(self, field_name, field_type):
         """
         Returns dictionary of auxiliary information needed to render a give scene
@@ -104,7 +128,8 @@ class MVCDrawModelBase:
         :return: {dict}
         """
 
-        metadata_dict = {}
+        # metadata_dict = {}
+        metadata_dict = self.get_color_metadata(field_name=field_name, field_type=field_type)
         con_field_name = field_name
         metadata_dict['MinRangeFixed'] = Configuration.getSetting("MinRangeFixed", con_field_name)
         metadata_dict['MaxRangeFixed'] = Configuration.getSetting("MaxRangeFixed", con_field_name)
@@ -117,6 +142,21 @@ class MVCDrawModelBase:
 
         return metadata_dict
 
+    def get_vector_field_metadata(self,field_name, field_type):
+        """
+        Returns dictionary of auxiliary information needed to render a give scene
+        :param field_name:{str} field_name
+        :return: {dict}
+        """
+
+        metadata_dict = self.get_con_field_metadata(field_name=field_name, field_type=field_type)
+        metadata_dict['ArrowLength'] = Configuration.getSetting('ArrowLength',field_name)
+        metadata_dict['FixedArrowColorOn'] = Configuration.getSetting('FixedArrowColorOn', field_name)
+        metadata_dict['ArrowColor'] = qcolor_to_rgba(Configuration.getSetting('ArrowColor', field_name))
+        metadata_dict['ScaleArrowsOn'] = Configuration.getSetting('ScaleArrowsOn', field_name)
+
+
+        return metadata_dict
 
     def setDrawingParametersObject(self,_drawingParams):
         self.currentDrawingParameters=_drawingParams

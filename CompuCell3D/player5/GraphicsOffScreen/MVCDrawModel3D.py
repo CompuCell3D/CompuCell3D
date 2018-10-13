@@ -4,15 +4,12 @@ from PyQt5.QtWidgets import *
 
 from Utilities.QVTKRenderWidget import QVTKRenderWidget
 
-from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES,PLANES
-
 from MVCDrawModelBase import MVCDrawModelBase
 import Configuration
 import vtk, math
-import sys, os
 
 VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
-from utils import extractAddressIntFromVtkObject
+from Utilities.utils import extract_address_int_from_vtk_object
 
 MODULENAME='------  MVCDrawModel3D.py'
 
@@ -649,7 +646,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
         self.drawScalarFieldData(bsd,fieldType,fillScalarField)
 
     def initScalarFieldDataActors(self, _actors, _invisibleCellTypesVector, _fillScalarField):  #  rf. MVCDrawView3D:drawScalarFieldData
-        import CompuCell
         import PlayerPython
         # potts      = sim.getPotts()
         # cellField  = potts.getCellFieldG()
