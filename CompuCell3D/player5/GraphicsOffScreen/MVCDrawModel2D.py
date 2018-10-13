@@ -307,12 +307,17 @@ class MVCDrawModel2D(MVCDrawModelBase):
         :param drawing_params: {DrawingParameters}
         :return: None
         """
+        scene_metadata = drawing_params.screenshot_data.metadata
 
         lattice_type_str = self.get_lattice_type_str()
         if lattice_type_str.lower() =='hexagonal' and drawing_params.plane.lower()=="xy":
             self.init_concentration_field_actors_hex(actor_specs=actor_specs, drawing_params=drawing_params)
         else:
             self.init_concentration_field_actors_cartesian(actor_specs=actor_specs, drawing_params=drawing_params)
+
+        if scene_metadata['LegendEnable']:
+            print 'Enabling legend'
+            self.init_legend_actors(actor_specs=actor_specs, drawing_params=drawing_params)
 
     def init_concentration_field_actors_hex(self, actor_specs, drawing_params=None):
         """
@@ -432,6 +437,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
         concentration_actor = actors_dict['concentration_actor']
 
         concentration_actor.SetMapper(self.hex_con_mapper)
+
+        if actor_specs.metadata is None:
+            actor_specs.metadata = {'mapper':self.hex_con_mapper}
+        else:
+            actor_specs.metadata['mapper'] = self.hex_con_mapper
 
     def initialize_contours_hex(self, dim, con_array, min_max, contour_actor, num_contour_lines=2):
         """
@@ -615,6 +625,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         concentration_actor = actors_dict['concentration_actor']
         concentration_actor.SetMapper(self.conMapper)  # concentration actor
+
+        if actor_specs.metadata is None:
+            actor_specs.metadata = {'mapper':self.hex_con_mapper}
+        else:
+            actor_specs.metadata['mapper'] = self.hex_con_mapper
+
 
     def initialize_contours_cartesian(self,field_image_data, min_max, contour_actor, num_contour_lines=2):
 
@@ -1040,19 +1056,15 @@ class MVCDrawModel2D(MVCDrawModelBase):
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         dim_order = self.dimOrder(self.currentDrawingParameters.plane)
         scene_metadata = drawing_params.screenshot_data.metadata
-
-
-        # field_dim = self.currentDrawingParameters.bsd.fieldDim
-        #        print 'fieldDim, fieldDim.x =',fieldDim,fieldDim.x
         xdim = field_dim.x
         ydim = field_dim.y
+
         try:
             cellField = self.currentDrawingParameters.bsd.sim.getPotts().getCellFieldG()
             inventory = self.currentDrawingParameters.bsd.sim.getPotts().getCellInventory()
         except AttributeError:
             raise AttributeError('Could not access Potts object')
 
-        # print 'inventory=',type(inventory)  # = <class 'CompuCell.CellInventory'>
         cellList = CellList(inventory)
 
         points = vtk.vtkPoints()
@@ -1060,11 +1072,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         beginPt = 0
         lineNum = 0
-
-        hex_flag = False
-        lattice_type_str = self.get_lattice_type_str()
-        if lattice_type_str.lower() =='hexagonal' and drawing_params.plane.lower() == "xy":
-            hex_flag = True
 
         for cell in cellList:
             vol = cell.volume
@@ -1096,14 +1103,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
                         lines.InsertCellPoint(beginPt)
                         lines.InsertCellPoint(endPt)
 
-                        # coloring the FPP links
                         actualDist = xdim - actualDist  # compute (approximate) real actualDist
-                        #                    targetDist2 = fppd.targetDistance * fppd.targetDistance   # targetDist^2
-
                         lineNum += 1
                         endPt += 1
                     else:  # wraps around in y-direction
-                        #                    print '>>>>>> wraparound Y'
                         xmid0end = xmid0
                         if ydiff < 0:
                             ymid0end = ymid0 + self.stubSize
@@ -1114,23 +1117,19 @@ class MVCDrawModel2D(MVCDrawModelBase):
                         lines.InsertCellPoint(beginPt)
                         lines.InsertCellPoint(endPt)
 
-                        # coloring the FPP links
                         actualDist = ydim - actualDist  # compute (approximate) real actualDist
-                        #                    targetDist2 = fppd.targetDistance * fppd.targetDistance   # targetDist^2
 
                         lineNum += 1
 
                         endPt += 1
 
-                        # add dangling "in" line to end cell
-
-                else:  # link didn't wrap around on lattice
+                # link didn't wrap around on lattice
+                else:
                     points.InsertNextPoint(xmid, ymid, 0)
                     lines.InsertNextCell(2)  # our line has 2 points
                     lines.InsertCellPoint(beginPt)
                     lines.InsertCellPoint(endPt)
 
-                    # coloring the FPP links
                     lineNum += 1
                     endPt += 1
             for fppd in FocalPointPlasticityDataList(fppPlugin, cell):
@@ -1158,13 +1157,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
                         # coloring the FPP links
                         actualDist = xdim - actualDist  # compute (approximate) real actualDist
-                        #                    targetDist2 = fppd.targetDistance * fppd.targetDistance   # targetDist^2
 
                         lineNum += 1
 
                         endPt += 1
                     else:  # wraps around in y-direction
-                        #                    print '>>>>>> wraparound Y'
                         xmid0end = xmid0
                         if ydiff < 0:
                             ymid0end = ymid0 + self.stubSize
@@ -1177,46 +1174,26 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
                         # coloring the FPP links
                         actualDist = ydim - actualDist  # compute (approximate) real actualDist
-                        #                    targetDist2 = fppd.targetDistance * fppd.targetDistance   # targetDist^2
 
                         lineNum += 1
 
                         endPt += 1
 
-                        # add dangling "in" line to end cell
-                #                    beginPt = endPt
-                #                    lines.InsertNextCell(2)  # our line has 2 points
-                #                    lines.InsertCellPoint(beginPt)
-                #                    lines.InsertCellPoint(endPt)
-
-                else:  # link didn't wrap around on lattice
-                    #                print '>>> No wraparound'
+                # link didn't wrap around on lattice
+                else:
                     points.InsertNextPoint(xmid, ymid, 0)
                     lines.InsertNextCell(2)  # our line has 2 points
-                    #                print beginPt,' ----- (external link, no wrap) -----> ',endPt
-                    #                print beginPt,' (external link, no wrap) -----> ',endPt
                     lines.InsertCellPoint(beginPt)
                     lines.InsertCellPoint(endPt)
 
-                    # coloring the FPP links
-                    #                targetDist2 = fppd.targetDistance * fppd.targetDistance   # targetDist^2
                     lineNum += 1
                     endPt += 1
-
-            # 2345678901234
-            #          print 'after external links: beginPt, endPt=',beginPt,endPt
             beginPt = endPt  # update point index
 
         # -----------------------
-        if lineNum == 0:  return
-        #        print '---------- # links=',lineNum
+        if lineNum == 0:
+            return
 
-        # create Blue-Red LUT
-        #        lutBlueRed = vtk.vtkLookupTable()
-        #        lutBlueRed.SetHueRange(0.667,0.0)
-        #        lutBlueRed.Build()
-
-        #        print '---------- # links,scalarValMin,Max =',lineNum,scalarValMin,scalarValMax
         FPPLinksPD = vtk.vtkPolyData()
         FPPLinksPD.SetPoints(points)
         FPPLinksPD.SetLines(lines)
@@ -1229,9 +1206,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
             FPPLinksPD.Update()
             self.FPPLinksMapper.SetInput(FPPLinksPD)
 
-        #        self.FPPLinksMapper.SetScalarModeToUseCellFieldData()
-
         fpp_links_actor.SetMapper(self.FPPLinksMapper)
+        fpp_links_color = to_vtk_rgb(scene_metadata['FppLinksColor'])
+        # coloring borders
+        fpp_links_actor.GetProperty().SetColor(*fpp_links_color)
+
 
     # def initBordersActors2D(self,_actors):
     #     points = vtk.vtkPoints()

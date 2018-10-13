@@ -198,6 +198,50 @@ class MVCDrawModelBase:
         """
         raise NotImplementedError()
 
+    def init_legend_actors(self, actor_specs, drawing_params=None):
+        """
+        initializes legend (for concentration fields) actors
+        :param actor_specs:
+        :param drawing_params:
+        :return: None
+        """
+        try:
+            mapper = actor_specs.metadata['mapper']
+        except KeyError:
+            print 'Could not find mapper object to draw legend'
+            return
+
+        actors_dict = actor_specs.actors_dict
+
+        legend_actor = actors_dict['legend_actor']
+
+
+        legend_actor.SetLookupTable(mapper.GetLookupTable())
+        legend_actor.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
+        legend_actor.GetPositionCoordinate().SetValue(0.01, 0.1)
+        legend_actor.SetOrientationToHorizontal()
+
+        legend_actor.SetOrientationToVertical()
+        # self.legendActor.SetWidth(0.8)
+        # self.legendActor.SetHeight(0.10)
+
+        legend_actor.SetWidth(0.1)
+        legend_actor.SetHeight(0.9)
+
+        if VTK_MAJOR_VERSION >= 6:
+            legend_actor.SetTitle('')
+
+        # You don't actually need to make contrast for the text as
+        # it has shadow!
+        text_property = legend_actor.GetLabelTextProperty()
+        text_property.SetFontSize(12)  # For some reason it doesn't make effect
+        # text.BoldOff()
+        text_property.SetColor(1.0, 1.0, 1.0)
+
+        legend_actor.SetLabelTextProperty(text_property)
+
+
+
 
     def init_cell_field_actors(self, actor_specs, drawing_params=None):
         """

@@ -11,7 +11,8 @@
 # todo -  fix border color
 # todo - store metadata for vector field
 # todo - check api for show, prepare init functions
-
+# todo - fix color of fpp links
+# todo - find better way to determine if fpp plugin is properly loaded
 
 import string
 import Configuration

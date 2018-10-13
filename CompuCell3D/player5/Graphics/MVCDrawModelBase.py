@@ -118,7 +118,10 @@ class MVCDrawModelBase:
         metadata_dict['BoundingBoxColor'] = qcolor_to_rgba(Configuration.getSetting('BoundingBoxColor'))
         metadata_dict['AxesColor'] = qcolor_to_rgba(Configuration.getSetting('AxesColor'))
         metadata_dict['ContourColor'] = qcolor_to_rgba(Configuration.getSetting('ContourColor'))
-        metadata_dict['WindowColor'] = qcolor_to_rgba(Configuration.getSetting('ContourColor'))
+        metadata_dict['WindowColor'] = qcolor_to_rgba(Configuration.getSetting('WindowColor'))
+        # todo - fix color of fpp links
+        metadata_dict['FppLinksColor'] = qcolor_to_rgba(Configuration.getSetting('ContourColor'))
+
         return metadata_dict
 
     def get_con_field_metadata(self, field_name, field_type):

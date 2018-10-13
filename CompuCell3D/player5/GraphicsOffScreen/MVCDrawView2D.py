@@ -155,6 +155,7 @@ class MVCDrawView2D(MVCDrawViewBase):
         actor_specs_copy.actors_dict = OrderedDict()
         actor_specs_copy.actors_dict['concentration_actor'] = self.conActor
         actor_specs_copy.actors_dict['contour_actor'] = self.contourActor
+        actor_specs_copy.actors_dict['legend_actor'] = self.legendActor
 
         return actor_specs_copy
 
@@ -183,6 +184,17 @@ class MVCDrawView2D(MVCDrawViewBase):
                     self.currentActors["contour_actor"] = self.contourActor
                     self.ren.AddActor(self.contourActor)
 
+                add_legend = False
+                try:
+                    add_legend = scene_metadata['LegendEnable']
+                except KeyError:
+                    pass
+
+                if add_legend:
+                    self.currentActors["legend_actor"] = self.legendActor
+                    self.ren.AddActor(self.legendActor)
+
+
         else:
             if self.currentActors.has_key("concentration_actor"):
                 del self.currentActors["concentration_actor"]
@@ -190,6 +202,11 @@ class MVCDrawView2D(MVCDrawViewBase):
             if self.currentActors.has_key("contour_actor"):
                 del self.currentActors["contour_actor"]
                 self.ren.RemoveActor(self.contourActor)
+            if self.currentActors.has_key("legend_actor"):
+                del self.currentActors["legend_actor"]
+                self.ren.RemoveActor(self.legendActor)
+
+
 
     def prepare_cell_field_actors(self,actor_specs, drawing_params=None):
         """
