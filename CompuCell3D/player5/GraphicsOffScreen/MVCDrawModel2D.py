@@ -113,6 +113,18 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
 
     def init_outline_actors(self, actor_specs, drawing_params=None):
+        """
+        Initializes outline actors for hex actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+
+        actors_dict = actor_specs.actors_dict
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        scene_metadata = drawing_params.screenshot_data.metadata
+
 
         outlineData = vtk.vtkImageData()
 
@@ -138,13 +150,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
         outlineMapper = vtk.vtkPolyDataMapper()
         outlineMapper.SetInputConnection(outline.GetOutputPort())
 
-        actors = list(actor_specs.actors_dict.values())
-        actors[0].SetMapper(outlineMapper)
-        actors[0].GetProperty().SetColor(1, 1, 1)
+        outline_actor = actors_dict['outlineActor']
+        outline_actor.SetMapper(outlineMapper)
+        outline_actor.GetProperty().SetColor(1, 1, 1)
 
+        outline_color = to_vtk_rgb(scene_metadata['BoundingBoxColor'])
 
-        # color = Configuration.getSetting("BoundingBoxColor")   # eventually do this smarter (only get/update when it changes)
-        # actors[0].GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+        outline_actor.GetProperty().SetColor(*outline_color)
 
 
     def init_vector_field_actors(self, actor_specs, drawing_params=None):
@@ -834,7 +846,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         border_actor.SetMapper(self.borderMapperHex)
 
         border_color = to_vtk_rgb(scene_metadata['BorderColor'])
-
         # coloring borders
         border_actor.GetProperty().SetColor(*border_color)
 
@@ -878,6 +889,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # actors = list(actor_specs.actors_dict.values())
 
         border_actor.SetMapper(self.borderMapper)
+
+        border_color = to_vtk_rgb(scene_metadata['BorderColor'])
+        # coloring borders
+        border_actor.GetProperty().SetColor(*border_color)
+
+
         # self.setBorderColor()
 
         # print "self.currentActors.keys()=",self.currentActors.keys()
