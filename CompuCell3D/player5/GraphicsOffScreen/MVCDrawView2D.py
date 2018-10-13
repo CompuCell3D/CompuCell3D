@@ -169,42 +169,48 @@ class MVCDrawView2D(MVCDrawViewBase):
         """
         scene_metadata = drawing_params.screenshot_data.metadata
         if show_flag:
-            if not self.currentActors.has_key("concentration_actor"):
-                self.currentActors["concentration_actor"] = self.conActor
+            # if not self.currentActors.has_key("concentration_actor"):
+            #     self.currentActors["concentration_actor"] = self.conActor
+            #
+            #     self.ren.AddActor(self.conActor)
+            self.add_actor_to_renderer(actor_label='concentration_actor', actor_obj=self.conActor)
 
-                self.ren.AddActor(self.conActor)
+            add_contour = False
+            try:
+                add_contour = scene_metadata['ContoursOn']
+            except KeyError:
+                pass
 
-                add_contour = False
-                try:
-                    add_contour = scene_metadata['ContoursOn']
-                except KeyError:
-                    pass
+            if add_contour:
+                self.add_actor_to_renderer(actor_label='contour_actor', actor_obj=self.contourActor)
+                # self.currentActors["contour_actor"] = self.contourActor
+                # self.ren.AddActor(self.contourActor)
 
-                if add_contour:
-                    self.currentActors["contour_actor"] = self.contourActor
-                    self.ren.AddActor(self.contourActor)
+            add_legend = False
+            try:
+                add_legend = scene_metadata['LegendEnable']
+            except KeyError:
+                pass
 
-                add_legend = False
-                try:
-                    add_legend = scene_metadata['LegendEnable']
-                except KeyError:
-                    pass
-
-                if add_legend:
-                    self.currentActors["legend_actor"] = self.legendActor
-                    self.ren.AddActor(self.legendActor)
+            if add_legend:
+                self.add_actor_to_renderer(actor_label='legend_actor', actor_obj=self.legendActor)
+                # self.currentActors["legend_actor"] = self.legendActor
+                # self.ren.AddActor(self.legendActor)
 
 
         else:
-            if self.currentActors.has_key("concentration_actor"):
-                del self.currentActors["concentration_actor"]
-                self.ren.RemoveActor(self.conActor)
-            if self.currentActors.has_key("contour_actor"):
-                del self.currentActors["contour_actor"]
-                self.ren.RemoveActor(self.contourActor)
-            if self.currentActors.has_key("legend_actor"):
-                del self.currentActors["legend_actor"]
-                self.ren.RemoveActor(self.legendActor)
+            self.remove_actor_from_renderer(actor_label='concentration_actor', actor_obj=self.conActor)
+            self.remove_actor_from_renderer(actor_label='contour_actor', actor_obj=self.contourActor)
+            self.remove_actor_from_renderer(actor_label='legend_actor', actor_obj=self.legendActor)
+            # if self.currentActors.has_key("concentration_actor"):
+            #     del self.currentActors["concentration_actor"]
+            #     self.ren.RemoveActor(self.conActor)
+            # if self.currentActors.has_key("contour_actor"):
+            #     del self.currentActors["contour_actor"]
+            #     self.ren.RemoveActor(self.contourActor)
+            # if self.currentActors.has_key("legend_actor"):
+            #     del self.currentActors["legend_actor"]
+            #     self.ren.RemoveActor(self.legendActor)
 
 
 
@@ -232,14 +238,8 @@ class MVCDrawView2D(MVCDrawViewBase):
         '''
         if show_flag:
             self.add_actor_to_renderer(actor_label='border_actor', actor_obj=self.borderActor)
-            # if not self.currentActors.has_key('border_actor'):
-            #     self.currentActors['border_actor'] = self.borderActor
-            #     self.ren.AddActor(self.borderActor)
         else:
             self.remove_actor_from_renderer(actor_label='border_actor', actor_obj=self.borderActor)
-            # if self.currentActors.has_key('border_actor'):
-            #     del self.currentActors['border_actor']
-            #     self.ren.RemoveActor(self.borderActor)
 
 
     def prepare_border_actors(self,actor_specs,drawing_params=None, show_flag=True):

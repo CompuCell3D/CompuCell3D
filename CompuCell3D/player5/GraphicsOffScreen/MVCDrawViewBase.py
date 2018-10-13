@@ -544,7 +544,7 @@ class MVCDrawViewBase:
             self.currentActors[actor_label] = actor_obj
             self.ren.AddActor(actor_obj)
 
-    def remove_actor_to_renderer(self,actor_label, actor_obj):
+    def remove_actor_from_renderer(self,actor_label, actor_obj):
         """
         Convenience fcn that removes actor from a renderer and updates
         current actor container
