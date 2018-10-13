@@ -231,12 +231,12 @@ class MVCDrawView2D(MVCDrawViewBase):
         """
         '''
         if show_flag:
-            if not self.currentActors.has_key("BorderActor"):
-                self.currentActors["BorderActor"] = self.borderActor
+            if not self.currentActors.has_key('border_actor'):
+                self.currentActors['border_actor'] = self.borderActor
                 self.ren.AddActor(self.borderActor)
         else:
-            if self.currentActors.has_key("BorderActor"):
-                del self.currentActors["BorderActor"]
+            if self.currentActors.has_key('border_actor'):
+                del self.currentActors['border_actor']
                 self.ren.RemoveActor(self.borderActor)
 
 
@@ -249,7 +249,7 @@ class MVCDrawView2D(MVCDrawViewBase):
 
         actor_specs_copy = deepcopy(actor_specs)
         actor_specs_copy.actors_dict = OrderedDict()
-        actor_specs_copy.actors_dict['borderActor'] = self.borderActor
+        actor_specs_copy.actors_dict['border_actor'] = self.borderActor
         return actor_specs_copy
 
 
