@@ -1020,6 +1020,228 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
 
 
+    def init_fpp_links_actors(self, actor_specs, drawing_params=None):
+        """
+        initializes fpp links actors
+        :param actor_specs:
+        :param drawing_params:
+        :return: None
+        """
+        from PySteppables import CellList, FocalPointPlasticityDataList, InternalFocalPointPlasticityDataList
+        import CompuCell
+
+        fppPlugin = CompuCell.getFocalPointPlasticityPlugin()
+        # if (fppPlugin == 0):  # bogus check
+        if not fppPlugin:  # bogus check
+            print '    fppPlugin is null, returning'
+            return
+
+        actors_dict = actor_specs.actors_dict
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        scene_metadata = drawing_params.screenshot_data.metadata
+
+
+        # field_dim = self.currentDrawingParameters.bsd.fieldDim
+        #        print 'fieldDim, fieldDim.x =',fieldDim,fieldDim.x
+        xdim = field_dim.x
+        ydim = field_dim.y
+        try:
+            cellField = self.currentDrawingParameters.bsd.sim.getPotts().getCellFieldG()
+            inventory = self.currentDrawingParameters.bsd.sim.getPotts().getCellInventory()
+        except AttributeError:
+            raise AttributeError('Could not access Potts object')
+
+        # print 'inventory=',type(inventory)  # = <class 'CompuCell.CellInventory'>
+        cellList = CellList(inventory)
+
+        points = vtk.vtkPoints()
+        lines = vtk.vtkCellArray()
+
+        beginPt = 0
+        lineNum = 0
+
+        hex_flag = False
+        lattice_type_str = self.get_lattice_type_str()
+        if lattice_type_str.lower() =='hexagonal' and drawing_params.plane.lower() == "xy":
+            hex_flag = True
+
+        for cell in cellList:
+            vol = cell.volume
+            if vol < self.eps: continue
+
+            if hex_flag:
+                xmid0 = cell.xCOM / 1.07457
+                ymid0 = cell.yCOM / 1.07457
+            else:
+                xmid0 = cell.xCOM  # + self.offset
+                ymid0 = cell.yCOM  # + self.offset
+            points.InsertNextPoint(xmid0, ymid0, 0)
+
+            endPt = beginPt + 1
+            # 2345678901234
+            for fppd in InternalFocalPointPlasticityDataList(fppPlugin, cell):
+                if hex_flag:
+                    xmid = fppd.neighborAddress.xCOM / 1.07457
+                    ymid = fppd.neighborAddress.yCOM / 1.07457
+                else:
+                    xmid = fppd.neighborAddress.xCOM  # + self.offset
+                    ymid = fppd.neighborAddress.yCOM  # + self.offset
+
+                xdiff = xmid - xmid0
+                ydiff = ymid - ymid0
+                actualDist = math.sqrt((xdiff * xdiff) + (ydiff * ydiff))
+                if actualDist > fppd.maxDistance:  # implies we have wraparound (via periodic BCs)
+                    # add dangling "out" line to beginning cell
+                    if abs(xdiff) > abs(ydiff):  # wraps around in x-direction
+                        if xdiff < 0:
+                            xmid0end = xmid0 + self.stubSize
+                        else:
+                            xmid0end = xmid0 - self.stubSize
+                        ymid0end = ymid0
+                        points.InsertNextPoint(xmid0end, ymid0end, 0)
+                        lines.InsertNextCell(2)  # our line has 2 points
+                        lines.InsertCellPoint(beginPt)
+                        lines.InsertCellPoint(endPt)
+
+                        # coloring the FPP links
+                        actualDist = xdim - actualDist  # compute (approximate) real actualDist
+                        #                    targetDist2 = fppd.targetDistance * fppd.targetDistance   # targetDist^2
+
+                        lineNum += 1
+                        endPt += 1
+                    else:  # wraps around in y-direction
+                        #                    print '>>>>>> wraparound Y'
+                        xmid0end = xmid0
+                        if ydiff < 0:
+                            ymid0end = ymid0 + self.stubSize
+                        else:
+                            ymid0end = ymid0 - self.stubSize
+                        points.InsertNextPoint(xmid0end, ymid0end, 0)
+                        lines.InsertNextCell(2)  # our line has 2 points
+                        lines.InsertCellPoint(beginPt)
+                        lines.InsertCellPoint(endPt)
+
+                        # coloring the FPP links
+                        actualDist = ydim - actualDist  # compute (approximate) real actualDist
+                        #                    targetDist2 = fppd.targetDistance * fppd.targetDistance   # targetDist^2
+
+                        lineNum += 1
+
+                        endPt += 1
+
+                        # add dangling "in" line to end cell
+
+                else:  # link didn't wrap around on lattice
+                    points.InsertNextPoint(xmid, ymid, 0)
+                    lines.InsertNextCell(2)  # our line has 2 points
+                    lines.InsertCellPoint(beginPt)
+                    lines.InsertCellPoint(endPt)
+
+                    # coloring the FPP links
+                    lineNum += 1
+                    endPt += 1
+            for fppd in FocalPointPlasticityDataList(fppPlugin, cell):
+                if hex_flag:
+                    xmid = fppd.neighborAddress.xCOM / 1.07457
+                    ymid = fppd.neighborAddress.yCOM / 1.07457
+                else:
+                    xmid = fppd.neighborAddress.xCOM  # + self.offset
+                    ymid = fppd.neighborAddress.yCOM  # + self.offset
+                xdiff = xmid - xmid0
+                ydiff = ymid - ymid0
+                actualDist = math.sqrt((xdiff * xdiff) + (ydiff * ydiff))
+                if actualDist > fppd.maxDistance:  # implies we have wraparound (via periodic BCs)
+
+                    # add dangling "out" line to beginning cell
+                    if abs(xdiff) > abs(ydiff):  # wraps around in x-direction
+                        #                    print '>>>>>> wraparound X'
+                        if xdiff < 0:
+                            xmid0end = xmid0 + self.stubSize
+                        else:
+                            xmid0end = xmid0 - self.stubSize
+                        ymid0end = ymid0
+                        points.InsertNextPoint(xmid0end, ymid0end, 0)
+                        lines.InsertNextCell(2)  # our line has 2 points
+                        lines.InsertCellPoint(beginPt)
+                        lines.InsertCellPoint(endPt)
+
+                        # coloring the FPP links
+                        actualDist = xdim - actualDist  # compute (approximate) real actualDist
+                        #                    targetDist2 = fppd.targetDistance * fppd.targetDistance   # targetDist^2
+
+                        lineNum += 1
+
+                        endPt += 1
+                    else:  # wraps around in y-direction
+                        #                    print '>>>>>> wraparound Y'
+                        xmid0end = xmid0
+                        if ydiff < 0:
+                            ymid0end = ymid0 + self.stubSize
+                        else:
+                            ymid0end = ymid0 - self.stubSize
+                        points.InsertNextPoint(xmid0end, ymid0end, 0)
+                        lines.InsertNextCell(2)  # our line has 2 points
+                        lines.InsertCellPoint(beginPt)
+                        lines.InsertCellPoint(endPt)
+
+                        # coloring the FPP links
+                        actualDist = ydim - actualDist  # compute (approximate) real actualDist
+                        #                    targetDist2 = fppd.targetDistance * fppd.targetDistance   # targetDist^2
+
+                        lineNum += 1
+
+                        endPt += 1
+
+                        # add dangling "in" line to end cell
+                #                    beginPt = endPt
+                #                    lines.InsertNextCell(2)  # our line has 2 points
+                #                    lines.InsertCellPoint(beginPt)
+                #                    lines.InsertCellPoint(endPt)
+
+                else:  # link didn't wrap around on lattice
+                    #                print '>>> No wraparound'
+                    points.InsertNextPoint(xmid, ymid, 0)
+                    lines.InsertNextCell(2)  # our line has 2 points
+                    #                print beginPt,' ----- (external link, no wrap) -----> ',endPt
+                    #                print beginPt,' (external link, no wrap) -----> ',endPt
+                    lines.InsertCellPoint(beginPt)
+                    lines.InsertCellPoint(endPt)
+
+                    # coloring the FPP links
+                    #                targetDist2 = fppd.targetDistance * fppd.targetDistance   # targetDist^2
+                    lineNum += 1
+                    endPt += 1
+
+            # 2345678901234
+            #          print 'after external links: beginPt, endPt=',beginPt,endPt
+            beginPt = endPt  # update point index
+
+        # -----------------------
+        if lineNum == 0:  return
+        #        print '---------- # links=',lineNum
+
+        # create Blue-Red LUT
+        #        lutBlueRed = vtk.vtkLookupTable()
+        #        lutBlueRed.SetHueRange(0.667,0.0)
+        #        lutBlueRed.Build()
+
+        #        print '---------- # links,scalarValMin,Max =',lineNum,scalarValMin,scalarValMax
+        FPPLinksPD = vtk.vtkPolyData()
+        FPPLinksPD.SetPoints(points)
+        FPPLinksPD.SetLines(lines)
+
+        fpp_links_actor = actors_dict['fpp_links_actor']
+
+        if VTK_MAJOR_VERSION >= 6:
+            self.FPPLinksMapper.SetInputData(FPPLinksPD)
+        else:
+            FPPLinksPD.Update()
+            self.FPPLinksMapper.SetInput(FPPLinksPD)
+
+        #        self.FPPLinksMapper.SetScalarModeToUseCellFieldData()
+
+        fpp_links_actor.SetMapper(self.FPPLinksMapper)
 
     # def initBordersActors2D(self,_actors):
     #     points = vtk.vtkPoints()

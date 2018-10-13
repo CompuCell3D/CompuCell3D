@@ -2091,6 +2091,7 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
             bsd = BasicSimulationData()
             bsd.fieldDim = sim.getPotts().getCellFieldG().getDim()
             bsd.numberOfSteps = sim.getNumSteps()
+            bsd.sim = sim
             # drawing_params.bsd = bsd
             #
             # drawing_params.plane = screenshot_data.projection

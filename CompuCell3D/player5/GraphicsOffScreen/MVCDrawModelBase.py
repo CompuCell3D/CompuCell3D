@@ -173,13 +173,21 @@ class MVCDrawModelBase:
 
     def init_cluster_border_actors(self, actor_specs, drawing_params=None):
         """
-        initializes cluster border_actors
+        initializes cluster border actors
         :param actor_specs:
         :param drawing_params:
         :return: None
         """
         raise NotImplementedError()
 
+    def init_fpp_links_actors(self, actor_specs, drawing_params=None):
+        """
+        initializes fpp links actors
+        :param actor_specs:
+        :param drawing_params:
+        :return: None
+        """
+        raise NotImplementedError()
 
     def init_concentration_field_actors(self, actor_specs, drawing_params=None):
         """

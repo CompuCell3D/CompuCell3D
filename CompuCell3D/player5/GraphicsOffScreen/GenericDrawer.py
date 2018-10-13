@@ -10,7 +10,7 @@
 # todo - add legend actor
 # todo -  fix border color
 # todo - store metadata for vector field
-# todo - check api for show, prepar,e init functions
+# todo - check api for show, prepare init functions
 
 
 import string
@@ -190,6 +190,21 @@ class GenericDrawer():
         model.init_cluster_border_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
         view.show_cluster_border_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
 
+    def draw_fpp_links(self, drawing_params):
+        """
+        Draws FPP links
+        :param drawing_params:
+        :return: None
+        """
+
+        model, view = self.get_model_view(drawing_params=drawing_params)
+
+        actor_specs = ActorSpecs()
+        actor_specs_final = view.prepare_fpp_links_actors(actor_specs=actor_specs)
+        model.init_fpp_links_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
+        view.show_fpp_links_actors(actor_specs=actor_specs_final, drawing_params=drawing_params)
+
+
     def draw_bounding_box(self, drawing_params):
         model, view = self.get_model_view(drawing_params=drawing_params)
 
@@ -266,6 +281,14 @@ class GenericDrawer():
 
                 try:
                     self.draw_cluster_borders(drawing_params=drawing_params)
+                except NotImplementedError:
+                    pass
+
+            # decorations
+            if drawing_params.screenshot_data.fpp_links_on:
+
+                try:
+                    self.draw_fpp_links(drawing_params=drawing_params)
                 except NotImplementedError:
                     pass
 

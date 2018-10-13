@@ -492,18 +492,9 @@ class MVCDrawViewBase:
 
         raise NotImplementedError(self.__class__.prepare_cluster_border_actors.__name__)
 
-    def cluster_borders_actors(self, actor_specs, show_flag=True):
-        """
-        Shows cluster borders actors
-        :param actor_specs: {ActorSpecs}
-        :param show_flag: {bool}
-        :return: None
-        """
-        raise NotImplementedError(self.__class__.show_cell_actors.__name__)
-
     def show_cluster_border_actors(self, actor_specs, drawing_params=None,  show_flag=True):
         """
-        Shows concentration actors
+        Shows cluster borders actors
         :param actor_specs: {ActorSpecs}
         :param drawing_params: {DrawingParameters}
         :param show_flag: {bool}
@@ -521,6 +512,25 @@ class MVCDrawViewBase:
 
         raise NotImplementedError(self.__class__.prepare_border_actors.__name__)
 
+    def prepare_fpp_links_actors(self, actor_specs, drawing_params=None):
+        """
+        Prepares fpp links actors  based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
+        :return: {dict}
+        """
+
+        raise NotImplementedError(self.__class__.prepare_fpp_links_actors.__name__)
+
+    def show_fpp_links_actors(self, actor_specs, drawing_params=None,  show_flag=True):
+        """
+        Shows fpp links actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :param show_flag: {bool}
+        :return: None
+        """
+        raise NotImplementedError(self.__class__.show_fpp_links_actors.__name__)
 
 
 
