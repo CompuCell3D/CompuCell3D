@@ -974,6 +974,52 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # coloring borders
         cluster_border_actor.GetProperty().SetColor(*cluster_border_color)
 
+    def init_cluster_border_actors_hex(self, actor_specs, drawing_params=None):
+        """
+        Initializes cell borders actors for hex actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+
+        actors_dict = actor_specs.actors_dict
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        scene_metadata = drawing_params.screenshot_data.metadata
+
+        points = vtk.vtkPoints()
+        lines = vtk.vtkCellArray()
+        points_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor,
+                                                              vtkObj=points)
+        lines_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor,
+                                                             vtkObj=lines)
+
+        self.field_extractor.fillClusterBorderData2DHex(
+            points_int_addr,
+            lines_int_addr,
+            self.currentDrawingParameters.plane,
+            self.currentDrawingParameters.planePos
+        )
+
+        borders = vtk.vtkPolyData()
+
+        borders.SetPoints(points)
+        borders.SetLines(lines)
+
+        if VTK_MAJOR_VERSION >= 6:
+            self.clusterBorderMapper.SetInputData(borders)
+        else:
+            self.clusterBorderMapper.SetInput(borders)
+
+        cluster_border_actor = actor_specs.actors_dict['cluster_border_actor']
+        cluster_border_actor.SetMapper(self.clusterBorderMapper)
+
+        cluster_border_color = to_vtk_rgb(scene_metadata['ClusterBorderColor'])
+        # coloring borders
+        cluster_border_actor.GetProperty().SetColor(*cluster_border_color)
+
+
+
 
     # def initBordersActors2D(self,_actors):
     #     points = vtk.vtkPoints()
