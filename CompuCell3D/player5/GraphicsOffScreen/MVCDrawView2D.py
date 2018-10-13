@@ -231,13 +231,15 @@ class MVCDrawView2D(MVCDrawViewBase):
         """
         '''
         if show_flag:
-            if not self.currentActors.has_key('border_actor'):
-                self.currentActors['border_actor'] = self.borderActor
-                self.ren.AddActor(self.borderActor)
+            self.add_actor_to_renderer(actor_label='border_actor', actor_obj=self.borderActor)
+            # if not self.currentActors.has_key('border_actor'):
+            #     self.currentActors['border_actor'] = self.borderActor
+            #     self.ren.AddActor(self.borderActor)
         else:
-            if self.currentActors.has_key('border_actor'):
-                del self.currentActors['border_actor']
-                self.ren.RemoveActor(self.borderActor)
+            self.remove_actor_from_renderer(actor_label='border_actor', actor_obj=self.borderActor)
+            # if self.currentActors.has_key('border_actor'):
+            #     del self.currentActors['border_actor']
+            #     self.ren.RemoveActor(self.borderActor)
 
 
     def prepare_border_actors(self,actor_specs,drawing_params=None, show_flag=True):

@@ -532,6 +532,29 @@ class MVCDrawViewBase:
         """
         raise NotImplementedError(self.__class__.show_fpp_links_actors.__name__)
 
+    def add_actor_to_renderer(self,actor_label, actor_obj):
+        """
+        Convenience fcn that adds actor to a renderer and updates
+        current actor container
+        :param actor_label:  {str} actor label
+        :param actor_obj: {vtkActor} instance of the actor
+        :return: None
+        """
+        if not self.currentActors.has_key(actor_label):
+            self.currentActors[actor_label] = actor_obj
+            self.ren.AddActor(actor_obj)
+
+    def remove_actor_to_renderer(self,actor_label, actor_obj):
+        """
+        Convenience fcn that removes actor from a renderer and updates
+        current actor container
+        :param actor_label:  {str} actor label
+        :param actor_obj: {vtkActor} instance of the actor
+        :return: None
+        """
+        if self.currentActors.has_key(actor_label):
+            del self.currentActors[actor_label]
+            self.ren.RemoveActor(actor_obj)
 
 
     def drawCellField(self, _bsd, fieldType): pass
