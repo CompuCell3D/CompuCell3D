@@ -311,22 +311,48 @@ class GenericDrawer():
             if screenshot_data.clippingRange is not None:
                 view.set_custom_camera(camera_settings=screenshot_data)
 
-
-            # todo 5 - move this part to a function
-            renWin = vtk.vtkRenderWindow()
-            renWin.SetOffScreenRendering(1)
-            renWin.AddRenderer(ren)
-            renWin.Render()
-
-            windowToImageFilter = vtk.vtkWindowToImageFilter()
-            windowToImageFilter.SetInput(renWin)
-            windowToImageFilter.Update()
-
-            writer = vtk.vtkPNGWriter()
-            writer.SetFileName('D:/CC3D_GIT/CompuCell3D/player5/GraphicsOffScreen/{screenshot_name}.png'.format(
+            self.output_screenshot(ren=ren,screenshot_fname='D:/CC3D_GIT/CompuCell3D/player5/GraphicsOffScreen/{screenshot_name}.png'.format(
                 screenshot_name=screenshot_name))
-            writer.SetInputConnection(windowToImageFilter.GetOutputPort())
-            writer.Write()
+
+            # renWin = vtk.vtkRenderWindow()
+            # renWin.SetOffScreenRendering(1)
+            # renWin.AddRenderer(ren)
+            # renWin.Render()
+            #
+            # windowToImageFilter = vtk.vtkWindowToImageFilter()
+            # windowToImageFilter.SetInput(renWin)
+            # windowToImageFilter.Update()
+            #
+            # writer = vtk.vtkPNGWriter()
+            # writer.SetFileName('D:/CC3D_GIT/CompuCell3D/player5/GraphicsOffScreen/{screenshot_name}.png'.format(
+            #     screenshot_name=screenshot_name))
+            # writer.SetInputConnection(windowToImageFilter.GetOutputPort())
+            # writer.Write()
+
+    def output_screenshot(self,ren, screenshot_fname):
+        """
+        Saves scene rendered in the renderer to the image
+        :param ren: {vtkRenderer} renderer
+        :param screenshot_fname: {str} screenshot filename
+        :return: None
+        """
+
+        renWin = vtk.vtkRenderWindow()
+        renWin.SetOffScreenRendering(1)
+        renWin.AddRenderer(ren)
+        renWin.Render()
+
+        windowToImageFilter = vtk.vtkWindowToImageFilter()
+        windowToImageFilter.SetInput(renWin)
+        windowToImageFilter.Update()
+
+        writer = vtk.vtkPNGWriter()
+        # writer.SetFileName('D:/CC3D_GIT/CompuCell3D/player5/GraphicsOffScreen/{screenshot_name}.png'.format(
+        #     screenshot_name=screenshot_fname))
+        writer.SetFileName(screenshot_fname)
+
+        writer.SetInputConnection(windowToImageFilter.GetOutputPort())
+        writer.Write()
 
     def draw_old(self, screenshot_data, bsd, screenshot_name):
         # drawing_params = DrawingParameters()
