@@ -47,7 +47,7 @@ import vtk, math
 #import sys, os
 import string
 
-from Utilities import qcolor_to_rgba
+from Utilities import qcolor_to_rgba, cs_string_to_typed_list
 
 from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES,PLANES
         
@@ -140,7 +140,9 @@ class MVCDrawModelBase:
         metadata_dict['MaxRange'] = Configuration.getSetting("MaxRange", con_field_name)
         metadata_dict['ContoursOn'] = Configuration.getSetting("ContoursOn", con_field_name)
         metadata_dict['NumberOfContourLines'] = Configuration.getSetting("NumberOfContourLines", field_name)
+        metadata_dict['ScalarIsoValues'] = cs_string_to_typed_list(Configuration.getSetting("ScalarIsoValues", field_name))
         metadata_dict['LegendEnable'] = Configuration.getSetting("LegendEnable", field_name)
+
 
 
         return metadata_dict

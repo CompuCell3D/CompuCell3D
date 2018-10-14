@@ -90,11 +90,12 @@ class MVCDrawView3D(MVCDrawViewBase):
 
         return od
 
-    def prepare_cell_field_actors(self, actor_specs):
+    def prepare_cell_field_actors(self, actor_specs, drawing_params=None):
         """
         Prepares cell_field_actors  based on actor_specs specifications
         Scans list of invisible cell types and used cell types and creates those actors that user selected to be visible
         :param actor_specs: {ActorSpecs} specification of actors to create
+        :param drawing_params: {DrawingParameters}
         :return: {ActorSpecs}
         """
         actor_specs_copy = deepcopy(actor_specs)
@@ -111,15 +112,56 @@ class MVCDrawView3D(MVCDrawViewBase):
 
         return actor_specs_copy
 
-    def prepare_border_actors(self,actor_specs):
+    def prepare_border_actors(self,actor_specs, drawing_params=None):
         """
         Prepares border actors  based on actor_specs specifications
         :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
         :return: {dict}
         """
 
         raise NotImplementedError(self.__class__.prepare_border_actors.__name__)
 
+
+    def prepare_concentration_field_actors(self,actor_specs, drawing_params=None):
+        """
+        Prepares concentration field actors
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
+        :return: {ActorSpecs}
+        """
+
+        actor_specs_copy = deepcopy(actor_specs)
+        actor_specs_copy.actors_dict = OrderedDict()
+        actor_specs_copy.actors_dict['concentration_actor'] = self.conActor
+        actor_specs_copy.actors_dict['legend_actor'] = self.legendActor
+
+        return actor_specs_copy
+
+    def show_concentration_field_actors(self,actor_specs, drawing_params=None,  show_flag=True):
+        """
+        Shows concentration actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :param show_flag: {bool}
+        :return: None
+        """
+
+        scene_metadata = drawing_params.screenshot_data.metadata
+        if show_flag:
+            self.add_actor_to_renderer(actor_label='concentration_actor', actor_obj=self.conActor)
+
+            add_legend = False
+            try:
+                add_legend = scene_metadata['LegendEnable']
+            except KeyError:
+                pass
+
+            if add_legend:
+                self.add_actor_to_renderer(actor_label='legend_actor', actor_obj=self.legendActor)
+        else:
+            self.remove_actor_from_renderer(actor_label='concentration_actor', actor_obj=self.conActor)
+            self.remove_actor_from_renderer(actor_label='legend_actor', actor_obj=self.legendActor)
 
     def getPlane(self):
         return ("3D", 0)
