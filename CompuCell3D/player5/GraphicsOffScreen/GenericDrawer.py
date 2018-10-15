@@ -42,6 +42,7 @@ class GenericDrawer():
 
         self.ren_2D = vtk.vtkRenderer()
         self.ren_3D = vtk.vtkRenderer()
+        self.interactive_camera_flag = False
 
         # self.renWin = self.qvtkWidget.GetRenderWindow()
         # self.renWin.AddRenderer(self.ren)
@@ -69,6 +70,23 @@ class GenericDrawer():
         }
         self.screenshotWindowFlag = False
         self.lattice_type = Configuration.LATTICE_TYPES['Square']
+
+    def set_interactive_camera_flag(self,flag):
+        """
+        sets flag that allows resetting of camera parameters during each draw function. for
+        Interactive model when GenericDrwer is called form the GUI this should be set to False
+        but for screenshots this should be True
+        :param flag:{bool}
+        :return:
+        """
+        self.interactive_camera_flag = flag
+    def get_renderer(self):
+        """
+
+        :return:
+        """
+
+        return self.ren_2D
 
     def extract_cell_field_data(self):
         """
@@ -307,12 +325,14 @@ class GenericDrawer():
             # else:
             #     view.set_default_camera(drawing_params.bsd.fieldDim)
 
+            # we allow resetting of camera properties only in the non-interactive mode
+            # in the interactive mode camera is managed by the GUI
+            if not self.interactive_camera_flag:
+                if screenshot_data.clippingRange is not None:
+                    view.set_custom_camera(camera_settings=screenshot_data)
 
-            if screenshot_data.clippingRange is not None:
-                view.set_custom_camera(camera_settings=screenshot_data)
-
-            self.output_screenshot(ren=ren,screenshot_fname='D:/CC3D_GIT/CompuCell3D/player5/GraphicsOffScreen/{screenshot_name}.png'.format(
-                screenshot_name=screenshot_name))
+            # self.output_screenshot(ren=ren, screenshot_fname='D:/CC3D_GIT/CompuCell3D/player5/GraphicsOffScreen/{screenshot_name}.png'.format(
+            #     screenshot_name=screenshot_name))
 
             # renWin = vtk.vtkRenderWindow()
             # renWin.SetOffScreenRendering(1)

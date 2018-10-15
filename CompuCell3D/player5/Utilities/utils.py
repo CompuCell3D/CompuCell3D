@@ -28,7 +28,7 @@ def to_vtk_rgb(color_obj):
     except AttributeError:
         pass
 
-    if isinstance(color_obj,list):
+    if isinstance(color_obj,list) or isinstance(color_obj,tuple):
         if len(color_obj) < 3:
             raise IndexError ('color_obj list should have at least 3 elements')
 

@@ -510,8 +510,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # self.mainGraphicsWidget.hide()
         # return
 
-        self.configsChanged.connect(self.mainGraphicsWidget.draw2D.configsChanged)
-        self.configsChanged.connect(self.mainGraphicsWidget.draw3D.configsChanged)
+        # todo 5
+        # self.configsChanged.connect(self.mainGraphicsWidget.draw2D.configsChanged)
+        # self.configsChanged.connect(self.mainGraphicsWidget.draw3D.configsChanged)
+
+
+        self.configsChanged.connect(self.mainGraphicsWidget.configsChanged)
+        self.configsChanged.connect(self.mainGraphicsWidget.configsChanged)
+
         # self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWidget.draw2D.configsChanged)
         # self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWidget.draw3D.configsChanged)
         self.mainGraphicsWidget.readSettings()
@@ -2135,9 +2141,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 # rwh: error if we try to invoke switchdim earlier
                 (currentPlane, currentPlanePos) = graphicsFrame.getPlane()
 
-                graphicsFrame.drawFieldLocal(self.basicSimulationData)
-
-                self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())  # show MCS in lower-left GUI
+                # todo 5
+                # graphicsFrame.drawFieldLocal(self.basicSimulationData)
+                graphicsFrame.draw(self.basicSimulationData)
+                #todo 5
+                # self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())  # show MCS in lower-left GUI
 
         self.simulation.drawMutex.unlock()
 
@@ -2762,6 +2770,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # ------------------
         if not self.mainGraphicsWidget: return
 
+        # todo 5 -  rework initialization
         self.mainGraphicsWidget.setStatusBar(self.__statusBar)
 
         self.mainGraphicsWidget.setZoomItems(self.zitems)  # Set zoomFixed parameters
@@ -2783,7 +2792,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.mainGraphicsWidget.showFPPLinks()
 
         self.mainGraphicsWidget.setPlane(PLANES[0], 0)
-        self.mainGraphicsWidget.currentDrawingObject.setPlane(PLANES[0], 0)
+        # todo - old code
+        # self.mainGraphicsWidget.currentDrawingObject.setPlane(PLANES[0], 0)
 
     def setParams(self):
         '''
