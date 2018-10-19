@@ -548,16 +548,32 @@ class GenericDrawer():
         style = string.upper(_style)
         if style == "2D":
             self.draw3DFlag = False
-            self.currentDrawingObject = self.draw_view_2D
-            self.ren.SetActiveCamera(self.camera2D)
+            # self.currentDrawingObject = self.draw_view_2D
+            # self.ren.SetActiveCamera(self.camera2D)
             self.qvtkWidget.setMouseInteractionSchemeTo2D()
             self.draw3D.clearDisplay()
         elif style == "3D":
             self.draw3DFlag = True
-            self.currentDrawingObject = self.draw3D
-            self.ren.SetActiveCamera(self.camera3D)
+            # self.currentDrawingObject = self.draw3D
+            # self.ren.SetActiveCamera(self.camera3D)
             self.qvtkWidget.setMouseInteractionSchemeTo3D()
             self.draw_view_2D.clearDisplay()
+
+    # todo 5 - orig code
+    # def setDrawingStyle(self, _style):
+    #     style = string.upper(_style)
+    #     if style == "2D":
+    #         self.draw3DFlag = False
+    #         self.currentDrawingObject = self.draw_view_2D
+    #         self.ren.SetActiveCamera(self.camera2D)
+    #         self.qvtkWidget.setMouseInteractionSchemeTo2D()
+    #         self.draw3D.clearDisplay()
+    #     elif style == "3D":
+    #         self.draw3DFlag = True
+    #         self.currentDrawingObject = self.draw3D
+    #         self.ren.SetActiveCamera(self.camera3D)
+    #         self.qvtkWidget.setMouseInteractionSchemeTo3D()
+    #         self.draw_view_2D.clearDisplay()
 
     def getCamera3D(self):
         return self.camera3D

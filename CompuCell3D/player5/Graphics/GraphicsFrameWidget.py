@@ -105,6 +105,13 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.current_screenshot_data = None
 
 
+        self.camera2D = self.gd.get_active_camera()
+        self.camera3D = self.gd.get_renderer().MakeCamera()
+        # self.camera3D.SetClippingRange(self.camera2D.GetClippingRange())
+        # self.camera3D.SetFocalPoint(self.camera2D.GetFocalPoint())
+        # self.camera3D.SetPosition(self.camera2D.GetPosition())
+        # self.camera3D.SetViewUp(self.camera2D.GetViewUp())
+
         self.renWin = self.qvtkWidget.GetRenderWindow()
         self.renWin.AddRenderer(self.gd.get_renderer())
 
@@ -213,6 +220,19 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
             'VectorField': self.get_con_field_metadata,
             'VectorFieldCellLevel': self.get_vector_field_metadata,
         }
+
+    def copy_camera(self,src,dst):
+        """
+        Copies camera settings
+        :param src: 
+        :param dst: 
+        :return: None
+        """
+        dst.SetClippingRange(src.GetClippingRange())
+        dst.SetFocalPoint(src.GetFocalPoint())
+        dst.SetPosition(src.GetPosition())
+        dst.SetViewUp(src.GetViewUp())
+
 
     def get_metadata(self, field_name, field_type):
         try:
@@ -876,20 +896,48 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         :return:
         """
         print 'CHANGE SET DRAWING STYLE TODO 5'
-        return
+
+        # self.gd.setDrawingStyle(_style=_style)
+        # return
         style=string.upper(_style)
         if style=="2D":
             self.draw3DFlag = False
-            self.currentDrawingObject = self.draw2D
-            self.ren.SetActiveCamera(self.camera2D)
+            # self.currentDrawingObject = self.draw2D
+            self.gd.get_renderer().SetActiveCamera(self.camera2D)
             self.qvtkWidget.setMouseInteractionSchemeTo2D()
-            self.draw3D.clearDisplay()
+            # self.draw3D.clearDisplay()
         elif style=="3D":
             self.draw3DFlag = True
-            self.currentDrawingObject = self.draw3D
-            self.ren.SetActiveCamera(self.camera3D)
+            # self.currentDrawingObject = self.draw3D
+            self.gd.get_renderer().SetActiveCamera(self.camera3D)
+            # self.gd.get_renderer().SetActiveCamera(self.camera2D)
             self.qvtkWidget.setMouseInteractionSchemeTo3D()
-            self.draw2D.clearDisplay()
+            # self.draw2D.clearDisplay()
+
+    # todo 5 - orig code
+    # def setDrawingStyle(self,_style):
+    #     """
+    #
+    #     :param _style:
+    #     :return:
+    #     """
+    #     print 'CHANGE SET DRAWING STYLE TODO 5'
+    #
+    #     self.gd.setDrawingStyle(_style=_style)
+    #     return
+    #     style=string.upper(_style)
+    #     if style=="2D":
+    #         self.draw3DFlag = False
+    #         self.currentDrawingObject = self.draw2D
+    #         self.ren.SetActiveCamera(self.camera2D)
+    #         self.qvtkWidget.setMouseInteractionSchemeTo2D()
+    #         self.draw3D.clearDisplay()
+    #     elif style=="3D":
+    #         self.draw3DFlag = True
+    #         self.currentDrawingObject = self.draw3D
+    #         self.ren.SetActiveCamera(self.camera3D)
+    #         self.qvtkWidget.setMouseInteractionSchemeTo3D()
+    #         self.draw2D.clearDisplay()
 
     # def setDrawingStyle(self,_style):
     #     style=string.upper(_style)
@@ -1240,7 +1288,9 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.fieldComboBox.setCurrentIndex(1)  # setting value of the Combo box to be cellField - default action
 
         # self.qvtkWidget.resetCamera() # last call triggers fisrt call to draw function so we here reset camera so that all the actors are initially visible
+        # todo 5 - essential initialization of the default cameras
         self.resetCamera()  # last call triggers fisrt call to draw function so we here reset camera so that all the actors are initially visible
+        self.copy_camera(src=self.camera2D, dst=self.camera3D)
 
     # def setFieldTypesComboBox(self,_fieldTypes):
     #     # return
