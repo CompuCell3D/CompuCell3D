@@ -532,6 +532,15 @@ class MVCDrawViewBase:
         """
         raise NotImplementedError(self.__class__.show_fpp_links_actors.__name__)
 
+    def remove_all_actors_from_renderer(self):
+        """
+        Removes all actors from renderer
+        :return:
+        """
+
+        for actor_label, actor_obj in self.currentActors.items():
+            self.remove_actor_from_renderer(actor_label=actor_label,actor_obj=actor_obj)
+
     def add_actor_to_renderer(self,actor_label, actor_obj):
         """
         Convenience fcn that adds actor to a renderer and updates

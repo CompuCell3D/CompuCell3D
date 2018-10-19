@@ -41,7 +41,7 @@ class GenericDrawer():
         self.field_extractor = None
 
         self.ren_2D = vtk.vtkRenderer()
-        self.ren_3D = vtk.vtkRenderer()
+        # self.ren_3D = vtk.vtkRenderer()
         self.interactive_camera_flag = False
 
         # self.renWin = self.qvtkWidget.GetRenderWindow()
@@ -55,7 +55,8 @@ class GenericDrawer():
         self.draw_view_3D = MVCDrawView3D(self.draw_model_3D)
 
         self.draw_view_2D.ren = self.ren_2D
-        self.draw_view_3D.ren = self.ren_3D
+        self.draw_view_3D.ren = self.ren_2D
+        # self.draw_view_3D.ren = self.ren_3D
 
         #
         # dict {field_type: drawing fcn}
@@ -80,6 +81,7 @@ class GenericDrawer():
         :return:
         """
         self.interactive_camera_flag = flag
+
     def get_renderer(self):
         """
 
@@ -87,6 +89,18 @@ class GenericDrawer():
         """
 
         return self.ren_2D
+
+    def get_active_camera(self):
+        """
+        returns active camera object
+        :return: {vtkCamera}
+        """
+
+        return self.get_renderer().GetActiveCamera()
+
+    def clear_display(self):
+        self.draw_view_2D.remove_all_actors_from_renderer()
+        self.draw_view_3D.remove_all_actors_from_renderer()
 
     def extract_cell_field_data(self):
         """
