@@ -777,7 +777,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 #        print ' GFW: _projSpinBoxChanged: val =',val
 #        print ' spinBoxChanged: self.xyPlane, xyMaxPlane=',self.xyPlane, self.xyMaxPlane
 
-        return
+        # return
 
         if self.parentWidget.completedFirstMCS:
             self.parentWidget.newDrawingUserRequest = True
@@ -793,15 +793,16 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 #            print ' _projSpinBoxChanged: set xy val=',val
             # print 'self.currentDrawingObject=',self.currentDrawingObject
             # print 'self.draw2D=',self.draw2D
-            
-            self.currentDrawingObject.setPlane(self.currentProjection, self.xyPlane)
+            #todo 5 -  remove
+            # self.currentDrawingObject.setPlane(self.currentProjection, self.xyPlane)
 #            self.parentWidget._drawField()
 
         elif self.currentProjection == 'xz':
             if val > self.xzMaxPlane: val = self.xzMaxPlane
             self.projSpinBox.setValue(val)
             self.setPlane(self.currentProjection, val)
-            self.currentDrawingObject.setPlane(self.currentProjection, val)
+            # todo 5 -  remove
+            # self.currentDrawingObject.setPlane(self.currentProjection, val)
 #            self.parentWidget._drawField()
             self.xzPlane = val
             
@@ -809,12 +810,15 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
             if val > self.yzMaxPlane: val = self.yzMaxPlane
             self.projSpinBox.setValue(val)
             self.setPlane(self.currentProjection, val)
-            self.currentDrawingObject.setPlane(self.currentProjection, val)
+            # todo 5 -  remove
+            # self.currentDrawingObject.setPlane(self.currentProjection, val)
 #            self.parentWidget._drawField()
             self.yzPlane = val
-    
+
+        self.current_screenshot_data = self.compute_current_screenshot_data()
         self.parentWidget._drawField()   # SimpleTabView.py
-        
+        # todo 5 - essential call to refresh screen . otherwise need to move window
+        self.Render()
             
 #        if self.parentWidget.fieldTypes.has_key(name):
 #            # Tuple that holds (FieldName, FieldType), e.g. ("FGF", ConField)
