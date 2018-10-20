@@ -310,6 +310,21 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
         self.gd.set_field_extractor(field_extractor=self.parentWidget.fieldExtractor)
 
+    def get_current_field_name_and_type(self):
+        """
+        Returns current field nanem and type
+        :return: {tuple}
+        """
+
+        field_name = str(self.fieldComboBox.currentText())
+
+        try:
+            field_type = self.parentWidget.fieldTypes[field_name]
+        except KeyError:
+            return field_name, ''
+            # raise KeyError('Could not figure out the type of the field {} you requested'.format(field_name))
+
+        return field_name, field_type
 
     def compute_current_screenshot_data(self):
         """
@@ -324,6 +339,13 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
         projection_name = str(self.projComboBox.currentText())
         projection_position = int(self.projSpinBox.value())
+
+        field_name, field_type = self.get_current_field_name_and_type()
+        scr_data.plotData = (field_name, field_type)
+
+        #     str(self.fieldComboBox.currentText())
+        # if self.parentWidget.fieldTypes.has_key(field_name):
+        #     self.parentWidget.setFieldType((name, self.parentWidget.fieldTypes[name]))
 
         if projection_name == '3D':
             scr_data.spaceDimension = '3D'
@@ -381,14 +403,12 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
         if self.current_screenshot_data is None:
             self.initialize_scene()
-            # self.current_screenshot_data = self.compute_current_screenshot_data()
-
 
         self.gd.clear_display()
         self.gd.draw(screenshot_data=self.current_screenshot_data, bsd=basic_simulation_data, screenshot_name='')
-        print 'drawing scene'
 
-
+        # essential call to refresh screen . otherwise need to move/resize graphics window
+        self.Render()
 
     def conMinMax(self):
         print 'CHANGE THIS'
@@ -789,8 +809,8 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.current_screenshot_data = self.compute_current_screenshot_data()
 
         self.parentWidget._drawField()  # SimpleTabView.py
-        # todo 5 - essential call to refresh screen . otherwise need to move window
-        self.Render()
+        # # todo 5 - essential call to refresh screen . otherwise need to move window
+        # self.Render()
         # self.render_repaint()
             
     def _projSpinBoxChanged(self, val):
@@ -877,17 +897,13 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
             self.parentWidget.newDrawingUserRequest = True
 #        print MODULENAME,' _fieldTypeChanged(): self.fieldComboBox.count() = ',self.fieldComboBox.count()
 #        if self.fieldComboBox.count() > 0:
-        name = str(self.fieldComboBox.currentText())
-#        print MODULENAME,' _fieldTypeChanged(): name = ',name
-#        Configuration.setSetting("CurrentFieldName",name)
-#        print MODULENAME,' _fieldTypeChanged(): self.parentWidget=',self.parentWidget
-#        print MODULENAME,' _fieldTypeChanged(): type(self.parentWidget)=',type(self.parentWidget)
-    #        print MODULENAME,' _fieldTypeChanged(): dir(self.parentWidget)=',dir(self.parentWidget)
-        if self.parentWidget.fieldTypes.has_key(name):
-            # Tuple that holds (FieldName, FieldType), e.g. ("FGF", ConField)
-#            print MODULENAME,' _fieldTypeChanged():      self.parentWidget.fieldTypes[name]=',self.parentWidget.fieldTypes[name]
-            self.parentWidget.setFieldType((name, self.parentWidget.fieldTypes[name])) 
-            self.parentWidget._drawField()
+
+        field_name, field_type = self.get_current_field_name_and_type()
+
+        self.parentWidget.setFieldType((field_name, field_type))
+        self.current_screenshot_data = self.compute_current_screenshot_data()
+        self.parentWidget._drawField()
+
 
     def setDrawingStyle(self,_style):
         """
