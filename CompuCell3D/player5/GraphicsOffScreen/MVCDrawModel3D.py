@@ -486,6 +486,156 @@ class MVCDrawModel3D(MVCDrawModelBase):
             self.init_legend_actors(actor_specs=actor_specs, drawing_params=drawing_params)
 
 
+    def init_vector_field_actors(self, actor_specs, drawing_params=None):
+        """
+        initializes vector field actors for cartesian lattice
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+        actors_dict = actor_specs.actors_dict
+
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+        field_name = drawing_params.fieldName
+        field_type = drawing_params.fieldType.lower()
+        scene_metadata = drawing_params.screenshot_data.metadata
+
+        dim = [field_dim.x,field_dim.y, field_dim.z]
+
+        scene_metadata = drawing_params.screenshot_data.metadata
+
+
+
+        vector_grid = vtk.vtkUnstructuredGrid()
+
+        points = vtk.vtkPoints()
+        vectors = vtk.vtkFloatArray()
+        vectors.SetNumberOfComponents(3)
+        vectors.SetName("visVectors")
+
+        points_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor, vtkObj=points)
+        vectors_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor, vtkObj=vectors)
+
+
+        fill_successful = False
+        lattice_type_str = self.get_lattice_type_str()
+
+        hex_flag = False
+        if lattice_type_str.lower() == 'hexagonal' and drawing_params.plane.lower() == "xy":
+            hex_flag = True
+            if field_type == 'vectorfield':
+                fill_successful = self.field_extractor.fillVectorFieldData2DHex(
+                    points_int_addr,
+                    vectors_int_addr,
+                    field_name,
+                    self.currentDrawingParameters.plane,
+                    self.currentDrawingParameters.planePos
+                )
+            elif field_type == 'vectorfieldcelllevel':
+                fill_successful = self.field_extractor.fillVectorFieldCellLevelData2DHex(
+                    points_int_addr,
+                    vectors_int_addr,
+                    field_name,
+                    self.currentDrawingParameters.plane,
+                    self.currentDrawingParameters.planePos
+                )
+        else:
+            if field_type == 'vectorfield':
+                fill_successful = self.field_extractor.fillVectorFieldData2D(
+                    points_int_addr,
+                    vectors_int_addr,
+                    field_name,
+                    self.currentDrawingParameters.plane,
+                    self.currentDrawingParameters.planePos
+                )
+            elif field_type == 'vectorfieldcelllevel':
+                fill_successful = self.field_extractor.fillVectorFieldCellLevelData2D(
+                    points_int_addr,
+                    vectors_int_addr,
+                    field_name,
+                    self.currentDrawingParameters.plane,
+                    self.currentDrawingParameters.planePos
+                )
+
+        if not fill_successful:
+            return
+
+
+
+        # fillSuccessful = _fillVectorFieldFcn(points_int_addr, vectors_int_addr, conFieldName)
+        # if not fillSuccessful:
+        #     return
+
+        vector_grid.SetPoints(points)
+        vector_grid.GetPointData().SetVectors(vectors)
+
+        cone = vtk.vtkConeSource()
+        cone.SetResolution(5)
+        cone.SetHeight(2)
+        cone.SetRadius(0.5)
+        # cone.SetRadius(4)
+
+        range = vectors.GetRange(-1)
+
+        min_magnitude = range[0]
+        max_magnitude = range[1]
+
+        if Configuration.getSetting("MinRangeFixed", field_name):
+            min_magnitude = Configuration.getSetting("MinRange", field_name)
+
+        if Configuration.getSetting("MaxRangeFixed", field_name):
+            max_magnitude = Configuration.getSetting("MaxRange", field_name)
+
+
+        glyphs = vtk.vtkGlyph3D()
+
+        if VTK_MAJOR_VERSION >= 6:
+            glyphs.SetInputData(vector_grid)
+        else:
+            glyphs.SetInput(vector_grid)
+
+        glyphs.SetSourceConnection(cone.GetOutputPort())
+        # glyphs.SetScaleModeToScaleByVector()
+        # glyphs.SetColorModeToColorByVector()
+
+        # glyphs.SetScaleFactor(Configuration.getSetting("ArrowLength")) # scaling arrows here ArrowLength indicates scaling factor not actual length
+
+
+        vector_field_actor = actors_dict['vector_field_actor']
+
+        # scaling factor for an arrow - ArrowLength indicates scaling factor not actual length
+        arrowScalingFactor = Configuration.getSetting("ArrowLength",field_name)
+
+        if Configuration.getSetting("ScaleArrowsOn", field_name):
+            glyphs.SetScaleModeToScaleByVector()
+            rangeSpan = self.maxMagnitude - self.minMagnitude
+            dataScalingFactor = max(abs(self.minMagnitude), abs(self.maxMagnitude))
+            #            print MODULENAME,"self.minMagnitude=",self.minMagnitude," self.maxMagnitude=",self.maxMagnitude
+
+            if dataScalingFactor == 0.0:
+                dataScalingFactor = 1.0  # in this case we are plotting 0 vectors and in this case data scaling factor will be set to 1
+            glyphs.SetScaleFactor(arrowScalingFactor / dataScalingFactor)
+            # coloring arrows
+
+            color = Configuration.getSetting("ArrowColor", field_name)
+            r, g, b = color.red(), color.green(), color.blue()
+
+            vector_field_actor.GetProperty().SetColor(r, g, b)
+        else:
+            glyphs.SetColorModeToColorByVector()
+            glyphs.SetScaleFactor(arrowScalingFactor)
+
+        self.glyphsMapper.SetInputConnection(glyphs.GetOutputPort())
+        self.glyphsMapper.SetLookupTable(self.scalarLUT)
+
+        self.glyphsMapper.SetScalarRange([min_magnitude, max_magnitude])
+
+        vector_field_actor.SetMapper(self.glyphsMapper)
+        if hex_flag:
+            vector_field_actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
+
+
+
     def init_cell_field_borders_actors(self, actor_specs):  # rf. MVCDrawView3D:drawCellField()
         #        print MODULENAME,'  initCellFieldBordersActors():  self.usedCellTypesList=',self.usedCellTypesList
 

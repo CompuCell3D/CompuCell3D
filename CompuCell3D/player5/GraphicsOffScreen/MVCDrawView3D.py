@@ -163,6 +163,36 @@ class MVCDrawView3D(MVCDrawViewBase):
             self.remove_actor_from_renderer(actor_label='concentration_actor', actor_obj=self.conActor)
             self.remove_actor_from_renderer(actor_label='legend_actor', actor_obj=self.legendActor)
 
+    def prepare_vector_field_actors(self,actor_specs,  drawing_params=None):
+        """
+        Prepares vector field actors
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
+        :return: {ActorSpecs}
+        """
+
+        actor_specs_copy = deepcopy(actor_specs)
+        actor_specs_copy.actors_dict = OrderedDict()
+        actor_specs_copy.actors_dict['vector_field_actor'] = self.glyphsActor
+
+        return actor_specs_copy
+
+    def show_vector_field_actors(self,actor_specs,drawing_params=None, show_flag=True):
+        """
+        Shows vector field actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :param show_flag: {bool}
+        :return: None
+        """
+        scene_metadata = drawing_params.screenshot_data.metadata
+        if show_flag:
+            self.add_actor_to_renderer(actor_label='vector_field_actor', actor_obj=self.glyphsActor)
+        else:
+            self.remove_actor_from_renderer(actor_label='vector_field_actor', actor_obj=self.glyphsActor)
+
+
+
     def getPlane(self):
         return ("3D", 0)
     
