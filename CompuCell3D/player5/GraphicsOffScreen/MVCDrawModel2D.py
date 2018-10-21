@@ -42,9 +42,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.outlineDim=[0,0,0]
 
         ## Set up the mappers (2D) for concentration field.
-        self.conMapper      = vtk.vtkPolyDataMapper()
-        self.hex_con_mapper   = vtk.vtkPolyDataMapper()
-        self.cartesianConMapper   = vtk.vtkPolyDataMapper()
+        self.con_mapper   = vtk.vtkPolyDataMapper()
         self.contour_mapper  = vtk.vtkPolyDataMapper()
         self.glyphs_mapper   = vtk.vtkPolyDataMapper()
 
@@ -426,22 +424,22 @@ class MVCDrawModel2D(MVCDrawModelBase):
         hex_cells_con_poly_data.SetPolys(hex_cells_con)
 
         if VTK_MAJOR_VERSION >= 6:
-            self.hex_con_mapper.SetInputData(hex_cells_con_poly_data)
+            self.con_mapper.SetInputData(hex_cells_con_poly_data)
         else:
-            self.hex_con_mapper.SetInput(hex_cells_con_poly_data)
+            self.con_mapper.SetInput(hex_cells_con_poly_data)
 
-        self.hex_con_mapper.ScalarVisibilityOn()
-        self.hex_con_mapper.SetLookupTable(self.clut)
-        self.hex_con_mapper.SetScalarRange(min_con, max_con)
+        self.con_mapper.ScalarVisibilityOn()
+        self.con_mapper.SetLookupTable(self.clut)
+        self.con_mapper.SetScalarRange(min_con, max_con)
 
         concentration_actor = actors_dict['concentration_actor']
 
-        concentration_actor.SetMapper(self.hex_con_mapper)
+        concentration_actor.SetMapper(self.con_mapper)
 
         if actor_specs.metadata is None:
-            actor_specs.metadata = {'mapper':self.hex_con_mapper}
+            actor_specs.metadata = {'mapper':self.con_mapper}
         else:
-            actor_specs.metadata['mapper'] = self.hex_con_mapper
+            actor_specs.metadata['mapper'] = self.con_mapper
 
     def initialize_contours_hex(self, dim, con_array, min_max, contour_actor, num_contour_lines=2):
         """
@@ -614,22 +612,25 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 num_contour_lines=num_contour_lines
             )
 
-        self.conMapper.SetInputConnection(field_image_data.GetOutputPort())  # port index = 0
+        self.clut.SetTableRange([min_con, max_con])
 
-        self.conMapper.ScalarVisibilityOn()
-        self.conMapper.SetLookupTable(self.clut)
+        self.con_mapper.SetInputConnection(field_image_data.GetOutputPort())  # port index = 0
+
+        self.con_mapper.ScalarVisibilityOn()
+
+        self.con_mapper.SetLookupTable(self.clut)
         # 0, self.clut.GetNumberOfColors()) # may manually set range so that type reassignment will not be scalled dynamically when one type is missing
-        self.conMapper.SetScalarRange(min_con,max_con)
+        self.con_mapper.SetScalarRange(min_con, max_con)
 
-        self.conMapper.SetScalarModeToUsePointData()
+        self.con_mapper.SetScalarModeToUsePointData()
 
         concentration_actor = actors_dict['concentration_actor']
-        concentration_actor.SetMapper(self.conMapper)  # concentration actor
+        concentration_actor.SetMapper(self.con_mapper)  # concentration actor
 
         if actor_specs.metadata is None:
-            actor_specs.metadata = {'mapper':self.hex_con_mapper}
+            actor_specs.metadata = {'mapper':self.con_mapper}
         else:
-            actor_specs.metadata['mapper'] = self.hex_con_mapper
+            actor_specs.metadata['mapper'] = self.con_mapper
 
 
     def initialize_contours_cartesian(self,field_image_data, min_max, contour_actor, num_contour_lines=2):
@@ -1336,18 +1337,18 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.hexCellsConPolyData.SetPolys(self.hexCellsCon)
 
         if VTK_MAJOR_VERSION>=6:
-            self.hex_con_mapper.SetInputData(self.hexCellsConPolyData)
+            self.con_mapper.SetInputData(self.hexCellsConPolyData)
         else:
-            self.hex_con_mapper.SetInput(self.hexCellsConPolyData)
+            self.con_mapper.SetInput(self.hexCellsConPolyData)
 
 
 
 
-        self.hex_con_mapper.ScalarVisibilityOn()
-        self.hex_con_mapper.SetLookupTable(self.clut)
-        self.hex_con_mapper.SetScalarRange(self.minCon, self.maxCon)
+        self.con_mapper.ScalarVisibilityOn()
+        self.con_mapper.SetLookupTable(self.clut)
+        self.con_mapper.SetScalarRange(self.minCon, self.maxCon)
 
-        _actors[0].SetMapper(self.hex_con_mapper)
+        _actors[0].SetMapper(self.con_mapper)
 
 
     def initScalarFieldCellLevelHexActors(self,_actors):
@@ -1401,15 +1402,15 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.hexCellsConPolyData.SetPolys(self.hexCellsCon)
 
         if VTK_MAJOR_VERSION>=6:
-            self.hex_con_mapper.SetInputData(self.hexCellsConPolyData)
+            self.con_mapper.SetInputData(self.hexCellsConPolyData)
         else:
-            self.hex_con_mapper.SetInput(self.hexCellsConPolyData)
+            self.con_mapper.SetInput(self.hexCellsConPolyData)
 
-        self.hex_con_mapper.ScalarVisibilityOn()
-        self.hex_con_mapper.SetLookupTable(self.clut)
-        self.hex_con_mapper.SetScalarRange(self.minCon, self.maxCon)
+        self.con_mapper.ScalarVisibilityOn()
+        self.con_mapper.SetLookupTable(self.clut)
+        self.con_mapper.SetScalarRange(self.minCon, self.maxCon)
 
-        _actors[0].SetMapper(self.hex_con_mapper)
+        _actors[0].SetMapper(self.con_mapper)
 
 
     def initScalarFieldHexActors(self,_actors):
@@ -1465,16 +1466,16 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.hexCellsConPolyData.SetPoints(self.hexPointsCon)
         self.hexCellsConPolyData.SetPolys(self.hexCellsCon)
         if VTK_MAJOR_VERSION>=6:
-            self.hex_con_mapper.SetInputData(self.hexCellsConPolyData)
+            self.con_mapper.SetInputData(self.hexCellsConPolyData)
         else:
-            self.hex_con_mapper.SetInput(self.hexCellsConPolyData)
+            self.con_mapper.SetInput(self.hexCellsConPolyData)
 
 
-        self.hex_con_mapper.ScalarVisibilityOn()
-        self.hex_con_mapper.SetLookupTable(self.clut)
-        self.hex_con_mapper.SetScalarRange(self.minCon, self.maxCon)
+        self.con_mapper.ScalarVisibilityOn()
+        self.con_mapper.SetLookupTable(self.clut)
+        self.con_mapper.SetScalarRange(self.minCon, self.maxCon)
 
-        _actors[0].SetMapper(self.hex_con_mapper)
+        _actors[0].SetMapper(self.con_mapper)
 
     def drawConField(self, sim, fieldType):
         print MODULENAME,'  drawConField()'
@@ -1615,15 +1616,15 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.cartesianCellsConPolyData.SetPolys(self.cartesianCellsCon)
 
         if VTK_MAJOR_VERSION>=6:
-            self.conMapper.SetInputData(self.cartesianCellsConPolyData)
+            self.con_mapper.SetInputData(self.cartesianCellsConPolyData)
         else:
-            self.conMapper.SetInput(self.cartesianCellsConPolyData)
+            self.con_mapper.SetInput(self.cartesianCellsConPolyData)
 
-        self.conMapper.ScalarVisibilityOn()
-        self.conMapper.SetLookupTable(self.clut)
-        self.conMapper.SetScalarRange(self.minCon, self.maxCon)
+        self.con_mapper.ScalarVisibilityOn()
+        self.con_mapper.SetLookupTable(self.clut)
+        self.con_mapper.SetScalarRange(self.minCon, self.maxCon)
 
-        _actors[0].SetMapper(self.conMapper)
+        _actors[0].SetMapper(self.con_mapper)
 
 
 
@@ -1767,15 +1768,15 @@ class MVCDrawModel2D(MVCDrawModelBase):
         contourActor.GetProperty().SetColor(float(color.red())/255, float(color.green())/255, float(color.blue())/255)
 
 
-        self.conMapper.SetInputConnection(field.GetOutputPort()) # port index = 0
+        self.con_mapper.SetInputConnection(field.GetOutputPort()) # port index = 0
 
-        self.conMapper.ScalarVisibilityOn()
-        self.conMapper.SetLookupTable(self.clut)
-        self.conMapper.SetScalarRange(self.minCon, self.maxCon) #0, self.clut.GetNumberOfColors()) # may manually set range so that type reassignment will not be scalled dynamically when one type is missing
+        self.con_mapper.ScalarVisibilityOn()
+        self.con_mapper.SetLookupTable(self.clut)
+        self.con_mapper.SetScalarRange(self.minCon, self.maxCon) #0, self.clut.GetNumberOfColors()) # may manually set range so that type reassignment will not be scalled dynamically when one type is missing
 
-        self.conMapper.SetScalarModeToUsePointData()
+        self.con_mapper.SetScalarModeToUsePointData()
 
-        _actors[0].SetMapper(self.conMapper)   # concentration actor
+        _actors[0].SetMapper(self.con_mapper)   # concentration actor
 
 
     def drawVectorField(self, bsd, fieldType):

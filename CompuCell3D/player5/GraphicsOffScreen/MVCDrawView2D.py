@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import *
 from Utilities.QVTKRenderWidget import QVTKRenderWidget
 # from GraphicsNew import GraphicsNew
 from MVCDrawViewBase import MVCDrawViewBase
-from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES
+# from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES
 import Configuration
 import vtk, math
 import sys, os
@@ -14,7 +14,7 @@ import string
 from collections import OrderedDict
 from copy import deepcopy
 
-CONTOUR_ALLOWED_FIELD_TYPES=[FIELD_TYPES[1],FIELD_TYPES[2],FIELD_TYPES[3]]
+# CONTOUR_ALLOWED_FIELD_TYPES=[FIELD_TYPES[1],FIELD_TYPES[2],FIELD_TYPES[3]]
 
 MODULENAME='----MVCDrawView2D.py: '
 

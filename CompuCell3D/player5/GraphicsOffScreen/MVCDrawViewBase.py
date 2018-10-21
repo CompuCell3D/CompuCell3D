@@ -35,7 +35,7 @@ import Configuration
 import vtk, math
 #import sys, os
 
-from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES,PLANES
+# from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES,PLANES
 from DrawingParameters import DrawingParameters
 from CustomActorsStorage import CustomActorsStorage
 from CameraSettings import CameraSettings
@@ -84,7 +84,8 @@ class MVCDrawViewBase:
         self.drawingFcnHasChanged = True
         self.fieldTypes = None 
         self.currentDrawingParameters = DrawingParameters()
-        self.currentFieldType = ("Cell_Field", FIELD_TYPES[0])
+        # self.currentFieldType = ("Cell_Field", FIELD_TYPES[0])
+        self.currentFieldType = ("Cell_Field", 'CellField')
         self.__initDist = 0 # initial camera distance - used in zoom functions
         
         

@@ -40,7 +40,7 @@ def cs_string_to_typed_list(cs_str,sep=",",type_conv_fcn=float):
     """
     Coinvers comma (or sep) separated string into a list of specific type
     :param cs_str: {str} str to convert
-    :param sep: {str} separator  - dfaul is ','
+    :param sep: {str} separator  - default is ','
     :param type_conv_fcn: {function} type converting fcn
     :return: {list}
     """
@@ -48,5 +48,5 @@ def cs_string_to_typed_list(cs_str,sep=",",type_conv_fcn=float):
         list_strings = cs_str.split(sep)
         return list(map(lambda x: type_conv_fcn(x),list_strings))
     except:
-        print 'Could not convert string {s} to a typed list'.format(cs_str)
-        return None
+        print 'Could not convert string {s} to a typed list'.format(s=cs_str)
+        return []

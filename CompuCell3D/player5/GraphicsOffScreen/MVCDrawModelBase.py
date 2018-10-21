@@ -47,7 +47,7 @@ import vtk, math
 #import sys, os
 import string
 import CompuCellSetup
-from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES,PLANES
+# from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES,PLANES
 
 
 

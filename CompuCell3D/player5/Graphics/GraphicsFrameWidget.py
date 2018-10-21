@@ -35,6 +35,7 @@ from PyQt5.QtWidgets import *
 from enums import *
 
 from GraphicsOffScreen import GenericDrawer
+# import GraphicsOffScreen
 from Utilities import ScreenshotData
 from Utilities import qcolor_to_rgba, cs_string_to_typed_list
 
@@ -335,13 +336,16 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
         scr_data = ScreenshotData()
         self.store_gui_vis_config(scr_data=scr_data)
-        metadata = self.get_metadata(field_name=scr_data.plotData[0], field_type=scr_data.plotData[1])
+
 
         projection_name = str(self.projComboBox.currentText())
         projection_position = int(self.projSpinBox.value())
 
         field_name, field_type = self.get_current_field_name_and_type()
         scr_data.plotData = (field_name, field_type)
+
+        metadata = self.get_metadata(field_name=scr_data.plotData[0], field_type=scr_data.plotData[1])
+
 
         #     str(self.fieldComboBox.currentText())
         # if self.parentWidget.fieldTypes.has_key(field_name):
