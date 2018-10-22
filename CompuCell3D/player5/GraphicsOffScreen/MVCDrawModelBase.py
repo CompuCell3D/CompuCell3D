@@ -150,16 +150,48 @@ class MVCDrawModelBase:
 #        print MODULENAME,"     --------- Render() "
         self.graphicsFrameWidget.Render()
         
-    #this is an ugly solution that seems to work on 32 bit machines. We will see if it will work on other machines        
-    def extractAddressIntFromVtkObject(self,_vtkObj):
-        # pointer_ia=ia.__this__
-        # print "pointer_ia=",pointer_ia
-        # address=pointer_ia[1:9]
-        # print "address=",address," int(address)=",int(address,16)
-        return self.parentWidget.fieldExtractor.unmangleSWIGVktPtrAsLong(_vtkObj.__this__)
-        # return int(_vtkObj.__this__[1:9],16)
+    # #this is an ugly solution that seems to work on 32 bit machines. We will see if it will work on other machines
+    # def extractAddressIntFromVtkObject(self,_vtkObj):
+    #     # pointer_ia=ia.__this__
+    #     # print "pointer_ia=",pointer_ia
+    #     # address=pointer_ia[1:9]
+    #     # print "address=",address," int(address)=",int(address,16)
+    #     return self.parentWidget.fieldExtractor.unmangleSWIGVktPtrAsLong(_vtkObj.__this__)
+    #     # return int(_vtkObj.__this__[1:9],16)
                 
     def get_cell_actors_metadata(self): pass
+
+    def get_min_max_metadata(self, scene_metadata, field_name):
+        """
+        Returns dictionary with the following entries:
+        1. MinRangeFixed
+        2. MaxRangeFixed
+        3. MinRange
+        3. MaxRange
+
+        :param scene_metadata:{dict} metadata dictionary
+        :param field_name: {str} field name
+        :return: {dict}
+        """
+        out_dict = {}
+        if set(['MinRangeFixed',"MaxRangeFixed",'MinRange','MaxRange']).issubset( set(scene_metadata.keys())):
+
+            min_range_fixed = scene_metadata['MinRangeFixed']
+            max_range_fixed = scene_metadata['MaxRangeFixed']
+            min_range = scene_metadata['MinRange']
+            max_range = scene_metadata['MaxRange']
+        else:
+            min_range_fixed = Configuration.getSetting("MinRangeFixed", field_name)
+            max_range_fixed = Configuration.getSetting("MaxRangeFixed", field_name)
+            min_range = Configuration.getSetting("MinRange", field_name)
+            max_range = Configuration.getSetting("MaxRange", field_name)
+
+        out_dict['MinRangeFixed'] = min_range_fixed
+        out_dict['MaxRangeFixed'] = max_range_fixed
+        out_dict['MinRange'] = min_range
+        out_dict['MaxRange'] = max_range
+
+        return out_dict
 
     def init_vector_field_actors(self, actor_specs, drawing_params=None):
         """

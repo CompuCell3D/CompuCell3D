@@ -390,16 +390,23 @@ class MVCDrawModel2D(MVCDrawModelBase):
         if not fill_successful:
             return
 
-        if set(['MinRangeFixed',"MaxRangeFixed",'MinRange','MaxRange']).issubset( set(scene_metadata.keys())):
-            min_range_fixed = scene_metadata['MinRangeFixed']
-            max_range_fixed = scene_metadata['MaxRangeFixed']
-            min_range = scene_metadata['MinRange']
-            max_range = scene_metadata['MaxRange']
-        else:
-            min_range_fixed = Configuration.getSetting("MinRangeFixed", field_name)
-            max_range_fixed = Configuration.getSetting("MaxRangeFixed", field_name)
-            min_range = Configuration.getSetting("MinRange", field_name)
-            max_range = Configuration.getSetting("MaxRange", field_name)
+        min_max_dict = self.get_min_max_metadata(scene_metadata=scene_metadata, field_name=field_name)
+        min_range_fixed = min_max_dict['MinRangeFixed']
+        max_range_fixed = min_max_dict['MaxRangeFixed']
+        min_range = min_max_dict['MinRange']
+        max_range = min_max_dict['MaxRange']
+
+
+        # if set(['MinRangeFixed',"MaxRangeFixed",'MinRange','MaxRange']).issubset( set(scene_metadata.keys())):
+        #     min_range_fixed = scene_metadata['MinRangeFixed']
+        #     max_range_fixed = scene_metadata['MaxRangeFixed']
+        #     min_range = scene_metadata['MinRange']
+        #     max_range = scene_metadata['MaxRange']
+        # else:
+        #     min_range_fixed = Configuration.getSetting("MinRangeFixed", field_name)
+        #     max_range_fixed = Configuration.getSetting("MaxRangeFixed", field_name)
+        #     min_range = Configuration.getSetting("MinRange", field_name)
+        #     max_range = Configuration.getSetting("MaxRange", field_name)
 
 
         range =con_array.GetRange()
@@ -552,16 +559,22 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # numIsos = Configuration.getSetting("NumberOfContourLines", field_name)
         # #        self.isovalStr = Configuration.getSetting("ScalarIsoValues",conFieldName)
 
-        if set(['MinRangeFixed',"MaxRangeFixed",'MinRange','MaxRange']).issubset( set(scene_metadata.keys())):
-            min_range_fixed = scene_metadata['MinRangeFixed']
-            max_range_fixed = scene_metadata['MaxRangeFixed']
-            min_range = scene_metadata['MinRange']
-            max_range = scene_metadata['MaxRange']
-        else:
-            min_range_fixed = Configuration.getSetting("MinRangeFixed", field_name)
-            max_range_fixed = Configuration.getSetting("MaxRangeFixed", field_name)
-            min_range = Configuration.getSetting("MinRange", field_name)
-            max_range = Configuration.getSetting("MaxRange", field_name)
+        min_max_dict = self.get_min_max_metadata(scene_metadata=scene_metadata, field_name=field_name)
+        min_range_fixed = min_max_dict['MinRangeFixed']
+        max_range_fixed = min_max_dict['MaxRangeFixed']
+        min_range = min_max_dict['MinRange']
+        max_range = min_max_dict['MaxRange']
+
+        # if set(['MinRangeFixed',"MaxRangeFixed",'MinRange','MaxRange']).issubset( set(scene_metadata.keys())):
+        #     min_range_fixed = scene_metadata['MinRangeFixed']
+        #     max_range_fixed = scene_metadata['MaxRangeFixed']
+        #     min_range = scene_metadata['MinRange']
+        #     max_range = scene_metadata['MaxRange']
+        # else:
+        #     min_range_fixed = Configuration.getSetting("MinRangeFixed", field_name)
+        #     max_range_fixed = Configuration.getSetting("MaxRangeFixed", field_name)
+        #     min_range = Configuration.getSetting("MinRange", field_name)
+        #     max_range = Configuration.getSetting("MaxRange", field_name)
 
 
         range =con_array.GetRange()

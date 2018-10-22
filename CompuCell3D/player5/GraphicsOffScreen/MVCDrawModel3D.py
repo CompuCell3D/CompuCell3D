@@ -381,16 +381,30 @@ class MVCDrawModel3D(MVCDrawModelBase):
             return
 
         range = con_array.GetRange()
-        minCon = range[0]
-        maxCon = range[1]
-        fieldMax = range[1]
+        min_con = range[0]
+        max_con = range[1]
+        field_max = range[1]
         #        print MODULENAME, '  initScalarFieldDataActors(): min,maxCon=',self.minCon,self.maxCon
 
-        if Configuration.getSetting("MinRangeFixed", field_name):
-            minCon = Configuration.getSetting("MinRange", field_name)
+        min_max_dict = self.get_min_max_metadata(scene_metadata=scene_metadata, field_name=field_name)
+        min_range_fixed = min_max_dict['MinRangeFixed']
+        max_range_fixed = min_max_dict['MaxRangeFixed']
+        min_range = min_max_dict['MinRange']
+        max_range = min_max_dict['MaxRange']
 
-        if Configuration.getSetting("MaxRangeFixed", field_name):
-            maxCon = Configuration.getSetting("MaxRange", field_name)
+        # Note! should really avoid doing a getSetting with each step to speed up the rendering;
+        # only update when changed in Prefs
+        if min_range_fixed:
+            min_con = min_range
+
+        if max_range_fixed:
+            max_con = max_range
+
+        # if Configuration.getSetting("MinRangeFixed", field_name):
+        #     min_con = Configuration.getSetting("MinRange", field_name)
+        #
+        # if Configuration.getSetting("MaxRangeFixed", field_name):
+        #     max_con = Configuration.getSetting("MaxRange", field_name)
 
         uGrid = vtk.vtkStructuredPoints()
         uGrid.SetDimensions(dim[0] + 2, dim[1] + 2, dim[
@@ -430,8 +444,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
         if isoNum > 0:
             isoNum += 1
 
-        delIso = (maxCon - minCon) / (numIsos + 1)  # exclude the min,max for isovalues
-        isoVal = minCon + delIso
+        delIso = (max_con - min_con) / (numIsos + 1)  # exclude the min,max for isovalues
+        isoVal = min_con + delIso
         for idx in xrange(numIsos):
             isoContour.SetValue(isoNum, isoVal)
             isoNum += 1
@@ -439,13 +453,13 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         # UGLY hack to NOT display anything since our attempt to RemoveActor (below) don't seem to work
         if isoNum == 0:
-            isoVal = fieldMax + 1.0  # go just outside valid range
+            isoVal = field_max + 1.0  # go just outside valid range
             isoContour.SetValue(isoNum, isoVal)
 
         #        concLut = vtk.vtkLookupTable()
         # concLut.SetTableRange(conc_vol.GetScalarRange())
         #        concLut.SetTableRange([self.minCon,self.maxCon])
-        self.scalarLUT.SetTableRange([minCon, maxCon])
+        self.scalarLUT.SetTableRange([min_con, max_con])
         #        concLut.SetNumberOfColors(256)
         #        concLut.Build()
         # concLut.SetTableValue(39,0,0,0,0)
@@ -458,7 +472,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         self.conMapper.SetLookupTable(self.scalarLUT)
         # # # print " this is conc_vol.GetScalarRange()=",conc_vol.GetScalarRange()
         # self.conMapper.SetScalarRange(conc_vol.GetScalarRange())
-        self.conMapper.SetScalarRange([minCon, maxCon])
+        self.conMapper.SetScalarRange([min_con, max_con])
         # self.conMapper.SetScalarRange(0,1500)
 
         # rwh - what does this do?
@@ -580,11 +594,25 @@ class MVCDrawModel3D(MVCDrawModelBase):
         min_magnitude = range[0]
         max_magnitude = range[1]
 
-        if Configuration.getSetting("MinRangeFixed", field_name):
-            min_magnitude = Configuration.getSetting("MinRange", field_name)
+        min_max_dict = self.get_min_max_metadata(scene_metadata=scene_metadata, field_name=field_name)
+        min_range_fixed = min_max_dict['MinRangeFixed']
+        max_range_fixed = min_max_dict['MaxRangeFixed']
+        min_range = min_max_dict['MinRange']
+        max_range = min_max_dict['MaxRange']
 
-        if Configuration.getSetting("MaxRangeFixed", field_name):
-            max_magnitude = Configuration.getSetting("MaxRange", field_name)
+        # Note! should really avoid doing a getSetting with each step to speed up the rendering;
+        # only update when changed in Prefs
+        if min_range_fixed:
+            min_magnitude = min_range
+
+        if max_range_fixed:
+            max_magnitude = max_range
+
+        # if Configuration.getSetting("MinRangeFixed", field_name):
+        #     min_magnitude = Configuration.getSetting("MinRange", field_name)
+        #
+        # if Configuration.getSetting("MaxRangeFixed", field_name):
+        #     max_magnitude = Configuration.getSetting("MaxRange", field_name)
 
 
         glyphs = vtk.vtkGlyph3D()

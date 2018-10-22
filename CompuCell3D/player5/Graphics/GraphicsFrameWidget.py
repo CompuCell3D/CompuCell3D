@@ -400,7 +400,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         :return:
         """
         self.Render()
-        self.graphicsFrameWidget.repaint()
+        # self.graphicsFrameWidget.repaint()
 
 
     def draw(self,basic_simulation_data):
@@ -409,10 +409,18 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
             self.initialize_scene()
 
         self.gd.clear_display()
+        #todo 5 - trying computing screenshot data every draw request
+        self.current_screenshot_data = self.compute_current_screenshot_data()
+
         self.gd.draw(screenshot_data=self.current_screenshot_data, bsd=basic_simulation_data, screenshot_name='')
 
+        # this call seems to be needed to refresh qvtk widget
+        self.gd.get_renderer().ResetCameraClippingRange()
         # essential call to refresh screen . otherwise need to move/resize graphics window
         self.Render()
+
+        # self.qvtkWidget.zoomIn()
+        # self.qvtkWidget.zoomOut()
 
     def conMinMax(self):
         print 'CHANGE THIS'
@@ -814,6 +822,10 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
         self.parentWidget._drawField()  # SimpleTabView.py
         # # todo 5 - essential call to refresh screen . otherwise need to move window
+
+        # self.qvtkWidget.zoomIn()
+        # self.qvtkWidget.zoomOut()
+
         # self.Render()
         # self.render_repaint()
             
@@ -907,6 +919,22 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.parentWidget.setFieldType((field_name, field_type))
         self.current_screenshot_data = self.compute_current_screenshot_data()
         self.parentWidget._drawField()
+
+        # focal_point = self.camera3D.GetFocalPoint()
+
+        # this call seems to be needed to refresh qvtk widget
+        # self.gd.get_renderer().ResetCameraClippingRange()
+        # self.camera3D.SetFocalPoint(focal_point[0]*1.01, focal_point[1], focal_point[2])
+
+        # self.qvtkWidget.zoomIn()
+        # self.qvtkWidget.zoomOut()
+        # self.resetCamera()
+
+        self.Render()
+
+
+
+
 
 
     def setDrawingStyle(self,_style):
