@@ -11,87 +11,79 @@ from Graphics.GraphicsFrameWidget import GraphicsFrameWidget
 from Utilities import ScreenshotData, ScreenshotManagerCore
 from Utilities import SceneData, ActorProperties
 
+from GraphicsOffScreen import GenericDrawer
 MODULENAME = '---- ScreenshotManager.py: '
 
 
-# class ScreenshotData:
-#     def __init__(self):
-#         self.screenshotName = ""
-#         self.screenshotCoreName = ""
-#         self.spaceDimension = "2D"
-#         self.projection = "xy"
+
+# class ScreenshotManager(ScreenshotManagerCore):
+#     def __init__(self, _tabViewWidget):
+#         ScreenshotManagerCore.__init__(self)
 #
-#         # this is a tuple where first element is field name (as displayed in the field list in the player5)
-#         # and the second one is plot type (e.g. CellField, Confield, Vector Field)
-#         self.plotData = ("Cell_Field",
-#                          "CellField")
-#         self.projectionPosition = 0
+#         from weakref import ref
+#         self.tabViewWidget = ref(_tabViewWidget)
+#         tvw = self.tabViewWidget()
+#
+#         self.basicSimulationData = tvw.basicSimulationData
+#         self.basicSimulationData = tvw.basicSimulationData
+#         self.screenshotNumberOfDigits = len(str(self.basicSimulationData.numberOfSteps))
+#
+#         # self.screenshotNumberOfDigits=len(str(self.sim.getNumSteps()))
+#         self.maxNumberOfScreenshots = 20  # we limit max number of screenshots to discourage users from using screenshots as their main analysis tool
+#
 #         self.screenshotGraphicsWidget = None
-#         # self.originalCameraObj=None
-#         # those are the values used to handle 3D screenshots
 #
-#         self.clippingRange = None
-#         self.focalPoint = None
-#         self.position = None
-#         self.viewUp = None
-#         self.cell_borders_on = None
-#         self.cells_on = None
-#         self.cluster_borders_on = None
-#         self.cell_glyphs_on = None
-#         self.fpp_links_on = None
-#         self.bounding_box_on = None
-#         self.lattice_axes_on = None
-#         self.lattice_axes_labels_on = None
-#         self.invisible_types = None
+#         self.gd = GenericDrawer()
+#         self.gd.set_field_extractor(field_extractor=tvw.fieldExtractor)
 #
-#     #        self.winWidth=299   # some unique default
-#     #        self.winHeight=299
+#         # MDIFIX
+#         # todo 5 - orig code
+#         # self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw, tvw)
 #
-#     def extractCameraInfo(self, _camera):
-#         self.clippingRange = _camera.GetClippingRange()
-#         self.focalPoint = _camera.GetFocalPoint()
-#         self.position = _camera.GetPosition()
-#         self.viewUp = _camera.GetViewUp()
+#         # self.screenshotGraphicsWidget.allowSaveLayout = False # we do not save screenshot widget in the windows layout
 #
-#     def extractCameraInfoFromList(self, _cameraSettings):
-#         self.clippingRange = _cameraSettings[0:2]
-#         self.focalPoint = _cameraSettings[2:5]
-#         self.position = _cameraSettings[5:8]
-#         self.viewUp = _cameraSettings[8:11]
+#         # important because e.g. we do not save screenshot widget in the windows layout
+#         self.screenshotGraphicsWidget.is_screenshot_widget = True
+#         # self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw)
 #
-#     def prepareCamera(self):
+#         self.screenshotGraphicsWidget.screenshotWindowFlag = True
 #
-#         if self.clippingRange and self.focalPoint and self.position and self.viewUp:
-#             cam = self.screenshotGraphicsWidget.getCamera()
-#             cam.SetClippingRange(self.clippingRange)
-#             cam.SetFocalPoint(self.focalPoint)
-#             cam.SetPosition(self.position)
-#             cam.SetViewUp(self.viewUp)
+#         xSize = Configuration.getSetting("Screenshot_X")
+#         ySize = Configuration.getSetting("Screenshot_Y")
 #
-#     def compareCameras(self, _camera):
+#         # xSize = 1000
+#         # ySize = 1000
 #
-#         if self.clippingRange != _camera.GetClippingRange():
-#             return False
-#         if self.focalPoint != _camera.GetFocalPoint():
-#             return False
-#         if self.position != _camera.GetPosition():
-#             return False
-#         if self.viewUp != _camera.GetViewUp():
-#             return False
-#         return True
+#         # print 'xSize=',xSize,' ySize=',ySize
+#         # self.screenshotGraphicsWidget.resize(xSize,ySize)
 #
-#     def compareExistingCameraToNewCameraSettings(self, _cameraSettings):
-#         if self.clippingRange[0] != _cameraSettings[0] or self.clippingRange[1] != _cameraSettings[1]:
-#             return False
-#         if self.focalPoint[0] != _cameraSettings[2] or self.focalPoint[1] != _cameraSettings[3] or self.focalPoint[3] != \
-#                 _cameraSettings[4]:
-#             return False
-#         if self.position[0] != _cameraSettings[5] or self.position[1] != _cameraSettings[6] or self.position[3] != \
-#                 _cameraSettings[7]:
-#             return False
-#         if self.viewUp[0] != _cameraSettings[8] or self.viewUp[1] != _cameraSettings[9] or self.viewUp[3] != \
-#                 _cameraSettings[10]:
-#             return False
+#         self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().SetSize(xSize, ySize)  # default size
+#         self.screenshotGraphicsWidget.qvtkWidget.resize(xSize, ySize)
+#
+#         winsize = self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().GetSize()
+#         print 'ADDITIONAL SCREENSHOT WINDOW SIZE=', winsize
+#
+#         #        print MODULENAME,'  ScreenshotManager: __init__(),   self.screenshotGraphicsWidget=',self.screenshotGraphicsWidget
+#         #        print MODULENAME,'  ScreenshotManager: __init__(),   self.screenshotGraphicsWidget.winId().__int__()=',self.screenshotGraphicsWidget.winId().__int__()
+#         #        print
+#         #        import pdb; pdb.set_trace()
+#         #        bad = 1/0
+#         #        SimpleTabView.   # rwh: add this to the graphics windows dict
+#
+#         #        self.tabViewWidget.lastActiveWindow = self.screenshotGraphicsWidget
+#         #        self.tabViewWidget.updateActiveWindowVisFlags()
+#
+#         self.screenshotGraphicsWidget.readSettings()
+#         # # # self.tabViewWidget.addSubWindow(self.screenshotGraphicsWidget)
+#         self.screenshotSubWindow = tvw.addSubWindow(self.screenshotGraphicsWidget)
+#
+#         self.screenshotSubWindow.resize(xSize, ySize)
+#
+#         # necessary to avoid spurious maximization of screenshot window. possible bug either in Player or in QMDIArea
+#         self.screenshotSubWindow.showMinimized()
+#         self.screenshotSubWindow.hide()
+#
+#         self.screenshotGraphicsWidgetFieldTypesInitialized = False
 
 class ScreenshotManager(ScreenshotManagerCore):
     def __init__(self, _tabViewWidget):
@@ -110,52 +102,11 @@ class ScreenshotManager(ScreenshotManagerCore):
 
         self.screenshotGraphicsWidget = None
 
-        # MDIFIX
-        self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw, tvw)
-        # self.screenshotGraphicsWidget.allowSaveLayout = False # we do not save screenshot widget in the windows layout
+        self.gd = GenericDrawer()
+        self.gd.set_field_extractor(field_extractor=tvw.fieldExtractor)
 
-        # important because e.g. we do not save screenshot widget in the windows layout
-        self.screenshotGraphicsWidget.is_screenshot_widget = True
-        # self.screenshotGraphicsWidget = GraphicsFrameWidget(tvw)
 
-        self.screenshotGraphicsWidget.screenshotWindowFlag = True
 
-        xSize = Configuration.getSetting("Screenshot_X")
-        ySize = Configuration.getSetting("Screenshot_Y")
-
-        # xSize = 1000
-        # ySize = 1000
-
-        # print 'xSize=',xSize,' ySize=',ySize
-        # self.screenshotGraphicsWidget.resize(xSize,ySize)
-
-        self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().SetSize(xSize, ySize)  # default size
-        self.screenshotGraphicsWidget.qvtkWidget.resize(xSize, ySize)
-
-        winsize = self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().GetSize()
-        print 'ADDITIONAL SCREENSHOT WINDOW SIZE=', winsize
-
-        #        print MODULENAME,'  ScreenshotManager: __init__(),   self.screenshotGraphicsWidget=',self.screenshotGraphicsWidget
-        #        print MODULENAME,'  ScreenshotManager: __init__(),   self.screenshotGraphicsWidget.winId().__int__()=',self.screenshotGraphicsWidget.winId().__int__()
-        #        print
-        #        import pdb; pdb.set_trace()
-        #        bad = 1/0
-        #        SimpleTabView.   # rwh: add this to the graphics windows dict
-
-        #        self.tabViewWidget.lastActiveWindow = self.screenshotGraphicsWidget
-        #        self.tabViewWidget.updateActiveWindowVisFlags()
-
-        self.screenshotGraphicsWidget.readSettings()
-        # # # self.tabViewWidget.addSubWindow(self.screenshotGraphicsWidget)
-        self.screenshotSubWindow = tvw.addSubWindow(self.screenshotGraphicsWidget)
-
-        self.screenshotSubWindow.resize(xSize, ySize)
-
-        # necessary to avoid spurious maximization of screenshot window. possible bug either in Player or in QMDIArea
-        self.screenshotSubWindow.showMinimized()
-        self.screenshotSubWindow.hide()
-
-        self.screenshotGraphicsWidgetFieldTypesInitialized = False
 
     def cleanup(self):
         # have to do cleanup to ensure some of the memory intensive resources e.g. self.screenshotGraphicsWidget get deallocated
@@ -558,7 +509,47 @@ class ScreenshotManager(ScreenshotManagerCore):
         # serializing all screenshots
         self.serialize_screenshot_data()
 
-    def outputScreenshots(self, _generalScreenshotDirectoryName,
+
+    # called from SimpleTabView:handleCompletedStep{Regular,CML*}
+    def outputScreenshots(self, _generalScreenshotDirectoryName,_mcs):
+
+        tvw = self.tabViewWidget()
+        bsd = tvw.basicSimulationData
+
+        screenshot_name = str(_mcs)
+        screenshot_fname = 'D:/CC3D_GIT/CompuCell3D/player5/GraphicsOffScreen/{screenshot_name}.png'.format(
+            screenshot_name=screenshot_name)
+
+        for screenshot_name in self.screenshotDataDict.keys():
+            screenshot_data = self.screenshotDataDict[screenshot_name]
+
+            self.gd.draw(screenshot_data=screenshot_data, bsd=bsd, screenshot_name=screenshot_name)
+            self.gd.output_screenshot(screenshot_fname=screenshot_fname)
+
+        # #        print MODULENAME, 'outputScreenshots():  _generalScreenshotDirectoryName=',_generalScreenshotDirectoryName
+        # mcsFormattedNumber = string.zfill(str(_mcs),
+        #                                   self.screenshotNumberOfDigits)  # fills string with 0's up to self.screenshotNumberOfDigits width
+        #
+        # if not self.screenshotGraphicsWidgetFieldTypesInitialized:
+        #     tvw = self.tabViewWidget()
+        #     if tvw:
+        #         self.screenshotGraphicsWidget.setFieldTypesComboBox(tvw.fieldTypes)
+        #
+        # # apparently on linux and most likely OSX we need to resize screenshot window before each screenshot
+        # xSize = Configuration.getSetting("Screenshot_X")
+        # ySize = Configuration.getSetting("Screenshot_Y")
+        #
+        # # xSize = 1000
+        # # ySize = 1000
+        # #
+        # # self.screenshotGraphicsWidget.resize(xSize,ySize)
+        #
+        # self.screenshotGraphicsWidget.qvtkWidget.GetRenderWindow().SetSize(xSize, ySize)  # default size
+        # self.screenshotGraphicsWidget.qvtkWidget.resize(xSize, ySize)
+
+
+
+    def outputScreenshots_orig(self, _generalScreenshotDirectoryName,
                           _mcs):  # called from SimpleTabView:handleCompletedStep{Regular,CML*}
         print "Cannot output screenshots"
         return

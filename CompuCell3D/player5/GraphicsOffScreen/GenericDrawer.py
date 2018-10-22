@@ -13,6 +13,8 @@
 # todo - check api for show, prepare init functions
 # todo - fix color of fpp links
 # todo - find better way to determine if fpp plugin is properly loaded
+# todo - any references to simpletabview should be via weakref
+
 
 import string
 import Configuration
@@ -363,7 +365,7 @@ class GenericDrawer():
             # writer.SetInputConnection(windowToImageFilter.GetOutputPort())
             # writer.Write()
 
-    def output_screenshot(self,ren, screenshot_fname):
+    def output_screenshot(self, screenshot_fname):
         """
         Saves scene rendered in the renderer to the image
         :param ren: {vtkRenderer} renderer
@@ -371,6 +373,7 @@ class GenericDrawer():
         :return: None
         """
 
+        ren = self.get_renderer()
         renWin = vtk.vtkRenderWindow()
         renWin.SetOffScreenRendering(1)
         renWin.AddRenderer(ren)
@@ -387,6 +390,32 @@ class GenericDrawer():
 
         writer.SetInputConnection(windowToImageFilter.GetOutputPort())
         writer.Write()
+
+
+    # def output_screenshot(self,ren, screenshot_fname):
+    #     """
+    #     Saves scene rendered in the renderer to the image
+    #     :param ren: {vtkRenderer} renderer
+    #     :param screenshot_fname: {str} screenshot filename
+    #     :return: None
+    #     """
+    #
+    #     renWin = vtk.vtkRenderWindow()
+    #     renWin.SetOffScreenRendering(1)
+    #     renWin.AddRenderer(ren)
+    #     renWin.Render()
+    #
+    #     windowToImageFilter = vtk.vtkWindowToImageFilter()
+    #     windowToImageFilter.SetInput(renWin)
+    #     windowToImageFilter.Update()
+    #
+    #     writer = vtk.vtkPNGWriter()
+    #     # writer.SetFileName('D:/CC3D_GIT/CompuCell3D/player5/GraphicsOffScreen/{screenshot_name}.png'.format(
+    #     #     screenshot_name=screenshot_fname))
+    #     writer.SetFileName(screenshot_fname)
+    #
+    #     writer.SetInputConnection(windowToImageFilter.GetOutputPort())
+    #     writer.Write()
 
     def draw_old(self, screenshot_data, bsd, screenshot_name):
         # drawing_params = DrawingParameters()

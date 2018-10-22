@@ -2104,6 +2104,11 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
 
             # gd.draw(drawing_params=drawing_params,screenshot_name=screenshot_name)
             gd.draw(screenshot_data=screenshot_data, bsd=bsd,screenshot_name=screenshot_name)
+            screenshot_name = str(current_step)
+            screenshot_fname = 'D:/CC3D_GIT/CompuCell3D/player5/GraphicsOffScreen/{screenshot_name}.png'.format(
+                screenshot_name=screenshot_name)
+            gd.output_screenshot(screenshot_fname=screenshot_fname)
+
 
         # OK
         # drawing_params = DrawingParameters()
