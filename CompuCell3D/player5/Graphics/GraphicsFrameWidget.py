@@ -1229,7 +1229,8 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
             print MODULENAME, '  _takeShot():  fieldType=', field_name_type_tuple
 
             if self.draw3DFlag:
-                metadata = self.drawModel3D.get_metadata(field_name=field_name, field_type=field_type)
+                # metadata = self.drawModel3D.get_metadata(field_name=field_name, field_type=field_type)
+                metadata = self.get_metadata(field_name=field_name, field_type=field_type)
                 self.parentWidget.screenshotManager.add3DScreenshot(field_name, field_type, camera, metadata)
             else:
                 planePositionTupple = self.draw2D.getPlane()

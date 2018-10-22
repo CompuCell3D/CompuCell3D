@@ -240,6 +240,7 @@ class ScreenshotManagerCore(object):
 
         for scr_name, scr_data_elem in scr_data_container.items():
             scr_data = ScreenshotData()
+            scr_data.screenshotName = scr_name
 
             scr_data.plotData = tuple(map(lambda x:str(x),(scr_data_elem['Plot']['PlotName'], scr_data_elem['Plot']['PlotType'])))
             scr_data.spaceDimension = str(scr_data_elem['Dimension'])
