@@ -1,101 +1,50 @@
-# todo mane paranet widget a weak reference
-import sys
-import os
 import string
 import Configuration
-
-# def setVTKPaths():
-   # import sys
-   # from os import environ
-   # import string
-   # import sys
-   # platform=sys.platform
-   # if platform=='win32':
-      # sys.path.append(environ["VTKPATH"])
-      # sys.path.append(environ["VTKPATH1"])
-      # sys.path.append(environ["PYQT_PATH"])
-      # sys.path.append(environ["SIP_PATH"])
-      # sys.path.append(environ["SIP_UTILS_PATH"])
-# #   else:
-# #      swig_path_list=string.split(environ["VTKPATH"])
-# #      for swig_path in swig_path_list:
-# #         sys.path.append(swig_path)
-
-# # print "PATH=",sys.path
-# setVTKPaths()
-# # print "PATH=",sys.path  
-
-
-# from PyQt4 import QtCore, QtGui,QtOpenGL
-from PyQt5 import QtCore, QtGui,QtOpenGL, QtWidgets
-import vtk
+from PyQt5 import QtCore, QtGui, QtOpenGL, QtWidgets
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from enums import *
-
 from GraphicsOffScreen import GenericDrawer
-# import GraphicsOffScreen
 from Utilities import ScreenshotData
 from Utilities import qcolor_to_rgba, cs_string_to_typed_list
-
 import sys
-platform=sys.platform
-if platform=='darwin':    
+
+platform = sys.platform
+if platform == 'darwin':
     from Utilities.QVTKRenderWindowInteractor_mac import QVTKRenderWindowInteractor
-#     from Utilities.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-else:    
+else:
     from Utilities.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-
-# from Utilities.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor    
-
-from MVCDrawView2D import MVCDrawView2D
-from MVCDrawModel2D import MVCDrawModel2D
-
-from MVCDrawView3D import MVCDrawView3D
-from MVCDrawModel3D import MVCDrawModel3D
-
 MODULENAME = '---- GraphicsFrameWidget.py: '
 
 from weakref import ref
 
-# class GraphicsFrameWidget(QtGui.QFrame):
 class GraphicsFrameWidget(QtWidgets.QFrame):
-    # def __init__(self, parent=None, wflags=QtCore.Qt.WindowFlags(), **kw):
     def __init__(self, parent=None, originatingWidget=None):
-
         QtWidgets.QFrame.__init__(self, parent)
-        
-        
-        # print '\n\n\n\n\n CREATING NEW GRAPHICS FRAME WIDGET ',self
-        
-        
-        # self.allowSaveLayout = True
         self.is_screenshot_widget = False
-        self.qvtkWidget = QVTKRenderWindowInteractor(self)   # a QWidget
-        
+        self.qvtkWidget = QVTKRenderWindowInteractor(self)  # a QWidget
+
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        
+
         # MDIFIX
-        self.parentWidget = originatingWidget
-        # self.parentWidget = parent
-        
-        
+        self.parentWidget = ref(originatingWidget)
+
         self.plane = None
         self.planePos = None
 
         self.lineEdit = QtWidgets.QLineEdit()
-        
+
         self.__initCrossSectionActions()
-        self.cstb = self.initCrossSectionToolbar()        
-        
+        self.cstb = self.initCrossSectionToolbar()
+
         layout = QtWidgets.QBoxLayout(QtWidgets.QBoxLayout.TopToBottom)
         layout.addWidget(self.cstb)
         layout.addWidget(self.qvtkWidget)
         self.setLayout(layout)
-        self.setMinimumSize(100, 100) #needs to be defined to resize smaller than 400x400
+        self.setMinimumSize(100, 100)  # needs to be defined to resize smaller than 400x400
         self.resize(600, 600)
-        
+
         self.qvtkWidget.Initialize()
         self.qvtkWidget.Start()
 
@@ -105,124 +54,22 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.gd.set_interactive_camera_flag(True)
         self.current_screenshot_data = None
 
-
         self.camera2D = self.gd.get_active_camera()
         self.camera3D = self.gd.get_renderer().MakeCamera()
-        # self.camera3D.SetClippingRange(self.camera2D.GetClippingRange())
-        # self.camera3D.SetFocalPoint(self.camera2D.GetFocalPoint())
-        # self.camera3D.SetPosition(self.camera2D.GetPosition())
-        # self.camera3D.SetViewUp(self.camera2D.GetViewUp())
 
         self.renWin = self.qvtkWidget.GetRenderWindow()
         self.renWin.AddRenderer(self.gd.get_renderer())
 
-        # todo 5 - ok previous code
-        # self.ren = vtk.vtkRenderer()
-        # self.renWin = self.qvtkWidget.GetRenderWindow()
-        # self.renWin.AddRenderer(self.ren)
-
-
-
-
-#        print MODULENAME,"GraphicsFrameWidget():__init__:   parent=",parent
-
-        #    some objects below create cyclic dependencies - the widget will not free its memory unless  in the close event e.g.  self.drawModel2D gets set to None
-        # # # from weakref import ref
-        
-        # # # self_weakref=ref(self)
-        # # # self.drawModel2D = MVCDrawModel2D(self_weakref,parent)
-        # # # self.draw2D = MVCDrawView2D(self.drawModel2D,self_weakref,parent)
-        
-        # # # self.drawModel3D = MVCDrawModel3D(self_weakref,parent)
-        # # # self.draw3D = MVCDrawView3D(self.drawModel3D,self_weakref,parent)
-        
-        # todo 5
-        # # MDIFIX
-        # self.drawModel2D = MVCDrawModel2D(self, self.parentWidget)
-        # self.draw2D = MVCDrawView2D(self.drawModel2D, self, self.parentWidget)
-        #
-        # self.drawModel3D = MVCDrawModel3D(self, self.parentWidget)
-        # self.draw3D = MVCDrawView3D(self.drawModel3D, self, self.parentWidget)
-
-
-
-
-        # self.drawModel2D = MVCDrawModel2D(self,parent)
-        # self.draw2D = MVCDrawView2D(self.drawModel2D,self,parent)
-        #
-        # self.drawModel3D = MVCDrawModel3D(self,parent)
-        # self.draw3D = MVCDrawView3D(self.drawModel3D,self,parent)
-
-
-
-
-
-#         # self.draw2D=Draw2D(self,parent)
-#         # self.draw3D=Draw3D(self,parent)
-#         self.camera3D = self.ren.MakeCamera()
-#         self.camera2D = self.ren.GetActiveCamera()
-#         self.ren.SetActiveCamera(self.camera2D)
-#
-#
-#         self.currentDrawingObject = self.draw2D
-#
-#
-#         self.draw3DFlag = False
-#         self.usedDraw3DFlag = False
-#         # self.getattrFcn=self.getattrDraw2D
-#
-#         # rwh test
-# #        print MODULENAME,' self.parentWidget.playerSettingsFileName= ',self.parentWidget.playerSettingsFileName
-#         if self.parentWidget.playerSettingsFileName:
-#             # does not work on Windows with Python 2.5
-#             # with open(self.parentWidget.playerSettingsFileName, 'r') as f:
-#             f=None
-#             try:
-#                 f=open(self.parentWidget.playerSettingsFileName, 'r')
-#                 while True:
-#                     l = f.readline()
-#                     if l == "": break
-#                     v = l.split()
-#                     print v
-#                     if string.find(v[0], 'CameraPosition') > -1:
-#                         self.camera3D.SetPosition(float(v[1]), float(v[2]), float(v[3]))
-#                     elif string.find(v[0], 'CameraFocalPoint') > -1:
-#                         self.camera3D.SetFocalPoint(float(v[1]), float(v[2]), float(v[3]))
-#                     elif string.find(v[0], 'CameraViewUp') > -1:
-#                         self.camera3D.SetViewUp(float(v[1]), float(v[2]), float(v[3]))
-# #                    elif string.find(v[0], 'ViewPlaneNormal') > -1:   # deprecated
-# #                        self.camera3D.SetViewPlaneNormal(float(v[1]), float(v[2]), float(v[3]))
-#                     elif string.find(v[0], 'CameraClippingRange') > -1:
-#                         self.camera3D.SetClippingRange(float(v[1]), float(v[2]))
-#                     elif string.find(v[0], 'CameraDistance') > -1:
-#                         print 'SetDistance = ',float(v[1])
-#                         self.camera3D.SetDistance(float(v[1]))
-#                     elif string.find(v[0], 'ViewAngle') > -1:
-#                         self.camera3D.SetViewAngle(float(v[1]))
-#
-#             except IOError:
-#                 pass
-#
-#         self.screenshotWindowFlag=False
-#             # # # self.setDrawingStyle("3D")
-#     #        self.currentDrawingObject = self.draw3D
-#     #        self.draw3DFlag = True
-#     #        self.usedDraw3DFlag = False
-#     #        self.ren.SetActiveCamera(self.camera3D)
-# #            self.camera3D.SetPosition(100,100,100)
-# #            self.qvtkWidget.SetSize(200,200)
-#
-
         self.metadata_fetcher_dict = {
             'CellField': self.get_cell_field_metadata,
-            'ConField':self.get_con_field_metadata,
-            'ScalarField':self.get_con_field_metadata,
+            'ConField': self.get_con_field_metadata,
+            'ScalarField': self.get_con_field_metadata,
             'ScalarFieldCellLevel': self.get_con_field_metadata,
             'VectorField': self.get_con_field_metadata,
             'VectorFieldCellLevel': self.get_vector_field_metadata,
         }
 
-    def copy_camera(self,src,dst):
+    def copy_camera(self, src, dst):
         """
         Copies camera settings
         :param src: 
@@ -234,8 +81,13 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         dst.SetPosition(src.GetPosition())
         dst.SetViewUp(src.GetViewUp())
 
-
     def get_metadata(self, field_name, field_type):
+        """
+        Fetches a dictionary that summarizes graphics/configs settings for the current scene
+        :param field_name: {str} field name
+        :param field_type: {str} field type
+        :return: {dict}
+        """
         try:
             metadata_fetcher_fcn = self.metadata_fetcher_dict[field_type]
         except KeyError:
@@ -246,6 +98,13 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         return metadata
 
     def get_cell_field_metadata(self, field_name, field_type):
+        """
+        Returns dictionary of auxiliary information needed to cell field
+        :param field_name:{str} field_name
+        :param field_type: {str} field type
+        :return: {dict}
+        """
+
         metadata_dict = self.get_color_metadata(field_name=field_name, field_type=field_type)
         return metadata_dict
 
@@ -253,6 +112,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         """
         Returns dictionary of auxiliary information needed to render borders
         :param field_name:{str} field_name
+        :param field_type: {str} field type
         :return: {dict}
         """
         metadata_dict = {}
@@ -271,6 +131,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         """
         Returns dictionary of auxiliary information needed to render a give scene
         :param field_name:{str} field_name
+        :param field_type: {str} field type
         :return: {dict}
         """
 
@@ -283,44 +144,48 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         metadata_dict['MaxRange'] = Configuration.getSetting("MaxRange", con_field_name)
         metadata_dict['ContoursOn'] = Configuration.getSetting("ContoursOn", con_field_name)
         metadata_dict['NumberOfContourLines'] = Configuration.getSetting("NumberOfContourLines", field_name)
-        metadata_dict['ScalarIsoValues'] = cs_string_to_typed_list(Configuration.getSetting("ScalarIsoValues", field_name))
+        metadata_dict['ScalarIsoValues'] = cs_string_to_typed_list(
+            Configuration.getSetting("ScalarIsoValues", field_name))
         metadata_dict['LegendEnable'] = Configuration.getSetting("LegendEnable", field_name)
-
-
 
         return metadata_dict
 
-    def get_vector_field_metadata(self,field_name, field_type):
+    def get_vector_field_metadata(self, field_name, field_type):
         """
         Returns dictionary of auxiliary information needed to render a give scene
         :param field_name:{str} field_name
+        :param field_type: {str} field type
         :return: {dict}
         """
 
         metadata_dict = self.get_con_field_metadata(field_name=field_name, field_type=field_type)
-        metadata_dict['ArrowLength'] = Configuration.getSetting('ArrowLength',field_name)
+        metadata_dict['ArrowLength'] = Configuration.getSetting('ArrowLength', field_name)
         metadata_dict['FixedArrowColorOn'] = Configuration.getSetting('FixedArrowColorOn', field_name)
         metadata_dict['ArrowColor'] = qcolor_to_rgba(Configuration.getSetting('ArrowColor', field_name))
         metadata_dict['ScaleArrowsOn'] = Configuration.getSetting('ScaleArrowsOn', field_name)
 
-
         return metadata_dict
 
     def initialize_scene(self):
+        """
+        initialization function that sets up field extractor for the generic Drawer
+        :return:
+        """
+        tvw = self.parentWidget()
         self.current_screenshot_data = self.compute_current_screenshot_data()
 
-        self.gd.set_field_extractor(field_extractor=self.parentWidget.fieldExtractor)
+        self.gd.set_field_extractor(field_extractor=tvw.fieldExtractor)
 
     def get_current_field_name_and_type(self):
         """
-        Returns current field nanem and type
+        Returns current field name and type
         :return: {tuple}
         """
-
+        tvw = self.parentWidget()
         field_name = str(self.fieldComboBox.currentText())
 
         try:
-            field_type = self.parentWidget.fieldTypes[field_name]
+            field_type = tvw.fieldTypes[field_name]
         except KeyError:
             return field_name, ''
             # raise KeyError('Could not figure out the type of the field {} you requested'.format(field_name))
@@ -337,7 +202,6 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         scr_data = ScreenshotData()
         self.store_gui_vis_config(scr_data=scr_data)
 
-
         projection_name = str(self.projComboBox.currentText())
         projection_position = int(self.projSpinBox.value())
 
@@ -345,11 +209,6 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         scr_data.plotData = (field_name, field_type)
 
         metadata = self.get_metadata(field_name=scr_data.plotData[0], field_type=scr_data.plotData[1])
-
-
-        #     str(self.fieldComboBox.currentText())
-        # if self.parentWidget.fieldTypes.has_key(field_name):
-        #     self.parentWidget.setFieldType((name, self.parentWidget.fieldTypes[name]))
 
         if projection_name == '3D':
             scr_data.spaceDimension = '3D'
@@ -362,7 +221,6 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
         return scr_data
 
-
     def store_gui_vis_config(self, scr_data):
         """
         Stores visualization settings such as cell borders, on/or cell on/off etc...
@@ -370,11 +228,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         :param scr_data: {instance of ScreenshotDescriptionData}
         :return: None
         """
-        # todo 5 make it a weakref
-        tvw = self.parentWidget
-        # tvw = self.tabViewWidget()
-        # if tvw:
-        #     tvw.updateActiveWindowVisFlags(self.screenshotGraphicsWidget)
+        tvw = self.parentWidget()
 
         scr_data.cell_borders_on = tvw.borderAct.isChecked()
         scr_data.cells_on = tvw.cellsAct.isChecked()
@@ -390,7 +244,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         invisible_types = invisible_types.strip()
 
         if invisible_types:
-            scr_data.invisible_types = list(map(lambda x : int(x), invisible_types.split(',')))
+            scr_data.invisible_types = list(map(lambda x: int(x), invisible_types.split(',')))
         else:
             scr_data.invisible_types = []
 
@@ -400,16 +254,20 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         :return:
         """
         self.Render()
-        # self.graphicsFrameWidget.repaint()
 
 
-    def draw(self,basic_simulation_data):
+    def draw(self, basic_simulation_data):
+        """
+        Main drawing function - calls draw fcn from the GenericDrawer. All drawing happens there
+        :param basic_simulation_data: {instance of BasicSimulationData}
+        :return: None
+        """
 
         if self.current_screenshot_data is None:
             self.initialize_scene()
 
         self.gd.clear_display()
-        #todo 5 - trying computing screenshot data every draw request
+
         self.current_screenshot_data = self.compute_current_screenshot_data()
 
         self.gd.draw(screenshot_data=self.current_screenshot_data, bsd=basic_simulation_data, screenshot_name='')
@@ -424,24 +282,23 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
     def conMinMax(self):
         print 'CHANGE THIS'
-        return ['0','0']
+        return ['0', '0']
 
     def setStatusBar(self, statusBar):
         self._statusBar = statusBar
 
     # Break the settings read into groups?
     def readSettings(self):  # only performed at startup
-        #        print MODULENAME,'----- readSettings()'
+
         self.readColorsSets()
         self.readViewSets()
-        #        self.readColormapSets()
+
         self.readOutputSets()
-        #        self.readVectorSets()
+
         self.readVisualSets()
-        # simDefaults?
 
     def readColorsSets(self):
-        #        print MODULENAME,'----- readColorsSets()'
+
         # colorsDefaults
         self._colorMap = Configuration.getSetting("TypeColorMap")
         self._borderColor = Configuration.getSetting("BorderColor")
@@ -459,9 +316,9 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def readOutputSets(self):
         # Should I read the settings here?
         # outputDefaults
-        self._updateScreen     = Configuration.getSetting("ScreenUpdateFrequency")
-        self._imageOutput      = Configuration.getSetting("ImageOutputOn")
-        self._shotFrequency    = Configuration.getSetting("ScreenUpdateFrequency")
+        self._updateScreen = Configuration.getSetting("ScreenUpdateFrequency")
+        self._imageOutput = Configuration.getSetting("ImageOutputOn")
+        self._shotFrequency = Configuration.getSetting("ScreenUpdateFrequency")
 
     def readVisualSets(self):
         # visualDefaults
@@ -478,142 +335,32 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         """
         print 'configsChanged'
 
-
-    # def clearDisplayOnDemand(self):
-        # self.draw2D.clearDisplay()
-        
-    # def changeStateMonitor(self,oldState,newState):
-        # print 'oldState=',oldState
-        # print 'newState=',newState
-        
-    # def sizeHint(self):
-        # return QSize(400,400)
-        
-    # def changeEvent(self, ev):
-        # print 'INSIDE CHANGE EVENT', self, ' type=',ev.type()
-        # if ev.type() == QEvent.WindowStateChange:
-            # ev.ignore()
-            # print 'CHANGING STATE OF THE QWINDOW'
-            # print 'max=',self.isMaximized(),' min=',self.isMinimized()
-            
-            # if self.isMaximized()  and self.screenshotWindowFlag:
-                # self.qvtkWidget.GetRenderWindow().SetSize(400,400) # default size
-                # self.qvtkWidget.resize(400,400)
-        
-                # self.showNormal()
-                # self.hide()
-                
-                # print 'self.parent=',
-                # # self.parentWidget.activateMainGraphicsWindow()
-                # # self.setShown(False)                  
-                # # self.showMinimized()
-                # # self.parent.activatePreviousSubWindow()
-                
-            
-            
-#     def  resizeEvent(self, ev) :
-#         print 'THIS IS RESIZE EVENT'
-        # print 'resizing graphics window ',self, 'ev.type()=',ev.type(), ' isMaximized=',self.isMaximized()
-        # if self.isMaximized():
-            # ev.ignore()
-
-
-    # todo 5
-    # def resetAllCameras(self):
-    #     print 'resetAllCameras in GraphicsFrame =',self
-    #
-    #     self.draw2D.resetAllCameras()
-    #     self.draw3D.resetAllCameras()
-        
-    # def __getattr__(self, attr):
-    #     """Makes the object behave like a DrawBase"""
-    #     if not self.draw3DFlag:
-    #         if hasattr(self.draw2D, attr):
-    #             return getattr(self.draw2D, attr)
-    #         else:
-    #             raise AttributeError, self.__class__.__name__ + \
-    #                   " has no attribute named " + attr
-    #     else:
-    #         if hasattr(self.draw3D, attr):
-    #             return getattr(self.draw3D, attr)
-    #         else:
-    #             raise AttributeError, self.__class__.__name__ + \
-    #                   " has no attribute named " + attr
-            
-
-
-    
-        # print "FINDING ATTRIBUTE ", attr
-        # self.getattrFcn(attr)
-        
-    # def getattrDraw2D(self,attr):
-        # print "INSIDE getattrDraw2D ",attr
-        # print "hasattr(self.draw2D, attr)=",hasattr(self.draw2D, attr)
-        # if hasattr(self.draw2D, attr):
-            # print getattr(self.draw2D, attr)
-            # return getattr(self.draw2D, attr)
-        # else:
-            # raise AttributeError, self.__class__.__name__ + \
-                  # " has no attribute named " + attr
-                  
-    # def getattrDraw3D(self,attr):
-        # if hasattr(self.draw3D, attr):            
-            # return getattr(self.draw3D, attr)
-        # else:
-            # raise AttributeError, self.__class__.__name__ + \
-                  # " has no attribute named " + attr
     def populateLookupTable(self):
         self.drawModel2D.populateLookupTable()
         self.drawModel3D.populateLookupTable()
 
-
     def Render(self):
-        #        print MODULENAME, ' ---------Render():'
-        #        Configuration.getSetting("CurrentFieldName",name)
         color = Configuration.getSetting("WindowColor")
-        #        r = color.red()
-        #        g = color.green()
-        #        b = color.blue()
-        #        print MODULENAME,'  setBorderColor():   r,g,b=',r,g,b
-        #        self.borderActor.GetProperty().SetColor(self.toVTKColor(r), self.toVTKColor(g), self.toVTKColor(b))
-        # self.ren.SetBackground(float(color.red()) / 255, float(color.green()) / 255, float(color.blue()) / 255)
-        # self.qvtkWidget.Render()
-
-        self.gd.get_renderer().SetBackground(float(color.red()) / 255, float(color.green()) / 255, float(color.blue()) / 255)
+        self.gd.get_renderer().SetBackground(float(color.red()) / 255, float(color.green()) / 255,
+                                             float(color.blue()) / 255)
         self.qvtkWidget.Render()
 
-
-# todo 5 - old code
-#     def Render(self):
-#
-# #        print MODULENAME, ' ---------Render():'
-# #        Configuration.getSetting("CurrentFieldName",name)
-#         color = Configuration.getSetting("WindowColor")
-# #        r = color.red()
-# #        g = color.green()
-# #        b = color.blue()
-# #        print MODULENAME,'  setBorderColor():   r,g,b=',r,g,b
-# #        self.borderActor.GetProperty().SetColor(self.toVTKColor(r), self.toVTKColor(g), self.toVTKColor(b))
-#         self.ren.SetBackground(float(color.red())/255, float(color.green())/255, float(color.blue())/255)
-#         self.qvtkWidget.Render()
-        
     def getCamera(self):
         return self.getActiveCamera()
 
     def getActiveCamera(self):
         return self.gd.get_active_camera()
 
-
     # def getActiveCamera(self):
     #     return self.ren.GetActiveCamera()
-    
-    def setActiveCamera(self,_camera):
+
+    def setActiveCamera(self, _camera):
         return self.ren.SetActiveCamera(_camera)
-        
-    def getCamera2D(self):    
-        return self.camera2D        
-        
-    def setZoomItems(self,_zitems):
+
+    def getCamera2D(self):
+        return self.camera2D
+
+    def setZoomItems(self, _zitems):
         # todo 5
         # self.draw2D.setZoomItems(_zitems)
         # self.draw3D.setZoomItems(_zitems)
@@ -631,7 +378,6 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def hideClusterBorder(self):
         pass
 
-
     def showCells(self):
         pass
 
@@ -641,435 +387,233 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def setPlane(self, plane, pos):
         (self.plane, self.planePos) = (str(plane).upper(), pos)
         # print (self.plane, self.planePos)
+
     def getPlane(self):
         return (self.plane, self.planePos)
 
-
-
     def initCrossSectionToolbar(self):
         cstb = QtWidgets.QToolBar("CrossSection", self)
-        #viewtb.setIconSize(QSize(20, 18))
+        # viewtb.setIconSize(QSize(20, 18))
         cstb.setObjectName("CrossSection")
         cstb.setToolTip("Projection")
-        
-#        cstb.addWidget( QtGui.QLabel("  ")) # Spacer, just make it look pretty
-#        cstb.addWidget( QtGui.QLabel("  ")) # Spacer, just make it look pretty 
-#        cstb.addWidget(self.threeDRB)
-#        cstb.addWidget( QtGui.QLabel("  "))
-#        cstb.addWidget(self.xyRB)
-#        cstb.addWidget(self.xySB)
-#        cstb.addWidget( QtGui.QLabel("  "))
-#        cstb.addWidget(self.xzRB)
-#        cstb.addWidget(self.xzSB)
-#        cstb.addWidget( QtGui.QLabel("  "))
-#        cstb.addWidget(self.yzRB)
-#        cstb.addWidget(self.yzSB)
-#        cstb.addWidget( QtGui.QLabel("    ")) 
 
         # new technique (rwh, May 2011), instead of individual radio buttons as originally done (above)
         cstb.addWidget(self.projComboBox)
         cstb.addWidget(self.projSpinBox)
-        
+
         cstb.addWidget(self.fieldComboBox)
         cstb.addAction(self.screenshotAct)
-        
+
         return cstb
-        
+
     def __initCrossSectionActions(self):
         # Do I need actions? Probably not, but will leave for a while
-        
-        # old way
-#        self.threeDAct = QtGui.QAction(self)
-#        self.threeDRB  = QtGui.QRadioButton("3D")
-#        self.threeDRB.addAction(self.threeDAct)
-#
-#        self.xyAct = QtGui.QAction(self)
-#        self.xyRB  = QtGui.QRadioButton("xy")
-#        self.xyRB.addAction(self.xyAct)
-#
-#        self.xySBAct = QtGui.QAction(self)
-#        self.xySB  = QtGui.QSpinBox()
-#        self.xySB.addAction(self.xySBAct)
-#
-#        self.xzAct = QtGui.QAction(self)
-#        self.xzRB  = QtGui.QRadioButton("xz")
-#        self.xzRB.addAction(self.xzAct)
-#
-#        self.xzSBAct = QtGui.QAction(self)
-#        self.xzSB  = QtGui.QSpinBox()
-#        self.xzSB.addAction(self.xzSBAct)
-#
-#        self.yzAct = QtGui.QAction(self)
-#        self.yzRB  = QtGui.QRadioButton("yz")
-#        self.yzRB.addAction(self.yzAct)
-#
-#        self.yzSBAct = QtGui.QAction(self)
-#        self.yzSB  = QtGui.QSpinBox()
-#        self.yzSB.addAction(self.yzSBAct)
-        
+
         # new (rwh, May 2011)
         self.projComboBoxAct = QtWidgets.QAction(self)
-        self.projComboBox  = QtWidgets.QComboBox()
+        self.projComboBox = QtWidgets.QComboBox()
         self.projComboBox.addAction(self.projComboBoxAct)
-        
+
         # NB: the order of these is important; rf. setInitialCrossSection where we set 'xy' to be default projection
         self.projComboBox.addItem("3D")
         self.projComboBox.addItem("xy")
         self.projComboBox.addItem("xz")
         self.projComboBox.addItem("yz")
-        
+
         self.projSBAct = QtWidgets.QAction(self)
-        self.projSpinBox  = QtWidgets.QSpinBox()
+        self.projSpinBox = QtWidgets.QSpinBox()
         self.projSpinBox.addAction(self.projSBAct)
 
         self.fieldComboBoxAct = QtWidgets.QAction(self)
-        self.fieldComboBox  = QtWidgets.QComboBox()   # Note that this is different than the fieldComboBox in the Prefs panel (rf. SimpleTabView.py)
+        self.fieldComboBox = QtWidgets.QComboBox()  # Note that this is different than the fieldComboBox in the Prefs panel (rf. SimpleTabView.py)
         self.fieldComboBox.addAction(self.fieldComboBoxAct)
         self.fieldComboBox.addItem("-- Field Type --")
         # self.fieldComboBox.addItem("cAMP")  # huh?
         import DefaultData
         gip = DefaultData.getIconPath
         self.screenshotAct = QtWidgets.QAction(QtGui.QIcon(gip("screenshot.png")), "&Take Screenshot", self)
-        
-        
 
     def _xyChecked(self, checked):
-        if self.parentWidget.completedFirstMCS:
-            self.parentWidget.newDrawingUserRequest = True
+        tvw = self.parentWidget()
+
+        if tvw.completedFirstMCS:
+            tvw.newDrawingUserRequest = True
         if checked:
             self.projComboBox.setCurrentIndex(1)
-#            self.setPlane("xy", self.xySB.value())
-#            self.xyRB.setChecked(checked)
-#            self.currentDrawingObject.setPlane("xy", self.xySB.value())
-#            self.parentWidget._drawField()
-#            
+
     def _xzChecked(self, checked):
-        if self.parentWidget.completedFirstMCS:
-            self.parentWidget.newDrawingUserRequest = True
+        tvw = self.parentWidget()
+        if tvw.completedFirstMCS:
+            tvw.newDrawingUserRequest = True
         if checked:
             self.projComboBox.setCurrentIndex(2)
-#            self.setPlane("xz", self.xzSB.value())
-#            self.xzRB.setChecked(checked)
-#            self.currentDrawingObject.setPlane("xz", self.xzSB.value())
-#            self.parentWidget._drawField()
-#            
+
     def _yzChecked(self, checked):
-        if self.parentWidget.completedFirstMCS:
-            self.parentWidget.newDrawingUserRequest = True
+        tvw = self.parentWidget()
+        if tvw.completedFirstMCS:
+            tvw.newDrawingUserRequest = True
         if checked:
             self.projComboBox.setCurrentIndex(3)
-#            self.setPlane("yz", self.yzSB.value())
-#            self.yzRB.setChecked(checked)
-#            self.currentDrawingObject.setPlane("yz", self.yzSB.value())
-#            self.parentWidget._drawField()
-            
-            
-    def _projComboBoxChanged(self):   # new (rwh, May 2011)
 
+    def _projComboBoxChanged(self):  # new (rwh, May 2011)
+        tvw = self.parentWidget()
 
-
-        if self.parentWidget.completedFirstMCS:
-            self.parentWidget.newDrawingUserRequest = True
+        if tvw.completedFirstMCS:
+            tvw.newDrawingUserRequest = True
         name = str(self.projComboBox.currentText())
-#        print MODULENAME, ' _projectionChanged:  name =',name
         self.currentProjection = name
-        
+
         if self.currentProjection == '3D':  # disable spinbox
-#            print '   _projSpinBoxChanged, doing 3D'
+
             self.projSpinBox.setEnabled(False)
             self.setDrawingStyle("3D")
-            if self.parentWidget.completedFirstMCS:
-                self.parentWidget.newDrawingUserRequest = True
-            # todo - old code
-            # self.parentWidget._drawField()   # SimpleTabView.py
-        
+            if tvw.completedFirstMCS:
+                tvw.newDrawingUserRequest = True
+
         elif self.currentProjection == 'xy':
             self.projSpinBox.setEnabled(True)
-#            print ' self.xyPlane, xyMaxPlane=',self.xyPlane, self.xyMaxPlane
-#            self._xyChanged(2)
-#            val = 2
-#            self.setPlane("xy", val)
-##            self.xySB.setValue(val)
-#            self.currentDrawingObject.setPlane("xy", val)
-#            self.parentWidget._drawField()
-#            self.projSpinBox.setMaximum(self.xyMaxPlane)
-#            self.projSpinBox.setValue(self.xyPlane)  # automatically invokes the callback (--Changed)
-
             self.projSpinBox.setValue(self.xyPlane)
             self._projSpinBoxChanged(self.xyPlane)
-#            print '  xy: new max = ', self.projSpinBox.maximum()
-#            print '  xy: new val = ', self.projSpinBox.value()
-            
+
         elif self.currentProjection == 'xz':
             self.projSpinBox.setEnabled(True)
-#            print ' self.xzPlane, xzMaxPlane=',self.xzPlane, self.xzMaxPlane
-#            print ' got xz proj'
-#            self.projSpinBox.setMaximum(self.xzMaxPlane)
-#            self.projSpinBox.setValue(self.xzPlane)
-#            self.projSpinBox.setMaximum(self.xzMaxPlane)
+
             self.projSpinBox.setValue(self.xzPlane)
             self._projSpinBoxChanged(self.xzPlane)
-            
+
         elif self.currentProjection == 'yz':
             self.projSpinBox.setEnabled(True)
-#            print ' self.yzPlane, yzMaxPlane=',self.yzPlane, self.yzMaxPlane
-#            self.projSpinBox.setMaximum(self.yzMaxPlane)
-#            self.projSpinBox.setValue(self.yzPlane)
+
             self.projSpinBox.setValue(self.yzPlane)
             self._projSpinBoxChanged(self.yzPlane)
 
         self.current_screenshot_data = self.compute_current_screenshot_data()
 
-        self.parentWidget._drawField()  # SimpleTabView.py
-        # # todo 5 - essential call to refresh screen . otherwise need to move window
+        tvw._drawField()  # SimpleTabView.py
 
         # self.qvtkWidget.zoomIn()
         # self.qvtkWidget.zoomOut()
 
         # self.Render()
         # self.render_repaint()
-            
+
     def _projSpinBoxChanged(self, val):
-#        print ' GFW: _projSpinBoxChanged: val =',val
-#        print ' spinBoxChanged: self.xyPlane, xyMaxPlane=',self.xyPlane, self.xyMaxPlane
 
-        # return
+        tvw = self.parentWidget()
 
-        if self.parentWidget.completedFirstMCS:
-            self.parentWidget.newDrawingUserRequest = True
-            
+        if tvw.completedFirstMCS:
+            tvw.newDrawingUserRequest = True
+
         self.setDrawingStyle("2D")
-        
+
         if self.currentProjection == 'xy':
             if val > self.xyMaxPlane: val = self.xyMaxPlane
             self.projSpinBox.setValue(val)
             self.setPlane(self.currentProjection, val)  # for some bizarre(!) reason, val=0 for xyPlane
             self.xyPlane = val
-#            self.projSpinBox.setValue(val)
-#            print ' _projSpinBoxChanged: set xy val=',val
-            # print 'self.currentDrawingObject=',self.currentDrawingObject
-            # print 'self.draw2D=',self.draw2D
-            #todo 5 -  remove
-            # self.currentDrawingObject.setPlane(self.currentProjection, self.xyPlane)
-#            self.parentWidget._drawField()
 
         elif self.currentProjection == 'xz':
             if val > self.xzMaxPlane: val = self.xzMaxPlane
             self.projSpinBox.setValue(val)
             self.setPlane(self.currentProjection, val)
-            # todo 5 -  remove
-            # self.currentDrawingObject.setPlane(self.currentProjection, val)
-#            self.parentWidget._drawField()
             self.xzPlane = val
-            
+
         elif self.currentProjection == 'yz':
             if val > self.yzMaxPlane: val = self.yzMaxPlane
             self.projSpinBox.setValue(val)
             self.setPlane(self.currentProjection, val)
-            # todo 5 -  remove
-            # self.currentDrawingObject.setPlane(self.currentProjection, val)
-#            self.parentWidget._drawField()
             self.yzPlane = val
 
         self.current_screenshot_data = self.compute_current_screenshot_data()
-        self.parentWidget._drawField()   # SimpleTabView.py
-        # todo 5 - essential call to refresh screen . otherwise need to move window
-        self.Render()
-            
-#        if self.parentWidget.fieldTypes.has_key(name):
-#            # Tuple that holds (FieldName, FieldType), e.g. ("FGF", ConField)
-#            self.parentWidget.setFieldType((name, self.parentWidget.fieldTypes[name])) 
-#            self.parentWidget._drawField()
-            
-#    def _xyChanged(self, val):
-#        if self.parentWidget.completedFirstMCS:
-#            self.parentWidget.newDrawingUserRequest = True
-#        if self.xyRB.isChecked():
-#            self.setPlane("xy", val)
-#            self.xySB.setValue(val)
-#            self.currentDrawingObject.setPlane("xy", val)
-#            self.parentWidget._drawField()
-#
-#    def _xzChanged(self, val):
-#        if self.parentWidget.completedFirstMCS:
-#            self.parentWidget.newDrawingUserRequest = True
-#        if self.xzRB.isChecked():
-#            self.setPlane("xz", val)
-#            self.xzSB.setValue(val)
-#            self.currentDrawingObject.setPlane("xz", val)
-#            self.parentWidget._drawField()
-#
-#    def _yzChanged(self, val):
-#        if self.parentWidget.completedFirstMCS:
-#            self.parentWidget.newDrawingUserRequest = True
-#        if self.yzRB.isChecked():
-#            self.setPlane("yz", val)
-#            self.yzSB.setValue(val)
-#            self.currentDrawingObject.setPlane("yz", val)
-#            self.parentWidget._drawField()
-            
-    def _fieldTypeChanged(self):
-        if self.parentWidget.completedFirstMCS:
-            self.parentWidget.newDrawingUserRequest = True
-#        print MODULENAME,' _fieldTypeChanged(): self.fieldComboBox.count() = ',self.fieldComboBox.count()
-#        if self.fieldComboBox.count() > 0:
+        # SimpleTabView.py
+        tvw._drawField()
 
+    def _fieldTypeChanged(self):
+        tvw = self.parentWidget()
+        if tvw.completedFirstMCS:
+            tvw.newDrawingUserRequest = True
         field_name, field_type = self.get_current_field_name_and_type()
 
-        self.parentWidget.setFieldType((field_name, field_type))
+        tvw.setFieldType((field_name, field_type))
         self.current_screenshot_data = self.compute_current_screenshot_data()
-        self.parentWidget._drawField()
+        tvw._drawField()
 
-        # focal_point = self.camera3D.GetFocalPoint()
-
-        # this call seems to be needed to refresh qvtk widget
-        # self.gd.get_renderer().ResetCameraClippingRange()
-        # self.camera3D.SetFocalPoint(focal_point[0]*1.01, focal_point[1], focal_point[2])
-
-        # self.qvtkWidget.zoomIn()
-        # self.qvtkWidget.zoomOut()
-        # self.resetCamera()
-
-        self.Render()
-
-
-
-
-
-
-    def setDrawingStyle(self,_style):
+    def setDrawingStyle(self, _style):
         """
 
         :param _style:
         :return:
         """
-        print 'CHANGE SET DRAWING STYLE TODO 5'
 
-        # self.gd.setDrawingStyle(_style=_style)
-        # return
-        style=string.upper(_style)
-        if style=="2D":
+        style = string.upper(_style)
+        if style == "2D":
             self.draw3DFlag = False
-            # self.currentDrawingObject = self.draw2D
             self.gd.get_renderer().SetActiveCamera(self.camera2D)
             self.qvtkWidget.setMouseInteractionSchemeTo2D()
-            # self.draw3D.clearDisplay()
-        elif style=="3D":
+        elif style == "3D":
             self.draw3DFlag = True
-            # self.currentDrawingObject = self.draw3D
             self.gd.get_renderer().SetActiveCamera(self.camera3D)
-            # self.gd.get_renderer().SetActiveCamera(self.camera2D)
             self.qvtkWidget.setMouseInteractionSchemeTo3D()
-            # self.draw2D.clearDisplay()
 
-    # todo 5 - orig code
-    # def setDrawingStyle(self,_style):
-    #     """
-    #
-    #     :param _style:
-    #     :return:
-    #     """
-    #     print 'CHANGE SET DRAWING STYLE TODO 5'
-    #
-    #     self.gd.setDrawingStyle(_style=_style)
-    #     return
-    #     style=string.upper(_style)
-    #     if style=="2D":
-    #         self.draw3DFlag = False
-    #         self.currentDrawingObject = self.draw2D
-    #         self.ren.SetActiveCamera(self.camera2D)
-    #         self.qvtkWidget.setMouseInteractionSchemeTo2D()
-    #         self.draw3D.clearDisplay()
-    #     elif style=="3D":
-    #         self.draw3DFlag = True
-    #         self.currentDrawingObject = self.draw3D
-    #         self.ren.SetActiveCamera(self.camera3D)
-    #         self.qvtkWidget.setMouseInteractionSchemeTo3D()
-    #         self.draw2D.clearDisplay()
-
-    # def setDrawingStyle(self,_style):
-    #     style=string.upper(_style)
-    #     if style=="2D":
-    #         self.draw3DFlag = False
-    #         self.currentDrawingObject = self.draw2D
-    #         self.ren.SetActiveCamera(self.camera2D)
-    #         self.qvtkWidget.setMouseInteractionSchemeTo2D()
-    #         self.draw3D.clearDisplay()
-    #     elif style=="3D":
-    #         self.draw3DFlag = True
-    #         self.currentDrawingObject = self.draw3D
-    #         self.ren.SetActiveCamera(self.camera3D)
-    #         self.qvtkWidget.setMouseInteractionSchemeTo3D()
-    #         self.draw2D.clearDisplay()
-            
     def getCamera3D(self):
         return self.camera3D
-        
-    def _switchDim(self,checked):
-        print MODULENAME, '  _switchDim, checked=',checked
-        if self.parentWidget.completedFirstMCS:
-            self.parentWidget.newDrawingUserRequest = True
-        
+
+    def _switchDim(self, checked):
+
+        tvw = self.parentWidget()
+        if tvw.completedFirstMCS:
+            tvw.newDrawingUserRequest = True
+
         if checked:
-            # self.getattrFcn=self.__getattrDraw3D
+
             self.draw3DFlag = True
             self.ren.SetActiveCamera(self.camera3D)
-            self.qvtkWidget.setMouseInteractionSchemeTo3D()           
+            self.qvtkWidget.setMouseInteractionSchemeTo3D()
             self.draw2D.clearDisplay()
-#            self.threeDRB.setChecked(True)
+
             self.projComboBox.setCurrentIndex(0)
-            self.parentWidget._drawField()            
-            # if not self.usedDraw3DFlag and len(self.draw3D.currentActors.keys()):                
-                # self.usedDraw3DFlag=True
-                # self.qvtkWidget.resetCamera()
-                
+            tvw._drawField()
+
         else:
             self.draw3DFlag = False
             self.ren.SetActiveCamera(self.camera2D)
             self.qvtkWidget.setMouseInteractionSchemeTo2D()
             self.draw3D.clearDisplay()
-            self.parentWidget._drawField()
-            # self.getattrFcn=self.__getattrDraw2D
-            
-        # return self.ren.GetActiveCamera()
-        
+            tvw._drawField()
+
     def getCurrentSceneNameAndType(self):
-        # this is usually field name but we can also allow other types of visualizations hence I am calling it getCurrerntSceneName
+        # this is usually field name but we can also allow other types of visualizations hence
+        # I am calling it getCurrerntSceneName
+
+        tvw = self.parentWidget()
         sceneName = str(self.fieldComboBox.currentText())
-        return sceneName , self.parentWidget.fieldTypes[sceneName]        
-        
-    def apply3DGraphicsWindowData(self,gwd):
-    
-    
+        return sceneName, tvw.fieldTypes[sceneName]
+
+    def apply3DGraphicsWindowData(self, gwd):
+
         for p in xrange(self.projComboBox.count()):
-            
+
             if str(self.projComboBox.itemText(p)) == '3D':
-            
-                # camera = self.getActiveCamera()
-                # print 'activeCamera=',activeCamera
-            
-                self.projComboBox.setCurrentIndex(p)            
-                
+                self.projComboBox.setCurrentIndex(p)
+
                 # notice: there are two cameras one for 2D and one for 3D  here we set camera for 3D                
                 self.camera3D.SetClippingRange(gwd.cameraClippingRange)
                 self.camera3D.SetFocalPoint(gwd.cameraFocalPoint)
                 self.camera3D.SetPosition(gwd.cameraPosition)
-                self.camera3D.SetViewUp(gwd.cameraViewUp)                
-                
-                
+                self.camera3D.SetViewUp(gwd.cameraViewUp)
+
                 break
-        
-        
-    def apply2DGraphicsWindowData(self,gwd):        
-    
+
+    def apply2DGraphicsWindowData(self, gwd):
+
         for p in xrange(self.projComboBox.count()):
-            
+
             if str(self.projComboBox.itemText(p)).lower() == str(gwd.planeName).lower():
-                self.projComboBox.setCurrentIndex(p)            
+                self.projComboBox.setCurrentIndex(p)
                 # print 'self.projSpinBox.maximum()= ', self.projSpinBox.maximum()    
                 # if gwd.planePosition <= self.projSpinBox.maximum():
                 self.projSpinBox.setValue(gwd.planePosition)  # automatically invokes the callback (--Changed)
-                
+
                 # notice: there are two cameras one for 2D and one for 3D  here we set camera for 3D                
                 self.camera2D.SetClippingRange(gwd.cameraClippingRange)
                 self.camera2D.SetFocalPoint(gwd.cameraFocalPoint)
@@ -1105,38 +649,12 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         # import time
         # time.sleep(2)
 
-    # def applyGraphicsWindowData(self,gwd):
-    #
-    #     # print 'COMBO BOX CHECK '
-    #     # for i in xrange(self.fieldComboBox.count()):
-    #         # print 'self.fieldComboBox.itemText(i)=',self.fieldComboBox.itemText(i)
-    #
-    #
-    #     for i in xrange(self.fieldComboBox.count()):
-    #
-    #         if str(self.fieldComboBox.itemText(i)) == gwd.sceneName:
-    #
-    #
-    #             self.fieldComboBox.setCurrentIndex(i)
-    #             # setting 2D projection or 3D
-    #             if gwd.is3D:
-    #                 self.apply3DGraphicsWindowData(gwd)
-    #             else:
-    #                 self.apply2DGraphicsWindowData(gwd)
-    #
-    #
-    #
-    #             break
-    #
-    #     # import time
-    #     # time.sleep(2)
-
     def getGraphicsWindowData(self):
         """
 
         :return:
         """
-
+        tvw = self.parentWidget()
         print 'UPDATE getGraphicsWindowData'
 
         from GraphicsWindowData import GraphicsWindowData
@@ -1144,7 +662,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         activeCamera = self.getActiveCamera()
         # gwd.camera = self.getActiveCamera()
         gwd.sceneName = str(self.fieldComboBox.currentText())
-        gwd.sceneType = self.parentWidget.fieldTypes[gwd.sceneName]
+        gwd.sceneType = tvw.fieldTypes[gwd.sceneName]
         # gwd.winType = 'graphics'
         gwd.winType = GRAPHICS_WINDOW_LABEL
         # winPosition and winPosition will be filled externally by the SimpleTabView , since it has access to mdi windows
@@ -1152,102 +670,46 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         # gwd.winPosition = self.pos()
         # gwd.winSize = self.size()
 
-
-        if self.current_screenshot_data.spaceDimension=='3D':
+        if self.current_screenshot_data.spaceDimension == '3D':
             gwd.is3D = True
         else:
-            # planePositionTupple = self.draw2D.getPlane()
-            # gwd.planeName = planePositionTupple[0]
-            # gwd.planePosition = planePositionTupple[1]
+
             gwd.planeName = self.current_screenshot_data.projection
             gwd.planePosition = self.current_screenshot_data.projectionPosition
 
-
-        # todo 5 - old code
-        # if self.draw3DFlag:
-        #     gwd.is3D = True
-        # else:
-        #     planePositionTupple = self.draw2D.getPlane()
-        #     gwd.planeName = planePositionTupple[0]
-        #     gwd.planePosition = planePositionTupple[1]
-
-        # print 'GetClippingRange()=',activeCamera.GetClippingRange()
         gwd.cameraClippingRange = activeCamera.GetClippingRange()
         gwd.cameraFocalPoint = activeCamera.GetFocalPoint()
         gwd.cameraPosition = activeCamera.GetPosition()
         gwd.cameraViewUp = activeCamera.GetViewUp()
 
-        # import time
-        # time.sleep(2)
         return gwd
-    # def getGraphicsWindowData(self):
-    #     from GraphicsWindowData import GraphicsWindowData
-    #     gwd = GraphicsWindowData()
-    #     activeCamera = self.getActiveCamera()
-    #     # gwd.camera = self.getActiveCamera()
-    #     gwd.sceneName = str(self.fieldComboBox.currentText())
-    #     gwd.sceneType = self.parentWidget.fieldTypes[gwd.sceneName]
-    #     # gwd.winType = 'graphics'
-    #     gwd.winType = GRAPHICS_WINDOW_LABEL
-    #     # winPosition and winPosition will be filled externally by the SimpleTabView , since it has access to mdi windows
-    #
-    #     # gwd.winPosition = self.pos()
-    #     # gwd.winSize = self.size()
-    #
-    #     if self.draw3DFlag:
-    #         gwd.is3D = True
-    #     else:
-    #         planePositionTupple = self.draw2D.getPlane()
-    #         gwd.planeName = planePositionTupple[0]
-    #         gwd.planePosition = planePositionTupple[1]
-    #
-    #     # print 'GetClippingRange()=',activeCamera.GetClippingRange()
-    #     gwd.cameraClippingRange = activeCamera.GetClippingRange()
-    #     gwd.cameraFocalPoint = activeCamera.GetFocalPoint()
-    #     gwd.cameraPosition = activeCamera.GetPosition()
-    #     gwd.cameraViewUp = activeCamera.GetViewUp()
-    #
-    #
-    #     # import time
-    #     # time.sleep(2)
-    #     return gwd
 
     def _takeShot(self):
         """
         Adds screenshot data for a current scene
         :return: None
         """
-
+        tvw = self.parentWidget()
         print MODULENAME, '  _takeShot():  self.renWin.GetSize()=', self.renWin.GetSize()
         camera = self.getActiveCamera()
 
-        if self.parentWidget.screenshotManager is not None:
+        if tvw.screenshotManager is not None:
             field_name = str(self.fieldComboBox.currentText())
 
-            field_type = self.parentWidget.fieldTypes[field_name]
+            field_type = tvw.fieldTypes[field_name]
             field_name_type_tuple = (field_name, field_type)
             print MODULENAME, '  _takeShot():  fieldType=', field_name_type_tuple
 
             if self.draw3DFlag:
-                # metadata = self.drawModel3D.get_metadata(field_name=field_name, field_type=field_type)
                 metadata = self.get_metadata(field_name=field_name, field_type=field_type)
-                self.parentWidget.screenshotManager.add3DScreenshot(field_name, field_type, camera, metadata)
+                tvw.screenshotManager.add3DScreenshot(field_name, field_type, camera, metadata)
             else:
-                planePositionTupple = self.draw2D.getPlane()
-                metadata = self.drawModel3D.get_metadata(field_name=field_name, field_type=field_type)
-                self.parentWidget.screenshotManager.add2DScreenshot(field_name, field_type, planePositionTupple[0],
-                                                                    planePositionTupple[1], camera, metadata)
+                plane, position = self.getPlane()
+                metadata = self.get_metadata(field_name=field_name, field_type=field_type)
+                tvw.screenshotManager.add2DScreenshot(field_name, field_type, plane,
+                                                      position, camera, metadata)
 
-
-    def setConnects(self,_workspace):   # rf. Plugins/ViewManagerPlugins/SimpleTabView.py
-
-        # TODO
-        # self.connect(self.projComboBox,  SIGNAL('currentIndexChanged (int)'), self._projComboBoxChanged)
-        # self.connect(self.projSpinBox,   SIGNAL('valueChanged(int)'), self._projSpinBoxChanged)
-        #
-        # self.connect(self.fieldComboBox, SIGNAL('currentIndexChanged (int)'), self._fieldTypeChanged)
-        #
-        # self.connect(self.screenshotAct, SIGNAL('triggered()'), self._takeShot)
+    def setConnects(self, _workspace):  # rf. Plugins/ViewManagerPlugins/SimpleTabView.py
 
         self.projComboBox.currentIndexChanged.connect(self._projComboBoxChanged)
         self.projSpinBox.valueChanged.connect(self._projSpinBoxChanged)
@@ -1256,77 +718,43 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
         self.screenshotAct.triggered.connect(self._takeShot)
 
-    def setInitialCrossSection(self,_basicSimulationData):
-#        print MODULENAME, '  setInitialCrossSection'
-        fieldDim = _basicSimulationData.fieldDim
-        
-#        self.xyRB.setChecked(True)
-#        self.xySB.setMinimum(0)
-#        self.xySB.setMaximum(fieldDim.z - 1)
-#        if fieldDim.z/2 >= 1: # do this trick to avoid empty vtk widget after stop, play sequence for some 3D simulations
-#            self.xySB.setValue(fieldDim.z/2+1)  
-#        self.xySB.setValue(fieldDim.z/2) # If you want to set the value from configuration
-#        self.xySB.setWrapping(True)
-#
-#        self.xzSB.setMinimum(0)
-#        self.xzSB.setMaximum(fieldDim.y - 1)
-#        self.xzSB.setValue(fieldDim.y/2)
-#        self.xzSB.setWrapping(True)
-#
-#        self.yzSB.setMinimum(0)
-#        self.yzSB.setMaximum(fieldDim.x - 1)
-#        self.yzSB.setValue(fieldDim.x/2)
-#        self.yzSB.setWrapping(True)
-        
-        self.updateCrossSection(_basicSimulationData)
-        
-        # new (rwh, May 2011)
-        self.currentProjection = 'xy'   # rwh
-        
-        
-        # # # self.xyMaxPlane = fieldDim.z - 1
-# # # #        self.xyPlane = fieldDim.z/2 + 1
-        # # # self.xyPlane = fieldDim.z/2
-        
-        # # # self.xzMaxPlane = fieldDim.y - 1
-        # # # self.xzPlane = fieldDim.y/2
-        
-        # # # self.yzMaxPlane = fieldDim.x - 1
-        # # # self.yzPlane = fieldDim.x/2
-        
-        self.projComboBox.setCurrentIndex(1)   # set to be 'xy' projection by default, regardless of 2D or 3D sim?
-        
-        self.projSpinBox.setMinimum(0)
-#        self.projSpinBox.setMaximum(fieldDim.z - 1)
-        self.projSpinBox.setMaximum(10000)
-#        if fieldDim.z/2 >= 1: # do this trick to avoid empty vtk widget after stop, play sequence for some 3D simulations
-#            self.projSpinBox.setValue(fieldDim.z/2 + 1)  
-        self.projSpinBox.setValue(fieldDim.z/2) # If you want to set the value from configuration
-#        self.projSpinBox.setWrapping(True)
+    def setInitialCrossSection(self, _basicSimulationData):
 
-    def updateCrossSection(self,_basicSimulationData):
+        fieldDim = _basicSimulationData.fieldDim
+
+        self.updateCrossSection(_basicSimulationData)
+
+        # new (rwh, May 2011)
+        self.currentProjection = 'xy'  # rwh
+
+        # set to be 'xy' projection by default, regardless of 2D or 3D sim?
+        self.projComboBox.setCurrentIndex(1)
+
+        self.projSpinBox.setMinimum(0)
+
+        self.projSpinBox.setMaximum(10000)
+
+        # If you want to set the value from configuration
+        self.projSpinBox.setValue(fieldDim.z / 2)
+
+    def updateCrossSection(self, _basicSimulationData):
         fieldDim = _basicSimulationData.fieldDim
         self.xyMaxPlane = fieldDim.z - 1
-#        self.xyPlane = fieldDim.z/2 + 1
-        self.xyPlane = fieldDim.z/2
-        
+        #        self.xyPlane = fieldDim.z/2 + 1
+        self.xyPlane = fieldDim.z / 2
+
         self.xzMaxPlane = fieldDim.y - 1
-        self.xzPlane = fieldDim.y/2
-        
+        self.xzPlane = fieldDim.y / 2
+
         self.yzMaxPlane = fieldDim.x - 1
-        self.yzPlane = fieldDim.x/2
-        
+        self.yzPlane = fieldDim.x / 2
+
     def takeSimShot(self, *args, **kwds):
         print 'CHANGE - TAKE SIM SHOT'
 
     def setFieldTypesComboBox(self, _fieldTypes):
         # return
         self.fieldTypes = _fieldTypes  # assign field types to be the same as field types in the workspace
-        # self.draw2D.setFieldTypes(
-        #     self.fieldTypes)  # make sure that field types are the same in graphics widget and in the drawing object
-        # self.draw3D.setFieldTypes(
-        #     self.fieldTypes)  # make sure that field types are the same in graphics widget and in the drawing object
-        # # self.draw3D.setFieldTypes(self.fieldTypes)# make sure that field types are the same in graphics widget and in the drawing object
 
         self.fieldComboBox.clear()
         self.fieldComboBox.addItem("-- Field Type --")
@@ -1336,29 +764,14 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
                 self.fieldComboBox.addItem(key)
         self.fieldComboBox.setCurrentIndex(1)  # setting value of the Combo box to be cellField - default action
 
-        # self.qvtkWidget.resetCamera() # last call triggers fisrt call to draw function so we here reset camera so that all the actors are initially visible
-        # todo 5 - essential initialization of the default cameras
-        self.resetCamera()  # last call triggers fisrt call to draw function so we here reset camera so that all the actors are initially visible
-        self.copy_camera(src=self.camera2D, dst=self.camera3D)
+        # self.qvtkWidget.resetCamera() # last call triggers fisrt call to draw function so
+        # we here reset camera so that all the actors are initially visible
 
-    # def setFieldTypesComboBox(self,_fieldTypes):
-    #     # return
-    #     self.fieldTypes=_fieldTypes # assign field types to be the same as field types in the workspace
-    #     self.draw2D.setFieldTypes(self.fieldTypes) # make sure that field types are the same in graphics widget and in the drawing object
-    #     self.draw3D.setFieldTypes(self.fieldTypes) # make sure that field types are the same in graphics widget and in the drawing object
-    #     # self.draw3D.setFieldTypes(self.fieldTypes)# make sure that field types are the same in graphics widget and in the drawing object
-    #
-    #     self.fieldComboBox.clear()
-    #     self.fieldComboBox.addItem("-- Field Type --")
-    #     self.fieldComboBox.addItem("Cell_Field")
-    #     for key in self.fieldTypes.keys():
-    #         if key !="Cell_Field":
-    #             self.fieldComboBox.addItem(key)
-    #     self.fieldComboBox.setCurrentIndex(1) # setting value of the Combo box to be cellField - default action
-    #
-    #
-    #     # self.qvtkWidget.resetCamera() # last call triggers fisrt call to draw function so we here reset camera so that all the actors are initially visible
-    #     self.resetCamera() # last call triggers fisrt call to draw function so we here reset camera so that all the actors are initially visible
+        # todo 5 - essential initialization of the default cameras
+        # last call triggers fisrt call to draw function so we here reset camera so that
+        # all the actors are initially visible
+        self.resetCamera()
+        self.copy_camera(src=self.camera2D, dst=self.camera3D)
 
     def zoomIn(self):
         '''
@@ -1380,7 +793,6 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         :return:None
         '''
         self.qvtkWidget.resetCamera()
-
 
     # note that if you close widget using X button this slot is not called
     # we need to reimplement closeEvent
@@ -1404,89 +816,4 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.qvtkWidget.close()
         self.qvtkWidget = None
 
-        # todo 5- old code
-        # self.ren.SetActiveCamera(None)
-        #
-        # self.ren = None
-        # self.renWin = None
-        #
-        # # return
-        # # cleaning up objects with cyclic references
-        # self.drawModel2D = None
-        # self.draw2D = None
-        #
-        # self.drawModel3D = None
-        # self.draw3D = None
-        # # print 'self.currentDrawingObject=',self.currentDrawingObject
-        #
-        # self.currentDrawingObject = None
-        #
-        # self.camera3D = None
-        # self.camera2D = None
-        #
-        # self.fieldTypes = None
-
-
-
-
-
-
-        # MDIFIX
-        # self.parentWidget.removeWindowWidgetFromRegistry(self)
-
-        # print 'AFTER CLOSE GFW self.graphicsWindowDict=',self.parentWidget.graphicsWindowDict
-        # print 'self.windowDict=',self.parentWidget.windowDict
-
-        self.parentWidget = None
-
-        print 'GRAPHICS CLOSED'
-
-    # def closeEvent(self,ev):
-    #     # print '\n\n\n closeEvent GRAPHICS FRAME'
-    #
-    #     # cleaning up to release memory - notice that if we do not do this cleanup this widget will not be destroyed and will take sizeable portion of the memory
-    #     # not a big deal for a single simulation but repeated runs can easily exhaust all system memory
-    #
-    #     self.clearEntireDisplay()
-    #
-    #
-    #     self.qvtkWidget.close()
-    #     self.qvtkWidget=None
-    #     self.ren.SetActiveCamera(None)
-    #
-    #     self.ren=None
-    #     self.renWin=None
-    #
-    #
-    #     # return
-    #     # cleaning up objects with cyclic references
-    #     self.drawModel2D=None
-    #     self.draw2D=None
-    #
-    #
-    #     self.drawModel3D = None
-    #     self.draw3D = None
-    #     # print 'self.currentDrawingObject=',self.currentDrawingObject
-    #
-    #     self.currentDrawingObject=None
-    #
-    #
-    #     self.camera3D = None
-    #     self.camera2D = None
-    #
-    #
-    #
-    #
-    #     self.fieldTypes=None
-    #
-    #     #MDIFIX
-    #     # self.parentWidget.removeWindowWidgetFromRegistry(self)
-    #
-    #     # print 'AFTER CLOSE GFW self.graphicsWindowDict=',self.parentWidget.graphicsWindowDict
-    #     # print 'self.windowDict=',self.parentWidget.windowDict
-    #
-    #     self.parentWidget = None
-    #
-    #     print 'GRAPHICS CLOSED'
-
-        
+        tvw = None
