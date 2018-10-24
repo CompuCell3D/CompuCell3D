@@ -2596,7 +2596,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                     graphicsWindow.resize(gwd.winSize)
                     graphicsWindow.move(gwd.winPosition)
 
-                    gfw.applyGraphicsWindowData(gwd)
+                    gfw.apply_graphics_window_data(gwd)
 
             except KeyError:
                 # in case there is no main window with id 0 in the settings we kill the main window
@@ -2664,7 +2664,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             graphicsWindow.resize(gwd.winSize)
             graphicsWindow.move(gwd.winPosition)
 
-            gfw.applyGraphicsWindowData(gwd)
+            gfw.apply_graphics_window_data(gwd)
 
 
             # print ' PLOT WINDOW MANAGER  WINDOW LIST = ', self.plotManager.plotWindowList

@@ -37,7 +37,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
         self.lineEdit = QtWidgets.QLineEdit()
 
-        self.__initCrossSectionActions()
+        self.init_cross_section_actions()
         self.cstb = self.initCrossSectionToolbar()
 
         layout = QtWidgets.QBoxLayout(QtWidgets.QBoxLayout.TopToBottom)
@@ -281,10 +281,13 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         # self.qvtkWidget.zoomIn()
         # self.qvtkWidget.zoomOut()
 
-
     def setStatusBar(self, statusBar):
+        """
+        Sets status bar
+        :param statusBar:
+        :return:
+        """
         self._statusBar = statusBar
-
 
     def configsChanged(self):
         """
@@ -293,7 +296,6 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         """
         print 'configsChanged'
 
-
     def Render(self):
         color = Configuration.getSetting("WindowColor")
         self.gd.get_renderer().SetBackground(float(color.red()) / 255, float(color.green()) / 255,
@@ -301,13 +303,26 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.qvtkWidget.Render()
 
     def getCamera(self):
+        """
+        Conveenince function that fetches active camera obj
+        :return: {vtkCamera}
+        """
         return self.getActiveCamera()
 
     def getActiveCamera(self):
+
         return self.gd.get_active_camera()
 
-    def setActiveCamera(self, _camera):
-        return self.ren.SetActiveCamera(_camera)
+    def getCamera3D(self):
+        """
+        Convenince function that fetches 3D camera obj
+        :return: {vtkCamera}
+        """
+        return self.camera3D
+
+
+    # def setActiveCamera(self, _camera):
+    #     return self.ren.SetActiveCamera(_camera)
 
     def getCamera2D(self):
         return self.camera2D
@@ -350,9 +365,9 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
         return cstb
 
-    def __initCrossSectionActions(self):
+    def init_cross_section_actions(self):
         """
-        INitializes actions associated with the cross section toolbar
+        Initializes actions associated with the cross section toolbar
         :return: None
         """
 
@@ -479,9 +494,9 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
     def setDrawingStyle(self, _style):
         """
-
-        :param _style:
-        :return:
+        Function that wires-up the widget to behave according tpo the dimension of the visualization
+        :param _style:{str} '2D' or '3D'
+        :return: None
         """
 
         style = string.upper(_style)
@@ -494,34 +509,40 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
             self.gd.get_renderer().SetActiveCamera(self.camera3D)
             self.qvtkWidget.setMouseInteractionSchemeTo3D()
 
-    def getCamera3D(self):
-        return self.camera3D
 
+    def set_camera_from_graphics_window_data(self,camera, gwd):
+        """
+        Sets camera from graphics window data
+        :param camera: {vtkCamera} camera obj
+        :param gwd: {instance og GrtaphicsWindowData}
+        :return: None
+        """
+        camera.SetClippingRange(gwd.cameraClippingRange)
+        camera.SetFocalPoint(gwd.cameraFocalPoint)
+        camera.SetPosition(gwd.cameraPosition)
+        camera.SetViewUp(gwd.cameraViewUp)
 
-    def getCurrentSceneNameAndType(self):
-        # this is usually field name but we can also allow other types of visualizations hence
-        # I am calling it getCurrerntSceneName
-
-        tvw = self.parentWidget()
-        sceneName = str(self.fieldComboBox.currentText())
-        return sceneName, tvw.fieldTypes[sceneName]
-
-    def apply3DGraphicsWindowData(self, gwd):
+    def apply_3D_graphics_window_data(self, gwd):
+        """
+        Applies graphics window configuration data (stored on a disk) to graphics window (3D version)
+        :param gwd: {instrance of GraphicsWindowData}
+        :return: None
+        """
 
         for p in xrange(self.projComboBox.count()):
 
             if str(self.projComboBox.itemText(p)) == '3D':
                 self.projComboBox.setCurrentIndex(p)
-
-                # notice: there are two cameras one for 2D and one for 3D  here we set camera for 3D                
-                self.camera3D.SetClippingRange(gwd.cameraClippingRange)
-                self.camera3D.SetFocalPoint(gwd.cameraFocalPoint)
-                self.camera3D.SetPosition(gwd.cameraPosition)
-                self.camera3D.SetViewUp(gwd.cameraViewUp)
-
+                # notice: there are two cameras one for 2D and one for 3D  here we set camera for 3D
+                self.set_camera_from_graphics_window_data(camera=self.camera3D, gwd=gwd)
                 break
 
-    def apply2DGraphicsWindowData(self, gwd):
+    def apply_2D_graphics_window_data(self, gwd):
+        """
+        Applies graphics window configuration data (stored on a disk) to graphics window (2D version)
+        :param gwd: {instrance of GraphicsWindowData}
+        :return: None
+        """
 
         for p in xrange(self.projComboBox.count()):
 
@@ -531,24 +552,15 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
                 # if gwd.planePosition <= self.projSpinBox.maximum():
                 self.projSpinBox.setValue(gwd.planePosition)  # automatically invokes the callback (--Changed)
 
-                # notice: there are two cameras one for 2D and one for 3D  here we set camera for 3D                
-                self.camera2D.SetClippingRange(gwd.cameraClippingRange)
-                self.camera2D.SetFocalPoint(gwd.cameraFocalPoint)
-                self.camera2D.SetPosition(gwd.cameraPosition)
-                self.camera2D.SetViewUp(gwd.cameraViewUp)
+                # notice: there are two cameras one for 2D and one for 3D  here we set camera for 2D
+                self.set_camera_from_graphics_window_data(camera=self.camera2D, gwd=gwd)
 
-    def applyGraphicsWindowData(self, gwd):
+    def apply_graphics_window_data(self, gwd):
         """
-
-        :param gwd:
-        :return:
+        Applies graphics window configuration data (stored on a disk) to graphics window (2D version)
+        :param gwd: {instrance of GraphicsWindowData}
+        :return: None
         """
-
-        # print 'CHANGE applyGraphicsWindowData todo 5'
-        # return
-        # # print 'COMBO BOX CHECK '
-        # # for i in xrange(self.fieldComboBox.count()):
-        # # print 'self.fieldComboBox.itemText(i)=',self.fieldComboBox.itemText(i)
 
         for i in xrange(self.fieldComboBox.count()):
 
@@ -557,14 +569,12 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
                 self.fieldComboBox.setCurrentIndex(i)
                 # setting 2D projection or 3D
                 if gwd.is3D:
-                    self.apply3DGraphicsWindowData(gwd)
+                    self.apply_3D_graphics_window_data(gwd)
                 else:
-                    self.apply2DGraphicsWindowData(gwd)
+                    self.apply_2D_graphics_window_data(gwd)
 
                 break
 
-        # import time
-        # time.sleep(2)
 
     def getGraphicsWindowData(self):
         """
@@ -735,3 +745,4 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.qvtkWidget = None
 
         tvw = None
+
