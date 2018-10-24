@@ -1,5 +1,6 @@
 from weakref import ref
 import string
+import DefaultData
 import Configuration
 from PyQt5 import QtCore, QtGui, QtOpenGL, QtWidgets
 from PyQt5.QtCore import *
@@ -280,9 +281,82 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         # self.qvtkWidget.zoomIn()
         # self.qvtkWidget.zoomOut()
 
-    def conMinMax(self):
-        print 'CHANGE THIS'
-        return ['0', '0']
+    # def conMinMax(self):
+    #     print 'CHANGE THIS'
+    #     return ['0', '0']
+
+    # def populateLookupTable(self):
+    #     self.drawModel2D.populateLookupTable()
+    #     self.drawModel3D.populateLookupTable()
+
+    # def showBorder(self):
+    #     pass
+    #
+    # def hideBorder(self):
+    #     pass
+    #
+    # def showClusterBorder(self):
+    #     pass
+    #
+    # def hideClusterBorder(self):
+    #     pass
+    #
+    # def showCells(self):
+    #     pass
+    #
+    # def hideCells(self):
+    #     pass
+
+    # def _xyChecked(self, checked):
+    #     """
+    #     :param checked:
+    #     :return:
+    #     """
+    #
+    #     tvw = self.parentWidget()
+    #
+    #     if tvw.completedFirstMCS:
+    #         tvw.newDrawingUserRequest = True
+    #     if checked:
+    #         self.projComboBox.setCurrentIndex(1)
+    #
+    # def _xzChecked(self, checked):
+    #     tvw = self.parentWidget()
+    #     if tvw.completedFirstMCS:
+    #         tvw.newDrawingUserRequest = True
+    #     if checked:
+    #         self.projComboBox.setCurrentIndex(2)
+    #
+    # def _yzChecked(self, checked):
+    #     tvw = self.parentWidget()
+    #     if tvw.completedFirstMCS:
+    #         tvw.newDrawingUserRequest = True
+    #     if checked:
+    #         self.projComboBox.setCurrentIndex(3)
+
+    # def _switchDim(self, checked):
+    #
+    #     tvw = self.parentWidget()
+    #     if tvw.completedFirstMCS:
+    #         tvw.newDrawingUserRequest = True
+    #
+    #     if checked:
+    #
+    #         self.draw3DFlag = True
+    #         self.ren.SetActiveCamera(self.camera3D)
+    #         self.qvtkWidget.setMouseInteractionSchemeTo3D()
+    #         self.draw2D.clearDisplay()
+    #
+    #         self.projComboBox.setCurrentIndex(0)
+    #         tvw._drawField()
+    #
+    #     else:
+    #         self.draw3DFlag = False
+    #         self.ren.SetActiveCamera(self.camera2D)
+    #         self.qvtkWidget.setMouseInteractionSchemeTo2D()
+    #         self.draw3D.clearDisplay()
+    #         tvw._drawField()
+
 
     def setStatusBar(self, statusBar):
         self._statusBar = statusBar
@@ -295,9 +369,6 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         """
         print 'configsChanged'
 
-    def populateLookupTable(self):
-        self.drawModel2D.populateLookupTable()
-        self.drawModel3D.populateLookupTable()
 
     def Render(self):
         color = Configuration.getSetting("WindowColor")
@@ -311,9 +382,6 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def getActiveCamera(self):
         return self.gd.get_active_camera()
 
-    # def getActiveCamera(self):
-    #     return self.ren.GetActiveCamera()
-
     def setActiveCamera(self, _camera):
         return self.ren.SetActiveCamera(_camera)
 
@@ -326,32 +394,24 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         # self.draw3D.setZoomItems(_zitems)
         print 'set zoom items'
 
-    def showBorder(self):
-        pass
-
-    def hideBorder(self):
-        pass
-
-    def showClusterBorder(self):
-        pass
-
-    def hideClusterBorder(self):
-        pass
-
-    def showCells(self):
-        pass
-
-    def hideCells(self):
-        pass
 
     def setPlane(self, plane, pos):
         (self.plane, self.planePos) = (str(plane).upper(), pos)
         # print (self.plane, self.planePos)
 
     def getPlane(self):
+        """
+        Gets current plane tuple
+        :return: {tuple} (plane label, plane position)
+        """
         return (self.plane, self.planePos)
 
     def initCrossSectionToolbar(self):
+        """
+        Initializes crosse section toolbar
+        :return: None
+        """
+
         cstb = QtWidgets.QToolBar("CrossSection", self)
         # viewtb.setIconSize(QSize(20, 18))
         cstb.setObjectName("CrossSection")
@@ -367,9 +427,11 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         return cstb
 
     def __initCrossSectionActions(self):
-        # Do I need actions? Probably not, but will leave for a while
+        """
+        INitializes actions associated with the cross section toolbar
+        :return: None
+        """
 
-        # new (rwh, May 2011)
         self.projComboBoxAct = QtWidgets.QAction(self)
         self.projComboBox = QtWidgets.QComboBox()
         self.projComboBox.addAction(self.projComboBoxAct)
@@ -389,33 +451,16 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.fieldComboBox.addAction(self.fieldComboBoxAct)
         self.fieldComboBox.addItem("-- Field Type --")
         # self.fieldComboBox.addItem("cAMP")  # huh?
-        import DefaultData
+
         gip = DefaultData.getIconPath
         self.screenshotAct = QtWidgets.QAction(QtGui.QIcon(gip("screenshot.png")), "&Take Screenshot", self)
 
-    def _xyChecked(self, checked):
-        tvw = self.parentWidget()
+    def proj_combo_box_changed(self):
+        """
+        slot reacting to changes in the projection combo box
+        :return: None
+        """
 
-        if tvw.completedFirstMCS:
-            tvw.newDrawingUserRequest = True
-        if checked:
-            self.projComboBox.setCurrentIndex(1)
-
-    def _xzChecked(self, checked):
-        tvw = self.parentWidget()
-        if tvw.completedFirstMCS:
-            tvw.newDrawingUserRequest = True
-        if checked:
-            self.projComboBox.setCurrentIndex(2)
-
-    def _yzChecked(self, checked):
-        tvw = self.parentWidget()
-        if tvw.completedFirstMCS:
-            tvw.newDrawingUserRequest = True
-        if checked:
-            self.projComboBox.setCurrentIndex(3)
-
-    def _projComboBoxChanged(self):  # new (rwh, May 2011)
         tvw = self.parentWidget()
 
         if tvw.completedFirstMCS:
@@ -433,19 +478,19 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         elif self.currentProjection == 'xy':
             self.projSpinBox.setEnabled(True)
             self.projSpinBox.setValue(self.xyPlane)
-            self._projSpinBoxChanged(self.xyPlane)
+            self.proj_spin_box_changed(self.xyPlane)
 
         elif self.currentProjection == 'xz':
             self.projSpinBox.setEnabled(True)
 
             self.projSpinBox.setValue(self.xzPlane)
-            self._projSpinBoxChanged(self.xzPlane)
+            self.proj_spin_box_changed(self.xzPlane)
 
         elif self.currentProjection == 'yz':
             self.projSpinBox.setEnabled(True)
 
             self.projSpinBox.setValue(self.yzPlane)
-            self._projSpinBoxChanged(self.yzPlane)
+            self.proj_spin_box_changed(self.yzPlane)
 
         self.current_screenshot_data = self.compute_current_screenshot_data()
 
@@ -457,7 +502,12 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         # self.Render()
         # self.render_repaint()
 
-    def _projSpinBoxChanged(self, val):
+    def proj_spin_box_changed(self, val):
+        """
+        Slot that reacts to position spin boox changes
+        :param val: {int} number corresponding to the position of the crosse section
+        :return: None
+        """
 
         tvw = self.parentWidget()
 
@@ -488,7 +538,12 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         # SimpleTabView.py
         tvw._drawField()
 
-    def _fieldTypeChanged(self):
+    def field_type_changed(self):
+        """
+        Slot reacting to the field type combo box changes
+        :return: None
+        """
+
         tvw = self.parentWidget()
         if tvw.completedFirstMCS:
             tvw.newDrawingUserRequest = True
@@ -518,28 +573,6 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def getCamera3D(self):
         return self.camera3D
 
-    def _switchDim(self, checked):
-
-        tvw = self.parentWidget()
-        if tvw.completedFirstMCS:
-            tvw.newDrawingUserRequest = True
-
-        if checked:
-
-            self.draw3DFlag = True
-            self.ren.SetActiveCamera(self.camera3D)
-            self.qvtkWidget.setMouseInteractionSchemeTo3D()
-            self.draw2D.clearDisplay()
-
-            self.projComboBox.setCurrentIndex(0)
-            tvw._drawField()
-
-        else:
-            self.draw3DFlag = False
-            self.ren.SetActiveCamera(self.camera2D)
-            self.qvtkWidget.setMouseInteractionSchemeTo2D()
-            self.draw3D.clearDisplay()
-            tvw._drawField()
 
     def getCurrentSceneNameAndType(self):
         # this is usually field name but we can also allow other types of visualizations hence
@@ -644,9 +677,9 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
         return gwd
 
-    def _takeShot(self):
+    def add_screenshot_conf(self):
         """
-        Adds screenshot data for a current scene
+        Adds screenshot configuration data for a current scene
         :return: None
         """
         tvw = self.parentWidget()
@@ -671,12 +704,12 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
     def setConnects(self, _workspace):  # rf. Plugins/ViewManagerPlugins/SimpleTabView.py
 
-        self.projComboBox.currentIndexChanged.connect(self._projComboBoxChanged)
-        self.projSpinBox.valueChanged.connect(self._projSpinBoxChanged)
+        self.projComboBox.currentIndexChanged.connect(self.proj_combo_box_changed)
+        self.projSpinBox.valueChanged.connect(self.proj_spin_box_changed)
 
-        self.fieldComboBox.currentIndexChanged.connect(self._fieldTypeChanged)
+        self.fieldComboBox.currentIndexChanged.connect(self.field_type_changed)
 
-        self.screenshotAct.triggered.connect(self._takeShot)
+        self.screenshotAct.triggered.connect(self.add_screenshot_conf)
 
     def setInitialCrossSection(self, basic_simulation_data):
 
@@ -778,46 +811,3 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.qvtkWidget = None
 
         tvw = None
-
-
-
-    # # Break the settings read into groups?
-    # def readSettings(self):  # only performed at startup
-    #
-    #     self.readColorsSets()
-    #     self.readViewSets()
-    #
-    #     self.readOutputSets()
-    #
-    #     self.readVisualSets()
-    #
-    # def readColorsSets(self):
-    #
-    #     # colorsDefaults
-    #     self._colorMap = Configuration.getSetting("TypeColorMap")
-    #     self._borderColor = Configuration.getSetting("BorderColor")
-    #     self._contourColor = Configuration.getSetting("ContourColor")
-    #     self._brushColor = Configuration.getSetting("BrushColor")
-    #     self._penColor = Configuration.getSetting("PenColor")
-    #     self._windowColor = Configuration.getSetting("WindowColor")
-    #     self._boundingBoxColor = Configuration.getSetting("BoundingBoxColor")
-    #
-    # def readViewSets(self):
-    #     # For 3D only?
-    #     # viewDefaults
-    #     self._types3D = Configuration.getSetting("Types3DInvisible")
-    #
-    # def readOutputSets(self):
-    #     # Should I read the settings here?
-    #     # outputDefaults
-    #     self._updateScreen = Configuration.getSetting("ScreenUpdateFrequency")
-    #     self._imageOutput = Configuration.getSetting("ImageOutputOn")
-    #     self._shotFrequency = Configuration.getSetting("ScreenUpdateFrequency")
-    #
-    # def readVisualSets(self):
-    #     # visualDefaults
-    #     self._cellBordersOn = Configuration.getSetting("CellBordersOn")
-    #     self._clusterBordersOn = Configuration.getSetting("ClusterBordersOn")
-    #     #        print MODULENAME,'   readVisualSets():  cellBordersOn, clusterBordersOn = ',self._cellBordersOn, self._clusterBordersOn
-    #     self._conLimitsOn = Configuration.getSetting("ConcentrationLimitsOn")
-    #     self._zoomFactor = Configuration.getSetting("ZoomFactor")

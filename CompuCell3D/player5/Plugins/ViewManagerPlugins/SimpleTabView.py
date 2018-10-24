@@ -2785,21 +2785,21 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.mainGraphicsWidget.setZoomItems(self.zitems)  # Set zoomFixed parameters
 
-        if self.borderAct.isChecked():  # Vis menu "Cell Borders" check box
-            self.mainGraphicsWidget.showBorder()
-        else:
-            self.mainGraphicsWidget.hideBorder()
-
-        if self.clusterBorderAct.isChecked():  # Vis menu "Cluster Borders" check box
-            self.mainGraphicsWidget.showClusterBorder()
-
-        # ---------------------
-        if self.cellGlyphsAct.isChecked():  # Vis menu "Cell Glyphs"
-            self.mainGraphicsWidget.showCellGlyphs()
-
-        # ---------------------
-        if self.FPPLinksAct.isChecked():  # Vis menu "FPP (Focal Point Plasticity) Links"
-            self.mainGraphicsWidget.showFPPLinks()
+        # if self.borderAct.isChecked():  # Vis menu "Cell Borders" check box
+        #     self.mainGraphicsWidget.showBorder()
+        # else:
+        #     self.mainGraphicsWidget.hideBorder()
+        #
+        # if self.clusterBorderAct.isChecked():  # Vis menu "Cluster Borders" check box
+        #     self.mainGraphicsWidget.showClusterBorder()
+        #
+        # # ---------------------
+        # if self.cellGlyphsAct.isChecked():  # Vis menu "Cell Glyphs"
+        #     self.mainGraphicsWidget.showCellGlyphs()
+        #
+        # # ---------------------
+        # if self.FPPLinksAct.isChecked():  # Vis menu "FPP (Focal Point Plasticity) Links"
+        #     self.mainGraphicsWidget.showFPPLinks()
 
         self.mainGraphicsWidget.setPlane(PLANES[0], 0)
         # todo - old code
