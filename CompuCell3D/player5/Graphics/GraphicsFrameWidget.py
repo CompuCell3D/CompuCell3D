@@ -1,3 +1,4 @@
+from weakref import ref
 import string
 import Configuration
 from PyQt5 import QtCore, QtGui, QtOpenGL, QtWidgets
@@ -17,7 +18,7 @@ else:
     from Utilities.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 MODULENAME = '---- GraphicsFrameWidget.py: '
 
-from weakref import ref
+
 
 class GraphicsFrameWidget(QtWidgets.QFrame):
     def __init__(self, parent=None, originatingWidget=None):
@@ -254,7 +255,6 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         :return:
         """
         self.Render()
-
 
     def draw(self, basic_simulation_data):
         """
@@ -627,11 +627,11 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         :return:
         """
 
-        print 'CHANGE applyGraphicsWindowData todo 5'
-        return
-        # print 'COMBO BOX CHECK '
-        # for i in xrange(self.fieldComboBox.count()):
-        # print 'self.fieldComboBox.itemText(i)=',self.fieldComboBox.itemText(i)
+        # print 'CHANGE applyGraphicsWindowData todo 5'
+        # return
+        # # print 'COMBO BOX CHECK '
+        # # for i in xrange(self.fieldComboBox.count()):
+        # # print 'self.fieldComboBox.itemText(i)=',self.fieldComboBox.itemText(i)
 
         for i in xrange(self.fieldComboBox.count()):
 
