@@ -287,46 +287,6 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def setStatusBar(self, statusBar):
         self._statusBar = statusBar
 
-    # Break the settings read into groups?
-    def readSettings(self):  # only performed at startup
-
-        self.readColorsSets()
-        self.readViewSets()
-
-        self.readOutputSets()
-
-        self.readVisualSets()
-
-    def readColorsSets(self):
-
-        # colorsDefaults
-        self._colorMap = Configuration.getSetting("TypeColorMap")
-        self._borderColor = Configuration.getSetting("BorderColor")
-        self._contourColor = Configuration.getSetting("ContourColor")
-        self._brushColor = Configuration.getSetting("BrushColor")
-        self._penColor = Configuration.getSetting("PenColor")
-        self._windowColor = Configuration.getSetting("WindowColor")
-        self._boundingBoxColor = Configuration.getSetting("BoundingBoxColor")
-
-    def readViewSets(self):
-        # For 3D only?
-        # viewDefaults
-        self._types3D = Configuration.getSetting("Types3DInvisible")
-
-    def readOutputSets(self):
-        # Should I read the settings here?
-        # outputDefaults
-        self._updateScreen = Configuration.getSetting("ScreenUpdateFrequency")
-        self._imageOutput = Configuration.getSetting("ImageOutputOn")
-        self._shotFrequency = Configuration.getSetting("ScreenUpdateFrequency")
-
-    def readVisualSets(self):
-        # visualDefaults
-        self._cellBordersOn = Configuration.getSetting("CellBordersOn")
-        self._clusterBordersOn = Configuration.getSetting("ClusterBordersOn")
-        #        print MODULENAME,'   readVisualSets():  cellBordersOn, clusterBordersOn = ',self._cellBordersOn, self._clusterBordersOn
-        self._conLimitsOn = Configuration.getSetting("ConcentrationLimitsOn")
-        self._zoomFactor = Configuration.getSetting("ZoomFactor")
 
     def configsChanged(self):
         """
@@ -718,11 +678,11 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
         self.screenshotAct.triggered.connect(self._takeShot)
 
-    def setInitialCrossSection(self, _basicSimulationData):
+    def setInitialCrossSection(self, basic_simulation_data):
 
-        fieldDim = _basicSimulationData.fieldDim
+        fieldDim = basic_simulation_data.fieldDim
 
-        self.updateCrossSection(_basicSimulationData)
+        self.updateCrossSection(basic_simulation_data)
 
         # new (rwh, May 2011)
         self.currentProjection = 'xy'  # rwh
@@ -737,17 +697,18 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         # If you want to set the value from configuration
         self.projSpinBox.setValue(fieldDim.z / 2)
 
-    def updateCrossSection(self, _basicSimulationData):
-        fieldDim = _basicSimulationData.fieldDim
-        self.xyMaxPlane = fieldDim.z - 1
+    def updateCrossSection(self, basic_simulation_data):
+
+        field_dim = basic_simulation_data.fieldDim
+        self.xyMaxPlane = field_dim.z - 1
         #        self.xyPlane = fieldDim.z/2 + 1
-        self.xyPlane = fieldDim.z / 2
+        self.xyPlane = field_dim.z / 2
 
-        self.xzMaxPlane = fieldDim.y - 1
-        self.xzPlane = fieldDim.y / 2
+        self.xzMaxPlane = field_dim.y - 1
+        self.xzPlane = field_dim.y / 2
 
-        self.yzMaxPlane = fieldDim.x - 1
-        self.yzPlane = fieldDim.x / 2
+        self.yzMaxPlane = field_dim.x - 1
+        self.yzPlane = field_dim.x / 2
 
     def takeSimShot(self, *args, **kwds):
         print 'CHANGE - TAKE SIM SHOT'
@@ -817,3 +778,46 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.qvtkWidget = None
 
         tvw = None
+
+
+
+    # # Break the settings read into groups?
+    # def readSettings(self):  # only performed at startup
+    #
+    #     self.readColorsSets()
+    #     self.readViewSets()
+    #
+    #     self.readOutputSets()
+    #
+    #     self.readVisualSets()
+    #
+    # def readColorsSets(self):
+    #
+    #     # colorsDefaults
+    #     self._colorMap = Configuration.getSetting("TypeColorMap")
+    #     self._borderColor = Configuration.getSetting("BorderColor")
+    #     self._contourColor = Configuration.getSetting("ContourColor")
+    #     self._brushColor = Configuration.getSetting("BrushColor")
+    #     self._penColor = Configuration.getSetting("PenColor")
+    #     self._windowColor = Configuration.getSetting("WindowColor")
+    #     self._boundingBoxColor = Configuration.getSetting("BoundingBoxColor")
+    #
+    # def readViewSets(self):
+    #     # For 3D only?
+    #     # viewDefaults
+    #     self._types3D = Configuration.getSetting("Types3DInvisible")
+    #
+    # def readOutputSets(self):
+    #     # Should I read the settings here?
+    #     # outputDefaults
+    #     self._updateScreen = Configuration.getSetting("ScreenUpdateFrequency")
+    #     self._imageOutput = Configuration.getSetting("ImageOutputOn")
+    #     self._shotFrequency = Configuration.getSetting("ScreenUpdateFrequency")
+    #
+    # def readVisualSets(self):
+    #     # visualDefaults
+    #     self._cellBordersOn = Configuration.getSetting("CellBordersOn")
+    #     self._clusterBordersOn = Configuration.getSetting("ClusterBordersOn")
+    #     #        print MODULENAME,'   readVisualSets():  cellBordersOn, clusterBordersOn = ',self._cellBordersOn, self._clusterBordersOn
+    #     self._conLimitsOn = Configuration.getSetting("ConcentrationLimitsOn")
+    #     self._zoomFactor = Configuration.getSetting("ZoomFactor")

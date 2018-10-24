@@ -454,7 +454,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # self.connect(self, SIGNAL('configsChanged'), newWindow.draw2D.configsChanged)
         # self.connect(self, SIGNAL('configsChanged'), newWindow.draw3D.configsChanged)
 
-        newWindow.readSettings()  # Graphics/MVCDrawViewBase.py
+        # newWindow.readSettings()  # Graphics/MVCDrawViewBase.py
+
         # setting up plane tuple based on window number 1
         # plane=self.windowDict[1].getPlane()
         # newWindow.setPlane(plane[0],plane[1])
@@ -518,17 +519,18 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # self.mainGraphicsWidget.hide()
         # return
 
-        # todo 5
+        # todo 5 - old code
         # self.configsChanged.connect(self.mainGraphicsWidget.draw2D.configsChanged)
         # self.configsChanged.connect(self.mainGraphicsWidget.draw3D.configsChanged)
+        # self.mainGraphicsWidget.readSettings()
 
-
-        self.configsChanged.connect(self.mainGraphicsWidget.configsChanged)
-        self.configsChanged.connect(self.mainGraphicsWidget.configsChanged)
 
         # self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWidget.draw2D.configsChanged)
         # self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWidget.draw3D.configsChanged)
-        self.mainGraphicsWidget.readSettings()
+
+        self.configsChanged.connect(self.mainGraphicsWidget.configsChanged)
+        self.configsChanged.connect(self.mainGraphicsWidget.configsChanged)
+
         self.simulation.setGraphicsWidget(self.mainGraphicsWidget)
 
         mdiSubWindow = self.addSubWindow(self.mainGraphicsWidget)
