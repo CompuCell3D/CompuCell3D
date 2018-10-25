@@ -3836,7 +3836,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         uGridConc = vtk.vtkStructuredPoints()
         uGridConc.SetDimensions(dim[0],dim[1],dim[2])
 
-        uGridConc.GetPointData().SetScalars(self.cellType)
+        uGridConc.GetPointData().SetScalars(self.cell_type_array)
 
         cellsPlane=vtk.vtkImageDataGeometryFilter()
         cellsPlane.SetExtent(0,dim[0],0,dim[1],0,0)

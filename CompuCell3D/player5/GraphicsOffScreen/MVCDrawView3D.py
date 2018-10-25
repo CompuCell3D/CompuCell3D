@@ -555,55 +555,55 @@ class MVCDrawView3D(MVCDrawViewBase):
 
 
 
-    def drawCellField(self, bsd, fieldType):
-        '''
-        Draws Cell Field
-        :param bsd: BasicSimulationData - contains field dim etc
-        :param fieldType: field type - e.g. cellfield, concentration field etc...
-        :return:None
-        '''
-#        print MODULENAME, '  drawCellField():    calling drawModel.extractCellFieldData()'
-        self.usedCellTypesList = self.drawModel.extractCellFieldData()
-        numberOfActors = len(self.usedCellTypesList)
-        
-        self.hideAllActors()
-        self.set3DInvisibleTypes()
-        
-        self.drawModel.prepareOutlineActors((self.outlineActor,))
-        # remember to edit configs changed for actors to be visible or not. control variable are being changed there
-
-        self.drawCellVisDecorations()
-
-        dictKey = self.graphicsFrameWidget.winId().__int__()
-        
-        if (self.parentWidget.graphicsWindowVisDict[dictKey][0])  \
-          and not (self.parentWidget.graphicsWindowVisDict[dictKey][1]):    # cells (= cell types)
-#            print MODULENAME, '  drawCellField():    drawing Cells for this window'
-#             self.prepareCellTypeActors()
-            self.drawModel.prepareCellTypeActors(self.cellTypeActors, self.invisibleCellTypes)
-            self.showCellTypeActors()
-            self.drawModel.init_cell_field_actors(self.currentActors)
-            
-        if self.parentWidget.graphicsWindowVisDict[dictKey][1]:    # cell borders (= individual cells)
-
-            self.parentWidget.displayWarning ('3D Cell rendering with Vis->Borders "ON"  may be slow')
-
-            # self.prepareCellTypeActors()
-            self.drawModel.prepareCellTypeActors(self.cellTypeActors, self.invisibleCellTypes)
-            self.showCellTypeActors()
-            self.drawModel.initCellFieldBordersActors(self.currentActors)
-        
-        # Note: Cell borders and Cluster borders are not meaningful for 3D cells (= [dictKey][1], [2])
-        
-#        if self.parentWidget.cellGlyphsAct.isChecked():
-        if self.parentWidget.graphicsWindowVisDict[dictKey][3]:    # glyphs
-            self.drawCellGlyphs3D()
-            
-#        if self.parentWidget.FPPLinksAct.isChecked():
-        if self.parentWidget.graphicsWindowVisDict[dictKey][4]:    # FPP links
-            self.drawFPPLinks3D() 
-        
-        self.Render()
+#     def drawCellField(self, bsd, fieldType):
+#         '''
+#         Draws Cell Field
+#         :param bsd: BasicSimulationData - contains field dim etc
+#         :param fieldType: field type - e.g. cellfield, concentration field etc...
+#         :return:None
+#         '''
+# #        print MODULENAME, '  drawCellField():    calling drawModel.extractCellFieldData()'
+#         self.usedCellTypesList = self.drawModel.extractCellFieldData()
+#         numberOfActors = len(self.usedCellTypesList)
+#
+#         self.hideAllActors()
+#         self.set3DInvisibleTypes()
+#
+#         self.drawModel.prepareOutlineActors((self.outlineActor,))
+#         # remember to edit configs changed for actors to be visible or not. control variable are being changed there
+#
+#         self.drawCellVisDecorations()
+#
+#         dictKey = self.graphicsFrameWidget.winId().__int__()
+#
+#         if (self.parentWidget.graphicsWindowVisDict[dictKey][0])  \
+#           and not (self.parentWidget.graphicsWindowVisDict[dictKey][1]):    # cells (= cell types)
+# #            print MODULENAME, '  drawCellField():    drawing Cells for this window'
+# #             self.prepareCellTypeActors()
+#             self.drawModel.prepareCellTypeActors(self.cellTypeActors, self.invisibleCellTypes)
+#             self.showCellTypeActors()
+#             self.drawModel.init_cell_field_actors(self.currentActors)
+#
+#         if self.parentWidget.graphicsWindowVisDict[dictKey][1]:    # cell borders (= individual cells)
+#
+#             self.parentWidget.displayWarning ('3D Cell rendering with Vis->Borders "ON"  may be slow')
+#
+#             # self.prepareCellTypeActors()
+#             self.drawModel.prepareCellTypeActors(self.cellTypeActors, self.invisibleCellTypes)
+#             self.showCellTypeActors()
+#             self.drawModel.initCellFieldBordersActors(self.currentActors)
+#
+#         # Note: Cell borders and Cluster borders are not meaningful for 3D cells (= [dictKey][1], [2])
+#
+# #        if self.parentWidget.cellGlyphsAct.isChecked():
+#         if self.parentWidget.graphicsWindowVisDict[dictKey][3]:    # glyphs
+#             self.drawCellGlyphs3D()
+#
+# #        if self.parentWidget.FPPLinksAct.isChecked():
+#         if self.parentWidget.graphicsWindowVisDict[dictKey][4]:    # FPP links
+#             self.drawFPPLinks3D()
+#
+#         self.Render()
 
     def showConActors(self):
         '''

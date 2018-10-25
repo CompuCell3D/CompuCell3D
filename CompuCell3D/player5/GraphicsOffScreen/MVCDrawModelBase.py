@@ -18,7 +18,7 @@ class MVCDrawModelBase:
         self.currentDrawingParameters=None
         self.field_extractor = None
 
-        self.cellType = None
+        self.cell_type_array = None
         self.cell_id_array = None
         self.used_cell_types_list = None
         self.lattice_type = None
@@ -65,7 +65,7 @@ class MVCDrawModelBase:
         :return:
         """
 
-        self.cellType = cell_field_data_dict['cell_type_array']
+        self.cell_type_array = cell_field_data_dict['cell_type_array']
         self.cell_id_array = cell_field_data_dict['cell_id_array']
         self.used_cell_types_list = cell_field_data_dict['used_cell_types']
 
