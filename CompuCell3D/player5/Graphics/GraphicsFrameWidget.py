@@ -1,8 +1,8 @@
 # todo - off screen CML run - integrate fully with CompuCellSetup
+# todo - check ghost 2D actor when going from outputting screenshots in the CML mode
 # todo - add bounding box in 3D
-# todo - check 3D cells hex drawing with borders
 # todo - add fpp vis in 3D
-
+# todo - check simulation replay
 from weakref import ref
 import string
 import DefaultData
