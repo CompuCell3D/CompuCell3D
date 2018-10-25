@@ -1,3 +1,6 @@
+# todo - borders on/off functionality - scr_data - check
+# todo - off screen CML run - integrate fully with CompuCellSetup
+# todo borders on in 3D cell view - causes issues right now
 from weakref import ref
 import string
 import DefaultData

@@ -176,6 +176,9 @@ class GenericDrawer():
         :param drawing_params:{DrawingParameters}
         :return:None
         """
+        if not drawing_params.screenshot_data.cells_on:
+            return
+
         model, view = self.get_model_view(drawing_params=drawing_params)
 
         max_cell_type_used = max(drawing_params.bsd.cell_types_used)

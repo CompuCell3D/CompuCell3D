@@ -3177,23 +3177,23 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 # if graphicsWidget.is_screenshot_widget: continue
 
                 # self.updateActiveWindowVisFlags(graphicsWidget)
-
-                try:
-                    if checked:
-                        # print 'SHOWING CELLS ACTION'
-                        graphicsWidget.showCells()
-                        Configuration.setSetting('CellsOn', True)
-                        self.cellsAct.setChecked(True)
-                        win.activateWindow()
-                    else:
-                        # print 'HIDING CELLS ACTION'
-                        graphicsWidget.hideCells()
-                        Configuration.setSetting('CellsOn', False)
-                        self.cellsAct.setChecked(False)
-                        win.activateWindow()
-
-                except AttributeError, e:
-                    pass
+                graphicsWidget.draw(basic_simulation_data=self.basicSimulationData)
+                # try:
+                #     if checked:
+                #         # print 'SHOWING CELLS ACTION'
+                #         graphicsWidget.showCells()
+                #         Configuration.setSetting('CellsOn', True)
+                #         self.cellsAct.setChecked(True)
+                #         win.activateWindow()
+                #     else:
+                #         # print 'HIDING CELLS ACTION'
+                #         graphicsWidget.hideCells()
+                #         Configuration.setSetting('CellsOn', False)
+                #         self.cellsAct.setChecked(False)
+                #         win.activateWindow()
+                #
+                # except AttributeError, e:
+                #     pass
                 self.updateActiveWindowVisFlags(graphicsWidget)
 
         self.simulation.drawMutex.unlock()
@@ -3215,17 +3215,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
             for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
                 graphicsWidget = win.widget()
 
-                try:
-                    if checked:
-                        graphicsWidget.showBorder()
-                        self.borderAct.setChecked(True)
-                        win.activateWindow()
-                    else:
-                        graphicsWidget.hideBorder()
-                        self.borderAct.setChecked(False)
-                        win.activateWindow()
-                except AttributeError, e:
-                    pass
+                graphicsWidget.draw(basic_simulation_data=self.basicSimulationData)
+
+                # try:
+                #     if checked:
+                #         graphicsWidget.showBorder()
+                #         self.borderAct.setChecked(True)
+                #         win.activateWindow()
+                #     else:
+                #         graphicsWidget.hideBorder()
+                #         self.borderAct.setChecked(False)
+                #         win.activateWindow()
+                # except AttributeError, e:
+                #     pass
 
                 self.updateActiveWindowVisFlags(graphicsWidget)
 
@@ -3245,19 +3247,20 @@ class SimpleTabView(MainArea, SimpleViewManager):
             # MDIFIX
             for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
                 graphicsWidget = win.widget()
-                try:
-                    if checked:
-                        graphicsWidget.showClusterBorder()
-                        self.clusterBorderAct.setChecked(True)
-                        win.activateWindow()
-
-                    else:
-                        graphicsWidget.hideClusterBorder()
-                        self.clusterBorderAct.setChecked(False)
-                        win.activateWindow()
-
-                except AttributeError, e:
-                    pass
+                graphicsWidget.draw(basic_simulation_data=self.basicSimulationData)
+                # try:
+                #     if checked:
+                #         graphicsWidget.showClusterBorder()
+                #         self.clusterBorderAct.setChecked(True)
+                #         win.activateWindow()
+                #
+                #     else:
+                #         graphicsWidget.hideClusterBorder()
+                #         self.clusterBorderAct.setChecked(False)
+                #         win.activateWindow()
+                #
+                # except AttributeError, e:
+                #     pass
 
                 self.updateActiveWindowVisFlags(graphicsWidget)
 
