@@ -14,26 +14,21 @@
 # todo - fix color of fpp links
 # todo - find better way to determine if fpp plugin is properly loaded
 # todo - any references to simpletabview should be via weakref
-
-
 import string
 import Configuration
 import vtk
 from enums import *
 from copy import deepcopy
-
 from MVCDrawView2D import MVCDrawView2D
 from MVCDrawModel2D import MVCDrawModel2D
-
 from MVCDrawView3D import MVCDrawView3D
 from MVCDrawModel3D import MVCDrawModel3D
 from Specs import ActorSpecs
-
-MODULENAME = '---- GraphicsFrameWidget.py: '
-
 from CompuCell3D.player5.Utilities.utils import extract_address_int_from_vtk_object
 from DrawingParameters import DrawingParameters
 
+
+MODULENAME = '---- GraphicsFrameWidget.py: '
 
 class GenericDrawer():
     def __init__(self, parent=None, originatingWidget=None):

@@ -1,16 +1,6 @@
-
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-
-from Utilities.QVTKRenderWidget import QVTKRenderWidget
-
-# from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES,PLANES
-
 from MVCDrawViewBase import MVCDrawViewBase
 import Configuration
-import vtk, math
-import sys, os
+import vtk
 from collections import OrderedDict
 from copy import deepcopy
 

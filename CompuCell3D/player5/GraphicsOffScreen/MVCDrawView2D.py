@@ -1,18 +1,14 @@
-# -*- coding: utf-8 -*-
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-
-from Utilities.QVTKRenderWidget import QVTKRenderWidget
-# from GraphicsNew import GraphicsNew
 from MVCDrawViewBase import MVCDrawViewBase
-# from Plugins.ViewManagerPlugins.SimpleTabView import FIELD_TYPES
 import Configuration
-import vtk, math
-import sys, os
+import vtk
+import os
 import string
 from collections import OrderedDict
 from copy import deepcopy
+
+from Messaging import dbgMsg, setDebugging
+# setDebugging(1)
+
 
 # CONTOUR_ALLOWED_FIELD_TYPES=[FIELD_TYPES[1],FIELD_TYPES[2],FIELD_TYPES[3]]
 
@@ -20,10 +16,6 @@ MODULENAME='----MVCDrawView2D.py: '
 
 VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
 VTK_MINOR_VERSION=vtk.vtkVersion.GetVTKMinorVersion()
-
-
-from Messaging import dbgMsg, setDebugging
-# setDebugging(1)
 
 class MVCDrawView2D(MVCDrawViewBase):
     def __init__(self, _drawModel):

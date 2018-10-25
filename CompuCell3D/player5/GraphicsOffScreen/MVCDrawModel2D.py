@@ -1,21 +1,14 @@
-# -*- coding: utf-8 -*-
-# from PyQt5.QtCore import *
-# from PyQt5.QtGui import *
-# from PyQt5.QtWidgets import *
-# import
-# from GraphicsNew import GraphicsNew
 import Configuration
 from MVCDrawModelBase import MVCDrawModelBase
 import vtk
 import math
 import string
+from Messaging import dbgMsg
 from CompuCell3D.player5.Utilities.utils import extract_address_int_from_vtk_object, to_vtk_rgb
 
 VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
 
-
 MODULENAME='----- MVCDrawModel2D.py:  '
-from Messaging import dbgMsg
 
 
 class MVCDrawModel2D(MVCDrawModelBase):
@@ -25,7 +18,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.initArea()
         self.setParams()
 
-        
     # Sets up the VTK simulation area 
     def initArea(self):
         ## Set up the mappers (2D) for cell vis.

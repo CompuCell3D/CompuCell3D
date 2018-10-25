@@ -3170,6 +3170,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.drawMutex.lock()
         self.updateActiveWindowVisFlags()
         if self.cellsAct.isEnabled():
+            Configuration.setSetting('CellsOn', checked)
 
             # MDIFIX
             for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
@@ -3177,7 +3178,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 # if graphicsWidget.is_screenshot_widget: continue
 
                 # self.updateActiveWindowVisFlags(graphicsWidget)
+
                 graphicsWidget.draw(basic_simulation_data=self.basicSimulationData)
+
                 # try:
                 #     if checked:
                 #         # print 'SHOWING CELLS ACTION'
@@ -3210,10 +3213,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
         #        print '             self.graphicsWindowDict=',self.graphicsWindowDict
         self.updateActiveWindowVisFlags()
 
+
+
         if self.borderAct.isEnabled():
+            Configuration.setSetting('CellBordersOn', checked)
+
 
             for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
                 graphicsWidget = win.widget()
+
 
                 graphicsWidget.draw(basic_simulation_data=self.basicSimulationData)
 
@@ -3244,6 +3252,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.updateActiveWindowVisFlags()
         if self.clusterBorderAct.isEnabled():
+            Configuration.setSetting('ClusterBordersOn', checked)
+
             # MDIFIX
             for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
                 graphicsWidget = win.widget()
@@ -3290,17 +3300,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
             # MDIFIX
             for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
                 graphicsWidget = win.widget()
-                try:
-                    if checked:
-                        graphicsWidget.showCellGlyphs()
-                        self.cellGlyphsAct.setChecked(True)
-                        win.activateWindow()
-                    else:
-                        graphicsWidget.hideCellGlyphs()
-                        self.cellGlyphsAct.setChecked(False)
-                        win.activateWindow()
-                except AttributeError, e:
-                    pass
+                graphicsWidget.draw(basic_simulation_data=self.basicSimulationData)
+
+                # try:
+                #     if checked:
+                #         graphicsWidget.showCellGlyphs()
+                #         self.cellGlyphsAct.setChecked(True)
+                #         win.activateWindow()
+                #     else:
+                #         graphicsWidget.hideCellGlyphs()
+                #         self.cellGlyphsAct.setChecked(False)
+                #         win.activateWindow()
+                # except AttributeError, e:
+                #     pass
 
                 self.updateActiveWindowVisFlags(graphicsWidget)
 
@@ -3333,19 +3345,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
             # MDIFIX
             for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
                 graphicsWidget = win.widget()
-
-                try:
-                    if checked:
-                        graphicsWidget.showFPPLinks()
-                        self.FPPLinksAct.setChecked(True)
-                        win.activateWindow()
-                    else:
-                        graphicsWidget.hideFPPLinks()
-                        self.FPPLinksAct.setChecked(False)
-                        win.activateWindow()
-
-                except AttributeError, e:
-                    pass
+                graphicsWidget.draw(basic_simulation_data=self.basicSimulationData)
+                # try:
+                #     if checked:
+                #         graphicsWidget.showFPPLinks()
+                #         self.FPPLinksAct.setChecked(True)
+                #         win.activateWindow()
+                #     else:
+                #         graphicsWidget.hideFPPLinks()
+                #         self.FPPLinksAct.setChecked(False)
+                #         win.activateWindow()
+                #
+                # except AttributeError, e:
+                #     pass
 
                 self.updateActiveWindowVisFlags(graphicsWidget)
 
