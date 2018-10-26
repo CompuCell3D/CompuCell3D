@@ -486,18 +486,6 @@ class ScreenshotManagerCore(object):
         """
         return self.bsd
 
-
-
-    # def outputScreenshots(self, _generalScreenshotDirectoryName,
-    #                       _mcs):  # called from SimpleTabView:handleCompletedStep{Regular,CML*}
-    #     """
-    #     Outputs screenshot
-    #     :param _generalScreenshotDirectoryName:
-    #     :param _mcs:
-    #     :return:
-    #     """
-    #     raise NotImplementedError()
-
     # called from SimpleTabView:handleCompletedStep{Regular,CML*}
     def outputScreenshots(self, general_screenshot_directory_name, mcs):
         """
@@ -508,6 +496,9 @@ class ScreenshotManagerCore(object):
         """
 
         bsd = self.get_basic_simulation_data()
+        if self.gd is None or bsd is None:
+            print('GenericDrawer or basic simulation data is None. Could not output screenshots')
+            return
 
         # fills string with 0's up to self.screenshotNumberOfDigits width
         mcsFormattedNumber = string.zfill(str(mcs), self.screenshot_number_of_digits)

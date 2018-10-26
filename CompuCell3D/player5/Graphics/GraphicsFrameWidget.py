@@ -1,8 +1,8 @@
-# todo - off screen CML run - integrate fully with CompuCellSetup
-# todo - check ghost 2D actor when going from outputting screenshots in the CML mode
 # todo - add bounding box in 3D
 # todo - add fpp vis in 3D
 # todo - check simulation replay
+# todo - resolve the issue of imports in the CompuCellSetup
+
 from weakref import ref
 import string
 import DefaultData

@@ -7,9 +7,6 @@ from collections import OrderedDict
 
 from distutils.dir_util import mkpath
 import json
-from GraphicsOffScreen import GenericDrawer
-from GraphicsOffScreen import DrawingParameters
-from Utilities import ScreenshotManagerCore
 from BasicSimulationData import BasicSimulationData
 from os.path import join, dirname, exists
 # import Configuration
@@ -1944,19 +1941,6 @@ def extractAddressIntFromVtkObject(field_extractor, _vtkObj):
     '''
     return field_extractor.unmangleSWIGVktPtrAsLong(_vtkObj.__this__)
 
-def output_screenshots(gd, bsd, screenshot_data_dict, screenshot_dir):
-
-    for screenshot_name, screenshot_data in screenshot_data_dict.items():
-        screenshot_name = screenshot_data.screenshotName + '_{current_step}.png'.format(current_step=current_step)
-
-        # gd.draw(drawing_params=drawing_params,screenshot_name=screenshot_name)
-        gd.draw(screenshot_data=screenshot_data, bsd=bsd, screenshot_name=screenshot_name)
-        screenshot_name = str(current_step)
-        screenshot_fname = 'D:/CC3D_GIT/CompuCell3D/player5/GraphicsOffScreen/{screenshot_name}.png'.format(
-            screenshot_name=screenshot_name)
-        gd.output_screenshot(screenshot_fname=screenshot_fname)
-
-
 def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=None):
     global cmlFieldHandler  # rwh2
     global globalSteppableRegistry  # rwh2
@@ -2052,13 +2036,13 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
 
     screenshot_dir = simulationPaths.getSimulationResultStorageDirectory()
 
-    # from GraphicsOffScreen import GenericDrawer
-    # from GraphicsOffScreen import DrawingParameters
-    # from Utilities import ScreenshotManagerCore
-    # from BasicSimulationData import BasicSimulationData
-    # from os.path import join, dirname, exists
 
     global simulationFileName
+
+    # todo 5 - for some reason importing at hte top of the file does not work . have too look into it
+    from GraphicsOffScreen import GenericDrawer
+    from GraphicsOffScreen import DrawingParameters
+    from Utilities import ScreenshotManagerCore
 
     sim_fname = simulationFileName
     screenshot_data_fname = join(dirname(sim_fname), 'screenshot_data/screenshots.json')
@@ -2082,7 +2066,7 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
         # wiring screenshot manager
         screenshot_mgr.gd = gd
         screenshot_mgr.bsd = bsd
-        screenshot_mgr.screenshotNumberOfDigits = len(str(bsd.numberOfSteps))
+        screenshot_mgr.screenshot_number_of_digits = len(str(bsd.numberOfSteps))
 
 
     # for current_step in range(sim.getNumSteps()):
@@ -2111,92 +2095,13 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
         if not steppableRegistry is None:
             steppableRegistry.step(current_step)
 
-        # ------------- custom drawing code
-        # import vtk
-        # cellType = vtk.vtkIntArray()
-        # cellType.SetName("celltype")
-        #
-        # cellTypeIntAddr = extractAddressIntFromVtkObject(field_extractor_local, cellType)
-        # field_extractor_local.fillCellFieldData2D(cellTypeIntAddr, 'xy', 0)
-
-        # import GraphicsOffScreen
-        # gd = GraphicsOffScreen.GenericDrawer.GenericDrawer()
-
-        # from Plugins.ViewManagerPlugins.ScreenshotManager import ScreenshotManager
-
-        # global simulationFileName
-        #
-        # sim_fname = simulationFileName
-        # screenshot_data_fname = join(dirname(sim_fname), 'screenshot_data/screenshots.json')
-        # screenshot_mgr = ScreenshotManagerCore()
-        # if exists(screenshot_data_fname):
-        #     screenshot_mgr.readScreenshotDescriptionFile(screenshot_data_fname)
-
-        # gd = GenericDrawer()
-        # gd.set_field_extractor(field_extractor=field_extractor_local)
-
-        if gd is not None:
-            screenshot_mgr.outputScreenshots( general_screenshot_directory_name=screenshot_dir, mcs=current_step)
-            # output_screenshots(
-            #     gd=gd,
-            #     bsd=bsd,
-            #     screenshot_data_dict=screenshot_mgr.screenshotDataDict,
-            #     screenshot_dir=screenshot_dir
-            # )
-            #
-        # fs = field_handler.fieldStorage
-        # for screenshot_name, screenshot_data in screenshot_mgr.screenshotDataDict.items():
-        #     drawing_params = DrawingParameters()
-        #     bsd = BasicSimulationData()
-        #     bsd.fieldDim = sim.getPotts().getCellFieldG().getDim()
-        #     bsd.numberOfSteps = sim.getNumSteps()
-        #     bsd.sim = sim
-        #     # drawing_params.bsd = bsd
-        #     #
-        #     # drawing_params.plane = screenshot_data.projection
-        #     #
-        #     # drawing_params.planePosition = screenshot_data.projectionPosition
-        #     # drawing_params.planePos = screenshot_data.projectionPosition
-        #     # drawing_params.fieldName = screenshot_data.plotData[0]  # e.g. plotData = ('Cell_Field','CellField')
-        #     # drawing_params.fieldType = screenshot_data.plotData[0]
-        #     screenshot_name = screenshot_data.screenshotName+'_{current_step}.png'.format(current_step=current_step)
-        #
-        #     # gd.draw(drawing_params=drawing_params,screenshot_name=screenshot_name)
-        #     gd.draw(screenshot_data=screenshot_data, bsd=bsd,screenshot_name=screenshot_name)
-        #     screenshot_name = str(current_step)
-        #     screenshot_fname = 'D:/CC3D_GIT/CompuCell3D/player5/GraphicsOffScreen/{screenshot_name}.png'.format(
-        #         screenshot_name=screenshot_name)
-        #     gd.output_screenshot(screenshot_fname=screenshot_fname)
-
-
-        # OK
-        # drawing_params = DrawingParameters()
-        # bsd = BasicSimulationData()
-        # bsd.fieldDim = sim.getPotts().getCellFieldG().getDim()
-        # bsd.numberOfSteps = sim.getNumSteps()
-        # drawing_params.bsd = bsd
-        #
-        # drawing_params.plane = 'XY'
-        # drawing_params.planePos = 0
-        # drawing_params.planePosition = 0
-        # drawing_params.fieldName = 'Cell_Field'
-        # drawing_params.fieldType = 'CellField'
-
-        # gd = GenericDrawer()
-        # gd.set_field_extractor(field_extractor=field_extractor_local)
-        #
-        # gd.draw(drawing_params=drawing_params)
-        #
-        # OK
-
-
-        print
-        # ------------- custom drawing code
-
-
         if cmlFieldHandler.outputFrequency and not (current_step % cmlFieldHandler.outputFrequency):
             #            print MYMODULENAME,' mainLoopCML: cmlFieldHandler.writeFields(i), i=',i
             cmlFieldHandler.writeFields(current_step)
+
+            # outputting screenshots
+            screenshot_mgr.outputScreenshots(general_screenshot_directory_name=screenshot_dir, mcs=current_step)
+
             # cmlFieldHandler.fieldWriter.addCellFieldForOutput()
             # cmlFieldHandler.fieldWriter.writeFields(cmlFieldHandler.outputFileCoreName+str(i)+".vtk")
             # cmlFieldHandler.fieldWriter.clear()

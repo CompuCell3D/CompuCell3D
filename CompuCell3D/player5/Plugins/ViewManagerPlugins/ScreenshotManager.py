@@ -19,7 +19,7 @@ class ScreenshotManager(ScreenshotManagerCore):
 
         self.basicSimulationData = tvw.basicSimulationData
         self.basicSimulationData = tvw.basicSimulationData
-        self.screenshotNumberOfDigits = len(str(self.basicSimulationData.numberOfSteps))
+        self.screenshot_number_of_digits = len(str(self.basicSimulationData.numberOfSteps))
 
         self.maxNumberOfScreenshots = 20  # we limit max number of screenshots to discourage users from using screenshots as their main analysis tool
 
@@ -232,7 +232,7 @@ class ScreenshotManager(ScreenshotManagerCore):
         bsd = self.get_basic_simulation_data()
 
         # fills string with 0's up to self.screenshotNumberOfDigits width
-        mcsFormattedNumber = string.zfill(str(mcs), self.screenshotNumberOfDigits)
+        mcsFormattedNumber = string.zfill(str(mcs), self.screenshot_number_of_digits)
 
         for i, screenshot_name in enumerate(self.screenshotDataDict.keys()):
             screenshot_data = self.screenshotDataDict[screenshot_name]
