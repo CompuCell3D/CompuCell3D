@@ -213,14 +213,26 @@ class ScreenshotManager(ScreenshotManagerCore):
         # serializing all screenshots
         self.serialize_screenshot_data()
 
-    # called from SimpleTabView:handleCompletedStep{Regular,CML*}
-    def outputScreenshots(self, _generalScreenshotDirectoryName, _mcs):
-
+    def get_basic_simulation_data(self):
+        """
+        Returns an instance of BasicSimulationData
+        :return: {BasicSimulationData}
+        """
         tvw = self.tabViewWidget()
         bsd = tvw.basicSimulationData
+        return bsd
+
+
+    # called from SimpleTabView:handleCompletedStep{Regular,CML*}
+    def outputScreenshots(self, general_screenshot_directory_name, mcs):
+
+        # tvw = self.tabViewWidget()
+        #         # bsd = tvw.basicSimulationData
+
+        bsd = self.get_basic_simulation_data()
 
         # fills string with 0's up to self.screenshotNumberOfDigits width
-        mcsFormattedNumber = string.zfill(str(_mcs), self.screenshotNumberOfDigits)
+        mcsFormattedNumber = string.zfill(str(mcs), self.screenshotNumberOfDigits)
 
         for i, screenshot_name in enumerate(self.screenshotDataDict.keys()):
             screenshot_data = self.screenshotDataDict[screenshot_name]
@@ -228,7 +240,7 @@ class ScreenshotManager(ScreenshotManagerCore):
             if not screenshot_name:
                 screenshot_name = 'screenshot_' + str(i)
 
-            screenshot_dir = os.path.join(_generalScreenshotDirectoryName, screenshot_name)
+            screenshot_dir = os.path.join(general_screenshot_directory_name, screenshot_name)
 
             # will create screenshot directory if directory does not exist
             if not os.path.isdir(screenshot_dir):

@@ -21,6 +21,9 @@ class ScreenshotManagerCore(object):
         self.screenshotDataDict = {}
         self.screenshotCounter3D = 0
         self.screenshotGraphicsWidget = None
+        self.gd = None
+        self.bsd = None
+        self.screenshot_number_of_digits = 10
 
     def cleanup(self):
         """
@@ -476,12 +479,53 @@ class ScreenshotManagerCore(object):
 
         raise NotImplementedError()
 
-    def outputScreenshots(self, _generalScreenshotDirectoryName,
-                          _mcs):  # called from SimpleTabView:handleCompletedStep{Regular,CML*}
+    def get_basic_simulation_data(self):
+        """
+        Returns an instance of BasicSimulationData. Needs to be reimplemented or bsd member needs to be set
+        :return: {BasicSimulationData}
+        """
+        return self.bsd
+
+
+
+    # def outputScreenshots(self, _generalScreenshotDirectoryName,
+    #                       _mcs):  # called from SimpleTabView:handleCompletedStep{Regular,CML*}
+    #     """
+    #     Outputs screenshot
+    #     :param _generalScreenshotDirectoryName:
+    #     :param _mcs:
+    #     :return:
+    #     """
+    #     raise NotImplementedError()
+
+    # called from SimpleTabView:handleCompletedStep{Regular,CML*}
+    def outputScreenshots(self, general_screenshot_directory_name, mcs):
         """
         Outputs screenshot
-        :param _generalScreenshotDirectoryName:
-        :param _mcs:
+        :param general_screenshot_directory_name:
+        :param mcs:
         :return:
         """
-        raise NotImplementedError()
+
+        bsd = self.get_basic_simulation_data()
+
+        # fills string with 0's up to self.screenshotNumberOfDigits width
+        mcsFormattedNumber = string.zfill(str(mcs), self.screenshot_number_of_digits)
+
+        for i, screenshot_name in enumerate(self.screenshotDataDict.keys()):
+            screenshot_data = self.screenshotDataDict[screenshot_name]
+
+            if not screenshot_name:
+                screenshot_name = 'screenshot_' + str(i)
+
+            screenshot_dir = os.path.join(general_screenshot_directory_name, screenshot_name)
+
+            # will create screenshot directory if directory does not exist
+            if not os.path.isdir(screenshot_dir):
+                os.mkdir(screenshot_dir)
+
+            screenshot_fname = os.path.join(screenshot_dir, screenshot_name + "_" + mcsFormattedNumber + ".png")
+
+            self.gd.clear_display()
+            self.gd.draw(screenshot_data=screenshot_data, bsd=bsd, screenshot_name=screenshot_name)
+            self.gd.output_screenshot(screenshot_fname=screenshot_fname)
