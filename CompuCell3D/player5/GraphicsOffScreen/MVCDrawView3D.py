@@ -429,11 +429,28 @@ class MVCDrawView3D(MVCDrawViewBase):
                 self.currentActors[actorName] = self.cellTypeActors[actorNumber]
                 self.graphicsFrameWidget.ren.AddActor(self.currentActors[actorName])
 
-    def show_bounding_box(self, show_flag):
+    def prepare_outline_actors(self, actor_specs, drawing_params=None):
+        """
+        Prepares cell_field_actors  based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
+        :return: {dict}
+        """
+
+        actor_specs_copy = deepcopy(actor_specs)
+        actor_specs_copy.actors_dict = OrderedDict()
+        actor_specs_copy.actors_dict['outline_actor'] = self.outlineActor
+
+        return actor_specs_copy
+
+
+    def show_outline_actors(self, actor_specs, drawing_params=None, show_flag=True):
         """
         shows/hides bounding box
+        :param actor_specs:
+        :param drawing_params:
         :param show_flag:
-        :return:
+        :return::
         """
         if show_flag:
             if not self.currentActors.has_key("Outline"):
@@ -447,6 +464,27 @@ class MVCDrawView3D(MVCDrawViewBase):
             if self.currentActors.has_key("Outline"):
                 del self.currentActors["Outline"]
                 self.ren.RemoveActor(self.outlineActor)
+
+    def show_axes_actors(self,  actor_specs, drawing_params=None, show_flag=True):
+        """
+        shows/hides axes box
+        :param actor_specs:
+        :param drawing_params:
+        :param show_flag:
+        :return:
+        """
+        if show_flag:
+            if not self.currentActors.has_key("Axes"):
+                self.currentActors["Axes"] = self.axesActor
+                self.ren.AddActor(self.axesActor)
+            else:
+                self.ren.RemoveActor(self.axesActor)
+
+                self.ren.AddActor(self.axesActor)
+        else:
+            if self.currentActors.has_key("Axes"):
+                del self.currentActors["Axes"]
+                self.ren.RemoveActor(self.axesActor)
 
 
     #     def showCellTypeActors(self):

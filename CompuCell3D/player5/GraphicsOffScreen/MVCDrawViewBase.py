@@ -398,7 +398,7 @@ class MVCDrawViewBase:
 
         raise NotImplementedError(self.__class__.prepare_cell_field_actors.__name__)
 
-    def show_cell_actors(self, actor_specs, show_flag=True):
+    def show_cell_actors(self,  actor_specs, drawing_params=None, show_flag=True):
         """
         Shows cell_field actors
         :param actor_specs: {ActorSpecs}
@@ -406,6 +406,37 @@ class MVCDrawViewBase:
         :return: None
         """
         raise NotImplementedError(self.__class__.show_cell_actors.__name__)
+
+    def prepare_outline_actors(self, actor_specs, drawing_params=None):
+        """
+        Prepares cell_field_actors  based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
+        :return: {dict}
+        """
+
+        raise NotImplementedError(self.__class__.prepare_outline_actors.__name__)
+
+    def show_outline_actors(self, actor_specs, drawing_params=None, show_flag=True):
+        """
+        shows/hides bounding box
+        :param actor_specs:
+        :param drawing_params:
+        :param show_flag:
+        :return:
+        """
+        raise NotImplementedError(self.__class__.show_outline_actors.__name__)
+
+    def show_axes_actors(self,  actor_specs, drawing_params=None, show_flag=True):
+        """
+        shows/hides axes box
+        :param actor_specs:
+        :param drawing_params:
+        :param show_flag:
+        :return:
+        """
+        raise NotImplementedError(self.__class__.show_axes_actors.__name__)
+
 
     def prepare_cluster_border_actors(self, actor_specs, drawing_params=None):
         """

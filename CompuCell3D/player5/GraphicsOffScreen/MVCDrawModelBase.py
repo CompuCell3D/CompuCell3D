@@ -222,7 +222,23 @@ class MVCDrawModelBase:
         raise NotImplementedError()
 
     def init_outline_actors(self, actor_specs, drawing_params=None):
+        """
+        Initializes outline actors for hex actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+
         raise NotImplementedError()
+
+    def init_axes_axes_actors(self, actor_specs, drawing_params=None):
+        """
+        Initializes axes actors for hex actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+
 
     
     # def initConFieldActors(self, _actors): pass

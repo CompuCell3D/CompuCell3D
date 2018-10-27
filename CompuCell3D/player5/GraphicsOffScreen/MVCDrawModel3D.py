@@ -4,7 +4,8 @@ import Configuration
 import vtk, math
 
 VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
-from Utilities.utils import extract_address_int_from_vtk_object
+# from Utilities.utils import extract_address_int_from_vtk_object
+from CompuCell3D.player5.Utilities.utils import extract_address_int_from_vtk_object, to_vtk_rgb
 
 MODULENAME='------  MVCDrawModel3D.py'
 
@@ -676,64 +677,17 @@ class MVCDrawModel3D(MVCDrawModelBase):
         outline_mapper = vtk.vtkPolyDataMapper()
         outline_mapper.SetInputConnection(outline.GetOutputPort())
 
-        outline_actor = actors_dict['outlineActor']
+        outline_actor = actors_dict['outline_actor']
 
         outline_actor.SetMapper(outline_mapper)
 
 
         lattice_type_str = self.get_lattice_type_str()
-        if lattice_type_str.lower() == 'hexagonal' and drawing_params.plane.lower() == "xy":
-
-
+        if lattice_type_str.lower() == 'hexagonal':
             outline_actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
 
-        # eventually do this smarter (only get/update when it changes)
-        color = Configuration.getSetting("BoundingBoxColor")
-        outline_actor.GetProperty().SetColor(float(color.red()) / 255, float(color.green()) / 255,
-                                          float(color.blue()) / 255)
-
-
-        return
-
-        actors_dict = actor_specs.actors_dict
-        field_dim = self.currentDrawingParameters.bsd.fieldDim
-        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
-        scene_metadata = drawing_params.screenshot_data.metadata
-
-
-        outline_data = vtk.vtkImageData()
-
-        field_dim = self.currentDrawingParameters.bsd.fieldDim
-        dimOrder    = self.dimOrder(self.currentDrawingParameters.plane)
-        self.dim = self.planeMapper(dimOrder, (field_dim.x, field_dim.y, field_dim.z))
-
-        lattice_type_str = self.get_lattice_type_str()
-        if lattice_type_str.lower() == 'hexagonal' and drawing_params.plane.lower() == "xy":
-
-            outline_data.SetDimensions(self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1)
-            # print "self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1= ",(self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1)
-        else:
-            outline_data.SetDimensions(self.dim[0]+1, self.dim[1]+1, 1)
-
-        outline = vtk.vtkOutlineFilter()
-
-        if VTK_MAJOR_VERSION>=6:
-            outline.SetInputData(outline_data)
-        else:
-            outline.SetInput(outline_data)
-
-        outline_mapper = vtk.vtkPolyDataMapper()
-        outline_mapper.SetInputConnection(outline.GetOutputPort())
-
-        outline_actor = actors_dict['outlineActor']
-        outline_actor.SetMapper(outline_mapper)
-        outline_actor.GetProperty().SetColor(1, 1, 1)
-
         outline_color = to_vtk_rgb(scene_metadata['BoundingBoxColor'])
-
         outline_actor.GetProperty().SetColor(*outline_color)
-
-
 
     def __zoomStep(self, delta):
         # # # print "ZOOM STEP"

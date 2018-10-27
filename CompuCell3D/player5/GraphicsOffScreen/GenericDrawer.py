@@ -242,14 +242,31 @@ class GenericDrawer():
         model, view = self.get_model_view(drawing_params=drawing_params)
 
         actor_specs = ActorSpecs()
-        actor_specs.actor_label_list = ['outlineActor']
+        # actor_specs.actor_label_list = ['outlineActor']
+        # actor_specs.actors_dict ={
+        #     'outlineActor':view.outlineActor
+        # }
+
+        actor_specs = ActorSpecs()
+        actor_specs_final = view.prepare_outline_actors(actor_specs=actor_specs)
+
+        model.init_outline_actors(actor_specs=actor_specs_final,drawing_params=drawing_params)
+        show_flag = drawing_params.screenshot_data.bounding_box_on
+        view.show_outline_actors(actor_specs=actor_specs_final, drawing_params=drawing_params, show_flag=show_flag)
+
+    def draw_axes(self, drawing_params):
+        model, view = self.get_model_view(drawing_params=drawing_params)
+
+        actor_specs = ActorSpecs()
+        actor_specs.actor_label_list = ['axesActor']
         actor_specs.actors_dict ={
-            'outlineActor':view.outlineActor
+            'axesActor':view.axesActor
         }
 
-        model.init_outline_actors(actor_specs=actor_specs,drawing_params=drawing_params)
-        show_flag = drawing_params.screenshot_data.bounding_box_on
-        view.show_bounding_box(show_flag=show_flag)
+        model.init_axes_actors(actor_specs=actor_specs,drawing_params=drawing_params)
+        show_flag = drawing_params.screenshot_data.lattice_axes_on
+        view.show_axes_actors(show_flag=show_flag)
+
 
     def get_model_view(self, drawing_params):
         # type: (DrawingParameters) -> (MVCDrawModelBase,MVCDrawViewBase)

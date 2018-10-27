@@ -681,9 +681,27 @@ class MVCDrawView2D(MVCDrawViewBase):
                 del self.currentActors["CellsActor"]
                 self.ren.RemoveActor(self.cellsActor)
 
-    def show_bounding_box(self, show_flag):
+    def prepare_outline_actors(self, actor_specs, drawing_params=None):
+        """
+        Prepares cell_field_actors  based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
+        :return: {dict}
+        """
+
+        actor_specs_copy = deepcopy(actor_specs)
+        actor_specs_copy.actors_dict = OrderedDict()
+        actor_specs_copy.actors_dict['outline_actor'] = self.outlineActor
+
+        return actor_specs_copy
+
+
+
+    def show_outline_actors(self, actor_specs, drawing_params=None, show_flag=True):
         """
         shows/hides bounding box
+        :param actor_specs:
+        :param drawing_params:
         :param show_flag:
         :return:
         """
