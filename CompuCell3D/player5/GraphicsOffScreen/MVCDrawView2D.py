@@ -681,7 +681,6 @@ class MVCDrawView2D(MVCDrawViewBase):
                 del self.currentActors["CellsActor"]
                 self.ren.RemoveActor(self.cellsActor)
 
-
     def show_bounding_box(self, show_flag):
         """
         shows/hides bounding box
@@ -690,7 +689,7 @@ class MVCDrawView2D(MVCDrawViewBase):
         """
         if show_flag:
             if not self.currentActors.has_key("Outline"):
-                self.currentActors["Outline"]=self.outlineActor
+                self.currentActors["Outline"] = self.outlineActor
                 self.ren.AddActor(self.outlineActor)
             else:
                 self.ren.RemoveActor(self.outlineActor)
@@ -700,9 +699,6 @@ class MVCDrawView2D(MVCDrawViewBase):
             if self.currentActors.has_key("Outline"):
                 del self.currentActors["Outline"]
                 self.ren.RemoveActor(self.outlineActor)
-
-
-
 
     def drawCellFieldLocalNew(self, drawing_params, fieldType):
         '''

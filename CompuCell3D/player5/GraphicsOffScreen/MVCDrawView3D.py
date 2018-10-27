@@ -429,6 +429,26 @@ class MVCDrawView3D(MVCDrawViewBase):
                 self.currentActors[actorName] = self.cellTypeActors[actorNumber]
                 self.graphicsFrameWidget.ren.AddActor(self.currentActors[actorName])
 
+    def show_bounding_box(self, show_flag):
+        """
+        shows/hides bounding box
+        :param show_flag:
+        :return:
+        """
+        if show_flag:
+            if not self.currentActors.has_key("Outline"):
+                self.currentActors["Outline"] = self.outlineActor
+                self.ren.AddActor(self.outlineActor)
+            else:
+                self.ren.RemoveActor(self.outlineActor)
+
+                self.ren.AddActor(self.outlineActor)
+        else:
+            if self.currentActors.has_key("Outline"):
+                del self.currentActors["Outline"]
+                self.ren.RemoveActor(self.outlineActor)
+
+
     #     def showCellTypeActors(self):
 #         '''
 #         Shows Actors representing cell types

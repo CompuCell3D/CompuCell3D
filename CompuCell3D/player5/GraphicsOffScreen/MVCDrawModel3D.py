@@ -68,45 +68,45 @@ class MVCDrawModel3D(MVCDrawModelBase):
         # self.dim = [fieldDim.x+1 , fieldDim.y+1 , fieldDim.z]
         self.dim = [fieldDim.x , fieldDim.y , fieldDim.z]
 
-    def prepareOutlineActors(self, _actors):
-
-        outlineData = vtk.vtkImageData()
-        
-        fieldDim = self.currentDrawingParameters.bsd.fieldDim
-        
-        outlineData.SetDimensions(fieldDim.x+1,fieldDim.y+1,fieldDim.z+1)
-        
-        # if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.currentDrawingParameters.plane=="XY":       
-            # import math            
-            # outlineData.SetDimensions(self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1)
-            # print "self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1= ",(self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1)
-        # else:            
-            # outlineData.SetDimensions(self.dim[0]+1, self.dim[1]+1, 1)
-
-        # outlineDimTmp=_imageData.GetDimensions()
-        # # print "\n\n\n this is outlineDimTmp=",outlineDimTmp," self.outlineDim=",self.outlineDim
-        # if self.outlineDim[0] != outlineDimTmp[0] or self.outlineDim[1] != outlineDimTmp[1] or self.outlineDim[2] != outlineDimTmp[2]:
-            # self.outlineDim=outlineDimTmp
-        
-        outline = vtk.vtkOutlineFilter()
-        
-        if VTK_MAJOR_VERSION>=6:
-            outline.SetInputData(outlineData)
-        else:    
-            outline.SetInput(outlineData)
-        
-
-        outlineMapper = vtk.vtkPolyDataMapper()
-        outlineMapper.SetInputConnection(outline.GetOutputPort())
-    
-        _actors[0].SetMapper(outlineMapper)
-        if self.hexFlag:
-            _actors[0].SetScale(self.xScaleHex,self.yScaleHex,self.zScaleHex)
-        _actors[0].GetProperty().SetColor(1, 1, 1)        
-        # self.outlineDim=_imageData.GetDimensions()
-
-        color = Configuration.getSetting("BoundingBoxColor")   # eventually do this smarter (only get/update when it changes)
-        _actors[0].GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+    # def prepareOutlineActors(self, _actors):
+    #
+    #     outlineData = vtk.vtkImageData()
+    #
+    #     fieldDim = self.currentDrawingParameters.bsd.fieldDim
+    #
+    #     outlineData.SetDimensions(fieldDim.x+1,fieldDim.y+1,fieldDim.z+1)
+    #
+    #     # if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.currentDrawingParameters.plane=="XY":
+    #         # import math
+    #         # outlineData.SetDimensions(self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1)
+    #         # print "self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1= ",(self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1)
+    #     # else:
+    #         # outlineData.SetDimensions(self.dim[0]+1, self.dim[1]+1, 1)
+    #
+    #     # outlineDimTmp=_imageData.GetDimensions()
+    #     # # print "\n\n\n this is outlineDimTmp=",outlineDimTmp," self.outlineDim=",self.outlineDim
+    #     # if self.outlineDim[0] != outlineDimTmp[0] or self.outlineDim[1] != outlineDimTmp[1] or self.outlineDim[2] != outlineDimTmp[2]:
+    #         # self.outlineDim=outlineDimTmp
+    #
+    #     outline = vtk.vtkOutlineFilter()
+    #
+    #     if VTK_MAJOR_VERSION>=6:
+    #         outline.SetInputData(outlineData)
+    #     else:
+    #         outline.SetInput(outlineData)
+    #
+    #
+    #     outlineMapper = vtk.vtkPolyDataMapper()
+    #     outlineMapper.SetInputConnection(outline.GetOutputPort())
+    #
+    #     _actors[0].SetMapper(outlineMapper)
+    #     if self.hexFlag:
+    #         _actors[0].SetScale(self.xScaleHex,self.yScaleHex,self.zScaleHex)
+    #     _actors[0].GetProperty().SetColor(1, 1, 1)
+    #     # self.outlineDim=_imageData.GetDimensions()
+    #
+    #     color = Configuration.getSetting("BoundingBoxColor")   # eventually do this smarter (only get/update when it changes)
+    #     _actors[0].GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
 
     def prepareAxesActors(self, _mappers, _actors):
 
@@ -646,6 +646,93 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         if hex_flag:
             vector_field_actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
+
+
+    def init_outline_actors(self, actor_specs, drawing_params=None):
+        """
+        Initializes outline actors for hex actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+        actors_dict = actor_specs.actors_dict
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+        scene_metadata = drawing_params.screenshot_data.metadata
+
+        outline_data = vtk.vtkImageData()
+
+
+
+        outline_data.SetDimensions(field_dim.x + 1, field_dim.y + 1, field_dim.z + 1)
+
+
+        outline = vtk.vtkOutlineFilter()
+
+        if VTK_MAJOR_VERSION >= 6:
+            outline.SetInputData(outline_data)
+        else:
+            outline.SetInput(outline_data)
+
+        outline_mapper = vtk.vtkPolyDataMapper()
+        outline_mapper.SetInputConnection(outline.GetOutputPort())
+
+        outline_actor = actors_dict['outlineActor']
+
+        outline_actor.SetMapper(outline_mapper)
+
+
+        lattice_type_str = self.get_lattice_type_str()
+        if lattice_type_str.lower() == 'hexagonal' and drawing_params.plane.lower() == "xy":
+
+
+            outline_actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
+
+        # eventually do this smarter (only get/update when it changes)
+        color = Configuration.getSetting("BoundingBoxColor")
+        outline_actor.GetProperty().SetColor(float(color.red()) / 255, float(color.green()) / 255,
+                                          float(color.blue()) / 255)
+
+
+        return
+
+        actors_dict = actor_specs.actors_dict
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        scene_metadata = drawing_params.screenshot_data.metadata
+
+
+        outline_data = vtk.vtkImageData()
+
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+        dimOrder    = self.dimOrder(self.currentDrawingParameters.plane)
+        self.dim = self.planeMapper(dimOrder, (field_dim.x, field_dim.y, field_dim.z))
+
+        lattice_type_str = self.get_lattice_type_str()
+        if lattice_type_str.lower() == 'hexagonal' and drawing_params.plane.lower() == "xy":
+
+            outline_data.SetDimensions(self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1)
+            # print "self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1= ",(self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1)
+        else:
+            outline_data.SetDimensions(self.dim[0]+1, self.dim[1]+1, 1)
+
+        outline = vtk.vtkOutlineFilter()
+
+        if VTK_MAJOR_VERSION>=6:
+            outline.SetInputData(outline_data)
+        else:
+            outline.SetInput(outline_data)
+
+        outline_mapper = vtk.vtkPolyDataMapper()
+        outline_mapper.SetInputConnection(outline.GetOutputPort())
+
+        outline_actor = actors_dict['outlineActor']
+        outline_actor.SetMapper(outline_mapper)
+        outline_actor.GetProperty().SetColor(1, 1, 1)
+
+        outline_color = to_vtk_rgb(scene_metadata['BoundingBoxColor'])
+
+        outline_actor.GetProperty().SetColor(*outline_color)
+
 
 
     def __zoomStep(self, delta):
