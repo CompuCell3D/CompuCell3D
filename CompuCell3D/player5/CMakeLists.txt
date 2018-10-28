@@ -153,6 +153,12 @@ if(INSTALL_PLAYER)
         PATTERN "*.pyc" EXCLUDE
         PATTERN "@CMAKE_SOURCE_DIR@/${player_dir}/Graphics/*")
 
+    INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/${player_dir}/GraphicsOffScreen" DESTINATION @CMAKE_INSTALL_PREFIX@/${player_dir}
+        PATTERN "*.svn" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN "@CMAKE_SOURCE_DIR@/${player_dir}/GraphicsOffScreen/*")
+
+
     # # copying PyQt, Sip and VTK libraries used by the player on Windows
     # if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
         # INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/windows_libs/player/PyQt4" DESTINATION @CMAKE_INSTALL_PREFIX@/player

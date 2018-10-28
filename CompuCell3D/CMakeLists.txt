@@ -19,6 +19,11 @@ IF (APPLE)
 	MESSAGE ("GOT APPLE")
 ENDIF (APPLE)
 
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    SET (CMAKE_CXX_FLAGS -std=c++0x)
+endif()
+
 FIND_PACKAGE (OpenMP)
 
 # Should we build shared libraries
