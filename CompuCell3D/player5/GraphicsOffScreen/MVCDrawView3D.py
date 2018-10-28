@@ -208,9 +208,6 @@ class MVCDrawView3D(MVCDrawViewBase):
         else:
             self.remove_actor_from_renderer(actor_label='fpp_links_actor', actor_obj=self.FPPLinksActor)
 
-
-
-
     def getPlane(self):
         return ("3D", 0)
     
@@ -301,9 +298,6 @@ class MVCDrawView3D(MVCDrawViewBase):
                     self.currentActors[actor_name] = actor_specs.actors_dict[actor_number]
                     self.ren.AddActor(self.currentActors[actor_name])
 
-            # if not self.currentActors.has_key("CellsActor"):
-            #     self.currentActors["CellsActor"] = self.cellsActor
-            #     self.ren.AddActor(self.cellsActor)
         else:
             for actor_number in all_types:
                 actor_name = "CellType_" + str(actor_number)
@@ -311,13 +305,8 @@ class MVCDrawView3D(MVCDrawViewBase):
                     actor_to_remove = self.currentActors[actor_name]
                     del self.currentActors[actor_name]
                     self.ren.RemoveActor(actor_to_remove)
-                # if actor_number not in invisible_types:
-                #     self.currentActors[actor_name] = actor_specs.actors_dict[actor_name]
-                #     self.ren.AddActor(self.currentActors[actor_name])
 
-            # if self.currentActors.has_key("CellsActor"):
-            #     del self.currentActors["CellsActor"]
-            #     self.ren.RemoveActor(self.cellsActor)
+
 
     def show_cells_actors(self):
         '''
@@ -413,13 +402,4 @@ class MVCDrawView3D(MVCDrawViewBase):
                 del self.currentActors["Axes"]
                 self.ren.RemoveActor(self.axesActor)
 
-    def initSizeDim(self, dataSet, x, y, z):
-        (xloc, yloc, zloc) = (x, y, z)
-        if x == 1:
-            xloc += 2
-        if y == 1:
-            yloc += 2
-        if z == 1:
-            zloc += 2
-            
-        dataSet.SetDimensions(xloc, yloc, zloc)
+
