@@ -1,5 +1,3 @@
-# todo - add bounding box in 3D
-# todo - add fpp vis in 3D
 # todo - check simulation replay
 # todo - resolve the issue of imports in the CompuCellSetup
 
