@@ -4,7 +4,7 @@ import vtk
 import math
 import string
 from Messaging import dbgMsg
-from CompuCell3D.player5.Utilities.utils import extract_address_int_from_vtk_object, to_vtk_rgb
+from Utilities.utils import extract_address_int_from_vtk_object, to_vtk_rgb
 
 VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
 

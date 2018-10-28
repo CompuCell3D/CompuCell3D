@@ -24,7 +24,7 @@ from MVCDrawModel2D import MVCDrawModel2D
 from MVCDrawView3D import MVCDrawView3D
 from MVCDrawModel3D import MVCDrawModel3D
 from Specs import ActorSpecs
-from CompuCell3D.player5.Utilities.utils import extract_address_int_from_vtk_object
+from Utilities.utils import extract_address_int_from_vtk_object
 from DrawingParameters import DrawingParameters
 
 
