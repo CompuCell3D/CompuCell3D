@@ -1154,6 +1154,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.FPPLinksAct.setChecked(False)
 
             CompuCellSetup.playerType = "CMLResultReplay"
+            CompuCellSetup.parseXML(fileName)
 
             self.prepareForNewSimulation()
 
@@ -2117,9 +2118,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 (currentPlane, currentPlanePos) = graphicsFrame.getPlane()
 
                 if not self.simulation.newFileBeingLoaded:  # this flag is used to prevent calling  draw function when new data is read from hard drive
-                    graphicsFrame.drawFieldLocal(self.basicSimulationData)
-
-                self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())
+                    # graphicsFrame.drawFieldLocal(self.basicSimulationData)
+                    graphicsFrame.draw(self.basicSimulationData)
+                # todo 5
+                # self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())
 
         self.simulation.drawMutex.unlock()
         self.simulation.readFileSem.release()
@@ -2155,7 +2157,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 # graphicsFrame.drawFieldLocal(self.basicSimulationData)
                 graphicsFrame.draw(self.basicSimulationData)
                 #todo 5
-                # self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())  # show MCS in lower-left GUI
+                self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())  # show MCS in lower-left GUI
 
         self.simulation.drawMutex.unlock()
 

@@ -1172,9 +1172,17 @@ def getStepperRegistry(sim):
 
 def ExtractLatticeType():
     global cc3dXML2ObjConverter
+
     if cc3dXML2ObjConverter.root.findElement("Potts"):
+        # dealing with regular cc3dml
         if cc3dXML2ObjConverter.root.getFirstElement("Potts").findElement("LatticeType"):
             return cc3dXML2ObjConverter.root.getFirstElement("Potts").getFirstElement("LatticeType").getText()
+    else:
+        # dealing with LDF file
+        if cc3dXML2ObjConverter.root.findElement("Lattice"):
+            return cc3dXML2ObjConverter.root.getFirstElement("Lattice").getAttribute('Type')
+
+        pass
 
     return ""
 

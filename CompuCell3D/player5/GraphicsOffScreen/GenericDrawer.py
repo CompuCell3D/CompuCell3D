@@ -1,19 +1,21 @@
 # todo list:
-# todo - move self.extractCellFieldData() up - to avoid costly lattice traversal for each visualization
 # todo - make once call per 2D/3D or even try global call if possible
 # todo - get max cell typ from the simulation
 # todo  - fix this so that it is called only once per drawing series
 # todo cell_field_data_dict = self.extract_cell_field_data()
 # todo - check what happens when we used non consecutive cell types -  seems to be OK
 
-# todo - process contour isovalues in the concentration plot
-# todo - add legend actor
-# todo -  fix border color
-# todo - store metadata for vector field
+
 # todo - check api for show, prepare init functions
 # todo - fix color of fpp links
 # todo - find better way to determine if fpp plugin is properly loaded
 # todo - any references to simpletabview should be via weakref
+
+# todo - add action to remove screenshot file
+# todo - add version to screenshot.json format
+# todo - ignore any read errors in the reading/processing screenshot json - and display popup window
+# todo - mcs and min max concentrations are not displayed - fix it
+
 import string
 import Configuration
 import vtk
