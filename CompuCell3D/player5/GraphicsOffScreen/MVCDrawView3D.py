@@ -182,6 +182,34 @@ class MVCDrawView3D(MVCDrawViewBase):
             self.remove_actor_from_renderer(actor_label='vector_field_actor', actor_obj=self.glyphsActor)
 
 
+    def prepare_fpp_links_actors(self, actor_specs, drawing_params=None):
+        """
+        Prepares fpp links actors  based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
+        :return: {dict}
+        """
+        actor_specs_copy = deepcopy(actor_specs)
+        actor_specs_copy.actors_dict = OrderedDict()
+        actor_specs_copy.actors_dict['fpp_links_actor'] = self.FPPLinksActor
+        return actor_specs_copy
+
+    def show_fpp_links_actors(self, actor_specs, drawing_params=None,  show_flag=True):
+        """
+        Shows fpp links actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :param show_flag: {bool}
+        :return: None
+        """
+        scene_metadata = drawing_params.screenshot_data.metadata
+        if show_flag:
+            self.add_actor_to_renderer(actor_label='fpp_links_actor', actor_obj=self.FPPLinksActor)
+        else:
+            self.remove_actor_from_renderer(actor_label='fpp_links_actor', actor_obj=self.FPPLinksActor)
+
+
+
 
     def getPlane(self):
         return ("3D", 0)

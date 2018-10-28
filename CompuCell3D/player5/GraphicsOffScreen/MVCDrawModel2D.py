@@ -1030,8 +1030,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
                                                              vtkObj=lines)
 
         hex_flag = False
-        lattice_type_str = self.get_lattice_type_str()
-        if lattice_type_str.lower() =='hexagonal' and drawing_params.plane.lower()=="xy":
+        # lattice_type_str = self.get_lattice_type_str()
+        # if lattice_type_str.lower() =='hexagonal' and drawing_params.plane.lower()=="xy":
+        if self.is_lattice_hex(drawing_params=drawing_params):
             hex_flag = True
 
         if hex_flag:
