@@ -1,0 +1,93 @@
+{
+    "ScreenshotData": {
+        "Cell_Field_CellField_2D_XY_5": {
+            "Plot": {
+                "PlotName": "Cell_Field", 
+                "PlotType": "CellField"
+            }, 
+            "Dimension": "2D", 
+            "Projection": {
+                "ProjectionPlane": "XY", 
+                "ProjectionPosition": 5
+            }, 
+            "CameraClippingRange": {
+                "Max": "152.516736333", 
+                "Min": "148.760166472"
+            }, 
+            "CameraFocalPoint": {
+                "y": "27.5", 
+                "x": "27.5", 
+                "z": "0.0"
+            }, 
+            "CameraPosition": {
+                "y": "27.5", 
+                "x": "27.5", 
+                "z": "150.262794416"
+            }, 
+            "CameraViewUp": {
+                "y": "1.0", 
+                "x": "0.0", 
+                "z": "0.0"
+            }, 
+            "Size": {
+                "Width": 600, 
+                "Height": 600
+            }, 
+            "CellBorders": true, 
+            "Cells": true, 
+            "ClusterBorders": false, 
+            "CellGlyphs": false, 
+            "FPPLinks": false, 
+            "BoundingBox": true, 
+            "LatticeAxes": true, 
+            "LatticeAxesLabels": true, 
+            "TypesInvisible": [
+                0
+            ], 
+            "metadata": {
+                "BorderColor": [
+                    255, 
+                    255, 
+                    0, 
+                    255
+                ], 
+                "BoundingBoxColor": [
+                    255, 
+                    255, 
+                    255, 
+                    255
+                ], 
+                "ContourColor": [
+                    255, 
+                    255, 
+                    255, 
+                    255
+                ], 
+                "AxesColor": [
+                    255, 
+                    255, 
+                    255, 
+                    255
+                ], 
+                "FppLinksColor": [
+                    255, 
+                    255, 
+                    255, 
+                    255
+                ], 
+                "ClusterBorderColor": [
+                    0, 
+                    0, 
+                    255, 
+                    255
+                ], 
+                "WindowColor": [
+                    0, 
+                    0, 
+                    0, 
+                    255
+                ]
+            }
+        }
+    }
+}

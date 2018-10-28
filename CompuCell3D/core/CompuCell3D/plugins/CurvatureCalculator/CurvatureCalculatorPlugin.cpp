@@ -2,10 +2,10 @@
 #include <CompuCell3D/CC3D.h>        
 using namespace CompuCell3D;
 
-#include <CompuCell3D/Plugins/NeighborTracker/NeighborTracker.h>
-#include <CompuCell3D/Plugins/NeighborTracker/NeighborTrackerPlugin.h>
-#include <CompuCell3D/Plugins/BoundaryPixelTracker/BoundaryPixelTracker.h>
-#include <CompuCell3D/Plugins/BoundaryPixelTracker/BoundaryPixelTrackerPlugin.h>
+#include <CompuCell3D/plugins/NeighborTracker/NeighborTracker.h>
+#include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
+#include <CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTracker.h>
+#include <CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTrackerPlugin.h>
 #include "CurvatureCalculatorPlugin.h"
 
 
