@@ -242,12 +242,6 @@ class GenericDrawer():
         model, view = self.get_model_view(drawing_params=drawing_params)
 
         actor_specs = ActorSpecs()
-        # actor_specs.actor_label_list = ['outlineActor']
-        # actor_specs.actors_dict ={
-        #     'outlineActor':view.outlineActor
-        # }
-
-        actor_specs = ActorSpecs()
         actor_specs_final = view.prepare_outline_actors(actor_specs=actor_specs)
 
         model.init_outline_actors(actor_specs=actor_specs_final,drawing_params=drawing_params)
@@ -258,14 +252,17 @@ class GenericDrawer():
         model, view = self.get_model_view(drawing_params=drawing_params)
 
         actor_specs = ActorSpecs()
-        actor_specs.actor_label_list = ['axesActor']
-        actor_specs.actors_dict ={
-            'axesActor':view.axesActor
-        }
+        actor_specs_final = view.prepare_axes_actors(actor_specs=actor_specs)
+        camera = view.getCamera()
+        if actor_specs_final.metadata is None:
+            actor_specs_final.metadata = {'camera': camera}
+        else:
+            actor_specs_final.metadata['camera'] = camera
 
-        model.init_axes_actors(actor_specs=actor_specs,drawing_params=drawing_params)
+
+        model.init_axes_actors(actor_specs=actor_specs_final,drawing_params=drawing_params)
         show_flag = drawing_params.screenshot_data.lattice_axes_on
-        view.show_axes_actors(show_flag=show_flag)
+        view.show_axes_actors(actor_specs=actor_specs_final, drawing_params=drawing_params, show_flag=show_flag)
 
 
     def get_model_view(self, drawing_params):
@@ -318,6 +315,7 @@ class GenericDrawer():
 
 
             draw_fcn(drawing_params=drawing_params)
+
             # decorations
             if drawing_params.screenshot_data.cell_borders_on:
 
@@ -348,6 +346,14 @@ class GenericDrawer():
                     self.draw_bounding_box(drawing_params=drawing_params)
                 except NotImplementedError:
                     pass
+
+            if drawing_params.screenshot_data.lattice_axes_on:
+                try:
+                    self.draw_axes(drawing_params=drawing_params)
+                except NotImplementedError:
+                    pass
+
+
 
             # setting camera
             # if screenshot_data.spaceDimension == '3D':

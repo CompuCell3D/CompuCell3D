@@ -30,6 +30,8 @@ class MVCDrawViewBase:
         dM = ref(_drawModel)
         self.drawModel = dM()
 
+
+
         self.currentDrawingFunction = None
         self.currentActors = {}  # dictionary of current actors
         self.drawingFcnName = ""  # holds a string describing name of the drawing fcn . Used to determine if current actors need to be removed before next drawing
@@ -409,7 +411,7 @@ class MVCDrawViewBase:
 
     def prepare_outline_actors(self, actor_specs, drawing_params=None):
         """
-        Prepares cell_field_actors  based on actor_specs specifications
+        Prepares bounding box actors  based on actor_specs specifications
         :param actor_specs {ActorSpecs}: specification of actors to create
         :param drawing_params: {DrawingParameters}
         :return: {dict}
@@ -426,6 +428,16 @@ class MVCDrawViewBase:
         :return:
         """
         raise NotImplementedError(self.__class__.show_outline_actors.__name__)
+
+    def prepare_axes_actors(self, actor_specs, drawing_params=None):
+        """
+        Prepares axes  based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
+        :return: {dict}
+        """
+
+        raise NotImplementedError(self.__class__.prepare_axes_actors.__name__)
 
     def show_axes_actors(self,  actor_specs, drawing_params=None, show_flag=True):
         """

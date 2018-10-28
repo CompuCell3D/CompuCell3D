@@ -689,6 +689,54 @@ class MVCDrawModel3D(MVCDrawModelBase):
         outline_color = to_vtk_rgb(scene_metadata['BoundingBoxColor'])
         outline_actor.GetProperty().SetColor(*outline_color)
 
+    def init_axes_actors(self, actor_specs, drawing_params=None):
+        """
+        Initializes outline actors for hex actors
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+        actors_dict = actor_specs.actors_dict
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+        scene_metadata = drawing_params.screenshot_data.metadata
+
+
+        axesActor = actors_dict['axes_actor']
+        axes_color = to_vtk_rgb(scene_metadata['AxesColor'])
+
+        lattice_type_str = self.get_lattice_type_str()
+
+
+        tprop = vtk.vtkTextProperty()
+        tprop.SetColor(axes_color)
+        tprop.ShadowOn()
+        dim = self.currentDrawingParameters.bsd.fieldDim
+
+        axesActor.SetNumberOfLabels(4) # number of labels
+
+        lattice_type_str = self.get_lattice_type_str()
+        if lattice_type_str.lower() == 'hexagonal':
+            axesActor.SetBounds(0, dim.x, 0, dim.y*math.sqrt(3.0)/2.0, 0, dim.z*math.sqrt(6.0)/3.0)
+        else:
+            axesActor.SetBounds(0, dim.x, 0, dim.y, 0, dim.z)
+
+        axesActor.SetLabelFormat("%6.4g")
+        axesActor.SetFlyModeToOuterEdges()
+        axesActor.SetFontFactor(1.5)
+
+        # axesActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+        axesActor.GetProperty().SetColor(axes_color)
+
+        xAxisActor = axesActor.GetXAxisActor2D()
+        # xAxisActor.RulerModeOn()
+        # xAxisActor.SetRulerDistance(40)
+        # xAxisActor.SetRulerMode(20)
+        # xAxisActor.RulerModeOn()
+        xAxisActor.SetNumberOfMinorTicks(3)
+
+
+
+
     def __zoomStep(self, delta):
         # # # print "ZOOM STEP"
         if self.ren:

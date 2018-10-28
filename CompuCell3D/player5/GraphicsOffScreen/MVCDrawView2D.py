@@ -695,8 +695,6 @@ class MVCDrawView2D(MVCDrawViewBase):
 
         return actor_specs_copy
 
-
-
     def show_outline_actors(self, actor_specs, drawing_params=None, show_flag=True):
         """
         shows/hides bounding box
@@ -717,6 +715,60 @@ class MVCDrawView2D(MVCDrawViewBase):
             if self.currentActors.has_key("Outline"):
                 del self.currentActors["Outline"]
                 self.ren.RemoveActor(self.outlineActor)
+
+    def prepare_axes_actors(self, actor_specs, drawing_params=None):
+        """
+        Prepares cell_field_actors  based on actor_specs specifications
+        :param actor_specs {ActorSpecs}: specification of actors to create
+        :param drawing_params: {DrawingParameters}
+        :return: {dict}
+        """
+
+        actor_specs_copy = deepcopy(actor_specs)
+        actor_specs_copy.actors_dict = OrderedDict()
+        actor_specs_copy.actors_dict['axes_actor'] = self.axesActor
+        # actor_specs_copy.actors_dict['axes_actor'] = self.outlineActor
+
+        return actor_specs_copy
+
+    def show_axes_actors(self,  actor_specs, drawing_params=None, show_flag=True):
+        """
+        shows/hides axes box
+        :param actor_specs:
+        :param drawing_params:
+        :param show_flag:
+        :return:
+        """
+        camera = actor_specs.metadata['camera']
+        if show_flag:
+            if not self.currentActors.has_key("Axes"):
+                # setting camera for the actor is very important to get axes working properly
+                self.axesActor.SetCamera(camera)
+                self.currentActors["Axes"] = self.axesActor
+                self.ren.AddActor(self.axesActor)
+            else:
+                self.ren.RemoveActor(self.axesActor)
+                # setting camera for the actor is very important to get axes working properly
+                self.axesActor.SetCamera(camera)
+                self.ren.AddActor(self.axesActor)
+        else:
+            if self.currentActors.has_key("Axes"):
+                del self.currentActors["Axes"]
+                self.ren.RemoveActor(self.axesActor)
+        #
+        # if show_flag:
+        #     if not self.currentActors.has_key("Axes"):
+        #         self.currentActors["Axes"] = self.outlineActor
+        #         self.ren.AddActor(self.outlineActor)
+        #     else:
+        #         self.ren.RemoveActor(self.outlineActor)
+        #
+        #         self.ren.AddActor(self.outlineActor)
+        # else:
+        #     if self.currentActors.has_key("Axes"):
+        #         del self.currentActors["Axes"]
+        #         self.ren.RemoveActor(self.outlineActor)
+
 
     def drawCellFieldLocalNew(self, drawing_params, fieldType):
         '''

@@ -148,7 +148,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         outline_actor.GetProperty().SetColor(*outline_color)
 
-    def init_axes_axes_actors(self, actor_specs, drawing_params=None):
+    def init_axes_actors(self, actor_specs, drawing_params=None):
         """
         Initializes outline actors for hex actors
         :param actor_specs: {ActorSpecs}
@@ -162,7 +162,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         scene_metadata = drawing_params.screenshot_data.metadata
 
 
-        axesActor = actors_dict['axesActor']
+        axesActor = actors_dict['axes_actor']
 
         lattice_type_str = self.get_lattice_type_str()
 
@@ -183,14 +183,15 @@ class MVCDrawModel2D(MVCDrawModelBase):
         vertical_label = axes_labels[dim_order[1]]  # y-axis - equivalent
 
         # eventually do this smarter (only get/update when it changes)
-        color = Configuration.getSetting("AxesColor")
+        # color = Configuration.getSetting("AxesColor")
 
         # color = (float(color.red()) / 255, float(color.green()) / 255, float(color.blue()) / 255)
 
-        axesActor.GetProperty().SetColor(color)
+        axes_color = to_vtk_rgb(scene_metadata['AxesColor'])
+        axesActor.GetProperty().SetColor(axes_color)
 
         tprop = vtk.vtkTextProperty()
-        tprop.SetColor(color)
+        tprop.SetColor(axes_color)
         # tprop.ShadowOn()
 
         # axesActor.SetNumberOfLabels(4) # number of labels
@@ -240,15 +241,15 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         axesActor.SetTickLocationToOutside()
 
-        axesActor.GetTitleTextProperty(0).SetColor(color)
-        axesActor.GetLabelTextProperty(0).SetColor(color)
+        axesActor.GetTitleTextProperty(0).SetColor(axes_color)
+        axesActor.GetLabelTextProperty(0).SetColor(axes_color)
 
-        axesActor.GetXAxesLinesProperty().SetColor(color)
-        axesActor.GetYAxesLinesProperty().SetColor(color)
-        # axesActor.GetLabelTextProperty(0).SetColor(color)
+        axesActor.GetXAxesLinesProperty().SetColor(axes_color)
+        axesActor.GetYAxesLinesProperty().SetColor(axes_color)
+        # axesActor.GetLabelTextProperty(0).SetColor(axes_color)
 
-        axesActor.GetTitleTextProperty(1).SetColor(color)
-        axesActor.GetLabelTextProperty(1).SetColor(color)
+        axesActor.GetTitleTextProperty(1).SetColor(axes_color)
+        axesActor.GetLabelTextProperty(1).SetColor(axes_color)
 
         # axesActor.DrawXGridlinesOn()
         # axesActor.DrawYGridlinesOn()
