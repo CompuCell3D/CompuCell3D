@@ -109,41 +109,54 @@ class MVCDrawModel3D(MVCDrawModelBase):
     #     color = Configuration.getSetting("BoundingBoxColor")   # eventually do this smarter (only get/update when it changes)
     #     _actors[0].GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
 
-    def prepareAxesActors(self, _mappers, _actors):
+#     def prepareAxesActors(self, _mappers, _actors):
+#
+#         axesActor=_actors[0]
+#         color = Configuration.getSetting("AxesColor")   # eventually do this smarter (only get/update when it changes)
+#         color = (float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+#
+#         tprop = vtk.vtkTextProperty()
+#         tprop.SetColor(color)
+#         tprop.ShadowOn()
+#         dim = self.currentDrawingParameters.bsd.fieldDim
+#
+#         axesActor.SetNumberOfLabels(4) # number of labels
+#
+#         if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"]:
+#             axesActor.SetBounds(0, dim.x, 0, dim.y*math.sqrt(3.0)/2.0, 0, dim.z*math.sqrt(6.0)/3.0)
+#         else:
+#             axesActor.SetBounds(0, dim.x, 0, dim.y, 0, dim.z)
+#
+#         axesActor.SetLabelFormat("%6.4g")
+#         axesActor.SetFlyModeToOuterEdges()
+#         axesActor.SetFontFactor(1.5)
+#
+#         # axesActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
+#         axesActor.GetProperty().SetColor(color)
+#
+#         xAxisActor = axesActor.GetXAxisActor2D()
+#         # xAxisActor.RulerModeOn()
+#         # xAxisActor.SetRulerDistance(40)
+#         # xAxisActor.SetRulerMode(20)
+#         # xAxisActor.RulerModeOn()
+#         xAxisActor.SetNumberOfMinorTicks(3)
+#
+#         # setting camera fot he actor is vey important to get axes working properly
+# #         axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
+# #         self.graphicsFrameWidget.ren.AddActor(axesActor)
 
-        axesActor=_actors[0]
-        color = Configuration.getSetting("AxesColor")   # eventually do this smarter (only get/update when it changes)
-        color = (float(color.red())/255,float(color.green())/255,float(color.blue())/255)
-
-        tprop = vtk.vtkTextProperty()
-        tprop.SetColor(color)
-        tprop.ShadowOn()
-        dim = self.currentDrawingParameters.bsd.fieldDim
-
-        axesActor.SetNumberOfLabels(4) # number of labels
-
-        if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"]:
-            axesActor.SetBounds(0, dim.x, 0, dim.y*math.sqrt(3.0)/2.0, 0, dim.z*math.sqrt(6.0)/3.0)
+    def is_lattice_hex(self, drawing_params):
+        """
+        returns if flag that states if the lattice is hex or not. Notice
+        In 2D we may use cartesian coordinates for certain projections
+        :return: {bool}
+        """
+        lattice_type_str = self.get_lattice_type_str()
+        if lattice_type_str.lower() == 'hexagonal':
+            return True
         else:
-            axesActor.SetBounds(0, dim.x, 0, dim.y, 0, dim.z)
+            return False
 
-        axesActor.SetLabelFormat("%6.4g")
-        axesActor.SetFlyModeToOuterEdges()
-        axesActor.SetFontFactor(1.5)
-
-        # axesActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
-        axesActor.GetProperty().SetColor(color)
-
-        xAxisActor = axesActor.GetXAxisActor2D()
-        # xAxisActor.RulerModeOn()
-        # xAxisActor.SetRulerDistance(40)
-        # xAxisActor.SetRulerMode(20)
-        # xAxisActor.RulerModeOn()
-        xAxisActor.SetNumberOfMinorTicks(3)
-
-        # setting camera fot he actor is vey important to get axes working properly
-#         axesActor.SetCamera(self.graphicsFrameWidget.ren.GetActiveCamera())
-#         self.graphicsFrameWidget.ren.AddActor(axesActor)
 
     def init_cell_field_actors_borderless(self,actor_specs, drawing_params=None):
 
@@ -230,8 +243,9 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         hex_flag = False
         lattice_type_str = self.get_lattice_type_str()
-        if lattice_type_str.lower() == 'hexagonal':
-            hex_flag = True
+        # if lattice_type_str.lower() == 'hexagonal':
+        #     hex_flag = True
+        hex_flag = self.is_lattice_hex(drawing_params=drawing_params)
 
         cell_type_image_data = vtk.vtkImageData()
 
@@ -522,10 +536,10 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
 
         fill_successful = False
-        lattice_type_str = self.get_lattice_type_str()
 
         hex_flag = False
-        if lattice_type_str.lower() == 'hexagonal':
+
+        if self.is_lattice_hex(drawing_params=drawing_params):
             hex_flag = True
             if field_type == 'vectorfield':
                 fill_successful = self.field_extractor.fillVectorFieldData2DHex(
@@ -682,8 +696,9 @@ class MVCDrawModel3D(MVCDrawModelBase):
         outline_actor.SetMapper(outline_mapper)
 
 
-        lattice_type_str = self.get_lattice_type_str()
-        if lattice_type_str.lower() == 'hexagonal':
+        # lattice_type_str = self.get_lattice_type_str()
+        # if lattice_type_str.lower() == 'hexagonal':
+        if self.is_lattice_hex(drawing_params=drawing_params):
             outline_actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
 
         outline_color = to_vtk_rgb(scene_metadata['BoundingBoxColor'])
@@ -701,33 +716,30 @@ class MVCDrawModel3D(MVCDrawModelBase):
         scene_metadata = drawing_params.screenshot_data.metadata
 
 
-        axesActor = actors_dict['axes_actor']
+        axes_actor = actors_dict['axes_actor']
         axes_color = to_vtk_rgb(scene_metadata['AxesColor'])
-
-        lattice_type_str = self.get_lattice_type_str()
-
 
         tprop = vtk.vtkTextProperty()
         tprop.SetColor(axes_color)
         tprop.ShadowOn()
-        dim = self.currentDrawingParameters.bsd.fieldDim
 
-        axesActor.SetNumberOfLabels(4) # number of labels
+        axes_actor.SetNumberOfLabels(4) # number of labels
 
-        lattice_type_str = self.get_lattice_type_str()
-        if lattice_type_str.lower() == 'hexagonal':
-            axesActor.SetBounds(0, dim.x, 0, dim.y*math.sqrt(3.0)/2.0, 0, dim.z*math.sqrt(6.0)/3.0)
+        # lattice_type_str = self.get_lattice_type_str()
+        # if lattice_type_str.lower() == 'hexagonal':
+        if self.is_lattice_hex(drawing_params=drawing_params):
+            axes_actor.SetBounds(0, field_dim.x, 0, field_dim.y*math.sqrt(3.0)/2.0, 0, field_dim.z*math.sqrt(6.0)/3.0)
         else:
-            axesActor.SetBounds(0, dim.x, 0, dim.y, 0, dim.z)
+            axes_actor.SetBounds(0, field_dim.x, 0, field_dim.y, 0, field_dim.z)
 
-        axesActor.SetLabelFormat("%6.4g")
-        axesActor.SetFlyModeToOuterEdges()
-        axesActor.SetFontFactor(1.5)
+        axes_actor.SetLabelFormat("%6.4g")
+        axes_actor.SetFlyModeToOuterEdges()
+        axes_actor.SetFontFactor(1.5)
 
         # axesActor.GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
-        axesActor.GetProperty().SetColor(axes_color)
+        axes_actor.GetProperty().SetColor(axes_color)
 
-        xAxisActor = axesActor.GetXAxisActor2D()
+        xAxisActor = axes_actor.GetXAxisActor2D()
         # xAxisActor.RulerModeOn()
         # xAxisActor.SetRulerDistance(40)
         # xAxisActor.SetRulerMode(20)

@@ -86,7 +86,6 @@ class MVCDrawView2D(MVCDrawViewBase):
         self.ctlut.Build()
 
 
-
     def getActors(self, actor_label_list=None):
         """
         returns container with actors

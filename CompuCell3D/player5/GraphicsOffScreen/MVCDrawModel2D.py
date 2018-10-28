@@ -64,43 +64,55 @@ class MVCDrawModel2D(MVCDrawModelBase):
     def setDim(self, fieldDim):
         self.dim = [fieldDim.x , fieldDim.y , fieldDim.z]
 
-    def prepareOutlineActors(self,_actors):
-        outlineData = vtk.vtkImageData()
+    # def prepareOutlineActors(self,_actors):
+    #     outlineData = vtk.vtkImageData()
+    #
+    #     fieldDim = self.currentDrawingParameters.bsd.fieldDim
+    #     dimOrder    = self.dimOrder(self.currentDrawingParameters.plane)
+    #     self.dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))
+    #
+    #     if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.currentDrawingParameters.plane=="XY":
+    #         import math
+    #         outlineData.SetDimensions(self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1)
+    #         # print "self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1= ",(self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1)
+    #     else:
+    #         outlineData.SetDimensions(self.dim[0]+1, self.dim[1]+1, 1)
+    #
+    #     # outlineDimTmp=_imageData.GetDimensions()
+    #     # # print "\n\n\n this is outlineDimTmp=",outlineDimTmp," self.outlineDim=",self.outlineDim
+    #     # if self.outlineDim[0] != outlineDimTmp[0] or self.outlineDim[1] != outlineDimTmp[1] or self.outlineDim[2] != outlineDimTmp[2]:
+    #         # self.outlineDim=outlineDimTmp
+    #
+    #     outline = vtk.vtkOutlineFilter()
+    #
+    #     if VTK_MAJOR_VERSION>=6:
+    #         outline.SetInputData(outlineData)
+    #     else:
+    #         outline.SetInput(outlineData)
+    #
+    #
+    #     outlineMapper = vtk.vtkPolyDataMapper()
+    #     outlineMapper.SetInputConnection(outline.GetOutputPort())
+    #
+    #     _actors[0].SetMapper(outlineMapper)
+    #     _actors[0].GetProperty().SetColor(1, 1, 1)
+    #     # self.outlineDim=_imageData.GetDimensions()
+    #
+    #     color = Configuration.getSetting("BoundingBoxColor")   # eventually do this smarter (only get/update when it changes)
+    #     _actors[0].GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
 
-        fieldDim = self.currentDrawingParameters.bsd.fieldDim
-        dimOrder    = self.dimOrder(self.currentDrawingParameters.plane)
-        self.dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))
 
-        if self.parentWidget.latticeType==Configuration.LATTICE_TYPES["Hexagonal"] and self.currentDrawingParameters.plane=="XY":
-            import math
-            outlineData.SetDimensions(self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1)
-            # print "self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1= ",(self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1)
+    def is_lattice_hex(self, drawing_params):
+        """
+        returns if flag that states if the lattice is hex or not. Notice
+        In 2D we may use cartesian coordinates for certain projections
+        :return: {bool}
+        """
+        lattice_type_str = self.get_lattice_type_str()
+        if lattice_type_str.lower() == 'hexagonal' and drawing_params.plane.lower() == "xy":
+            return True
         else:
-            outlineData.SetDimensions(self.dim[0]+1, self.dim[1]+1, 1)
-
-        # outlineDimTmp=_imageData.GetDimensions()
-        # # print "\n\n\n this is outlineDimTmp=",outlineDimTmp," self.outlineDim=",self.outlineDim
-        # if self.outlineDim[0] != outlineDimTmp[0] or self.outlineDim[1] != outlineDimTmp[1] or self.outlineDim[2] != outlineDimTmp[2]:
-            # self.outlineDim=outlineDimTmp
-
-        outline = vtk.vtkOutlineFilter()
-
-        if VTK_MAJOR_VERSION>=6:
-            outline.SetInputData(outlineData)
-        else:
-            outline.SetInput(outlineData)
-
-
-        outlineMapper = vtk.vtkPolyDataMapper()
-        outlineMapper.SetInputConnection(outline.GetOutputPort())
-
-        _actors[0].SetMapper(outlineMapper)
-        _actors[0].GetProperty().SetColor(1, 1, 1)
-        # self.outlineDim=_imageData.GetDimensions()
-
-        color = Configuration.getSetting("BoundingBoxColor")   # eventually do this smarter (only get/update when it changes)
-        _actors[0].GetProperty().SetColor(float(color.red())/255,float(color.green())/255,float(color.blue())/255)
-
+            return False
 
     def init_outline_actors(self, actor_specs, drawing_params=None):
         """
@@ -122,8 +134,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         dimOrder    = self.dimOrder(self.currentDrawingParameters.plane)
         self.dim = self.planeMapper(dimOrder, (fieldDim.x, fieldDim.y, fieldDim.z))
 
-        lattice_type_str = self.get_lattice_type_str()
-        if lattice_type_str.lower() == 'hexagonal' and drawing_params.plane.lower() == "xy":
+        # lattice_type_str = self.get_lattice_type_str()
+        # if lattice_type_str.lower() == 'hexagonal' and drawing_params.plane.lower() == "xy":
+        if self.is_lattice_hex(drawing_params=drawing_params):
 
             outlineData.SetDimensions(self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1)
             # print "self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1= ",(self.dim[0]+1,int(self.dim[1]*math.sqrt(3.0)/2.0)+2,1)
@@ -162,18 +175,15 @@ class MVCDrawModel2D(MVCDrawModelBase):
         scene_metadata = drawing_params.screenshot_data.metadata
 
 
-        axesActor = actors_dict['axes_actor']
+        axes_actor = actors_dict['axes_actor']
 
         lattice_type_str = self.get_lattice_type_str()
 
         dim_array = [field_dim.x, field_dim.y, field_dim.z]
-        if lattice_type_str.lower() == 'hexagonal':
+        # if lattice_type_str.lower() == 'hexagonal':
+        if self.is_lattice_hex(drawing_params=drawing_params):
             dim_array = [field_dim.x, field_dim.y * math.sqrt(3.0) / 2.0, field_dim.z * math.sqrt(6.0) / 3.0]
 
-
-        # dim_array = [dim.x, dim.y, dim.z]
-        # if self.parentWidget.latticeType == Configuration.LATTICE_TYPES["Hexagonal"]:
-        #     dim_array = [dim.x, dim.y * math.sqrt(3.0) / 2.0, dim.z * math.sqrt(6.0) / 3.0]
 
         axes_labels = ['X', 'Y', 'Z']
 
@@ -188,26 +198,26 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # color = (float(color.red()) / 255, float(color.green()) / 255, float(color.blue()) / 255)
 
         axes_color = to_vtk_rgb(scene_metadata['AxesColor'])
-        axesActor.GetProperty().SetColor(axes_color)
+        axes_actor.GetProperty().SetColor(axes_color)
 
         tprop = vtk.vtkTextProperty()
         tprop.SetColor(axes_color)
         # tprop.ShadowOn()
 
         # axesActor.SetNumberOfLabels(4) # number of labels
-        axesActor.SetUse2DMode(1)
+        axes_actor.SetUse2DMode(1)
         # axesActor.SetScreenSize(50.0) # for labels and axes titles
         # axesActor.SetLabelScaling(True,0,0,0)
 
         if Configuration.getSetting('ShowHorizontalAxesLabels'):
-            axesActor.SetXAxisLabelVisibility(1)
+            axes_actor.SetXAxisLabelVisibility(1)
         else:
-            axesActor.SetXAxisLabelVisibility(0)
+            axes_actor.SetXAxisLabelVisibility(0)
 
         if Configuration.getSetting('ShowVerticalAxesLabels'):
-            axesActor.SetYAxisLabelVisibility(1)
+            axes_actor.SetYAxisLabelVisibility(1)
         else:
-            axesActor.SetYAxisLabelVisibility(0)
+            axes_actor.SetYAxisLabelVisibility(0)
 
         # axesActor.SetAxisLabels(1,[0,10])
 
@@ -215,17 +225,17 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # axesActor.SetXLabelFormat("%6.4g")
         # axesActor.SetYLabelFormat("%6.4g")
 
-        axesActor.SetBounds(0, horizontal_length, 0, vertical_length, 0, 0)
+        axes_actor.SetBounds(0, horizontal_length, 0, vertical_length, 0, 0)
 
-        axesActor.SetXTitle(horizontal_label)
-        axesActor.SetYTitle(vertical_label)
+        axes_actor.SetXTitle(horizontal_label)
+        axes_actor.SetYTitle(vertical_label)
         # axesActor.SetFlyModeToOuterEdges()
 
-        label_prop = axesActor.GetLabelTextProperty(0)
+        label_prop = axes_actor.GetLabelTextProperty(0)
         # print 'label_prop=',label_prop
 
         # print 'axesActor.GetXTitle()=',axesActor.GetXTitle()
-        title_prop_x = axesActor.GetTitleTextProperty(0)
+        title_prop_x = axes_actor.GetTitleTextProperty(0)
         # title_prop_x.SetLineOffset()
         # print 'axesActor.GetTitleTextProperty(0)=',axesActor.GetTitleTextProperty(0)
 
@@ -236,20 +246,20 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # axesActor.GetTitleTextProperty(0).SetLineSpacing(0.5)
         # print 'axesActor.GetTitleTextProperty(0)=',axesActor.GetTitleTextProperty(0)
 
-        axesActor.XAxisMinorTickVisibilityOff()
-        axesActor.YAxisMinorTickVisibilityOff()
+        axes_actor.XAxisMinorTickVisibilityOff()
+        axes_actor.YAxisMinorTickVisibilityOff()
 
-        axesActor.SetTickLocationToOutside()
+        axes_actor.SetTickLocationToOutside()
 
-        axesActor.GetTitleTextProperty(0).SetColor(axes_color)
-        axesActor.GetLabelTextProperty(0).SetColor(axes_color)
+        axes_actor.GetTitleTextProperty(0).SetColor(axes_color)
+        axes_actor.GetLabelTextProperty(0).SetColor(axes_color)
 
-        axesActor.GetXAxesLinesProperty().SetColor(axes_color)
-        axesActor.GetYAxesLinesProperty().SetColor(axes_color)
+        axes_actor.GetXAxesLinesProperty().SetColor(axes_color)
+        axes_actor.GetYAxesLinesProperty().SetColor(axes_color)
         # axesActor.GetLabelTextProperty(0).SetColor(axes_color)
 
-        axesActor.GetTitleTextProperty(1).SetColor(axes_color)
-        axesActor.GetLabelTextProperty(1).SetColor(axes_color)
+        axes_actor.GetTitleTextProperty(1).SetColor(axes_color)
+        axes_actor.GetLabelTextProperty(1).SetColor(axes_color)
 
         # axesActor.DrawXGridlinesOn()
         # axesActor.DrawYGridlinesOn()
@@ -312,9 +322,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
         vectors_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor, vtkObj=vectors)
 
         fill_successful = False
-        lattice_type_str = self.get_lattice_type_str()
-
-        if lattice_type_str.lower() == 'hexagonal' and drawing_params.plane.lower() == "xy":
+        # lattice_type_str = self.get_lattice_type_str()
+        #
+        # if lattice_type_str.lower() == 'hexagonal' and drawing_params.plane.lower() == "xy":
+        if self.is_lattice_hex(drawing_params=drawing_params):
             if field_type == 'vectorfield':
                 fill_successful = self.field_extractor.fillVectorFieldData2DHex(
                     points_int_addr,
@@ -827,8 +838,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         :return: None
         """
 
-        lattice_type_str = self.get_lattice_type_str()
-        if lattice_type_str.lower() == 'hexagonal' and drawing_params.plane.lower() == "xy":
+        # lattice_type_str = self.get_lattice_type_str()
+        # if lattice_type_str.lower() == 'hexagonal' and drawing_params.plane.lower() == "xy":
+        if self.is_lattice_hex(drawing_params=drawing_params):
             self.init_cell_field_actors_hex(actor_specs=actor_specs, drawing_params=drawing_params)
         else:
             self.init_cell_field_actors_cartesian(actor_specs=actor_specs, drawing_params=drawing_params)
@@ -965,10 +977,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
                                                              vtkObj=lines)
 
         hex_flag = False
-        lattice_type_str = self.get_lattice_type_str()
-        if lattice_type_str.lower() =='hexagonal' and drawing_params.plane.lower()=="xy":
+        # lattice_type_str = self.get_lattice_type_str()
+        # if lattice_type_str.lower() =='hexagonal' and drawing_params.plane.lower()=="xy":
+        if self.is_lattice_hex(drawing_params=drawing_params):
             hex_flag = True
-
 
         if hex_flag:
             self.field_extractor.fillBorderData2DHex(points_int_addr, lines_int_addr, self.currentDrawingParameters.plane,

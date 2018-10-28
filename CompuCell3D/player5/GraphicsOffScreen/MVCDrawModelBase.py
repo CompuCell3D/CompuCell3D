@@ -98,6 +98,15 @@ class MVCDrawModelBase:
 #        print MODULENAME,"     --------- Render() "
         self.graphicsFrameWidget.Render()
 
+    def is_lattice_hex(self, drawing_params):
+        """
+        returns if flag that states if the lattice is hex or not. Notice
+        In 2D we may use cartesian coordinates for certain projections
+        :param drawing_params: {instance of DrawingParameters}
+        :return: {bool}
+        """
+        raise NotImplementedError()
+
     def get_cell_actors_metadata(self): pass
 
     def get_min_max_metadata(self, scene_metadata, field_name):
