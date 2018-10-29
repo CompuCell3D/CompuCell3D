@@ -1601,7 +1601,17 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
 
         if self.__screenshotDescriptionFileName != "":
-            self.screenshotManager.readScreenshotDescriptionFile(self.__screenshotDescriptionFileName)
+            try:
+                self.screenshotManager.readScreenshotDescriptionFile(self.__screenshotDescriptionFileName)
+            except:
+                self.screenshotManager.screenshotDataDict = {}
+                self.popup_message(
+                    title='Error Parsing Screenshot Description',
+                    msg='Could not parse'
+                        'screenshot description file {}. Try '
+                        'removing old screenshot file and generate new one. No screenshots will be taken'.format(self.__screenshotDescriptionFileName))
+
+                print('Error in parsing screenshot description file {}'.format(self.__screenshotDescriptionFileName))
 
         if self.simulationIsStepping:
             # print "BEFORE STEPPING PAUSE REGULAR SIMULATION"
@@ -2122,6 +2132,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                     graphicsFrame.draw(self.basicSimulationData)
                 # todo 5
                 # self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())
+                self.__updateStatusBar(self.__step)
 
         self.simulation.drawMutex.unlock()
         self.simulation.readFileSem.release()
@@ -2157,7 +2168,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 # graphicsFrame.drawFieldLocal(self.basicSimulationData)
                 graphicsFrame.draw(self.basicSimulationData)
                 #todo 5
-                self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())  # show MCS in lower-left GUI
+                # self.__updateStatusBar(self.__step, graphicsFrame.conMinMax())  # show MCS in lower-left GUI
+                self.__updateStatusBar(self.__step)  # show MCS in lower-left GUI
 
         self.simulation.drawMutex.unlock()
 
@@ -2254,15 +2266,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
         self.warnings.setText(warning_text)
 
-    def __updateStatusBar(self, step, conMinMax):
+    def __updateStatusBar(self, step):
         '''
         Updates status bar
         :param step: int - current MCS
-        :param conMinMax: two element list with min max valuaes for the concentration field
         :return:
         '''
         self.mcSteps.setText("MC Step: %s" % step)
-        self.conSteps.setText("Min: %s Max: %s" % conMinMax)
+        # self.conSteps.setText("Min: %s Max: %s" % conMinMax)
 
     def __pauseSim(self):
         '''

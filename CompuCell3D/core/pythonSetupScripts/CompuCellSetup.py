@@ -1171,6 +1171,10 @@ def getStepperRegistry(sim):
 
 
 def ExtractLatticeType():
+    """
+    Fetches lattice type
+    :return:
+    """
     global cc3dXML2ObjConverter
 
     if cc3dXML2ObjConverter.root.findElement("Potts"):
@@ -1182,10 +1186,7 @@ def ExtractLatticeType():
         if cc3dXML2ObjConverter.root.findElement("Lattice"):
             return cc3dXML2ObjConverter.root.getFirstElement("Lattice").getAttribute('Type')
 
-        pass
-
     return ""
-
 
 def ExtractTypeNamesAndIds():
     global cc3dXML2ObjConverter
