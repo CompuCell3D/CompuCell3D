@@ -10,6 +10,7 @@ from collections import OrderedDict
 # import SimpleTabView
 from Utilities import ScreenshotData
 import json
+import Version
 
 # from Graphics.GraphicsFrameWidget import GraphicsFrameWidget
 
@@ -81,8 +82,11 @@ class ScreenshotManagerCore(object):
         :param filename: {str} file name
         :return: None
         """
+
         root_elem = OrderedDict()
+        root_elem['Version'] = Version.getVersionAsString()
         root_elem['ScreenshotData'] = OrderedDict()
+
 
         scr_container_elem = root_elem['ScreenshotData']
 
