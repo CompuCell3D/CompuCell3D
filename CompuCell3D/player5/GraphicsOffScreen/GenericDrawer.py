@@ -13,6 +13,8 @@
 
 # todo - add action to remove screenshot file
 # todo - mcs and min max concentrations are not displayed - fix it
+# todo - eliminate references to Configuration in the GraphicsOffScreen - especially in the Model code
+
 
 import string
 import Configuration
