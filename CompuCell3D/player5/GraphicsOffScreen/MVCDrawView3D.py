@@ -281,7 +281,7 @@ class MVCDrawView3D(MVCDrawViewBase):
         self.dim = [fieldDim.x , fieldDim.y , fieldDim.z]
 
 
-    def show_cell_actors(self,actor_specs,show_flag=True):
+    def show_cell_actors(self,actor_specs,drawing_params=None, show_flag=True):
         """
         shows/hides cells
         :param show_flag:
@@ -306,27 +306,6 @@ class MVCDrawView3D(MVCDrawViewBase):
                     del self.currentActors[actor_name]
                     self.ren.RemoveActor(actor_to_remove)
 
-
-
-    def show_cells_actors(self):
-        '''
-        Shows Actors representing cell types
-        :return:None
-        '''
-        for actorNumber in self.usedCellTypesList:
-            actorName = "CellType_" + str(actorNumber)
-            # print "Actor name=",actorName
-            # print "self.invisibleCellTypes=",self.invisibleCellTypes
-
-            if actorNumber in self.invisibleCellTypes:
-                #                print MODULENAME,"showCellTypeActors: cannot display ",actorName
-                pass
-            elif not actorName in self.currentActors:
-                #            if not actorName in self.currentActors:
-                #            if not actorName in self.currentActors and not actorNumber in self.invisibleCellTypes:
-                self.currentActors[actorName] = self.cellTypeActors[actorNumber]
-                self.graphicsFrameWidget.ren.AddActor(self.currentActors[actorName])
-
     def prepare_outline_actors(self, actor_specs, drawing_params=None):
         """
         Prepares cell_field_actors  based on actor_specs specifications
@@ -340,7 +319,6 @@ class MVCDrawView3D(MVCDrawViewBase):
         actor_specs_copy.actors_dict['outline_actor'] = self.outlineActor
 
         return actor_specs_copy
-
 
     def show_outline_actors(self, actor_specs, drawing_params=None, show_flag=True):
         """
