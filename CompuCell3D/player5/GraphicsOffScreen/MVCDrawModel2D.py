@@ -169,12 +169,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # axesActor.SetScreenSize(50.0) # for labels and axes titles
         # axesActor.SetLabelScaling(True,0,0,0)
 
-        if Configuration.getSetting('ShowHorizontalAxesLabels'):
+
+        if scene_metadata['ShowHorizontalAxesLabels']:
             axes_actor.SetXAxisLabelVisibility(1)
         else:
             axes_actor.SetXAxisLabelVisibility(0)
 
-        if Configuration.getSetting('ShowVerticalAxesLabels'):
+        if scene_metadata['ShowVerticalAxesLabels']:
             axes_actor.SetYAxisLabelVisibility(1)
         else:
             axes_actor.SetYAxisLabelVisibility(0)
@@ -332,16 +333,31 @@ class MVCDrawModel2D(MVCDrawModelBase):
         cone.SetRadius(0.5)
         # cone.SetRadius(4)
 
+
+
+        # if Configuration.getSetting("MinRangeFixed", field_name):
+        #     min_magnitude = Configuration.getSetting("MinRange", field_name)
+        #
+        # if Configuration.getSetting("MaxRangeFixed", field_name):
+        #     max_magnitude = Configuration.getSetting("MaxRange", field_name)
+
+        min_max_dict = self.get_min_max_metadata(scene_metadata=scene_metadata, field_name=field_name)
+        min_magnitude_fixed = min_max_dict['MinRangeFixed']
+        max_magnitude_fixed = min_max_dict['MaxRangeFixed']
+        min_magnitude_read = min_max_dict['MinRange']
+        max_magnitude_read = min_max_dict['MaxRange']
+
+
         range = vectors.GetRange(-1)
 
-        minMagnitude = range[0]
-        maxMagnitude = range[1]
+        min_magnitude = range[0]
+        max_magnitude = range[1]
 
-        if Configuration.getSetting("MinRangeFixed", field_name):
-            minMagnitude = Configuration.getSetting("MinRange", field_name)
+        if min_magnitude_fixed:
+            min_magnitude = min_magnitude_read
 
-        if Configuration.getSetting("MaxRangeFixed", field_name):
-            maxMagnitude = Configuration.getSetting("MaxRange", field_name)
+        if max_magnitude_fixed:
+            max_magnitude = max_magnitude_read
 
         glyphs = vtk.vtkGlyph3D()
 
@@ -355,30 +371,33 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # glyphs.SetColorModeToColorByVector()
 
         # rwh: should use of this factor depend on the state of the "Scale arrow length" checkbox?
-        arrowScalingFactor = Configuration.getSetting("ArrowLength",
-                                                      field_name)  # scaling factor for an arrow (ArrowLength indicates scaling factor not actual length)
+
+        # scaling factor for an arrow (ArrowLength indicates scaling factor not actual length)
+        arrowScalingFactor = scene_metadata['ArrowLength']
 
         vector_field_actor = actors_dict['vector_field_actor']
-        if Configuration.getSetting("FixedArrowColorOn", field_name):
+        if scene_metadata['FixedArrowColorOn'] :
             glyphs.SetScaleModeToScaleByVector()
             # rangeSpan = maxMagnitude - minMagnitude
-            dataScalingFactor = max(abs(minMagnitude), abs(maxMagnitude))
+            dataScalingFactor = max(abs(min_magnitude), abs(max_magnitude))
             #            print MODULENAME,"initVectorFieldCellLevelActors():  self.minMagnitude=",self.minMagnitude," self.maxMagnitude=",self.maxMagnitude
 
             if dataScalingFactor == 0.0:
                 dataScalingFactor = 1.0  # in this case we are plotting 0 vectors and in this case data scaling factor will be set to 1
             glyphs.SetScaleFactor(arrowScalingFactor / dataScalingFactor)
             # coloring arrows
-            color = Configuration.getSetting("ArrowColor", field_name)
-            r, g, b = color.red(), color.green(), color.blue()
-            vector_field_actor.GetProperty().SetColor(r, g, b)
+            arrow_color = to_vtk_rgb(scene_metadata['ArrowColor'])
+            vector_field_actor.GetProperty().SetColor(arrow_color)
+
+
+
         else:
-            if Configuration.getSetting("ScaleArrowsOn", field_name):
+            if scene_metadata['ScaleArrowsOn']:
                 glyphs.SetColorModeToColorByVector()
                 glyphs.SetScaleModeToScaleByVector()
 
-                rangeSpan = maxMagnitude - minMagnitude
-                dataScalingFactor = max(abs(minMagnitude), abs(maxMagnitude))
+                rangeSpan = max_magnitude - min_magnitude
+                dataScalingFactor = max(abs(min_magnitude), abs(max_magnitude))
                 #                print "self.minMagnitude=",self.minMagnitude," self.maxMagnitude=",self.maxMagnitude
 
                 if dataScalingFactor == 0.0:
@@ -392,7 +411,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.glyphs_mapper.SetInputConnection(glyphs.GetOutputPort())
         self.glyphs_mapper.SetLookupTable(self.clut)
 
-        self.glyphs_mapper.SetScalarRange([minMagnitude, maxMagnitude])
+        self.glyphs_mapper.SetScalarRange([min_magnitude, max_magnitude])
 
         vector_field_actor.SetMapper(self.glyphs_mapper)
 
@@ -493,19 +512,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         max_range_fixed = min_max_dict['MaxRangeFixed']
         min_range = min_max_dict['MinRange']
         max_range = min_max_dict['MaxRange']
-
-
-        # if set(['MinRangeFixed',"MaxRangeFixed",'MinRange','MaxRange']).issubset( set(scene_metadata.keys())):
-        #     min_range_fixed = scene_metadata['MinRangeFixed']
-        #     max_range_fixed = scene_metadata['MaxRangeFixed']
-        #     min_range = scene_metadata['MinRange']
-        #     max_range = scene_metadata['MaxRange']
-        # else:
-        #     min_range_fixed = Configuration.getSetting("MinRangeFixed", field_name)
-        #     max_range_fixed = Configuration.getSetting("MaxRangeFixed", field_name)
-        #     min_range = Configuration.getSetting("MinRange", field_name)
-        #     max_range = Configuration.getSetting("MaxRange", field_name)
-
 
         range =con_array.GetRange()
         min_con = range[0]
@@ -712,6 +718,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         field_image_data.SetExtent(0, dim_0, 0, dim_1, 0, 0)
 
+
         if scene_metadata['ContoursOn']:
 
             contour_actor = actors_dict['contour_actor']
@@ -720,7 +727,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 field_image_data,
                 [min_con, max_con],
                 contour_actor,
-                num_contour_lines=num_contour_lines
+                num_contour_lines=num_contour_lines,
+                scene_metadata=scene_metadata
             )
 
         self.clut.SetTableRange([min_con, max_con])
@@ -744,7 +752,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
             actor_specs.metadata['mapper'] = self.con_mapper
 
 
-    def initialize_contours_cartesian(self,field_image_data, min_max, contour_actor, num_contour_lines=2):
+    def initialize_contours_cartesian(self,field_image_data, min_max, contour_actor, num_contour_lines=2, scene_metadata=None):
 
         min_con, max_con = min_max[0], min_max[1]
         iso_contour = vtk.vtkContourFilter()
@@ -786,9 +794,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         contour_actor.SetMapper(self.contour_mapper)
 
-        color = Configuration.getSetting("ContourColor")  # want to avoid this; only update when Prefs changes
-        contour_actor.GetProperty().SetColor(float(color.red()) / 255, float(color.green()) / 255,
-                                            float(color.blue()) / 255)
+
+        color = to_vtk_rgb(scene_metadata["ContourColor"])
+        contour_actor.GetProperty().SetColor(color)
+
+
 
     def init_cell_field_actors(self, actor_specs, drawing_params=None):
         """

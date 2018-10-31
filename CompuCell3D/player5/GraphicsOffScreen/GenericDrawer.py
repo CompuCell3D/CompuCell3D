@@ -14,7 +14,7 @@
 # todo - add action to remove screenshot file
 # todo - mcs and min max concentrations are not displayed - fix it
 # todo - eliminate references to Configuration in the GraphicsOffScreen - especially in the Model code
-
+# todo - add fcn get_metadata(scene_metadata, label, field) - returns scene_metadata entry of value from config
 
 import string
 import Configuration

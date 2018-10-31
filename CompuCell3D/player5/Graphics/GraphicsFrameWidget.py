@@ -69,7 +69,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
             'ConField': self.get_con_field_metadata,
             'ScalarField': self.get_con_field_metadata,
             'ScalarFieldCellLevel': self.get_con_field_metadata,
-            'VectorField': self.get_con_field_metadata,
+            'VectorField': self.get_vector_field_metadata,
             'VectorFieldCellLevel': self.get_vector_field_metadata,
         }
 
@@ -109,10 +109,10 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         :return: {dict}
         """
 
-        metadata_dict = self.get_color_metadata(field_name=field_name, field_type=field_type)
+        metadata_dict = self.get_config_metadata(field_name=field_name, field_type=field_type)
         return metadata_dict
 
-    def get_color_metadata(self, field_name, field_type):
+    def get_config_metadata(self, field_name, field_type):
         """
         Returns dictionary of auxiliary information needed to render borders
         :param field_name:{str} field_name
@@ -129,6 +129,9 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         # todo - fix color of fpp links
         metadata_dict['FppLinksColor'] = qcolor_to_rgba(Configuration.getSetting('ContourColor'))
 
+        metadata_dict['ShowHorizontalAxesLabels'] = Configuration.getSetting('ShowHorizontalAxesLabels')
+        metadata_dict['ShowVerticalAxesLabels'] = Configuration.getSetting('ShowVerticalAxesLabels')
+
         return metadata_dict
 
     def get_con_field_metadata(self, field_name, field_type):
@@ -140,7 +143,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         """
 
         # metadata_dict = {}
-        metadata_dict = self.get_color_metadata(field_name=field_name, field_type=field_type)
+        metadata_dict = self.get_config_metadata(field_name=field_name, field_type=field_type)
         con_field_name = field_name
         metadata_dict['MinRangeFixed'] = Configuration.getSetting("MinRangeFixed", con_field_name)
         metadata_dict['MaxRangeFixed'] = Configuration.getSetting("MaxRangeFixed", con_field_name)
