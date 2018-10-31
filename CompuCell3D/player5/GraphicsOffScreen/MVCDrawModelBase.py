@@ -3,19 +3,21 @@ import Configuration
 import string
 import CompuCellSetup
 
-VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
-MODULENAME='----- MVCDrawModelBase.py: '
+VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
+MODULENAME = '----- MVCDrawModelBase.py: '
+
+
 class MVCDrawModelBase:
     def __init__(self):
-        
+
         (self.minCon, self.maxCon) = (0, 0)
 
         from weakref import ref
         # # # self.graphicsFrameWidget=graphicsFrameWidget
         # # # self.qvtkWidget=self.graphicsFrameWidget.qvtkWidget
-        self.currentDrawingFunction=None       
-        self.fieldTypes=None 
-        self.currentDrawingParameters=None
+        self.currentDrawingFunction = None
+        self.fieldTypes = None
+        self.currentDrawingParameters = None
         self.field_extractor = None
 
         self.cell_type_array = None
@@ -23,9 +25,10 @@ class MVCDrawModelBase:
         self.used_cell_types_list = None
         self.lattice_type = None
         self.lattice_type_str = None
-#        self.scaleGlyphsByVolume = False
-        
-        # should also set "periodic" boundary condition flag(s) (e.g. for drawing FPP links that wraparound)
+
+    #        self.scaleGlyphsByVolume = False
+
+    # should also set "periodic" boundary condition flag(s) (e.g. for drawing FPP links that wraparound)
 
     def init_lattice_type(self):
         """
@@ -69,33 +72,33 @@ class MVCDrawModelBase:
         self.cell_id_array = cell_field_data_dict['cell_id_array']
         self.used_cell_types_list = cell_field_data_dict['used_cell_types']
 
-    def setDrawingParametersObject(self,_drawingParams):
-        self.currentDrawingParameters=_drawingParams
-        
-    def setDrawingParameters(self,_bsd,_plane,_planePos,_fieldType):   
-        self.bsd=_bsd
-        self.plane=_plane
-        self.planePos=_planePos
-        self.fieldtype=_fieldType
-        
-    def setDrawingFunctionName(self,_fcnName):
+    def setDrawingParametersObject(self, _drawingParams):
+        self.currentDrawingParameters = _drawingParams
+
+    def setDrawingParameters(self, _bsd, _plane, _planePos, _fieldType):
+        self.bsd = _bsd
+        self.plane = _plane
+        self.planePos = _planePos
+        self.fieldtype = _fieldType
+
+    def setDrawingFunctionName(self, _fcnName):
         # print "\n\n\n THIS IS _fcnName=",_fcnName," self.drawingFcnName=",self.drawingFcnName
-        
+
         if self.drawingFcnName != _fcnName:
-            self.drawingFcnHasChanged=True
+            self.drawingFcnHasChanged = True
         else:
-            self.drawingFcnHasChanged=False
-        self.drawingFcnName=_fcnName
-        
+            self.drawingFcnHasChanged = False
+        self.drawingFcnName = _fcnName
+
     def clearDisplay(self):
-        print MODULENAME,"     clearDisplay() "
+        print MODULENAME, "     clearDisplay() "
         for actor in self.currentActors:
             self.graphicsFrameWidget.ren.RemoveActor(self.currentActors[actor])
-            
+
         self.currentActors.clear()
-    
-    def Render(self):   # never called?!
-#        print MODULENAME,"     --------- Render() "
+
+    def Render(self):  # never called?!
+        #        print MODULENAME,"     --------- Render() "
         self.graphicsFrameWidget.Render()
 
     def is_lattice_hex(self, drawing_params):
@@ -107,7 +110,8 @@ class MVCDrawModelBase:
         """
         raise NotImplementedError()
 
-    def get_cell_actors_metadata(self): pass
+    def get_cell_actors_metadata(self):
+        pass
 
     def get_min_max_metadata(self, scene_metadata, field_name):
         """
@@ -122,7 +126,7 @@ class MVCDrawModelBase:
         :return: {dict}
         """
         out_dict = {}
-        if set(['MinRangeFixed',"MaxRangeFixed",'MinRange','MaxRange']).issubset( set(scene_metadata.keys())):
+        if set(['MinRangeFixed', "MaxRangeFixed", 'MinRange', 'MaxRange']).issubset(set(scene_metadata.keys())):
 
             min_range_fixed = scene_metadata['MinRangeFixed']
             max_range_fixed = scene_metadata['MaxRangeFixed']
@@ -149,7 +153,6 @@ class MVCDrawModelBase:
         :return: None
         """
         raise NotImplementedError()
-
 
     def init_cluster_border_actors(self, actor_specs, drawing_params=None):
         """
@@ -194,7 +197,6 @@ class MVCDrawModelBase:
         actors_dict = actor_specs.actors_dict
 
         legend_actor = actors_dict['legend_actor']
-
 
         legend_actor.SetLookupTable(mapper.GetLookupTable())
         legend_actor.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
@@ -249,7 +251,6 @@ class MVCDrawModelBase:
         """
         raise NotImplementedError()
 
-    
     # def initConFieldActors(self, _actors): pass
     #
     # def initVectorFieldCellLevelActors(self, _fillVectorFieldFcn, _actors): pass
@@ -259,32 +260,33 @@ class MVCDrawModelBase:
     # def initScalarFieldCellLevelActors(self, _actors): pass
     #
     # def initScalarFieldActors(self, _fillScalarField, _actors): pass
-    
-    def prepareOutlineActors(self,_actors):pass        
-    
+
+    def prepareOutlineActors(self, _actors):
+        pass
 
     def getCamera(self):
         return self.ren.GetActiveCamera()
-        
+
     # def initSimArea(self, _bsd):
-        # fieldDim   = _bsd.fieldDim
-        # # sim.getPotts().getCellFieldG().getDim()
-        # self.setCamera(fieldDim)
-       
-    def configsChanged(self): pass
-        
+    # fieldDim   = _bsd.fieldDim
+    # # sim.getPotts().getCellFieldG().getDim()
+    # self.setCamera(fieldDim)
+
+    def configsChanged(self):
+        pass
+
     # Transforms interval [0, 255] to [0, 1]
     def toVTKColor(self, val):
-        return float(val)/255
+        return float(val) / 255
 
     def largestDim(self, dim):
         ldim = dim[0]
         for i in range(len(dim)):
             if dim[i] > ldim:
                 ldim = dim[i]
-                
+
         return ldim
-    
+
     def setParams(self):
         # You can use either Build() method (256 color by default) or
         # SetNumberOfTableValues() to allocate much more colors!
@@ -293,50 +295,51 @@ class MVCDrawModelBase:
         self.celltypeLUT.Build()
         self.populateLookupTable()
         # self.dim = [100, 100, 1] # Default values
-        
+
         # for FPP links (and offset also for cell glyphs)
-        self.eps = 1.e-4     # not sure how small this should be (checking to see if cell volume -> 0)
+        self.eps = 1.e-4  # not sure how small this should be (checking to see if cell volume -> 0)
         self.stubSize = 3.0  # dangling line stub size for lines that wraparound periodic BCs
-#        self.offset = 1.0    # account for fact that COM of cell is offset from visualized lattice
-#        self.offset = 0.0    # account for fact that COM of cell is offset from visualized lattice
+        #        self.offset = 1.0    # account for fact that COM of cell is offset from visualized lattice
+        #        self.offset = 0.0    # account for fact that COM of cell is offset from visualized lattice
 
         # scaling factors to map square lattice to hex lattice (rf. CC3D Manual)
         self.xScaleHex = 1.0
-        self.yScaleHex =  0.866
-        self.zScaleHex =  0.816
-        
+        self.yScaleHex = 0.866
+        self.zScaleHex = 0.816
+
         self.lutBlueRed = vtk.vtkLookupTable()
-        self.lutBlueRed.SetHueRange(0.667,0.0)
+        self.lutBlueRed.SetHueRange(0.667, 0.0)
         self.lutBlueRed.Build()
-    
+
     def populateLookupTable(self):
-#        print MODULENAME,' populateLookupTable()'
+        #        print MODULENAME,' populateLookupTable()'
         colorMap = Configuration.getSetting("TypeColorMap")
-#        print MODULENAME,' populateLookupTable():  len(colorMap)=',len(colorMap)
+        #        print MODULENAME,' populateLookupTable():  len(colorMap)=',len(colorMap)
         self.celltypeLUT.SetNumberOfTableValues(len(colorMap))
         self.celltypeLUT.SetNumberOfColors(len(colorMap))
-#        lutGlyph.SetTableValue(5, 1,0,0, 1.0)     # SetTableValue (vtkIdType indx, double r, double g, double b, double a=1.0)
-#        lutGlyph.SetTableValue(8, 0,1,1, 1.0)     # SetTableValue (vtkIdType indx, double r, double g, double b, double a=1.0)
+        #        lutGlyph.SetTableValue(5, 1,0,0, 1.0)     # SetTableValue (vtkIdType indx, double r, double g, double b, double a=1.0)
+        #        lutGlyph.SetTableValue(8, 0,1,1, 1.0)     # SetTableValue (vtkIdType indx, double r, double g, double b, double a=1.0)
         for key in colorMap.keys():
             r = colorMap[key].red()
             g = colorMap[key].green()
             b = colorMap[key].blue()
             self.celltypeLUT.SetTableValue(key, self.toVTKColor(r), self.toVTKColor(g), self.toVTKColor(b), 1.0)
-#            print "       type=",key," red=",r," green=",g," blue=",b
-#            print "       type=",key," (VTK) red=",self.toVTKColor(r)," green=",self.toVTKColor(g)," blue=",self.toVTKColor(b)
+        #            print "       type=",key," red=",r," green=",g," blue=",b
+        #            print "       type=",key," (VTK) red=",self.toVTKColor(r)," green=",self.toVTKColor(g)," blue=",self.toVTKColor(b)
         # self.qvtkWidget.repaint()
         self.celltypeLUT.Build()
-        self.celltypeLUTMax = self.celltypeLUT.GetNumberOfTableValues() - 1   # cell types = [0,max]
-        self.celltypeLUT.SetTableRange(0,self.celltypeLUTMax)
-#        print "       celltypeLUTMax=",self.celltypeLUTMax
-        
-        # self.graphicsFrameWidget.Render()
-        
+        self.celltypeLUTMax = self.celltypeLUT.GetNumberOfTableValues() - 1  # cell types = [0,max]
+        self.celltypeLUT.SetTableRange(0, self.celltypeLUTMax)
+
+    #        print "       celltypeLUTMax=",self.celltypeLUTMax
+
+    # self.graphicsFrameWidget.Render()
+
     # Do I need this method?
     # Calculates min and max concentration
     def findMinMax(self, conField, dim):
         import CompuCell
-        pt = CompuCell.Point3D() 
+        pt = CompuCell.Point3D()
 
         maxCon = 0
         minCon = 0
@@ -346,12 +349,12 @@ class MVCDrawModelBase:
                     pt.x = i
                     pt.y = j
                     pt.z = k
-                    
+
                     con = float(conField.get(pt))
-                    
+
                     if maxCon < con:
                         maxCon = con
-                    
+
                     if minCon > con:
                         minCon = con
 
@@ -364,16 +367,16 @@ class MVCDrawModelBase:
     # Just returns min and max concentration
     def conMinMax(self):
         return (self.minCon, self.maxCon)
-    
+
     def frac(self, con, minCon, maxCon):
         if maxCon == minCon:
             return 0.0
         else:
-            frac = (con - minCon)/(maxCon - minCon)
-            
+            frac = (con - minCon) / (maxCon - minCon)
+
         if frac > 1.0:
             frac = 1.0
-            
+
         if frac < 0.0:
             frac = 0.0
 
@@ -383,36 +386,32 @@ class MVCDrawModelBase:
         pass
 
     def prepareLegendActors(self, _mappers, _actors):
-        legendActor=_actors[0]
-        mapper=_mappers[0]
-            
-        legendActor.SetLookupTable(mapper.GetLookupTable())    
+        legendActor = _actors[0]
+        mapper = _mappers[0]
+
+        legendActor.SetLookupTable(mapper.GetLookupTable())
         legendActor.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
         legendActor.GetPositionCoordinate().SetValue(0.01, 0.1)
         legendActor.SetOrientationToHorizontal()
-        
+
         legendActor.SetOrientationToVertical()
         # self.legendActor.SetWidth(0.8)
         # self.legendActor.SetHeight(0.10)
 
         legendActor.SetWidth(0.1)
         legendActor.SetHeight(0.9)
-        
-        if VTK_MAJOR_VERSION>=6:
+
+        if VTK_MAJOR_VERSION >= 6:
             legendActor.SetTitle('')
 
         # You don't actually need to make contrast for the text as
         # it has shadow!
         text_property = legendActor.GetLabelTextProperty()
-        text_property.SetFontSize(12) # For some reason it doesn't make effect
+        text_property.SetFontSize(12)  # For some reason it doesn't make effect
         # text.BoldOff()
         text_property.SetColor(1.0, 1.0, 1.0)
 
         legendActor.SetLabelTextProperty(text_property)
 
-
-
     def setLatticeType(self, latticeType):
         self.latticeType = latticeType
-
-    
