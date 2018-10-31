@@ -15,7 +15,7 @@
 # todo - mcs and min max concentrations are not displayed - fix it
 # todo - eliminate references to Configuration in the GraphicsOffScreen - especially in the Model code
 # todo - add fcn get_metadata(scene_metadata, label, field) - returns scene_metadata entry of value from config
-
+# todo - add fpp link color in the configuration dialog - fix metadata in Graphics FrameWidget then
 import string
 import Configuration
 import vtk
