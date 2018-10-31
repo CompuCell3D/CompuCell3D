@@ -220,6 +220,19 @@ class MVCDrawViewBase:
 
         raise NotImplementedError(self.__class__.prepare_border_actors.__name__)
 
+    def show_cell_borders(self, actor_specs,drawing_params=None, show_flag=True):
+        '''
+        Shows or hides cell border actor
+
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :param show_flag: {bool}
+        :return: None
+        """
+        '''
+
+        raise NotImplementedError(self.__class__.show_cell_borders.__name__)
+
     def prepare_fpp_links_actors(self, actor_specs, drawing_params=None):
         """
         Prepares fpp links actors  based on actor_specs specifications

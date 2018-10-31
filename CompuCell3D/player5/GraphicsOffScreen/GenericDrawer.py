@@ -12,8 +12,6 @@
 # todo - any references to simpletabview should be via weakref
 
 # todo - add action to remove screenshot file
-# todo - add version to screenshot.json format
-# todo - ignore any read errors in the reading/processing screenshot json - and display popup window
 # todo - mcs and min max concentrations are not displayed - fix it
 
 import string
