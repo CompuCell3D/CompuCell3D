@@ -269,8 +269,6 @@ class MVCDrawView3D(MVCDrawViewBase):
         camera.SetClippingRange(distance - 1, distance + 1)
         self.__initDist = distance  # camera.GetDistance()
 
-
-
     def setDim(self, fieldDim):
         '''
         assigns field dimensions (x,y,z) to a vector self.dim
@@ -279,7 +277,6 @@ class MVCDrawView3D(MVCDrawViewBase):
         '''
         #self.dim = [fieldDim.x+1 , fieldDim.y+1 , fieldDim.z]
         self.dim = [fieldDim.x , fieldDim.y , fieldDim.z]
-
 
     def show_cell_actors(self,actor_specs,drawing_params=None, show_flag=True):
         """
