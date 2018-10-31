@@ -411,72 +411,8 @@ class MVCDrawModelBase:
         legendActor.SetLabelTextProperty(text_property)
 
 
-#     # Break the settings read into groups?
-# #    def readSettings_old(self):   # not ever called?!  (rf. MVCDrawViewBase)
-# #        self.readColorsSets()
-# #        self.readViewSets()
-# #        self.readColormapSets()
-# #        self.readOutputSets()
-# #        self.readVectorSets()
-# #        self.readVisualSets()
-#         # simDefaults?
-#
-#     def readColorsSets(self):
-#         #colorsDefaults
-#         self._colorMap     = Configuration.getSetting("TypeColorMap")
-#         self._borderColor  = Configuration.getSetting("BorderColor")
-#         self._contourColor = Configuration.getSetting("ContourColor")
-#         self._brushColor   = Configuration.getSetting("BrushColor")
-#         self._penColor     = Configuration.getSetting("PenColor")
-#
-#     def readViewSets(self):
-#         # For 3D only?
-#         # viewDefaults
-#         self._types3D      = Configuration.getSetting("Types3DInvisible")
-#
-# #    def readColormapSets(self):   # don't think this is ever called
-# #        print MODULENAME,' readColormapSets():  doing Config-.getSetting...'
-# #        # colormapDefaults
-# #        self._minCon       = Configuration.getSetting("minRange")
-# #        self._minConFixed  = Configuration.getSetting("minRangeFixed")
-# #        self._maxCon       = Configuration.getSetting("MaxRange")
-# #        self._maxConFixed  = Configuration.getSetting("MaxRangeFixed")
-# #        self._accuracy     = Configuration.getSetting("NumberAccuracy")
-# #        self._numLegend    = Configuration.getSetting("NumberOfLegendBoxes")
-# #        self._enableLegend = Configuration.getSetting("LegendEnable")
-# #        self._contoursOn   = Configuration.getSetting("ContoursOn")
-# #        self._numberOfContourLines   = Configuration.getSetting("NumberOfContourLines")
-#
-#     def readOutputSets(self):
-#         # Should I read the settings here?
-#         # outputDefaults
-#         self._updateScreen     = Configuration.getSetting("ScreenUpdateFrequency")
-#         self._imageOutput      = Configuration.getSetting("ImageOutputOn")
-#         self._shotFrequency    = Configuration.getSetting("ScreenshotFrequency")
-#
-#     def readVectorSets(self):
-#         # vectorDefaults
-#         self._arrowColor   = Configuration.getSetting("ArrowColor")
-#         self._arrowLength  = Configuration.getSetting("ArrowLength")
-#         self._arrowColorFixed  = Configuration.getSetting("FixedArrowColorOn")
-#         self._enableLegendVec  = Configuration.getSetting("LegendEnableVector")
-#         self._scaleArrows  = Configuration.getSetting("ScaleArrowsOn")
-#         self._accuracyVec  = Configuration.getSetting("NumberAccuracyVector")
-#         self._numLegendVec = Configuration.getSetting("NumberOfLegendBoxesVector")
-#         self._overlayVec   = Configuration.getSetting("OverlayVectorsOn")
-#         self._maxMag       = Configuration.getSetting("MaxMagnitude")
-#         self._maxMagFixed  = Configuration.getSetting("MaxMagnitudeFixed")
-#         self._minMag       = Configuration.getSetting("MinMagnitude")
-#         self._minMagFixed  = Configuration.getSetting("MinMagnitudeFixed")
-#
-#     def readVisualSets(self):
-#         # visualDefaults
-#         self._cellBordersOn    = Configuration.getSetting("CellBordersOn")
-#         self._clusterBordersOn = Configuration.getSetting("ClusterBordersOn")
-#         self._conLimitsOn  = Configuration.getSetting("ConcentrationLimitsOn")
-#         self._zoomFactor   = Configuration.getSetting("ZoomFactor")
 
     def setLatticeType(self, latticeType):
-        self.latticeType=latticeType
+        self.latticeType = latticeType
 
     
