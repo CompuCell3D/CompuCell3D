@@ -3,11 +3,11 @@ from MVCDrawModelBase import MVCDrawModelBase
 import Configuration
 import vtk, math
 
-VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
+VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 # from Utilities.utils import extract_address_int_from_vtk_object
 from Utilities.utils import extract_address_int_from_vtk_object, to_vtk_rgb
 
-MODULENAME='------  MVCDrawModel3D.py'
+MODULENAME = '------  MVCDrawModel3D.py'
 
 
 class MVCDrawModel3D(MVCDrawModelBase):
@@ -63,7 +63,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
         self.polyDataNormals = {}  # vtkPolyDataNormals
         self.typeExtractors = {}  # vtkDiscreteMarchingCubes
         self.typeExtractorMappers = {}  # vtkPolyDataMapper
-        
 
     # def setDim(self, fieldDim):
     #     # self.dim = [fieldDim.x+1 , fieldDim.y+1 , fieldDim.z]
@@ -81,11 +80,11 @@ class MVCDrawModel3D(MVCDrawModelBase):
         else:
             return False
 
-    def init_cell_field_actors_borderless(self,actor_specs, drawing_params=None):
+    def init_cell_field_actors_borderless(self, actor_specs, drawing_params=None):
 
         hex_flag = False
         lattice_type_str = self.get_lattice_type_str()
-        if lattice_type_str.lower() =='hexagonal':
+        if lattice_type_str.lower() == 'hexagonal':
             hex_flag = True
 
         # todo 5 - check if this should be called earlier
@@ -94,17 +93,18 @@ class MVCDrawModel3D(MVCDrawModelBase):
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         cell_type_image_data = vtk.vtkImageData()
 
-        cell_type_image_data.SetDimensions(field_dim.x+2,field_dim.y+2,field_dim.z+2) # adding 1 pixel border around the lattice to make rendering smooth at lattice borders
+        cell_type_image_data.SetDimensions(field_dim.x + 2, field_dim.y + 2,
+                                           field_dim.z + 2)  # adding 1 pixel border around the lattice to make rendering smooth at lattice borders
         cell_type_image_data.GetPointData().SetScalars(self.cell_type_array)
         voi = vtk.vtkExtractVOI()
 
-        if VTK_MAJOR_VERSION>=6:
+        if VTK_MAJOR_VERSION >= 6:
             voi.SetInputData(cell_type_image_data)
         else:
             voi.SetInput(cell_type_image_data)
 
-#        voi.SetVOI(1,self.dim[0]-1, 1,self.dim[1]-1, 1,self.dim[2]-1 )  # crop out the artificial boundary layer that we created
-        voi.SetVOI(0,249, 0,189, 0,170)
+        #        voi.SetVOI(1,self.dim[0]-1, 1,self.dim[1]-1, 1,self.dim[2]-1 )  # crop out the artificial boundary layer that we created
+        voi.SetVOI(0, 249, 0, 189, 0, 170)
 
         # # todo 5- check if it is possible to call it once
         # self.usedCellTypesList = self.extractCellFieldData()
@@ -121,19 +121,19 @@ class MVCDrawModel3D(MVCDrawModelBase):
         # actorCounter=0
         # for i in usedCellTypesList:
         for actorCounter, actor_number in enumerate(self.used_cell_types_list):
-        # for actorCounter in xrange(len(self.usedCellTypesList)):
+            # for actorCounter in xrange(len(self.usedCellTypesList)):
 
             if VTK_MAJOR_VERSION >= 6:
                 filterList[actorCounter].SetInputData(cell_type_image_data)
             else:
                 filterList[actorCounter].SetInput(cell_type_image_data)
 
-#            filterList[actorCounter].SetInputConnection(voi.GetOutputPort())
+            #            filterList[actorCounter].SetInputConnection(voi.GetOutputPort())
 
             # filterList[actorCounter].SetValue(0, usedCellTypesList[actorCounter])
             filterList[actorCounter].SetValue(0, self.used_cell_types_list[actorCounter])
             smootherList[actorCounter].SetInputConnection(filterList[actorCounter].GetOutputPort())
-#            smootherList[actorCounter].SetNumberOfIterations(200)
+            #            smootherList[actorCounter].SetNumberOfIterations(200)
             normalsList[actorCounter].SetInputConnection(smootherList[actorCounter].GetOutputPort())
             normalsList[actorCounter].SetFeatureAngle(45.0)
             mapperList[actorCounter].SetInputConnection(normalsList[actorCounter].GetOutputPort())
@@ -145,7 +145,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
                 actor = actors_dict[actor_number]
                 actor.SetMapper(mapperList[actorCounter])
 
-                actor.GetProperty().SetDiffuseColor(self.celltypeLUT.GetTableValue(self.used_cell_types_list[actorCounter])[0:3])
+                actor.GetProperty().SetDiffuseColor(
+                    self.celltypeLUT.GetTableValue(self.used_cell_types_list[actorCounter])[0:3])
 
                 # actor.GetProperty().SetDiffuseColor(
                 #     # self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3])
@@ -230,7 +231,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
     # original rendering technique (and still used if Vis->Cell Borders not checked) - vkDiscreteMarchingCubes on celltype
     def init_cell_field_actors(self, actor_specs, drawing_params=None):
 
-
         if drawing_params.screenshot_data.cell_borders_on:
             self.init_cell_field_borders_actors(actor_specs=actor_specs)
         else:
@@ -249,10 +249,9 @@ class MVCDrawModel3D(MVCDrawModelBase):
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         # dim_order = self.dimOrder(self.currentDrawingParameters.plane)
         # dim = self.planeMapper(dim_order, (field_dim.x, field_dim.y, field_dim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]
-        dim = [field_dim.x,field_dim.y, field_dim.z]
+        dim = [field_dim.x, field_dim.y, field_dim.z]
         field_name = drawing_params.fieldName
         scene_metadata = drawing_params.screenshot_data.metadata
-
 
         try:
             isovalues = scene_metadata['ScalarIsoValues']
@@ -269,7 +268,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         hex_flag = False
         lattice_type_str = self.get_lattice_type_str()
-        if lattice_type_str.lower() =='hexagonal':
+        if lattice_type_str.lower() == 'hexagonal':
             hex_flag = True
 
         import PlayerPython
@@ -278,14 +277,11 @@ class MVCDrawModel3D(MVCDrawModelBase):
         for type_label in drawing_params.screenshot_data.invisible_types:
             types_invisible.append(int(type_label))
 
-
         # self.isovalStr = Configuration.getSetting("ScalarIsoValues", field_name)
         # if type(self.isovalStr) == QVariant:
         #     self.isovalStr = str(self.isovalStr.toString())
         # else:
         #     self.isovalStr = str(self.isovalStr)
-
-
 
         con_array = vtk.vtkDoubleArray()
         con_array.SetName("concentration")
@@ -293,15 +289,20 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         cell_type_con = vtk.vtkIntArray()
         cell_type_con.SetName("concelltype")
-        cell_type_con_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor, vtkObj=cell_type_con)
+        cell_type_con_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor,
+                                                                     vtkObj=cell_type_con)
 
         field_type = drawing_params.fieldType.lower()
         if field_type == 'confield':
-            fill_successful = self.field_extractor.fillConFieldData3D(con_array_int_addr, cell_type_con_int_addr, field_name,types_invisible)
-        elif field_type =='scalarfield':
-            fill_successful = self.field_extractor.fillScalarFieldData3D(con_array_int_addr, cell_type_con_int_addr, field_name,types_invisible)
-        elif field_type =='scalarfieldcelllevel':
-            fill_successful = self.field_extractor.fillScalarFieldCellLevelData3D(con_array_int_addr, cell_type_con_int_addr, field_name,types_invisible)
+            fill_successful = self.field_extractor.fillConFieldData3D(con_array_int_addr, cell_type_con_int_addr,
+                                                                      field_name, types_invisible)
+        elif field_type == 'scalarfield':
+            fill_successful = self.field_extractor.fillScalarFieldData3D(con_array_int_addr, cell_type_con_int_addr,
+                                                                         field_name, types_invisible)
+        elif field_type == 'scalarfieldcelllevel':
+            fill_successful = self.field_extractor.fillScalarFieldCellLevelData3D(con_array_int_addr,
+                                                                                  cell_type_con_int_addr, field_name,
+                                                                                  types_invisible)
 
         if not fill_successful:
             return
@@ -325,12 +326,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         if max_range_fixed:
             max_con = max_range
-
-        # if Configuration.getSetting("MinRangeFixed", field_name):
-        #     min_con = Configuration.getSetting("MinRange", field_name)
-        #
-        # if Configuration.getSetting("MaxRangeFixed", field_name):
-        #     max_con = Configuration.getSetting("MaxRange", field_name)
 
         uGrid = vtk.vtkStructuredPoints()
         uGrid.SetDimensions(dim[0] + 2, dim[1] + 2, dim[
@@ -357,8 +352,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
         # skinExtractorColor = vtk.vtkMarchingCubes()
         #        isoContour.SetInput(uGrid)
         isoContour.SetInputConnection(voi.GetOutputPort())
-
-
 
         isoNum = 0
         for isoNum, isoVal in enumerate(isovalues):
@@ -417,15 +410,13 @@ class MVCDrawModel3D(MVCDrawModelBase):
             concentration_actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
 
         if actor_specs.metadata is None:
-            actor_specs.metadata = {'mapper':self.conMapper}
+            actor_specs.metadata = {'mapper': self.conMapper}
         else:
             actor_specs.metadata['mapper'] = self.conMapper
-
 
         if scene_metadata['LegendEnable']:
             print 'Enabling legend'
             self.init_legend_actors(actor_specs=actor_specs, drawing_params=drawing_params)
-
 
     def init_vector_field_actors(self, actor_specs, drawing_params=None):
         """
@@ -441,11 +432,9 @@ class MVCDrawModel3D(MVCDrawModelBase):
         field_type = drawing_params.fieldType.lower()
         scene_metadata = drawing_params.screenshot_data.metadata
 
-        dim = [field_dim.x,field_dim.y, field_dim.z]
+        dim = [field_dim.x, field_dim.y, field_dim.z]
 
         scene_metadata = drawing_params.screenshot_data.metadata
-
-
 
         vector_grid = vtk.vtkUnstructuredGrid()
 
@@ -456,7 +445,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         points_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor, vtkObj=points)
         vectors_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor, vtkObj=vectors)
-
 
         fill_successful = False
 
@@ -501,7 +489,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
         if not fill_successful:
             return
 
-
         vector_grid.SetPoints(points)
         vector_grid.GetPointData().SetVectors(vectors)
 
@@ -530,13 +517,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
         if max_range_fixed:
             max_magnitude = max_range
 
-        # if Configuration.getSetting("MinRangeFixed", field_name):
-        #     min_magnitude = Configuration.getSetting("MinRange", field_name)
-        #
-        # if Configuration.getSetting("MaxRangeFixed", field_name):
-        #     max_magnitude = Configuration.getSetting("MaxRange", field_name)
-
-
         glyphs = vtk.vtkGlyph3D()
 
         if VTK_MAJOR_VERSION >= 6:
@@ -548,29 +528,29 @@ class MVCDrawModel3D(MVCDrawModelBase):
         # glyphs.SetScaleModeToScaleByVector()
         # glyphs.SetColorModeToColorByVector()
 
-        # glyphs.SetScaleFactor(Configuration.getSetting("ArrowLength")) # scaling arrows here ArrowLength indicates scaling factor not actual length
-
+        # scaling arrows here ArrowLength indicates scaling factor not actual length
+        # glyphs.SetScaleFactor(Configuration.getSetting("ArrowLength"))
 
         vector_field_actor = actors_dict['vector_field_actor']
 
         # scaling factor for an arrow - ArrowLength indicates scaling factor not actual length
-        arrowScalingFactor = Configuration.getSetting("ArrowLength",field_name)
+        arrowScalingFactor = scene_metadata['ArrowLength']
 
-        if Configuration.getSetting("ScaleArrowsOn", field_name):
+        if scene_metadata['FixedArrowColorOn']:
             glyphs.SetScaleModeToScaleByVector()
-            rangeSpan = self.maxMagnitude - self.minMagnitude
-            dataScalingFactor = max(abs(self.minMagnitude), abs(self.maxMagnitude))
-            #            print MODULENAME,"self.minMagnitude=",self.minMagnitude," self.maxMagnitude=",self.maxMagnitude
+
+            dataScalingFactor = max(abs(min_magnitude), abs(max_magnitude))
 
             if dataScalingFactor == 0.0:
-                dataScalingFactor = 1.0  # in this case we are plotting 0 vectors and in this case data scaling factor will be set to 1
+                # in this case we are plotting 0 vectors and in this case data scaling factor will be set to 1
+                dataScalingFactor = 1.0
+
             glyphs.SetScaleFactor(arrowScalingFactor / dataScalingFactor)
+
             # coloring arrows
+            arrow_color = to_vtk_rgb(scene_metadata['ArrowColor'])
+            vector_field_actor.GetProperty().SetColor(arrow_color)
 
-            color = Configuration.getSetting("ArrowColor", field_name)
-            r, g, b = color.red(), color.green(), color.blue()
-
-            vector_field_actor.GetProperty().SetColor(r, g, b)
         else:
             glyphs.SetColorModeToColorByVector()
             glyphs.SetScaleFactor(arrowScalingFactor)
@@ -585,7 +565,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
         if hex_flag:
             vector_field_actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
 
-
     def init_outline_actors(self, actor_specs, drawing_params=None):
         """
         Initializes outline actors for hex actors
@@ -599,10 +578,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         outline_data = vtk.vtkImageData()
 
-
-
         outline_data.SetDimensions(field_dim.x + 1, field_dim.y + 1, field_dim.z + 1)
-
 
         outline = vtk.vtkOutlineFilter()
 
@@ -617,7 +593,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
         outline_actor = actors_dict['outline_actor']
 
         outline_actor.SetMapper(outline_mapper)
-
 
         # lattice_type_str = self.get_lattice_type_str()
         # if lattice_type_str.lower() == 'hexagonal':
@@ -638,7 +613,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         scene_metadata = drawing_params.screenshot_data.metadata
 
-
         axes_actor = actors_dict['axes_actor']
         axes_color = to_vtk_rgb(scene_metadata['AxesColor'])
 
@@ -646,12 +620,13 @@ class MVCDrawModel3D(MVCDrawModelBase):
         tprop.SetColor(axes_color)
         tprop.ShadowOn()
 
-        axes_actor.SetNumberOfLabels(4) # number of labels
+        axes_actor.SetNumberOfLabels(4)  # number of labels
 
         # lattice_type_str = self.get_lattice_type_str()
         # if lattice_type_str.lower() == 'hexagonal':
         if self.is_lattice_hex(drawing_params=drawing_params):
-            axes_actor.SetBounds(0, field_dim.x, 0, field_dim.y*math.sqrt(3.0)/2.0, 0, field_dim.z*math.sqrt(6.0)/3.0)
+            axes_actor.SetBounds(0, field_dim.x, 0, field_dim.y * math.sqrt(3.0) / 2.0, 0,
+                                 field_dim.z * math.sqrt(6.0) / 3.0)
         else:
             axes_actor.SetBounds(0, field_dim.x, 0, field_dim.y, 0, field_dim.z)
 
@@ -668,7 +643,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
         # xAxisActor.SetRulerMode(20)
         # xAxisActor.RulerModeOn()
         xAxisActor.SetNumberOfMinorTicks(3)
-
 
     def init_fpp_links_actors(self, actor_specs, drawing_params=None):
         """
@@ -843,5 +817,3 @@ class MVCDrawModel3D(MVCDrawModelBase):
         fpp_links_color = to_vtk_rgb(scene_metadata['FppLinksColor'])
         # coloring borders
         fpp_links_actor.GetProperty().SetColor(*fpp_links_color)
-
-
