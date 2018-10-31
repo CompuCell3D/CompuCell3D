@@ -14,6 +14,7 @@ from GraphicsOffScreen import GenericDrawer
 from Utilities import ScreenshotData
 from Utilities import qcolor_to_rgba, cs_string_to_typed_list
 import sys
+from collections import OrderedDict
 
 platform = sys.platform
 if platform == 'darwin':
@@ -131,6 +132,15 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
         metadata_dict['ShowHorizontalAxesLabels'] = Configuration.getSetting('ShowHorizontalAxesLabels')
         metadata_dict['ShowVerticalAxesLabels'] = Configuration.getSetting('ShowVerticalAxesLabels')
+
+        # type-color map
+        type_color_map_dict = OrderedDict()
+        config_type_color_map = Configuration.getSetting("TypeColorMap")
+        for type_id, qt_color in config_type_color_map.items():
+            type_color_map_dict[type_id] = qcolor_to_rgba(qt_color)
+
+        metadata_dict['TypeColorMap'] = type_color_map_dict
+
 
         return metadata_dict
 

@@ -2,6 +2,8 @@ import vtk
 import Configuration
 import string
 import CompuCellSetup
+from Utilities import qcolor_to_rgba
+from Utilities.utils import to_vtk_rgb
 
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 MODULENAME = '----- MVCDrawModelBase.py: '
@@ -26,9 +28,91 @@ class MVCDrawModelBase:
         self.lattice_type = None
         self.lattice_type_str = None
 
+        self.celltypeLUT = None
+
     #        self.scaleGlyphsByVolume = False
 
     # should also set "periodic" boundary condition flag(s) (e.g. for drawing FPP links that wraparound)
+
+    def setParams(self):
+        # # You can use either Build() method (256 color by default) or
+        # # SetNumberOfTableValues() to allocate much more colors!
+        # self.celltypeLUT = vtk.vtkLookupTable()
+        # # You need to explicitly call Build() when constructing the LUT by hand
+        # self.celltypeLUT.Build()
+        #
+        # self.populate_cell_type_lookup_table()
+
+        # self.populateLookupTable()
+
+        # self.dim = [100, 100, 1] # Default values
+
+        # for FPP links (and offset also for cell glyphs)
+        self.eps = 1.e-4  # not sure how small this should be (checking to see if cell volume -> 0)
+        self.stubSize = 3.0  # dangling line stub size for lines that wraparound periodic BCs
+        #        self.offset = 1.0    # account for fact that COM of cell is offset from visualized lattice
+        #        self.offset = 0.0    # account for fact that COM of cell is offset from visualized lattice
+
+        # scaling factors to map square lattice to hex lattice (rf. CC3D Manual)
+        self.xScaleHex = 1.0
+        self.yScaleHex = 0.866
+        self.zScaleHex = 0.816
+
+        self.lutBlueRed = vtk.vtkLookupTable()
+        self.lutBlueRed.SetHueRange(0.667, 0.0)
+        self.lutBlueRed.Build()
+
+    def get_type_lookup_table(self, scene_metadata=None):
+        if self.celltypeLUT is not None:
+            return self.celltypeLUT
+
+        self.populate_cell_type_lookup_table(scene_metadata=scene_metadata)
+
+        return self.celltypeLUT
+
+    def populate_cell_type_lookup_table(self, scene_metadata=None):
+        """
+        Populates lookup table
+        :param scene_metadata:
+        :return:
+        """
+        if scene_metadata is None:
+            color_map = Configuration.getSetting("TypeColorMap")
+        else:
+            color_map = scene_metadata["TypeColorMap"]
+
+        self.celltypeLUT = vtk.vtkLookupTable()
+        # You need to explicitly call Build() when constructing the LUT by hand
+        self.celltypeLUT.Build()
+        self.celltypeLUT.SetNumberOfTableValues(len(color_map))
+        self.celltypeLUT.SetNumberOfColors(len(color_map))
+
+        for type_id, qt_color in color_map.items():
+            rgba = to_vtk_rgb(qcolor_to_rgba(qt_color))
+            rgba.append(1.0)
+            self.celltypeLUT.SetTableValue(type_id, *rgba)
+
+    def populateLookupTable(self):
+        #        print MODULENAME,' populateLookupTable()'
+        colorMap = Configuration.getSetting("TypeColorMap")
+        #        print MODULENAME,' populateLookupTable():  len(colorMap)=',len(colorMap)
+        self.celltypeLUT.SetNumberOfTableValues(len(colorMap))
+        self.celltypeLUT.SetNumberOfColors(len(colorMap))
+        #        lutGlyph.SetTableValue(5, 1,0,0, 1.0)     # SetTableValue (vtkIdType indx, double r, double g, double b, double a=1.0)
+        #        lutGlyph.SetTableValue(8, 0,1,1, 1.0)     # SetTableValue (vtkIdType indx, double r, double g, double b, double a=1.0)
+        for key in colorMap.keys():
+            r = colorMap[key].red()
+            g = colorMap[key].green()
+            b = colorMap[key].blue()
+            self.celltypeLUT.SetTableValue(key, self.toVTKColor(r), self.toVTKColor(g), self.toVTKColor(b), 1.0)
+        #            print "       type=",key," red=",r," green=",g," blue=",b
+        #            print "       type=",key," (VTK) red=",self.toVTKColor(r)," green=",self.toVTKColor(g)," blue=",self.toVTKColor(b)
+        # self.qvtkWidget.repaint()
+        self.celltypeLUT.Build()
+        self.celltypeLUTMax = self.celltypeLUT.GetNumberOfTableValues() - 1  # cell types = [0,max]
+        self.celltypeLUT.SetTableRange(0, self.celltypeLUTMax)
+
+    #        print "       celltypeLUTMax=",self.celltypeLUTMax
 
     def init_lattice_type(self):
         """
@@ -287,51 +371,6 @@ class MVCDrawModelBase:
 
         return ldim
 
-    def setParams(self):
-        # You can use either Build() method (256 color by default) or
-        # SetNumberOfTableValues() to allocate much more colors!
-        self.celltypeLUT = vtk.vtkLookupTable()
-        # You need to explicitly call Build() when constructing the LUT by hand     
-        self.celltypeLUT.Build()
-        self.populateLookupTable()
-        # self.dim = [100, 100, 1] # Default values
-
-        # for FPP links (and offset also for cell glyphs)
-        self.eps = 1.e-4  # not sure how small this should be (checking to see if cell volume -> 0)
-        self.stubSize = 3.0  # dangling line stub size for lines that wraparound periodic BCs
-        #        self.offset = 1.0    # account for fact that COM of cell is offset from visualized lattice
-        #        self.offset = 0.0    # account for fact that COM of cell is offset from visualized lattice
-
-        # scaling factors to map square lattice to hex lattice (rf. CC3D Manual)
-        self.xScaleHex = 1.0
-        self.yScaleHex = 0.866
-        self.zScaleHex = 0.816
-
-        self.lutBlueRed = vtk.vtkLookupTable()
-        self.lutBlueRed.SetHueRange(0.667, 0.0)
-        self.lutBlueRed.Build()
-
-    def populateLookupTable(self):
-        #        print MODULENAME,' populateLookupTable()'
-        colorMap = Configuration.getSetting("TypeColorMap")
-        #        print MODULENAME,' populateLookupTable():  len(colorMap)=',len(colorMap)
-        self.celltypeLUT.SetNumberOfTableValues(len(colorMap))
-        self.celltypeLUT.SetNumberOfColors(len(colorMap))
-        #        lutGlyph.SetTableValue(5, 1,0,0, 1.0)     # SetTableValue (vtkIdType indx, double r, double g, double b, double a=1.0)
-        #        lutGlyph.SetTableValue(8, 0,1,1, 1.0)     # SetTableValue (vtkIdType indx, double r, double g, double b, double a=1.0)
-        for key in colorMap.keys():
-            r = colorMap[key].red()
-            g = colorMap[key].green()
-            b = colorMap[key].blue()
-            self.celltypeLUT.SetTableValue(key, self.toVTKColor(r), self.toVTKColor(g), self.toVTKColor(b), 1.0)
-        #            print "       type=",key," red=",r," green=",g," blue=",b
-        #            print "       type=",key," (VTK) red=",self.toVTKColor(r)," green=",self.toVTKColor(g)," blue=",self.toVTKColor(b)
-        # self.qvtkWidget.repaint()
-        self.celltypeLUT.Build()
-        self.celltypeLUTMax = self.celltypeLUT.GetNumberOfTableValues() - 1  # cell types = [0,max]
-        self.celltypeLUT.SetTableRange(0, self.celltypeLUTMax)
-
-    #        print "       celltypeLUTMax=",self.celltypeLUTMax
 
     # self.graphicsFrameWidget.Render()
 
@@ -415,3 +454,7 @@ class MVCDrawModelBase:
 
     def setLatticeType(self, latticeType):
         self.latticeType = latticeType
+
+    def configs_changed(self):
+
+        self.populate_cell_type_lookup_table()

@@ -16,6 +16,8 @@
 # todo - eliminate references to Configuration in the GraphicsOffScreen - especially in the Model code
 # todo - add fcn get_metadata(scene_metadata, label, field) - returns scene_metadata entry of value from config
 # todo - add fpp link color in the configuration dialog - fix metadata in Graphics FrameWidget then
+# todo - implement proper handling of changed configs - right now changing cell colors is not reflected in the scene
+
 import string
 import Configuration
 import vtk

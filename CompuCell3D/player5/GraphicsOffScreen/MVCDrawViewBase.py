@@ -317,10 +317,11 @@ class MVCDrawViewBase:
     def setParams(self):
         # You can use either Build() method (256 color by default) or
         # SetNumberOfTableValues() to allocate much more colors!
-        self.lut = vtk.vtkLookupTable()
-        # You need to explicitly call Build() when constructing the LUT by hand     
-        self.lut.Build()
-        self.populateLookupTable()
+        # self.lut = vtk.vtkLookupTable()
+        # # You need to explicitly call Build() when constructing the LUT by hand
+        # self.lut.Build()
+        # self.populateLookupTable()
+        pass
 
 
     def populateLookupTable(self):  # rwh: why is this method in both View & Model?

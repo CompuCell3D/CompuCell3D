@@ -846,9 +846,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         else:
             self.hex_cells_mapper.SetInput(hex_cells_poly_data)
 
+        cell_type_lut = self.get_type_lookup_table()
+        cell_type_lut_max = cell_type_lut.GetNumberOfTableValues() - 1
+
         self.hex_cells_mapper.ScalarVisibilityOn()
-        self.hex_cells_mapper.SetLookupTable(self.celltypeLUT)
-        self.hex_cells_mapper.SetScalarRange(0, self.celltypeLUTMax)
+        self.hex_cells_mapper.SetLookupTable(cell_type_lut)
+        self.hex_cells_mapper.SetScalarRange(0, cell_type_lut_max)
 
         cells_actor = actors_dict['cellsActor']
         cells_actor.SetMapper(self.hex_cells_mapper)
@@ -900,8 +903,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.cellsMapper.SetInputConnection(cells_plane.GetOutputPort())
         self.cellsMapper.ScalarVisibilityOn()
 
-        self.cellsMapper.SetLookupTable(self.celltypeLUT)  # def'd in parent class
-        self.cellsMapper.SetScalarRange(0, self.celltypeLUTMax)
+        cell_type_lut = self.get_type_lookup_table()
+        cell_type_lut_max = cell_type_lut.GetNumberOfTableValues() - 1
+
+
+        self.cellsMapper.SetLookupTable(cell_type_lut)  # def'd in parent class
+        self.cellsMapper.SetScalarRange(0, cell_type_lut_max)
 
         cells_actor = actors_dict['cellsActor']
         cells_actor.SetMapper(self.cellsMapper)

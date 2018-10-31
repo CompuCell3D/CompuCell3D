@@ -141,12 +141,15 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
             actors_dict = actor_specs.actors_dict
 
+            cell_type_lut = self.get_type_lookup_table()
+            cell_type_lut_max = cell_type_lut.GetNumberOfTableValues() - 1
+
             if actor_number in actors_dict.keys():
                 actor = actors_dict[actor_number]
                 actor.SetMapper(mapperList[actorCounter])
 
                 actor.GetProperty().SetDiffuseColor(
-                    self.celltypeLUT.GetTableValue(self.used_cell_types_list[actorCounter])[0:3])
+                    cell_type_lut.GetTableValue(self.used_cell_types_list[actorCounter])[0:3])
 
                 # actor.GetProperty().SetDiffuseColor(
                 #     # self.celltypeLUT.GetTableValue(self.usedCellTypesList[actorCounter])[0:3])
