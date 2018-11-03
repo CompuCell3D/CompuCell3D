@@ -3590,7 +3590,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     def __configsChanged(self):
         """
-        Private slot to handle a change of the preferences. Called after we hit Ok buttin on configuration dialog
+        Private slot to handle a change of the preferences. Called after we hit Ok builtin on configuration dialog
         :return:None
         """
         self.configsChanged.emit()

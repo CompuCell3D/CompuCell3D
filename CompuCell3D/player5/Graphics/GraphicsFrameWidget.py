@@ -57,7 +57,12 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
         self.gd = GenericDrawer()
         self.gd.set_interactive_camera_flag(True)
+
+        # placeholder for current screenshot data
         self.current_screenshot_data = None
+
+        # placeholder for currently used basic simulation data
+        self.current_bsd = None
 
         self.camera2D = self.gd.get_active_camera()
         self.camera3D = self.gd.get_renderer().MakeCamera()
@@ -278,6 +283,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         :param basic_simulation_data: {instance of BasicSimulationData}
         :return: None
         """
+        self.current_bsd = basic_simulation_data
 
         if self.current_screenshot_data is None:
             self.initialize_scene()
@@ -309,6 +315,22 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
         :return:
         """
+        # print MODULENAME, '  >>>>>>>>>>   configsChange()    <<<<<<<<<<<<<<<<<<'
+        # self.populateLookupTable()
+        # self.setBorderColor()
+        # # Doesn't work, gives error:
+        # # vtkScalarBarActor (0x8854218): Need a mapper to render a scalar bar
+        # # self.showLegend(Configuration.getSetting("LegendEnable"))
+        #
+        # #        self.showContours(Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName))
+        # self.showContours(True)
+        # self.parentWidget.requestRedraw()
+
+        # here we are updating models based on the new set of configs
+        self.gd.configsChanged()
+        if self.current_bsd is not None:
+            self.draw(basic_simulation_data=self.current_bsd)
+
         print 'configsChanged'
 
     def Render(self):

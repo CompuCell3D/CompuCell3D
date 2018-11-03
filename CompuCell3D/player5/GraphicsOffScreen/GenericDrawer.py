@@ -73,6 +73,26 @@ class GenericDrawer():
         self.screenshotWindowFlag = False
         self.lattice_type = Configuration.LATTICE_TYPES['Square']
 
+        # # placeholder for recently used basic simulation data
+        # self.recent_bsd = None
+        #
+        # # recent screenshot description data
+        # self.recent_screenshot_data = None
+
+
+    def configsChanged(self):
+        """
+        Function called by the GraphicsFrameWidget after configuration dialog has been approved
+        We update information from configuration dialog here
+        :return: None
+        """
+        self.draw_model_2D.populate_cell_type_lookup_table()
+        self.draw_model_3D.populate_cell_type_lookup_table()
+        # if self.recent_screenshot_data is not None and self.recent_bsd is not None:
+        #     self.draw(screenshot_data=self.recent_screenshot_data,bsd=self.recent_bsd)
+
+
+
     def set_interactive_camera_flag(self,flag):
         """
         sets flag that allows resetting of camera parameters during each draw function. for
@@ -283,8 +303,12 @@ class GenericDrawer():
         else:
             return self.draw_model_3D, self.draw_view_3D
 
-    def draw(self, screenshot_data, bsd, screenshot_name):
+    def draw(self, screenshot_data, bsd, screenshot_name=None):
         # todo 5 - fix this so that it is called only once per drawing series
+
+        # self.recent_screenshot_data = screenshot_data
+        # self.recent_bsd = bsd
+
         cell_field_data_dict = self.extract_cell_field_data()
         bsd.cell_types_used = deepcopy(cell_field_data_dict['used_cell_types'])
 
