@@ -295,7 +295,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             print MODULENAME, 'updateActiveWindowVisFlags():  Could not find any open windows. Ignoring request'
             return
 
-        self.graphicsWindowVisDict[dictKey] = (self.cellsAct.isChecked(), self.borderAct.isChecked(), \
+        self.graphicsWindowVisDict[dictKey] = (self.cellsAct.isChecked(), self.borderAct.isChecked(),
                                                self.clusterBorderAct.isChecked(), self.cellGlyphsAct.isChecked(),
                                                self.FPPLinksAct.isChecked())
 
@@ -1405,21 +1405,37 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             return
 
+    def read_screenshot_description_file(self,scr_file):
+        """
+        Reads screenshot_description file
+        :param scr_file: {str} scr file
+        :return: None
+        """
+        if self.__screenshotDescriptionFileName != "":
+            try:
+                self.screenshotManager.readScreenshotDescriptionFile()
+            except:
+                self.screenshotManager.screenshotDataDict = {}
+                self.popup_message(
+                    title='Error Parsing Screenshot Description',
+                    msg='Could not parse'
+                        'screenshot description file {}. Try '
+                        'removing old screenshot file and generate new one. No screenshots will be taken'.format(self.__screenshotDescriptionFileName))
+
     def initializeSimulationViewWidgetCMLResultReplay(self):
         '''
         Initializes PLayer during VTK replay run mode
         :return:None
         '''
-        # self.pifFromVTKAct.setEnabled(True)
+
         self.fieldDim = self.simulation.fieldDim
         self.mysim = self.simulation.sim
 
         # currentl;y not supported - likely race conditions/synchronization because it works
         # when slowly stepping through the code but crashes during actual run
         # opening screenshot description file
-        # self.open_implicit_screenshot_descr_file()
 
-        #        print MODULENAME,"--------- initializeSimulationViewWidgetCMLResultReplay()"
+
 
         latticeTypeStr = self.simulation.latticeType
         if latticeTypeStr in Configuration.LATTICE_TYPES.keys():
@@ -1429,40 +1445,35 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         simulationDataIntAddr = self.extractAddressIntFromVtkObject(self.simulation.simulationData)
         self.fieldExtractor.setSimulationData(simulationDataIntAddr)
-        self.simulation.newFileBeingLoaded = False  # this flag is used to prevent calling  draw function when new data is read from hard drive
+
+        # this flag is used to prevent calling  draw function
+        # when new data is read from hard drive
         # at this moment new data has been read and is ready to be used
+        self.simulation.newFileBeingLoaded = False
 
 
-        # this fcn will draw initial lattice configuration so data has to be available by then and appropriate pointers set - see line above
+        # this fcn will draw initial lattice configuration so data has to be available by then
+        # and appropriate pointers set - see line above
         self.prepareSimulationView()
 
         self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
         self.screenshotNumberOfDigits = len(str(self.basicSimulationData.numberOfSteps))
 
-        # print "self.screenshotManager",self.screenshotManager
-        # print "self.__fileName=",self.__fileName
+        self.read_screenshot_description_file(scr_file=self.__screenshotDescriptionFileName)
 
-        if self.__screenshotDescriptionFileName != "":
-            self.screenshotManager.readScreenshotDescriptionFile(self.__screenshotDescriptionFileName)
 
         if self.simulationIsStepping:
-            # print "BEFORE STEPPING PAUSE"
             self.__pauseSim()
-
-
-            # after this call I can access self.root_element of the XML File
-            # self.loadCustomPlayerSettings(self.root_element)
-            # creating simulation directory depending on whether user requests simulation output or not
-        #        import CompuCellSetup
 
         if self.__imageOutput:
             if self.customScreenshotDirectoryName == "":
-                #                import CompuCellSetup
+
                 outputDir = str(Configuration.getSetting("OutputLocation"))
-                #                print MODULENAME, 'initializeSimulationViewWidgetCMLResultReplay(): outputDir, self.__outputDirectory= ',outputDir, self.__outputDirectory
-                (self.screenshotDirectoryName, self.baseScreenshotName) = CompuCellSetup.makeSimDir(self.__sim_file_name,
-                                                                                                    outputDir)
-                #                print MODULENAME, 'initializeSimulationViewWidgetCMLResultReplay(): self.screenshotDirectoryName= ',self.screenshotDirectoryName
+                (self.screenshotDirectoryName, self.baseScreenshotName) = CompuCellSetup.makeSimDir(
+                    self.__sim_file_name,
+                    outputDir
+                    )
+
                 CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
 
             else:
@@ -1470,8 +1481,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
                     self.customScreenshotDirectoryName, self.__sim_file_name)
                 CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
                 if self.screenshotDirectoryName == "":
-                    self.__imageOutput = False  # do not output screenshots when custom directory was not created or already exists
-                    #                print MODULENAME, 'initializeSimulationViewWidgetCMLResultReplay(): self.screenshotDirectoryName= ',self.screenshotDirectoryName
+                    # do not output screenshots when custom directory was not created or already exists
+                    self.__imageOutput = False
+
 
         self.cmlReplayManager.keepGoing()
         self.cmlReplayManager.set_stay_in_current_step(True)
@@ -1600,18 +1612,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
 
-        if self.__screenshotDescriptionFileName != "":
-            try:
-                self.screenshotManager.readScreenshotDescriptionFile(self.__screenshotDescriptionFileName)
-            except:
-                self.screenshotManager.screenshotDataDict = {}
-                self.popup_message(
-                    title='Error Parsing Screenshot Description',
-                    msg='Could not parse'
-                        'screenshot description file {}. Try '
-                        'removing old screenshot file and generate new one. No screenshots will be taken'.format(self.__screenshotDescriptionFileName))
-
-                print('Error in parsing screenshot description file {}'.format(self.__screenshotDescriptionFileName))
+        self.read_screenshot_description_file(scr_file=self.__screenshotDescriptionFileName)
 
         if self.simulationIsStepping:
             # print "BEFORE STEPPING PAUSE REGULAR SIMULATION"
@@ -1811,7 +1812,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 print 'self.screenshotManager=', self.screenshotManager
 
             if self.screenshotManager:
-                self.screenshotManager.outputScreenshots(self.screenshotDirectoryName, self.__step)
+                try:
+                    self.screenshotManager.outputScreenshots(self.screenshotDirectoryName, self.__step)
+                except KeyError:
+
+                    self.screenshotManager.screenshotDataDict = {}
+                    self.popup_message(
+                        title='Error Processing Screnenshots',
+                        msg='Could not output screenshots. It is likely that screenshot description file was generated '
+                            'using incompatible code. You may want to remove "screenshot_data" directory from your project '
+                            'and use camera button to generate new screenshot file '                            
+                            ' No screenshots will be taken'.format(
+                            self.__screenshotDescriptionFileName))
+
                 if Configuration.getSetting('DebugOutputPlayer'):
                     print 'self.screenshotDirectoryName=', self.screenshotDirectoryName
                     # sys.exit()

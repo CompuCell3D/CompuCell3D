@@ -243,7 +243,35 @@ class ScreenshotManagerCore(object):
             print('Could not read screenshot description file {}'.format(filename))
             return
 
+        version = root_elem['Version']
         scr_data_container = root_elem['ScreenshotData']
+
+        # will replace it with a dict, for now leaving it as an if statement
+        if version=='3.7.9':
+            self.readScreenshotDescriptionFile_JSON_379(scr_data_container)
+        else:
+            raise RuntimeError('Unknown version of screenshot description: {}'.format(version))
+
+
+
+
+    def readScreenshotDescriptionFile_JSON_379(self,scr_data_container):
+        """
+        parses screenshot description JSON file and stores instances ScreenshotData in appropriate
+        container
+        :param scr_data_container: {dict} ScreenShotData json dict
+        :return: None
+        """
+
+        # with open(filename,'r') as f_in:
+        #     root_elem = json.load(f_in)
+        #
+        # if root_elem is None:
+        #     print('Could not read screenshot description file {}'.format(filename))
+        #     return
+        #
+        #
+        # scr_data_container = root_elem['ScreenshotData']
 
         for scr_name, scr_data_elem in scr_data_container.items():
             scr_data = ScreenshotData()
