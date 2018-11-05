@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'cc3D_prefs.ui'
 #
-# Created by: PyQt5 UI code generator 5.6
+# Created by: PyQt5 UI code generator 5.7
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_CC3DPrefs(object):
     def setupUi(self, CC3DPrefs):
         CC3DPrefs.setObjectName("CC3DPrefs")
-        CC3DPrefs.resize(498, 461)
+        CC3DPrefs.resize(555, 478)
         self.verticalLayout_18 = QtWidgets.QVBoxLayout(CC3DPrefs)
         self.verticalLayout_18.setObjectName("verticalLayout_18")
         self.tabWidget = QtWidgets.QTabWidget(CC3DPrefs)
@@ -253,11 +253,7 @@ class Ui_CC3DPrefs(object):
         self.verticalLayout_17.setObjectName("verticalLayout_17")
         self.groupBox_11 = QtWidgets.QGroupBox(self.groupBox_13)
         self.groupBox_11.setObjectName("groupBox_11")
-        self.verticalLayout_6 = QtWidgets.QVBoxLayout(self.groupBox_11)
-        self.verticalLayout_6.setObjectName("verticalLayout_6")
-        self.verticalLayout_5 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_5.setObjectName("verticalLayout_5")
-        self.formLayout = QtWidgets.QFormLayout()
+        self.formLayout = QtWidgets.QFormLayout(self.groupBox_11)
         self.formLayout.setObjectName("formLayout")
         self.borderColorLabel = QtWidgets.QLabel(self.groupBox_11)
         self.borderColorLabel.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
@@ -300,12 +296,21 @@ class Ui_CC3DPrefs(object):
         self.windowColorButton.setText("")
         self.windowColorButton.setObjectName("windowColorButton")
         self.formLayout.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.windowColorButton)
-        self.verticalLayout_5.addLayout(self.formLayout)
+        self.windowColorLabel_4 = QtWidgets.QLabel(self.groupBox_11)
+        self.windowColorLabel_4.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.windowColorLabel_4.setObjectName("windowColorLabel_4")
+        self.formLayout.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.windowColorLabel_4)
+        self.fppColorButton = QtWidgets.QToolButton(self.groupBox_11)
+        self.fppColorButton.setEnabled(True)
+        self.fppColorButton.setMinimumSize(QtCore.QSize(26, 26))
+        self.fppColorButton.setMaximumSize(QtCore.QSize(26, 26))
+        self.fppColorButton.setText("")
+        self.fppColorButton.setObjectName("fppColorButton")
+        self.formLayout.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.fppColorButton)
         self.windowColorSameAsMediumCB = QtWidgets.QCheckBox(self.groupBox_11)
         self.windowColorSameAsMediumCB.setChecked(True)
         self.windowColorSameAsMediumCB.setObjectName("windowColorSameAsMediumCB")
-        self.verticalLayout_5.addWidget(self.windowColorSameAsMediumCB)
-        self.verticalLayout_6.addLayout(self.verticalLayout_5)
+        self.formLayout.setWidget(5, QtWidgets.QFormLayout.SpanningRole, self.windowColorSameAsMediumCB)
         self.verticalLayout_17.addWidget(self.groupBox_11)
         self.groupBox_4 = QtWidgets.QGroupBox(self.groupBox_13)
         self.groupBox_4.setObjectName("groupBox_4")
@@ -712,7 +717,7 @@ class Ui_CC3DPrefs(object):
         self.verticalLayout_18.addWidget(self.buttonBox)
 
         self.retranslateUi(CC3DPrefs)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         self.buttonBox.accepted.connect(CC3DPrefs.accept)
         self.buttonBox.rejected.connect(CC3DPrefs.reject)
         self.contoursShowCB.toggled['bool'].connect(self.isovalList.setEnabled)
@@ -752,6 +757,7 @@ class Ui_CC3DPrefs(object):
         self.clusterBorderColorLabel.setText(_translate("CC3DPrefs", "Cluster border color"))
         self.contourColorLabel.setText(_translate("CC3DPrefs", "Contour color"))
         self.windowColorLabel.setText(_translate("CC3DPrefs", "Window color"))
+        self.windowColorLabel_4.setText(_translate("CC3DPrefs", "FPP Link Color"))
         self.windowColorSameAsMediumCB.setText(_translate("CC3DPrefs", "Window color same as Medium"))
         self.groupBox_4.setTitle(_translate("CC3DPrefs", "Cell Glyphs"))
         self.cellGlyphScaleByVolumeCheckBox.setText(_translate("CC3DPrefs", "scale by volume"))

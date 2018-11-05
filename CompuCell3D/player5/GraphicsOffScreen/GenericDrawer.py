@@ -3,20 +3,18 @@
 # todo - get max cell typ from the simulation
 # todo  - fix this so that it is called only once per drawing series
 # todo cell_field_data_dict = self.extract_cell_field_data()
-# todo - check what happens when we used non consecutive cell types -  seems to be OK
 
 
-# todo - check api for show, prepare init functions
 # todo - fix color of fpp links
 # todo - find better way to determine if fpp plugin is properly loaded
 # todo - any references to simpletabview should be via weakref
 
 # todo - add action to remove screenshot file
 # todo - mcs and min max concentrations are not displayed - fix it
-# todo - eliminate references to Configuration in the GraphicsOffScreen - especially in the Model code
 # todo - add fcn get_metadata(scene_metadata, label, field) - returns scene_metadata entry of value from config
 # todo - add fpp link color in the configuration dialog - fix metadata in Graphics FrameWidget then
-# todo - implement proper handling of changed configs - right now changing cell colors is not reflected in the scene
+# todo -  add versioned read_screenshot_json fcn and same for write  - to make the choice pf parser seamless to the user
+
 
 import string
 import Configuration

@@ -817,6 +817,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
             self.FPPLinksMapper.SetInput(FPPLinksPD)
 
         fpp_links_actor.SetMapper(self.FPPLinksMapper)
-        fpp_links_color = to_vtk_rgb(scene_metadata['FppLinksColor'])
+        fpp_links_color = to_vtk_rgb(scene_metadata['FPPLinksColor'])
         # coloring borders
         fpp_links_actor.GetProperty().SetColor(*fpp_links_color)

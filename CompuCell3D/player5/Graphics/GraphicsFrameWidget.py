@@ -133,7 +133,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         metadata_dict['ContourColor'] = qcolor_to_rgba(Configuration.getSetting('ContourColor'))
         metadata_dict['WindowColor'] = qcolor_to_rgba(Configuration.getSetting('WindowColor'))
         # todo - fix color of fpp links
-        metadata_dict['FppLinksColor'] = qcolor_to_rgba(Configuration.getSetting('ContourColor'))
+        metadata_dict['FPPLinksColor'] = qcolor_to_rgba(Configuration.getSetting('FPPLinksColor'))
 
         metadata_dict['ShowHorizontalAxesLabels'] = Configuration.getSetting('ShowHorizontalAxesLabels')
         metadata_dict['ShowVerticalAxesLabels'] = Configuration.getSetting('ShowVerticalAxesLabels')
