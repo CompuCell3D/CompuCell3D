@@ -738,6 +738,29 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.resetCamera()
         self.copy_camera(src=self.camera2D, dst=self.camera3D)
 
+    def largestDim(self, dim):
+        ldim = dim[0]
+        for i in range(len(dim)):
+            if dim[i] > ldim:
+                ldim = dim[i]
+
+        return ldim
+
+    def reset_all_cameras(self, bsd):
+        field_dim = [bsd.fieldDim.x, bsd.fieldDim.y, bsd.fieldDim.z]
+
+        distance = self.largestDim(field_dim) * 2  # 200 #273.205 #
+
+        # FIXME: Hardcoded numbers
+        self.camera2D.SetPosition(field_dim[0] / 2, field_dim[1] / 2, distance)
+        self.camera2D.SetFocalPoint(field_dim[0] / 2, field_dim[1] / 2, 0)
+        self.camera2D.SetClippingRange(distance - 1, distance + 1)
+        self.gd.get_renderer().ResetCameraClippingRange()
+
+        # self.resetCamera()
+        self.copy_camera(src=self.camera2D, dst=self.camera3D)
+
+
     def zoomIn(self):
         '''
         Zooms in view

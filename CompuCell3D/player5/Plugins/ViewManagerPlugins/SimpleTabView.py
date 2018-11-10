@@ -2237,7 +2237,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
             graphicsWidget = win.widget()
-            graphicsWidget.resetAllCameras()
+            # graphicsWidget.resetAllCameras()
+            graphicsWidget.reset_all_cameras(self.basicSimulationData)
 
         # self.__drawField()
 
@@ -2267,7 +2268,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         if propertiesUpdated:
             # __drawFieldFcn() # this call is actually unnecessary
-            self.updateVisualization()  # for some reason cameras have to be initialized after drawing resized lattice and draw function has to be repeated
+            # for some reason cameras have to be initialized after drawing resized lattice and draw function has to be repeated
+            self.updateVisualization()
 
         __drawFieldFcn()
 

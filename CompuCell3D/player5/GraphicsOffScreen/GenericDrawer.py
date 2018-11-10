@@ -5,7 +5,6 @@
 # todo cell_field_data_dict = self.extract_cell_field_data()
 
 
-# todo - fix color of fpp links
 # todo - find better way to determine if fpp plugin is properly loaded
 # todo - any references to simpletabview should be via weakref
 
@@ -801,4 +800,4 @@ class GenericDrawer():
         Resets camera to default settings
         :return:None
         '''
-        self.qvtkWidget.resetCamera()
+        pass
