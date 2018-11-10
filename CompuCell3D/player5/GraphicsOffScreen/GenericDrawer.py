@@ -13,7 +13,7 @@
 # todo - add fcn get_metadata(scene_metadata, label, field) - returns scene_metadata entry of value from config
 # todo - add fpp link color in the configuration dialog - fix metadata in Graphics FrameWidget then
 # todo -  add versioned read_screenshot_json fcn and same for write  - to make the choice pf parser seamless to the user
-
+# todo - implement bad screenshot file handler in the mainCML in CompuCell3D setup
 
 import string
 import Configuration
