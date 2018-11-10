@@ -196,8 +196,10 @@ class GenericDrawer():
             return
 
         model, view = self.get_model_view(drawing_params=drawing_params)
-
-        max_cell_type_used = max(drawing_params.bsd.cell_types_used)
+        try:
+            max_cell_type_used = max(drawing_params.bsd.cell_types_used)
+        except ValueError:
+            max_cell_type_used = 0
 
         actor_specs = ActorSpecs()
         actor_specs.actor_label_list = ['cellsActor']
