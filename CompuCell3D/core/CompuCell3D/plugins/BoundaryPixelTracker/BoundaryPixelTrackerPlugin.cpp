@@ -145,7 +145,6 @@ void BoundaryPixelTrackerPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 			maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
 		}
 
-		cerr << "BPT: neighborOrder=" << neighborOrder << "maxNeighborIndex " << maxNeighborIndex << endl;
 
 
 		std::set<int>  extraBoundariesNeighborOrderSet;
@@ -159,7 +158,7 @@ void BoundaryPixelTrackerPlugin::update(CC3DXMLElement *_xmlData, bool _fullInit
 		extraBoundariesNeighborOrder.assign(extraBoundariesNeighborOrderSet.begin(), extraBoundariesNeighborOrderSet.end());
 		extraBoundariesMaxNeighborIndex.assign(extraBoundariesNeighborOrder.size(), 0); //allocating memory in the extraBoundariesMaxNeighborIndex vector
 
-		cerr << "extraBoundariesNeighborOrder.size()=" << extraBoundariesNeighborOrder.size() << endl;
+		
 		for (unsigned int i = 0; i < extraBoundariesNeighborOrder.size(); ++i) {
 			extraBoundariesMaxNeighborIndex[i] = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(extraBoundariesNeighborOrder[i]);
 		}
@@ -187,15 +186,8 @@ void BoundaryPixelTrackerPlugin::updateBoundaryPixels(const Point3D &pt, CellG *
 	CellG * nCell;
 	CellG * nnCell;
 
-	//for (unsigned int i = 0 ; i <  extraBoundariesMaxNeighborIndex.size() ; ++i){
-	//    cerr<<"i="<<i<<" extraBoundariesMaxNeighborIndex[i]="<<extraBoundariesMaxNeighborIndex[i]<<endl;
-	//}
-
-
 
 	if (newCell) {
-		//cerr << "indexOfExtraBoundary=" << indexOfExtraBoundary << endl;
-		//cerr << "newCell.volume=" << newCell->volume << endl;
 		std::set<BoundaryPixelTrackerData > * pixelSetPtr = 0;
 		int maxNI = -1; //maxNI stands for maxNeighborIndex
 
@@ -211,11 +203,8 @@ void BoundaryPixelTrackerPlugin::updateBoundaryPixels(const Point3D &pt, CellG *
 			maxNI = maxNeighborIndex;
 		}
 
-		//cerr << "newCell maxNI=" << maxNI << " index of extra boundary " << indexOfExtraBoundary << endl;
-		std::set<BoundaryPixelTrackerData > & pixelSetRef = *pixelSetPtr;
-		//cerr << "pixelSetPtr=" << pixelSetPtr << endl;
 
-		//std::set<BoundaryPixelTrackerData > & pixelSetRef=boundaryPixelTrackerAccessor.get(newCell->extraAttribPtr)->pixelSet;
+		std::set<BoundaryPixelTrackerData > & pixelSetRef = *pixelSetPtr;
 
 		bool ptInsertedAsBoundary = false;
 
@@ -235,9 +224,7 @@ void BoundaryPixelTrackerPlugin::updateBoundaryPixels(const Point3D &pt, CellG *
 				if (!ptInsertedAsBoundary) {
 
 					pixelSetRef.insert(BoundaryPixelTrackerData(pt)); // when we determine that new pixel touches cell different than newCell only then we will insert it as a boundary pixel
-					if (pt.x == 36 && pt.y == 35 && indexOfExtraBoundary >= 0) {
-						cerr << "adding_new " << pt << endl;
-					}
+
 					ptInsertedAsBoundary = true;
 				}
 				continue; //we visit only neighbors of pt that belong to newCell
@@ -257,60 +244,23 @@ void BoundaryPixelTrackerPlugin::updateBoundaryPixels(const Point3D &pt, CellG *
 					break;
 				}
 			}
-			//cerr << "check keepNeighborInBoundary=" << keepNeighborInBoundary << endl;
+
 			if (!keepNeighborInBoundary) {
 
 				std::set<BoundaryPixelTrackerData >::iterator sitr = pixelSetRef.find(BoundaryPixelTrackerData(neighbor.pt));
 
-
-				if (sitr == pixelSetRef.end()) {
-					cerr << "sitr!=pixelSetRef.end()=" << (sitr != pixelSetRef.end()) << endl;
-					cerr << "oldCell=" << oldCell << endl;
-					cerr << "&(boundaryPixelTrackerAccessor.get(newCell->extraAttribPtr)->pixelSetMap[extraBoundariesNeighborOrder[indexOfExtraBoundary]])=" << &(boundaryPixelTrackerAccessor.get(newCell->extraAttribPtr)->pixelSetMap[extraBoundariesNeighborOrder[indexOfExtraBoundary]]) << endl;
-					cerr << "&boundaryPixelTrackerAccessor.get(newCell->extraAttribPtr)->pixelSet=" << &boundaryPixelTrackerAccessor.get(newCell->extraAttribPtr)->pixelSet << endl;
-					cerr << "pixelSetPtr=" << pixelSetPtr << endl;
-
-					cerr << "pt=" << pt << endl;
-					cerr << "neighbor.pt=" << neighbor.pt << endl;
-					cerr << "neighbor_pt_cell = " << fieldG->get(neighbor.pt) << " type="<<(int)fieldG->get(neighbor.pt)->type<<endl;
-
-					bool in_the_boundary = false;
-					cerr << "will check up to maxNI=" << maxNI << endl;
-					for (unsigned int nnIdx = 0; nnIdx <= maxNI; ++nnIdx) {
-						Neighbor n = boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(neighbor.pt), nnIdx);
-						cerr << "n.pt=" << n.pt << endl;
-						nCell = fieldG->get(n.pt);
-						cerr << "nCell=" << nCell << " nCell->type=" << (int)nCell->type << endl;
-						if (nCell != newCell) {
-							in_the_boundary = true;
-						}
-					}
-					cerr << "in_the_boundary=" << in_the_boundary << endl;
-					
-					cerr << "newCell maxNI=" << maxNI << " index of extra boundary " << indexOfExtraBoundary << endl;
-					cerr << "pt=" << pt << endl;
-					cerr << "(int)newCell->type=" << (int)newCell->type << endl;
-				}
-
 				ASSERT_OR_THROW("Could not find point:" + neighbor.pt + " in the boundary of cell id: " + BasicString(newCell->id) + " type: " + BasicString((int)newCell->type),
 					sitr != pixelSetRef.end());
 
-				if (sitr->pixel.x == 36 && sitr->pixel.y == 35 && indexOfExtraBoundary >= 0) {
-					cerr << "adding_rem_new sitr->pixel " << sitr->pixel << endl;
-				}
 				pixelSetRef.erase(sitr);
 			}
 
 		}
-		//cerr << "finished newCell branch" << endl;
+		
 	}
-	else {
+	
 
-
-	}
-
-	if (oldCell) {
-		//cerr << "oldCell.volume=" << oldCell->volume << endl;
+	if (oldCell) {		
 		std::set<BoundaryPixelTrackerData > * pixelSetPtr = 0;
 		int maxNI = -1; //maxNI stands for maxNeighborIndex
 
@@ -338,9 +288,7 @@ void BoundaryPixelTrackerPlugin::updateBoundaryPixels(const Point3D &pt, CellG *
 
 		if (sitr != pixelSetRef.end()) {//means that pt belongs to oldCell border
 			pixelSetRef.erase(sitr);
-			if (sitr->pixel.x == 36 && sitr->pixel.y == 35 && indexOfExtraBoundary >= 0) {
-				cerr << "adding_rem_old sitr->pixel " << sitr->pixel << endl;
-			}
+
 		}
 		//handling global boundary pixel set
 		//if(boundaryPixelSetPtr ){//always insert pt to the global set of boundary pixels
@@ -358,15 +306,13 @@ void BoundaryPixelTrackerPlugin::updateBoundaryPixels(const Point3D &pt, CellG *
 			nCell = fieldG->get(neighbor.pt);
 
 			if (nCell == oldCell) {
-				if (neighbor.pt.x == 36 && neighbor.pt.y == 35 && indexOfExtraBoundary >= 0) {
-					cerr << "adding_old " << neighbor.pt << endl;
-				}
+
 				pixelSetRef.insert(BoundaryPixelTrackerData(neighbor.pt));
 			}
 			
 
 		}
-		//cerr << "finished oldCell branch" << endl;
+
 	}
 
 }
