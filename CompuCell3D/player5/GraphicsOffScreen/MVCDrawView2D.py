@@ -5,7 +5,7 @@ import os
 import string
 from collections import OrderedDict
 from copy import deepcopy
-
+from GraphicsOffScreen.MetadataHandler import MetadataHandler
 from Messaging import dbgMsg, setDebugging
 # setDebugging(1)
 
@@ -125,15 +125,12 @@ class MVCDrawView2D(MVCDrawViewBase):
         :return: None
         """
         scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
+
         if show_flag:
             self.add_actor_to_renderer(actor_label='vector_field_actor', actor_obj=self.glyphsActor)
 
-            add_min_max_text = True
-            try:
-                add_min_max_text = scene_metadata['DisplayMinMaxInfo']
-            except KeyError:
-                pass
-            if add_min_max_text:
+            if mdata.get('DisplayMinMaxInfo', default=True):
                 self.add_actor_to_renderer(actor_label='min_max_text_actor', actor_obj=self.min_max_text_actor)
 
         else:
@@ -166,66 +163,20 @@ class MVCDrawView2D(MVCDrawViewBase):
         :return: None
         """
 
-        # create a text actor
-        # txt = vtk.vtkTextActor()
-        # txt = self.min_max_text_actor
-        # print 'txt = ', txt.GetInput()
-        # # txt.SetInput("Hello World 1!")
-        # txtprop = txt.GetTextProperty()
-        # txtprop.SetFontFamilyToArial()
-        # txtprop.SetFontSize(10)
-        # txtprop.SetColor(1, 1, 1)
-        # # txt.SetDisplayPosition(200, 200)
-        # txt.SetPosition(20, 20)
-        # # txt.SetPosition2(200, 200)
-        #
-        # # assign actor to the renderer
-        # self.ren.AddActor(txt)
-
-
-        #
-        # self.add_actor_to_renderer(actor_label='min_max_text_actor', actor_obj=self.min_max_text_actor)
-        #
-        # self.min_max_text_actor.GetPositionCoordinate().SetValue(0.01, 0.1)
-        # if not self.currentActors.has_key('min_max_text_actor'):
-        #     self.currentActors['min_max_text_actor'] = self.min_max_text_actor
-        #     self.ren.AddActor2D(self.min_max_text_actor)
-        #
-        # self.ren.AddActor(self.min_max_text_actor)
-        # return
         scene_metadata = drawing_params.screenshot_data.metadata
-        # return
+        mdata = MetadataHandler(mdata=scene_metadata)
+
         if show_flag:
             self.add_actor_to_renderer(actor_label='concentration_actor', actor_obj=self.conActor)
 
-            add_contour = False
-            try:
-                add_contour = scene_metadata['ContoursOn']
-            except KeyError:
-                pass
-
-            if add_contour:
+            if mdata.get('ContoursOn',default=False):
                 self.add_actor_to_renderer(actor_label='contour_actor', actor_obj=self.contourActor)
 
-
-
-            add_legend = False
-            try:
-                add_legend = scene_metadata['LegendEnable']
-            except KeyError:
-                pass
-
-            if add_legend:
+            if mdata.get('LegendEnable',default=False):
                 self.add_actor_to_renderer(actor_label='legend_actor', actor_obj=self.legendActor)
 
-            add_min_max_text = True
-            try:
-                add_min_max_text = scene_metadata['DisplayMinMaxInfo']
-            except KeyError:
-                pass
-            if add_min_max_text:
+            if mdata.get('DisplayMinMaxInfo',default=True):
                 self.add_actor_to_renderer(actor_label='min_max_text_actor', actor_obj=self.min_max_text_actor)
-
 
         else:
             self.remove_actor_from_renderer(actor_label='concentration_actor', actor_obj=self.conActor)
@@ -296,6 +247,7 @@ class MVCDrawView2D(MVCDrawViewBase):
         :return: None
         """
         scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
         if show_flag:
             self.add_actor_to_renderer(actor_label='cluster_border_actor', actor_obj=self.clusterBorderActor)
         else:
@@ -322,6 +274,7 @@ class MVCDrawView2D(MVCDrawViewBase):
         :return: None
         """
         scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
         if show_flag:
             self.add_actor_to_renderer(actor_label='fpp_links_actor', actor_obj=self.FPPLinksActor)
         else:

@@ -1,3 +1,4 @@
+import warnings
 def extract_address_int_from_vtk_object(field_extractor, vtkObj):
     '''
     Extracts memory address of vtk object
@@ -48,5 +49,6 @@ def cs_string_to_typed_list(cs_str,sep=",",type_conv_fcn=float):
         list_strings = cs_str.split(sep)
         return list(map(lambda x: type_conv_fcn(x),list_strings))
     except:
-        print 'Could not convert string {s} to a typed list'.format(s=cs_str)
+        warnings.warn('Could not convert string {s} to a typed list'.format(s=cs_str))
+        # print 'Could not convert string {s} to a typed list'.format(s=cs_str)
         return []

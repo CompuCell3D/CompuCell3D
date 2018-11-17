@@ -3,6 +3,7 @@ import Configuration
 import vtk
 from collections import OrderedDict
 from copy import deepcopy
+from GraphicsOffScreen.MetadataHandler import MetadataHandler
 
 MODULENAME='==== MVCDrawView3D.py:  '
 
@@ -139,24 +140,15 @@ class MVCDrawView3D(MVCDrawViewBase):
         """
 
         scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
+
         if show_flag:
             self.add_actor_to_renderer(actor_label='concentration_actor', actor_obj=self.conActor)
 
-            add_legend = False
-            try:
-                add_legend = scene_metadata['LegendEnable']
-            except KeyError:
-                pass
-
-            if add_legend:
+            if mdata.get('LegendEnable',default=False):
                 self.add_actor_to_renderer(actor_label='legend_actor', actor_obj=self.legendActor)
 
-            add_min_max_text = True
-            try:
-                add_min_max_text = scene_metadata['DisplayMinMaxInfo']
-            except KeyError:
-                pass
-            if add_min_max_text:
+            if mdata.get('DisplayMinMaxInfo',default=True):
                 self.add_actor_to_renderer(actor_label='min_max_text_actor', actor_obj=self.min_max_text_actor)
 
         else:
@@ -187,14 +179,12 @@ class MVCDrawView3D(MVCDrawViewBase):
         :return: None
         """
         scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
+
         if show_flag:
             self.add_actor_to_renderer(actor_label='vector_field_actor', actor_obj=self.glyphsActor)
-            add_min_max_text = True
-            try:
-                add_min_max_text = scene_metadata['DisplayMinMaxInfo']
-            except KeyError:
-                pass
-            if add_min_max_text:
+
+            if mdata.get('DisplayMinMaxInfo',default=True):
                 self.add_actor_to_renderer(actor_label='min_max_text_actor', actor_obj=self.min_max_text_actor)
 
         else:
@@ -223,6 +213,7 @@ class MVCDrawView3D(MVCDrawViewBase):
         :return: None
         """
         scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
         if show_flag:
             self.add_actor_to_renderer(actor_label='fpp_links_actor', actor_obj=self.FPPLinksActor)
         else:
