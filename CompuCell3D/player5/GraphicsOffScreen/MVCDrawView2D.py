@@ -142,6 +142,7 @@ class MVCDrawView2D(MVCDrawViewBase):
         actor_specs_copy.actors_dict['concentration_actor'] = self.conActor
         actor_specs_copy.actors_dict['contour_actor'] = self.contourActor
         actor_specs_copy.actors_dict['legend_actor'] = self.legendActor
+        actor_specs_copy.actors_dict['min_max_text_actor'] = self.min_max_text_actor
 
         return actor_specs_copy
 
@@ -153,7 +154,36 @@ class MVCDrawView2D(MVCDrawViewBase):
         :param show_flag: {bool}
         :return: None
         """
+
+        # create a text actor
+        # txt = vtk.vtkTextActor()
+        # txt = self.min_max_text_actor
+        # print 'txt = ', txt.GetInput()
+        # # txt.SetInput("Hello World 1!")
+        # txtprop = txt.GetTextProperty()
+        # txtprop.SetFontFamilyToArial()
+        # txtprop.SetFontSize(10)
+        # txtprop.SetColor(1, 1, 1)
+        # # txt.SetDisplayPosition(200, 200)
+        # txt.SetPosition(20, 20)
+        # # txt.SetPosition2(200, 200)
+        #
+        # # assign actor to the renderer
+        # self.ren.AddActor(txt)
+
+
+        #
+        # self.add_actor_to_renderer(actor_label='min_max_text_actor', actor_obj=self.min_max_text_actor)
+        #
+        # self.min_max_text_actor.GetPositionCoordinate().SetValue(0.01, 0.1)
+        # if not self.currentActors.has_key('min_max_text_actor'):
+        #     self.currentActors['min_max_text_actor'] = self.min_max_text_actor
+        #     self.ren.AddActor2D(self.min_max_text_actor)
+        #
+        # self.ren.AddActor(self.min_max_text_actor)
+        # return
         scene_metadata = drawing_params.screenshot_data.metadata
+        # return
         if show_flag:
             self.add_actor_to_renderer(actor_label='concentration_actor', actor_obj=self.conActor)
 
@@ -166,6 +196,8 @@ class MVCDrawView2D(MVCDrawViewBase):
             if add_contour:
                 self.add_actor_to_renderer(actor_label='contour_actor', actor_obj=self.contourActor)
 
+
+
             add_legend = False
             try:
                 add_legend = scene_metadata['LegendEnable']
@@ -175,10 +207,21 @@ class MVCDrawView2D(MVCDrawViewBase):
             if add_legend:
                 self.add_actor_to_renderer(actor_label='legend_actor', actor_obj=self.legendActor)
 
+            add_min_max_text = True
+            try:
+                add_min_max_text = scene_metadata['DisplayMinMaxInfo']
+            except KeyError:
+                pass
+            if add_min_max_text:
+                self.add_actor_to_renderer(actor_label='min_max_text_actor', actor_obj=self.min_max_text_actor)
+
+
         else:
             self.remove_actor_from_renderer(actor_label='concentration_actor', actor_obj=self.conActor)
             self.remove_actor_from_renderer(actor_label='contour_actor', actor_obj=self.contourActor)
             self.remove_actor_from_renderer(actor_label='legend_actor', actor_obj=self.legendActor)
+            self.remove_actor_from_renderer(actor_label='min_max_text_actor', actor_obj=self.min_max_text_actor)
+
 
     def prepare_cell_field_actors(self,actor_specs, drawing_params=None):
         """

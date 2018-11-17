@@ -310,10 +310,10 @@ class MVCDrawModel3D(MVCDrawModelBase):
         if not fill_successful:
             return
 
-        range = con_array.GetRange()
-        min_con = range[0]
-        max_con = range[1]
-        field_max = range[1]
+        range_array = con_array.GetRange()
+        min_con = range_array[0]
+        max_con = range_array[1]
+        field_max = range_array[1]
         #        print MODULENAME, '  initScalarFieldDataActors(): min,maxCon=',self.minCon,self.maxCon
 
         min_max_dict = self.get_min_max_metadata(scene_metadata=scene_metadata, field_name=field_name)
@@ -408,6 +408,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
         concentration_actor = actors_dict['concentration_actor']
 
         concentration_actor.SetMapper(self.conMapper)
+
+        self.init_min_max_actor(min_max_actor=actors_dict['min_max_text_actor'], range_array=range_array)
 
         if hex_flag:
             concentration_actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)

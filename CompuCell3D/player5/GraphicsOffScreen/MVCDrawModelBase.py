@@ -197,6 +197,51 @@ class MVCDrawModelBase:
     def get_cell_actors_metadata(self):
         pass
 
+    def float_formatting(self, val, max_exp=6):
+        """
+        Formats float for display
+        :param val:
+        :param max_exp:
+        :return:
+        """
+        from math import log10, fabs
+        if val == 0.0:
+            return '0.0'
+
+        try:
+            val_log = fabs(log10(val))
+            if val_log <= max_exp:
+                val_str = '{:f}'.format(val)
+            else:
+                val_str = '{:e}'.format(val)
+        except:
+            val_str = 'NaN'
+
+        return val_str
+
+    def init_min_max_actor(self, min_max_actor, range_array, scene_metadata=None):
+        """
+
+        :param min_max_actor:
+        :param range_array:
+        :param scene_metadata:
+        :return:
+        """
+        min_str = self.float_formatting(range_array[0])
+        max_str = self.float_formatting(range_array[1])
+        min_max_actor.SetInput("Min: {} Max: {}".format(min_str, max_str))
+
+        print 'txt = ', min_max_actor.GetInput()
+        # txt.SetInput("Hello World 1!")
+        txtprop = min_max_actor.GetTextProperty()
+        txtprop.SetFontFamilyToArial()
+        txtprop.SetFontSize(10)
+        txtprop.SetColor(1, 1, 1)
+        # txt.SetDisplayPosition(200, 200)
+        min_max_actor.SetPosition(20, 20)
+
+
+
     def get_min_max_metadata(self, scene_metadata, field_name):
         """
         Returns dictionary with the following entries:

@@ -1413,7 +1413,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         """
         if self.__screenshotDescriptionFileName != "":
             try:
-                self.screenshotManager.readScreenshotDescriptionFile()
+                self.screenshotManager.readScreenshotDescriptionFile(self.__screenshotDescriptionFileName)
             except:
                 self.screenshotManager.screenshotDataDict = {}
                 self.popup_message(

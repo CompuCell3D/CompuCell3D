@@ -427,6 +427,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
             print 'Enabling legend'
             self.init_legend_actors(actor_specs=actor_specs, drawing_params=drawing_params)
 
+
+
+
+
+
     def init_concentration_field_actors_hex(self, actor_specs, drawing_params=None):
         """
         initializes concentration field actors for hex lattice
@@ -506,9 +511,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         min_range = min_max_dict['MinRange']
         max_range = min_max_dict['MaxRange']
 
-        range =con_array.GetRange()
-        min_con = range[0]
-        max_con = range[1]
+        range_array =con_array.GetRange()
+        min_con = range_array[0]
+        max_con = range_array[1]
 
         # Note! should really avoid doing a getSetting with each step to speed up the rendering; only update when changed in Prefs
         if min_range_fixed:
@@ -539,6 +544,31 @@ class MVCDrawModel2D(MVCDrawModelBase):
         concentration_actor = actors_dict['concentration_actor']
 
         concentration_actor.SetMapper(self.con_mapper)
+
+        self.init_min_max_actor(min_max_actor=actors_dict['min_max_text_actor'], range_array=range_array)
+
+        # create a text actor
+        # txt = vtk.vtkTextActor()
+        # txt = actors_dict['min_max_text_actor']
+        # txt.SetInput("Hello World 2!")
+        # print('model txt=', txt.GetInput())
+        # txtprop = txt.GetTextProperty()
+        # txtprop.SetFontFamilyToArial()
+        # txtprop.SetFontSize(10)
+        # txtprop.SetColor(1, 1, 1)
+        # # txt.SetDisplayPosition(200, 200)
+        # txt.SetPosition(20, 20)
+        # # txt.SetPosition2(200, 200)
+
+        # actors_dict['min_max_text_actor'] = txt
+
+        # min_max_text_actor = actors_dict['min_max_text_actor']
+        # min_max_text_actor.SetInput('DUPAAAAAAAAAAAAAAAAAAA')
+        # min_max_text_actor.SetPosition(20, 20)
+        #
+        # min_max_text_actor.GetTextProperty().SetFontSize(24)
+        # min_max_text_actor.GetTextProperty().SetColor(1.0, 0.0, 0.0)
+
 
         if actor_specs.metadata is None:
             actor_specs.metadata = {'mapper':self.con_mapper}
@@ -662,9 +692,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         min_range = min_max_dict['MinRange']
         max_range = min_max_dict['MaxRange']
 
-        range =con_array.GetRange()
-        min_con = range[0]
-        max_con = range[1]
+        range_array =con_array.GetRange()
+        min_con = range_array[0]
+        max_con = range_array[1]
 
         # Note! should really avoid doing a getSetting with each step to speed up the rendering;
         # only update when changed in Prefs
@@ -726,6 +756,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         concentration_actor = actors_dict['concentration_actor']
         concentration_actor.SetMapper(self.con_mapper)  # concentration actor
+
+        self.init_min_max_actor(min_max_actor=actors_dict['min_max_text_actor'], range_array=range_array)
 
         if actor_specs.metadata is None:
             actor_specs.metadata = {'mapper':self.con_mapper}

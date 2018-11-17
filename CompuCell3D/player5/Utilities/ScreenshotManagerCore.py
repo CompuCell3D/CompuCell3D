@@ -327,6 +327,14 @@ class ScreenshotManagerCore(object):
 
             scr_data.metadata = metadata_dict
 
+            # checking for extra metadata entries added
+            # you may reset this list after bumping up the version of json file
+            extra_metadata_keys = ['DisplayMinMaxInfo']
+
+            for key in extra_metadata_keys:
+                if key not in metadata_dict.keys():
+                    raise KeyError('Missing key in the metadata: {}'.format(key))
+
             # scr_data.screenshotGraphicsWidget = self.screenshotGraphicsWidget
 
             self.screenshotDataDict[scr_data.screenshotName] = scr_data

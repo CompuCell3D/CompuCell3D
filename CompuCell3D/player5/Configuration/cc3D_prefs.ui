@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>555</width>
-    <height>478</height>
+    <width>550</width>
+    <height>464</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,7 @@
       <string>When checked uses floating window layout instead of Multi Document Interface</string>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tab_output">
       <attribute name="title">
@@ -828,7 +828,7 @@
       <attribute name="title">
        <string>Field</string>
       </attribute>
-      <layout class="QHBoxLayout" name="horizontalLayout_28">
+      <layout class="QVBoxLayout" name="verticalLayout_6">
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_15">
          <item>
@@ -836,16 +836,33 @@
            <property name="title">
             <string>General properties</string>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout_19">
+           <layout class="QVBoxLayout" name="verticalLayout_5">
             <item>
-             <widget class="QCheckBox" name="pixelizedScalarFieldCB">
-              <property name="toolTip">
-               <string>Checking this box will cause cartesian concentration field in 2D be drawn using explicit pixels providing &quot;exact&quot; representation of the field. Unchecked box will mean that field will be smoothed. </string>
-              </property>
-              <property name="text">
-               <string>Pixelized scalar plot (&quot;exact&quot;)</string>
-              </property>
-             </widget>
+             <layout class="QHBoxLayout" name="horizontalLayout_28">
+              <item>
+               <widget class="QCheckBox" name="pixelizedScalarFieldCB">
+                <property name="toolTip">
+                 <string>Checking this box will cause cartesian concentration field in 2D be drawn using explicit pixels providing &quot;exact&quot; representation of the field. Unchecked box will mean that field will be smoothed. </string>
+                </property>
+                <property name="text">
+                 <string>Pixelized scalar plot (&quot;exact&quot;)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="min_max_display_CB">
+                <property name="toolTip">
+                 <string>Checking this box will cause cartesian concentration field in 2D be drawn using explicit pixels providing &quot;exact&quot; representation of the field. Unchecked box will mean that field will be smoothed. </string>
+                </property>
+                <property name="text">
+                 <string>Display Min Max Field Values</string>
+                </property>
+                <property name="checked">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>

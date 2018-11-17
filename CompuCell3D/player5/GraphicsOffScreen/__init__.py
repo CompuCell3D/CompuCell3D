@@ -9,3 +9,4 @@ from . MVCDrawModelBase import *
 from . MVCDrawViewBase import *
 from . CameraSettings import *
 from . CustomActorsStorage import *
+from . MetadataHandler import *

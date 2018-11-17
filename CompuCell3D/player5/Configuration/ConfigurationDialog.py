@@ -623,6 +623,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("CellGlyphThetaRes", self.cellGlyphThetaRes.value())  # spinbox
         Configuration.setSetting("CellGlyphPhiRes", self.cellGlyphPhiRes.value())  # spinbox
 
+
         fp = Configuration.getSetting("FieldParams")
 
         # get Field name from combobox in the Field tab and save the current settings for that field
@@ -651,6 +652,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("ScalarIsoValues", self.isovalList.text())
         Configuration.setSetting("NumberOfContourLines", self.numberOfContoursLinesSpinBox.value())
         Configuration.setSetting("ShowPlotAxes", self.showPlotAxesCB.isChecked())
+
+        Configuration.setSetting("DisplayMinMaxInfo", self.min_max_display_CB.isChecked())  
 
         # Vectors
         
@@ -708,6 +711,10 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         # # # self.prefsFileLineEdit.setText( str(Configuration.getSetting("PreferencesFile")))
         self.numberOfRecentSimulationsSB.setValue(Configuration.getSetting("NumberOfRecentSimulations"))
         self.floatingWindowsCB.setChecked(Configuration.getSetting("FloatingWindows"))
+
+        self.min_max_display_CB.setChecked(Configuration.getSetting("DisplayMinMaxInfo"))
+
+
         
         # Cell Type/Colors
 

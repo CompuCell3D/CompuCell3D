@@ -1,28 +1,29 @@
 {
+    "Version": "3.7.9", 
     "ScreenshotData": {
-        "Cell_Field_CellField_2D_XY_5": {
+        "ATTR_ConField_2D_XY_0": {
             "Plot": {
-                "PlotName": "Cell_Field", 
-                "PlotType": "CellField"
+                "PlotName": "ATTR", 
+                "PlotType": "ConField"
             }, 
             "Dimension": "2D", 
             "Projection": {
                 "ProjectionPlane": "XY", 
-                "ProjectionPosition": 5
+                "ProjectionPosition": 0
             }, 
             "CameraClippingRange": {
-                "Max": "152.516736333", 
-                "Min": "148.760166472"
+                "Max": "1386.51578484", 
+                "Min": "1352.36514974"
             }, 
             "CameraFocalPoint": {
-                "y": "27.5", 
-                "x": "27.5", 
+                "y": "250.0", 
+                "x": "250.0", 
                 "z": "0.0"
             }, 
             "CameraPosition": {
-                "y": "27.5", 
-                "x": "27.5", 
-                "z": "150.262794416"
+                "y": "250.0", 
+                "x": "250.0", 
+                "z": "1366.02540378"
             }, 
             "CameraViewUp": {
                 "y": "1.0", 
@@ -33,14 +34,14 @@
                 "Width": 600, 
                 "Height": 600
             }, 
-            "CellBorders": true, 
+            "CellBorders": false, 
             "Cells": true, 
             "ClusterBorders": false, 
             "CellGlyphs": false, 
             "FPPLinks": false, 
             "BoundingBox": true, 
-            "LatticeAxes": true, 
-            "LatticeAxesLabels": true, 
+            "LatticeAxes": false, 
+            "LatticeAxesLabels": false, 
             "TypesInvisible": [
                 0
             ], 
@@ -51,6 +52,9 @@
                     0, 
                     255
                 ], 
+                "MaxRangeFixed": true, 
+                "LegendEnable": true, 
+                "MinRange": 0.0, 
                 "BoundingBoxColor": [
                     255, 
                     255, 
@@ -63,13 +67,87 @@
                     255, 
                     255
                 ], 
+                "ContoursOn": false, 
                 "AxesColor": [
                     255, 
                     255, 
                     255, 
                     255
                 ], 
-                "FppLinksColor": [
+                "MinRangeFixed": false, 
+                "NumberOfContourLines": 3, 
+                "TypeColorMap": {
+                    "0": [
+                        0, 
+                        0, 
+                        0, 
+                        255
+                    ], 
+                    "1": [
+                        0, 
+                        255, 
+                        0, 
+                        255
+                    ], 
+                    "2": [
+                        0, 
+                        0, 
+                        255, 
+                        255
+                    ], 
+                    "3": [
+                        255, 
+                        0, 
+                        0, 
+                        255
+                    ], 
+                    "4": [
+                        128, 
+                        128, 
+                        0, 
+                        255
+                    ], 
+                    "5": [
+                        192, 
+                        192, 
+                        192, 
+                        255
+                    ], 
+                    "6": [
+                        255, 
+                        0, 
+                        255, 
+                        255
+                    ], 
+                    "7": [
+                        0, 
+                        0, 
+                        128, 
+                        255
+                    ], 
+                    "8": [
+                        0, 
+                        255, 
+                        255, 
+                        255
+                    ], 
+                    "9": [
+                        0, 
+                        128, 
+                        0, 
+                        255
+                    ], 
+                    "10": [
+                        255, 
+                        255, 
+                        255, 
+                        255
+                    ]
+                }, 
+                "ShowHorizontalAxesLabels": false, 
+                "ShowVerticalAxesLabels": false, 
+                "ScalarIsoValues": [], 
+                "FPPLinksColor": [
                     255, 
                     255, 
                     255, 
@@ -81,12 +159,14 @@
                     255, 
                     255
                 ], 
+                "MaxRange": 1.0, 
                 "WindowColor": [
                     0, 
                     0, 
                     0, 
                     255
-                ]
+                ], 
+                "DisplayMinMaxInfo": true
             }
         }
     }

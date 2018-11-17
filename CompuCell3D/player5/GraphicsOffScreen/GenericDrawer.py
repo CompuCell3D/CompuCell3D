@@ -14,6 +14,17 @@
 # todo - add fpp link color in the configuration dialog - fix metadata in Graphics FrameWidget then
 # todo -  add versioned read_screenshot_json fcn and same for write  - to make the choice pf parser seamless to the user
 # todo - implement bad screenshot file handler in the mainCML in CompuCell3D setup
+# todo - improve scr data error handling - metadata, version etc. test it for robustness
+# todo add fcn to fetch scene metadata to handle missing keys
+
+# workflow for adding new setting
+# ===============================
+# 1. Add setting to _settings.sqllite - use SqlBrowser to edit the database
+# 2. Edit configuration dialog (edit form via designer, generate ui_xxx.py using pyuic5 and edit CondifugationDialog.py)
+# 3. Edit ScreenshotManagerCore - readScreenshotData fcn and write screenshot fct data
+# 4. Edit Graphics widget function that geenrate sceen metadata to have this new setting be reflected in sscene metadata
+
+
 
 import string
 import Configuration

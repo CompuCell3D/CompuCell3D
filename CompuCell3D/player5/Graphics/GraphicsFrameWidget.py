@@ -169,6 +169,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         metadata_dict['ScalarIsoValues'] = cs_string_to_typed_list(
             Configuration.getSetting("ScalarIsoValues", field_name))
         metadata_dict['LegendEnable'] = Configuration.getSetting("LegendEnable", field_name)
+        metadata_dict['DisplayMinMaxInfo'] = Configuration.getSetting("DisplayMinMaxInfo")
 
         return metadata_dict
 

@@ -125,6 +125,7 @@ class MVCDrawView3D(MVCDrawViewBase):
         actor_specs_copy.actors_dict = OrderedDict()
         actor_specs_copy.actors_dict['concentration_actor'] = self.conActor
         actor_specs_copy.actors_dict['legend_actor'] = self.legendActor
+        actor_specs_copy.actors_dict['min_max_text_actor'] = self.min_max_text_actor
 
         return actor_specs_copy
 
@@ -149,6 +150,15 @@ class MVCDrawView3D(MVCDrawViewBase):
 
             if add_legend:
                 self.add_actor_to_renderer(actor_label='legend_actor', actor_obj=self.legendActor)
+
+            add_min_max_text = True
+            try:
+                add_min_max_text = scene_metadata['DisplayMinMaxInfo']
+            except KeyError:
+                pass
+            if add_min_max_text:
+                self.add_actor_to_renderer(actor_label='min_max_text_actor', actor_obj=self.min_max_text_actor)
+
         else:
             self.remove_actor_from_renderer(actor_label='concentration_actor', actor_obj=self.conActor)
             self.remove_actor_from_renderer(actor_label='legend_actor', actor_obj=self.legendActor)

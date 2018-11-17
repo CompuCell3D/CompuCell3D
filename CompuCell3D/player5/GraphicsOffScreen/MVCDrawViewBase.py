@@ -38,6 +38,7 @@ class MVCDrawViewBase:
         # self.currentFieldType = ("Cell_Field", FIELD_TYPES[0])
         self.currentFieldType = ("Cell_Field", 'CellField')
         self.__initDist = 0  # initial camera distance - used in zoom functions
+        self.min_max_text_actor = vtk.vtkTextActor()
 
         # CUSTOM ACTORS
         self.customActors = {}  # {visName: CustomActorsStorage() }
