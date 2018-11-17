@@ -503,10 +503,10 @@ class MVCDrawModel3D(MVCDrawModelBase):
         cone.SetRadius(0.5)
         # cone.SetRadius(4)
 
-        range = vectors.GetRange(-1)
+        range_array = vectors.GetRange(-1)
 
-        min_magnitude = range[0]
-        max_magnitude = range[1]
+        min_magnitude = range_array[0]
+        max_magnitude = range_array[1]
 
         min_max_dict = self.get_min_max_metadata(scene_metadata=scene_metadata, field_name=field_name)
         min_range_fixed = min_max_dict['MinRangeFixed']
@@ -566,6 +566,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
         self.glyphsMapper.SetScalarRange([min_magnitude, max_magnitude])
 
         vector_field_actor.SetMapper(self.glyphsMapper)
+
+        self.init_min_max_actor(min_max_actor=actors_dict['min_max_text_actor'], range_array=range_array)
 
         if hex_flag:
             vector_field_actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)

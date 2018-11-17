@@ -112,6 +112,7 @@ class MVCDrawView2D(MVCDrawViewBase):
         actor_specs_copy = deepcopy(actor_specs)
         actor_specs_copy.actors_dict = OrderedDict()
         actor_specs_copy.actors_dict['vector_field_actor'] = self.glyphsActor
+        actor_specs_copy.actors_dict['min_max_text_actor'] = self.min_max_text_actor
 
         return actor_specs_copy
 
@@ -126,8 +127,18 @@ class MVCDrawView2D(MVCDrawViewBase):
         scene_metadata = drawing_params.screenshot_data.metadata
         if show_flag:
             self.add_actor_to_renderer(actor_label='vector_field_actor', actor_obj=self.glyphsActor)
+
+            add_min_max_text = True
+            try:
+                add_min_max_text = scene_metadata['DisplayMinMaxInfo']
+            except KeyError:
+                pass
+            if add_min_max_text:
+                self.add_actor_to_renderer(actor_label='min_max_text_actor', actor_obj=self.min_max_text_actor)
+
         else:
             self.remove_actor_from_renderer(actor_label='vector_field_actor', actor_obj=self.glyphsActor)
+            self.remove_actor_from_renderer(actor_label='min_max_text_actor', actor_obj=self.min_max_text_actor)
 
     def prepare_concentration_field_actors(self,actor_specs, drawing_params=None):
         """

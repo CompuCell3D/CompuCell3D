@@ -341,10 +341,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
         max_magnitude_read = min_max_dict['MaxRange']
 
 
-        range = vectors.GetRange(-1)
+        range_array = vectors.GetRange(-1)
 
-        min_magnitude = range[0]
-        max_magnitude = range[1]
+        min_magnitude = range_array[0]
+        max_magnitude = range_array[1]
 
         if min_magnitude_fixed:
             min_magnitude = min_magnitude_read
@@ -407,6 +407,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.glyphs_mapper.SetScalarRange([min_magnitude, max_magnitude])
 
         vector_field_actor.SetMapper(self.glyphs_mapper)
+
+        self.init_min_max_actor(min_max_actor=actors_dict['min_max_text_actor'], range_array=range_array)
+
 
     def init_concentration_field_actors(self, actor_specs, drawing_params=None):
         """
