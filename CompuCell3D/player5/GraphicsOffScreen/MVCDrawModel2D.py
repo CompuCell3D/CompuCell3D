@@ -6,6 +6,8 @@ import string
 from Messaging import dbgMsg
 from Utilities.utils import extract_address_int_from_vtk_object, to_vtk_rgb
 
+from GraphicsOffScreen.MetadataHandler import MetadataHandler
+
 VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
 
 MODULENAME='----- MVCDrawModel2D.py:  '
@@ -272,6 +274,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         field_type = drawing_params.fieldType.lower()
         scene_metadata = drawing_params.screenshot_data.metadata
 
+        mdata = MetadataHandler(mdata=scene_metadata)
+
+
         vector_grid = vtk.vtkUnstructuredGrid()
 
         points = vtk.vtkPoints()
@@ -369,7 +374,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         arrowScalingFactor = scene_metadata['ArrowLength']
 
         vector_field_actor = actors_dict['vector_field_actor']
-        if scene_metadata['FixedArrowColorOn'] :
+        if mdata.get('FixedArrowColorOn',data_type='bool'):
             glyphs.SetScaleModeToScaleByVector()
             # rangeSpan = maxMagnitude - minMagnitude
             dataScalingFactor = max(abs(min_magnitude), abs(max_magnitude))
@@ -379,13 +384,16 @@ class MVCDrawModel2D(MVCDrawModelBase):
                 dataScalingFactor = 1.0  # in this case we are plotting 0 vectors and in this case data scaling factor will be set to 1
             glyphs.SetScaleFactor(arrowScalingFactor / dataScalingFactor)
             # coloring arrows
-            arrow_color = to_vtk_rgb(scene_metadata['ArrowColor'])
+            # arrow_color = to_vtk_rgb(scene_metadata['ArrowColor'])
+
+            arrow_color = to_vtk_rgb(mdata.get('ArrowColor', data_type='color'))
             vector_field_actor.GetProperty().SetColor(arrow_color)
 
 
 
         else:
-            if scene_metadata['ScaleArrowsOn']:
+
+            if mdata.get('ScaleArrowsOn', data_type='bool'):
                 glyphs.SetColorModeToColorByVector()
                 glyphs.SetScaleModeToScaleByVector()
 
@@ -419,6 +427,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         :return: None
         """
         scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
 
         lattice_type_str = self.get_lattice_type_str()
         if lattice_type_str.lower() =='hexagonal' and drawing_params.plane.lower()=="xy":
@@ -426,7 +435,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         else:
             self.init_concentration_field_actors_cartesian(actor_specs=actor_specs, drawing_params=drawing_params)
 
-        if scene_metadata['LegendEnable']:
+        if mdata.get('LegendEnable',default=True):
             print 'Enabling legend'
             self.init_legend_actors(actor_specs=actor_specs, drawing_params=drawing_params)
 
@@ -450,6 +459,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         dim = self.planeMapper(dim_order, (field_dim.x, field_dim.y, field_dim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]
         field_name = drawing_params.fieldName
         scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
 
         con_array = vtk.vtkDoubleArray()
         con_array.SetName("concentration")
@@ -525,9 +535,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         if max_range_fixed:
             max_con = max_range
 
-        if scene_metadata['ContoursOn']:
+        if mdata.get('ContoursOn',default=False):
             contour_actor = actors_dict['contour_actor']
-            num_contour_lines = scene_metadata['NumberOfContourLines']
+            num_contour_lines = mdata.get('NumberOfContourLines',default=3)
             self.initialize_contours_hex([dim[0], dim[1]], con_array, [min_con, max_con],
                                        contour_actor,num_contour_lines=num_contour_lines)
 
@@ -649,6 +659,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         dim = self.planeMapper(dim_order, (field_dim.x, field_dim.y, field_dim.z))# [fieldDim.x, fieldDim.y, fieldDim.z]
         field_name = drawing_params.fieldName
         scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
 
         con_array = vtk.vtkDoubleArray()
         con_array.SetName("concentration")
@@ -733,10 +744,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
         field_image_data.SetExtent(0, dim_0, 0, dim_1, 0, 0)
 
 
-        if scene_metadata['ContoursOn']:
+        if mdata.get('ContoursOn',default=False):
 
             contour_actor = actors_dict['contour_actor']
-            num_contour_lines = scene_metadata['NumberOfContourLines']
+            num_contour_lines = mdata.get('NumberOfContourLines',default=3)
             self.initialize_contours_cartesian(
                 field_image_data,
                 [min_con, max_con],
@@ -773,6 +784,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         min_con, max_con = min_max[0], min_max[1]
         iso_contour = vtk.vtkContourFilter()
         iso_contour.SetInputConnection(field_image_data.GetOutputPort())
+        mdata = MetadataHandler(mdata=scene_metadata)
 
 
         # TODO - FIX IT
@@ -811,7 +823,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         contour_actor.SetMapper(self.contour_mapper)
 
 
-        color = to_vtk_rgb(scene_metadata["ContourColor"])
+        color = to_vtk_rgb(mdata.get('ContourColor', data_type='color'))
         contour_actor.GetProperty().SetColor(color)
 
 
@@ -843,6 +855,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         dim_order = self.dimOrder(self.currentDrawingParameters.plane)
         scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
 
         # dim = self.planeMapper(dim_order,
         #                             (field_dim.x, field_dim.y, field_dim.z))  # [fieldDim.x, fieldDim.y, fieldDim.z]
@@ -903,6 +916,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         dim_order = self.dimOrder(self.currentDrawingParameters.plane)
         scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
 
         # [fieldDim.x, fieldDim.y, fieldDim.z]
         dim = self.planeMapper(dim_order, (field_dim.x, field_dim.y, field_dim.z))
@@ -960,6 +974,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         dim_order = self.dimOrder(self.currentDrawingParameters.plane)
         scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
 
         points = vtk.vtkPoints()
         lines = vtk.vtkCellArray()
@@ -997,7 +1012,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         border_actor.SetMapper(self.borderMapper)
 
-        border_color = to_vtk_rgb(scene_metadata['BorderColor'])
+        border_color = to_vtk_rgb(mdata.get('BorderColor',data_type='color'))
         # coloring borders
         border_actor.GetProperty().SetColor(*border_color)
 
@@ -1013,6 +1028,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         dim_order = self.dimOrder(self.currentDrawingParameters.plane)
         scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
 
 
         points = vtk.vtkPoints()
@@ -1057,7 +1073,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         cluster_border_actor.SetMapper(self.clusterBorderMapper)
 
-        cluster_border_color = to_vtk_rgb(scene_metadata['ClusterBorderColor'])
+        cluster_border_color = to_vtk_rgb(mdata.get('ClusterBorderColor',data_type='color'))
         # coloring borders
         cluster_border_actor.GetProperty().SetColor(*cluster_border_color)
 
@@ -1081,6 +1097,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         dim_order = self.dimOrder(self.currentDrawingParameters.plane)
         scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
+
         xdim = field_dim.x
         ydim = field_dim.y
 
@@ -1232,7 +1250,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
             self.FPPLinksMapper.SetInput(FPPLinksPD)
 
         fpp_links_actor.SetMapper(self.FPPLinksMapper)
-        fpp_links_color = to_vtk_rgb(scene_metadata['FPPLinksColor'])
+        fpp_links_color = to_vtk_rgb(mdata.get('FPPLinksColor', data_type='color'))
         # coloring borders
         fpp_links_actor.GetProperty().SetColor(*fpp_links_color)
 

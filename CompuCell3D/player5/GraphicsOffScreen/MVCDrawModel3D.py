@@ -6,6 +6,7 @@ import vtk, math
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 # from Utilities.utils import extract_address_int_from_vtk_object
 from Utilities.utils import extract_address_int_from_vtk_object, to_vtk_rgb
+from GraphicsOffScreen.MetadataHandler import MetadataHandler
 
 MODULENAME = '------  MVCDrawModel3D.py'
 
@@ -255,16 +256,17 @@ class MVCDrawModel3D(MVCDrawModelBase):
         dim = [field_dim.x, field_dim.y, field_dim.z]
         field_name = drawing_params.fieldName
         scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
 
         try:
-            isovalues = scene_metadata['ScalarIsoValues']
+            isovalues = mdata.get('ScalarIsoValues',default=[])
             isovalues = list(map(lambda x: float(x), isovalues))
         except:
             print('Could not process isovalue list ')
             isovalues = []
 
         try:
-            numIsos = scene_metadata['NumberOfContourLines']
+            numIsos = mdata.get('NumberOfContourLines',default=3)
         except:
             print('could not process NumberOfContourLines setting')
             numIsos = 0
@@ -419,7 +421,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         else:
             actor_specs.metadata['mapper'] = self.conMapper
 
-        if scene_metadata['LegendEnable']:
+        if mdata.get('LegendEnable',default=False):
             print 'Enabling legend'
             self.init_legend_actors(actor_specs=actor_specs, drawing_params=drawing_params)
 
@@ -436,10 +438,12 @@ class MVCDrawModel3D(MVCDrawModelBase):
         field_name = drawing_params.fieldName
         field_type = drawing_params.fieldType.lower()
         scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
+
+
 
         dim = [field_dim.x, field_dim.y, field_dim.z]
 
-        scene_metadata = drawing_params.screenshot_data.metadata
 
         vector_grid = vtk.vtkUnstructuredGrid()
 
@@ -539,9 +543,9 @@ class MVCDrawModel3D(MVCDrawModelBase):
         vector_field_actor = actors_dict['vector_field_actor']
 
         # scaling factor for an arrow - ArrowLength indicates scaling factor not actual length
-        arrowScalingFactor = scene_metadata['ArrowLength']
+        arrowScalingFactor = mdata.get('ArrowLength', default=1.0)
 
-        if scene_metadata['FixedArrowColorOn']:
+        if mdata.get('FixedArrowColorOn',default=False):
             glyphs.SetScaleModeToScaleByVector()
 
             dataScalingFactor = max(abs(min_magnitude), abs(max_magnitude))
@@ -553,7 +557,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
             glyphs.SetScaleFactor(arrowScalingFactor / dataScalingFactor)
 
             # coloring arrows
-            arrow_color = to_vtk_rgb(scene_metadata['ArrowColor'])
+            arrow_color = to_vtk_rgb(mdata.get('ArrowColor',data_type='color'))
             vector_field_actor.GetProperty().SetColor(arrow_color)
 
         else:
@@ -582,6 +586,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         actors_dict = actor_specs.actors_dict
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
 
         outline_data = vtk.vtkImageData()
 
@@ -606,7 +611,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         if self.is_lattice_hex(drawing_params=drawing_params):
             outline_actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)
 
-        outline_color = to_vtk_rgb(scene_metadata['BoundingBoxColor'])
+        outline_color = to_vtk_rgb(mdata.get('BoundingBoxColor',data_type='color'))
         outline_actor.GetProperty().SetColor(*outline_color)
 
     def init_axes_actors(self, actor_specs, drawing_params=None):
@@ -619,9 +624,10 @@ class MVCDrawModel3D(MVCDrawModelBase):
         actors_dict = actor_specs.actors_dict
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
 
         axes_actor = actors_dict['axes_actor']
-        axes_color = to_vtk_rgb(scene_metadata['AxesColor'])
+        axes_color = to_vtk_rgb(mdata.get('AxesColor',data_type='color'))
 
         tprop = vtk.vtkTextProperty()
         tprop.SetColor(axes_color)
@@ -670,6 +676,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
         actors_dict = actor_specs.actors_dict
         field_dim = self.currentDrawingParameters.bsd.fieldDim
         scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
+
         xdim = field_dim.x
         ydim = field_dim.y
 
@@ -821,6 +829,6 @@ class MVCDrawModel3D(MVCDrawModelBase):
             self.FPPLinksMapper.SetInput(FPPLinksPD)
 
         fpp_links_actor.SetMapper(self.FPPLinksMapper)
-        fpp_links_color = to_vtk_rgb(scene_metadata['FPPLinksColor'])
+        fpp_links_color = to_vtk_rgb(mdata.get('FPPLinksColor',data_type='color'))
         # coloring borders
         fpp_links_actor.GetProperty().SetColor(*fpp_links_color)
