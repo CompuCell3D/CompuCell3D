@@ -226,8 +226,10 @@ class MVCDrawModel3D(MVCDrawModelBase):
                 actor = actors_dict[actor_number]
                 actor.SetMapper(mapper_list[actor_counter])
 
+                cell_type_lut = self.get_type_lookup_table()
+
                 actor.GetProperty().SetDiffuseColor(
-                    self.celltypeLUT.GetTableValue(actor_number)[0:3])
+                    cell_type_lut.GetTableValue(actor_number)[0:3])
 
                 if hex_flag:
                     actor.SetScale(self.xScaleHex, self.yScaleHex, self.zScaleHex)

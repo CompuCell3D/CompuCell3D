@@ -14,7 +14,7 @@
 # todo - add fpp link color in the configuration dialog - fix metadata in Graphics FrameWidget then
 # todo -  add versioned read_screenshot_json fcn and same for write  - to make the choice pf parser seamless to the user
 # todo - improve scr data error handling - metadata, version etc. test it for robustness
-
+# todo - cleanup info bar for the player - remove min max from there
 
 # workflow for adding new setting
 # ===============================
