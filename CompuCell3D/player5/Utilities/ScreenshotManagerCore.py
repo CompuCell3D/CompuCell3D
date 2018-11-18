@@ -329,7 +329,9 @@ class ScreenshotManagerCore(object):
 
             # checking for extra metadata entries added
             # you may reset this list after bumping up the version of json file
-            extra_metadata_keys = ['DisplayMinMaxInfo']
+            # todo fix - we will be permissive as far as DisplayMinMaxInfo
+            # extra_metadata_keys = ['DisplayMinMaxInfo']
+            extra_metadata_keys = []
 
             for key in extra_metadata_keys:
                 if key not in metadata_dict.keys():
