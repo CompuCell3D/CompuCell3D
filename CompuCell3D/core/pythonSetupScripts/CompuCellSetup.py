@@ -9,6 +9,7 @@ from distutils.dir_util import mkpath
 import json
 from BasicSimulationData import BasicSimulationData
 from os.path import join, dirname, exists
+import warnings
 # import Configuration
 
 
@@ -2062,7 +2063,15 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
     gd = None
     bsd = None
     if exists(screenshot_data_fname) and field_extractor_local is not None:
-        screenshot_mgr.readScreenshotDescriptionFile(screenshot_data_fname)
+        try:
+            screenshot_mgr.readScreenshotDescriptionFile(screenshot_data_fname)
+        except:
+            warnings.warn('Could not parse screenshot description file {screenshot_data_fname}. '
+                          'If you want graphical screenshot output please generate '
+                          'new screenshot description file from Player by pressing camera button on '
+                          'select graphical visualizations. If you do not want screenshots'
+                          'you may delete subfolder {scr_dir} or simply ingnore this message'.format(
+                screenshot_data_fname=screenshot_data_fname, scr_dir=dirname(screenshot_data_fname)))
 
         gd = GenericDrawer()
         gd.set_field_extractor(field_extractor=field_extractor_local)
