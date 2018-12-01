@@ -67,25 +67,25 @@ void UniformFieldInitializer::init(Simulator *simulator,  CC3DXMLElement * _xmlD
 		plugin->init(simulator);
 
 
-	oldStyleInitData.boxMin=Dim3D(0,0,0);
-	oldStyleInitData.boxMax=dim;
+	//oldStyleInitData.boxMin=Dim3D(0,0,0);
+	//oldStyleInitData.boxMax=dim;
 
-	if(_xmlData->getFirstElement("RangeBox")){
-		oldStyleInitData.boxMax.x=_xmlData->getFirstElement("RangeBox")->getAttributeAsUInt("x");
-		oldStyleInitData.boxMax.y=_xmlData->getFirstElement("RangeBox")->getAttributeAsUInt("y");
-		oldStyleInitData.boxMax.z=_xmlData->getFirstElement("RangeBox")->getAttributeAsUInt("z");
-		if (oldStyleInitData.boxMax.x > dim.x || oldStyleInitData.boxMax.y > dim.y || oldStyleInitData.boxMax.z > dim.z )
-			oldStyleInitData.boxMax=dim;
-	}
+	//if(_xmlData->getFirstElement("RangeBox")){
+	//	oldStyleInitData.boxMax.x=_xmlData->getFirstElement("RangeBox")->getAttributeAsUInt("x");
+	//	oldStyleInitData.boxMax.y=_xmlData->getFirstElement("RangeBox")->getAttributeAsUInt("y");
+	//	oldStyleInitData.boxMax.z=_xmlData->getFirstElement("RangeBox")->getAttributeAsUInt("z");
+	//	if (oldStyleInitData.boxMax.x > dim.x || oldStyleInitData.boxMax.y > dim.y || oldStyleInitData.boxMax.z > dim.z )
+	//		oldStyleInitData.boxMax=dim;
+	//}
 
-	if(_xmlData->getFirstElement("Width")){
-		oldStyleInitData.width=_xmlData->getFirstElement("Width")->getUInt();
+	//if(_xmlData->getFirstElement("Width")){
+	//	oldStyleInitData.width=_xmlData->getFirstElement("Width")->getUInt();
 
-	}
-	if(_xmlData->getFirstElement("Gap")){
-		oldStyleInitData.gap=_xmlData->getFirstElement("Gap")->getUInt();
+	//}
+	//if(_xmlData->getFirstElement("Gap")){
+	//	oldStyleInitData.gap=_xmlData->getFirstElement("Gap")->getUInt();
 
-	}
+	//}
 
 
 
@@ -93,36 +93,36 @@ void UniformFieldInitializer::init(Simulator *simulator,  CC3DXMLElement * _xmlD
 	initDataVec.clear();
 
 	CC3DXMLElementList regionVec=_xmlData->getElements("Region");
+	if (regionVec.size() > 0) {
+		for (int i = 0; i < regionVec.size(); ++i) {
+			UniformFieldInitializerData initData;
 
-	for (int i = 0 ; i<regionVec.size(); ++i){
-		UniformFieldInitializerData initData;
+			if (regionVec[i]->findElement("Gap"))
+				initData.gap = regionVec[i]->getFirstElement("Gap")->getUInt();
+			if (regionVec[i]->findElement("Width"))
+				initData.width = regionVec[i]->getFirstElement("Width")->getUInt();
 
-		if(regionVec[i]->findElement("Gap"))
-			initData.gap=regionVec[i]->getFirstElement("Gap")->getUInt();
-		if(regionVec[i]->findElement("Width"))
-			initData.width=regionVec[i]->getFirstElement("Width")->getUInt();
+			ASSERT_OR_THROW("UniformInitializer requires Types element inside Region section.See manual for details.", regionVec[i]->getFirstElement("Types"));
+			initData.typeNamesString = regionVec[i]->getFirstElement("Types")->getText();
+			parseStringIntoList(initData.typeNamesString, initData.typeNames, ",");
 
-		ASSERT_OR_THROW("UniformInitializer requires Types element inside Region section.See manual for details.",regionVec[i]->getFirstElement("Types"));
-		initData.typeNamesString=regionVec[i]->getFirstElement("Types")->getText();
-		parseStringIntoList(initData.typeNamesString , initData.typeNames , ",");
+			if (regionVec[i]->findElement("BoxMax")) {
+				initData.boxMax.x = regionVec[i]->getFirstElement("BoxMax")->getAttributeAsUInt("x");
+				initData.boxMax.y = regionVec[i]->getFirstElement("BoxMax")->getAttributeAsUInt("y");
+				initData.boxMax.z = regionVec[i]->getFirstElement("BoxMax")->getAttributeAsUInt("z");
+			}
 
-		if(regionVec[i]->findElement("BoxMax")){
-			initData.boxMax.x=regionVec[i]->getFirstElement("BoxMax")->getAttributeAsUInt("x");
-			initData.boxMax.y=regionVec[i]->getFirstElement("BoxMax")->getAttributeAsUInt("y");
-			initData.boxMax.z=regionVec[i]->getFirstElement("BoxMax")->getAttributeAsUInt("z");
+			if (regionVec[i]->findElement("BoxMin")) {
+				initData.boxMin.x = regionVec[i]->getFirstElement("BoxMin")->getAttributeAsUInt("x");
+				initData.boxMin.y = regionVec[i]->getFirstElement("BoxMin")->getAttributeAsUInt("y");
+				initData.boxMin.z = regionVec[i]->getFirstElement("BoxMin")->getAttributeAsUInt("z");
+			}
+
+
+			initDataVec.push_back(initData);
 		}
-
-		if(regionVec[i]->findElement("BoxMin")){
-			initData.boxMin.x=regionVec[i]->getFirstElement("BoxMin")->getAttributeAsUInt("x");
-			initData.boxMin.y=regionVec[i]->getFirstElement("BoxMin")->getAttributeAsUInt("y");
-			initData.boxMin.z=regionVec[i]->getFirstElement("BoxMin")->getAttributeAsUInt("z");
-		}
-
-
-		initDataVec.push_back(initData);
 	}
-
-
+	
 }
 void UniformFieldInitializer::layOutCells(const UniformFieldInitializerData & _initData){
 
@@ -243,9 +243,10 @@ void UniformFieldInitializer::start() {
 			layOutCells(initDataVec[i]);
 			//          exit(0);
 		}
-	}else{
-		layOutCells(oldStyleInitData);
 	}
+	//else{
+	//	layOutCells(oldStyleInitData);
+	//}
 
 
 	//   // TODO: Chage this code so it write the 0 spins too.  This will make it
@@ -310,47 +311,47 @@ void UniformFieldInitializer::start() {
 
 
 
-void UniformFieldInitializer::initializeCellTypes(){
-	BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
-
-	cellInventoryPtr=& potts->getCellInventory();
-
-	///will initialize cell type here depending on the position of the cells
-	CellInventory::cellInventoryIterator cInvItr;
-	///loop over all the cells in the inventory
-	Point3D com;
-	CellG * cell;
-
-
-	float x,y,z;
-
-	for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr ){
-
-		cell=cellInventoryPtr->getCell(cInvItr);
-		//cell=*cInvItr;
-		///BCGPtr=cellAccessorPtr->get(*cInvItr);
-		x = cell->xCM / (float)cell->volume;
-		y = cell->yCM / (float)cell->volume;
-		z = cell->zCM / (float)cell->volume;
-		cell->type=rand->getInteger(0,1)+1;
-		cell->type=1;
-		/*         if ((x > 25) && (x < 30)){
-		cell->type = 1;
-		}else{
-		if ((z >= 60) && (z <= 90)){
-		cell->type = 2;
-		}
-		else{
-		cell->type = 2;
-		}
-
-		}*/
-		//cerr<<"vol old = "<<cell->volume<<endl;
-		//cerr<<"INIT typeNode.get(cellNodes)->type "<<(int)typeNode.get(cellNodes)->type<<
-		//" G part="<<(int)cellTypeGAccessorPtr->get(*cInvItr)->type<<endl;
-
-	}
-}
+//void UniformFieldInitializer::initializeCellTypes(){
+//	BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
+//
+//	cellInventoryPtr=& potts->getCellInventory();
+//
+//	///will initialize cell type here depending on the position of the cells
+//	CellInventory::cellInventoryIterator cInvItr;
+//	///loop over all the cells in the inventory
+//	Point3D com;
+//	CellG * cell;
+//
+//
+//	float x,y,z;
+//
+//	for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr ){
+//
+//		cell=cellInventoryPtr->getCell(cInvItr);
+//		//cell=*cInvItr;
+//		///BCGPtr=cellAccessorPtr->get(*cInvItr);
+//		x = cell->xCM / (float)cell->volume;
+//		y = cell->yCM / (float)cell->volume;
+//		z = cell->zCM / (float)cell->volume;
+//		cell->type=rand->getInteger(0,1)+1;
+//		cell->type=1;
+//		/*         if ((x > 25) && (x < 30)){
+//		cell->type = 1;
+//		}else{
+//		if ((z >= 60) && (z <= 90)){
+//		cell->type = 2;
+//		}
+//		else{
+//		cell->type = 2;
+//		}
+//
+//		}*/
+//		//cerr<<"vol old = "<<cell->volume<<endl;
+//		//cerr<<"INIT typeNode.get(cellNodes)->type "<<(int)typeNode.get(cellNodes)->type<<
+//		//" G part="<<(int)cellTypeGAccessorPtr->get(*cInvItr)->type<<endl;
+//
+//	}
+//}
 
 std::string UniformFieldInitializer::steerableName(){
 	return toString();

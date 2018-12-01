@@ -70,7 +70,7 @@ namespace CompuCell3D {
 
     void layOutCells(const UniformFieldInitializerData & _initData);
     unsigned char initCellType(const UniformFieldInitializerData & _initData);
-	 UniformFieldInitializerData oldStyleInitData;
+	 //UniformFieldInitializerData oldStyleInitData;
 	 std::vector<UniformFieldInitializerData> initDataVec;
   public:
 
