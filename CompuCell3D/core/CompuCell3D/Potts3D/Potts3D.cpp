@@ -70,8 +70,8 @@ Potts3D::Potts3D() :
 	energy(0),
 	depth(1.0),
 	displayUnitsFlag(true),
-	recentlyCreatedCellId(1),
-	recentlyCreatedClusterId(1),
+	recentlyCreatedCellId(0),
+	recentlyCreatedClusterId(0),
 	debugOutputFrequency(10),
 	sim(0),
 	automaton(0),
@@ -167,8 +167,8 @@ void Potts3D::clean_cell_field(bool reset_cell_inventory) {
 
 
 	if (reset_cell_inventory) {
-		recentlyCreatedCellId = 1;
-		recentlyCreatedClusterId = 1;
+		recentlyCreatedCellId = 0;
+		recentlyCreatedClusterId = 0;
 	}
 
 }
@@ -409,21 +409,24 @@ CellG * Potts3D::createCellG(const Point3D pt, long _clusterId) {
 CellG *Potts3D::createCell(long _clusterId) {
 	CellG * cell = new CellG();
 	cell->extraAttribPtr = cellFactoryGroup.create();
-	cell->id = recentlyCreatedCellId;
+	//always keep incrementing recently created  cell id
 	++recentlyCreatedCellId;
+	cell->id = recentlyCreatedCellId;
+	
 
 	//this means that cells with clusterId<=0 should be placed at the end of PIF file if automatic numbering of clusters is to work for a mix of clustered and non clustered cells	
 
 	if (_clusterId <= 0) { //default behavior if user does not specify cluster id or cluster id is 0
-
-		cell->clusterId = recentlyCreatedClusterId;
 		++recentlyCreatedClusterId;
+		cell->clusterId = recentlyCreatedClusterId;
+		//++recentlyCreatedClusterId;
 
 	}
 	else if (_clusterId > recentlyCreatedClusterId) { //clusterId specified by user is greater than recentlyCreatedClusterId
 
 		cell->clusterId = _clusterId;
-		recentlyCreatedClusterId = _clusterId + 1; // if we get cluster id greater than recentlyCreatedClusterId we set recentlyCreatedClusterId to be _clusterId+1
+		recentlyCreatedClusterId = _clusterId ; // if we get cluster id greater than recentlyCreatedClusterId we set recentlyCreatedClusterId to be _clusterId+1
+		//recentlyCreatedClusterId = _clusterId + 1; // if we get cluster id greater than recentlyCreatedClusterId we set recentlyCreatedClusterId to be _clusterId+1
 		// this way if users add "non-cluster" cells after definition of clustered cells	the cell->clusterId is guaranteed to be greater than any of the clusterIds specified for clustered cells
 	}
 	else { // cluster id is greater than zero but smaller than recentlyCreatedClusterId
@@ -454,25 +457,44 @@ CellG * Potts3D::createCellGSpecifiedIds(const Point3D pt, long _cellId, long _c
 CellG *Potts3D::createCellSpecifiedIds(long _cellId, long _clusterId) {
 	CellG * cell = new CellG();
 	cell->extraAttribPtr = cellFactoryGroup.create();
-	cell->id = _cellId;
+	//cell->id = _cellId;
 
-	if (_cellId >= recentlyCreatedCellId) {
-		recentlyCreatedCellId = _cellId + 1;
+	//if (_cellId >= recentlyCreatedCellId) {
+	//	recentlyCreatedCellId = _cellId + 1;
+	//}
+	if (_cellId > recentlyCreatedCellId) {
+		recentlyCreatedCellId = _cellId ;
+		cell->id = recentlyCreatedCellId;
+		//++recentlyCreatedCellId;
 	}
+	else {
+		// override _cellId and use recentlyCreatedCellId as _cellId. 
+		// otherwise we may create a bug where cells initialized from e.g. PIF initializers will have same id as cells created earlier by e.g. uniform initializer
+		// they will have different cluster id but still it creates a problem/. Having a model where cell id and cluster id are always incremented is a safer (but not ideal) bet 
+		++recentlyCreatedCellId;
+		cell->id = recentlyCreatedCellId;
+	}
+
+
+	//cell->id = recentlyCreatedCellId;
+
+	//++recentlyCreatedCellId;
 
 
 	//this means that cells with clusterId<=0 should be placed at the end of PIF file if automatic numbering of clusters is to work for a mix of clustered and non clustered cells	
 
 	if (_clusterId <= 0) { //default behavior if user does not specify cluster id or cluster id is 0
 
-		cell->clusterId = recentlyCreatedClusterId;
 		++recentlyCreatedClusterId;
+		cell->clusterId = recentlyCreatedClusterId;
+		//++recentlyCreatedClusterId;
 
 	}
 	else if (_clusterId > recentlyCreatedClusterId) { //clusterId specified by user is greater than recentlyCreatedClusterId
 
 		cell->clusterId = _clusterId;
-		recentlyCreatedClusterId = _clusterId + 1; // if we get cluster id greater than recentlyCreatedClusterId we set recentlyCreatedClusterId to be _clusterId+1
+		recentlyCreatedClusterId = _clusterId; // if we get cluster id greater than recentlyCreatedClusterId we set recentlyCreatedClusterId to be _clusterId+1
+		//recentlyCreatedClusterId = _clusterId + 1; // if we get cluster id greater than recentlyCreatedClusterId we set recentlyCreatedClusterId to be _clusterId+1
 		// this way if users add "non-cluster" cells after definition of clustered cells	the cell->clusterId is guaranteed to be greater than any of the clusterIds specified for clustered cells
 	}
 	else { // cluster id is greater than zero but smaller than recentlyCreatedClusterId
