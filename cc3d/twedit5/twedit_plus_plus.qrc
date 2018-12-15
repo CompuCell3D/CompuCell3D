@@ -1,0 +1,34 @@
+<RCC>
+  <qresource>
+    <file>icons/application-exit.png</file>
+    <file>icons/configure.png</file>
+    <file>icons/document-clean.png</file>
+    <file>icons/document-edited.png</file>
+    <file>icons/document-new.png</file>
+    <file>icons/document-open.png</file>
+    <file>icons/document-print-preview.png</file>
+    <file>icons/document-print.png</file>
+    <file>icons/document-save-all.png</file>
+    <file>icons/document-save-as.png</file>
+    <file>icons/document-save.png</file>
+    <file>icons/edit-copy.png</file>
+    <file>icons/edit-cut.png</file>
+    <file>icons/edit-delete.png</file>
+    <file>icons/edit-find.png</file>
+    <file>icons/edit-paste.png</file>
+    <file>icons/edit-redo.png</file>
+    <file>icons/edit-undo.png</file>
+    <file>icons/flag.png</file>
+    <file>icons/format-indent-less.png</file>
+    <file>icons/format-indent-more.png</file>
+    <file>icons/gear.png</file>
+    <file>icons/lizard-at-a-computer-small.png</file>
+    <file>icons/tab-close.png</file>
+    <file>icons/twedit-icon-setup.ico</file>
+    <file>icons/twedit-icon.ico</file>
+    <file>icons/twedit-icon.png</file>
+    <file>icons/zoom-in.png</file>
+    <file>icons/zoom-original.png</file>
+    <file>icons/zoom-out.png</file>
+  </qresource>
+</RCC>
