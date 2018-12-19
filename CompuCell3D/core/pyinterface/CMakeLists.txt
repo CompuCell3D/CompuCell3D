@@ -18,7 +18,7 @@ SET(NUMPY_INCLUDE_DIR )
 EXEC_PROGRAM(${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/core/pyinterface ARGS NumpyHeader.py
       OUTPUT_VARIABLE NUMPY_INCLUDE_DIR)
 
-
+message ("NUMPY_INCLUDE_DIR = ${NUMPY_INCLUDE_DIR}")
 INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include)
@@ -30,33 +30,33 @@ SET(CMAKE_SWIG_FLAGS "")
 
 IF(SWIG_FOUND)
     add_subdirectory(CC3DXML)
-    add_subdirectory(CompuCellPython)
+#     add_subdirectory(CompuCellPython)
 
-# if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+# # if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
-# else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-    # add_subdirectory(FiPyInterface)
-# endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+# # else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+#     # add_subdirectory(FiPyInterface)
+# # endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
-#    add_subdirectory(PlayerPythonOld)
+# #    add_subdirectory(PlayerPythonOld)
 
-    FIND_PACKAGE(VTK REQUIRED)
-    message("VTK_MAJOR_VERSION=" ${VTK_MAJOR_VERSION})
-    if (${VTK_MAJOR_VERSION} EQUAL "6")
-        add_definitions(-DVTK6)
-    endif()
+#     FIND_PACKAGE(VTK REQUIRED)
+#     message("VTK_MAJOR_VERSION=" ${VTK_MAJOR_VERSION})
+#     if (${VTK_MAJOR_VERSION} EQUAL "6")
+#         add_definitions(-DVTK6)
+#     endif()
 
-    if (${VTK_MAJOR_VERSION} EQUAL "7")    
-        add_definitions(-DVTK6)
-    endif()
+#     if (${VTK_MAJOR_VERSION} EQUAL "7")    
+#         add_definitions(-DVTK6)
+#     endif()
 
 
 
-    add_subdirectory(PlayerPythonNew)
-    add_subdirectory(SerializerDE)
-    add_subdirectory(PyPlugin)
-    add_subdirectory(Example)
-    add_subdirectory(Fields)
+#     add_subdirectory(PlayerPythonNew)
+#     add_subdirectory(SerializerDE)
+#     add_subdirectory(PyPlugin)
+#     add_subdirectory(Example)
+#     add_subdirectory(Fields)
 if(USE_DOLFIN)
     add_subdirectory(dolfinCC3D)
 endif(USE_DOLFIN)

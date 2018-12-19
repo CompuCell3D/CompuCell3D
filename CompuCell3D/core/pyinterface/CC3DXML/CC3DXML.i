@@ -133,9 +133,6 @@ public:
 	
 	std::list<std::string,std::allocator<std::string > > getListString(){
 		std::list<std::string,std::allocator<std::string > > list_string;
-		list_string.push_back("dupa1");
-		list_string.push_back("dupa2");
-		list_string.push_back("dupa3");		
 		return list_string;
 	}
 
@@ -147,9 +144,6 @@ public:
 
 	ListStringWrapped getListStringWrapped(){
 		ListStringWrapped list_string;
-		list_string.push_back("dupa1");
-		list_string.push_back("dupa2");
-		list_string.push_back("dupa3");		
 		return list_string;
 	}
 	

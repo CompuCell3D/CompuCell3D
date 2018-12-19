@@ -1,0 +1,1 @@
+pyrcc5 -o PluginCompuCell3D_rc.py PluginCompuCell3D_rc.qrc
