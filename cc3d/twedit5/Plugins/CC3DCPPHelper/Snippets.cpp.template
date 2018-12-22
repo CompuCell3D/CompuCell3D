@@ -1,0 +1,161 @@
+=============== #@Menu@ Visit
+
+---------- #@Submenu@ All Cells
+CellInventory::cellInventoryIterator cInvItr;
+CellG * cell=0;
+// std::set<NeighborSurfaceData > * neighborData;
+
+for(cInvItr=cellInventoryPtr->cellInventoryBegin() ; cInvItr !=cellInventoryPtr->cellInventoryEnd() ;++cInvItr )
+{
+    cell=cellInventoryPtr->getCell(cInvItr);
+    //Put your code here
+    cerr<<"cell id="<<cell->id<<endl;
+}
+
+---------- #@Submenu@ Pixel Neighbors
+int maxNeighborIndexLocal=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(neighborOrder); // this line usually sits in the init or extra init function
+Neighbor neighbor;
+CellG * nCell;
+WatchableField3D<CellG *> *fieldG =(WatchableField3D<CellG *> *) potts->getCellFieldG(); // you may store WatchableField3D<CellG *> *fieldG as a class member
+
+Point3D px;
+
+for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndexLocal ; ++nIdx ){
+    neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(px),nIdx);
+    if(!neighbor.distance){
+        //if distance is 0 then the neighbor returned is invalid
+        continue;
+    }
+    nCell=fieldG->get(neighbor.pt);
+
+    if (!nCell) {
+        cerr<<"neighbor pixel cell id="<<nCell->id<<endl;
+    }
+        
+}
+
+
+---------- #@Submenu@ Compartments of a Cluster
+CC3DCellList compartments = potts->getCellInventory().getClusterInventory().getClusterCells(CELL->clusterId);
+for (int i =0 ; i< compartments.size() ; ++i){
+    cerr<<"compartment id="<<compartments[i]->id<<endl; 
+}
+
+=============== #@Menu@ Module Setup
+---------- #@Submenu@ Preload Plugin
+//This code is usually called from   init function      
+bool pluginAlreadyRegisteredFlag;
+Plugin *plugin=Simulator::pluginManager.get("PLUGIN_NAME",&pluginAlreadyRegisteredFlag); //this will load PLUGIN_NAME plugin if it is not already loaded
+if(!pluginAlreadyRegisteredFlag)
+    plugin->init(simulator);
+
+=============== #@Menu@ Include    
+
+---------- #@Submenu@ Cell/Cluster Inventory
+#include <CompuCell3D/Potts3D/CellInventory.h>
+
+---------- #@Submenu@ Plugin Files
+#include <CompuCell3D/plugins/PLUGIN_NAME/PLUGIN_FILE.h>
+
+---------- #@Submenu@ Point3D/Dim3D
+#include <CompuCell3D/Field3D/Point3D.h>
+#include <CompuCell3D/Field3D/Dim3D.h>
+
+---------- #@Submenu@ Field3D
+#include <CompuCell3D/Field3D/Field3D.h>
+#include <CompuCell3D/Field3D/WatchableField3D.h>
+
+---------- #@Submenu@ Boundary Type Definitions
+#include <CompuCell3D/Boundary/BoundaryTypeDefinitions.h>
+
+---------- #@Submenu@ Boundary Strategy
+#include <CompuCell3D/Boundary/BoundaryStrategy.h>
+
+---------- #@Submenu@ Automaton
+#include <CompuCell3D/Automaton/Automaton.h>
+
+---------- #@Submenu@ Potts3D
+#include <CompuCell3D/Potts3D/Potts3D.h>
+
+---------- #@Submenu@ Simulator
+#include <CompuCell3D/Simulator.h>
+
+---------- #@Submenu@ Vector3
+#include <PublicUtilities/Vector3.h>
+
+---------- #@Submenu@ StringUtilis
+#include <PublicUtilities/StringUtils.h>
+
+---------- #@Submenu@ NumericalUtilis
+#include <PublicUtilities/NumericalUtils.h>
+
+
+
+=============== #@Menu@ Cell Attributes    
+
+---------- #@Submenu@ Get ExtraAttribute
+
+ACCESSOR_NAME.get(CELL->extraAttribPtr)->ATTRIBUTE_COMPONENT
+
+
+=============== #@Menu@ XML Utils   
+
+---------- #@Submenu@ Find Element
+bool flag=_xmlData->findElement("ELEMENT_NAME");
+
+---------- #@Submenu@ Get Element
+CC3DXMLElement *elem=_xmlData->getFirstElement("ELEMENT_NAME");
+
+---------- #@Submenu@ Get Element As Double
+double val=_xmlData->getFirstElement("ELEMENT_NAME")->getDouble();
+
+---------- #@Submenu@ Get Element As Int
+int val=_xmlData->getFirstElement("ELEMENT_NAME")->getInt();
+
+---------- #@Submenu@ Get Element As UInt
+unsigned int val=_xmlData->getFirstElement("ELEMENT_NAME")->getUInt();
+
+---------- #@Submenu@ Get Element As Short
+short val=_xmlData->getFirstElement("ELEMENT_NAME")->getShort();
+
+---------- #@Submenu@ Get Element As UShort
+unsigned short val=_xmlData->getFirstElement("ELEMENT_NAME")->getUShort();
+
+---------- #@Submenu@ Get Element As Bool
+bool val=_xmlData->getFirstElement("ELEMENT_NAME")->getBool();
+
+---------- #@Submenu@ Get Element As Text
+std::string val=_xmlData->getFirstElement("ELEMENT_NAME")->getText();
+
+---------- #@Submenu@ Find Attribute
+bool flag=_xmlData->findAttribute("ATTR_NAME");
+
+---------- #@Submenu@ Get Attribute As Text
+std::string val=_xmlData->getAttribute("ATTR_NAME");
+
+---------- #@Submenu@ Get Attribute As Double
+double val=_xmlData->getAttributeAsDouble("ATTR_NAME");
+
+---------- #@Submenu@ Get Attribute As Int
+int val=_xmlData->getAttributeAsInt("ATTR_NAME");
+
+---------- #@Submenu@ Get Attribute As UInt
+unsigned int val=_xmlData->getAttributeAsUInt("ATTR_NAME");
+
+---------- #@Submenu@ Get Attribute As Short
+short val=_xmlData->getAttributeAsShort("ATTR_NAME");
+
+---------- #@Submenu@ Get Attribute As UShort
+unsigned short val=_xmlData->getAttributeAsUShort("ATTR_NAME");
+
+---------- #@Submenu@ Get Attribute As Bool
+bool val=_xmlData->getAttributeAsBool("ATTR_NAME");
+
+---------- #@Submenu@ Process List of Elements
+CC3DXMLElementList elemVec=_xmlData->getElements("ELEMENT_NAME");
+for (int i = 0 ; i<elemVec.size(); ++i){
+    //Put your code here
+}
+
+
+
