@@ -753,59 +753,61 @@ FIELD3DEXTENDERBASE(type,returnType)
         }            
     }
 
-    //////if (PySlice_Check(yCoord)){
-    //////    
-    //////    int ok=PySlice_GetIndicesEx((PySliceObject*)yCoord,dim.y-1,&start_y,&stop_y,&step_y,&sliceLength);
-    ////// // cerr<<"extracting slices for x axis"<<endl;   
-    //////// cerr<<"start y="<< start_y<<endl;
-    //////// cerr<<"stop y="<< stop_y<<endl;
-    //////// cerr<<"step y="<< step_y<<endl;
-    //////// cerr<<"sliceLength="<<sliceLength<<endl;               
-    //////    
-    //////    
-    //////}else{
-    //////    if (PyInt_Check(yCoord)){
-    //////        start_y=PyInt_AsLong(PyTuple_GetItem(_indexTuple,1));
-    //////        stop_y=start_y;
-    //////        step_y=1;
-    //////    }else if (PyLong_Check(yCoord)){
-    //////        start_y=PyLong_AsLong(PyTuple_GetItem(_indexTuple,1));
-    //////        stop_y=start_y;
-    //////        step_y=1;          
-    //////    }else if (PyFloat_Check(yCoord)){
-    //////        start_y = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple,1)));     
-    //////        stop_y=start_y;
-    //////        step_y=1;                      
-    //////    }
-    //////    else{
-    //////        throw std::runtime_error("Wrong Type (Y): only integer or float values are allowed here - floats are rounded");
-    //////    }
-    //////}
-    //////
-    //////if (PySlice_Check(zCoord)){
-    //////    
-    //////   int ok= PySlice_GetIndicesEx((PySliceObject*)zCoord,dim.z-1,&start_z,&stop_z,&step_z,&sliceLength);
-    //////    
-    //////    
-    //////}else{
-    //////    if (PyInt_Check(zCoord)){
-    //////        start_z=PyInt_AsLong(PyTuple_GetItem(_indexTuple,2));
-    //////        stop_z=start_z;
-    //////        step_z=1;
-    //////    }else if (PyLong_Check(zCoord)){
-    //////        start_z=PyLong_AsLong(PyTuple_GetItem(_indexTuple,2));
-    //////        stop_z=start_z;
-    //////        step_z=1;          
-    //////    }else if (PyFloat_Check(zCoord)){
-    //////        start_z = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple,2)));     
-    //////        stop_z=start_z;
-    //////        step_z=1;                      
-    //////    }
-    //////    else{
-    //////        throw std::runtime_error("Wrong Type (Z): only integer or float values are allowed here - floats are rounded");
-    //////    }
+    if (PySlice_Check(yCoord)){
+        
+        //int ok=PySlice_GetIndicesEx((PySliceObject*)yCoord,dim.y-1,&start_y,&stop_y,&step_y,&sliceLength);
+		int ok = PySlice_GetIndices(yCoord, dim.y - 1, &start_y, &stop_y, &step_y);
+     // cerr<<"extracting slices for x axis"<<endl;   
+    // cerr<<"start y="<< start_y<<endl;
+    // cerr<<"stop y="<< stop_y<<endl;
+    // cerr<<"step y="<< step_y<<endl;
+    // cerr<<"sliceLength="<<sliceLength<<endl;               
+        
+        
+    }else{
+        if (PyInt_Check(yCoord)){
+            start_y=PyInt_AsLong(PyTuple_GetItem(_indexTuple,1));
+            stop_y=start_y;
+            step_y=1;
+        }else if (PyLong_Check(yCoord)){
+            start_y=PyLong_AsLong(PyTuple_GetItem(_indexTuple,1));
+            stop_y=start_y;
+            step_y=1;          
+        }else if (PyFloat_Check(yCoord)){
+            start_y = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple,1)));     
+            stop_y=start_y;
+            step_y=1;                      
+        }
+        else{
+            throw std::runtime_error("Wrong Type (Y): only integer or float values are allowed here - floats are rounded");
+        }
+    }
+    
+    if (PySlice_Check(zCoord)){
+        
+       //int ok= PySlice_GetIndicesEx((PySliceObject*)zCoord,dim.z-1,&start_z,&stop_z,&step_z,&sliceLength);
+	   int ok = PySlice_GetIndices(zCoord, dim.z - 1, &start_z, &stop_z, &step_z);
+        
+        
+    }else{
+        if (PyInt_Check(zCoord)){
+            start_z=PyInt_AsLong(PyTuple_GetItem(_indexTuple,2));
+            stop_z=start_z;
+            step_z=1;
+        }else if (PyLong_Check(zCoord)){
+            start_z=PyLong_AsLong(PyTuple_GetItem(_indexTuple,2));
+            stop_z=start_z;
+            step_z=1;          
+        }else if (PyFloat_Check(zCoord)){
+            start_z = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple,2)));     
+            stop_z=start_z;
+            step_z=1;                      
+        }
+        else{
+            throw std::runtime_error("Wrong Type (Z): only integer or float values are allowed here - floats are rounded");
+        }
 
-    //////}
+    }
 
     
     // cerr<<"start x="<< start_x<<endl;
@@ -884,76 +886,79 @@ FIELD3DEXTENDERBASE(type,returnType)
     
     Dim3D dim=self->getDim();
     
-    //////if (PySlice_Check(xCoord)){    
-    //////    PySlice_GetIndicesEx((PySliceObject*)xCoord,dim.x-1,&start_x,&stop_x,&step_x,&sliceLength);
-    //////    
-    //////}else{
-    //////    if (PyInt_Check(xCoord)){
-    //////        start_x=PyInt_AsLong(PyTuple_GetItem(_indexTuple,0));
-    //////        stop_x=start_x;
-    //////        step_x=1;
-    //////    }else if (PyLong_Check(xCoord)){
-    //////        start_x=PyLong_AsLong(PyTuple_GetItem(_indexTuple,0));
-    //////        stop_x=start_x;
-    //////        step_x=1;          
-    //////    }else if (PyFloat_Check(xCoord)){
-    //////        start_x = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple,0)));     
-    //////        stop_x=start_x;
-    //////        step_x=1;                      
-    //////    }
-    //////    else{
-    //////        throw std::runtime_error("Wrong Type (X): only integer or float values are allowed here - floats are rounded");
-    //////    }   
-    //////    
-    //////}
-    //////
-    //////if (PySlice_Check(yCoord)){
-    //////    
-    //////    PySlice_GetIndicesEx((PySliceObject*)yCoord,dim.y-1,&start_y,&stop_y,&step_y,&sliceLength);
-    //////    
-    //////    
-    //////}else{
-    //////    if (PyInt_Check(yCoord)){
-    //////        start_y=PyInt_AsLong(PyTuple_GetItem(_indexTuple,1));
-    //////        stop_y=start_y;
-    //////        step_y=1;
-    //////    }else if (PyLong_Check(yCoord)){
-    //////        start_y=PyLong_AsLong(PyTuple_GetItem(_indexTuple,1));
-    //////        stop_y=start_y;
-    //////        step_y=1;          
-    //////    }else if (PyFloat_Check(yCoord)){
-    //////        start_y = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple,1)));     
-    //////        stop_y=start_y;
-    //////        step_y=1;                      
-    //////    }
-    //////    else{
-    //////        throw std::runtime_error("Wrong Type (Y): only integer or float values are allowed here - floats are rounded");
-    //////    }
-    //////}
-    //////
-    //////if (PySlice_Check(zCoord)){
-    //////    
-    //////    PySlice_GetIndicesEx((PySliceObject*)zCoord,dim.z-1,&start_z,&stop_z,&step_z,&sliceLength);
-    //////    
-    //////    
-    //////}else{
-    //////    if (PyInt_Check(zCoord)){
-    //////        start_z=PyInt_AsLong(PyTuple_GetItem(_indexTuple,2));
-    //////        stop_z=start_z;
-    //////        step_z=1;
-    //////    }else if (PyLong_Check(zCoord)){
-    //////        start_z=PyLong_AsLong(PyTuple_GetItem(_indexTuple,2));
-    //////        stop_z=start_z;
-    //////        step_z=1;          
-    //////    }else if (PyFloat_Check(zCoord)){
-    //////        start_z = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple,2)));     
-    //////        stop_z=start_z;
-    //////        step_z=1;                      
-    //////    }
-    //////    else{
-    //////        throw std::runtime_error("Wrong Type (Z): only integer or float values are allowed here - floats are rounded");
-    //////    }
-    //////}
+    if (PySlice_Check(xCoord)){    
+        //PySlice_GetIndicesEx((PySliceObject*)xCoord,dim.x-1,&start_x,&stop_x,&step_x,&sliceLength);
+		int ok = PySlice_GetIndices(xCoord, dim.x - 1, &start_x, &stop_x, &step_x);
+        
+    }else{
+        if (PyInt_Check(xCoord)){
+            start_x=PyInt_AsLong(PyTuple_GetItem(_indexTuple,0));
+            stop_x=start_x;
+            step_x=1;
+        }else if (PyLong_Check(xCoord)){
+            start_x=PyLong_AsLong(PyTuple_GetItem(_indexTuple,0));
+            stop_x=start_x;
+            step_x=1;          
+        }else if (PyFloat_Check(xCoord)){
+            start_x = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple,0)));     
+            stop_x=start_x;
+            step_x=1;                      
+        }
+        else{
+            throw std::runtime_error("Wrong Type (X): only integer or float values are allowed here - floats are rounded");
+        }   
+        
+    }
+    
+    if (PySlice_Check(yCoord)){
+        
+        //PySlice_GetIndicesEx((PySliceObject*)yCoord,dim.y-1,&start_y,&stop_y,&step_y,&sliceLength);
+		int ok = PySlice_GetIndices(yCoord, dim.y - 1, &start_y, &stop_y, &step_y);
+        
+        
+    }else{
+        if (PyInt_Check(yCoord)){
+            start_y=PyInt_AsLong(PyTuple_GetItem(_indexTuple,1));
+            stop_y=start_y;
+            step_y=1;
+        }else if (PyLong_Check(yCoord)){
+            start_y=PyLong_AsLong(PyTuple_GetItem(_indexTuple,1));
+            stop_y=start_y;
+            step_y=1;          
+        }else if (PyFloat_Check(yCoord)){
+            start_y = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple,1)));     
+            stop_y=start_y;
+            step_y=1;                      
+        }
+        else{
+            throw std::runtime_error("Wrong Type (Y): only integer or float values are allowed here - floats are rounded");
+        }
+    }
+    
+    if (PySlice_Check(zCoord)){
+        
+        //PySlice_GetIndicesEx((PySliceObject*)zCoord,dim.z-1,&start_z,&stop_z,&step_z,&sliceLength);
+		int ok = PySlice_GetIndices(zCoord, dim.z - 1, &start_z, &stop_z, &step_z);
+        
+        
+    }else{
+        if (PyInt_Check(zCoord)){
+            start_z=PyInt_AsLong(PyTuple_GetItem(_indexTuple,2));
+            stop_z=start_z;
+            step_z=1;
+        }else if (PyLong_Check(zCoord)){
+            start_z=PyLong_AsLong(PyTuple_GetItem(_indexTuple,2));
+            stop_z=start_z;
+            step_z=1;          
+        }else if (PyFloat_Check(zCoord)){
+            start_z = (Py_ssize_t) round(PyFloat_AsDouble(PyTuple_GetItem(_indexTuple,2)));     
+            stop_z=start_z;
+            step_z=1;                      
+        }
+        else{
+            throw std::runtime_error("Wrong Type (Z): only integer or float values are allowed here - floats are rounded");
+        }
+    }
    
     
 //     cerr<<"start x="<< start_x<<endl;
