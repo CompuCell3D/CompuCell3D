@@ -81,23 +81,23 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	contactEnergies.clear();
 
 
-	if(potts->getDisplayUnitsFlag()){
-		Unit contactEnergyUnit=potts->getEnergyUnit()/powerUnit(potts->getLengthUnit(),2);
+	//////if(potts->getDisplayUnitsFlag()){
+	//////	Unit contactEnergyUnit=potts->getEnergyUnit()/powerUnit(potts->getLengthUnit(),2);
 
 
 
 
-		CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-		if (!unitsElem){ //add Units element
-			unitsElem=_xmlData->attachElement("Units");
-		}
+	//////	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
+	//////	if (!unitsElem){ //add Units element
+	//////		unitsElem=_xmlData->attachElement("Units");
+	//////	}
 
-		if(unitsElem->getFirstElement("EnergyUnit")){
-			unitsElem->getFirstElement("EnergyUnit")->updateElementValue(contactEnergyUnit.toString());
-		}else{
-			CC3DXMLElement * energyUnitElem = unitsElem->attachElement("EnergyUnit",contactEnergyUnit.toString());
-		}
-	}
+	//////	if(unitsElem->getFirstElement("EnergyUnit")){
+	//////		unitsElem->getFirstElement("EnergyUnit")->updateElementValue(contactEnergyUnit.toString());
+	//////	}else{
+	//////		CC3DXMLElement * energyUnitElem = unitsElem->attachElement("EnergyUnit",contactEnergyUnit.toString());
+	//////	}
+	//////}
 
 	CC3DXMLElementList energyVec=_xmlData->getElements("Energy");
 

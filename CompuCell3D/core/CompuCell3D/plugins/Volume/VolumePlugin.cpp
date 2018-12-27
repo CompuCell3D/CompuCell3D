@@ -61,39 +61,39 @@ void VolumePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData){
 void VolumePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	//if there are no child elements for this plugin it means will use changeEnergyByCellId
 
-	if(potts->getDisplayUnitsFlag()){
-		Unit targetVolumeUnit=powerUnit(potts->getLengthUnit(),3);
-		Unit lambdaVolumeUnit=potts->getEnergyUnit()/(targetVolumeUnit*targetVolumeUnit);
-		//Unit demoUnit("10^-15*kg");
-		//cerr<<"demoUnit="<<demoUnit<<endl;
-		//cerr<<"Length Unit"<<potts->getLengthUnit()<<endl;
-		//cerr<<"targetVolumeUnit="<<targetVolumeUnit.toString()<<endl;
-		//cerr<<"lambdaVolumeUnit="<<lambdaVolumeUnit.toString()<<endl;
+	//if(potts->getDisplayUnitsFlag()){
+	//	Unit targetVolumeUnit=powerUnit(potts->getLengthUnit(),3);
+	//	Unit lambdaVolumeUnit=potts->getEnergyUnit()/(targetVolumeUnit*targetVolumeUnit);
+	//	//Unit demoUnit("10^-15*kg");
+	//	//cerr<<"demoUnit="<<demoUnit<<endl;
+	//	//cerr<<"Length Unit"<<potts->getLengthUnit()<<endl;
+	//	//cerr<<"targetVolumeUnit="<<targetVolumeUnit.toString()<<endl;
+	//	//cerr<<"lambdaVolumeUnit="<<lambdaVolumeUnit.toString()<<endl;
 
 
-		//CC3DXMLElement * volumeUnitElem = _xmlData->attachElement("TargetVolumeUnit",targetVolumeUnit.toString());
-		//CC3DXMLElement * volumeUnitElem1 = _xmlData->attachElement("TargetVolumeUnit1",targetVolumeUnit.toString());
-		//CC3DXMLElement * volumeUnitElem2 = _xmlData->attachElement("TargetVolumeUnit2","demoElement");
+	//	//CC3DXMLElement * volumeUnitElem = _xmlData->attachElement("TargetVolumeUnit",targetVolumeUnit.toString());
+	//	//CC3DXMLElement * volumeUnitElem1 = _xmlData->attachElement("TargetVolumeUnit1",targetVolumeUnit.toString());
+	//	//CC3DXMLElement * volumeUnitElem2 = _xmlData->attachElement("TargetVolumeUnit2","demoElement");
 
-		CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-		if (!unitsElem){ //add Units element
-			unitsElem=_xmlData->attachElement("Units");
-		}
+	//	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
+	//	if (!unitsElem){ //add Units element
+	//		unitsElem=_xmlData->attachElement("Units");
+	//	}
 
-		if(unitsElem->getFirstElement("TargetVolumeUnit")){
-			unitsElem->getFirstElement("TargetVolumeUnit")->updateElementValue(targetVolumeUnit.toString());
-		}else{
-			CC3DXMLElement * volumeUnitElem = unitsElem->attachElement("TargetVolumeUnit",targetVolumeUnit.toString());
-		}
+	//	if(unitsElem->getFirstElement("TargetVolumeUnit")){
+	//		unitsElem->getFirstElement("TargetVolumeUnit")->updateElementValue(targetVolumeUnit.toString());
+	//	}else{
+	//		CC3DXMLElement * volumeUnitElem = unitsElem->attachElement("TargetVolumeUnit",targetVolumeUnit.toString());
+	//	}
 
-		if(unitsElem->getFirstElement("LambdaVolumeUnit")){
-			unitsElem->getFirstElement("LambdaVolumeUnit")->updateElementValue(lambdaVolumeUnit.toString());
-		}else{
-			CC3DXMLElement * lambdaVolumeUnitElem = unitsElem->attachElement("LambdaVolumeUnit",lambdaVolumeUnit.toString());
-		}
+	//	if(unitsElem->getFirstElement("LambdaVolumeUnit")){
+	//		unitsElem->getFirstElement("LambdaVolumeUnit")->updateElementValue(lambdaVolumeUnit.toString());
+	//	}else{
+	//		CC3DXMLElement * lambdaVolumeUnitElem = unitsElem->attachElement("LambdaVolumeUnit",lambdaVolumeUnit.toString());
+	//	}
 
 
-	}
+	//}
 
 	
 

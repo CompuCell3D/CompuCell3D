@@ -60,7 +60,7 @@ void CellTypePlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData){
    potts->registerAutomaton(this);
    update(_xmlData);
    simulator->registerSteerableObject((SteerableObject*)this);
-
+   cerr << "initialized cell type plugin" << endl;
 }
 
 
