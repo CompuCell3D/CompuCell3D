@@ -80,8 +80,17 @@ class TestAPI(unittest.TestCase):
         sim.initializeCC3D()
         # at this point after initialize cc3d stepwe can start querieg sim object.
         print('num_steps=', sim.getNumSteps())
+        max_num_steps = sim.getNumSteps()
+
+        sim.extraInit()
 
         sim.start()
+
+        cur_step = 0
+        while cur_step < max_num_steps/100:
+
+            sim.step(cur_step)
+            cur_step += 1
 
 
 

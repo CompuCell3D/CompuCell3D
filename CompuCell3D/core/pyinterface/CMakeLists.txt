@@ -30,7 +30,7 @@ SET(CMAKE_SWIG_FLAGS "")
 
 IF(SWIG_FOUND)
     add_subdirectory(CC3DXML)
-#     add_subdirectory(CompuCellPython)
+    add_subdirectory(CompuCellPython)
 
 # # if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 

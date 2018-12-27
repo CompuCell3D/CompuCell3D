@@ -11,6 +11,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 SET(LIBS
   CompuCellLibShared
+  BabySimLibShared
   #AutomatonStatic
   #BoundaryStatic
   Field3DStatic
@@ -178,7 +179,10 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   SET_TARGET_PROPERTIES(_CompuCell PROPERTIES SUFFIX ".pyd") # changes dll name to pyd sop that it is compatible with new Python standard
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
-SWIG_LINK_LIBRARIES(CompuCell ${LIBS} ${LIBS_AUX})
+# SWIG_LINK_LIBRARIES(CompuCell ${LIBS} ${LIBS_AUX})
+# todo - change back to include libs_aux
+SWIG_LINK_LIBRARIES(CompuCell ${LIBS})
+
 #TARGET_LINK_LIBRARIES(_CompuCell ${LIBS})
 
 

@@ -99,6 +99,9 @@ Simulator::~Simulator() {
 	delete classRegistry;
 	delete pUtils;
     delete pUtilsSingle;
+
+	cerr << "Simulator: extra destroy for boundary strategy" << endl;
+	BoundaryStrategy::destroy();
     
 #ifdef QT_WRAPPERS_AVAILABLE
 	//restoring original cerr stream buffer
@@ -732,9 +735,17 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 
 	cerr << "ppdCC3DPtr->latticeType = " << ppdCC3DPtr->latticeType << endl;
 
+
+
 	changeToLower(ppdCC3DPtr->latticeType);
 
+
+
 	BoundaryStrategy::destroy(); // TEMP, se what happens: It hangs after second selection of the file.
+
+
+
+
 
 	// This is the ONLY place where the BoundaryStrategy singleton is instantiated!!!
 	if(ppdCC3DPtr->latticeType=="hexagonal")
@@ -765,8 +776,6 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 
 	//    exit(0);
 	BoundaryStrategy::getInstance()->setDim(ppdCC3DPtr->dim);
-
-
 
 	if (_xmlData->getFirstElement("FlipNeighborMaxDistance")) {
 
@@ -840,6 +849,7 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 	potts.setFluctuationAmplitudeFunctionByName(ppdCC3DPtr->fluctuationAmplitudeFunctionName);
 
 
+
 	if(_xmlData->getFirstElement("EnergyFunctionCalculator"))
 	{
 		if(_xmlData->getFirstElement("EnergyFunctionCalculator")->findAttribute("Type")){
@@ -852,6 +862,7 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 		enCalculator->setSimulator(this);
 		enCalculator->init(_xmlData->getFirstElement("EnergyFunctionCalculator"));
 	}
+
 
 
 
@@ -886,7 +897,9 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 
 	//this might reinitialize some of the POtts members but it also makes sure that units are initialized too.
 	potts.update(_xmlData);
+	cerr << "before return 1" << endl;
 
+	return;
 }
 
 

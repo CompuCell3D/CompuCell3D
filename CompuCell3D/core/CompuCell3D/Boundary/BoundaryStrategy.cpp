@@ -546,7 +546,7 @@ void BoundaryStrategy::prepareNeighborListsSquare(float _maxDistance) {
 
 	char a = '0';
 	Field3DImpl<char> tempField(dim, a);
-	int margin = 2 * fabs(_maxDistance) + 1;
+	int margin = 2 * (int)fabs(_maxDistance) + 1;
 	//    cerr<<"margin="<<margin<<" distance="<<_maxDistance<<endl;
 	Point3D ctPt(dim.x / 2, dim.y / 2, dim.z / 2);
 	//    if (margin > dim.x/2 && margin > dim.y/2 && margin > dim.z/2){
