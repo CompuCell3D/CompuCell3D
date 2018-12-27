@@ -47,7 +47,7 @@ public:
    * @return The id or index of the new class group.
    */  
   unsigned int create() {
-    return groups.put(factory.create());
+    return (unsigned int)groups.put(factory.create());
   }
 
   /** 

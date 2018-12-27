@@ -61,8 +61,8 @@ class BasicDynamicClassNodeBase;
  * See also this similar class BasicClassGroupFactory.
  */
 class BasicDynamicClassFactory {
-  unsigned int classSize;
-  unsigned int numClasses;
+  size_t classSize;
+  size_t numClasses;
 
   BasicArray<BasicDynamicClassNodeBase *> nodes;
 
@@ -88,13 +88,13 @@ public:
   void destroy(void *x);
 
   /// @return The current total size of the dynamic class.
-  unsigned int getClassSize() {return classSize;}
+  size_t getClassSize() {return classSize;}
 
   /// @return The current number of nodes in this dynamic class factory.
-  unsigned int getNumNodes() {return nodes.getSize();}
+  size_t getNumNodes() {return nodes.getSize();}
 
   /// @return The current number of existing instances of the dynamic class.
-  unsigned int getNumClasses() {return numClasses;}
+  size_t getNumClasses() {return numClasses;}
 
 protected:
   /** 

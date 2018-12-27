@@ -33,12 +33,12 @@
 #include <iostream>
 
 BasicClassGroupFactory::~BasicClassGroupFactory() {
-  for (unsigned int i = 0; i < classFactories.getSize(); i++)
+  for (size_t i = 0; i < classFactories.getSize(); i++)
     delete classFactories[i];
 }
 
 void BasicClassGroupFactory::registerClass(BasicClassAccessorBase *accessor) {
-  int id = classFactories.put(accessor->createClassFactory());
+  int id = (int)classFactories.put(accessor->createClassFactory());
   accessor->setId(id);
   classAccessors.put(accessor);
 }
@@ -46,7 +46,7 @@ void BasicClassGroupFactory::registerClass(BasicClassAccessorBase *accessor) {
 BasicClassGroup *BasicClassGroupFactory::create() {
   void **classes = new void *[classFactories.getSize()];
 
-  for (unsigned int i = 0; i < classFactories.getSize(); i++)
+  for (size_t i = 0; i < classFactories.getSize(); i++)
     classes[i] = classFactories[i]->create();
 
   return new BasicClassGroup(classes, classFactories.getSize());
@@ -65,7 +65,7 @@ void BasicClassGroupFactory::destroy(BasicClassGroup *group) {
   //cerr<<"group->size="<<group->size<<endl;	
   //cerr<<"classAccessors[0]="<<classAccessors[0]<<endl;
   //cerr<<"INSIDE DESTROY BasicClassGroupFactory"<<endl; 		
-  for (unsigned int i = 0; i < group->size; i++){
+  for (size_t i = 0; i < group->size; i++){
 	
 	 //cerr<<"group->classes[i]="<<group->classes[i]<<endl;
     classAccessors[i]->deallocateClass(group);
