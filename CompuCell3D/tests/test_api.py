@@ -57,17 +57,31 @@ class TestAPI(unittest.TestCase):
         xml_fname = r'd:\CC3D_PY3_GIT\CompuCell3D\tests\test_data\cellsort_2D.xml'
         cc3dXML2ObjConverter = parseXML(xml_fname=xml_fname)
 
+        # # this loads all plugins/steppables - need to recode it to make loading on-demand only
+        # CompuCell.initializePlugins()
+
         sim = CompuCell.Simulator()
+        # boundary_strategy = sim.getBoundaryStrategy()
 
 
 
-        print('num_steps=', sim.ppdCC3DPtr)
         initModules(sim, cc3dXML2ObjConverter)
 
+        # sim.initializeCC3D()
+        # at this point after initialize cc3d stepwe can start querieg sim object.
+        # print('num_steps=', sim.getNumSteps())
+
+        # sim.start()
+
+
+        # this loads all plugins/steppables - need to recode it to make loading on-demand only
+        CompuCell.initializePlugins()
+
         sim.initializeCC3D()
+        # at this point after initialize cc3d stepwe can start querieg sim object.
+        print('num_steps=', sim.getNumSteps())
 
-
-
+        sim.start()
 
 
 
