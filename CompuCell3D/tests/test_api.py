@@ -52,7 +52,7 @@ class TestAPI(unittest.TestCase):
         # boundary_strategy = baby_sim.getBoundaryStrategy()
     def test_core_object_creation_api(self):
         import CompuCell
-        from cc3d.CompuCellSetup import initModules, parseXML
+        from cc3d.CompuCellSetup import init_modules, parseXML
 
         xml_fname = r'd:\CC3D_PY3_GIT\CompuCell3D\tests\test_data\cellsort_2D.xml'
         cc3dXML2ObjConverter = parseXML(xml_fname=xml_fname)
@@ -65,7 +65,7 @@ class TestAPI(unittest.TestCase):
 
 
 
-        initModules(sim, cc3dXML2ObjConverter)
+        init_modules(sim, cc3dXML2ObjConverter)
 
         # sim.initializeCC3D()
         # at this point after initialize cc3d stepwe can start querieg sim object.

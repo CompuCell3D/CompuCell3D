@@ -1,6 +1,8 @@
 import cc3d.core.XMLUtils as XMLUtils
 
-def initModules(sim, _cc3dXML2ObjConverter):
+
+
+def init_modules(sim, _cc3dXML2ObjConverter):
     """
 
     :param sim:

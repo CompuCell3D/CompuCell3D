@@ -1,4 +1,5 @@
 # Recurse into subprojects
+ADD_SUBDIRECTORY(BabySim)
 ADD_SUBDIRECTORY(Field3D)
 ADD_SUBDIRECTORY(Automaton)
 ADD_SUBDIRECTORY(Boundary)
@@ -61,11 +62,11 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
          INSTALL_TARGETS(/bin CompuCell3DCML)
      else(BUILD_CPP_ONLY_EXECUTABLE)
 
-          ADD_EXECUTABLE(CompuCell3D mainSimple.cpp)
-          TARGET_LINK_LIBRARIES(CompuCell3D
+          ADD_EXECUTABLE(mainSimpleDemo mainSimpleDemo.cpp)
+          TARGET_LINK_LIBRARIES(mainSimpleDemo
             CompuCellLibShared            
           )
-         INSTALL_TARGETS(/bin CompuCell3D)
+         INSTALL_TARGETS(/bin mainSimpleDemo)
 
     endif(BUILD_CPP_ONLY_EXECUTABLE) 
     
@@ -109,22 +110,22 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
          
      else(BUILD_CPP_ONLY_EXECUTABLE)
      
-          ADD_EXECUTABLE(CompuCell3D mainSimple.cpp)
+        #   ADD_EXECUTABLE(CompuCell3D mainSimple.cpp)
 
-          TARGET_LINK_LIBRARIES(CompuCell3D
-            CompuCellLibShared
-            BasicUtilsShared
-           # XercesUtilsShared
-            #XMLCerealShared
-            PublicUtilitiesShared
-            UnitsShared
-            AutomatonShared
-            BoundaryShared
-            Field3DShared
-            Potts3DShared
-          )
+        #   TARGET_LINK_LIBRARIES(CompuCell3D
+        #     CompuCellLibShared
+        #     BasicUtilsShared
+        #    # XercesUtilsShared
+        #     #XMLCerealShared
+        #     PublicUtilitiesShared
+        #     UnitsShared
+        #     AutomatonShared
+        #     BoundaryShared
+        #     Field3DShared
+        #     Potts3DShared
+        #   )
 
-        INSTALL_TARGETS(/bin CompuCell3D)
+        # INSTALL_TARGETS(/bin CompuCell3D)
 
 
     endif(BUILD_CPP_ONLY_EXECUTABLE) 

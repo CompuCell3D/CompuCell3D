@@ -1250,6 +1250,7 @@ public:
 
   // todo - plugin manager
   void initializePlugins() {
+	  cerr << "initialize plugin fcn" << endl;
     // Set the path and load the plugins
 	  //char * cellTypePluginPath = "d:/Program Files/cc3d_py3/lib/CompuCell3DPlugins/CC3DCellType.dll";
 	  //Simulator::pluginManager.loadLibrary(cellTypePluginPath);
@@ -1258,7 +1259,7 @@ public:
     char *steppablePath = getenv("COMPUCELL3D_STEPPABLE_PATH");
     cerr<<"steppablePath="<<steppablePath<<endl;
     if (steppablePath) Simulator::steppableManager.loadLibraries(steppablePath);
-
+	  
     char *pluginPath = getenv("COMPUCELL3D_PLUGIN_PATH");
     cerr<<"pluginPath="<<pluginPath<<endl;
     cerr<<"THIS IS JUST BEFORE LOADING LIBRARIES"<<endl;

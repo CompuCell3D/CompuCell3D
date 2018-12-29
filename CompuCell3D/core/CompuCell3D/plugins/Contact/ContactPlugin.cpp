@@ -20,7 +20,7 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 
- #include <CompuCell3D/CC3D.h>
+#include <CompuCell3D/CC3D.h>
 // // // #include <CompuCell3D/Field3D/Field3D.h>
 // // // #include <CompuCell3D/Field3D/WatchableField3D.h>
 // // // #include <CompuCell3D/Potts3D/Potts3D.h>
@@ -44,7 +44,7 @@ using namespace std;
 
 
 
-ContactPlugin::ContactPlugin():xmlData(0),weightDistance(false)   {
+ContactPlugin::ContactPlugin() :xmlData(0), weightDistance(false) {
 }
 
 ContactPlugin::~ContactPlugin() {
@@ -55,27 +55,33 @@ ContactPlugin::~ContactPlugin() {
 
 
 void ContactPlugin::init(Simulator *simulator, CC3DXMLElement *_xmlData) {
-	potts=simulator->getPotts();
-	xmlData=_xmlData;
-	simulator->getPotts()->registerEnergyFunctionWithName(this,toString());
+	potts = simulator->getPotts();
+	xmlData = _xmlData;
+	simulator->getPotts()->registerEnergyFunctionWithName(this, toString());
 	simulator->registerSteerableObject(this);
 }
 
 
 
 
-void ContactPlugin::extraInit(Simulator *simulator){
-	update(xmlData,true);
+void ContactPlugin::extraInit(Simulator *simulator) {
+	cerr << "contact enter extraInit" << endl;
+	update(xmlData, true);
+	cerr << "contact after update" << endl;
 	Automaton * cellTypePluginAutomaton = potts->getAutomaton();
-	if (cellTypePluginAutomaton){
-		ASSERT_OR_THROW("The size of matrix of contact energy coefficients has must equal max_cell_type_id+1. You must list interactions coefficients between all cel types", 
-		contactEnergyArray.size() == ((unsigned int)cellTypePluginAutomaton->getMaxTypeId()+1) );
+	cerr << "contact after automaton" << endl;
+	return;
+	if (cellTypePluginAutomaton) {
+		ASSERT_OR_THROW("The size of matrix of contact energy coefficients has must equal max_cell_type_id+1. You must list interactions coefficients between all cel types",
+			contactEnergyArray.size() == ((unsigned int)cellTypePluginAutomaton->getMaxTypeId() + 1));
 	}
 
 }
 
-void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
+void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 	automaton = potts->getAutomaton();
+	//cerr << "automaton=" << automaton << endl;
+	//return;
 	ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
 		set<unsigned char> cellTypesSet;
 	contactEnergies.clear();
@@ -99,9 +105,9 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	//////	}
 	//////}
 
-	CC3DXMLElementList energyVec=_xmlData->getElements("Energy");
+	CC3DXMLElementList energyVec = _xmlData->getElements("Energy");
 
-	for (int i = 0 ; i<energyVec.size(); ++i){
+	for (int i = 0; i < energyVec.size(); ++i) {
 		setContactEnergy(energyVec[i]->getAttribute("Type1"), energyVec[i]->getAttribute("Type2"), energyVec[i]->getDouble());
 		//inserting all the types to the set (duplicate are automatically eleminated) to figure out max value of type Id
 		cellTypesSet.insert(automaton->getTypeId(energyVec[i]->getAttribute("Type1")));
@@ -109,56 +115,58 @@ void ContactPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 	}
 
 	//Now that we know all the types used in the simulation we will find size of the contactEnergyArray
-	vector<unsigned char> cellTypesVector(cellTypesSet.begin(),cellTypesSet.end());//coping set to the vector
+	vector<unsigned char> cellTypesVector(cellTypesSet.begin(), cellTypesSet.end());//coping set to the vector
 
-	int size= * max_element(cellTypesVector.begin(),cellTypesVector.end());
-	size+=1;//if max element is e.g. 5 then size has to be 6 for an array to be properly allocated
+	int size = *max_element(cellTypesVector.begin(), cellTypesVector.end());
+	size += 1;//if max element is e.g. 5 then size has to be 6 for an array to be properly allocated
 
-	int index ;
+	int index;
 	contactEnergyArray.clear();
-	contactEnergyArray.assign(size,vector<double>(size,0.0));
+	contactEnergyArray.assign(size, vector<double>(size, 0.0));
 
-	for(int i = 0 ; i < size ; ++i)
-		for(int j = 0 ; j < size ; ++j){
+	for (int i = 0; i < size; ++i)
+		for (int j = 0; j < size; ++j) {
 
-			index = getIndex(cellTypesVector[i],cellTypesVector[j]);
+			index = getIndex(cellTypesVector[i], cellTypesVector[j]);
 
 			contactEnergyArray[i][j] = contactEnergies[index];
 
 		}
-		cerr<<"size="<<size<<endl;
-		for(int i = 0 ; i < size ; ++i)
-			for(int j = 0 ; j < size ; ++j){
+	cerr << "size=" << size << endl;
+	for (int i = 0; i < size; ++i)
+		for (int j = 0; j < size; ++j) {
 
-				cerr<<"contact["<<i<<"]["<<j<<"]="<<contactEnergyArray[i][j]<<endl;
+			cerr << "contact[" << i << "][" << j << "]=" << contactEnergyArray[i][j] << endl;
 
-			}
+		}
 
-			//Here I initialize max neighbor index for direct acces to the list of neighbors 
-			boundaryStrategy=BoundaryStrategy::getInstance();
-			maxNeighborIndex=0;
+	//Here I initialize max neighbor index for direct acces to the list of neighbors 
+	boundaryStrategy = BoundaryStrategy::getInstance();
+	maxNeighborIndex = 0;
 
-			if(_xmlData->getFirstElement("Depth")){
-				maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
-				//cerr<<"got here will do depth"<<endl;
-			}else{
-				//cerr<<"got here will do neighbor order"<<endl;
-				if(_xmlData->getFirstElement("NeighborOrder")){
+	if (_xmlData->getFirstElement("Depth")) {
+		maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromDepth(_xmlData->getFirstElement("Depth")->getDouble());
+		//cerr<<"got here will do depth"<<endl;
+	}
+	else {
+		//cerr<<"got here will do neighbor order"<<endl;
+		if (_xmlData->getFirstElement("NeighborOrder")) {
 
-					maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());	
-// 					exit(0);
-				}else{
-					maxNeighborIndex=boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
+			maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(_xmlData->getFirstElement("NeighborOrder")->getUInt());
+			// 					exit(0);
+		}
+		else {
+			maxNeighborIndex = boundaryStrategy->getMaxNeighborIndexFromNeighborOrder(1);
 
-				}
+		}
 
-			}
+	}
 
-			cerr<<"Contact maxNeighborIndex="<<maxNeighborIndex<<endl;
+	cerr << "Contact maxNeighborIndex=" << maxNeighborIndex << endl;
 
 }
 
-double ContactPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const CellG *oldCell) {
+double ContactPlugin::changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell) {
 
 	//cerr<<"ChangeEnergy"<<endl;
 
@@ -168,75 +176,78 @@ double ContactPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const 
 	double distance = 0;
 	Point3D n;
 
-	CellG *nCell=0;
-	WatchableField3D<CellG *> *fieldG =(WatchableField3D<CellG *> *) potts->getCellFieldG();
+	CellG *nCell = 0;
+	WatchableField3D<CellG *> *fieldG = (WatchableField3D<CellG *> *) potts->getCellFieldG();
 	Neighbor neighbor;
 
 
 
-	if(weightDistance){
-		for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
-			neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
-			if(!neighbor.distance){
+	if (weightDistance) {
+		for (unsigned int nIdx = 0; nIdx <= maxNeighborIndex; ++nIdx) {
+			neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
+			if (!neighbor.distance) {
 				//if distance is 0 then the neighbor returned is invalid
 				continue;
 			}
 			nCell = fieldG->get(neighbor.pt);
-			if(nCell!=oldCell){
-				if((nCell != 0) && (oldCell != 0)) {
-				   if((nCell->clusterId) != (oldCell->clusterId)) {
-					  energy -= contactEnergy(oldCell,nCell)/ neighbor.distance;
-				   }
-				}else{
-				   energy -= contactEnergy(oldCell, nCell)/ neighbor.distance;
-			   }
-				
-			}
-			if(nCell!=newCell){
-				if((newCell != 0) && (nCell != 0)) {
-				   if((newCell->clusterId) != (nCell->clusterId)) {
-					  energy += contactEnergy(newCell,nCell)/ neighbor.distance;
-				   }
+			if (nCell != oldCell) {
+				if ((nCell != 0) && (oldCell != 0)) {
+					if ((nCell->clusterId) != (oldCell->clusterId)) {
+						energy -= contactEnergy(oldCell, nCell) / neighbor.distance;
+					}
 				}
-				else{
-				   energy += contactEnergy(newCell, nCell)/ neighbor.distance;
+				else {
+					energy -= contactEnergy(oldCell, nCell) / neighbor.distance;
+				}
 
-				}				
+			}
+			if (nCell != newCell) {
+				if ((newCell != 0) && (nCell != 0)) {
+					if ((newCell->clusterId) != (nCell->clusterId)) {
+						energy += contactEnergy(newCell, nCell) / neighbor.distance;
+					}
+				}
+				else {
+					energy += contactEnergy(newCell, nCell) / neighbor.distance;
+
+				}
 			}
 
 
 		}
-	}else{
+	}
+	else {
 
-		for(unsigned int nIdx=0 ; nIdx <= maxNeighborIndex ; ++nIdx ){
-			neighbor=boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt),nIdx);
-			if(!neighbor.distance){
+		for (unsigned int nIdx = 0; nIdx <= maxNeighborIndex; ++nIdx) {
+			neighbor = boundaryStrategy->getNeighborDirect(const_cast<Point3D&>(pt), nIdx);
+			if (!neighbor.distance) {
 				//if distance is 0 then the neighbor returned is invalid
 				continue;
 			}
 
 			nCell = fieldG->get(neighbor.pt);
-			if(nCell!=oldCell){
-				if((nCell != 0) && (oldCell != 0)) {
-				   if((nCell->clusterId) != (oldCell->clusterId)) {
-					  energy -= contactEnergy(oldCell,nCell);
-				   }
-				}else{
-				   energy -= contactEnergy(oldCell, nCell);
-			   }
-				
+			if (nCell != oldCell) {
+				if ((nCell != 0) && (oldCell != 0)) {
+					if ((nCell->clusterId) != (oldCell->clusterId)) {
+						energy -= contactEnergy(oldCell, nCell);
+					}
+				}
+				else {
+					energy -= contactEnergy(oldCell, nCell);
+				}
+
 				/*            if(pt.x==25 && pt.y==74 && pt.z==0)
 				cerr<<"!=oldCell neighbor.pt="<<neighbor.pt<<" contactEnergy(oldCell, nCell)="<<contactEnergy(oldCell, nCell)<<endl;*/
 			}
-			if(nCell!=newCell){
+			if (nCell != newCell) {
 
-				if((newCell != 0) && (nCell != 0)) {
-				   if((newCell->clusterId) != (nCell->clusterId)) {
-					  energy += contactEnergy(newCell,nCell);
-				   }
+				if ((newCell != 0) && (nCell != 0)) {
+					if ((newCell->clusterId) != (nCell->clusterId)) {
+						energy += contactEnergy(newCell, nCell);
+					}
 				}
-				else{
-				   energy += contactEnergy(newCell, nCell);
+				else {
+					energy += contactEnergy(newCell, nCell);
 
 				}
 
@@ -262,12 +273,12 @@ double ContactPlugin::changeEnergy(const Point3D &pt,const CellG *newCell,const 
 
 double ContactPlugin::contactEnergy(const CellG *cell1, const CellG *cell2) {
 
-	return contactEnergyArray[cell1 ? cell1->type : 0][cell2? cell2->type : 0];
+	return contactEnergyArray[cell1 ? cell1->type : 0][cell2 ? cell2->type : 0];
 
 
 }
 
-void ContactPlugin::setContactEnergy(const string typeName1,const string typeName2,const double energy) {
+void ContactPlugin::setContactEnergy(const string typeName1, const string typeName2, const double energy) {
 
 	char type1 = automaton->getTypeId(typeName1);
 	char type2 = automaton->getTypeId(typeName2);
@@ -286,7 +297,7 @@ int ContactPlugin::getIndex(const int type1, const int type2) const {
 	else return ((type2 + 1) | ((type1 + 1) << 16));
 }
 
-std::string ContactPlugin::steerableName(){return "Contact";}
-std::string ContactPlugin::toString(){return steerableName();}
+std::string ContactPlugin::steerableName() { return "Contact"; }
+std::string ContactPlugin::toString() { return steerableName(); }
 
 
