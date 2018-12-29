@@ -1,5 +1,5 @@
 import cc3d.core.XMLUtils as XMLUtils
-
+import cc3d.CompuCellSetup as CompuCellSetup
 
 
 def init_modules(sim, _cc3dXML2ObjConverter):
@@ -44,4 +44,11 @@ def parseXML( xml_fname):
     root_element = cc3dXML2ObjConverter.Parse(xml_fname)
     print('root_element=', root_element)
     return cc3dXML2ObjConverter
+
+def getSteppableRegistry():
+    """
+    returns steppable registry object from persistent globals. Legacy function
+    :return: {SeppableRegistry
+    """
+    return CompuCellSetup.persistent_globals.steppable_registry
 

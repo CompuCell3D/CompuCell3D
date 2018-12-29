@@ -3,8 +3,54 @@ from cc3d.CompuCellSetup import init_modules, parseXML
 import cc3d.CompuCellSetup as CompuCellSetup
 
 
-def getCoreSimulationObjects():
+def initialize_cc3d():
+    """
 
+    :return:
+    """
+    CompuCellSetup.persistent_globals.sim, CompuCellSetup.persistent_globals.simthread = getCoreSimulationObjects()
+    sim = CompuCellSetup.persistent_globals.sim
+    simthread = CompuCellSetup.persistent_globals.simthread
+
+    CompuCellSetup.persistent_globals.steppable_registry.sim = sim
+
+    initializeSimulationObjects(sim, simthread)
+
+    CompuCellSetup.persistent_globals.simulation_initialized = True
+
+
+def run():
+    """
+
+    :return:
+    """
+    simulation_initialized = CompuCellSetup.persistent_globals.simulation_initialized
+    if not simulation_initialized:
+        initialize_cc3d()
+
+    sim = CompuCellSetup.persistent_globals.sim
+    simthread = CompuCellSetup.persistent_globals.simthread
+    steppable_registry = CompuCellSetup.persistent_globals.steppable_registry
+
+    mainLoop(sim, simthread=simthread, steppableRegistry=steppable_registry)
+
+
+def register_steppable(steppable):
+    """
+
+    :param steppable:{SteppableBasePy object}
+    :return: None
+    """
+    steppable_registry = CompuCellSetup.persistent_globals.steppable_registry
+
+    # initializing steppables with the sim object
+    steppable.simulator = steppable_registry.sim
+    steppable.core_init()
+
+    steppable_registry.registerSteppable(_steppable=steppable)
+
+
+def getCoreSimulationObjects():
     # xml_fname = r'd:\CC3D_PY3_GIT\CompuCell3D\tests\test_data\cellsort_2D.xml'
     # cc3dXML2ObjConverter = parseXML(xml_fname=xml_fname)
 
@@ -22,8 +68,9 @@ def getCoreSimulationObjects():
 
     # cc3dXML2ObjConverter = parseXML(xml_fname=xml_fname)
 
-    print ('CompuCellSetup.cc3dSimulationDataHandler=',CompuCellSetup.cc3dSimulationDataHandler)
-    print('cc3dSimulationDataHandler.cc3dSimulationData.pythonScript=',CompuCellSetup.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
+    print('CompuCellSetup.cc3dSimulationDataHandler=', CompuCellSetup.cc3dSimulationDataHandler)
+    print('cc3dSimulationDataHandler.cc3dSimulationData.pythonScript=',
+          CompuCellSetup.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
     init_modules(sim, cc3d_xml2_obj_converter)
     #
     # # sim.initializeCC3D()
@@ -34,11 +81,12 @@ def getCoreSimulationObjects():
     #
     # # this loads all plugins/steppables - need to recode it to make loading on-demand only
     CompuCell.initializePlugins()
-    print ("sim=",sim)
+    print("sim=", sim)
     sim.initializeCC3D()
     # sim.extraInit()
 
     return sim, simthread
+
 
 def initializeSimulationObjects(sim, simthread):
     """
@@ -51,11 +99,24 @@ def initializeSimulationObjects(sim, simthread):
     print('THIS IS num_steps=', sim.getNumSteps())
     max_num_steps = sim.getNumSteps()
 
+    # sim.start()
+    # cur_step = 0
+    # while cur_step < max_num_steps / 100:
+    #     sim.step(cur_step)
+    #     cur_step += 1
+
+    # print("sim=", sim)
+    # sim.initializeCC3D()
+
+
+def mainLoop(sim, simthread, steppableRegistry):
+    steppableRegistry = CompuCellSetup.persistent_globals.steppable_registry
+    if not steppableRegistry is None:
+        steppableRegistry.init(sim)
+
+    max_num_steps = sim.getNumSteps()
     sim.start()
     cur_step = 0
     while cur_step < max_num_steps / 100:
         sim.step(cur_step)
         cur_step += 1
-
-    # print("sim=", sim)
-    # sim.initializeCC3D()

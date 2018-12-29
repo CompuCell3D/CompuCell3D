@@ -1,4 +1,5 @@
 import argparse
+import traceback
 import cc3d.CompuCellSetup as CompuCellSetup
 from cc3d.CompuCellSetup.readers import readCC3DFile
 
@@ -73,12 +74,38 @@ if __name__ =='__main__':
     cc3dSimulationDataHandler = readCC3DFile(fileName=sim_fname)
 
     CompuCellSetup.cc3dSimulationDataHandler = cc3dSimulationDataHandler
+    import sys
+    from os.path import *
+    # todo - need to find a better solution ot append and remove pythonpath of the simulation object
+    sys.path.append(join(dirname(sim_fname),'Simulation'))
 
     # execfile(CompuCellSetup.simulationPaths.simulationPythonScriptName)
     with open(cc3dSimulationDataHandler.cc3dSimulationData.pythonScript) as sim_fh:
-        exec(sim_fh.read())
+        try:
+            code = compile(sim_fh.read(), cc3dSimulationDataHandler.cc3dSimulationData.pythonScript, 'exec')
+        except:
+            code = None
+            traceback.print_exc(file=sys.stdout)
+
+        # exec(code)
+        if code is not None:
+            try:
+                exec(code)
+                # exec(sim_fh.read())
+                # exec(cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
+            except:
+                traceback.print_exc(file=sys.stdout)
+
+            # traceback.format_stack()
+            # # traceback.format_exc()
+            # # print(traceback.format_stack())
+            # traceback.print_tb()
     # execfile()
     # print
 
 
 
+"""
+--input=d:\CC3D_PY3_GIT\CompuCell3D\tests\test_data\cellsort_project\cellsort_2D.cc3d
+--input=d:\CC3D_PY3_GIT\CompuCell3D\tests\test_data\cellsort_project_py_step\cellsort_2D.cc3d
+"""
