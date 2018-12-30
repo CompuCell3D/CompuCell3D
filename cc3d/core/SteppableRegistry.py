@@ -8,17 +8,17 @@ class SteppableRegistry(SteppablePy):
         self.steppableList = []
         self.runBeforeMCSSteppableList = []
         self.steppableDict = {}  # {steppableClassName:[steppable inst0,steppable inst1,...]}
-        self._sim = None
+        self._simulator = None
         from collections import defaultdict
         self.profiler_dict = defaultdict(lambda: defaultdict(float))  # {steppable_class_name:{object_hash:runtime}}
 
     @property
-    def sim(self):
-        return self._sim
+    def simulator(self):
+        return self._simulator
 
-    @sim.setter
-    def sim(self,sim):
-        self._sim = sim
+    @simulator.setter
+    def simulator(self,simulator):
+        self._simulator = simulator
 
 
     def set_sim(self,sim):
@@ -59,8 +59,22 @@ class SteppableRegistry(SteppablePy):
         for steppable in self.runBeforeMCSSteppableList:
             yield steppable
 
-    def registerSteppable(self, _steppable):
+    def core_init(self):
+        """
 
+        :return:
+        """
+
+        for steppable in self.runBeforeMCSSteppableList:
+            steppable.simulator = self.simulator
+            steppable.core_init()
+
+        for steppable in self.steppableList:
+            steppable.simulator = self.simulator
+            steppable.core_init()
+
+
+    def registerSteppable(self, _steppable):
 
         try:
             if _steppable.runBeforeMCS:
