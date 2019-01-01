@@ -1,0 +1,44 @@
+CellOrientation: Computes change in cell orientation energy.
+CellType: Adds cell type attributes.
+CenterOfMass: Tracks the center of mass for each cell.
+Chemotaxis: Adds the chemotactic energy function.
+ChemotaxisDicty: Adds the chemotactic energy function for dicty.
+ContactCompartment: Adds the interaction energy function.
+Connectivity: Adds connectivity constraints.
+ConnectivityLocalFlex: Adds connectivity constraints based on local parameters.
+Contact: Adds the interaction energy function.
+ContactLocalFlex: Adds the interaction energy function.
+ContactLocalProduct: Contact energy function. Energy is calculated as a product of cadherins concentrations.
+ContactMultiCad: Contact energy function. Energy is calculated as a matrix product of cadherins concentrations.
+ExternalPotential: Implements external potential energy.
+LengthConstraint: Tracks cell lengths and adds length constraints. Each cell type may have different lambda and target lengths.
+LengthConstraintLocalFlex: Tracks cell lengths and adds length constraints. Each individual cell may have different lambda and target lengths.
+Mitosis: Splits cells when they reach the doubling volume.
+MitosisSimple: Splits cells when they reach the doubling volume. Does not register Field Watcher; intended to be used from Python.
+MomentOfInertia: Tracks the center of mass for each cell.
+NeighborStick: Adds the interaction energy function and orientation.
+NeighborTracker: Tracks cell neighbors and stores them in a list.
+OrientedContact: Adds the interaction energy function and orientation.
+PDESolverCaller: Calls PDE solvers several times during one Monte Carlo Step.
+PlasticityTracker: Initializes and tracks plasticity participating cells.
+Plasticity: Computes change in plasticity energy.
+PlasticityEnergy: Computes change in plasticity energy.
+PlayerSettings: Keeps some settings for CompuCell Player.
+PolarizationVector: Adds polarization vector as a cell attribute.
+RearrangementEnergy: Introduces energy term which suppresses cell rearrangements.
+SimpleArray: Simple Array template.
+SimpleClock: Simple time (Monte Carlo Step) counter.
+Stretchness: Computes change in stretchness energy.
+StretchnessEnergy: Computes change in stretchness energy.
+Surface: Computes change in surface energy.
+SurfaceEnergy: Computes change in surface energy.
+SurfaceFlex: Tracks cell volumes and adds volume energy function. Each cell type may have different lambda and target volume.
+SurfaceLocalFlex: Computes surface energy change. TargetSurface and lambda are local to every cell.
+SurfaceLocalFlexEnergy: Computes surface energy change. TargetSurface and lambda are local to every cell.
+SurfaceTracker: Tracks cell surfaces.
+Volume: Tracks cell volumes and adds volume energy function.
+VolumeEnergy: Tracks cell volumes and adds volume energy function.
+VolumeFlex: Tracks cell volumes and adds volume energy function. Each cell type may have different lambda and target volume.
+VolumeLocalFlex: Computes volume energy change. TargetVolume and lambda are local to every cell.
+VolumeLocalFlexEnergy: Computes volume energy change. TargetVolume and lambda are local to every cell.
+VolumeTracker: Tracks cell volumes.
