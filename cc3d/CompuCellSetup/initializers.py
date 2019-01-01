@@ -1,6 +1,8 @@
 import CompuCell
 from cc3d.CompuCellSetup import init_modules, parseXML
-import cc3d.CompuCellSetup as CompuCellSetup
+# import cc3d.CompuCellSetup as CompuCellSetup
+# import cc3d.CompuCellSetup as CompuCellSetup
+from cc3d import CompuCellSetup
 
 def initializeSimulationObjects(sim, simthread):
     """

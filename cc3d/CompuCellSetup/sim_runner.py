@@ -1,6 +1,10 @@
 import argparse
 import traceback
-import cc3d.CompuCellSetup as CompuCellSetup
+import cc3d
+
+# import cc3d.CompuCellSetup as CompuCellSetup
+from cc3d import CompuCellSetup
+
 from cc3d.CompuCellSetup.readers import readCC3DFile
 
 
