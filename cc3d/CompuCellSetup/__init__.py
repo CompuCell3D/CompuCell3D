@@ -1,7 +1,8 @@
 from .utils import *
+from . simulation_utils import *
 from . sim_runner import *
 from . readers import *
-from . initializers import *
+from . simulation_setup import *
 # from . readers import readCC3DFile
 # from . initializers import (initializeSimulationObjects,
 #                             initialize_cc3d,

@@ -7,6 +7,7 @@ class PersistentGlobals:
         self.simthread = None
         self.simulation_initialized = False
         self.simulation_file_name = None
+        self.user_stop_simulation_flag = False
 
     def clean(self):
         """

@@ -1,4 +1,9 @@
-import cc3d.core.XMLUtils as XMLUtils
+# import cc3d.core.XMLUtils as XMLUtils
+# try:
+#     import cc3d.core.XMLUtils as XMLUtils
+# except ImportError:
+#     pass
+from cc3d.core import XMLUtils
 # import cc3d.CompuCellSetup as CompuCellSetup
 
 
