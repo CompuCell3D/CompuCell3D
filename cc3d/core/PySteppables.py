@@ -1,4 +1,13 @@
 from cc3d.core.iterators import *
+# from cc3d.CompuCellSetup.simulation_utils import stop_simulation
+from cc3d import CompuCellSetup
+
+# try:
+#     import cc3d.CompuCellSetup
+# except ImportError:
+#     pass
+
+
 class SteppablePy:
     def __init__(self):
         self.runBeforeMCS = 0
@@ -59,7 +68,13 @@ class SteppableBasePy(SteppablePy):
 
 
 
+    def stop_simulation(self):
+        """
+        Stops simulation
+        :return:
+        """
 
+        CompuCellSetup.stop_simulation()
 
     def init(self, _simulator):
         """

@@ -14,6 +14,7 @@ When running automated testing f Demo suite use the following cml options:
 import sys
 import os
 from  cc3d.core.CMLParser import CMLParser
+
 from cc3d import CompuCellSetup
 import argparse
 from cc3d.player5.CQt.CQApplication import CQApplication

@@ -112,8 +112,11 @@ class SerializerUtil(object):
         :return: {tuple} ('bytearray',QByteArray representation string)
         """
         out_str = ''
+        out_str = val.data().decode('utf8', 'backslashreplace')
+        return 'bytearray', out_str
         for i in range(val.count()):
             out_str += str(ord(val[i]))
+            # out_str += str((ord(val[i])),encoding='utf-8')
             if i < val.count() - 1:
                 out_str += ','
         return 'bytearray', out_str

@@ -135,7 +135,10 @@ def mainLoop(sim, simthread, steppableRegistry):
         steppableRegistry.start()
 
     cur_step = 0
-    while cur_step < max_num_steps / 100:
+    while cur_step < max_num_steps / 10:
+        if CompuCellSetup.persistent_globals.user_stop_simulation_flag:
+            runFinishFlag = False;
+            break
         sim.step(cur_step)
         if not steppableRegistry is None:
             steppableRegistry.step(cur_step)
@@ -165,6 +168,10 @@ def mainLoopPlayer(sim, simthread, steppableRegistry):
     cur_step = 0
     while cur_step < max_num_steps / 100:
         simthread.beforeStep(_mcs=cur_step)
+        if simthread.getStopSimulation() or CompuCellSetup.persistent_globals.user_stop_simulation_flag:
+            runFinishFlag = False;
+            break
+
         sim.step(cur_step)
         if not steppableRegistry is None:
             steppableRegistry.step(cur_step)

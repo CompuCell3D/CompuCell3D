@@ -1733,11 +1733,12 @@ struct unit_t parseUnit(char * _unitStr){
   // printf("this is flowting point number %g\n",atof("10"));
   // exit(1);
   printf("> "); 
+  printf(_unitStr);
   //char ptr; 
-  yy_scan_string(_unitStr); //have to include \n ot \0 at the end of the string to signal to scanner EOF
-  // yy_scan_string("(2+2)*3*2*kg*kg^(2/3)*(2+6)*s*0.5*10^2*mol^2*10^2\n"); //have to include \n at the end of the string to signal to scanner EOF
+  //yy_scan_string(_unitStr); //have to include \n ot \0 at the end of the string to signal to scanner EOF
+   //yy_scan_string("(2+2)*3*2*kg*kg^(2/3)*(2+6)*s*0.5*10^2*mol^2*10^2\n"); //have to include \n at the end of the string to signal to scanner EOF
   // char unitPtr;
-  yyparse();
+  // yyparse();
   return returnedUnit;
   
 }

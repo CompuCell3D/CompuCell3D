@@ -2,7 +2,8 @@
 import os, sys
 import string
 # import cc3d.twedit5.twedit.editor.Configuration as Configuration
-import cc3d.core.DefaultSettingsData as settings_data
+# import cc3d.core.DefaultSettingsData as settings_data
+from  cc3d.core import DefaultSettingsData as settings_data
 from cc3d.core.XMLUtils import ElementCC3D
 
 MODULENAME = '------- pythonSetupScripts/CC3DSimulationDataHandler.py: '
