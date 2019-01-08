@@ -30,6 +30,17 @@ def initialize_cc3d():
     CompuCellSetup.persistent_globals.simulation_initialized = True
     # print(' initialize cc3d CompuCellSetup.persistent_globals=',CompuCellSetup.persistent_globals)
 
+def determine_main_loop_fcn():
+    """
+    Based on persisten globals this fcn determines which mainLoop function
+    CC3D shold use
+    :return: {object} function to use as a mainLoop
+    """
+    if CompuCellSetup.persistent_globals.simthread is None:
+        return mainLoop
+    else:
+        return mainLoopPlayer
+
 def run():
     """
 
@@ -47,7 +58,10 @@ def run():
     simthread = CompuCellSetup.persistent_globals.simthread
     steppable_registry = CompuCellSetup.persistent_globals.steppable_registry
 
-    mainLoop(simulator, simthread=simthread, steppableRegistry=steppable_registry)
+    main_loop_fcn = determine_main_loop_fcn()
+
+    main_loop_fcn(simulator, simthread=simthread, steppableRegistry=steppable_registry)
+    # mainLoop(simulator, simthread=simthread, steppableRegistry=steppable_registry)
 
 
 def register_steppable(steppable):
@@ -74,6 +88,11 @@ def getCoreSimulationObjects():
 
     simulator = CompuCell.Simulator()
     simthread = None
+    # todo 5 - fix logic regarding simthread initialization
+    if CompuCellSetup.persistent_globals.simthread is not None:
+        simthread = CompuCellSetup.persistent_globals.simthread
+
+
     xml_fname = CompuCellSetup.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript
 
     cc3d_xml2_obj_converter = parseXML(xml_fname=xml_fname)
@@ -117,6 +136,35 @@ def mainLoop(sim, simthread, steppableRegistry):
 
     cur_step = 0
     while cur_step < max_num_steps / 100:
+        sim.step(cur_step)
+        if not steppableRegistry is None:
+            steppableRegistry.step(cur_step)
+
+        cur_step += 1
+
+
+def mainLoopPlayer(sim, simthread, steppableRegistry):
+    """
+
+    :param sim:
+    :param simthread:
+    :param steppableRegistry:
+    :return:
+    """
+    steppableRegistry = CompuCellSetup.persistent_globals.steppable_registry
+    simthread = CompuCellSetup.persistent_globals.simthread
+
+    if not steppableRegistry is None:
+        steppableRegistry.init(sim)
+
+    max_num_steps = sim.getNumSteps()
+    sim.start()
+    if not steppableRegistry is None:
+        steppableRegistry.start()
+
+    cur_step = 0
+    while cur_step < max_num_steps / 100:
+        simthread.beforeStep(_mcs=cur_step)
         sim.step(cur_step)
         if not steppableRegistry is None:
             steppableRegistry.step(cur_step)

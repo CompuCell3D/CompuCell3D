@@ -1,3 +1,4 @@
+# todo - change settings core name to _-settings_3.0.sqlite
 
 # enabling with statement in python 2.5
 
@@ -58,6 +59,9 @@ vtk.vtkObject.GlobalWarningDisplayOff()
 from .RollbackImporter import RollbackImporter
 
 from cc3d import CompuCellSetup
+from cc3d.CompuCellSetup.readers import readCC3DFile
+import cc3d.Version as Version
+
 
 try:
     python_module_path = os.environ["PYTHON_MODULE_PATH"]
@@ -1077,6 +1081,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.cc3dSimulationDataHandler = None
 
         fileName = str(self.__sim_file_name)
+        CompuCellSetup.persistent_globals.simulation_file_name = self.__sim_file_name
         # print 'INSIDE LOADSIM file=',fileName
         #        print MODULENAME,"Load file ",fileName
         self.UI.console.bringUpOutputConsole()
@@ -1092,33 +1097,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # We need to create new SimulationPaths object for each new simulation.
         #        import CompuCellSetup
-        CompuCellSetup.simulationPaths = CompuCellSetup.SimulationPaths()
+        # CompuCellSetup.simulationPaths = CompuCellSetup.SimulationPaths()
+        # CompuCellSetup.simulationPaths = CompuCellSetup.persistent_globals.simulation_file_name
 
-        if re.match(".*\.xml$", fileName):  # If filename ends with .xml
-            # print "GOT FILE ",fileName
-            # self.prepareForNewSimulation()
-            self.simulation.setRunUserPythonScriptFlag(True)
-            CompuCellSetup.simulationPaths.setPlayerSimulationXMLFileName(fileName)
-            pythonScriptName = CompuCellSetup.ExtractPythonScriptNameFromXML(fileName)
-
-            if pythonScriptName != "":
-                CompuCellSetup.simulationPaths.setPythonScriptNameFromXML(pythonScriptName)
-
-            self.__parent.toggleLatticeData(False)
-            self.__parent.toggleModelEditor(True)
-
-        elif re.match(".*\.py$", fileName):
-            globals = {'simTabView': 20}
-            locals = {}
-            self.simulation.setRunUserPythonScriptFlag(True)
-
-            # NOTE: extracting of xml file name from python script is done during script run time so we cannot use CompuCellSetup.simulationPaths.setXmlFileNameFromPython function here
-            CompuCellSetup.simulationPaths.setPlayerSimulationPythonScriptName(self.__sim_file_name)
-
-            self.__parent.toggleLatticeData(False)
-            self.__parent.toggleModelEditor(True)
-
-        elif re.match(".*\.cc3d$", fileName):
+        if re.match(".*\.cc3d$", fileName):
             self.__loadCC3DFile(fileName)
 
             self.__parent.toggleLatticeData(False)
@@ -1171,8 +1153,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.prepareLatticeDataView()
 
         Configuration.setSetting("RecentFile", os.path.abspath(self.__sim_file_name))
-        Configuration.setSetting("RecentSimulations", os.path.abspath(
-            self.__sim_file_name))  # each loaded simulation has to be passed to a function which updates list of recent files
+        # todo 5 - uncomment it
+        # Configuration.setSetting("RecentSimulations", os.path.abspath(
+        #     self.__sim_file_name))  # each loaded simulation has to be passed to a function which updates list of recent files
 
     def __loadCC3DFile(self, fileName):
         '''
@@ -1187,8 +1170,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
          CC3DSimulationDataHandler class holds the file paths of all the resources and has methods to read the 
         .cc3d file contents
         """
-        import CC3DSimulationDataHandler
-        self.cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler(self)
+        # import CC3DSimulationDataHandler
+        # self.cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler(self)
 
         # Checking if the file is readable otherwise raising an error
         try:
@@ -1200,10 +1183,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
                                       QMessageBox.Ok)
             raise IOError("%s does not exist" % fileName)
 
-        self.cc3dSimulationDataHandler.readCC3DFileFormat(fileName)
+        self.cc3dSimulationDataHandler = readCC3DFile(fileName=fileName)
+        # self.cc3dSimulationDataHandler.readCC3DFileFormat(fileName)
 
         # check if current CC3D version is greater or equal to the version (minimal required version) specified in the project
-        import Version
+
         currentVersion = Version.getVersionAsString()
         currentVersionInt = currentVersion.replace('.', '')
         projectVersion = self.cc3dSimulationDataHandler.cc3dSimulationData.version
@@ -1223,6 +1207,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
             # print 'GOT CUSTOM SETTINGS RESOURCE = ', self.customSettingPath
             Configuration.initializeCustomSettings(self.customSettingPath)
             self.__paramsChanged()
+
+        if self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript != "":
+            self.simulation.setRunUserPythonScriptFlag(True)
+
         # Else creating a project settings file
         else:
             self.customSettingPath = os.path.abspath(
@@ -1300,29 +1288,29 @@ class SimpleTabView(MainArea, SimpleViewManager):
         else:
             self.singleSimulation = True
 
-        CompuCellSetup.simulationPaths.setSimulationBasePath(self.cc3dSimulationDataHandler.cc3dSimulationData.basePath)
-
-        if self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript != "":
-            self.simulation.setRunUserPythonScriptFlag(True)
-            CompuCellSetup.simulationPaths.setPlayerSimulationPythonScriptName(
-                self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
-            if self.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript != "":
-                CompuCellSetup.simulationPaths.setPlayerSimulationXMLFileName(
-                    self.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript)
-
-        elif self.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript != "":
-            self.simulation.setRunUserPythonScriptFlag(True)
-            CompuCellSetup.simulationPaths.setPlayerSimulationXMLFileName(
-                self.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript)
-
-            if self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript != "":
-                CompuCellSetup.simulationPaths.setPythonScriptNameFromXML(
-                    self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
-
-        if self.cc3dSimulationDataHandler.cc3dSimulationData.windowScript != "":
-            CompuCellSetup.simulationPaths.setPlayerSimulationWindowsFileName(
-                self.cc3dSimulationDataHandler.cc3dSimulationData.windowScript)
-            self.__windowsXMLFileName = self.cc3dSimulationDataHandler.cc3dSimulationData.windowScript
+        # CompuCellSetup.simulationPaths.setSimulationBasePath(self.cc3dSimulationDataHandler.cc3dSimulationData.basePath)
+        #
+        # if self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript != "":
+        #     self.simulation.setRunUserPythonScriptFlag(True)
+        #     CompuCellSetup.simulationPaths.setPlayerSimulationPythonScriptName(
+        #         self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
+        #     if self.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript != "":
+        #         CompuCellSetup.simulationPaths.setPlayerSimulationXMLFileName(
+        #             self.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript)
+        #
+        # elif self.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript != "":
+        #     self.simulation.setRunUserPythonScriptFlag(True)
+        #     CompuCellSetup.simulationPaths.setPlayerSimulationXMLFileName(
+        #         self.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript)
+        #
+        #     if self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript != "":
+        #         CompuCellSetup.simulationPaths.setPythonScriptNameFromXML(
+        #             self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
+        #
+        # if self.cc3dSimulationDataHandler.cc3dSimulationData.windowScript != "":
+        #     CompuCellSetup.simulationPaths.setPlayerSimulationWindowsFileName(
+        #         self.cc3dSimulationDataHandler.cc3dSimulationData.windowScript)
+        #     self.__windowsXMLFileName = self.cc3dSimulationDataHandler.cc3dSimulationData.windowScript
 
     def __setConnects(self):
         '''
@@ -1949,10 +1937,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
 
+        print ('INSIDE RUN SIM')
+        # self.simulation.start()
+
         self.simulation.screenUpdateFrequency = self.__updateScreen  # when we run simulation we ensure that self.simulation.screenUpdateFrequency is whatever is written in the settings
 
         if not self.drawingAreaPrepared:
             self.prepareSimulation()
+            # todo 5 - self.drawingAreaPrepared is initialized elsewhere this is tmp placeholder and a hack
+            self.drawingAreaPrepared = True
 
         # print 'SIMULATION PREPARED self.__viewManagerType=',self.__viewManagerType
         if self.__viewManagerType == "CMLResultReplay":
@@ -1980,6 +1973,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         else:
             if not self.simulationIsRunning:
                 self.simulation.start()
+
                 self.simulationIsRunning = True
                 self.simulationIsStepping = False
 
@@ -3098,18 +3092,17 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.set_title_window_from_sim_fname(widget = self.__parent, abs_sim_fname=self.__sim_file_name)
 
 
-        """
-        What is CompuCellSetup?
-        It is located in ./core/pythonSetupScripts/CompuCellSetup.py
-        
-        """
-        import CompuCellSetup
-        CompuCellSetup.simulationFileName = self.__sim_file_name
+
+        # import CompuCellSetup
+        # CompuCellSetup.simulationFileName = self.__sim_file_name
+        CompuCellSetup.persistent_globals.simulation_file_name = self.__sim_file_name
+
 
         # Add the current opening file to recent files and recent simulation
         Configuration.setSetting("RecentFile", self.__sim_file_name)
-        Configuration.setSetting("RecentSimulations",
-                                 self.__sim_file_name)  # each loaded simulation has to be passed to a function which updates list of recent files
+        # todo 5 - uncomment and fix it
+        # Configuration.setSetting("RecentSimulations",
+        #                          self.__sim_file_name)  # each loaded simulation has to be passed to a function which updates list of recent files
 
     def __openScrDesc(self):
         '''

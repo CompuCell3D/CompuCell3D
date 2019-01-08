@@ -6,6 +6,7 @@ class PersistentGlobals:
         self.simulator = None
         self.simthread = None
         self.simulation_initialized = False
+        self.simulation_file_name = None
 
     def clean(self):
         """

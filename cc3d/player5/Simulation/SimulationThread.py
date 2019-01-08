@@ -2,6 +2,7 @@
 import os, sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import *
+from cc3d import CompuCellSetup
 
 
 # from PyQt5.QtGui import *
@@ -203,12 +204,12 @@ class SimulationThread(QtCore.QThread):
         self.graphicsWidget = _graphicsWidget
 
     def setSimulationXMLFileName(self, _xmlFileName):
-        import CompuCellSetup
+        # import CompuCellSetup
         CompuCellSetup.simulationPaths.simulationXMLFileName = _xmlFileName
         self.xmlFileName = _xmlFileName
 
     def setSimulationPythonFileName(self, _pythonFileName):
-        import CompuCellSetup
+        # import CompuCellSetup
         CompuCellSetup.simulationPaths.simulationPythonScriptName = _pythonFileName
         self.pythonFileName = _pythonFileName
 
@@ -278,19 +279,19 @@ class SimulationThread(QtCore.QThread):
         pass
 
     def createVectorFieldPy(self, _dim, _fieldName):
-        import CompuCellSetup
+        # import CompuCellSetup
         return CompuCellSetup.createVectorFieldPy(_dim, _fieldName)
 
     def createVectorFieldCellLevelPy(self, _fieldName):
-        import CompuCellSetup
+        # import CompuCellSetup
         return CompuCellSetup.createVectorFieldCellLevelPy(_fieldName)
 
     def createFloatFieldPy(self, _dim, _fieldName):
-        import CompuCellSetup
+        # import CompuCellSetup
         return CompuCellSetup.createFloatFieldPy(_dim, _fieldName)
 
     def createScalarFieldCellLevelPy(self, _fieldName):
-        import CompuCellSetup
+        # import CompuCellSetup
         return CompuCellSetup.createScalarFieldCellLevelPy(_fieldName)
 
     def getScreenUpdateFrequency(self):
@@ -383,11 +384,11 @@ class SimulationThread(QtCore.QThread):
 
     def prepareSimulation(self):
 
-        import CompuCellSetup
+        # import CompuCellSetup
         # CompuCellSetup.setSimulationXMLFileName(self.xmlFileName)
         (self.sim, self.simthread) = CompuCellSetup.getCoreSimulationObjects()
 
-        import CompuCell
+        # import CompuCell
         CompuCellSetup.initializeSimulationObjects(self.sim, self.simthread)
         CompuCellSetup.extraInitSimulationObjects(self.sim, self.simthread)
         self.simulationInitialized = True
@@ -407,13 +408,15 @@ class SimulationThread(QtCore.QThread):
         self.emitErrorFormatted(_errorMessage)
 
     def runUserPythonScript(self, _scriptFileName, _globals, _locals):
-        import CompuCellSetup
+        # import CompuCellSetup
 
-        CompuCellSetup.simulationThreadObject = self
+        # CompuCellSetup.simulationThreadObject = self
+
+        CompuCellSetup.persistent_globals.simthread = self
 
         # execfile("pythonSetupScripts/CompuCellPythonSimulationNewPlayer.py")
         # determinig the path of the CompuCellPythonSimulationNewPlayer.py based on the location of the current scrit (SimlulationThread.py)
-        import os
+
 
         _path = os.path.abspath(os.path.dirname(__file__))
 
@@ -448,11 +451,22 @@ class SimulationThread(QtCore.QThread):
         exec(compile(open(run_script_name).read(), run_script_name, 'exec'))
 
 
+
+
     def run(self):
+        from cc3d.CompuCellSetup.sim_runner import run_cc3d_project
+        cc3d_sim_fname = CompuCellSetup.persistent_globals.simulation_file_name
+        CompuCellSetup.persistent_globals.simthread = self
+        run_cc3d_project(cc3d_sim_fname=cc3d_sim_fname)
+        return
+        print('SIMTHREAD: GOT INSIDE RUN FUNCTION')
+        print('self.runUserPythonScriptFlag=',self.runUserPythonScriptFlag)
 
         if self.runUserPythonScriptFlag:
             # print "runUserPythonScriptFlag=",self.runUserPythonScriptFlag
             globalDict = {'simTabView': 20}
             localDict = {}
+
+            print('GOT INSIDE RUN FUNCTION');
 
             self.runUserPythonScript(self.pythonFileName, globalDict, localDict)

@@ -1,6 +1,8 @@
 import argparse
 import traceback
 import cc3d
+import sys
+from os.path import *
 
 # import cc3d.CompuCellSetup as CompuCellSetup
 from cc3d import CompuCellSetup
@@ -71,17 +73,18 @@ def process_cml():
 
     return cml_parser.parse_args()
 
+def run_cc3d_project(cc3d_sim_fname):
+    """
 
-if __name__ =='__main__':
-    args = process_cml()
-    sim_fname = args.input
-    cc3dSimulationDataHandler = readCC3DFile(fileName=sim_fname)
+    :param cc3d_sim_fname:
+    :return:
+    """
+
+    cc3dSimulationDataHandler = readCC3DFile(fileName=cc3d_sim_fname)
 
     CompuCellSetup.cc3dSimulationDataHandler = cc3dSimulationDataHandler
-    import sys
-    from os.path import *
     # todo - need to find a better solution ot append and remove pythonpath of the simulation object
-    sys.path.append(join(dirname(sim_fname),'Simulation'))
+    sys.path.append(join(dirname(cc3d_sim_fname),'Simulation'))
 
     # execfile(CompuCellSetup.simulationPaths.simulationPythonScriptName)
     with open(cc3dSimulationDataHandler.cc3dSimulationData.pythonScript) as sim_fh:
@@ -104,6 +107,42 @@ if __name__ =='__main__':
             # # traceback.format_exc()
             # # print(traceback.format_stack())
             # traceback.print_tb()
+
+
+if __name__ =='__main__':
+    args = process_cml()
+    cc3d_sim_fname = args.input
+    run_cc3d_project(cc3d_sim_fname=cc3d_sim_fname)
+
+    # cc3dSimulationDataHandler = readCC3DFile(fileName=sim_fname)
+    #
+    # CompuCellSetup.cc3dSimulationDataHandler = cc3dSimulationDataHandler
+    # import sys
+    # from os.path import *
+    # # todo - need to find a better solution ot append and remove pythonpath of the simulation object
+    # sys.path.append(join(dirname(sim_fname),'Simulation'))
+    #
+    # # execfile(CompuCellSetup.simulationPaths.simulationPythonScriptName)
+    # with open(cc3dSimulationDataHandler.cc3dSimulationData.pythonScript) as sim_fh:
+    #     try:
+    #         code = compile(sim_fh.read(), cc3dSimulationDataHandler.cc3dSimulationData.pythonScript, 'exec')
+    #     except:
+    #         code = None
+    #         traceback.print_exc(file=sys.stdout)
+    #
+    #     # exec(code)
+    #     if code is not None:
+    #         try:
+    #             exec(code)
+    #             # exec(sim_fh.read())
+    #             # exec(cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
+    #         except:
+    #             traceback.print_exc(file=sys.stdout)
+    #
+    #         # traceback.format_stack()
+    #         # # traceback.format_exc()
+    #         # # print(traceback.format_stack())
+    #         # traceback.print_tb()
     # execfile()
     # print
 
