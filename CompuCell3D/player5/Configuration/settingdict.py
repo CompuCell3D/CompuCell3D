@@ -4,8 +4,31 @@ try:
     import cPickle as pickle
 except ImportError:
     import pickle
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
+# from PyQt5.QtGui import *
+# from PyQt5.QtCore import *
+
+class QColorImitation(object):
+    def __init__(self,value):
+        self.rgb_list = self.hex_to_rgb(value=value)
+        self.rgb_list.append(1.0)
+
+    def red(self):
+        return self.rgb_list[0]
+
+    def green(self):
+        return self.rgb_list[1]
+
+    def blue(self):
+        return self.rgb_list[2]
+
+    def alpha(self):
+        return  self.rgb_list[3]
+
+    def hex_to_rgb(self, value):
+        value = value.lstrip('#')
+        lv = len(value)
+
+        return [int(value[i:i + lv / 3], 16) for i in range(0, lv, lv / 3)]
 
 
 class SerializerUtil(object):
@@ -58,12 +81,15 @@ class SerializerUtil(object):
         """
         return 'color', val.name()
 
+
     def sql_2_color(self, val):
         """
         sql string representation to QColor
         :param val: {str} sql string representation
         :return: {QColor}
         """
+        # return self.hex_to_rgb(val)
+        return QColorImitation(value=val)
         return QColor(val)
 
     def qsize_2_sql(self, val):
@@ -84,6 +110,7 @@ class SerializerUtil(object):
         sizeList = val.split(',')
         sizeListInt = map(int, sizeList)
 
+        from PyQt5.QtCore import QSize
         return QSize(sizeListInt[0], sizeListInt[1])
 
     def qpoint_2_sql(self, val):
@@ -103,6 +130,7 @@ class SerializerUtil(object):
         sizeList = val.split(',')
         sizeListInt = map(int, sizeList)
 
+        from PyQt5.QtCore import QPoint
         return QPoint(sizeListInt[0], sizeListInt[1])
 
     def qbytearray_2_sql(self, val):
@@ -124,6 +152,9 @@ class SerializerUtil(object):
         :param val: {str} sql string representation
         :return: {QByteArray}
         """
+
+        from PyQt5.QtCore import QByteArray
+
         try:
             elemsList = map(chr, map(int, val.split(',')))
         except:
