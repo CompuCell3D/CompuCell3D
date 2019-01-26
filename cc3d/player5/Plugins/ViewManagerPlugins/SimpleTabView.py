@@ -1153,9 +1153,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.prepareLatticeDataView()
 
         Configuration.setSetting("RecentFile", os.path.abspath(self.__sim_file_name))
-        # todo 5 - uncomment it
-        # Configuration.setSetting("RecentSimulations", os.path.abspath(
-        #     self.__sim_file_name))  # each loaded simulation has to be passed to a function which updates list of recent files
+
+        # each loaded simulation has to be passed to a function which updates list of recent files
+        Configuration.setSetting("RecentSimulations", os.path.abspath(self.__sim_file_name))
 
     def __loadCC3DFile(self, fileName):
         '''
