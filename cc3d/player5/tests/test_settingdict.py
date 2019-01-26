@@ -6,7 +6,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from CompuCell3D.player5.Configuration.settingdict import SettingsSQL
+from cc3d.player5.Configuration.settingdict import SettingsSQL
 
 
 class TestSettingdict(unittest.TestCase):
@@ -76,6 +76,10 @@ class TestSettingdict(unittest.TestCase):
 
     def test_list_types(self):
         s = SettingsSQL('_TestSettingdict.sqlite')
+
+        l = []
+        s.setSetting('RecentSimulations', l)
+
 
         l = [1, 2.0, QColor('red'), 'dupa']
 

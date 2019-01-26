@@ -130,7 +130,7 @@ class SerializerUtil(object):
         try:
             elemsList = list(map(chr, list(map(int, val.split(',')))))
         except:
-            print('CONFIGURATIN: COULD NOT CONVERT SETTING TO QBYTEARRAY')
+            print('CONFIGURATION: COULD NOT CONVERT SETTING TO QBYTEARRAY')
             elemsList = []
 
         ba = QByteArray()
@@ -175,7 +175,8 @@ class SerializerUtil(object):
         :param val: {str} sql string representation
         :return: {dict}
         """
-        p_load = pickle.loads(str(val))
+        # p_load = pickle.loads(str(val))
+        p_load = pickle.loads(val)
         out_dict = {}
         for k, v in list(p_load.items()):  # v is a tuple (type, value_repr)
             value_type = v[0]
@@ -204,7 +205,8 @@ class SerializerUtil(object):
         :param val: {str} sql string representation
         :return: {list}
         """
-        l_load = pickle.loads(str(val))
+        # l_load = pickle.loads(str(val))
+        l_load = pickle.loads(val)
 
         out_list = []
 
@@ -392,6 +394,8 @@ class ListWrapper(list):
 
         for val in self:
             out_state.append(su.val_2_sql(val))
+
+        # return str(pickle.dumps(out_state))
 
         return pickle.dumps(out_state)
 
