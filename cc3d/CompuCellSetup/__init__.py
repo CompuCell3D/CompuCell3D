@@ -14,3 +14,11 @@ from . persistent_globals import PersistentGlobals
 # cc3dSimulationDataHandler = ''
 
 persistent_globals = PersistentGlobals()
+
+def resetGlobals():
+    """
+    Resets persisten globals
+    :return:
+    """
+    global  persistent_globals
+    persistent_globals = PersistentGlobals()
