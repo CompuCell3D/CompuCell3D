@@ -195,11 +195,11 @@ def mainLoopPlayer(sim, simthread, steppableRegistry):
         # if sim.getRecentErrorMessage() != "":
         #     raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
         # steppableRegistry.finish()
-        # sim.cleanAfterSimulation()
+        sim.cleanAfterSimulation()
         simthread.simulationFinishedPostEvent(True)
         print ("CALLING FINISH")
     else:
-        # sim.cleanAfterSimulation()
+        sim.cleanAfterSimulation()
         # # sim.unloadModules()
         print( "CALLING UNLOAD MODULES NEW PLAYER")
         if simthread is not None:
