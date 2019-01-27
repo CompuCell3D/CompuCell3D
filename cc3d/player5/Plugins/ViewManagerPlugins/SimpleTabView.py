@@ -1793,39 +1793,41 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
 
         if self.__imageOutput and not (self.__step % self.__shotFrequency):  # dumping images? Check modulo MCS #
-            mcsFormattedNumber = string.zfill(str(self.__step),
-                                              self.screenshotNumberOfDigits)  # fills string wtih 0's up to self.screenshotNumberOfDigits width
-            screenshotFileName = os.path.join(self.screenshotDirectoryName,
-                                              self.baseScreenshotName + "_" + mcsFormattedNumber + ".png")
-            if _mcs != 0:
-                if self.mainGraphicsWidget:  # self.mainGraphicsWindow can be closed by the user
-                    self.mainGraphicsWidget.takeSimShot(screenshotFileName)
+            # fills string wtih 0's up to self.screenshotNumberOfDigits width
 
-            if Configuration.getSetting('DebugOutputPlayer'):
-                print('self.screenshotManager=', self.screenshotManager)
-
-            if self.screenshotManager:
-                try:
-                    self.screenshotManager.outputScreenshots(self.screenshotDirectoryName, self.__step)
-                except KeyError:
-
-                    self.screenshotManager.screenshotDataDict = {}
-                    self.popup_message(
-                        title='Error Processing Screnenshots',
-                        msg='Could not output screenshots. It is likely that screenshot description file was generated '
-                            'using incompatible code. You may want to remove "screenshot_data" directory from your project '
-                            'and use camera button to generate new screenshot file '                            
-                            ' No screenshots will be taken'.format(
-                            self.__screenshotDescriptionFileName))
-
-                if Configuration.getSetting('DebugOutputPlayer'):
-                    print('self.screenshotDirectoryName=', self.screenshotDirectoryName)
-                    # sys.exit()
-
-                    #        if (CompuCellSetup.cmlFieldHandler is not None) and self.__latticeOutputFlag and (not self.__step % self.__latticeOutputFrequency):  #rwh
-        if self.cmlHandlerCreated and self.__latticeOutputFlag and (
-                not self.__step % self.__latticeOutputFrequency):  # rwh
-            CompuCellSetup.cmlFieldHandler.writeFields(self.__step)
+            mcsFormattedNumber = str(self.__step).zfill(self.screenshotNumberOfDigits)
+        # todo 5 - uncomment it later
+        #     screenshotFileName = os.path.join(self.screenshotDirectoryName,
+        #                                       self.baseScreenshotName + "_" + mcsFormattedNumber + ".png")
+        #     if _mcs != 0:
+        #         if self.mainGraphicsWidget:  # self.mainGraphicsWindow can be closed by the user
+        #             self.mainGraphicsWidget.takeSimShot(screenshotFileName)
+        #
+        #     if Configuration.getSetting('DebugOutputPlayer'):
+        #         print('self.screenshotManager=', self.screenshotManager)
+        #
+        #     if self.screenshotManager:
+        #         try:
+        #             self.screenshotManager.outputScreenshots(self.screenshotDirectoryName, self.__step)
+        #         except KeyError:
+        #
+        #             self.screenshotManager.screenshotDataDict = {}
+        #             self.popup_message(
+        #                 title='Error Processing Screnenshots',
+        #                 msg='Could not output screenshots. It is likely that screenshot description file was generated '
+        #                     'using incompatible code. You may want to remove "screenshot_data" directory from your project '
+        #                     'and use camera button to generate new screenshot file '
+        #                     ' No screenshots will be taken'.format(
+        #                     self.__screenshotDescriptionFileName))
+        #
+        #         if Configuration.getSetting('DebugOutputPlayer'):
+        #             print('self.screenshotDirectoryName=', self.screenshotDirectoryName)
+        #             # sys.exit()
+        #
+        #             #        if (CompuCellSetup.cmlFieldHandler is not None) and self.__latticeOutputFlag and (not self.__step % self.__latticeOutputFrequency):  #rwh
+        # if self.cmlHandlerCreated and self.__latticeOutputFlag and (
+        #         not self.__step % self.__latticeOutputFrequency):  # rwh
+        #     CompuCellSetup.cmlFieldHandler.writeFields(self.__step)
 
         self.simulation.drawMutex.unlock()
 
@@ -2015,6 +2017,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         if not self.drawingAreaPrepared:
             self.prepareSimulation()
+            # todo 5 - self.drawingAreaPrepared is initialized elsewhere this is tmp placeholder and a hack
+            self.drawingAreaPrepared = True
+
 
         # print 'SIMULATION PREPARED self.__viewManagerType=',self.__viewManagerType
         if self.__viewManagerType == "CMLResultReplay":

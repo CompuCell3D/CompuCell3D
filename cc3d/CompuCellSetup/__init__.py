@@ -15,10 +15,10 @@ from . persistent_globals import PersistentGlobals
 
 persistent_globals = PersistentGlobals()
 
-def resetGlobals():
+def resetGlobals() -> None:
     """
     Resets persisten globals
     :return:
     """
-    global  persistent_globals
+    global persistent_globals
     persistent_globals = PersistentGlobals()

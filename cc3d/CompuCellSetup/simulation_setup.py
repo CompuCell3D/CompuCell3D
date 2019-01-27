@@ -178,6 +178,9 @@ def mainLoopPlayer(sim, simthread, steppableRegistry):
         if not steppableRegistry is None:
             steppableRegistry.step(cur_step)
 
+        simthread.loopWork(cur_step)
+        simthread.loopWorkPostEvent(cur_step)
+
         cur_step += 1
 
     if runFinishFlag:
