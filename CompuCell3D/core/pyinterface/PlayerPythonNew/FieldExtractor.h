@@ -22,6 +22,7 @@ class vtkCellArray;
 class vtkObject;
 
 
+
 //Notice one can speed up filling up of the Hex lattice data by allocating e.g. hexPOints ot cellType arrays
 //instead of inserting values. Inserting causes reallocations and this slows down the task completion
 
@@ -81,7 +82,7 @@ namespace CompuCell3D{
 
 	    virtual bool fillScalarFieldData3D(long _conArrayAddr ,long _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec);
 
-		virtual std::vector<int> fillCellFieldData3D(long _cellTypeArrayAddr, long _cellIdArrayAddr);
+		virtual std::vector<int> fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr);
 		virtual bool fillConFieldData3D(long _conArrayAddr ,long _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec);
 
 		void setVtkObj(void * _vtkObj);

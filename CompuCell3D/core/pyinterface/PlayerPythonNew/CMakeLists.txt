@@ -24,6 +24,10 @@ if (${VTK_MAJOR_VERSION} EQUAL "7")
 endif()
 
 
+if (${VTK_MAJOR_VERSION} EQUAL "8")
+    SET(VTK_LIBS vtkRenderingVolume vtkInteractionStyle  vtkIOLegacy)
+endif()
+
 if (${VTK_MAJOR_VERSION} EQUAL "5")
     SET(VTK_LIBS vtkVolumeRendering vtkHybrid vtkFiltering vtkCommon)
 endif()
@@ -108,6 +112,12 @@ INCLUDE_DIRECTORIES(
 )
 
 SET_SOURCE_FILES_PROPERTIES(PlayerPython.i PROPERTIES CPLUSPLUS ON)
+
+# have to add additional flag here for Windows because _WIN32 is unreliable in swig. it does not work properly with typedefs
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+    SET_SOURCE_FILES_PROPERTIES(PlayerPython.i PROPERTIES SWIG_FLAGS "-DSWIGWIN")
+endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+
 
 SWIG_ADD_MODULE(PlayerPythonNew python PlayerPython.i)
 

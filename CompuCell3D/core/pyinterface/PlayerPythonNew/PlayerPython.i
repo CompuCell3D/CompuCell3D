@@ -2,6 +2,9 @@
 // Module Name
 %module("threads"=1) PlayerPython
 
+%include "windows.i"
+
+//%include "typemaps.i"
 
 // *************************************************************
 // Module Includes 
@@ -13,7 +16,114 @@ namespace CompuCell3D{
  typedef CellG * cellGPtr_t;
 }
 
+// Windows calling conventions and some types in windows.h
+%inline %{
+//#if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
+//#ifdef __cplusplus
+#if defined(SWIGWIN) || defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
+
+	typedef long long vtk_obj_addr_int_t;
+
+#else
+	typedef long vtk_obj_addr_int_t;
+
+#endif
+
+
+
+	%}
+
+
+//// Windows calling conventions and some types in windows.h
+//%inline %{
+//#if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
+//	typedef long long vtk_obj_addr_int_t;
+//#else
+//	typedef longaas vtk_obj_addr_int_t;	
+//
+//#endif
+//
+//
+//	%}
+
+//%inline  %{
+//#if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
+//	
+//	
+//	# define vtk_obj_addr_int_t long long
+//#else
+//	# define vtk_obj_addr_int_t long
+//	
+//	
+//#endif
+//	%}
+//
+//#if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
+//	%apply long long{ vtk_obj_addr_int_t }
+//#else
+//	%apply long { vtk_obj_addr_int_t }
+//#endif
+
+//%inline %{
+//#if defined(_WIN32)
+//	#define MY_WIN
+//#endif
+//
+//# ifdef MY_WIN
+//	typedef long long vtk_obj_addr_int_t;
+//#else
+//	typedef long vtk_obj_addr_int_t;
+//#endif
+//	%}
+
+//# ifdef _WIN32
+//typedef long long vtk_obj_addr_int_t;
+//#else
+//typedef long vtk_obj_addr_int_t;
+//#endif
+
+
+//%inline	%{
+//# ifdef _WIN32
+//	typedef long long vtk_obj_addr_int_t;
+//#else
+//	typedef long vtk_obj_addr_int_t;
+//#endif
+//%}
+
+
+//#else
+//%inline	%{
+//
+//	typedef long vtk_obj_addr_int_t;
+//	%}
+//
+//#endif
+/* Tell SWIG about it */
+//# ifdef _WIN32 || _WIN64
+
+//typedef long long vtk_obj_addr_int_t;
+
+//#else
+//typedef long vtk_obj_addr_int_t;
+//#endif
+
+
+//typedef long long vtk_obj_addr_int_t;;
+
+//%inline %{
+//
+//# ifdef _WIN32 || _WIN64
+//	typedef long long vtk_obj_addr_int_t;
+//#else
+//	typedef long vtk_obj_addr_int_t;
+//#endif
+//
+//	%}
+
 %{
+
+
 
 // #include <Potts3D/Cell.h>
 #include <Utils/Coordinates3D.h>
@@ -21,6 +131,8 @@ namespace CompuCell3D{
 #include <FieldStorage.h>
 
 #include <ndarray_adapter.h>
+
+#include <FieldExtractorTypes.h>
 
 #include <FieldExtractorBase.h>
 #include <FieldExtractor.h>
@@ -42,9 +154,14 @@ using namespace std;
 using namespace CompuCell3D;
 class CellG;
 
+
 %}
 
 #define FIELDEXTRACTOR_EXPORT
+
+
+
+
 
 //necessary to get proper wrapping of the numpy arrays
 %include "swig_includes/numpy.i"
@@ -52,6 +169,12 @@ class CellG;
 %init %{
     import_array();
 %}
+
+
+
+
+
+
 
 // C++ std::string handling
 %include "std_string.i"
@@ -175,13 +298,37 @@ class CellG;
       
 };
 
-
+%include <FieldExtractorTypes.h>
 %include <FieldStorage.h>
 %include <FieldExtractorBase.h>
 %include <FieldExtractor.h>
 %include <FieldExtractorCML.h>
 %include <FieldWriter.h>
 
+//
+//// Windows calling conventions and some types in windows.h
+//%inline %{
+//#if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
+//	//#ifdef __cplusplus
+//#define MY_WIN
+//
+//	//#ifdef __win32
+//
+//
+//	typedef long long vtk_obj_addr_int_t;
+//
+//#else
+//	typedef longaas vtk_obj_addr_int_t;
+//
+//#endif
+//
+//#ifdef MY_WIN
+//	typedef long long vtk_obj_addr_int_t;
+//#else
+//	typedef longaas vtk_obj_addr_int_t;
+//#endif
+//
+//	%}
 
 
 %extend CompuCell3D::ScalarFieldCellLevel{    
@@ -375,7 +522,9 @@ class CellG;
         for (int i = 0; i < dim_x*dim_y*dim_z*dim_vec;++i){
             data[i]=0.0;
         }
-        
+
+
+
     }
    
    Coordinates3D<float> * findVectorInVectorCellLEvelField(CompuCell3D::FieldStorage::vectorFieldCellLevel_t * _field,CompuCell3D::CellG* _cell){
@@ -387,6 +536,15 @@ class CellG;
 
          return 0;
       }
+
+   }
+
+   void test_ifdef() {
+#ifndef SWIGWIN
+	   cerr << "GOT SWIGWIN WINDOWS 32" << endl;
+	#else
+	   cerr << "GOT DIFFERENT " << endl;
+#endif
 
    }
 
