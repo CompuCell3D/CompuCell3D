@@ -2430,88 +2430,16 @@ bool FieldExtractor::fillVectorFieldCellLevelData3D(vtk_obj_addr_int_t _pointsAr
 			return true;
 }
 
-//vector<int> FieldExtractor::fillCellFieldData3D_old(long _cellTypeArrayAddr){
-//	set<int> usedCellTypes;
-//
-//	vtkIntArray *cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
-//
-//	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
-//	Dim3D fieldDim=cellFieldG->getDim();
-//
-//	cellTypeArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
-//
-//	Point3D pt;
-//	CellG* cell;
-//	int type;
-//	int offset=0;
-//	//when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
-//	for(int k =0 ; k<fieldDim.z+2 ; ++k)
-//		for(int j =0 ; j<fieldDim.y+2 ; ++j)
-//			for(int i =0 ; i<fieldDim.x+2 ; ++i){
-//				if(i==0 || i==fieldDim.x+1 ||j==0 || j==fieldDim.y+1 || k==0 || k==fieldDim.z+1){
-//					cellTypeArray->InsertValue(offset, 0);
-//					++offset;
-//				}else{
-//					pt.x=i-1;
-//					pt.y=j-1;
-//					pt.z=k-1;
-//					cell=cellFieldG->get(pt);
-//					if (!cell){
-//						type=0;
-//					}else{
-//						type=cell->type;
-//						usedCellTypes.insert(type);
-//					}
-//					cellTypeArray->InsertValue(offset, type);
-//					++offset;
-//				}
-//			}
-//			return vector<int>(usedCellTypes.begin(),usedCellTypes.end());
-//}
 
 vector<int> FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr){
 	set<int> usedCellTypes;
-	cerr << "_cellTypeArrayAddr=" << _cellTypeArrayAddr << endl;
-	cerr << "SIZE OF (vtk_obj_addr_int_)=" << sizeof(_cellTypeArrayAddr) << endl;
 	vtkIntArray *cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
 	vtkLongArray *cellIdArray=(vtkLongArray *)_cellIdArrayAddr;
 
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
 	Dim3D fieldDim = cellFieldG->getDim();
 
-	//cerr << "c++ fieldDim=" << fieldDim << endl;
-	//cerr << " before cellTypeArray=" << cellTypeArray << endl;
-
-	//string addr = "0000021019840130";
-	//void *ptr = 0;
-	//char typeCheck[128];
-	//cerr << "addr=" << addr << endl;
-	//int i = sscanf(addr.c_str(), "%lx", (long long *)&ptr);
-	//cerr << "ptr=" << ptr << endl;
-
-	//long long ptr_test;
-	////std::istringstream ss("48543954385");
-	//std::istringstream ss(addr);
-	//if (!(ss >> ptr_test))
-	//	std::cout << "failed" << std::endl;
-	//else
-	//	cerr << "ptr_test=" << ptr_test << endl;
-
-	//addr = "000002a5bef60320";
-	//cerr << "addr=" << addr << endl;
-	//std::istringstream ss1(addr);
-	//if (!(ss1 >> std::hex >> ptr_test))
-	//	std::cout << "failed" << std::endl;
-	//else
-	//	cerr << "ptr_test=" << std::hex<<ptr_test << endl;
-
-
-
-	//cerr << "array name=" << cellTypeArray->GetName() << endl;
-
-
-	cellTypeArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
-	cerr << "cellTypeArray=" << cellTypeArray << endl;
+	cellTypeArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));	
 	cellIdArray->SetNumberOfValues((fieldDim.x+2)*(fieldDim.y+2)*(fieldDim.z+2));
 
 	Point3D pt;
@@ -2530,8 +2458,7 @@ vector<int> FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArra
 				}else{
 					pt.x=i-1;
 					pt.y=j-1;
-					pt.z=k-1;
-					cerr << "pt=" << pt << endl;
+					pt.z=k-1;					
 					cell = cellFieldG->get(pt);
 					if (!cell){
 						type=0;

@@ -71,8 +71,8 @@ namespace CompuCell3D{
 		virtual std::vector<int> fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr){return std::vector<int>();}
 		virtual bool fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec){return false;}
 
-		void* unmangleSWIGVktPtr(std::string _swigStyleVtkPtr);
-		long unmangleSWIGVktPtrAsLong(std::string _swigStyleVtkPtr);
+		//void* unmangleSWIGVktPtr(std::string _swigStyleVtkPtr);
+		//long unmangleSWIGVktPtrAsLong(std::string _swigStyleVtkPtr);
 
 
 	protected:

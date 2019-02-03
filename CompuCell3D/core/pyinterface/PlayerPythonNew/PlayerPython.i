@@ -16,10 +16,10 @@ namespace CompuCell3D{
  typedef CellG * cellGPtr_t;
 }
 
-// Windows calling conventions and some types in windows.h
+// in SWIG tydefs have to be explicitely redeclared in the interface (.i) file. Also note that SWIG struggles with proper handling of 
+// preprocessor _WIN32 macros so it is best to add -DSWIGWIN option to the actual swig command and look for this Macro together with _WIN32
+
 %inline %{
-//#if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
-//#ifdef __cplusplus
 #if defined(SWIGWIN) || defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
 
 	typedef long long vtk_obj_addr_int_t;
@@ -31,95 +31,8 @@ namespace CompuCell3D{
 
 
 
-	%}
+%}
 
-
-//// Windows calling conventions and some types in windows.h
-//%inline %{
-//#if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
-//	typedef long long vtk_obj_addr_int_t;
-//#else
-//	typedef longaas vtk_obj_addr_int_t;	
-//
-//#endif
-//
-//
-//	%}
-
-//%inline  %{
-//#if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
-//	
-//	
-//	# define vtk_obj_addr_int_t long long
-//#else
-//	# define vtk_obj_addr_int_t long
-//	
-//	
-//#endif
-//	%}
-//
-//#if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
-//	%apply long long{ vtk_obj_addr_int_t }
-//#else
-//	%apply long { vtk_obj_addr_int_t }
-//#endif
-
-//%inline %{
-//#if defined(_WIN32)
-//	#define MY_WIN
-//#endif
-//
-//# ifdef MY_WIN
-//	typedef long long vtk_obj_addr_int_t;
-//#else
-//	typedef long vtk_obj_addr_int_t;
-//#endif
-//	%}
-
-//# ifdef _WIN32
-//typedef long long vtk_obj_addr_int_t;
-//#else
-//typedef long vtk_obj_addr_int_t;
-//#endif
-
-
-//%inline	%{
-//# ifdef _WIN32
-//	typedef long long vtk_obj_addr_int_t;
-//#else
-//	typedef long vtk_obj_addr_int_t;
-//#endif
-//%}
-
-
-//#else
-//%inline	%{
-//
-//	typedef long vtk_obj_addr_int_t;
-//	%}
-//
-//#endif
-/* Tell SWIG about it */
-//# ifdef _WIN32 || _WIN64
-
-//typedef long long vtk_obj_addr_int_t;
-
-//#else
-//typedef long vtk_obj_addr_int_t;
-//#endif
-
-
-//typedef long long vtk_obj_addr_int_t;;
-
-//%inline %{
-//
-//# ifdef _WIN32 || _WIN64
-//	typedef long long vtk_obj_addr_int_t;
-//#else
-//	typedef long vtk_obj_addr_int_t;
-//#endif
-//
-//	%}
 
 %{
 
@@ -159,21 +72,12 @@ class CellG;
 
 #define FIELDEXTRACTOR_EXPORT
 
-
-
-
-
 //necessary to get proper wrapping of the numpy arrays
 %include "swig_includes/numpy.i"
 
 %init %{
     import_array();
 %}
-
-
-
-
-
 
 
 // C++ std::string handling
@@ -212,8 +116,6 @@ class CellG;
 
 %template(Coodrinates3DFloat) Coordinates3D<float>;
 %template(mapCellGPtrToCoordinates3DFloat) std::map<CompuCell3D::CellG*,Coordinates3D<float> >;
-
-
 
 
 %template(vectorint) std::vector<int>;
@@ -304,31 +206,6 @@ class CellG;
 %include <FieldExtractor.h>
 %include <FieldExtractorCML.h>
 %include <FieldWriter.h>
-
-//
-//// Windows calling conventions and some types in windows.h
-//%inline %{
-//#if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
-//	//#ifdef __cplusplus
-//#define MY_WIN
-//
-//	//#ifdef __win32
-//
-//
-//	typedef long long vtk_obj_addr_int_t;
-//
-//#else
-//	typedef longaas vtk_obj_addr_int_t;
-//
-//#endif
-//
-//#ifdef MY_WIN
-//	typedef long long vtk_obj_addr_int_t;
-//#else
-//	typedef longaas vtk_obj_addr_int_t;
-//#endif
-//
-//	%}
 
 
 %extend CompuCell3D::ScalarFieldCellLevel{    
@@ -538,16 +415,6 @@ class CellG;
       }
 
    }
-
-   void test_ifdef() {
-#ifndef SWIGWIN
-	   cerr << "GOT SWIGWIN WINDOWS 32" << endl;
-	#else
-	   cerr << "GOT DIFFERENT " << endl;
-#endif
-
-   }
-
 
 %}
 
