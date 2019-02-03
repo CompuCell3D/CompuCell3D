@@ -23,9 +23,6 @@
 # 3. Edit ScreenshotManagerCore - readScreenshotData fcn and write screenshot fct data
 # 4. Edit Graphics widget function that geenrate sceen metadata to have this new setting be reflected in sscene metadata
 
-
-
-import string
 import Configuration
 import vtk
 from cc3d.core.enums import *
@@ -35,7 +32,7 @@ from .MVCDrawModel2D import MVCDrawModel2D
 from .MVCDrawView3D import MVCDrawView3D
 from .MVCDrawModel3D import MVCDrawModel3D
 from .Specs import ActorSpecs
-from Utilities.utils import extract_address_int_from_vtk_object
+from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
 from .DrawingParameters import DrawingParameters
 
 
@@ -135,14 +132,9 @@ class GenericDrawer():
         Extracts basic information about cell field
         :return:
         """
-        import PlayerPython
-        PlayerPython.test_ifdef()
         cellType = vtk.vtkIntArray()
         cellType.SetName("celltype")
         cellTypeIntAddr = extract_address_int_from_vtk_object(cellType)
-        print("cellType.GetName()=",cellType.GetName())
-        print('vtkObj.__this__=',cellType.__this__)
-        print('cellTypeIntAddr=',hex(cellTypeIntAddr))
         # Also get the CellId
         cellId = vtk.vtkLongArray()
         cellId.SetName("cellid")
@@ -636,7 +628,7 @@ class GenericDrawer():
         return (self.plane, self.planePos)
 
     def setDrawingStyle(self, _style):
-        style = string.upper(_style)
+        style = _style.upper()
         if style == "2D":
             self.draw3DFlag = False
             # self.currentDrawingObject = self.draw_view_2D

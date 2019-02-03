@@ -10,7 +10,9 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from cc3d.core.enums import *
-from GraphicsOffScreen import GenericDrawer
+# from GraphicsOffScreen import GenericDrawer
+from cc3d.player5.GraphicsOffScreen.GenericDrawer import GenericDrawer
+
 from Utilities import ScreenshotData
 from Utilities import qcolor_to_rgba, cs_string_to_typed_list
 import sys
@@ -537,7 +539,8 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         :return: None
         """
 
-        style = string.upper(_style)
+        # style = string.upper(_style)
+        style = _style.upper()
         if style == "2D":
             self.draw3DFlag = False
             self.gd.get_renderer().SetActiveCamera(self.camera2D)

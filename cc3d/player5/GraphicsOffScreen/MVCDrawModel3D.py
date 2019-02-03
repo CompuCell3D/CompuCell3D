@@ -5,8 +5,8 @@ import vtk, math
 
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 # from Utilities.utils import extract_address_int_from_vtk_object
-from Utilities.utils import extract_address_int_from_vtk_object, to_vtk_rgb
-from GraphicsOffScreen.MetadataHandler import MetadataHandler
+from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object, to_vtk_rgb
+from cc3d.player5.GraphicsOffScreen.MetadataHandler import MetadataHandler
 
 MODULENAME = '------  MVCDrawModel3D.py'
 
@@ -292,12 +292,11 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
         con_array = vtk.vtkDoubleArray()
         con_array.SetName("concentration")
-        con_array_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor, vtkObj=con_array)
+        con_array_int_addr = extract_address_int_from_vtk_object(vtkObj=con_array)
 
         cell_type_con = vtk.vtkIntArray()
         cell_type_con.SetName("concelltype")
-        cell_type_con_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor,
-                                                                     vtkObj=cell_type_con)
+        cell_type_con_int_addr = extract_address_int_from_vtk_object(vtkObj=cell_type_con)
 
         field_type = drawing_params.fieldType.lower()
         if field_type == 'confield':
@@ -454,8 +453,8 @@ class MVCDrawModel3D(MVCDrawModelBase):
         vectors.SetNumberOfComponents(3)
         vectors.SetName("visVectors")
 
-        points_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor, vtkObj=points)
-        vectors_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor, vtkObj=vectors)
+        points_int_addr = extract_address_int_from_vtk_object(vtkObj=points)
+        vectors_int_addr = extract_address_int_from_vtk_object(vtkObj=vectors)
 
         fill_successful = False
 

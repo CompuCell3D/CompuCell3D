@@ -6,7 +6,7 @@ import string
 from cc3d.core.utils import mkdir_p
 import Configuration
 from Utilities import ScreenshotData, ScreenshotManagerCore
-from GraphicsOffScreen import GenericDrawer
+from cc3d.player5.GraphicsOffScreen.GenericDrawer import GenericDrawer
 
 
 class ScreenshotManager(ScreenshotManagerCore):

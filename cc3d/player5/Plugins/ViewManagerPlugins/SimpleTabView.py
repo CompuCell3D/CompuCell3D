@@ -227,6 +227,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # too often. Default check interval is 7 days
         self.check_version(check_interval=7)
 
+
     def getOutputDirName(self):
         """
         Returns screenshot directory name
@@ -901,11 +902,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.plotManager.initSignalAndSlots()
             self.widgetManager.initSignalAndSlots()
 
-            # todo 5 - uncommend here
-            # import PlayerPython
-            # self.fieldStorage = PlayerPython.FieldStorage()
-            # self.fieldExtractor = PlayerPython.FieldExtractor()
-            # self.fieldExtractor.setFieldStorage(self.fieldStorage)
+            # todo 5 - uncomment here
+            import PlayerPython
+            self.fieldStorage = PlayerPython.FieldStorage()
+            self.fieldExtractor = PlayerPython.FieldExtractor()
+            self.fieldExtractor.setFieldStorage(self.fieldStorage)
 
         self.simulation.setCallingWidget(self)
 
@@ -942,8 +943,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :param _traceback_message: str - contains full Python traceback
         :return:
         '''
-        msg = QMessageBox.warning(self, _errorType, \
-                                  _traceback_message, \
+        msg = QMessageBox.warning(self, _errorType,
+                                  _traceback_message,
                                   QMessageBox.Ok,
                                   QMessageBox.Ok)
 
@@ -1021,7 +1022,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
 
-        self.root_element = CompuCellSetup.cc3dXML2ObjConverter.root
+        # todo 5 -  restore model view
+        return
+        self.root_element = CompuCellSetup.persistent_globals.cc3d_xml_2_obj_converter
         self.model = SimModel(self.root_element, self.__modelEditor)
 
         # hook in simulation thread class to XML model TreeView panel in the GUI - needed for steering
@@ -1487,7 +1490,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
 
-        import CompuCellSetup
+        # todo 5 - restore it
+        return
         #        import pdb; pdb.set_trace()
         if self.customScreenshotDirectoryName == "":
             (self.screenshotDirectoryName, self.baseScreenshotName) = \
@@ -1542,7 +1546,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # opening screenshot description file
         self.open_implicit_screenshot_descr_file()
 
-        sim = self.simulation.sim()
+        # sim = self.simulation.sim()
+
+        sim = CompuCellSetup.persistent_globals.simulator
         if sim:
             self.fieldDim = sim.getPotts().getCellFieldG().getDim()
             # any references to simulator shuold be weak to avoid possible memory leaks - when not using weak references one has to be super careful to set to Non all references to sim to break any reference cycles
@@ -1594,10 +1600,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.screenshotNumberOfDigits = len(str(self.basicSimulationData.numberOfSteps))
 
-        latticeTypeStr = CompuCellSetup.ExtractLatticeType()
+        # latticeTypeStr = CompuCellSetup.ExtractLatticeType()
+        lattice_type_str = CompuCellSetup.simulation_utils.extract_lattice_type()
 
-        if latticeTypeStr in list(Configuration.LATTICE_TYPES.keys()):
-            self.latticeType = Configuration.LATTICE_TYPES[latticeTypeStr]
+
+        if lattice_type_str in list(Configuration.LATTICE_TYPES.keys()):
+            self.latticeType = Configuration.LATTICE_TYPES[lattice_type_str]
         else:
             self.latticeType = Configuration.LATTICE_TYPES["Square"]  # default choice
 
@@ -1619,10 +1627,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
         # todo
-        pass
-        import CompuCellSetup
 
-        CompuCellSetup.simulationFileName = self.__sim_file_name
+        # import CompuCellSetup
+
+        # CompuCellSetup.simulationFileName = self.__sim_file_name
+
         self.close_all_windows()
 
         initializeSimulationViewWidgetFcn = getattr(self, "initializeSimulationViewWidget" + self.__viewManagerType)
@@ -1634,9 +1643,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.createOutputDirs()
 
         # copy simulation files to output directory  for simgle simulation- copying of the simulations files for parameter scan is doen in the __loadCC3DFile
-        if self.singleSimulation:
-            if self.cc3dSimulationDataHandler and CompuCellSetup.screenshotDirectoryName != "":
-                self.cc3dSimulationDataHandler.copySimulationDataFiles(CompuCellSetup.screenshotDirectoryName)
+
+        # todo 5 - uncomment it later and restore
+        # if self.singleSimulation:
+        #     if self.cc3dSimulationDataHandler and CompuCellSetup.screenshotDirectoryName != "":
+        #         self.cc3dSimulationDataHandler.copySimulationDataFiles(CompuCellSetup.screenshotDirectoryName)
 
         # print MODULENAME, " initializeSimulationViewWidget():  before TRY ACQUIRE"
         self.simulation.sem.tryAcquire()
@@ -2596,6 +2607,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
 
+        # todo 5 -  reimplement it
+        return
         windowsLayoutDict = Configuration.getSetting('WindowsLayout')
         print('from settings windowsLayout = ', windowsLayoutDict)
 
@@ -2763,11 +2776,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
             #            print MODULENAME,"setFieldTypes():  Got this vector field (cell level): ",fieldName
             self.fieldTypes[fieldName] = FIELD_TYPES[5]
 
-        # inserting custom visualization
-        visDict = CompuCellSetup.customVisStorage.visDataDict
-
-        for visName in visDict:
-            self.fieldTypes[visName] = FIELD_TYPES[6]
+        #todo 5 - handle custom visualizations
+        # # inserting custom visualization
+        # visDict = CompuCellSetup.customVisStorage.visDataDict
+        #
+        # for visName in visDict:
+        #     self.fieldTypes[visName] = FIELD_TYPES[6]
 
     def showDisplayWidgets(self):
         '''
@@ -2776,12 +2790,17 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
 
         # This block of code simply checks to see if some plugins assoc'd with Vis are defined
-        import XMLUtils
-        if CompuCellSetup.cc3dXML2ObjConverter != None:
+        # todo 5 - rework this - remove parsing away from the player
+        from cc3d.core import XMLUtils
+        # import XMLUtils
+        # if CompuCellSetup.cc3dXML2ObjConverter != None:
+
+        cc3d_xml_2_obj_converter = CompuCellSetup.persistent_globals.cc3d_xml_2_obj_converter
+        if cc3d_xml_2_obj_converter != None:
             self.pluginCOMDefined = False
             self.pluginFPPDefined = False
 
-            self.root_element = CompuCellSetup.cc3dXML2ObjConverter.root
+            self.root_element = cc3d_xml_2_obj_converter.root
             elms = self.root_element.getElements("Plugin")
             elmList = XMLUtils.CC3DXMLListPy(elms)
             for elm in elmList:
@@ -3105,9 +3124,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # Add the current opening file to recent files and recent simulation
         Configuration.setSetting("RecentFile", self.__sim_file_name)
-        # todo 5 - uncomment and fix it
-        # Configuration.setSetting("RecentSimulations",
-        #                          self.__sim_file_name)  # each loaded simulation has to be passed to a function which updates list of recent files
+
+        # each loaded simulation has to be passed to a function which updates list of recent files
+        Configuration.setSetting("RecentSimulations",self.__sim_file_name)
 
     def __openScrDesc(self):
         '''

@@ -146,6 +146,82 @@ def mainLoop(sim, simthread, steppableRegistry):
         cur_step += 1
 
 
+def extraInitSimulationObjects(sim, simthread, _restartEnabled=False):
+    sim.extraInit()  # after all xml steppables and plugins have been loaded we call extraInit to complete initialization
+    # simthread.preStartInit()
+    sim.start()
+
+    # sends signal to player  to prepare for the upcoming simulation
+    simthread.postStartInit()
+
+    # waits for player  to complete initialization
+    simthread.waitForPlayerTaskToFinish()
+
+
+
+    # 62 mb
+
+    # if sim.getRecentErrorMessage() != "":
+    #     raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
+
+    # if simthread is not None and playerType != "CML":
+    #     simthread.preStartInit()
+
+    # if not _restartEnabled:  # start function does not get called during restart
+    #     sim.start()
+    # 71 mb
+
+    # print 'extraInitSimulationObjects 1'
+    # import time
+    # time.sleep(5)
+
+    # if sim.getRecentErrorMessage() != "":
+    #     raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
+
+    # print 'extraInitSimulationObjects 2'
+    # import time
+    # time.sleep(5)
+
+    # if simthread is not None and playerType != "CML":
+    #     simthread.postStartInit()
+
+    # if playerType == "CMLResultReplay":
+    #     simthread.preStartInit()
+    #     simthread.postStartInit()
+    # else:
+    #
+    #     sim.extraInit()  # after all xml steppables and plugins have been loaded we call extraInit to complete initialization
+    #
+    #     # 62 mb
+    #
+    #     if sim.getRecentErrorMessage() != "":
+    #         raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
+    #
+    #     if simthread is not None and playerType != "CML":
+    #         simthread.preStartInit()
+    #
+    #     if not _restartEnabled:  # start function does not get called during restart
+    #         sim.start()
+    #     # 71 mb
+    #
+    #
+    #     # print 'extraInitSimulationObjects 1'
+    #     # import time
+    #     # time.sleep(5)
+    #
+    #
+    #     if sim.getRecentErrorMessage() != "":
+    #         raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
+    #
+    #     # print 'extraInitSimulationObjects 2'
+    #     # import time
+    #     # time.sleep(5)
+    #
+    #     if simthread is not None and playerType != "CML":
+    #         simthread.postStartInit()
+
+
+
 def mainLoopPlayer(sim, simthread, steppableRegistry):
     """
 
@@ -157,11 +233,21 @@ def mainLoopPlayer(sim, simthread, steppableRegistry):
     steppableRegistry = CompuCellSetup.persistent_globals.steppable_registry
     simthread = CompuCellSetup.persistent_globals.simthread
 
+
+    extraInitSimulationObjects(sim, simthread, _restartEnabled=False)
+
+    # simthread.waitForInitCompletion()
+    # simthread.waitForPlayerTaskToFinish()
+
+
     if not steppableRegistry is None:
         steppableRegistry.init(sim)
 
     max_num_steps = sim.getNumSteps()
-    sim.start()
+
+    # called in extra
+    # sim.start()
+
     if not steppableRegistry is None:
         steppableRegistry.start()
 

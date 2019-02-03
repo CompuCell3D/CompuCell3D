@@ -1,11 +1,24 @@
 import warnings
-def extract_address_int_from_vtk_object(field_extractor, vtkObj):
+
+
+def extract_address_int_from_vtk_object(vtkObj: str) -> int:
     '''
     Extracts memory address of vtk object
     :param _vtkObj: vtk object - e.g. vtk array
     :return: int (possible long int) representing the address of the vtk object
     '''
-    return field_extractor.unmangleSWIGVktPtrAsLong(vtkObj.__this__)
+
+    addr_portion  = vtkObj.__this__.split('_')[1]
+    addr_hex_int = int(addr_portion,16)
+
+    return addr_hex_int
+
+    # addr_portion  = vtkObj.__this__.split('_')[1]
+    # addr_hex_int = int(addr_portion,16)
+    # print ('addr_hex=',hex(addr_hex_int))
+    # return field_extractor.unmangleSWIGVktPtrAsLong(addr_portion)
+    # print('addr_portion=',addr_portion)
+    # return field_extractor.unmangleSWIGVktPtrAsLong(vtkObj.__this__)
 
 def qcolor_to_rgba(qcolor):
     """

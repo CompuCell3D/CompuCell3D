@@ -1,9 +1,7 @@
 import vtk
 import Configuration
-import string
-from cc3d import  CompuCellSetup
-from Utilities import qcolor_to_rgba
-from Utilities.utils import to_vtk_rgb
+from cc3d import CompuCellSetup
+from cc3d.player5.Utilities.utils import to_vtk_rgb, qcolor_to_rgba
 
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 MODULENAME = '----- MVCDrawModelBase.py: '

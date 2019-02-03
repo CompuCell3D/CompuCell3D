@@ -282,8 +282,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
         vectors.SetNumberOfComponents(3)
         vectors.SetName("visVectors")
 
-        points_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor, vtkObj=points)
-        vectors_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor, vtkObj=vectors)
+        points_int_addr = extract_address_int_from_vtk_object(vtkObj=points)
+        vectors_int_addr = extract_address_int_from_vtk_object(vtkObj=vectors)
 
         fill_successful = False
         # lattice_type_str = self.get_lattice_type_str()
@@ -461,13 +461,13 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         con_array = vtk.vtkDoubleArray()
         con_array.SetName("concentration")
-        con_array_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor, vtkObj=con_array)
+        con_array_int_addr = extract_address_int_from_vtk_object(vtkObj=con_array)
         hex_points_con = vtk.vtkPoints()
-        hex_points_con_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor, vtkObj=hex_points_con)
+        hex_points_con_int_addr = extract_address_int_from_vtk_object(vtkObj=hex_points_con)
 
 
         hex_cells_con = vtk.vtkCellArray()
-        hex_cells_con_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor, vtkObj=hex_cells_con)
+        hex_cells_con_int_addr = extract_address_int_from_vtk_object(vtkObj=hex_cells_con)
         hex_cells_con_poly_data = vtk.vtkPolyData()
 
 
@@ -661,7 +661,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         con_array = vtk.vtkDoubleArray()
         con_array.SetName("concentration")
-        con_array_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor, vtkObj=con_array)
+        con_array_int_addr = extract_address_int_from_vtk_object(vtkObj=con_array)
         # todo - make it flexible
 
         field_type = drawing_params.fieldType.lower()
@@ -860,20 +860,18 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         cell_type_array = vtk.vtkIntArray()
         cell_type_array.SetName("celltype")
-        cell_type_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor,
-                                                                 vtkObj=cell_type_array)
+        cell_type_int_addr = extract_address_int_from_vtk_object(vtkObj=cell_type_array)
 
         hex_cells_array = vtk.vtkCellArray()
 
-        hex_cells_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor,
-                                                                 vtkObj=hex_cells_array)
+        hex_cells_int_addr = extract_address_int_from_vtk_object(vtkObj=hex_cells_array)
 
         hex_cells_poly_data = vtk.vtkPolyData()
         # **********************************************
 
         hex_points = vtk.vtkPoints()
         # self.hexPoints.SetName("hexpoints")
-        hex_points_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor, vtkObj=hex_points)
+        hex_points_int_addr = extract_address_int_from_vtk_object(vtkObj=hex_points)
 
         self.field_extractor.fillCellFieldData2DHex(
             cell_type_int_addr,
@@ -979,13 +977,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         points = vtk.vtkPoints()
         lines = vtk.vtkCellArray()
-        points_int_addr = extract_address_int_from_vtk_object(
-                # field_extractor=self.field_extractor,
-                                                              vtkObj=points)
+        points_int_addr = extract_address_int_from_vtk_object(vtkObj=points)
 
-        lines_int_addr = extract_address_int_from_vtk_object(
-                # field_extractor=self.field_extractor,
-                                                             vtkObj=lines)
+        lines_int_addr = extract_address_int_from_vtk_object(vtkObj=lines)
 
         hex_flag = False
         # lattice_type_str = self.get_lattice_type_str()
@@ -1036,10 +1030,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         points = vtk.vtkPoints()
         lines = vtk.vtkCellArray()
-        points_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor,
-                                                             vtkObj=points)
-        lines_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor,
-                                                             vtkObj=lines)
+        points_int_addr = extract_address_int_from_vtk_object(vtkObj=points)
+        lines_int_addr = extract_address_int_from_vtk_object(vtkObj=lines)
 
         hex_flag = False
         # lattice_type_str = self.get_lattice_type_str()
