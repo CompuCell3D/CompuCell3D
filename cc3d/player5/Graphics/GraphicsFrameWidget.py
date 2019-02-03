@@ -2,27 +2,23 @@
 # todo - resolve the issue of imports in the CompuCellSetup
 
 from weakref import ref
-import string
-import DefaultData
-import Configuration
-from PyQt5 import QtCore, QtGui, QtOpenGL, QtWidgets
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+import cc3d.player5.DefaultData as DefaultData
+import cc3d.player5.Configuration as Configuration
+from PyQt5 import QtCore, QtGui, QtWidgets
 from cc3d.core.enums import *
-# from GraphicsOffScreen import GenericDrawer
 from cc3d.player5.GraphicsOffScreen.GenericDrawer import GenericDrawer
+from .GraphicsWindowData import GraphicsWindowData
 
-from Utilities import ScreenshotData
-from Utilities import qcolor_to_rgba, cs_string_to_typed_list
+from cc3d.player5.Utilities import ScreenshotData
+from cc3d.player5.Utilities import qcolor_to_rgba, cs_string_to_typed_list
 import sys
 from collections import OrderedDict
 
 platform = sys.platform
 if platform == 'darwin':
-    from Utilities.QVTKRenderWindowInteractor_mac import QVTKRenderWindowInteractor
+    from cc3d.player5.Utilities.QVTKRenderWindowInteractor_mac import QVTKRenderWindowInteractor
 else:
-    from Utilities.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+    from cc3d.player5.Utilities.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 MODULENAME = '---- GraphicsFrameWidget.py: '
 
 
@@ -625,7 +621,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         tvw = self.parentWidget()
         print('UPDATE getGraphicsWindowData')
 
-        from .GraphicsWindowData import GraphicsWindowData
+
         gwd = GraphicsWindowData()
         activeCamera = self.getActiveCamera()
         # gwd.camera = self.getActiveCamera()

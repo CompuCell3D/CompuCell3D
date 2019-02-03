@@ -1,13 +1,11 @@
 from vtk.util.numpy_support import vtk_to_numpy
 from .MVCDrawModelBase import MVCDrawModelBase
-import Configuration
-import vtk, math
-
-VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
-# from Utilities.utils import extract_address_int_from_vtk_object
+import vtk
+import math
 from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object, to_vtk_rgb
 from cc3d.player5.GraphicsOffScreen.MetadataHandler import MetadataHandler
 
+VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 MODULENAME = '------  MVCDrawModel3D.py'
 
 

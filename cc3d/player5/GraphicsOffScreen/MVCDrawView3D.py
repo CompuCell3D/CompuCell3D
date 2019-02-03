@@ -1,16 +1,17 @@
 from .MVCDrawViewBase import MVCDrawViewBase
-import Configuration
+import cc3d.player5.Configuration as Configuration
 import vtk
 from collections import OrderedDict
 from copy import deepcopy
-from GraphicsOffScreen.MetadataHandler import MetadataHandler
+from cc3d.player5.GraphicsOffScreen.MetadataHandler import MetadataHandler
 
-MODULENAME='==== MVCDrawView3D.py:  '
+MODULENAME = '==== MVCDrawView3D.py:  '
+
 
 class MVCDrawView3D(MVCDrawViewBase):
     def __init__(self, _drawModel):
-        MVCDrawViewBase.__init__(self,_drawModel)
-        
+        MVCDrawViewBase.__init__(self, _drawModel)
+
         self.initArea()
         self.setParams()
         # self.usedCellTypesList=None
@@ -28,22 +29,22 @@ class MVCDrawView3D(MVCDrawViewBase):
         self.zitems = []
 
         self.actors_dict = {}
-        
-        self.cellTypeActors={}
+
+        self.cellTypeActors = {}
         self.outlineActor = vtk.vtkActor()
-        self.outlineDim=[0,0,0]
-        
-        self.invisibleCellTypes={}
-        self.typesInvisibleStr=""
+        self.outlineDim = [0, 0, 0]
+
+        self.invisibleCellTypes = {}
+        self.typesInvisibleStr = ""
         self.set3DInvisibleTypes()
-        
+
         self.axesActor = vtk.vtkCubeAxesActor2D()
 
         self.clut = vtk.vtkLookupTable()
         self.clut.SetHueRange(0.67, 0.0)
-        self.clut.SetSaturationRange(1.0,1.0)
-        self.clut.SetValueRange(1.0,1.0)
-        self.clut.SetAlphaRange(1.0,1.0)
+        self.clut.SetSaturationRange(1.0, 1.0)
+        self.clut.SetValueRange(1.0, 1.0)
+        self.clut.SetAlphaRange(1.0, 1.0)
         self.clut.SetNumberOfColors(1024)
         self.clut.Build()
 
@@ -51,14 +52,14 @@ class MVCDrawView3D(MVCDrawViewBase):
         # self.conMapper = vtk.vtkPolyDataMapper()
         self.conActor = vtk.vtkActor()
 
-        self.glyphsActor=vtk.vtkActor()
+        self.glyphsActor = vtk.vtkActor()
         # self.glyphsMapper=vtk.vtkPolyDataMapper()
-        
-        self.cellGlyphsActor  = vtk.vtkActor()
-        self.FPPLinksActor  = vtk.vtkActor()
+
+        self.cellGlyphsActor = vtk.vtkActor()
+        self.FPPLinksActor = vtk.vtkActor()
 
         # Weird attributes
-        self.typeActors             = {} # vtkActor
+        self.typeActors = {}  # vtkActor
         # self.smootherFilters        = {} # vtkSmoothPolyDataFilter
         # self.polyDataNormals        = {} # vtkPolyDataNormals
         # self.typeExtractors         = {} # vtkDiscreteMarchingCubes
@@ -97,13 +98,13 @@ class MVCDrawView3D(MVCDrawViewBase):
         all_types = metadata['all_types']
 
         for actorNumber in all_types:
-            actorName="CellType_"+str(actorNumber)
-            if  not actorNumber in invisible_types:
+            actorName = "CellType_" + str(actorNumber)
+            if not actorNumber in invisible_types:
                 actor_specs_copy.actors_dict[actorNumber] = vtk.vtkActor()
 
         return actor_specs_copy
 
-    def prepare_border_actors(self,actor_specs, drawing_params=None):
+    def prepare_border_actors(self, actor_specs, drawing_params=None):
         """
         Prepares border actors  based on actor_specs specifications
         :param actor_specs {ActorSpecs}: specification of actors to create
@@ -113,8 +114,7 @@ class MVCDrawView3D(MVCDrawViewBase):
 
         raise NotImplementedError(self.__class__.prepare_border_actors.__name__)
 
-
-    def prepare_concentration_field_actors(self,actor_specs, drawing_params=None):
+    def prepare_concentration_field_actors(self, actor_specs, drawing_params=None):
         """
         Prepares concentration field actors
         :param actor_specs {ActorSpecs}: specification of actors to create
@@ -130,7 +130,7 @@ class MVCDrawView3D(MVCDrawViewBase):
 
         return actor_specs_copy
 
-    def show_concentration_field_actors(self,actor_specs, drawing_params=None,  show_flag=True):
+    def show_concentration_field_actors(self, actor_specs, drawing_params=None, show_flag=True):
         """
         Shows concentration actors
         :param actor_specs: {ActorSpecs}
@@ -145,17 +145,17 @@ class MVCDrawView3D(MVCDrawViewBase):
         if show_flag:
             self.add_actor_to_renderer(actor_label='concentration_actor', actor_obj=self.conActor)
 
-            if mdata.get('LegendEnable',default=False):
+            if mdata.get('LegendEnable', default=False):
                 self.add_actor_to_renderer(actor_label='legend_actor', actor_obj=self.legendActor)
 
-            if mdata.get('DisplayMinMaxInfo',default=True):
+            if mdata.get('DisplayMinMaxInfo', default=True):
                 self.add_actor_to_renderer(actor_label='min_max_text_actor', actor_obj=self.min_max_text_actor)
 
         else:
             self.remove_actor_from_renderer(actor_label='concentration_actor', actor_obj=self.conActor)
             self.remove_actor_from_renderer(actor_label='legend_actor', actor_obj=self.legendActor)
 
-    def prepare_vector_field_actors(self,actor_specs,  drawing_params=None):
+    def prepare_vector_field_actors(self, actor_specs, drawing_params=None):
         """
         Prepares vector field actors
         :param actor_specs {ActorSpecs}: specification of actors to create
@@ -170,7 +170,7 @@ class MVCDrawView3D(MVCDrawViewBase):
 
         return actor_specs_copy
 
-    def show_vector_field_actors(self,actor_specs,drawing_params=None, show_flag=True):
+    def show_vector_field_actors(self, actor_specs, drawing_params=None, show_flag=True):
         """
         Shows vector field actors
         :param actor_specs: {ActorSpecs}
@@ -184,13 +184,12 @@ class MVCDrawView3D(MVCDrawViewBase):
         if show_flag:
             self.add_actor_to_renderer(actor_label='vector_field_actor', actor_obj=self.glyphsActor)
 
-            if mdata.get('DisplayMinMaxInfo',default=True):
+            if mdata.get('DisplayMinMaxInfo', default=True):
                 self.add_actor_to_renderer(actor_label='min_max_text_actor', actor_obj=self.min_max_text_actor)
 
         else:
             self.remove_actor_from_renderer(actor_label='vector_field_actor', actor_obj=self.glyphsActor)
             self.remove_actor_from_renderer(actor_label='min_max_text_actor', actor_obj=self.min_max_text_actor)
-
 
     def prepare_fpp_links_actors(self, actor_specs, drawing_params=None):
         """
@@ -204,7 +203,7 @@ class MVCDrawView3D(MVCDrawViewBase):
         actor_specs_copy.actors_dict['fpp_links_actor'] = self.FPPLinksActor
         return actor_specs_copy
 
-    def show_fpp_links_actors(self, actor_specs, drawing_params=None,  show_flag=True):
+    def show_fpp_links_actors(self, actor_specs, drawing_params=None, show_flag=True):
         """
         Shows fpp links actors
         :param actor_specs: {ActorSpecs}
@@ -221,29 +220,30 @@ class MVCDrawView3D(MVCDrawViewBase):
 
     def getPlane(self):
         return ("3D", 0)
-    
-    def setPlotData(self,_plotData):
-        self.currentFieldType=_plotData  
-        
+
+    def setPlotData(self, _plotData):
+        self.currentFieldType = _plotData
+
     def set3DInvisibleTypes(self):
         '''
         Initializes a dictionary self.invisibleCellTypes of invisible cell types - reads settings "Types3DInvisible"
         :return:None
         '''
         self.colorMap = Configuration.getSetting("TypeColorMap")
-        
+
         typesInvisibleStrTmp = str(Configuration.getSetting("Types3DInvisible"))
         # print "GOT ",typesInvisibleStrTmp
         if typesInvisibleStrTmp != self.typesInvisibleStr:
             self.typesInvisibleStr = str(Configuration.getSetting("Types3DInvisible"))
 
-            typesInvisible = self.typesInvisibleStr.replace(" ","")
-            
+            typesInvisible = self.typesInvisibleStr.replace(" ", "")
+
             typesInvisible = typesInvisible.split(",")
+
             def cell_type_check(cell_type):
                 try:
                     cell_type_int = int(cell_type)
-                    if cell_type_int>=0:
+                    if cell_type_int >= 0:
 
                         return True
                     else:
@@ -253,11 +253,11 @@ class MVCDrawView3D(MVCDrawViewBase):
 
             typesInvisible = [int(cell_type) for cell_type in typesInvisible if cell_type_check(cell_type)]
             # print "typesInvisibleVec=",typesInvisibleVec
-            #turning list into a dictionary
+            # turning list into a dictionary
             self.invisibleCellTypes.clear()
             for type in typesInvisible:
-                self.invisibleCellTypes[int(type)]=0        
-            # print "\t\t\t self.invisibleCellTypes=",self.invisibleCellTypes
+                self.invisibleCellTypes[int(type)] = 0
+                # print "\t\t\t self.invisibleCellTypes=",self.invisibleCellTypes
 
     def set_default_camera(self, fieldDim=None):
         '''
@@ -285,10 +285,10 @@ class MVCDrawView3D(MVCDrawViewBase):
         :param fieldDim: field dimension - instance of Dim3D (CC3D ++ object)
         :return: None
         '''
-        #self.dim = [fieldDim.x+1 , fieldDim.y+1 , fieldDim.z]
-        self.dim = [fieldDim.x , fieldDim.y , fieldDim.z]
+        # self.dim = [fieldDim.x+1 , fieldDim.y+1 , fieldDim.z]
+        self.dim = [fieldDim.x, fieldDim.y, fieldDim.z]
 
-    def show_cell_actors(self,actor_specs,drawing_params=None, show_flag=True):
+    def show_cell_actors(self, actor_specs, drawing_params=None, show_flag=True):
         """
         shows/hides cells
         :param show_flag:
@@ -362,7 +362,7 @@ class MVCDrawView3D(MVCDrawViewBase):
 
         return actor_specs_copy
 
-    def show_axes_actors(self,  actor_specs, drawing_params=None, show_flag=True):
+    def show_axes_actors(self, actor_specs, drawing_params=None, show_flag=True):
         """
         shows/hides axes box
         :param actor_specs:
@@ -386,5 +386,3 @@ class MVCDrawView3D(MVCDrawViewBase):
             if "Axes" in self.currentActors:
                 del self.currentActors["Axes"]
                 self.ren.RemoveActor(self.axesActor)
-
-

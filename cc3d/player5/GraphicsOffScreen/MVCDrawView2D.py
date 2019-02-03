@@ -1,16 +1,9 @@
 from .MVCDrawViewBase import MVCDrawViewBase
-import Configuration
 import vtk
-import os
 import string
 from collections import OrderedDict
 from copy import deepcopy
-from GraphicsOffScreen.MetadataHandler import MetadataHandler
-from Messaging import dbgMsg, setDebugging
-# setDebugging(1)
-
-
-# CONTOUR_ALLOWED_FIELD_TYPES=[FIELD_TYPES[1],FIELD_TYPES[2],FIELD_TYPES[3]]
+from cc3d.player5.GraphicsOffScreen.MetadataHandler import MetadataHandler
 
 MODULENAME='----MVCDrawView2D.py: '
 

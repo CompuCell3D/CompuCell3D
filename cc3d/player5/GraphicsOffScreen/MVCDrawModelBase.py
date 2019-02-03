@@ -1,5 +1,5 @@
 import vtk
-import Configuration
+import cc3d.player5.Configuration as Configuration
 from cc3d import CompuCellSetup
 from cc3d.player5.Utilities.utils import to_vtk_rgb, qcolor_to_rgba
 
