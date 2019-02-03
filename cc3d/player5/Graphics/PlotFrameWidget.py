@@ -1,6 +1,6 @@
 import sys
 from PyQt5 import Qt
-
+import warnings
 # import PyQt.Qwt5 as Qwt
 # from PyQt4.Qwt5.anynumpy import *
 

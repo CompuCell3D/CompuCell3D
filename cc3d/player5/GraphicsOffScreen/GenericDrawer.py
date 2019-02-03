@@ -23,7 +23,7 @@
 # 3. Edit ScreenshotManagerCore - readScreenshotData fcn and write screenshot fct data
 # 4. Edit Graphics widget function that geenrate sceen metadata to have this new setting be reflected in sscene metadata
 
-import Configuration
+import cc3d.player5.Configuration as Configuration
 import vtk
 from cc3d.core.enums import *
 from copy import deepcopy
