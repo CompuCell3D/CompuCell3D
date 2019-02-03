@@ -8,7 +8,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from cc3d.core.enums import *
 from cc3d.player5.GraphicsOffScreen.GenericDrawer import GenericDrawer
 from .GraphicsWindowData import GraphicsWindowData
-
 from cc3d.player5.Utilities import ScreenshotData
 from cc3d.player5.Utilities import qcolor_to_rgba, cs_string_to_typed_list
 import sys
@@ -19,6 +18,7 @@ if platform == 'darwin':
     from cc3d.player5.Utilities.QVTKRenderWindowInteractor_mac import QVTKRenderWindowInteractor
 else:
     from cc3d.player5.Utilities.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+
 MODULENAME = '---- GraphicsFrameWidget.py: '
 
 
@@ -314,23 +314,11 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
         :return:
         """
-        # print MODULENAME, '  >>>>>>>>>>   configsChange()    <<<<<<<<<<<<<<<<<<'
-        # self.populateLookupTable()
-        # self.setBorderColor()
-        # # Doesn't work, gives error:
-        # # vtkScalarBarActor (0x8854218): Need a mapper to render a scalar bar
-        # # self.showLegend(Configuration.getSetting("LegendEnable"))
-        #
-        # #        self.showContours(Configuration.getSetting("ContoursOn",self.currentDrawingParameters.fieldName))
-        # self.showContours(True)
-        # self.parentWidget.requestRedraw()
 
         # here we are updating models based on the new set of configs
         self.gd.configsChanged()
         if self.current_bsd is not None:
             self.draw(basic_simulation_data=self.current_bsd)
-
-        print('configsChanged')
 
     def Render(self):
         color = Configuration.getSetting("WindowColor")
@@ -355,10 +343,6 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         :return: {vtkCamera}
         """
         return self.camera3D
-
-
-    # def setActiveCamera(self, _camera):
-    #     return self.ren.SetActiveCamera(_camera)
 
     def getCamera2D(self):
         return self.camera2D
@@ -793,9 +777,6 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         :return:
         """
         print('CHANGE and update closeEvent')
-
-        # print '\n\n\n closeEvent GRAPHICS FRAME'
-
         # cleaning up to release memory - notice that if we do not do this cleanup this widget will not be destroyed and will take sizeable portion of the memory
         # not a big deal for a single simulation but repeated runs can easily exhaust all system memory
         # todo 5 - old code

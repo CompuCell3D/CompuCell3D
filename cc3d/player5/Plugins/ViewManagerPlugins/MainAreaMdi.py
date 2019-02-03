@@ -1,7 +1,7 @@
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-
+import cc3d.player5.Graphics as Graphics
 from .WindowInventory import WindowInventory
 from cc3d.core.enums import *
 
@@ -195,7 +195,7 @@ class MainArea(QMdiArea):
         :return: None
         '''
 
-        import Graphics
+
         obj_type = 'other'
         if isinstance(widget, Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
             # obj_type = 'graphics'
