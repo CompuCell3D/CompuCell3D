@@ -22,7 +22,9 @@
 import sys
 class RollbackImporter:
     def __init__(self):
-        "Creates an instance and installs as the global importer"
+        """
+        Creates an instance and installs as the global importer
+        """
         self.previousModules = sys.modules.copy()
         print("__builtins__",__builtins__)
         self.realImport = __builtins__['__import__']

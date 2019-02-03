@@ -1,36 +1,15 @@
 # from PlotWindowInterface import PlotWindowInterface
 # -*- coding: utf-8 -*-
-# from PyQt5 import Qt
-# from PyQt5.Qt import *
-#
 from .PlotWindowInterface import PlotWindowInterface
-from PyQt5 import QtCore, QtGui, QtWidgets
-# # from PyQt5.QtCore import *
-
+from cc3d.player5.Graphics.GraphicsWindowData import GraphicsWindowData
+from PyQt5 import QtCore
+from cc3d.player5.Graphics.PlotFrameWidget import PlotFrameWidget
 from . import PlotManagerSetup
-import os, Configuration
-from enums import *
+import cc3d.player.Configuration as Configuration
+from cc3d.core.enums import *
 
-
-# class PlotManager(object):
-#     # __pyqtSignals__ = ("newPlotWindow(QtCore.QMutex)",)
-#     # @QtCore.pyqtSignature("newPlotWindow(QtCore.QMutex)")
-#
-#     # def emitNewPlotWindow(self,_mutex):
-#     # self.emit(SIGNAL("newPlotWindow(QtCore.QMutex)") , _mutex)
-#
-#     # newPlotWindowSignal = QtCore.pyqtSignal(QtCore.QMutex, object)
-#
-#     def __init__(self, _viewManager=None, _plotSupportFlag=False):
-#         # QtCore.QObject.__init__(self, None)
-#         pass
 
 class PlotManager(QtCore.QObject):
-    # __pyqtSignals__ = ("newPlotWindow(QtCore.QMutex)",)
-    # @QtCore.pyqtSignature("newPlotWindow(QtCore.QMutex)")
-
-    # def emitNewPlotWindow(self,_mutex):
-    # self.emit(SIGNAL("newPlotWindow(QtCore.QMutex)") , _mutex)
 
     newPlotWindowSignal = QtCore.pyqtSignal(QtCore.QMutex, object)
 
@@ -81,7 +60,7 @@ class PlotManager(QtCore.QObject):
             if str(plot_interface.title) in list(windows_layout_dict.keys()):
                 window_data_dict = windows_layout_dict[str(plot_interface.title)]
 
-                from Graphics.GraphicsWindowData import GraphicsWindowData
+
 
                 gwd = GraphicsWindowData()
                 gwd.fromDict(window_data_dict)
@@ -122,12 +101,11 @@ class PlotManager(QtCore.QObject):
         windows_layout_dict = Configuration.getSetting('WindowsLayout')
         # print 'windowsLayoutDict=', windowsLayoutDict
 
-        if not windows_layout_dict: return
+        if not windows_layout_dict:
+            return
 
         if str(plotWindowInterface.title) in list(windows_layout_dict.keys()):
             window_data_dict = windows_layout_dict[str(plotWindowInterface.title)]
-
-            from Graphics.GraphicsWindowData import GraphicsWindowData
 
             gwd = GraphicsWindowData()
             gwd.fromDict(window_data_dict)
@@ -142,7 +120,6 @@ class PlotManager(QtCore.QObject):
 
     def getPlotWindowsLayoutDict(self):
         windowsLayout = {}
-        from Graphics.GraphicsWindowData import GraphicsWindowData
 
         for winId, win in self.vm.win_inventory.getWindowsItems(PLOT_WINDOW_LABEL):
             plotFrameWidget = win.widget()
@@ -192,7 +169,7 @@ class PlotManager(QtCore.QObject):
         if not self.plotsSupported:
             return PlotWindowInterfaceBase(None)  # dummy PlotwindowInterface
 
-        from  Graphics.PlotFrameWidget import PlotFrameWidget
+
         if not self.vm.simulationIsRunning:
             return
         # self.vm.simulation.drawMutex.lock()

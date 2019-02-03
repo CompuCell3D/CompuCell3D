@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
 import warnings
-import os, sys
-from os.path import join, exists, dirname
+import os
+import sys
+from os.path import join, dirname
 import string
 from cc3d.core.utils import mkdir_p
-import Configuration
-from Utilities import ScreenshotData, ScreenshotManagerCore
+import cc3d.player5.Configuration as Configuration
+from cc3d.player5.Utilities import ScreenshotData
+from cc3d.player5.Utilities import ScreenshotManagerCore
 from cc3d.player5.GraphicsOffScreen.GenericDrawer import GenericDrawer
-
+from weakref import ref
 
 class ScreenshotManager(ScreenshotManagerCore):
     def __init__(self, _tabViewWidget):
         ScreenshotManagerCore.__init__(self)
 
-        from weakref import ref
         self.tabViewWidget = ref(_tabViewWidget)
         tvw = self.tabViewWidget()
 

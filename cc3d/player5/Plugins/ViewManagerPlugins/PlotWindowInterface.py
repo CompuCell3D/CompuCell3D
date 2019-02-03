@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-# from PyQt5 import Qt
-# from PyQt5.Qt import *
-
-from PyQt5 import QtCore, QtGui, QtWidgets
+import weakref
+from PyQt5 import QtCore
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -20,7 +18,7 @@ import pyqtgraph as pg
 import pyqtgraph.exporters
 
 from . import PlotManagerSetup
-import os, Configuration
+import os
 from cc3d.core.enums import *
 
 MODULENAME = '---- PlotManager.py: '
@@ -62,7 +60,7 @@ class PlotWindowInterface(QtCore.QObject):
         QtCore.QObject.__init__(self, None)
         if _plotWindow:
             self.plotWindow = _plotWindow
-            import weakref
+
             self.plotWindow.plotInterface = weakref.ref(self)
             self.pW = self.plotWindow.plotWidget
 

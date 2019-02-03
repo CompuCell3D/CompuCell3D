@@ -1,9 +1,9 @@
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from enums import *
-
+from cc3d.core.enums import *
 from .WindowInventory import WindowInventory
+
 
 class SubWindow(QFrame):
     def __init__(self, _parent):
@@ -18,8 +18,10 @@ class SubWindow(QFrame):
         # thus the settings below
         # are actually the ones that work on all platforms
 
-        self.setWindowFlags(Qt.Dialog|Qt.CustomizeWindowHint|Qt.WindowMaximizeButtonHint|Qt.WindowMinimizeButtonHint\
-        |Qt.WindowCloseButtonHint|Qt.FramelessWindowHint)
+        self.setWindowFlags(
+            Qt.Dialog | Qt.CustomizeWindowHint | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint
+            | Qt.WindowCloseButtonHint | Qt.FramelessWindowHint
+        )
 
     def setWidget(self, widget):
         '''
@@ -31,7 +33,7 @@ class SubWindow(QFrame):
         layout = QBoxLayout(QBoxLayout.TopToBottom)
         layout.addWidget(widget)
         # layout.setMargin(0)
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(0, 0, 0, 0)
         # layout.setSpacing(0)
         self.main_widget = widget
         self.setLayout(layout)
@@ -57,7 +59,7 @@ class SubWindow(QFrame):
         :return:None
         '''
         self.parent.lastActiveRealWindow = self
-        super(SubWindow,self).mousePressEvent(ev)
+        super(SubWindow, self).mousePressEvent(ev)
 
     def mouseDoubleClickEvent(self, ev):
         '''
@@ -76,12 +78,12 @@ class SubWindow(QFrame):
     #     '''
     #
     #     return
-        # if ev.type() == QEvent.ActivationChange:
-        #     if self.isActiveWindow():
-        #         print 'will activate ', self
-        #         self.parent.lastActiveRealWindow = self
-        #
-        # super(DockSubWindow,self).changeEvent(ev)
+    # if ev.type() == QEvent.ActivationChange:
+    #     if self.isActiveWindow():
+    #         print 'will activate ', self
+    #         self.parent.lastActiveRealWindow = self
+    #
+    # super(DockSubWindow,self).changeEvent(ev)
 
     def closeEvent(self, ev):
         '''
@@ -100,18 +102,17 @@ class PythonSteeringSubWindow(QFrame):
 
 
 class MainArea(QWidget):
-    def __init__(self, stv,  ui ):
+    def __init__(self, stv, ui):
 
         self.MDI_ON = False
 
-        self.stv = stv # SimpleTabView
-        self.UI = ui # UserInterface
+        self.stv = stv  # SimpleTabView
+        self.UI = ui  # UserInterface
 
         self.win_inventory = WindowInventory()
 
-        self.lastActiveRealWindow = None # keeps track of the last active real window
-        self.last_suggested_window_position = QPoint(0,0)
-
+        self.lastActiveRealWindow = None  # keeps track of the last active real window
+        self.last_suggested_window_position = QPoint(0, 0)
 
     def suggested_window_position(self):
         '''
@@ -123,11 +124,12 @@ class MainArea(QWidget):
 
         if self.last_suggested_window_position.x() == 0 and self.last_suggested_window_position.y() == 0:
 
-            self.last_suggested_window_position = QPoint(rec.width()/5, rec.height()/5)
+            self.last_suggested_window_position = QPoint(rec.width() / 5, rec.height() / 5)
             return self.last_suggested_window_position
         else:
             from random import randint
-            self.last_suggested_window_position = QPoint(randint(rec.width()/5, rec.width()/2), randint(rec.height()/5, rec.height()/2))
+            self.last_suggested_window_position = QPoint(randint(rec.width() / 5, rec.width() / 2),
+                                                         randint(rec.height() / 5, rec.height() / 2))
             return self.last_suggested_window_position
 
     def addSubWindow(self, widget):
@@ -138,7 +140,8 @@ class MainArea(QWidget):
         '''
 
         import Graphics
-        print('INSTANCE OF GraphicsFrameWidget =  ', isinstance(widget, Graphics.GraphicsFrameWidget.GraphicsFrameWidget))
+        print('INSTANCE OF GraphicsFrameWidget =  ',
+              isinstance(widget, Graphics.GraphicsFrameWidget.GraphicsFrameWidget))
         obj_type = 'other'
         if isinstance(widget, Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
             obj_type = GRAPHICS_WINDOW_LABEL
@@ -148,11 +151,11 @@ class MainArea(QWidget):
 
         window_name = obj_type + ' ' + str(self.win_inventory.get_counter())
 
-        subWindow = self.createSubWindow(name=window_name) # sub window
+        subWindow = self.createSubWindow(name=window_name)  # sub window
         self.setupSubWindow(subWindow, widget, window_name)
 
         # inserting widget into dictionary
-        self.win_inventory.add_to_inventory(obj = subWindow, obj_type=obj_type)
+        self.win_inventory.add_to_inventory(obj=subWindow, obj_type=obj_type)
 
         return subWindow
 
@@ -164,7 +167,7 @@ class MainArea(QWidget):
         '''
 
         mdi_sub_window = PythonSteeringSubWindow(self)
-        subWindow = self.createSubWindow(name='Steering Panel') # sub window
+        subWindow = self.createSubWindow(name='Steering Panel')  # sub window
         self.setupSubWindow(subWindow, widget, 'Steering Panel')
 
         subWindow.resize(widget.sizeHint())
@@ -218,7 +221,7 @@ class MainArea(QWidget):
         '''
 
         sub_window = SubWindow(self)
-        sub_window .setObjectName(name)
+        sub_window.setObjectName(name)
         return sub_window
 
     def setupSubWindow(self, sub_window, widget, caption):
@@ -232,12 +235,11 @@ class MainArea(QWidget):
         '''
 
         if caption is None:
-            caption = QString()
+            caption = ''
 
         sub_window.setWindowTitle(caption)
         sub_window.setWidget(widget)
         sub_window.show()
-
 
 # class DockSubWindow(QDockWidget):
 #     def __init__(self, _parent):
