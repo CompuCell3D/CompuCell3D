@@ -1,12 +1,10 @@
-import Configuration
 from .MVCDrawModelBase import MVCDrawModelBase
 import vtk
 import math
 import string
-from Messaging import dbgMsg
-from Utilities.utils import extract_address_int_from_vtk_object, to_vtk_rgb
+from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object, to_vtk_rgb
 
-from GraphicsOffScreen.MetadataHandler import MetadataHandler
+from cc3d.player5.GraphicsOffScreen.MetadataHandler import MetadataHandler
 
 VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
 
@@ -722,7 +720,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         dim_1 = dim[1] + 1
 
         # print 'dim_0,dim_1=',(dim_0,dim_1)
-        dbgMsg('dim_0,dim_1=', (dim_0, dim_1))
+        # dbgMsg('dim_0,dim_1=', (dim_0, dim_1))
 
         data = vtk.vtkImageData()
         data.SetDimensions(dim_0, dim_1, 1)
@@ -924,8 +922,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
         cell_type_array = vtk.vtkIntArray()
         cell_type_array.SetName("celltype")
 
-        cell_type_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor,
-                                                                 vtkObj=cell_type_array)
+        # cell_type_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor,
+        #                                                          vtkObj=cell_type_array)
+
+        cell_type_int_addr = extract_address_int_from_vtk_object(vtkObj=cell_type_array)
+
 
         self.field_extractor.fillCellFieldData2D(
             cell_type_int_addr,
@@ -978,10 +979,12 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
         points = vtk.vtkPoints()
         lines = vtk.vtkCellArray()
-        points_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor,
+        points_int_addr = extract_address_int_from_vtk_object(
+                # field_extractor=self.field_extractor,
                                                               vtkObj=points)
 
-        lines_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor,
+        lines_int_addr = extract_address_int_from_vtk_object(
+                # field_extractor=self.field_extractor,
                                                              vtkObj=lines)
 
         hex_flag = False
@@ -1256,7 +1259,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
 
     # Optimize code?
     def dimOrder(self, plane):
-        plane=string.lower(plane)
+        plane = plane.lower()
         order = (0, 1, 2)
         if plane == "xy":
             order = (0, 1, 2)

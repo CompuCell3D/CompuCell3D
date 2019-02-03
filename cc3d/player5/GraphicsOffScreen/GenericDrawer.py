@@ -135,15 +135,18 @@ class GenericDrawer():
         Extracts basic information about cell field
         :return:
         """
-
+        import PlayerPython
+        PlayerPython.test_ifdef()
         cellType = vtk.vtkIntArray()
         cellType.SetName("celltype")
-        cellTypeIntAddr = extract_address_int_from_vtk_object(self.field_extractor, cellType)
-
+        cellTypeIntAddr = extract_address_int_from_vtk_object(cellType)
+        print("cellType.GetName()=",cellType.GetName())
+        print('vtkObj.__this__=',cellType.__this__)
+        print('cellTypeIntAddr=',hex(cellTypeIntAddr))
         # Also get the CellId
         cellId = vtk.vtkLongArray()
         cellId.SetName("cellid")
-        cellIdIntAddr = extract_address_int_from_vtk_object(self.field_extractor, cellId)
+        cellIdIntAddr = extract_address_int_from_vtk_object(cellId)
 
         usedCellTypesList = self.field_extractor.fillCellFieldData3D(cellTypeIntAddr, cellIdIntAddr)
 
@@ -213,6 +216,7 @@ class GenericDrawer():
 
         actor_specs = ActorSpecs()
         actor_specs.actor_label_list = ['cellsActor']
+
         # todo 5 - get max cell type here
         actor_specs.metadata = {
             'invisible_types':drawing_params.screenshot_data.invisible_types,
@@ -314,7 +318,7 @@ class GenericDrawer():
 
     def draw(self, screenshot_data, bsd, screenshot_name=None):
         # todo 5 - fix this so that it is called only once per drawing series
-
+        # return
         # self.recent_screenshot_data = screenshot_data
         # self.recent_bsd = bsd
 

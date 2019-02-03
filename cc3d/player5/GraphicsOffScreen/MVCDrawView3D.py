@@ -236,11 +236,10 @@ class MVCDrawView3D(MVCDrawViewBase):
         # print "GOT ",typesInvisibleStrTmp
         if typesInvisibleStrTmp != self.typesInvisibleStr:
             self.typesInvisibleStr = str(Configuration.getSetting("Types3DInvisible"))
+
+            typesInvisible = self.typesInvisibleStr.replace(" ","")
             
-            import string
-            typesInvisible = string.replace(self.typesInvisibleStr," ","")
-            
-            typesInvisible = string.split(typesInvisible,",")
+            typesInvisible = typesInvisible.split(",")
             def cell_type_check(cell_type):
                 try:
                     cell_type_int = int(cell_type)

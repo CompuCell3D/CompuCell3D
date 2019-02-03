@@ -119,7 +119,7 @@ class MVCDrawModelBase:
         Initializes lattice type and lattice type enum
         :return: None
         """
-        self.lattice_type_str = CompuCellSetup.ExtractLatticeType()
+        self.lattice_type_str = CompuCellSetup.simulation_utils.extract_lattice_type()
 
         if self.lattice_type_str in list(Configuration.LATTICE_TYPES.keys()):
             self.lattice_type = Configuration.LATTICE_TYPES[self.lattice_type_str]
