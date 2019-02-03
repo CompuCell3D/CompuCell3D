@@ -85,6 +85,7 @@ class TestSettingdict(unittest.TestCase):
 
         s.setSetting('window_data_list', l)
 
+
         l_s = s.setting('window_data_list')
 
         self.assertIsInstance(l_s, list)
@@ -135,7 +136,27 @@ class TestSettingdict(unittest.TestCase):
         self.assertIsInstance(dict_s['flag_false'], bool)
         self.assertEqual(dict_s['flag_false'], False)
 
+        type_color_map = {
+            0: QColor('black'),
+            1: QColor('blue'),
+            2: QColor('green'),
+            3: QColor('red'),
+            4: QColor('yellow'),
+            5: QColor('brown'),
+            6: QColor('lightblue'),
+            7: QColor('lightgreen'),
+            8: QColor('purple'),
+            9: QColor('orange'),
+            10: QColor('turquoise'),
+
+        }
         print(dict_s)
+
+        s.setSetting('TypeColorMap',type_color_map)
+
+        type_color_map_s = s.setting('TypeColorMap')
+
+        print(type_color_map_s)
 
     def test_custom_settings(self):
         setting_path = join(dirname(dirname(__file__)), 'CustomSetting.sqlite')
