@@ -43,37 +43,6 @@ FieldExtractorBase::~FieldExtractorBase(){
 
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//void* FieldExtractorBase::unmangleSWIGVktPtr(std::string _swigStyleVtkPtr){
-//	/*long long ptr;*/
-//	void * ptr;
-//	cerr << "ptr input=" << _swigStyleVtkPtr << endl;
-//	std::istringstream ss(_swigStyleVtkPtr);
-//	if (!(ss >> std::hex >> ptr))
-//		return 0;
-//	else {
-//		cerr << "ptr converted=" << std::hex << ptr << endl;
-//		return ptr;
-//	}
-//		
-//
-//	//void *ptr;
-//	//char typeCheck[128];
-//	//int i;
-//	//if (_swigStyleVtkPtr.size()<128){
-//	//	i = sscanf(_swigStyleVtkPtr.c_str(),"_%lx_%s",(long *)&ptr,typeCheck);
-//	//	return ptr;
-//	//}
-//	//else{
-//	//	return 0;
-//	//}
-//	
-//}
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//long FieldExtractorBase::unmangleSWIGVktPtrAsLong(std::string _swigStyleVtkPtr){
-//	return (long)unmangleSWIGVktPtr( _swigStyleVtkPtr);
-//}
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::vector<int> FieldExtractorBase::pointOrder(std::string _plane){

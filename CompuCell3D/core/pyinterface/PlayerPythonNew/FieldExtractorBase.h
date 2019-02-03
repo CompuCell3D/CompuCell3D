@@ -5,15 +5,8 @@
 #include <map>
 #include <string>
 #include <Utils/Coordinates3D.h>
-
 #include "FieldExtractorDLLSpecifier.h"
 #include "FieldExtractorTypes.h"
-
-//# ifdef _WIN32 || _WIN64
-//	typedef long long vtk_obj_addr_int_t ;
-//#else
-//	typedef long vtk_obj_addr_int_t;
-//#endif
 
 //Notice one can speed up filling up of the Hex lattice data by allocating e.g. hexPOints ot cellType arrays
 //instead of inserting values. Inserting causes reallocations and this slows down the task completion
@@ -29,7 +22,6 @@ namespace CompuCell3D{
 		std::vector<int> pointOrder(std::string _plane);
 		std::vector<int> dimOrder(std::string _plane);
 		Coordinates3D<double> HexCoordXY(unsigned int x,unsigned int y,unsigned int z);
-
 
 		virtual void fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr , std::string _plane ,  int _pos);
 		virtual void fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr , vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos){}
@@ -71,15 +63,9 @@ namespace CompuCell3D{
 		virtual std::vector<int> fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr){return std::vector<int>();}
 		virtual bool fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec){return false;}
 
-		//void* unmangleSWIGVktPtr(std::string _swigStyleVtkPtr);
-		//long unmangleSWIGVktPtrAsLong(std::string _swigStyleVtkPtr);
-
-
 	protected:
 		std::vector<Coordinates3D<double> > hexagonVertices;
         std::vector<Coordinates3D<double> > cartesianVertices;
-        
-        
 
 	};
 };
