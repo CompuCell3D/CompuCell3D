@@ -172,4 +172,4 @@ Coordinates3D<double> FieldExtractorBase::HexCoordXY(unsigned int x,unsigned int
 
 }
 
-void FieldExtractorBase::fillCellFieldData2D(long _cellTypeArrayAddr , std::string _plane ,  int _pos){}
+void FieldExtractorBase::fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr , std::string _plane ,  int _pos){}
