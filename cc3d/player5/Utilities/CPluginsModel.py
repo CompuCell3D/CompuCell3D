@@ -1,28 +1,25 @@
-from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
-
-# from PyQt4.QtCore import *
-# from PyQt4.QtGui import *
-
 class CPluginsModel(QAbstractTableModel):
 
+    # Constructor
     def __init__(self, filename, parent=None):
-        #Constructor
+
         super(CPluginsModel, self).__init__(parent)
         self.__headers = ["Name", "Description"]
         self.__filename = filename
         self.__plugins = {}
         self.loadData()
 
-    def headerData(self, section, orientation, role): # By default role == Qt.DisplayRole
+    # By default role == Qt.DisplayRole
+    def headerData(self, section, orientation, role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             if 0 <= section <= len(self.__headers):
                 return QVariant(self.__headers[section])
             
         if orientation == Qt.Vertical and role == Qt.DisplayRole:
-            return  QVariant(section)
+            return QVariant(section)
          
         return QVariant()
     
@@ -61,5 +58,4 @@ class CPluginsModel(QAbstractTableModel):
             file.close()
         except IOError:
             print("Cannot open the file: %s" % self.__filename)
-        
-    #def 
+

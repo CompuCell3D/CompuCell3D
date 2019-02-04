@@ -5,7 +5,6 @@ class FancyCombo(QtWidgets.QComboBox):
 
     def __init__(self, parent=None):
         super(FancyCombo, self).__init__(parent)
-        # self._stored_type = float
 
     def setValue(self,val):
         print('THIS IS VALUE =', val)

@@ -1,18 +1,13 @@
-
 # -*- coding: utf-8 -*-
-import warnings
-import os, sys
-from os.path import join, exists, dirname
-import string
-# from utils import mkdir_p
-import Configuration
+
+import os
 from collections import OrderedDict
-# import SimpleTabView
 from Utilities import ScreenshotData
 import json
-import cc3d.core.Version
+import cc3d.core.Version as Version
 
-# from Graphics.GraphicsFrameWidget import GraphicsFrameWidget
+import cc3d.core.XMLUtils as XMLUtils
+from cc3d.core.XMLUtils import ElementCC3D
 
 MODULENAME = '---- ScreenshotManager.py: '
 
@@ -162,7 +157,7 @@ class ScreenshotManagerCore(object):
         self.writeScreenshotDescriptionFile_JSON(filename=filename)
 
     def writeScreenshotDescriptionFile_XML(self, fileName):
-        from XMLUtils import ElementCC3D
+
 
         screenshotFileElement = ElementCC3D("CompuCell3DScreenshots")
 
@@ -352,7 +347,7 @@ class ScreenshotManagerCore(object):
         self.readScreenshotDescriptionFile_JSON(filename=filename)
 
     def readScreenshotDescriptionFile_XML(self, _fileName):
-        import XMLUtils
+
 
         xml2ObjConverter = XMLUtils.Xml2Obj()
         root_element = xml2ObjConverter.Parse(_fileName)
@@ -529,7 +524,7 @@ class ScreenshotManagerCore(object):
         return self.bsd
 
     # called from SimpleTabView:handleCompletedStep{Regular,CML*}
-    def outputScreenshots(self, general_screenshot_directory_name, mcs):
+    def outputScreenshots(self, general_screenshot_directory_name :str, mcs:str):
         """
         Outputs screenshot
         :param general_screenshot_directory_name:
@@ -543,7 +538,7 @@ class ScreenshotManagerCore(object):
             return
 
         # fills string with 0's up to self.screenshotNumberOfDigits width
-        mcsFormattedNumber = string.zfill(str(mcs), self.screenshot_number_of_digits)
+        mcsFormattedNumber = str(mcs).zfill(self.screenshot_number_of_digits)
 
         for i, screenshot_name in enumerate(self.screenshotDataDict.keys()):
             screenshot_data = self.screenshotDataDict[screenshot_name]

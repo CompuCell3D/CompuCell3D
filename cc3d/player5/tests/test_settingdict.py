@@ -1,15 +1,13 @@
 import sys
 import unittest
 from os.path import *
-
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-
 from cc3d.player5.Configuration.settingdict import SettingsSQL
 
 
 class TestSettingdict(unittest.TestCase):
+
     def setUp(self):
         pass
 

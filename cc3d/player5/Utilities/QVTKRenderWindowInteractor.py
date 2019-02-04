@@ -78,17 +78,6 @@ if PyQtImpl == "PyQt5":
     from PyQt5.QtCore import QEvent
     from PyQt5 import QtCore
 
-elif PyQtImpl == "PyQt4":
-    if QVTKRWIBase == "QGLWidget":
-        from PyQt4.QtOpenGL import QGLWidget
-    from PyQt4.QtGui import QWidget
-    from PyQt4.QtGui import QSizePolicy
-    from PyQt4.QtGui import QApplication
-    from PyQt4.QtCore import Qt
-    from PyQt4.QtCore import QTimer
-    from PyQt4.QtCore import QObject
-    from PyQt4.QtCore import QSize
-    from PyQt4.QtCore import QEvent
 elif PyQtImpl == "PySide":
     if QVTKRWIBase == "QGLWidget":
         from PySide.QtOpenGL import QGLWidget
