@@ -1,4 +1,4 @@
-import os, sys
+import os
 
 # ICONS' PATH
 _path = os.path.abspath(os.path.dirname(__file__))
