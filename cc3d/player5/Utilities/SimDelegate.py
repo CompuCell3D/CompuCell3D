@@ -5,8 +5,6 @@ from PyQt5.QtGui import *
 # Can be used for advanced editing in the Model Editor.
 class SimDelegate(QItemDelegate):
 
-
-
     def __init__(self, parent=None):
         QItemDelegate.__init__(self, parent)
         

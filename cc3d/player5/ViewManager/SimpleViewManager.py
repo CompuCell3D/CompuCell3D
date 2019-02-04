@@ -1,16 +1,15 @@
 import os
 import sys
-
+import re
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-
-# from PyQt4.QtXml import *
-import Configuration
-# import DefaultData
+import cc3d.player5.Configuration as Configuration
 from cc3d.player5 import DefaultData
-
 from cc3d.core import Version
+import datetime
+from cc3d.player5.Utilities.WebFetcher import WebFetcher
+
 gip = DefaultData.getIconPath
 
 MODULENAME = '------- SimpleViewManager: '
@@ -29,7 +28,6 @@ class SimpleViewManager(QObject):
         self.visual["FPPLinksOn"] = Configuration.getSetting("FPPLinksOn")
         #        self.visual["FPPLinksColorOn"]  = Configuration.getSetting("FPPLinksColorOn")
         self.visual["CC3DOutputOn"] = Configuration.getSetting("CC3DOutputOn")
-        #        print MODULENAME, 'self.visual["CC3DOutputOn"] = ',self.visual["CC3DOutputOn"]
 
         # self.visual["ContoursOn"]   = Configuration.getSetting("ContoursOn")
         self.visual["ConcentrationLimitsOn"] = Configuration.getSetting("ConcentrationLimitsOn")
@@ -245,38 +243,6 @@ class SimpleViewManager(QObject):
         self.__initHelpActions()
         # self.__initTabActions()
 
-    #def setModelEditor(self, modelEditor):
-    #    self.__modelEditor = modelEditor
-
-    def hello(self):
-        #if self.modelAct.isChecked():
-        #   print "Hello from modelAct"
-        print("Welcome to CompuCell3D!")
-        #sys.stderr.write(self.out)
-
-        #def _getOpenFileFilter(self):
-        """
-        Protected method to return the active filename filter for a file open dialog.
-        
-        The appropriate filename filter is determined by file extension of
-        the currently active editor.
-        
-        @return name of the filename filter (QString) or None
-        """
-        """
-        if self.activeWindow() is not None and \
-           self.activeWindow().getFileName():
-            ext = os.path.splitext(self.activeWindow().getFileName())[1]
-            rx = QRegExp(".*\*\.%s[ )].*" % ext[1:])
-            filters = QScintilla.Lexers.getOpenFileFiltersList()
-            index = filters.indexOf(rx)
-            if index == -1:
-                return QString(Preferences.getEditor("DefaultOpenFilter"))
-            else:
-                return filters[index]
-        else:
-            return QString(Preferences.getEditor("DefaultOpenFilter"))
-        """
 
     def _getOpenStartDir(self):
         """
@@ -296,13 +262,9 @@ class SimpleViewManager(QObject):
                 self.activeWindow().getFileName():
             return os.path.dirname(self.activeWindow().getFileName())
 
-        # Check, if there is an active project and return its path
-        #elif e4App().getObject("Project").isOpen():
-        #    return e4App().getObject("Project").ppath
-
         else:
             # None will cause open dialog to start with cwd
-            return QString()
+            return ''
 
     def __initFileActions(self):
         # - Create Action -- act = QAction()
@@ -467,9 +429,6 @@ class SimpleViewManager(QObject):
         self.zoomOutAct = QAction(QIcon(gip("zoomOut.png")), "&Zoom Out", self)
 
 
-
-
-
         # Why append?
         self.visualActions.append(self.cellsAct)
         self.visualActions.append(self.borderAct)
@@ -581,35 +540,25 @@ class SimpleViewManager(QObject):
     def __initHelpActions(self):
         self.quickAct = QAction("&Quick Start", self)
         self.quickAct.triggered.connect(self.__open_manuals_webpage)
-        # self.connect(self.quickAct, SIGNAL('triggered()'), self.__open_manuals_webpage)
         self.tutorAct = QAction("&Tutorials", self)
         self.tutorAct.triggered.connect(self.__open_manuals_webpage)
-
-        # self.connect(self.tutorAct, SIGNAL('triggered()'), self.__open_manuals_webpage)
         self.refManAct = QAction(QIcon(gip("man.png")), "&Reference Manual", self)
         self.refManAct.triggered.connect(self.__open_manuals_webpage)
-        # self.connect(self.refManAct, SIGNAL('triggered()'), self.__open_manuals_webpage)
         self.aboutAct = QAction(QIcon(gip("cc3d_64x64_logo.png")), "&About CompuCell3D", self)
         self.aboutAct.triggered.connect(self.__about)
-        # self.connect(self.aboutAct, SIGNAL('triggered()'), self.__about)
-
         self.mail_subscribe_act = QAction(QIcon(gip("email-at-sign-icon.png")), "Subscribe to Mailing List", self)
         self.mail_subscribe_act.triggered.connect(self.__mail_subscribe)
-        # self.connect(self.mail_subscribe_act, SIGNAL('triggered()'), self.__mail_subscribe)
 
         self.mail_unsubscribe_act = QAction(QIcon(gip("email-at-sign-icon-unsubscribe.png")),
                                             "Unsubscribe from Mailing List", self)
         self.mail_unsubscribe_act.triggered.connect(self.__mail_unsubscribe)
-        # self.connect(self.mail_unsubscribe_act, SIGNAL('triggered()'), self.__mail_unsubscribe)
 
         self.mail_subscribe_unsubscribe_web_act = QAction("Subscribe/Unsubscribe Mailing List - Web browser", self)
         self.mail_subscribe_unsubscribe_web_act.triggered.connect(
                      self.__mail_subscribe_unsubscribe_web)
-        # self.connect(self.mail_subscribe_unsubscribe_web_act, SIGNAL('triggered()'), self.__mail_subscribe_unsubscribe_web)
 
         self.check_update_act = QAction("Check for CC3D Updates", self)
         self.check_update_act.triggered.connect(self.__check_update)
-        # self.connect(self.check_update_act, SIGNAL('triggered()'), self.__check_update)
         self.display_no_update_info = False
 
         self.whatsThisAct = QAction(QIcon(gip("whatsThis.png")), "&What's This?", self)
@@ -635,12 +584,6 @@ class SimpleViewManager(QObject):
         self.helpActions.append(self.check_update_act)
         self.helpActions.append(self.whatsThisAct)
 
-        # def __initTabActions(self):
-        # self.closeTab = QToolButton(self)
-        # self.closeTab.setIcon(QIcon("player5/icons/close.png"))
-        # self.closeTab.setToolTip("Close the tab")
-        # self.closeTab.hide()
-
     def check_version(self, check_interval = -1, display_no_update_info=False):
         '''
         This function checks if new CC3D version is available
@@ -656,7 +599,7 @@ class SimpleViewManager(QObject):
         # determine if check is necessary - for now we check every week in order not to bother users with too many checks
         last_version_check_date = Configuration.getSetting('LastVersionCheckDate')
 
-        import datetime
+
         today = datetime.date.today()
         today_date_str = today.strftime('%Y%m%d')
 
@@ -664,11 +607,10 @@ class SimpleViewManager(QObject):
         t_delta = today - old_date
 
         if t_delta.days < check_interval:
-            return # check for CC3D recently
+            # check for CC3D recently
+            return
         else:
             print('WILL DO THE CHECK')
-
-        from Utilities.WebFetcher import WebFetcher
 
         self.version_fetcher = WebFetcher(_parent=self)
         self.version_fetcher.gotWebContentSignal.connect(self.process_version_check)
@@ -691,7 +633,7 @@ class SimpleViewManager(QObject):
         current_version = ''
         current_revision = ''
         whats_new_list = []
-        import re
+
 
         current_version_regex = re.compile("(current version)([0-9\. ]*)")
 
@@ -747,14 +689,10 @@ class SimpleViewManager(QObject):
         elif current_version_number == instance_version_number and current_revision_number > instance_revision_number:
             display_new_version_info = True
 
-
-
-        import datetime
         today = datetime.date.today()
         today_date_str = today.strftime('%Y%m%d')
 
         last_version_check_date = Configuration.setSetting('LastVersionCheckDate', today_date_str)
-
 
         message = 'New version of CompuCell3D is available - %s rev. %s. Would you like to upgrade?'%(current_version,current_revision)
 
@@ -798,8 +736,6 @@ class SimpleViewManager(QObject):
         revisionStr = '0'
 
         try:
-            import Version
-
             versionStr = Version.getVersionAsString()
             revisionStr = Version.getSVNRevisionAsString()
         except ImportError as e:
@@ -843,60 +779,3 @@ class SimpleViewManager(QObject):
             else:
                 tb.hide()
 
-                # Any commented methods that are related to the tabs should not be
-                # in the class ViewManager!
-                #def closeTabWindow(self, tabIdx):
-        """
-        Public method to close an arbitrary tab.
-        
-        @param tab to be closed
-        """
-
-        #    self.removeTab(tabIdx)
-
-        """
-        if tab is None:
-            return
-        
-        res = self.closeTab(tab)
-        if res and tab == self.currentTab:
-            self.currentTab = None
-        """
-        #print tab
-
-        #def closeTab(self, tabIdx):
-        """
-        Public method to close a tab window.
-        
-        @param tab tab window to be closed
-        @return flag indicating success (boolean)
-        """
-
-        #self.removeTab(tabIdx)
-
-        """
-        # This complication can be used later. Now I need just to close the plugin tab!
-
-        # save file if necessary
-        if not self.checkDirty(editor):
-            return False
-        
-        # get the filename of the editor for later use
-        fn = editor.getFileName()
-        
-        # remove the window
-        self._removeView(editor)
-        self.editors.remove(editor)
-        
-        # send a signal, if it was the last editor for this filename
-        if fn and self.getOpenEditor(fn) is None:
-            self.emit(SIGNAL('editorClosed'), fn)
-        self.emit(SIGNAL('editorClosedEd'), editor)
-        
-        # send a signal, if it was the very last editor
-        if not len(self.editors):
-            self.__lastEditorClosed()
-            self.emit(SIGNAL('lastEditorClosed'))
-        """
-
-        #return True

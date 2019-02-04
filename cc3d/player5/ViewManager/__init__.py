@@ -1,10 +1,4 @@
-# from . import SimpleViewManager
 from cc3d.player5.ViewManager import SimpleViewManager
-
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-
 
 
 def factory(parent, ui):
@@ -18,7 +12,7 @@ def factory(parent, ui):
     @param pluginManager reference to the plugin manager object
     @return the instantiated viewmanager
     """
-    
+
     """
     # They don't instantiate the object directly. They use plugin manager!
     
@@ -29,6 +23,6 @@ def factory(parent, ui):
         if vm is None:
             raise RuntimeError("Could not create a viemanager object.")
     """
-    vm = SimpleViewManager.SimpleViewManager(ui) 
-    
-    return  vm
+    vm = SimpleViewManager.SimpleViewManager(ui)
+
+    return vm

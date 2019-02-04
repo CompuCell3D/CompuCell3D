@@ -1,22 +1,15 @@
-
-from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from PyQt5.QtXml import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from cc3d.player5.Utilities.TreeMapper import *
 
-from Utilities.TreeMapper import *
-import copy
 
 PROPERTY, VALUE = list(range(2))
 
 # The SimModel is specific to the CompuCell3D XML simulation models!
 
 class SimModel(QAbstractItemModel):
-    #class SimModel creates model for QTreeView
-    
+
     def __init__(self, domDoc, parent=None):
-        #Constructor
-        #@param domDoc refers to the QDomDocument
 
         QAbstractItemModel.__init__(self, parent)
         
@@ -97,28 +90,7 @@ class SimModel(QAbstractItemModel):
         parentTreeItem=self.treeItemFromIndex(parentIndex)
         return self.createIndex(row,column,parentTreeItem.child(row))
         
-        # if self.__rootItem is None:
-            # return QModelIndex()
-        # elif not parentIndex.isValid():     # Root item doesn't have parent
-            # # print " row=",row," column=",column," index is invalid"
-            # parentItem = self.__rootItem    # Object of TreeItem
-        # else:
-            # parentItem = parentIndex.internalPointer()
-            
-            
-            
-        # if 0 <= row and row < parentItem.childCount():
-            # childItem = parentItem.child(row)
-            # # '#text' node is not displayed 
-            # if (childItem is not None):
-                # # print " row=",row," column=",column," parent Item name=",parentItem.domNode().name
-                # # print "self.__printFlag=",self.__printFlag
-                # # if self.__printFlag:
-                    # # print "child Item=",childItem.name()
-                # return self.createIndex(row, column, childItem)
 
-        # return QModelIndex()
-        
     def parent(self, childIndex): #interface: done
         if not childIndex.isValid():
             return QModelIndex()
@@ -126,31 +98,17 @@ class SimModel(QAbstractItemModel):
         childItem = childIndex.internalPointer()
         parentItem = childItem.parent()
         
-        # if (parentItem is None) or (parentItem == self.__rootItem):
+
         if parentItem is None:
             return QModelIndex()
             
         grandparentItem=parentItem.parent()
         if grandparentItem is None:
             return QModelIndex()
-        # row=grandparentItem.
-        # return self.createIndex(row, childIndex.column(), parentItem)
-        
-        index=self.createIndex(parentItem.siblingIdx(), 0, parentItem)
-        # print "parentItem=",parentItem.name()
-        return index
-    
-        # if not childIndex.isValid():
-            # return QModelIndex()
-        
-        # childItem = childIndex.internalPointer()
-        # parentItem = childItem.parent()
-        
-        # # if (parentItem is None) or (parentItem == self.__rootItem):
-        # if (parentItem is None) or (parentItem == self.__rootItem):
-            # return QModelIndex()
 
-        # return self.createIndex(parentItem.siblingIdx(), 0, parentItem)
+        index=self.createIndex(parentItem.siblingIdx(), 0, parentItem)
+
+        return index
 
     def rowCount(self, parentIndex): #interface: done
         if self.__rootItem is None:
@@ -217,38 +175,7 @@ class SimModel(QAbstractItemModel):
 
         return False
 
-    # def setData(self, index, value, role=Qt.EditRole):
-    #
-    #     if index.isValid() and 0 <= index.row() < self.rowCount(index.parent()):
-    #         column = index.column()
-    #
-    #         if column == VALUE: # and index.model().data(index).toString() != "":
-    #             # Sets the value of the node
-    #             item = index.internalPointer()
-    #
-    #             # Check if edited value preserves type
-    #             str = value.toString()
-    #
-    #             Ival, Iok = str.toInt()
-    #             Fval, Fok = str.toFloat()
-    #             if (Iok and item.type() == "int") \
-    #                 or (Fok and item.type() == "float" and not Iok) \
-    #                 or (item.type() == "string" and not Iok and not Fok):
-    #                 item.setValue(str)
-    #                 self.addDirtyModule(item.getSuperParent().name(),item.getSuperParent().value())
-    #                 print "dirty modules=",self.__dirtyModules
-    #                 print "item SuperParent type=",item.getSuperParent().name()," type=",item.getSuperParent().value()
-    #                 print "item.domNode()=",item.domNode()
-    #                 print "item.domNode().getName()=",item.domNode().getName()
-    #                 print "item.domNode().getText()=",item.domNode().getText()
-    #                 # item.domNode().setNodeValue(str) #setNodeValue()
-    #
-    #         self.__isDirty = True # Variable that chacks if data has been modified!
-    #         self.emit(SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
-    #         return True
-    #
-    #     return False
-     
+
     def domDocIsDirty(self):
         return self.__isDirty
     
@@ -258,23 +185,5 @@ class SimModel(QAbstractItemModel):
     def domDoc(self):
         return self.__domDoc
            
-    def checkSanity(self):pass
-#    def checkSanity(self):
-#        print "rootTI=",self.__rootItem.name," self.__rootItem.domNode().getName()=",self.__rootItem.domNode().getName()
-#        pottsIdx=self.createIndex(0,0,self.__rootItem.child(0))
-#        print "pottsIdx.internalPointer().name=",pottsIdx.internalPointer().name()
-#        
-#        volumeIdx=self.createIndex(1,0,self.__rootItem.child(1))
-#        print "volumeIdx.internalPointer().value()=",volumeIdx.internalPointer().value()
-#        
-#        tempIdx=self.createIndex(3,0,pottsIdx.internalPointer().child(3))
-#        print "tempIdx.internalPointer().name()=",tempIdx.internalPointer().name()
-#        print "tempIdx.internalPointer()=",tempIdx.internalPointer()
-#        print "tempIdx.internalPointer().domNode().getName()=",tempIdx.internalPointer().domNode().getName()
-#        
-#        print "CHECKING TREE SANITY"
-#        pottsItem=self.__rootItem.child(0)
-#        print "pottsItem=",pottsItem.name()," pottsItem.domNode().getName()=",pottsItem.domNode().getName()
-#        
-#        # print "CHECKING TREE SANITY"
- 
+    def checkSanity(self):
+        pass
