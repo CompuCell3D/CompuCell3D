@@ -25,7 +25,7 @@ import cc3d.player5.DefaultData as DefaultData
 from cc3d.player5.Simulation.CMLResultReader import CMLResultReader
 from cc3d.player5.Simulation.SimulationThread import SimulationThread
 # from Simulation.SimulationThread1 import SimulationThread1
-
+from cc3d.core import XMLUtils
 from . import ScreenshotManager
 import vtk
 
@@ -2743,9 +2743,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # This block of code simply checks to see if some plugins assoc'd with Vis are defined
         # todo 5 - rework this - remove parsing away from the player
-        from cc3d.core import XMLUtils
-        # import XMLUtils
-        # if CompuCellSetup.cc3dXML2ObjConverter != None:
+        # from cc3d.core import XMLUtils
 
         cc3d_xml_2_obj_converter = CompuCellSetup.persistent_globals.cc3d_xml_2_obj_converter
         if cc3d_xml_2_obj_converter != None:

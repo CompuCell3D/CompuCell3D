@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
-import os, sys
-from PyQt5 import QtCore, QtGui, QtWidgets
+import os
+import weakref
+import PlayerPython
+from PyQt5 import QtCore
 from PyQt5.QtCore import *
 from cc3d import CompuCellSetup
-
-
-# from PyQt5.QtGui import *
-
+from cc3d.CompuCellSetup.sim_runner import run_cc3d_project
 
 
 class SimulationThread(QtCore.QThread):
+    """
+    QtThread - this is the object that is responsible for running simulation and
+    communicating between PLayer code, CompuCellSetup simulation look and actual simulation
+    """
     simulationInitializedSignal = pyqtSignal(int)
     completedStep = pyqtSignal(int)
     steppablesStarted = pyqtSignal(bool)
@@ -19,102 +22,13 @@ class SimulationThread(QtCore.QThread):
     errorFormatted = pyqtSignal(str)
     errorOccuredDetailed = pyqtSignal(str, str,int,int,str)
 
-
-
-
-    def emitErrorOccured(self,_errorType,_traceback_message):
-        self.errorOccured.emit(_errorType,_traceback_message)
-
-
-    def emitErrorFormatted(self,_errorMessage):
-        self.errorFormatted.emit(_errorMessage)
-
-
-    def emitCompletedStep(self,_mcs=None):
-        self.completedStep.emit(_mcs)
-
-
-    def emitSimulationInitialized(self,_flag=True):
-        self.simulationInitializedSignal.emit(_flag)
-
-
-    def emitSteppablesStarted(self,_flag=True):
-        self.steppablesStarted.emit(_flag)
-
-
-    def emitSimulationFinished(self,_flag=True):
-        self.simulationFinished.emit(_flag)
-
-    def emitFinishRequest(self,_flag=True):
-        self.finishRequest.emit(_flag)
-
-
-    def emitErrorOccuredDetailed(self,_errorType,_file,_line,_col,_traceback_message):
-        self.errorOccuredDetailed.emit(_errorType,_file,_line,_col,_traceback_message)
-
-
-
-    pass
-
-    #     __pyqtSignals__ = ("completedStep(int)","simulationInitialized(bool)","simulationInitialized(bool)",
-    #   "errorOccured(QString,QString)","simulationFinished(bool)",
-    # "finishRequest(bool)","errorOccuredDetailed(QString,QString,int,int,QString)","errorFormatted(QString)",)
-    #
-    #     # @QtCore.pyqtSignature("emitCompletedStep(int)")
-    #     @QtCore.pyqt("emitCompletedStep(int)")
-    #     def emitCompletedStep(self,_mcs=None):
-    #         self.emit(SIGNAL("completedStep(int)") , _mcs)
-    #
-    #     @QtCore.pyqtSignature("emitFinishRequest(bool)")
-    #     def emitFinishRequest(self,_flag=True):
-    #         print 'emiting finish request'
-    #         self.emit(SIGNAL("finishRequest(bool)"), _flag)
-    #
-    #
-    #     @QtCore.pyqtSignature("simulationInitialized(bool)")
-    #     def emitSimulationInitialized(self,_flag=True):
-    #         self.emit(SIGNAL("simulationInitialized(bool)") , _flag)
-    #
-    #     @QtCore.pyqtSignature("steppablesStarted(bool)")
-    #     def emitSteppablesStarted(self,_flag=True):
-    #         self.emit(SIGNAL("steppablesStarted(bool)") , _flag)
-    #
-    #
-    #
-    #     @QtCore.pyqtSignature("errorOccured(QString,QString)")
-    #     def emitErrorOccured(self,_errorType,_traceback_message):
-    #         self.emit(SIGNAL("errorOccured(QString,QString)") , QString(_errorType),QString(_traceback_message))
-    #
-    #     @QtCore.pyqtSignature("errorOccuredDetailed(QString,QString,int,int,QString)")
-    #     def emitErrorOccuredDetailed(self,_errorType,_file,_line,_col,_traceback_message):
-    #         print "emitting errorOccuredDetailed"
-    #         # print
-    #         #
-    #         self.emit(SIGNAL("errorOccuredDetailed(QString,QString,int,int,QString)") , QString(_errorType),QString(_file),_line,_col,QString(_traceback_message))
-    #
-    #     @QtCore.pyqtSignature("errorFormatted(QString)")
-    #     def emitErrorFormatted(self,_errorMessage):
-    #         print "emitting errorOccuredDetailed"
-    #         # print
-    #         #
-    #         self.emit(SIGNAL("errorFormatted(QString)") , QString(_errorMessage))
-    #
-    #     @QtCore.pyqtSignature("errorFormatted(QString)")
-    #     def emitErrorOccuredDetailed(self,_errorMessage):
-    #         print "emitting errorFormatted"
-    #         # print
-    #         #
-    #         self.emit(SIGNAL("errorFormatted(QString,QString,int,int,QString)") , QString(_errorMessage))
-    #
-    #     @QtCore.pyqtSignature("simulationFinished(bool)")
-    #     def emitSimulationFinished(self,_flag=True):
-    #         self.emit(SIGNAL("simulationFinished(bool)") , _flag)
     #
     # CONSTRUCTOR
     def __init__(self, parent=None):
         QtCore.QThread.__init__(self, parent)
 
-        # NOTE: to implement synchronization between threads we use semaphores. If yuou use mutexes for this then if you lokc mutex in one thread and try to unlock
+        # NOTE: to implement synchronization between threads we use semaphores.
+        # If yuou use mutexes for this then if you lokc mutex in one thread and try to unlock
         # from another thread than on Linux it will not work. Semaphores are better for this
         self.__ui = parent
         self.sem = QSemaphore(1)
@@ -122,14 +36,15 @@ class SimulationThread(QtCore.QThread):
         # self.mutex = QtCore.QMutex()
         self.drawMutex = QtCore.QMutex()
         self.finishMutex = QtCore.QMutex()
-        self.finishMutex.lock()  # this mutex will be unlocked externally when it is ok for simulation to finish
+
+        # this mutex will be unlocked externally when it is ok for simulation to finish
+        self.finishMutex.lock()
 
         # self.pauseMutex = QtCore.QMutex()
         self.simulationInitialized = False
         self.stopThreadFlag = False
         self.stopped = False
         self.runUserPythonScriptFlag = False
-        self.www = 21
         self.xmlFileName = ""
         self.pythonFileName = ""
 
@@ -148,9 +63,13 @@ class SimulationThread(QtCore.QThread):
         self.__fileWriter = None
         self.sim = None  # reference to CompuCell.Simulator()
 
-    # Python 2.6 requires importing of Example, CompuCell and Player Python modules from an instance  of QThread class (here Simulation Thread inherits from QThread)
-    # Simulation Thread communicates with SimpleTabView using SignalSlot method. If we dont import the three modules then when SimulationThread emits siglan and SimpleTabView
-    # processes this signal in a slot (e.g. initializeSimulationViewWidget) than calling a member function of an object from e.g. Player Python (self.fieldStorage.allocateCellField(self.fieldDim))
+    # Python 2.6 requires importing of Example, CompuCell and Player Python modules from an instance
+    # of QThread class (here Simulation Thread inherits from QThread)
+    # Simulation Thread communicates with SimpleTabView using SignalSlot method.
+    # If we dont import the three modules then when SimulationThread emits siglan and SimpleTabView
+    # processes this signal in a slot (e.g. initializeSimulationViewWidget)
+    # than calling a member function of an object from e.g. Player Python
+    # (self.fieldStorage.allocateCellField(self.fieldDim))
     # results in segfault. Python 2.5 does not have this issue. Anyway this seems to work on Linux with Python 2.6
     # This might be a problem only on Linux
     # TODO UNCOMMENT
@@ -158,10 +77,33 @@ class SimulationThread(QtCore.QThread):
     # import CompuCell
     # import PlayerPython
 
+    def emitErrorOccured(self,_errorType,_traceback_message):
+
+        self.errorOccured.emit(_errorType,_traceback_message)
+
+    def emitErrorFormatted(self,_errorMessage):
+        self.errorFormatted.emit(_errorMessage)
+
+    def emitCompletedStep(self,_mcs=None):
+        self.completedStep.emit(_mcs)
+
+    def emitSimulationInitialized(self,_flag=True):
+        self.simulationInitializedSignal.emit(_flag)
+
+    def emitSteppablesStarted(self,_flag=True):
+        self.steppablesStarted.emit(_flag)
+
+    def emitSimulationFinished(self,_flag=True):
+        self.simulationFinished.emit(_flag)
+
+    def emitFinishRequest(self,_flag=True):
+        self.finishRequest.emit(_flag)
+
+    def emitErrorOccuredDetailed(self,_errorType,_file,_line,_col,_traceback_message):
+        self.errorOccuredDetailed.emit(_errorType,_file,_line,_col,_traceback_message)
+
     def setSimulator(self, _sim):
-        # self.sim=_sim
-        # return
-        import weakref
+
         if _sim:
             self.sim = weakref.ref(_sim)
 
@@ -174,12 +116,9 @@ class SimulationThread(QtCore.QThread):
         self.__fileWriter = None
         self.sim = None
 
-
-        # self.condition = QtCore.QWaitCondition()
-
     def generatePIFFromRunningSimulation(self, _pifFileName):
         if self.__fileWriter is None:
-            import PlayerPython
+
             self.__fileWriter = PlayerPython.FieldWriter()
             self.__fileWriter.init(
                 self.sim())  # note self.sim is a weak reference so to pass underlying object to swigged-fcn we need to derefernce it by using self.sim() expression
@@ -204,94 +143,80 @@ class SimulationThread(QtCore.QThread):
         self.graphicsWidget = _graphicsWidget
 
     def setSimulationXMLFileName(self, _xmlFileName):
-        # import CompuCellSetup
         CompuCellSetup.simulationPaths.simulationXMLFileName = _xmlFileName
         self.xmlFileName = _xmlFileName
 
     def setSimulationPythonFileName(self, _pythonFileName):
-        # import CompuCellSetup
         CompuCellSetup.simulationPaths.simulationPythonScriptName = _pythonFileName
         self.pythonFileName = _pythonFileName
 
     def setRunUserPythonScriptFlag(self, _flag):
         self.runUserPythonScriptFlag = _flag
 
-    def clearGraphicsFields(self):  # added for compatibility reasons
+    # added for compatibility reasons
+    def clearGraphicsFields(self):
         pass
 
-    def preStartInit(self):  # added for compatibility reasons
+    # added for compatibility reasons
+    def preStartInit(self):
         pass
 
-    def postStartInit(self):  # added for compatibility reasons
+    # added for compatibility reasons
+    def postStartInit(self):
 
         self.sem.acquire()
-
-        # print 'prepareSimulation'
-        # print self.restartManager
-
-        # print self.callingWidget
-        # print self.__simModel
-        # print self.__mcs
-        # print self.__fileWriter
-        # print '\n\n\n\nself.sim=',self.sim
-
-
-
-        # # sys.exit()
-
-        # print 'POSTSTART INIT'
-        # import time
-        # time.sleep(5)
-
         self.emitSimulationInitialized()
 
     def steppablePostStartPrep(self):
 
         self.sem.acquire()
-
         self.emitSteppablesStarted()
 
     def waitForPlayerTaskToFinish(self):
         self.sem.acquire()
         self.sem.release()
 
-    def setStopSimulation(self, _flag):  # added for compatibility reasons
+    # added for compatibility reasons
+    def setStopSimulation(self, _flag):
         self.stopped = _flag
 
-    def getStopSimulation(self):  # added for compatibility reasons
+    # added for compatibility reasons
+    def getStopSimulation(self):
         return self.stopped
 
     def simulationFinishedPostEvent(self, _flag=True):
         self.emitSimulationFinished(_flag)
 
-    def loopWork(self, _mcs):  # added for compatibility reasons
+    # added for compatibility reasons
+    def loopWork(self, _mcs):
         self.drawMutex.lock()
         self.drawMutex.unlock()
 
-    def loopWorkPostEvent(self, _mcs):  # added for compatibility reasons
+    # added for compatibility reasons
+    def loopWorkPostEvent(self, _mcs):
         if self.getStopSimulation():
             return
         self.sem.acquire()
-        #        print '-------- Sim-Thread.py:  loopWorkPostEvent(), _mcs=',_mcs
         self.emitCompletedStep(_mcs)
 
-    def sendStopSimulationRequest(self):  # added for compatibility reasons
+    # added for compatibility reasons
+    def sendStopSimulationRequest(self):
         pass
 
     def createVectorFieldPy(self, _dim, _fieldName):
-        # import CompuCellSetup
+
         return CompuCellSetup.createVectorFieldPy(_dim, _fieldName)
 
     def createVectorFieldCellLevelPy(self, _fieldName):
-        # import CompuCellSetup
+
         return CompuCellSetup.createVectorFieldCellLevelPy(_fieldName)
 
     def createFloatFieldPy(self, _dim, _fieldName):
-        # import CompuCellSetup
+
         return CompuCellSetup.createFloatFieldPy(_dim, _fieldName)
 
     def createScalarFieldCellLevelPy(self, _fieldName):
-        # import CompuCellSetup
+
         return CompuCellSetup.createScalarFieldCellLevelPy(_fieldName)
 
     def getScreenUpdateFrequency(self):
@@ -319,8 +244,8 @@ class SimulationThread(QtCore.QThread):
         self.__mcs = _mcs
 
     def steerUsingGUI(self, _sim):
+
         if self.__simModel:
-            # print "self.__simModel=",self.__simModel
 
             dirtyModulesDict = self.__simModel.getDirtyModules()
             if dirtyModulesDict and len(list(dirtyModulesDict.keys())) > 0:
@@ -333,10 +258,7 @@ class SimulationThread(QtCore.QThread):
                 if "Plugin" in dirtyModulesDict:
                     dirtyPluginDict = dirtyModulesDict["Plugin"]
                     for pluginName in dirtyPluginDict:
-                        # print "pluginName=",pluginName
                         _sim.updateCC3DModule(_sim.getCC3DModuleData("Plugin", pluginName))
-                        # print "TARGET VOLUME=",_sim.getCC3DModuleData("Plugin","Volume").getFirstElement("TargetVolume").getText()
-                        # print "_sim.getCC3DModuleData(\"Plugin\",\"Volume\").getFirstElement(\"TargetVolume\")=",_sim.getCC3DModuleData("Plugin","Volume").getFirstElement("TargetVolume")
                 if "Steppable" in dirtyModulesDict:
                     dirtySteppableDict = dirtyModulesDict["Steppable"]
                     for steppableName in dirtySteppableDict:
@@ -354,20 +276,11 @@ class SimulationThread(QtCore.QThread):
             self.sem.acquire()
             self.semPause.acquire()
 
-            # # # self.mutex.lock()
-            # # # self.drawMutex.lock()
             self.stopped = True
         finally:
             self.sem.release()
             self.semPause.release()()
 
-            # # # self.mutex.unlock()
-            # # # self.drawMutex.unlock()
-
-        # self.mutex.lock()
-        # # self.abort = True
-        # # self.condition.wakeOne()
-        # self.mutex.unlock()
 
         self.wait()
 
@@ -384,11 +297,8 @@ class SimulationThread(QtCore.QThread):
 
     def prepareSimulation(self):
 
-        # import CompuCellSetup
-        # CompuCellSetup.setSimulationXMLFileName(self.xmlFileName)
         (self.sim, self.simthread) = CompuCellSetup.getCoreSimulationObjects()
 
-        # import CompuCell
         CompuCellSetup.initializeSimulationObjects(self.sim, self.simthread)
         CompuCellSetup.extraInitSimulationObjects(self.sim, self.simthread)
         self.simulationInitialized = True
@@ -398,19 +308,14 @@ class SimulationThread(QtCore.QThread):
         print("INSIDE handleErrorMessage")
         print("_traceback_message=", _traceback_message)
         self.emitErrorOccured(_errorType, _traceback_message)
-        # self.callingWidget.handleErrorMessage(_errorType,_traceback_message)
 
     def handleErrorMessageDetailed(self, _errorType, _file, _line, _col, _traceback_message):
         self.emitErrorOccuredDetailed(_errorType, _file, _line, _col, _traceback_message)
 
     def handleErrorFormatted(self, _errorMessage):
-        print('DUPA handleErrorFormatted')
         self.emitErrorFormatted(_errorMessage)
 
     def runUserPythonScript(self, _scriptFileName, _globals, _locals):
-        # import CompuCellSetup
-
-        # CompuCellSetup.simulationThreadObject = self
 
         CompuCellSetup.persistent_globals.simthread = self
 
@@ -454,19 +359,19 @@ class SimulationThread(QtCore.QThread):
 
 
     def run(self):
-        from cc3d.CompuCellSetup.sim_runner import run_cc3d_project
+        # from cc3d.CompuCellSetup.sim_runner import run_cc3d_project
         cc3d_sim_fname = CompuCellSetup.persistent_globals.simulation_file_name
         CompuCellSetup.persistent_globals.simthread = self
         run_cc3d_project(cc3d_sim_fname=cc3d_sim_fname)
         return
-        print('SIMTHREAD: GOT INSIDE RUN FUNCTION')
-        print('self.runUserPythonScriptFlag=',self.runUserPythonScriptFlag)
-
-        if self.runUserPythonScriptFlag:
-            # print "runUserPythonScriptFlag=",self.runUserPythonScriptFlag
-            globalDict = {'simTabView': 20}
-            localDict = {}
-
-            print('GOT INSIDE RUN FUNCTION');
-
-            self.runUserPythonScript(self.pythonFileName, globalDict, localDict)
+        # print('SIMTHREAD: GOT INSIDE RUN FUNCTION')
+        # print('self.runUserPythonScriptFlag=',self.runUserPythonScriptFlag)
+        #
+        # if self.runUserPythonScriptFlag:
+        #     # print "runUserPythonScriptFlag=",self.runUserPythonScriptFlag
+        #     globalDict = {'simTabView': 20}
+        #     localDict = {}
+        #
+        #     print('GOT INSIDE RUN FUNCTION');
+        #
+        #     self.runUserPythonScript(self.pythonFileName, globalDict, localDict)
