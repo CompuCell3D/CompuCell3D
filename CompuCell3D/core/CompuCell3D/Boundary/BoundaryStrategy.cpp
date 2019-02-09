@@ -199,6 +199,15 @@ void BoundaryStrategy::setDim(const Dim3D theDim) {
 
 }
 
+const std::vector<Point3D> & BoundaryStrategy::getOffsetVec() const { return offsetVec; }
+
+const std::vector<Point3D> & BoundaryStrategy::getOffsetVec(Point3D & pt) const {
+   if(latticeType==HEXAGONAL_LATTICE){
+      return hexOffsetArray[(pt.z%3)*2+pt.y%2];
+   }else{
+      return offsetVec;
+   }
+}
 
 bool BoundaryStrategy::isValid(const int coordinate, const int max_value)const {
 
@@ -566,6 +575,10 @@ void BoundaryStrategy::prepareNeighborListsSquare(float _maxDistance) {
 		cerr << " This is offset[" << i << "]=" << offsetVec[i] << " distance=" << distanceVec[i] << endl;
 	}
 #endif
+}
+
+LatticeMultiplicativeFactors BoundaryStrategy::getLatticeMultiplicativeFactors()const {
+	return lmf; 
 }
 
 LatticeMultiplicativeFactors BoundaryStrategy::generateLatticeMultiplicativeFactors(LatticeType _latticeType, Dim3D dim) {
