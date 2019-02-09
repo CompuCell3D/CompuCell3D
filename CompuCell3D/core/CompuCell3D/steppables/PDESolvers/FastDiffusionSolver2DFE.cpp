@@ -1500,111 +1500,111 @@ void FastDiffusionSolver2DFE::readConcentrationField(std::string fileName,Concen
 void FastDiffusionSolver2DFE::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 
-	if(potts->getDisplayUnitsFlag()){
-		Unit diffConstUnit=powerUnit(potts->getLengthUnit(),2)/potts->getTimeUnit();
-		Unit decayConstUnit=1/potts->getTimeUnit();
-		Unit secretionConstUnit=1/potts->getTimeUnit();
+	//if(potts->getDisplayUnitsFlag()){
+	//	Unit diffConstUnit=powerUnit(potts->getLengthUnit(),2)/potts->getTimeUnit();
+	//	Unit decayConstUnit=1/potts->getTimeUnit();
+	//	Unit secretionConstUnit=1/potts->getTimeUnit();
 
-		CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-		if (!unitsElem){ //add Units element
-			unitsElem=_xmlData->attachElement("Units");
-		}
+	//	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
+	//	if (!unitsElem){ //add Units element
+	//		unitsElem=_xmlData->attachElement("Units");
+	//	}
 
-		if(unitsElem->getFirstElement("DiffusionConstantUnit")){
-			unitsElem->getFirstElement("DiffusionConstantUnit")->updateElementValue(diffConstUnit.toString());
-		}else{
-			unitsElem->attachElement("DiffusionConstantUnit",diffConstUnit.toString());
-		}
+	//	if(unitsElem->getFirstElement("DiffusionConstantUnit")){
+	//		unitsElem->getFirstElement("DiffusionConstantUnit")->updateElementValue(diffConstUnit.toString());
+	//	}else{
+	//		unitsElem->attachElement("DiffusionConstantUnit",diffConstUnit.toString());
+	//	}
 
-		if(unitsElem->getFirstElement("DecayConstantUnit")){
-			unitsElem->getFirstElement("DecayConstantUnit")->updateElementValue(decayConstUnit.toString());
-		}else{
-			unitsElem->attachElement("DecayConstantUnit",decayConstUnit.toString());
-		}
+	//	if(unitsElem->getFirstElement("DecayConstantUnit")){
+	//		unitsElem->getFirstElement("DecayConstantUnit")->updateElementValue(decayConstUnit.toString());
+	//	}else{
+	//		unitsElem->attachElement("DecayConstantUnit",decayConstUnit.toString());
+	//	}
 
-		if(unitsElem->getFirstElement("DeltaXUnit")){
-			unitsElem->getFirstElement("DeltaXUnit")->updateElementValue(potts->getLengthUnit().toString());
-		}else{
-			unitsElem->attachElement("DeltaXUnit",potts->getLengthUnit().toString());
-		}
+	//	if(unitsElem->getFirstElement("DeltaXUnit")){
+	//		unitsElem->getFirstElement("DeltaXUnit")->updateElementValue(potts->getLengthUnit().toString());
+	//	}else{
+	//		unitsElem->attachElement("DeltaXUnit",potts->getLengthUnit().toString());
+	//	}
 
-		if(unitsElem->getFirstElement("DeltaTUnit")){
-			unitsElem->getFirstElement("DeltaTUnit")->updateElementValue(potts->getTimeUnit().toString());
-		}else{
-			unitsElem->attachElement("DeltaTUnit",potts->getTimeUnit().toString());
-		}
+	//	if(unitsElem->getFirstElement("DeltaTUnit")){
+	//		unitsElem->getFirstElement("DeltaTUnit")->updateElementValue(potts->getTimeUnit().toString());
+	//	}else{
+	//		unitsElem->attachElement("DeltaTUnit",potts->getTimeUnit().toString());
+	//	}
 
-		if(unitsElem->getFirstElement("CouplingCoefficientUnit")){
-			unitsElem->getFirstElement("CouplingCoefficientUnit")->updateElementValue(decayConstUnit.toString());
-		}else{
-			unitsElem->attachElement("CouplingCoefficientUnit",decayConstUnit.toString());
-		}
-
-
-
-		if(unitsElem->getFirstElement("SecretionUnit")){
-			unitsElem->getFirstElement("SecretionUnit")->updateElementValue(secretionConstUnit.toString());
-		}else{
-			unitsElem->attachElement("SecretionUnit",secretionConstUnit.toString());
-		}
-
-		if(unitsElem->getFirstElement("SecretionOnContactUnit")){
-			unitsElem->getFirstElement("SecretionOnContactUnit")->updateElementValue(secretionConstUnit.toString());
-		}else{
-			unitsElem->attachElement("SecretionOnContactUnit",secretionConstUnit.toString());
-		}
-
-		if(unitsElem->getFirstElement("ConstantConcentrationUnit")){
-			unitsElem->getFirstElement("ConstantConcentrationUnit")->updateElementValue(secretionConstUnit.toString());
-		}else{
-			unitsElem->attachElement("ConstantConcentrationUnit",secretionConstUnit.toString());
-		}
-
-		if(unitsElem->getFirstElement("DecayConstantUnit")){
-			unitsElem->getFirstElement("DecayConstantUnit")->updateElementValue(decayConstUnit.toString());
-		}else{
-			unitsElem->attachElement("DecayConstantUnit",decayConstUnit.toString());
-		}
-
-		if(unitsElem->getFirstElement("DeltaXUnit")){
-			unitsElem->getFirstElement("DeltaXUnit")->updateElementValue(potts->getLengthUnit().toString());
-		}else{
-			unitsElem->attachElement("DeltaXUnit",potts->getLengthUnit().toString());
-		}
-
-		if(unitsElem->getFirstElement("DeltaTUnit")){
-			unitsElem->getFirstElement("DeltaTUnit")->updateElementValue(potts->getTimeUnit().toString());
-		}else{
-			unitsElem->attachElement("DeltaTUnit",potts->getTimeUnit().toString());
-		}
-
-		if(unitsElem->getFirstElement("CouplingCoefficientUnit")){
-			unitsElem->getFirstElement("CouplingCoefficientUnit")->updateElementValue(decayConstUnit.toString());
-		}else{
-			unitsElem->attachElement("CouplingCoefficientUnit",decayConstUnit.toString());
-		}
-
-		if(unitsElem->getFirstElement("UptakeUnit")){
-			unitsElem->getFirstElement("UptakeUnit")->updateElementValue(decayConstUnit.toString());
-		}else{
-			unitsElem->attachElement("UptakeUnit",decayConstUnit.toString());
-		}
-
-		if(unitsElem->getFirstElement("RelativeUptakeUnit")){
-			unitsElem->getFirstElement("RelativeUptakeUnit")->updateElementValue(decayConstUnit.toString());
-		}else{
-			unitsElem->attachElement("RelativeUptakeUnit",decayConstUnit.toString());
-		}
-
-		if(unitsElem->getFirstElement("MaxUptakeUnit")){
-			unitsElem->getFirstElement("MaxUptakeUnit")->updateElementValue(decayConstUnit.toString());
-		}else{
-			unitsElem->attachElement("MaxUptakeUnit",decayConstUnit.toString());
-		}
+	//	if(unitsElem->getFirstElement("CouplingCoefficientUnit")){
+	//		unitsElem->getFirstElement("CouplingCoefficientUnit")->updateElementValue(decayConstUnit.toString());
+	//	}else{
+	//		unitsElem->attachElement("CouplingCoefficientUnit",decayConstUnit.toString());
+	//	}
 
 
 
-	}
+	//	if(unitsElem->getFirstElement("SecretionUnit")){
+	//		unitsElem->getFirstElement("SecretionUnit")->updateElementValue(secretionConstUnit.toString());
+	//	}else{
+	//		unitsElem->attachElement("SecretionUnit",secretionConstUnit.toString());
+	//	}
+
+	//	if(unitsElem->getFirstElement("SecretionOnContactUnit")){
+	//		unitsElem->getFirstElement("SecretionOnContactUnit")->updateElementValue(secretionConstUnit.toString());
+	//	}else{
+	//		unitsElem->attachElement("SecretionOnContactUnit",secretionConstUnit.toString());
+	//	}
+
+	//	if(unitsElem->getFirstElement("ConstantConcentrationUnit")){
+	//		unitsElem->getFirstElement("ConstantConcentrationUnit")->updateElementValue(secretionConstUnit.toString());
+	//	}else{
+	//		unitsElem->attachElement("ConstantConcentrationUnit",secretionConstUnit.toString());
+	//	}
+
+	//	if(unitsElem->getFirstElement("DecayConstantUnit")){
+	//		unitsElem->getFirstElement("DecayConstantUnit")->updateElementValue(decayConstUnit.toString());
+	//	}else{
+	//		unitsElem->attachElement("DecayConstantUnit",decayConstUnit.toString());
+	//	}
+
+	//	if(unitsElem->getFirstElement("DeltaXUnit")){
+	//		unitsElem->getFirstElement("DeltaXUnit")->updateElementValue(potts->getLengthUnit().toString());
+	//	}else{
+	//		unitsElem->attachElement("DeltaXUnit",potts->getLengthUnit().toString());
+	//	}
+
+	//	if(unitsElem->getFirstElement("DeltaTUnit")){
+	//		unitsElem->getFirstElement("DeltaTUnit")->updateElementValue(potts->getTimeUnit().toString());
+	//	}else{
+	//		unitsElem->attachElement("DeltaTUnit",potts->getTimeUnit().toString());
+	//	}
+
+	//	if(unitsElem->getFirstElement("CouplingCoefficientUnit")){
+	//		unitsElem->getFirstElement("CouplingCoefficientUnit")->updateElementValue(decayConstUnit.toString());
+	//	}else{
+	//		unitsElem->attachElement("CouplingCoefficientUnit",decayConstUnit.toString());
+	//	}
+
+	//	if(unitsElem->getFirstElement("UptakeUnit")){
+	//		unitsElem->getFirstElement("UptakeUnit")->updateElementValue(decayConstUnit.toString());
+	//	}else{
+	//		unitsElem->attachElement("UptakeUnit",decayConstUnit.toString());
+	//	}
+
+	//	if(unitsElem->getFirstElement("RelativeUptakeUnit")){
+	//		unitsElem->getFirstElement("RelativeUptakeUnit")->updateElementValue(decayConstUnit.toString());
+	//	}else{
+	//		unitsElem->attachElement("RelativeUptakeUnit",decayConstUnit.toString());
+	//	}
+
+	//	if(unitsElem->getFirstElement("MaxUptakeUnit")){
+	//		unitsElem->getFirstElement("MaxUptakeUnit")->updateElementValue(decayConstUnit.toString());
+	//	}else{
+	//		unitsElem->attachElement("MaxUptakeUnit",decayConstUnit.toString());
+	//	}
+
+
+
+	//}
 
 
 	//notice, only basic steering is enabled for PDE solvers - changing diffusion constants, do -not-diffuse to types etc...
