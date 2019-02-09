@@ -1,3 +1,4 @@
+from os.path import dirname, join
 import CompuCell
 from cc3d.CompuCellSetup import init_modules, parseXML
 # import cc3d.CompuCellSetup as CompuCellSetup
@@ -86,11 +87,19 @@ def getCoreSimulationObjects():
     # # this loads all plugins/steppables - need to recode it to make loading on-demand only
     # CompuCell.initializePlugins()
 
+    persistent_globals = CompuCellSetup.persistent_globals
+
     simulator = CompuCell.Simulator()
     simthread = None
     # todo 5 - fix logic regarding simthread initialization
-    if CompuCellSetup.persistent_globals.simthread is not None:
-        simthread = CompuCellSetup.persistent_globals.simthread
+    if persistent_globals.simthread is not None:
+        simthread = persistent_globals.simthread
+
+    simulator.setBasePath(join(dirname(persistent_globals.simulation_file_name)))
+
+    print("Simulation basepath=",simulator.getBasePath())
+
+
 
 
     xml_fname = CompuCellSetup.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript
@@ -98,7 +107,7 @@ def getCoreSimulationObjects():
     cc3d_xml2_obj_converter = parseXML(xml_fname=xml_fname)
     #  cc3d_xml2_obj_converter cannot be garbage colected hence goes to persisten storage declared at the global level
     # in CompuCellSetup
-    CompuCellSetup.persistent_globals.cc3d_xml_2_obj_converter = cc3d_xml2_obj_converter
+    persistent_globals.cc3d_xml_2_obj_converter = cc3d_xml2_obj_converter
 
     # cc3dXML2ObjConverter = parseXML(xml_fname=xml_fname)
 
@@ -130,6 +139,7 @@ def mainLoop(sim, simthread, steppableRegistry):
         steppableRegistry.init(sim)
 
     max_num_steps = sim.getNumSteps()
+
     sim.start()
     if not steppableRegistry is None:
         steppableRegistry.start()
@@ -147,6 +157,8 @@ def mainLoop(sim, simthread, steppableRegistry):
 
 
 def extraInitSimulationObjects(sim, simthread, _restartEnabled=False):
+    print("Simulation basepath extra init=", sim.getBasePath())
+
     sim.extraInit()  # after all xml steppables and plugins have been loaded we call extraInit to complete initialization
     # simthread.preStartInit()
     sim.start()
@@ -245,7 +257,7 @@ def mainLoopPlayer(sim, simthread, steppableRegistry):
 
     max_num_steps = sim.getNumSteps()
 
-    # called in extra
+    # called in extraInitSimulationObjects
     # sim.start()
 
     if not steppableRegistry is None:
