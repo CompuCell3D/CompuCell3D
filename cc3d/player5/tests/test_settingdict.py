@@ -156,6 +156,12 @@ class TestSettingdict(unittest.TestCase):
 
         print(type_color_map_s)
 
+        field_params = {}
+
+        s.setSetting('FieldParams', field_params)
+
+
+
     def test_custom_settings(self):
         setting_path = join(dirname(dirname(__file__)), 'CustomSetting.sqlite')
         s = SettingsSQL(setting_path)
