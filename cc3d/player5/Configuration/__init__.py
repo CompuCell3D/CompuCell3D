@@ -37,7 +37,7 @@ maxNumberOfRecentFiles = 5
 MODULENAME = '------- player5/Configuration/__init__.py: '
 
 
-class Configuration():
+class Configuration:
     """
     "Global" class that serves as a container for global, default and simulation specific settings and their
     respective paths

@@ -1,4 +1,4 @@
-class GraphicsWindowData(object):
+class GraphicsWindowData:
 
     def __init__(self):
         self.sceneName = ''

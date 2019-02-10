@@ -22,6 +22,7 @@ import cc3d.player5.Configuration as Configuration
 import cc3d.core.DefaultSettingsData as settings_data
 from cc3d.core.BasicSimulationData import BasicSimulationData
 import cc3d.player5.DefaultData as DefaultData
+from cc3d.player5.Graphics.GraphicsWindowData import GraphicsWindowData
 from cc3d.player5.Simulation.CMLResultReader import CMLResultReader
 from cc3d.player5.Simulation.SimulationThread import SimulationThread
 # from Simulation.SimulationThread1 import SimulationThread1
@@ -85,6 +86,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         SimpleViewManager.__init__(self, parent)
         MainArea.__init__(self, stv=self, ui=parent)
+
+
 
         self.__createStatusBar()
         self.__setConnects()
@@ -1157,6 +1160,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
                                       QMessageBox.Ok)
             raise IOError("%s does not exist" % fileName)
 
+
+
         self.cc3dSimulationDataHandler = readCC3DFile(fileName=fileName)
         # self.cc3dSimulationDataHandler.readCC3DFileFormat(fileName)
 
@@ -1175,12 +1180,17 @@ class SimpleTabView(MainArea, SimpleViewManager):
                                           currentVersion, projectVersion), \
                                       QMessageBox.Ok)
 
-        # If project settings exists using the project settings
-        if self.cc3dSimulationDataHandler.cc3dSimulationData.playerSettingsResource:
-            self.customSettingPath = self.cc3dSimulationDataHandler.cc3dSimulationData.playerSettingsResource.path
-            # print 'GOT CUSTOM SETTINGS RESOURCE = ', self.customSettingPath
-            Configuration.initializeCustomSettings(self.customSettingPath)
-            self.__paramsChanged()
+        self.customSettingPath = self.cc3dSimulationDataHandler.cc3dSimulationData.custom_settings_path
+        Configuration.initializeCustomSettings(self.customSettingPath)
+        self.__paramsChanged()
+
+        # todo 5  - previouse code - see if it still make ssense
+        # # If project settings exists using the project settings
+        # if self.cc3dSimulationDataHandler.cc3dSimulationData.playerSettingsResource:
+        #     self.customSettingPath = self.cc3dSimulationDataHandler.cc3dSimulationData.playerSettingsResource.path
+        #     # print 'GOT CUSTOM SETTINGS RESOURCE = ', self.customSettingPath
+        #     Configuration.initializeCustomSettings(self.customSettingPath)
+        #     self.__paramsChanged()
 
         if self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript != "":
             self.simulation.setRunUserPythonScriptFlag(True)
@@ -2279,10 +2289,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.pauseAct.setEnabled(False)
 
     def __saveWindowsLayout(self):
-        '''
+        """
         Saves windows layout in the _settings.xml
         :return:None
-        '''
+        """
 
         windowsLayout = {}
 
@@ -2526,6 +2536,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
 
+
         self.__setupArea()
 
         # Create self.mainGraphicsWindow
@@ -2567,8 +2578,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
 
+
         # todo 5 -  reimplement it
-        return
+
         windowsLayoutDict = Configuration.getSetting('WindowsLayout')
         print('from settings windowsLayout = ', windowsLayoutDict)
 
@@ -2587,7 +2599,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                     except KeyError:
                         raise KeyError('Could not find 0 in the keys of windowsLayoutDict')
 
-                from Graphics.GraphicsWindowData import GraphicsWindowData
+                # from Graphics.GraphicsWindowData import GraphicsWindowData
 
                 gwd = GraphicsWindowData()
 
@@ -2619,7 +2631,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
             if windowId == 0 or windowId == '0':
                 continue
 
-            from Graphics.GraphicsWindowData import GraphicsWindowData
 
             gwd = GraphicsWindowData()
 
@@ -2649,7 +2660,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
             #     continue
 
             # gfw = self.findMDISubWindowForWidget(self.lastActiveWindow)
-            from Graphics.GraphicsWindowData import GraphicsWindowData
 
             gwd = GraphicsWindowData()
 
@@ -2676,6 +2686,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         initializes field types for VTK vidgets during vtk replay mode
         :return:None
         '''
+
+
+
         # Add cell field
         self.fieldTypes["Cell_Field"] = FIELD_TYPES[0]  # "CellField"
 

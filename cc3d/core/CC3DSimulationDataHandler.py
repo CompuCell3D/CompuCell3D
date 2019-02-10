@@ -155,6 +155,10 @@ class CC3DSimulationData:
         self.version = "3.5.1"
 
     @property
+    def custom_settings_path(self):
+        return os.path.join(self.basePath, 'Simulation', settings_data.SETTINGS_FILE_NAME)
+
+    @property
     def pythonScript(self):
         return self.pythonScriptResource.path
 
