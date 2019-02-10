@@ -66,6 +66,11 @@ class SteppableBasePy(SteppablePy):
         self.clusters = Clusters(self.inventory)
         self.mcs = -1
 
+        self.plot_dict = {}  # {plot_name:plotWindow  - pW object}
+
+
+        # legacy API
+        self.addNewPlotWindow = self.add_new_plot_window
 
 
     def stop_simulation(self):
@@ -100,3 +105,16 @@ class SteppableBasePy(SteppablePy):
 
         :return:
         """
+
+    def add_new_plot_window(self, _title, _xAxisTitle, _yAxisTitle, _xScaleType='linear', _yScaleType='linear', _grid=True, _config_options=None):
+
+        # import CompuCellSetup
+        if _title in self.plot_dict.keys():
+            raise RuntimeError('PLOT WINDOW: ' + _title + ' already exists. Please choose a different name')
+
+        pW = CompuCellSetup.simulation_player_utils.add_new_plot_window(_title, _xAxisTitle, _yAxisTitle, _xScaleType, _yScaleType,_grid,_config_options=_config_options)
+        self.plot_dict = {}  # {plot_name:plotWindow  - pW object}
+
+
+        return pW
+

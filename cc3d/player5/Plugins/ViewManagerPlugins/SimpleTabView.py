@@ -812,10 +812,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
         """
         self.resetControlButtonsAndActions()
 
+
+
         self.steppingThroughSimulation = False
 
-        CompuCellSetup.viewManager = self
-        CompuCellSetup.simulationFileName = ""
+
+        CompuCellSetup.persistent_globals.view_manager = self
+        # todo 5 - check if still needed
+        # CompuCellSetup.viewManager = self
+        # CompuCellSetup.simulationFileName = ""
 
         # from BasicSimulationData import BasicSimulationData
 

@@ -4,8 +4,8 @@ from .PlotWindowInterface import PlotWindowInterface
 from cc3d.player5.Graphics.GraphicsWindowData import GraphicsWindowData
 from PyQt5 import QtCore
 from cc3d.player5.Graphics.PlotFrameWidget import PlotFrameWidget
-from . import PlotManagerSetup
-import cc3d.player.Configuration as Configuration
+# from . import PlotManagerSetup
+import cc3d.player5.Configuration as Configuration
 from cc3d.core.enums import *
 
 
@@ -21,11 +21,11 @@ class PlotManager(QtCore.QObject):
         self.plotWindowMutex = QtCore.QMutex()
         self.signalsInitialized = False
 
-    def getPlotWindow(self):
-        if self.plotsSupported:
-            return PlotWindow()
-        else:
-            return PlotWindowBase()
+    # def getPlotWindow(self):
+    #     if self.plotsSupported:
+    #         return PlotWindow()
+    #     else:
+    #         return PlotWindowBase()
 
     def reset(self):
         self.plotWindowList = []

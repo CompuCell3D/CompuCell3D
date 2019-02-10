@@ -3,6 +3,7 @@ from . simulation_utils import *
 from . sim_runner import *
 from . readers import *
 from . simulation_setup import *
+from . simulation_player_utils import *
 # from . readers import readCC3DFile
 # from . initializers import (initializeSimulationObjects,
 #                             initialize_cc3d,

@@ -279,7 +279,7 @@ class SimulationThread(QtCore.QThread):
             self.stopped = True
         finally:
             self.sem.release()
-            self.semPause.release()()
+            self.semPause.release()
 
 
         self.wait()
