@@ -6,13 +6,9 @@ from PySteppables import *
 
 from PlayerPython import insertVectorIntoVectorCellLevelField as insertVector
 
-class VectorFieldPlotTestSteppable(SteppablePy):
+class VectorFieldPlotTestSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=10):
-        SteppablePy.__init__(self,_frequency)
-        self.simulator=_simulator
-        self.cellFieldG=self.simulator.getPotts().getCellFieldG()
-        self.inventory=self.simulator.getPotts().getCellInventory()
-        self.dim=self.cellFieldG.getDim()
+        SteppableBasePy.__init__(self,_simulator, _frequency)
         
     def setVectorField(self,_field):
         self.vectorField=_field

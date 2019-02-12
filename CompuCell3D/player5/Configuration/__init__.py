@@ -291,7 +291,20 @@ def getSetting(_key, fieldName=None):
         except LookupError:
             pass  # returning global parameter for the field
 
-    val = settingStorage.getSetting(_key)
+    # val = settingStorage.getSetting(_key)
+    # a way to fetch unknown setting from default setting and writing it back to the custom settins
+    try:
+        val = settingStorage.getSetting(_key)
+    except KeyError:
+        # atempt to fetch setting from global setting
+        settingStorage = Configuration.myGlobalSettings
+        val = settingStorage.getSetting(_key)
+        # and write it to custom setting
+        if Configuration.myCustomSettings:
+            settingStorage = Configuration.myCustomSettings
+            settingStorage.setSetting(_key,val)
+
+
     return val
 
 

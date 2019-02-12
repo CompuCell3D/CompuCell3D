@@ -123,6 +123,38 @@ self.setSBMLGlobalOptions(options)
 # returns current options - can be None if no global options were set
 options = self.getSBMLGlobalOptions()
 
+===============  # @Menu@ Steering Panel
+
+----------i1  # @Submenu@ 1.Set Up Steering Panel
+
+
+def add_steering_panel(self):
+    self.add_steering_param(name='MY_PARAM_SLIDER', val=20, min_val=0, max_val=100,
+                            decimal_precision=2, widget_name='slider')
+    self.add_steering_param(name='MY_PARAM_COMBO', val=20, enum=[10,20,30,40,50,60,70,80,90,100],
+                                widget_name='combobox')
+
+def process_steering_panel_data(self):
+    print 'processing steering panel updates'
+    print 'all dirty flag=', self.steering_param_dirty()
+    param_slider = self.get_steering_param('MY_PARAM_SLIDER')
+    param_combo = self.get_steering_param('MY_PARAM_COMBO')
+    print 'updated MY_PARAM_SLIDER=',param_slider
+    print 'updated MY_PARAM_COMBO=', param_combo
+
+    # IMPORTANT: you may add code here tht updates cell properties based on the
+    # values of the parameters from the steering panel. For example:
+
+    # for cell in self.cellList:
+    #     cell.targetVolume = param_slider
+    #     cell.lambdaVolume = param_combo
+
+----------  # @Submenu@ Get Updated Value of Steering Parameter
+my_param = self.get_steering_param('MY_PARAM')
+
+----------  # @Submenu@ Check if Steering Panel Was Updated
+updateg_flag = self.steering_param_dirty()
+
 ===============  # @Menu@ Cell Constraints
 
 ----------  # @Submenu@ Change Target Volume

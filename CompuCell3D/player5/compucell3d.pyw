@@ -254,6 +254,21 @@ def main(argv):
     return error_code
 
 
+
+def except_hook(cls, exception, traceback):
+    sys.__excepthook__(cls, exception, traceback)
+    sys.exit(1)
+
 if __name__ == '__main__':
+    # enable it during debugging in pycharm
+    sys.excepthook = except_hook
+
     error_code = main(sys.argv[1:])
+
+    # if error_code !=0 :
+    #     print traceback.print_tb()
+
+
+    # sys.excepthook = except_hook
+    print "GOT HERE"
     sys.exit(error_code)

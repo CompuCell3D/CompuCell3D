@@ -19,6 +19,8 @@ from CC3DProject.Configuration import Configuration
 import re
 import os
 import shutil
+from copy import deepcopy
+from ParameterScanEnums import *
 
 # Start-Of-Header
 name = "CC3D Project Plugin"
@@ -244,7 +246,6 @@ class CC3DProjectTreeWidget(QTreeWidget):
             self.addActionToContextMenu(menu, self.plugin.actions["Open XML/Python In Editor"])
             self.addActionToContextMenu(menu, self.plugin.actions["Open in Player"])
 
-
             # --------------------------------------------------------------------
             menu.addSeparator()
             if not pdh.cc3dSimulationData.serializerResource:
@@ -261,7 +262,6 @@ class CC3DProjectTreeWidget(QTreeWidget):
             self.addConvertXMLToPythonMenu(menu, projItem)
 
             menu.addSeparator()
-
 
         resourceName = self.getResourceName(self.currentItem())
         print '\n\n\n RESOURCENAME', resourceName
@@ -281,7 +281,6 @@ class CC3DProjectTreeWidget(QTreeWidget):
         # parameter scan menus
         self.addActionToContextMenu(menu, self.plugin.actions["Add Parameter Scan"])
         self.addParameterScanMenus(menu, projItem)
-
 
         # --------------------------------------------------------------------
         menu.addSeparator()
@@ -318,7 +317,7 @@ class CC3DProjectTreeWidget(QTreeWidget):
         except LookupError, e:
 
             return
-            # check if thei file to which we are trying to add Steppable is Python resource        
+            # check if the file to which we are trying to add Steppable is Python resource
         itemFullPath = str(self.getFullPath(self.currentItem()))
         basename, extension = os.path.splitext(itemFullPath)
 
@@ -363,6 +362,8 @@ class CC3DProjectTreeWidget(QTreeWidget):
 
         if pdh.cc3dSimulationData.xmlScript == itemFullPath or pdh.cc3dSimulationData.pythonScript == itemFullPath:
             self.addActionToContextMenu(_menu, self.plugin.actions["Open Scan Editor"])
+            _menu.addSeparator()
+            self.addActionToContextMenu(_menu, self.plugin.actions["Open XML Access Path Editor"])
 
         _menu.addSeparator()
 
@@ -496,13 +497,18 @@ class CC3DProject(QObject):
         # parameter scan globals
         self.parameterScanEditor = None  # only one scan editor is allowed at any given time
         self.scannedFileName = ''  # this is the path to the file which is open in parameterScanEditor
+
+        self.access_path_editor = None  # only one access path editor is allowed at any given time
+        self.access_path_fname = ''  # this is the path to the file which is open in access_path_editor
+        self.access_path_xml_handler = None
+        self.xml_elem_access_path = None
+        self.xml_access_path_obj = None
         # self.parameterScanXMLHandler=None
         # self.parameterScanFile=''
 
         # self.openCC3Dproject("/Users/m/CC3DProjects/ExtraFields/ExtraFields.cc3d")
         # self.openCC3Dproject("/Users/m/CC3DProjects/scientificPlotsSimple/scientificPlots.cc3d")
         # self.openCC3Dproject("/Users/m/CC3DProjects/ParamScanDemo/ParamScanDemo.cc3d")
-
 
         # # # self.openCC3Dproject('/home/m/CC3DProjects/CellSorting/CellSorting.cc3d')
 
@@ -564,6 +570,7 @@ class CC3DProject(QObject):
             self.__ui.insertToolBar(self.__ui.toolBar["File"], self.__ui.toolBar["CompuCell3D"])
 
         self.__ui.toolBar["CompuCell3D"].addAction(self.actions["Open CC3D Project..."])
+        self.__ui.toolBar["CompuCell3D"].addAction(self.actions["Save CC3D Project"])
 
     def __initMenus(self):
 
@@ -582,7 +589,6 @@ class CC3DProject(QObject):
         self.cc3dProjectMenu.addAction(self.actions["Open in Player"])
         self.cc3dProjectMenu.addSeparator()
         # ---------------------------------------
-
 
         # self.cc3dProjectMenu.addAction(self.actions["Save CC3D Project As..."])
         self.cc3dProjectMenu.addAction(self.actions["Add Resource..."])
@@ -725,7 +731,7 @@ class CC3DProject(QObject):
                                                            triggered=self.__runInPlayer)
         self.actions["Save CC3D Project"] = QtWidgets.QAction(QIcon(':/icons/save-project.png'), "Save CC3D Project",
                                                               self,
-                                                              shortcut="", statusTip="Save CC3D Project ",
+                                                              shortcut="Ctrl+Shift+D", statusTip="Save CC3D Project ",
                                                               triggered=self.__saveCC3DProject)
         self.actions["Save CC3D Project As..."] = QtWidgets.QAction("Save CC3D Project As...", self,
                                                                     shortcut="Ctrl+Shift+A",
@@ -807,10 +813,35 @@ class CC3DProject(QObject):
         self.actions['Open Scan Editor'] = QtWidgets.QAction(QIcon(':/icons/editor.png'), "Open Scan Editor", self,
                                                              shortcut="", statusTip="Open Scan Editor",
                                                              triggered=self.__openScanEditor)
+
         self.actions['Reset Parameter Scan'] = QtWidgets.QAction(QIcon(':/icons/reset_32x32.png'),
                                                                  "Reset Parameter Scan",
                                                                  self, shortcut="", statusTip="Reset Parameter Scan",
                                                                  triggered=self.__resetParameterScan)
+        # XML Access Path Handling
+
+        self.actions['Open XML Access Path Editor'] = QtWidgets.QAction(QIcon(':/icons/editor.png'),
+                                                                        "Open XML Access Path Editor", self,
+                                                                        shortcut="",
+                                                                        statusTip="Open XML Access Path Editor",
+                                                                        triggered=self.__open_access_path_editor)
+
+        self.actions["XML Access Path to Clipboard"] = QtWidgets.QAction(addToScanIcon, "XML Access Path to Clipboard",
+                                                                         self, shortcut="Ctrl+Shift+X",
+                                                                         statusTip="Copies XML access Path to Clipboard",
+                                                                         triggered=self.get_access_path)
+
+        self.actions['Get XML Element Value (Clipboard)'] = QtWidgets.QAction(QIcon(':/icons/editor.png'),
+                                                                              "Get XML Element Value (Clipboard)", self,
+                                                                              shortcut="",
+                                                                              statusTip="Get XML Element Value (Clipboard)",
+                                                                              triggered=self.__get_xml_element_value_snippet)
+
+        self.actions['Set XML Element Value (Clipboard)'] = QtWidgets.QAction(QIcon(':/icons/editor.png'),
+                                                                              "Set XML Element Value (Clipboard)", self,
+                                                                              shortcut="",
+                                                                              statusTip="Set XML Element Value (Clipboard)",
+                                                                              triggered=self.__set_xml_element_value_snippet)
 
     def __resetParameterScan(self):
         tw = self.treeWidget
@@ -873,6 +904,14 @@ class CC3DProject(QObject):
         if panel and idx >= 0:
             self.__ui.closeTab(index=idx, _askToSave=False, _panel=panel)
         self.parameterScanEditor = None
+
+    def __close_access_path_editor(self):
+        if not self.access_path_editor: return
+
+        panel, idx = self.__ui.getTabWidgetAndWidgetIndex(self.access_path_editor)
+        if panel and idx >= 0:
+            self.__ui.closeTab(index=idx, _askToSave=False, _panel=panel)
+        self.access_path_editor = None
 
         # def  __closeScanEditorEvent(self,event):
         # print 'LOCAL CLOSE EVENT'
@@ -967,6 +1006,244 @@ class CC3DProject(QObject):
         tabBar = activePanel.tabBar()
         tabBar.setTabTextColor(currentindex, QColor('blue'))
 
+    def __open_access_path_editor(self):
+
+        if self.access_path_editor:
+            self.__close_access_path_editor()
+
+        import os
+
+        tw = self.treeWidget
+
+        projItem = tw.getProjectParent(tw.currentItem())
+
+        itemFullPath = str(tw.getFullPath(tw.currentItem()))
+        basename, extension = os.path.splitext(itemFullPath)
+
+        # pScanResource.fileTypeForEditor = extension.lower()
+
+        self.access_path_fname = itemFullPath  # store access path file name in the global - we can only have one parameter access path editor open
+
+        # opening editor
+        self.__ui.newFile()
+        editor = self.__ui.getCurrentEditor()
+        editor.setReadOnly(True)
+
+        # # set tab font color color
+        # tabBar=activePanel.tabBar()
+        # tabBar.setTabIcon()
+        # tabBar.setStyleSheet('background-color: blue;')
+
+        # lexer = self.__ui.guessLexer("tmp" + pScanResource.fileTypeForEditor)
+        lexer = self.__ui.guessLexer("tmp" + extension)
+        if lexer[0]:
+            editor.setLexer(lexer[0])
+        self.__ui.setEditorProperties(editor)
+
+        # editor.registerCustomContextMenu(self.createParameterScanMenu(editor))
+        editor.registerCustomContextMenu(self.create_access_path_menu(editor))
+
+        # initialize globals
+        self.access_path_editor = editor
+        # self.parameterScanEditor = editor
+
+        # self.parameterScanEditor.closeEvent=self.__closeScanEditorEvent # close event will be handled via local function
+
+        # pScanResource.parameterScanEditor=editor
+
+        # if pScanResource.fileTypeForEditor == '.xml':  # for xml we have to get generate line to access path map and line to element map for easier handling of parameter scan generation
+        if extension == '.xml':  # for xml we have to get generate line to access path map and line to element map for easier handling of parameter scan generation
+            import XMLUtils
+            import os
+            cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
+            root_element = cc3dXML2ObjConverter.Parse(self.access_path_fname)
+
+            from ParameterScanUtils import XMLHandler
+            xml_handler = XMLHandler()
+
+            xml_handler.outputXMLWithAccessPaths(self.access_path_fname)
+
+            print xml_handler.lineToElem
+            print xml_handler.lineToAccessPath
+
+            editor.insertAt(xml_handler.xmlString, 0, 0)
+            editor.setModified(False)
+            self.access_path_xml_handler = xml_handler
+            # pScanResource.parameterScanXMLHandler = xmlHandler
+        #
+        # if pScanResource.fileTypeForEditor == '.py':
+        #     editor.insertAt(open(self.scannedFileName).read(), 0, 0)
+        #     editor.setModified(False)
+        #
+        # setting graphical  properties for parameter scan editor tab widget
+        activePanel, currentindex = self.__ui.getCurrentTabWidgetAndIndex()
+        activePanel.setTabText(currentindex, 'XML Access Path Tmp File')
+        activePanel.setTabIcon(currentindex, QIcon(':/icons/scan_32x32.png'))
+        tabBar = activePanel.tabBar()
+        tabBar.setTabTextColor(currentindex, QColor('blue'))
+
+    def get_access_path(self):
+        """
+        Opens XML Access Path Read-only editor and extracts access path  (full access path to the XML element)
+        :return: {None} access path gets copied to the clipboard
+        """
+
+        tw = self.treeWidget
+
+        projItem = tw.getProjectParent(tw.currentItem())
+        print'projItem=', projItem
+
+        print 'self.projectDataHandlers=', self.projectDataHandlers
+
+        pdh = None
+        try:
+            pdh = self.projectDataHandlers[projItem]
+        except LookupError, e:
+
+            return
+
+        csd = pdh.cc3dSimulationData
+        # pScanResource = pdh.cc3dSimulationData.parameterScanResource
+
+        print '__addToScan'
+        if not self.access_path_editor: return
+
+        # check if the editor is still open
+        editorExists = self.__ui.checkIfEditorExists(self.access_path_editor)
+        if not editorExists:
+            self.access_path_editor = None
+            return
+
+        line, col = self.access_path_editor.getCursorPosition()
+        print 'line,col=', (line, col)
+
+        # if pScanResource
+        access_fname_extension = os.path.splitext(self.access_path_fname)[1].lower()
+        if access_fname_extension == '.xml':
+            # psXMLHandler = pScanResource.parameterScanXMLHandler
+            access_path_xml_handler = self.access_path_xml_handler
+            self.access_path_obj = ''
+            if access_path_xml_handler:
+                try:
+                    self.access_path_obj = access_path_xml_handler.lineToAccessPath[line]
+                    self.xml_elem_access_path = access_path_xml_handler.lineToElem[line]
+                except LookupError, e:
+                    print 'Could not figure out access path'
+
+                print 'AccessPath=', self.access_path_obj
+
+            if not self.access_path_obj:
+                return
+
+            clipboard = QApplication.clipboard()
+            clipboard.setText(str(self.access_path_obj))
+            return
+
+
+    def get_xml_value_callback(self, orig_access_path, attribute_name=None):
+        """
+        Returns full or partial access path depending if we are accessing CDATA value or an attribute
+        :param orig_access_path:{str} access path - full XML element
+        :param attribute_name: {str or None} -  optional attribute name - if accessing attribute, otherwise None
+        :return: {str} access path (possibly partial access path for attributes)
+        """
+        print 'orig_access_path=', orig_access_path
+        print 'attribute_name=', attribute_name
+
+        local_access_path = deepcopy(self.access_path_obj)
+        if attribute_name is not None:
+
+            last_access_path_segment = local_access_path[-1]
+            for i, item in enumerate(last_access_path_segment):
+                if str(item) == str(attribute_name):
+                    break
+
+            # removing i'th and the next elementn
+            last_access_path_segment.pop(i)
+            last_access_path_segment.pop(i)
+
+            attr_access_path = local_access_path[:-1] + [last_access_path_segment]
+
+        return local_access_path
+
+
+    def process_xml_access_path_dialog(self):
+        """
+        Opens up xml access path dialog and extracts precise access path to the xml element component
+        :return: {instance of  XmlAccessPathTuple}
+        """
+        self.get_access_path()
+        access_path = QApplication.clipboard().text()
+        s = 'access_path={}\n'.format(access_path)
+        s += 'val=float(self.getXMLElementValue(*access_path))\n'
+        QApplication.clipboard().setText(s)
+
+        print 'self.scannedFileName=', self.scannedFileName, '\n\n\n\n\n'
+        from CC3DProject.XmlAccessPathDialog import XmlAccessPathDialog
+        xml_access_path = XmlAccessPathDialog(self.parameterScanEditor)
+        # xml_access_path.setWindowTitle('XML Access Path Selection')
+
+        try:
+            xml_access_path.display_xml_attributes(self.xml_elem_access_path, access_path,
+                                        handle_xml_access_callback=self.get_xml_value_callback)
+            ret = xml_access_path.exec_()
+        except LookupError, e:  # to protect against elements that are not in psXMLHandler.lineToAccessPath
+            return
+
+        precise_xml_access_path_tuple = xml_access_path.get_precise_xml_access_path_tuple()
+        return precise_xml_access_path_tuple
+
+    def __get_xml_element_value_snippet(self):
+        """
+        Callback to get xml element value/attribute using xml access path. Copies
+        a snippet to the clipboard
+        :return:{None} - code gets copied into clipboard
+        """
+
+        precise_xml_access_path_tuple = self.process_xml_access_path_dialog()
+
+        # default snippet value
+        s = '__get_xml_element_value_snippet'
+        if precise_xml_access_path_tuple.type == XML_CDATA:
+            s = 'access_path={}\n'.format(precise_xml_access_path_tuple.access_path)
+            s += 'val=float(self.getXMLElementValue(*access_path))\n'
+        elif precise_xml_access_path_tuple.type == XML_ATTR:
+            s = 'access_path={}\n'.format(precise_xml_access_path_tuple.access_path)
+            s += "val=float(self.getXMLAttributeValue('{attr_name}',*access_path))\n".format(
+                attr_name=precise_xml_access_path_tuple.name)
+        else:
+            print(
+                'Expected precise_xml_access_path_tuple to be of type {}'.format('ParameterDialog.XmlAccessPathTuple'))
+        print 'code to modify elem = ', s
+
+        QApplication.clipboard().setText(s)
+
+    def __set_xml_element_value_snippet(self):
+        """
+        Callback to get xml element value/attribute using xml access path. Copies
+        a snippet to the clipboard
+        :return:{None} - code gets copied into clipboard
+        """
+
+        precise_xml_access_path_tuple = self.process_xml_access_path_dialog()
+
+        # default snippet value
+        s = '__set_xml_element_value_snippet'
+        if precise_xml_access_path_tuple.type == XML_CDATA:
+            s = 'access_path={}\n'.format(precise_xml_access_path_tuple.access_path)
+            s += 'self.setXMLElementValue(VALUE, *access_path)\n'
+        elif precise_xml_access_path_tuple.type == XML_ATTR:
+            s = 'access_path={}\n'.format(precise_xml_access_path_tuple.access_path)
+            s += "self.setXMLAttributeValue('{attr_name}',VALUE,*access_path)\n".format(
+                attr_name=precise_xml_access_path_tuple.name)
+        else:
+            raise TypeError(
+                'Expected precise_xml_access_path_tupl to be of type {}'.format('ParameterDialog.XmlAccessPathTuple'))
+        print 'code to modify elem = ', s
+
+        QApplication.clipboard().setText(s)
+
+
     def __addToScan(self):
 
         tw = self.treeWidget
@@ -1037,7 +1314,6 @@ class CC3DProject(QObject):
             except LookupError, e:  # to protect against elements that are not in psXMLHandler.lineToAccessPath
                 return
 
-
         elif scannedFileExt == '.py':
             from ParameterScanUtils import ParameterScanUtils as PSU
             psu = PSU()
@@ -1081,17 +1357,6 @@ class CC3DProject(QObject):
                     return
 
         self.__ui.checkIfDocumentsWereModified()
-        # # # print 'DICT AFTER=',csd.parameterScanResource.parameterScanFileToDataMap
-        # # # # get path to ParameterScan XML file
-        # # # parScanResources=csd.getResourcesByType ('ParameterScan') 
-        # # # print 'parScanResources=',parScanResources     
-
-        # # # if not csd.parameterScanResource:return
-
-        # # # resource=csd.parameterScanResource
-        # # # # paramScanXMLFilePath=resource.path
-
-        # resource.writeParameterScanSpecs()
 
     def restoreIcons(self):
         print 'restore icons for scan menu'
@@ -1100,9 +1365,6 @@ class CC3DProject(QObject):
 
     def addActionToContextMenu(self, _menu, _action):
 
-        #         if self.hideContextMenuIcons:            
-        #             self.__iconDict[_action]=_action.icon()                
-        #             _action.setIcon(QIcon())
 
         _menu.addAction(_action)
 
@@ -1115,6 +1377,24 @@ class CC3DProject(QObject):
         menu.aboutToHide.connect(self.restoreIcons)
 
         self.addActionToContextMenu(menu, self.actions["Add To Scan..."])
+        # self.addActionToContextMenu(menu, self.actions["XML Access Path to Clipboard"])
+        #         menu.addAction(self.actions["Add To Scan..."])
+
+        return menu
+
+    def create_access_path_menu(self, _widget):
+        self.__iconDict = {}  # resetting icon dictionary
+        self.hideContextMenuIcons = True
+
+        menu = QMenu(_widget)
+
+        menu.aboutToHide.connect(self.restoreIcons)
+
+        self.addActionToContextMenu(menu, self.actions["Get XML Element Value (Clipboard)"])
+        self.addActionToContextMenu(menu, self.actions["Set XML Element Value (Clipboard)"])
+        menu.addSeparator()
+        self.addActionToContextMenu(menu, self.actions["XML Access Path to Clipboard"])
+
         #         menu.addAction(self.actions["Add To Scan..."])
 
         return menu
@@ -1678,7 +1958,6 @@ class CC3DProject(QObject):
             elif item != projItem:
                 leafItems.append(item)
 
-
                 # first process leaf items - remove them from the project
         print "typeItems=", typeItems
 
@@ -2057,8 +2336,6 @@ class CC3DProject(QObject):
                 pifFileItem.setText(0, fileNameBase)
                 # check if full path exist in this branch
 
-
-
                 try:
                     ild.insertNewItem(pifFileItem, pd.resources[resourceName])
                 except LookupError, e:
@@ -2139,7 +2416,6 @@ class CC3DProject(QObject):
         # fileName="D:/Program Files/COMPUCELL3D_3.5.1_install2/examples_PythonTutorial/infoPrinterDemo/infoPrinterDemo_new.cc3d"
         # first determine project to be saved based on current element
 
-
         pdh.writeCC3DFileFormat(fileName)
 
         # set dirtyFlag to False        
@@ -2161,16 +2437,12 @@ class CC3DProject(QObject):
         projectDirName, _ = QFileDialog.getSaveFileName(self.__ui, "Save CC3D Project...", currentProjectDir, '', '',
                                                         QFileDialog.DontConfirmOverwrite)
 
-
-
         projectDirName = str(projectDirName)
 
         # projectDirName can have extension because we are using getSaveFile, so we get rid of extension here        
         projectDirName, extension = os.path.splitext(projectDirName)
 
-
         projectCoreName = os.path.basename(projectDirName)
-
 
         if str(projectDirName) == "":
             return
@@ -2309,13 +2581,11 @@ class CC3DProject(QObject):
         csd = pdh.cc3dSimulationData
         QDesktopServices.openUrl(QUrl.fromLocalFile(csd.basePath))
 
-
     def __zipProject(self):
         """
         Zips project directory
         :return:
         """
-
 
         tw = self.treeWidget
         curItem = self.treeWidget.currentItem()
@@ -2352,7 +2622,7 @@ class CC3DProject(QObject):
                                                                  # os.path.basename(zip_archive_core_name),
                                                                  _dir,
                                                                  "*.zip")
-            if zipped_filename_tmp :
+            if zipped_filename_tmp:
                 if not os.path.isfile(zipped_filename_tmp):
                     zipped_filename = zipped_filename_tmp
                     break
@@ -2581,7 +2851,6 @@ class CC3DProject(QObject):
                 newResourceItem1.setText(0, os.path.basename(resource.path))
 
                 ild.insertNewItem(newResourceItem1, resource)
-
 
                 # serialization data
         if pd.serializerResource:

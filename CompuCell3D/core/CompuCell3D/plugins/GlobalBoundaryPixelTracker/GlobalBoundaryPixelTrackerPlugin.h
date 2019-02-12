@@ -24,54 +24,91 @@
 #define GLOBALBOUNDARYPIXELTRACKERPLUGIN_H
 #include <CompuCell3D/CC3D.h>
 #include "GlobalBoundaryPixelTrackerDLLSpecifier.h"
-
+#include <unordered_set>
 
 class CC3DXMLElement;
 namespace CompuCell3D {
 
-  class Cell;
-  class Field3DIndex;
-  class Potts3D;
-  template <class T> class Field3D;
-  template <class T> class WatchableField3D;
-  class BoundaryStrategy;
+	class Cell;
+	class Field3DIndex;
+	class Potts3D;
+	template <class T> class Field3D;
+	template <class T> class WatchableField3D;
+	class BoundaryStrategy;
 
-  
-class GLOBALBOUNDARYPIXELTRACKER_EXPORT GlobalBoundaryPixelTrackerPlugin : public Plugin, public CellGChangeWatcher {
+	//struct Point3DHasher {
+	//public:
+	//	size_t operator()(const Point3D & pt) const {
 
-	ParallelUtilsOpenMP *pUtils;
-	ParallelUtilsOpenMP::OpenMPLock_t *lockPtr;
+	//		long long int hash_val = 1e12*pt.x+1e6*pt.y+pt.z;
+	//		return std::hash<long long int>()(hash_val);
+	//	}
+	//};
 
-      //WatchableField3D<CellG *> *cellFieldG;
-      Dim3D fieldDim;
-      Simulator *simulator;
+	//// Custom comparator that compares the string objects by length
+	//struct Point3DComparator {
+	//public:
+	//	bool operator()(const Point3D & pt1 , const Point3D & pt2) const {
+	//		long long int hash_val_1 = 1e12*pt1.x + 1e6*pt1.y + pt1.z;
+	//		long long int hash_val_2 = 1e12*pt2.x + 1e6*pt2.y + pt2.z;
+	//		if (hash_val_1 == hash_val_2)
+	//			return true;
+	//		else
+	//			return false;
+	//	}
+	//};
+
+
+	class GLOBALBOUNDARYPIXELTRACKER_EXPORT GlobalBoundaryPixelTrackerPlugin : public Plugin, public CellGChangeWatcher {
+
+		ParallelUtilsOpenMP *pUtils;
+		ParallelUtilsOpenMP::OpenMPLock_t *lockPtr;
+
+		//WatchableField3D<CellG *> *cellFieldG;
+		Dim3D fieldDim;
+		Simulator *simulator;
 		Potts3D* potts;
 		unsigned int maxNeighborIndex;
+		float container_refresh_fraction;
 		BoundaryStrategy * boundaryStrategy;
 		CC3DXMLElement *xmlData;
-		std::set<Point3D> * boundaryPixelSetPtr;
-			
-   public:
-      GlobalBoundaryPixelTrackerPlugin();
-      virtual ~GlobalBoundaryPixelTrackerPlugin();
-      
-      
-      // Field3DChangeWatcher interface
-      virtual void field3DChange(const Point3D &pt, CellG *newCell,
-                                 CellG *oldCell);
-		
+		//std::set<Point3D> * boundaryPixelSetPtr;
+		//std::set<Point3D>  * justInsertedBoundaryPixelSetPtr;
+		//std::set<Point3D>  * justDeletedBoundaryPixelSetPtr;
+		std::unordered_set<Point3D, Point3DHasher, Point3DComparator> *  boundaryPixelSetPtr;
+		std::unordered_set<Point3D, Point3DHasher, Point3DComparator> *justInsertedBoundaryPixelSetPtr;
+		std::unordered_set<Point3D, Point3DHasher, Point3DComparator> *justDeletedBoundaryPixelSetPtr;
+		std::vector<Point3D> * boundaryPixelVectorPtr;
+
+		//std::unordered_set<Point3D, Point3DHasher, Point3DComparator> justInsertedBoundaryPixelSet;
+
+		void insertPixel(Point3D & pt);
+		void removePixel(Point3D & pt);
+
+		void refreshContainers();
+
+
+	public:
+		GlobalBoundaryPixelTrackerPlugin();
+		virtual ~GlobalBoundaryPixelTrackerPlugin();
+
+
+		// Field3DChangeWatcher interface
+		virtual void field3DChange(const Point3D &pt, CellG *newCell,
+			CellG *oldCell);
+
 		//Plugin interface 
-		virtual void init(Simulator *_simulator, CC3DXMLElement *_xmlData=0);
+		virtual void init(Simulator *_simulator, CC3DXMLElement *_xmlData = 0);
 		virtual void extraInit(Simulator *_simulators);
-		virtual void handleEvent(CC3DEvent & _event);		
+		virtual void handleEvent(CC3DEvent & _event);
 
 		//Steerable interface
-		virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag=false);
+		virtual void update(CC3DXMLElement *_xmlData, bool _fullInitFlag = false);
 		virtual std::string steerableName();
 		virtual std::string toString();
 
-				
-      
-  };
+
+
+	};
 };
 #endif

@@ -727,7 +727,15 @@ class MVCDrawViewBase:
         # cam.SetDistance(_camera.GetDistance())
         
         # cam.SetViewAngle(_camera.GetViewAngle())
-        
+
+    def set_default_camera(self, fieldDim=None):
+        '''
+        Initializes default camera view
+        :param fieldDim:field dimension (Dim3D C++ object)
+        :return: None
+        '''
+        raise NotImplementedError()
+
     def setCamera(self, fieldDim): 
         camera = self.GetCurrentRenderer().GetActiveCamera()
         

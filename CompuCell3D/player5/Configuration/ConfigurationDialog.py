@@ -51,6 +51,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         self.clusterBorderColorButton.clicked.connect(self.clusterBorderColorClicked)
         self.contourColorButton.clicked.connect(self.contourColorClicked)
         self.windowColorButton.clicked.connect(self.windowColorClicked)
+        self.windowColorButton.clicked.connect(self.windowColorClicked)
+        self.fppColorButton.clicked.connect(self.fppColorButtonClicked)
         
         cellGlyphScaleValid = QDoubleValidator(self.cellGlyphScale)
         self.cellGlyphScale.setValidator(cellGlyphScaleValid)
@@ -193,6 +195,9 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 
     def windowColorClicked(self):
         self.updateColorButton(self.windowColorButton, "WindowColor")
+
+    def fppColorButtonClicked(self):
+        self.updateColorButton(self.fppColorButton, "FPPLinksColor")
 
     def boundingBoxColorClicked(self):
         self.updateColorButton(self.boundingBoxColorButton, "BoundingBoxColor")
@@ -618,6 +623,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("CellGlyphThetaRes", self.cellGlyphThetaRes.value())  # spinbox
         Configuration.setSetting("CellGlyphPhiRes", self.cellGlyphPhiRes.value())  # spinbox
 
+
         fp = Configuration.getSetting("FieldParams")
 
         # get Field name from combobox in the Field tab and save the current settings for that field
@@ -646,6 +652,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("ScalarIsoValues", self.isovalList.text())
         Configuration.setSetting("NumberOfContourLines", self.numberOfContoursLinesSpinBox.value())
         Configuration.setSetting("ShowPlotAxes", self.showPlotAxesCB.isChecked())
+
+        Configuration.setSetting("DisplayMinMaxInfo", self.min_max_display_CB.isChecked())  
 
         # Vectors
         
@@ -703,6 +711,10 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         # # # self.prefsFileLineEdit.setText( str(Configuration.getSetting("PreferencesFile")))
         self.numberOfRecentSimulationsSB.setValue(Configuration.getSetting("NumberOfRecentSimulations"))
         self.floatingWindowsCB.setChecked(Configuration.getSetting("FloatingWindows"))
+
+        self.min_max_display_CB.setChecked(Configuration.getSetting("DisplayMinMaxInfo"))
+
+
         
         # Cell Type/Colors
 
@@ -736,7 +748,15 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         pm.fill(color)
         self.windowColorButton.setIconSize(pm.size())
         self.windowColorButton.setIcon(QIcon(pm))
-        
+
+
+        color = Configuration.getSetting("FPPLinksColor")
+        pm = QPixmap(size.width(), size.height())
+        pm.fill(color)
+        self.fppColorButton.setIconSize(pm.size())
+        self.fppColorButton.setIcon(QIcon(pm))
+
+
         self.windowColorSameAsMediumCB.setChecked(Configuration.getSetting("WindowColorSameAsMedium"))
         
         self.cellGlyphScaleByVolumeCheckBox.setChecked(Configuration.getSetting("CellGlyphScaleByVolumeOn"))

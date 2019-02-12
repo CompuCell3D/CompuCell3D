@@ -32,29 +32,17 @@
 #include "FixedStepper.h"
 #include "AttributeAdder.h"
 #include <CompuCell3D/Automaton/Automaton.h>
-
-// #include <CompuCell3D/Field3D/WatchableField3D.h>
-
 #include <CompuCell3D/Potts3D/TypeTransition.h>
 #include "EnergyFunctionCalculator.h"
 #include "EnergyFunctionCalculatorStatistics.h"
-
 #include <CompuCell3D/Simulator.h>
-//#include <CompuCell3D/plugins/Volume/VolumePlugin.h>
-//#include <CompuCell3D/plugins/Surface/SurfacePlugin.h>
-
 #include <BasicUtils/BasicRandomNumberGenerator.h>
 #include <BasicUtils/BasicPluginInfo.h>
-
-
 #include <PublicUtilities/StringUtils.h>
 #include <PublicUtilities/ParallelUtilsOpenMP.h>
 #include <deque>
 #include <sstream>
 #include <algorithm>
-
-
-
 
 #include "Potts3D.h"
 
@@ -70,8 +58,8 @@ Potts3D::Potts3D() :
 	energy(0),
 	depth(1.0),
 	displayUnitsFlag(true),
-	recentlyCreatedCellId(1),
-	recentlyCreatedClusterId(1),
+	recentlyCreatedCellId(0),
+	recentlyCreatedClusterId(0),
 	debugOutputFrequency(10),
 	sim(0),
 	automaton(0),
@@ -167,8 +155,8 @@ void Potts3D::clean_cell_field(bool reset_cell_inventory) {
 
 
 	if (reset_cell_inventory) {
-		recentlyCreatedCellId = 1;
-		recentlyCreatedClusterId = 1;
+		recentlyCreatedCellId = 0;
+		recentlyCreatedClusterId = 0;
 	}
 
 }
@@ -221,7 +209,7 @@ void Potts3D::setDepth(double _depth) {
 	//    neighbors.assign(numNeighbors+1,Point3D());
 
 	maxNeighborIndex = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromDepth(depth);
-	cerr << "\t\t\t\t\t setDepth  maxNeighborIndex=" << maxNeighborIndex << endl;
+	//	cerr << "\t\t\t\t\t setDepth  maxNeighborIndex=" << maxNeighborIndex << endl;
 	neighbors.clear();
 	neighbors.assign(maxNeighborIndex + 1, Point3D());
 
@@ -230,7 +218,7 @@ void Potts3D::setDepth(double _depth) {
 void Potts3D::setNeighborOrder(unsigned int _neighborOrder) {
 	BoundaryStrategy::getInstance()->prepareNeighborListsBasedOnNeighborOrder(_neighborOrder);
 	maxNeighborIndex = BoundaryStrategy::getInstance()->getMaxNeighborIndexFromNeighborOrder(_neighborOrder);
-	cerr << "\t\t\t\t\t setNeighborOrder  maxNeighborIndex=" << maxNeighborIndex << endl;
+	//	cerr << "\t\t\t\t\t setNeighborOrder  maxNeighborIndex=" << maxNeighborIndex << endl;
 	Dim3D dim = cellFieldG->getDim();
 	minCoordinates = Point3D(0, 0, 0);
 	maxCoordinates = Point3D(dim.x, dim.y, dim.z);
@@ -254,23 +242,10 @@ void Potts3D::resizeCellField(const Dim3D dim, Dim3D shiftVec) {
 	cellFieldG->resizeAndShift(dim, shiftVec);
 }
 
-////////added for more convenient Python scripting
-//////// notice that SWIG will automatically convert tupples and lists to vectors of a given type provided 
-//////// they are passed by a constant reference
-//////void Potts3D::resizeCellField(const vector<int> & dim, const vector<int> & shiftVec) {
-//////	if (dim.size()==3 && shiftVec.size()==3){
-//////		resizeCellField(Dim3D(dim[0],dim[1],dim[2]),Dim3D(shiftVec[0],shiftVec[1],shiftVec[2]));
-//////	}
-//////}
-
 
 void Potts3D::registerAttributeAdder(AttributeAdder * _attrAdder) {
 	attrAdder = _attrAdder;
 }
-
-// void Potts3D::registerTypeChangeWatcher(TypeChangeWatcher * _typeChangeWatcher){
-//    typeTransition->registerTypeChangeWatcher(_typeChangeWatcher);
-// }
 
 void Potts3D::registerAutomaton(Automaton* autom) { automaton = autom; }
 Automaton* Potts3D::getAutomaton() { return automaton; }
@@ -409,27 +384,32 @@ CellG * Potts3D::createCellG(const Point3D pt, long _clusterId) {
 CellG *Potts3D::createCell(long _clusterId) {
 	CellG * cell = new CellG();
 	cell->extraAttribPtr = cellFactoryGroup.create();
-	cell->id = recentlyCreatedCellId;
+	//always keep incrementing recently created  cell id
 	++recentlyCreatedCellId;
+	cell->id = recentlyCreatedCellId;
+
 
 	//this means that cells with clusterId<=0 should be placed at the end of PIF file if automatic numbering of clusters is to work for a mix of clustered and non clustered cells	
 
 	if (_clusterId <= 0) { //default behavior if user does not specify cluster id or cluster id is 0
-
-		cell->clusterId = recentlyCreatedClusterId;
 		++recentlyCreatedClusterId;
+		cell->clusterId = recentlyCreatedClusterId;
+
 
 	}
 	else if (_clusterId > recentlyCreatedClusterId) { //clusterId specified by user is greater than recentlyCreatedClusterId
 
 		cell->clusterId = _clusterId;
-		recentlyCreatedClusterId = _clusterId + 1; // if we get cluster id greater than recentlyCreatedClusterId we set recentlyCreatedClusterId to be _clusterId+1
-		// this way if users add "non-cluster" cells after definition of clustered cells	the cell->clusterId is guaranteed to be greater than any of the clusterIds specified for clustered cells
+		// if we get cluster id greater than recentlyCreatedClusterId we set recentlyCreatedClusterId to be _clusterId+1
+		// this way if users add "non-cluster" cells after definition of clustered cell 
+		// the cell->clusterId is guaranteed to be greater than any of the clusterIds specified for clustered cells
+		recentlyCreatedClusterId = _clusterId;
+
+
 	}
 	else { // cluster id is greater than zero but smaller than recentlyCreatedClusterId
 		cell->clusterId = _clusterId;
 	}
-
 
 	cellInventory.addToInventory(cell);
 
@@ -454,31 +434,38 @@ CellG * Potts3D::createCellGSpecifiedIds(const Point3D pt, long _cellId, long _c
 CellG *Potts3D::createCellSpecifiedIds(long _cellId, long _clusterId) {
 	CellG * cell = new CellG();
 	cell->extraAttribPtr = cellFactoryGroup.create();
-	cell->id = _cellId;
 
-	if (_cellId >= recentlyCreatedCellId) {
-		recentlyCreatedCellId = _cellId + 1;
+	if (_cellId > recentlyCreatedCellId) {
+		recentlyCreatedCellId = _cellId;
+		cell->id = recentlyCreatedCellId;
 	}
-
+	else {
+		// override _cellId and use recentlyCreatedCellId as _cellId. 
+		// otherwise we may create a bug where cells initialized from e.g. PIF initializers will have same id as cells created earlier by e.g. uniform initializer
+		// they will have different cluster id but still it creates a problem/. Having a model where cell id and cluster id are always incremented is a safer (but not ideal) bet 
+		++recentlyCreatedCellId;
+		cell->id = recentlyCreatedCellId;
+	}
 
 	//this means that cells with clusterId<=0 should be placed at the end of PIF file if automatic numbering of clusters is to work for a mix of clustered and non clustered cells	
 
 	if (_clusterId <= 0) { //default behavior if user does not specify cluster id or cluster id is 0
 
-		cell->clusterId = recentlyCreatedClusterId;
 		++recentlyCreatedClusterId;
+		cell->clusterId = recentlyCreatedClusterId;
 
 	}
 	else if (_clusterId > recentlyCreatedClusterId) { //clusterId specified by user is greater than recentlyCreatedClusterId
 
 		cell->clusterId = _clusterId;
-		recentlyCreatedClusterId = _clusterId + 1; // if we get cluster id greater than recentlyCreatedClusterId we set recentlyCreatedClusterId to be _clusterId+1
+		// if we get cluster id greater than recentlyCreatedClusterId we set recentlyCreatedClusterId to be _clusterId+1
 		// this way if users add "non-cluster" cells after definition of clustered cells	the cell->clusterId is guaranteed to be greater than any of the clusterIds specified for clustered cells
+		recentlyCreatedClusterId = _clusterId;
+
 	}
 	else { // cluster id is greater than zero but smaller than recentlyCreatedClusterId
 		cell->clusterId = _clusterId;
 	}
-
 
 	cellInventory.addToInventory(cell);
 	if (attrAdder) {
@@ -547,6 +534,7 @@ unsigned int Potts3D::metropolis(const unsigned int steps, const double temp) {
 }
 
 unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp) {
+	cerr << "metropolisList" << endl;
 	ASSERT_OR_THROW("Potts3D: cell field G not initialized", cellFieldG);
 
 	// ParallelUtilsOpenMP * pUtils=sim->getParallelUtils();
@@ -602,18 +590,11 @@ unsigned int Potts3D::metropolisList(const unsigned int steps, const double temp
 			for (unsigned int j = 0; j < fixedSteppers.size(); j++)
 				fixedSteppers[j]->step();
 
-
-
 			Point3D pt;
 			// Pick a random point
 			pt.x = rand->getInteger(minCoordinates.x, maxCoordinates.x - 1);
 			pt.y = rand->getInteger(minCoordinates.y, maxCoordinates.y - 1);
 			pt.z = rand->getInteger(minCoordinates.z, maxCoordinates.z - 1);
-
-
-			//     pt.x = rand->getInteger(0, dim.x - 1);
-			//     pt.y = rand->getInteger(0, dim.y - 1);
-			//     pt.z = rand->getInteger(0, dim.z - 1);
 
 			///Cell *cell = cellField->get(pt);
 			CellG *cell = cellFieldG->get(pt);
@@ -719,6 +700,8 @@ Point3D Potts3D::getFlipNeighbor() {
 }
 
 unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp) {
+
+
 	ASSERT_OR_THROW("Potts3D: cell field G not initialized", cellFieldG);
 	// // // ParallelUtilsOpenMP * pUtils=sim->getParallelUtils();
 
@@ -743,13 +726,10 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 	}
 
 
-
 	// Note that since user may change number of work nodes we have to monitor if the max number of work threads is greater than size of flipNeighborVec
 	if (!flipNeighborVec.size() || pUtils->getMaxNumberOfWorkNodesPotts() > flipNeighborVec.size()) {
 		flipNeighborVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), Point3D());
 	}
-
-	//cerr<<"flipNeighborVec.size()="<<flipNeighborVec.size()<<endl;
 
 	// generating random order in which subgridSections will be handled
 	vector<unsigned int> subgridSectionOrderVec(pUtils->getNumberOfSubgridSectionsPotts());
@@ -757,7 +737,6 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 		subgridSectionOrderVec[i] = i;
 	}
 	random_shuffle(subgridSectionOrderVec.begin(), subgridSectionOrderVec.end());
-
 
 	unsigned int maxNumberOfThreads = pUtils->getMaxNumberOfWorkNodesPotts();
 	unsigned int numberOfThreads = pUtils->getNumberOfWorkNodesPotts();
@@ -777,17 +756,15 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 	vector<int> flipsVec(maxNumberOfThreads, 0);
 
 	Dim3D dim = cellFieldG->getDim();
-	ASSERT_OR_THROW("Potts3D: You must supply an acceptance function!",
-		acceptanceFunction);
-
-
+	ASSERT_OR_THROW("Potts3D: You must supply an acceptance function!", acceptanceFunction);
 
 	//FOR NOW WE WILL IGNORE BOX WATCHER FOR POTTS SECTION IT WILL STILL WORK WITH PDE SOLVERS
 	Dim3D fieldDim = cellFieldG->getDim();
 	numberOfAttempts = (int)fieldDim.x*fieldDim.y*fieldDim.z*sim->getFlip2DimRatio();
 	unsigned int currentStep = sim->getStep();
 	if (debugOutputFrequency && !(currentStep % debugOutputFrequency)) {
-		cerr << "FAST numberOfAttempts=" << numberOfAttempts << endl;
+		cerr << "Metropolis Fast" << endl;
+		cerr << "total number of pixel copy attempts=" << numberOfAttempts << endl;
 	}
 
 	pUtils->prepareParallelRegionPotts();
@@ -803,15 +780,11 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
 		unsigned int currentWorkNodeNumber = pUtils->getCurrentWorkNodeNumber();
 
-
 		BasicRandomNumberGeneratorNonStatic * rand = randNSVec[currentWorkNodeNumber].getInstance();
 		BoundaryStrategy * boundaryStrategy = BoundaryStrategy::getInstance();
 
 		//iterating over subgridSections
 		for (int s = 0; s < subgridSectionOrderVec.size(); ++s) {
-
-
-
 
 			pair<Dim3D, Dim3D> sectionDims = pUtils->getPottsSection(currentWorkNodeNumber, s);
 			numberOfAttemptsLocal = (int)(sectionDims.second.x - sectionDims.first.x)*(sectionDims.second.y - sectionDims.first.y)*(sectionDims.second.z - sectionDims.first.z)*sim->getFlip2DimRatio();
@@ -819,8 +792,6 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
 
 			for (unsigned int i = 0; i < numberOfAttemptsLocal; ++i) {
-
-
 
 				//////currentAttempt=i;
 				//currentAttemptLocal=i; //this will need to be fixed as this is used in PDE SOLVER CALLER
@@ -843,16 +814,12 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 				}
 				}
 
-
-
-
 				Point3D pt;
 
 				// Pick a random point
 				pt.x = rand->getInteger(sectionDims.first.x, sectionDims.second.x - 1);
 				pt.y = rand->getInteger(sectionDims.first.y, sectionDims.second.y - 1);
 				pt.z = rand->getInteger(sectionDims.first.z, sectionDims.second.z - 1);
-
 
 				///Cell *cell = cellField->get(pt);
 				CellG *cell = cellFieldG->getQuick(pt);
@@ -898,20 +865,15 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 				}
 				++attemptedECVec[currentWorkNodeNumber];
 
+				flipNeighborVec[currentWorkNodeNumber] = pt;
 
+				/// change takes place at change pixel  and pt is a neighbor of changePixel
+				// Calculate change in energy				
 
-				flipNeighborVec[currentWorkNodeNumber] = pt;/// change takes place at change pixel  and pt is a neighbor of changePixel
-				// Calculate change in energy
-				//cerr<<"steps="<<steps<<" temp="<<temp<<" acceptanceFunction="<<acceptanceFunction<<endl;
-
-				double change = energyCalculator->changeEnergy(changePixel, cell, cellFieldG->get(changePixel), i);
-
-				//cerr<<"This is change: "<<change<<endl;	
-
-				//cerr<<"steps="<<steps<<" temp="<<temp<<" acceptanceFunction="<<acceptanceFunction<<endl;
+				double change = energyCalculator->changeEnergy(changePixel, cell, changePixelCell, i);
 
 				// Acceptance based on probability
-				double motility = fluctAmplFcn->fluctuationAmplitude(cell, cellFieldG->get(changePixel));
+				double motility = fluctAmplFcn->fluctuationAmplitude(cell, changePixelCell);
 
 				double prob = acceptanceFunction->accept(motility, change);
 				//#pragma omp critical
@@ -930,7 +892,7 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 
 					energyVec[currentWorkNodeNumber] += change;
 
-					if (connectivityConstraint && connectivityConstraint->changeEnergy(changePixel, cell, cellFieldG->get(changePixel))) {
+					if (connectivityConstraint && connectivityConstraint->changeEnergy(changePixel, cell, changePixelCell)) {
 						if (numberOfThreads == 1) {
 							energyCalculator->setLastFlipAccepted(false);
 						}
@@ -957,7 +919,6 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 						steppers[j]->step();
 				}
 
-				//     exit(0);
 			}
 
 #pragma omp barrier
@@ -981,7 +942,6 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 			attemptedECVec[currentWorkNodeNumber] = 0;
 			flipsVec[currentWorkNodeNumber] = 0;
 
-
 		}
 
 	} //pragma omp parallel
@@ -994,20 +954,48 @@ unsigned int Potts3D::metropolisFast(const unsigned int steps, const double temp
 	return flips;
 
 }
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Point3D Potts3D::randomPickBoundaryPixel(BasicRandomNumberGeneratorNonStatic * rand) {
 
+	size_t vec_size = boundaryPixelVector.size();
+	Point3D pt;
+	int counter = 0;
+	while (true) {
+		++counter;
+		long boundaryPointIndex = rand->getInteger(0, boundaryPixelSet.size() - 1);
+		if (boundaryPointIndex < vec_size) {
+			pt = boundaryPixelVector[boundaryPointIndex];
+		}
+		else {
+			std::unordered_set<Point3D, Point3DHasher, Point3DComparator>::iterator sitr = justInsertedBoundaryPixelSet.begin();
+			advance(sitr, boundaryPointIndex - vec_size);
+			pt = *sitr;
 
+		}
+		if (justDeletedBoundaryPixelSet.find(pt) != justDeletedBoundaryPixelSet.end()) {
+
+		}
+		else {
+			break;
+		}
+	}
+	if (counter > 5) {
+		cerr << "had to try more than 5 times" << endl;
+	}
+	return pt;
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const double temp) {
+
+
+
+	ASSERT_OR_THROW("BoundaryWalker Algorithm works only in single processor mode. Please change number of processors to 1", pUtils->getNumberOfWorkNodesPotts() == 1);
+
 	ASSERT_OR_THROW("Potts3D: cell field G not initialized", cellFieldG);
-
-	// // // ParallelUtilsOpenMP * pUtils=sim->getParallelUtils();
-
 
 	if (customAcceptanceExpressionDefined) {
 		customAcceptanceFunction.initialize(this->sim); //actual initialization will happen only once at MCS=0 all other calls will return without doing anything
 	}
-
-
-	ASSERT_OR_THROW("BoundaryWalker Algorithm works only in single processor mode. Please change number of processors to 1", pUtils->getNumberOfWorkNodesPotts() == 1);
 
 	//here we will allocate Random number generators for each thread. Note that since user may change number of work nodes we have to monitor if the max number of work threads is greater than size of random number generator vector 
 	if (!randNSVec.size() || pUtils->getMaxNumberOfWorkNodesPotts() > randNSVec.size()) { //each thread will have different random number ghenerator
@@ -1027,183 +1015,235 @@ unsigned int Potts3D::metropolisBoundaryWalker(const unsigned int steps, const d
 
 	// Note that since user may change number of work nodes we have to monitor if the max number of work threads is greater than size of flipNeighborVec
 	if (!flipNeighborVec.size() || pUtils->getMaxNumberOfWorkNodesPotts() > flipNeighborVec.size()) {
-
 		flipNeighborVec.assign(pUtils->getMaxNumberOfWorkNodesPotts(), Point3D());
 	}
 
+	// generating random order in which subgridSections will be handled
+	vector<unsigned int> subgridSectionOrderVec(pUtils->getNumberOfSubgridSectionsPotts());
+	for (int i = 0; i < subgridSectionOrderVec.size(); ++i) {
+		subgridSectionOrderVec[i] = i;
+	}
+	random_shuffle(subgridSectionOrderVec.begin(), subgridSectionOrderVec.end());
 
+
+	unsigned int maxNumberOfThreads = pUtils->getMaxNumberOfWorkNodesPotts();
+	unsigned int numberOfThreads = pUtils->getNumberOfWorkNodesPotts();
+
+	unsigned int numberOfSections = pUtils->getNumberOfSubgridSectionsPotts();
+
+	//reset current attepmt counter
+	currentAttempt = 0;
+
+	//THESE VARIABLES ARE SHARED
 	flips = 0;
 	attemptedEC = 0;
-	BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
-	///Dim3D dim = cellField->getDim();
+	energy = 0.0;
+
+	//THESE WILL BE USED IN SEPARATE THREADS - WE USE VECTORS TO AVOID USING SYNCHRONIZATION EXPLICITELY
+	vector<double> energyVec(maxNumberOfThreads, 0.0);
+	vector<int>	attemptedECVec(maxNumberOfThreads, 0);
+	vector<int> flipsVec(maxNumberOfThreads, 0);
+
 	Dim3D dim = cellFieldG->getDim();
 	ASSERT_OR_THROW("Potts3D: You must supply an acceptance function!",
 		acceptanceFunction);
-	//cerr<<"steps="<<steps<<" temp="<<temp<<" acceptanceFunction="<<acceptanceFunction<<endl;
 
-	//numberOfAttempts=(int)(maxCoordinates.x-minCoordinates.x)*(maxCoordinates.y-minCoordinates.y)*(maxCoordinates.z-minCoordinates.z)*sim->getFlip2DimRatio();
-	//   numberOfAttempts=steps;
-	//Number of attempts is equal to number of boundary pixels
-	numberOfAttempts = boundaryPixelSet.size();
+	//FOR NOW WE WILL IGNORE BOX WATCHER FOR POTTS SECTION IT WILL STILL WORK WITH PDE SOLVERS
+	Dim3D fieldDim = cellFieldG->getDim();
+	numberOfAttempts = (int)fieldDim.x*fieldDim.y*fieldDim.z*sim->getFlip2DimRatio();
 	unsigned int currentStep = sim->getStep();
-	if (debugOutputFrequency && !(currentStep % debugOutputFrequency)) {
-		cerr << "numberOfAttempts=" << numberOfAttempts << endl;
-	}
+
+
+	pUtils->prepareParallelRegionPotts();
+
+	//necessary in case we use e.g. PDE solver caller which in turn calls parallel PDE solver
+	//omp_set_nested(true);
+	pUtils->allowNestedParallelRegions(true);
 
 	long boundaryPointIndex;
 	long counter = 0;
-	set<Point3D>::iterator sitr;
+	//set<Point3D>::iterator sitr;
+	std::unordered_set<Point3D, Point3DHasher, Point3DComparator>::iterator sitr;
 	vector<Point3D> boundaryPointVector;
-	boundaryPointVector.assign(boundaryPixelSet.begin(), boundaryPixelSet.end());
-
-	BoundaryStrategy * boundaryStrategy = BoundaryStrategy::getInstance();
-	//cerr<<"numberOf workNodes="<<pUtils->getNumberOfWorkNodesPotts()<<endl;
-	pUtils->prepareParallelRegionPotts();
-	pUtils->allowNestedParallelRegions(true); //necessary in case we use e.g. PDE solver caller which in turn calls parallel PDE solver
+	//boundaryPointVector.assign(boundaryPixelSet.begin(), boundaryPixelSet.end());
+	numberOfAttempts = boundaryPixelSet.size();
+	if (debugOutputFrequency && !(currentStep % debugOutputFrequency)) {
+		cerr << "Boundary Walker" << endl;
+		cerr << "number pixel copy attempts=" << numberOfAttempts << endl;
+	}
 
 #pragma omp parallel
 	{
-		for (unsigned int i = 0; i < numberOfAttempts; i++) {
 
-			currentAttempt = i;
-			//run fixed steppers - they are executed regardless whether spin flip take place or not . Note, regular steopers are executed only after spin flip attepmts takes place 
-			for (unsigned int j = 0; j < fixedSteppers.size(); j++)
-				fixedSteppers[j]->step();
+		int currentAttemptLocal;
+		//int numberOfAttemptsLocal;
+		Point3D flipNeighborLocal;
 
+		unsigned int currentWorkNodeNumber = pUtils->getCurrentWorkNodeNumber();
 
+		BasicRandomNumberGeneratorNonStatic * rand = randNSVec[currentWorkNodeNumber].getInstance();
+		BoundaryStrategy * boundaryStrategy = BoundaryStrategy::getInstance();
 
-			Point3D pt;
+		//iterating over subgridSections
+		for (int s = 0; s < subgridSectionOrderVec.size(); ++s) {
 
-			// Pick a random integer
-			boundaryPointIndex = rand->getInteger(minCoordinates.x, boundaryPointVector.size() - 1);
-			pt = boundaryPointVector[boundaryPointIndex];
+			pair<Dim3D, Dim3D> sectionDims = pUtils->getPottsSection(currentWorkNodeNumber, s);
+			//numberOfAttemptsLocal = (int)(sectionDims.second.x - sectionDims.first.x)*(sectionDims.second.y - sectionDims.first.y)*(sectionDims.second.z - sectionDims.first.z)*sim->getFlip2DimRatio();
 
-			//cerr<<"pt="<<pt<<" boundaryPointIndex="<<boundaryPointIndex<<endl;
-			//    boundaryPointIndex=rand->getInteger(minCoordinates.x, boundaryPixelSet.size()-1);//we use most up-to-date set size
-			//  counter=0;
-			//for (set<Point3D>::iterator sitr=boundaryPixelSet.begin() ; sitr!=boundaryPixelSet.end(); ++sitr){
-			// if(counter==boundaryPointIndex){
-			//	pt=*sitr;
-			//	break;
-			// }
-			// ++counter;
-			//}
-
-			//    cerr<<"pt flip="<<pt<<endl;
-			//     pt.x = rand->getInteger(0, dim.x - 1);
-			//     pt.y = rand->getInteger(0, dim.y - 1);
-			//     pt.z = rand->getInteger(0, dim.z - 1);
-			//     cerr<<"pt="<<pt<<" rand->getSeed()="<<rand->getSeed()<<endl;
+			// #pragma omp critical
 
 
-			///Cell *cell = cellField->get(pt);
-			CellG *cell = cellFieldG->get(pt);
+			for (unsigned int i = 0; i < numberOfAttempts; ++i) {
 
-			if (sizeFrozenTypeVec && cell) {///must also make sure that cell ptr is different 0; Will never freeze medium
-				if (checkIfFrozen(cell->type))
+
+
+				//////currentAttempt=i;
+				//currentAttemptLocal=i; //this will need to be fixed as this is used in PDE SOLVER CALLER
+				//run fixed steppers - they are executed regardless whether spin flip take place or not . Note, regular stepers are executed only after spin flip attepmts takes place 
+
+				if (fixedSteppers.size()) {
+#pragma omp critical
+				{
+					//IMPORTANT: fixed steppers cause really bad performance with multiple processor runs. Currently only two of them are supported 
+					// PDESolverCaller plugin and Secretion plugin. PDESolverCaller is deprecated and Secretion plugin section that mimics functionality of PDE sovler Secretion data section is depreecated as well
+					// However Secretion plugin can be used to do "per cell" secretion (using python scripting). This will not slow down multicore simulation
+
+					//cerr<<"pUtils->getCurrentWorkNodeNumber()="<<pUtils->getCurrentWorkNodeNumber()<<" currentAttempt="<<currentAttempt<<endl;
+					for (unsigned int j = 0; j < fixedSteppers.size(); j++)
+						fixedSteppers[j]->step();
+
+					++currentAttempt; //to be consistent with serial code currentAttampt has to be increamented after fixedSteppers run 
+
+				}
+				}
+
+				Point3D pt;
+
+				//boundaryPointVector.assign(boundaryPixelSet.begin(), boundaryPixelSet.end());
+
+				// Pick a random integer and pick a random point from a boundary
+				pt = randomPickBoundaryPixel(rand);
+
+				//////boundaryPointIndex = rand->getInteger(0, boundaryPixelSet.size() - 1);
+				//////sitr = boundaryPixelSet.begin();
+				//////
+				//////advance(sitr, boundaryPointIndex);
+				//////continue;
+				//////pt = *sitr;
+
+				//pt = boundaryPointVector[boundaryPointIndex];
+
+
+				//boundaryPointVector.assign(boundaryPixelSet.begin(), boundaryPixelSet.end());
+
+				//// Pick a random integer and pick a random point from a boundary
+				//boundaryPointIndex = rand->getInteger(0, boundaryPointVector.size() - 1);
+				//pt = boundaryPointVector[boundaryPointIndex];
+
+				CellG *cell = cellFieldG->getQuick(pt);
+
+				if (sizeFrozenTypeVec && cell) {///must also make sure that cell ptr is different 0; Will never freeze medium
+					if (checkIfFrozen(cell->type))
+						continue;
+				}
+
+				unsigned int directIdx = rand->getInteger(0, maxNeighborIndex);
+
+				Neighbor n = boundaryStrategy->getNeighborDirect(pt, directIdx);
+
+				if (!n.distance) {
+					//if distance is 0 then the neighbor returned is invalid
 					continue;
-			}
+				}
+				Point3D changePixel = n.pt;
 
-			unsigned int directIdx = rand->getInteger(0, maxNeighborIndex);
-			//cerr<<"directIdx="<<directIdx<<endl;
+				//check if changePixel refers to different cell. 
+				CellG* changePixelCell = cellFieldG->getQuick(changePixel);
 
-			Neighbor n = boundaryStrategy->getNeighborDirect(pt, directIdx);
-			//cerr<<"n.pt"<<n.pt<<" n.distance="<<n.distance<<endl;
+				if (changePixelCell == cell) {
+					continue;//skip the rest of the loop if change pixel points to the same cell as pt
+				}
 
-			if (!n.distance) {
-				//if distance is 0 then the neighbor returned is invalid
-				continue;
-			}
-			Point3D changePixel = n.pt;
-			//       cerr<<"pt="<<pt<<" n.pt="<<n.pt<<" difference="<<pt-n.pt<<endl;
-			//check if changePixel refers to different cell. 
+				if (sizeFrozenTypeVec && changePixelCell) {///must also make sure that cell ptr is different 0; Will never freeze medium
+					if (checkIfFrozen(changePixelCell->type))
+						continue;
+				}
+				++attemptedECVec[currentWorkNodeNumber];
 
-			if (cellFieldG->getQuick(changePixel) == cell) {
-				continue;//skip the rest of the loop if change pixel points to the same cell as pt
-			}
-			else {
-				;
-
-			}
-
-			//cerr<<"pt="<<pt<<" changePixel="<<changePixel<<endl;
-
-			if (sizeFrozenTypeVec && cellFieldG->get(changePixel)) {///must also make sure that cell ptr is different 0; Will never freeze medium
-				if (checkIfFrozen(cellFieldG->get(changePixel)->type))
-					continue;
-			}
-			++attemptedEC;
-
-			flipNeighbor = pt;/// change takes place at change pixel  and pt is a neighbor of changePixel
-
-			// Calculate change in energy
-			//cerr<<"steps="<<steps<<" temp="<<temp<<" acceptanceFunction="<<acceptanceFunction<<endl;
-
-			double change = energyCalculator->changeEnergy(changePixel, cell, cellFieldG->get(changePixel), i);
-
-			//cerr<<"This is change: "<<change<<endl;	
-
-			//cerr<<"steps="<<steps<<" temp="<<temp<<" acceptanceFunction="<<acceptanceFunction<<endl;
-
-			// Acceptance based on probability
-			double motility = fluctAmplFcn->fluctuationAmplitude(cell, cellFieldG->get(changePixel));
-			//double motility=0.0;
-			//if(cellTypeMotilityVec.size()){
-			//	unsigned int newCellTypeId=(cell ? (unsigned int)cell->type :0);
-			//	unsigned int oldCellTypeId=(cellFieldG->get(changePixel)? (unsigned int)cellFieldG->get(changePixel)->type :0);
-			//	if(newCellTypeId && oldCellTypeId)
-			//		motility=(cellTypeMotilityVec[newCellTypeId]<cellTypeMotilityVec[oldCellTypeId] ? cellTypeMotilityVec[newCellTypeId]:cellTypeMotilityVec[oldCellTypeId]);
-			//	else if(newCellTypeId){
-			//		motility=cellTypeMotilityVec[newCellTypeId];
-			//	}else if (oldCellTypeId){
-			//		motility=cellTypeMotilityVec[oldCellTypeId];
-			//	}else{//should never get here
-			//		motility=0;
-			//	}
-			//}else{
-			//	motility=temp;
-			//}
-			double prob = acceptanceFunction->accept(motility, change);
-			//cerr<<"prob="<<prob<<endl;
+				flipNeighborVec[currentWorkNodeNumber] = pt;
 
 
-			//cerr<<"change E="<<change<<" prob="<<prob<<endl;
-			if (prob >= 1 || rand->getRatio() < prob) {
-				// Accept the change
-				//        cerr<<"accepted flip "<< change<<endl;
-				energy += change;
-				//       cerr<<"energy="<<energy<<endl;
-				if (connectivityConstraint && connectivityConstraint->changeEnergy(changePixel, cell, cellFieldG->get(changePixel))) {
-					energyCalculator->setLastFlipAccepted(false);
+				/// change takes place at change pixel  and pt is a neighbor of changePixel
+				// Calculate change in energy
+				double change = energyCalculator->changeEnergy(changePixel, cell, changePixelCell, i);
+
+				// Acceptance based on probability
+				double motility = fluctAmplFcn->fluctuationAmplitude(cell, changePixelCell);
+
+				double prob = acceptanceFunction->accept(motility, change);
+
+
+				if (numberOfThreads == 1) {
+					energyCalculator->set_aceptance_probability(prob);
+				}
+
+				if (prob >= 1.0 || rand->getRatio() < prob) {
+
+					// Accept the change
+					energyVec[currentWorkNodeNumber] += change;
+
+					if (connectivityConstraint && connectivityConstraint->changeEnergy(changePixel, cell, changePixelCell)) {
+						if (numberOfThreads == 1) {
+							energyCalculator->setLastFlipAccepted(false);
+						}
+					}
+					else {
+						cellFieldG->set(changePixel, cell);
+						flipsVec[currentWorkNodeNumber]++;
+						if (numberOfThreads == 1) {
+							energyCalculator->setLastFlipAccepted(true);
+						}
+					}
 				}
 				else {
-					//cerr<<"FLIP ACCEPTED"<<endl;
-					cellFieldG->set(changePixel, cell);
-					flips++;
-					energyCalculator->setLastFlipAccepted(true);
+					if (numberOfThreads == 1) {
+						energyCalculator->setLastFlipAccepted(false);
+					}
+				}
+
+				// Run steppers
+				//#pragma omp single 
+				{
+					for (unsigned int j = 0; j < steppers.size(); j++)
+						steppers[j]->step();
 				}
 			}
-			else {
-				energyCalculator->setLastFlipAccepted(false);
-			}
 
+#pragma omp barrier
+		}//iteration over subrid sections
 
-			// Run steppers
-			for (unsigned int j = 0; j < steppers.size(); j++)
-				steppers[j]->step();
+#pragma omp critical
+		{
 
-			//     exit(0);
+			energy += energyVec[currentWorkNodeNumber];
+			attemptedEC += attemptedECVec[currentWorkNodeNumber];
+			flips += flipsVec[currentWorkNodeNumber];
+
+			//reseting values before processing new slice
+
+			energyVec[currentWorkNodeNumber] = 0.0;
+			attemptedECVec[currentWorkNodeNumber] = 0;
+			flipsVec[currentWorkNodeNumber] = 0;
 		}
-	}// #pragma omp parallel
+
+	} //pragma omp parallel
+
 	if (debugOutputFrequency && !(currentStep % debugOutputFrequency)) {
 		cerr << "Number of Attempted Energy Calculations=" << attemptedEC << endl;
 	}
-	//    exit(0);
-
 	return flips;
 
 }
-
 
 void Potts3D::setMetropolisAlgorithm(std::string _algName) {
 
@@ -1251,12 +1291,6 @@ void Potts3D::initializeCellTypeMotility(std::vector<CellTypeMotilityData> & _ce
 		cellTypeMotilityVec[id] = _cellTypeMotilityVector[i].motility;
 	}
 
-	//for(int i =0 ; i < _cellTypeMotilityVector.size() ;++i ){
-	//	
-	//	cerr<<"cellTypeMotilityVec["<<i<<"]="<<cellTypeMotilityVec[i]<<endl;
-	//}
-	//
-	//exit(0);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1277,33 +1311,6 @@ void Potts3D::setFrozenTypeVector(std::vector<unsigned char> & _frozenTypeVec) {
 	frozenTypeVec = _frozenTypeVec;
 	sizeFrozenTypeVec = frozenTypeVec.size();
 }
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//void Potts3D::update(ParseData *pd, bool _fullInitFlag){
-//	PottsParseData * ppdPtr=(PottsParseData *)pd;
-//	sim->ppdPtr=ppdPtr;
-//	BasicRandomNumberGenerator *rand = BasicRandomNumberGenerator::getInstance();
-//	if(rand->getSeed() != ppdPtr->seed)
-//		rand->setSeed(ppdPtr->seed);
-//
-//	if(ppdPtr->offset!=0.){
-//		getAcceptanceFunction()->setOffset(ppdPtr->offset);
-//	}
-//	if(ppdPtr->kBoltzman!=1.0){
-//		getAcceptanceFunction()->setK(ppdPtr->kBoltzman);
-//	}
-//
-//	if(debugOutputFrequency != ppdPtr->debugOutputFrequency){
-//		setDebugOutputFrequency(ppdPtr->debugOutputFrequency >0 ?ppdPtr->debugOutputFrequency:1 );
-//	}
-//	if(ppdPtr->depthFlag){
-//		setDepth(ppdPtr->depth);
-//	}else{
-//		setNeighborOrder(ppdPtr->neighborOrder);
-//	}
-//
-//
-//}
-
 
 void Potts3D::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 
@@ -1403,12 +1410,6 @@ void Potts3D::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 			timeUnit = Unit(unitElemPtr->getText());
 		}
 
-
-		//cerr<<"massUnit="<<massUnit.toString()<<endl;
-		//cerr<<"lengthUnit="<<lengthUnit.toString()<<endl;
-		//cerr<<"timeUnit="<<timeUnit.toString()<<endl;
-		//cerr<<"updating units"<<endl;
-		//exit(0);
 		if (displayUnitsFlag) {
 			updateUnits(unitsPtr);
 		}
@@ -1422,43 +1423,6 @@ void Potts3D::update(CC3DXMLElement *_xmlData, bool _fullInitFlag) {
 		if (displayUnitsFlag) {
 			updateUnits(unitsPtr);
 		}
-
-		//CC3DXMLElement * massUnitElem = unitsPtr->attachElement("MassUnit",massUnit.toString());
-		//
-		//if( !massUnitElem  ){ //element alread exists
-		//	unitsPtr->getFirstElement("MassUnit")->updateElementValue(massUnit.toString());
-		//}
-
-		//CC3DXMLElement * lengthUnitElem = unitsPtr->attachElement("LengthUnit",lengthUnit.toString());
-		//
-		//if( !lengthUnitElem  ){ //element alread exists
-		//	unitsPtr->getFirstElement("LengthUnit")->updateElementValue(lengthUnit.toString());
-		//}
-
-		//CC3DXMLElement * timeUnitElem = unitsPtr->attachElement("TimeUnit",timeUnit.toString());
-		//
-		//if( !timeUnitElem  ){ //element alread exists
-		//	unitsPtr->getFirstElement("TimeUnit")->updateElementValue(timeUnit.toString());
-		//}
-
-		//CC3DXMLElement * volumeUnitElem = unitsPtr->attachElement("VolumeUnit",powerUnit(lengthUnit,3).toString());
-		//
-		//if( !volumeUnitElem  ){ //element alread exists
-		//	unitsPtr->getFirstElement("VolumeUnit")->updateElementValue(powerUnit(lengthUnit,3).toString());
-		//}
-
-		//CC3DXMLElement * surfaceUnitElem = unitsPtr->attachElement("SurfaceUnit",powerUnit(lengthUnit,2).toString());
-		//
-		//if( !surfaceUnitElem  ){ //element alread exists
-		//	unitsPtr->getFirstElement("SurfaceUnit")->updateElementValue(powerUnit(lengthUnit,2).toString());
-		//}
-
-
-		//CC3DXMLElement * energyUnitElem = unitsPtr->attachElement("EnergyUnit",energyUnit.toString());
-		//
-		//if( !energyUnitElem  ){ //element alread exists
-		//	unitsPtr->getFirstElement("EnergyUnit")->updateElementValue(energyUnit.toString());
-		//}
 
 	}
 

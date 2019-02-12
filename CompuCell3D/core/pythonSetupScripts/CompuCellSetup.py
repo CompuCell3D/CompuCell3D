@@ -3,9 +3,13 @@ import os
 import os.path
 import cStringIO, traceback
 import CMLParser
+from collections import OrderedDict
 
 from distutils.dir_util import mkpath
-
+import json
+from BasicSimulationData import BasicSimulationData
+from os.path import join, dirname, exists
+import warnings
 # import Configuration
 
 
@@ -79,6 +83,16 @@ globalSBMLSimulatorOptions = None  # {optionName:Value}
 
 global viewManager
 viewManager = None  # stores viewmanager object - initialized when simulation is run using Player
+
+global steering_param_dict
+steering_param_dict = OrderedDict()
+
+global steering_panel
+steering_panel = None
+
+global steering_panel_model
+steering_panel_model = None
+
 
 MYMODULENAME = '------- CompuCellSetup.py: '
 
@@ -477,6 +491,16 @@ def resetGlobals():
     global globalSBMLSimulatorOptions
     globalSBMLSimulatorOptions = None
 
+    global steering_param_dict
+    steering_param_dict = OrderedDict()
+
+    global steering_panel
+    steering_panel = None
+
+    global steering_panel_model
+    steering_panel_model = None
+
+
 
 def setSimulationXMLFileName(_simulationFileName):
     global simulationPaths
@@ -484,6 +508,71 @@ def setSimulationXMLFileName(_simulationFileName):
 
 
 #     print "\n\n\n got here ",simulationPaths.simulationXMLFileName
+
+
+def addSteeringPanel(panel_data):
+    """
+    Adds steering panel with sliders to the Player5 Window
+    :return:
+    """
+    global viewManager
+    # global steering_panel
+    # global steering_panel_model
+
+    steering_panel = viewManager.widgetManager.getNewWidget('Steering Panel', panel_data)
+    return steering_panel
+
+def serialize_steering_panel(fname):
+    """
+    Serializes steering panel
+    :param fname: {str} filename - to serialize steering panel to
+    :return: None
+    """
+    global steering_param_dict
+    json_dict = OrderedDict()
+
+    for param_name, steering_param_obj in steering_param_dict.items():
+        json_dict[param_name] = OrderedDict()
+        json_dict[param_name]['val'] = steering_param_obj.val
+        json_dict[param_name]['min'] = steering_param_obj.min
+        json_dict[param_name]['max'] = steering_param_obj.max
+        json_dict[param_name]['decimal_precision'] = steering_param_obj.decimal_precision
+        json_dict[param_name]['enum'] = steering_param_obj.enum
+        json_dict[param_name]['widget_name'] = steering_param_obj.widget_name
+
+
+    with open(fname, 'w') as outfile:
+        json.dump(json_dict, outfile, indent=4, sort_keys=True)
+
+
+def deserialize_steering_panel(fname):
+    """
+    Deserializes steering panel
+    :param fname: {str} serialized steering panel filename
+    :return: None
+    """
+
+    global steering_param_dict
+    import SteeringParam
+
+    with open(fname) as infile:
+
+        json_dict = json.load(infile)
+        steering_param_dict = OrderedDict()
+        for param_name, steering_param_obj_data in json_dict.items():
+            try:
+                steering_param_dict[param_name] = SteeringParam.SteeringParam(
+                    name=param_name,
+                    val=steering_param_obj_data['val'],
+                    min_val=steering_param_obj_data['min'],
+                    max_val=steering_param_obj_data['max'],
+                    decimal_precision=steering_param_obj_data['decimal_precision'],
+                    enum=steering_param_obj_data['enum'],
+                    widget_name=steering_param_obj_data['widget_name']
+                )
+            except:
+                print 'Could not update steering parameter {} value'.format(param_name)
+
 
 def addNewPlotWindow(_title='', _xAxisTitle='', _yAxisTitle='', _xScaleType='linear', _yScaleType='linear', _grid=True,_config_options=None):
     class PlotWindowDummy(object):
@@ -1083,13 +1172,22 @@ def getStepperRegistry(sim):
 
 
 def ExtractLatticeType():
+    """
+    Fetches lattice type
+    :return:
+    """
     global cc3dXML2ObjConverter
+
     if cc3dXML2ObjConverter.root.findElement("Potts"):
+        # dealing with regular cc3dml
         if cc3dXML2ObjConverter.root.getFirstElement("Potts").findElement("LatticeType"):
             return cc3dXML2ObjConverter.root.getFirstElement("Potts").getFirstElement("LatticeType").getText()
+    else:
+        # dealing with LDF file
+        if cc3dXML2ObjConverter.root.findElement("Lattice"):
+            return cc3dXML2ObjConverter.root.getFirstElement("Lattice").getAttribute('Type')
 
     return ""
-
 
 def ExtractTypeNamesAndIds():
     global cc3dXML2ObjConverter
@@ -1180,7 +1278,7 @@ def extraInitSimulationObjects(sim, simthread, _restartEnabled=False):
         if simthread is not None and playerType != "CML":
             simthread.preStartInit()
 
-        if not _restartEnabled:  # start fcuntion does not get called during restart
+        if not _restartEnabled:  # start function does not get called during restart
             sim.start()
         # 71 mb
 
@@ -1609,6 +1707,10 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry=None, _screenUpdateFrequ
 
         if not restartEnabled:  # start function does not get called during restart
             steppableRegistry.start()
+        # else:
+        #     print 'RESTARTING STEERING PANEL'
+        #     steppableRegistry.restart_steering_panel()
+
         # # restoring plots
         #             global viewManager
         #             viewManager.plotManager.restore_plots_layout()
@@ -1623,6 +1725,10 @@ def mainLoopNewPlayer(sim, simthread, steppableRegistry=None, _screenUpdateFrequ
     # restartManager=RestartManager.RestartManager(sim)
     restartManager.prepareRestarter()
     beginingStep = restartManager.getRestartStep()
+
+    if restartEnabled:
+        print 'RESTARTING STEERING PANEL'
+        steppableRegistry.restart_steering_panel()
 
     # restartManager.setupRestartOutputDirectory()
 
@@ -1836,6 +1942,15 @@ def mainLoopCLI(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
     # In exception handlers you have to call sim.finish to unload the plugins .
     # We may need to introduce new funuction name (e.g. unload) because finish does more than unloading
 
+
+def extractAddressIntFromVtkObject(field_extractor, _vtkObj):
+    '''
+    Extracts memory address of vtk object
+    :param _vtkObj: vtk object - e.g. vtk array
+    :return: int (possible long int) representing the address of the vtk object
+    '''
+    return field_extractor.unmangleSWIGVktPtrAsLong(_vtkObj.__this__)
+
 def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=None):
     global cmlFieldHandler  # rwh2
     global globalSteppableRegistry  # rwh2
@@ -1877,7 +1992,9 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
     if not steppableRegistry is None:
         steppableRegistry.init(sim)
         steppableRegistry.start()
-    # init fieldWriter    
+    # init fieldWriter
+
+    field_extractor_local = None
     if cmlFieldHandler:
         cmlFieldHandler.fieldWriter.init(sim)
         cmlFieldHandler.getInfoAboutFields()
@@ -1889,6 +2006,23 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
         cmlFieldHandler.setMaxNumberOfSteps(
             sim.getNumSteps())  # will determine the length text field  of the step number suffix
         cmlFieldHandler.writeXMLDescriptionFile()  # initialization of the cmlFieldHandler is done - we can write XML description file
+
+        import PlayerPython
+
+        field_handler = simthread
+
+        # field_storage_local = PlayerPython.FieldStorage()
+
+        # OK
+        # field_extractor_local = PlayerPython.FieldExtractor()
+        # field_storage_local.allocateCellField(sim.getPotts().getCellFieldG().getDim())
+        # field_extractor_local.setFieldStorage(field_storage_local)
+        # field_extractor_local.init(sim)
+
+
+        field_extractor_local = PlayerPython.FieldExtractor()
+        field_extractor_local.setFieldStorage(field_handler.fieldStorage)
+        field_extractor_local.init(sim)
 
         # self.simulationXMLFileName=""
         # self.simulationPythonScriptName=""
@@ -1909,6 +2043,49 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
     global cml_args
     if cml_args and cml_args.numSteps:
         sim.setNumSteps(cml_args.numSteps)
+
+    screenshot_dir = simulationPaths.getSimulationResultStorageDirectory()
+
+
+    global simulationFileName
+
+    # todo 5 - for some reason importing at hte top of the file does not work . have too look into it
+    from GraphicsOffScreen import GenericDrawer
+    from GraphicsOffScreen import DrawingParameters
+    from Utilities import ScreenshotManagerCore
+
+    sim_fname = simulationFileName
+    screenshot_data_fname = join(dirname(sim_fname), 'screenshot_data/screenshots.json')
+    screenshot_mgr = ScreenshotManagerCore()
+
+    # generic viewer
+
+    gd = None
+    bsd = None
+    if exists(screenshot_data_fname) and field_extractor_local is not None:
+        try:
+            screenshot_mgr.readScreenshotDescriptionFile(screenshot_data_fname)
+        except:
+            warnings.warn('Could not parse screenshot description file {screenshot_data_fname}. '
+                          'If you want graphical screenshot output please generate '
+                          'new screenshot description file from Player by pressing camera button on '
+                          'select graphical visualizations. If you do not want screenshots'
+                          'you may delete subfolder {scr_dir} or simply ingnore this message'.format(
+                screenshot_data_fname=screenshot_data_fname, scr_dir=dirname(screenshot_data_fname)))
+
+        gd = GenericDrawer()
+        gd.set_field_extractor(field_extractor=field_extractor_local)
+
+        bsd = BasicSimulationData()
+        bsd.fieldDim = sim.getPotts().getCellFieldG().getDim()
+        bsd.numberOfSteps = sim.getNumSteps()
+        bsd.sim = sim
+
+        # wiring screenshot manager
+        screenshot_mgr.gd = gd
+        screenshot_mgr.bsd = bsd
+        screenshot_mgr.screenshot_number_of_digits = len(str(bsd.numberOfSteps))
+
 
     # for current_step in range(sim.getNumSteps()):
     while True:
@@ -1939,6 +2116,10 @@ def mainLoopCML(sim, simthread, steppableRegistry=None, _screenUpdateFrequency=N
         if cmlFieldHandler.outputFrequency and not (current_step % cmlFieldHandler.outputFrequency):
             #            print MYMODULENAME,' mainLoopCML: cmlFieldHandler.writeFields(i), i=',i
             cmlFieldHandler.writeFields(current_step)
+
+            # outputting screenshots
+            screenshot_mgr.outputScreenshots(general_screenshot_directory_name=screenshot_dir, mcs=current_step)
+
             # cmlFieldHandler.fieldWriter.addCellFieldForOutput()
             # cmlFieldHandler.fieldWriter.writeFields(cmlFieldHandler.outputFileCoreName+str(i)+".vtk")
             # cmlFieldHandler.fieldWriter.clear()

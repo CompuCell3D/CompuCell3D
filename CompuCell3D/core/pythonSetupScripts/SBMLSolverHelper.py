@@ -1,5 +1,6 @@
 import os
 import sys
+import warnings
 
 # this function will replace all API functions which refer to SBMLSolver in the event that no SBMLSolver event is installed
 def SBMLSolverError(self, *args, **kwrds):
@@ -83,6 +84,10 @@ class SBMLSolverHelper(object):
         if coreModelName == '':
             coreModelName, ext = os.path.splitext(os.path.basename(_modelFile))
 
+        if not _modelFile:
+            warnings.warn('\n\n\n _modelFile argument not provided to addSBMLToCell. This will prevent proper restart of the simulation'
+                          'You may ignore this warning if you are not serializing simulation for future restarts', RuntimeWarning)
+
         modelPathNormalized = self.normalizePath(_modelFile)
 
         dict_attrib = CompuCell.getPyAttrib(_cell)
@@ -105,6 +110,12 @@ class SBMLSolverHelper(object):
             rr = RoadRunnerPy(sbml=_currentStateSBML)
             # setting stepSize
             rr.stepSize = _stepSize
+
+            # setting up paths - IMPORTANT FOR RESTARTING
+            rr.path = _modelFile
+            if os.path.exists(modelPathNormalized):
+                rr.absPath = modelPathNormalized
+
 
         # storing rr instance in the cell dictionary
         sbmlDict[coreModelName] = rr
@@ -129,9 +140,9 @@ class SBMLSolverHelper(object):
                 except AttributeError:
                     setattr(rr.getIntegrator(), self.option_name_dict[name], value)
         else:
-            
+
             # check for global options
-            
+
             globalOptions = self.getSBMLGlobalOptions()
             if globalOptions:
                 for name, value in globalOptions.iteritems():
@@ -140,7 +151,6 @@ class SBMLSolverHelper(object):
                     except (AttributeError, ValueError) as e:
                         setattr(rr.getIntegrator(), self.option_name_dict[name], value)
                         # setattr(rr.simulateOptions,name,value)
-
 
     def getSBMLGlobalOptions(self):
         """
@@ -628,12 +638,16 @@ class SBMLSolverHelper(object):
             sbmlDictTo = dict_attrib_to['SBMLSolver']
 
         for sbmlName in sbmlNamesToCopy:
-
             rrFrom = sbmlDictFrom[sbmlName]
             currentStateSBML = sbmlDictFrom[sbmlName].getCurrentSBML()
-            self.addSBMLToCell(_modelName=sbmlName, _cell=_toCell, _stepSize=rrFrom.stepSize, _options=_options,
-                               _currentStateSBML=currentStateSBML)
-
+            self.addSBMLToCell(
+                _modelFile=rrFrom.path, # necessary to get deserialization working properly
+                _modelName=sbmlName,
+                _cell=_toCell,
+                _stepSize=rrFrom.stepSize,
+                _options=_options,
+                _currentStateSBML=currentStateSBML
+            )
 
     def normalizePath(self, _path):
         """

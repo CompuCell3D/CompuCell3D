@@ -19,6 +19,11 @@ IF (APPLE)
 	MESSAGE ("GOT APPLE")
 ENDIF (APPLE)
 
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    SET (CMAKE_CXX_FLAGS -std=c++0x)
+endif()
+
 FIND_PACKAGE (OpenMP)
 
 # Should we build shared libraries
@@ -27,10 +32,10 @@ OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
 SET (PYQT_VERSION "5" CACHE STRING "PyQt major version")
 
 # Specify a version for all libs to use
-# letters A, B, C are added to ensure nice display of sersion in cmake gui
+# letters A, B, C are added to ensure nice display of version in cmake gui
 SET (COMPUCELL3D_A_MAJOR_VERSION "3" CACHE STRING "Major Version")
 SET (COMPUCELL3D_B_MINOR_VERSION "7" CACHE STRING "Minor Version")
-SET (COMPUCELL3D_C_BUILD_VERSION "7" CACHE STRING "Build Version")
+SET (COMPUCELL3D_C_BUILD_VERSION "9" CACHE STRING "Build Version")
 
 
 # and here we assign them back to what they shuld be

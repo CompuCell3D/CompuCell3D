@@ -1099,7 +1099,9 @@ class CC3DMLGeneratorBase:
 
                 secrData = diffFieldElem.ElementCC3D("SecretionData")
                 secrData.addComment(
-                    'When secretion is defined inside DissufionSolverFEall secretio nconstants are scaled automaticly to account for extra calls of the solver when handling large diffusion constants')
+                    'When secretion is defined inside DissufionSolverFE all secretion constants are scaled '
+                    'automaticaly to account for the extra calls to the diffusion step '
+                    'when handling large diffusion constants')
                 secrData.addComment('newline')
                 secrData.addComment('Uniform secretion Definition')
 
