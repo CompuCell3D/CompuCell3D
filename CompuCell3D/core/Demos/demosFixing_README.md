@@ -35,8 +35,17 @@ Added values to temperature and contact A-B in the main XML.
 * Demos/BookChapterDemos_ComputationalMethodsInCellBiology/Angiogenesis/
 
 
+# There are duplicate demos
 
+## Demos both in experimental (makes sense) and in CompucellPythonTutorials (doesn't make sense).
 
+* FiPyConcentrationTest
+
+In Demos/CompuCellPythonTutorial/FiPyConcentrationTest/ and Demos/experimental/FiPyConcentrationTest/. FiPy is not currently in CC3D's installation
+
+* GraphVTKVis
+
+In Demos/CompuCellPythonTutorial/GraphVTKVis/ and Demos/experimental/GraphVTKVis/.  NetworkX is not currently in CC3D's installation
 
 
 
