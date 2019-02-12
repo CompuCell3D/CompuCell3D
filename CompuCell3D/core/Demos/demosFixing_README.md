@@ -26,7 +26,7 @@ Added values to temperature and contact A-B in the main XML.
 
 
 
-# Demos that might have a OS dependent issue:
+# Demos that might have an OS dependent issue:
 
 ## Issue in mac, works on windows
 
