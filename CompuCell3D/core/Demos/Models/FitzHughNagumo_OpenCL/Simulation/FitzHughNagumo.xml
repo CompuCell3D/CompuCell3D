@@ -43,7 +43,7 @@
    <!-- <Steppable Type="ReactionDiffusionSolverFE"> -->
    <!-- Can be used as a plain diffusion solver if additional terms are not
 	specified. Regular implicit linear solver is used in this case. -->
-   <Steppable Type="ReactionDiffusionSolverFE_OpenCL_Implicit">
+   <Steppable Type="DiffusionSolverFE">
    
 	   <!-- individual per-field parameters won't be used -->	
 	   <DeltaT>0.6</DeltaT>

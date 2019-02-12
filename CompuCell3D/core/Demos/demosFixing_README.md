@@ -8,21 +8,24 @@ Cell type ID used twice
 
 Added values to temperature and contact A-B in the main XML.
 
+## Old diffusion solver, changed to standard (DiffusionSolverFE):
 
-# List of demos up for deletion
-
-## deprecated/unsuported module (old diffusion solver):
-
-* Demos/Models/FitzHughNagumo_OpenCL/FitzHughNagumo_OpenCL.cc3d 
+* Demos/Models/FitzHughNagumo_OpenCL/
 
 * Demos/SteppableDemos/DiffusionSolverFE_OpenCL/DiffusionSolverFE_OpenCL_3D/
+
+* Demos/SteppableDemos/DiffusionSolverFE_OpenCL/DiffusionSolverFE_OpenCL_3D/
+
 
 * Demos/SteppableDemos/ReactionDiffusionSolverFE_OpenCL_Implicit/ReactionDiffusion_OpenCL_Implicit_3D/
 
 * Demos/SteppableDemos/ReactionDiffusionSolverFE_OpenCL_Implicit/SimpleDiffusion/
 
-* Demos/SteppableDemos/DiffusionSolverFE_OpenCL/DiffusionSolverFE_OpenCL/
 
+
+# List of demos up for deletion
+
+* blank
 
 
 

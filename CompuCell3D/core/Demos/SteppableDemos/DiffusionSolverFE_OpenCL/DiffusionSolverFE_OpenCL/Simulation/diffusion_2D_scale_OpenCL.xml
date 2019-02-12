@@ -49,7 +49,7 @@
    </Plugin>
    
  <!-- <Steppable Type="DiffusionSolverFE"> -->
- <Steppable Type="DiffusionSolverFE_OpenCL">
+ <Steppable Type="DiffusionSolverFE">
  <!--  zero-based GPU device index. -1 stands for automatic GPU device selection. May be omited (default behavior). -->
 	<!-- <GPUDeviceIndex>-1</GPUDeviceIndex> -->
      <DiffusionField>

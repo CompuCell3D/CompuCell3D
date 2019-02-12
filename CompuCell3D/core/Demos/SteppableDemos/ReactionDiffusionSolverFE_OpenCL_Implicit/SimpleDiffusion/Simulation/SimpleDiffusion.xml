@@ -18,8 +18,8 @@
 
 
 
- <!-- <Steppable Type="DiffusionSolverFE"> -->
- <Steppable Type="ReactionDiffusionSolverFE_OpenCL_Implicit">
+  <Steppable Type="DiffusionSolverFE"> 
+<!--  <Steppable Type="ReactionDiffusionSolverFE_OpenCL_Implicit"> -->
   <!--  zero-based GPU device index. -1 stands for automatic GPU device selection. May be omited (default behavior). -->
 	<GPUDeviceIndex>0</GPUDeviceIndex>
      <DiffusionField>
