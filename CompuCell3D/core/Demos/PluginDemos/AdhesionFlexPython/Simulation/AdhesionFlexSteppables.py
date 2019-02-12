@@ -14,23 +14,26 @@ class AdhesionMoleculesSteppables(SteppablePy):
         
     def start(self):
         pass
-        # for cell in self.cellList:
-            # print "CELL ID=",cell.id, " CELL TYPE=",cell.type
-            # adhesionMoleculeVector=self.adhesionFlexPlugin.getAdhesionMoleculeDensityVector(cell)
-            # print "adhesionMoleculeVector=",adhesionMoleculeVector
+#         for cell in self.cellList:
+#             print "CELL ID=",cell.id, " CELL TYPE=",cell.type
+#             adhesionMoleculeVector=self.adhesionFlexPlugin.getAdhesionMoleculeDensityVector(cell)
+#             print "adhesionMoleculeVector=",adhesionMoleculeVector
             
             
     
 
 
     def step(self,mcs):
+        print 'bf if'
         if mcs==0:
+            print 'bf cell loop'
             for cell in self.cellList:
                 print "CELL ID=",cell.id, " CELL TYPE=",cell.type
                 adhesionMoleculeVector=self.adhesionFlexPlugin.getAdhesionMoleculeDensityVector(cell) # accessing entire vector of adhesion molecule densities for non-medium cell
                 print "adhesionMoleculeVector=",adhesionMoleculeVector
                 
             # Medium density adhesion vector
+            print 'af cell loop'
             mediumAdhesionMoleculeVector=self.adhesionFlexPlugin.getMediumAdhesionMoleculeDensityVector() # accessing entire vector of adhesion molecule densities for medium cell
             print "mediumAdhesionMoleculeVector=",mediumAdhesionMoleculeVector
         else:

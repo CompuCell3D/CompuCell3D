@@ -14,7 +14,7 @@
     <CellType TypeName="Medium" TypeId="0"/>
     <CellType TypeName="Amoeba" TypeId="1"/>
     <CellType TypeName="Bacteria" TypeId="2"/>
-    <CellType TypeName="Wall" TypeId="2" Freeze=""/>
+    <CellType TypeName="Wall" TypeId="3" Freeze=""/>
  </Plugin>
 
 

@@ -8,7 +8,11 @@
    <Boundary_y>Periodic</Boundary_y>
    <NeighborOrder>2</NeighborOrder>
  </Potts>
-
+<Plugin Name="CellType">
+    <CellType TypeName="Medium" TypeId="0"/>
+    <CellType TypeName="Cell1" TypeId="1"/>
+    <CellType TypeName="Cell2" TypeId="2"/>
+ </Plugin>
 
 
  <Plugin Name="Volume">
@@ -26,11 +30,7 @@
  
  <Plugin Name="CenterOfMass" />
 
-<Plugin Name="CellType">
-    <CellType TypeName="Medium" TypeId="0"/>
-    <CellType TypeName="Cell1" TypeId="1"/>
-    <CellType TypeName="Cell2" TypeId="2"/>
- </Plugin>
+
 
 
   <Plugin Name="AdhesionFlex">

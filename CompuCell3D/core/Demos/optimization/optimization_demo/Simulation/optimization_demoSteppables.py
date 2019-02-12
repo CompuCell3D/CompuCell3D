@@ -42,11 +42,11 @@ class optimization_demoSteppable(SteppableBasePy):
 
         # Finish Function gets called after the last MCS
         # CompuCellSetup.set_simulation_return_value(322.0)
-
+        
 
         temperature_access_path = [['Potts'], ['Temperature']]
         temp = float(self.getXMLElementValue(*temperature_access_path))
-
+        
         access_path = [['Plugin', 'Name', 'Contact'], ['Energy', 'Type1', 'A','Type2','B']]
         contact_energy = float(self.getXMLElementValue(*access_path))
         print 'temp,contact_energy=',(temp, contact_energy)

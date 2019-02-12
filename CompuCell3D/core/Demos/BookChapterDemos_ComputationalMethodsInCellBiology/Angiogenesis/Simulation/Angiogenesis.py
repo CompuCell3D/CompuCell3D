@@ -8,7 +8,7 @@ def configureSimulation(sim):
     # Basic properties of CPM (GGH) algorithm
     PottsElmnt=CompuCell3DElmnt.ElementCC3D("Potts")
     PottsElmnt.ElementCC3D("Dimensions",{"x":"50","y":"50","z":"50"})
-    PottsElmnt.ElementCC3D("Steps",{},"10000")
+    PottsElmnt.ElementCC3D("Steps",{},"1000")
     PottsElmnt.ElementCC3D("Temperature",{},"20.0")
     PottsElmnt.ElementCC3D("NeighborOrder",{},"3")
     PottsElmnt.ElementCC3D("Boundary_x",{},"Periodic")
