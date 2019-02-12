@@ -1,0 +1,57 @@
+<CompuCell3D Revision="20171208" Version="3.7.7">
+   
+<Potts>
+   
+   <!-- Basic properties of CPM (GGH) algorithm -->
+   <Dimensions x="1000" y="1000" z="1"/>
+   <Steps>1000000</Steps>
+   <Temperature>10.0</Temperature>
+   <NeighborOrder>1</NeighborOrder>
+   <Boundary_x>Periodic</Boundary_x>
+   <Boundary_y>Periodic</Boundary_y>
+</Potts>
+   <Metadata>
+   <DebugOutputFrequency>100</DebugOutputFrequency>
+</Metadata>
+
+   <Plugin Name="CellType">
+      
+      <!-- Listing all cell types in the simulation -->
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="Cell"/>
+   </Plugin>
+   
+   <Plugin Name="Volume"/>
+   
+   <Plugin Name="ExternalPotential">
+      
+      <!-- External force applied to cell. Each cell has different force and force components have to be managed in Python. -->
+      <!-- e.g. cell.lambdaVecX=0.5; cell.lambdaVecY=0.1 ; cell.lambdaVecZ=0.3; -->
+      <Algorithm>PixelBased</Algorithm>
+   </Plugin>
+   
+   <Plugin Name="CenterOfMass">
+      
+      <!-- Module tracking center of mass of each cell -->
+   </Plugin>
+   
+   <Plugin Name="Contact">
+      <!-- Specification of adhesion energies -->
+      <Energy Type1="Medium" Type2="Medium">10.0</Energy>
+      <Energy Type1="Medium" Type2="Cell">10.0</Energy>
+      <Energy Type1="Cell" Type2="Cell">10.0</Energy>
+      <NeighborOrder>1</NeighborOrder>
+   </Plugin>
+   
+   <Steppable Type="BlobInitializer">
+      
+      <!-- Initial layout of cells in the form of spherical (circular in 2D) blob -->
+      <Region>
+         <Center x="500" y="500" z="0"/>
+         <Radius>6</Radius>
+         <Gap>0</Gap>
+         <Width>6</Width>
+         <Types>Cell</Types>
+      </Region>
+   </Steppable>
+</CompuCell3D>
