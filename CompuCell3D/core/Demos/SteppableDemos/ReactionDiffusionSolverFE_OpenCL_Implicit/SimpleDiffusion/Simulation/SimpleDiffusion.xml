@@ -1,10 +1,8 @@
  <CompuCell3D>
  <Potts>
    <Dimensions x="128" y="128" z="128"/>
-   <Anneal>0</Anneal>
    <Steps>100</Steps>
    <Temperature>15</Temperature>
-   <Flip2DimRatio>0.0</Flip2DimRatio>   
 <!--    <Boundary_x>Periodic</Boundary_x>
    <Boundary_z>Periodic</Boundary_z> -->
 <!--    <LatticeType>Hexagonal</LatticeType> -->

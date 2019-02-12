@@ -45,7 +45,7 @@
    </Metadata>-->
    <Potts>
       <Dimensions x="50" y="50" z="80"/>
-      <Steps>100000</Steps>
+      <Steps>10000</Steps>
       <Temperature>20</Temperature>
       <Flip2DimRatio>1</Flip2DimRatio>
       <Boundary_x>Periodic</Boundary_x>

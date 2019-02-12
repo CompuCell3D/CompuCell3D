@@ -4,12 +4,24 @@ import sys
 
 
 
-class AdhesionMoleculesSteppables(SteppableBasePy):
+class AdhesionMoleculesSteppables(SteppablePy):
     def __init__(self,_simulator,_frequency=1):
-        SteppableBasePy.__init__(self,_simulator, _frequency)
+        SteppablePy.__init__(self,_frequency)
+        self.simulator=_simulator
+        self.inventory=self.simulator.getPotts().getCellInventory()
+        self.cellList=CellList(self.inventory)
+        self.adhesionFlexPlugin=CompuCell.getAdhesionFlexPlugin()
         
     def start(self):
         pass
+        # for cell in self.cellList:
+            # print "CELL ID=",cell.id, " CELL TYPE=",cell.type
+            # adhesionMoleculeVector=self.adhesionFlexPlugin.getAdhesionMoleculeDensityVector(cell)
+            # print "adhesionMoleculeVector=",adhesionMoleculeVector
+            
+            
+    
+
 
     def step(self,mcs):
         if mcs==0:
@@ -61,4 +73,9 @@ class AdhesionMoleculesSteppables(SteppableBasePy):
             
             mediumAdhesionMoleculeVector=self.adhesionFlexPlugin.getMediumAdhesionMoleculeDensityVector() # accessing entire vector of adhesion molecule densities for medium cell
             print "mediumAdhesionMoleculeVector=",mediumAdhesionMoleculeVector
+    
+        
+        
+    
+
     

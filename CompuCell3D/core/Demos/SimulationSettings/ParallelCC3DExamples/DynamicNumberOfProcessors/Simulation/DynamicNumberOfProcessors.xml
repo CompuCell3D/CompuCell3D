@@ -6,10 +6,8 @@
  
  <Potts>
    <Dimensions x="200" y="200" z="1"/>
-   <Anneal>10</Anneal>
    <Steps>1000</Steps>
    <Temperature>10</Temperature>
-   <Flip2DimRatio>1</Flip2DimRatio>
    <NeighborOrder>2</NeighborOrder>
  </Potts>
 
