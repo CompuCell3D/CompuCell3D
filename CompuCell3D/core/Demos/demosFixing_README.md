@@ -39,6 +39,8 @@ Added values to temperature and contact A-B in the main XML.
 
 ## Demos both in experimental (makes sense) and in CompucellPythonTutorials (doesn't make sense).
 
+### (already removed the duplicates from CompucellPythonTutorials)
+
 * FiPyConcentrationTest
 
 In Demos/CompuCellPythonTutorial/FiPyConcentrationTest/ and Demos/experimental/FiPyConcentrationTest/. FiPy is not currently in CC3D's installation
