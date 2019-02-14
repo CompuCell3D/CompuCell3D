@@ -20,6 +20,7 @@ Fix: Added values to temperature and contact A-B in the main XML.
 * Demos/SteppableDemos/ReactionDiffusionSolverFE_OpenCL_Implicit/ReactionDiffusion_OpenCL_Implicit_3D/
 
 * Demos/SteppableDemos/ReactionDiffusionSolverFE_OpenCL_Implicit/SimpleDiffusion/
+
 Fix: Old diffusion solver, changed to standard (DiffusionSolverFE)
 
 
