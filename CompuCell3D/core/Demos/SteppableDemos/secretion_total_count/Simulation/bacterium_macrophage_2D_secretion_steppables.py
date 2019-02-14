@@ -2,16 +2,19 @@ from PySteppables import *
 import CompuCell
 import sys
 from XMLUtils import dictionaryToMapStrStr as d2mss
+import os
 
 NEW = True
             
 class SecretionSteppable(SecretionBasePy):
     def __init__(self,_simulator,_frequency=1):
         SecretionBasePy.__init__(self,_simulator, _frequency)
+        self.fileDir = os.path.dirname(os.path.abspath(__file__))
+        
         
     def step(self,mcs):
         attrSecretor=self.getFieldSecretor("ATTR")
-        f = open('step_'+str(mcs).zfill(3)+'.dat','w')
+        
         for cell in self.cellList:
             if cell.type==self.WALL:
                 attrSecretor.secreteInsideCellAtBoundaryOnContactWith(cell,300,[self.WALL])
@@ -36,15 +39,15 @@ class SecretionSteppable(SecretionBasePy):
                 
 
 
-        field=self.getConcentrationField('ATTR')
         
-        for x,y,z in self.everyPixel():
+        
+        if mcs%1000 == 0:
+            field=self.getConcentrationField('ATTR')
+            fileName = 'step_'+str(mcs).zfill(3)+'.dat'
+            filePath = os.join(self.fileDir,fileName)
+            with open(filePath,'w') as f:
+                f.write('x,y,z,field\n')
+                for x,y,z in self.everyPixel():
+                    f.write('%i,%i,%i,%f\n'%(x,y,z,field[x,y,z]))
             
-            print >>f ,(x,y,z,field[x,y,z])
-        
-        f.close()
-        
-        
-                
-        
 
