@@ -2,13 +2,13 @@
 
 * Demos/SteppableDemos/DiffusionSolverFE/diffusion_3D_scale_wall/
 
-Cell type ID used twice
+Fix: Cell type ID used twice
 
 * Demos/optimization/optimization_demo/
 
-Added values to temperature and contact A-B in the main XML.
+Fix: Added values to temperature and contact A-B in the main XML.
 
-## Old diffusion solver, changed to standard (DiffusionSolverFE):
+
 
 * Demos/Models/FitzHughNagumo_OpenCL/
 
@@ -20,7 +20,7 @@ Added values to temperature and contact A-B in the main XML.
 * Demos/SteppableDemos/ReactionDiffusionSolverFE_OpenCL_Implicit/ReactionDiffusion_OpenCL_Implicit_3D/
 
 * Demos/SteppableDemos/ReactionDiffusionSolverFE_OpenCL_Implicit/SimpleDiffusion/
-
+Fix: Old diffusion solver, changed to standard (DiffusionSolverFE)
 
 
 # List of demos up for deletion
