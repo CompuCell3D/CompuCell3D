@@ -42,7 +42,10 @@ class MitosisSteppableClusters(MitosisSteppableClustersBase):
             
             
             if clusterVolume>250: # condition under which cluster mitosis takes place
-                mitosisClusterIdList.append(clusterId) # instead of doing mitosis right away we store ids for clusters which should be divide. This avoids modifying cluster list while we iterate through it
+                # instead of doing mitosis right away we store ids for clusters 
+				#which should be divide. This avoids modifying cluster list 
+				#while we iterate through it
+				mitosisClusterIdList.append(clusterId) 
         for clusterId in mitosisClusterIdList:
             # to change mitosis mode leave one of the below lines uncommented
             
