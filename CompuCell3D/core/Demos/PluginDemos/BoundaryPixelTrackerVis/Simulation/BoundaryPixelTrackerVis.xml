@@ -8,10 +8,7 @@
    <!--Boundary_y>NoFlux</Boundary_y-->
  </Potts>
 
- <Plugin Name="PlayerSettings">
-    <!--Project2D XYProj="0"/-->
-    <Rotate3D XRot="27" YRot="-11"/>
- </Plugin>
+ 
 
 
 <Plugin Name="CellType">

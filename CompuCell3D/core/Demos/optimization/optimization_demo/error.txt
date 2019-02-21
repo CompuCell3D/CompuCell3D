@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "C:\CompuCell3D-64bit\pythonSetupScripts\CompuCellPythonSimulationNewPlayer.py", line 351, in <module>
+    execfile(CompuCellSetup.simulationPaths.simulationPythonScriptName)
+  File "C:\Users\jferrari\Documents\CompuCell3D - dev stuff\code\CompuCell3D\core\Demos\optimization\optimization_demo\Simulation\optimization_demo.py", line 27, in <module>
+    CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
+  File "C:\CompuCell3D-64bit\pythonSetupScripts\CompuCellSetup.py", line 2262, in mainLoop
+    return mainLoopNewPlayer(sim, simthread, steppableRegistry, _screenUpdateFrequency)
+  File "C:\CompuCell3D-64bit\pythonSetupScripts\CompuCellSetup.py", line 1826, in mainLoopNewPlayer
+    steppableRegistry.finish()
+  File "C:\CompuCell3D-64bit\pythonSetupScripts\PySteppables.py", line 1656, in finish
+    steppable.finish()
+  File "C:\Users\jferrari\Documents\CompuCell3D - dev stuff\code\CompuCell3D\core\Demos\optimization\optimization_demo\Simulation\optimization_demoSteppables.py", line 48, in finish
+    temp = float(self.getXMLElementValue(*temperature_access_path))
+ValueError: could not convert string to float: {{TEMPERATURE}}

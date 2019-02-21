@@ -4,7 +4,7 @@ import sys
 from XMLUtils import dictionaryToMapStrStr as d2mss
 
 
-class ElasticitySteering(SteppablePy):
+class ElasticitySteering(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
         SteppablePy.__init__(self,_frequency)
         self.simulator=_simulator

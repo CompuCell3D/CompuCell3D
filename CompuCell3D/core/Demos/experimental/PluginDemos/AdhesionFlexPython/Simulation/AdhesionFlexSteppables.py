@@ -4,7 +4,7 @@ import sys
 
 
 
-class AdhesionMoleculesSteppables(SteppablePy):
+class AdhesionMoleculesSteppables(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
         SteppablePy.__init__(self,_frequency)
         self.simulator=_simulator

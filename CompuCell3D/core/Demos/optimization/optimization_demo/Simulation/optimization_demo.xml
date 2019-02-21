@@ -6,7 +6,7 @@
       <Dimensions x="100" y="100" z="1"/>
       <Steps>200</Steps>
       <RandomSeed>20</RandomSeed>
-      <Temperature>10</Temperature>
+      <Temperature>{{TEMPERATURE}}</Temperature>
       <NeighborOrder>2</NeighborOrder>
    </Potts>
    
@@ -34,7 +34,7 @@
       <Energy Type1="Medium" Type2="A">16.0</Energy>
       <Energy Type1="Medium" Type2="B">16.0</Energy>
       <Energy Type1="A" Type2="A">4.0</Energy>
-      <Energy Type1="A" Type2="B">6</Energy>
+      <Energy Type1="A" Type2="B">{{CONTACT_A_B}}</Energy>
       <Energy Type1="B" Type2="B">11.0</Energy>
       <NeighborOrder>3</NeighborOrder>
    </Plugin>

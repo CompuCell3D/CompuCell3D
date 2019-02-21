@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "C:\CompuCell3D-64bit\pythonSetupScripts\CompuCellPythonSimulationNewPlayer.py", line 351, in <module>
+    execfile(CompuCellSetup.simulationPaths.simulationPythonScriptName)
+  File "C:\Users\jferrari\Documents\CompuCell3D - dev stuff\code\CompuCell3D\core\Demos\CompuCellPythonTutorial\vectorPlot\Simulation\vectorPlot.py", line 30, in <module>
+    CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
+  File "C:\CompuCell3D-64bit\pythonSetupScripts\CompuCellSetup.py", line 2262, in mainLoop
+    return mainLoopNewPlayer(sim, simthread, steppableRegistry, _screenUpdateFrequency)
+  File "C:\CompuCell3D-64bit\pythonSetupScripts\CompuCellSetup.py", line 1709, in mainLoopNewPlayer
+    steppableRegistry.start()
+  File "C:\CompuCell3D-64bit\pythonSetupScripts\PySteppables.py", line 1588, in start
+    steppable.add_steering_panel()
+AttributeError: VectorFieldPlotTestSteppable instance has no attribute 'add_steering_panel'

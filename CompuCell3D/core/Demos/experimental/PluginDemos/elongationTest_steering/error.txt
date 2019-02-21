@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "C:\CompuCell3D-64bit\pythonSetupScripts\CompuCellPythonSimulationNewPlayer.py", line 351, in <module>
+    execfile(CompuCellSetup.simulationPaths.simulationPythonScriptName)
+  File "C:\Users\jferrari\Documents\CompuCell3D - dev stuff\code\CompuCell3D\core\Demos\experimental\PluginDemos\elongationTest_steering\Simulation\elongationTest_steering.py", line 27, in <module>
+    CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
+  File "C:\CompuCell3D-64bit\pythonSetupScripts\CompuCellSetup.py", line 2262, in mainLoop
+    return mainLoopNewPlayer(sim, simthread, steppableRegistry, _screenUpdateFrequency)
+  File "C:\CompuCell3D-64bit\pythonSetupScripts\CompuCellSetup.py", line 1709, in mainLoopNewPlayer
+    steppableRegistry.start()
+  File "C:\CompuCell3D-64bit\pythonSetupScripts\PySteppables.py", line 1590, in start
+    steppable.initialize_automatic_tasks()
+  File "C:\CompuCell3D-64bit\pythonSetupScripts\PySteppables.py", line 541, in initialize_automatic_tasks
+    self.initialize_tracking_plots()
+  File "C:\CompuCell3D-64bit\pythonSetupScripts\PySteppables.py", line 465, in initialize_tracking_plots
+    for plot_name, tracking_plot_data in self.tracking_plot_dict.iteritems():
+AttributeError: 'LengthConstraintSteering' object has no attribute 'tracking_plot_dict'
