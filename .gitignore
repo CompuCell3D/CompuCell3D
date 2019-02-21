@@ -25,3 +25,5 @@ CompuCell3D/Twedit++5/EditorWindow_old.py
 *.xlsx
 
 CompuCell3D/core/Demos/untitled0.py
+.cproject
+.project
