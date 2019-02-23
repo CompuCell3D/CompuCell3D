@@ -1,8 +1,11 @@
 from __future__ import with_statement
 import ParameterScanEnums
 import ErrorCodes
-from os import environ
 import sys
+import re
+from os import environ
+import traceback
+import time
 
 # enabling with statement in python 2.5
 
@@ -226,11 +229,6 @@ try:
 
     from xml.parsers.expat import ExpatError
 
-    import re
-    from os import environ
-    import string
-    import traceback
-    import time
 
     CompuCellSetup.playerType = "CML"
 
@@ -328,7 +326,6 @@ try:
                     print '\n\n\n--------------- COMPUCELL3D VERSION MISMATCH\n\n'
                     print 'Your CompuCell3D version %s might be too old for the project you are trying to run.\n The least version project requires is %s. \n You may run project at your own risk' % (
                         currentVersion, projectVersion)
-                    import time
 
                     time.sleep(5)
             else:

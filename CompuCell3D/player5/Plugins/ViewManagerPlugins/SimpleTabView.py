@@ -631,7 +631,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.customScreenshotDirectoryName = cml_args.screenshotOutputDir
             self.__imageOutput = True
 
-        if cml_args.playerSettings:
+        if hasattr(cml_args,'playerSettings'):
             self.playerSettingsFileName = cml_args.playerSettings
 
         currentDir = cml_args.currentDir if cml_args.currentDir else ''
