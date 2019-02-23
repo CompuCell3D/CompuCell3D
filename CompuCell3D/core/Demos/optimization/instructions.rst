@@ -1,4 +1,15 @@
-to run this demo you must use (dependeing on your architecture)
+This ia simple demo that illustrates how to implement parameter optimization in CC3D
+
+.. note::
+
+    The objective function we minimize is a simple quadratic form involving two parameters
+    It doe not depend on the simulation output hence in fact we run simple quadratic
+    function optimization where each optimization step requires run of CC3D simulation with
+    those new parameters. You can extend this demo and replace our simple objective function
+    with a function that depends on the actual simulation output for example the length of
+    heterotypic boundary between two cell types.
+
+To run this demo you must use (depending on your architecture)
 ``optimization.bat``, ``optimization.sh`` or ``optimization.command`` run script
 
 
