@@ -190,10 +190,13 @@ class OptimizerWorkerProcessZMQ(MonitorBase, Process):
             popen_args.append("--noOutput")
 
         popen_args.append("-p")
+        # popen_args.append('--pushAddress')
         popen_args.append(self.push_address_str)
 
         # sets return value tag
         popen_args.append("-l")
+        # popen_args.append('--returnValueTag')
+
         popen_args.append(str(worker_tag))
 
         print 'popen_args=', popen_args
