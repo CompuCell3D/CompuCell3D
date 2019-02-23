@@ -53,3 +53,6 @@ to the ``Player`` run script (in our case we would use ``--cc3d-run-script=c:\Co
     multiple GUIs being open at the same time. also the memory usage wil spike so this is
     something you should be aware of when using multiple workers with a GUI-base
     optimization runs
+
+
+"d:\Program Files\3710\optimization.bat" --input=c:\CompuCell3D-64bit\Demos\optimization\optimization_demo\optimization_demo.cc3d --params-file=c:\CompuCell3D-64bit\Demos\optimization\optimization_demo\Simulation\params.json --cc3d-run-script="d:\Program Files\3710\runScript.bat" --clean-workdirs --num-workers=1 --population-size=6

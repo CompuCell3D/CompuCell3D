@@ -1,57 +1,57 @@
 from __future__ import with_statement
 import ParameterScanEnums
 import ErrorCodes
+import sys
+import re
+from os import environ
+import traceback
+import time
 
 # enabling with statement in python 2.5
 
 '''
 SWIG LIBRARY LOADING ORDER: Before attempting to load swig libray it is necessary to first call 
    sim,simthread = CompuCellSetup.getCoreSimulationObjects(True)
-   loadCC3DFile imports XMLUtils (swig library) and if getCoreSimulationObjects is not called before importting e.g. XMLUtils then segfault may appear sometime during run
+   loadCC3DFile imports XMLUtils (swig library) and if getCoreSimulationObjects is not called before importing e.g. XMLUtils then segfault may appear sometime during run
    The likely causes are:
    1) Using execfile to run actual simulation from this python script
    2) Using global variables in CompuCellsetup
    3) order in which swig libraries are loaded matters.
    
-   After we moved getCoreSimulationObjects to be executed as early as possible most of the segfault erros disappeared - those errors were all associated with SwigPyIterator 
+   After we moved getCoreSimulationObjects to be executed as early as possible most of the segfault errors disappeared - those errors were all associated with SwigPyIterator 
    when we tried to iterate over CC3D C++ STL based containers - e.g. sets, maps etc. using iterators provided byt swig wrappers like iter() , itervalues(), iterators()
-   Hand-written iterators were OK tohugh. The segfaults appearedonly in the command line runs i.e. without the player
+   Hand-written iterators were OK though. The segfaults appeared only in the command line runs i.e. without the player
 '''
 
-
 def setVTKPaths():
-    import sys
-    from os import environ
-    import string
-    import sys
     platform = sys.platform
     if platform == 'win32':
         sys.path.insert(0, environ["PYTHON_DEPS_PATH"])
-        #    else:
-        #        swig_path_list=string.split(environ["VTKPATH"])
-        #        for swig_path in swig_path_list:
-        #            sys.path.append(swig_path)
-
-        # print "PATH=",sys.path
 
 
 setVTKPaths()
-# print "PATH=",sys.path
 
-import os, sys
-from os import environ
+import os
 
-python_module_path = os.environ["PYTHON_MODULE_PATH"]
+
+
+def except_hook(cls, exception, traceback):
+    sys.__excepthook__(cls, exception, traceback)
+    sys.exit(1)
+
+# enable it during debugging in pycharm
+sys.excepthook = except_hook
+
+python_module_path = environ["PYTHON_MODULE_PATH"]
 appended = sys.path.count(python_module_path)
 if not appended:
     sys.path.append(python_module_path)
 
-swig_lib_install_path = os.environ["SWIG_LIB_INSTALL_DIR"]
+swig_lib_install_path = environ["SWIG_LIB_INSTALL_DIR"]
 appended = sys.path.count(swig_lib_install_path)
 if not appended:
     sys.path.append(swig_lib_install_path)
 
-# import Configuration # we do not import Configuration in order to avoid PyQt4 dependency for runScript
 import time
 
 """ Have to import vtk from command line script to make sure vtk output works"""
@@ -223,15 +223,12 @@ from CMLParser import CMLParser
 
 from xml.parsers.expat import ExpatError
 
+
+
 try:
 
     from xml.parsers.expat import ExpatError
 
-    import re
-    from os import environ
-    import string
-    import traceback
-    import time
 
     CompuCellSetup.playerType = "CML"
 
@@ -246,24 +243,17 @@ try:
     helpOnly = cmlParser.processCommandLineOptions()
     cml_args = cmlParser.cml_args
 
-    # print 'BEFORE cmlParser.processCommandLineOptions() \n\n\n\n'
-    # helpOnly = cmlParser.processCommandLineOptions()
-    # print 'GOT PAST cmlParser.processCommandLineOptions() \n\n\n\n'
-    #
-    # if helpOnly:
-    #     raise NameError('HelpOnly')
-
     # setting up push address
-
-
-    if hasattr(cmlParser, 'push_address'):
-        CompuCellSetup.set_push_address(cmlParser.push_address)
-
+    if hasattr(cml_args, 'push_address'):
+        CompuCellSetup.set_push_address(cml_args.push_address)
+    elif hasattr(cml_args, 'pushAddress'):
+        CompuCellSetup.set_push_address(cml_args.pushAddress)
 
     # setting up return tag
-    if hasattr(cmlParser, 'return_value_tag'):
-        CompuCellSetup.set_return_value_tag(cmlParser.return_value_tag)
-
+    if hasattr(cml_args, 'return_value_tag'):
+        CompuCellSetup.set_return_value_tag(cml_args.return_value_tag)
+    elif hasattr(cml_args, 'returnValueTag'):
+        CompuCellSetup.set_return_value_tag(cml_args.returnValueTag)
     fileName = cmlParser.getSimulationFileName()
 
     consecutiveRunCounter = 0
@@ -297,6 +287,14 @@ try:
 
             sim, simthread = CompuCellSetup.getCoreSimulationObjects(True)
 
+            # import PlayerPython
+            #
+            # field_handler = simthread
+            #
+            # field_extractor_local = PlayerPython.FieldExtractor()
+            # field_extractor_local.setFieldStorage(field_handler.fieldStorage)
+            # field_extractor_local.init(sim)
+
             setSimulationResultStorageDirectory(
                 cmlParser.customScreenshotDirectoryName)  # set Simulation output dir - it can be reset later - at this point only directory name is set. directory gets created later
 
@@ -328,7 +326,6 @@ try:
                     print '\n\n\n--------------- COMPUCELL3D VERSION MISMATCH\n\n'
                     print 'Your CompuCell3D version %s might be too old for the project you are trying to run.\n The least version project requires is %s. \n You may run project at your own risk' % (
                         currentVersion, projectVersion)
-                    import time
 
                     time.sleep(5)
             else:
