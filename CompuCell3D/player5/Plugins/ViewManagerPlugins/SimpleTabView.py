@@ -634,6 +634,18 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if hasattr(cml_args,'playerSettings'):
             self.playerSettingsFileName = cml_args.playerSettings
 
+        # setting up push address
+        if hasattr(cml_args, 'push_address'):
+            CompuCellSetup.set_push_address(cml_args.push_address)
+        elif hasattr(cml_args, 'pushAddress'):
+            CompuCellSetup.set_push_address(cml_args.pushAddress)
+
+        # setting up return tag
+        if hasattr(cml_args, 'return_value_tag'):
+            CompuCellSetup.set_return_value_tag(cml_args.return_value_tag)
+        elif hasattr(cml_args, 'returnValueTag'):
+            CompuCellSetup.set_return_value_tag(cml_args.returnValueTag)
+
         currentDir = cml_args.currentDir if cml_args.currentDir else ''
         if cml_args.windowSize:
             winSizes = cml_args.windowSize.split('x')

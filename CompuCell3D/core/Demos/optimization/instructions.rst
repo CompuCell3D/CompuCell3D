@@ -8,7 +8,8 @@ you would run the following command:
 .. code-block:: console
 
     c:\CompuCell3D-64bit\optimization.bat --input=c:\CompuCell3D-64bit\Demos\optimization\optimization_demo\optimization_demo.cc3d \
-    --params-file=c:\CompuCell3D-64bit\Demos\optimization\optimization_demo\Simulation\params.json --cc3d-run-script=c:\CompuCell3D-64bit\runScript.bat \
+    --params-file=c:\CompuCell3D-64bit\Demos\optimization\optimization_demo\Simulation\params.json \
+    --cc3d-run-script=c:\CompuCell3D-64bit\runScript.bat \
     --clean-workdirs --num-workers=1 --population-size=6
 
 or one-liner version of the above command:
@@ -18,3 +19,26 @@ or one-liner version of the above command:
 
 **Notice** running of the optimization simulation from the player directly is
 NOT supported and will result in an error.
+
+Optimization with GUI output
+============================
+
+If you want GUI output while running simulation, all you need to do is to to change path top the run script to point
+to the ``Player`` run script (in our case we would use ``--cc3d-run-script=c:\CompuCell3D-64bit\compucell3d.bat``)
+
+.. note::
+
+    Before running optimization with GUI you must check ``Close Player after simulation ends``
+    in the Player configuration  dialog. Without this step the optimization run
+    in the GUI mode will not work properly
+
+.. code-block:: console
+
+    c:\CompuCell3D-64bit\optimization.bat --input=c:\CompuCell3D-64bit\Demos\optimization\optimization_demo\optimization_demo.cc3d --params-file=c:\CompuCell3D-64bit\Demos\optimization\optimization_demo\Simulation\params.json --cc3d-run-script=c:\CompuCell3D-64bit\compucell3d.bat --clean-workdirs --num-workers=1 --population-size=6
+
+.. warning::
+
+    Even though GUI runs are possible if you use more than one worker you will end up with
+    multiple GUIs being open at the same time. also the memory usage wil spike so this is
+    something you should be aware of when using multiple workers with a GUI-base
+    optimization runs
