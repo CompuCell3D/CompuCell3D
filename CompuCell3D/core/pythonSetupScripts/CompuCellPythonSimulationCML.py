@@ -10,16 +10,20 @@ import time
 # enabling with statement in python 2.5
 
 '''
-SWIG LIBRARY LOADING ORDER: Before attempting to load swig libray it is necessary to first call 
-   sim,simthread = CompuCellSetup.getCoreSimulationObjects(True)
-   loadCC3DFile imports XMLUtils (swig library) and if getCoreSimulationObjects is not called before importing e.g. XMLUtils then segfault may appear sometime during run
+   SWIG LIBRARY LOADING ORDER: Before attempting to load swig library it is necessary to first call 
+   sim, simthread = CompuCellSetup.getCoreSimulationObjects(True)
+   loadCC3DFile imports XMLUtils (swig library) and if getCoreSimulationObjects is not called before importing e.g.
+   XMLUtils then segfault may appear sometime during run
+    
    The likely causes are:
    1) Using execfile to run actual simulation from this python script
    2) Using global variables in CompuCellsetup
    3) order in which swig libraries are loaded matters.
    
-   After we moved getCoreSimulationObjects to be executed as early as possible most of the segfault errors disappeared - those errors were all associated with SwigPyIterator 
-   when we tried to iterate over CC3D C++ STL based containers - e.g. sets, maps etc. using iterators provided byt swig wrappers like iter() , itervalues(), iterators()
+   After we moved getCoreSimulationObjects to be executed as early as possible most of the segfault errors disappeared 
+   - those errors were all associated with SwigPyIterator 
+   when we tried to iterate over CC3D C++ STL based containers - e.g. sets, maps etc. using iterators provided by
+   swig wrappers like iter() , itervalues(), iterators()
    Hand-written iterators were OK though. The segfaults appeared only in the command line runs i.e. without the player
 '''
 
