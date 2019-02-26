@@ -6,10 +6,9 @@ from XMLUtils import CC3DXMLListPy
 
 
 
-class DiffusionSolverSteering(SteppablePy):
+class DiffusionSolverSteering(SteppableBasePy):
     def __init__(self,_simulator,_frequency=100):
-        SteppablePy.__init__(self,_frequency)
-        self.simulator=_simulator
+        SteppableBasePy.__init__(self,_simulator,_frequency)        
     def step(self, mcs):
         if mcs>100:
             # get <Steppable Type="FlexibleDiffusionSolverFE"> section of XML file 

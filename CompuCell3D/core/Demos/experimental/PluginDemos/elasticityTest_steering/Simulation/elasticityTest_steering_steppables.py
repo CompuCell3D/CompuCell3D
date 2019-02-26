@@ -6,8 +6,8 @@ from XMLUtils import dictionaryToMapStrStr as d2mss
 
 class ElasticitySteering(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
-        SteppablePy.__init__(self,_frequency)
-        self.simulator=_simulator
+        SteppableBasePy.__init__(self,_simulator, _frequency)
+        
     def step(self, mcs):
         if mcs>100 and not mcs%100 and mcs<2000:
             # get <Plugin Name="Elasticity"> section of XML file 

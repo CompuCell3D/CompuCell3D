@@ -20,6 +20,7 @@ VTKLibs
 vtk
 *~
 CompuCell3D/Twedit++5/EditorWindow_old.py
+<<<<<<< HEAD
 *.sqlite
 
 *.xlsx
@@ -27,3 +28,5 @@ CompuCell3D/Twedit++5/EditorWindow_old.py
 CompuCell3D/core/Demos/untitled0.py
 .cproject
 .project
+=======
+>>>>>>> parent of e7a5f2c6... James Sluka's changes

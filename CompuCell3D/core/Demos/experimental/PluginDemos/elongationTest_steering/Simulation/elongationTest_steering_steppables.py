@@ -8,8 +8,8 @@ from XMLUtils import dictionaryToMapStrStr as d2mss
             
 class LengthConstraintSteering(SteppableBasePy):
     def __init__(self,_simulator,_frequency=100):
-        SteppablePy.__init__(self,_frequency)
-        self.simulator=_simulator
+        SteppableBasePy.__init__(self,_simulator,_frequency)
+        
 
     def step(self,mcs):
         if mcs>100 and not mcs%100:
