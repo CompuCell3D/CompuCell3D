@@ -1,4 +1,9 @@
 from cc3d import CompuCellSetup
+import numpy as np
+from cc3d.core.enums import *
+
+
+
 class PlotWindowDummy(object):
     '''
     This class serves as a dummy object that is used when viewManager is None
@@ -19,7 +24,18 @@ class PlotWindowDummy(object):
         pass
 
 
-def add_new_plot_window(_title='', _xAxisTitle='', _yAxisTitle='', _xScaleType='linear', _yScaleType='linear', _grid=True, _config_options=None):
+def add_new_plot_window(title='', xAxisTitle='', yAxisTitle='', xScaleType='linear', yScaleType='linear', grid=True, config_options=None):
+    """
+    Adds new plot window to the player
+    :param title:
+    :param xAxisTitle:
+    :param yAxisTitle:
+    :param xScaleType:
+    :param yScaleType:
+    :param grid:
+    :param config_options:
+    :return:
+    """
 
     view_manager = CompuCellSetup.persistent_globals.view_manager
 
@@ -27,67 +43,65 @@ def add_new_plot_window(_title='', _xAxisTitle='', _yAxisTitle='', _xScaleType='
         pwd = PlotWindowDummy()
         return pwd
 
-    # qt_version = 4
     try:
         pW = view_manager.plotManager.getNewPlotWindow()
     except:
         full_options_dict = {
-            'title':_title,
-            'xAxisTitle':_xAxisTitle,
-            'yAxisTitle':_yAxisTitle,
-            'xScaleType':_xScaleType,
-            'yScaleType':_yScaleType,
-            'grid':_grid
+            'title':title,
+            'xAxisTitle':xAxisTitle,
+            'yAxisTitle':yAxisTitle,
+            'xScaleType':xScaleType,
+            'yScaleType':yScaleType,
+            'grid':grid
         }
-        if _config_options:
-            full_options_dict.update(_config_options)
+        if config_options:
+            full_options_dict.update(config_options)
 
         pW = view_manager.plotManager.getNewPlotWindow(full_options_dict)
 
-        # pW = viewManager.plotManager.getNewPlotWindow({
-        #     'title':_title,
-        #     'xAxisTitle':_xAxisTitle,
-        #     'yAxisTitle':_yAxisTitle,
-        #     'xScaleType':_xScaleType,
-        #     'yScaleType':_yScaleType,
-        #     'grid':_grid
-        # }
-        # )
-        qt_version = 5
 
     if not pW:
         raise AttributeError(
-            'Missing plot modules. Windows/OSX Users: Make sure you have numpy installed. For instructions please visit www.compucell3d.org/Downloads. Linux Users: Make sure you have numpy and PyQwt installed. Please consult your linux distributioun manual pages on how to best install those packages')
-
-    # # setting up default plot window parameters/look
-    # if qt_version==4:
-    #     # Plot Title - properties
-    #     pW.setTitle(_title)
-    #     pW.setTitleSize(12)
-    #     pW.setTitleColor("Green")
-    #
-    #     # plot background
-    #     pW.setPlotBackgroundColor("white")
-    #     # properties of x axis
-    #     pW.setXAxisTitle(_xAxisTitle)
-    #     if _xScaleType == 'log':
-    #         pW.setXAxisLogScale()
-    #     pW.setXAxisTitleSize(10)
-    #     pW.setXAxisTitleColor("blue")
-    #
-    #     # properties of y axis
-    #     pW.setYAxisTitle(_yAxisTitle)
-    #     if _xScaleType == 'log':
-    #         pW.setYAxisLogScale()
-    #     pW.setYAxisTitleSize(10)
-    #     pW.setYAxisTitleColor("red")
-    #
-    #     pW.addGrid()
-    #     # adding automatically generated legend
-    #     # default possition is at the bottom of the plot but here we put it at the top
-    #     pW.addAutoLegend("top")
-    #
-    #     # restoring plot window - have to decide whether to keep it or rely on viewManager.plotManager restore_plots_layout function
-    #     #     viewManager.plotManager.restoreSingleWindow(pW)
+            'Missing plot modules. Windows/OSX Users: Make sure you have numpy installed. '
+            'For instructions please visit www.compucell3d.org/Downloads. '
+            'Linux Users: Make sure you have numpy and PyQwt installed. '
+            'Please consult your linux distributioun manual pages on how to best install those packages')
 
     return pW
+
+# def create_scalar_field_py(dim ,fieldName):
+def create_scalar_field_py(field_name):
+
+
+    field_name = field_name.replace(" ", "_")
+    persistent_globals = CompuCellSetup.persistent_globals
+    simthread = persistent_globals.simthread
+    field_registry = persistent_globals.field_registry
+
+    # field_adapter = field_registry.schedule_field_creation(field_name, SCALAR_FIELD_NPY)
+    field_adapter = field_registry.create_field(field_name, SCALAR_FIELD_NPY)
+
+
+    return field_adapter
+
+
+
+    # todo 5 - fix it to handle CML runs
+    # if persistent_globals.simthread == "CML":
+    #
+    #     fieldNP = np.zeros(shape=(_dim.x, _dim.y, _dim.z), dtype=np.float32)
+    #     ndarrayAdapter = cmlFieldHandler.fieldStorage.createFloatFieldPy(_dim, _fieldName)
+    #     ndarrayAdapter.initFromNumpy(
+    #         fieldNP)  # initializing  numpyAdapter using numpy array (copy dims and data ptr)
+    #     fieldRegistry.addNewField(ndarrayAdapter, _fieldName, SCALAR_FIELD)
+    #     fieldRegistry.addNewField(fieldNP, _fieldName + '_npy', SCALAR_FIELD_NPY)
+    #     return fieldNP
+    # else:
+
+    fieldNP = np.zeros(shape=(dim.x, dim.y, dim.z), dtype=np.float32)
+    ndarrayAdapter = simthread.callingWidget.fieldStorage.createFloatFieldPy(dim, field_name)
+    # initializing  numpyAdapter using numpy array (copy dims and data ptr)
+    ndarrayAdapter.initFromNumpy(fieldNP)
+    field_registry.addNewField(ndarrayAdapter, field_name, SCALAR_FIELD)
+    field_registry.addNewField(fieldNP, field_name + '_npy', SCALAR_FIELD_NPY)
+    return fieldNP

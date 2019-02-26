@@ -47,12 +47,23 @@ def run():
 
     :return:
     """
-    simulation_initialized = CompuCellSetup.persistent_globals.simulation_initialized
+    persistent_globals = CompuCellSetup.persistent_globals
+    simulation_initialized = persistent_globals.simulation_initialized
     if not simulation_initialized:
         initialize_cc3d()
         # print(' run(): CompuCellSetup.persistent_globals=', CompuCellSetup.persistent_globals)
         # print(' run(): CompuCellSetup.persistent_globals.simulator=', CompuCellSetup.persistent_globals.simulator)
-        CompuCellSetup.persistent_globals.steppable_registry.core_init()
+        persistent_globals.steppable_registry.core_init()
+
+        #initializing extra visualization fields
+        field_registry = persistent_globals.field_registry
+        potts = persistent_globals.simulator.getPotts()
+        cellField = potts.getCellFieldG()
+        dim = cellField.getDim()
+        field_registry.dim = dim
+        field_registry.simthread= persistent_globals.simthread
+
+        field_registry.create_fields()
 
 
     simulator = CompuCellSetup.persistent_globals.simulator
