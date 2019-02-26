@@ -20,6 +20,13 @@ if sys.platform.startswith('win'):
     demo_script = r'C:\CompuCell3D-64bit\Demos\Models\cellsort\cellsort_2D\cellsort_2D.cc3d'
     test_output_root = r'C:\CompuCell3D-64bit\CompuCell3D_test_output'
 
+# if sys.platform.startswith('win'):
+#     cc3d_run_script = r'd:\Program Files\3710\compucell3d.bat'
+#     cc3d_demo_dir = r'd:\Program Files\3710\Demos'
+#     demo_script = r'd:\Program Files\3710\Demos\Models\cellsort\cellsort_2D\cellsort_2D.cc3d'
+#     test_output_root = r'd:\Program Files\3710\CompuCell3D_test_output'
+
+
 if sys.platform.startswith('darwin'):
     #osx settings
     cc3d_run_script = r'/Users/m/Demo/CC3D_3.7.6/cc3d_test.command'
