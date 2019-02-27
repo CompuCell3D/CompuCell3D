@@ -3,10 +3,8 @@
     <!-- It also defines lattice parameters, flip neighbors and boundary conditions-->
    <Potts>
       <Dimensions x="101" y="101" z="1"/>
-      <Anneal>0</Anneal>
       <Steps>1000</Steps>
       <Temperature>5</Temperature>
-      <Flip2DimRatio>1.0</Flip2DimRatio>
       <Boundary_y>Periodic</Boundary_y>
       <Boundary_x>Periodic</Boundary_x>
       <NeighborOrder>2</NeighborOrder>

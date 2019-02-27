@@ -1,10 +1,8 @@
  <CompuCell3D>
  <Potts>
    <Dimensions x="200" y="200" z="1"/> <!-- Z >1 become 3D -->
-   <Anneal>10</Anneal>
-   <Steps>1000000</Steps>
+   <Steps>10000</Steps>
    <Temperature>5</Temperature>   
-   <Flip2DimRatio>1</Flip2DimRatio>
    <Boundary_x>Periodic</Boundary_x>
    <Boundary_y>Periodic</Boundary_y>
    <NeighborOrder>2</NeighborOrder>
