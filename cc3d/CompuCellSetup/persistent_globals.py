@@ -19,7 +19,8 @@ class FieldRegistry:
 
         # dictionary with field creating functions
         self.field_creating_fcns = {
-            SCALAR_FIELD_NPY :self.create_scalar_field
+            SCALAR_FIELD_NPY :self.create_scalar_field,
+            SCALAR_FIELD_CELL_LEVEL: self.create_scalar_field_cell_level
         }
 
     def create_field(self, field_name: str, field_type: int) -> ExtraFieldAdapter:
@@ -70,6 +71,18 @@ class FieldRegistry:
 
         field_adapter.set_ref(fieldNP)
 
+    def create_scalar_field_cell_level(self, field_name: str)->None:
+        try:
+            field_adapter = self.__fields_to_create[field_name]
+        except KeyError:
+            print('Could not create field ', field_name)
+            return
+
+        field_ref = self.simthread.callingWidget.fieldStorage.createScalarFieldCellLevelPy(field_name)
+        self.addNewField(field_ref, field_name, SCALAR_FIELD_CELL_LEVEL)
+        field_adapter.set_ref(field_ref)
+
+
     def create_fields(self)->None:
         """
         Creates Fields that are scheduled to be created. Called after constructors of steppalbes has been called
@@ -98,6 +111,23 @@ class FieldRegistry:
             #     self.create_scalar_field(field_name)
 
         self.enable_ad_hoc_field_creation = True
+
+    def get_fields_to_create_dict(self)->dict:
+        """
+
+        :return:
+        """
+
+        return self.__fields_to_create
+
+
+    def get_field_dict(self)->dict:
+        """
+
+        :return:
+        """
+
+        return self.__field_dict
 
     def addNewField(self, _field, _fieldName, _fieldType):
         self.__field_dict[_fieldName] = [_field, _fieldType]

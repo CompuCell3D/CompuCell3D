@@ -136,6 +136,16 @@ class SteppableBasePy(SteppablePy):
         return CompuCellSetup.simulation_player_utils.create_scalar_field_py(fieldName)
         # return CompuCellSetup.simulation_player_utils.create_scalar_field_py(self.dim, fieldName)
 
+    def create_scalar_field_cell_level_py(self, fieldName):
+        """
+        Created extra visualization field
+        :param fieldName: {str}
+        :return:
+        """
+        return CompuCellSetup.simulation_player_utils.create_scalar_field_cell_level_py(fieldName)
+        # return CompuCellSetup.simulation_player_utils.create_scalar_field_py(self.dim, fieldName)
+
+
 
     def every_pixel_with_steps(self, step_x, step_y, step_z):
         """

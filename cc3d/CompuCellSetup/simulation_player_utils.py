@@ -86,22 +86,36 @@ def create_scalar_field_py(field_name):
 
 
 
-    # todo 5 - fix it to handle CML runs
-    # if persistent_globals.simthread == "CML":
+    # # todo 5 - fix it to handle CML runs
+    # # if persistent_globals.simthread == "CML":
+    # #
+    # #     fieldNP = np.zeros(shape=(_dim.x, _dim.y, _dim.z), dtype=np.float32)
+    # #     ndarrayAdapter = cmlFieldHandler.fieldStorage.createFloatFieldPy(_dim, _fieldName)
+    # #     ndarrayAdapter.initFromNumpy(
+    # #         fieldNP)  # initializing  numpyAdapter using numpy array (copy dims and data ptr)
+    # #     fieldRegistry.addNewField(ndarrayAdapter, _fieldName, SCALAR_FIELD)
+    # #     fieldRegistry.addNewField(fieldNP, _fieldName + '_npy', SCALAR_FIELD_NPY)
+    # #     return fieldNP
+    # # else:
     #
-    #     fieldNP = np.zeros(shape=(_dim.x, _dim.y, _dim.z), dtype=np.float32)
-    #     ndarrayAdapter = cmlFieldHandler.fieldStorage.createFloatFieldPy(_dim, _fieldName)
-    #     ndarrayAdapter.initFromNumpy(
-    #         fieldNP)  # initializing  numpyAdapter using numpy array (copy dims and data ptr)
-    #     fieldRegistry.addNewField(ndarrayAdapter, _fieldName, SCALAR_FIELD)
-    #     fieldRegistry.addNewField(fieldNP, _fieldName + '_npy', SCALAR_FIELD_NPY)
-    #     return fieldNP
-    # else:
+    # fieldNP = np.zeros(shape=(dim.x, dim.y, dim.z), dtype=np.float32)
+    # ndarrayAdapter = simthread.callingWidget.fieldStorage.createFloatFieldPy(dim, field_name)
+    # # initializing  numpyAdapter using numpy array (copy dims and data ptr)
+    # ndarrayAdapter.initFromNumpy(fieldNP)
+    # field_registry.addNewField(ndarrayAdapter, field_name, SCALAR_FIELD)
+    # field_registry.addNewField(fieldNP, field_name + '_npy', SCALAR_FIELD_NPY)
+    # return fieldNP
 
-    fieldNP = np.zeros(shape=(dim.x, dim.y, dim.z), dtype=np.float32)
-    ndarrayAdapter = simthread.callingWidget.fieldStorage.createFloatFieldPy(dim, field_name)
-    # initializing  numpyAdapter using numpy array (copy dims and data ptr)
-    ndarrayAdapter.initFromNumpy(fieldNP)
-    field_registry.addNewField(ndarrayAdapter, field_name, SCALAR_FIELD)
-    field_registry.addNewField(fieldNP, field_name + '_npy', SCALAR_FIELD_NPY)
-    return fieldNP
+def create_scalar_field_cell_level_py(field_name):
+
+
+    field_name = field_name.replace(" ", "_")
+    persistent_globals = CompuCellSetup.persistent_globals
+    simthread = persistent_globals.simthread
+    field_registry = persistent_globals.field_registry
+
+    # field_adapter = field_registry.schedule_field_creation(field_name, SCALAR_FIELD_NPY)
+    field_adapter = field_registry.create_field(field_name, SCALAR_FIELD_CELL_LEVEL)
+
+
+    return field_adapter

@@ -39,6 +39,18 @@ import cc3d.Version as Version
 
 FIELD_TYPES = (
     "CellField", "ConField", "ScalarField", "ScalarFieldCellLevel", "VectorField", "VectorFieldCellLevel", "CustomVis")
+
+FIELD_NUMBER_TO_FIELD_TYPE_MAP = {
+    0: "CellField",
+    1: "ConField",
+    2: "ScalarField",
+    3: "ScalarFieldCellLevel",
+    4: "VectorField",
+    5: "VectorFieldCellLevel",
+    6: "ScalarField",
+    8: "CustomVis"
+}
+
 PLANES = ("xy", "xz", "yz")
 
 MODULENAME = '---- SimpleTabView.py: '
@@ -2713,45 +2725,54 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.fieldTypes["Cell_Field"] = FIELD_TYPES[0]  # "CellField"
 
+
         # Add concentration fields How? I don't care how I got it at this time
 
         concFieldNameVec = simObj.getConcentrationFieldNameVector()
-
         # putting concentration fields from simulator
         for fieldName in concFieldNameVec:
             #            print MODULENAME,"setFieldTypes():  Got this conc field: ",fieldName
             self.fieldTypes[fieldName] = FIELD_TYPES[1]
 
+        extra_field_registry = CompuCellSetup.persistent_globals.field_registry
+
+
         # inserting extra scalar fields managed from Python script
-        scalarFieldNameVec = self.fieldStorage.getScalarFieldNameVector()
-        for fieldName in scalarFieldNameVec:
-            #            print MODULENAME,"setFieldTypes():  Got this scalar field: ",fieldName
-            self.fieldTypes[fieldName] = FIELD_TYPES[2]
+        field_dict = extra_field_registry.get_fields_to_create_dict()
 
-        # inserting extra scalar fields cell levee managed from Python script
-        scalarFieldCellLevelNameVec = self.fieldStorage.getScalarFieldCellLevelNameVector()
-        for fieldName in scalarFieldCellLevelNameVec:
-            #            print MODULENAME,"setFieldTypes():  Got this scalar field (cell leve): ",fieldName
-            self.fieldTypes[fieldName] = FIELD_TYPES[3]
+        for field_name , field_adapter in field_dict.items():
+            self.fieldTypes[field_name] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[field_adapter.field_type]
 
-        # inserting extra vector fields  managed from Python script
-        vectorFieldNameVec = self.fieldStorage.getVectorFieldNameVector()
-        for fieldName in vectorFieldNameVec:
-            #            print MODULENAME,"setFieldTypes():  Got this vector field: ",fieldName
-            self.fieldTypes[fieldName] = FIELD_TYPES[4]
-
-        # inserting extra vector fields  cell level managed from Python script
-        vectorFieldCellLevelNameVec = self.fieldStorage.getVectorFieldCellLevelNameVector()
-        for fieldName in vectorFieldCellLevelNameVec:
-            #            print MODULENAME,"setFieldTypes():  Got this vector field (cell level): ",fieldName
-            self.fieldTypes[fieldName] = FIELD_TYPES[5]
-
-        # todo 5 - handle custom visualizations
-        # # inserting custom visualization
-        # visDict = CompuCellSetup.customVisStorage.visDataDict
+        # # inserting extra scalar fields managed from Python script
+        # scalarFieldNameVec = self.fieldStorage.getScalarFieldNameVector()
+        # for fieldName in scalarFieldNameVec:
+        #     #            print MODULENAME,"setFieldTypes():  Got this scalar field: ",fieldName
+        #     self.fieldTypes[fieldName] = FIELD_TYPES[2]
         #
-        # for visName in visDict:
-        #     self.fieldTypes[visName] = FIELD_TYPES[6]
+        # # inserting extra scalar fields cell levee managed from Python script
+        # scalarFieldCellLevelNameVec = self.fieldStorage.getScalarFieldCellLevelNameVector()
+        # for fieldName in scalarFieldCellLevelNameVec:
+        #     #            print MODULENAME,"setFieldTypes():  Got this scalar field (cell leve): ",fieldName
+        #     self.fieldTypes[fieldName] = FIELD_TYPES[3]
+        #
+        # # inserting extra vector fields  managed from Python script
+        # vectorFieldNameVec = self.fieldStorage.getVectorFieldNameVector()
+        # for fieldName in vectorFieldNameVec:
+        #     #            print MODULENAME,"setFieldTypes():  Got this vector field: ",fieldName
+        #     self.fieldTypes[fieldName] = FIELD_TYPES[4]
+        #
+        # # inserting extra vector fields  cell level managed from Python script
+        # vectorFieldCellLevelNameVec = self.fieldStorage.getVectorFieldCellLevelNameVector()
+        # for fieldName in vectorFieldCellLevelNameVec:
+        #     #            print MODULENAME,"setFieldTypes():  Got this vector field (cell level): ",fieldName
+        #     self.fieldTypes[fieldName] = FIELD_TYPES[5]
+        #
+        # # todo 5 - handle custom visualizations
+        # # # inserting custom visualization
+        # # visDict = CompuCellSetup.customVisStorage.visDataDict
+        # #
+        # # for visName in visDict:
+        # #     self.fieldTypes[visName] = FIELD_TYPES[6]
 
     def showDisplayWidgets(self):
         '''
