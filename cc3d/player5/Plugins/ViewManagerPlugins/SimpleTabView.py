@@ -459,28 +459,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.configsChanged.connect(newWindow.configsChanged)
         self.configsChanged.connect(newWindow.configsChanged)
 
-        # todo 5 old code
-        # self.configsChanged.connect(newWindow.draw2D.configsChanged)
-        # self.configsChanged.connect(newWindow.draw3D.configsChanged)
-
-        # self.connect(self, SIGNAL('configsChanged'), newWindow.draw2D.configsChanged)
-        # self.connect(self, SIGNAL('configsChanged'), newWindow.draw3D.configsChanged)
-
-        # newWindow.readSettings()  # Graphics/MVCDrawViewBase.py
-
-        # setting up plane tuple based on window number 1
-        # plane=self.windowDict[1].getPlane()
-        # newWindow.setPlane(plane[0],plane[1])
-
-        # todo 5 - old code
-        # # each new window is painted in 2D mode xy projection with z coordinate set to fieldDim.z/2
-        # self.newWindowDefaultPlane = ("XY", self.basicSimulationData.fieldDim.z / 2)
-        # newWindow.setPlane(self.newWindowDefaultPlane[0], self.newWindowDefaultPlane[1])
-        #
-        # newWindow.currentDrawingObject.setPlane(self.newWindowDefaultPlane[0], self.newWindowDefaultPlane[1])
-
-        # self.simulation.setGraphicsWidget(self.mainGraphicsWindow)
-        # self.mdiWindowDict[self.windowCounter] = self.addSubWindow(newWindow)
         mdiWindow = self.addSubWindow(newWindow)
 
         # MDIFIX
