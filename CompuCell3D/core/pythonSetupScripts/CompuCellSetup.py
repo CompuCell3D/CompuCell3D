@@ -15,7 +15,7 @@ import warnings
 
 cc3dModuleDictionary = {}
 cc3dActiveSteerableList = []
-cc3dXML2ObjConverter = None
+cc3d_xml2_obj_converter = None
 cc3dXML2ObjConverterAdapter = None
 windowsXML2ObjConverter = None
 simulationXMLDescription = None
@@ -81,8 +81,8 @@ freeFloatingSBMLSimulator = {}  # {name:RoadRunnerPy}
 global globalSBMLSimulatorOptions
 globalSBMLSimulatorOptions = None  # {optionName:Value}
 
-global viewManager
-viewManager = None  # stores viewmanager object - initialized when simulation is run using Player
+global view_manager
+view_manager = None  # stores viewmanager object - initialized when simulation is run using Player
 
 global steering_param_dict
 steering_param_dict = OrderedDict()
@@ -152,8 +152,8 @@ class FieldRegistry:
             return None, None
 
 
-global fieldRegistry
-fieldRegistry = FieldRegistry()
+global field_registry
+field_registry = FieldRegistry()
 
 
 class CustomVisData:
@@ -472,7 +472,7 @@ def resetGlobals():
     global cc3dSimulationDataHandler
     cc3dSimulationDataHandler = None
 
-    global fieldRegistry
+    global field_registry
     fieldRegistry = FieldRegistry()
 
     global simulationThreadObject
@@ -515,7 +515,7 @@ def addSteeringPanel(panel_data):
     Adds steering panel with sliders to the Player5 Window
     :return:
     """
-    global viewManager
+    global view_manager
     # global steering_panel
     # global steering_panel_model
 
@@ -594,7 +594,7 @@ def addNewPlotWindow(_title='', _xAxisTitle='', _yAxisTitle='', _xScaleType='lin
         def dummyFcn(self, *args, **kwds):
             pass
 
-    global viewManager
+    global view_manager
 
     if not viewManager:
         pwd = PlotWindowDummy()
@@ -789,7 +789,7 @@ def initModules(sim, _cc3dXML2ObjConverter):
 #     walker.iterateCC3DXMLElement(cc3dXML2ObjConverter.root)
 
 def parseXML(_simulationFileName):
-    global cc3dXML2ObjConverter
+    global cc3d_xml2_obj_converter
     import XMLUtils
     cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
     root_element = cc3dXML2ObjConverter.Parse(_simulationFileName)
@@ -837,7 +837,7 @@ def setSimulationXMLDescription(_xmlTree):
 
 
 def setSimulationXMLDescriptionNewPlayer(_xmlTree):
-    global cc3dXML2ObjConverter
+    global cc3d_xml2_obj_converter
     cc3dXML2ObjConverter = XML2ObjConverterAdapter()
     cc3dXML2ObjConverter.xmlTree = _xmlTree
     cc3dXML2ObjConverter.root = _xmlTree.CC3DXMLElement
@@ -907,7 +907,7 @@ def getCoreSimulationObjectsNewPlayer(_parseOnlyFlag=False, _cmlOnly=False):
 
         if simulationPaths.simulationXMLFileName != "":
             global simulationPaths
-            global cc3dXML2ObjConverter
+            global cc3d_xml2_obj_converter
             import XMLUtils
 
             parseXML(simulationPaths.simulationXMLFileName)
@@ -1176,7 +1176,7 @@ def ExtractLatticeType():
     Fetches lattice type
     :return:
     """
-    global cc3dXML2ObjConverter
+    global cc3d_xml2_obj_converter
 
     if cc3dXML2ObjConverter.root.findElement("Potts"):
         # dealing with regular cc3dml
@@ -1190,7 +1190,7 @@ def ExtractLatticeType():
     return ""
 
 def ExtractTypeNamesAndIds():
-    global cc3dXML2ObjConverter
+    global cc3d_xml2_obj_converter
     if cc3dXML2ObjConverter is None:
         return
 
@@ -1217,7 +1217,7 @@ def ExtractTypeNamesAndIds():
 
 def initializeSimulationObjects(sim, simthread):
     if not playerType == "CMLResultReplay":
-        global cc3dXML2ObjConverter
+        global cc3d_xml2_obj_converter
         global cc3dXML2ObjConverterAdapter
         if cc3dXML2ObjConverter is not None:
             initModules(sim,
@@ -1301,7 +1301,7 @@ def extraInitSimulationObjects(sim, simthread, _restartEnabled=False):
 
 def createVectorFieldCellLevelPy(_fieldName):
     global cmlFieldHandler  # rwh2
-    global fieldRegistry
+    global field_registry
     import string
     fieldName = string.replace(_fieldName, " ", "_")  # replacing spaces with underscore
 
@@ -1333,7 +1333,7 @@ def createVectorFieldCellLevelPy(_fieldName):
 
 def createVectorFieldPy(_dim, _fieldName):
     global cmlFieldHandler  # rwh2
-    global fieldRegistry
+    global field_registry
     import string
     fieldName = string.replace(_fieldName, " ", "_")  # replacing spaces with underscore
     import numpy as np
@@ -1472,7 +1472,7 @@ def createScalarFieldPy(_dim, _fieldName):
 
 def createFloatFieldPy(_dim, _fieldName):
     global cmlFieldHandler  # rwh2
-    global fieldRegistry
+    global field_registry
     import string
     fieldName = string.replace(_fieldName, " ", "_")  # replacing spaces with underscore
 
@@ -1496,7 +1496,7 @@ def createFloatFieldPy(_dim, _fieldName):
 
 def createScalarFieldCellLevelPy(_fieldName):
     global cmlFieldHandler  # rwh2
-    global fieldRegistry
+    global field_registry
     import string
     fieldName = string.replace(_fieldName, " ", "_")  # replacing spaces with underscore
     if playerType == "CML":
