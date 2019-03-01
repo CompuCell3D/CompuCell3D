@@ -432,6 +432,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.fieldTypes[field_name] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[field_type]
 
+        for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+            graphicsFrame = win.widget()
+            graphicsFrame.update_field_types_combo_box(field_types=self.fieldTypes)
+
     def addNewGraphicsWindow(self):
         '''
         callback method to create additional ("Aux") graphics windows

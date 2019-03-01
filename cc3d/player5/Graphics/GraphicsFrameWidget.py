@@ -731,19 +731,6 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
             cb.setCurrentIndex(current_idx)
 
     def setFieldTypesComboBox(self, _fieldTypes):
-        # return
-        # self.fieldTypes = _fieldTypes  # assign field types to be the same as field types in the workspace
-        #
-        # self.fieldComboBox.clear()
-        # self.fieldComboBox.addItem("-- Field Type --")
-        # self.fieldComboBox.addItem("Cell_Field")
-        # for key in list(self.fieldTypes.keys()):
-        #     if key != "Cell_Field":
-        #         self.fieldComboBox.addItem(key)
-        # self.fieldComboBox.setCurrentIndex(1)  # setting value of the Combo box to be cellField - default action
-        #
-        # # self.qvtkWidget.resetCamera() # last call triggers fisrt call to draw function so
-        # # we here reset camera so that all the actors are initially visible
         #
         self.update_field_types_combo_box(field_types=_fieldTypes)
 
