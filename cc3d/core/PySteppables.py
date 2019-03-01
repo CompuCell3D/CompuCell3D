@@ -1,14 +1,9 @@
 import itertools
 from cc3d.core.iterators import *
 from cc3d.core.enums import *
+from cc3d.CompuCellSetup.ExtraFieldAdapter import ExtraFieldAdapter
 # from cc3d.CompuCellSetup.simulation_utils import stop_simulation
 from cc3d import CompuCellSetup
-
-# try:
-#     import cc3d.CompuCellSetup
-# except ImportError:
-#     pass
-
 
 class SteppablePy:
     def __init__(self):
@@ -45,8 +40,8 @@ class SteppablePy:
         :return:
         """
 
-class SteppableBasePy(SteppablePy):
 
+class SteppableBasePy(SteppablePy):
     (CC3D_FORMAT, TUPLE_FORMAT) = range(0, 2)
 
     def __init__(self, simulator=None, frequency=1):
@@ -55,13 +50,11 @@ class SteppableBasePy(SteppablePy):
         self.frequency = frequency
         self.simulator = simulator
 
-
         # legacy API
         self.addNewPlotWindow = self.add_new_plot_window
-        self.createScalarFieldPy =self.create_scalar_field_py
+        self.createScalarFieldPy = self.create_scalar_field_py
         self.everyPixelWithSteps = self.every_pixel_with_steps
         self.everyPixel = self.every_pixel
-
 
     def core_init(self):
 
@@ -77,9 +70,6 @@ class SteppableBasePy(SteppablePy):
         self.mcs = -1
 
         self.plot_dict = {}  # {plot_name:plotWindow  - pW object}
-
-
-
 
     def stop_simulation(self):
         """
@@ -114,31 +104,29 @@ class SteppableBasePy(SteppablePy):
         :return:
         """
 
-    def add_new_plot_window(self, title, xAxisTitle, yAxisTitle, xScaleType='linear', yScaleType='linear', grid=True, config_options=None):
-
+    def add_new_plot_window(self, title, xAxisTitle, yAxisTitle, xScaleType='linear', yScaleType='linear', grid=True,
+                            config_options=None):
 
         if title in self.plot_dict.keys():
             raise RuntimeError('PLOT WINDOW: ' + title + ' already exists. Please choose a different name')
 
-        pW = CompuCellSetup.simulation_player_utils.add_new_plot_window(title, xAxisTitle, yAxisTitle, xScaleType, yScaleType, grid, config_options=config_options)
+        pW = CompuCellSetup.simulation_player_utils.add_new_plot_window(title, xAxisTitle, yAxisTitle, xScaleType,
+                                                                        yScaleType, grid, config_options=config_options)
         self.plot_dict = {}  # {plot_name:plotWindow  - pW object}
-
 
         return pW
 
-
-
-    def create_scalar_field_py(self, fieldName:str):
+    def create_scalar_field_py(self, fieldName: str) -> ExtraFieldAdapter:
         """
         Created extra visualization field
         :param fieldName: {str}
         :return:
         """
 
-        return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=fieldName,field_type=SCALAR_FIELD_NPY)
-        # return CompuCellSetup.simulation_player_utils.create_scalar_field_py(fieldName)
+        return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=fieldName,
+                                                                         field_type=SCALAR_FIELD_NPY)
 
-    def create_scalar_field_cell_level_py(self, fieldName:str):
+    def create_scalar_field_cell_level_py(self, fieldName: str) -> ExtraFieldAdapter:
         """
         Creates extra visualization field
         :param fieldName: {str}
@@ -146,9 +134,8 @@ class SteppableBasePy(SteppablePy):
         """
         return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=fieldName,
                                                                          field_type=SCALAR_FIELD_CELL_LEVEL)
-        # return CompuCellSetup.simulation_player_utils.create_scalar_field_cell_level_py(fieldName)
 
-    def create_vector_field_py(self, fieldName:str):
+    def create_vector_field_py(self, fieldName: str) -> ExtraFieldAdapter:
         """
         Creates extra visualization vector field (voxel-based)
         :param fieldName: {str}
@@ -157,8 +144,16 @@ class SteppableBasePy(SteppablePy):
 
         return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=fieldName,
                                                                          field_type=VECTOR_FIELD_NPY)
-        # return CompuCellSetup.simulation_player_utils.create_scalar_field_py(fieldName)
 
+    def create_vector_field_cell_level_py(self, fieldName: str) -> ExtraFieldAdapter:
+        """
+        Creates extra visualization vector field (voxel-based)
+        :param fieldName: {str}
+        :return:
+        """
+
+        return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=fieldName,
+                                                                         field_type=VECTOR_FIELD_CELL_LEVEL)
 
     def every_pixel_with_steps(self, step_x, step_y, step_z):
         """
@@ -188,5 +183,3 @@ class SteppableBasePy(SteppablePy):
             return itertools.product(range(self.dim.x), range(self.dim.y), range(self.dim.z))
         else:
             return self.every_pixel_with_steps(step_x, step_y, step_z)
-
-

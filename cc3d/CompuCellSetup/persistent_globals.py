@@ -1,7 +1,6 @@
 from cc3d.core.SteppableRegistry import SteppableRegistry
 from cc3d.core.enums import *
 import numpy as np
-import weakref
 from .ExtraFieldAdapter import ExtraFieldAdapter
 
 
@@ -17,17 +16,15 @@ class FieldRegistry:
         self.dim = None
         self.simthread = None
 
-        # self.persistent_globals = None
-        # if persistent_globals is not None:
-        #     self.persistent_globals = weakref.ref(persistent_globals)
-
-
         self.enable_ad_hoc_field_creation = False
 
         # dictionary with field creating functions
         self.field_creating_fcns = {
-            SCALAR_FIELD_NPY :self.create_scalar_field,
-            SCALAR_FIELD_CELL_LEVEL: self.create_scalar_field_cell_level
+            SCALAR_FIELD_NPY: self.create_scalar_field,
+            SCALAR_FIELD_CELL_LEVEL: self.create_scalar_field_cell_level,
+            VECTOR_FIELD_NPY: self.create_vector_field,
+            VECTOR_FIELD_CELL_LEVEL: self.create_vector_field_cell_level,
+
         }
 
     def create_field(self, field_name: str, field_type: int) -> ExtraFieldAdapter:
@@ -39,7 +36,7 @@ class FieldRegistry:
         """
         # todo - need to add mechanism to inform player about new field
 
-        field_adapter = self.schedule_field_creation(field_name=field_name,field_type=field_type)
+        field_adapter = self.schedule_field_creation(field_name=field_name, field_type=field_type)
 
         if self.enable_ad_hoc_field_creation:
             self.create_fields()
@@ -56,17 +53,34 @@ class FieldRegistry:
 
         field_adapter = ExtraFieldAdapter(name=field_name, field_type=field_type)
 
-        # self.__fields_to_create[field_name] = field_type
-
         self.__fields_to_create[field_name] = field_adapter
 
         return field_adapter
 
-    def create_scalar_field(self, field_name: str)->None:
+    def fetch_field_adapter(self, field_name: str) -> ExtraFieldAdapter:
+        """
+        Convenience function that fetches field adapter or returns None
+        :param field_name:
+        :return:
+        """
+
         try:
-            field_adapter = self.__fields_to_create[field_name]
+            return self.__fields_to_create[field_name]
         except KeyError:
             print('Could not create field ', field_name)
+
+    def create_scalar_field(self, field_name: str) -> None:
+
+        """
+
+        Creates scalar field
+
+        :param field_name:
+        :return:
+        """
+
+        field_adapter = self.fetch_field_adapter(field_name=field_name)
+        if field_adapter is None:
             return
 
         fieldNP = np.zeros(shape=(self.dim.x, self.dim.y, self.dim.z), dtype=np.float32)
@@ -78,19 +92,59 @@ class FieldRegistry:
 
         field_adapter.set_ref(fieldNP)
 
-    def create_scalar_field_cell_level(self, field_name: str)->None:
-        try:
-            field_adapter = self.__fields_to_create[field_name]
-        except KeyError:
-            print('Could not create field ', field_name)
+    def create_scalar_field_cell_level(self, field_name: str) -> None:
+        """
+        Creates scalar field cell level
+
+        :param field_name:
+        :return:
+        """
+
+        field_adapter = self.fetch_field_adapter(field_name=field_name)
+        if field_adapter is None:
             return
 
         field_ref = self.simthread.callingWidget.fieldStorage.createScalarFieldCellLevelPy(field_name)
         self.addNewField(field_ref, field_name, SCALAR_FIELD_CELL_LEVEL)
         field_adapter.set_ref(field_ref)
 
+    def create_vector_field(self, field_name: str) -> None:
+        """
+        Creates vector field pixel-level
+        :param field_name:
+        :return:
+        """
 
-    def create_fields(self)->None:
+        field_adapter = self.fetch_field_adapter(field_name=field_name)
+        if field_adapter is None:
+            return
+
+        fieldNP = np.zeros(shape=(self.dim.x, self.dim.y, self.dim.z, 3), dtype=np.float32)
+        ndarrayAdapter = self.simthread.callingWidget.fieldStorage.createVectorFieldPy(self.dim, field_name)
+
+        # initializing  numpyAdapter using numpy array (copy dims and data ptr)
+        ndarrayAdapter.initFromNumpy(fieldNP)
+        self.addNewField(ndarrayAdapter, field_name, VECTOR_FIELD)
+        self.addNewField(fieldNP, field_name + '_npy', VECTOR_FIELD_NPY)
+
+        field_adapter.set_ref(fieldNP)
+
+    def create_vector_field_cell_level(self, field_name: str) -> None:
+        """
+        Creates vector fiedl cell-level
+        :param field_name:
+        :return:
+        """
+
+        field_adapter = self.fetch_field_adapter(field_name=field_name)
+        if field_adapter is None:
+            return
+
+        field_ref = self.simthread.callingWidget.fieldStorage.createVectorFieldCellLevelPy(field_name)
+        self.addNewField(field_ref, field_name, VECTOR_FIELD_CELL_LEVEL)
+        field_adapter.set_ref(field_ref)
+
+    def create_fields(self) -> None:
         """
         Creates Fields that are scheduled to be created. Called after constructors of steppalbes has been called
         Typically fields are requested int he constructor although we will add functionality to create fields at
@@ -98,11 +152,6 @@ class FieldRegistry:
 
         :return: None
         """
-
-        # for field_name, field_type in self.__fields_to_create.items():
-        #     self.create_scalar_field(field_name)  # todo implement creation of other types as well
-
-        # persistent_globals = self.persistent_globals
 
         for field_name, field_adapter in self.__fields_to_create.items():
             try:
@@ -115,15 +164,11 @@ class FieldRegistry:
             if field_adapter.get_ref() is None:
                 field_creating_fcn(field_name)
                 if self.simthread is not None:
-                    self.simthread.add_visualization_field(field_name,field_adapter.field_type)
-
-            # # todo implement creation of other types as well -  introduce factory
-            # if field_adapter.field_type == SCALAR_FIELD_NPY:
-            #     self.create_scalar_field(field_name)
+                    self.simthread.add_visualization_field(field_name, field_adapter.field_type)
 
         self.enable_ad_hoc_field_creation = True
 
-    def get_fields_to_create_dict(self)->dict:
+    def get_fields_to_create_dict(self) -> dict:
         """
 
         :return:
@@ -131,8 +176,7 @@ class FieldRegistry:
 
         return self.__fields_to_create
 
-
-    def get_field_dict(self)->dict:
+    def get_field_dict(self) -> dict:
         """
 
         :return:

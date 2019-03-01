@@ -40,6 +40,7 @@ import cc3d.Version as Version
 FIELD_TYPES = (
     "CellField", "ConField", "ScalarField", "ScalarFieldCellLevel", "VectorField", "VectorFieldCellLevel", "CustomVis")
 
+# todo 5 - replace numbers with enum labels (variables) e.g. SCALAR_FIELD_NP etc...
 FIELD_NUMBER_TO_FIELD_TYPE_MAP = {
     0: "CellField",
     1: "ConField",
@@ -48,6 +49,7 @@ FIELD_NUMBER_TO_FIELD_TYPE_MAP = {
     4: "VectorField",
     5: "VectorFieldCellLevel",
     6: "ScalarField",
+    7: "VectorField",
     8: "CustomVis"
 }
 
