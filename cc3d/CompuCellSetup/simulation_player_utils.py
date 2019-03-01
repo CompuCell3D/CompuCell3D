@@ -1,6 +1,7 @@
 from cc3d import CompuCellSetup
 import numpy as np
 from cc3d.core.enums import *
+from .ExtraFieldAdapter import ExtraFieldAdapter
 
 
 
@@ -69,53 +70,21 @@ def add_new_plot_window(title='', xAxisTitle='', yAxisTitle='', xScaleType='line
 
     return pW
 
-# def create_scalar_field_py(dim ,fieldName):
-def create_scalar_field_py(field_name):
-
-
+def create_extra_field(field_name:str, field_type:int)->ExtraFieldAdapter:
+    """
+    Creates field adapter. On initialization it may or may not have functional reference to the actual field
+    When field is initialized from constructor only adapter is returned, however fields
+    initizlized later in the simulatino (start or step function ) will have functional field reference inside
+    :param field_name:
+    :param field_type:
+    :return:
+    """
     field_name = field_name.replace(" ", "_")
     persistent_globals = CompuCellSetup.persistent_globals
-    simthread = persistent_globals.simthread
     field_registry = persistent_globals.field_registry
 
-    # field_adapter = field_registry.schedule_field_creation(field_name, SCALAR_FIELD_NPY)
-    field_adapter = field_registry.create_field(field_name, SCALAR_FIELD_NPY)
-
+    field_adapter = field_registry.create_field(field_name, field_type)
 
     return field_adapter
 
 
-
-    # # todo 5 - fix it to handle CML runs
-    # # if persistent_globals.simthread == "CML":
-    # #
-    # #     fieldNP = np.zeros(shape=(_dim.x, _dim.y, _dim.z), dtype=np.float32)
-    # #     ndarrayAdapter = cmlFieldHandler.fieldStorage.createFloatFieldPy(_dim, _fieldName)
-    # #     ndarrayAdapter.initFromNumpy(
-    # #         fieldNP)  # initializing  numpyAdapter using numpy array (copy dims and data ptr)
-    # #     fieldRegistry.addNewField(ndarrayAdapter, _fieldName, SCALAR_FIELD)
-    # #     fieldRegistry.addNewField(fieldNP, _fieldName + '_npy', SCALAR_FIELD_NPY)
-    # #     return fieldNP
-    # # else:
-    #
-    # fieldNP = np.zeros(shape=(dim.x, dim.y, dim.z), dtype=np.float32)
-    # ndarrayAdapter = simthread.callingWidget.fieldStorage.createFloatFieldPy(dim, field_name)
-    # # initializing  numpyAdapter using numpy array (copy dims and data ptr)
-    # ndarrayAdapter.initFromNumpy(fieldNP)
-    # field_registry.addNewField(ndarrayAdapter, field_name, SCALAR_FIELD)
-    # field_registry.addNewField(fieldNP, field_name + '_npy', SCALAR_FIELD_NPY)
-    # return fieldNP
-
-def create_scalar_field_cell_level_py(field_name):
-
-
-    field_name = field_name.replace(" ", "_")
-    persistent_globals = CompuCellSetup.persistent_globals
-    simthread = persistent_globals.simthread
-    field_registry = persistent_globals.field_registry
-
-    # field_adapter = field_registry.schedule_field_creation(field_name, SCALAR_FIELD_NPY)
-    field_adapter = field_registry.create_field(field_name, SCALAR_FIELD_CELL_LEVEL)
-
-
-    return field_adapter

@@ -1,5 +1,6 @@
 import itertools
 from cc3d.core.iterators import *
+from cc3d.core.enums import *
 # from cc3d.CompuCellSetup.simulation_utils import stop_simulation
 from cc3d import CompuCellSetup
 
@@ -127,24 +128,36 @@ class SteppableBasePy(SteppablePy):
 
 
 
-    def create_scalar_field_py(self, fieldName):
+    def create_scalar_field_py(self, fieldName:str):
         """
         Created extra visualization field
         :param fieldName: {str}
         :return:
         """
-        return CompuCellSetup.simulation_player_utils.create_scalar_field_py(fieldName)
-        # return CompuCellSetup.simulation_player_utils.create_scalar_field_py(self.dim, fieldName)
 
-    def create_scalar_field_cell_level_py(self, fieldName):
+        return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=fieldName,field_type=SCALAR_FIELD_NPY)
+        # return CompuCellSetup.simulation_player_utils.create_scalar_field_py(fieldName)
+
+    def create_scalar_field_cell_level_py(self, fieldName:str):
         """
-        Created extra visualization field
+        Creates extra visualization field
         :param fieldName: {str}
         :return:
         """
-        return CompuCellSetup.simulation_player_utils.create_scalar_field_cell_level_py(fieldName)
-        # return CompuCellSetup.simulation_player_utils.create_scalar_field_py(self.dim, fieldName)
+        return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=fieldName,
+                                                                         field_type=SCALAR_FIELD_CELL_LEVEL)
+        # return CompuCellSetup.simulation_player_utils.create_scalar_field_cell_level_py(fieldName)
 
+    def create_vector_field_py(self, fieldName:str):
+        """
+        Creates extra visualization vector field (voxel-based)
+        :param fieldName: {str}
+        :return:
+        """
+
+        return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=fieldName,
+                                                                         field_type=VECTOR_FIELD_NPY)
+        # return CompuCellSetup.simulation_player_utils.create_scalar_field_py(fieldName)
 
 
     def every_pixel_with_steps(self, step_x, step_y, step_z):
