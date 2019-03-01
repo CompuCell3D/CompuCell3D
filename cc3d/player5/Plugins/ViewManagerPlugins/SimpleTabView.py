@@ -419,6 +419,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         return mdiWindow
 
+    def handle_vis_field_created(self, field_name:str, field_type:int)->None:
+        """
+        slot that handles new visualization field creation. This mechanism is necessary to handle fields
+        created outside steppable constructor
+        :param field_name:
+        :param field_type:
+        :return:
+        """
+        # for field_name , field_adapter in field_dict.items():
+        #     self.fieldTypes[field_name] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[field_adapter.field_type]
+
+        self.fieldTypes[field_name] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[field_type]
+
     def addNewGraphicsWindow(self):
         '''
         callback method to create additional ("Aux") graphics windows
@@ -1079,6 +1092,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # TODO changing signals
         self.simulation.errorOccured.connect(self.handleErrorMessage)
         self.simulation.errorFormatted.connect(self.handleErrorFormatted)
+
+        self.simulation.visFieldCreatedSignal.connect(self.handle_vis_field_created)
 
         # self.connect(self.simulation, SIGNAL("errorOccured(QString,QString)"), self.handleErrorMessage)
         # # self.connect(self.simulation,SIGNAL("errorOccuredDetailed(QString,QString,int,int,QString)"),self.handleErrorMessageDetailed)
@@ -2705,7 +2720,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.fieldTypes["Cell_Field"] = FIELD_TYPES[0]  # "CellField"
 
         self.fieldComboBox.clear()
-        self.fieldComboBox.addItem("-- Field Type --")
+        # self.fieldComboBox.addItem("-- Field Type --")
         self.fieldComboBox.addItem("Cell_Field")
 
         for fieldName in list(self.simulation.fieldsUsed.keys()):

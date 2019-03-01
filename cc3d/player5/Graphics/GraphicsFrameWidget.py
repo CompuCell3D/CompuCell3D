@@ -408,7 +408,7 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         self.fieldComboBoxAct = QtWidgets.QAction(self)
         self.fieldComboBox = QtWidgets.QComboBox()  # Note that this is different than the fieldComboBox in the Prefs panel (rf. SimpleTabView.py)
         self.fieldComboBox.addAction(self.fieldComboBoxAct)
-        self.fieldComboBox.addItem("-- Field Type --")
+        # self.fieldComboBox.addItem("-- Field Type --")
         # self.fieldComboBox.addItem("cAMP")  # huh?
 
         gip = DefaultData.getIconPath
@@ -701,20 +701,51 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
     def takeSimShot(self, *args, **kwds):
         print('CHANGE - TAKE SIM SHOT')
 
-    def setFieldTypesComboBox(self, _fieldTypes):
-        # return
-        self.fieldTypes = _fieldTypes  # assign field types to be the same as field types in the workspace
+    def update_field_types_combo_box(self, field_types:dict)->None:
+        """
+        Updates combo boxes
+        :param field_types:{str}
+        :return:
+        """
 
-        self.fieldComboBox.clear()
-        self.fieldComboBox.addItem("-- Field Type --")
-        self.fieldComboBox.addItem("Cell_Field")
+        # assign field types to be the same as field types in the workspace
+        self.fieldTypes = field_types
+
+        cb = self.fieldComboBox
+        current_text = None
+        if cb.count():
+            current_text = self.fieldComboBox.currentText()
+
+        cb.clear()
+        # cb.addItem("-- Field Type --")
+        cb.addItem("Cell_Field")
         for key in list(self.fieldTypes.keys()):
             if key != "Cell_Field":
-                self.fieldComboBox.addItem(key)
-        self.fieldComboBox.setCurrentIndex(1)  # setting value of the Combo box to be cellField - default action
+                cb.addItem(key)
 
-        # self.qvtkWidget.resetCamera() # last call triggers fisrt call to draw function so
-        # we here reset camera so that all the actors are initially visible
+        # setting value of the Combo box to be cellField - default action
+        if current_text is None:
+            cb.setCurrentIndex(0)
+        else:
+            current_idx = cb.findText(current_text)
+            cb.setCurrentIndex(current_idx)
+
+    def setFieldTypesComboBox(self, _fieldTypes):
+        # return
+        # self.fieldTypes = _fieldTypes  # assign field types to be the same as field types in the workspace
+        #
+        # self.fieldComboBox.clear()
+        # self.fieldComboBox.addItem("-- Field Type --")
+        # self.fieldComboBox.addItem("Cell_Field")
+        # for key in list(self.fieldTypes.keys()):
+        #     if key != "Cell_Field":
+        #         self.fieldComboBox.addItem(key)
+        # self.fieldComboBox.setCurrentIndex(1)  # setting value of the Combo box to be cellField - default action
+        #
+        # # self.qvtkWidget.resetCamera() # last call triggers fisrt call to draw function so
+        # # we here reset camera so that all the actors are initially visible
+        #
+        self.update_field_types_combo_box(field_types=_fieldTypes)
 
         # todo 5 - essential initialization of the default cameras
         # last call triggers fisrt call to draw function so we here reset camera so that

@@ -1,10 +1,12 @@
 from cc3d.core.SteppableRegistry import SteppableRegistry
 from cc3d.core.enums import *
 import numpy as np
+import weakref
 from .ExtraFieldAdapter import ExtraFieldAdapter
 
 
 class FieldRegistry:
+    # def __init__(self, persistent_globals=None):
     def __init__(self):
         self.__field_dict = {}
 
@@ -14,6 +16,11 @@ class FieldRegistry:
 
         self.dim = None
         self.simthread = None
+
+        # self.persistent_globals = None
+        # if persistent_globals is not None:
+        #     self.persistent_globals = weakref.ref(persistent_globals)
+
 
         self.enable_ad_hoc_field_creation = False
 
@@ -95,6 +102,8 @@ class FieldRegistry:
         # for field_name, field_type in self.__fields_to_create.items():
         #     self.create_scalar_field(field_name)  # todo implement creation of other types as well
 
+        # persistent_globals = self.persistent_globals
+
         for field_name, field_adapter in self.__fields_to_create.items():
             try:
                 field_creating_fcn = self.field_creating_fcns[field_adapter.field_type]
@@ -105,6 +114,8 @@ class FieldRegistry:
             # we are creating fields only when internal field reference is None
             if field_adapter.get_ref() is None:
                 field_creating_fcn(field_name)
+                if self.simthread is not None:
+                    self.simthread.add_visualization_field(field_name,field_adapter.field_type)
 
             # # todo implement creation of other types as well -  introduce factory
             # if field_adapter.field_type == SCALAR_FIELD_NPY:

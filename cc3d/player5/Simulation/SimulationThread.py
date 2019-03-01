@@ -21,6 +21,7 @@ class SimulationThread(QtCore.QThread):
     errorOccured = pyqtSignal(str, str)
     errorFormatted = pyqtSignal(str)
     errorOccuredDetailed = pyqtSignal(str, str,int,int,str)
+    visFieldCreatedSignal = pyqtSignal(str, int)
 
     #
     # CONSTRUCTOR
@@ -101,6 +102,9 @@ class SimulationThread(QtCore.QThread):
 
     def emitErrorOccuredDetailed(self,_errorType,_file,_line,_col,_traceback_message):
         self.errorOccuredDetailed.emit(_errorType,_file,_line,_col,_traceback_message)
+
+    def emitVisFieldCreatedSignal(self, field_name, field_type):
+        self.visFieldCreatedSignal.emit(field_name, field_type)
 
     def setSimulator(self, _sim):
 
@@ -355,8 +359,16 @@ class SimulationThread(QtCore.QThread):
         # py_compile.compile(file=run_script_name)
         exec(compile(open(run_script_name).read(), run_script_name, 'exec'))
 
+    def add_visualization_field(self, field_name, field_type):
+        """
 
+        :param field_name:
+        :param field_type:
+        :return:
+        """
 
+        print(" field_name, field_type=",( field_name, field_type))
+        self.emitVisFieldCreatedSignal(field_name=field_name, field_type=field_type)
 
     def run(self):
         # from cc3d.CompuCellSetup.sim_runner import run_cc3d_project
