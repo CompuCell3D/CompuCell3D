@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+"""
+This module handles  reading of serialized simulation output. It has
+API of Simulation Thread and from the point of view of player
+it behaves as a "regular" simulation with one exception that
+instead running actual simulation during call to the step function it reads previously
+saves simulation snapshot (currently stored as vtk file)
+"""
+
 from cc3d.core.enums import *
 from PyQt5.QtCore import *
 import CompuCell
@@ -39,7 +47,6 @@ class DataReader(QThread):
 
 
 class CMLResultReader(SimulationThread.SimulationThread):
-
     data_read = pyqtSignal(int, name='data_read')
     initial_data_read = pyqtSignal(bool, name='initial_data_read')
     subsequent_data_read = pyqtSignal(int, name='subsequent_data_read')
@@ -70,7 +77,7 @@ class CMLResultReader(SimulationThread.SimulationThread):
         self.latticeType = "Square"
         self.numberOfSteps = 0
         self.__direct_access_flag = False
-        self.__mcsDirectAccess = 0
+        self.__mcs_direct_access = 0
         self.__fileNumber = -1  # self.counter=0
         self.newFileBeingLoaded = False
         self.readFileSem = QSemaphore(1)
@@ -91,10 +98,19 @@ class CMLResultReader(SimulationThread.SimulationThread):
 
         self.recently_read_file_number = -1
 
-    def set_stay_in_current_step(self, flag):
+    def set_stay_in_current_step(self, flag: bool) -> None:
+        """
+
+        :param flag:
+        :return:
+        """
         self.stay_in_current_step = flag
 
-    def get_stay_in_current_step(self):
+    def get_stay_in_current_step(self) -> bool:
+        """
+
+        :return:
+        """
         return self.stay_in_current_step
 
     def got_data(self, file_number):
@@ -112,7 +128,6 @@ class CMLResultReader(SimulationThread.SimulationThread):
             self.initial_data_read.emit(True)
             self.__initialized = True
 
-
         if file_number < 0:
             # read did not succeed
             self.set_run_state(state=STOP_STATE)
@@ -121,7 +136,7 @@ class CMLResultReader(SimulationThread.SimulationThread):
             # read successful
             self.subsequent_data_read.emit(file_number)
 
-    def set_run_state(self, state:int)->None:
+    def set_run_state(self, state: int) -> None:
         """
         sets current run state
         :param state:
@@ -129,7 +144,6 @@ class CMLResultReader(SimulationThread.SimulationThread):
         """
 
         self.state = state
-
 
     def keep_going(self):
         """
@@ -163,7 +177,7 @@ class CMLResultReader(SimulationThread.SimulationThread):
             return
 
         if self.__direct_access_flag:
-            self.stepCounter = self.__mcsDirectAccess
+            self.stepCounter = self.__mcs_direct_access
             self.__direct_access_flag = False
 
         self.data_reader = DataReader(parent=self)
@@ -204,7 +218,7 @@ class CMLResultReader(SimulationThread.SimulationThread):
     def data_ready(self):
         return self.newFileBeingLoaded
 
-    def read_simulation_data_non_blocking(self, file_number:int)->bool:
+    def read_simulation_data_non_blocking(self, file_number: int) -> bool:
         """
         reads content of the serialized file
         :param file_number: {int}
@@ -279,96 +293,100 @@ class CMLResultReader(SimulationThread.SimulationThread):
 
         return -1
 
-
-    def extractLatticeDescriptionInfo(self, _fileName: str):
+    def extract_lattice_description_info(self, file_name: str) -> None:
+        """
+        Reads the xml that summarizes serialized simulation files
+        :param file_name:{str} xml metadata file name
+        :return: None
         """
 
-        :param _fileName:
-        :return:
-        """
-        ldsFile = os.path.abspath(_fileName)
-        self.ldsDir = os.path.dirname(ldsFile)
+        # lattice data simulation file
+        lds_file = os.path.abspath(file_name)
+        self.ldsDir = os.path.dirname(lds_file)
 
-        xml2ObjConverter = XMLUtils.Xml2Obj()
-        root_element = xml2ObjConverter.Parse(ldsFile)
-        dimElement = root_element.getFirstElement("Dimensions")
+        xml2_obj_converter = XMLUtils.Xml2Obj()
+        root_element = xml2_obj_converter.Parse(lds_file)
+        dim_element = root_element.getFirstElement("Dimensions")
         self.fieldDim = CompuCell.Dim3D()
-        self.fieldDim.x = int(dimElement.getAttribute("x"))
-        self.fieldDim.y = int(dimElement.getAttribute("y"))
-        self.fieldDim.z = int(dimElement.getAttribute("z"))
-        outputElement = root_element.getFirstElement("Output")
-        self.ldsCoreFileName = outputElement.getAttribute("CoreFileName")
-        self.frequency = int(outputElement.getAttribute("Frequency"))
-        self.numberOfSteps = int(outputElement.getAttribute("NumberOfSteps"))
+        self.fieldDim.x = int(dim_element.getAttribute("x"))
+        self.fieldDim.y = int(dim_element.getAttribute("y"))
+        self.fieldDim.z = int(dim_element.getAttribute("z"))
+        output_element = root_element.getFirstElement("Output")
+        self.ldsCoreFileName = output_element.getAttribute("CoreFileName")
+        self.frequency = int(output_element.getAttribute("Frequency"))
+        self.numberOfSteps = int(output_element.getAttribute("NumberOfSteps"))
 
         # obtaining list of files in the ldsDir
-        latticeElement = root_element.getFirstElement("Lattice")
-        self.latticeType = latticeElement.getAttribute("Type")
+        lattice_element = root_element.getFirstElement("Lattice")
+        self.latticeType = lattice_element.getAttribute("Type")
 
-        # getting information about cell type names and cell ids. It is necessary during generation of the PIF files from VTK output
-        cellTypesElements = root_element.getElements("CellType")
-        listCellTypeElements = CC3DXMLListPy(cellTypesElements)
-        for cellTypeElement in listCellTypeElements:
-            typeName = cellTypeElement.getAttribute("TypeName")
-            typeId = cellTypeElement.getAttributeAsInt("TypeId")
-            self.typeIdTypeNameDict[typeId] = typeName
+        # getting information about cell type names and cell ids.
+        # It is necessary during generation of the PIF files from VTK output
+        cell_types_elements = root_element.getElements("CellType")
+        list_cell_type_elements = CC3DXMLListPy(cell_types_elements)
+        for cell_type_element in list_cell_type_elements:
+            type_name = cell_type_element.getAttribute("TypeName")
+            type_id = cell_type_element.getAttributeAsInt("TypeId")
+            self.typeIdTypeNameDict[type_id] = type_name
 
         # now will convert python dictionary into C++ map<int, string>     
 
         self.typeIdTypeNameCppMap = CC3DXML.MapIntStr()
-        for typeId in list(self.typeIdTypeNameDict.keys()):
-            self.typeIdTypeNameCppMap[int(typeId)] = self.typeIdTypeNameDict[typeId]
+        for type_id in list(self.typeIdTypeNameDict.keys()):
+            self.typeIdTypeNameCppMap[int(type_id)] = self.typeIdTypeNameDict[type_id]
 
-        ldsFileList = os.listdir(self.ldsDir)
+        lds_file_list = os.listdir(self.ldsDir)
 
-        for fName in ldsFileList:
+        for fName in lds_file_list:
             if re.match(".*\.vtk$", fName):
                 self.ldsFileList.append(fName)
 
         self.ldsFileList.sort()
 
         # extracting information about fields in the lds file
-        fieldsElement = root_element.getFirstElement("Fields")
-        if fieldsElement:
-            fieldList = XMLUtils.CC3DXMLListPy(fieldsElement.getElements("Field"))
+        fields_element = root_element.getFirstElement("Fields")
+        if fields_element:
+            field_list = XMLUtils.CC3DXMLListPy(fields_element.getElements("Field"))
 
-            for fieldElem in fieldList:
+            for field_elem in field_list:
 
-                fieldName = fieldElem.getAttribute("Name")
-                self.fieldsUsed[fieldElem.getAttribute("Name")] = fieldElem.getAttribute("Type")
-                if fieldElem.findAttribute("Script"):  # True or False if present
-                    # ToDo:  if a "CustomVis" Type was provided, require that a "Script" was also provided; else warn user
-                    customVisScript = fieldElem.getAttribute("Script")
+                field_name = field_elem.getAttribute("Name")
+                self.fieldsUsed[field_elem.getAttribute("Name")] = field_elem.getAttribute("Type")
+                if field_elem.findAttribute("Script"):  # True or False if present
+                    # ToDo:  if a "CustomVis" Type was provided,
+                    #  require that a "Script" was also provided; else warn user
+                    custom_vis_script = field_elem.getAttribute("Script")
 
-                    self.customVis = CompuCellSetup.createCustomVisPy(fieldName)
+                    self.customVis = CompuCellSetup.createCustomVisPy(field_name)
                     self.customVis.registerVisCallbackFunction(CompuCellSetup.vtkScriptCallback)
 
-                    self.customVis.addActor(fieldName, "vtkActor")
+                    self.customVis.addActor(field_name, "vtkActor")
                     # we'll piggyback off the actorsDict
-                    self.customVis.addActor("customVTKScript", customVisScript)
+                    self.customVis.addActor("customVTKScript", custom_vis_script)
 
-    def generatePIFFromVTK(self, _vtkFileName: str, _pifFileName: str) -> None:
+    def generate_pif_from_vtk(self, _vtkFileName: str, _pifFileName: str) -> None:
         """
         generates PIFF from VTK file
         :param _vtkFileName:
         :param _pifFileName:
         :return:
         """
+
         if self.__fileWriter is None:
             self.__fileWriter = PlayerPython.FieldWriter()
 
         self.__fileWriter.generatePIFFileFromVTKOutput(_vtkFileName, _pifFileName, self.fieldDim.x, self.fieldDim.y,
                                                        self.fieldDim.z, self.typeIdTypeNameCppMap)
 
-    def setCurrentStepDirectAccess(self, _mcs):
-        self.__mcsDirectAccess = _mcs
+    def set_current_step_direct_access(self, mcs: int) -> None:
+        """
+        function used by lattice files data panel module to directly set
+        current step
+        :param mcs: {int} current mcs - directo access from gui pabel
+        :return:
+        """
+        self.__mcs_direct_access = mcs
         self.__direct_access_flag = True
-
-    def getCurrentStepDirectAccess(self):
-        return (self.__mcsDirectAccess, self.__direct_access_flag)
-
-    def resetDirectAccessFlag(self):
-        self.__direct_access_flag = False
 
     def steerUsingGUI(self, _sim):
         """

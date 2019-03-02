@@ -862,7 +862,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.cmlReplayManager = self.simulation = CMLResultReader(self)
 
             # print "GOT THIS self.__fileName=",self.__fileName
-            self.simulation.extractLatticeDescriptionInfo(self.__sim_file_name)
+            self.simulation.extract_lattice_description_info(self.__sim_file_name)
             # filling out basic simulation data
             self.basicSimulationData.fieldDim = self.simulation.fieldDim
             self.basicSimulationData.numberOfSteps = self.simulation.numberOfSteps

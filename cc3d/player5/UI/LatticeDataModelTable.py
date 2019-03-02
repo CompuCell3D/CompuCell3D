@@ -62,7 +62,7 @@ class LatticeDataModelTable(QTableView):
     def __pickAndAdvanceMCSDirect(self,idx):
         # print '__pickAndAdvanceMCSDirect idx=',idx
         # print 'self.vm.simulation=',self.vm.simulation
-        self.vm.simulation.setCurrentStepDirectAccess(idx.row())
+        self.vm.simulation.set_current_step_direct_access(idx.row())
         self.vm.stepAct.trigger()
     
     def __pickMCSDirect(self, idx):
@@ -70,7 +70,7 @@ class LatticeDataModelTable(QTableView):
         
         # idx0 = idx.sibling(idx.row(), 0)
         # print MODULENAME,"__pickMCSDirect():  calling self.vm.simulation.setCurrentStepDirectAccess(idx.row())= ",idx.row()
-        self.vm.simulation.setCurrentStepDirectAccess(idx.row())
+        self.vm.simulation.set_current_step_direct_access(idx.row())
         # self.vm.stepAct.trigger()
         # idx1 = idx.sibling(idx.row(), 1)
         # pluginInfo = [self.model().data(idx0, Qt.DisplayRole).toString(), self.model().data(idx1, Qt.DisplayRole).toString()]

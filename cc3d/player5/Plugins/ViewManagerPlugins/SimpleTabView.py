@@ -3665,7 +3665,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # todo - have to recode C++ code to take unicode as filename...
         pifFileName = str(pifFileName_selection[0])
-        self.simulation.generatePIFFromVTK(self.simulation.currentFileName, pifFileName)
+        self.simulation.generate_pif_from_vtk(self.simulation.currentFileName, pifFileName)
 
     def __configsChanged(self):
         """
