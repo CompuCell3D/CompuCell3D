@@ -1,7 +1,7 @@
 import itertools
 from cc3d.core.iterators import *
 from cc3d.core.enums import *
-from cc3d.CompuCellSetup.ExtraFieldAdapter import ExtraFieldAdapter
+from cc3d.core.ExtraFieldAdapter import ExtraFieldAdapter
 # from cc3d.CompuCellSetup.simulation_utils import stop_simulation
 from cc3d import CompuCellSetup
 
