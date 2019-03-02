@@ -1607,39 +1607,30 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.prepareXMLTreeView()
 
     def initializeSimulationViewWidget(self):
-        '''
-        Dispatch function - calls player5 initialization functions (initializeSimulationViewWidgetRegular or initializeSimulationViewWidgetCML) depending on the run mode
+        """
+        Dispatch function - calls player5 initialization functions
+        (initializeSimulationViewWidgetRegular or initializeSimulationViewWidgetCML) depending on the run mode
         :return:None
-        '''
-        # todo
-
-        # import CompuCellSetup
-
-        # CompuCellSetup.simulationFileName = self.__sim_file_name
+        """
 
         self.close_all_windows()
 
         initializeSimulationViewWidgetFcn = getattr(self, "initializeSimulationViewWidget" + self.__viewManagerType)
         initializeSimulationViewWidgetFcn()
 
-        #        print MODULENAME, 'initializeSimulationViewWidget(),  __imageOutput,__latticeOutputFlag,screenshotDirectoryName=', self.__imageOutput,self.__latticeOutputFlag,self.screenshotDirectoryName
         if (self.__imageOutput or self.__latticeOutputFlag) and self.screenshotDirectoryName == "":
-            #            print MODULENAME, 'initializeSimulationViewWidget(),  calling createOutputDirs'
             self.createOutputDirs()
 
-        # copy simulation files to output directory  for simgle simulation- copying of the simulations files for parameter scan is doen in the __loadCC3DFile
+        # copy simulation files to output directory  for single simulation
+        # copying of the simulations files for parameter scan is done in the __loadCC3DFile
 
-        # todo 5 - uncomment it later and restore
-        # if self.singleSimulation:
-        #     if self.cc3dSimulationDataHandler and CompuCellSetup.screenshotDirectoryName != "":
-        #         self.cc3dSimulationDataHandler.copySimulationDataFiles(CompuCellSetup.screenshotDirectoryName)
+        screenshot_directory = CompuCellSetup.persistent_globals.screenshot_directory
+        if self.singleSimulation:
+            if self.cc3dSimulationDataHandler and screenshot_directory is not None:
+                self.cc3dSimulationDataHandler.copySimulationDataFiles(screenshot_directory)
 
-        # print MODULENAME, " initializeSimulationViewWidget():  before TRY ACQUIRE"
         self.simulation.sem.tryAcquire()
         self.simulation.sem.release()
-        # print MODULENAME, " initializeSimulationViewWidget():  AFTER RELEASE"
-
-    #        import pdb; pdb.set_trace()
 
     def runSteppablePostStartPlayerPrep(self):
         '''
