@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from cc3d.core.enums import *
 from PyQt5.QtCore import *
 import CompuCell
 import PlayerPython
@@ -13,43 +14,42 @@ import os.path
 from . import SimulationThread
 from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
 
-(STOP_STATE, RUN_STATE, STEP_STATE, PAUSE_STATE) = list(range(0, 4))
-
-MODULENAME = '---- CMLResultReader.py: '
-
 
 class DataReader(QThread):
     data_read = pyqtSignal(int, name='data_read')
 
     def __init__(self, parent=None):
         QThread.__init__(self, parent)
-        self.cmlReader = parent
-        self.i = 0
+        self.cml_reader = parent
+        self.step = 0
 
-    def setStep(self, _step):
-        self.i = _step
+    def set_step(self, step):
+        self.step = step
 
     def run(self):
-
-        readState = self.cmlReader.readSimulationDataNonBlocking(self.i)
-        if readState:
-            self.data_read.emit(self.i)
+        """
+        reads simulation data. emits a signal after the read finished
+        :return:
+        """
+        read_state = self.cml_reader.read_simulation_data_non_blocking(self.step)
+        if read_state:
+            self.data_read.emit(self.step)
         else:
             self.data_read.emit(-1)
 
 
 class CMLResultReader(SimulationThread.SimulationThread):
-    data_read = pyqtSignal(int, name='data_read')
 
+    data_read = pyqtSignal(int, name='data_read')
     initial_data_read = pyqtSignal(bool, name='initial_data_read')
     subsequent_data_read = pyqtSignal(int, name='subsequent_data_read')
     final_data_read = pyqtSignal(bool, name='final_data_read')
 
-    # CONSTRUCTOR 
     def __init__(self, parent=None):
         SimulationThread.SimulationThread.__init__(self, parent)
 
-        # NOTE: to implement synchronization between threads we use semaphores. If yuou use mutexes for this then if you lokc mutex in one thread and try to unlock
+        # NOTE: to implement synchronization between threads we use semaphores.
+        # If you use mutexes for this then if you lock mutex in one thread and try to unlock
         # from another thread than on Linux it will not work. Semaphores are better for this
 
         # data extracted from LDS file *.dml
@@ -58,23 +58,27 @@ class CMLResultReader(SimulationThread.SimulationThread):
         self.ldsCoreFileName = ""
         self.currentFileName = ""
         self.ldsDir = None
-        self.ldsFileList = []  # list of *.vtk files containing graphics lattice data
+
+        # list of *.vtk files containing graphics lattice data
+        self.ldsFileList = []
         self.fieldsUsed = {}
         self.sim = None
         self.simulationData = None
         self.simulationDataReader = None
-        self.frequency = 0;
-        self.currentStep = 0;
+        self.frequency = 0
+        self.currentStep = 0
         self.latticeType = "Square"
-        self.numberOfSteps = 0;
-        self.__directAccessFlag = False
-        self.__mcsDirectAccess = 0;
+        self.numberOfSteps = 0
+        self.__direct_access_flag = False
+        self.__mcsDirectAccess = 0
         self.__fileNumber = -1  # self.counter=0
         self.newFileBeingLoaded = False
         self.readFileSem = QSemaphore(1)
         self.typeIdTypeNameDict = {}
         self.__fileWriter = None
-        self.typeIdTypeNameCppMap = None  # C++ map<int,string> providing mapping from type id to type name
+
+        # C++ map<int,string> providing mapping from type id to type name
+        self.typeIdTypeNameCppMap = None
         self.customVis = None
         self.__ui = parent
         self.__initialized = False
@@ -87,58 +91,61 @@ class CMLResultReader(SimulationThread.SimulationThread):
 
         self.recently_read_file_number = -1
 
-    # Python 2.6 requires importing of Example, CompuCell and Player Python modules from an instance  of QThread class (here Simulation Thread inherits from QThread)
-    # Simulation Thread communicates with SimpleTabView using SignalSlot method. If we dont import the three modules then when SimulationThread emits siglan and SimpleTabView
-    # processes this signal in a slot (e.g. initializeSimulationViewWidget) than calling a member function of an object from e.g. Player Python (self.fieldStorage.allocateCellField(self.fieldDim))
-    # results in segfault. Python 2.5 does not have this issue. Anyway this seems to work on Linux with Python 2.6
-    # This might be a problem only on Linux
-    # import Example
-    # import CompuCell
-    # import PlayerPython
-
     def set_stay_in_current_step(self, flag):
         self.stay_in_current_step = flag
 
     def get_stay_in_current_step(self):
         return self.stay_in_current_step
 
-    def gotData(self, _i):
-        # print '\n\n\n       GOT DATA FOR STEP ',_i
-        # print '\n\n'
-        self.recently_read_file_number = _i
+    def got_data(self, file_number):
+        """
+        slot handling data read
+        :param file_number:
+        :return:
+        """
+        self.recently_read_file_number = file_number
 
-        self.dataReader.data_read.disconnect(self.gotData)
+        self.data_reader.data_read.disconnect(self.got_data)
         self.reading = False
 
-        if _i == 0 and not self.__initialized:
+        if file_number == 0 and not self.__initialized:
             self.initial_data_read.emit(True)
             self.__initialized = True
-        if _i < 0:  # meaning read did not succeed
-            self.setStopState()
+
+
+        if file_number < 0:
+            # read did not succeed
+            self.set_run_state(state=STOP_STATE)
             self.final_data_read.emit(True)
         else:
-            self.subsequent_data_read.emit(_i)
+            # read successful
+            self.subsequent_data_read.emit(file_number)
 
-    def setRunState(self):
-        self.state = RUN_STATE
+    def set_run_state(self, state:int)->None:
+        """
+        sets current run state
+        :param state:
+        :return:
+        """
 
-    def setStepState(self):
-        self.state = STEP_STATE
+        self.state = state
 
-    def setPauseState(self):
-        self.state = PAUSE_STATE
 
-    def setStopState(self):
-        self.state = STOP_STATE
+    def keep_going(self):
+        """
 
-    def keepGoing(self):
+        :return:
+        """
 
         if self.state == RUN_STATE:
             self.step()
 
-    def step(self):
+    def step(self) -> None:
+        """
+        executes single step for CMLResultReplay
+        :return:
+        """
         # ignoring step requests while reading operation is pending
-        # print 'INSIDE STEP self.reading=',self.reading
         if self.reading:
             return
 
@@ -154,27 +161,28 @@ class CMLResultReader(SimulationThread.SimulationThread):
 
             return
 
-        print('self.stepCounter=', self.stepCounter)
-        print('DIRECT ACCESS =', self.getCurrentStepDirectAccess())
-
-        if self.__directAccessFlag:
+        if self.__direct_access_flag:
             self.stepCounter = self.__mcsDirectAccess
-            self.__directAccessFlag = False
+            self.__direct_access_flag = False
 
-        self.dataReader = DataReader(parent=self)
-        self.dataReader.setStep(self.stepCounter)
-        self.dataReader.data_read.connect(self.gotData)
+        self.data_reader = DataReader(parent=self)
+        self.data_reader.set_step(self.stepCounter)
+        self.data_reader.data_read.connect(self.got_data)
 
         self.stepCounter += 1
 
-        self.reading = True  # flag indicating that reading is taking place
-        self.dataReader.start()
+        # flag indicating that reading is taking place
+        self.reading = True
+        self.data_reader.start()
 
-    def dimensionChange(self):
-        # print 'self.fieldDimPrevious=',self.fieldDimPrevious
-        # print 'self.fieldDim=',self.fieldDim
+    def dimensionChange(self) -> bool:
+        """
+        event handler that processes change of dimension of the simulation
+        :return: {bool} flag indicating if essentiall handler code was actually or not
+        """
         if self.fieldDimPrevious:
-            if self.fieldDimPrevious.x != self.fieldDim.x or self.fieldDimPrevious.y != self.fieldDim.y or self.fieldDimPrevious.z != self.fieldDim.z:
+            if self.fieldDimPrevious.x != self.fieldDim.x \
+                    or self.fieldDimPrevious.y != self.fieldDim.y or self.fieldDimPrevious.z != self.fieldDim.z:
                 return True
             else:
                 return False
@@ -182,69 +190,89 @@ class CMLResultReader(SimulationThread.SimulationThread):
             return False
 
     def resetDimensionChangeMonitoring(self):
-        # this reset is necessary to avoid recursive calls in the SimpleTabView -- this code needs to be changed because at this point it looks horrible
+        """
+
+        :return:
+        """
+
+        # this reset is necessary to avoid recursive calls in the
+        # SimpleTabView -- this code needs to be changed because at this point it looks horrible
         self.fieldDimPrevious = self.fieldDim
 
-    def readSimulationDataNonBlocking(self, _i):
-        self.newFileBeingLoaded = True  # this flag is used to prevent calling  draw function when new data is read from hard drive
-        # print "LOCKED self.newFileBeingLoaded=",self.newFileBeingLoaded
-        # self.drawMutex.lock()
-        if _i >= len(self.ldsFileList):
+    @property
+    def data_ready(self):
+        return self.newFileBeingLoaded
+
+    def read_simulation_data_non_blocking(self, file_number:int)->bool:
+        """
+        reads content of the serialized file
+        :param file_number: {int}
+        :return: {bool} flag whether read was successful or not
+        """
+
+        # this flag is used to prevent calling  draw function
+        self.newFileBeingLoaded = True
+
+        # when new data is read from hard drive
+        if file_number >= len(self.ldsFileList):
             return False
 
-        fileName = self.ldsFileList[_i]
+        fileName = self.ldsFileList[file_number]
 
         self.simulationDataReader = vtk.vtkStructuredPointsReader()
 
         self.currentFileName = os.path.join(self.ldsDir, fileName)
         print('self.currentFileName=', self.currentFileName)
 
-        extractedMCS = self.extractMCSNumberFromFileName(self.currentFileName)
-        if extractedMCS < 0:
-            extractedMCS = _i
+        extracted_mcs = self.extract_mcs_number_from_file_name(file_name=self.currentFileName)
+        if extracted_mcs < 0:
+            extracted_mcs = file_number
 
         self.simulationDataReader.SetFileName(self.currentFileName)
         # print "path= ", os.path.join(self.ldsDir,fileName)
 
-        dataReaderIntAddr = extract_address_int_from_vtk_object(vtkObj=self.simulationDataReader)
-        # todo 5- old way
-        # dataReaderIntAddr = self.__ui.extractAddressIntFromVtkObject(self.simulationDataReader)
+        data_reader_int_addr = extract_address_int_from_vtk_object(vtkObj=self.simulationDataReader)
 
         # swig wrapper  on top of     vtkStructuredPointsReader.Update()  - releases GIL,
         # hence can be used in multithreaded program that does not block GUI
-        self.__ui.fieldExtractor.readVtkStructuredPointsData(dataReaderIntAddr)
+        self.__ui.fieldExtractor.readVtkStructuredPointsData(data_reader_int_addr)
 
         # # # self.simulationDataReader.Update() # does not erlease GIL - VTK ISSUE -
         # cannot be used in multithreaded program - blocks GUI
         self.simulationData = self.simulationDataReader.GetOutput()
 
-
         self.fieldDimPrevious = self.fieldDim
         # self.fieldDimPrevious=CompuCell.Dim3D()
 
-        dimFromVTK = self.simulationData.GetDimensions()
+        dim_from_vtk = self.simulationData.GetDimensions()
 
-        self.fieldDim = CompuCell.Dim3D(dimFromVTK[0], dimFromVTK[1], dimFromVTK[2])
+        self.fieldDim = CompuCell.Dim3D(dim_from_vtk[0], dim_from_vtk[1], dim_from_vtk[2])
 
-        self.currentStep = extractedMCS
+        self.currentStep = extracted_mcs
         # # # self.currentStep = self.frequency * _i # this is how we set CMS for CML reading before
         self.setCurrentStep(self.currentStep)
 
+        self.newFileBeingLoaded = False
+
         return True
 
-    def extractMCSNumberFromFileName(self, _fileName):
+    def extract_mcs_number_from_file_name(self, file_name: str) -> int:
+        """
+        Extracts mcs from serialized file name
+        :param file_name:
+        :return:
+        """
 
-        coreName, ext = os.path.splitext(os.path.basename(_fileName))
-
+        core_name, ext = os.path.splitext(os.path.basename(file_name))
 
         mcs_extractor_regex = re.compile('([\D]*)([0-9]*)')
-        match = re.match(mcs_extractor_regex, coreName)
+        match = re.match(mcs_extractor_regex, core_name)
 
         if match:
-            matchGroups = match.groups()
+            match_groups = match.groups()
 
-            if matchGroups[1] != '':
-                mcs_str = matchGroups[1]
+            if match_groups[1] != '':
+                mcs_str = match_groups[1]
 
                 return int(mcs_str)
 
@@ -283,7 +311,7 @@ class CMLResultReader(SimulationThread.SimulationThread):
         self.drawMutex.unlock()
         self.readFileSem.release()
 
-    def extractLatticeDescriptionInfo(self, _fileName : str):
+    def extractLatticeDescriptionInfo(self, _fileName: str):
         """
 
         :param _fileName:
@@ -322,7 +350,6 @@ class CMLResultReader(SimulationThread.SimulationThread):
         for typeId in list(self.typeIdTypeNameDict.keys()):
             self.typeIdTypeNameCppMap[int(typeId)] = self.typeIdTypeNameDict[typeId]
 
-
         ldsFileList = os.listdir(self.ldsDir)
 
         for fName in ldsFileList:
@@ -351,7 +378,7 @@ class CMLResultReader(SimulationThread.SimulationThread):
                     # we'll piggyback off the actorsDict
                     self.customVis.addActor("customVTKScript", customVisScript)
 
-    def generatePIFFromVTK(self, _vtkFileName : str , _pifFileName: str) -> None:
+    def generatePIFFromVTK(self, _vtkFileName: str, _pifFileName: str) -> None:
         """
         generates PIFF from VTK file
         :param _vtkFileName:
@@ -359,7 +386,6 @@ class CMLResultReader(SimulationThread.SimulationThread):
         :return:
         """
         if self.__fileWriter is None:
-
             self.__fileWriter = PlayerPython.FieldWriter()
 
         self.__fileWriter.generatePIFFileFromVTKOutput(_vtkFileName, _pifFileName, self.fieldDim.x, self.fieldDim.y,
@@ -367,21 +393,23 @@ class CMLResultReader(SimulationThread.SimulationThread):
 
     def setCurrentStepDirectAccess(self, _mcs):
         self.__mcsDirectAccess = _mcs
-        self.__directAccessFlag = True
+        self.__direct_access_flag = True
 
     def getCurrentStepDirectAccess(self):
-        return (self.__mcsDirectAccess, self.__directAccessFlag)
+        return (self.__mcsDirectAccess, self.__direct_access_flag)
 
     def resetDirectAccessFlag(self):
-        self.__directAccessFlag = False
+        self.__direct_access_flag = False
 
     def steerUsingGUI(self, _sim):
-        pass
+        """
+        dummy overwrite of base class method
+        :param _sim:
+        :return:
+        """
 
     def run(self):
-        return
-        globalDict = {'simTabView': 20}
-        localDict = {}
-        print('self.pythonFileName=', self.pythonFileName)
-        self.runUserPythonScript(self.pythonFileName, globalDict, localDict)
-        return
+        """
+        dummy overwrite of base class method
+        :return:
+        """

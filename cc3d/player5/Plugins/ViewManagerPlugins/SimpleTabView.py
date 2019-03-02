@@ -1151,7 +1151,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         """
         persistent_globals = CompuCellSetup.persistent_globals
         # Let's toggle these off (and not tell the user for now)
-        #            Configuration.setSetting("ImageOutputOn",False)  # need to make it possible to save images from .dml/vtk files
+        # need to make it possible to save images from .dml/vtk files
         if Configuration.getSetting("LatticeOutputOn"):
             QMessageBox.warning(self, "Message",
                                 "Warning: Turning OFF 'Save lattice...' in Preferences",
@@ -1532,7 +1532,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         #             # do not output screenshots when custom directory was not created or already exists
         #             self.__imageOutput = False
 
-        self.cmlReplayManager.keepGoing()
+        self.cmlReplayManager.keep_going()
         self.cmlReplayManager.set_stay_in_current_step(True)
 
     def createOutputDirs(self):
@@ -1711,14 +1711,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.plotManager.restore_plots_layout()
 
-    # def extractAddressIntFromVtkObject_1(self, _vtkObj):
-    #     '''
-    #     Extracts memory address of vtk object
-    #     :param _vtkObj: vtk object - e.g. vtk array
-    #     :return: int (possible long int) representing the address of the vtk object
-    #     '''
-    #     return self.fieldExtractor.unmangleSWIGVktPtrAsLong(_vtkObj.__this__)
-
     def handleSimulationFinishedCMLResultReplay(self, _flag):
         '''
         callback - runs after CML replay mode finished. Cleans after vtk replay
@@ -1791,19 +1783,24 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.drawMutex.lock()  # had to add synchronization here . without it I would get weird behavior in CML replay mode
 
         simulationDataIntAddr = extract_address_int_from_vtk_object(self.simulation.simulationData)
-        # simulationDataIntAddr = self.extractAddressIntFromVtkObject(self.simulation.simulationData)
 
         self.fieldExtractor.setSimulationData(simulationDataIntAddr)
         self.__step = self.simulation.currentStep
 
-        self.latticeDataModelTable.selectRow(
-            self.simulation.stepCounter - 1)  # self.simulation.stepCounter is incremented by one before it reaches this function
+        # self.simulation.stepCounter is incremented by one before it reaches this function
+        self.latticeDataModelTable.selectRow(self.simulation.stepCounter - 1)
 
-        # there is additional locking inside draw to acccount for the fact that users may want to draw lattice on demand
+        # there is additional locking inside draw to account for the fact that users may want to draw lattice on demand
         # self.simulation.newFileBeingLoaded=False
-        self.simulation.drawMutex.unlock()  # had to add synchronization here . without it I would get weird behavior in CML replay mode
 
-        self.simulation.newFileBeingLoaded = False  # this flag is used to prevent calling  draw function when new data is read from hard drive
+        # had to add synchronization here . without it I would get weird behavior in CML replay mode
+        self.simulation.drawMutex.unlock()
+
+        # todo 5- this code is moved to the CMLReader
+        # # this flag is used to prevent calling  draw function when new data is read from hard drive
+        # self.simulation.newFileBeingLoaded = False
+
+
         # at this moment new data has been read and is ready to be used
         self.__drawField()
         # print '----------------AFTER self.fieldDim=',self.fieldDim
@@ -1830,7 +1827,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.sem.tryAcquire()
         self.simulation.sem.release()
 
-        self.cmlReplayManager.keepGoing()
+        self.cmlReplayManager.keep_going()
 
     def handleCompletedStepRegular(self, _mcs):
         '''
@@ -2003,8 +2000,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # print 'SIMULATION PREPARED self.__viewManagerType=',self.__viewManagerType
         if self.__viewManagerType == "CMLResultReplay":
-            # print 'starting CMLREPLAY'
-            import CompuCellSetup
 
             self.simulation.semPause.release()  # just in case
 
@@ -2012,8 +2007,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.simulationIsRunning = True
             self.simulationIsStepping = False
 
-            self.cmlReplayManager.setRunState()
-            self.cmlReplayManager.keepGoing()
+            # self.cmlReplayManager.setRunState()
+            self.cmlReplayManager.set_run_state(state=RUN_STATE)
+
+            self.cmlReplayManager.keep_going()
 
             self.runAct.setEnabled(False)
             self.stepAct.setEnabled(True)
@@ -2078,7 +2075,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.simulation.semPause.release()
             self.simulationIsRunning = True
             self.simulationIsStepping = True
-            self.cmlReplayManager.setStepState()
+
+            # self.cmlReplayManager.setStepState()
+            self.cmlReplayManager.set_run_state(state=STEP_STATE)
+
             self.cmlReplayManager.step()
 
             self.stopAct.setEnabled(True)
@@ -2195,7 +2195,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 (currentPlane, currentPlanePos) = graphicsFrame.getPlane()
 
-                if not self.simulation.newFileBeingLoaded:  # this flag is used to prevent calling  draw function when new data is read from hard drive
+                # this flag is used to prevent calling  draw function when new data is read from hard drive
+                # if not self.simulation.newFileBeingLoaded:
+                if not self.simulation.data_ready:
                     # graphicsFrame.drawFieldLocal(self.basicSimulationData)
                     graphicsFrame.draw(self.basicSimulationData)
                 # todo 5
@@ -2351,7 +2353,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
         if self.__viewManagerType == "CMLResultReplay":
-            self.cmlReplayManager.setPauseState()
+
+            self.cmlReplayManager.set_run_state(state=PAUSE_STATE)
 
         self.simulation.semPause.acquire()
         self.runAct.setEnabled(True)
@@ -2416,7 +2419,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.__saveWindowsLayout()
 
         if self.__viewManagerType == "CMLResultReplay":
-            self.cmlReplayManager.setStopState()
+
+            self.cmlReplayManager.set_run_state(state=STOP_STATE)
+
             self.runAct.setEnabled(True)
             self.stepAct.setEnabled(True)
             self.pauseAct.setEnabled(False)
