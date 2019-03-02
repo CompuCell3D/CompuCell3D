@@ -27,6 +27,9 @@ from cc3d.player5.Simulation.CMLResultReader import CMLResultReader
 from cc3d.player5.Simulation.SimulationThread import SimulationThread
 # from Simulation.SimulationThread1 import SimulationThread1
 from cc3d.core import XMLUtils
+
+from cc3d.core.CMLFieldHandler import CMLFieldHandler
+
 from . import ScreenshotManager
 import vtk
 
@@ -113,8 +116,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.useVTKPlots = False
         # object responsible for creating/managing plot windows so they're accessible from steppable level
-        # TODO FIX IT
-        # self.plotManager = None
+
         self.plotManager = createPlotManager(self, self.useVTKPlots)
 
         from .WidgetManager import WidgetManager
@@ -1799,9 +1801,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         #             # sys.exit()
         #
         #             #        if (CompuCellSetup.cmlFieldHandler is not None) and self.__latticeOutputFlag and (not self.__step % self.__latticeOutputFrequency):  #rwh
-        # if self.cmlHandlerCreated and self.__latticeOutputFlag and (
-        #         not self.__step % self.__latticeOutputFrequency):  # rwh
-        #     CompuCellSetup.cmlFieldHandler.writeFields(self.__step)
+
+        if self.cmlHandlerCreated and self.__latticeOutputFlag and (not self.__step % self.__latticeOutputFrequency):
+            CompuCellSetup.persistent_globals.cml_field_handler.write_fields(self.__step)
 
         self.simulation.drawMutex.unlock()
 
@@ -1996,8 +1998,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # print 'SIMULATION PREPARED self.__viewManagerType=',self.__viewManagerType
         if self.__viewManagerType == "CMLResultReplay":
-            # print 'starting CMLREPLAY'
-            import CompuCellSetup
+
 
             self.simulation.semPause.release()
             self.simulationIsRunning = True
@@ -2032,10 +2033,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 self.simulation.start()
 
-            if self.completedFirstMCS and Configuration.getSetting(
-                    "LatticeOutputOn") and not self.cmlHandlerCreated:  # rwh
-                from cc3d.core.CMLFieldHandler import CMLFieldHandler
-                cml_field_handler = CMLFieldHandler()
+            if self.completedFirstMCS and Configuration.getSetting("LatticeOutputOn") and not self.cmlHandlerCreated:
+
+                persistent_globals = CompuCellSetup.persistent_globals
+                persistent_globals.cml_field_handler = CMLFieldHandler()
+                persistent_globals.cml_field_handler.initialize(field_storage=self.fieldStorage)
+                self.cmlHandlerCreated = True
                 print
                 #todo orig code
                 # CompuCellSetup.createCMLFieldHandler()
@@ -2055,8 +2058,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             # if Pause button is enabled
             elif self.simulationIsRunning and not self.simulationIsStepping and self.pauseAct.isEnabled():  # transition from running simulation
-                #            print MODULENAME,'  __stepSim() - 2:'
-                #            updateSimPrefs()   # should we call this and then reset screenUpdateFreq = 1 ?
                 self.simulation.screenUpdateFrequency = 1
                 self.simulation.screenshotFrequency = self.__shotFrequency
                 self.simulationIsStepping = True
@@ -2064,8 +2065,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.pauseAct.setEnabled(False)
             # if Pause button is disabled, meaning the sim is paused:
             elif self.simulationIsRunning and not self.simulationIsStepping and not self.pauseAct.isEnabled():  # transition from paused simulation
-                #            print MODULENAME,'  __stepSim() - 3:'
-                #            updateSimPrefs()   # should we call this and then reset screenUpdateFreq = 1 ?
                 self.simulation.screenUpdateFrequency = 1
                 self.simulation.screenshotFrequency = self.__shotFrequency
                 self.simulationIsStepping = True

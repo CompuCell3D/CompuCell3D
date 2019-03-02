@@ -1,7 +1,5 @@
 from cc3d import CompuCellSetup
-import numpy as np
-from cc3d.core.enums import *
-from .ExtraFieldAdapter import ExtraFieldAdapter
+from cc3d.core.ExtraFieldAdapter import ExtraFieldAdapter
 
 
 
