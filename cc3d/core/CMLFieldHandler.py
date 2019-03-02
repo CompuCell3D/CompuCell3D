@@ -10,6 +10,7 @@ from cc3d.core.utils import mkdir_p
 from cc3d.core.XMLUtils import ElementCC3D
 import PlayerPython
 
+
 class CMLFieldHandler:
 
     def __init__(self):
@@ -53,7 +54,7 @@ class CMLFieldHandler:
 
         self.write_xml_description_file()
 
-    def write_fields(self, mcs:int)->None:
+    def write_fields(self, mcs: int) -> None:
         """
         stores simulation fields to the disk
         :param mcs: MCS
@@ -77,12 +78,13 @@ class CMLFieldHandler:
         mcs_formatted_number = str(mcs).zfill(self.out_file_number_of_digits)
 
         # e.g. /path/Step_01.vtk
-        lattice_data_file_name = join(self.output_dir_name, self.output_file_core_name + "_" + mcs_formatted_number + ".vtk")
+        lattice_data_file_name = join(self.output_dir_name,
+                                      self.output_file_core_name + "_" + mcs_formatted_number + ".vtk")
 
         self.field_writer.writeFields(lattice_data_file_name)
         self.field_writer.clear()
 
-    def write_xml_description_file(self, file_name:str="")->None:
+    def write_xml_description_file(self, file_name: str = "") -> None:
         """
         This function will write XML description of the stored fields. It has to be called after
         initialization of theCMLFieldHandler is completed
@@ -107,13 +109,16 @@ class CMLFieldHandler:
         lattice_data_xml_element.ElementCC3D("Dimensions", {"x": str(dim.x), "y": str(dim.y), "z": str(dim.z)})
         lattice_data_xml_element.ElementCC3D("Lattice", {"Type": lattice_type_str})
         lattice_data_xml_element.ElementCC3D("Output",
-                                          {"Frequency": str(self.output_freq), "NumberOfSteps": str(number_of_steps),
-                                           "CoreFileName": self.output_file_core_name,
-                                           "Directory": self.output_dir_name})
-        # output information about cell type names and cell ids. It is necessary during generation of the PIF files from VTK output
+                                             {"Frequency": str(self.output_freq), "NumberOfSteps": str(number_of_steps),
+                                              "CoreFileName": self.output_file_core_name,
+                                              "Directory": self.output_dir_name})
+
+        # output information about cell type names and cell ids.
+        # It is necessary during generation of the PIF files from VTK output
         for typeId in type_id_type_name_dict.keys():
             lattice_data_xml_element.ElementCC3D("CellType",
-                                              {"TypeName": str(type_id_type_name_dict[typeId]), "TypeId": str(typeId)})
+                                                 {"TypeName": str(type_id_type_name_dict[typeId]),
+                                                  "TypeId": str(typeId)})
 
         fields_xml_element = lattice_data_xml_element.ElementCC3D("Fields")
         for fieldName in self.field_types.keys():
@@ -126,7 +131,7 @@ class CMLFieldHandler:
             lattice_data_file_name = join(self.output_dir_name, self.output_file_core_name + "LDF.dml")
             lattice_data_xml_element.CC3DXMLElement.saveXML(str(lattice_data_file_name))
 
-    def create_storage_dir(self)->None:
+    def create_storage_dir(self) -> None:
         """
         Creates storage dir for fields. Initializes self.output_dir_name
         :return:
@@ -136,8 +141,7 @@ class CMLFieldHandler:
 
         mkdir_p(self.output_dir_name)
 
-
-    def get_info_about_fields(self)->None:
+    def get_info_about_fields(self) -> None:
         """
         populates a dictionary (self.field_types) with information about currently available
         fields withing the running simulation
@@ -151,33 +155,33 @@ class CMLFieldHandler:
         # extracting information about concentration vectors
         conc_field_name_vec = sim.getConcentrationFieldNameVector()
         for field_name in conc_field_name_vec:
-            if not field_name in self.do_not_output_field_list:
+            if field_name not in self.do_not_output_field_list:
                 self.field_types[field_name] = self.FIELD_TYPES[1]
 
         # inserting extra scalar fields managed from Python script
         scalar_field_name_vec = self.field_storage.getScalarFieldNameVector()
         for field_name in scalar_field_name_vec:
 
-            if not field_name in self.do_not_output_field_list:
+            if field_name not in self.do_not_output_field_list:
                 self.field_types[field_name] = self.FIELD_TYPES[2]
 
         # inserting extra scalar fields cell levee managed from Python script
         scalar_field_cell_level_name_vec = self.field_storage.getScalarFieldCellLevelNameVector()
         for field_name in scalar_field_cell_level_name_vec:
 
-            if not field_name in self.do_not_output_field_list:
+            if field_name not in self.do_not_output_field_list:
                 self.field_types[field_name] = self.FIELD_TYPES[3]
 
         # inserting extra vector fields  managed from Python script
         vector_field_name_vec = self.field_storage.getVectorFieldNameVector()
         for field_name in vector_field_name_vec:
 
-            if not field_name in self.do_not_output_field_list:
+            if field_name not in self.do_not_output_field_list:
                 self.field_types[field_name] = self.FIELD_TYPES[4]
 
         # inserting extra vector fields  cell level managed from Python script
         vector_field_cell_level_name_vec = self.field_storage.getVectorFieldCellLevelNameVector()
         for field_name in vector_field_cell_level_name_vec:
 
-            if not field_name in self.do_not_output_field_list:
+            if field_name not in self.do_not_output_field_list:
                 self.field_types[field_name] = self.FIELD_TYPES[5]
