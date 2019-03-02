@@ -133,7 +133,7 @@ class CMLResultReader(SimulationThread.SimulationThread):
 
     def keep_going(self):
         """
-
+        executes step fcn if self.state == RUN_STATE
         :return:
         """
 
@@ -145,6 +145,7 @@ class CMLResultReader(SimulationThread.SimulationThread):
         executes single step for CMLResultReplay
         :return:
         """
+
         # ignoring step requests while reading operation is pending
         if self.reading:
             return
@@ -278,38 +279,6 @@ class CMLResultReader(SimulationThread.SimulationThread):
 
         return -1
 
-    def readSimulationData(self, _i):
-
-        self.drawMutex.lock()
-        self.readFileSem.acquire()
-
-        # this flag is used to prevent calling  draw function when new data is read from hard drive
-        self.newFileBeingLoaded = True
-
-        if _i >= len(self.ldsFileList):
-            return
-
-        fileName = self.ldsFileList[_i]
-
-        self.simulationDataReader = vtk.vtkStructuredPointsReader()
-        self.currentFileName = os.path.join(self.ldsDir, fileName)
-        self.simulationDataReader.SetFileName(self.currentFileName)
-
-        self.simulationDataReader.Update()
-        self.simulationData = self.simulationDataReader.GetOutput()
-
-        # updating fieldDim each time we read data
-        self.fieldDimPrevious = self.fieldDim
-
-        dimFromVTK = self.simulationData.GetDimensions()
-
-        self.fieldDim = CompuCell.Dim3D(dimFromVTK[0], dimFromVTK[1], dimFromVTK[2])
-
-        self.currentStep = self.frequency * _i
-        self.setCurrentStep(self.currentStep)
-
-        self.drawMutex.unlock()
-        self.readFileSem.release()
 
     def extractLatticeDescriptionInfo(self, _fileName: str):
         """

@@ -1780,7 +1780,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :param _mcs: int - current Monte Carlo step
         :return:None
         '''
-        self.simulation.drawMutex.lock()  # had to add synchronization here . without it I would get weird behavior in CML replay mode
+
+        # synchronization  to allow CMLReader to read data, and report results and then
+        # once data is ready drawing can happen.
+        self.simulation.drawMutex.lock()
 
         simulationDataIntAddr = extract_address_int_from_vtk_object(self.simulation.simulationData)
 
@@ -1796,19 +1799,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # had to add synchronization here . without it I would get weird behavior in CML replay mode
         self.simulation.drawMutex.unlock()
 
-        # todo 5- this code is moved to the CMLReader
-        # # this flag is used to prevent calling  draw function when new data is read from hard drive
-        # self.simulation.newFileBeingLoaded = False
-
-
         # at this moment new data has been read and is ready to be used
         self.__drawField()
-        # print '----------------AFTER self.fieldDim=',self.fieldDim
         self.simulation.drawMutex.lock()
-        # will need to synchorinize screenshots with simulation thread . make sure that before simuklation thread writes new results all the screenshots are taken
+        # will need to synchronize screenshots with simulation thread .
+        # make sure that before simulation thread writes new results all the screenshots are taken
 
-        if self.__imageOutput and not (self.__step % self.__shotFrequency):  # dumping images? Check modulo MCS #
-            # fills string wtih 0's up to self.screenshotNumberOfDigits width
+        if self.__imageOutput and not (self.__step % self.__shotFrequency):
             mcsFormattedNumber = str(self.__step).zfill(self.screenshotNumberOfDigits)
 
             screenshotFileName = os.path.join(self.screenshotDirectoryName,
@@ -1819,7 +1816,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.simulation.drawMutex.unlock()
 
-        # print '\n\n self.simulationIsStepping=',self.simulationIsStepping
         if self.simulationIsStepping:
             self.__pauseSim()
             self.stepAct.setEnabled(True)
@@ -1829,20 +1825,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.cmlReplayManager.keep_going()
 
-    def handleCompletedStepRegular(self, _mcs):
-        '''
+    def handleCompletedStepRegular(self, mcs:int)->None:
+        """
         callback - runs after simulation step completed.
-        :param _mcs: int - current Monte Carlo step
+        :param mcs: {int} current Monte Carlo step
         :return:
-        '''
-        # print 'GOT HERE BEFORE DRAW'
+        """
+
         self.__drawField()
-        # print 'GOT HERE AAFTER DRAW'
         self.simulation.drawMutex.lock()
-        # will need to sync screenshots with simulation thread. Be sure before simulation thread writes new results all the screenshots are taken
+        # will need to sync screenshots with simulation thread.
+        # Be sure before simulation thread writes new results all the screenshots are taken
 
         if self.__imageOutput and not (self.__step % self.__shotFrequency):  # dumping images? Check modulo MCS #
-            # fills string wtih 0's up to self.screenshotNumberOfDigits width
 
             mcsFormattedNumber = str(self.__step).zfill(self.screenshotNumberOfDigits)
         # todo 5 - uncomment it later
