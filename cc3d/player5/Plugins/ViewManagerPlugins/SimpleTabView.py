@@ -26,7 +26,6 @@ from cc3d.player5.Graphics.GraphicsWindowData import GraphicsWindowData
 from cc3d.player5.Simulation.CMLResultReader import CMLResultReader
 from cc3d.player5.Simulation.SimulationThread import SimulationThread
 from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
-# from Simulation.SimulationThread1 import SimulationThread1
 from cc3d.core import XMLUtils
 
 from cc3d.core.CMLFieldHandler import CMLFieldHandler
@@ -835,7 +834,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # that during switching from playing one type of files to another
         # there is no "missing module" issue due to improper imports
 
-        from Simulation.CMLResultReader import CMLResultReader
+        # from Simulation.CMLResultReader import CMLResultReader
 
         self.cmlHandlerCreated = False
 
@@ -854,7 +853,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.cmlReplayManager = self.simulation = CMLResultReader(self)
 
             # print "GOT THIS self.__fileName=",self.__fileName
-            self.simulation.extractLatticeDescriptionInfo(self.__sim_file_name)
+            self.simulation.extract_lattice_description_info(self.__sim_file_name)
             # filling out basic simulation data
             self.basicSimulationData.fieldDim = self.simulation.fieldDim
             self.basicSimulationData.numberOfSteps = self.simulation.numberOfSteps
@@ -3087,18 +3086,16 @@ class SimpleTabView(MainArea, SimpleViewManager):
         else:
             self.__screenshotDescriptionFileName = ''
 
-    def __openRecentSim(self):
-        '''
+    def __openRecentSim(self)->None:
+        """
         Slot - opens recent simulation
-        :return:None
-        '''
-        # todo 5 - fix open recent
+        :return: None
+        """
         if self.simulationIsRunning:
             return
 
         action = self.sender()
         if isinstance(action, QAction):
-            # self.__fileName = str(action.data().toString())
             self.__sim_file_name = str(action.data())
 
         # opening screenshot description file
@@ -3106,13 +3103,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # setting text for main window (self.__parent) title bar
         self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=self.__sim_file_name)
-        # title_to_display = join(basename(dirname(self.__fileName)), basename(self.__fileName))
-        # self.__parent.setWindowTitle(title_to_display + " - CompuCell3D Player")
 
-        import CompuCellSetup
+        persistent_globals = CompuCellSetup.persistent_globals
 
         self.__sim_file_name = os.path.abspath(self.__sim_file_name)
-        CompuCellSetup.simulationFileName = self.__sim_file_name
+        persistent_globals.simulation_file_name = os.path.abspath(self.__sim_file_name)
+
         Configuration.setSetting("RecentFile", self.__sim_file_name)
         #  each loaded simulation has to be passed to a function which updates list of recent files
         Configuration.setSetting("RecentSimulations", self.__sim_file_name)
