@@ -256,8 +256,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             action = QAction("&%d %s " % (simCounter, simulationFileName), self)
             rencentSimulationsMenu.addAction(action)
             action.setData(QVariant(simulationFileName))
-            # self.connect(action, SIGNAL("triggered()"), self.__openRecentSim)
-            action.triggered.connect(self.__openRecentSim)
+            action.triggered.connect(self.open_recent_sim)
 
             simCounter += 1
         return
@@ -3086,7 +3085,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         else:
             self.__screenshotDescriptionFileName = ''
 
-    def __openRecentSim(self)->None:
+    def open_recent_sim(self)->None:
         """
         Slot - opens recent simulation
         :return: None
