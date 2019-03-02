@@ -40,18 +40,7 @@ import cc3d.Version as Version
 FIELD_TYPES = (
     "CellField", "ConField", "ScalarField", "ScalarFieldCellLevel", "VectorField", "VectorFieldCellLevel", "CustomVis")
 
-# todo 5 - replace numbers with enum labels (variables) e.g. SCALAR_FIELD_NP etc...
-FIELD_NUMBER_TO_FIELD_TYPE_MAP = {
-    0: "CellField",
-    1: "ConField",
-    2: "ScalarField",
-    3: "ScalarFieldCellLevel",
-    4: "VectorField",
-    5: "VectorFieldCellLevel",
-    6: "ScalarField",
-    7: "VectorField",
-    8: "CustomVis"
-}
+
 
 PLANES = ("xy", "xz", "yz")
 
@@ -2045,11 +2034,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             if self.completedFirstMCS and Configuration.getSetting(
                     "LatticeOutputOn") and not self.cmlHandlerCreated:  # rwh
-                CompuCellSetup.createCMLFieldHandler()
-                self.cmlHandlerCreated = True  # rwh
+                from cc3d.core.CMLFieldHandler import CMLFieldHandler
+                cml_field_handler = CMLFieldHandler()
+                print
+                #todo orig code
+                # CompuCellSetup.createCMLFieldHandler()
+                # self.cmlHandlerCreated = True  # rwh
 
-                CompuCellSetup.initCMLFieldHandler(self.mysim, self.resultStorageDirectory, self.fieldStorage)
-                CompuCellSetup.cmlFieldHandler.getInfoAboutFields()  # rwh
+                # CompuCellSetup.initCMLFieldHandler(self.mysim, self.resultStorageDirectory, self.fieldStorage)
+                # CompuCellSetup.cmlFieldHandler.getInfoAboutFields()  # rwh
 
             if self.simulationIsRunning and self.simulationIsStepping:
                 #            print MODULENAME,'  __stepSim() - 1:'
@@ -3021,6 +3014,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Slot - opens recent simulation
         :return:None
         '''
+        # todo 5 - fix open recent
         if self.simulationIsRunning:
             return
 
