@@ -37,10 +37,18 @@ def determine_main_loop_fcn():
     CC3D shold use
     :return: {object} function to use as a mainLoop
     """
+
+
     if CompuCellSetup.persistent_globals.simthread is None:
         return mainLoop
     else:
-        return mainLoopPlayer
+        player_type = CompuCellSetup.persistent_globals.player_type
+        if player_type == 'CMLResultReplay':
+            # result replay
+            return mainLoopPlayerCMLResultReplay
+        else:
+            # "regular" run
+            return mainLoopPlayer
 
 def run():
     """
@@ -315,3 +323,12 @@ def mainLoopPlayer(sim, simthread, steppableRegistry):
             simthread.sendStopSimulationRequest()
             simthread.simulationFinishedPostEvent(True)
 
+
+def mainLoopPlayerCMLResultReplay(sim, simthread, steppableRegistry):
+    """
+
+    :param sim:
+    :param simthread:
+    :param steppableRegistry:
+    :return:
+    """

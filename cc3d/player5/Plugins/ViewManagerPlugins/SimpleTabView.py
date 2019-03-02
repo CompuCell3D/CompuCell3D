@@ -25,6 +25,7 @@ import cc3d.player5.DefaultData as DefaultData
 from cc3d.player5.Graphics.GraphicsWindowData import GraphicsWindowData
 from cc3d.player5.Simulation.CMLResultReader import CMLResultReader
 from cc3d.player5.Simulation.SimulationThread import SimulationThread
+from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
 # from Simulation.SimulationThread1 import SimulationThread1
 from cc3d.core import XMLUtils
 
@@ -811,11 +812,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def prepareForNewSimulation(self, _forceGenericInitialization=False, _inStopFcn=False):
         """
         This function creates new instance of computational thread and sets various flags
-        to initial values i.e. to a state before the beginnig of the simulations
+        to initial values i.e. to a state before the beginning of the simulations
         """
+
+        persistent_globals = CompuCellSetup.persistent_globals
+
         self.resetControlButtonsAndActions()
-
-
 
         self.steppingThroughSimulation = False
 
@@ -829,18 +831,22 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.basicSimulationData = BasicSimulationData()
 
-        # this import has to be here not inside is statement to ensure that during switching from playing one type of files to another there is no "missing module" issue due to imoprer imports
-        # import CMLResultReader
+        # this import has to be here not inside is statement to ensure
+        # that during switching from playing one type of files to another
+        # there is no "missing module" issue due to improper imports
+
         from Simulation.CMLResultReader import CMLResultReader
 
         self.cmlHandlerCreated = False
 
-        # this is used to perform generic preparation for new simulation , normally called after "stop". If users decide to use *.dml  prepare simulation will be called again with False argument
+        # this is used to perform generic preparation for new simulation ,
+        # normally called after "stop".
+        # If users decide to use *.dml  prepare simulation will be called again with False argument
         if _forceGenericInitialization:
-            CompuCellSetup.playerType = "new"
+            persistent_globals.player_type = "new"
 
         # print '_forceGenericInitialization=',_forceGenericInitialization
-        if CompuCellSetup.playerType == "CMLResultReplay":
+        if persistent_globals.player_type == "CMLResultReplay":
             self.__viewManagerType = "CMLResultReplay"
 
             # note that this variable will be the same as self.simulation when doing CMLReplay mode. I keep it under diffferent name to keep track of the places in the code where I am using SimulationThread API and where I use CMLResultReade replay part of the API
@@ -1086,55 +1092,115 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.__parent.toggleModelEditor(True)
 
         elif re.match(".*\.dml$", fileName):
-            # Let's toggle these off (and not tell the user for now)
-            #            Configuration.setSetting("ImageOutputOn",False)  # need to make it possible to save images from .dml/vtk files
-            if Configuration.getSetting("LatticeOutputOn"):
-                QMessageBox.warning(self, "Message",
-                                    "Warning: Turning OFF 'Save lattice...' in Preferences",
-                                    QMessageBox.Ok)
-                print('-----------------------')
-                print('  WARNING:  Turning OFF "Save lattice" in Preferences|Output')
-                print('-----------------------')
-                Configuration.setSetting("LatticeOutputOn", False)
-
-            if Configuration.getSetting("CellGlyphsOn"):
-                QMessageBox.warning(self, "Message",
-                                    "Warning: Turning OFF 'Vis->Cell Glyphs' ",
-                                    QMessageBox.Ok)
-                print('-----------------------')
-                print('  WARNING:  Turning OFF "Vis->Cell Glyphs"')
-                print('-----------------------')
-                Configuration.setSetting("CellGlyphsOn", False)
-                #                self.graphicsWindowVisDict[self.lastActiveWindow.winId()][3] = False
-                self.cellGlyphsAct.setChecked(False)
-
-            if Configuration.getSetting("FPPLinksOn"):
-                QMessageBox.warning(self, "Message",
-                                    "Warning: Turning OFF 'Vis->FPP Links' ",
-                                    QMessageBox.Ok)
-                print('-----------------------')
-                print('  WARNING:  Turning OFF "Vis->FPP Links"')
-                print('-----------------------')
-                Configuration.setSetting("FPPLinksOn", False)
-                #                self.graphicsWindowVisDict[self.lastActiveWindow.winId()][4] = False
-                self.FPPLinksAct.setChecked(False)
-
-            CompuCellSetup.playerType = "CMLResultReplay"
-            CompuCellSetup.parseXML(fileName)
-
-            self.prepareForNewSimulation()
-
-            CompuCellSetup.simulationPaths.setSimulationResultDescriptionFile(fileName)
-
-            self.__parent.toggleLatticeData(True)
-            self.__parent.toggleModelEditor(False)
-
-            self.prepareLatticeDataView()
+            self.__loadDMLFile(file_name=fileName)
+            # # Let's toggle these off (and not tell the user for now)
+            # #            Configuration.setSetting("ImageOutputOn",False)  # need to make it possible to save images from .dml/vtk files
+            # if Configuration.getSetting("LatticeOutputOn"):
+            #     QMessageBox.warning(self, "Message",
+            #                         "Warning: Turning OFF 'Save lattice...' in Preferences",
+            #                         QMessageBox.Ok)
+            #     print('-----------------------')
+            #     print('  WARNING:  Turning OFF "Save lattice" in Preferences|Output')
+            #     print('-----------------------')
+            #     Configuration.setSetting("LatticeOutputOn", False)
+            #
+            # if Configuration.getSetting("CellGlyphsOn"):
+            #     QMessageBox.warning(self, "Message",
+            #                         "Warning: Turning OFF 'Vis->Cell Glyphs' ",
+            #                         QMessageBox.Ok)
+            #     print('-----------------------')
+            #     print('  WARNING:  Turning OFF "Vis->Cell Glyphs"')
+            #     print('-----------------------')
+            #     Configuration.setSetting("CellGlyphsOn", False)
+            #     #                self.graphicsWindowVisDict[self.lastActiveWindow.winId()][3] = False
+            #     self.cellGlyphsAct.setChecked(False)
+            #
+            # if Configuration.getSetting("FPPLinksOn"):
+            #     QMessageBox.warning(self, "Message",
+            #                         "Warning: Turning OFF 'Vis->FPP Links' ",
+            #                         QMessageBox.Ok)
+            #     print('-----------------------')
+            #     print('  WARNING:  Turning OFF "Vis->FPP Links"')
+            #     print('-----------------------')
+            #     Configuration.setSetting("FPPLinksOn", False)
+            #     #                self.graphicsWindowVisDict[self.lastActiveWindow.winId()][4] = False
+            #     self.FPPLinksAct.setChecked(False)
+            #
+            # CompuCellSetup.playerType = "CMLResultReplay"
+            # CompuCellSetup.parseXML(fileName)
+            #
+            # self.prepareForNewSimulation()
+            #
+            # CompuCellSetup.simulationPaths.setSimulationResultDescriptionFile(fileName)
+            #
+            # self.__parent.toggleLatticeData(True)
+            # self.__parent.toggleModelEditor(False)
+            #
+            # self.prepareLatticeDataView()
 
         Configuration.setSetting("RecentFile", os.path.abspath(self.__sim_file_name))
 
         # each loaded simulation has to be passed to a function which updates list of recent files
         Configuration.setSetting("RecentSimulations", os.path.abspath(self.__sim_file_name))
+
+    def __loadDMLFile(self, file_name:str)->None:
+        """
+        loads lattice descriotion file and initializes simulation result replay
+        :param file_name:
+        :return:
+        """
+        persistent_globals = CompuCellSetup.persistent_globals
+        # Let's toggle these off (and not tell the user for now)
+        #            Configuration.setSetting("ImageOutputOn",False)  # need to make it possible to save images from .dml/vtk files
+        if Configuration.getSetting("LatticeOutputOn"):
+            QMessageBox.warning(self, "Message",
+                                "Warning: Turning OFF 'Save lattice...' in Preferences",
+                                QMessageBox.Ok)
+            print('-----------------------')
+            print('  WARNING:  Turning OFF "Save lattice" in Preferences|Output')
+            print('-----------------------')
+            Configuration.setSetting("LatticeOutputOn", False)
+
+        if Configuration.getSetting("CellGlyphsOn"):
+            QMessageBox.warning(self, "Message",
+                                "Warning: Turning OFF 'Vis->Cell Glyphs' ",
+                                QMessageBox.Ok)
+            print('-----------------------')
+            print('  WARNING:  Turning OFF "Vis->Cell Glyphs"')
+            print('-----------------------')
+            Configuration.setSetting("CellGlyphsOn", False)
+            #                self.graphicsWindowVisDict[self.lastActiveWindow.winId()][3] = False
+            self.cellGlyphsAct.setChecked(False)
+
+        if Configuration.getSetting("FPPLinksOn"):
+            QMessageBox.warning(self, "Message",
+                                "Warning: Turning OFF 'Vis->FPP Links' ",
+                                QMessageBox.Ok)
+            print('-----------------------')
+            print('  WARNING:  Turning OFF "Vis->FPP Links"')
+            print('-----------------------')
+            Configuration.setSetting("FPPLinksOn", False)
+            #                self.graphicsWindowVisDict[self.lastActiveWindow.winId()][4] = False
+            self.FPPLinksAct.setChecked(False)
+
+        # todo 5 - old code
+
+        # CompuCellSetup.playerType = "CMLResultReplay"
+        # CompuCellSetup.parseXML(file_name)
+        #
+        # self.prepareForNewSimulation()
+        #
+        # CompuCellSetup.simulationPaths.setSimulationResultDescriptionFile(file_name)
+
+        persistent_globals.player_type = 'CMLResultReplay'
+        persistent_globals.cc3d_xml_2_obj_converter = CompuCellSetup.parseXML(file_name)
+
+        self.prepareForNewSimulation()
+
+        self.__parent.toggleLatticeData(True)
+        self.__parent.toggleModelEditor(False)
+
+        self.prepareLatticeDataView()
 
     def __loadCC3DFile(self, fileName):
         '''
@@ -1419,7 +1485,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         else:
             self.latticeType = Configuration.LATTICE_TYPES["Square"]  # default choice
 
-        simulationDataIntAddr = self.extractAddressIntFromVtkObject(self.simulation.simulationData)
+        # simulationDataIntAddr = self.extractAddressIntFromVtkObject(self.simulation.simulationData)
+
+        simulationDataIntAddr = extract_address_int_from_vtk_object(self.simulation.simulationData)
         self.fieldExtractor.setSimulationData(simulationDataIntAddr)
 
         # this flag is used to prevent calling  draw function
@@ -1439,24 +1507,30 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if self.simulationIsStepping:
             self.__pauseSim()
 
-        if self.__imageOutput:
-            if self.customScreenshotDirectoryName == "":
+        self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
 
-                outputDir = str(Configuration.getSetting("OutputLocation"))
-                (self.screenshotDirectoryName, self.baseScreenshotName) = CompuCellSetup.makeSimDir(
-                    self.__sim_file_name,
-                    outputDir
-                )
+        self.read_screenshot_description_file(scr_file=self.__screenshotDescriptionFileName)
 
-                CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
 
-            else:
-                (self.screenshotDirectoryName, self.baseScreenshotName) = self.makeCustomSimDir(
-                    self.customScreenshotDirectoryName, self.__sim_file_name)
-                CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
-                if self.screenshotDirectoryName == "":
-                    # do not output screenshots when custom directory was not created or already exists
-                    self.__imageOutput = False
+        # todo 5 old code
+        # if self.__imageOutput:
+        #     if self.customScreenshotDirectoryName == "":
+        #
+        #         outputDir = str(Configuration.getSetting("OutputLocation"))
+        #         (self.screenshotDirectoryName, self.baseScreenshotName) = CompuCellSetup.makeSimDir(
+        #             self.__sim_file_name,
+        #             outputDir
+        #         )
+        #
+        #         CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
+        #
+        #     else:
+        #         (self.screenshotDirectoryName, self.baseScreenshotName) = self.makeCustomSimDir(
+        #             self.customScreenshotDirectoryName, self.__sim_file_name)
+        #         CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
+        #         if self.screenshotDirectoryName == "":
+        #             # do not output screenshots when custom directory was not created or already exists
+        #             self.__imageOutput = False
 
         self.cmlReplayManager.keepGoing()
         self.cmlReplayManager.set_stay_in_current_step(True)
@@ -1637,13 +1711,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.plotManager.restore_plots_layout()
 
-    def extractAddressIntFromVtkObject(self, _vtkObj):
-        '''
-        Extracts memory address of vtk object
-        :param _vtkObj: vtk object - e.g. vtk array
-        :return: int (possible long int) representing the address of the vtk object
-        '''
-        return self.fieldExtractor.unmangleSWIGVktPtrAsLong(_vtkObj.__this__)
+    # def extractAddressIntFromVtkObject_1(self, _vtkObj):
+    #     '''
+    #     Extracts memory address of vtk object
+    #     :param _vtkObj: vtk object - e.g. vtk array
+    #     :return: int (possible long int) representing the address of the vtk object
+    #     '''
+    #     return self.fieldExtractor.unmangleSWIGVktPtrAsLong(_vtkObj.__this__)
 
     def handleSimulationFinishedCMLResultReplay(self, _flag):
         '''
@@ -1651,7 +1725,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :param _flag: bool - not used at tyhe moment
         :return:None
         '''
-        if CompuCellSetup.playerType == "CMLResultReplay":
+        persistent_globals = CompuCellSetup.persistent_globals
+        if persistent_globals.player_type == "CMLResultReplay":
             self.latticeDataModelTable.prepareToClose()
 
         # # # self.__stopSim()
@@ -1715,7 +1790,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
         self.simulation.drawMutex.lock()  # had to add synchronization here . without it I would get weird behavior in CML replay mode
 
-        simulationDataIntAddr = self.extractAddressIntFromVtkObject(self.simulation.simulationData)
+        simulationDataIntAddr = extract_address_int_from_vtk_object(self.simulation.simulationData)
+        # simulationDataIntAddr = self.extractAddressIntFromVtkObject(self.simulation.simulationData)
 
         self.fieldExtractor.setSimulationData(simulationDataIntAddr)
         self.__step = self.simulation.currentStep
@@ -1996,7 +2072,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
             # todo 5 - self.drawingAreaPrepared is initialized elsewhere this is tmp placeholder and a hack
             self.drawingAreaPrepared = True
 
-        # print 'SIMULATION PREPARED self.__viewManagerType=',self.__viewManagerType
         if self.__viewManagerType == "CMLResultReplay":
 
 
@@ -2298,7 +2373,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 continue
 
             gwd = widget.getGraphicsWindowData()
-            # fill size and position of graphics windows data using mdiWidget, NOT the internal widget such as GraphicsFrameWidget - sizes and positions are base on MID widet settings
+
+            # fill size and position of graphics windows data using mdiWidget,
+            # NOT the internal widget such as GraphicsFrameWidget - sizes and positions are base on MID widet settings
             gwd.winPosition = win.pos()
             gwd.winSize = win.size()
 
@@ -2399,9 +2476,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.resetControlButtonsAndActions()
         self.resetControlVariables()
 
-        self.fieldTypes = {}  # re-init (empty) the fieldTypes dict, otherwise get previous/bogus fields in graphics win field combobox
+        # re-init (empty) the fieldTypes dict, otherwise get previous/bogus fields in graphics win field combobox
+        self.fieldTypes = {}
 
-        # saving settings witht eh simulation
+        # saving settings with the simulation
         if self.customSettingPath:
             Configuration.writeSettingsForSingleSimulation(self.customSettingPath)
             self.customSettingPath = ''
@@ -2417,7 +2495,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
             # sys.exit(_exitCode)
             self.quit(CompuCellSetup.error_code)
 
-        # in case there is pending simulation to be run we will put it a recent simulation so that it can be ready to run without going through open file dialog
+        # in case there is pending simulation to be run we will put it a recent simulation
+        # so that it can be ready to run without going through open file dialog
         if self.nextSimulation != "":
             Configuration.setSetting("RecentSimulations", self.nextSimulation)
             self.nextSimulation = ""

@@ -25,6 +25,9 @@ class PersistentGlobals:
         # an object that writes or reads fields from disk
         self.cml_field_handler = None
 
+        # variable that tells what type of player mode we have
+        self.player_type = None
+
         self.simulation_initialized = False
         self.simulation_file_name = None
         self.user_stop_simulation_flag = False

@@ -11,6 +11,7 @@ import vtk
 import os
 import os.path
 from . import SimulationThread
+from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
 
 (STOP_STATE, RUN_STATE, STEP_STATE, PAUSE_STATE) = list(range(0, 4))
 
@@ -205,7 +206,9 @@ class CMLResultReader(SimulationThread.SimulationThread):
         self.simulationDataReader.SetFileName(self.currentFileName)
         # print "path= ", os.path.join(self.ldsDir,fileName)
 
-        dataReaderIntAddr = self.__ui.extractAddressIntFromVtkObject(self.simulationDataReader)
+        dataReaderIntAddr = extract_address_int_from_vtk_object(vtkObj=self.simulationDataReader)
+        # todo 5- old way
+        # dataReaderIntAddr = self.__ui.extractAddressIntFromVtkObject(self.simulationDataReader)
 
         # swig wrapper  on top of     vtkStructuredPointsReader.Update()  - releases GIL,
         # hence can be used in multithreaded program that does not block GUI
