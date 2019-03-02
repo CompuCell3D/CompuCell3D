@@ -2,6 +2,7 @@ from os.path import join
 from os.path import exists
 from os import makedirs
 import cc3d.CompuCellSetup
+from cc3d.core.utils import mkdir_p
 
 import PlayerPython
 
@@ -45,6 +46,8 @@ class CMLFieldHandler:
 
         self.out_file_number_of_digits = len(str(peristent_globals.simulator.getNumSteps()))
         self.get_info_about_fields()
+
+        self.create_storage_dir()
 
     # def doNotOutputField(self,_fieldName):
     #     if not _fieldName in  self.doNotOutputFieldList:
@@ -138,6 +141,16 @@ class CMLFieldHandler:
         else:
             latticeDataFileName = join(self.output_dir_name, self.output_file_core_name + "LDF.dml")
             latticeDataXMLElement.CC3DXMLElement.saveXML(str(latticeDataFileName))
+
+    def create_storage_dir(self)->None:
+        """
+        Creates storage dir for fields
+        :return:
+        """
+        screenshot_directory = cc3d.CompuCellSetup.persistent_globals.screenshot_directory
+        self.output_dir_name = join(screenshot_directory, 'LatticeData')
+
+        mkdir_p(self.output_dir_name)
 
     def prepareSimulationStorageDir(self, _dirName):
 
