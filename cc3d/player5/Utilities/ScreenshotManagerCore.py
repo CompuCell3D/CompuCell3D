@@ -299,7 +299,8 @@ class ScreenshotManagerCore(object):
             screenshot_filename = self.get_screenshot_filename()
 
         if not exists(screenshot_filename):
-            raise RuntimeError('Could not locate screenshot description file: {}'.format(screenshot_filename))
+            return
+            # raise RuntimeError('Could not locate screenshot description file: {}'.format(screenshot_filename))
 
 
         self.readScreenshotDescriptionFile_JSON(filename=screenshot_filename)

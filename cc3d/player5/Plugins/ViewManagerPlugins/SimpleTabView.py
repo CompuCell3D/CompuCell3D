@@ -625,16 +625,16 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # from which run script was called
         sim_file_full_name = os.path.join(current_dir, self.__sim_file_name)
 
-        if start_simulation:
-            if os.access(sim_file_full_name, os.F_OK):  # checking if such a file exists
+        # if start_simulation:
+        if os.access(sim_file_full_name, os.F_OK):  # checking if such a file exists
 
-                self.__sim_file_name = sim_file_full_name
-                CompuCellSetup.persistent_globals.simulation_file_name = self.__sim_file_name
+            self.__sim_file_name = sim_file_full_name
+            CompuCellSetup.persistent_globals.simulation_file_name = self.__sim_file_name
 
-            elif not os.access(self.__sim_file_name, os.F_OK):
-                raise FileNotFoundError("Could not find simulation file: " + self.__sim_file_name)
+        elif not os.access(self.__sim_file_name, os.F_OK):
+            raise FileNotFoundError("Could not find simulation file: " + self.__sim_file_name)
 
-            self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=self.__sim_file_name)
+        self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=self.__sim_file_name)
 
         if self.__screenshotDescriptionFileName != '':
 
@@ -945,22 +945,20 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.latticeDataModelTable = ui.latticeDataModelTable
 
     def __loadSim(self, file):
-        '''
+        """
         Loads simulation
         :param file: str - full path to the CC3D simulation (usually .cc3d file or .dml vtk replay file path) .
         XML and python files are also acceptable options for the simulation but they are deprecated in favor of .cc3d
+        :param file:
         :return:
-        '''
-        # resetting reference to SimulationDataHandler
+        """
 
         self.prepare_for_new_simulation(force_generic_initialization=True)
 
         self.cc3dSimulationDataHandler = None
 
-        fileName = str(self.__sim_file_name)
+        file_name = str(self.__sim_file_name)
         CompuCellSetup.persistent_globals.simulation_file_name = self.__sim_file_name
-        # print 'INSIDE LOADSIM file=',fileName
-        #        print MODULENAME,"Load file ",fileName
         self.UI.console.bringUpOutputConsole()
 
         # have to connect error handler to the signal emited from self.simulation object
@@ -970,67 +968,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.simulation.visFieldCreatedSignal.connect(self.handle_vis_field_created)
 
-        # self.connect(self.simulation, SIGNAL("errorOccured(QString,QString)"), self.handleErrorMessage)
-        # # self.connect(self.simulation,SIGNAL("errorOccuredDetailed(QString,QString,int,int,QString)"),self.handleErrorMessageDetailed)
-        # self.connect(self.simulation, SIGNAL("errorFormatted(QString)"), self.handleErrorFormatted)
-
-        # We need to create new SimulationPaths object for each new simulation.
-        #        import CompuCellSetup
-        # CompuCellSetup.simulationPaths = CompuCellSetup.SimulationPaths()
-        # CompuCellSetup.simulationPaths = CompuCellSetup.persistent_globals.simulation_file_name
-
-        if re.match(".*\.cc3d$", fileName):
-            self.__loadCC3DFile(fileName)
+        if re.match(".*\.cc3d$", file_name):
+            self.__loadCC3DFile(file_name)
 
             self.__parent.toggleLatticeData(False)
             self.__parent.toggleModelEditor(True)
 
-        elif re.match(".*\.dml$", fileName):
-            self.__loadDMLFile(file_name=fileName)
-            # # Let's toggle these off (and not tell the user for now)
-            # #            Configuration.setSetting("ImageOutputOn",False)  # need to make it possible to save images from .dml/vtk files
-            # if Configuration.getSetting("LatticeOutputOn"):
-            #     QMessageBox.warning(self, "Message",
-            #                         "Warning: Turning OFF 'Save lattice...' in Preferences",
-            #                         QMessageBox.Ok)
-            #     print('-----------------------')
-            #     print('  WARNING:  Turning OFF "Save lattice" in Preferences|Output')
-            #     print('-----------------------')
-            #     Configuration.setSetting("LatticeOutputOn", False)
-            #
-            # if Configuration.getSetting("CellGlyphsOn"):
-            #     QMessageBox.warning(self, "Message",
-            #                         "Warning: Turning OFF 'Vis->Cell Glyphs' ",
-            #                         QMessageBox.Ok)
-            #     print('-----------------------')
-            #     print('  WARNING:  Turning OFF "Vis->Cell Glyphs"')
-            #     print('-----------------------')
-            #     Configuration.setSetting("CellGlyphsOn", False)
-            #     #                self.graphicsWindowVisDict[self.lastActiveWindow.winId()][3] = False
-            #     self.cellGlyphsAct.setChecked(False)
-            #
-            # if Configuration.getSetting("FPPLinksOn"):
-            #     QMessageBox.warning(self, "Message",
-            #                         "Warning: Turning OFF 'Vis->FPP Links' ",
-            #                         QMessageBox.Ok)
-            #     print('-----------------------')
-            #     print('  WARNING:  Turning OFF "Vis->FPP Links"')
-            #     print('-----------------------')
-            #     Configuration.setSetting("FPPLinksOn", False)
-            #     #                self.graphicsWindowVisDict[self.lastActiveWindow.winId()][4] = False
-            #     self.FPPLinksAct.setChecked(False)
-            #
-            # CompuCellSetup.playerType = "CMLResultReplay"
-            # CompuCellSetup.parseXML(fileName)
-            #
-            # self.prepareForNewSimulation()
-            #
-            # CompuCellSetup.simulationPaths.setSimulationResultDescriptionFile(fileName)
-            #
-            # self.__parent.toggleLatticeData(True)
-            # self.__parent.toggleModelEditor(False)
-            #
-            # self.prepareLatticeDataView()
+        elif re.match(".*\.dml$", file_name):
+            self.__loadDMLFile(file_name=file_name)
 
         Configuration.setSetting("RecentFile", os.path.abspath(self.__sim_file_name))
 
@@ -1404,25 +1349,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.read_screenshot_description_file()
 
-        # todo 5 old code
-        # if self.__imageOutput:
-        #     if self.customScreenshotDirectoryName == "":
-        #
-        #         outputDir = str(Configuration.getSetting("OutputLocation"))
-        #         (self.screenshotDirectoryName, self.baseScreenshotName) = CompuCellSetup.makeSimDir(
-        #             self.__sim_file_name,
-        #             outputDir
-        #         )
-        #
-        #         CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
-        #
-        #     else:
-        #         (self.screenshotDirectoryName, self.baseScreenshotName) = self.makeCustomSimDir(
-        #             self.customScreenshotDirectoryName, self.__sim_file_name)
-        #         CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
-        #         if self.screenshotDirectoryName == "":
-        #             # do not output screenshots when custom directory was not created or already exists
-        #             self.__imageOutput = False
 
         self.cmlReplayManager.keep_going()
         self.cmlReplayManager.set_stay_in_current_step(True)
@@ -1554,8 +1480,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.prepareSimulationView()
 
         self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
+        self.read_screenshot_description_file()
 
-        self.read_screenshot_description_file(scr_file=self.__screenshotDescriptionFileName)
+        # self.read_screenshot_description_file(scr_file=self.__screenshotDescriptionFileName)
+
+
 
         if self.simulationIsStepping:
             # print "BEFORE STEPPING PAUSE REGULAR SIMULATION"
