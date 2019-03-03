@@ -11,6 +11,7 @@ from cc3d.player5.Utilities import ScreenshotManagerCore
 from cc3d.player5.GraphicsOffScreen.GenericDrawer import GenericDrawer
 from weakref import ref
 
+
 class ScreenshotManager(ScreenshotManagerCore):
     def __init__(self, _tabViewWidget):
         ScreenshotManagerCore.__init__(self)
@@ -223,17 +224,18 @@ class ScreenshotManager(ScreenshotManagerCore):
         bsd = tvw.basicSimulationData
         return bsd
 
-
-    # called from SimpleTabView:handleCompletedStep{Regular,CML*}
-    def outputScreenshots(self, general_screenshot_directory_name, mcs):
-
-        # tvw = self.tabViewWidget()
-        #         # bsd = tvw.basicSimulationData
+    def output_screenshots(self, mcs: int) -> None:
+        """
+        outputs screenshots. Called from SimpleTabView:handleCompletedStep{Regular,CML*}
+        :param mcs:
+        :return:
+        """
 
         bsd = self.get_basic_simulation_data()
 
-        # fills string with 0's up to self.screenshotNumberOfDigits width
-        mcsFormattedNumber = string.zfill(str(mcs), self.screenshot_number_of_digits)
+        screenshot_directory_name = self.get_screenshot_dir_name()
+
+        mcs_formatted_number = str(mcs).zfill(self.screenshot_number_of_digits)
 
         for i, screenshot_name in enumerate(self.screenshotDataDict.keys()):
             screenshot_data = self.screenshotDataDict[screenshot_name]
@@ -241,13 +243,13 @@ class ScreenshotManager(ScreenshotManagerCore):
             if not screenshot_name:
                 screenshot_name = 'screenshot_' + str(i)
 
-            screenshot_dir = os.path.join(general_screenshot_directory_name, screenshot_name)
+            screenshot_dir = os.path.join(screenshot_directory_name, screenshot_name)
 
             # will create screenshot directory if directory does not exist
             if not os.path.isdir(screenshot_dir):
                 os.mkdir(screenshot_dir)
 
-            screenshot_fname = os.path.join(screenshot_dir, screenshot_name + "_" + mcsFormattedNumber + ".png")
+            screenshot_fname = os.path.join(screenshot_dir, screenshot_name + "_" + mcs_formatted_number + ".png")
 
             self.gd.clear_display()
             self.gd.draw(screenshot_data=screenshot_data, bsd=bsd, screenshot_name=screenshot_name)

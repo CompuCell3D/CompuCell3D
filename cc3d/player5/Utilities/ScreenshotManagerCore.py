@@ -4,8 +4,10 @@ from collections import OrderedDict
 from cc3d.player5.Utilities import ScreenshotData
 import json
 import cc3d.core.Version as Version
+from cc3d import CompuCellSetup
 
 MODULENAME = '---- ScreenshotManager.py: '
+
 
 class ScreenshotManagerCore(object):
     def __init__(self):
@@ -18,12 +20,15 @@ class ScreenshotManagerCore(object):
         self.screenshot_number_of_digits = 10
 
         self.screenshot_file_parsers = {
-            '3.7.9':self.readScreenshotDescriptionFile_JSON_379,
+            '3.7.9': self.readScreenshotDescriptionFile_JSON_379,
             '3.7.10': self.readScreenshotDescriptionFile_JSON_379,
             '3.8.0': self.readScreenshotDescriptionFile_JSON_379,
-            '4.0.0':self.readScreenshotDescriptionFile_JSON_379,
+            '4.0.0': self.readScreenshotDescriptionFile_JSON_379,
 
         }
+
+    def get_screenshot_dir_name(self):
+        return CompuCellSetup.persistent_globals.screenshot_directory
 
     def cleanup(self):
         """
@@ -48,7 +53,6 @@ class ScreenshotManagerCore(object):
             screenshotName = screenshotCoreName + "_" + _scrData.spaceDimension + "_" + str(self.screenshotCounter3D)
         return (screenshotName, screenshotCoreName)
 
-
     def writeScreenshotDescriptionFile_JSON(self, filename):
         """
         Writes JSON format of screenshot description file
@@ -59,7 +63,6 @@ class ScreenshotManagerCore(object):
         root_elem = OrderedDict()
         root_elem['Version'] = Version.getVersionAsString()
         root_elem['ScreenshotData'] = OrderedDict()
-
 
         scr_container_elem = root_elem['ScreenshotData']
 
@@ -73,7 +76,7 @@ class ScreenshotManagerCore(object):
                 scr_elem['Dimension'] = '2D'
 
                 scr_elem['Projection'] = {'ProjectionPlane': scr_data.projection,
-                                                          'ProjectionPosition': int(scr_data.projectionPosition)}
+                                          'ProjectionPosition': int(scr_data.projectionPosition)}
 
             if scr_data.spaceDimension == '3D':
                 scr_elem['Dimension'] = '3D'
@@ -103,8 +106,8 @@ class ScreenshotManagerCore(object):
             }
 
             scr_elem['Size'] = {
-                    'Width': int(scr_data.win_width),
-                    'Height': int(scr_data.win_height)
+                'Width': int(scr_data.win_width),
+                'Height': int(scr_data.win_height)
             }
 
             scr_elem['CellBorders'] = bool(scr_data.cell_borders_on)
@@ -134,8 +137,7 @@ class ScreenshotManagerCore(object):
 
         self.writeScreenshotDescriptionFile_JSON(filename=filename)
 
-
-    def readScreenshotDescriptionFile_JSON(self,filename):
+    def readScreenshotDescriptionFile_JSON(self, filename):
         """
         parses screenshot description JSON file and stores instances ScreenshotData in appropriate
         container
@@ -143,7 +145,7 @@ class ScreenshotManagerCore(object):
         :return: None
         """
 
-        with open(filename,'r') as f_in:
+        with open(filename, 'r') as f_in:
             root_elem = json.load(f_in)
 
         if root_elem is None:
@@ -152,7 +154,6 @@ class ScreenshotManagerCore(object):
 
         version = root_elem['Version']
         scr_data_container = root_elem['ScreenshotData']
-
 
         # will replace it with a dict, for now leaving it as an if statement
 
@@ -171,10 +172,7 @@ class ScreenshotManagerCore(object):
         # else:
         #     raise RuntimeError('Unknown version of screenshot description: {}'.format(version))
 
-
-
-
-    def readScreenshotDescriptionFile_JSON_379(self,scr_data_container):
+    def readScreenshotDescriptionFile_JSON_379(self, scr_data_container):
         """
         parses screenshot description JSON file and stores instances ScreenshotData in appropriate
         container
@@ -196,7 +194,8 @@ class ScreenshotManagerCore(object):
             scr_data = ScreenshotData()
             scr_data.screenshotName = scr_name
 
-            scr_data.plotData = tuple([str(x) for x in (scr_data_elem['Plot']['PlotName'], scr_data_elem['Plot']['PlotType'])])
+            scr_data.plotData = tuple(
+                [str(x) for x in (scr_data_elem['Plot']['PlotName'], scr_data_elem['Plot']['PlotType'])])
             scr_data.spaceDimension = str(scr_data_elem['Dimension'])
             try:
                 scr_data.projection = str(scr_data_elem['Projection']['ProjectionPlane'])
@@ -260,7 +259,6 @@ class ScreenshotManagerCore(object):
 
             self.screenshotDataDict[scr_data.screenshotName] = scr_data
 
-
     def readScreenshotDescriptionFile(self, filename):
         """
         Reads screenshot description file
@@ -299,7 +297,7 @@ class ScreenshotManagerCore(object):
         """
         raise NotImplementedError()
 
-    def add3DScreenshot(self, _plotName, _plotType, _camera,metadata):
+    def add3DScreenshot(self, _plotName, _plotType, _camera, metadata):
         """
         adds screenshot stub based on current specification of graphics window
         Typically called from GraphicsFrameWidget
@@ -320,14 +318,14 @@ class ScreenshotManagerCore(object):
         """
         return self.bsd
 
-    # called from SimpleTabView:handleCompletedStep{Regular,CML*}
-    def outputScreenshots(self, general_screenshot_directory_name :str, mcs:str):
+    def output_screenshots(self, mcs: int) -> None:
         """
-        Outputs screenshot
-        :param general_screenshot_directory_name:
+        Outputs screenshot        
         :param mcs:
         :return:
         """
+
+        screenshot_directory_name = self.get_screenshot_dir_name()
 
         bsd = self.get_basic_simulation_data()
         if self.gd is None or bsd is None:
@@ -335,7 +333,7 @@ class ScreenshotManagerCore(object):
             return
 
         # fills string with 0's up to self.screenshotNumberOfDigits width
-        mcsFormattedNumber = str(mcs).zfill(self.screenshot_number_of_digits)
+        mcs_formatted_number = str(mcs).zfill(self.screenshot_number_of_digits)
 
         for i, screenshot_name in enumerate(self.screenshotDataDict.keys()):
             screenshot_data = self.screenshotDataDict[screenshot_name]
@@ -343,13 +341,13 @@ class ScreenshotManagerCore(object):
             if not screenshot_name:
                 screenshot_name = 'screenshot_' + str(i)
 
-            screenshot_dir = os.path.join(general_screenshot_directory_name, screenshot_name)
+            screenshot_dir = os.path.join(screenshot_directory_name, screenshot_name)
 
             # will create screenshot directory if directory does not exist
             if not os.path.isdir(screenshot_dir):
                 os.mkdir(screenshot_dir)
 
-            screenshot_fname = os.path.join(screenshot_dir, screenshot_name + "_" + mcsFormattedNumber + ".png")
+            screenshot_fname = os.path.join(screenshot_dir, screenshot_name + "_" + mcs_formatted_number + ".png")
 
             self.gd.clear_display()
             self.gd.draw(screenshot_data=screenshot_data, bsd=bsd, screenshot_name=screenshot_name)
