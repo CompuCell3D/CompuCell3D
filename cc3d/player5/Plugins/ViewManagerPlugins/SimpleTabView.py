@@ -239,26 +239,27 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
         return self.__windowsXMLFileName
 
-    def updateRecentFileMenu(self):
-        '''
+    def update_recent_file_menu(self)->None:
+        """
         Updates recent simulations File menu - called on demand only
         :return: None
-        '''
-        menusDict = self.__parent.getMenusDictionary()
-        rencentSimulationsMenu = menusDict["recentSimulations"]
-        rencentSimulationsMenu.clear()
-        recentSimulations = Configuration.getSetting("RecentSimulations")
 
-        simCounter = 1
-        for simulationFileName in recentSimulations:
-            actionText = self.tr("&%1 %2").format(simCounter, simulationFileName)
-            # action=rencentSimulationsMenu.addAction(actionText)
-            action = QAction("&%d %s " % (simCounter, simulationFileName), self)
-            rencentSimulationsMenu.addAction(action)
+        :return:
+        """
+        menus_dict = self.__parent.getMenusDictionary()
+        rencent_simulations_menu = menus_dict["recentSimulations"]
+        rencent_simulations_menu.clear()
+        recent_simulations = Configuration.getSetting("RecentSimulations")
+
+        sim_counter = 1
+        for simulationFileName in recent_simulations:
+            action_text = self.tr("&%1 %2").format(sim_counter, simulationFileName)
+            action = QAction("&%d %s " % (sim_counter, simulationFileName), self)
+            rencent_simulations_menu.addAction(action)
             action.setData(QVariant(simulationFileName))
             action.triggered.connect(self.open_recent_sim)
 
-            simCounter += 1
+            sim_counter += 1
         return
 
     def setActiveSubWindowCustomSlot(self, window):
@@ -268,7 +269,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
 
-        # print 'setActiveSubWindowCustomSlot = ', window
         self.lastActiveRealWindow = window
         # self.lastClickedRealWindow = window
         self.lastActiveRealWindow.activateWindow()
@@ -293,11 +293,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
                                                self.clusterBorderAct.isChecked(), self.cellGlyphsAct.isChecked(),
                                                self.FPPLinksAct.isChecked())
 
-    def updateWindowMenu(self):
-        '''
-        Invoked whenever 'Window' menu is clicked. It does NOT modify lastActiveWindow directly (setActiveSubWindowCustomSlot does)
+    def updateWindowMenu(self) -> None:
+        """
+        Invoked whenever 'Window' menu is clicked.
+        It does NOT modify lastActiveWindow directly (setActiveSubWindowCustomSlot does)
         :return:None
-        '''
+        """
 
         menusDict = self.__parent.getMenusDictionary()
         windowMenu = menusDict["window"]
@@ -1829,6 +1830,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :param mcs: {int} current Monte Carlo step
         :return:
         """
+        # creating cml field handler in case lattice output is ON
+        if Configuration.getSetting("LatticeOutputOn") and not self.cmlHandlerCreated:
+            persistent_globals = CompuCellSetup.persistent_globals
+            persistent_globals.cml_field_handler = CMLFieldHandler()
+            persistent_globals.cml_field_handler.initialize(field_storage=self.fieldStorage)
+            self.cmlHandlerCreated = True
 
         self.__drawField()
         self.simulation.drawMutex.lock()
@@ -2030,12 +2037,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.openAct.setEnabled(False)
                 self.openLDSAct.setEnabled(False)
 
-            if Configuration.getSetting("LatticeOutputOn") and not self.cmlHandlerCreated:
-                import CompuCellSetup
+            # if Configuration.getSetting("LatticeOutputOn") and not self.cmlHandlerCreated:
+            #
+            #     persistent_globals = CompuCellSetup.persistent_globals
+            #     print('mysim=',self.mysim)
+            #     print('simulator = ', persistent_globals.simulator)
+            #
+            #     persistent_globals.cml_field_handler = CMLFieldHandler()
+            #     persistent_globals.cml_field_handler.initialize(field_storage=self.fieldStorage)
+            #     self.cmlHandlerCreated = True
 
-                CompuCellSetup.createCMLFieldHandler()
-                self.cmlHandlerCreated = True
-                #            CompuCellSetup.initCMLFieldHandler(self.mysim,self.resultStorageDirectory,self.fieldStorage)
+                # CompuCellSetup.createCMLFieldHandler()
+                # self.cmlHandlerCreated = True
+                # #            CompuCellSetup.initCMLFieldHandler(self.mysim,self.resultStorageDirectory,self.fieldStorage)
 
             self.steppingThroughSimulation = False
 
@@ -2101,19 +2115,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 self.simulation.start()
 
-            if self.completedFirstMCS and Configuration.getSetting("LatticeOutputOn") and not self.cmlHandlerCreated:
-
-                persistent_globals = CompuCellSetup.persistent_globals
-                persistent_globals.cml_field_handler = CMLFieldHandler()
-                persistent_globals.cml_field_handler.initialize(field_storage=self.fieldStorage)
-                self.cmlHandlerCreated = True
-                print
-                #todo orig code
-                # CompuCellSetup.createCMLFieldHandler()
-                # self.cmlHandlerCreated = True  # rwh
-
-                # CompuCellSetup.initCMLFieldHandler(self.mysim, self.resultStorageDirectory, self.fieldStorage)
-                # CompuCellSetup.cmlFieldHandler.getInfoAboutFields()  # rwh
+            # if self.completedFirstMCS and Configuration.getSetting("LatticeOutputOn") and not self.cmlHandlerCreated:
+            #
+            #     persistent_globals = CompuCellSetup.persistent_globals
+            #     persistent_globals.cml_field_handler = CMLFieldHandler()
+            #     persistent_globals.cml_field_handler.initialize(field_storage=self.fieldStorage)
+            #     self.cmlHandlerCreated = True
+            #     print
+            #     #todo orig code
+            #     # CompuCellSetup.createCMLFieldHandler()
+            #     # self.cmlHandlerCreated = True  # rwh
+            #
+            #     # CompuCellSetup.initCMLFieldHandler(self.mysim, self.resultStorageDirectory, self.fieldStorage)
+            #     # CompuCellSetup.cmlFieldHandler.getInfoAboutFields()  # rwh
 
             if self.simulationIsRunning and self.simulationIsStepping:
                 #            print MODULENAME,'  __stepSim() - 1:'
@@ -2125,14 +2139,17 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 return
 
             # if Pause button is enabled
-            elif self.simulationIsRunning and not self.simulationIsStepping and self.pauseAct.isEnabled():  # transition from running simulation
+            elif self.simulationIsRunning and not self.simulationIsStepping and self.pauseAct.isEnabled():
+                # transition from running simulation
+
                 self.simulation.screenUpdateFrequency = 1
                 self.simulation.screenshotFrequency = self.__shotFrequency
                 self.simulationIsStepping = True
                 self.stepAct.setEnabled(False)
                 self.pauseAct.setEnabled(False)
             # if Pause button is disabled, meaning the sim is paused:
-            elif self.simulationIsRunning and not self.simulationIsStepping and not self.pauseAct.isEnabled():  # transition from paused simulation
+            elif self.simulationIsRunning and not self.simulationIsStepping and not self.pauseAct.isEnabled():
+                # transition from paused simulation
                 self.simulation.screenUpdateFrequency = 1
                 self.simulation.screenshotFrequency = self.__shotFrequency
                 self.simulationIsStepping = True

@@ -247,7 +247,7 @@ class UserInterface(QMainWindow):
         self.__menus["file"] = fileMenu
         self.__menus["recentSimulations"] = recentSimulationsMenu
 
-        self.__menus["recentSimulations"].aboutToShow.connect(self.viewmanager.updateRecentFileMenu)
+        self.__menus["recentSimulations"].aboutToShow.connect(self.viewmanager.update_recent_file_menu)
         # self.connect(self.__menus["recentSimulations"] , SIGNAL("aboutToShow()"), self.viewmanager.updateRecentFileMenu )
 
         mb.addMenu(self.__menus["file"])
