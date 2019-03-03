@@ -396,69 +396,67 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :param field_type:
         :return:
         """
-        # for field_name , field_adapter in field_dict.items():
-        #     self.fieldTypes[field_name] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[field_adapter.field_type]
 
         self.fieldTypes[field_name] = FIELD_NUMBER_TO_FIELD_TYPE_MAP[field_type]
 
-        for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
-            graphicsFrame = win.widget()
-            graphicsFrame.update_field_types_combo_box(field_types=self.fieldTypes)
+        for win_id, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+            graphics_frame = win.widget()
+            graphics_frame.update_field_types_combo_box(field_types=self.fieldTypes)
 
-    def addNewGraphicsWindow(self):
-        '''
+    def add_new_graphics_window(self)->object:
+        """
         callback method to create additional ("Aux") graphics windows
         :return: None
-        '''
-        print(MODULENAME, '--------- addNewGraphicsWindow() ')
+
+        """
 
         if not self.simulationIsRunning:
-            return
+            return None
         self.simulation.drawMutex.lock()
 
-        newWindow = GraphicsFrameWidget(parent=None, originatingWidget=self)
+        new_window = GraphicsFrameWidget(parent=None, originatingWidget=self)
 
         # prepares new window for drawing - mainly sets reference to fieldExtractor
-        newWindow.initialize_scene()
+        new_window.initialize_scene()
 
-        newWindow.setZoomItems(self.zitems)  # Set zoomFixed parameters
+        new_window.setZoomItems(self.zitems)  # Set zoomFixed parameters
 
-        newWindow.hide()
+        new_window.hide()
 
-        self.configsChanged.connect(newWindow.configsChanged)
-        self.configsChanged.connect(newWindow.configsChanged)
+        self.configsChanged.connect(new_window.configsChanged)
+        self.configsChanged.connect(new_window.configsChanged)
 
-        mdiWindow = self.addSubWindow(newWindow)
+        mdi_window = self.addSubWindow(new_window)
 
         # MDIFIX
-        self.lastActiveRealWindow = mdiWindow
+        self.lastActiveRealWindow = mdi_window
 
         # this happens when during restoration graphics window with id 0 had to be closed
         if self.mainGraphicsWidget is None:
-            self.mainGraphicsWidget = mdiWindow.widget()
+            self.mainGraphicsWidget = mdi_window.widget()
 
         self.update_active_window_vis_flags()
 
-        newWindow.show()
+        new_window.show()
 
         self.simulation.drawMutex.unlock()
 
-        newWindow.setConnects(self)  # in GraphicsFrameWidget
-        newWindow.setInitialCrossSection(self.basicSimulationData)
-        newWindow.setFieldTypesComboBox(self.fieldTypes)
+        new_window.setConnects(self)  # in GraphicsFrameWidget
+        new_window.setInitialCrossSection(self.basicSimulationData)
+        new_window.setFieldTypesComboBox(self.fieldTypes)
 
         suggested_win_pos = self.suggested_window_position()
 
         if suggested_win_pos.x() != -1 and suggested_win_pos.y() != -1:
-            mdiWindow.move(suggested_win_pos)
+            mdi_window.move(suggested_win_pos)
 
-        return mdiWindow
+        return mdi_window
 
-    def addVTKWindowToWorkspace(self):  #
-        '''
-        just called one time, for initial graphics window  (vs. addNewGraphicsWindow())
-        :return: None
-        '''
+    def add_vtk_window_to_workspace(self)->None:
+        """
+        called one time, for initial graphics window  (vs. addNewGraphicsWindow())
+        :return:
+        """
 
         self.mainGraphicsWidget = GraphicsFrameWidget(parent=None, originatingWidget=self)
 
@@ -477,61 +475,53 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # self.mainGraphicsWidget.hide()
         # return
 
-        # todo 5 - old code
-        # self.configsChanged.connect(self.mainGraphicsWidget.draw2D.configsChanged)
-        # self.configsChanged.connect(self.mainGraphicsWidget.draw3D.configsChanged)
-        # self.mainGraphicsWidget.readSettings()
-
-        # self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWidget.draw2D.configsChanged)
-        # self.connect(self, SIGNAL('configsChanged'), self.mainGraphicsWidget.draw3D.configsChanged)
 
         self.configsChanged.connect(self.mainGraphicsWidget.configsChanged)
         self.configsChanged.connect(self.mainGraphicsWidget.configsChanged)
 
         self.simulation.setGraphicsWidget(self.mainGraphicsWidget)
 
-        mdiSubWindow = self.addSubWindow(self.mainGraphicsWidget)
+        mdi_sub_window = self.addSubWindow(self.mainGraphicsWidget)
 
-        self.mainMdiSubWindow = mdiSubWindow
+        self.mainMdiSubWindow = mdi_sub_window
         self.mainGraphicsWidget.show()
         self.mainGraphicsWidget.setConnects(self)
 
-        self.lastActiveRealWindow = mdiSubWindow
-        # return OK drawing
+        self.lastActiveRealWindow = mdi_sub_window
 
         # MDIFIX
-        self.set_active_sub_window_custom_slot(
-            self.lastActiveRealWindow)  # rwh: do this to "check" this in the "Window" menu
+        self.set_active_sub_window_custom_slot(self.lastActiveRealWindow)
 
         self.update_window_menu()
         self.update_active_window_vis_flags()
-        # print self.graphicsWindowVisDict
 
         suggested_win_pos = self.suggested_window_position()
 
         if suggested_win_pos.x() != -1 and suggested_win_pos.y() != -1:
-            mdiSubWindow.move(suggested_win_pos)
+            mdi_sub_window.move(suggested_win_pos)
 
-    def minimizeAllGraphicsWindows(self):
-        '''
+    def minimize_all_graphics_windows(self)->None:
+        """
         Minimizes all graphics windows. Used ony with MDI window layout
         :return:None
-        '''
+
+        """
+
         if not self.MDI_ON: return
 
-        for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+        for win_id, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
             if win.widget().is_screenshot_widget:
                 continue
             win.showMinimized()
 
-    def restoreAllGraphicsWindows(self):
-        '''
+    def restore_all_graphics_windows(self)->None:
+        """
         Restores all graphics windows. Used ony with MDI window layout
         :return:None
-        '''
+        """
         if not self.MDI_ON: return
 
-        for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
+        for win_id, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
             if win.widget().is_screenshot_widget:
                 continue
             win.showNormal()
@@ -877,7 +867,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
         self.close_all_windows()
 
-        self.addVTKWindowToWorkspace()
+        self.add_vtk_window_to_workspace()
 
     def popup_message(self, title, msg):
         """
@@ -1379,13 +1369,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # window menu actions
         self.pythonSteeringPanelAct.triggered.connect(self.addPythonSteeringPanel)
-        self.newGraphicsWindowAct.triggered.connect(self.addNewGraphicsWindow)
+        self.newGraphicsWindowAct.triggered.connect(self.add_new_graphics_window)
 
         self.tileAct.triggered.connect(self.tileSubWindows)
         self.cascadeAct.triggered.connect(self.cascadeSubWindows)
 
-        self.minimizeAllGraphicsWindowsAct.triggered.connect(self.minimizeAllGraphicsWindows)
-        self.restoreAllGraphicsWindowsAct.triggered.connect(self.restoreAllGraphicsWindows)
+        self.minimizeAllGraphicsWindowsAct.triggered.connect(self.minimize_all_graphics_windows)
+        self.restoreAllGraphicsWindowsAct.triggered.connect(self.restore_all_graphics_windows)
 
         self.closeActiveWindowAct.triggered.connect(self.closeActiveSubWindowSlot)
         # self.closeAdditionalGraphicsWindowsAct, triggered self.removeAuxiliaryGraphicsWindows)
@@ -2707,7 +2697,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             if gwd.sceneName not in list(self.fieldTypes.keys()):
                 continue  # we only create window for a sceneNames (e.g. fieldNames) that exist in the simulation
 
-            graphicsWindow = self.addNewGraphicsWindow()
+            graphicsWindow = self.add_new_graphics_window()
             gfw = graphicsWindow.widget()
 
             graphicsWindow.resize(gwd.winSize)
