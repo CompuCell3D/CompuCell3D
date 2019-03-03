@@ -10,7 +10,7 @@ from cc3d.player5.Utilities import ScreenshotData
 from cc3d.player5.Utilities import ScreenshotManagerCore
 from cc3d.player5.GraphicsOffScreen.GenericDrawer import GenericDrawer
 from weakref import ref
-
+from cc3d.core.utils import mkdir_p
 
 class ScreenshotManager(ScreenshotManagerCore):
     def __init__(self, _tabViewWidget):
@@ -247,7 +247,8 @@ class ScreenshotManager(ScreenshotManagerCore):
 
             # will create screenshot directory if directory does not exist
             if not os.path.isdir(screenshot_dir):
-                os.mkdir(screenshot_dir)
+                mkdir_p(screenshot_dir)
+                # os.mkdir(screenshot_dir)
 
             screenshot_fname = os.path.join(screenshot_dir, screenshot_name + "_" + mcs_formatted_number + ".png")
 

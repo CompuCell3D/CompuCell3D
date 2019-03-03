@@ -703,7 +703,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.cmlHandlerCreated = False
 
-        CompuCellSetup.persistent_globals.simulation_file_name = ''
+        # CompuCellSetup.persistent_globals.simulation_file_name = None
 
         self.drawingAreaPrepared = False
         self.simulationIsRunning = False
@@ -1231,29 +1231,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         else:
             self.singleSimulation = True
 
-        # CompuCellSetup.simulationPaths.setSimulationBasePath(self.cc3dSimulationDataHandler.cc3dSimulationData.basePath)
-        #
-        # if self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript != "":
-        #     self.simulation.setRunUserPythonScriptFlag(True)
-        #     CompuCellSetup.simulationPaths.setPlayerSimulationPythonScriptName(
-        #         self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
-        #     if self.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript != "":
-        #         CompuCellSetup.simulationPaths.setPlayerSimulationXMLFileName(
-        #             self.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript)
-        #
-        # elif self.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript != "":
-        #     self.simulation.setRunUserPythonScriptFlag(True)
-        #     CompuCellSetup.simulationPaths.setPlayerSimulationXMLFileName(
-        #         self.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript)
-        #
-        #     if self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript != "":
-        #         CompuCellSetup.simulationPaths.setPythonScriptNameFromXML(
-        #             self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
-        #
-        # if self.cc3dSimulationDataHandler.cc3dSimulationData.windowScript != "":
-        #     CompuCellSetup.simulationPaths.setPlayerSimulationWindowsFileName(
-        #         self.cc3dSimulationDataHandler.cc3dSimulationData.windowScript)
-        #     self.__windowsXMLFileName = self.cc3dSimulationDataHandler.cc3dSimulationData.windowScript
 
     def __setConnects(self):
         '''
@@ -1340,28 +1317,45 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             return
 
-    def read_screenshot_description_file(self, scr_file):
+    def read_screenshot_description_file(self, scr_file=None):
         """
         Reads screenshot_description file
         :param scr_file: {str} scr file
         :return: None
         """
-        if self.__screenshotDescriptionFileName != "":
-            try:
-                self.screenshotManager.readScreenshotDescriptionFile(self.__screenshotDescriptionFileName)
-            except RuntimeError as e:
-                self.screenshotManager.screenshotDataDict = {}
-                self.popup_message(
-                    title='Error Parsing Screenshot Description',
-                    msg=str(e))
-            except:
-                self.screenshotManager.screenshotDataDict = {}
-                self.popup_message(
-                    title='Error Parsing Screenshot Description',
-                    msg='Could not parse '
-                        'screenshot description file {}. Try '
-                        'removing old screenshot file and generate new one. No screenshots will be taken'.format(
-                        self.__screenshotDescriptionFileName))
+
+        try:
+            self.screenshotManager.read_screenshot_description_file(screenshot_fname=scr_file)
+        except RuntimeError as e:
+            # self.screenshotManager.screenshotDataDict = {}
+            self.popup_message(
+                title='Error Parsing Screenshot Description',
+                msg=str(e))
+        except:
+            self.screenshotManager.screenshotDataDict = {}
+            self.popup_message(
+                title='Error Parsing Screenshot Description',
+                msg='Could not parse '
+                    'screenshot description file {}. Try '
+                    'removing old screenshot file and generate new one. No screenshots will be taken'.format(
+                    self.__screenshotDescriptionFileName))
+
+        # if self.__screenshotDescriptionFileName != "":
+        #     try:
+        #         self.screenshotManager.readScreenshotDescriptionFile(self.__screenshotDescriptionFileName)
+        #     except RuntimeError as e:
+        #         self.screenshotManager.screenshotDataDict = {}
+        #         self.popup_message(
+        #             title='Error Parsing Screenshot Description',
+        #             msg=str(e))
+        #     except:
+        #         self.screenshotManager.screenshotDataDict = {}
+        #         self.popup_message(
+        #             title='Error Parsing Screenshot Description',
+        #             msg='Could not parse '
+        #                 'screenshot description file {}. Try '
+        #                 'removing old screenshot file and generate new one. No screenshots will be taken'.format(
+        #                 self.__screenshotDescriptionFileName))
 
     def initializeSimulationViewWidgetCMLResultReplay(self):
         '''
@@ -1396,17 +1390,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # and appropriate pointers set - see line above
         self.prepareSimulationView()
 
-        self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
+        # todo - move this to screenshot manager
         self.screenshotNumberOfDigits = len(str(self.basicSimulationData.numberOfSteps))
-
-        self.read_screenshot_description_file(scr_file=self.__screenshotDescriptionFileName)
+        # self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
+        #
+        #
+        # self.read_screenshot_description_file(scr_file=self.__screenshotDescriptionFileName)
 
         if self.simulationIsStepping:
             self.__pauseSim()
 
         self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
 
-        self.read_screenshot_description_file(scr_file=self.__screenshotDescriptionFileName)
+        self.read_screenshot_description_file()
 
         # todo 5 old code
         # if self.__imageOutput:
@@ -1702,13 +1698,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # make sure that before simulation thread writes new results all the screenshots are taken
 
         if self.__imageOutput and not (self.__step % self.__shotFrequency):
-            mcsFormattedNumber = str(self.__step).zfill(self.screenshotNumberOfDigits)
-
-            screenshotFileName = os.path.join(self.screenshotDirectoryName,
-                                              self.baseScreenshotName + "_" + mcsFormattedNumber + ".png")
-
-            self.mainGraphicsWidget.takeSimShot(screenshotFileName)
-            self.screenshotManager.outputScreenshots(self.screenshotDirectoryName, self.__step)
+            # mcsFormattedNumber = str(self.__step).zfill(self.screenshotNumberOfDigits)
+            #
+            # screenshotFileName = os.path.join(self.screenshotDirectoryName,
+            #                                   self.baseScreenshotName + "_" + mcsFormattedNumber + ".png")
+            #
+            # self.mainGraphicsWidget.takeSimShot(screenshotFileName)
+            self.screenshotManager.output_screenshots(self.__step)
 
         self.simulation.drawMutex.unlock()
 
@@ -1727,6 +1723,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :param mcs: {int} current Monte Carlo step
         :return:
         """
+
         # creating cml field handler in case lattice output is ON
         if Configuration.getSetting("LatticeOutputOn") and not self.cmlHandlerCreated:
             persistent_globals = CompuCellSetup.persistent_globals
@@ -1736,27 +1733,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.__drawField()
         self.simulation.drawMutex.lock()
+
         # will need to sync screenshots with simulation thread.
         # Be sure before simulation thread writes new results all the screenshots are taken
 
         if self.__imageOutput and not (self.__step % self.__shotFrequency):  # dumping images? Check modulo MCS #
 
-            mcsFormattedNumber = str(self.__step).zfill(self.screenshotNumberOfDigits)
-
-            screenshotFileName = os.path.join(self.screenshotDirectoryName,
-                                              self.baseScreenshotName + "_" + mcsFormattedNumber + ".png")
-            # if mcs != 0:
-
-                # # self.mainGraphicsWindow can be closed by the user
-                # if self.mainGraphicsWidget:
-                #     self.mainGraphicsWidget.takeSimShot(screenshotFileName)
-
-            # if Configuration.getSetting('DebugOutputPlayer'):
-            #     print('self.screenshotManager=', self.screenshotManager)
-
             if self.screenshotManager:
                 try:
-                    # self.screenshotManager.outputScreenshots(self.screenshotDirectoryName, self.__step)
                     self.screenshotManager.output_screenshots(mcs=self.__step)
                 except KeyError:
 
@@ -1764,16 +1748,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
                     self.popup_message(
                         title='Error Processing Screnenshots',
                         msg='Could not output screenshots. It is likely that screenshot description file was generated '
-                            'using incompatible code. You may want to remove "screenshot_data" directory from your project '
+                            'using incompatible code. '
+                            'You may want to remove "screenshot_data" directory from your project '
                             'and use camera button to generate new screenshot file '
-                            ' No screenshots will be taken'.format(
-                            self.__screenshotDescriptionFileName))
-
-                if Configuration.getSetting('DebugOutputPlayer'):
-                    print('self.screenshotDirectoryName=', self.screenshotDirectoryName)
-                    # sys.exit()
-
-                    #        if (CompuCellSetup.cmlFieldHandler is not None) and self.__latticeOutputFlag and (not self.__step % self.__latticeOutputFrequency):  #rwh
+                            ' No screenshots will be taken'.format(self.__screenshotDescriptionFileName))
 
         if self.cmlHandlerCreated and self.__latticeOutputFlag and (not self.__step % self.__latticeOutputFrequency):
             CompuCellSetup.persistent_globals.cml_field_handler.write_fields(self.__step)
@@ -1787,19 +1765,23 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.sem.tryAcquire()
         self.simulation.sem.release()
 
-    def handleCompletedStep(self, _mcs):
-        '''
+    def handleCompletedStep(self, mcs:int)->None:
+        """
         Dispatch function for handleCompletedStep functions
-        :param _mcs: int - current Monte Carlo step
+
+        :param mcs: int - current Monte Carlo step
+
         :return:None
-        '''
+
+        """
+
         if not self.completedFirstMCS:
             self.completedFirstMCS = True
 
-        self.__step = _mcs
+        self.__step = mcs
 
-        handleCompletedStepFcn = getattr(self, "handleCompletedStep" + self.__viewManagerType)
-        handleCompletedStepFcn(_mcs)
+        handle_completed_step_fcn = getattr(self, "handleCompletedStep" + self.__viewManagerType)
+        handle_completed_step_fcn(mcs)
 
     def handleFinishRequest(self, _flag):
         '''

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+from typing import Union
 import os
+from os.path import dirname, join, exists
 from collections import OrderedDict
 from cc3d.player5.Utilities import ScreenshotData
 import json
@@ -259,14 +261,49 @@ class ScreenshotManagerCore(object):
 
             self.screenshotDataDict[scr_data.screenshotName] = scr_data
 
-    def readScreenshotDescriptionFile(self, filename):
+    # def readScreenshotDescriptionFile(self, filename):
+    #     """
+    #     Reads screenshot description file
+    #     :param filename:{str} scr descr file name
+    #     :return: None
+    #     """
+    #
+    #     self.readScreenshotDescriptionFile_JSON(filename=filename)
+
+    def get_screenshot_filename(self)->Union[str, None]:
         """
-        Reads screenshot description file
-        :param filename:{str} scr descr file name
+
+        :return:
+        """
+        sim_file_name = CompuCellSetup.persistent_globals.simulation_file_name
+        if sim_file_name is None and sim_file_name != '':
+            print('Unknown simulation file name . Cannot locate screenshot_data folder')
+            return None
+
+
+        guessed_screenshot_name  = join(dirname(sim_file_name),'screenshot_data','screenshots.json')
+
+        return guessed_screenshot_name
+
+
+    def read_screenshot_description_file(self, screenshot_fname=None):
+        """
+        Reads screenshot description file. checks persisten globals or the simulation name and
+        looks for screenshot_data folder in the project location
         :return: None
         """
 
-        self.readScreenshotDescriptionFile_JSON(filename=filename)
+        if screenshot_fname is not None:
+            screenshot_filename = screenshot_fname
+        else:
+            screenshot_filename = self.get_screenshot_filename()
+
+        if not exists(screenshot_filename):
+            raise RuntimeError('Could not locate screenshot description file: {}'.format(screenshot_filename))
+
+
+        self.readScreenshotDescriptionFile_JSON(filename=screenshot_filename)
+
 
     def safe_writeScreenshotDescriptionFile(self, out_fname):
         """
