@@ -1349,11 +1349,16 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if self.__screenshotDescriptionFileName != "":
             try:
                 self.screenshotManager.readScreenshotDescriptionFile(self.__screenshotDescriptionFileName)
+            except RuntimeError as e:
+                self.screenshotManager.screenshotDataDict = {}
+                self.popup_message(
+                    title='Error Parsing Screenshot Description',
+                    msg=str(e))
             except:
                 self.screenshotManager.screenshotDataDict = {}
                 self.popup_message(
                     title='Error Parsing Screenshot Description',
-                    msg='Could not parse'
+                    msg='Could not parse '
                         'screenshot description file {}. Try '
                         'removing old screenshot file and generate new one. No screenshots will be taken'.format(
                         self.__screenshotDescriptionFileName))
