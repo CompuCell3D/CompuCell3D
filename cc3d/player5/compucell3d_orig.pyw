@@ -138,7 +138,7 @@ def main(argv):
 
     # process reminder of the command line options
     if argv != "":
-        mainWindow.viewmanager.processCommandLineOptions(opts)
+        mainWindow.viewmanager.parse_cml(opts)
 
 
     mainWindow.show()

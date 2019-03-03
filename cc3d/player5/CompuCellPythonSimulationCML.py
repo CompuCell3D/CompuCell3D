@@ -253,7 +253,7 @@ try:
     allowRelaunch = True
 
     sim, simthread = None, None
-    helpOnly = cmlParser.processCommandLineOptions()
+    helpOnly = cmlParser.parse_cml()
     cml_args = cmlParser.cml_args
 
     # print 'BEFORE cmlParser.processCommandLineOptions() \n\n\n\n'

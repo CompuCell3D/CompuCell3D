@@ -23,8 +23,6 @@ import cc3d.core.Version as Version
 
 setDebugging(0)
 
-
-
 if sys.platform.lower().startswith('linux'):
     # On linux have to import rr early on to avoid
     # PyQt-related crash - appears to only affect VirtualBox Installs
@@ -34,7 +32,6 @@ if sys.platform.lower().startswith('linux'):
     except ImportError:
         print('Could not import roadrunner')
         pass
-
 
 if sys.platform.startswith('win'):
     # this takes care of the need to distribute qwindows.dll with the qt5 application
@@ -69,13 +66,12 @@ if sys.platform == 'darwin':
             # PyQt5.QtCore.qInstallMsgHandler(handler)
 
 
-
 def main(argv):
-    argc = len(argv)
+    print('compucell3d.pyw:   type(argv)=', type(argv))
+    print('compucell3d.pyw:   argv=', argv)
 
     # if sys.platform.startswith('darwin'):
     #     PyQt5.QtCore.QCoreApplication.setAttribute(Qt.AA_DontUseNativeMenuBar)
-
 
     app = CQApplication(argv)
 
@@ -87,76 +83,51 @@ def main(argv):
     if sys.platform.startswith('darwin'):
         splash.raise_()
 
-
-    # RWH:  not sure why vtk was being imported here
-    # splash.showMessage("Loading VTK modules...",Qt.AlignLeft,  Qt.white)
-    # import vtk
-
     # TODO Fix this - set paths and uncomment
     # sys.path.append(os.environ["PYTHON_MODULE_PATH"])
     sys.path.append(os.environ["SWIG_LIB_INSTALL_DIR"])
 
-    # todo - fix version fetching
-    versionStr = '3.8.0'
-    revisionStr = '0'
-    try:
+    version_str = Version.getVersionAsString()
+    revision_str = Version.getSVNRevisionAsString()
 
-        versionStr = Version.getVersionAsString()
-        revisionStr = Version.getSVNRevisionAsString()
-    except ImportError as e:
-        pass
-    baseMessage = "CompuCell3D Version: %s Revision: %s\n" % (versionStr, revisionStr)
-    firstMessage = baseMessage + "Loading User Interface ..."
+    base_message = "CompuCell3D Version: %s Revision: %s\n" % (version_str, revision_str)
+    first_message = base_message + "Loading User Interface ..."
 
-    splash.showMessage(firstMessage, Qt.AlignLeft, Qt.white)
+    splash.showMessage(first_message, Qt.AlignLeft, Qt.white)
 
-    secondMessage = baseMessage + "Loading CompuCell3D Python Modules..."
+    second_message = base_message + "Loading CompuCell3D Python Modules..."
 
-    splash.showMessage(secondMessage, Qt.AlignLeft, Qt.white)
-    # splash.showMessage("Loading CompuCell3D Python Modules...",Qt.AlignLeft,  Qt.white)
-
+    splash.showMessage(second_message, Qt.AlignLeft, Qt.white)
 
     app.processEvents()
 
-    print('compucell3d.pyw:   type(argv)=', type(argv))
-    print('compucell3d.pyw:   argv=', argv)
-
     cml_parser = CMLParser()
-    cml_parser.processCommandLineOptions()
+    cml_parser.parse_cml()
     cml_args = cml_parser.cml_args
 
-    mainWindow = UserInterface()
-    mainWindow.setArgv(argv)  # passing command line to the code
+    main_window = UserInterface()
 
+    # passing command line to the code
+    main_window.setArgv(argv)
 
     # process reminder of the command line options
     # TODO
     if argv != "":
-        # mainWindow.viewmanager.processCommandLineOptions(opts)
-        mainWindow.viewmanager.processCommandLineOptions(cml_args)
+        main_window.viewmanager.process_command_line_options(cml_args)
 
+    main_window.show()
+    splash.finish(main_window)
 
-    mainWindow.show()
-    splash.finish(mainWindow)
+    main_window.raise_()
 
-
-    # 2010: mainWindow.raise_() must be called after mainWindow.show()
-    #       otherwise the CC3D player5 GUI won't receive foreground focus. It's a
-    #       workaround for a well-known bug caused by PyQt4/Qt on Mac OS X, as shown here:
-    #       http://www.riverbankcomputing.com/pipermail/pyqt/2009-September/024509.html
-    mainWindow.raise_()
-
-    # mainWindow.showMinimized()
-    # mainWindow.showNormal()
-
-    error_code = app.exec_()
-    return error_code
-
+    error_code_local = app.exec_()
+    return error_code_local
 
 
 def except_hook(cls, exception, traceback):
     sys.__excepthook__(cls, exception, traceback)
     sys.exit(1)
+
 
 if __name__ == '__main__':
     # enable it during debugging in pycharm
@@ -167,7 +138,6 @@ if __name__ == '__main__':
     # if error_code !=0 :
     #     print traceback.print_tb()
 
-
     # sys.excepthook = except_hook
-    print("GOT HERE")
+
     sys.exit(error_code)
