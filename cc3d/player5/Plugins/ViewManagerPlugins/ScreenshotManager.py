@@ -79,7 +79,7 @@ class ScreenshotManager(ScreenshotManagerCore):
 
         tvw = self.tabViewWidget()
         if tvw:
-            tvw.updateActiveWindowVisFlags(self.screenshotGraphicsWidget)
+            tvw.update_active_window_vis_flags(self.screenshotGraphicsWidget)
 
         scrData.cell_borders_on = tvw.borderAct.isChecked()
         scrData.cells_on = tvw.cellsAct.isChecked()
@@ -134,7 +134,7 @@ class ScreenshotManager(ScreenshotManagerCore):
 
             tvw = self.tabViewWidget()
             if tvw:
-                tvw.updateActiveWindowVisFlags(self.screenshotGraphicsWidget)
+                tvw.update_active_window_vis_flags(self.screenshotGraphicsWidget)
 
             self.store_gui_vis_config(scrData=scrData)
             scrData.extractCameraInfo(_camera)  # so "camera" icon (save images) remembers camera view
@@ -190,7 +190,7 @@ class ScreenshotManager(ScreenshotManagerCore):
 
             tvw = self.tabViewWidget()
             if tvw:
-                tvw.updateActiveWindowVisFlags(self.screenshotGraphicsWidget)
+                tvw.update_active_window_vis_flags(self.screenshotGraphicsWidget)
 
             self.store_gui_vis_config(scrData=scrData)
 

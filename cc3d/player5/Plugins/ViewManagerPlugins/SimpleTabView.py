@@ -27,6 +27,8 @@ from cc3d.player5.Simulation.CMLResultReader import CMLResultReader
 from cc3d.player5.Simulation.SimulationThread import SimulationThread
 from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
 from cc3d.core import XMLUtils
+from .PlotManagerSetup import createPlotManager
+from .WidgetManager import WidgetManager
 
 from cc3d.core.CMLFieldHandler import CMLFieldHandler
 
@@ -39,11 +41,8 @@ from cc3d import CompuCellSetup
 from cc3d.CompuCellSetup.readers import readCC3DFile
 import cc3d.Version as Version
 
-
 FIELD_TYPES = (
     "CellField", "ConField", "ScalarField", "ScalarFieldCellLevel", "VectorField", "VectorFieldCellLevel", "CustomVis")
-
-
 
 PLANES = ("xy", "xz", "yz")
 
@@ -51,7 +50,6 @@ MODULENAME = '---- SimpleTabView.py: '
 
 # turning off vtkWindows console output
 vtk.vtkObject.GlobalWarningDisplayOff()
-
 
 try:
     python_module_path = os.environ["PYTHON_MODULE_PATH"]
@@ -74,26 +72,23 @@ except:
 # 11. update mitosis generation add clone attributes to twedit
 
 
-# from MainAreaMdi import MainArea
 if Configuration.getSetting('FloatingWindows'):
     from .MainArea import MainArea
 else:
     from .MainAreaMdi import MainArea
 
 
-# class SimpleTabView(QMdiArea, SimpleViewManager):
 class SimpleTabView(MainArea, SimpleViewManager):
     configsChanged = pyqtSignal()
 
     def __init__(self, parent):
 
-        self.__parent = parent  # QMainWindow -> UI.UserInterface
+        # QMainWindow -> UI.UserInterface
+        self.__parent = parent
         self.UI = parent
 
         SimpleViewManager.__init__(self, parent)
         MainArea.__init__(self, stv=self, ui=parent)
-
-
 
         self.__createStatusBar()
         self.__setConnects()
@@ -109,8 +104,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.rollbackImporter = None
 
-        from .PlotManagerSetup import createPlotManager
-
         # stores parsed command line arguments
         self.cml_args = None
 
@@ -119,7 +112,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.plotManager = createPlotManager(self, self.useVTKPlots)
 
-        from .WidgetManager import WidgetManager
         self.widgetManager = WidgetManager(self)
 
         self.fieldTypes = {}
@@ -173,25 +165,21 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # for more information on QSignalMapper see Mark Summerfield book "Rapid GUI Development with PyQt"
         self.windowMapper = QSignalMapper(self)
-        self.windowMapper.mapped.connect(self.setActiveSubWindowCustomSlot)
-        # self.connect(self.windowMapper, SIGNAL("mapped(QWidget*)"), self.setActiveSubWindowCustomSlot)
+        self.windowMapper.mapped.connect(self.set_active_sub_window_custom_slot)
 
         self.prepareForNewSimulation(_forceGenericInitialization=True)
-        #        print MODULENAME,'__init__:   after prepareForNewSimulation(),  self.mysim = ',self.mysim
 
         self.setParams()
-        # self.keepOldTabs = False  #this flag sets if tabs should be removed before creating new one or not
         self.mainGraphicsWidget = None  # vs.  lastActiveWindow
 
         # determine if some relevant plugins are defined in the model
         self.pluginFPPDefined = False  # FocalPointPlasticity
         self.pluginCOMDefined = False  # CenterOfMass
-        # is there a better way to check for plugins being defined?
-        # mainGraphicsWindow.drawModel2D.currentDrawingParameters.bsd.sim.getCC3DModuleData("Plugin","FocalPointPlasticity"):
 
         # Note: we cannot check the plugins here as CompuCellSetup.cc3dXML2ObjConverter.root is not defined
 
-        # nextSimulation holds the name of the file that will be inserted as a new simulation to run after current simulation gets stopped
+        # nextSimulation holds the name of the file that will be inserted as a new simulation
+        # to run after current simulation gets stopped
         self.nextSimulation = ""
         self.dlg = None
 
@@ -205,10 +193,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # extracting from the runScript maximum number of consecutive runs
         try:
             self.maxNumberOfConsecutiveRuns = int(os.environ["MAX_NUMBER_OF_CONSECUTIVE_RUNS"])
-        except:  # if for whatever reason we cannot do it we stay with the default value
+        except:
+            # if for whatever reason we cannot do it we stay with the default value
             pass
 
-            # note that this variable will be the same as self.simulation when doing CMLReplay mode. I keep it under diffferent name to keep track of the places in the code where I am using SimulationThread API and where I use CMLResultReade replay part of the API
+            # note that this variable will be the same as self.simulation when doing CMLReplay mode.
+            # I keep it under diffferent name to keep track of the places in the code where
+            # I am using SimulationThread API and where I use CMLResultReade replay part of the API
+
         # this means that further refactoring is needed but I leave it for now
         self.cmlReplayManager = None
 
@@ -232,14 +224,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         return self.__sim_file_name
 
-    def getWindowsXMLFileName(self):
-        '''
-        Deprecated - returns windows XML file name
-        :return: str
-        '''
-        return self.__windowsXMLFileName
-
-    def update_recent_file_menu(self)->None:
+    def update_recent_file_menu(self) -> None:
         """
         Updates recent simulations File menu - called on demand only
         :return: None
@@ -262,102 +247,93 @@ class SimpleTabView(MainArea, SimpleViewManager):
             sim_counter += 1
         return
 
-    def setActiveSubWindowCustomSlot(self, window):
-        '''
+    def set_active_sub_window_custom_slot(self, window: object) -> None:
+        """
         Activates window
         :param window: QDockWidget or QMdiWindow instance
         :return:None
-        '''
+
+        """
 
         self.lastActiveRealWindow = window
-        # self.lastClickedRealWindow = window
         self.lastActiveRealWindow.activateWindow()
 
-    def updateActiveWindowVisFlags(self, window=None):
-        '''
+    def update_active_window_vis_flags(self, window: object = None) -> None:
+        """
         Updates graphics visualization dictionary - checks if border, cells fpp links etc should be drawn
         :param window: QDockWidget or QMdiWindow instance - but only for graphics windows
         :return: None
-        '''
+        """
 
         try:
             if window:
-                dictKey = window.winId().__int__()
+                dict_key = window.winId().__int__()
             else:
-                dictKey = self.lastActiveRealWindow.widget().winId().__int__()
+                dict_key = self.lastActiveRealWindow.widget().winId().__int__()
         except Exception:
-            print(MODULENAME, 'updateActiveWindowVisFlags():  Could not find any open windows. Ignoring request')
+            print('update_active_window_vis_flags():  Could not find any open windows. Ignoring request')
             return
 
-        self.graphicsWindowVisDict[dictKey] = (self.cellsAct.isChecked(), self.borderAct.isChecked(),
+        self.graphicsWindowVisDict[dict_key] = (self.cellsAct.isChecked(), self.borderAct.isChecked(),
                                                self.clusterBorderAct.isChecked(), self.cellGlyphsAct.isChecked(),
                                                self.FPPLinksAct.isChecked())
 
-    def updateWindowMenu(self) -> None:
+    def update_window_menu(self) -> None:
         """
         Invoked whenever 'Window' menu is clicked.
         It does NOT modify lastActiveWindow directly (setActiveSubWindowCustomSlot does)
         :return:None
         """
 
-        menusDict = self.__parent.getMenusDictionary()
-        windowMenu = menusDict["window"]
-        windowMenu.clear()
-        windowMenu.addAction(self.newGraphicsWindowAct)
-        windowMenu.addAction(self.pythonSteeringPanelAct)
-        # windowMenu.addAction(self.newPlotWindowAct)
-        if self.MDI_ON:
-            windowMenu.addAction(self.tileAct)
-            windowMenu.addAction(self.cascadeAct)
-            windowMenu.addAction(self.minimizeAllGraphicsWindowsAct)
-            windowMenu.addAction(self.restoreAllGraphicsWindowsAct)
-        windowMenu.addSeparator()
+        menus_dict = self.__parent.getMenusDictionary()
+        window_menu = menus_dict["window"]
+        window_menu.clear()
+        window_menu.addAction(self.newGraphicsWindowAct)
+        window_menu.addAction(self.pythonSteeringPanelAct)
 
-        windowMenu.addAction(self.closeActiveWindowAct)
-        # windowMenu.addAction(self.closeAdditionalGraphicsWindowsAct)
-        windowMenu.addSeparator()
+        if self.MDI_ON:
+            window_menu.addAction(self.tileAct)
+            window_menu.addAction(self.cascadeAct)
+            window_menu.addAction(self.minimizeAllGraphicsWindowsAct)
+            window_menu.addAction(self.restoreAllGraphicsWindowsAct)
+        window_menu.addSeparator()
+
+        window_menu.addAction(self.closeActiveWindowAct)
+        window_menu.addSeparator()
 
         # adding graphics windows
         counter = 0
+        for win_id, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
 
-        # for windowName in self.graphicsWindowDict.keys():
-        for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
-            # for win in self.win_inventory.values():
-            graphicsWidget = win.widget()
+            graphics_widget = win.widget()
 
-            if not graphicsWidget:  # happens with screenshot widget after simulation closes
+            if not graphics_widget:
+                # happens with screenshot widget after simulation closes
                 continue
 
-            if graphicsWidget.is_screenshot_widget:
+            if graphics_widget.is_screenshot_widget:
                 continue
 
-            # actionText = self.tr("&%1. %2").format(counter + 1, win.windowTitle())
-            actionText = str("&{0}. {1}").format(counter + 1, win.windowTitle())
+            action_text = str("&{0}. {1}").format(counter + 1, win.windowTitle())
 
-            action = windowMenu.addAction(actionText)
+            action = window_menu.addAction(action_text)
             action.setCheckable(True)
-            # myFlag = self.lastActiveRealWindow == graphicsWidget
-            myFlag = self.lastActiveRealWindow == win
-            action.setChecked(myFlag)
+            my_flag = self.lastActiveRealWindow == win
+            action.setChecked(my_flag)
 
-            # todo
-            # self.connect(action, SIGNAL("triggered()"), self.windowMapper, SLOT("map()"))
             action.triggered.connect(self.windowMapper.map)
 
             self.windowMapper.setMapping(action, win)
             counter += 1
 
-        for winId, win in self.win_inventory.getWindowsItems(PLOT_WINDOW_LABEL):
-            # actionText = self.tr("&%1. %2").arg(counter + 1).arg(win.windowTitle())
-            actionText = self.tr("&{0}. {1}").format(counter + 1, win.windowTitle())
+        for win_id, win in self.win_inventory.getWindowsItems(PLOT_WINDOW_LABEL):
+            action_text = self.tr("&{0}. {1}").format(counter + 1, win.windowTitle())
 
-            action = windowMenu.addAction(actionText)
+            action = window_menu.addAction(action_text)
             action.setCheckable(True)
-            # myFlag = self.lastActiveRealWindow == graphicsWidget
-            myFlag = self.lastActiveRealWindow == win
-            action.setChecked(myFlag)
+            my_flag = self.lastActiveRealWindow == win
+            action.setChecked(my_flag)
 
-            # self.connect(action, SIGNAL("triggered()"), self.windowMapper, SLOT("map()"))
             action.triggered.connect(self.windowMapper.map)
             self.windowMapper.setMapping(action, win)
             counter += 1
@@ -461,7 +437,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if self.mainGraphicsWidget is None:
             self.mainGraphicsWidget = mdiWindow.widget()
 
-        self.updateActiveWindowVisFlags()
+        self.update_active_window_vis_flags()
 
         newWindow.show()
 
@@ -524,11 +500,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # return OK drawing
 
         # MDIFIX
-        self.setActiveSubWindowCustomSlot(
+        self.set_active_sub_window_custom_slot(
             self.lastActiveRealWindow)  # rwh: do this to "check" this in the "Window" menu
 
-        self.updateWindowMenu()
-        self.updateActiveWindowVisFlags()
+        self.update_window_menu()
+        self.update_active_window_vis_flags()
         # print self.graphicsWindowVisDict
 
         suggested_win_pos = self.suggested_window_position()
@@ -574,7 +550,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         activeWindow.close()
 
-        self.updateWindowMenu()
+        self.update_window_menu()
 
     def processCommandLineOptions(self, cml_args):  #
         # command line parsing needs to be fixed - it takes place in two places now...
@@ -1991,7 +1967,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         print('INSIDE RUN SIM')
         # self.simulation.start()
 
-        self.simulation.screenUpdateFrequency = self.__updateScreen  # when we run simulation we ensure that self.simulation.screenUpdateFrequency is whatever is written in the settings
+        # when we run simulation we ensure that self.simulation.screenUpdateFrequency
+        # is whatever is written in the settings
+        self.simulation.screenUpdateFrequency = self.__updateScreen
 
         if not self.drawingAreaPrepared:
             self.prepareSimulation()
@@ -2003,11 +1981,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             self.simulation.semPause.release()  # just in case
 
-            # these flagg settings calls have to be executed before self.cmlReplayManager.keepGoing()
+            # these flags settings calls have to be executed before self.cmlReplayManager.keepGoing()
             self.simulationIsRunning = True
             self.simulationIsStepping = False
 
-            # self.cmlReplayManager.setRunState()
             self.cmlReplayManager.set_run_state(state=RUN_STATE)
 
             self.cmlReplayManager.keep_going()
@@ -2036,20 +2013,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 self.openAct.setEnabled(False)
                 self.openLDSAct.setEnabled(False)
-
-            # if Configuration.getSetting("LatticeOutputOn") and not self.cmlHandlerCreated:
-            #
-            #     persistent_globals = CompuCellSetup.persistent_globals
-            #     print('mysim=',self.mysim)
-            #     print('simulator = ', persistent_globals.simulator)
-            #
-            #     persistent_globals.cml_field_handler = CMLFieldHandler()
-            #     persistent_globals.cml_field_handler.initialize(field_storage=self.fieldStorage)
-            #     self.cmlHandlerCreated = True
-
-                # CompuCellSetup.createCMLFieldHandler()
-                # self.cmlHandlerCreated = True
-                # #            CompuCellSetup.initCMLFieldHandler(self.mysim,self.resultStorageDirectory,self.fieldStorage)
 
             self.steppingThroughSimulation = False
 
@@ -2115,20 +2078,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 self.simulation.start()
 
-            # if self.completedFirstMCS and Configuration.getSetting("LatticeOutputOn") and not self.cmlHandlerCreated:
-            #
-            #     persistent_globals = CompuCellSetup.persistent_globals
-            #     persistent_globals.cml_field_handler = CMLFieldHandler()
-            #     persistent_globals.cml_field_handler.initialize(field_storage=self.fieldStorage)
-            #     self.cmlHandlerCreated = True
-            #     print
-            #     #todo orig code
-            #     # CompuCellSetup.createCMLFieldHandler()
-            #     # self.cmlHandlerCreated = True  # rwh
-            #
-            #     # CompuCellSetup.initCMLFieldHandler(self.mysim, self.resultStorageDirectory, self.fieldStorage)
-            #     # CompuCellSetup.cmlFieldHandler.getInfoAboutFields()  # rwh
-
             if self.simulationIsRunning and self.simulationIsStepping:
                 #            print MODULENAME,'  __stepSim() - 1:'
                 self.pauseAct.setEnabled(False)
@@ -2147,6 +2096,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.simulationIsStepping = True
                 self.stepAct.setEnabled(False)
                 self.pauseAct.setEnabled(False)
+
             # if Pause button is disabled, meaning the sim is paused:
             elif self.simulationIsRunning and not self.simulationIsStepping and not self.pauseAct.isEnabled():
                 # transition from paused simulation
@@ -2166,11 +2116,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if self.simulationIsRunning or self.simulationIsStepping:
             self.__drawField()
 
-    def drawFieldCMLResultReplay(self):
-        '''
+    def drawFieldCMLResultReplay(self)->None:
+        """
         Draws fields during vtk replay mode
-        :return:None
-        '''
+        :return:
+        """
+
         self.simulation.drawMutex.lock()
         self.simulation.readFileSem.acquire()
 
@@ -2181,16 +2132,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
             return
 
         if self.newDrawingUserRequest:
-            # print "entering newDrawingUserRequest"
             self.newDrawingUserRequest = False
             if self.pauseAct.isEnabled():
-                # print "PAUSING THE SIMULATION"
                 self.__pauseSim()
 
         self.simulation.drawMutex.unlock()
         self.simulation.readFileSem.release()
 
-        # print "self.simulation.drawMutex=",self.simulation.drawMutex
         self.simulation.drawMutex.lock()
         self.simulation.readFileSem.acquire()
 
@@ -3038,7 +2986,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                     # print 'AFTER showSimView'
 
         self.drawingAreaPrepared = True
-        self.updateActiveWindowVisFlags()  # needed in case switching from one sim to another (e.g. 1st has FPP, 2nd doesn't)
+        self.update_active_window_vis_flags()  # needed in case switching from one sim to another (e.g. 1st has FPP, 2nd doesn't)
 
     def set_title_window_from_sim_fname(self, widget, abs_sim_fname):
         """
@@ -3277,7 +3225,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # Should be disabled when the simulation is not loaded!
         self.simulation.drawMutex.lock()
-        self.updateActiveWindowVisFlags()
+        self.update_active_window_vis_flags()
         if self.cellsAct.isEnabled():
             Configuration.setSetting('CellsOn', checked)
 
@@ -3306,7 +3254,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 #
                 # except AttributeError, e:
                 #     pass
-                self.updateActiveWindowVisFlags(graphicsWidget)
+                self.update_active_window_vis_flags(graphicsWidget)
 
         self.simulation.drawMutex.unlock()
 
@@ -3320,7 +3268,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.drawMutex.lock()
         #        print '======== SimpleTabView.py:  __checkBorder(): checked =',checked
         #        print '             self.graphicsWindowDict=',self.graphicsWindowDict
-        self.updateActiveWindowVisFlags()
+        self.update_active_window_vis_flags()
 
         if self.borderAct.isEnabled():
             Configuration.setSetting('CellBordersOn', checked)
@@ -3342,7 +3290,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 # except AttributeError, e:
                 #     pass
 
-                self.updateActiveWindowVisFlags(graphicsWidget)
+                self.update_active_window_vis_flags(graphicsWidget)
 
         self.simulation.drawMutex.unlock()
 
@@ -3355,7 +3303,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # Should be disabled when the simulation is not loaded!
         self.simulation.drawMutex.lock()
 
-        self.updateActiveWindowVisFlags()
+        self.update_active_window_vis_flags()
         if self.clusterBorderAct.isEnabled():
             Configuration.setSetting('ClusterBordersOn', checked)
 
@@ -3377,7 +3325,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 # except AttributeError, e:
                 #     pass
 
-                self.updateActiveWindowVisFlags(graphicsWidget)
+                self.update_active_window_vis_flags(graphicsWidget)
 
         self.simulation.drawMutex.unlock()
 
@@ -3389,7 +3337,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
         # Should be disabled when the simulation is not loaded!
         self.simulation.drawMutex.lock()
-        self.updateActiveWindowVisFlags()
+        self.update_active_window_vis_flags()
 
         if self.cellGlyphsAct.isEnabled():
             if not self.pluginCOMDefined:
@@ -3419,7 +3367,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 # except AttributeError, e:
                 #     pass
 
-                self.updateActiveWindowVisFlags(graphicsWidget)
+                self.update_active_window_vis_flags(graphicsWidget)
 
         self.simulation.drawMutex.unlock()
 
@@ -3433,7 +3381,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Configuration.setSetting("FPPLinksOn", checked)
         # Should be disabled when the simulation is not loaded!
         self.simulation.drawMutex.lock()
-        self.updateActiveWindowVisFlags()
+        self.update_active_window_vis_flags()
 
         if self.FPPLinksAct.isEnabled():
 
@@ -3464,7 +3412,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 # except AttributeError, e:
                 #     pass
 
-                self.updateActiveWindowVisFlags(graphicsWidget)
+                self.update_active_window_vis_flags(graphicsWidget)
 
         self.simulation.drawMutex.unlock()
 
@@ -3483,7 +3431,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Configuration.setSetting("FPPLinksColorOn", checked)
         # Should be disabled when the simulation is not loaded!
         self.simulation.drawMutex.lock()
-        self.updateActiveWindowVisFlags()
+        self.update_active_window_vis_flags()
 
         if self.FPPLinksColorAct.isEnabled():
 
@@ -3519,7 +3467,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 except AttributeError as e:
                     pass
 
-                self.updateActiveWindowVisFlags(graphicsWidget)
+                self.update_active_window_vis_flags(graphicsWidget)
 
         self.simulation.drawMutex.unlock()
 
@@ -3547,7 +3495,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 except AttributeError as e:
                     pass
 
-                self.updateActiveWindowVisFlags(graphicsWidget)
+                self.update_active_window_vis_flags(graphicsWidget)
 
     def __checkLimits(self, checked):
         '''

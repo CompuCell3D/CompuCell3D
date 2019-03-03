@@ -279,7 +279,7 @@ class UserInterface(QMainWindow):
         self.__menus["window"] = self.viewmanager.initWindowMenu()
         mb.addMenu(self.__menus["window"])
 
-        self.__menus["window"].aboutToShow.connect(self.viewmanager.updateWindowMenu)
+        self.__menus["window"].aboutToShow.connect(self.viewmanager.update_window_menu)
         # self.connect(self.__menus["window"] , SIGNAL("aboutToShow()"), self.viewmanager.updateWindowMenu )
 
         self.__menus["help"] = self.viewmanager.initHelpMenu()
