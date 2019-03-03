@@ -158,9 +158,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.__viewManagerType = "Regular"
 
-        # this determines how many digits screenshot number of screenshot file name should have
-        self.screenshotNumberOfDigits = 10
-
         self.graphicsWindowVisDict = OrderedDict()  # stores visualization settings for each open window
 
         # self.lastActiveWindow = None
@@ -1285,23 +1282,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
                     'removing old screenshot file and generate new one. No screenshots will be taken'.format(
                     self.__screenshotDescriptionFileName))
 
-        # if self.__screenshotDescriptionFileName != "":
-        #     try:
-        #         self.screenshotManager.readScreenshotDescriptionFile(self.__screenshotDescriptionFileName)
-        #     except RuntimeError as e:
-        #         self.screenshotManager.screenshotDataDict = {}
-        #         self.popup_message(
-        #             title='Error Parsing Screenshot Description',
-        #             msg=str(e))
-        #     except:
-        #         self.screenshotManager.screenshotDataDict = {}
-        #         self.popup_message(
-        #             title='Error Parsing Screenshot Description',
-        #             msg='Could not parse '
-        #                 'screenshot description file {}. Try '
-        #                 'removing old screenshot file and generate new one. No screenshots will be taken'.format(
-        #                 self.__screenshotDescriptionFileName))
-
     def initializeSimulationViewWidgetCMLResultReplay(self):
         '''
         Initializes PLayer during VTK replay run mode
@@ -1334,13 +1314,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # this fcn will draw initial lattice configuration so data has to be available by then
         # and appropriate pointers set - see line above
         self.prepareSimulationView()
-
-        # todo - move this to screenshot manager
-        self.screenshotNumberOfDigits = len(str(self.basicSimulationData.numberOfSteps))
-        # self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
-        #
-        #
-        # self.read_screenshot_description_file(scr_file=self.__screenshotDescriptionFileName)
 
         if self.simulationIsStepping:
             self.__pauseSim()
@@ -1467,9 +1440,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.fieldExtractor.init(simObj)
 
-        self.screenshotNumberOfDigits = len(str(self.basicSimulationData.numberOfSteps))
-
-        # latticeTypeStr = CompuCellSetup.ExtractLatticeType()
         lattice_type_str = CompuCellSetup.simulation_utils.extract_lattice_type()
 
         if lattice_type_str in list(Configuration.LATTICE_TYPES.keys()):
@@ -1482,12 +1452,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.screenshotManager = ScreenshotManager.ScreenshotManager(self)
         self.read_screenshot_description_file()
 
-        # self.read_screenshot_description_file(scr_file=self.__screenshotDescriptionFileName)
-
-
-
         if self.simulationIsStepping:
-            # print "BEFORE STEPPING PAUSE REGULAR SIMULATION"
             self.__pauseSim()
 
         self.prepareXMLTreeView()
@@ -1627,12 +1592,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # make sure that before simulation thread writes new results all the screenshots are taken
 
         if self.__imageOutput and not (self.__step % self.__shotFrequency):
-            # mcsFormattedNumber = str(self.__step).zfill(self.screenshotNumberOfDigits)
-            #
-            # screenshotFileName = os.path.join(self.screenshotDirectoryName,
-            #                                   self.baseScreenshotName + "_" + mcsFormattedNumber + ".png")
-            #
-            # self.mainGraphicsWidget.takeSimShot(screenshotFileName)
             self.screenshotManager.output_screenshots(self.__step)
 
         self.simulation.drawMutex.unlock()
