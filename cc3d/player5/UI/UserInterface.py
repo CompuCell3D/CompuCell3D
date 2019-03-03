@@ -483,7 +483,7 @@ class UserInterface(QMainWindow):
         self.zitems = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0, 8.0]
         self.viewmanager = SimpleTabView(self)  # ViewManager.factory(self, self)
 
-        self.viewmanager.setRecentSimulationFile(str(Configuration.getSetting("RecentFile")))
+        self.viewmanager.set_recent_simulation_file(str(Configuration.getSetting("RecentFile")))
 
         self.viewmanager.setZoomItems(self.zitems)
 

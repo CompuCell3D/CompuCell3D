@@ -1,9 +1,12 @@
 # todo - change settings core name to _-settings_3.0.sqlite
+# todo - check if cml replay or regular simulation always exits cleanly right now
+# todo there is a segfault after several repeated opens of simulations
 
 # enabling with statement in python 2.5 - CC3D was first implemented with Python 2.2 or 2.3. Those were the times...
 
 # -*- coding: utf-8 -*-
 import os
+import argparse
 import sys
 import re
 import inspect
@@ -29,7 +32,7 @@ from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
 from cc3d.core import XMLUtils
 from .PlotManagerSetup import createPlotManager
 from .WidgetManager import WidgetManager
-
+import PlayerPython
 from cc3d.core.CMLFieldHandler import CMLFieldHandler
 
 from . import ScreenshotManager
@@ -138,6 +141,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.newDrawingUserRequest = False
         self.completedFirstMCS = False
 
+        self.fieldStorage = None
+        self.fieldExtractor = None
+
         self.customSettingPath = ''
         self.cmlHandlerCreated = False
 
@@ -167,7 +173,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.windowMapper = QSignalMapper(self)
         self.windowMapper.mapped.connect(self.set_active_sub_window_custom_slot)
 
-        self.prepareForNewSimulation(_forceGenericInitialization=True)
+        self.prepare_for_new_simulation(force_generic_initialization=True)
 
         self.setParams()
         self.mainGraphicsWidget = None  # vs.  lastActiveWindow
@@ -541,29 +547,25 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.update_window_menu()
 
-    def process_command_line_options(self, cml_args):
-
-        '''
-        Called from compucell3d.pyw  - parses the command line (rf. player5/compucell3d.pyw now). initializes SimpleTabView member variables
-        :param cml_args: object returned by: opts, args = getopt.getopt
+    def process_command_line_options(self, cml_args:argparse.Namespace)->None:
+        """
+        initializes player internal variables based on command line input.
+        Also if user passes appropriate option this function may get simulation going directly from command line
+        :param cml_args: {}
         :return:
-        '''
-        # from cc3d import CompuCellSetup
-        # CompuCellSetup.cml_args = cml_args
+        """
 
         self.cml_args = cml_args
 
         self.__screenshotDescriptionFileName = ""
         self.customScreenshotDirectoryName = ""
-        startSimulation = False
-
-        # TODO IMPLEMENT CML PARSING HERE
+        start_simulation = False
 
         self.__prefsFile = "cc3d_default"  # default name of QSettings .ini file (in ~/.config/Biocomplexity on *nix)
 
         if cml_args.input:
             self.__sim_file_name = cml_args.input
-            startSimulation = True
+            start_simulation = True
 
         if cml_args.screenshotDescription:
             self.__screenshotDescriptionFileName = cml_args.screenshotDescription
@@ -577,7 +579,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if cml_args.playerSettings:
             self.playerSettingsFileName = cml_args.playerSettings
 
-        currentDir = cml_args.currentDir if cml_args.currentDir else ''
+        current_dir = cml_args.currentDir if cml_args.currentDir else ''
         if cml_args.windowSize:
             winSizes = cml_args.windowSize.split('x')
             # print MODULENAME, "  winSizes=", winSizes
@@ -597,15 +599,17 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.closePlayerAfterSimulationDone = cml_args.exitWhenDone
 
         if cml_args.guiScan:
-            # when user uses gui to do parameter scan all we have to do is to set self.closePlayerAfterSimulationDone to True
+            # when user uses gui to do parameter scan all we have to do is
+            # to set self.closePlayerAfterSimulationDone to True
             self.closePlayerAfterSimulationDone = True
+
             # we reset max number of consecutive runs to 1 because we want each simulation in parameter scan
-            # initiated by the psrun.py script to be an independent run after which player5 gets closed and reopened again for the next run
+            # initiated by the psrun.py script to be an independent run after which player5
+            # gets closed and reopened again for the next run
             self.maxNumberOfConsecutiveRuns = 1
 
         if cml_args.maxNumberOfConsecutiveRuns:
             self.maxNumberOfConsecutiveRuns = cml_args.maxNumberOfConsecutiveRuns
-
 
         self.UI.console.getSyntaxErrorConsole().setPlayerMainWidget(self)
 
@@ -614,71 +618,72 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # establishConnection starts twedit and hooks it up via sockets to player5
         self.tweditAct.triggered.connect(self.UI.console.getSyntaxErrorConsole().cc3dSender.establishConnection)
 
-        #        print MODULENAME,"    self.UI.console=",self.UI.console
         if port != -1:
             self.UI.console.getSyntaxErrorConsole().cc3dSender.setServerPort(port)
 
-        # checking if file path needs to be remapped to point to files in the directories from which run script was called
-        simFileFullName = os.path.join(currentDir, self.__sim_file_name)
-        if startSimulation:
-            if os.access(simFileFullName, os.F_OK):  # checking if such a file exists
-                self.__sim_file_name = simFileFullName
-                print("self.__fileName=", self.__sim_file_name)
-                import CompuCellSetup
+        # checking if file path needs to be remapped to point to files in the directories
+        # from which run script was called
+        sim_file_full_name = os.path.join(current_dir, self.__sim_file_name)
 
-                CompuCellSetup.simulationFileName = self.__sim_file_name
+        if start_simulation:
+            if os.access(sim_file_full_name, os.F_OK):  # checking if such a file exists
+
+                self.__sim_file_name = sim_file_full_name
+                CompuCellSetup.persistent_globals.simulation_file_name = self.__sim_file_name
 
             elif not os.access(self.__sim_file_name, os.F_OK):
-                assert False, "Could not find simulation file: " + self.__sim_file_name
+                raise FileNotFoundError("Could not find simulation file: " + self.__sim_file_name)
+
             self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=self.__sim_file_name)
 
-        if self.__screenshotDescriptionFileName != "":
-            screenshotDescriptionFullFileName = os.path.abspath(self.__screenshotDescriptionFileName)
-            if os.access(screenshotDescriptionFullFileName, os.F_OK):  # checking if such a file exists
-                self.__screenshotDescriptionFileName = screenshotDescriptionFullFileName
-            elif os.access(self.__screenshotDescriptionFileName):  # checking if such a file exists
-                assert False, "Could not find screenshot Description file: " + self.__screenshotDescriptionFileName
+        if self.__screenshotDescriptionFileName != '':
 
-        if self.playerSettingsFileName != "":
-            playerSettingsFullFileName = os.path.abspath(self.playerSettingsFileName)
-            if os.access(playerSettingsFullFileName, os.F_OK):  # checking if such a file exists
-                self.playerSettingsFileName = playerSettingsFullFileName
-                print(MODULENAME, '(full) playerSettings filename=', self.playerSettingsFileName)
+            screenshot_description_full_file_name = os.path.abspath(self.__screenshotDescriptionFileName)
+
+            # checking if such a file exists
+            if os.access(screenshot_description_full_file_name, os.F_OK):
+
+                self.__screenshotDescriptionFileName = screenshot_description_full_file_name
+
+            elif os.access(self.__screenshotDescriptionFileName):
+                raise FileNotFoundError(
+                    "Could not find screenshot Description file: " + self.__screenshotDescriptionFileName)
+
+        if self.playerSettingsFileName != '':
+            player_settings_full_file_name = os.path.abspath(self.playerSettingsFileName)
+
+            # checking if such a file exists
+            if os.access(player_settings_full_file_name, os.F_OK):
+
+                self.playerSettingsFileName = player_settings_full_file_name
             else:
-                assert False, "Could not find playerSettings file: " + self.playerSettingsFileName
+                raise FileNotFoundError(
+                    "Could not find playerSettings file: " + self.playerSettingsFileName)
 
-        if startSimulation:
+        if start_simulation:
             self.__runSim()
 
-    def usage(self):
-        '''
-        Prints player5 command line usage guide
-        :return:None
-        '''
-        print("\n--------------------------------------------------------")
-        print(
-            "USAGE: ./compucell3d.sh -i <sim file (.cc3d or .xml or .py)> -s <ScreenshotDescriptionFile> -o <custom outputDirectory>")
-        print("-w <widthxheight of graphics window>")
-        print("--exitWhenDone   close the player5 after simulation is done")
-        print("--noOutput   ensure that no screenshots are stored regardless of Player settings")
-        print("--prefs    name of preferences file to use/save")
-        print("-p    playerSettingsFileName (e.g. 3D camera settings)")
-        print("-h or --help   print (this) help message")
-        print(
-            "\ne.g.  compucell3d.sh -i Demos/cellsort_2D/cellsort_2D/cellsort_2D.cc3d -w 500x500 --prefs myCellSortPrefs")
+    def set_recent_simulation_file(self, file_name:str)->None:
+        """
+        sets recent simulation file name
+        :param file_name: {str}
+        :return: None
+        """
 
-    def setRecentSimulationFile(self, _fileName):
-        self.__sim_file_name = _fileName
+        self.__sim_file_name = file_name
         self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=self.__sim_file_name)
-        # import CompuCellSetup
 
-        CompuCellSetup.simulationFileName = self.__sim_file_name
+        CompuCellSetup.persistent_globals.simulation_file_name = self.__sim_file_name
 
-    def resetControlButtonsAndActions(self):
-        '''
-        Resets control buttons and actions - called either after simulation is done (__cleanAfterSimulation) or in prepareForNewSimulation
-        :return:None
-        '''
+    def reset_control_buttons_and_actions(self)->None:
+        """
+
+        Resets control buttons and actions - called either after simulation is done
+        (__cleanAfterSimulation) or in prepareForNewSimulation
+        :return:
+
+        """
+
         self.runAct.setEnabled(True)
         self.stepAct.setEnabled(True)
         self.pauseAct.setEnabled(False)
@@ -688,16 +693,17 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.pifFromSimulationAct.setEnabled(False)
         self.pifFromVTKAct.setEnabled(False)
 
-    def resetControlVariables(self):
-        '''
+    def reset_control_variables(self)->None:
+        """
         Resets control variables - called either after simulation is done (__cleanAfterSimulation) or in prepareForNewSimulation
-        :return:None
-        '''
+        :return: None
+        """
 
         self.steppingThroughSimulation = False
+
         self.cmlHandlerCreated = False
 
-        CompuCellSetup.simulationFileName = ""
+        CompuCellSetup.persistent_globals.simulation_file_name = ''
 
         self.drawingAreaPrepared = False
         self.simulationIsRunning = False
@@ -705,7 +711,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.newDrawingUserRequest = False
         self.completedFirstMCS = False
 
-    def prepareForNewSimulation(self, _forceGenericInitialization=False, _inStopFcn=False):
+    def prepare_for_new_simulation(self, force_generic_initialization: bool = False, in_stop_fcn: bool = False) -> None:
         """
         This function creates new instance of computational thread and sets various flags
         to initial values i.e. to a state before the beginning of the simulations
@@ -713,16 +719,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         persistent_globals = CompuCellSetup.persistent_globals
 
-        self.resetControlButtonsAndActions()
+        self.reset_control_buttons_and_actions()
 
         self.steppingThroughSimulation = False
 
         CompuCellSetup.persistent_globals.view_manager = self
-        # todo 5 - check if still needed
-        # CompuCellSetup.viewManager = self
-        # CompuCellSetup.simulationFileName = ""
-
-        # from BasicSimulationData import BasicSimulationData
 
         self.basicSimulationData = BasicSimulationData()
 
@@ -737,19 +738,20 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # this is used to perform generic preparation for new simulation ,
         # normally called after "stop".
         # If users decide to use *.dml  prepare simulation will be called again with False argument
-        if _forceGenericInitialization:
+        if force_generic_initialization:
             persistent_globals.player_type = "new"
 
-        # print '_forceGenericInitialization=',_forceGenericInitialization
         if persistent_globals.player_type == "CMLResultReplay":
             self.__viewManagerType = "CMLResultReplay"
 
-            # note that this variable will be the same as self.simulation when doing CMLReplay mode. I keep it under diffferent name to keep track of the places in the code where I am using SimulationThread API and where I use CMLResultReade replay part of the API
+            # note that this variable will be the same as self.simulation when doing CMLReplay mode.
+            # I keep it under diffferent name to keep track of the places in the code where I am using
+            # SimulationThread API and where I use CMLResultReade replay part of the API
             # this means that further refactoring is needed but I leave it for now
             self.cmlReplayManager = self.simulation = CMLResultReader(self)
 
-            # print "GOT THIS self.__fileName=",self.__fileName
             self.simulation.extract_lattice_description_info(self.__sim_file_name)
+
             # filling out basic simulation data
             self.basicSimulationData.fieldDim = self.simulation.fieldDim
             self.basicSimulationData.numberOfSteps = self.simulation.numberOfSteps
@@ -758,16 +760,14 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.cmlReplayManager.subsequent_data_read.connect(self.handleCompletedStep)
             self.cmlReplayManager.final_data_read.connect(self.handleSimulationFinished)
 
-            import PlayerPython
-
             self.fieldExtractor = PlayerPython.FieldExtractorCML()
             self.fieldExtractor.setFieldDim(self.basicSimulationData.fieldDim)
 
         else:
             self.__viewManagerType = "Regular"
-            #            import CompuCellSetup
-            # print MODULENAME,'prepareForNewSimulation(): setting cmlFieldHandler = None'
-            CompuCellSetup.cmlFieldHandler = None  # have to reinitialize cmlFieldHandler to None
+
+            # have to reinitialize cmlFieldHandler to None
+            CompuCellSetup.persistent_globals.cml_field_handler = None
 
             self.simulation = SimulationThread(self)
 
@@ -780,26 +780,25 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.plotManager.initSignalAndSlots()
             self.widgetManager.initSignalAndSlots()
 
-            # todo 5 - uncomment here
-            import PlayerPython
             self.fieldStorage = PlayerPython.FieldStorage()
             self.fieldExtractor = PlayerPython.FieldExtractor()
             self.fieldExtractor.setFieldStorage(self.fieldStorage)
 
         self.simulation.setCallingWidget(self)
 
-        self.resetControlVariables()
+        self.reset_control_variables()
 
-    def __setupArea(self):
-        '''
+    def prepare_area_for_new_simulation(self)->None:
+        """
         Closes all open windows (from previous simulation) and creates new VTK window for the new simulation
-        :return:None
-        '''
+        :return:
+        """
+
         self.close_all_windows()
 
         self.add_vtk_window_to_workspace()
 
-    def popup_message(self, title, msg):
+    def popup_message(self, title:str, msg:str)->None:
         """
         displays popup message window
         :param title: {str} title
@@ -954,7 +953,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
         # resetting reference to SimulationDataHandler
 
-        self.prepareForNewSimulation(_forceGenericInitialization=True)
+        self.prepare_for_new_simulation(force_generic_initialization=True)
 
         self.cc3dSimulationDataHandler = None
 
@@ -1090,7 +1089,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         persistent_globals.player_type = 'CMLResultReplay'
         persistent_globals.cc3d_xml_2_obj_converter = CompuCellSetup.parseXML(file_name)
 
-        self.prepareForNewSimulation()
+        self.prepare_for_new_simulation()
 
         self.__parent.toggleLatticeData(True)
         self.__parent.toggleModelEditor(False)
@@ -2350,8 +2349,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
 
-        self.resetControlButtonsAndActions()
-        self.resetControlVariables()
+        self.reset_control_buttons_and_actions()
+        self.reset_control_variables()
 
         # re-init (empty) the fieldTypes dict, otherwise get previous/bogus fields in graphics win field combobox
         self.fieldTypes = {}
@@ -2486,7 +2485,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
 
-        self.__setupArea()
+        self.prepare_area_for_new_simulation()
 
         # Create self.mainGraphicsWindow
         self.__step = 0
