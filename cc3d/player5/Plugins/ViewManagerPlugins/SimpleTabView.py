@@ -126,15 +126,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.screenshotManager = None
         self.zitems = []
         self.__sim_file_name = ""  # simulation model filename
-        self.__windowsXMLFileName = ""
+
 
         self.__fieldType = ("Cell_Field", FIELD_TYPES[0])
         self.simulationIsStepping = False
         self.simulationIsRunning = False
-        self.screenshotDirectoryName = ""
         self.playerSettingsFileName = ""
         self.resultStorageDirectory = ""
-        self.customScreenshotDirectoryName = ""
         self.prevOutputDir = ""
         self.baseScreenshotName = ""
         self.latticeType = Configuration.LATTICE_TYPES["Square"]
@@ -211,13 +209,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # too often. Default check interval is 7 days
         self.check_version(check_interval=7)
 
-    def getOutputDirName(self):
-        """
-        Returns screenshot directory name
-        :return: {str} dirname
-        """
-
-        return self.screenshotDirectoryName
+    # def getOutputDirName(self):
+    #     """
+    #     Returns screenshot directory name
+    #     :return: {str} dirname
+    #     """
+    #
+    #     return self.screenshotDirectoryName
 
     def getSimFileName(self):
         '''
@@ -552,10 +550,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:
         """
 
+        persistent_globals = CompuCellSetup.persistent_globals
         self.cml_args = cml_args
 
         self.__screenshotDescriptionFileName = ""
-        self.customScreenshotDirectoryName = ""
+
         start_simulation = False
 
         self.__prefsFile = "cc3d_default"  # default name of QSettings .ini file (in ~/.config/Biocomplexity on *nix)
@@ -570,7 +569,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.__imageOutput = not cml_args.noOutput
 
         if cml_args.screenshotOutputDir:
-            self.customScreenshotDirectoryName = cml_args.screenshotOutputDir
+            persistent_globals.set_screenshot_dir(screenshot_dir=cml_args.screenshotOutputDir)
             self.__imageOutput = True
 
         if cml_args.playerSettings:
@@ -1123,52 +1122,53 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 raise AssertionError(
                     'parameter Scan Error: Parameter Scan xml file :' + paramScanXMLFileName + ' has to be writeable. Please change permission on this file')
 
-            try:
-                from FileLock import FileLock
-                with FileLock(file_name=fileName, timeout=10, delay=0.05)  as flock:
-
-                    self.singleSimulation = False
-                    self.parameterScanFile = self.cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.path  # parameter scan file path
-                    pScanFilePath = self.parameterScanFile
-                    # We use separate ParameterScanUtils object to handle parameter scan
-                    from ParameterScanUtils import ParameterScanUtils
-
-                    psu = ParameterScanUtils()
-
-                    psu.readParameterScanSpecs(pScanFilePath)
-
-                    paramScanSpecsDirName = os.path.dirname(pScanFilePath)
-
-                    outputDir = str(Configuration.getSetting('OutputLocation'))
-
-                    customOutputPath = psu.prepareParameterScanOutputDirs(_outputDirRoot=outputDir)
-
-                    self.cc3dSimulationDataHandler.copySimulationDataFiles(customOutputPath)
-
-                    # construct path to the just-copied .cc3d file
-                    cc3dFileBaseName = os.path.basename(self.cc3dSimulationDataHandler.cc3dSimulationData.path)
-                    cc3dFileFullName = os.path.join(customOutputPath, cc3dFileBaseName)
-
-                    psu.replaceValuesInSimulationFiles(_pScanFileName=pScanFilePath, _simulationDir=customOutputPath)
-                    # save parameter Scan spec file with incremented ityeration
-                    psu.saveParameterScanState(_pScanFileName=pScanFilePath)
-
-                    self.__parent.setWindowTitle('ParameterScan: ' +
-                                                 basename(self.__sim_file_name) + ' Iteration: ' + basename(
-                        customOutputPath) + " - CompuCell3D Player")
-
-                    # read newly created .cc3d file
-                    self.cc3dSimulationDataHandler.readCC3DFileFormat(cc3dFileFullName)
-
-                    # # setting simultaion output dir names
-                    self.customScreenshotDirectoryName = customOutputPath
-                    CompuCellSetup.screenshotDirectoryName = customOutputPath
-                    self.screenshotDirectoryName = customOutputPath
-                    self.parameterScanOutputDir = customOutputPath
-                    # print 'self.screenshotDirectoryName=',self.screenshotDirectoryName
-
-            except AssertionError as e:  # propagating exception
-                raise e
+            # todo 5- refactor this for parameter scans
+            # try:
+            #     from FileLock import FileLock
+            #     with FileLock(file_name=fileName, timeout=10, delay=0.05)  as flock:
+            #
+            #         self.singleSimulation = False
+            #         self.parameterScanFile = self.cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.path  # parameter scan file path
+            #         pScanFilePath = self.parameterScanFile
+            #         # We use separate ParameterScanUtils object to handle parameter scan
+            #         from ParameterScanUtils import ParameterScanUtils
+            #
+            #         psu = ParameterScanUtils()
+            #
+            #         psu.readParameterScanSpecs(pScanFilePath)
+            #
+            #         paramScanSpecsDirName = os.path.dirname(pScanFilePath)
+            #
+            #         outputDir = str(Configuration.getSetting('OutputLocation'))
+            #
+            #         customOutputPath = psu.prepareParameterScanOutputDirs(_outputDirRoot=outputDir)
+            #
+            #         self.cc3dSimulationDataHandler.copySimulationDataFiles(customOutputPath)
+            #
+            #         # construct path to the just-copied .cc3d file
+            #         cc3dFileBaseName = os.path.basename(self.cc3dSimulationDataHandler.cc3dSimulationData.path)
+            #         cc3dFileFullName = os.path.join(customOutputPath, cc3dFileBaseName)
+            #
+            #         psu.replaceValuesInSimulationFiles(_pScanFileName=pScanFilePath, _simulationDir=customOutputPath)
+            #         # save parameter Scan spec file with incremented ityeration
+            #         psu.saveParameterScanState(_pScanFileName=pScanFilePath)
+            #
+            #         self.__parent.setWindowTitle('ParameterScan: ' +
+            #                                      basename(self.__sim_file_name) + ' Iteration: ' + basename(
+            #             customOutputPath) + " - CompuCell3D Player")
+            #
+            #         # read newly created .cc3d file
+            #         self.cc3dSimulationDataHandler.readCC3DFileFormat(cc3dFileFullName)
+            #
+            #         # # setting simultaion output dir names
+            #         self.customScreenshotDirectoryName = customOutputPath
+            #         CompuCellSetup.screenshotDirectoryName = customOutputPath
+            #         self.screenshotDirectoryName = customOutputPath
+            #         self.parameterScanOutputDir = customOutputPath
+            #         # print 'self.screenshotDirectoryName=',self.screenshotDirectoryName
+            #
+            # except AssertionError as e:  # propagating exception
+            #     raise e
 
         else:
             self.singleSimulation = True
@@ -1469,8 +1469,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
         initializeSimulationViewWidgetFcn = getattr(self, "initializeSimulationViewWidget" + self.__viewManagerType)
         initializeSimulationViewWidgetFcn()
 
-        if (self.__imageOutput or self.__latticeOutputFlag) and self.screenshotDirectoryName == "":
-            self.createOutputDirs()
+        # todo 5 - probably unneeded
+        # if (self.__imageOutput or self.__latticeOutputFlag) :
+        #         # and self.screenshotDirectoryName == "":
+        #     self.createOutputDirs()
 
         # copy simulation files to output directory  for single simulation
         # copying of the simulations files for parameter scan is done in the __loadCC3DFile
@@ -1745,7 +1747,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             self.init_simulation_control_vars()
 
-            self.screenshotDirectoryName = ""
+            # self.screenshotDirectoryName = ""
 
             if self.rollbackImporter:
                 self.rollbackImporter.uninstall()
@@ -1860,7 +1862,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
                 self.simulation.screenUpdateFrequency = 1
                 self.simulation.screenshotFrequency = self.__shotFrequency
-                self.screenshotDirectoryName = ""
+                # self.screenshotDirectoryName = ""
 
                 self.runAct.setEnabled(True)
                 self.pauseAct.setEnabled(False)
@@ -2681,16 +2683,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # print MODULENAME, '__paramsChanged(),  prevOutputDir, __outputDirectory= ', self.prevOutputDir, self.__outputDirectory
 
-        if (
-                self.__imageOutput or self.__latticeOutputFlag) and self.mysim:  # has user requested output and is there a valid sim?
-            if self.screenshotDirectoryName == "":  # haven't created any yet
-                #                print MODULENAME, '__paramsChanged(), screenshotDirName empty;  calling createOutputDirs'
-                self.createOutputDirs()
-            elif self.prevOutputDir != self.__outputDirectory:  # test if the sneaky user changed the output location
-                #                print MODULENAME, '__paramsChanged(),  prevOutput != Output;  calling createOutputDirs'
-                self.createOutputDirs()
 
-                # NOTE: if self.mysim == None (i.e. sim hasn't begun yet), then createOutputDirs() should be called in __loadSim
+        # todo 5 - write code that create screenshot outoput if parameters are changed
+
+        # if (
+        #         self.__imageOutput or self.__latticeOutputFlag) and self.mysim:  # has user requested output and is there a valid sim?
+        #     if self.screenshotDirectoryName == "":  # haven't created any yet
+        #         #                print MODULENAME, '__paramsChanged(), screenshotDirName empty;  calling createOutputDirs'
+        #         self.createOutputDirs()
+        #     elif self.prevOutputDir != self.__outputDirectory:  # test if the sneaky user changed the output location
+        #         #                print MODULENAME, '__paramsChanged(),  prevOutput != Output;  calling createOutputDirs'
+        #         self.createOutputDirs()
+        #
+        #         # NOTE: if self.mysim == None (i.e. sim hasn't begun yet), then createOutputDirs() should be called in __loadSim
 
         if self.simulation:
             self.init_simulation_control_vars()

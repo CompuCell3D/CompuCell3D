@@ -37,10 +37,20 @@ class PersistentGlobals:
         # class - container that stores information about the fields
         self.field_registry = FieldRegistry()
 
+    def set_screenshot_dir(self, screenshot_dir: str) -> None:
+        """
+        Sets screenshot dir - usually this is a custom screenshot directory set based on
+        command line input
+
+        :param screenshot_dir:
+        :return:
+        """
+        self.__screenshot_dir = screenshot_dir
+
     @property
     def workspace_dir(self) -> str:
         """
-
+        returns workspace directory
         :return:
         """
         workspace_dir = os.path.join(os.path.expanduser('~'), 'CC3DWorkspace')
@@ -51,6 +61,10 @@ class PersistentGlobals:
 
     @property
     def timestamp_string(self) -> str:
+        """
+        returns current timestamp string
+        :return:
+        """
         current_time = time.localtime()
         str_f_time = time.strftime
         timestamp_str = "_" + str_f_time("%m", current_time) + "_" + str_f_time("%d", current_time) + "_" + str_f_time(
