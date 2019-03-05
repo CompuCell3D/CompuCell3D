@@ -595,14 +595,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # from which run script was called
         sim_file_full_name = os.path.join(current_dir, self.__sim_file_name)
 
-        # if start_simulation:
-        if os.access(sim_file_full_name, os.F_OK):  # checking if such a file exists
 
-            self.__sim_file_name = sim_file_full_name
-            CompuCellSetup.persistent_globals.simulation_file_name = self.__sim_file_name
+        self.__sim_file_name = sim_file_full_name
+        CompuCellSetup.persistent_globals.simulation_file_name = self.__sim_file_name
 
-        elif not os.access(self.__sim_file_name, os.F_OK):
-            raise FileNotFoundError("Could not find simulation file: " + self.__sim_file_name)
+        if start_simulation:
+            if not os.access(self.__sim_file_name, os.F_OK):
+                raise FileNotFoundError("Could not find simulation file: " + self.__sim_file_name)
 
         self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=self.__sim_file_name)
 
@@ -1022,6 +1021,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             msg = QMessageBox.warning(self, "Not A Valid Simulation File", \
                                       "Please make sure <b>%s</b> exists" % fileName, \
                                       QMessageBox.Ok)
+
             raise IOError("%s does not exist" % fileName)
 
         self.cc3dSimulationDataHandler = readCC3DFile(fileName=fileName)
@@ -1665,7 +1665,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                                           "Please pick simulation file <b>File->OpenSimulation File ...</b>", \
                                           QMessageBox.Ok,
                                           QMessageBox.Ok)
-                return
+                return False
             file = QFile(self.__sim_file_name)
 
             import xml
@@ -1683,7 +1683,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                     #                     print 'Exiting inside prepare simulation '
                     sys.exit(ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE)
 
-                return
+                return False
             except xml.parsers.expat.ExpatError as e:
                 # todo 5 - fix this - simulationPaths does not exit
                 xmlFileName = CompuCellSetup.simulationPaths.simulationXMLFileName
@@ -1691,7 +1691,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.handleErrorMessage("Error in XML File",
                                         "File:\n " + xmlFileName + "\nhas the following problem\n" + e.message)
             except IOError:
-                return
+                return False
 
             self.init_simulation_control_vars()
 
@@ -1699,6 +1699,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.rollbackImporter.uninstall()
 
             self.rollbackImporter = RollbackImporter()
+
+            return True
 
     def __runSim(self):
         '''
@@ -1714,9 +1716,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.screenUpdateFrequency = self.__updateScreen
 
         if not self.drawingAreaPrepared:
-            self.prepareSimulation()
-            # todo 5 - self.drawingAreaPrepared is initialized elsewhere this is tmp placeholder and a hack
-            self.drawingAreaPrepared = True
+            prepare_flag = self.prepareSimulation()
+            if prepare_flag:
+                # todo 5 - self.drawingAreaPrepared is initialized elsewhere this is tmp placeholder and a hack
+                self.drawingAreaPrepared = True
+            else:
+                return
 
         # print 'SIMULATION PREPARED self.__viewManagerType=',self.__viewManagerType
         if self.__viewManagerType == "CMLResultReplay":
@@ -1777,9 +1782,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.screenUpdateFrequency = 1  # when we step we need to ensure screenUpdateFrequency is 1
 
         if not self.drawingAreaPrepared:
-            self.prepareSimulation()
-            # todo 5 - self.drawingAreaPrepared is initialized elsewhere this is tmp placeholder and a hack
-            self.drawingAreaPrepared = True
+
+            prepare_flag = self.prepareSimulation()
+            if prepare_flag:
+                # todo 5 - self.drawingAreaPrepared is initialized elsewhere this is tmp placeholder and a hack
+                self.drawingAreaPrepared = True
+            else:
+                return
 
         if self.__viewManagerType == "CMLResultReplay":
 

@@ -80,7 +80,11 @@ def run_cc3d_project(cc3d_sim_fname):
     :return:
     """
 
-    cc3dSimulationDataHandler = readCC3DFile(fileName=cc3d_sim_fname)
+    try:
+        cc3dSimulationDataHandler = readCC3DFile(fileName=cc3d_sim_fname)
+    except FileNotFoundError:
+        print('Could not find cc3d_sim_fname')
+        return
 
     CompuCellSetup.cc3dSimulationDataHandler = cc3dSimulationDataHandler
     # todo - need to find a better solution ot append and remove pythonpath of the simulation object
