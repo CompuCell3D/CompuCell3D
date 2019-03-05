@@ -11,6 +11,7 @@ from cc3d.player5.Utilities import ScreenshotManagerCore
 from cc3d.player5.GraphicsOffScreen.GenericDrawer import GenericDrawer
 from weakref import ref
 from cc3d.core.utils import mkdir_p
+from cc3d import CompuCellSetup
 
 class ScreenshotManager(ScreenshotManagerCore):
     def __init__(self, _tabViewWidget):
@@ -55,11 +56,10 @@ class ScreenshotManager(ScreenshotManagerCore):
         for future reference/reuse
         :return: None
         """
+        persistent_globals = CompuCellSetup.persistent_globals
 
-        tvw = self.tabViewWidget()
-
-        out_dir_name = tvw.getOutputDirName()
-        sim_fname = tvw.getSimFileName()
+        out_dir_name = persistent_globals.screenshot_directory
+        sim_fname = persistent_globals.simulation_file_name
 
         out_fname = join(out_dir_name, 'screenshot_data', 'screenshots.json')
         out_fname_in_sim_dir = join(dirname(sim_fname), 'screenshot_data', 'screenshots.json')

@@ -134,7 +134,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.playerSettingsFileName = ""
         self.resultStorageDirectory = ""
         self.prevOutputDir = ""
-        self.baseScreenshotName = ""
+
         self.latticeType = Configuration.LATTICE_TYPES["Square"]
         self.newDrawingUserRequest = False
         self.completedFirstMCS = False
@@ -553,7 +553,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         persistent_globals = CompuCellSetup.persistent_globals
         self.cml_args = cml_args
 
-        self.__screenshotDescriptionFileName = ""
+        # self.__screenshotDescriptionFileName = ""
 
         start_simulation = False
 
@@ -563,8 +563,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.__sim_file_name = cml_args.input
             start_simulation = True
 
-        if cml_args.screenshotDescription:
-            self.__screenshotDescriptionFileName = cml_args.screenshotDescription
+        # if cml_args.screenshotDescription:
+        #     self.__screenshotDescriptionFileName = cml_args.screenshotDescription
 
         self.__imageOutput = not cml_args.noOutput
 
@@ -632,18 +632,18 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=self.__sim_file_name)
 
-        if self.__screenshotDescriptionFileName != '':
-
-            screenshot_description_full_file_name = os.path.abspath(self.__screenshotDescriptionFileName)
-
-            # checking if such a file exists
-            if os.access(screenshot_description_full_file_name, os.F_OK):
-
-                self.__screenshotDescriptionFileName = screenshot_description_full_file_name
-
-            elif os.access(self.__screenshotDescriptionFileName):
-                raise FileNotFoundError(
-                    "Could not find screenshot Description file: " + self.__screenshotDescriptionFileName)
+        # if self.__screenshotDescriptionFileName != '':
+        #
+        #     screenshot_description_full_file_name = os.path.abspath(self.__screenshotDescriptionFileName)
+        #
+        #     # checking if such a file exists
+        #     if os.access(screenshot_description_full_file_name, os.F_OK):
+        #
+        #         self.__screenshotDescriptionFileName = screenshot_description_full_file_name
+        #
+        #     elif os.access(self.__screenshotDescriptionFileName):
+        #         raise FileNotFoundError(
+        #             "Could not find screenshot Description file: " + self.__screenshotDescriptionFileName)
 
         if self.playerSettingsFileName != '':
             player_settings_full_file_name = os.path.abspath(self.playerSettingsFileName)
@@ -1191,9 +1191,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.openAct.triggered.connect(self.__openSim)
         self.openLDSAct.triggered.connect(self.__openLDSFile)
 
-        self.saveScreenshotDescriptionAct.triggered.connect(self.__saveScrDesc)
-        self.openScreenshotDescriptionAct.triggered.connect(self.__openScrDesc)
-
         # qApp is a member of QtGui. closeAllWindows will cause closeEvent and closeEventSimpleTabView will be called
         self.exitAct.triggered.connect(qApp.closeAllWindows)
 
@@ -1280,7 +1277,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 msg='Could not parse '
                     'screenshot description file {}. Try '
                     'removing old screenshot file and generate new one. No screenshots will be taken'.format(
-                    self.__screenshotDescriptionFileName))
+                    self.screenshotManager.get_screenshot_filename()))
 
     def initializeSimulationViewWidgetCMLResultReplay(self):
         '''
@@ -1385,8 +1382,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
 
-        # opening screenshot description file
-        self.open_implicit_screenshot_descr_file()
+        # # opening screenshot description file
+        # self.open_implicit_screenshot_descr_file()
 
         # sim = self.simulation.sim()
 
@@ -1641,7 +1638,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                             'using incompatible code. '
                             'You may want to remove "screenshot_data" directory from your project '
                             'and use camera button to generate new screenshot file '
-                            ' No screenshots will be taken'.format(self.__screenshotDescriptionFileName))
+                            ' No screenshots will be taken'.format(self.screenshotManager.get_screenshot_filename()))
 
         if self.cmlHandlerCreated and self.__latticeOutputFlag and (not self.__step % self.__latticeOutputFrequency):
             CompuCellSetup.persistent_globals.cml_field_handler.write_fields(self.__step)
@@ -2825,19 +2822,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Configuration.setSetting("ImageOutputOn", False)
         Configuration.setSetting("LatticeOutputOn", False)
 
-    def open_implicit_screenshot_descr_file(self):
-        """
-        Attepmts to guess default screenshot description file
-        and initialize signaling self.__screenshotDescriptionFileName responsible for handling screenshots from file
-        initialization
-        :return: None
-        """
-
-        scr_desc_fname = join(dirname(self.__sim_file_name), 'screenshot_data', 'screenshots.json')
-        if exists(scr_desc_fname):
-            self.__screenshotDescriptionFileName = scr_desc_fname
-        else:
-            self.__screenshotDescriptionFileName = ''
+    # def open_implicit_screenshot_descr_file(self):
+    #     """
+    #     Attepmts to guess default screenshot description file
+    #     and initialize signaling self.__screenshotDescriptionFileName responsible for handling screenshots from file
+    #     initialization
+    #     :return: None
+    #     """
+    #
+    #     scr_desc_fname = join(dirname(self.__sim_file_name), 'screenshot_data', 'screenshots.json')
+    #     if exists(scr_desc_fname):
+    #         self.__screenshotDescriptionFileName = scr_desc_fname
+    #     else:
+    #         self.__screenshotDescriptionFileName = ''
 
     def open_recent_sim(self) -> None:
         """
@@ -2851,8 +2848,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if isinstance(action, QAction):
             self.__sim_file_name = str(action.data())
 
-        # opening screenshot description file
-        self.open_implicit_screenshot_descr_file()
+        # # opening screenshot description file
+        # self.open_implicit_screenshot_descr_file()
 
         # setting text for main window (self.__parent) title bar
         self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=self.__sim_file_name)
@@ -2881,7 +2878,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         filter = "CompuCell3D simulation (*.cc3d *.xml *.py)"  # self._getOpenFileFilter()
 
-        self.__screenshotDescriptionFileName = ""  # make screenshotDescriptionFile empty string
+        # self.__screenshotDescriptionFileName = ""  # make screenshotDescriptionFile empty string
 
         defaultDir = str(Configuration.getSetting('ProjectLocation'))
 
@@ -2908,8 +2905,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         print('__openSim: self.__fileName=', self.__sim_file_name)
 
-        # opening screenshot description file
-        self.open_implicit_screenshot_descr_file()
+        # # opening screenshot description file
+        # self.open_implicit_screenshot_descr_file()
 
         # setting text for main window (self.__parent) title bar
         self.set_title_window_from_sim_fname(widget=self.__parent, abs_sim_fname=self.__sim_file_name)
@@ -2924,54 +2921,54 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # each loaded simulation has to be passed to a function which updates list of recent files
         Configuration.setSetting("RecentSimulations", self.__sim_file_name)
 
-    def __openScrDesc(self):
-        '''
-        Slot that opens screenshot description file
-        :return:None
-        '''
+    # def __openScrDesc(self):
+    #     '''
+    #     Slot that opens screenshot description file
+    #     :return:None
+    #     '''
+    #
+    #     preferred_dir = os.getcwd()
+    #
+    #     if self.__sim_file_name:
+    #         preferred_dir = os.path.dirname(self.__sim_file_name)
+    #
+    #     filter = "Screenshot description file (*.sdfml)"  # self._getOpenFileFilter()
+    #     screenshotDescriptionFileName_tuple = QFileDialog.getOpenFileName(
+    #         self.ui,
+    #         QApplication.translate('ViewManager', "Open Screenshot Description File"),
+    #         preferred_dir,
+    #         # os.getcwd(),
+    #         filter
+    #     )
+    #
+    #     self.__screenshotDescriptionFileName = screenshotDescriptionFileName_tuple[0]
 
-        preferred_dir = os.getcwd()
-
-        if self.__sim_file_name:
-            preferred_dir = os.path.dirname(self.__sim_file_name)
-
-        filter = "Screenshot description file (*.sdfml)"  # self._getOpenFileFilter()
-        screenshotDescriptionFileName_tuple = QFileDialog.getOpenFileName(
-            self.ui,
-            QApplication.translate('ViewManager', "Open Screenshot Description File"),
-            preferred_dir,
-            # os.getcwd(),
-            filter
-        )
-
-        self.__screenshotDescriptionFileName = screenshotDescriptionFileName_tuple[0]
-
-    def __saveScrDesc(self):
-        '''
-        Slot that opens file dialog to save screenshot description file
-        :return:None
-        '''
-        # print "THIS IS __saveScrDesc"
-        preferred_dir = os.getcwd()
-
-        if self.__sim_file_name:
-            preferred_dir = os.path.dirname(self.__sim_file_name)
-
-        filter = "Screenshot Description File (*.sdfml )"  # self._getOpenFileFilter()
-        screenshotDescriptionFileName_tuple = QFileDialog.getSaveFileName(
-            self.ui,
-            QApplication.translate('ViewManager', "Save Screenshot Description File"),
-            preferred_dir,
-            # os.getcwd(),
-            filter
-        )
-
-        self.screenshotDescriptionFileName = screenshotDescriptionFileName_tuple[0]
-
-        if self.screenshotManager:
-            self.screenshotManager.writeScreenshotDescriptionFile(self.screenshotDescriptionFileName)
-
-        print("self.screenshotDescriptionFileName=", self.screenshotDescriptionFileName)
+    # def __saveScrDesc(self):
+    #     '''
+    #     Slot that opens file dialog to save screenshot description file
+    #     :return:None
+    #     '''
+    #     # print "THIS IS __saveScrDesc"
+    #     preferred_dir = os.getcwd()
+    #
+    #     if self.__sim_file_name:
+    #         preferred_dir = os.path.dirname(self.__sim_file_name)
+    #
+    #     filter = "Screenshot Description File (*.sdfml )"  # self._getOpenFileFilter()
+    #     screenshotDescriptionFileName_tuple = QFileDialog.getSaveFileName(
+    #         self.ui,
+    #         QApplication.translate('ViewManager', "Save Screenshot Description File"),
+    #         preferred_dir,
+    #         # os.getcwd(),
+    #         filter
+    #     )
+    #
+    #     self.screenshotDescriptionFileName = screenshotDescriptionFileName_tuple[0]
+    #
+    #     if self.screenshotManager:
+    #         self.screenshotManager.writeScreenshotDescriptionFile(self.screenshotDescriptionFileName)
+    #
+    #     print("self.screenshotDescriptionFileName=", self.screenshotDescriptionFileName)
 
     # Sets the attribute self.movieSupport
     def __setMovieSupport(self):
