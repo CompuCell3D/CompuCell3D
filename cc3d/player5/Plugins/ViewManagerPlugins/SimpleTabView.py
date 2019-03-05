@@ -121,15 +121,18 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.pluginTab = None
         self.mysim = None
 
-        self.simulation = None  # gets assigned to SimulationThread down in prepareForNewSimulation()
+        # gets assigned to SimulationThread down in prepareForNewSimulation()
+        self.simulation = None
         self.screenshotManager = None
         self.zitems = []
+
         self.__sim_file_name = ""  # simulation model filename
 
 
         self.__fieldType = ("Cell_Field", FIELD_TYPES[0])
         self.simulationIsStepping = False
         self.simulationIsRunning = False
+
         self.playerSettingsFileName = ""
         self.resultStorageDirectory = ""
         self.prevOutputDir = ""
@@ -150,7 +153,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.closePlayerAfterSimulationDone = False
 
         self.__outputDirectory = ""
-        self.__prefsFile = ""
+
 
         self.__viewManagerType = "Regular"
 
@@ -536,8 +539,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         start_simulation = False
 
-        self.__prefsFile = "cc3d_default"  # default name of QSettings .ini file (in ~/.config/Biocomplexity on *nix)
-
         if cml_args.input:
             self.__sim_file_name = cml_args.input
             start_simulation = True
@@ -561,12 +562,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
             Configuration.setSetting("GraphicsWinHeight", height)
 
         port = cml_args.port if cml_args.port else -1
-        if cml_args.prefs:
-            self.__prefsFile = cml_args.prefs
-            # print MODULENAME, '---------  doing QSettings ---------  prefsFile=', self.__prefsFile
-            Configuration.mySettings = QSettings(QSettings.IniFormat, QSettings.UserScope, "Biocomplexity",
-                                                 self.__prefsFile)
-            Configuration.setSetting("PreferencesFile", self.__prefsFile)
 
         self.closePlayerAfterSimulationDone = cml_args.exitWhenDone
 
