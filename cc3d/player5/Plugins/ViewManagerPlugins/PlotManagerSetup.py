@@ -38,7 +38,8 @@ class PlotManagerBase:
         return {}
 
 
-def createPlotManager(_viewManager=None, preferred_manager_type=None):  # called from SimpleTabView
+# called from SimpleTabView
+def createPlotManager(_viewManager=None):
     """
 
     @param _viewManager:instance of viewManager

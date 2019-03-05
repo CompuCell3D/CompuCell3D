@@ -131,11 +131,11 @@ class SimulationThread(QtCore.QThread):
     def getCurrentStep(self):
         return self.__mcs
 
-    def getSimFileName(self):
-        if self.__ui:
-            return self.__ui.getSimFileName()
-        else:
-            return ''
+    # def getSimFileName(self):
+    #     if self.__ui:
+    #         return self.__ui.getSimFileName()
+    #     else:
+    #         return ''
 
     def setCurrentStep(self, _mcs):
         self.__mcs = _mcs
