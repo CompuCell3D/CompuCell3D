@@ -2,9 +2,11 @@ import os
 import time
 from os.path import join, exists, basename
 from typing import Union
-
 from cc3d.core.SteppableRegistry import SteppableRegistry
 from cc3d.core.FieldRegistry import FieldRegistry
+import copy
+from CompuCell import PyAttributeAdder
+from pathlib import Path
 
 
 class PersistentGlobals:
@@ -34,6 +36,11 @@ class PersistentGlobals:
 
         self.__screenshot_dir = None
 
+        # todo - move it elsewhere or come up with a better solution
+        # two objects that handle adding addition of python attributes
+        self.attribute_adder = None
+        self.dict_adder = None
+
         # class - container that stores information about the fields
         self.field_registry = FieldRegistry()
 
@@ -45,6 +52,7 @@ class PersistentGlobals:
         :param screenshot_dir:
         :return:
         """
+
         self.__screenshot_dir = screenshot_dir
 
     @property
@@ -53,9 +61,10 @@ class PersistentGlobals:
         returns workspace directory
         :return:
         """
+
         workspace_dir = os.path.join(os.path.expanduser('~'), 'CC3DWorkspace')
         if not exists(workspace_dir):
-            os.mkdir(workspace_dir)
+            Path(workspace_dir).mkdir(parents=True, exist_ok=True)
 
         return workspace_dir
 
@@ -65,6 +74,7 @@ class PersistentGlobals:
         returns current timestamp string
         :return:
         """
+
         current_time = time.localtime()
         str_f_time = time.strftime
         timestamp_str = "_" + str_f_time("%m", current_time) + "_" + str_f_time("%d", current_time) + "_" + str_f_time(
@@ -98,3 +108,36 @@ class PersistentGlobals:
 
         :return:
         """
+
+    def attach_dictionary_to_cells(self) -> None:
+        """
+        Utility method that handles addition of
+        dictionary to C++ cells.
+        :return: None
+        """
+
+        if self.attribute_adder is not None:
+            return
+
+        if self.simulator is None:
+            return
+
+        class DictAdder:
+            def __init__(self):
+                self.dict_template = {}
+
+            def addAttribute(self):
+                """
+                function called ducring cell creation in C++
+                C++ expects this function to be exactly "addAttribute". Do not refactor
+                :return:
+                """
+                temp_copy = copy.deepcopy(self.dict_template)
+                return temp_copy
+
+        self.attribute_adder = PyAttributeAdder()
+        # adder.registerRefChecker(getrefcount)
+        self.dict_adder = DictAdder()
+        self.attribute_adder.registerAdder(self.dict_adder)
+        potts = self.simulator.getPotts()
+        potts.registerAttributeAdder(self.attribute_adder.getPyAttributeAdderPtr())

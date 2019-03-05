@@ -494,6 +494,7 @@ using namespace CompuCell3D;
         raise AttributeError('ASSIGNMENT cell.dict=%s is illegal. Dictionary "dict" can only be modified but not replaced'%(_dict))
         
     def getdict(self):
+        dict_object = _CompuCell.getPyAttrib(self)
         return _CompuCell.getPyAttrib(self)
         
     __swig_setmethods__["dict"] = setdict
@@ -1292,4 +1293,6 @@ public:
 
 %}
 
-//%include "CompuCellExtraDeclarations.i"
+
+
+%include "CompuCellExtraDeclarations.i"

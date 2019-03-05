@@ -123,13 +123,17 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # gets assigned to SimulationThread down in prepareForNewSimulation()
         self.simulation = None
+
+        # object that manages screenshots
         self.screenshotManager = None
+
         self.zitems = []
 
         self.__sim_file_name = ""  # simulation model filename
 
-
         self.__fieldType = ("Cell_Field", FIELD_TYPES[0])
+
+
         self.simulationIsStepping = False
         self.simulationIsRunning = False
 
@@ -153,7 +157,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.closePlayerAfterSimulationDone = False
 
         self.__outputDirectory = ""
-
 
         self.__viewManagerType = "Regular"
 

@@ -3,7 +3,9 @@ from cc3d.core.iterators import *
 from cc3d.core.enums import *
 from cc3d.core.ExtraFieldAdapter import ExtraFieldAdapter
 # from cc3d.CompuCellSetup.simulation_utils import stop_simulation
+from cc3d.CompuCellSetup.simulation_utils import extract_type_names_and_ids
 from cc3d import CompuCellSetup
+
 
 class SteppablePy:
     def __init__(self):
@@ -70,6 +72,46 @@ class SteppableBasePy(SteppablePy):
         self.mcs = -1
 
         self.plot_dict = {}  # {plot_name:plotWindow  - pW object}
+
+        persistent_globals = CompuCellSetup.persistent_globals
+        persistent_globals.attach_dictionary_to_cells()
+
+        type_id_type_name_dict = extract_type_names_and_ids()
+
+        for type_id, type_name in type_id_type_name_dict.items():
+            self.typename_to_attribute(cell_type_name=type_name, type_id=type_id)
+            # setattr(self, type_name.upper(), type_id)
+
+    def typename_to_attribute(self, cell_type_name: str, type_id: int) -> None:
+        """
+        sets steppable attribute based on type name
+        Performs basic sanity checks
+        :param cell_type_name:{str}
+        :param type_id:{str}
+        :return:
+        """
+
+        if cell_type_name.isspace() or not len(cell_type_name.strip()):
+            raise AttributeError('cell type "{}" contains whitespaces'.format(cell_type_name))
+
+        if not cell_type_name[0].isalpha():
+            raise AttributeError('Invalid cell type "{}" . Type name must start with a letter'.format(cell_type_name))
+
+        cell_type_name_attr = cell_type_name.upper()
+
+        try:
+            getattr(self, cell_type_name_attr)
+            attribute_already_exists = True
+        except AttributeError:
+            attribute_already_exists = False
+
+        if attribute_already_exists:
+            raise AttributeError('Could not convert cell type {cell_type} to steppable attribute. '
+                                 'Attribute {attr_name} already exists . Please change your cell type name'.format(
+                cell_type=cell_type_name, attr_name=cell_type_name_attr
+            ))
+
+        setattr(self, cell_type_name_attr, type_id)
 
     def stop_simulation(self):
         """

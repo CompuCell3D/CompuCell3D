@@ -59,7 +59,7 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 
 
-SET(LIBS_AUX
+SET(LIBS_AUX_ORIG
    ChemotaxisSimpleShared
    ChemotaxisShared
    MitosisShared
@@ -147,6 +147,9 @@ ClusterSurfaceTrackerShared
    
 )
 
+SET(LIBS_AUX PyPlugin
+)
+
 INCLUDE_DIRECTORIES(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${COMPUCELL3D_SOURCE_DIR}/core
@@ -181,7 +184,7 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 # SWIG_LINK_LIBRARIES(CompuCell ${LIBS} ${LIBS_AUX})
 # todo - change back to include libs_aux
-SWIG_LINK_LIBRARIES(CompuCell ${LIBS})
+SWIG_LINK_LIBRARIES(CompuCell ${LIBS} ${LIBS_AUX})
 
 #TARGET_LINK_LIBRARIES(_CompuCell ${LIBS})
 
