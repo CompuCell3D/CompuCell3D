@@ -73,6 +73,21 @@ def process_cml():
 
     return cml_parser.parse_args()
 
+def handle_error():
+    """
+
+    :return:
+    """
+
+    tb = traceback.format_exc()
+
+    simthread = CompuCellSetup.persistent_globals.simthread
+
+    if simthread is not None:
+        # simthread.emitErrorOccured('Python Error', tb)
+        simthread.emitErrorFormatted( tb)
+
+
 def run_cc3d_project(cc3d_sim_fname):
     """
 
@@ -97,6 +112,7 @@ def run_cc3d_project(cc3d_sim_fname):
         except:
             code = None
             traceback.print_exc(file=sys.stdout)
+            handle_error()
 
         # exec(code)
         if code is not None:
@@ -106,6 +122,9 @@ def run_cc3d_project(cc3d_sim_fname):
                 # exec(cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
             except:
                 traceback.print_exc(file=sys.stdout)
+                handle_error()
+
+
 
             # traceback.format_stack()
             # # traceback.format_exc()

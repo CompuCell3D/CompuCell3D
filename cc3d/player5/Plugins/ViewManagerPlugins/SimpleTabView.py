@@ -812,7 +812,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
             with open(os.path.join(self.cml_args.testOutputDir, 'error_output.txt'), 'w') as fout:
                 fout.write('%s' % _errorMessage)
 
-        print('DUPA GOT FORMATTED ERROR')
         return
 
     def processIncommingSimulation(self, _fileName, _stopCurrentSim=False):
@@ -1721,6 +1720,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 # todo 5 - self.drawingAreaPrepared is initialized elsewhere this is tmp placeholder and a hack
                 self.drawingAreaPrepared = True
             else:
+                # when self.prepareSimulation() fails
                 return
 
         # print 'SIMULATION PREPARED self.__viewManagerType=',self.__viewManagerType
@@ -1776,7 +1776,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
     def __stepSim(self):
         '''
         Slot that steps through simulation
-        :return:None
+        :return:Nonea
         '''
 
         self.simulation.screenUpdateFrequency = 1  # when we step we need to ensure screenUpdateFrequency is 1
@@ -1788,6 +1788,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 # todo 5 - self.drawingAreaPrepared is initialized elsewhere this is tmp placeholder and a hack
                 self.drawingAreaPrepared = True
             else:
+                # when self.prepareSimulation() fails
                 return
 
         if self.__viewManagerType == "CMLResultReplay":

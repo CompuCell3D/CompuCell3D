@@ -376,6 +376,8 @@ class SyntaxErrorLexer(QsciLexerCustom):
         # scintilla always asks to style whole lines
 
         for line in source.splitlines(True):
+            # todo - make sure this decoding is enought to convert bytearray to str
+            line = line.decode('utf-8')
             length = len(line)
             # dbgMsg("line=",line)
             # dbgMsg(line)
