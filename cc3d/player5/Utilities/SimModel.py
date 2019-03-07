@@ -187,3 +187,13 @@ class SimModel(QAbstractItemModel):
            
     def checkSanity(self):
         pass
+
+
+if __name__ == '__main__':
+    from cc3d import CompuCellSetup
+    file_name = r'd:\CC3D_PY3_GIT\CompuCell3D\core\DemosNew\ExtraFields\Simulation\ExtraFields.xml'
+    cc3d_xml_2_obj_converter = CompuCellSetup.parseXML(file_name)
+
+    sim_model = SimModel(domDoc=cc3d_xml_2_obj_converter)
+
+    print

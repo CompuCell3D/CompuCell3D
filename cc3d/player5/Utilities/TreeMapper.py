@@ -1,5 +1,5 @@
 from cc3d.core import XMLUtils
-# from cc3d.player5.XMLUtils import dictionaryToMapStrStr as d2mss
+from cc3d.core.XMLUtils import dictionaryToMapStrStr as d2mss
 
 MODULENAME = 'TreeMapper.py:--'
 
@@ -194,8 +194,17 @@ def treeNode(itemNode, _superParent=None):
     if not itemNode:
         return None
 
-    node = itemNode
+
+    try:
+        itemNode.name
+        node = itemNode
+    except AttributeError:
+        node = itemNode.root
+
+    # node = itemNode
+
     tNode = TreeItem(node.name, node.cdata)
+
 
     # Setting item values for Potts, Metadata,  Plugins and Steppables.
     # Those settings are for display purposes only and do not affect CC3DXML element that
@@ -237,21 +246,58 @@ def treeNode(itemNode, _superParent=None):
     # FOR AN UNKNOWN REASON "regular" map iteration does not work so i had to implement by hand iterators
     # in C++ and Python to walk thrugh all the elementnts in the map<string,string> in python
 
-    attribList = XMLUtils.MapStrStrPy(node.attributes)
-    # # # print "attributes=",attribList
-    for attr in attribList:
-        attributeName = attr[0]
-        attributeValue = attr[1]
-        if node.name == "Plugin" and attributeName == "Name":
-            continue
-        if node.name == "Steppable" and attributeName == "Type":
-            continue
+    # attribList = XMLUtils.MapStrStrPy(node.attributes)
+    # print("attributes=",attribList)
+    # for attr in attribList:
+    #     attributeName = attr[0]
+    #     attributeValue = attr[1]
+    #     if node.name == "Plugin" and attributeName == "Name":
+    #         continue
+    #     if node.name == "Steppable" and attributeName == "Type":
+    #         continue
+    #
+    #     treeChild = TreeItem(attributeName, attributeValue)  # attribute name, attribute value pair
+    #     treeChild.setCC3DXMLElement(node)
+    #     treeChild.setSuperParent(superParent)
+    #     treeChild.setElementType("attribute")
+    #     tNode.addChild(treeChild)
 
-        treeChild = TreeItem(attributeName, attributeValue)  # attribute name, attribute value pair
-        treeChild.setCC3DXMLElement(node)
-        treeChild.setSuperParent(superParent)
-        treeChild.setElementType("attribute")
-        tNode.addChild(treeChild)
+    print(node.attributes)
+    if node.attributes.size():
+        for attr_combo in node.attributes.items():
+            print(attr_combo)
+            attributeName = attr_combo[0]
+            attributeValue = attr_combo[1]
+            if node.name == "Plugin" and attributeName == "Name":
+                continue
+            if node.name == "Steppable" and attributeName == "Type":
+                continue
+
+            treeChild = TreeItem(attributeName, attributeValue)  # attribute name, attribute value pair
+            treeChild.setCC3DXMLElement(node)
+            treeChild.setSuperParent(superParent)
+            treeChild.setElementType("attribute")
+            tNode.addChild(treeChild)
+
+        print
+    # for attr_list in node.attributes:
+    #     print(attr_list)
+
+    # attribList = XMLUtils.MapStrStrPy(node.attributes)
+    # print("attributes=",attribList)
+    # for attr in attribList:
+    #     attributeName = attr[0]
+    #     attributeValue = attr[1]
+    #     if node.name == "Plugin" and attributeName == "Name":
+    #         continue
+    #     if node.name == "Steppable" and attributeName == "Type":
+    #         continue
+    #
+    #     treeChild = TreeItem(attributeName, attributeValue)  # attribute name, attribute value pair
+    #     treeChild.setCC3DXMLElement(node)
+    #     treeChild.setSuperParent(superParent)
+    #     treeChild.setElementType("attribute")
+    #     tNode.addChild(treeChild)
 
     children = XMLUtils.CC3DXMLListPy(node.children)
     for child in children:

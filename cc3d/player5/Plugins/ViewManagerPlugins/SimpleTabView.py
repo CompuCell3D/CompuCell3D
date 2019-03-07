@@ -853,7 +853,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
 
         # todo 5 -  restore model view
-        return
+
         self.root_element = CompuCellSetup.persistent_globals.cc3d_xml_2_obj_converter
         self.model = SimModel(self.root_element, self.__modelEditor)
 
