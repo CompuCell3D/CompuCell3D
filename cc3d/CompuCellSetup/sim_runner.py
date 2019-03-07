@@ -81,11 +81,17 @@ def handle_error():
 
     tb = traceback.format_exc()
 
+    formatted_lines = tb.splitlines()
+    error_description_line = formatted_lines[-1]
+
+    traceback_text = "Error: " + error_description_line + "\n"
+    traceback_text += tb
+
     simthread = CompuCellSetup.persistent_globals.simthread
 
     if simthread is not None:
         # simthread.emitErrorOccured('Python Error', tb)
-        simthread.emitErrorFormatted( tb)
+        simthread.emitErrorFormatted( traceback_text)
 
 
 def run_cc3d_project(cc3d_sim_fname):
