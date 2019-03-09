@@ -169,6 +169,7 @@ def mainLoop(sim, simthread, steppableRegistry):
             runFinishFlag = False;
             break
         sim.step(cur_step)
+
         if not steppableRegistry is None:
             steppableRegistry.step(cur_step)
 
@@ -292,6 +293,10 @@ def mainLoopPlayer(sim, simthread, steppableRegistry):
             break
 
         sim.step(cur_step)
+
+        # steering using GUI. GUI steering overrides steering done in the steppables
+        simthread.steerUsingGUI(sim)
+
         if not steppableRegistry is None:
             steppableRegistry.step(cur_step)
 
