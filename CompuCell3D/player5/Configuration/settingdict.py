@@ -4,6 +4,13 @@ try:
     import cPickle as pickle
 except ImportError:
     import pickle
+
+try:
+    from PyQt5.QtGui import QColor
+    qcolor_available = True
+except IndexError:
+    qcolor_available = False
+
 # from PyQt5.QtGui import *
 # from PyQt5.QtCore import *
 
@@ -88,9 +95,11 @@ class SerializerUtil(object):
         :param val: {str} sql string representation
         :return: {QColor}
         """
-        # return self.hex_to_rgb(val)
+        if qcolor_available:
+            return QColor(val)
         return QColorImitation(value=val)
-        return QColor(val)
+
+
 
     def qsize_2_sql(self, val):
         """
