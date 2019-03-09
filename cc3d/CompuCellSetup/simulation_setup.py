@@ -166,12 +166,16 @@ def mainLoop(sim, simthread, steppableRegistry):
     cur_step = 0
     while cur_step < max_num_steps / 10:
         if CompuCellSetup.persistent_globals.user_stop_simulation_flag:
-            runFinishFlag = False;
+            runFinishFlag = False
             break
         sim.step(cur_step)
 
         if not steppableRegistry is None:
             steppableRegistry.step(cur_step)
+
+        # steer application will only update modules that uses requested using updateCC3DModule function from simulator
+        sim.steer()
+
 
         cur_step += 1
 
@@ -299,6 +303,9 @@ def mainLoopPlayer(sim, simthread, steppableRegistry):
 
         if not steppableRegistry is None:
             steppableRegistry.step(cur_step)
+
+        # steer application will only update modules that uses requested using updateCC3DModule function from simulator
+        sim.steer()
 
         simthread.loopWork(cur_step)
         simthread.loopWorkPostEvent(cur_step)
