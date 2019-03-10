@@ -226,6 +226,7 @@ class SteppableBasePy(SteppablePy):
         :param step_z:
         :return:
         """
+
         if step_x == 1 and step_y == 1 and step_z == 1:
 
             return itertools.product(range(self.dim.x), range(self.dim.y), range(self.dim.z))
