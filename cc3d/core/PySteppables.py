@@ -250,162 +250,162 @@ class SteppableBasePy(SteppablePy):
         return element_adapter
 
 
-    def registerXMLElementUpdate(self, *args):
-        '''this function registers core module XML Element from wchich XML subelement has been fetched.It returns XML subelement
-        '''
-        # element,coreElement=None,None
-        # info=sys.version_info
-        # if info[0]>=2 and info[1]>5:
-        #     element,coreElement=self.getXMLElementAndModuleRoot(*args,returnModuleRoot=True)  # does not work in python 2.5 - syntax error
-        # else:
-        element, coreElement = self.getXMLElementAndModuleRoot(args, returnModuleRoot=True)
-
-        coreNameComposite = coreElement.getName()
-        if coreElement.findAttribute('Name'):
-            coreNameComposite += coreElement.getAttribute('Name')
-        elif coreElement.findAttribute('Type'):
-            coreNameComposite += coreElement.getAttribute('Type')
-
-        if element:
-
-            # now will register which modules were modified we will use this information when we call update function
-            currentMCS = self.simulator.getStep()
-            try:
-                moduleDict = self.__modulesToUpdateDict[currentMCS]
-                try:
-                    moduleDict[coreNameComposite]
-                except LookupError:
-                    moduleDict['NumberOfModules'] += 1
-                    moduleDict[coreNameComposite] = [coreElement, moduleDict['NumberOfModules']]
-                    # # # print 'moduleDict[NumberOfModules]=',moduleDict['NumberOfModules']
-
-            except LookupError:
-                self.__modulesToUpdateDict[currentMCS] = {coreNameComposite: [coreElement, 0], 'NumberOfModules': 0}
-
-        return element
-
-    def getXMLAttributeValue(self, attr, *args):
-        element = self.getXMLElement(*args)
-        if element is not None:
-            if element.findAttribute(attr):
-                return element.getAttribute(attr)
-            else:
-                raise LookupError('Could not find attribute ' + attr + ' in ' + args)
-        else:
-            return None
-
-    def setXMLAttributeValue(self, attr, value, *args):
-        element = self.registerXMLElementUpdate(*args)
-        if element:
-            if element.findAttribute(attr):
-                element.updateElementAttributes(d2mss({attr: value}))
-
-    def updateXML(self):
-        currentMCS = self.simulator.getStep()
-        try:
-            # trying to get dictionary of  modules for which XML has been modified during current step
-            moduleDict = self.__modulesToUpdateDict[currentMCS]
-        except LookupError:
-            # if such dictionary does not exist we clean self.__modulesToUpdateDict deleteing whatever was stored before
-            self.__modulesToUpdateDict = {}
-            return
-
-        try:
-            numberOfModules = moduleDict['NumberOfModules']
-            del moduleDict['NumberOfModules']
-        except LookupError:
-            pass
-
-        # [1][1] refers to number denoting the order in which module was added
-        # [1][1] refers to added element with order number being [1][1]
-        list_of_tuples = sorted(moduleDict.items(), key=lambda x: x[1][1])
-
-        # # # print 'list_of_tuples=',list_of_tuples
-        for elem_tuple in list_of_tuples:
-            self.simulator.updateCC3DModule(elem_tuple[1][0])
-
-    def getXMLElement(self, *args):
-        element = None
-
-        if not len(args):
-            return None
-
-        if type(args[0]) is not list:  # it is CC3DXMLElement
-            element = args[0]
-        else:
-            element, moduleRoot = self.getXMLElementAndModuleRoot(*args)
-
-        return element if element else None
-
-    def getXMLElementValue(self, *args):
-
-        element = self.getXMLElement(*args)
-        return element.getText() if element else None
-
-    def getXMLElementAndModuleRoot(self, *args, **kwds):
-        ''' This fcn fetches xml element value and returns it as text. Potts, Plugin and steppable are special names and roots of these elements are fetched using simulator
-            The implementation of this plugin may be simplified. Current implementation is least invasive and requires no changes apart from modifying PySteppables.
-            This Function greatly simplifies access to XML data - one line  easily replaces  many lines of code
-        '''
-
-        # depending on Python version we might need to pass "extra-tupple-wrapped"
-        # positional arguments especially in situation when variable list arguments
-        # are mixed with keyword arguments during function call
-        if isinstance(args[0], tuple):
-            args = args[0]
-
-        if not isinstance(args[0], list):  # it is CC3DXMLElement
-            return args[0]
-
-        coreModuleElement = None
-        tmpElement = None
-        for arg in args:
-            if type(arg) is list:
-                if arg[0] == 'Potts':
-                    coreModuleElement = self.simulator.getCC3DModuleData('Potts')
-                    tmpElement = coreModuleElement
-                elif arg[0] == 'Plugin':
-                    counter = 0
-                    for attrName in arg:
-                        if attrName == 'Name':
-                            pluginName = arg[counter + 1]
-                            coreModuleElement = self.simulator.getCC3DModuleData('Plugin', pluginName)
-                            tmpElement = coreModuleElement
-                            break
-                        counter += 1
-
-                elif arg[0] == 'Steppable':
-                    counter = 0
-                    for attrName in arg:
-                        if attrName == 'Type':
-                            steppableName = arg[counter + 1]
-                            coreModuleElement = self.simulator.getCC3DModuleData('Steppable', steppableName)
-                            tmpElement = coreModuleElement
-                            break
-                        counter += 1
-                else:
-                    # print 'XML FETCH=',arg
-                    attrDict = None
-                    if len(arg) >= 3:
-                        attrDict = {}
-                        for attr_tuple in zip(arg[1::2], arg[2::2]):
-                            if attr_tuple[0] in attrDict.keys():
-                                raise LookupError('Duplicate attribute name in the access path ' + str(args))
-                            else:
-                                attrDict[attr_tuple[0]] = attr_tuple[1]
-                        attrDict = d2mss(attrDict)
-                        # attrDict=d2mss(dict((tuple[0],tuple[1]) for tuple in izip(arg[1::2],arg[2::2])))
-
-                    if coreModuleElement is not None:
-                        elemName = arg[0]
-                        tmpElement = tmpElement.getFirstElement(arg[0],
-                                                                attrDict) if attrDict is not None else tmpElement.getFirstElement(
-                            arg[0])
-
-        if tmpElement is None:
-            raise LookupError('Could not find element With the following access path', args)
-
-        if 'returnModuleRoot' in kwds.keys():
-            return tmpElement, coreModuleElement
-
-        return tmpElement, None
+    # def registerXMLElementUpdate(self, *args):
+    #     '''this function registers core module XML Element from wchich XML subelement has been fetched.It returns XML subelement
+    #     '''
+    #     # element,coreElement=None,None
+    #     # info=sys.version_info
+    #     # if info[0]>=2 and info[1]>5:
+    #     #     element,coreElement=self.getXMLElementAndModuleRoot(*args,returnModuleRoot=True)  # does not work in python 2.5 - syntax error
+    #     # else:
+    #     element, coreElement = self.getXMLElementAndModuleRoot(args, returnModuleRoot=True)
+    #
+    #     coreNameComposite = coreElement.getName()
+    #     if coreElement.findAttribute('Name'):
+    #         coreNameComposite += coreElement.getAttribute('Name')
+    #     elif coreElement.findAttribute('Type'):
+    #         coreNameComposite += coreElement.getAttribute('Type')
+    #
+    #     if element:
+    #
+    #         # now will register which modules were modified we will use this information when we call update function
+    #         currentMCS = self.simulator.getStep()
+    #         try:
+    #             moduleDict = self.__modulesToUpdateDict[currentMCS]
+    #             try:
+    #                 moduleDict[coreNameComposite]
+    #             except LookupError:
+    #                 moduleDict['NumberOfModules'] += 1
+    #                 moduleDict[coreNameComposite] = [coreElement, moduleDict['NumberOfModules']]
+    #                 # # # print 'moduleDict[NumberOfModules]=',moduleDict['NumberOfModules']
+    #
+    #         except LookupError:
+    #             self.__modulesToUpdateDict[currentMCS] = {coreNameComposite: [coreElement, 0], 'NumberOfModules': 0}
+    #
+    #     return element
+    #
+    # def getXMLAttributeValue(self, attr, *args):
+    #     element = self.getXMLElement(*args)
+    #     if element is not None:
+    #         if element.findAttribute(attr):
+    #             return element.getAttribute(attr)
+    #         else:
+    #             raise LookupError('Could not find attribute ' + attr + ' in ' + args)
+    #     else:
+    #         return None
+    #
+    # def setXMLAttributeValue(self, attr, value, *args):
+    #     element = self.registerXMLElementUpdate(*args)
+    #     if element:
+    #         if element.findAttribute(attr):
+    #             element.updateElementAttributes(d2mss({attr: value}))
+    #
+    # def updateXML(self):
+    #     currentMCS = self.simulator.getStep()
+    #     try:
+    #         # trying to get dictionary of  modules for which XML has been modified during current step
+    #         moduleDict = self.__modulesToUpdateDict[currentMCS]
+    #     except LookupError:
+    #         # if such dictionary does not exist we clean self.__modulesToUpdateDict deleteing whatever was stored before
+    #         self.__modulesToUpdateDict = {}
+    #         return
+    #
+    #     try:
+    #         numberOfModules = moduleDict['NumberOfModules']
+    #         del moduleDict['NumberOfModules']
+    #     except LookupError:
+    #         pass
+    #
+    #     # [1][1] refers to number denoting the order in which module was added
+    #     # [1][1] refers to added element with order number being [1][1]
+    #     list_of_tuples = sorted(moduleDict.items(), key=lambda x: x[1][1])
+    #
+    #     # # # print 'list_of_tuples=',list_of_tuples
+    #     for elem_tuple in list_of_tuples:
+    #         self.simulator.updateCC3DModule(elem_tuple[1][0])
+    #
+    # def getXMLElement(self, *args):
+    #     element = None
+    #
+    #     if not len(args):
+    #         return None
+    #
+    #     if type(args[0]) is not list:  # it is CC3DXMLElement
+    #         element = args[0]
+    #     else:
+    #         element, moduleRoot = self.getXMLElementAndModuleRoot(*args)
+    #
+    #     return element if element else None
+    #
+    # def getXMLElementValue(self, *args):
+    #
+    #     element = self.getXMLElement(*args)
+    #     return element.getText() if element else None
+    #
+    # def getXMLElementAndModuleRoot(self, *args, **kwds):
+    #     ''' This fcn fetches xml element value and returns it as text. Potts, Plugin and steppable are special names and roots of these elements are fetched using simulator
+    #         The implementation of this plugin may be simplified. Current implementation is least invasive and requires no changes apart from modifying PySteppables.
+    #         This Function greatly simplifies access to XML data - one line  easily replaces  many lines of code
+    #     '''
+    #
+    #     # depending on Python version we might need to pass "extra-tupple-wrapped"
+    #     # positional arguments especially in situation when variable list arguments
+    #     # are mixed with keyword arguments during function call
+    #     if isinstance(args[0], tuple):
+    #         args = args[0]
+    #
+    #     if not isinstance(args[0], list):  # it is CC3DXMLElement
+    #         return args[0]
+    #
+    #     coreModuleElement = None
+    #     tmpElement = None
+    #     for arg in args:
+    #         if type(arg) is list:
+    #             if arg[0] == 'Potts':
+    #                 coreModuleElement = self.simulator.getCC3DModuleData('Potts')
+    #                 tmpElement = coreModuleElement
+    #             elif arg[0] == 'Plugin':
+    #                 counter = 0
+    #                 for attrName in arg:
+    #                     if attrName == 'Name':
+    #                         pluginName = arg[counter + 1]
+    #                         coreModuleElement = self.simulator.getCC3DModuleData('Plugin', pluginName)
+    #                         tmpElement = coreModuleElement
+    #                         break
+    #                     counter += 1
+    #
+    #             elif arg[0] == 'Steppable':
+    #                 counter = 0
+    #                 for attrName in arg:
+    #                     if attrName == 'Type':
+    #                         steppableName = arg[counter + 1]
+    #                         coreModuleElement = self.simulator.getCC3DModuleData('Steppable', steppableName)
+    #                         tmpElement = coreModuleElement
+    #                         break
+    #                     counter += 1
+    #             else:
+    #                 # print 'XML FETCH=',arg
+    #                 attrDict = None
+    #                 if len(arg) >= 3:
+    #                     attrDict = {}
+    #                     for attr_tuple in zip(arg[1::2], arg[2::2]):
+    #                         if attr_tuple[0] in attrDict.keys():
+    #                             raise LookupError('Duplicate attribute name in the access path ' + str(args))
+    #                         else:
+    #                             attrDict[attr_tuple[0]] = attr_tuple[1]
+    #                     attrDict = d2mss(attrDict)
+    #                     # attrDict=d2mss(dict((tuple[0],tuple[1]) for tuple in izip(arg[1::2],arg[2::2])))
+    #
+    #                 if coreModuleElement is not None:
+    #                     elemName = arg[0]
+    #                     tmpElement = tmpElement.getFirstElement(arg[0],
+    #                                                             attrDict) if attrDict is not None else tmpElement.getFirstElement(
+    #                         arg[0])
+    #
+    #     if tmpElement is None:
+    #         raise LookupError('Could not find element With the following access path', args)
+    #
+    #     if 'returnModuleRoot' in kwds.keys():
+    #         return tmpElement, coreModuleElement
+    #
+    #     return tmpElement, None
