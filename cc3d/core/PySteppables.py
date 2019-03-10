@@ -233,12 +233,12 @@ class SteppableBasePy(SteppablePy):
         else:
             return self.every_pixel_with_steps(step_x, step_y, step_z)
 
-    def get_xml_element(self, id: str) -> Union[XMLElemAdapter, None]:
+    def get_xml_element(self, tag: str) -> Union[XMLElemAdapter, None]:
         """
         Fetches XML element by id. Returns XMLElementAdapter object that provides natural way of manipulating
         properties of the underlying XML element
 
-        :param id: {str}  xml element identifier - must be present in the xml
+        :param tag: {str}  xml element identifier - must be present in the xml
         :return: {XMLElemAdapter} xml element adapter
         """
         xml_id_locator = CompuCellSetup.persistent_globals.xml_id_locator
@@ -246,7 +246,7 @@ class SteppableBasePy(SteppablePy):
         if xml_id_locator is None:
             return None
 
-        element_adapter = xml_id_locator.get_xml_element(id=id)
+        element_adapter = xml_id_locator.get_xml_element(tag=tag)
 
         return element_adapter
 

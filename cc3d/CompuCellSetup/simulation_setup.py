@@ -170,6 +170,7 @@ def incorporate_script_steering_changes(simulator)->None:
     xml_id_locator = persistent_globals.xml_id_locator
 
     # passing information about modules that need to be updated to C++ code
+    # super_parent means XML element of the CC3D module  e.g. Plugin, Steppable or Potts
     for dirty_module_id, dirty_module_xml_elem in xml_id_locator.dirty_super_parents.items():
         simulator.updateCC3DModule(dirty_module_xml_elem)
 

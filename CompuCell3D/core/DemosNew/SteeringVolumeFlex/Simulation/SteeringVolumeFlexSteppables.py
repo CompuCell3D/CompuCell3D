@@ -15,6 +15,7 @@ class SteeringVolumeFlexSteppable(SteppableBasePy):
         if mcs == 1:
 
             temp_elem = self.get_xml_element('temp')
+
             temp_elem.cdata = 100
 
         if mcs == 10:

@@ -178,10 +178,25 @@ class XMLIdLocator:
         if popped_elem.name in ['Potts', 'Plugin', 'Steppable']:
             self.super_parent_stack.pop()
 
-    def get_xml_element(self, id):
+    def get_xml_element(self, tag:str)->XMLElemAdapter:
+        """
+        Returns  XMLElemAdapter for the XML element with give id
+        :param tag:
+        :return:
+        """
+
+        # first we try to see if given ide has been accessed recently. If so we return it
         try:
-            elem = self.id_elements_dict[id]
-            self._recently_accessed_elems[id] = elem
+            return self._recently_accessed_elems[tag]
+        except KeyError:
+            pass
+
+        # if a given id has not been accessed we fetch element with a given id and
+        # store this element in the dictionary of  recently accessed elements. Note
+        # this dictionary is reset after each MCS
+        try:
+            elem = self.id_elements_dict[tag]
+            self._recently_accessed_elems[tag] = elem
             return elem
         except KeyError:
             return None
