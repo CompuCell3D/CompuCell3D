@@ -1,9 +1,12 @@
 from os.path import dirname, join
 import CompuCell
+from cc3d.core.XMLDomUtils import XMLIdLocator
 from cc3d.CompuCellSetup import init_modules, parseXML
+
 # import cc3d.CompuCellSetup as CompuCellSetup
 # import cc3d.CompuCellSetup as CompuCellSetup
 from cc3d import CompuCellSetup
+
 
 def initializeSimulationObjects(sim, simthread):
     """
@@ -123,10 +126,16 @@ def getCoreSimulationObjects():
 
     xml_fname = CompuCellSetup.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript
 
+
     cc3d_xml2_obj_converter = parseXML(xml_fname=xml_fname)
     #  cc3d_xml2_obj_converter cannot be garbage colected hence goes to persisten storage declared at the global level
     # in CompuCellSetup
     persistent_globals.cc3d_xml_2_obj_converter = cc3d_xml2_obj_converter
+
+    # locating all XML elements with attribute id - presumably to be used for programmatic steering
+    persistent_globals.xml_id_locator = XMLIdLocator(root_elem=persistent_globals.cc3d_xml_2_obj_converter.root)
+    persistent_globals.xml_id_locator.locate_id_elements()
+
 
     # cc3dXML2ObjConverter = parseXML(xml_fname=xml_fname)
 
@@ -148,6 +157,42 @@ def getCoreSimulationObjects():
     # sim.extraInit()
 
     return simulator, simthread
+
+
+def incorporate_script_steering_changes(simulator)->None:
+    """
+    goes over the list of modified xml elements and  schedules XML updates
+
+    :return:None
+    """
+    def super_parent_identifier(xml_elem):
+        name = xml_elem.name
+        secondary_id = ''
+        possible_secondary_ids = ['Name','Type']
+        xml_elem_attributes = xml_elem.getAttributes()
+
+
+        for possible_attr in possible_secondary_ids:
+            if possible_attr in xml_elem_attributes.keys():
+                secondary_id = xml_elem_attributes[possible_attr]
+                break
+
+        return (name,secondary_id)
+
+    dirty_module_dict = {}
+    persistent_globals = CompuCellSetup.persistent_globals
+    xml_id_locator = persistent_globals.xml_id_locator
+    for elem_id, elem_adapter in xml_id_locator.recently_accessed_elems.items():
+        if elem_adapter.dirty:
+            identifier = super_parent_identifier(elem_adapter.super_parent)
+            dirty_module_dict[identifier] = elem_adapter.super_parent
+
+    # passing information about modules that need to be updated to C++ code
+    for dirty_module_id, dirty_module_xml_elem in dirty_module_dict.items():
+        simulator.updateCC3DModule(dirty_module_xml_elem)
+
+    # resetting xml_id_locator.recently_accessed_elems
+    xml_id_locator.reset()
 
 
 
@@ -172,6 +217,9 @@ def mainLoop(sim, simthread, steppableRegistry):
 
         if not steppableRegistry is None:
             steppableRegistry.step(cur_step)
+
+        # passing Python-script-made changes in XML to C++ code
+        incorporate_script_steering_changes(simulator=sim)
 
         # steer application will only update modules that uses requested using updateCC3DModule function from simulator
         sim.steer()
@@ -290,10 +338,10 @@ def mainLoopPlayer(sim, simthread, steppableRegistry):
     runFinishFlag = True
 
     cur_step = 0
-    while cur_step < max_num_steps :
+    while cur_step < max_num_steps:
         simthread.beforeStep(_mcs=cur_step)
         if simthread.getStopSimulation() or CompuCellSetup.persistent_globals.user_stop_simulation_flag:
-            runFinishFlag = False;
+            runFinishFlag = False
             break
 
         sim.step(cur_step)
@@ -303,6 +351,10 @@ def mainLoopPlayer(sim, simthread, steppableRegistry):
 
         if not steppableRegistry is None:
             steppableRegistry.step(cur_step)
+
+
+        # passing Python-script-made changes in XML to C++ code
+        incorporate_script_steering_changes(simulator=sim)
 
         # steer application will only update modules that uses requested using updateCC3DModule function from simulator
         sim.steer()

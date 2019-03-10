@@ -41,6 +41,9 @@ class PersistentGlobals:
         self.attribute_adder = None
         self.dict_adder = None
 
+        # object that facilitates fast lookups of XML elements
+        self.xml_id_locator = None
+
         # class - container that stores information about the fields
         self.field_registry = FieldRegistry()
 

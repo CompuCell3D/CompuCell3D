@@ -4,7 +4,7 @@
    <Dimensions x="55" y="55" z="10"/>
    <Anneal>0</Anneal>
    <Steps>1000</Steps>
-   <Temperature>15</Temperature>
+   <Temperature id="temp">15</Temperature>
    <Flip2DimRatio>0.0</Flip2DimRatio>
    <Boundary_y>NoFlux</Boundary_y>
  </Potts>
@@ -17,13 +17,19 @@
     <CellType TypeName="NonCondensing" TypeId="2" Freeze=""/>
  </Plugin>
 
- 
+
+   <Plugin Name="Volume">
+      <VolumeEnergyParameters id="vol_cond" CellType="Condensing" LambdaVolume="2.0" TargetVolume="25"/>
+      <VolumeEnergyParameters CellType="NonCondensing" LambdaVolume="2.0" TargetVolume="25"/>
+   </Plugin>
+
+
  <Steppable Type="DiffusionSolverFE">
      <DiffusionField>
         <DiffusionData>
             <FieldName>FGF</FieldName>
-            <DiffusionConstant>0.010</DiffusionConstant>
-            <DecayConstant>0.000</DecayConstant>	    
+            <DiffusionConstant id="fgf_diff_constant">0.010</DiffusionConstant>
+            <DecayConstant id="fgf_decay_constant">0.000</DecayConstant>
 	    <!--DoNotDecayIn>Medium</DoNotDecayIn-->		
 <!--            <DeltaT>0.1</DeltaT> -->
 <!--            <DeltaX>1.0</DeltaX> -->

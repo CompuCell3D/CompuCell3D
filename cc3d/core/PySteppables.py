@@ -7,6 +7,8 @@ from cc3d.core.ExtraFieldAdapter import ExtraFieldAdapter
 from cc3d.CompuCellSetup.simulation_utils import extract_type_names_and_ids
 from cc3d import CompuCellSetup
 from cc3d.core.XMLUtils import dictionaryToMapStrStr as d2mss
+from cc3d.core.XMLDomUtils import XMLElemAdapter
+from typing import Union
 import types
 
 
@@ -230,6 +232,22 @@ class SteppableBasePy(SteppablePy):
         else:
             return self.every_pixel_with_steps(step_x, step_y, step_z)
 
+    def get_xml_element(self, id: str) -> Union[XMLElemAdapter, None]:
+        """
+        Fetches XML element by id. Returns XMLElementAdapter object that provides natural way of manipulating
+        properties of the underlying XML element
+
+        :param id: {str}  xml element identifier - must be present in the xml
+        :return: {XMLElemAdapter} xml element adapter
+        """
+        xml_id_locator = CompuCellSetup.persistent_globals.xml_id_locator
+
+        if xml_id_locator is None:
+            return None
+
+        element_adapter = xml_id_locator.get_xml_element(id=id)
+
+        return element_adapter
 
 
     def registerXMLElementUpdate(self, *args):
@@ -266,7 +284,6 @@ class SteppableBasePy(SteppablePy):
 
         return element
 
-
     def getXMLAttributeValue(self, attr, *args):
         element = self.getXMLElement(*args)
         if element is not None:
@@ -281,7 +298,6 @@ class SteppableBasePy(SteppablePy):
         element = self.registerXMLElementUpdate(*args)
         if element:
             if element.findAttribute(attr):
-
                 element.updateElementAttributes(d2mss({attr: value}))
 
     def updateXML(self):
@@ -307,7 +323,6 @@ class SteppableBasePy(SteppablePy):
         # # # print 'list_of_tuples=',list_of_tuples
         for elem_tuple in list_of_tuples:
             self.simulator.updateCC3DModule(elem_tuple[1][0])
-
 
     def getXMLElement(self, *args):
         element = None
@@ -336,13 +351,11 @@ class SteppableBasePy(SteppablePy):
         # depending on Python version we might need to pass "extra-tupple-wrapped"
         # positional arguments especially in situation when variable list arguments
         # are mixed with keyword arguments during function call
-        if isinstance(args[0],tuple):
+        if isinstance(args[0], tuple):
             args = args[0]
 
         if not isinstance(args[0], list):  # it is CC3DXMLElement
             return args[0]
-
-
 
         coreModuleElement = None
         tmpElement = None
