@@ -115,6 +115,37 @@ class XMLIdLocator:
         """
         self.walk_and_locate_id_elements(elem=self.root_elem)
 
+    @property
+    def dirty_super_parents(self)->dict:
+        """
+        returns a dictionary of super-parents whose content has
+        been modified by the user
+        :return:
+        """
+        def super_parent_identifier(xml_elem):
+            name = xml_elem.name
+            secondary_id = ''
+            possible_secondary_ids = ['Name','Type']
+            xml_elem_attributes = xml_elem.getAttributes()
+
+
+            for possible_attr in possible_secondary_ids:
+                if possible_attr in xml_elem_attributes.keys():
+                    secondary_id = xml_elem_attributes[possible_attr]
+                    break
+
+            return (name,secondary_id)
+
+        dirty_module_dict = {}
+
+        for elem_id, elem_adapter in self.recently_accessed_elems.items():
+            if elem_adapter.dirty:
+                identifier = super_parent_identifier(elem_adapter.super_parent)
+                dirty_module_dict[identifier] = elem_adapter.super_parent
+
+        return dirty_module_dict
+
+
     def walk_and_locate_id_elements(self, elem):
         """
 

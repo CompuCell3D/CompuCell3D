@@ -165,30 +165,32 @@ def incorporate_script_steering_changes(simulator)->None:
 
     :return:None
     """
-    def super_parent_identifier(xml_elem):
-        name = xml_elem.name
-        secondary_id = ''
-        possible_secondary_ids = ['Name','Type']
-        xml_elem_attributes = xml_elem.getAttributes()
+    # def super_parent_identifier(xml_elem):
+    #     name = xml_elem.name
+    #     secondary_id = ''
+    #     possible_secondary_ids = ['Name','Type']
+    #     xml_elem_attributes = xml_elem.getAttributes()
+    #
+    #
+    #     for possible_attr in possible_secondary_ids:
+    #         if possible_attr in xml_elem_attributes.keys():
+    #             secondary_id = xml_elem_attributes[possible_attr]
+    #             break
+    #
+    #     return (name,secondary_id)
+    #
+    # dirty_module_dict = {}
+    # persistent_globals = CompuCellSetup.persistent_globals
+    # xml_id_locator = persistent_globals.xml_id_locator
+    # for elem_id, elem_adapter in xml_id_locator.recently_accessed_elems.items():
+    #     if elem_adapter.dirty:
+    #         identifier = super_parent_identifier(elem_adapter.super_parent)
+    #         dirty_module_dict[identifier] = elem_adapter.super_parent
 
-
-        for possible_attr in possible_secondary_ids:
-            if possible_attr in xml_elem_attributes.keys():
-                secondary_id = xml_elem_attributes[possible_attr]
-                break
-
-        return (name,secondary_id)
-
-    dirty_module_dict = {}
     persistent_globals = CompuCellSetup.persistent_globals
     xml_id_locator = persistent_globals.xml_id_locator
-    for elem_id, elem_adapter in xml_id_locator.recently_accessed_elems.items():
-        if elem_adapter.dirty:
-            identifier = super_parent_identifier(elem_adapter.super_parent)
-            dirty_module_dict[identifier] = elem_adapter.super_parent
-
     # passing information about modules that need to be updated to C++ code
-    for dirty_module_id, dirty_module_xml_elem in dirty_module_dict.items():
+    for dirty_module_id, dirty_module_xml_elem in xml_id_locator.dirty_super_parents.items():
         simulator.updateCC3DModule(dirty_module_xml_elem)
 
     # resetting xml_id_locator.recently_accessed_elems
