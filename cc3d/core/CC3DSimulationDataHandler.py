@@ -5,6 +5,7 @@ import string
 # import cc3d.core.DefaultSettingsData as settings_data
 from  cc3d.core import DefaultSettingsData as settings_data
 from cc3d.core.XMLUtils import ElementCC3D
+from cc3d.core.XMLUtils import Xml2Obj
 
 MODULENAME = '------- pythonSetupScripts/CC3DSimulationDataHandler.py: '
 
@@ -362,7 +363,7 @@ class CC3DSimulationDataHandler:
         :return:
         """
         # Import XML utils to read the .cc3d xml file
-        from cc3d.core.XMLUtils import Xml2Obj
+
         xml2ObjConverter = Xml2Obj()
 
         # Get the full file path .cc3d xml file
