@@ -2,6 +2,9 @@ import argparse
 from cc3d.core.parameter_scan_utils import copy_project_to_output_folder
 from cc3d.core.parameter_scan_utils import create_param_scan_status
 from cc3d.core.parameter_scan_utils import cc3d_proj_pth_in_output_dir
+from cc3d.core.parameter_scan_utils import fetch_next_set_of_scan_parameters
+
+
 
 
 
@@ -28,3 +31,8 @@ if __name__ == '__main__':
     cc3d_proj_target = cc3d_proj_pth_in_output_dir(cc3d_proj_fname=cc3d_proj_fname, output_dir=output_dir)
 
     create_param_scan_status(cc3d_proj_target, output_dir=output_dir)
+
+    # next_parameters(output_dir=output_dir)
+
+    current_scan_parameters =  fetch_next_set_of_scan_parameters(output_dir=output_dir)
+    print('current_scan_parameters=',current_scan_parameters)
