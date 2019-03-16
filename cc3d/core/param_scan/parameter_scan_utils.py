@@ -169,10 +169,16 @@ def fetch_next_set_of_scan_parameters(output_dir: Union[str, Path]) -> dict:
 
         param_list_dict = param_scan_status_root['parameter_list']
 
-        ret_dict = OrderedDict(
+        ret_dict = {
+            'current_iteration':param_scan_status_root['current_iteration'],
+        }
+
+        param_dict = OrderedDict(
             [(param_name, param_list_dict[param_name]['values'][param_list_dict[param_name]['current_idx']]) for
              param_name in param_list_dict.keys()]
         )
+
+        ret_dict['parameters'] = param_dict
 
         update_param_scan_status(param_scan_status_root=param_scan_status_root, output_dir=output_dir)
 
@@ -187,9 +193,7 @@ def update_param_scan_status(param_scan_status_root: dict, output_dir: str) -> N
     :param param_list_dict:
     :return:
     """
-    # param_list_dict = param_scan_status_root['parameter_list']
 
-    # param_list_dict = advance_param_list(param_scan_status_root=param_scan_status_root)
     advance_param_list(param_scan_status_root=param_scan_status_root)
 
     param_scan_status_pth = param_scan_status(output_dir=output_dir)
@@ -251,7 +255,7 @@ def next_cartesian_product_from_state(curr_list: List[int], max_list: List[int])
                 break
 
 
-def run_single_param_scan_simulation(current_scan_parameters: dict, output_dir: str = None):
+def run_single_param_scan_simulation(cc3d_proj_fname:Union[str, Path], current_scan_parameters: dict, output_dir: str = None):
     """
     Given the set of scanned parameters This funciton creates CC3D project (by applying)
     parameter set to the .cc3d template and the runs such newly created simulation
@@ -261,6 +265,19 @@ def run_single_param_scan_simulation(current_scan_parameters: dict, output_dir: 
     :param output_dir:{str, Path} output directory
     :return:
     """
+
+    current_iteration = current_scan_parameters['current_iteration']
+
+    # make dir for the current simulation
+    scan_iteration_output_dir = Path(output_dir).joinpath('scan_iteration_{}'.format(current_iteration))
+    scan_iteration_output_dir.mkdir(parents=True)
+
+    # write what parameters will be applied for the current itneration fo the scan
+    with open(str(scan_iteration_output_dir.joinpath('current_scan_parameters.json')),'w') as fout:
+        json.dump(obj=current_scan_parameters,fp=fout,indent=4)
+
+
+    # copy template to the
 
     print('Running simulation with current_scan_parameters=', current_scan_parameters)
     time.sleep(0.1)

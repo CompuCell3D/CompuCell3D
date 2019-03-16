@@ -56,4 +56,5 @@ if __name__ == '__main__':
 
             break
 
-        run_single_param_scan_simulation(current_scan_parameters=current_scan_parameters)
+        run_single_param_scan_simulation(cc3d_proj_fname=cc3d_proj_fname,
+                                         current_scan_parameters=current_scan_parameters, output_dir=output_dir)
