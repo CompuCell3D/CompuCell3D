@@ -35,8 +35,8 @@ def handle_param_scan_complete(output_dir: Union[str, Path]) -> None:
     :return:
     """
 
-    print('Parameter Scan Complete. If you want to run again. please specify a different '
-          'output_directory')
+    print('Parameter Scan Complete. If you want to run again, please specify different '
+          'output directory')
     try:
         param_scan_complete_signal(output_dir=output_dir).touch(exist_ok=False)
     except FileExistsError:
@@ -86,11 +86,11 @@ def copy_project_to_output_folder(cc3d_proj_fname: Union[str, Path], output_dir:
     return True
 
 
-def parse_param_scan(param_scan_fname: Union[str, Path]) -> None:
+def parse_param_scan(param_scan_fname: Union[str, Path]) -> dict:
     """
     Parses json file that includes parameter scan specification
     :param param_scan_fname:
-    :return:
+    :return:{dict} root json element
     """
 
     with open(param_scan_fname, 'r') as fin:
