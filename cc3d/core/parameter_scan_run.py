@@ -1,11 +1,11 @@
 import argparse
+from pathlib import Path
 from cc3d.core.parameter_scan_utils import copy_project_to_output_folder
 from cc3d.core.parameter_scan_utils import create_param_scan_status
 from cc3d.core.parameter_scan_utils import cc3d_proj_pth_in_output_dir
 from cc3d.core.parameter_scan_utils import fetch_next_set_of_scan_parameters
-
-
-
+from cc3d.core.parameter_scan_utils import run_single_param_scan_simulation
+from cc3d.core.filelock import FileLockException
 
 
 def process_cml():
@@ -34,5 +34,13 @@ if __name__ == '__main__':
 
     # next_parameters(output_dir=output_dir)
 
-    current_scan_parameters =  fetch_next_set_of_scan_parameters(output_dir=output_dir)
-    print('current_scan_parameters=',current_scan_parameters)
+    for i in range(20):
+        try:
+            current_scan_parameters = fetch_next_set_of_scan_parameters(output_dir=output_dir)
+        except FileLockException:
+            print('There exists a {lock_file} that prevents param scan from running. '
+                  'Please remove this file and start again'.format(
+                lock_file=Path(output_dir).joinpath('param_scan_status.lock')))
+            break
+        print('current_scan_parameters=', current_scan_parameters)
+        run_single_param_scan_simulation()
