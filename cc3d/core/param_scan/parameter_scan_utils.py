@@ -8,6 +8,7 @@ import json
 from cc3d.core.CC3DSimulationDataHandler import CC3DSimulationDataHandler
 from cc3d.core.filelock import FileLock
 from cc3d.core.ParameterScanEnums import SCAN_FINISHED_OR_DIRECTORY_ISSUE
+from .template_utils import generate_simulation_files_from_template
 
 
 def param_scan_complete_signal(output_dir: Union[str, Path]) -> Path:
@@ -80,7 +81,6 @@ def copy_project_to_output_folder(cc3d_proj_fname: Union[str, Path], output_dir:
 
     # if not Path(output_dir).exists():
     if not cc3d_proj_target.exists():
-
         shutil.copytree(Path(cc3d_proj_fname).parent, cc3d_proj_target.parent)
 
         return True
@@ -172,7 +172,7 @@ def fetch_next_set_of_scan_parameters(output_dir: Union[str, Path]) -> dict:
         param_list_dict = param_scan_status_root['parameter_list']
 
         ret_dict = {
-            'current_iteration':param_scan_status_root['current_iteration'],
+            'current_iteration': param_scan_status_root['current_iteration'],
         }
 
         param_dict = OrderedDict(
@@ -192,14 +192,15 @@ def update_param_scan_status(param_scan_status_root: dict, output_dir: str) -> N
     given root of json element describing parameter scan (param_scan_status_root) and
     output directory  this function writes updated parameter scan status file to the disk
 
-    :param param_list_dict:
+    :param param_scan_status_root:
+    :param output_dir:
     :return:
     """
 
     advance_param_list(param_scan_status_root=param_scan_status_root)
 
     param_scan_status_pth = param_scan_status(output_dir=output_dir)
-    with open(str(param_scan_status_pth),'w') as fout:
+    with open(str(param_scan_status_pth), 'w') as fout:
         json.dump(param_scan_status_root, fout, indent=4)
 
 
@@ -222,7 +223,7 @@ def advance_param_list(param_scan_status_root: dict) -> dict:
         param_list_dict[param_name]['current_idx'] = current_idx
 
     # advancing current iteration
-    param_scan_status_root['current_iteration'] = param_scan_status_root['current_iteration'] +1
+    param_scan_status_root['current_iteration'] = param_scan_status_root['current_iteration'] + 1
 
     return param_list_dict
 
@@ -257,12 +258,14 @@ def next_cartesian_product_from_state(curr_list: List[int], max_list: List[int])
                 break
 
 
-def run_single_param_scan_simulation(cc3d_proj_fname:Union[str, Path], current_scan_parameters: dict, output_dir: str = None):
+def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_scan_parameters: dict,
+                                     output_dir: str = None):
     """
     Given the set of scanned parameters This funciton creates CC3D project (by applying)
     parameter set to the .cc3d template and the runs such newly created simulation
     Runs single CC3D simulation
 
+    :param cc3d_proj_fname:{str, Path} - path to the "original" cc3d project
     :param current_scan_parameters: {str, path} dictionary with current set of parameters for the simulation
     :param output_dir:{str, Path} output directory
     :return:
@@ -275,12 +278,22 @@ def run_single_param_scan_simulation(cc3d_proj_fname:Union[str, Path], current_s
     scan_iteration_output_dir.mkdir(parents=True)
 
     # write what parameters will be applied for the current itneration fo the scan
-    with open(str(scan_iteration_output_dir.joinpath('current_scan_parameters.json')),'w') as fout:
-        json.dump(obj=current_scan_parameters,fp=fout,indent=4)
-
+    with open(str(scan_iteration_output_dir.joinpath('current_scan_parameters.json')), 'w') as fout:
+        json.dump(obj=current_scan_parameters, fp=fout, indent=4)
 
     # copy template to the interation output folder
     copy_project_to_output_folder(cc3d_proj_fname=cc3d_proj_fname, output_dir=scan_iteration_output_dir)
+
+    # replace macros in cc3d template (in XML and py) with actual values to create a valid, runnable cc3d project
+
+    cc3d_proj_template = cc3d_proj_pth_in_output_dir(cc3d_proj_fname=cc3d_proj_fname,
+                                                     output_dir=scan_iteration_output_dir)
+
+    # generate_simulation_files_from_template(simulation_dir=)
+
+    param_dict = current_scan_parameters['parameters']
+    generate_simulation_files_from_template(cc3d_proj_template=cc3d_proj_template, simulation_template_name='',
+                                            param_dict=param_dict)
 
     print('Running simulation with current_scan_parameters=', current_scan_parameters)
     time.sleep(0.1)
