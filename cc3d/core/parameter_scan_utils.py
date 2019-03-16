@@ -1,4 +1,5 @@
 import time
+import sys
 import shutil
 from collections import OrderedDict
 from pathlib import Path
@@ -6,7 +7,32 @@ from typing import List, Union
 import json
 from .CC3DSimulationDataHandler import CC3DSimulationDataHandler
 from cc3d.core.filelock import FileLock
+from cc3d.core.ParameterScanEnums import SCAN_FINISHED_OR_DIRECTORY_ISSUE
 
+
+def param_scan_complete_signal(output_dir: Union[str, Path]) -> Path:
+    """
+    returns file name for the parameter scan complete signal
+    :param output_dir: {Path, str} main output directory for the parameter scan run
+    :return: {Path}
+    """
+    return Path(output_dir).joinpath('param_scan_status.complete')
+
+def handle_param_scan_complete(output_dir:Union[str, Path])->None:
+    """
+    Handles parameter scan complete situation
+    :param output_dir: {str, Path}
+    :return:
+    """
+
+    print('Parameter Scan Complete. If you want to run again. please specify a different '
+          'output_directory')
+    try:
+        param_scan_complete_signal(output_dir=output_dir).touch(exist_ok=False)
+    except FileExistsError:
+        pass
+
+    sys.exit(SCAN_FINISHED_OR_DIRECTORY_ISSUE)
 
 def cc3d_proj_pth_in_output_dir(cc3d_proj_fname: str, output_dir: str) -> Path:
     """
@@ -54,7 +80,8 @@ def parse_param_scan(param_scan_fname: str):
     with open(param_scan_fname, 'r') as fin:
         return json.load(fin)
 
-def param_scan_status_path(output_dir:Union[str,Path])->Path:
+
+def param_scan_status_path(output_dir: Union[str, Path]) -> Path:
     """
     given output dir returns path to param scan status file
     :param output_dir: {Path}
@@ -63,7 +90,7 @@ def param_scan_status_path(output_dir:Union[str,Path])->Path:
     return Path(output_dir).joinpath('param_scan_status.json')
 
 
-def create_param_scan_status(cc3d_proj_fname: str, output_dir: str)->None:
+def create_param_scan_status(cc3d_proj_fname: Union[str,Path], output_dir: str) -> None:
     """
     Creates parameter scan in the otput directory
     :param cc3d_proj_fname:{str} file name ofcc3d project that includes parameter scan
@@ -84,7 +111,6 @@ def create_param_scan_status(cc3d_proj_fname: str, output_dir: str)->None:
         # adding current_idx
         param_list_elem[param_name]['current_idx'] = 0
 
-
     param_scan_status_pth = param_scan_status_path(output_dir)
 
     # we do no create param scan status fil iof such file exists
@@ -95,10 +121,11 @@ def create_param_scan_status(cc3d_proj_fname: str, output_dir: str)->None:
 
         json.dump(param_scan_root_elem, fout, indent=4)
 
+
 def fetch_next_set_of_scan_parameters(output_dir):
     # todo add locking
     with FileLock(Path(output_dir).joinpath('param_scan_status.lock')):
-        time.sleep(3.0)
+        # time.sleep(3.0)
         param_scan_status_path = Path(output_dir).joinpath('param_scan_status.json')
 
         with open(param_scan_status_path, 'r') as fin:
@@ -107,14 +134,16 @@ def fetch_next_set_of_scan_parameters(output_dir):
         param_list_dict = param_scan_status_root['parameter_list']
 
         ret_dict = OrderedDict(
-            [ (param_name,param_list_dict[param_name]['values'][param_list_dict[param_name]['current_idx']]) for param_name in param_list_dict.keys()]
+            [(param_name, param_list_dict[param_name]['values'][param_list_dict[param_name]['current_idx']]) for
+             param_name in param_list_dict.keys()]
         )
 
         update_param_scan_status(param_scan_status_root=param_scan_status_root, output_dir=output_dir)
 
         return ret_dict
 
-def update_param_scan_status(param_scan_status_root:dict, output_dir:str)->dict:
+
+def update_param_scan_status(param_scan_status_root: dict, output_dir: str) -> dict:
     """
 
     :param param_list_dict:
@@ -125,10 +154,8 @@ def update_param_scan_status(param_scan_status_root:dict, output_dir:str)->dict:
     param_list_dict = advance_param_list(param_list_dict=param_list_dict)
 
     param_scan_status_path = Path(output_dir).joinpath('param_scan_status.json')
-    with open(param_scan_status_path,'w') as fout:
-        json.dump(param_scan_status_root,fout, indent=4)
-
-
+    with open(param_scan_status_path, 'w') as fout:
+        json.dump(param_scan_status_root, fout, indent=4)
 
 
 def advance_param_list(param_list_dict: dict) -> dict:
@@ -138,37 +165,16 @@ def advance_param_list(param_list_dict: dict) -> dict:
     :param output_dir:
     :return:
     """
-    # # todo add locking
-    # param_scan_status_path = Path(output_dir).joinpath('param_scan_status.json')
-    #
-    # with open(param_scan_status_path, 'r') as fin:
-    #     param_scan_status_root = json.load(fin)
-    #
-    # param_list_dict = param_scan_status_root['parameter_list']
 
-    curr_list = list(map(lambda key: param_list_dict[key]['current_idx'],  param_list_dict.keys() ))
-    max_list = list(map(lambda key: len(param_list_dict[key]['values'])-1,  param_list_dict.keys() ))
+    curr_list = list(map(lambda key: param_list_dict[key]['current_idx'], param_list_dict.keys()))
+    max_list = list(map(lambda key: len(param_list_dict[key]['values']) - 1, param_list_dict.keys()))
 
-    next_state_list = next(next_cartesian_product_from_state(curr_list=curr_list,max_list=max_list))
+    next_state_list = next(next_cartesian_product_from_state(curr_list=curr_list, max_list=max_list))
 
     for param_name, current_idx in zip(param_list_dict.keys(), next_state_list):
         param_list_dict[param_name]['current_idx'] = current_idx
 
     return param_list_dict
-    # ret_dict = OrderedDict(
-    #     [ (param_name,param_list_dict[param_name]['values'][value_idx]) for param_name, value_idx in zip(param_list_dict.keys(), next_state_list)]
-    # )
-    #
-    # # ret_dict = dict(zip(param_list_dict.keys(), next_state_list))
-    #
-    # return ret_dict
-
-# def update_param_scan_status(cc3d_proj_fname: str):
-#     """
-#
-#     :param cc3d_proj_fname:
-#     :return:
-#     """
 
 
 def next_cartesian_product_from_state(curr_list: List[int], max_list: List[int]) -> List[int]:
@@ -198,11 +204,12 @@ def next_cartesian_product_from_state(curr_list: List[int], max_list: List[int])
                 yield curr_list
                 break
 
-def run_single_param_scan_simulation(output_dir:str=None):
+
+def run_single_param_scan_simulation(current_scan_parameters: dict, output_dir: str = None):
     """
 
     :param output_dir:
     :return:
     """
-
-    time.sleep(1.0)
+    print('Running simulation with current_scan_parameters=', current_scan_parameters)
+    time.sleep(0.1)
