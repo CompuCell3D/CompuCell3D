@@ -78,7 +78,9 @@ def copy_project_to_output_folder(cc3d_proj_fname: Union[str, Path], output_dir:
 
     cc3d_proj_target = cc3d_proj_pth_in_output_dir(cc3d_proj_fname=cc3d_proj_fname, output_dir=output_dir)
 
-    if not Path(output_dir).exists():
+    # if not Path(output_dir).exists():
+    if not cc3d_proj_target.exists():
+
         shutil.copytree(Path(cc3d_proj_fname).parent, cc3d_proj_target.parent)
 
         return True
@@ -277,7 +279,8 @@ def run_single_param_scan_simulation(cc3d_proj_fname:Union[str, Path], current_s
         json.dump(obj=current_scan_parameters,fp=fout,indent=4)
 
 
-    # copy template to the
+    # copy template to the interation output folder
+    copy_project_to_output_folder(cc3d_proj_fname=cc3d_proj_fname, output_dir=scan_iteration_output_dir)
 
     print('Running simulation with current_scan_parameters=', current_scan_parameters)
     time.sleep(0.1)

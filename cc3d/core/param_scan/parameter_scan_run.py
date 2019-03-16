@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
             print('There exists a {lock_file} that prevents param scan from running. '
                   'Please remove this file and start again'.format(
-                lock_file=Path(output_dir).joinpath('param_scan_status.lock')))
+                    lock_file=Path(output_dir).joinpath('param_scan_status.lock')))
 
             break
 
