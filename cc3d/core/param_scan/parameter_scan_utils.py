@@ -5,7 +5,7 @@ from collections import OrderedDict
 from pathlib import Path
 from typing import List, Union
 import json
-from .CC3DSimulationDataHandler import CC3DSimulationDataHandler
+from cc3d.core.CC3DSimulationDataHandler import CC3DSimulationDataHandler
 from cc3d.core.filelock import FileLock
 from cc3d.core.ParameterScanEnums import SCAN_FINISHED_OR_DIRECTORY_ISSUE
 
@@ -129,6 +129,9 @@ def create_param_scan_status(cc3d_proj_fname: Union[str, Path], output_dir: Unio
         # adding current_idx
         param_list_elem[param_name]['current_idx'] = 0
 
+    # adding element that will keep track of current iteration
+    param_scan_root_elem['current_iteration'] = 0
+
     param_scan_status_pth = param_scan_status_path(output_dir)
 
     # we do no create param scan status fil iof such file exists
@@ -159,9 +162,9 @@ def fetch_next_set_of_scan_parameters(output_dir: Union[str, Path]) -> dict:
     """
 
     with FileLock(Path(output_dir).joinpath('param_scan_status.lock')):
-        param_scan_status_path = param_scan_status(output_dir=output_dir)
+        param_scan_status_pth = param_scan_status(output_dir=output_dir)
 
-        with open(param_scan_status_path, 'r') as fin:
+        with open(str(param_scan_status_pth), 'r') as fin:
             param_scan_status_root = json.load(fin)
 
         param_list_dict = param_scan_status_root['parameter_list']
@@ -184,22 +187,25 @@ def update_param_scan_status(param_scan_status_root: dict, output_dir: str) -> N
     :param param_list_dict:
     :return:
     """
-    param_list_dict = param_scan_status_root['parameter_list']
+    # param_list_dict = param_scan_status_root['parameter_list']
 
-    param_list_dict = advance_param_list(param_list_dict=param_list_dict)
+    # param_list_dict = advance_param_list(param_scan_status_root=param_scan_status_root)
+    advance_param_list(param_scan_status_root=param_scan_status_root)
 
-    param_scan_status_path = param_scan_status(output_dir=output_dir)
-    with open(param_scan_status_path, 'w') as fout:
+    param_scan_status_pth = param_scan_status(output_dir=output_dir)
+    with open(str(param_scan_status_pth),'w') as fout:
         json.dump(param_scan_status_root, fout, indent=4)
 
 
-def advance_param_list(param_list_dict: dict) -> dict:
+def advance_param_list(param_scan_status_root: dict) -> dict:
     """
     iterator that returns next set of scanned parameters in the form of dict
     that can be used for an easy replacement in templating engine e.g. Jinja2
-    :param output_dir:
+    :param param_scan_status_root:{dict} - root of the parameter scan status
     :return:
     """
+
+    param_list_dict = param_scan_status_root['parameter_list']
 
     curr_list = list(map(lambda key: param_list_dict[key]['current_idx'], param_list_dict.keys()))
     max_list = list(map(lambda key: len(param_list_dict[key]['values']) - 1, param_list_dict.keys()))
@@ -209,12 +215,16 @@ def advance_param_list(param_list_dict: dict) -> dict:
     for param_name, current_idx in zip(param_list_dict.keys(), next_state_list):
         param_list_dict[param_name]['current_idx'] = current_idx
 
+    # advancing current iteration
+    param_scan_status_root['current_iteration'] = param_scan_status_root['current_iteration'] +1
+
     return param_list_dict
 
 
 def next_cartesian_product_from_state(curr_list: List[int], max_list: List[int]) -> List[int]:
     """
-    a generator that gives next cartesian product combination from a current state
+    Generator that gives next cartesian product combination from a current state
+
     :param curr_list: {list of ints} current cartesian product combination
     :param max_list:{list of ints} maximum values a given position may assume
     :return: {list} list of indices - one index per parameter that indicate which values should be used for
@@ -243,9 +253,9 @@ def next_cartesian_product_from_state(curr_list: List[int], max_list: List[int])
 
 def run_single_param_scan_simulation(current_scan_parameters: dict, output_dir: str = None):
     """
-    given the set of scanned parameters This funciton creates CC3D project (by applying)
+    Given the set of scanned parameters This funciton creates CC3D project (by applying)
     parameter set to the .cc3d template and the runs such newly created simulation
-    Runs single CC3D simulation with a
+    Runs single CC3D simulation
 
     :param current_scan_parameters: {str, path} dictionary with current set of parameters for the simulation
     :param output_dir:{str, Path} output directory

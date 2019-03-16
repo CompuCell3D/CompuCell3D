@@ -1,12 +1,12 @@
 import argparse
 from pathlib import Path
-from cc3d.core.parameter_scan_utils import copy_project_to_output_folder
-from cc3d.core.parameter_scan_utils import create_param_scan_status
-from cc3d.core.parameter_scan_utils import cc3d_proj_pth_in_output_dir
-from cc3d.core.parameter_scan_utils import fetch_next_set_of_scan_parameters
-from cc3d.core.parameter_scan_utils import run_single_param_scan_simulation
-from cc3d.core.parameter_scan_utils import param_scan_complete_signal
-from cc3d.core.parameter_scan_utils import handle_param_scan_complete
+from cc3d.core.param_scan.parameter_scan_utils import copy_project_to_output_folder
+from cc3d.core.param_scan.parameter_scan_utils import create_param_scan_status
+from cc3d.core.param_scan.parameter_scan_utils import cc3d_proj_pth_in_output_dir
+from cc3d.core.param_scan.parameter_scan_utils import fetch_next_set_of_scan_parameters
+from cc3d.core.param_scan.parameter_scan_utils import run_single_param_scan_simulation
+from cc3d.core.param_scan.parameter_scan_utils import param_scan_complete_signal
+from cc3d.core.param_scan.parameter_scan_utils import handle_param_scan_complete
 from cc3d.core.filelock import FileLockException
 
 
