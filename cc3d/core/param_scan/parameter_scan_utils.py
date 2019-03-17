@@ -10,6 +10,8 @@ from cc3d.core.filelock import FileLock
 from cc3d.core.ParameterScanEnums import SCAN_FINISHED_OR_DIRECTORY_ISSUE
 from .template_utils import generate_simulation_files_from_template
 
+from cc3d.player5.compucell3d import main as main_player
+
 
 def param_scan_complete_signal(output_dir: Union[str, Path]) -> Path:
     """
@@ -281,7 +283,7 @@ def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_
     with open(str(scan_iteration_output_dir.joinpath('current_scan_parameters.json')), 'w') as fout:
         json.dump(obj=current_scan_parameters, fp=fout, indent=4)
 
-    # copy template to the interation output folder
+    # copy template to the iteration output folder
     copy_project_to_output_folder(cc3d_proj_fname=cc3d_proj_fname, output_dir=scan_iteration_output_dir)
 
     # replace macros in cc3d template (in XML and py) with actual values to create a valid, runnable cc3d project
@@ -289,11 +291,9 @@ def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_
     cc3d_proj_template = cc3d_proj_pth_in_output_dir(cc3d_proj_fname=cc3d_proj_fname,
                                                      output_dir=scan_iteration_output_dir)
 
-    # generate_simulation_files_from_template(simulation_dir=)
-
     param_dict = current_scan_parameters['parameters']
-    generate_simulation_files_from_template(cc3d_proj_template=cc3d_proj_template, simulation_template_name='',
-                                            param_dict=param_dict)
+    generate_simulation_files_from_template(cc3d_proj_template=cc3d_proj_template, param_dict=param_dict)
 
+    main_player([])
     print('Running simulation with current_scan_parameters=', current_scan_parameters)
     time.sleep(0.1)

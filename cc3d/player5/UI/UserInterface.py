@@ -15,12 +15,15 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtXml import *
 
-import ViewManager
+import cc3d.player5.ViewManager as ViewManager
+# import ViewManager
+# from cc3d.player5.UI.ViewManager import  ViewManager
+
 # from .ModelEditor import ModelEditor
 from cc3d.player5.UI.ModelEditor import ModelEditor
 
 # TODO
-from Plugins.ViewManagerPlugins.SimpleTabView import SimpleTabView
+from cc3d.player5.Plugins.ViewManagerPlugins.SimpleTabView import SimpleTabView
 
 # TODO
 from cc3d.player5.UI.CPlugins import CPlugins
@@ -30,15 +33,15 @@ from .LatticeDataModelTable import LatticeDataModelTable
 from .Console import Console
 
 # TODO
-from Utilities.QVTKRenderWidget import QVTKRenderWidget
+from cc3d.player5.Utilities.QVTKRenderWidget import QVTKRenderWidget
 import vtk
 
-from Utilities.SimModel import SimModel
-from Utilities.CPluginsModel import CPluginsModel
-from Utilities.LatticeDataModel import LatticeDataModel
-from Utilities.SimDelegate import SimDelegate
-import Configuration
-import DefaultData
+from cc3d.player5.Utilities.SimModel import SimModel
+from cc3d.player5.Utilities.CPluginsModel import CPluginsModel
+from cc3d.player5.Utilities.LatticeDataModel import LatticeDataModel
+from cc3d.player5.Utilities.SimDelegate import SimDelegate
+from cc3d.player5 import Configuration
+from cc3d.player5 import  DefaultData
 
 cc3dApp = QCoreApplication.instance
 

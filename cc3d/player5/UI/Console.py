@@ -3,7 +3,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from CustomGui.CTabWidget import CTabWidget 
+from cc3d.player5.CustomGui.CTabWidget import CTabWidget
 from .ErrorConsole import ErrorConsole
 
 
