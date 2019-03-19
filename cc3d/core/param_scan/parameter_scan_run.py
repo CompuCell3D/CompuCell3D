@@ -1,3 +1,9 @@
+"""
+Example args
+
+
+"""
+
 import argparse
 from pathlib import Path
 from cc3d.core.param_scan.parameter_scan_utils import copy_project_to_output_folder
@@ -28,6 +34,7 @@ if __name__ == '__main__':
 
     cc3d_proj_fname = args.input
     output_dir = args.output
+    output_frequency = args.outputFrequency
 
     param_scan_complete_pth = param_scan_complete_signal(output_dir=output_dir)
 
@@ -39,6 +46,7 @@ if __name__ == '__main__':
     cc3d_proj_target = cc3d_proj_pth_in_output_dir(cc3d_proj_fname=cc3d_proj_fname, output_dir=output_dir)
 
     create_param_scan_status(cc3d_proj_target, output_dir=output_dir)
+
 
     while True:
         try:
@@ -56,5 +64,10 @@ if __name__ == '__main__':
 
             break
 
+        arg_list = ['--outputFrequency={}'.format(output_frequency)]
         run_single_param_scan_simulation(cc3d_proj_fname=cc3d_proj_fname,
-                                         current_scan_parameters=current_scan_parameters, output_dir=output_dir)
+                                         current_scan_parameters=current_scan_parameters, output_dir=output_dir,
+                                         arg_list=arg_list)
+
+        print
+        # break

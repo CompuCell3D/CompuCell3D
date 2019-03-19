@@ -5,12 +5,13 @@ from collections import OrderedDict
 from pathlib import Path
 from typing import List, Union
 import json
+from copy import deepcopy
 from cc3d.core.CC3DSimulationDataHandler import CC3DSimulationDataHandler
 from cc3d.core.filelock import FileLock
 from cc3d.core.ParameterScanEnums import SCAN_FINISHED_OR_DIRECTORY_ISSUE
 from .template_utils import generate_simulation_files_from_template
 
-from cc3d.player5.compucell3d import main as main_player
+# from cc3d.player5.compucell3d import main as main_player
 
 
 def param_scan_complete_signal(output_dir: Union[str, Path]) -> Path:
@@ -261,7 +262,7 @@ def next_cartesian_product_from_state(curr_list: List[int], max_list: List[int])
 
 
 def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_scan_parameters: dict,
-                                     output_dir: str = None):
+                                     output_dir: str = None, arg_list: list = []):
     """
     Given the set of scanned parameters This funciton creates CC3D project (by applying)
     parameter set to the .cc3d template and the runs such newly created simulation
@@ -291,9 +292,51 @@ def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_
     cc3d_proj_template = cc3d_proj_pth_in_output_dir(cc3d_proj_fname=cc3d_proj_fname,
                                                      output_dir=scan_iteration_output_dir)
 
+    print("current_scan_parameters=", current_scan_parameters)
     param_dict = current_scan_parameters['parameters']
     generate_simulation_files_from_template(cc3d_proj_template=cc3d_proj_template, param_dict=param_dict)
 
-    main_player([])
+    # at this point arg_list may have args from main script
+    arg_list_local = deepcopy(arg_list)
+    arg_list_local += ['--input={}'.format(cc3d_proj_template),
+                       '--screenshotOutputDir={}'.format(cc3d_proj_template.parent),'--exitWhenDone']
+
     print('Running simulation with current_scan_parameters=', current_scan_parameters)
-    time.sleep(0.1)
+
+    # main_player(arg_list_local)
+
+    import cc3d.core.param_scan
+    import traceback
+    main_player_run = str(Path(cc3d.core.param_scan.__file__).parent.joinpath('main_player_run.py'))
+
+    sys.argv = arg_list_local
+
+
+    with open(main_player_run) as sim_fh:
+        try:
+            code = compile(sim_fh.read(), main_player_run, 'exec')
+
+        except:
+            code = None
+            traceback.print_exc(file=sys.stdout)
+            # handle_error()
+
+        # exec(code)
+        if code is not None:
+            try:
+                exec(code)
+                # exec(sim_fh.read())
+                # exec(cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
+            except:
+                traceback.print_exc(file=sys.stdout)
+                # handle_error()
+
+
+
+
+    import cc3d.CompuCellSetup
+    print('cc3d.CompuCellSetup.persistent_globals.simulator=',cc3d.CompuCellSetup.persistent_globals.simulator)
+
+    print('repeat: Running simulation with current_scan_parameters=', current_scan_parameters)
+
+    time.sleep(5.0)
