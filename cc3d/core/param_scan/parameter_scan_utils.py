@@ -9,9 +9,12 @@ from copy import deepcopy
 from cc3d.core.CC3DSimulationDataHandler import CC3DSimulationDataHandler
 from cc3d.core.filelock import FileLock
 from cc3d.core.ParameterScanEnums import SCAN_FINISHED_OR_DIRECTORY_ISSUE
+import cc3d.core.param_scan
+import traceback
+
 from .template_utils import generate_simulation_files_from_template
 
-# from cc3d.player5.compucell3d import main as main_player
+from cc3d.player5.compucell3d import main as main_player
 
 
 def param_scan_complete_signal(output_dir: Union[str, Path]) -> Path:
@@ -261,6 +264,35 @@ def next_cartesian_product_from_state(curr_list: List[int], max_list: List[int])
                 break
 
 
+def run_main_player_run_script(arg_list_local: list):
+    """
+    Runs simulation via helper script cc3d.core.param_scan.main_player_run
+    Experimental function .
+    :param arg_list_local: {list} list of cml options for the player
+    :return: None
+    """
+
+    main_player_run = str(Path(cc3d.core.param_scan.__file__).parent.joinpath('main_player_run.py'))
+
+    sys.argv = arg_list_local
+
+    with open(main_player_run) as sim_fh:
+        try:
+            code = compile(sim_fh.read(), main_player_run, 'exec')
+
+        except:
+            code = None
+            traceback.print_exc(file=sys.stdout)
+            # handle_error()
+
+        # exec(code)
+        if code is not None:
+            try:
+                exec(code)
+            except:
+                traceback.print_exc(file=sys.stdout)
+
+
 def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_scan_parameters: dict,
                                      output_dir: str = None, arg_list: list = []):
     """
@@ -299,43 +331,11 @@ def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_
     # at this point arg_list may have args from main script
     arg_list_local = deepcopy(arg_list)
     arg_list_local += ['--input={}'.format(cc3d_proj_template),
-                       '--screenshotOutputDir={}'.format(cc3d_proj_template.parent),'--exitWhenDone']
+                       '--screenshotOutputDir={}'.format(cc3d_proj_template.parent), '--exitWhenDone']
 
     print('Running simulation with current_scan_parameters=', current_scan_parameters)
 
-    # main_player(arg_list_local)
-
-    import cc3d.core.param_scan
-    import traceback
-    main_player_run = str(Path(cc3d.core.param_scan.__file__).parent.joinpath('main_player_run.py'))
-
-    sys.argv = arg_list_local
-
-
-    with open(main_player_run) as sim_fh:
-        try:
-            code = compile(sim_fh.read(), main_player_run, 'exec')
-
-        except:
-            code = None
-            traceback.print_exc(file=sys.stdout)
-            # handle_error()
-
-        # exec(code)
-        if code is not None:
-            try:
-                exec(code)
-                # exec(sim_fh.read())
-                # exec(cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
-            except:
-                traceback.print_exc(file=sys.stdout)
-                # handle_error()
-
-
-
-
-    import cc3d.CompuCellSetup
-    print('cc3d.CompuCellSetup.persistent_globals.simulator=',cc3d.CompuCellSetup.persistent_globals.simulator)
+    main_player(arg_list_local)
 
     print('repeat: Running simulation with current_scan_parameters=', current_scan_parameters)
 
