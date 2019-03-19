@@ -30,7 +30,7 @@ class CMLParser(object):
     def getSimulationFileName(self):
         return self.__fileName
 
-    def parse_cml(self):
+    def parse_cml(self,arg_list=[]):
         """
         Parses command line
         :return:
@@ -89,8 +89,9 @@ class CMLParser(object):
         cml_parser.add_argument('--returnValueTag', required=False, action='store',
                                 help='return value tag (optimization runs only))')
 
+        self.__cml_args = cml_parser.parse_args(arg_list)
 
-        self.__cml_args = cml_parser.parse_args()
+
 
         #filling out legacy variables
         self.__fileName = self.__cml_args.input
