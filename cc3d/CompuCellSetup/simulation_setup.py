@@ -2,6 +2,7 @@ from os.path import dirname, join
 import CompuCell
 from cc3d.core.XMLDomUtils import XMLIdLocator
 from cc3d.CompuCellSetup import init_modules, parseXML
+import weakref
 
 # import cc3d.CompuCellSetup as CompuCellSetup
 # import cc3d.CompuCellSetup as CompuCellSetup
@@ -24,10 +25,12 @@ def initialize_cc3d():
     :return:
     """
     CompuCellSetup.persistent_globals.simulator, CompuCellSetup.persistent_globals.simthread = getCoreSimulationObjects()
+
     simulator = CompuCellSetup.persistent_globals.simulator
     simthread = CompuCellSetup.persistent_globals.simthread
 
-    CompuCellSetup.persistent_globals.steppable_registry.simulator = simulator
+    # CompuCellSetup.persistent_globals.steppable_registry.simulator = simulator
+    CompuCellSetup.persistent_globals.steppable_registry.simulator = weakref.ref(simulator)
 
     initializeSimulationObjects(simulator, simthread)
 
@@ -226,68 +229,6 @@ def extraInitSimulationObjects(sim, simthread, _restartEnabled=False):
 
 
 
-    # 62 mb
-
-    # if sim.getRecentErrorMessage() != "":
-    #     raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
-
-    # if simthread is not None and playerType != "CML":
-    #     simthread.preStartInit()
-
-    # if not _restartEnabled:  # start function does not get called during restart
-    #     sim.start()
-    # 71 mb
-
-    # print 'extraInitSimulationObjects 1'
-    # import time
-    # time.sleep(5)
-
-    # if sim.getRecentErrorMessage() != "":
-    #     raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
-
-    # print 'extraInitSimulationObjects 2'
-    # import time
-    # time.sleep(5)
-
-    # if simthread is not None and playerType != "CML":
-    #     simthread.postStartInit()
-
-    # if playerType == "CMLResultReplay":
-    #     simthread.preStartInit()
-    #     simthread.postStartInit()
-    # else:
-    #
-    #     sim.extraInit()  # after all xml steppables and plugins have been loaded we call extraInit to complete initialization
-    #
-    #     # 62 mb
-    #
-    #     if sim.getRecentErrorMessage() != "":
-    #         raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
-    #
-    #     if simthread is not None and playerType != "CML":
-    #         simthread.preStartInit()
-    #
-    #     if not _restartEnabled:  # start function does not get called during restart
-    #         sim.start()
-    #     # 71 mb
-    #
-    #
-    #     # print 'extraInitSimulationObjects 1'
-    #     # import time
-    #     # time.sleep(5)
-    #
-    #
-    #     if sim.getRecentErrorMessage() != "":
-    #         raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
-    #
-    #     # print 'extraInitSimulationObjects 2'
-    #     # import time
-    #     # time.sleep(5)
-    #
-    #     if simthread is not None and playerType != "CML":
-    #         simthread.postStartInit()
-
-
 
 def mainLoopPlayer(sim, simthread, steppableRegistry):
     """
@@ -361,14 +302,18 @@ def mainLoopPlayer(sim, simthread, steppableRegistry):
         # steppableRegistry.finish()
         sim.cleanAfterSimulation()
         simthread.simulationFinishedPostEvent(True)
+        steppableRegistry.clean_after_simulation()
         print ("CALLING FINISH")
     else:
         sim.cleanAfterSimulation()
+
         # # sim.unloadModules()
         print( "CALLING UNLOAD MODULES NEW PLAYER")
         if simthread is not None:
             simthread.sendStopSimulationRequest()
             simthread.simulationFinishedPostEvent(True)
+
+        steppableRegistry.clean_after_simulation()
 
 
 def mainLoopPlayerCMLResultReplay(sim, simthread, steppableRegistry):
