@@ -189,18 +189,18 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.dlg = None
 
         # parameter scan variables
-        self.singleSimulation = False
-        self.parameterScanFile = ''
-        self.parameterScanOutputDir = ''
-        self.consecutiveRunCounter = 0
+        # self.singleSimulation = False
+        # self.parameterScanFile = ''
+        # self.parameterScanOutputDir = ''
+        # self.consecutiveRunCounter = 0
 
-        self.maxNumberOfConsecutiveRuns = 50
+        # self.maxNumberOfConsecutiveRuns = 50
         # extracting from the runScript maximum number of consecutive runs
-        try:
-            self.maxNumberOfConsecutiveRuns = int(os.environ["MAX_NUMBER_OF_CONSECUTIVE_RUNS"])
-        except:
-            # if for whatever reason we cannot do it we stay with the default value
-            pass
+        # try:
+        #     self.maxNumberOfConsecutiveRuns = int(os.environ["MAX_NUMBER_OF_CONSECUTIVE_RUNS"])
+        # except:
+        #     # if for whatever reason we cannot do it we stay with the default value
+        #     pass
 
             # note that this variable will be the same as self.simulation when doing CMLReplay mode.
             # I keep it under diffferent name to keep track of the places in the code where
@@ -1045,7 +1045,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Configuration.initializeCustomSettings(self.customSettingPath)
         self.__paramsChanged()
 
-        # todo 5  - previouse code - see if it still make ssense
+        # todo 5  - previous code - see if it still make ssense
         # # If project settings exists using the project settings
         # if self.cc3dSimulationDataHandler.cc3dSimulationData.playerSettingsResource:
         #     self.customSettingPath = self.cc3dSimulationDataHandler.cc3dSimulationData.playerSettingsResource.path
@@ -1067,21 +1067,21 @@ class SimpleTabView(MainArea, SimpleViewManager):
             # Configuration.writeCustomFile(self.customSettingPath)
             Configuration.writeSettingsForSingleSimulation(self.customSettingPath)
 
-        # Checking for parameter scan resource
-        if self.cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource:
-
-            cc3dProjectDir = os.path.dirname(fileName)
-            paramScanXMLFileName = self.cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.path
-
-            # checking if simulation file directory is writeable if not parameterscan cannot run properly - writeable simulation fiel directory is requirement for parameter scan
-            if not os.access(cc3dProjectDir, os.W_OK):
-                raise AssertionError(
-                    'parameter Scan Error: CC3D project directory:' + cc3dProjectDir + ' has to be writeable. Please change permission on the directory of the .cc3d project')
-            # check if parameter scan file is writeable
-            if not os.access(paramScanXMLFileName, os.W_OK):
-                raise AssertionError(
-                    'parameter Scan Error: Parameter Scan xml file :' + paramScanXMLFileName + ' has to be writeable. Please change permission on this file')
-
+        # # Checking for parameter scan resource
+        # if self.cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource:
+        #
+        #     cc3dProjectDir = os.path.dirname(fileName)
+        #     paramScanXMLFileName = self.cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.path
+        #
+        #     # checking if simulation file directory is writeable if not parameterscan cannot run properly - writeable simulation fiel directory is requirement for parameter scan
+        #     if not os.access(cc3dProjectDir, os.W_OK):
+        #         raise AssertionError(
+        #             'parameter Scan Error: CC3D project directory:' + cc3dProjectDir + ' has to be writeable. Please change permission on the directory of the .cc3d project')
+        #     # check if parameter scan file is writeable
+        #     if not os.access(paramScanXMLFileName, os.W_OK):
+        #         raise AssertionError(
+        #             'parameter Scan Error: Parameter Scan xml file :' + paramScanXMLFileName + ' has to be writeable. Please change permission on this file')
+        #
             # todo 5- refactor this for parameter scans
             # try:
             #     from FileLock import FileLock
@@ -1130,8 +1130,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
             # except AssertionError as e:  # propagating exception
             #     raise e
 
-        else:
-            self.singleSimulation = True
+        # else:
+        #     self.singleSimulation = True
 
 
     def __setConnects(self):
@@ -1425,9 +1425,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # copying of the simulations files for parameter scan is done in the __loadCC3DFile
 
         screenshot_directory = CompuCellSetup.persistent_globals.screenshot_directory
-        if self.singleSimulation:
-            if self.cc3dSimulationDataHandler and screenshot_directory is not None:
-                self.cc3dSimulationDataHandler.copySimulationDataFiles(screenshot_directory)
+        # if self.singleSimulation:
+        if self.cc3dSimulationDataHandler and screenshot_directory is not None:
+            self.cc3dSimulationDataHandler.copySimulationDataFiles(screenshot_directory)
 
         self.simulation.sem.tryAcquire()
         self.simulation.sem.release()
@@ -1497,8 +1497,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         print('INSIDE handleSimulationFinishedRegular')
         self.__cleanAfterSimulation()
 
-        if not self.singleSimulation:
-            self.launchNextParameterScanRun()
+        # if not self.singleSimulation:
+        #     self.launchNextParameterScanRun()
 
     def handleSimulationFinished(self, _flag):
         '''
@@ -2138,9 +2138,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.cmlReplayManager.subsequent_data_read.disconnect(self.handleCompletedStep)
             self.cmlReplayManager.final_data_read.disconnect(self.handleSimulationFinished)
 
-        if not self.singleSimulation:
-            self.singleSimulation = True
-            self.parameterScanFile = ''
+        # if not self.singleSimulation:
+        #     self.singleSimulation = True
+        #     self.parameterScanFile = ''
 
         if not self.pauseAct.isEnabled():
             self.__stopSim()
@@ -2205,7 +2205,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
             Configuration.setSetting("RecentSimulations", os.path.abspath(self.__sim_file_name))
 
             # sys.exit(_exitCode)
-            self.quit(CompuCellSetup.error_code)
+            CompuCellSetup.resetGlobals()
+            self.quit()
 
         # in case there is pending simulation to be run we will put it a recent simulation
         # so that it can be ready to run without going through open file dialog
@@ -2267,32 +2268,32 @@ class SimpleTabView(MainArea, SimpleViewManager):
         else:
             return ("", "")
 
-    # Shows the plugin view tab
-    def showPluginView(self, pluginInfo):
-        '''
-        Shows PLugin information - deprecated
-        :param pluginInfo:plugin information
-        :return:None
-        '''
-        textStr = QString('<div style="margin: 10px 10px 10px 20px; font-size: 14px"><br />\
-        Plugin: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <b>%1</b><br />\
-        Description: &nbsp; %2</div>').arg(pluginInfo[0]).arg(pluginInfo[1])
-
-        gip = DefaultData.getIconPath
-        if self.pluginTab is None:
-            self.pluginTab = QTextEdit(textStr, self)
-            self.addTab(self.pluginTab, QIcon(gip("plugin.png")), pluginInfo[0])
-            # self.closeTab.show()
-        else:
-            # The plugin view always has index 1 if simview present 0 otherwhise
-            if self.count() == 2:
-                idx = 1
-            else:
-                idx = 0
-            self.setTabText(idx, pluginInfo[0])  # self.currentIndex()
-            self.pluginTab.setText(textStr)
-
-        self.setCurrentIndex(1)
+    # # Shows the plugin view tab
+    # def showPluginView(self, pluginInfo):
+    #     '''
+    #     Shows PLugin information - deprecated
+    #     :param pluginInfo:plugin information
+    #     :return:None
+    #     '''
+    #     textStr = QString('<div style="margin: 10px 10px 10px 20px; font-size: 14px"><br />\
+    #     Plugin: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <b>%1</b><br />\
+    #     Description: &nbsp; %2</div>').arg(pluginInfo[0]).arg(pluginInfo[1])
+    #
+    #     gip = DefaultData.getIconPath
+    #     if self.pluginTab is None:
+    #         self.pluginTab = QTextEdit(textStr, self)
+    #         self.addTab(self.pluginTab, QIcon(gip("plugin.png")), pluginInfo[0])
+    #         # self.closeTab.show()
+    #     else:
+    #         # The plugin view always has index 1 if simview present 0 otherwhise
+    #         if self.count() == 2:
+    #             idx = 1
+    #         else:
+    #             idx = 0
+    #         self.setTabText(idx, pluginInfo[0])  # self.currentIndex()
+    #         self.pluginTab.setText(textStr)
+    #
+    #     self.setCurrentIndex(1)
 
     def setInitialCrossSection(self, _basicSimulationData):
         '''
