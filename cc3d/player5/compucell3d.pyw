@@ -102,7 +102,7 @@ def main(argv):
     app.processEvents()
 
     cml_parser = CMLParser()
-    cml_parser.parse_cml()
+    cml_parser.parse_cml(argv)
     cml_args = cml_parser.cml_args
 
     main_window = UserInterface()
@@ -121,6 +121,8 @@ def main(argv):
     main_window.raise_()
 
     error_code_local = app.exec_()
+
+    print('EXITING WITH ERROR CODE=',error_code_local)
     return error_code_local
 
 
