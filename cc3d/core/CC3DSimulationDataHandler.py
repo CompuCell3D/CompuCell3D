@@ -321,25 +321,40 @@ class CC3DSimulationDataHandler:
             pass
 
         if self.cc3dSimulationData.pythonScript != "":
-            shutil.copy(self.cc3dSimulationData.pythonScript,
+            try:
+                shutil.copy(self.cc3dSimulationData.pythonScript,
                         os.path.join(simulationPath, os.path.basename(self.cc3dSimulationData.pythonScript)))
+            except shutil.SameFileError:
+                pass
 
         if self.cc3dSimulationData.xmlScript != "":
-            shutil.copy(self.cc3dSimulationData.xmlScript,
+            try:
+                shutil.copy(self.cc3dSimulationData.xmlScript,
                         os.path.join(simulationPath, os.path.basename(self.cc3dSimulationData.xmlScript)))
+            except shutil.SameFileError:
+                pass
 
         if self.cc3dSimulationData.pifFile != "":
-            shutil.copy(self.cc3dSimulationData.pifFile,
+            try:
+                shutil.copy(self.cc3dSimulationData.pifFile,
                         os.path.join(simulationPath, os.path.basename(self.cc3dSimulationData.pifFile)))
+            except shutil.SameFileError:
+                pass
 
         if self.cc3dSimulationData.windowScript != "":
-            shutil.copy(self.cc3dSimulationData.windowScript,
+            try:
+                shutil.copy(self.cc3dSimulationData.windowScript,
                         os.path.join(simulationPath, os.path.basename(self.cc3dSimulationData.windowScript)))
+            except shutil.SameFileError:
+                pass
 
         if self.cc3dSimulationData.parameterScanResource:
-            shutil.copy(self.cc3dSimulationData.parameterScanResource.path, os.path.join(simulationPath,
+            try:
+                shutil.copy(self.cc3dSimulationData.parameterScanResource.path, os.path.join(simulationPath,
                                                                                          os.path.basename(
                                                                                              self.cc3dSimulationData.parameterScanResource.path)))
+            except shutil.SameFileError:
+                pass
 
 
             # copy resource files
