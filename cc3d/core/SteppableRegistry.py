@@ -219,3 +219,12 @@ class SteppableRegistry(SteppablePy):
 
         for steppable in self.steppableList:
             steppable.cleanup()
+
+        self.clean_after_simulation()
+
+
+    def clean_after_simulation(self):
+        self.steppableList = []
+        self.runBeforeMCSSteppableList = []
+        self.steppableDict = {}
+        # self._simulator = None

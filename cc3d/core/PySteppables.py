@@ -55,7 +55,7 @@ class SteppableBasePy(SteppablePy):
         SteppablePy.__init__(self)
         # SBMLSolverHelper.__init__(self)
         self.frequency = frequency
-        self.simulator = simulator
+        self._simulator = simulator
         self.__modulesToUpdateDict = OrderedDict()
 
         # legacy API
@@ -64,9 +64,66 @@ class SteppableBasePy(SteppablePy):
         self.everyPixelWithSteps = self.every_pixel_with_steps
         self.everyPixel = self.every_pixel
 
+    @property
+    def simulator(self):
+        return self._simulator()
+
+    @simulator.setter
+    def simulator(self, simulator):
+        self._simulator = simulator
+
+
+    @property
+    def potts(self):
+        return self.simulator.getPotts()
+
+    @property
+    def cellField(self):
+        return self.potts.getCellFieldG()
+
+    @property
+    def dim(self):
+        return self.cellField.getDim()
+
+    @property
+    def inventory(self):
+        return self.simulator.getPotts().getCellInventory()
+
+    @property
+    def clusterInventory(self):
+        return self.inventory.getClusterInventory()
+
+
+
     def core_init(self):
 
+
+        # self.potts = self.simulator.getPotts()
+        # self.cellField = self.potts.getCellFieldG()
+        # self.dim = self.cellField.getDim()
+        # self.inventory = self.simulator.getPotts().getCellInventory()
+        # self.clusterInventory = self.inventory.getClusterInventory()
+        self.cellList = CellList(self.inventory)
+        self.cellListByType = CellListByType(self.inventory)
+        self.clusterList = ClusterList(self.inventory)
+        self.clusters = Clusters(self.inventory)
+        self.mcs = -1
+
+        self.plot_dict = {}  # {plot_name:plotWindow  - pW object}
+
+        persistent_globals = CompuCellSetup.persistent_globals
+        persistent_globals.attach_dictionary_to_cells()
+
+        type_id_type_name_dict = extract_type_names_and_ids()
+
+        for type_id, type_name in type_id_type_name_dict.items():
+            self.typename_to_attribute(cell_type_name=type_name, type_id=type_id)
+            # setattr(self, type_name.upper(), type_id)
+
+
+        return
         self.potts = self.simulator.getPotts()
+
         self.cellField = self.potts.getCellFieldG()
         self.dim = self.cellField.getDim()
         self.inventory = self.simulator.getPotts().getCellInventory()
