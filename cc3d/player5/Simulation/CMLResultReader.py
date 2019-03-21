@@ -9,12 +9,12 @@ saves simulation snapshot (currently stored as vtk file)
 
 from cc3d.core.enums import *
 from PyQt5.QtCore import *
-import CompuCell
-import PlayerPython
+from cc3d.cpp import CompuCell
+from cc3d.cpp import PlayerPython
 from cc3d.core import XMLUtils
 import re
 from cc3d.core.XMLUtils import CC3DXMLListPy
-import CC3DXML
+from cc3d.cpp import CC3DXML
 import cc3d.CompuCellSetup as CompuCellSetup
 import vtk
 import os

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import weakref
-import PlayerPython
+from cc3d.cpp import PlayerPython
 from PyQt5 import QtCore
 from PyQt5.QtCore import *
 from cc3d import CompuCellSetup

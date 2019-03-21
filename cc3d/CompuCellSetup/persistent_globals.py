@@ -5,7 +5,7 @@ from typing import Union
 from cc3d.core.SteppableRegistry import SteppableRegistry
 from cc3d.core.FieldRegistry import FieldRegistry
 import copy
-from CompuCell import PyAttributeAdder
+from cc3d.cpp.CompuCell import PyAttributeAdder
 from pathlib import Path
 
 

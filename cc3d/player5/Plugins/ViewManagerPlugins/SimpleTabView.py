@@ -32,7 +32,7 @@ from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
 from cc3d.core import XMLUtils
 from .PlotManagerSetup import createPlotManager
 from .WidgetManager import WidgetManager
-import PlayerPython
+from cc3d.cpp import PlayerPython
 from cc3d.core.CMLFieldHandler import CMLFieldHandler
 
 from . import ScreenshotManager

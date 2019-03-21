@@ -1,5 +1,5 @@
 from os.path import dirname, join
-import CompuCell
+from cc3d.cpp import CompuCell
 from cc3d.core.XMLDomUtils import XMLIdLocator
 from cc3d.CompuCellSetup import init_modules, parseXML
 import weakref

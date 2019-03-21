@@ -8,7 +8,7 @@ from cc3d.CompuCellSetup.simulation_utils import extract_lattice_type
 from cc3d.CompuCellSetup.simulation_utils import extract_type_names_and_ids
 from cc3d.core.utils import mkdir_p
 from cc3d.core.XMLUtils import ElementCC3D
-import PlayerPython
+from cc3d.cpp import PlayerPython
 
 
 class CMLFieldHandler:

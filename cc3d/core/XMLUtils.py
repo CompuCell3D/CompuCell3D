@@ -1,14 +1,14 @@
-from __future__ import with_statement
-# enabling with statement in python 2.5
-
-
 from xml.parsers import expat
-import CC3DXML
-from CC3DXML import *
+from cc3d.cpp import CC3DXML
+from cc3d.cpp.CC3DXML import *
 
 
-def dictionaryToMapStrStr(_dictionary):
-    import CC3DXML
+def dictionaryToMapStrStr(_dictionary:dict)->object:
+    """
+    converts python dictionaty to c++ map (std::map<std:string, std:string>)
+    :param _dictionary:
+    :return:
+    """
     mapStrStr = CC3DXML.MapStrStr()
     for key in _dictionary.keys():
         # mapStrStr[key.encode()]=str(_dictionary[key])
@@ -49,9 +49,8 @@ class CC3DXMLListPy:
 
 class CC3DXMLListIteratorPy:
     def __init__(self, _cc3dXMLElementListPy):
-        import CC3DXML
         self.elementList = _cc3dXMLElementListPy.elementList
-        #         self.invItr=CC3DXML.STLPyIteratorCC3DXMLElementList()
+
         self.invItr = CC3DXML.CC3DXMLElementListIterator()
 
         self.invItr.initialize(self.elementList)
@@ -69,7 +68,8 @@ class CC3DXMLListIteratorPy:
         return self
 
 
-# FOR AN UNKNOWN REASON "regular" map iteration does not work so i had to implement by hand iterators in C++ and Python to walk thrugh all the elementnts in the map<string,string> in python
+# FOR AN UNKNOWN REASON "regular" map iteration does not work so we had to
+# implement by hand iterators in C++ and Python to walk thrugh all the elementnts in the map<string,string> in python
 class MapStrStrPy:
     def __init__(self, _map):
         self.map = _map
@@ -83,7 +83,6 @@ class MapStrStrPy:
 
 class MapStrStrIteratorPy:
     def __init__(self, _mapStrStrElementPy):
-        import CC3DXML
         self.map = _mapStrStrElementPy.map
         #         self.invItr=CC3DXML.STLPyIteratorCC3DXMLElementList()
         self.invItr = CC3DXML.MapStrStrIterator()
@@ -113,9 +112,10 @@ class XMLAttributeList:
 
 class XMLAttributeIterator:
     def __init__(self, _xmlAttributeList):
-        import CC3DXML
         self.xmlElement = _xmlAttributeList.xmlElement
-        self.attributes = self.xmlElement.getAttributes()  # have to store attributes in a local variable so that it does not get garbage collected
+
+        # have to store attributes in a local variable so that it does not get garbage collected
+        self.attributes = self.xmlElement.getAttributes()
         self.itr = CC3DXML.MapStrStrIterator()
 
         self.itr.initialize(self.attributes)
@@ -131,7 +131,6 @@ class XMLAttributeIterator:
 
     def __iter__(self):
         return self
-    # # # TRIPPLE COMENTS COMMENT OUT DENOTE USEFUL DEBUGGING OUTPUT  - uncomment if necessary. Note , sometimes debug output may cause GUI crash when using internal concole and outputting images.
 
 
 class Xml2Obj(object):
@@ -144,12 +143,8 @@ class Xml2Obj(object):
 
     def StartElement(self, name, attributes):
         'Expat start element event handler'
-        # Instantiate an Element object
-        import CC3DXML
-        #         element = Element(name.encode(), attributes)
-        #         element = CC3DXML.CC3DXMLElement(name.encode(), dictionaryToMapStrStr(attributes))
         element = CC3DXML.CC3DXMLElement(str(name), dictionaryToMapStrStr(attributes))
-        # # # print "start_element:", name, attributes
+
         # Push element onto the stack and make it a child of parent
         if self.nodeStack:
             parent = self.nodeStack[-1]
@@ -158,37 +153,30 @@ class Xml2Obj(object):
             self.root = element
         self.nodeStack.append(element)
         self.elementInventory.append(element)
-        # # # print "self.nodeStack=",self.nodeStack[-1].name
+
 
     def EndElement(self, name):
-        # # # 'Expat end element event handler'
-        # # # print "End Element", name
 
         self.nodeStack.pop()
 
     def CharacterData(self, data):
-        # # # 'Expat character data event handler'
 
         if data.strip():
             # data = data.encode()
             data = str(data)
-            # # # print "Character Data",repr(data)
             element = self.nodeStack[-1]
             element.cdata += data
 
     def Parse(self, filename):
         # Create an Expat parser
         Parser = expat.ParserCreate()
+
         # Set the Expat event handlers to our methods
         Parser.StartElementHandler = self.StartElement
         Parser.EndElementHandler = self.EndElement
         Parser.CharacterDataHandler = self.CharacterData
-        # Parse the XML File
-        # # # with open(filename) as file:
-        # # # ParserStatus = Parser.Parse(file.read(),1)
         file_handle = open(filename)
 
-        # ParserStatus = Parser.Parse(open(filename).read(),1)
         ParserStatus = Parser.Parse(file_handle.read(), 1)
         file_handle.close()
 
@@ -203,4 +191,5 @@ class Xml2Obj(object):
         Parser.CharacterDataHandler = self.CharacterData
         # Parse the XML File
         ParserStatus = Parser.Parse(_string, 1)
+
         return self.root
