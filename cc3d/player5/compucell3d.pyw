@@ -8,6 +8,7 @@ When running automated testing f Demo suite use the following cml options:
  or for automatic starting of a particular simulation you use :
  --input=/home/m/376_dz/Demos/Models/cellsort/cellsort_2D/cellsort_2D.cc3d
 """
+import cc3d
 import sys
 import os
 from cc3d.core.CMLParser import CMLParser
@@ -85,7 +86,7 @@ def main(argv):
 
     # TODO Fix this - set paths and uncomment
     # sys.path.append(os.environ["PYTHON_MODULE_PATH"])
-    sys.path.append(os.environ["SWIG_LIB_INSTALL_DIR"])
+    # sys.path.append(os.environ["SWIG_LIB_INSTALL_DIR"])
 
     version_str = Version.getVersionAsString()
     revision_str = Version.getSVNRevisionAsString()
@@ -95,7 +96,7 @@ def main(argv):
 
     splash.showMessage(first_message, Qt.AlignLeft, Qt.white)
 
-    second_message = base_message + "Loading CompuCell3D Python Modules..."
+    second_message = base_message + "Loading CompuCnell3D Python Modules..."
 
     splash.showMessage(second_message, Qt.AlignLeft, Qt.white)
 

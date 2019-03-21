@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet href="api_tests.xsl" type="text/xsl" ?>
-<unittest-results date_time = "2012-12-11 13:55:13" tests="0" failedtests="0" failures="1" time="31.398">
-<test suite="Base" name="AllocateRR" time="0"/>
-</unittest-results>
