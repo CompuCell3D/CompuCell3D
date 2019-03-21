@@ -175,7 +175,7 @@ INCLUDE_DIRECTORIES(
 
 SET_SOURCE_FILES_PROPERTIES(CompuCell.i  PROPERTIES CPLUSPLUS ON)
 # SET_SOURCE_FILES_PROPERTIES(CompuCellPython.i CompuCellAuxPython.i PROPERTIES SWIG_FLAGS "-includeall")
-SWIG_ADD_MODULE(CompuCell python CompuCell.i)
+SWIG_ADD_LIBRARY(CompuCell LANGUAGE python SOURCES CompuCell.i)
 
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
@@ -188,8 +188,9 @@ SWIG_LINK_LIBRARIES(CompuCell ${LIBS} ${LIBS_AUX})
 
 #TARGET_LINK_LIBRARIES(_CompuCell ${LIBS})
 
+install(TARGETS _CompuCell    DESTINATION ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} )
 
-install_targets(/lib/python _CompuCell)
+# install_targets(${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} _CompuCell)
 
 set(python_files_path ${CMAKE_BINARY_DIR}/core/pyinterface/CompuCellPython)
 
@@ -203,7 +204,7 @@ set(python_files_path ${CMAKE_BINARY_DIR}/core/pyinterface/CompuCellPython)
 # ADD_CUSTOM_TARGET(_swigmodifier ALL DEPENDS CompuCell.py.mod)
 
 INSTALL(FILES ${python_files_path}/CompuCell.py 
-	      DESTINATION lib/python)
+	      DESTINATION ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR})
 
 # add_subdirectory(CompuCellPythonOld)
 

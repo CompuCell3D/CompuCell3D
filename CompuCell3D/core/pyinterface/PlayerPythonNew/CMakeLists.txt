@@ -119,7 +119,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 
-SWIG_ADD_MODULE(PlayerPythonNew python PlayerPython.i)
+SWIG_ADD_LIBRARY(PlayerPythonNew LANGUAGE python SOURCES PlayerPython.i)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   SET_TARGET_PROPERTIES(_PlayerPythonNew PROPERTIES SUFFIX ".pyd") # changes dll name to pyd sop that it is compatible with new Python standard
@@ -129,11 +129,13 @@ SET_TARGET_PROPERTIES(_PlayerPythonNew PROPERTIES OUTPUT_NAME  "_PlayerPython")
 
 SWIG_LINK_LIBRARIES(PlayerPythonNew ${LIBS_SWIG})
 
-install_targets(/lib/python _PlayerPythonNew)
+# install_targets(${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} _PlayerPythonNew)
+install(TARGETS _PlayerPythonNew DESTINATION ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR})
+
 set(python_files_path ${CMAKE_BINARY_DIR}/core/pyinterface/PlayerPythonNew)
 
 INSTALL(FILES ${python_files_path}/PlayerPython.py
-	      DESTINATION lib/python)
+	      DESTINATION ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR})
 
 #SWIG_LINK_LIBRARIES(PlayerPython ${LIBS} simthreadStatic)
 #SWIG_LINK_LIBRARIES(PlayerPython ${LIBS} simthreadShared)
