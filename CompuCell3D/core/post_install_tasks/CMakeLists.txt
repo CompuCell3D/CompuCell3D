@@ -1,4 +1,10 @@
+SET(TOP_LEVEL_DIR ${CMAKE_SOURCE_DIR}/../)
+
 #writing run scripts
+
+
+
+
 set(LIBRARY_PATH_SYNTAX LD_LIBRARY_PATH) #default choice
 if(${CMAKE_SYSTEM_NAME} STREQUAL Linux)
    set(LIBRARY_PATH_SYNTAX LD_LIBRARY_PATH)
@@ -8,7 +14,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
    set(LIBRARY_PATH_SYNTAX DYLD_LIBRARY_PATH)
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
 
-SET(COMPUCELL_INSTALL_DIR @CMAKE_INSTALL_PREFIX@)
+SET(COMPUCELL_INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
 
 SET(player_dir "player")
 SET(twedit_dir "Twedit++")
@@ -55,7 +61,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   endif(BUILD_CPP_ONLY_EXECUTABLE)
 
   #copying SetupScript file
-  INSTALL(FILES "@CMAKE_SOURCE_DIR@/core/post_install_tasks/windows/scriptSetup.py" DESTINATION ${CMAKE_INSTALL_PREFIX})
+  INSTALL(FILES "${CMAKE_SOURCE_DIR}/core/post_install_tasks/windows/scriptSetup.py" DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 
 
@@ -166,7 +172,7 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
                 message("WILL COPY DEPENDENCIES")
                 INSTALL(
                     DIRECTORY  "@DEPENDENCIES_DIR@/"
-                    DESTINATION @CMAKE_INSTALL_PREFIX@
+                    DESTINATION ${CMAKE_INSTALL_PREFIX}
                     USE_SOURCE_PERMISSIONS
                     PATTERN "@DEPENDENCIES_DIR@/*"
                 )
@@ -247,17 +253,17 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 if(WINDOWS_DEPENDENCIES_INSTALL_ENABLE)
     if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
         if(${PYQT_VERSION} STREQUAL 4)
-            INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/bin/" DESTINATION @CMAKE_INSTALL_PREFIX@/bin
+            INSTALL(DIRECTORY  ${WINDOWS_DEPENDENCIES}/bin/ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
                 PATTERN "*.svn" EXCLUDE
-                PATTERN "@WINDOWS_DEPENDENCIES@/bin/*")
+                PATTERN "${WINDOWS_DEPENDENCIES}/bin/*")
 
-            file(GLOB prerequisites "@WINDOWS_DEPENDENCIES@/Prerequisites/*")
-            list(REMOVE_ITEM prerequisites "@WINDOWS_DEPENDENCIES@/Prerequisites/.svn")
-            INSTALL(FILES ${prerequisites} DESTINATION "@CMAKE_INSTALL_PREFIX@/Prerequisites" )
+            file(GLOB prerequisites "${WINDOWS_DEPENDENCIES}/Prerequisites/*")
+            list(REMOVE_ITEM prerequisites "${WINDOWS_DEPENDENCIES}/Prerequisites/.svn")
+            INSTALL(FILES ${prerequisites} DESTINATION "${CMAKE_INSTALL_PREFIX}/Prerequisites" )
         elseif(${PYQT_VERSION} STREQUAL 5)
-            INSTALL(DIRECTORY  "@WINDOWS_DEPENDENCIES@/" DESTINATION @CMAKE_INSTALL_PREFIX@
+            INSTALL(DIRECTORY  "${WINDOWS_DEPENDENCIES}/" DESTINATION ${CMAKE_INSTALL_PREFIX}
                 PATTERN "*.svn" EXCLUDE
-                PATTERN "@WINDOWS_DEPENDENCIES@/*")
+                PATTERN "${WINDOWS_DEPENDENCIES}/*")
 
         endif()
     endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
@@ -278,7 +284,7 @@ endif(WINDOWS_DEPENDENCIES_INSTALL_ENABLE)
 # ADD_CUSTOM_TARGET(RevisionSVN ALL DEPENDS GetSVNRevision.py)
 
 SET(COMPUCELL3D_REVISION 0)
-EXEC_PROGRAM(${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/core/pythonSetupScripts ARGS RevisionNumber.py
+EXEC_PROGRAM(${PYTHON_EXECUTABLE} ${TOP_LEVEL_DIR}/cc3d ARGS RevisionNumber.py
       OUTPUT_VARIABLE COMPUCELL3D_REVISION)
 
 
@@ -295,9 +301,12 @@ EXEC_PROGRAM(${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/core/pythonSetupScripts AR
 # MESSAGE("COMPUCELL3D_REVISION= ",${COMPUCELL3D_REVISION})
 
 # configure_file(${CMAKE_SOURCE_DIR}/core/pythonSetupScripts/Version.py.in @CMAKE_INSTALL_PREFIX@/pythonSetupScripts/Version.py)
-configure_file(${CMAKE_SOURCE_DIR}/core/pythonSetupScripts/Version.py.in ${CMAKE_SOURCE_DIR}/core/pythonSetupScripts/Version.py)
+# configure_file(${CMAKE_SOURCE_DIR}/core/pythonSetupScripts/Version.py.in ${CMAKE_SOURCE_DIR}/core/pythonSetupScripts/Version.py)
+# INSTALL(FILES  "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/Version.py" DESTINATION @CMAKE_INSTALL_PREFIX@/pythonSetupScripts)
 
-INSTALL(FILES  "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/Version.py" DESTINATION @CMAKE_INSTALL_PREFIX@/pythonSetupScripts)
+configure_file(${TOP_LEVEL_DIR}/cc3d/Version.py.in ${TOP_LEVEL_DIR}/cc3d/Version.py)
+INSTALL(FILES  ${TOP_LEVEL_DIR}/cc3d/Version.py DESTINATION ${SITE_PACKAGES_INSTALL}/cc3d)
+
 
 # file(GLOB GetSVNRevision "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/GetSVNRevision.py")
 # INSTALL(FILES ${GetSVNRevision} DESTINATION "@CMAKE_INSTALL_PREFIX@/pythonSetupScripts")
@@ -306,31 +315,31 @@ INSTALL(FILES  "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/Version.py" DESTINATI
 # INSTALL(FILES ${GetSVNRevision} DESTINATION "@CMAKE_INSTALL_PREFIX@/Twedit++")
 
 
-INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts" DESTINATION @CMAKE_INSTALL_PREFIX@
+# INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts" DESTINATION @CMAKE_INSTALL_PREFIX@
+#     PATTERN "*.svn" EXCLUDE
+#     PATTERN "CompuCellPythonSimulationCML.py" EXCLUDE
+#     PATTERN "Version.py.in*" EXCLUDE
+#     PATTERN "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/*")
+
+
+
+# if (INSTALL_PLAYER)
+
+#     INSTALL(FILES  "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/CompuCellPythonSimulationCML.py" DESTINATION @CMAKE_INSTALL_PREFIX@/${player_dir} )
+#     INSTALL(FILES  "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/ParameterScanRun.py" DESTINATION @CMAKE_INSTALL_PREFIX@/${player_dir} )
+
+# endif (INSTALL_PLAYER)
+
+
+INSTALL(DIRECTORY  "${CMAKE_SOURCE_DIR}/core/Demos" DESTINATION ${CMAKE_INSTALL_PREFIX}
     PATTERN "*.svn" EXCLUDE
-    PATTERN "CompuCellPythonSimulationCML.py" EXCLUDE
-    PATTERN "Version.py.in*" EXCLUDE
-    PATTERN "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/*")
-
-
-
-if (INSTALL_PLAYER)
-
-    INSTALL(FILES  "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/CompuCellPythonSimulationCML.py" DESTINATION @CMAKE_INSTALL_PREFIX@/${player_dir} )
-    INSTALL(FILES  "@CMAKE_SOURCE_DIR@/core/pythonSetupScripts/ParameterScanRun.py" DESTINATION @CMAKE_INSTALL_PREFIX@/${player_dir} )
-
-endif (INSTALL_PLAYER)
-
-
-INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/core/Demos" DESTINATION @CMAKE_INSTALL_PREFIX@
-    PATTERN "*.svn" EXCLUDE
-    PATTERN "@CMAKE_SOURCE_DIR@/core/Demos/*")
+    PATTERN "${CMAKE_SOURCE_DIR}/core/Demos/*")
 
 # INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/core/examples_PythonTutorial" DESTINATION @CMAKE_INSTALL_PREFIX@
     # PATTERN "*.svn" EXCLUDE
     # PATTERN "@CMAKE_SOURCE_DIR@/core/examples_PythonTutorial/*")
 
 # Copying images
-INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/core/icons" DESTINATION @CMAKE_INSTALL_PREFIX@
+INSTALL(DIRECTORY  "${CMAKE_SOURCE_DIR}/core/icons" DESTINATION ${CMAKE_INSTALL_PREFIX}
     PATTERN "*.svn" EXCLUDE
-    PATTERN "@CMAKE_SOURCE_DIR@/core/icons/*")
+    PATTERN "${CMAKE_SOURCE_DIR}/core/icons/*")

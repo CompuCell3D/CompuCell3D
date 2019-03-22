@@ -179,7 +179,7 @@ SWIG_ADD_LIBRARY(CompuCell LANGUAGE python SOURCES CompuCell.i)
 
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-  SET_TARGET_PROPERTIES(_CompuCell PROPERTIES SUFFIX ".pyd") # changes dll name to pyd sop that it is compatible with new Python standard
+  SET_TARGET_PROPERTIES(CompuCell PROPERTIES SUFFIX ".pyd") # changes dll name to pyd sop that it is compatible with new Python standard
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 # SWIG_LINK_LIBRARIES(CompuCell ${LIBS} ${LIBS_AUX})
@@ -188,7 +188,7 @@ SWIG_LINK_LIBRARIES(CompuCell ${LIBS} ${LIBS_AUX})
 
 #TARGET_LINK_LIBRARIES(_CompuCell ${LIBS})
 
-install(TARGETS _CompuCell    DESTINATION ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} )
+install(TARGETS CompuCell    DESTINATION ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} )
 
 # install_targets(${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} _CompuCell)
 

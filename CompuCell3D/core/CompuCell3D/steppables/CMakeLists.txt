@@ -20,7 +20,7 @@ MACRO(ADD_COMPUCELL3D_STEPPABLE_HEADERS steppable)
     
   file(GLOB header_files "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
   # message(${steppable} "uses the following header files: " ${header_files})
-  INSTALL(FILES ${header_files} DESTINATION "@CMAKE_INSTALL_PREFIX@/include/CompuCell3D/CompuCell3D/steppables/${steppable}")
+  INSTALL(FILES ${header_files} DESTINATION "${CMAKE_INSTALL_PREFIX}/include/CompuCell3D/CompuCell3D/steppables/${steppable}")
   
     
 ENDMACRO(ADD_COMPUCELL3D_STEPPABLE_HEADERS)

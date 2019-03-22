@@ -16,8 +16,9 @@ MACRO(ADD_COMPUCELL3D_PLUGIN_HEADERS plugin)
     
   file(GLOB header_files "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
   # message(${plugin} "uses the following header files: " ${header_files})
-  INSTALL(FILES ${header_files} DESTINATION "@CMAKE_INSTALL_PREFIX@/include/CompuCell3D/CompuCell3D/plugins/${plugin}")
-    
+  # INSTALL(FILES ${header_files} DESTINATION "@CMAKE_INSTALL_PREFIX@/include/CompuCell3D/CompuCell3D/plugins/${plugin}")
+  INSTALL(FILES ${header_files} DESTINATION "${CMAKE_INSTALL_PREFIX}/include/CompuCell3D/CompuCell3D/plugins/${plugin}")    
+
     
 ENDMACRO(ADD_COMPUCELL3D_PLUGIN_HEADERS)
 # ADD_SUBDIRECTORY(TemplatePlugin)

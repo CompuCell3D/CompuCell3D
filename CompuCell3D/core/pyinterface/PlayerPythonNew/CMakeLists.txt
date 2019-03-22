@@ -122,15 +122,15 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 SWIG_ADD_LIBRARY(PlayerPythonNew LANGUAGE python SOURCES PlayerPython.i)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-  SET_TARGET_PROPERTIES(_PlayerPythonNew PROPERTIES SUFFIX ".pyd") # changes dll name to pyd sop that it is compatible with new Python standard
+  SET_TARGET_PROPERTIES(PlayerPythonNew PROPERTIES SUFFIX ".pyd") # changes dll name to pyd sop that it is compatible with new Python standard
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
-SET_TARGET_PROPERTIES(_PlayerPythonNew PROPERTIES OUTPUT_NAME  "_PlayerPython")
+SET_TARGET_PROPERTIES(PlayerPythonNew PROPERTIES OUTPUT_NAME  "PlayerPython")
 
 SWIG_LINK_LIBRARIES(PlayerPythonNew ${LIBS_SWIG})
 
 # install_targets(${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} _PlayerPythonNew)
-install(TARGETS _PlayerPythonNew DESTINATION ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR})
+install(TARGETS PlayerPythonNew DESTINATION ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR})
 
 set(python_files_path ${CMAKE_BINARY_DIR}/core/pyinterface/PlayerPythonNew)
 
