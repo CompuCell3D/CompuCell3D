@@ -25,3 +25,4 @@ if cc3d_bin_path not in path_env_list:
 os.environ['PATH'] = ';'.join(path_env_list)
 
 print('ENVIRONMENT VARS=', os.environ)
+

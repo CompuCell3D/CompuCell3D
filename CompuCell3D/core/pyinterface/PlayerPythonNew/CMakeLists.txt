@@ -81,8 +81,7 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     target_link_libraries(FieldExtractor  ${LIBS})
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
-INSTALL_TARGETS(/lib
-  FieldExtractor)
+INSTALL_TARGETS(/lib/site-packages/cc3d/cpp/lib RUNTIME_DIRECTORY /lib/site-packages/cc3d/cpp/bin FieldExtractor)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
