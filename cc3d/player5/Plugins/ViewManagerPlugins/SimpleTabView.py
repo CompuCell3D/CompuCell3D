@@ -1422,7 +1422,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # copy simulation files to output directory  for single simulation
         # copying of the simulations files for parameter scan is done in the __loadCC3DFile
 
-        screenshot_directory = CompuCellSetup.persistent_globals.screenshot_directory
+        screenshot_directory = CompuCellSetup.persistent_globals.output_directory
         # if self.singleSimulation:
         if self.cc3dSimulationDataHandler and screenshot_directory is not None:
             self.cc3dSimulationDataHandler.copySimulationDataFiles(screenshot_directory)

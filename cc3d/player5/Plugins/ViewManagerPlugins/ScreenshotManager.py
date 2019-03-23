@@ -58,7 +58,7 @@ class ScreenshotManager(ScreenshotManagerCore):
         """
         persistent_globals = CompuCellSetup.persistent_globals
 
-        out_dir_name = persistent_globals.screenshot_directory
+        out_dir_name = persistent_globals.output_directory
         sim_fname = persistent_globals.simulation_file_name
 
         out_fname = join(out_dir_name, 'screenshot_data', 'screenshots.json')

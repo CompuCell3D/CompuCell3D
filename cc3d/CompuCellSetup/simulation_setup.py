@@ -1,10 +1,14 @@
 from os.path import dirname, join
-from pathlib import Path
 from cc3d.cpp import CompuCell
 from cc3d.core.XMLDomUtils import XMLIdLocator
 from cc3d.CompuCellSetup import init_modules, parseXML
 from cc3d.core.CMLFieldHandler import CMLFieldHandler
+from cc3d.core.GraphicsUtils.ScreenshotManagerCore import ScreenshotManagerCore
 from cc3d.cpp import PlayerPython
+from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawer
+from cc3d.core.BasicSimulationData import BasicSimulationData
+import warnings
+import time
 import weakref
 
 # import cc3d.CompuCellSetup as CompuCellSetup
@@ -211,16 +215,14 @@ def incorporate_script_steering_changes(simulator)->None:
     # resetting xml_id_locator.recently_accessed_elems
     xml_id_locator.reset()
 
-
-def init_lattice_snapshot_objects():
+def initialize_field_extractor_objects():
     """
-    Initializes cml filed handler , field storage and field extractor
-    This trio of objects are responsible for outputting lattice snapshots
+    Initialzies field storage and field extractor objects
+    Stores references to them in persistent_globals.persistent_holder dictionary
     :return:
     """
 
     persistent_globals = CompuCellSetup.persistent_globals
-
     sim = persistent_globals.simulator
     dim = sim.getPotts().getCellFieldG().getDim()
 
@@ -234,6 +236,36 @@ def init_lattice_snapshot_objects():
     field_storage.allocateCellField(dim)
 
     field_extractor.init(sim)
+
+
+
+
+def init_lattice_snapshot_objects():
+    """
+    Initializes cml filed handler , field storage and field extractor
+    This trio of objects are responsible for outputting lattice snapshots
+    :return:
+    """
+
+    persistent_globals = CompuCellSetup.persistent_globals
+
+    initialize_field_extractor_objects()
+    field_storage = persistent_globals.persistent_holder['field_storage']
+
+
+    # sim = persistent_globals.simulator
+    # dim = sim.getPotts().getCellFieldG().getDim()
+    #
+    # field_storage = PlayerPython.FieldStorage()
+    # field_extractor = PlayerPython.FieldExtractor()
+    # field_extractor.setFieldStorage(field_storage)
+    #
+    # persistent_globals.persistent_holder['field_storage'] = field_storage
+    # persistent_globals.persistent_holder['field_extractor'] = field_extractor
+    #
+    # field_storage.allocateCellField(dim)
+    #
+    # field_extractor.init(sim)
 
     cml_field_handler = CMLFieldHandler()
     persistent_globals.cml_field_handler = cml_field_handler
@@ -257,19 +289,65 @@ def store_lattice_snapshot(cur_step:int)->None:
         cml_field_handler.write_fields(cur_step)
 
 
-def init_screenshot_manager():
+def init_screenshot_manager()->None:
     """
-    Initializes screenshot manager
+    Initializes screenshot manager. Requires that field extractor is set.
+
     :return:
     """
 
     persistent_globals = CompuCellSetup.persistent_globals
 
-    screenshot_data_fname = str(Path(persistent_globals.simulation_file_name).joinpath(
-        'screenshot_data/screenshots.json'))
+    screenshot_data_fname = join(dirname(persistent_globals.simulation_file_name),'screenshot_data/screenshots.json')
 
-    # screenshot_mgr = ScreenshotManagerCore()
+    persistent_globals.screenshot_mgr = ScreenshotManagerCore()
 
+    try:
+        field_extractor = persistent_globals.persistent_holder['field_extractor']
+    except KeyError:
+        initialize_field_extractor_objects()
+        field_extractor = persistent_globals.persistent_holder['field_extractor']
+
+
+    persistent_globals.create_output_dir()
+    gd = GenericDrawer()
+    gd.set_field_extractor(field_extractor=field_extractor)
+
+    bsd = BasicSimulationData()
+    bsd.fieldDim = persistent_globals.simulator.getPotts().getCellFieldG().getDim()
+    bsd.numberOfSteps = persistent_globals.simulator.getNumSteps()
+
+
+    # wiring screenshot manager
+    persistent_globals.screenshot_mgr.gd = gd
+    persistent_globals.screenshot_mgr.bsd = bsd
+    persistent_globals.screenshot_mgr.screenshot_number_of_digits = len(str(bsd.numberOfSteps))
+
+    try:
+        persistent_globals.screenshot_mgr.read_screenshot_description_file(screenshot_data_fname)
+    except:
+        warnings.warn('Could not parse screenshot description file {screenshot_data_fname}. '
+                      'If you want graphical screenshot output please generate '
+                      'new screenshot description file from Player by pressing camera button on '
+                      'select graphical visualizations. If you do not want screenshots'
+                      'you may delete subfolder {scr_dir} or simply ingnore this message'.format(
+            screenshot_data_fname=screenshot_data_fname, scr_dir=dirname(screenshot_data_fname)))
+        time.sleep(5)
+
+def store_screenshots(cur_step:int)->None:
+    """
+    Stores screenshots
+    :param cur_step:{int} current MCS
+    :return: None
+    """
+
+    persistent_globals = CompuCellSetup.persistent_globals
+
+    screenshot_output_frequency = persistent_globals.screenshot_output_frequency
+    screenshot_mgr = persistent_globals.screenshot_mgr
+
+    if screenshot_output_frequency and screenshot_mgr and (not cur_step % screenshot_output_frequency):
+        screenshot_mgr.output_screenshots(mcs=cur_step)
 
 def main_loop(sim, simthread, steppableRegistry):
     """
@@ -289,6 +367,7 @@ def main_loop(sim, simthread, steppableRegistry):
     max_num_steps = sim.getNumSteps()
 
     init_lattice_snapshot_objects()
+    init_screenshot_manager()
 
 
     sim.start()
@@ -307,6 +386,7 @@ def main_loop(sim, simthread, steppableRegistry):
             steppableRegistry.step(cur_step)
 
         store_lattice_snapshot(cur_step=cur_step)
+        store_screenshots(cur_step=cur_step)
 
         # passing Python-script-made changes in XML to C++ code
         incorporate_script_steering_changes(simulator=sim)

@@ -136,7 +136,7 @@ class CMLFieldHandler:
         Creates storage dir for fields. Initializes self.output_dir_name
         :return:
         """
-        screenshot_directory = cc3d.CompuCellSetup.persistent_globals.screenshot_directory
+        screenshot_directory = cc3d.CompuCellSetup.persistent_globals.output_directory
         self.output_dir_name = join(screenshot_directory, 'LatticeData')
 
         mkdir_p(self.output_dir_name)

@@ -5,6 +5,7 @@ from typing import Union
 from cc3d.core.SteppableRegistry import SteppableRegistry
 from cc3d.core.FieldRegistry import FieldRegistry
 import copy
+from cc3d.core.utils import mkdir_p
 from cc3d.cpp.CompuCell import PyAttributeAdder
 from pathlib import Path
 
@@ -96,7 +97,7 @@ class PersistentGlobals:
         return timestamp_str
 
     @property
-    def screenshot_directory(self) -> Union[str, None]:
+    def output_directory(self) -> Union[str, None]:
         """
         Retuns screenshot directory - if possible to construct one otherwise returns None
         :return:
@@ -113,6 +114,14 @@ class PersistentGlobals:
             self.__output_dir = join(self.workspace_dir, sim_base_name)
 
             return self.__output_dir
+
+    def create_output_dir(self):
+        """
+
+        :return:
+        """
+
+        mkdir_p(self.output_directory)
 
     def clean(self):
         """

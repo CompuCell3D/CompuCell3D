@@ -30,7 +30,7 @@ class ScreenshotManagerCore(object):
         }
 
     def get_screenshot_dir_name(self):
-        return CompuCellSetup.persistent_globals.screenshot_directory
+        return CompuCellSetup.persistent_globals.output_directory
 
     def cleanup(self):
         """
