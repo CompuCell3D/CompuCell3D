@@ -8,8 +8,36 @@ import weakref
 # import cc3d.CompuCellSetup as CompuCellSetup
 from cc3d import CompuCellSetup
 
+# -------------------- legacy API emulation ----------------------------------------
+def getCoreSimulationObjects():
+    """
 
-def initializeSimulationObjects(sim, simthread):
+    :return:
+    """
+    return None, None
+
+def initializeSimulationObjects(*args,**kwds):
+    """
+
+    :param args:
+    :param kwds:
+    :return:
+    """
+
+def mainLoop(*args, **kwds):
+    """
+
+    :param args:
+    :param kwds:
+    :return:
+    """
+    CompuCellSetup.run()
+
+
+# -------------------- enf of legacy API emulation ----------------------------------------
+
+
+def initialize_simulation_objects(sim, simthread):
     """
 
     :param sim:
@@ -24,7 +52,7 @@ def initialize_cc3d():
 
     :return:
     """
-    CompuCellSetup.persistent_globals.simulator, CompuCellSetup.persistent_globals.simthread = getCoreSimulationObjects()
+    CompuCellSetup.persistent_globals.simulator, CompuCellSetup.persistent_globals.simthread = get_core_simulation_objects()
 
     simulator = CompuCellSetup.persistent_globals.simulator
     simthread = CompuCellSetup.persistent_globals.simthread
@@ -32,7 +60,7 @@ def initialize_cc3d():
     # CompuCellSetup.persistent_globals.steppable_registry.simulator = simulator
     CompuCellSetup.persistent_globals.steppable_registry.simulator = weakref.ref(simulator)
 
-    initializeSimulationObjects(simulator, simthread)
+    initialize_simulation_objects(simulator, simthread)
 
     CompuCellSetup.persistent_globals.simulation_initialized = True
     # print(' initialize cc3d CompuCellSetup.persistent_globals=',CompuCellSetup.persistent_globals)
@@ -46,15 +74,15 @@ def determine_main_loop_fcn():
 
 
     if CompuCellSetup.persistent_globals.simthread is None:
-        return mainLoop
+        return main_loop
     else:
         player_type = CompuCellSetup.persistent_globals.player_type
         if player_type == 'CMLResultReplay':
             # result replay
-            return mainLoopPlayerCMLResultReplay
+            return main_loop_player_cml_result_replay
         else:
             # "regular" run
-            return mainLoopPlayer
+            return main_loop_player
 
 def run():
     """
@@ -105,7 +133,7 @@ def register_steppable(steppable):
     steppable_registry.registerSteppable(_steppable=steppable)
 
 
-def getCoreSimulationObjects():
+def get_core_simulation_objects():
     # xml_fname = r'd:\CC3D_PY3_GIT\CompuCell3D\tests\test_data\cellsort_2D.xml'
     # cc3dXML2ObjConverter = parseXML(xml_fname=xml_fname)
 
@@ -183,7 +211,7 @@ def incorporate_script_steering_changes(simulator)->None:
 
 
 
-def mainLoop(sim, simthread, steppableRegistry):
+def main_loop(sim, simthread, steppableRegistry):
     steppableRegistry = CompuCellSetup.persistent_globals.steppable_registry
     if not steppableRegistry is None:
         steppableRegistry.init(sim)
@@ -214,7 +242,7 @@ def mainLoop(sim, simthread, steppableRegistry):
         cur_step += 1
 
 
-def extraInitSimulationObjects(sim, simthread, _restartEnabled=False):
+def extra_init_simulation_objects(sim, simthread, _restartEnabled=False):
     print("Simulation basepath extra init=", sim.getBasePath())
 
     sim.extraInit()  # after all xml steppables and plugins have been loaded we call extraInit to complete initialization
@@ -230,7 +258,7 @@ def extraInitSimulationObjects(sim, simthread, _restartEnabled=False):
 
 
 
-def mainLoopPlayer(sim, simthread, steppableRegistry):
+def main_loop_player(sim, simthread, steppableRegistry):
     """
 
     :param sim:
@@ -242,7 +270,7 @@ def mainLoopPlayer(sim, simthread, steppableRegistry):
     simthread = CompuCellSetup.persistent_globals.simthread
 
 
-    extraInitSimulationObjects(sim, simthread, _restartEnabled=False)
+    extra_init_simulation_objects(sim, simthread, _restartEnabled=False)
 
     # simthread.waitForInitCompletion()
     # simthread.waitForPlayerTaskToFinish()
@@ -316,7 +344,7 @@ def mainLoopPlayer(sim, simthread, steppableRegistry):
         steppableRegistry.clean_after_simulation()
 
 
-def mainLoopPlayerCMLResultReplay(sim, simthread, steppableRegistry):
+def main_loop_player_cml_result_replay(sim, simthread, steppableRegistry):
     """
 
     :param sim:

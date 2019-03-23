@@ -51,11 +51,24 @@ class SteppablePy:
 class SteppableBasePy(SteppablePy):
     (CC3D_FORMAT, TUPLE_FORMAT) = range(0, 2)
 
-    def __init__(self, simulator=None, frequency=1):
+    # def __init__(self, simulator=None, frequency=1):
+    def __init__(self, *args,**kwds):
+
+        try:
+            frequency = args[1]
+        except IndexError:
+            try:
+                frequency = kwds['frequency']
+            except KeyError:
+                try:
+                    frequency = kwds['_frequency']
+                except KeyError:
+                    frequency = 1
+
         SteppablePy.__init__(self)
         # SBMLSolverHelper.__init__(self)
         self.frequency = frequency
-        self._simulator = simulator
+        # self._simulator = simulator
         self.__modulesToUpdateDict = OrderedDict()
 
         # legacy API
@@ -63,6 +76,7 @@ class SteppableBasePy(SteppablePy):
         self.createScalarFieldPy = self.create_scalar_field_py
         self.everyPixelWithSteps = self.every_pixel_with_steps
         self.everyPixel = self.every_pixel
+
 
     @property
     def simulator(self):

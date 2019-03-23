@@ -301,10 +301,10 @@ class SimulationThread(QtCore.QThread):
 
     def prepareSimulation(self):
 
-        (self.sim, self.simthread) = CompuCellSetup.getCoreSimulationObjects()
+        (self.sim, self.simthread) = CompuCellSetup.get_core_simulation_objects()
 
-        CompuCellSetup.initializeSimulationObjects(self.sim, self.simthread)
-        CompuCellSetup.extraInitSimulationObjects(self.sim, self.simthread)
+        CompuCellSetup.initialize_simulation_objects(self.sim, self.simthread)
+        CompuCellSetup.extra_init_simulation_objects(self.sim, self.simthread)
         self.simulationInitialized = True
         self.callingWidget.sim = self.sim
 

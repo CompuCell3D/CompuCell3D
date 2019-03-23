@@ -5,6 +5,7 @@
 #     pass
 from cc3d.core import XMLUtils
 # import cc3d.CompuCellSetup as CompuCellSetup
+from cc3d import CompuCellSetup
 
 
 def init_modules(sim, _cc3dXML2ObjConverter):
