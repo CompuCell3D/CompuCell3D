@@ -1,5 +1,7 @@
 from cc3d.core.PySteppables import *
 from cc3d import CompuCellSetup
+import numpy as np
+from scipy import special, optimize
 
 class InventoryCheckSteppable(SteppableBasePy):
     def __init__(self, frequency=1):

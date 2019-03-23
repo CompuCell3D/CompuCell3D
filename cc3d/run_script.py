@@ -15,13 +15,9 @@ def process_cml():
 
     :return:
     """
-
-
     cml_parser = argparse.ArgumentParser(description='CompuCell3D Player 5')
     cml_parser.add_argument('-i', '--input', required=False, action='store',
                             help='path to the CC3D project file (*.cc3d)')
-
-
 
     return cml_parser.parse_args()
 
@@ -58,41 +54,5 @@ if __name__ =='__main__':
 
     run_cc3d_project(cc3d_sim_fname=cc3d_sim_fname)
 
-    # cc3dSimulationDataHandler = readCC3DFile(fileName=sim_fname)
-    #
-    # CompuCellSetup.cc3dSimulationDataHandler = cc3dSimulationDataHandler
-    # import sys
-    # from os.path import *
-    # # todo - need to find a better solution ot append and remove pythonpath of the simulation object
-    # sys.path.append(join(dirname(sim_fname),'Simulation'))
-    #
-    # # execfile(CompuCellSetup.simulationPaths.simulationPythonScriptName)
-    # with open(cc3dSimulationDataHandler.cc3dSimulationData.pythonScript) as sim_fh:
-    #     try:
-    #         code = compile(sim_fh.read(), cc3dSimulationDataHandler.cc3dSimulationData.pythonScript, 'exec')
-    #     except:
-    #         code = None
-    #         traceback.print_exc(file=sys.stdout)
-    #
-    #     # exec(code)
-    #     if code is not None:
-    #         try:
-    #             exec(code)
-    #             # exec(sim_fh.read())
-    #             # exec(cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
-    #         except:
-    #             traceback.print_exc(file=sys.stdout)
-    #
-    #         # traceback.format_stack()
-    #         # # traceback.format_exc()
-    #         # # print(traceback.format_stack())
-    #         # traceback.print_tb()
-    # execfile()
-    # print
+    rollbackImporter.uninstall()
 
-
-
-"""
---input=d:\CC3D_PY3_GIT\CompuCell3D\tests\test_data\cellsort_project\cellsort_2D.cc3d
---input=d:\CC3D_PY3_GIT\CompuCell3D\tests\test_data\cellsort_project_py_step\cellsort_2D.cc3d
-"""

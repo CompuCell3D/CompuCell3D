@@ -30,13 +30,44 @@ class RollbackImporter:
         Creates an instance and installs as the global importer
         """
         self.previousModules = sys.modules.copy()
-        print("__builtins__",__builtins__)
+        # print("__builtins__",__builtins__)
         self.realImport = __builtins__['__import__']
         __builtins__['__import__'] = self._import
         self.newModules = {}
 
     def _import(self, name, globals=None, locals=None, fromlist=[], level=0):
-        result = self.realImport(*(name, globals, locals, fromlist))
+        """
+        import override. Modules/packages that have word "steppable" in ther name
+        are imported as leve 0. This means that PYTHONPATH will be used to
+        search for them and even some of them are  relative imports
+        e.g.  from .bacterium_macrophage_steppables import MySteppable
+
+        this import will be resolved as level 0 import. If we did not intercept level variable
+        the above relative import would be given level=1 and this would result in error
+
+        This special handling of level import variable allows 3rd party packages to function properly and at the same
+        time have relative imports for steppable modules
+
+        :param name:
+        :param globals:
+        :param locals:
+        :param fromlist:
+        :param level:
+        :return:
+        """
+
+        level_import = level
+        if name.find('steppable') > 0 or  name.find('Steppable')>0:
+            level_import = 0
+        else:
+            if fromlist:
+                for mod_name in fromlist:
+                    if mod_name.find('steppable') > 0 or mod_name.find('Steppable') > 0:
+                        level_import = 0
+                        break
+
+        result = self.realImport(*(name, globals, locals, fromlist,level_import))
+
         self.newModules[name] = 1
         return result
         
