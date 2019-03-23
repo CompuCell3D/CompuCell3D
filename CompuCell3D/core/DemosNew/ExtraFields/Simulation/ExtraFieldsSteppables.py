@@ -1,7 +1,7 @@
 from cc3d.core.PySteppables import *
 from math import sin
 from random import random
-import CompuCell
+from cc3d.cpp import CompuCell
 
 
 class ExtraFieldVisualizationSteppable(SteppableBasePy):
@@ -76,7 +76,6 @@ class DiffusionFieldSteppable(SteppableBasePy):
         SteppableBasePy.__init__(self, frequency)
 
     def start(self):
-
         # initial condition for diffusion field
         field = CompuCell.getConcentrationField(self.simulator, "FGF")
         field[26:28, 26:28, 0:5] = 2000.0
