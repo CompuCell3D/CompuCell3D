@@ -2,10 +2,7 @@ from weakref import ref
 import cc3d.player5.Configuration as Configuration
 import vtk
 import math
-from cc3d.player5.GraphicsOffScreen.DrawingParameters import DrawingParameters
-from .CustomActorsStorage import CustomActorsStorage
-from cc3d.player5.GraphicsOffScreen.CameraSettings import CameraSettings
-
+from cc3d.core.GraphicsOffScreen.DrawingParameters import DrawingParameters
 
 MODULENAME = '----- MVCDrawViewBase.py: '
 

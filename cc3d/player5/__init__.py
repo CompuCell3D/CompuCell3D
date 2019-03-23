@@ -1,1 +1,1 @@
-from . GraphicsOffScreen import *
+from cc3d.core.GraphicsOffScreen import *

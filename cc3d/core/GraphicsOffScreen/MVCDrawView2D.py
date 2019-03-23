@@ -3,7 +3,7 @@ import vtk
 import string
 from collections import OrderedDict
 from copy import deepcopy
-from cc3d.player5.GraphicsOffScreen.MetadataHandler import MetadataHandler
+from cc3d.core.GraphicsOffScreen.MetadataHandler import MetadataHandler
 
 MODULENAME='----MVCDrawView2D.py: '
 

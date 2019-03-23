@@ -8,7 +8,7 @@ from cc3d.core.utils import mkdir_p
 import cc3d.player5.Configuration as Configuration
 from cc3d.player5.Utilities import ScreenshotData
 from cc3d.player5.Utilities import ScreenshotManagerCore
-from cc3d.player5.GraphicsOffScreen.GenericDrawer import GenericDrawer
+from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawer
 from weakref import ref
 from cc3d.core.utils import mkdir_p
 from cc3d import CompuCellSetup
