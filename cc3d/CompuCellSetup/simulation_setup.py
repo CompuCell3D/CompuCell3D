@@ -1,7 +1,10 @@
 from os.path import dirname, join
+from pathlib import Path
 from cc3d.cpp import CompuCell
 from cc3d.core.XMLDomUtils import XMLIdLocator
 from cc3d.CompuCellSetup import init_modules, parseXML
+from cc3d.core.CMLFieldHandler import CMLFieldHandler
+from cc3d.cpp import PlayerPython
 import weakref
 
 # import cc3d.CompuCellSetup as CompuCellSetup
@@ -209,21 +212,92 @@ def incorporate_script_steering_changes(simulator)->None:
     xml_id_locator.reset()
 
 
+def init_lattice_snapshot_objects():
+    """
+    Initializes cml filed handler , field storage and field extractor
+    This trio of objects are responsible for outputting lattice snapshots
+    :return:
+    """
+
+    persistent_globals = CompuCellSetup.persistent_globals
+
+    sim = persistent_globals.simulator
+    dim = sim.getPotts().getCellFieldG().getDim()
+
+    field_storage = PlayerPython.FieldStorage()
+    field_extractor = PlayerPython.FieldExtractor()
+    field_extractor.setFieldStorage(field_storage)
+
+    persistent_globals.persistent_holder['field_storage'] = field_storage
+    persistent_globals.persistent_holder['field_extractor'] = field_extractor
+
+    field_storage.allocateCellField(dim)
+
+    field_extractor.init(sim)
+
+    cml_field_handler = CMLFieldHandler()
+    persistent_globals.cml_field_handler = cml_field_handler
+
+    cml_field_handler.initialize(field_storage=field_storage)
+
+
+def store_lattice_snapshot(cur_step:int)->None:
+    """
+    Stores complete lattice snapshots
+    :param cur_step:
+    :return:
+    """
+
+    persistent_globals = CompuCellSetup.persistent_globals
+    output_frequency = persistent_globals.output_frequency
+
+    cml_field_handler =persistent_globals.cml_field_handler
+
+    if output_frequency and cml_field_handler and (not cur_step % output_frequency):
+        cml_field_handler.write_fields(cur_step)
+
+
+def init_screenshot_manager():
+    """
+    Initializes screenshot manager
+    :return:
+    """
+
+    persistent_globals = CompuCellSetup.persistent_globals
+
+    screenshot_data_fname = str(Path(persistent_globals.simulation_file_name).joinpath(
+        'screenshot_data/screenshots.json'))
+
+    # screenshot_mgr = ScreenshotManagerCore()
 
 
 def main_loop(sim, simthread, steppableRegistry):
+    """
+
+    :param sim:
+    :param simthread:
+    :param steppableRegistry:
+    :return:
+    """
+
+    persistent_globals = CompuCellSetup.persistent_globals
+
     steppableRegistry = CompuCellSetup.persistent_globals.steppable_registry
     if not steppableRegistry is None:
         steppableRegistry.init(sim)
 
     max_num_steps = sim.getNumSteps()
 
+    init_lattice_snapshot_objects()
+
+
     sim.start()
     if not steppableRegistry is None:
         steppableRegistry.start()
 
     cur_step = 0
-    while cur_step < max_num_steps / 10:
+
+    while cur_step < max_num_steps :
         if CompuCellSetup.persistent_globals.user_stop_simulation_flag:
             runFinishFlag = False
             break
@@ -231,6 +305,8 @@ def main_loop(sim, simthread, steppableRegistry):
 
         if not steppableRegistry is None:
             steppableRegistry.step(cur_step)
+
+        store_lattice_snapshot(cur_step=cur_step)
 
         # passing Python-script-made changes in XML to C++ code
         incorporate_script_steering_changes(simulator=sim)

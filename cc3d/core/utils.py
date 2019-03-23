@@ -2,19 +2,22 @@ import fnmatch
 import os
 from os.path import *
 import errno
+from pathlib import Path
 
 abs_join = lambda *args: abspath(join(*args))
 # Path utilities
 # --------------
 
 def mkdir_p(path):
-    try:
-        os.makedirs(path)
-    except OSError as exc:
-        if exc.errno == errno.EEXIST and os.path.isdir(path):
-            pass
-        else:
-            raise
+
+    Path(path).mkdir(parents=True, exist_ok=True)
+    # try:
+    #     os.makedirs(path)
+    # except OSError as exc:
+    #     if exc.errno == errno.EEXIST and os.path.isdir(path):
+    #         pass
+    #     else:
+    #         raise
 
 def find_file_in_dir(dirname, fname_pattern):
     """

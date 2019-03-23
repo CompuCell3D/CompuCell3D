@@ -19,8 +19,17 @@ def process_cml():
     cml_parser.add_argument('-i', '--input', required=False, action='store',
                             help='path to the CC3D project file (*.cc3d)')
 
-    cml_parser.add_argument('--currentDir', required=False, action='store',
+    cml_parser.add_argument('--current-dir', required=False, action='store',
                             help='path to current directory')
+
+    cml_parser.add_argument('-o', '--output-dir', required=False, action='store',
+                            help='path to the output folder to store simulation results')
+
+    cml_parser.add_argument('-f', '--output-frequency', required=False, action='store', default=0, type=int,
+                            help='simulation snapshot output frequency')
+
+    cml_parser.add_argument('-fs', '--screenshot-output-frequency', required=False, action='store', default=0, type=int,
+                            help='screenshot output frequency')
 
 
     return cml_parser.parse_args()
@@ -51,10 +60,18 @@ def handle_error():
 if __name__ =='__main__':
     args = process_cml()
     cc3d_sim_fname = args.input
+    output_frequency = args.output_frequency
+    screenshot_output_frequency = args.screenshot_output_frequency
+    output_dir = args.output_dir
+
+    persistent_globals = cc3d.CompuCellSetup.persistent_globals
 
     rollbackImporter = RollbackImporter()
 
-    cc3d.CompuCellSetup.persistent_globals.simulation_file_name = cc3d_sim_fname
+    persistent_globals.simulation_file_name = cc3d_sim_fname
+    persistent_globals.output_frequency = output_frequency
+    persistent_globals.screenshot_output_frequency = screenshot_output_frequency
+    persistent_globals.set_output_dir(output_dir)
 
     run_cc3d_project(cc3d_sim_fname=cc3d_sim_fname)
 

@@ -1281,58 +1281,58 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.cmlReplayManager.keep_going()
         self.cmlReplayManager.set_stay_in_current_step(True)
 
-    def createOutputDirs(self):
-        '''
-        Creates Simulation output directory
-        :return:None
-        '''
-
-        # todo 5 - restore it
-        return
-        #        import pdb; pdb.set_trace()
-        if self.customScreenshotDirectoryName == "":
-            (self.screenshotDirectoryName, self.baseScreenshotName) = \
-                CompuCellSetup.makeSimDir(self.__sim_file_name, self.__outputDirectory)
-
-            CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
-            self.prevOutputDir = self.__outputDirectory
-
-        else:
-            # for parameter scan the directories are created in __loadCC3DFile
-            if self.singleSimulation:
-
-                (self.screenshotDirectoryName, self.baseScreenshotName) = \
-                    self.makeCustomSimDir(self.customScreenshotDirectoryName, self.__sim_file_name)
-
-                CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
-
-            else:
-                self.screenshotDirectoryName = self.parameterScanOutputDir
-
-                pScanBaseFileName = os.path.basename(self.__sim_file_name)
-                pScanBaseFileName, extension = os.path.splitext(pScanBaseFileName)
-                screenshotSuffix = os.path.basename(self.screenshotDirectoryName)
-
-                self.baseScreenshotName = pScanBaseFileName + '_' + screenshotSuffix
-
-                # print 'self.baseScreenshotName=',self.baseScreenshotName
-
-            if self.screenshotDirectoryName == "":
-                self.__imageOutput = False  # do not output screenshots when custom directory was not created or already exists
-
-                #        if Configuration.getSetting("LatticeOutputOn"):
-        if not self.cmlHandlerCreated:
-            #            print MODULENAME,'createOutputDirs():  calling CompuCellSetup.createCMLFieldHandler()'
-            CompuCellSetup.createCMLFieldHandler()
-            self.cmlHandlerCreated = True  # rwh
-
-        self.resultStorageDirectory = os.path.join(self.screenshotDirectoryName, "LatticeData")
-
-        if (self.mysim == None):
-            print(MODULENAME, '\n\n\n createOutputDirs():  self.mysim is None!!!')  # bad, very bad
-
-        CompuCellSetup.initCMLFieldHandler(self.mysim(), self.resultStorageDirectory,
-                                           self.fieldStorage)  # also creates the /LatticeData dir
+    # def createOutputDirs(self):
+    #     '''
+    #     Creates Simulation output directory
+    #     :return:None
+    #     '''
+    #
+    #     # todo 5 - restore it
+    #     return
+    #     #        import pdb; pdb.set_trace()
+    #     if self.customScreenshotDirectoryName == "":
+    #         (self.screenshotDirectoryName, self.baseScreenshotName) = \
+    #             CompuCellSetup.makeSimDir(self.__sim_file_name, self.__outputDirectory)
+    #
+    #         CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
+    #         self.prevOutputDir = self.__outputDirectory
+    #
+    #     else:
+    #         # for parameter scan the directories are created in __loadCC3DFile
+    #         if self.singleSimulation:
+    #
+    #             (self.screenshotDirectoryName, self.baseScreenshotName) = \
+    #                 self.makeCustomSimDir(self.customScreenshotDirectoryName, self.__sim_file_name)
+    #
+    #             CompuCellSetup.screenshotDirectoryName = self.screenshotDirectoryName
+    #
+    #         else:
+    #             self.screenshotDirectoryName = self.parameterScanOutputDir
+    #
+    #             pScanBaseFileName = os.path.basename(self.__sim_file_name)
+    #             pScanBaseFileName, extension = os.path.splitext(pScanBaseFileName)
+    #             screenshotSuffix = os.path.basename(self.screenshotDirectoryName)
+    #
+    #             self.baseScreenshotName = pScanBaseFileName + '_' + screenshotSuffix
+    #
+    #             # print 'self.baseScreenshotName=',self.baseScreenshotName
+    #
+    #         if self.screenshotDirectoryName == "":
+    #             self.__imageOutput = False  # do not output screenshots when custom directory was not created or already exists
+    #
+    #             #        if Configuration.getSetting("LatticeOutputOn"):
+    #     if not self.cmlHandlerCreated:
+    #         #            print MODULENAME,'createOutputDirs():  calling CompuCellSetup.createCMLFieldHandler()'
+    #         CompuCellSetup.createCMLFieldHandler()
+    #         self.cmlHandlerCreated = True  # rwh
+    #
+    #     self.resultStorageDirectory = os.path.join(self.screenshotDirectoryName, "LatticeData")
+    #
+    #     if (self.mysim == None):
+    #         print(MODULENAME, '\n\n\n createOutputDirs():  self.mysim is None!!!')  # bad, very bad
+    #
+    #     CompuCellSetup.initCMLFieldHandler(self.mysim(), self.resultStorageDirectory,
+    #                                        self.fieldStorage)  # also creates the /LatticeData dir
 
     def initializeSimulationViewWidgetRegular(self)->None:
         """

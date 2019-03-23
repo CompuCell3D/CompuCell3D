@@ -27,6 +27,9 @@ class PersistentGlobals:
         # an object that writes or reads fields from disk
         self.cml_field_handler = None
 
+        # an object that stores graphics screenshots
+        self.screenshot_manager = None
+
         # variable that tells what type of player mode we have
         self.player_type = None
 
@@ -37,6 +40,7 @@ class PersistentGlobals:
         self.__output_dir = None
 
         self.output_frequency = 0
+        self.screenshot_output_frequency = 0
 
         # todo - move it elsewhere or come up with a better solution
         # two objects that handle adding addition of python attributes
@@ -48,6 +52,8 @@ class PersistentGlobals:
 
         # class - container that stores information about the fields
         self.field_registry = FieldRegistry()
+
+        self.persistent_holder = {}
 
     def set_output_dir(self, output_dir: str) -> None:
         """
