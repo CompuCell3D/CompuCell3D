@@ -9,6 +9,7 @@ from cc3d import CompuCellSetup
 from cc3d.core.XMLUtils import dictionaryToMapStrStr as d2mss
 from cc3d.core.XMLDomUtils import XMLElemAdapter
 from typing import Union
+from cc3d.cpp import CompuCell
 import types
 
 
@@ -47,6 +48,26 @@ class SteppablePy:
         :return:
         """
 
+class FieldFetcher:
+    def __init__(self):
+        """
+
+        """
+    def __getattr__(self, item):
+        pg = CompuCellSetup.persistent_globals
+        field_registry = pg.field_registry
+
+        try:
+            return field_registry.get_field_adapter(field_name=item)
+        except KeyError:
+            # trying C++ concentration fields - e.g. diffusion solvers
+            field = CompuCell.getConcentrationField(pg.simulator, item)
+            if field is not None:
+                return field
+            else:
+                raise KeyError(' The requested field {} does not exist'.format(item))
+
+
 
 class SteppableBasePy(SteppablePy):
     (CC3D_FORMAT, TUPLE_FORMAT) = range(0, 2)
@@ -76,6 +97,8 @@ class SteppableBasePy(SteppablePy):
         self.createScalarFieldPy = self.create_scalar_field_py
         self.everyPixelWithSteps = self.every_pixel_with_steps
         self.everyPixel = self.every_pixel
+
+        self.field = FieldFetcher()
 
 
     @property

@@ -51,6 +51,9 @@ class FieldRegistry:
 
         field_adapter = ExtraFieldAdapter(name=field_name, field_type=field_type)
 
+        if field_name in self.__fields_to_create.keys():
+            raise RuntimeError('Field {} already exits. Choose different field name'.format(field_name))
+
         self.__fields_to_create[field_name] = field_adapter
 
         return field_adapter
@@ -225,3 +228,8 @@ class FieldRegistry:
             return self.__field_dict[_fieldName][0], self.__field_dict[_fieldName][1]  # field, field type
         except (LookupError, IndexError) as e:
             return None, None
+
+    def get_field_adapter(self,field_name):
+
+
+        return self.__fields_to_create[field_name]
