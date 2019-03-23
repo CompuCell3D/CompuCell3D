@@ -15,6 +15,9 @@ class ExtraFieldVisualizationSteppable(SteppableBasePy):
 
     def step(self, mcs):
 
+        cell = self.field.Cell_Field[20, 20, 0]
+        print('cell=', cell)
+
         # clear field
         self.field.ExtraField[:, :, :] = 10.0
 
@@ -52,7 +55,6 @@ class VectorFieldVisualizationSteppable(SteppableBasePy):
         self.create_vector_field_py("VectorField")
 
     def step(self, mcs):
-
         vec_field = self.field.VectorField
 
         # clear vector field

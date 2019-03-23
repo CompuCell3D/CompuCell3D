@@ -57,6 +57,9 @@ class FieldFetcher:
         pg = CompuCellSetup.persistent_globals
         field_registry = pg.field_registry
 
+        if item.lower() in ['cell_field', 'cellfield']:
+            return pg.simulator.getPotts().getCellFieldG()
+
         try:
             return field_registry.get_field_adapter(field_name=item)
         except KeyError:
