@@ -7,17 +7,13 @@ from cc3d.cpp import CompuCell
 class ExtraFieldVisualizationSteppable(SteppableBasePy):
     def __init__(self, frequency=10):
         SteppableBasePy.__init__(self, frequency)
-        # self.scalar_field = self.create_scalar_field_py("ExtraField")
         self.create_scalar_field_py("ExtraField")
 
     def start(self):
 
-        # self.scalar_cl_field = self.create_scalar_field_cell_level_py("IdField")
         self.create_scalar_field_cell_level_py("IdField")
 
     def step(self, mcs):
-
-        # extra_field = self.field.ExtraField
 
         # clear field
         self.field.ExtraField[:, :, :] = 10.0
@@ -93,5 +89,3 @@ class DiffusionFieldSteppable(SteppableBasePy):
         # initial condition for diffusion field
         fgf_field = self.field.FGF
         fgf_field[26:28, 26:28, 0:5] = 2000.0
-        # field = CompuCell.getConcentrationField(self.simulator, "FGF")
-        # field[26:28, 26:28, 0:5] = 2000.0
