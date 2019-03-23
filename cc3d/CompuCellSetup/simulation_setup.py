@@ -15,6 +15,7 @@ import weakref
 # import cc3d.CompuCellSetup as CompuCellSetup
 from cc3d import CompuCellSetup
 
+
 # -------------------- legacy API emulation ----------------------------------------
 def getCoreSimulationObjects():
     """
@@ -23,13 +24,15 @@ def getCoreSimulationObjects():
     """
     return None, None
 
-def initializeSimulationObjects(*args,**kwds):
+
+def initializeSimulationObjects(*args, **kwds):
     """
 
     :param args:
     :param kwds:
     :return:
     """
+
 
 def mainLoop(*args, **kwds):
     """
@@ -72,13 +75,13 @@ def initialize_cc3d():
     CompuCellSetup.persistent_globals.simulation_initialized = True
     # print(' initialize cc3d CompuCellSetup.persistent_globals=',CompuCellSetup.persistent_globals)
 
+
 def determine_main_loop_fcn():
     """
     Based on persisten globals this fcn determines which mainLoop function
     CC3D shold use
     :return: {object} function to use as a mainLoop
     """
-
 
     if CompuCellSetup.persistent_globals.simthread is None:
         return main_loop
@@ -90,6 +93,7 @@ def determine_main_loop_fcn():
         else:
             # "regular" run
             return main_loop_player
+
 
 def run():
     """
@@ -104,16 +108,15 @@ def run():
         # print(' run(): CompuCellSetup.persistent_globals.simulator=', CompuCellSetup.persistent_globals.simulator)
         persistent_globals.steppable_registry.core_init()
 
-        #initializing extra visualization fields
+        # initializing extra visualization fields
         field_registry = persistent_globals.field_registry
         potts = persistent_globals.simulator.getPotts()
         cellField = potts.getCellFieldG()
         dim = cellField.getDim()
         field_registry.dim = dim
-        field_registry.simthread= persistent_globals.simthread
+        field_registry.simthread = persistent_globals.simthread
 
         field_registry.create_fields()
-
 
     simulator = CompuCellSetup.persistent_globals.simulator
     simthread = CompuCellSetup.persistent_globals.simthread
@@ -157,13 +160,9 @@ def get_core_simulation_objects():
 
     simulator.setBasePath(join(dirname(persistent_globals.simulation_file_name)))
 
-    print("Simulation basepath=",simulator.getBasePath())
-
-
-
+    print("Simulation basepath=", simulator.getBasePath())
 
     xml_fname = CompuCellSetup.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript
-
 
     cc3d_xml2_obj_converter = parseXML(xml_fname=xml_fname)
     #  cc3d_xml2_obj_converter cannot be garbage colected hence goes to persisten storage declared at the global level
@@ -173,7 +172,6 @@ def get_core_simulation_objects():
     # locating all XML elements with attribute id - presumably to be used for programmatic steering
     persistent_globals.xml_id_locator = XMLIdLocator(root_elem=persistent_globals.cc3d_xml_2_obj_converter.root)
     persistent_globals.xml_id_locator.locate_id_elements()
-
 
     # cc3dXML2ObjConverter = parseXML(xml_fname=xml_fname)
 
@@ -197,7 +195,7 @@ def get_core_simulation_objects():
     return simulator, simthread
 
 
-def incorporate_script_steering_changes(simulator)->None:
+def incorporate_script_steering_changes(simulator) -> None:
     """
     Iterates over the list of modified xml elements and  schedules XML updates
 
@@ -214,6 +212,7 @@ def incorporate_script_steering_changes(simulator)->None:
 
     # resetting xml_id_locator.recently_accessed_elems
     xml_id_locator.reset()
+
 
 def initialize_field_extractor_objects():
     """
@@ -238,8 +237,6 @@ def initialize_field_extractor_objects():
     field_extractor.init(sim)
 
 
-
-
 def init_lattice_snapshot_objects():
     """
     Initializes cml filed handler , field storage and field extractor
@@ -252,28 +249,13 @@ def init_lattice_snapshot_objects():
     initialize_field_extractor_objects()
     field_storage = persistent_globals.persistent_holder['field_storage']
 
-
-    # sim = persistent_globals.simulator
-    # dim = sim.getPotts().getCellFieldG().getDim()
-    #
-    # field_storage = PlayerPython.FieldStorage()
-    # field_extractor = PlayerPython.FieldExtractor()
-    # field_extractor.setFieldStorage(field_storage)
-    #
-    # persistent_globals.persistent_holder['field_storage'] = field_storage
-    # persistent_globals.persistent_holder['field_extractor'] = field_extractor
-    #
-    # field_storage.allocateCellField(dim)
-    #
-    # field_extractor.init(sim)
-
     cml_field_handler = CMLFieldHandler()
     persistent_globals.cml_field_handler = cml_field_handler
 
     cml_field_handler.initialize(field_storage=field_storage)
 
 
-def store_lattice_snapshot(cur_step:int)->None:
+def store_lattice_snapshot(cur_step: int) -> None:
     """
     Stores complete lattice snapshots
     :param cur_step:
@@ -289,7 +271,7 @@ def store_lattice_snapshot(cur_step:int)->None:
         cml_field_handler.write_fields(cur_step)
 
 
-def init_screenshot_manager()->None:
+def init_screenshot_manager() -> None:
     """
     Initializes screenshot manager. Requires that field extractor is set.
 
@@ -298,7 +280,7 @@ def init_screenshot_manager()->None:
 
     persistent_globals = CompuCellSetup.persistent_globals
 
-    screenshot_data_fname = join(dirname(persistent_globals.simulation_file_name),'screenshot_data/screenshots.json')
+    screenshot_data_fname = join(dirname(persistent_globals.simulation_file_name), 'screenshot_data/screenshots.json')
 
     persistent_globals.screenshot_mgr = ScreenshotManagerCore()
 
@@ -308,7 +290,6 @@ def init_screenshot_manager()->None:
         initialize_field_extractor_objects()
         field_extractor = persistent_globals.persistent_holder['field_extractor']
 
-
     persistent_globals.create_output_dir()
     gd = GenericDrawer()
     gd.set_field_extractor(field_extractor=field_extractor)
@@ -316,7 +297,6 @@ def init_screenshot_manager()->None:
     bsd = BasicSimulationData()
     bsd.fieldDim = persistent_globals.simulator.getPotts().getCellFieldG().getDim()
     bsd.numberOfSteps = persistent_globals.simulator.getNumSteps()
-
 
     # wiring screenshot manager
     persistent_globals.screenshot_mgr.gd = gd
@@ -334,7 +314,8 @@ def init_screenshot_manager()->None:
             screenshot_data_fname=screenshot_data_fname, scr_dir=dirname(screenshot_data_fname)))
         time.sleep(5)
 
-def store_screenshots(cur_step:int)->None:
+
+def store_screenshots(cur_step: int) -> None:
     """
     Stores screenshots
     :param cur_step:{int} current MCS
@@ -348,6 +329,7 @@ def store_screenshots(cur_step:int)->None:
 
     if screenshot_output_frequency and screenshot_mgr and (not cur_step % screenshot_output_frequency):
         screenshot_mgr.output_screenshots(mcs=cur_step)
+
 
 def main_loop(sim, simthread, steppableRegistry):
     """
@@ -369,14 +351,13 @@ def main_loop(sim, simthread, steppableRegistry):
     init_lattice_snapshot_objects()
     init_screenshot_manager()
 
-
     sim.start()
     if not steppableRegistry is None:
         steppableRegistry.start()
 
     cur_step = 0
 
-    while cur_step < max_num_steps :
+    while cur_step < max_num_steps:
         if CompuCellSetup.persistent_globals.user_stop_simulation_flag:
             runFinishFlag = False
             break
@@ -393,7 +374,6 @@ def main_loop(sim, simthread, steppableRegistry):
 
         # steer application will only update modules that uses requested using updateCC3DModule function from simulator
         sim.steer()
-
 
         cur_step += 1
 
@@ -412,8 +392,6 @@ def extra_init_simulation_objects(sim, simthread, _restartEnabled=False):
     simthread.waitForPlayerTaskToFinish()
 
 
-
-
 def main_loop_player(sim, simthread, steppableRegistry):
     """
 
@@ -425,12 +403,10 @@ def main_loop_player(sim, simthread, steppableRegistry):
     steppableRegistry = CompuCellSetup.persistent_globals.steppable_registry
     simthread = CompuCellSetup.persistent_globals.simthread
 
-
     extra_init_simulation_objects(sim, simthread, _restartEnabled=False)
 
     # simthread.waitForInitCompletion()
     # simthread.waitForPlayerTaskToFinish()
-
 
     if not steppableRegistry is None:
         steppableRegistry.init(sim)
@@ -460,7 +436,6 @@ def main_loop_player(sim, simthread, steppableRegistry):
         if not steppableRegistry is None:
             steppableRegistry.step(cur_step)
 
-
         # passing Python-script-made changes in XML to C++ code
         incorporate_script_steering_changes(simulator=sim)
 
@@ -487,12 +462,12 @@ def main_loop_player(sim, simthread, steppableRegistry):
         sim.cleanAfterSimulation()
         simthread.simulationFinishedPostEvent(True)
         steppableRegistry.clean_after_simulation()
-        print ("CALLING FINISH")
+        print("CALLING FINISH")
     else:
         sim.cleanAfterSimulation()
 
         # # sim.unloadModules()
-        print( "CALLING UNLOAD MODULES NEW PLAYER")
+        print("CALLING UNLOAD MODULES NEW PLAYER")
         if simthread is not None:
             simthread.sendStopSimulationRequest()
             simthread.simulationFinishedPostEvent(True)
