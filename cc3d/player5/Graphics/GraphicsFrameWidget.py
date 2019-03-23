@@ -8,7 +8,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from cc3d.core.enums import *
 from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawer
 from .GraphicsWindowData import GraphicsWindowData
-from cc3d.player5.Utilities import ScreenshotData
+from cc3d.core.GraphicsUtils.ScreenshotData import ScreenshotData
 from cc3d.player5.Utilities import qcolor_to_rgba, cs_string_to_typed_list
 import sys
 from collections import OrderedDict

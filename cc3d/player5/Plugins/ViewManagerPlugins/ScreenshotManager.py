@@ -6,8 +6,8 @@ from os.path import join, dirname
 import string
 from cc3d.core.utils import mkdir_p
 import cc3d.player5.Configuration as Configuration
-from cc3d.player5.Utilities import ScreenshotData
-from cc3d.player5.Utilities import ScreenshotManagerCore
+from cc3d.core.GraphicsUtils.ScreenshotData import ScreenshotData
+from cc3d.core.GraphicsUtils.ScreenshotManagerCore import ScreenshotManagerCore
 from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawer
 from weakref import ref
 from cc3d.core.utils import mkdir_p

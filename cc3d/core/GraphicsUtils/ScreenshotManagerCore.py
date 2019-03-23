@@ -3,7 +3,7 @@ from typing import Union
 import os
 from os.path import dirname, join, exists
 from collections import OrderedDict
-from cc3d.player5.Utilities import ScreenshotData
+from cc3d.core.GraphicsUtils.ScreenshotData import ScreenshotData
 import json
 import cc3d.core.Version as Version
 from cc3d import CompuCellSetup

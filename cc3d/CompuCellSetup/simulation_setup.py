@@ -251,7 +251,7 @@ def store_lattice_snapshot(cur_step:int)->None:
     persistent_globals = CompuCellSetup.persistent_globals
     output_frequency = persistent_globals.output_frequency
 
-    cml_field_handler =persistent_globals.cml_field_handler
+    cml_field_handler = persistent_globals.cml_field_handler
 
     if output_frequency and cml_field_handler and (not cur_step % output_frequency):
         cml_field_handler.write_fields(cur_step)
