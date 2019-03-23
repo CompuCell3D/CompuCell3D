@@ -19,6 +19,10 @@ def process_cml():
     cml_parser.add_argument('-i', '--input', required=False, action='store',
                             help='path to the CC3D project file (*.cc3d)')
 
+    cml_parser.add_argument('--currentDir', required=False, action='store',
+                            help='path to current directory')
+
+
     return cml_parser.parse_args()
 
 def handle_error():
@@ -55,4 +59,3 @@ if __name__ =='__main__':
     run_cc3d_project(cc3d_sim_fname=cc3d_sim_fname)
 
     rollbackImporter.uninstall()
-

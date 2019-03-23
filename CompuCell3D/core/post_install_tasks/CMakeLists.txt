@@ -23,7 +23,9 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   STRING(REGEX REPLACE "/" "\\\\" COMPUCELL_INSTALL_DIR_WINDOWS_STYLE ${COMPUCELL_INSTALL_DIR_WINDOWS_STYLE})
 
   configure_file(${RUN_SCRIPT_DIR}/cc3d.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/cc3d.bat @ONLY)
-  configure_file(${RUN_SCRIPT_DIR}/compucell3d.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat @ONLY)
+  configure_file(${RUN_SCRIPT_DIR}/run_cml_cc3d.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/run_cml_cc3d.bat @ONLY)
+
+  configure_file(${RUN_SCRIPT_DIR}/compucell3d.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat @ONLY)  
   configure_file(${RUN_SCRIPT_DIR}/runScript.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat @ONLY)
   configure_file(${RUN_SCRIPT_DIR}/paramScan.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat @ONLY)
   configure_file(${RUN_SCRIPT_DIR}/twedit++.bat.in.windows ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.bat @ONLY)
@@ -37,6 +39,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
   INSTALL(FILES
     ${CMAKE_BINARY_DIR}/post_install_tasks/cc3d.bat
+    ${CMAKE_BINARY_DIR}/post_install_tasks/run_cml_cc3d.bat
     ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.bat
     ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat
     ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.bat
