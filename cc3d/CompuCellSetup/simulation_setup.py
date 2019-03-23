@@ -5,7 +5,9 @@ from cc3d.CompuCellSetup import init_modules, parseXML
 from cc3d.core.CMLFieldHandler import CMLFieldHandler
 from cc3d.core.GraphicsUtils.ScreenshotManagerCore import ScreenshotManagerCore
 from cc3d.cpp import PlayerPython
-from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawer
+
+from cc3d.core.GraphicsOffScreen import GenericDrawer
+
 from cc3d.core.BasicSimulationData import BasicSimulationData
 import warnings
 import time
@@ -291,7 +293,7 @@ def init_screenshot_manager() -> None:
         field_extractor = persistent_globals.persistent_holder['field_extractor']
 
     persistent_globals.create_output_dir()
-    gd = GenericDrawer()
+    gd = GenericDrawer.GenericDrawer()
     gd.set_field_extractor(field_extractor=field_extractor)
 
     bsd = BasicSimulationData()

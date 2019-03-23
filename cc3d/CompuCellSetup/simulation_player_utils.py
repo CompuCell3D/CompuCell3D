@@ -72,7 +72,7 @@ def create_extra_field(field_name:str, field_type:int)->ExtraFieldAdapter:
     """
     Creates field adapter. On initialization it may or may not have functional reference to the actual field
     When field is initialized from constructor only adapter is returned, however fields
-    initizlized later in the simulatino (start or step function ) will have functional field reference inside
+    initialized later in the simulation (start or step function ) will have functional field reference inside
     :param field_name:
     :param field_type:
     :return:
