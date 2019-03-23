@@ -547,7 +547,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.__imageOutput = not cml_args.noOutput
 
         if cml_args.screenshotOutputDir:
-            persistent_globals.set_screenshot_dir(screenshot_dir=cml_args.screenshotOutputDir)
+            persistent_globals.set_output_dir(output_dir=cml_args.screenshotOutputDir)
             self.__imageOutput = True
 
         if cml_args.playerSettings:

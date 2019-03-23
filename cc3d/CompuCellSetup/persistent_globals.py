@@ -34,7 +34,9 @@ class PersistentGlobals:
         self.simulation_file_name = None
         self.user_stop_simulation_flag = False
 
-        self.__screenshot_dir = None
+        self.__output_dir = None
+
+        self.output_frequency = 0
 
         # todo - move it elsewhere or come up with a better solution
         # two objects that handle adding addition of python attributes
@@ -47,16 +49,16 @@ class PersistentGlobals:
         # class - container that stores information about the fields
         self.field_registry = FieldRegistry()
 
-    def set_screenshot_dir(self, screenshot_dir: str) -> None:
+    def set_output_dir(self, output_dir: str) -> None:
         """
         Sets screenshot dir - usually this is a custom screenshot directory set based on
         command line input
 
-        :param screenshot_dir:
+        :param output_dir:
         :return:
         """
 
-        self.__screenshot_dir = screenshot_dir
+        self.__output_dir = output_dir
 
     @property
     def workspace_dir(self) -> str:
@@ -95,16 +97,16 @@ class PersistentGlobals:
         """
         if self.simulation_file_name is None:
             return None
-        elif self.__screenshot_dir is not None:
-            return self.__screenshot_dir
+        elif self.__output_dir is not None:
+            return self.__output_dir
         else:
             sim_base_name = basename(self.simulation_file_name)
             sim_base_name = sim_base_name.replace('.', '_')
             sim_base_name += self.timestamp_string
 
-            self.__screenshot_dir = join(self.workspace_dir, sim_base_name)
+            self.__output_dir = join(self.workspace_dir, sim_base_name)
 
-            return self.__screenshot_dir
+            return self.__output_dir
 
     def clean(self):
         """
