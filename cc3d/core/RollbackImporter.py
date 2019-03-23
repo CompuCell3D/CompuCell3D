@@ -7,9 +7,13 @@
    # 3. The code is changed
    # 4. The modules must be used again, but be freshly imported 
 
-# The solution is to draw a line in the 'module sand' before loading and using the modules, then roll back to that point before re-running the code. This is accomplished, in PyUnit, by the following class: 
+# The solution is to draw a line in the 'module sand' before loading and using the modules,
+# then roll back to that point before re-running the code. This is accomplished, in PyUnit, by the following class:
 
-# RollbackImporter instances install themselves as a proxy for the built-in __import__ function that lies behind the 'import' statement. Once installed, they note all imported modules, and when uninstalled, they delete those modules from the system module list; this ensures that the modules will be freshly loaded from their source code when next imported.
+# RollbackImporter instances install themselves as a proxy for the built-in __
+# import__ function that lies behind the 'import' statement. Once installed, they note all imported modules,
+# and when uninstalled, they delete those modules from the system module list; this ensures that the modules
+# will be freshly loaded from their source code when next imported.
 
 # The rollback importer is used as follows in the Player see functions __ runSim and __stepSim
 

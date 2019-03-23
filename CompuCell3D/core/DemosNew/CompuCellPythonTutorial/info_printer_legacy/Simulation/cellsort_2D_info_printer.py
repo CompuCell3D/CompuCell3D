@@ -10,8 +10,6 @@ CompuCellSetup.initializeSimulationObjects(sim, simthread)
 # Add Python steppables here
 steppableRegistry = CompuCellSetup.getSteppableRegistry()
 
-
-
 infoPrinterSteppable = InfoPrinterSteppable(_simulator=sim, _frequency=10)
 steppableRegistry.registerSteppable(infoPrinterSteppable)
 

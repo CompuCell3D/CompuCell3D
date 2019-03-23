@@ -12,11 +12,10 @@ import re
 import inspect
 from collections import OrderedDict
 from PyQt5.QtCore import *
-from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QCoreApplication
 from cc3d.core.enums import *
-from os.path import basename, dirname, join, exists
+from os.path import basename, dirname, join
 from cc3d.player5.ViewManager.SimpleViewManager import SimpleViewManager
 from cc3d.player5.Graphics.GraphicsFrameWidget import GraphicsFrameWidget
 from cc3d.player5.Utilities.SimModel import SimModel
@@ -24,7 +23,6 @@ from cc3d.player5.Configuration.ConfigurationDialog import ConfigurationDialog
 import cc3d.player5.Configuration as Configuration
 import cc3d.core.DefaultSettingsData as settings_data
 from cc3d.core.BasicSimulationData import BasicSimulationData
-import cc3d.player5.DefaultData as DefaultData
 from cc3d.player5.Graphics.GraphicsWindowData import GraphicsWindowData
 from cc3d.player5.Simulation.CMLResultReader import CMLResultReader
 from cc3d.player5.Simulation.SimulationThread import SimulationThread
@@ -38,9 +36,9 @@ from cc3d.core.CMLFieldHandler import CMLFieldHandler
 from . import ScreenshotManager
 import vtk
 
-from .RollbackImporter import RollbackImporter
-
 from cc3d import CompuCellSetup
+from cc3d.core.RollbackImporter import RollbackImporter
+
 from cc3d.CompuCellSetup.readers import readCC3DFile
 import cc3d.Version as Version
 
