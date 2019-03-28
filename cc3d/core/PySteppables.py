@@ -10,6 +10,7 @@ from cc3d.core.XMLUtils import dictionaryToMapStrStr as d2mss
 from cc3d.core.XMLDomUtils import XMLElemAdapter
 from typing import Union
 from cc3d.cpp import CompuCell
+from cc3d.core.SBMLSolverHelper import SBMLSolverHelper
 import types
 
 
@@ -72,7 +73,7 @@ class FieldFetcher:
 
 
 
-class SteppableBasePy(SteppablePy):
+class SteppableBasePy(SteppablePy,SBMLSolverHelper):
     (CC3D_FORMAT, TUPLE_FORMAT) = range(0, 2)
 
     # def __init__(self, simulator=None, frequency=1):
@@ -90,6 +91,7 @@ class SteppableBasePy(SteppablePy):
                     frequency = 1
 
         SteppablePy.__init__(self)
+        SBMLSolverHelper.__init__(self)
         # SBMLSolverHelper.__init__(self)
         self.frequency = frequency
         # self._simulator = simulator

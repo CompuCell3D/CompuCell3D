@@ -56,6 +56,9 @@ class PersistentGlobals:
 
         self.persistent_holder = {}
 
+        self.global_sbml_simulator_options = None
+        self.free_floating_sbml_simulators = {}
+
     def set_output_dir(self, output_dir: str) -> None:
         """
         Sets screenshot dir - usually this is a custom screenshot directory set based on
