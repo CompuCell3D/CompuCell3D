@@ -1,30 +1,34 @@
 import os
-import sys
+from typing import Union
 import warnings
 import types
 from cc3d.cpp import CompuCell
-
 from cc3d import CompuCellSetup
 
 try:
     import roadrunner
     from .RoadRunnerPy import RoadRunnerPy
+
     roadrunner_available = True
 except ImportError:
     roadrunner_available = False
 
-# this function will replace all API functions which refer to SBMLSolver in the event that no SBMLSolver event is installed
+
+# this function will replace all API functions which refer to SBMLSolver in the event that
+# no SBMLSolver event is installed
+
 def SBMLSolverError(self, *args, **kwrds):
     import inspect
     line = inspect.stack()[1][2]
     call = inspect.stack()[1][4]
     raise AttributeError('SBMLSolverError line :' + str(line) + ' call:' + str(
-        call) + ' Trying to access one of the SBML solver methods but SBMLSolver engine (e.g. RoadRunner) has not been installed with your CompuCell3D package')
+        call) + ' Trying to access one of the SBML solver methods'
+                ' but SBMLSolver engine (e.g. RoadRunner) has not been installed with your CompuCell3D package')
 
 
 class SBMLSolverHelper(object):
     @classmethod
-    def removeAttribute(cls, name):
+    def remove_attribute(cls, name):
         print('cls=', cls)
         return delattr(cls, name)
 
@@ -37,96 +41,116 @@ class SBMLSolverHelper(object):
             'absolute': 'absolute_tolerance',
             'steps': 'maximum_num_steps'
         }
-
+        print(dir(self))
         if not roadrunner_available:
-            SBMLSolverAPI = ['getSBMLGlobalOptions', 'setSBMLGlobalOptions', 'addSBMLToCell', 'addSBMLToCellTypes',
-                             'addSBMLToCellIds', 'addFreeFloatingSBML',
-                             'deleteSBMLFromCellIds', 'deleteSBMLFromCellTypes', 'deleteSBMLFromCell',
-                             'timestepCellSBML', 'timestepFreeFloatingSBML', 'timestepSBML',
-                             'setStepSizeForCell', 'setStepSizeForCellIds', 'setStepSizeForCellTypes',
-                             'setStepSizeForFreeFloatingSBML',
-                             'getSBMLSimulator', 'getSBMLState', 'setSBMLState', 'getSBMLValue', 'setSBMLValue',
-                             'normalizePath', 'copySBMLs']
+            sbml_solver_api = ['add_free_floating_sbml', 'add_sbml_to_cell', 'add_sbml_to_cell_ids',
+                               'add_sbml_to_cell_types',
+                               'copy_sbml_simulators', 'delete_free_floating_sbml', 'delete_sbml_from_cell',
+                               'delete_sbml_from_cell_ids', 'delete_sbml_from_cell_types',
+                               'get_sbml_global_options', 'get_sbml_simulator', 'get_sbml_state',
+                               'get_sbml_state_as_python_dict', 'get_sbml_value', 'normalize_path',
+                               'set_sbml_global_options', 'set_sbml_state', 'set_sbml_value', 'set_step_size_for_cell',
+                               'set_step_size_for_cell_ids', 'set_step_size_for_cell_types',
+                               'set_step_size_for_free_floating_sbml',
+                               'timestep_cell_sbml', 'timestep_free_floating_sbml', 'timestep_sbml']
 
-            for apiName in SBMLSolverAPI:
-                SBMLSolverHelper.removeAttribute(apiName)
-                setattr(SBMLSolverHelper, apiName, types.MethodType(SBMLSolverError, SBMLSolverHelper))
+            for api_name in sbml_solver_api:
+                SBMLSolverHelper.remove_attribute(api_name)
+                setattr(SBMLSolverHelper, api_name, types.MethodType(SBMLSolverError, SBMLSolverHelper))
 
-    def addSBMLToCell(self, _modelFile='', _modelName='', _cell=None, _stepSize=1.0, _initialConditions={},
-                      _coreModelName='', _modelPathNormalized='', _options=None, _currentStateSBML=None):
+    def __default_mutable_type(self, obj: Union[object, list, dict], obj_default: Union[list, dict] = None) -> Union[
+        object, list, dict]:
+        """
+        helper function  - deals with default mutable arguments of function
+        :param obj: {}
+        :param obj_default:
+        :return:
+        """
+        if obj is None:
+            return obj_default
+        else:
+            return obj
 
+    def add_sbml_to_cell(self, model_file: str = '', model_name: str = '', cell: object = None, step_size: float = 1.0,
+                         initial_conditions: Union[None, dict] = None, options: Union[None, dict] = None,
+                         current_state_sbml: object = None) -> None:
         """
         Attaches RoadRunner SBML solver to a particular cell. The sbml solver is stored as an element
-        of the cell's dictionary - cell.dict['SBMLSolver'][_modelName]. The function has a dual operation mode. 
-        When user provides _currentStateSBML, _cell _modelName, _stepSize the addSBMLToCell function creates a clone 
-        of a solver whose state is described by the _currentStateSBML . If _currentStateSBML is None then the new SBML solver 
-        is being created,  SBML file (_modelFile) loaded and initial conditions are applied. It is important to always set 
-        _stepSize to make sure that after calling timestep() fcn the solver advances appropriate delta time
+        of the cell's dictionary - cell.dict['SBMLSolver'][_modelName]. The function has a dual operation mode.
+        When user provides current_state_sbml, cell model_name, step_size the add_sbml_to_cell function creates a clone
+        of a solver whose state is described by the current_state_sbml . If current_state_sbml is None
+        then the new SBML solver
+        is being created,  SBML file (model_file) loaded and initial conditions are applied.
+        It is important to always set
+        ste_size to make sure that after calling timestep() fcn the solver advances appropriate delta time
 
-        :param _modelFile {str}: name of the SBML file - can be relative path (e.g. Simulation/file.sbml) or absolute path 
-        :param _modelName {str}: name of the model - this is a label used to store mode in the cell.dict['SBMLSolver'] dictionary  
-        :param _cell {CellG object}: cc3d cell object 
-        :param _stepSize {float}: time step- determines how much in "real" time units timestep() fcn advances SBML solver 
-        :param _initialConditions {dict}: initial conditions dictionary
-        :param _coreModelName {str}: deprecated, kept for backward compatibility reasons 
-        :param _modelPathNormalized {str}: deprecated, kept for backward compatibility reasons: 
-        :param _options {dict}: dictionary that currently only defines what type of ODE solver to choose. In the newer versions of RR this might be not necessary. The keys that are supported are the following: 
-             
+        :param model_file: name of the SBML file - can be relative path (e.g. Simulation/file.sbml) or absolute path
 
-        absolute - determines absolute tolerance default 1e-10
-        relative - determines relative tolerance default 1e-5
-        stiff - determines if using stiff solver or not default False
-        
-        :param _currentStateSBML {str}: string representation  of the SBML representing current state of the solver. 
-         
-        :return: None 
+        :param model_name: name of the model - this is a label used to store mode in the cell.dict['SBMLSolver']
+        dictionary
+
+        :param cell: {CellG object} cc3d cell object
+
+        :param step_size:  time step- determines how much in "real" time units timestep() fcn advances SBML solver
+
+        :param initial_conditions: initial conditions dictionary
+
+        :param options: dictionary that currently only defines what type of ODE solver to choose.
+        In the newer versions of RR this might be not necessary. The keys that are supported are the following:
+
+        :param current_state_sbml:  string representation  of the SBML representing current state of the solver.
+
+        :return: None
         """
 
+        initial_conditions = self.__default_mutable_type(initial_conditions, {})
+        options = self.__default_mutable_type(options, {})
 
+        core_model_name = model_name
+        if core_model_name == '':
+            core_model_name, ext = os.path.splitext(os.path.basename(model_file))
 
-        coreModelName = _modelName
-        if coreModelName == '':
-            coreModelName, ext = os.path.splitext(os.path.basename(_modelFile))
+        if not model_file:
+            warnings.warn('\n\n\n _modelFile argument not provided to addSBMLToCell. '
+                          'This will prevent proper restart of the simulation'
+                          'You may ignore this warning if you are not '
+                          'serializing simulation for future restarts', RuntimeWarning)
 
-        if not _modelFile:
-            warnings.warn('\n\n\n _modelFile argument not provided to addSBMLToCell. This will prevent proper restart of the simulation'
-                          'You may ignore this warning if you are not serializing simulation for future restarts', RuntimeWarning)
+        model_path_normalized = self.normalize_path(model_file)
 
-        modelPathNormalized = self.normalizePath(_modelFile)
+        dict_attrib = CompuCell.getPyAttrib(cell)
 
-        dict_attrib = CompuCell.getPyAttrib(_cell)
-
-        sbmlDict = {}
+        sbml_dict = {}
         if 'SBMLSolver' in dict_attrib:
-            sbmlDict = dict_attrib['SBMLSolver']
+            sbml_dict = dict_attrib['SBMLSolver']
         else:
-            dict_attrib['SBMLSolver'] = sbmlDict
+            dict_attrib['SBMLSolver'] = sbml_dict
 
-
-        if _currentStateSBML is None:
-            rr = RoadRunnerPy(_path=_modelFile)
+        if current_state_sbml is None:
+            rr = RoadRunnerPy(_path=model_file)
             # setting stepSize
-            rr.stepSize = _stepSize
+            rr.stepSize = step_size
             # loading SBML and LLVM-ing it
-            rr.loadSBML(_externalPath=modelPathNormalized)
+            rr.loadSBML(_externalPath=model_path_normalized)
 
         else:
-            rr = RoadRunnerPy(sbml=_currentStateSBML)
+            rr = RoadRunnerPy(sbml=current_state_sbml)
             # setting stepSize
-            rr.stepSize = _stepSize
+            rr.stepSize = step_size
 
             # setting up paths - IMPORTANT FOR RESTARTING
-            rr.path = _modelFile
-            if os.path.exists(modelPathNormalized):
-                rr.absPath = modelPathNormalized
-
+            rr.path = model_file
+            if os.path.exists(model_path_normalized):
+                rr.absPath = model_path_normalized
 
         # storing rr instance in the cell dictionary
-        sbmlDict[coreModelName] = rr
+        sbml_dict[core_model_name] = rr
 
         # setting initial conditions - this has to be done after loadingSBML
-        for name, value in _initialConditions.items():
-            try:  # have to catch exceptions in case initial conditions contain "unsettable" entries such as reaction rate etc...
+        for name, value in initial_conditions.items():
+            # have to catch exceptions in case initial conditions contain
+            # "unsettable" entries such as reaction rate etc...
+            try:
                 rr.model[name] = value
             except:
                 pass
@@ -136,8 +160,8 @@ class SBMLSolverHelper(object):
         # setting output results array size 
         rr.selections = []  # by default we do not request any output array at each intergration step
 
-        if _options:
-            for name, value in _options.items():
+        if options:
+            for name, value in options.items():
 
                 try:
                     setattr(rr.getIntegrator(), name, value)
@@ -147,49 +171,49 @@ class SBMLSolverHelper(object):
 
             # check for global options
 
-            globalOptions = self.getSBMLGlobalOptions()
-            if globalOptions:
-                for name, value in globalOptions.items():
+            global_options = self.get_sbml_global_options()
+            if global_options:
+                for name, value in global_options.items():
                     try:
                         setattr(rr.getIntegrator(), name, value)
-                    except (AttributeError, ValueError) as e:
+                    except (AttributeError, ValueError):
                         setattr(rr.getIntegrator(), self.option_name_dict[name], value)
                         # setattr(rr.simulateOptions,name,value)
 
-    def getSBMLGlobalOptions(self):
+    def get_sbml_global_options(self):
         """
         returns global options for the SBML solver - deprecated as newer version of CC3D
         :return {dict}: global SBML solver options
         """
-        # from . import CompuCellSetup
         pg = CompuCellSetup.persistent_globals
         return pg.global_sbml_simulator_options
 
-    def setSBMLGlobalOptions(self, _options):
+    def set_sbml_global_options(self, options: dict) -> None:
         """
         Deprecated  - sets global SBML options
-        :param _options {dictionary}:
+        :param options:
         :return: None
         """
-        # from . import CompuCellSetup
 
         pg = CompuCellSetup.persistent_globals
-        pg.global_sbml_simulator_options = _options
-        # CompuCellSetup.globalSBMLSimulatorOptions = _options
+        pg.global_sbml_simulator_options = options
 
-    def addSBMLToCellTypes(self, _modelFile='', _modelName='', _types=[], _stepSize=1.0, _initialConditions={},
-                           _options={}):
+    def add_sbml_to_cell_types(self, model_file: str = '', model_name: str = '', cell_types: Union[None, list] = None,
+                               step_size: float = 1.0, initial_conditions: Union[None, dict] = None,
+                               options: Union[None, dict] = None) -> None:
         """
         Adds SBML Solver to all cells of given cell type - internally it calls addSBMLToCell(fcn).
         Used during initialization of the simulation. It is important to always set
         _stepSize to make sure that after calling timestep() fcn the solver advances appropriate delta time
 
-        :param _modelFile {str}: name of the SBML file - can be relative path (e.g. Simulation/file.sbml) or absolute path
-        :param _modelName {str}: name of the model - this is a label used to store mode in the cell.dict['SBMLSolver'] dictionary
-        :param _types {list of integers}: list of cell types
-        :param _stepSize {float}: time step - determines how much in "real" time units timestep() fcn advances SBML solver
-        :param _initialConditions {dict}: initial conditions dictionary
-        :param _options {dict}: dictionary that currently only defines what type of ODE solver to choose.
+        :param model_file: name of the SBML file - can be relative path (e.g. Simulation/file.sbml) or absolute path
+        :param model_name: name of the model - this is a label used to store mode in the cell.dict['SBMLSolver']
+        dictionary
+
+        :param cell_types: list of cell types
+        :param step_size: time step - determines how much in "real" time units timestep() fcn advances SBML solver
+        :param initial_conditions: initial conditions dictionary
+        :param options: dictionary that currently only defines what type of ODE solver to choose.
         In the newer versions of RR this might be not necessary. The keys that are supported are the following:
 
         absolute - determines absolute tolerance default 1e-10
@@ -199,33 +223,39 @@ class SBMLSolverHelper(object):
         :return: None
         """
 
-        if 'steps' in list(_options.keys()):
-            print('-----------WARNING-----------------\n\n steps option for SBML solver is deprecated.')
+        initial_conditions = self.__default_mutable_type(initial_conditions, {})
+        options = self.__default_mutable_type(options, {})
+        cell_types = self.__default_mutable_type(cell_types, [])
 
-        coreModelName = _modelName
-        if coreModelName == '':
-            coreModelName, ext = os.path.splitext(os.path.basename(_modelFile))
+        if 'steps' in list(options.keys()):
+            warnings.warn('-----------WARNING-----------------\n'
+                          ' steps option for SBML solver is deprecated.',
+                          RuntimeWarning)
 
-        modelPathNormalized = self.normalizePath(_modelFile)
+        for cell in self.cellListByType(*cell_types):
+            self.add_sbml_to_cell(model_file=model_file, model_name=model_name, cell=cell, step_size=step_size,
+                                  initial_conditions=initial_conditions, options=options)
 
-        for cell in self.cellListByType(*_types):
-            self.addSBMLToCell(_modelFile=_modelFile, _modelName=_modelName, _cell=cell, _stepSize=_stepSize,
-                               _initialConditions=_initialConditions, _coreModelName=coreModelName,
-                               _modelPathNormalized=modelPathNormalized, _options=_options)
-
-    def addSBMLToCellIds(self, _modelFile, _modelName='', _ids=[], _stepSize=1.0, _initialConditions={}, _options={}):
+    def add_sbml_to_cell_ids(self, model_file: str, model_name: str = '', cell_ids: Union[None, list] = None,
+                             step_size: float = 1.0, initial_conditions: Union[None, dict] = None,
+                             options: Union[None, dict] = None) -> None:
         """
-        Adds SBML Solver to all cells with give ids - internally it calls addSBMLToCell(fcn).
+        Adds SBML Solver to all cells of given cell ids - internally it calls add_sbml_to_cell fcn.
         Used during initialization of the simulation. It is important to always set
-        _stepSize to make sure that after calling timestep() fcn the solver advances appropriate delta time
+        step_size to make sure that after calling timestep() fcn the solver advances appropriate delta time
 
-        :param _modelFile {str}: name of the SBML file - can be relative path (e.g. Simulation/file.sbml) or absolute path
-        :param _modelName {str}: name of the model - this is a label used to store mode in the cell.dict['SBMLSolver'] dictionary
+        :param model_file: name of the SBML file - can be relative path (e.g. Simulation/file.sbml) or absolute path
 
-        :param _ids {list}: list of cell ids that will get new SBML Sovler
-        :param _stepSize {float}: time step - determines how much in "real" time units timestep() fcn advances SBML solver
-        :param _initialConditions {dict}: initial conditions dictionary
-        :param _options {dict}: dictionary that currently only defines what type of ODE solver to choose.
+        :param model_name: name of the model - this is a label used to store mode in the
+         cell.dict['SBMLSolver'] dictionary
+
+        :param cell_ids: list of cell ids
+
+        :param step_size: time step - determines how much in "real" time units timestep() fcn advances SBML solver
+
+        :param initial_conditions: initial conditions dictionary
+
+        :param options: dictionary that currently only defines what type of ODE solver to choose.
         In the newer versions of RR this might be not necessary. The keys that are supported are the following:
 
         absolute - determines absolute tolerance default 1e-10
@@ -235,35 +265,31 @@ class SBMLSolverHelper(object):
         :return: None
         """
 
-        if 'steps' in list(_options.keys()):
-            print('-----------WARNING-----------------\n\n steps option for SBML solver is deprecated.')
+        initial_conditions = self.__default_mutable_type(initial_conditions, {})
+        options = self.__default_mutable_type(options, {})
+        cell_ids = self.__default_mutable_type(cell_ids, [])
 
-        coreModelName = _modelName
-        if coreModelName == '':
-            coreModelName, ext = os.path.splitext(os.path.basename(_modelFile))
+        if 'steps' in list(options.keys()):
+            warnings.warn('-----------WARNING-----------------\n\n steps option for SBML solver is deprecated.',
+                          RuntimeWarning)
 
-        modelPathNormalized = self.normalizePath(_modelFile)
-        # print 'will try to add SBML to ids=',_ids
-        for id in _ids:
-            cell = self.inventory.attemptFetchingCellById(id)
-            # print 'THIS IS CELL ID=',cell.id
+        for cell_id in cell_ids:
+            cell = self.inventory.attemptFetchingCellById(cell_id)
             if not cell:
                 continue
 
-            self.addSBMLToCell(_modelFile=_modelFile, _modelName=_modelName, _cell=cell, _stepSize=_stepSize,
-                               _initialConditions=_initialConditions, _coreModelName=coreModelName,
-                               _modelPathNormalized=modelPathNormalized, _options=_options)
+            self.add_sbml_to_cell(model_file=model_file, model_name=model_name, cell=cell, step_size=step_size,
+                                  initial_conditions=initial_conditions, options=options)
 
-    def addFreeFloatingSBML(self, _modelFile, _modelName, _stepSize=1.0, _initialConditions={}, _options={}):
+    def add_free_floating_sbml(self, model_file: str, model_name: str = '', step_size: float = 1.0,
+                               initial_conditions: Union[None, dict] = None, options: Union[None, dict] = None):
         """
         Adds free floating SBML model - not attached to any cell. The model will be identified/referenced by the _modelName
-
-        :param _modelFile {str}: name of the SBML file - can be relative path (e.g. Simulation/file.sbml) or absolute path
-        :param _modelName {str}: name of the model - this is a label used to store mode in the cell.dict['SBMLSolver'] dictionary
-
-        :param _stepSize {float}: time step - determines how much in "real" time units timestep() fcn advances SBML solver
-        :param _initialConditions {dict}: initial conditions dictionary
-        :param _options {dict}: dictionary that currently only defines what type of ODE solver to choose.
+        :param model_file: name of the SBML file - can be relative path (e.g. Simulation/file.sbml) or absolute path
+        :param model_name: name of the model - this is a label used to store mode in the cell.dict['SBMLSolver'] dictionary
+        :param step_size: time step - determines how much in "real" time units timestep() fcn advances SBML solver
+        :param initial_conditions: initial conditions dictionary
+        :param options: dictionary that currently only defines what type of ODE solver to choose.
         In the newer versions of RR this might be not necessary. The keys that are supported are the following:
 
         absolute - determines absolute tolerance default 1e-10
@@ -272,37 +298,38 @@ class SBMLSolverHelper(object):
 
         :return: None
         """
+        initial_conditions = self.__default_mutable_type(initial_conditions, {})
+        options = self.__default_mutable_type(options, {})
 
-        modelPathNormalized = self.normalizePath(_modelFile)
+        model_path_normalized = self.normalize_path(model_file)
         try:
-            f = open(modelPathNormalized, 'r')
+            f = open(model_path_normalized, 'r')
             f.close()
         except IOError as e:
             if self.simulator.getBasePath() != '':
-                modelPathNormalized = os.path.abspath(os.path.join(self.simulator.getBasePath(), modelPathNormalized))
+                model_path_normalized = os.path.abspath(
+                    os.path.join(self.simulator.getBasePath(), model_path_normalized))
 
-        from .RoadRunnerPy import RoadRunnerPy
-        rr = RoadRunnerPy(_path=_modelFile)
-        rr.loadSBML(_externalPath=modelPathNormalized)
+        rr = RoadRunnerPy(_path=model_file)
+        rr.loadSBML(_externalPath=model_path_normalized)
 
         # setting stepSize
-        rr.stepSize = _stepSize
+        rr.stepSize = step_size
 
         # storing
-        from . import CompuCellSetup
-        CompuCellSetup.freeFloatingSBMLSimulator[_modelName] = rr
+        pg = CompuCellSetup.persistent_globals
+        pg.free_floating_sbml_simulators[model_name] = rr
 
         # setting initial conditions - this has to be done after loadingSBML
-        for name, value in _initialConditions.items():
+        for name, value in initial_conditions.items():
             rr.model[name] = value
-            # rr.options.disablePythonDynamicProperties = True
 
-        # setting output results array size 
-        rr.selections = []  # by default we do not request any output array at each intergration step
+            # setting output results array size
+        rr.selections = []  # by default we do not request any output array at each integration step
 
         # in case user passes simulate options we set the here        
-        if _options:
-            for name, value in _options.items():
+        if options:
+            for name, value in options.items():
 
                 try:
                     setattr(rr.getIntegrator(), name, value)
@@ -310,366 +337,379 @@ class SBMLSolverHelper(object):
                     setattr(rr.getIntegrator(), self.option_name_dict[name], value)
         else:
             # check for global options
-
-            globalOptions = self.getSBMLGlobalOptions()
-            if globalOptions:
-                for name, value in globalOptions.items():
-                    # print ' 2 name , value=',(name , value)
-                    # print 'name=',name,' value=',value
-                    # if name=='steps':
-                    # continue
+            global_options = self.get_sbml_global_options()
+            if global_options:
+                for name, value in global_options.items():
                     try:
                         setattr(rr.getIntegrator(), name, value)
                     except (AttributeError, ValueError) as e:
                         setattr(rr.getIntegrator(), self.option_name_dict[name], value)
-                        # setattr(rr.simulateOptions,name,value)
 
-                        # if _options:
-                        # for name , value in _options.iteritems():
-                        # setattr(rr.simulateOptions,name,value)
-                        # else: # check for global options
-                        # globalOptions=self.getSBMLGlobalOptions()
-                        # if globalOptions:
-                        # for name , value in globalOptions.iteritems():
-                        # setattr(rr.simulateOptions,name,value)
-
-    def deleteSBMLFromCellIds(self, _modelName, _ids=[]):
+    def delete_sbml_from_cell_ids(self, model_name: str, cell_ids: Union[None, list] = None) -> None:
         """
         Deletes  SBML model from cells whose ids match those stered int he _ids list
-        :param _modelName {str}: model name
-        :param _ids {list}: list of cell ids
+        :param model_name: model name
+        :param cell_ids: list of cell ids
+        :return:
+        """
+        """
+        
+        :param _modelName {str}: 
+        :param _ids {list}: 
         :return: None
         """
-        import CompuCell
-        for id in _ids:
-            cell = self.inventory.attemptFetchingCellById(id)
+        cell_ids = self.__default_mutable_type(cell_ids, [])
+
+        for cell_id in cell_ids:
+            cell = self.inventory.attemptFetchingCellById(cell_id)
             if not cell:
                 continue
 
             dict_attrib = CompuCell.getPyAttrib(cell)
             try:
-                sbmlDict = dict_attrib['SBMLSolver']
-                del sbmlDict[_modelName]
+                sbml_dict = dict_attrib['SBMLSolver']
+                del sbml_dict[model_name]
             except LookupError as e:
                 pass
 
-    def deleteSBMLFromCellTypes(self, _modelName, _types=[]):
+    def delete_sbml_from_cell_types(self, model_name: str, cell_types: Union[None, list] = None) -> None:
         """
-        Deletes  SBML model from cells whose type match those stered int he _ids list
-        :param _modelName {str}: model name
-        :param _types: list of cell cell types
+        Deletes  SBML model from cells whose type match those stered in the cell_types list
+        :param model_name: model name
+        :param cell_types: list of cell cell types
+        :return:
+        """
+        """
+        
+        :param _modelName {str}: 
+        :param types: 
         :return: None
 
         """
-        import CompuCell
-        for cell in self.cellListByType(*_types):
+        cell_types = self.__default_mutable_type(cell_types, [])
+
+        for cell in self.cellListByType(*cell_types):
             dict_attrib = CompuCell.getPyAttrib(cell)
             try:
-                sbmlDict = dict_attrib['SBMLSolver']
-                del sbmlDict[_modelName]
-            except LookupError as e:
+                sbml_dict = dict_attrib['SBMLSolver']
+                del sbml_dict[model_name]
+            except LookupError:
                 pass
 
-    def deleteSBMLFromCell(self, _modelName='', _cell=None):
+    def delete_sbml_from_cell(self, model_name: str = '', cell: object = None) -> None:
         """
         Deletes SBML from a particular cell
-        :param _modelName {str}: model name
-        :param _cell {obj}: CellG cell obj
-        :return: None
-        """
-        import CompuCell
-        dict_attrib = CompuCell.getPyAttrib(_cell)
-        try:
-            sbmlDict = dict_attrib['SBMLSolver']
-            del sbmlDict[_modelName]
-        except LookupError as e:
-            pass
-
-    def deleteFreeFloatingSBML(self, _modelName):
-        """
-        Deletes free floatfin SBLM model
-        :param _modelName {str}: model name
+        :param model_name: model name
+        :param cell: CellG cell obj
         :return: None
         """
 
-        from . import CompuCellSetup
+        dict_attrib = CompuCell.getPyAttrib(cell)
         try:
-            del CompuCellSetup.freeFloatingSBMLSimulator[_modelName]
-        except LookupError as e:
+            sbml_dict = dict_attrib['SBMLSolver']
+            del sbml_dict[model_name]
+        except LookupError:
             pass
 
-    def timestepCellSBML(self):
+    def delete_free_floating_sbml(self, model_name: str) -> None:
+        """
+        Deletes free floating SBLM mo
+        del
+        :param model_name: model name
+        :return: None
+        """
+        pg = CompuCellSetup.persistent_globals
+
+        try:
+            del pg.free_floating_sbml_simulators[model_name]
+        except LookupError:
+            pass
+
+    def timestep_cell_sbml(self):
         """
         advances (integrats forward) models stored as attributes of cells
         :return: None
         """
 
-
-        # timestepping SBML attached to cells
+        # time-stepping SBML attached to cells
         for cell in self.cellList:
             dict_attrib = CompuCell.getPyAttrib(cell)
             if 'SBMLSolver' in dict_attrib:
-                sbmlDict = dict_attrib['SBMLSolver']
+                sbml_dict = dict_attrib['SBMLSolver']
 
-                for modelName, rrTmp in sbmlDict.items():
-                    rrTmp.timestep()  # integrating SBML
+                for model_name, rrTmp in sbml_dict.items():
+                    # integrating SBML
+                    rrTmp.timestep()
 
-    def setStepSizeForCell(self, _modelName='', _cell=None, _stepSize=1.0):
+    def set_step_size_for_cell(self, model_name: str = '', cell: object = None, step_size: float = 1.0):
         """
         Sets integration step size for SBML model attached to _cell
 
-        :param _modelName {str}: model name
-        :param _cell {object}: CellG cell object
-        :param _stepSize {float}: integrtion step size
+        :param model_name: model name
+        :param cell: CellG cell object
+        :param step_size: integration step size
         :return: None
         """
-        import CompuCell
-        dict_attrib = CompuCell.getPyAttrib(_cell)
+        dict_attrib = CompuCell.getPyAttrib(cell)
 
         try:
-            sbmlSolver = dict_attrib['SBMLSolver'][_modelName]
-        except LookupError as e:
+            sbmlSolver = dict_attrib['SBMLSolver'][model_name]
+        except LookupError:
             return
 
-        sbmlSolver.stepSize = _stepSize
+        sbmlSolver.stepSize = step_size
 
-    def setStepSizeForCellIds(self, _modelName='', _ids=[], _stepSize=1.0):
+    def set_step_size_for_cell_ids(self, model_name: str = '', cell_ids: Union[None, list] = None,
+                                   step_size: float = 1.0) -> None:
+
         """
         Sets integration step size for SBML model attached to cells of given ids
 
-        :param _modelName {str}: model name
-        :param _ids {list}: list of cell ids
-        :param _stepSize {float}: integrtion step size
+        :param model_name:  model name
+        :param cell_ids : list of cell ids
+        :param step_size : integration step size
         :return: None
         """
-        for id in _ids:
-            cell = self.inventory.attemptFetchingCellById(id)
+        cell_ids = self.__default_mutable_type(cell_ids, [])
+
+        for cell_id in cell_ids:
+            cell = self.inventory.attemptFetchingCellById(cell_id)
             if not cell:
                 continue
-            self.setStepSizeForCell(_modelName=_modelName, _cell=cell, _stepSize=_stepSize)
 
-    def setStepSizeForCellTypes(self, _modelName='', _types=[], _stepSize=1.0):
+            self.set_step_size_for_cell(model_name=model_name, cell=cell, step_size=step_size)
+
+    def set_step_size_for_cell_types(self, model_name: str = '', cell_types: Union[None, list] = None,
+                                     step_size=1.0) -> None:
         """
-        Sets integration step size for SBML model attached to cells of given ids
+        Sets integration step size for SBML model attached to cells of given cell types
 
-        :param _modelName {str}: model name
-        :param _types {list}: list of cell types
-        :param _stepSize {float}: integrtion step size
+        :param model_name: model name
+        :param cell_types: list of cell types
+        :param step_size: integration step size
         :return: None
         """
-        for cell in self.cellListByType(*_types):
-            self.setStepSizeForCell(_modelName=_modelName, _cell=cell, _stepSize=_stepSize)
+        cell_types = self.__default_mutable_type(cell_types, [])
 
-    def setStepSizeForFreeFloatingSBML(self, _modelName='', _stepSize=1.0):
+        for cell in self.cellListByType(*cell_types):
+            self.set_step_size_for_cell(model_name=model_name, cell=cell, step_size=step_size)
+
+    @staticmethod
+    def set_step_size_for_free_floating_sbml(model_name: str = '', step_size: float = 1.0) -> None:
+
         """
         Sets integration step size for free floating SBML
-        :param _modelName {str}: model name
-        :param _stepSize {float}: integration time step
+        :param model_name: model name
+        :param step_size: integration time step
         :return: None
         """
+
+        pg = CompuCellSetup.persistent_globals
         try:
-            from . import CompuCellSetup
-            sbmlSolver = CompuCellSetup.freeFloatingSBMLSimulator[_modelName]
-        except LookupError as e:
+            sbml_solver = pg.free_floating_sbml_simulators[model_name]
+        except LookupError:
             return
 
-        sbmlSolver.stepSize = _stepSize
+        sbml_solver.stepSize = step_size
 
-    def timestepFreeFloatingSBML(self):
+    def timestep_free_floating_sbml(self):
         """
         Integrates forward all free floating SBML solvers
         :return: None
         """
         pg = CompuCellSetup.persistent_globals
 
-        for modelName, rr in pg.free_floating_sbml_simulators.items():
+        for model_name, rr in pg.free_floating_sbml_simulators.items():
             rr.timestep()
 
-    def timestepSBML(self):
+    def timestep_sbml(self):
         """
         Integrates forward all free floating SBML solvers and all sbmlsolvers attached to cells
         :return: None
         """
-        self.timestepCellSBML()
-        self.timestepFreeFloatingSBML()
+        self.timestep_cell_sbml()
+        self.timestep_free_floating_sbml()
 
-    def getSBMLSimulator(self, _modelName, _cell=None):
+    def get_sbml_simulator(self, model_name: str, cell: object = None) -> Union[object, None]:
         """
         Returns a reference to RoadRunnerPy or None
-        :param _modelName {str}: model name
-        :param _cell {object}: CellG cell object
+        :param model_name: model name
+        :param cell: CellG cell object
         :return {instance of RoadRunnerPy} or {None}:
         """
 
-
         pg = CompuCellSetup.persistent_globals
-        if not _cell:
+        if not cell:
             try:
 
-                return pg.free_floating_sbml_simulators[_modelName]
+                return pg.free_floating_sbml_simulators[model_name]
 
-            except LookupError as e:
+            except LookupError:
                 return None
         else:
             try:
-                dict_attrib = CompuCell.getPyAttrib(_cell)
-                return dict_attrib['SBMLSolver'][_modelName]
-            except LookupError as e:
+                dict_attrib = CompuCell.getPyAttrib(cell)
+                return dict_attrib['SBMLSolver'][model_name]
+            except LookupError:
                 return None
 
-    def getSBMLState(self, _modelName, _cell=None):
+    def get_sbml_state(self, model_name: str, cell: object = None) -> Union[None, dict]:
         """
         Returns dictionary-like object representing state of the SBML solver - instance of the RoadRunner.model
         which behaves as a python dictionary but has many entries some of which are non-assignable /non-mutable
 
-        :param _modelName {str}: model name
-        :param _cell {object}: CellG object
+        :param model_name: model name
+        :param cell: CellG object
         :return {instance of RoadRunner.model}: dict-like object
         """
-        # might use roadrunner.SelectionRecord.STATE_VECTOR to limit dictionary iterations to only valuses which are settable
+        # might use roadrunner.SelectionRecord.STATE_VECTOR to limit dictionary iterations
+        # to only values which are settable
         # for now, though, we return full rr.model dictionary-like object
 
-        # return dict(sbmlSimulator.model.items(roadrunner.SelectionRecord.STATE_VECTOR))
-        sbmlSimulator = self.getSBMLSimulator(_modelName, _cell)
+        sbml_simulator = self.get_sbml_simulator(model_name, cell)
         try:
-            return sbmlSimulator.model
+            return sbml_simulator.model
         except:
-            if _cell:
-                raise RuntimeError("Could not find model " + _modelName + ' attached to cell.id=', _cell.id)
+            if cell:
+                raise RuntimeError("Could not find model " + model_name + ' attached to cell.id=', cell.id)
             else:
-                raise RuntimeError("Could not find model " + _modelName + ' in the list of free floating SBML models')
+                raise RuntimeError("Could not find model " + model_name + ' in the list of free floating SBML models')
 
-    def getSBMLStateAsPythonDict(self, _modelName, _cell=None):
+    def get_sbml_state_as_python_dict(self, model_name: str, cell: object = None) -> dict:
         """
         Returns Python dictionary representing state of the SBML solver
 
-        :param _modelName {str}: model name
-        :param _cell {object}: CellG object
-        :return {dict}: dictionary representing state of the SBML Solver
+        :param model_name: model name
+        :param cell: CellG object
+        :return : dictionary representing state of the SBML Solver
         """
-        return self.getSBMLState(_modelName, _cell)
+        return self.get_sbml_state(model_name, cell)
 
-    def setSBMLState(self, _modelName, _cell=None, _state={}):
+    def set_sbml_state(self, model_name: str, cell: object = None, state: Union[None, dict] = None) -> bool:
         """
         Sets SBML state for the solver - only for advanced uses. Requires detailed knowledge of how underlying
         SBML solver (roadrunner) works
-        :param _modelName {str}: model name
-        :param _cell {object}: CellG object
-        :param _state {dict}: dictionary with state variables to set
+        :param model_name: model name
+        :param cell: CellG object
+        :param state : dictionary with state variables to set
         :return: None
         """
+        state = self.__default_mutable_type(state, {})
+        sbml_simulator = self.get_sbml_simulator(model_name, cell)
 
-        sbmlSimulator = self.getSBMLSimulator(_modelName, _cell)
-
-        if not sbmlSimulator:
+        if not sbml_simulator:
             return False
         else:
 
-            if _state == sbmlSimulator.model:  # no need to do anything when all the state changes are done on model
+            if state == sbml_simulator.model:  # no need to do anything when all the state changes are done on model
                 return True
 
-            for name, value in _state.items():
+            for name, value in state.items():
                 try:
-                    sbmlSimulator.model[name] = value
+                    sbml_simulator.model[name] = value
                 except:  # in case user decides to set unsettable quantities e.g. reaction rates
                     pass
 
             return True
 
-    def getSBMLValue(self, _modelName, _valueName='', _cell=None):
+    def get_sbml_value(self, model_name: str, value_name: str, cell: object = None) -> float:
         """
         Retrieves value of the SBML state variable
-        :param _modelName {str}: model name
-        :param _valueName {str}: name of the state variable
-        :param _cell {object}: CellG object
-        :return {float}: value of the state variable
+        :param model_name: model name
+        :param value_name: name of the state variable
+        :param cell: CellG object
+        :return: value of the state variable
         """
-        sbmlSimulator = self.getSBMLSimulator(_modelName, _cell)
-        if not sbmlSimulator:
-            if _cell:
-                raise RuntimeError("Could not find model " + _modelName + ' attached to cell.id=', _cell.id)
+        sbml_simulator = self.get_sbml_simulator(model_name, cell)
+        if not sbml_simulator:
+            if cell:
+                raise RuntimeError("Could not find model " + model_name + ' attached to cell.id=', cell.id)
             else:
-                raise RuntimeError("Could not find model " + _modelName + ' in the list of free floating SBML models')
+                raise RuntimeError("Could not find model " + model_name + ' in the list of free floating SBML models')
         else:
-            return sbmlSimulator[_valueName]
+            return sbml_simulator[value_name]
 
-    def setSBMLValue(self, _modelName, _valueName='', _value=0.0, _cell=None):
+    def set_sbml_value(self, model_name: str, value_name: str, value: float = 0.0, cell: object = None) -> bool:
         """
         Sets SBML solver state variable
-        :param _modelName {str}: model name
-        :param _valueName {str}: name of the stae variable
-        :param _value {float}: value of the state variable
-        :param _cell {object}: CellG object
+        :param model_name: model name
+        :param value_name: name of the stae variable
+        :param value: value of the state variable
+        :param cell: CellG object
         :return: None
         """
-        sbmlSimulator = self.getSBMLSimulator(_modelName, _cell)
-        if not sbmlSimulator:
+        sbml_simulator = self.get_sbml_simulator(model_name, cell)
+        if not sbml_simulator:
             return False
         else:
-            sbmlSimulator.model[_valueName] = _value
+            sbml_simulator.model[value_name] = value
             return True
 
-    def copySBMLs(self, _fromCell, _toCell, _sbmlNames=[], _options=None):
+    def copy_sbml_simulators(self, from_cell: object, to_cell: object, sbml_names: Union[list, None] = None,
+                             options: Union[dict, None] = None):
         """
         Copies SBML solvers (with their states - effectively clones the solver) from one cell to another
-        :param _fromCell {object}: source CellG cell
-        :param _toCell {object}: target CellG cell
-        :param _sbmlNames: list of SBML model name whose solver are to be copied
-        :param _options {dict}: - deprecated - list of SBML solver options
+        :param from_cell: source CellG cell
+        :param to_cell: target CellG cell
+        :param sbml_names: list of SBML model name whose solver are to be copied
+        :param options: - deprecated - list of SBML solver options
         :return: None
         """
-        sbmlNamesToCopy = []
-        import CompuCell
-        if not (len(_sbmlNames)):
+        sbml_names = self.__default_mutable_type(sbml_names, [])
+        options = self.__default_mutable_type(options, {})
+
+        sbml_names_to_copy = []
+        if not (len(sbml_names)):
             # if user does not specify _sbmlNames we copy all SBML networks
             try:
-                dict_attrib = CompuCell.getPyAttrib(_fromCell)
-                sbmlDict = dict_attrib['SBMLSolver']
-                sbmlNamesToCopy = list(sbmlDict.keys())
+                dict_attrib = CompuCell.getPyAttrib(from_cell)
+                sbml_dict = dict_attrib['SBMLSolver']
+                sbml_names_to_copy = list(sbml_dict.keys())
             except LookupError as e:
                 pass
         else:
-            sbmlNamesToCopy = _sbmlNames
+            sbml_names_to_copy = sbml_names
 
         try:
-            dict_attrib_from = CompuCell.getPyAttrib(_fromCell)
-            sbmlDictFrom = dict_attrib_from['SBMLSolver']
-        except LookupError as e:
+            dict_attrib_from = CompuCell.getPyAttrib(from_cell)
+            sbml_dict_from = dict_attrib_from['SBMLSolver']
+        except LookupError:
             return
 
         try:
-            dict_attrib_to = CompuCell.getPyAttrib(_toCell)
-            sbmlDictTo = dict_attrib_to['SBMLSolver']
-        except LookupError as e:
+            dict_attrib_to = CompuCell.getPyAttrib(to_cell)
+            # sbml_dict_to = dict_attrib_to['SBMLSolver']
+        except LookupError:
+            pass
             # if _toCell does not have SBMLSolver dictionary entry we simply add it
-            dict_attrib_to['SBMLSolver'] = {}
-            sbmlDictTo = dict_attrib_to['SBMLSolver']
+            # dict_attrib_to['SBMLSolver'] = {}
+            # sbml_dict_to = dict_attrib_to['SBMLSolver']
 
-        for sbmlName in sbmlNamesToCopy:
-            rrFrom = sbmlDictFrom[sbmlName]
-            currentStateSBML = sbmlDictFrom[sbmlName].getCurrentSBML()
-            self.addSBMLToCell(
-                _modelFile=rrFrom.path, # necessary to get deserialization working properly
-                _modelName=sbmlName,
-                _cell=_toCell,
-                _stepSize=rrFrom.stepSize,
-                _options=_options,
-                _currentStateSBML=currentStateSBML
+        for sbml_name in sbml_names_to_copy:
+            rr_from = sbml_dict_from[sbml_name]
+            current_state_sbml = sbml_dict_from[sbml_name].getCurrentSBML()
+            self.add_sbml_to_cell(
+                model_file=rr_from.path,  # necessary to get deserialization working properly
+                model_name=sbml_name,
+                cell=to_cell,
+                step_size=rr_from.stepSize,
+                options=options,
+                current_state_sbml=current_state_sbml
             )
 
-    def normalizePath(self, _path):
+    def normalize_path(self, path: str) -> str:
         """
         Checks if file exists and if not it joins basepath (path to the root of the cc3d project) with path
-        :param _path {str}: relative path to CC3D resource
+        :param path: relative path to CC3D resource
         :return {str}: absolute path to CC3D resource
         """
 
-        pathNormalized = _path
+        path_normalized = path
         try:
-            f = open(pathNormalized, 'r')
+            f = open(path_normalized, 'r')
             f.close()
-        except IOError as e:
+        except IOError:
             if self.simulator.getBasePath() != '':
-                pathNormalized = os.path.abspath(os.path.join(self.simulator.getBasePath(), pathNormalized))
+                path_normalized = os.path.abspath(os.path.join(self.simulator.getBasePath(), path_normalized))
 
-        return pathNormalized
+        return path_normalized

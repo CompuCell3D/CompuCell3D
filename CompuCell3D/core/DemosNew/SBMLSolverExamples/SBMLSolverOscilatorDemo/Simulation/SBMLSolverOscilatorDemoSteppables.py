@@ -24,7 +24,7 @@ class SBMLSolverOscilatorDemoSteppable(SteppableBasePy):
         # but useful when encountering integration instabilities
         options = {'relative': 1e-10, 'absolute': 1e-12}
         # options={'relative':1e-10,'absolute':1e-12}
-        self.setSBMLGlobalOptions(options)
+        self.set_sbml_global_options(options)
 
         modelFile = 'Simulation/oscli.sbml'  # this can be e.g. partial path 'Simulation/oscli.sbml'
         stepSize = 0.02
@@ -32,8 +32,8 @@ class SBMLSolverOscilatorDemoSteppable(SteppableBasePy):
         initialConditions = {}
         initialConditions['S1'] = 0.0
         initialConditions['S2'] = 1.0
-        self.addSBMLToCellTypes(_modelFile=modelFile, _modelName='OSCIL', _types=[self.NONCONDENSING],
-                                _stepSize=stepSize, _initialConditions=initialConditions)
+        self.add_sbml_to_cell_types(model_file=modelFile, model_name='OSCIL', cell_types=[self.NONCONDENSING],
+                                    step_size=stepSize, initial_conditions=initialConditions)
 
     def step(self, mcs):
         if not self.pW:
@@ -44,7 +44,7 @@ class SBMLSolverOscilatorDemoSteppable(SteppableBasePy):
         added = False
         for cell in self.cellList:
             if cell.type == self.NONCONDENSING:
-                state = self.getSBMLState(_modelName='OSCIL', _cell=cell)
+                state = self.get_sbml_state(model_name='OSCIL', cell=cell)
                 concentration = state['S1']
                 cell.targetVolume = 25 + 10 * concentration
 
@@ -53,4 +53,4 @@ class SBMLSolverOscilatorDemoSteppable(SteppableBasePy):
                     added = True
 
         self.pW.showAllPlots()
-        self.timestepSBML()
+        self.timestep_sbml()
