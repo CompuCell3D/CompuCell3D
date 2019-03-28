@@ -1,0 +1,7 @@
+<Simulation version="3.5.1">
+   <XMLScript Type="XMLScript">Simulation/SBMLSolverOscilatorDemo.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/SBMLSolverOscilatorDemo.py</PythonScript>
+   <Resource Type="Python">Simulation/SBMLSolverOscilatorDemoSteppables.py</Resource>
+   <Resource Type="SBML">Simulation/oscli.sbml</Resource>
+<!--   <SerializeSimulation AllowMultipleRestartDirectories="False" FileFormat="text" OutputFrequency="100"/> -->
+</Simulation>
