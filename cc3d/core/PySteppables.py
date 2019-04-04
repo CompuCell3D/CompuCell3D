@@ -49,11 +49,13 @@ class SteppablePy:
         :return:
         """
 
+
 class FieldFetcher:
     def __init__(self):
         """
 
         """
+
     def __getattr__(self, item):
         pg = CompuCellSetup.persistent_globals
         field_registry = pg.field_registry
@@ -72,12 +74,11 @@ class FieldFetcher:
                 raise KeyError(' The requested field {} does not exist'.format(item))
 
 
-
-class SteppableBasePy(SteppablePy,SBMLSolverHelper):
+class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     (CC3D_FORMAT, TUPLE_FORMAT) = range(0, 2)
 
     # def __init__(self, simulator=None, frequency=1):
-    def __init__(self, *args,**kwds):
+    def __init__(self, *args, **kwds):
 
         try:
             frequency = args[1]
@@ -105,7 +106,6 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
 
         self.field = FieldFetcher()
 
-
     @property
     def simulator(self):
         return self._simulator()
@@ -113,7 +113,6 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
     @simulator.setter
     def simulator(self, simulator):
         self._simulator = simulator
-
 
     @property
     def potts(self):
@@ -135,10 +134,7 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
     def clusterInventory(self):
         return self.inventory.getClusterInventory()
 
-
-
     def core_init(self):
-
 
         # self.potts = self.simulator.getPotts()
         # self.cellField = self.potts.getCellFieldG()
@@ -161,7 +157,6 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         for type_id, type_name in type_id_type_name_dict.items():
             self.typename_to_attribute(cell_type_name=type_name, type_id=type_id)
             # setattr(self, type_name.upper(), type_id)
-
 
         return
         self.potts = self.simulator.getPotts()
@@ -348,7 +343,6 @@ class SteppableBasePy(SteppablePy,SBMLSolverHelper):
         element_adapter = xml_id_locator.get_xml_element(tag=tag)
 
         return element_adapter
-
 
     # def registerXMLElementUpdate(self, *args):
     #     '''this function registers core module XML Element from wchich XML subelement has been fetched.It returns XML subelement

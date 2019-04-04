@@ -501,11 +501,57 @@ using namespace CompuCell3D;
     __swig_getmethods__["dict"] = getdict
 
     if _newclass: dict = property(getdict,setdict)    
-                
+	
+    # simplifying access to sbml models
+    def setsbml(self, sbml) :		
+        raise AttributeError('ASSIGNMENT cell.sbml=%s is illegal. sbml attribute can only be modified but not replaced' % (sbml))
+
+	
+    def getsbml(self) :
+        #return self.dict
+        try:
+            return self.dict['__sbml_fetcher']
+        except (KeyError,AttributeError):
+                    
+            class SBMLFetcher :
+                def __init__(self, cell=None) :
+                    import weakref
+                    if cell is not None:
+                        print('creating SBML for cell.id=', cell.id)                    
+                    self.cell = weakref.ref(cell)
+
+                def __getattr__(self, item) :
+
+                    try :
+                        cell_obj = self.cell()
+                        sbml_solver_dict = cell_obj['SBMLSolver']
+                    except KeyError :
+                        raise KeyError('Cell id={cell_id} has no SBML solvers'.format(cell_id = cell_obj.id))
+
+                    try :
+                        return sbml_solver_dict[item]
+                    except KeyError :
+                        raise KeyError('Could not find SBML solver with id={sbml_solver_id} in cell id={cell_id} '.format(
+                            sbml_solver_id = item, cell_id = cell_obj.id))
+
+                def fetch(self) :
+                    print('grabbing sbml')
+
+            self.dict['__sbml_fetcher'] = SBMLFetcher(cell=self)
+            return self.dict['__sbml_fetcher']
+            # return SBMLFetcher()
+
+    __swig_setmethods__["sbml"] = setsbml
+    __swig_getmethods__["sbml"] = getsbml
+
+    if _newclass : sbml = property(getsbml, setsbml)
+
       %}
     };
 
-        
+    
+
+
 
 %include "Field3D/Field3D.h"
 %include "Field3D/Field3DImpl.h"

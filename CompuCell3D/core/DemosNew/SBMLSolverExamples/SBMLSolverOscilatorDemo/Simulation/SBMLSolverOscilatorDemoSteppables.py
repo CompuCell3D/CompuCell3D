@@ -43,7 +43,9 @@ class SBMLSolverOscilatorDemoSteppable(SteppableBasePy):
 
         added = False
         for cell in self.cellList:
+
             if cell.type == self.NONCONDENSING:
+                print(cell.sbml)
                 state = self.get_sbml_state(model_name='OSCIL', cell=cell)
                 concentration = state['S1']
                 cell.targetVolume = 25 + 10 * concentration
@@ -51,6 +53,19 @@ class SBMLSolverOscilatorDemoSteppable(SteppableBasePy):
                 if not added:
                     self.pW.addDataPoint("S1", mcs, concentration)
                     added = True
+
+        if mcs > 2:
+            for cell in self.cellList:
+                if cell.type == self.NONCONDENSING:
+                    sbml_model = cell.sbml._rr_OSCIL
+                    print('sbml_model=',sbml_model)
+                    print('S1=',sbml_model['S1'])
+                    break
+
+        if mcs == 3:
+            for cell in self.cellList:
+                if cell.type == self.NONCONDENSING:
+                    cell.sbml.OSCIL['S1'] = 1.3
 
         self.pW.showAllPlots()
         self.timestep_sbml()
