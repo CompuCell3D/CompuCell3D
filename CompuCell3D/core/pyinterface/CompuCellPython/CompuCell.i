@@ -504,42 +504,66 @@ using namespace CompuCell3D;
 	
     # simplifying access to sbml models
     def setsbml(self, sbml) :		
-        raise AttributeError('ASSIGNMENT cell.sbml=%s is illegal. sbml attribute can only be modified but not replaced' % (sbml))
+        raise AttributeError('ASSIGNMENT cell.sbml = %s is illegal. '
+                             '"sbml" attribute can only be modified but not replaced' % (sbml))
 
-	
     def getsbml(self) :
-        #return self.dict
+        import weakref
         try:
-            return self.dict['__sbml_fetcher']
+
+            sbml_fetcher = self.dict['__sbml_fetcher']
+
+            sbml_fetcher.cell_obj = weakref.ref(self)
+
+            # sbml_fetcher.cell_ref = weakref.ref(self)
+
+            return sbml_fetcher
         except (KeyError,AttributeError):
-                    
+
             class SBMLFetcher :
                 def __init__(self, cell=None) :
                     import weakref
+                    self.cell_id = -1
+                    self.cell_obj = None
                     if cell is not None:
-                        print('creating SBML for cell.id=', cell.id)                    
-                    self.cell = weakref.ref(cell)
+                        self.cell_id = cell.id
+
+
 
                 def __getattr__(self, item) :
+                    if item == 'cell_id':
+                        return self.__dict__['cell_id']
+
+                    cell_obj = self.cell_obj()
+                    cell_dict = cell_obj.dict
 
                     try :
-                        cell_obj = self.cell()
-                        sbml_solver_dict = cell_obj['SBMLSolver']
+                        sbml_solver_dict = cell_dict['SBMLSolver']
                     except KeyError :
-                        raise KeyError('Cell id={cell_id} has no SBML solvers'.format(cell_id = cell_obj.id))
+                        raise KeyError('Cell id={cell_id} has no SBML solvers'.format(cell_id = self.cell_id))
+
+                    item_to_search = item
+                    rr_flag = False
+                    if item.startswith('_rr_'):
+                        item_to_search = item[4:]
+                        rr_flag = True
 
                     try :
-                        return sbml_solver_dict[item]
+                        rr_object =  sbml_solver_dict[item_to_search]
                     except KeyError :
                         raise KeyError('Could not find SBML solver with id={sbml_solver_id} in cell id={cell_id} '.format(
-                            sbml_solver_id = item, cell_id = cell_obj.id))
+                            sbml_solver_id = item_to_search, cell_id = self.cell_id))
 
-                def fetch(self) :
-                    print('grabbing sbml')
+                    if rr_flag:
+                        return rr_object
+                    else:
+                        return rr_object.model
 
-            self.dict['__sbml_fetcher'] = SBMLFetcher(cell=self)
-            return self.dict['__sbml_fetcher']
-            # return SBMLFetcher()
+            sbml_fetcher = SBMLFetcher(cell=self)
+            self.dict['__sbml_fetcher'] = sbml_fetcher
+            sbml_fetcher.cell_obj = weakref.ref(self)
+            return sbml_fetcher
+
 
     __swig_setmethods__["sbml"] = setsbml
     __swig_getmethods__["sbml"] = getsbml
