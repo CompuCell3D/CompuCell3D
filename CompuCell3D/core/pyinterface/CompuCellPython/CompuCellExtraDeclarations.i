@@ -165,24 +165,24 @@ using namespace CompuCell3D;
    }   
 %}
 
-////Plugins
-//
-//%include <BasicUtils/BasicClassAccessor.h>
-//%include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
-//
-//
-//%inline %{
-//   Plugin * getPlugin(std::string _pluginName){
-//      return (Plugin *)Simulator::pluginManager.get(_pluginName);
-//   }
-//
-//   Steppable * getSteppable(std::string _steppableName){
-//      return (Steppable *)Simulator::steppableManager.get(_steppableName);
-//   }
-//
-//
-//%}
-//
+//Plugins
+
+%include <BasicUtils/BasicClassAccessor.h>
+%include <BasicUtils/BasicClassGroup.h> //had to include it to avoid problems with template instantiation
+
+
+%inline %{
+   Plugin * getPlugin(std::string _pluginName){
+      return (Plugin *)Simulator::pluginManager.get(_pluginName);
+   }
+
+   Steppable * getSteppable(std::string _steppableName){
+      return (Steppable *)Simulator::steppableManager.get(_steppableName);
+   }
+
+
+%}
+
 ////ConnectivityLocalFlex
 //
 //
@@ -295,42 +295,42 @@ using namespace CompuCell3D;
 //// %}
 //
 //
-////NeighborPlugin
-//
-//
-//
-//%include <CompuCell3D/plugins/NeighborTracker/NeighborTracker.h>
-//
-//%template (neighbortrackeraccessor) BasicClassAccessor<NeighborTracker>; //necessary to get NeighborTracker accessor working
-//%template (nsdSetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::NeighborSurfaceData> , CompuCell3D::NeighborSurfaceData>;
-//// %template (nsdSetPyItr) STLPyIterator<std::set<CompuCell3D::NeighborSurfaceData> >;
-//%template (neighborsurfacedataset) std::set<CompuCell3D::NeighborSurfaceData>; //necessary to get basis set functionality working
-//
-//PLUGINACCESSOR(NeighborTracker)
-//
-//// %include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
-//// 
-//// 
-//// // %inline %{
-//// //    PyObject * getPyAttrib(CompuCell3D::CellG * _cell){
-//// //       Py_INCREF(_cell->pyAttrib);
-//// //       return _cell->pyAttrib;
-//// //    }
-//// // %}
-//// 
-//// %inline %{
-////    NeighborTrackerPlugin * getNeighborTrackerPlugin(){
-////       return (NeighborTrackerPlugin *)Simulator::pluginManager.get("NeighborTracker");
-////    }
-//// 
-//// //    CompuCell3D::NeighborSurfaceData & derefNeighborSurfaceData(std::set<CompuCell3D::NeighborSurfaceData>::iterator &_itr){
-//// //       return const_cast<CompuCell3D::NeighborSurfaceData &>(*_itr);
-//// //    }
-//// 
-//// %}
-//
-//
-//
+//NeighborPlugin
+
+
+
+%include <CompuCell3D/plugins/NeighborTracker/NeighborTracker.h>
+
+%template (neighbortrackeraccessor) BasicClassAccessor<NeighborTracker>; //necessary to get NeighborTracker accessor working
+%template (nsdSetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::NeighborSurfaceData> , CompuCell3D::NeighborSurfaceData>;
+// %template (nsdSetPyItr) STLPyIterator<std::set<CompuCell3D::NeighborSurfaceData> >;
+%template (neighborsurfacedataset) std::set<CompuCell3D::NeighborSurfaceData>; //necessary to get basis set functionality working
+
+PLUGINACCESSOR(NeighborTracker)
+
+// %include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
+// 
+// 
+// // %inline %{
+// //    PyObject * getPyAttrib(CompuCell3D::CellG * _cell){
+// //       Py_INCREF(_cell->pyAttrib);
+// //       return _cell->pyAttrib;
+// //    }
+// // %}
+// 
+// %inline %{
+//    NeighborTrackerPlugin * getNeighborTrackerPlugin(){
+//       return (NeighborTrackerPlugin *)Simulator::pluginManager.get("NeighborTracker");
+//    }
+// 
+// //    CompuCell3D::NeighborSurfaceData & derefNeighborSurfaceData(std::set<CompuCell3D::NeighborSurfaceData>::iterator &_itr){
+// //       return const_cast<CompuCell3D::NeighborSurfaceData &>(*_itr);
+// //    }
+// 
+// %}
+
+
+
 //%include <CompuCell3D/plugins/PixelTracker/PixelTracker.h>
 //%template (PixelTrackerAccessor) BasicClassAccessor<PixelTracker>; //necessary to get PixelTracker accessor working
 //// #define std::set<CompuCell3D::PixelTrackerData>::value_type CompuCell3D::PixelTrackerData

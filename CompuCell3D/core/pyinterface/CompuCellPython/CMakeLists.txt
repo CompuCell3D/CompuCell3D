@@ -148,6 +148,7 @@ ClusterSurfaceTrackerShared
 )
 
 SET(LIBS_AUX PyPlugin
+NeighborTrackerShared
 )
 
 INCLUDE_DIRECTORIES(
