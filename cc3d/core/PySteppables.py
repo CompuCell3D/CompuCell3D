@@ -74,6 +74,36 @@ class FieldFetcher:
                 raise KeyError(' The requested field {} does not exist'.format(item))
 
 
+class GlobalSBMLFetcher:
+    def __init__(self):
+        """
+
+        """
+
+    def __getattr__(self, item):
+
+        pg = CompuCellSetup.persistent_globals
+
+        item_to_search = item
+        rr_flag = False
+        if item.startswith('_rr_'):
+            item_to_search = item[4:]
+            rr_flag = True
+
+        try:
+
+            rr_object = pg.free_floating_sbml_simulators[item_to_search]
+
+        except (LookupError, KeyError):
+            raise KeyError('Could not find "free floating" SBML solver with id={sbml_solver_id}'.format(
+                sbml_solver_id=item_to_search))
+
+        if rr_flag:
+            return rr_object
+        else:
+            return rr_object.model
+
+
 class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     (CC3D_FORMAT, TUPLE_FORMAT) = range(0, 2)
 
@@ -93,6 +123,10 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         SteppablePy.__init__(self)
         SBMLSolverHelper.__init__(self)
+
+        # free floating SBML model accessor
+        self.sbml = GlobalSBMLFetcher()
+
         # SBMLSolverHelper.__init__(self)
         self.frequency = frequency
         # self._simulator = simulator
@@ -104,7 +138,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         self.everyPixelWithSteps = self.every_pixel_with_steps
         self.everyPixel = self.every_pixel
         self.getCellNeighborDataList = self.get_cell_neighbor_data_list
-
+        self.attemptFetchingCellById = self.fetch_cell_by_id
 
         self.field = FieldFetcher()
 
@@ -356,6 +390,14 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             raise AttributeError('Could not find NeighborTrackerPlugin')
 
         return CellNeighborListFlex(self.neighbor_tracker_plugin, cell)
+
+    def fetch_cell_by_id(self, cell_id: int) -> Union[None, object]:
+        """
+        Fetches cell by id. If cell does not exist it returns None
+        :param cell_id: cell id
+        :return: sucessfully fetched cell id or None
+        """
+        return self.inventory.attemptFetchingCellById(cell_id)
 
     # def registerXMLElementUpdate(self, *args):
     #     '''this function registers core module XML Element from wchich XML subelement has been fetched.It returns XML subelement
