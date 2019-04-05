@@ -103,6 +103,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         self.createScalarFieldPy = self.create_scalar_field_py
         self.everyPixelWithSteps = self.every_pixel_with_steps
         self.everyPixel = self.every_pixel
+        self.getCellNeighborDataList = self.get_cell_neighbor_data_list
+
 
         self.field = FieldFetcher()
 
@@ -157,6 +159,11 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         for type_id, type_name in type_id_type_name_dict.items():
             self.typename_to_attribute(cell_type_name=type_name, type_id=type_id)
             # setattr(self, type_name.upper(), type_id)
+
+        # NeighborTrackerPlugin
+        self.neighbor_tracker_plugin = None
+        if self.simulator.pluginManager.isLoaded("NeighborTracker"):
+            self.neighbor_tracker_plugin = CompuCell.getNeighborTrackerPlugin()
 
         return
         self.potts = self.simulator.getPotts()
@@ -343,6 +350,12 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         element_adapter = xml_id_locator.get_xml_element(tag=tag)
 
         return element_adapter
+
+    def get_cell_neighbor_data_list(self, cell):
+        if not self.neighbor_tracker_plugin:
+            raise AttributeError('Could not find NeighborTrackerPlugin')
+
+        return CellNeighborListFlex(self.neighbor_tracker_plugin, cell)
 
     # def registerXMLElementUpdate(self, *args):
     #     '''this function registers core module XML Element from wchich XML subelement has been fetched.It returns XML subelement

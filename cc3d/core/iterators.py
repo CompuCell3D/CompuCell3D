@@ -255,3 +255,77 @@ class ClusterCellListIterator:
         return self
 
     # legacy code  - do not modify
+
+
+class CellNeighborListFlex:
+    def __init__(self, _neighborPlugin, _cell):
+        self.neighborPlugin = _neighborPlugin
+        self.neighborTrackerAccessor = self.neighborPlugin.getNeighborTrackerAccessorPtr()
+        self.cell = _cell
+
+        # legacy API
+        self.commonSurfaceAreaWithCellTypes = self.common_surface_area_with_cell_types
+        self.commonSurfaceAreaByType = self.common_surface_area_by_type
+        self.neighborCountByType = self.neighbor_count_by_type
+
+    def __len__(self):
+        neighborTracker = self.neighborTrackerAccessor.get(self.cell.extraAttribPtr)
+        return int(neighborTracker.cellNeighbors.size())
+
+    def __getitem__(self, idx):
+        if idx > self.__len__() - 1: raise IndexError(
+            "Out of bounds index: CellNeighborListAuto index = %s is out of bounds" % str(idx))
+        for counter, data in enumerate(self.__iter__()):
+            if idx == counter: return data
+
+    def common_surface_area_with_cell_types(self, cell_type_list):
+        area = 0
+        for neighbor, commonSurfaceArea in self.__iter__():
+            cell_type = 0 if not neighbor else neighbor.type
+            if cell_type in cell_type_list:
+                area += commonSurfaceArea
+        return area
+
+    def common_surface_area_by_type(self):
+        from collections import defaultdict
+        area_dict = defaultdict(int)
+        for neighbor, commonSurfaceArea in self.__iter__():
+            cell_type = 0 if not neighbor else neighbor.type
+            area_dict[cell_type] += commonSurfaceArea
+        return area_dict
+
+    def neighbor_count_by_type(self):
+        from collections import defaultdict
+        neighbor_counter_dict = defaultdict(int)
+
+        for neighbor, commonSurfaceArea in self.__iter__():
+            cell_type = 0 if not neighbor else neighbor.type
+            neighbor_counter_dict[cell_type] += 1
+        return neighbor_counter_dict
+
+    def __iter__(self):
+        return CellNeighborIteratorFlex(self)
+
+
+class CellNeighborIteratorFlex:
+    def __init__(self, _cellNeighborList):
+        self.neighborTrackerAccessor = _cellNeighborList.neighborTrackerAccessor
+        self.cell = _cellNeighborList.cell
+        self.nsdItr = CompuCell.nsdSetPyItr()
+        self.nTracker = self.neighborTrackerAccessor.get(self.cell.extraAttribPtr)
+        self.nsdItr.initialize(self.nTracker.cellNeighbors)
+        self.nsdItr.setToBegin()
+
+    def __next__(self):
+        if not self.nsdItr.isEnd():
+            self.neighborCell = self.nsdItr.getCurrentRef().neighborAddress
+            self.currentNsdItr = self.nsdItr.current
+            self.currentNeighborSurfaceData = self.nsdItr.getCurrentRef()
+            self.nsdItr.next()
+            # return self.currentNeighborSurfaceData.neighborAddress,self.currentNeighborSurfaceData.commonSurfaceArea
+            return self.currentNeighborSurfaceData.neighborAddress, self.currentNeighborSurfaceData.commonSurfaceArea
+        else:
+            raise StopIteration
+
+    def __iter__(self):
+        return self
