@@ -22,6 +22,7 @@ cc3d_bin_path = abspath(join(cc3d_py_dir, 'cpp', 'bin'))
 if cc3d_bin_path not in path_env_list:
     path_env_list.insert(0, cc3d_bin_path)
 
+# todo - this needs to have platform specific behavior
 path_env_list.insert(0,os.environ['COMPUCELL3D_PLUGIN_PATH'])
 
 

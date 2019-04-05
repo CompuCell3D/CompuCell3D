@@ -65,7 +65,9 @@ class SBMLSolverOscilatorDemoSteppable(SteppableBasePy):
         if mcs == 3:
             for cell in self.cellList:
                 if cell.type == self.NONCONDENSING:
-                    cell.sbml.OSCIL['S1'] = 1.3
+                    state = cell.sbml.OSCIL
+                    state['S1'] = 1.3
+                    # cell.sbml.OSCIL['S1'] = 1.3
 
         self.pW.showAllPlots()
         self.timestep_sbml()
