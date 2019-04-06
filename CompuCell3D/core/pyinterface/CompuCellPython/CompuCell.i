@@ -72,8 +72,8 @@
 #include <CompuCell3D/Potts3D/EnergyFunctionCalculator.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>
 
-#include <CompuCell3D/BabySim/BabyPottsParseData.h>
-#include <CompuCell3D/BabySim/BabySim.h>
+//#include <CompuCell3D/BabySim/BabyPottsParseData.h>
+//#include <CompuCell3D/BabySim/BabySim.h>
 
 
 
@@ -199,7 +199,7 @@ using namespace CompuCell3D;
 //have to include all  export definitions for modules which are arapped to avoid problems with interpreting by swig win32 specific c++ extensions...
 #define COMPUCELLLIB_EXPORT
 
-#define BABYSIMLIB_EXPORT
+//#define BABYSIMLIB_EXPORT
 
 #define BOUNDARYSHARED_EXPORT
 #define CHEMOTAXISSIMPLE_EXPORT
@@ -640,13 +640,13 @@ using namespace CompuCell3D;
 %inline %{
 
   
-  BasicPluginManager<Plugin> * getPluginManagerAsBPM(){
-    return (BasicPluginManager<Plugin> *)&BabySim::pluginManager;
-  }
+//  BasicPluginManager<Plugin> * getPluginManagerAsBPM(){
+//    return (BasicPluginManager<Plugin> *)&BabySim::pluginManager;
+//  }
 
-  BasicPluginManager<Steppable> * getSteppableManagerAsBPM(){
-    return (BasicPluginManager<Steppable> *)&BabySim::steppableManager;
-  }
+//  BasicPluginManager<Steppable> * getSteppableManagerAsBPM(){
+//    return (BasicPluginManager<Steppable> *)&BabySim::steppableManager;
+//  }
   
 //   CompuCell3D::PluginManager<StepNew> getStepManager(){return CompuCell3D::PluginManager<StepNew>();}
 //   CompuCell3D::PluginManager<Steppable> getSteppableManager(){return CompuCell3D::PluginManager<Steppable>();}
@@ -1109,8 +1109,8 @@ FIELD3DEXTENDER(Field3D<int>,int)
 %include <CompuCell3D/Potts3D/EnergyFunctionCalculator.h>
 %include <CompuCell3D/Potts3D/Potts3D.h>
 
-%include <CompuCell3D/BabySim/BabyPottsParseData.h>
-%include <CompuCell3D/BabySim/BabySim.h>
+//%include <CompuCell3D/BabySim/BabyPottsParseData.h>
+//%include <CompuCell3D/BabySim/BabySim.h>
 
 %include "Steppable.h"
 %include "ClassRegistry.h"

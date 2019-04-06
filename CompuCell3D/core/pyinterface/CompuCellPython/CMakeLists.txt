@@ -11,7 +11,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 SET(LIBS
   CompuCellLibShared
-  BabySimLibShared
+  #BabySimLibShared
   #AutomatonStatic
   #BoundaryStatic
   Field3DStatic

@@ -1,5 +1,5 @@
 # Recurse into subprojects
-ADD_SUBDIRECTORY(BabySim)
+# ADD_SUBDIRECTORY(BabySim)
 ADD_SUBDIRECTORY(Field3D)
 ADD_SUBDIRECTORY(Automaton)
 ADD_SUBDIRECTORY(Boundary)

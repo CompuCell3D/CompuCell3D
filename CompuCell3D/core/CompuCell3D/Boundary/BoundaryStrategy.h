@@ -183,7 +183,7 @@ namespace CompuCell3D {
 		LatticeMultiplicativeFactors getLatticeMultiplicativeFactors()const;
 
 
-		void BoundaryStrategy::prepareNeighborListsHex(float _maxDistance = 4.0);
+		void prepareNeighborListsHex(float _maxDistance = 4.0);
 		void prepareNeighborLists(float _maxDistance = 4.0);
 		unsigned int getMaxNeighborIndexFromNeighborOrderNoGen(unsigned int _neighborOrder) const;
 		unsigned int getMaxNeighborOrder();

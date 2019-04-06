@@ -25,6 +25,9 @@
 #ifndef BASICDYNAMICCLASSNODEBASE_H
 #define BASICDYNAMICCLASSNODEBASE_H
 
+#include <cstdlib>
+#include <cwchar>
+
 class BasicDynamicClassFactory;
 
 
@@ -37,7 +40,7 @@ class BasicDynamicClassFactory;
 class BasicDynamicClassNodeBase {
 protected:
   BasicDynamicClassFactory *factory;
-  size_t offset;
+  std::size_t offset;
 
 public:
   BasicDynamicClassNodeBase() : factory(0), offset(0) {}
