@@ -2,6 +2,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from cc3d.core.enums import *
+
+from cc3d.player5 import Graphics
 from .WindowInventory import WindowInventory
 
 
@@ -139,7 +141,7 @@ class MainArea(QWidget):
         :return:None
         '''
 
-        import Graphics
+
         print('INSTANCE OF GraphicsFrameWidget =  ',
               isinstance(widget, Graphics.GraphicsFrameWidget.GraphicsFrameWidget))
         obj_type = 'other'
