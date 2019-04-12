@@ -125,8 +125,7 @@ import ctypes.util
 from ctypes import *
 
 me = os.path.abspath(os.path.dirname(__file__))
-# lib = cdll.LoadLibrary(os.path.join(me, "..", "libtest.so"))
-lib = cdll.LoadLibrary(ctypes.util.find_library('libcpposxhelper'))
+lib = cdll.LoadLibrary(os.path.join(me,'libcpposxhelper.dylib'))
 lib.cpp_print_hello_long(12)
 
 
