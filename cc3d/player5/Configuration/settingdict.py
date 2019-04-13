@@ -19,7 +19,7 @@ class SerializerUtil(object):
             'str': lambda val: ('str', val),
             'unicode': lambda val: ('unicode', val),
             'int': lambda val: ('int', str(val)),
-            'long':lambda val: ('long', str(val)),
+            'long': lambda val: ('long', str(val)),
             'float': lambda val: ('float', str(val)),
             'complex': lambda val: ('complex', str(val)),
             'bool': lambda val: ('bool', int(val)),
@@ -111,15 +111,7 @@ class SerializerUtil(object):
         :param val: {QByteArray}
         :return: {tuple} ('bytearray',QByteArray representation string)
         """
-        out_str = ''
-        # out_str = val.data().decode('utf8', 'backslashreplace')
         out_str = val.data()
-        return 'bytearray', out_str
-        for i in range(val.count()):
-            out_str += str(ord(val[i]))
-            # out_str += str((ord(val[i])),encoding='utf-8')
-            if i < val.count() - 1:
-                out_str += ','
         return 'bytearray', out_str
 
     def sql_2_bytearray(self, val):
@@ -129,18 +121,6 @@ class SerializerUtil(object):
         :return: {QByteArray}
         """
         return QByteArray(val)
-
-        try:
-            elemsList = list(map(chr, list(map(int, val.split(',')))))
-        except:
-            print('CONFIGURATION: COULD NOT CONVERT SETTING TO QBYTEARRAY')
-            elemsList = []
-
-        ba = QByteArray()
-        for i in range(len(elemsList)):
-            ba.append(elemsList[i])
-
-        return ba
 
     def generic_2_sql(self, val):
         """
@@ -159,9 +139,6 @@ class SerializerUtil(object):
         """
         return pickle.loads(str(val))
 
-    # def getstate_dict(self):
-    #     print 'self.keys = ', self.keys()
-
     def dict_2_sql(self, val):
         """
         Python dict to sql string representation. Dictionary may include any element for which
@@ -178,7 +155,6 @@ class SerializerUtil(object):
         :param val: {str} sql string representation
         :return: {dict}
         """
-        # p_load = pickle.loads(str(val))
         p_load = pickle.loads(val)
         out_dict = {}
         for k, v in list(p_load.items()):  # v is a tuple (type, value_repr)
@@ -201,14 +177,12 @@ class SerializerUtil(object):
         lw = ListWrapper(val)
         return 'list', lw.serialize()
 
-
     def sql_2_list(self, val):
         """
         sql string representation to python list
         :param val: {str} sql string representation
         :return: {list}
         """
-        # l_load = pickle.loads(str(val))
         l_load = pickle.loads(val)
 
         out_list = []
@@ -254,7 +228,7 @@ class SerializerUtil(object):
         except KeyError:
             # prevent pickle conversion - try to enforce explicit type converters
             warning_msg = 'guess_serializer_fcn: could not find converter for {}'.format(val.__class__.__name__)
-            print (warning_msg)
+            print(warning_msg)
             raise RuntimeError(warning_msg)
 
             # return self.generic_2_sql
@@ -273,10 +247,7 @@ class SerializerUtil(object):
             return self.type_2_deserializer_dict[stored_type]
         except KeyError:
             # prevent pickle conversion- try to enforce explicit type converters
-            # raise RuntimeError('guess_deserializer_fcn: could not find converter for {}'.format(stored_type))
-
             return self.sql_2_generic
-
 
     def val_2_sql(self, val):
         """
@@ -326,12 +297,8 @@ class DictWrapper(dict):
         :return: {str} pickle serialization string of the dictionary
         """
         su = SerializerUtil()
-
-        # state = {}
         state = self.copy()
-        # su_state = {}
         for key, val in list(self.items()):
-            # if key in ['su'] : continue
             state[key] = su.val_2_sql(val)
 
         return pickle.dumps(state)
@@ -349,17 +316,13 @@ class DictWrapper(dict):
         Overide of pickle-used method. Currently not in use
         :return: {dict} representation of the dict
         """
-        # print 'self.keys = ', self.local_dict.keys()
-        su = SerializerUtil()
-        # state = {}
-        state = self.copy()
-        # su_state = {}
-        for key, val in list(self.items()):
-            # if key in ['su'] : continue
-            state[key] = su.val_2_sql(val)
 
-        # del state['su']
-        # state['su'] = su_state
+        su = SerializerUtil()
+
+        state = self.copy()
+
+        for key, val in list(self.items()):
+            state[key] = su.val_2_sql(val)
 
         return state
 
@@ -368,12 +331,8 @@ class DictWrapper(dict):
         Overide of pickle-used method. Currently not in use
         :return: None
         """
-        su = {}
         for key, val in list(newstate.items()):
-            # newstate[key] = val[1]
             self[key] = val[1]
-            # newstate['su'] = None
-            # self.__dict__.update(newstate)
 
 
 class ListWrapper(list):
@@ -397,8 +356,6 @@ class ListWrapper(list):
 
         for val in self:
             out_state.append(su.val_2_sql(val))
-
-        # return str(pickle.dumps(out_state))
 
         return pickle.dumps(out_state)
 
@@ -446,7 +403,6 @@ class SettingsSQL(object):
             cur = self.conn.execute("SELECT name FROM settings")
             return [key[0] for key in cur.fetchall()]
 
-
     def setSetting(self, key, val):
 
         with self.conn:
@@ -468,11 +424,8 @@ class SettingsSQL(object):
                 raise KeyError("No such key: " + key)
 
             return self.su.sql_2_val(obj)
-            # return pickle.loads(obj[0].encode())
 
     def getSetting(self, key):
-        # type: (object) -> object
-        # type: (object) -> object
         """
         Added for backward compatibility
         :param key:
@@ -483,115 +436,3 @@ class SettingsSQL(object):
 
     def close(self):
         self.conn.close()
-
-
-
-# if __name__ == "__main__":  # pragma: no cover
-#     from PyQt5.QtGui import *
-#     from PyQt5.QtCore import *
-#     import sys
-#
-#     s = SettingsSQL('_settings_demo.sqlite')
-#
-#     l = [1,2,QColor('red'),'dupa']
-#     lw = ListWrapper(l)
-#
-#     l_serialized = lw.serialize()
-#
-#
-#     # l_out = pickle.dumps(lw)
-#
-#     print l_out
-#     print lw
-#
-#     l_load = pickle.loads(l_out)
-#
-#
-#     print
-#     sys.exit()
-#     #
-#     d = {'a': 2, 'b': 3, 'c': QColor('red')}
-#
-#     s.setSetting('dictionary', d)
-#
-#     dict_s = s.setting('dictionary')
-#
-#     dw = DictWrapper()
-#     dw.update(d)
-#
-#     p_serialized = dw.serialize()
-#
-#     p_out = pickle.dumps(dw)
-#     # s.dict_2_sql(d)
-#     #
-#
-#     p_load = pickle.loads(p_out)
-#
-#     print p_load
-#
-#     # # trying out serialization
-#     # val_type, val_repr = s.su.val_2_sql(dw)
-#     #
-#     # print val_type
-#     # print val_repr
-#     # #
-#     # # # dw = DictWrapper(d)
-#     # # # p_out = pickle.dumps(dw)
-#     # # # # s.dict_2_sql(d)
-#     # # # #
-#     # # #
-#     # # # p_load = pickle.loads(p_out)
-#     # # # print
-#     sys.exit()
-#
-#     s = SettingsSQL('_settings.sqlite')
-#
-#
-#     col = QColor('red')
-#     size = QSize(20, 30)
-#
-#     ba = QByteArray();
-#     ba.resize(5)
-#
-#     s.setSetting('bytearray', ba)
-#     s.setSetting('WindowSize', size)
-#     s.setSetting('ScreenshotFrequency', 8)
-#     s.setSetting('MinConcentration', 8.2)
-#     s.setSetting('ComplexNum', 8.2 + 3j)
-#     s.setSetting('dupa', 'blada2')
-#     # s.setSetting('window_data', {'size': 20, 'color': '#ffff00'})
-#     s.setSetting('window_color', col)
-#
-#     print s.setting('bytearray')
-#     print s.setting('WindowSize')
-#     print s.setting('ScreenshotFrequency')
-#     print s.setting('MinConcentration')
-#     print s.setting('ComplexNum')
-#     print s.setting('dupa')
-#     print s.setting('window_color')
-#
-#
-#     # d = SettingDict("_settings.sqlite")
-#     # d['RecentFile'] = '/dupa'
-#
-#     # import numpy as np
-#     #
-#     # d = SettingDict("test.sqlite")
-#     # d["thing"] = "whatever"
-#     # print(d["thing"])
-#     #
-#     # d["wat"] = np.random.random((100,200))
-#     # print(d["wat"])
-#     #
-#     # with SettingDict("test.sqlite") as pd:
-#     #     print(pd["wat"])
-#     #
-#     # print(d.keys())
-#     #
-#     # print(SettingDict().keys())
-#     #
-#     # pd2 = SettingDict(a=1, b=2, c=3)
-#     # for key in pd2.keys():
-#     #     print(pd2[key])
-#     #
-#     # print(len(pd2))
