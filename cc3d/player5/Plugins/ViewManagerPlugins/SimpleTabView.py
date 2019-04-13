@@ -2357,7 +2357,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
     def __restoreWindowsLayout(self):
         """
-
+        Restores windows layout based on the WindowsLayout setting.
+        Known limitation - when extra field is specified outside steppable constructopr
+        this window will NOT be restored. Instead it will default to cell field
         :return:
         """
 
@@ -2426,20 +2428,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
             win_id_list = sorted(win_id_list)
 
         # restore graphics windows first
-        # for windowId, windowDataDict in windows_layout_dict.iteritems():
         for win_id in win_id_list:
-            windowId = None
             try:
                 windowDataDict = windows_layout_dict[win_id]
             except:
 
-                windowId = str(win_id)
                 windowDataDict = windows_layout_dict[win_id]
-
-            # if windowId == str(0) or win_id==0:
-            #     continue
-
-            # gfw = self.findMDISubWindowForWidget(self.lastActiveWindow)
 
             gwd = GraphicsWindowData()
 
@@ -2459,7 +2453,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             gfw.apply_graphics_window_data(gwd)
 
-            # print ' PLOT WINDOW MANAGER  WINDOW LIST = ', self.plotManager.plotWindowList
 
     def setFieldTypesCML(self):
         '''

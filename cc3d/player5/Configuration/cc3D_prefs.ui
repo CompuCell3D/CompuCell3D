@@ -20,7 +20,7 @@
       <string>When checked uses floating window layout instead of Multi Document Interface</string>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab_output">
       <attribute name="title">
@@ -1736,7 +1736,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
    </item>
@@ -1745,18 +1745,34 @@
  <resources/>
  <connections>
   <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>CC3DPrefs</receiver>
-   <slot>accept()</slot>
+   <sender>contoursShowCB</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>isovalList</receiver>
+   <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>257</x>
-     <y>444</y>
+     <x>345</x>
+     <y>324</y>
     </hint>
     <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
+     <x>482</x>
+     <y>367</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>contoursShowCB</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>numberOfContoursLinesSpinBox</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>358</x>
+     <y>338</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>482</x>
+     <y>396</y>
     </hint>
    </hints>
   </connection>
@@ -1777,34 +1793,18 @@
    </hints>
   </connection>
   <connection>
-   <sender>contoursShowCB</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>isovalList</receiver>
-   <slot>setEnabled(bool)</slot>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>CC3DPrefs</receiver>
+   <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>345</x>
-     <y>324</y>
+     <x>257</x>
+     <y>444</y>
     </hint>
     <hint type="destinationlabel">
-     <x>380</x>
-     <y>341</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>contoursShowCB</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>numberOfContoursLinesSpinBox</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>362</x>
-     <y>321</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>376</x>
-     <y>366</y>
+     <x>157</x>
+     <y>274</y>
     </hint>
    </hints>
   </connection>

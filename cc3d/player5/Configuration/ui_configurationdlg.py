@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'cc3D_prefs.ui'
 #
-# Created by: PyQt5 UI code generator 5.7
+# Created by: PyQt5 UI code generator 5.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -719,16 +719,16 @@ class Ui_CC3DPrefs(object):
         self.buttonBox = QtWidgets.QDialogButtonBox(CC3DPrefs)
         self.buttonBox.setEnabled(True)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Apply|QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout_18.addWidget(self.buttonBox)
 
         self.retranslateUi(CC3DPrefs)
-        self.tabWidget.setCurrentIndex(2)
-        self.buttonBox.accepted.connect(CC3DPrefs.accept)
-        self.buttonBox.rejected.connect(CC3DPrefs.reject)
+        self.tabWidget.setCurrentIndex(0)
         self.contoursShowCB.toggled['bool'].connect(self.isovalList.setEnabled)
         self.contoursShowCB.toggled['bool'].connect(self.numberOfContoursLinesSpinBox.setEnabled)
+        self.buttonBox.rejected.connect(CC3DPrefs.reject)
+        self.buttonBox.accepted.connect(CC3DPrefs.accept)
         QtCore.QMetaObject.connectSlotsByName(CC3DPrefs)
 
     def retranslateUi(self, CC3DPrefs):
