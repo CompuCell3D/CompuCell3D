@@ -4,6 +4,7 @@ import vtk
 import math
 from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object, to_vtk_rgb
 from cc3d.core.GraphicsOffScreen.MetadataHandler import MetadataHandler
+from cc3d.cpp import PlayerPython
 
 VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 MODULENAME = '------  MVCDrawModel3D.py'
@@ -276,7 +277,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
         if lattice_type_str.lower() == 'hexagonal':
             hex_flag = True
 
-        import PlayerPython
+
 
         types_invisible = PlayerPython.vectorint()
         for type_label in drawing_params.screenshot_data.invisible_types:
