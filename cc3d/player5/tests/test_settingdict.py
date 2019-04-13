@@ -20,11 +20,6 @@ class TestSettingdict(unittest.TestCase):
         ba = QByteArray(bytes_to_write)
         # ba = QByteArray()
         # ba.resize(5)
-        # ba[0] = 0x3c
-        # ba[1] = 0xb8
-        # ba[2] = 0x64
-        # ba[3] = 0x18
-        # ba[4] = 0xca
         s.setSetting('bytearray', ba)
         ba_check = s.setting('bytearray')
 
@@ -32,11 +27,6 @@ class TestSettingdict(unittest.TestCase):
         ba = QByteArray(bytes_to_write)
         # ba = QByteArray()
         # ba.resize(5)
-        # ba[0] = 0x3c
-        # ba[1] = 0xb8
-        # ba[2] = 0x64
-        # ba[3] = 0x18
-        # ba[4] = 0xca
         s.setSetting('bytearray', ba)
         ba_check = s.setting('bytearray')
 
