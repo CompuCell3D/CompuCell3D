@@ -1,6 +1,15 @@
+
+
+# set(PYTHON_LIBRARY_TO_LINK ${PYTHON_LIBRARIES})
+# set(undefined_link_flags )
+# if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+#     set(PYTHON_LIBRARY_TO_LINK )
+#     set(undefined_link_flags "-undefined dynamic_lookup")
+# endif()
+
 SET(LIBS
    XMLUtilsShared
-   ${PYTHON_LIBRARIES}
+   ${PYTHON_LIBRARY_TO_LINK}
 )
 
 INCLUDE_DIRECTORIES(
@@ -20,6 +29,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 SWIG_LINK_LIBRARIES(CC3DXML ${LIBS})
+set_target_properties(CC3DXML PROPERTIES LINK_FLAGS ${undefined_link_flags})
 
 # install(TARGETS _CC3DXML    DESTINATION ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} )
 install(TARGETS CC3DXML    DESTINATION ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} )

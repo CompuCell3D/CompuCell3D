@@ -115,12 +115,12 @@ void ClassRegistry::initModules(Simulator *_sim){
 //       }else{//plugin parse data has been initialized externally
 //          plugin->init(this, ps.pluginParseDataVector[i]);
 //       }
-      
+
       //steppable->init(_sim, steppableParseDataVectorRef[i]);
 		steppable->init(_sim, steppableCC3DXMLElementVectorRef[i]);
       addStepper(type,steppable);
 //       _sim->registerSteerableObject(steppable);
-   
+
    }
 
    for (ActiveSteppers_t::iterator litr = activeSteppers.begin() ; litr != activeSteppers.end() ; ++litr){

@@ -92,23 +92,23 @@ restartEnabled(false)
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Simulator::~Simulator() {
-	// cerr<<"\n\n\n********************************************************************************"<<endl;	
-	// cerr<<"\n\n\n\n INSIDE SIMULATOR DELETE \n\n\n\n "<<endl;	
 	// cerr<<"\n\n\n********************************************************************************"<<endl;
-	
+	// cerr<<"\n\n\n\n INSIDE SIMULATOR DELETE \n\n\n\n "<<endl;
+	// cerr<<"\n\n\n********************************************************************************"<<endl;
+
 	delete classRegistry;
 	delete pUtils;
     delete pUtilsSingle;
 
 	cerr << "Simulator: extra destroy for boundary strategy" << endl;
 	BoundaryStrategy::destroy();
-    
+
 #ifdef QT_WRAPPERS_AVAILABLE
 	//restoring original cerr stream buffer
 	if (cerrStreamBufOrig)
 		cerr.rdbuf(cerrStreamBufOrig);
 
-	if (qStreambufPtr) 
+	if (qStreambufPtr)
 		delete qStreambufPtr;
 #endif
 
@@ -137,14 +137,14 @@ void Simulator::setOutputRedirectionTarget(ptrdiff_t  _ptr){
 	//if (!qStreambufPtr)
 	//	return ; //means setOutputRedirectionTarget has already been called
 
-	if (_ptr<0){//output goes to system console  
-		
+	if (_ptr<0){//output goes to system console
+
 		cerr.rdbuf(cerrStreamBufOrig);
 		return;
 	}
 
-	if (!_ptr){ //do not output anything at all		
-		cerr.rdbuf(0);	
+	if (!_ptr){ //do not output anything at all
+		cerr.rdbuf(0);
 		return;
 	}
 
@@ -169,7 +169,7 @@ std::vector<std::string> Simulator::getConcentrationFieldNameVector(){
 	vector<string> fieldNameVec;
 	std::map<std::string,Field3D<float>*>::iterator mitr;
 	for (mitr=concentrationFieldNameMap.begin()  ; mitr !=concentrationFieldNameMap.end() ; ++mitr){
-		fieldNameVec.push_back(mitr->first);	
+		fieldNameVec.push_back(mitr->first);
 	}
 	return fieldNameVec;
 }
@@ -210,7 +210,7 @@ void Simulator::serialize(){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Simulator::registerSteerableObject(SteerableObject * _steerableObject){
-	// cerr<<"Dealing with _steerableObject->steerableName()="<<_steerableObject->steerableName()<<endl;   
+	// cerr<<"Dealing with _steerableObject->steerableName()="<<_steerableObject->steerableName()<<endl;
 	std::map<std::string,SteerableObject *>::iterator mitr;
 	mitr=steerableObjectMap.find(_steerableObject->steerableName());
 	// cerr<<"after find"<<endl;
@@ -249,33 +249,33 @@ void Simulator::postEvent(CC3DEvent & _ev){
 
 		string pluginName;
 		BasicPluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
-		BasicPluginManager<Plugin>::infos_t::iterator it; 
-		//for (it = infos->begin(); it != infos->end(); it++)	{		
+		BasicPluginManager<Plugin>::infos_t::iterator it;
+		//for (it = infos->begin(); it != infos->end(); it++)	{
 		//	cerr<<" THIS IS PLUGIN NAME "<<(*it)->getName()<<endl;
 		//}
 
 		for (it = infos->begin(); it != infos->end(); it++){
-			pluginName=(*it)->getName();			
+			pluginName=(*it)->getName();
 			if (pluginManager.isLoaded((*it)->getName())) {
 				Plugin *plugin = pluginManager.get((*it)->getName());
-				plugin->handleEvent(_ev); 
-			}	
+				plugin->handleEvent(_ev);
+			}
 
 		}
 
 		string steppableName;
 		BasicPluginManager<Steppable>::infos_t *infos_step = &steppableManager.getPluginInfos();
-		BasicPluginManager<Steppable>::infos_t::iterator it_step; 
+		BasicPluginManager<Steppable>::infos_t::iterator it_step;
 		for (it_step = infos_step->begin(); it_step != infos_step->end(); it_step++){
 
 			steppableName=(*it_step)->getName();
 			// cerr<<"processign steppable="<<steppableName<<endl;
-			
+
 			if (steppableManager.isLoaded(steppableName)) {
 				// cerr<<"SENDING EVENT TO THE STEPPABLE "<<steppableName<<endl;
 				Steppable *steppable= steppableManager.get(steppableName);
-				steppable->handleEvent(_ev); 
-			}	
+				steppable->handleEvent(_ev);
+			}
 		}
 
 }
@@ -288,7 +288,7 @@ void Simulator::start() {
 		// Print the names of loaded plugins
 		cerr << "Simulator::start():  Plugins:";
 		BasicPluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
-		BasicPluginManager<Plugin>::infos_t::iterator it; 
+		BasicPluginManager<Plugin>::infos_t::iterator it;
 		for (it = infos->begin(); it != infos->end(); it++)
 			if (pluginManager.isLoaded((*it)->getName())) {
 				if (it != infos->begin()) cerr << ",";
@@ -313,7 +313,7 @@ void Simulator::start() {
 		stringstream errorMessageStream;
 
 		errorMessageStream<<"Exception in C++ code :\n"<<e.getMessage()<<"\n"<<"Location \n"<<"FILE :"<<e.getLocation().getFilename()<<"\n"<<"LINE :"<<e.getLocation().getLine();
-		recentErrorMessage=errorMessageStream.str(); 
+		recentErrorMessage=errorMessageStream.str();
 		cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
 		if (!newPlayerFlag){
 			throw e;
@@ -323,10 +323,10 @@ void Simulator::start() {
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Simulator::extraInit(){
-	
+
 	try{
 		BasicPluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
-		BasicPluginManager<Plugin>::infos_t::iterator it; 
+		BasicPluginManager<Plugin>::infos_t::iterator it;
 		//for (it = infos->begin(); it != infos->end(); it++)
 		//	if (pluginManager.isLoaded((*it)->getName())) {
 		//		pluginManager.get((*it)->getName())->extraInit(this);
@@ -355,7 +355,7 @@ void Simulator::extraInit(){
 		stringstream errorMessageStream;
 
 		errorMessageStream<<"Exception in C++ code :\n"<<e.getMessage()<<"\n"<<"Location \n"<<"FILE :"<<e.getLocation().getFilename()<<"\n"<<"LINE :"<<e.getLocation().getLine();
-		recentErrorMessage=errorMessageStream.str(); 
+		recentErrorMessage=errorMessageStream.str();
 		cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
 		if (!newPlayerFlag){
 			throw e;
@@ -376,7 +376,7 @@ void Simulator::step(const unsigned int currentStep) {
 		//    }
 		// Run potts metropolis
 		Dim3D dim = potts.getCellFieldG()->getDim();
-		int flipAttempts = (int)(dim.x * dim.y * dim.z * ppdCC3DPtr->flip2DimRatio); //may be a member 
+		int flipAttempts = (int)(dim.x * dim.y * dim.z * ppdCC3DPtr->flip2DimRatio); //may be a member
 		int flips = potts.metropolis(flipAttempts, ppdCC3DPtr->temperature);
 
 		currstep = currentStep;
@@ -399,7 +399,7 @@ void Simulator::step(const unsigned int currentStep) {
 		stringstream errorMessageStream;
 
 		errorMessageStream<<"Exception in C++ code :\n"<<e.getMessage()<<"\n"<<"Location \n"<<"FILE :"<<e.getLocation().getFilename()<<"\n"<<"LINE :"<<e.getLocation().getLine();
-		recentErrorMessage=errorMessageStream.str(); 
+		recentErrorMessage=errorMessageStream.str();
 		cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
 		if (!newPlayerFlag){
 			throw e;
@@ -430,7 +430,7 @@ void Simulator::finish() {
 		stringstream errorMessageStream;
 
 		errorMessageStream<<"Exception in C++ code :\n"<<e.getMessage()<<"\n"<<"Location \n"<<"FILE :"<<e.getLocation().getFilename()<<"\n"<<"LINE :"<<e.getLocation().getLine();
-		recentErrorMessage=errorMessageStream.str(); 
+		recentErrorMessage=errorMessageStream.str();
 		cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
 		if (!newPlayerFlag){
 			throw e;
@@ -451,43 +451,43 @@ void Simulator::unloadModules(){
 
 void Simulator::processMetadataCC3D(CC3DXMLElement * _xmlData){
 		if (!_xmlData) //no metadata were specified
-			return; 
+			return;
 		if (_xmlData->getFirstElement("NumberOfProcessors")) {
 			unsigned int numberOfProcessors=_xmlData->getFirstElement("NumberOfProcessors")->getUInt();
 			pUtils->setNumberOfWorkNodes(numberOfProcessors);
 			CC3DEventChangeNumberOfWorkNodes workNodeChangeEvent;
 			workNodeChangeEvent.newNumberOfNodes=numberOfProcessors;
-			
+
 			// this will cause redundant calculations inside pUtils but since we do not call it often it is ok . This way code remains cleaner
 			postEvent(workNodeChangeEvent);
 
 		}else if(_xmlData->getFirstElement("VirtualProcessingUnits")){
-			
+
 			unsigned int numberOfVPUs=_xmlData->getFirstElement("VirtualProcessingUnits")->getUInt();
 			unsigned int threadsPerVPU=0;
-			
+
 			if (_xmlData->getFirstElement("VirtualProcessingUnits")->findAttribute("ThreadsPerVPU")){
-				threadsPerVPU=_xmlData->getFirstElement("VirtualProcessingUnits")->getAttributeAsUInt("ThreadsPerVPU");				
+				threadsPerVPU=_xmlData->getFirstElement("VirtualProcessingUnits")->getAttributeAsUInt("ThreadsPerVPU");
 			}
-			cerr<<"updating VPU's numberOfVPUs="<<numberOfVPUs<<" threadsPerVPU="<<threadsPerVPU<<endl;	
+			cerr<<"updating VPU's numberOfVPUs="<<numberOfVPUs<<" threadsPerVPU="<<threadsPerVPU<<endl;
 			pUtils->setVPUs(numberOfVPUs,threadsPerVPU);
 
 			CC3DEventChangeNumberOfWorkNodes workNodeChangeEvent;
 			workNodeChangeEvent.newNumberOfNodes=numberOfVPUs;
-			
+
 			// this will cause redundant calculations inside pUtils but since we do not call it often it is ok . This way code remains cleaner
 			postEvent(workNodeChangeEvent);
 		}
 
 		if(_xmlData->getFirstElement("DebugOutputFrequency")){
 			//updating DebugOutputFrequency in Potts using Metadata
-			unsigned int debugOutputFrequency=_xmlData->getFirstElement("DebugOutputFrequency")->getUInt();			
+			unsigned int debugOutputFrequency=_xmlData->getFirstElement("DebugOutputFrequency")->getUInt();
 			potts.setDebugOutputFrequency(debugOutputFrequency>0 ?debugOutputFrequency: 0);
 			ppdCC3DPtr->debugOutputFrequency=debugOutputFrequency;
 		}
-        
+
         CC3DXMLElementList npmVec=_xmlData->getElements("NonParallelModule");
-        
+
         for (size_t i = 0 ; i<npmVec.size(); ++i){
             // this is simple initialization because for now we only allow Potts to have non-parallel execution. Adding more functionalty later will be straight-forward
             string moduleName=npmVec[i]->getAttribute("Name");
@@ -495,8 +495,8 @@ void Simulator::processMetadataCC3D(CC3DXMLElement * _xmlData){
                 potts.setParallelUtils(pUtilsSingle);
             }
         }
-        
-        
+
+
 
 }
 
@@ -507,18 +507,18 @@ void Simulator::initializeCC3D(){
 		cerr<<"BEFORE initializePotts"<<endl;
 		//initializePotts(ps.pottsParseData);
 		initializePottsCC3D(ps.pottsCC3DXMLElement);
-		
+
 
 
 		//initializing parallel utils  - OpenMP
 		pUtils->init(potts.getCellFieldG()->getDim());
         potts.setParallelUtils(pUtils); // by default Potts gets pUtls which can have multiple threads
-        
+
         //initializing parallel utils  - OpenMP  - for single CPU runs of selecte modules
         pUtilsSingle->init(potts.getCellFieldG()->getDim());
 
-        
-        
+
+
 		//after pUtils have been initialized we process metadata -  in this function potts may get pUtils limiting it to use single thread
 		processMetadataCC3D(ps.metadataCC3DXMLElement);
 
@@ -553,14 +553,14 @@ void Simulator::initializeCC3D(){
 				steppable->init(this, ps.steppableCC3DXMLElementVector[i]);
 				classRegistry->addStepper(steppableName,steppable);
 
-			} 
+			}
 		}
 		if(ppdCC3DPtr->cellTypeMotilityVector.size()){
 			//for(int i =0 ; i < ppdCC3DPtr->cellTypeMotilityVector.size() ;++i ){
 			//	cerr<<" GOT THIS CELL TYPE FOR MOTILITY"<<	ppdCC3DPtr->cellTypeMotilityVector[i].typeName<<endl;
 			//}
 
-			potts.initializeCellTypeMotility(ppdCC3DPtr->cellTypeMotilityVector);		
+			potts.initializeCellTypeMotility(ppdCC3DPtr->cellTypeMotilityVector);
 		}
 
 	}catch (const BasicException &e) {
@@ -568,7 +568,7 @@ void Simulator::initializeCC3D(){
 		stringstream errorMessageStream;
 
 		errorMessageStream<<"Exception during initialization/parsing :\n"<<e.getMessage()<<"\n"<<"Location \n"<<"FILE :"<<e.getLocation().getFilename()<<"\n"<<"LINE :"<<e.getLocation().getLine();
-		recentErrorMessage=errorMessageStream.str(); 
+		recentErrorMessage=errorMessageStream.str();
 		cerr<<"THIS IS recentErrorMessage="<<recentErrorMessage<<endl;
 		if (!newPlayerFlag){
 			throw e;
@@ -603,34 +603,34 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 	ppdCC3DPtr->dim.y = _xmlData->getFirstElement("Dimensions")->getAttributeAsUInt("y");
 	ppdCC3DPtr->dim.z = _xmlData->getFirstElement("Dimensions")->getAttributeAsUInt("z");
 
-	
+
 	//if (_xmlData->getFirstElement("FluctuationAmplitude")) {
 	//	ppdCC3DPtr->temperature=_xmlData->getFirstElement("FluctuationAmplitude")->getDouble();
 	//	fluctAmplGlobalReadFlag=true;
 	//}
 
-	
+
 	bool fluctAmplGlobalReadFlag=false;
 
 	bool fluctAmplByTypeReadFlag=false;
 	if(_xmlData->getFirstElement("FluctuationAmplitude")){
 		if (_xmlData->getFirstElement("FluctuationAmplitude")->findElement("FluctuationAmplitudeParameters")){
-		
+
 			CC3DXMLElementList motilityVec=_xmlData->getFirstElement("FluctuationAmplitude")->getElements("FluctuationAmplitudeParameters");
 			for (size_t i = 0 ; i<motilityVec.size(); ++i){
 				CellTypeMotilityData motilityData;
 
 				motilityData.typeName=motilityVec[i]->getAttribute("CellType");
 				motilityData.motility=static_cast<float>(motilityVec[i]->getAttributeAsDouble("FluctuationAmplitude"));
-				ppdCC3DPtr->cellTypeMotilityVector.push_back(motilityData);				
+				ppdCC3DPtr->cellTypeMotilityVector.push_back(motilityData);
 			}
 			fluctAmplByTypeReadFlag=true;
 		}else{
 			ppdCC3DPtr->temperature=_xmlData->getFirstElement("FluctuationAmplitude")->getDouble();
 			fluctAmplGlobalReadFlag=true;
 		}
-		
-	}	
+
+	}
 
 	if (!fluctAmplGlobalReadFlag && _xmlData->getFirstElement("Temperature")) {
 		ppdCC3DPtr->temperature=_xmlData->getFirstElement("Temperature")->getDouble();
@@ -644,9 +644,9 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 
 			motilityData.typeName=motilityVec[i]->getAttribute("CellType");
 			motilityData.motility=static_cast<float>(motilityVec[i]->getAttributeAsDouble("Motility"));
-			ppdCC3DPtr->cellTypeMotilityVector.push_back(motilityData);				
+			ppdCC3DPtr->cellTypeMotilityVector.push_back(motilityData);
 		}
-	}	
+	}
 
 	if (_xmlData->getFirstElement("Steps")) {
 		ppdCC3DPtr->numSteps=_xmlData->getFirstElement("Steps")->getUInt();
@@ -694,7 +694,7 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 	}
 
 	cerr << " ppdCC3DPtr->seed = " << ppdCC3DPtr->seed << endl;
-	
+
 
 	if (_xmlData->getFirstElement("Shape")) {
 		ppdCC3DPtr->shapeFlag=true;
@@ -786,7 +786,7 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 		cerr<<"initialized square lattice"<<endl;
 	}
 
-	cerr<<"potts.getLatticeType()="<<potts.getLatticeType()<<endl; //potts.getLatticeType() only works when the BoundaryStrategy singleton is instantiated! 
+	cerr<<"potts.getLatticeType()="<<potts.getLatticeType()<<endl; //potts.getLatticeType() only works when the BoundaryStrategy singleton is instantiated!
 
 	//    exit(0);
 	BoundaryStrategy::getInstance()->setDim(ppdCC3DPtr->dim);
@@ -833,11 +833,11 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 	if (_xmlData->getFirstElement("AcceptanceFunctionName")) {
 		ppdCC3DPtr->acceptanceFunctionName=_xmlData->getFirstElement("AcceptanceFunctionName")->getText();
 	}
-	//Setting Acceptance Function 
+	//Setting Acceptance Function
 	//    cerr<<"ppdCC3DPtr->acceptanceFunctionName="<<ppdCC3DPtr->acceptanceFunctionName<<endl;
 	potts.setAcceptanceFunctionByName(ppdCC3DPtr->acceptanceFunctionName);
 	//    exit(0);
-	
+
 
 	if (_xmlData->getFirstElement("Offset")) {//TODO: these two are really strange: assigning double into strings??
 		ppdCC3DPtr->acceptanceFunctionName=_xmlData->getFirstElement("Offset")->getDouble();
@@ -902,11 +902,11 @@ void Simulator::initializePottsCC3D(CC3DXMLElement * _xmlData){
 
 	//}
 
-	//set default values for units
-	potts.setMassUnit(ppdCC3DPtr->massUnit);
-	potts.setLengthUnit(ppdCC3DPtr->lengthUnit);
-	potts.setTimeUnit(ppdCC3DPtr->timeUnit);
-	//potts.setEnergyUnit(ppdCC3DPtr->massUnit*(ppdCC3DPtr->lengthUnit)*(ppdCC3DPtr->lengthUnit)/((ppdCC3DPtr->timeUnit)*(ppdCC3DPtr->timeUnit)));
+//	//set default values for units
+//	potts.setMassUnit(ppdCC3DPtr->massUnit);
+//	potts.setLengthUnit(ppdCC3DPtr->lengthUnit);
+//	potts.setTimeUnit(ppdCC3DPtr->timeUnit);
+//	//potts.setEnergyUnit(ppdCC3DPtr->massUnit*(ppdCC3DPtr->lengthUnit)*(ppdCC3DPtr->lengthUnit)/((ppdCC3DPtr->timeUnit)*(ppdCC3DPtr->timeUnit)));
 
 
 	//this might reinitialize some of the POtts members but it also makes sure that units are initialized too.
@@ -934,7 +934,7 @@ CC3DXMLElement * Simulator::getCC3DModuleData(std::string _moduleType,std::strin
 			if (ps.steppableCC3DXMLElementVector[i]->getAttribute("Type")==_moduleName)
 				return ps.steppableCC3DXMLElementVector[i];
 		}
-		return 0;		
+		return 0;
 	}else{
 		return 0;
 	}
@@ -975,7 +975,7 @@ void Simulator::steer(){
 
 	if(ps.updateMetadataCC3DXMLElement){
 		//here we will update Debug Frequency - the way we handle this will have to be rewritten though. This is ad hoc solution only
-		//mitr=steerableObjectMap.find("Potts"); 
+		//mitr=steerableObjectMap.find("Potts");
 		//if(mitr!=steerableObjectMap.end()){
 		//	if(ps.updateMetadataCC3DXMLElement->getFirstElement("DebugOutputFrequency")){
 		//		//updating DebugOutputFrequency in Potts using Metadata
@@ -986,7 +986,7 @@ void Simulator::steer(){
 		//	}
 
 		//}
-		
+
 		processMetadataCC3D(ps.updateMetadataCC3DXMLElement); // here we update number of work nodes and Debug output frequency
 		ps.updateMetadataCC3DXMLElement=0;
 
@@ -1018,13 +1018,13 @@ void Simulator::steer(){
 			mitr=steerableObjectMap.find(moduleName);
 			if(mitr!=steerableObjectMap.end()){
 				mitr->second->update(ps.updateSteppableCC3DXMLElementVector[i]);
-                
+
 				//now overwrite pointer to existing copy of the module data
 				for(size_t j=0 ; j < ps.steppableCC3DXMLElementVector.size(); ++j){
 					if(ps.steppableCC3DXMLElementVector[j]->getAttribute("Type")==moduleName)
 						ps.steppableCC3DXMLElementVector[j]=ps.updateSteppableCC3DXMLElementVector[i];
 				}
-			}	
+			}
 		}
 		ps.updateSteppableCC3DXMLElementVector.clear();
 	}

@@ -23,7 +23,7 @@ SET(LIBS
    UnitsStatic
    # XMLCerealStatic
    # ${XERCESC_LIBRARY}
-   ${PYTHON_LIBRARIES}
+   ${PYTHON_LIBRARY_TO_LINK}
 
 )
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
@@ -49,7 +49,7 @@ SET(LIBS
    UnitsShared
    # XMLCerealShared
    # ${XERCESC_LIBRARY}
-   ${PYTHON_LIBRARIES}
+   ${PYTHON_LIBRARY_TO_LINK}
    ${DOLFIN_LIBS}
 
 )
@@ -186,10 +186,11 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 # SWIG_LINK_LIBRARIES(CompuCell ${LIBS} ${LIBS_AUX})
 # todo - change back to include libs_aux
 SWIG_LINK_LIBRARIES(CompuCell ${LIBS} ${LIBS_AUX})
+set_target_properties(CompuCell PROPERTIES LINK_FLAGS ${undefined_link_flags})
 
 #TARGET_LINK_LIBRARIES(_CompuCell ${LIBS})
 
-install(TARGETS CompuCell    DESTINATION ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} )
+install(TARGETS CompuCell DESTINATION ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} )
 
 # install_targets(${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} _CompuCell)
 

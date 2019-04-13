@@ -53,11 +53,21 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     SET(LIBS
        CompuCellLibShared
        BasicUtilsStatic
-       ${PYTHON_LIBRARIES}
+       ${Python_LIBRARY_RELEASE}
        ${VTK_LIBS}
        # simthreadShared
 
     )
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+    SET(LIBS
+       CompuCellLibShared
+       BasicUtilsShared
+       ${PYTHON_LIBRARY_TO_LINK}
+       ${VTK_LIBS}
+
+       # simthreadShared
+    )
+
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     SET(LIBS
        CompuCellLibShared
@@ -75,6 +85,13 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     ADD_LIBRARY(FieldExtractor SHARED ${SRCS})
 
     target_link_libraries(FieldExtractor  ${LIBS})
+
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+   ADD_LIBRARY(FieldExtractor ${SRCS})
+
+    target_link_libraries(FieldExtractor  ${LIBS})
+    set_target_properties(FieldExtractor PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     ADD_LIBRARY(FieldExtractor ${SRCS})
 
@@ -88,16 +105,25 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 SET(LIBS_SWIG
    FieldExtractor
    ${LIBS}
-   ${PYTHON_LIBRARIES}
+   ${Python_LIBRARY_RELEASE}
 
 )
+
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+    SET(LIBS_SWIG
+        FieldExtractor
+        ${LIBS}
+        ${PYTHON_LIBRARY_TO_LINK}
+
+    )
+
 
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 SET(LIBS_SWIG
    FieldExtractor
    ${LIBS}
-   ${PYTHON_LIBRARIES}
+   ${Python_LIBRARY_RELEASE}
 
 )
 
@@ -106,7 +132,6 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 INCLUDE_DIRECTORIES(
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${PYINTERFACE_SRC_DIR}/PlayerPythonNew
-   ${PYTHON_INCLUDE_PATH}
    ${VTK_INCLUDE_DIRS}
 )
 
@@ -127,6 +152,7 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 SET_TARGET_PROPERTIES(PlayerPythonNew PROPERTIES OUTPUT_NAME  "PlayerPython")
 
 SWIG_LINK_LIBRARIES(PlayerPythonNew ${LIBS_SWIG})
+set_target_properties(PlayerPythonNew PROPERTIES LINK_FLAGS ${undefined_link_flags})
 
 # install_targets(${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} _PlayerPythonNew)
 install(TARGETS PlayerPythonNew DESTINATION ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR})
