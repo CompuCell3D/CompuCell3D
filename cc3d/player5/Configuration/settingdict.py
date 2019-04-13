@@ -112,7 +112,8 @@ class SerializerUtil(object):
         :return: {tuple} ('bytearray',QByteArray representation string)
         """
         out_str = ''
-        out_str = val.data().decode('utf8', 'backslashreplace')
+        # out_str = val.data().decode('utf8', 'backslashreplace')
+        out_str = val.data()
         return 'bytearray', out_str
         for i in range(val.count()):
             out_str += str(ord(val[i]))
@@ -127,6 +128,8 @@ class SerializerUtil(object):
         :param val: {str} sql string representation
         :return: {QByteArray}
         """
+        return QByteArray(val)
+
         try:
             elemsList = list(map(chr, list(map(int, val.split(',')))))
         except:

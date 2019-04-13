@@ -16,13 +16,37 @@ class TestSettingdict(unittest.TestCase):
 
         size = QSize(20, 30)
         col = QColor('red')
-        ba = QByteArray()
-        ba.resize(5)
+        bytes_to_write = b"\x00\x00\x00\xff\x00\x00\x00\x00\xfd\x00\x00\x00\x02"
+        ba = QByteArray(bytes_to_write)
+        # ba = QByteArray()
+        # ba.resize(5)
+        # ba[0] = 0x3c
+        # ba[1] = 0xb8
+        # ba[2] = 0x64
+        # ba[3] = 0x18
+        # ba[4] = 0xca
+        s.setSetting('bytearray', ba)
+        ba_check = s.setting('bytearray')
+
+        bytes_to_write = b"\x00"
+        ba = QByteArray(bytes_to_write)
+        # ba = QByteArray()
+        # ba.resize(5)
+        # ba[0] = 0x3c
+        # ba[1] = 0xb8
+        # ba[2] = 0x64
+        # ba[3] = 0x18
+        # ba[4] = 0xca
+        s.setSetting('bytearray', ba)
+        ba_check = s.setting('bytearray')
+
+        self.assertIsInstance(ba_check, QByteArray)
+        self.assertEqual(ba_check,bytes_to_write)
 
         s.setSetting('flag_false', False)
         s.setSetting('flag_true', True)
 
-        s.setSetting('bytearray', ba)
+
         s.setSetting('WindowSize', size)
         s.setSetting('ScreenshotFrequency', 8)
         s.setSetting('MinConcentration', 8.2)
@@ -32,6 +56,7 @@ class TestSettingdict(unittest.TestCase):
         s.setSetting('window_color', col)
 
         s.setSetting('qdate', QDate(1999,1,1))
+
 
 
         flag_true_s = s.setting('flag_true')
