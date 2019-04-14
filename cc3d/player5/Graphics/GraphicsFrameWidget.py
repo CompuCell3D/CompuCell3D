@@ -55,6 +55,8 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
 
         self.gd = GenericDrawer()
         self.gd.set_interactive_camera_flag(True)
+        self.gd.set_pixelized_cartesian_scene(Configuration.getSetting("PixelizedCartesianFields"))
+
 
         # placeholder for current screenshot data
         self.current_screenshot_data = None
