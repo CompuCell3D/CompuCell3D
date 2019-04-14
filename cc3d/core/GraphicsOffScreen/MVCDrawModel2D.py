@@ -45,6 +45,9 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.initArea()
         self.setParams()
 
+        self.pixelized_cartesian_field = True
+
+
     # Sets up the VTK simulation area 
     def initArea(self):
 
@@ -451,7 +454,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
         if lattice_type_str.lower() == 'hexagonal' and drawing_params.plane.lower() == "xy":
             self.init_concentration_field_actors_hex(actor_specs=actor_specs, drawing_params=drawing_params)
         else:
-            self.init_concentration_field_actors_cartesian(actor_specs=actor_specs, drawing_params=drawing_params)
+            if self.pixelized_cartesian_field:
+                self.init_concentration_field_actors_cartesian_pixelized(actor_specs=actor_specs, drawing_params=drawing_params)
+            else:
+
+                self.init_concentration_field_actors_cartesian(actor_specs=actor_specs, drawing_params=drawing_params)
 
         if mdata.get('LegendEnable', default=True):
             print('Enabling legend')
@@ -654,6 +661,136 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.contour_mapper.ScalarVisibilityOff()
         contour_actor.SetMapper(self.contour_mapper)
 
+    def init_concentration_field_actors_cartesian_pixelized(self, actor_specs, drawing_params=None):
+
+        actors_dict = actor_specs.actors_dict
+
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        dim = self.planeMapper(dim_order,
+                               (field_dim.x, field_dim.y, field_dim.z))  # [fieldDim.x, fieldDim.y, fieldDim.z]
+        field_name = drawing_params.fieldName
+        scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
+
+
+        con_array = vtk.vtkDoubleArray()
+        con_array.SetName("concentration")
+        con_array_int_addr = extract_address_int_from_vtk_object(vtkObj=con_array)
+        points_con = vtk.vtkPoints()
+        points_con_int_addr = extract_address_int_from_vtk_object(vtkObj=points_con)
+
+        cells_con = vtk.vtkCellArray()
+        cells_con_int_addr = extract_address_int_from_vtk_object(vtkObj=cells_con)
+        cells_con_poly_data = vtk.vtkPolyData()
+
+        field_type = drawing_params.fieldType.lower()
+        if field_type == 'confield':
+            fill_successful = self.field_extractor.fillConFieldData2DCartesian(
+                con_array_int_addr,
+                cells_con_int_addr,
+                points_con_int_addr,
+                field_name,
+                self.currentDrawingParameters.plane,
+                self.currentDrawingParameters.planePos
+            )
+        elif field_type == 'scalarfield':
+            fill_successful = self.field_extractor.fillScalarFieldData2DCartesian(
+
+                con_array_int_addr,
+                cells_con_int_addr,
+                points_con_int_addr,
+                field_name,
+                self.currentDrawingParameters.plane,
+                self.currentDrawingParameters.planePos
+            )
+        elif field_type == 'scalarfieldcelllevel':
+            fill_successful = self.field_extractor.fillScalarFieldCellLevelData2DCartesian(
+                con_array_int_addr,
+                cells_con_int_addr,
+                points_con_int_addr,
+                field_name,
+                self.currentDrawingParameters.plane,
+                self.currentDrawingParameters.planePos
+            )
+
+        else:
+            print(("unsuported field type {}".format(field_type)))
+            return
+
+        if not fill_successful:
+            return
+
+
+        min_max_dict = self.get_min_max_metadata(scene_metadata=scene_metadata, field_name=field_name)
+        min_range_fixed = min_max_dict['MinRangeFixed']
+        max_range_fixed = min_max_dict['MaxRangeFixed']
+        min_range = min_max_dict['MinRange']
+        max_range = min_max_dict['MaxRange']
+
+        range_array = con_array.GetRange()
+        min_con = range_array[0]
+        max_con = range_array[1]
+
+        # Note! should really avoid doing a getSetting with each step to speed up the rendering; only update when changed in Prefs
+        if min_range_fixed:
+            min_con = min_range
+
+        if max_range_fixed:
+            max_con = max_range
+
+        if mdata.get('ContoursOn', default=False):
+            contour_actor = actors_dict['contour_actor']
+            num_contour_lines = mdata.get('NumberOfContourLines', default=3)
+            self.initialize_contours_hex([dim[0], dim[1]], con_array, [min_con, max_con],
+                                         contour_actor, num_contour_lines=num_contour_lines)
+
+        cells_con_poly_data.GetCellData().SetScalars(con_array)
+        cells_con_poly_data.SetPoints(points_con)
+        cells_con_poly_data.SetPolys(cells_con)
+
+        if VTK_MAJOR_VERSION >= 6:
+            self.con_mapper.SetInputData(cells_con_poly_data)
+        else:
+            self.con_mapper.SetInput(cells_con_poly_data)
+
+        self.con_mapper.ScalarVisibilityOn()
+        self.con_mapper.SetLookupTable(self.clut)
+        self.con_mapper.SetScalarRange(min_con, max_con)
+
+        concentration_actor = actors_dict['concentration_actor']
+
+        concentration_actor.SetMapper(self.con_mapper)
+
+        self.init_min_max_actor(min_max_actor=actors_dict['min_max_text_actor'], range_array=range_array)
+
+        # create a text actor
+        # txt = vtk.vtkTextActor()
+        # txt = actors_dict['min_max_text_actor']
+        # txt.SetInput("Hello World 2!")
+        # print('model txt=', txt.GetInput())
+        # txtprop = txt.GetTextProperty()
+        # txtprop.SetFontFamilyToArial()
+        # txtprop.SetFontSize(10)
+        # txtprop.SetColor(1, 1, 1)
+        # # txt.SetDisplayPosition(200, 200)
+        # txt.SetPosition(20, 20)
+        # # txt.SetPosition2(200, 200)
+
+        # actors_dict['min_max_text_actor'] = txt
+
+        # min_max_text_actor = actors_dict['min_max_text_actor']
+        # min_max_text_actor.SetInput('DUPAAAAAAAAAAAAAAAAAAA')
+        # min_max_text_actor.SetPosition(20, 20)
+        #
+        # min_max_text_actor.GetTextProperty().SetFontSize(24)
+        # min_max_text_actor.GetTextProperty().SetColor(1.0, 0.0, 0.0)
+
+        if actor_specs.metadata is None:
+            actor_specs.metadata = {'mapper': self.con_mapper}
+        else:
+            actor_specs.metadata['mapper'] = self.con_mapper
+
     def init_concentration_field_actors_cartesian(self, actor_specs, drawing_params=None):
         """
         initializes concentration field actors for cartesian lattice
@@ -675,7 +812,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         con_array = vtk.vtkDoubleArray()
         con_array.SetName("concentration")
         con_array_int_addr = extract_address_int_from_vtk_object(vtkObj=con_array)
-        # todo - make it flexible
+        # # todo - make it flexible
 
         field_type = drawing_params.fieldType.lower()
         if field_type == 'confield':
@@ -844,7 +981,10 @@ class MVCDrawModel2D(MVCDrawModelBase):
         if self.is_lattice_hex(drawing_params=drawing_params):
             self.init_cell_field_actors_hex(actor_specs=actor_specs, drawing_params=drawing_params)
         else:
-            self.init_cell_field_actors_cartesian(actor_specs=actor_specs, drawing_params=drawing_params)
+            if self.pixelized_cartesian_field:
+                self.init_cell_field_actors_cartesian_pixelized(actor_specs=actor_specs, drawing_params=drawing_params)
+            else:
+                self.init_cell_field_actors_cartesian(actor_specs=actor_specs, drawing_params=drawing_params)
 
     def init_cell_field_actors_hex(self, actor_specs, drawing_params=None):
         """
@@ -905,6 +1045,123 @@ class MVCDrawModel2D(MVCDrawModelBase):
         cells_actor = actors_dict['cellsActor']
         cells_actor.SetMapper(self.hex_cells_mapper)
 
+    def init_cell_field_actors_cartesian_pixelized(self, actor_specs, drawing_params=None):
+        """
+        Initializes cell field actors for cartesian lattice
+        :param actor_specs: {ActorSpecs}
+        :param drawing_params: {DrawingParameters}
+        :return: None
+        """
+        actors_dict = actor_specs.actors_dict
+        field_dim = self.currentDrawingParameters.bsd.fieldDim
+        dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        scene_metadata = drawing_params.screenshot_data.metadata
+        mdata = MetadataHandler(mdata=scene_metadata)
+
+        # dim = self.planeMapper(dim_order,
+        #                             (field_dim.x, field_dim.y, field_dim.z))  # [fieldDim.x, fieldDim.y, fieldDim.z]
+
+        cell_type_array = vtk.vtkIntArray()
+        cell_type_array.SetName("celltype")
+        cell_type_int_addr = extract_address_int_from_vtk_object(vtkObj=cell_type_array)
+
+        cartesian_cells_array = vtk.vtkCellArray()
+
+        cartesian_cells_int_addr = extract_address_int_from_vtk_object(vtkObj=cartesian_cells_array)
+
+        cartesian_cells_poly_data = vtk.vtkPolyData()
+        # **********************************************
+
+        cartesian_points = vtk.vtkPoints()
+        cartesian_points_int_addr = extract_address_int_from_vtk_object(vtkObj=cartesian_points)
+
+        self.field_extractor.fillCellFieldData2DCartesian(
+            cell_type_int_addr,
+            cartesian_cells_int_addr,
+            cartesian_points_int_addr,
+            self.currentDrawingParameters.plane,
+            self.currentDrawingParameters.planePos
+        )
+
+        cartesian_cells_poly_data.GetCellData().SetScalars(cell_type_array)
+        cartesian_cells_poly_data.SetPoints(cartesian_points)
+        cartesian_cells_poly_data.SetPolys(cartesian_cells_array)
+
+        if VTK_MAJOR_VERSION >= 6:
+            self.cellsMapper.SetInputData(cartesian_cells_poly_data)
+        else:
+            self.cellsMapper.SetInput(cartesian_cells_poly_data)
+
+        cell_type_lut = self.get_type_lookup_table()
+        cell_type_lut_max = cell_type_lut.GetNumberOfTableValues() - 1
+
+        self.cellsMapper.ScalarVisibilityOn()
+        self.cellsMapper.SetLookupTable(cell_type_lut)
+        self.cellsMapper.SetScalarRange(0, cell_type_lut_max)
+
+        cells_actor = actors_dict['cellsActor']
+        cells_actor.SetMapper(self.cellsMapper)
+
+
+        #
+        #
+        # actors_dict = actor_specs.actors_dict
+        # field_dim = self.currentDrawingParameters.bsd.fieldDim
+        # dim_order = self.dimOrder(self.currentDrawingParameters.plane)
+        # scene_metadata = drawing_params.screenshot_data.metadata
+        # mdata = MetadataHandler(mdata=scene_metadata)
+        #
+        # # [fieldDim.x, fieldDim.y, fieldDim.z]
+        # dim = self.planeMapper(dim_order, (field_dim.x, field_dim.y, field_dim.z))
+        #
+        # cell_type_array = vtk.vtkIntArray()
+        # cell_type_array.SetName("celltype")
+        #
+        # # cell_type_int_addr = extract_address_int_from_vtk_object(field_extractor=self.field_extractor,
+        # #                                                          vtkObj=cell_type_array)
+        #
+        # cell_type_int_addr = extract_address_int_from_vtk_object(vtkObj=cell_type_array)
+        #
+        # self.field_extractor.fillCellFieldData2D(
+        #     cell_type_int_addr,
+        #     self.currentDrawingParameters.plane,
+        #     self.currentDrawingParameters.planePos
+        # )
+        #
+        # dim_new = [dim[0] + 1, dim[1] + 1, dim[2] + 1]
+        #
+        # u_grid_conc = vtk.vtkStructuredPoints()
+        # u_grid_conc.SetDimensions(dim_new[0], dim_new[1], dim_new[2])
+        #
+        # u_grid_conc.GetPointData().SetScalars(cell_type_array)
+        #
+        # cells_plane = vtk.vtkImageDataGeometryFilter()
+        #
+        #
+        # cells_plane.SetExtent(0, dim_new[0], 0, dim_new[1], 0, 0)
+        # if VTK_MAJOR_VERSION >= 6:
+        #     cells_plane.SetInputData(u_grid_conc)
+        # else:
+        #     cells_plane.SetInput(u_grid_conc)
+        #
+        # # concMapper=self.cellsMapper
+        #
+        # self.cellsMapper.SetInputConnection(cells_plane.GetOutputPort())
+        # self.cellsMapper.ScalarVisibilityOn()
+        #
+        # cell_type_lut = self.get_type_lookup_table()
+        # cell_type_lut_max = cell_type_lut.GetNumberOfTableValues() - 1
+        #
+        # self.cellsMapper.SetLookupTable(cell_type_lut)  # def'd in parent class
+        # self.cellsMapper.SetScalarRange(0, cell_type_lut_max)
+        #
+        #
+        #
+        # cells_actor = actors_dict['cellsActor']
+        # cells_actor.SetMapper(self.cellsMapper)
+        # # cells_actor.GetProperty().SetInterpolationToFlat()
+
+
     def init_cell_field_actors_cartesian(self, actor_specs, drawing_params=None):
         """
         Initializes cell field actors for cartesian lattice
@@ -944,6 +1201,8 @@ class MVCDrawModel2D(MVCDrawModelBase):
         u_grid_conc.GetPointData().SetScalars(cell_type_array)
 
         cells_plane = vtk.vtkImageDataGeometryFilter()
+
+
         cells_plane.SetExtent(0, dim_new[0], 0, dim_new[1], 0, 0)
         if VTK_MAJOR_VERSION >= 6:
             cells_plane.SetInputData(u_grid_conc)
@@ -961,8 +1220,11 @@ class MVCDrawModel2D(MVCDrawModelBase):
         self.cellsMapper.SetLookupTable(cell_type_lut)  # def'd in parent class
         self.cellsMapper.SetScalarRange(0, cell_type_lut_max)
 
+
+
         cells_actor = actors_dict['cellsActor']
         cells_actor.SetMapper(self.cellsMapper)
+        # cells_actor.GetProperty().SetInterpolationToFlat()
 
     def init_borders_actors(self, actor_specs, drawing_params=None):
         """

@@ -46,6 +46,7 @@ namespace CompuCell3D{
 		void extractCellField();
 
 		virtual void fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr , std::string _plane ,  int _pos);
+        virtual void fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos);
 		virtual void fillCellFieldData2DHex_old(vtk_obj_addr_int_t _cellTypeArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane ,  int _pos);
 	    virtual void fillCellFieldData2DHex(vtk_obj_addr_int_t _cellTypeArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane ,  int _pos);
 

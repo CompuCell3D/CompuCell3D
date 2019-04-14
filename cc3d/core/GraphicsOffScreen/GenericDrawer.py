@@ -83,6 +83,14 @@ class GenericDrawer():
         # # recent screenshot description data
         # self.recent_screenshot_data = None
 
+    def set_pixelized_cartesian_scene(self, flag: bool)->None:
+        """
+        Enables pixelized cartesian scene
+        :param flag:
+        :return:
+        """
+
+        self.draw_model_2D.pixelized_cartesian_field = flag
 
     def configsChanged(self):
         """
