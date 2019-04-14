@@ -845,7 +845,7 @@
                  <string>Checking this box will cause cartesian concentration field in 2D be drawn using explicit pixels providing &quot;exact&quot; representation of the field. Unchecked box will mean that field will be smoothed. </string>
                 </property>
                 <property name="text">
-                 <string>Pixelized scalar plot (&quot;exact&quot;)</string>
+                 <string>Pixelized (&quot;exact&quot;) cartesian fields (including cell field)  </string>
                 </property>
                </widget>
               </item>
