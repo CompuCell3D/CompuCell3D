@@ -1,6 +1,9 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.13)
 PROJECT(COMPUCELL3D)
 
+
+
+
 if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
@@ -13,19 +16,20 @@ endif()
 # cmake_policy(VERSION 3.13)
 
 
-#APPLE CHECK
+##APPLE CHECK
 IF (APPLE)
-#	SET (CMAKE_OSX_ARCHITECTURES "i386")            #x86_64 ppc ppc64
-#	SET (CMAKE_OSX_SYSROOT "/Developer/SDKs/MacOSX10.5.sdk")
-#	SET (CMAKE_CXX_FLAGS -mmacosx-version-min=10.4)
-#	SET (CMAKE_C_FLAGS -mmacosx-version-min=10.4)
-	MESSAGE ("GOT APPLE")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -mmacosx-version-min=10.6 -O3 -g -fpermissive -m64 " CACHE STRING "flags used during compilation by C++ compiler" FORCE)
+    SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6 -O3 -g -fpermissive -m64 " CACHE STRING "flags used during compilation by C compiler" FORCE)
+    SET(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "OSX deplyment target" FORCE)
+
+    MESSAGE ("GOT APPLE")
 ENDIF (APPLE)
 
+set(CMAKE_CXX_STANDARD 11)
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    SET (CMAKE_CXX_FLAGS -std=c++0x)
-endif()
+# if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+#     SET (CMAKE_CXX_FLAGS -std=c++0x)
+# endif()
 
 FIND_PACKAGE (OpenMP)
 
@@ -135,6 +139,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     OPTION(BUNDLE_PYTHON "Builds CC3D assuming Python will be bundled with CC3D - default on Windows and OSX" ON)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
     OPTION(BUNDLE_PYTHON "Builds CC3D assuming Python will be bundled with CC3D - default on Windows and OSX" ON)
+
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     OPTION(BUNDLE_PYTHON "Builds CC3D assuming Python will be bundled with CC3D - default on Windows and OSX" OFF)
     SET(DEPENDENCIES_DIR CACHE PATH  "Location of dependencies folder. This folder will be copied to installation directory")
@@ -504,6 +509,8 @@ ENDIF(USE_LIBRARY_VERSIONS)
   SET_TARGET_PROPERTIES(${LIBRARY_NAME}Shared  PROPERTIES OUTPUT_NAME CC3D${LIBRARY_NAME}${LIBRARY_SUFFIX} COMPILE_FLAGS "${LIBRARY_EXTRA_COMPILER_FLAGS}")
   INSTALL_TARGETS(${COMPUCELL3D_INSTALL_STEPPABLE_DIR} RUNTIME_DIRECTORY ${COMPUCELL3D_INSTALL_STEPPABLE_DIR} ${LIBRARY_NAME}Shared)
 ENDMACRO(ADD_COMPUCELL3D_STEPPABLE_ORIGINAL)
+
+
 
 
 # setting up compilation environment for XML parser based on Expat library
