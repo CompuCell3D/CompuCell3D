@@ -1,7 +1,19 @@
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+    # FIND_PACKAGE(PythonInterpreter)
+    FIND_PACKAGE(PythonLibs)
+    FIND_PACKAGE(PythonInterp)
+    # INCLUDE(FindPythonLibs)
+    set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE PATH "Python executable" FORCE)
+    set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE PATH "Python library" FORCE)
+    set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE PATH "Python include directory" FORCE )
+    set(Python_LIBRARY_RELEASE ${PYTHON_LIBRARY} CACHE PATH "Python release library directory" FORCE )
 
-find_package (Python 3 COMPONENTS Interpreter Development)
+else()
+    find_package (Python 3 COMPONENTS Interpreter Development)
+endif()
 
+# find_package (Python 3 COMPONENTS Interpreter Development)
 
 
 message("Python_FOUND: ${Python_FOUND}")

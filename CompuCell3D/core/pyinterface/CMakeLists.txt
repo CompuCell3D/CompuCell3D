@@ -30,7 +30,7 @@ SET(CMAKE_SWIG_FLAGS "")
 
 
 set(PYTHON_LIBRARY_TO_LINK ${Python_LIBRARY_RELEASE})
-set(undefined_link_flags )
+set(undefined_link_flags " ")
 if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
     # on osx wih conda python 3 we do not link python
     # https://github.com/shogun-toolbox/shogun/issues/4068
@@ -62,6 +62,7 @@ IF(SWIG_FOUND)
 #    add_subdirectory(PlayerPythonOld)
 
     FIND_PACKAGE(VTK REQUIRED)
+
     message("VTK_MAJOR_VERSION=" ${VTK_MAJOR_VERSION})
     if (${VTK_MAJOR_VERSION} EQUAL "6")
         add_definitions(-DVTK6)
