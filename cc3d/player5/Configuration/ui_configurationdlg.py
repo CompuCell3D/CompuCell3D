@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'cc3D_prefs.ui'
 #
-# Created by: PyQt5 UI code generator 5.7
+# Created by: PyQt5 UI code generator 5.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -719,16 +719,16 @@ class Ui_CC3DPrefs(object):
         self.buttonBox = QtWidgets.QDialogButtonBox(CC3DPrefs)
         self.buttonBox.setEnabled(True)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Apply|QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout_18.addWidget(self.buttonBox)
 
         self.retranslateUi(CC3DPrefs)
-        self.tabWidget.setCurrentIndex(2)
-        self.buttonBox.accepted.connect(CC3DPrefs.accept)
-        self.buttonBox.rejected.connect(CC3DPrefs.reject)
+        self.tabWidget.setCurrentIndex(0)
         self.contoursShowCB.toggled['bool'].connect(self.isovalList.setEnabled)
         self.contoursShowCB.toggled['bool'].connect(self.numberOfContoursLinesSpinBox.setEnabled)
+        self.buttonBox.rejected.connect(CC3DPrefs.reject)
+        self.buttonBox.accepted.connect(CC3DPrefs.accept)
         QtCore.QMetaObject.connectSlotsByName(CC3DPrefs)
 
     def retranslateUi(self, CC3DPrefs):
@@ -774,7 +774,7 @@ class Ui_CC3DPrefs(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_cell_type), _translate("CC3DPrefs", "Cells/Colors"))
         self.groupBox_6.setTitle(_translate("CC3DPrefs", "General properties"))
         self.pixelizedScalarFieldCB.setToolTip(_translate("CC3DPrefs", "Checking this box will cause cartesian concentration field in 2D be drawn using explicit pixels providing \"exact\" representation of the field. Unchecked box will mean that field will be smoothed. "))
-        self.pixelizedScalarFieldCB.setText(_translate("CC3DPrefs", "Pixelized scalar plot (\"exact\")"))
+        self.pixelizedScalarFieldCB.setText(_translate("CC3DPrefs", "Pixelized (\"exact\") cartesian fields (including cell field)  "))
         self.min_max_display_CB.setToolTip(_translate("CC3DPrefs", "Checking this box will cause cartesian concentration field in 2D be drawn using explicit pixels providing \"exact\" representation of the field. Unchecked box will mean that field will be smoothed. "))
         self.min_max_display_CB.setText(_translate("CC3DPrefs", "Display Min Max Field Values"))
         self.label_6.setText(_translate("CC3DPrefs", "Field name:"))

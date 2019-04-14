@@ -5,6 +5,7 @@ from collections import OrderedDict
 from copy import deepcopy
 from cc3d.core.GraphicsOffScreen.MetadataHandler import MetadataHandler
 
+
 MODULENAME='----MVCDrawView2D.py: '
 
 VTK_MAJOR_VERSION=vtk.vtkVersion.GetVTKMajorVersion()
@@ -18,6 +19,9 @@ class MVCDrawView2D(MVCDrawViewBase):
         self.setParams()
         
         # self.pixelizedScalarField = Configuration.getSetting("PixelizedScalarField")
+
+
+
 
     def initArea(self):
         '''

@@ -597,7 +597,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         # fpafter = Configuration.getSetting("FieldParams")
         # print 'CONF POPUP AFTER self.updateFieldParams \n\n\n FIELD PARAMS keys  = ',fpafter.keys()        
 
-        Configuration.setSetting("PixelizedScalarField", self.pixelizedScalarFieldCB.isChecked())
+        Configuration.setSetting("PixelizedCartesianFields", self.pixelizedScalarFieldCB.isChecked())
 
         Configuration.setSetting("MinRange", float(self.fieldMinRange.text()))
         Configuration.setSetting("MinRangeFixed", self.fieldMinRangeFixedCheckBox.isChecked())
@@ -716,7 +716,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         fp = Configuration.getSetting("FieldParams")
 
         self.showPlotAxesCB.setChecked(Configuration.getSetting("ShowPlotAxes"))
-        self.pixelizedScalarFieldCB.setChecked(Configuration.getSetting("PixelizedScalarField"))
+        self.pixelizedScalarFieldCB.setChecked(Configuration.getSetting("PixelizedCartesianFields"))
 
         self.fieldMinRange.setText(str(Configuration.getSetting("MinRange")))
         self.fieldMinRangeFixedCheckBox.setChecked(Configuration.getSetting("MinRangeFixed"))

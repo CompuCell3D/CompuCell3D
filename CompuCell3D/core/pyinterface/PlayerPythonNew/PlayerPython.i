@@ -30,7 +30,6 @@ namespace CompuCell3D{
 #endif
 
 
-
 %}
 
 

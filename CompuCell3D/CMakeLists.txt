@@ -434,7 +434,7 @@ MACRO(ADD_COMPUCELL3D_STEPPABLE)
   CDR(LIBRARY_SOURCES ${LIBRARY_DEFAULT_ARGS})
 
   #MESSAGE("*** NAME OF LIBRARY ${LIBRARY_NAME}")
-  #MESSAGE("Sources: ${LIBRARY_SOURCES}")
+  #MESSAGE("Sources: ${LIBRARY_SOURCES}")`
   #MESSAGE("Link libraries: ${LIBRARY_LINK_LIBRARIES}")
 
   # # # #Automatically write a dll header file - used once during code rewriting

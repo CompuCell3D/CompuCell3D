@@ -2356,32 +2356,33 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.__restoreWindowsLayout()
 
     def __restoreWindowsLayout(self):
-        '''
-        Restores Windows layout
-        :return:None
-        '''
+        """
+        Restores windows layout based on the WindowsLayout setting.
+        Known limitation - when extra field is specified outside steppable constructopr
+        this window will NOT be restored. Instead it will default to cell field
+        :return:
+        """
 
-        # todo 5 -  reimplement it
+        windows_layout_dict = Configuration.getSetting('WindowsLayout')
+        print('from settings windowsLayout = ', windows_layout_dict)
 
-        windowsLayoutDict = Configuration.getSetting('WindowsLayout')
-        print('from settings windowsLayout = ', windowsLayoutDict)
+        # first restore main window with id 0 - this window is the only window open at this point
+        # and it is open by default when simulation is started
+        # that's why we have to treat it in a special way but only when we determine
+        # that windows_layout_dict is not empty
 
-        # first restore main window with id 0 - this window is the only window open at this point and it is open by default when simulation is started
-        # that's why we have to treat it in a special way but only when we determine that windowsLayoutDict is not empty
-        if len(list(windowsLayoutDict.keys())):
+        if len(list(windows_layout_dict.keys())):
             try:
-                # windowDataDict0 = windowsLayoutDict[
-                #     str(0)]  # inside windowsLayoutDict windows are labeled using ints represented as strings
+                # windowDataDict0 = windows_layout_dict[
+                #     str(0)]  # inside windows_layout_dict windows are labeled using ints represented as strings
                 try:
-                    # inside windowsLayoutDict windows are labeled using ints represented as strings
-                    windowDataDict0 = windowsLayoutDict[str(0)]
+                    # inside windows_layout_dict windows are labeled using ints represented as strings
+                    windowDataDict0 = windows_layout_dict[str(0)]
                 except KeyError:
                     try:
-                        windowDataDict0 = windowsLayoutDict[0]
+                        windowDataDict0 = windows_layout_dict[0]
                     except KeyError:
-                        raise KeyError('Could not find 0 in the keys of windowsLayoutDict')
-
-                # from Graphics.GraphicsWindowData import GraphicsWindowData
+                        raise KeyError('Could not find 0 in the keys of windows_layout_dict')
 
                 gwd = GraphicsWindowData()
 
@@ -2409,7 +2410,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # we make a sorted list of graphics windows. Graphics Window with lowest id assumes role of
         # mainGraphicsWindow (actually this should be called maingraphicsWidget)
         win_id_list = []
-        for windowId, windowDataDict in windowsLayoutDict.items():
+        for windowId, windowDataDict in windows_layout_dict.items():
             if windowId == 0 or windowId == '0':
                 continue
 
@@ -2427,20 +2428,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
             win_id_list = sorted(win_id_list)
 
         # restore graphics windows first
-        # for windowId, windowDataDict in windowsLayoutDict.iteritems():
         for win_id in win_id_list:
-            windowId = None
             try:
-                windowDataDict = windowsLayoutDict[win_id]
+                windowDataDict = windows_layout_dict[win_id]
             except:
 
-                windowId = str(win_id)
-                windowDataDict = windowsLayoutDict[win_id]
-
-            # if windowId == str(0) or win_id==0:
-            #     continue
-
-            # gfw = self.findMDISubWindowForWidget(self.lastActiveWindow)
+                windowDataDict = windows_layout_dict[win_id]
 
             gwd = GraphicsWindowData()
 
@@ -2460,7 +2453,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             gfw.apply_graphics_window_data(gwd)
 
-            # print ' PLOT WINDOW MANAGER  WINDOW LIST = ', self.plotManager.plotWindowList
 
     def setFieldTypesCML(self):
         '''

@@ -7,6 +7,7 @@
    <Temperature id="temp">15</Temperature>
    <Flip2DimRatio>0.0</Flip2DimRatio>
    <Boundary_y>NoFlux</Boundary_y>
+   <!-- <LatticeType>Hexagonal</LatticeType> -->
  </Potts>
 
 
