@@ -39,7 +39,6 @@ namespace CompuCell3D{
 
 // #include <Potts3D/Cell.h>
 #include <Utils/Coordinates3D.h>
-#include <GraphicsData.h>
 #include <FieldStorage.h>
 
 #include <ndarray_adapter.h>
