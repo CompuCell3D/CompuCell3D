@@ -27,6 +27,7 @@ from cc3d.player5.Graphics.GraphicsWindowData import GraphicsWindowData
 from cc3d.player5.Simulation.CMLResultReader import CMLResultReader
 from cc3d.player5.Simulation.SimulationThread import SimulationThread
 from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object
+from cc3d.player5 import Graphics
 from cc3d.core import XMLUtils
 from .PlotManagerSetup import createPlotManager
 from .WidgetManager import WidgetManager
@@ -174,6 +175,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.setParams()
         self.mainGraphicsWidget = None  # vs.  lastActiveWindow
+        self.lastActiveRealWindow = None
 
         # determine if some relevant plugins are defined in the model
         self.pluginFPPDefined = False  # FocalPointPlasticity
@@ -3099,7 +3101,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if not activeSubWindow:
             return
 
-        import Graphics
+
         if isinstance(activeSubWindow.widget(), Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
             activeSubWindow.widget().resetCamera()
 
@@ -3118,14 +3120,18 @@ class SimpleTabView(MainArea, SimpleViewManager):
         @param pageName name of the configuration page to show (string or QString)
         :return:None
         """
-        activeFieldNamesList = []
+        active_field_names_list = []
         for idx in range(len(self.fieldTypes)):
-            fieldName = list(self.fieldTypes.keys())[idx]
-            if fieldName != 'Cell_Field':  # rwh: dangerous to hard code this field name
-                # self.dlg.fieldComboBox.addItem(fieldName)   # this is where we set the combobox of field names in Prefs
-                activeFieldNamesList.append(str(fieldName))
+            field_name = list(self.fieldTypes.keys())[idx]
+            if field_name != 'Cell_Field':
+                active_field_names_list.append(str(field_name))
 
-        Configuration.setUsedFieldNames(activeFieldNamesList)
+        currently_active_field = self.lastActiveRealWindow.widget().fieldComboBox.currentText()
+        if currently_active_field in active_field_names_list:
+            active_field_names_list = list(filter(lambda elem: elem != currently_active_field, active_field_names_list))
+            active_field_names_list.insert(0,currently_active_field)
+
+        Configuration.setUsedFieldNames(active_field_names_list)
 
         dlg = ConfigurationDialog(self, 'Configuration', True)
         self.dlg = dlg  # rwh: to allow enable/disable widgets in Preferences
@@ -3137,8 +3143,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.dlg.fieldComboBox.clear()
 
-        for fieldName in activeFieldNamesList:
-            self.dlg.fieldComboBox.addItem(fieldName)  # this is where we set the combobox of field names in Prefs
+        for field_name in active_field_names_list:
+            self.dlg.fieldComboBox.addItem(field_name)  # this is where we set the combobox of field names in Prefs
 
         # TODO - fix this - figure out if config dialog has configsChanged signal
         # self.connect(dlg, SIGNAL('configsChanged'), self.__configsChanged)
