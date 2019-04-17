@@ -1,9 +1,9 @@
 from .MVCDrawModelBase import MVCDrawModelBase
 import vtk
 import math
+from math import sqrt
 import string
 from cc3d.player5.Utilities.utils import extract_address_int_from_vtk_object, to_vtk_rgb
-
 from cc3d.core.GraphicsOffScreen.MetadataHandler import MetadataHandler
 from cc3d.core.iterators import CellList, FocalPointPlasticityDataList, InternalFocalPointPlasticityDataList
 from cc3d.cpp import CompuCell
@@ -1544,7 +1544,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         return [tuple[order[0]], tuple[order[1]], tuple[order[2]]]
 
     def HexCoordXY(self, x, y, z):
-        from math import sqrt
+
         if (z % 2):
             if (y % 2):
                 return [x, sqrt(3.0) / 2.0 * (y + 2.0 / 3.0), z * sqrt(6.0) / 3.0]

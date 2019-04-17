@@ -12,7 +12,7 @@ from typing import Union
 from cc3d.cpp import CompuCell
 from cc3d.core.SBMLSolverHelper import SBMLSolverHelper
 import types
-
+import warnings
 
 class SteppablePy:
     def __init__(self):
@@ -142,14 +142,16 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         self.field = FieldFetcher()
 
-        # plugin declarations =
+        # plugin declarations
         self.neighbor_tracker_plugin = None
         self.neighborTrackerPlugin = None
         self.focal_point_plasticity_plugin = None
         self.focalPointPlasticityPlugin = None
 
-
-
+        self.plugin_init_dict = {
+            "NeighborTracker":['neighbor_tracker_plugin', 'neighborTrackerPlugin'],
+            "FocalPointPlasticity":['focal_point_plasticity_plugin', 'focalPointPlasticityPlugin']
+        }
 
     @property
     def simulator(self):
@@ -176,8 +178,32 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         return self.simulator.getPotts().getCellInventory()
 
     @property
-    def clusterInventory(self):
+    def clusterInventory(self)->object:
         return self.inventory.getClusterInventory()
+
+    def fetch_loaded_plugins(self) -> None:
+        """
+        Processes self.plugin_init_dict and initializes member variables according to specification in
+        self.plugin_init_dict. relies on fixed naming convention for plugin accessor functions defined in
+        pyinterface/CompuCellPython/CompuCellExtraDeclarations.i in  PLUGINACCESSOR macro
+        :return:
+        """
+
+        for plugin_name , member_var_list in self.plugin_init_dict.items():
+            if self.simulator.pluginManager.isLoaded(plugin_name):
+                accessor_fcn_name = 'get'+plugin_name+'Plugin'
+                try:
+                    accessor_function = getattr(CompuCell, accessor_fcn_name)
+                except AttributeError:
+                    warnings.warn('Could not locate {accessor_fcn_name} membed of CompuCell python module')
+                    continue
+
+                plugin_obj = accessor_function()
+
+                for plugin_member_name in member_var_list:
+                    setattr(self, plugin_member_name, plugin_obj)
+
+
 
     def core_init(self):
 
@@ -203,21 +229,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             self.typename_to_attribute(cell_type_name=type_name, type_id=type_id)
             # setattr(self, type_name.upper(), type_id)
 
-        # NeighborTrackerPlugin
-        self.neighbor_tracker_plugin = None
-        if self.simulator.pluginManager.isLoaded("NeighborTracker"):
-            self.neighbor_tracker_plugin = CompuCell.getNeighborTrackerPlugin()
-
-            # legacy API
-            self.neighborTrackerPlugin = self.neighbor_tracker_plugin
-
-        # FocalPointPlasticity
-        self.focal_point_plasticity_plugin = None
-        if self.simulator.pluginManager.isLoaded("FocalPointPlasticity"):
-            self.focal_point_plasticity_plugin = CompuCell.getFocalPointPlasticityPlugin()
-            # legacy API
-            self.focalPointPlasticityPlugin = self.focal_point_plasticity_plugin
-
+        self.fetch_loaded_plugins()
 
 
         return
