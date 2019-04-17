@@ -20,24 +20,7 @@
 *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.        *
 *************************************************************************/
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/WatchableField3D.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Potts3D/Cell.h>
-// // // #include <CompuCell3D/Automaton/Automaton.h>
-// // // #include <PublicUtilities/NumericalUtils.h>
-// // // #include <Utils/Coordinates3D.h>
-
 using namespace CompuCell3D;
-
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-// // // #include <PublicUtilities/ParallelUtilsOpenMP.h>
-// // // #include <iostream>
-// // // #include <algorithm>
-
 using namespace std;
 
 #include "FocalPointPlasticityPlugin.h"
@@ -118,39 +101,39 @@ void FocalPointPlasticityPlugin::handleEvent(CC3DEvent & _event){
 
 void FocalPointPlasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
-	if(potts->getDisplayUnitsFlag()){
-		Unit targetLengthPlasticityUnit=potts->getLengthUnit();
-		Unit lambdaPlasticityUnit=potts->getEnergyUnit()/(targetLengthPlasticityUnit*targetLengthPlasticityUnit);
+	//if(potts->getDisplayUnitsFlag()){
+	//	Unit targetLengthPlasticityUnit=potts->getLengthUnit();
+	//	Unit lambdaPlasticityUnit=potts->getEnergyUnit()/(targetLengthPlasticityUnit*targetLengthPlasticityUnit);
 
-		CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-		if (!unitsElem){ //add Units element
-			unitsElem=_xmlData->attachElement("Units");
-		}
+	//	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
+	//	if (!unitsElem){ //add Units element
+	//		unitsElem=_xmlData->attachElement("Units");
+	//	}
 
-		if(unitsElem->getFirstElement("TargetDistanceUnit")){
-			unitsElem->getFirstElement("TargetDistanceUnit")->updateElementValue(targetLengthPlasticityUnit.toString());
-		}else{
-			unitsElem->attachElement("TargetDistanceUnit",targetLengthPlasticityUnit.toString());
-		}
+	//	if(unitsElem->getFirstElement("TargetDistanceUnit")){
+	//		unitsElem->getFirstElement("TargetDistanceUnit")->updateElementValue(targetLengthPlasticityUnit.toString());
+	//	}else{
+	//		unitsElem->attachElement("TargetDistanceUnit",targetLengthPlasticityUnit.toString());
+	//	}
 
-		if(unitsElem->getFirstElement("MaxDistanceUnit")){
-			unitsElem->getFirstElement("MaxDistanceUnit")->updateElementValue(targetLengthPlasticityUnit.toString());
-		}else{
-			unitsElem->attachElement("MaxDistanceUnit",targetLengthPlasticityUnit.toString());
-		}
+	//	if(unitsElem->getFirstElement("MaxDistanceUnit")){
+	//		unitsElem->getFirstElement("MaxDistanceUnit")->updateElementValue(targetLengthPlasticityUnit.toString());
+	//	}else{
+	//		unitsElem->attachElement("MaxDistanceUnit",targetLengthPlasticityUnit.toString());
+	//	}
 
-		if(unitsElem->getFirstElement("LambdaUnit")){
-			unitsElem->getFirstElement("LambdaUnit")->updateElementValue(lambdaPlasticityUnit.toString());
-		}else{
-			unitsElem->attachElement("LambdaUnit",lambdaPlasticityUnit.toString());
-		}
+	//	if(unitsElem->getFirstElement("LambdaUnit")){
+	//		unitsElem->getFirstElement("LambdaUnit")->updateElementValue(lambdaPlasticityUnit.toString());
+	//	}else{
+	//		unitsElem->attachElement("LambdaUnit",lambdaPlasticityUnit.toString());
+	//	}
 
-		if(unitsElem->getFirstElement("ActivationEnergyUnit")){
-			unitsElem->getFirstElement("ActivationEnergyUnit")->updateElementValue(potts->getEnergyUnit().toString());
-		}else{
-			unitsElem->attachElement("ActivationEnergyUnit",(potts->getEnergyUnit()).toString());
-		}
-	}
+	//	if(unitsElem->getFirstElement("ActivationEnergyUnit")){
+	//		unitsElem->getFirstElement("ActivationEnergyUnit")->updateElementValue(potts->getEnergyUnit().toString());
+	//	}else{
+	//		unitsElem->attachElement("ActivationEnergyUnit",(potts->getEnergyUnit()).toString());
+	//	}
+	//}
 	automaton = potts->getAutomaton();
 
 	set<unsigned char> cellTypesSet;

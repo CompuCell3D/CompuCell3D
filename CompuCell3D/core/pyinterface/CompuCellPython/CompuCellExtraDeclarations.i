@@ -542,29 +542,29 @@ PLUGINACCESSOR(NeighborTracker)
 //
 ////Focal Point Plasticity Plugin
 //
-//%include <CompuCell3D/plugins/FocalPointPlasticity/FocalPointPlasticityTracker.h>
-//%template (focalPointPlasticityTrackerAccessor) BasicClassAccessor<FocalPointPlasticityTracker>; //necessary to get PlasticityTracker accessor working
-//%template (focalPointPlasticitySetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::FocalPointPlasticityTrackerData> , CompuCell3D::FocalPointPlasticityTrackerData >;
-//// %template (focalPointPlasticitySetPyItr) STLPyIterator<std::set<CompuCell3D::FocalPointPlasticityTrackerData> >;
-//%template (focalPointPlasticityTrackerDataSet) std::set<CompuCell3D::FocalPointPlasticityTrackerData>; //necessary to get basic set functionality working
-//%template (focalPointPlasticityTrackerDataVector) std::vector<CompuCell3D::FocalPointPlasticityTrackerData>; //necessary to get basic set functionality working
-//PLUGINACCESSOR(FocalPointPlasticity)
-//
-//
-//
-//
-//// %include <CompuCell3D/plugins/FocalPointPlasticity/FocalPointPlasticityPlugin.h>
-//// 
-//// %inline %{
-////  FocalPointPlasticityPlugin * getFocalPointPlasticityPlugin(){
-////       return (FocalPointPlasticityPlugin *)Simulator::pluginManager.get("FocalPointPlasticity");
-////    }
-//// 
-//// CompuCell3D::FocalPointPlasticityTrackerData & derefPlasticityTrackerData(std::set<CompuCell3D::FocalPointPlasticityTrackerData>::iterator &_itr){
-////       return const_cast<CompuCell3D::FocalPointPlasticityTrackerData &>(*_itr);
-////    }
-//// 
-//// %}
+%include <CompuCell3D/plugins/FocalPointPlasticity/FocalPointPlasticityTracker.h>
+%template (focalPointPlasticityTrackerAccessor) BasicClassAccessor<FocalPointPlasticityTracker>; //necessary to get PlasticityTracker accessor working
+%template (focalPointPlasticitySetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::FocalPointPlasticityTrackerData> , CompuCell3D::FocalPointPlasticityTrackerData >;
+%template (focalPointPlasticitySetPyItr) STLPyIterator<std::set<CompuCell3D::FocalPointPlasticityTrackerData> >;
+%template (focalPointPlasticityTrackerDataSet) std::set<CompuCell3D::FocalPointPlasticityTrackerData>; //necessary to get basic set functionality working
+%template (focalPointPlasticityTrackerDataVector) std::vector<CompuCell3D::FocalPointPlasticityTrackerData>; //necessary to get basic set functionality working
+PLUGINACCESSOR(FocalPointPlasticity)
+
+
+
+
+ ////%include <CompuCell3D/plugins/FocalPointPlasticity/FocalPointPlasticityPlugin.h>
+ ////
+ ////%inline %{
+ //// FocalPointPlasticityPlugin * getFocalPointPlasticityPlugin(){
+ ////      return (FocalPointPlasticityPlugin *)Simulator::pluginManager.get("FocalPointPlasticity");
+ ////   }
+ ////
+ ////CompuCell3D::FocalPointPlasticityTrackerData & derefPlasticityTrackerData(std::set<CompuCell3D::FocalPointPlasticityTrackerData>::iterator &_itr){
+ ////      return const_cast<CompuCell3D::FocalPointPlasticityTrackerData &>(*_itr);
+ ////   }
+ ////
+ ////%}
 //// 
 //
 //// //MolecularContactPlugin

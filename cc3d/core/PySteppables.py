@@ -142,6 +142,15 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         self.field = FieldFetcher()
 
+        # plugin declarations =
+        self.neighbor_tracker_plugin = None
+        self.neighborTrackerPlugin = None
+        self.focal_point_plasticity_plugin = None
+        self.focalPointPlasticityPlugin = None
+
+
+
+
     @property
     def simulator(self):
         return self._simulator()
@@ -198,6 +207,18 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         self.neighbor_tracker_plugin = None
         if self.simulator.pluginManager.isLoaded("NeighborTracker"):
             self.neighbor_tracker_plugin = CompuCell.getNeighborTrackerPlugin()
+
+            # legacy API
+            self.neighborTrackerPlugin = self.neighbor_tracker_plugin
+
+        # FocalPointPlasticity
+        self.focal_point_plasticity_plugin = None
+        if self.simulator.pluginManager.isLoaded("FocalPointPlasticity"):
+            self.focal_point_plasticity_plugin = CompuCell.getFocalPointPlasticityPlugin()
+            # legacy API
+            self.focalPointPlasticityPlugin = self.focal_point_plasticity_plugin
+
+
 
         return
         self.potts = self.simulator.getPotts()
@@ -398,6 +419,26 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         :return: sucessfully fetched cell id or None
         """
         return self.inventory.attemptFetchingCellById(cell_id)
+
+    def getFocalPointPlasticityDataList(self, _cell):
+        if self.focal_point_plasticity_plugin:
+            return FocalPointPlasticityDataList(self.focal_point_plasticity_plugin, _cell)
+
+        return None
+
+    def getInternalFocalPointPlasticityDataList(self, _cell):
+        if self.focal_point_plasticity_plugin:
+            return InternalFocalPointPlasticityDataList(self.focal_point_plasticity_plugin, _cell)
+
+        return None
+
+    def getAnchorFocalPointPlasticityDataList(self, _cell):
+        if self.focal_point_plasticity_plugin:
+            return AnchorFocalPointPlasticityDataList(self.focal_point_plasticity_plugin, _cell)
+
+        return None
+
+
 
     # def registerXMLElementUpdate(self, *args):
     #     '''this function registers core module XML Element from wchich XML subelement has been fetched.It returns XML subelement

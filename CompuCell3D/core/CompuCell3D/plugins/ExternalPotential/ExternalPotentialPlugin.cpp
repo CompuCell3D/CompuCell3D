@@ -1,16 +1,4 @@
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-// // // #include <CompuCell3D/Field3D/Field3D.h>
-// // // #include <CompuCell3D/Field3D/AdjacentNeighbor.h>
-// // // #include <CompuCell3D/Automaton/Automaton.h>
-// // // #include <BasicUtils/BasicClassGroup.h>
-
-// // // #include <PublicUtilities/NumericalUtils.h>
-// // // #include <Utils/Coordinates3D.h>
-// // // #include <PublicUtilities/StringUtils.h>
-
-
 using namespace CompuCell3D;
 using namespace std;
 
@@ -85,24 +73,24 @@ void ExternalPotentialPlugin::extraInit(Simulator *_simulator){
 void ExternalPotentialPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 
-	if(potts->getDisplayUnitsFlag()){
-		Unit extternalPotentialLambdaUnit=potts->getEnergyUnit()/potts->getLengthUnit();
+	//if(potts->getDisplayUnitsFlag()){
+	//	Unit extternalPotentialLambdaUnit=potts->getEnergyUnit()/potts->getLengthUnit();
 
 
 
 
-		CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-		if (!unitsElem){ //add Units element
-			unitsElem=_xmlData->attachElement("Units");
-		}
+	//	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
+	//	if (!unitsElem){ //add Units element
+	//		unitsElem=_xmlData->attachElement("Units");
+	//	}
 
-		if(unitsElem->getFirstElement("LambdaUnit")){
-			unitsElem->getFirstElement("LambdaUnit")->updateElementValue(extternalPotentialLambdaUnit.toString());
-		}else{
-			unitsElem->attachElement("LambdaUnit",extternalPotentialLambdaUnit.toString());
-		}
+	//	if(unitsElem->getFirstElement("LambdaUnit")){
+	//		unitsElem->getFirstElement("LambdaUnit")->updateElementValue(extternalPotentialLambdaUnit.toString());
+	//	}else{
+	//		unitsElem->attachElement("LambdaUnit",extternalPotentialLambdaUnit.toString());
+	//	}
 
-	}
+	//}
 
 	bool comBasedAlgorithm=false;
 	if(_xmlData->findElement("Algorithm")){ 

@@ -329,3 +329,135 @@ class CellNeighborIteratorFlex:
 
     def __iter__(self):
         return self
+
+class FocalPointPlasticityDataList:
+    def __init__(self, _focalPointPlasticityPlugin, _cell):
+        self.focalPointPlasticityPlugin = _focalPointPlasticityPlugin
+        self.focalPointPlasticityTrackerAccessor = self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerAccessorPtr()
+        self.cell = _cell
+
+    def __len__(self):
+        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
+        return int(self.focalPointPlasticityTracker.focalPointPlasticityNeighbors.size())
+
+    def __getitem__(self, idx):
+        if idx > self.__len__() - 1: raise IndexError(
+            "Out of bounds index: FocalPointPlasticityDataList index = %s is out of bounds" % str(idx))
+        for counter, data in enumerate(self.__iter__()):
+            if idx == counter: return data
+
+    def __iter__(self):
+        return FocalPointPlasticityDataIterator(self)
+
+
+class FocalPointPlasticityDataIterator:
+    def __init__(self, _focalPointPlasticityDataList):
+        self.focalPointPlasticityTrackerAccessor = _focalPointPlasticityDataList.focalPointPlasticityTrackerAccessor
+        self.cell = _focalPointPlasticityDataList.cell
+        self.focalPointPlasticityPlugin = _focalPointPlasticityDataList.focalPointPlasticityPlugin
+        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
+        self.focalPointPlasticityDataSetItr = CompuCell.focalPointPlasticitySetPyItr()
+        self.focalPointPlasticityDataSetItr.initialize(self.focalPointPlasticityTracker.focalPointPlasticityNeighbors)
+        self.focalPointPlasticityDataSetItr.setToBegin()
+
+    def __next__(self):
+        if not self.focalPointPlasticityDataSetItr.isEnd():
+            self.currentFocalPointPlasticityDataSetItr = self.focalPointPlasticityDataSetItr.current
+            self.focalPointPlasticityData = self.focalPointPlasticityDataSetItr.getCurrentRef()
+            self.focalPointPlasticityDataSetItr.next()
+            return self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerData(self.focalPointPlasticityData)
+        #             return self.plasticityData
+        else:
+            raise StopIteration
+
+    def __iter__(self):
+        return self
+
+
+class InternalFocalPointPlasticityDataList:
+    def __init__(self, _focalPointPlasticityPlugin, _cell):
+        self.focalPointPlasticityPlugin = _focalPointPlasticityPlugin
+        self.focalPointPlasticityTrackerAccessor = self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerAccessorPtr()
+        self.cell = _cell
+
+    def __getitem__(self, idx):
+        if idx > self.__len__() - 1: raise IndexError(
+            "Out of bounds index: InternalFocalPointPlasticityDataList index = %s is out of bounds" % str(idx))
+        for counter, data in enumerate(self.__iter__()):
+            if idx == counter: return data
+
+    def __len__(self):
+        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
+        return int(self.focalPointPlasticityTracker.internalFocalPointPlasticityNeighbors.size())
+
+    def __iter__(self):
+        return InternalFocalPointPlasticityDataIterator(self)
+
+
+class InternalFocalPointPlasticityDataIterator:
+    def __init__(self, _focalPointPlasticityDataList):
+        self.focalPointPlasticityTrackerAccessor = _focalPointPlasticityDataList.focalPointPlasticityTrackerAccessor
+        self.cell = _focalPointPlasticityDataList.cell
+        self.focalPointPlasticityPlugin = _focalPointPlasticityDataList.focalPointPlasticityPlugin
+        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
+        self.focalPointPlasticityDataSetItr = CompuCell.focalPointPlasticitySetPyItr()
+        self.focalPointPlasticityDataSetItr.initialize(
+            self.focalPointPlasticityTracker.internalFocalPointPlasticityNeighbors)
+        self.focalPointPlasticityDataSetItr.setToBegin()
+
+    def __next__(self):
+        if not self.focalPointPlasticityDataSetItr.isEnd():
+            self.currentFocalPointPlasticityDataSetItr = self.focalPointPlasticityDataSetItr.current
+            self.focalPointPlasticityData = self.focalPointPlasticityDataSetItr.getCurrentRef()
+            self.focalPointPlasticityDataSetItr.next()
+            return self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerData(self.focalPointPlasticityData)
+        #             return self.plasticityData
+        else:
+            raise StopIteration
+
+    def __iter__(self):
+        return self
+
+
+class AnchorFocalPointPlasticityDataList:
+    def __init__(self, _focalPointPlasticityPlugin, _cell):
+        self.focalPointPlasticityPlugin = _focalPointPlasticityPlugin
+        self.focalPointPlasticityTrackerAccessor = self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerAccessorPtr()
+        self.cell = _cell
+
+    def __getitem__(self, idx):
+        if idx > self.__len__() - 1: raise IndexError(
+            "Out of bounds index: AnchorFocalPointPlasticityDataList index = %s is out of bounds" % str(idx))
+        for counter, data in enumerate(self.__iter__()):
+            if idx == counter: return data
+
+    def __len__(self):
+        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
+        return int(self.focalPointPlasticityTracker.anchors.size())
+
+    def __iter__(self):
+        return AnchorFocalPointPlasticityDataIterator(self)
+
+
+class AnchorFocalPointPlasticityDataIterator:
+    def __init__(self, _focalPointPlasticityDataList):
+        self.focalPointPlasticityTrackerAccessor = _focalPointPlasticityDataList.focalPointPlasticityTrackerAccessor
+        self.cell = _focalPointPlasticityDataList.cell
+        self.focalPointPlasticityPlugin = _focalPointPlasticityDataList.focalPointPlasticityPlugin
+        self.focalPointPlasticityTracker = self.focalPointPlasticityTrackerAccessor.get(self.cell.extraAttribPtr)
+        self.focalPointPlasticityDataSetItr = CompuCell.focalPointPlasticitySetPyItr()
+        self.focalPointPlasticityDataSetItr.initialize(self.focalPointPlasticityTracker.anchors)
+        self.focalPointPlasticityDataSetItr.setToBegin()
+
+    def __next__(self):
+        if not self.focalPointPlasticityDataSetItr.isEnd():
+            self.currentFocalPointPlasticityDataSetItr = self.focalPointPlasticityDataSetItr.current
+            self.focalPointPlasticityData = self.focalPointPlasticityDataSetItr.getCurrentRef()
+            self.focalPointPlasticityDataSetItr.next()
+            return self.focalPointPlasticityPlugin.getFocalPointPlasticityTrackerData(self.focalPointPlasticityData)
+        #             return self.plasticityData
+        else:
+            raise StopIteration
+
+    def __iter__(self):
+        return self
