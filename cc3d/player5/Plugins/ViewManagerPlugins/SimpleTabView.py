@@ -3126,10 +3126,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
             if field_name != 'Cell_Field':
                 active_field_names_list.append(str(field_name))
 
-        currently_active_field = self.lastActiveRealWindow.widget().fieldComboBox.currentText()
-        if currently_active_field in active_field_names_list:
-            active_field_names_list = list(filter(lambda elem: elem != currently_active_field, active_field_names_list))
-            active_field_names_list.insert(0,currently_active_field)
+        if self.lastActiveRealWindow is not None:
+            currently_active_field = self.lastActiveRealWindow.widget().fieldComboBox.currentText()
+            if currently_active_field in active_field_names_list:
+                active_field_names_list = list(
+                    filter(lambda elem: elem != currently_active_field, active_field_names_list))
+                active_field_names_list.insert(0, currently_active_field)
 
         Configuration.setUsedFieldNames(active_field_names_list)
 
