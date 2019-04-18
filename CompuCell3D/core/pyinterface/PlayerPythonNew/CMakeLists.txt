@@ -153,6 +153,27 @@ SET_TARGET_PROPERTIES(PlayerPythonNew PROPERTIES OUTPUT_NAME  "PlayerPython")
 
 SWIG_LINK_LIBRARIES(PlayerPythonNew ${LIBS_SWIG})
 set_target_properties(PlayerPythonNew PROPERTIES LINK_FLAGS ${undefined_link_flags})
+  
+if (APPLE)
+
+   # interesting reading: https://blog.kitware.com/upcoming-in-cmake-2-8-12-osx-rpath-support/
+
+   # INSTALL_NAME_DIR overrides MACOSX_RPATH.  Try not to do that.
+
+   # Use rpath for PlayerPythonNew.so
+   SET_TARGET_PROPERTIES(PlayerPythonNew PROPERTIES MACOSX_RPATH TRUE)
+
+   # append directories in the linker search path and outside the project to the INSTALL_RPATH
+   SET_TARGET_PROPERTIES(PlayerPythonNew PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+   # this is where libraries on which PlayerPythonNew.so depends on are
+   # installed relative to where PlayerPythonNew.py is installed
+   SET_TARGET_PROPERTIES(PlayerPythonNew PROPERTIES INSTALL_RPATH "@loader_path/lib")
+
+
+endif()
+  
+  
 
 # install_targets(${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR} _PlayerPythonNew)
 install(TARGETS PlayerPythonNew DESTINATION ${COMPUCELL3D_INSTALL_SWIG_MODULES_DIR})

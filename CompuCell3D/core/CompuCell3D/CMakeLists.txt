@@ -135,7 +135,8 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   
   
 
-INSTALL_TARGETS(/lib
+INSTALL_TARGETS("/${COMPUCELL3D_INSTALL_LIB_DIR}"
+  # /lib
   CompuCellLibShared)
 
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
