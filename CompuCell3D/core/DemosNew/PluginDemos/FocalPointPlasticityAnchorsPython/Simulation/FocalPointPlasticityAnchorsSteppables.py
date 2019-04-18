@@ -51,29 +51,25 @@ class FocalPointPlasticityAnchorSteppable(SteppableBasePy):
             elif mcs > 200 and mcs < 300:
                 # setting plasticity constraints to 0
                 for fppd in self.getFocalPointPlasticityDataList(cell):
-                    print("fppd.neighborId", fppd.neighborAddress.id,
-                          " lambda=", fppd.lambdaDistance, " targetDistance=", fppd.targetDistance)
+                    print("fppd.neighborId", fppd.neighborAddress.id, " lambda=", fppd.lambdaDistance,
+                          " targetDistance=", fppd.targetDistance)
 
                     # IMPORTANT: although you can access and manipulate focal point plasticity data directly
                     # it is better to do it via setFocalPointPlasticityParameters
                     # IMPORTANT: this way you ensure that data you change is changed in both cell1 and cell2 .
                     # Otherwise if you do direct manipulation , make sure you change parameters in cell1 and
                     # its focal point plasticity neighbor
-                    self.focalPointPlasticityPlugin.setFocalPointPlasticityParameters(cell, fppd.neighborAddress, 0.0,
-                                                                                      0.0, 0.0)
+                    self.focalPointPlasticityPlugin.setFocalPointPlasticityParameters(
+                        cell, fppd.neighborAddress, 0.0, 0.0, 0.0)
 
             elif mcs == 400:
                 anchor_list = self.getAnchorFocalPointPlasticityDataList(cell)
                 if len(anchor_list):
                     for anchor_fppd in anchor_list:
-                        self.focalPointPlasticityPlugin.setAnchorParameters(cell, anchor_fppd.anchorId,
-                                                                            anchor_fppd.lambdaDistance,
-                                                                            anchor_fppd.targetDistance / 2.0,
-                                                                            anchor_fppd.maxDistance,
-                                                                            anchor_fppd.anch
-                        orPoint[0],
-                        anchor_fppd.anchorPoint[1],
-                        anchor_fppd.anchorPoint[2]
+                        self.focalPointPlasticityPlugin.setAnchorParameters(
+                            cell, anchor_fppd.anchorId, anchor_fppd.lambdaDistance,
+                            anchor_fppd.targetDistance / 2.0, anchor_fppd.maxDistance, anchor_fppd.anchorPoint[0],
+                            anchor_fppd.anchorPoint[1], anchor_fppd.anchorPoint[2]
                         )
 
                 elif mcs == 600:
