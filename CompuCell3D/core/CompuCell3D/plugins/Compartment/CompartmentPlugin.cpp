@@ -199,29 +199,29 @@ int CompartmentPlugin::getIndex(const int type1, const int type2) const {
 
 void CompartmentPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
-	if(potts->getDisplayUnitsFlag()){
-		Unit contactEnergyUnit=potts->getEnergyUnit()/powerUnit(potts->getLengthUnit(),2);
+	//if(potts->getDisplayUnitsFlag()){
+	//	Unit contactEnergyUnit=potts->getEnergyUnit()/powerUnit(potts->getLengthUnit(),2);
 
 
 
 
-		CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-		if (!unitsElem){ //add Units element
-			unitsElem=_xmlData->attachElement("Units");
-		}
+	//	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
+	//	if (!unitsElem){ //add Units element
+	//		unitsElem=_xmlData->attachElement("Units");
+	//	}
 
-		if(unitsElem->getFirstElement("EnergyUnit")){
-			unitsElem->getFirstElement("EnergyUnit")->updateElementValue(contactEnergyUnit.toString());
-		}else{
-			CC3DXMLElement * energyUnitElem = unitsElem->attachElement("EnergyUnit",contactEnergyUnit.toString());
-		}
-		if(unitsElem->getFirstElement("InternalEnergyUnit")){
-			unitsElem->getFirstElement("InternalEnergyUnit")->updateElementValue(contactEnergyUnit.toString());
-		}else{
-			CC3DXMLElement * internalEnergyUnitElem = unitsElem->attachElement("InternalEnergyUnit",contactEnergyUnit.toString());
-		}
+	//	if(unitsElem->getFirstElement("EnergyUnit")){
+	//		unitsElem->getFirstElement("EnergyUnit")->updateElementValue(contactEnergyUnit.toString());
+	//	}else{
+	//		CC3DXMLElement * energyUnitElem = unitsElem->attachElement("EnergyUnit",contactEnergyUnit.toString());
+	//	}
+	//	if(unitsElem->getFirstElement("InternalEnergyUnit")){
+	//		unitsElem->getFirstElement("InternalEnergyUnit")->updateElementValue(contactEnergyUnit.toString());
+	//	}else{
+	//		CC3DXMLElement * internalEnergyUnitElem = unitsElem->attachElement("InternalEnergyUnit",contactEnergyUnit.toString());
+	//	}
 
-	}
+	//}
 
 
 	contactEnergies.clear();
