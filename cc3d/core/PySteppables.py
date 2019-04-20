@@ -13,6 +13,7 @@ from cc3d.cpp import CompuCell
 from cc3d.core.SBMLSolverHelper import SBMLSolverHelper
 import types
 import warnings
+from deprecated import deprecated
 
 class SteppablePy:
     def __init__(self):
@@ -138,7 +139,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         self.everyPixelWithSteps = self.every_pixel_with_steps
         self.everyPixel = self.every_pixel
         self.getCellNeighborDataList = self.get_cell_neighbor_data_list
-        self.attemptFetchingCellById = self.fetch_cell_by_id
+        # self.attemptFetchingCellById = self.fetch_cell_by_id
 
         self.field = FieldFetcher()
 
@@ -424,11 +425,15 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         return CellNeighborListFlex(self.neighbor_tracker_plugin, cell)
 
+    @deprecated(version='4.0.0', reason="You should use : fetch_cell_by_id")
+    def attemptFetchingCellById(self,_id):
+        return self.fetch_cell_by_id(cell_id=_id)
+
     def fetch_cell_by_id(self, cell_id: int) -> Union[None, object]:
         """
         Fetches cell by id. If cell does not exist it returns None
         :param cell_id: cell id
-        :return: sucessfully fetched cell id or None
+        :return: successfully fetched cell id or None
         """
         return self.inventory.attemptFetchingCellById(cell_id)
 

@@ -4,6 +4,7 @@ import warnings
 import types
 from cc3d.cpp import CompuCell
 from cc3d import CompuCellSetup
+from deprecated import deprecated
 
 try:
     import roadrunner
@@ -26,6 +27,26 @@ def SBMLSolverError(self, *args, **kwrds):
                 ' but SBMLSolver engine (e.g. RoadRunner) has not been installed with your CompuCell3D package')
 
 
+# def depreciated_method(f):
+#   def deco(self):
+#     print ('In deco')
+#     f(self)
+#   return deco
+
+# import warnings
+#
+# def deprecated(message):
+#   def deprecated_decorator(func):
+#       def deprecated_func(*args, **kwargs):
+#           print("func.__name__=", func.__name__)
+#           warnings.warn("{} is a deprecated function. {}".format(func.__name__, message), DeprecationWarning
+#                         # ,stacklevel=25
+#                         )
+#           warnings.simplefilter('default', DeprecationWarning)
+#           return func(*args, **kwargs)
+#       return deprecated_func
+#   return deprecated_decorator
+
 class SBMLSolverHelper(object):
     @classmethod
     def remove_attribute(cls, name):
@@ -34,7 +55,7 @@ class SBMLSolverHelper(object):
 
     def __init__(self):
 
-        # in case user passes simulate options we set the here 
+        # in case user passes simulate options we set the here
         # this dictionary translates old options valid for earlier rr versions to new ones
         self.option_name_dict = {
             'relative': 'relative_tolerance',
@@ -70,6 +91,14 @@ class SBMLSolverHelper(object):
             return obj_default
         else:
             return obj
+
+    @deprecated(version='4.0.0', reason="You should use : add_sbml_to_cell")
+    def addSBMLToCell(self, _modelFile='', _modelName='', _cell=None, _stepSize=1.0, _initialConditions={},
+                      _coreModelName='', _modelPathNormalized='', _options=None, _currentStateSBML=None):
+
+        return self.add_sbml_to_cell(model_file=_modelFile, model_name=_modelName, cell=_cell, step_size=_stepSize,
+                                     initial_conditions=_initialConditions, options=_options,
+                                     current_state_sbml=_currentStateSBML)
 
     def add_sbml_to_cell(self, model_file: str = '', model_name: str = '', cell: object = None, step_size: float = 1.0,
                          initial_conditions: Union[None, dict] = None, options: Union[None, dict] = None,
@@ -180,6 +209,10 @@ class SBMLSolverHelper(object):
                         setattr(rr.getIntegrator(), self.option_name_dict[name], value)
                         # setattr(rr.simulateOptions,name,value)
 
+    @deprecated(version='4.0.0', reason="You should use : get_sbml_global_options")
+    def getSBMLGlobalOptions(self):
+        return self.get_sbml_global_options()
+
     def get_sbml_global_options(self):
         """
         returns global options for the SBML solver - deprecated as newer version of CC3D
@@ -187,6 +220,10 @@ class SBMLSolverHelper(object):
         """
         pg = CompuCellSetup.persistent_globals
         return pg.global_sbml_simulator_options
+
+    @deprecated(version='4.0.0', reason="You should use : set_sbml_global_options")
+    def setSBMLGlobalOptions(self, _options):
+        return self.set_sbml_global_options(_options)
 
     def set_sbml_global_options(self, options: dict) -> None:
         """
@@ -197,6 +234,12 @@ class SBMLSolverHelper(object):
 
         pg = CompuCellSetup.persistent_globals
         pg.global_sbml_simulator_options = options
+
+    @deprecated(version='4.0.0', reason="You should use : add_sbml_to_cell_types")
+    def addSBMLToCellTypes(self, _modelFile='', _modelName='', _types=[], _stepSize=1.0, _initialConditions={},
+                           _options={}):
+        return self.add_sbml_to_cell_types(model_file=_modelFile, model_name=_modelName, cell_types=_types,
+                                           step_size=_stepSize, initial_conditions=_initialConditions, options=_options)
 
     def add_sbml_to_cell_types(self, model_file: str = '', model_name: str = '', cell_types: Union[None, list] = None,
                                step_size: float = 1.0, initial_conditions: Union[None, dict] = None,
@@ -235,6 +278,11 @@ class SBMLSolverHelper(object):
         for cell in self.cellListByType(*cell_types):
             self.add_sbml_to_cell(model_file=model_file, model_name=model_name, cell=cell, step_size=step_size,
                                   initial_conditions=initial_conditions, options=options)
+
+    @deprecated(version='4.0.0', reason="You should use : add_sbml_to_cell_ids")
+    def addSBMLToCellIds(self, _modelFile, _modelName='', _ids=[], _stepSize=1.0, _initialConditions={}, _options={}):
+        return self.add_sbml_to_cell_ids(model_file=_modelFile, model_name=_modelName, cell_ids=_ids,
+                                         step_size=_stepSize, initial_conditions=_initialConditions, options=_options)
 
     def add_sbml_to_cell_ids(self, model_file: str, model_name: str = '', cell_ids: Union[None, list] = None,
                              step_size: float = 1.0, initial_conditions: Union[None, dict] = None,
@@ -280,6 +328,11 @@ class SBMLSolverHelper(object):
 
             self.add_sbml_to_cell(model_file=model_file, model_name=model_name, cell=cell, step_size=step_size,
                                   initial_conditions=initial_conditions, options=options)
+
+    @deprecated(version='4.0.0', reason="You should use : addFreeFloatingSBML")
+    def addFreeFloatingSBML(self, _modelFile, _modelName, _stepSize=1.0, _initialConditions={}, _options={}):
+        return self.add_free_floating_sbml(model_file=_modelFile, model_name=_modelName, step_size=_stepSize,
+                                           initial_conditions=_initialConditions, options=_options)
 
     def add_free_floating_sbml(self, model_file: str, model_name: str = '', step_size: float = 1.0,
                                initial_conditions: Union[None, dict] = None, options: Union[None, dict] = None):
@@ -345,6 +398,10 @@ class SBMLSolverHelper(object):
                     except (AttributeError, ValueError) as e:
                         setattr(rr.getIntegrator(), self.option_name_dict[name], value)
 
+    @deprecated(version='4.0.0', reason="You should use : delete_sbml_from_cell_ids")
+    def deleteSBMLFromCellIds(self, _modelName, _ids=[]):
+        return self.delete_sbml_from_cell_ids(model_name=_modelName, cell_ids=_ids)
+
     def delete_sbml_from_cell_ids(self, model_name: str, cell_ids: Union[None, list] = None) -> None:
         """
         Deletes  SBML model from cells whose ids match those stered int he _ids list
@@ -372,6 +429,10 @@ class SBMLSolverHelper(object):
             except LookupError as e:
                 pass
 
+    @deprecated(version='4.0.0', reason="You should use : delete_sbml_from_cell_types")
+    def deleteSBMLFromCellTypes(self, _modelName, _types=[]):
+        return self.delete_sbml_from_cell_types(model_name=_modelName, cell_types=_types)
+
     def delete_sbml_from_cell_types(self, model_name: str, cell_types: Union[None, list] = None) -> None:
         """
         Deletes  SBML model from cells whose type match those stered in the cell_types list
@@ -396,6 +457,10 @@ class SBMLSolverHelper(object):
             except LookupError:
                 pass
 
+    @deprecated(version='4.0.0', reason="You should use : delete_sbml_from_cell")
+    def deleteSBMLFromCell(self, _modelName='', _cell=None):
+        return self.delete_sbml_from_cell(model_name=_modelName, cell=_cell)
+
     def delete_sbml_from_cell(self, model_name: str = '', cell: object = None) -> None:
         """
         Deletes SBML from a particular cell
@@ -411,6 +476,10 @@ class SBMLSolverHelper(object):
         except LookupError:
             pass
 
+    @deprecated(version='4.0.0', reason="You should use : delete_free_floating_sbml")
+    def deleteFreeFloatingSBML(self, _modelName):
+        return self.delete_free_floating_sbml(model_name=_modelName)
+
     def delete_free_floating_sbml(self, model_name: str) -> None:
         """
         Deletes free floating SBLM mo
@@ -424,6 +493,10 @@ class SBMLSolverHelper(object):
             del pg.free_floating_sbml_simulators[model_name]
         except LookupError:
             pass
+
+    @deprecated(version='4.0.0', reason="You should use : timestep_cell_sbml")
+    def timestepCellSBML(self):
+        return self.timestep_cell_sbml()
 
     def timestep_cell_sbml(self):
         """
@@ -440,6 +513,10 @@ class SBMLSolverHelper(object):
                 for model_name, rrTmp in sbml_dict.items():
                     # integrating SBML
                     rrTmp.timestep()
+
+    @deprecated(version='4.0.0', reason="You should use : set_step_size_for_cell")
+    def setStepSizeForCell(self, _modelName='', _cell=None, _stepSize=1.0):
+        return self.set_step_size_for_cell(model_name=_modelName, cell=_cell, step_size=_stepSize)
 
     def set_step_size_for_cell(self, model_name: str = '', cell: object = None, step_size: float = 1.0):
         """
@@ -458,6 +535,10 @@ class SBMLSolverHelper(object):
             return
 
         sbmlSolver.stepSize = step_size
+
+    @deprecated(version='4.0.0', reason="You should use : set_step_size_for_cell_ids")
+    def setStepSizeForCellIds(self, _modelName='', _ids=[], _stepSize=1.0):
+        return self.set_step_size_for_cell_ids(model_name=_modelName, cell_ids=_ids, step_size=_stepSize)
 
     def set_step_size_for_cell_ids(self, model_name: str = '', cell_ids: Union[None, list] = None,
                                    step_size: float = 1.0) -> None:
@@ -479,6 +560,10 @@ class SBMLSolverHelper(object):
 
             self.set_step_size_for_cell(model_name=model_name, cell=cell, step_size=step_size)
 
+    @deprecated(version='4.0.0', reason="You should use : set_step_size_for_cell_types")
+    def setStepSizeForCellTypes(self, _modelName='', _types=[], _stepSize=1.0):
+        return self.set_step_size_for_cell_types(model_name=_modelName,cell_types=_types,step_size=_stepSize)
+
     def set_step_size_for_cell_types(self, model_name: str = '', cell_types: Union[None, list] = None,
                                      step_size=1.0) -> None:
         """
@@ -494,8 +579,11 @@ class SBMLSolverHelper(object):
         for cell in self.cellListByType(*cell_types):
             self.set_step_size_for_cell(model_name=model_name, cell=cell, step_size=step_size)
 
-    @staticmethod
-    def set_step_size_for_free_floating_sbml(model_name: str = '', step_size: float = 1.0) -> None:
+    @deprecated(version='4.0.0', reason="You should use : set_step_size_for_free_floating_sbml")
+    def setStepSizeForFreeFloatingSBML(self, _modelName='', _stepSize=1.0):
+        return SBMLSolverHelper.set_step_size_for_free_floating_sbml(model_name=_modelName,step_size=_stepSize)
+
+    def set_step_size_for_free_floating_sbml(self, model_name: str = '', step_size: float = 1.0) -> None:
 
         """
         Sets integration step size for free floating SBML
@@ -512,6 +600,10 @@ class SBMLSolverHelper(object):
 
         sbml_solver.stepSize = step_size
 
+    @deprecated(version='4.0.0', reason="You should use : timestep_free_floating_sbml")
+    def timestepFreeFloatingSBML(self):
+        return self.timestep_free_floating_sbml()
+
     def timestep_free_floating_sbml(self):
         """
         Integrates forward all free floating SBML solvers
@@ -522,6 +614,10 @@ class SBMLSolverHelper(object):
         for model_name, rr in pg.free_floating_sbml_simulators.items():
             rr.timestep()
 
+    @deprecated(version='4.0.0', reason="You should use : timestep_sbml")
+    def timestepSBML(self):
+        return self.timestep_sbml()
+
     def timestep_sbml(self):
         """
         Integrates forward all free floating SBML solvers and all sbmlsolvers attached to cells
@@ -529,6 +625,10 @@ class SBMLSolverHelper(object):
         """
         self.timestep_cell_sbml()
         self.timestep_free_floating_sbml()
+
+    @deprecated(version='4.0.0', reason="You should use : get_sbml_simulator")
+    def getSBMLSimulator(self, _modelName, _cell=None):
+        return self.get_sbml_simulator(model_name=_modelName,cell=_cell)
 
     def get_sbml_simulator(self, model_name: str, cell: object = None) -> Union[object, None]:
         """
@@ -553,6 +653,10 @@ class SBMLSolverHelper(object):
             except LookupError:
                 return None
 
+    @deprecated(version='4.0.0', reason="You should use : get_sbml_state")
+    def getSBMLState(self, _modelName, _cell=None):
+        return self.get_sbml_state(model_name=_modelName, cell=_cell)
+
     def get_sbml_state(self, model_name: str, cell: object = None) -> Union[None, dict]:
         """
         Returns dictionary-like object representing state of the SBML solver - instance of the RoadRunner.model
@@ -575,6 +679,10 @@ class SBMLSolverHelper(object):
             else:
                 raise RuntimeError("Could not find model " + model_name + ' in the list of free floating SBML models')
 
+    @deprecated(version='4.0.0', reason="You should use : get_sbml_state_as_python_dict")
+    def getSBMLStateAsPythonDict(self, _modelName, _cell=None):
+        return self.get_sbml_state_as_python_dict(model_name=_modelName,cell=_cell)
+
     def get_sbml_state_as_python_dict(self, model_name: str, cell: object = None) -> dict:
         """
         Returns Python dictionary representing state of the SBML solver
@@ -584,6 +692,10 @@ class SBMLSolverHelper(object):
         :return : dictionary representing state of the SBML Solver
         """
         return self.get_sbml_state(model_name, cell)
+
+    @deprecated(version='4.0.0', reason="You should use : set_sbml_state")
+    def setSBMLState(self, _modelName, _cell=None, _state={}):
+        return self.set_sbml_state(model_name=_modelName, cell=_cell, state=_state)
 
     def set_sbml_state(self, model_name: str, cell: object = None, state: Union[None, dict] = None) -> bool:
         """
@@ -612,6 +724,10 @@ class SBMLSolverHelper(object):
 
             return True
 
+    @deprecated(version='4.0.0', reason="You should use : get_sbml_value")
+    def getSBMLValue(self, _modelName, _valueName='', _cell=None):
+        return self.get_sbml_value(model_name=_modelName, value_name=_valueName, cell=_cell)
+
     def get_sbml_value(self, model_name: str, value_name: str, cell: object = None) -> float:
         """
         Retrieves value of the SBML state variable
@@ -629,6 +745,10 @@ class SBMLSolverHelper(object):
         else:
             return sbml_simulator[value_name]
 
+    @deprecated(version='4.0.0', reason="You should use : set_sbml_value")
+    def setSBMLValue(self, _modelName, _valueName='', _value=0.0, _cell=None):
+        return self.set_sbml_value(model_name=_modelName, value_name=_valueName, value=_value, cell=_cell)
+
     def set_sbml_value(self, model_name: str, value_name: str, value: float = 0.0, cell: object = None) -> bool:
         """
         Sets SBML solver state variable
@@ -644,6 +764,10 @@ class SBMLSolverHelper(object):
         else:
             sbml_simulator.model[value_name] = value
             return True
+
+    @deprecated(version='4.0.0', reason="You should use : copy_sbml_simulators")
+    def copySBMLs(self, _fromCell, _toCell, _sbmlNames=[], _options=None):
+        return self.copy_sbml_simulators(from_cell=_fromCell, to_cell=_toCell, sbml_names=_sbmlNames, options=_options)
 
     def copy_sbml_simulators(self, from_cell: object, to_cell: object, sbml_names: Union[list, None] = None,
                              options: Union[dict, None] = None):
@@ -696,6 +820,10 @@ class SBMLSolverHelper(object):
                 options=options,
                 current_state_sbml=current_state_sbml
             )
+
+    @deprecated(version='4.0.0', reason="You should use : normalize_path")
+    def normalizePath(self, _path):
+        return self.normalize_path(path=_path)
 
     def normalize_path(self, path: str) -> str:
         """
