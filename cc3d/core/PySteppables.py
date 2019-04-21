@@ -109,7 +109,6 @@ class GlobalSBMLFetcher:
 class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     (CC3D_FORMAT, TUPLE_FORMAT) = range(0, 2)
 
-    # def __init__(self, simulator=None, frequency=1):
     def __init__(self, *args, **kwds):
 
         try:
@@ -121,7 +120,14 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                 try:
                     frequency = kwds['_frequency']
                 except KeyError:
-                    frequency = 1
+                    try:
+                        frequency = args[0]
+                        if not isinstance(frequency, int):
+                            raise TypeError('frequency must must be integer. The correct SPI for SteppableBasePy is'
+                                            ' e.g. SteppableBasePy(frequency=10)')
+                    except IndexError:
+
+                        frequency = 1
 
         SteppablePy.__init__(self)
         SBMLSolverHelper.__init__(self)

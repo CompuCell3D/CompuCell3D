@@ -5,16 +5,11 @@ from cc3d.CompuCellSetup import init_modules, parseXML
 from cc3d.core.CMLFieldHandler import CMLFieldHandler
 from cc3d.core.GraphicsUtils.ScreenshotManagerCore import ScreenshotManagerCore
 from cc3d.cpp import PlayerPython
-
 from cc3d.core.GraphicsOffScreen import GenericDrawer
-
 from cc3d.core.BasicSimulationData import BasicSimulationData
 import warnings
 import time
 import weakref
-
-# import cc3d.CompuCellSetup as CompuCellSetup
-# import cc3d.CompuCellSetup as CompuCellSetup
 from cc3d import CompuCellSetup
 
 
@@ -64,7 +59,8 @@ def initialize_cc3d():
 
     :return:
     """
-    CompuCellSetup.persistent_globals.simulator, CompuCellSetup.persistent_globals.simthread = get_core_simulation_objects()
+    CompuCellSetup.persistent_globals.simulator, \
+    CompuCellSetup.persistent_globals.simthread = get_core_simulation_objects()
 
     simulator = CompuCellSetup.persistent_globals.simulator
     simthread = CompuCellSetup.persistent_globals.simthread
