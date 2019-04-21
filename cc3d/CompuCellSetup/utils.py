@@ -6,6 +6,13 @@
 from cc3d.core import XMLUtils
 # import cc3d.CompuCellSetup as CompuCellSetup
 from cc3d import CompuCellSetup
+from deprecated import deprecated
+from cc3d.core.XMLUtils import ElementCC3D
+
+class XML2ObjConverterAdapter:
+    def __init__(self):
+        self.root = None
+        self.xmlTree = None
 
 
 def init_modules(sim, _cc3dXML2ObjConverter):
@@ -50,6 +57,26 @@ def parseXML( xml_fname):
     root_element = cc3dXML2ObjConverter.Parse(xml_fname)
     print('root_element=', root_element)
     return cc3dXML2ObjConverter
+
+@deprecated(version='4.0.0', reason="You should use : set_simulation_xml_description")
+def setSimulationXMLDescription(_xmlTree):
+    """
+
+    :param _xmlTree:
+    :return:
+    """
+    return set_simulation_xml_description(xml_tree=_xmlTree)
+
+def set_simulation_xml_description(xml_tree:ElementCC3D)->None:
+    """
+    
+    :param xml_tree: 
+    :return: 
+    """
+    CompuCellSetup.persistent_globals.cc3d_xml_2_obj_converter = XML2ObjConverterAdapter()
+    cc3d_xml_2_obj_converter = CompuCellSetup.persistent_globals.cc3d_xml_2_obj_converter
+    cc3d_xml_2_obj_converter.xmlTree = xml_tree
+    cc3d_xml_2_obj_converter.root = xml_tree.CC3DXMLElement
 
 
 

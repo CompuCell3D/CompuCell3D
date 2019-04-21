@@ -146,12 +146,6 @@ def register_steppable(steppable):
 
 
 def get_core_simulation_objects():
-    # xml_fname = r'd:\CC3D_PY3_GIT\CompuCell3D\tests\test_data\cellsort_2D.xml'
-    # cc3dXML2ObjConverter = parseXML(xml_fname=xml_fname)
-
-    # # this loads all plugins/steppables - need to recode it to make loading on-demand only
-    # CompuCell.initializePlugins()
-
     persistent_globals = CompuCellSetup.persistent_globals
 
     simulator = CompuCell.Simulator()
@@ -166,28 +160,22 @@ def get_core_simulation_objects():
 
     xml_fname = CompuCellSetup.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript
 
-    cc3d_xml2_obj_converter = parseXML(xml_fname=xml_fname)
-    #  cc3d_xml2_obj_converter cannot be garbage colected hence goes to persisten storage declared at the global level
-    # in CompuCellSetup
-    persistent_globals.cc3d_xml_2_obj_converter = cc3d_xml2_obj_converter
+    if persistent_globals.cc3d_xml_2_obj_converter is None:
+        # We only call parseXML if previous steps do not initialize XML tree
+        # Such situation usually happen when we specify XML tree using Python API in configure_simulation function
+        # that is typically called from the Python main script
+
+        cc3d_xml2_obj_converter = parseXML(xml_fname=xml_fname)
+        #  cc3d_xml2_obj_converter cannot be garbage colected hence goes to persisten storage declared at the global level
+        # in CompuCellSetup
+        persistent_globals.cc3d_xml_2_obj_converter = cc3d_xml2_obj_converter
 
     # locating all XML elements with attribute id - presumably to be used for programmatic steering
     persistent_globals.xml_id_locator = XMLIdLocator(root_elem=persistent_globals.cc3d_xml_2_obj_converter.root)
     persistent_globals.xml_id_locator.locate_id_elements()
 
-    # cc3dXML2ObjConverter = parseXML(xml_fname=xml_fname)
+    init_modules(simulator, persistent_globals.cc3d_xml_2_obj_converter)
 
-    # print('CompuCellSetup.cc3dSimulationDataHandler=', CompuCellSetup.cc3dSimulationDataHandler)
-    # print('cc3dSimulationDataHandler.cc3dSimulationData.pythonScript=',
-    #       CompuCellSetup.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
-    init_modules(simulator, cc3d_xml2_obj_converter)
-    #
-    # # sim.initializeCC3D()
-    # # at this point after initialize cc3d stepwe can start querieg sim object.
-    # # print('num_steps=', sim.getNumSteps())
-    #
-    # # sim.start()
-    #
     # # this loads all plugins/steppables - need to recode it to make loading on-demand only
     CompuCell.initializePlugins()
     print("simulator=", simulator)
