@@ -15,6 +15,7 @@ import types
 import warnings
 from deprecated import deprecated
 
+
 class SteppablePy:
     def __init__(self):
         self.runBeforeMCS = 0
@@ -134,24 +135,24 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         self.__modulesToUpdateDict = OrderedDict()
 
         # legacy API
-        self.addNewPlotWindow = self.add_new_plot_window
-        self.createScalarFieldPy = self.create_scalar_field_py
-        self.everyPixelWithSteps = self.every_pixel_with_steps
-        self.everyPixel = self.every_pixel
-        self.getCellNeighborDataList = self.get_cell_neighbor_data_list
+        # self.addNewPlotWindow = self.add_new_plot_window
+        # self.createScalarFieldPy = self.create_scalar_field_py
+        # self.everyPixelWithSteps = self.every_pixel_with_steps
+        # self.everyPixel = self.every_pixel
+        # self.getCellNeighborDataList = self.get_cell_neighbor_data_list
         # self.attemptFetchingCellById = self.fetch_cell_by_id
 
         self.field = FieldFetcher()
 
-        # plugin declarations
+        # plugin declarations - including legacy members
         self.neighbor_tracker_plugin = None
         self.neighborTrackerPlugin = None
         self.focal_point_plasticity_plugin = None
         self.focalPointPlasticityPlugin = None
 
         self.plugin_init_dict = {
-            "NeighborTracker":['neighbor_tracker_plugin', 'neighborTrackerPlugin'],
-            "FocalPointPlasticity":['focal_point_plasticity_plugin', 'focalPointPlasticityPlugin']
+            "NeighborTracker": ['neighbor_tracker_plugin', 'neighborTrackerPlugin'],
+            "FocalPointPlasticity": ['focal_point_plasticity_plugin', 'focalPointPlasticityPlugin']
         }
 
     @property
@@ -179,7 +180,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         return self.simulator.getPotts().getCellInventory()
 
     @property
-    def clusterInventory(self)->object:
+    def clusterInventory(self) -> object:
         return self.inventory.getClusterInventory()
 
     def fetch_loaded_plugins(self) -> None:
@@ -190,9 +191,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         :return:
         """
 
-        for plugin_name , member_var_list in self.plugin_init_dict.items():
+        for plugin_name, member_var_list in self.plugin_init_dict.items():
             if self.simulator.pluginManager.isLoaded(plugin_name):
-                accessor_fcn_name = 'get'+plugin_name+'Plugin'
+                accessor_fcn_name = 'get' + plugin_name + 'Plugin'
                 try:
                     accessor_function = getattr(CompuCell, accessor_fcn_name)
                 except AttributeError:
@@ -203,8 +204,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
                 for plugin_member_name in member_var_list:
                     setattr(self, plugin_member_name, plugin_obj)
-
-
 
     def core_init(self):
 
@@ -231,7 +230,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             # setattr(self, type_name.upper(), type_id)
 
         self.fetch_loaded_plugins()
-
 
         return
         self.potts = self.simulator.getPotts()
@@ -321,17 +319,30 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         :return:
         """
 
-    def add_new_plot_window(self, title, xAxisTitle, yAxisTitle, xScaleType='linear', yScaleType='linear', grid=True,
-                            config_options=None):
+    @deprecated(version='4.0.0', reason="You should use : add_new_plot_window")
+    def addNewPlotWindow(self, _title, _xAxisTitle, _yAxisTitle, _xScaleType='linear', _yScaleType='linear', _grid=True,
+                         _config_options=None):
+        return self.add_new_plot_window(title=_title, x_axis_title=_xAxisTitle, y_axis_title=_yAxisTitle,
+                                        x_scale_type=_xScaleType, y_scale_type=_yScaleType,
+                                        grid=_grid, config_options=_config_options)
+
+    def add_new_plot_window(self, title: str, x_axis_title: str, y_axis_title: str, x_scale_type: str = 'linear',
+                            y_scale_type: str = 'linear', grid: bool = True,
+                            config_options: object = None) -> object:
 
         if title in self.plot_dict.keys():
             raise RuntimeError('PLOT WINDOW: ' + title + ' already exists. Please choose a different name')
 
-        pW = CompuCellSetup.simulation_player_utils.add_new_plot_window(title, xAxisTitle, yAxisTitle, xScaleType,
-                                                                        yScaleType, grid, config_options=config_options)
+        pW = CompuCellSetup.simulation_player_utils.add_new_plot_window(title, x_axis_title, y_axis_title, x_scale_type,
+                                                                        y_scale_type, grid,
+                                                                        config_options=config_options)
         self.plot_dict = {}  # {plot_name:plotWindow  - pW object}
 
         return pW
+
+    @deprecated(version='4.0.0', reason="You should use : create_scalar_field_py")
+    def createScalarFieldPy(self, _fieldName):
+        return self.create_scalar_field_py(fieldName=_fieldName)
 
     def create_scalar_field_py(self, fieldName: str) -> ExtraFieldAdapter:
         """
@@ -343,34 +354,50 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=fieldName,
                                                                          field_type=SCALAR_FIELD_NPY)
 
-    def create_scalar_field_cell_level_py(self, fieldName: str) -> ExtraFieldAdapter:
+    @deprecated(version='4.0.0', reason="You should use : create_scalar_field_cell_level_py")
+    def createScalarFieldCellLevelPy(self, _fieldName):
+        return self.create_scalar_field_cell_level_py(field_name=_fieldName)
+
+    def create_scalar_field_cell_level_py(self, field_name: str) -> ExtraFieldAdapter:
         """
         Creates extra visualization field
-        :param fieldName: {str}
+        :param field_name: {str}
         :return:
         """
-        return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=fieldName,
+        return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=field_name,
                                                                          field_type=SCALAR_FIELD_CELL_LEVEL)
 
-    def create_vector_field_py(self, fieldName: str) -> ExtraFieldAdapter:
+    @deprecated(version='4.0.0', reason="You should use : create_vector_field_py")
+    def createVectorFieldPy(self, _fieldName):
+        return self.create_vector_field_py(field_name=_fieldName)
+
+    def create_vector_field_py(self, field_name: str) -> ExtraFieldAdapter:
         """
         Creates extra visualization vector field (voxel-based)
-        :param fieldName: {str}
+        :param field_name: {str}
         :return:
         """
 
-        return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=fieldName,
+        return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=field_name,
                                                                          field_type=VECTOR_FIELD_NPY)
 
-    def create_vector_field_cell_level_py(self, fieldName: str) -> ExtraFieldAdapter:
+    @deprecated(version='4.0.0', reason="You should use : create_vector_field_cell_level_py")
+    def createVectorFieldCellLevelPy(self, _fieldName):
+        return self.create_vector_field_cell_level_py(field_name=_fieldName)
+
+    def create_vector_field_cell_level_py(self, field_name: str) -> ExtraFieldAdapter:
         """
         Creates extra visualization vector field (voxel-based)
-        :param fieldName: {str}
+        :param field_name: {str}
         :return:
         """
 
-        return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=fieldName,
+        return CompuCellSetup.simulation_player_utils.create_extra_field(field_name=field_name,
                                                                          field_type=VECTOR_FIELD_CELL_LEVEL)
+
+    @deprecated(version='4.0.0', reason="You should use : every_pixel_with_steps")
+    def everyPixelWithSteps(self, step_x, step_y, step_z):
+        return self.every_pixel_with_steps(step_x=step_x,step_y=step_y,step_z=step_z)
 
     def every_pixel_with_steps(self, step_x, step_y, step_z):
         """
@@ -384,6 +411,10 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             for y in range(0, self.dim.y, step_y):
                 for z in range(0, self.dim.z, step_z):
                     yield x, y, z
+
+    @deprecated(version='4.0.0', reason="You should use : every_pixel")
+    def everyPixel(self, step_x=1, step_y=1, step_z=1):
+        return self.every_pixel(step_x=step_x,step_y=step_y,step_z=step_z)
 
     def every_pixel(self, step_x=1, step_y=1, step_z=1):
         """
@@ -419,6 +450,10 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         return element_adapter
 
+    @deprecated(version='4.0.0', reason="You should use : get_cell_neighbor_data_list")
+    def getCellNeighborDataList(self, _cell):
+        return self.get_cell_neighbor_data_list(cell=_cell)
+
     def get_cell_neighbor_data_list(self, cell):
         if not self.neighbor_tracker_plugin:
             raise AttributeError('Could not find NeighborTrackerPlugin')
@@ -426,7 +461,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         return CellNeighborListFlex(self.neighbor_tracker_plugin, cell)
 
     @deprecated(version='4.0.0', reason="You should use : fetch_cell_by_id")
-    def attemptFetchingCellById(self,_id):
+    def attemptFetchingCellById(self, _id):
         return self.fetch_cell_by_id(cell_id=_id)
 
     def fetch_cell_by_id(self, cell_id: int) -> Union[None, object]:
@@ -454,8 +489,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             return AnchorFocalPointPlasticityDataList(self.focal_point_plasticity_plugin, _cell)
 
         return None
-
-
 
     # def registerXMLElementUpdate(self, *args):
     #     '''this function registers core module XML Element from wchich XML subelement has been fetched.It returns XML subelement

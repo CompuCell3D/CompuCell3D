@@ -11,8 +11,8 @@ class InventoryCheckSteppable(SteppableBasePy):
         print("INSIDE START FUNCTION")
         print('view_manager = ', CompuCellSetup.persistent_globals.view_manager)
 
-        self.pW = self.add_new_plot_window(title='Average Volume And Surface', xAxisTitle='MonteCarlo Step (MCS)',
-                                           yAxisTitle='Variables', xScaleType='linear', yScaleType='linear', grid=False)
+        self.pW = self.add_new_plot_window(title='Average Volume And Surface', x_axis_title='MonteCarlo Step (MCS)',
+                                           y_axis_title='Variables', x_scale_type='linear', y_scale_type='linear', grid=False)
 
         self.pW.addPlot("MVol", _style='Lines', _color='red')
         self.pW.addPlot("MSur", _style='Dots', _color='green')

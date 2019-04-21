@@ -8,8 +8,8 @@ class SBMLSolverOscilatorDemoSteppable(SteppableBasePy):
         self.pW = None
 
     def start(self):
-        self.pW = self.add_new_plot_window(title='S1 concentration', xAxisTitle='MonteCarlo Step (MCS)',
-                                           yAxisTitle='Variables')
+        self.pW = self.add_new_plot_window(title='S1 concentration', x_axis_title='MonteCarlo Step (MCS)',
+                                           y_axis_title='Variables')
         self.pW.addPlot('S1', _style='Dots', _color='red', _size=5)
 
         # iterating over all cells in simulation        
