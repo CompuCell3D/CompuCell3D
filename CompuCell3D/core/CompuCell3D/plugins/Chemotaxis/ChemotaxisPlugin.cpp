@@ -158,6 +158,18 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 				cd.chemotactTowardsTypesString=chemotactByTypeXMlList[j]->getAttribute("ChemotactAtInterfaceWith");
 			}
 			//cerr<<"cd.typeName="<<cd.typeName<<" cd.lambda="<<endl;
+			
+			
+			//jfg:
+			if( chemotactByTypeXMlList[j]->findAttribute("PowerCoef") )
+			{
+				cd.powerLevel = chemotactByTypeXMlList[j]->getAttributeAsDouble("PowerCoef");
+				if( cd.powerCoef != 1 )
+				{
+					cd.formulaName = "PowerChemotaxisFormula";//powerChemotaxisFormula
+				}
+			}
+			//jfg, end
 		}
 
 	}
@@ -234,6 +246,12 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::saturationLinearChemotaxisFormula;
 
 				}
+				//jfg, more formulas
+				else if ( vecVecChemotaxisData[i][cellTypeId].formulaName == "PowerChemotaxisFormula")
+				{
+					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::powerChemotaxisFormula;
+				} 
+				// jfg, end
 				else{
 					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::simpleChemotaxisFormula;
 				}
@@ -292,6 +310,7 @@ float ChemotaxisPlugin::saturationLinearChemotaxisFormula(float _flipNeighborCon
 
 }
 
+//jfg, more formulas
 float ChemotaxisPlugin::saturationDifferenceChemotaxisFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData)
 {
 	return _chemotaxisData.lambda*(
@@ -336,7 +355,7 @@ float ChemotaxisPlugin::log10DifferenceFormula(float _flipNeighborConc, float _c
 		return -9E99 * _chemotaxisData.lambda;
 	}
 	
-	return _chemotaxisData.lambda * log10( diff )
+	return _chemotaxisData.lambda * log10( diff );
 }
 
 float ChemotaxisPlugin::logNatDifferenceFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData)
@@ -348,9 +367,9 @@ float ChemotaxisPlugin::logNatDifferenceFormula(float _flipNeighborConc, float _
 		return -9E99 * _chemotaxisData.lambda;
 	}
 	
-	return _chemotaxisData.lambda * log( diff )
+	return _chemotaxisData.lambda * log( diff );
 }
-
+//jfg, end
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 double ChemotaxisPlugin::regularChemotaxis(const Point3D &pt, const CellG *newCell,const CellG *oldCell){
