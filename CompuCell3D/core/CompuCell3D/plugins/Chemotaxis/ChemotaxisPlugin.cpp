@@ -170,7 +170,7 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 				if( chemotactByTypeXMlList[j]->findAttribute("PowerCoef") )
 				{
 					cd.powerLevel = chemotactByTypeXMlList[j]->getAttributeAsDouble("PowerCoef");
-					if( cd.powerCoef == 1.0 )
+					if( cd.powerLevel == 1.0 )
 					{
 						cd.formulaName = false;//powerChemotaxisFormula
 					}
@@ -210,7 +210,7 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 				if( chemotactByTypeXMlList[j]->findAttribute("PowerCoef") )
 				{
 					cd.powerLevel = chemotactByTypeXMlList[j]->getAttributeAsDouble("PowerCoef");
-					if( cd.powerCoef != 1 )
+					if( cd.powerLevel != 1 )
 					{
 						cd.formulaName = "PowerChemotaxisFormula";//powerChemotaxisFormula
 					}
