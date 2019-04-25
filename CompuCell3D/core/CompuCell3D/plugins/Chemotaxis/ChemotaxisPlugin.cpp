@@ -295,10 +295,33 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 				}
 				//jfg, more formulas
-				else if ( vecVecChemotaxisData[i][cellTypeId].formulaName == "PowerChemotaxisFormula")
+				
+				
+				else if ( vecVecChemotaxisData[i][cellTypeId].formulaName == "PowerChemotaxisFormula" )
 				{
 					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::powerChemotaxisFormula;
 				} 
+				else if ( vecVecChemotaxisData[i][cellTypeId].formulaName == "SaturationDifferenceChemotaxisFormula" )
+				{
+					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::saturationDifferenceChemotaxisFormula;
+				}
+				else if ( vecVecChemotaxisData[i][cellTypeId].formulaName == "Log10DivisionFormula" )
+				{
+					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::log10DivisionFormula;
+				}
+				else if ( vecVecChemotaxisData[i][cellTypeId].formulaName == "LogNatDivisionFormula" )
+				{
+					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::logNatDivisionFormula;
+				}
+				else if ( vecVecChemotaxisData[i][cellTypeId].formulaName == "Log10DifferenceFormula" )
+				{
+					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::log10DifferenceFormula;
+				}
+				else if ( vecVecChemotaxisData[i][cellTypeId].formulaName == "LogNatDifferenceFormula" )
+				{
+					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::logNatDifferenceFormula;
+				}
+				
 				// jfg, end
 				else{
 					vecVecChemotaxisData[i][cellTypeId].formulaPtr=&ChemotaxisPlugin::simpleChemotaxisFormula;
