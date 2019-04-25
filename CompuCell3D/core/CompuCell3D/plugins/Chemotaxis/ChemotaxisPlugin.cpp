@@ -32,6 +32,8 @@ using namespace std;
 #include "ChemotaxisData.h"
 #include "ChemotaxisPlugin.h"
 
+#include <math.h>
+
 
 ChemotaxisPlugin::ChemotaxisPlugin():algorithmPtr(&ChemotaxisPlugin::merksChemotaxis),xmlData(0),chemotaxisAlgorithm("merks"),automaton(0) {
 
@@ -288,6 +290,65 @@ float ChemotaxisPlugin::saturationLinearChemotaxisFormula(float _flipNeighborCon
 		-_conc/(_chemotaxisData.saturationCoef*_conc+1)
 		);
 
+}
+
+float ChemotaxisPlugin::saturationDifferenceChemotaxisFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData)
+{
+	return _chemotaxisData.lambda*(
+		( _flipNeighborConc - _conc )/( _chemotaxisData.saturationCoef + _flipNeighborConc + _conc )
+		);
+	)
+	
+}
+
+float ChemotaxisPlugin::powerChemotaxisFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData)
+{
+	float diff = _flipNeighborConc-_conc
+	if (_chemotaxisData.powerLevel < 0 && diff == 0)
+	{
+		return 9E99 * _chemotaxisData.lambda;
+	}
+	return _chemotaxisData.lambda*pow(
+		diff, _chemotaxisData.powerLevel
+	);
+}
+
+float ChemotaxisPlugin::log10DivisionFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData)
+{
+	return _chemotaxisData.lambda * log10(
+		( 1 + _flipNeighborConc )/( 1 + _conc )
+	) ;
+}
+
+float ChemotaxisPlugin::logNatDivisionFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData)
+{
+	return _chemotaxisData.lambda * log(
+		( 1 + _flipNeighborConc )/( 1 + _conc )
+	) ;
+}
+
+float ChemotaxisPlugin::log10DifferenceFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData)
+{
+	float diff = _flipNeighborConc - _conc
+	
+	if ( diff <= 0 )
+	{
+		return -9E99 * _chemotaxisData.lambda;
+	}
+	
+	return _chemotaxisData.lambda * log10( diff )
+}
+
+float ChemotaxisPlugin::logNatDifferenceFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData)
+{
+	float diff = _flipNeighborConc - _conc
+	
+	if ( diff <= 0 )
+	{
+		return -9E99 * _chemotaxisData.lambda;
+	}
+	
+	return _chemotaxisData.lambda * log( diff )
 }
 
 
