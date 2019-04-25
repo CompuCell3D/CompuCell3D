@@ -132,44 +132,92 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 			cfd.vecChemotaxisData.push_back(ChemotaxisData());
 			ChemotaxisData & cd=cfd.vecChemotaxisData[cfd.vecChemotaxisData.size()-1];
 			cd.typeName=chemotactByTypeXMlList[j]->getAttribute("Type");
-
-			if(chemotactByTypeXMlList[j]->findAttribute("Lambda")){
-				cd.lambda=chemotactByTypeXMlList[j]->getAttributeAsDouble("Lambda");
-			}
-
-			if(chemotactByTypeXMlList[j]->findAttribute("SaturationCoef")){
-				cd.saturationCoef=chemotactByTypeXMlList[j]->getAttributeAsDouble("SaturationCoef");
-				cd.formulaName="SaturationChemotaxisFormula";
-			}
-
-			if (chemotactByTypeXMlList[j]->findAttribute("DisallowChemotaxisBetweenCompartments")) {
-				cd.allowChemotaxisBetweenCompartmentsGlobal = false;				
-			}
-
-			if(chemotactByTypeXMlList[j]->findAttribute("SaturationLinearCoef")){
-				cd.saturationCoef=chemotactByTypeXMlList[j]->getAttributeAsDouble("SaturationLinearCoef");
-				cd.formulaName="SaturationLinearChemotaxisFormula";
-			}
-
-			if(chemotactByTypeXMlList[j]->findAttribute("ChemotactTowards")){
-				//ASSERT_OR_THROW("ChemotactTowards is deprecated now. Please replace it with ChemotactAtInterfaceWith.",chemotaxisFieldDataVec.size());
-				cd.chemotactTowardsTypesString=chemotactByTypeXMlList[j]->getAttribute("ChemotactTowards");
-			}else if (chemotactByTypeXMlList[j]->findAttribute("ChemotactAtInterfaceWith")){// both keywords are OK
-				cd.chemotactTowardsTypesString=chemotactByTypeXMlList[j]->getAttribute("ChemotactAtInterfaceWith");
-			}
-			//cerr<<"cd.typeName="<<cd.typeName<<" cd.lambda="<<endl;
 			
+			//jfg, now that there are a bunch of formulas it'd be good to have ifs to select them, instead of relying on 
+			// variable names that migh or might not be in the xml
 			
-			//jfg:
-			if( chemotactByTypeXMlList[j]->findAttribute("PowerCoef") )
+			if(chemotactByTypeXMlList[j]->findAttribute("FormulaName"))
 			{
-				cd.powerLevel = chemotactByTypeXMlList[j]->getAttributeAsDouble("PowerCoef");
-				if( cd.powerCoef != 1 )
-				{
-					cd.formulaName = "PowerChemotaxisFormula";//powerChemotaxisFormula
+				cd.formulaName = chemotactByTypeXMlList[j]->getAttribute("FormulaName");
+				
+				if(chemotactByTypeXMlList[j]->findAttribute("Lambda")){
+					cd.lambda=chemotactByTypeXMlList[j]->getAttributeAsDouble("Lambda");
 				}
+				
+				if(chemotactByTypeXMlList[j]->findAttribute("SaturationCoef"))
+				{
+					cd.saturationCoef=chemotactByTypeXMlList[j]->getAttributeAsDouble("SaturationCoef");
+					//cd.formulaName="SaturationChemotaxisFormula";
+				}
+				else if(chemotactByTypeXMlList[j]->findAttribute("SaturationLinearCoef"))
+				{
+					cd.saturationCoef=chemotactByTypeXMlList[j]->getAttributeAsDouble("SaturationLinearCoef");
+					//cd.formulaName="SaturationLinearChemotaxisFormula";
+				}
+				
+				if (chemotactByTypeXMlList[j]->findAttribute("DisallowChemotaxisBetweenCompartments")) 
+				{
+					cd.allowChemotaxisBetweenCompartmentsGlobal = false;				
+				}
+				
+				if(chemotactByTypeXMlList[j]->findAttribute("ChemotactTowards")){
+					//ASSERT_OR_THROW("ChemotactTowards is deprecated now. Please replace it with ChemotactAtInterfaceWith.",chemotaxisFieldDataVec.size());
+					cd.chemotactTowardsTypesString=chemotactByTypeXMlList[j]->getAttribute("ChemotactTowards");
+				}else if (chemotactByTypeXMlList[j]->findAttribute("ChemotactAtInterfaceWith")){// both keywords are OK
+					cd.chemotactTowardsTypesString=chemotactByTypeXMlList[j]->getAttribute("ChemotactAtInterfaceWith");
+				}
+				
+				if( chemotactByTypeXMlList[j]->findAttribute("PowerCoef") )
+				{
+					cd.powerLevel = chemotactByTypeXMlList[j]->getAttributeAsDouble("PowerCoef");
+					if( cd.powerCoef == 1 )
+					{
+						cd.formulaName = false;//powerChemotaxisFormula
+					}
+				}
+				
 			}
+			else //jfg, end
+			{
+				if(chemotactByTypeXMlList[j]->findAttribute("Lambda")){
+					cd.lambda=chemotactByTypeXMlList[j]->getAttributeAsDouble("Lambda");
+				}
+
+				if(chemotactByTypeXMlList[j]->findAttribute("SaturationCoef")){
+					cd.saturationCoef=chemotactByTypeXMlList[j]->getAttributeAsDouble("SaturationCoef");
+					cd.formulaName="SaturationChemotaxisFormula";
+				}
+
+				if (chemotactByTypeXMlList[j]->findAttribute("DisallowChemotaxisBetweenCompartments")) {
+					cd.allowChemotaxisBetweenCompartmentsGlobal = false;				
+				}
+
+				if(chemotactByTypeXMlList[j]->findAttribute("SaturationLinearCoef")){
+					cd.saturationCoef=chemotactByTypeXMlList[j]->getAttributeAsDouble("SaturationLinearCoef");
+					cd.formulaName="SaturationLinearChemotaxisFormula";
+				}
+
+				if(chemotactByTypeXMlList[j]->findAttribute("ChemotactTowards")){
+					//ASSERT_OR_THROW("ChemotactTowards is deprecated now. Please replace it with ChemotactAtInterfaceWith.",chemotaxisFieldDataVec.size());
+					cd.chemotactTowardsTypesString=chemotactByTypeXMlList[j]->getAttribute("ChemotactTowards");
+				}else if (chemotactByTypeXMlList[j]->findAttribute("ChemotactAtInterfaceWith")){// both keywords are OK
+					cd.chemotactTowardsTypesString=chemotactByTypeXMlList[j]->getAttribute("ChemotactAtInterfaceWith");
+				}
+				//cerr<<"cd.typeName="<<cd.typeName<<" cd.lambda="<<endl;
+				
+				
+				//jfg:
+				if( chemotactByTypeXMlList[j]->findAttribute("PowerCoef") )
+				{
+					cd.powerLevel = chemotactByTypeXMlList[j]->getAttributeAsDouble("PowerCoef");
+					if( cd.powerCoef != 1 )
+					{
+						cd.formulaName = "PowerChemotaxisFormula";//powerChemotaxisFormula
+					}
+				}
 			//jfg, end
+			}
+			
 		}
 
 	}
