@@ -11,6 +11,7 @@ import warnings
 import time
 import weakref
 from cc3d import CompuCellSetup
+from cc3d.core import RestartManager
 
 
 # -------------------- legacy API emulation ----------------------------------------

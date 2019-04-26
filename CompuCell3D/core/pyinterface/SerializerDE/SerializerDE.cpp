@@ -655,7 +655,7 @@ bool SerializerDE::loadVectorField(SerializeData &_sd){
 		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
 			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
 
-				fieldArray->GetTupleValue(offset,tuple);
+				fieldArray->GetTypedTuple(offset,tuple);
 
 // 				(*fieldPtr)[pt.x][pt.y][pt.z]=Coordinates3D<float>(tuple[0],tuple[1],tuple[2]) ;
                                 
@@ -789,7 +789,7 @@ bool SerializerDE::loadVectorFieldCellLevel(SerializeData &_sd){
 					if(mitr!=fieldPtr->end()){
 						;
 					}else{
-						fieldArray->GetTupleValue(offset,tuple);
+						fieldArray->GetTypedTuple(offset,tuple);
 						cerr<<"inserting "<<Coordinates3D<float>(tuple[0],tuple[1],tuple[2])<<endl;
 						fieldPtr->insert(make_pair(cell,Coordinates3D<float>(tuple[0],tuple[1],tuple[2])));
 						

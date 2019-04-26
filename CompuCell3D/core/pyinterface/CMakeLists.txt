@@ -78,7 +78,7 @@ IF(SWIG_FOUND)
 
 
     add_subdirectory(PlayerPythonNew)
-    # add_subdirectory(SerializerDE)
+    add_subdirectory(SerializerDE)
     add_subdirectory(PyPlugin)
     # add_subdirectory(Example)
     # add_subdirectory(Fields)
