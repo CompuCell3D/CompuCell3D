@@ -44,6 +44,8 @@ class RollbackImporter:
 
         result = self.realImport(*(name, globals, locals, fromlist, level_import))
 
+        # result = apply(self.realImport, (name, globals, locals, fromlist))
+
         self.newModules[name] = 1
         return result
 
