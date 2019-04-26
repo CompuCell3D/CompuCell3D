@@ -41,6 +41,10 @@ ChemotaxisPlugin::ChemotaxisPlugin():algorithmPtr(&ChemotaxisPlugin::merksChemot
 	chemotaxisFormulaDict["SaturationChemotaxisFormula"]=&ChemotaxisPlugin::saturationChemotaxisFormula;
 	chemotaxisFormulaDict["SaturationLinearChemotaxisFormula"]=&ChemotaxisPlugin::saturationLinearChemotaxisFormula;
 	chemotaxisFormulaDict["SimpleChemotaxisFormula"]=&ChemotaxisPlugin::simpleChemotaxisFormula;
+    
+    //jfg, adding the new formulas here
+    chemotaxisFormulaDict["SaturationChemotaxisFormula"]=&ChemotaxisPlugin::saturationChemotaxisFormula;
+    
 	
 }
 
@@ -147,17 +151,15 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 				if(chemotactByTypeXMlList[j]->findAttribute("SaturationCoef"))
 				{
 					cd.saturationCoef=chemotactByTypeXMlList[j]->getAttributeAsDouble("SaturationCoef");
-					//cd.formulaName="SaturationChemotaxisFormula";
 				}
 				else if(chemotactByTypeXMlList[j]->findAttribute("SaturationLinearCoef"))
 				{
 					cd.saturationCoef=chemotactByTypeXMlList[j]->getAttributeAsDouble("SaturationLinearCoef");
-					//cd.formulaName="SaturationLinearChemotaxisFormula";
 				}
 				
 				if (chemotactByTypeXMlList[j]->findAttribute("DisallowChemotaxisBetweenCompartments")) 
 				{
-					cd.allowChemotaxisBetweenCompartmentsGlobal = false;				
+					cd.allowChemotaxisBetweenCompartmentsGlobal = false;	
 				}
 				
 				if(chemotactByTypeXMlList[j]->findAttribute("ChemotactTowards")){
