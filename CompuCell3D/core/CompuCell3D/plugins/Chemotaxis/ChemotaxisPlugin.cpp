@@ -43,8 +43,12 @@ ChemotaxisPlugin::ChemotaxisPlugin():algorithmPtr(&ChemotaxisPlugin::merksChemot
 	chemotaxisFormulaDict["SimpleChemotaxisFormula"]=&ChemotaxisPlugin::simpleChemotaxisFormula;
     
     //jfg, adding the new formulas here
-    chemotaxisFormulaDict["SaturationChemotaxisFormula"]=&ChemotaxisPlugin::saturationChemotaxisFormula;
-    
+    chemotaxisFormulaDict["SaturationDifferenceChemotaxisFormula"]=&ChemotaxisPlugin::saturationDifferenceChemotaxisFormula;
+    chemotaxisFormulaDict["PowerChemotaxisFormula"]=&ChemotaxisPlugin::powerChemotaxisFormula;
+    chemotaxisFormulaDict["Log10DivisionFormula"]=&ChemotaxisPlugin::log10DivisionFormula;
+    chemotaxisFormulaDict["LogNatDivisionFormula"]=&ChemotaxisPlugin::logNatDivisionFormula;
+    chemotaxisFormulaDict["Log10DifferenceFormula"]=&ChemotaxisPlugin::log10DifferenceFormula;
+    chemotaxisFormulaDict["LogNatDifferenceFormula"]=&ChemotaxisPlugin::logNatDifferenceFormula;
 	
 }
 
