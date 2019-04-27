@@ -32,15 +32,21 @@ class RollbackImporter:
         self.newModules = {}
 
     def _import(self, name, globals=None, locals=None, fromlist=[], level=0):
+        if name in ['roadrunner','RoadRunnerPy']:
+            result = apply(self.realImport, (name, globals, locals, fromlist))
+
+            self.newModules[name] = 1
+            return result
+
         level_import = level
-        if name.find('steppable') > 0 or name.find('Steppable') > 0:
-            level_import = 0
-        else:
-            if fromlist:
-                for mod_name in fromlist:
-                    if mod_name.find('steppable') > 0 or mod_name.find('Steppable') > 0:
-                        level_import = 0
-                        break
+        # if name.find('steppable') > 0 or name.find('Steppable') > 0:
+        #     level_import = 0
+        # else:
+        #     if fromlist:
+        #         for mod_name in fromlist:
+        #             if mod_name.find('Steppable') > 0 or mod_name.find('Steppable') > 0:
+        #                 level_import = 0
+        #                 break
 
         result = self.realImport(*(name, globals, locals, fromlist, level_import))
 
