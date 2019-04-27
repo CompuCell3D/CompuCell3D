@@ -392,6 +392,19 @@ def main_loop_player(sim, simthread, steppableRegistry):
 
     extra_init_simulation_objects(sim, simthread, _restartEnabled=False)
 
+
+    restartManager = RestartManager.RestartManager(sim)
+
+    restartEnabled = restartManager.restartEnabled()
+    sim.setRestartEnabled(restartEnabled)
+    # restartEnabled=False
+    if restartEnabled:
+        print ('WILL RESTART SIMULATION')
+        restartManager.loadRestartFiles()
+    else:
+        print ('WILL RUN SIMULATION FROM BEGINNING')
+
+
     # simthread.waitForInitCompletion()
     # simthread.waitForPlayerTaskToFinish()
 
@@ -408,12 +421,18 @@ def main_loop_player(sim, simthread, steppableRegistry):
 
     runFinishFlag = True
 
+    restartManager.prepareRestarter()
+    beginingStep = restartManager.getRestartStep()
+
+
     cur_step = 0
     while cur_step < max_num_steps:
         simthread.beforeStep(_mcs=cur_step)
         if simthread.getStopSimulation() or CompuCellSetup.persistent_globals.user_stop_simulation_flag:
             runFinishFlag = False
             break
+
+        restartManager.outputRestartFiles(cur_step)
 
         sim.step(cur_step)
 

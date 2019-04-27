@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 import os, sys
-
+import re
+import pickle
 from cc3d.cpp import CompuCell
 from cc3d.cpp import SerializerDEPy
+from cc3d.core.PySteppables import CellList
+from cc3d.core.XMLUtils import ElementCC3D
+from cc3d.core import Version
+from cc3d import CompuCellSetup
+from pathlib import Path
 
 import warnings
 
@@ -18,14 +24,13 @@ copyreg.pickle(CompuCell.Vector3, _pickleVector3)
 class RestartManager:
 
     def __init__(self, _sim=None):
-        import SerializerDEPy
-        import CompuCellSetup
         self.sim = _sim
+
         self.serializer = SerializerDEPy.SerializerDE()
         self.serializer.init(self.sim)
         self.cc3dSimOutputDir = ''
         self.serializeDataList = []
-        self.__stepNumberOfDigits = 0  # field size for formatting step number output
+        self.__step_number_of_digits = 0  # field size for formatting step number output
         self.__completedRestartOutputPath = ''
         self.__allowMultipleRestartDirectories = True
         self.__outputFrequency = 0
@@ -41,7 +46,6 @@ class RestartManager:
 
         self.cc3dSimulationDataHandler = None
 
-        # self.extractRestartManagerConfiguration()
 
     def getRestartStep(self):
         return self.__restartStep
@@ -51,8 +55,13 @@ class RestartManager:
         Performs basic setup before attempting a restart
         :return: None
         """
-        import re
-        import CompuCellSetup
+
+        #todo - fix
+        self.__allowMultipleRestartDirectories = False
+        self.__outputFrequency = 1
+
+        return
+
         if re.match(".*\.cc3d$", str(CompuCellSetup.simulationFileName)):
             from . import CC3DSimulationDataHandler
             cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler()
@@ -69,9 +78,9 @@ class RestartManager:
         reads .cc3d project file and checks if restart is enabled
         :return: {bool}
         """
+        return False
 
-        import CompuCellSetup
-        import re
+
         if re.match(".*\.cc3d$", str(CompuCellSetup.simulationFileName)):
 
             print("EXTRACTING restartEnabled")
@@ -111,21 +120,31 @@ class RestartManager:
 
         return restartOutputRootPath
 
-    def setupRestartOutputDirectory(self, _step=0):
+    def setup_restart_output_directory(self, _step=0):
         """
         Prpares restart directory
         :param _step: {int} Monte Carlo Step
         :return: {None}
         """
-        import CompuCellSetup
-        import string
+
+        pg = CompuCellSetup.persistent_globals
+        output_dir_root  = pg.output_directory
+        if not self.__step_number_of_digits:
+            self.__step_number_of_digits = len(str(pg.simulator.getNumSteps()))
+
+        restart_output_dir = Path(output_dir_root).joinpath('restart_'+str(_step).zfill(self.__step_number_of_digits))
+        # restart_output_dir.
+
+        restart_output_dir.mkdir(parents=True, exist_ok=True)
+
+        return str(restart_output_dir)
 
         print('CompuCellSetup.screenshotDirectoryName=', CompuCellSetup.screenshotDirectoryName)
 
         self.cc3dSimOutputDir = CompuCellSetup.screenshotDirectoryName
 
-        if not self.__stepNumberOfDigits:
-            self.__stepNumberOfDigits = len(str(self.sim.getNumSteps()))
+        if not self.__step_number_of_digits:
+            self.__step_number_of_digits = len(str(self.sim.getNumSteps()))
 
         restartOutputPath = ''
         simFilesOutputPath = ''
@@ -137,7 +156,7 @@ class RestartManager:
 
                 # fills string with 0's up to self.__stepNumberOfDigits
                 restartOutputPath = os.path.join(self.cc3dSimOutputDir, 'restart_' + string.zfill(str(_step),
-                                                                                                  self.__stepNumberOfDigits))
+                                                                                                  self.__step_number_of_digits))
                 simFilesOutputPath = restartOutputPath
 
                 # one more level of nesting
@@ -154,7 +173,7 @@ class RestartManager:
 
             # fills string with 0's up to self.__stepNumberOfDigits
             restartOutputPath = os.path.join(self.cc3dSimOutputDir,
-                                             'restart_' + string.zfill(str(_step), self.__stepNumberOfDigits))
+                                             'restart_' + string.zfill(str(_step), self.__step_number_of_digits))
             simFilesOutputPath = restartOutputPath
             # one more level of nesting
             restartOutputPath = os.path.join(restartOutputPath,
@@ -203,7 +222,7 @@ class RestartManager:
                 if cc3dSimulationDataHandlerLocal.cc3dSimulationData.serializerResource:
                     cc3dSimulationDataHandlerLocal.cc3dSimulationData.serializerResource.restartDirectory = 'restart'
                     cc3dSimulationDataHandlerLocal.writeCC3DFileFormat(simFullName)
-                else:  # otherwise we create new simulation resource and add restart siukation element
+                else:  # otherwise we create new simulation resource and add restart simulation element
                     cc3dSimulationDataHandlerLocal.cc3dSimulationData.addNewSerializerResource(_restartDir='restart')
                     cc3dSimulationDataHandlerLocal.writeCC3DFileFormat(simFullName)
 
@@ -1385,81 +1404,81 @@ class RestartManager:
 
         # have to initialize serialized each time in case lattice gets resized in which case cellField Ptr
         # has to be updated and lattice dimension is usually different
-        self.serializer.init(self.sim)
 
-        from .XMLUtils import ElementCC3D
-        from . import Version
+        pg = CompuCellSetup.persistent_globals
+
+        self.serializer.init(pg.simulator)
+
 
         rstXMLElem = ElementCC3D("RestartFiles",
                                  {"Version": Version.getVersionAsString(), 'Build': Version.getSVNRevisionAsString()})
         rstXMLElem.ElementCC3D("Step", {}, _step)
         print('outputRestartFiles')
 
-        import CompuCellSetup
 
-        cc3dSimOutputDir = CompuCellSetup.screenshotDirectoryName
+        # cc3dSimOutputDir = CompuCellSetup.screenshotDirectoryName
+        cc3dSimOutputDir = pg.output_directory
 
         print("cc3dSimOutputDir=", cc3dSimOutputDir)
-        print("CompuCellSetup.simulationPaths.simulationXMLFileName=", CompuCellSetup.simulationPaths.simulationXMLFileName)
-        print('CompuCellSetup.simulationFileName=', CompuCellSetup.simulationFileName)
+        # print("CompuCellSetup.simulationPaths.simulationXMLFileName=", CompuCellSetup.simulationPaths.simulationXMLFileName)
+        # print('CompuCellSetup.simulationFileName=', CompuCellSetup.simulationFileName)
 
-        restartOutputPath = self.setupRestartOutputDirectory(_step)
+        restart_output_path = self.setup_restart_output_directory(_step)
 
-        # no output if restartOutputPath is not specified
-        if restartOutputPath == '':
+        # no output if restart_output_path is not specified
+        if restart_output_path == '':
             return
 
         # ---------------------- OUTPUTTING RESTART FILES    --------------------
         # outputting cell field    
-        self.outputCellField(restartOutputPath, rstXMLElem)
+        self.outputCellField(restart_output_path, rstXMLElem)
         # outputting concentration fields (scalar fields) from PDE solvers    
-        self.outputConcentrationFields(restartOutputPath, rstXMLElem)
+        self.outputConcentrationFields(restart_output_path, rstXMLElem)
         # outputting extra scalar fields   - used in Python only
-        self.outputScalarFields(restartOutputPath, rstXMLElem)
+        self.outputScalarFields(restart_output_path, rstXMLElem)
         # outputting extra scalar fields cell level  - used in Python only
-        self.outputScalarFieldsCellLevel(restartOutputPath, rstXMLElem)
+        self.outputScalarFieldsCellLevel(restart_output_path, rstXMLElem)
         # outputting extra vector fields  - used in Python only
-        self.outputVectorFields(restartOutputPath, rstXMLElem)
+        self.outputVectorFields(restart_output_path, rstXMLElem)
         # outputting extra vector fields cell level  - used in Python only
-        self.outputVectorFieldsCellLevel(restartOutputPath, rstXMLElem)
+        self.outputVectorFieldsCellLevel(restart_output_path, rstXMLElem)
         # outputting core cell  attributes
-        self.outputCoreCellAttributes(restartOutputPath, rstXMLElem)
+        self.outputCoreCellAttributes(restart_output_path, rstXMLElem)
         # outputting cell Python attributes
-        self.outputPythonAttributes(restartOutputPath, rstXMLElem)
-        # outputting bionetSolver
-        self.outputBionetSolver(restartOutputPath, rstXMLElem)
-        # outputting FreeFloating SBMLSolvers -
-        # notice that SBML solvers assoaciated with a cell are pickled in the outputPythonAttributes function
-        self.outputFreeFloatingSBMLSolvers(restartOutputPath, rstXMLElem)
-        # outputting plugins
-        # outputting AdhesionFlexPlugin
-        self.outputAdhesionFlexPlugin(restartOutputPath, rstXMLElem)
-        # outputting ChemotaxisPlugin
-        self.outputChemotaxisPlugin(restartOutputPath, rstXMLElem)
-        # outputting LengthConstraintPlugin
-        self.outputLengthConstraintPlugin(restartOutputPath, rstXMLElem)
-        # outputting ConnectivityGlobalPlugin
-        self.outputConnectivityGlobalPlugin(restartOutputPath, rstXMLElem)
-        # outputting ConnectivityLocalFlexPlugin
-        self.outputConnectivityLocalFlexPlugin(restartOutputPath, rstXMLElem)
-        # outputting FocalPointPlacticityPlugin
-        self.outputFocalPointPlacticityPlugin(restartOutputPath, rstXMLElem)
-        # outputting ContactLocalProductPlugin
-        self.outputContactLocalProductPlugin(restartOutputPath, rstXMLElem)
-        # outputting CellOrientationPlugin
-        self.outputCellOrientationPlugin(restartOutputPath, rstXMLElem)
-        # outputting PolarizationVectorPlugin
-        self.outputPolarizationVectorPlugin(restartOutputPath, rstXMLElem)
-        # outputting Polarization23Plugin
-        self.outputPolarization23Plugin(restartOutputPath, rstXMLElem)
-
-        # outputting steering panel params
-        self.outputSteeringPanel(restartOutputPath, rstXMLElem)
-
-        # ---------------------- END OF  OUTPUTTING RESTART FILES    --------------------
-
-        # -------------writing xml description of the restart files
-        rstXMLElem.CC3DXMLElement.saveXML(os.path.join(restartOutputPath, 'restart.xml'))
+        self.outputPythonAttributes(restart_output_path, rstXMLElem)
+        # return
+        # # outputting FreeFloating SBMLSolvers -
+        # # notice that SBML solvers assoaciated with a cell are pickled in the outputPythonAttributes function
+        # self.outputFreeFloatingSBMLSolvers(restart_output_path, rstXMLElem)
+        # # outputting plugins
+        # # outputting AdhesionFlexPlugin
+        # self.outputAdhesionFlexPlugin(restart_output_path, rstXMLElem)
+        # # outputting ChemotaxisPlugin
+        # self.outputChemotaxisPlugin(restart_output_path, rstXMLElem)
+        # # outputting LengthConstraintPlugin
+        # self.outputLengthConstraintPlugin(restart_output_path, rstXMLElem)
+        # # outputting ConnectivityGlobalPlugin
+        # self.outputConnectivityGlobalPlugin(restart_output_path, rstXMLElem)
+        # # outputting ConnectivityLocalFlexPlugin
+        # self.outputConnectivityLocalFlexPlugin(restart_output_path, rstXMLElem)
+        # # outputting FocalPointPlacticityPlugin
+        # self.outputFocalPointPlacticityPlugin(restart_output_path, rstXMLElem)
+        # # outputting ContactLocalProductPlugin
+        # self.outputContactLocalProductPlugin(restart_output_path, rstXMLElem)
+        # # outputting CellOrientationPlugin
+        # self.outputCellOrientationPlugin(restart_output_path, rstXMLElem)
+        # # outputting PolarizationVectorPlugin
+        # self.outputPolarizationVectorPlugin(restart_output_path, rstXMLElem)
+        # # outputting Polarization23Plugin
+        # self.outputPolarization23Plugin(restart_output_path, rstXMLElem)
+        #
+        # # outputting steering panel params
+        # self.outputSteeringPanel(restart_output_path, rstXMLElem)
+        #
+        # # ---------------------- END OF  OUTPUTTING RESTART FILES    --------------------
+        #
+        # # -------------writing xml description of the restart files
+        # rstXMLElem.CC3DXMLElement.saveXML(os.path.join(restart_output_path, 'restart.xml'))
 
         # --------------- depending on removePreviousFiles we will remove or keep previous restart files
 
@@ -1479,7 +1498,7 @@ class RestartManager:
                     # in such a case it is best to ignore such requests
                     pass
 
-        self.__completedRestartOutputPath = self.getRestartOutputRootPath(restartOutputPath)
+        self.__completedRestartOutputPath = self.getRestartOutputRootPath(restart_output_path)
 
     def outputConcentrationFields(self, _restartOutputPath, _rstXMLElem):
         """
@@ -1490,7 +1509,6 @@ class RestartManager:
         """
 
         concFieldNameVec = self.sim.getConcentrationFieldNameVector()
-        import SerializerDEPy
         for fieldName in concFieldNameVec:
             sd = SerializerDEPy.SerializeData()
             sd.moduleName = 'PDESolver'
@@ -1515,7 +1533,6 @@ class RestartManager:
         """
 
         concFieldNameVec = self.sim.getConcentrationFieldNameVector()
-        import SerializerDEPy
         sd = SerializerDEPy.SerializeData()
         sd.moduleName = 'Potts3D'
         sd.moduleType = 'Core'
@@ -1535,17 +1552,16 @@ class RestartManager:
         :param _rstXMLElem: {instance of CC3DXMLElement}
         :return: None
         """
+        field_registry = CompuCellSetup.persistent_globals.field_registry
 
-        import SerializerDEPy
-        import CompuCellSetup
-        scalarFieldsDict = CompuCellSetup.fieldRegistry.getScalarFields()
-        for fieldName in scalarFieldsDict:
+        scalar_fields_dict = field_registry.getScalarFields()
+        for fieldName in scalar_fields_dict:
             sd = SerializerDEPy.SerializeData()
             sd.moduleName = 'Python'
             sd.moduleType = 'Python'
             sd.objectName = fieldName
             sd.objectType = 'ScalarField'
-            sd.objectPtr = scalarFieldsDict[fieldName]
+            sd.objectPtr = scalar_fields_dict[fieldName]
             sd.fileName = os.path.join(_restartOutputPath, fieldName + '.dat')
             self.serializer.serializeScalarField(sd)
             self.appendXMLStub(_rstXMLElem, sd)
@@ -1558,17 +1574,15 @@ class RestartManager:
         :param _rstXMLElem: {instance of CC3DXMLElement}
         :return: None
         """
-
-        import SerializerDEPy
-        import CompuCellSetup
-        scalarFieldsDictCellLevel = CompuCellSetup.fieldRegistry.getScalarFieldsCellLevel()
-        for fieldName in scalarFieldsDictCellLevel:
+        field_registry = CompuCellSetup.persistent_globals.field_registry
+        scalar_fields_dict_cell_level = field_registry.getScalarFieldsCellLevel()
+        for fieldName in scalar_fields_dict_cell_level:
             sd = SerializerDEPy.SerializeData()
             sd.moduleName = 'Python'
             sd.moduleType = 'Python'
             sd.objectName = fieldName
             sd.objectType = 'ScalarFieldCellLevel'
-            sd.objectPtr = scalarFieldsDictCellLevel[fieldName]
+            sd.objectPtr = scalar_fields_dict_cell_level[fieldName]
             sd.fileName = os.path.join(_restartOutputPath, fieldName + '.dat')
             self.serializer.serializeScalarFieldCellLevel(sd)
             self.appendXMLStub(_rstXMLElem, sd)
@@ -1581,16 +1595,15 @@ class RestartManager:
         :return: None
         """
 
-        import SerializerDEPy
-        import CompuCellSetup
-        vectorFieldsDict = CompuCellSetup.fieldRegistry.getVectorFields()
-        for fieldName in vectorFieldsDict:
+        field_registry = CompuCellSetup.persistent_globals.field_registry
+        vector_fields_dict = field_registry.getVectorFields()
+        for fieldName in vector_fields_dict:
             sd = SerializerDEPy.SerializeData()
             sd.moduleName = 'Python'
             sd.moduleType = 'Python'
             sd.objectName = fieldName
             sd.objectType = 'VectorField'
-            sd.objectPtr = vectorFieldsDict[fieldName]
+            sd.objectPtr = vector_fields_dict[fieldName]
             sd.fileName = os.path.join(_restartOutputPath, fieldName + '.dat')
             self.serializer.serializeVectorField(sd)
             self.appendXMLStub(_rstXMLElem, sd)
@@ -1602,17 +1615,15 @@ class RestartManager:
         :param _rstXMLElem: {instance of CC3DXMLElement}
         :return: None
         """
-
-        import SerializerDEPy
-        import CompuCellSetup
-        vectorFieldsCellLevelDict = CompuCellSetup.fieldRegistry.getVectorFieldsCellLevel()
-        for fieldName in vectorFieldsCellLevelDict:
+        field_registry = CompuCellSetup.persistent_globals.field_registry
+        vector_fields_cell_level_dict = field_registry.getVectorFieldsCellLevel()
+        for fieldName in vector_fields_cell_level_dict:
             sd = SerializerDEPy.SerializeData()
             sd.moduleName = 'Python'
             sd.moduleType = 'Python'
             sd.objectName = fieldName
             sd.objectType = 'VectorFieldCellLevel'
-            sd.objectPtr = vectorFieldsCellLevelDict[fieldName]
+            sd.objectPtr = vector_fields_cell_level_dict[fieldName]
             sd.fileName = os.path.join(_restartOutputPath, fieldName + '.dat')
             self.serializer.serializeVectorFieldCellLevel(sd)
             self.appendXMLStub(_rstXMLElem, sd)
@@ -1668,12 +1679,8 @@ class RestartManager:
         :param _rstXMLElem: {instance of CC3DXMLElement}
         :return: None
         """
-
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        inventory = self.sim.getPotts().getCellInventory()
+        sim = CompuCellSetup.persistent_globals.simulator
+        inventory = sim.getPotts().getCellInventory()
         cellList = CellList(inventory)
         numberOfCells = len(cellList)
 
@@ -1684,7 +1691,7 @@ class RestartManager:
         sd.objectType = 'Pickle'
         sd.fileName = os.path.join(_restartOutputPath, 'CoreCellAttributes' + '.dat')
         try:
-            pf = open(sd.fileName, 'w')
+            pf = open(sd.fileName, 'wb')
         except IOError as e:
             return
 
@@ -1743,14 +1750,12 @@ class RestartManager:
         :param _cellList: {instance of CellList} - a container representing all CC3D simulations
         :return: None
         """
-        import CompuCell
-        import pickle
 
         numberOfCells = len(_cellList)
 
-        nullFile = open(os.devnull, 'w')
+        nullFile = open(os.devnull, 'wb')
         try:
-            pf = open(_fileName, 'w')
+            pf = open(_fileName, 'wb')
         except IOError as e:
             return
 
@@ -1801,9 +1806,6 @@ class RestartManager:
         :param _cellList: {instance of CellList} - a container representing all CC3D simulations
         :return: None
         """
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
 
         sd = SerializerDEPy.SerializeData()
         sd.moduleName = 'Python'
@@ -1825,15 +1827,11 @@ class RestartManager:
         """
 
         # notice that this function also outputs SBMLSolver objects
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
         inventory = self.sim.getPotts().getCellInventory()
         cellList = CellList(inventory)
 
         # checking if cells have extra attribute
-        import CompuCell
+
         for cell in cellList:
             if not CompuCell.isPyAttribValid(cell):
                 return
@@ -1862,167 +1860,6 @@ class RestartManager:
         else:
             self.pickleDictionary(sd.fileName, cellList)
 
-        self.appendXMLStub(_rstXMLElem, sd)
-
-    def outputBionetSolver(self, _restartOutputPath, _rstXMLElem):
-
-        """
-        serializes bionet solver -deprecated
-        :param _restartOutputPath: {str}
-        :param _rstXMLElem: {instance of CC3DXMLElement}
-        :return: None
-        """
-        warnings.warn('Bionet solver is deprecated', PendingDeprecationWarning)
-
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        inventory = self.sim.getPotts().getCellInventory()
-        cellList = CellList(inventory)
-        try:  # some Cc3D distros might be without bionetSolver
-            import bionetAPI
-
-            if bionetAPI.bionetworkManager is None:
-                print("\t\t\t bionetAPI.bionetworkManager is not initialized")
-                return
-            else:
-                bbm = bionetAPI.bionetworkManager
-
-
-        except ImportError as e:
-            return
-
-        # checking if cells have extra attribute
-        import CompuCell
-        for cell in cellList:
-            if not CompuCell.isPyAttribValid(cell):
-                return
-
-        listFlag = True
-        for cell in cellList:
-            attrib = CompuCell.getPyAttrib(cell)
-            if isinstance(attrib, list):
-                listFlag = True
-            else:
-                listFlag = False
-            break
-
-        print("CELLS HAVE ATTRIBUTES")
-        print('listFlag=', listFlag)
-
-        import shutil
-        sbmlModelDict = {}
-        for modelName, model in bbm.bionetworkSBMLInventory.items():
-            print("modelName=", modelName, " integrationStep=", model.getTimeStepSize(), " path=", os.path.basename(
-                model.getModelPath()), " model Key=", model.getModelKey())
-            sbmlModelDict[modelName] = {"ModelKey": model.getModelKey(), "ModelTimeStep": model.getTimeStepSize(),
-                                        "ModelPath": os.path.join("Simulation", os.path.basename(model.getModelPath()))}
-            # just in case - copy all sbml files to Simulation directory of in the output folder
-
-            sbmlModelOutputPath = os.path.join(self.cc3dSimOutputDir, 'Simulation')
-
-            if not os.path.exists(sbmlModelOutputPath):
-                os.mkdir(sbmlModelOutputPath)
-
-            # copy project file
-            try:
-                shutil.copy(model.getModelPath(), sbmlModelOutputPath)
-            except:  # ignore any copy errors
-                pass
-
-        sd = SerializerDEPy.SerializeData()
-        sd.moduleName = 'BionetSolver'
-        sd.moduleType = 'Python'
-        sd.objectName = 'BionetSolver'
-        sd.objectType = 'Pickle'
-        sd.fileName = os.path.join(_restartOutputPath, 'BionetSolver' + '.dat')
-        try:
-            pf = open(sd.fileName, 'w')
-        except IOError as e:
-            return
-
-        pickle.dump(sbmlModelDict, pf)
-
-        # cPickle.dump(len(bbm.nonCellBionetworkInventory.keys()),pf) # dumping number of nonCell BionetworkTemplateLibraries
-        nonCellTemplateLibraryDict = {}
-
-        nonCellLibraryNames = list(bbm.nonCellBionetworkInventory.keys())
-
-        for templateLibraryName, bn in bbm.nonCellBionetworkInventory.items():
-            dictToPickle = {}
-            templateLibrary = bn.getTemplateLibraryInstancePtr()
-
-            modelNames = templateLibrary.getModelNamesAsString().split()
-
-            for name in modelNames:
-                stateVarNames = bn.getBionetworkStateVarNamesAsString(name)
-                listOfStateVars = stateVarNames.split()
-
-                model = templateLibrary.getSBMLModelByName(name)
-
-                modelKey = sbmlModelDict[name]["ModelKey"]
-                modelStateVarDict = {}
-                for stateVar in listOfStateVars:
-                    varAccessName = modelKey + "_" + stateVar
-                    modelStateVarDict[varAccessName] = bionetAPI.getBionetworkValue(varAccessName, templateLibraryName)
-
-                dictToPickle[name] = modelStateVarDict
-
-            nonCellTemplateLibraryDict[templateLibraryName] = dictToPickle
-
-        # we store nonCell Template Library data after  template library data associated with cell types
-
-        # templateLibraries associated with cell types
-        cellTemplateLibraryDict = {}
-
-        for templateLibraryName, templateLibrary in bbm.bionetworkTemplateLibraryInventory.items():
-            dictToPickle = {}
-            if templateLibraryName not in nonCellLibraryNames:
-                modelNames = templateLibrary.getModelNamesAsString().split()
-                # print "templateLibraryName=",templateLibraryName, "\t\t\t templateLibrary.modelNames=",templateLibrary.getModelNamesAsString().split()
-                cellTemplateLibraryDict[templateLibraryName] = templateLibrary.getModelNamesAsString().split()
-
-        pickle.dump(cellTemplateLibraryDict, pf)  # we first store template library data associated with cell types
-
-        pickle.dump(nonCellTemplateLibraryDict, pf)  # later we store nonCell Template Library data
-
-        for cell in cellList:
-
-            dictAttrib = CompuCell.getPyAttrib(cell)
-            dictToPickle = {}
-            # checking which list items are picklable
-            try:
-
-                bn = dictAttrib["Bionetwork"]
-
-                stateVarNames = bn.getBionetworkStateVarNamesAsString("DeltaNotch")
-                listOfStateVars = stateVarNames.split()
-
-                templateLibrary = bn.getTemplateLibraryInstancePtr()
-                modelNames = templateLibrary.getModelNamesAsString().split()
-
-                for name in modelNames:
-                    stateVarNames = bn.getBionetworkStateVarNamesAsString(name)
-                    listOfStateVars = stateVarNames.split()
-
-                    model = templateLibrary.getSBMLModelByName(name)
-
-                    modelKey = sbmlModelDict[name]["ModelKey"]
-                    modelStateVarDict = {}
-                    for stateVar in listOfStateVars:
-                        varAccessName = modelKey + "_" + stateVar
-                        modelStateVarDict[varAccessName] = bionetAPI.getBionetworkValue(varAccessName, cell.id)
-
-                    dictToPickle[name] = modelStateVarDict
-
-                pickle.dump(cell.id, pf)
-                pickle.dump(dictToPickle, pf)
-
-            except LookupError as e:
-                pass
-
-        pf.close()
         self.appendXMLStub(_rstXMLElem, sd)
 
     def outputAdhesionFlexPlugin(self, _restartOutputPath, _rstXMLElem):
