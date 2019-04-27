@@ -1370,8 +1370,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             fieldNames = self.chemotaxisPlugin.getFieldNamesWithChemotaxisData(sourceCell)
 
             for fieldName in fieldNames:
-                source_chd = chemotaxisPlugin.getChemotaxisData(sourceCell, fieldName)
-                target_chd = chemotaxisPlugin.addChemotaxisData(targetCell, fieldName)
+                source_chd = self.chemotaxisPlugin.getChemotaxisData(sourceCell, fieldName)
+                target_chd = self.chemotaxisPlugin.addChemotaxisData(targetCell, fieldName)
 
                 target_chd.setLambda(source_chd.getLambda())
                 target_chd.saturationCoef = source_chd.saturationCoef

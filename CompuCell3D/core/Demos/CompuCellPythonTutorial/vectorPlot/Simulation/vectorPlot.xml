@@ -2,10 +2,8 @@
 
  <Potts>
    <Dimensions x="100" y="100" z="1"/>
-   <Anneal>0</Anneal>
    <Steps>10000</Steps>
    <Temperature>15</Temperature>
-   <Flip2DimRatio>1.0</Flip2DimRatio>
    <!--Boundary_y>NoFlux</Boundary_y-->
  </Potts>
 

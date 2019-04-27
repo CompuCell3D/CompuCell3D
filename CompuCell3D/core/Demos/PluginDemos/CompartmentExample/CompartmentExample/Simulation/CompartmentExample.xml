@@ -1,10 +1,8 @@
 <CompuCell3D>
 <Potts>
 	<Dimensions x="200" y="200" z="50"/>
-	<Anneal>0</Anneal>
 	<Steps>20000</Steps>
 	<Temperature>7</Temperature>
-	<Flip2DimRatio>1.0</Flip2DimRatio>
       <Boundary_y>Periodic</Boundary_y>
       <Boundary_x>Periodic</Boundary_x>
 	<FlipNeighborMaxDistance>1.75</FlipNeighborMaxDistance>

@@ -1,11 +1,9 @@
  <CompuCell3D>
  <Potts>
    <Dimensions x="40" y="40" z="40"/>
-   <Anneal>0</Anneal>
-   <Steps>30000</Steps>
+   <Steps>20000</Steps>
    <Temperature>2</Temperature>
    <Offset>-0.1</Offset>
-   <Flip2DimRatio>1.0</Flip2DimRatio>
  </Potts>
 
  <Plugin Name="PlayerSettings">
