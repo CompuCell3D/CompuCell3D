@@ -12,6 +12,7 @@ from pathlib import Path
 
 import warnings
 
+
 def _pickleVector3(_vec):
     return CompuCell.Vector3, (_vec.fX, _vec.fY, _vec.fZ)
 
@@ -24,10 +25,12 @@ copyreg.pickle(CompuCell.Vector3, _pickleVector3)
 class RestartManager:
 
     def __init__(self, _sim=None):
-        self.sim = _sim
 
+        sim = CompuCellSetup.persistent_globals.simulator
         self.serializer = SerializerDEPy.SerializerDE()
-        self.serializer.init(self.sim)
+
+        self.serializer.init(sim)
+
         self.cc3dSimOutputDir = ''
         self.serializeDataList = []
         self.__step_number_of_digits = 0  # field size for formatting step number output
@@ -46,7 +49,6 @@ class RestartManager:
 
         self.cc3dSimulationDataHandler = None
 
-
     def getRestartStep(self):
         return self.__restartStep
 
@@ -56,7 +58,7 @@ class RestartManager:
         :return: None
         """
 
-        #todo - fix
+        # todo - fix
         self.__allowMultipleRestartDirectories = False
         self.__outputFrequency = 1
 
@@ -72,7 +74,6 @@ class RestartManager:
                 self.__allowMultipleRestartDirectories = cc3dSimulationDataHandler.cc3dSimulationData.serializerResource.allowMultipleRestartDirectories
                 self.__outputFrequency = cc3dSimulationDataHandler.cc3dSimulationData.serializerResource.outputFrequency
 
-
     def restartEnabled(self):
         """
         reads .cc3d project file and checks if restart is enabled
@@ -80,9 +81,7 @@ class RestartManager:
         """
         return False
 
-
         if re.match(".*\.cc3d$", str(CompuCellSetup.simulationFileName)):
-
             print("EXTRACTING restartEnabled")
 
             from . import CC3DSimulationDataHandler
@@ -128,11 +127,11 @@ class RestartManager:
         """
 
         pg = CompuCellSetup.persistent_globals
-        output_dir_root  = pg.output_directory
+        output_dir_root = pg.output_directory
         if not self.__step_number_of_digits:
             self.__step_number_of_digits = len(str(pg.simulator.getNumSteps()))
 
-        restart_output_dir = Path(output_dir_root).joinpath('restart_'+str(_step).zfill(self.__step_number_of_digits))
+        restart_output_dir = Path(output_dir_root).joinpath('restart_' + str(_step).zfill(self.__step_number_of_digits))
         # restart_output_dir.
 
         restart_output_dir.mkdir(parents=True, exist_ok=True)
@@ -209,11 +208,13 @@ class RestartManager:
                 # read newly copied simulation file - we will add restart tags to it
                 cc3dSimulationDataHandlerLocal.readCC3DFileFormat(simFullName)
 
-                print('\n\n\n\n cc3dSimulationDataHandlerLocal.cc3dSimulationData=', cc3dSimulationDataHandlerLocal.cc3dSimulationData)
+                print('\n\n\n\n cc3dSimulationDataHandlerLocal.cc3dSimulationData=',
+                      cc3dSimulationDataHandlerLocal.cc3dSimulationData)
 
                 # update simulation size in the XML  in case it has changed during the simulation 
                 if cc3dSimulationDataHandlerLocal.cc3dSimulationData.xmlScript != '':
-                    print('cc3dSimulationDataHandlerLocal.cc3dSimulationData.xmlScript=', cc3dSimulationDataHandlerLocal.cc3dSimulationData.xmlScript)
+                    print('cc3dSimulationDataHandlerLocal.cc3dSimulationData.xmlScript=',
+                          cc3dSimulationDataHandlerLocal.cc3dSimulationData.xmlScript)
                     self.updateXMLScript(cc3dSimulationDataHandlerLocal.cc3dSimulationData.xmlScript)
                 elif cc3dSimulationDataHandlerLocal.cc3dSimulationData.pythonScript != '':
                     self.updatePythonScript(cc3dSimulationDataHandlerLocal.cc3dSimulationData.pythonScript)
@@ -373,7 +374,8 @@ class RestartManager:
 
             cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler()
             cc3dSimulationDataHandler.readCC3DFileFormat(str(CompuCellSetup.simulationFileName))
-            print("cc3dSimulationDataHandler.cc3dSimulationData.serializerResource=", cc3dSimulationDataHandler.cc3dSimulationData.serializerResource.restartDirectory)
+            print("cc3dSimulationDataHandler.cc3dSimulationData.serializerResource=",
+                  cc3dSimulationDataHandler.cc3dSimulationData.serializerResource.restartDirectory)
             if cc3dSimulationDataHandler.cc3dSimulationData.serializerResource.restartDirectory != '':
                 restartFileLocation = os.path.dirname(str(CompuCellSetup.simulationFileName))
                 self.__restartDirectory = os.path.join(restartFileLocation, 'restart')
@@ -655,7 +657,6 @@ class RestartManager:
         numberOfCells = pickle.load(pf)
 
         for cell in _cellList:
-
             cellId = pickle.load(pf)
             unpickledAttribList = pickle.load(pf)
             listAttrib = CompuCell.getPyAttrib(cell)
@@ -663,7 +664,6 @@ class RestartManager:
             # appends all elements of unpickledAttribList to the end of listAttrib
             #  note: deep copy will not work here
             listAttrib.extend(unpickledAttribList)
-
 
         pf.close()
 
@@ -804,7 +804,6 @@ class RestartManager:
                 # templateLibraryName in this case is the sdame as cell type name (except medium)
                 for templateLibraryName, modelNames in cellTemplateLibraryDict.items():
                     for modelName in modelNames:
-
                         bionetAPI.addSBMLModelToTemplateLibrary(modelName, templateLibraryName)
 
                 nonCellTemplateLibraryDict = pickle.load(pf)
@@ -1175,7 +1174,6 @@ class RestartManager:
         :return: None
         """
 
-
         import SerializerDEPy
         import CompuCellSetup
         import pickle
@@ -1220,7 +1218,6 @@ class RestartManager:
         :return: None
         """
 
-
         import SerializerDEPy
         import CompuCellSetup
         import pickle
@@ -1263,7 +1260,6 @@ class RestartManager:
         :return: None
         """
 
-
         import SerializerDEPy
         import CompuCellSetup
         import pickle
@@ -1301,13 +1297,11 @@ class RestartManager:
 
                 pf.close()
 
-
     def loadPolarization23(self):
         """
         restores polarization23 plugin
         :return: None
         """
-
 
         import SerializerDEPy
         import CompuCellSetup
@@ -1409,12 +1403,10 @@ class RestartManager:
 
         self.serializer.init(pg.simulator)
 
-
-        rstXMLElem = ElementCC3D("RestartFiles",
+        rst_xml_elem = ElementCC3D("RestartFiles",
                                  {"Version": Version.getVersionAsString(), 'Build': Version.getSVNRevisionAsString()})
-        rstXMLElem.ElementCC3D("Step", {}, _step)
+        rst_xml_elem.ElementCC3D("Step", {}, _step)
         print('outputRestartFiles')
-
 
         # cc3dSimOutputDir = CompuCellSetup.screenshotDirectoryName
         cc3dSimOutputDir = pg.output_directory
@@ -1431,54 +1423,72 @@ class RestartManager:
 
         # ---------------------- OUTPUTTING RESTART FILES    --------------------
         # outputting cell field    
-        self.outputCellField(restart_output_path, rstXMLElem)
+        self.output_cell_field(restart_output_path, rst_xml_elem)
+        
         # outputting concentration fields (scalar fields) from PDE solvers    
-        self.outputConcentrationFields(restart_output_path, rstXMLElem)
+        self.output_concentration_fields(restart_output_path, rst_xml_elem)
+        
         # outputting extra scalar fields   - used in Python only
-        self.outputScalarFields(restart_output_path, rstXMLElem)
+        self.output_scalar_fields(restart_output_path, rst_xml_elem)
+        
         # outputting extra scalar fields cell level  - used in Python only
-        self.outputScalarFieldsCellLevel(restart_output_path, rstXMLElem)
+        self.output_scalar_fields_cell_level(restart_output_path, rst_xml_elem)
+        
         # outputting extra vector fields  - used in Python only
-        self.outputVectorFields(restart_output_path, rstXMLElem)
+        self.output_vector_fields(restart_output_path, rst_xml_elem)
+        
         # outputting extra vector fields cell level  - used in Python only
-        self.outputVectorFieldsCellLevel(restart_output_path, rstXMLElem)
+        self.output_vector_fields_cell_level(restart_output_path, rst_xml_elem)
+        
         # outputting core cell  attributes
-        self.outputCoreCellAttributes(restart_output_path, rstXMLElem)
+        self.output_core_cell_attributes(restart_output_path, rst_xml_elem)
+        
         # outputting cell Python attributes
-        self.outputPythonAttributes(restart_output_path, rstXMLElem)
-        # return
-        # # outputting FreeFloating SBMLSolvers -
-        # # notice that SBML solvers assoaciated with a cell are pickled in the outputPythonAttributes function
-        # self.outputFreeFloatingSBMLSolvers(restart_output_path, rstXMLElem)
-        # # outputting plugins
-        # # outputting AdhesionFlexPlugin
-        # self.outputAdhesionFlexPlugin(restart_output_path, rstXMLElem)
-        # # outputting ChemotaxisPlugin
-        # self.outputChemotaxisPlugin(restart_output_path, rstXMLElem)
-        # # outputting LengthConstraintPlugin
-        # self.outputLengthConstraintPlugin(restart_output_path, rstXMLElem)
-        # # outputting ConnectivityGlobalPlugin
-        # self.outputConnectivityGlobalPlugin(restart_output_path, rstXMLElem)
-        # # outputting ConnectivityLocalFlexPlugin
-        # self.outputConnectivityLocalFlexPlugin(restart_output_path, rstXMLElem)
-        # # outputting FocalPointPlacticityPlugin
-        # self.outputFocalPointPlacticityPlugin(restart_output_path, rstXMLElem)
-        # # outputting ContactLocalProductPlugin
-        # self.outputContactLocalProductPlugin(restart_output_path, rstXMLElem)
-        # # outputting CellOrientationPlugin
-        # self.outputCellOrientationPlugin(restart_output_path, rstXMLElem)
-        # # outputting PolarizationVectorPlugin
-        # self.outputPolarizationVectorPlugin(restart_output_path, rstXMLElem)
-        # # outputting Polarization23Plugin
-        # self.outputPolarization23Plugin(restart_output_path, rstXMLElem)
+        self.output_python_attributes(restart_output_path, rst_xml_elem)
+
+        # outputting FreeFloating SBMLSolvers -
+        # notice that SBML solvers assoaciated with a cell are pickled in the outputPythonAttributes function
+        self.output_free_floating_sbml_solvers(restart_output_path, rst_xml_elem)
+        
+        # outputting plugins
+        
+        # outputting AdhesionFlexPlugin
+        self.output_adhesion_flex_plugin(restart_output_path, rst_xml_elem)
+        
+        # outputting ChemotaxisPlugin
+        self.output_chemotaxis_plugin(restart_output_path, rst_xml_elem)
+        
+        # outputting LengthConstraintPlugin
+        self.output_length_constraint_plugin(restart_output_path, rst_xml_elem)
+        
+        # outputting ConnectivityGlobalPlugin
+        self.output_connectivity_global_plugin(restart_output_path, rst_xml_elem)
+        
+        # outputting ConnectivityLocalFlexPlugin
+        self.output_connectivity_local_flex_plugin(restart_output_path, rst_xml_elem)
+        
+        # outputting FocalPointPlacticityPlugin
+        self.output_focal_point_placticity_plugin(restart_output_path, rst_xml_elem)
+        
+        # outputting ContactLocalProductPlugin
+        self.output_contact_local_product_plugin(restart_output_path, rst_xml_elem)
+        
+        # outputting CellOrientationPlugin
+        self.output_cell_orientation_plugin(restart_output_path, rst_xml_elem)
+        
+        # outputting PolarizationVectorPlugin
+        self.output_polarization_vector_plugin(restart_output_path, rst_xml_elem)
+        
+        # outputting Polarization23Plugin
+        self.output_polarization23_plugin(restart_output_path, rst_xml_elem)
         #
         # # outputting steering panel params
-        # self.outputSteeringPanel(restart_output_path, rstXMLElem)
+        # self.outputSteeringPanel(restart_output_path, rst_xml_elem)
         #
         # # ---------------------- END OF  OUTPUTTING RESTART FILES    --------------------
         #
         # # -------------writing xml description of the restart files
-        # rstXMLElem.CC3DXMLElement.saveXML(os.path.join(restart_output_path, 'restart.xml'))
+        # rst_xml_elem.CC3DXMLElement.saveXML(os.path.join(restart_output_path, 'restart.xml'))
 
         # --------------- depending on removePreviousFiles we will remove or keep previous restart files
 
@@ -1500,56 +1510,57 @@ class RestartManager:
 
         self.__completedRestartOutputPath = self.getRestartOutputRootPath(restart_output_path)
 
-    def outputConcentrationFields(self, _restartOutputPath, _rstXMLElem):
+    def output_concentration_fields(self, restart_output_path, rst_xml_elem):
         """
         Serializes concentration fields (associated with PDE solvers)
-        :param _restartOutputPath:{str}
-        :param _rstXMLElem: {instance of CC3DXMLElement}
+        :param restart_output_path:{str}
+        :param rst_xml_elem: {instance of CC3DXMLElement}
         :return: None
         """
 
-        concFieldNameVec = self.sim.getConcentrationFieldNameVector()
-        for fieldName in concFieldNameVec:
+        sim = CompuCellSetup.persistent_globals.simulator
+        conc_field_name_vec = sim.getConcentrationFieldNameVector()
+        for fieldName in conc_field_name_vec:
             sd = SerializerDEPy.SerializeData()
             sd.moduleName = 'PDESolver'
             sd.moduleType = 'Steppable'
 
             sd.objectName = fieldName
             sd.objectType = 'ConcentrationField'
-            sd.fileName = os.path.join(_restartOutputPath, fieldName + '.dat')
+            sd.fileName = os.path.join(restart_output_path, fieldName + '.dat')
             print('sd.fileName=', sd.fileName)
             sd.fileFormat = 'text'
             self.serializeDataList.append(sd)
             self.serializer.serializeConcentrationField(sd)
-            self.appendXMLStub(_rstXMLElem, sd)
+            self.appendXMLStub(rst_xml_elem, sd)
             print("Got concentration field: ", fieldName)
 
-    def outputCellField(self, _restartOutputPath, _rstXMLElem):
+    def output_cell_field(self, restart_output_path, rst_xml_elem):
         """
         Serializes cell field
-        :param _restartOutputPath:{str}
-        :param _rstXMLElem: {instance of CC3DXMLElement}
+        :param restart_output_path:{str}
+        :param rst_xml_elem: {instance of CC3DXMLElement}
         :return: None
         """
-
-        concFieldNameVec = self.sim.getConcentrationFieldNameVector()
+        sim = CompuCellSetup.persistent_globals.simulator
+        concFieldNameVec = sim.getConcentrationFieldNameVector()
         sd = SerializerDEPy.SerializeData()
         sd.moduleName = 'Potts3D'
         sd.moduleType = 'Core'
 
         sd.objectName = 'CellField'
         sd.objectType = 'CellField'
-        sd.fileName = os.path.join(_restartOutputPath, sd.objectName + '.dat')
+        sd.fileName = os.path.join(restart_output_path, sd.objectName + '.dat')
         sd.fileFormat = 'text'
         self.serializeDataList.append(sd)
         self.serializer.serializeCellField(sd)
-        self.appendXMLStub(_rstXMLElem, sd)
+        self.appendXMLStub(rst_xml_elem, sd)
 
-    def outputScalarFields(self, _restartOutputPath, _rstXMLElem):
+    def output_scalar_fields(self, restart_output_path, rst_xml_elem):
         """
         Serializes user defined scalar fields (not associated with PDE solvers)
-        :param _restartOutputPath:{str}
-        :param _rstXMLElem: {instance of CC3DXMLElement}
+        :param restart_output_path:{str}
+        :param rst_xml_elem: {instance of CC3DXMLElement}
         :return: None
         """
         field_registry = CompuCellSetup.persistent_globals.field_registry
@@ -1562,16 +1573,16 @@ class RestartManager:
             sd.objectName = fieldName
             sd.objectType = 'ScalarField'
             sd.objectPtr = scalar_fields_dict[fieldName]
-            sd.fileName = os.path.join(_restartOutputPath, fieldName + '.dat')
+            sd.fileName = os.path.join(restart_output_path, fieldName + '.dat')
             self.serializer.serializeScalarField(sd)
-            self.appendXMLStub(_rstXMLElem, sd)
+            self.appendXMLStub(rst_xml_elem, sd)
 
-    def outputScalarFieldsCellLevel(self, _restartOutputPath, _rstXMLElem):
+    def output_scalar_fields_cell_level(self, restart_output_path, rst_xml_elem):
         """
         Serializes user defined scalar fields (not associated with PDE solvers) that are
         defined on the per-cell basis
-        :param _restartOutputPath:{str}
-        :param _rstXMLElem: {instance of CC3DXMLElement}
+        :param restart_output_path:{str}
+        :param rst_xml_elem: {instance of CC3DXMLElement}
         :return: None
         """
         field_registry = CompuCellSetup.persistent_globals.field_registry
@@ -1583,15 +1594,15 @@ class RestartManager:
             sd.objectName = fieldName
             sd.objectType = 'ScalarFieldCellLevel'
             sd.objectPtr = scalar_fields_dict_cell_level[fieldName]
-            sd.fileName = os.path.join(_restartOutputPath, fieldName + '.dat')
+            sd.fileName = os.path.join(restart_output_path, fieldName + '.dat')
             self.serializer.serializeScalarFieldCellLevel(sd)
-            self.appendXMLStub(_rstXMLElem, sd)
+            self.appendXMLStub(rst_xml_elem, sd)
 
-    def outputVectorFields(self, _restartOutputPath, _rstXMLElem):
+    def output_vector_fields(self, restart_output_path, rst_xml_elem):
         """
         Serializes user defined vector fields
-        :param _restartOutputPath:{str}
-        :param _rstXMLElem: {instance of CC3DXMLElement}
+        :param restart_output_path:{str}
+        :param rst_xml_elem: {instance of CC3DXMLElement}
         :return: None
         """
 
@@ -1604,15 +1615,15 @@ class RestartManager:
             sd.objectName = fieldName
             sd.objectType = 'VectorField'
             sd.objectPtr = vector_fields_dict[fieldName]
-            sd.fileName = os.path.join(_restartOutputPath, fieldName + '.dat')
+            sd.fileName = os.path.join(restart_output_path, fieldName + '.dat')
             self.serializer.serializeVectorField(sd)
-            self.appendXMLStub(_rstXMLElem, sd)
+            self.appendXMLStub(rst_xml_elem, sd)
 
-    def outputVectorFieldsCellLevel(self, _restartOutputPath, _rstXMLElem):
+    def output_vector_fields_cell_level(self, restart_output_path, rst_xml_elem):
         """
         Serializes user defined vector fields that are defined on per-cell basis
-        :param _restartOutputPath:{str}
-        :param _rstXMLElem: {instance of CC3DXMLElement}
+        :param restart_output_path:{str}
+        :param rst_xml_elem: {instance of CC3DXMLElement}
         :return: None
         """
         field_registry = CompuCellSetup.persistent_globals.field_registry
@@ -1624,9 +1635,9 @@ class RestartManager:
             sd.objectName = fieldName
             sd.objectType = 'VectorFieldCellLevel'
             sd.objectPtr = vector_fields_cell_level_dict[fieldName]
-            sd.fileName = os.path.join(_restartOutputPath, fieldName + '.dat')
+            sd.fileName = os.path.join(restart_output_path, fieldName + '.dat')
             self.serializer.serializeVectorFieldCellLevel(sd)
-            self.appendXMLStub(_rstXMLElem, sd)
+            self.appendXMLStub(rst_xml_elem, sd)
 
     def cellCoreAttributes(self, _cell):
         """
@@ -1672,11 +1683,11 @@ class RestartManager:
             except AttributeError as ea:
                 continue
 
-    def outputCoreCellAttributes(self, _restartOutputPath, _rstXMLElem):
+    def output_core_cell_attributes(self, restart_output_path, rst_xml_elem):
         """
         Serializes core clel attributes - the ones from CellG C++ object such as lambdaVolume, targetVolume, etc...
-        :param _restartOutputPath:{str}
-        :param _rstXMLElem: {instance of CC3DXMLElement}
+        :param restart_output_path:{str}
+        :param rst_xml_elem: {instance of CC3DXMLElement}
         :return: None
         """
         sim = CompuCellSetup.persistent_globals.simulator
@@ -1689,7 +1700,7 @@ class RestartManager:
         sd.moduleType = 'Core'
         sd.objectName = 'CoreCellAttributes'
         sd.objectType = 'Pickle'
-        sd.fileName = os.path.join(_restartOutputPath, 'CoreCellAttributes' + '.dat')
+        sd.fileName = os.path.join(restart_output_path, 'CoreCellAttributes' + '.dat')
         try:
             pf = open(sd.fileName, 'wb')
         except IOError as e:
@@ -1701,7 +1712,7 @@ class RestartManager:
             pickle.dump(self.cellCoreAttributes(cell), pf)
 
         pf.close()
-        self.appendXMLStub(_rstXMLElem, sd)
+        self.appendXMLStub(rst_xml_elem, sd)
 
     def pickleList(self, _fileName, _cellList):
         """
@@ -1710,9 +1721,6 @@ class RestartManager:
         :param _cellList: {instance of CellList} - a container representing all CC3D simulations
         :return: None
         """
-        import CompuCell
-        import pickle
-
         numberOfCells = len(_cellList)
 
         nullFile = open(os.devnull, 'w')
@@ -1798,667 +1806,538 @@ class RestartManager:
         nullFile.close()
         pf.close()
 
-    def outputFreeFloatingSBMLSolvers(self, _restartOutputPath, _rstXMLElem):
+    def output_free_floating_sbml_solvers(self, restart_output_path, rst_xml_elem):
 
         """
         Outputs free-floating SBML solvers
-        :param  _restartOutputPath: {str}
+        :param  restart_output_path: {str}
         :param _cellList: {instance of CellList} - a container representing all CC3D simulations
         :return: None
         """
+
+        free_floating_sbml_simulators = CompuCellSetup.persistent_globals.free_floating_sbml_simulators
 
         sd = SerializerDEPy.SerializeData()
         sd.moduleName = 'Python'
         sd.moduleType = 'Python'
         sd.objectName = 'FreeFloatingSBMLSolvers'
         sd.objectType = 'Pickle'
-        sd.fileName = os.path.join(_restartOutputPath, 'FreeFloatingSBMLSolvers' + '.dat')
-        if CompuCellSetup.freeFloatingSBMLSimulator:  # checking if freeFloatingSBMLSimulator is non-empty
+        sd.fileName = os.path.join(restart_output_path, 'FreeFloatingSBMLSolvers' + '.dat')
+        # checking if freeFloatingSBMLSimulator is non-empty
+        if free_floating_sbml_simulators:
             with open(sd.fileName, 'w') as pf:
-                pickle.dump(CompuCellSetup.freeFloatingSBMLSimulator, pf)
-                self.appendXMLStub(_rstXMLElem, sd)
+                pickle.dump(free_floating_sbml_simulators, pf)
+                self.appendXMLStub(rst_xml_elem, sd)
 
-    def outputPythonAttributes(self, _restartOutputPath, _rstXMLElem):
+    def output_python_attributes(self, restart_output_path, rst_xml_elem):
         """
         outputs python attributes that were attached to a cell by the user in the Python script
-        :param _restartOutputPath: {str}
-        :param _rstXMLElem: {instance of CC3DXMLElement}
+        :param restart_output_path: {str}
+        :param rst_xml_elem: {instance of CC3DXMLElement}
         :return:
         """
-
+        sim = CompuCellSetup.persistent_globals.simulator
         # notice that this function also outputs SBMLSolver objects
-        inventory = self.sim.getPotts().getCellInventory()
-        cellList = CellList(inventory)
+        inventory = sim.getPotts().getCellInventory()
+        cell_list = CellList(inventory)
 
         # checking if cells have extra attribute
 
-        for cell in cellList:
+        for cell in cell_list:
             if not CompuCell.isPyAttribValid(cell):
                 return
 
-        listFlag = True
-        for cell in cellList:
+        list_flag = True
+        for cell in cell_list:
             attrib = CompuCell.getPyAttrib(cell)
             if isinstance(attrib, list):
-                listFlag = True
+                list_flag = True
             else:
-                listFlag = False
+                list_flag = False
             break
 
-        print('listFlag=', listFlag)
+        print('list_flag=', list_flag)
 
         sd = SerializerDEPy.SerializeData()
         sd.moduleName = 'Python'
         sd.moduleType = 'Python'
         sd.objectName = 'PythonAttributes'
         sd.objectType = 'Pickle'
-        sd.fileName = os.path.join(_restartOutputPath, 'PythonAttributes' + '.dat')
+        sd.fileName = os.path.join(restart_output_path, 'PythonAttributes' + '.dat')
         # cPickle.dump(numberOfCells,pf)
 
-        if listFlag:
-            self.pickleList(sd.fileName, cellList)
+        if list_flag:
+            self.pickleList(sd.fileName, cell_list)
         else:
-            self.pickleDictionary(sd.fileName, cellList)
+            self.pickleDictionary(sd.fileName, cell_list)
 
-        self.appendXMLStub(_rstXMLElem, sd)
+        self.appendXMLStub(rst_xml_elem, sd)
 
-    def outputAdhesionFlexPlugin(self, _restartOutputPath, _rstXMLElem):
+    def output_adhesion_flex_plugin(self, restart_output_path, rst_xml_elem):
         """
         serializes AdhesionFlex Plugin
-        :param _restartOutputPath: {str}
-        :param _rstXMLElem: {instance of CC3DXMLElement}
+        :param restart_output_path: {str}
+        :param rst_xml_elem: {instance of CC3DXMLElement}
         :return:
         """
 
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        import CompuCell
-
-        # AdhesionFlexPlugin
-        adhesionFlexPlugin = None
-        if self.sim.pluginManager.isLoaded("AdhesionFlex"):
-            import CompuCell
-            adhesionFlexPlugin = CompuCell.getAdhesionFlexPlugin()
-        else:
+        sim = CompuCellSetup.persistent_globals.simulator
+        if not sim.pluginManager.isLoaded("AdhesionFlex"):
             return
+
+        adhesion_flex_plugin = CompuCell.getAdhesionFlexPlugin()
 
         sd = SerializerDEPy.SerializeData()
         sd.moduleName = 'AdhesionFlex'
         sd.moduleType = 'Plugin'
         sd.objectName = 'AdhesionFlex'
         sd.objectType = 'Pickle'
-        sd.fileName = os.path.join(_restartOutputPath, 'AdhesionFlex' + '.dat')
+        sd.fileName = os.path.join(restart_output_path, 'AdhesionFlex' + '.dat')
 
-        inventory = self.sim.getPotts().getCellInventory()
-        cellList = CellList(inventory)
-        numberOfCells = len(cellList)
+        inventory = sim.getPotts().getCellInventory()
+        cell_list = CellList(inventory)
+        number_of_cells = len(cell_list)
 
         try:
             pf = open(sd.fileName, 'w')
         except IOError as e:
             return
 
-        pickle.dump(numberOfCells, pf)
+        pickle.dump(number_of_cells, pf)
         # wtiting medium adhesion vector
 
-        mediumAdhesionVector = adhesionFlexPlugin.getMediumAdhesionMoleculeDensityVector()
-        pickle.dump(mediumAdhesionVector, pf)
-        for cell in cellList:
+        medium_adhesion_vector = adhesion_flex_plugin.getMediumAdhesionMoleculeDensityVector()
+        pickle.dump(medium_adhesion_vector, pf)
+        for cell in cell_list:
             pickle.dump(cell.id, pf)
-            cellAdhesionVector = adhesionFlexPlugin.getAdhesionMoleculeDensityVector(cell)
-            pickle.dump(cellAdhesionVector, pf)
+            cell_adhesion_vector = adhesion_flex_plugin.getAdhesionMoleculeDensityVector(cell)
+            pickle.dump(cell_adhesion_vector, pf)
 
         pf.close()
-        self.appendXMLStub(_rstXMLElem, sd)
+        self.appendXMLStub(rst_xml_elem, sd)
 
-    def outputChemotaxisPlugin(self, _restartOutputPath, _rstXMLElem):
+    def output_chemotaxis_plugin(self, restart_output_path, rst_xml_elem):
 
         """
         serializes Chemotaxis Plugin
-        :param _restartOutputPath: {str}
-        :param _rstXMLElem: {instance of CC3DXMLElement}
+        :param restart_output_path: {str}
+        :param rst_xml_elem: {instance of CC3DXMLElement}
         :return:
         """
 
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        import CompuCell
-
-        # ChemotaxisPlugin
-        chemotaxisPlugin = None
-        if self.sim.pluginManager.isLoaded("Chemotaxis"):
-            import CompuCell
-            chemotaxisPlugin = CompuCell.getChemotaxisPlugin()
-        else:
+        sim = CompuCellSetup.persistent_globals.simulator
+        if not sim.pluginManager.isLoaded("Chemotaxis"):
             return
+        chemotaxis_plugin = CompuCell.getChemotaxisPlugin()
 
         sd = SerializerDEPy.SerializeData()
         sd.moduleName = 'Chemotaxis'
         sd.moduleType = 'Plugin'
         sd.objectName = 'Chemotaxis'
         sd.objectType = 'Pickle'
-        sd.fileName = os.path.join(_restartOutputPath, 'Chemotaxis' + '.dat')
+        sd.fileName = os.path.join(restart_output_path, 'Chemotaxis' + '.dat')
 
-        inventory = self.sim.getPotts().getCellInventory()
-        cellList = CellList(inventory)
-        numberOfCells = len(cellList)
+        inventory = sim.getPotts().getCellInventory()
+        cell_list = CellList(inventory)
+        number_of_cells = len(cell_list)
 
         try:
-            pf = open(sd.fileName, 'w')
+            pf = open(sd.fileName, 'wb')
         except IOError as e:
             return
 
-        pickle.dump(numberOfCells, pf)
-        for cell in cellList:
+        pickle.dump(number_of_cells, pf)
+        for cell in cell_list:
             pickle.dump(cell.id, pf)
 
-            fieldNames = chemotaxisPlugin.getFieldNamesWithChemotaxisData(cell)
+            field_names = chemotaxis_plugin.getFieldNamesWithChemotaxisData(cell)
             # outputting numbed of chemotaxis data that cell has
-            pickle.dump(len(fieldNames), pf)
+            pickle.dump(len(field_names), pf)
 
-            for fieldName in fieldNames:
-                chd = chemotaxisPlugin.getChemotaxisData(cell, fieldName)
-                chdDict = {}
-                chdDict['fieldName'] = fieldName
-                chdDict['lambda'] = chd.getLambda()
-                chdDict['saturationCoef'] = chd.saturationCoef
-                chdDict['formulaName'] = chd.formulaName
+            for fieldName in field_names:
+                chd = chemotaxis_plugin.getChemotaxisData(cell, fieldName)
+                chd_dict = {}
+                chd_dict['fieldName'] = fieldName
+                chd_dict['lambda'] = chd.getLambda()
+                chd_dict['saturationCoef'] = chd.saturationCoef
+                chd_dict['formulaName'] = chd.formulaName
                 chemotactTowardsVec = chd.getChemotactTowardsVectorTypes()
                 print('chemotactTowardsVec=', chemotactTowardsVec)
-                chdDict['chemotactTowardsTypesVec'] = chd.getChemotactTowardsVectorTypes()
+                chd_dict['chemotactTowardsTypesVec'] = chd.getChemotactTowardsVectorTypes()
 
-                pickle.dump(chdDict, pf)
-            print('fieldNames=', fieldNames)
+                pickle.dump(chd_dict, pf)
+            print('field_names=', field_names)
             # cPickle.dump(cellAdhesionVector,pf)        
 
         pf.close()
-        self.appendXMLStub(_rstXMLElem, sd)
+        self.appendXMLStub(rst_xml_elem, sd)
 
-    def outputLengthConstraintPlugin(self, _restartOutputPath, _rstXMLElem):
+    def output_length_constraint_plugin(self, restart_output_path, rst_xml_elem):
         """
         serializes LengthConstraint Plugin
-        :param _restartOutputPath: {str}
-        :param _rstXMLElem: {instance of CC3DXMLElement}
+        :param restart_output_path: {str}
+        :param rst_xml_elem: {instance of CC3DXMLElement}
         :return:
         """
 
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        import CompuCell
-
-        # LengthConstraintPlugin
-        lengthConstraintPlugin = None
-        if self.sim.pluginManager.isLoaded("LengthConstraint"):
-            import CompuCell
-            lengthConstraintPlugin = CompuCell.getLengthConstraintPlugin()
-        else:
+        sim = CompuCellSetup.persistent_globals.simulator
+        if not sim.pluginManager.isLoaded("LengthConstraint"):
             return
+        length_constraint_plugin = CompuCell.getLengthConstraintPlugin()
 
         sd = SerializerDEPy.SerializeData()
         sd.moduleName = 'LengthConstraint'
         sd.moduleType = 'Plugin'
         sd.objectName = 'LengthConstraint'
         sd.objectType = 'Pickle'
-        sd.fileName = os.path.join(_restartOutputPath, 'LengthConstraint' + '.dat')
+        sd.fileName = os.path.join(restart_output_path, 'LengthConstraint' + '.dat')
 
-        inventory = self.sim.getPotts().getCellInventory()
-        cellList = CellList(inventory)
-        numberOfCells = len(cellList)
+        inventory = sim.getPotts().getCellInventory()
+        cell_list = CellList(inventory)
+        number_of_cells = len(cell_list)
 
         try:
-            pf = open(sd.fileName, 'w')
+            pf = open(sd.fileName, 'wb')
         except IOError as e:
             return
 
-        pickle.dump(numberOfCells, pf)
+        pickle.dump(number_of_cells, pf)
 
-        lcp = lengthConstraintPlugin
+        lcp = length_constraint_plugin
 
-        for cell in cellList:
+        for cell in cell_list:
             pickle.dump(cell.id, pf)
             pickle.dump([lcp.getLambdaLength(cell), lcp.getTargetLength(cell), lcp.getMinorTargetLength(cell)], pf)
 
         pf.close()
-        self.appendXMLStub(_rstXMLElem, sd)
+        self.appendXMLStub(rst_xml_elem, sd)
 
-    def outputConnectivityGlobalPlugin(self, _restartOutputPath, _rstXMLElem):
+    def output_connectivity_global_plugin(self, restart_output_path, rst_xml_elem):
 
         """
         serializes ConnectivityGlobal Plugin
-        :param _restartOutputPath: {str}
-        :param _rstXMLElem: {instance of CC3DXMLElement}
+        :param restart_output_path: {str}
+        :param rst_xml_elem: {instance of CC3DXMLElement}
         :return:
         """
 
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        import CompuCell
-
-        # ConnectivityLocalFlexPlugin
-        connectivityGlobalPlugin = None
-        if self.sim.pluginManager.isLoaded("ConnectivityGlobal"):
-            import CompuCell
-            connectivityGlobalPlugin = CompuCell.getConnectivityGlobalPlugin()
-        else:
+        sim = CompuCellSetup.persistent_globals.simulator
+        if not sim.pluginManager.isLoaded("ConnectivityGlobal"):
             return
+
+        connectivity_global_plugin = CompuCell.getConnectivityGlobalPlugin()
 
         sd = SerializerDEPy.SerializeData()
         sd.moduleName = 'ConnectivityGlobal'
         sd.moduleType = 'Plugin'
         sd.objectName = 'ConnectivityGlobal'
         sd.objectType = 'Pickle'
-        sd.fileName = os.path.join(_restartOutputPath, 'ConnectivityGlobal' + '.dat')
+        sd.fileName = os.path.join(restart_output_path, 'ConnectivityGlobal' + '.dat')
 
-        inventory = self.sim.getPotts().getCellInventory()
-        cellList = CellList(inventory)
-        numberOfCells = len(cellList)
+        inventory = sim.getPotts().getCellInventory()
+        cell_list = CellList(inventory)
+        number_of_cells = len(cell_list)
 
         try:
-            pf = open(sd.fileName, 'w')
+            pf = open(sd.fileName, 'wb')
         except IOError as e:
             return
 
-        pickle.dump(numberOfCells, pf)
+        pickle.dump(number_of_cells, pf)
 
-        for cell in cellList:
+        for cell in cell_list:
             pickle.dump(cell.id, pf)
-            pickle.dump(connectivityGlobalPlugin.getConnectivityStrength(cell), pf)
+            pickle.dump(connectivity_global_plugin.getConnectivityStrength(cell), pf)
 
         pf.close()
-        self.appendXMLStub(_rstXMLElem, sd)
+        self.appendXMLStub(rst_xml_elem, sd)
 
-    def outputConnectivityLocalFlexPlugin(self, _restartOutputPath, _rstXMLElem):
+    def output_connectivity_local_flex_plugin(self, restart_output_path, rst_xml_elem):
 
         """
         serializes ConnectivityLocalFlex Plugin
-        :param _restartOutputPath: {str}
-        :param _rstXMLElem: {instance of CC3DXMLElement}
+        :param restart_output_path: {str}
+        :param rst_xml_elem: {instance of CC3DXMLElement}
         :return:
         """
-
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        import CompuCell
-
-        # ConnectivityLocalFlexPlugin
-        connectivityLocalFlexPlugin = None
-        if self.sim.pluginManager.isLoaded("ConnectivityLocalFlex"):
-            import CompuCell
-            connectivityLocalFlexPlugin = CompuCell.getConnectivityLocalFlexPlugin()
-        else:
+        sim = CompuCellSetup.persistent_globals.simulator
+        if not sim.pluginManager.isLoaded("ConnectivityLocalFlex"):
             return
+
+        connectivity_local_flex_plugin = CompuCell.getConnectivityLocalFlexPlugin()
 
         sd = SerializerDEPy.SerializeData()
         sd.moduleName = 'ConnectivityLocalFlex'
         sd.moduleType = 'Plugin'
         sd.objectName = 'ConnectivityLocalFlex'
         sd.objectType = 'Pickle'
-        sd.fileName = os.path.join(_restartOutputPath, 'ConnectivityLocalFlex' + '.dat')
+        sd.fileName = os.path.join(restart_output_path, 'ConnectivityLocalFlex' + '.dat')
 
-        inventory = self.sim.getPotts().getCellInventory()
-        cellList = CellList(inventory)
-        numberOfCells = len(cellList)
+        inventory = sim.getPotts().getCellInventory()
+        cell_list = CellList(inventory)
+        number_of_cells = len(cell_list)
 
         try:
-            pf = open(sd.fileName, 'w')
+            pf = open(sd.fileName, 'wb')
         except IOError as e:
             return
 
-        pickle.dump(numberOfCells, pf)
+        pickle.dump(number_of_cells, pf)
 
-        for cell in cellList:
+        for cell in cell_list:
             pickle.dump(cell.id, pf)
-            pickle.dump(connectivityLocalFlexPlugin.getConnectivityStrength(cell), pf)
+            pickle.dump(connectivity_local_flex_plugin.getConnectivityStrength(cell), pf)
 
         pf.close()
-        self.appendXMLStub(_rstXMLElem, sd)
+        self.appendXMLStub(rst_xml_elem, sd)
 
-    def outputFocalPointPlacticityPlugin(self, _restartOutputPath, _rstXMLElem):
+    def output_focal_point_placticity_plugin(self, restart_output_path, rst_xml_elem):
 
         """
         serializes FocalPointPlacticity Plugin
-        :param _restartOutputPath: {str}
-        :param _rstXMLElem: {instance of CC3DXMLElement}
+        :param restart_output_path: {str}
+        :param rst_xml_elem: {instance of CC3DXMLElement}
         :return:
         """
 
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        import CompuCell
-
-        # FocalPointPlasticity
-        focalPointPlasticityPlugin = None
-        if self.sim.pluginManager.isLoaded("FocalPointPlasticity"):
-            import CompuCell
-            focalPointPlasticityPlugin = CompuCell.getFocalPointPlasticityPlugin()
-        else:
+        sim = CompuCellSetup.persistent_globals.simulator
+        if not sim.pluginManager.isLoaded("FocalPointPlasticity"):
             return
+
+        focal_point_plasticity_plugin = CompuCell.getFocalPointPlasticityPlugin()
 
         sd = SerializerDEPy.SerializeData()
         sd.moduleName = 'FocalPointPlasticity'
         sd.moduleType = 'Plugin'
         sd.objectName = 'FocalPointPlasticity'
         sd.objectType = 'Pickle'
-        sd.fileName = os.path.join(_restartOutputPath, 'FocalPointPlasticity' + '.dat')
+        sd.fileName = os.path.join(restart_output_path, 'FocalPointPlasticity' + '.dat')
 
-        inventory = self.sim.getPotts().getCellInventory()
-        cellList = CellList(inventory)
-        numberOfCells = len(cellList)
+        inventory = sim.getPotts().getCellInventory()
+        cell_list = CellList(inventory)
+        number_of_cells = len(cell_list)
 
         try:
-            pf = open(sd.fileName, 'w')
+            pf = open(sd.fileName, 'wb')
         except IOError as e:
             return
 
-        pickle.dump(numberOfCells, pf)
+        pickle.dump(number_of_cells, pf)
 
-        for cell in cellList:
+        for cell in cell_list:
 
             pickle.dump(cell.id, pf)
-            fppVec = focalPointPlasticityPlugin.getFPPDataVec(cell)
-            internalFPPVec = focalPointPlasticityPlugin.getInternalFPPDataVec(cell)
-            anchorFPPVec = focalPointPlasticityPlugin.getAnchorFPPDataVec(cell)
+            fpp_vec = focal_point_plasticity_plugin.getFPPDataVec(cell)
+            internal_fpp_vec = focal_point_plasticity_plugin.getInternalFPPDataVec(cell)
+            anchor_fpp_vec = focal_point_plasticity_plugin.getAnchorFPPDataVec(cell)
 
             # dumping 'external' fpp links
-            pickle.dump(len(fppVec), pf)
-            for fppData in fppVec:
-                fppDataDict = {}
-                if fppData.neighborAddress:
-                    fppDataDict['neighborIds'] = [fppData.neighborAddress.id, fppData.neighborAddress.clusterId]
+            pickle.dump(len(fpp_vec), pf)
+            for fpp_data in fpp_vec:
+                fpp_data_dict = {}
+                if fpp_data.neighborAddress:
+                    fpp_data_dict['neighborIds'] = [fpp_data.neighborAddress.id, fpp_data.neighborAddress.clusterId]
                 else:
-                    fppDataDict['neighborIds'] = [0, 0]
-                fppDataDict['lambdaDistance'] = fppData.lambdaDistance
-                fppDataDict['targetDistance'] = fppData.targetDistance
-                fppDataDict['maxDistance'] = fppData.maxDistance
-                fppDataDict['activationEnergy'] = fppData.activationEnergy
-                fppDataDict['maxNumberOfJunctions'] = fppData.maxNumberOfJunctions
-                fppDataDict['neighborOrder'] = fppData.neighborOrder
-                pickle.dump(fppDataDict, pf)
+                    fpp_data_dict['neighborIds'] = [0, 0]
+                fpp_data_dict['lambdaDistance'] = fpp_data.lambdaDistance
+                fpp_data_dict['targetDistance'] = fpp_data.targetDistance
+                fpp_data_dict['maxDistance'] = fpp_data.maxDistance
+                fpp_data_dict['activationEnergy'] = fpp_data.activationEnergy
+                fpp_data_dict['maxNumberOfJunctions'] = fpp_data.maxNumberOfJunctions
+                fpp_data_dict['neighborOrder'] = fpp_data.neighborOrder
+                pickle.dump(fpp_data_dict, pf)
 
             # dumping 'internal' fpp links
-            pickle.dump(len(internalFPPVec), pf)
-            for fppData in internalFPPVec:
-                fppDataDict = {}
-                if fppData.neighborAddress:
-                    fppDataDict['neighborIds'] = [fppData.neighborAddress.id, fppData.neighborAddress.clusterId]
+            pickle.dump(len(internal_fpp_vec), pf)
+            for fpp_data in internal_fpp_vec:
+                fpp_data_dict = {}
+                if fpp_data.neighborAddress:
+                    fpp_data_dict['neighborIds'] = [fpp_data.neighborAddress.id, fpp_data.neighborAddress.clusterId]
                 else:
-                    fppDataDict['neighborIds'] = [0, 0]
-                fppDataDict['lambdaDistance'] = fppData.lambdaDistance
-                fppDataDict['targetDistance'] = fppData.targetDistance
-                fppDataDict['maxDistance'] = fppData.maxDistance
-                fppDataDict['activationEnergy'] = fppData.activationEnergy
-                fppDataDict['maxNumberOfJunctions'] = fppData.maxNumberOfJunctions
-                fppDataDict['neighborOrder'] = fppData.neighborOrder
-                pickle.dump(fppDataDict, pf)
+                    fpp_data_dict['neighborIds'] = [0, 0]
+                fpp_data_dict['lambdaDistance'] = fpp_data.lambdaDistance
+                fpp_data_dict['targetDistance'] = fpp_data.targetDistance
+                fpp_data_dict['maxDistance'] = fpp_data.maxDistance
+                fpp_data_dict['activationEnergy'] = fpp_data.activationEnergy
+                fpp_data_dict['maxNumberOfJunctions'] = fpp_data.maxNumberOfJunctions
+                fpp_data_dict['neighborOrder'] = fpp_data.neighborOrder
+                pickle.dump(fpp_data_dict, pf)
 
             # dumping anchor fpp links
-            pickle.dump(len(anchorFPPVec), pf)
-            for fppData in anchorFPPVec:
-                fppDataDict = {}
-                fppDataDict['lambdaDistance'] = fppData.lambdaDistance
-                fppDataDict['targetDistance'] = fppData.targetDistance
-                fppDataDict['maxDistance'] = fppData.maxDistance
-                fppDataDict['anchorId'] = fppData.anchorId
-                fppDataDict['anchorPoint'] = [fppData.anchorPoint[0], fppData.anchorPoint[1], fppData.anchorPoint[2]]
-                pickle.dump(fppDataDict, pf)
+            pickle.dump(len(anchor_fpp_vec), pf)
+            for fpp_data in anchor_fpp_vec:
+                fpp_data_dict = {}
+                fpp_data_dict['lambdaDistance'] = fpp_data.lambdaDistance
+                fpp_data_dict['targetDistance'] = fpp_data.targetDistance
+                fpp_data_dict['maxDistance'] = fpp_data.maxDistance
+                fpp_data_dict['anchorId'] = fpp_data.anchorId
+                fpp_data_dict['anchorPoint'] = [fpp_data.anchorPoint[0], fpp_data.anchorPoint[1],
+                                                fpp_data.anchorPoint[2]]
+                pickle.dump(fpp_data_dict, pf)
 
         pf.close()
-        self.appendXMLStub(_rstXMLElem, sd)
+        self.appendXMLStub(rst_xml_elem, sd)
 
-    def outputContactLocalProductPlugin(self, _restartOutputPath, _rstXMLElem):
+    def output_contact_local_product_plugin(self, restart_output_path, rst_xml_elem):
 
         """
         serializes ContactLocalProduct Plugin
-        :param _restartOutputPath: {str}
-        :param _rstXMLElem: {instance of CC3DXMLElement}
+        :param restart_output_path: {str}
+        :param rst_xml_elem: {instance of CC3DXMLElement}
         :return:
         """
 
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        import CompuCell
-
-        # ContactLocalProductPlugin
-        contactLocalProductPlugin = None
-        if self.sim.pluginManager.isLoaded("ContactLocalProduct"):
-            import CompuCell
-            contactLocalProductPlugin = CompuCell.getContactLocalProductPlugin()
-        else:
+        sim = CompuCellSetup.persistent_globals.simulator
+        if not sim.pluginManager.isLoaded("ContactLocalProduct"):
             return
 
+        contact_local_product_plugin = CompuCell.getContactLocalProductPlugin()
         sd = SerializerDEPy.SerializeData()
         sd.moduleName = 'ContactLocalProduct'
         sd.moduleType = 'Plugin'
         sd.objectName = 'ContactLocalProduct'
         sd.objectType = 'Pickle'
-        sd.fileName = os.path.join(_restartOutputPath, 'ContactLocalProduct' + '.dat')
+        sd.fileName = os.path.join(restart_output_path, 'ContactLocalProduct' + '.dat')
 
-        inventory = self.sim.getPotts().getCellInventory()
-        cellList = CellList(inventory)
-        numberOfCells = len(cellList)
+        inventory = sim.getPotts().getCellInventory()
+        cell_list = CellList(inventory)
+        number_of_cells = len(cell_list)
 
         try:
-            pf = open(sd.fileName, 'w')
-        except IOError as e:
+            pf = open(sd.fileName, 'wb')
+        except IOError:
             return
 
-        pickle.dump(numberOfCells, pf)
+        pickle.dump(number_of_cells, pf)
 
-        for cell in cellList:
+        for cell in cell_list:
             pickle.dump(cell.id, pf)
-            pickle.dump(contactLocalProductPlugin.getCadherinConcentrationVec(cell), pf)
+            pickle.dump(contact_local_product_plugin.getCadherinConcentrationVec(cell), pf)
 
         pf.close()
-        self.appendXMLStub(_rstXMLElem, sd)
+        self.appendXMLStub(rst_xml_elem, sd)
 
-    def outputCellOrientationPlugin(self, _restartOutputPath, _rstXMLElem):
+    def output_cell_orientation_plugin(self, restart_output_path, rst_xml_elem):
 
         """
         serializes CellOrientation Plugin
-        :param _restartOutputPath: {str}
-        :param _rstXMLElem: {instance of CC3DXMLElement}
+        :param restart_output_path: {str}
+        :param rst_xml_elem: {instance of CC3DXMLElement}
         :return:
         """
 
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        import CompuCell
-
-        # CellOrientationPlugin
-        cellOrientationPlugin = None
-        if self.sim.pluginManager.isLoaded("CellOrientation"):
-            import CompuCell
-            cellOrientationPlugin = CompuCell.getCellOrientationPlugin()
-        else:
+        sim = CompuCellSetup.persistent_globals.simulator
+        if not sim.pluginManager.isLoaded("CellOrientation"):
             return
+
+        cell_orientation_plugin = CompuCell.getCellOrientationPlugin()
 
         sd = SerializerDEPy.SerializeData()
         sd.moduleName = 'CellOrientation'
         sd.moduleType = 'Plugin'
         sd.objectName = 'CellOrientation'
         sd.objectType = 'Pickle'
-        sd.fileName = os.path.join(_restartOutputPath, 'CellOrientation' + '.dat')
+        sd.fileName = os.path.join(restart_output_path, 'CellOrientation' + '.dat')
 
-        inventory = self.sim.getPotts().getCellInventory()
-        cellList = CellList(inventory)
-        numberOfCells = len(cellList)
+        inventory = sim.getPotts().getCellInventory()
+        cell_list = CellList(inventory)
+        number_of_cells = len(cell_list)
 
         try:
-            pf = open(sd.fileName, 'w')
+            pf = open(sd.fileName, 'wb')
         except IOError as e:
             return
 
-        pickle.dump(numberOfCells, pf)
+        pickle.dump(number_of_cells, pf)
 
-        for cell in cellList:
+        for cell in cell_list:
             pickle.dump(cell.id, pf)
-            pickle.dump(cellOrientationPlugin.getLambdaCellOrientation(cell), pf)
+            pickle.dump(cell_orientation_plugin.getLambdaCellOrientation(cell), pf)
 
         pf.close()
-        self.appendXMLStub(_rstXMLElem, sd)
+        self.appendXMLStub(rst_xml_elem, sd)
 
-    def outputPolarizationVectorPlugin(self, _restartOutputPath, _rstXMLElem):
+    def output_polarization_vector_plugin(self, restart_output_path, rst_xml_elem):
 
         """
         serializes PolarizationVector Plugin
-        :param _restartOutputPath: {str}
-        :param _rstXMLElem: {instance of CC3DXMLElement}
+        :param restart_output_path: {str}
+        :param rst_xml_elem: {instance of CC3DXMLElement}
         :return:
         """
 
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        import CompuCell
-
-        # PolarizationVectorPlugin
-        polarizationVectorPlugin = None
-        if self.sim.pluginManager.isLoaded("PolarizationVector"):
-            import CompuCell
-            polarizationVectorPlugin = CompuCell.getPolarizationVectorPlugin()
-        else:
+        sim = CompuCellSetup.persistent_globals.simulator
+        if not sim.pluginManager.isLoaded("PolarizationVector"):
             return
+
+        polarization_vector_plugin = CompuCell.getPolarizationVectorPlugin()
 
         sd = SerializerDEPy.SerializeData()
         sd.moduleName = 'PolarizationVector'
         sd.moduleType = 'Plugin'
         sd.objectName = 'PolarizationVector'
         sd.objectType = 'Pickle'
-        sd.fileName = os.path.join(_restartOutputPath, 'PolarizationVector' + '.dat')
+        sd.fileName = os.path.join(restart_output_path, 'PolarizationVector' + '.dat')
 
-        inventory = self.sim.getPotts().getCellInventory()
-        cellList = CellList(inventory)
-        numberOfCells = len(cellList)
+        inventory = sim.getPotts().getCellInventory()
+        cell_list = CellList(inventory)
+        number_of_cells = len(cell_list)
 
         try:
-            pf = open(sd.fileName, 'w')
-        except IOError as e:
+            pf = open(sd.fileName, 'wb')
+        except IOError:
             return
 
-        pickle.dump(numberOfCells, pf)
+        pickle.dump(number_of_cells, pf)
 
-        for cell in cellList:
+        for cell in cell_list:
             pickle.dump(cell.id, pf)
-            pickle.dump(polarizationVectorPlugin.getPolarizationVector(cell), pf)
+            pickle.dump(polarization_vector_plugin.getPolarizationVector(cell), pf)
 
         pf.close()
-        self.appendXMLStub(_rstXMLElem, sd)
+        self.appendXMLStub(rst_xml_elem, sd)
 
-    def outputPolarization23Plugin(self, _restartOutputPath, _rstXMLElem):
+    def output_polarization23_plugin(self, restart_output_path, rst_xml_elem):
 
         """
         serializes Polarization23 Plugin
-        :param _restartOutputPath: {str}
-        :param _rstXMLElem: {instance of CC3DXMLElement}
+        :param restart_output_path: {str}
+        :param rst_xml_elem: {instance of CC3DXMLElement}
         :return:
         """
 
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        import CompuCell
+        sim = CompuCellSetup.persistent_globals.simulator
 
-        # polarization23Plugin
-        polarization23Plugin = None
-        if self.sim.pluginManager.isLoaded("Polarization23"):
-            import CompuCell
-            polarization23Plugin = CompuCell.getPolarization23Plugin()
-        else:
+        if not sim.pluginManager.isLoaded("Polarization23"):
             return
+
+        polarization23_plugin = CompuCell.getPolarization23Plugin()
 
         sd = SerializerDEPy.SerializeData()
         sd.moduleName = 'Polarization23'
         sd.moduleType = 'Plugin'
         sd.objectName = 'Polarization23'
         sd.objectType = 'Pickle'
-        sd.fileName = os.path.join(_restartOutputPath, 'Polarization23' + '.dat')
+        sd.fileName = os.path.join(restart_output_path, 'Polarization23' + '.dat')
 
-        inventory = self.sim.getPotts().getCellInventory()
-        cellList = CellList(inventory)
-        numberOfCells = len(cellList)
+        inventory = sim.getPotts().getCellInventory()
+        cell_list = CellList(inventory)
+        number_of_cells = len(cell_list)
 
         try:
-            pf = open(sd.fileName, 'w')
-        except IOError as e:
+            pf = open(sd.fileName, 'wb')
+        except IOError:
             return
 
-        pickle.dump(numberOfCells, pf)
+        pickle.dump(number_of_cells, pf)
 
-        for cell in cellList:
+        for cell in cell_list:
             pickle.dump(cell.id, pf)
-            polVec = polarization23Plugin.getPolarizationVector(cell)
-            pickle.dump([polVec.fX, polVec.fY, polVec.fZ], pf)
-            pickle.dump(polarization23Plugin.getPolarizationMarkers(cell), pf)
-            pickle.dump(polarization23Plugin.getLambdaPolarization(cell), pf)
+            pol_vec = polarization23_plugin.getPolarizationVector(cell)
+            pickle.dump([pol_vec.fX, pol_vec.fY, pol_vec.fZ], pf)
+            pickle.dump(polarization23_plugin.getPolarizationMarkers(cell), pf)
+            pickle.dump(polarization23_plugin.getLambdaPolarization(cell), pf)
 
         pf.close()
-        self.appendXMLStub(_rstXMLElem, sd)
+        self.appendXMLStub(rst_xml_elem, sd)
 
-    # def outputPolarization23Plugin(self, _restartOutputPath, _rstXMLElem):
-    #     """
-    #     Serializes Polarization23PLugin
-    #     :param _restartOutputPath: {str}
-    #     :param _rstXMLElem: {instance of CC3DXMLElement}
-    #     :return:
-    #     """
-    #
-    #
-    #     import SerializerDEPy
-    #     import CompuCellSetup
-    #     import cPickle
-    #     from PySteppables import CellList
-    #     import CompuCell
-    #
-    #     # polarization23Plugin
-    #     polarization23Plugin = None
-    #     if self.sim.pluginManager.isLoaded("Polarization23"):
-    #         import CompuCell
-    #         polarization23Plugin = CompuCell.getPolarization23Plugin()
-    #     else:
-    #         return
-    #
-    #     sd = SerializerDEPy.SerializeData()
-    #     sd.moduleName = 'Polarization23'
-    #     sd.moduleType = 'Plugin'
-    #     sd.objectName = 'Polarization23'
-    #     sd.objectType = 'Pickle'
-    #     sd.fileName = os.path.join(_restartOutputPath, 'Polarization23' + '.dat')
-    #
-    #     inventory = self.sim.getPotts().getCellInventory()
-    #     cellList = CellList(inventory)
-    #     numberOfCells = len(cellList)
-    #
-    #     try:
-    #         pf = open(sd.fileName, 'w')
-    #     except IOError, e:
-    #         return
-    #
-    #     cPickle.dump(numberOfCells, pf)
-    #
-    #     for cell in cellList:
-    #         cPickle.dump(cell.id, pf)
-    #         polVec = polarization23Plugin.getPolarizationVector(cell)
-    #         cPickle.dump([polVec.fX, polVec.fY, polVec.fZ], pf)
-    #         cPickle.dump(polarization23Plugin.getPolarizationMarkers(), pf)
-    #         cPickle.dump(polarization23Plugin.getLambdaPolarization(), pf)
-    #
-    #     pf.close()
-    #     self.appendXMLStub(_rstXMLElem, sd)

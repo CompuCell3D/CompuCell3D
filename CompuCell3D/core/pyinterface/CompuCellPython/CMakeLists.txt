@@ -142,8 +142,10 @@ ClusterSurfaceTrackerShared
 )
 
 SET(LIBS_AUX PyPlugin
+  ChemotaxisShared
   FocalPointPlasticityShared  
   NeighborTrackerShared
+  
 )
 
 INCLUDE_DIRECTORIES(

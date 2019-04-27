@@ -258,8 +258,8 @@ using namespace CompuCell3D;
 //
 ////Chemotaxis Plugin
 //
-//%include <CompuCell3D/plugins/Chemotaxis/ChemotaxisData.h>
-//PLUGINACCESSOR(Chemotaxis)
+%include <CompuCell3D/plugins/Chemotaxis/ChemotaxisData.h>
+PLUGINACCESSOR(Chemotaxis)
 //
 //// %include <CompuCell3D/plugins/Chemotaxis/ChemotaxisPlugin.h>
 //// 
