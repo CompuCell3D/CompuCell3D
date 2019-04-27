@@ -39,7 +39,10 @@ def _load_sql_settings(setting_path):
     :return: {tuple} (SettingsSQL object, path to SQL settings)
     """
     # from CompuCell3D.player5.Configuration.settingdict import SettingsSQL
-    from settingdict import SettingsSQL
+    from .settingdict import SettingsSQL
+
+
+
 
     # workaround for Windows leftover DefaultSettingPath.pyc
     from os.path import splitext
