@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, sys
+import os
 import re
 import pickle
 from cc3d.cpp import CompuCell
@@ -9,8 +9,8 @@ from cc3d.core.XMLUtils import ElementCC3D
 from cc3d.core import Version
 from cc3d import CompuCellSetup
 from pathlib import Path
-
 import warnings
+import shutil
 
 
 def _pickleVector3(_vec):
@@ -52,7 +52,7 @@ class RestartManager:
     def getRestartStep(self):
         return self.__restartStep
 
-    def prepareRestarter(self):
+    def prepare_restarter(self):
         """
         Performs basic setup before attempting a restart
         :return: None
@@ -74,7 +74,7 @@ class RestartManager:
                 self.__allowMultipleRestartDirectories = cc3dSimulationDataHandler.cc3dSimulationData.serializerResource.allowMultipleRestartDirectories
                 self.__outputFrequency = cc3dSimulationDataHandler.cc3dSimulationData.serializerResource.outputFrequency
 
-    def restartEnabled(self):
+    def restart_enabled(self):
         """
         reads .cc3d project file and checks if restart is enabled
         :return: {bool}
@@ -93,7 +93,7 @@ class RestartManager:
 
         return False
 
-    def appendXMLStub(selt, _rootElem, _sd):
+    def append_xml_stub(selt, _rootElem, _sd):
         """
         Internal function in the restart manager - manipulatex xml file that describes the layout of
         restart files
@@ -106,18 +106,20 @@ class RestartManager:
                          "ObjectType": _sd.objectType, "FileName": baseFileName, 'FileFormat': _sd.fileFormat}
         _rootElem.ElementCC3D('ObjectData', attributeDict)
 
-    def getRestartOutputRootPath(self, _restartOutputPath):
+    def get_restart_output_root_path(self, restart_output_path):
         """
         returns path to the  output root directory e.g. <outputFolder>/restart_200
-        :param _restartOutputPath: {str}
+        :param restart_output_path: {str}
         :return:{str}
         """
-        restartOutputRootPath = os.path.dirname(_restartOutputPath)
+        return restart_output_path
 
-        # normalizing path
-        restartOutputRootPath = os.path.abspath(restartOutputRootPath)
-
-        return restartOutputRootPath
+        # restart_output_root_path = os.path.dirname(restart_output_path)
+        #
+        # # normalizing path
+        # restart_output_root_path = os.path.abspath(restart_output_root_path)
+        #
+        # return restart_output_root_path
 
     def setup_restart_output_directory(self, _step=0):
         """
@@ -1364,7 +1366,7 @@ class RestartManager:
         import CompuCellSetup
         CompuCellSetup.serialize_steering_panel(sd.fileName)
 
-        self.appendXMLStub(_rstXMLElem, sd)
+        self.append_xml_stub(_rstXMLElem, sd)
 
     def loadSteeringPanel(self):
         """
@@ -1379,7 +1381,7 @@ class RestartManager:
                 import CompuCellSetup
                 CompuCellSetup.deserialize_steering_panel(fname=fullPath)
 
-    def outputRestartFiles(self, _step=0, _onDemand=False):
+    def output_restart_files(self, _step=0, _onDemand=False):
         """
         main function that serializes simulation
         :param _step: {int} current MCS
@@ -1499,7 +1501,7 @@ class RestartManager:
             print('\n\n\n\n self.__completedRestartOutputPath=', self.__completedRestartOutputPath)
 
             if self.__completedRestartOutputPath != '':
-                import shutil
+
                 try:
                     shutil.rmtree(self.__completedRestartOutputPath)
                 except:
@@ -1508,7 +1510,7 @@ class RestartManager:
                     # in such a case it is best to ignore such requests
                     pass
 
-        self.__completedRestartOutputPath = self.getRestartOutputRootPath(restart_output_path)
+        self.__completedRestartOutputPath = self.get_restart_output_root_path(restart_output_path)
 
     def output_concentration_fields(self, restart_output_path, rst_xml_elem):
         """
@@ -1532,7 +1534,7 @@ class RestartManager:
             sd.fileFormat = 'text'
             self.serializeDataList.append(sd)
             self.serializer.serializeConcentrationField(sd)
-            self.appendXMLStub(rst_xml_elem, sd)
+            self.append_xml_stub(rst_xml_elem, sd)
             print("Got concentration field: ", fieldName)
 
     def output_cell_field(self, restart_output_path, rst_xml_elem):
@@ -1554,7 +1556,7 @@ class RestartManager:
         sd.fileFormat = 'text'
         self.serializeDataList.append(sd)
         self.serializer.serializeCellField(sd)
-        self.appendXMLStub(rst_xml_elem, sd)
+        self.append_xml_stub(rst_xml_elem, sd)
 
     def output_scalar_fields(self, restart_output_path, rst_xml_elem):
         """
@@ -1575,7 +1577,7 @@ class RestartManager:
             sd.objectPtr = scalar_fields_dict[fieldName]
             sd.fileName = os.path.join(restart_output_path, fieldName + '.dat')
             self.serializer.serializeScalarField(sd)
-            self.appendXMLStub(rst_xml_elem, sd)
+            self.append_xml_stub(rst_xml_elem, sd)
 
     def output_scalar_fields_cell_level(self, restart_output_path, rst_xml_elem):
         """
@@ -1596,7 +1598,7 @@ class RestartManager:
             sd.objectPtr = scalar_fields_dict_cell_level[fieldName]
             sd.fileName = os.path.join(restart_output_path, fieldName + '.dat')
             self.serializer.serializeScalarFieldCellLevel(sd)
-            self.appendXMLStub(rst_xml_elem, sd)
+            self.append_xml_stub(rst_xml_elem, sd)
 
     def output_vector_fields(self, restart_output_path, rst_xml_elem):
         """
@@ -1617,7 +1619,7 @@ class RestartManager:
             sd.objectPtr = vector_fields_dict[fieldName]
             sd.fileName = os.path.join(restart_output_path, fieldName + '.dat')
             self.serializer.serializeVectorField(sd)
-            self.appendXMLStub(rst_xml_elem, sd)
+            self.append_xml_stub(rst_xml_elem, sd)
 
     def output_vector_fields_cell_level(self, restart_output_path, rst_xml_elem):
         """
@@ -1637,7 +1639,7 @@ class RestartManager:
             sd.objectPtr = vector_fields_cell_level_dict[fieldName]
             sd.fileName = os.path.join(restart_output_path, fieldName + '.dat')
             self.serializer.serializeVectorFieldCellLevel(sd)
-            self.appendXMLStub(rst_xml_elem, sd)
+            self.append_xml_stub(rst_xml_elem, sd)
 
     def cellCoreAttributes(self, _cell):
         """
@@ -1712,7 +1714,7 @@ class RestartManager:
             pickle.dump(self.cellCoreAttributes(cell), pf)
 
         pf.close()
-        self.appendXMLStub(rst_xml_elem, sd)
+        self.append_xml_stub(rst_xml_elem, sd)
 
     def pickleList(self, _fileName, _cellList):
         """
@@ -1827,7 +1829,7 @@ class RestartManager:
         if free_floating_sbml_simulators:
             with open(sd.fileName, 'w') as pf:
                 pickle.dump(free_floating_sbml_simulators, pf)
-                self.appendXMLStub(rst_xml_elem, sd)
+                self.append_xml_stub(rst_xml_elem, sd)
 
     def output_python_attributes(self, restart_output_path, rst_xml_elem):
         """
@@ -1871,7 +1873,7 @@ class RestartManager:
         else:
             self.pickleDictionary(sd.fileName, cell_list)
 
-        self.appendXMLStub(rst_xml_elem, sd)
+        self.append_xml_stub(rst_xml_elem, sd)
 
     def output_adhesion_flex_plugin(self, restart_output_path, rst_xml_elem):
         """
@@ -1914,7 +1916,7 @@ class RestartManager:
             pickle.dump(cell_adhesion_vector, pf)
 
         pf.close()
-        self.appendXMLStub(rst_xml_elem, sd)
+        self.append_xml_stub(rst_xml_elem, sd)
 
     def output_chemotaxis_plugin(self, restart_output_path, rst_xml_elem):
 
@@ -1970,7 +1972,7 @@ class RestartManager:
             # cPickle.dump(cellAdhesionVector,pf)        
 
         pf.close()
-        self.appendXMLStub(rst_xml_elem, sd)
+        self.append_xml_stub(rst_xml_elem, sd)
 
     def output_length_constraint_plugin(self, restart_output_path, rst_xml_elem):
         """
@@ -2010,7 +2012,7 @@ class RestartManager:
             pickle.dump([lcp.getLambdaLength(cell), lcp.getTargetLength(cell), lcp.getMinorTargetLength(cell)], pf)
 
         pf.close()
-        self.appendXMLStub(rst_xml_elem, sd)
+        self.append_xml_stub(rst_xml_elem, sd)
 
     def output_connectivity_global_plugin(self, restart_output_path, rst_xml_elem):
 
@@ -2050,7 +2052,7 @@ class RestartManager:
             pickle.dump(connectivity_global_plugin.getConnectivityStrength(cell), pf)
 
         pf.close()
-        self.appendXMLStub(rst_xml_elem, sd)
+        self.append_xml_stub(rst_xml_elem, sd)
 
     def output_connectivity_local_flex_plugin(self, restart_output_path, rst_xml_elem):
 
@@ -2089,7 +2091,7 @@ class RestartManager:
             pickle.dump(connectivity_local_flex_plugin.getConnectivityStrength(cell), pf)
 
         pf.close()
-        self.appendXMLStub(rst_xml_elem, sd)
+        self.append_xml_stub(rst_xml_elem, sd)
 
     def output_focal_point_placticity_plugin(self, restart_output_path, rst_xml_elem):
 
@@ -2176,7 +2178,7 @@ class RestartManager:
                 pickle.dump(fpp_data_dict, pf)
 
         pf.close()
-        self.appendXMLStub(rst_xml_elem, sd)
+        self.append_xml_stub(rst_xml_elem, sd)
 
     def output_contact_local_product_plugin(self, restart_output_path, rst_xml_elem):
 
@@ -2215,7 +2217,7 @@ class RestartManager:
             pickle.dump(contact_local_product_plugin.getCadherinConcentrationVec(cell), pf)
 
         pf.close()
-        self.appendXMLStub(rst_xml_elem, sd)
+        self.append_xml_stub(rst_xml_elem, sd)
 
     def output_cell_orientation_plugin(self, restart_output_path, rst_xml_elem):
 
@@ -2255,7 +2257,7 @@ class RestartManager:
             pickle.dump(cell_orientation_plugin.getLambdaCellOrientation(cell), pf)
 
         pf.close()
-        self.appendXMLStub(rst_xml_elem, sd)
+        self.append_xml_stub(rst_xml_elem, sd)
 
     def output_polarization_vector_plugin(self, restart_output_path, rst_xml_elem):
 
@@ -2295,7 +2297,7 @@ class RestartManager:
             pickle.dump(polarization_vector_plugin.getPolarizationVector(cell), pf)
 
         pf.close()
-        self.appendXMLStub(rst_xml_elem, sd)
+        self.append_xml_stub(rst_xml_elem, sd)
 
     def output_polarization23_plugin(self, restart_output_path, rst_xml_elem):
 
@@ -2339,5 +2341,5 @@ class RestartManager:
             pickle.dump(polarization23_plugin.getLambdaPolarization(cell), pf)
 
         pf.close()
-        self.appendXMLStub(rst_xml_elem, sd)
+        self.append_xml_stub(rst_xml_elem, sd)
 

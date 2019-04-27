@@ -395,7 +395,7 @@ def main_loop_player(sim, simthread, steppableRegistry):
 
     restartManager = RestartManager.RestartManager(sim)
 
-    restartEnabled = restartManager.restartEnabled()
+    restartEnabled = restartManager.restart_enabled()
     sim.setRestartEnabled(restartEnabled)
     # restartEnabled=False
     if restartEnabled:
@@ -421,7 +421,7 @@ def main_loop_player(sim, simthread, steppableRegistry):
 
     runFinishFlag = True
 
-    restartManager.prepareRestarter()
+    restartManager.prepare_restarter()
     beginingStep = restartManager.getRestartStep()
 
 
@@ -432,7 +432,7 @@ def main_loop_player(sim, simthread, steppableRegistry):
             runFinishFlag = False
             break
 
-        restartManager.outputRestartFiles(cur_step)
+        restartManager.output_restart_files(cur_step)
 
         sim.step(cur_step)
 
