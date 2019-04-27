@@ -2,10 +2,10 @@
 # http://pyunit.sourceforge.net/notes/reloading.html
 # Taking a step back, the situation is as follows:
 
-   # 1. A set of modules are loaded
-   # 2. The modules are used
-   # 3. The code is changed
-   # 4. The modules must be used again, but be freshly imported 
+# 1. A set of modules are loaded
+# 2. The modules are used
+# 3. The code is changed
+# 4. The modules must be used again, but be freshly imported
 
 # The solution is to draw a line in the 'module sand' before loading and using the modules,
 # then roll back to that point before re-running the code. This is accomplished, in PyUnit, by the following class:
@@ -17,13 +17,15 @@
 
 # The rollback importer is used as follows in the Player see functions __ runSim and __stepSim
 
-        # def runClicked(self):
-            # if self.rollbackImporter:
-                # self.rollbackImporter.uninstall()
-            
+# def runClicked(self):
+# if self.rollbackImporter:
+# self.rollbackImporter.uninstall()
+
 # Credits: Steve Purcell
 
 import sys
+
+
 class RollbackImporter:
     def __init__(self):
         """
@@ -37,8 +39,8 @@ class RollbackImporter:
 
     def _import(self, name, globals=None, locals=None, fromlist=[], level=0):
         """
-        import override. Modules/packages that have word "steppable" in ther name
-        are imported as leve 0. This means that PYTHONPATH will be used to
+        import override. Modules/packages that have word "steppable" in their name
+        are imported as level 0. This means that PYTHONPATH will be used to
         search for them and even some of them are  relative imports
         e.g.  from .bacterium_macrophage_steppables import MySteppable
 
@@ -57,7 +59,7 @@ class RollbackImporter:
         """
 
         level_import = level
-        if name.find('steppable') > 0 or  name.find('Steppable')>0:
+        if name.find('steppable') > 0 or name.find('Steppable') > 0:
             level_import = 0
         else:
             if fromlist:
@@ -66,11 +68,11 @@ class RollbackImporter:
                         level_import = 0
                         break
 
-        result = self.realImport(*(name, globals, locals, fromlist,level_import))
+        result = self.realImport(*(name, globals, locals, fromlist, level_import))
 
         self.newModules[name] = 1
         return result
-        
+
     def uninstall(self):
         for modname in list(self.newModules.keys()):
             if modname not in self.previousModules:
