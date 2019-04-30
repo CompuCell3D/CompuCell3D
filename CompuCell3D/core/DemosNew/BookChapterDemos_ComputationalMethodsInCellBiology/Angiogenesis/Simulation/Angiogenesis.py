@@ -78,6 +78,7 @@ def configure_simulation():
     uni_init_el = CompuCell3DElmnt.ElementCC3D("Steppable", {"Type": "UniformInitializer"})
     region_el = uni_init_el.ElementCC3D("Region")
     region_el.ElementCC3D("BoxMin", {"x": "15", "y": "15", "z": "15"})
+    # region_el.ElementCC3D("BoxMax", {"x": "19", "y": "19", "z": "19"})
     region_el.ElementCC3D("BoxMax", {"x": "35", "y": "35", "z": "35"})
     region_el.ElementCC3D("Gap", {}, "0")
     region_el.ElementCC3D("Width", {}, "4")

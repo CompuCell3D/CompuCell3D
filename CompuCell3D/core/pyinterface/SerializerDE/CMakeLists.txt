@@ -90,10 +90,8 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     target_link_libraries(SerializerDE  ${LIBS})
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
-INSTALL_TARGETS(/lib
-  SerializerDE)
-    
-    
+INSTALL_TARGETS(/lib/site-packages/cc3d/cpp/lib RUNTIME_DIRECTORY /lib/site-packages/cc3d/cpp/bin SerializerDE)
+        
 INSTALL_FILES(/include/SerializerDE .h
 SerializerDE
 )

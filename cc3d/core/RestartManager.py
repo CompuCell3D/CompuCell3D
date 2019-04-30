@@ -6,6 +6,7 @@ from cc3d.cpp import CompuCell
 from cc3d.cpp import SerializerDEPy
 from cc3d.core.PySteppables import CellList
 from cc3d.core.XMLUtils import ElementCC3D
+from cc3d.core import XMLUtils
 from cc3d.core import Version
 from cc3d import CompuCellSetup
 from pathlib import Path
@@ -41,16 +42,16 @@ class RestartManager:
 
         # variables used during restarting
         self.__restartDirectory = ''
-        self.__restartFile = ''
+        self.__restart_file = ''
         self.__restartVersion = 0
         self.__restartBuild = 0
-        self.__restartStep = 0
-        self.__restartResourceDict = {}
+        self.__restart_step = 0
+        self.__restart_resource_dict = {}
 
         self.cc3dSimulationDataHandler = None
 
     def getRestartStep(self):
-        return self.__restartStep
+        return self.__restart_step
 
     def prepare_restarter(self):
         """
@@ -79,7 +80,7 @@ class RestartManager:
         reads .cc3d project file and checks if restart is enabled
         :return: {bool}
         """
-        return False
+        return True
 
         if re.match(".*\.cc3d$", str(CompuCellSetup.simulationFileName)):
             print("EXTRACTING restartEnabled")
@@ -314,33 +315,31 @@ class RestartManager:
         os.remove(_fileName)
         os.rename(_fileName + '.new', _fileName)
 
-    def readRestartFile(self, _fileName):
+    def read_restart_file(self, _fileName):
         """
         reads XML file that holds information about restart data
         :param _fileName: {str}
         :return: None
         """
-        from . import XMLUtils
-        xml2ObjConverter = XMLUtils.Xml2Obj()
+        xml2_obj_converter = XMLUtils.Xml2Obj()
 
-        fileFullPath = os.path.abspath(_fileName)
+        file_full_path = os.path.abspath(_fileName)
 
-        root_element = xml2ObjConverter.Parse(fileFullPath)  # this is RestartFiles element
+        root_element = xml2_obj_converter.Parse(file_full_path)  # this is RestartFiles element
         if root_element.findAttribute('Version'):
             self.__restartVersion = root_element.getAttribute('Version')
         if root_element.findAttribute('Build'):
             self.__restartVersion = root_element.getAttributeAsInt('Build')
 
-        stepElem = root_element.getFirstElement('Step')
+        step_elem = root_element.getFirstElement('Step')
 
-        if stepElem:
-            self.__restartStep = stepElem.getInt()
+        if step_elem:
+            self.__restart_step = step_elem.getInt()
 
-        restartObjectElements = XMLUtils.CC3DXMLListPy(root_element.getElements('ObjectData'))
+        restart_object_elements = XMLUtils.CC3DXMLListPy(root_element.getElements('ObjectData'))
 
-        import SerializerDEPy
-        if restartObjectElements:
-            for elem in restartObjectElements:
+        if restart_object_elements:
+            for elem in restart_object_elements:
                 sd = SerializerDEPy.SerializeData()
                 if elem.findAttribute('ObjectName'):
                     sd.objectName = elem.getAttribute('ObjectName')
@@ -355,8 +354,8 @@ class RestartManager:
                 if elem.findAttribute('FileFormat'):
                     sd.fileFormat = elem.getAttribute('FileFormat')
                 if sd.objectName != '':
-                    self.__restartResourceDict[sd.objectName] = sd
-        print('self.__restartResourceDict=', self.__restartResourceDict)
+                    self.__restart_resource_dict[sd.objectName] = sd
+        print('self.__restartResourceDict=', self.__restart_resource_dict)
 
     def loadRestartFiles(self):
         """
@@ -364,387 +363,395 @@ class RestartManager:
         :return: None
         """
 
-        import CompuCellSetup
-        import re
+        pg = CompuCellSetup.persistent_globals
+        restart_file_pth = Path(pg.simulation_file_name).parent.joinpath('restart', 'restart.xml')
 
-        print("\n\n\n\n REASTART MANAGER CompuCellSetup.simulationFileName=", CompuCellSetup.simulationFileName)
+        if not restart_file_pth.exists():
+            return
 
-        if re.match(".*\.cc3d$", str(CompuCellSetup.simulationFileName)):
+        self.__restart_file = str(restart_file_pth)
+        self.__restartDirectory = str(restart_file_pth.parent)
+        self.read_restart_file(self.__restart_file)
 
-            print("EXTRACTING restartEnabled")
-            from . import CC3DSimulationDataHandler
-
-            cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler()
-            cc3dSimulationDataHandler.readCC3DFileFormat(str(CompuCellSetup.simulationFileName))
-            print("cc3dSimulationDataHandler.cc3dSimulationData.serializerResource=",
-                  cc3dSimulationDataHandler.cc3dSimulationData.serializerResource.restartDirectory)
-            if cc3dSimulationDataHandler.cc3dSimulationData.serializerResource.restartDirectory != '':
-                restartFileLocation = os.path.dirname(str(CompuCellSetup.simulationFileName))
-                self.__restartDirectory = os.path.join(restartFileLocation, 'restart')
-                self.__restartDirectory = os.path.abspath(self.__restartDirectory)  # normalizing path format
-
-                self.__restartFile = os.path.join(self.__restartDirectory, 'restart.xml')
-                print('self.__restartDirectory=', self.__restartDirectory)
-                print('self.__restartFile=', self.__restartFile)
-                self.readRestartFile(self.__restartFile)
+        # if re.match(".*\.cc3d$", str(CompuCellSetup.simulationFileName)):
+        #
+        #     print("EXTRACTING restartEnabled")
+        #     from . import CC3DSimulationDataHandler
+        #
+        #     cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler()
+        #     cc3dSimulationDataHandler.readCC3DFileFormat(str(CompuCellSetup.simulationFileName))
+        #     print("cc3dSimulationDataHandler.cc3dSimulationData.serializerResource=",
+        #           cc3dSimulationDataHandler.cc3dSimulationData.serializerResource.restartDirectory)
+        #     if cc3dSimulationDataHandler.cc3dSimulationData.serializerResource.restartDirectory != '':
+        #         restartFileLocation = os.path.dirname(str(CompuCellSetup.simulationFileName))
+        #         self.__restartDirectory = os.path.join(restartFileLocation, 'restart')
+        #         self.__restartDirectory = os.path.abspath(self.__restartDirectory)  # normalizing path format
+        #
+        #         self.__restart_file = os.path.join(self.__restartDirectory, 'restart.xml')
+        #         print('self.__restartDirectory=', self.__restartDirectory)
+        #         print('self.__restartFile=', self.__restart_file)
+        #         self.read_restart_file(self.__restart_file)
 
         # ---------------------- LOADING RESTART FILES    --------------------
         # loading cell field    
 
-        self.loadCellField()
+        self.load_cell_field()
+
         # loading concentration fields (scalar fields) from PDE solvers            
-        self.loadConcentrationFields()
+        self.load_concentration_fields()
+
         # loading extra scalar fields   - used in Python only
-        self.loadScalarFields()
+        self.load_scalar_fields()
+
         # loading extra scalar fields cell level  - used in Python only
-        self.loadScalarFieldsCellLevel()
+        self.load_scalar_fields_cell_level()
+
         # loading extra vector fields  - used in Python only
-        self.loadVectorFields()
+        self.load_vector_fields()
+
         # loading extra vector fields cell level  - used in Python only
-        self.loadVectorFieldsCellLevel()
+        self.load_vector_fields_cell_level()
+
         # loading core cell  attributes
-        self.loadCoreCellAttributes()
+        self.load_core_cell_attributes()
+
         # load cell Python attributes
-        self.loadPythonAttributes()
-        # load SBMLSolvers -  free floating SBML Solvers are loaded and initialized and those associated with cell are initialized - they are loaded by  self.loadPythonAttributes
-        self.loadSBMLSolvers()
-        # load bionetSolver Data
-        self.loadBionetSolver()
+        self.load_python_attributes()
+
+        # load SBMLSolvers -  free floating SBML Solvers are loaded and initialized
+        # and those associated with cell are initialized - they are loaded by  self.loadPythonAttributes
+        self.load_sbml_solvers()
+
         # load adhesionFlex plugin
-        self.loadAdhesionFlex()
+        self.load_adhesion_flex()
+
         # load chemotaxis plugin        
-        self.loadChemotaxis()
+        self.load_chemotaxis()
+
         # load LengthConstraint plugin        
-        self.loadLengthConstraint()
+        self.load_length_constraint()
+
         # load ConnectivityGlobal plugin        
-        self.loadConnectivityGlobal()
+        self.load_connectivity_global()
+
         # load ConnectivityLocalFlex plugin        
-        self.loadConnectivityLocalFlex()
+        self.load_connectivity_local_flex()
+
         # load FocalPointPlasticity plugin        
-        self.loadFocalPointPlasticity()
+        self.load_focal_point_plasticity()
+
         # load ContactLocalProduct plugin        
-        self.loadContactLocalProduct()
+        self.load_contact_local_product()
+
         # load CellOrientation plugin        
-        self.loadCellOrientation()
+        self.load_cell_orientation()
+
         # load PolarizationVector plugin        
-        self.loadPolarizationVector()
+        self.load_polarization_vector()
+
         # load loadPolarization23 plugin        
-        self.loadPolarization23()
+        self.load_polarization23()
 
         # load steering panel
-        self.loadSteeringPanel()
+        self.load_steering_panel()
 
         # ---------------------- END OF LOADING RESTART FILES    --------------------
 
-    #
-
-    def loadCellField(self, ):
+    def load_cell_field(self, ):
         """
         Restores Cell Field
         :return: None
         """
-        import SerializerDEPy
-        if 'CellField' in list(self.__restartResourceDict.keys()):
-            sd = self.__restartResourceDict['CellField']
-            # full path to cell field serialized recource
-            fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-            fullPath = os.path.abspath(fullPath)  # normalizing path format
-            tmpFileName = sd.fileName
-            sd.fileName = fullPath
+        if 'CellField' in list(self.__restart_resource_dict.keys()):
+            sd = self.__restart_resource_dict['CellField']
+            # full path to cell field serialized resource
+            full_path = os.path.join(self.__restartDirectory, sd.fileName)
+            full_path = os.path.abspath(full_path)  # normalizing path format
+            tmp_file_name = sd.fileName
+            sd.fileName = full_path
             self.serializer.loadCellField(sd)
-            sd.fileName = tmpFileName
+            sd.fileName = tmp_file_name
 
-    def loadConcentrationFields(self):
+    def load_concentration_fields(self):
         """
         restores chemical fields
         :return: None
         """
 
-        for resourceName, sd in self.__restartResourceDict.items():
+        for resource_name, sd in self.__restart_resource_dict.items():
             if sd.objectType == 'ConcentrationField':
-                fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-                fullPath = os.path.abspath(fullPath)  # normalizing path format
-                tmpFileName = sd.fileName
-                sd.fileName = fullPath
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
+                full_path = os.path.abspath(full_path)  # normalizing path format
+                tmp_file_name = sd.fileName
+                sd.fileName = full_path
                 self.serializer.loadConcentrationField(sd)
-                sd.fileName = tmpFileName
+                sd.fileName = tmp_file_name
 
-    def loadScalarFields(self):
+    def load_scalar_fields(self):
         """
         restores user-defined custom scalar fields (not associated with PDE solvers)
         :return: None
         """
-        import CompuCellSetup
-        scalarFieldsDict = CompuCellSetup.fieldRegistry.getScalarFields()
-        for resourceName, sd in self.__restartResourceDict.items():
+        field_registry = CompuCellSetup.persistent_globals.field_registry
+
+        scalar_fields_dict = field_registry.getScalarFields()
+        for resource_name, sd in self.__restart_resource_dict.items():
             if sd.objectType == 'ScalarField' and sd.moduleType == 'Python':
 
-                fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-                fullPath = os.path.abspath(fullPath)  # normalizing path format
-                tmpFileName = sd.fileName
-                sd.fileName = fullPath
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
+                full_path = os.path.abspath(full_path)  # normalizing path format
+                tmp_file_name = sd.fileName
+                sd.fileName = full_path
 
                 try:
-                    sd.objectPtr = scalarFieldsDict[sd.objectName]
+                    sd.objectPtr = scalar_fields_dict[sd.objectName]
 
                 except LookupError as e:
                     continue
 
                 self.serializer.loadScalarField(sd)
-                sd.fileName = tmpFileName
+                sd.fileName = tmp_file_name
 
-    def loadScalarFieldsCellLevel(self):
+    def load_scalar_fields_cell_level(self):
         """
         Loads user-defined custom scalar fields (not associated with PDE solvers) that are defined on per-cell basis
         :return: None
         """
+        field_registry = CompuCellSetup.persistent_globals.field_registry
 
-        import CompuCellSetup
-
-        scalarFieldsDictCellLevel = CompuCellSetup.fieldRegistry.getScalarFieldsCellLevel()
-        for resourceName, sd in self.__restartResourceDict.items():
+        scalar_fields_dict_cell_level = field_registry.getScalarFieldsCellLevel()
+        for resource_name, sd in self.__restart_resource_dict.items():
 
             if sd.objectType == 'ScalarFieldCellLevel' and sd.moduleType == 'Python':
 
-                fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-                fullPath = os.path.abspath(fullPath)  # normalizing path format
-                tmpFileName = sd.fileName
-                sd.fileName = fullPath
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
+                full_path = os.path.abspath(full_path)  # normalizing path format
+                tmp_file_name = sd.fileName
+                sd.fileName = full_path
 
                 try:
-                    sd.objectPtr = scalarFieldsDictCellLevel[sd.objectName]
+                    sd.objectPtr = scalar_fields_dict_cell_level[sd.objectName]
 
                 except LookupError as e:
                     continue
 
                 self.serializer.loadScalarFieldCellLevel(sd)
-                sd.fileName = tmpFileName
+                sd.fileName = tmp_file_name
 
-    def loadVectorFields(self):
+    def load_vector_fields(self):
         """
         restores user-defined custom vector fields
         :return: None
         """
 
-        import CompuCellSetup
-        vectorFieldsDict = CompuCellSetup.fieldRegistry.getVectorFields()
-        for resourceName, sd in self.__restartResourceDict.items():
+        field_registry = CompuCellSetup.persistent_globals.field_registry
+        vector_fields_dict = field_registry.getVectorFields()
+
+        for resource_name, sd in self.__restart_resource_dict.items():
             if sd.objectType == 'VectorField' and sd.moduleType == 'Python':
 
-                fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-                fullPath = os.path.abspath(fullPath)  # normalizing path format
-                tmpFileName = sd.fileName
-                sd.fileName = fullPath
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
+                full_path = os.path.abspath(full_path)  # normalizing path format
+                tmp_file_name = sd.fileName
+                sd.fileName = full_path
 
                 try:
-                    sd.objectPtr = vectorFieldsDict[sd.objectName]
+                    sd.objectPtr = vector_fields_dict[sd.objectName]
 
                 except LookupError as e:
                     continue
 
                 self.serializer.loadVectorField(sd)
-                sd.fileName = tmpFileName
+                sd.fileName = tmp_file_name
 
-    def loadVectorFieldsCellLevel(self):
+    def load_vector_fields_cell_level(self):
         """
         Loads user-defined custom vector fields that are defined on per-cell basis
         :return: None
         """
-        import CompuCellSetup
+        field_registry = CompuCellSetup.persistent_globals.field_registry
 
-        vectorFieldsCellLevelDict = CompuCellSetup.fieldRegistry.getVectorFieldsCellLevel()
+        vector_fields_cell_level_dict = field_registry.getVectorFieldsCellLevel()
 
-        for resourceName, sd in self.__restartResourceDict.items():
+        for resource_name, sd in self.__restart_resource_dict.items():
             if sd.objectType == 'VectorFieldCellLevel' and sd.moduleType == 'Python':
 
-                fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-                fullPath = os.path.abspath(fullPath)  # normalizing path format
-                tmpFileName = sd.fileName
-                sd.fileName = fullPath
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
+                full_path = os.path.abspath(full_path)  # normalizing path format
+                tmp_file_name = sd.fileName
+                sd.fileName = full_path
 
                 try:
-                    sd.objectPtr = vectorFieldsCellLevelDict[sd.objectName]
+                    sd.objectPtr = vector_fields_cell_level_dict[sd.objectName]
 
                 except LookupError as e:
                     continue
 
                 self.serializer.loadVectorFieldCellLevel(sd)
-                sd.fileName = tmpFileName
+                sd.fileName = tmp_file_name
 
-    def loadCoreCellAttributes(self):
+    def load_core_cell_attributes(self):
         """
         Loads core cell attributes such as lambdaVolume, targetVolume etc...
         :return: None
         """
-        import pickle
-        from .PySteppables import CellList
 
-        for resourceName, sd in self.__restartResourceDict.items():
+        sim = CompuCellSetup.persistent_globals.simulator
+
+        for resource_name, sd in self.__restart_resource_dict.items():
             if sd.objectName == 'CoreCellAttributes' and sd.objectType == 'Pickle':
 
-                inventory = self.sim.getPotts().getCellInventory()
-                cellList = CellList(inventory)
+                inventory = sim.getPotts().getCellInventory()
+                cell_list = CellList(inventory)
 
-                fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-                fullPath = os.path.abspath(fullPath)  # normalizing path format
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
+                full_path = os.path.abspath(full_path)  # normalizing path format
                 try:
-                    pf = open(fullPath, 'r')
-                except IOError as e:
+                    pf = open(full_path, 'rb')
+                except IOError:
                     return
 
-                numberOfCells = pickle.load(pf)
-                for cell in cellList:
-                    cellId = pickle.load(pf)
-                    clusterId = cell.clusterId
-                    # print 'cellId=',cellId
-                    cellCoreAttributes = pickle.load(pf)
-                    # print 'cellCoreAttributes=',cellCoreAttributes
-                    # cellLocal=inventory.getCellByIds(cellId,clusterId)   
+                number_of_cells = pickle.load(pf)
+                for cell in cell_list:
+                    cell_id = pickle.load(pf)
+                    cluster_id = cell.clusterId
+                    cell_core_attributes = pickle.load(pf)
 
                     if cell:
-                        # print 'cell=',cell," cell.id=",cell.id    
-                        self.setCellCoreAttributes(cell, cellCoreAttributes)
+                        self.set_cell_core_attributes(cell, cell_core_attributes)
 
                 pf.close()
 
-    def unpickleDict(self, _fileName, _cellList):
+    def unpickle_dict(self, file_name, cell_list):
         """
         Utility function that unpickles dictionary representing dictionary of attributes that user
         attaches to cells at the Python level
-        :param _fileName: {str}
-        :param _cellList: {container with all CC3D cells - equivalent of self.cellList in SteppableBasePy}
+        :param file_name: {str}
+        :param cell_list: {container with all CC3D cells - equivalent of self.cellList in SteppableBasePy}
         :return:
         """
-        import CompuCell
-        import pickle
-        import copy
         try:
-            pf = open(_fileName, 'r')
-        except IOError as e:
+            pf = open(file_name, 'rb')
+        except IOError:
             return
 
-        numberOfCells = pickle.load(pf)
+        number_of_cells = pickle.load(pf)
 
-        for cell in _cellList:
-            cellId = pickle.load(pf)
+        for cell in cell_list:
+            cell_id = pickle.load(pf)
 
-            unpickledAttribDict = pickle.load(pf)
+            unpickled_attrib_dict = pickle.load(pf)
 
-            dictAttrib = CompuCell.getPyAttrib(cell)
+            dict_attrib = CompuCell.getPyAttrib(cell)
 
-            # dictAttrib=copy.deepcopy(unpickledAttribDict)
-            dictAttrib.update(
-                unpickledAttribDict)  # adds all objects from unpickledAttribDict to dictAttrib -  note: deep copy will not work here
+            # dict_attrib=copy.deepcopy(unpickled_attrib_dict)
+            # adds all objects from unpickled_attrib_dict to dict_attrib -  note: deep copy will not work here
+            dict_attrib.update(unpickled_attrib_dict)
 
         pf.close()
 
-    def unpickleList(self, _fileName, _cellList):
+    def unpickle_list(self, file_name, cell_list):
         """
         Utility function that unpickles list representing list of attributes that user
         attaches to cells at the Python level
 
-        :param _fileName: {ste}
-        :param _cellList: {container with all CC3D cells - equivalent of self.cellList in SteppableBasePy}
+        :param file_name: {ste}
+        :param cell_list: {container with all CC3D cells - equivalent of self.cellList in SteppableBasePy}
         :return:
         """
 
-        import CompuCell
-        import pickle
-
         try:
-            pf = open(_fileName, 'r')
+            pf = open(file_name, 'r')
         except IOError as e:
             return
 
-        numberOfCells = pickle.load(pf)
+        number_of_cells = pickle.load(pf)
 
-        for cell in _cellList:
-            cellId = pickle.load(pf)
-            unpickledAttribList = pickle.load(pf)
-            listAttrib = CompuCell.getPyAttrib(cell)
+        for cell in cell_list:
+            cell_id = pickle.load(pf)
+            unpickled_attrib_list = pickle.load(pf)
+            list_attrib = CompuCell.getPyAttrib(cell)
 
-            # appends all elements of unpickledAttribList to the end of listAttrib
+            # appends all elements of unpickled_attrib_list to the end of list_attrib
             #  note: deep copy will not work here
-            listAttrib.extend(unpickledAttribList)
+            list_attrib.extend(unpickled_attrib_list)
 
         pf.close()
 
-    def loadPythonAttributes(self):
+    def load_python_attributes(self):
         """
         Loads python attributes that user attached to cells (a list or dictionary)
         :return: None
         """
 
-        import CompuCellSetup
-        import pickle
+        sim = CompuCellSetup.persistent_globals.simulator
 
-        from .PySteppables import CellList
-
-        for resourceName, sd in self.__restartResourceDict.items():
+        for resource_name, sd in self.__restart_resource_dict.items():
             if sd.objectName == 'PythonAttributes' and sd.objectType == 'Pickle':
 
-                fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-                fullPath = os.path.abspath(fullPath)  # normalizing path format
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
 
-                inventory = self.sim.getPotts().getCellInventory()
-                cellList = CellList(inventory)
+                # normalizing path format
+                full_path = os.path.abspath(full_path)
+
+                inventory = sim.getPotts().getCellInventory()
+                cell_list = CellList(inventory)
 
                 # checking if cells have extra attribute
-                import CompuCell
-                for cell in cellList:
+                for cell in cell_list:
                     if not CompuCell.isPyAttribValid(cell):
                         return
 
-                listFlag = True
-                for cell in cellList:
+                list_flag = True
+                for cell in cell_list:
                     attrib = CompuCell.getPyAttrib(cell)
                     if isinstance(attrib, list):
-                        listFlag = True
+                        list_flag = True
                     else:
-                        listFlag = False
+                        list_flag = False
                     break
 
-                if listFlag:
-                    self.unpickleList(fullPath, cellList)
+                if list_flag:
+                    self.unpickle_list(full_path, cell_list)
                 else:
-                    self.unpickleDict(fullPath, cellList)
+                    self.unpickle_dict(full_path, cell_list)
 
-    def loadSBMLSolvers(self):
+    def load_sbml_solvers(self):
         """
         Loads SBML solvers
         :return: None
         """
 
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
+        sim = CompuCellSetup.persistent_globals.simulator
+        free_floating_sbml_simulators = CompuCellSetup.persistent_globals.free_floating_sbml_simulators
 
         # loading and initializing freeFloating SBML Simulators
         #  SBML solvers associated with cells are loaded (but not fully initialized) in the loadPythonAttributes
-        for resourceName, sd in self.__restartResourceDict.items():
-            print('resourceName=', resourceName)
+        for resource_name, sd in self.__restart_resource_dict.items():
+            print('resource_name=', resource_name)
             print('sd=', sd)
 
             if sd.objectName == 'FreeFloatingSBMLSolvers' and sd.objectType == 'Pickle':
                 print('RESTORING FreeFloatingSBMLSolvers ')
 
-                fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-                fullPath = os.path.abspath(fullPath)  # normalizing path format
-                with open(fullPath, 'r') as pf:
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
+
+                # normalizing path format
+                full_path = os.path.abspath(full_path)
+                with open(full_path, 'r') as pf:
                     CompuCellSetup.freeFloatingSBMLSimulator = pickle.load(pf)
 
                 # initializing  freeFloating SBML Simulators       
-                for modelName, sbmlSolver in CompuCellSetup.freeFloatingSBMLSimulator.items():
-                    sbmlSolver.loadSBML(_externalPath=self.sim.getBasePath())
+                for model_name, sbml_solver in free_floating_sbml_simulators.items():
+                    sbml_solver.loadSBML(_externalPath=sim.getBasePath())
 
         # full initializing SBML solvers associated with cell
         #  we do that regardless whether we have freeFloatingSBMLSolver pickled file or not
-        inventory = self.sim.getPotts().getCellInventory()
-        cellList = CellList(inventory)
+        inventory = sim.getPotts().getCellInventory()
+        cell_list = CellList(inventory)
 
         # checking if cells have extra attribute
-        import CompuCell
-        for cell in cellList:
+        for cell in cell_list:
             if not CompuCell.isPyAttribValid(cell):
                 return
             else:
@@ -754,648 +761,505 @@ class RestartManager:
                 else:
                     break
 
-        for cell in cellList:
+        for cell in cell_list:
 
-            cellDict = CompuCell.getPyAttrib(cell)
+            cell_dict = CompuCell.getPyAttrib(cell)
             try:
-                sbmlDict = cellDict['SBMLSolver']
-                print('sbmlDict=', sbmlDict)
-            except LookupError as e:
+                sbml_dict = cell_dict['SBMLSolver']
+                print('sbml_dict=', sbml_dict)
+            except LookupError:
                 continue
 
-            for modelName, sbmlSolver in sbmlDict.items():
+            for model_name, sbml_solver in sbml_dict.items():
                 # this call fully initializes SBML Solver by
                 # loadSBML
-                # ( relative path stored in sbmlSolver.path and root dir is passed using self.sim.getBasePath())
-                sbmlSolver.loadSBML(_externalPath=self.sim.getBasePath())
+                # ( relative path stored in sbml_solver.path and root dir is passed using self.sim.getBasePath())
+                sbml_solver.loadSBML(_externalPath=sim.getBasePath())
 
-    def loadBionetSolver(self):
-        """
-        Deprecated - loads bionet solver - SBMLSolver replaced this one
-        :return: None
-        """
-
-        warnings.warn('BionetSolver is deprecated', PendingDeprecationWarning)
-
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-
-        for resourceName, sd in self.__restartResourceDict.items():
-            if sd.objectName == 'BionetSolver' and sd.objectType == 'Pickle':
-
-                fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-                fullPath = os.path.abspath(fullPath)  # normalizing path format
-
-                try:
-                    pf = open(fullPath, 'r')
-                except IOError as e:
-                    return
-
-                    # first will load sbml files and
-                import bionetAPI
-                sbmlModelDict = pickle.load(pf)
-
-                for modelName, modelDict in sbmlModelDict.items():
-                    bionetAPI.loadSBMLModel(modelName, modelDict["ModelPath"], modelDict["ModelKey"],
-                                            modelDict["ModelTimeStep"])
-
-                # loading library names (model names)  associated with cell types
-                cellTemplateLibraryDict = pickle.load(pf)
-
-                # templateLibraryName in this case is the sdame as cell type name (except medium)
-                for templateLibraryName, modelNames in cellTemplateLibraryDict.items():
-                    for modelName in modelNames:
-                        bionetAPI.addSBMLModelToTemplateLibrary(modelName, templateLibraryName)
-
-                nonCellTemplateLibraryDict = pickle.load(pf)
-                for nonCellLibName, modelInstanceDict in nonCellTemplateLibraryDict.items():
-                    for modelName, varDict in modelInstanceDict.items():
-                        bionetAPI.addSBMLModelToTemplateLibrary(modelName, nonCellLibName)
-
-                bionetAPI.initializeBionetworks()
-
-                # after bionetworks are initialized inthe bionetAPI we can assign variables to non cell models
-                for nonCellLibName, modelInstanceDict in nonCellTemplateLibraryDict.items():
-                    for modelName, varDict in modelInstanceDict.items():
-                        for varName, varValue in varDict.items():
-                            bionetAPI.setBionetworkValue(varName, varValue, nonCellLibName)
-
-                inventory = self.sim.getPotts().getCellInventory()
-                cellList = CellList(inventory)
-
-                # checking if cells have extra attribute
-                import CompuCell
-                for cell in cellList:
-
-                    dictAttrib = CompuCell.getPyAttrib(cell)
-                    dictToPickle = {}
-
-                    id = pickle.load(pf)  # cell id
-                    cellSBMLModelData = pickle.load(pf)  # cell's sbml models
-
-                    for modelName, modeVarDict in cellSBMLModelData.items():
-                        for varName, varValue in modeVarDict.items():
-                            bionetAPI.setBionetworkValue(varName, varValue, cell.id)
-
-                pf.close()
-
-    def loadAdhesionFlex(self):
+    def load_adhesion_flex(self):
         """
         restores AdhesionFlex Plugin
         :return: None
         """
 
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        import CompuCell
+        sim = CompuCellSetup.persistent_globals.simulator
 
-        # AdhesionFlexPlugin
-
-        adhesionFlexPlugin = None
-        if self.sim.pluginManager.isLoaded("AdhesionFlex"):
-            import CompuCell
-            adhesionFlexPlugin = CompuCell.getAdhesionFlexPlugin()
-        else:
+        if not sim.pluginManager.isLoaded("AdhesionFlex"):
             return
 
-        for resourceName, sd in self.__restartResourceDict.items():
+        adhesion_flex_plugin = CompuCell.getAdhesionFlexPlugin()
+
+        for resource_name, sd in self.__restart_resource_dict.items():
             if sd.objectName == 'AdhesionFlex' and sd.objectType == 'Pickle':
 
-                inventory = self.sim.getPotts().getCellInventory()
-                cellList = CellList(inventory)
+                inventory = sim.getPotts().getCellInventory()
+                cell_list = CellList(inventory)
 
-                fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-                fullPath = os.path.abspath(fullPath)  # normalizing path format
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
+
+                # normalizing path format
+                full_path = os.path.abspath(full_path)
                 try:
-                    pf = open(fullPath, 'r')
-                except IOError as e:
+                    pf = open(full_path, 'r')
+                except IOError:
                     return
 
-                numberOfCells = pickle.load(pf)
+                number_of_cells = pickle.load(pf)
                 # read medium adhesion molecule vector
-                mediumAdhesionVector = pickle.load(pf)
+                medium_adhesion_vector = pickle.load(pf)
 
-                adhesionFlexPlugin.assignNewMediumAdhesionMoleculeDensityVector(mediumAdhesionVector)
+                adhesion_flex_plugin.assignNewMediumAdhesionMoleculeDensityVector(medium_adhesion_vector)
 
-                for cell in cellList:
-                    cellId = pickle.load(pf)
+                for cell in cell_list:
+                    cell_id = pickle.load(pf)
 
-                    cellAdhesionVector = pickle.load(pf)
-                    adhesionFlexPlugin.assignNewAdhesionMoleculeDensityVector(cell, cellAdhesionVector)
+                    cell_adhesion_vector = pickle.load(pf)
+                    adhesion_flex_plugin.assignNewAdhesionMoleculeDensityVector(cell, cell_adhesion_vector)
 
                 pf.close()
-            adhesionFlexPlugin.overrideInitialization()
+            adhesion_flex_plugin.overrideInitialization()
 
-    def loadChemotaxis(self):
+    def load_chemotaxis(self):
         """
         restores Chemotaxis
         :return: None
         """
+        sim = CompuCellSetup.persistent_globals.simulator
 
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        import CompuCell
-
-        # chemotaxisPlugin
-        chemotaxisPlugin = None
-        if self.sim.pluginManager.isLoaded("Chemotaxis"):
-            import CompuCell
-            chemotaxisPlugin = CompuCell.getChemotaxisPlugin()
-        else:
+        if not sim.pluginManager.isLoaded("Chemotaxis"):
             return
+        chemotaxis_plugin = CompuCell.getChemotaxisPlugin()
 
-        for resourceName, sd in self.__restartResourceDict.items():
+        for resource_name, sd in self.__restart_resource_dict.items():
             if sd.objectName == 'Chemotaxis' and sd.objectType == 'Pickle':
 
-                inventory = self.sim.getPotts().getCellInventory()
-                cellList = CellList(inventory)
+                inventory = sim.getPotts().getCellInventory()
+                cell_list = CellList(inventory)
 
-                fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-                fullPath = os.path.abspath(fullPath)  # normalizing path format
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
+                # normalizing path format
+                full_path = os.path.abspath(full_path)
                 try:
-                    pf = open(fullPath, 'r')
-                except IOError as e:
+                    pf = open(full_path, 'rb')
+                except IOError:
                     return
 
-                numberOfCells = pickle.load(pf)
+                number_of_cells = pickle.load(pf)
 
-                for cell in cellList:
-                    cellId = pickle.load(pf)
+                for cell in cell_list:
+                    cell_id = pickle.load(pf)
 
                     # loading number of chemotaxis data that cell has
-                    chdNumber = pickle.load(pf)
+                    chd_number = pickle.load(pf)
 
-                    for i in range(chdNumber):
+                    for i in range(chd_number):
                         # reading chemotaxis data 
-                        chdDict = pickle.load(pf)
+                        chd_dict = pickle.load(pf)
                         # creating chemotaxis data for cell
-                        chd = chemotaxisPlugin.addChemotaxisData(cell, chdDict['fieldName'])
-                        chd.setLambda(chdDict['lambda'])
-                        chd.saturationCoef = chdDict['saturationCoef']
-                        chd.setChemotaxisFormulaByName(chdDict['formulaName'])
-                        chd.assignChemotactTowardsVectorTypes(chdDict['chemotactTowardsTypesVec'])
+                        chd = chemotaxis_plugin.addChemotaxisData(cell, chd_dict['fieldName'])
+                        chd.setLambda(chd_dict['lambda'])
+                        chd.saturationCoef = chd_dict['saturationCoef']
+                        chd.setChemotaxisFormulaByName(chd_dict['formulaName'])
+                        chd.assignChemotactTowardsVectorTypes(chd_dict['chemotactTowardsTypesVec'])
 
                 pf.close()
 
-    def loadLengthConstraint(self):
+    def load_length_constraint(self):
         """
         Restores LengthConstraint
         :return: None
         """
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        import CompuCell
-
-        # LengthConstraintPlugin
-        lengthConstraintPlugin = None
-        if self.sim.pluginManager.isLoaded("LengthConstraint"):
-            import CompuCell
-            lengthConstraintPlugin = CompuCell.getLengthConstraintPlugin()
-        else:
+        sim = CompuCellSetup.persistent_globals.simulator
+        if not sim.pluginManager.isLoaded("LengthConstraint"):
             return
 
-        for resourceName, sd in self.__restartResourceDict.items():
+        length_constraint_plugin = CompuCell.getLengthConstraintPlugin()
+
+        for resource_name, sd in self.__restart_resource_dict.items():
             if sd.objectName == 'LengthConstraint' and sd.objectType == 'Pickle':
 
-                inventory = self.sim.getPotts().getCellInventory()
-                cellList = CellList(inventory)
+                inventory = sim.getPotts().getCellInventory()
+                cell_list = CellList(inventory)
 
-                fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-                fullPath = os.path.abspath(fullPath)  # normalizing path format
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
+                # normalizing path format
+                full_path = os.path.abspath(full_path)
                 try:
-                    pf = open(fullPath, 'r')
-                except IOError as e:
+                    pf = open(full_path, 'rb')
+                except IOError:
                     return
 
-                numberOfCells = pickle.load(pf)
+                number_of_cells = pickle.load(pf)
 
-                for cell in cellList:
-                    cellId = pickle.load(pf)
+                for cell in cell_list:
+                    cell_id = pickle.load(pf)
 
-                    lengthConstraintVec = pickle.load(pf)
-                    # ([lcp.getLambdaLength(cell),lcp.getTargetLength(cell),lcp.getMinorTargetLength(cell)],pf)
-                    lengthConstraintPlugin.setLengthConstraintData(cell, lengthConstraintVec[0], lengthConstraintVec[1],
-                                                                   lengthConstraintVec[2])
+                    length_constraint_vec = pickle.load(pf)
+                    length_constraint_plugin.setLengthConstraintData(cell, length_constraint_vec[0],
+                                                                     length_constraint_vec[1],
+                                                                     length_constraint_vec[2])
 
                 pf.close()
 
-    def loadConnectivityGlobal(self):
+    def load_connectivity_global(self):
         """
         Restores ConnectivityGlobal plugin
         :return: None
         """
 
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        import CompuCell
-
-        # ConnectivityLocalFlexPlugin
-        connectivityGlobalPlugin = None
-        if self.sim.pluginManager.isLoaded("ConnectivityGlobal"):
-            import CompuCell
-            connectivityGlobalPlugin = CompuCell.getConnectivityGlobalPlugin()
-        else:
+        sim = CompuCellSetup.persistent_globals.simulator
+        if not sim.pluginManager.isLoaded("ConnectivityGlobal"):
             return
 
-        for resourceName, sd in self.__restartResourceDict.items():
+        connectivity_global_plugin = CompuCell.getConnectivityGlobalPlugin()
+
+        for resource_name, sd in self.__restart_resource_dict.items():
             if sd.objectName == 'ConnectivityGlobal' and sd.objectType == 'Pickle':
 
-                inventory = self.sim.getPotts().getCellInventory()
-                cellList = CellList(inventory)
+                inventory = sim.getPotts().getCellInventory()
+                cell_list = CellList(inventory)
 
-                fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-                fullPath = os.path.abspath(fullPath)  # normalizing path format
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
+                # normalizing path format
+                full_path = os.path.abspath(full_path)
                 try:
-                    pf = open(fullPath, 'r')
-                except IOError as e:
+                    pf = open(full_path, 'rb')
+                except IOError:
                     return
 
-                numberOfCells = pickle.load(pf)
+                number_of_cells = pickle.load(pf)
 
-                for cell in cellList:
-                    cellId = pickle.load(pf)
+                for cell in cell_list:
+                    cell_id = pickle.load(pf)
 
-                    connectivityStrength = pickle.load(pf)
-                    connectivityGlobalPlugin.setConnectivityStrength(cell, connectivityStrength)
+                    connectivity_strength = pickle.load(pf)
+                    connectivity_global_plugin.setConnectivityStrength(cell, connectivity_strength)
 
                 pf.close()
 
-    def loadConnectivityLocalFlex(self):
+    def load_connectivity_local_flex(self):
         """
         Restores ConnectivityLocalFlex plugin
         :return: None
         """
-
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        import CompuCell
-
-        # ConnectivityLocalFlexPlugin
-        connectivityLocalFlexPlugin = None
-        if self.sim.pluginManager.isLoaded("ConnectivityLocalFlex"):
-            import CompuCell
-            connectivityLocalFlexPlugin = CompuCell.getConnectivityLocalFlexPlugin()
-        else:
+        sim = CompuCellSetup.persistent_globals.simulator
+        if not sim.pluginManager.isLoaded("ConnectivityLocalFlex"):
             return
 
-        for resourceName, sd in self.__restartResourceDict.items():
+        connectivity_local_flex_plugin = CompuCell.getConnectivityLocalFlexPlugin()
+
+        for resource_name, sd in self.__restart_resource_dict.items():
             if sd.objectName == 'ConnectivityLocalFlex' and sd.objectType == 'Pickle':
 
-                inventory = self.sim.getPotts().getCellInventory()
-                cellList = CellList(inventory)
+                inventory = sim.getPotts().getCellInventory()
+                cell_list = CellList(inventory)
 
-                fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-                fullPath = os.path.abspath(fullPath)  # normalizing path format
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
+                # normalizing path format
+                full_path = os.path.abspath(full_path)
                 try:
-                    pf = open(fullPath, 'r')
-                except IOError as e:
+                    pf = open(full_path, 'rb')
+                except IOError:
                     return
 
-                numberOfCells = pickle.load(pf)
+                number_of_cells = pickle.load(pf)
 
-                for cell in cellList:
-                    cellId = pickle.load(pf)
+                for cell in cell_list:
+                    cell_id = pickle.load(pf)
 
-                    connectivityStrength = pickle.load(pf)
-                    connectivityLocalFlexPlugin.setConnectivityStrength(cell, connectivityStrength)
+                    connectivity_strength = pickle.load(pf)
+                    connectivity_local_flex_plugin.setConnectivityStrength(cell, connectivity_strength)
 
                 pf.close()
 
-    def loadFocalPointPlasticity(self):
+    def load_focal_point_plasticity(self):
         """
         restores FocalPointPlasticity plugin
         :return: None
         """
 
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        import CompuCell
-
-        # FocalPointPlasticity
-        focalPointPlasticityPlugin = None
-        if self.sim.pluginManager.isLoaded("FocalPointPlasticity"):
-            import CompuCell
-            focalPointPlasticityPlugin = CompuCell.getFocalPointPlasticityPlugin()
-        else:
+        sim = CompuCellSetup.persistent_globals.simulator
+        if not sim.pluginManager.isLoaded("FocalPointPlasticity"):
             return
 
-        for resourceName, sd in self.__restartResourceDict.items():
+        focal_point_plasticity_plugin = CompuCell.getFocalPointPlasticityPlugin()
+
+        for resource_name, sd in self.__restart_resource_dict.items():
             if sd.objectName == 'FocalPointPlasticity' and sd.objectType == 'Pickle':
 
-                inventory = self.sim.getPotts().getCellInventory()
-                cellList = CellList(inventory)
+                inventory = sim.getPotts().getCellInventory()
+                cell_list = CellList(inventory)
 
-                fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-                fullPath = os.path.abspath(fullPath)  # normalizing path format
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
+                full_path = os.path.abspath(full_path)  # normalizing path format
                 try:
-                    pf = open(fullPath, 'r')
-                except IOError as e:
+                    pf = open(full_path, 'rb')
+                except IOError:
                     return
 
-                numberOfCells = pickle.load(pf)
+                number_of_cells = pickle.load(pf)
 
-                for cell in cellList:
-                    cellId = pickle.load(pf)
+                for cell in cell_list:
+                    cell_id = pickle.load(pf)
 
-                    cellId = cell.id
-                    clusterId = cell.clusterId
+                    cell_id = cell.id
+                    cluster_id = cell.clusterId
 
                     # read number of fpp links in the cell (external)
-                    linksNumber = pickle.load(pf)
-                    for i in range(linksNumber):
-                        fppDict = pickle.load(pf)  # loading external links
+                    links_number = pickle.load(pf)
+                    for i in range(links_number):
+                        # loading external links
+                        fpp_dict = pickle.load(pf)
                         fpptd = CompuCell.FocalPointPlasticityTrackerData()
                         # get neighbor data
-                        neighborIds = fppDict['neighborIds']  # cellId, cluster id
+                        # cell_id, cluster id
+                        neighbor_ids = fpp_dict['neighbor_ids']
 
-                        neighborCell = inventory.getCellByIds(neighborIds[0], neighborIds[1])
-                        fpptd.neighborAddress = neighborCell
-                        fpptd.lambdaDistance = fppDict['lambdaDistance']
-                        fpptd.targetDistance = fppDict['targetDistance']
-                        fpptd.maxDistance = fppDict['maxDistance']
-                        fpptd.activationEnergy = fppDict['activationEnergy']
-                        fpptd.maxNumberOfJunctions = fppDict['maxNumberOfJunctions']
-                        fpptd.neighborOrder = fppDict['neighborOrder']
+                        neighbor_cell = inventory.getCellByIds(neighbor_ids[0], neighbor_ids[1])
+                        fpptd.neighborAddress = neighbor_cell
+                        fpptd.lambdaDistance = fpp_dict['lambdaDistance']
+                        fpptd.targetDistance = fpp_dict['targetDistance']
+                        fpptd.maxDistance = fpp_dict['maxDistance']
+                        fpptd.activationEnergy = fpp_dict['activationEnergy']
+                        fpptd.maxNumberOfJunctions = fpp_dict['maxNumberOfJunctions']
+                        fpptd.neighborOrder = fpp_dict['neighborOrder']
 
-                        focalPointPlasticityPlugin.insertFPPData(cell, fpptd)
+                        focal_point_plasticity_plugin.insertFPPData(cell, fpptd)
 
                     # read number of fpp links in the cell (internal)
-                    internalLinksNumber = pickle.load(pf)
-                    for i in range(internalLinksNumber):
-                        fppDict = pickle.load(pf)  # loading external links
+                    internal_links_number = pickle.load(pf)
+                    for i in range(internal_links_number):
+                        # loading external links
+                        fpp_dict = pickle.load(pf)
                         fpptd = CompuCell.FocalPointPlasticityTrackerData()
                         # get neighbor data
-                        neighborIds = fppDict['neighborIds']  # cellId, cluster id
-                        neighborCell = inventory.getCellByIds(neighborIds[0], neighborIds[1])
-                        fpptd.neighborAddfess = neighborCell
-                        fpptd.lambdaDistance = fppDict['lambdaDistance']
-                        fpptd.targetDistance = fppDict['targetDistance']
-                        fpptd.maxDistance = fppDict['maxDistance']
-                        fpp.activationEnergy = fppDict['activationEnergy']
-                        fpptd.maxNumberOfJunctions = fppDict['maxNumberOfJunctions']
-                        fpptd.neighborOrder = fppDict['neighborOrder']
-                        focalPointPlasticityPlugin.insertInternalFPPData(cell, fpptd)
+                        # cell_id, cluster id
+                        neighbor_ids = fpp_dict['neighbor_ids']
+                        neighbor_cell = inventory.getCellByIds(neighbor_ids[0], neighbor_ids[1])
+                        fpptd.neighborAddfess = neighbor_cell
+                        fpptd.lambdaDistance = fpp_dict['lambdaDistance']
+                        fpptd.targetDistance = fpp_dict['targetDistance']
+                        fpptd.maxDistance = fpp_dict['maxDistance']
+                        fpptd.activationEnergy = fpp_dict['activationEnergy']
+                        fpptd.maxNumberOfJunctions = fpp_dict['maxNumberOfJunctions']
+                        fpptd.neighborOrder = fpp_dict['neighborOrder']
+                        focal_point_plasticity_plugin.insertInternalFPPData(cell, fpptd)
 
                     # read number of fpp links in the cell (anchors)
-                    anchorLinksNumber = pickle.load(pf)
-                    for i in range(anchorLinksNumber):
-                        fppDict = pickle.load(pf)  # loading external links
+                    anchor_links_number = pickle.load(pf)
+                    for i in range(anchor_links_number):
+                        # loading external links
+                        fpp_dict = pickle.load(pf)
                         fpptd = CompuCell.FocalPointPlasticityTrackerData()
                         # get neighbor data
-                        # neighborIds=fppDict['neighborIds'] # cellId, cluster id
-                        # neighborCell=inventory.getCellByIds(neighborIds[0],neighborIds[1])
+                        # neighbor_ids=fpp_dict['neighbor_ids'] # cell_id, cluster id
+                        # neighbor_cell=inventory.getCellByIds(neighbor_ids[0],neighbor_ids[1])
                         fpptd.neighborAddfess = 0
-                        fpptd.lambdaDistance = fppDict['lambdaDistance']
-                        fpptd.targetDistance = fppDict['targetDistance']
-                        fpptd.maxDistance = fppDict['maxDistance']
-                        fpptd.anchorId = fppDict['anchorId']
-                        fpptd.anchorPoint[0] = fppDict['anchorPoint'][0]
-                        fpptd.anchorPoint[1] = fppDict['anchorPoint'][1]
-                        fpptd.anchorPoint[2] = fppDict['anchorPoint'][2]
+                        fpptd.lambdaDistance = fpp_dict['lambdaDistance']
+                        fpptd.targetDistance = fpp_dict['targetDistance']
+                        fpptd.maxDistance = fpp_dict['maxDistance']
+                        fpptd.anchorId = fpp_dict['anchorId']
+                        fpptd.anchorPoint[0] = fpp_dict['anchorPoint'][0]
+                        fpptd.anchorPoint[1] = fpp_dict['anchorPoint'][1]
+                        fpptd.anchorPoint[2] = fpp_dict['anchorPoint'][2]
 
-                        focalPointPlasticityPlugin.insertAnchorFPPData(cell, fpptd)
+                        focal_point_plasticity_plugin.insertAnchorFPPData(cell, fpptd)
 
                 pf.close()
 
-    def loadContactLocalProduct(self):
+    def load_contact_local_product(self):
         """
         restores ContactLocalProduct plugin
         :return: None
         """
 
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        import CompuCell
-
-        # ContactLocalProductPlugin
-        contactLocalProductPlugin = None
-        if self.sim.pluginManager.isLoaded("ContactLocalProduct"):
-            import CompuCell
-            contactLocalProductPlugin = CompuCell.getContactLocalProductPlugin()
-        else:
+        sim = CompuCellSetup.persistent_globals.simulator
+        if not sim.pluginManager.isLoaded("ContactLocalProduct"):
             return
 
-        for resourceName, sd in self.__restartResourceDict.items():
+        contact_local_product_plugin = CompuCell.getContactLocalProductPlugin()
+
+        for resourceName, sd in self.__restart_resource_dict.items():
             if sd.objectName == 'ContactLocalProduct' and sd.objectType == 'Pickle':
 
-                inventory = self.sim.getPotts().getCellInventory()
-                cellList = CellList(inventory)
+                inventory = sim.getPotts().getCellInventory()
+                cell_list = CellList(inventory)
 
-                fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-                fullPath = os.path.abspath(fullPath)  # normalizing path format
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
+                # normalizing path format
+                full_path = os.path.abspath(full_path)
                 try:
-                    pf = open(fullPath, 'r')
-                except IOError as e:
+                    pf = open(full_path, 'rb')
+                except IOError:
                     return
 
-                numberOfCells = pickle.load(pf)
+                number_of_cells = pickle.load(pf)
 
-                for cell in cellList:
-                    cellId = pickle.load(pf)
-                    cadherinVector = pickle.load(pf)
-                    contactLocalProductPlugin.setCadherinConcentrationVec(cell,
-                                                                          CompuCell.contactproductdatacontainertype(
-                                                                              cadherinVector))
+                for cell in cell_list:
+                    cell_id = pickle.load(pf)
+                    cadherin_vector = pickle.load(pf)
+                    contact_local_product_plugin.setCadherinConcentrationVec(
+                        cell, CompuCell.contactproductdatacontainertype(cadherin_vector))
 
                 pf.close()
 
-    def loadCellOrientation(self):
+    def load_cell_orientation(self):
         """
         restores CellOriencation plugin
         :return: None
         """
 
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        import CompuCell
-
-        # CellOrientationPlugin
-        cellOrientationPlugin = None
-        if self.sim.pluginManager.isLoaded("CellOrientation"):
-            import CompuCell
-            cellOrientationPlugin = CompuCell.getCellOrientationPlugin()
-        else:
+        sim = CompuCellSetup.persistent_globals.simulator
+        if not sim.pluginManager.isLoaded("CellOrientation"):
             return
 
-        for resourceName, sd in self.__restartResourceDict.items():
+        cell_orientation_plugin = CompuCell.getCellOrientationPlugin()
+
+        for resource_name, sd in self.__restart_resource_dict.items():
             if sd.objectName == 'CellOrientation' and sd.objectType == 'Pickle':
 
-                inventory = self.sim.getPotts().getCellInventory()
-                cellList = CellList(inventory)
+                inventory = sim.getPotts().getCellInventory()
+                cell_list = CellList(inventory)
 
-                fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-                fullPath = os.path.abspath(fullPath)  # normalizing path format
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
+                # normalizing path format
+                full_path = os.path.abspath(full_path)
                 try:
-                    pf = open(fullPath, 'r')
-                except IOError as e:
+                    pf = open(full_path, 'rb')
+                except IOError:
                     return
 
-                numberOfCells = pickle.load(pf)
+                number_of_cells = pickle.load(pf)
 
-                for cell in cellList:
-                    cellId = pickle.load(pf)
-                    lambdaCellOrientation = pickle.load(pf)
-                    cellOrientationPlugin.setLambdaCellOrientation(cell, lambdaCellOrientation)
+                for cell in cell_list:
+                    cell_id = pickle.load(pf)
+                    lambda_cell_orientation = pickle.load(pf)
+                    cell_orientation_plugin.setLambdaCellOrientation(cell, lambda_cell_orientation)
 
                 pf.close()
 
-    def loadPolarizationVector(self):
+    def load_polarization_vector(self):
         """
         restores polarizationVector plugin
         :return: None
         """
 
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        import CompuCell
-
-        # PolarizationVectorPlugin
-        polarizationVectorPlugin = None
-        if self.sim.pluginManager.isLoaded("PolarizationVector"):
-            import CompuCell
-            polarizationVectorPlugin = CompuCell.getPolarizationVectorPlugin()
-        else:
+        sim = CompuCellSetup.persistent_globals.simulator
+        if not sim.pluginManager.isLoaded("PolarizationVector"):
             return
 
-        for resourceName, sd in self.__restartResourceDict.items():
+        polarization_vector_plugin = CompuCell.getPolarizationVectorPlugin()
+
+        for resource_name, sd in self.__restart_resource_dict.items():
             if sd.objectName == 'PolarizationVector' and sd.objectType == 'Pickle':
 
-                inventory = self.sim.getPotts().getCellInventory()
-                cellList = CellList(inventory)
+                inventory = sim.getPotts().getCellInventory()
+                cell_list = CellList(inventory)
 
-                fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-                fullPath = os.path.abspath(fullPath)  # normalizing path format
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
+                # normalizing path format
+                full_path = os.path.abspath(full_path)
                 try:
-                    pf = open(fullPath, 'r')
-                except IOError as e:
+                    pf = open(full_path, 'rb')
+                except IOError:
                     return
 
-                numberOfCells = pickle.load(pf)
+                number_of_cells = pickle.load(pf)
 
-                for cell in cellList:
-                    cellId = pickle.load(pf)
-                    polarizationVec = pickle.load(pf)
-                    polarizationVectorPlugin.setPolarizationVector(cell, polarizationVec[0], polarizationVec[1],
-                                                                   polarizationVec[2])
+                for cell in cell_list:
+                    cell_id = pickle.load(pf)
+                    polarization_vec = pickle.load(pf)
+                    polarization_vector_plugin.setPolarizationVector(cell, polarization_vec[0], polarization_vec[1],
+                                                                   polarization_vec[2])
 
                 pf.close()
 
-    def loadPolarization23(self):
+    def load_polarization23(self):
         """
         restores polarization23 plugin
         :return: None
         """
-
-        import SerializerDEPy
-        import CompuCellSetup
-        import pickle
-        from .PySteppables import CellList
-        import CompuCell
-
-        # polarization23Plugin
-        polarization23Plugin = None
-        if self.sim.pluginManager.isLoaded("Polarization23"):
-            import CompuCell
-            polarization23Plugin = CompuCell.getPolarization23Plugin()
-        else:
+        sim = CompuCellSetup.persistent_globals.simulator
+        if not sim.pluginManager.isLoaded("Polarization23"):
             return
 
-        for resourceName, sd in self.__restartResourceDict.items():
+        polarization23_plugin = CompuCell.getPolarization23Plugin()
+
+        for resource_name, sd in self.__restart_resource_dict.items():
             if sd.objectName == 'Polarization23' and sd.objectType == 'Pickle':
 
-                inventory = self.sim.getPotts().getCellInventory()
-                cellList = CellList(inventory)
+                inventory = sim.getPotts().getCellInventory()
+                cell_list = CellList(inventory)
 
-                fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-                fullPath = os.path.abspath(fullPath)  # normalizing path format
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
+                full_path = os.path.abspath(full_path)  # normalizing path format
                 try:
-                    pf = open(fullPath, 'r')
-                except IOError as e:
+                    pf = open(full_path, 'rb')
+                except IOError:
                     return
 
-                numberOfCells = pickle.load(pf)
+                number_of_cells = pickle.load(pf)
 
-                for cell in cellList:
-                    cellId = pickle.load(pf)
+                for cell in cell_list:
+                    cell_id = pickle.load(pf)
 
-                    polVec = pickle.load(pf)  # [fX,fY,fZ]
-                    polMarkers = pickle.load(pf)
-                    lambdaPol = pickle.load(pf)
+                    # [fX,fY,fZ]
+                    pol_vec = pickle.load(pf)
+                    pol_markers = pickle.load(pf)
+                    lambda_pol = pickle.load(pf)
 
-                    polarization23Plugin.setPolarizationVector(cell, CompuCell.Vector3(polVec[0], polVec[2], polVec[2]))
-                    polarization23Plugin.setPolarizationMarkers(cell, polMarkers[0], polMarkers[1])
-                    polarization23Plugin.setLambdaPolarization(cell, lambdaPol)
+                    polarization23_plugin.setPolarizationVector(cell, CompuCell.Vector3(pol_vec[0], pol_vec[2], pol_vec[2]))
+                    polarization23_plugin.setPolarizationMarkers(cell, pol_markers[0], pol_markers[1])
+                    polarization23_plugin.setLambdaPolarization(cell, lambda_pol)
 
                 pf.close()
 
-    def outputSteeringPanel(self, _restartOutputPath, _rstXMLElem):
+    def output_steering_panel(self, restart_output_path, rst_xml_elem):
         """
         Outputs steering panel for python parameters
         :param restartOutputPath:{str} path to restart dir
-        :param _rstXMLElem: {xml elem obj}
+        :param rst_xml_elem: {xml elem obj}
         :return: None
         """
-        import SerializerDEPy
 
         sd = SerializerDEPy.SerializeData()
         sd.moduleName = 'SteeringPanel'
         sd.moduleType = 'SteeringPanel'
         sd.objectName = 'SteeringPanel'
         sd.objectType = 'JSON'
-        sd.fileName = os.path.join(_restartOutputPath, 'SteeringPanel' + '.json')
+        sd.fileName = os.path.join(restart_output_path, 'SteeringPanel' + '.json')
 
-        import CompuCellSetup
         CompuCellSetup.serialize_steering_panel(sd.fileName)
 
-        self.append_xml_stub(_rstXMLElem, sd)
+        self.append_xml_stub(rst_xml_elem, sd)
 
-    def loadSteeringPanel(self):
+    def load_steering_panel(self):
         """
         Deserializes steering panel
         :return:None
         """
-        for resourceName, sd in self.__restartResourceDict.items():
+        for resource_name, sd in self.__restart_resource_dict.items():
             if sd.objectName == 'SteeringPanel' and sd.objectType.lower() == 'json':
-                fullPath = os.path.join(self.__restartDirectory, sd.fileName)
-                fullPath = os.path.abspath(fullPath)  # normalizing path format
+                full_path = os.path.join(self.__restartDirectory, sd.fileName)
+                full_path = os.path.abspath(full_path)  # normalizing path format
 
-                import CompuCellSetup
-                CompuCellSetup.deserialize_steering_panel(fname=fullPath)
+                CompuCellSetup.deserialize_steering_panel(fname=full_path)
 
-    def output_restart_files(self, _step=0, _onDemand=False):
+    def output_restart_files(self, step=0, on_demand=False):
         """
         main function that serializes simulation
-        :param _step: {int} current MCS
-        :param _onDemand: {False} flag representing whether serialization is ad-hoc or regularly scheduled one
+        :param step: {int} current MCS
+        :param on_demand: {False} flag representing whether serialization is ad-hoc or regularly scheduled one
         :return: None
         """
 
-        if not _onDemand and self.__outputFrequency <= 0:
+        if not on_demand and self.__outputFrequency <= 0:
             return
 
-        if not _onDemand and _step == 0:
+        if not on_demand and step == 0:
             return
 
-        if not _onDemand and _step % self.__outputFrequency:
+        if not on_demand and step % self.__outputFrequency:
             return
 
         # have to initialize serialized each time in case lattice gets resized in which case cellField Ptr
@@ -1406,18 +1270,16 @@ class RestartManager:
         self.serializer.init(pg.simulator)
 
         rst_xml_elem = ElementCC3D("RestartFiles",
-                                 {"Version": Version.getVersionAsString(), 'Build': Version.getSVNRevisionAsString()})
-        rst_xml_elem.ElementCC3D("Step", {}, _step)
+                                   {"Version": Version.getVersionAsString(), 'Build': Version.getSVNRevisionAsString()})
+        rst_xml_elem.ElementCC3D("Step", {}, step)
         print('outputRestartFiles')
 
-        # cc3dSimOutputDir = CompuCellSetup.screenshotDirectoryName
-        cc3dSimOutputDir = pg.output_directory
+        # cc3d_sim_output_dir = CompuCellSetup.screenshotDirectoryName
+        cc3d_sim_output_dir = pg.output_directory
 
-        print("cc3dSimOutputDir=", cc3dSimOutputDir)
-        # print("CompuCellSetup.simulationPaths.simulationXMLFileName=", CompuCellSetup.simulationPaths.simulationXMLFileName)
-        # print('CompuCellSetup.simulationFileName=', CompuCellSetup.simulationFileName)
+        print("cc3d_sim_output_dir=", cc3d_sim_output_dir)
 
-        restart_output_path = self.setup_restart_output_directory(_step)
+        restart_output_path = self.setup_restart_output_directory(step)
 
         # no output if restart_output_path is not specified
         if restart_output_path == '':
@@ -1426,61 +1288,61 @@ class RestartManager:
         # ---------------------- OUTPUTTING RESTART FILES    --------------------
         # outputting cell field    
         self.output_cell_field(restart_output_path, rst_xml_elem)
-        
+
         # outputting concentration fields (scalar fields) from PDE solvers    
         self.output_concentration_fields(restart_output_path, rst_xml_elem)
-        
+
         # outputting extra scalar fields   - used in Python only
         self.output_scalar_fields(restart_output_path, rst_xml_elem)
-        
+
         # outputting extra scalar fields cell level  - used in Python only
         self.output_scalar_fields_cell_level(restart_output_path, rst_xml_elem)
-        
+
         # outputting extra vector fields  - used in Python only
         self.output_vector_fields(restart_output_path, rst_xml_elem)
-        
+
         # outputting extra vector fields cell level  - used in Python only
         self.output_vector_fields_cell_level(restart_output_path, rst_xml_elem)
-        
+
         # outputting core cell  attributes
         self.output_core_cell_attributes(restart_output_path, rst_xml_elem)
-        
+
         # outputting cell Python attributes
         self.output_python_attributes(restart_output_path, rst_xml_elem)
 
         # outputting FreeFloating SBMLSolvers -
         # notice that SBML solvers assoaciated with a cell are pickled in the outputPythonAttributes function
         self.output_free_floating_sbml_solvers(restart_output_path, rst_xml_elem)
-        
+
         # outputting plugins
-        
+
         # outputting AdhesionFlexPlugin
         self.output_adhesion_flex_plugin(restart_output_path, rst_xml_elem)
-        
+
         # outputting ChemotaxisPlugin
         self.output_chemotaxis_plugin(restart_output_path, rst_xml_elem)
-        
+
         # outputting LengthConstraintPlugin
         self.output_length_constraint_plugin(restart_output_path, rst_xml_elem)
-        
+
         # outputting ConnectivityGlobalPlugin
         self.output_connectivity_global_plugin(restart_output_path, rst_xml_elem)
-        
+
         # outputting ConnectivityLocalFlexPlugin
         self.output_connectivity_local_flex_plugin(restart_output_path, rst_xml_elem)
-        
+
         # outputting FocalPointPlacticityPlugin
         self.output_focal_point_placticity_plugin(restart_output_path, rst_xml_elem)
-        
+
         # outputting ContactLocalProductPlugin
         self.output_contact_local_product_plugin(restart_output_path, rst_xml_elem)
-        
+
         # outputting CellOrientationPlugin
         self.output_cell_orientation_plugin(restart_output_path, rst_xml_elem)
-        
+
         # outputting PolarizationVectorPlugin
         self.output_polarization_vector_plugin(restart_output_path, rst_xml_elem)
-        
+
         # outputting Polarization23Plugin
         self.output_polarization23_plugin(restart_output_path, rst_xml_elem)
         #
@@ -1489,8 +1351,8 @@ class RestartManager:
         #
         # # ---------------------- END OF  OUTPUTTING RESTART FILES    --------------------
         #
-        # # -------------writing xml description of the restart files
-        # rst_xml_elem.CC3DXMLElement.saveXML(os.path.join(restart_output_path, 'restart.xml'))
+        # -------------writing xml description of the restart files
+        rst_xml_elem.CC3DXMLElement.saveXML(os.path.join(restart_output_path, 'restart.xml'))
 
         # --------------- depending on removePreviousFiles we will remove or keep previous restart files
 
@@ -1641,7 +1503,7 @@ class RestartManager:
             self.serializer.serializeVectorFieldCellLevel(sd)
             self.append_xml_stub(rst_xml_elem, sd)
 
-    def cellCoreAttributes(self, _cell):
+    def cell_core_attributes(self, _cell):
         """
         produces a dictionary containing core CellG attributes
         :param _cell:{instance of CellG object} cc3d cell
@@ -1667,22 +1529,22 @@ class RestartManager:
 
         return coreAttribDict
 
-    def setCellCoreAttributes(self, _cell, _coreAttribDict):
+    def set_cell_core_attributes(self, cell, core_attrib_dict):
         """
         initializes cell attributes
-        :param _cell: {instance of CellG object} cc3d cell
-        :param _coreAttribDict: {dict} dictionry of attributes
+        :param cell: {instance of CellG object} cc3d cell
+        :param core_attrib_dict: {dict} dictionry of attributes
         :return:
         """
 
-        for attribName, attribValue in _coreAttribDict.items():
+        for attribName, attribValue in core_attrib_dict.items():
 
             try:
-                setattr(_cell, attribName, attribValue)
+                setattr(cell, attribName, attribValue)
 
-            except LookupError as e:
+            except LookupError:
                 continue
-            except AttributeError as ea:
+            except AttributeError:
                 continue
 
     def output_core_cell_attributes(self, restart_output_path, rst_xml_elem):
@@ -1694,8 +1556,8 @@ class RestartManager:
         """
         sim = CompuCellSetup.persistent_globals.simulator
         inventory = sim.getPotts().getCellInventory()
-        cellList = CellList(inventory)
-        numberOfCells = len(cellList)
+        cell_list = CellList(inventory)
+        number_of_cells = len(cell_list)
 
         sd = SerializerDEPy.SerializeData()
         sd.moduleName = 'Potts3D'
@@ -1705,13 +1567,13 @@ class RestartManager:
         sd.fileName = os.path.join(restart_output_path, 'CoreCellAttributes' + '.dat')
         try:
             pf = open(sd.fileName, 'wb')
-        except IOError as e:
+        except IOError:
             return
 
-        pickle.dump(numberOfCells, pf)
-        for cell in cellList:
+        pickle.dump(number_of_cells, pf)
+        for cell in cell_list:
             pickle.dump(cell.id, pf)
-            pickle.dump(self.cellCoreAttributes(cell), pf)
+            pickle.dump(self.cell_core_attributes(cell), pf)
 
         pf.close()
         self.append_xml_stub(rst_xml_elem, sd)
@@ -2342,4 +2204,3 @@ class RestartManager:
 
         pf.close()
         self.append_xml_stub(rst_xml_elem, sd)
-

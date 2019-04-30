@@ -133,6 +133,8 @@ bool SerializerDE::loadCellField(SerializeData &_sd){
 	fieldDataReader->SetFileName(_sd.fileName.c_str());
 
 	bool binaryFlag=(_sd.fileFormat=="binary");	
+    cerr << "_sd.fileName.c_str()=" << _sd.fileName.c_str() << endl;
+    cerr << "_sd.fileFormat=" << _sd.fileFormat << endl;
 
 	//if (binaryFlag)
 	//    fieldDataReader->SetFileTypeToBinary();
@@ -140,10 +142,22 @@ bool SerializerDE::loadCellField(SerializeData &_sd){
 	//    fieldDataReader->SetFileTypeToASCII();
 	fieldDataReader->Update();
 	vtkStructuredPoints *fieldData=fieldDataReader->GetOutput();
+    cerr << "fieldData->GetDataDimension()="<<fieldData->GetDataDimension() << endl;
+    
 
 	vtkCharArray *typeArray =(vtkCharArray *) fieldData->GetPointData()->GetArray("CellType");
 	vtkLongArray *idArray = (vtkLongArray *) fieldData->GetPointData()->GetArray("CellId");
 	vtkLongArray *clusterIdArray = (vtkLongArray *) fieldData->GetPointData()->GetArray("ClusterId");
+
+    cerr << "typeArray=" << typeArray << endl;
+    cerr << "typeArray->GetDataSize()=" << typeArray->GetDataSize() << endl;
+    cerr << "typeArray->GetDataSize()=" << typeArray->GetArrayType() << endl;
+
+    cerr << "sim=" << this->sim << endl;;
+    cerr << "potts=" << this->potts << endl;
+    cerr << " fieldDim=" << fieldDim << endl;
+    cerr << "typeArray->GetValue(offset)=" << typeArray->GetValue(10) << endl;
+    cerr << "typeArray->GetValue(offset)=" << typeArray->GetValue(11) << endl;
 	
 	Point3D pt;
 	
@@ -160,7 +174,7 @@ bool SerializerDE::loadCellField(SerializeData &_sd){
 	for(pt.z =0 ; pt.z<fieldDim.z ; ++pt.z)	
 		for(pt.y =0 ; pt.y<fieldDim.y ; ++pt.y)
 			for(pt.x =0 ; pt.x<fieldDim.x ; ++pt.x){
-				type=typeArray->GetValue(offset);
+				type=typeArray->GetValue(offset);                
 				if (!type){
 					++offset;
 					continue;
@@ -168,6 +182,10 @@ bool SerializerDE::loadCellField(SerializeData &_sd){
 
 				cellId=idArray->GetValue(offset);				
 				clusterId=clusterIdArray->GetValue(offset);
+                cerr << "type" << (int)type << endl;
+                cerr << "cellId=" << cellId << endl;
+                cerr << "clusterId=" << clusterId << endl;
+
 
 				if ( existingCellsMap.find(cellId) != existingCellsMap.end() ){
 					//reuse new cell
