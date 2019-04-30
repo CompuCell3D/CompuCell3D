@@ -395,9 +395,10 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
     restart_manager = RestartManager.RestartManager(sim)
 
     restart_enabled = restart_manager.restart_enabled()
+    restart_enabled = False
     sim.setRestartEnabled(restart_enabled)
 
-    restart_enabled = False
+
     if restart_enabled:
         print('WILL RESTART SIMULATION')
         restart_manager.loadRestartFiles()
