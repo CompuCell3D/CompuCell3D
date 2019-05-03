@@ -23,6 +23,8 @@
 #include <CompuCell3D/CC3D.h>
 
 #include <CompuCell3D/steppables/PDESolvers/DiffusableVector.h>
+#include <iostream>
+#include <fstream>
 
 
 using namespace CompuCell3D;
@@ -160,6 +162,13 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 				{
 					cd.saturationCoef=chemotactByTypeXMlList[j]->getAttributeAsDouble("SaturationLinearCoef");
 				}
+				else if (cd.formulaName == "SaturationLinearChemotaxisFormula" || 
+					cd.formulaName == "SaturationChemotaxisFormula" ||
+					cd.formulaName == "SaturationDifferenceChemotaxisFormula")
+				{
+					std::cout << "You've asked for a saturation formula but did not provide a saturation coeficient" << std::endl ;
+					exit(0);
+				}
 				
 				if (chemotactByTypeXMlList[j]->findAttribute("DisallowChemotaxisBetweenCompartments")) 
 				{
@@ -178,7 +187,7 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 					cd.powerLevel = chemotactByTypeXMlList[j]->getAttributeAsDouble("PowerCoef");
 					if( cd.powerLevel == 1.0 )
 					{
-						cd.formulaName = false;//powerChemotaxisFormula
+						cd.formulaName="none";
 					}
 				}
 				
@@ -191,7 +200,7 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 				if(chemotactByTypeXMlList[j]->findAttribute("SaturationCoef")){
 					cd.saturationCoef=chemotactByTypeXMlList[j]->getAttributeAsDouble("SaturationCoef");
-					cd.formulaName="SaturationChemotaxisFormula";
+					cd.formulaName="SaturationChemotaxisFormula";//
 				}
 
 				if (chemotactByTypeXMlList[j]->findAttribute("DisallowChemotaxisBetweenCompartments")) {
@@ -367,11 +376,28 @@ void ChemotaxisPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 
 float ChemotaxisPlugin::simpleChemotaxisFormula(float _flipNeighborConc,float _conc,ChemotaxisData & _chemotaxisData){
+	
+	std::ofstream test_out_file;
+	test_out_file.open("simpleChemotaxisOut.dat", std::ios_base::app);
+	test_out_file << _flipNeighborConc << "," << _conc << "," << (_flipNeighborConc - _conc)*_chemotaxisData.lambda << "\n";
+	test_out_file.close();
+
+	
 	return (_flipNeighborConc-_conc)*_chemotaxisData.lambda;
 }
 
 float ChemotaxisPlugin::saturationChemotaxisFormula(float _flipNeighborConc,float _conc,ChemotaxisData & _chemotaxisData){
 
+	
+	std::ofstream test_out_file;
+	test_out_file.open("saturationChemotaxisOut.dat", std::ios_base::app);
+	test_out_file << _flipNeighborConc << "," << _conc << "," << _chemotaxisData.saturationCoef << ","
+		<< _chemotaxisData.lambda*(_flipNeighborConc / (_chemotaxisData.saturationCoef + _flipNeighborConc)
+			- _conc / (_chemotaxisData.saturationCoef + _conc)) << "\n";
+	test_out_file.close();
+	
+	
+	
 	return   _chemotaxisData.lambda*(
 		_flipNeighborConc/(_chemotaxisData.saturationCoef+_flipNeighborConc)
 		-_conc/(_chemotaxisData.saturationCoef+_conc)
@@ -380,6 +406,19 @@ float ChemotaxisPlugin::saturationChemotaxisFormula(float _flipNeighborConc,floa
 }
 
 float ChemotaxisPlugin::saturationLinearChemotaxisFormula(float _flipNeighborConc,float _conc,ChemotaxisData & _chemotaxisData){
+	
+	std::ofstream test_out_file;
+	test_out_file.open("saturationLinearChemotaxisOut.dat", std::ios_base::app);
+	test_out_file << _flipNeighborConc << "," << _conc << "," << _chemotaxisData.saturationCoef << "," 
+		<< _chemotaxisData.lambda*(_flipNeighborConc / (_chemotaxisData.saturationCoef*_flipNeighborConc + 1)
+			- _conc / (_chemotaxisData.saturationCoef*_conc + 1)
+			) << "\n";
+	test_out_file.close();
+	
+	
+	
+	
+	
 	return   _chemotaxisData.lambda*(
 		_flipNeighborConc/(_chemotaxisData.saturationCoef*_flipNeighborConc+1)
 		-_conc/(_chemotaxisData.saturationCoef*_conc+1)
@@ -390,20 +429,48 @@ float ChemotaxisPlugin::saturationLinearChemotaxisFormula(float _flipNeighborCon
 //jfg, more formulas
 float ChemotaxisPlugin::saturationDifferenceChemotaxisFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData)
 {
-	return _chemotaxisData.lambda*(
-		( _flipNeighborConc - _conc )/( _chemotaxisData.saturationCoef + _flipNeighborConc + _conc )
-		);
-	)
+	
+	std::ofstream test_out_file;
+	test_out_file.open("saturationDifferenceChemotaxisOut.dat", std::ios_base::app);
+	test_out_file << _flipNeighborConc << "," << _conc << "," << _chemotaxisData.saturationCoef << "," 
+		<< _chemotaxisData.lambda*(_flipNeighborConc - _conc) / (_chemotaxisData.saturationCoef + _flipNeighborConc - _conc) << "\n";
+	test_out_file.close();
+	
+	
+	return _chemotaxisData.lambda*( _flipNeighborConc - _conc )/( _chemotaxisData.saturationCoef + _flipNeighborConc - _conc );
+	
 	
 }
 
 float ChemotaxisPlugin::powerChemotaxisFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData)
 {
-	float diff = _flipNeighborConc-_conc
-	if (_chemotaxisData.powerLevel < 0 && diff == 0)
+	float diff = _flipNeighborConc - _conc;
+
+	std::ofstream test_out_file;
+	test_out_file.open("powerDifferenceChemotaxisOut.dat", std::ios_base::app);
+	
+	
+
+
+
+	if (_chemotaxisData.powerLevel < 0 && diff == 0)//don't wan't NANs or infs going around
 	{
+		
+		test_out_file << _flipNeighborConc << "," << _conc << "," << _chemotaxisData.powerLevel << ","
+			<< 9E99 * _chemotaxisData.lambda << "\n";
+		
+		test_out_file.close();
 		return 9E99 * _chemotaxisData.lambda;
 	}
+	
+
+	test_out_file << _flipNeighborConc << "," << _conc << "," << _chemotaxisData.powerLevel << ","
+		<< _chemotaxisData.lambda*pow(
+			diff, _chemotaxisData.powerLevel
+		) << "\n";
+
+
+	test_out_file.close();
 	return _chemotaxisData.lambda*pow(
 		diff, _chemotaxisData.powerLevel
 	);
@@ -411,6 +478,13 @@ float ChemotaxisPlugin::powerChemotaxisFormula(float _flipNeighborConc, float _c
 
 float ChemotaxisPlugin::log10DivisionFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData)
 {
+	
+	std::ofstream test_out_file;
+	test_out_file.open("log10ChemotaxisOut.dat", std::ios_base::app);
+	test_out_file << _flipNeighborConc << "," << _conc << "," << _chemotaxisData.lambda * log10((1 + _flipNeighborConc) / (1 + _conc)) << "\n";
+	test_out_file.close();
+	
+	
 	return _chemotaxisData.lambda * log10(
 		( 1 + _flipNeighborConc )/( 1 + _conc )
 	) ;
@@ -418,6 +492,11 @@ float ChemotaxisPlugin::log10DivisionFormula(float _flipNeighborConc, float _con
 
 float ChemotaxisPlugin::logNatDivisionFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData)
 {
+	std::ofstream test_out_file;
+	test_out_file.open("lnChemotaxisOut.dat", std::ios_base::app);
+	test_out_file << _flipNeighborConc << "," << _conc << "," << _chemotaxisData.lambda * log((1 + _flipNeighborConc) / (1 + _conc)) << "\n";
+	test_out_file.close();
+	
 	return _chemotaxisData.lambda * log(
 		( 1 + _flipNeighborConc )/( 1 + _conc )
 	) ;
@@ -425,25 +504,45 @@ float ChemotaxisPlugin::logNatDivisionFormula(float _flipNeighborConc, float _co
 
 float ChemotaxisPlugin::log10DifferenceFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData)
 {
-	float diff = _flipNeighborConc - _conc
+	float diff = _flipNeighborConc - _conc;
+
+	std::ofstream test_out_file;
+	test_out_file.open("log10DiffChemotaxisOut.dat", std::ios_base::app);
+	test_out_file << _flipNeighborConc << "," << _conc << ",";
+
 	
-	if ( diff <= 0 )
+	if ( diff <= 0 )//don't wan't NANs or infs going around
 	{
+		test_out_file << -9E99 * _chemotaxisData.lambda << "\n";
+		test_out_file.close();
 		return -9E99 * _chemotaxisData.lambda;
 	}
 	
+	test_out_file << _chemotaxisData.lambda * log10(diff) << "\n";
+	test_out_file.close();
+
 	return _chemotaxisData.lambda * log10( diff );
 }
 
 float ChemotaxisPlugin::logNatDifferenceFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData)
 {
-	float diff = _flipNeighborConc - _conc
+	float diff = _flipNeighborConc - _conc;
+
+	std::ofstream test_out_file;
+	test_out_file.open("lnDiffChemotaxisOut.dat", std::ios_base::app);
+	test_out_file << _flipNeighborConc << "," << _conc << ",";
+
 	
-	if ( diff <= 0 )
+	if ( diff <= 0 )//don't wan't NANs or infs going around
 	{
 		return -9E99 * _chemotaxisData.lambda;
+		test_out_file << -9E99 * _chemotaxisData.lambda << "\n";
+		test_out_file.close();
 	}
 	
+	test_out_file << _chemotaxisData.lambda * log(diff) << "\n";
+	test_out_file.close();
+
 	return _chemotaxisData.lambda * log( diff );
 }
 //jfg, end
