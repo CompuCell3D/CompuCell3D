@@ -3,6 +3,10 @@ from cc3d import CompuCellSetup
 import numpy as np
 from scipy import special, optimize
 
+from scipy import integrate
+from numpy import exp
+
+
 class InventoryCheckSteppable(SteppableBasePy):
     def __init__(self, frequency=1):
         SteppableBasePy.__init__(self, frequency=frequency)
@@ -29,6 +33,11 @@ class InventoryCheckSteppable(SteppableBasePy):
 
         # self.pW.addDataPoint("MCS1",mcs,-2*mcs)
         # this is non optimized code. It is for illustrative purposes only.
+
+        f= lambda x:exp(-x**2)
+        i = integrate.quad(f, 0, 1)
+
+        print("i=",i)
 
         mean_surface = 0.0
         mean_volume = 0.0

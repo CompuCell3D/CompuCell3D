@@ -72,7 +72,7 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     SET(LIBS
        CompuCellLibShared
        BasicUtilsShared
-       ${PYTHON_LIBRARIES}
+       ${Python_LIBRARY_RELEASE}
        ${VTK_LIBS}
 
        # simthreadShared

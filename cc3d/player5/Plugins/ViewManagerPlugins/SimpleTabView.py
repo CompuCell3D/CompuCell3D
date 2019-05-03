@@ -2157,7 +2157,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         currentStep = self.simulation.sim.getStep()
         if self.pauseAct.isEnabled():
             self.__pauseSim()
-        self.simulation.restartManager.outputRestartFiles(currentStep, True)
+        self.simulation.restartManager.output_restart_files(currentStep, True)
 
     def __restoreDefaultSettings(self):
         '''

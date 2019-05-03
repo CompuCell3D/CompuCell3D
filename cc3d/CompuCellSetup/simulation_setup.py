@@ -11,6 +11,7 @@ import warnings
 import time
 import weakref
 from cc3d import CompuCellSetup
+from cc3d.core import RestartManager
 
 
 # -------------------- legacy API emulation ----------------------------------------
@@ -122,7 +123,7 @@ def run():
 
     main_loop_fcn = determine_main_loop_fcn()
 
-    main_loop_fcn(simulator, simthread=simthread, steppableRegistry=steppable_registry)
+    main_loop_fcn(simulator, simthread=simthread, steppable_registry=steppable_registry)
     # mainLoop(simulator, simthread=simthread, steppableRegistry=steppable_registry)
 
 
@@ -364,10 +365,11 @@ def main_loop(sim, simthread, steppableRegistry):
         cur_step += 1
 
 
-def extra_init_simulation_objects(sim, simthread, _restartEnabled=False):
+def extra_init_simulation_objects(sim, simthread, restart_enabled=False):
     print("Simulation basepath extra init=", sim.getBasePath())
 
-    sim.extraInit()  # after all xml steppables and plugins have been loaded we call extraInit to complete initialization
+    # after all xml steppables and plugins have been loaded we call extraInit to complete initialization
+    sim.extraInit()
     # simthread.preStartInit()
     sim.start()
 
@@ -378,49 +380,69 @@ def extra_init_simulation_objects(sim, simthread, _restartEnabled=False):
     simthread.waitForPlayerTaskToFinish()
 
 
-def main_loop_player(sim, simthread, steppableRegistry):
+def main_loop_player(sim, simthread=None, steppable_registry=None):
     """
 
     :param sim:
     :param simthread:
-    :param steppableRegistry:
+    :param steppable_registry:
     :return:
     """
-    steppableRegistry = CompuCellSetup.persistent_globals.steppable_registry
+
+    steppable_registry = CompuCellSetup.persistent_globals.steppable_registry
     simthread = CompuCellSetup.persistent_globals.simthread
 
-    extra_init_simulation_objects(sim, simthread, _restartEnabled=False)
+    restart_manager = RestartManager.RestartManager(sim)
+
+    restart_enabled = restart_manager.restart_enabled()
+    restart_enabled = False
+    sim.setRestartEnabled(restart_enabled)
+
+
+    if restart_enabled:
+        print('WILL RESTART SIMULATION')
+        restart_manager.loadRestartFiles()
+    else:
+        print('WILL RUN SIMULATION FROM BEGINNING')
+
+    extra_init_simulation_objects(sim, simthread, restart_enabled=restart_enabled)
 
     # simthread.waitForInitCompletion()
     # simthread.waitForPlayerTaskToFinish()
 
-    if not steppableRegistry is None:
-        steppableRegistry.init(sim)
+    if not steppable_registry is None:
+        steppable_registry.init(sim)
 
     max_num_steps = sim.getNumSteps()
 
     # called in extraInitSimulationObjects
     # sim.start()
 
-    if not steppableRegistry is None:
-        steppableRegistry.start()
+    if not steppable_registry is None:
+        steppable_registry.start()
 
-    runFinishFlag = True
+    run_finish_flag = True
 
-    cur_step = 0
+    restart_manager.prepare_restarter()
+    beginning_step = restart_manager.getRestartStep()
+
+    cur_step = beginning_step
+
     while cur_step < max_num_steps:
         simthread.beforeStep(_mcs=cur_step)
         if simthread.getStopSimulation() or CompuCellSetup.persistent_globals.user_stop_simulation_flag:
-            runFinishFlag = False
+            run_finish_flag = False
             break
+
+        restart_manager.output_restart_files(cur_step)
 
         sim.step(cur_step)
 
         # steering using GUI. GUI steering overrides steering done in the steppables
         simthread.steerUsingGUI(sim)
 
-        if not steppableRegistry is None:
-            steppableRegistry.step(cur_step)
+        if not steppable_registry is None:
+            steppable_registry.step(cur_step)
 
         # passing Python-script-made changes in XML to C++ code
         incorporate_script_steering_changes(simulator=sim)
@@ -433,7 +455,7 @@ def main_loop_player(sim, simthread, steppableRegistry):
 
         cur_step += 1
 
-    if runFinishFlag:
+    if run_finish_flag:
         # # we emit request to finish simulation
         # simthread.emitFinishRequest()
         # # then we wait for GUI thread to unlock the finishMutex - it will only happen when all tasks in the GUI thread are completed (especially those that need simulator object to stay alive)
@@ -447,7 +469,7 @@ def main_loop_player(sim, simthread, steppableRegistry):
         # steppableRegistry.finish()
         sim.cleanAfterSimulation()
         simthread.simulationFinishedPostEvent(True)
-        steppableRegistry.clean_after_simulation()
+        steppable_registry.clean_after_simulation()
         print("CALLING FINISH")
     else:
         sim.cleanAfterSimulation()
@@ -458,7 +480,7 @@ def main_loop_player(sim, simthread, steppableRegistry):
             simthread.sendStopSimulationRequest()
             simthread.simulationFinishedPostEvent(True)
 
-        steppableRegistry.clean_after_simulation()
+        steppable_registry.clean_after_simulation()
 
 
 def main_loop_player_cml_result_replay(sim, simthread, steppableRegistry):
