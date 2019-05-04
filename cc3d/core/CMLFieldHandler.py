@@ -44,7 +44,9 @@ class CMLFieldHandler:
 
         persistent_globals = cc3d.CompuCellSetup.persistent_globals
         self.field_writer.init(persistent_globals.simulator)
+
         if field_storage is not None:
+            self.field_storage = field_storage
             self.field_writer.setFieldStorage(field_storage)
 
         self.out_file_number_of_digits = len(str(persistent_globals.simulator.getNumSteps()))

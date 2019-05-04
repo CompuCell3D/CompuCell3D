@@ -3184,7 +3184,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         __generatePIFFromRunningSimulation depending on th4e running mode
         :return:None
         '''
-        self.__pauseSim()
         if self.__viewManagerType == "CMLResultReplay":
             self.__generatePIFFromVTK()
         else:
@@ -3194,19 +3193,19 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if self.pauseAct.isEnabled():
             self.__pauseSim()
 
-        fullSimFileName = os.path.abspath(self.__sim_file_name)
-        simFilePath = os.path.dirname(fullSimFileName)
+        full_sim_file_name = os.path.abspath(self.__sim_file_name)
+        sim_file_path = os.path.dirname(full_sim_file_name)
 
         filter = "Choose PIF File Name (*.piff *.txt )"  # self._getOpenFileFilter()
-        pifFileName_selection = QFileDialog.getSaveFileName(
+        pif_file_name_selection = QFileDialog.getSaveFileName(
             self.ui,
             QApplication.translate('ViewManager', "Save PIF File As ..."),
-            simFilePath,
+            sim_file_path,
             filter
         )
 
         # todo - have to recode C++ code to take unicode as filename...
-        pifFileName = str(pifFileName_selection[0])
+        pifFileName = str(pif_file_name_selection[0])
         self.simulation.generatePIFFromRunningSimulation(pifFileName)
 
     def __generatePIFFromVTK(self):
@@ -3218,20 +3217,20 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if self.pauseAct.isEnabled():
             self.__pauseSim()
 
-        fullSimFileName = os.path.abspath(self.__sim_file_name)
-        simFilePath = os.path.dirname(fullSimFileName)
+        full_sim_file_name = os.path.abspath(self.__sim_file_name)
+        sim_file_path = os.path.dirname(full_sim_file_name)
 
         filter = "Choose PIF File Name (*.piff *.txt )"  # self._getOpenFileFilter()
-        pifFileName_selection = QFileDialog.getSaveFileName( \
+        pif_file_name_selection = QFileDialog.getSaveFileName(
             self.ui,
             QApplication.translate('ViewManager', "Save PIF File As ..."),
-            simFilePath,
+            sim_file_path,
             filter
         )
 
         # todo - have to recode C++ code to take unicode as filename...
-        pifFileName = str(pifFileName_selection[0])
-        self.simulation.generate_pif_from_vtk(self.simulation.currentFileName, pifFileName)
+        pif_file_name = str(pif_file_name_selection[0])
+        self.simulation.generate_pif_from_vtk(self.simulation.currentFileName, pif_file_name)
 
     def __configsChanged(self):
         """
