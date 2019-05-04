@@ -43,6 +43,10 @@ class PersistentGlobals:
         self.output_frequency = 0
         self.screenshot_output_frequency = 0
 
+        self.restart_snapshot_frequency = 0
+        self.restart_multiple_snapshots = 0
+        self.restart_manager = None
+
         # todo - move it elsewhere or come up with a better solution
         # two objects that handle adding addition of python attributes
         self.attribute_adder = None

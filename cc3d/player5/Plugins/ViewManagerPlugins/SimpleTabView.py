@@ -9,6 +9,7 @@ import os
 import argparse
 import sys
 import re
+import xml
 import inspect
 from collections import OrderedDict
 from PyQt5.QtCore import *
@@ -1652,6 +1653,20 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.latticeOutputFlag = self.__latticeOutputFlag
         self.simulation.latticeOutputFrequency = self.__latticeOutputFrequency
 
+        pg = CompuCellSetup.persistent_globals
+
+        if not Configuration.getSetting('RestartOutputEnable'):
+            pg.restart_snapshot_frequency = 0
+        else:
+            pg.restart_snapshot_frequency = Configuration.getSetting('RestartOutputFrequency')
+
+        pg.restart_multiple_snapshots = Configuration.getSetting('RestartAllowMultipleSnapshots')
+
+        if pg.restart_manager is not None:
+            pg.restart_manager.output_frequency = pg.restart_snapshot_frequency
+            pg.restart_manager.allow_multiple_restart_directories = pg.restart_multiple_snapshots
+
+
     def prepareSimulation(self):
         '''
         Prepares simulation - loads simulation, installs rollback importer - to unimport previously used modules
@@ -1667,28 +1682,26 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 return False
             file = QFile(self.__sim_file_name)
 
-            import xml
-
             try:
                 self.__loadSim(file)
             except AssertionError as e:
                 print("Assertion Error: ", str(e))
 
                 self.handleErrorMessage("Assertion Error", str(e))
-                import ParameterScanEnums
-
-                if _errorType == 'Assertion Error' and _traceback_message.startswith(
-                        'Parameter Scan ERRORCODE=' + str(ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE)):
-                    #                     print 'Exiting inside prepare simulation '
-                    sys.exit(ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE)
+                # import ParameterScanEnums
+                #
+                # if _errorType == 'Assertion Error' and _traceback_message.startswith(
+                #         'Parameter Scan ERRORCODE=' + str(ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE)):
+                #     #                     print 'Exiting inside prepare simulation '
+                #     sys.exit(ParameterScanEnums.SCAN_FINISHED_OR_DIRECTORY_ISSUE)
 
                 return False
             except xml.parsers.expat.ExpatError as e:
                 # todo 5 - fix this - simulationPaths does not exit
-                xmlFileName = CompuCellSetup.simulationPaths.simulationXMLFileName
-                print("Error in XML File", "File:\n " + xmlFileName + "\nhas the following problem\n" + e.message)
+                xml_file_name = CompuCellSetup.simulationPaths.simulationXMLFileName
+                print("Error in XML File", "File:\n " + xml_file_name + "\nhas the following problem\n" + e.message)
                 self.handleErrorMessage("Error in XML File",
-                                        "File:\n " + xmlFileName + "\nhas the following problem\n" + e.message)
+                                        "File:\n " + xml_file_name + "\nhas the following problem\n" + e.message)
             except IOError:
                 return False
 
@@ -1698,6 +1711,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.rollbackImporter.uninstall()
 
             self.rollbackImporter = RollbackImporter()
+
+            #
 
             return True
 

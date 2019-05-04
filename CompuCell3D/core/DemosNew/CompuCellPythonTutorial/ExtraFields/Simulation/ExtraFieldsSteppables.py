@@ -39,15 +39,17 @@ class IdFieldVisualizationSteppable(SteppableBasePy):
         self.create_scalar_field_cell_level_py("IdFieldNew")
 
     def step(self, mcs):
-        id_field = self.field.IdFieldNew
+
 
         # clear id field
         try:
+            id_field = self.field.IdFieldNew
             id_field.clear()
         except KeyError:
             # an exception might occur if you are using restart snapshots to restart simulation
             # because field has been created outside constructor
             self.create_scalar_field_cell_level_py("IdFieldNew")
+            id_field = self.field.IdFieldNew
 
         for cell in self.cellList:
             id_field[cell] = cell.id * random()

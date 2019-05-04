@@ -37,8 +37,8 @@ class RestartManager:
         self.serializeDataList = []
         self.__step_number_of_digits = 0  # field size for formatting step number output
         self.__completedRestartOutputPath = ''
-        self.__allowMultipleRestartDirectories = True
-        self.__outputFrequency = 0
+        self.allow_multiple_restart_directories = False
+        self.output_frequency = 0
         self.__baseSimulationFilesCopied = False
 
         # variables used during restarting
@@ -62,9 +62,9 @@ class RestartManager:
 
         pg = CompuCellSetup.persistent_globals
 
-        # todo - fix
-        self.__allowMultipleRestartDirectories = False
-        self.__outputFrequency = 1
+        # # todo - fix
+        # self.allow_multiple_restart_directories = False
+        # self.output_frequency = 1
 
         self.cc3d_simulation_data_handler = CC3DSimulationDataHandler()
         self.cc3d_simulation_data_handler.read_cc3_d_file_format(pg.simulation_file_name)
@@ -89,20 +89,6 @@ class RestartManager:
         pg = CompuCellSetup.persistent_globals
 
         return Path(pg.simulation_file_name).parent.joinpath('restart').exists()
-
-        # return True
-        #
-        # if re.match(".*\.cc3d$", str(CompuCellSetup.simulationFileName)):
-        #     print("EXTRACTING restartEnabled")
-        #
-        #     from . import CC3DSimulationDataHandler
-        #
-        #     cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler()
-        #     cc3dSimulationDataHandler.read_cc3_d_file_format(str(CompuCellSetup.simulationFileName))
-        #
-        #     return cc3dSimulationDataHandler.cc3dSimulationData.restartEnabled()
-        #
-        # return False
 
     def append_xml_stub(selt, _rootElem, _sd):
         """
@@ -137,16 +123,15 @@ class RestartManager:
         if not self.__step_number_of_digits:
             self.__step_number_of_digits = len(str(pg.simulator.getNumSteps()))
 
-        restart_output_root = Path(output_dir_root).joinpath('restart_' + str(_step).zfill(self.__step_number_of_digits))
+        restart_output_root = Path(output_dir_root).joinpath(
+            'restart_' + str(_step).zfill(self.__step_number_of_digits))
         restart_files_dir = restart_output_root.joinpath('restart')
 
         restart_files_dir.mkdir(parents=True, exist_ok=True)
 
         self.cc3d_simulation_data_handler.copy_simulation_data_files(restart_output_root)
 
-
         return str(restart_files_dir)
-
 
     def updatePythonScript(self, _fileName):
         """
@@ -1083,7 +1068,7 @@ class RestartManager:
                     cell_id = pickle.load(pf)
                     polarization_vec = pickle.load(pf)
                     polarization_vector_plugin.setPolarizationVector(cell, polarization_vec[0], polarization_vec[1],
-                                                                   polarization_vec[2])
+                                                                     polarization_vec[2])
 
                 pf.close()
 
@@ -1121,7 +1106,8 @@ class RestartManager:
                     pol_markers = pickle.load(pf)
                     lambda_pol = pickle.load(pf)
 
-                    polarization23_plugin.setPolarizationVector(cell, CompuCell.Vector3(pol_vec[0], pol_vec[2], pol_vec[2]))
+                    polarization23_plugin.setPolarizationVector(cell,
+                                                                CompuCell.Vector3(pol_vec[0], pol_vec[2], pol_vec[2]))
                     polarization23_plugin.setPolarizationMarkers(cell, pol_markers[0], pol_markers[1])
                     polarization23_plugin.setLambdaPolarization(cell, lambda_pol)
 
@@ -1166,13 +1152,13 @@ class RestartManager:
         :return: None
         """
 
-        if not on_demand and self.__outputFrequency <= 0:
+        if not on_demand and self.output_frequency <= 0:
             return
 
         if not on_demand and step == 0:
             return
 
-        if not on_demand and step % self.__outputFrequency:
+        if not on_demand and step % self.output_frequency:
             return
 
         # have to initialize serialized each time in case lattice gets resized in which case cellField Ptr
@@ -1269,9 +1255,9 @@ class RestartManager:
 
         # --------------- depending on removePreviousFiles we will remove or keep previous restart files
 
-        print('\n\n\n\n self.__allowMultipleRestartDirectories=', self.__allowMultipleRestartDirectories)
+        print('\n\n\n\n self.__allowMultipleRestartDirectories=', self.allow_multiple_restart_directories)
 
-        if not self.__allowMultipleRestartDirectories:
+        if not self.allow_multiple_restart_directories:
 
             print('\n\n\n\n self.__completedRestartOutputPath=', self.__completedRestartOutputPath)
 
