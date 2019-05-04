@@ -1,0 +1,10 @@
+to add entries (example below) to settings execute the following script in sqlite database editor for example in
+DB Browser for SQLLite (nice too for cross platform database browsing)
+
+insert into settings(name, type, value) VALUES("RestartOutputEnable","bool",0);
+insert into settings(name, type, value) VALUES("RestartOutputFrequency","int",100);
+insert into settings(name, type, value) VALUES("RestartAllowMultipleSnapshots","bool",0);
+
+to delete row - example
+
+DELETE FROM settings WHERE name='RestartEnable';
