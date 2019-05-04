@@ -86,19 +86,23 @@ class RestartManager:
         reads .cc3d project file and checks if restart is enabled
         :return: {bool}
         """
-        return True
+        pg = CompuCellSetup.persistent_globals
 
-        if re.match(".*\.cc3d$", str(CompuCellSetup.simulationFileName)):
-            print("EXTRACTING restartEnabled")
+        return Path(pg.simulation_file_name).parent.joinpath('restart').exists()
 
-            from . import CC3DSimulationDataHandler
-
-            cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler()
-            cc3dSimulationDataHandler.read_cc3_d_file_format(str(CompuCellSetup.simulationFileName))
-
-            return cc3dSimulationDataHandler.cc3dSimulationData.restartEnabled()
-
-        return False
+        # return True
+        #
+        # if re.match(".*\.cc3d$", str(CompuCellSetup.simulationFileName)):
+        #     print("EXTRACTING restartEnabled")
+        #
+        #     from . import CC3DSimulationDataHandler
+        #
+        #     cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler()
+        #     cc3dSimulationDataHandler.read_cc3_d_file_format(str(CompuCellSetup.simulationFileName))
+        #
+        #     return cc3dSimulationDataHandler.cc3dSimulationData.restartEnabled()
+        #
+        # return False
 
     def append_xml_stub(selt, _rootElem, _sd):
         """
@@ -121,13 +125,6 @@ class RestartManager:
         """
         return str(Path(restart_output_path).parent)
 
-        # restart_output_root_path = os.path.dirname(restart_output_path)
-        #
-        # # normalizing path
-        # restart_output_root_path = os.path.abspath(restart_output_root_path)
-        #
-        # return restart_output_root_path
-
     def setup_restart_output_directory(self, _step=0):
         """
         Prpares restart directory
@@ -142,113 +139,14 @@ class RestartManager:
 
         restart_output_root = Path(output_dir_root).joinpath('restart_' + str(_step).zfill(self.__step_number_of_digits))
         restart_files_dir = restart_output_root.joinpath('restart')
-        # restart_output_root.
 
         restart_files_dir.mkdir(parents=True, exist_ok=True)
-
-        # copying  verbatim simulation files
-        # if not self.__baseSimulationFilesCopied:
-        #     self.cc3d_simulation_data_handler.copySimulationDataFiles(restart_files_dir)
-        #     self.__baseSimulationFilesCopied = True
 
         self.cc3d_simulation_data_handler.copy_simulation_data_files(restart_output_root)
 
 
         return str(restart_files_dir)
 
-        print('CompuCellSetup.screenshotDirectoryName=', CompuCellSetup.screenshotDirectoryName)
-
-        self.cc3dSimOutputDir = CompuCellSetup.screenshotDirectoryName
-
-        if not self.__step_number_of_digits:
-            self.__step_number_of_digits = len(str(self.sim.getNumSteps()))
-
-        restartOutputPath = ''
-        simFilesOutputPath = ''
-        if self.cc3dSimOutputDir == '':
-            if str(CompuCellSetup.simulationFileName) != '':
-                (self.cc3dSimOutputDir, baseScreenshotName) = CompuCellSetup.makeSimDir(
-                    str(CompuCellSetup.simulationFileName))
-                CompuCellSetup.screenshotDirectoryName = self.cc3dSimOutputDir
-
-                # fills string with 0's up to self.__stepNumberOfDigits
-                restartOutputPath = os.path.join(self.cc3dSimOutputDir, 'restart_' + string.zfill(str(_step),
-                                                                                                  self.__step_number_of_digits))
-                simFilesOutputPath = restartOutputPath
-
-                # one more level of nesting
-                restartOutputPath = os.path.join(restartOutputPath,
-                                                 'restart')
-
-                try:
-                    os.makedirs(restartOutputPath)
-                except IOError as e:
-                    restartOutputPath = ''
-
-        else:
-            self.cc3dSimOutputDir = self.cc3dSimOutputDir
-
-            # fills string with 0's up to self.__stepNumberOfDigits
-            restartOutputPath = os.path.join(self.cc3dSimOutputDir,
-                                             'restart_' + string.zfill(str(_step), self.__step_number_of_digits))
-            simFilesOutputPath = restartOutputPath
-            # one more level of nesting
-            restartOutputPath = os.path.join(restartOutputPath,
-                                             'restart')
-
-            try:
-                os.makedirs(restartOutputPath)
-            except IOError as e:
-                restartOutputPath = ''
-
-        # we only copy simulation files if simulation run in in the .cc3d format                
-        import re
-        if re.match(".*\.cc3d$", str(CompuCellSetup.simulationFileName)):
-
-            from . import CC3DSimulationDataHandler
-
-            cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler()
-            cc3dSimulationDataHandler.read_cc3_d_file_format(str(CompuCellSetup.simulationFileName))
-
-            # copying  verbatim simulation files
-            if not self.__baseSimulationFilesCopied:
-                cc3dSimulationDataHandler.copy_simulation_data_files(self.cc3dSimOutputDir)
-                self.__baseSimulationFilesCopied = True
-
-            # copying modified simulation files - with restart modification
-            if simFilesOutputPath != '':
-                cc3dSimulationDataHandler.copy_simulation_data_files(simFilesOutputPath)
-                cc3dSimulationDataHandlerLocal = CC3DSimulationDataHandler.CC3DSimulationDataHandler()
-
-                simBaseName = os.path.basename(str(CompuCellSetup.simulationFileName))
-                # path to newly copied simulation file
-                simFullName = os.path.join(simFilesOutputPath, simBaseName)
-                # read newly copied simulation file - we will add restart tags to it
-                cc3dSimulationDataHandlerLocal.read_cc3_d_file_format(simFullName)
-
-                print('\n\n\n\n cc3dSimulationDataHandlerLocal.cc3dSimulationData=',
-                      cc3dSimulationDataHandlerLocal.cc3dSimulationData)
-
-                # update simulation size in the XML  in case it has changed during the simulation 
-                if cc3dSimulationDataHandlerLocal.cc3dSimulationData.xmlScript != '':
-                    print('cc3dSimulationDataHandlerLocal.cc3dSimulationData.xmlScript=',
-                          cc3dSimulationDataHandlerLocal.cc3dSimulationData.xmlScript)
-                    self.updateXMLScript(cc3dSimulationDataHandlerLocal.cc3dSimulationData.xmlScript)
-                elif cc3dSimulationDataHandlerLocal.cc3dSimulationData.pythonScript != '':
-                    self.updatePythonScript(cc3dSimulationDataHandlerLocal.cc3dSimulationData.pythonScript)
-
-                # if serialize resource exists we only modify it by adding restart simulation element
-                if cc3dSimulationDataHandlerLocal.cc3dSimulationData.serializerResource:
-                    cc3dSimulationDataHandlerLocal.cc3dSimulationData.serializerResource.restartDirectory = 'restart'
-                    cc3dSimulationDataHandlerLocal.write_cc3d_file_format(simFullName)
-                else:  # otherwise we create new simulation resource and add restart simulation element
-                    cc3dSimulationDataHandlerLocal.cc3dSimulationData.addNewSerializerResource(_restartDir='restart')
-                    cc3dSimulationDataHandlerLocal.write_cc3d_file_format(simFullName)
-
-            # if self.cc3dSimOutputDir!='':
-            # cc3dSimulationDataHandler.copySimulationDataFiles(self.cc3dSimOutputDir)
-
-        return restartOutputPath
 
     def updatePythonScript(self, _fileName):
         """

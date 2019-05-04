@@ -370,8 +370,12 @@ def extra_init_simulation_objects(sim, simthread, restart_enabled=False):
 
     # after all xml steppables and plugins have been loaded we call extraInit to complete initialization
     sim.extraInit()
+
     # simthread.preStartInit()
-    sim.start()
+    # we skip calling start functions of steppables if restart is enabled and we are using restart
+    # directory to restart simulation from a given MCS
+    if not restart_enabled:
+        sim.start()
 
     # sends signal to player  to prepare for the upcoming simulation
     simthread.postStartInit()
@@ -395,9 +399,8 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
     restart_manager = RestartManager.RestartManager(sim)
 
     restart_enabled = restart_manager.restart_enabled()
-    restart_enabled = False
+    # restart_enabled = False
     sim.setRestartEnabled(restart_enabled)
-
 
     if restart_enabled:
         print('WILL RESTART SIMULATION')
@@ -418,7 +421,7 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
     # called in extraInitSimulationObjects
     # sim.start()
 
-    if not steppable_registry is None:
+    if not steppable_registry is None and not restart_enabled:
         steppable_registry.start()
 
     run_finish_flag = True
@@ -434,8 +437,6 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
             run_finish_flag = False
             break
 
-        restart_manager.output_restart_files(cur_step)
-
         sim.step(cur_step)
 
         # steering using GUI. GUI steering overrides steering done in the steppables
@@ -443,6 +444,8 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
 
         if not steppable_registry is None:
             steppable_registry.step(cur_step)
+
+        restart_manager.output_restart_files(cur_step)
 
         # passing Python-script-made changes in XML to C++ code
         incorporate_script_steering_changes(simulator=sim)

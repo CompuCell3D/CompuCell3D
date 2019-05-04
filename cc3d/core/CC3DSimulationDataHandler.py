@@ -540,7 +540,7 @@ class CC3DSimulationDataHandler:
 
             try:
                 resources_dict[resource.type].append(resource)
-            except LookupError as e:
+            except LookupError:
                 resources_dict[resource.type] = [resource]
 
             # sort resources according to path name

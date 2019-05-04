@@ -8,9 +8,6 @@ class ExtraFieldVisualizationSteppable(SteppableBasePy):
     def __init__(self, frequency=10):
         SteppableBasePy.__init__(self, frequency)
         self.create_scalar_field_py("ExtraField")
-
-    def start(self):
-
         self.create_scalar_field_cell_level_py("IdField")
 
     def step(self, mcs):
@@ -22,7 +19,7 @@ class ExtraFieldVisualizationSteppable(SteppableBasePy):
         self.field.ExtraField[:, :, :] = 10.0
 
         for x, y, z in self.every_pixel(4, 4, 1):
-            if (not mcs % 20):
+            if not mcs % 20:
                 self.field.ExtraField[x, y, z] = x * y
             # else:
             #     self.field.ExtraField[x, y, z] = sin(x * y)
@@ -37,13 +34,20 @@ class IdFieldVisualizationSteppable(SteppableBasePy):
         SteppableBasePy.__init__(self, frequency)
 
     def start(self):
+        # note if you create field outside constructor this field will not be properly
+        # initialized if you are using restart snapshots. It is OK as long as you are aware of this limitation
         self.create_scalar_field_cell_level_py("IdFieldNew")
 
     def step(self, mcs):
         id_field = self.field.IdFieldNew
 
         # clear id field
-        id_field.clear()
+        try:
+            id_field.clear()
+        except KeyError:
+            # an exception might occur if you are using restart snapshots to restart simulation
+            # because field has been created outside constructor
+            self.create_scalar_field_cell_level_py("IdFieldNew")
 
         for cell in self.cellList:
             id_field[cell] = cell.id * random()
