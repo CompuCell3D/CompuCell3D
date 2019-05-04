@@ -119,7 +119,7 @@ class RestartManager:
         :param restart_output_path: {str}
         :return:{str}
         """
-        return restart_output_path
+        return str(Path(restart_output_path).parent)
 
         # restart_output_root_path = os.path.dirname(restart_output_path)
         #
