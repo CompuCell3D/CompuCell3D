@@ -27,7 +27,8 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 
         self.setupUi(self)  # in ui_configurationdlg.Ui_CC3DPrefs
 
-        # for now, let's disable these guys until we want to handle them.  But can still do: compucell3d.sh --prefs=myprefs
+        # for now, let's disable these guys until we want to handle them.
+        # But can still do: compucell3d.sh --prefs=myprefs
         # self.prefsFileLineEdit.setEnabled(False)
         # self.prefsFileButton.setEnabled(False)
 
@@ -620,7 +621,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("ScaleArrowsOn", self.vectorsScaleArrowCheckBox.isChecked())
         Configuration.setSetting("FixedArrowColorOn", self.vectorsArrowColorCheckBox.isChecked())
 
-        # 3D
+        # 3D section
 
         # cellTypesInvisibleList = self.cellTypesInvisibleList.text()
 
@@ -630,6 +631,11 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         Configuration.setSetting("ShowHorizontalAxesLabels", self.showHorizontalAxesLabelsCB.isChecked())
         Configuration.setSetting("ShowVerticalAxesLabels", self.showVerticalAxesLabelsCB.isChecked())
         # Configuration.setSetting("Show3DAxes", self.show3DAxesCB.isChecked())
+
+        # restart section
+        Configuration.setSetting("RestartOutputEnable", self.restart_CB.isChecked())
+        Configuration.setSetting("RestartOutputFrequency", self.restart_freq_SB.value())
+        Configuration.setSetting("RestartAllowMultipleSnapshots", self.multiple_restart_snapshots_CB.isChecked())
 
     def updateUI(self):  #
         '''called whenever Prefs dialog is open'''
@@ -781,6 +787,15 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
 
         self.axesColorButton.setIconSize(pm_axes.size())
         self.axesColorButton.setIcon(QIcon(pm_axes))
+
+        # restart section
+        enable_restart = Configuration.getSetting("RestartOutputEnable")
+        restart_output_frequency = Configuration.getSetting("RestartOutputFrequency")
+        allow_multiple_snapshots = Configuration.getSetting("RestartAllowMultipleSnapshots")
+
+        self.restart_CB.setChecked  (enable_restart)
+        self.restart_freq_SB.setValue(restart_output_frequency)
+        self.multiple_restart_snapshots_CB.setChecked(allow_multiple_snapshots)
 
     def initParams(self):
         '''
