@@ -9,6 +9,7 @@ from cc3d.core.XMLUtils import ElementCC3D
 from cc3d.core import XMLUtils
 from cc3d.core import Version
 from cc3d import CompuCellSetup
+from .CC3DSimulationDataHandler import CC3DSimulationDataHandler
 from pathlib import Path
 import warnings
 import shutil
@@ -48,7 +49,7 @@ class RestartManager:
         self.__restart_step = 0
         self.__restart_resource_dict = {}
 
-        self.cc3dSimulationDataHandler = None
+        self.cc3d_simulation_data_handler = None
 
     def getRestartStep(self):
         return self.__restart_step
@@ -59,21 +60,26 @@ class RestartManager:
         :return: None
         """
 
+        pg = CompuCellSetup.persistent_globals
+
         # todo - fix
         self.__allowMultipleRestartDirectories = False
         self.__outputFrequency = 1
 
+        self.cc3d_simulation_data_handler = CC3DSimulationDataHandler()
+        self.cc3d_simulation_data_handler.readCC3DFileFormat(pg.simulation_file_name)
+
         return
 
-        if re.match(".*\.cc3d$", str(CompuCellSetup.simulationFileName)):
-            from . import CC3DSimulationDataHandler
-            cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler()
-            cc3dSimulationDataHandler.readCC3DFileFormat(str(CompuCellSetup.simulationFileName))
-
-            # checking is serializer resource exists
-            if cc3dSimulationDataHandler.cc3dSimulationData.serializerResource:
-                self.__allowMultipleRestartDirectories = cc3dSimulationDataHandler.cc3dSimulationData.serializerResource.allowMultipleRestartDirectories
-                self.__outputFrequency = cc3dSimulationDataHandler.cc3dSimulationData.serializerResource.outputFrequency
+        # if re.match(".*\.cc3d$", str(CompuCellSetup.simulationFileName)):
+        #     from . import CC3DSimulationDataHandler
+        #     cc3d_simulation_data_handler = CC3DSimulationDataHandler.CC3DSimulationDataHandler()
+        #     cc3d_simulation_data_handler.readCC3DFileFormat(str(CompuCellSetup.simulationFileName))
+        #
+        #     # checking is serializer resource exists
+        #     if cc3d_simulation_data_handler.cc3dSimulationData.serializerResource:
+        #         self.__allowMultipleRestartDirectories = cc3d_simulation_data_handler.cc3dSimulationData.serializerResource.allowMultipleRestartDirectories
+        #         self.__outputFrequency = cc3d_simulation_data_handler.cc3dSimulationData.serializerResource.outputFrequency
 
     def restart_enabled(self):
         """
@@ -134,12 +140,21 @@ class RestartManager:
         if not self.__step_number_of_digits:
             self.__step_number_of_digits = len(str(pg.simulator.getNumSteps()))
 
-        restart_output_dir = Path(output_dir_root).joinpath('restart_' + str(_step).zfill(self.__step_number_of_digits))
-        # restart_output_dir.
+        restart_output_root = Path(output_dir_root).joinpath('restart_' + str(_step).zfill(self.__step_number_of_digits))
+        restart_files_dir = restart_output_root.joinpath('restart')
+        # restart_output_root.
 
-        restart_output_dir.mkdir(parents=True, exist_ok=True)
+        restart_files_dir.mkdir(parents=True, exist_ok=True)
 
-        return str(restart_output_dir)
+        # copying  verbatim simulation files
+        # if not self.__baseSimulationFilesCopied:
+        #     self.cc3d_simulation_data_handler.copySimulationDataFiles(restart_files_dir)
+        #     self.__baseSimulationFilesCopied = True
+
+        self.cc3d_simulation_data_handler.copySimulationDataFiles(restart_output_root)
+
+
+        return str(restart_files_dir)
 
         print('CompuCellSetup.screenshotDirectoryName=', CompuCellSetup.screenshotDirectoryName)
 
