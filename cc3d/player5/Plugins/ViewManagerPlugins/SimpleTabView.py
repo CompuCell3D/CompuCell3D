@@ -1427,7 +1427,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         screenshot_directory = CompuCellSetup.persistent_globals.output_directory
         # if self.singleSimulation:
         if self.cc3dSimulationDataHandler and screenshot_directory is not None:
-            self.cc3dSimulationDataHandler.copySimulationDataFiles(screenshot_directory)
+            self.cc3dSimulationDataHandler.copy_simulation_data_files(screenshot_directory)
 
         self.simulation.sem.tryAcquire()
         self.simulation.sem.release()

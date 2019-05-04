@@ -67,7 +67,7 @@ class RestartManager:
         self.__outputFrequency = 1
 
         self.cc3d_simulation_data_handler = CC3DSimulationDataHandler()
-        self.cc3d_simulation_data_handler.readCC3DFileFormat(pg.simulation_file_name)
+        self.cc3d_simulation_data_handler.read_cc3_d_file_format(pg.simulation_file_name)
 
         return
 
@@ -94,7 +94,7 @@ class RestartManager:
             from . import CC3DSimulationDataHandler
 
             cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler()
-            cc3dSimulationDataHandler.readCC3DFileFormat(str(CompuCellSetup.simulationFileName))
+            cc3dSimulationDataHandler.read_cc3_d_file_format(str(CompuCellSetup.simulationFileName))
 
             return cc3dSimulationDataHandler.cc3dSimulationData.restartEnabled()
 
@@ -151,7 +151,7 @@ class RestartManager:
         #     self.cc3d_simulation_data_handler.copySimulationDataFiles(restart_files_dir)
         #     self.__baseSimulationFilesCopied = True
 
-        self.cc3d_simulation_data_handler.copySimulationDataFiles(restart_output_root)
+        self.cc3d_simulation_data_handler.copy_simulation_data_files(restart_output_root)
 
 
         return str(restart_files_dir)
@@ -208,23 +208,23 @@ class RestartManager:
             from . import CC3DSimulationDataHandler
 
             cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler()
-            cc3dSimulationDataHandler.readCC3DFileFormat(str(CompuCellSetup.simulationFileName))
+            cc3dSimulationDataHandler.read_cc3_d_file_format(str(CompuCellSetup.simulationFileName))
 
             # copying  verbatim simulation files
             if not self.__baseSimulationFilesCopied:
-                cc3dSimulationDataHandler.copySimulationDataFiles(self.cc3dSimOutputDir)
+                cc3dSimulationDataHandler.copy_simulation_data_files(self.cc3dSimOutputDir)
                 self.__baseSimulationFilesCopied = True
 
             # copying modified simulation files - with restart modification
             if simFilesOutputPath != '':
-                cc3dSimulationDataHandler.copySimulationDataFiles(simFilesOutputPath)
+                cc3dSimulationDataHandler.copy_simulation_data_files(simFilesOutputPath)
                 cc3dSimulationDataHandlerLocal = CC3DSimulationDataHandler.CC3DSimulationDataHandler()
 
                 simBaseName = os.path.basename(str(CompuCellSetup.simulationFileName))
                 # path to newly copied simulation file
                 simFullName = os.path.join(simFilesOutputPath, simBaseName)
                 # read newly copied simulation file - we will add restart tags to it
-                cc3dSimulationDataHandlerLocal.readCC3DFileFormat(simFullName)
+                cc3dSimulationDataHandlerLocal.read_cc3_d_file_format(simFullName)
 
                 print('\n\n\n\n cc3dSimulationDataHandlerLocal.cc3dSimulationData=',
                       cc3dSimulationDataHandlerLocal.cc3dSimulationData)
@@ -240,10 +240,10 @@ class RestartManager:
                 # if serialize resource exists we only modify it by adding restart simulation element
                 if cc3dSimulationDataHandlerLocal.cc3dSimulationData.serializerResource:
                     cc3dSimulationDataHandlerLocal.cc3dSimulationData.serializerResource.restartDirectory = 'restart'
-                    cc3dSimulationDataHandlerLocal.writeCC3DFileFormat(simFullName)
+                    cc3dSimulationDataHandlerLocal.write_cc3d_file_format(simFullName)
                 else:  # otherwise we create new simulation resource and add restart simulation element
                     cc3dSimulationDataHandlerLocal.cc3dSimulationData.addNewSerializerResource(_restartDir='restart')
-                    cc3dSimulationDataHandlerLocal.writeCC3DFileFormat(simFullName)
+                    cc3dSimulationDataHandlerLocal.write_cc3d_file_format(simFullName)
 
             # if self.cc3dSimOutputDir!='':
             # cc3dSimulationDataHandler.copySimulationDataFiles(self.cc3dSimOutputDir)

@@ -123,7 +123,7 @@ def create_param_scan_status(cc3d_proj_fname: Union[str, Path], output_dir: Unio
     """
 
     cc3d_simulation_data_handler = CC3DSimulationDataHandler()
-    cc3d_simulation_data_handler.readCC3DFileFormat(cc3d_proj_fname)
+    cc3d_simulation_data_handler.read_cc3_d_file_format(cc3d_proj_fname)
     cc3d_sim_data = cc3d_simulation_data_handler.cc3dSimulationData
 
     if cc3d_sim_data.parameterScanResource is None:
