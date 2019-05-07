@@ -1,4 +1,3 @@
-import os
 import sys
 import re
 from PyQt5.QtCore import *
@@ -19,26 +18,69 @@ class SimpleViewManager(QObject):
 
     def __init__(self, ui):
         QObject.__init__(self)
-        self.visual = {}
-        self.visual["CellsOn"] = Configuration.getSetting("CellsOn")
-        self.visual["CellBordersOn"] = Configuration.getSetting("CellBordersOn")
-        self.visual["ClusterBordersOn"] = Configuration.getSetting("ClusterBordersOn")
-        self.visual["CellGlyphsOn"] = Configuration.getSetting("CellGlyphsOn")
-        self.visual["FPPLinksOn"] = Configuration.getSetting("FPPLinksOn")
-        #        self.visual["FPPLinksColorOn"]  = Configuration.getSetting("FPPLinksColorOn")
-        self.visual["CC3DOutputOn"] = Configuration.getSetting("CC3DOutputOn")
+        self.visual = {
+            "CellsOn": Configuration.getSetting("CellsOn"),
+            "CellBordersOn": Configuration.getSetting("CellBordersOn"),
+            "ClusterBordersOn": Configuration.getSetting("ClusterBordersOn"),
+            "CellGlyphsOn": Configuration.getSetting("CellGlyphsOn"),
+            "FPPLinksOn": Configuration.getSetting("FPPLinksOn"),
+            "CC3DOutputOn": Configuration.getSetting("CC3DOutputOn"),
+            "ConcentrationLimitsOn": Configuration.getSetting("ConcentrationLimitsOn"),
+            "ZoomFactor": Configuration.getSetting("ZoomFactor"),
+        }
 
-        # self.visual["ContoursOn"]   = Configuration.getSetting("ContoursOn")
-        self.visual["ConcentrationLimitsOn"] = Configuration.getSetting("ConcentrationLimitsOn")
-        self.visual["ZoomFactor"] = Configuration.getSetting("ZoomFactor")
+        # file actions
+        self.open_act = None
+        self.open_lds_act = None
+        self.exit_act = None
+        self.twedit_act = None
 
-        self.file_actions = []
-        self.sim_actions = []
-        self.cross_section_actions = []
-        self.visual_actions = []
-        self.tools_actions = []
-        self.help_actions = []
-        self.window_actions = []
+        # Simulation actions
+        self.run_act = None
+        self.step_act = None
+        self.pause_act = None
+        self.stop_act = None
+        self.restore_default_settings_act = None
+
+        # visualization actions
+        self.cells_act = None
+        self.border_act = None
+        self.cluster_border_act = None
+        self.cell_glyphs_act = None
+        self.fpp_links_act = None
+        self.limits_act = None
+        self.cc3d_output_on_act = None
+        self.reset_camera_act = None
+        self.zoom_in_act = None
+        self.zoom_out_act = None
+
+        # tools Actions
+        self.config_act = None
+        self.pif_from_vtk_act = None
+        self.pif_from_simulation_act = None
+        self.restart_snapshot_from_simulation_act = None
+
+        # windows actions
+        self.python_steering_panel_act = None
+        self.new_graphics_window_act = None
+        self.tile_act = None
+        self.cascade_act = None
+        self.minimize_all_graphics_windows_act = None
+        self.restore_all_graphics_windows_act = None
+        self.close_active_window_act = None
+
+        # help actions
+        self.quick_act = None
+        self.tutor_act = None
+        self.ref_man_act = None
+        self.about_act = None
+        self.mail_subscribe_act = None
+        self.mail_unsubscribe_act = None
+        self.mail_subscribe_unsubscribe_web_act = None
+        self.check_update_act = None
+        self.whats_this_act = None
+
+        self.display_no_update_info = False
 
         self.init_actions()
         self.ui = ui
@@ -76,7 +118,7 @@ class SimpleViewManager(QObject):
 
         menu.addSeparator()
         # --------------------
-        menu.addAction(self.restoreDefaultSettingsAct)
+        menu.addAction(self.restore_default_settings_act)
 
         return menu
 
@@ -139,9 +181,9 @@ class SimpleViewManager(QObject):
         """
 
         menu = QMenu(QApplication.translate('ViewManager', '&Help'), self.ui)
-        menu.addAction(self.quickAct)
-        menu.addAction(self.tutorAct)
-        menu.addAction(self.refManAct)
+        menu.addAction(self.quick_act)
+        menu.addAction(self.tutor_act)
+        menu.addAction(self.ref_man_act)
         menu.addSeparator()
         menu.addAction(self.mail_subscribe_act)
         menu.addAction(self.mail_unsubscribe_act)
@@ -149,9 +191,9 @@ class SimpleViewManager(QObject):
         menu.addSeparator()
         menu.addAction(self.check_update_act)
         menu.addSeparator()
-        menu.addAction(self.aboutAct)
+        menu.addAction(self.about_act)
         menu.addSeparator()
-        menu.addAction(self.whatsThisAct)
+        menu.addAction(self.whats_this_act)
 
         return menu
 
@@ -217,7 +259,7 @@ class SimpleViewManager(QObject):
         wtb.setObjectName("WindowToolbar")
         wtb.setToolTip(QApplication.translate('ViewManager', 'Window'))
 
-        wtb.addAction(self.newGraphicsWindowAct)
+        wtb.addAction(self.new_graphics_window_act)
 
         return wtb
 
@@ -275,11 +317,11 @@ class SimpleViewManager(QObject):
         self.stop_act = QAction(QIcon(gip("stop.png")), "&Stop", self)
         self.stop_act.setShortcut(Qt.CTRL + Qt.Key_X)
 
-        self.restoreDefaultSettingsAct = QAction("Restore Default Settings", self)
+        self.restore_default_settings_act = QAction("Restore Default Settings", self)
 
     def init_visual_actions(self):
         """
-        Initializes Visulazation actions
+        Initializes Visualization actions
         :return:
         """
         self.cells_act = QAction("&Cells", self)
@@ -316,7 +358,6 @@ class SimpleViewManager(QObject):
         self.zoom_in_act.setShortcut(Qt.CTRL + Qt.Key_Y)
         self.zoom_out_act = QAction(QIcon(gip("zoomOut.png")), "&Zoom Out", self)
 
-
     def init_tools_actions(self):
         """
         initializes tools actions
@@ -341,34 +382,30 @@ class SimpleViewManager(QObject):
             """<b>Generate PIF file from current simulation snapshot </b>"""
         )
 
-        self.tools_actions.append(self.config_act)
-        self.tools_actions.append(self.pif_from_simulation_act)
-        self.tools_actions.append(self.pif_from_vtk_act)
-
     def init_window_actions(self):
         """
         initializes Window Actions
         :return:
         """
 
-        self.pythonSteeringPanelAct = QAction("Steering Panel", self)
-        self.pythonSteeringPanelAct.setShortcut(self.tr("Ctrl+U"))
+        self.python_steering_panel_act = QAction("Steering Panel", self)
+        self.python_steering_panel_act.setShortcut(self.tr("Ctrl+U"))
 
-        self.newGraphicsWindowAct = QAction(QIcon(gip("kcmkwm.png")), "&New Graphics Window", self)
-        self.newGraphicsWindowAct.setShortcut(self.tr("Ctrl+I"))
+        self.new_graphics_window_act = QAction(QIcon(gip("kcmkwm.png")), "&New Graphics Window", self)
+        self.new_graphics_window_act.setShortcut(self.tr("Ctrl+I"))
 
-        self.tileAct = QAction("Tile", self)
-        self.cascadeAct = QAction("Cascade", self)
+        self.tile_act = QAction("Tile", self)
+        self.cascade_act = QAction("Cascade", self)
 
-        self.minimizeAllGraphicsWindowsAct = QAction("Minimize All Graphics Windows", self)
+        self.minimize_all_graphics_windows_act = QAction("Minimize All Graphics Windows", self)
 
-        self.minimizeAllGraphicsWindowsAct.setShortcut(self.tr("Ctrl+Alt+M"))
+        self.minimize_all_graphics_windows_act.setShortcut(self.tr("Ctrl+Alt+M"))
 
-        self.restoreAllGraphicsWindowsAct = QAction("Restore All Graphics Windows", self)
-        self.restoreAllGraphicsWindowsAct.setShortcut(self.tr("Ctrl+Alt+N"))
+        self.restore_all_graphics_windows_act = QAction("Restore All Graphics Windows", self)
+        self.restore_all_graphics_windows_act.setShortcut(self.tr("Ctrl+Alt+N"))
 
-        self.closeActiveWindowAct = QAction("Close Active Window", self)
-        self.closeActiveWindowAct.setShortcut(self.tr("Ctrl+F4"))
+        self.close_active_window_act = QAction("Close Active Window", self)
+        self.close_active_window_act.setShortcut(self.tr("Ctrl+F4"))
 
     def init_help_actions(self):
         """
@@ -376,14 +413,14 @@ class SimpleViewManager(QObject):
         :return:
         """
 
-        self.quickAct = QAction("&Quick Start", self)
-        self.quickAct.triggered.connect(self.__open_manuals_webpage)
-        self.tutorAct = QAction("&Tutorials", self)
-        self.tutorAct.triggered.connect(self.__open_manuals_webpage)
-        self.refManAct = QAction(QIcon(gip("man.png")), "&Reference Manual", self)
-        self.refManAct.triggered.connect(self.__open_manuals_webpage)
-        self.aboutAct = QAction(QIcon(gip("cc3d_64x64_logo.png")), "&About CompuCell3D", self)
-        self.aboutAct.triggered.connect(self.__about)
+        self.quick_act = QAction("&Quick Start", self)
+        self.quick_act.triggered.connect(self.__open_manuals_webpage)
+        self.tutor_act = QAction("&Tutorials", self)
+        self.tutor_act.triggered.connect(self.__open_manuals_webpage)
+        self.ref_man_act = QAction(QIcon(gip("man.png")), "&Reference Manual", self)
+        self.ref_man_act.triggered.connect(self.__open_manuals_webpage)
+        self.about_act = QAction(QIcon(gip("cc3d_64x64_logo.png")), "&About CompuCell3D", self)
+        self.about_act.triggered.connect(self.__about)
         self.mail_subscribe_act = QAction(QIcon(gip("email-at-sign-icon.png")), "Subscribe to Mailing List", self)
         self.mail_subscribe_act.triggered.connect(self.__mail_subscribe)
 
@@ -399,8 +436,8 @@ class SimpleViewManager(QObject):
         self.check_update_act.triggered.connect(self.__check_update)
         self.display_no_update_info = False
 
-        self.whatsThisAct = QAction(QIcon(gip("whatsThis.png")), "&What's This?", self)
-        self.whatsThisAct.setWhatsThis(
+        self.whats_this_act = QAction(QIcon(gip("whatsThis.png")), "&What's This?", self)
+        self.whats_this_act.setWhatsThis(
             """<b>Display context sensitive help</b>"""
             """<p>In What's This? mode, the mouse cursor shows an arrow with a question"""
             """ mark, and you can click on the interface elements to get a short"""
@@ -408,7 +445,7 @@ class SimpleViewManager(QObject):
             """ feature can be accessed using the context help button in the"""
             """ titlebar.</p>"""
         )
-        self.whatsThisAct.triggered.connect(self.__whatsThis)
+        self.whats_this_act.triggered.connect(self.__whatsThis)
 
     def check_version(self, check_interval=-1, display_no_update_info=False):
         """
@@ -438,10 +475,10 @@ class SimpleViewManager(QObject):
         else:
             print('WILL DO THE CHECK')
 
-        self.version_fetcher = WebFetcher(_parent=self)
-        self.version_fetcher.gotWebContentSignal.connect(self.process_version_check)
+        version_fetcher = WebFetcher(_parent=self)
+        version_fetcher.gotWebContentSignal.connect(self.process_version_check)
 
-        self.version_fetcher.fetch("http://www.compucell3d.org/current_version")
+        version_fetcher.fetch("http://www.compucell3d.org/current_version")
 
     def process_version_check(self, version_str, url_str):
         """
@@ -514,7 +551,7 @@ class SimpleViewManager(QObject):
         last_version_check_date = Configuration.setSetting('LastVersionCheckDate', today_date_str)
 
         message = 'New version of CompuCell3D is available - %s rev. %s. Would you like to upgrade?' % (
-        current_version, current_revision)
+            current_version, current_revision)
 
         if len(whats_new_list):
             message += '<p><b>New Features:</b></p>'
@@ -574,9 +611,10 @@ class SimpleViewManager(QObject):
         l_version_string = "<br><br><small><small>Support library information:<br>Python runtime version: " \
                            "%s<br>Qt runtime version: %s<br>Qt compile-time version: " \
                            "%s<br>PyQt version: %s</small></small>" % \
-                     (str(sys.version_info[0]) + "." + str(sys.version_info[1]) + "." + str(
-                     sys.version_info[2]) + " - " + str(sys.version_info[3]) + " - " + str(sys.version_info[4]),
-                  qVersion(), QT_VERSION_STR, PYQT_VERSION_STR)
+                           (str(sys.version_info[0]) + "." + str(sys.version_info[1]) + "." + str(
+                               sys.version_info[2]) + " - " + str(sys.version_info[3]) + " - " + str(
+                               sys.version_info[4]),
+                            qVersion(), QT_VERSION_STR, PYQT_VERSION_STR)
 
         QMessageBox.about(self, "CompuCell3D", about_text + more_info_text + l_version_string)
 

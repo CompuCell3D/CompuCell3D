@@ -279,17 +279,17 @@ class SimpleTabView(MainArea, SimpleViewManager):
         menus_dict = self.__parent.getMenusDictionary()
         window_menu = menus_dict["window"]
         window_menu.clear()
-        window_menu.addAction(self.newGraphicsWindowAct)
-        window_menu.addAction(self.pythonSteeringPanelAct)
+        window_menu.addAction(self.new_graphics_window_act)
+        window_menu.addAction(self.python_steering_panel_act)
 
         if self.MDI_ON:
-            window_menu.addAction(self.tileAct)
-            window_menu.addAction(self.cascadeAct)
-            window_menu.addAction(self.minimizeAllGraphicsWindowsAct)
-            window_menu.addAction(self.restoreAllGraphicsWindowsAct)
+            window_menu.addAction(self.tile_act)
+            window_menu.addAction(self.cascade_act)
+            window_menu.addAction(self.minimize_all_graphics_windows_act)
+            window_menu.addAction(self.restore_all_graphics_windows_act)
         window_menu.addSeparator()
 
-        window_menu.addAction(self.closeActiveWindowAct)
+        window_menu.addAction(self.close_active_window_act)
         window_menu.addSeparator()
 
         # adding graphics windows
@@ -1147,7 +1147,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.pause_act.triggered.connect(self.__pauseSim)
         self.stop_act.triggered.connect(self.__simulationStop)
 
-        self.restoreDefaultSettingsAct.triggered.connect(self.__restoreDefaultSettings)
+        self.restore_default_settings_act.triggered.connect(self.restore_default_settings)
 
         self.open_act.triggered.connect(self.__openSim)
         self.open_lds_act.triggered.connect(self.__openLDSFile)
@@ -1174,16 +1174,16 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
 
         # window menu actions
-        self.pythonSteeringPanelAct.triggered.connect(self.addPythonSteeringPanel)
-        self.newGraphicsWindowAct.triggered.connect(self.add_new_graphics_window)
+        self.python_steering_panel_act.triggered.connect(self.addPythonSteeringPanel)
+        self.new_graphics_window_act.triggered.connect(self.add_new_graphics_window)
 
-        self.tileAct.triggered.connect(self.tileSubWindows)
-        self.cascadeAct.triggered.connect(self.cascadeSubWindows)
+        self.tile_act.triggered.connect(self.tileSubWindows)
+        self.cascade_act.triggered.connect(self.cascadeSubWindows)
 
-        self.minimizeAllGraphicsWindowsAct.triggered.connect(self.minimize_all_graphics_windows)
-        self.restoreAllGraphicsWindowsAct.triggered.connect(self.restore_all_graphics_windows)
+        self.minimize_all_graphics_windows_act.triggered.connect(self.minimize_all_graphics_windows)
+        self.restore_all_graphics_windows_act.triggered.connect(self.restore_all_graphics_windows)
 
-        self.closeActiveWindowAct.triggered.connect(self.close_active_sub_window_slot)
+        self.close_active_window_act.triggered.connect(self.close_active_sub_window_slot)
         # self.closeAdditionalGraphicsWindowsAct, triggered self.removeAuxiliaryGraphicsWindows)
 
         self.configsChanged.connect(self.__paramsChanged)
@@ -2178,16 +2178,17 @@ class SimpleTabView(MainArea, SimpleViewManager):
     #         self.__pauseSim()
     #     self.simulation.restartManager.output_restart_files(currentStep, True)
 
-    def __restoreDefaultSettings(self):
-        '''
+    def restore_default_settings(self):
+        """
         Replaces existing simulation's settings with the default ones
         :return: None
-        '''
-        if not self.simulationIsRunning:  # works only for running simulation
+        """
+        # works only for running simulation
+
+        if not self.simulationIsRunning:
             return
 
-        # print 'Replacing settings'
-        Configuration.replaceCustomSettingsWithDefaults()
+        Configuration.replace_custom_settings_with_defaults()
 
     def quit(self, error_code=0):
         """Quit the application."""
