@@ -498,7 +498,7 @@ class SimpleViewManager(QObject):
 
         current_version_regex = re.compile("(current version)([0-9\. ]*)")
 
-        # (.*?)(<) ensures non-greedy match i.e. all the characters will be matched until first occurence of '<'
+        # (.*?)(<) ensures non-greedy match i.e. all the characters will be matched until first occurrence of '<'
         whats_new_regex = re.compile("(>[\S]*what is new:)(.*?)(<)")
 
         for line in str(version_str).split("\n"):
