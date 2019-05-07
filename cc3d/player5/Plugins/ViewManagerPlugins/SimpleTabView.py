@@ -641,14 +641,15 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         """
 
-        self.runAct.setEnabled(True)
-        self.stepAct.setEnabled(True)
-        self.pauseAct.setEnabled(False)
-        self.stopAct.setEnabled(False)
+        self.run_act.setEnabled(True)
+        self.step_act.setEnabled(True)
+        self.pause_act.setEnabled(False)
+        self.stop_act.setEnabled(False)
         self.openAct.setEnabled(True)
         self.openLDSAct.setEnabled(True)
         self.pifFromSimulationAct.setEnabled(False)
         self.pifFromVTKAct.setEnabled(False)
+        self.restart_snapshot_from_simulation_act.setEnabled(False)
 
     def reset_control_variables(self)->None:
         """
@@ -1141,10 +1142,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
         # QShortcut(QKeySequence("Ctrl+p"), self, self.__dumpPlayerParams)  # Cmd-3 on Mac
-        self.runAct.triggered.connect(self.__runSim)
-        self.stepAct.triggered.connect(self.__stepSim)
-        self.pauseAct.triggered.connect(self.__pauseSim)
-        self.stopAct.triggered.connect(self.__simulationStop)
+        self.run_act.triggered.connect(self.__runSim)
+        self.step_act.triggered.connect(self.__stepSim)
+        self.pause_act.triggered.connect(self.__pauseSim)
+        self.stop_act.triggered.connect(self.__simulationStop)
 
         self.serializeAct.triggered.connect(self.__simulationSerialize)
         self.restoreDefaultSettingsAct.triggered.connect(self.__restoreDefaultSettings)
@@ -1153,7 +1154,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.openLDSAct.triggered.connect(self.__openLDSFile)
 
         # qApp is a member of QtGui. closeAllWindows will cause closeEvent and closeEventSimpleTabView will be called
-        self.exitAct.triggered.connect(qApp.closeAllWindows)
+        self.exit_act.triggered.connect(qApp.closeAllWindows)
 
         self.cellsAct.triggered.connect(self.__checkCells)
         self.borderAct.triggered.connect(self.__checkBorder)
@@ -1170,6 +1171,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.pifFromSimulationAct.triggered.connect(self.__generatePIFFromCurrentSnapshot)
         self.pifFromVTKAct.triggered.connect(self.__generatePIFFromVTK)
+        self.restart_snapshot_from_simulation_act.triggered.connect(self.generate_restart_snapshot)
+
 
         # window menu actions
         self.pythonSteeringPanelAct.triggered.connect(self.addPythonSteeringPanel)
@@ -1548,7 +1551,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         if self.simulationIsStepping:
             self.__pauseSim()
-            self.stepAct.setEnabled(True)
+            self.step_act.setEnabled(True)
 
         self.simulation.sem.tryAcquire()
         self.simulation.sem.release()
@@ -1598,7 +1601,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         if self.simulationIsStepping:
             self.__pauseSim()
-            self.stepAct.setEnabled(True)
+            self.step_act.setEnabled(True)
 
         self.simulation.sem.tryAcquire()
         self.simulation.sem.release()
@@ -1751,10 +1754,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             self.cmlReplayManager.keep_going()
 
-            self.runAct.setEnabled(False)
-            self.stepAct.setEnabled(True)
-            self.stopAct.setEnabled(True)
-            self.pauseAct.setEnabled(True)
+            self.run_act.setEnabled(False)
+            self.step_act.setEnabled(True)
+            self.stop_act.setEnabled(True)
+            self.pause_act.setEnabled(True)
 
             self.openAct.setEnabled(False)
             self.openLDSAct.setEnabled(False)
@@ -1767,11 +1770,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.simulationIsRunning = True
                 self.simulationIsStepping = False
 
-                self.runAct.setEnabled(False)
-                self.stepAct.setEnabled(True)
-                self.stopAct.setEnabled(True)
-                self.pauseAct.setEnabled(True)
+                self.run_act.setEnabled(False)
+                self.step_act.setEnabled(True)
+                self.stop_act.setEnabled(True)
+                self.pause_act.setEnabled(True)
                 self.pifFromSimulationAct.setEnabled(True)
+                self.restart_snapshot_from_simulation_act.setEnabled(True)
 
                 self.openAct.setEnabled(False)
                 self.openLDSAct.setEnabled(False)
@@ -1782,9 +1786,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.simulationIsStepping = False
                 self.init_simulation_control_vars()
 
-            if not self.pauseAct.isEnabled() and self.simulationIsRunning:
-                self.runAct.setEnabled(False)
-                self.pauseAct.setEnabled(True)
+            if not self.pause_act.isEnabled() and self.simulationIsRunning:
+                self.run_act.setEnabled(False)
+                self.pause_act.setEnabled(True)
                 self.simulation.semPause.release()
                 return
 
@@ -1817,9 +1821,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             self.cmlReplayManager.step()
 
-            self.stopAct.setEnabled(True)
-            self.pauseAct.setEnabled(False)
-            self.runAct.setEnabled(True)
+            self.stop_act.setEnabled(True)
+            self.pause_act.setEnabled(False)
+            self.run_act.setEnabled(True)
             self.pifFromVTKAct.setEnabled(True)
 
             self.openAct.setEnabled(False)
@@ -1835,10 +1839,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.simulation.screenshotFrequency = self.__shotFrequency
                 # self.screenshotDirectoryName = ""
 
-                self.runAct.setEnabled(True)
-                self.pauseAct.setEnabled(False)
-                self.stopAct.setEnabled(True)
+                self.run_act.setEnabled(True)
+                self.pause_act.setEnabled(False)
+                self.stop_act.setEnabled(True)
                 self.pifFromSimulationAct.setEnabled(True)
+                self.restart_snapshot_from_simulation_act.setEnabled(True)
                 self.openAct.setEnabled(False)
                 self.openLDSAct.setEnabled(False)
 
@@ -1846,25 +1851,25 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             if self.simulationIsRunning and self.simulationIsStepping:
                 #            print MODULENAME,'  __stepSim() - 1:'
-                self.pauseAct.setEnabled(False)
+                self.pause_act.setEnabled(False)
                 self.simulation.semPause.release()
-                self.stepAct.setEnabled(False)
-                self.pauseAct.setEnabled(False)
+                self.step_act.setEnabled(False)
+                self.pause_act.setEnabled(False)
 
                 return
 
             # if Pause button is enabled
-            elif self.simulationIsRunning and not self.simulationIsStepping and self.pauseAct.isEnabled():
+            elif self.simulationIsRunning and not self.simulationIsStepping and self.pause_act.isEnabled():
                 # transition from running simulation
 
                 self.simulation.screenUpdateFrequency = 1
                 self.simulation.screenshotFrequency = self.__shotFrequency
                 self.simulationIsStepping = True
-                self.stepAct.setEnabled(False)
-                self.pauseAct.setEnabled(False)
+                self.step_act.setEnabled(False)
+                self.pause_act.setEnabled(False)
 
             # if Pause button is disabled, meaning the sim is paused:
-            elif self.simulationIsRunning and not self.simulationIsStepping and not self.pauseAct.isEnabled():
+            elif self.simulationIsRunning and not self.simulationIsStepping and not self.pause_act.isEnabled():
                 # transition from paused simulation
                 self.simulation.screenUpdateFrequency = 1
                 self.simulation.screenshotFrequency = self.__shotFrequency
@@ -1899,7 +1904,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         if self.newDrawingUserRequest:
             self.newDrawingUserRequest = False
-            if self.pauseAct.isEnabled():
+            if self.pause_act.isEnabled():
                 self.__pauseSim()
 
         self.simulation.drawMutex.unlock()
@@ -1941,7 +1946,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         if self.newDrawingUserRequest:
             self.newDrawingUserRequest = False
-            if self.pauseAct.isEnabled():
+            if self.pause_act.isEnabled():
                 self.__pauseSim()
         self.simulation.drawMutex.lock()
 
@@ -2080,8 +2085,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.cmlReplayManager.set_run_state(state=PAUSE_STATE)
 
         self.simulation.semPause.acquire()
-        self.runAct.setEnabled(True)
-        self.pauseAct.setEnabled(False)
+        self.run_act.setEnabled(True)
+        self.pause_act.setEnabled(False)
 
     def __saveWindowsLayout(self):
         """
@@ -2144,10 +2149,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if self.__viewManagerType == "CMLResultReplay":
             self.cmlReplayManager.set_run_state(state=STOP_STATE)
 
-            self.runAct.setEnabled(True)
-            self.stepAct.setEnabled(True)
-            self.pauseAct.setEnabled(False)
-            self.stopAct.setEnabled(False)
+            self.run_act.setEnabled(True)
+            self.step_act.setEnabled(True)
+            self.pause_act.setEnabled(False)
+            self.stop_act.setEnabled(False)
 
             self.cmlReplayManager.initial_data_read.disconnect(self.initializeSimulationViewWidget)
             self.cmlReplayManager.subsequent_data_read.disconnect(self.handleCompletedStep)
@@ -2157,7 +2162,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         #     self.singleSimulation = True
         #     self.parameterScanFile = ''
 
-        if not self.pauseAct.isEnabled():
+        if not self.pause_act.isEnabled():
             self.__stopSim()
             self.__cleanAfterSimulation()
         else:
@@ -2170,7 +2175,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         '''
         # print self.simulation.restartManager
         currentStep = self.simulation.sim.getStep()
-        if self.pauseAct.isEnabled():
+        if self.pause_act.isEnabled():
             self.__pauseSim()
         self.simulation.restartManager.output_restart_files(currentStep, True)
 
@@ -3190,7 +3195,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.__generatePIFFromRunningSimulation()
 
     def __generatePIFFromRunningSimulation(self):
-        if self.pauseAct.isEnabled():
+        if self.pause_act.isEnabled():
             self.__pauseSim()
 
         full_sim_file_name = os.path.abspath(self.__sim_file_name)
@@ -3209,12 +3214,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.generatePIFFromRunningSimulation(pifFileName)
 
     def __generatePIFFromVTK(self):
-        '''
+        """
         Slot that generates PIFF file from current vtk replay snapshot - calls __generatePIFFromVTK
         :return:None
-        '''
+        """
 
-        if self.pauseAct.isEnabled():
+        if self.pause_act.isEnabled():
             self.__pauseSim()
 
         full_sim_file_name = os.path.abspath(self.__sim_file_name)
@@ -3231,6 +3236,40 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # todo - have to recode C++ code to take unicode as filename...
         pif_file_name = str(pif_file_name_selection[0])
         self.simulation.generate_pif_from_vtk(self.simulation.currentFileName, pif_file_name)
+
+    def generate_restart_snapshot(self)->None:
+        """
+        Generated on-demand restart snapshot
+        :return:None
+        """
+
+        pg = CompuCellSetup.persistent_globals
+        out_dir = pg.output_directory
+
+        full_sim_file_name = os.path.abspath(self.__sim_file_name)
+        if out_dir is None:
+            out_dir = os.path.dirname(full_sim_file_name)
+
+        if self.pause_act.isEnabled():
+            self.__pauseSim()
+
+        # todo - leaving it in case we decide to allow custom output directories
+        # restart_dir_selection = QFileDialog.getExistingDirectory(
+        #     self.ui,
+        #     QApplication.translate('ViewManager', "Restart Snapshot Directory ..."),
+        #     out_dir
+        # )
+        #
+        # if restart_dir_selection.strip() == '':
+        #     return
+
+        restart_manager = pg.restart_manager
+
+        if restart_manager is None:
+            return
+
+        restart_manager.output_restart_files(step=pg.simulator.getStep(), on_demand=True)
+
 
     def __configsChanged(self):
         """

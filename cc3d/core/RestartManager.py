@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-import re
 import pickle
 from cc3d.cpp import CompuCell
 from cc3d.cpp import SerializerDEPy
@@ -11,17 +10,15 @@ from cc3d.core import Version
 from cc3d import CompuCellSetup
 from .CC3DSimulationDataHandler import CC3DSimulationDataHandler
 from pathlib import Path
-import warnings
 import shutil
+import copyreg
 
 
-def _pickleVector3(_vec):
+def pickle_vector3(_vec):
     return CompuCell.Vector3, (_vec.fX, _vec.fY, _vec.fZ)
 
 
-import copyreg
-
-copyreg.pickle(CompuCell.Vector3, _pickleVector3)
+copyreg.pickle(CompuCell.Vector3, pickle_vector3)
 
 
 class RestartManager:
@@ -35,7 +32,8 @@ class RestartManager:
 
         self.cc3dSimOutputDir = ''
         self.serializeDataList = []
-        self.__step_number_of_digits = 0  # field size for formatting step number output
+        # field size for formatting step number output
+        self.__step_number_of_digits = 0
         self.__completedRestartOutputPath = ''
         self.allow_multiple_restart_directories = False
         self.output_frequency = 0
@@ -62,24 +60,8 @@ class RestartManager:
 
         pg = CompuCellSetup.persistent_globals
 
-        # # todo - fix
-        # self.allow_multiple_restart_directories = False
-        # self.output_frequency = 1
-
         self.cc3d_simulation_data_handler = CC3DSimulationDataHandler()
         self.cc3d_simulation_data_handler.read_cc3_d_file_format(pg.simulation_file_name)
-
-        return
-
-        # if re.match(".*\.cc3d$", str(CompuCellSetup.simulationFileName)):
-        #     from . import CC3DSimulationDataHandler
-        #     cc3d_simulation_data_handler = CC3DSimulationDataHandler.CC3DSimulationDataHandler()
-        #     cc3d_simulation_data_handler.readCC3DFileFormat(str(CompuCellSetup.simulationFileName))
-        #
-        #     # checking is serializer resource exists
-        #     if cc3d_simulation_data_handler.cc3dSimulationData.serializerResource:
-        #         self.__allowMultipleRestartDirectories = cc3d_simulation_data_handler.cc3dSimulationData.serializerResource.allowMultipleRestartDirectories
-        #         self.__outputFrequency = cc3d_simulation_data_handler.cc3dSimulationData.serializerResource.outputFrequency
 
     def restart_enabled(self):
         """

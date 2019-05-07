@@ -50,16 +50,16 @@ class SimpleViewManager(QObject):
         menu.addSeparator()
         recentSimulationsMenu = menu.addMenu("Recent Simulations...")
         menu.addSeparator()
-        menu.addAction(self.exitAct)
+        menu.addAction(self.exit_act)
 
         return (menu, recentSimulationsMenu)
 
     def initSimMenu(self):
         menu = QMenu(QApplication.translate('ViewManager', '&Simulation'), self.ui)
-        menu.addAction(self.runAct)
-        menu.addAction(self.stepAct)
-        menu.addAction(self.pauseAct)
-        menu.addAction(self.stopAct)
+        menu.addAction(self.run_act)
+        menu.addAction(self.step_act)
+        menu.addAction(self.pause_act)
+        menu.addAction(self.stop_act)
 
         # menu.addAction(self.addVTKWindowAct)
 
@@ -109,6 +109,10 @@ class SimpleViewManager(QObject):
 
         menu.addAction(self.pifFromVTKAct)
         self.pifFromVTKAct.setEnabled(False)
+
+        menu.addAction(self.restart_snapshot_from_simulation_act)
+        self.restart_snapshot_from_simulation_act.setEnabled(False)
+
 
         return menu
 
@@ -182,10 +186,10 @@ class SimpleViewManager(QObject):
         tb.setObjectName("SimToolbar")
         tb.setToolTip(QApplication.translate('ViewManager', 'Simulation'))
 
-        tb.addAction(self.runAct)
-        tb.addAction(self.stepAct)
-        tb.addAction(self.pauseAct)
-        tb.addAction(self.stopAct)
+        tb.addAction(self.run_act)
+        tb.addAction(self.step_act)
+        tb.addAction(self.pause_act)
+        tb.addAction(self.stop_act)
 
         return tb
 
@@ -287,7 +291,7 @@ class SimpleViewManager(QObject):
         self.openLDSAct = QAction(QIcon(gip("screenshots_open.png")), "&Open Lattice Description Summary File...", self)
 
         # self.closeAct = QAction(QIcon("player5/icons/close.png"), "&Close Simulation", self)
-        self.exitAct = QAction(QIcon(gip("exit2.png")), "&Exit", self)
+        self.exit_act = QAction(QIcon(gip("exit2.png")), "&Exit", self)
 
         self.tweditAct = QAction(QIcon(gip("twedit-icon.png")), "Start Twe&dit++", self)
 
@@ -300,7 +304,7 @@ class SimpleViewManager(QObject):
         self.fileActions.append(self.tweditAct)
 
         # self.fileActions.append(self.closeAct)
-        self.fileActions.append(self.exitAct)
+        self.fileActions.append(self.exit_act)
 
     def __initCrossSectionActions(self):
         # Do I need actions? Probably not, but will leave for a while
@@ -353,14 +357,14 @@ class SimpleViewManager(QObject):
         gip = DefaultData.getIconPath
 
         # self.runAct = QAction(QIcon("player5/icons/play.png"), "&Run", self)
-        self.runAct = QAction(QIcon(gip("play.png")), "&Run", self)
-        self.runAct.setShortcut(Qt.CTRL + Qt.Key_M)
-        self.stepAct = QAction(QIcon(gip("step.png")), "&Step", self)
-        self.stepAct.setShortcut(Qt.CTRL + Qt.Key_E)
-        self.pauseAct = QAction(QIcon(gip("pause.png")), "&Pause", self)
-        self.pauseAct.setShortcut(Qt.CTRL + Qt.Key_D)
-        self.stopAct = QAction(QIcon(gip("stop.png")), "&Stop", self)
-        self.stopAct.setShortcut(Qt.CTRL + Qt.Key_X)
+        self.run_act = QAction(QIcon(gip("play.png")), "&Run", self)
+        self.run_act.setShortcut(Qt.CTRL + Qt.Key_M)
+        self.step_act = QAction(QIcon(gip("step.png")), "&Step", self)
+        self.step_act.setShortcut(Qt.CTRL + Qt.Key_E)
+        self.pause_act = QAction(QIcon(gip("pause.png")), "&Pause", self)
+        self.pause_act.setShortcut(Qt.CTRL + Qt.Key_D)
+        self.stop_act = QAction(QIcon(gip("stop.png")), "&Stop", self)
+        self.stop_act.setShortcut(Qt.CTRL + Qt.Key_X)
         self.serializeAct = QAction("Serialize", self)
 
         self.restoreDefaultSettingsAct = QAction("Restore Default Settings", self)
@@ -369,10 +373,10 @@ class SimpleViewManager(QObject):
 
 
         # Why append?
-        self.simActions.append(self.runAct)
-        self.simActions.append(self.stepAct)
-        self.simActions.append(self.pauseAct)
-        self.simActions.append(self.stopAct)
+        self.simActions.append(self.run_act)
+        self.simActions.append(self.step_act)
+        self.simActions.append(self.pause_act)
+        self.simActions.append(self.stop_act)
         self.simActions.append(self.serializeAct)
         self.simActions.append(self.restoreDefaultSettingsAct)
 
@@ -474,6 +478,9 @@ class SimpleViewManager(QObject):
         # ))    
 
         self.pifFromSimulationAct = QAction("& Generate PIF File from current snapshot ...", self)
+        self.restart_snapshot_from_simulation_act = QAction("& Generate Restart Snapshot", self)
+
+
         self.configAct.setWhatsThis(
             """<b>Generate PIF file from current simulation snapshot </b>"""
         )
