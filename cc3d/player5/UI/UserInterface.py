@@ -245,7 +245,7 @@ class UserInterface(QMainWindow):
         mb = self.menuBar()
 
         # TODO
-        (fileMenu, recentSimulationsMenu) = self.viewmanager.initFileMenu()
+        (fileMenu, recentSimulationsMenu) = self.viewmanager.init_file_menu()
 
         self.__menus["file"] = fileMenu
         self.__menus["recentSimulations"] = recentSimulationsMenu
@@ -272,28 +272,28 @@ class UserInterface(QMainWindow):
 
         self.__showViewMenu()
 
-        self.__menus["simulation"] = self.viewmanager.initSimMenu()
+        self.__menus["simulation"] = self.viewmanager.init_sim_menu()
         mb.addMenu(self.__menus["simulation"])
-        self.__menus["visualization"] = self.viewmanager.initVisualMenu()
+        self.__menus["visualization"] = self.viewmanager.init_visual_menu()
         mb.addMenu(self.__menus["visualization"])
-        self.__menus["tools"] = self.viewmanager.initToolsMenu()
+        self.__menus["tools"] = self.viewmanager.init_tools_menu()
         mb.addMenu(self.__menus["tools"])
 
-        self.__menus["window"] = self.viewmanager.initWindowMenu()
+        self.__menus["window"] = self.viewmanager.init_window_menu()
         mb.addMenu(self.__menus["window"])
 
         self.__menus["window"].aboutToShow.connect(self.viewmanager.update_window_menu)
         # self.connect(self.__menus["window"] , SIGNAL("aboutToShow()"), self.viewmanager.updateWindowMenu )
 
-        self.__menus["help"] = self.viewmanager.initHelpMenu()
+        self.__menus["help"] = self.viewmanager.init_help_menu()
         mb.addMenu(self.__menus["help"])
 
     def __initToolbars(self):
         # TODO
         pass
-        simtb = self.viewmanager.initSimToolbar()
+        simtb = self.viewmanager.init_sim_toolbar()
         # filetb = self.viewmanager.initFileToolbar(self.toolbarManager)
-        filetb = self.viewmanager.initFileToolbar()
+        filetb = self.viewmanager.init_file_toolbar()
 
         # viewtb = QToolBar("View", self)
         # viewtb.setIconSize(QSize(20, 18))
@@ -306,8 +306,8 @@ class UserInterface(QMainWindow):
         # viewtb.addWidget(QLabel("  "))
         # viewtb.addAction(self.screenshotAct)
 
-        visualizationtb = self.viewmanager.initVisualizationToolbar()
-        windowtb = self.viewmanager.initWindowToolbar()
+        visualizationtb = self.viewmanager.init_visualization_toolbar()
+        windowtb = self.viewmanager.init_window_toolbar()
 
         # cstb = self.viewmanager.initCrossSectionToolbar() #QToolBar("Cross Section", self) #
         # threeDAct = QAction(self)

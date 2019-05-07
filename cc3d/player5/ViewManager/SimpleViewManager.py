@@ -14,10 +14,9 @@ gip = DefaultData.getIconPath
 
 MODULENAME = '------- SimpleViewManager: '
 
-# ViewManager inherits from QObject to use its methods (e.g. self.connect)
 
 class SimpleViewManager(QObject):
-    # class SimpleViewManager():
+
     def __init__(self, ui):
         QObject.__init__(self)
         self.visual = {}
@@ -32,113 +31,113 @@ class SimpleViewManager(QObject):
         # self.visual["ContoursOn"]   = Configuration.getSetting("ContoursOn")
         self.visual["ConcentrationLimitsOn"] = Configuration.getSetting("ConcentrationLimitsOn")
         self.visual["ZoomFactor"] = Configuration.getSetting("ZoomFactor")
-        self.initActions()
+
+        self.file_actions = []
+        self.sim_actions = []
+        self.cross_section_actions = []
+        self.visual_actions = []
+        self.tools_actions = []
+        self.help_actions = []
+        self.window_actions = []
+
+        self.init_actions()
         self.ui = ui
 
-    def initFileMenu(self):
+    def init_file_menu(self):
+        """
+        Initializes file menu
+        :return:
+        """
         menu = QMenu(QApplication.translate('ViewManager', '&File'), self.ui)
-        menu.addAction(self.openAct)
+        menu.addAction(self.open_act)
 
-        # turning off screenshot description action
-        # menu.addAction(self.openScreenshotDescriptionAct)
-        # menu.addAction(self.saveScreenshotDescriptionAct)
-        menu.addAction(
-            self.openLDSAct)  # LDS lattice description summary  - xml file that specifies what simulation data has been written to the disk
+        # LDS lattice description summary  - xml file that specifies what simulation data has been written to the disk
+        menu.addAction(self.open_lds_act)
         menu.addSeparator()
-        menu.addAction(self.tweditAct)
-        # menu.addAction(self.closeAct)
+        menu.addAction(self.twedit_act)
         menu.addSeparator()
-        recentSimulationsMenu = menu.addMenu("Recent Simulations...")
+        recent_simulations_menu = menu.addMenu("Recent Simulations...")
         menu.addSeparator()
         menu.addAction(self.exit_act)
 
-        return (menu, recentSimulationsMenu)
+        return menu, recent_simulations_menu
 
-    def initSimMenu(self):
+    def init_sim_menu(self):
+        """
+        Initializes simulation menu
+
+        :return:
+        """
         menu = QMenu(QApplication.translate('ViewManager', '&Simulation'), self.ui)
         menu.addAction(self.run_act)
         menu.addAction(self.step_act)
         menu.addAction(self.pause_act)
         menu.addAction(self.stop_act)
 
-        # menu.addAction(self.addVTKWindowAct)
-
         menu.addSeparator()
-        #--------------------
-        menu.addAction(self.serializeAct)
-        menu.addSeparator()
-        #--------------------
+        # --------------------
         menu.addAction(self.restoreDefaultSettingsAct)
 
         return menu
 
-    def initVisualMenu(self):
+    def init_visual_menu(self):
+        """
+        Initializes Visualization menu
+        :return:
+        """
         menu = QMenu(QApplication.translate('ViewManager', '&Visualization'), self.ui)
-        menu.addAction(self.cellsAct)
-        menu.addAction(self.borderAct)
-        menu.addAction(self.clusterBorderAct)
-        menu.addAction(self.cellGlyphsAct)
-        menu.addAction(self.FPPLinksAct)
-        #        menu.addAction(self.FPPLinksColorAct)
-        #menu.addAction(self.plotTypeAct)     
-        # menu.addAction(self.contourAct)
-        menu.addAction(self.limitsAct)
+        menu.addAction(self.cells_act)
+        menu.addAction(self.border_act)
+        menu.addAction(self.cluster_border_act)
+        menu.addAction(self.cell_glyphs_act)
+        menu.addAction(self.fpp_links_act)
+        menu.addAction(self.limits_act)
         menu.addSeparator()
-        menu.addAction(self.cc3dOutputOnAct)
+        menu.addAction(self.cc3d_output_on_act)
         menu.addSeparator()
-        menu.addAction(self.resetCameraAct)
-        menu.addAction(self.zoomInAct)
-        menu.addAction(self.zoomOutAct)
-
-
-        # menu.addAction(self.configAct)
+        menu.addAction(self.reset_camera_act)
+        menu.addAction(self.zoom_in_act)
+        menu.addAction(self.zoom_out_act)
 
         return menu
 
-    def initToolsMenu(self):
+    def init_tools_menu(self):
+        """
+        Initializes Tools menu
+        :return:
+        """
         menu = QMenu(QApplication.translate('ViewManager', '&Tools'), self.ui)
-        # Don't remove. Will be implemented later
-        #menu.addAction(self.pifGenAct)
-        #menu.addAction(self.pifVisAct)     
-        # # # menu.addAction(self.movieAct)
         menu.addSeparator()
-        menu.addAction(self.configAct)
+        menu.addAction(self.config_act)
 
-        menu.addAction(self.pifFromSimulationAct)
-        self.pifFromSimulationAct.setEnabled(False)
+        menu.addAction(self.pif_from_simulation_act)
+        self.pif_from_simulation_act.setEnabled(False)
 
-        menu.addAction(self.pifFromVTKAct)
-        self.pifFromVTKAct.setEnabled(False)
+        menu.addAction(self.pif_from_vtk_act)
+        self.pif_from_vtk_act.setEnabled(False)
 
         menu.addAction(self.restart_snapshot_from_simulation_act)
         self.restart_snapshot_from_simulation_act.setEnabled(False)
 
-
         return menu
 
-    def initWindowMenu(self):
+    def init_window_menu(self):
+        """
+        Imiplements Windows Menu
+        :return:
+        """
         menu = QMenu(QApplication.translate('ViewManager', '&Window'), self.ui)
 
         # NOTE initialization of the menu is done in the updateWindowMenu function in SimpleTabView
 
-
-        # Don't remove. Will be implemented later
-        #menu.addAction(self.pifGenAct)
-        #menu.addAction(self.pifVisAct)     
-        # # # menu.addAction(self.movieAct)
-
-        # menu.addAction(self.newGraphicsWindowAct)
-        # menu.addAction(self.tileAct)
-        # menu.addAction(self.cascadeAct)
-        # menu.addSeparator()
-        # menu.addAction(self.closeActiveWindowAct)
-        # menu.addAction(self.closeAdditionalGraphicsWindowsAct)
-        # menu.addSeparator()
-
-
         return menu
 
-    def initHelpMenu(self):
+    def init_help_menu(self):
+        """
+        Implements Help Menu
+        :return:
+        """
+
         menu = QMenu(QApplication.translate('ViewManager', '&Help'), self.ui)
         menu.addAction(self.quickAct)
         menu.addAction(self.tutorAct)
@@ -156,33 +155,47 @@ class SimpleViewManager(QObject):
 
         return menu
 
-    def initFileToolbar(self):
+    def init_file_toolbar(self):
+        """
+        Initializes file toolbar
+        :return:
+        """
         tb = QToolBar(QApplication.translate('ViewManager', 'File'), self.ui)
-        tb.setIconSize(QSize(20, 18))  # UI.Config.ToolBarIconSize
+        # UI.Config.ToolBarIconSize
+        tb.setIconSize(QSize(20, 18))
         tb.setObjectName("FileToolbar")
         tb.setToolTip(QApplication.translate('ViewManager', 'File'))
 
-        tb.addAction(self.openAct)
-        # tb.addAction(self.saveAct)
-        # tb.addAction(self.closeAct)
-        tb.addAction(self.configAct)
-        tb.addAction(self.tweditAct)
+        tb.addAction(self.open_act)
+        tb.addAction(self.config_act)
+        tb.addAction(self.twedit_act)
+
         return tb
 
-    def initVisualizationToolbar(self):
+    def init_visualization_toolbar(self):
+        """
+        Initializes Visualization toolbar
+        :return:
+        """
         tb = QToolBar(QApplication.translate('Visualization', 'Visualization'), self.ui)
-        tb.setIconSize(QSize(20, 18))  # UI.Config.ToolBarIconSize
+        # UI.Config.ToolBarIconSize
+        tb.setIconSize(QSize(20, 18))
         tb.setObjectName("VisualizationToolbar")
         tb.setToolTip(QApplication.translate('ViewManager', 'Visualization'))
 
-        tb.addAction(self.zoomInAct)
-        tb.addAction(self.zoomOutAct)
+        tb.addAction(self.zoom_in_act)
+        tb.addAction(self.zoom_out_act)
+
         return tb
 
-
-    def initSimToolbar(self):
+    def init_sim_toolbar(self):
+        """
+        Initializes Simulation toolbat
+        :return:
+        """
         tb = QToolBar(QApplication.translate('ViewManager', 'Simulation'), self.ui)
-        tb.setIconSize(QSize(20, 18))  #UI.Config.ToolBarIconSize
+        # UI.Config.ToolBarIconSize
+        tb.setIconSize(QSize(20, 18))
         tb.setObjectName("SimToolbar")
         tb.setToolTip(QApplication.translate('ViewManager', 'Simulation'))
 
@@ -193,93 +206,46 @@ class SimpleViewManager(QObject):
 
         return tb
 
-    def initCrossSectionToolbar(self):
-        cstb = QToolBar("CrossSection", self)
-        #viewtb.setIconSize(QSize(20, 18))
-        cstb.setObjectName("CrossSection")
-        cstb.setToolTip("Cross Section")
-
-        cstb.addWidget(QLabel("  "))  # Spacer, just make it look pretty
-        cstb.addWidget(self.threeDRB)
-        cstb.addWidget(QLabel("  "))
-        cstb.addWidget(self.xyRB)
-        cstb.addWidget(self.xySB)
-        cstb.addWidget(QLabel("  "))
-        cstb.addWidget(self.xzRB)
-        cstb.addWidget(self.xzSB)
-        cstb.addWidget(QLabel("  "))
-        cstb.addWidget(self.yzRB)
-        cstb.addWidget(self.yzSB)
-        cstb.addWidget(QLabel("    "))
-        cstb.addWidget(self.fieldComboBox)
-
-        return cstb
-
-    def initWindowToolbar(self):
+    def init_window_toolbar(self):
+        """
+        Initializes Window toolbar
+        :return:
+        """
         wtb = QToolBar(QApplication.translate('ViewManager', 'Window'), self.ui)
-        wtb.setIconSize(QSize(20, 18))  # UI.Config.ToolBarIconSize
+        # UI.Config.ToolBarIconSize
+        wtb.setIconSize(QSize(20, 18))
         wtb.setObjectName("WindowToolbar")
         wtb.setToolTip(QApplication.translate('ViewManager', 'Window'))
 
         wtb.addAction(self.newGraphicsWindowAct)
-        # wtb.addAction(self.newPlotWindowAct)
+
         return wtb
 
-    def initActions(self):
+    def init_actions(self):
+        """
+        Initializes actions
+        :return:
+        """
         # list containing all file actions
-        self.fileActions = []
-        #self.viewActions        = []
-        #self.toolbarsActions    = []
-        self.simActions = []
-        self.crossSectionActions = []
-        self.visualActions = []
-        self.toolsActions = []
-        self.helpActions = []
-        self.windowActions = []  # list containing all window actions
 
-        self.__initWindowActions()
-        self.__initFileActions()
-        #self.__initViewActions()
-        self.__initSimActions()
-        self.__initCrossSectionActions()
-        self.__initVisualActions()
-        self.__initToolsActions()
-        self.__initHelpActions()
-        # self.__initTabActions()
+        self.init_window_actions()
+        self.init_file_actions()
+        self.init_sim_actions()
+        self.init_cross_section_actions()
+        self.init_visual_actions()
+        self.init_tools_actions()
+        self.init_help_actions()
 
-
-    def _getOpenStartDir(self):
-        """
-        Protected method to return the starting directory for a file open dialog. 
-        
-        The appropriate starting directory is calculated
-        using the following search order, until a match is found:<br />
-            1: Directory of currently active editor<br />
-            2: Directory of currently active Project<br />
-            3: CWD
-        
-        @return name of directory to start (string) or None
-        """
-
-        # if we have an active source, return its path
-        if self.activeWindow() is not None and \
-                self.activeWindow().getFileName():
-            return os.path.dirname(self.activeWindow().getFileName())
-
-        else:
-            # None will cause open dialog to start with cwd
-            return ''
-
-    def __initFileActions(self):
+    def init_file_actions(self):
         # - Create Action -- act = QAction()
         # - Set status tip -- act.setStatusTip()
         # - Set what's this -- act.setWhatsThis()
         # - Connect signals -- self.connect(act, ...)
         # - Add to the action list - actList.append(act)
 
-        self.openAct = QAction(QIcon(gip("fileopen.png")), "&Open Simulation File (.cc3d)", self)
+        self.open_act = QAction(QIcon(gip("fileopen.png")), "&Open Simulation File (.cc3d)", self)
         # self.openAct.setShortcut(QKeySequence(tr("Ctrl+O")))
-        self.openAct.setShortcut(Qt.CTRL + Qt.Key_O)
+        self.open_act.setShortcut(Qt.CTRL + Qt.Key_O)
 
         # self.saveAct = QAction(QIcon(gip("save.png")), "&Save Simulation XML file", self)
         self.saveScreenshotDescriptionAct = QAction(QIcon(gip("screenshots_save_alt.png")),
@@ -288,25 +254,25 @@ class SimpleViewManager(QObject):
                                                     "&Open Screenshot Description...", self)
         # self.savePlayerParamsAct=QAction(QIcon(gip("screenshots_save_alt.png")), "&Save Player Parameters...", self)
         #        self.openPlayerParamsAct=QAction(QIcon(gip("screenshots_open.png")), "&Open Player Parameters...", self)
-        self.openLDSAct = QAction(QIcon(gip("screenshots_open.png")), "&Open Lattice Description Summary File...", self)
+        self.open_lds_act = QAction(QIcon(gip("screenshots_open.png")), "&Open Lattice Description Summary File...", self)
 
         # self.closeAct = QAction(QIcon("player5/icons/close.png"), "&Close Simulation", self)
         self.exit_act = QAction(QIcon(gip("exit2.png")), "&Exit", self)
 
-        self.tweditAct = QAction(QIcon(gip("twedit-icon.png")), "Start Twe&dit++", self)
+        self.twedit_act = QAction(QIcon(gip("twedit-icon.png")), "Start Twe&dit++", self)
 
         # Why do I need these appendings?
-        self.fileActions.append(self.openAct)
+        self.file_actions.append(self.open_act)
         # self.fileActions.append(self.saveAct)
-        self.fileActions.append(self.openScreenshotDescriptionAct)
-        self.fileActions.append(self.saveScreenshotDescriptionAct)
-        self.fileActions.append(self.openLDSAct)
-        self.fileActions.append(self.tweditAct)
+        self.file_actions.append(self.openScreenshotDescriptionAct)
+        self.file_actions.append(self.saveScreenshotDescriptionAct)
+        self.file_actions.append(self.open_lds_act)
+        self.file_actions.append(self.twedit_act)
 
         # self.fileActions.append(self.closeAct)
-        self.fileActions.append(self.exit_act)
+        self.file_actions.append(self.exit_act)
 
-    def __initCrossSectionActions(self):
+    def init_cross_section_actions(self):
         # Do I need actions? Probably not, but will leave for a while
         self.threeDAct = QAction(self)
         self.threeDRB = QRadioButton("3D")
@@ -343,16 +309,16 @@ class SimpleViewManager(QObject):
         #self.fieldComboBox.addItem("cAMP")
 
         # Why append?
-        self.crossSectionActions.append(self.threeDAct)
-        self.crossSectionActions.append(self.xyAct)
-        self.crossSectionActions.append(self.xySBAct)
-        self.crossSectionActions.append(self.xzAct)
-        self.crossSectionActions.append(self.xzSBAct)
-        self.crossSectionActions.append(self.yzAct)
-        self.crossSectionActions.append(self.yzSBAct)
-        self.crossSectionActions.append(self.fieldComboBoxAct)
+        self.cross_section_actions.append(self.threeDAct)
+        self.cross_section_actions.append(self.xyAct)
+        self.cross_section_actions.append(self.xySBAct)
+        self.cross_section_actions.append(self.xzAct)
+        self.cross_section_actions.append(self.xzSBAct)
+        self.cross_section_actions.append(self.yzAct)
+        self.cross_section_actions.append(self.yzSBAct)
+        self.cross_section_actions.append(self.fieldComboBoxAct)
 
-    def __initSimActions(self):
+    def init_sim_actions(self):
 
         gip = DefaultData.getIconPath
 
@@ -365,44 +331,41 @@ class SimpleViewManager(QObject):
         self.pause_act.setShortcut(Qt.CTRL + Qt.Key_D)
         self.stop_act = QAction(QIcon(gip("stop.png")), "&Stop", self)
         self.stop_act.setShortcut(Qt.CTRL + Qt.Key_X)
-        self.serializeAct = QAction("Serialize", self)
 
         self.restoreDefaultSettingsAct = QAction("Restore Default Settings", self)
         # self.addVTKWindowAct=QAction(QIcon(gip("kcmkwm.png")), 'Add VTK Window', self)
         # self.addVTKWindowAct.setShortcut(Qt.CTRL + Qt.Key_I)
 
-
-        # Why append?
-        self.simActions.append(self.run_act)
-        self.simActions.append(self.step_act)
-        self.simActions.append(self.pause_act)
-        self.simActions.append(self.stop_act)
-        self.simActions.append(self.serializeAct)
-        self.simActions.append(self.restoreDefaultSettingsAct)
+        self.sim_actions.append(self.run_act)
+        self.sim_actions.append(self.step_act)
+        self.sim_actions.append(self.pause_act)
+        self.sim_actions.append(self.stop_act)
+        # self.simActions.append(self.serialize_act)
+        self.sim_actions.append(self.restoreDefaultSettingsAct)
 
         # self.simActions.append(self.addVTKWindowAct)
 
 
-    def __initVisualActions(self):
-        self.cellsAct = QAction("&Cells", self)
-        self.cellsAct.setCheckable(True)
-        self.cellsAct.setChecked(self.visual["CellsOn"])
+    def init_visual_actions(self):
+        self.cells_act = QAction("&Cells", self)
+        self.cells_act.setCheckable(True)
+        self.cells_act.setChecked(self.visual["CellsOn"])
 
-        self.borderAct = QAction("Cell &Borders", self)
-        self.borderAct.setCheckable(True)
-        self.borderAct.setChecked(self.visual["CellBordersOn"])
+        self.border_act = QAction("Cell &Borders", self)
+        self.border_act.setCheckable(True)
+        self.border_act.setChecked(self.visual["CellBordersOn"])
 
-        self.clusterBorderAct = QAction("Cluster Borders", self)
-        self.clusterBorderAct.setCheckable(True)
-        self.clusterBorderAct.setChecked(self.visual["ClusterBordersOn"])
+        self.cluster_border_act = QAction("Cluster Borders", self)
+        self.cluster_border_act.setCheckable(True)
+        self.cluster_border_act.setChecked(self.visual["ClusterBordersOn"])
 
-        self.cellGlyphsAct = QAction("Cell &Glyphs", self)
-        self.cellGlyphsAct.setCheckable(True)
-        self.cellGlyphsAct.setChecked(self.visual["CellGlyphsOn"])
+        self.cell_glyphs_act = QAction("Cell &Glyphs", self)
+        self.cell_glyphs_act.setCheckable(True)
+        self.cell_glyphs_act.setChecked(self.visual["CellGlyphsOn"])
 
-        self.FPPLinksAct = QAction("&FPP Links", self)  # callbacks for these menu items in child class SimpleTabView
-        self.FPPLinksAct.setCheckable(True)
-        self.FPPLinksAct.setChecked(self.visual["FPPLinksOn"])
+        self.fpp_links_act = QAction("&FPP Links", self)  # callbacks for these menu items in child class SimpleTabView
+        self.fpp_links_act.setCheckable(True)
+        self.fpp_links_act.setChecked(self.visual["FPPLinksOn"])
         #        self.connect(self.FPPLinksAct, SIGNAL('triggered()'), self.__fppLinksTrigger)
 
         #        self.FPPLinksColorAct = QAction("&FPP Links(color)", self)
@@ -418,35 +381,35 @@ class SimpleViewManager(QObject):
         # self.contourAct.setCheckable(True)
         # self.contourAct.setChecked(self.visual["ContoursOn"])
 
-        self.limitsAct = QAction("Concentration &Limits", self)
-        self.limitsAct.setCheckable(True)
-        self.limitsAct.setChecked(self.visual["ConcentrationLimitsOn"])
+        self.limits_act = QAction("Concentration &Limits", self)
+        self.limits_act.setCheckable(True)
+        self.limits_act.setChecked(self.visual["ConcentrationLimitsOn"])
 
-        self.cc3dOutputOnAct = QAction("&Turn On CompuCell3D Output", self)
-        self.cc3dOutputOnAct.setCheckable(True)
-        self.cc3dOutputOnAct.setChecked(self.visual["CC3DOutputOn"])
+        self.cc3d_output_on_act = QAction("&Turn On CompuCell3D Output", self)
+        self.cc3d_output_on_act.setCheckable(True)
+        self.cc3d_output_on_act.setChecked(self.visual["CC3DOutputOn"])
 
-        self.resetCameraAct = QAction("Reset Camera for Graphics Window ('r')", self)
+        self.reset_camera_act = QAction("Reset Camera for Graphics Window ('r')", self)
 
-        self.zoomInAct = QAction(QIcon(gip("zoomIn.png")), "&Zoom In", self)
-        self.zoomInAct.setShortcut(Qt.CTRL + Qt.Key_Y)
-        self.zoomOutAct = QAction(QIcon(gip("zoomOut.png")), "&Zoom Out", self)
+        self.zoom_in_act = QAction(QIcon(gip("zoomIn.png")), "&Zoom In", self)
+        self.zoom_in_act.setShortcut(Qt.CTRL + Qt.Key_Y)
+        self.zoom_out_act = QAction(QIcon(gip("zoomOut.png")), "&Zoom Out", self)
 
 
         # Why append?
-        self.visualActions.append(self.cellsAct)
-        self.visualActions.append(self.borderAct)
-        self.visualActions.append(self.clusterBorderAct)
-        self.visualActions.append(self.cellGlyphsAct)
-        self.visualActions.append(self.FPPLinksAct)
+        self.visual_actions.append(self.cells_act)
+        self.visual_actions.append(self.border_act)
+        self.visual_actions.append(self.cluster_border_act)
+        self.visual_actions.append(self.cell_glyphs_act)
+        self.visual_actions.append(self.fpp_links_act)
         #        self.visualActions.append(self.FPPLinksColorAct)
         #self.visualActions.append(self.plotTypeAct)
         # self.visualActions.append(self.contourAct)
-        self.visualActions.append(self.limitsAct)
-        self.visualActions.append(self.cc3dOutputOnAct)
-        self.visualActions.append(self.resetCameraAct)
-        self.visualActions.append(self.zoomInAct)
-        self.visualActions.append(self.zoomOutAct)
+        self.visual_actions.append(self.limits_act)
+        self.visual_actions.append(self.cc3d_output_on_act)
+        self.visual_actions.append(self.reset_camera_act)
+        self.visual_actions.append(self.zoom_in_act)
+        self.visual_actions.append(self.zoom_out_act)
         # self.visualActions.append(self.configAct)
 
     #    def __fppLinksTrigger(self):
@@ -459,35 +422,35 @@ class SimpleViewManager(QObject):
     ##        self.FPPLinksColorAct.setChecked(self.visual["FPPLinksColorOn"])
     #        self.FPPLinksAct.setChecked(0)
 
-    def __initToolsActions(self):
-        self.configAct = QAction(QIcon(gip("config.png")), "&Configuration...", self)
+    def init_tools_actions(self):
+        self.config_act = QAction(QIcon(gip("config.png")), "&Configuration...", self)
 
-        self.configAct.setShortcut(Qt.CTRL + Qt.Key_Comma)
+        self.config_act.setShortcut(Qt.CTRL + Qt.Key_Comma)
 
-        self.configAct.setWhatsThis(
+        self.config_act.setWhatsThis(
             """<b>Configuration</b>"""
             """<p>Set the configuration items of the simulation"""
             """ with your prefered values.</p>"""
         )
 
-        self.pifFromVTKAct = QAction("& Generate PIF File from VTK output ...", self)
+        self.pif_from_vtk_act = QAction("& Generate PIF File from VTK output ...", self)
         # self.configAct.setWhatsThis(self.trUtf8(
         # """<b>Generate PIF file from VTK output </b>"""
         # """<p>This will only work in the VTK simulation replay mode."""
         # """ Make sure you generated vtk output and then load *.dml file.</p>"""
         # ))    
 
-        self.pifFromSimulationAct = QAction("& Generate PIF File from current snapshot ...", self)
+        self.pif_from_simulation_act = QAction("& Generate PIF File from current snapshot ...", self)
         self.restart_snapshot_from_simulation_act = QAction("& Generate Restart Snapshot", self)
 
 
-        self.configAct.setWhatsThis(
+        self.config_act.setWhatsThis(
             """<b>Generate PIF file from current simulation snapshot </b>"""
         )
 
-        self.toolsActions.append(self.configAct)
-        self.toolsActions.append(self.pifFromSimulationAct)
-        self.toolsActions.append(self.pifFromVTKAct)
+        self.tools_actions.append(self.config_act)
+        self.tools_actions.append(self.pif_from_simulation_act)
+        self.tools_actions.append(self.pif_from_vtk_act)
         # self.pifGenAct = QAction("&Generate PIF", self)
         # self.pifGenAct.setCheckable(True)
 
@@ -503,7 +466,7 @@ class SimpleViewManager(QObject):
         #self.toolsActions.append(self.pifVisAct)
         # # # self.toolsActions.append(self.movieAct)
 
-    def __initWindowActions(self):
+    def init_window_actions(self):
 
         self.pythonSteeringPanelAct =  QAction("Steering Panel", self)
         self.pythonSteeringPanelAct.setShortcut(self.tr("Ctrl+U"))
@@ -530,21 +493,21 @@ class SimpleViewManager(QObject):
 
 
 
-        self.windowActions.append(self.newGraphicsWindowAct)
+        self.window_actions.append(self.newGraphicsWindowAct)
         # self.windowActions.append(self.newPlotWindowAct)
-        self.windowActions.append(self.tileAct)
-        self.windowActions.append(self.cascadeAct)
+        self.window_actions.append(self.tileAct)
+        self.window_actions.append(self.cascadeAct)
 
-        self.windowActions.append(self.pythonSteeringPanelAct)
+        self.window_actions.append(self.pythonSteeringPanelAct)
 
-        self.windowActions.append(self.minimizeAllGraphicsWindowsAct)
-        self.windowActions.append(self.restoreAllGraphicsWindowsAct)
+        self.window_actions.append(self.minimizeAllGraphicsWindowsAct)
+        self.window_actions.append(self.restoreAllGraphicsWindowsAct)
 
-        self.windowActions.append(self.closeActiveWindowAct)
+        self.window_actions.append(self.closeActiveWindowAct)
         # self.windowActions.append(self.closeAdditionalGraphicsWindowsAct)
 
 
-    def __initHelpActions(self):
+    def init_help_actions(self):
         self.quickAct = QAction("&Quick Start", self)
         self.quickAct.triggered.connect(self.__open_manuals_webpage)
         self.tutorAct = QAction("&Tutorials", self)
@@ -581,15 +544,15 @@ class SimpleViewManager(QObject):
         # self.connect(self.whatsThisAct, SIGNAL('triggered()'), self.__whatsThis)
 
         # Why append?
-        self.helpActions.append(self.quickAct)
-        self.helpActions.append(self.tutorAct)
-        self.helpActions.append(self.refManAct)
-        self.helpActions.append(self.aboutAct)
-        self.helpActions.append(self.mail_subscribe_act)
-        self.helpActions.append(self.mail_unsubscribe_act)
-        self.helpActions.append(self.mail_subscribe_unsubscribe_web_act)
-        self.helpActions.append(self.check_update_act)
-        self.helpActions.append(self.whatsThisAct)
+        self.help_actions.append(self.quickAct)
+        self.help_actions.append(self.tutorAct)
+        self.help_actions.append(self.refManAct)
+        self.help_actions.append(self.aboutAct)
+        self.help_actions.append(self.mail_subscribe_act)
+        self.help_actions.append(self.mail_unsubscribe_act)
+        self.help_actions.append(self.mail_subscribe_unsubscribe_web_act)
+        self.help_actions.append(self.check_update_act)
+        self.help_actions.append(self.whatsThisAct)
 
     def check_version(self, check_interval = -1, display_no_update_info=False):
         '''

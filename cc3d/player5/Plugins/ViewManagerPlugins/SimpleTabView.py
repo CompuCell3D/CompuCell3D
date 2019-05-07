@@ -265,9 +265,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
             print('update_active_window_vis_flags():  Could not find any open windows. Ignoring request')
             return
 
-        self.graphicsWindowVisDict[dict_key] = (self.cellsAct.isChecked(), self.borderAct.isChecked(),
-                                                self.clusterBorderAct.isChecked(), self.cellGlyphsAct.isChecked(),
-                                                self.FPPLinksAct.isChecked())
+        self.graphicsWindowVisDict[dict_key] = (self.cells_act.isChecked(), self.border_act.isChecked(),
+                                                self.cluster_border_act.isChecked(), self.cell_glyphs_act.isChecked(),
+                                                self.fpp_links_act.isChecked())
 
     def update_window_menu(self) -> None:
         """
@@ -587,7 +587,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.UI.console.getSyntaxErrorConsole().closeCC3D.connect(qApp.closeAllWindows)
 
         # establishConnection starts twedit and hooks it up via sockets to player5
-        self.tweditAct.triggered.connect(self.UI.console.getSyntaxErrorConsole().cc3dSender.establishConnection)
+        self.twedit_act.triggered.connect(self.UI.console.getSyntaxErrorConsole().cc3dSender.establishConnection)
 
         if port != -1:
             self.UI.console.getSyntaxErrorConsole().cc3dSender.setServerPort(port)
@@ -645,10 +645,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.step_act.setEnabled(True)
         self.pause_act.setEnabled(False)
         self.stop_act.setEnabled(False)
-        self.openAct.setEnabled(True)
-        self.openLDSAct.setEnabled(True)
-        self.pifFromSimulationAct.setEnabled(False)
-        self.pifFromVTKAct.setEnabled(False)
+        self.open_act.setEnabled(True)
+        self.open_lds_act.setEnabled(True)
+        self.pif_from_simulation_act.setEnabled(False)
+        self.pif_from_vtk_act.setEnabled(False)
         self.restart_snapshot_from_simulation_act.setEnabled(False)
 
     def reset_control_variables(self)->None:
@@ -966,7 +966,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             print('-----------------------')
             Configuration.setSetting("CellGlyphsOn", False)
             #                self.graphicsWindowVisDict[self.lastActiveWindow.winId()][3] = False
-            self.cellGlyphsAct.setChecked(False)
+            self.cell_glyphs_act.setChecked(False)
 
         if Configuration.getSetting("FPPLinksOn"):
             QMessageBox.warning(self, "Message",
@@ -977,7 +977,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             print('-----------------------')
             Configuration.setSetting("FPPLinksOn", False)
             #                self.graphicsWindowVisDict[self.lastActiveWindow.winId()][4] = False
-            self.FPPLinksAct.setChecked(False)
+            self.fpp_links_act.setChecked(False)
 
         # todo 5 - old code
 
@@ -1147,30 +1147,29 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.pause_act.triggered.connect(self.__pauseSim)
         self.stop_act.triggered.connect(self.__simulationStop)
 
-        self.serializeAct.triggered.connect(self.__simulationSerialize)
         self.restoreDefaultSettingsAct.triggered.connect(self.__restoreDefaultSettings)
 
-        self.openAct.triggered.connect(self.__openSim)
-        self.openLDSAct.triggered.connect(self.__openLDSFile)
+        self.open_act.triggered.connect(self.__openSim)
+        self.open_lds_act.triggered.connect(self.__openLDSFile)
 
         # qApp is a member of QtGui. closeAllWindows will cause closeEvent and closeEventSimpleTabView will be called
         self.exit_act.triggered.connect(qApp.closeAllWindows)
 
-        self.cellsAct.triggered.connect(self.__checkCells)
-        self.borderAct.triggered.connect(self.__checkBorder)
-        self.clusterBorderAct.triggered.connect(self.__checkClusterBorder)
-        self.cellGlyphsAct.triggered.connect(self.__checkCellGlyphs)
-        self.FPPLinksAct.triggered.connect(self.__checkFPPLinks)
+        self.cells_act.triggered.connect(self.__checkCells)
+        self.border_act.triggered.connect(self.__checkBorder)
+        self.cluster_border_act.triggered.connect(self.__checkClusterBorder)
+        self.cell_glyphs_act.triggered.connect(self.__checkCellGlyphs)
+        self.fpp_links_act.triggered.connect(self.__checkFPPLinks)
 
-        self.limitsAct.triggered.connect(self.__checkLimits)
-        self.configAct.triggered.connect(self.__showConfigDialog)
-        self.cc3dOutputOnAct.triggered.connect(self.__checkCC3DOutput)
-        self.resetCameraAct.triggered.connect(self.__resetCamera)
-        self.zoomInAct.triggered.connect(self.zoomIn)
-        self.zoomOutAct.triggered.connect(self.zoomOut)
+        self.limits_act.triggered.connect(self.__checkLimits)
+        self.config_act.triggered.connect(self.__showConfigDialog)
+        self.cc3d_output_on_act.triggered.connect(self.__checkCC3DOutput)
+        self.reset_camera_act.triggered.connect(self.__resetCamera)
+        self.zoom_in_act.triggered.connect(self.zoomIn)
+        self.zoom_out_act.triggered.connect(self.zoomOut)
 
-        self.pifFromSimulationAct.triggered.connect(self.__generatePIFFromCurrentSnapshot)
-        self.pifFromVTKAct.triggered.connect(self.__generatePIFFromVTK)
+        self.pif_from_simulation_act.triggered.connect(self.__generatePIFFromCurrentSnapshot)
+        self.pif_from_vtk_act.triggered.connect(self.__generatePIFFromVTK)
         self.restart_snapshot_from_simulation_act.triggered.connect(self.generate_restart_snapshot)
 
 
@@ -1364,7 +1363,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.cerrStreamBufOrig = simObj.getCerrStreamBufOrig()
 
         # if Configuration.getVisualization("CC3DOutputOn"):
-        if self.UI.viewmanager.cc3dOutputOnAct.isChecked():
+        if self.UI.viewmanager.cc3d_output_on_act.isChecked():
             if Configuration.getSetting("UseInternalConsole"):
                 # redirecting output from C++ to internal console
                 import sip
@@ -1759,8 +1758,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.stop_act.setEnabled(True)
             self.pause_act.setEnabled(True)
 
-            self.openAct.setEnabled(False)
-            self.openLDSAct.setEnabled(False)
+            self.open_act.setEnabled(False)
+            self.open_lds_act.setEnabled(False)
 
             return
         else:
@@ -1774,11 +1773,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.step_act.setEnabled(True)
                 self.stop_act.setEnabled(True)
                 self.pause_act.setEnabled(True)
-                self.pifFromSimulationAct.setEnabled(True)
+                self.pif_from_simulation_act.setEnabled(True)
                 self.restart_snapshot_from_simulation_act.setEnabled(True)
 
-                self.openAct.setEnabled(False)
-                self.openLDSAct.setEnabled(False)
+                self.open_act.setEnabled(False)
+                self.open_lds_act.setEnabled(False)
 
             self.steppingThroughSimulation = False
 
@@ -1824,10 +1823,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
             self.stop_act.setEnabled(True)
             self.pause_act.setEnabled(False)
             self.run_act.setEnabled(True)
-            self.pifFromVTKAct.setEnabled(True)
+            self.pif_from_vtk_act.setEnabled(True)
 
-            self.openAct.setEnabled(False)
-            self.openLDSAct.setEnabled(False)
+            self.open_act.setEnabled(False)
+            self.open_lds_act.setEnabled(False)
             return
 
         else:
@@ -1842,10 +1841,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 self.run_act.setEnabled(True)
                 self.pause_act.setEnabled(False)
                 self.stop_act.setEnabled(True)
-                self.pifFromSimulationAct.setEnabled(True)
+                self.pif_from_simulation_act.setEnabled(True)
                 self.restart_snapshot_from_simulation_act.setEnabled(True)
-                self.openAct.setEnabled(False)
-                self.openLDSAct.setEnabled(False)
+                self.open_act.setEnabled(False)
+                self.open_lds_act.setEnabled(False)
 
                 self.simulation.start()
 
@@ -2168,16 +2167,16 @@ class SimpleTabView(MainArea, SimpleViewManager):
         else:
             self.simulation.setStopSimulation(True)
 
-    def __simulationSerialize(self):
-        '''
-        Slot that handles request to serialize simulation
-        :return:None
-        '''
-        # print self.simulation.restartManager
-        currentStep = self.simulation.sim.getStep()
-        if self.pause_act.isEnabled():
-            self.__pauseSim()
-        self.simulation.restartManager.output_restart_files(currentStep, True)
+    # def __simulationSerialize(self):
+    #     '''
+    #     Slot that handles request to serialize simulation
+    #     :return:None
+    #     '''
+    #     # print self.simulation.restartManager
+    #     currentStep = self.simulation.sim.getStep()
+    #     if self.pause_act.isEnabled():
+    #         self.__pauseSim()
+    #     self.simulation.restartManager.output_restart_files(currentStep, True)
 
     def __restoreDefaultSettings(self):
         '''
@@ -2583,18 +2582,18 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
             # If appropriate, disable/enable Vis menu options
             if not self.pluginFPPDefined:
-                self.FPPLinksAct.setEnabled(False)
-                self.FPPLinksAct.setChecked(False)
+                self.fpp_links_act.setEnabled(False)
+                self.fpp_links_act.setChecked(False)
                 Configuration.setSetting("FPPLinksOn", False)
             else:
-                self.FPPLinksAct.setEnabled(True)
+                self.fpp_links_act.setEnabled(True)
 
             if not self.pluginCOMDefined:
-                self.cellGlyphsAct.setEnabled(False)
-                self.cellGlyphsAct.setChecked(False)
+                self.cell_glyphs_act.setEnabled(False)
+                self.cell_glyphs_act.setChecked(False)
                 Configuration.setSetting("CellGlyphsOn", False)
             else:
-                self.cellGlyphsAct.setEnabled(True)
+                self.cell_glyphs_act.setEnabled(True)
 
         # ------------------
         if not self.mainGraphicsWidget: return
@@ -2683,14 +2682,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
 
-        activeSubWindow = self.activeSubWindow()
+        active_sub_window = self.activeSubWindow()
 
-        if not activeSubWindow:
+        if not active_sub_window:
             return
 
-        import Graphics
-        if isinstance(activeSubWindow.widget(), Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
-            activeSubWindow.widget().zoomIn()
+        if isinstance(active_sub_window.widget(), Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
+            active_sub_window.widget().zoomIn()
 
     def zoomOut(self):
         '''
@@ -2698,14 +2696,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :return:None
         '''
 
-        activeSubWindow = self.activeSubWindow()
+        active_sub_window = self.activeSubWindow()
 
-        if not activeSubWindow:
+        if not active_sub_window:
             return
 
-        import Graphics
-        if isinstance(activeSubWindow.widget(), Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
-            activeSubWindow.widget().zoomOut()
+        if isinstance(active_sub_window.widget(), Graphics.GraphicsFrameWidget.GraphicsFrameWidget):
+            active_sub_window.widget().zoomOut()
 
     # # File name should be passed
     def takeShot(self):
@@ -2906,7 +2903,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # Should be disabled when the simulation is not loaded!
         self.simulation.drawMutex.lock()
         self.update_active_window_vis_flags()
-        if self.cellsAct.isEnabled():
+        if self.cells_act.isEnabled():
             Configuration.setSetting('CellsOn', checked)
 
             # MDIFIX
@@ -2929,7 +2926,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.drawMutex.lock()
         self.update_active_window_vis_flags()
 
-        if self.borderAct.isEnabled():
+        if self.border_act.isEnabled():
             Configuration.setSetting('CellBordersOn', checked)
 
             for winId, win in self.win_inventory.getWindowsItems(GRAPHICS_WINDOW_LABEL):
@@ -2951,7 +2948,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.drawMutex.lock()
 
         self.update_active_window_vis_flags()
-        if self.clusterBorderAct.isEnabled():
+        if self.cluster_border_act.isEnabled():
             Configuration.setSetting('ClusterBordersOn', checked)
 
             # MDIFIX
@@ -2972,12 +2969,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.drawMutex.lock()
         self.update_active_window_vis_flags()
 
-        if self.cellGlyphsAct.isEnabled():
+        if self.cell_glyphs_act.isEnabled():
             if not self.pluginCOMDefined:
                 QMessageBox.warning(self, "Message",
                                     "Warning: You have not defined a CenterOfMass plugin",
                                     QMessageBox.Ok)
-                self.cellGlyphsAct.setChecked(False)
+                self.cell_glyphs_act.setChecked(False)
                 Configuration.setSetting("CellGlyphsOn", False)
 
                 self.simulation.drawMutex.unlock()
@@ -3004,13 +3001,13 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.simulation.drawMutex.lock()
         self.update_active_window_vis_flags()
 
-        if self.FPPLinksAct.isEnabled():
+        if self.fpp_links_act.isEnabled():
 
             if not self.pluginFPPDefined:
                 QMessageBox.warning(self, "Message",
                                     "Warning: You have not defined a FocalPointPlasticity plugin",
                                     QMessageBox.Ok)
-                self.FPPLinksAct.setChecked(False)
+                self.fpp_links_act.setChecked(False)
                 Configuration.setSetting("FPPLinksOn", False)
 
                 self.simulation.drawMutex.unlock()
@@ -3030,8 +3027,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :param checked: bool - flag determines if action is on or off
         :return:None
         '''
-        if checked and self.FPPLinksAct.isChecked():
-            self.FPPLinksAct.setChecked(False)
+        if checked and self.fpp_links_act.isChecked():
+            self.fpp_links_act.setChecked(False)
             self.__checkFPPLinks(False)
         # if self.mainGraphicsWindow is not None:
         #                self.mainGraphicsWindow.hideFPPLinks()

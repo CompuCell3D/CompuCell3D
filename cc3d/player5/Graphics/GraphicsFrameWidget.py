@@ -253,11 +253,11 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         """
         tvw = self.parentWidget()
 
-        scr_data.cell_borders_on = tvw.borderAct.isChecked()
-        scr_data.cells_on = tvw.cellsAct.isChecked()
-        scr_data.cluster_borders_on = tvw.clusterBorderAct.isChecked()
-        scr_data.cell_glyphs_on = tvw.cellGlyphsAct.isChecked()
-        scr_data.fpp_links_on = tvw.FPPLinksAct.isChecked()
+        scr_data.cell_borders_on = tvw.border_act.isChecked()
+        scr_data.cells_on = tvw.cells_act.isChecked()
+        scr_data.cluster_borders_on = tvw.cluster_border_act.isChecked()
+        scr_data.cell_glyphs_on = tvw.cell_glyphs_act.isChecked()
+        scr_data.fpp_links_on = tvw.fpp_links_act.isChecked()
         scr_data.lattice_axes_on = Configuration.getSetting('ShowHorizontalAxesLabels') or Configuration.getSetting(
             'ShowVerticalAxesLabels')
         scr_data.lattice_axes_labels_on = Configuration.getSetting("ShowAxes")

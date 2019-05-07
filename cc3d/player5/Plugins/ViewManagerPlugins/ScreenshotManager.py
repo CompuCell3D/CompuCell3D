@@ -82,11 +82,11 @@ class ScreenshotManager(ScreenshotManagerCore):
         if tvw:
             tvw.update_active_window_vis_flags(self.screenshotGraphicsWidget)
 
-        scrData.cell_borders_on = tvw.borderAct.isChecked()
-        scrData.cells_on = tvw.cellsAct.isChecked()
-        scrData.cluster_borders_on = tvw.clusterBorderAct.isChecked()
-        scrData.cell_glyphs_on = tvw.cellGlyphsAct.isChecked()
-        scrData.fpp_links_on = tvw.FPPLinksAct.isChecked()
+        scrData.cell_borders_on = tvw.border_act.isChecked()
+        scrData.cells_on = tvw.cells_act.isChecked()
+        scrData.cluster_borders_on = tvw.cluster_border_act.isChecked()
+        scrData.cell_glyphs_on = tvw.cell_glyphs_act.isChecked()
+        scrData.fpp_links_on = tvw.fpp_links_act.isChecked()
         scrData.lattice_axes_on = Configuration.getSetting('ShowHorizontalAxesLabels') or Configuration.getSetting(
             'ShowVerticalAxesLabels')
         scrData.lattice_axes_labels_on = Configuration.getSetting("ShowAxes")
