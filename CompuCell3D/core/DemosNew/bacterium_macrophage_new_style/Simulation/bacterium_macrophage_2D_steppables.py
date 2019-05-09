@@ -56,7 +56,11 @@ class InventoryCheckSteppable(SteppableBasePy):
             self.pW.addDataPoint("MSur", mcs, mean_surface)
             if mcs >= 200:
                 print("Adding meanVolume=", mean_volume)
-                print("plotData=", self.pW.plotData["MVol"])
+                try:
+                    print("plotData=", self.pW.plotData["MVol"])
+                except TypeError:
+                    # happens in CML mode
+                    pass
 
         self.pW.showAllPlots()
 

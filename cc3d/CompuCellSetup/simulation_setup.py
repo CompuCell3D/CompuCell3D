@@ -318,40 +318,89 @@ def store_screenshots(cur_step: int) -> None:
         screenshot_mgr.output_screenshots(mcs=cur_step)
 
 
-def main_loop(sim, simthread, steppableRegistry):
-    """
+def extra_init_simulation_objects(sim, simthread, init_using_restart_snapshot_enabled=False):
+    print("Simulation basepath extra init=", sim.getBasePath())
 
+    # after all xml steppables and plugins have been loaded we call extraInit to complete initialization
+    sim.extraInit()
+
+    # simthread.preStartInit()
+    # we skip calling start functions of steppables if restart is enabled and we are using restart
+    # directory to restart simulation from a given MCS
+    if not init_using_restart_snapshot_enabled:
+        sim.start()
+
+    if simthread is not None:
+        # sends signal to player  to prepare for the upcoming simulation
+        simthread.postStartInit()
+
+        # waits for player  to complete initialization
+        simthread.waitForPlayerTaskToFinish()
+
+
+def main_loop(sim, simthread, steppable_registry=None):
+    """
+    main loop for CML simulation
     :param sim:
     :param simthread:
-    :param steppableRegistry:
+    :param steppable_registry:
     :return:
     """
 
-    persistent_globals = CompuCellSetup.persistent_globals
+    pg = CompuCellSetup.persistent_globals
+    steppable_registry = pg.steppable_registry
 
-    steppableRegistry = CompuCellSetup.persistent_globals.steppable_registry
-    if not steppableRegistry is None:
-        steppableRegistry.init(sim)
+    pg.restart_manager = RestartManager.RestartManager(sim)
+    restart_manager = pg.restart_manager
+    restart_manager.output_frequency = pg.restart_snapshot_frequency
+    restart_manager.allow_multiple_restart_directories = pg.restart_multiple_snapshots
+
+    init_using_restart_snapshot_enabled = restart_manager.restart_enabled()
+    # init_using_restart_snapshot_enabled = False
+    sim.setRestartEnabled(init_using_restart_snapshot_enabled)
+
+    if init_using_restart_snapshot_enabled:
+        print('WILL RESTART SIMULATION')
+        restart_manager.loadRestartFiles()
+    else:
+        print('WILL RUN SIMULATION FROM BEGINNING')
+
+    extra_init_simulation_objects(sim, simthread,
+                                  init_using_restart_snapshot_enabled=init_using_restart_snapshot_enabled)
+
+    if not steppable_registry is None:
+        steppable_registry.init(sim)
 
     max_num_steps = sim.getNumSteps()
 
     init_lattice_snapshot_objects()
     init_screenshot_manager()
 
-    sim.start()
-    if not steppableRegistry is None:
-        steppableRegistry.start()
+    if not steppable_registry is None and not init_using_restart_snapshot_enabled:
+        steppable_registry.start()
 
-    cur_step = 0
+    if not steppable_registry is None:
+        steppable_registry.start()
+
+    run_finish_flag = True
+
+    restart_manager.prepare_restarter()
+    beginning_step = restart_manager.getRestartStep()
+
+    cur_step = beginning_step
 
     while cur_step < max_num_steps:
         if CompuCellSetup.persistent_globals.user_stop_simulation_flag:
-            runFinishFlag = False
+            run_finish_flag = False
             break
+
         sim.step(cur_step)
 
-        if not steppableRegistry is None:
-            steppableRegistry.step(cur_step)
+        if not steppable_registry is None:
+            steppable_registry.step(cur_step)
+
+        # restart manager will decide whether to output files or not based on its settings
+        restart_manager.output_restart_files(cur_step)
 
         store_lattice_snapshot(cur_step=cur_step)
         store_screenshots(cur_step=cur_step)
@@ -365,28 +414,9 @@ def main_loop(sim, simthread, steppableRegistry):
         cur_step += 1
 
 
-def extra_init_simulation_objects(sim, simthread, init_using_restart_snapshot_enabled=False):
-    print("Simulation basepath extra init=", sim.getBasePath())
-
-    # after all xml steppables and plugins have been loaded we call extraInit to complete initialization
-    sim.extraInit()
-
-    # simthread.preStartInit()
-    # we skip calling start functions of steppables if restart is enabled and we are using restart
-    # directory to restart simulation from a given MCS
-    if not init_using_restart_snapshot_enabled:
-        sim.start()
-
-    # sends signal to player  to prepare for the upcoming simulation
-    simthread.postStartInit()
-
-    # waits for player  to complete initialization
-    simthread.waitForPlayerTaskToFinish()
-
-
 def main_loop_player(sim, simthread=None, steppable_registry=None):
     """
-
+    main loop for GUI based simulations
     :param sim:
     :param simthread:
     :param steppable_registry:
@@ -413,7 +443,7 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
         print('WILL RUN SIMULATION FROM BEGINNING')
 
     extra_init_simulation_objects(sim, simthread,
-        init_using_restart_snapshot_enabled=init_using_restart_snapshot_enabled)
+                                  init_using_restart_snapshot_enabled=init_using_restart_snapshot_enabled)
 
     # simthread.waitForInitCompletion()
     # simthread.waitForPlayerTaskToFinish()
@@ -450,6 +480,7 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
         if not steppable_registry is None:
             steppable_registry.step(cur_step)
 
+        # restart manager will decide whether to output files or not based on its settings
         restart_manager.output_restart_files(cur_step)
 
         # passing Python-script-made changes in XML to C++ code

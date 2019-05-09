@@ -31,6 +31,13 @@ def process_cml():
     cml_parser.add_argument('-fs', '--screenshot-output-frequency', required=False, action='store', default=0, type=int,
                             help='screenshot output frequency')
 
+    cml_parser.add_argument('-fr', '--restart-snapshot-frequency', required=False, action='store', default=0, type=int,
+                            help='restart snapshot output frequency')
+
+    cml_parser.add_argument('--restart-multiple-snapshots', required=False, action='store_true', default=False,
+                            help='turns on storing of multiple restart snapshots')
+
+
 
     return cml_parser.parse_args()
 
@@ -62,6 +69,9 @@ if __name__ =='__main__':
     cc3d_sim_fname = args.input
     output_frequency = args.output_frequency
     screenshot_output_frequency = args.screenshot_output_frequency
+    restart_snapshot_frequency = args.restart_snapshot_frequency
+    restart_multiple_snapshots = args.restart_multiple_snapshots
+
     output_dir = args.output_dir
 
     persistent_globals = cc3d.CompuCellSetup.persistent_globals
@@ -72,6 +82,8 @@ if __name__ =='__main__':
     persistent_globals.output_frequency = output_frequency
     persistent_globals.screenshot_output_frequency = screenshot_output_frequency
     persistent_globals.set_output_dir(output_dir)
+    persistent_globals.restart_snapshot_frequency = restart_snapshot_frequency
+    persistent_globals.restart_multiple_snapshots = restart_multiple_snapshots
 
     run_cc3d_project(cc3d_sim_fname=cc3d_sim_fname)
 

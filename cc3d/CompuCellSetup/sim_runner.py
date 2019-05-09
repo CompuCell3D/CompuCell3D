@@ -45,7 +45,6 @@ def run_cc3d_project(cc3d_sim_fname):
 
     CompuCellSetup.cc3dSimulationDataHandler = cc3dSimulationDataHandler
     # todo - need to find a better solution ot append and remove pythonpath of the simulation object
-    # sys.path.append(join(dirname(cc3d_sim_fname),'Simulation'))
     sys.path.insert(0,join(dirname(cc3d_sim_fname), 'Simulation'))
 
     # execfile(CompuCellSetup.simulationPaths.simulationPythonScriptName)
