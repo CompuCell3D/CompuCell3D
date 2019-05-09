@@ -3145,7 +3145,11 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 active_field_names_list.append(str(field_name))
 
         if self.lastActiveRealWindow is not None:
-            currently_active_field = self.lastActiveRealWindow.widget().fieldComboBox.currentText()
+            try:
+                currently_active_field = self.lastActiveRealWindow.widget().fieldComboBox.currentText()
+            except AttributeError:
+                currently_active_field = ''
+
             if currently_active_field in active_field_names_list:
                 active_field_names_list = list(
                     filter(lambda elem: elem != currently_active_field, active_field_names_list))

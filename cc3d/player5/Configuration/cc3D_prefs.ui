@@ -385,6 +385,13 @@
            </spacer>
           </item>
           <item row="0" column="3">
+           <widget class="QLabel" name="label_20">
+            <property name="text">
+             <string>Restart Output Frequency</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="4">
            <widget class="QSpinBox" name="restart_freq_SB">
             <property name="enabled">
              <bool>false</bool>
