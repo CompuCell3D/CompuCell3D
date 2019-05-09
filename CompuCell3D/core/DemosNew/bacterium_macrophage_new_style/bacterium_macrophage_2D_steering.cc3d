@@ -4,7 +4,7 @@
 
     <PythonScript>Simulation/bacterium_macrophage_2D_steering.py</PythonScript> 
 
-    <Resource Type="Python">Simulation/bacterium_macrophage_2D_steering_steppables.py</Resource>    
+    <Resource Type="Python">Simulation/bacterium_macrophage_2D_steppables.py</Resource>    
 
     <PIFFile>Simulation/bacterium_macrophage_2D_wall.piff</PIFFile>
 
