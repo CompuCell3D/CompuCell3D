@@ -2,9 +2,9 @@ from cc3d.core.PySteppables import *
 from cc3d import CompuCellSetup
 import numpy as np
 from scipy import special, optimize
-
 from scipy import integrate
 from numpy import exp
+from scipy import stats
 
 
 class InventoryCheckSteppable(SteppableBasePy):

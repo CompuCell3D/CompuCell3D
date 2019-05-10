@@ -14,6 +14,7 @@ from cc3d.core.SBMLSolverHelper import SBMLSolverHelper
 import types
 import warnings
 from deprecated import deprecated
+from cc3d.core.SteeringParam import SteeringParam
 
 
 class SteppablePy:
@@ -188,6 +189,98 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     @property
     def clusterInventory(self) -> object:
         return self.inventory.getClusterInventory()
+
+    def add_steering_panel(self):
+        pass
+
+    def process_steering_panel_data(self):
+        pass
+
+    def process_steering_panel_data_wrapper(self):
+        """
+        Calls process_steering_panel_data if and only if there are dirty
+        parameters in the steering panel model
+        :return: None
+        """
+        if self.steering_param_dirty():
+            self.process_steering_panel_data()
+
+        # NOTE: resetting of the dirty flag for the steering
+        # panel model is done in the SteppableRegistry's "step" function
+
+    def add_steering_param(self, name, val, min_val=None, max_val=None, decimal_precision=3, enum=None,
+                           widget_name=None):
+        """
+        Adds steering parameter
+        :param name:
+        :param val:
+        :param min_val:
+        :param max_val:
+        :param decimal_precision:
+        :param enum:
+        :param widget_name:
+        :return:
+        """
+        pg = CompuCellSetup.persistent_globals
+        steering_param_dict = pg.steering_param_dict
+
+        if self.mcs >= 0:
+            raise RuntimeError(
+                'Steering Parameters Can only be added in "__init__" or "start" function of the steppable')
+
+        if name in steering_param_dict.keys():
+            raise RuntimeError(
+                'Steering parameter named {} has already been defined. Please use different parameter name'.format(
+                    name))
+
+        steering_param_dict[name] = SteeringParam(name=name, val=val, min_val=min_val, max_val=max_val,
+            decimal_precision=decimal_precision, enum=enum, widget_name=widget_name)
+
+    @staticmethod
+    def get_steering_param(name:str)->object:
+        """
+        Fetches value of the steering parameter
+        :param name: parameter name
+        :return: value
+        """
+
+        try:
+            return CompuCellSetup.persistent_globals.steering_param_dict[name].val
+        except KeyError:
+            raise RuntimeError('Could not find steering_parameter named {}'.format(name))
+
+    def steering_param_dirty(self, name=None):
+        """
+        Checks if a given steering parameter is dirty or if name is None if any of the parameters are dirty
+
+        :param name:{str} name of the parameter
+        True gets returned (False otherwise)
+        :return:{bool} dirty flag
+        """
+
+        if name is not None:
+            return self.get_steering_param(name=name).dirty_flag
+        else:
+            for p_name, steering_param in CompuCellSetup.persistent_globals.steering_param_dict.items():
+                if steering_param.dirty_flag:
+                    return True
+            return False
+
+    def set_steering_param_dirty(self, name=None, flag=True):
+        """
+        Sets dirty flag for given steering parameter or if name is None all parameters
+        have their dirty flag set to a given boolean value
+
+        :param name:{str} name of the parameter
+        :param flag:{bool} dirty_flag
+        :return:None
+        """
+
+        if name is not None:
+            self.get_steering_param(name=name).dirty_flag = flag
+        else:
+            for p_name, steering_param in CompuCellSetup.persistent_globals.steering_param_dict.items():
+                steering_param.dirty_flag = flag
 
     def fetch_loaded_plugins(self) -> None:
         """
@@ -403,7 +496,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
     @deprecated(version='4.0.0', reason="You should use : every_pixel_with_steps")
     def everyPixelWithSteps(self, step_x, step_y, step_z):
-        return self.every_pixel_with_steps(step_x=step_x,step_y=step_y,step_z=step_z)
+        return self.every_pixel_with_steps(step_x=step_x, step_y=step_y, step_z=step_z)
 
     def every_pixel_with_steps(self, step_x, step_y, step_z):
         """
@@ -420,7 +513,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
     @deprecated(version='4.0.0', reason="You should use : every_pixel")
     def everyPixel(self, step_x=1, step_y=1, step_z=1):
-        return self.every_pixel(step_x=step_x,step_y=step_y,step_z=step_z)
+        return self.every_pixel(step_x=step_x, step_y=step_y, step_z=step_z)
 
     def every_pixel(self, step_x=1, step_y=1, step_z=1):
         """

@@ -1,5 +1,6 @@
 import os
 import time
+from collections import OrderedDict
 from os.path import join, exists, basename
 from typing import Union
 from cc3d.core.SteppableRegistry import SteppableRegistry
@@ -62,6 +63,9 @@ class PersistentGlobals:
 
         self.global_sbml_simulator_options = None
         self.free_floating_sbml_simulators = {}
+
+        # dictionary holding steering parameter objects - used for custom steering panel
+        self.steering_param_dict = OrderedDict()
 
     def set_output_dir(self, output_dir: str) -> None:
         """
