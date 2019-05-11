@@ -1,4 +1,5 @@
 import itertools
+import numpy as np
 from collections import OrderedDict
 from cc3d.core.iterators import *
 from cc3d.core.enums import *
@@ -177,8 +178,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def potts(self):
         return self.simulator.getPotts()
 
-
-
     # @property
     # def cellField(self):
     #     return self.potts.getCellFieldG()
@@ -246,10 +245,11 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                     name))
 
         steering_param_dict[name] = SteeringParam(name=name, val=val, min_val=min_val, max_val=max_val,
-            decimal_precision=decimal_precision, enum=enum, widget_name=widget_name)
+                                                  decimal_precision=decimal_precision, enum=enum,
+                                                  widget_name=widget_name)
 
     @staticmethod
-    def get_steering_param(name:str)->object:
+    def get_steering_param(name: str) -> object:
         """
         Fetches value of the steering parameter
         :param name: parameter name
@@ -312,7 +312,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             # used in setitem function in SWIG CELLFIELDEXTEDER macro CompuCell.i
             self.cell_field.volumeTrackerPlugin = self.volume_tracker_plugin
             # self.potts.getCellFieldG().volumeTrackerPlugin =  self.volume_tracker_plugin
-
 
         for plugin_name, member_var_list in self.plugin_init_dict.items():
             if self.simulator.pluginManager.isLoaded(plugin_name):
@@ -670,7 +669,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
     @deprecated(version='4.0.0', reason="You should use : resize_and_shift_lattice")
     def resizeAndShiftLattice(self, _newSize, _shiftVec=(0, 0, 0)):
-        return self.resize_and_shift_lattice(new_size=_newSize,shift_vec=_shiftVec)
+        return self.resize_and_shift_lattice(new_size=_newSize, shift_vec=_shiftVec)
 
     def resize_and_shift_lattice(self, new_size, shift_vec=(0, 0, 0)):
         """
@@ -692,8 +691,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         shift_vec = list(map(int, shift_vec))
 
         ok_flag = self.volume_tracker_plugin.checkIfOKToResize(CompuCell.Dim3D(new_size[0], new_size[1], new_size[2]),
-                                                            CompuCell.Dim3D(shift_vec[0], shift_vec[1], shift_vec[2]))
-        print ('ok_flag=', ok_flag)
+                                                               CompuCell.Dim3D(shift_vec[0], shift_vec[1],
+                                                                               shift_vec[2]))
+        print('ok_flag=', ok_flag)
         if not ok_flag:
             warnings.warn('WARNING: Lattice Resize Denied. '
                           'The proposed lattice resizing/shift would lead to disappearance of cells.', Warning)
@@ -709,8 +709,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         if new_geometry_dimensionality != old_geometry_dimensionality:
             raise RuntimeError('Changing dimmensionality of simulation from 2D to 3D is not supported. '
-               'It also makes little sense as 2D and 3D simulations have different mathematical properties. '
-                'Please see CPM literature for more details.')
+                               'It also makes little sense as 2D and 3D simulations have different mathematical properties. '
+                               'Please see CPM literature for more details.')
 
         self.potts.resizeCellField(CompuCell.Dim3D(new_size[0], new_size[1], new_size[2]),
                                    CompuCell.Dim3D(shift_vec[0], shift_vec[1], shift_vec[2]))
@@ -732,6 +732,144 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         for steppable in CompuCellSetup.persistent_globals.steppable_registry.allSteppables():
             if steppable != self:
                 steppable.__init__(steppable.frequency)
+
+    @deprecated(version='4.0.0', reason="You should use : distance_vector")
+    def distanceVector(self, _from, _to):
+        return self.distance_vector(p1=_from, p2=_to)
+
+    def distance_vector(self, p1, p2):
+        """
+        This function will calculate distance vector between  two points - (_to-_from)
+        This is most straightforward implementation and will ignore periodic boundary conditions if such are present
+        :param p1: {list} position of first point
+        :param p2: {list} position of second point
+        :return: {ndarray} distance vector
+        """
+
+        return np.array([float(p2[0] - p1[0]), float(p2[1] - p1[1]), float(p2[2] - p1[2])])
+
+    def distance(self, p1, p2):
+        """
+        Distance between two points. Assumes non-periodic boundary conditions
+        :return: {float} "naive" distance between two points
+        """
+        return self.vectorNorm(self.distance_vector(p1, p2))
+
+    @deprecated(version='4.0.0', reason="You should use : invariant_distance")
+    def invariantDistance(self, _from, _to):
+        return self.invariant_distance(p1=_from, p2=_to)
+
+    def invariant_distance(self, p1, p2):
+        """
+        Distance between two points. Assumes periodic boundary conditions
+        - or simply makes sure that no component of distance vector
+        is greater than 1/2 corresponding dimension
+        :return: {float} invariant distance between two points
+        """
+
+        return self.vector_norm(self.invariant_distance_vector(p1, p2))
+
+
+    @deprecated(version='4.0.0', reason="You should use : invariant_distance_vector_integer")
+    def invariantDistanceVectorInteger(self, _from, _to):
+        return self.invariant_distance_vector_integer(p1=_from, p2=_to)
+
+    def invariant_distance_vector_integer(self, p1, p2):
+        """
+        This function will calculate distance vector with integer coordinates between two Point3D points
+        and make sure that the absolute values of the vector are smaller than 1/2 of the corresponding lattice dimension
+        this way we simulate 'invariance' of distance assuming that periodic boundary conditions are in place
+
+        :param p1: {list} position of first point
+        :param p2: {list} position of second point
+        :return: {ndarray} distance vector
+        """
+
+        dist_vec = CompuCell.distanceVectorInvariant(p2, p1, self.dim)
+        return np.array([float(dist_vec.x), float(dist_vec.y), float(dist_vec.z)])
+
+    @deprecated(version='4.0.0', reason="You should use : invariant_distance_vector")
+    def invariantDistanceVector(self, _from, _to):
+        return self.invariant_distance_vector(p1=_from, p2=_to)
+
+    def invariant_distance_vector(self, p1, p2):
+        """
+        This function will calculate distance vector with integer coordinates between two Coordinates3D<double> points
+        and make sure that the absolute values of the vector are smaller than 1/2 of the corresponding lattice dimension
+        this way we simulate 'invariance' of distance assuming that periodic boundary conditions are in place
+        :param p1: {list} position of first point
+        :param p2: {list} position of second point
+        :return: {ndarray} distance vector
+        """
+
+        dist_vec = CompuCell.distanceVectorCoordinatesInvariant(p2, p1, self.dim)
+        return np.array([dist_vec.x, dist_vec.y, dist_vec.z])
+
+    @deprecated(version='4.0.0', reason="You should use : vectorNorm")
+    def vectorNorm(self, _vec):
+        return self.vector_norm(vec=_vec)
+
+    @staticmethod
+    def vector_norm(vec):
+        """
+        Computes norm of a vector
+        :param vec: vector
+        :return:
+        """
+
+        return np.linalg.norm(vec)
+
+    @deprecated(version='4.0.0', reason="You should use : distance_vector_between_cells")
+    def distanceVectorBetweenCells(self, _cell_from, _cell_to):
+        return self.distance_vector_between_cells(cell1=_cell_from, cell2=_cell_to)
+
+    def distance_vector_between_cells(self, cell1, cell2):
+        """
+        This function will calculate distance vector between  COM's of cells  assuming non-periodic boundary conditions
+        :return: {ndarray} distance vector
+        """
+        return self.distance_vector([cell1.xCOM, cell1.yCOM, cell1.zCOM], [cell2.xCOM, cell2.yCOM, cell2.zCOM])
+
+    @deprecated(version='4.0.0', reason="You should use : invariant_distance_vector_between_cells")
+    def invariantDistanceVectorBetweenCells(self, _cell_from, _cell_to):
+        return self.invariant_distance_vector_between_cells(cell1=_cell_from, cell2=_cell_to)
+
+    def invariant_distance_vector_between_cells(self, cell1, cell2):
+        """
+        This function will calculate distance vector between  COM's of cells  assuming periodic boundary conditions
+        - or simply makes sure that no component of distance vector
+        is greater than 1/2 corresponding dimension
+        :return: {ndarray} distance vector
+        """
+        return self.invariant_distance_vector([cell1.xCOM, cell1.yCOM, cell1.zCOM],
+                                              [cell2.xCOM, cell2.yCOM, cell2.zCOM])
+
+    @deprecated(version='4.0.0', reason="You should use : distance_between_cells")
+    def distanceBetweenCells(self, _cell_from, _cell_to):
+        return self.distance_between_cells(cell1=_cell_from, cell2=_cell_to)
+
+    def distance_between_cells(self, cell1, cell2):
+        """
+        Distance between COM's between cells. Assumes non-periodic boundary conditions
+        :return: naive distance between COM of cells
+        """
+
+        return self.vector_norm(self.distance_vector_between_cells(cell1, cell2))
+
+    @deprecated(version='4.0.0', reason="You should use : invariant_distance_between_cells")
+    def invariantDistanceBetweenCells(self, _cell_from, _cell_to):
+        return self.invariant_distance_between_cells(cell1=_cell_from, cell2=_cell_to)
+
+    def invariant_distance_between_cells(self, cell1, cell2):
+        """
+        Distance between COM's of two cells. Assumes periodic boundary conditions
+        - or simply makes sure that no component of distance vector
+        is greater than 1/2 corresponding dimension
+        :return: invariant distance between COM of cells
+        """
+        return self.vector_norm(self.invariant_distance_vector_between_cells(cell1, cell2))
+
+
 
     # def registerXMLElementUpdate(self, *args):
     #     '''this function registers core module XML Element from wchich XML subelement has been fetched.It returns XML subelement
