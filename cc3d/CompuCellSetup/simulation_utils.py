@@ -1,5 +1,7 @@
 from cc3d import CompuCellSetup
 from cc3d.core.XMLUtils import CC3DXMLListPy
+
+
 def stop_simulation():
     """
     Stops simulation
@@ -41,10 +43,9 @@ def extract_type_names_and_ids()->dict:
     if cc3d_xml2_obj_converter is None:
         return {}
 
-    pluginElements = cc3d_xml2_obj_converter.root.getElements("Plugin")
+    plugin_elements = cc3d_xml2_obj_converter.root.getElements("Plugin")
 
-
-    list_plugin = CC3DXMLListPy(pluginElements)
+    list_plugin = CC3DXMLListPy(plugin_elements)
     type_id_type_name_dict = {}
     for element in list_plugin:
 
