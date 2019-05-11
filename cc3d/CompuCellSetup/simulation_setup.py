@@ -385,7 +385,7 @@ def main_loop(sim, simthread, steppable_registry=None):
     run_finish_flag = True
 
     restart_manager.prepare_restarter()
-    beginning_step = restart_manager.getRestartStep()
+    beginning_step = restart_manager.get_restart_step()
 
     cur_step = beginning_step
 
@@ -462,7 +462,10 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
     run_finish_flag = True
 
     restart_manager.prepare_restarter()
-    beginning_step = restart_manager.getRestartStep()
+    beginning_step = restart_manager.get_restart_step()
+
+    if init_using_restart_snapshot_enabled:
+        steppable_registry.restart_steering_panel()
 
     cur_step = beginning_step
 

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 import pickle
+import json
+from collections import OrderedDict
 from cc3d.cpp import CompuCell
 from cc3d.cpp import SerializerDEPy
 from cc3d.core.PySteppables import CellList
@@ -9,6 +11,7 @@ from cc3d.core import XMLUtils
 from cc3d.core import Version
 from cc3d import CompuCellSetup
 from .CC3DSimulationDataHandler import CC3DSimulationDataHandler
+from .SteeringParam import SteeringParam
 from pathlib import Path
 import shutil
 import copyreg
@@ -49,7 +52,7 @@ class RestartManager:
 
         self.cc3d_simulation_data_handler = None
 
-    def getRestartStep(self):
+    def get_restart_step(self):
         return self.__restart_step
 
     def prepare_restarter(self):
@@ -63,7 +66,8 @@ class RestartManager:
         self.cc3d_simulation_data_handler = CC3DSimulationDataHandler()
         self.cc3d_simulation_data_handler.read_cc3_d_file_format(pg.simulation_file_name)
 
-    def restart_enabled(self):
+    @staticmethod
+    def restart_enabled():
         """
         reads .cc3d project file and checks if restart is enabled
         :return: {bool}
@@ -72,20 +76,22 @@ class RestartManager:
 
         return Path(pg.simulation_file_name).parent.joinpath('restart').exists()
 
-    def append_xml_stub(selt, _rootElem, _sd):
+    @staticmethod
+    def append_xml_stub(root_elem, sd):
         """
         Internal function in the restart manager - manipulatex xml file that describes the layout of
         restart files
-        :param _rootElem: {instance of CC3DXMLElement}
-        :param _sd: {object that has basic information about serialized module}
+        :param root_elem: {instance of CC3DXMLElement}
+        :param sd: {object that has basic information about serialized module}
         :return: None
         """
-        baseFileName = os.path.basename(_sd.fileName)
-        attributeDict = {"ModuleName": _sd.moduleName, "ModuleType": _sd.moduleType, "ObjectName": _sd.objectName,
-                         "ObjectType": _sd.objectType, "FileName": baseFileName, 'FileFormat': _sd.fileFormat}
-        _rootElem.ElementCC3D('ObjectData', attributeDict)
+        base_file_name = os.path.basename(sd.fileName)
+        attribute_dict = {"ModuleName": sd.moduleName, "ModuleType": sd.moduleType, "ObjectName": sd.objectName,
+                         "ObjectType": sd.objectType, "FileName": base_file_name, 'FileFormat': sd.fileFormat}
+        root_elem.ElementCC3D('ObjectData', attribute_dict)
 
-    def get_restart_output_root_path(self, restart_output_path):
+    @staticmethod
+    def get_restart_output_root_path(restart_output_path):
         """
         returns path to the  output root directory e.g. <outputFolder>/restart_200
         :param restart_output_path: {str}
@@ -93,10 +99,10 @@ class RestartManager:
         """
         return str(Path(restart_output_path).parent)
 
-    def setup_restart_output_directory(self, _step=0):
+    def setup_restart_output_directory(self, step=0):
         """
-        Prpares restart directory
-        :param _step: {int} Monte Carlo Step
+        Prepares restart directory
+        :param step: {int} Monte Carlo Step
         :return: {None}
         """
 
@@ -106,7 +112,7 @@ class RestartManager:
             self.__step_number_of_digits = len(str(pg.simulator.getNumSteps()))
 
         restart_output_root = Path(output_dir_root).joinpath(
-            'restart_' + str(_step).zfill(self.__step_number_of_digits))
+            'restart_' + str(step).zfill(self.__step_number_of_digits))
         restart_files_dir = restart_output_root.joinpath('restart')
 
         restart_files_dir.mkdir(parents=True, exist_ok=True)
@@ -1110,9 +1116,31 @@ class RestartManager:
         sd.objectType = 'JSON'
         sd.fileName = os.path.join(restart_output_path, 'SteeringPanel' + '.json')
 
-        CompuCellSetup.serialize_steering_panel(sd.fileName)
+        self.serialize_steering_panel(sd.fileName)
 
         self.append_xml_stub(rst_xml_elem, sd)
+
+    @staticmethod
+    def serialize_steering_panel(fname):
+        """
+        Serializes steering panel
+        :param fname: {str} filename - to serialize steering panel to
+        :return: None
+        """
+        steering_param_dict = CompuCellSetup.persistent_globals.steering_param_dict
+        json_dict = OrderedDict()
+
+        for param_name, steering_param_obj in steering_param_dict.items():
+            json_dict[param_name] = OrderedDict()
+            json_dict[param_name]['val'] = steering_param_obj.val
+            json_dict[param_name]['min'] = steering_param_obj.min
+            json_dict[param_name]['max'] = steering_param_obj.max
+            json_dict[param_name]['decimal_precision'] = steering_param_obj.decimal_precision
+            json_dict[param_name]['enum'] = steering_param_obj.enum
+            json_dict[param_name]['widget_name'] = steering_param_obj.widget_name
+
+        with open(fname, 'w') as outfile:
+            json.dump(json_dict, outfile, indent=4, sort_keys=True)
 
     def load_steering_panel(self):
         """
@@ -1124,7 +1152,36 @@ class RestartManager:
                 full_path = os.path.join(self.__restartDirectory, sd.fileName)
                 full_path = os.path.abspath(full_path)  # normalizing path format
 
-                CompuCellSetup.deserialize_steering_panel(fname=full_path)
+                self.deserialize_steering_panel(fname=full_path)
+
+    @staticmethod
+    def deserialize_steering_panel(fname):
+        """
+        Deserializes steering panel
+        :param fname: {str} serialized steering panel filename
+        :return: None
+        """
+
+        CompuCellSetup.persistent_globals.steering_param_dict = OrderedDict()
+        steering_param_dict = CompuCellSetup.persistent_globals.steering_param_dict
+
+        with open(fname) as infile:
+
+            json_dict = json.load(infile)
+            for param_name, steering_param_obj_data in json_dict.items():
+                try:
+                    steering_param_dict[param_name] = SteeringParam(
+                        name=param_name,
+                        val=steering_param_obj_data['val'],
+                        min_val=steering_param_obj_data['min'],
+                        max_val=steering_param_obj_data['max'],
+                        decimal_precision=steering_param_obj_data['decimal_precision'],
+                        enum=steering_param_obj_data['enum'],
+                        widget_name=steering_param_obj_data['widget_name']
+                    )
+                except:
+                    print
+                    'Could not update steering parameter {} value'.format(param_name)
 
     def output_restart_files(self, step=0, on_demand=False):
         """
@@ -1228,7 +1285,7 @@ class RestartManager:
         self.output_polarization23_plugin(restart_output_path, rst_xml_elem)
         #
         # # outputting steering panel params
-        # self.outputSteeringPanel(restart_output_path, rst_xml_elem)
+        self.output_steering_panel(restart_output_path, rst_xml_elem)
         #
         # # ---------------------- END OF  OUTPUTTING RESTART FILES    --------------------
         #

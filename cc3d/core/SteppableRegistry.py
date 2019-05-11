@@ -117,17 +117,10 @@ class SteppableRegistry(SteppablePy):
         Function used during restart only to bring up the steering panel
         :return: None
         """
-        # for steppable in self.runBeforeMCSSteppableList:
-        #     # handling steering panel
-        #     steppable.add_steering_panel()
-        #
-        # for steppable in self.steppableList:
-        #     # handling steering panel
-        #     steppable.add_steering_panel()
+        pg = CompuCellSetup.persistent_globals
         try:
-            import CompuCellSetup
-            if len(list(CompuCellSetup.steering_param_dict.keys())):
-                CompuCellSetup.addSteeringPanel(list(CompuCellSetup.steering_param_dict.values()))
+            if len(list(pg.steering_param_dict.keys())):
+                pg.add_steering_panel(panel_data=list(pg.steering_param_dict.values()))
         except:
             print('Could not create steering panel')
 
@@ -167,7 +160,7 @@ class SteppableRegistry(SteppablePy):
 
                 try:
                     steppable.mcs = _mcs
-                except AttributeError as e:
+                except AttributeError:
                     pass
 
                 begin = time.time()
