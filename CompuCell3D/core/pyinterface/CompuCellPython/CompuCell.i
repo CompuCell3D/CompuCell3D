@@ -947,7 +947,7 @@ FIELD3DEXTENDERBASE(type,returnType)
         throw std::runtime_error("Wrong Syntax: Expected someting like: field[1,2,3]=object");
     }
     
-    cerr << "setItem=" << endl;
+    //cerr << "setItem=" << endl;
     VolumeTrackerPlugin *volumeTrackerPlugin=(VolumeTrackerPlugin *)_volumeTrackerPlugin;
        
     

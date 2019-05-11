@@ -160,6 +160,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         self.volume_tracker_plugin = None
 
         self.cell_field = None
+        self.cellField = None
 
         self.plugin_init_dict = {
             "NeighborTracker": ['neighbor_tracker_plugin', 'neighborTrackerPlugin'],
@@ -769,7 +770,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         return self.vector_norm(self.invariant_distance_vector(p1, p2))
 
-
     @deprecated(version='4.0.0', reason="You should use : invariant_distance_vector_integer")
     def invariantDistanceVectorInteger(self, _from, _to):
         return self.invariant_distance_vector_integer(p1=_from, p2=_to)
@@ -878,6 +878,32 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         cell.type = cell_type
         return cell
 
+    @deprecated(version='4.0.0', reason="You should use : get_pixel_neighbors_based_on_neighbor_order")
+    def getPixelNeighborsBasedOnNeighborOrder(self, _pixel, _neighborOrder=1):
+        return self.get_pixel_neighbors_based_on_neighbor_order(pixel=_pixel, neighbor_order=_neighborOrder)
+
+    def get_pixel_neighbors_based_on_neighbor_order(self, pixel, neighbor_order=1):
+        """
+        generator that returns a sequence of pixel neighbors up to specified neighbor order
+        :param pixel: {CompuCell.Point3D} pixel
+        :param neighbor_order: {int} neighbor order
+        :return:
+        """
+
+        boundary_strategy = CompuCell.BoundaryStrategy.getInstance()
+        max_neighbor_index = boundary_strategy.getMaxNeighborIndexFromNeighborOrder(neighbor_order)
+
+        # returning a list migh be safer in some situations For now sticking with the generator
+        # neighbors_out = []
+        for i in range(max_neighbor_index + 1):
+            pixel_neighbor = boundary_strategy.getNeighborDirect(pixel, i)
+            if pixel_neighbor.distance:
+                # neighbor is valid
+                yield pixel_neighbor
+
+                # neighbors_out.append(pixel_neighbor)
+
+        # return neighbors_out
 
 
     # def registerXMLElementUpdate(self, *args):

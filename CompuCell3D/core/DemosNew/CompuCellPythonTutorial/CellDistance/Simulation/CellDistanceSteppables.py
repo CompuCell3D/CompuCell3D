@@ -11,11 +11,11 @@ class CellDistanceSteppable(SteppableBasePy):
     def start(self):
         self.cellA = self.potts.createCell()
         self.cellA.type = self.A
-        self.cellField[10:12, 10:12, 0] = self.cellA
+        self.cell_field[10:12, 10:12, 0] = self.cellA
 
         self.cellB = self.potts.createCell()
         self.cellB.type = self.B
-        self.cellField[92:94, 10:12, 0] = self.cellB
+        self.cell_field[92:94, 10:12, 0] = self.cellB
 
     def step(self, mcs):
         dist_vec = self.invariant_distance_vector_integer(p1=[10, 10, 0], p2=[92, 12, 0])
