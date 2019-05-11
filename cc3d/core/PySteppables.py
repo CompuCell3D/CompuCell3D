@@ -328,7 +328,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                 for plugin_member_name in member_var_list:
                     setattr(self, plugin_member_name, plugin_obj)
 
-    def core_init(self):
+    def core_init(self, reinitialize_cell_types=True):
 
         # self.potts = self.simulator.getPotts()
         self.cellField = self.potts.getCellFieldG()
@@ -348,9 +348,10 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         type_id_type_name_dict = extract_type_names_and_ids()
 
-        for type_id, type_name in type_id_type_name_dict.items():
-            self.typename_to_attribute(cell_type_name=type_name, type_id=type_id)
-            # setattr(self, type_name.upper(), type_id)
+        if reinitialize_cell_types:
+            for type_id, type_name in type_id_type_name_dict.items():
+                self.typename_to_attribute(cell_type_name=type_name, type_id=type_id)
+                # setattr(self, type_name.upper(), type_id)
 
         self.fetch_loaded_plugins()
 
@@ -663,6 +664,66 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         # build wall of Medium
         self.build_wall(0)
 
+    def resize_and_shift_lattice(self, new_size, shift_vec=(0, 0, 0)):
+        """
+        resizes and shits lattice. Checks if the operation is possible , if not the action is abandoned
+
+        :param new_size: {list} new size
+        :param shift_vec: {list} shift vector
+        :return: None
+        """
+
+        if self.potts.getBoundaryXName().lower() == 'periodic' \
+                or self.potts.getBoundaryYName().lower() == 'periodic' \
+                or self.potts.getBoundaryZName().lower() == 'periodic':
+            raise EnvironmentError('Cannot resize lattice with Periodic Boundary Conditions')
+
+        # converting new size to integers
+        new_size = list(map(int, new_size))
+        # converting shift vec to integers
+        shift_vec = list(map(int, shift_vec))
+
+        ok_flag = self.volume_tracker_plugin.checkIfOKToResize(CompuCell.Dim3D(new_size[0], new_size[1], new_size[2]),
+                                                            CompuCell.Dim3D(shift_vec[0], shift_vec[1], shift_vec[2]))
+        print ('ok_flag=', ok_flag)
+        if not ok_flag:
+            warnings.warn('WARNING: Lattice Resize Denied. '
+                          'The proposed lattice resizing/shift would lead to disappearance of cells.', Warning)
+            return
+
+        old_geometry_dimensionality = 2
+        if self.dim.x > 1 and self.dim.y > 1 and self.dim.z > 1:
+            old_geometry_dimensionality = 3
+
+        new_geometry_dimensionality = 2
+        if new_size[0] > 1 and new_size[1] > 1 and new_size[2] > 1:
+            new_geometry_dimensionality = 3
+
+        if new_geometry_dimensionality != old_geometry_dimensionality:
+            raise RuntimeError('Changing dimmensionality of simulation from 2D to 3D is not supported. '
+               'It also makes little sense as 2D and 3D simulations have different mathematical properties. '
+                'Please see CPM literature for more details.')
+
+        self.potts.resizeCellField(CompuCell.Dim3D(new_size[0], new_size[1], new_size[2]),
+                                   CompuCell.Dim3D(shift_vec[0], shift_vec[1], shift_vec[2]))
+        #         if sum(shift_vec)==0: # there is no shift in cell field
+        #             return
+
+        # posting CC3DEventLatticeResize so that participating modules can react
+        resize_event = CompuCell.CC3DEventLatticeResize()
+        resize_event.oldDim = self.dim
+        resize_event.newDim = CompuCell.Dim3D(new_size[0], new_size[1], new_size[2])
+        resize_event.shiftVec = CompuCell.Dim3D(shift_vec[0], shift_vec[1], shift_vec[2])
+
+        self.simulator.postEvent(resize_event)
+
+        self.__init__(self.frequency)
+        self.core_init(reinitialize_cell_types=False)
+
+        # with new cell field and possibly other fields  we have to reinitialize steppables
+        for steppable in CompuCellSetup.persistent_globals.steppable_registry.allSteppables():
+            if steppable != self:
+                steppable.__init__(steppable.frequency)
 
     # def registerXMLElementUpdate(self, *args):
     #     '''this function registers core module XML Element from wchich XML subelement has been fetched.It returns XML subelement
