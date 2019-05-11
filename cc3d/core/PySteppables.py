@@ -164,7 +164,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         self.plugin_init_dict = {
             "NeighborTracker": ['neighbor_tracker_plugin', 'neighborTrackerPlugin'],
-            "FocalPointPlasticity": ['focal_point_plasticity_plugin', 'focalPointPlasticityPlugin']
+            "FocalPointPlasticity": ['focal_point_plasticity_plugin', 'focalPointPlasticityPlugin'],
+            "PixelTracker": ['pixel_tracker_plugin', 'pixelTrackerPlugin']
         }
 
     @property
@@ -893,18 +894,117 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         boundary_strategy = CompuCell.BoundaryStrategy.getInstance()
         max_neighbor_index = boundary_strategy.getMaxNeighborIndexFromNeighborOrder(neighbor_order)
 
-        # returning a list migh be safer in some situations For now sticking with the generator
-        # neighbors_out = []
+        # returning a list might be safer in some situations For now sticking with the generator
         for i in range(max_neighbor_index + 1):
             pixel_neighbor = boundary_strategy.getNeighborDirect(pixel, i)
             if pixel_neighbor.distance:
                 # neighbor is valid
                 yield pixel_neighbor
 
-                # neighbors_out.append(pixel_neighbor)
+    @deprecated(version='4.0.0', reason="You should use : get_cell_pixel_list")
+    def getCellPixelList(self, _cell):
+        return self.get_cell_pixel_list(cell=_cell)
 
-        # return neighbors_out
+    def get_cell_pixel_list(self, cell):
+        """
+        For a given cell returns list of cell pixels
 
+        :param cell: {CompuCell.CellG}
+        :return: {list} list of cell pixels
+        """
+        if self.pixelTrackerPlugin:
+            return CellPixelList(self.pixelTrackerPlugin, cell)
+
+        return None
+
+    @deprecated(version='4.0.0', reason="You should use : move_cell")
+    def moveCell(self, cell, shiftVector):
+        return self.move_cell(cell=cell, shift_vector=shiftVector)
+
+    def move_cell(self, cell, shift_vector):
+        """
+        Moves cell by shift_vector
+        :param cell: {CompuCell.CellG} cell
+        :param shift_vector: {tuple,  list, array, or CompuCell.Point3D} 3-element list specifying shoft vector
+        :return: None
+        """
+
+        # we have to make two list of pixels :
+        # used to hold pixels to delete
+        pixels_to_delete = []
+        # used to hold pixels to move
+        pixels_to_move = []
+
+        shift_vec = CompuCell.Point3D()
+        if isinstance(shift_vector, list) or isinstance(shift_vector, tuple):
+            shift_vec.x = shift_vector[0]
+            shift_vec.y = shift_vector[1]
+            shift_vec.z = shift_vector[2]
+        else:
+            shift_vec = shift_vector
+        # If we try to reassign pixels in the loop where we iterate over pixel data
+        # we will corrupt the container so in the loop below all we will do is to populate the two list mentioned above
+        pixel_list = self.get_cell_pixel_list(cell)
+        pt = CompuCell.Point3D()
+
+        for pixelTrackerData in pixel_list:
+            pt.x = pixelTrackerData.pixel.x + shift_vec.x
+            pt.y = pixelTrackerData.pixel.y + shift_vec.y
+            pt.z = pixelTrackerData.pixel.z + shift_vec.z
+            # here we are making a copy of the cell
+            pixels_to_delete.append(CompuCell.Point3D(pixelTrackerData.pixel))
+
+            if self.check_if_in_the_lattice(pt):
+                pixels_to_move.append(CompuCell.Point3D(pt))
+                # self.cellField.set(pt,cell)
+
+        # Now we will move cell
+        for pixel in pixels_to_move:
+            self.cell_field[pixel.x, pixel.y, pixel.z] = cell
+
+        # Now we will delete old pixels
+        medium_cell = CompuCell.getMediumCell()
+        for pixel in pixels_to_delete:
+            self.cell_field[pixel.x, pixel.y, pixel.z] = medium_cell
+
+    @deprecated(version='4.0.0', reason="You should use : check_if_in_the_lattice")
+    def checkIfInTheLattice(self, _pt):
+        return self.check_if_in_the_lattice(pt=_pt)
+
+    def check_if_in_the_lattice(self, pt):
+        if pt.x >= 0 and pt.x < self.dim.x and pt.y >= 0 and pt.y < self.dim.y and pt.z >= 0 and pt.z < self.dim.z:
+            return True
+        return False
+
+    # def getCopyOfCellPixels(self, _cell, _format=CC3D_FORMAT):
+
+    def get_copy_of_cell_pixels(self, cell, format=CC3D_FORMAT):
+
+        try:
+            if format == SteppableBasePy.CC3D_FORMAT:
+                return [CompuCell.Point3D(pixelTrackerData.pixel) for pixelTrackerData in
+                        self.get_cell_pixel_list(cell)]
+            else:
+                return [(pixelTrackerData.pixel.x, pixelTrackerData.pixel.y, pixelTrackerData.pixel.z) for
+                        pixelTrackerData in self.get_cell_pixel_list(cell)]
+        except:
+            raise AttributeError('Could not find PixelTracker Plugin')
+
+    @deprecated(version='4.0.0', reason="You should use : delete_cell")
+    def deleteCell(self, cell):
+        return self.delete_cell(cell=cell)
+
+    def delete_cell(self, cell):
+        """
+        Deletes given cell by overwriting its pixels with medium pixels
+        :param cell:
+        :return:
+        """
+        # returns list of tuples
+        pixels_to_delete = self.get_copy_of_cell_pixels(cell, SteppableBasePy.TUPLE_FORMAT)
+        medium_cell = CompuCell.getMediumCell()
+        for pixel in pixels_to_delete:
+            self.cell_field[pixel[0], pixel[1], pixel[2]] = medium_cell
 
     # def registerXMLElementUpdate(self, *args):
     #     '''this function registers core module XML Element from wchich XML subelement has been fetched.It returns XML subelement

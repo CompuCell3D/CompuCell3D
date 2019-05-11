@@ -461,3 +461,43 @@ class AnchorFocalPointPlasticityDataIterator:
 
     def __iter__(self):
         return self
+
+class CellPixelList:
+    def __init__(self, _pixelTrackerPlugin, _cell):
+        self.pixelTrackerPlugin = _pixelTrackerPlugin
+        self.pixelTrackerAccessor = self.pixelTrackerPlugin.getPixelTrackerAccessorPtr()
+        self.cell = _cell
+
+    def __iter__(self):
+        return CellPixelIterator(self)
+
+    def numberOfPixels(self):
+        return self.pixelTrackerAccessor.get(self.cell.extraAttribPtr).pixelSet.size()
+
+
+class CellPixelIterator:
+    def __init__(self, _cellPixelList):
+
+        self.pixelTrackerAccessor = _cellPixelList.pixelTrackerAccessor
+        self.pixelTrackerPlugin = _cellPixelList.pixelTrackerPlugin
+        self.cell = _cellPixelList.cell
+        self.pixelItr = CompuCell.pixelSetPyItr()
+        self.pixelTracker = self.pixelTrackerAccessor.get(self.cell.extraAttribPtr)
+        self.pixelItr.initialize(self.pixelTracker.pixelSet)
+        self.pixelItr.setToBegin()
+
+    def __next__(self):
+        if not self.pixelItr.isEnd():
+            #             self.neighborCell = self.nsdItr.getCurrentRef().neighborAddress
+            #             self.currentNsdItr = self.nsdItr.current
+            self.currentPixelTrackerData = self.pixelItr.getCurrentRef()
+            self.pixelItr.next()
+
+            return self.pixelTrackerPlugin.getPixelTrackerData(self.currentPixelTrackerData)
+            # return self.currentPixelTrackerData
+        else:
+            raise StopIteration
+
+    def __iter__(self):
+        return self
+

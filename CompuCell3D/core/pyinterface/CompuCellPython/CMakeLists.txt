@@ -148,6 +148,9 @@ SET(LIBS_AUX
     NeighborTrackerShared
     VolumeTrackerShared
     CenterOfMassShared
+   PixelTrackerShared
+   BoundaryPixelTrackerShared   
+
 )
 
 INCLUDE_DIRECTORIES(

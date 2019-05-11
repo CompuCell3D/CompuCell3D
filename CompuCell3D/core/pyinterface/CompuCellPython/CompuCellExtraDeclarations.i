@@ -283,18 +283,7 @@ PLUGINACCESSOR(VolumeTracker)
 
 //CenterOfMass Plugin
 PLUGINACCESSOR(CenterOfMass)
-//
-//
-//// %include <CompuCell3D/plugins/VolumeTracker/VolumeTrackerPlugin.h>
-//// %inline %{
-////    VolumeTrackerPlugin * getVolumeTrackerPlugin(){
-////       return (VolumeTrackerPlugin *)Simulator::pluginManager.get("VolumeTracker");
-////    }
-//// 
-//// 
-//// %}
-//
-//
+
 //NeighborPlugin
 
 
@@ -331,44 +320,44 @@ PLUGINACCESSOR(NeighborTracker)
 
 
 
-//%include <CompuCell3D/plugins/PixelTracker/PixelTracker.h>
-//%template (PixelTrackerAccessor) BasicClassAccessor<PixelTracker>; //necessary to get PixelTracker accessor working
-//// #define std::set<CompuCell3D::PixelTrackerData>::value_type CompuCell3D::PixelTrackerData
-//%template (PixelTrackerDataset) std::set<CompuCell3D::PixelTrackerData>; //necessary to get basis set functionality working
-//%template (pixelSetPyItr) STLPyIteratorRefRetType< std::set<CompuCell3D::PixelTrackerData>,CompuCell3D::PixelTrackerData >; 
-//// %template (pixelSetPyItr) STLPyIterator<std::set<CompuCell3D::PixelTrackerData> >;
-//PLUGINACCESSOR(PixelTracker)
-//
-//
-//// %include <CompuCell3D/plugins/PixelTracker/PixelTrackerPlugin.h>
-//// 
-//// %inline %{
-////    PixelTrackerPlugin * getPixelTrackerPlugin(){
-////       return (PixelTrackerPlugin *)Simulator::pluginManager.get("PixelTracker");
-////    }
-//// 
-//// %}
-//
-//
-//%include <CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTracker.h>
-//%template (BoundaryPixelTrackerAccessor) BasicClassAccessor<BoundaryPixelTracker>; //necessary to get BoundaryPixelTracker accessor working
-//%template (BoundaryPixelTrackerDataset) std::set<CompuCell3D::BoundaryPixelTrackerData>; //necessary to get basis set functionality working
-//%template (IntBoundaryPixelTrackerDataSetMap) std::map<int, std::set<CompuCell3D::BoundaryPixelTrackerData> >; //necessary to get basis set functionality working
-//%template (boundaryPixelSetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::BoundaryPixelTrackerData> , CompuCell3D::BoundaryPixelTrackerData >;
-//// %template (boundaryPixelSetPyItr) STLPyIterator<std::set<CompuCell3D::BoundaryPixelTrackerData> >;
-//PLUGINACCESSOR(BoundaryPixelTracker)
-//
-//
-//
-//// %include <CompuCell3D/plugins/PixelTracker/BoundaryPixelTrackerPlugin.h>
-//// 
-//// %inline %{
-////    BoundaryPixelTrackerPlugin * getBoundaryPixelTrackerPlugin(){
-////       return (BoundaryPixelTrackerPlugin *)Simulator::pluginManager.get("BoundaryPixelTracker");
-////    }
-//// 
-//// 
-//// %}
+%include <CompuCell3D/plugins/PixelTracker/PixelTracker.h>
+%template (PixelTrackerAccessor) BasicClassAccessor<PixelTracker>; //necessary to get PixelTracker accessor working
+// #define std::set<CompuCell3D::PixelTrackerData>::value_type CompuCell3D::PixelTrackerData
+%template (PixelTrackerDataset) std::set<CompuCell3D::PixelTrackerData>; //necessary to get basis set functionality working
+%template (pixelSetPyItr) STLPyIteratorRefRetType< std::set<CompuCell3D::PixelTrackerData>,CompuCell3D::PixelTrackerData >; 
+// %template (pixelSetPyItr) STLPyIterator<std::set<CompuCell3D::PixelTrackerData> >;
+PLUGINACCESSOR(PixelTracker)
+
+
+// %include <CompuCell3D/plugins/PixelTracker/PixelTrackerPlugin.h>
+// 
+// %inline %{
+//    PixelTrackerPlugin * getPixelTrackerPlugin(){
+//       return (PixelTrackerPlugin *)Simulator::pluginManager.get("PixelTracker");
+//    }
+// 
+// %}
+
+
+%include <CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTracker.h>
+%template (BoundaryPixelTrackerAccessor) BasicClassAccessor<BoundaryPixelTracker>; //necessary to get BoundaryPixelTracker accessor working
+%template (BoundaryPixelTrackerDataset) std::set<CompuCell3D::BoundaryPixelTrackerData>; //necessary to get basis set functionality working
+%template (IntBoundaryPixelTrackerDataSetMap) std::map<int, std::set<CompuCell3D::BoundaryPixelTrackerData> >; //necessary to get basis set functionality working
+%template (boundaryPixelSetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::BoundaryPixelTrackerData> , CompuCell3D::BoundaryPixelTrackerData >;
+// %template (boundaryPixelSetPyItr) STLPyIterator<std::set<CompuCell3D::BoundaryPixelTrackerData> >;
+PLUGINACCESSOR(BoundaryPixelTracker)
+
+
+
+// %include <CompuCell3D/plugins/PixelTracker/BoundaryPixelTrackerPlugin.h>
+// 
+// %inline %{
+//    BoundaryPixelTrackerPlugin * getBoundaryPixelTrackerPlugin(){
+//       return (BoundaryPixelTrackerPlugin *)Simulator::pluginManager.get("BoundaryPixelTracker");
+//    }
+// 
+// 
+// %}
 //
 ////ContactLocalFlexPlugin
 //

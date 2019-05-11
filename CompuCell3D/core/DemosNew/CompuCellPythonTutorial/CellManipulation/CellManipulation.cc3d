@@ -1,0 +1,8 @@
+<Simulation version="3.5.1">
+    <XMLScript>Simulation/CellManipulation.xml</XMLScript>    
+    <PythonScript>Simulation/CellManipulation.py</PythonScript> 
+    <Resource Type="Python">Simulation/CellManipulationSteppables.py</Resource>
+    <PIFFile>Simulation/CellManipulation.piff</PIFFile>
+</Simulation>
+
+ 
