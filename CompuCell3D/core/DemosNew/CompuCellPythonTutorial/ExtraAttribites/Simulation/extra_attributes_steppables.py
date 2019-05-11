@@ -6,7 +6,7 @@ class ExtraAttributeCellsort(SteppableBasePy):
         SteppableBasePy.__init__(self, frequency)
 
     def step(self, mcs):
-        for cell in self.cellList:
+        for cell in self.cell_list:
             print('demo')
             cell.dict['my_list'] = [cell.id * mcs, cell.id * (mcs - 1)]
             print("CELL ID modified=", cell.dict['my_list'][0], "    ", cell.dict['my_list'][1])
@@ -17,7 +17,7 @@ class TypeSwitcherSteppable(SteppableBasePy):
         SteppableBasePy.__init__(self, frequency)
 
     def step(self, mcs):
-        for cell in self.cellList:
+        for cell in self.cell_list:
             if cell.type == self.CONDENSING:
                 cell.type = self.NONCONDENSING
             elif cell.type == self.NONCONDENSING:

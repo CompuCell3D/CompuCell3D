@@ -13,7 +13,7 @@ class SBMLSolverOscilatorDemoSteppable(SteppableBasePy):
         self.pW.addPlot('S1', _style='Dots', _color='red', _size=5)
 
         # iterating over all cells in simulation        
-        for cell in self.cellList:
+        for cell in self.cell_list:
             # you can access/manipulate cell properties here
             cell.targetVolume = 25
             cell.lambdaVolume = 2.0
@@ -42,7 +42,7 @@ class SBMLSolverOscilatorDemoSteppable(SteppableBasePy):
             self.pW.addPlot('S1', _style='Dots', _color='red', _size=5)
 
         added = False
-        for cell in self.cellList:
+        for cell in self.cell_list:
 
             if cell.type == self.NONCONDENSING:
                 print(cell.sbml)
@@ -55,7 +55,7 @@ class SBMLSolverOscilatorDemoSteppable(SteppableBasePy):
                     added = True
 
         if mcs > 2:
-            for cell in self.cellList:
+            for cell in self.cell_list:
                 if cell.type == self.NONCONDENSING:
                     sbml_model = cell.sbml._rr_OSCIL
                     print('sbml_model=',sbml_model)
@@ -63,7 +63,7 @@ class SBMLSolverOscilatorDemoSteppable(SteppableBasePy):
                     break
 
         if mcs == 3:
-            for cell in self.cellList:
+            for cell in self.cell_list:
                 if cell.type == self.NONCONDENSING:
                     state = cell.sbml.OSCIL
                     state['S1'] = 1.3

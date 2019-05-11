@@ -25,7 +25,7 @@ class ExtraFieldVisualizationSteppable(SteppableBasePy):
             #     self.field.ExtraField[x, y, z] = sin(x * y)
 
         self.field.IdField.clear()
-        for cell in self.cellList:
+        for cell in self.cell_list:
             self.field.IdField[cell] = cell.id * random()
 
 
@@ -51,7 +51,7 @@ class IdFieldVisualizationSteppable(SteppableBasePy):
             self.create_scalar_field_cell_level_py("IdFieldNew")
             id_field = self.field.IdFieldNew
 
-        for cell in self.cellList:
+        for cell in self.cell_list:
             id_field[cell] = cell.id * random()
 
 
@@ -80,7 +80,7 @@ class VectorFieldCellLevelVisualizationSteppable(SteppableBasePy):
         vec_field = self.field.VectorFieldCellLevel
 
         vec_field.clear()
-        for cell in self.cellList:
+        for cell in self.cell_list:
 
             if cell.type == 1:
                 vec_field[cell] = [cell.id * random(), cell.id * random(), 0]

@@ -13,7 +13,7 @@ class FocalPointPlasticityAnchorSteppable(SteppableBasePy):
 
     def start(self):
 
-        for cell in self.cellList:
+        for cell in self.cell_list:
             if cell.id == 5:
                 # it is a good idea to store anchor id because any modification to anchor parameters/ deletion
                 # of an anchor require the anchor id
@@ -30,7 +30,7 @@ class FocalPointPlasticityAnchorSteppable(SteppableBasePy):
 
     def step(self, mcs):
 
-        for cell in self.cellList:
+        for cell in self.cell_list:
 
             if mcs < 100:
                 for fppd in self.getFocalPointPlasticityDataList(cell):

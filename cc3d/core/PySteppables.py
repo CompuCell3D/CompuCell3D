@@ -158,7 +158,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         self.focalPointPlasticityPlugin = None
         self.volume_tracker_plugin = None
 
-        self.cellField = None
+        self.cell_field = None
 
         self.plugin_init_dict = {
             "NeighborTracker": ['neighbor_tracker_plugin', 'neighborTrackerPlugin'],
@@ -185,7 +185,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
     @property
     def dim(self):
-        return self.cellField.getDim()
+        return self.cell_field.getDim()
 
     @property
     def inventory(self):
@@ -310,7 +310,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         if self.simulator.pluginManager.isLoaded("VolumeTracker"):
             self.volume_tracker_plugin = CompuCell.getVolumeTrackerPlugin()
             # used in setitem function in SWIG CELLFIELDEXTEDER macro CompuCell.i
-            self.cellField.volumeTrackerPlugin = self.volume_tracker_plugin
+            self.cell_field.volumeTrackerPlugin = self.volume_tracker_plugin
             # self.potts.getCellFieldG().volumeTrackerPlugin =  self.volume_tracker_plugin
 
 
@@ -331,13 +331,17 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def core_init(self, reinitialize_cell_types=True):
 
         # self.potts = self.simulator.getPotts()
-        self.cellField = self.potts.getCellFieldG()
+        self.cell_field = self.potts.getCellFieldG()
+        self.cellField = self.cell_field
         # self.dim = self.cellField.getDim()
         # self.inventory = self.simulator.getPotts().getCellInventory()
         # self.clusterInventory = self.inventory.getClusterInventory()
-        self.cellList = CellList(self.inventory)
-        self.cellListByType = CellListByType(self.inventory)
-        self.clusterList = ClusterList(self.inventory)
+        self.cell_list = CellList(self.inventory)
+        self.cellList = self.cell_list
+        self.cell_list_by_type = CellListByType(self.inventory)
+        self.cellListByType = self.cell_list_by_type
+        self.cluster_list = ClusterList(self.inventory)
+        self.clusterList = self.cluster_list
         self.clusters = Clusters(self.inventory)
         self.mcs = -1
 
@@ -358,13 +362,13 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         return
         self.potts = self.simulator.getPotts()
 
-        self.cellField = self.potts.getCellFieldG()
-        self.dim = self.cellField.getDim()
+        self.cell_field = self.potts.getCellFieldG()
+        self.dim = self.cell_field.getDim()
         self.inventory = self.simulator.getPotts().getCellInventory()
         self.clusterInventory = self.inventory.getClusterInventory()
-        self.cellList = CellList(self.inventory)
-        self.cellListByType = CellListByType(self.inventory)
-        self.clusterList = ClusterList(self.inventory)
+        self.cell_list = CellList(self.inventory)
+        self.cell_list_by_type = CellListByType(self.inventory)
+        self.cluster_list = ClusterList(self.inventory)
         self.clusters = Clusters(self.inventory)
         self.mcs = -1
 
@@ -623,38 +627,38 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
             if index_of1 == 2:
                 # xy plane simulation
-                self.cellField[0:self.dim.x, 0, 0] = cell
-                self.cellField[0:self.dim.x, self.dim.y - 1:self.dim.y, 0] = cell
-                self.cellField[0, 0:self.dim.y, 0] = cell
-                self.cellField[self.dim.x - 1:self.dim.x, 0:self.dim.y, 0:0] = cell
+                self.cell_field[0:self.dim.x, 0, 0] = cell
+                self.cell_field[0:self.dim.x, self.dim.y - 1:self.dim.y, 0] = cell
+                self.cell_field[0, 0:self.dim.y, 0] = cell
+                self.cell_field[self.dim.x - 1:self.dim.x, 0:self.dim.y, 0:0] = cell
 
             elif index_of1 == 0:
                 # yz simulation
-                self.cellField[0, 0:self.dim.y, 0] = cell
-                self.cellField[0, 0:self.dim.y, self.dim.z - 1:self.dim.z] = cell
-                self.cellField[0, 0, 0:self.dim.z] = cell
-                self.cellField[0, self.dim.y - 1:self.dim.y, 0:self.dim.z] = cell
+                self.cell_field[0, 0:self.dim.y, 0] = cell
+                self.cell_field[0, 0:self.dim.y, self.dim.z - 1:self.dim.z] = cell
+                self.cell_field[0, 0, 0:self.dim.z] = cell
+                self.cell_field[0, self.dim.y - 1:self.dim.y, 0:self.dim.z] = cell
 
             elif index_of1 == 1:
                 # xz simulation
-                self.cellField[0:self.dim.x, 0, 0] = cell
-                self.cellField[0:self.dim.x, 0, self.dim.z - 1:self.dim.z] = cell
-                self.cellField[0, 0, 0:self.dim.z] = cell
-                self.cellField[self.dim.x - 1:self.dim.x, 0, 0:self.dim.z] = cell
+                self.cell_field[0:self.dim.x, 0, 0] = cell
+                self.cell_field[0:self.dim.x, 0, self.dim.z - 1:self.dim.z] = cell
+                self.cell_field[0, 0, 0:self.dim.z] = cell
+                self.cell_field[self.dim.x - 1:self.dim.x, 0, 0:self.dim.z] = cell
         else:
             # 3D case
             # wall 1 (front)
-            self.cellField[0:self.dim.x, 0:self.dim.y, 0] = cell
+            self.cell_field[0:self.dim.x, 0:self.dim.y, 0] = cell
             # wall 2 (rear)
-            self.cellField[0:self.dim.x, 0:self.dim.y, self.dim.z - 1] = cell
+            self.cell_field[0:self.dim.x, 0:self.dim.y, self.dim.z - 1] = cell
             # wall 3 (bottom)
-            self.cellField[0:self.dim.x, 0, 0:self.dim.z] = cell
+            self.cell_field[0:self.dim.x, 0, 0:self.dim.z] = cell
             # wall 4 (top)
-            self.cellField[0:self.dim.x, self.dim.y - 1, 0:self.dim.z] = cell
+            self.cell_field[0:self.dim.x, self.dim.y - 1, 0:self.dim.z] = cell
             # wall 5 (left)
-            self.cellField[0, 0:self.dim.y, 0:self.dim.z] = cell
+            self.cell_field[0, 0:self.dim.y, 0:self.dim.z] = cell
             # wall 6 (right)
-            self.cellField[self.dim.x - 1, 0:self.dim.y, 0:self.dim.z] = cell
+            self.cell_field[self.dim.x - 1, 0:self.dim.y, 0:self.dim.z] = cell
 
     @deprecated(version='4.0.0', reason="You should use : destroy_wall")
     def destroyWall(self):

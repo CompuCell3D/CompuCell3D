@@ -24,13 +24,13 @@ class VolumeSteeringSteppable(SteppableBasePy):
         target_vol = self.get_steering_param('target_vol')
         lambda_vol = self.get_steering_param('lambda_vol')
 
-        for cell in self.cellList:
+        for cell in self.cell_list:
             cell.targetVolume = target_vol
             cell.lambdaVolume = lambda_vol
 
     def start(self):
 
-        for cell in self.cellList:
+        for cell in self.cell_list:
             cell.targetVolume = 25
             cell.lambdaVolume = 2.0
 
@@ -59,12 +59,12 @@ class SurfaceSteeringSteppable(SteppableBasePy):
         target_surf = self.get_steering_param('target_surface')
         lambda_surf = self.get_steering_param('lambda_surface')
 
-        for cell in self.cellList:
+        for cell in self.cell_list:
             cell.targetSurface = target_surf
             cell.lambdaSurface = lambda_surf
 
     def start(self):
-        for cell in self.cellList:
+        for cell in self.cell_list:
             cell.targetSurface = 20
             cell.lambdaSurface = 0.2
 

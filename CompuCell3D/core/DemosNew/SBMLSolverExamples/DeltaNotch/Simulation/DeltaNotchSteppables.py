@@ -16,7 +16,7 @@ class DeltaNotchClass(SteppableBasePy):
         model_file = 'Simulation/DN_Collier.sbml'
         self.add_sbml_to_cell_types(model_file=model_file, model_name='DN', cell_types=[self.TYPEA], step_size=0.2)
 
-        for cell in self.cellList:
+        for cell in self.cell_list:
             dn_model = cell.sbml.DN
 
             dn_model['D'] = uniform(0.9, 1.0)
@@ -27,7 +27,7 @@ class DeltaNotchClass(SteppableBasePy):
 
     def step(self, mcs):
 
-        for cell in self.cellList:
+        for cell in self.cell_list:
             delta_tot = 0.0
             nn = 0
             for neighbor, commonSurfaceArea in self.get_cell_neighbor_data_list(cell):
@@ -59,6 +59,6 @@ class DNVisualizationSteppable(SteppableBasePy):
         delta.clear()
         notch.clear()
 
-        for cell in self.cellList:
+        for cell in self.cell_list:
             delta[cell] = cell.dict['D']
             notch[cell] = cell.dict['N']

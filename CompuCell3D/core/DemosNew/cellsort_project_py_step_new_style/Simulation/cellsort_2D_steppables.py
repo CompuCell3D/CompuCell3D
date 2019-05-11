@@ -12,7 +12,7 @@ class CellsortSteppable(SteppableBasePy):
 
     def step(self, mcs):
         print("running mcs=", mcs)
-        for i, cell in enumerate(self.cellList):
+        for i, cell in enumerate(self.cell_list):
             if i > 3:
                 break
             # print ('cell=', cell)

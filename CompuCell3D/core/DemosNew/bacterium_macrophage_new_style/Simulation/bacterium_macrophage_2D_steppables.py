@@ -42,7 +42,7 @@ class InventoryCheckSteppable(SteppableBasePy):
         mean_surface = 0.0
         mean_volume = 0.0
         number_of_cells = 0
-        for cell in self.cellList:
+        for cell in self.cell_list:
             mean_volume += cell.volume
             mean_surface += cell.surface
             number_of_cells += 1

@@ -6,7 +6,7 @@ class FocalPointPlasticityParams(SteppableBasePy):
         SteppableBasePy.__init__(self, frequency)
 
     def step(self, mcs):
-        for cell in self.cellList:
+        for cell in self.cell_list:
             print("CELL ID=", cell.id, " CELL TYPE=", cell.type, " volume=", cell.volume)
             if mcs < 100:
                 for fppd in self.getFocalPointPlasticityDataList(cell):
