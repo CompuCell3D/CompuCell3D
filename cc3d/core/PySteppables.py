@@ -664,6 +664,10 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         # build wall of Medium
         self.build_wall(0)
 
+    @deprecated(version='4.0.0', reason="You should use : resize_and_shift_lattice")
+    def resizeAndShiftLattice(self, _newSize, _shiftVec=(0, 0, 0)):
+        return self.resize_and_shift_lattice(new_size=_newSize,shift_vec=_shiftVec)
+
     def resize_and_shift_lattice(self, new_size, shift_vec=(0, 0, 0)):
         """
         resizes and shits lattice. Checks if the operation is possible , if not the action is abandoned
