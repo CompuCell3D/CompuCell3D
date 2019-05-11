@@ -156,7 +156,8 @@ class SteppableRegistry(SteppablePy):
 
         for steppable in self.steppableList:
 
-            if not _mcs % steppable.frequency:  # this executes given steppable every "frequency" Monte Carlo Steps
+            # this executes given steppable every "frequency" Monte Carlo Steps
+            if not _mcs % steppable.frequency:
 
                 try:
                     steppable.mcs = _mcs

@@ -1140,7 +1140,7 @@ class RestartManager:
             json_dict[param_name]['widget_name'] = steering_param_obj.widget_name
 
         with open(fname, 'w') as outfile:
-            json.dump(json_dict, outfile, indent=4, sort_keys=True)
+            json.dump(json_dict, outfile, indent=4)
 
     def load_steering_panel(self):
         """
