@@ -492,8 +492,12 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
         # steer application will only update modules that uses requested using updateCC3DModule function from simulator
         sim.steer()
 
-        simthread.loopWork(cur_step)
-        simthread.loopWorkPostEvent(cur_step)
+        screen_update_frequency = simthread.getScreenUpdateFrequency()
+        screenshot_frequency = simthread.getScreenshotFrequency()
+
+        if (cur_step % screen_update_frequency == 0) or ( cur_step % screenshot_frequency == 0):
+            simthread.loopWork(cur_step)
+            simthread.loopWorkPostEvent(cur_step)
 
         cur_step += 1
 
