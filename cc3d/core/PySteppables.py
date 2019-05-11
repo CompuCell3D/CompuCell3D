@@ -655,6 +655,15 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             # wall 6 (right)
             self.cellField[self.dim.x - 1, 0:self.dim.y, 0:self.dim.z] = cell
 
+    @deprecated(version='4.0.0', reason="You should use : destroy_wall")
+    def destroyWall(self):
+        return self.destroy_wall()
+
+    def destroy_wall(self):
+        # build wall of Medium
+        self.build_wall(0)
+
+
     # def registerXMLElementUpdate(self, *args):
     #     '''this function registers core module XML Element from wchich XML subelement has been fetched.It returns XML subelement
     #     '''
