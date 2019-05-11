@@ -156,6 +156,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         self.neighborTrackerPlugin = None
         self.focal_point_plasticity_plugin = None
         self.focalPointPlasticityPlugin = None
+        self.volume_tracker_plugin = None
+
+        self.cellField = None
 
         self.plugin_init_dict = {
             "NeighborTracker": ['neighbor_tracker_plugin', 'neighborTrackerPlugin'],
@@ -174,9 +177,11 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def potts(self):
         return self.simulator.getPotts()
 
-    @property
-    def cellField(self):
-        return self.potts.getCellFieldG()
+
+
+    # @property
+    # def cellField(self):
+    #     return self.potts.getCellFieldG()
 
     @property
     def dim(self):
@@ -196,6 +201,12 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         :return:
         """
         pass
+
+    def add_steering_panel(self):
+        """
+        To be implemented in the subclass
+        :return:
+        """
 
     def process_steering_panel_data_wrapper(self):
         """
@@ -295,6 +306,14 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         :return:
         """
 
+        # Special handling of VolumeTrackerPlugin - used in cell field numpy-like array operations
+        if self.simulator.pluginManager.isLoaded("VolumeTracker"):
+            self.volume_tracker_plugin = CompuCell.getVolumeTrackerPlugin()
+            # used in setitem function in SWIG CELLFIELDEXTEDER macro CompuCell.i
+            self.cellField.volumeTrackerPlugin = self.volume_tracker_plugin
+            # self.potts.getCellFieldG().volumeTrackerPlugin =  self.volume_tracker_plugin
+
+
         for plugin_name, member_var_list in self.plugin_init_dict.items():
             if self.simulator.pluginManager.isLoaded(plugin_name):
                 accessor_fcn_name = 'get' + plugin_name + 'Plugin'
@@ -312,7 +331,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def core_init(self):
 
         # self.potts = self.simulator.getPotts()
-        # self.cellField = self.potts.getCellFieldG()
+        self.cellField = self.potts.getCellFieldG()
         # self.dim = self.cellField.getDim()
         # self.inventory = self.simulator.getPotts().getCellInventory()
         # self.clusterInventory = self.inventory.getClusterInventory()
@@ -575,6 +594,66 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             return AnchorFocalPointPlasticityDataList(self.focal_point_plasticity_plugin, _cell)
 
         return None
+
+    @deprecated(version='4.0.0', reason="You should use : build_wall")
+    def buildWall(self, type):
+        return self.build_wall(cell_type=type)
+
+    def build_wall(self, cell_type):
+        # medium:
+        if cell_type == 0:
+            cell = CompuCell.getMediumCell()
+        else:
+            cell = self.potts.createCell()
+            cell.type = cell_type
+
+        index_of1 = -1
+        dim_local = [self.dim.x, self.dim.y, self.dim.z]
+
+        for idx in range(len(dim_local)):
+
+            if dim_local[idx] == 1:
+                index_of1 = idx
+                break
+
+        # this could be recoded in a more general way
+        # 2D case
+        if index_of1 >= 0:
+
+            if index_of1 == 2:
+                # xy plane simulation
+                self.cellField[0:self.dim.x, 0, 0] = cell
+                self.cellField[0:self.dim.x, self.dim.y - 1:self.dim.y, 0] = cell
+                self.cellField[0, 0:self.dim.y, 0] = cell
+                self.cellField[self.dim.x - 1:self.dim.x, 0:self.dim.y, 0:0] = cell
+
+            elif index_of1 == 0:
+                # yz simulation
+                self.cellField[0, 0:self.dim.y, 0] = cell
+                self.cellField[0, 0:self.dim.y, self.dim.z - 1:self.dim.z] = cell
+                self.cellField[0, 0, 0:self.dim.z] = cell
+                self.cellField[0, self.dim.y - 1:self.dim.y, 0:self.dim.z] = cell
+
+            elif index_of1 == 1:
+                # xz simulation
+                self.cellField[0:self.dim.x, 0, 0] = cell
+                self.cellField[0:self.dim.x, 0, self.dim.z - 1:self.dim.z] = cell
+                self.cellField[0, 0, 0:self.dim.z] = cell
+                self.cellField[self.dim.x - 1:self.dim.x, 0, 0:self.dim.z] = cell
+        else:
+            # 3D case
+            # wall 1 (front)
+            self.cellField[0:self.dim.x, 0:self.dim.y, 0] = cell
+            # wall 2 (rear)
+            self.cellField[0:self.dim.x, 0:self.dim.y, self.dim.z - 1] = cell
+            # wall 3 (bottom)
+            self.cellField[0:self.dim.x, 0, 0:self.dim.z] = cell
+            # wall 4 (top)
+            self.cellField[0:self.dim.x, self.dim.y - 1, 0:self.dim.z] = cell
+            # wall 5 (left)
+            self.cellField[0, 0:self.dim.y, 0:self.dim.z] = cell
+            # wall 6 (right)
+            self.cellField[self.dim.x - 1, 0:self.dim.y, 0:self.dim.z] = cell
 
     # def registerXMLElementUpdate(self, *args):
     #     '''this function registers core module XML Element from wchich XML subelement has been fetched.It returns XML subelement

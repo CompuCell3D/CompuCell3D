@@ -278,11 +278,11 @@ PLUGINACCESSOR(Chemotaxis)
 //%include <CompuCell3D/plugins/Mitosis/MitosisSimplePlugin.h>
 //
 ////Volume Tracker Plugin
-//PLUGINACCESSOR(VolumeTracker)
-//
-//
-////CenterOfMass Plugin
-//PLUGINACCESSOR(CenterOfMass)
+PLUGINACCESSOR(VolumeTracker)
+
+
+//CenterOfMass Plugin
+PLUGINACCESSOR(CenterOfMass)
 //
 //
 //// %include <CompuCell3D/plugins/VolumeTracker/VolumeTrackerPlugin.h>

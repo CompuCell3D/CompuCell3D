@@ -141,11 +141,13 @@ ClusterSurfaceTrackerShared
    
 )
 
-SET(LIBS_AUX PyPlugin
-  ChemotaxisShared
-  FocalPointPlasticityShared  
-  NeighborTrackerShared
-  
+SET(LIBS_AUX
+    PyPlugin
+    ChemotaxisShared
+    FocalPointPlasticityShared
+    NeighborTrackerShared
+    VolumeTrackerShared
+    CenterOfMassShared
 )
 
 INCLUDE_DIRECTORIES(

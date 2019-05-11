@@ -796,6 +796,7 @@ FIELD3DEXTENDERBASE(type,returnType)
 
         //int ok=PySlice_GetIndicesEx((PySliceObject*)xCoord,dim.x-1,&start_x,&stop_x,&step_x,&sliceLength);
 		int ok = PySlice_GetIndices(xCoord, dim.x - 1, &start_x, &stop_x, &step_x);
+        stop_x -= 1;
 		
      // cerr<<"extracting slices for x axis"<<endl;   
     // cerr<<"start x="<< start_x<<endl;
@@ -828,6 +829,7 @@ FIELD3DEXTENDERBASE(type,returnType)
         
         //int ok=PySlice_GetIndicesEx((PySliceObject*)yCoord,dim.y-1,&start_y,&stop_y,&step_y,&sliceLength);
 		int ok = PySlice_GetIndices(yCoord, dim.y - 1, &start_y, &stop_y, &step_y);
+        stop_y -= 1;
      // cerr<<"extracting slices for x axis"<<endl;   
     // cerr<<"start y="<< start_y<<endl;
     // cerr<<"stop y="<< stop_y<<endl;
@@ -858,6 +860,7 @@ FIELD3DEXTENDERBASE(type,returnType)
         
        //int ok= PySlice_GetIndicesEx((PySliceObject*)zCoord,dim.z-1,&start_z,&stop_z,&step_z,&sliceLength);
 	   int ok = PySlice_GetIndices(zCoord, dim.z - 1, &start_z, &stop_z, &step_z);
+       stop_z -= 1;
         
         
     }else{
@@ -944,6 +947,7 @@ FIELD3DEXTENDERBASE(type,returnType)
         throw std::runtime_error("Wrong Syntax: Expected someting like: field[1,2,3]=object");
     }
     
+    cerr << "setItem=" << endl;
     VolumeTrackerPlugin *volumeTrackerPlugin=(VolumeTrackerPlugin *)_volumeTrackerPlugin;
        
     
@@ -960,6 +964,8 @@ FIELD3DEXTENDERBASE(type,returnType)
     if (PySlice_Check(xCoord)){    
         //PySlice_GetIndicesEx((PySliceObject*)xCoord,dim.x-1,&start_x,&stop_x,&step_x,&sliceLength);
 		int ok = PySlice_GetIndices(xCoord, dim.x - 1, &start_x, &stop_x, &step_x);
+        stop_x -= 1;
+        //cerr << "start_x=" << start_x << " stop_x=" << stop_x << endl;
         
     }else{
         if (PyInt_Check(xCoord)){
@@ -985,7 +991,7 @@ FIELD3DEXTENDERBASE(type,returnType)
         
         //PySlice_GetIndicesEx((PySliceObject*)yCoord,dim.y-1,&start_y,&stop_y,&step_y,&sliceLength);
 		int ok = PySlice_GetIndices(yCoord, dim.y - 1, &start_y, &stop_y, &step_y);
-        
+        stop_y -= 1;
         
     }else{
         if (PyInt_Check(yCoord)){
@@ -1010,7 +1016,7 @@ FIELD3DEXTENDERBASE(type,returnType)
         
         //PySlice_GetIndicesEx((PySliceObject*)zCoord,dim.z-1,&start_z,&stop_z,&step_z,&sliceLength);
 		int ok = PySlice_GetIndices(zCoord, dim.z - 1, &start_z, &stop_z, &step_z);
-        
+        stop_z -= 1;
         
     }else{
         if (PyInt_Check(zCoord)){
@@ -1044,6 +1050,8 @@ FIELD3DEXTENDERBASE(type,returnType)
     for (Py_ssize_t x=start_x ; x<=stop_x ; x+=step_x)
         for (Py_ssize_t y=start_y ; y<=stop_y ; y+=step_y)
             for (Py_ssize_t z=start_z ; z<=stop_z ; z+=step_z){
+                //cerr << "Point3D(x,y,z)=" << Point3D(x, y, z) << endl;
+                //cerr << "_val=" << _val << endl;
                 $self->set(Point3D(x,y,z),_val);
                 volumeTrackerPlugin->step();
             }
