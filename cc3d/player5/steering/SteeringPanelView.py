@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import *
-
+from cc3d import CompuCellSetup
 
 class SteeringPanelView(QtWidgets.QTableView):
     def __init__(self, *args, **kwargs):
@@ -8,6 +8,10 @@ class SteeringPanelView(QtWidgets.QTableView):
         QtWidgets.QTableView.__init__(self, *args, **kwargs)
 
     def mousePressEvent(self, event):
+
+        pg = CompuCellSetup.persistent_globals
+        if pg.steering_panel_synchronizer.locked():
+            return
 
         if event.button() == Qt.LeftButton:
             index = self.indexAt(event.pos())

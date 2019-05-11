@@ -9,6 +9,7 @@ import copy
 from cc3d.core.utils import mkdir_p
 from cc3d.cpp.CompuCell import PyAttributeAdder
 from pathlib import Path
+from threading import Lock
 
 
 class PersistentGlobals:
@@ -66,6 +67,19 @@ class PersistentGlobals:
 
         # dictionary holding steering parameter objects - used for custom steering panel
         self.steering_param_dict = OrderedDict()
+        self.steering_panel_synchronizer = Lock()
+
+    def add_steering_panel(self, panel_data: dict):
+        """
+        Adds steering panel if simulation is run using player
+        :param panel_data: dictionary with param scans
+        :return:
+        """
+        if self.view_manager is None:
+            return
+
+        steering_panel = self.view_manager.widgetManager.getNewWidget('Steering Panel', panel_data)
+        return steering_panel
 
     def set_output_dir(self, output_dir: str) -> None:
         """

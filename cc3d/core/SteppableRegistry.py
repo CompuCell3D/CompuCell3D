@@ -1,5 +1,6 @@
 import time
 from cc3d.core.PySteppables import SteppablePy
+from cc3d import CompuCellSetup
 # from cc3d.core import SteppablePy
 
 
@@ -131,6 +132,7 @@ class SteppableRegistry(SteppablePy):
             print('Could not create steering panel')
 
     def start(self):
+        pg = CompuCellSetup.persistent_globals
         for steppable in self.runBeforeMCSSteppableList:
             steppable.start()
             # handling steering panel
@@ -152,9 +154,8 @@ class SteppableRegistry(SteppablePy):
 
         # handling steering panel
         try:
-            import CompuCellSetup
-            if len(list(CompuCellSetup.steering_param_dict.keys())):
-                CompuCellSetup.addSteeringPanel(list(CompuCellSetup.steering_param_dict.values()))
+            if len(list(pg.steering_param_dict.keys())):
+                pg.add_steering_panel(panel_data=list(pg.steering_param_dict.values()))
         except:
             print('Could not create steering panel')
 

@@ -190,10 +190,11 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def clusterInventory(self) -> object:
         return self.inventory.getClusterInventory()
 
-    def add_steering_panel(self):
-        pass
-
     def process_steering_panel_data(self):
+        """
+        Function to be implemented in steppable where we react to changes in the steering panel
+        :return:
+        """
         pass
 
     def process_steering_panel_data_wrapper(self):
@@ -257,14 +258,17 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         True gets returned (False otherwise)
         :return:{bool} dirty flag
         """
+        pg = CompuCellSetup.persistent_globals
 
-        if name is not None:
-            return self.get_steering_param(name=name).dirty_flag
-        else:
-            for p_name, steering_param in CompuCellSetup.persistent_globals.steering_param_dict.items():
-                if steering_param.dirty_flag:
-                    return True
-            return False
+        with pg.steering_panel_synchronizer:
+
+            if name is not None:
+                return self.get_steering_param(name=name).dirty_flag
+            else:
+                for p_name, steering_param in CompuCellSetup.persistent_globals.steering_param_dict.items():
+                    if steering_param.dirty_flag:
+                        return True
+                return False
 
     def set_steering_param_dirty(self, name=None, flag=True):
         """
@@ -275,12 +279,13 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         :param flag:{bool} dirty_flag
         :return:None
         """
-
-        if name is not None:
-            self.get_steering_param(name=name).dirty_flag = flag
-        else:
-            for p_name, steering_param in CompuCellSetup.persistent_globals.steering_param_dict.items():
-                steering_param.dirty_flag = flag
+        pg = CompuCellSetup.persistent_globals
+        with pg.steering_panel_synchronizer:
+            if name is not None:
+                self.get_steering_param(name=name).dirty_flag = flag
+            else:
+                for p_name, steering_param in CompuCellSetup.persistent_globals.steering_param_dict.items():
+                    steering_param.dirty_flag = flag
 
     def fetch_loaded_plugins(self) -> None:
         """
@@ -397,24 +402,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         """
 
         :param _simulator:
-        :return:
-        """
-
-    def add_steering_panel(self):
-        """
-
-        :return:
-        """
-
-    def process_steering_panel_data_wrapper(self):
-        """
-
-        :return:
-        """
-
-    def set_steering_param_dirty(self, flag=False):
-        """
-
         :return:
         """
 
