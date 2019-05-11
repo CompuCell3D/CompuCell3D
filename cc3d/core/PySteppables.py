@@ -869,6 +869,15 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         """
         return self.vector_norm(self.invariant_distance_vector_between_cells(cell1, cell2))
 
+    @deprecated(version='4.0.0', reason="You should use : new_cell")
+    def newCell(self, type=0):
+        return self.new_cell(cell_type=type)
+
+    def new_cell(self, cell_type=0):
+        cell = self.potts.createCell()
+        cell.type = cell_type
+        return cell
+
 
 
     # def registerXMLElementUpdate(self, *args):
