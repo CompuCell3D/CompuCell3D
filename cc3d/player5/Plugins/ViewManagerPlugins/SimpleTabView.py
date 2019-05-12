@@ -2868,38 +2868,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # each loaded simulation has to be passed to a function which updates list of recent files
         Configuration.setSetting("RecentSimulations", self.__sim_file_name)
 
-    # Sets the attribute self.movieSupport
-    def __setMovieSupport(self):
-        '''
-        Experimental
-        :return:
-        '''
-        self.movieSupport = False  # Is there vtkMPEG2Writer class in vtk module?
-        vtkmod = inspect.getmembers(vtk, inspect.isclass)
-        for i in range(len(vtkmod)):
-            if vtkmod[i][0] == "vtkMPEG2Writer":
-                self.movieSupport = True
-                self.movieAct.setEnabled(True)
-                return
-
-        self.movieAct.setEnabled(False)
-
-    def __checkMovieSupport(self, checked):
-        '''
-        Experimental
-        :param checked:
-        :return:
-        '''
-        if self.movieAct.isEnabled():
-            if checked and self.movieSupport:
-                # The ONLY place where the self.movieAct is checked!
-                self.movieAct.setChecked(True)
-            elif not self.movieSupport:
-                self.movieAct.setChecked(False)
-                QMessageBox.warning(self, "Movie Support Failed",
-                                    "Sorry, your VTK library does not support \nmovie generation!",
-                                    QMessageBox.Ok)
-
     def __checkCells(self, checked):
         '''
         Slot that triggers display of cells
