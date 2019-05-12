@@ -113,6 +113,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # object responsible for creating/managing plot windows so they're accessible from steppable level
 
         self.plotManager = createPlotManager(self)
+        self.plotManager = createPlotManager(self)
 
         self.widgetManager = WidgetManager(self)
 
@@ -2824,24 +2825,29 @@ class SimpleTabView(MainArea, SimpleViewManager):
         #     2: Directory of currently active project
         #     3: CWD
 
-        filter = "CompuCell3D simulation (*.cc3d *.xml *.py)"  # self._getOpenFileFilter()
+        path_filter = "CompuCell3D simulation (*.cc3d *.xml *.py)"  # self._getOpenFileFilter()
 
-        defaultDir = str(Configuration.getSetting('ProjectLocation'))
+        default_dir = str(Configuration.getSetting('ProjectLocation'))
 
-        if not os.path.exists(defaultDir):
-            defaultDir = os.getcwd()
+        if not os.path.exists(default_dir):
+            default_dir = os.getcwd()
 
-        self.__sim_file_name = QFileDialog.getOpenFileName( \
-            self.ui,
+        current_sim_file_name = self.__sim_file_name
+
+        self.__sim_file_name = QFileDialog.getOpenFileName(self.ui,
             QApplication.translate('ViewManager', "Open Simulation File"),
-            defaultDir,
-            filter
+            default_dir,
+            path_filter
         )
+
         # getOpenFilename may return tuple
         if isinstance(self.__sim_file_name, tuple):
             self.__sim_file_name = self.__sim_file_name[0]
 
-        # converting Qstring to python string and normalizing path
+        if not self.__sim_file_name:
+            # if user clicks "Cancel" we keep existing simulation
+            self.__sim_file_name = current_sim_file_name
+
         self.__sim_file_name = os.path.abspath(str(self.__sim_file_name))
 
         if os.path.splitext(self.__sim_file_name)[1].lower() not in ['.cc3d', '.dml']:
