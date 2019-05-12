@@ -146,10 +146,13 @@ SET(LIBS_AUX
     ChemotaxisShared
     FocalPointPlasticityShared
     NeighborTrackerShared
-    VolumeTrackerShared
-    CenterOfMassShared
+    VolumeTrackerShared    
+    CenterOfMassShared    
    PixelTrackerShared
    BoundaryPixelTrackerShared   
+   MitosisShared
+   MitosisSteppableShared
+   
 
 )
 

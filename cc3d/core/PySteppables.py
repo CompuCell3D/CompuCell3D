@@ -16,6 +16,7 @@ import types
 import warnings
 from deprecated import deprecated
 from cc3d.core.SteeringParam import SteeringParam
+from copy import deepcopy
 
 
 class SteppablePy:
@@ -165,8 +166,23 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         self.plugin_init_dict = {
             "NeighborTracker": ['neighbor_tracker_plugin', 'neighborTrackerPlugin'],
             "FocalPointPlasticity": ['focal_point_plasticity_plugin', 'focalPointPlasticityPlugin'],
-            "PixelTracker": ['pixel_tracker_plugin', 'pixelTrackerPlugin']
+            "PixelTracker": ['pixel_tracker_plugin', 'pixelTrackerPlugin'],
+            "AdhesionFlex": ['adhesion_flex_plugin', 'adhesionFlexPlugin'],
+            "PolarizationVector": ['polarization_vector_plugin', 'polarizationVectorPlugin'],
+            "Polarization23": ['polarization_23_plugin', 'polarization23Plugin'],
+            "CellOrientation": ['cell_orientation_plugin', 'cellOrientationPlugin'],
+            "ContactOrientation": ['contact_orientation_plugin', 'contactOrientationPlugin'],
+            "ContactLocalProduct": ['contact_local_product_plugin', 'contactLocalProductPlugin'],
+            "LengthConstraint": ['length_constraint_plugin', 'lengthConstraintPlugin'],
+            "ConnectivityGlobal": ['connectivity_global_plugin', 'connectivityGlobalPlugin'],
+            "ConnectivityLocalFlex": ['connectivity_local_flex_plugin', 'connectivityLocalFlexPlugin'],
+            "Chemotaxis": ['chemotaxis_plugin', 'chemotaxisPlugin'],
         }
+
+        # used by clone attributes functions
+        self.clonable_attribute_names = ['lambdaVolume', 'targetVolume', 'targetSurface', 'lambdaSurface',
+                                         'targetClusterSurface', 'lambdaClusterSurface', 'type', 'lambdaVecX',
+                                         'lambdaVecY', 'lambdaVecZ', 'fluctAmpl']
 
     @property
     def simulator(self):
@@ -321,13 +337,21 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                 try:
                     accessor_function = getattr(CompuCell, accessor_fcn_name)
                 except AttributeError:
-                    warnings.warn('Could not locate {accessor_fcn_name} membed of CompuCell python module')
+                    warnings.warn('Could not locate {accessor_fcn_name} member of CompuCell python module')
+                    for plugin_member_name in member_var_list:
+                        setattr(self, plugin_member_name, None)
+
                     continue
 
                 plugin_obj = accessor_function()
 
                 for plugin_member_name in member_var_list:
                     setattr(self, plugin_member_name, plugin_obj)
+
+            else:
+                # in case the plugin is not loaded we initialize member variables associated with the plugin to None
+                for plugin_member_name in member_var_list:
+                    setattr(self, plugin_member_name, None)
 
     def core_init(self, reinitialize_cell_types=True):
 
@@ -1006,6 +1030,107 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         for pixel in pixels_to_delete:
             self.cell_field[pixel[0], pixel[1], pixel[2]] = medium_cell
 
+    def cloneAttributes(self, sourceCell, targetCell, no_clone_key_dict_list=[]):
+        return self.clone_attributes(source_cell=sourceCell, target_cell=targetCell,
+                                     no_clone_key_dict_list=no_clone_key_dict_list)
+
+    def clone_attributes(self, source_cell, target_cell, no_clone_key_dict_list=[]):
+        """
+        Copies attributes from source cell to target cell. Users can specify which attributes should not be clones
+        using no_clone_key_dict_list
+        :param source_cell: {CompuCell.CellG} source cell
+        :param target_cell: {CompuCell.CellG} target cell
+        :param no_clone_key_dict_list: {list} list of dictionaries of attributes that are not to be cloned
+        :return:
+        """
+
+        # clone "C++" attributes
+        for attrName in self.clonable_attribute_names:
+            setattr(target_cell, attrName, getattr(source_cell, attrName))
+
+        # clone dictionary
+        for key, val in source_cell.dict.items():
+
+            if key in no_clone_key_dict_list:
+                continue
+
+            elif key == 'SBMLSolver':
+                self.copy_sbml_simulators(from_cell=source_cell, to_cell=target_cell)
+            else:
+                # copying the rest of dictionary entries
+                target_cell.dict[key] = deepcopy(source_cell.dict[key])
+
+        # now copy data associated with plugins
+        # AdhesionFlex
+        if self.adhesionFlexPlugin:
+            source_adhesion_vector = self.adhesionFlexPlugin.getAdhesionMoleculeDensityVector(source_cell)
+            self.adhesionFlexPlugin.assignNewAdhesionMoleculeDensityVector(target_cell, source_adhesion_vector)
+
+        # PolarizationVector
+        if self.polarizationVectorPlugin:
+            source_polarization_vector = self.polarizationVectorPlugin.getPolarizationVector(source_cell)
+            self.polarizationVectorPlugin.setPolarizationVector(target_cell, source_polarization_vector[0],
+                                                                source_polarization_vector[1],
+                                                                source_polarization_vector[2])
+
+        # polarization23Plugin
+        if self.polarization23Plugin:
+            pol_vec = self.polarization23Plugin.getPolarizationVector(source_cell)
+            self.polarization23Plugin.setPolarizationVector(target_cell, pol_vec)
+            pol_mark = self.polarization23Plugin.getPolarizationMarkers(source_cell)
+            self.polarization23Plugin.setPolarizationMarkers(target_cell, pol_mark[0], pol_mark[1])
+            lam = self.polarization23Plugin.getLambdaPolarization(source_cell)
+            self.polarization23Plugin.setLambdaPolarization(target_cell, lam)
+
+        # CellOrientationPlugin
+        if self.cellOrientationPlugin:
+            lam = self.cellOrientationPlugin.getLambdaCellOrientation(source_cell)
+            self.cellOrientationPlugin.setLambdaCellOrientation(target_cell, lam)
+
+        # ContactOrientationPlugin
+        if self.contactOrientationPlugin:
+            o_vec = self.contactOrientationPlugin.getOriantationVector(source_cell)
+            self.contactOrientationPlugin.setOriantationVector(target_cell, o_vec.x, o_vec.y, o_vec.z)
+            self.contactOrientationPlugin.setAlpha(target_cell, self.contactOrientationPlugin.getAlpha(source_cell))
+
+        # ContactLocalProductPlugin
+        if self.contactLocalProductPlugin:
+            c_vec = self.contactLocalProductPlugin.getCadherinConcentrationVec(source_cell)
+            self.contactLocalProductPlugin.setCadherinConcentrationVec(target_cell, c_vec)
+
+        # LengthConstraintPlugin
+        if self.lengthConstraintPlugin:
+            lam = self.lengthConstraintPlugin.getLambdaLength(source_cell)
+            tl = self.lengthConstraintPlugin.getTargetLength(source_cell)
+            mtl = self.lengthConstraintPlugin.getMinorTargetLength(source_cell)
+            self.lengthConstraintPlugin.setLengthConstraintData(target_cell, lam, tl, mtl)
+
+        # ConnectivityGlobalPlugin
+        if self.connectivityGlobalPlugin:
+            cs = self.connectivityGlobalPlugin.getConnectivityStrength(source_cell)
+            self.connectivityGlobalPlugin.setConnectivityStrength(target_cell, cs)
+
+        # ConnectivityLocalFlexPlugin
+        if self.connectivityLocalFlexPlugin:
+            cs = self.connectivityLocalFlexPlugin.getConnectivityStrength(source_cell)
+            self.connectivityLocalFlexPlugin.setConnectivityStrength(target_cell, cs)
+
+        # Chemotaxis
+        if self.chemotaxisPlugin:
+            field_names = self.chemotaxisPlugin.getFieldNamesWithChemotaxisData(source_cell)
+
+            for fieldName in field_names:
+                source_chd = self.chemotaxisPlugin.getChemotaxisData(source_cell, fieldName)
+                target_chd = self.chemotaxisPlugin.addChemotaxisData(target_cell, fieldName)
+
+                target_chd.setLambda(source_chd.getLambda())
+                target_chd.saturationCoef = source_chd.saturationCoef
+                target_chd.setChemotaxisFormulaByName(source_chd.formulaName)
+                target_chd.assignChemotactTowardsVectorTypes(source_chd.getChemotactTowardsVectorTypes())
+
+                # FocalPointPLasticityPlugin - this plugin has to be handled manually -
+                # there is no good way to figure out which links shuold be copied from parent to daughter cell
+
     # def registerXMLElementUpdate(self, *args):
     #     '''this function registers core module XML Element from wchich XML subelement has been fetched.It returns XML subelement
     #     '''
@@ -1165,3 +1290,277 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     #         return tmpElement, coreModuleElement
     #
     #     return tmpElement, None
+
+
+class MitosisSteppableBase(SteppableBasePy):
+    def __init__(self, frequency=1):
+        SteppableBasePy.__init__(self, frequency)
+        self.mitosisSteppable = None
+        self.parentCell = None
+        self.childCell = None
+        self._parent_child_position_flag = None
+
+    def core_init(self, reinitialize_cell_types=True):
+        SteppableBasePy.core_init(self, reinitialize_cell_types=reinitialize_cell_types)
+        self.mitosisSteppable = CompuCell.MitosisSteppable()
+        self.mitosisSteppable.init(self.simulator)
+        self.parentCell = self.mitosisSteppable.parentCell
+        self.childCell = self.mitosisSteppable.childCell
+
+        # delayed initialization
+        if self._parent_child_position_flag is not None:
+            self.set_parent_child_position_flag(flag=self._parent_child_position_flag)
+
+    @deprecated(version='4.0.0', reason="You should use : set_parent_child_position_flag")
+    def setParentChildPositionFlag(self, _flag):
+        return self.set_parent_child_position_flag(flag=_flag)
+
+    def set_parent_child_position_flag(self, flag):
+        """
+        Specifies which position of the "child" cell after mitosis process
+        :param flag:{int} 0 - parent child position will be randomized between mitosis event
+        negative integer - parent appears on the 'left' of the child
+        positive integer - parent appears on the 'right' of the child
+        :return: None
+        """
+        if self.mitosisSteppable is not None:
+            self.mitosisSteppable.setParentChildPositionFlag(int(flag))
+        else:
+            self._parent_child_position_flag = flag
+
+    @deprecated(version='4.0.0', reason="You should use : get_parent_child_position_flag")
+    def getParentChildPositionFlag(self, _flag):
+        return self.get_parent_child_position_flag()
+
+    def get_parent_child_position_flag(self):
+        return self.mitosisSteppable.getParentChildPositionFlag()
+
+    @deprecated(version='4.0.0', reason="You should use : clone_parent_2_child")
+    def cloneParent2Child(self):
+        return self.clone_parent_2_child()
+
+    def clone_parent_2_child(self):
+        """
+        clones attributes of parent cell to daughter cell
+        :return: None
+        """
+        # these calls seem to be necessary to ensure whatever is setin in mitosisSteppable (C++) is reflected in Python
+        # self.parentCell=self.mitosisSteppable.parentCell
+        # self.childCell=self.mitosisSteppable.childCell
+
+        self.clone_attributes(source_cell=self.parentCell, target_cell=self.childCell, no_clone_key_dict_list=[])
+
+    def update_attributes(self):
+        """
+        This function is supposed to be reimplemented in the subclass. It is called immediately after cell division
+        takes place
+        :return:
+        """
+
+        self.childCell.targetVolume = self.parentCell.targetVolume
+        self.childCell.lambdaVolume = self.parentCell.lambdaVolume
+        self.childCell.type = self.parentCell.type
+
+    @deprecated(version='4.0.0', reason="You should use : init_parent_and_child_cells")
+    def initParentAndChildCells(self):
+        return self.init_parent_and_child_cells()
+
+    def init_parent_and_child_cells(self):
+        """
+        Initializes self.parentCell and self.childCell to point to respective cell objects after mitosis
+         is completed succesfully
+        """
+
+        self.parentCell = self.mitosisSteppable.parentCell
+        self.childCell = self.mitosisSteppable.childCell
+
+    def handle_mitosis_update_attributes(self, mitosis_done):
+        """
+        Performs actions and bookipping that has to be done after actual cell division happened.
+        One of such actions is calling update_attributes function that users typically overload
+        :param mitosis_done: {bool} flag indicating if mitosis has been sucessful
+        :return: None
+        """
+
+        if mitosis_done:
+            self.init_parent_and_child_cells()
+            legacy_update_attributes_fcn = getattr(self, 'updateAttributes')
+
+            if legacy_update_attributes_fcn is not None:
+                warnings.warn('"updateAttribute function" is deprecated since 4.0.0. '
+                              'Please use "update_attributes" in your'
+                              ' mitosis subclass', DeprecationWarning)
+                legacy_update_attributes_fcn()
+            else:
+                self.update_attributes()
+
+    @deprecated(version='4.0.0', reason="You should use : divide_cell_random_orientation")
+    def divideCellRandomOrientation(self, _cell):
+        return self.divide_cell_random_orientation(cell=_cell)
+
+    def divide_cell_random_orientation(self, cell):
+        """
+        Divides cell into two daughter cells along randomly chosen cleavage plane.
+        For tracking reasons one daughter cell is considered a "parent"
+        and refers to a cell object that existed before division
+
+        :param cell: {CompuCell.CellG} cell to divide
+        :return: None
+        """
+
+        mitosis_done = self.mitosisSteppable.doDirectionalMitosisRandomOrientation(cell)
+        self.handle_mitosis_update_attributes(mitosis_done=mitosis_done)
+        # if self.mitosis_done:
+        #     self.init_parent_and_child_cells()
+        #
+        #     self.update_attributes()
+        return mitosis_done
+
+    @deprecated(version='4.0.0', reason="You should use : divide_cell_orientation_vector_based")
+    def divideCellOrientationVectorBased(self, _cell, _nx, _ny, _nz):
+        return self.divide_cell_orientation_vector_based(cell=_cell, nx=_nx, ny=_ny, nz=_nz)
+
+    def divide_cell_orientation_vector_based(self, cell, nx, ny, nz):
+        """
+        Divides cell into two daughter cells along cleavage plane specified by a normal vector (nx, ny, nz).
+        For tracking reasons one daughter cell is considered a "parent"
+        and refers to a cell object that existed before division
+        :param cell: {CompuCell.CellG} cell to divide
+        :param nx: {float} 'x' component of vector normal to the cleavage plane
+        :param ny: {float} 'y' component of vector normal to the cleavage plane
+        :param nz: {float} 'z' component of vector normal to the cleavage plane
+        :return:
+        """
+
+        mitosis_done = self.mitosisSteppable.doDirectionalMitosisOrientationVectorBased(cell, nx, ny, nz)
+        self.handle_mitosis_update_attributes(mitosis_done=mitosis_done)
+        # if self.mitosis_done:
+        #     self.init_parent_and_child_cells()
+        #     self.update_attributes()
+        return mitosis_done
+
+    @deprecated(version='4.0.0', reason="You should use : divide_cell_along_major_axis")
+    def divideCellAlongMajorAxis(self, _cell):
+        return self.divide_cell_along_major_axis(cell=_cell)
+
+    def divide_cell_along_major_axis(self, cell):
+        """
+        Divides cell into two daughter cells along cleavage plane parallel to major axis of the cell.
+        For tracking reasons one daughter cell is considered a "parent"
+        and refers to a cell object that existed before division
+        :param cell: {CompuCell.CellG} cell to divide
+        :return: None
+        """
+
+        mitosis_done = self.mitosisSteppable.doDirectionalMitosisAlongMajorAxis(cell)
+        self.handle_mitosis_update_attributes(mitosis_done=mitosis_done)
+        # if self.mitosis_done:
+        #     self.init_parent_and_child_cells()
+        #     legacy_update_attributes_fcn = getattr(self,'updateAttributes')
+        #
+        #     if legacy_update_attributes_fcn is not None:
+        #         warnings.warn('"updateAttribute function" is deprecated since 4.0.0. '
+        #                       'Please use "update_attributes" in your'
+        #                       ' mitosis subclass', DeprecationWarning)
+        #         legacy_update_attributes_fcn()
+        #     else:
+        #         self.update_attributes()
+        return mitosis_done
+
+    @deprecated(version='4.0.0', reason="You should use : divide_cell_along_minor_axis")
+    def divideCellAlongMinorAxis(self, _cell):
+        return self.divide_cell_along_minor_axis(cell=_cell)
+
+    def divide_cell_along_minor_axis(self, cell):
+        """
+        Divides cell into two daughter cells along cleavage plane parallel to minor axis of the cell.
+        For tracking reasons one daughter cell is considered a "parent"
+        and refers to a cell object that existed before division
+        :param cell: {CompuCell.CellG} cell to divide
+        :return: None
+        """
+
+        mitosis_done = self.mitosisSteppable.doDirectionalMitosisAlongMinorAxis(cell)
+        self.handle_mitosis_update_attributes(mitosis_done=mitosis_done)
+        # if self.mitosis_done:
+        #     self.init_parent_and_child_cells()
+        #     self.update_attributes()
+        return mitosis_done
+
+
+class MitosisSteppableClustersBase(SteppableBasePy):
+    def __init__(self, _simulator, _frequency=1):
+        SteppableBasePy.__init__(self, _simulator, _frequency)
+        self.mitosisSteppable = CompuCell.MitosisSteppable()
+        self.mitosisSteppable.init(self.simulator)
+        self.parentCell = self.mitosisSteppable.parentCell
+        self.childCell = self.mitosisSteppable.childCell
+        self.mitosisDone = False
+
+    def initParentAndChildCells(self):
+        '''
+        Initializes self.parentCell and self.childCell to point to respective cell objects after mitosis is completed succesfully
+        '''
+        self.parentCell = self.mitosisSteppable.parentCell
+        self.childCell = self.mitosisSteppable.childCell
+
+    def cloneClusterAttributes(self, sourceCellCluster, targetCellCluster, no_clone_key_dict_list=[]):
+        for i in xrange(sourceCellCluster.size()):
+            self.cloneAttributes(sourceCell=sourceCellCluster[i], targetCell=targetCellCluster[i],
+                                 no_clone_key_dict_list=no_clone_key_dict_list)
+
+    def cloneParentCluster2ChildCluster(self):
+        # these calls seem to be necessary to ensure whatever is setin in mitosisSteppable (C++) is reflected in Python
+        # self.parentCell=self.mitosisSteppable.parentCell
+        # self.childCell=self.mitosisSteppable.childCell
+
+        compartmentListParent = self.inventory.getClusterCells(self.parentCell.clusterId)
+        compartmentListChild = self.inventory.getClusterCells(self.childCell.clusterId)
+
+        self.cloneClusterAttributes(sourceCellCluster=compartmentListParent, targetCellCluster=compartmentListChild,
+                                    no_clone_key_dict_list=[])
+
+    def updateAttributes(self):
+        parentCell = self.mitosisSteppable.parentCell
+        childCell = self.mitosisSteppable.childCell
+
+        compartmentListChild = self.inventory.getClusterCells(childCell.clusterId)
+        compartmentListParent = self.inventory.getClusterCells(parentCell.clusterId)
+        # compartments in the parent and child clusters arel listed in the same order so attribute changes require simple iteration through compartment list
+        for i in xrange(compartmentListChild.size()):
+            compartmentListChild[i].type = compartmentListParent[i].type
+
+    def step(self, mcs):
+        print
+        "MITOSIS STEPPABLE Clusters BASE"
+
+    def divideClusterRandomOrientation(self, _clusterId):
+        self.mitosisDone = self.mitosisSteppable.doDirectionalMitosisRandomOrientationCompartments(_clusterId)
+        if self.mitosisDone:
+            self.initParentAndChildCells()
+            self.updateAttributes()
+        return self.mitosisDone
+
+    def divideClusterOrientationVectorBased(self, _clusterId, _nx, _ny, _nz):
+        self.mitosisDone = self.mitosisSteppable.doDirectionalMitosisOrientationVectorBasedCompartments(_clusterId, _nx,
+                                                                                                        _ny, _nz)
+        if self.mitosisDone:
+            self.initParentAndChildCells()
+            self.updateAttributes()
+        return self.mitosisDone
+
+    def divideClusterAlongMajorAxis(self, _clusterId):
+        # orientationVectors=self.mitosisSteppable.getOrientationVectorsMitosis(_cell)
+        # print "orientationVectors.semiminorVec=",(orientationVectors.semiminorVec.fX,orientationVectors.semiminorVec.fY,orientationVectors.semiminorVec.fZ)
+        self.mitosisDone = self.mitosisSteppable.doDirectionalMitosisAlongMajorAxisCompartments(_clusterId)
+        if self.mitosisDone:
+            self.initParentAndChildCells()
+            self.updateAttributes()
+        return self.mitosisDone
+
+    def divideClusterAlongMinorAxis(self, _clusterId):
+        self.mitosisDone = self.mitosisSteppable.doDirectionalMitosisAlongMinorAxisCompartments(_clusterId)
+        if self.mitosisDone:
+            self.initParentAndChildCells()
+            self.updateAttributes()
+        return self.mitosisDone

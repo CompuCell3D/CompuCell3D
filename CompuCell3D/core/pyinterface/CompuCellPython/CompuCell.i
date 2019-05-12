@@ -34,6 +34,7 @@
 %feature("autodoc",setDebugOutputFrequency_func) setDebugOutputFrequency;
 %feature("autodoc",getCellInventory_func) getCellInventory;
 
+
    //PottsParseData.h
 %feature("autodoc",PottsParseData_Class) PottsParseData;
 
@@ -986,13 +987,14 @@ FIELD3DEXTENDERBASE(type,returnType)
         }   
         
     }
-    
+
     if (PySlice_Check(yCoord)){
         
         //PySlice_GetIndicesEx((PySliceObject*)yCoord,dim.y-1,&start_y,&stop_y,&step_y,&sliceLength);
 		int ok = PySlice_GetIndices(yCoord, dim.y - 1, &start_y, &stop_y, &step_y);
         stop_y -= 1;
         
+
     }else{
         if (PyInt_Check(yCoord)){
             start_y=PyInt_AsLong(PyTuple_GetItem(_indexTuple,1));
