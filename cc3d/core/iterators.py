@@ -8,6 +8,7 @@ from deprecated import deprecated
 
 # this is used to iterate more easily over cells
 
+
 class CellList:
     def __init__(self, inventory):
         self.inventory = inventory
@@ -20,9 +21,9 @@ class CellList:
 
 
 class CellListIterator:
-    def __init__(self, cellList):
+    def __init__(self, cell_list):
         self.next = self.__next__
-        self.inventory = cellList.inventory
+        self.inventory = cell_list.inventory
         self.invItr = CompuCell.STLPyIteratorCINV()
         self.invItr.initialize(self.inventory.getContainer())
         self.invItr.setToBegin()
@@ -42,8 +43,8 @@ class CellListIterator:
 #########################################################################
 # iterating over inventory of cells of a given type
 class CellListByType:
-    def __init__(self, _inventory, *args):
-        self.inventory = _inventory
+    def __init__(self, inventory, *args):
+        self.inventory = inventory
 
         self.types = CompuCell.vectorint()
 
@@ -64,13 +65,13 @@ class CellListByType:
     def __len__(self):
         return int(self.inventoryByType.size())
 
-    def initTypeVec(self, _typeList):
+    def initTypeVec(self, _type_list):
 
         self.types.clear()
-        if len(_typeList) <= 0:
+        if len(_type_list) <= 0:
             self.types.push_back(1)  # type 1
         else:
-            for type in _typeList:
+            for type in _type_list:
                 self.types.push_back(type)
 
     def initializeWithType(self, _type):
@@ -214,6 +215,7 @@ class CompartmentListIterator:
     def __iter__(self):
         return self
 
+
 # this is wrapper for std::vector<CellG*>
 class ClusterCellList:
     def __init__(self, _inventory):
@@ -231,6 +233,7 @@ class ClusterCellList:
     @deprecated(version='4.0.0', reason="You should use : len()")
     def size(self):
         return self.__len__()
+
 
 class ClusterCellListIterator:
     def __init__(self, _cellList):
