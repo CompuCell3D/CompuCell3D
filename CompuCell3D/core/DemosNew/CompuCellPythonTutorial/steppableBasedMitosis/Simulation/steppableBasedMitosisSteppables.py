@@ -6,6 +6,9 @@ class VolumeParamSteppable(SteppableBasePy):
         SteppableBasePy.__init__(self, frequency)
 
     def start(self):
+
+        self.cell_field[5:11,5:11,0] = self.new_cell(self.CONDENSING)
+
         for cell in self.cell_list:
             cell.targetVolume = 25
             cell.lambdaVolume = 2.0
