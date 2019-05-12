@@ -1410,10 +1410,6 @@ class MitosisSteppableBase(SteppableBasePy):
 
         mitosis_done = self.mitosisSteppable.doDirectionalMitosisRandomOrientation(cell)
         self.handle_mitosis_update_attributes(mitosis_done=mitosis_done)
-        # if self.mitosis_done:
-        #     self.init_parent_and_child_cells()
-        #
-        #     self.update_attributes()
         return mitosis_done
 
     @deprecated(version='4.0.0', reason="You should use : divide_cell_orientation_vector_based")
@@ -1434,9 +1430,6 @@ class MitosisSteppableBase(SteppableBasePy):
 
         mitosis_done = self.mitosisSteppable.doDirectionalMitosisOrientationVectorBased(cell, nx, ny, nz)
         self.handle_mitosis_update_attributes(mitosis_done=mitosis_done)
-        # if self.mitosis_done:
-        #     self.init_parent_and_child_cells()
-        #     self.update_attributes()
         return mitosis_done
 
     @deprecated(version='4.0.0', reason="You should use : divide_cell_along_major_axis")
@@ -1454,17 +1447,6 @@ class MitosisSteppableBase(SteppableBasePy):
 
         mitosis_done = self.mitosisSteppable.doDirectionalMitosisAlongMajorAxis(cell)
         self.handle_mitosis_update_attributes(mitosis_done=mitosis_done)
-        # if self.mitosis_done:
-        #     self.init_parent_and_child_cells()
-        #     legacy_update_attributes_fcn = getattr(self,'updateAttributes')
-        #
-        #     if legacy_update_attributes_fcn is not None:
-        #         warnings.warn('"updateAttribute function" is deprecated since 4.0.0. '
-        #                       'Please use "update_attributes" in your'
-        #                       ' mitosis subclass', DeprecationWarning)
-        #         legacy_update_attributes_fcn()
-        #     else:
-        #         self.update_attributes()
         return mitosis_done
 
     @deprecated(version='4.0.0', reason="You should use : divide_cell_along_minor_axis")
@@ -1482,9 +1464,6 @@ class MitosisSteppableBase(SteppableBasePy):
 
         mitosis_done = self.mitosisSteppable.doDirectionalMitosisAlongMinorAxis(cell)
         self.handle_mitosis_update_attributes(mitosis_done=mitosis_done)
-        # if self.mitosis_done:
-        #     self.init_parent_and_child_cells()
-        #     self.update_attributes()
         return mitosis_done
 
 
