@@ -1,4 +1,5 @@
 from cc3d.cpp import CompuCell
+from deprecated import deprecated
 
 # IMPORTANT: It is best to always provide hand-written iterators for STL
 # containers even though swig generates them for you.
@@ -221,9 +222,15 @@ class ClusterCellList:
     def __iter__(self):
         return ClusterCellListIterator(self)
 
+    def __getitem__(self, item):
+        return self.inventory[item]
+
     def __len__(self):
         return int(self.inventory.size())
 
+    @deprecated(version='4.0.0', reason="You should use : len()")
+    def size(self):
+        return self.__len__()
 
 class ClusterCellListIterator:
     def __init__(self, _cellList):

@@ -143,14 +143,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         # self._simulator = simulator
         self.__modulesToUpdateDict = OrderedDict()
 
-        # legacy API
-        # self.addNewPlotWindow = self.add_new_plot_window
-        # self.createScalarFieldPy = self.create_scalar_field_py
-        # self.everyPixelWithSteps = self.every_pixel_with_steps
-        # self.everyPixel = self.every_pixel
-        # self.getCellNeighborDataList = self.get_cell_neighbor_data_list
-        # self.attemptFetchingCellById = self.fetch_cell_by_id
-
         self.field = FieldFetcher()
 
         # plugin declarations - including legacy members
@@ -160,8 +152,20 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         self.focalPointPlasticityPlugin = None
         self.volume_tracker_plugin = None
 
+        self._simulator = None
+
         self.cell_field = None
         self.cellField = None
+        self.cell_list = None
+        self.cellList = None
+        self.cell_list_by_type = None
+        self.cellListByType = None
+        self.cluster_list = None
+        self.clusters = None
+        self.clusterList = None
+        self.mcs = -1
+        # {plot_name:plotWindow  - pW object}
+        self.plot_dict = {}
 
         self.plugin_init_dict = {
             "NeighborTracker": ['neighbor_tracker_plugin', 'neighborTrackerPlugin'],
@@ -183,6 +187,104 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         self.clonable_attribute_names = ['lambdaVolume', 'targetVolume', 'targetSurface', 'lambdaSurface',
                                          'targetClusterSurface', 'lambdaClusterSurface', 'type', 'lambdaVecX',
                                          'lambdaVecY', 'lambdaVecZ', 'fluctAmpl']
+
+    def core_init(self, reinitialize_cell_types=True):
+        """
+        Performs actual initialization of members that point to C++ objects. This is function is called AFTER
+        C++ objects are created and initialized. Therefore we cannot put those initialization calls in the steppable
+        constructor because during Steppable construction C++ objects may not exist. This behavior is different
+        thatn in previous versions of CC3D
+
+        :param reinitialize_cell_types: {bool} indicates if types should be reinitialized or not . Sometimes core init
+        might get called multiple times (e.g. during resize lattice event) and you donot want to reinitialize cell types
+
+        :return:
+        """
+
+        self.cell_field = self.potts.getCellFieldG()
+        self.cellField = self.cell_field
+        self.cell_list = CellList(self.inventory)
+        self.cellList = self.cell_list
+        self.cell_list_by_type = CellListByType(self.inventory)
+        self.cellListByType = self.cell_list_by_type
+        self.cluster_list = ClusterList(self.inventory)
+        self.clusterList = self.cluster_list
+        self.clusters = Clusters(self.inventory)
+
+        persistent_globals = CompuCellSetup.persistent_globals
+        persistent_globals.attach_dictionary_to_cells()
+
+        type_id_type_name_dict = extract_type_names_and_ids()
+
+        if reinitialize_cell_types:
+            for type_id, type_name in type_id_type_name_dict.items():
+                self.typename_to_attribute(cell_type_name=type_name, type_id=type_id)
+                # setattr(self, type_name.upper(), type_id)
+
+        self.fetch_loaded_plugins()
+
+        # return
+        # self.potts = self.simulator.getPotts()
+        #
+        # self.cell_field = self.potts.getCellFieldG()
+        # self.dim = self.cell_field.getDim()
+        # self.inventory = self.simulator.getPotts().getCellInventory()
+        # self.clusterInventory = self.inventory.getClusterInventory()
+        # self.cell_list = CellList(self.inventory)
+        # self.cell_list_by_type = CellListByType(self.inventory)
+        # self.cluster_list = ClusterList(self.inventory)
+        # self.clusters = Clusters(self.inventory)
+        # self.mcs = -1
+        #
+        # self.plot_dict = {}  # {plot_name:plotWindow  - pW object}
+        #
+        # persistent_globals = CompuCellSetup.persistent_globals
+        # persistent_globals.attach_dictionary_to_cells()
+        #
+        # type_id_type_name_dict = extract_type_names_and_ids()
+        #
+        # for type_id, type_name in type_id_type_name_dict.items():
+        #     self.typename_to_attribute(cell_type_name=type_name, type_id=type_id)
+        #     # setattr(self, type_name.upper(), type_id)
+
+    def fetch_loaded_plugins(self) -> None:
+        """
+        Processes self.plugin_init_dict and initializes member variables according to specification in
+        self.plugin_init_dict. relies on fixed naming convention for plugin accessor functions defined in
+        pyinterface/CompuCellPython/CompuCellExtraDeclarations.i in  PLUGINACCESSOR macro
+        :return:
+        """
+
+        # Special handling of VolumeTrackerPlugin - used in cell field numpy-like array operations
+        if self.simulator.pluginManager.isLoaded("VolumeTracker"):
+            self.volume_tracker_plugin = CompuCell.getVolumeTrackerPlugin()
+            # used in setitem function in SWIG CELLFIELDEXTEDER macro CompuCell.i
+            self.cell_field.volumeTrackerPlugin = self.volume_tracker_plugin
+            # self.potts.getCellFieldG().volumeTrackerPlugin =  self.volume_tracker_plugin
+
+        for plugin_name, member_var_list in self.plugin_init_dict.items():
+            if self.simulator.pluginManager.isLoaded(plugin_name):
+                accessor_fcn_name = 'get' + plugin_name + 'Plugin'
+                try:
+                    accessor_function = getattr(CompuCell, accessor_fcn_name)
+                except AttributeError:
+                    warnings.warn('Could not locate {accessor_fcn_name} member of CompuCell python module')
+                    for plugin_member_name in member_var_list:
+                        setattr(self, plugin_member_name, None)
+
+                    continue
+
+                plugin_obj = accessor_function()
+
+                for plugin_member_name in member_var_list:
+                    setattr(self, plugin_member_name, plugin_obj)
+
+            else:
+                # in case the plugin is not loaded we initialize member variables associated with the plugin to None
+                for plugin_member_name in member_var_list:
+                    setattr(self, plugin_member_name, None)
+
+
 
     @property
     def simulator(self):
@@ -212,6 +314,18 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
     def clusterInventory(self) -> object:
         return self.inventory.getClusterInventory()
 
+    @deprecated(version='4.0.0', reason="You should use : get_cluster_cells")
+    def getClusterCells(self, _clusterId):
+        return self.get_cluster_cells(cluster_id=_clusterId)
+
+    def get_cluster_cells(self, cluster_id):
+        """
+        returns a container with cell objects that are members of compartmentalized cell (a cluster)
+        :param cluster_id: {long int}
+        :return:
+        """
+        return ClusterCellList(self.inventory.getClusterInventory().getClusterCells(cluster_id))
+
     def process_steering_panel_data(self):
         """
         Function to be implemented in steppable where we react to changes in the steering panel
@@ -231,11 +345,12 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         parameters in the steering panel model
         :return: None
         """
+        # NOTE: resetting of the dirty flag for the steering
+        # panel model is done in the SteppableRegistry's "step" function
+
         if self.steering_param_dirty():
             self.process_steering_panel_data()
 
-        # NOTE: resetting of the dirty flag for the steering
-        # panel model is done in the SteppableRegistry's "step" function
 
     def add_steering_param(self, name, val, min_val=None, max_val=None, decimal_precision=3, enum=None,
                            widget_name=None):
@@ -316,98 +431,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                 for p_name, steering_param in CompuCellSetup.persistent_globals.steering_param_dict.items():
                     steering_param.dirty_flag = flag
 
-    def fetch_loaded_plugins(self) -> None:
-        """
-        Processes self.plugin_init_dict and initializes member variables according to specification in
-        self.plugin_init_dict. relies on fixed naming convention for plugin accessor functions defined in
-        pyinterface/CompuCellPython/CompuCellExtraDeclarations.i in  PLUGINACCESSOR macro
-        :return:
-        """
-
-        # Special handling of VolumeTrackerPlugin - used in cell field numpy-like array operations
-        if self.simulator.pluginManager.isLoaded("VolumeTracker"):
-            self.volume_tracker_plugin = CompuCell.getVolumeTrackerPlugin()
-            # used in setitem function in SWIG CELLFIELDEXTEDER macro CompuCell.i
-            self.cell_field.volumeTrackerPlugin = self.volume_tracker_plugin
-            # self.potts.getCellFieldG().volumeTrackerPlugin =  self.volume_tracker_plugin
-
-        for plugin_name, member_var_list in self.plugin_init_dict.items():
-            if self.simulator.pluginManager.isLoaded(plugin_name):
-                accessor_fcn_name = 'get' + plugin_name + 'Plugin'
-                try:
-                    accessor_function = getattr(CompuCell, accessor_fcn_name)
-                except AttributeError:
-                    warnings.warn('Could not locate {accessor_fcn_name} member of CompuCell python module')
-                    for plugin_member_name in member_var_list:
-                        setattr(self, plugin_member_name, None)
-
-                    continue
-
-                plugin_obj = accessor_function()
-
-                for plugin_member_name in member_var_list:
-                    setattr(self, plugin_member_name, plugin_obj)
-
-            else:
-                # in case the plugin is not loaded we initialize member variables associated with the plugin to None
-                for plugin_member_name in member_var_list:
-                    setattr(self, plugin_member_name, None)
-
-    def core_init(self, reinitialize_cell_types=True):
-
-        # self.potts = self.simulator.getPotts()
-        self.cell_field = self.potts.getCellFieldG()
-        self.cellField = self.cell_field
-        # self.dim = self.cellField.getDim()
-        # self.inventory = self.simulator.getPotts().getCellInventory()
-        # self.clusterInventory = self.inventory.getClusterInventory()
-        self.cell_list = CellList(self.inventory)
-        self.cellList = self.cell_list
-        self.cell_list_by_type = CellListByType(self.inventory)
-        self.cellListByType = self.cell_list_by_type
-        self.cluster_list = ClusterList(self.inventory)
-        self.clusterList = self.cluster_list
-        self.clusters = Clusters(self.inventory)
-        self.mcs = -1
-
-        self.plot_dict = {}  # {plot_name:plotWindow  - pW object}
-
-        persistent_globals = CompuCellSetup.persistent_globals
-        persistent_globals.attach_dictionary_to_cells()
-
-        type_id_type_name_dict = extract_type_names_and_ids()
-
-        if reinitialize_cell_types:
-            for type_id, type_name in type_id_type_name_dict.items():
-                self.typename_to_attribute(cell_type_name=type_name, type_id=type_id)
-                # setattr(self, type_name.upper(), type_id)
-
-        self.fetch_loaded_plugins()
-
-        return
-        self.potts = self.simulator.getPotts()
-
-        self.cell_field = self.potts.getCellFieldG()
-        self.dim = self.cell_field.getDim()
-        self.inventory = self.simulator.getPotts().getCellInventory()
-        self.clusterInventory = self.inventory.getClusterInventory()
-        self.cell_list = CellList(self.inventory)
-        self.cell_list_by_type = CellListByType(self.inventory)
-        self.cluster_list = ClusterList(self.inventory)
-        self.clusters = Clusters(self.inventory)
-        self.mcs = -1
-
-        self.plot_dict = {}  # {plot_name:plotWindow  - pW object}
-
-        persistent_globals = CompuCellSetup.persistent_globals
-        persistent_globals.attach_dictionary_to_cells()
-
-        type_id_type_name_dict = extract_type_names_and_ids()
-
-        for type_id, type_name in type_id_type_name_dict.items():
-            self.typename_to_attribute(cell_type_name=type_name, type_id=type_id)
-            # setattr(self, type_name.upper(), type_id)
-
     def typename_to_attribute(self, cell_type_name: str, type_id: int) -> None:
         """
         sets steppable attribute based on type name
@@ -433,9 +456,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         if attribute_already_exists:
             raise AttributeError('Could not convert cell type {cell_type} to steppable attribute. '
-                                 'Attribute {attr_name} already exists . Please change your cell type name'.format(
-                cell_type=cell_type_name, attr_name=cell_type_name_attr
-            ))
+                'Attribute {attr_name} already exists . Please change your cell type name'.format(
+                    cell_type=cell_type_name, attr_name=cell_type_name_attr))
 
         setattr(self, cell_type_name_attr, type_id)
 
@@ -735,8 +757,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         if new_geometry_dimensionality != old_geometry_dimensionality:
             raise RuntimeError('Changing dimmensionality of simulation from 2D to 3D is not supported. '
-                               'It also makes little sense as 2D and 3D simulations have different mathematical properties. '
-                               'Please see CPM literature for more details.')
+                'It also makes little sense as 2D and 3D simulations have different mathematical properties. '
+                'Please see CPM literature for more details.')
 
         self.potts.resizeCellField(CompuCell.Dim3D(new_size[0], new_size[1], new_size[2]),
                                    CompuCell.Dim3D(shift_vec[0], shift_vec[1], shift_vec[2]))
@@ -1000,7 +1022,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             return True
         return False
 
-    # def getCopyOfCellPixels(self, _cell, _format=CC3D_FORMAT):
+    @deprecated(version='4.0.0', reason="You should use : get_copy_of_cell_pixels")
+    def getCopyOfCellPixels(self, _cell, _format=CC3D_FORMAT):
+        return self.get_copy_of_cell_pixels(cell=_cell, format=_format)
 
     def get_copy_of_cell_pixels(self, cell, format=CC3D_FORMAT):
 
@@ -1030,11 +1054,14 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         for pixel in pixels_to_delete:
             self.cell_field[pixel[0], pixel[1], pixel[2]] = medium_cell
 
-    def cloneAttributes(self, sourceCell, targetCell, no_clone_key_dict_list=[]):
+    def cloneAttributes(self, sourceCell, targetCell, no_clone_key_dict_list=None):
+        if no_clone_key_dict_list is None:
+            no_clone_key_dict_list = []
+
         return self.clone_attributes(source_cell=sourceCell, target_cell=targetCell,
                                      no_clone_key_dict_list=no_clone_key_dict_list)
 
-    def clone_attributes(self, source_cell, target_cell, no_clone_key_dict_list=[]):
+    def clone_attributes(self, source_cell, target_cell, no_clone_key_dict_list=None):
         """
         Copies attributes from source cell to target cell. Users can specify which attributes should not be clones
         using no_clone_key_dict_list
@@ -1043,6 +1070,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         :param no_clone_key_dict_list: {list} list of dictionaries of attributes that are not to be cloned
         :return:
         """
+        if no_clone_key_dict_list is None:
+            no_clone_key_dict_list =[]
 
         # clone "C++" attributes
         for attrName in self.clonable_attribute_names:
@@ -1383,7 +1412,6 @@ class MitosisSteppableBase(SteppableBasePy):
         self.parentCell = self.parent_cell
         self.childCell = self.child_cell
 
-
     def handle_mitosis_update_attributes(self, mitosis_done):
         """
         Performs actions and bookipping that has to be done after actual cell division happened.
@@ -1481,78 +1509,211 @@ class MitosisSteppableBase(SteppableBasePy):
 
 
 class MitosisSteppableClustersBase(SteppableBasePy):
-    def __init__(self, _simulator, _frequency=1):
-        SteppableBasePy.__init__(self, _simulator, _frequency)
+    def __init__(self, frequency=1):
+        SteppableBasePy.__init__(self, frequency)
+        self.mitosisSteppable = None
+        self.parent_cell = None
+        self.child_cell = None
+        # legacy API
+        self.parentCell = None
+        self.childCell = None
+        self._parent_child_position_flag = None
+
+    def core_init(self, reinitialize_cell_types=True):
+        SteppableBasePy.core_init(self, reinitialize_cell_types=reinitialize_cell_types)
         self.mitosisSteppable = CompuCell.MitosisSteppable()
         self.mitosisSteppable.init(self.simulator)
-        self.parentCell = self.mitosisSteppable.parentCell
-        self.childCell = self.mitosisSteppable.childCell
-        self.mitosisDone = False
+        self.parent_cell = self.mitosisSteppable.parentCell
+        self.child_cell = self.mitosisSteppable.childCell
+        self.parentCell = self.parent_cell
+        self.childCell = self.child_cell
 
+        # # delayed initialization
+        # if self._parent_child_position_flag is not None:
+        #     self.set_parent_child_position_flag(flag=self._parent_child_position_flag)
+
+    @deprecated(version='4.0.0', reason="You should use : init_parent_and_child_cells")
     def initParentAndChildCells(self):
-        '''
-        Initializes self.parentCell and self.childCell to point to respective cell objects after mitosis is completed succesfully
-        '''
-        self.parentCell = self.mitosisSteppable.parentCell
-        self.childCell = self.mitosisSteppable.childCell
 
-    def cloneClusterAttributes(self, sourceCellCluster, targetCellCluster, no_clone_key_dict_list=[]):
-        for i in xrange(sourceCellCluster.size()):
-            self.cloneAttributes(sourceCell=sourceCellCluster[i], targetCell=targetCellCluster[i],
-                                 no_clone_key_dict_list=no_clone_key_dict_list)
+        return self.init_parent_and_child_cells()
 
+    def init_parent_and_child_cells(self):
+        """
+        Initializes self.parent_cell and self.child_cell to point to respective cell objects after mitosis
+        is completed successfully
+        """
+
+        self.parent_cell = self.mitosisSteppable.parentCell
+        self.child_cell = self.mitosisSteppable.childCell
+
+        self.parentCell = self.parent_cell
+        self.childCell = self.child_cell
+
+    @deprecated(version='4.0.0', reason="You should use : clone_cluster_attributes")
+    def cloneClusterAttributes(self, sourceCellCluster, targetCellCluster, no_clone_key_dict_list=None):
+
+        if no_clone_key_dict_list is None:
+            no_clone_key_dict_list = []
+        return self.clone_cluster_attributes(source_cell_cluster=sourceCellCluster,
+                                             target_cell_cluster=targetCellCluster,
+                                             no_clone_key_dict_list=no_clone_key_dict_list)
+
+    def clone_cluster_attributes(self, source_cell_cluster, target_cell_cluster, no_clone_key_dict_list=None):
+        """
+        Clones attributes for cluster members
+        :param source_cell_cluster: {vector of CellG objects} vector (C++) of CellG object representing
+        source cluster
+        :param target_cell_cluster: {vector of CellG objects} vector (C++) of CellG object representing
+        target cluster
+        :param no_clone_key_dict_list: {list} list-based specification of attributes that are not supposed
+        to be cloned
+        :return:
+        """
+
+        if no_clone_key_dict_list is None:
+            no_clone_key_dict_list = []
+
+        for i in range(source_cell_cluster.size()):
+            self.clone_attributes(source_cell=source_cell_cluster[i], target_cell=target_cell_cluster[i],
+                                  no_clone_key_dict_list=no_clone_key_dict_list)
+
+    @deprecated(version='4.0.0', reason="You should use : clone_parent_cluster_2_child_cluster")
     def cloneParentCluster2ChildCluster(self):
-        # these calls seem to be necessary to ensure whatever is setin in mitosisSteppable (C++) is reflected in Python
-        # self.parentCell=self.mitosisSteppable.parentCell
-        # self.childCell=self.mitosisSteppable.childCell
 
-        compartmentListParent = self.inventory.getClusterCells(self.parentCell.clusterId)
-        compartmentListChild = self.inventory.getClusterCells(self.childCell.clusterId)
+        return self.clone_parent_cluster_2_child_cluster()
 
-        self.cloneClusterAttributes(sourceCellCluster=compartmentListParent, targetCellCluster=compartmentListChild,
-                                    no_clone_key_dict_list=[])
+    def clone_parent_cluster_2_child_cluster(self):
+        """
+        Clones attributes of "parent" cluster to "child" cluster wherre parent and child
+        refer to objects that existed before and after mitosis
+        these calls seem to be necessary to ensure
+        whatever is set in in mitosisSteppable (C++) is reflected in Python
+        :return:
+        """
 
-    def updateAttributes(self):
-        parentCell = self.mitosisSteppable.parentCell
-        childCell = self.mitosisSteppable.childCell
+        compartment_list_parent = self.inventory.getClusterCells(self.parentCell.clusterId)
+        compartment_list_child = self.inventory.getClusterCells(self.childCell.clusterId)
 
-        compartmentListChild = self.inventory.getClusterCells(childCell.clusterId)
-        compartmentListParent = self.inventory.getClusterCells(parentCell.clusterId)
-        # compartments in the parent and child clusters arel listed in the same order so attribute changes require simple iteration through compartment list
-        for i in xrange(compartmentListChild.size()):
-            compartmentListChild[i].type = compartmentListParent[i].type
+        self.clone_cluster_attributes(source_cell_cluster=compartment_list_parent,
+                                      target_cell_cluster=compartment_list_child,
+                                      no_clone_key_dict_list=[])
 
-    def step(self, mcs):
-        print
-        "MITOSIS STEPPABLE Clusters BASE"
+    def update_attributes(self):
+        """
+        Default implmentation of update attribute function that is called
+        immediately after the mitosis happens. This function is supposed
+        to be reimplemented in the subclass. Default implementation only copies type
+        attribute from parent to child cell
+        :return:
+        """
 
+        parent_cell = self.mitosisSteppable.parentCell
+        child_cell = self.mitosisSteppable.childCell
+        compartment_list_child = self.inventory.getClusterCells(child_cell.clusterId)
+        compartment_list_parent = self.inventory.getClusterCells(parent_cell.clusterId)
+        # compartments in the parent and child clusters arel listed
+        # in the same order so attribute changes require simple iteration through compartment list
+        for i in range(compartment_list_child.size()):
+            compartment_list_child[i].type = compartment_list_parent[i].type
+
+    def handle_mitosis_update_attributes(self, mitosis_done):
+        """
+        Performs actions and bookipping that has to be done after actual cell division happened.
+        One of such actions is calling update_attributes function that users typically overload
+        :param mitosis_done: {bool} flag indicating if mitosis has been successful
+        :return: None
+        """
+
+        if mitosis_done:
+            self.init_parent_and_child_cells()
+            try:
+                legacy_update_attributes_fcn = getattr(self, 'updateAttributes')
+            except AttributeError:
+                legacy_update_attributes_fcn = None
+
+            if legacy_update_attributes_fcn is not None:
+                warnings.warn('"updateAttribute function" is deprecated since 4.0.0. '
+                              'Please use "update_attributes" in your'
+                              ' mitosis subclass', DeprecationWarning)
+                legacy_update_attributes_fcn()
+            else:
+                self.update_attributes()
+
+    @deprecated(version='4.0.0', reason="You should use : divide_cluster_random_orientation")
     def divideClusterRandomOrientation(self, _clusterId):
-        self.mitosisDone = self.mitosisSteppable.doDirectionalMitosisRandomOrientationCompartments(_clusterId)
-        if self.mitosisDone:
-            self.initParentAndChildCells()
-            self.updateAttributes()
-        return self.mitosisDone
 
+        return self.divide_cluster_random_orientation(cluster_id=_clusterId)
+
+    def divide_cluster_random_orientation(self, cluster_id):
+        """
+        Divides cluster into two daughter clusters along randomly chosen cleavage plane.
+        For tracking reasons one daughter cluster is considered a "parent"
+        and refers to a set of cell objects that existed before division
+
+        :param cluster_id: {long int} cluster id
+        :return: None
+        """
+
+        mitosis_done = self.mitosisSteppable.doDirectionalMitosisRandomOrientationCompartments(cluster_id)
+        self.handle_mitosis_update_attributes(mitosis_done=mitosis_done)
+        return mitosis_done
+
+    @deprecated(version='4.0.0', reason="You should use : divide_cluster_orientation_vector_based")
     def divideClusterOrientationVectorBased(self, _clusterId, _nx, _ny, _nz):
-        self.mitosisDone = self.mitosisSteppable.doDirectionalMitosisOrientationVectorBasedCompartments(_clusterId, _nx,
-                                                                                                        _ny, _nz)
-        if self.mitosisDone:
-            self.initParentAndChildCells()
-            self.updateAttributes()
-        return self.mitosisDone
 
-    def divideClusterAlongMajorAxis(self, _clusterId):
-        # orientationVectors=self.mitosisSteppable.getOrientationVectorsMitosis(_cell)
-        # print "orientationVectors.semiminorVec=",(orientationVectors.semiminorVec.fX,orientationVectors.semiminorVec.fY,orientationVectors.semiminorVec.fZ)
-        self.mitosisDone = self.mitosisSteppable.doDirectionalMitosisAlongMajorAxisCompartments(_clusterId)
-        if self.mitosisDone:
-            self.initParentAndChildCells()
-            self.updateAttributes()
-        return self.mitosisDone
+        return self.divide_cluster_orientation_vector_based(cluster_id=_clusterId,nx=_nx, ny=_ny, nz=_nz)
 
+    def divide_cluster_orientation_vector_based(self, cluster_id, nx, ny, nz):
+        """
+        Divides cluster into two daughter clusters along cleavage plane specified by a normal vector (nx, ny, nz).
+        For tracking reasons one daughter cluster is considered a "parent"
+        and refers to a set of cell objects that existed before division
+        :param cluster_id: {long int} cluster id
+        :param nx: {float} 'x' component of vector normal to the cleavage plane
+        :param ny: {float} 'y' component of vector normal to the cleavage plane
+        :param nz: {float} 'z' component of vector normal to the cleavage plane
+        :return: None
+        """
+
+        mitosis_done = self.mitosisSteppable.doDirectionalMitosisOrientationVectorBasedCompartments(
+            cluster_id, nx, ny, nz)
+        self.handle_mitosis_update_attributes(mitosis_done=mitosis_done)
+        return mitosis_done
+
+    @deprecated(version='4.0.0', reason="You should use : divide_cluster_along_major_axis")
+    def divideClusterAlongMajorAxis(self, cluster_id):
+
+        return self.divide_cluster_along_major_axis(cluster_id=cluster_id)
+
+    def divide_cluster_along_major_axis(self, cluster_id):
+        """
+        Divides cell into two daughter clusters along cleavage plane parallel to major axis of the cluster.
+        For tracking reasons one daughter cell is considered a "parent"
+        and refers to a set of cell objects that existed before division
+
+        :param cluster_id: {long int} cluster id
+        :return: None
+        """
+
+        mitosis_done = self.mitosisSteppable.doDirectionalMitosisAlongMajorAxisCompartments(cluster_id)
+        self.handle_mitosis_update_attributes(mitosis_done=mitosis_done)
+        return mitosis_done
+
+    @deprecated(version='4.0.0', reason="You should use : divide_cluster_along_minor_axis")
     def divideClusterAlongMinorAxis(self, _clusterId):
-        self.mitosisDone = self.mitosisSteppable.doDirectionalMitosisAlongMinorAxisCompartments(_clusterId)
-        if self.mitosisDone:
-            self.initParentAndChildCells()
-            self.updateAttributes()
-        return self.mitosisDone
+        return self.divide_cluster_along_minor_axis(cluster_id=_clusterId)
+
+    def divide_cluster_along_minor_axis(self, cluster_id):
+        """
+        Divides cell into two daughter clusters along cleavage plane parallel to minor axis of the cluster.
+        For tracking reasons one daughter cell is considered a "parent"
+        and refers to a set of cell objects that existed before division
+
+        :param cluster_id: {long int} cluster id
+        :return: None
+        """
+
+        mitosis_done = self.mitosisSteppable.doDirectionalMitosisAlongMinorAxisCompartments(cluster_id)
+        self.handle_mitosis_update_attributes(mitosis_done=mitosis_done)
+
+        return mitosis_done
