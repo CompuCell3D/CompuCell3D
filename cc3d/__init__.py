@@ -28,6 +28,7 @@ if sys.platform.startswith('win'):
 
     # todo - this needs to have platform specific behavior
     path_env_list.insert(0,os.environ['COMPUCELL3D_PLUGIN_PATH'])
+    path_env_list.insert(0, os.environ['COMPUCELL3D_STEPPABLE_PATH'])
 
 
     os.environ['PATH'] = ';'.join(path_env_list)
