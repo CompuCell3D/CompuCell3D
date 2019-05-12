@@ -36,9 +36,4 @@
         <NeighborOrder>2</NeighborOrder>
     </Plugin>
 
-
-    <Steppable Type="PIFInitializer">
-        <PIFName>Simulation/steppableBasedMitosis.piff</PIFName>
-    </Steppable>
-
 </CompuCell3D>
