@@ -1296,16 +1296,22 @@ class MitosisSteppableBase(SteppableBasePy):
     def __init__(self, frequency=1):
         SteppableBasePy.__init__(self, frequency)
         self.mitosisSteppable = None
+        self.parent_cell = None
+        self.child_cell = None
+        # legacy API
         self.parentCell = None
         self.childCell = None
+
         self._parent_child_position_flag = None
 
     def core_init(self, reinitialize_cell_types=True):
         SteppableBasePy.core_init(self, reinitialize_cell_types=reinitialize_cell_types)
         self.mitosisSteppable = CompuCell.MitosisSteppable()
         self.mitosisSteppable.init(self.simulator)
-        self.parentCell = self.mitosisSteppable.parentCell
-        self.childCell = self.mitosisSteppable.childCell
+        self.parent_cell = self.mitosisSteppable.parentCell
+        self.child_cell = self.mitosisSteppable.childCell
+        self.parentCell = self.parent_cell
+        self.childCell = self.child_cell
 
         # delayed initialization
         if self._parent_child_position_flag is not None:
@@ -1348,7 +1354,7 @@ class MitosisSteppableBase(SteppableBasePy):
         # self.parentCell=self.mitosisSteppable.parentCell
         # self.childCell=self.mitosisSteppable.childCell
 
-        self.clone_attributes(source_cell=self.parentCell, target_cell=self.childCell, no_clone_key_dict_list=[])
+        self.clone_attributes(source_cell=self.parent_cell, target_cell=self.child_cell, no_clone_key_dict_list=[])
 
     def update_attributes(self):
         """
@@ -1357,9 +1363,9 @@ class MitosisSteppableBase(SteppableBasePy):
         :return:
         """
 
-        self.childCell.targetVolume = self.parentCell.targetVolume
-        self.childCell.lambdaVolume = self.parentCell.lambdaVolume
-        self.childCell.type = self.parentCell.type
+        self.child_cell.targetVolume = self.parent_cell.targetVolume
+        self.child_cell.lambdaVolume = self.parent_cell.lambdaVolume
+        self.child_cell.type = self.parent_cell.type
 
     @deprecated(version='4.0.0', reason="You should use : init_parent_and_child_cells")
     def initParentAndChildCells(self):
@@ -1371,8 +1377,12 @@ class MitosisSteppableBase(SteppableBasePy):
          is completed succesfully
         """
 
-        self.parentCell = self.mitosisSteppable.parentCell
-        self.childCell = self.mitosisSteppable.childCell
+        self.parent_cell = self.mitosisSteppable.parentCell
+        self.child_cell = self.mitosisSteppable.childCell
+
+        self.parentCell = self.parent_cell
+        self.childCell = self.child_cell
+
 
     def handle_mitosis_update_attributes(self, mitosis_done):
         """
@@ -1384,7 +1394,10 @@ class MitosisSteppableBase(SteppableBasePy):
 
         if mitosis_done:
             self.init_parent_and_child_cells()
-            legacy_update_attributes_fcn = getattr(self, 'updateAttributes')
+            try:
+                legacy_update_attributes_fcn = getattr(self, 'updateAttributes')
+            except AttributeError:
+                legacy_update_attributes_fcn = None
 
             if legacy_update_attributes_fcn is not None:
                 warnings.warn('"updateAttribute function" is deprecated since 4.0.0. '

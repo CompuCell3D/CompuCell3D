@@ -34,19 +34,20 @@ class MitosisSteppable(MitosisSteppableBase):
         for cell in cells_to_divide:
             # to change mitosis mode leave one of the below lines uncommented
             self.divide_cell_random_orientation(cell)
-            # self.divideCellOrientationVectorBased(cell,1,0,0)                 # this is a valid option
-            # self.divideCellAlongMajorAxis(cell)                               # this is a valid option
-            # self.divideCellAlongMinorAxis(cell)                               # this is a valid option
+            # Other valid options
+            # self.divide_cell_orientation_vector_based(cell,1,1,0)
+            # self.divide_cell_along_major_axis(cell)
+            # self.divide_cell_along_minor_axis(cell)
 
-    def updateAttributes(self):
-    # def update_attributes(self):
+    def update_attributes(self):
+
         # reducing parent target volume BEFORE cloning
-        self.parentCell.targetVolume /= 2.0
+        self.parent_cell.targetVolume /= 2.0
 
         self.clone_parent_2_child()
 
         # implementing
-        if self.parentCell.type == self.CONDENSING:
-            self.childCell.type = self.NONCONDENSING
+        if self.parent_cell.type == self.CONDENSING:
+            self.child_cell.type = self.NONCONDENSING
         else:
-            self.childCell.type = self.CONDENSING
+            self.child_cell.type = self.CONDENSING
