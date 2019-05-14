@@ -181,6 +181,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             "ConnectivityGlobal": ['connectivity_global_plugin', 'connectivityGlobalPlugin'],
             "ConnectivityLocalFlex": ['connectivity_local_flex_plugin', 'connectivityLocalFlexPlugin'],
             "Chemotaxis": ['chemotaxis_plugin', 'chemotaxisPlugin'],
+            "ClusterSurface": ['cluster_surface_plugin', 'clusterSurfacePlugin'],
+            "ClusterSurfaceTracker": ['cluster_surface_tracker_plugin', 'clusterSurfaceTrackerPlugin'],
         }
 
         # used by clone attributes functions
@@ -1054,6 +1056,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         for pixel in pixels_to_delete:
             self.cell_field[pixel[0], pixel[1], pixel[2]] = medium_cell
 
+    @deprecated(version='4.0.0', reason="You should use : clone_attributes")
     def cloneAttributes(self, sourceCell, targetCell, no_clone_key_dict_list=None):
         if no_clone_key_dict_list is None:
             no_clone_key_dict_list = []
@@ -1159,6 +1162,19 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
                 # FocalPointPLasticityPlugin - this plugin has to be handled manually -
                 # there is no good way to figure out which links shuold be copied from parent to daughter cell
+
+    @deprecated(version='4.0.0', reason="You should use : reassign_cluster_id")
+    def reassignClusterId(self, _cell, _clusterId):
+        return self.reassign_cluster_id(cell=_cell,cluster_id=_clusterId)
+
+    def reassign_cluster_id(self, cell, cluster_id):
+        old_cluster_id = cell.clusterId
+        new_cluster_id = cluster_id
+        self.inventory.reassignClusterId(cell, new_cluster_id)
+        if self.clusterSurfaceTrackerPlugin:
+            self.clusterSurfaceTrackerPlugin.updateClusterSurface(old_cluster_id)
+            self.clusterSurfaceTrackerPlugin.updateClusterSurface(new_cluster_id)
+
 
     # def registerXMLElementUpdate(self, *args):
     #     '''this function registers core module XML Element from wchich XML subelement has been fetched.It returns XML subelement

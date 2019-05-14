@@ -152,6 +152,9 @@ SET(LIBS_AUX
    BoundaryPixelTrackerShared   
    MitosisShared
    MitosisSteppableShared
+   ClusterSurfaceShared    
+   ClusterSurfaceTrackerShared
+
    
 
 )

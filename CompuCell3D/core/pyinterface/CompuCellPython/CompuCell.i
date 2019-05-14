@@ -34,8 +34,7 @@
 %feature("autodoc",setDebugOutputFrequency_func) setDebugOutputFrequency;
 %feature("autodoc",getCellInventory_func) getCellInventory;
 
-
-   //PottsParseData.h
+//PottsParseData.h
 %feature("autodoc",PottsParseData_Class) PottsParseData;
 
    //VolumeParseData.h

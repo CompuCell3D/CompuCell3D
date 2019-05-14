@@ -194,29 +194,29 @@ void ClusterSurfacePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
     //For more information on XML parser function please see CC3D code or lookup XML utils API
     automaton = potts->getAutomaton();
     ASSERT_OR_THROW("CELL TYPE PLUGIN WAS NOT PROPERLY INITIALIZED YET. MAKE SURE THIS IS THE FIRST PLUGIN THAT YOU SET", automaton)
-    if(potts->getDisplayUnitsFlag()){
-        Unit targetSurfaceUnit=powerUnit(potts->getLengthUnit(),2);
-        Unit lambdaSurfaceUnit=potts->getEnergyUnit()/(targetSurfaceUnit*targetSurfaceUnit);
+    //if(potts->getDisplayUnitsFlag()){
+    //    Unit targetSurfaceUnit=powerUnit(potts->getLengthUnit(),2);
+    //    Unit lambdaSurfaceUnit=potts->getEnergyUnit()/(targetSurfaceUnit*targetSurfaceUnit);
 
-        CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-        if (!unitsElem){ //add Units element
-            unitsElem=_xmlData->attachElement("Units");
-        }
+    //    CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
+    //    if (!unitsElem){ //add Units element
+    //        unitsElem=_xmlData->attachElement("Units");
+    //    }
 
-        if(unitsElem->getFirstElement("TargetSurfaceUnit")){
-            unitsElem->getFirstElement("TargetSurfaceUnit")->updateElementValue(targetSurfaceUnit.toString());
-        }else{
-            CC3DXMLElement * surfaceUnitElem = unitsElem->attachElement("TargetSurfaceUnit",targetSurfaceUnit.toString());
-        }
+    //    if(unitsElem->getFirstElement("TargetSurfaceUnit")){
+    //        unitsElem->getFirstElement("TargetSurfaceUnit")->updateElementValue(targetSurfaceUnit.toString());
+    //    }else{
+    //        CC3DXMLElement * surfaceUnitElem = unitsElem->attachElement("TargetSurfaceUnit",targetSurfaceUnit.toString());
+    //    }
 
-        if(unitsElem->getFirstElement("LambdaSurfaceUnit")){
-            unitsElem->getFirstElement("LambdaSurfaceUnit")->updateElementValue(lambdaSurfaceUnit.toString());
-        }else{
-            CC3DXMLElement * lambdaSurfaceUnitElem = unitsElem->attachElement("LambdaSurfaceUnit",lambdaSurfaceUnit.toString());
-        }
+    //    if(unitsElem->getFirstElement("LambdaSurfaceUnit")){
+    //        unitsElem->getFirstElement("LambdaSurfaceUnit")->updateElementValue(lambdaSurfaceUnit.toString());
+    //    }else{
+    //        CC3DXMLElement * lambdaSurfaceUnitElem = unitsElem->attachElement("LambdaSurfaceUnit",lambdaSurfaceUnit.toString());
+    //    }
 
 
-    }
+    //}
 
 
     //if there are no child elements for this plugin it means will use changeEnergyByCellId
