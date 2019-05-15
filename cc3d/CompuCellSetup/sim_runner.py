@@ -59,7 +59,7 @@ def run_cc3d_project(cc3d_sim_fname):
         # exec(code)
         if code is not None:
             try:
-                exec(code)
+                exec(code, globals(), locals())
                 # exec(sim_fh.read())
                 # exec(cc3dSimulationDataHandler.cc3dSimulationData.pythonScript)
             except:

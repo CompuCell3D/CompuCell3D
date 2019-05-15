@@ -1,5 +1,5 @@
 from .AngiogenesisSteppables import AngiogenesisStetppable
-import cc3d.CompuCellSetup as CompuCellSetup
+from cc3d import CompuCellSetup
 
 
 def configure_simulation():
