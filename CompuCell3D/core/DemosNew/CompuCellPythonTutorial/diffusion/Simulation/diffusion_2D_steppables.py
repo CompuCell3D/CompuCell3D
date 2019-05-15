@@ -1,5 +1,4 @@
 from cc3d.core.PySteppables import *
-from cc3d import CompuCellSetup
 from pathlib import Path
 
 
@@ -11,9 +10,7 @@ class ConcentrationFieldDumperSteppable(SteppableBasePy):
         file_name = "diffusion_output/FGF_" + str(mcs) + ".dat"
         fgf_field = self.field.FGF
 
-        # persistent_globals object stores many global variables that are shared among simulation objects
-        # one such variable is output_directory
-        output_dir = CompuCellSetup.persistent_globals.output_directory
+        output_dir = self.output_dir
 
         if output_dir is not None:
             output_path = Path(output_dir).joinpath(file_name)

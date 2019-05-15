@@ -290,6 +290,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                     setattr(self, plugin_member_name, None)
 
 
+    @property
+    def output_dir(self):
+        return CompuCellSetup.persistent_globals.output_directory
 
     @property
     def simulator(self):
