@@ -511,3 +511,70 @@ class CellPixelIterator:
     def __iter__(self):
         return self
 
+
+class ElasticityDataList:
+    def __init__(self, elasticity_tracker_plugin, _cell):
+        self.elasticity_tracker_plugin = elasticity_tracker_plugin
+        self.elasticity_tracker_accessor = self.elasticity_tracker_plugin.getElasticityTrackerAccessorPtr()
+        self.cell = _cell
+
+    def __iter__(self):
+        return ElasticityDataIterator(self)
+
+
+class ElasticityDataIterator:
+    def __init__(self, elasticity_data_list):
+        self.elasticity_tracker_accessor = elasticity_data_list.elasticity_tracker_accessor
+        self.cell = elasticity_data_list.cell
+        self.elasticity_tracker_plugin = elasticity_data_list.elasticity_tracker_plugin
+        self.elasticity_tracker = self.elasticity_tracker_accessor.get(self.cell.extraAttribPtr)
+        self.elasticity_data_set_itr = CompuCell.elasticitySetPyItr()
+        self.elasticity_data_set_itr.initialize(self.elasticity_tracker.elasticityNeighbors)
+        self.elasticity_data_set_itr.setToBegin()
+
+    def __next__(self):
+        if not self.elasticity_data_set_itr.isEnd():
+            self.current_elasticity_data_set_itr = self.elasticity_data_set_itr.current
+            self.elasticity_data = self.elasticity_data_set_itr.getCurrentRef()
+            self.elasticity_data_set_itr.next()
+            return self.elasticity_tracker_plugin.getElasticityTrackerData(self.elasticity_data)
+        else:
+            raise StopIteration
+
+    def __iter__(self):
+        return self
+
+
+class PlasticityDataList:
+    def __init__(self, plasticity_tracker_plugin, cell):
+        self.plasticity_tracker_plugin = plasticity_tracker_plugin
+        self.plasticityTrackerAccessor = self.plasticity_tracker_plugin.getPlasticityTrackerAccessorPtr()
+        self.cell = cell
+
+    def __iter__(self):
+        return PlasticityDataIterator(self)
+
+
+class PlasticityDataIterator:
+    def __init__(self, plasticity_data_list):
+        self.plasticityTrackerAccessor = plasticity_data_list.plasticityTrackerAccessor
+        self.cell = plasticity_data_list.cell
+        self.plasticity_tracker_plugin = plasticity_data_list.plasticity_tracker_plugin
+        self.plasticityTracker = self.plasticityTrackerAccessor.get(self.cell.extraAttribPtr)
+        self.plasticityDataSetItr = CompuCell.plasticitySetPyItr()
+        self.plasticityDataSetItr.initialize(self.plasticityTracker.plasticityNeighbors)
+        self.plasticityDataSetItr.setToBegin()
+
+    def next(self):
+        if not self.plasticityDataSetItr.isEnd():
+            self.currentPlasticityDataSetItr = self.plasticityDataSetItr.current
+            self.plasticityData = self.plasticityDataSetItr.getCurrentRef()
+            self.plasticityDataSetItr.next()
+            return self.plasticity_tracker_plugin.getPlasticityTrackerData(self.plasticityData)
+        #             return self.plasticityData
+        else:
+            raise StopIteration
+
+    def __iter__(self):
+        return self
+

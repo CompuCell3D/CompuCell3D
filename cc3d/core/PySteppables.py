@@ -183,6 +183,9 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             "Chemotaxis": ['chemotaxis_plugin', 'chemotaxisPlugin'],
             "ClusterSurface": ['cluster_surface_plugin', 'clusterSurfacePlugin'],
             "ClusterSurfaceTracker": ['cluster_surface_tracker_plugin', 'clusterSurfaceTrackerPlugin'],
+            "ElasticityTracker": ['elasticity_tracker_plugin', 'elasticityTrackerPlugin'],
+            "PlasticityTracker": ['plasticity_tracker_plugin', 'plasticityTrackerPlugin'],
+
         }
 
         # used by clone attributes functions
@@ -631,23 +634,52 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         """
         return self.inventory.attemptFetchingCellById(cell_id)
 
+    @deprecated(version='4.0.0', reason="You should use : get_focal_point_plasticity_data_list")
     def getFocalPointPlasticityDataList(self, _cell):
+        return self.get_focal_point_plasticity_data_list(cell=_cell)
+
+    def get_focal_point_plasticity_data_list(self, cell):
         if self.focal_point_plasticity_plugin:
-            return FocalPointPlasticityDataList(self.focal_point_plasticity_plugin, _cell)
+            return FocalPointPlasticityDataList(self.focal_point_plasticity_plugin, cell)
 
         return None
 
+    @deprecated(version='4.0.0', reason="You should use : get_internal_focal_point_plasticity_data_list")
     def getInternalFocalPointPlasticityDataList(self, _cell):
+        return self.get_internal_focal_point_plasticity_data_list(cell=_cell)
+
+    def get_internal_focal_point_plasticity_data_list(self, cell):
         if self.focal_point_plasticity_plugin:
-            return InternalFocalPointPlasticityDataList(self.focal_point_plasticity_plugin, _cell)
+            return InternalFocalPointPlasticityDataList(self.focal_point_plasticity_plugin, cell)
 
         return None
 
+    @deprecated(version='4.0.0', reason="You should use : get_anchor_focal_point_plasticity_data_list")
     def getAnchorFocalPointPlasticityDataList(self, _cell):
+        return self.get_anchor_focal_point_plasticity_data_list(cell=_cell)
+
+    def get_anchor_focal_point_plasticity_data_list(self, cell):
         if self.focal_point_plasticity_plugin:
-            return AnchorFocalPointPlasticityDataList(self.focal_point_plasticity_plugin, _cell)
+            return AnchorFocalPointPlasticityDataList(self.focal_point_plasticity_plugin, cell)
 
         return None
+
+    @deprecated(version='4.0.0', reason="You should use : get_elasticity_data_list")
+    def getElasticityDataList(self, _cell):
+        return self.get_elasticity_data_list(cell=_cell)
+
+    def get_elasticity_data_list(self, cell):
+        if self.elasticity_tracker_plugin:
+            return ElasticityDataList(self.elasticity_tracker_plugin, cell)
+
+    @deprecated(version='4.0.0', reason="You should use : get_plasticity_data_list")
+    def getPlasticityDataList(self, _cell):
+        return self.get_plasticity_data_list(cell=_cell)
+
+    def get_plasticity_data_list(self, cell):
+        if self.plasticity_tracker_plugin:
+            return PlasticityDataList(self.plasticity_tracker_plugin, cell)
+
 
     @deprecated(version='4.0.0', reason="You should use : build_wall")
     def buildWall(self, type):

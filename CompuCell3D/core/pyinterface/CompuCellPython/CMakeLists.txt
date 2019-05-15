@@ -148,15 +148,14 @@ SET(LIBS_AUX
     NeighborTrackerShared
     VolumeTrackerShared    
     CenterOfMassShared    
-   PixelTrackerShared
-   BoundaryPixelTrackerShared   
-   MitosisShared
-   MitosisSteppableShared
-   ClusterSurfaceShared    
-   ClusterSurfaceTrackerShared
-
-   
-
+    PixelTrackerShared
+    BoundaryPixelTrackerShared   
+    MitosisShared
+    MitosisSteppableShared
+    ClusterSurfaceShared    
+    ClusterSurfaceTrackerShared
+    ElasticityTrackerShared
+    ElasticityShared   
 )
 
 INCLUDE_DIRECTORIES(

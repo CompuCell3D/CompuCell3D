@@ -104,39 +104,39 @@ void ElasticityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
     
 	Potts3D *potts = simulator->getPotts();
 
-	if(potts->getDisplayUnitsFlag()){
-		Unit targetLengthElasticityUnit=potts->getLengthUnit();
-		Unit lambdaElasticityUnit=potts->getEnergyUnit()/(targetLengthElasticityUnit*targetLengthElasticityUnit);
+	//if(potts->getDisplayUnitsFlag()){
+	//	Unit targetLengthElasticityUnit=potts->getLengthUnit();
+	//	Unit lambdaElasticityUnit=potts->getEnergyUnit()/(targetLengthElasticityUnit*targetLengthElasticityUnit);
 
-		CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-		if (!unitsElem){ //add Units element
-			unitsElem=_xmlData->attachElement("Units");
-		}
+	//	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
+	//	if (!unitsElem){ //add Units element
+	//		unitsElem=_xmlData->attachElement("Units");
+	//	}
 
-		if(unitsElem->getFirstElement("TargetLengthElasticityUnit")){
-			unitsElem->getFirstElement("TargetLengthElasticityUnit")->updateElementValue(targetLengthElasticityUnit.toString());
-		}else{
-			 unitsElem->attachElement("TargetLengthElasticityUnit",targetLengthElasticityUnit.toString());
-		}
-
-
-
-		if(unitsElem->getFirstElement("MaxElasticityLengthUnit")){
-			unitsElem->getFirstElement("MaxElasticityLengthUnit")->updateElementValue(targetLengthElasticityUnit.toString());
-		}else{
-			unitsElem->attachElement("MaxElasticityLengthUnit",targetLengthElasticityUnit.toString());
-		}
+	//	if(unitsElem->getFirstElement("TargetLengthElasticityUnit")){
+	//		unitsElem->getFirstElement("TargetLengthElasticityUnit")->updateElementValue(targetLengthElasticityUnit.toString());
+	//	}else{
+	//		 unitsElem->attachElement("TargetLengthElasticityUnit",targetLengthElasticityUnit.toString());
+	//	}
 
 
 
+	//	if(unitsElem->getFirstElement("MaxElasticityLengthUnit")){
+	//		unitsElem->getFirstElement("MaxElasticityLengthUnit")->updateElementValue(targetLengthElasticityUnit.toString());
+	//	}else{
+	//		unitsElem->attachElement("MaxElasticityLengthUnit",targetLengthElasticityUnit.toString());
+	//	}
 
-		if(unitsElem->getFirstElement("LambdaElasticityUnit")){
-			unitsElem->getFirstElement("LambdaElasticityUnit")->updateElementValue(lambdaElasticityUnit.toString());
-		}else{
-			unitsElem->attachElement("LambdaElasticityUnit",lambdaElasticityUnit.toString());
-		}
 
-	}
+
+
+	//	if(unitsElem->getFirstElement("LambdaElasticityUnit")){
+	//		unitsElem->getFirstElement("LambdaElasticityUnit")->updateElementValue(lambdaElasticityUnit.toString());
+	//	}else{
+	//		unitsElem->attachElement("LambdaElasticityUnit",lambdaElasticityUnit.toString());
+	//	}
+
+	//}
 
 	if(_xmlData->findElement("Local")){
       diffEnergyFcnPtr=&ElasticityPlugin::diffEnergyLocal;

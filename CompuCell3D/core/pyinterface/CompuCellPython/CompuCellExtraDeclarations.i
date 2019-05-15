@@ -477,30 +477,30 @@ PLUGINACCESSOR(BoundaryPixelTracker)
 //// 
 //// %}
 //
-////Elasticity Plugin
-//%include <CompuCell3D/plugins/ElasticityTracker/ElasticityTracker.h>
-//%template (elasticityTrackerAccessor) BasicClassAccessor<ElasticityTracker>; //necessary to get ElasticityTracker accessor working
-//%template (elasticitySetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::ElasticityTrackerData> , CompuCell3D::ElasticityTrackerData >;
-//// %template (elasticitySetPyItr) STLPyIterator<std::set<CompuCell3D::ElasticityTrackerData> >;
-//%template (elasticityTrackerDataSet) std::set<CompuCell3D::ElasticityTrackerData>; //necessary to get basic set functionality working
-//PLUGINACCESSOR(ElasticityTracker)
-//
-//
-//// %include <CompuCell3D/plugins/ElasticityTracker/ElasticityTrackerPlugin.h>
-//// 
-//// %inline %{
-////  ElasticityTrackerPlugin * getElasticityTrackerPlugin(){
-////          return (ElasticityTrackerPlugin *)Simulator::pluginManager.get("ElasticityTracker");
-////    }
-//// 
-////  CompuCell3D::ElasticityTrackerData & derefElasticityTrackerData(std::set<CompuCell3D::ElasticityTrackerData>::iterator &_itr){
-////      return const_cast<CompuCell3D::ElasticityTrackerData &>(*_itr);
-////  }
-//// 
-//// 
-//// %}
-//
-//
+//Elasticity Plugin
+%include <CompuCell3D/plugins/ElasticityTracker/ElasticityTracker.h>
+%template (elasticityTrackerAccessor) BasicClassAccessor<ElasticityTracker>; //necessary to get ElasticityTracker accessor working
+%template (elasticitySetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::ElasticityTrackerData> , CompuCell3D::ElasticityTrackerData >;
+// %template (elasticitySetPyItr) STLPyIterator<std::set<CompuCell3D::ElasticityTrackerData> >;
+%template (elasticityTrackerDataSet) std::set<CompuCell3D::ElasticityTrackerData>; //necessary to get basic set functionality working
+PLUGINACCESSOR(ElasticityTracker)
+
+
+// %include <CompuCell3D/plugins/ElasticityTracker/ElasticityTrackerPlugin.h>
+// 
+// %inline %{
+//  ElasticityTrackerPlugin * getElasticityTrackerPlugin(){
+//          return (ElasticityTrackerPlugin *)Simulator::pluginManager.get("ElasticityTracker");
+//    }
+// 
+//  CompuCell3D::ElasticityTrackerData & derefElasticityTrackerData(std::set<CompuCell3D::ElasticityTrackerData>::iterator &_itr){
+//      return const_cast<CompuCell3D::ElasticityTrackerData &>(*_itr);
+//  }
+// 
+// 
+// %}
+
+
 ////Plasticity Plugin
 //%include <CompuCell3D/plugins/PlasticityTracker/PlasticityTracker.h>
 //%template (plasticityTrackerAccessor) BasicClassAccessor<PlasticityTracker>; //necessary to get PlasticityTracker accessor working

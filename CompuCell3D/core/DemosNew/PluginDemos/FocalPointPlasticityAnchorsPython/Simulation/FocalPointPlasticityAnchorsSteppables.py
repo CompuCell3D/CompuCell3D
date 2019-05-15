@@ -33,12 +33,12 @@ class FocalPointPlasticityAnchorSteppable(SteppableBasePy):
         for cell in self.cell_list:
 
             if mcs < 100:
-                for fppd in self.getFocalPointPlasticityDataList(cell):
+                for fppd in self.get_focal_point_plasticity_data_list(cell):
                     print("CELL ID=", cell.id, " CELL TYPE=", cell.type, " volume=", cell.volume)
                     print("fppd.neighborId", fppd.neighborAddress.id, " lambda=", fppd.lambdaDistance,
                           " targetDistance=", fppd.targetDistance)
 
-                for anchor_fppd in self.getAnchorFocalPointPlasticityDataList(cell):
+                for anchor_fppd in self.get_anchor_focal_point_plasticity_data_list(cell):
                     print("ANCHORED CELL ID=", cell.id, " CELL TYPE=", cell.type, " volume=", cell.volume)
                     print("lambda=", anchor_fppd.lambdaDistance,
                           " targetDistance=", anchor_fppd.targetDistance,
@@ -50,7 +50,7 @@ class FocalPointPlasticityAnchorSteppable(SteppableBasePy):
 
             elif mcs > 200 and mcs < 300:
                 # setting plasticity constraints to 0
-                for fppd in self.getFocalPointPlasticityDataList(cell):
+                for fppd in self.get_focal_point_plasticity_data_list(cell):
                     print("fppd.neighborId", fppd.neighborAddress.id, " lambda=", fppd.lambdaDistance,
                           " targetDistance=", fppd.targetDistance)
 
@@ -63,7 +63,7 @@ class FocalPointPlasticityAnchorSteppable(SteppableBasePy):
                         cell, fppd.neighborAddress, 0.0, 0.0, 0.0)
 
             elif mcs == 400:
-                anchor_list = self.getAnchorFocalPointPlasticityDataList(cell)
+                anchor_list = self.get_anchor_focal_point_plasticity_data_list(cell)
                 if len(anchor_list):
                     for anchor_fppd in anchor_list:
                         self.focalPointPlasticityPlugin.setAnchorParameters(
@@ -73,7 +73,7 @@ class FocalPointPlasticityAnchorSteppable(SteppableBasePy):
                         )
 
                 elif mcs == 600:
-                    anchor_list = self.getAnchorFocalPointPlasticityDataList(cell)
+                    anchor_list = self.get_anchor_focal_point_plasticity_data_list(cell)
                     if len(anchor_list):
                         for anchor_fppd in anchor_list:
                             self.focalPointPlasticityPlugin.deleteAnchor(cell, anchor_fppd.anchorId)
