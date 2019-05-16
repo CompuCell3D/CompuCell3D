@@ -7,6 +7,7 @@ from PyQt5.QtGui import *
 import numpy as np
 
 import warnings
+from deprecated import deprecated
 
 try:
     import webcolors as wc
@@ -40,11 +41,6 @@ class PlotWindowInterface(QtCore.QObject):
 
     showPlotSignal = QtCore.pyqtSignal(str, QtCore.QMutex)
     showAllPlotsSignal = QtCore.pyqtSignal(QtCore.QMutex)
-    showHistPlotSignal = QtCore.pyqtSignal(str, QtCore.QMutex)
-    showAllHistPlotsSignal = QtCore.pyqtSignal(QtCore.QMutex)
-
-    showBarCurvePlotSignal = QtCore.pyqtSignal(str, QtCore.QMutex)
-    showAllBarCurvePlotsSignal = QtCore.pyqtSignal(QtCore.QMutex)
 
     # savePlotAsPNG has to emit signal with locking mutex to work correctly
     savePlotAsPNGSignal = QtCore.pyqtSignal(str, int, int, QtCore.QMutex)
@@ -53,7 +49,7 @@ class PlotWindowInterface(QtCore.QObject):
     setTitleSizeSignal = QtCore.pyqtSignal(int)
     setPlotBackgroundColorSignal = QtCore.pyqtSignal(str)
 
-    addPlotSignal = QtCore.pyqtSignal(object)
+    addPlotSignal = QtCore.pyqtSignal(object, QtCore.QMutex)
 
     def __init__(self, _plotWindow=None):
         # PlotManagerSetup.PlotWindowInterfaceBase.__init__(self,_plotWindow)
@@ -71,7 +67,8 @@ class PlotWindowInterface(QtCore.QObject):
         self.plotDrawingObjects = {}
         self.initSignalsAndSlots()
         self.plotWindowInterfaceMutex = QtCore.QMutex()
-        self.dirtyFlagIndex = 2  # this is the index of the flag tha is used to signal wheather the data has been modified or not
+        # this is the index of the flag tha is used to signal wheather the data has been modified or not
+        self.dirtyFlagIndex = 2
         self.autoLegendFlag = False
         self.legendSetFlag = False
         # self.legendPosition = Qwt.QwtPlot.BottomLegend
@@ -89,22 +86,12 @@ class PlotWindowInterface(QtCore.QObject):
         except:
             self.title = 'GENERIC PLOT'
 
-    def getQWTPLotWidget(self):  # returns native QWT widget to be manipulated by expert users
-        return self.plotWindow
-
     def initSignalsAndSlots(self):
-        self.showAllPlotsSignal.connect(self.__showAllPlots)
-        self.showPlotSignal.connect(self.__showPlot)
-        self.showAllHistPlotsSignal.connect(self.__showAllHistPlots)
-        self.showHistPlotSignal.connect(self.__showHistPlot)
-        self.showAllBarCurvePlotsSignal.connect(self.__showAllBarCurvePlots)
-        self.showBarCurvePlotSignal.connect(self.__showBarCurvePlot)
-        self.savePlotAsPNGSignal.connect(self.__savePlotAsPNG)
-
-        self.setTitleSignal.connect(self.setTitleHandler)
-        self.setTitleSizeSignal.connect(self.setTitleSizeHandler)
-        self.setPlotBackgroundColorSignal.connect(self.setPlotBackgroundColorHandler)
-        self.addPlotSignal.connect(self.addPlotHandler)
+        self.showAllPlotsSignal.connect(self.__show_all_plots_handler)
+        self.savePlotAsPNGSignal.connect(self.__save_plot_as_png_handler)
+        self.setTitleSignal.connect(self.set_title_handler)
+        self.setPlotBackgroundColorSignal.connect(self.set_plot_background_color_handler)
+        self.addPlotSignal.connect(self.add_plot_handler)
 
     def clear(self):
         # self.pW.clear()
@@ -113,78 +100,105 @@ class PlotWindowInterface(QtCore.QObject):
     def replot(self):
         self.pW.replot()
 
-    def setTitleHandler(self, _title):
-        self.title = str(_title)
-        self.pW.setTitle(_title)
+    # @deprecated(version='4.0.0', reason="You should use : set_title_handler")
+    # def setTitleHandler(self, _title):
+    #     return self.set_title_handler(title=_title)
 
+    def set_title_handler(self, title):
+        self.title = str(title)
+        self.pW.set_title(title)
+
+    @deprecated(version='4.0.0', reason="You should use : set_title")
     def setTitle(self, _title):
-        self.title = str(_title)
-        self.setTitleSignal.emit(_title)
+        return self.set_title(title=_title)
+
+    def set_title(self, title):
+        self.title = str(title)
+        self.setTitleSignal.emit(title)
         # self.pW.setTitle(_title)
 
-    def setTitleSizeHandler(self, _size):
-        print('setTitleSizeHandler')
-        # title = self.pW.titleLabel()
-        # print 'title=',title
-        # font = title.font()
-        # font.setPointSize(_size)
-        # title.setFont(font)
-        # self.pW.setTitle(title)
-
+    @deprecated(version='4.0.0', reason="You should use : set_title_size")
     def setTitleSize(self, _size):
-        self.setTitleSizeSignal.emit(_size)
+        return self.set_title_size(size=_size)
 
+    def set_title_size(self, size):
+        self.setTitleSizeSignal.emit(size)
+
+    @deprecated(version='4.0.0', reason="You should use : set_title_color")
     def setTitleColor(self, _colorName):
+        return self.set_title_color(color_name=_colorName)
+
+    def set_title_color(self, color_name):
         try:
             title = self.pW.title()
-            title.setColor(QColor(_colorName))
-            self.pW.setTitle(title)
+            title.setColor(QColor(color_name))
+            self.pW.set_title(title)
         except:
             raise RuntimeError('setTitleColor function is not supported in Player 5')
 
-    def setPlotBackgroundColorHandler(self, _colorName):
-        print('_colorName=', _colorName)
+    def set_plot_background_color_handler(self, color_name):
+        print('_colorName=', color_name)
         # self.pW.setCanvasBackground(QColor(_colorName))
 
-    def setPlotBackgroundColor(self, _colorName):
-        self.setPlotBackgroundColorSignal.emit(_colorName)
+    # @deprecated(version='4.0.0', reason="You should use : set_plot_background_color")
+    # def setPlotBackgroundColor(self, _colorName):
+    #     return self.set_plot_background_color(color_name=_colorName)
+
+    def set_plot_background_color(self, color_name):
+        self.setPlotBackgroundColorSignal.emit(color_name)
         self.pW.getViewBox().setBackgroundColor((255, 255, 255, 255))
 
         # self.pW.setCanvasBackground(QColor(_colorName))
 
-    def addAutoLegend(self, _position="bottom"):
-        pass
-
+    @deprecated(version='4.0.0', reason="You should use : set_data_default")
     def setDataDefault(self, plot_obj, x, y):
+        return self.set_data_default(plot_obj=plot_obj, x=x, y=y)
+
+    def set_data_default(self, plot_obj, x, y):
         plot_obj.setData(x, y)
 
+    @deprecated(version='4.0.0', reason="You should use : set_data_bar_graph_item")
     def setDataBarGraphItem(self, plot_obj, x, y):
+        return self.set_data_bar_graph_item(plot_obj=plot_obj, x=x, y=y)
+
+    def set_data_bar_graph_item(self, plot_obj, x, y):
         plot_obj.setOpts(x=x, height=y)
 
+    @deprecated(version='4.0.0', reason="You should use : add_plot")
     def addPlot(self, _plotName, _style="Lines", _color='white', _size=3, _alpha=255):
+        return self.add_plot(plot_name=_plotName, style=_style, color=_color, size=_size, alpha=_alpha)
+
+    def add_plot(self, plot_name, style="Lines", color='white', size=3, alpha=255):
         plot_param_dict = {
-            '_plotName': _plotName,
-            '_style': _style,
-            '_color': _color,
-            '_size': _size,
-            '_alpha': _alpha
+            '_plotName': plot_name,
+            '_style': style,
+            '_color': color,
+            '_size': size,
+            '_alpha': alpha
         }
 
-        self.addPlotSignal.emit(plot_param_dict)
+        self.plotWindowInterfaceMutex.lock()
+        self.addPlotSignal.emit(plot_param_dict, self.plotWindowInterfaceMutex)
 
-    # def addPlotHandler(self, _plotName, _style="Lines", _color='white', _size=3, _alpha=255):
-    def addPlotHandler(self, plot_param_dict):
+        self.plotWindowInterfaceMutex.lock()
+        self.plotWindowInterfaceMutex.unlock()
 
-        _plotName = plot_param_dict['_plotName']
-        _style = plot_param_dict['_style']
-        _color = plot_param_dict['_color']
+    # @deprecated(version='4.0.0', reason="You should use : add_plot_handler")
+    # def addPlotHandler(self, plot_param_dict):
+    #     return self.add_plot_handler(plot_param_dict=plot_param_dict)
+
+    def add_plot_handler(self, plot_param_dict):
+
+        plot_name = plot_param_dict['_plotName']
+        style = plot_param_dict['_style']
+        color = plot_param_dict['_color']
 
         background_color = self.pW.backgroundBrush().color()
 
         # print 'dir(self.pW)=',dir(self.pW)
 
-        _size = plot_param_dict['_size']
-        _alpha = plot_param_dict['_alpha']
+        size = plot_param_dict['_size']
+        alpha = plot_param_dict['_alpha']
 
         add_legend = False
         try:
@@ -196,61 +210,71 @@ class PlotWindowInterface(QtCore.QObject):
             self.pW.addLegend()
             self.legend_added = True
 
-        alpha = abs(int(_alpha)) % 256
+        alpha = abs(int(alpha)) % 256
 
         yd, xd = np.array([], dtype=np.float), np.array([], dtype=np.float)
 
-        setData_fcn = self.setDataDefault
+        set_data_fcn = self.set_data_default
 
-        color = wc.name_to_rgb(_color) + (alpha,)
-        if _style.lower() == 'dots':
-            plotObj = self.pW.plot(y=yd, x=xd, pen=background_color, symbolBrush=color, symbolSize=_size, name=_plotName)
+        color = wc.name_to_rgb(color) + (alpha,)
+        if style.lower() == 'dots':
+            plot_obj = self.pW.plot(y=yd, x=xd, pen=background_color, symbolBrush=color, symbolSize=size,
+                                   name=plot_name)
 
+        elif style.lower() == 'lines':
+            pen = pg.mkPen(color=color, width=size)
+            plot_obj = self.pW.plot(y=yd, x=xd, pen=pen, name=plot_name)
 
-        elif _style.lower() == 'lines':
-            pen = pg.mkPen(color=color, width=_size)
-            plotObj = self.pW.plot(y=yd, x=xd, pen=pen, name=_plotName)
-
-
-        elif _style.lower() == 'steps':
+        elif style.lower() == 'steps':
             xd, yd = np.array([0, .00001], dtype=np.float), np.array([1], dtype=np.float)
-            # pen = pg.mkPen(color=color, width=_size)
+            # pen = pg.mkPen(color=color, width=size)
             # plotObj = self.pW.plot(y=yd, x=xd, pen=pen,stepMode=True)
 
-            plotObj = pg.PlotCurveItem(xd, yd, stepMode=True, fillLevel=0, brush=color, name=_plotName)
+            plot_obj = pg.PlotCurveItem(xd, yd, stepMode=True, fillLevel=0, brush=color, name=plot_name)
 
-            self.pW.addItem(plotObj)
+            self.pW.addItem(plot_obj)
             # plt1.addItem(curve)
 
-        elif _style.lower() == 'bars':
+        elif style.lower() == 'bars':
 
-            plotObj = pg.BarGraphItem(x=xd, height=yd, width=_size, brush=color, name=_plotName)
-            setData_fcn = self.setDataBarGraphItem
-            self.pW.addItem(plotObj)
+            plot_obj = pg.BarGraphItem(x=xd, height=yd, width=size, brush=color, name=plot_name)
+            set_data_fcn = self.set_data_bar_graph_item
+            self.pW.addItem(plot_obj)
 
         else:  # dots is the default
-            plotObj = self.pW.plot(y=yd, x=xd, pen=background_color, symbolBrush=color, symbolSize=_size, name=_plotName)
+            plot_obj = self.pW.plot(y=yd, x=xd, pen=background_color, symbolBrush=color, symbolSize=size,
+                                   name=plot_name)
 
-        self.plotData[_plotName] = [xd, yd, False, XYPLOT, False]
-        self.plotDrawingObjects[_plotName] = {'curve': plotObj,
-                                              'LineWidth': _size,
-                                              'LineColor': _color,
-                                              'Style': _style,
-                                              'SetData': setData_fcn}
+        self.plotData[plot_name] = [xd, yd, False, XYPLOT, False]
+        self.plotDrawingObjects[plot_name] = {'curve': plot_obj,
+                                              'LineWidth': size,
+                                              'LineColor': color,
+                                              'Style': style,
+                                              'SetData': set_data_fcn}
 
-    def addGrid(self):
-        pass
+        self.plotWindowInterfaceMutex.unlock()
 
+    @deprecated(version='4.0.0', reason="You should use : erase_all_data")
     def eraseAllData(self):
+        return self.eraseAllData()
 
-        self.cleanAllContainers()
+    def erase_all_data(self):
+        """
+        erases all pot data - effectively this clears plots
+        :return:
+        """
+        self.clean_all_containers()
 
         for name, data in self.plotData.items():
             data[self.dirtyFlagIndex] = True
 
         self.eraseAllFlag = True
 
-    def cleanAllContainers(self):
+    def clean_all_containers(self):
+        """
+        Cleans all data containers that store plot data. Helper function
+        :return:
+        """
 
         for name, data in self.plotData.items():
             # todo implement special handling for "steps" or switch to bars instead of steps
@@ -261,274 +285,236 @@ class PlotWindowInterface(QtCore.QObject):
                 data[0], data[1] = np.array([], dtype=np.float), np.array([], dtype=np.float)
             data[self.dirtyFlagIndex] = True
 
-    def eraseData(self, _plotName):
-        plotType = self.plotData[_plotName][PLOT_TYPE_POSITION]
-        self.plotData[_plotName] = [array([], dtype=double), array([], dtype=double), False, plotType]
 
+    def erase_data(self, plot_name:str):
+        """
+        Erases data for a particular plot
+        :param plot_name: plot name for which data will be erased
+        :return:
+        """
+        plot_type = self.plotData[plot_name][PLOT_TYPE_POSITION]
+        self.plotData[plot_name] = [np.array([], dtype=np.float), np.array([], dtype=np.float), False, plot_type]
+
+    @deprecated(version='4.0.0', reason="You should use : add_data_series")
     def addDataSeries(self, _plotName, _x_vec, _y_vec):
+        return self.add_data_series(plot_name=_plotName, x_vec=_x_vec, y_vec=_y_vec)
 
-        if not isinstance(_x_vec, (list, tuple, np.ndarray)):
+    def add_data_series(self, plot_name, x_vec, y_vec):
+
+        if not isinstance(x_vec, (list, tuple, np.ndarray)):
             raise RuntimeError('addDataSeries: _x_vec has to be a list, tuple or 1D numpe array')
 
-        if not isinstance(_y_vec, (list, tuple, np.ndarray)):
+        if not isinstance(y_vec, (list, tuple, np.ndarray)):
             raise RuntimeError('addDataSeries: _y_vec has to be a list, tuple or 1D numpe array')
 
-        if len(_x_vec) != len(_y_vec):
+        if len(x_vec) != len(y_vec):
             raise RuntimeError('addDataSeries: _x_vec and _y_vec have to be of the same length')
 
-        for x, y in zip(_x_vec, _y_vec):
-            self.addDataPoint(_plotName=_plotName, _x=x, _y=y)
+        for x, y in zip(x_vec, y_vec):
+            self.add_data_point(plot_name=plot_name, x=x, y=y)
 
+    @deprecated(version='4.0.0', reason="You should use : add_data_point")
     def addDataPoint(self, _plotName, _x, _y):
+        return self.add_data_point(plot_name=_plotName, x=_x, y=_y)
 
-        if not _plotName in list(self.plotData.keys()):
+    def add_data_point(self, plot_name, x, y):
+
+        print('add_data_point: self.plotData=', self.plotData)
+
+        if plot_name not in list(self.plotData.keys()):
             return
 
         if self.eraseAllFlag:
-            self.cleanAllContainers()
+            self.clean_all_containers()
             self.eraseAllFlag = False
 
-        currentLength = len(self.plotData[_plotName][0])
+        currentLength = len(self.plotData[plot_name][0])
 
-        x_vec = self.plotData[_plotName][0]
-        y_vec = self.plotData[_plotName][1]
+        x_vec = self.plotData[plot_name][0]
+        y_vec = self.plotData[plot_name][1]
 
-        plot_obj = self.plotDrawingObjects[_plotName]
+        plot_obj = self.plotDrawingObjects[plot_name]
         style = plot_obj['Style']
         if style.lower() == 'steps':
             # processing first first point of the histogram
-            if not self.plotData[_plotName][4]:
+            if not self.plotData[plot_name][4]:
 
-                x_vec = np.array([_x, _x + 1], dtype=np.float)
-                y_vec = np.array([_y], dtype=np.float)
+                x_vec = np.array([x, x + 1], dtype=np.float)
+                y_vec = np.array([y], dtype=np.float)
 
-                self.plotData[_plotName][0] = x_vec
-                self.plotData[_plotName][1] = y_vec
-                self.plotData[_plotName][4] = True
+                self.plotData[plot_name][0] = x_vec
+                self.plotData[plot_name][1] = y_vec
+                self.plotData[plot_name][4] = True
             else:
-                self.plotData[_plotName][0] = np.append(self.plotData[_plotName][0], [_x])
-                self.plotData[_plotName][1] = np.append(self.plotData[_plotName][1], [_y])
-                self.plotData[_plotName][0][-2] = _x
-                self.plotData[_plotName][0][-1] = _x + 1
+                self.plotData[plot_name][0] = np.append(self.plotData[plot_name][0], [x])
+                self.plotData[plot_name][1] = np.append(self.plotData[plot_name][1], [y])
+                self.plotData[plot_name][0][-2] = x
+                self.plotData[plot_name][0][-1] = x + 1
 
         else:
-            self.plotData[_plotName][0] = np.append(self.plotData[_plotName][0], [_x])
-            self.plotData[_plotName][1] = np.append(self.plotData[_plotName][1], [_y])
+            self.plotData[plot_name][0] = np.append(self.plotData[plot_name][0], [x])
+            self.plotData[plot_name][1] = np.append(self.plotData[plot_name][1], [y])
 
-        self.plotData[_plotName][self.dirtyFlagIndex] = True
+        self.plotData[plot_name][self.dirtyFlagIndex] = True
 
-    def getDrawingObjectsSettings(self, _plotName):
-        if _plotName in list(self.plotDrawingObjects.keys()):
-            return self.plotDrawingObjects[_plotName]
+        print('exit add_data_point: self.plotData=', self.plotData)
+
+    def get_drawing_objects_settings(self, plot_name:str):
+        """
+        returns settings for plot
+        :param plot_name: plot name
+        :return:
+        """
+        if plot_name in list(self.plotDrawingObjects.keys()):
+            return self.plotDrawingObjects[plot_name]
         else:
             return None
 
-    def changePlotProperty(self, _plotName, _property, _value):
-        raise RuntimeError(
-            '"changePlotProperty" is not supported in Player 5. It appears thst you are using old-style syntax that is no longer supported.')
-        # self.plotDrawingObjects[_plotName][_property] = _value
-
-    def setXAxisTitle(self, _title):
-        pass
-
-    def setYAxisTitle(self, _title):
-        pass
-
-    def setXAxisTitleSize(self, _size):
-        pass
-
-    def setXAxisTitleColor(self, _colorName):
-        pass
-
-    def setYAxisTitleSize(self, _size):
-
-        pass
-
-    def setYAxisTitleColor(self, _colorName):
-
-        pass
-
-    def setXAxisLogScale(self):
-        pass
-
-    def setYAxisLogScale(self):
-        pass
-
-    def setYAxisScale(self, _lower=0.0, _upper=100.0):
-        pass
-
-    def setXAxisScale(self, _lower=0.0, _upper=100.0):
-        pass
-
-    def showPlot(self, _plotName):
-        pass
-
+    @deprecated(version='4.0.0', reason="You should use : save_plot_as_png")
     def savePlotAsPNG(self, _fileName, _sizeX=400, _sizeY=400):
-        self.plotWindowInterfaceMutex.lock()
-        self.savePlotAsPNGSignal.emit(_fileName, _sizeX, _sizeY, self.plotWindowInterfaceMutex)
+        return self.save_plot_as_png(file_name=_fileName, size_x=_sizeX, size_y=_sizeY)
 
-    def __savePlotAsPNG(self, _fileName, _sizeX, _sizeY, _mutex):
+    def save_plot_as_png(self, file_name, size_x=400, size_y=400):
+        """
+        writes plot as png to the drive.Current implementation cannot resize image size but this may change
+        in the future therefore we are keeping 'size_x', 'size_y' variables
+
+        :param file_name: {str} file name
+        :param size_x: {int} image x-size -  currently not used
+        :param size_y: {int} image y-size -  currently not used
+        :return:
+        """
+
+        self.plotWindowInterfaceMutex.lock()
+        self.savePlotAsPNGSignal.emit(str(file_name), size_x, size_y, self.plotWindowInterfaceMutex)
+
+        self.plotWindowInterfaceMutex.lock()
+        self.plotWindowInterfaceMutex.unlock()
+
+    def __save_plot_as_png_handler(self, file_name, size_x, size_y, mutex):
+        """
+        Hendler - writes plot as png to the drive.Current implementation cannot resize image size but this may change
+        in the future therefore we are keeping 'size_x', 'size_y' variables
+
+        :param file_name: {str} file name
+        :param size_x: {int} image x-size -  currently not used
+        :param size_y: {int} image y-size -  currently not used
+        :param mutex: {QMutex}
+        :return: None
+        """
 
         warnings.warn('Player 5 does not allow scaling of plot screenshots. If this feature is required,'
-                      'it is best to save plot data and render it separately in a full-featured plotting package such as Matpotlib or pyqtgraph. '
+                      'it is best to save plot data and render it '
+                      'separately in a full-featured plotting package such as Matpotlib or pyqtgraph. '
                       'CompuCell3D provides only basic plotting capabilities', RuntimeWarning)
 
-        fileName = str(_fileName)
-        #        pixmap=QPixmap(_sizeX,_sizeY)  # worked on Windows, but not Linux/OSX
-        #        pixmap.fill(QColor("white"))
-
-        # # WORKS OK todo
-        # exporter = pg.exporters.ImageExporter(self.pW)
-        # exporter.parameters()['width'] = 1000
-        # exporter.parameters()['height'] = 1000
-        #
-        # exporter.export(_fileName)
-        #
-
-        # for plot_name, plot_obj_dict in self.plotDrawingObjects.iteritems():
-        #     plot_obj = plot_obj_dict['curve']
-        #     exporter = pg.exporters.ImageExporter(plot_obj)
-        #     exporter.parameters()['width'] = 1000
-        #     exporter.parameters()['height'] = 1000
-        #     exporter.export(_fileName)
-        # self.plotDrawingObjects[_plotName] = {'curve':plotObj,
-        #                                       'LineWidth':_size,
-        #                                       'LineColor': _color,
-        #                                       'Style':_style,
-        #                                       'SetData':setData_fcn}
-        #
-        #
-        #
-        #
-        # import pyqtgraph.exporters
-        # exporter = pg.exporters.ImageExporter(self.pW)
-        # exporter.parameters()['width'] = 1000
-        #
-        # pixmap_array = self.pW.renderToArray((_sizeX,_sizeY))
-        #
+        file_name = str(file_name)
         pixmap = QPixmap(self.pW.size())
         painter = QPainter()
         painter.begin(pixmap)
         self.pW.render(painter, self.pW.sceneRect())
-        pixmap.save(_fileName)
+        pixmap.save(file_name)
         painter.end()
-        #
-        # imgmap = QImage(_sizeX, _sizeY, QImage.Format_ARGB32)
-        # # imgmap.fill(Qt.white)
-        # imgmap.fill(
-        #     qRgba(255, 255, 255, 255))  # solid white background (should probably depend on user-chosen colors though)
-        #
-        # self.pW.print_(imgmap)
-        # # following seems pretty crude, but keep in mind user can change Prefs anytime during sim
-        # # # #         if Configuration.getSetting("OutputToProjectOn"):
-        # # # #             outDir = str(Configuration.getSetting("ProjectLocation"))
-        # # # #         else:
-        # # # #             outDir = str(Configuration.getSetting("OutputLocation"))
-        #
-        # import CompuCellSetup
-        # outDir = CompuCellSetup.getSimulationOutputDir()
-        #
-        # outfile = os.path.join(outDir, fileName)
-        # #        print '--------- savePlotAsPNG: outfile=',outfile
-        # imgmap.save(outfile, "PNG")
-        _mutex.unlock()
 
-    def writeOutHeader(self, _file, _plotName, _outputFormat=LEGACY_FORMAT):
+        mutex.unlock()
 
-        if _outputFormat == LEGACY_FORMAT:
+    def write_out_header(self, fp, plot_name, output_format=LEGACY_FORMAT):
+        """
+        Writes header for plot data seres. Used as a convenience function by the function that writes
+        plot data to the disk
+        :param fp: file pointer
+        :param plot_name: plot name
+        :param output_format: outpout format
+        :return:
+        """
+        if output_format == LEGACY_FORMAT:
 
-            _file.write(_plotName + '\n')
+            fp.write(plot_name + '\n')
             return 0  # field width
 
-        elif _outputFormat == CSV_FORMAT:
+        elif output_format == CSV_FORMAT:
 
-            plotName = _plotName.replace(' ', '_')
+            plot_name = plot_name.replace(' ', '_')
 
-            fieldSize = len(plotName) + 2  # +2 is for _x or _y
-            if MAX_FIELD_LEGTH > fieldSize:
-                fieldSize = MAX_FIELD_LEGTH
+            field_size = len(plot_name) + 2  # +2 is for _x or _y
+            if MAX_FIELD_LEGTH > field_size:
+                field_size = MAX_FIELD_LEGTH
 
             fmt = ''
-            fmt += '{0:>' + str(fieldSize) + '},'
-            fmt += '{1:>' + str(fieldSize) + '}\n'
+            fmt += '{0:>' + str(field_size) + '},'
+            fmt += '{1:>' + str(field_size) + '}\n'
 
-            _file.write(fmt.format(plotName + '_x', plotName + '_y'))
+            fp.write(fmt.format(plot_name + '_x', plot_name + '_y'))
 
-            return fieldSize
+            return field_size
 
         else:
             raise LookupError(
-                MODULENAME + " writeOutHeader :" + "Requested output format: " + outputFormat + " does not exist")
+                MODULENAME + " writeOutHeader :" + "Requested output format: " + output_format + " does not exist")
 
+    @deprecated(version='4.0.0', reason="You should use : save_plot_as_data")
     def savePlotAsData(self, _fileName, _outputFormat=LEGACY_FORMAT):
-        # PLOT_TYPE_POSITION=3
-        # (XYPLOT,HISTOGRAM,BARPLOT)=range(0,3)
+        return self.save_plot_as_data(file_name=_fileName, output_format=_outputFormat)
 
-        import CompuCellSetup
-        outDir = CompuCellSetup.getSimulationOutputDir()
+    def save_plot_as_data(self, file_name, output_format=LEGACY_FORMAT):
+        """
+        Writes plots' data as a data file
+        :param file_name: {str} file name
+        :param output_format: output format
+        :return:
+        """
 
-        outfile = os.path.join(outDir, _fileName)
-        # print MODULENAME,'  savePlotAsData():   outfile=',outfile
+        outfile = file_name
         fpout = open(outfile, "w")
-        # print MODULENAME,'  self.plotData= ',self.plotData
 
-        for plotName, plotData in self.plotData.items():
-            # fpout.write(plotName+ '\n')
-            fieldSize = self.writeOutHeader(_file=fpout, _plotName=plotName, _outputFormat=_outputFormat)
-
-            xvals = plotData[0]
-            yvals = plotData[1]
-            # print MODULENAME,'  savePlotAsData():   xvals=',xvals
-            # print MODULENAME,'  savePlotAsData():   yvals=',yvals
-            if _outputFormat == LEGACY_FORMAT:
-                if plotData[PLOT_TYPE_POSITION] == XYPLOT or plotData[PLOT_TYPE_POSITION] == BARPLOT:
+        for plot_name, plot_data in self.plotData.items():
+            fieldSize = self.write_out_header(fp=fpout, plot_name=plot_name, output_format=output_format)
+            xvals = plot_data[0]
+            yvals = plot_data[1]
+            if output_format == LEGACY_FORMAT:
+                if plot_data[PLOT_TYPE_POSITION] == XYPLOT or plot_data[PLOT_TYPE_POSITION] == BARPLOT:
                     for jdx in range(len(xvals)):
 
                         # we need to intercept Index Error because steps data appends extra data point in x array
                         try:
-                            xyStr = "%f  %f\n" % (xvals[jdx], yvals[jdx])
-                            fpout.write(xyStr)
+                            xy_str = "%f  %f\n" % (xvals[jdx], yvals[jdx])
+                            fpout.write(xy_str)
                         except IndexError:
                             pass
 
-                elif plotData[PLOT_TYPE_POSITION] == HISTOGRAM:
+                elif plot_data[PLOT_TYPE_POSITION] == HISTOGRAM:
                     for jdx in range(len(xvals) - 1):
 
                         # we need to intercept Index Error because steps data appends extra data point in x array
                         try:
-                            xyStr = "%f  %f\n" % (xvals[jdx], yvals[jdx])
-                            fpout.write(xyStr)
+                            xy_str = "%f  %f\n" % (xvals[jdx], yvals[jdx])
+                            fpout.write(xy_str)
                         except IndexError:
                             pass
 
-            elif _outputFormat == CSV_FORMAT:
+            elif output_format == CSV_FORMAT:
                 fmt = ''
                 fmt += '{0:>' + str(fieldSize) + '},'
                 fmt += '{1:>' + str(fieldSize) + '}\n'
 
-                if plotData[PLOT_TYPE_POSITION] == XYPLOT or plotData[PLOT_TYPE_POSITION] == BARPLOT:
+                if plot_data[PLOT_TYPE_POSITION] == XYPLOT or plot_data[PLOT_TYPE_POSITION] == BARPLOT:
                     for jdx in range(len(xvals)):
 
                         # we need to intercept Index Error because steps data appends extra data point in x array
                         try:
-                            xyStr = fmt.format(xvals[jdx], yvals[jdx])
-                            # "%f  %f\n" % (xvals[jdx],yvals[jdx])
-                            fpout.write(xyStr)
+                            xy_str = fmt.format(xvals[jdx], yvals[jdx])
+                            fpout.write(xy_str)
                         except IndexError:
                             pass
-                elif plotData[PLOT_TYPE_POSITION] == HISTOGRAM:
+                elif plot_data[PLOT_TYPE_POSITION] == HISTOGRAM:
                     for jdx in range(len(xvals) - 1):
 
                         # we need to intercept Index Error because steps data appends extra data point in x array
-
                         try:
-                            xyStr = fmt.format(xvals[jdx], yvals[jdx])
-                            # xyStr = "%f  %f\n" % (xvals[jdx],yvals[jdx])
-                            fpout.write(xyStr)
+                            xy_str = fmt.format(xvals[jdx], yvals[jdx])
+                            fpout.write(xy_str)
                         except IndexError:
                             pass
-
-
 
             else:
                 raise LookupError(
@@ -537,31 +523,22 @@ class PlotWindowInterface(QtCore.QObject):
 
         fpout.close()
 
-    def __showPlot(self, plotName, _mutex=None):
-        _plotName = str(plotName)
-        if (not _plotName in list(self.plotData.keys())) or (not _plotName in list(self.plotDrawingObjects.keys())):
-            return
-        if not self.plotData[_plotName][self.dirtyFlagIndex]:
-            return
-        drawingObjects = self.plotDrawingObjects[_plotName]
-        drawingObjects["curve"].attach(self.pW)
-        drawingObjects["curve"].setPen(QPen(QColor(drawingObjects["LineColor"]), drawingObjects["LineWidth"]))
-        drawingObjects["curve"].setData(self.plotData[_plotName][0], self.plotData[_plotName][1])
-        self.plotData[_plotName][self.dirtyFlagIndex] = False
-        if self.autoLegendFlag and not self.legendSetFlag:
-            self.legend = Qwt.QwtLegend()
-            self.legend.setFrameStyle(QFrame.Box | QFrame.Sunken)
-            self.legend.setItemMode(Qwt.QwtLegend.ClickableItem)
-            self.pW.insertLegend(self.legend, self.legendPosition)
-            self.legendSetFlag = True
-        self.pW.replot()
-        self.plotWindowInterfaceMutex.unlock()
-
+    @deprecated(version='4.0.0', reason="You should use : show_all_plots")
     def showAllPlots(self):
+        return self.show_all_plots()
+
+    def show_all_plots(self):
+        """
+        Updates aall plots with current data. Effectively shows plots onthe screen
+        :return:
+        """
         self.plotWindowInterfaceMutex.lock()
         self.showAllPlotsSignal.emit(self.plotWindowInterfaceMutex)
 
-    def __showAllPlots(self, _mutex=None):
+        self.plotWindowInterfaceMutex.lock()
+        self.plotWindowInterfaceMutex.unlock()
+
+    def __show_all_plots_handler(self, _mutex=None):
 
         for plotName in list(self.plotData.keys()):
             if self.plotData[plotName][self.dirtyFlagIndex]:
@@ -582,24 +559,18 @@ class PlotWindowInterface(QtCore.QObject):
 
         _mutex.unlock()
 
-    def showAllHistPlots(self):
-        self.plotWindowInterfaceMutex.lock()
-        self.showAllHistPlotsSignal.emit(self.plotWindowInterfaceMutex)
-
-    def __showHistPlot(self, plotName, _mutex=None):
-        _plotName = str(plotName)
-        print(_plotName)
-        self.histogram.attach(self.pW)
-        self.pW.replot()
-        self.plotWindowInterfaceMutex.unlock()
-
-    def __showAllHistPlots(self, _mutex=None):
-        for hist in list(self.plotHistData.values()):
-            hist.attach(self.pW)
-        self.pW.replot()
-        _mutex.unlock()
-
+    @deprecated(version='4.0.0', reason="You should use : add_histogram")
     def addHistogram(self, plot_name, value_array, number_of_bins):
+        return self.add_histogram(plot_name=plot_name, value_array=value_array, number_of_bins=number_of_bins)
+
+    def add_histogram(self, plot_name, value_array, number_of_bins):
+        """
+        Creates a histogram out of "value_array" and adds it to a histogram plotplot
+        :param plot_name:
+        :param value_array:
+        :param number_of_bins:
+        :return:
+        """
 
         (values, intervals) = np.histogram(value_array, bins=number_of_bins)
 
@@ -608,134 +579,17 @@ class PlotWindowInterface(QtCore.QObject):
 
         self.plotData[plot_name][self.dirtyFlagIndex] = True
 
-        # self.addHistPlotData(_plotName=plot_name, _values=values, _intervals=intervals)
-
-    def addHistPlotData(self, _plotName, _values, _intervals):
-        # print 'addHistPlotData'
-        # print '_values=',_values
-        # print '_intervals=',_intervals
-        # self.plotData[_plotName]=[array([],dtype=double),array([],dtype=double),False]
-
-        self.plotData[str(_plotName)] = [_intervals, _values, False, HISTOGRAM]
-
-        intervals = []
-        valLength = len(_values)
-        values = Qwt.QwtArrayDouble(valLength)
-        for i in range(valLength):
-            # width = _intervals[i+1]-_intervals[i]+2
-            intervals.append(Qwt.QwtDoubleInterval(_intervals[i], _intervals[
-                i + 1]));  # numpy automcatically adds extra element for edge
-            values[i] = _values[i]
-
-        self.plotHistData[_plotName].setData(Qwt.QwtIntervalData(intervals, values))
-
-    # todo OK
-    # def addHistPlotData(self, _plotName, _values, _intervals):
-    #     # print 'addHistPlotData'
-    #     # print '_values=',_values
-    #     # print '_intervals=',_intervals
-    #     # self.plotData[_plotName]=[array([],dtype=double),array([],dtype=double),False]
-    #
-    #     self.plotData[str(_plotName)] = [_intervals, _values, False, HISTOGRAM]
-    #
-    #     intervals = []
-    #     valLength = len(_values)
-    #     values = Qwt.QwtArrayDouble(valLength)
-    #     for i in range(valLength):
-    #         # width = _intervals[i+1]-_intervals[i]+2
-    #         intervals.append(Qwt.QwtDoubleInterval(_intervals[i], _intervals[
-    #             i + 1]));  # numpy automcatically adds extra element for edge
-    #         values[i] = _values[i]
-    #
-    #     self.plotHistData[_plotName].setData(Qwt.QwtIntervalData(intervals, values))
-
-    def addHistPlot(self, _plotName, _r=100, _g=100, _b=0, _alpha=255):
-        return
-        self.plotHistData[_plotName] = HistogramItem()
-        self.plotHistData[_plotName].setColor(QColor(_r, _g, _b, _alpha))
-
+    @deprecated(version='4.0.0', reason="You should use : add_histogram_plot")
     def addHistogramPlot(self, _plotName, _color='blue', _alpha=255):
-        self.addPlot(_plotName=_plotName, _style='Steps', _color=_color, _size=1.0, _alpha=_alpha)
-        # self.plotHistData[_plotName] = HistogramItem()
-        # color = QColor(_color)
-        # color.setAlpha(_alpha)
-        # self.plotHistData[_plotName].setColor(color)
-        #
-        # # def setHistogramColor(self,):
-        # # self.histogram.setColor(QColor(_colorName))
+        return self.add_histogram_plot(plot_name=_plotName, color=_color, alpha=_alpha)
 
-    # def addHistogramPlot(self, _plotName, _color='blue', _alpha=255):
-    #     self.plotHistData[_plotName] = HistogramItem()
-    #     color = QColor(_color)
-    #     color.setAlpha(_alpha)
-    #     self.plotHistData[_plotName].setColor(color)
-    #
-    #     # def setHistogramColor(self,):
-    #     # self.histogram.setColor(QColor(_colorName))
+    def add_histogram_plot(self, plot_name, color='blue', alpha=255):
+        """
+        Adds empty historgram plot
+        :param plot_name:
+        :param color:
+        :param alpha:
+        :return:
+        """
+        self.add_plot(plot_name=plot_name, style='Steps', color=color, size=1.0, alpha=alpha)
 
-    def setHistogramColor(self, _colorName=None, _r=100, _g=100, _b=0, _alpha=255):
-        if _colorName != None:
-            # self.histogram.setColor(QColor(_colorName))
-            self.plotHistData[_plotName].setColor(QColor(_colorName))
-        else:
-            # self.histogram.setColor(QColor(_r,_g,_b,_alpha))
-            self.plotHistData[_plotName].setColor(QColor(_r, _g, _b, _alpha))
-
-    def setHistogramView(self):
-        self.histogram = HistogramItem()
-        self.histogram.setColor(Qt.darkCyan)
-
-        numValues = 20
-        intervals = []
-        values = Qwt.QwtArrayDouble(numValues)
-
-        pos = 0.0
-        for i in range(numValues):
-            width = 5 + random.randint(0, 4)
-            value = random.randint(0, 99)
-            intervals.append(Qwt.QwtDoubleInterval(pos, pos + width));
-            values[i] = value
-            pos += width
-
-            # self.histogram.setData(Qwt.QwtIntervalData(intervals, values))
-
-    def showHistogram(self):
-        self.plotWindowInterfaceMutex.lock()
-        self.showAllHistPlotsSignal.emit(self.plotWindowInterfaceMutex)
-
-    def addBarPlotData(self, _values, _positions, _width=1):
-
-        raise RuntimeError('addBarPlotData is not supported in Player 5. Instead Please use regular plots and '
-                           'specify plotting style as "bars" - '
-                           'self.pW.addPlot(_plotName="GDP",_color="red",_style="bars", _size=0.5). it is a good idea to '
-                           'clean plot before plotting new series by calling e.g. self.pW.eraseAllData()')
-
-        self.plotData[self.title] = [_positions, _values, False, BARPLOT]
-
-        for bar in self.pW.itemList():
-            if isinstance(bar, BarCurve):
-                bar.detach()
-
-        for i in range(len(_values)):
-            self.barplot = BarCurve()
-            self.barplot.attach(self.pW)
-            self.barplot.setData([float(_positions[i]), float(_positions[i] + _width)], [0, float(_values[i])])
-
-    def setBarPlotView(self):
-        # do nothing
-        pass
-
-    def showAllBarCurvePlots(self):
-        self.plotWindowInterfaceMutex.lock()
-        self.showAllBarCurvePlotsSignal.emit(self.plotWindowInterfaceMutex)
-
-    def __showBarCurvePlot(self, _plotName, _mutex=None):
-        plotName = str(_plotName)
-        self.pW.replot()
-        self.plotWindowInterfaceMutex.unlock()
-
-    def __showAllBarCurvePlots(self, _mutex=None):
-        if self.barplot is not None:
-            self.barplot.attach(self.pW)
-        self.pW.replot()
-        _mutex.unlock()

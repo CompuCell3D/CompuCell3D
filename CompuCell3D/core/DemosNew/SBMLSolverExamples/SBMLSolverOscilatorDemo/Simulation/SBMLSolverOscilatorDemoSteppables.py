@@ -39,7 +39,7 @@ class SBMLSolverOscilatorDemoSteppable(SteppableBasePy):
         if not self.pW:
             self.pW = self.addNewPlotWindow(_title='S1 concentration', _xAxisTitle='MonteCarlo Step (MCS)',
                                             _yAxisTitle='Variables')
-            self.pW.addPlot('S1', _style='Dots', _color='red', _size=5)
+            self.pW.add_plot('S1', style='Dots', color='red', size=5)
 
         added = False
         for cell in self.cell_list:

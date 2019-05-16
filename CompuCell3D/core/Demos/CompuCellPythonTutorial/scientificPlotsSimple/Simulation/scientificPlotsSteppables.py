@@ -31,7 +31,7 @@ class ExtraPlotSteppable(SteppableBasePy):
         meanSurface /= float(numberOfCells)
 
         if mcs > 100 and mcs < 200:
-            self.pW.eraseAllData()
+            self.pW.erase_all_data()
         else:
             self.pW.addDataPoint('MVol', mcs, meanVolume)
             self.pW.addDataPoint('MSur', mcs, meanSurface)
@@ -42,9 +42,9 @@ class ExtraPlotSteppable(SteppableBasePy):
         # Saving plots as PNG's
         if mcs < 50:
             fileName = 'ExtraPlots_' + str(mcs) + '.png'
-            self.pW.savePlotAsPNG(fileName, 1000,
-                                  1000)  # here we specify size of the image saved - default is 400 x 400
-            self.pW.savePlotAsData(fileName + '.txt', CSV_FORMAT)
+            self.pW.save_plot_as_png(fileName, 1000,
+                                     1000)  # here we specify size of the image saved - default is 400 x 400
+            self.pW.save_plot_as_data(fileName + '.txt', CSV_FORMAT)
 
 
 class ExtraMultiPlotSteppable(SteppableBasePy):
