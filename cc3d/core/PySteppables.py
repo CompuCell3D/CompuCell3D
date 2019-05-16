@@ -289,6 +289,27 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
                 for plugin_member_name in member_var_list:
                     setattr(self, plugin_member_name, None)
 
+    def perform_automatic_tasks(self):
+        """
+        Performs automatic tasks that normally woudl need to be called explicitely in tyhe steppale code
+        updating plots at the end of steppable is one such task
+        :return:
+        """
+        # self.update_tracking_fields()
+        # self.update_tracking_plot()
+        self.update_all_plots_windows()
+
+    def update_all_plots_windows(self):
+        """
+        Updates all plots
+        :return:
+        """
+        # tracking visualization part
+
+        for plot_window_name, plot_window in self.plot_dict.items():
+            plot_window.show_all_plots()
+            # plot_window.showAllHistPlots()
+            # plot_window.showAllBarCurvePlots()
 
     @property
     def output_dir(self):
@@ -358,7 +379,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         if self.steering_param_dirty():
             self.process_steering_panel_data()
-
 
     def add_steering_param(self, name, val, min_val=None, max_val=None, decimal_precision=3, enum=None,
                            widget_name=None):
@@ -464,8 +484,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         if attribute_already_exists:
             raise AttributeError('Could not convert cell type {cell_type} to steppable attribute. '
-                'Attribute {attr_name} already exists . Please change your cell type name'.format(
-                    cell_type=cell_type_name, attr_name=cell_type_name_attr))
+                                 'Attribute {attr_name} already exists . Please change your cell type name'.format(
+                cell_type=cell_type_name, attr_name=cell_type_name_attr))
 
         setattr(self, cell_type_name_attr, type_id)
 
@@ -498,12 +518,13 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         if title in self.plot_dict.keys():
             raise RuntimeError('PLOT WINDOW: ' + title + ' already exists. Please choose a different name')
 
-        pW = CompuCellSetup.simulation_player_utils.add_new_plot_window(title, x_axis_title, y_axis_title, x_scale_type,
-                                                                        y_scale_type, grid,
-                                                                        config_options=config_options)
-        self.plot_dict = {}  # {plot_name:plotWindow  - pW object}
+        plot_win = CompuCellSetup.simulation_player_utils.add_new_plot_window(title, x_axis_title, y_axis_title,
+                                                                              x_scale_type,
+                                                                              y_scale_type, grid,
+                                                                              config_options=config_options)
+        self.plot_dict[title] = plot_win
 
-        return pW
+        return plot_win
 
     @deprecated(version='4.0.0', reason="You should use : create_scalar_field_py")
     def createScalarFieldPy(self, _fieldName):
@@ -683,7 +704,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         if self.plasticity_tracker_plugin:
             return PlasticityDataList(self.plasticity_tracker_plugin, cell)
 
-
     @deprecated(version='4.0.0', reason="You should use : build_wall")
     def buildWall(self, type):
         return self.build_wall(cell_type=type)
@@ -794,8 +814,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         if new_geometry_dimensionality != old_geometry_dimensionality:
             raise RuntimeError('Changing dimmensionality of simulation from 2D to 3D is not supported. '
-                'It also makes little sense as 2D and 3D simulations have different mathematical properties. '
-                'Please see CPM literature for more details.')
+                               'It also makes little sense as 2D and 3D simulations have different mathematical properties. '
+                               'Please see CPM literature for more details.')
 
         self.potts.resizeCellField(CompuCell.Dim3D(new_size[0], new_size[1], new_size[2]),
                                    CompuCell.Dim3D(shift_vec[0], shift_vec[1], shift_vec[2]))
@@ -1109,7 +1129,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         :return:
         """
         if no_clone_key_dict_list is None:
-            no_clone_key_dict_list =[]
+            no_clone_key_dict_list = []
 
         # clone "C++" attributes
         for attrName in self.clonable_attribute_names:
@@ -1200,7 +1220,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
     @deprecated(version='4.0.0', reason="You should use : reassign_cluster_id")
     def reassignClusterId(self, _cell, _clusterId):
-        return self.reassign_cluster_id(cell=_cell,cluster_id=_clusterId)
+        return self.reassign_cluster_id(cell=_cell, cluster_id=_clusterId)
 
     def reassign_cluster_id(self, cell, cluster_id):
         old_cluster_id = cell.clusterId
@@ -1209,7 +1229,6 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         if self.clusterSurfaceTrackerPlugin:
             self.clusterSurfaceTrackerPlugin.updateClusterSurface(old_cluster_id)
             self.clusterSurfaceTrackerPlugin.updateClusterSurface(new_cluster_id)
-
 
     # def registerXMLElementUpdate(self, *args):
     #     '''this function registers core module XML Element from wchich XML subelement has been fetched.It returns XML subelement
@@ -1712,7 +1731,7 @@ class MitosisSteppableClustersBase(SteppableBasePy):
     @deprecated(version='4.0.0', reason="You should use : divide_cluster_orientation_vector_based")
     def divideClusterOrientationVectorBased(self, _clusterId, _nx, _ny, _nz):
 
-        return self.divide_cluster_orientation_vector_based(cluster_id=_clusterId,nx=_nx, ny=_ny, nz=_nz)
+        return self.divide_cluster_orientation_vector_based(cluster_id=_clusterId, nx=_nx, ny=_ny, nz=_nz)
 
     def divide_cluster_orientation_vector_based(self, cluster_id, nx, ny, nz):
         """
