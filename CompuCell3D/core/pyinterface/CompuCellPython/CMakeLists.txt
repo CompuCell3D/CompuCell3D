@@ -155,7 +155,11 @@ SET(LIBS_AUX
     ClusterSurfaceShared    
     ClusterSurfaceTrackerShared
     ElasticityTrackerShared
-    ElasticityShared   
+    ElasticityShared 
+    ContactLocalFlexShared
+    ContactLocalProductShared
+    ContactMultiCadShared
+    AdhesionFlexShared    
 )
 
 INCLUDE_DIRECTORIES(

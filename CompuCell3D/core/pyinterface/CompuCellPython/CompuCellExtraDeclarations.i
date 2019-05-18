@@ -357,90 +357,90 @@ PLUGINACCESSOR(BoundaryPixelTracker)
 // 
 // %}
 //
-////ContactLocalFlexPlugin
-//
-//
-//%include <CompuCell3D/plugins/ContactLocalFlex/ContactLocalFlexData.h>
-//%template (contactlocalflexcontainerccessor) BasicClassAccessor<ContactLocalFlexDataContainer>; //necessary to get ContactlocalFlexData accessor working
-//%template (clfdSetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::ContactLocalFlexData> , CompuCell3D::ContactLocalFlexData >;
-//// %template (clfdSetPyItr) STLPyIterator<std::set<CompuCell3D::ContactLocalFlexData> >;
-//%template (contactlocalflexdataset) std::set<CompuCell3D::ContactLocalFlexData>; //necessary to get basis set functionality working
-//PLUGINACCESSOR(ContactLocalFlex)
-//
-//// %include <CompuCell3D/plugins/ContactLocalFlex/ContactLocalFlexPlugin.h>
-//// %inline %{
-////    ContactLocalFlexPlugin * getContactLocalFlexPlugin(){
-////       return (ContactLocalFlexPlugin *)Simulator::pluginManager.get("ContactLocalFlex");
-////    }
-//// %}
-//
-////ContactLocalProductPlugin
-//
-//%include <CompuCell3D/plugins/ContactLocalProduct/ContactLocalProductData.h>
-//%template (contactproductflexccessor) BasicClassAccessor<ContactLocalProductData>; //necessary to get ContactLocalProductData accessor working
-//%template (jVecPyItr) STLPyIteratorRefRetType<ContactLocalProductData::ContainerType_t,float>; //ContainerType_t - this is vector<float> in current implementation
-//// %template (jVecPyItr) STLPyIterator<ContactLocalProductData::ContainerType_t>; //ContainerType_t - this is vector<float> in current implementation
-//%template (contactproductdatacontainertype) std::vector<float>; //necessary to get basis vector functionality working
-//PLUGINACCESSOR(ContactLocalProduct)
-//
-////some functions to get more vector function to work
-//
-//%extend std::vector<float>{
-//
-//   void set(unsigned int pos, float _x){
-//      if(pos <= self->size()-1 ){
-//         self->operator[](pos)=_x;
-//      }
-//   }
-//
-//   float get(unsigned int pos){
-//      if(pos <= self->size()-1 ){
-//         return self->operator[](pos);
-//      }
-//   }
-//
-//
-//}
-//
-//
-//// %include <CompuCell3D/plugins/ContactLocalProduct/ContactLocalProductPlugin.h>
-//// 
-//// %inline %{
-////    ContactLocalProductPlugin * getContactLocalProductPlugin(){
-////       return (ContactLocalProductPlugin *)Simulator::pluginManager.get("ContactLocalProduct");
-////    }
-//// %}
-//
-////ContactMultiCadPlugin
-//
-//%include <CompuCell3D/plugins/ContactMultiCad/ContactMultiCadData.h>
-//%template (contactmulticaddataaccessor) BasicClassAccessor<ContactMultiCadData>; //necessary to get ContactMultiCadData accessor working
-//PLUGINACCESSOR(ContactMultiCad)
-//
-//// %include <CompuCell3D/plugins/ContactMultiCad/ContactMultiCadPlugin.h>
-//// 
-//// %inline %{
-////    ContactMultiCadPlugin * getContactMultiCadPlugin(){
-////       return (ContactMultiCadPlugin *)Simulator::pluginManager.get("ContactMultiCad");
-////    }
-//// %}
-//
-////AdhesionFlexPlugin
-//
-//%include <CompuCell3D/plugins/AdhesionFlex/AdhesionFlexData.h>
-//%template (adhesionflexdataaccessor) BasicClassAccessor<AdhesionFlexData>; //necessary to get AdhesionFlexData accessor working
-//PLUGINACCESSOR(AdhesionFlex)
-//
-//
-//// %include <CompuCell3D/plugins/AdhesionFlex/AdhesionFlexPlugin.h>
-//// 
-//// %inline %{
-////    AdhesionFlexPlugin * getAdhesionFlexPlugin(){
-////       return (AdhesionFlexPlugin *)Simulator::pluginManager.get("AdhesionFlex");
-////    }
-//// %}
-//
-//
+//ContactLocalFlexPlugin
+
+
+%include <CompuCell3D/plugins/ContactLocalFlex/ContactLocalFlexData.h>
+%template (contactlocalflexcontainerccessor) BasicClassAccessor<ContactLocalFlexDataContainer>; //necessary to get ContactlocalFlexData accessor working
+%template (clfdSetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::ContactLocalFlexData> , CompuCell3D::ContactLocalFlexData >;
+// %template (clfdSetPyItr) STLPyIterator<std::set<CompuCell3D::ContactLocalFlexData> >;
+%template (contactlocalflexdataset) std::set<CompuCell3D::ContactLocalFlexData>; //necessary to get basis set functionality working
+PLUGINACCESSOR(ContactLocalFlex)
+
+// %include <CompuCell3D/plugins/ContactLocalFlex/ContactLocalFlexPlugin.h>
+// %inline %{
+//    ContactLocalFlexPlugin * getContactLocalFlexPlugin(){
+//       return (ContactLocalFlexPlugin *)Simulator::pluginManager.get("ContactLocalFlex");
+//    }
+// %}
+
+//ContactLocalProductPlugin
+
+%include <CompuCell3D/plugins/ContactLocalProduct/ContactLocalProductData.h>
+%template (contactproductflexccessor) BasicClassAccessor<ContactLocalProductData>; //necessary to get ContactLocalProductData accessor working
+%template (jVecPyItr) STLPyIteratorRefRetType<ContactLocalProductData::ContainerType_t,float>; //ContainerType_t - this is vector<float> in current implementation
+// %template (jVecPyItr) STLPyIterator<ContactLocalProductData::ContainerType_t>; //ContainerType_t - this is vector<float> in current implementation
+%template (contactproductdatacontainertype) std::vector<float>; //necessary to get basis vector functionality working
+PLUGINACCESSOR(ContactLocalProduct)
+
+//some functions to get more vector function to work
+
+%extend std::vector<float>{
+
+   void set(unsigned int pos, float _x){
+      if(pos <= self->size()-1 ){
+         self->operator[](pos)=_x;
+      }
+   }
+
+   float get(unsigned int pos){
+      if(pos <= self->size()-1 ){
+         return self->operator[](pos);
+      }
+   }
+
+
+}
+
+
+// %include <CompuCell3D/plugins/ContactLocalProduct/ContactLocalProductPlugin.h>
+// 
+// %inline %{
+//    ContactLocalProductPlugin * getContactLocalProductPlugin(){
+//       return (ContactLocalProductPlugin *)Simulator::pluginManager.get("ContactLocalProduct");
+//    }
+// %}
+
+//ContactMultiCadPlugin
+
+%include <CompuCell3D/plugins/ContactMultiCad/ContactMultiCadData.h>
+%template (contactmulticaddataaccessor) BasicClassAccessor<ContactMultiCadData>; //necessary to get ContactMultiCadData accessor working
+PLUGINACCESSOR(ContactMultiCad)
+
+// %include <CompuCell3D/plugins/ContactMultiCad/ContactMultiCadPlugin.h>
+// 
+// %inline %{
+//    ContactMultiCadPlugin * getContactMultiCadPlugin(){
+//       return (ContactMultiCadPlugin *)Simulator::pluginManager.get("ContactMultiCad");
+//    }
+// %}
+
+//AdhesionFlexPlugin
+
+%include <CompuCell3D/plugins/AdhesionFlex/AdhesionFlexData.h>
+%template (adhesionflexdataaccessor) BasicClassAccessor<AdhesionFlexData>; //necessary to get AdhesionFlexData accessor working
+PLUGINACCESSOR(AdhesionFlex)
+
+
+// %include <CompuCell3D/plugins/AdhesionFlex/AdhesionFlexPlugin.h>
+// 
+// %inline %{
+//    AdhesionFlexPlugin * getAdhesionFlexPlugin(){
+//       return (AdhesionFlexPlugin *)Simulator::pluginManager.get("AdhesionFlex");
+//    }
+// %}
+
+
 //
 ////CellOrientation Plugin
 //
