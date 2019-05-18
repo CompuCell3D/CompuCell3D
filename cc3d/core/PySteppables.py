@@ -172,6 +172,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             "FocalPointPlasticity": ['focal_point_plasticity_plugin', 'focalPointPlasticityPlugin'],
             "PixelTracker": ['pixel_tracker_plugin', 'pixelTrackerPlugin'],
             "BoundaryPixelTracker": ['boundary_pixel_tracker_plugin', 'boundaryPixelTrackerPlugin'],
+            "BoundaryMonitor": ['boundary_monitor_plugin', 'boundaryMonitorPlugin'],
             "AdhesionFlex": ['adhesion_flex_plugin', 'adhesionFlexPlugin'],
             "PolarizationVector": ['polarization_vector_plugin', 'polarizationVectorPlugin'],
             "Polarization23": ['polarization_23_plugin', 'polarization23Plugin'],

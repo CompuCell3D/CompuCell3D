@@ -35,6 +35,7 @@
 %feature("autodoc",getCellInventory_func) getCellInventory;
 
 
+
 //PottsParseData.h
 %feature("autodoc",PottsParseData_Class) PottsParseData;
 
@@ -42,7 +43,6 @@
 %feature("autodoc",VolumeParseData_Class) VolumeParseData; 
 %feature("autodoc",TargetVolume_func) TargetVolume;
 %feature("autodoc",LambdaVolume_func) LambdaVolume;
-
 
 
 %include <windows.i>
