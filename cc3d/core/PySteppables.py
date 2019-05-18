@@ -171,6 +171,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             "NeighborTracker": ['neighbor_tracker_plugin', 'neighborTrackerPlugin'],
             "FocalPointPlasticity": ['focal_point_plasticity_plugin', 'focalPointPlasticityPlugin'],
             "PixelTracker": ['pixel_tracker_plugin', 'pixelTrackerPlugin'],
+            "BoundaryPixelTracker": ['boundary_pixel_tracker_plugin', 'boundaryPixelTrackerPlugin'],
             "AdhesionFlex": ['adhesion_flex_plugin', 'adhesionFlexPlugin'],
             "PolarizationVector": ['polarization_vector_plugin', 'polarizationVectorPlugin'],
             "Polarization23": ['polarization_23_plugin', 'polarization23Plugin'],
@@ -1019,6 +1020,17 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             return CellPixelList(self.pixelTrackerPlugin, cell)
 
         return None
+
+    @deprecated(version='4.0.0', reason="You should use : get_cell_boundary_pixel_list")
+    def getCellBoundaryPixelList(self, _cell, _neighborOrder=-1):
+        return self.get_cell_boundary_pixel_list(cell=_cell, neighbor_order=_neighborOrder)
+
+    def get_cell_boundary_pixel_list(self, cell, neighbor_order=-1):
+        if self.boundaryPixelTrackerPlugin:
+            return CellBoundaryPixelList(self.boundaryPixelTrackerPlugin, cell, neighbor_order)
+
+        return None
+
 
     @deprecated(version='4.0.0', reason="You should use : move_cell")
     def moveCell(self, cell, shiftVector):

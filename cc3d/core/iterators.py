@@ -512,6 +512,57 @@ class CellPixelIterator:
         return self
 
 
+class CellBoundaryPixelList:
+    def __init__(self, boundary_pixel_tracker_plugin, cell, neighbor_order=-1):
+        self.neighbor_order = neighbor_order
+        self.boundary_pixel_tracker_plugin = boundary_pixel_tracker_plugin
+        self.boundary_pixel_tracker_accessor = self.boundary_pixel_tracker_plugin.getBoundaryPixelTrackerAccessorPtr()
+        self.cell = cell
+
+    def __iter__(self):
+        return CellBoundaryPixelIterator(self, self.neighbor_order)
+
+    @deprecated(version='4.0.0', reason="You should use : number_of_pixels")
+    def numberOfPixels(self):
+        return self.number_of_pixels()
+
+    def number_of_pixels(self):
+        return self.boundary_pixel_tracker_accessor.get(self.cell.extraAttribPtr).pixelSet.size()
+
+
+class CellBoundaryPixelIterator:
+    def __init__(self, cell_pixel_list, neighbor_order=-1):
+        self.boundary_pixel_tracker_accessor = cell_pixel_list.boundary_pixel_tracker_accessor
+        self.boundary_pixel_tracker_plugin = cell_pixel_list.boundary_pixel_tracker_plugin
+        self.cell = cell_pixel_list.cell
+        self.boundary_pixel_itr = CompuCell.boundaryPixelSetPyItr()
+        self.boundary_pixel_tracker = self.boundary_pixel_tracker_accessor.get(self.cell.extraAttribPtr)
+        if neighbor_order <= 0:
+            self.pixelSet = self.boundary_pixel_tracker.pixelSet
+        else:
+            self.pixelSet = self.boundary_pixel_tracker_plugin.getPixelSetForNeighborOrderPtr(self.cell, neighbor_order)
+            if not self.pixelSet:
+                raise LookupError('LookupError: CellBoundaryPixelIterator could not locate pixel set '
+                                  'for neighbor order = %s. Make sure your BoundaryPixelTracker plugin definition '
+                                  'requests tracking of neighbor order =%s boundary' % (neighbor_order, neighbor_order))
+
+        # self.boundaryPixelItr.initialize(self.boundaryPixelTracker.pixelSet)
+        self.boundary_pixel_itr.initialize(self.pixelSet)
+        self.boundary_pixel_itr.setToBegin()
+
+    def __next__(self):
+        if not self.boundary_pixel_itr.isEnd():
+            self.current_boundary_pixel_tracker_data = self.boundary_pixel_itr.getCurrentRef()
+            self.boundary_pixel_itr.next()
+            return self.boundary_pixel_tracker_plugin.getBoundaryPixelTrackerData(
+                self.current_boundary_pixel_tracker_data)
+        else:
+            raise StopIteration
+
+    def __iter__(self):
+        return self
+
+
 class ElasticityDataList:
     def __init__(self, elasticity_tracker_plugin, _cell):
         self.elasticity_tracker_plugin = elasticity_tracker_plugin
