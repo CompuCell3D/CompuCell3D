@@ -1236,6 +1236,12 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         return self.reassign_cluster_id(cell=_cell, cluster_id=_clusterId)
 
     def reassign_cluster_id(self, cell, cluster_id):
+        """
+        reassigns cluster id of cells
+        :param cell: {cell}
+        :param cluster_id:{int} new cluster id
+        :return:
+        """
         old_cluster_id = cell.clusterId
         new_cluster_id = cluster_id
         self.inventory.reassignClusterId(cell, new_cluster_id)
