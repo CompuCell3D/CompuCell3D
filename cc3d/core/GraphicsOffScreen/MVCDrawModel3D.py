@@ -702,18 +702,27 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
             xmid0 = cell.xCOM
             ymid0 = cell.yCOM
+            zmid0 = cell.zCOM
 
-            points.InsertNextPoint(xmid0, ymid0, 0)
+            points.InsertNextPoint(xmid0, ymid0, zmid0)
             endPt = beginPt + 1
 
             for fppd in InternalFocalPointPlasticityDataList(fppPlugin, cell):
                 xmid = fppd.neighborAddress.xCOM
                 ymid = fppd.neighborAddress.yCOM
+                zmid = fppd.neighborAddress.zCOM
 
                 xdiff = xmid - xmid0
                 ydiff = ymid - ymid0
-                actualDist = math.sqrt((xdiff * xdiff) + (ydiff * ydiff))
-                if actualDist > fppd.maxDistance:  # implies we have wraparound (via periodic BCs)
+                zdiff = zmid - zmid0
+
+                actualDist = math.sqrt(xdiff**2 + ydiff**2 + zdiff**2)
+                if actualDist > fppd.maxDistance:
+                    # implies we have wraparound (via periodic BCs)
+                    # we are not drawing those links that wrap around the lattice - leaving the code for now
+                    # todo - most likely will redo this part later
+                    continue
+
                     # add dangling "out" line to beginning cell
                     if abs(xdiff) > abs(ydiff):  # wraps around in x-direction
                         if xdiff < 0:
@@ -748,7 +757,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
                 # link didn't wrap around on lattice
                 else:
-                    points.InsertNextPoint(xmid, ymid, 0)
+                    points.InsertNextPoint(xmid, ymid, zmid)
                     lines.InsertNextCell(2)  # our line has 2 points
                     lines.InsertCellPoint(beginPt)
                     lines.InsertCellPoint(endPt)
@@ -759,12 +768,17 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
                 xmid = fppd.neighborAddress.xCOM
                 ymid = fppd.neighborAddress.yCOM
+                zmid = fppd.neighborAddress.zCOM
 
                 xdiff = xmid - xmid0
                 ydiff = ymid - ymid0
-                actualDist = math.sqrt((xdiff * xdiff) + (ydiff * ydiff))
-                if actualDist > fppd.maxDistance:  # implies we have wraparound (via periodic BCs)
+                zdiff = ymid - zmid0
 
+                actualDist = math.sqrt(xdiff**2 + ydiff**2 + zdiff**2)
+                if actualDist > fppd.maxDistance:  # implies we have wraparound (via periodic BCs)
+                    # we are not drawing those links that wrap around the lattice - leaving the code for now
+                    # todo - most likely will redo this part later
+                    continue
                     # add dangling "out" line to beginning cell
                     if abs(xdiff) > abs(ydiff):  # wraps around in x-direction
                         #                    print '>>>>>> wraparound X'
@@ -804,7 +818,7 @@ class MVCDrawModel3D(MVCDrawModelBase):
 
                 # link didn't wrap around on lattice
                 else:
-                    points.InsertNextPoint(xmid, ymid, 0)
+                    points.InsertNextPoint(xmid, ymid, zmid)
                     lines.InsertNextCell(2)  # our line has 2 points
                     lines.InsertCellPoint(beginPt)
                     lines.InsertCellPoint(endPt)
