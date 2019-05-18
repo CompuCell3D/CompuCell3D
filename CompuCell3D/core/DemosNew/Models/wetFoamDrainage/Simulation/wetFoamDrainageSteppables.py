@@ -29,23 +29,32 @@ class FlexCellInitializer(SteppableBasePy):
         self.cell_type_parameters[1][0] = count_type1
         self.cell_type_parameters[2][0] = count_type2
 
-        self.medium_cell = self.cell_field[0, 0, 0]
+        self.medium_cell = self.cellField[0, 0, 0]
 
         for cell_type, cell_type_param_list in self.cell_type_parameters.items():
-            # initialize self.cellTypeParameters[0]+1 number of randomly placed cells with user
-            # specified targetVolume and lambdaVolume
+            # initialize self.cellTypeParameters[0]+1 number of randomly
+            # placed cells with user specified targetVolume and lambdaVolume
             for cell_count in range(cell_type_param_list[0]):
                 cell = self.potts.createCell()
-                self.cellField[
+                self.cell_field[
                     randint(0, self.dim.x - 1), randint(0, self.dim.y - 1), randint(0, self.dim.z - 1)] = cell
 
                 cell.type = cell_type
                 cell.targetVolume = cell_type_param_list[1]
                 cell.lambdaVolume = cell_type_param_list[2]
 
+    def adjust_gravity(self):
+
+        water_force_elem = self.get_xml_element('water_force')
+        water_force_elem.y = 20
+
     def step(self, mcs):
+
+        if mcs == 500:
+            self.adjust_gravity()
+
         if mcs == 300:
-            for cell in self.cell_list:
+            for cell in self.cellList:
                 if cell.type == 1:
                     cell.lambdaVolume = 0.0
                 if cell.type == 2:
@@ -55,11 +64,13 @@ class FlexCellInitializer(SteppableBasePy):
 
             # fill medium with water
             for x, y, z in self.every_pixel():
-                current_cell = self.cellField[x, y, z]
+
+                current_cell = self.cell_field[x, y, z]
 
                 if not current_cell:
                     cell = self.potts.createCell()
                     self.cellField[x, y, z] = cell
                     cell.type = 2
+
                     cell.targetVolume = self.cell_type_parameters[2][1]
                     cell.lambdaVolume = self.cell_type_parameters[2][2]

@@ -1,0 +1,9 @@
+<Simulation version="3.6.1">
+
+    <XMLScript Type="XMLScript">Simulation/wetFoamDrainage.xml</XMLScript>
+
+    <PythonScript>Simulation/wetFoamDrainage.py</PythonScript> 
+
+    <Resource Type="Python">Simulation/wetFoamDrainageSteppables.py</Resource>    
+
+</Simulation>
