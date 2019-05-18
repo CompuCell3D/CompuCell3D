@@ -142,7 +142,6 @@ ClusterSurfaceTrackerShared
 )
 
 SET(LIBS_AUX
-
     PyPlugin
     ChemotaxisShared
     FocalPointPlasticityShared
@@ -161,6 +160,9 @@ SET(LIBS_AUX
     ContactLocalProductShared
     ContactMultiCadShared
     AdhesionFlexShared
+    ConnectivityLocalFlexShared
+    ConnectivityGlobalShared  
+    LengthConstraintShared
     BoundaryMonitorShared    
 )
 

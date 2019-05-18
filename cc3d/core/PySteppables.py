@@ -179,7 +179,8 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             "CellOrientation": ['cell_orientation_plugin', 'cellOrientationPlugin'],
             "ContactOrientation": ['contact_orientation_plugin', 'contactOrientationPlugin'],
             "ContactLocalProduct": ['contact_local_product_plugin', 'contactLocalProductPlugin'],
-            "LengthConstraint": ['length_constraint_plugin', 'lengthConstraintPlugin'],
+            "LengthConstraint": ['length_constraint_plugin', 'lengthConstraintPlugin',
+                                 'length_constraint_local_flex_plugin' , 'lengthConstraintLocalFlexPlugin'],
             "ConnectivityGlobal": ['connectivity_global_plugin', 'connectivityGlobalPlugin'],
             "ConnectivityLocalFlex": ['connectivity_local_flex_plugin', 'connectivityLocalFlexPlugin'],
             "Chemotaxis": ['chemotaxis_plugin', 'chemotaxisPlugin'],
@@ -189,6 +190,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             "PlasticityTracker": ['plasticity_tracker_plugin', 'plasticityTrackerPlugin'],
 
         }
+
 
         # used by clone attributes functions
         self.clonable_attribute_names = ['lambdaVolume', 'targetVolume', 'targetSurface', 'lambdaSurface',

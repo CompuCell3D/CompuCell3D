@@ -148,11 +148,6 @@ using namespace CompuCell3D;
 
 %enddef
 
-
-
-
-
-
 %inline %{
    PyObject * getPyAttrib(CompuCell3D::CellG * _cell){
       Py_INCREF(_cell->pyAttrib);
@@ -183,95 +178,67 @@ using namespace CompuCell3D;
 
 %}
 
-////ConnectivityLocalFlex
-//
-//
-//%include <CompuCell3D/plugins/ConnectivityLocalFlex/ConnectivityLocalFlexData.h>
-//%template (connectivitylocalflexaccessor) BasicClassAccessor<ConnectivityLocalFlexData>; //necessary to get ConnectivityLocalFlexData accessor working
-//PLUGINACCESSOR(ConnectivityLocalFlex)
-//
-//
-//// %include <CompuCell3D/plugins/ConnectivityLocalFlex/ConnectivityLocalFlexPlugin.h>
-//// 
-//// %inline %{
-////    ConnectivityLocalFlexPlugin * getConnectivityLocalFlexPlugin(){
-////          return (ConnectivityLocalFlexPlugin *)Simulator::pluginManager.get("ConnectivityLocalFlex");
-////     }
-//// %}
-//
-//
-////ConnectivityGlobal
-//
-//%include <CompuCell3D/plugins/ConnectivityGlobal/ConnectivityGlobalData.h>
-//%template (connectivityGlobalaccessor) BasicClassAccessor<ConnectivityGlobalData>; //necessary to get ConnectivityGlobalData accessor working
-//PLUGINACCESSOR(ConnectivityGlobal)
-//
-//// %include <CompuCell3D/plugins/ConnectivityGlobal/ConnectivityGlobalPlugin.h>
-//// 
-//// %inline %{
-////    ConnectivityGlobalPlugin * getConnectivityGlobalPlugin(){
-////          return (ConnectivityGlobalPlugin *)Simulator::pluginManager.get("ConnectivityGlobal");
-////     }
-//// %}
-//
-//
-//// //LengthConstraintLocalFlex
-//// %include <CompuCell3D/plugins/LengthConstraintLocalFlex/LengthConstraintLocalFlexData.h>
-//// %template (lengthconstraintlocalflexccessor) BasicClassAccessor<LengthConstraintLocalFlexData>; //necessary to get LengthConstraintLocalFlexData accessor working
-//
-//// %include <CompuCell3D/plugins/LengthConstraintLocalFlex/LengthConstraintLocalFlexPlugin.h>
-//
-//// %inline %{
-//   // LengthConstraintLocalFlexPlugin * getLengthConstraintLocalFlexPlugin(){
-//         // return (LengthConstraintLocalFlexPlugin *)Simulator::pluginManager.get("LengthConstraintLocalFlex");
-//    // }
-//// %}
-//
-//
-//
-////LengthConstraint - includes local flax option
-//%include <CompuCell3D/plugins/LengthConstraint/LengthConstraintData.h>
-//%template (lengthconstraintccessor) BasicClassAccessor<LengthConstraintData>; //necessary to get LengthConstraintData accessor working
-//
-//%include <CompuCell3D/plugins/LengthConstraint/LengthConstraintPlugin.h>
-//
-//%inline %{
-//   LengthConstraintPlugin * getLengthConstraintPlugin(){
-//         return (LengthConstraintPlugin *)Simulator::pluginManager.get("LengthConstraint");
-//    }
-//   LengthConstraintPlugin * getLengthConstraintLocalFlexPlugin(){
-//         
-//         Plugin  * ptr= Simulator::pluginManager.get("LengthConstraintLocalFlex");
-//         
-//         if (ptr){
-//            return (LengthConstraintPlugin *)ptr;
-//         }
-//         
-//         return (LengthConstraintPlugin *)Simulator::pluginManager.get("LengthConstraintLocalFlex");
-//    }
-//    
-//    
-//%}
-//
-//
+//ConnectivityLocalFlex
+
+%include <CompuCell3D/plugins/ConnectivityLocalFlex/ConnectivityLocalFlexData.h>
+%template (connectivitylocalflexaccessor) BasicClassAccessor<ConnectivityLocalFlexData>; //necessary to get ConnectivityLocalFlexData accessor working
+PLUGINACCESSOR(ConnectivityLocalFlex)
+
+
+//ConnectivityGlobal
+
+%include <CompuCell3D/plugins/ConnectivityGlobal/ConnectivityGlobalData.h>
+%template (connectivityGlobalaccessor) BasicClassAccessor<ConnectivityGlobalData>; //necessary to get ConnectivityGlobalData accessor working
+PLUGINACCESSOR(ConnectivityGlobal)
+
+
+// //LengthConstraintLocalFlex
+// %include <CompuCell3D/plugins/LengthConstraintLocalFlex/LengthConstraintLocalFlexData.h>
+// %template (lengthconstraintlocalflexccessor) BasicClassAccessor<LengthConstraintLocalFlexData>; //necessary to get LengthConstraintLocalFlexData accessor working
+
+// %include <CompuCell3D/plugins/LengthConstraintLocalFlex/LengthConstraintLocalFlexPlugin.h>
+
+// %inline %{
+   // LengthConstraintLocalFlexPlugin * getLengthConstraintLocalFlexPlugin(){
+         // return (LengthConstraintLocalFlexPlugin *)Simulator::pluginManager.get("LengthConstraintLocalFlex");
+    // }
+// %}
+
+
+
+//LengthConstraint - includes local flax option
+%include <CompuCell3D/plugins/LengthConstraint/LengthConstraintData.h>
+%template (lengthconstraintccessor) BasicClassAccessor<LengthConstraintData>; //necessary to get LengthConstraintData accessor working
+
+%include <CompuCell3D/plugins/LengthConstraint/LengthConstraintPlugin.h>
+
+%inline %{
+   LengthConstraintPlugin * getLengthConstraintPlugin(){
+         return (LengthConstraintPlugin *)Simulator::pluginManager.get("LengthConstraint");
+    }
+   LengthConstraintPlugin * getLengthConstraintLocalFlexPlugin(){
+         
+         Plugin  * ptr= Simulator::pluginManager.get("LengthConstraintLocalFlex");
+         
+         if (ptr){
+            return (LengthConstraintPlugin *)ptr;
+         }
+         
+         return (LengthConstraintPlugin *)Simulator::pluginManager.get("LengthConstraintLocalFlex");
+    }
+    
+    
+%}
+
+
 //%include <CompuCell3D/plugins/ChemotaxisSimple/ChemotaxisSimpleEnergy.h>
 //
 ////Chemotaxis Plugin
 //
 %include <CompuCell3D/plugins/Chemotaxis/ChemotaxisData.h>
 PLUGINACCESSOR(Chemotaxis)
-//
-//// %include <CompuCell3D/plugins/Chemotaxis/ChemotaxisPlugin.h>
-//// 
-//// %inline %{
-////    ChemotaxisPlugin * getChemotaxisPlugin(){
-////       return (ChemotaxisPlugin *)Simulator::pluginManager.get("Chemotaxis");
-////    }
-//// 
-//// %}
-//
-//
-//
+
+
 ////plugins
 //// %include <CompuCell3D/plugins/Mitosis/MitosisParseData.h>
 %include <CompuCell3D/plugins/Mitosis/MitosisPlugin.h>
@@ -295,28 +262,6 @@ PLUGINACCESSOR(CenterOfMass)
 
 PLUGINACCESSOR(NeighborTracker)
 
-// %include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
-// 
-// 
-// // %inline %{
-// //    PyObject * getPyAttrib(CompuCell3D::CellG * _cell){
-// //       Py_INCREF(_cell->pyAttrib);
-// //       return _cell->pyAttrib;
-// //    }
-// // %}
-// 
-// %inline %{
-//    NeighborTrackerPlugin * getNeighborTrackerPlugin(){
-//       return (NeighborTrackerPlugin *)Simulator::pluginManager.get("NeighborTracker");
-//    }
-// 
-// //    CompuCell3D::NeighborSurfaceData & derefNeighborSurfaceData(std::set<CompuCell3D::NeighborSurfaceData>::iterator &_itr){
-// //       return const_cast<CompuCell3D::NeighborSurfaceData &>(*_itr);
-// //    }
-// 
-// %}
-
-
 
 %include <CompuCell3D/plugins/PixelTracker/PixelTracker.h>
 %template (PixelTrackerAccessor) BasicClassAccessor<PixelTracker>; //necessary to get PixelTracker accessor working
@@ -325,16 +270,6 @@ PLUGINACCESSOR(NeighborTracker)
 %template (pixelSetPyItr) STLPyIteratorRefRetType< std::set<CompuCell3D::PixelTrackerData>,CompuCell3D::PixelTrackerData >; 
 // %template (pixelSetPyItr) STLPyIterator<std::set<CompuCell3D::PixelTrackerData> >;
 PLUGINACCESSOR(PixelTracker)
-
-
-// %include <CompuCell3D/plugins/PixelTracker/PixelTrackerPlugin.h>
-// 
-// %inline %{
-//    PixelTrackerPlugin * getPixelTrackerPlugin(){
-//       return (PixelTrackerPlugin *)Simulator::pluginManager.get("PixelTracker");
-//    }
-// 
-// %}
 
 
 %include <CompuCell3D/plugins/BoundaryPixelTracker/BoundaryPixelTracker.h>
@@ -346,20 +281,6 @@ PLUGINACCESSOR(PixelTracker)
 PLUGINACCESSOR(BoundaryPixelTracker)
 
 
-
-// %include <CompuCell3D/plugins/PixelTracker/BoundaryPixelTrackerPlugin.h>
-// 
-// %inline %{
-//    BoundaryPixelTrackerPlugin * getBoundaryPixelTrackerPlugin(){
-//       return (BoundaryPixelTrackerPlugin *)Simulator::pluginManager.get("BoundaryPixelTracker");
-//    }
-// 
-// 
-// %}
-//
-//ContactLocalFlexPlugin
-
-
 %include <CompuCell3D/plugins/ContactLocalFlex/ContactLocalFlexData.h>
 %template (contactlocalflexcontainerccessor) BasicClassAccessor<ContactLocalFlexDataContainer>; //necessary to get ContactlocalFlexData accessor working
 %template (clfdSetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::ContactLocalFlexData> , CompuCell3D::ContactLocalFlexData >;
@@ -367,15 +288,7 @@ PLUGINACCESSOR(BoundaryPixelTracker)
 %template (contactlocalflexdataset) std::set<CompuCell3D::ContactLocalFlexData>; //necessary to get basis set functionality working
 PLUGINACCESSOR(ContactLocalFlex)
 
-// %include <CompuCell3D/plugins/ContactLocalFlex/ContactLocalFlexPlugin.h>
-// %inline %{
-//    ContactLocalFlexPlugin * getContactLocalFlexPlugin(){
-//       return (ContactLocalFlexPlugin *)Simulator::pluginManager.get("ContactLocalFlex");
-//    }
-// %}
-
 //ContactLocalProductPlugin
-
 %include <CompuCell3D/plugins/ContactLocalProduct/ContactLocalProductData.h>
 %template (contactproductflexccessor) BasicClassAccessor<ContactLocalProductData>; //necessary to get ContactLocalProductData accessor working
 %template (jVecPyItr) STLPyIteratorRefRetType<ContactLocalProductData::ContainerType_t,float>; //ContainerType_t - this is vector<float> in current implementation
@@ -402,43 +315,17 @@ PLUGINACCESSOR(ContactLocalProduct)
 
 }
 
-
-// %include <CompuCell3D/plugins/ContactLocalProduct/ContactLocalProductPlugin.h>
-// 
-// %inline %{
-//    ContactLocalProductPlugin * getContactLocalProductPlugin(){
-//       return (ContactLocalProductPlugin *)Simulator::pluginManager.get("ContactLocalProduct");
-//    }
-// %}
-
 //ContactMultiCadPlugin
 
 %include <CompuCell3D/plugins/ContactMultiCad/ContactMultiCadData.h>
 %template (contactmulticaddataaccessor) BasicClassAccessor<ContactMultiCadData>; //necessary to get ContactMultiCadData accessor working
 PLUGINACCESSOR(ContactMultiCad)
 
-// %include <CompuCell3D/plugins/ContactMultiCad/ContactMultiCadPlugin.h>
-// 
-// %inline %{
-//    ContactMultiCadPlugin * getContactMultiCadPlugin(){
-//       return (ContactMultiCadPlugin *)Simulator::pluginManager.get("ContactMultiCad");
-//    }
-// %}
-
 //AdhesionFlexPlugin
 
 %include <CompuCell3D/plugins/AdhesionFlex/AdhesionFlexData.h>
 %template (adhesionflexdataaccessor) BasicClassAccessor<AdhesionFlexData>; //necessary to get AdhesionFlexData accessor working
 PLUGINACCESSOR(AdhesionFlex)
-
-
-// %include <CompuCell3D/plugins/AdhesionFlex/AdhesionFlexPlugin.h>
-// 
-// %inline %{
-//    AdhesionFlexPlugin * getAdhesionFlexPlugin(){
-//       return (AdhesionFlexPlugin *)Simulator::pluginManager.get("AdhesionFlex");
-//    }
-// %}
 
 
 //
