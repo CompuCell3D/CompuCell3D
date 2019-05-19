@@ -171,8 +171,10 @@ SET(LIBS_AUX
     SecretionShared
     CellOrientationShared
     PolarizationVectorShared
+    Polarization23Shared
     OrientedGrowthShared
     ContactOrientationShared
+
 )
 
 INCLUDE_DIRECTORIES(

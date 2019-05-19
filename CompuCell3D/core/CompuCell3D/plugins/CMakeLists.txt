@@ -28,10 +28,9 @@ ADD_SUBDIRECTORY(OrientedGrowth)
 ADD_SUBDIRECTORY(ContactOrientation)
 ADD_SUBDIRECTORY(BoundaryMonitor)
 ADD_SUBDIRECTORY(CellTypeMonitor)
-# ADD_SUBDIRECTORY(Polarization23)
+ADD_SUBDIRECTORY(Polarization23)
 ADD_SUBDIRECTORY(ClusterSurface)
 ADD_SUBDIRECTORY(ClusterSurfaceTracker)
-
 
 ADD_SUBDIRECTORY(CellType)
 ADD_SUBDIRECTORY(VolumeTracker)
