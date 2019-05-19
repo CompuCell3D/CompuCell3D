@@ -1,0 +1,59 @@
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="50" y="50" z="1"/>
+        <Anneal>10</Anneal>
+        <Steps>10000</Steps>
+        <Temperature>50</Temperature> <!--Vary temperature to test connectivity -->
+        <Flip2DimRatio>1</Flip2DimRatio>
+        <NeighborOrder>2</NeighborOrder>
+        <LatticeType>Hexagonal</LatticeType>
+        <Boundary_x>Periodic</Boundary_x>
+        <Boundary_y>Periodic</Boundary_y>
+    </Potts>
+
+
+    <Plugin Name="Volume">
+        <TargetVolume>30</TargetVolume>
+        <LambdaVolume>4.0</LambdaVolume>
+    </Plugin>
+
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Body1" TypeId="1"/>
+        <CellType TypeName="Body2" TypeId="2"/>
+        <CellType TypeName="Body3" TypeId="3"/>
+    </Plugin>
+
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">0</Energy>
+        <Energy Type1="Body1" Type2="Body1">16</Energy>
+        <Energy Type1="Body1" Type2="Medium">4</Energy>
+        <Energy Type1="Body2" Type2="Body2">16</Energy>
+        <Energy Type1="Body2" Type2="Medium">4</Energy>
+        <Energy Type1="Body3" Type2="Body3">16</Energy>
+        <Energy Type1="Body3" Type2="Medium">4</Energy>
+
+        <Energy Type1="Body1" Type2="Body2">16</Energy>
+        <Energy Type1="Body1" Type2="Body3">16</Energy>
+        <Energy Type1="Body2" Type2="Body3">16</Energy>
+
+        <NeighborOrder>2</NeighborOrder>
+    </Plugin>
+
+    <Plugin Name="CenterOfMass"/>
+
+    <Plugin Name="ConnectivityGlobal">
+        <Penalty Type="Body1">1000000000</Penalty>
+        <Penalty Type="Body2">1000000000</Penalty>
+        <Penalty Type="Body3">1000000000</Penalty>
+        <!-- Be Default we will always precheck connectivity but in simulations in which there is no risk of having unfragmented cell one can add this flag to speed up computations-->
+        <!-- <DoNotPrecheckConnectivity/>     -->
+    </Plugin>
+
+
+    <Steppable Type="PIFInitializer">
+        <PIFName>Simulation/ConnectivityGlobalTestFragmentedCells.piff</PIFName>
+    </Steppable>
+
+
+</CompuCell3D>

@@ -33,11 +33,7 @@
     <Plugin Name="ConnectivityGlobal">
         <FastAlgorithm/>
         <!-- <ConnectivityOn Type="NonCondensing"/> -->
-        <!-- <ConnectivityOn Type="Condensing"/>			 -->
-        <!-- Note old tags <Penalty >still work but are being deprecated -->
-        <!-- <Penalty Type="NonCondensing">1</Penalty> -->
-        <!-- <Penalty Type="Condensing">1</Penalty>  -->
-
+        <!-- <ConnectivityOn Type="Condensing"/> -->
     </Plugin>
 
 
