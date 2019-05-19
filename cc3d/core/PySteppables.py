@@ -190,8 +190,11 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             "ElasticityTracker": ['elasticity_tracker_plugin', 'elasticityTrackerPlugin'],
             "PlasticityTracker": ['plasticity_tracker_plugin', 'plasticityTrackerPlugin'],
             "MomentOfInertia": ['moment_of_inertia_plugin', 'momentOfInertiaPlugin'],
+            "OrientedGrowth": ['oriented_growth_plugin', 'orientedGrowthPlugin'],
 
         }
+
+
 
 
         # used by clone attributes functions
