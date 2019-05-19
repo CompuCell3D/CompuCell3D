@@ -164,6 +164,7 @@ SET(LIBS_AUX
     ConnectivityGlobalShared  
     LengthConstraintShared
     BoundaryMonitorShared    
+    CurvatureCalculatorShared
 )
 
 INCLUDE_DIRECTORIES(
