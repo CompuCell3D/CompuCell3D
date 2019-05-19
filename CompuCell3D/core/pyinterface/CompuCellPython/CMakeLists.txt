@@ -169,6 +169,8 @@ SET(LIBS_AUX
     CurvatureCalculatorShared
     MomentOfInertiaShared
     SecretionShared
+    CellOrientationShared
+    PolarizationVectorShared
 )
 
 INCLUDE_DIRECTORIES(

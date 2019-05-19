@@ -316,54 +316,28 @@ PLUGINACCESSOR(ContactLocalProduct)
 }
 
 //ContactMultiCadPlugin
-
 %include <CompuCell3D/plugins/ContactMultiCad/ContactMultiCadData.h>
 %template (contactmulticaddataaccessor) BasicClassAccessor<ContactMultiCadData>; //necessary to get ContactMultiCadData accessor working
 PLUGINACCESSOR(ContactMultiCad)
 
 //AdhesionFlexPlugin
-
 %include <CompuCell3D/plugins/AdhesionFlex/AdhesionFlexData.h>
 %template (adhesionflexdataaccessor) BasicClassAccessor<AdhesionFlexData>; //necessary to get AdhesionFlexData accessor working
 PLUGINACCESSOR(AdhesionFlex)
 
 
-//
-////CellOrientation Plugin
-//
-//%include <CompuCell3D/plugins/CellOrientation/CellOrientationVector.h>
-//%template (cellOrientationVectorAccessor) BasicClassAccessor<CellOrientationVector>; //necessary to get CellOrientationVector accessor working
-//
-//%template (LambdaCellOrientationAccessor) BasicClassAccessor<LambdaCellOrientation>; //necessary to get LambdaCellOrientation accessor working
-//PLUGINACCESSOR(CellOrientation)
-//
-//
-//
-//// %include <CompuCell3D/plugins/CellOrientation/CellOrientationPlugin.h>
-//// 
-//// %inline %{
-////    CellOrientationPlugin * getCellOrientationPlugin(){
-////       return (CellOrientationPlugin *)Simulator::pluginManager.get("CellOrientation");
-////    }
-//// 
-//// %}
-//
-//
-////PolarizationVectorPlugin
-//
-//%include <CompuCell3D/plugins/PolarizationVector/PolarizationVector.h>
-//%template (polarizationVectorAccessor) BasicClassAccessor<PolarizationVector>; //necessary to get CellOrientationVector accessor working
-//PLUGINACCESSOR(PolarizationVector)
-//
-//// %include <CompuCell3D/plugins/PolarizationVector/PolarizationVectorPlugin.h>
-//// 
-//// %inline %{
-////    PolarizationVectorPlugin * getPolarizationVectorPlugin(){
-////       return (PolarizationVectorPlugin*)Simulator::pluginManager.get("PolarizationVector");
-////    }
-//// 
-//// %}
-//
+
+//CellOrientation Plugin
+%include <CompuCell3D/plugins/CellOrientation/CellOrientationVector.h>
+%template (cellOrientationVectorAccessor) BasicClassAccessor<CellOrientationVector>; //necessary to get CellOrientationVector accessor working
+%template (LambdaCellOrientationAccessor) BasicClassAccessor<LambdaCellOrientation>; //necessary to get LambdaCellOrientation accessor working
+PLUGINACCESSOR(CellOrientation)
+
+ ////PolarizationVectorPlugin
+%include <CompuCell3D/plugins/PolarizationVector/PolarizationVector.h>
+%template (polarizationVectorAccessor) BasicClassAccessor<PolarizationVector>; //necessary to get CellOrientationVector accessor working
+PLUGINACCESSOR(PolarizationVector)
+
 //Elasticity Plugin
 %include <CompuCell3D/plugins/ElasticityTracker/ElasticityTracker.h>
 %template (elasticityTrackerAccessor) BasicClassAccessor<ElasticityTracker>; //necessary to get ElasticityTracker accessor working
