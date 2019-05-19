@@ -68,7 +68,7 @@ class CellManipulationSteppableExplained(SteppableBasePy):
         # If we try to reassign pixels in the loop where we iterate over pixel data we will corrupt the container so in the loop below all we will do is to populate the two list mentioned above
         pixelList=self.getCellPixelList(cell)
         pt=CompuCell.Point3D()
-        print " Moving ",pixelList.numberOfPixels()," pixels of cell.id=",cell.id," . Shift vector=",shiftVector
+        print " Moving ", pixelList.number_of_pixels(), " pixels of cell.id=", cell.id, " . Shift vector=", shiftVector
         for pixelTrackerData in pixelList:
             pt.x = pixelTrackerData.pixel.x + shiftVector.x
             pt.y = pixelTrackerData.pixel.y + shiftVector.y

@@ -481,7 +481,11 @@ class CellPixelList:
     def __iter__(self):
         return CellPixelIterator(self)
 
+    @deprecated(version='4.0.0', reason="You should use : number_of_pixels")
     def numberOfPixels(self):
+        return self.number_of_pixels()
+
+    def number_of_pixels(self):
         return self.pixelTrackerAccessor.get(self.cell.extraAttribPtr).pixelSet.size()
 
 

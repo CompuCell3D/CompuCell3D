@@ -16,4 +16,4 @@ class BoundaryPixelTrackerSteppable(SteppableBasePy):
             pixelList=self.getCellBoundaryPixelList(cell)
             if cell.type==2:                
                 for boundaryPixelTrackerData in pixelList:
-                    print "pixel of cell id=",cell.id," type:",cell.type, " = ",boundaryPixelTrackerData.pixel," number of pixels=",pixelList.numberOfPixels()
+                    print "pixel of cell id=",cell.id," type:",cell.type, " = ",boundaryPixelTrackerData.pixel," number of pixels=",pixelList.number_of_pixels()

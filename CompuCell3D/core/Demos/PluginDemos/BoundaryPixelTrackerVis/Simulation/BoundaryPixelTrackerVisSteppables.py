@@ -21,7 +21,7 @@ class BoundaryPixelTrackerSteppable(SteppableBasePy):
             pixelList=self.getCellBoundaryPixelList(cell,3)
             if cell.id==8:                
                 for boundaryPixelTrackerData in pixelList:
-                    print "pixel of cell id=",cell.id," type:",cell.type, " = ",boundaryPixelTrackerData.pixel," number of pixels=",pixelList.numberOfPixels()
+                    print "pixel of cell id=",cell.id," type:",cell.type, " = ",boundaryPixelTrackerData.pixel," number of pixels=",pixelList.number_of_pixels()
                     pt = boundaryPixelTrackerData.pixel
                     self.scalarField[pt.x,pt.y,pt.z] = 20
                     

@@ -1,0 +1,11 @@
+<Simulation version="3.6.1">
+
+    <XMLScript Type="XMLScript">Simulation/PixelTrackerExample.xml</XMLScript>
+
+    <PythonScript>Simulation/PixelTrackerExample.py</PythonScript> 
+
+    <Resource Type="Python">Simulation/PixelTrackerExampleSteppables.py</Resource>    
+
+    <PIFFile>Simulation/bacterium_macrophage_2D_wall.piff</PIFFile>
+
+</Simulation>

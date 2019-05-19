@@ -16,6 +16,6 @@ class PixelTrackerSteppable(SteppableBasePy):
          if cell.type==2:
             pixelList=self.getCellPixelList(cell)
             for pixelTrackerData in pixelList:
-               print "pixel of cell id=",cell.id," type:",cell.type, " = ",pixelTrackerData.pixel," number of pixels=",pixelList.numberOfPixels()
+               print "pixel of cell id=",cell.id," type:",cell.type, " = ",pixelTrackerData.pixel," number of pixels=",pixelList.number_of_pixels()
 
 
