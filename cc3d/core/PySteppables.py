@@ -179,6 +179,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             "CellOrientation": ['cell_orientation_plugin', 'cellOrientationPlugin'],
             "ContactOrientation": ['contact_orientation_plugin', 'contactOrientationPlugin'],
             "ContactLocalProduct": ['contact_local_product_plugin', 'contactLocalProductPlugin'],
+            "ContactMultiCad": ['contact_multi_cad_plugin', 'contactMultiCadPlugin'],
             "LengthConstraint": ['length_constraint_plugin', 'lengthConstraintPlugin',
                                  'length_constraint_local_flex_plugin' , 'lengthConstraintLocalFlexPlugin'],
             "ConnectivityGlobal": ['connectivity_global_plugin', 'connectivityGlobalPlugin'],

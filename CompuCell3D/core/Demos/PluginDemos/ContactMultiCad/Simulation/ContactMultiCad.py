@@ -16,7 +16,7 @@ steppableRegistry=CompuCellSetup.getSteppableRegistry()
 from ContactMultiCadSteppables import ContactMultiCadSteppable
 cmcSteppable=ContactMultiCadSteppable(sim)
 typeContactEnergyTable={0:0.0 , 1:20, 2:30}
-cmcSteppable.setTypeContactEnergyTable(typeContactEnergyTable)
+cmcSteppable.set_type_contact_energy_table(typeContactEnergyTable)
 steppableRegistry.registerSteppable(cmcSteppable)
 
 CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)

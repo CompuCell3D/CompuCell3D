@@ -16,7 +16,7 @@ steppableRegistry=CompuCellSetup.getSteppableRegistry()
 from ContactLocalProductExampleModules import ContactLocalProductSteppable
 clpSteppable=ContactLocalProductSteppable(sim)
 typeContactEnergyTable={0:0.0 , 1:20, 2:30}
-clpSteppable.setTypeContactEnergyTable(typeContactEnergyTable)
+clpSteppable.set_type_contact_energy_table(typeContactEnergyTable)
 steppableRegistry.registerSteppable(clpSteppable)
 
 

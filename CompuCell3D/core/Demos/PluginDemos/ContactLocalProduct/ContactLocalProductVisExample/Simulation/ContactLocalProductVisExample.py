@@ -20,7 +20,7 @@ typeContactEnergyTable={0:0.0 , 1:20, 2:30} # the format is as follows:
                                                       #type:N e.g. 1:20.1234 , 2:12.19	
 #typeContactEnergyTable={0:0.0 , 1:[20,30], 2:[30,50]} # the format is as follows:
                                                       #type:[N_min,N_max] e.g. 1:[20,30] , 2:[40,50]	
-clpSteppable.setTypeContactEnergyTable(typeContactEnergyTable)
+clpSteppable.set_type_contact_energy_table(typeContactEnergyTable)
 steppableRegistry.registerSteppable(clpSteppable)
 
 
