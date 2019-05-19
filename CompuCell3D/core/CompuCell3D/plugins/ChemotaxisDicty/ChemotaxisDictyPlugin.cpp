@@ -111,23 +111,23 @@ void ChemotaxisDictyPlugin::field3DChange(const Point3D &pt, CellG *newCell, Cel
 
 
 void ChemotaxisDictyPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
-	if(potts->getDisplayUnitsFlag()){
-		Unit energyUnit=potts->getEnergyUnit();
+	//if(potts->getDisplayUnitsFlag()){
+	//	Unit energyUnit=potts->getEnergyUnit();
 
 
 
 
-		CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-		if (!unitsElem){ //add Units element
-			unitsElem=_xmlData->attachElement("Units");
-		}
+	//	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
+	//	if (!unitsElem){ //add Units element
+	//		unitsElem=_xmlData->attachElement("Units");
+	//	}
 
-		if(unitsElem->getFirstElement("LambdaUnit")){
-			unitsElem->getFirstElement("LambdaUnit")->updateElementValue(energyUnit.toString());
-		}else{
-			CC3DXMLElement * energyElem = unitsElem->attachElement("LambdaUnit",energyUnit.toString());
-		}
-	}
+	//	if(unitsElem->getFirstElement("LambdaUnit")){
+	//		unitsElem->getFirstElement("LambdaUnit")->updateElementValue(energyUnit.toString());
+	//	}else{
+	//		CC3DXMLElement * energyElem = unitsElem->attachElement("LambdaUnit",energyUnit.toString());
+	//	}
+	//}
 
 	nonChemotacticTypeVector.clear();
 

@@ -174,6 +174,7 @@ SET(LIBS_AUX
     Polarization23Shared
     OrientedGrowthShared
     ContactOrientationShared
+    CleaverMeshDumperShared
 
 )
 
