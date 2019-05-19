@@ -1,0 +1,11 @@
+<Simulation version="3.6.1">
+
+    <XMLScript Type="XMLScript">Simulation/elongationTest_steering.xml</XMLScript>
+
+    <PythonScript>Simulation/elongationTest_steering.py</PythonScript> 
+
+    <Resource Type="Python">Simulation/elongationTest_steering_steppables.py</Resource>    
+
+    <PIFFile>Simulation/elongationTest_steering.piff</PIFFile>
+
+</Simulation>
