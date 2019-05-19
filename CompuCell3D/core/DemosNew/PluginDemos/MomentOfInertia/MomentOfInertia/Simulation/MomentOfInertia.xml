@@ -1,0 +1,24 @@
+<CompuCell3D>
+
+    <Potts>
+        <Dimensions x="100" y="100" z="1"/>
+        <Steps>10000</Steps>
+        <Temperature>10</Temperature>
+        <Flip2DimRatio>1</Flip2DimRatio>
+        <NeighborOrder>2</NeighborOrder>
+    </Potts>
+
+    <Plugin Name="VolumeTracker"/>
+
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Condensing" TypeId="1" Freeze=""/>
+    </Plugin>
+
+    <Plugin Name="CenterOfMass"/>
+
+    <Plugin Name="MomentOfInertia"/>
+
+
+</CompuCell3D>
+

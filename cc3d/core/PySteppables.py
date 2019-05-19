@@ -189,6 +189,7 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             "ClusterSurfaceTracker": ['cluster_surface_tracker_plugin', 'clusterSurfaceTrackerPlugin'],
             "ElasticityTracker": ['elasticity_tracker_plugin', 'elasticityTrackerPlugin'],
             "PlasticityTracker": ['plasticity_tracker_plugin', 'plasticityTrackerPlugin'],
+            "MomentOfInertia": ['moment_of_inertia_plugin', 'momentOfInertiaPlugin'],
 
         }
 

@@ -373,47 +373,14 @@ PLUGINACCESSOR(AdhesionFlex)
 PLUGINACCESSOR(ElasticityTracker)
 
 
-// %include <CompuCell3D/plugins/ElasticityTracker/ElasticityTrackerPlugin.h>
-// 
-// %inline %{
-//  ElasticityTrackerPlugin * getElasticityTrackerPlugin(){
-//          return (ElasticityTrackerPlugin *)Simulator::pluginManager.get("ElasticityTracker");
-//    }
-// 
-//  CompuCell3D::ElasticityTrackerData & derefElasticityTrackerData(std::set<CompuCell3D::ElasticityTrackerData>::iterator &_itr){
-//      return const_cast<CompuCell3D::ElasticityTrackerData &>(*_itr);
-//  }
-// 
-// 
-// %}
+//Plasticity Plugin
+%include <CompuCell3D/plugins/PlasticityTracker/PlasticityTracker.h>
+%template (plasticityTrackerAccessor) BasicClassAccessor<PlasticityTracker>; //necessary to get PlasticityTracker accessor working
+%template (plasticitySetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::PlasticityTrackerData> , CompuCell3D::PlasticityTrackerData >;
+// %template (plasticitySetPyItr) STLPyIterator<std::set<CompuCell3D::PlasticityTrackerData> >;
+%template (plasticityTrackerDataSet) std::set<CompuCell3D::PlasticityTrackerData>; //necessary to get basic set functionality working
+PLUGINACCESSOR(PlasticityTracker)
 
-
-////Plasticity Plugin
-//%include <CompuCell3D/plugins/PlasticityTracker/PlasticityTracker.h>
-//%template (plasticityTrackerAccessor) BasicClassAccessor<PlasticityTracker>; //necessary to get PlasticityTracker accessor working
-//%template (plasticitySetPyItr) STLPyIteratorRefRetType<std::set<CompuCell3D::PlasticityTrackerData> , CompuCell3D::PlasticityTrackerData >;
-//// %template (plasticitySetPyItr) STLPyIterator<std::set<CompuCell3D::PlasticityTrackerData> >;
-//%template (plasticityTrackerDataSet) std::set<CompuCell3D::PlasticityTrackerData>; //necessary to get basic set functionality working
-//PLUGINACCESSOR(PlasticityTracker)
-//
-//// PLUGINACCESSOR(PlasticityTracker)
-//
-//// %include <CompuCell3D/plugins/Plasticity/PlasticityTrackerPlugin.h>
-//// 
-//// %inline %{
-////  PlasticityTrackerPlugin * getPlasticityTrackerPlugin(){
-////       return (PlasticityTrackerPlugin *)Simulator::pluginManager.get("PlasticityTracker");
-////    }
-//// 
-//// CompuCell3D::PlasticityTrackerData & derefPlasticityTrackerData(std::set<CompuCell3D::PlasticityTrackerData>::iterator &_itr){
-////       return const_cast<CompuCell3D::PlasticityTrackerData &>(*_itr);
-////    }
-//// 
-//// 
-//// 
-//// %}
-//
-//
 ////Focal Point Plasticity Plugin
 //
 %include <CompuCell3D/plugins/FocalPointPlasticity/FocalPointPlasticityTracker.h>
@@ -425,286 +392,245 @@ PLUGINACCESSOR(ElasticityTracker)
 PLUGINACCESSOR(FocalPointPlasticity)
 
 
+//MomentOfInertia
+PLUGINACCESSOR(MomentOfInertia)
 
 
- ////%include <CompuCell3D/plugins/FocalPointPlasticity/FocalPointPlasticityPlugin.h>
- ////
- ////%inline %{
- //// FocalPointPlasticityPlugin * getFocalPointPlasticityPlugin(){
- ////      return (FocalPointPlasticityPlugin *)Simulator::pluginManager.get("FocalPointPlasticity");
- ////   }
- ////
- ////CompuCell3D::FocalPointPlasticityTrackerData & derefPlasticityTrackerData(std::set<CompuCell3D::FocalPointPlasticityTrackerData>::iterator &_itr){
- ////      return const_cast<CompuCell3D::FocalPointPlasticityTrackerData &>(*_itr);
- ////   }
- ////
- ////%}
-//// 
-//
-//// //MolecularContactPlugin
-//// %include <CompuCell3D/plugins/MolecularContact/MolecularContactPlugin.h>
-//// /* %nothread MolecularContactPlugin */
-//// /* %template (moleculemapaccessor) BasicClassAccessor<MoleculeNameMap_t>; //necessary to get MolecularContactPlugin accessor working */
-//
-//// /* %template (molecularlcontactMapPyItr) STLPyIterator<std::map<CompuCell3D::MolecularContactData> >; */
-//// /* %template (molecularlcontactDataSet) std::map<CompuCell3D::MolecularContactData>; //necessary to get basic map functionality working */
-//
-//// %inline %{
-//   // MolecularContactPlugin * getMolecularContactPlugin(){
-//      // return (MolecularContactPlugin *)Simulator::pluginManager.get("MolecularContact");
-//   // }
-//// %}
-//
-////MomentOfInertia
-//
-//PLUGINACCESSOR(MomentOfInertia)
-//
-//
-//// %include <CompuCell3D/plugins/MomentOfInertia/MomentOfInertiaPlugin.h>
-//// 
-//// %inline %{
-////    MomentOfInertiaPlugin * getMomentOfInertiaPlugin(){
-////       return (MomentOfInertiaPlugin *)Simulator::pluginManager.get("MomentOfInertia");
-////    }
-//// %}
-//
-////Secretion
-//
-//%include <CompuCell3D/plugins/Secretion/FieldSecretor.h>
-//PLUGINACCESSOR(Secretion)
-//
-//
-//%extend  CompuCell3D::FieldSecretor{
-//
-//  bool secreteInsideCellConstantConcentration(CellG * _cell, float _amount){
-//    if (!self->pixelTrackerPlugin){
-//        throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function"));        
-//    }else{
-//        return self->_secreteInsideCellConstantConcentration(_cell,_amount);
-//    }               
-//  }    
-//
-//FieldSecretorResult secreteInsideCellConstantConcentrationTotalAmount(CellG * _cell, float _amount) {
-//	if (!self->pixelTrackerPlugin) {
-//		throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function"));
-//	}
-//	else {
-//		return self->_secreteInsideCellConstantConcentrationTotalCount(_cell,_amount);
-//	}
-//}
-//
-//
-//  bool secreteInsideCell(CellG * _cell, float _amount){
-//    if (!self->pixelTrackerPlugin){
-//        throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function"));        
-//    }else{
-//        return self->_secreteInsideCell(_cell,_amount);
-//    }               
-//  }    
-//  
-//  FieldSecretorResult secreteInsideCellTotalCount(CellG * _cell, float _amount) {
-//	  if (!self->pixelTrackerPlugin) {
-//		  throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function"));
-//	  }
-//	  else {
-//		  return self->_secreteInsideCellTotalCount(_cell,_amount);
-//	  }
-//  }
-//
-//
-//  bool secreteInsideCellAtBoundary(CellG * _cell, float _amount){
-//    if (!self->boundaryPixelTrackerPlugin){
-//        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteInsideCellAtBoundary function"));        
-//    }else{
-//        return self->_secreteInsideCellAtBoundary(_cell,_amount);
-//    }               
-//  }    
-//
-//  FieldSecretorResult secreteInsideCellAtBoundaryTotalCount(CellG * _cell, float _amount) {
-//	  if (!self->boundaryPixelTrackerPlugin) {
-//		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteInsideCellAtBoundary function"));
-//	  }
-//	  else {
-//		  return self->_secreteInsideCellAtBoundaryTotalCount(_cell,_amount);
-//	  }
-//  }
-//
-//
-//  bool secreteInsideCellAtBoundaryOnContactWith(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec){
-//      
-//    if (!self->boundaryPixelTrackerPlugin){
-//        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteInsideCellAtBoundaryOnContactWith function"));        
-//    }else{
-//        return self->_secreteInsideCellAtBoundaryOnContactWith(_cell,_amount,_onContactVec);
-//    }                     
-//  }
-//
-//  FieldSecretorResult secreteInsideCellAtBoundaryOnContactWithTotalCount(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec) {
-//
-//	  if (!self->boundaryPixelTrackerPlugin) {
-//		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteInsideCellAtBoundaryOnContactWith function"));
-//	  }
-//	  else {
-//		  return self->_secreteInsideCellAtBoundaryOnContactWithTotalCount(_cell,_amount,_onContactVec);
-//	  }
-//  }
-//
-//
-//  bool secreteOutsideCellAtBoundary(CellG * _cell, float _amount) {
-//
-//	  if (!self->boundaryPixelTrackerPlugin) {
-//		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteOutsideCellAtBoundary function"));
-//	  }
-//	  else {
-//		  return self->_secreteOutsideCellAtBoundary(_cell,_amount);
-//	  }
-//  }
-//
-//  FieldSecretorResult secreteOutsideCellAtBoundaryTotalCount(CellG * _cell, float _amount) {
-//
-//	  if (!self->boundaryPixelTrackerPlugin) {
-//		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteOutsideCellAtBoundary function"));
-//	  }
-//	  else {
-//		  return self->_secreteOutsideCellAtBoundaryTotalCount(_cell,_amount);
-//	  }
-//  }
-//
-//
-//
-//  bool secreteOutsideCellAtBoundaryOnContactWith(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec){
-//      
-//    if (!self->boundaryPixelTrackerPlugin){
-//        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteOutsideCellAtBoundaryOnContactWith function"));        
-//    }else{
-//        return self->_secreteOutsideCellAtBoundaryOnContactWith(_cell,_amount,_onContactVec);
-//    }                     
-//  }  
-//
-//  FieldSecretorResult secreteOutsideCellAtBoundaryOnContactWithTotalCount(CellG * _cell, float _amount, const std::vector<unsigned char> & _onContactVec) {
-//
-//	  if (!self->boundaryPixelTrackerPlugin) {
-//		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteOutsideCellAtBoundaryOnContactWith function"));
-//	  }
-//	  else {
-//		  return self->_secreteOutsideCellAtBoundaryOnContactWithTotalCount(_cell, _amount, _onContactVec);
-//	  }
-//  }
-//
-//
-////   bool secreteInsideCellAtCOM(CellG * _cell, float _amount){
-////     return self->_secreteInsideCellAtCOM(_cell,_amount);  
-////   }
-//  
-//  bool uptakeInsideCell(CellG * _cell, float _maxUptake, float _relativeUptake){
-//    if (!self->pixelTrackerPlugin){
-//        throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute uptakeInsideCell function"));        
-//    }else{
-//        return self->_uptakeInsideCell(_cell, _maxUptake, _relativeUptake);
-//    }               
-//  }    
-//
-//  FieldSecretorResult uptakeInsideCellTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake) {
-//	  if (!self->pixelTrackerPlugin) {
-//		  throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute uptakeInsideCell function"));
-//	  }
-//	  else {
-//		  return self->_uptakeInsideCellTotalCount(_cell, _maxUptake, _relativeUptake);
-//	  }
-//  }
-//
-//
-//  bool uptakeInsideCellAtBoundary(CellG * _cell, float _maxUptake, float _relativeUptake){
-//    if (!self->pixelTrackerPlugin){
-//        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeInsideCellAtBoundary function"));        
-//    }else{
-//        return self->_uptakeInsideCellAtBoundary(_cell,_maxUptake, _relativeUptake);
-//    }               
-//  }    
-//
-//  FieldSecretorResult uptakeInsideCellAtBoundaryTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake) {
-//	  if (!self->pixelTrackerPlugin) {
-//		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeInsideCellAtBoundary function"));
-//	  }
-//	  else {
-//		  return self->_uptakeInsideCellAtBoundaryTotalCount(_cell, _maxUptake, _relativeUptake);
-//	  }
-//  }
-//
-//
-//  bool uptakeInsideCellAtBoundaryOnContactWith(CellG * _cell, float _maxUptake, float _relativeUptake, const std::vector<unsigned char> & _onContactVec){
-//    if (!self->pixelTrackerPlugin){
-//        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeInsideCellAtBoundaryOnContactWith function"));        
-//    }else{
-//        return self->_uptakeInsideCellAtBoundaryOnContactWith(_cell,_maxUptake, _relativeUptake,_onContactVec);
-//    }               
-//  }          
-//
-//  FieldSecretorResult uptakeInsideCellAtBoundaryOnContactWithTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake, const std::vector<unsigned char> & _onContactVec) {
-//	  if (!self->pixelTrackerPlugin) {
-//		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeInsideCellAtBoundaryOnContactWith function"));
-//	  }
-//	  else {
-//		  return self->_uptakeInsideCellAtBoundaryOnContactWithTotalCount(_cell, _maxUptake, _relativeUptake, _onContactVec);
-//	  }
-//  }
-//
-//
-//
-//  bool uptakeOutsideCellAtBoundary(CellG * _cell, float _maxUptake, float _relativeUptake){
-//    if (!self->pixelTrackerPlugin){
-//        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeOutsideCellAtBoundary function"));        
-//    }else{
-//        return self->_uptakeOutsideCellAtBoundary(_cell,_maxUptake, _relativeUptake);
-//    }               
-//  }    
-//
-//  FieldSecretorResult uptakeOutsideCellAtBoundaryTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake) {
-//	  if (!self->pixelTrackerPlugin) {
-//		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeOutsideCellAtBoundary function"));
-//	  }
-//	  else {
-//		  return self->_uptakeOutsideCellAtBoundaryTotalCount(_cell, _maxUptake, _relativeUptake);
-//	  }
-//  }
-//
-//
-//  bool uptakeOutsideCellAtBoundaryOnContactWith(CellG * _cell, float _maxUptake, float _relativeUptake, const std::vector<unsigned char> & _onContactVec){
-//    if (!self->pixelTrackerPlugin){
-//        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeOutsideCellAtBoundaryOnContactWith function"));        
-//    }else{
-//        return self->_uptakeOutsideCellAtBoundaryOnContactWith(_cell,_maxUptake, _relativeUptake,_onContactVec);
-//    }               
-//  }   
-//
-//  FieldSecretorResult uptakeOutsideCellAtBoundaryOnContactWithTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake, const std::vector<unsigned char> & _onContactVec) {
-//	  if (!self->pixelTrackerPlugin) {
-//		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeOutsideCellAtBoundaryOnContactWith function"));
-//	  }
-//	  else {
-//		  return self->_uptakeOutsideCellAtBoundaryOnContactWithTotalCount(_cell, _maxUptake, _relativeUptake, _onContactVec);
-//	  }
-//  }
-//
-//
-//
-////   bool uptakeInsideCellAtCOM(CellG * _cell, float _maxUptake, float _relativeUptake){
-////     return _uptakeInsideCellAtCOM(_cell,_maxUptake,_relativeUptake);
-////   }
-//  
-//}
-//  
-//  
-//// %include <CompuCell3D/plugins/Secretion/SecretionPlugin.h>
-//// 
-//// %inline %{
-////    SecretionPlugin * getSecretionPlugin(){
-////       return (SecretionPlugin *)Simulator::pluginManager.get("Secretion");
-////    }
-//// %}
-//
-//
-//
+//Secretion
+%include <CompuCell3D/plugins/Secretion/FieldSecretor.h>
+PLUGINACCESSOR(Secretion)
+
+%extend  CompuCell3D::FieldSecretor{
+
+  bool secreteInsideCellConstantConcentration(CellG * _cell, float _amount){
+    if (!self->pixelTrackerPlugin){
+        throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function"));        
+    }else{
+        return self->_secreteInsideCellConstantConcentration(_cell,_amount);
+    }               
+  }    
+
+FieldSecretorResult secreteInsideCellConstantConcentrationTotalAmount(CellG * _cell, float _amount) {
+	if (!self->pixelTrackerPlugin) {
+		throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function"));
+	}
+	else {
+		return self->_secreteInsideCellConstantConcentrationTotalCount(_cell,_amount);
+	}
+}
+
+
+  bool secreteInsideCell(CellG * _cell, float _amount){
+    if (!self->pixelTrackerPlugin){
+        throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function"));        
+    }else{
+        return self->_secreteInsideCell(_cell,_amount);
+    }               
+  }    
+  
+  FieldSecretorResult secreteInsideCellTotalCount(CellG * _cell, float _amount) {
+	  if (!self->pixelTrackerPlugin) {
+		  throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute secreteInsideCell function"));
+	  }
+	  else {
+		  return self->_secreteInsideCellTotalCount(_cell,_amount);
+	  }
+  }
+
+
+  bool secreteInsideCellAtBoundary(CellG * _cell, float _amount){
+    if (!self->boundaryPixelTrackerPlugin){
+        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteInsideCellAtBoundary function"));        
+    }else{
+        return self->_secreteInsideCellAtBoundary(_cell,_amount);
+    }               
+  }    
+
+  FieldSecretorResult secreteInsideCellAtBoundaryTotalCount(CellG * _cell, float _amount) {
+	  if (!self->boundaryPixelTrackerPlugin) {
+		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteInsideCellAtBoundary function"));
+	  }
+	  else {
+		  return self->_secreteInsideCellAtBoundaryTotalCount(_cell,_amount);
+	  }
+  }
+
+
+  bool secreteInsideCellAtBoundaryOnContactWith(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec){
+      
+    if (!self->boundaryPixelTrackerPlugin){
+        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteInsideCellAtBoundaryOnContactWith function"));        
+    }else{
+        return self->_secreteInsideCellAtBoundaryOnContactWith(_cell,_amount,_onContactVec);
+    }                     
+  }
+
+  FieldSecretorResult secreteInsideCellAtBoundaryOnContactWithTotalCount(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec) {
+
+	  if (!self->boundaryPixelTrackerPlugin) {
+		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteInsideCellAtBoundaryOnContactWith function"));
+	  }
+	  else {
+		  return self->_secreteInsideCellAtBoundaryOnContactWithTotalCount(_cell,_amount,_onContactVec);
+	  }
+  }
+
+
+  bool secreteOutsideCellAtBoundary(CellG * _cell, float _amount) {
+
+	  if (!self->boundaryPixelTrackerPlugin) {
+		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteOutsideCellAtBoundary function"));
+	  }
+	  else {
+		  return self->_secreteOutsideCellAtBoundary(_cell,_amount);
+	  }
+  }
+
+  FieldSecretorResult secreteOutsideCellAtBoundaryTotalCount(CellG * _cell, float _amount) {
+
+	  if (!self->boundaryPixelTrackerPlugin) {
+		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteOutsideCellAtBoundary function"));
+	  }
+	  else {
+		  return self->_secreteOutsideCellAtBoundaryTotalCount(_cell,_amount);
+	  }
+  }
+
+
+
+  bool secreteOutsideCellAtBoundaryOnContactWith(CellG * _cell, float _amount,const std::vector<unsigned char> & _onContactVec){
+      
+    if (!self->boundaryPixelTrackerPlugin){
+        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteOutsideCellAtBoundaryOnContactWith function"));        
+    }else{
+        return self->_secreteOutsideCellAtBoundaryOnContactWith(_cell,_amount,_onContactVec);
+    }                     
+  }  
+
+  FieldSecretorResult secreteOutsideCellAtBoundaryOnContactWithTotalCount(CellG * _cell, float _amount, const std::vector<unsigned char> & _onContactVec) {
+
+	  if (!self->boundaryPixelTrackerPlugin) {
+		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute secreteOutsideCellAtBoundaryOnContactWith function"));
+	  }
+	  else {
+		  return self->_secreteOutsideCellAtBoundaryOnContactWithTotalCount(_cell, _amount, _onContactVec);
+	  }
+  }
+
+
+//   bool secreteInsideCellAtCOM(CellG * _cell, float _amount){
+//     return self->_secreteInsideCellAtCOM(_cell,_amount);  
+//   }
+  
+  bool uptakeInsideCell(CellG * _cell, float _maxUptake, float _relativeUptake){
+    if (!self->pixelTrackerPlugin){
+        throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute uptakeInsideCell function"));        
+    }else{
+        return self->_uptakeInsideCell(_cell, _maxUptake, _relativeUptake);
+    }               
+  }    
+
+  FieldSecretorResult uptakeInsideCellTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake) {
+	  if (!self->pixelTrackerPlugin) {
+		  throw std::runtime_error(std::string("PixelTracker Plugin has been turned off. Cannot execute uptakeInsideCell function"));
+	  }
+	  else {
+		  return self->_uptakeInsideCellTotalCount(_cell, _maxUptake, _relativeUptake);
+	  }
+  }
+
+
+  bool uptakeInsideCellAtBoundary(CellG * _cell, float _maxUptake, float _relativeUptake){
+    if (!self->pixelTrackerPlugin){
+        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeInsideCellAtBoundary function"));        
+    }else{
+        return self->_uptakeInsideCellAtBoundary(_cell,_maxUptake, _relativeUptake);
+    }               
+  }    
+
+  FieldSecretorResult uptakeInsideCellAtBoundaryTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake) {
+	  if (!self->pixelTrackerPlugin) {
+		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeInsideCellAtBoundary function"));
+	  }
+	  else {
+		  return self->_uptakeInsideCellAtBoundaryTotalCount(_cell, _maxUptake, _relativeUptake);
+	  }
+  }
+
+
+  bool uptakeInsideCellAtBoundaryOnContactWith(CellG * _cell, float _maxUptake, float _relativeUptake, const std::vector<unsigned char> & _onContactVec){
+    if (!self->pixelTrackerPlugin){
+        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeInsideCellAtBoundaryOnContactWith function"));        
+    }else{
+        return self->_uptakeInsideCellAtBoundaryOnContactWith(_cell,_maxUptake, _relativeUptake,_onContactVec);
+    }               
+  }          
+
+  FieldSecretorResult uptakeInsideCellAtBoundaryOnContactWithTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake, const std::vector<unsigned char> & _onContactVec) {
+	  if (!self->pixelTrackerPlugin) {
+		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeInsideCellAtBoundaryOnContactWith function"));
+	  }
+	  else {
+		  return self->_uptakeInsideCellAtBoundaryOnContactWithTotalCount(_cell, _maxUptake, _relativeUptake, _onContactVec);
+	  }
+  }
+
+
+
+  bool uptakeOutsideCellAtBoundary(CellG * _cell, float _maxUptake, float _relativeUptake){
+    if (!self->pixelTrackerPlugin){
+        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeOutsideCellAtBoundary function"));        
+    }else{
+        return self->_uptakeOutsideCellAtBoundary(_cell,_maxUptake, _relativeUptake);
+    }               
+  }    
+
+  FieldSecretorResult uptakeOutsideCellAtBoundaryTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake) {
+	  if (!self->pixelTrackerPlugin) {
+		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeOutsideCellAtBoundary function"));
+	  }
+	  else {
+		  return self->_uptakeOutsideCellAtBoundaryTotalCount(_cell, _maxUptake, _relativeUptake);
+	  }
+  }
+
+
+  bool uptakeOutsideCellAtBoundaryOnContactWith(CellG * _cell, float _maxUptake, float _relativeUptake, const std::vector<unsigned char> & _onContactVec){
+    if (!self->pixelTrackerPlugin){
+        throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeOutsideCellAtBoundaryOnContactWith function"));        
+    }else{
+        return self->_uptakeOutsideCellAtBoundaryOnContactWith(_cell,_maxUptake, _relativeUptake,_onContactVec);
+    }               
+  }   
+
+  FieldSecretorResult uptakeOutsideCellAtBoundaryOnContactWithTotalCount(CellG * _cell, float _maxUptake, float _relativeUptake, const std::vector<unsigned char> & _onContactVec) {
+	  if (!self->pixelTrackerPlugin) {
+		  throw std::runtime_error(std::string("BoundaryPixelTracker Plugin has been turned off. Cannot execute uptakeOutsideCellAtBoundaryOnContactWith function"));
+	  }
+	  else {
+		  return self->_uptakeOutsideCellAtBoundaryOnContactWithTotalCount(_cell, _maxUptake, _relativeUptake, _onContactVec);
+	  }
+  }
+
+
+
+//   bool uptakeInsideCellAtCOM(CellG * _cell, float _maxUptake, float _relativeUptake){
+//     return _uptakeInsideCellAtCOM(_cell,_maxUptake,_relativeUptake);
+//   }
+  
+}
+  
+  
+// %include <CompuCell3D/plugins/Secretion/SecretionPlugin.h>
+// 
+// %inline %{
+//    SecretionPlugin * getSecretionPlugin(){
+//       return (SecretionPlugin *)Simulator::pluginManager.get("Secretion");
+//    }
+// %}
+
+
+
 ////Steppables
 %include <CompuCell3D/steppables/Mitosis/MitosisSteppable.h>
 

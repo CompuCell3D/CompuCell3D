@@ -145,6 +145,8 @@ SET(LIBS_AUX
     PyPlugin
     ChemotaxisShared
     FocalPointPlasticityShared
+    PlasticityTrackerShared
+    PlasticityShared
     NeighborTrackerShared
     VolumeTrackerShared    
     CenterOfMassShared    
@@ -165,6 +167,8 @@ SET(LIBS_AUX
     LengthConstraintShared
     BoundaryMonitorShared    
     CurvatureCalculatorShared
+    MomentOfInertiaShared
+    SecretionShared
 )
 
 INCLUDE_DIRECTORIES(
