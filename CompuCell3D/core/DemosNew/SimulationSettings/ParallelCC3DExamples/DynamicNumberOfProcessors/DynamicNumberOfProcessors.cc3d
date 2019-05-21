@@ -1,0 +1,5 @@
+<Simulation version="3.6.2">
+   <XMLScript Type="XMLScript">Simulation/DynamicNumberOfProcessors.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/DynamicNumberOfProcessors.py</PythonScript>
+   <Resource Type="Python">Simulation/DynamicNumberOfProcessorsSteppables.py</Resource>
+</Simulation>

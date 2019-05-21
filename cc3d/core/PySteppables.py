@@ -730,6 +730,11 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         return self.build_wall(cell_type=type)
 
     def build_wall(self, cell_type):
+        """
+        builds a 1px wide wall around the lattice
+        :param cell_type: type pf cells that will make up the wall. This should be a frozen cell type
+        :return:
+        """
         # medium:
         if cell_type == 0:
             cell = CompuCell.getMediumCell()
@@ -790,8 +795,29 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         return self.destroy_wall()
 
     def destroy_wall(self):
+        """
+        removes wall around the lattice
+        :return:
+        """
         # build wall of Medium
         self.build_wall(0)
+
+    @deprecated(version='4.0.0', reason="You should use : change_number_of_work_nodes")
+    def changeNumberOfWorkNodes(self, _numberOfWorkNodes):
+        return self.change_number_of_work_nodes(number_of_work_nodes=_numberOfWorkNodes)
+
+    def change_number_of_work_nodes(self, number_of_work_nodes:int):
+        """
+        changes number of CPU's while simulation runs
+        :param number_of_work_nodes:
+        :return:
+        """
+
+        number_of_work_nodes_ev = CompuCell.CC3DEventChangeNumberOfWorkNodes()
+        number_of_work_nodes_ev.oldNumberOfNodes = 1
+        number_of_work_nodes_ev.newNumberOfNodes = number_of_work_nodes
+        self.simulator.postEvent(number_of_work_nodes_ev)
+
 
     @deprecated(version='4.0.0', reason="You should use : resize_and_shift_lattice")
     def resizeAndShiftLattice(self, _newSize, _shiftVec=(0, 0, 0)):
@@ -851,7 +877,14 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
 
         self.simulator.postEvent(resize_event)
 
+        # need to store simulator in a tmp variable because it is overwritten (set to None) in self.__init__
+        simulator = self._simulator
+
         self.__init__(self.frequency)
+
+        # restoring self._simulator
+        self._simulator = simulator
+
         self.core_init(reinitialize_cell_types=False)
 
         # with new cell field and possibly other fields  we have to reinitialize steppables
