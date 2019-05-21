@@ -1,5 +1,22 @@
 from cc3d import CompuCellSetup
 from cc3d.core.XMLUtils import CC3DXMLListPy
+from pathlib import Path
+
+
+def set_output_dir(output_dir: str, abs_path: bool = False) -> None:
+    """
+    Sets output directory to output_dir. If  abs_path is False
+    then the directory path will be w.r.t to workspace directory
+    Otherwise it is expected that user provides absolute output path
+    :param output_dir: directory name - relative (w.r.t to workspace dir) or absolute
+    :param abs_path:  flag specifying if user provided absolute or relative path
+    :return:
+    """
+    pg = CompuCellSetup.persistent_globals
+    if abs_path:
+        pg.set_output_dir(output_dir=output_dir)
+    else:
+        pg.set_output_dir(output_dir=str(Path(pg.workspace_dir).joinpath(output_dir)))
 
 
 def stop_simulation():
@@ -8,6 +25,7 @@ def stop_simulation():
     :return:
     """
     CompuCellSetup.persistent_globals.user_stop_simulation_flag = True
+
 
 # legacy api
 stopSimulation = stop_simulation
@@ -33,7 +51,7 @@ def extract_lattice_type():
     return ''
 
 
-def extract_type_names_and_ids()->dict:
+def extract_type_names_and_ids() -> dict:
     """
     Extracts type_name to type id mapping from CC3DXML
     :return {dict}:

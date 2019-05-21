@@ -320,6 +320,18 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             # plot_window.showAllHistPlots()
             # plot_window.showAllBarCurvePlots()
 
+    @staticmethod
+    def set_output_dir(output_dir: str, abs_path: bool = False) -> None:
+        """
+        Sets output directory to output_dir. If  abs_path is False
+        then the directory path will be w.r.t to workspace directory
+        Otherwise it is expected that user provides absolute output path
+        :param output_dir: directory name - relative (w.r.t to workspace dir) or absolute
+        :param abs_path:  flag specifying if user provided absolute or relative path
+        :return:
+        """
+        CompuCellSetup.set_output_dir(output_dir=output_dir, abs_path=abs_path)
+
     @property
     def output_dir(self):
         return CompuCellSetup.persistent_globals.output_directory
