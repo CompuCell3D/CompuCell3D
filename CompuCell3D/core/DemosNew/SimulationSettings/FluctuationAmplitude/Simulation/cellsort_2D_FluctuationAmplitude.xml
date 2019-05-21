@@ -1,9 +1,11 @@
 <CompuCell3D>
     <Potts>
         <Dimensions x="100" y="100" z="1"/>
-        <Anneal>10</Anneal>
         <Steps>10000</Steps>
-        <Temperature>10</Temperature>
+        <FluctuationAmplitude>
+            <FluctuationAmplitudeParameters CellType="Condensing" FluctuationAmplitude="10"/>
+            <FluctuationAmplitudeParameters CellType="NonCondensing" FluctuationAmplitude="5"/>
+        </FluctuationAmplitude>
         <Flip2DimRatio>1</Flip2DimRatio>
         <NeighborOrder>2</NeighborOrder>
     </Potts>
@@ -31,9 +33,8 @@
 
     <Plugin Name="CenterOfMass"/>
 
-    <Plugin Name="NeighborTracker"/>
-
     <Steppable Type="BlobInitializer">
+
         <Region>
             <Center x="50" y="50" z="0"/>
             <Radius>40</Radius>
@@ -42,5 +43,6 @@
             <Types>Condensing,NonCondensing</Types>
         </Region>
     </Steppable>
+
 
 </CompuCell3D>
