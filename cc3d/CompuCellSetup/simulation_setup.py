@@ -194,16 +194,16 @@ def convert_time_interval_to_hmsm(time_interval):
     minutes_interval = time_interval % (3600 * 1000)
     minutes = minutes_interval / (60 * 1000)
     seconds_interval = minutes_interval % (60 * 1000)
-    seconds = seconds_interval / (1000)
-    miliseconds = seconds_interval % (1000)
+    seconds = seconds_interval / 1000
+    miliseconds = seconds_interval % 1000
 
-    if hours:
+    if hours > 1.0:
         out_str = str(hours) + " h : " + str(minutes) + " m : " + str(seconds) + " s : " + str(miliseconds) + " ms"
 
-    elif minutes:
+    elif minutes > 1.0:
         out_str = str(minutes) + " m : " + str(seconds) + " s : " + str(miliseconds) + " ms"
 
-    elif seconds:
+    elif seconds > 1.0:
         out_str = str(seconds) + " s : " + str(miliseconds) + " ms"
 
     else:
