@@ -368,7 +368,7 @@ def main_loop(sim, simthread, steppable_registry=None):
     extra_init_simulation_objects(sim, simthread,
                                   init_using_restart_snapshot_enabled=init_using_restart_snapshot_enabled)
 
-    if not steppable_registry is None:
+    if steppable_registry is not None:
         steppable_registry.init(sim)
 
     max_num_steps = sim.getNumSteps()
@@ -376,10 +376,10 @@ def main_loop(sim, simthread, steppable_registry=None):
     init_lattice_snapshot_objects()
     init_screenshot_manager()
 
-    if not steppable_registry is None and not init_using_restart_snapshot_enabled:
+    if steppable_registry is not None and not init_using_restart_snapshot_enabled:
         steppable_registry.start()
 
-    if not steppable_registry is None:
+    if steppable_registry is not None:
         steppable_registry.start()
 
     run_finish_flag = True
@@ -394,9 +394,12 @@ def main_loop(sim, simthread, steppable_registry=None):
             run_finish_flag = False
             break
 
+        if steppable_registry is not None:
+            steppable_registry.stepRunBeforeMCSSteppables(cur_step)
+
         sim.step(cur_step)
 
-        if not steppable_registry is None:
+        if steppable_registry is not None:
             steppable_registry.step(cur_step)
 
         # restart manager will decide whether to output files or not based on its settings
@@ -474,6 +477,9 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
         if simthread.getStopSimulation() or CompuCellSetup.persistent_globals.user_stop_simulation_flag:
             run_finish_flag = False
             break
+
+        if steppable_registry is not None:
+            steppable_registry.stepRunBeforeMCSSteppables(cur_step)
 
         sim.step(cur_step)
 
