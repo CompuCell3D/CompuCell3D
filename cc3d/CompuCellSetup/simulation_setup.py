@@ -1,3 +1,4 @@
+import time
 from os.path import dirname, join
 from cc3d.cpp import CompuCell
 from cc3d.core.XMLDomUtils import XMLIdLocator
@@ -140,6 +141,75 @@ def register_steppable(steppable):
     # steppable.core_init()
 
     steppable_registry.registerSteppable(_steppable=steppable)
+
+
+def print_profiling_report(py_steppable_profiler_report, compiled_code_run_time, total_run_time):
+    """
+    prints profiling information after simulation finishes running
+    :param py_steppable_profiler_report:
+    :param compiled_code_run_time:
+    :param total_run_time:
+    :return:
+    """
+    profiling_format = '{:>32.32}: {:11.2f} ({:5.1%})'
+
+    print('\n\n')
+    print('------------------PERFORMANCE REPORT:----------------------')
+    print('-----------------------------------------------------------')
+    print("TOTAL RUNTIME ", convert_time_interval_to_hmsm(total_run_time))
+    print('-----------------------------------------------------------')
+    print('-----------------------------------------------------------')
+    print('PYTHON STEPPABLE RUNTIMES')
+    # print py_steppable_profiler_report
+
+    totStepTime = 0
+
+    for steppableName, steppableObjectHash, run_time_ms in py_steppable_profiler_report:
+        print(profiling_format.format(steppableName, int(run_time_ms) / 1000., int(run_time_ms) / total_run_time))
+
+        totStepTime += run_time_ms
+
+    print('-----------------------------------------------------------')
+
+    print(profiling_format.format('Total Steppable Time', int(totStepTime) / 1000., int(totStepTime) / total_run_time))
+
+    print(profiling_format.format('Compiled Code (C++) Run Time', int(compiled_code_run_time) / 1000.,
+                                  int(compiled_code_run_time) / total_run_time))
+
+    print(profiling_format.format('Other Time', int(total_run_time - compiled_code_run_time - totStepTime) / 1000.,
+                                  int(total_run_time - compiled_code_run_time - totStepTime) / total_run_time))
+
+    print('-----------------------------------------------------------')
+    print()
+
+
+def convert_time_interval_to_hmsm(time_interval):
+    """
+    Converts timestamp to human readable format
+    :param time_interval:
+    :return:
+    """
+    time_interval = int(time_interval)
+    hours = time_interval / (3600 * 1000)
+    minutes_interval = time_interval % (3600 * 1000)
+    minutes = minutes_interval / (60 * 1000)
+    seconds_interval = minutes_interval % (60 * 1000)
+    seconds = seconds_interval / (1000)
+    miliseconds = seconds_interval % (1000)
+
+    if hours:
+        out_str = str(hours) + " h : " + str(minutes) + " m : " + str(seconds) + " s : " + str(miliseconds) + " ms"
+
+    elif minutes:
+        out_str = str(minutes) + " m : " + str(seconds) + " s : " + str(miliseconds) + " ms"
+
+    elif seconds:
+        out_str = str(seconds) + " s : " + str(miliseconds) + " ms"
+
+    else:
+        out_str = str(miliseconds) + " ms"
+
+    return out_str + ' = ' + str(time_interval / 1000.0) + ' s'
 
 
 def get_core_simulation_objects():
@@ -346,6 +416,8 @@ def main_loop(sim, simthread, steppable_registry=None):
     :param steppable_registry:
     :return:
     """
+    t1 = time.time()
+    compiled_code_run_time = 0.0
 
     pg = CompuCellSetup.persistent_globals
     steppable_registry = pg.steppable_registry
@@ -397,7 +469,13 @@ def main_loop(sim, simthread, steppable_registry=None):
         if steppable_registry is not None:
             steppable_registry.stepRunBeforeMCSSteppables(cur_step)
 
-        sim.step(cur_step)
+        compiled_code_begin = time.time()
+
+        sim.step(cur_step)  # steering using steppables
+
+        compiled_code_end = time.time()
+
+        compiled_code_run_time += (compiled_code_end - compiled_code_begin) * 1000
 
         if steppable_registry is not None:
             steppable_registry.step(cur_step)
@@ -416,6 +494,10 @@ def main_loop(sim, simthread, steppable_registry=None):
 
         cur_step += 1
 
+    t2 = time.time()
+    print_profiling_report(py_steppable_profiler_report=steppable_registry.get_profiler_report(),
+                           compiled_code_run_time=compiled_code_run_time, total_run_time=(t2 - t1) * 1000.0)
+
 
 def main_loop_player(sim, simthread=None, steppable_registry=None):
     """
@@ -425,6 +507,9 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
     :param steppable_registry:
     :return:
     """
+    t1 = time.time()
+    compiled_code_run_time = 0.0
+
     pg = CompuCellSetup.persistent_globals
 
     steppable_registry = pg.steppable_registry
@@ -481,7 +566,13 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
         if steppable_registry is not None:
             steppable_registry.stepRunBeforeMCSSteppables(cur_step)
 
-        sim.step(cur_step)
+        compiled_code_begin = time.time()
+
+        sim.step(cur_step)  # steering using steppables
+
+        compiled_code_end = time.time()
+
+        compiled_code_run_time += (compiled_code_end - compiled_code_begin) * 1000
 
         # steering using GUI. GUI steering overrides steering done in the steppables
         simthread.steerUsingGUI(sim)
@@ -501,7 +592,7 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
         screen_update_frequency = simthread.getScreenUpdateFrequency()
         screenshot_frequency = simthread.getScreenshotFrequency()
 
-        if (cur_step % screen_update_frequency == 0) or ( cur_step % screenshot_frequency == 0):
+        if (cur_step % screen_update_frequency == 0) or (cur_step % screenshot_frequency == 0):
             simthread.loopWork(cur_step)
             simthread.loopWorkPostEvent(cur_step)
 
@@ -535,6 +626,10 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
             simthread.simulationFinishedPostEvent(True)
 
         steppable_registry.clean_after_simulation()
+
+    t2 = time.time()
+    print_profiling_report(py_steppable_profiler_report=steppable_registry.get_profiler_report(),
+                           compiled_code_run_time=compiled_code_run_time, total_run_time=(t2 - t1) * 1000.0)
 
 
 def main_loop_player_cml_result_replay(sim, simthread, steppableRegistry):
