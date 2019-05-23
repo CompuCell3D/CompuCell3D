@@ -22,7 +22,7 @@ def handle_error(exception_obj):
     steppable_registry = CompuCellSetup.persistent_globals.steppable_registry
     # printing c++ error
     if isinstance(exception_obj, CC3DCPlusPlusError):
-        simthread.emitErrorFormatted(str(exception_obj))
+        simthread.emitErrorFormatted('Error: '+ str(exception_obj))
         if sim is not None:
             sim.cleanAfterSimulation()
 
@@ -86,9 +86,9 @@ def run_cc3d_project(cc3d_sim_fname):
             except CC3DCPlusPlusError as e:
                 # handling C++ error
                 handle_error(e)
-            except:
+            except Exception as e:
                 traceback.print_exc(file=sys.stdout)
-                handle_error()
+                handle_error(e)
 
             # traceback.format_stack()
             # # traceback.format_exc()

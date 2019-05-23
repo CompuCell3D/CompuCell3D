@@ -27,7 +27,7 @@
     </Plugin>
 
 
-    <Plugin Name="Contact">
+    <Plugin Name="Contact1">
         <Energy Type1="Medium" Type2="Medium">0</Energy>
         <Energy Type1="Macrophage" Type2="Macrophage">15</Energy>
         <Energy Type1="Macrophage" Type2="Medium">8</Energy>
