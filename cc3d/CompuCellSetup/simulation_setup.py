@@ -13,7 +13,7 @@ import time
 import weakref
 from cc3d import CompuCellSetup
 from cc3d.core import RestartManager
-
+from cc3d.CompuCellSetup.simulation_utils import check_for_cpp_errors
 
 # -------------------- legacy API emulation ----------------------------------------
 def getCoreSimulationObjects():
@@ -64,6 +64,8 @@ def initialize_cc3d():
     CompuCellSetup.persistent_globals.simulator, \
     CompuCellSetup.persistent_globals.simthread = get_core_simulation_objects()
 
+    check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
+
     simulator = CompuCellSetup.persistent_globals.simulator
     simthread = CompuCellSetup.persistent_globals.simthread
 
@@ -71,6 +73,7 @@ def initialize_cc3d():
     CompuCellSetup.persistent_globals.steppable_registry.simulator = weakref.ref(simulator)
 
     initialize_simulation_objects(simulator, simthread)
+    check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
     CompuCellSetup.persistent_globals.simulation_initialized = True
     # print(' initialize cc3d CompuCellSetup.persistent_globals=',CompuCellSetup.persistent_globals)
@@ -104,9 +107,11 @@ def run():
     simulation_initialized = persistent_globals.simulation_initialized
     if not simulation_initialized:
         initialize_cc3d()
+        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
         # print(' run(): CompuCellSetup.persistent_globals=', CompuCellSetup.persistent_globals)
         # print(' run(): CompuCellSetup.persistent_globals.simulator=', CompuCellSetup.persistent_globals.simulator)
         persistent_globals.steppable_registry.core_init()
+        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
         # initializing extra visualization fields
         field_registry = persistent_globals.field_registry
@@ -220,6 +225,7 @@ def get_core_simulation_objects():
     # todo 5 - fix logic regarding simthread initialization
     if persistent_globals.simthread is not None:
         simthread = persistent_globals.simthread
+        simulator.setNewPlayerFlag(True)
 
     simulator.setBasePath(join(dirname(persistent_globals.simulation_file_name)))
 
@@ -247,6 +253,7 @@ def get_core_simulation_objects():
     CompuCell.initializePlugins()
     print("simulator=", simulator)
     simulator.initializeCC3D()
+
     # sim.extraInit()
 
     return simulator, simthread
@@ -430,15 +437,18 @@ def main_loop(sim, simthread, steppable_registry=None):
     init_using_restart_snapshot_enabled = restart_manager.restart_enabled()
     # init_using_restart_snapshot_enabled = False
     sim.setRestartEnabled(init_using_restart_snapshot_enabled)
+    check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
     if init_using_restart_snapshot_enabled:
         print('WILL RESTART SIMULATION')
         restart_manager.loadRestartFiles()
+        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
     else:
         print('WILL RUN SIMULATION FROM BEGINNING')
 
     extra_init_simulation_objects(sim, simthread,
                                   init_using_restart_snapshot_enabled=init_using_restart_snapshot_enabled)
+    check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
     if steppable_registry is not None:
         steppable_registry.init(sim)
@@ -472,6 +482,7 @@ def main_loop(sim, simthread, steppable_registry=None):
         compiled_code_begin = time.time()
 
         sim.step(cur_step)  # steering using steppables
+        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
         compiled_code_end = time.time()
 
@@ -491,6 +502,7 @@ def main_loop(sim, simthread, steppable_registry=None):
 
         # steer application will only update modules that uses requested using updateCC3DModule function from simulator
         sim.steer()
+        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
         cur_step += 1
 
@@ -527,11 +539,14 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
     if init_using_restart_snapshot_enabled:
         print('WILL RESTART SIMULATION')
         restart_manager.loadRestartFiles()
+        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
     else:
         print('WILL RUN SIMULATION FROM BEGINNING')
 
     extra_init_simulation_objects(sim, simthread,
                                   init_using_restart_snapshot_enabled=init_using_restart_snapshot_enabled)
+
+    check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
     # simthread.waitForInitCompletion()
     # simthread.waitForPlayerTaskToFinish()
@@ -569,6 +584,7 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
         compiled_code_begin = time.time()
 
         sim.step(cur_step)  # steering using steppables
+        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
         compiled_code_end = time.time()
 
@@ -588,6 +604,7 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
 
         # steer application will only update modules that uses requested using updateCC3DModule function from simulator
         sim.steer()
+        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
         screen_update_frequency = simthread.getScreenUpdateFrequency()
         screenshot_frequency = simthread.getScreenshotFrequency()

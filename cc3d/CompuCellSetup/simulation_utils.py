@@ -3,6 +3,13 @@ from cc3d.core.XMLUtils import CC3DXMLListPy
 from pathlib import Path
 
 
+class CC3DCPlusPlusError(Exception):
+    def __init__(self, _message):
+        self.message = _message
+
+    def __str__(self):
+        return repr(self.message)
+
 def set_output_dir(output_dir: str, abs_path: bool = False) -> None:
     """
     Sets output directory to output_dir. If  abs_path is False
@@ -77,3 +84,8 @@ def extract_type_names_and_ids() -> dict:
                 type_id_type_name_dict[type_id] = type_name
 
     return type_id_type_name_dict
+
+
+def check_for_cpp_errors(sim):
+    if sim.getRecentErrorMessage() != "":
+        raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
