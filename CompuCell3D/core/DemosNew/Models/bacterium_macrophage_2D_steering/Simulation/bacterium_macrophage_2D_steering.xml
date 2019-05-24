@@ -25,7 +25,6 @@
         <LambdaSurface>5.0</LambdaSurface>
     </Plugin>
 
-
     <Plugin Name="Contact">
         <Energy Type1="Medium" Type2="Medium">0</Energy>
         <Energy Type1="Macrophage" Type2="Macrophage">15</Energy>
