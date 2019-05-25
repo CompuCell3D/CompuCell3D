@@ -46,14 +46,14 @@ def mainLoop(*args, **kwds):
 # -------------------- enf of legacy API emulation ----------------------------------------
 
 
-def initialize_simulation_objects(sim, simthread):
-    """
-
-    :param sim:
-    :param simthread:
-    :return:
-    """
-    sim.extraInit()
+# def initialize_simulation_objects(sim, simthread):
+#     """
+#
+#     :param sim:
+#     :param simthread:
+#     :return:
+#     """
+#     sim.extraInit()
 
 
 def initialize_cc3d():
@@ -67,13 +67,13 @@ def initialize_cc3d():
     check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
     simulator = CompuCellSetup.persistent_globals.simulator
-    simthread = CompuCellSetup.persistent_globals.simthread
+    # simthread = CompuCellSetup.persistent_globals.simthread
 
     # CompuCellSetup.persistent_globals.steppable_registry.simulator = simulator
     CompuCellSetup.persistent_globals.steppable_registry.simulator = weakref.ref(simulator)
 
-    initialize_simulation_objects(simulator, simthread)
-    check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
+    # initialize_simulation_objects(simulator, simthread)
+    # check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
     CompuCellSetup.persistent_globals.simulation_initialized = True
     # print(' initialize cc3d CompuCellSetup.persistent_globals=',CompuCellSetup.persistent_globals)
@@ -108,16 +108,15 @@ def run():
     if not simulation_initialized:
         initialize_cc3d()
         check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
-        # print(' run(): CompuCellSetup.persistent_globals=', CompuCellSetup.persistent_globals)
-        # print(' run(): CompuCellSetup.persistent_globals.simulator=', CompuCellSetup.persistent_globals.simulator)
+
         persistent_globals.steppable_registry.core_init()
         check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
         # initializing extra visualization fields
         field_registry = persistent_globals.field_registry
         potts = persistent_globals.simulator.getPotts()
-        cellField = potts.getCellFieldG()
-        dim = cellField.getDim()
+        cell_field = potts.getCellFieldG()
+        dim = cell_field.getDim()
         field_registry.dim = dim
         field_registry.simthread = persistent_globals.simthread
 
@@ -130,7 +129,6 @@ def run():
     main_loop_fcn = determine_main_loop_fcn()
 
     main_loop_fcn(simulator, simthread=simthread, steppable_registry=steppable_registry)
-    # mainLoop(simulator, simthread=simthread, steppableRegistry=steppable_registry)
 
 
 def register_steppable(steppable):
