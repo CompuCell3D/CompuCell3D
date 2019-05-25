@@ -15,6 +15,7 @@ from cc3d import CompuCellSetup
 from cc3d.core import RestartManager
 from cc3d.CompuCellSetup.simulation_utils import check_for_cpp_errors
 
+
 # -------------------- legacy API emulation ----------------------------------------
 def getCoreSimulationObjects():
     """
@@ -45,17 +46,6 @@ def mainLoop(*args, **kwds):
 
 # -------------------- enf of legacy API emulation ----------------------------------------
 
-
-# def initialize_simulation_objects(sim, simthread):
-#     """
-#
-#     :param sim:
-#     :param simthread:
-#     :return:
-#     """
-#     sim.extraInit()
-
-
 def initialize_cc3d():
     """
 
@@ -67,16 +57,11 @@ def initialize_cc3d():
     check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
     simulator = CompuCellSetup.persistent_globals.simulator
-    # simthread = CompuCellSetup.persistent_globals.simthread
 
     # CompuCellSetup.persistent_globals.steppable_registry.simulator = simulator
     CompuCellSetup.persistent_globals.steppable_registry.simulator = weakref.ref(simulator)
 
-    # initialize_simulation_objects(simulator, simthread)
-    # check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
-
     CompuCellSetup.persistent_globals.simulation_initialized = True
-    # print(' initialize cc3d CompuCellSetup.persistent_globals=',CompuCellSetup.persistent_globals)
 
 
 def determine_main_loop_fcn():
@@ -237,8 +222,8 @@ def get_core_simulation_objects():
         # that is typically called from the Python main script
 
         cc3d_xml2_obj_converter = parseXML(xml_fname=xml_fname)
-        #  cc3d_xml2_obj_converter cannot be garbage colected hence goes to persisten storage declared at the global level
-        # in CompuCellSetup
+        #  cc3d_xml2_obj_converter cannot be garbage colected hence goes to persisten storage
+        #  declared at the global level in CompuCellSetup
         persistent_globals.cc3d_xml_2_obj_converter = cc3d_xml2_obj_converter
 
     # locating all XML elements with attribute id - presumably to be used for programmatic steering
