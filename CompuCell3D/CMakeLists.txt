@@ -122,6 +122,7 @@ SET(COMPUCELL3D_INSTALL_LIB_DIR "lib/site-packages/cc3d/cpp/lib")
 
 SET(COMPUCELL3D_INSTALL_PLUGIN_DIR " lib/site-packages/cc3d/cpp/CompuCell3DPlugins")
 SET(COMPUCELL3D_INSTALL_STEPPABLE_DIR " lib/site-packages/cc3d/cpp/CompuCell3DSteppables")
+SET(COMPUCELL3D_INSTALL_STEPPABLE_DIR_FULL_PATH ${CMAKE_INSTALL_PREFIX}/lib/site-packages/cc3d/cpp/CompuCell3DSteppables)
 SET(COMPUCELL3D_INSTALL_INCLUDE_DIR "include/CompuCell3D")
 
 SET(COMPUCELL3D_INSTALL_SWIG_MODULES_DIR "lib/site-packages/cc3d/cpp/")

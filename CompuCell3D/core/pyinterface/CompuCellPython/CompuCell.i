@@ -44,7 +44,6 @@
 %feature("autodoc",TargetVolume_func) TargetVolume;
 %feature("autodoc",LambdaVolume_func) LambdaVolume;
 
-
 %include <windows.i>
 
 %{

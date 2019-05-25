@@ -1,0 +1,88 @@
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="120" y="120" z="1"/>
+        <Anneal>0</Anneal>
+        <Steps>10000</Steps>
+        <Temperature>15</Temperature>
+        <Flip2DimRatio>1.0</Flip2DimRatio>
+        <!--    <Boundary_x>Periodic</Boundary_x>
+           <Boundary_z>Periodic</Boundary_z> -->
+        <!-- <LatticeType>Hexagonal</LatticeType> -->
+    </Potts>
+
+    <Plugin Name="CellType">
+        <CellType TypeId="0" TypeName="Medium"/>
+        <CellType TypeId="1" TypeName="Bacterium"/>
+        <CellType TypeId="2" TypeName="Macrophage"/>
+        <CellType TypeId="3" TypeName="Red"/>
+    </Plugin>
+
+    <Plugin Name="Volume">
+        <VolumeEnergyParameters CellType="Bacterium" LambdaVolume="60.0" TargetVolume="10"/>
+        <VolumeEnergyParameters CellType="Macrophage" LambdaVolume="15.0" TargetVolume="150"/>
+        <VolumeEnergyParameters CellType="Red" LambdaVolume="30.0" TargetVolume="100"/>
+    </Plugin>
+
+    <Plugin Name="Surface">
+        <SurfaceEnergyParameters CellType="Bacterium" LambdaSurface="4.0" TargetSurface="10"/>
+        <SurfaceEnergyParameters CellType="Macrophage" LambdaSurface="20.0" TargetSurface="50"/>
+        <SurfaceEnergyParameters CellType="Red" LambdaSurface="0.0" TargetSurface="40"/>
+    </Plugin>
+
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">10.0</Energy>
+        <Energy Type1="Medium" Type2="Bacterium">8.0</Energy>
+        <Energy Type1="Medium" Type2="Macrophage">8.0</Energy>
+        <Energy Type1="Medium" Type2="Red">30.0</Energy>
+        <Energy Type1="Bacterium" Type2="Bacterium">150.0</Energy>
+        <Energy Type1="Bacterium" Type2="Macrophage">15.0</Energy>
+        <Energy Type1="Bacterium" Type2="Red">150.0</Energy>
+        <Energy Type1="Macrophage" Type2="Macrophage">150.0</Energy>
+        <Energy Type1="Macrophage" Type2="Red">150.0</Energy>
+        <Energy Type1="Red" Type2="Red">150.0</Energy>
+        <NeighborOrder>2</NeighborOrder>
+    </Plugin>
+
+
+    <Plugin Name="Chemotaxis">
+        <ChemicalField Name="ATTR">
+            <ChemotaxisByType Lambda="1.0" Type="Macrophage"/>
+        </ChemicalField>
+    </Plugin>
+
+    <!-- <Steppable Type="DiffusionSolverFE"> -->
+    <Steppable Type="DiffusionSolverFE_OpenCL">
+        <!--  zero-based GPU device index. -1 stands for automatic GPU device selection. May be omited (default behavior). -->
+        <!-- <GPUDeviceIndex>-1</GPUDeviceIndex> -->
+        <DiffusionField>
+            <DiffusionData>
+                <FieldName>ATTR</FieldName>
+
+                <GlobalDiffusionConstant>1.05</GlobalDiffusionConstant>
+                <GlobalDecayConstant>0.000</GlobalDecayConstant>
+                <DiffusionCoefficient CellType="Red">0.0</DiffusionCoefficient>
+
+            </DiffusionData>
+
+            <SecretionData>
+                <Secretion Type="Bacterium">100</Secretion>
+            </SecretionData>
+
+            <BoundaryConditions>
+                <Plane Axis="X">
+                    <Periodic/>
+                </Plane>
+                <Plane Axis="Y">
+                    <Periodic/>
+                </Plane>
+            </BoundaryConditions>
+
+        </DiffusionField>
+    </Steppable>
+
+    <Steppable Type="PIFInitializer">
+        <PIFName>Simulation/bacterium_macrophage.piff</PIFName>
+    </Steppable>
+
+
+</CompuCell3D>

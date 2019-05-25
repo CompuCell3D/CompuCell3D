@@ -1,7 +1,7 @@
 #include "DiffusionSolverFE_OpenCL.h"
 
 //Ivan Komarov
-
+#include <stdlib.h>
 #include <CompuCell3D/Potts3D/Potts3D.h>
 #include <CompuCell3D/Automaton/Automaton.h>
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>
@@ -733,8 +733,22 @@ void DiffusionSolverFE_OpenCL::initImpl(){
 	gpuAlloc(field_len);
 
 	cerr<<"building OpenCL program"<<endl;
-	const char *kernelSource[]={"lib/CompuCell3DSteppables/OpenCL/GPUSolverParams.h",
-		"lib/CompuCell3DSteppables/OpenCL/DiffusionKernel.cl"};
+    // for now we are using PREFIX_CC3D env var as a efernce pooint in locating OpenCL modules. We might consider introducing separate env var in the future though
+    // specifically for locating OpenCL modules
+    char *prefix_cc3d_chr = getenv("PREFIX_CC3D");
+    cerr << "this is getenv(PREFIX_CC3D) = " << getenv("PREFIX_CC3D") << endl;
+    string prefix_cc3d = prefix_cc3d_chr;
+    cerr << "prefix_cc3d=" << prefix_cc3d << endl;
+
+	//const char *kernelSource[]={"lib/CompuCell3DSteppables/OpenCL/GPUSolverParams.h",
+	//	"lib/CompuCell3DSteppables/OpenCL/DiffusionKernel.cl"};
+
+	//const char *kernelSource[]={ (prefix_cc3d + string("/lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/GPUSolverParams.h")).c_str(),
+ //       (prefix_cc3d + string("/lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/DiffusionKernel.cl")).c_str()};
+
+
+     const char *kernelSource[]={ (string("lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/GPUSolverParams.h")).c_str(),
+        (string("lib/site-packages/cc3d/cpp/CompuCell3DSteppables/OpenCL/DiffusionKernel.cl")).c_str()};
 
 	if(!oclHelper->LoadProgram(kernelSource, 2, program)){
 		ASSERT_OR_THROW("Can't load the OpenCL kernel", false);
