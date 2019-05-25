@@ -65,9 +65,15 @@ namespace CompuCell3D {
         id(0),
         clusterId(0),
 		fluctAmpl(-1.0),
+		lambdaMotility(0.0),
+		biasVecX(0.0),
+		biasVecY(0.0),
+		biasVecZ(0.0),
 		connectivityOn(false),
         extraAttribPtr(0),
         pyAttrib(0)
+
+
       {}
       long volume;
       float targetVolume;
@@ -93,6 +99,10 @@ namespace CompuCell3D {
       long id;
       long clusterId;
 	  double fluctAmpl;
+	  double lambdaMotility;
+	  double biasVecX;
+	  double biasVecY;
+	  double biasVecZ;
 	  bool connectivityOn;
       BasicClassGroup *extraAttribPtr;
 

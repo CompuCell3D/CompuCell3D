@@ -197,6 +197,14 @@ namespace CompuCell3D {
 		const std::vector<Point3D> & getOffsetVec(Point3D & pt) const;
 		const std::vector<Point3D> & getOffsetVec() const;
 
+        void getHexOffsetArray(std::vector<std::vector<Point3D> > &hoa)const{
+        	hoa=hexOffsetArray;
+        }
+        int getMaxOffset() const { return maxOffset; }
+
+
+
+
 		//               const std::vector<Point3D> & getOffsetVec() const {return offsetVec;}
 		//               const std::vector<float> & getDistanceVec() const {return distanceVec;}
 		//               //const std::vector<Point3D> & getOffsetVec(Point3D & pt) const {
