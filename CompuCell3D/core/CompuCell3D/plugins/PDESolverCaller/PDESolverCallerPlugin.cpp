@@ -21,19 +21,8 @@
 *************************************************************************/
 
 #include <CompuCell3D/CC3D.h>
-// // // #include <CompuCell3D/ClassRegistry.h>
 
 using namespace CompuCell3D;
-
-
-// // // #include <CompuCell3D/Simulator.h>
-// // // #include <CompuCell3D/Potts3D/Potts3D.h>
-
-
-// // // #include <BasicUtils/BasicString.h>
-// // // #include <BasicUtils/BasicException.h>
-
-// // // #include <iostream>
 using namespace std;
 
 #include "PDESolverCallerPlugin.h"
@@ -71,8 +60,6 @@ void PDESolverCallerPlugin::step() {
     currentAttempt = potts->getCurrentAttempt();
     numberOfAttempts = potts->getNumberOfAttempts();
 
-
-
     for (int i = 0; i <solverDataVec.size(); ++i) {
         if (!solverDataVec[i].extraTimesPerMC) //when user specifies 0 extra calls per MCS we don't execute the rest of the loop 
             continue;
@@ -82,10 +69,6 @@ void PDESolverCallerPlugin::step() {
         //       cerr<<"pscpdPtr->solverDataVec[i].extraTimesPerMC="<<pscpdPtr->solverDataVec[i].extraTimesPerMC<<endl;
         //cerr<<"ratio="<<ratio<<" reminder="<<reminder<<endl;
         if (!((currentAttempt - reminder) % ratio) && currentAttempt>reminder) {
-            //cerr << "solverDataVec.size()=" << solverDataVec.size() << endl;
-            //cerr << "currentAttempt=" << currentAttempt << endl;
-            //cerr << "solverPtrVec.size()=" << solverPtrVec.size() << endl;
-            //cerr << "before calling step of " << solverDataVec[i].solverName << endl;
             solverPtrVec[i]->step(currentStep);
             //          float a=reminder+ratio;
             //cerr << "calling Solver" << solverDataVec[i].solverName << " currentAttempt=" << currentAttempt << " numberOfAttempts=" << numberOfAttempts << endl;
@@ -93,9 +76,6 @@ void PDESolverCallerPlugin::step() {
         }
 
     }
-
-
-
 
 }
 
