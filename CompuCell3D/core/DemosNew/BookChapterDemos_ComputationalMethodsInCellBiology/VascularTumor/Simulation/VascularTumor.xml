@@ -128,17 +128,17 @@
         <NeighborOrder>1</NeighborOrder>
     </Plugin>
 
-    <!--<Plugin Name="ConnectivityGlobal">-->
-    <!--<Penalty Type="NeoVascular">10000</Penalty>-->
-    <!--<Penalty Type="Vascular">10000</Penalty>-->
-    <!--</Plugin>-->
-
-
     <Plugin Name="ConnectivityGlobal">
-        <FastAlgorithm/>
-        <ConnectivityOn Type="NeoVascular"/>
-        <ConnectivityOn Type="Vascular"/>
+        <Penalty Type="NeoVascular">10000</Penalty>
+        <Penalty Type="Vascular">10000</Penalty>
     </Plugin>
+
+
+    <!--<Plugin Name="ConnectivityGlobal">-->
+    <!--<FastAlgorithm/>-->
+    <!--<ConnectivityOn Type="NeoVascular"/>-->
+    <!--<ConnectivityOn Type="Vascular"/>-->
+    <!--</Plugin>-->
 
 
     <Plugin Name="PDESolverCaller">
