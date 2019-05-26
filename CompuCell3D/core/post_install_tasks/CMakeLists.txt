@@ -13,6 +13,55 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
 
 SET(COMPUCELL_INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
 
+set(cc3d_py_dir cc3d)
+set(cc3d_py_dir_target lib/site-packages/${cc3d_py_dir})
+set(cc3d_py_source_dir ${CMAKE_SOURCE_DIR}/../cc3d)
+
+message("THIS IS cc3d_py_source_dir" ${cc3d_py_source_dir})
+
+if(INSTALL_PLAYER)
+#INSTALL(DIRECTORY  "@CMAKE_SOURCE_DIR@/${cc3d_py_dir}/CompuCellSetup" DESTINATION ${cc3d_py_dir_target}
+  INSTALL(FILES  ${cc3d_py_source_dir}/__init__.py DESTINATION ${cc3d_py_dir_target})
+
+    INSTALL(DIRECTORY  ${cc3d_py_source_dir}/CompuCellSetup DESTINATION ${cc3d_py_dir_target}
+        PATTERN "*.svn" EXCLUDE
+        PATTERN "*.ui" EXCLUDE
+        PATTERN "*.in" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN "*.bak" EXCLUDE
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN ${cc3d_py_source_dir}/CompuCellSetup/*)
+
+   INSTALL(DIRECTORY  ${cc3d_py_source_dir}/core DESTINATION ${cc3d_py_dir_target}
+        PATTERN "*.svn" EXCLUDE
+        PATTERN "*.ui" EXCLUDE
+        PATTERN "*.in" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN "*.bak" EXCLUDE
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN ${cc3d_py_source_dir}/core/*)
+
+  INSTALL(DIRECTORY  ${cc3d_py_source_dir}/player5 DESTINATION ${cc3d_py_dir_target}
+        PATTERN "*.svn" EXCLUDE
+        PATTERN "*.ui" EXCLUDE
+        PATTERN "*.in" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN "*.bak" EXCLUDE
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN ${cc3d_py_source_dir}/player5/*)
+
+      INSTALL(DIRECTORY  ${cc3d_py_source_dir}/twedit5 DESTINATION ${cc3d_py_dir_target}
+           PATTERN "*.svn" EXCLUDE
+           PATTERN "*.ui" EXCLUDE
+           PATTERN "*.in" EXCLUDE
+           PATTERN "*.pyc" EXCLUDE
+           PATTERN "*.bak" EXCLUDE
+           PATTERN "__pycache__" EXCLUDE
+           PATTERN ${cc3d_py_source_dir}/twedit5/*)
+
+endif()
+
+
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   #here I need to change "/" to "\" to comply with windows style paths
   set(COMPUCELL_INSTALL_DIR_WINDOWS_STYLE ${COMPUCELL_INSTALL_DIR})
