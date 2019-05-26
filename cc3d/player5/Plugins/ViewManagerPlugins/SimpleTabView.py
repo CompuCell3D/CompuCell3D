@@ -15,6 +15,7 @@ from collections import OrderedDict
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QCoreApplication
+import cc3d
 from cc3d.core.enums import *
 from os.path import basename, dirname, join
 from cc3d.player5.ViewManager.SimpleViewManager import SimpleViewManager
@@ -42,7 +43,8 @@ from cc3d import CompuCellSetup
 from cc3d.core.RollbackImporter import RollbackImporter
 
 from cc3d.CompuCellSetup.readers import readCC3DFile
-import cc3d.Version as Version
+
+# import cc3d.Version as Version
 
 FIELD_TYPES = (
     "CellField", "ConField", "ScalarField", "ScalarFieldCellLevel", "VectorField", "VectorFieldCellLevel", "CustomVis")
@@ -1031,7 +1033,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # check if current CC3D version is greater or equal to the version (minimal required version) specified in the project
 
-        currentVersion = Version.getVersionAsString()
+        currentVersion = cc3d.getVersionAsString()
         currentVersionInt = currentVersion.replace('.', '')
         projectVersion = self.cc3dSimulationDataHandler.cc3dSimulationData.version
         projectVersionInt = projectVersion.replace('.', '')

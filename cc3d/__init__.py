@@ -2,6 +2,38 @@ import os
 import sys
 from os.path import dirname, join, abspath
 
+versionMajor = 3
+versionMinor = 7
+versionBuild = 9
+revisionNumber = "20190321"
+
+
+def getVersionAsString():
+    return str(versionMajor) + "." + str(versionMinor) + "." + str(versionBuild)
+
+
+def getVersionMajor():
+    return versionMajor
+
+
+def getVersionMinor():
+    return versionMinor
+
+
+def getVersionBuild():
+    return versionBuild
+
+
+def getSVNRevision():
+    return revisionNumber
+
+
+def getSVNRevisionAsString():
+    return str(getSVNRevision())
+
+__version__ = getVersionAsString()
+__revision__ = revisionNumber
+
 path_postfix = ''
 if sys.platform.startswith('win'):
     path_postfix = '\\'
