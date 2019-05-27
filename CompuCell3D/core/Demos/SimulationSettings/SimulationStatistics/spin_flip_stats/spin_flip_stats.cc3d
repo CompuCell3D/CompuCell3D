@@ -1,5 +1,0 @@
-<Simulation version="3.6.2">
-   <XMLScript Type="XMLScript">Simulation/spin_flip_stats.xml</XMLScript>
-   <PythonScript Type="PythonScript">Simulation/spin_flip_stats.py</PythonScript>
-   <Resource Type="Python">Simulation/spin_flip_statsSteppables.py</Resource>
-</Simulation>

@@ -1,9 +1,0 @@
-<Simulation version="3.6.1">
-
-    <XMLScript Type="XMLScript">Simulation/diffusion_2D_multicall.xml</XMLScript>
-
-    <Resource Type="Field" Copy="No">Simulation/diffusion_2D.pulse.txt</Resource>    
-
-    <PIFFile>Simulation/amoebae_2D.piff</PIFFile>
-
-</Simulation>

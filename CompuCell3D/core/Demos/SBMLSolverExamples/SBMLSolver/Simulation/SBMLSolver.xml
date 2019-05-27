@@ -1,8 +1,7 @@
 <CompuCell3D version="3.6.2">
    
    <Potts>
-      
-      <!-- Basic properties of CPM (GGH) algorithm -->
+            
       <Dimensions x="100" y="100" z="1"/>
       <Steps>1000</Steps>
       <Temperature>10.0</Temperature>

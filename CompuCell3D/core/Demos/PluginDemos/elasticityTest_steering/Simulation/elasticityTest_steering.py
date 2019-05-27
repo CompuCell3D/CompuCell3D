@@ -1,28 +1,6 @@
-import sys
-from os import environ
-from os import getcwd
-import string
+from cc3d import CompuCellSetup
+from .elasticityTest_steering_steppables import ElasticitySteering
 
-sys.path.append(environ["PYTHON_MODULE_PATH"])
+CompuCellSetup.register_steppable(steppable=ElasticitySteering(frequency=100))
 
-
-import CompuCellSetup
-
-
-
-sim,simthread = CompuCellSetup.getCoreSimulationObjects()
-
-#Create extra player fields here or add attributes
-
-CompuCellSetup.initializeSimulationObjects(sim,simthread)
-
-#Add Python steppables here
-steppableRegistry=CompuCellSetup.getSteppableRegistry()
-
-from elasticityTest_steering_steppables import ElasticitySteering
-elasticitySteering=ElasticitySteering(sim,100)
-steppableRegistry.registerSteppable(elasticitySteering)
-
-
-CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
-
+CompuCellSetup.run()

@@ -1,30 +1,9 @@
-import sys
-from os import environ
-import string
-sys.path.append(environ["PYTHON_MODULE_PATH"])
+from cc3d import CompuCellSetup
+from .VascularTumorSteppables import MitosisSteppable
+from .VascularTumorSteppables import VolumeParamSteppable
 
+CompuCellSetup.register_steppable(steppable=MitosisSteppable(frequency=1))
+CompuCellSetup.register_steppable(steppable=VolumeParamSteppable(frequency=1))
 
-
-import CompuCellSetup
-sim,simthread = CompuCellSetup.getCoreSimulationObjects()
-CompuCellSetup.initializeSimulationObjects(sim,simthread)
-import CompuCell
-
-#Create extra player fields here or add attributes
-
-
-from PySteppables import SteppableRegistry
-steppableRegistry=SteppableRegistry()
-
-
-from VascularTumorSteppables import MitosisSteppable
-mitosisSteppable=MitosisSteppable(sim,1)
-steppableRegistry.registerSteppable(mitosisSteppable)
-
-from VascularTumorSteppables import VolumeParamSteppable
-                                         #sim,frequency,areaThresh,nutrientThresh,necroticThresh
-volumeParamSteppable=VolumeParamSteppable(sim,1)
-steppableRegistry.registerSteppable(volumeParamSteppable)
-
-CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
+CompuCellSetup.run()
 

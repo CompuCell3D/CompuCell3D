@@ -1,61 +1,52 @@
+<CompuCell3D>
 
- <CompuCell3D>
+    <Potts>
+        <Dimensions x="50" y="50" z="1"/>
+        <Anneal>10</Anneal>
+        <Steps>10000</Steps>
+        <Temperature>5</Temperature>
+        <NeighborOrder>2</NeighborOrder>
+    </Potts>
 
-<Potts>
-   <Dimensions x="50" y="50" z="1"/>
-   <Anneal>10</Anneal>
-   <Steps>10000</Steps>
-   <Temperature>5</Temperature> 
-   <NeighborOrder>2</NeighborOrder>
- </Potts>
-
- <Plugin Name="Volume">
-   <TargetVolume>30</TargetVolume>
-   <LambdaVolume>2.0</LambdaVolume>
- </Plugin>
-
-
-<Plugin Name="CellType">
-    <CellType TypeName="Medium" TypeId="0"/>
-    <CellType TypeName="Body1" TypeId="1"/>
-    <CellType TypeName="Body2" TypeId="2"/>    
-    <CellType TypeName="Body3" TypeId="3"/>    
- </Plugin>
-
- <Plugin Name="Contact">
-   <Energy Type1="Medium" Type2="Medium">0</Energy>
-   <Energy Type1="Body1" Type2="Body1">16</Energy>
-   <Energy Type1="Body1" Type2="Medium">4</Energy>
-   <Energy Type1="Body2" Type2="Body2">16</Energy>
-   <Energy Type1="Body2" Type2="Medium">4</Energy>
-   <Energy Type1="Body3" Type2="Body3">16</Energy>
-   <Energy Type1="Body3" Type2="Medium">4</Energy>
-
-   <Energy Type1="Body1" Type2="Body2">16</Energy>
-   <Energy Type1="Body1" Type2="Body3">16</Energy>
-   <Energy Type1="Body2" Type2="Body3">16</Energy>
-
-   <NeighborOrder>2</NeighborOrder>
- </Plugin>
-
- <Plugin Name="CenterOfMass"/>
+    <Plugin Name="Volume">
+        <TargetVolume>30</TargetVolume>
+        <LambdaVolume>2.0</LambdaVolume>
+    </Plugin>
 
 
-  <Plugin Name="LengthConstraint"/>
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Body1" TypeId="1"/>
+        <CellType TypeName="Body2" TypeId="2"/>
+        <CellType TypeName="Body3" TypeId="3"/>
+    </Plugin>
 
-  <Plugin Name="ConnectivityGlobal">
-	<FastAlgorithm/>
-  </Plugin>
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">0</Energy>
+        <Energy Type1="Body1" Type2="Body1">16</Energy>
+        <Energy Type1="Body1" Type2="Medium">4</Energy>
+        <Energy Type1="Body2" Type2="Body2">16</Energy>
+        <Energy Type1="Body2" Type2="Medium">4</Energy>
+        <Energy Type1="Body3" Type2="Body3">16</Energy>
+        <Energy Type1="Body3" Type2="Medium">4</Energy>
 
-  
-<!--   <Plugin Name="ConnectivityGlobal">
-       <Penalty Type="Body1">1200000</Penalty>
-       <Penalty Type="Body2">1200000</Penalty>    
-       <Penalty Type="Body3">1200000</Penalty>     
-  </Plugin>
- -->
+        <Energy Type1="Body1" Type2="Body2">16</Energy>
+        <Energy Type1="Body1" Type2="Body3">16</Energy>
+        <Energy Type1="Body2" Type2="Body3">16</Energy>
 
-  <Steppable Type="PIFInitializer">
+        <NeighborOrder>2</NeighborOrder>
+    </Plugin>
+
+    <Plugin Name="CenterOfMass"/>
+
+    <Plugin Name="LengthConstraint"/>
+
+    <Plugin Name="ConnectivityGlobal">
+        <FastAlgorithm/>
+    </Plugin>
+
+
+    <Steppable Type="PIFInitializer">
         <PIFName>Simulation/ConnectivityTest.piff</PIFName>
-  </Steppable>
+    </Steppable>
 </CompuCell3D>

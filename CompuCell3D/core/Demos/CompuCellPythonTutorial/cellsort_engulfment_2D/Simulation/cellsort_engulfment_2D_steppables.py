@@ -1,37 +1,24 @@
-
-from PySteppables import *
-import CompuCell
-import sys
-
-from PlayerPython import *
-import CompuCellSetup
-from math import *
+from cc3d.core.PySteppables import *
 
 
 class CellInitializer(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=1):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
-            
-    def start(self):        
-        size=5
-        xMin=15
-        xMax=85
-        yMin_low=15
-        yMax_low=50
+    def __init__(self, frequency=1):
+        SteppableBasePy.__init__(self, frequency)
 
-        yMin_high=50
-        yMax_high=85
+    def start(self):
+        size = 5
+        x_min = 15
+        x_max = 85
+        y_min_low = 15
+        y_max_low = 50
 
+        y_min_high = 50
+        y_max_high = 85
 
-        for x in range(xMin,xMax,size):
-            for y in range(yMin_low,yMax_low,size):                
-                cell=self.potts.createCell()
-                cell.type=self.CONDENSING
-                self.cellField[x:x+size-1,y:y+size-1,0]=cell #y:y+size-1 - size -1 gets you a cell of size=size
-        
-        for x in range(xMin,xMax,size):
-            for y in range(yMin_high,yMax_high,size):                
-                cell=self.potts.createCell()
-                cell.type=self.NONCONDENSING
-                self.cellField[x:x+size-1,y:y+size-1,0]=cell
-        
+        for x in range(x_min, x_max, size):
+            for y in range(y_min_low, y_max_low, size):
+                self.cellField[x:x + size - 1, y:y + size - 1, 0] = self.new_cell(self.CONDENSING)
+
+        for x in range(x_min, x_max, size):
+            for y in range(y_min_high, y_max_high, size):
+                self.cellField[x:x + size - 1, y:y + size - 1, 0] = self.new_cell(self.NONCONDENSING)

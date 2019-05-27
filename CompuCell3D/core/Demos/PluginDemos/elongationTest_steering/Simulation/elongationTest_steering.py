@@ -1,28 +1,6 @@
-import sys
-from os import environ
-from os import getcwd
-import string
+from cc3d import CompuCellSetup
+from .elongationTest_steering_steppables import LengthConstraintSteering
 
-sys.path.append(environ["PYTHON_MODULE_PATH"])
+CompuCellSetup.register_steppable(steppable=LengthConstraintSteering(frequency=100))
 
-
-import CompuCellSetup
-
-
-
-sim,simthread = CompuCellSetup.getCoreSimulationObjects()
-
-#Create extra player fields here or add attributes
-
-CompuCellSetup.initializeSimulationObjects(sim,simthread)
-
-#Add Python steppables here
-steppableRegistry=CompuCellSetup.getSteppableRegistry()
-
-
-from elongationTest_steering_steppables import LengthConstraintSteering
-lengthConstraintSteering=LengthConstraintSteering(_simulator=sim,_frequency=100)
-steppableRegistry.registerSteppable(lengthConstraintSteering)
-
-CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
-
+CompuCellSetup.run()

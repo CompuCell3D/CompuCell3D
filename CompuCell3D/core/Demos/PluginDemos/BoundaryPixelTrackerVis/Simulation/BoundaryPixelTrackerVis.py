@@ -1,25 +1,7 @@
-import sys
-from os import environ
-import string
-sys.path.append(environ["PYTHON_MODULE_PATH"])
+from cc3d import CompuCellSetup
+from .BoundaryPixelTrackerVisSteppables import BoundaryPixelTrackerSteppable
 
-import CompuCellSetup
+CompuCellSetup.register_steppable(steppable=BoundaryPixelTrackerSteppable(frequency=10))
 
-sim,simthread = CompuCellSetup.getCoreSimulationObjects()
-
-CompuCellSetup.initializeSimulationObjects(sim,simthread)
-
-
-#Add Python steppables here
-steppableRegistry=CompuCellSetup.getSteppableRegistry()
-
-
-from BoundaryPixelTrackerVisSteppables import BoundaryPixelTrackerSteppable
-boundaryPixelTracker=BoundaryPixelTrackerSteppable(_simulator=sim,_frequency=10)
-steppableRegistry.registerSteppable(boundaryPixelTracker)
-
-
-CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
-
-
+CompuCellSetup.run()
 

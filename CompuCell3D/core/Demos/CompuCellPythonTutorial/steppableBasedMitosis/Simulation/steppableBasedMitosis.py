@@ -1,30 +1,8 @@
-import sys
-from os import environ
-from os import getcwd
-import string
+from cc3d import CompuCellSetup
+from .steppableBasedMitosisSteppables import VolumeParamSteppable
+from .steppableBasedMitosisSteppables import MitosisSteppable
 
-sys.path.append(environ["PYTHON_MODULE_PATH"])
+CompuCellSetup.register_steppable(steppable=VolumeParamSteppable(frequency=10))
+CompuCellSetup.register_steppable(steppable=MitosisSteppable(frequency=10))
 
-
-import CompuCellSetup
-
-sim,simthread = CompuCellSetup.getCoreSimulationObjects()
-CompuCellSetup.initializeSimulationObjects(sim,simthread)
-import CompuCell #notice importing CompuCell to main script has to be done after call to getCoreSimulationObjects()
-
-#Add Python steppables here
-from PySteppablesExamples import SteppableRegistry
-steppableRegistry=SteppableRegistry()
-
-from steppableBasedMitosisSteppables import VolumeParamSteppable
-volumeParamSteppable=VolumeParamSteppable(sim,10)
-steppableRegistry.registerSteppable(volumeParamSteppable)
-
-from steppableBasedMitosisSteppables import MitosisSteppable
-mitosisSteppable=MitosisSteppable(sim,10)
-steppableRegistry.registerSteppable(mitosisSteppable)
-
-CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
-
-
-
+CompuCellSetup.run()

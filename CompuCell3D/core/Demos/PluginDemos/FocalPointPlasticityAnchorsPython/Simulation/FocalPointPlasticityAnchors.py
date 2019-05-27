@@ -1,26 +1,7 @@
-import sys
-from os import environ
-from os import getcwd
-import string
+import cc3d.CompuCellSetup as CompuCellSetup
+from .FocalPointPlasticityAnchorsSteppables import FocalPointPlasticityAnchorSteppable
 
-sys.path.append(environ["PYTHON_MODULE_PATH"])
+CompuCellSetup.register_steppable(steppable=FocalPointPlasticityAnchorSteppable(frequency=10))
 
-import CompuCellSetup
+CompuCellSetup.run()
 
-# CompuCellSetup.setSimulationXMLFileName("Simulation/FocalPointPlasticity.xml")
-
-sim, simthread = CompuCellSetup.getCoreSimulationObjects()
-
-# Create extra player fields here or add attributes
-
-CompuCellSetup.initializeSimulationObjects(sim, simthread)
-
-# Add Python steppables here
-steppableRegistry = CompuCellSetup.getSteppableRegistry()
-
-from FocalPointPlasticityAnchorsSteppables import FocalPointPlasticityAnchorSteppable
-
-focalPointPlasticityAnchorSteppable = FocalPointPlasticityAnchorSteppable(_simulator=sim, _frequency=10)
-steppableRegistry.registerSteppable(focalPointPlasticityAnchorSteppable)
-
-CompuCellSetup.mainLoop(sim, simthread, steppableRegistry)

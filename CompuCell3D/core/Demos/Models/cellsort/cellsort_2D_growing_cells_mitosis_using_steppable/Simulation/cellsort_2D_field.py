@@ -1,29 +1,10 @@
-import sys
-from os import environ
-from os import getcwd
-import string
+from cc3d import CompuCellSetup
+from .cellsort_2D_field_modules import VolumeConstraintSteppable
+from .cellsort_2D_field_modules import MitosisSteppable
+from .cellsort_2D_field_modules import MitosisDataPrinterSteppable
 
-sys.path.append(environ["PYTHON_MODULE_PATH"])
+CompuCellSetup.register_steppable(steppable=VolumeConstraintSteppable(frequency=10))
+CompuCellSetup.register_steppable(steppable=MitosisSteppable(frequency=1))
+CompuCellSetup.register_steppable(steppable=MitosisDataPrinterSteppable(frequency=100))
 
-import CompuCellSetup
-
-sim,simthread = CompuCellSetup.getCoreSimulationObjects()
-
-CompuCellSetup.initializeSimulationObjects(sim,simthread)
-
-#Add Python steppables here
-steppableRegistry=CompuCellSetup.getSteppableRegistry()
-
-from cellsort_2D_field_modules import VolumeConstraintSteppable
-volumeConstraint=VolumeConstraintSteppable(sim)
-steppableRegistry.registerSteppable(volumeConstraint)
-
-from cellsort_2D_field_modules import MitosisSteppable
-mitosisSteppable=MitosisSteppable(sim,1)
-steppableRegistry.registerSteppable(mitosisSteppable)
-
-from cellsort_2D_field_modules import MitosisDataPrinterSteppable
-mitosisDataPrinterSteppable=MitosisDataPrinterSteppable(sim)
-steppableRegistry.registerSteppable(mitosisDataPrinterSteppable)
-
-CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
+CompuCellSetup.run()
