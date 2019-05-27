@@ -1,5 +1,0 @@
-<Simulation version="3.6.1">
-   <XMLScript Type="XMLScript">Simulation/connectivity_global_fast_python.xml</XMLScript>
-   <PythonScript Type="Python">Simulation/connectivity_global_fast_python.py</PythonScript>
-   <Resource Type="Python">Simulation/connectivity_global_fast_python_steppables.py</Resource>
-</Simulation>

@@ -1,5 +1,0 @@
-<Simulation version="3.5.1">
-   <XMLScript Type="XMLScript">Simulation/cellsort_2D.xml</XMLScript>
-   <PythonScript Type="PythonScript">Simulation/steering_panel_demo.py</PythonScript>
-   <Resource Type="Python">Simulation/steering_panel_demo_steppables.py</Resource>
-</Simulation>

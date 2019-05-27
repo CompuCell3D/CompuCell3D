@@ -1,9 +1,0 @@
-<Simulation version="3.6.1">
-
-    <XMLScript Type="XMLScript">Simulation/MomentOfInertia3D.xml</XMLScript>
-
-    <PythonScript>Simulation/MomentOfInertia3D.py</PythonScript> 
-
-    <Resource Type="Python">Simulation/MomentOfInertia3DSteppables.py</Resource>    
-
-</Simulation>

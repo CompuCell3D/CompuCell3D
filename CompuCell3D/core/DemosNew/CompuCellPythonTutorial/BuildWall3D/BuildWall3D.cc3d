@@ -1,5 +1,0 @@
-<Simulation version="3.6.2">
-   <XMLScript Type="XMLScript">Simulation/BuildWall3D.xml</XMLScript>
-   <PythonScript Type="PythonScript">Simulation/BuildWall3D.py</PythonScript>
-   <Resource Type="Python">Simulation/BuildWall3DSteppables.py</Resource>
-</Simulation>

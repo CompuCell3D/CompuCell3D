@@ -1,4 +1,0 @@
-<Simulation version="3.6.1">
-    <XMLScript Type="XMLScript">Simulation/cellsort_2D_open_mp.xml</XMLScript>
-    <PythonScript >Simulation/cellsort_2D_open_mp.py</PythonScript>
-</Simulation>

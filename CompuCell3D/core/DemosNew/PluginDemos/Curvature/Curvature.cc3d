@@ -1,7 +1,0 @@
-<Simulation version="3.6.1">
-
-    <XMLScript Type="XMLScript">Simulation/Curvature.xml</XMLScript>
-    <PythonScript>Simulation/Curvature.py</PythonScript>
-    <PIFFile>Simulation/Curvature.piff</PIFFile>
-
-</Simulation>

@@ -1,6 +1,0 @@
-<Simulation version="3.5.1">
-   <XMLScript Type="XMLScript">Simulation/ExtraFields.xml</XMLScript>
-   <PythonScript Type="PythonScript">Simulation/ExtraFields.py</PythonScript>
-   <Resource Type="Python">Simulation/ExtraFieldsSteppables.py</Resource>
-   <Resource Type="ScalarField">Simulation/diffusion_2D.pulse.txt</Resource>
-</Simulation>

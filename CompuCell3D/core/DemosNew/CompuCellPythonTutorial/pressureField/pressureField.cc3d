@@ -1,7 +1,0 @@
-<Simulation version="3.5.1">
-    <XMLScript>Simulation/pressureField.xml</XMLScript>    
-    <PythonScript>Simulation/pressureField.py</PythonScript> 
-    <Resource Type="Python">Simulation/pressureFieldSteppables.py</Resource>    
-</Simulation>
-
- 

@@ -1,6 +1,0 @@
-<Simulation version="3.6.1">
-
-    <XMLScript Type="XMLScript">Simulation/diffusion_2D_init.xml</XMLScript>
-    <PythonScript Type="PythonScript">Simulation/diffusion_2D_init.py</PythonScript>
-
-</Simulation>

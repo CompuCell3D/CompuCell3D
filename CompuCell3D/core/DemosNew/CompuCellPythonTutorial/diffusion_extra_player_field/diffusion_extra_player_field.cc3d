@@ -1,8 +1,0 @@
-<Simulation version="3.5.1">
-    <XMLScript>Simulation/diffusion_2D.xml</XMLScript>    
-    <PythonScript>Simulation/diffusion_2D_extra_player_field.py</PythonScript> 
-    <Resource Type="Python">Simulation/diffusion_2D_steppables_player.py</Resource>
-    <Resource Type="ScalarField">Simulation/diffusion_2D.pulse.txt</Resource>
-</Simulation>
-
- 

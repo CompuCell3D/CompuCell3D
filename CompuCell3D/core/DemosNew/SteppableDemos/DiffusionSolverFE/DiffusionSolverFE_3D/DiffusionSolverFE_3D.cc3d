@@ -1,4 +1,0 @@
-<Simulation version="3.6.2">
-   <XMLScript Type="XMLScript">Simulation/DIffusionSolverFE_3D.xml</XMLScript>
-   <PythonScript >Simulation/DIffusionSolverFE_3D.py</PythonScript>
-</Simulation>

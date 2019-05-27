@@ -1,8 +1,0 @@
-<Simulation version="3.5.1">
-    <XMLScript>Simulation/BoundaryMonitorExample.xml</XMLScript>    
-    <PythonScript>Simulation/BoundaryMonitorExample.py</PythonScript> 
-    <Resource Type="Python">Simulation/BoundaryMonitorExampleSteppables.py</Resource>    
-     <PIFFile>Simulation/bacterium_macrophage_2D_wall.piff</PIFFile> 
-</Simulation>
-
- 

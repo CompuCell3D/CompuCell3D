@@ -1,5 +1,0 @@
-<Simulation version="3.6.2">
-   <XMLScript Type="XMLScript">Simulation/SteppableCommunication.xml</XMLScript>
-   <PythonScript Type="PythonScript">Simulation/SteppableCommunication.py</PythonScript>
-   <Resource Type="Python">Simulation/SteppableCommunicationSteppables.py</Resource>
-</Simulation>

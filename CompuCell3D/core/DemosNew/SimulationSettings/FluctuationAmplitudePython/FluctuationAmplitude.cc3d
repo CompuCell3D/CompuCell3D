@@ -1,9 +1,0 @@
-<Simulation version="3.6.1">
-
-    <XMLScript Type="XMLScript">Simulation/FluctuationAmplitude.xml</XMLScript>
-
-    <PythonScript>Simulation/FluctuationAmplitude.py</PythonScript> 
-
-    <Resource Type="Python">Simulation/FluctuationAmplitudeSteppables.py</Resource>    
-
-</Simulation>

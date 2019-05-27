@@ -1,8 +1,0 @@
-<Simulation version="3.5.1">
-    <XMLScript>Simulation/VascularTumor.xml</XMLScript>    
-    <PythonScript>Simulation/VascularTumor.py</PythonScript> 
-    <Resource Type="Python">Simulation/VascularTumorSteppables.py</Resource>    
-    <Resource Type="ScalarField">Simulation/Glucose_300.dat</Resource>    
-</Simulation>
-
- 
