@@ -1,4 +1,5 @@
 import time
+from math import floor
 from os.path import dirname, join
 from cc3d.cpp import CompuCell
 from cc3d.core.XMLDomUtils import XMLIdLocator
@@ -185,14 +186,17 @@ def convert_time_interval_to_hmsm(time_interval):
     seconds = seconds_interval / 1000
     miliseconds = seconds_interval % 1000
 
+    def s_int_fl(x):
+        return str(int(floor(x)))
+
     if hours > 1.0:
-        out_str = str(hours) + " h : " + str(minutes) + " m : " + str(seconds) + " s : " + str(miliseconds) + " ms"
+        out_str = s_int_fl(hours) + " h : " + s_int_fl(minutes) + " m : " + s_int_fl(seconds) + " s : " + str(miliseconds) + " ms"
 
     elif minutes > 1.0:
-        out_str = str(minutes) + " m : " + str(seconds) + " s : " + str(miliseconds) + " ms"
+        out_str = s_int_fl(minutes) + " m : " + s_int_fl(seconds) + " s : " + str(miliseconds) + " ms"
 
     elif seconds > 1.0:
-        out_str = str(seconds) + " s : " + str(miliseconds) + " ms"
+        out_str = s_int_fl(seconds) + " s : " + str(miliseconds) + " ms"
 
     else:
         out_str = str(miliseconds) + " ms"
