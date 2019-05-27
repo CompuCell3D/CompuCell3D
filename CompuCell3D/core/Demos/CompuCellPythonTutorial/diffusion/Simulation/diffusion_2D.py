@@ -1,6 +1,0 @@
-from cc3d import CompuCellSetup
-from .diffusion_2D_steppables import ConcentrationFieldDumperSteppable
-
-CompuCellSetup.register_steppable(steppable=ConcentrationFieldDumperSteppable(frequency=100))
-
-CompuCellSetup.run()
