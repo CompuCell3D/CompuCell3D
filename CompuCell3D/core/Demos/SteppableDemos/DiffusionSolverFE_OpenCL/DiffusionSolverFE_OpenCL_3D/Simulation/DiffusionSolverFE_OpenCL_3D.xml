@@ -1,0 +1,39 @@
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="128" y="128" z="128"/>
+        <Anneal>0</Anneal>
+        <Steps>100</Steps>
+        <Temperature>15</Temperature>
+        <Flip2DimRatio>0.0</Flip2DimRatio>
+        <!--    <Boundary_x>Periodic</Boundary_x>
+           <Boundary_z>Periodic</Boundary_z> -->
+        <!--    <LatticeType>Hexagonal</LatticeType> -->
+    </Potts>
+
+
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Amoeba" TypeId="1"/>
+        <CellType TypeName="Bacteria" TypeId="2"/>
+    </Plugin>
+
+
+    <!-- <Steppable Type="DiffusionSolverFE"> -->
+    <Steppable Type="DiffusionSolverFE_OpenCL">
+        <!--  zero-based GPU device index. -1 stands for automatic GPU device selection. May be omited (default behavior). -->
+        <GPUDeviceIndex>0</GPUDeviceIndex>
+        <DiffusionField>
+            <DiffusionData>
+                <FieldName>FGF</FieldName>
+
+                <GlobalDiffusionConstant>1.05</GlobalDiffusionConstant>
+                <GlobalDecayConstant>0.0001</GlobalDecayConstant>
+                <ConcentrationFileName>Simulation/DiffusionSolverFE_OpenCL_3D.txt</ConcentrationFileName>
+                <!--DoNotDecayIn>Medium</DoNotDecayIn-->
+                <!--<DoNotDiffuseTo>Amoeba</DoNotDiffuseTo> -->
+            </DiffusionData>
+        </DiffusionField>
+    </Steppable>
+
+
+</CompuCell3D>

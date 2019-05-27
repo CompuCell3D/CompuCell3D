@@ -1,0 +1,67 @@
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="100" y="100" z="1"/>
+        <Anneal>0</Anneal>
+        <Steps>10000</Steps>
+        <Temperature>15</Temperature>
+        <Flip2DimRatio>1.0</Flip2DimRatio>
+    </Potts>
+
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Bacterium" TypeId="1"/>
+        <CellType TypeName="Macrophage" TypeId="2"/>
+        <CellType TypeName="Wall" TypeId="3" Freeze=""/>
+    </Plugin>
+
+    <Plugin Name="Volume">
+        <TargetVolume>25</TargetVolume>
+        <LambdaVolume>15.0</LambdaVolume>
+    </Plugin>
+
+    <Plugin Name="Surface">
+        <TargetSurface>20</TargetSurface>
+        <LambdaSurface>5.0</LambdaSurface>
+    </Plugin>
+
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">0</Energy>
+        <Energy Type1="Macrophage" Type2="Macrophage">15</Energy>
+        <Energy Type1="Macrophage" Type2="Medium">8</Energy>
+        <Energy Type1="Bacterium" Type2="Bacterium">15</Energy>
+        <Energy Type1="Bacterium" Type2="Macrophage">15</Energy>
+        <Energy Type1="Bacterium" Type2="Medium">8</Energy>
+        <Energy Type1="Wall" Type2="Wall">0</Energy>
+        <Energy Type1="Wall" Type2="Medium">0</Energy>
+        <Energy Type1="Wall" Type2="Bacterium">50</Energy>
+        <Energy Type1="Wall" Type2="Macrophage">50</Energy>
+        <Depth>2</Depth>
+    </Plugin>
+
+    <Plugin Name="Chemotaxis">
+        <ChemicalField Name="ATTR">
+            <!--     <ChemotaxisByType Type="Macrophage" Lambda="20"/>   	 -->
+        </ChemicalField>
+    </Plugin>
+
+
+    <Steppable Type="DiffusionSolverFE">
+        <DiffusionField>
+            <DiffusionData>
+                <FieldName>ATTR</FieldName>
+                <DiffusionConstant>0.10</DiffusionConstant>
+                <DecayConstant>0.000</DecayConstant>
+                <DiffusionCoefficient CellType="Wall">0.0</DiffusionCoefficient>
+            </DiffusionData>
+            <SecretionData>
+                <Secretion Type="Bacterium">20</Secretion>
+            </SecretionData>
+
+        </DiffusionField>
+    </Steppable>
+
+    <Steppable Type="PIFInitializer">
+        <PIFName>Simulation/chemotaxis_by_cell_id.piff</PIFName>
+    </Steppable>
+
+</CompuCell3D>

@@ -1,0 +1,38 @@
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="56" y="56" z="1"/>
+        <Anneal>0</Anneal>
+        <Steps>1000</Steps>
+        <Temperature>15</Temperature>
+        <Flip2DimRatio>0.0</Flip2DimRatio>
+        <Boundary_y>Periodic</Boundary_y>
+        <Boundary_x>Periodic</Boundary_x>
+    </Potts>
+
+
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Amoeba" TypeId="1"/>
+        <CellType TypeName="Bacteria" TypeId="2"/>
+    </Plugin>
+
+
+    <Steppable Type="KernelDiffusionSolver">
+        <!--      <Serialize Frequency="100"/> -->
+        <DiffusionField>
+            <Kernel>4</Kernel>
+            <DiffusionData>
+                <FieldName>FGF</FieldName>
+                <DiffusionConstant>1.0</DiffusionConstant>
+                <DecayConstant>0.000</DecayConstant>
+                <ConcentrationFileName>Simulation/diffusion_2D.pulse.txt</ConcentrationFileName>
+                <!--DoNotDecayIn>Medium</DoNotDecayIn-->
+                <!--            <DeltaT>0.1</DeltaT> -->
+                <!--            <DeltaX>1.0</DeltaX> -->
+                <!--<DoNotDiffuseTo>Amoeba</DoNotDiffuseTo> -->
+            </DiffusionData>
+        </DiffusionField>
+    </Steppable>
+
+
+</CompuCell3D>

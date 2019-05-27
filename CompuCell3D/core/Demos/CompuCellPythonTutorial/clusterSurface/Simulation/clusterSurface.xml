@@ -1,0 +1,114 @@
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="100" y="100" z="1"/>
+        <Anneal>10</Anneal>
+        <Steps>10000</Steps>
+        <Temperature>10</Temperature>
+        <Flip2DimRatio>1</Flip2DimRatio>
+        <NeighborOrder>2</NeighborOrder>
+    </Potts>
+
+
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Top" TypeId="1"/>
+        <CellType TypeName="Bottom" TypeId="2"/>
+        <CellType TypeName="Side1" TypeId="3"/>
+        <CellType TypeName="Side2" TypeId="4"/>
+        <CellType TypeName="Center" TypeId="5"/>
+        <CellType TypeName="Base" TypeId="6" Freeze=""/>
+    </Plugin>
+
+    <Plugin Name="Contact">
+
+        <Energy Type1="Base" Type2="Base">0</Energy>
+        <Energy Type1="Top" Type2="Base">25</Energy>
+        <Energy Type1="Center" Type2="Base">30</Energy>
+        <Energy Type1="Bottom" Type2="Base">-2</Energy>
+        <Energy Type1="Side1" Type2="Base">25</Energy>
+        <Energy Type1="Side2" Type2="Base">25</Energy>
+        <Energy Type1="Medium" Type2="Base">0</Energy>
+
+
+        <Energy Type1="Medium" Type2="Medium">0</Energy>
+        <Energy Type1="Top" Type2="Medium">30</Energy>
+        <Energy Type1="Bottom" Type2="Medium">30</Energy>
+        <Energy Type1="Side1" Type2="Medium">30</Energy>
+        <Energy Type1="Side2" Type2="Medium">30</Energy>
+        <Energy Type1="Center" Type2="Medium">100</Energy>
+
+        <!--  <Energy Type1="Top" Type2="Top">35</Energy> -->
+        <Energy Type1="Top" Type2="Top">100</Energy>
+        <Energy Type1="Top" Type2="Bottom">100</Energy>
+        <Energy Type1="Top" Type2="Side1">100</Energy>
+        <Energy Type1="Top" Type2="Side2">100</Energy>
+        <Energy Type1="Top" Type2="Center">100</Energy>
+
+        <!--  <Energy Type1="Bottom" Type2="Bottom">35</Energy> -->
+        <Energy Type1="Bottom" Type2="Bottom">100</Energy>
+        <Energy Type1="Bottom" Type2="Side1">100</Energy>
+        <Energy Type1="Bottom" Type2="Side2">100</Energy>
+        <Energy Type1="Bottom" Type2="Center">100</Energy>
+
+        <Energy Type1="Side1" Type2="Side1">100</Energy>
+        <Energy Type1="Side1" Type2="Center">100</Energy>
+        <Energy Type1="Side2" Type2="Side2">100</Energy>
+        <Energy Type1="Side2" Type2="Center">100</Energy>
+        <Energy Type1="Side1" Type2="Side2">100</Energy>
+
+        <Energy Type1="Center" Type2="Center">100</Energy>
+
+
+        <NeighborOrder>2</NeighborOrder>
+    </Plugin>
+
+    <Plugin Name="ContactInternal">
+        <Energy Type1="Base" Type2="Base">0</Energy>
+        <Energy Type1="Base" Type2="Bottom">0</Energy>
+        <Energy Type1="Base" Type2="Side1">0</Energy>
+        <Energy Type1="Base" Type2="Side2">0</Energy>
+        <Energy Type1="Base" Type2="Center">0</Energy>
+
+        <Energy Type1="Top" Type2="Top">4</Energy>
+        <Energy Type1="Top" Type2="Bottom">25</Energy>
+        <Energy Type1="Top" Type2="Side1">22</Energy>
+        <Energy Type1="Top" Type2="Side2">22</Energy>
+        <Energy Type1="Top" Type2="Center">10</Energy>
+
+        <Energy Type1="Bottom" Type2="Bottom">4</Energy>
+        <Energy Type1="Bottom" Type2="Side1">15</Energy>
+        <Energy Type1="Bottom" Type2="Side2">15</Energy>
+        <Energy Type1="Bottom" Type2="Center">10</Energy>
+
+        <Energy Type1="Side1" Type2="Side1">11</Energy>
+        <Energy Type1="Side2" Type2="Side2">11</Energy>
+        <Energy Type1="Side1" Type2="Side2">50</Energy>
+
+        <Energy Type1="Side2" Type2="Center">10</Energy>
+        <Energy Type1="Side1" Type2="Center">10</Energy>
+
+        <Energy Type1="Center" Type2="Center">2</Energy>
+
+        <NeighborOrder>2</NeighborOrder>
+    </Plugin>
+
+
+    <Plugin Name="Volume"/>
+
+
+    <!-- <Plugin Name="ClusterSurfaceTracker"/>   -->
+
+    <Plugin Name="ClusterSurface"/>
+
+    <!-- <Plugin Name="ClusterSurface">
+        <TargetClusterSurface>80</TargetClusterSurface>
+        <LambdaClusterSurface>2.0</LambdaClusterSurface>
+    </Plugin>
+     -->
+    <Plugin Name="PixelTracker"/>
+
+    <Steppable Type="PIFInitializer">
+        <PIFName>Simulation/clusterSurface.piff</PIFName>
+    </Steppable>
+
+</CompuCell3D>

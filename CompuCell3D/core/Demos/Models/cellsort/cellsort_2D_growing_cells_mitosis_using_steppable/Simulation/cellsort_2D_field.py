@@ -1,0 +1,10 @@
+from cc3d import CompuCellSetup
+from .cellsort_2D_field_modules import VolumeConstraintSteppable
+from .cellsort_2D_field_modules import MitosisSteppable
+from .cellsort_2D_field_modules import MitosisDataPrinterSteppable
+
+CompuCellSetup.register_steppable(steppable=VolumeConstraintSteppable(frequency=10))
+CompuCellSetup.register_steppable(steppable=MitosisSteppable(frequency=1))
+CompuCellSetup.register_steppable(steppable=MitosisDataPrinterSteppable(frequency=100))
+
+CompuCellSetup.run()

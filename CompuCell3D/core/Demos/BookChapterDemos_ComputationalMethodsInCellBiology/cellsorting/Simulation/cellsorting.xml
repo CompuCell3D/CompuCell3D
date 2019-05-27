@@ -1,0 +1,49 @@
+<CompuCell3D version="3.6.0">
+
+    <!-- Basic properties of CPM (GGH) algorithm -->
+    <Potts>
+        <Dimensions x="100" y="100" z="1"/>
+        <Steps>10000</Steps>
+        <Temperature>10.0</Temperature>
+        <NeighborOrder>2</NeighborOrder>
+    </Potts>
+
+    <!-- Listing all cell types in the simulation -->
+    <Plugin Name="CellType">
+        <CellType TypeId="0" TypeName="Medium"/>
+        <CellType TypeId="1" TypeName="Condensing"/>
+        <CellType TypeId="2" TypeName="NonCondensing"/>
+    </Plugin>
+
+    <!-- Constraint on cell volume. Each cell type has different constraint. -->
+    <!-- For more flexible specification of the constraint (done in Python) please use VolumeLocalFlex plugin -->
+    <Plugin Name="Volume">
+        <VolumeEnergyParameters CellType="Condensing" LambdaVolume="2.0" TargetVolume="25"/>
+        <VolumeEnergyParameters CellType="NonCondensing" LambdaVolume="2.0" TargetVolume="25"/>
+    </Plugin>
+
+    <!-- Module tracking center of mass of each cell -->
+    <Plugin Name="CenterOfMass"/>
+
+    <!-- Specification of adhesion energies -->
+    <Plugin Name="Contact">
+        <Energy Type1="Medium" Type2="Medium">10</Energy>
+        <Energy Type1="Medium" Type2="Condensing">16</Energy>
+        <Energy Type1="Medium" Type2="NonCondensing">16</Energy>
+        <Energy Type1="Condensing" Type2="Condensing">2</Energy>
+        <Energy Type1="Condensing" Type2="NonCondensing">11</Energy>
+        <Energy Type1="NonCondensing" Type2="NonCondensing">16</Energy>
+        <NeighborOrder>2</NeighborOrder>
+    </Plugin>
+
+    <!-- Initial layout of cells in the form of spherical (circular in 2D) blob -->
+    <Steppable Type="BlobInitializer">
+        <Region>
+            <Center x="50" y="50" z="0"/>
+            <Radius>40</Radius>
+            <Gap>0</Gap>
+            <Width>5</Width>
+            <Types>Condensing,NonCondensing</Types>
+        </Region>
+    </Steppable>
+</CompuCell3D>
