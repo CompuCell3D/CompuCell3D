@@ -63,6 +63,7 @@ class PlotWindowInterface(QtCore.QObject):
         self.plot_params = self.plotWindow.getPlotParams()
 
         self.plotData = {}
+        self.plot_data = self.plotData
         self.plotHistData = {}
         self.plotDrawingObjects = {}
         self.initSignalsAndSlots()
@@ -256,7 +257,7 @@ class PlotWindowInterface(QtCore.QObject):
 
     @deprecated(version='4.0.0', reason="You should use : erase_all_data")
     def eraseAllData(self):
-        return self.eraseAllData()
+        return self.erase_all_data()
 
     def erase_all_data(self):
         """
