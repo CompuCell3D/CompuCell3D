@@ -1,11 +1,17 @@
 ===============  # @Menu@ Python Utilities
 
 ----------  # @Submenu@ Open File In Simulation Output Directory
-try:
-    fileHandle, fullFileName = self.openFileInSimulationOutputDirectory("YOUR FILE NAME", "w")
-except IOError:
-    print "Could not open file ", "YOUR FILE NAME", " for writing. "
-    return
+from pathlib import Path
+
+if self.output_dir is not None:
+    output_path = Path(self.output_dir).joinpath("<FILE_NAME>")
+    # create folder to store data
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        file_handle = open(output_path, 'w')
+    except IOError:
+        print ("Could not open file for writing.")
+        return
 
 ----------  # @Submenu@ Fetch Steppable By Class Name
 self.getSteppableByClassName('STEPPABLE_CLASS_NAME')
@@ -20,108 +26,119 @@ filePath = os.path.abspath(__file__)
 import os
 
 ----------  # @Submenu@ Set Simulation Output Directory (main Python script)
-# this function has to be called from the main Python script right after
-# import CompuCellSetup
-CompuCellSetup.set_custom_output_directory(
-    "FULL PATH TO THE DIRECTORY - DO NOT OVERWRITE EXISTING DIRECTORY . Call only once from main Python script")
+# It is best to call this function from __init__ of first registered steppable
+self.set_output_dir(output_dir="<CUSTOM_OUTPUT_DIR>", abs_path=False)
 
 ===============  # @Menu@ SBML Solver
 
 ----------  # @Submenu@ 1. Model Initial Data
-modelFile = 'PATH_TO_SBML_MODEL'  # this can be e.g. partial path 'Simulation/osci.sbml'
+# this can be e.g. partial path 'Simulation/osci.sbml'
+model_file = 'PATH_TO_SBML_MODEL'
 
-initialConditions = {}
-initialConditions['SPECIES_NAME1'] = species_val1
-initialConditions['SPECIES_NAME2'] = species_val2
+initial_conditions = {}
+initial_conditions['SPECIES_NAME1'] = species_val1
+initial_conditions['SPECIES_NAME2'] = species_val2
 
-stepSize = 0.5
+step_size = 0.5
 
 ----------  # @Submenu@ 2. Add model to cell ids
-self.addSBMLToCellIds(_modelFile=modelFile, _modelName='MODEL_NAME', _ids=[1, 3, 7], _stepSize=stepSize,
-                      _initialConditions=initialConditions)
+self.add_sbml_to_cell_ids(model_file=model_file, model_name='MODEL_NAME', cell_ids=[1, 3, 7], step_size=step_size,
+                          initial_conditions=initial_conditions)
 
 ----------  # @Submenu@ 2. Add model to cell types
-self.addSBMLToCellTypes(_modelFile=modelFile, _modelName='MODEL_NAME', _types=[self.CELLTYPENAME1, self.CELLTYPENAME1],
-                        _stepSize=stepSize, _initialConditions=initialConditions)
+self.add_sbml_to_cell_types(model_file=model_file, model_name='MODEL_NAME', cell_types=[self.CELLTYPENAME1, self.CELLTYPENAME1],
+                        step_size=step_size, initial_conditions=initial_conditions)
 
 ----------  # @Submenu@ 2. Add model to individual cell
-cell20 = self.inventory.attemptFetchingCellById(20)
-if cell20:
-    self.addSBMLToCell(_modelFile=modelFile, _modelName='MODEL_NAME', _cell=cell20, _stepSize=stepSize,
-                       _initialConditions=initialConditions)
+cell_20 = self.fetch_cell_by_id(20)
+
+if cell_20:
+    self.add_sbml_to_cell(model_file=model_file, model_name='MODEL_NAME', cell=cell_20,step_size=step_size,
+                          initial_conditions=initial_conditions)
+
 
 ----------  # @Submenu@ 2. Add free floating model e.g. PBPK
-self.addFreeFloatingSBML(_modelFile=modelFile, _modelName='UNIQUE_MODEL_NAME', _stepSize=stepSize,
-                         _initialConditions=initialConditions)
+self.add_free_floating_sbml(model_file=model_file, model_name='UNIQUE_MODEL_NAME', step_size=step_size,
+                            initial_conditions=initial_conditions)
 
 ----------  # @Submenu@ 3. Timestep SBML models
-self.timestepSBML()
+self.timestep_sbml()
 
 ----------  # @Submenu@ 5. Copy select SBMLs
-self.copySBMLs(_fromCell=source_cell, _toCell=target_cell, _sbmlNames=['MODEL_NAME1', 'MODEL_NAME2'])
+self.copy_sbml_simulators(from_cell=source_cell, to_cell=target_cell, sbml_names=['MODEL_NAME1', 'MODEL_NAME2'])
 
 ----------  # @Submenu@ 5. Copy All SBMLs
-self.copySBMLs(_fromCell=source_cell, _toCell=target_cell)
+self.copy_sbml_simulators(from_cell=source_cell, to_cell=target_cell)
 
 ----------  # @Submenu@  Get SBML State for individual cell
-state = self.getSBMLState(_modelName='MODELNAME', _cell=cell)  # returns dictionary of values
+# returns dictionary of values
+state = cell.sbml.MODELNAME
+
 
 ----------  # @Submenu@  Get SBML State for Free Floating model
-state = self.getSBMLState(_modelName='UNIQUE_MODEL_NAME')
+state = self.sbml.UNIQUE_MODEL_NAME
 
 ----------  # @Submenu@  Get SBML Value for SBML in a specific cell
-self.getSBMLValue(_modelName='UNIQUE_MODEL_NAME', _valueName='VALUE_NAME',
-                  _cell=cell)  # value name can be e.g. species name
+# value name can be e.g. species name
+# example cell.DN.Delta
+cell.sbml.MODEL_NAME['VALUE_NAME']
 
 ----------  # @Submenu@  Get SBML Value for Free Floating model
-self.getSBMLValue(_modelName='UNIQUE_MODEL_NAME', _valueName='VALUE_NAME')  # value name can be e.g. species name
+# value name can be e.g. species name
+self.sbml.MODEL_NAME['VALUE_NAME']
 
 ----------  # @Submenu@  Get SBML Simulator for individual cell(advanced)
-self.getSBMLSimulator(_modelName='MODEL_NAME', _cell=cell)
+# example cell.sbml._rr_DN
+cell.sbml._rr_MODEL_NAME
 
 ----------  # @Submenu@  Get SBML Simulator for Free Floating Model(advanced)
-self.getSBMLSimulator(_modelName='MODEL_NAME')
+# example self.sbml._rr_DN
+self.sbml._rr_MODEL_NAME
 
 ----------  # @Submenu@  Set SBML State for individual cell
 state = {}
 state['REACTANT_NAME'] = 0.9
 
-self.setSBMLState(_modelName='MODELNAME', _cell=cell, _state=state)
+self.set_sbml_state(model_name='MODELNAME', cell=cell, state=state)
 
 ----------  # @Submenu@  Set SBML State for Free Floating model
 state = {}
 state['REACTANT_NAME'] = 0.9
-self.setSBMLState(_modelName='MODELNAME', _state=state)
+self.set_sbml_state(model_name='MODELNAME',  state=state)
 
 ----------  # @Submenu@  Set SBML Value for SBML in a specific cell
-self.setSBMLValue(_modelName='UNIQUE_MODEL_NAME', _valueName='VALUE_NAME', _value=0.1,
-                  _cell=cell)  # value name can be e.g. species name
+# value name can be e.g. species name
+cell.sbml.UNIQUE_MODEL_NAME['VALUE_NAME'] = 0.1
 
 ----------  # @Submenu@  Set SBML Value for Free Floating model
-self.setSBMLValue(_modelName='UNIQUE_MODEL_NAME', _valueName='VALUE_NAME',
-                  _value=0.1)  # value name can be e.g. species name
+# value name can be e.g. species name
+self.sbml.UNIQUE_MODEL_NAME['VALUE_NAME'] = 0.1
 
 ----------  # @Submenu@  Delete SBML from cell ids
-self.deleteSBMLFromCellIds(_modelName='MODEL_NAME', _ids=[1, 4, 7])
+self.delete_sbml_from_cell_ids(model_name='MODEL_NAME', cell_ids=[1, 4, 7])
 
 ----------  # @Submenu@  Delete SBML from cell types
-self.deleteSBMLFromCellTypes(_modelName='MODEL_NAME', _types=[self.CELLTYPE1, self.CELLTYPE2])
+self.delete_sbml_from_cell_types(model_name='MODEL_NAME', cell_types=[self.CELLTYPE1, self.CELLTYPE2])
 
 ----------  # @Submenu@  Delete SBML from individual cell
-self.deleteSBMLFromCell(_modelName='MODEL_NAME', _cell=cell)
+self.delete_sbml_from_cell(model_name='MODEL_NAME', cell=cell)
 
 ----------  # @Submenu@  Delete Free Floating SBML
-self.deleteFreeFloatingSBML(_modelName='UNIQUE_MODEL_NAME')
+self.delete_free_floating_sbml(model_name='UNIQUE_MODEL_NAME')
 
 ----------  # @Submenu@  Set SBML Integrator  Global Options
-# adding options that setup SBML solver integrator - these are optional but useful when encounteting integration instabilities              
-# relative is relative tolerance, absolute is absolute tolerance, steps is the initial number of integration steps for each integration interval (higher number does not result in slower simulateion, quite to the contrary), stiff set to true will use stiff ODE solver
+# adding options that setup SBML solver integrator - these are optional but useful when encountering
+# integration instabilities
+# relative is relative tolerance, absolute is absolute tolerance,
+# steps is the initial number of integration steps for each integration interval
+# (higher number does not result in slower simulation, quite to the contrary),
+# stiff set to true will use stiff ODE solver
 options = {'relative': 1e-10, 'absolute': 1e-12, 'steps': 10, 'stiff': False}
-self.setSBMLGlobalOptions(options)
+self.set_sbml_global_options(options)
 
 ----------  # @Submenu@  Get SBML Integrator  Global Options
 # returns current options - can be None if no global options were set
-options = self.getSBMLGlobalOptions()
+options = self.get_sbml_global_options()
 
 ===============  # @Menu@ Steering Panel
 
@@ -135,12 +152,12 @@ def add_steering_panel(self):
                                 widget_name='combobox')
 
 def process_steering_panel_data(self):
-    print 'processing steering panel updates'
-    print 'all dirty flag=', self.steering_param_dirty()
+    print ('processing steering panel updates')
+    print ('all dirty flag=', self.steering_param_dirty())
     param_slider = self.get_steering_param('MY_PARAM_SLIDER')
     param_combo = self.get_steering_param('MY_PARAM_COMBO')
-    print 'updated MY_PARAM_SLIDER=',param_slider
-    print 'updated MY_PARAM_COMBO=', param_combo
+    print ('updated MY_PARAM_SLIDER=',param_slider)
+    print ('updated MY_PARAM_COMBO=', param_combo)
 
     # IMPORTANT: you may add code here tht updates cell properties based on the
     # values of the parameters from the steering panel. For example:
@@ -153,7 +170,7 @@ def process_steering_panel_data(self):
 my_param = self.get_steering_param('MY_PARAM')
 
 ----------  # @Submenu@ Check if Steering Panel Was Updated
-updateg_flag = self.steering_param_dirty()
+updated_flag = self.steering_param_dirty()
 
 ===============  # @Menu@ Cell Constraints
 
@@ -177,51 +194,46 @@ cell.lambdaVecZ = 0.0  # force component pointing along Z axis
 
 ----------  # @Submenu@ Length Constraint By Cell Id
 # Make sure LengthConstraintLocalFlex plugin is loaded
-self.lengthConstraintLocalFlexPlugin.setLengthConstraintData(cell, 20, 20)  # cell , lambdaLength, targetLength
+# Argument Order: cell , lambdaLength, targetLength
+self.lengthConstraintLocalFlexPlugin.setLengthConstraintData(cell, 20, 20)
 
 ----------  # @Submenu@ Connectivity Constraint By Cell Id
 # Make sure ConnectivityLocalFlex plugin is loaded
-self.connectivityLocalFlexPlugin.setConnectivityStrength(cell, 10000000)  # cell, strength
+# Argument Order: cell, strength
+self.connectivityLocalFlexPlugin.setConnectivityStrength(cell, 10000000)
 
 ===============  # @Menu@ Cell Manipulation
 
 ----------  # @Submenu@ Fetch Cell By Id
-cell = self.attemptFetchingCellById(CELL_ID)
+cell = self.fetch_cell_by_id(CELL_ID)
 
 ----------  # @Submenu@ Delete Cell
-self.deleteCell(cell)
+self.delete_cell(cell)
 
 ----------  # @Submenu@ Create Cell
 # size of cell will be 3x3x1
-self.cellField[10:12, 10:12, 0] = self.newCell(self.TYPENAME)
+self.cell_field[10:12, 10:12, 0] = self.new_cell(self.TYPENAME)
 
 ----------  # @Submenu@ Create Cell (detailed)
 x = X_POSITION
 y = Y_POSITION
 size = SIZE
-cell = self.newCell(self.TYPENAME)
-self.cellField[x:x + size - 1, y:y + size - 1, 0] = cell  # size of cell will be SIZExSIZEx1
-
-----------  # @Submenu@ Create Cell (one-liner  - alt)
-cell = self.createNewCell(self.TYPENAME, [10, 10, 0], xSize=5, ySize=5,
-                          zSize=1)  # args - type, location of seed point, x,y,z dimansions
-
-----------  # @Submenu@ Create Cell (old style)
-pt = CompuCell.Point3D(50, 50, 0)
-self.createNewCell(2, pt, 5, 5, 1)  # the arguments are (type,pt,xSize,ySize,zSize)
+cell = self.new_cell(self.TYPENAME)
+# size of cell will be SIZExSIZEx1
+self.cell_field[x:x + size - 1, y:y + size - 1, 0] = cell
 
 ----------  # @Submenu@ Get Cell At a Pixel
-cell = self.cellField[10, 11, 0]
+cell = self.cell_field[10, 11, 0]
 
 ----------  # @Submenu@ Move Cell
 # Shifting entire cell by a 'shiftVector'         
-shiftVector = CompuCell.Point3D(20, 20, 0)
-self.moveCell(cell, shiftVector)
+shift_vector = [20, 20, 0]
+self.move_cell(cell, shift_vector)
 
 ===============  # @Menu@ Distances, Vectors, Transformations
 
 ----------  # @Submenu@ Distance Vector Between Cells
-vec = self.distanceVectorBetweenCells(CELL1, CELL2)
+vec = self.distance_between_cells(CELL1, CELL2)
 
 ----------  # @Submenu@ Distance Vector Between Cells (Invariant)
 vec = self.invariantDistanceVectorBetweenCells(CELL1, CELL2)
