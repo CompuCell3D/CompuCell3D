@@ -1,4 +1,6 @@
 
+@SET PYTHONPATH=%PREFIX_CC3D%\lib\site-packages
+
 @set CURRENT_DIRECTORY=%CD%
 
 
