@@ -17,6 +17,6 @@ class ConcentrationFieldDumperSteppable(SteppableBasePy):
             # create folder to store data
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
-            with open(output_path, 'w') as fileHandle:
-                for i, j, k in self.everyPixel():
-                    fileHandle.write("%d\t%d\t%d\t%f\n" % (i, j, k, fgf_field[i, j, k]))
+            with open(output_path, 'w') as file_handle:
+                for i, j, k in self.every_pixel():
+                    file_handle.write("%d\t%d\t%d\t%f\n" % (i, j, k, fgf_field[i, j, k]))

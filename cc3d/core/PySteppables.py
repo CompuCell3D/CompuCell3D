@@ -17,6 +17,7 @@ import warnings
 from deprecated import deprecated
 from cc3d.core.SteeringParam import SteeringParam
 from copy import deepcopy
+from math import sqrt
 
 
 class SteppablePy:
@@ -1314,6 +1315,120 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         raise RuntimeError(
             "Please define Secretion Plugin in the XML before requesting secretor object from Python script."
             'Secreion Plugin can be defined by including <Plugin Name="Secretion"/> in the XML')
+
+    # TODO - check this API starting from here
+
+    @deprecated(version='4.0.0', reason="You should use : hex_2_cartesian")
+    def hex2Cartesian(self,_in):
+        return self.hex_2_cartesian(coords=_in)
+
+    def hex_2_cartesian(self, coords):
+        """
+        this transformation takes coordinates of a point on a hex lattice and returns integer coordinates of cartesian pixel that is nearest given point on hex lattice
+        It is the inverse transformation of the one coded in HexCoord in BoundaryStrategy.cpp (see Hex2Cartesian).
+
+        Argument: _in is either a tuple or a list or array with 3 elements or Coordinates3D<double> object
+        returns Point3D
+        """
+        bs = self.simulator.getBoundaryStrategy()
+        return bs.Hex2Cartesian(coords)
+
+    @deprecated(version='4.0.0', reason="You should use : hex_2_cartesian_python")
+    def hex2CartesianPython(self, _in):
+        return self.hex_2_cartesian_python(coords=_in)
+
+    def hex_2_cartesian_python(self, coords):
+        '''
+        this transformation takes coordinates of a point on ahex lattice and returns integer coordinates of cartesian
+        pixel that is nearest given point on hex lattice
+        It is the inverse transformation of the one coded in HexCoord in BoundaryStrategy.cpp.
+        NOTE: there is c+= implementation of this function which is much faster and
+        Argument: _in is either a tuple or a list or array with 3 elements
+        '''
+
+        def ir(x):
+            return int(round(x))
+
+        z_segments = ir(coords[2] / (sqrt(6.0) / 3.0))
+
+        if (z_segments % 3) == 1:
+            y_segments = ir(coords[1] / (sqrt(3.0) / 2.0) - 2.0 / 6.0)
+
+            if y_segments % 2:
+
+                return CompuCell.Point3D(ir(coords[0] - 0.5), y_segments, z_segments)
+
+            else:
+
+                return CompuCell.Point3D(ir(coords[0]), y_segments, z_segments)
+
+        elif (z_segments % 3) == 2:
+
+            y_segments = ir(coords[1] / (sqrt(3.0) / 2.0) + 2.0 / 6.0)
+
+            if y_segments % 2:
+                return CompuCell.Point3D(ir(coords[0] - 0.5), y_segments, z_segments)
+            else:
+                return CompuCell.Point3D(ir(coords[0]), y_segments, z_segments)
+
+        else:
+            y_segments = ir(coords[1] / (sqrt(3.0) / 2.0))
+
+            if y_segments % 2:
+                return CompuCell.Point3D(ir(coords[0]), y_segments, z_segments)
+            else:
+                return CompuCell.Point3D(ir(coords[0] - 0.5), y_segments, z_segments)
+
+    @deprecated(version='4.0.0', reason="You should use : cartesian_2_hex")
+    def cartesian2Hex(self, _in):
+        return self.cartesian_2_hex(coords=_in)
+
+    def cartesian_2_hex(self, coords):
+        """
+        this transformation takes coordinates of a point on a cartesian lattice and returns hex coordinates
+        It is coded as HexCoord fcn in BoundaryStrategy.cpp.
+        NOTE: there is c++ implementation of this function which is much faster and
+        Argument: _in is either a tuple or a list or array with 3 elements or Point3D object
+        returns Coordinates3D<double>
+        """
+        bs = self.simulator.getBoundaryStrategy()
+        return bs.HexCoord(coords)
+
+    @deprecated(version='4.0.0', reason="You should use : point_3d_to_numpy")
+    def point3DToNumpy(self, _pt):
+        return self.point_3d_to_numpy(pt=_pt)
+
+    def point_3d_to_numpy(self, pt):
+        """
+        This function converts CompuCell.Point3D into floating point numpy array(vector) of size 3
+        """
+
+        return np.array([float(pt.x), float(pt.y), float(pt.z)])
+
+    @deprecated(version='4.0.0', reason="You should use : numpy_to_point_3d")
+    def numpyToPoint3D(self, _array):
+        return self.numpy_to_point_3d(array=_array)
+
+    def numpy_to_point_3d(self, array):
+
+        pt = CompuCell.Point3D()
+        pt.x = array[0]
+        pt.y = array[1]
+        pt.z = array[2]
+        return pt
+
+    @deprecated(version='4.0.0', reason="You should use : are_cells_different")
+    def areCellsDifferent(self, _cell1, _cell2):
+        return self.are_cells_different(cell1=_cell1, cell2=_cell2)
+
+    def are_cells_different(self, cell1, cell2):
+        """
+        Checks if two cells are different
+        :param cell1: {CellG c++ obj}
+        :param cell2: {CellG c++ obj}
+        :return: {bool}
+        """
+        return CompuCell.areCellsDifferent(cell1, cell2)
 
 
 
