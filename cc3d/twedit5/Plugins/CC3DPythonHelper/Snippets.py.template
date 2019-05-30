@@ -864,21 +864,19 @@ self.plot_win.save_plot_as_data(file_name)
 ===============  # @Menu@ Scientific Plots Histograms
 
 ----------  # @Submenu@ 1. Add Histogram Plot (start fcn)
-self.pW = self.addNewPlotWindow(_title='Histogram', _xAxisTitle='TYPE NAME OF X AXIS',
-                                _yAxisTitle='TYPE NAME OF Y AXIS', _xScaleType='linear', _yScaleType='linear')
-self.pW.addHistogramPlot(_plotName='Hist 1', _color='green',
-                         _alpha=100)  # _alpha is transparency 0 is transparent, 255 is opaque
+# initialize setting for Histogram
+self.plot_win = self.add_new_plot_window(title='Histogram of Cell Volumes', x_axis_title='Number of Cells',
+                                         y_axis_title='Volume Size in Pixels')
+# _alpha is transparency 0 is transparent, 255 is opaque
+self.plot_win.add_histogram_plot(plot_name='Hist 1', color='green', alpha=100)
+self.plot_win.add_histogram_plot(plot_name='Hist 2', color='red', alpha=100)
+self.plot_win.add_histogram_plot(plot_name='Hist 3', color='blue')
 
 ----------  # @Submenu@ 2. Add Histogram  (step fcn)
-self.pW.addHistogram(plot_name='Hist 1', value_array=ARRAY_WITH_VALUES, number_of_bins=20)
+self.plot_win.add_histogram(plot_name='Hist 1', value_array=gauss, number_of_bins=10)
+self.plot_win.add_histogram(plot_name='Hist 2', value_array=vol_list, number_of_bins=10)
+self.plot_win.add_histogram(plot_name='Hist 3', value_array=vol_list, number_of_bins=50)
 
-----------  # @Submenu@ Add Histogram  (step fcn - alternative)
-# n and bins are generated using the follofing numpy 
-# (n, bins) = numpy.histogram(list_of_values, bins=10)  
-self.pW.addHistPlotData('Hist 1', n, bins)
-
-----------  # @Submenu@ Refresh Histogram Plots (deprecated)
-self.pW.showAllHistPlots()
 
 ----------  # @Submenu@ Save  Plot As A PNG File
 # here we specify size of the image saved (1000x1000) - default is 400 x 400
@@ -886,171 +884,182 @@ self.pW.showAllHistPlots()
 self.plot_win.save_plot_as_png(file_name, 1000, 1000)
 
 ----------  # @Submenu@ Save Plot As Data (text file)
-self.plot_win.savePlotAsData(fileName)
+self.plot_win.save_plot_as_data(file_name)
 
 ===============  # @Menu@ Simulation
 
 ----------  # @Submenu@ Stop Simulation
-self.stopSimulation()
+self.stop_simulation()
 
 ----------  # @Submenu@ Set Max MCS
-self.setMaxMCS(MAX_MCS)
+self.set_max_mcs(MAX_MCS)
 
 ----------  # @Submenu@ Change Steppable Frequency
 self.frequency = NEW_FREQUENCY
 
 ----------  # @Submenu@ Build Wall
-self.buildWall(self.YOUR_WALL_CELL_TYPE)
+self.build_wall(self.YOUR_WALL_CELL_TYPE)
 
 ----------  # @Submenu@ Destroy Wall
-self.destroyWall()
+self.destroy_wall()
 
 ----------  # @Submenu@ Resize And Shift Lattice
-self.resizeAndShiftLattice(_newSize=(X, Y, Z), _shiftVec=(VX, VY, VZ))
+self.resize_and_shift_lattice(new_size=(X, Y, Z), shift_vec=(VX, VY, VZ))
 
 ----------  # @Submenu@ Change Number of CPU's (worknodes)
-self.changeNumberOfWorkNodes(8)
+self.change_number_of_work_nodes(8)
 
 ===============  # @Menu@ Mitosis
 
 ----------  # @Submenu@ 1. Clone Attributes Parent -> Child
-self.cloneParent2Child()
+self.clone_parent_2_child()
 
 ----------  # @Submenu@ 1. Clone Cluster Attributes Parent -> Child
-self.cloneParentCluster2ChildCluster()
+self.clone_parent_cluster_2_child_cluster()
 
 ----------  # @Submenu@ 2. Compact updateAttributes
-self.parentCell.targetVolume /= 2.0  # reducing parent target volume
-self.cloneParent2Child()
+self.parent_cell.targetVolume /= 2.0  # reducing parent target volume
+self.clone_parent_2_child()
 
 ----------  # @Submenu@ 2. Compact updateAttributes for clusters
 # we first redice target volum of the cluster of parent cell
-compartmentListParent = self.getClusterCells(self.parentCell.clusterId)
-for i in xrange(compartmentListParent.size()):
-    compartmentListParent[i].targetVolume /= 2.0
+compartment_list_parent = self.get_cluster_cells(self.parent_cell.clusterId)
+for i in range(compartment_list_parent.size()):
+    compartment_list_parent[i].targetVolume /= 2.0
 
 # later we clone attributes from parent cluster to child cluster
-self.cloneParentCluster2ChildCluster()
+self.clone_parent_cluster_2_child_cluster()
 
 ----------  # @Submenu@ Clone Attributes (Flexible)
-self.cloneAttributes(sourceCell=self.parentCell, targetCell=self.childCell, no_clone_key_dict_list=[ATTRIB_1, ATTRIB_2])
+self.clone_attributes(source_cell=self.parent_cell, target_cell=self.child_cell, no_clone_key_dict_list=[ATTRIB_1, ATTRIB_2])
 
 ----------  # @Submenu@ Child/Parent Random Relative Position
-self.setParentChildPositionFlag(0)
+self.set_parent_child_position_flag(0)
 
 ----------  # @Submenu@ Child on the Left of the Parent
-self.setParentChildPositionFlag(1)
+self.set_parent_child_position_flag(1)
 
 ----------  # @Submenu@ Child on the Right of the Parent
-self.setParentChildPositionFlag(-1)
+self.set_parent_child_position_flag(-1)
 
 ----------  # @Submenu@ Divide Cells Along Random Axis (Example)
 cells_to_divide = []
-for cell in self.cellList:
+for cell in self.cell_list:
     if cell.volume > 50:
         cells_to_divide.append(cell)
 
 for cell in cells_to_divide:
-    self.divideCellRandomOrientation(cell)
+    self.divide_cell_random_orientation(cell)
 
 ----------  # @Submenu@ Divide Cells Along Major Axis (Example)
 cells_to_divide = []
-for cell in self.cellList:
+for cell in self.cell_list:
     if cell.volume > 50:
         cells_to_divide.append(cell)
 
 for cell in cells_to_divide:
-    self.divideCellAlongMajorAxis(cell)
+    self.divide_cell_along_major_axis(cell)
 
 ----------  # @Submenu@ Divide Cells Along Minor Axis (Example)
 cells_to_divide = []
-for cell in self.cellList:
+for cell in self.cell_list:
     if cell.volume > 50:
         cells_to_divide.append(cell)
 
 for cell in cells_to_divide:
-    self.divideCellAlongMinorAxis(cell)
+    self.divide_cell_along_minor_axis(cell)
 
 ----------  # @Submenu@ Divide Cells Along Normal To Vector (Example)
 cells_to_divide = []
-for cell in self.cellList:
+for cell in self.cell_list:
     if cell.volume > 50:
         cells_to_divide.append(cell)
 
 for cell in cells_to_divide:
-    self.divideCellOrientationVectorBased(cell, 1, 0, 0)  # dividing along Y axis - normal to (1,0,0)
+    # dividing along Y axis - normal to (1,0,0)
+    self.divide_cell_orientation_vector_based(cell, 1, 0, 0)
 
 ----------  # @Submenu@ Divide Cluster Along Random Axis (Example)
-mitosisClusterIdList = []
-for compartmentList in self.clusterList:
+mitosis_cluster_id_list = []
+for compartment_list in self.cluster_list:
 
-    clusterId = 0
-    clusterVolume = 0
-    for cell in CompartmentList(compartmentList):
-        clusterVolume += cell.volume
-        clusterId = cell.clusterId
+    cluster_id = 0
+    cluster_volume = 0
+    for cell in CompartmentList(compartment_list):
+        cluster_volume += cell.volume
+        cluster_id = cell.clusterId
 
-    if clusterVolume > 250:  # condition under which cluster mitosis takes place
-        mitosisClusterIdList.append(
-            clusterId)  # instead of doing mitosis right away we store ids for clusters which should be divide. This avoids modifying cluster list while we iterate through it
-for clusterId in mitosisClusterIdList:
-    self.divideClusterRandomOrientation(clusterId)
+    # condition under which cluster mitosis takes place
+    if cluster_volume > 250:
+        # instead of doing mitosis right away we store ids for clusters which should be divide.
+        # This avoids modifying cluster list while we iterate through it
+        mitosis_cluster_id_list.append(cluster_id)
+
+for cluster_id in mitosis_cluster_id_list:
+    self.divide_cluster_random_orientation(cluster_id)
 
 ----------  # @Submenu@ Divide Cluster Along Major Axis (Example)
-mitosisClusterIdList = []
-for compartmentList in self.clusterList:
+mitosis_cluster_id_list = []
+for compartment_list in self.cluster_list:
 
-    clusterId = 0
-    clusterVolume = 0
-    for cell in CompartmentList(compartmentList):
-        clusterVolume += cell.volume
-        clusterId = cell.clusterId
+    cluster_id = 0
+    cluster_volume = 0
+    for cell in CompartmentList(compartment_list):
+        cluster_volume += cell.volume
+        cluster_id = cell.clusterId
 
-    if clusterVolume > 250:  # condition under which cluster mitosis takes place
-        mitosisClusterIdList.append(
-            clusterId)  # instead of doing mitosis right away we store ids for clusters which should be divide. This avoids modifying cluster list while we iterate through it
-for clusterId in mitosisClusterIdList:
-    self.divideClusterAlongMajorAxis(clusterId)
+    # condition under which cluster mitosis takes place
+    if cluster_volume > 250:
+        # instead of doing mitosis right away we store ids for clusters which should be divide.
+        # This avoids modifying cluster list while we iterate through it
+        mitosis_cluster_id_list.append(cluster_id)
+
+for cluster_id in mitosis_cluster_id_list:
+    self.divide_cluster_along_major_axis(cluster_id)
 
 ----------  # @Submenu@ Divide Cluster Along Minor Axis (Example)
-mitosisClusterIdList = []
-for compartmentList in self.clusterList:
+mitosis_cluster_id_list = []
+for compartment_list in self.clusterList:
 
-    clusterId = 0
-    clusterVolume = 0
-    for cell in CompartmentList(compartmentList):
-        clusterVolume += cell.volume
-        clusterId = cell.clusterId
+    cluster_id = 0
+    cluster_volume = 0
+    for cell in CompartmentList(compartment_list):
+        cluster_volume += cell.volume
+        cluster_id = cell.clusterId
 
-    if clusterVolume > 250:  # condition under which cluster mitosis takes place
-        mitosisClusterIdList.append(
-            clusterId)  # instead of doing mitosis right away we store ids for clusters which should be divide. This avoids modifying cluster list while we iterate through it
-for clusterId in mitosisClusterIdList:
-    self.divideClusterAlongMinorAxis(clusterId)
+    # condition under which cluster mitosis takes place
+    if cluster_volume > 250:
+        # instead of doing mitosis right away we store ids for clusters which should be divide.
+        # This avoids modifying cluster list while we iterate through it
+        mitosis_cluster_id_list.append(cluster_id)
+
+for cluster_id in mitosis_cluster_id_list:
+    self.divide_cluster_along_major_axis(cluster_id)
 
 ----------  # @Submenu@ Divide Cluster Along Normal To Vector (Example)
-mitosisClusterIdList = []
-for compartmentList in self.clusterList:
+mitosis_cluster_id_list = []
+for compartment_list in self.clusterList:
 
-    clusterId = 0
-    clusterVolume = 0
-    for cell in CompartmentList(compartmentList):
-        clusterVolume += cell.volume
-        clusterId = cell.clusterId
+    cluster_id = 0
+    cluster_volume = 0
+    for cell in CompartmentList(compartment_list):
+        cluster_volume += cell.volume
+        cluster_id = cell.clusterId
 
-    if clusterVolume > 250:  # condition under which cluster mitosis takes place
-        mitosisClusterIdList.append(
-            clusterId)  # instead of doing mitosis right away we store ids for clusters which should be divide. This avoids modifying cluster list while we iterate through it
-for clusterId in mitosisClusterIdList:
-    self.divideClusterOrientationVectorBased(clusterId, 1, 0, 0)
+    # condition under which cluster mitosis takes place
+    if cluster_volume > 250:
+        # instead of doing mitosis right away we store ids for clusters which should be divide.
+        # This avoids modifying cluster list while we iterate through it
+        mitosis_cluster_id_list.append(cluster_id)
+
+for cluster_id in mitosis_cluster_id_list:
+    self.divideClusterOrientationVectorBased(cluster_id, 1, 0, 0)
 
 ===============  # @Menu@ Parameter Scan Command Line
 
 ----------  # @Submenu@ 1. Run Parameter Scan Using Player (Windows)
 # NOTE: THIS COMMAND IS SUPPOSED TO BE EXECUTED IN COMMAND LINE SHELL, NOT IN PYTHON!
-paramScan.bat - i < cc3d
-project - file > --guiScan - -maxNumberOfRuns = 20[remaining
-command
+paramScan.bat - i < cc3dproject - file > --guiScan --maxNumberOfRuns=20[remaining command
 line
 options
 used in compucell3d.bat or runScript.bat]

@@ -1430,6 +1430,14 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
         """
         return CompuCell.areCellsDifferent(cell1, cell2)
 
+    @deprecated(version='4.0.0', reason="You should use : set_max_mcs")
+    def setMaxMCS(self, maxMCS):
+        return self.set_max_mcs(max_mcs=maxMCS)
+
+    def set_max_mcs(self, max_mcs):
+        self.simulator.setNumSteps(max_mcs)
+
+
 
 
 class MitosisSteppableBase(SteppableBasePy):
