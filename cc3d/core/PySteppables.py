@@ -1837,6 +1837,7 @@ class MitosisSteppableClustersBase(SteppableBasePy):
 
         return mitosis_done
 
+
 class RunBeforeMCSSteppableBasePy(SteppableBasePy):
     def __init__(self, frequency=1):
         SteppableBasePy.__init__(self, frequency)
