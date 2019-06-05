@@ -20,7 +20,7 @@ def process_cml():
     cml_parser = argparse.ArgumentParser(description='param_scan_run - Parameter Scan Run Script')
     cml_parser.add_argument('-i', '--input', required=True, action='store',
                             help='path to the CC3D project file (*.cc3d)')
-    cml_parser.add_argument('-o', '--output', required=True, action='store',
+    cml_parser.add_argument('-o', '--output-dir', required=True, action='store',
                             help='path to the output folder to store parameter scan results')
     cml_parser.add_argument('-f', '--output-frequency', required=False, action='store', default=0, type=int,
                             help='simulation snapshot output frequency')
@@ -47,11 +47,12 @@ def find_run_script(install_dir, gui_flag=False):
 
     raise FileNotFoundError('Could not find run script')
 
+
 if __name__ == '__main__':
     args = process_cml()
 
     cc3d_proj_fname = args.input
-    output_dir = args.output
+    output_dir = args.output_dir
     gui_flag = args.gui
     output_frequency = args.output_frequency
     screenshot_output_frequency = args.screenshot_output_frequency

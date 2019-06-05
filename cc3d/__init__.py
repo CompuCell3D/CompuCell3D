@@ -2,10 +2,10 @@ import os
 import sys
 from os.path import dirname, join, abspath
 
-versionMajor = 3
-versionMinor = 7
-versionBuild = 9
-revisionNumber = "20190321"
+versionMajor = 4
+versionMinor = 0
+versionBuild = 0
+revisionNumber = "20190604"
 
 
 def getVersionAsString():
