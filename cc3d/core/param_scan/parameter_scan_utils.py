@@ -1,6 +1,7 @@
 import time
 import sys
 import shutil
+from subprocess import Popen
 from collections import OrderedDict
 from pathlib import Path
 from typing import List, Union
@@ -294,9 +295,12 @@ def run_main_player_run_script(arg_list_local: list):
 
 
 def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_scan_parameters: dict,
+                                     run_script: Union[str, Path] = '', gui_flag: bool=False,
                                      output_dir: str = None, arg_list: list = []):
+
+
     """
-    Given the set of scanned parameters This funciton creates CC3D project (by applying)
+    Given the set of scanned parameters This function creates CC3D project (by applying)
     parameter set to the .cc3d template and the runs such newly created simulation
     Runs single CC3D simulation
 
@@ -331,12 +335,21 @@ def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_
     # at this point arg_list may have args from main script
     arg_list_local = deepcopy(arg_list)
     arg_list_local += ['--input={}'.format(cc3d_proj_template),
-                       '--screenshotOutputDir={}'.format(cc3d_proj_template.parent), '--exitWhenDone']
+                       '--output-dir={}'.format(cc3d_proj_template.parent),]
+    if gui_flag:
+        arg_list_local += ['--exit-when-done']
 
     print('Running simulation with current_scan_parameters=', current_scan_parameters)
 
-    main_player(arg_list_local)
+    popen_args = [run_script] + arg_list_local
+    print('command=', popen_args)
+
+
+    cc3d_process = Popen(popen_args)
+    cc3d_process.communicate()
+
+    # main_player(arg_list_local)
 
     print('repeat: Running simulation with current_scan_parameters=', current_scan_parameters)
 
-    time.sleep(5.0)
+    # time.sleep(5.0)

@@ -114,6 +114,7 @@ def main(argv):
     # process reminder of the command line options
     # TODO
     if argv != "":
+        main_window.viewmanager.set_cml_args(cml_args)
         main_window.viewmanager.process_command_line_options(cml_args)
 
     main_window.show()

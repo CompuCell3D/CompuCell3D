@@ -35,17 +35,13 @@ from .PlotManagerSetup import createPlotManager
 from .WidgetManager import WidgetManager
 from cc3d.cpp import PlayerPython
 from cc3d.core.CMLFieldHandler import CMLFieldHandler
-
 from . import ScreenshotManager
 import vtk
-
 from cc3d import CompuCellSetup
 from cc3d.core.RollbackImporter import RollbackImporter
-
 from cc3d.CompuCellSetup.readers import readCC3DFile
 
 # import cc3d.Version as Version
-
 FIELD_TYPES = (
     "CellField", "ConField", "ScalarField", "ScalarFieldCellLevel", "VectorField", "VectorFieldCellLevel", "CustomVis")
 
@@ -136,6 +132,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.__fieldType = ("Cell_Field", FIELD_TYPES[0])
 
+        # parsed command line args
+        self.cml_args = None
 
         self.simulationIsStepping = False
         self.simulationIsRunning = False
@@ -192,31 +190,12 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.nextSimulation = ""
         self.dlg = None
 
-        # parameter scan variables
-        # self.singleSimulation = False
-        # self.parameterScanFile = ''
-        # self.parameterScanOutputDir = ''
-        # self.consecutiveRunCounter = 0
-
-        # self.maxNumberOfConsecutiveRuns = 50
-        # extracting from the runScript maximum number of consecutive runs
-        # try:
-        #     self.maxNumberOfConsecutiveRuns = int(os.environ["MAX_NUMBER_OF_CONSECUTIVE_RUNS"])
-        # except:
-        #     # if for whatever reason we cannot do it we stay with the default value
-        #     pass
-
-            # note that this variable will be the same as self.simulation when doing CMLReplay mode.
-            # I keep it under diffferent name to keep track of the places in the code where
-            # I am using SimulationThread API and where I use CMLResultReade replay part of the API
-
         # this means that further refactoring is needed but I leave it for now
         self.cmlReplayManager = None
 
         # Here we are checking for new version - notice we use check interval in order not to perform version checks
         # too often. Default check interval is 7 days
         self.check_version(check_interval=7)
-
 
     def update_recent_file_menu(self) -> None:
         """
@@ -533,17 +512,21 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         self.update_window_menu()
 
-    def process_command_line_options(self, cml_args:argparse.Namespace)->None:
+    def set_cml_args(self, cml_args:argparse.Namespace):
         """
-        initializes player internal variables based on command line input.
-        Also if user passes appropriate option this function may get simulation going directly from command line
+        storing parsed cml arguments
         :param cml_args: {}
         :return:
         """
-
-        persistent_globals = CompuCellSetup.persistent_globals
         self.cml_args = cml_args
 
+    def override_settings_using_cml_args(self, cml_args:argparse.Namespace)->None:
+        """
+        overrides settings using cml arguments
+        :param cml_args:
+        :return:
+        """
+        persistent_globals = CompuCellSetup.persistent_globals
         start_simulation = False
 
         if cml_args.input:
@@ -556,8 +539,53 @@ class SimpleTabView(MainArea, SimpleViewManager):
             persistent_globals.set_output_dir(output_dir=cml_args.screenshotOutputDir)
             self.__imageOutput = True
 
+        if cml_args.screenshot_output_frequency > 0:
+            self.__imageOutput = True
+            self.__shotFrequency = cml_args.screenshot_output_frequency
+
+        if cml_args.outputFrequency:
+            self.__latticeOutputFlag = True
+            self.__latticeOutputFrequency = cml_args.outputFrequency
+
         if cml_args.playerSettings:
             self.playerSettingsFileName = cml_args.playerSettings
+
+        return {'start_simulation':start_simulation}
+
+    def process_command_line_options(self, cml_args:argparse.Namespace)->None:
+        """
+        initializes player internal variables based on command line input.
+        Also if user passes appropriate option this function may get simulation going directly from command line
+        :param cml_args: {}
+        :return:
+        """
+
+        # persistent_globals = CompuCellSetup.persistent_globals
+        self.cml_args = cml_args
+
+        settings_dict = self.override_settings_using_cml_args(cml_args=self.cml_args)
+        start_simulation = settings_dict['start_simulation']
+
+        # if cml_args.input:
+        #     self.__sim_file_name = cml_args.input
+        #     start_simulation = True
+        #
+        # self.__imageOutput = not cml_args.noOutput
+        #
+        # if cml_args.screenshotOutputDir:
+        #     persistent_globals.set_output_dir(output_dir=cml_args.screenshotOutputDir)
+        #     self.__imageOutput = True
+        #
+        # if cml_args.screenshot_output_frequency > 0:
+        #     self.__imageOutput = True
+        #     self.__shotFrequency = cml_args.screenshot_output_frequency
+        #
+        # if cml_args.outputFrequency:
+        #     self.__latticeOutputFlag = True
+        #     self.__latticeOutputFrequency = cml_args.outputFrequency
+        #
+        # if cml_args.playerSettings:
+        #     self.playerSettingsFileName = cml_args.playerSettings
 
         current_dir = cml_args.currentDir if cml_args.currentDir else ''
         if cml_args.windowSize:
@@ -865,27 +893,8 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # hook in simulation thread class to XML model TreeView panel in the GUI - needed for steering
         self.simulation.setSimModel(self.model)
 
-        # self.model.checkSanity()
-
         self.__modelEditor.setModel(self.model)
-        #        print MODULENAME,' --------- prepareXMLTreeView(self):'
-        #        import pdb; pdb.set_trace()
         self.model.setPrintFlag(True)
-
-        # todo
-        pass
-
-        # self.root_element = CompuCellSetup.cc3dXML2ObjConverter.root
-        # self.model = SimModel(self.root_element, self.__modelEditor)
-        # self.simulation.setSimModel(
-        #     self.model)  # hook in simulation thread class to XML model TreeView panel in the GUI - needed for steering
-        #
-        # # self.model.checkSanity()
-        #
-        # self.__modelEditor.setModel(self.model)
-        # #        print MODULENAME,' --------- prepareXMLTreeView(self):'
-        # #        import pdb; pdb.set_trace()
-        # self.model.setPrintFlag(True)
 
     def prepareLatticeDataView(self):
         '''
@@ -982,15 +991,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
             #                self.graphicsWindowVisDict[self.lastActiveWindow.winId()][4] = False
             self.fpp_links_act.setChecked(False)
 
-        # todo 5 - old code
-
-        # CompuCellSetup.playerType = "CMLResultReplay"
-        # CompuCellSetup.parseXML(file_name)
-        #
-        # self.prepareForNewSimulation()
-        #
-        # CompuCellSetup.simulationPaths.setSimulationResultDescriptionFile(file_name)
-
         persistent_globals.player_type = 'CMLResultReplay'
         persistent_globals.cc3d_xml_2_obj_converter = CompuCellSetup.parseXML(file_name)
 
@@ -1002,28 +1002,26 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.prepareLatticeDataView()
 
     def __loadCC3DFile(self, fileName):
-        '''
+        """
         Loads .cc3d file . loads project-specific settings for the project if such exist or creates them based on the
         global settings stored in ~/.compucell3d. It internally invokes the data reader modules which reads the file
         and populate resources and file paths in CC3DSimulationDataHandler class object.
         :param fileName: str - .cc3d file name
         :return:None
-        '''
+        """
 
         """
          CC3DSimulationDataHandler class holds the file paths of all the resources and has methods to read the 
         .cc3d file contents
         """
-        # import CC3DSimulationDataHandler
-        # self.cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler(self)
 
         # Checking if the file is readable otherwise raising an error
         try:
             f = open(fileName, 'r')
             f.close()
         except IOError as e:
-            msg = QMessageBox.warning(self, "Not A Valid Simulation File", \
-                                      "Please make sure <b>%s</b> exists" % fileName, \
+            msg = QMessageBox.warning(self, "Not A Valid Simulation File",
+                                      "Please make sure <b>%s</b> exists" % fileName,
                                       QMessageBox.Ok)
 
             raise IOError("%s does not exist" % fileName)
@@ -1031,32 +1029,29 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.cc3dSimulationDataHandler = readCC3DFile(fileName=fileName)
         # self.cc3dSimulationDataHandler.readCC3DFileFormat(fileName)
 
-        # check if current CC3D version is greater or equal to the version (minimal required version) specified in the project
+        # check if current CC3D version is greater or equal to the version
+        # (minimal required version) specified in the project
 
-        currentVersion = cc3d.getVersionAsString()
-        currentVersionInt = currentVersion.replace('.', '')
-        projectVersion = self.cc3dSimulationDataHandler.cc3dSimulationData.version
-        projectVersionInt = projectVersion.replace('.', '')
-        # print 'projectVersion=', projectVersion
-        # print 'currentVersion=', currentVersion
+        current_version = cc3d.getVersionAsString()
+        current_version_int = current_version.replace('.', '')
+        project_version = self.cc3dSimulationDataHandler.cc3dSimulationData.version
+        project_version_int = project_version.replace('.', '')
 
-        if int(projectVersionInt) > int(currentVersionInt):
-            msg = QMessageBox.warning(self, "CompuCell3D Version Mismatch", \
-                                      "Your CompuCell3D version <b>%s</b> might be too old for the project you are trying to run. The least version project requires is <b>%s</b>. You may run project at your own risk" % (
-                                          currentVersion, projectVersion), \
+        if int(project_version_int) > int(current_version_int):
+            msg = QMessageBox.warning(self, "CompuCell3D Version Mismatch",
+                                      "Your CompuCell3D version <b>%s</b> might be too old for the project "
+                                      "you are trying to run. The least version project requires is <b>%s</b>. "
+                                      "You may run project at your own risk" % (
+                                          current_version, project_version),
                                       QMessageBox.Ok)
 
         self.customSettingPath = self.cc3dSimulationDataHandler.cc3dSimulationData.custom_settings_path
         Configuration.initializeCustomSettings(self.customSettingPath)
         self.__paramsChanged()
 
-        # todo 5  - previous code - see if it still make ssense
-        # # If project settings exists using the project settings
-        # if self.cc3dSimulationDataHandler.cc3dSimulationData.playerSettingsResource:
-        #     self.customSettingPath = self.cc3dSimulationDataHandler.cc3dSimulationData.playerSettingsResource.path
-        #     # print 'GOT CUSTOM SETTINGS RESOURCE = ', self.customSettingPath
-        #     Configuration.initializeCustomSettings(self.customSettingPath)
-        #     self.__paramsChanged()
+        # override settings with command line options
+        if self.cml_args is not None:
+            self.override_settings_using_cml_args(self.cml_args)
 
         if self.cc3dSimulationDataHandler.cc3dSimulationData.pythonScript != "":
             self.simulation.setRunUserPythonScriptFlag(True)
@@ -1067,77 +1062,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 os.path.join(self.cc3dSimulationDataHandler.cc3dSimulationData.basePath, 'Simulation',
                              settings_data.SETTINGS_FILE_NAME))
 
-            # self.customSettingPath = os.path.abspath(
-            #     os.path.join(self.cc3dSimulationDataHandler.cc3dSimulationData.basePath, 'Simulation/_settings.xml'))
-            # Configuration.writeCustomFile(self.customSettingPath)
             Configuration.writeSettingsForSingleSimulation(self.customSettingPath)
-
-        # # Checking for parameter scan resource
-        # if self.cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource:
-        #
-        #     cc3dProjectDir = os.path.dirname(fileName)
-        #     paramScanXMLFileName = self.cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.path
-        #
-        #     # checking if simulation file directory is writeable if not parameterscan cannot run properly - writeable simulation fiel directory is requirement for parameter scan
-        #     if not os.access(cc3dProjectDir, os.W_OK):
-        #         raise AssertionError(
-        #             'parameter Scan Error: CC3D project directory:' + cc3dProjectDir + ' has to be writeable. Please change permission on the directory of the .cc3d project')
-        #     # check if parameter scan file is writeable
-        #     if not os.access(paramScanXMLFileName, os.W_OK):
-        #         raise AssertionError(
-        #             'parameter Scan Error: Parameter Scan xml file :' + paramScanXMLFileName + ' has to be writeable. Please change permission on this file')
-        #
-            # todo 5- refactor this for parameter scans
-            # try:
-            #     from FileLock import FileLock
-            #     with FileLock(file_name=fileName, timeout=10, delay=0.05)  as flock:
-            #
-            #         self.singleSimulation = False
-            #         self.parameterScanFile = self.cc3dSimulationDataHandler.cc3dSimulationData.parameterScanResource.path  # parameter scan file path
-            #         pScanFilePath = self.parameterScanFile
-            #         # We use separate ParameterScanUtils object to handle parameter scan
-            #         from ParameterScanUtils import ParameterScanUtils
-            #
-            #         psu = ParameterScanUtils()
-            #
-            #         psu.readParameterScanSpecs(pScanFilePath)
-            #
-            #         paramScanSpecsDirName = os.path.dirname(pScanFilePath)
-            #
-            #         outputDir = str(Configuration.getSetting('OutputLocation'))
-            #
-            #         customOutputPath = psu.prepareParameterScanOutputDirs(_outputDirRoot=outputDir)
-            #
-            #         self.cc3dSimulationDataHandler.copySimulationDataFiles(customOutputPath)
-            #
-            #         # construct path to the just-copied .cc3d file
-            #         cc3dFileBaseName = os.path.basename(self.cc3dSimulationDataHandler.cc3dSimulationData.path)
-            #         cc3dFileFullName = os.path.join(customOutputPath, cc3dFileBaseName)
-            #
-            #         psu.replaceValuesInSimulationFiles(_pScanFileName=pScanFilePath, _simulationDir=customOutputPath)
-            #         # save parameter Scan spec file with incremented ityeration
-            #         psu.saveParameterScanState(_pScanFileName=pScanFilePath)
-            #
-            #         self.__parent.setWindowTitle('ParameterScan: ' +
-            #                                      basename(self.__sim_file_name) + ' Iteration: ' + basename(
-            #             customOutputPath) + " - CompuCell3D Player")
-            #
-            #         # read newly created .cc3d file
-            #         self.cc3dSimulationDataHandler.readCC3DFileFormat(cc3dFileFullName)
-            #
-            #         # # setting simultaion output dir names
-            #         self.customScreenshotDirectoryName = customOutputPath
-            #         CompuCellSetup.screenshotDirectoryName = customOutputPath
-            #         self.screenshotDirectoryName = customOutputPath
-            #         self.parameterScanOutputDir = customOutputPath
-            #         # print 'self.screenshotDirectoryName=',self.screenshotDirectoryName
-            #
-            # except AssertionError as e:  # propagating exception
-            #     raise e
-
-        # else:
-        #     self.singleSimulation = True
-
 
     def __setConnects(self):
         '''
@@ -1568,7 +1493,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         """
 
         # creating cml field handler in case lattice output is ON
-        if Configuration.getSetting("LatticeOutputOn") and not self.cmlHandlerCreated:
+        if self.__latticeOutputFlag and not self.cmlHandlerCreated:
             persistent_globals = CompuCellSetup.persistent_globals
             persistent_globals.cml_field_handler = CMLFieldHandler()
             persistent_globals.cml_field_handler.initialize(field_storage=self.fieldStorage)

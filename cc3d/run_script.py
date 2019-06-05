@@ -9,6 +9,9 @@ from cc3d import CompuCellSetup
 from cc3d.CompuCellSetup.sim_runner import run_cc3d_project
 from cc3d.core.RollbackImporter import RollbackImporter
 
+"""
+-i d:\CC3DProjects\bac_mac_restart_100\bacterium_macrophage_2D_steering.cc3d -f 10 -fr 100 --restart-multiple-snapshots
+"""
 
 def process_cml():
     """
@@ -37,9 +40,8 @@ def process_cml():
     cml_parser.add_argument('--restart-multiple-snapshots', required=False, action='store_true', default=False,
                             help='turns on storing of multiple restart snapshots')
 
-
-
     return cml_parser.parse_args()
+
 
 def handle_error():
     """
@@ -59,12 +61,10 @@ def handle_error():
 
     if simthread is not None:
         # simthread.emitErrorOccured('Python Error', tb)
-        simthread.emitErrorFormatted( traceback_text)
+        simthread.emitErrorFormatted(traceback_text)
 
 
-
-
-if __name__ =='__main__':
+if __name__ == '__main__':
     args = process_cml()
     cc3d_sim_fname = args.input
     output_frequency = args.output_frequency

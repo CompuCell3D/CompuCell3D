@@ -22,19 +22,42 @@ def process_cml():
                             help='path to the CC3D project file (*.cc3d)')
     cml_parser.add_argument('-o', '--output', required=True, action='store',
                             help='path to the output folder to store parameter scan results')
-    cml_parser.add_argument('-f', '--outputFrequency', required=False, action='store', default=1, type=int,
+    cml_parser.add_argument('-f', '--output-frequency', required=False, action='store', default=0, type=int,
                             help='simulation snapshot output frequency')
+    cml_parser.add_argument('--screenshot-output-frequency', required=False, action='store', default=0, type=int,
+                            help='screenshot output frequency')
+    cml_parser.add_argument('--gui', required=False, action='store_true',default=False,
+                            help='path to the output folder to store parameter scan results')
+    cml_parser.add_argument('--install-dir', required=True, type=str, help='CC3D install directory')
 
     args = cml_parser.parse_args()
     return args
 
+
+def find_run_script(install_dir, gui_flag=False):
+    if gui_flag:
+        possible_scripts = ['compucell3d.bat', 'compucell3d.command', 'compucell3d.sh']
+    else:
+        possible_scripts = ['runScript.bat', 'runScript.command', 'runScript.sh']
+
+    for script_name in possible_scripts:
+        full_script_path = Path(install_dir).joinpath(script_name)
+        if full_script_path.exists():
+            return str(full_script_path)
+
+    raise FileNotFoundError('Could not find run script')
 
 if __name__ == '__main__':
     args = process_cml()
 
     cc3d_proj_fname = args.input
     output_dir = args.output
-    output_frequency = args.outputFrequency
+    gui_flag = args.gui
+    output_frequency = args.output_frequency
+    screenshot_output_frequency = args.screenshot_output_frequency
+    install_dir = args.install_dir
+
+    run_script = find_run_script(install_dir=install_dir, gui_flag=gui_flag)
 
     param_scan_complete_pth = param_scan_complete_signal(output_dir=output_dir)
 
@@ -46,7 +69,6 @@ if __name__ == '__main__':
     cc3d_proj_target = cc3d_proj_pth_in_output_dir(cc3d_proj_fname=cc3d_proj_fname, output_dir=output_dir)
 
     create_param_scan_status(cc3d_proj_target, output_dir=output_dir)
-
 
     while True:
         try:
@@ -64,8 +86,12 @@ if __name__ == '__main__':
 
             break
 
-        arg_list = ['--outputFrequency={}'.format(output_frequency)]
-        run_single_param_scan_simulation(cc3d_proj_fname=cc3d_proj_fname,
+        arg_list = [
+            '--output-frequency={}'.format(output_frequency),
+            '--screenshot-output-frequency={}'.format(screenshot_output_frequency)
+        ]
+
+        run_single_param_scan_simulation(cc3d_proj_fname=cc3d_proj_fname,run_script=run_script, gui_flag=gui_flag,
                                          current_scan_parameters=current_scan_parameters, output_dir=output_dir,
                                          arg_list=arg_list)
 
