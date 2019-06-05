@@ -1506,9 +1506,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
 
         # will need to sync screenshots with simulation thread.
         # Be sure before simulation thread writes new results all the screenshots are taken
-
-        print('self.__imageOutput=',self.__imageOutput)
-        print('self.__shotFrequency=', self.__shotFrequency)
         if self.__imageOutput and not (self.__step % self.__shotFrequency):
             if self.screenshotManager:
                 try:
