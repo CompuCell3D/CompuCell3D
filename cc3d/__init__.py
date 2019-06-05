@@ -88,5 +88,5 @@ elif sys.platform.startswith('darwin'):
 
     os.environ['DYLD_LIBRARY_PATH'] = ':'.join(dyld_env_list)
 
-print('ENVIRONMENT VARS=', os.environ)
+# print('ENVIRONMENT VARS=', os.environ)
 

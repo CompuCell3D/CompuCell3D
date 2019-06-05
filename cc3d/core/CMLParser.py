@@ -45,7 +45,7 @@ class CMLParser(object):
         cml_parser.add_argument('--output-frequency', required=False, action='store', type=int, default=0,
                                 help='simulation snapshot output frequency')
 
-        cml_parser.add_argument('--screenshot-output-frequency', required=False, action='store', type=int, default=0,
+        cml_parser.add_argument('--screenshot-output-frequency', required=False, action='store', type=int, default=-1,
                                 help='screenshot output frequency')
 
         cml_parser.add_argument('-s', '--screenshotDescription', required=False, action='store',

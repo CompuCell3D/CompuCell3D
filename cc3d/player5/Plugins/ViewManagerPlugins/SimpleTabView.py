@@ -539,8 +539,10 @@ class SimpleTabView(MainArea, SimpleViewManager):
             persistent_globals.set_output_dir(output_dir=cml_args.screenshotOutputDir)
             self.__imageOutput = True
 
-        if cml_args.screenshot_output_frequency > 0:
+        if cml_args.screenshot_output_frequency >= 0:
             self.__imageOutput = True
+            if cml_args.screenshot_output_frequency ==0 :
+                self.__imageOutput = False
             self.__shotFrequency = cml_args.screenshot_output_frequency
 
         if cml_args.outputFrequency:
@@ -1505,8 +1507,9 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # will need to sync screenshots with simulation thread.
         # Be sure before simulation thread writes new results all the screenshots are taken
 
-        if self.__imageOutput and not (self.__step % self.__shotFrequency):  # dumping images? Check modulo MCS #
-
+        print('self.__imageOutput=',self.__imageOutput)
+        print('self.__shotFrequency=', self.__shotFrequency)
+        if self.__imageOutput and not (self.__step % self.__shotFrequency):
             if self.screenshotManager:
                 try:
                     self.screenshotManager.output_screenshots(mcs=self.__step)
