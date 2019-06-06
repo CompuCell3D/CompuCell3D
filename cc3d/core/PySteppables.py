@@ -1316,15 +1316,14 @@ class SteppableBasePy(SteppablePy, SBMLSolverHelper):
             "Please define Secretion Plugin in the XML before requesting secretor object from Python script."
             'Secreion Plugin can be defined by including <Plugin Name="Secretion"/> in the XML')
 
-    # TODO - check this API starting from here
-
     @deprecated(version='4.0.0', reason="You should use : hex_2_cartesian")
     def hex2Cartesian(self,_in):
         return self.hex_2_cartesian(coords=_in)
 
     def hex_2_cartesian(self, coords):
         """
-        this transformation takes coordinates of a point on a hex lattice and returns integer coordinates of cartesian pixel that is nearest given point on hex lattice
+        this transformation takes coordinates of a point on a hex lattice and returns integer coordinates of cartesian
+        pixel that is nearest given point on hex lattice
         It is the inverse transformation of the one coded in HexCoord in BoundaryStrategy.cpp (see Hex2Cartesian).
 
         Argument: _in is either a tuple or a list or array with 3 elements or Coordinates3D<double> object

@@ -440,8 +440,6 @@ def main_loop(sim, simthread, steppable_registry=None):
     if steppable_registry is not None:
         steppable_registry.init(sim)
 
-    max_num_steps = sim.getNumSteps()
-
     init_lattice_snapshot_objects()
     init_screenshot_manager()
 
@@ -458,7 +456,7 @@ def main_loop(sim, simthread, steppable_registry=None):
 
     cur_step = beginning_step
 
-    while cur_step < max_num_steps:
+    while cur_step < sim.getNumSteps():
         if CompuCellSetup.persistent_globals.user_stop_simulation_flag:
             run_finish_flag = False
             break
@@ -541,7 +539,7 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
     if not steppable_registry is None:
         steppable_registry.init(sim)
 
-    max_num_steps = sim.getNumSteps()
+
 
     # called in extraInitSimulationObjects
     # sim.start()
@@ -559,7 +557,7 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
 
     cur_step = beginning_step
 
-    while cur_step < max_num_steps:
+    while cur_step < sim.getNumSteps():
         simthread.beforeStep(_mcs=cur_step)
         if simthread.getStopSimulation() or CompuCellSetup.persistent_globals.user_stop_simulation_flag:
             run_finish_flag = False
@@ -596,7 +594,9 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
         screen_update_frequency = simthread.getScreenUpdateFrequency()
         screenshot_frequency = simthread.getScreenshotFrequency()
 
-        if (cur_step % screen_update_frequency == 0) or (cur_step % screenshot_frequency == 0):
+        if (screen_update_frequency > 0 and cur_step % screen_update_frequency == 0) or (
+                screenshot_frequency > 0 and cur_step % screenshot_frequency == 0):
+
             simthread.loopWork(cur_step)
             simthread.loopWorkPostEvent(cur_step)
 
