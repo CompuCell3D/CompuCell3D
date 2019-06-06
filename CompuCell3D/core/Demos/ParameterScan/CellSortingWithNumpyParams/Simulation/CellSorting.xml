@@ -1,0 +1,87 @@
+<CompuCell3D version="3.6.2">
+
+   <Potts>
+      <Dimensions x="100" y="{{y_dim}}" z="1"/>
+      <Steps>{{steps}}</Steps>
+      <Temperature>10.0</Temperature>
+      <NeighborOrder>2</NeighborOrder>
+   </Potts>
+   
+   <Plugin Name="CellType">
+      
+      <!-- Listing all cell types in the simulation -->
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="Light"/>
+      <CellType TypeId="2" TypeName="Dark"/>
+   </Plugin>
+   
+   <Plugin Name="Volume">
+      <VolumeEnergyParameters CellType="Light" LambdaVolume="2.0" TargetVolume="25"/>
+      <VolumeEnergyParameters CellType="Dark" LambdaVolume="2.0" TargetVolume="25"/>
+   </Plugin>
+   
+   <Plugin Name="Contact">
+      <!-- Specification of adhesion energies -->
+      <Energy Type1="Medium" Type2="Medium">0.0</Energy>
+      <Energy Type1="Medium" Type2="Light">16.0</Energy>
+      <Energy Type1="Medium" Type2="Dark">16.0</Energy>
+      <Energy Type1="Light" Type2="Light">15.0</Energy>
+      <Energy Type1="Light" Type2="Dark">10.0</Energy>
+      <Energy Type1="Dark" Type2="Dark">2.0</Energy>
+      <NeighborOrder>2</NeighborOrder>
+   </Plugin>
+
+   <Steppable Type="DiffusionSolverFE">
+      
+      <!-- Specification of PDE solvers -->
+      <DiffusionField>
+         <DiffusionData>
+            <FieldName>FGF</FieldName>
+            <GlobalDiffusionConstant>0.1</GlobalDiffusionConstant>
+            <GlobalDecayConstant>1e-05</GlobalDecayConstant>
+            <!-- Additional options are: -->
+            <!-- <InitialConcentrationExpression>x*y</InitialConcentrationExpression> -->
+            <!-- <ConcentrationFileName>INITIAL CONCENTRATION FIELD - typically a file with path Simulation/NAME_OF_THE_FILE.txt</ConcentrationFileName> -->
+            <DiffusionCoefficient CellType="Light">0.1</DiffusionCoefficient>
+            <DiffusionCoefficient CellType="Dark">0.1</DiffusionCoefficient>
+            <DecayCoefficient CellType="Light">0.0001</DecayCoefficient>
+            <DecayCoefficient CellType="Dark">0.0001</DecayCoefficient>
+         </DiffusionData>
+         <SecretionData>
+            <!-- When secretion is defined inside DissufionSolverFEall secretio nconstants are scaled automaticly to account for extra calls of the solver when handling large diffusion constants -->
+            
+            <!-- Uniform secretion Definition -->
+            <Secretion Type="Light">0.1</Secretion>
+            <Secretion Type="Dark">0.1</Secretion>
+            <!-- <SecretionOnContact SecreteOnContactWith="Light,Dark" Type="Dark">0.2</SecretionOnContact> -->
+            <!-- <ConstantConcentration Type="Dark">0.1</ConstantConcentration> -->
+         </SecretionData>
+         <BoundaryConditions>
+            <Plane Axis="X">
+               <ConstantValue PlanePosition="Min" Value="10.0"/>
+               <ConstantValue PlanePosition="Max" Value="5.0"/>
+               <!-- Other options are (examples): -->
+               <!-- <Periodic/> -->
+               <!-- <ConstantDerivative PlanePosition="Min" Value="10.0"/> -->
+            </Plane>
+            <Plane Axis="Y">
+               <ConstantDerivative PlanePosition="Min" Value="10.0"/>
+               <ConstantDerivative PlanePosition="Max" Value="5.0"/>
+               <!-- Other options are (examples): -->
+               <!-- <Periodic/> -->
+               <!-- <ConstantValue PlanePosition="Min" Value="10.0"/> -->
+            </Plane>
+         </BoundaryConditions>
+      </DiffusionField>
+   </Steppable>
+   
+   <Steppable Type="UniformInitializer">
+      <Region>
+         <BoxMin x="20" y="20" z="0"/>
+         <BoxMax x="50" y="50" z="1"/>
+         <Gap>0</Gap>
+         <Width>5</Width>
+         <Types>Light,Dark</Types>
+      </Region>
+   </Steppable>
+</CompuCell3D>
