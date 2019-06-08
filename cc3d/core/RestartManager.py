@@ -8,7 +8,7 @@ from cc3d.cpp import SerializerDEPy
 from cc3d.core.PySteppables import CellList
 from cc3d.core.XMLUtils import ElementCC3D
 from cc3d.core import XMLUtils
-from cc3d.core import Version
+import cc3d
 from cc3d import CompuCellSetup
 from .CC3DSimulationDataHandler import CC3DSimulationDataHandler
 from .SteeringParam import SteeringParam
@@ -1208,7 +1208,7 @@ class RestartManager:
         self.serializer.init(pg.simulator)
 
         rst_xml_elem = ElementCC3D("RestartFiles",
-                                   {"Version": Version.getVersionAsString(), 'Build': Version.getSVNRevisionAsString()})
+                                   {"Version": cc3d.__version__, 'Build': cc3d.__revision__})
         rst_xml_elem.ElementCC3D("Step", {}, step)
         print('outputRestartFiles')
 
