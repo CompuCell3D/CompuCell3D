@@ -193,9 +193,6 @@ class PlotManager(QtCore.QObject):
 
         #
 
-
-        # newWindow.setWindowTitle('DUPA')
-        # newWindow.setShown(False)
         newWindow.show()
 
         mdiPlotWindow = self.vm.addSubWindow(newWindow)

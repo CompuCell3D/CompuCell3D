@@ -349,7 +349,7 @@ def get_data_frame():
     # return df
 
     df = pd.DataFrame.from_items([('Name',['a','b','c','d','e']),
-                                  ('Value',[5.1,6.2,7.3,8.4, 'dupa']),
+                                  ('Value',[5.1,6.2,7.3,8.4, 'dp']),
                                   ('Min', [0.0, 0.,0.,0.,0.0]),
                                   ('Max', [100.0, 100., 100., 100.,100 ])
                                   ])

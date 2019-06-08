@@ -596,8 +596,7 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # actors_dict['min_max_text_actor'] = txt
 
         # min_max_text_actor = actors_dict['min_max_text_actor']
-        # min_max_text_actor.SetInput('DUPAAAAAAAAAAAAAAAAAAA')
-        # min_max_text_actor.SetPosition(20, 20)
+                # min_max_text_actor.SetPosition(20, 20)
         #
         # min_max_text_actor.GetTextProperty().SetFontSize(24)
         # min_max_text_actor.GetTextProperty().SetColor(1.0, 0.0, 0.0)
@@ -782,7 +781,6 @@ class MVCDrawModel2D(MVCDrawModelBase):
         # actors_dict['min_max_text_actor'] = txt
 
         # min_max_text_actor = actors_dict['min_max_text_actor']
-        # min_max_text_actor.SetInput('DUPAAAAAAAAAAAAAAAAAAA')
         # min_max_text_actor.SetPosition(20, 20)
         #
         # min_max_text_actor.GetTextProperty().SetFontSize(24)
