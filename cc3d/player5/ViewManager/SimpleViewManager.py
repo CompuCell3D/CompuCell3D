@@ -5,7 +5,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import cc3d.player5.Configuration as Configuration
 from cc3d.player5 import DefaultData
-from cc3d.core import Version
+import cc3d
 import datetime
 from cc3d.player5.Utilities.WebFetcher import WebFetcher
 
@@ -525,8 +525,8 @@ class SimpleViewManager(QObject):
                 except:
                     pass
 
-        instance_version = Version.getVersionAsString()
-        instance_revision = Version.getSVNRevision()
+        instance_version = cc3d.__version__
+        instance_revision = cc3d.__revision__
         try:
             current_version_number = int(current_version.replace('.', ''))
         except:
@@ -594,9 +594,9 @@ class SimpleViewManager(QObject):
         revision_str = '0'
 
         try:
-            version_str = Version.getVersionAsString()
-            revision_str = Version.getSVNRevisionAsString()
-        except ImportError as e:
+            version_str = cc3d.__version__
+            revision_str = cc3d.__revision__
+        except ImportError :
             pass
 
         # import Configuration
