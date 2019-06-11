@@ -128,6 +128,41 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
   INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})
   INSTALL(FILES ${CMAKE_BINARY_DIR}/post_install_tasks/optimization.bat.in.v2 DESTINATION ${CMAKE_INSTALL_PREFIX})
 
+elseif (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+
+    if (BUNDLE_PYTHON)
+        SET(PYTHON_EXEC_FILE "\${PREFIX_CC3D}/python37/bin/python")
+        message ("USING BUNDLE")
+    else(BUNDLE_PYTHON)
+        SET(PYTHON_EXEC_FILE ${PYTHON_EXECUTABLE})
+        message ("USING EXTERNAL PYTHON")
+    endif(BUNDLE_PYTHON)
+
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/pyqt5/compucell3d.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/compucell3d.command @ONLY)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/pyqt5/twedit++.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/twedit++.command @ONLY)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/pyqt5/runScript.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/runScript.command @ONLY)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/pyqt5/paramScan.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/paramScan.command @ONLY)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/pyqt5/optimization.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/optimization.command @ONLY)
+
+
+#  INSTALL(FILES
+#     ${CMAKE_BINARY_DIR}/post_install_tasks/mac/compucell3d.command
+#     ${CMAKE_BINARY_DIR}/post_install_tasks/mac/twedit++.command
+#     ${CMAKE_BINARY_DIR}/post_install_tasks/mac/runScript.command
+#     ${CMAKE_BINARY_DIR}/post_install_tasks/mac/paramScan.command
+#     ${CMAKE_BINARY_DIR}/post_install_tasks/mac/optimization.command
+#
+#     DESTINATION
+#
+#     ${CMAKE_INSTALL_PREFIX}
+# )
+
+
+    FILE(GLOB mac_command_files "${CMAKE_BINARY_DIR}/post_install_tasks/mac/*.command")
+    INSTALL(FILES ${mac_command_files} DESTINATION ${CMAKE_INSTALL_PREFIX}
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE  WORLD_READ WORLD_WRITE WORLD_EXECUTE
+    )
+
 endif()
 
 INSTALL(DIRECTORY  "${CMAKE_SOURCE_DIR}/core/Demos" DESTINATION ${CMAKE_INSTALL_PREFIX}

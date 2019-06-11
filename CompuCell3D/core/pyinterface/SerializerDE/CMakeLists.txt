@@ -46,7 +46,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
 
     SET(LIBS
        CompuCellLibShared
-       BasicUtilsStatic
+       BasicUtilsShared
        FieldExtractor
        ${PYTHON_LIBRARY_TO_LINK}
        ${VTK_LIBS}
