@@ -229,7 +229,7 @@ if (APPLE)
 
    # this is where libraries on which CompuCell.so depends on are
    # installed relative to where CompuCell.py is installed
-   SET_TARGET_PROPERTIES(CompuCell PROPERTIES INSTALL_RPATH "@loader_path/CompuCell3DPlugins;@loader_path/lib")
+   SET_TARGET_PROPERTIES(CompuCell PROPERTIES INSTALL_RPATH "@loader_path/CompuCell3DPlugins;@loader_path/CompuCell3DSteppables;@loader_path/lib")
 
 
 endif()
