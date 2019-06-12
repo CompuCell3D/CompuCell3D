@@ -138,24 +138,11 @@ elseif (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
         message ("USING EXTERNAL PYTHON")
     endif(BUNDLE_PYTHON)
 
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/pyqt5/compucell3d.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/compucell3d.command @ONLY)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/pyqt5/twedit++.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/twedit++.command @ONLY)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/pyqt5/runScript.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/runScript.command @ONLY)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/pyqt5/paramScan.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/paramScan.command @ONLY)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/pyqt5/optimization.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/optimization.command @ONLY)
-
-
-#  INSTALL(FILES
-#     ${CMAKE_BINARY_DIR}/post_install_tasks/mac/compucell3d.command
-#     ${CMAKE_BINARY_DIR}/post_install_tasks/mac/twedit++.command
-#     ${CMAKE_BINARY_DIR}/post_install_tasks/mac/runScript.command
-#     ${CMAKE_BINARY_DIR}/post_install_tasks/mac/paramScan.command
-#     ${CMAKE_BINARY_DIR}/post_install_tasks/mac/optimization.command
-#
-#     DESTINATION
-#
-#     ${CMAKE_INSTALL_PREFIX}
-# )
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/compucell3d.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/compucell3d.command @ONLY)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/twedit++.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/twedit++.command @ONLY)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/runScript.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/runScript.command @ONLY)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/paramScan.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/paramScan.command @ONLY)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mac/optimization.command.in ${CMAKE_BINARY_DIR}/post_install_tasks/mac/optimization.command @ONLY)
 
 
     FILE(GLOB mac_command_files "${CMAKE_BINARY_DIR}/post_install_tasks/mac/*.command")
