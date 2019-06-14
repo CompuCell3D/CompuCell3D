@@ -17,7 +17,7 @@ import traceback
 
 from .template_utils import generate_simulation_files_from_template
 
-from cc3d.player5.compucell3d import main as main_player
+# from cc3d.player5.compucell3d import main as main_player
 
 
 def param_scan_complete_signal(output_dir: Union[str, Path]) -> Path:
