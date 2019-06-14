@@ -327,26 +327,19 @@ void Simulator::extraInit(){
 	try{
 		BasicPluginManager<Plugin>::infos_t *infos = &pluginManager.getPluginInfos();
 		BasicPluginManager<Plugin>::infos_t::iterator it;
-		//for (it = infos->begin(); it != infos->end(); it++)
-		//	if (pluginManager.isLoaded((*it)->getName())) {
-		//		pluginManager.get((*it)->getName())->extraInit(this);
-		//		if (it != infos->begin()) cerr << ",";
-		//		cerr << " extraInit for: " << (*it)->getName()<<endl;
 
-		//	}
-
-		//	classRegistry->extraInit(this);
-
+        cerr<<"begin extraInit calls for plugins"<<endl;
 		for (it = infos->begin(); it != infos->end(); it++)
 			if (pluginManager.isLoaded((*it)->getName())) {
 				//pluginManager.get((*it)->getName())->extraInit(this);
 				//if (it != infos->begin()) cerr << ",";
-				cerr << " extraInit for: " << (*it)->getName() << endl;
+//				cerr << " extraInit for: " << (*it)->getName() << endl;
 				pluginManager.get((*it)->getName())->extraInit(this);
-				cerr << " DONE extraInit for: " << (*it)->getName() << endl;
+//				cerr << " DONE extraInit for: " << (*it)->getName() << endl;
 
 			}
 
+        cerr<<"finish extraInit calls for plugins"<<endl;
 		classRegistry->extraInit(this);
 
 	}catch (const BasicException &e) {

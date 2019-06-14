@@ -216,8 +216,6 @@ def get_core_simulation_objects():
 
     simulator.setBasePath(join(dirname(persistent_globals.simulation_file_name)))
 
-    print("Simulation basepath=", simulator.getBasePath())
-
     xml_fname = CompuCellSetup.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript
 
     if persistent_globals.cc3d_xml_2_obj_converter is None:
@@ -238,7 +236,7 @@ def get_core_simulation_objects():
 
     # # this loads all plugins/steppables - need to recode it to make loading on-demand only
     CompuCell.initializePlugins()
-    print("simulator=", simulator)
+
     simulator.initializeCC3D()
 
     # sim.extraInit()
@@ -383,7 +381,6 @@ def store_screenshots(cur_step: int) -> None:
 
 
 def extra_init_simulation_objects(sim, simthread, init_using_restart_snapshot_enabled=False):
-    print("Simulation basepath extra init=", sim.getBasePath())
 
     # after all xml steppables and plugins have been loaded we call extraInit to complete initialization
     sim.extraInit()

@@ -793,7 +793,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         restart_output_frequency = Configuration.getSetting("RestartOutputFrequency")
         allow_multiple_snapshots = Configuration.getSetting("RestartAllowMultipleSnapshots")
 
-        self.restart_CB.setChecked  (enable_restart)
+        self.restart_CB.setChecked(enable_restart)
         self.restart_freq_SB.setValue(restart_output_frequency)
         self.multiple_restart_snapshots_CB.setChecked(allow_multiple_snapshots)
 
@@ -803,9 +803,7 @@ class ConfigurationDialog(QDialog, ui_configurationdlg.Ui_CC3DPrefs, Configurati
         '''
 
         for key in Configuration.getSettingNameList():
-            print('key=', key)
             self.paramCC3D[key] = Configuration.getSetting(key)
-        return
 
         # for key in Configuration.Configuration.defaultConfigs.keys():
         # self.paramCC3D[key]=Configuration.getSetting(key)

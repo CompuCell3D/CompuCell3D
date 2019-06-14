@@ -350,15 +350,16 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         return self.camera2D
 
     def setZoomItems(self, _zitems):
-        # todo 5
-        # self.draw2D.setZoomItems(_zitems)
-        # self.draw3D.setZoomItems(_zitems)
-        print('set zoom items')
+        """
+
+        :param _zitems:
+        :return:
+        """
 
 
     def setPlane(self, plane, pos):
         (self.plane, self.planePos) = (str(plane).upper(), pos)
-        # print (self.plane, self.planePos)
+
 
     def getPlane(self):
         """

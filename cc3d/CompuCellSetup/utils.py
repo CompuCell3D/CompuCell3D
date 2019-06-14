@@ -22,28 +22,24 @@ def init_modules(sim, _cc3dXML2ObjConverter):
     :param _cc3dXML2ObjConverter:
     :return:
     """
-    pluginDataList = XMLUtils.CC3DXMLListPy(_cc3dXML2ObjConverter.root.getElements("Plugin"))
-    for pluginData in pluginDataList:
-        print ("Element", pluginData.name)
+    plugin_data_list = XMLUtils.CC3DXMLListPy(_cc3dXML2ObjConverter.root.getElements("Plugin"))
+    for pluginData in plugin_data_list:
         sim.ps.addPluginDataCC3D(pluginData)
 
-    steppableDataList = XMLUtils.CC3DXMLListPy(_cc3dXML2ObjConverter.root.getElements("Steppable"))
-    for steppableData in steppableDataList:
-        print("Element", steppableData.name)
+    steppable_data_list = XMLUtils.CC3DXMLListPy(_cc3dXML2ObjConverter.root.getElements("Steppable"))
+    for steppableData in steppable_data_list:
         sim.ps.addSteppableDataCC3D(steppableData)
 
-    pottsDataList = XMLUtils.CC3DXMLListPy(_cc3dXML2ObjConverter.root.getElements("Potts"))
-    assert pottsDataList.getBaseClass().size() <= 1, 'You have more than 1 definition of the Potts section'
-    if pottsDataList.getBaseClass().size() == 1:
-        for pottsData in pottsDataList:
-            print("Element", pottsData.name)
+    potts_data_list = XMLUtils.CC3DXMLListPy(_cc3dXML2ObjConverter.root.getElements("Potts"))
+    assert potts_data_list.getBaseClass().size() <= 1, 'You have more than 1 definition of the Potts section'
+    if potts_data_list.getBaseClass().size() == 1:
+        for pottsData in potts_data_list:
             sim.ps.addPottsDataCC3D(pottsData)
 
-    metadataDataList = XMLUtils.CC3DXMLListPy(_cc3dXML2ObjConverter.root.getElements("Metadata"))
-    assert metadataDataList.getBaseClass().size() <= 1, 'You have more than 1 definition of the Metadata section'
-    if metadataDataList.getBaseClass().size() == 1:
-        for metadataData in metadataDataList:
-            print("Element", metadataData.name)
+    metadata_data_list = XMLUtils.CC3DXMLListPy(_cc3dXML2ObjConverter.root.getElements("Metadata"))
+    assert metadata_data_list.getBaseClass().size() <= 1, 'You have more than 1 definition of the Metadata section'
+    if metadata_data_list.getBaseClass().size() == 1:
+        for metadataData in metadata_data_list:
             sim.ps.addMetadataDataCC3D(metadataData)
 
 def parseXML( xml_fname):
@@ -55,8 +51,8 @@ def parseXML( xml_fname):
 
     cc3dXML2ObjConverter = XMLUtils.Xml2Obj()
     root_element = cc3dXML2ObjConverter.Parse(xml_fname)
-    print('root_element=', root_element)
     return cc3dXML2ObjConverter
+
 
 @deprecated(version='4.0.0', reason="You should use : set_simulation_xml_description")
 def setSimulationXMLDescription(_xmlTree):
