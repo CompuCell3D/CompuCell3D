@@ -395,7 +395,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         new_window.hide()
 
         self.configsChanged.connect(new_window.configsChanged)
-        self.configsChanged.connect(new_window.configsChanged)
 
         mdi_window = self.addSubWindow(new_window)
 
@@ -446,7 +445,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # self.mainGraphicsWidget.hide()
         # return
 
-        self.configsChanged.connect(self.mainGraphicsWidget.configsChanged)
         self.configsChanged.connect(self.mainGraphicsWidget.configsChanged)
 
         self.simulation.setGraphicsWidget(self.mainGraphicsWidget)
@@ -2172,7 +2170,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.screenshotManager = None
 
         CompuCellSetup.resetGlobals()
-        # print 'AFTER __cleanupAfterSimulation'
 
         # self.close_all_windows()
 
