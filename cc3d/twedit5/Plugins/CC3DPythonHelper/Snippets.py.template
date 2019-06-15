@@ -441,7 +441,7 @@ eccentricity = cell.ecc
 ===============  # @Menu@ Focal Point Placticity
 
 ----------  # @Submenu@ Properties
-# Make sure FocalPointPlacticity plugin is loaded
+# Make sure FocalPointPlasticity plugin is loaded
 # visiting all focal links cell 'cell' has with other cells
 for fppd in self.get_focal_point_plasticity_data_list(cell):
     print("fppd.neighborId", fppd.neighborAddress.id, " lambda=", fppd.lambdaDistance,
