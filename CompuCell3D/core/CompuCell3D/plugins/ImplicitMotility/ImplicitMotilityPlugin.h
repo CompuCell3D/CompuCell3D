@@ -32,14 +32,16 @@ namespace CompuCell3D {
 
     class Automaton;
 
+	class AdjacentNeighbor;
+
     //class AdhesionFlexData;
 
     class BoundaryStrategy;
 
-	AdjacentNeighbor  adjNeighbor;
-	Dim3D fieldDim;
-	AdjacentNeighbor  * adjNeighbor_ptr;
-	Point3D boundaryConditionIndicator;
+	//AdjacentNeighbor  adjNeighbor;
+	
+	//AdjacentNeighbor  * adjNeighbor_ptr;
+	
 
     class ParallelUtilsOpenMP;
 
@@ -74,15 +76,16 @@ namespace CompuCell3D {
 
         CC3DXMLElement *xmlData;        
 
-        
+		
 
         Potts3D *potts;
-
-        
+		
+		AdjacentNeighbor  adjNeighbor;
+		
 
         Simulator *sim;
 
-        
+		Point3D boundaryConditionIndicator;
 
         ParallelUtilsOpenMP *pUtils;            
 
@@ -99,6 +102,8 @@ namespace CompuCell3D {
         BoundaryStrategy *boundaryStrategy;
 
         WatchableField3D<CellG *> *cellFieldG;
+		Dim3D fieldDim;
+		AdjacentNeighbor  * adjNeighbor_ptr;
 
 		std::vector<ImplicitMotilityParam> motilityParamVector;
 		Coordinates3D<double> biasVecTmp;
