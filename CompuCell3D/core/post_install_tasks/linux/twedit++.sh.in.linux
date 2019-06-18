@@ -4,15 +4,14 @@
 export LC_NUMERIC="C.UTF-8"
 
 
-# export PREFIX_CC3D=@COMPUCELL_INSTALL_DIR@
 export PREFIX_CC3D="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-export PYTHON_EXEC=@PYTHON_EXEC@
-
-export PYTHON_MODULE_PATH=${PREFIX_CC3D}/pythonSetupScripts
-export SWIG_LIB_INSTALL_DIR=${PREFIX_CC3D}/lib/python
-
-export @LIBRARY_PATH_SYNTAX@=${PREFIX_CC3D}/lib/:$@LIBRARY_PATH_SYNTAX@
-export @LIBRARY_PATH_SYNTAX@=${PREFIX_CC3D}/lib/python:$@LIBRARY_PATH_SYNTAX@
+export PYTHON_EXEC=@PYTHON_EXEC_FILE@
 
 
-${PYTHON_EXEC} ${PREFIX_CC3D}/@twedit_dir@/twedit_plus_plus_cc3d.py $*
+export @LIBRARY_PATH_SYNTAX@=${PREFIX_CC3D}/lib/site-packages/cc3d/cpp/lib:$@LIBRARY_PATH_SYNTAX@
+export @LIBRARY_PATH_SYNTAX@=${COMPUCELL3D_PLUGIN_PATH}:$@LIBRARY_PATH_SYNTAX@
+export @LIBRARY_PATH_SYNTAX@=${COMPUCELL3D_STEPPABLE_PATH}:$@LIBRARY_PATH_SYNTAX@
+
+export PYTHONPATH=${PREFIX_CC3D}/lib/site-packages
+
+${PYTHON_EXEC} ${PREFIX_CC3D}/lib/site-packages/cc3d/twedit5/twedit_plus_plus_cc3d.py $*
