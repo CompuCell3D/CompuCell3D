@@ -10,8 +10,6 @@ export LC_NUMERIC="C.UTF-8"
 export PREFIX_CC3D="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export PYTHON_EXEC=@PYTHON_EXEC_FILE@
 
-export MAX_NUMBER_OF_CONSECUTIVE_RUNS=50
-
 cd $PREFIX_CC3D
 #export @LIBRARY_PATH_SYNTAX@=@xercesc_ld_path@:$@LIBRARY_PATH_SYNTAX@
 export @LIBRARY_PATH_SYNTAX@=${PREFIX_CC3D}/lib/:$@LIBRARY_PATH_SYNTAX@
