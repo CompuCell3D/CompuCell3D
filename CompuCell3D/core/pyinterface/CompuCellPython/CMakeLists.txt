@@ -42,6 +42,8 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 
 SET(LIBS_AUX
+    BiasVectorSteppableShared
+    ImplicitMotilityShared
     PyPlugin
     ChemotaxisShared
     FocalPointPlasticityShared
