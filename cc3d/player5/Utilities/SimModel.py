@@ -20,8 +20,8 @@ class SimModel(QAbstractItemModel):
         self.__rootItem = treeNode(domDoc)
 
         if self.__rootItem:
-            print("THIS IS ROOT ITEM=", self.__rootItem.name())
-            print("ROOT ITEM DOMNode=", self.__rootItem.domNode().getName())
+            # print("THIS IS ROOT ITEM=", self.__rootItem.name())
+            # print("ROOT ITEM DOMNode=", self.__rootItem.domNode().getName())
             self.checkSanity()
             # text = raw_input('Enter text here->')
 

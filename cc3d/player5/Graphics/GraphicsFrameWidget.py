@@ -4,7 +4,9 @@
 from weakref import ref
 import cc3d.player5.DefaultData as DefaultData
 import cc3d.player5.Configuration as Configuration
+from cc3d import CompuCellSetup
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import pyqtSlot
 from cc3d.core.enums import *
 from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawer
 from .GraphicsWindowData import GraphicsWindowData
@@ -311,11 +313,16 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         """
         self._statusBar = statusBar
 
+    @pyqtSlot()
     def configsChanged(self):
         """
 
         :return:
         """
+        # handling what happens after user presses stop - at this point pg is reset and no drawing should be allowed
+        pg = CompuCellSetup.persistent_globals
+        if pg.view_manager is None:
+            return
 
         # here we are updating models based on the new set of configs
         self.gd.configsChanged()
@@ -350,15 +357,16 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         return self.camera2D
 
     def setZoomItems(self, _zitems):
-        # todo 5
-        # self.draw2D.setZoomItems(_zitems)
-        # self.draw3D.setZoomItems(_zitems)
-        print('set zoom items')
+        """
+
+        :param _zitems:
+        :return:
+        """
 
 
     def setPlane(self, plane, pos):
         (self.plane, self.planePos) = (str(plane).upper(), pos)
-        # print (self.plane, self.planePos)
+
 
     def getPlane(self):
         """

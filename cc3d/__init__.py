@@ -45,7 +45,8 @@ cc3d_py_dir = dirname(__file__)
 
 os.environ['COMPUCELL3D_STEPPABLE_PATH'] = join(cc3d_py_dir, 'cpp', 'CompuCell3DSteppables') + path_postfix
 os.environ['COMPUCELL3D_PLUGIN_PATH'] = join(cc3d_py_dir, 'cpp', 'CompuCell3DPlugins') + path_postfix
-
+print(os.environ['COMPUCELL3D_STEPPABLE_PATH'] )
+print(os.environ['COMPUCELL3D_PLUGIN_PATH'] )
 
 if sys.platform.startswith('win'):
     path_env = os.environ['PATH']
@@ -87,6 +88,21 @@ elif sys.platform.startswith('darwin'):
     # dyld_env_list.insert(0,os.environ['COMPUCELL3D_PLUGIN_PATH'])
 
     os.environ['DYLD_LIBRARY_PATH'] = ':'.join(dyld_env_list)
+
+elif sys.platform.startswith('linux'):
+
+    try:
+        ld_library_env = os.environ['DYLD_LIBRARY_PATH']
+    except KeyError:
+        ld_library_env = ''
+
+    ld_env_list = ld_library_env.split(':')
+    cc3d_cpp_lib_path = abspath(join(cc3d_py_dir, 'cpp', 'lib'))
+    if cc3d_cpp_lib_path not in ld_env_list:
+        ld_env_list.insert(0, cc3d_cpp_lib_path)
+
+    os.environ['LD_LIBRARY_PATH'] = ':'.join(ld_env_list)
+
 
 # print('ENVIRONMENT VARS=', os.environ)
 

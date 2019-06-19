@@ -395,7 +395,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         new_window.hide()
 
         self.configsChanged.connect(new_window.configsChanged)
-        self.configsChanged.connect(new_window.configsChanged)
 
         mdi_window = self.addSubWindow(new_window)
 
@@ -446,7 +445,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # self.mainGraphicsWidget.hide()
         # return
 
-        self.configsChanged.connect(self.mainGraphicsWidget.configsChanged)
         self.configsChanged.connect(self.mainGraphicsWidget.configsChanged)
 
         self.simulation.setGraphicsWidget(self.mainGraphicsWidget)
@@ -2172,7 +2170,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         self.screenshotManager = None
 
         CompuCellSetup.resetGlobals()
-        # print 'AFTER __cleanupAfterSimulation'
 
         # self.close_all_windows()
 
@@ -2314,7 +2311,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         """
 
         windows_layout_dict = Configuration.getSetting('WindowsLayout')
-        print('from settings windowsLayout = ', windows_layout_dict)
+        # print('from settings windowsLayout = ', windows_layout_dict)
 
         # first restore main window with id 0 - this window is the only window open at this point
         # and it is open by default when simulation is started
@@ -2492,21 +2489,20 @@ class SimpleTabView(MainArea, SimpleViewManager):
         # from cc3d.core import XMLUtils
 
         cc3d_xml_2_obj_converter = CompuCellSetup.persistent_globals.cc3d_xml_2_obj_converter
-        if cc3d_xml_2_obj_converter != None:
+        if cc3d_xml_2_obj_converter is not None:
             self.pluginCOMDefined = False
             self.pluginFPPDefined = False
 
             self.root_element = cc3d_xml_2_obj_converter.root
             elms = self.root_element.getElements("Plugin")
-            elmList = XMLUtils.CC3DXMLListPy(elms)
-            for elm in elmList:
-                pluginName = elm.getAttribute("Name")
-                print("   pluginName = ", pluginName)  # e.g. CellType, Contact, etc
-                if pluginName == "FocalPointPlasticity":
+            elm_list = XMLUtils.CC3DXMLListPy(elms)
+            for elm in elm_list:
+                plugin_name = elm.getAttribute("Name")
+                if plugin_name == "FocalPointPlasticity":
                     self.pluginFPPDefined = True
                     self.pluginCOMDefined = True  # if FPP is defined, COM will (implicitly) be defined
 
-                if pluginName == "CenterOfMass":
+                if plugin_name == "CenterOfMass":
                     self.pluginCOMDefined = True
 
             # If appropriate, disable/enable Vis menu options
@@ -2549,8 +2545,6 @@ class SimpleTabView(MainArea, SimpleViewManager):
         #     self.mainGraphicsWidget.showFPPLinks()
 
         self.mainGraphicsWidget.setPlane(PLANES[0], 0)
-        # todo - old code
-        # self.mainGraphicsWidget.currentDrawingObject.setPlane(PLANES[0], 0)
 
     def setParams(self):
         '''
@@ -2565,7 +2559,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         Also called during run initialization
         :return:None
         '''
-        #        print MODULENAME,'  __paramsChanged():  do a bunch of Config--.getSetting'
+
         self.__updateScreen = Configuration.getSetting("ScreenUpdateFrequency")
         self.__imageOutput = Configuration.getSetting("ImageOutputOn")
         self.__shotFrequency = Configuration.getSetting("SaveImageFrequency")
@@ -2578,21 +2572,7 @@ class SimpleTabView(MainArea, SimpleViewManager):
         if Configuration.getSetting("OutputToProjectOn"):
             self.__outputDirectory = str(Configuration.getSetting("ProjectLocation"))
 
-        # print MODULENAME, '__paramsChanged(),  prevOutputDir, __outputDirectory= ', self.prevOutputDir, self.__outputDirectory
-
-
         # todo 5 - write code that create screenshot outoput if parameters are changed
-
-        # if (
-        #         self.__imageOutput or self.__latticeOutputFlag) and self.mysim:  # has user requested output and is there a valid sim?
-        #     if self.screenshotDirectoryName == "":  # haven't created any yet
-        #         #                print MODULENAME, '__paramsChanged(), screenshotDirName empty;  calling createOutputDirs'
-        #         self.createOutputDirs()
-        #     elif self.prevOutputDir != self.__outputDirectory:  # test if the sneaky user changed the output location
-        #         #                print MODULENAME, '__paramsChanged(),  prevOutput != Output;  calling createOutputDirs'
-        #         self.createOutputDirs()
-        #
-        #         # NOTE: if self.mysim == None (i.e. sim hasn't begun yet), then createOutputDirs() should be called in __loadSim
 
         if self.simulation:
             self.init_simulation_control_vars()
@@ -2645,16 +2625,16 @@ class SimpleTabView(MainArea, SimpleViewManager):
                 # print "CAMERA SETTINGS =",camera
                 self.screenshotManager.add3DScreenshot(self.__fieldType[0], self.__fieldType[1], camera)
             else:
-                planePositionTupple = self.mainGraphicsWidget.getPlane()
-                # print "planePositionTupple=",planePositionTupple
-                self.screenshotManager.add2DScreenshot(self.__fieldType[0], self.__fieldType[1], planePositionTupple[0],
-                                                       planePositionTupple[1])
+                plane_position_tupple = self.mainGraphicsWidget.getPlane()
+                self.screenshotManager.add2DScreenshot(self.__fieldType[0], self.__fieldType[1],
+                                                       plane_position_tupple[0], plane_position_tupple[1])
 
     def prepareSimulationView(self):
         '''
         One of the initialization functions - prepares initial simulation view
         :return:
         '''
+
         if self.__sim_file_name != "":
             file = QFile(self.__sim_file_name)
             if file is not None:
@@ -2688,18 +2668,20 @@ class SimpleTabView(MainArea, SimpleViewManager):
         :param fileName: str - .dml file name
         :return:none
         '''
-        filter = "Lattice Description Summary file  (*.dml )"  # self._getOpenFileFilter()
 
-        defaultDir = self.__outputDirectory
+        # self._getOpenFileFilter()
+        filter_ext = "Lattice Description Summary file  (*.dml )"
 
-        if not os.path.exists(defaultDir):
-            defaultDir = os.getcwd()
+        default_dir = self.__outputDirectory
+
+        if not os.path.exists(default_dir):
+            default_dir = os.getcwd()
 
         self.fileName_tuple = QFileDialog.getOpenFileName(
             self.ui,
             QApplication.translate('ViewManager', "Open Lattice Description Summary file"),
-            defaultDir,
-            filter
+            default_dir,
+            filter_ext
         )
 
         self.__sim_file_name = self.fileName_tuple[0]
