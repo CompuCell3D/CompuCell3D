@@ -4,7 +4,7 @@
 from weakref import ref
 import cc3d.player5.DefaultData as DefaultData
 import cc3d.player5.Configuration as Configuration
-from cc3d import CompuCellSetup
+import cc3d
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSlot
 from cc3d.core.enums import *
@@ -320,7 +320,9 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         :return:
         """
         # handling what happens after user presses stop - at this point pg is reset and no drawing should be allowed
-        pg = CompuCellSetup.persistent_globals
+        # for some reason on OSX we cannot fo
+        # from cc3d import CompuCellSetup and  instead we access persistent globals via cc3d.CompuCellSetup
+        pg = cc3d.CompuCellSetup.persistent_globals
         if pg.view_manager is None:
             return
 
