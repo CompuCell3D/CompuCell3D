@@ -150,6 +150,45 @@ elseif (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE  WORLD_READ WORLD_WRITE WORLD_EXECUTE
     )
 
+else()
+
+  set(RUN_SCRIPT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/linux)
+    if (BUNDLE_PYTHON)
+        SET(PYTHON_EXEC_FILE "\${PREFIX_CC3D}/python37/bin/python")
+        message("USING BUNDLE")
+    else (BUNDLE_PYTHON)
+        SET(PYTHON_EXEC_FILE ${PYTHON_EXECUTABLE})
+        message("USING EXTERNAL PYTHON")
+    endif(BUNDLE_PYTHON)
+
+    configure_file(${RUN_SCRIPT_DIR}/compucell3d.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.sh @ONLY)
+    configure_file(${RUN_SCRIPT_DIR}/runScript.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh @ONLY)
+    configure_file(${RUN_SCRIPT_DIR}/paramScan.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.sh @ONLY)
+    configure_file(${RUN_SCRIPT_DIR}/twedit++.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.sh @ONLY)
+
+
+    INSTALL(FILES
+        ${CMAKE_BINARY_DIR}/post_install_tasks/compucell3d.sh
+        ${CMAKE_BINARY_DIR}/post_install_tasks/runScript.sh
+        ${CMAKE_BINARY_DIR}/post_install_tasks/paramScan.sh
+        ${CMAKE_BINARY_DIR}/post_install_tasks/twedit++.sh
+        DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                                        GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                                        WORLD_READ WORLD_WRITE WORLD_EXECUTE
+        )
+
+    if(BUILD_CPP_ONLY_EXECUTABLE)
+      configure_file(${RUN_SCRIPT_DIR}/cc3dScript.sh.in.linux ${CMAKE_BINARY_DIR}/post_install_tasks/cc3dScript.sh @ONLY)
+        INSTALL(FILES
+            ${CMAKE_BINARY_DIR}/post_install_tasks/cc3dScript.sh
+            DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                                            WORLD_READ WORLD_WRITE WORLD_EXECUTE
+            )
+
+    endif(BUILD_CPP_ONLY_EXECUTABLE)
+
+
 endif()
 
 INSTALL(DIRECTORY  "${CMAKE_SOURCE_DIR}/core/Demos" DESTINATION ${CMAKE_INSTALL_PREFIX}

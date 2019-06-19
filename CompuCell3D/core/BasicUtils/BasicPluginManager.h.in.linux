@@ -260,21 +260,32 @@ public:
     // Exit if already opened.
     if (libraryHandles[name] != NULL) return;
 
+    std::cerr<<"loading "<<filename<<std::endl;
     void *handle = dlopen(filename.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 
-    char *error;
-    if ((error = dlerror()))
-      THROW(std::string("BasicPluginManager::loadLibrary() ") + error);
 
-    if (handle) libraryHandles[name] = handle;
+//    std::cerr<<"dlerror()="<<dlerror()<<std::endl;
+//    char *error;
+//    if ((error = dlerror()))
+//      THROW(std::string("BasicPluginManager::loadLibrary() ") + error);
 
-    if (pluginException) {
-      BasicException e = *pluginException;
-      delete pluginException;
-      throw BasicException(std::string("Exception while loading library '") +
-			   filename + "'", e);
+    if (handle) {
+        libraryHandles[name] = handle;
+    }else{
+        throw BasicException(std::string("Exception while loading library '") +
+			   filename + "'");
     }
-  }
+
+    std::cerr<<"loaded "<<filename<<std::endl;
+
+//    if (pluginException) {
+//      BasicException e = *pluginException;
+//      std::cerr<<"inside plugin exception"<<std::endl;
+//      delete pluginException;
+//      throw BasicException(std::string("Exception while loading library '") +
+//			   filename + "'", e);
+//    }
+   }
 
   /** 
    * Called by BasicPluginProxy to register itself with the manager.
