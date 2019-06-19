@@ -5,6 +5,7 @@
 
 
 
+
 // This SWIG interface file defines the CompuCell API.
 // CompuCell module wraps the major CompuCell3D classes.
 
@@ -63,7 +64,13 @@
 %{
 
 
+
+
+
+
+
 // CompuCell Include Files
+
 
 // CompuCell3D Include Files
 #include <CompuCell3D/Field3D/Neighbor.h>

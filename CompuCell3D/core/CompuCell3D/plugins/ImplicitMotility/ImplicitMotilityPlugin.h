@@ -130,11 +130,14 @@ namespace CompuCell3D {
         
 
         //Energy function interface
-		typedef double (ImplicitMotilityPlugin::*changeEnergy_t)(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
+		typedef double (ImplicitMotilityPlugin::*changeEnergy_t)(const Point3D &pt, 
+												const CellG *newCell, const CellG *oldCell);
 		ImplicitMotilityPlugin::changeEnergy_t changeEnergyFcnPtr;
-        double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);        
-		double changeEnergyByCellType(const Point3D & pt, const CellG * newCell, const CellG * oldCell);
-		double changeEnergyByCellId(const Point3D & pt, const CellG * newCell, const CellG * oldCell);
+		virtual double changeEnergy(const Point3D &pt, const CellG *newCell, const CellG *oldCell);
+		double changeEnergyByCellType(const Point3D & pt,
+									const CellG * newCell, const CellG * oldCell);
+		double changeEnergyByCellId(const Point3D & pt, 
+									const CellG * newCell, const CellG * oldCell);
 		
         
 

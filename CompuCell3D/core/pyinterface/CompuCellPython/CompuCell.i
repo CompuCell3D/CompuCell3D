@@ -1,9 +1,12 @@
 // -*-c++-*-
 
+
 %module ("threads"=1) CompuCell
 
 // Have to replace ptrdiff_t with long long on windows. long on windows is 4 bytes
 %apply long long {ptrdiff_t}
+
+
 
 
 %include "typemaps.i"
