@@ -36,8 +36,8 @@
    </Plugin>
    
    <Plugin Name="ImplicitMotility">
-        <MotilityParameters CellType="MotCell" LambdaMotility="20"/>
-        <MotilityParameters CellType="MotCell2" LambdaMotility="15"/>
+        <MotilityEnergyParameters CellType="MotCell" LambdaMotility="20"/>
+        <MotilityEnergyParameters CellType="MotCell2" LambdaMotility="15"/>
    </Plugin>
    <Steppable Type="BlobInitializer">
    
