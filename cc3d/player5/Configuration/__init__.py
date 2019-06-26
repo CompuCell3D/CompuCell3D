@@ -72,17 +72,18 @@ def initConfiguration():
     Configuration.myCustomSettings = None
     Configuration.myCustomSettingsPath = ''
 
-def replaceCustomSettingsWithDefaults():
+def replace_custom_settings_with_defaults():
     """
     Replaces simulation-specific settings with the default settings
     :return: None
     """
-    defaultSettings, default_settings_path = loadDefaultSettings()
+    default_settings, default_settings_path = loadDefaultSettings()
 
     copy_settings(src_setting_path=default_settings_path,
                   dst_setting_dir=os.path.dirname(Configuration.myCustomSettingsPath))
 
-    Configuration.myCustomSettings, Configuration.myCustomSettingsPath = loadSettings(Configuration.myCustomSettingsPath)
+    Configuration.myCustomSettings, Configuration.myCustomSettingsPath = loadSettings(
+        Configuration.myCustomSettingsPath)
 
 
 def getSettingNameList():

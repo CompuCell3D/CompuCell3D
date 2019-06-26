@@ -2,6 +2,7 @@ import sys
 import os.path
 import argparse
 
+
 class CMLParser(object):
     def __init__(self):
         self.__screenshotDescriptionFileName = ''
@@ -11,26 +12,22 @@ class CMLParser(object):
         self.outputFrequency = 1
         self.outputFileCoreName = ''
 
-
-
-    @property 
+    @property
     def fileName(self):
         return self.__fileName
 
-    @property 
+    @property
     def cml_args(self):
         return self.__cml_args
 
-    @property 
+    @property
     def screenshotDescriptionFileName(self):
         return self.__screenshotDescriptionFileName
-
-
 
     def getSimulationFileName(self):
         return self.__fileName
 
-    def parse_cml(self,arg_list=[]):
+    def parse_cml(self, arg_list=[]):
         """
         Parses command line
         :return:
@@ -41,8 +38,15 @@ class CMLParser(object):
                                 help='path to the CC3D project file (*.cc3d)')
         cml_parser.add_argument('--noOutput', required=False, action='store_true', default=False,
                                 help='flag suppressing output of simulation snapshots')
-        cml_parser.add_argument('-f', '--outputFrequency', required=False, action='store', default=1, type=int,
+        cml_parser.add_argument('-f', '--outputFrequency', required=False, action='store',
+                                default=0, type=int,
                                 help='simulation snapshot output frequency')
+
+        cml_parser.add_argument('--output-frequency', required=False, action='store', type=int, default=0,
+                                help='simulation snapshot output frequency')
+
+        cml_parser.add_argument('--screenshot-output-frequency', required=False, action='store', type=int, default=-1,
+                                help='screenshot output frequency')
 
         cml_parser.add_argument('-s', '--screenshotDescription', required=False, action='store',
                                 help='screenshot description file name (deprecated)')
@@ -57,6 +61,9 @@ class CMLParser(object):
                                 help='test output directory (used during unit testing only)')
 
         cml_parser.add_argument('-o', '--screenshotOutputDir', required=False, action='store',
+                                help='directory where screenshots should be written to')
+
+        cml_parser.add_argument('--output-dir', required=False, action='store',
                                 help='directory where screenshots should be written to')
 
         cml_parser.add_argument('-p', '--playerSettings', required=False, action='store',
@@ -77,6 +84,9 @@ class CMLParser(object):
         cml_parser.add_argument('--exitWhenDone', required=False, action='store_true', default=False,
                                 help='exits Player at the end of the simulation')
 
+        cml_parser.add_argument('--exit-when-done', required=False, action='store_true', default=False,
+                                help='exits Player at the end of the simulation')
+
         cml_parser.add_argument('--guiScan', required=False, action='store_true', default=False,
                                 help='enables running parameter scan in the Player')
 
@@ -91,15 +101,25 @@ class CMLParser(object):
 
         self.__cml_args = cml_parser.parse_args(arg_list)
 
+        # handling multiple versions of long options
+        if self.__cml_args.output_frequency is not None:
+            self.__cml_args.outputFrequency = self.__cml_args.output_frequency
 
+        if self.__cml_args.output_dir is not None:
+            self.__cml_args.screenshotOutputDir = self.__cml_args.output_dir
 
-        #filling out legacy variables
+        if self.__cml_args.exit_when_done:
+            self.__cml_args.exitWhenDone = self.__cml_args.exit_when_done
+
+        # filling out legacy variables
+
         self.__fileName = self.__cml_args.input
         if self.__fileName:
             self.outputFileCoreName = os.path.basename(self.__fileName.replace('.', '_'))
 
         self.__screenshotDescriptionFileName = self.__cml_args.screenshotDescription
         self.customScreenshotDirectoryName = self.__cml_args.screenshotOutputDir
+
         self.outputFrequency = self.__cml_args.outputFrequency
 
         return False

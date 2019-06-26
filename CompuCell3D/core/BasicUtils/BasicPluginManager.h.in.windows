@@ -242,7 +242,7 @@ public:
     // Exit if already opened.
     if (libraryHandles[name] != NULL) return;
 
-	cerr<<"Library Name="<<name<<endl;
+	//cerr<<"Library Name="<<name<<endl;
 
     //void *handle = dlopen(filename.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 	//cerr<<"Will try to load the following library: "<<filename<<endl;
@@ -250,13 +250,14 @@ public:
 	//cerr<<"I have loaded the library "<<name<<endl;
 
 	if (handle==NULL){
+        cerr<<"Library Name="<<name<<endl;
 		cerr<<"I got Null handle"<<endl;
 	}
 
     if (handle==NULL)
 		THROW(std::string("BasicPluginManager::loadLibrary() error:"));
 
-	cerr << "handle=" << handle << endl;
+	//cerr << "handle=" << handle << endl;
     if (handle) libraryHandles[name] = handle;
 
     if (pluginException) {
@@ -333,39 +334,12 @@ protected:
     using namespace std;
     glob_t globbuf;
 
-	//char * cellTypePluginPath = "d:/Program Files/cc3d_py3/lib/CompuCell3DPlugins/CC3DCellType.dll";
-	//Simulator::pluginManager.loadLibrary(cellTypePluginPath);
-
-	//vector<string> file_list = get_all_files_names_within_folder("d:/Program Files/cc3d_py3/lib/CompuCell3DPlugins/", "*.dll");
 	vector<string> file_list = get_all_files_names_within_folder(path, "*.dll");
-
-	cerr << "file_list=" << file_list.size() << endl;
-
-	for (int i = 0; i < file_list.size(); ++i) {
-		cerr << "fname=" << file_list[i] << endl;
-
-	}
 
 	for (size_t f_idx = 0; f_idx < file_list.size(); ++f_idx) {
 		
 		loadLibrary(file_list[f_idx]);
 	}
-
-	//glob("d:/Program Files/cc3d_py3/lib/CompuCell3DPlugins/*.dll", 0, NULL, &globbuf);
-
- //   // NOTE the change from "/" + "*" UNIX to "*\" WINDOWS
- //   cerr<<"path to glob="<<path<<endl;
-	//std::string pathGlob = path + "\\*" + libExtension;
-
- //   cerr<<"pathGlob="<<pathGlob<<endl;
-
- //   if (glob(pathGlob.c_str(), 0, NULL, &globbuf) == 0) {
- //     cerr<<"globbuf.gl_pathc="<<globbuf.gl_pathc<<endl;
- //     for (unsigned int i = 0; i < globbuf.gl_pathc; i++)
-	//       loadLibrary(globbuf.gl_pathv[i]);
- //   }
-
- //   globfree(&globbuf);
   }
 };
 

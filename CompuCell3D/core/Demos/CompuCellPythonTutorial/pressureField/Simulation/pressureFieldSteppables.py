@@ -1,51 +1,39 @@
-from PySteppables import *
-import CompuCell
-import CompuCellSetup
-import sys
+from cc3d.core.PySteppables import *
 
-from PlayerPython import *
-from math import *
 
 class TargetVolumeDrosoSteppable(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=1):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
-        
-    def setInitialTargetVolume(self,_tv):
-        self.tv=_tv
-    def setInitialLambdaVolume(self,_lambdaVolume):
-        self.lambdaVolume=_lambdaVolume
-        
+    def __init__(self, frequency=1):
+        SteppableBasePy.__init__(self, frequency)
+
     def start(self):
 
-        for cell in self.cellList:
-            cell.targetVolume=self.tv
-            cell.lambdaVolume=self.lambdaVolume
-    
-    def step(self,mcs):
-        for cell in self.cellList:            
-            if ((cell.xCOM-100)**2+(cell.yCOM-100)**2) < 400:
-                cell.targetVolume+=1
+        for cell in self.cell_list:
+            cell.targetVolume = 25.0
+            cell.lambdaVolume = 2.0
+
+    def step(self, mcs):
+        for cell in self.cell_list:
+            if ((cell.xCOM - 100) ** 2 + (cell.yCOM - 100) ** 2) < 400:
+                cell.targetVolume += 1
 
 
 class CellKiller(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=10):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
+    def __init__(self, frequency=10):
+        SteppableBasePy.__init__(self, frequency)
 
-    def step(self,mcs):
-        for cell in self.cellList:            
-            if mcs==10:
-                cell.targetVolume=0            
+    def step(self, mcs):
+        for cell in self.cell_list:
+            if mcs == 10:
+                cell.targetVolume = 0
 
 
 class PressureFieldVisualizationSteppable(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=10):
-        SteppableBasePy.__init__(self,_simulator,_frequency)                
-        self.pressureField=CompuCellSetup.createScalarFieldCellLevelPy("PressureField")
-        
-    def step(self,mcs):
-        for cell in self.cellList:
-            self.pressureField[cell]=cell.targetVolume-cell.volume
-            
-            
+    def __init__(self, frequency=10):
+        SteppableBasePy.__init__(self, frequency)
+        self.create_scalar_field_cell_level_py("PressureField")
 
-
+    def step(self, mcs):
+        pressure_field = self.field.PressureField
+        pressure_field.clear()
+        for cell in self.cell_list:
+            pressure_field[cell] = cell.targetVolume - cell.volume

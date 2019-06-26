@@ -117,35 +117,35 @@ double LengthConstraintPlugin::getMinorTargetLength(CellG * _cell){
 
 void LengthConstraintPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
-	if(potts->getDisplayUnitsFlag()){		
-		Unit lambdaLengthUnit=potts->getEnergyUnit()/(potts->getLengthUnit()*potts->getLengthUnit());
+	//if(potts->getDisplayUnitsFlag()){		
+	//	Unit lambdaLengthUnit=potts->getEnergyUnit()/(potts->getLengthUnit()*potts->getLengthUnit());
 
-		CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
-		if (!unitsElem){ //add Units element
-			unitsElem=_xmlData->attachElement("Units");
-		}
+	//	CC3DXMLElement * unitsElem=_xmlData->getFirstElement("Units"); 
+	//	if (!unitsElem){ //add Units element
+	//		unitsElem=_xmlData->attachElement("Units");
+	//	}
 
-		if(unitsElem->getFirstElement("TargetLengthUnit")){
-			unitsElem->getFirstElement("TargetLengthUnit")->updateElementValue(potts->getLengthUnit().toString());
-		}else{
-			unitsElem->attachElement("TargetLengthUnit",potts->getLengthUnit().toString());
-		}
+	//	if(unitsElem->getFirstElement("TargetLengthUnit")){
+	//		unitsElem->getFirstElement("TargetLengthUnit")->updateElementValue(potts->getLengthUnit().toString());
+	//	}else{
+	//		unitsElem->attachElement("TargetLengthUnit",potts->getLengthUnit().toString());
+	//	}
 
 
 
-		if(unitsElem->getFirstElement("MinorTargetLengthUnit")){
-			unitsElem->getFirstElement("MinorTargetLengthUnit")->updateElementValue(potts->getLengthUnit().toString());
-		}else{
-			unitsElem->attachElement("MinorTargetLengthUnit",potts->getLengthUnit().toString());
-		}
+	//	if(unitsElem->getFirstElement("MinorTargetLengthUnit")){
+	//		unitsElem->getFirstElement("MinorTargetLengthUnit")->updateElementValue(potts->getLengthUnit().toString());
+	//	}else{
+	//		unitsElem->attachElement("MinorTargetLengthUnit",potts->getLengthUnit().toString());
+	//	}
 
-		if(unitsElem->getFirstElement("LambdaLengthUnit")){
-			unitsElem->getFirstElement("LambdaLengthUnit")->updateElementValue(lambdaLengthUnit.toString());
-		}else{
-			unitsElem->attachElement("LambdaLengthUnit",lambdaLengthUnit.toString());
-		}
+	//	if(unitsElem->getFirstElement("LambdaLengthUnit")){
+	//		unitsElem->getFirstElement("LambdaLengthUnit")->updateElementValue(lambdaLengthUnit.toString());
+	//	}else{
+	//		unitsElem->attachElement("LambdaLengthUnit",lambdaLengthUnit.toString());
+	//	}
 
-	}
+	//}
 
 
 	typeNameVec.clear();

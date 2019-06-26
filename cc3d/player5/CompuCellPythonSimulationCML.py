@@ -117,7 +117,7 @@ def prepareParameterScan(_cc3dSimulationDataHandler):
     if not customOutputPath:
         return False, False
 
-    _cc3dSimulationDataHandler.copySimulationDataFiles(customOutputPath)
+    _cc3dSimulationDataHandler.copy_simulation_data_files(customOutputPath)
 
     # tweak simulation files according to parameter scan file
 
@@ -173,7 +173,7 @@ def readCC3DFile(fileName):
     import CC3DSimulationDataHandler as CC3DSimulationDataHandler
 
     cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler(None)
-    cc3dSimulationDataHandler.readCC3DFileFormat(fileName)
+    cc3dSimulationDataHandler.read_cc3_d_file_format(fileName)
     print(cc3dSimulationDataHandler.cc3dSimulationData)
 
     return cc3dSimulationDataHandler
@@ -188,7 +188,7 @@ def loadCC3DFile(fileName, forceSingleRun=False):
     import CC3DSimulationDataHandler as CC3DSimulationDataHandler
 
     cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler(None)
-    cc3dSimulationDataHandler.readCC3DFileFormat(fileName)
+    cc3dSimulationDataHandler.read_cc3_d_file_format(fileName)
     print(cc3dSimulationDataHandler.cc3dSimulationData)
 
     if forceSingleRun:  # forces loadCC3D to behave as if it was running plane simulation without addons such as e.g. parameter scan

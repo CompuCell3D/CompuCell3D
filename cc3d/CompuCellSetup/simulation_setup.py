@@ -1,3 +1,5 @@
+import time
+from math import floor
 from os.path import dirname, join
 from cc3d.cpp import CompuCell
 from cc3d.core.XMLDomUtils import XMLIdLocator
@@ -12,6 +14,7 @@ import time
 import weakref
 from cc3d import CompuCellSetup
 from cc3d.core import RestartManager
+from cc3d.CompuCellSetup.simulation_utils import check_for_cpp_errors
 
 
 # -------------------- legacy API emulation ----------------------------------------
@@ -44,17 +47,6 @@ def mainLoop(*args, **kwds):
 
 # -------------------- enf of legacy API emulation ----------------------------------------
 
-
-def initialize_simulation_objects(sim, simthread):
-    """
-
-    :param sim:
-    :param simthread:
-    :return:
-    """
-    sim.extraInit()
-
-
 def initialize_cc3d():
     """
 
@@ -63,16 +55,14 @@ def initialize_cc3d():
     CompuCellSetup.persistent_globals.simulator, \
     CompuCellSetup.persistent_globals.simthread = get_core_simulation_objects()
 
+    check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
+
     simulator = CompuCellSetup.persistent_globals.simulator
-    simthread = CompuCellSetup.persistent_globals.simthread
 
     # CompuCellSetup.persistent_globals.steppable_registry.simulator = simulator
     CompuCellSetup.persistent_globals.steppable_registry.simulator = weakref.ref(simulator)
 
-    initialize_simulation_objects(simulator, simthread)
-
     CompuCellSetup.persistent_globals.simulation_initialized = True
-    # print(' initialize cc3d CompuCellSetup.persistent_globals=',CompuCellSetup.persistent_globals)
 
 
 def determine_main_loop_fcn():
@@ -103,15 +93,16 @@ def run():
     simulation_initialized = persistent_globals.simulation_initialized
     if not simulation_initialized:
         initialize_cc3d()
-        # print(' run(): CompuCellSetup.persistent_globals=', CompuCellSetup.persistent_globals)
-        # print(' run(): CompuCellSetup.persistent_globals.simulator=', CompuCellSetup.persistent_globals.simulator)
+        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
+
         persistent_globals.steppable_registry.core_init()
+        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
         # initializing extra visualization fields
         field_registry = persistent_globals.field_registry
         potts = persistent_globals.simulator.getPotts()
-        cellField = potts.getCellFieldG()
-        dim = cellField.getDim()
+        cell_field = potts.getCellFieldG()
+        dim = cell_field.getDim()
         field_registry.dim = dim
         field_registry.simthread = persistent_globals.simthread
 
@@ -124,7 +115,6 @@ def run():
     main_loop_fcn = determine_main_loop_fcn()
 
     main_loop_fcn(simulator, simthread=simthread, steppable_registry=steppable_registry)
-    # mainLoop(simulator, simthread=simthread, steppableRegistry=steppable_registry)
 
 
 def register_steppable(steppable):
@@ -142,6 +132,78 @@ def register_steppable(steppable):
     steppable_registry.registerSteppable(_steppable=steppable)
 
 
+def print_profiling_report(py_steppable_profiler_report, compiled_code_run_time, total_run_time):
+    """
+    prints profiling information after simulation finishes running
+    :param py_steppable_profiler_report:
+    :param compiled_code_run_time:
+    :param total_run_time:
+    :return:
+    """
+    profiling_format = '{:>32.32}: {:11.2f} ({:5.1%})'
+
+    print('\n\n')
+    print('------------------PERFORMANCE REPORT:----------------------')
+    print('-----------------------------------------------------------')
+    print("TOTAL RUNTIME ", convert_time_interval_to_hmsm(total_run_time))
+    print('-----------------------------------------------------------')
+    print('-----------------------------------------------------------')
+    print('PYTHON STEPPABLE RUNTIMES')
+    # print py_steppable_profiler_report
+
+    totStepTime = 0
+
+    for steppableName, steppableObjectHash, run_time_ms in py_steppable_profiler_report:
+        print(profiling_format.format(steppableName, int(run_time_ms) / 1000., int(run_time_ms) / total_run_time))
+
+        totStepTime += run_time_ms
+
+    print('-----------------------------------------------------------')
+
+    print(profiling_format.format('Total Steppable Time', int(totStepTime) / 1000., int(totStepTime) / total_run_time))
+
+    print(profiling_format.format('Compiled Code (C++) Run Time', int(compiled_code_run_time) / 1000.,
+                                  int(compiled_code_run_time) / total_run_time))
+
+    print(profiling_format.format('Other Time', int(total_run_time - compiled_code_run_time - totStepTime) / 1000.,
+                                  int(total_run_time - compiled_code_run_time - totStepTime) / total_run_time))
+
+    print('-----------------------------------------------------------')
+    print()
+
+
+def convert_time_interval_to_hmsm(time_interval):
+    """
+    Converts timestamp to human readable format
+    :param time_interval:
+    :return:
+    """
+    time_interval = int(time_interval)
+    hours = time_interval / (3600 * 1000)
+    minutes_interval = time_interval % (3600 * 1000)
+    minutes = minutes_interval / (60 * 1000)
+    seconds_interval = minutes_interval % (60 * 1000)
+    seconds = seconds_interval / 1000
+    miliseconds = seconds_interval % 1000
+
+    def s_int_fl(x):
+        return str(int(floor(x)))
+
+    if hours > 1.0:
+        out_str = s_int_fl(hours) + " h : " + s_int_fl(minutes) + " m : " + s_int_fl(seconds) + " s : " + str(miliseconds) + " ms"
+
+    elif minutes > 1.0:
+        out_str = s_int_fl(minutes) + " m : " + s_int_fl(seconds) + " s : " + str(miliseconds) + " ms"
+
+    elif seconds > 1.0:
+        out_str = s_int_fl(seconds) + " s : " + str(miliseconds) + " ms"
+
+    else:
+        out_str = str(miliseconds) + " ms"
+
+    return out_str + ' = ' + str(time_interval / 1000.0) + ' s'
+
+
 def get_core_simulation_objects():
     persistent_globals = CompuCellSetup.persistent_globals
 
@@ -150,10 +212,9 @@ def get_core_simulation_objects():
     # todo 5 - fix logic regarding simthread initialization
     if persistent_globals.simthread is not None:
         simthread = persistent_globals.simthread
+        simulator.setNewPlayerFlag(True)
 
     simulator.setBasePath(join(dirname(persistent_globals.simulation_file_name)))
-
-    print("Simulation basepath=", simulator.getBasePath())
 
     xml_fname = CompuCellSetup.cc3dSimulationDataHandler.cc3dSimulationData.xmlScript
 
@@ -163,8 +224,8 @@ def get_core_simulation_objects():
         # that is typically called from the Python main script
 
         cc3d_xml2_obj_converter = parseXML(xml_fname=xml_fname)
-        #  cc3d_xml2_obj_converter cannot be garbage colected hence goes to persisten storage declared at the global level
-        # in CompuCellSetup
+        #  cc3d_xml2_obj_converter cannot be garbage colected hence goes to persisten storage
+        #  declared at the global level in CompuCellSetup
         persistent_globals.cc3d_xml_2_obj_converter = cc3d_xml2_obj_converter
 
     # locating all XML elements with attribute id - presumably to be used for programmatic steering
@@ -175,8 +236,9 @@ def get_core_simulation_objects():
 
     # # this loads all plugins/steppables - need to recode it to make loading on-demand only
     CompuCell.initializePlugins()
-    print("simulator=", simulator)
+
     simulator.initializeCC3D()
+
     # sim.extraInit()
 
     return simulator, simthread
@@ -318,40 +380,101 @@ def store_screenshots(cur_step: int) -> None:
         screenshot_mgr.output_screenshots(mcs=cur_step)
 
 
-def main_loop(sim, simthread, steppableRegistry):
-    """
+def extra_init_simulation_objects(sim, simthread, init_using_restart_snapshot_enabled=False):
 
+    # after all xml steppables and plugins have been loaded we call extraInit to complete initialization
+    sim.extraInit()
+
+    # simthread.preStartInit()
+    # we skip calling start functions of steppables if restart is enabled and we are using restart
+    # directory to restart simulation from a given MCS
+    if not init_using_restart_snapshot_enabled:
+        sim.start()
+
+    if simthread is not None:
+        # sends signal to player  to prepare for the upcoming simulation
+        simthread.postStartInit()
+
+        # waits for player  to complete initialization
+        simthread.waitForPlayerTaskToFinish()
+
+
+def main_loop(sim, simthread, steppable_registry=None):
+    """
+    main loop for CML simulation
     :param sim:
     :param simthread:
-    :param steppableRegistry:
+    :param steppable_registry:
     :return:
     """
+    t1 = time.time()
+    compiled_code_run_time = 0.0
 
-    persistent_globals = CompuCellSetup.persistent_globals
+    pg = CompuCellSetup.persistent_globals
+    steppable_registry = pg.steppable_registry
 
-    steppableRegistry = CompuCellSetup.persistent_globals.steppable_registry
-    if not steppableRegistry is None:
-        steppableRegistry.init(sim)
+    pg.restart_manager = RestartManager.RestartManager(sim)
+    restart_manager = pg.restart_manager
+    restart_manager.output_frequency = pg.restart_snapshot_frequency
+    restart_manager.allow_multiple_restart_directories = pg.restart_multiple_snapshots
 
-    max_num_steps = sim.getNumSteps()
+    init_using_restart_snapshot_enabled = restart_manager.restart_enabled()
+    # init_using_restart_snapshot_enabled = False
+    sim.setRestartEnabled(init_using_restart_snapshot_enabled)
+    check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
+
+    if init_using_restart_snapshot_enabled:
+        print('WILL RESTART SIMULATION')
+        restart_manager.loadRestartFiles()
+        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
+    else:
+        print('WILL RUN SIMULATION FROM BEGINNING')
+
+    extra_init_simulation_objects(sim, simthread,
+                                  init_using_restart_snapshot_enabled=init_using_restart_snapshot_enabled)
+    check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
+
+    if steppable_registry is not None:
+        steppable_registry.init(sim)
 
     init_lattice_snapshot_objects()
     init_screenshot_manager()
 
-    sim.start()
-    if not steppableRegistry is None:
-        steppableRegistry.start()
+    if steppable_registry is not None and not init_using_restart_snapshot_enabled:
+        steppable_registry.start()
 
-    cur_step = 0
+    if steppable_registry is not None:
+        steppable_registry.start()
 
-    while cur_step < max_num_steps:
+    run_finish_flag = True
+
+    restart_manager.prepare_restarter()
+    beginning_step = restart_manager.get_restart_step()
+
+    cur_step = beginning_step
+
+    while cur_step < sim.getNumSteps():
         if CompuCellSetup.persistent_globals.user_stop_simulation_flag:
-            runFinishFlag = False
+            run_finish_flag = False
             break
-        sim.step(cur_step)
 
-        if not steppableRegistry is None:
-            steppableRegistry.step(cur_step)
+        if steppable_registry is not None:
+            steppable_registry.stepRunBeforeMCSSteppables(cur_step)
+
+        compiled_code_begin = time.time()
+
+        sim.step(cur_step)  # steering using steppables
+        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
+
+        compiled_code_end = time.time()
+
+        compiled_code_run_time += (compiled_code_end - compiled_code_begin) * 1000
+
+        if steppable_registry is not None:
+            steppable_registry.step(cur_step)
+
+        # restart manager will decide whether to output files or not based on its settings
+        restart_manager.output_restart_files(cur_step)
 
         store_lattice_snapshot(cur_step=cur_step)
         store_screenshots(cur_step=cur_step)
@@ -361,51 +484,51 @@ def main_loop(sim, simthread, steppableRegistry):
 
         # steer application will only update modules that uses requested using updateCC3DModule function from simulator
         sim.steer()
+        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
         cur_step += 1
 
-
-def extra_init_simulation_objects(sim, simthread, restart_enabled=False):
-    print("Simulation basepath extra init=", sim.getBasePath())
-
-    # after all xml steppables and plugins have been loaded we call extraInit to complete initialization
-    sim.extraInit()
-    # simthread.preStartInit()
-    sim.start()
-
-    # sends signal to player  to prepare for the upcoming simulation
-    simthread.postStartInit()
-
-    # waits for player  to complete initialization
-    simthread.waitForPlayerTaskToFinish()
+    t2 = time.time()
+    print_profiling_report(py_steppable_profiler_report=steppable_registry.get_profiler_report(),
+                           compiled_code_run_time=compiled_code_run_time, total_run_time=(t2 - t1) * 1000.0)
 
 
 def main_loop_player(sim, simthread=None, steppable_registry=None):
     """
-
+    main loop for GUI based simulations
     :param sim:
     :param simthread:
     :param steppable_registry:
     :return:
     """
+    t1 = time.time()
+    compiled_code_run_time = 0.0
 
-    steppable_registry = CompuCellSetup.persistent_globals.steppable_registry
-    simthread = CompuCellSetup.persistent_globals.simthread
+    pg = CompuCellSetup.persistent_globals
 
-    restart_manager = RestartManager.RestartManager(sim)
+    steppable_registry = pg.steppable_registry
+    simthread = pg.simthread
 
-    restart_enabled = restart_manager.restart_enabled()
-    restart_enabled = False
-    sim.setRestartEnabled(restart_enabled)
+    pg.restart_manager = RestartManager.RestartManager(sim)
+    restart_manager = pg.restart_manager
+    restart_manager.output_frequency = pg.restart_snapshot_frequency
+    restart_manager.allow_multiple_restart_directories = pg.restart_multiple_snapshots
 
+    init_using_restart_snapshot_enabled = restart_manager.restart_enabled()
+    # init_using_restart_snapshot_enabled = False
+    sim.setRestartEnabled(init_using_restart_snapshot_enabled)
 
-    if restart_enabled:
+    if init_using_restart_snapshot_enabled:
         print('WILL RESTART SIMULATION')
         restart_manager.loadRestartFiles()
+        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
     else:
         print('WILL RUN SIMULATION FROM BEGINNING')
 
-    extra_init_simulation_objects(sim, simthread, restart_enabled=restart_enabled)
+    extra_init_simulation_objects(sim, simthread,
+                                  init_using_restart_snapshot_enabled=init_using_restart_snapshot_enabled)
+
+    check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
     # simthread.waitForInitCompletion()
     # simthread.waitForPlayerTaskToFinish()
@@ -413,30 +536,41 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
     if not steppable_registry is None:
         steppable_registry.init(sim)
 
-    max_num_steps = sim.getNumSteps()
+
 
     # called in extraInitSimulationObjects
     # sim.start()
 
-    if not steppable_registry is None:
+    if not steppable_registry is None and not init_using_restart_snapshot_enabled:
         steppable_registry.start()
 
     run_finish_flag = True
 
     restart_manager.prepare_restarter()
-    beginning_step = restart_manager.getRestartStep()
+    beginning_step = restart_manager.get_restart_step()
+
+    if init_using_restart_snapshot_enabled:
+        steppable_registry.restart_steering_panel()
 
     cur_step = beginning_step
 
-    while cur_step < max_num_steps:
+    while cur_step < sim.getNumSteps():
         simthread.beforeStep(_mcs=cur_step)
         if simthread.getStopSimulation() or CompuCellSetup.persistent_globals.user_stop_simulation_flag:
             run_finish_flag = False
             break
 
-        restart_manager.output_restart_files(cur_step)
+        if steppable_registry is not None:
+            steppable_registry.stepRunBeforeMCSSteppables(cur_step)
 
-        sim.step(cur_step)
+        compiled_code_begin = time.time()
+
+        sim.step(cur_step)  # steering using steppables
+        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
+
+        compiled_code_end = time.time()
+
+        compiled_code_run_time += (compiled_code_end - compiled_code_begin) * 1000
 
         # steering using GUI. GUI steering overrides steering done in the steppables
         simthread.steerUsingGUI(sim)
@@ -444,24 +578,36 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
         if not steppable_registry is None:
             steppable_registry.step(cur_step)
 
+        # restart manager will decide whether to output files or not based on its settings
+        restart_manager.output_restart_files(cur_step)
+
         # passing Python-script-made changes in XML to C++ code
         incorporate_script_steering_changes(simulator=sim)
 
         # steer application will only update modules that uses requested using updateCC3DModule function from simulator
         sim.steer()
+        check_for_cpp_errors(CompuCellSetup.persistent_globals.simulator)
 
-        simthread.loopWork(cur_step)
-        simthread.loopWorkPostEvent(cur_step)
+        screen_update_frequency = simthread.getScreenUpdateFrequency()
+        screenshot_frequency = simthread.getScreenshotFrequency()
+
+        if (screen_update_frequency > 0 and cur_step % screen_update_frequency == 0) or (
+                screenshot_frequency > 0 and cur_step % screenshot_frequency == 0):
+
+            simthread.loopWork(cur_step)
+            simthread.loopWorkPostEvent(cur_step)
 
         cur_step += 1
 
     if run_finish_flag:
         # # we emit request to finish simulation
         # simthread.emitFinishRequest()
-        # # then we wait for GUI thread to unlock the finishMutex - it will only happen when all tasks in the GUI thread are completed (especially those that need simulator object to stay alive)
+        # # then we wait for GUI thread to unlock the finishMutex - it will only happen when all tasks
+        # in the GUI thread are completed (especially those that need simulator object to stay alive)
         # simthread.finishMutex.lock()
         # simthread.finishMutex.unlock()
-        # # at this point GUI thread finished all the tasks for which simulator had to stay alive  and we can proceed to destroy simulator
+        # # at this point GUI thread finished all the tasks for which simulator had to stay alive
+        # and we can proceed to destroy simulator
         #
         # sim.finish()
         # if sim.getRecentErrorMessage() != "":
@@ -481,6 +627,10 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
             simthread.simulationFinishedPostEvent(True)
 
         steppable_registry.clean_after_simulation()
+
+    t2 = time.time()
+    print_profiling_report(py_steppable_profiler_report=steppable_registry.get_profiler_report(),
+                           compiled_code_run_time=compiled_code_run_time, total_run_time=(t2 - t1) * 1000.0)
 
 
 def main_loop_player_cml_result_replay(sim, simthread, steppableRegistry):

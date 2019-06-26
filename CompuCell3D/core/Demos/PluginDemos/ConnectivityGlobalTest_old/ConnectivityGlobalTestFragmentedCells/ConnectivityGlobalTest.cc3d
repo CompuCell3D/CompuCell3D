@@ -1,7 +1,7 @@
 <Simulation version="3.6.1">
 
     <XMLScript Type="XMLScript">Simulation/ConnectivityGlobalTestFragmentedCells.xml</XMLScript>
-
+    <PythonScript>Simulation/ConnectivityGlobalTestFragmentedCells.py</PythonScript>
     <PIFFile>Simulation/ConnectivityGlobalTestFragmentedCells.piff</PIFFile>
 
 </Simulation>

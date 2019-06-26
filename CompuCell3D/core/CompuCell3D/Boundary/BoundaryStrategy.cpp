@@ -1203,6 +1203,56 @@ Neighbor BoundaryStrategy::getNeighborDirect(Point3D & pt, unsigned int idx, boo
 
 }
 
+Point3D BoundaryStrategy::Hex2Cartesian(const Coordinates3D<double> & _coord)const {
+    //this transformation takes coordinates of a point on ahex lattice and returns integer coordinates of cartesian pixel that is nearest given point on hex lattice 
+    //It is the inverse transformation of the one coded in HexCoord 
+    int z_segments = (int)roundf(_coord.z / (sqrt(6.0) / 3.0));
+
+    if ((z_segments % 3) == 1) {
+        int y_segments = (int)roundf(_coord.y / (sqrt(3.0) / 2.0) - 2.0 / 6.0);
+
+        if (y_segments % 2) {
+
+            return Point3D((int)roundf(_coord.x - 0.5), y_segments, z_segments);
+        }
+        else {
+
+            return Point3D((int)roundf(_coord.x), y_segments, z_segments);
+        }
+
+    }
+    else if ((z_segments % 3) == 2) {
+
+        int y_segments = (int)roundf(_coord.y / (sqrt(3.0) / 2.0) + 2.0 / 6.0);
+
+
+        if (y_segments % 2) {
+
+            return Point3D((int)roundf(_coord.x - 0.5), y_segments, z_segments);
+        }
+        else {
+
+            return Point3D((int)roundf(_coord.x), y_segments, z_segments);
+        }
+
+    }
+    else {
+
+        int y_segments = (int)roundf(_coord.y / (sqrt(3.0) / 2.0));
+        if (y_segments % 2) {
+
+            return Point3D((int)roundf(_coord.x), y_segments, z_segments);
+        }
+        else {
+
+            return Point3D((int)roundf(_coord.x - 0.5), y_segments, z_segments);
+        }
+
+
+    }
+}
+
+
 
 
 /// <summary>

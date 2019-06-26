@@ -140,7 +140,7 @@ void CurvaturePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 
 
 	// plastParams.clear();
-	// internalCurvatureParams.clear();
+	 internalCurvatureParams.clear();
 	// typeSpecificCurvatureParams.clear();
 	internalTypeSpecificCurvatureParams.clear();
 
@@ -210,7 +210,7 @@ void CurvaturePlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag){
 		char type2 = automaton->getTypeId(internalCurvatureParamVec[i]->getAttribute("Type2"));
 
 		int index = getIndex(type1, type2);
-
+        cerr << "setting curvature parameters between type1=" << (int)type1 << " and type2=" << (int)type2 << endl;
 		curvatureParams_t::iterator it = internalCurvatureParams.find(index);
 		ASSERT_OR_THROW(string("Internal curvature parameters for ") + type1 + " " + type2 +
 			" already set!", it == internalCurvatureParams.end());

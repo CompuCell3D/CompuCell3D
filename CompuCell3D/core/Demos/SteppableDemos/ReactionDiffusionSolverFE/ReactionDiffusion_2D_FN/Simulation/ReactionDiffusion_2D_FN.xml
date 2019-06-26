@@ -1,0 +1,41 @@
+<CompuCell3D>
+    <Potts>
+        <Dimensions x="55" y="55" z="1"/>
+        <Anneal>0</Anneal>
+        <Steps>10000</Steps>
+        <Temperature>15</Temperature>
+        <Flip2DimRatio>0.0</Flip2DimRatio>
+        <Boundary_x>Periodic</Boundary_x>
+        <Boundary_y>Periodic</Boundary_y>
+
+    </Potts>
+
+
+    <Plugin Name="CellType">
+        <CellType TypeName="Medium" TypeId="0"/>
+        <CellType TypeName="Amoeba" TypeId="1"/>
+        <CellType TypeName="Bacteria" TypeId="2"/>
+    </Plugin>
+
+
+    <Steppable Type="ReactionDiffusionSolverFE">
+        <DiffusionField>
+            <DiffusionData>
+                <FieldName>F</FieldName>
+                <DiffusionConstant>0.01</DiffusionConstant>
+                <ConcentrationFileName>Simulation/FN.pulse.txt</ConcentrationFileName>
+                <AdditionalTerm>F-F*F*F/3+0.3-H</AdditionalTerm>
+            </DiffusionData>
+        </DiffusionField>
+        <DiffusionField>
+            <DiffusionData>
+                <FieldName>H</FieldName>
+                <DiffusionConstant>0.01</DiffusionConstant>
+                <AdditionalTerm>0.08*F-0.064*H+0.056</AdditionalTerm>
+            </DiffusionData>
+        </DiffusionField>
+
+    </Steppable>
+
+
+</CompuCell3D>

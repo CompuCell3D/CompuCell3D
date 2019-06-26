@@ -1,6 +1,0 @@
-import cc3d.CompuCellSetup as CompuCellSetup
-from .FocalPointPlasticityCompartmentsSteppables import FocalPointPlasticityCompartmentsParams
-
-CompuCellSetup.register_steppable(steppable=FocalPointPlasticityCompartmentsParams(frequency=10))
-
-CompuCellSetup.run()

@@ -1,10 +1,13 @@
 import time
 import sys
 import shutil
+from subprocess import Popen
 from collections import OrderedDict
 from pathlib import Path
 from typing import List, Union
 import json
+import numpy as np
+import math
 from copy import deepcopy
 from cc3d.core.CC3DSimulationDataHandler import CC3DSimulationDataHandler
 from cc3d.core.filelock import FileLock
@@ -14,7 +17,7 @@ import traceback
 
 from .template_utils import generate_simulation_files_from_template
 
-from cc3d.player5.compucell3d import main as main_player
+# from cc3d.player5.compucell3d import main as main_player
 
 
 def param_scan_complete_signal(output_dir: Union[str, Path]) -> Path:
@@ -123,7 +126,7 @@ def create_param_scan_status(cc3d_proj_fname: Union[str, Path], output_dir: Unio
     """
 
     cc3d_simulation_data_handler = CC3DSimulationDataHandler()
-    cc3d_simulation_data_handler.readCC3DFileFormat(cc3d_proj_fname)
+    cc3d_simulation_data_handler.read_cc3_d_file_format(cc3d_proj_fname)
     cc3d_sim_data = cc3d_simulation_data_handler.cc3dSimulationData
 
     if cc3d_sim_data.parameterScanResource is None:
@@ -134,20 +137,42 @@ def create_param_scan_status(cc3d_proj_fname: Union[str, Path], output_dir: Unio
     param_list_elem = param_scan_root_elem['parameter_list']
 
     for param_name, param_values in param_list_elem.items():
+
         # adding current_idx
         param_list_elem[param_name]['current_idx'] = 0
+        try:
+            values = param_list_elem[param_name]['values']
+        except KeyError:
+            values = []
+
+        # executing code in "code" string
+        try:
+            code_str = param_list_elem[param_name]['code']
+        except KeyError:
+            code_str = None
+
+        if code_str:
+            values_generated = eval(code_str, {'np': np, 'math': math})
+            if isinstance(values_generated, np.ndarray):
+                values = values_generated.tolist()
+            else:
+                values = list(values_generated)
+
+        if not len(values):
+            raise RuntimeError('Parameter {} has no values associated with it'.format(param_name))
+
+        param_list_elem[param_name]['values'] = values
 
     # adding element that will keep track of current iteration
     param_scan_root_elem['current_iteration'] = 0
 
     param_scan_status_pth = param_scan_status_path(output_dir)
 
-    # we do no create param scan status fil iof such file exists
+    # we do no create param scan status file if such file exists
     if param_scan_status_pth.exists():
         return
 
     with open(str(param_scan_status_pth), 'w') as fout:
-
         json.dump(param_scan_root_elem, fout, indent=4)
 
 
@@ -294,9 +319,10 @@ def run_main_player_run_script(arg_list_local: list):
 
 
 def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_scan_parameters: dict,
+                                     run_script: Union[str, Path] = '', gui_flag: bool = False,
                                      output_dir: str = None, arg_list: list = []):
     """
-    Given the set of scanned parameters This funciton creates CC3D project (by applying)
+    Given the set of scanned parameters This function creates CC3D project (by applying)
     parameter set to the .cc3d template and the runs such newly created simulation
     Runs single CC3D simulation
 
@@ -331,12 +357,20 @@ def run_single_param_scan_simulation(cc3d_proj_fname: Union[str, Path], current_
     # at this point arg_list may have args from main script
     arg_list_local = deepcopy(arg_list)
     arg_list_local += ['--input={}'.format(cc3d_proj_template),
-                       '--screenshotOutputDir={}'.format(cc3d_proj_template.parent), '--exitWhenDone']
+                       '--output-dir={}'.format(cc3d_proj_template.parent), ]
+    if gui_flag:
+        arg_list_local += ['--exit-when-done']
 
     print('Running simulation with current_scan_parameters=', current_scan_parameters)
 
-    main_player(arg_list_local)
+    popen_args = [run_script] + arg_list_local
+    print('command=', popen_args)
+
+    cc3d_process = Popen(popen_args)
+    cc3d_process.communicate()
+
+    # main_player(arg_list_local)
 
     print('repeat: Running simulation with current_scan_parameters=', current_scan_parameters)
 
-    time.sleep(5.0)
+    # time.sleep(5.0)

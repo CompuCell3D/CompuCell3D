@@ -1,105 +1,89 @@
-from PySteppables import *
-import CompuCell
-import CompuCellSetup
-import sys
+from cc3d.core.PySteppables import *
+from pathlib import Path
 
 
 class ExtraPlotSteppable(SteppableBasePy):
-    def __init__(self, _simulator, _frequency=10):
-        SteppableBasePy.__init__(self, _simulator, _frequency)
+    def __init__(self, frequency=10):
+        SteppableBasePy.__init__(self, frequency)
+        self.clear_flag = False
+        self.plot_win = None
 
     def start(self):
 
-        self.pW=self.addNewPlotWindow(_title='Average Volume And Surface',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Variables', _xScaleType='linear',_yScaleType='linear',_grid=False)
-		
-        self.pW.addPlot("MVol", _style='Lines',_color='red')
-        self.pW.addPlot("MSur", _style='Dots',_color='green')
-        
-        # adding automatically generated legend
-        # default possition is at the bottom of the plot but here we put it at the top
-        self.pW.addAutoLegend("top")
+        self.plot_win = self.add_new_plot_window(title='Average Volume And Surface',
+                                                 x_axis_title='MonteCarlo Step (MCS)',
+                                                 y_axis_title='Variables', x_scale_type='linear', y_scale_type='linear',
+                                                 grid=False, config_options={'legend': True})
 
-        self.clearFlag = False
+        self.plot_win.add_plot("MVol", style='Lines', color='red')
+        self.plot_win.add_plot("MSur", style='Dots', color='green')
 
     def step(self, mcs):
-        if not self.pW:
-            print "To get scientific plots working you need extra packages installed:"
-            print "Windows/OSX Users: Make sure you have numpy installed. For instructions please visit www.compucell3d.org/Downloads"
-            print "Linux Users: Make sure you have numpy and PyQwt installed. Please consult your linux distributioun manual pages on how to best install those packages"
+        if not self.plot_win:
             return
-            # self.pW.addDataPoint("MCS",mcs,mcs)
 
-        # self.pW.addDataPoint("MCS1",mcs,-2*mcs)
-        # this is totall non optimized code. It is for illustrative purposes only. 
-        meanSurface = 0.0
-        meanVolume = 0.0
-        numberOfCells = 0
+        mean_surface = 0.0
+        mean_volume = 0.0
+        number_of_cells = 0
         for cell in self.cellList:
-            meanVolume += cell.volume
-            meanSurface += cell.surface
-            numberOfCells += 1
-        meanVolume /= float(numberOfCells)
-        meanSurface /= float(numberOfCells)
-
-
+            mean_volume += cell.volume
+            mean_surface += cell.surface
+            number_of_cells += 1
+        mean_volume /= float(number_of_cells)
+        mean_surface /= float(number_of_cells)
 
         if mcs > 100 and mcs < 200:
-            self.pW.eraseAllData()
+            self.plot_win.erase_all_data()
         else:
-            self.pW.addDataPoint("MVol", mcs, meanVolume)
-            self.pW.addDataPoint("MSur", mcs, meanSurface)
+            self.plot_win.add_data_point("MVol", mcs, mean_volume)
+            self.plot_win.add_data_point("MSur", mcs, mean_surface)
             if mcs >= 200:
-                print "Adding meanVolume=", meanVolume
-                print "plotData=", self.pW.plotData["MVol"]
-
-
-        self.pW.showAllPlots()
+                print("Adding meanVolume=", mean_volume)
+                print("plotData=", self.plot_win.plotData["MVol"])
 
         # Saving plots as PNG's
-        if mcs < 50:
-            qwtPlotWidget = self.pW.getQWTPLotWidget()
-            qwtPlotWidgetSize = qwtPlotWidget.size()
-            # print "pW.size=",self.pW.size()
-            fileName = "ExtraPlots_" + str(mcs) + ".png"
-            self.pW.savePlotAsPNG(fileName, 550, 550)  # here we specify size of the image saved - default is 400 x 400
+        if mcs < 50 and self.output_dir is not None:
+            file_name = str(Path(self.output_dir).joinpath("ExtraPlots_" + str(mcs) + ".png"))
+            # here we specify size of the image saved - default is 400 x 400
+            self.plot_win.save_plot_as_png(file_name, 550, 550)
 
 
 class ExtraMultiPlotSteppable(SteppableBasePy):
-    def __init__(self, _simulator, _frequency=10):
-        SteppableBasePy.__init__(self, _simulator, _frequency)
+    def __init__(self, frequency=10):
+        SteppableBasePy.__init__(self, frequency)
+
+        self.plot_win_vol = None
+        self.plot_win_sur = None
 
     def start(self):
 
-        self.pWVol=self.addNewPlotWindow(_title='Average Volume ',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Volume', _xScaleType='linear',_yScaleType='linear')
-        
-        self.pWVol.addPlot("MVol", _style='Dots',_color='blue')
-        
-        if not self.pWVol:
-            return
-        
-        # adding automatically generated legend
-        self.pWVol.addAutoLegend()
-       
-        self.pWSur=self.addNewPlotWindow(_title='Average Surface',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Surface', _xScaleType='linear',_yScaleType='linear')
-        self.pWSur.addPlot("MSur", _style='Dots', _color='red')
+        self.plot_win_vol = self.add_new_plot_window(title='Average Volume ', x_axis_title='MonteCarlo Step (MCS)',
+                                                     y_axis_title='Volume', x_scale_type='linear',
+                                                     y_scale_type='linear',
+                                                     config_options={'legend': True})
 
+        self.plot_win_vol.add_plot("MVol", style='Dots', color='blue')
+
+        if not self.plot_win_vol:
+            return
+
+        self.plot_win_sur = self.add_new_plot_window(title='Average Surface', x_axis_title='MonteCarlo Step (MCS)',
+                                                     y_axis_title='Surface', x_scale_type='linear',
+                                                     y_scale_type='linear')
+        self.plot_win_sur.add_plot("MSur", style='Dots', color='red')
 
     def step(self, mcs):
         # this is totally non optimized code. It is for illustrative purposes only. 
-        meanSurface = 0.0
-        meanVolume = 0.0
-        numberOfCells = 0
+        mean_surface = 0.0
+        mean_volume = 0.0
+        number_of_cells = 0
         for cell in self.cellList:
-            meanVolume += cell.volume
-            meanSurface += cell.surface
-            numberOfCells += 1
-        meanVolume /= float(numberOfCells)
-        meanSurface /= float(numberOfCells)
+            mean_volume += cell.volume
+            mean_surface += cell.surface
+            number_of_cells += 1
+        mean_volume /= float(number_of_cells)
+        mean_surface /= float(number_of_cells)
 
-        self.pWVol.addDataPoint("MVol", mcs, meanVolume)
-        self.pWSur.addDataPoint("MSur", mcs, meanSurface)
-        print "meanVolume=", meanVolume, "meanSurface=", meanSurface
-
-        # self.pW.showPlot("MCS1")
-        self.pWVol.showAllPlots()
-        self.pWSur.showAllPlots()
+        self.plot_win_vol.add_data_point("MVol", mcs, mean_volume)
+        self.plot_win_sur.add_data_point("MSur", mcs, mean_surface)
+        print("meanVolume=", mean_volume, "meanSurface=", mean_surface)

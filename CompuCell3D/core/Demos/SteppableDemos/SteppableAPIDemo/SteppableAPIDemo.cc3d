@@ -1,0 +1,5 @@
+<Simulation version="3.6.2">
+   <XMLScript Type="XMLScript">Simulation/SteppableAPIDemo.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/SteppableAPIDemo.py</PythonScript>
+   <Resource Type="Python">Simulation/SteppableAPIDemoSteppables.py</Resource>
+</Simulation>

@@ -20,7 +20,7 @@ from cc3d.player5.CQt.CQApplication import CQApplication
 # setting debug information output
 from cc3d.player5.Messaging import setDebugging
 
-import cc3d.core.Version as Version
+import cc3d
 
 setDebugging(0)
 
@@ -88,8 +88,8 @@ def main(argv):
     # sys.path.append(os.environ["PYTHON_MODULE_PATH"])
     # sys.path.append(os.environ["SWIG_LIB_INSTALL_DIR"])
 
-    version_str = Version.getVersionAsString()
-    revision_str = Version.getSVNRevisionAsString()
+    version_str = cc3d.__version__
+    revision_str = cc3d.__revision__
 
     base_message = "CompuCell3D Version: %s Revision: %s\n" % (version_str, revision_str)
     first_message = base_message + "Loading User Interface ..."
@@ -114,6 +114,7 @@ def main(argv):
     # process reminder of the command line options
     # TODO
     if argv != "":
+        main_window.viewmanager.set_cml_args(cml_args)
         main_window.viewmanager.process_command_line_options(cml_args)
 
     main_window.show()

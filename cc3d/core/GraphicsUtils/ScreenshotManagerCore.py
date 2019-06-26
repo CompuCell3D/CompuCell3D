@@ -5,7 +5,7 @@ from os.path import dirname, join, exists
 from collections import OrderedDict
 from cc3d.core.GraphicsUtils.ScreenshotData import ScreenshotData
 import json
-import cc3d.core.Version as Version
+import cc3d
 from cc3d import CompuCellSetup
 
 MODULENAME = '---- ScreenshotManager.py: '
@@ -63,7 +63,7 @@ class ScreenshotManagerCore(object):
         """
 
         root_elem = OrderedDict()
-        root_elem['Version'] = Version.getVersionAsString()
+        root_elem['Version'] = cc3d.__version__
         root_elem['ScreenshotData'] = OrderedDict()
 
         scr_container_elem = root_elem['ScreenshotData']

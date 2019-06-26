@@ -173,27 +173,27 @@ INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}")
 message("OPENMP FLAGS " ${OpenMP_CXX_FLAGS})
 
 ADD_COMPUCELL3D_STEPPABLE(PDESolvers
-#   AdvectionDiffusionSolverFE.cpp
-#   FastDiffusionSolver2DFE.cpp
+  AdvectionDiffusionSolverFE.cpp
+  FastDiffusionSolver2DFE.cpp
   DiffusionSolverFE.cpp
   DiffusionSolverFE_CPU.cpp
-#   DiffusionSolverFE_CPU_Implicit.cpp
-#   SteadyStateDiffusionSolver2D.cpp
-#   SteadyStateDiffusionSolver.cpp
-#   PDESolversProxy.cpp
-#   DiffSecrData.cpp  
-#   FlexibleDiffusionSolverFE.cpp
-#   # FiPySolver.cpp
-#   FlexibleDiffusionSolverADE.cpp
-#   KernelDiffusionSolver.cpp
-#   ReactionDiffusionSolverFE_SavHog.cpp
-#   ReactionDiffusionSolverFE.cpp
-#   FlexibleReactionDiffusionSolverFE.cpp
-#   HW3CRT.c 
-#   HWSCRT.c
-# #  ${CUDA_SRCS}
-#   ${OPENCL_SRCS}
-#   ${HEADER_FILES}
+  DiffusionSolverFE_CPU_Implicit.cpp
+  SteadyStateDiffusionSolver2D.cpp
+  SteadyStateDiffusionSolver.cpp
+  PDESolversProxy.cpp
+  DiffSecrData.cpp  
+  FlexibleDiffusionSolverFE.cpp
+  # FiPySolver.cpp
+  FlexibleDiffusionSolverADE.cpp
+  KernelDiffusionSolver.cpp
+  ReactionDiffusionSolverFE_SavHog.cpp
+  ReactionDiffusionSolverFE.cpp
+  FlexibleReactionDiffusionSolverFE.cpp
+  HW3CRT.c 
+  HWSCRT.c
+#  ${CUDA_SRCS}
+  ${OPENCL_SRCS}
+  ${HEADER_FILES}
 
 LINK_LIBRARIES ${STEPPABLE_DEPENDENCIES} ${OPENCL_LIBS} 
 #  ${CUDA_LIBS} 

@@ -1,7 +1,0 @@
-<Simulation version="3.5.1">
-    <XMLScript>Simulation/cellInitializer.xml</XMLScript>    
-    <PythonScript>Simulation/cellInitializer.py</PythonScript>    
-    <Resource Type="Python">Simulation/cellInitializerSteppables.py</Resource> 
-</Simulation>
-
- 

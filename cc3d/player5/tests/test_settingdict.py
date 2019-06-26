@@ -41,7 +41,7 @@ class TestSettingdict(unittest.TestCase):
         s.setSetting('ScreenshotFrequency', 8)
         s.setSetting('MinConcentration', 8.2)
         s.setSetting('ComplexNum', 8.2 + 3j)
-        s.setSetting('dupa', 'blada2')
+        s.setSetting('d1', 'blade')
 
         s.setSetting('window_color', col)
 
@@ -75,9 +75,9 @@ class TestSettingdict(unittest.TestCase):
         self.assertEqual(complex_s.real, 8.2)
         self.assertEqual(complex_s.imag, 3)
 
-        str_s = s.setting('dupa')
+        str_s = s.setting('d1')
         self.assertIsInstance(str_s, str)
-        self.assertEqual(str_s, 'blada2')
+        self.assertEqual(str_s, 'blade')
 
         color_s = s.setting('window_color')
         self.assertIsInstance(color_s, QColor)
@@ -94,7 +94,7 @@ class TestSettingdict(unittest.TestCase):
         s.setSetting('RecentSimulations', l)
 
 
-        l = [1, 2.0, QColor('red'), 'dupa']
+        l = [1, 2.0, QColor('red'), 'dp']
 
         s.setSetting('window_data_list', l)
 
@@ -115,7 +115,7 @@ class TestSettingdict(unittest.TestCase):
         self.assertEqual(l_s[2].name(), "#ff0000")
 
         self.assertIsInstance(l_s[3], str)
-        self.assertEqual(l_s[3], 'dupa')
+        self.assertEqual(l_s[3], 'dp')
 
         print(l_s)
 
@@ -221,7 +221,7 @@ class TestSettingdict(unittest.TestCase):
              },
              'flag_true': True,
              'flag_false': False,
-             'window_data_list': [1, 2, QColor('red'), 'dupa']
+             'window_data_list': [1, 2, QColor('red'), 'dp']
 
              }
 
@@ -263,6 +263,6 @@ class TestSettingdict(unittest.TestCase):
         self.assertEqual(l_s[2].name(), "#ff0000")
 
         self.assertIsInstance(l_s[3], str)
-        self.assertEqual(l_s[3], 'dupa')
+        self.assertEqual(l_s[3], 'dp')
 
         print(dict_s)

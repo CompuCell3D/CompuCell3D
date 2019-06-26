@@ -156,11 +156,8 @@ class XMLIdLocator:
         children = elem.children
         self.node_stack.append(elem)
 
-        print('elem=', elem.name)
-
         if elem.name in ['Potts', 'Plugin', 'Steppable']:
             self.super_parent_stack.append(elem)
-            print('adding super_parent=', elem.name)
 
         # direct iteration like for child_elem in  root_elem.children: does not work with SWIG
         for child_idx in range(children.size()):

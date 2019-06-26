@@ -1,19 +1,29 @@
+from cc3d.core.PySteppables import *
 
-from PySteppables import *
-import CompuCell
-import sys
-class AngiogenesisStetppable(SteppableBasePy):    
 
-    def __init__(self,_simulator,_frequency=10):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
+class AngiogenesisStetppable(SteppableBasePy):
+
+    def __init__(self, frequency=10):
+        SteppableBasePy.__init__(self, frequency)
+
     def start(self):
-        # any code in the start function runs before MCS=0
-        pass
-    def step(self,mcs):        
-        #type here the code that will run every _frequency MCS
-        for cell in self.cellList:
-            print "cell.id=",cell.id
+        """
+        function called before simulation starts running but after all objects are "ready to go"
+        :return:
+        """
+
+    def step(self, mcs):
+        """
+        Called every 'self.frequency' Monte Carlo Steps
+        :param mcs: Monte Carlo Step
+        :return:
+        """
+
+        for cell in self.cell_list:
+            print("cell.id=", cell.id)
+
     def finish(self):
-        # Finish Function gets called after the last MCS
-        pass
-        
+        """
+        function called after simulation starts running. Some simulation objects may be inaccessible
+        :return:
+        """

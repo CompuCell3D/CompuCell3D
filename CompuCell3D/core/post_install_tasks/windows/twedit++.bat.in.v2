@@ -1,5 +1,7 @@
 
 
+@SET PYTHONPATH=%PREFIX_CC3D%\lib\site-packages
+
 @SET PYTHON_MODULE_PATH=%PREFIX_CC3D%\pythonSetupScripts
 @SET SWIG_LIB_INSTALL_DIR=%PREFIX_CC3D%\lib\python
 
@@ -13,4 +15,4 @@
 
 
 
-"%PYTHON_INSTALL_PATH%\python" "%PREFIX_CC3D%\@twedit_dir@\twedit_plus_plus_cc3d.py" %*
+"%PYTHON_INSTALL_PATH%\python" "%PYTHONPATH%\cc3d\twedit5\twedit_plus_plus_cc3d.py" %*

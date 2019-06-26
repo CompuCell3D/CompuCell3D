@@ -1,20 +1,6 @@
-import sys
-from os import environ
-import string
-sys.path.append(environ["PYTHON_MODULE_PATH"])
+from cc3d import CompuCellSetup
+from .ConnectivityElongationSteppable import ConnectivityElongationSteppable
 
-import CompuCellSetup
+CompuCellSetup.register_steppable(steppable=ConnectivityElongationSteppable(frequency=50))
 
-sim,simthread = CompuCellSetup.getCoreSimulationObjects()
-
-CompuCellSetup.initializeSimulationObjects(sim,simthread)
-
-from PySteppables import SteppableRegistry
-steppableRegistry=SteppableRegistry()
-
-from ConnectivityElongationSteppable import ConnectivityElongationSteppable
-connectivityElongationSteppable=ConnectivityElongationSteppable(_simulator=sim,_frequency=50)
-steppableRegistry.registerSteppable(connectivityElongationSteppable)
-
-CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
-
+CompuCellSetup.run()

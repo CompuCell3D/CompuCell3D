@@ -1,5 +1,5 @@
 <Simulation version="3.6.1">
 
     <XMLScript Type="XMLScript">Simulation/randomFieldInitializer.xml</XMLScript>
-
+    <PythonScript>Simulation/randomFieldInitializer.py</PythonScript>
 </Simulation>

@@ -4,7 +4,9 @@
 from weakref import ref
 import cc3d.player5.DefaultData as DefaultData
 import cc3d.player5.Configuration as Configuration
+import cc3d
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import pyqtSlot
 from cc3d.core.enums import *
 from cc3d.core.GraphicsOffScreen.GenericDrawer import GenericDrawer
 from .GraphicsWindowData import GraphicsWindowData
@@ -253,11 +255,11 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         """
         tvw = self.parentWidget()
 
-        scr_data.cell_borders_on = tvw.borderAct.isChecked()
-        scr_data.cells_on = tvw.cellsAct.isChecked()
-        scr_data.cluster_borders_on = tvw.clusterBorderAct.isChecked()
-        scr_data.cell_glyphs_on = tvw.cellGlyphsAct.isChecked()
-        scr_data.fpp_links_on = tvw.FPPLinksAct.isChecked()
+        scr_data.cell_borders_on = tvw.border_act.isChecked()
+        scr_data.cells_on = tvw.cells_act.isChecked()
+        scr_data.cluster_borders_on = tvw.cluster_border_act.isChecked()
+        scr_data.cell_glyphs_on = tvw.cell_glyphs_act.isChecked()
+        scr_data.fpp_links_on = tvw.fpp_links_act.isChecked()
         scr_data.lattice_axes_on = Configuration.getSetting('ShowHorizontalAxesLabels') or Configuration.getSetting(
             'ShowVerticalAxesLabels')
         scr_data.lattice_axes_labels_on = Configuration.getSetting("ShowAxes")
@@ -311,11 +313,18 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         """
         self._statusBar = statusBar
 
+    @pyqtSlot()
     def configsChanged(self):
         """
 
         :return:
         """
+        # handling what happens after user presses stop - at this point pg is reset and no drawing should be allowed
+        # for some reason on OSX we cannot fo
+        # from cc3d import CompuCellSetup and  instead we access persistent globals via cc3d.CompuCellSetup
+        pg = cc3d.CompuCellSetup.persistent_globals
+        if pg.view_manager is None:
+            return
 
         # here we are updating models based on the new set of configs
         self.gd.configsChanged()
@@ -350,15 +359,16 @@ class GraphicsFrameWidget(QtWidgets.QFrame):
         return self.camera2D
 
     def setZoomItems(self, _zitems):
-        # todo 5
-        # self.draw2D.setZoomItems(_zitems)
-        # self.draw3D.setZoomItems(_zitems)
-        print('set zoom items')
+        """
+
+        :param _zitems:
+        :return:
+        """
 
 
     def setPlane(self, plane, pos):
         (self.plane, self.planePos) = (str(plane).upper(), pos)
-        # print (self.plane, self.planePos)
+
 
     def getPlane(self):
         """

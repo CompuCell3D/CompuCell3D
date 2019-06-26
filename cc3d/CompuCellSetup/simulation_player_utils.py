@@ -2,7 +2,6 @@ from cc3d import CompuCellSetup
 from cc3d.core.ExtraFieldAdapter import ExtraFieldAdapter
 
 
-
 class PlotWindowDummy(object):
     '''
     This class serves as a dummy object that is used when viewManager is None
@@ -23,7 +22,8 @@ class PlotWindowDummy(object):
         pass
 
 
-def add_new_plot_window(title='', xAxisTitle='', yAxisTitle='', xScaleType='linear', yScaleType='linear', grid=True, config_options=None):
+def add_new_plot_window(title='', xAxisTitle='', yAxisTitle='', xScaleType='linear', yScaleType='linear', grid=True,
+                        config_options=None):
     """
     Adds new plot window to the player
     :param title:
@@ -46,18 +46,17 @@ def add_new_plot_window(title='', xAxisTitle='', yAxisTitle='', xScaleType='line
         pW = view_manager.plotManager.getNewPlotWindow()
     except:
         full_options_dict = {
-            'title':title,
-            'xAxisTitle':xAxisTitle,
-            'yAxisTitle':yAxisTitle,
-            'xScaleType':xScaleType,
-            'yScaleType':yScaleType,
-            'grid':grid
+            'title': title,
+            'xAxisTitle': xAxisTitle,
+            'yAxisTitle': yAxisTitle,
+            'xScaleType': xScaleType,
+            'yScaleType': yScaleType,
+            'grid': grid
         }
         if config_options:
             full_options_dict.update(config_options)
 
         pW = view_manager.plotManager.getNewPlotWindow(full_options_dict)
-
 
     if not pW:
         raise AttributeError(
@@ -68,7 +67,8 @@ def add_new_plot_window(title='', xAxisTitle='', yAxisTitle='', xScaleType='line
 
     return pW
 
-def create_extra_field(field_name:str, field_type:int)->ExtraFieldAdapter:
+
+def create_extra_field(field_name: str, field_type: int) -> ExtraFieldAdapter:
     """
     Creates field adapter. On initialization it may or may not have functional reference to the actual field
     When field is initialized from constructor only adapter is returned, however fields
@@ -84,5 +84,3 @@ def create_extra_field(field_name:str, field_type:int)->ExtraFieldAdapter:
     field_adapter = field_registry.create_field(field_name, field_type)
 
     return field_adapter
-
-

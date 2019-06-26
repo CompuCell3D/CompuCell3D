@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 import os, sys
-import string
+import shutil
+
 # import cc3d.twedit5.twedit.editor.Configuration as Configuration
 # import cc3d.core.DefaultSettingsData as settings_data
-from  cc3d.core import DefaultSettingsData as settings_data
+from cc3d.core.ParameterScanUtils import ParameterScanUtils
+from cc3d.core import DefaultSettingsData as settings_data
 from cc3d.core.XMLUtils import ElementCC3D
 from cc3d.core.XMLUtils import Xml2Obj
+from cc3d.core.XMLUtils import CC3DXMLListPy
 
 MODULENAME = '------- pythonSetupScripts/CC3DSimulationDataHandler.py: '
 
@@ -20,29 +23,30 @@ def findRelativePathSegments(basePath, p, rest=[]):
     if h == basePath:
         pathMatch = True
         return [t] + rest, pathMatch
-    print ("(h,t,pathMatch)=", (h, t, pathMatch))
+    print("(h,t,pathMatch)=", (h, t, pathMatch))
     if len(h) < 1: return [t] + rest, pathMatch
     if len(t) < 1: return [h] + rest, pathMatch
     return findRelativePathSegments(basePath, h, [t] + rest)
 
 
-def findRelativePath(basePath, p):
-    relativePathSegments, pathMatch = findRelativePathSegments(basePath, p)
-    if pathMatch:
-        relativePath = ""
-        for i in range(len(relativePathSegments)):
-            segment = relativePathSegments[i]
-            relativePath += segment
-            if i != len(relativePathSegments) - 1:
-                relativePath += "/"  # we use unix style separators - they work on all (3) platforms
-        return relativePath
+def find_relative_path(basePath, p):
+    relative_path_segments, path_match = findRelativePathSegments(basePath, p)
+    if path_match:
+        relative_path = ""
+        for i in range(len(relative_path_segments)):
+            segment = relative_path_segments[i]
+            relative_path += segment
+            if i != len(relative_path_segments) - 1:
+                # we use unix style separators - they work on all (3) platforms
+                relative_path += "/"
+        return relative_path
     else:
         return p
 
 
 class GenericResource(object):
-    def __init__(self, _resourceName=''):
-        self.resourceName = _resourceName
+    def __init__(self, resource_name=''):
+        self.resourceName = resource_name
 
 
 class CC3DResource(GenericResource):
@@ -70,32 +74,29 @@ class CC3DSerializerResource(GenericResource):
         self.fileFormat = 'text'
         self.restartDirectory = ''
 
-    def disableRestart(self):
+    def disable_restart(self):
         self.restartDirectory = ''
 
-    def enableRestart(self, _restartDir=''):
-        if _restartDir != '':
-            self.restartDirectory = _restartDir
+    def enable_restart(self, restart_dir=''):
+        if restart_dir != '':
+            self.restartDirectory = restart_dir
         else:
             self.restartDirectory = 'restart'
 
-    def appendXMLStub(self, _rootElem):
+    def append_xml_stub(self, root_elem):
         # from XMLUtils import ElementCC3D
-        print (MODULENAME, 'IN APPEND XML STUB')
-        print ('self.restartDirectory=', self.restartDirectory)
+        print(MODULENAME, 'IN APPEND XML STUB')
+        print('self.restartDirectory=', self.restartDirectory)
 
         if self.outputFrequency > 0:
-            attributeDict = {"OutputFrequency": self.outputFrequency,
-                             "AllowMultipleRestartDirectories": self.allowMultipleRestartDirectories,
-                             "FileFormat": self.fileFormat}
-            _rootElem.ElementCC3D('SerializeSimulation', attributeDict)
+            attribute_dict = {"OutputFrequency": self.outputFrequency,
+                              "AllowMultipleRestartDirectories": self.allowMultipleRestartDirectories,
+                              "FileFormat": self.fileFormat}
+            root_elem.ElementCC3D('SerializeSimulation', attribute_dict)
         if self.restartDirectory != '':
-            attributeDict = {"RestartDirectory": self.restartDirectory}
-            _rootElem.ElementCC3D('RestartSimulation', attributeDict)
-            print (MODULENAME, 'attributeDict=', attributeDict)
-
-
-from cc3d.core.ParameterScanUtils import ParameterScanUtils
+            attribute_dict = {"RestartDirectory": self.restartDirectory}
+            root_elem.ElementCC3D('RestartSimulation', attribute_dict)
+            print(MODULENAME, 'attribute_dict=', attribute_dict)
 
 
 class CC3DParameterScanResource(CC3DResource):
@@ -106,21 +107,21 @@ class CC3DParameterScanResource(CC3DResource):
         self.basePath = ''
 
         self.parameterScanXMLElements = {}
-        self.parameterScanFileToDataMap = {}  # {file name:dictionary of parameterScanData} parameterScanDataMap={hash:parameterScanData}
-        # self.parameterScanDataMap = {}
+        # {file name:dictionary of parameterScanData} parameterScanDataMap={hash:parameterScanData}
+        self.parameterScanFileToDataMap = {}
         self.fileTypeForEditor = 'xml'
         self.parameterScanXMLHandler = None
-        # self.parameterScanEditor=None
 
-        self.psu = ParameterScanUtils()  # ParameterScanUtils is the class where all parsing and parameter scan data processing takes place
+        # ParameterScanUtils is the class where all parsing and parameter scan data processing takes place
+        self.psu = ParameterScanUtils()
 
     def addParameterScanData(self, _file, _psd):
-        print ('self.basePath=', self.basePath)
-        print ('_file=', _file)
+        print('self.basePath=', self.basePath)
+        print('_file=', _file)
 
         # relative path of the scanned simulation file w.r.t. project directory
-        relativePath = findRelativePath(self.basePath,_file)
-        print ('relativePath=', relativePath)
+        relativePath = find_relative_path(self.basePath, _file)
+        print('relativePath=', relativePath)
         self.psu.addParameterScanData(relativePath, _psd)
 
     def readParameterScanSpecs(self):
@@ -132,12 +133,6 @@ class CC3DParameterScanResource(CC3DResource):
 
 class CC3DSimulationData:
     def __init__(self):
-        # unfortunately there were double-definitions of resources some are refered via. xmlScript and some via xmlScriptREsource
-        #  I fixed this mess with properties. But in the long run the clean API should take care of those issues 
-        #         self.__pythonScript=""
-        #         self.__xmlScript=""
-        #         self.pifFile=""
-        #         self.windowScript=""
 
         self.pythonScriptResource = CC3DResource()
         self.xmlScriptResource = CC3DResource()
@@ -149,9 +144,12 @@ class CC3DSimulationData:
         self.serializerResource = None
         self.parameterScanResource = None
 
-        self.resources = {}  # dictionary of resource files with description (types, plugin, etc)
-        self.path = ""  # full path to project file
-        self.basePath = ""  # full path to the directory of project file
+        # dictionary of resource files with description (types, plugin, etc)
+        self.resources = {}
+        # full path to project file
+        self.path = ''
+        # full path to the directory of project file
+        self.basePath = ''
 
         self.version = "3.5.1"
 
@@ -193,7 +191,8 @@ class CC3DSimulationData:
         self.windowScriptResource.path = _val
 
     #     def __str__(self):
-    #         return "CC3DSIMULATIONDATA: "+self.basePath+"\n"+"\tpython file: "+self.pythonScript+"\n"+"\txml file: "+self.xmlScript+"\n"+\
+    #         return "CC3DSIMULATIONDATA: "+self.basePath+"\n"+"\tpython file: "
+    #         +self.pythonScript+"\n"+"\txml file: "+self.xmlScript+"\n"+\
     #         "\tpifFile="+self.pifFile+"\n"+"\twindow script="+self.windowScript + str(self.resources)
 
     def addNewParameterScanResource(self):
@@ -201,10 +200,10 @@ class CC3DSimulationData:
         self.parameterScanResource.path = os.path.abspath(
             os.path.join(self.basePath, 'Simulation/ParameterScanSpecs.xml'))
 
-        baseCoreName, ext = os.path.splitext(
+        base_core_name, ext = os.path.splitext(
             os.path.basename(self.path))  # extracting core simulation name from full cc3d project path
 
-        self.parameterScanResource.psu.setOutputDirectoryRelativePath(baseCoreName + '_ParameterScan')
+        self.parameterScanResource.psu.setOutputDirectoryRelativePath(base_core_name + '_ParameterScan')
 
     def removeParameterScanResource(self):
         self.parameterScanResource = None
@@ -234,18 +233,13 @@ class CC3DSimulationData:
         self.serializerResource = None
 
     def addNewResource(self, _fileName, _type):  # called by Twedit
-        # # #         print 'type(_fileName)=',type(_fileName)
-        # # #         print '_fileName=',_fileName
-        # # #         print 'resource type=',_type
 
         if _type == "XMLScript":
-            # # #             self.xmlScript = os.path.abspath(_fileName)
             self.xmlScriptResource.path = os.path.abspath(_fileName)
             self.xmlScriptResource.type = "XML"
             return
 
         if _type == "PythonScript":
-            # # #             self.pythonScript = os.path.abspath(_fileName)
             self.pythonScriptResource.path = os.path.abspath(_fileName)
             self.pythonScriptResource.type = "Python"
             return
@@ -253,8 +247,6 @@ class CC3DSimulationData:
         if _type == "PIFFile":
             # we have to check if there is  PIF file assigned resource. If so we do not want to modify 
             # this resource, rather add another one as a generic type of resource
-
-            # # #             print 'self.pifFileResource.path=',self.pifFileResource.path
 
             if self.pifFileResource.path == '':
                 # # #                 self.pifFile = os.path.abspath(_fileName)
@@ -265,29 +257,26 @@ class CC3DSimulationData:
                 # we will also add PIF File as generic resource
 
         # adding generic resource type - user specified        
-        fullPath = os.path.abspath(_fileName)
+        full_path = os.path.abspath(_fileName)
         resource = CC3DResource()
-        resource.path = fullPath
+        resource.path = full_path
         resource.type = _type
-        self.resources[fullPath] = resource
-        print (MODULENAME)
-        print ("self.resources=", self.resources)
+        self.resources[full_path] = resource
+        print(MODULENAME)
+        print("self.resources=", self.resources)
         return
 
     def removeResource(self, _fileName):
         fileName = os.path.abspath(_fileName)
-        print ('TRYING TO REMOVE RESOURCE _fileName=', _fileName)
+        print('TRYING TO REMOVE RESOURCE _fileName=', _fileName)
         # file name can be associated with many resources - we have to erase all such associations
         if fileName == self.xmlScript:
-            # # #             self.xmlScript=""
             self.xmlScriptResource = CC3DResource()
 
         if fileName == self.pythonScript:
-            # # #             self.pythonScript=""
             self.pythonScriptResource = CC3DResource()
 
         if fileName == self.pifFile:
-            # # #             self.pifFile=""
             self.pifFileResource = CC3DResource()
 
         try:
@@ -295,9 +284,9 @@ class CC3DSimulationData:
         except LookupError as e:
             pass
 
-        print ('After removing resources')
+        print('After removing resources')
 
-        print (self.resources)
+        print(self.resources)
         return
 
 
@@ -306,12 +295,12 @@ class CC3DSimulationDataHandler:
         self.cc3dSimulationData = CC3DSimulationData()
         self.tabViewWidget = _tabViewWidget
 
-    def copySimulationDataFiles(self, _dir):
-        import shutil
-        simulationPath = os.path.join(_dir, 'Simulation')
+    def copy_simulation_data_files(self, _dir):
 
-        if not os.path.exists(simulationPath):
-            os.makedirs(simulationPath)
+        simulation_path = os.path.join(_dir, 'Simulation')
+
+        if not os.path.exists(simulation_path):
+            os.makedirs(simulation_path)
 
         # copy project file
         try:
@@ -323,89 +312,83 @@ class CC3DSimulationDataHandler:
         if self.cc3dSimulationData.pythonScript != "":
             try:
                 shutil.copy(self.cc3dSimulationData.pythonScript,
-                        os.path.join(simulationPath, os.path.basename(self.cc3dSimulationData.pythonScript)))
+                            os.path.join(simulation_path, os.path.basename(self.cc3dSimulationData.pythonScript)))
             except shutil.SameFileError:
                 pass
 
         if self.cc3dSimulationData.xmlScript != "":
             try:
                 shutil.copy(self.cc3dSimulationData.xmlScript,
-                        os.path.join(simulationPath, os.path.basename(self.cc3dSimulationData.xmlScript)))
+                            os.path.join(simulation_path, os.path.basename(self.cc3dSimulationData.xmlScript)))
             except shutil.SameFileError:
                 pass
 
         if self.cc3dSimulationData.pifFile != "":
             try:
                 shutil.copy(self.cc3dSimulationData.pifFile,
-                        os.path.join(simulationPath, os.path.basename(self.cc3dSimulationData.pifFile)))
+                            os.path.join(simulation_path, os.path.basename(self.cc3dSimulationData.pifFile)))
             except shutil.SameFileError:
                 pass
 
         if self.cc3dSimulationData.windowScript != "":
             try:
                 shutil.copy(self.cc3dSimulationData.windowScript,
-                        os.path.join(simulationPath, os.path.basename(self.cc3dSimulationData.windowScript)))
+                            os.path.join(simulation_path, os.path.basename(self.cc3dSimulationData.windowScript)))
             except shutil.SameFileError:
                 pass
 
         if self.cc3dSimulationData.parameterScanResource:
             try:
-                shutil.copy(self.cc3dSimulationData.parameterScanResource.path, os.path.join(simulationPath,
-                                                                                         os.path.basename(
-                                                                                             self.cc3dSimulationData.parameterScanResource.path)))
+                shutil.copy(self.cc3dSimulationData.parameterScanResource.path,
+                            os.path.join(simulation_path,
+                                         os.path.basename(self.cc3dSimulationData.parameterScanResource.path)))
             except shutil.SameFileError:
                 pass
 
-
             # copy resource files
-        fileNames = self.cc3dSimulationData.resources.keys()
+        file_names = self.cc3dSimulationData.resources.keys()
 
-        for fileName in fileNames:
+        for file_name in file_names:
             try:
-                if self.cc3dSimulationData.resources[fileName].copy:
-                    shutil.copy(fileName, os.path.join(simulationPath, os.path.basename(fileName)))
+                if self.cc3dSimulationData.resources[file_name].copy:
+                    shutil.copy(file_name, os.path.join(simulation_path, os.path.basename(file_name)))
             except:
                 # ignore any copy errors
                 pass
 
-    def readCC3DFileFormat(self, _fileName):
+    def read_cc3_d_file_format(self, file_name):
         """
         This function reads the CompuCell3D (.cc3d -XML)file. Which contains the file paths to
         all the resources in used in the project. 'cc3dSimulationData' object in this class holds
         all file paths and read data.
 
-        :param _fileName: file path for the
+        :param file_name: file path for the
         :return:
         """
         # Import XML utils to read the .cc3d xml file
-
-        xml2ObjConverter = Xml2Obj()
+        xml2_obj_converter = Xml2Obj()
 
         # Get the full file path .cc3d xml file
-        fileFullPath = os.path.abspath(_fileName)
-        self.cc3dSimulationData.basePath = os.path.dirname(fileFullPath)
-        self.cc3dSimulationData.path = fileFullPath
+        file_full_path = os.path.abspath(file_name)
+        self.cc3dSimulationData.basePath = os.path.dirname(file_full_path)
+        self.cc3dSimulationData.path = file_full_path
         bp = self.cc3dSimulationData.basePath
 
         # Read the .cc3d xml and get the root element
-        root_element = xml2ObjConverter.Parse(fileFullPath)  # this is simulation element
-
-        version = '0'
+        root_element = xml2_obj_converter.Parse(file_full_path)  # this is simulation element
 
         # Check if custom settings file (Simulation/_settings.xml) exists.
-        # customSettingsFlag = os.path.isfile(os.path.join(self.cc3dSimulationData.basePath,'Simulation/_settings.xml'))
-        customSettingsFlag = os.path.isfile(
+        custom_settings_flag = os.path.isfile(
             os.path.join(self.cc3dSimulationData.basePath, 'Simulation', settings_data.SETTINGS_FILE_NAME))
 
-        if customSettingsFlag:
+        if custom_settings_flag:
             # If setting file is there load it to resources as PlayerSettings
             self.cc3dSimulationData.playerSettingsResource = CC3DResource()
-            # self.cc3dSimulationData.playerSettingsResource.path = os.path.abspath(os.path.join(self.cc3dSimulationData.basePath,'Simulation/_settings.xml'))
             self.cc3dSimulationData.playerSettingsResource.path = os.path.abspath(
                 os.path.join(self.cc3dSimulationData.basePath, 'Simulation', settings_data.SETTINGS_FILE_NAME))
 
             self.cc3dSimulationData.playerSettingsResource.type = "PlayerSettings"
-            print ('GOT SUSTOM SETTINGS : ', self.cc3dSimulationData.playerSettingsResource.path)
+            print('GOT SUSTOM SETTINGS : ', self.cc3dSimulationData.playerSettingsResource.path)
 
         # Get the version of the file
         if root_element.findAttribute('version'):
@@ -415,108 +398,75 @@ class CC3DSimulationDataHandler:
         # Get the model xml file
         if root_element.getFirstElement("XMLScript"):
             # If XML file exists load in resources as XMLScript
-            xmlScriptRelative = root_element.getFirstElement("XMLScript").getText()
+            xml_script_relative = root_element.getFirstElement("XMLScript").getText()
             self.cc3dSimulationData.xmlScriptResource.path = os.path.abspath(
-                os.path.join(bp, xmlScriptRelative))  # normalizing path to xml script
+                os.path.join(bp, xml_script_relative))  # normalizing path to xml script
             self.cc3dSimulationData.xmlScriptResource.type = "XMLScript"
 
         # Get the python script for the model
         if root_element.getFirstElement("PythonScript"):
             # If python file exists load in resources as PythonScript
-            pythonScriptRelative = root_element.getFirstElement("PythonScript").getText()
+            python_script_relative = root_element.getFirstElement("PythonScript").getText()
             self.cc3dSimulationData.pythonScriptResource.path = os.path.abspath(
-                os.path.join(bp, pythonScriptRelative))  # normalizing path to python script
+                os.path.join(bp, python_script_relative))  # normalizing path to python script
             self.cc3dSimulationData.pythonScriptResource.type = "PythonScript"
 
         # Get the PIF file resource for the model
         if root_element.getFirstElement("PIFFile"):
             # If PIF file exists load in resources as PIFFile
-            pifFileRelative = root_element.getFirstElement("PIFFile").getText()
+            pif_file_relative = root_element.getFirstElement("PIFFile").getText()
             self.cc3dSimulationData.pifFileResource.path = os.path.abspath(
-                os.path.join(bp, pifFileRelative))  # normalizing path
+                os.path.join(bp, pif_file_relative))  # normalizing path
             self.cc3dSimulationData.pifFileResource.type = "PIFFile"
 
-        """
-        QUESTION: What is WindowScript? How is it used?
-        """
-        if root_element.getFirstElement("WindowScript"):
-            windowScriptRelative = root_element.getFirstElement("WindowScript").getText()
-            self.cc3dSimulationData.windowScriptResource.path = os.path.abspath(
-                os.path.join(bp, windowScriptRelative))  # normalizing path
-            self.cc3dSimulationData.windowScriptResource.type = "WindowScript"
+        # Read the SerializeSimulation element which have the data on serialization of the resources.
+        # todo - remove this section - we no longer need serializer resource
 
-            """
-            Reading the WinScript XML file
-            """
-            winRoot = winXml2ObjConverter.Parse(self.cc3dSimulationData.windowScript)
-            winList = XMLUtils.CC3DXMLListPy(winRoot.getElements("Window"))
-
-            #  The following is pretty ugly; there's probably a more elegant way to parse this, but this works
-            for myWin in winList:
-                attrKeys = myWin.getAttributes().keys()
-                winName = myWin.getAttribute("Name")
-                locElms = myWin.getElements("Location")
-                elms = XMLUtils.CC3DXMLListPy(locElms)
-                for elm in elms:
-                    xpos = elm.getAttributeAsInt("x")
-                    ypos = elm.getAttributeAsInt("y")
-
-                sizeElms = myWin.getElements("Size")
-                elms = XMLUtils.CC3DXMLListPy(sizeElms)
-                for elm in elms:
-                    width = elm.getAttributeAsInt("width")
-                    height = elm.getAttributeAsInt("height")
-
-                self.cc3dSimulationData.windowDict[winName] = [xpos, ypos, width, height]
-
-            print(MODULENAME, '  -------- self.cc3dSimulationData.windowDict= ', self.cc3dSimulationData.windowDict)
-
-        """
-        Read the SerializeSimulation element which have the data on serialization of the resources.
-        """
         if root_element.getFirstElement("SerializeSimulation"):
-            serializeElem = root_element.getFirstElement("SerializeSimulation")
+            serialize_elem = root_element.getFirstElement("SerializeSimulation")
             self.cc3dSimulationData.serializerResource = CC3DSerializerResource()
-            if serializeElem:
-                if serializeElem.findAttribute("OutputFrequency"):
-                    self.cc3dSimulationData.serializerResource.outputFrequency = serializeElem.getAttributeAsInt(
+            if serialize_elem:
+                if serialize_elem.findAttribute("OutputFrequency"):
+                    self.cc3dSimulationData.serializerResource.outputFrequency = serialize_elem.getAttributeAsInt(
                         "OutputFrequency")
 
-                if serializeElem.findAttribute("AllowMultipleRestartDirectories"):
-                    self.cc3dSimulationData.serializerResource.allowMultipleRestartDirectories = serializeElem.getAttributeAsBool(
+                if serialize_elem.findAttribute("AllowMultipleRestartDirectories"):
+                    self.cc3dSimulationData.serializerResource.allowMultipleRestartDirectories = serialize_elem.getAttributeAsBool(
                         "AllowMultipleRestartDirectories")
 
-                if serializeElem.findAttribute("FileFormat"):
-                    self.cc3dSimulationData.serializerResource.fileFormat = serializeElem.getAttribute("FileFormat")
+                if serialize_elem.findAttribute("FileFormat"):
+                    self.cc3dSimulationData.serializerResource.fileFormat = serialize_elem.getAttribute("FileFormat")
 
         if root_element.getFirstElement("RestartSimulation"):
-            restartElem = root_element.getFirstElement("RestartSimulation")
+            restart_elem = root_element.getFirstElement("RestartSimulation")
             if not self.cc3dSimulationData.serializerResource:
                 self.cc3dSimulationData.serializerResource = CC3DSerializerResource()
 
-            if restartElem.findAttribute("RestartDirectory"):
-                self.cc3dSimulationData.serializerResource.restartDirectory = restartElem.getAttribute(
+            if restart_elem.findAttribute("RestartDirectory"):
+                self.cc3dSimulationData.serializerResource.restartDirectory = restart_elem.getAttribute(
                     "RestartDirectory")
 
         # Reading parameter scan resources in the .cc3d file
         if root_element.getFirstElement("ParameterScan"):
-            psFile = root_element.getFirstElement("ParameterScan").getText()
+            ps_file = root_element.getFirstElement("ParameterScan").getText()
             self.cc3dSimulationData.parameterScanResource = CC3DParameterScanResource()
             self.cc3dSimulationData.parameterScanResource.path = os.path.abspath(
-                os.path.join(bp, psFile))  # normalizing path to python script
+                os.path.join(bp, ps_file))  # normalizing path to python script
             self.cc3dSimulationData.parameterScanResource.type = 'ParameterScan'
-            self.cc3dSimulationData.parameterScanResource.basePath = self.cc3dSimulationData.basePath  # setting same base path for parameter scan as for the project - necessary to get relative paths in the parameterSpec file
+            # setting same base path for parameter scan as for the project
+            # - necessary to get relative paths in the parameterSpec file
+            self.cc3dSimulationData.parameterScanResource.basePath = self.cc3dSimulationData.basePath
             # reading content of XML parameter scan specs
-            # ------------------------------------------------------------------ IMPORTANT IMPOTRANT ------------------------------------------------------------------
-            # WE HAVE TO CALL MANUALLYreadParameterScanSpecs because if it is called each time CC3DSiulationDataHandler calls readCC3DFileFormat it may cause problems with parameter scan
-            # namely one process will attempt to read parameter scan specs while another might try to write to it and error will get thrown and synchronization gets lost
+            # ------------------------------------------------------------------ IMPORTANT IMPOTRANT ----------------
+            # WE HAVE TO CALL MANUALLY readParameterScanSpecs because
+            # if it is called each time CC3DSiulationDataHandler calls readCC3DFileFormat
+            # it may cause problems with parameter scan
+            # namely one process will attempt to read parameter scan specs while another might try
+            # to write to it and error will get thrown and synchronization gets lost
             # plus readCC3DFileFormat should read .cc3d only , not files which are included from .cc3d
-            # ------------------------------------------------------------------ IMPORTANT IMPOTRANT ------------------------------------------------------------------            
-            # # # self.cc3dSimulationData.parameterScanResource.readParameterScanSpecs()
+            # ------------------------------------------------------------------ IMPORTANT IMPOTRANT ----------------
 
-        from cc3d.core.XMLUtils import CC3DXMLListPy
         # Reading the remaining resources in the .cc3d file
-        # resourceList = XMLUtils.CC3DXMLListPy(root_element.getElements("Resource"))
         resourceList = CC3DXMLListPy(root_element.getElements("Resource"))
         for resourceElem in resourceList:
             cc3dResource = CC3DResource()
@@ -538,91 +488,81 @@ class CC3DSimulationDataHandler:
 
             self.cc3dSimulationData.resources[cc3dResource.path] = cc3dResource
 
-    def formatResourceElement(self, _resource, _elementName=""):
-        elName = ""
-        if _elementName != "":
-            elName = _elementName
+    def format_resource_element(self, resource, element_name=""):
+        el_name = ""
+        if element_name != "":
+            el_name = element_name
         else:
-            elName = "Resource"
+            el_name = "Resource"
 
-        attributeDict = {}
-        if _resource.type != "":
-            attributeDict["Type"] = _resource.type
+        attribute_dict = {}
+        if resource.type != "":
+            attribute_dict["Type"] = resource.type
 
-        if _resource.module != "":
-            attributeDict["Module"] = _resource.module
+        if resource.module != "":
+            attribute_dict["Module"] = resource.module
 
-        if _resource.origin != "":
-            attributeDict["Origin"] = _resource.origin
+        if resource.origin != "":
+            attribute_dict["Origin"] = resource.origin
 
-        if not _resource.copy:
-            attributeDict["Copy"] = "No"
+        if not resource.copy:
+            attribute_dict["Copy"] = "No"
 
-        return elName, attributeDict, findRelativePath(self.cc3dSimulationData.basePath, _resource.path)
+        return el_name, attribute_dict, find_relative_path(self.cc3dSimulationData.basePath, resource.path)
 
-    def writeCC3DFileFormat(self, _fileName):
-        #         print '\n\n\n will write ',_fileName
+    def write_cc3d_file_format(self, file_name):
 
         csd = self.cc3dSimulationData
-        simulationElement = ElementCC3D("Simulation", {"version": csd.version})
+        simulation_element = ElementCC3D("Simulation", {"version": csd.version})
 
         if csd.xmlScriptResource.path != "":
-            elName, attributeDict, path = self.formatResourceElement(csd.xmlScriptResource, "XMLScript")
-            #             print 'ADDING XML ',path
-            simulationElement.ElementCC3D(elName, attributeDict, path)
+            el_name, attribute_dict, path = self.format_resource_element(csd.xmlScriptResource, "XMLScript")
+            simulation_element.ElementCC3D(el_name, attribute_dict, path)
 
         if csd.pythonScriptResource.path != "":
-            elName, attributeDict, path = self.formatResourceElement(csd.pythonScriptResource, "PythonScript")
-            #             print 'ADDING PYTHON ',path
-            simulationElement.ElementCC3D(elName, attributeDict, path)
+            el_name, attribute_dict, path = self.format_resource_element(csd.pythonScriptResource, "PythonScript")
+            simulation_element.ElementCC3D(el_name, attribute_dict, path)
 
         if csd.pifFileResource.path != "":
-            elName, attributeDict, path = self.formatResourceElement(csd.pifFileResource, "PIFFile")
-            #             print 'ADDING PIF ',path
-            simulationElement.ElementCC3D(elName, attributeDict, path)
+            el_name, attribute_dict, path = self.format_resource_element(csd.pifFileResource, "PIFFile")
+            simulation_element.ElementCC3D(el_name, attribute_dict, path)
 
         if csd.windowScriptResource.path != "":
-            elName, attributeDict, path = self.formatResourceElement(csd.windowScriptResource, "WindowScript")
-            simulationElement.ElementCC3D(elName, attributeDict, path)
+            el_name, attribute_dict, path = self.format_resource_element(csd.windowScriptResource, "WindowScript")
+            simulation_element.ElementCC3D(el_name, attribute_dict, path)
 
-        resourcesDict = {}
+        resources_dict = {}
         # storing resources in a dictionary using resource type as a key
-        for resourceKey, resource in csd.resources.items():
+        for resource_key, resource in csd.resources.items():
             if resource.type == "PIFFile" and csd.pifFileResource.path == resource.path:
-                print (MODULENAME, "IGNORING RESOURCE =", resource.path)
+                print(MODULENAME, "IGNORING RESOURCE =", resource.path)
                 continue
 
             try:
-                resourcesDict[resource.type].append(resource)
-            except LookupError as e:
-                resourcesDict[resource.type] = [resource]
-
-                # elName,attributeDict,path = self.formatResourceElement(resource)
-                # simulationElement.ElementCC3D(elName,attributeDict,path)
+                resources_dict[resource.type].append(resource)
+            except LookupError:
+                resources_dict[resource.type] = [resource]
 
             # sort resources according to path name
-        for resourceType, resourceList in resourcesDict.items():
-            resourceList = sorted(resourceList, key=lambda x: x.path)
+        for resource_type, resource_list in resources_dict.items():
+            resource_list = sorted(resource_list, key=lambda x: x.path)
 
             # after sorting have to reinsert list into dictionary to have it available later
-            resourcesDict[resourceType] = resourceList
+            resources_dict[resource_type] = resource_list
 
-        sortedResourceTypeNames = list(resourcesDict.keys())
-        sortedResourceTypeNames.sort()
+        sorted_resource_type_names = list(resources_dict.keys())
+        sorted_resource_type_names.sort()
 
-        for resourceType in sortedResourceTypeNames:
-            for resource in resourcesDict[resourceType]:
-                elName, attributeDict, path = self.formatResourceElement(resource)
-                simulationElement.ElementCC3D(elName, attributeDict, path)
+        for resource_type in sorted_resource_type_names:
+            for resource in resources_dict[resource_type]:
+                el_name, attribute_dict, path = self.format_resource_element(resource)
+                simulation_element.ElementCC3D(el_name, attribute_dict, path)
 
         if csd.serializerResource:
-            csd.serializerResource.appendXMLStub(simulationElement)
+            csd.serializerResource.append_xml_stub(simulation_element)
 
         if csd.parameterScanResource:
-            elName, attributeDict, path = self.formatResourceElement(csd.parameterScanResource, 'ParameterScan')
-            simulationElement.ElementCC3D(elName, attributeDict, path)
+            el_name, attribute_dict, path = self.format_resource_element(csd.parameterScanResource, 'ParameterScan')
+            simulation_element.ElementCC3D(el_name, attribute_dict, path)
 
-        simulationElement.CC3DXMLElement.saveXML(str(_fileName))
-
-        # Based on code by  Cimarron Taylor
-        # Date: July 6, 2003
+        simulation_element.CC3DXMLElement.saveXML(str(file_name))

@@ -1,22 +1,6 @@
-import sys
-from os import environ
-from os import getcwd
-import string
+from cc3d import CompuCellSetup
+from .connectivity_global_fast_python_steppables import ConnectivitySteppable
 
-sys.path.append(environ["PYTHON_MODULE_PATH"])
+CompuCellSetup.register_steppable(steppable=ConnectivitySteppable(frequency=1))
 
-import CompuCellSetup
-
-sim,simthread = CompuCellSetup.getCoreSimulationObjects()
-                        
-CompuCellSetup.initializeSimulationObjects(sim,simthread)
-steppableRegistry=CompuCellSetup.getSteppableRegistry()
-
-
-from connectivity_global_fast_python_steppables import ConnectivitySteppable
-instanceOfConnectivitySteppable=ConnectivitySteppable(_simulator=sim,_frequency=1)
-steppableRegistry.registerSteppable(instanceOfConnectivitySteppable)
-
-CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
-        
-
+CompuCellSetup.run()

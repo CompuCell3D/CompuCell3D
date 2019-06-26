@@ -347,7 +347,8 @@ class GenericDrawer():
             key = drawing_params.fieldType
             draw_fcn = self.drawing_fcn_dict[key]
         except KeyError:
-            print('Could not find function for {}'.format(key))
+            if str(key).strip() !='':
+                print('Could not find function for {}'.format(key))
             draw_fcn = None
 
         if draw_fcn is not None:

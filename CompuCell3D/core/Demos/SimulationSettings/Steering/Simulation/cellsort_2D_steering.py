@@ -1,28 +1,7 @@
-import sys
-from os import environ
-from os import getcwd
-import string
+from cc3d import CompuCellSetup
+from .cellsort_2D_steering_steppables import ContactSteeringAndTemperature
 
-sys.path.append(environ["PYTHON_MODULE_PATH"])
+CompuCellSetup.register_steppable(steppable=ContactSteeringAndTemperature(frequency=10))
 
-
-import CompuCellSetup
-
-
-
-sim,simthread = CompuCellSetup.getCoreSimulationObjects()
-
-#Create extra player fields here or add attributes
-
-CompuCellSetup.initializeSimulationObjects(sim,simthread)
-
-#Add Python steppables here
-steppableRegistry=CompuCellSetup.getSteppableRegistry()
-
-
-from cellsort_2D_steering_steppables import ContactSteeringAndTemperature
-contactSteeringAndTemperature=ContactSteeringAndTemperature(_simulator=sim,_frequency=10)
-steppableRegistry.registerSteppable(contactSteeringAndTemperature)
-
-CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
+CompuCellSetup.run()
 

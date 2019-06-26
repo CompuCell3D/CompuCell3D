@@ -1,27 +1,17 @@
+from cc3d.core.PySteppables import *
 
-from PySteppables import *
-import CompuCell
-import sys
-class BuildWall3DSteppable(SteppableBasePy):    
+class BuildWall3DSteppable(SteppableBasePy):
 
-    def __init__(self,_simulator,_frequency=1):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
+    def __init__(self, frequency=1):
+        SteppableBasePy.__init__(self, frequency)
+
     def start(self):
-        
-        self.buildWall(self.WALL)
+        self.build_wall(self.WALL)
 
-    def step(self,mcs):        
-        print 'MCS=',mcs  
-#         if mcs==2:      
-#             self.destroyWall()
-        
-        if mcs==4:
-            self.destroyWall()
-            self.resizeAndShiftLattice(_newSize=(80,80,80), _shiftVec=(10,10,10))
-            self.buildWall(self.WALL)
-        
-        
-    def finish(self):
-        # Finish Function gets called after the last MCS
-        pass
-        
+    def step(self, mcs):
+        print('MCS=', mcs)
+        if mcs == 4:
+            self.destroy_wall()
+            self.resize_and_shift_lattice(new_size=(80, 80, 80), shift_vec=(10, 10, 10))
+        if mcs == 6:
+            self.build_wall(self.WALL)

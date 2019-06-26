@@ -1,23 +1,9 @@
-import sys
-from os import environ
-import string
-sys.path.append(environ["PYTHON_MODULE_PATH"])
-   
-import CompuCellSetup
-sim,simthread = CompuCellSetup.getCoreSimulationObjects()
+from cc3d import CompuCellSetup
+from .ContactMultiCadSteppables import ContactMultiCadSteppable
 
-#Create extra player fields here or add attributes
+cmc_steppable = ContactMultiCadSteppable(frequency=10)
+cmc_steppable.set_type_contact_energy_table({0: 0.0, 1: 20, 2: 30})
 
-CompuCellSetup.initializeSimulationObjects(sim,simthread)
+CompuCellSetup.register_steppable(steppable=cmc_steppable)
 
-#Add Python steppables here
-steppableRegistry=CompuCellSetup.getSteppableRegistry()
-
-from ContactMultiCadSteppables import ContactMultiCadSteppable
-cmcSteppable=ContactMultiCadSteppable(sim)
-typeContactEnergyTable={0:0.0 , 1:20, 2:30}
-cmcSteppable.setTypeContactEnergyTable(typeContactEnergyTable)
-steppableRegistry.registerSteppable(cmcSteppable)
-
-CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
-
+CompuCellSetup.run()

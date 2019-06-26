@@ -1,4 +1,5 @@
 from cc3d.cpp import CompuCell
+from deprecated import deprecated
 
 # IMPORTANT: It is best to always provide hand-written iterators for STL
 # containers even though swig generates them for you.
@@ -6,6 +7,7 @@ from cc3d.cpp import CompuCell
 # ones so best solution is to write iterators yourself
 
 # this is used to iterate more easily over cells
+
 
 class CellList:
     def __init__(self, inventory):
@@ -19,9 +21,9 @@ class CellList:
 
 
 class CellListIterator:
-    def __init__(self, cellList):
+    def __init__(self, cell_list):
         self.next = self.__next__
-        self.inventory = cellList.inventory
+        self.inventory = cell_list.inventory
         self.invItr = CompuCell.STLPyIteratorCINV()
         self.invItr.initialize(self.inventory.getContainer())
         self.invItr.setToBegin()
@@ -41,8 +43,8 @@ class CellListIterator:
 #########################################################################
 # iterating over inventory of cells of a given type
 class CellListByType:
-    def __init__(self, _inventory, *args):
-        self.inventory = _inventory
+    def __init__(self, inventory, *args):
+        self.inventory = inventory
 
         self.types = CompuCell.vectorint()
 
@@ -63,13 +65,13 @@ class CellListByType:
     def __len__(self):
         return int(self.inventoryByType.size())
 
-    def initTypeVec(self, _typeList):
+    def initTypeVec(self, _type_list):
 
         self.types.clear()
-        if len(_typeList) <= 0:
+        if len(_type_list) <= 0:
             self.types.push_back(1)  # type 1
         else:
-            for type in _typeList:
+            for type in _type_list:
                 self.types.push_back(type)
 
     def initializeWithType(self, _type):
@@ -213,6 +215,7 @@ class CompartmentListIterator:
     def __iter__(self):
         return self
 
+
 # this is wrapper for std::vector<CellG*>
 class ClusterCellList:
     def __init__(self, _inventory):
@@ -221,8 +224,15 @@ class ClusterCellList:
     def __iter__(self):
         return ClusterCellListIterator(self)
 
+    def __getitem__(self, item):
+        return self.inventory[item]
+
     def __len__(self):
         return int(self.inventory.size())
+
+    @deprecated(version='4.0.0', reason="You should use : len()")
+    def size(self):
+        return self.__len__()
 
 
 class ClusterCellListIterator:
@@ -461,3 +471,165 @@ class AnchorFocalPointPlasticityDataIterator:
 
     def __iter__(self):
         return self
+
+class CellPixelList:
+    def __init__(self, _pixelTrackerPlugin, _cell):
+        self.pixelTrackerPlugin = _pixelTrackerPlugin
+        self.pixelTrackerAccessor = self.pixelTrackerPlugin.getPixelTrackerAccessorPtr()
+        self.cell = _cell
+
+    def __iter__(self):
+        return CellPixelIterator(self)
+
+    @deprecated(version='4.0.0', reason="You should use : number_of_pixels")
+    def numberOfPixels(self):
+        return self.number_of_pixels()
+
+    def number_of_pixels(self):
+        return self.pixelTrackerAccessor.get(self.cell.extraAttribPtr).pixelSet.size()
+
+
+class CellPixelIterator:
+    def __init__(self, _cellPixelList):
+
+        self.pixelTrackerAccessor = _cellPixelList.pixelTrackerAccessor
+        self.pixelTrackerPlugin = _cellPixelList.pixelTrackerPlugin
+        self.cell = _cellPixelList.cell
+        self.pixelItr = CompuCell.pixelSetPyItr()
+        self.pixelTracker = self.pixelTrackerAccessor.get(self.cell.extraAttribPtr)
+        self.pixelItr.initialize(self.pixelTracker.pixelSet)
+        self.pixelItr.setToBegin()
+
+    def __next__(self):
+        if not self.pixelItr.isEnd():
+            #             self.neighborCell = self.nsdItr.getCurrentRef().neighborAddress
+            #             self.currentNsdItr = self.nsdItr.current
+            self.currentPixelTrackerData = self.pixelItr.getCurrentRef()
+            self.pixelItr.next()
+
+            return self.pixelTrackerPlugin.getPixelTrackerData(self.currentPixelTrackerData)
+            # return self.currentPixelTrackerData
+        else:
+            raise StopIteration
+
+    def __iter__(self):
+        return self
+
+
+class CellBoundaryPixelList:
+    def __init__(self, boundary_pixel_tracker_plugin, cell, neighbor_order=-1):
+        self.neighbor_order = neighbor_order
+        self.boundary_pixel_tracker_plugin = boundary_pixel_tracker_plugin
+        self.boundary_pixel_tracker_accessor = self.boundary_pixel_tracker_plugin.getBoundaryPixelTrackerAccessorPtr()
+        self.cell = cell
+
+    def __iter__(self):
+        return CellBoundaryPixelIterator(self, self.neighbor_order)
+
+    @deprecated(version='4.0.0', reason="You should use : number_of_pixels")
+    def numberOfPixels(self):
+        return self.number_of_pixels()
+
+    def number_of_pixels(self):
+        return self.boundary_pixel_tracker_accessor.get(self.cell.extraAttribPtr).pixelSet.size()
+
+
+class CellBoundaryPixelIterator:
+    def __init__(self, cell_pixel_list, neighbor_order=-1):
+        self.boundary_pixel_tracker_accessor = cell_pixel_list.boundary_pixel_tracker_accessor
+        self.boundary_pixel_tracker_plugin = cell_pixel_list.boundary_pixel_tracker_plugin
+        self.cell = cell_pixel_list.cell
+        self.boundary_pixel_itr = CompuCell.boundaryPixelSetPyItr()
+        self.boundary_pixel_tracker = self.boundary_pixel_tracker_accessor.get(self.cell.extraAttribPtr)
+        if neighbor_order <= 0:
+            self.pixelSet = self.boundary_pixel_tracker.pixelSet
+        else:
+            self.pixelSet = self.boundary_pixel_tracker_plugin.getPixelSetForNeighborOrderPtr(self.cell, neighbor_order)
+            if not self.pixelSet:
+                raise LookupError('LookupError: CellBoundaryPixelIterator could not locate pixel set '
+                                  'for neighbor order = %s. Make sure your BoundaryPixelTracker plugin definition '
+                                  'requests tracking of neighbor order =%s boundary' % (neighbor_order, neighbor_order))
+
+        # self.boundaryPixelItr.initialize(self.boundaryPixelTracker.pixelSet)
+        self.boundary_pixel_itr.initialize(self.pixelSet)
+        self.boundary_pixel_itr.setToBegin()
+
+    def __next__(self):
+        if not self.boundary_pixel_itr.isEnd():
+            self.current_boundary_pixel_tracker_data = self.boundary_pixel_itr.getCurrentRef()
+            self.boundary_pixel_itr.next()
+            return self.boundary_pixel_tracker_plugin.getBoundaryPixelTrackerData(
+                self.current_boundary_pixel_tracker_data)
+        else:
+            raise StopIteration
+
+    def __iter__(self):
+        return self
+
+
+class ElasticityDataList:
+    def __init__(self, elasticity_tracker_plugin, _cell):
+        self.elasticity_tracker_plugin = elasticity_tracker_plugin
+        self.elasticity_tracker_accessor = self.elasticity_tracker_plugin.getElasticityTrackerAccessorPtr()
+        self.cell = _cell
+
+    def __iter__(self):
+        return ElasticityDataIterator(self)
+
+
+class ElasticityDataIterator:
+    def __init__(self, elasticity_data_list):
+        self.elasticity_tracker_accessor = elasticity_data_list.elasticity_tracker_accessor
+        self.cell = elasticity_data_list.cell
+        self.elasticity_tracker_plugin = elasticity_data_list.elasticity_tracker_plugin
+        self.elasticity_tracker = self.elasticity_tracker_accessor.get(self.cell.extraAttribPtr)
+        self.elasticity_data_set_itr = CompuCell.elasticitySetPyItr()
+        self.elasticity_data_set_itr.initialize(self.elasticity_tracker.elasticityNeighbors)
+        self.elasticity_data_set_itr.setToBegin()
+
+    def __next__(self):
+        if not self.elasticity_data_set_itr.isEnd():
+            self.current_elasticity_data_set_itr = self.elasticity_data_set_itr.current
+            self.elasticity_data = self.elasticity_data_set_itr.getCurrentRef()
+            self.elasticity_data_set_itr.next()
+            return self.elasticity_tracker_plugin.getElasticityTrackerData(self.elasticity_data)
+        else:
+            raise StopIteration
+
+    def __iter__(self):
+        return self
+
+
+class PlasticityDataList:
+    def __init__(self, plasticity_tracker_plugin, cell):
+        self.plasticity_tracker_plugin = plasticity_tracker_plugin
+        self.plasticityTrackerAccessor = self.plasticity_tracker_plugin.getPlasticityTrackerAccessorPtr()
+        self.cell = cell
+
+    def __iter__(self):
+        return PlasticityDataIterator(self)
+
+
+class PlasticityDataIterator:
+    def __init__(self, plasticity_data_list):
+        self.plasticityTrackerAccessor = plasticity_data_list.plasticityTrackerAccessor
+        self.cell = plasticity_data_list.cell
+        self.plasticity_tracker_plugin = plasticity_data_list.plasticity_tracker_plugin
+        self.plasticityTracker = self.plasticityTrackerAccessor.get(self.cell.extraAttribPtr)
+        self.plasticityDataSetItr = CompuCell.plasticitySetPyItr()
+        self.plasticityDataSetItr.initialize(self.plasticityTracker.plasticityNeighbors)
+        self.plasticityDataSetItr.setToBegin()
+
+    def next(self):
+        if not self.plasticityDataSetItr.isEnd():
+            self.currentPlasticityDataSetItr = self.plasticityDataSetItr.current
+            self.plasticityData = self.plasticityDataSetItr.getCurrentRef()
+            self.plasticityDataSetItr.next()
+            return self.plasticity_tracker_plugin.getPlasticityTrackerData(self.plasticityData)
+        #             return self.plasticityData
+        else:
+            raise StopIteration
+
+    def __iter__(self):
+        return self
+

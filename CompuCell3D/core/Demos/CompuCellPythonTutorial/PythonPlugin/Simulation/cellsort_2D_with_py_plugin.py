@@ -1,3 +1,12 @@
+from cc3d import CompuCellSetup
+
+from .cellsort_2D_plugins_with_py_plugin import VolumeEnergyFunctionPlugin
+
+
+CompuCellSetup.register_steppable(steppable=VolumeEnergyFunctionPlugin())
+
+
+
 import sys
 from os import environ
 from os import getcwd

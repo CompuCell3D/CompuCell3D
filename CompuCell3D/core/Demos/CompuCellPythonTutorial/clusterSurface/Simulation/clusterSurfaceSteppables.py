@@ -1,116 +1,100 @@
-from PySteppables import *
-from PySteppablesExamples import MitosisSteppableClustersBase
-import CompuCell
-import sys
-from random import uniform
-import math
+from cc3d.core.PySteppables import *
+
 
 class VolumeParamSteppable(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=1):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
-        
+    def __init__(self, frequency=1):
+        SteppableBasePy.__init__(self, frequency)
+
     def start(self):
-        for cell in self.cellList:
-            cell.targetVolume=25
-            cell.lambdaVolume=2.0
-            
-    def step(self,mcs):
-        for cell in self.cellList:
-            cell.targetVolume+=1
-        print    
+        for cell in self.cell_list:
+            cell.targetVolume = 25
+            cell.lambdaVolume = 2.0
+
+    def step(self, mcs):
+        for cell in self.cell_list:
+            cell.targetVolume += 1
+
         for compartments in self.clusters:
-#             print "cluster has size=",len(compartments)
-#             print ' ------ compartmentList=',compartments.clusterId()
-#             print 'compartments=',compartments
-            for cell in compartments:                
-#                 print 'cell.id=',cell.id                
-                self.clusterSurfacePlugin.setTargetAndLambdaClusterSurface(cell,80, 2.0);
-                break
-            
-class MitosisSteppableClusters(MitosisSteppableClustersBase):
-    def __init__(self,_simulator,_frequency=1):
-        MitosisSteppableClustersBase.__init__(self,_simulator, _frequency)           
-                
-    def step(self,mcs):        
-        
-        for cell in self.cellList:            
-            clusterCellList=self.getClusterCells(cell.clusterId)
-            print "DISPLAYING CELL IDS OF CLUSTER ",cell.clusterId,"CELL. ID=",cell.id
-            for cellLocal in clusterCellList:
-                print "CLUSTER CELL ID=",cellLocal.id," type=",cellLocal.type
-                print 'clusterSurface=',cellLocal.clusterSurface
-                    
-        for compartments in self.clusters:
-            clusterId=-1
-            clusterCell=None
-            clusterSurface=0.0
             for cell in compartments:
-                clusterCell=cell
-                clusterId=cell.clusterId
-                for pixelTrackerData in self.getCellPixelList(cell):
-                    for neighbor in self.getPixelNeighborsBasedOnNeighborOrder(_pixel=pixelTrackerData.pixel,_neighborOrder=1):
-                        nCell = self.cellField.get(neighbor.pt)
-                        if not nCell: # only medium contributes in this case
-                            clusterSurface+=1.0
-                        elif cell.clusterId != nCell.clusterId:
-                            clusterSurface+=1.0
-                            
-            print 'MANUAL CALCULATION clusterId=',clusterId,' clusterSurface=',clusterSurface
-            print 'AUTOMATIC UPDATE clusterId=',clusterId, ' clusterSurface=',clusterCell.clusterSurface
-            
-        
-        if mcs==400:
-            cell1=None
-            for cell in self.cellList:
-                cell1=cell
+                self.clusterSurfacePlugin.setTargetAndLambdaClusterSurface(cell, 80, 2.0)
                 break
-            self.reassignClusterId(cell1,2)
-        
-        mitosisClusterIdList=[]
-        for compartmentList in self.clusterList:
-            # print "cluster has size=",compartmentList.size()
-            clusterId=0
-            clusterVolume=0            
+
+
+class MitosisSteppableClusters(MitosisSteppableClustersBase):
+    def __init__(self, frequency=1):
+        MitosisSteppableClustersBase.__init__(self, frequency)
+
+    def step(self, mcs):
+
+        for cell in self.cell_list:
+            cluster_cell_list = self.get_cluster_cells(cell.clusterId)
+            print("DISPLAYING CELL IDS OF CLUSTER ", cell.clusterId, "CELL. ID=", cell.id)
+            for cell_local in cluster_cell_list:
+                print("CLUSTER CELL ID=", cell_local.id, " type=", cell_local.type)
+                print('cluster_surface=', cell_local.clusterSurface)
+
+        for compartments in self.clusters:
+            cluster_id = -1
+            cluster_cell = None
+            cluster_surface = 0.0
+            for cell in compartments:
+                cluster_cell = cell
+                cluster_id = cell.clusterId
+                for pixel_tracker_data in self.get_cell_pixel_list(cell):
+                    for neighbor in self.get_pixel_neighbors_based_on_neighbor_order(
+                            pixel=pixel_tracker_data.pixel, neighbor_order=1):
+
+                        n_cell = self.cellField.get(neighbor.pt)
+                        if not n_cell:
+                            # only medium contributes in this case
+                            cluster_surface += 1.0
+                        elif cell.clusterId != n_cell.clusterId:
+                            cluster_surface += 1.0
+
+            print('MANUAL CALCULATION cluster_id=', cluster_id, ' cluster_surface=', cluster_surface)
+            print('AUTOMATIC UPDATE cluster_id=', cluster_id, ' cluster_surface=', cluster_cell.clusterSurface)
+
+        if mcs == 400:
+            cell1 = None
+            for cell in self.cell_list:
+                cell1 = cell
+                break
+            self.reassign_cluster_id(cell1, 2)
+
+        mitosis_cluster_id_list = []
+        for compartmentList in self.cluster_list:
+
+            cluster_id = 0
+            cluster_volume = 0
             for cell in CompartmentList(compartmentList):
-                clusterVolume+=cell.volume            
-                clusterId=cell.clusterId
-            
-            
-            if clusterVolume>250: # condition under which cluster mitosis takes place
-                mitosisClusterIdList.append(clusterId) # instead of doing mitosis right away we store ids for clusters which should be divide. This avoids modifying cluster list while we iterate through it
-                
-        for clusterId in mitosisClusterIdList:
-            # to change mitosis mode leave one of the below lines uncommented
-            
-            # self.divideClusterOrientationVectorBased(clusterId,1,0,0)             # this is a valid option
-            self.divideClusterRandomOrientation(clusterId)
-            # self.divideClusterAlongMajorAxis(clusterId)                                # this is a valid option
-            # self.divideClusterAlongMinorAxis(clusterId)                                # this is a valid option
-            
+                cluster_volume += cell.volume
+                cluster_id = cell.clusterId
 
-    def updateAttributes(self):
-        # compartments in the parent and child clusters arel listed in the same order so attribute changes require simple iteration through compartment list  
-        parentCell=self.mitosisSteppable.parentCell
-        childCell=self.mitosisSteppable.childCell
-                
-        compartmentListChild=self.inventory.getClusterCells(childCell.clusterId)
-        compartmentListParent=self.inventory.getClusterCells(parentCell.clusterId)
-        print "compartmentListChild=",compartmentListChild 
-        for i in xrange(compartmentListChild.size()):
-            compartmentListParent[i].targetVolume/=2.0
-            # compartmentListParent[i].targetVolume=25
-            compartmentListChild[i].targetVolume=compartmentListParent[i].targetVolume
-            compartmentListChild[i].lambdaVolume=compartmentListParent[i].lambdaVolume
+            # condition under which cluster mitosis takes place
+            if cluster_volume > 250:
+                # instead of doing mitosis right away we store ids for clusters which should be divide.
+                # This avoids modifying cluster list while we iterate through it
+                mitosis_cluster_id_list.append(cluster_id)
 
+        for cluster_id in mitosis_cluster_id_list:
+            self.divide_cluster_random_orientation(cluster_id)
 
-    def changeFlips(self):
-        # get Potts section of XML file 
-        pottsXMLData=self.simulator.getCC3DModuleData("Potts")
-        # check if we were able to successfully get the section from simulator
-        if pottsXMLData:            
-            flip2DimRatioElement=pottsXMLData.getFirstElement("Flip2DimRatio")
-            # check if the attempt was succesful
-            if flip2DimRatioElement:
-                flip2DimRatioElement.updateElementValue(str(0.0))
-            self.simulator.updateCC3DModule(pottsXMLData)            
-         
+            # valid options - to change mitosis mode leave one of the below lines uncommented
+            # self.divide_cluster_orientation_vector_based(cluster_id, 1, 0, 0)
+            # self.divide_cluster_along_major_axis(cluster_id)
+            # self.divide_cluster_along_minor_axis(cluster_id)
+
+    def update_attributes(self):
+        # compartments in the parent and child clusters arel listed in the same order
+        # so attribute changes require simple iteration through compartment list
+        parent_cell = self.mitosisSteppable.parentCell
+        child_cell = self.mitosisSteppable.childCell
+
+        compartment_list_child = self.inventory.getClusterCells(child_cell.clusterId)
+        compartment_list_parent = self.inventory.getClusterCells(parent_cell.clusterId)
+        print("compartment_list_child=", compartment_list_child)
+        for i in range(len(compartment_list_child)):
+            compartment_list_parent[i].targetVolume /= 2.0
+            # compartment_list_parent[i].targetVolume=25
+            compartment_list_child[i].targetVolume = compartment_list_parent[i].targetVolume
+            compartment_list_child[i].lambdaVolume = compartment_list_parent[i].lambdaVolume

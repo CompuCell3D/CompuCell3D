@@ -1,35 +1,17 @@
-import sys
-from os import environ
-import string
-sys.path.append(environ["PYTHON_MODULE_PATH"])
+from cc3d import CompuCellSetup
+from .ContactLocalProductExampleModules import ContactLocalProductSteppable
+from .ContactLocalProductExampleModules import ContactSpecVisualizationSteppable
 
-import CompuCellSetup
+clp_steppable = ContactLocalProductSteppable(frequency=10)
+clp_steppable.set_type_contact_energy_table({0: 0.0, 1: 20, 2: 30})
 
-sim,simthread = CompuCellSetup.getCoreSimulationObjects()
-
-#Create extra player fields here or add attributes or Python plugins
-CompuCellSetup.initializeSimulationObjects(sim,simthread)
+# alternative call when we select random number for adhesion molecules form the specified interval e.g. [20,30]
+# clp_steppable.set_type_contact_energy_table({0:0.0 , 1:[20,30], 2:[30,50]})
 
 
-#Add Python steppables here
-steppableRegistry=CompuCellSetup.getSteppableRegistry()
+CompuCellSetup.register_steppable(steppable=clp_steppable)
+CompuCellSetup.register_steppable(steppable=ContactSpecVisualizationSteppable(frequency=50))
 
-from ContactLocalProductExampleModules import ContactLocalProductSteppable
-clpSteppable=ContactLocalProductSteppable(sim)
-typeContactEnergyTable={0:0.0 , 1:20, 2:30} # the format is as follows:
-                                                      #type:N e.g. 1:20.1234 , 2:12.19	
-#typeContactEnergyTable={0:0.0 , 1:[20,30], 2:[30,50]} # the format is as follows:
-                                                      #type:[N_min,N_max] e.g. 1:[20,30] , 2:[40,50]	
-clpSteppable.setTypeContactEnergyTable(typeContactEnergyTable)
-steppableRegistry.registerSteppable(clpSteppable)
-
-
-from ContactLocalProductExampleModules import ContactSpecVisualizationSteppable
-contactVisSteppable=ContactSpecVisualizationSteppable(_simulator=sim,_frequency=50) #Here you would change frequency with which Python based visualizer is called
-steppableRegistry.registerSteppable(contactVisSteppable)
-
-
-CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
-
+CompuCellSetup.run()
 
 

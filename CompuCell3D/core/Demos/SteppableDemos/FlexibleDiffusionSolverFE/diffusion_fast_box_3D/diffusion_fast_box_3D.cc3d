@@ -1,7 +1,0 @@
-<Simulation version="3.6.1">
-
-    <XMLScript Type="XMLScript">Simulation/diffusion_fast_box_3D.xml</XMLScript>
-
-    <Resource Type="Field" Copy="No">Simulation/diffusion_3D_fast_box.pulse.txt</Resource>    
-
-</Simulation>

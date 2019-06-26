@@ -1,26 +1,9 @@
-import sys
-from os import environ
-import string
-sys.path.append(environ["PYTHON_MODULE_PATH"])
+from cc3d import CompuCellSetup
+from .ContactLocalProductExampleModules import ContactLocalProductSteppable
 
-import CompuCellSetup
+clp_steppable = ContactLocalProductSteppable(frequency=10)
+clp_steppable.set_type_contact_energy_table({0: 0.0, 1: 20, 2: 30})
 
-sim,simthread = CompuCellSetup.getCoreSimulationObjects()
+CompuCellSetup.register_steppable(steppable=clp_steppable)
 
-#Create extra player fields here or add attributes or Python plugins
-
-CompuCellSetup.initializeSimulationObjects(sim,simthread)
-
-#Add Python steppables here
-steppableRegistry=CompuCellSetup.getSteppableRegistry()
-
-from ContactLocalProductExampleModules import ContactLocalProductSteppable
-clpSteppable=ContactLocalProductSteppable(sim)
-typeContactEnergyTable={0:0.0 , 1:20, 2:30}
-clpSteppable.setTypeContactEnergyTable(typeContactEnergyTable)
-steppableRegistry.registerSteppable(clpSteppable)
-
-
-
-CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
-
+CompuCellSetup.run()

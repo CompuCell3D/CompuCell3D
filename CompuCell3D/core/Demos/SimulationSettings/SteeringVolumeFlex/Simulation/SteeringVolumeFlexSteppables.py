@@ -1,179 +1,61 @@
-from PySteppables import *
-import CompuCell
-import sys
+from cc3d.core.PySteppables import *
 
 
 class SteeringVolumeFlexSteppable(SteppableBasePy):
-    def __init__(self, _simulator, _frequency=1):
-        SteppableBasePy.__init__(self, _simulator, _frequency)
-
-    def start(self):
-        pass
+    def __init__(self, frequency=1):
+        SteppableBasePy.__init__(self, frequency)
 
     def step(self, mcs):
         """
         Here is an example of how to modify values stored in the CC3D XML:
-        1. First we need to construct the access path that can get us from a room XML element <CompuCell3D>
-        to the desired element. Access path is a list of lists where each "inner list" recursively identifies XML elements
-        Here is an example:
-        lets identify the access path for the following hierarchy of XML elements
+        1. First we add "id" tag to all XML elements we want to modify. Make sure the ids are unique
+        For example we have for Temperature element
+            <Temperature id="temp">10.0</Temperature>
 
-        <CompuCell3D>
-         <Plugin Name="Volume">
-          <VolumeEnergyParameters CellType="Condensing" LambdaVolume="2.0" TargetVolume="25"/>
-
-        to get from the  top element i.e <CompuCell3D>
-        its child i.e. <Plugin Name="Volume">
-        we insert a list of element identifiers that uniquely identify the required element
-        this list has the following format:
-        [element_name, attribute_label_1, attribute_value_1, attribute_label_2, attribute_value_2,...]
-
-        IMPORTANT: all elements of the above list are strings
-
-        In out case it is
-        ['Plugin','Name','Volume'] - because 'Plugin' is a name of the element , 'Name' is the label of first attribute and
-        'Volume' is the value of the first attribute. NOtice tha this uniquely identifies element in the xml .
-        In other words, you cannot find another element in the XML that matches this description
-        so the access path to
-
-        <CompuCell3D>
-         <Plugin Name="Volume">
-
-        looks as follows
-
-        access_path = [['Plugin','Name','Volume']]
-
-        It is a list of lists and the inner list identifies a child of the root element. Notice that we do not list
-        root element in the access path.
-
-        Now let's go and identify, secend component of the access path that will "extend" the access path and take use from
-        <CompuCell3D>
-         <Plugin Name="Volume">
-
-        to
-
-        <CompuCell3D>
-         <Plugin Name="Volume">
-          <VolumeEnergyParameters CellType="Condensing" LambdaVolume="2.0" TargetVolume="25"/>
+        and for VolumeEnergyParameters
+        <VolumeEnergyParameters id="vol_cond" CellType="Condensing" LambdaVolume="2.0" TargetVolume="25"/>
 
 
-       To do that we have to append an list of identifiers that will uniquely identify
+        2. Fetch element object in Python
+        For example:
 
-       <VolumeEnergyParameters CellType="Condensing" LambdaVolume="2.0" TargetVolume="25"/>
-       among the child elements of
+            temp_elem = self.get_xml_element('temp')
 
-       <Plugin Name="Volume">
+        or
+            vol_cond_elem = self.get_xml_element('vol_cond')
 
-       Notice that there are two such chile elements
-          <VolumeEnergyParameters CellType="Condensing" LambdaVolume="2.0" TargetVolume="25"/>
-          <VolumeEnergyParameters CellType="NonCondensing" LambdaVolume="2.0" TargetVolume="25"/>
+        3. Change the value of the element (cdata) or attribute of the element
+            a) changing value of the element .
+            The value is defined as the string quantity that sits between > and <
+            For example in <Temperature id="temp">10.0</Temperature> 10.0 is a value
+            We change it using the following syntax
 
-        The question is what is the sequence of identifiers of the form
-        [element_name, attribute_label_1, attribute_value_1, attribute_label_2, attribute_value_2,...]
+            temp_elem.cdata = float(temp_elem.cdata) + 10
 
-        that will identify
-        <VolumeEnergyParameters CellType="Condensing" LambdaVolume="2.0" TargetVolume="25"/>
+            Notice that temp_elem.cdata is  a string - in general anything in XMl is a string so we first convert it to
+            float and then assign back to cdata member
 
-        Here it is:
-        ['VolumeEnergyParameters', 'CellType', 'Condensing']
-        'VolumeEnergyParameters' is the name of the xml element, 'CellType' is a label of first attribute
-        and 'Condensing' is the value of the first attribute. Notice that this is sufficient to uniquely identify
-        <VolumeEnergyParameters CellType="Condensing" LambdaVolume="2.0" TargetVolume="25"/>
+            b) If we want to change attribute we use syntax as below
+            vol_cond_elem.TargetVolume = 2.0 * float(vol_cond_elem.TargetVolume)
 
-        Now we extend our access path
-        access_path = [['Plugin','Name','Volume'], ['VolumeEnergyParameters', 'CellType', 'Condensing']]
+            where we use name of the attribute as it appears in the XML
 
-        At this point we can use this path to access and modify XML elements
-        for read the value of the attribute of element specified by the acces path we use
-        getXMLAttributeValue function with the following syntax:
-
-        self.getXMLAttributeValue (attribute_name, *access_path)
-
-        Note the '*' operator in front of access path. This is, so called, unpacking operator and all it does
-        it "transforms" a Python list into a sequence of function call parameters and it is a python way to
-        declare a function with a variable list of parameters. Ini our case self.getXMLAttributeValue expects first
-        argument to be a name of the attribute and followed by comma-separated sequence of access path elements
-        i.e.
-
-        to get attribute 'TargetVolume' we call the function as follows
-
-        target_volume_value_str = self.getXMLAttributeValue ('TargetVolume', ['Plugin','Name','Volume'], ['VolumeEnergyParameters', 'CellType', 'Condensing'])
-
-        Notice that w took our access path and used a sequence of inner lists as argumants of the function.
-        So why did we bother constructing a list of lists?
-
-        The answer is that we can do the following:
-
-        access_path = [['Plugin','Name','Volume'], ['VolumeEnergyParameters', 'CellType', 'Condensing']]
-
-        target_volume_value_str = self.getXMLAttributeValue ('TargetVolume', *access_path)
-
-        Notice that now the function call is much simpler and easier to read . you construct a path first and then
-        can use it multiple times through out the code without being too verbose.
-
-        Notice that the output of fetching the attribute is a string because everything in the XML is a string
-        If w want to fo arithmetic operations on a number repersented by strings we need to convert is
-        to an appropriate type. It is easy in python - just use type conversion operator
-
-        target_volume_value = float(self.getXMLAttributeValue ('TargetVolume', *access_path))
-
-        now, if you want ot set the value of the XML element specified by the access path all you do is call
-
-        self.setXMLAttributeValue function with the following syntax
-
-        self.setXMLAttributeValue (attribute_name, attribute_value, *access_path)
-
-        Here is a full  example:
-
-        access_path = [['Plugin','Name','Volume'], ['VolumeEnergyParameters', 'CellType', 'Condensing']]
-        target_volume_value = float(self.getXMLAttributeValue ('TargetVolume', *access_path))
-        self.setXMLAttributeValue ('TargetVolume', 2*target_volume_value, *access_path)
-
-        If you want to access (and change) a value of the element (not the attribute)
-
-        e.g.
-
-        <CompuCell3D>
-          <Potts>
-            <Temperature>10</Temperature>
-
-
-        you have to use getXMLElementValue/setXMLElementValue functions
-
-        Here is how we do it:
-
-            temperature_access_path = [['Potts'], ['Temperature']]
-            temp = float(self.getXMLElementValue(*temperature_access_path))
-            self.setXMLElementValue(temp + 10, *temperature_access_path)
-
-        Notice that temperature_access_path = [['Potts'], ['Temperature']] specifies access path to the <Temperature>
-        element. Why? <Potts> element is a child of the <CompuCell3D> element (remember that we do not list root element)
-        and <Temperature> is a child of the <Potts> element hence the access path contains only two inner list
-        one that identifies <Potts> and one that identifies its child -  <Temperature>
-
-        [['Potts'], ['Temperature']]
-
-
-        IMPORTANT:
-        After you change the values in the XML elements you have to call
-
-        self.updateXML()
-
-        to make sure that CC3D reinterprets XML and applies new values to the running simulation
+            In our example ,the element
+            <VolumeEnergyParameters id="vol_cond" CellType="Condensing" LambdaVolume="2.0" TargetVolume="25"/>
+            has 4 attributes id, CellType, LambdaVolume and TargetVolume. you should not change id attribute
+            and also do not change CellType element. In this example changin g of lambda volume and target volume
+            makes sense
 
 
         """
+
+        temp_elem = self.get_xml_element('temp')
+        temp_elem.cdata = float(temp_elem.cdata) + 10
+
         if mcs == 10:
-            access_path = [['Plugin', 'Name', 'Volume'], ['VolumeEnergyParameters', 'CellType', 'Condensing']]
-            target_volume_value = float(self.getXMLAttributeValue('TargetVolume', *access_path))
-            self.setXMLAttributeValue('TargetVolume', 2 * target_volume_value, *access_path)
+            temp_elem = self.get_xml_element('temp')
+            temp_elem.cdata = float(temp_elem.cdata) + 10
 
-            temperature_access_path = [['Potts'], ['Temperature']]
-            temp = float(self.getXMLElementValue(*temperature_access_path))
-            self.setXMLElementValue(temp + 10, *temperature_access_path)
+            vol_cond_elem = self.get_xml_element('vol_cond')
+            vol_cond_elem.TargetVolume = 2.0 * float(vol_cond_elem.TargetVolume)
 
-            self.updateXML()
-
-    def finish(self):
-        # Finish Function gets called after the last MCS
-        pass

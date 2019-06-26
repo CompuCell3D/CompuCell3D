@@ -173,6 +173,7 @@ namespace CompuCell3D {
 
 		Point3D getNeighbor(const Point3D& pt, unsigned int& token, double& distance, bool checkBounds = true)const;
 		Coordinates3D<double> HexCoord(const Point3D & _pt)const;
+        Point3D Hex2Cartesian(const Coordinates3D<double> & _coord)const;
 		Point3D getNeighborCustomDim(const Point3D& pt, unsigned int& token,
 			double& distance, const Dim3D & customDim, bool checkBounds = true)const; // this function returns neighbor but takes extra dim as an argument  menaning we can use it for lattices of size different than simulation dim. used in prepareOffsets functions
 
@@ -196,6 +197,14 @@ namespace CompuCell3D {
 
 		const std::vector<Point3D> & getOffsetVec(Point3D & pt) const;
 		const std::vector<Point3D> & getOffsetVec() const;
+
+        void getHexOffsetArray(std::vector<std::vector<Point3D> > &hoa)const{
+        	hoa=hexOffsetArray;
+        }
+        int getMaxOffset() const { return maxOffset; }
+
+
+
 
 		//               const std::vector<Point3D> & getOffsetVec() const {return offsetVec;}
 		//               const std::vector<float> & getDistanceVec() const {return distanceVec;}

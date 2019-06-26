@@ -8,7 +8,7 @@ def readCC3DFile(fileName):
     """
 
     cc3dSimulationDataHandler = CC3DSimulationDataHandler(None)
-    cc3dSimulationDataHandler.readCC3DFileFormat(fileName)
+    cc3dSimulationDataHandler.read_cc3_d_file_format(fileName)
     print(cc3dSimulationDataHandler.cc3dSimulationData)
 
     return cc3dSimulationDataHandler

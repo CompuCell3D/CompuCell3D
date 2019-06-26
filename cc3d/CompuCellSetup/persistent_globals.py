@@ -1,5 +1,6 @@
 import os
 import time
+from collections import OrderedDict
 from os.path import join, exists, basename
 from typing import Union
 from cc3d.core.SteppableRegistry import SteppableRegistry
@@ -8,6 +9,7 @@ import copy
 from cc3d.core.utils import mkdir_p
 from cc3d.cpp.CompuCell import PyAttributeAdder
 from pathlib import Path
+from threading import Lock
 
 
 class PersistentGlobals:
@@ -43,6 +45,10 @@ class PersistentGlobals:
         self.output_frequency = 0
         self.screenshot_output_frequency = 0
 
+        self.restart_snapshot_frequency = 0
+        self.restart_multiple_snapshots = 0
+        self.restart_manager = None
+
         # todo - move it elsewhere or come up with a better solution
         # two objects that handle adding addition of python attributes
         self.attribute_adder = None
@@ -58,6 +64,22 @@ class PersistentGlobals:
 
         self.global_sbml_simulator_options = None
         self.free_floating_sbml_simulators = {}
+
+        # dictionary holding steering parameter objects - used for custom steering panel
+        self.steering_param_dict = OrderedDict()
+        self.steering_panel_synchronizer = Lock()
+
+    def add_steering_panel(self, panel_data: dict):
+        """
+        Adds steering panel if simulation is run using player
+        :param panel_data: dictionary with param scans
+        :return:
+        """
+        if self.view_manager is None:
+            return
+
+        steering_panel = self.view_manager.widgetManager.getNewWidget('Steering Panel', panel_data)
+        return steering_panel
 
     def set_output_dir(self, output_dir: str) -> None:
         """

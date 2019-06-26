@@ -1,26 +1,27 @@
 # -*- coding: utf-8 -*-
 import os
-import re
 import pickle
+import json
+from collections import OrderedDict
 from cc3d.cpp import CompuCell
 from cc3d.cpp import SerializerDEPy
 from cc3d.core.PySteppables import CellList
 from cc3d.core.XMLUtils import ElementCC3D
 from cc3d.core import XMLUtils
-from cc3d.core import Version
+import cc3d
 from cc3d import CompuCellSetup
+from .CC3DSimulationDataHandler import CC3DSimulationDataHandler
+from .SteeringParam import SteeringParam
 from pathlib import Path
-import warnings
 import shutil
+import copyreg
 
 
-def _pickleVector3(_vec):
+def pickle_vector3(_vec):
     return CompuCell.Vector3, (_vec.fX, _vec.fY, _vec.fZ)
 
 
-import copyreg
-
-copyreg.pickle(CompuCell.Vector3, _pickleVector3)
+copyreg.pickle(CompuCell.Vector3, pickle_vector3)
 
 
 class RestartManager:
@@ -34,10 +35,11 @@ class RestartManager:
 
         self.cc3dSimOutputDir = ''
         self.serializeDataList = []
-        self.__step_number_of_digits = 0  # field size for formatting step number output
+        # field size for formatting step number output
+        self.__step_number_of_digits = 0
         self.__completedRestartOutputPath = ''
-        self.__allowMultipleRestartDirectories = True
-        self.__outputFrequency = 0
+        self.allow_multiple_restart_directories = False
+        self.output_frequency = 0
         self.__baseSimulationFilesCopied = False
 
         # variables used during restarting
@@ -48,9 +50,9 @@ class RestartManager:
         self.__restart_step = 0
         self.__restart_resource_dict = {}
 
-        self.cc3dSimulationDataHandler = None
+        self.cc3d_simulation_data_handler = None
 
-    def getRestartStep(self):
+    def get_restart_step(self):
         return self.__restart_step
 
     def prepare_restarter(self):
@@ -59,73 +61,48 @@ class RestartManager:
         :return: None
         """
 
-        # todo - fix
-        self.__allowMultipleRestartDirectories = False
-        self.__outputFrequency = 1
+        pg = CompuCellSetup.persistent_globals
 
-        return
+        self.cc3d_simulation_data_handler = CC3DSimulationDataHandler()
+        self.cc3d_simulation_data_handler.read_cc3_d_file_format(pg.simulation_file_name)
 
-        if re.match(".*\.cc3d$", str(CompuCellSetup.simulationFileName)):
-            from . import CC3DSimulationDataHandler
-            cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler()
-            cc3dSimulationDataHandler.readCC3DFileFormat(str(CompuCellSetup.simulationFileName))
-
-            # checking is serializer resource exists
-            if cc3dSimulationDataHandler.cc3dSimulationData.serializerResource:
-                self.__allowMultipleRestartDirectories = cc3dSimulationDataHandler.cc3dSimulationData.serializerResource.allowMultipleRestartDirectories
-                self.__outputFrequency = cc3dSimulationDataHandler.cc3dSimulationData.serializerResource.outputFrequency
-
-    def restart_enabled(self):
+    @staticmethod
+    def restart_enabled():
         """
         reads .cc3d project file and checks if restart is enabled
         :return: {bool}
         """
-        return True
+        pg = CompuCellSetup.persistent_globals
 
-        if re.match(".*\.cc3d$", str(CompuCellSetup.simulationFileName)):
-            print("EXTRACTING restartEnabled")
+        return Path(pg.simulation_file_name).parent.joinpath('restart').exists()
 
-            from . import CC3DSimulationDataHandler
-
-            cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler()
-            cc3dSimulationDataHandler.readCC3DFileFormat(str(CompuCellSetup.simulationFileName))
-
-            return cc3dSimulationDataHandler.cc3dSimulationData.restartEnabled()
-
-        return False
-
-    def append_xml_stub(selt, _rootElem, _sd):
+    @staticmethod
+    def append_xml_stub(root_elem, sd):
         """
         Internal function in the restart manager - manipulatex xml file that describes the layout of
         restart files
-        :param _rootElem: {instance of CC3DXMLElement}
-        :param _sd: {object that has basic information about serialized module}
+        :param root_elem: {instance of CC3DXMLElement}
+        :param sd: {object that has basic information about serialized module}
         :return: None
         """
-        baseFileName = os.path.basename(_sd.fileName)
-        attributeDict = {"ModuleName": _sd.moduleName, "ModuleType": _sd.moduleType, "ObjectName": _sd.objectName,
-                         "ObjectType": _sd.objectType, "FileName": baseFileName, 'FileFormat': _sd.fileFormat}
-        _rootElem.ElementCC3D('ObjectData', attributeDict)
+        base_file_name = os.path.basename(sd.fileName)
+        attribute_dict = {"ModuleName": sd.moduleName, "ModuleType": sd.moduleType, "ObjectName": sd.objectName,
+                         "ObjectType": sd.objectType, "FileName": base_file_name, 'FileFormat': sd.fileFormat}
+        root_elem.ElementCC3D('ObjectData', attribute_dict)
 
-    def get_restart_output_root_path(self, restart_output_path):
+    @staticmethod
+    def get_restart_output_root_path(restart_output_path):
         """
         returns path to the  output root directory e.g. <outputFolder>/restart_200
         :param restart_output_path: {str}
         :return:{str}
         """
-        return restart_output_path
+        return str(Path(restart_output_path).parent)
 
-        # restart_output_root_path = os.path.dirname(restart_output_path)
-        #
-        # # normalizing path
-        # restart_output_root_path = os.path.abspath(restart_output_root_path)
-        #
-        # return restart_output_root_path
-
-    def setup_restart_output_directory(self, _step=0):
+    def setup_restart_output_directory(self, step=0):
         """
-        Prpares restart directory
-        :param _step: {int} Monte Carlo Step
+        Prepares restart directory
+        :param step: {int} Monte Carlo Step
         :return: {None}
         """
 
@@ -134,106 +111,15 @@ class RestartManager:
         if not self.__step_number_of_digits:
             self.__step_number_of_digits = len(str(pg.simulator.getNumSteps()))
 
-        restart_output_dir = Path(output_dir_root).joinpath('restart_' + str(_step).zfill(self.__step_number_of_digits))
-        # restart_output_dir.
+        restart_output_root = Path(output_dir_root).joinpath(
+            'restart_' + str(step).zfill(self.__step_number_of_digits))
+        restart_files_dir = restart_output_root.joinpath('restart')
 
-        restart_output_dir.mkdir(parents=True, exist_ok=True)
+        restart_files_dir.mkdir(parents=True, exist_ok=True)
 
-        return str(restart_output_dir)
+        self.cc3d_simulation_data_handler.copy_simulation_data_files(restart_output_root)
 
-        print('CompuCellSetup.screenshotDirectoryName=', CompuCellSetup.screenshotDirectoryName)
-
-        self.cc3dSimOutputDir = CompuCellSetup.screenshotDirectoryName
-
-        if not self.__step_number_of_digits:
-            self.__step_number_of_digits = len(str(self.sim.getNumSteps()))
-
-        restartOutputPath = ''
-        simFilesOutputPath = ''
-        if self.cc3dSimOutputDir == '':
-            if str(CompuCellSetup.simulationFileName) != '':
-                (self.cc3dSimOutputDir, baseScreenshotName) = CompuCellSetup.makeSimDir(
-                    str(CompuCellSetup.simulationFileName))
-                CompuCellSetup.screenshotDirectoryName = self.cc3dSimOutputDir
-
-                # fills string with 0's up to self.__stepNumberOfDigits
-                restartOutputPath = os.path.join(self.cc3dSimOutputDir, 'restart_' + string.zfill(str(_step),
-                                                                                                  self.__step_number_of_digits))
-                simFilesOutputPath = restartOutputPath
-
-                # one more level of nesting
-                restartOutputPath = os.path.join(restartOutputPath,
-                                                 'restart')
-
-                try:
-                    os.makedirs(restartOutputPath)
-                except IOError as e:
-                    restartOutputPath = ''
-
-        else:
-            self.cc3dSimOutputDir = self.cc3dSimOutputDir
-
-            # fills string with 0's up to self.__stepNumberOfDigits
-            restartOutputPath = os.path.join(self.cc3dSimOutputDir,
-                                             'restart_' + string.zfill(str(_step), self.__step_number_of_digits))
-            simFilesOutputPath = restartOutputPath
-            # one more level of nesting
-            restartOutputPath = os.path.join(restartOutputPath,
-                                             'restart')
-
-            try:
-                os.makedirs(restartOutputPath)
-            except IOError as e:
-                restartOutputPath = ''
-
-        # we only copy simulation files if simulation run in in the .cc3d format                
-        import re
-        if re.match(".*\.cc3d$", str(CompuCellSetup.simulationFileName)):
-
-            from . import CC3DSimulationDataHandler
-
-            cc3dSimulationDataHandler = CC3DSimulationDataHandler.CC3DSimulationDataHandler()
-            cc3dSimulationDataHandler.readCC3DFileFormat(str(CompuCellSetup.simulationFileName))
-
-            # copying  verbatim simulation files
-            if not self.__baseSimulationFilesCopied:
-                cc3dSimulationDataHandler.copySimulationDataFiles(self.cc3dSimOutputDir)
-                self.__baseSimulationFilesCopied = True
-
-            # copying modified simulation files - with restart modification
-            if simFilesOutputPath != '':
-                cc3dSimulationDataHandler.copySimulationDataFiles(simFilesOutputPath)
-                cc3dSimulationDataHandlerLocal = CC3DSimulationDataHandler.CC3DSimulationDataHandler()
-
-                simBaseName = os.path.basename(str(CompuCellSetup.simulationFileName))
-                # path to newly copied simulation file
-                simFullName = os.path.join(simFilesOutputPath, simBaseName)
-                # read newly copied simulation file - we will add restart tags to it
-                cc3dSimulationDataHandlerLocal.readCC3DFileFormat(simFullName)
-
-                print('\n\n\n\n cc3dSimulationDataHandlerLocal.cc3dSimulationData=',
-                      cc3dSimulationDataHandlerLocal.cc3dSimulationData)
-
-                # update simulation size in the XML  in case it has changed during the simulation 
-                if cc3dSimulationDataHandlerLocal.cc3dSimulationData.xmlScript != '':
-                    print('cc3dSimulationDataHandlerLocal.cc3dSimulationData.xmlScript=',
-                          cc3dSimulationDataHandlerLocal.cc3dSimulationData.xmlScript)
-                    self.updateXMLScript(cc3dSimulationDataHandlerLocal.cc3dSimulationData.xmlScript)
-                elif cc3dSimulationDataHandlerLocal.cc3dSimulationData.pythonScript != '':
-                    self.updatePythonScript(cc3dSimulationDataHandlerLocal.cc3dSimulationData.pythonScript)
-
-                # if serialize resource exists we only modify it by adding restart simulation element
-                if cc3dSimulationDataHandlerLocal.cc3dSimulationData.serializerResource:
-                    cc3dSimulationDataHandlerLocal.cc3dSimulationData.serializerResource.restartDirectory = 'restart'
-                    cc3dSimulationDataHandlerLocal.writeCC3DFileFormat(simFullName)
-                else:  # otherwise we create new simulation resource and add restart simulation element
-                    cc3dSimulationDataHandlerLocal.cc3dSimulationData.addNewSerializerResource(_restartDir='restart')
-                    cc3dSimulationDataHandlerLocal.writeCC3DFileFormat(simFullName)
-
-            # if self.cc3dSimOutputDir!='':
-            # cc3dSimulationDataHandler.copySimulationDataFiles(self.cc3dSimOutputDir)
-
-        return restartOutputPath
+        return str(restart_files_dir)
 
     def updatePythonScript(self, _fileName):
         """
@@ -1170,7 +1056,7 @@ class RestartManager:
                     cell_id = pickle.load(pf)
                     polarization_vec = pickle.load(pf)
                     polarization_vector_plugin.setPolarizationVector(cell, polarization_vec[0], polarization_vec[1],
-                                                                   polarization_vec[2])
+                                                                     polarization_vec[2])
 
                 pf.close()
 
@@ -1208,7 +1094,8 @@ class RestartManager:
                     pol_markers = pickle.load(pf)
                     lambda_pol = pickle.load(pf)
 
-                    polarization23_plugin.setPolarizationVector(cell, CompuCell.Vector3(pol_vec[0], pol_vec[2], pol_vec[2]))
+                    polarization23_plugin.setPolarizationVector(cell,
+                                                                CompuCell.Vector3(pol_vec[0], pol_vec[2], pol_vec[2]))
                     polarization23_plugin.setPolarizationMarkers(cell, pol_markers[0], pol_markers[1])
                     polarization23_plugin.setLambdaPolarization(cell, lambda_pol)
 
@@ -1229,9 +1116,31 @@ class RestartManager:
         sd.objectType = 'JSON'
         sd.fileName = os.path.join(restart_output_path, 'SteeringPanel' + '.json')
 
-        CompuCellSetup.serialize_steering_panel(sd.fileName)
+        self.serialize_steering_panel(sd.fileName)
 
         self.append_xml_stub(rst_xml_elem, sd)
+
+    @staticmethod
+    def serialize_steering_panel(fname):
+        """
+        Serializes steering panel
+        :param fname: {str} filename - to serialize steering panel to
+        :return: None
+        """
+        steering_param_dict = CompuCellSetup.persistent_globals.steering_param_dict
+        json_dict = OrderedDict()
+
+        for param_name, steering_param_obj in steering_param_dict.items():
+            json_dict[param_name] = OrderedDict()
+            json_dict[param_name]['val'] = steering_param_obj.val
+            json_dict[param_name]['min'] = steering_param_obj.min
+            json_dict[param_name]['max'] = steering_param_obj.max
+            json_dict[param_name]['decimal_precision'] = steering_param_obj.decimal_precision
+            json_dict[param_name]['enum'] = steering_param_obj.enum
+            json_dict[param_name]['widget_name'] = steering_param_obj.widget_name
+
+        with open(fname, 'w') as outfile:
+            json.dump(json_dict, outfile, indent=4)
 
     def load_steering_panel(self):
         """
@@ -1243,7 +1152,36 @@ class RestartManager:
                 full_path = os.path.join(self.__restartDirectory, sd.fileName)
                 full_path = os.path.abspath(full_path)  # normalizing path format
 
-                CompuCellSetup.deserialize_steering_panel(fname=full_path)
+                self.deserialize_steering_panel(fname=full_path)
+
+    @staticmethod
+    def deserialize_steering_panel(fname):
+        """
+        Deserializes steering panel
+        :param fname: {str} serialized steering panel filename
+        :return: None
+        """
+
+        CompuCellSetup.persistent_globals.steering_param_dict = OrderedDict()
+        steering_param_dict = CompuCellSetup.persistent_globals.steering_param_dict
+
+        with open(fname) as infile:
+
+            json_dict = json.load(infile)
+            for param_name, steering_param_obj_data in json_dict.items():
+                try:
+                    steering_param_dict[param_name] = SteeringParam(
+                        name=param_name,
+                        val=steering_param_obj_data['val'],
+                        min_val=steering_param_obj_data['min'],
+                        max_val=steering_param_obj_data['max'],
+                        decimal_precision=steering_param_obj_data['decimal_precision'],
+                        enum=steering_param_obj_data['enum'],
+                        widget_name=steering_param_obj_data['widget_name']
+                    )
+                except:
+                    print
+                    'Could not update steering parameter {} value'.format(param_name)
 
     def output_restart_files(self, step=0, on_demand=False):
         """
@@ -1253,13 +1191,13 @@ class RestartManager:
         :return: None
         """
 
-        if not on_demand and self.__outputFrequency <= 0:
+        if not on_demand and self.output_frequency <= 0:
             return
 
         if not on_demand and step == 0:
             return
 
-        if not on_demand and step % self.__outputFrequency:
+        if not on_demand and step % self.output_frequency:
             return
 
         # have to initialize serialized each time in case lattice gets resized in which case cellField Ptr
@@ -1270,7 +1208,7 @@ class RestartManager:
         self.serializer.init(pg.simulator)
 
         rst_xml_elem = ElementCC3D("RestartFiles",
-                                   {"Version": Version.getVersionAsString(), 'Build': Version.getSVNRevisionAsString()})
+                                   {"Version": cc3d.__version__, 'Build': cc3d.__revision__})
         rst_xml_elem.ElementCC3D("Step", {}, step)
         print('outputRestartFiles')
 
@@ -1347,7 +1285,7 @@ class RestartManager:
         self.output_polarization23_plugin(restart_output_path, rst_xml_elem)
         #
         # # outputting steering panel params
-        # self.outputSteeringPanel(restart_output_path, rst_xml_elem)
+        self.output_steering_panel(restart_output_path, rst_xml_elem)
         #
         # # ---------------------- END OF  OUTPUTTING RESTART FILES    --------------------
         #
@@ -1356,9 +1294,9 @@ class RestartManager:
 
         # --------------- depending on removePreviousFiles we will remove or keep previous restart files
 
-        print('\n\n\n\n self.__allowMultipleRestartDirectories=', self.__allowMultipleRestartDirectories)
+        print('\n\n\n\n self.__allowMultipleRestartDirectories=', self.allow_multiple_restart_directories)
 
-        if not self.__allowMultipleRestartDirectories:
+        if not self.allow_multiple_restart_directories:
 
             print('\n\n\n\n self.__completedRestartOutputPath=', self.__completedRestartOutputPath)
 

@@ -1,5 +1,0 @@
-<Simulation version="3.6.2">
-   <XMLScript Type="XMLScript">Simulation/optimization_demo.xml</XMLScript>
-   <PythonScript Type="PythonScript">Simulation/optimization_demo.py</PythonScript>
-   <Resource Type="Python">Simulation/optimization_demoSteppables.py</Resource>
-</Simulation>

@@ -1,33 +1,17 @@
-from PySteppables import *
-import CompuCell
-import CompuCellSetup
-import sys
+from cc3d.core.PySteppables import *
 from random import uniform
 
+
 class CellMotilitySteppable(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=10):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
+    def __init__(self, frequency=10):
+        SteppableBasePy.__init__(self, frequency)
 
-    def start(self):
-        print "This function is called once before simulation"
-        
-        # iterating over all cells in simulation        
+    def step(self, mcs):
+        # Make sure ExternalPotential plugin is loaded
+        # negative lambdaVecX makes force point in the positive direction
+
         for cell in self.cellList:
-            break 
-            # Make sure ExternalPotential plugin is loaded
-            # negative lambdaVecX makes force point in the positive direction
-            cell.lambdaVecX=10.1*uniform(-0.5,0.5) # force component pointing along X axis 
-            cell.lambdaVecY=10.1*uniform(-0.5,0.5) # force component pointing along Y axis 
-#         cell.lambdaVecZ=0.0 # force component pointing along Z axis 
-        
-        
-    def step(self,mcs):
-        
-        for cell in self.cellList:
-            
-            cell.lambdaVecX=10.1*uniform(-0.5,0.5) # force component pointing along X axis 
-            cell.lambdaVecY=10.1*uniform(-0.5,0.5) # force component pointing along Y axis 
-            # print 'cell.lambdaVecX=',cell.lambdaVecX,' cell.lambdaVecY=',cell.lambdaVecY
-
-
-
+            # force component pointing along X axis
+            cell.lambdaVecX = 10.1 * uniform(-0.5, 0.5)
+            # force component pointing along Y axis
+            cell.lambdaVecY = 10.1 * uniform(-0.5, 0.5)

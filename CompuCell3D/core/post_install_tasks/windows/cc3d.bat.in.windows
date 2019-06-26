@@ -6,11 +6,15 @@
 @set CURRENT_DIRECTORY=%CD%
 
 
-REM REM removing duplicates from PATH environment variable - this variable can get recusrive addodn with each subsequent run resulting in windows shell error - also a good idea to keep PATH short anyway
-REM REM a bit ugly but works...
-REM "%PYTHON_INSTALL_PATH%\python" "%PREFIX_CC3D%\pythonSetupScripts\envVarSanitizer.py" "PATH" > "%TMP%\path_modifier.bat"
-REM CALL  "%TMP%\path_modifier.bat"
-REM @del "%TMP%\path_modifier.bat"
+REM removing duplicates from PATH environment variable -
+REM this variable can get recusrive addodn with each subsequent run resulting in windows shell error -
+REM also a good idea to keep PATH short anyway
+REM a bit ugly but works...
+
+"%PYTHON_INSTALL_PATH%\python" "%PREFIX_CC3D%\lib\site-packages\cc3d\core\envVarSanitizer.py" "PATH" > "%TMP%\path_modifier.bat"
+CALL  "%TMP%\path_modifier.bat"
+@del "%TMP%\path_modifier.bat"
+
 
 
 cd %PREFIX_CC3D%

@@ -1,39 +1,37 @@
-from PlayerPython import * 
-import CompuCellSetup
-#Steppables
-
-import CompuCell
+from cc3d.core.PySteppables import *
 from random import random
-import types
 
-from PySteppables import *
 
 class ContactLocalProductSteppable(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=10):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
-        
-    def setTypeContactEnergyTable(self,_table):
-        self.table=_table
+    def __init__(self, frequency=10):
+        SteppableBasePy.__init__(self, frequency)
+
+        self.table = None
+
+    def set_type_contact_energy_table(self, table):
+        self.table = table
 
     def start(self):
-        for cell in self.cellList:
-            specificityObj=self.table[cell.type];
-            if isinstance(specificityObj,types.ListType):
-                self.contactLocalProductPlugin.setJVecValue(cell,0,(specificityObj[1]-specificityObj[0])*random())
+        for cell in self.cell_list:
+            specificity_obj = self.table[cell.type]
+            if isinstance(specificity_obj, list):
+                self.contactLocalProductPlugin.setJVecValue(cell, 0, (specificity_obj[1] - specificity_obj[0]) * random())
             else:
-                self.contactLocalProductPlugin.setJVecValue(cell,0,specificityObj)
+                self.contactLocalProductPlugin.setJVecValue(cell, 0, specificity_obj)
+
 
 class ContactSpecVisualizationSteppable(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=10):
-        SteppableBasePy.__init__(self,_simulator,_frequency)        
-        self.scalarField=CompuCellSetup.createScalarFieldPy(self.dim,"ContSpec")
+    def __init__(self, frequency=10):
+        SteppableBasePy.__init__(self, frequency)
+        self.create_scalar_field_py('ContSpec')
 
-    def step(self,mcs):
-        
-        for x,y,z in self.everyPixel():
-            cell=self.cellField[x,y,z]            
+    def step(self, mcs):
+
+        conc_spec_field = self.field.ContSpec
+        for x, y, z in self.every_pixel():
+
+            cell = self.cell_field[x, y, z]
             if cell:
-                self.scalarField[x,y,z]=self.contactLocalProductPlugin.getJVecValue(cell,0)
+                conc_spec_field[x, y, z] = self.contactLocalProductPlugin.getJVecValue(cell, 0)
             else:
-                self.scalarField[x,y,z]=0.0
-                        
+                conc_spec_field[x, y, z] = 0.0

@@ -1,106 +1,91 @@
-from PySteppables import *
-from PySteppablesExamples import MitosisSteppableBase
-import CompuCell
-import sys
-from random import uniform
-import math
+from cc3d.core.PySteppables import *
+
+
+def ir(x):
+    """
+    Rounds floating point to thew nearest integer ans returns integer
+    :param x: {float} num to round
+    :return:
+    """
+    return int(round(x))
+
 
 class VolumeParamSteppable(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=1,):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
-        self.fieldNameVEGF2 = 'VEGF2'
-        self.fieldNameGlucose = 'Glucose'
-                
+    def __init__(self, frequency=1, ):
+        SteppableBasePy.__init__(self, frequency)
+
     def start(self):
         for cell in self.cellList:
-            if cell.type==self.VASCULAR or cell.type==self.NEOVASCULAR:
-            #due to pressue from chemotaxis to vegf1, cell.volume is smaller that cell.target volume
-            #in this simulation the offset is about 10 voxels.
-                cell.targetVolume=64.0+10.0
-                cell.lambdaVolume=20.0
+            if cell.type == self.VASCULAR or cell.type == self.NEOVASCULAR:
+                # due to pressue from chemotaxis to vegf1, cell.volume is smaller that cell.target volume
+                # in this simulation the offset is about 10 voxels.
+                cell.targetVolume = 64.0 + 10.0
+                cell.lambdaVolume = 20.0
             else:
-                cell.targetVolume=32.0
-                cell.lambdaVolume=20.0
-                
-    def step(self,mcs):
-        fieldVEGF2=CompuCell.getConcentrationField(self.simulator,self.fieldNameVEGF2)
-        fieldGlucose=CompuCell.getConcentrationField(self.simulator,self.fieldNameGlucose)
-        print mcs
-        
-        for cell in self.cellList:
-            #print cell.volume
-            #NeoVascular
+                cell.targetVolume = 32.0
+                cell.lambdaVolume = 20.0
+
+    def step(self, mcs):
+        field_vegf2 = self.field.VEGF2
+        field_glucose = self.field.Glucose
+
+        for cell in self.cell_list:
+            # NeoVascular
             if cell.type == self.NEOVASCULAR:
-                totalArea = 0
-                # pt=CompuCell.Point3D()
-                # pt.x=int(round(cell.xCM/max(float(cell.volume),0.001)))
-                # pt.y=int(round(cell.yCM/max(float(cell.volume),0.001)))
-                # pt.z=int(round(cell.zCM/max(float(cell.volume),0.001)))
-                
-                # VEGFConcentration=fieldVEGF2.get(pt)
-                
-                VEGFConcentration=fieldVEGF2[int(round(cell.xCOM)),int(round(cell.yCOM)),int(round(cell.zCOM))]
-                
-                # cellNeighborList=CellNeighborListAuto(self.nTrackerPlugin,cell)
-                cellNeighborList=self.getCellNeighbors(cell)
-                for neighborSurfaceData in cellNeighborList:
-                    #Check to ensure cell neighbor is not medium
-                    if neighborSurfaceData.neighborAddress:
-                        if neighborSurfaceData.neighborAddress.type == self.VASCULAR or neighborSurfaceData.neighborAddress.type == self.NEOVASCULAR:                            
-                            #sum up common surface area of cell with its neighbors
-                            totalArea+=neighborSurfaceData.commonSurfaceArea 
-                            #print "  commonSurfaceArea:",neighborSurfaceData.commonSurfaceArea
-                #print totalArea        
-                if totalArea < 45:
-                    #Growth rate equation
-                    
-                    cell.targetVolume+=2.0*VEGFConcentration/(0.01 + VEGFConcentration)
-                    print "totalArea", totalArea,"cell growth rate: ", 2.0*VEGFConcentration/(0.01 + VEGFConcentration),"cell Volume: ", cell.volume
-         
-            #Proliferating Cells
+                total_area = 0
+
+                vegf_concentration = field_vegf2[ir(cell.xCOM), ir(cell.yCOM), ir(cell.zCOM)]
+
+                neighbor_list = self.get_cell_neighbor_data_list(cell)
+                for neighbor, common_surface_area in neighbor_list:
+                    # Check to ensure cell neighbor is not medium
+                    if neighbor:
+                        if neighbor.type == self.VASCULAR or neighbor.type == self.NEOVASCULAR:
+                            # sum up common surface area of cell with its neighbors
+                            total_area += common_surface_area
+
+                if total_area < 45:
+                    # Growth rate equation
+                    cell.targetVolume += 2.0 * vegf_concentration / (0.01 + vegf_concentration)
+                    print("total_area", total_area, "cell growth rate: ",
+                          2.0 * vegf_concentration / (0.01 + vegf_concentration), "cell Volume: ", cell.volume)
+
+            # Proliferating Cells
             if cell.type == self.PROLIFERATING:
-                
-                # pt=CompuCell.Point3D()
-                # pt.x=int(round(cell.xCM/max(float(cell.volume),0.001)))
-                # pt.y=int(round(cell.yCM/max(float(cell.volume),0.001)))
-                # pt.z=int(round(cell.zCM/max(float(cell.volume),0.001)))
-                # GlucoseConcentration=fieldGlucose.get(pt)
-                
-                GlucoseConcentration=fieldGlucose[int(round(cell.xCOM)),int(round(cell.yCOM)),int(round(cell.zCOM))]
-                
-                # Proliferating Cells become Necrotic when GlucoseConcentration is low
-                if  GlucoseConcentration < 0.001 and mcs>1000:
+
+                glucose_concentration = field_glucose[ir(cell.xCOM), ir(cell.yCOM), ir(cell.zCOM)]
+
+                # Proliferating Cells become Necrotic when glucose_concentration is low
+                if glucose_concentration < 0.001 and mcs > 1000:
                     cell.type = self.NECROTIC
-                    #set growth rate equation -- fastest cell cycle is 24hours or 1440 mcs--- 32voxels/1440mcs= 0.022 voxel/mcs
-                cell.targetVolume+=0.022*GlucoseConcentration/(0.05 + GlucoseConcentration)
-                #print "growth rate: ", 0.044*GlucoseConcentration/(0.05 + GlucoseConcentration), "GlucoseConcentration", GlucoseConcentration
+                    # set growth rate equation -- fastest cell cycle is 24hours or 1440 mcs
+                    # --- 32voxels/1440mcs= 0.022 voxel/mcs
+                cell.targetVolume += 0.022 * glucose_concentration / (0.05 + glucose_concentration)
 
-            #Necrotic Cells
+            # Necrotic Cells
             if cell.type == self.NECROTIC:
-                #sNecrotic Cells shrink at a constant rate
-                cell.targetVolume-=0.1
-                
+                # Necrotic Cells shrink at a constant rate
+                cell.targetVolume -= 0.1
+
+
 class MitosisSteppable(MitosisSteppableBase):
-    def __init__(self,_simulator,_frequency=1):
-        MitosisSteppableBase.__init__(self,_simulator, _frequency)
-     
-    def step(self,mcs):
-        
-        cells_to_divide=[]
-          
-        for cell in self.cellList:
-            if cell.type == self.PROLIFERATING and cell.volume>64:
+    def __init__(self, frequency=1):
+        MitosisSteppableBase.__init__(self, frequency)
+
+    def step(self, mcs):
+
+        cells_to_divide = []
+
+        for cell in self.cell_list:
+            if cell.type == self.PROLIFERATING and cell.volume > 64:
                 cells_to_divide.append(cell)
-            if cell.type== self.NEOVASCULAR and cell.volume>128:
+            if cell.type == self.NEOVASCULAR and cell.volume > 128:
                 cells_to_divide.append(cell)
 
-                     
         for cell in cells_to_divide:
+            self.divide_cell_random_orientation(cell)
 
-            self.divideCellRandomOrientation(cell)
-            
-    def updateAttributes(self):    
-        self.parentCell.targetVolume /= 2.0 # reducing parent target volume                 
-        self.cloneParent2Child()            
-              
-                
+    def update_attributes(self):
+        # reducing parent target volume
+        self.parent_cell.targetVolume /= 2.0
+        self.clone_parent_2_child()
