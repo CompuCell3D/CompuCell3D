@@ -430,11 +430,11 @@ float ChemotaxisPlugin::saturationLinearChemotaxisFormula(float _flipNeighborCon
 float ChemotaxisPlugin::saturationDifferenceChemotaxisFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData)
 {
 	
-	std::ofstream test_out_file;
+	/*std::ofstream test_out_file;
 	test_out_file.open("saturationDifferenceChemotaxisOut.dat", std::ios_base::app);
 	test_out_file << _flipNeighborConc << "," << _conc << "," << _chemotaxisData.saturationCoef << "," 
 		<< _chemotaxisData.lambda*(_flipNeighborConc - _conc) / (_chemotaxisData.saturationCoef + _flipNeighborConc - _conc) << "\n";
-	test_out_file.close();
+	test_out_file.close();*/
 	
 	
 	return _chemotaxisData.lambda*( _flipNeighborConc - _conc )/( _chemotaxisData.saturationCoef + _flipNeighborConc - _conc );
@@ -446,8 +446,8 @@ float ChemotaxisPlugin::powerChemotaxisFormula(float _flipNeighborConc, float _c
 {
 	float diff = _flipNeighborConc - _conc;
 
-	std::ofstream test_out_file;
-	test_out_file.open("powerDifferenceChemotaxisOut.dat", std::ios_base::app);
+	/*std::ofstream test_out_file;
+	test_out_file.open("powerDifferenceChemotaxisOut.dat", std::ios_base::app);*/
 	
 	
 
@@ -456,21 +456,21 @@ float ChemotaxisPlugin::powerChemotaxisFormula(float _flipNeighborConc, float _c
 	if (_chemotaxisData.powerLevel < 0 && diff == 0)//don't wan't NANs or infs going around
 	{
 		
-		test_out_file << _flipNeighborConc << "," << _conc << "," << _chemotaxisData.powerLevel << ","
+		/*test_out_file << _flipNeighborConc << "," << _conc << "," << _chemotaxisData.powerLevel << ","
 			<< 9E99 * _chemotaxisData.lambda << "\n";
 		
-		test_out_file.close();
+		test_out_file.close();*/
 		return 9E99 * _chemotaxisData.lambda;
 	}
 	
 
-	test_out_file << _flipNeighborConc << "," << _conc << "," << _chemotaxisData.powerLevel << ","
+	/*test_out_file << _flipNeighborConc << "," << _conc << "," << _chemotaxisData.powerLevel << ","
 		<< _chemotaxisData.lambda*pow(
 			diff, _chemotaxisData.powerLevel
 		) << "\n";
 
 
-	test_out_file.close();
+	test_out_file.close();*/
 	return _chemotaxisData.lambda*pow(
 		diff, _chemotaxisData.powerLevel
 	);
@@ -479,10 +479,10 @@ float ChemotaxisPlugin::powerChemotaxisFormula(float _flipNeighborConc, float _c
 float ChemotaxisPlugin::log10DivisionFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData)
 {
 	
-	std::ofstream test_out_file;
+	/*std::ofstream test_out_file;
 	test_out_file.open("log10ChemotaxisOut.dat", std::ios_base::app);
 	test_out_file << _flipNeighborConc << "," << _conc << "," << _chemotaxisData.lambda * log10((1 + _flipNeighborConc) / (1 + _conc)) << "\n";
-	test_out_file.close();
+	test_out_file.close();*/
 	
 	
 	return _chemotaxisData.lambda * log10(
@@ -492,10 +492,10 @@ float ChemotaxisPlugin::log10DivisionFormula(float _flipNeighborConc, float _con
 
 float ChemotaxisPlugin::logNatDivisionFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData)
 {
-	std::ofstream test_out_file;
+	/*std::ofstream test_out_file;
 	test_out_file.open("lnChemotaxisOut.dat", std::ios_base::app);
 	test_out_file << _flipNeighborConc << "," << _conc << "," << _chemotaxisData.lambda * log((1 + _flipNeighborConc) / (1 + _conc)) << "\n";
-	test_out_file.close();
+	test_out_file.close();*/
 	
 	return _chemotaxisData.lambda * log(
 		( 1 + _flipNeighborConc )/( 1 + _conc )
@@ -506,20 +506,20 @@ float ChemotaxisPlugin::log10DifferenceFormula(float _flipNeighborConc, float _c
 {
 	float diff = _flipNeighborConc - _conc;
 
-	std::ofstream test_out_file;
+	/*std::ofstream test_out_file;
 	test_out_file.open("log10DiffChemotaxisOut.dat", std::ios_base::app);
-	test_out_file << _flipNeighborConc << "," << _conc << ",";
+	test_out_file << _flipNeighborConc << "," << _conc << ",";*/
 
 	
 	if ( diff <= 0 )//don't wan't NANs or infs going around
 	{
-		test_out_file << -9E99 * _chemotaxisData.lambda << "\n";
-		test_out_file.close();
+		/*test_out_file << -9E99 * _chemotaxisData.lambda << "\n";
+		test_out_file.close();*/
 		return -9E99 * _chemotaxisData.lambda;
 	}
 	
-	test_out_file << _chemotaxisData.lambda * log10(diff) << "\n";
-	test_out_file.close();
+	/*test_out_file << _chemotaxisData.lambda * log10(diff) << "\n";
+	test_out_file.close();*/
 
 	return _chemotaxisData.lambda * log10( diff );
 }
@@ -528,20 +528,20 @@ float ChemotaxisPlugin::logNatDifferenceFormula(float _flipNeighborConc, float _
 {
 	float diff = _flipNeighborConc - _conc;
 
-	std::ofstream test_out_file;
+	/*std::ofstream test_out_file;
 	test_out_file.open("lnDiffChemotaxisOut.dat", std::ios_base::app);
-	test_out_file << _flipNeighborConc << "," << _conc << ",";
+	test_out_file << _flipNeighborConc << "," << _conc << ",";*/
 
 	
 	if ( diff <= 0 )//don't wan't NANs or infs going around
 	{
 		return -9E99 * _chemotaxisData.lambda;
-		test_out_file << -9E99 * _chemotaxisData.lambda << "\n";
-		test_out_file.close();
+		/*test_out_file << -9E99 * _chemotaxisData.lambda << "\n";
+		test_out_file.close();*/
 	}
 	
-	test_out_file << _chemotaxisData.lambda * log(diff) << "\n";
-	test_out_file.close();
+	/*test_out_file << _chemotaxisData.lambda * log(diff) << "\n";
+	test_out_file.close();*/
 
 	return _chemotaxisData.lambda * log( diff );
 }
