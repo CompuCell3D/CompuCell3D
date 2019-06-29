@@ -14,7 +14,7 @@ class HistPlotSteppable(SteppableBasePy):
         # initialize setting for Histogram
         self.plot_win = self.add_new_plot_window(title='Histogram of Cell Volumes', x_axis_title='Number of Cells',
                                                  y_axis_title='Volume Size in Pixels')
-        # _alpha is transparency 0 is transparent, 255 is opaque
+        # alpha is transparency 0 is transparent, 255 is opaque
         self.plot_win.add_histogram_plot(plot_name='Hist 1', color='green', alpha=100)
         self.plot_win.add_histogram_plot(plot_name='Hist 2', color='red', alpha=100)
         self.plot_win.add_histogram_plot(plot_name='Hist 3', color='blue')

@@ -26,27 +26,6 @@ def SBMLSolverError(self, *args, **kwrds):
         call) + ' Trying to access one of the SBML solver methods'
                 ' but SBMLSolver engine (e.g. RoadRunner) has not been installed with your CompuCell3D package')
 
-
-# def depreciated_method(f):
-#   def deco(self):
-#     print ('In deco')
-#     f(self)
-#   return deco
-
-# import warnings
-#
-# def deprecated(message):
-#   def deprecated_decorator(func):
-#       def deprecated_func(*args, **kwargs):
-#           print("func.__name__=", func.__name__)
-#           warnings.warn("{} is a deprecated function. {}".format(func.__name__, message), DeprecationWarning
-#                         # ,stacklevel=25
-#                         )
-#           warnings.simplefilter('default', DeprecationWarning)
-#           return func(*args, **kwargs)
-#       return deprecated_func
-#   return deprecated_decorator
-
 class SBMLSolverHelper(object):
     @classmethod
     def remove_attribute(cls, name):
@@ -329,7 +308,7 @@ class SBMLSolverHelper(object):
             self.add_sbml_to_cell(model_file=model_file, model_name=model_name, cell=cell, step_size=step_size,
                                   initial_conditions=initial_conditions, options=options)
 
-    @deprecated(version='4.0.0', reason="You should use : addFreeFloatingSBML")
+    @deprecated(version='4.0.0', reason="You should use : add_free_floating_sbml")
     def addFreeFloatingSBML(self, _modelFile, _modelName, _stepSize=1.0, _initialConditions={}, _options={}):
         return self.add_free_floating_sbml(model_file=_modelFile, model_name=_modelName, step_size=_stepSize,
                                            initial_conditions=_initialConditions, options=_options)
