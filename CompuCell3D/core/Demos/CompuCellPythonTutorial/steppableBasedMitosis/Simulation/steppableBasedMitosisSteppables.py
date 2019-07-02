@@ -25,7 +25,7 @@ class MitosisSteppable(MitosisSteppableBase):
         # 0 - parent child position will be randomized between mitosis event
         # negative integer - parent appears on the 'left' of the child
         # positive integer - parent appears on the 'right' of the child
-        self.setParentChildPositionFlag(-1)
+        self.set_parent_child_position_flag(-1)
 
     def step(self, mcs):
 
