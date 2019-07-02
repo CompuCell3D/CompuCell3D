@@ -46,7 +46,6 @@
         <ChemicalField Name="ATTR">
             <ChemotaxisByType id="macro_chem" Type="Macrophage" Lambda="20"/>
         </ChemicalField>
-
     </Plugin>
 
 
