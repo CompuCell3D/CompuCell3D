@@ -26,14 +26,14 @@ class SBMLSolverOscilatorDemoSteppable(SteppableBasePy):
         # options={'relative':1e-10,'absolute':1e-12}
         self.set_sbml_global_options(options)
 
-        modelFile = 'Simulation/oscli.sbml'  # this can be e.g. partial path 'Simulation/oscli.sbml'
-        stepSize = 0.02
+        model_file = 'Simulation/oscli.sbml'  # this can be e.g. partial path 'Simulation/oscli.sbml'
+        step_size = 0.02
 
-        initialConditions = {}
-        initialConditions['S1'] = 0.0
-        initialConditions['S2'] = 1.0
-        self.add_sbml_to_cell_types(model_file=modelFile, model_name='OSCIL', cell_types=[self.NONCONDENSING],
-                                    step_size=stepSize, initial_conditions=initialConditions)
+        initial_conditions = {}
+        initial_conditions['S1'] = 0.0
+        initial_conditions['S2'] = 1.0
+        self.add_sbml_to_cell_types(model_file=model_file, model_name='OSCIL', cell_types=[self.NONCONDENSING],
+                                    step_size=step_size, initial_conditions=initial_conditions)
 
     def step(self, mcs):
         if not self.pW:
