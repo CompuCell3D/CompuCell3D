@@ -27,7 +27,7 @@ def process_cml():
     cml_parser.add_argument('--screenshot-output-frequency', required=False, action='store', default=0, type=int,
                             help='screenshot output frequency')
     cml_parser.add_argument('--gui', required=False, action='store_true',default=False,
-                            help='path to the output folder to store parameter scan results')
+                            help='flag indicating whether to use Player or not')
     cml_parser.add_argument('--install-dir', required=True, type=str, help='CC3D install directory')
 
     args = cml_parser.parse_args()
