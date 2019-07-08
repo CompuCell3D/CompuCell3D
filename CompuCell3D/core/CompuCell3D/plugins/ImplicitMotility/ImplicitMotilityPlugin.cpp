@@ -287,7 +287,7 @@ void ImplicitMotilityPlugin::update(CC3DXMLElement *_xmlData, bool _fullInitFlag
     boundaryStrategy=BoundaryStrategy::getInstance();
 
 
-	if (_xmlData->findElement("MotilityParameters"))
+	if (_xmlData->findElement("MotilityEnergyParameters"))
 	{
 		functionType = BYCELLTYPE;
 	}

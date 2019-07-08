@@ -186,6 +186,9 @@ cell.targetSurface = 20.0
 ----------  # @Submenu@ Change Lambda Surface
 cell.lambdaSurface = 2.0
 
+----------  # @Submenu@ Change Lambda Motility
+cell.lambdaMotility = 15.0
+
 ----------  # @Submenu@ Apply Force To Cell
 # Make sure ExternalPotential plugin is loaded
 cell.lambdaVecX = -0.5  # force component pointing along X axis - towards positive X's

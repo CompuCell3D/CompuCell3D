@@ -50,6 +50,7 @@ namespace CompuCell3D {
 	
          float lambda;
          float saturationCoef;
+		 float powerLevel;
          std::string formulaName;
          typedef float (ChemotaxisPlugin::*chemotaxisEnergyFormulaFcnPtr_t)(float,float,ChemotaxisData &);
          chemotaxisEnergyFormulaFcnPtr_t  formulaPtr;

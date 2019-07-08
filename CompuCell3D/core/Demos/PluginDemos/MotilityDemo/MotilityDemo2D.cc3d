@@ -1,5 +1,0 @@
-<Simulation version="3.6.2">
-   <XMLScript Type="XMLScript">Simulation/MotilityDemo2D.xml</XMLScript>
-   <PythonScript Type="PythonScript">Simulation/MotilityDemo2D.py</PythonScript>
-   <Resource Type="Python">Simulation/MotilityDemo2DSteppables.py</Resource>
-</Simulation>
