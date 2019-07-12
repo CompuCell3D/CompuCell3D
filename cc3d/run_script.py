@@ -19,7 +19,7 @@ def process_cml():
     :return:
     """
     cml_parser = argparse.ArgumentParser(description='CompuCell3D Player 5')
-    cml_parser.add_argument('-i', '--input', required=False, action='store',
+    cml_parser.add_argument('-i', '--input', required=True, action='store',
                             help='path to the CC3D project file (*.cc3d)')
 
     cml_parser.add_argument('--current-dir', required=False, action='store',

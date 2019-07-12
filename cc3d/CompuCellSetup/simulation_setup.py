@@ -488,6 +488,10 @@ def main_loop(sim, simthread, steppable_registry=None):
 
         cur_step += 1
 
+    if run_finish_flag:
+        print("CALLING FINISH")
+        steppable_registry.finish()
+
     t2 = time.time()
     print_profiling_report(py_steppable_profiler_report=steppable_registry.get_profiler_report(),
                            compiled_code_run_time=compiled_code_run_time, total_run_time=(t2 - t1) * 1000.0)
@@ -612,11 +616,12 @@ def main_loop_player(sim, simthread=None, steppable_registry=None):
         # sim.finish()
         # if sim.getRecentErrorMessage() != "":
         #     raise CC3DCPlusPlusError(sim.getRecentErrorMessage())
-        # steppableRegistry.finish()
+        print("CALLING FINISH")
+        steppable_registry.finish()
         sim.cleanAfterSimulation()
         simthread.simulationFinishedPostEvent(True)
         steppable_registry.clean_after_simulation()
-        print("CALLING FINISH")
+
     else:
         sim.cleanAfterSimulation()
 

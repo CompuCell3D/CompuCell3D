@@ -60,6 +60,13 @@ namespace CompuCell3D {
    float simpleChemotaxisFormula(float _flipNeighborConc,float _conc,ChemotaxisData & _chemotaxisData);
    float saturationChemotaxisFormula(float _flipNeighborConc,float _conc,ChemotaxisData & _chemotaxisData);
    float saturationLinearChemotaxisFormula(float _flipNeighborConc,float _conc,ChemotaxisData & _chemotaxisData);
+   float saturationDifferenceChemotaxisFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
+   float powerChemotaxisFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
+   float log10DivisionFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
+   float logNatDivisionFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
+   float log10DifferenceFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
+   float logNatDifferenceFormula(float _flipNeighborConc, float _conc, ChemotaxisData & _chemotaxisData);
+   
    //bool okToChemotact(unsigned int fieldIdx,unsigned char cellType);
    std::string chemotaxisAlgorithm;
 
